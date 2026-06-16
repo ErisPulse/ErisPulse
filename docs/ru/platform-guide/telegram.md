@@ -6,7 +6,7 @@ TelegramAdapter — это адаптер, основанный на Telegram Bo
 
 ## Информация о документе
 
-- Версия соответствующего модуля: 3.6.5
+- Версия соответствующего модуля: 4.0.0
 - Ответственный: ErisPulse
 
 ## Основная информация
@@ -372,3 +372,27 @@ proxy_enabled = false
 host = "127.0.0.1"
 port = 1080
 type = "socks5"
+```
+
+### Поддержка нескольких ботов
+
+Telegram адаптер поддерживает конфигурацию с несколькими ботами.
+
+#### Пример конфигурации
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
+
+[Telegram_Adapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+enabled = true
+```
+
+#### Режим работы
+
+Telegram адаптер поддерживает только режим **Polling (опрос)**, режим Webhook был удален.
+
+### Конфигурация прокси
+
+Если вам нужно подключиться к Telegram API через прокси, вы можете использовать системный прокси (переменные окружения `ALL_PROXY` или `HTTPS_PROXY`).

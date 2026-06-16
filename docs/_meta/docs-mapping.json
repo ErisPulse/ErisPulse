@@ -3,23 +3,23 @@
   "total_languages": 5,
   "languages": {
     "en": {
-      "docs_count": 62,
+      "docs_count": 65,
       "mapping_path": "_meta/en/docs-mapping.json"
     },
     "ja": {
-      "docs_count": 62,
+      "docs_count": 65,
       "mapping_path": "_meta/ja/docs-mapping.json"
     },
     "ru": {
-      "docs_count": 62,
+      "docs_count": 65,
       "mapping_path": "_meta/ru/docs-mapping.json"
     },
     "zh-CN": {
-      "docs_count": 62,
+      "docs_count": 65,
       "mapping_path": "_meta/zh-CN/docs-mapping.json"
     },
     "zh-TW": {
-      "docs_count": 62,
+      "docs_count": 65,
       "mapping_path": "_meta/zh-TW/docs-mapping.json"
     }
   }

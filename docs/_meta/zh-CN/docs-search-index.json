@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1176,
+  "total_keywords": 1236,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -82,6 +82,14 @@
         "title": "1. 使用缓存"
       }
     ],
+    "1. 健康检查（GET）": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 50,
+        "level": 3,
+        "title": "1. 健康检查（GET）"
+      }
+    ],
     "1. 分类异常处理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -132,6 +140,14 @@
         "line": 351,
         "level": 3,
         "title": "1. 单元测试"
+      }
+    ],
+    "1. 发送消息": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 128,
+        "level": 3,
+        "title": "1. 发送消息"
       }
     ],
     "1. 合理使用日志级别": [
@@ -518,6 +534,14 @@
         "title": "2. 合理使用懒加载"
       }
     ],
+    "2. 响应标准化": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 158,
+        "level": 3,
+        "title": "2. 响应标准化"
+      }
+    ],
     "2. 基础返回结构": [
       {
         "document": "standards/api-response.md",
@@ -540,6 +564,14 @@
         "line": 226,
         "level": 3,
         "title": "2. 批量操作"
+      }
+    ],
+    "2. 接收事件（POST）": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 61,
+        "level": 3,
+        "title": "2. 接收事件（POST）"
       }
     ],
     "2. 提供上下文": [
@@ -904,6 +936,14 @@
         "line": 78,
         "level": 3,
         "title": "3. 创建适配器主类"
+      }
+    ],
+    "3. 字段映射（入站 JSON → OneBot12 事件）": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 107,
+        "level": 3,
+        "title": "3. 字段映射（入站 JSON → OneBot12 事件）"
       }
     ],
     "3. 完整字段规范": [
@@ -1882,6 +1922,12 @@
         "title": "API 响应"
       },
       {
+        "document": "platform-guide/wechatmp.md",
+        "line": 151,
+        "level": 2,
+        "title": "API 响应"
+      },
+      {
         "document": "standards/README.md",
         "line": 79,
         "level": 3,
@@ -1944,10 +1990,18 @@
         "title": "API 错误处理"
       }
     ],
+    "API响应标准": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 306,
+        "level": 2,
+        "title": "API响应标准"
+      }
+    ],
     "API标准": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 321,
+        "line": 429,
         "level": 3,
         "title": "API标准"
       }
@@ -2192,6 +2246,14 @@
         "title": "Discord"
       }
     ],
+    "Discord 平台特性文档": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 1,
+        "level": 1,
+        "title": "Discord 平台特性文档"
+      }
+    ],
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
@@ -2291,7 +2353,7 @@
     "Event Mixin 方法": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 270,
+        "line": 284,
         "level": 3,
         "title": "Event Mixin 方法"
       }
@@ -2328,12 +2390,36 @@
         "title": "Event 对象常用方法"
       }
     ],
+    "Event 快捷方法": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 142,
+        "level": 3,
+        "title": "Event 快捷方法"
+      }
+    ],
     "GET": [
       {
         "document": "advanced/http-client.md",
         "line": 74,
         "level": 3,
         "title": "GET"
+      }
+    ],
+    "Gateway Intents": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 50,
+        "level": 3,
+        "title": "Gateway Intents"
+      }
+    ],
+    "Gateway 连接": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 318,
+        "level": 2,
+        "title": "Gateway 连接"
       }
     ],
     "HTTP Client 模块": [
@@ -2475,7 +2561,7 @@
     "Mention消息段": [
       {
         "document": "platform-guide/kook.md",
-        "line": 278,
+        "line": 292,
         "level": 3,
         "title": "Mention消息段"
       }
@@ -2601,7 +2687,7 @@
     "OneBot12标准事件": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 56,
+        "line": 93,
         "level": 2,
         "title": "OneBot12标准事件"
       }
@@ -2609,7 +2695,7 @@
     "OneBot12标准特性": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 301,
+        "line": 409,
         "level": 2,
         "title": "OneBot12标准特性"
       }
@@ -2623,13 +2709,13 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 90,
+        "line": 104,
         "level": 3,
         "title": "OneBot12消息支持"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 97,
+        "line": 111,
         "level": 3,
         "title": "OneBot12消息支持"
       },
@@ -2641,7 +2727,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 96,
+        "line": 194,
         "level": 3,
         "title": "OneBot12消息支持"
       },
@@ -2650,6 +2736,14 @@
         "line": 109,
         "level": 3,
         "title": "OneBot12消息支持"
+      }
+    ],
+    "Opcode 说明": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 330,
+        "level": 3,
+        "title": "Opcode 说明"
       }
     ],
     "POST": [
@@ -2810,6 +2904,14 @@
         "title": "Send 嵌套类"
       }
     ],
+    "Send 方法": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 177,
+        "level": 2,
+        "title": "Send 方法"
+      }
+    ],
     "Send 消息发送": [
       {
         "document": "api-reference/adapter-system.md",
@@ -2829,7 +2931,7 @@
     "Send 链式调用": [
       {
         "document": "platform-guide/README.md",
-        "line": 39,
+        "line": 42,
         "level": 3,
         "title": "Send 链式调用"
       }
@@ -2901,7 +3003,7 @@
     "Sync API 连接": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 296,
+        "line": 310,
         "level": 2,
         "title": "Sync API 连接"
       }
@@ -2928,14 +3030,6 @@
         "line": 92,
         "level": 4,
         "title": "Telegram"
-      }
-    ],
-    "Telegram平台特性文档": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 1,
-        "level": 1,
-        "title": "Telegram平台特性文档"
       }
     ],
     "Token刷新": [
@@ -3035,7 +3129,7 @@
     "WebSocket连接": [
       {
         "document": "platform-guide/kook.md",
-        "line": 302,
+        "line": 316,
         "level": 2,
         "title": "WebSocket连接"
       },
@@ -3334,12 +3428,28 @@
         "title": "copy()"
       }
     ],
+    "detail_type 映射": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 200,
+        "level": 3,
+        "title": "detail_type 映射"
+      }
+    ],
     "disconnect — 断开连接": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 303,
         "level": 4,
         "title": "disconnect — 断开连接"
+      }
+    ],
+    "discord_embed 消息段": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 299,
+        "level": 3,
+        "title": "discord_embed 消息段"
       }
     ],
     "docker-compose.yml": [
@@ -3417,7 +3527,7 @@
     "mention_all消息段": [
       {
         "document": "platform-guide/kook.md",
-        "line": 291,
+        "line": 305,
         "level": 3,
         "title": "mention_all消息段"
       }
@@ -3524,6 +3634,14 @@
         "line": 723,
         "level": 3,
         "title": "self.user_id 与 Using 的关系"
+      }
+    ],
+    "self_id 自动映射": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 503,
+        "level": 2,
+        "title": "self_id 自动映射"
       }
     ],
     "stop()": [
@@ -3676,10 +3794,18 @@
         "title": "下一步"
       }
     ],
+    "不支持的方法调用": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 51,
+        "level": 3,
+        "title": "不支持的方法调用"
+      }
+    ],
     "不支持的类型处理": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 76,
+        "line": 129,
         "level": 3,
         "title": "不支持的类型处理"
       }
@@ -3765,7 +3891,7 @@
     "事件中的Bot标识": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 417,
+        "line": 515,
         "level": 3,
         "title": "事件中的Bot标识"
       }
@@ -3773,7 +3899,7 @@
     "事件中的账户标识": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 377,
+        "line": 379,
         "level": 3,
         "title": "事件中的账户标识"
       },
@@ -3865,13 +3991,13 @@
     "事件处理增强": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 248,
+        "line": 472,
         "level": 2,
         "title": "事件处理增强"
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 272,
+        "line": 378,
         "level": 2,
         "title": "事件处理增强"
       }
@@ -3914,6 +4040,28 @@
         "title": "事件处理示例"
       }
     ],
+    "事件扩展方法": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 315,
+        "level": 2,
+        "title": "事件扩展方法"
+      },
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 80,
+        "level": 2,
+        "title": "事件扩展方法"
+      }
+    ],
+    "事件扩展方法（WebhookEventMixin）": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 188,
+        "level": 2,
+        "title": "事件扩展方法（WebhookEventMixin）"
+      }
+    ],
     "事件接收与处理": [
       {
         "document": "advanced/lifecycle.md",
@@ -3947,12 +4095,18 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 99,
+        "line": 102,
         "level": 3,
         "title": "事件监听"
       }
     ],
     "事件示例": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 242,
+        "level": 3,
+        "title": "事件示例"
+      },
       {
         "document": "platform-guide/telegram.md",
         "line": 182,
@@ -3966,6 +4120,26 @@
         "line": 163,
         "level": 2,
         "title": "事件类型"
+      },
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 36,
+        "level": 2,
+        "title": "事件类型"
+      }
+    ],
+    "事件类型映射": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 207,
+        "level": 3,
+        "title": "事件类型映射"
+      },
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 212,
+        "level": 2,
+        "title": "事件类型映射"
       }
     ],
     "事件类型概览": [
@@ -4158,14 +4332,6 @@
         "title": "交互方法示例"
       }
     ],
-    "交互消息类型": [
-      {
-        "document": "platform-guide/onebot12.md",
-        "line": 42,
-        "level": 3,
-        "title": "交互消息类型"
-      }
-    ],
     "什么是适配器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -4201,7 +4367,7 @@
     "代理配置": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 356,
+        "line": 367,
         "level": 3,
         "title": "代理配置"
       }
@@ -4262,6 +4428,14 @@
         "title": "低级方法"
       }
     ],
+    "使用 Discord 特有方法": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 413,
+        "level": 3,
+        "title": "使用 Discord 特有方法"
+      }
+    ],
     "使用 Docker": [
       {
         "document": "quick-start.md",
@@ -4273,7 +4447,7 @@
     "使用 Send DSL 指定账户": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 359,
+        "line": 361,
         "level": 3,
         "title": "使用 Send DSL 指定账户"
       }
@@ -4297,7 +4471,7 @@
     "使用Send DSL指定Bot": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 395,
+        "line": 493,
         "level": 3,
         "title": "使用Send DSL指定Bot"
       }
@@ -4336,15 +4510,27 @@
     ],
     "使用示例": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 358,
+        "level": 2,
+        "title": "使用示例"
+      },
+      {
         "document": "platform-guide/kook.md",
-        "line": 340,
+        "line": 354,
         "level": 2,
         "title": "使用示例"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 319,
+        "line": 333,
         "level": 2,
+        "title": "使用示例"
+      },
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 340,
+        "level": 3,
         "title": "使用示例"
       },
       {
@@ -4411,7 +4597,7 @@
     "信令类型": [
       {
         "document": "platform-guide/kook.md",
-        "line": 313,
+        "line": 327,
         "level": 3,
         "title": "信令类型"
       }
@@ -4465,7 +4651,7 @@
     "元事件 (Meta Events)": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 149,
+        "line": 210,
         "level": 3,
         "title": "元事件 (Meta Events)"
       }
@@ -4476,6 +4662,14 @@
         "line": 251,
         "level": 2,
         "title": "元事件处理"
+      }
+    ],
+    "入站协议": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 48,
+        "level": 2,
+        "title": "入站协议"
       }
     ],
     "入门指南": [
@@ -4526,6 +4720,14 @@
         "title": "其他术语"
       }
     ],
+    "其他消息类型": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 81,
+        "level": 3,
+        "title": "其他消息类型"
+      }
+    ],
     "典型流程模式": [
       {
         "document": "advanced/conversation.md",
@@ -4573,7 +4775,7 @@
     "内置默认值": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 171,
+        "line": 379,
         "level": 3,
         "title": "内置默认值"
       }
@@ -4584,6 +4786,14 @@
         "line": 221,
         "level": 4,
         "title": "内联查询事件"
+      }
+    ],
+    "出站协议": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 126,
+        "level": 2,
+        "title": "出站协议"
       }
     ],
     "分支与跳转": [
@@ -4742,6 +4952,14 @@
         "title": "功能相关术语"
       }
     ],
+    "加密模式说明": [
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 126,
+        "level": 2,
+        "title": "加密模式说明"
+      }
+    ],
     "加载策略": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -4846,6 +5064,12 @@
     ],
     "原始消息发送": [
       {
+        "document": "platform-guide/onebot12.md",
+        "line": 77,
+        "level": 3,
+        "title": "原始消息发送"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 65,
         "level": 3,
@@ -4855,7 +5079,7 @@
     "参与贡献": [
       {
         "document": "platform-guide/README.md",
-        "line": 221,
+        "line": 224,
         "level": 2,
         "title": "参与贡献"
       }
@@ -4899,7 +5123,7 @@
     "参考链接": [
       {
         "document": "platform-guide/README.md",
-        "line": 209,
+        "line": 212,
         "level": 2,
         "title": "参考链接"
       }
@@ -4968,10 +5192,18 @@
         "title": "发布指南"
       }
     ],
+    "发送 Embed 消息": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 396,
+        "level": 3,
+        "title": "发送 Embed 消息"
+      }
+    ],
     "发送A2UI消息": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 273,
+        "line": 371,
         "level": 1,
         "title": "发送A2UI消息"
       }
@@ -4979,7 +5211,7 @@
     "发送KMarkdown和卡片消息": [
       {
         "document": "platform-guide/kook.md",
-        "line": 426,
+        "line": 440,
         "level": 3,
         "title": "发送KMarkdown和卡片消息"
       }
@@ -5003,13 +5235,13 @@
     "发送媒体消息": [
       {
         "document": "platform-guide/kook.md",
-        "line": 405,
+        "line": 419,
         "level": 3,
         "title": "发送媒体消息"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 362,
+        "line": 376,
         "level": 3,
         "title": "发送媒体消息"
       },
@@ -5023,7 +5255,7 @@
     "发送带按钮的消息到用户私聊": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 262,
+        "line": 360,
         "level": 1,
         "title": "发送带按钮的消息到用户私聊"
       }
@@ -5031,7 +5263,7 @@
     "发送带按钮的消息到群组": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 259,
+        "line": 357,
         "level": 1,
         "title": "发送带按钮的消息到群组"
       }
@@ -5060,6 +5292,12 @@
     ],
     "发送方法返回值": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 157,
+        "level": 2,
+        "title": "发送方法返回值"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 98,
         "level": 2,
@@ -5067,25 +5305,25 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 128,
+        "line": 142,
         "level": 2,
         "title": "发送方法返回值"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 119,
+        "line": 133,
         "level": 2,
         "title": "发送方法返回值"
       },
       {
         "document": "platform-guide/onebot11.md",
-        "line": 205,
+        "line": 419,
         "level": 2,
         "title": "发送方法返回值"
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 226,
+        "line": 289,
         "level": 2,
         "title": "发送方法返回值"
       },
@@ -5097,7 +5335,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 112,
+        "line": 210,
         "level": 2,
         "title": "发送方法返回值"
       },
@@ -5167,7 +5405,7 @@
     "同步流程": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 298,
+        "line": 312,
         "level": 3,
         "title": "同步流程"
       }
@@ -5320,6 +5558,14 @@
         "title": "命名规范"
       }
     ],
+    "响应": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 92,
+        "level": 4,
+        "title": "响应"
+      }
+    ],
     "回复": [
       {
         "document": "terminology.md",
@@ -5362,6 +5608,14 @@
         "line": 271,
         "level": 3,
         "title": "回调查询相关"
+      }
+    ],
+    "回调路由": [
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 141,
+        "level": 2,
+        "title": "回调路由"
       }
     ],
     "国内镜像加速": [
@@ -5470,6 +5724,12 @@
     ],
     "基本信息": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 13,
+        "level": 2,
+        "title": "基本信息"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 12,
         "level": 2,
@@ -5508,6 +5768,12 @@
       {
         "document": "platform-guide/telegram.md",
         "line": 12,
+        "level": 2,
+        "title": "基本信息"
+      },
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 3,
         "level": 2,
         "title": "基本信息"
       },
@@ -5608,14 +5874,6 @@
         "title": "基本调用方式"
       }
     ],
-    "基本配置": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 352,
-        "level": 3,
-        "title": "基本配置"
-      }
-    ],
     "基础判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -5659,7 +5917,7 @@
     "基础消息类型": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 35,
+        "line": 63,
         "level": 3,
         "title": "基础消息类型"
       }
@@ -5690,6 +5948,12 @@
     ],
     "处理交互事件": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 433,
+        "level": 3,
+        "title": "处理交互事件"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 321,
         "level": 3,
@@ -5699,15 +5963,23 @@
     "处理消息编辑": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 383,
+        "line": 397,
         "level": 3,
         "title": "处理消息编辑"
+      }
+    ],
+    "处理私信": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 380,
+        "level": 3,
+        "title": "处理私信"
       }
     ],
     "处理私信消息的编辑和删除通知": [
       {
         "document": "platform-guide/kook.md",
-        "line": 459,
+        "line": 473,
         "level": 3,
         "title": "处理私信消息的编辑和删除通知"
       }
@@ -5715,7 +5987,7 @@
     "处理私聊消息": [
       {
         "document": "platform-guide/kook.md",
-        "line": 364,
+        "line": 378,
         "level": 3,
         "title": "处理私聊消息"
       }
@@ -5731,7 +6003,7 @@
     "处理群组消息": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 321,
+        "line": 335,
         "level": 3,
         "title": "处理群组消息"
       }
@@ -5739,7 +6011,7 @@
     "处理表情回应": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 345,
+        "line": 359,
         "level": 3,
         "title": "处理表情回应"
       }
@@ -5747,15 +6019,21 @@
     "处理通知事件（表情回应等）": [
       {
         "document": "platform-guide/kook.md",
-        "line": 380,
+        "line": 394,
         "level": 3,
         "title": "处理通知事件（表情回应等）"
       }
     ],
     "处理频道消息": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 360,
+        "level": 3,
+        "title": "处理频道消息"
+      },
+      {
         "document": "platform-guide/kook.md",
-        "line": 342,
+        "line": 356,
         "level": 3,
         "title": "处理频道消息"
       }
@@ -5779,7 +6057,7 @@
     "多Bot配置": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 361,
+        "line": 459,
         "level": 2,
         "title": "多Bot配置"
       }
@@ -5819,13 +6097,13 @@
     "多账户发送语法": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 221,
+        "line": 434,
         "level": 3,
         "title": "多账户发送语法"
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 241,
+        "line": 346,
         "level": 3,
         "title": "多账户发送语法"
       }
@@ -5844,6 +6122,14 @@
         "title": "多账户支持"
       }
     ],
+    "多账户模型": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 37,
+        "level": 2,
+        "title": "多账户模型"
+      }
+    ],
     "多账户配置": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5855,6 +6141,12 @@
         "document": "platform-guide/ideaura.md",
         "line": 324,
         "level": 2,
+        "title": "多账户配置"
+      },
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 94,
+        "level": 3,
         "title": "多账户配置"
       },
       {
@@ -5870,6 +6162,14 @@
         "line": 472,
         "level": 3,
         "title": "多轮对话 (conversation)"
+      }
+    ],
+    "大小写不敏感调用": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 35,
+        "level": 3,
+        "title": "大小写不敏感调用"
       }
     ],
     "失败响应示例": [
@@ -5894,6 +6194,14 @@
         "line": 211,
         "level": 3,
         "title": "好友下线事件"
+      }
+    ],
+    "好友操作方法": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 76,
+        "level": 3,
+        "title": "好友操作方法"
       }
     ],
     "好友添加": [
@@ -5958,6 +6266,14 @@
         "line": 47,
         "level": 3,
         "title": "媒体文件处理"
+      }
+    ],
+    "媒体文件说明": [
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 24,
+        "level": 3,
+        "title": "媒体文件说明"
       }
     ],
     "子日志器": [
@@ -6139,6 +6455,12 @@
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 243,
         "level": 2,
+        "title": "完整示例"
+      },
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 177,
+        "level": 3,
         "title": "完整示例"
       }
     ],
@@ -6434,6 +6756,12 @@
         "line": 121,
         "level": 2,
         "title": "平台扩展字段"
+      },
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 65,
+        "level": 2,
+        "title": "平台扩展字段"
       }
     ],
     "平台扩展方法": [
@@ -6502,6 +6830,22 @@
         "line": 205,
         "level": 3,
         "title": "平台特性检测"
+      }
+    ],
+    "平台特性说明 — Webhook 通用桥接适配器": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 1,
+        "level": 1,
+        "title": "平台特性说明 — Webhook 通用桥接适配器"
+      }
+    ],
+    "平台特有事件（onebot11_ 前缀）": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 232,
+        "level": 3,
+        "title": "平台特有事件（onebot11_ 前缀）"
       }
     ],
     "平台特有方法": [
@@ -6655,7 +6999,7 @@
     "异步发送与结果处理": [
       {
         "document": "platform-guide/README.md",
-        "line": 84,
+        "line": 87,
         "level": 4,
         "title": "异步发送与结果处理"
       }
@@ -6671,13 +7015,13 @@
     "异步处理机制": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 232,
+        "line": 456,
         "level": 2,
         "title": "异步处理机制"
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 254,
+        "line": 359,
         "level": 2,
         "title": "异步处理机制"
       }
@@ -6712,6 +7056,14 @@
         "title": "循环对话"
       }
     ],
+    "微信公众号（WechatMp）适配器 - 平台特性文档": [
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 1,
+        "level": 1,
+        "title": "微信公众号（WechatMp）适配器 - 平台特性文档"
+      }
+    ],
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
@@ -6722,8 +7074,14 @@
     ],
     "心跳机制": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 351,
+        "level": 3,
+        "title": "心跳机制"
+      },
+      {
         "document": "platform-guide/matrix.md",
-        "line": 308,
+        "line": 322,
         "level": 3,
         "title": "心跳机制"
       }
@@ -6852,6 +7210,14 @@
         "title": "总结"
       }
     ],
+    "总览": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 5,
+        "level": 2,
+        "title": "总览"
+      }
+    ],
     "懒加载": [
       {
         "document": "terminology.md",
@@ -6903,7 +7269,7 @@
     "房间邀请": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 314,
+        "line": 328,
         "level": 3,
         "title": "房间邀请"
       }
@@ -6924,6 +7290,14 @@
         "title": "手动构造响应（旧版方式仍然兼容）"
       }
     ],
+    "手动调用 Request DSL": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 164,
+        "level": 3,
+        "title": "手动调用 Request DSL"
+      }
+    ],
     "手动部署（pip）": [
       {
         "document": "user-guide/deployment.md",
@@ -6934,14 +7308,20 @@
     ],
     "扩展字段": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 192,
+        "level": 3,
+        "title": "扩展字段"
+      },
+      {
         "document": "platform-guide/kook.md",
-        "line": 170,
+        "line": 184,
         "level": 3,
         "title": "扩展字段"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 158,
+        "line": 172,
         "level": 3,
         "title": "扩展字段"
       },
@@ -6961,13 +7341,13 @@
       },
       {
         "document": "platform-guide/ideaura.md",
-        "line": 393,
+        "line": 395,
         "level": 2,
         "title": "扩展字段说明"
       },
       {
         "document": "platform-guide/onebot11.md",
-        "line": 150,
+        "line": 306,
         "level": 3,
         "title": "扩展字段说明"
       },
@@ -6979,7 +7359,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 307,
+        "line": 405,
         "level": 2,
         "title": "扩展字段说明"
       },
@@ -7055,7 +7435,7 @@
     "按钮参数说明": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 49,
+        "line": 85,
         "level": 3,
         "title": "按钮参数说明"
       },
@@ -7149,12 +7529,18 @@
     "支持的文件类型": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 415,
+        "line": 417,
         "level": 3,
         "title": "支持的文件类型"
       }
     ],
     "支持的消息发送类型": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 69,
+        "level": 2,
+        "title": "支持的消息发送类型"
+      },
       {
         "document": "platform-guide/email.md",
         "line": 13,
@@ -7169,13 +7555,13 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 40,
+        "line": 54,
         "level": 2,
         "title": "支持的消息发送类型"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 44,
+        "line": 58,
         "level": 2,
         "title": "支持的消息发送类型"
       },
@@ -7200,6 +7586,12 @@
       {
         "document": "platform-guide/telegram.md",
         "line": 19,
+        "level": 2,
+        "title": "支持的消息发送类型"
+      },
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 10,
         "level": 2,
         "title": "支持的消息发送类型"
       },
@@ -7249,12 +7641,18 @@
     "文件处理特性": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 407,
+        "line": 409,
         "level": 3,
         "title": "文件处理特性"
       }
     ],
     "文档信息": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 7,
+        "level": 2,
+        "title": "文档信息"
+      },
       {
         "document": "platform-guide/email.md",
         "line": 7,
@@ -7387,7 +7785,7 @@
     "断线重连": [
       {
         "document": "platform-guide/kook.md",
-        "line": 324,
+        "line": 338,
         "level": 3,
         "title": "断线重连"
       },
@@ -7396,6 +7794,22 @@
         "line": 264,
         "level": 3,
         "title": "断线重连"
+      }
+    ],
+    "断线重连与 RESUME": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 343,
+        "level": 3,
+        "title": "断线重连与 RESUME"
+      }
+    ],
+    "新增特性：原始事件类型字段": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 97,
+        "level": 3,
+        "title": "新增特性：原始事件类型字段"
       }
     ],
     "新手入门": [
@@ -7420,6 +7834,14 @@
         "line": 23,
         "level": 3,
         "title": "方式二：使用 uv 安装（推荐）"
+      }
+    ],
+    "方法列表": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 329,
+        "level": 3,
+        "title": "方法列表"
       }
     ],
     "方法注释": [
@@ -7465,7 +7887,7 @@
     "日志信息": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 439,
+        "line": 537,
         "level": 3,
         "title": "日志信息"
       },
@@ -7514,10 +7936,18 @@
         "title": "日志配置"
       }
     ],
+    "旧版配置迁移": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 371,
+        "level": 3,
+        "title": "旧版配置迁移"
+      }
+    ],
     "旧配置兼容": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 464,
+        "line": 562,
         "level": 3,
         "title": "旧配置兼容"
       }
@@ -7595,7 +8025,7 @@
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 333,
+        "line": 441,
         "level": 2,
         "title": "最佳实践"
       }
@@ -7748,6 +8178,22 @@
         "title": "查询数据"
       }
     ],
+    "查询方法": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 65,
+        "level": 3,
+        "title": "查询方法"
+      }
+    ],
+    "标准 OB12 映射": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 214,
+        "level": 3,
+        "title": "标准 OB12 映射"
+      }
+    ],
     "标准事件定义": [
       {
         "document": "advanced/lifecycle.md",
@@ -7759,7 +8205,7 @@
     "标准事件格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 156,
+        "line": 159,
         "level": 3,
         "title": "标准事件格式"
       }
@@ -7775,7 +8221,7 @@
     "标准响应格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 177,
+        "line": 180,
         "level": 3,
         "title": "标准响应格式"
       }
@@ -7791,7 +8237,7 @@
     "标准格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 151,
+        "line": 154,
         "level": 2,
         "title": "标准格式"
       }
@@ -7874,6 +8320,12 @@
     ],
     "核心差异点": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 184,
+        "level": 3,
+        "title": "核心差异点"
+      },
+      {
         "document": "platform-guide/email.md",
         "line": 99,
         "level": 3,
@@ -7887,19 +8339,13 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 162,
+        "line": 176,
         "level": 3,
         "title": "核心差异点"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 147,
-        "level": 3,
-        "title": "核心差异点"
-      },
-      {
-        "document": "platform-guide/onebot11.md",
-        "line": 89,
+        "line": 161,
         "level": 3,
         "title": "核心差异点"
       },
@@ -7911,7 +8357,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 132,
+        "line": 230,
         "level": 3,
         "title": "核心差异点"
       },
@@ -8323,7 +8769,13 @@
       },
       {
         "document": "platform-guide/ideaura.md",
-        "line": 428,
+        "line": 430,
+        "level": 2,
+        "title": "注意事项"
+      },
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 210,
         "level": 2,
         "title": "注意事项"
       }
@@ -8409,9 +8861,17 @@
     "消息事件 (Message Events)": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 60,
+        "line": 115,
         "level": 3,
         "title": "消息事件 (Message Events)"
+      }
+    ],
+    "消息事件 (message)": [
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 38,
+        "level": 3,
+        "title": "消息事件 (message)"
       }
     ],
     "消息事件 detail_type 映射": [
@@ -8479,7 +8939,7 @@
     "消息发送失败": [
       {
         "document": "platform-guide/README.md",
-        "line": 194,
+        "line": 197,
         "level": 4,
         "title": "消息发送失败"
       }
@@ -8487,9 +8947,17 @@
     "消息发送成功": [
       {
         "document": "platform-guide/README.md",
-        "line": 178,
+        "line": 181,
         "level": 4,
         "title": "消息发送成功"
+      }
+    ],
+    "消息发送方法": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 291,
+        "level": 3,
+        "title": "消息发送方法"
       }
     ],
     "消息已读事件": [
@@ -8503,7 +8971,7 @@
     "消息序号机制": [
       {
         "document": "platform-guide/kook.md",
-        "line": 331,
+        "line": 345,
         "level": 3,
         "title": "消息序号机制"
       }
@@ -8516,12 +8984,36 @@
         "title": "消息撤回事件"
       }
     ],
+    "消息操作": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 143,
+        "level": 3,
+        "title": "消息操作"
+      }
+    ],
     "消息方法": [
       {
         "document": "api-reference/event-system.md",
         "line": 263,
         "level": 3,
         "title": "消息方法"
+      }
+    ],
+    "消息查询方法": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 65,
+        "level": 3,
+        "title": "消息查询方法"
+      }
+    ],
+    "消息查询示例": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 175,
+        "level": 3,
+        "title": "消息查询示例"
       }
     ],
     "消息段数据提取": [
@@ -8535,7 +9027,7 @@
     "消息段标准": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 303,
+        "line": 411,
         "level": 3,
         "title": "消息段标准"
       }
@@ -8548,14 +9040,20 @@
         "title": "消息段类型"
       },
       {
+        "document": "platform-guide/discord.md",
+        "line": 282,
+        "level": 3,
+        "title": "消息段类型"
+      },
+      {
         "document": "platform-guide/kook.md",
-        "line": 253,
+        "line": 267,
         "level": 3,
         "title": "消息段类型"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 215,
+        "line": 229,
         "level": 3,
         "title": "消息段类型"
       }
@@ -8609,7 +9107,7 @@
     "消息编辑与撤回": [
       {
         "document": "platform-guide/kook.md",
-        "line": 445,
+        "line": 459,
         "level": 3,
         "title": "消息编辑与撤回"
       }
@@ -8710,7 +9208,21 @@
         "title": "物料文档"
       }
     ],
+    "特性矩阵": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 196,
+        "level": 2,
+        "title": "特性矩阵"
+      }
+    ],
     "特有事件类型": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 180,
+        "level": 2,
+        "title": "特有事件类型"
+      },
       {
         "document": "platform-guide/email.md",
         "line": 53,
@@ -8725,19 +9237,13 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 158,
+        "line": 172,
         "level": 2,
         "title": "特有事件类型"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 143,
-        "level": 2,
-        "title": "特有事件类型"
-      },
-      {
-        "document": "platform-guide/onebot11.md",
-        "line": 85,
+        "line": 157,
         "level": 2,
         "title": "特有事件类型"
       },
@@ -8761,7 +9267,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 128,
+        "line": 226,
         "level": 2,
         "title": "特有事件类型"
       },
@@ -8790,20 +9296,20 @@
     ],
     "特殊字段示例": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 223,
+        "level": 3,
+        "title": "特殊字段示例"
+      },
+      {
         "document": "platform-guide/kook.md",
-        "line": 176,
+        "line": 190,
         "level": 3,
         "title": "特殊字段示例"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 164,
-        "level": 3,
-        "title": "特殊字段示例"
-      },
-      {
-        "document": "platform-guide/onebot11.md",
-        "line": 102,
+        "line": 178,
         "level": 3,
         "title": "特殊字段示例"
       },
@@ -8815,7 +9321,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 146,
+        "line": 244,
         "level": 3,
         "title": "特殊字段示例"
       }
@@ -8953,7 +9459,7 @@
     "监听成员变更": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 396,
+        "line": 410,
         "level": 3,
         "title": "监听成员变更"
       }
@@ -9190,6 +9696,14 @@
         "title": "示例"
       }
     ],
+    "私信发送": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 133,
+        "level": 3,
+        "title": "私信发送"
+      }
+    ],
     "立即加载": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -9305,7 +9819,7 @@
     "管理功能": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 49,
+        "line": 86,
         "level": 3,
         "title": "管理功能"
       }
@@ -9321,19 +9835,19 @@
     "管理接口": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 261,
+        "line": 487,
         "level": 2,
         "title": "管理接口"
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 285,
+        "line": 393,
         "level": 2,
         "title": "管理接口"
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 448,
+        "line": 546,
         "level": 3,
         "title": "管理接口"
       },
@@ -9440,6 +9954,14 @@
         "title": "群成员增加"
       }
     ],
+    "群操作方法": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 51,
+        "level": 3,
+        "title": "群操作方法"
+      }
+    ],
     "群组/频道信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -9454,6 +9976,22 @@
         "line": 266,
         "level": 3,
         "title": "群组权限"
+      }
+    ],
+    "群组管理方法": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 45,
+        "level": 3,
+        "title": "群组管理方法"
+      }
+    ],
+    "群组管理示例": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 132,
+        "level": 3,
+        "title": "群组管理示例"
       }
     ],
     "群聊消息（含 @提及）": [
@@ -9625,7 +10163,7 @@
     "表情包/贴纸消息段 (yunhu_expression)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 319,
+        "line": 417,
         "level": 3,
         "title": "表情包/贴纸消息段 (yunhu_expression)"
       }
@@ -9694,6 +10232,20 @@
         "title": "语言检测机制"
       }
     ],
+    "请求 Body": [
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 68,
+        "level": 4,
+        "title": "请求 Body"
+      },
+      {
+        "document": "platform-guide/webhook.md",
+        "line": 136,
+        "level": 4,
+        "title": "请求 Body"
+      }
+    ],
     "请求事件": [
       {
         "document": "api-reference/event-system.md",
@@ -9705,7 +10257,7 @@
     "请求事件 (Request Events)": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 119,
+        "line": 178,
         "level": 3,
         "title": "请求事件 (Request Events)"
       }
@@ -9754,6 +10306,22 @@
         "line": 347,
         "level": 3,
         "title": "请求操作"
+      }
+    ],
+    "请求操作返回值": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 200,
+        "level": 3,
+        "title": "请求操作返回值"
+      }
+    ],
+    "请求操作（Request DSL）": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 138,
+        "level": 2,
+        "title": "请求操作（Request DSL）"
       }
     ],
     "请求方法": [
@@ -9820,18 +10388,28 @@
         "title": "账户解析"
       }
     ],
-    "账户配置": [
+    "账户解析优先级": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 163,
+        "line": 448,
         "level": 3,
-        "title": "账户配置"
-      },
+        "title": "账户解析优先级"
+      }
+    ],
+    "账户配置": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 176,
+        "line": 239,
         "level": 3,
         "title": "账户配置"
+      }
+    ],
+    "账户配置字段": [
+      {
+        "document": "platform-guide/onebot11.md",
+        "line": 367,
+        "level": 3,
+        "title": "账户配置字段"
       }
     ],
     "账户配置文件": [
@@ -9989,7 +10567,7 @@
     "运行模式": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 361,
+        "line": 363,
         "level": 3,
         "title": "运行模式"
       }
@@ -10066,8 +10644,14 @@
     ],
     "连接流程": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 320,
+        "level": 3,
+        "title": "连接流程"
+      },
+      {
         "document": "platform-guide/kook.md",
-        "line": 304,
+        "line": 318,
         "level": 3,
         "title": "连接流程"
       },
@@ -10327,7 +10911,7 @@
     "通用接口": [
       {
         "document": "platform-guide/README.md",
-        "line": 37,
+        "line": 40,
         "level": 2,
         "title": "通用接口"
       }
@@ -10343,9 +10927,17 @@
     "通知事件 (Notice Events)": [
       {
         "document": "platform-guide/onebot12.md",
-        "line": 89,
+        "line": 146,
         "level": 3,
         "title": "通知事件 (Notice Events)"
+      }
+    ],
+    "通知事件 (notice)": [
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 51,
+        "level": 3,
+        "title": "通知事件 (notice)"
       }
     ],
     "通知事件处理": [
@@ -10530,6 +11122,14 @@
         "title": "配置变更"
       }
     ],
+    "配置字段说明": [
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 115,
+        "level": 3,
+        "title": "配置字段说明"
+      }
+    ],
     "配置懒加载": [
       {
         "document": "advanced/lazy-loading.md",
@@ -10573,13 +11173,19 @@
     "配置示例": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 176,
+        "line": 384,
         "level": 3,
         "title": "配置示例"
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 189,
+        "line": 252,
+        "level": 3,
+        "title": "配置示例"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 352,
         "level": 3,
         "title": "配置示例"
       }
@@ -10606,6 +11212,12 @@
     ],
     "配置说明": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 23,
+        "level": 2,
+        "title": "配置说明"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 326,
         "level": 3,
@@ -10613,13 +11225,13 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 21,
+        "line": 22,
         "level": 2,
         "title": "配置说明"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 21,
+        "line": 22,
         "level": 2,
         "title": "配置说明"
       },
@@ -10631,7 +11243,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 363,
+        "line": 461,
         "level": 3,
         "title": "配置说明"
       },
@@ -10651,19 +11263,25 @@
     "配置选项": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 159,
+        "line": 363,
         "level": 2,
         "title": "配置选项"
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 174,
+        "line": 237,
         "level": 2,
         "title": "配置选项"
       },
       {
         "document": "platform-guide/telegram.md",
         "line": 348,
+        "level": 2,
+        "title": "配置选项"
+      },
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 92,
         "level": 2,
         "title": "配置选项"
       }
@@ -10690,6 +11308,14 @@
         "line": 236,
         "level": 2,
         "title": "重置构建器"
+      }
+    ],
+    "重要限制": [
+      {
+        "document": "platform-guide/wechatmp.md",
+        "line": 32,
+        "level": 3,
+        "title": "重要限制"
       }
     ],
     "钩子断点一览": [
@@ -10722,6 +11348,12 @@
         "title": "链式修饰方法"
       },
       {
+        "document": "platform-guide/onebot12.md",
+        "line": 298,
+        "level": 3,
+        "title": "链式修饰方法"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 70,
         "level": 3,
@@ -10730,6 +11362,12 @@
     ],
     "链式修饰方法（可组合使用）": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 88,
+        "level": 3,
+        "title": "链式修饰方法（可组合使用）"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 42,
         "level": 3,
@@ -10737,19 +11375,19 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 60,
+        "line": 74,
         "level": 3,
         "title": "链式修饰方法（可组合使用）"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 64,
+        "line": 78,
         "level": 3,
         "title": "链式修饰方法（可组合使用）"
       },
       {
         "document": "platform-guide/onebot11.md",
-        "line": 51,
+        "line": 80,
         "level": 3,
         "title": "链式修饰方法（可组合使用）"
       },
@@ -10761,7 +11399,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 74,
+        "line": 110,
         "level": 3,
         "title": "链式修饰方法（可组合使用）"
       },
@@ -10770,6 +11408,14 @@
         "line": 82,
         "level": 3,
         "title": "链式修饰方法（可组合使用）"
+      }
+    ],
+    "链式修饰方法（返回self支持链式调用）": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 71,
+        "level": 3,
+        "title": "链式修饰方法（返回self支持链式调用）"
       }
     ],
     "链式查询": [
@@ -10798,6 +11444,12 @@
     ],
     "链式调用示例": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 96,
+        "level": 3,
+        "title": "链式调用示例"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 50,
         "level": 3,
@@ -10805,19 +11457,19 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 68,
+        "line": 82,
         "level": 3,
         "title": "链式调用示例"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 72,
+        "line": 86,
         "level": 3,
         "title": "链式调用示例"
       },
       {
         "document": "platform-guide/onebot11.md",
-        "line": 59,
+        "line": 88,
         "level": 3,
         "title": "链式调用示例"
       },
@@ -10829,7 +11481,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 83,
+        "line": 119,
         "level": 3,
         "title": "链式调用示例"
       },
@@ -10867,27 +11519,41 @@
       },
       {
         "document": "platform-guide/onebot11.md",
-        "line": 241,
+        "line": 465,
         "level": 2,
         "title": "错误处理"
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 264,
+        "line": 369,
         "level": 2,
         "title": "错误处理"
       }
     ],
+    "错误码规范": [
+      {
+        "document": "platform-guide/onebot12.md",
+        "line": 337,
+        "level": 3,
+        "title": "错误码规范"
+      }
+    ],
     "错误码说明": [
       {
+        "document": "platform-guide/discord.md",
+        "line": 172,
+        "level": 3,
+        "title": "错误码说明"
+      },
+      {
         "document": "platform-guide/kook.md",
-        "line": 143,
+        "line": 157,
         "level": 3,
         "title": "错误码说明"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 134,
+        "line": 148,
         "level": 3,
         "title": "错误码说明"
       },
@@ -10971,7 +11637,7 @@
     "额外操作方法": [
       {
         "document": "platform-guide/kook.md",
-        "line": 112,
+        "line": 126,
         "level": 3,
         "title": "额外操作方法"
       }
@@ -11031,13 +11697,13 @@
     "默认配置": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 196,
+        "line": 408,
         "level": 3,
         "title": "默认配置"
       },
       {
         "document": "platform-guide/onebot12.md",
-        "line": 214,
+        "line": 277,
         "level": 3,
         "title": "默认配置"
       }

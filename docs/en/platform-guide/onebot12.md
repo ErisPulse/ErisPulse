@@ -6,7 +6,7 @@ OneBot12Adapter is an adapter built based on the OneBot V12 protocol, serving as
 
 ## Document Information
 
-- Corresponding Module Version: 1.0.0
+- Corresponding Module Version: 4.0.0
 - Maintainer: ErisPulse
 - Protocol Version: OneBot V12
 
@@ -32,17 +32,54 @@ await onebot12.Send.To("group", group_id).Text("Hello World!")
 await onebot12.Send.To("group", group_id).Account("main").Text("Message from main account")
 ```
 
+### Case-Insensitive Method Calls
+
+All sending methods and chain modifiers support case-insensitive calls, and the adapter will automatically map them to the correct standard method names:
+
+```python
+# All the following calls are equivalent
+await onebot12.Send.To("user", 123).Text("hello")
+await onebot12.Send.To("user", 123).text("hello")
+await onebot12.Send.To("user", 123).TEXT("hello")
+
+# Chain modifier methods also support case-insensitivity
+await onebot12.Send.To("group", 123).At(456).Text("hello")
+await onebot12.Send.To("group", 123).at(456).TEXT("hello")
+await onebot12.Send.To("group", 123).AT(456).text("hello")
+```
+
+### Unsupported Method Calls
+
+When calling an unsupported method, the adapter will return a friendly text message instead of throwing an exception:
+
+```python
+# Call an unsupported method
+result = await onebot12.Send.To("user", 123).UnsupportedMethod("test")
+
+# The returned result is a text message
+# Message content: [Unsupported sending type] Method name: UnsupportedMethod, arguments: [args[0]: 'test']
+```
+
 ### Basic Message Types
 
 - `.Text(text: str)`: Send a plain text message
 - `.Image(file: Union[str, bytes], filename: str = "image.png")`: Send an image message (supports URL, Base64, or bytes)
 - `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`: Send an audio message
+- `.Voice(file: Union[str, bytes], filename: str = "voice.ogg")`: Send a voice message (alias for Audio, compatible with OneBot11)
 - `.Video(file: Union[str, bytes], filename: str = "video.mp4")`: Send a video message
 
-### Interactive Message Types
+### Chain Modifier Methods (return self for chaining)
 
-- `.Mention(user_id: Union[str, int], user_name: str = None)`: Send an @ mention message
-- `.Reply(message_id: Union[str, int], content: str = None)`: Send a reply message
+- `.At(user_id: Union[str, int])`: Mention a user (can be called multiple times)
+- `.AtAll()`: Mention all members
+- `.Reply(message_id: Union[str, int])`: Reply to a message
+
+### Raw Message Sending
+
+- `.Raw_ob12(message: Union[Dict, List[Dict]], **kwargs)`: Send OneBot12 raw format messages (follows naming conventions)
+
+### Other Message Types
+
 - `.Sticker(file_id: str)`: Send a sticker/E-mote
 - `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`: Send a location
 
@@ -57,6 +94,24 @@ await onebot12.Send.To("group", group_id).Account("main").Text("Message from mai
 
 The OneBot12 adapter fully adheres to the OneBot12 standard. The event format requires no conversion and is submitted directly to the framework.
 
+### New Feature: Raw Event Type Field
+
+Following the `standards/event-conversion.md` specification, all events will retain the raw event type field `onebot12_raw_type`:
+
+```python
+{
+    "id": "event-id",
+    "type": "message",              # Event type
+    "onebot12_raw_type": "message", # Raw event type (same as type)
+    "detail_type": "private",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "message": [{"type": "text", "data": {"text": "Hello"}}],
+    "alt_message": "Hello",
+    "time": 1234567890
+}
+```
+
 ### Message Events (Message Events)
 
 ```python
@@ -64,6 +119,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "message",
+    "onebot12_raw_type": "message",
     "detail_type": "private",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -76,6 +132,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "message",
+    "onebot12_raw_type": "message",
     "detail_type": "group",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -93,6 +150,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "notice",
+    "onebot12_raw_type": "notice",
     "detail_type": "group_member_increase",
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
@@ -105,7 +163,8 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 # Group member decrease
 {
     "id": "event-id",
-    "type": "notice", 
+    "type": "notice",
+    "onebot12_raw_type": "notice",
     "detail_type": "group_member_decrease",
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
@@ -123,6 +182,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "request",
+    "onebot12_raw_type": "request",
     "detail_type": "friend",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -135,6 +195,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "request",
+    "onebot12_raw_type": "request",
     "detail_type": "group",
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
@@ -153,6 +214,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "meta_event",
+    "onebot12_raw_type": "meta_event",
     "detail_type": "lifecycle",
     "self": {"user_id": "bot-id"},
     "sub_type": "enable",
@@ -163,6 +225,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "meta_event",
+    "onebot12_raw_type": "meta_event",
     "detail_type": "heartbeat",
     "self": {"user_id": "bot-id"},
     "interval": 5000,
@@ -225,18 +288,60 @@ platform = "onebot12"
 
 ## Return Values of Sending Methods
 
-All sending methods return a Task object, which can be directly awaited to obtain the sending result. The returned result follows the OneBot12 standard:
+### Message Sending Methods
+All message sending methods (such as `.Text()`, `.Image()`, `.Raw_ob12()` etc.) return an `asyncio.Task` object, which can be directly awaited to obtain the sending result:
 
 ```python
+task = await onebot12.Send.To("group", 123456).Text("Hello")
+```
+
+### Chain Modifier Methods
+All chain modifier methods (such as `.At()`, `.AtAll()`, `.Reply()`) return `self`, supporting chain calls:
+
+```python
+# Combine multiple modifier methods
+await onebot12.Send.To("group", 123456).Reply("msg123").At(789).At(790).Text("Text")
+```
+
+## API Response Standard
+
+The adapter follows the ErisPulse standardized return specification (`standards/api-response.md`):
+
+```python
+# Success response
 {
-    "status": "ok",           // Execution status
-    "retcode": 0,             // Return code
-    "data": {...},            // Response data
-    "self": {"user_id": "account-id"},  // Account information
-    "message_id": "123456",   // Message ID
-    "message": ""             // Error message
+    "status": "ok",              // Required: execution status
+    "retcode": 0,                // Required: return code (0 indicates success)
+    "data": {                     // Required: response data
+        "message_id": "123456",
+        "time": 1632847927.599013
+    },
+    "message_id": "123456",       // Required: message ID (empty string if none)
+    "message": "",                // Required: error message (empty if successful)
+    "echo": "1234",               // Optional: echo returned from the original request
+    "onebot12_raw": {...}        // Optional: raw response data
+}
+
+# Failure response
+{
+    "status": "failed",           // Required: execution status
+    "retcode": 10003,            // Required: return code (non-zero indicates failure)
+    "data": None,                // Required: null on failure
+    "message_id": "",            // Required: empty string on failure
+    "message": "Missing required parameter",    // Required: error description
+    "echo": "1234",              // Optional: echo returned from the original request
+    "onebot12_raw": {...}        // Optional: raw response data
 }
 ```
+
+### Error Code Specification
+
+Follows OneBot12 standard error codes:
+
+- **0**: Success
+- **1xxxx**: Action request error
+- **2xxxx**: Action handler error
+- **3xxxx**: Action execution error (33001 for network timeout)
 
 ### Multi-Account Sending Syntax
 
@@ -255,19 +360,20 @@ await onebot12.call_api("send_message", account_id="main",
 
 The OneBot12 adapter adopts an asynchronous non-blocking design:
 
-1.  Message sending does not block the event handling loop
-2.  Multiple concurrent sending operations can proceed simultaneously
-3.  API responses can be processed in a timely manner
-4.  WebSocket connections remain active
-5.  Multi-account concurrency processing, with each account running independently
+1. Message sending does not block the event handling loop
+2. Multiple concurrent sending operations can proceed simultaneously
+3. API responses can be processed in a timely manner
+4. WebSocket connections remain active
+5. Multi-account concurrency processing, with each account running independently
 
 ## Error Handling
 
 The adapter provides comprehensive error handling mechanisms:
 
-1.  Automatic reconnection for network connection exceptions (supports independent reconnection for each account, interval of 30 seconds)
-2.  API call timeout handling (fixed 30-second timeout)
-3.  Automatic retry for failed message sending (maximum 3 retries)
+1. Automatic reconnection for network connection exceptions (supports independent reconnection for each account, interval of 30 seconds)
+2. API call timeout handling (fixed 30-second timeout)
+3. Automatic retry for failed message sending (maximum 3 retries)
+4. Unsupported method calls will return a friendly text message
 
 ## Event Processing Enhancement
 
@@ -276,7 +382,9 @@ In multi-account mode, account information is automatically added to all events:
 ```python
 {
     "type": "message",
+    "onebot12_raw_type": "message",  // Raw event type
     "detail_type": "private",
+    "self": {"user_id": "123456"},  // Account ID that sent the event (standard field)
     "platform": "onebot12",
     // ... other event fields
 }
@@ -332,8 +440,9 @@ Follows the OneBot12 standard API specification:
 
 ## Best Practices
 
-1.  **Configuration Management**: It is recommended to use multi-account configuration to manage bots of different purposes separately.
-2.  **Error Handling**: Always check the return status of API calls.
-3.  **Message Sending**: Use appropriate message types and avoid sending unsupported messages.
-4.  **Connection Monitoring**: Regularly check connection status to ensure service availability.
-5.  **Performance Optimization**: Use the Batch method for sending to reduce network overhead when sending in bulk.
+1. **Configuration Management**: It is recommended to use multi-account configuration to manage bots of different purposes separately.
+2. **Error Handling**: Always check the return status of API calls.
+3. **Message Sending**: Use appropriate message types and avoid sending unsupported messages.
+4. **Connection Monitoring**: Regularly check connection status to ensure service availability.
+5. **Performance Optimization**: Use the Batch method for sending to reduce network overhead when sending in bulk.
+6. **Method Calls**: It is recommended to use standard PascalCase naming (such as `.Text()`), but lowercase forms are also supported for compatibility with different coding styles (this approach may be incompatible with older versions)

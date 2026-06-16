@@ -13436,7 +13436,7 @@ After unregistering, the Dashboard frontend will remove the sidebar navigation i
 
 ### 平台特性总览
 
-# ErisPulse PlatformFeatures Documentation
+# ErisPulse Platform Features Documentation
 
 > Base Protocol: [OneBot12](https://12.onebot.dev/) 
 > 
@@ -13467,6 +13467,9 @@ This section is maintained by developers of each adapter to explain the differen
 - [Matrix Platform Features](matrix.md)
 - [QQ Official Bot Platform Features](qqbot.md)
 - [Ideaura Platform Features](ideaura.md)
+- [Discord](discord.md)
+- [Webhook Protocol Bridge](webhook.md)
+- [WeChat Official Account](wechatmp.md)
 
 > Additionally, there is a `sandbox` adapter, but this adapter does not require platform-specific feature documentation
 
@@ -13677,7 +13680,7 @@ OneBot11Adapter is an adapter built based on the OneBot V11 protocol.
 
 ## Documentation Information
 
-- Corresponding Module Version: 3.6.0
+- Corresponding Module Version: 4.0.0
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -13686,7 +13689,7 @@ OneBot11Adapter is an adapter built based on the OneBot V11 protocol.
 - Adapter Name: OneBotAdapter
 - Supported Protocol/API Version: OneBot V11
 - Multi-account Support: Default multi-account architecture, supports configuring and running multiple OneBot accounts simultaneously
-- Legacy Configuration Compatibility: Compatible with old version configuration formats, provides migration reminders (non-automatic migration)
+- Configuration Key: `OneBotAdapter`
 
 ## Supported Message Sending Types
 
@@ -13719,6 +13722,35 @@ await onebot.Send.To("group", group_id).AtAll().Text("Announcement message")
 - `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 format message (auto-converted to OB11).
 - `.Recall(message_id: Union[str, int])`: Recall message.
 
+### Group Operation Methods
+
+The following methods must be called within a group context using `To("group", group_id)`:
+
+- `.Kick(user_id, reject_add_request=False)`: Kick out a group member.
+- `.Ban(user_id, duration=1800)`: Mute a group member (in seconds), 0 means unmute.
+- `.WholeBan(enable=True)`: Enable/disable all members mute.
+- `.SetAdmin(user_id, enable=True)`: Set/unset group admin.
+- `.SetCard(user_id, card="")`: Set group nickname.
+- `.SetGroupName(name)`: Modify group name.
+- `.Leave(is_dismiss=False)`: Leave group (group owner can dismiss).
+- `.SetTitle(user_id, title="")`: Set group title.
+- `.SetPortrait(file)`: Set group portrait.
+
+### Query Methods
+
+- `.GetMsg(message_id)`: Get message content.
+- `.GetForwardMsg(id)`: Get forward message.
+- `.GetLoginInfo()`: Get current login account info.
+- `.GetFriendList()`: Get friend list.
+- `.GetGroupInfo()`: Get group info (requires `To("group", group_id)`).
+- `.GetGroupList()`: Get group list.
+- `.GetGroupMemberInfo(user_id)`: Get group member info (requires `To("group", group_id)`).
+- `.GetGroupMemberList()`: Get group member list (requires `To("group", group_id)`).
+
+### Friend Operation Methods
+
+- `.Like(user_id, times=1)`: Send friend like (max 10 times).
+
 ### Chained Modifier Methods (Combinable)
 
 Chained modifier methods return `self`, support chaining, and must be called before the final sending method:
@@ -13742,6 +13774,30 @@ await onebot.Send.To("group", 123456).At(111).At(222).At(333).Text("Hello everyo
 # Send OneBot12 format message
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await onebot.Send.To("group", 123456).Raw_ob12(ob12_msg)
+
+# Like
+await onebot.Send.Like(123456, times=10)
+
+# Mute group member
+await onebot.Send.To("group", 123456).Ban(789012, duration=3600)
+
+# Unmute
+await onebot.Send.To("group", 123456).Ban(789012, duration=0)
+
+# Kick member
+await onebot.Send.To("group", 123456).Kick(789012)
+
+# Set admin
+await onebot.Send.To("group", 123456).SetAdmin(789012)
+
+# Modify group name
+await onebot.Send.To("group", 123456).SetGroupName("New Group Name")
+
+# Get group info
+result = await onebot.Send.To("group", 123456).GetGroupInfo()
+
+# Specify account operation
+await onebot.Send.Using("main").To("group", 123456).Ban(789012)
 ```
 
 ### Unsupported Type Handling
@@ -13753,47 +13809,148 @@ await onebot.Send.To("group", 123456).SomeUnsupportedMethod(arg1, arg2)
 # Actual send: "[Unsupported send type] Method Name: SomeUnsupportedMethod, Arguments: [...]"
 ```
 
-## Specific Event Types
+## Request Operations (Request DSL)
 
-OneBot11 events are converted to the OneBot12 protocol, where standard fields fully comply with the OneBot12 protocol, but there are the following differences:
+The adapter provides a request operation DSL for handling friend and group requests (add friend/group invite) approval/rejection operations.
 
-### Core Differences
+### Event Shortcut Methods
 
-1.  **Specific Event Types:**
-    -   CQ Code Extension Event: `onebot11_cq_{type}`
-    -   Honor Change Event: `onebot11_honor`
-    -   Poke Event: `onebot11_poke`
-    -   Group Red Packet Lucky King Event: `onebot11_lucky_king`
-
-2.  **Extension Fields:**
-    -   All specific fields are identified with the `onebot11_` prefix
-    -   Original CQ code message retained in the `onebot11_raw_message` field
-    -   Original event data retained in the `onebot11_raw` field
-
-### Special Field Examples
+Request events support `event.approve()` and `event.reject()` shortcut methods, which internally automatically call the Request DSL:
 
 ```python
-// Honor change event
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    comment = event.get("comment", "")
+
+    if comment == "passphrase":
+        await event.approve()
+    else:
+        await event.reject()
+
+@request.on_group_request()
+async def handle_group_request(event):
+    group_id = event.get("group_id")
+    await event.approve()
+```
+
+### Manual Request DSL Calls
+
+```python
+# Approve request
+await onebot.Request("flag_string").accept()
+
+# Reject request
+await onebot.Request("flag_string").reject()
+
+# Specify account operation
+await onebot.Request("flag_string").Using("main").accept()
+```
+
+### Complete Example
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    comment = event.get("comment", "")
+
+    # Method 1: Use Event shortcut method
+    if comment == "passphrase":
+        await event.approve()
+    else:
+        await event.reject()
+
+    # Method 2: Use Request DSL
+    flag = event.get("flag")
+    if comment == "passphrase":
+        await onebot.Request(flag).accept()
+    else:
+        await onebot.Request(flag).reject()
+```
+
+### Request Operation Return Values
+
+```python
 {
-  "type": "notice",
-  "detail_type": "onebot11_honor",
-  "group_id": "123456",
+    "status": "ok",
+    "retcode": 0,
+    "data": {...},
+    "message_id": "",
+    "message": ""
+}
+```
+
+## Event Type Mapping
+
+### Standard OB12 Mapping
+
+| OB11 Original Type | Converted detail_type | Description |
+|--------------------|-----------------------|-------------|
+| message_type: private | `private` | Private message |
+| message_type: group | `group` | Group message |
+| request_type: friend | `friend` | Friend request |
+| request_type: group | `group` | Group request |
+| meta_event_type: heartbeat | `heartbeat` | Heartbeat |
+| notice_type: group_upload | `group_file_upload` | Group file upload |
+| notice_type: group_admin | `group_admin_change` | Group admin change |
+| notice_type: group_increase | `group_member_increase` | Group member increase |
+| notice_type: group_decrease | `group_member_decrease` | Group member decrease |
+| notice_type: group_ban | `group_ban` | Group mute |
+| notice_type: friend_add | `friend_increase` | Friend add |
+| notice_type: friend_delete | `friend_decrease` | Friend delete |
+| notice_type: group_recall / friend_recall | `message_recall` | Message recall |
+
+### Platform-Specific Events (onebot11_ prefix)
+
+| OB11 Original Type | Converted detail_type | Description |
+|--------------------|-----------------------|-------------|
+| meta_event_type: lifecycle | `onebot11_lifecycle` | OneBot implementation lifecycle |
+| notify + sub_type: honor | `onebot11_honor` | Group honor change |
+| notify + sub_type: poke | `onebot11_poke` | Poke |
+| notify + sub_type: lucky_king | `onebot11_lucky_king` | Group red packet lucky king |
+| CQ Code unknown type | Message segment `onebot11_{type}` | Unrecognized CQ code |
+
+### Event Examples
+
+```python
+// Friend request
+{
+  "type": "request",
+  "detail_type": "friend",
   "user_id": "789012",
-  "onebot11_honor_type": "talkative",
-  "onebot11_operation": "set"
+  "comment": "Please add me as friend",
+  "request_id": "flag_abc123",
+  "flag": "flag_abc123"
 }
 
-// Poke event
+// Heartbeat
+{
+  "type": "meta_event",
+  "detail_type": "heartbeat",
+  "interval": 5000,
+  "status": {...}
+}
+
+// Lifecycle (platform-specific)
+{
+  "type": "meta_event",
+  "detail_type": "onebot11_lifecycle",
+  "sub_type": "enable"
+}
+
+// Poke (platform-specific)
 {
   "type": "notice",
   "detail_type": "onebot11_poke",
   "group_id": "123456",
   "user_id": "789012",
-  "target_id": "345678",
-  "onebot11_poke_type": "normal"
+  "target_id": "345678"
 }
 
-// Group red packet lucky king event
+// Group red packet lucky king (platform-specific)
 {
   "type": "notice",
   "detail_type": "onebot11_lucky_king",
@@ -13802,65 +13959,123 @@ OneBot11 events are converted to the OneBot12 protocol, where standard fields fu
   "target_id": "345678"
 }
 
-// CQ code message segment
+// Honor change (platform-specific)
+{
+  "type": "notice",
+  "detail_type": "onebot11_honor",
+  "group_id": "123456",
+  "user_id": "789012",
+  "honor_type": "talkative"
+}
+
+// CQ code extension message segment
 {
   "type": "message",
   "message": [
-    {
-      "type": "onebot11_face",
-      "data": {"id": "123"}
-    },
-    {
-      "type": "onebot11_shake",
-      "data": {} 
-    }
+    {"type": "onebot11_shake", "data": {}}
   ]
 }
 ```
 
 ### Extension Field Descriptions
 
--   All specific fields are identified with the `onebot11_` prefix
--   Original CQ code message retained in the `onebot11_raw_message` field
--   Original event data retained in the `onebot11_raw` field
--   CQ codes within message content are converted to corresponding message segments
--   Reply messages will add `reply` type message segments
--   @ messages will add `mention` type message segments
+- All specific fields are identified with the `onebot11_` prefix
+- Original event data retained in the `onebot11_raw` field
+- Original event type retained in the `onebot11_raw_type` field
+- CQ codes within message content are converted to corresponding message segments (standard types without prefix, unknown types with `onebot11_` prefix)
+- Reply messages will add `reply` type message segments
+- @ messages will add `mention` type message segments
+
+## Event Extension Methods
+
+OneBot11 Adapter registers the following platform-specific methods for event objects, which can be directly called in event handlers:
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    raw_self_id = event.get_raw_self_id()
+    sender_info = event.get_sender_info()
+    sender_role = event.get_sender_role()
+```
+
+### Method List
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `get_raw_self_id()` | `str` | Get original self_id (Bot's QQ number) |
+| `get_sender_info()` | `dict` | Get complete sender information (including nickname, role, level, etc.) |
+| `get_sender_role()` | `str` | Get sender's role in group (owner/admin/member) |
+| `get_sender_level()` | `int` | Get sender's level |
+| `get_sender_title()` | `str` | Get sender's group title |
+| `is_system_message()` | `bool` | Check if it is a system message (sub_type == "system") |
+
+### Usage Examples
+
+```python
+from ErisPulse.Core.Event import message, command
+
+@message.on_group_message()
+async def handle_group(event):
+    role = event.get_sender_role()
+    if role == "admin" or role == "owner":
+        await event.reply("Hello admin!")
+
+    title = event.get_sender_title()
+    if title:
+        await event.reply(f"Your title is: {title}")
+
+@command("whoami")
+async def whoami(event):
+    info = event.get_sender_info()
+    nickname = info.get("nickname", "Unknown")
+    level = event.get_sender_level()
+    await event.reply(f"Nickname: {nickname}, Level: {level}")
+```
 
 ## Configuration Options
 
-Each account in the OneBot adapter is configured with the following options independently:
+OneBot11 Adapter uses a multi-account architecture, with each account configured independently. The configuration key is `OneBotAdapter`.
 
-### Account Configuration
-- `mode`: Running mode of this account ("server" or "client")
-- `server_path`: WebSocket path in Server mode
-- `server_token`: Authentication Token in Server mode (optional)
-- `client_url`: WebSocket address to connect to in Client mode
-- `client_token`: Authentication Token in Client mode (optional)
-- `enabled`: Whether this account is enabled
+### Account Configuration Fields
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `bot_id` | `str` | Yes | `""` | Bot's QQ number, used to identify the account |
+| `mode` | `str` | No | `"server"` | Running mode: `"server"` (passive listening) or `"client"` (active connection) |
+| `url` | `str` | No | `"ws://127.0.0.1:3001"` | WebSocket address for Client mode |
+| `token` | `str` | No | `""` | Authentication token (Client mode connection token / Server mode verification token) |
+| `server_path` | `str` | No | `"/"` | WebSocket path for Server mode |
+| `enabled` | `bool` | No | `true` | Whether to enable this account |
+| `name` | `str` | No | `""` | Account comment name |
 
 ### Built-in Defaults
+
 - Reconnect Interval: 30 seconds
 - API Call Timeout: 30 seconds
-- Maximum Retry Count: 3 times
 
 ### Configuration Example
+
 ```toml
-[OneBotv11_Adapter.accounts.main]
+[OneBotAdapter.accounts.main]
+bot_id = "123456789"
 mode = "server"
 server_path = "/onebot-main"
-server_token = "main_token"
+token = "main_token"
 enabled = true
 
-[OneBotv11_Adapter.accounts.backup]
+[OneBotAdapter.accounts.backup]
+bot_id = "987654321"
 mode = "client"
-client_url = "ws://127.0.0.1:3002"
-client_token = "backup_token"
+url = "ws://127.0.0.1:3002"
+token = "backup_token"
 enabled = true
 
-[OneBotv11_Adapter.accounts.test]
+[OneBotAdapter.accounts.test]
+bot_id = "111222333"
 mode = "client"
-client_url = "ws://127.0.0.1:3003"
+url = "ws://127.0.0.1:3003"
 enabled = false
 ```
 
@@ -13868,7 +14083,8 @@ enabled = false
 
 If no account is configured, the adapter will automatically create:
 ```toml
-[OneBotv11_Adapter.accounts.default]
+[OneBotAdapter.accounts.default]
+bot_id = ""
 mode = "server"
 server_path = "/"
 enabled = true
@@ -13880,13 +14096,12 @@ All sending methods return a Task object, which can be directly awaited to get t
 
 ```python
 {
-    "status": "ok",           // Execution status
-    "retcode": 0,             // Return code
-    "data": {...},            // Response data
-    "self": {...},            // Self information
-    "message_id": "123456",   // Message ID
-    "message": "",            // Error message
-    "onebot_raw": {...}       // Raw response data
+    "status": "ok",
+    "retcode": 0,
+    "data": {...},
+    "message_id": "123456",
+    "message": "",
+    "onebot11_raw": {...}
 }
 ```
 
@@ -13897,25 +14112,36 @@ All sending methods return a Task object, which can be directly awaited to get t
 await onebot.Send.Using("main").To("group", 123456).Text("Main account message")
 await onebot.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
 
+# Using bot_id to select account
+await onebot.Send.Using("123456789").To("group", 123456).Text("Selected by QQ number")
+
 # API call method
 await onebot.call_api("send_msg", account_id="main", group_id=123456, message="Hello")
 ```
 
+### Account Resolution Priority
+
+The priority of `account_id` parameter resolution in `call_api` and `Using()`:
+1. Exact match account name
+2. Match `bot_id` field
+3. Match any `str` type field of the account
+4. Fall back to the first enabled account
+
 ## Async Processing Mechanism
 
-The OneBot adapter adopts an asynchronous non-blocking design, ensuring:
-1.  Message sending does not block the event processing loop
-2.  Multiple concurrent send operations can proceed simultaneously
-3.  API responses are handled in a timely manner
-4.  WebSocket connections remain active
-5.  Multi-account concurrent processing, with each account running independently
+OneBot11 Adapter adopts an asynchronous non-blocking design, ensuring:
+1. Message sending does not block the event processing loop
+2. Multiple concurrent send operations can proceed simultaneously
+3. API responses are handled in a timely manner
+4. WebSocket connections remain active
+5. Multi-account concurrent processing, with each account running independently
 
 ## Error Handling
 
 The adapter provides comprehensive error handling mechanisms:
-1.  Automatic reconnection for network connection exceptions (supports independent reconnection for each account, interval of 30 seconds)
-2.  API call timeout handling (fixed 30-second timeout)
-3.  Message send failure retry (up to 3 retries)
+1. Automatic reconnection for network connection exceptions (supports independent reconnection for each account, interval of 30 seconds)
+2. API call timeout handling (fixed 30-second timeout)
+3. Connection failure retries at fixed intervals
 
 ## Event Processing Enhancement
 
@@ -13924,11 +14150,13 @@ In multi-account mode, account information is automatically added to all events:
 {
     "type": "message",
     "detail_type": "private",
-    "self": {"user_id": "main"},  // New: Account ID that sent the event (standard field)
+    "self": {"user_id": "123456789", "platform": "onebot11"},
     "platform": "onebot11",
     // ... other event fields
 }
 ```
+
+The adapter automatically maintains `self_id → account_name` mapping, so `event.reply()` can correctly route to the source account without manually specifying the account.
 
 ## Management Interface
 
@@ -13944,6 +14172,21 @@ connection_status = {
 
 # Dynamically enable/disable accounts (requires restarting adapter)
 onebot.accounts["test"].enabled = False
+```
+
+## self_id Automatic Mapping
+
+The adapter automatically establishes a mapping relationship between OneBot `self_id` (QQ number) and `account_name` for event routing:
+
+```python
+# Adapter automatically completes
+# When receiving an event, the self.user_id field is filled with bot_id
+# The adapter automatically records: self_id("123456789") → account_name("main")
+
+# Therefore event.reply() can automatically find the correct account to send the message
+@message.on_message()
+async def handler(event):
+    await event.reply("Automatically routed to the correct account")
 
 
 ### OneBot12 适配
@@ -13956,7 +14199,7 @@ OneBot12Adapter is an adapter built based on the OneBot V12 protocol, serving as
 
 ## Document Information
 
-- Corresponding Module Version: 1.0.0
+- Corresponding Module Version: 4.0.0
 - Maintainer: ErisPulse
 - Protocol Version: OneBot V12
 
@@ -13982,17 +14225,54 @@ await onebot12.Send.To("group", group_id).Text("Hello World!")
 await onebot12.Send.To("group", group_id).Account("main").Text("Message from main account")
 ```
 
+### Case-Insensitive Method Calls
+
+All sending methods and chain modifiers support case-insensitive calls, and the adapter will automatically map them to the correct standard method names:
+
+```python
+# All the following calls are equivalent
+await onebot12.Send.To("user", 123).Text("hello")
+await onebot12.Send.To("user", 123).text("hello")
+await onebot12.Send.To("user", 123).TEXT("hello")
+
+# Chain modifier methods also support case-insensitivity
+await onebot12.Send.To("group", 123).At(456).Text("hello")
+await onebot12.Send.To("group", 123).at(456).TEXT("hello")
+await onebot12.Send.To("group", 123).AT(456).text("hello")
+```
+
+### Unsupported Method Calls
+
+When calling an unsupported method, the adapter will return a friendly text message instead of throwing an exception:
+
+```python
+# Call an unsupported method
+result = await onebot12.Send.To("user", 123).UnsupportedMethod("test")
+
+# The returned result is a text message
+# Message content: [Unsupported sending type] Method name: UnsupportedMethod, arguments: [args[0]: 'test']
+```
+
 ### Basic Message Types
 
 - `.Text(text: str)`: Send a plain text message
 - `.Image(file: Union[str, bytes], filename: str = "image.png")`: Send an image message (supports URL, Base64, or bytes)
 - `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`: Send an audio message
+- `.Voice(file: Union[str, bytes], filename: str = "voice.ogg")`: Send a voice message (alias for Audio, compatible with OneBot11)
 - `.Video(file: Union[str, bytes], filename: str = "video.mp4")`: Send a video message
 
-### Interactive Message Types
+### Chain Modifier Methods (return self for chaining)
 
-- `.Mention(user_id: Union[str, int], user_name: str = None)`: Send an @ mention message
-- `.Reply(message_id: Union[str, int], content: str = None)`: Send a reply message
+- `.At(user_id: Union[str, int])`: Mention a user (can be called multiple times)
+- `.AtAll()`: Mention all members
+- `.Reply(message_id: Union[str, int])`: Reply to a message
+
+### Raw Message Sending
+
+- `.Raw_ob12(message: Union[Dict, List[Dict]], **kwargs)`: Send OneBot12 raw format messages (follows naming conventions)
+
+### Other Message Types
+
 - `.Sticker(file_id: str)`: Send a sticker/E-mote
 - `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`: Send a location
 
@@ -14007,6 +14287,24 @@ await onebot12.Send.To("group", group_id).Account("main").Text("Message from mai
 
 The OneBot12 adapter fully adheres to the OneBot12 standard. The event format requires no conversion and is submitted directly to the framework.
 
+### New Feature: Raw Event Type Field
+
+Following the `standards/event-conversion.md` specification, all events will retain the raw event type field `onebot12_raw_type`:
+
+```python
+{
+    "id": "event-id",
+    "type": "message",              # Event type
+    "onebot12_raw_type": "message", # Raw event type (same as type)
+    "detail_type": "private",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "message": [{"type": "text", "data": {"text": "Hello"}}],
+    "alt_message": "Hello",
+    "time": 1234567890
+}
+```
+
 ### Message Events (Message Events)
 
 ```python
@@ -14014,6 +14312,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "message",
+    "onebot12_raw_type": "message",
     "detail_type": "private",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -14026,6 +14325,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "message",
+    "onebot12_raw_type": "message",
     "detail_type": "group",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -14043,6 +14343,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "notice",
+    "onebot12_raw_type": "notice",
     "detail_type": "group_member_increase",
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
@@ -14055,7 +14356,8 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 # Group member decrease
 {
     "id": "event-id",
-    "type": "notice", 
+    "type": "notice",
+    "onebot12_raw_type": "notice",
     "detail_type": "group_member_decrease",
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
@@ -14073,6 +14375,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "request",
+    "onebot12_raw_type": "request",
     "detail_type": "friend",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -14085,6 +14388,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "request",
+    "onebot12_raw_type": "request",
     "detail_type": "group",
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
@@ -14103,6 +14407,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "meta_event",
+    "onebot12_raw_type": "meta_event",
     "detail_type": "lifecycle",
     "self": {"user_id": "bot-id"},
     "sub_type": "enable",
@@ -14113,6 +14418,7 @@ The OneBot12 adapter fully adheres to the OneBot12 standard. The event format re
 {
     "id": "event-id",
     "type": "meta_event",
+    "onebot12_raw_type": "meta_event",
     "detail_type": "heartbeat",
     "self": {"user_id": "bot-id"},
     "interval": 5000,
@@ -14175,18 +14481,60 @@ platform = "onebot12"
 
 ## Return Values of Sending Methods
 
-All sending methods return a Task object, which can be directly awaited to obtain the sending result. The returned result follows the OneBot12 standard:
+### Message Sending Methods
+All message sending methods (such as `.Text()`, `.Image()`, `.Raw_ob12()` etc.) return an `asyncio.Task` object, which can be directly awaited to obtain the sending result:
 
 ```python
+task = await onebot12.Send.To("group", 123456).Text("Hello")
+```
+
+### Chain Modifier Methods
+All chain modifier methods (such as `.At()`, `.AtAll()`, `.Reply()`) return `self`, supporting chain calls:
+
+```python
+# Combine multiple modifier methods
+await onebot12.Send.To("group", 123456).Reply("msg123").At(789).At(790).Text("Text")
+```
+
+## API Response Standard
+
+The adapter follows the ErisPulse standardized return specification (`standards/api-response.md`):
+
+```python
+# Success response
 {
-    "status": "ok",           // Execution status
-    "retcode": 0,             // Return code
-    "data": {...},            // Response data
-    "self": {"user_id": "account-id"},  // Account information
-    "message_id": "123456",   // Message ID
-    "message": ""             // Error message
+    "status": "ok",              // Required: execution status
+    "retcode": 0,                // Required: return code (0 indicates success)
+    "data": {                     // Required: response data
+        "message_id": "123456",
+        "time": 1632847927.599013
+    },
+    "message_id": "123456",       // Required: message ID (empty string if none)
+    "message": "",                // Required: error message (empty if successful)
+    "echo": "1234",               // Optional: echo returned from the original request
+    "onebot12_raw": {...}        // Optional: raw response data
+}
+
+# Failure response
+{
+    "status": "failed",           // Required: execution status
+    "retcode": 10003,            // Required: return code (non-zero indicates failure)
+    "data": None,                // Required: null on failure
+    "message_id": "",            // Required: empty string on failure
+    "message": "Missing required parameter",    // Required: error description
+    "echo": "1234",              // Optional: echo returned from the original request
+    "onebot12_raw": {...}        // Optional: raw response data
 }
 ```
+
+### Error Code Specification
+
+Follows OneBot12 standard error codes:
+
+- **0**: Success
+- **1xxxx**: Action request error
+- **2xxxx**: Action handler error
+- **3xxxx**: Action execution error (33001 for network timeout)
 
 ### Multi-Account Sending Syntax
 
@@ -14205,19 +14553,20 @@ await onebot12.call_api("send_message", account_id="main",
 
 The OneBot12 adapter adopts an asynchronous non-blocking design:
 
-1.  Message sending does not block the event handling loop
-2.  Multiple concurrent sending operations can proceed simultaneously
-3.  API responses can be processed in a timely manner
-4.  WebSocket connections remain active
-5.  Multi-account concurrency processing, with each account running independently
+1. Message sending does not block the event handling loop
+2. Multiple concurrent sending operations can proceed simultaneously
+3. API responses can be processed in a timely manner
+4. WebSocket connections remain active
+5. Multi-account concurrency processing, with each account running independently
 
 ## Error Handling
 
 The adapter provides comprehensive error handling mechanisms:
 
-1.  Automatic reconnection for network connection exceptions (supports independent reconnection for each account, interval of 30 seconds)
-2.  API call timeout handling (fixed 30-second timeout)
-3.  Automatic retry for failed message sending (maximum 3 retries)
+1. Automatic reconnection for network connection exceptions (supports independent reconnection for each account, interval of 30 seconds)
+2. API call timeout handling (fixed 30-second timeout)
+3. Automatic retry for failed message sending (maximum 3 retries)
+4. Unsupported method calls will return a friendly text message
 
 ## Event Processing Enhancement
 
@@ -14226,7 +14575,9 @@ In multi-account mode, account information is automatically added to all events:
 ```python
 {
     "type": "message",
+    "onebot12_raw_type": "message",  // Raw event type
     "detail_type": "private",
+    "self": {"user_id": "123456"},  // Account ID that sent the event (standard field)
     "platform": "onebot12",
     // ... other event fields
 }
@@ -14282,11 +14633,12 @@ Follows the OneBot12 standard API specification:
 
 ## Best Practices
 
-1.  **Configuration Management**: It is recommended to use multi-account configuration to manage bots of different purposes separately.
-2.  **Error Handling**: Always check the return status of API calls.
-3.  **Message Sending**: Use appropriate message types and avoid sending unsupported messages.
-4.  **Connection Monitoring**: Regularly check connection status to ensure service availability.
-5.  **Performance Optimization**: Use the Batch method for sending to reduce network overhead when sending in bulk.
+1. **Configuration Management**: It is recommended to use multi-account configuration to manage bots of different purposes separately.
+2. **Error Handling**: Always check the return status of API calls.
+3. **Message Sending**: Use appropriate message types and avoid sending unsupported messages.
+4. **Connection Monitoring**: Regularly check connection status to ensure service availability.
+5. **Performance Optimization**: Use the Batch method for sending to reduce network overhead when sending in bulk.
+6. **Method Calls**: It is recommended to use standard PascalCase naming (such as `.Text()`), but lowercase forms are also supported for compatibility with different coding styles (this approach may be incompatible with older versions)
 
 
 ### Telegram 适配
@@ -14299,7 +14651,7 @@ TelegramAdapter is an adapter built based on the Telegram Bot API, supporting mu
 
 ## Document Information
 
-- Corresponding Module Version: 3.6.5
+- Corresponding Module Version: 4.0.0
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -14640,31 +14992,41 @@ async def handle_notice(event):
 
 ## Configuration Options
 
-The Telegram adapter supports the following configuration options:
+The Telegram adapter supports multi-account configuration:
 
-### Basic Configuration
-- `token`: Telegram Bot Token
-- `proxy_enabled`: Whether to enable proxy
+### Configuration Example
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
 
-### Proxy Configuration
-- `proxy.host`: Proxy server address
-- `proxy.port`: Proxy port
-- `proxy.type`: Proxy type (`"socks4"` or `"socks5"`)
+[Telegram_Adapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+enabled = true
+```
 
 ### Operating Mode
 
 The Telegram adapter only supports **Polling** mode. The Webhook mode has been removed.
 
-Configuration Example:
+### Proxy Configuration
+
+If you need to connect to Telegram API via a proxy, please use a system-level proxy (environment variables `ALL_PROXY` or `HTTPS_PROXY`).
+
+### Migration from Old Configuration
+
+The old single token configuration is automatically compatible:
 ```toml
+# Old format (still usable, but migration is recommended)
 [Telegram_Adapter]
 token = "YOUR_BOT_TOKEN"
-proxy_enabled = false
+```
 
-[Telegram_Adapter.proxy]
-host = "127.0.0.1"
-port = 1080
-type = "socks5"
+It is recommended to migrate to the new format:
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
 
 
 ### 云湖适配
@@ -14677,7 +15039,7 @@ YunhuAdapter is an adapter built on the Yunhu protocol, integrating all Yunhu fu
 
 ## Document Information
 
-- Corresponding Module Version: 3.10.1
+- Corresponding Module Version: 4.0.0
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -14712,6 +15074,42 @@ Supported sending types include:
 - `.Board(scope: str, content: str, **kwargs)`: Announce board, scope supports `local` and `global`.
 - `.DismissBoard(scope: str, **kwargs)`: Dissolve/Revoke board.
 - `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`: Send stream message.
+
+### Group Management Methods
+
+All group management methods require specifying the group via chain syntax, for example:
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+await yunhu.Send.To("group", group_id).Kick(user_id)
+```
+
+- `.Kick(user_id: str)`: Remove group member. Bot needs `Allow remove group members` permission.
+- `.Ban(user_id: str, duration: int = 600)`: Mute user. `duration` is mute duration (seconds), 0 to unmute, -1 to permanently mute. Bot needs `Allow mute users` permission.
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`: Create group tag. `color` format is #RRGGBB, smaller `sort` puts it at the front. Bot needs `Allow control tag groups` permission.
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`: Modify group tag. Parameters are optional, not passed means no modification. Bot needs `Allow control tag groups` permission.
+- `.DeleteTag(tag: str)`: Delete group tag. Bot needs `Allow control tag groups` permission.
+- `.GetTagList()`: Get group tag list. Returns response data containing `list` array.
+- `.AddUserTag(user_id: str, tag: str)`: Add tag to user. Bot needs `Allow control tag groups` permission.
+- `.RemoveUserTag(user_id: str, tag: str)`: Remove tag from user. Bot needs `Allow control tag groups` permission.
+- `.SetMsgTypeLimit(types: str)`: Control group message types. `types` is message type name, separated by commas (e.g., `"text,image,video"`), empty string means no restriction. Bot needs `Allow modify group info` permission.
+
+### Message Query Methods
+
+Get history message list for a specified session (user/group), need to specify target via chain syntax, for example:
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
+```
+
+- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`: Get session history messages. Returns response data containing `list` array and `total` total count.
+  - `message_id`: Message ID (optional). When left blank, returns the nearest N messages combined with `before`.
+  - `before`: Returns N messages before the specified message ID.
+  - `after`: Returns N messages after the specified message ID.
+  - > **Note:** `before` and `after` must specify at least one and be greater than 0, otherwise the server will not return any messages.
 
 Board board_type supports the following types:
 - `local`: Specified user board
@@ -14762,6 +15160,68 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Text("Reply message")
 
 # Reply + Buttons
 await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("Message with reply and buttons")
+```
+
+### Group Management Examples
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# Remove group member
+await yunhu.Send.To("group", group_id).Kick(user_id)
+
+# Mute user (10 minutes)
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=600)
+
+# Unmute
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=0)
+
+# Permanently mute
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=-1)
+
+# Create group tag
+await yunhu.Send.To("group", group_id).CreateTag("VIP User", color="#FF5733", desc="VIP Member")
+
+# Modify group tag
+await yunhu.Send.To("group", group_id).EditTag("VIP User", new_tag="SVIP User", color="#33C4FF")
+
+# Delete group tag
+await yunhu.Send.To("group", group_id).DeleteTag("VIP User")
+
+# Get group tag list
+result = await yunhu.Send.To("group", group_id).GetTagList()
+
+# Add tag to user
+await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP User")
+
+# Remove user tag
+await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP User")
+
+# Set message type limit
+await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
+
+# Cancel message type limit
+await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
+```
+
+### Message Query Examples
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# Get latest 10 messages (total 10 returned)
+result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
+
+# Get 10 messages before specified message ID (total 11 returned)
+result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10)
+
+# Get 10 messages before and after specified message ID (total 21 returned)
+result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
+
+# Get user session history messages
+result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
 ### OneBot12 Message Support
@@ -14900,7 +15360,241 @@ async def handle_yunhu_notice(event):
         await event.reply(f"Triggered shortcut menu: {menu_id}")
 
     # Handle bot setting changes
-    elif event
+    elif event.get("detail_type") == "yunhu_bot_setting":
+        settings = event.get("yunhu_setting", {})
+        await event.reply(f"Settings updated: {settings}")
+
+    # Handle A2UI button events
+    elif event.get("detail_type") == "yunhu_a2ui_button":
+        a2ui = event.get("yunhu_a2ui", {})
+        action_name = a2ui.get("action_name", "")
+        form_context = a2ui.get("form_context", {})
+        await event.reply(f"A2UI Action: {action_name}, Form Data: {form_context}")
+```
+
+### Send Messages with Buttons Using Chained Call
+
+```python
+from ErisPulse import sdk
+
+yunhu = sdk.adapter.get("yunhu")
+
+buttons = [
+    [
+        {"text": "Confirm", "actionType": 3, "value": "confirm"},
+        {"text": "Cancel", "actionType": 3, "value": "cancel"},
+        {"text": "View Details", "actionType": 1, "url": "http://example.com/detail"}
+    ]
+]
+
+# Send message with buttons to a group
+await yunhu.Send.To("group", "123456").Buttons(buttons).Text("Please confirm the following operation")
+
+# Send message with buttons to a user private chat
+await yunhu.Send.To("user", "789").Buttons(buttons).Text("Please select your preference settings")
+```
+
+### Send A2UI Messages
+
+```python
+from ErisPulse import sdk
+
+yunhu = sdk.adapter.get("yunhu")
+
+# Send A2UI message
+await yunhu.Send.To("user", user_id).A2UI("A2UI interactive card content")
+```
+
+# Bot Setting
+{
+  "type": "notice",
+  "detail_type": "yunhu_bot_setting",
+  "group_id": "Group ID (may be empty)",
+  "user_nickname": "User nickname",
+  "yunhu_setting": {
+    "Setting Item ID": {
+      "id": "Setting Item ID",
+      "type": "input/radio/checkbox/select/switch",
+      "value": "Setting value"
+    }
+  }
+}
+
+# Shortcut Menu
+{
+  "type": "notice",
+  "detail_type": "yunhu_shortcut_menu",
+  "user_id": "User ID who triggered the menu",
+  "user_nickname": "User nickname",
+  "group_id": "Group ID (if it's a group chat)",
+  "yunhu_menu": {
+    "id": "Menu ID",
+    "type": "Menu type (integer)",
+    "action": "Menu action (integer)"
+  }
+}
+```
+
+## Extended Field Description
+
+- All platform-specific fields are identified with the `yunhu_` prefix to avoid conflicts with standard fields
+- Original data is preserved in the `yunhu_raw` field for easy access to complete original data from the Yunhu platform
+- `self.user_id` represents the bot ID (obtained from `bot_id` in configuration)
+- Form commands provide structured data via the `yunhu_command` field
+- Button click events provide button-related information via the `yunhu_button` field
+- A2UI button events provide A2UI interaction-related information via the `yunhu_a2ui` field
+- Bot setting changes provide setting item data via the `yunhu_setting` field
+- Shortcut menu operations provide menu-related information via the `yunhu_menu` field
+- Expression/Sticker messages provide sticker data (sticker_id, sticker pack ID, image dimensions, etc.) via the `yunhu_expression` message segment
+
+### Expression/Sticker Message Segment (yunhu_expression)
+
+When a user sends an expression or sticker, the message segment type is `yunhu_expression`:
+
+```json
+{
+  "type": "yunhu_expression",
+  "data": {
+    "sticker_id": "35154",
+    "sticker_pack_id": "1670",
+    "expression_id": "0",
+    "image_name": "sticker/fabb9077f2ba302402ea871cab3686ad7a3fc52c.gif",
+    "width": 500,
+    "height": 500
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sticker_id` | string | Unique identifier for the sticker |
+| `sticker_pack_id` | string | Sticker pack ID |
+| `expression_id` | string | Expression ID |
+| `image_name` | string | Sticker image file path |
+| `width` | int | Image width (optional) |
+| `height` | int | Image height (optional) |
+
+Usage Example:
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event.get_platform() == "yunhu":
+        for segment in event.get("message", []):
+            if segment.get("type") == "yunhu_expression":
+                data = segment["data"]
+                print(f"Received expression: sticker_id={data['sticker_id']}, pack_id={data['sticker_pack_id']}")
+```
+
+---
+
+## Multi-Bot Configuration
+
+### Configuration Explanation
+
+The Yunhu adapter supports configuring and running multiple Yunhu bot accounts simultaneously.
+
+```toml
+# config.toml
+[Yunhu_Adapter.bots.bot1]
+bot_id = "30535459"  # Bot ID (Required)
+token = "your_bot1_token"  # Bot token (Required)
+webhook_path = "/webhook/bot1"  # Webhook path (Optional, defaults to "/webhook")
+enabled = true  # Whether to enable (Optional, defaults to true)
+
+[Yunhu_Adapter.bots.bot2]
+bot_id = "12345678"  # ID of the second bot
+token = "your_bot2_token"  # Token of the second bot
+webhook_path = "/webhook/bot2"  # Independent webhook path
+enabled = true
+```
+
+**Configuration Item Description:**
+- `bot_id`: Unique identifier ID for the bot (Required), used to identify which bot triggered the event
+- `token`: API token provided by the Yunhu platform (Required)
+- `webhook_path`: HTTP path to receive Yunhu events (Optional, defaults to "/webhook")
+- `enabled`: Whether to enable this bot (Optional, defaults to true)
+
+**Important Tips:**
+1. The Yunhu platform event does not include the bot ID, therefore `bot_id` must be explicitly specified in the configuration
+2. Each bot should have an independent `webhook_path` to receive their respective webhook events
+3. When configuring webhooks in the Yunhu platform, please configure the corresponding URL for each bot, for example:
+   - Bot1: `https://your-domain.com/webhook/bot1`
+   - Bot2: `https://your-domain.com/webhook/bot2`
+
+### Use Send DSL to Specify Bot
+
+You can specify which bot to use to send messages via the `Using()` method. This method supports two parameters:
+- **Account Name**: The bot name in the configuration (e.g., `bot1`, `bot2`)
+- **bot_id**: The `bot_id` value in the configuration
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# Send message using account name
+await yunhu.Send.Using("bot1").To("user", "user123").Text("Hello from bot1!")
+
+# Send message using bot_id (automatically matches corresponding account)
+await yunhu.Send.Using("30535459").To("group", "group456").Text("Hello from bot!")
+
+# If not specified, use the first enabled bot
+await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
+```
+
+> **Tip:** When using `bot_id`, the system will automatically search for the matching account in the configuration. This is especially useful when handling event replies, you can directly use `event["self"]["user_id"]` to reply using the same account.
+
+### Bot Identification in Events
+
+The received event automatically includes the corresponding `bot_id` information:
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event["platform"] == "yunhu":
+        # Get the bot ID that triggered the event
+        bot_id = event["self"]["user_id"]
+        print(f"Message from Bot: {bot_id}")
+        
+        # Reply using the same bot
+        yunhu = adapter.get("yunhu")
+        await yunhu.Send.Using(bot_id).To(
+            event["detail_type"],
+            event["user_id"] if event["detail_type"] == "private" else event["group_id"]
+        ).Text("Reply message")
+```
+
+### Log Information
+
+The adapter automatically includes `bot_id` information in the logs for easier debugging and tracking:
+
+```
+[INFO] [yunhu] [bot:30535459] Received private chat message from user user123
+[INFO] [yunhu] [bot:12345678] Message sent successfully, message_id: abc123
+```
+
+### Management Interface
+
+```python
+# Get all account information
+bots = yunhu.bots
+
+# Check if account is enabled
+bot_status = {
+    bot_name: bot_config.enabled
+    for bot_name, bot_config in yunhu.bots.items()
+}
+
+# Dynamically enable/disable account (requires adapter restart)
+yunhu.bots["bot1"].enabled = False
+```
+
+### Legacy Configuration Compatibility
+
+The system automatically supports legacy format configurations, but migration to the new configuration format is recommended for better multi-bot support.
 
 
 ### 邮件适配
@@ -15062,6 +15756,7 @@ KookAdapter is an adapter built on the Kook (Kaiheiya) Bot WebSocket protocol, i
 
 - Platform Introduction: Kook (formerly Kaiheiya) is a community platform that supports text, voice, and video communication, providing complete Bot development interfaces
 - Adapter Name: KookAdapter
+- Multi-account Support: Supports configuring multiple Kook Bots simultaneously
 - Connection Method: WebSocket Long Connection (via Kook Gateway)
 - Authentication Method: Bot Token-based authentication
 - Chain Decoration Support: Supports chain decoration methods such as `.Reply()`, `.At()`, `.AtAll()`
@@ -15069,18 +15764,31 @@ KookAdapter is an adapter built on the Kook (Kaiheiya) Bot WebSocket protocol, i
 
 ## Configuration Instructions
 
+KookAdapter supports multi-account configuration, with each account corresponding to an independent Kook Bot.
+
 ```toml
 # config.toml
-[KookAdapter]
+# Account 1
+[KookAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"     # Kook Bot Token (required, format: Bot xxx/xxx)
 bot_id = ""                   # Bot User ID (optional, will be parsed from token if not filled)
 compress = true               # Whether to enable WebSocket compression (optional, default: true)
+enabled = true                # Whether to enable (optional, default: true)
+
+# Account 2
+[KookAdapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+bot_id = ""
+enabled = true
 ```
 
-**Configuration Item Description:**
+> Backward Compatibility: If the old single-account `[KookAdapter]` configuration (including token) is detected, it will be automatically migrated to `accounts.default`.
+
+**Configuration Item Description (per account):**
 - `token`: Kook Bot Token (required), obtained from [Kook Developer Center](https://developer.kookapp.cn), format: `Bot xxx/xxx`
-- `bot_id`: Bot's User ID (optional), if not provided, the adapter will attempt to automatically parse from the token. It is recommended to fill in manually for accuracy
+- `bot_id`: Bot User ID (optional), if not provided, the adapter will attempt to automatically parse from the token. It is recommended to fill in manually for accuracy
 - `compress`: Whether to enable WebSocket data compression (optional, default: `true`), uses zlib to decompress data when enabled
+- `enabled`: Whether to enable this account (optional, default: `true`)
 
 **API Environment:**
 - Kook API Base URL: `https://www.kookapp.cn/api/v3`
@@ -15542,6 +16250,7 @@ MatrixAdapter is an adapter built based on the [Matrix protocol](https://spec.ma
 
 - Platform Introduction: Matrix is an open decentralized communication protocol supporting various scenarios such as private chats and group chats
 - Adapter Name: MatrixAdapter
+- Multi-account Support: Supports configuring multiple Matrix accounts simultaneously
 - Connection Method: Long Polling (through Matrix Sync API `/sync`)
 - Authentication Method: Login to obtain token based on access_token or user_id + password
 - Chaining Modifier Support: Supports chaining modifier methods such as `.Reply()`, `.At()`, `.AtAll()`
@@ -15549,22 +16258,35 @@ MatrixAdapter is an adapter built based on the [Matrix protocol](https://spec.ma
 
 ## Configuration Instructions
 
+MatrixAdapter supports multi-account configuration, with each account configured independently for homeserver and authentication information.
+
 ```toml
 # config.toml
-[Matrix_Adapter]
+# Account 1
+[Matrix_Adapter.accounts.default]
 homeserver = "https://matrix.org"          # Matrix server address (required)
 access_token = "YOUR_ACCESS_TOKEN"          # Access token (either this or user_id+password)
 user_id = ""                                # Matrix user ID (e.g., @bot:matrix.org)
 password = ""                               # Matrix user password
 auto_accept_invites = true                  # Whether to automatically accept room invitations (optional, defaults to true)
+enabled = true                              # Whether to enable (optional, defaults to true)
+
+# Account 2
+[Matrix_Adapter.accounts.bot2]
+homeserver = "https://matrix.example.com"
+access_token = "ANOTHER_TOKEN"
+enabled = true
 ```
 
-**Configuration Item Description:**
+> **Compatibility Note:** If an old single-account configuration (containing `access_token`) is detected, it will be automatically migrated to `accounts.default`.
+
+**Configuration Item Description (for each account):**
 - `homeserver`: Matrix server address (required), defaults to `https://matrix.org`
 - `access_token`: Access token, can be obtained from Matrix client. If you already have a token, just fill it in
 - `user_id`: Matrix user ID (e.g., `@bot:matrix.org`), used with `password` for login
 - `password`: Matrix user password, used for automatic login to obtain access_token
 - `auto_accept_invites`: Whether to automatically accept room invitations, defaults to `true`
+- `enabled`: Whether to enable this account (optional, defaults to true)
 
 **Authentication Methods:**
 - Method 1 (Recommended): Directly provide `access_token`
@@ -15651,12 +16373,12 @@ All sending methods return a Task object, which can be directly awaited to get t
 
 ```python
 {
-    "status": "ok",           // Execution status: "ok" or "failed"
-    "retcode": 0,             // Return code
-    "data": {...},            // Response data
-    "message_id": "$event_id", // Matrix event ID
-    "message": "",            // Error message
-    "matrix_raw": {...}       // Original response data
+    "status": "ok",           # Execution status: "ok" or "failed"
+    "retcode": 0,             # Return code
+    "data": {...},            # Response data
+    "message_id": "$event_id", # Matrix event ID
+    "message": "",            # Error message
+    "matrix_raw": {...}       # Original response data
 }
 ```
 
@@ -17108,7 +17830,7 @@ IdeauraAdapter is an adapter built based on the Ideaura Cafe (Allons) platform A
 
 - Platform Introduction: Ideaura Cafe (Allons) is an instant messaging platform
 - Adapter Name: IdeauraAdapter
-- Multi-account Support: Supports configuring multiple accounts via email/password
+- Multi-account Support: Supports configuring multiple accounts via token or email/password (one of the two)
 - Chaining Support: Supports chaining methods such as `.At()`, `.AtAll()`, `.Reply()`
 - OneBot12 Compatibility: Supports sending OneBot12 format messages
 
@@ -17418,18 +18140,19 @@ async def handle_notice(event):
 
 ### Configuration
 
-IdeauraAdapter supports configuring and running multiple accounts simultaneously.
+IdeauraAdapter supports configuring and running multiple accounts simultaneously, with each account able to choose between Token login or email/password login (one of the two).
 
 ```toml
 # config.toml
+# Account 1: Token login (recommended, no email/password required)
 [IdeauraAdapter.accounts.default]
-email = "user1@example.com"     # Login email (required)
-password = "password1"          # Login password (required)
-enabled = true                  # Enable account (optional, default true)
+token = "your-token-here"        # Login Token (optional, if provided, email+password is not required)
+enabled = true                   # Enable account (optional, default true)
 
+# Account 2: Email/password login
 [IdeauraAdapter.accounts.bot2]
-email = "user2@example.com"
-password = "password2"
+email = "user2@example.com"      # Login email
+password = "password2"           # Login password
 enabled = true
 
 # Optional: Custom server address
@@ -17440,8 +18163,9 @@ heartbeat_interval = 30
 ```
 
 **Configuration Description:**
-- `email`: Account login email (required)
-- `password`: Account login password (required)
+- `token`: Login Token (optional, if provided, email+password is not required)
+- `email`: Login email (optional for Token login, required for email/password login)
+- `password`: Login password (optional for Token login, required for email/password login)
 - `enabled`: Whether to enable this account (optional, default true)
 
 **Global Configuration Items:**
