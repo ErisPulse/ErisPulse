@@ -6,7 +6,7 @@ YunhuAdapter 是基於雲湖協議建構的適配器，整合了所有雲湖功�
 
 ## 文件資訊
 
-- 對應模組版本: 3.10.1
+- 對應模組版本: 4.0.0
 - 維護者: ErisPulse
 
 ## 基本資訊
@@ -42,6 +42,42 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 - `.DismissBoard(scope: str, **kwargs)`：撤銷公告看板。
 - `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`：傳送流式訊息。
 
+### 群組管理方法
+
+所有群組管理方法需要透過鏈式語法指定群組，例如：
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+await yunhu.Send.To("group", group_id).Kick(user_id)
+```
+
+- `.Kick(user_id: str)`：移除群成員。機器人需要 `允許移除群成員` 權限。
+- `.Ban(user_id: str, duration: int = 600)`：使用者禁言。`duration` 為禁言時長（秒），0 為解禁，-1 為永久禁言。機器人需要 `允許禁言使用者` 權限。
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`：建立群標籤。`color` 格式為 #RRGGBB，`sort` 越小越靠前。機器人需要 `允許控制標籤組` 權限。
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`：修改群標籤。各參數可選，不傳則不修改。機器人需要 `允許控制標籤組` 權限。
+- `.DeleteTag(tag: str)`：刪除群標籤。機器人需要 `允許控制標籤組` 權限。
+- `.GetTagList()`：取得群標籤列表。傳回包含 `list` 陣列的回應資料。
+- `.AddUserTag(user_id: str, tag: str)`：給使用者新增標籤。機器人需要 `允許控制標籤組` 權限。
+- `.RemoveUserTag(user_id: str, tag: str)`：給使用者移除標籤。機器人需要 `允許控制標籤組` 權限。
+- `.SetMsgTypeLimit(types: str)`：控制群內訊息類型。`types` 為訊息類型名稱，多個用逗號分隔（如 `"text,image,video"`），空字串表示不限制。機器人需要 `允許修改群資訊` 權限。
+
+### 訊息查詢方法
+
+取得指定會話（使用者/群）的歷史訊息列表，需要透過鏈式語法指定目標，例如：
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
+```
+
+- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`：取得會話歷史訊息。傳回包含 `list` 陣列和 `total` 總數的回應資料。
+  - `message_id`：訊息 ID（可選）。不填時配合 `before` 傳回最近的 N 條訊息。
+  - `before`：傳回指定訊息 ID 前 N 條。
+  - `after`：傳回指定訊息 ID 後 N 條。
+  - > **注意：** `before` 和 `after` 至少需指定一個且大於 0，否則伺服器不會傳回任何訊息。
+
 Board board_type 支援以下類型：
 - `local`：指定使用者看板
 - `global`：全域看板
@@ -50,12 +86,12 @@ Board board_type 支援以下類型：
 
 `buttons` 參數是一個巢狀列表，表示按鈕的佈局和功能。每個按鈕物件包含以下欄位：
 
-| 欄位 | 類型 | 是否必填 | 說明 |
-|------|------|----------|------|
-| `text` | string | 是 | 按鈕上的文字 |
-| `actionType` | int | 是 | 動作類型：<br>`1`: 跳轉 URL<br>`2`: 複製<br>`3`: 點擊回報 |
-| `url` | string | 否 | 當 `actionType=1` 時使用，表示跳轉的目標 URL |
-| `value` | string | 否 | 當 `actionType=2` 時，該值會複製到剪貼簿<br>當 `actionType=3` 時，該值會傳送給訂閱端 |
+| 欄位         | 類型   | 是否必填 | 說明                                                                 |
+|--------------|--------|----------|----------------------------------------------------------------------|
+| `text`       | string | 是       | 按鈕上的文字                                                         |
+| `actionType` | int    | 是       | 動作類型：<br>`1`: 跳轉 URL<br>`2`: 複製<br>`3`: 點擊回報            |
+| `url`        | string | 否       | 當 `actionType=1` 時使用，表示跳轉的目標 URL                         |
+| `value`      | string | 否       | 當 `actionType=2` 時，該值會複製到剪貼簿<br>當 `actionType=3` 時，該值會傳送給訂閱端 |
 
 範例：
 ```python
@@ -78,7 +114,7 @@ await yunhu.Send.To("user", user_id).Buttons(buttons).Text("帶按鈕的訊息")
 - `.Reply(message_id: str)`：回覆指定訊息。
 - `.At(user_id: str)`：@指定使用者。
 - `.AtAll()`：@所有人。
-- `.Buttons(buttons: List)`：添加按鈕。
+- `.Buttons(buttons: List)`：新增按鈕。
 
 ### 鏈式呼叫範例
 
@@ -91,6 +127,68 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Text("回覆訊息")
 
 # 回覆 + 按鈕
 await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("帶回覆和按鈕的訊息")
+```
+
+### 群組管理範例
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# 移除群成員
+await yunhu.Send.To("group", group_id).Kick(user_id)
+
+# 使用者禁言（10分鐘）
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=600)
+
+# 解除禁言
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=0)
+
+# 永久禁言
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=-1)
+
+# 建立群標籤
+await yunhu.Send.To("group", group_id).CreateTag("VIP使用者", color="#FF5733", desc="VIP會員")
+
+# 修改群標籤
+await yunhu.Send.To("group", group_id).EditTag("VIP使用者", new_tag="SVIP使用者", color="#33C4FF")
+
+# 刪除群標籤
+await yunhu.Send.To("group", group_id).DeleteTag("VIP使用者")
+
+# 取得群標籤列表
+result = await yunhu.Send.To("group", group_id).GetTagList()
+
+# 給使用者新增標籤
+await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP使用者")
+
+# 移除使用者標籤
+await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP使用者")
+
+# 設定訊息類型限制
+await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
+
+# 取消訊息類型限制
+await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
+```
+
+### 訊息查詢範例
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# 取得群最近10條訊息（共傳回10條）
+result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
+
+# 取得群中指定訊息 ID 前10條（共傳回11條）
+result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10)
+
+# 取得群中指定訊息 ID 前後各10條（共傳回21條）
+result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
+
+# 取得使用者會話歷史訊息
+result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
 ### OneBot12 訊息支援
@@ -127,7 +225,7 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 
 ## 特有事件類型
 
-需要檢測 platform=="yunhu" 才能使用本平台特性
+需要 platform=="yunhu" 檢測再使用本平台特性
 
 ### 核心差異點
 
@@ -442,7 +540,7 @@ async def handle_message(event):
 
 ```
 [INFO] [yunhu] [bot:30535459] 收到來自使用者 user123 的私聊訊息
-[INFO] [yunhu] [bot:12345678] 訊息傳送成功，message_id: abc123
+[INFO] [yunhu] [bot:12345678] 消息傳送成功，message_id: abc123
 ```
 
 ### 管理介面

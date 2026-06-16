@@ -1,6 +1,6 @@
 # Kookプラットフォーム特性ドキュメント
 
-KookAdapter は、Kook（旧称开黑啦）Bot WebSocket プロトコルを基に構築されたアダプターで、Kook のすべての機能モジュールを統合し、統一されたイベント処理とメッセージ操作インターフェースを提供します。
+KookAdapter は、Kook（開黒啦）Bot WebSocket プロトコルに基づいて構築されたアダプターで、Kookのすべての機能モジュールを統合し、統一されたイベント処理とメッセージ操作インターフェースを提供します。
 
 ---
 
@@ -11,27 +11,41 @@ KookAdapter は、Kook（旧称开黑啦）Bot WebSocket プロトコルを基�
 
 ## 基本情報
 
-- プラットフォーム紹介：Kook（旧称开黑啦）は、テキスト、音声、ビデオ通信をサポートするコミュニティプラットフォームであり、完全な Bot 開発インターフェースを提供します
+- プラットフォーム紹介：Kook（旧称開黒啦）は、テキスト、音声、ビデオ通信をサポートするコミュニティプラットフォームであり、完全な Bot 開発インターフェースを提供します
 - アダプター名：KookAdapter
+- 多アカウントサポート：複数の Kook ロボットを同時に設定できます
 - 接続方式：WebSocket ロング接続（Kook ゲートウェイ経由）
-- 認証方式：Bot Token ベースの認証
+- 認証方式：Bot Token を使用した認証
 - チェーン構文修飾のサポート：`.Reply()`、`.At()`、`.AtAll()` などのチェーン構文修飾メソッドをサポート
 - OneBot12互換性：OneBot12 形式メッセージの送信をサポート
 
 ## 設定説明
 
+KookAdapter は複数アカウントの設定をサポートし、各アカウントは独立した Kook ロボットに対応します。
+
 ```toml
 # config.toml
-[KookAdapter]
+# アカウント1
+[KookAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"     # Kook Bot Token（必須、形式: Bot xxx/xxx）
 bot_id = ""                   # Bot ユーザーID（任意、未入力の場合は token から解析）
 compress = true               # WebSocket 圧縮を有効にするかどうか（任意、デフォルトは true）
+enabled = true                # 有効かどうか（任意、デフォルトは true）
+
+# アカウント2
+[KookAdapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+bot_id = ""
+enabled = true
 ```
 
-**設定項目の説明：**
+> 旧設定の互換性：旧の単一アカウントの `[KookAdapter]` 設定（token を含む）が検出された場合、自動的に `accounts.default` に移行されます。
+
+**設定項目の説明（各アカウント）：**
 - `token`：Kook Bot の Token（必須）。[Kook Developer Center](https://developer.kookapp.cn) から取得、形式は `Bot xxx/xxx`
 - `bot_id`：Bot のユーザーID（任意）。未入力の場合、アダプターは token から自動的に解析を試みます。正確性を確保するために手動で入力することを推奨します
 - `compress`：WebSocket データ圧縮を有効にするかどうか（任意、デフォルトは `true`）。有効にすると zlib を使用してデータを展開します
+- `enabled`：アカウントの有効化（任意、デフォルトは `true`）
 
 **API環境：**
 - Kook API ベースアドレス：`https://www.kookapp.cn/api/v3`

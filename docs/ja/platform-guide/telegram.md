@@ -1,4 +1,4 @@
-# Telegram プラットフォーム特性ドキュメント
+# Telegramプラットフォーム特性ドキュメント
 
 TelegramAdapterは、Telegram Bot APIに基づいて構築されたアダプターであり、複数のメッセージタイプとイベント処理をサポートしています。
 
@@ -6,7 +6,7 @@ TelegramAdapterは、Telegram Bot APIに基づいて構築されたアダプタ�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 3.6.5
+- 対応モジュールバージョン: 4.0.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -31,7 +31,7 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 | メソッド | 説明 | パラメータ |
 |------|------|------|
 | `.Text(text)` | 純粋なテキストメッセージを送信 | `text: str` |
-| `.Face(emoji)` | ダイススタンプを送信 | `emoji: str`（例：🎲 🎯 🏀） |
+| `.Face(emoji)` | エモイジスタンプを送信 | `emoji: str`（例：🎲 🎯 🏀） |
 | `.Markdown(text, content_type)` | Markdown形式のメッセージを送信 | `content_type` のデフォルトは `"MarkdownV2"` |
 | `.HTML(text)` | HTML形式のメッセージを送信 | `text: str` |
 | `.Sticker(file)` | ステッカーを送信 | `file: str (file_id/URL) \| bytes` |
@@ -140,7 +140,7 @@ Telegramのイベント変換はOneBot12標準に準拠しつつ、`telegram_` �
 ### 固有のイベントタイプ
 
 | detail_type | 説明 |
-|---|---|
+|------|------|
 | `telegram_callback_query` | コールバッククエリ（インラインキーボードボタンのクリック） |
 | `telegram_inline_query` | インラインクエリ |
 | `telegram_chosen_inline_result` | 選択されたインライン結果 |
@@ -310,4 +310,75 @@ async def handle_message(event):
 
     # メッセージセグメントデータ
     sticker = event.get_sticker_info()
-    contact
+    contact = event.get_contact_info()
+    location = event.get_location()
+    keyboard = event.get_inline_keyboard()
+
+    # トピック
+    if event.is_topic_message():
+        topic_id = event.get_topic_id()
+
+@notice.on_notice()
+async def handle_notice(event):
+    if event.get("platform") != "telegram":
+        return
+
+    if event.get("detail_type") == "telegram_callback_query":
+        callback_data = event.get_callback_data()
+        callback_id = event.get_callback_id()
+
+        # コールバッククエリに応答
+        telegram = sdk.adapter.get("telegram")
+        await telegram.Send.AnswerCallback(callback_id, text="既にクリック")
+
+        # メッセージに返信
+        await event.reply(f"{callback_data}をクリックしました")
+```
+
+## 拡張フィールド説明
+
+- すべての固有フィールドは `telegram_` プレフィックスで識別されます
+- 原始データは `telegram_raw` フィールドに保持されます
+- 原始イベントタイプは `telegram_raw_type` フィールドに保持されます
+- チャンネルメッセージでは `detail_type="channel"` を使用します
+- プライベートチャットメッセージでは `detail_type="private"` を使用します（送信時に `user` に変換する必要があります）
+- トピックメッセージには `thread_id` フィールドが含まれます
+- `@` メンションは標準の `mention` メッセージセグメントタイプ（`type: "mention"`）を使用し、テキストには `@` ユーザー名が含まれません
+
+## 設定オプション
+
+Telegram アダプターは複数アカウントの設定をサポートしています：
+
+### 設定例
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
+
+[Telegram_Adapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+enabled = true
+```
+
+### 実行モード
+
+Telegram アダプターは **Polling（ポーリング）** モードのみをサポートしており、Webhook モードは削除されました。
+
+### プロキシ設定
+
+Telegram API にプロキシ経由で接続する場合は、システムレベルのプロキシ（環境変数 ` + 'ALL_PROXY' + ` / ` + 'HTTPS_PROXY' + `）を使用してください。
+
+### 旧設定のマイグレーション
+
+旧バージョンの単一 token 設定は自動的に互換性があります：
+```toml
+# 旧形式（まだ使用可能ですが、マイグレーションを推奨します）
+[Telegram_Adapter]
+token = "YOUR_BOT_TOKEN"
+```
+
+新形式へのマイグレーションを推奨します：
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true

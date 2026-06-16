@@ -13,6 +13,7 @@ KookAdapter is an adapter built on the Kook (Kaiheiya) Bot WebSocket protocol, i
 
 - Platform Introduction: Kook (formerly Kaiheiya) is a community platform that supports text, voice, and video communication, providing complete Bot development interfaces
 - Adapter Name: KookAdapter
+- Multi-account Support: Supports configuring multiple Kook Bots simultaneously
 - Connection Method: WebSocket Long Connection (via Kook Gateway)
 - Authentication Method: Bot Token-based authentication
 - Chain Decoration Support: Supports chain decoration methods such as `.Reply()`, `.At()`, `.AtAll()`
@@ -20,18 +21,31 @@ KookAdapter is an adapter built on the Kook (Kaiheiya) Bot WebSocket protocol, i
 
 ## Configuration Instructions
 
+KookAdapter supports multi-account configuration, with each account corresponding to an independent Kook Bot.
+
 ```toml
 # config.toml
-[KookAdapter]
+# Account 1
+[KookAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"     # Kook Bot Token (required, format: Bot xxx/xxx)
 bot_id = ""                   # Bot User ID (optional, will be parsed from token if not filled)
 compress = true               # Whether to enable WebSocket compression (optional, default: true)
+enabled = true                # Whether to enable (optional, default: true)
+
+# Account 2
+[KookAdapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+bot_id = ""
+enabled = true
 ```
 
-**Configuration Item Description:**
+> Backward Compatibility: If the old single-account `[KookAdapter]` configuration (including token) is detected, it will be automatically migrated to `accounts.default`.
+
+**Configuration Item Description (per account):**
 - `token`: Kook Bot Token (required), obtained from [Kook Developer Center](https://developer.kookapp.cn), format: `Bot xxx/xxx`
-- `bot_id`: Bot's User ID (optional), if not provided, the adapter will attempt to automatically parse from the token. It is recommended to fill in manually for accuracy
+- `bot_id`: Bot User ID (optional), if not provided, the adapter will attempt to automatically parse from the token. It is recommended to fill in manually for accuracy
 - `compress`: Whether to enable WebSocket data compression (optional, default: `true`), uses zlib to decompress data when enabled
+- `enabled`: Whether to enable this account (optional, default: `true`)
 
 **API Environment:**
 - Kook API Base URL: `https://www.kookapp.cn/api/v3`
