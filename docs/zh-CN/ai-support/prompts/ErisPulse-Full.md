@@ -13513,6 +13513,9 @@ async def on_unload(self, event):
 - [Matrix平台特性](matrix.md)
 - [QQ官方机器人平台特性](qqbot.md)
 - [花枫咖啡馆](ideaura.md)
+- [Discord](discord.md)
+- [Webhook协议桥](webhook.md)
+- [微信公众号](wechatmp.md)
 
 > 此外还有 `sandbox` 适配器，但此适配器无需维护平台特性文档
 
@@ -13724,7 +13727,7 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 
 ## 文档信息
 
-- 对应模块版本: 3.6.0
+- 对应模块版本: 4.0.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -13732,8 +13735,8 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 - 平台简介：OneBot 是一个聊天机器人应用接口标准
 - 适配器名称：OneBotAdapter
 - 支持的协议/API版本：OneBot V11
-- 多账户支持：默认多账户架构，支持同时配置和运行多个OneBot账户
-- 旧配置兼容：兼容旧版本配置格式，提供迁移提醒（非自动迁移）
+- 多账户支持：默认多账户架构，支持同时配置和运行多个 OneBot 账户
+- 配置键名：`OneBotAdapter`
 
 ## 支持的消息发送类型
 
@@ -13766,6 +13769,35 @@ await onebot.Send.To("group", group_id).AtAll().Text("公告消息")
 - `.Raw_ob12(message: List[Dict], **kwargs)`：发送 OneBot12 格式消息（自动转换为 OB11）。
 - `.Recall(message_id: Union[str, int])`：撤回消息。
 
+### 群操作方法
+
+以下方法需通过 `To("group", group_id)` 指定目标群，使用群上下文执行操作：
+
+- `.Kick(user_id, reject_add_request=False)`：踢出群成员。
+- `.Ban(user_id, duration=1800)`：禁言群成员（秒），0 表示解禁。
+- `.WholeBan(enable=True)`：开启/关闭全员禁言。
+- `.SetAdmin(user_id, enable=True)`：设置/取消群管理员。
+- `.SetCard(user_id, card="")`：设置群名片。
+- `.SetGroupName(name)`：修改群名称。
+- `.Leave(is_dismiss=False)`：退群（群主可解散）。
+- `.SetTitle(user_id, title="")`：设置群头衔。
+- `.SetPortrait(file)`：设置群头像。
+
+### 查询方法
+
+- `.GetMsg(message_id)`：获取消息内容。
+- `.GetForwardMsg(id)`：获取合并转发消息。
+- `.GetLoginInfo()`：获取当前登录号信息。
+- `.GetFriendList()`：获取好友列表。
+- `.GetGroupInfo()`：获取群信息（需 `To("group", group_id)`）。
+- `.GetGroupList()`：获取群列表。
+- `.GetGroupMemberInfo(user_id)`：获取群成员信息（需 `To("group", group_id)`）。
+- `.GetGroupMemberList()`：获取群成员列表（需 `To("group", group_id)`）。
+
+### 好友操作方法
+
+- `.Like(user_id, times=1)`：发送好友赞（最大 10 次）。
+
 ### 链式修饰方法（可组合使用）
 
 链式修饰方法返回 `self`，支持链式调用，必须在最终发送方法前调用：
@@ -13789,6 +13821,30 @@ await onebot.Send.To("group", 123456).At(111).At(222).At(333).Text("大家好")
 # 发送 OneBot12 格式消息
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await onebot.Send.To("group", 123456).Raw_ob12(ob12_msg)
+
+# 点赞
+await onebot.Send.Like(123456, times=10)
+
+# 禁言群成员
+await onebot.Send.To("group", 123456).Ban(789012, duration=3600)
+
+# 解禁
+await onebot.Send.To("group", 123456).Ban(789012, duration=0)
+
+# 踢人
+await onebot.Send.To("group", 123456).Kick(789012)
+
+# 设置群管理员
+await onebot.Send.To("group", 123456).SetAdmin(789012)
+
+# 修改群名
+await onebot.Send.To("group", 123456).SetGroupName("新群名")
+
+# 获取群信息
+result = await onebot.Send.To("group", 123456).GetGroupInfo()
+
+# 指定账户操作
+await onebot.Send.Using("main").To("group", 123456).Ban(789012)
 ```
 
 ### 不支持的类型处理
@@ -13800,47 +13856,148 @@ await onebot.Send.To("group", 123456).SomeUnsupportedMethod(arg1, arg2)
 # 实际发送: "[不支持的发送类型] 方法名: SomeUnsupportedMethod, 参数: [...]"
 ```
 
-## 特有事件类型
+## 请求操作（Request DSL）
 
-OneBot11事件转换到OneBot12协议，其中标准字段完全遵守OneBot12协议，但存在以下差异：
+适配器提供请求操作 DSL，用于处理好友请求和群请求（加群/邀请）的同意/拒绝操作。
 
-### 核心差异点
+### Event 快捷方法
 
-1. 特有事件类型：
-   - CQ码扩展事件：onebot11_cq_{type}
-   - 荣誉变更事件：onebot11_honor
-   - 戳一戳事件：onebot11_poke
-   - 群红包运气王事件：onebot11_lucky_king
-
-2. 扩展字段：
-   - 所有特有字段均以onebot11_前缀标识
-   - 保留原始CQ码消息在onebot11_raw_message字段
-   - 保留原始事件数据在onebot11_raw字段
-
-### 特殊字段示例
+请求事件支持 `event.approve()` 和 `event.reject()` 快捷方法，内部自动调用 Request DSL：
 
 ```python
-// 荣誉变更事件
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    comment = event.get("comment", "")
+
+    if comment == "passphrase":
+        await event.approve()
+    else:
+        await event.reject()
+
+@request.on_group_request()
+async def handle_group_request(event):
+    group_id = event.get("group_id")
+    await event.approve()
+```
+
+### 手动调用 Request DSL
+
+```python
+# 同意请求
+await onebot.Request("flag_string").accept()
+
+# 拒绝请求
+await onebot.Request("flag_string").reject()
+
+# 指定账户操作
+await onebot.Request("flag_string").Using("main").accept()
+```
+
+### 完整示例
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    comment = event.get("comment", "")
+
+    # 方式一：使用 Event 快捷方法
+    if comment == "passphrase":
+        await event.approve()
+    else:
+        await event.reject()
+
+    # 方式二：使用 Request DSL
+    flag = event.get("flag")
+    if comment == "passphrase":
+        await onebot.Request(flag).accept()
+    else:
+        await onebot.Request(flag).reject()
+```
+
+### 请求操作返回值
+
+```python
 {
-  "type": "notice",
-  "detail_type": "onebot11_honor",
-  "group_id": "123456",
+    "status": "ok",
+    "retcode": 0,
+    "data": {...},
+    "message_id": "",
+    "message": ""
+}
+```
+
+## 事件类型映射
+
+### 标准 OB12 映射
+
+| OB11 原始类型 | 转换后 detail_type | 说明 |
+|--------------|-------------------|------|
+| message_type: private | `private` | 私聊消息 |
+| message_type: group | `group` | 群聊消息 |
+| request_type: friend | `friend` | 好友请求 |
+| request_type: group | `group` | 群请求 |
+| meta_event_type: heartbeat | `heartbeat` | 心跳 |
+| notice_type: group_upload | `group_file_upload` | 群文件上传 |
+| notice_type: group_admin | `group_admin_change` | 群管理员变动 |
+| notice_type: group_increase | `group_member_increase` | 群成员增加 |
+| notice_type: group_decrease | `group_member_decrease` | 群成员减少 |
+| notice_type: group_ban | `group_ban` | 群禁言 |
+| notice_type: friend_add | `friend_increase` | 好友添加 |
+| notice_type: friend_delete | `friend_decrease` | 好友删除 |
+| notice_type: group_recall / friend_recall | `message_recall` | 消息撤回 |
+
+### 平台特有事件（onebot11_ 前缀）
+
+| OB11 原始类型 | 转换后 detail_type | 说明 |
+|--------------|-------------------|------|
+| meta_event_type: lifecycle | `onebot11_lifecycle` | OneBot 实现生命周期 |
+| notify + sub_type: honor | `onebot11_honor` | 群荣誉变更 |
+| notify + sub_type: poke | `onebot11_poke` | 戳一戳 |
+| notify + sub_type: lucky_king | `onebot11_lucky_king` | 群红包运气王 |
+| CQ 码未知类型 | 消息段 `onebot11_{type}` | 未识别的 CQ 码 |
+
+### 事件示例
+
+```python
+// 好友请求
+{
+  "type": "request",
+  "detail_type": "friend",
   "user_id": "789012",
-  "onebot11_honor_type": "talkative",
-  "onebot11_operation": "set"
+  "comment": "请加好友",
+  "request_id": "flag_abc123",
+  "flag": "flag_abc123"
 }
 
-// 戳一戳事件
+// 心跳
+{
+  "type": "meta_event",
+  "detail_type": "heartbeat",
+  "interval": 5000,
+  "status": {...}
+}
+
+// 生命周期（平台特有）
+{
+  "type": "meta_event",
+  "detail_type": "onebot11_lifecycle",
+  "sub_type": "enable"
+}
+
+// 戳一戳（平台特有）
 {
   "type": "notice",
   "detail_type": "onebot11_poke",
   "group_id": "123456",
   "user_id": "789012",
-  "target_id": "345678",
-  "onebot11_poke_type": "normal"
+  "target_id": "345678"
 }
 
-// 群红包运气王事件
+// 群红包运气王（平台特有）
 {
   "type": "notice",
   "detail_type": "onebot11_lucky_king",
@@ -13849,18 +14006,20 @@ OneBot11事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
   "target_id": "345678"
 }
 
-// CQ码消息段
+// 荣誉变更（平台特有）
+{
+  "type": "notice",
+  "detail_type": "onebot11_honor",
+  "group_id": "123456",
+  "user_id": "789012",
+  "honor_type": "talkative"
+}
+
+// CQ 码扩展消息段
 {
   "type": "message",
   "message": [
-    {
-      "type": "onebot11_face",
-      "data": {"id": "123"}
-    },
-    {
-      "type": "onebot11_shake",
-      "data": {} 
-    }
+    {"type": "onebot11_shake", "data": {}}
   ]
 }
 ```
@@ -13868,53 +14027,111 @@ OneBot11事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
 ### 扩展字段说明
 
 - 所有特有字段均以 `onebot11_` 前缀标识
-- 保留原始CQ码消息在 `onebot11_raw_message` 字段
 - 保留原始事件数据在 `onebot11_raw` 字段
-- 消息内容中的CQ码会转换为相应的消息段
+- 保留原始事件类型在 `onebot11_raw_type` 字段
+- 消息内容中的 CQ 码会转换为相应的消息段（标准类型无前缀，未知类型加 `onebot11_` 前缀）
 - 回复消息会添加 `reply` 类型的消息段
 - @消息会添加 `mention` 类型的消息段
 
+## 事件扩展方法
+
+OneBot11 适配器为事件对象注册了以下平台专有方法，可在事件处理器中直接调用：
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    raw_self_id = event.get_raw_self_id()
+    sender_info = event.get_sender_info()
+    sender_role = event.get_sender_role()
+```
+
+### 方法列表
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| `get_raw_self_id()` | `str` | 获取原始 self_id（Bot 的 QQ 号） |
+| `get_sender_info()` | `dict` | 获取完整的发送者信息（包含 nickname、role、level 等） |
+| `get_sender_role()` | `str` | 获取发送者在群内的角色（owner/admin/member） |
+| `get_sender_level()` | `int` | 获取发送者等级 |
+| `get_sender_title()` | `str` | 获取发送者群头衔 |
+| `is_system_message()` | `bool` | 判断是否为系统消息（sub_type == "system"） |
+
+### 使用示例
+
+```python
+from ErisPulse.Core.Event import message, command
+
+@message.on_group_message()
+async def handle_group(event):
+    role = event.get_sender_role()
+    if role == "admin" or role == "owner":
+        await event.reply("管理员好！")
+
+    title = event.get_sender_title()
+    if title:
+        await event.reply(f"你的头衔是: {title}")
+
+@command("whoami")
+async def whoami(event):
+    info = event.get_sender_info()
+    nickname = info.get("nickname", "未知")
+    level = event.get_sender_level()
+    await event.reply(f"昵称: {nickname}, 等级: {level}")
+```
+
 ## 配置选项
 
-OneBot 适配器每个账户独立配置以下选项：
+OneBot11 适配器采用多账户架构，每个账户独立配置。配置键名为 `OneBotAdapter`。
 
-### 账户配置
-- `mode`: 该账户的运行模式 ("server" 或 "client")
-- `server_path`: Server模式下的WebSocket路径
-- `server_token`: Server模式下的认证Token（可选）
-- `client_url`: Client模式下要连接的WebSocket地址
-- `client_token`: Client模式下的认证Token（可选）
-- `enabled`: 是否启用该账户
+### 账户配置字段
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `bot_id` | `str` | 是 | `""` | 机器人 QQ 号，用于标识账户 |
+| `mode` | `str` | 否 | `"server"` | 运行模式：`"server"`（被动监听）或 `"client"`（主动连接） |
+| `url` | `str` | 否 | `"ws://127.0.0.1:3001"` | Client 模式的 WebSocket 地址 |
+| `token` | `str` | 否 | `""` | 认证 Token（Client 模式连接 Token / Server 模式验证 Token） |
+| `server_path` | `str` | 否 | `"/"` | Server 模式的 WebSocket 路径 |
+| `enabled` | `bool` | 否 | `true` | 是否启用该账户 |
+| `name` | `str` | 否 | `""` | 账户备注名称 |
 
 ### 内置默认值
+
 - 重连间隔：30秒
 - API调用超时：30秒
-- 最大重试次数：3次
 
 ### 配置示例
+
 ```toml
-[OneBotv11_Adapter.accounts.main]
+[OneBotAdapter.accounts.main]
+bot_id = "123456789"
 mode = "server"
 server_path = "/onebot-main"
-server_token = "main_token"
+token = "main_token"
 enabled = true
 
-[OneBotv11_Adapter.accounts.backup]
+[OneBotAdapter.accounts.backup]
+bot_id = "987654321"
 mode = "client"
-client_url = "ws://127.0.0.1:3002"
-client_token = "backup_token"
+url = "ws://127.0.0.1:3002"
+token = "backup_token"
 enabled = true
 
-[OneBotv11_Adapter.accounts.test]
+[OneBotAdapter.accounts.test]
+bot_id = "111222333"
 mode = "client"
-client_url = "ws://127.0.0.1:3003"
+url = "ws://127.0.0.1:3003"
 enabled = false
 ```
 
 ### 默认配置
+
 如果未配置任何账户，适配器会自动创建：
 ```toml
-[OneBotv11_Adapter.accounts.default]
+[OneBotAdapter.accounts.default]
+bot_id = ""
 mode = "server"
 server_path = "/"
 enabled = true
@@ -13926,13 +14143,12 @@ enabled = true
 
 ```python
 {
-    "status": "ok",           // 执行状态
-    "retcode": 0,             // 返回码
-    "data": {...},            // 响应数据
-    "self": {...},            // 自身信息
-    "message_id": "123456",   // 消息ID
-    "message": "",            // 错误信息
-    "onebot_raw": {...}       // 原始响应数据
+    "status": "ok",
+    "retcode": 0,
+    "data": {...},
+    "message_id": "123456",
+    "message": "",
+    "onebot11_raw": {...}
 }
 ```
 
@@ -13943,13 +14159,24 @@ enabled = true
 await onebot.Send.Using("main").To("group", 123456).Text("主账户消息")
 await onebot.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
 
+# 通过 bot_id 选择账户
+await onebot.Send.Using("123456789").To("group", 123456).Text("通过QQ号选择")
+
 # API调用方式
 await onebot.call_api("send_msg", account_id="main", group_id=123456, message="Hello")
 ```
 
+### 账户解析优先级
+
+`call_api` 和 `Using()` 中 `account_id` 参数的解析优先级：
+1. 精确匹配账户名称
+2. 匹配 `bot_id` 字段
+3. 匹配账户的任意 `str` 类型字段
+4. 回退到第一个已启用的账户
+
 ## 异步处理机制
 
-OneBot 适配器采用异步非阻塞设计，确保：
+OneBot11 适配器采用异步非阻塞设计，确保：
 1. 消息发送不会阻塞事件处理循环
 2. 多个并发发送操作可以同时进行
 3. API 响应能够及时处理
@@ -13961,7 +14188,7 @@ OneBot 适配器采用异步非阻塞设计，确保：
 适配器提供完善的错误处理机制：
 1. 网络连接异常自动重连（支持每个账户独立重连，间隔30秒）
 2. API 调用超时处理（固定30秒超时）
-3. 消息发送失败重试（最多3次重试）
+3. 连接失败时自动按间隔重试
 
 ## 事件处理增强
 
@@ -13970,11 +14197,13 @@ OneBot 适配器采用异步非阻塞设计，确保：
 {
     "type": "message",
     "detail_type": "private",
-    "self": {"user_id": "main"},  // 新增：发送事件的账户ID（标准字段）
+    "self": {"user_id": "123456789", "platform": "onebot11"},
     "platform": "onebot11",
     // ... 其他事件字段
 }
 ```
+
+适配器自动维护 `self_id → account_name` 映射，`event.reply()` 无需手动指定账户即可正确路由到来源账户。
 
 ## 管理接口
 
@@ -13992,6 +14221,21 @@ connection_status = {
 onebot.accounts["test"].enabled = False
 ```
 
+## self_id 自动映射
+
+适配器会自动建立 OneBot `self_id`（QQ号）到 `account_name` 的映射关系，用于事件回路由：
+
+```python
+# 适配器内部自动完成
+# 当收到事件时，self.user_id 字段填充为 bot_id
+# 适配器自动记录: self_id("123456789") → account_name("main")
+
+# 因此 event.reply() 可以自动找到正确的账户发送消息
+@message.on_message()
+async def handler(event):
+    await event.reply("自动路由到正确的账户")
+```
+
 
 
 ### OneBot12 适配
@@ -14004,7 +14248,7 @@ OneBot12Adapter 是基于 OneBot V12 协议构建的适配器，作为 ErisPulse
 
 ## 文档信息
 
-- 对应模块版本: 1.0.0
+- 对应模块版本: 4.0.0
 - 维护者: ErisPulse
 - 协议版本: OneBot V12
 
@@ -14030,17 +14274,54 @@ await onebot12.Send.To("group", group_id).Text("Hello World!")
 await onebot12.Send.To("group", group_id).Account("main").Text("来自主账户的消息")
 ```
 
+### 大小写不敏感调用
+
+所有发送方法和链式修饰方法均支持大小写不敏感调用，适配器会自动映射到正确的标准方法名：
+
+```python
+# 以下所有调用方式等价
+await onebot12.Send.To("user", 123).Text("hello")
+await onebot12.Send.To("user", 123).text("hello")
+await onebot12.Send.To("user", 123).TEXT("hello")
+
+# 链式修饰方法同样支持
+await onebot12.Send.To("group", 123).At(456).Text("hello")
+await onebot12.Send.To("group", 123).at(456).TEXT("hello")
+await onebot12.Send.To("group", 123).AT(456).text("hello")
+```
+
+### 不支持的方法调用
+
+当调用不存在的方法时，适配器会返回友好的文本提示，而不是抛出异常：
+
+```python
+# 调用不支持的方法
+result = await onebot12.Send.To("user", 123).UnsupportedMethod("test")
+
+# 返回的结果是发送的文本消息
+# 消息内容: [不支持的发送类型] 方法名: UnsupportedMethod, 参数: [args[0]: 'test']
+```
+
 ### 基础消息类型
 
 - `.Text(text: str)`：发送纯文本消息
 - `.Image(file: Union[str, bytes], filename: str = "image.png")`：发送图片消息（支持URL、Base64或bytes）
 - `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`：发送音频消息
+- `.Voice(file: Union[str, bytes], filename: str = "voice.ogg")`：发送语音消息（Audio的别名，兼容OneBot11）
 - `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：发送视频消息
 
-### 交互消息类型
+### 链式修饰方法（返回self支持链式调用）
 
-- `.Mention(user_id: Union[str, int], user_name: str = None)`：发送@消息
-- `.Reply(message_id: Union[str, int], content: str = None)`：发送回复消息
+- `.At(user_id: Union[str, int])`：@用户（可多次调用）
+- `.AtAll()`：@全体成员
+- `.Reply(message_id: Union[str, int])`：回复消息
+
+### 原始消息发送
+
+- `.Raw_ob12(message: Union[Dict, List[Dict]], **kwargs)`：发送OneBot12原始格式消息（符合命名规范）
+
+### 其他消息类型
+
 - `.Sticker(file_id: str)`：发送表情包/贴纸
 - `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`：发送位置
 
@@ -14055,6 +14336,24 @@ await onebot12.Send.To("group", group_id).Account("main").Text("来自主账户�
 
 OneBot12适配器完全遵循OneBot12标准，事件格式无需转换，直接提交到框架。
 
+### 新增特性：原始事件类型字段
+
+符合 `standards/event-conversion.md` 规范，所有事件都会保留原始事件类型字段 `onebot12_raw_type`：
+
+```python
+{
+    "id": "event-id",
+    "type": "message",              # 事件类型
+    "onebot12_raw_type": "message", # 原始事件类型（与type相同）
+    "detail_type": "private",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "message": [{"type": "text", "data": {"text": "Hello"}}],
+    "alt_message": "Hello",
+    "time": 1234567890
+}
+```
+
 ### 消息事件 (Message Events)
 
 ```python
@@ -14062,6 +14361,7 @@ OneBot12适配器完全遵循OneBot12标准，事件格式无需转换，直接�
 {
     "id": "event-id",
     "type": "message",
+    "onebot12_raw_type": "message",
     "detail_type": "private",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -14074,6 +14374,7 @@ OneBot12适配器完全遵循OneBot12标准，事件格式无需转换，直接�
 {
     "id": "event-id",
     "type": "message",
+    "onebot12_raw_type": "message",
     "detail_type": "group",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -14091,6 +14392,7 @@ OneBot12适配器完全遵循OneBot12标准，事件格式无需转换，直接�
 {
     "id": "event-id",
     "type": "notice",
+    "onebot12_raw_type": "notice",
     "detail_type": "group_member_increase",
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
@@ -14103,7 +14405,8 @@ OneBot12适配器完全遵循OneBot12标准，事件格式无需转换，直接�
 # 群成员减少
 {
     "id": "event-id",
-    "type": "notice", 
+    "type": "notice",
+    "onebot12_raw_type": "notice",
     "detail_type": "group_member_decrease",
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
@@ -14121,6 +14424,7 @@ OneBot12适配器完全遵循OneBot12标准，事件格式无需转换，直接�
 {
     "id": "event-id",
     "type": "request",
+    "onebot12_raw_type": "request",
     "detail_type": "friend",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -14133,6 +14437,7 @@ OneBot12适配器完全遵循OneBot12标准，事件格式无需转换，直接�
 {
     "id": "event-id",
     "type": "request",
+    "onebot12_raw_type": "request",
     "detail_type": "group",
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
@@ -14151,6 +14456,7 @@ OneBot12适配器完全遵循OneBot12标准，事件格式无需转换，直接�
 {
     "id": "event-id",
     "type": "meta_event",
+    "onebot12_raw_type": "meta_event",
     "detail_type": "lifecycle",
     "self": {"user_id": "bot-id"},
     "sub_type": "enable",
@@ -14161,6 +14467,7 @@ OneBot12适配器完全遵循OneBot12标准，事件格式无需转换，直接�
 {
     "id": "event-id",
     "type": "meta_event",
+    "onebot12_raw_type": "meta_event",
     "detail_type": "heartbeat",
     "self": {"user_id": "bot-id"},
     "interval": 5000,
@@ -14223,18 +14530,60 @@ platform = "onebot12"
 
 ## 发送方法返回值
 
-所有发送方法均返回一个 Task 对象，可以直接 await 获取发送结果。返回结果遵循 OneBot12 标准：
+### 消息发送方法
+所有消息发送方法（如 `.Text()`, `.Image()`, `.Raw_ob12()` 等）均返回一个 `asyncio.Task` 对象，可以直接 await 获取发送结果：
 
 ```python
+task = await onebot12.Send.To("group", 123456).Text("Hello")
+```
+
+### 链式修饰方法
+所有链式修饰方法（如 `.At()`, `.AtAll()`, `.Reply()`）均返回 `self`，支持链式调用：
+
+```python
+# 组合使用多个修饰方法
+await onebot12.Send.To("group", 123456).Reply("msg123").At(789).At(790).Text("文本")
+```
+
+## API响应标准
+
+适配器遵循 ErisPulse 标准化返回规范（`standards/api-response.md`）：
+
+```python
+# 成功响应
 {
-    "status": "ok",           // 执行状态
-    "retcode": 0,             // 返回码
-    "data": {...},            // 响应数据
-    "self": {"user_id": "account-id"},  // 账户信息
-    "message_id": "123456",   // 消息ID
-    "message": ""             // 错误信息
+    "status": "ok",              // 必须：执行状态
+    "retcode": 0,                // 必须：返回码（0表示成功）
+    "data": {                     // 必须：响应数据
+        "message_id": "123456",
+        "time": 1632847927.599013
+    },
+    "message_id": "123456",       // 必须：消息ID（无则为空字符串）
+    "message": "",                // 必须：错误信息（成功时为空）
+    "echo": "1234",               // 可选：原样返回请求中的echo
+    "onebot12_raw": {...}        // 可选：原始响应数据
+}
+
+# 失败响应
+{
+    "status": "failed",           // 必须：执行状态
+    "retcode": 10003,            // 必须：返回码（非0表示失败）
+    "data": None,                // 必须：失败时为null
+    "message_id": "",            // 必须：失败时为空字符串
+    "message": "缺少必要参数",    // 必须：错误描述
+    "echo": "1234",              // 可选：原样返回请求中的echo
+    "onebot12_raw": {...}        // 可选：原始响应数据
 }
 ```
+
+### 错误码规范
+
+遵循 OneBot12 标准错误码：
+
+- **0**: 成功
+- **1xxxx**: 动作请求错误
+- **2xxxx**: 动作处理器错误
+- **3xxxx**: 动作执行错误（33001为网络超时）
 
 ### 多账户发送语法
 
@@ -14266,6 +14615,7 @@ OneBot12适配器采用异步非阻塞设计：
 1. 网络连接异常自动重连（支持每个账户独立重连，间隔30秒）
 2. API调用超时处理（固定30秒超时）
 3. 消息发送失败自动重试（最多3次重试）
+4. 不支持的方法调用会返回友好的文本提示
 
 ## 事件处理增强
 
@@ -14274,7 +14624,9 @@ OneBot12适配器采用异步非阻塞设计：
 ```python
 {
     "type": "message",
+    "onebot12_raw_type": "message",  // 原始事件类型
     "detail_type": "private",
+    "self": {"user_id": "123456"},  // 发送事件的账户ID（标准字段）
     "platform": "onebot12",
     // ... 其他事件字段
 }
@@ -14335,11 +14687,13 @@ OneBot12使用标准化的消息段格式：
 3. **消息发送**: 使用合适的消息类型，避免发送不支持的消息
 4. **连接监控**: 定期检查连接状态，确保服务可用性
 5. **性能优化**: 批量发送时使用Batch方法，减少网络开销
+6. **方法调用**: 推荐使用标准的大驼峰命名（如 `.Text()`），但也支持小写形式以兼容不同编程风格(这种方式可能会不兼容旧版本)
+
 
 
 ### Telegram 适配
 
-# Telegram平台特性文档
+﻿# Telegram平台特性文档
 
 TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消息类型和事件处理。
 
@@ -14347,7 +14701,7 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 
 ## 文档信息
 
-- 对应模块版本: 3.6.5
+- 对应模块版本: 4.0.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -14688,31 +15042,42 @@ async def handle_notice(event):
 
 ## 配置选项
 
-Telegram 适配器支持以下配置选项：
+Telegram 适配器支持多账号配置：
 
-### 基本配置
-- `token`: Telegram Bot Token
-- `proxy_enabled`: 是否启用代理
+### 配置示例
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
 
-### 代理配置
-- `proxy.host`: 代理服务器地址
-- `proxy.port`: 代理端口
-- `proxy.type`: 代理类型 (`"socks4"` 或 `"socks5"`)
+[Telegram_Adapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+enabled = true
+```
 
 ### 运行模式
 
 Telegram 适配器仅支持 **Polling（轮询）** 模式，Webhook 模式已移除。
 
-配置示例：
+### 代理配置
+
+如需通过代理连接 Telegram API，请使用系统级代理（环境变量 ` + 'ALL_PROXY' + ` / ` + 'HTTPS_PROXY' + `）。
+
+### 旧版配置迁移
+
+旧版单 token 配置会自动兼容：
 ```toml
+# 旧版格式（仍可使用，但建议迁移）
 [Telegram_Adapter]
 token = "YOUR_BOT_TOKEN"
-proxy_enabled = false
+```
 
-[Telegram_Adapter.proxy]
-host = "127.0.0.1"
-port = 1080
-type = "socks5"
+建议迁移到新格式：
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
+```
 
 
 ### 云湖适配
@@ -14725,7 +15090,7 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 
 ## 文档信息
 
-- 对应模块版本: 3.10.1
+- 对应模块版本: 4.0.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -14760,6 +15125,42 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 - `.Board(scope: str, content: str, **kwargs)`：发布公告看板，scope支持`local`和`global`。
 - `.DismissBoard(scope: str, **kwargs)`：撤销公告看板。
 - `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`：发送流式消息。
+
+### 群组管理方法
+
+所有群组管理方法需要通过链式语法指定群组，例如：
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+await yunhu.Send.To("group", group_id).Kick(user_id)
+```
+
+- `.Kick(user_id: str)`：移除群成员。机器人需要`允许移除群成员`权限。
+- `.Ban(user_id: str, duration: int = 600)`：用户禁言。`duration`为禁言时长（秒），0为解禁，-1为永久禁言。机器人需要`允许禁言用户`权限。
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`：创建群标签。`color`格式为#RRGGBB，`sort`越小越靠前。机器人需要`允许控制标签组`权限。
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`：修改群标签。各参数可选，不传则不修改。机器人需要`允许控制标签组`权限。
+- `.DeleteTag(tag: str)`：删除群标签。机器人需要`允许控制标签组`权限。
+- `.GetTagList()`：获取群标签列表。返回包含`list`数组的响应数据。
+- `.AddUserTag(user_id: str, tag: str)`：给用户添加标签。机器人需要`允许控制标签组`权限。
+- `.RemoveUserTag(user_id: str, tag: str)`：给用户移除标签。机器人需要`允许控制标签组`权限。
+- `.SetMsgTypeLimit(types: str)`：控制群内消息类型。`types`为消息类型名称，多个用逗号分隔（如`"text,image,video"`），空字符串表示不限制。机器人需要`允许修改群信息`权限。
+
+### 消息查询方法
+
+获取指定会话（用户/群）的历史消息列表，需要通过链式语法指定目标，例如：
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
+```
+
+- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`：获取会话历史消息。返回包含`list`数组和`total`总数的响应数据。
+  - `message_id`：消息ID（可选）。不填时配合`before`返回最近的N条消息。
+  - `before`：返回指定消息ID前N条。
+  - `after`：返回指定消息ID后N条。
+  - > **注意：** `before` 和 `after` 至少需指定一个且大于0，否则服务器不会返回任何消息。
 
 Board board_type 支持以下类型：
 - `local`：指定用户看板
@@ -14810,6 +15211,68 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Text("回复消息")
 
 # 回复 + 按钮
 await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("带回复和按钮的消息")
+```
+
+### 群组管理示例
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# 移除群成员
+await yunhu.Send.To("group", group_id).Kick(user_id)
+
+# 用户禁言（10分钟）
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=600)
+
+# 解除禁言
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=0)
+
+# 永久禁言
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=-1)
+
+# 创建群标签
+await yunhu.Send.To("group", group_id).CreateTag("VIP用户", color="#FF5733", desc="VIP会员")
+
+# 修改群标签
+await yunhu.Send.To("group", group_id).EditTag("VIP用户", new_tag="SVIP用户", color="#33C4FF")
+
+# 删除群标签
+await yunhu.Send.To("group", group_id).DeleteTag("VIP用户")
+
+# 获取群标签列表
+result = await yunhu.Send.To("group", group_id).GetTagList()
+
+# 给用户添加标签
+await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP用户")
+
+# 移除用户标签
+await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP用户")
+
+# 设置消息类型限制
+await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
+
+# 取消消息类型限制
+await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
+```
+
+### 消息查询示例
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# 获取群最近10条消息（共返回10条）
+result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
+
+# 获取群中指定消息ID前10条（共返回11条）
+result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10)
+
+# 获取群中指定消息ID前后各10条（共返回21条）
+result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
+
+# 获取用户会话历史消息
+result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
 ### OneBot12消息支持
@@ -15345,6 +15808,7 @@ KookAdapter 是基于Kook（开黑啦）Bot WebSocket 协议构建的适配器�
 
 - 平台简介：Kook（原开黑啦）是一款支持文字、语音、视频通信的社区平台，提供完整的 Bot 开发接口
 - 适配器名称：KookAdapter
+- 多账户支持：支持同时配置多个 Kook 机器人
 - 连接方式：WebSocket 长连接（通过Kook网关）
 - 认证方式：基于 Bot Token 进行身份认证
 - 链式修饰支持：支持 `.Reply()`、`.At()`、`.AtAll()` 等链式修饰方法
@@ -15352,18 +15816,31 @@ KookAdapter 是基于Kook（开黑啦）Bot WebSocket 协议构建的适配器�
 
 ## 配置说明
 
+KookAdapter 支持多账户配置，每个账户对应一个独立的 Kook 机器人。
+
 ```toml
 # config.toml
-[KookAdapter]
+# 账户1
+[KookAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"     # Kook Bot Token（必填，格式: Bot xxx/xxx）
 bot_id = ""                   # Bot 用户ID（可选，不填则从 token 中解析）
 compress = true               # 是否启用 WebSocket 压缩（可选，默认为 true）
+enabled = true                # 是否启用（可选，默认为true）
+
+# 账户2
+[KookAdapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+bot_id = ""
+enabled = true
 ```
 
-**配置项说明：**
+> 兼容旧配置：若检测到旧的单账户 `[KookAdapter]` 配置（含 token），会自动迁移为 `accounts.default`。
+
+**配置项说明（每个账户）：**
 - `token`：Kook Bot 的 Token（必填），从 [Kook开发者中心](https://developer.kookapp.cn) 获取，格式为 `Bot xxx/xxx`
 - `bot_id`：Bot 的用户ID（可选），如果不填写，适配器会尝试从 token 中自动解析。建议手动填写以确保准确性
 - `compress`：是否启用 WebSocket 数据压缩（可选，默认为 `true`），启用后使用 zlib 解压数据
+- `enabled`：是否启用该账户（可选，默认为true）
 
 **API环境：**
 - Kook API 基础地址：`https://www.kookapp.cn/api/v3`
@@ -15827,6 +16304,7 @@ MatrixAdapter 是基于 [Matrix协议](https://spec.matrix.org/) 构建的适配
 
 - 平台简介：Matrix是一个开放的去中心化通信协议，支持私聊、群组等多种场景
 - 适配器名称：MatrixAdapter
+- 多账户支持：支持同时配置多个 Matrix 账户
 - 连接方式：Long Polling（通过 Matrix Sync API `/sync`）
 - 认证方式：基于 access_token 或 user_id + password 登录获取 token
 - 链式修饰支持：支持 `.Reply()`、`.At()`、`.AtAll()` 等链式修饰方法
@@ -15834,22 +16312,35 @@ MatrixAdapter 是基于 [Matrix协议](https://spec.matrix.org/) 构建的适配
 
 ## 配置说明
 
+MatrixAdapter 支持多账户配置，每个账户独立配置 homeserver 和认证信息。
+
 ```toml
 # config.toml
-[Matrix_Adapter]
+# 账户1
+[Matrix_Adapter.accounts.default]
 homeserver = "https://matrix.org"          # Matrix服务器地址（必填）
 access_token = "YOUR_ACCESS_TOKEN"          # 访问令牌（与 user_id+password 二选一）
 user_id = ""                                # Matrix用户ID（如 @bot:matrix.org）
 password = ""                               # Matrix用户密码
 auto_accept_invites = true                  # 是否自动接受房间邀请（可选，默认为true）
+enabled = true                              # 是否启用（可选，默认为true）
+
+# 账户2
+[Matrix_Adapter.accounts.bot2]
+homeserver = "https://matrix.example.com"
+access_token = "ANOTHER_TOKEN"
+enabled = true
 ```
 
-**配置项说明：**
+> 兼容旧配置：若检测到旧的单账户 `[Matrix_Adapter]` 配置（含 access_token），会自动迁移为 `accounts.default`。
+
+**配置项说明（每个账户）：**
 - `homeserver`：Matrix服务器地址（必填），默认为 `https://matrix.org`
 - `access_token`：访问令牌，可从Matrix客户端获取。如果已有 token，直接填写即可
 - `user_id`：Matrix用户ID（如 `@bot:matrix.org`），与 `password` 配合使用进行登录
 - `password`：Matrix用户密码，用于自动登录获取 access_token
 - `auto_accept_invites`：是否自动接受房间邀请，默认为 `true`
+- `enabled`：是否启用该账户（可选，默认为true）
 
 **认证方式：**
 - 方式一（推荐）：直接提供 `access_token`
@@ -17401,7 +17892,7 @@ IdeauraAdapter 是基于花枫咖啡馆（Allons）平台 API 构建的适配器
 
 - 平台简介：花枫咖啡馆（Allons）是一个即时通讯平台
 - 适配器名称：IdeauraAdapter
-- 多账户支持：支持通过 email/password 配置多个账户
+- 多账户支持：支持通过 token 或 email/password 配置多个账户
 - 链式修饰支持：支持 `.At()`、`.AtAll()`、`.Reply()` 等链式修饰方法
 - OneBot12兼容：支持发送 OneBot12 格式消息
 
@@ -17713,18 +18204,19 @@ async def handle_notice(event):
 
 ### 配置说明
 
-IdeauraAdapter 支持同时配置和运行多个账户。
+IdeauraAdapter 支持同时配置和运行多个账户，每个账户可选择 Token 登录或邮箱密码登录（二选一）。
 
 ```toml
 # config.toml
+# 账户1：Token 登录（推荐，无需邮箱密码）
 [IdeauraAdapter.accounts.default]
-email = "user1@example.com"     # 登录邮箱（必填）
-password = "password1"          # 登录密码（必填）
-enabled = true                  # 是否启用（可选，默认为true）
+token = "your-token-here"        # 登录Token（与 email+password 二选一）
+enabled = true                   # 是否启用（可选，默认为true）
 
+# 账户2：邮箱密码登录
 [IdeauraAdapter.accounts.bot2]
-email = "user2@example.com"
-password = "password2"
+email = "user2@example.com"      # 登录邮箱
+password = "password2"           # 登录密码
 enabled = true
 
 # 可选：自定义服务器地址
@@ -17735,8 +18227,9 @@ heartbeat_interval = 30
 ```
 
 **配置项说明：**
-- `email`：账户登录邮箱（必填）
-- `password`：账户登录密码（必填）
+- `token`：登录Token（选填，填写后优先使用Token登录，无需邮箱密码）
+- `email`：登录邮箱（Token登录时可不填，邮箱密码登录时必填）
+- `password`：登录密码（Token登录时可不填，邮箱密码登录时必填）
 - `enabled`：是否启用该账户（可选，默认为true）
 
 **全局配置项：**

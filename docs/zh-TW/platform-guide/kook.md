@@ -1,6 +1,6 @@
 # Kook平台特性文件
 
-KookAdapter 是基於Kook（開黑啦）Bot WebSocket 協議構建的適配器，整合了Kook所有功能模組，提供統一的事件處理和消息操作介面。
+KookAdapter 是基於 Kook（開黑啦）Bot WebSocket 協議構建的適配器，整合了 Kook 所有功能模組，提供統一的事件處理和消息操作介面。
 
 ---
 
@@ -12,26 +12,40 @@ KookAdapter 是基於Kook（開黑啦）Bot WebSocket 協議構建的適配器�
 ## 基本資訊
 
 - 平台簡介：Kook（原開黑啦）是一款支援文字、語音、視訊通訊的社群平台，提供完整的 Bot 開發介面
-- 適配器名稱：KookAdapter
-- 連線方式：WebSocket 長連線（透過Kook網關）
+- 适配器名稱：KookAdapter
+- 多帳戶支援：支援同時配置多個 Kook 機器人
+- 連線方式：WebSocket 長連線（透過 Kook 網關）
 - 認證方式：基於 Bot Token 進行身份認證
 - 連式修飾支援：支援 `.Reply()`、`.At()`、`.AtAll()` 等連式修飾方法
 - OneBot12相容：支援傳送 OneBot12 格式消息
 
 ## 配置說明
 
+KookAdapter 支援多帳戶配置，每個帳戶對應一個獨立的 Kook 機器人。
+
 ```toml
 # config.toml
-[KookAdapter]
+# 帳戶1
+[KookAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"     # Kook Bot Token（必填，格式: Bot xxx/xxx）
 bot_id = ""                   # Bot 用戶ID（可選，不填則從 token 中解析）
 compress = true               # 是否啟用 WebSocket 壓縮（可選，預設為 true）
+enabled = true                # 是否啟用（可選，預設為 true）
+
+# 帳戶2
+[KookAdapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+bot_id = ""
+enabled = true
 ```
 
-**配置項說明：**
+> 兼容舊配置：若檢測到舊的單帳戶 `[KookAdapter]` 配置（含 token），會自動遷移為 `accounts.default`。
+
+**配置項說明（每個帳戶）：**
 - `token`：Kook Bot 的 Token（必填），從 [Kook開發者中心](https://developer.kookapp.cn) 獲取，格式為 `Bot xxx/xxx`
-- `bot_id`：Bot 的用戶ID（可選），如果不填寫，適配器會嘗試從 token 中自動解析。建議手動填寫以确保準確性
+- `bot_id`：Bot 的用戶ID（可選），如果不填寫，適配器會嘗試從 token 中自動解析。建議手動填寫以確保準確性
 - `compress`：是否啟用 WebSocket 資料壓縮（可選，預設為 `true`），啟用後使用 zlib 解壓資料
+- `enabled`：是否啟用該帳戶（可選，預設為 true）
 
 **API環境：**
 - Kook API 基礎地址：`https://www.kookapp.cn/api/v3`
@@ -53,7 +67,7 @@ await kook.Send.To("group", channel_id).Text("Hello World!")
 - `.Video(file: bytes | str)`：傳送影片消息，支援檔案路徑、URL、二進位資料。
 - `.File(file: bytes | str, filename: str = None)`：傳送檔案消息，支援檔案路徑、URL、二進位資料。
 - `.Voice(file: bytes | str)`：傳送語音消息，支援檔案路徑、URL、二進位資料。
-- `.Markdown(text: str)`：傳送KMarkdown格式消息。
+- `.Markdown(text: str)`：傳送 KMarkdown 格式消息。
 - `.Card(card_data: dict)`：傳送卡片消息（CardMessage）。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：傳送 OneBot12 格式消息。
 
@@ -111,7 +125,7 @@ await kook.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
 ### 額外操作方法
 
-除傳送消息外，Kook適配器還支援以下操作：
+除傳送消息外，Kook 適配器還支援以下操作：
 
 ```python
 # 編輯消息（僅支援 KMarkdown type=9 和 CardMessage type=10）
@@ -171,7 +185,7 @@ file_url = result["data"]["url"]
 
 - 所有特有欄位均以 `kook_` 前綴標識
 - 保留原始資料在 `kook_raw` 欄位
-- `kook_raw_type` 標識原始Kook消息類型編號（如 `1` 為文本、`255` 為通知事件）
+- `kook_raw_type` 標識原始 Kook 消息類型編號（如 `1` 為文本、`255` 為通知事件）
 
 ### 特殊欄位範例
 
@@ -214,7 +228,6 @@ file_url = result["data"]["url"]
   "detail_type": "group",
   "user_id": "用戶ID",
   "group_id": "頻道ID",
-  "channel_id": "頻道ID",
   "message_id": "消息ID",
   "kook_raw": {...},
   "kook_raw_type": "9",
@@ -229,7 +242,6 @@ file_url = result["data"]["url"]
   "detail_type": "group",
   "user_id": "用戶ID",
   "group_id": "頻道ID",
-  "channel_id": "頻道ID",
   "message_id": "消息ID",
   "kook_raw": {...},
   "kook_raw_type": "10",
@@ -326,4 +338,153 @@ Kook 的消息類型根據 `type` 欄位自動轉換為對應消息段：
 ### 斷線重連
 
 - 連線異常斷開後，適配器自動重試連線
-- 如果之前有 `sn > 0`，會首先嘗試
+- 如果之前有 `sn > 0`，會首先嘗試 RESUME（s=4）恢復連線
+- RESUME 失敗後，重置 sn 和消息隊列，重新進行全新連線（HELLO 流程）
+- 收到 RECONNECT（s=5）信令時，清空狀態並重新連線
+
+### 消息序號機制
+
+Kook WebSocket 使用 `sn`（遞增序號）保證消息有序性：
+
+- 每收到一條消息事件（s=0），sn 遞增
+- 如果收到的消息 sn 不連續，進入暫存模式
+- 暫存區中的消息按 sn 排序，等待缺失消息到達後按序處理
+- 暫存區清空後自動退出暫存模式
+
+## 使用示例
+
+### 處理頻道消息
+
+```python
+from ErisPulse.Core.Event import message
+from ErisPulse import sdk
+
+kook = sdk.adapter.get("kook")
+
+@message.on_message()
+async def handle_group_msg(event):
+    if event.get("platform") != "kook":
+        return
+    if event.get("detail_type") != "group":
+        return
+
+    text = event.get_text()
+    channel_id = event.get("group_id")
+
+    if text == "hello":
+        await kook.Send.To("group", channel_id).Text("Hello!")
+```
+
+### 處理私聊消息
+
+```python
+@message.on_message()
+async def handle_private_msg(event):
+    if event.get("platform") != "kook":
+        return
+    if event.get("detail_type") != "private":
+        return
+
+    text = event.get_text()
+    user_id = event.get("user_id")
+
+    await kook.Send.To("user", user_id).Text(f"你說了: {text}")
+```
+
+### 處理通知事件（表情回應等）
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_notice(event):
+    if event.get("platform") != "kook":
+        return
+
+    sub_type = event.get("sub_type")
+
+    if sub_type == "added_reaction":
+        emoji = event.get("emoji", {})
+        user_id = event.get("user_id")
+        msg_id = event.get("message_id")
+        print(f"用戶 {user_id} 對消息 {msg_id} 添加了表情回應")
+
+    elif sub_type == "deleted_reaction":
+        emoji = event.get("emoji", {})
+        user_id = event.get("user_id")
+        msg_id = event.get("message_id")
+        print(f"用戶 {user_id} 移除了消息 {msg_id} 的表情回應")
+```
+
+### 發送媒體消息
+
+```python
+# 發送圖片（URL）
+await kook.Send.To("group", channel_id).Image("https://example.com/image.png")
+
+# 發送圖片（二進位）
+with open("image.png", "rb") as f:
+    image_bytes = f.read()
+await kook.Send.To("group", channel_id).Image(image_bytes)
+
+# 發送影片
+await kook.Send.To("group", channel_id).Video("https://example.com/video.mp4")
+
+# 發送檔案
+await kook.Send.To("group", channel_id).File("https://example.com/file.pdf", filename="document.pdf")
+
+# 發送語音
+await kook.Send.To("group", channel_id).Voice("https://example.com/voice.mp3")
+```
+
+### 發送KMarkdown和卡片消息
+
+```python
+# KMarkdown
+await kook.Send.To("group", channel_id).Markdown("**粗體** *斜體* [連結](https://example.com)")
+
+# 卡片消息
+card = {
+    "type": "card",
+    "theme": "primary",
+    "size": "lg",
+    "modules": [
+        {"type": "header", "text": {"type": "plain-text", "content": "標題"}},
+        {"type": "section", "text": {"type": "kmarkdown", "content": "內容"}}
+    ]
+}
+await kook.Send.To("group", channel_id).Card(card)
+```
+
+### 消息編輯與撤回
+
+```python
+# 發送消息
+result = await kook.Send.To("group", channel_id).Markdown("**原始內容**")
+msg_id = result["data"]["msg_id"]
+
+# 編輯消息（僅支援 KMarkdown 和 CardMessage）
+await kook.Send.To("group", channel_id).Edit(msg_id, "**更新後的內容**")
+
+# 撤回消息
+await kook.Send.To("group", channel_id).Recall(msg_id)
+```
+
+### 處理私信消息的編輯和刪除通知
+
+```python
+@notice.on_notice()
+async def handle_private_notice(event):
+    if event.get("platform") != "kook":
+        return
+
+    sub_type = event.get("sub_type")
+
+    if sub_type == "updated_private_message":
+        msg_id = event.get("message_id")
+        content = event.get("content")
+        print(f"私信消息已更新: {msg_id}, 新內容: {content}")
+
+    elif sub_type == "deleted_private_message":
+        msg_id = event.get("message_id")
+        print(f"私信消息已刪除: {msg_id}")

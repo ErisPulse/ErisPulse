@@ -6,7 +6,7 @@ TelegramAdapter is an adapter built based on the Telegram Bot API, supporting mu
 
 ## Document Information
 
-- Corresponding Module Version: 3.6.5
+- Corresponding Module Version: 4.0.0
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -347,28 +347,38 @@ async def handle_notice(event):
 
 ## Configuration Options
 
-The Telegram adapter supports the following configuration options:
+The Telegram adapter supports multi-account configuration:
 
-### Basic Configuration
-- `token`: Telegram Bot Token
-- `proxy_enabled`: Whether to enable proxy
+### Configuration Example
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
 
-### Proxy Configuration
-- `proxy.host`: Proxy server address
-- `proxy.port`: Proxy port
-- `proxy.type`: Proxy type (`"socks4"` or `"socks5"`)
+[Telegram_Adapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+enabled = true
+```
 
 ### Operating Mode
 
 The Telegram adapter only supports **Polling** mode. The Webhook mode has been removed.
 
-Configuration Example:
+### Proxy Configuration
+
+If you need to connect to Telegram API via a proxy, please use a system-level proxy (environment variables `ALL_PROXY` or `HTTPS_PROXY`).
+
+### Migration from Old Configuration
+
+The old single token configuration is automatically compatible:
 ```toml
+# Old format (still usable, but migration is recommended)
 [Telegram_Adapter]
 token = "YOUR_BOT_TOKEN"
-proxy_enabled = false
+```
 
-[Telegram_Adapter.proxy]
-host = "127.0.0.1"
-port = 1080
-type = "socks5"
+It is recommended to migrate to the new format:
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true

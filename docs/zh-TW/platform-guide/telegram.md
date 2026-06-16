@@ -6,7 +6,7 @@ TelegramAdapter 是基於 Telegram Bot API 建立的適配器，支援多種訊�
 
 ## 文件資訊
 
-- 對應模組版本: 3.6.5
+- 對應模組版本: 4.0.0
 - 維護者: ErisPulse
 
 ## 基本資訊
@@ -345,30 +345,43 @@ async def handle_notice(event):
 - 話題訊息包含 `thread_id` 欄位
 - `@` 提及使用標準 `mention` 訊息段類型（`type: "mention"`），文字中不含 @用戶名
 
-## 設定選項
+## 配置選項
 
-Telegram 適配器支援以下設定選項：
+Telegram 適配器支援多帳號配置：
 
-### 基本設定
-- `token`: Telegram Bot Token
-- `proxy_enabled`: 是否啟用代理
+### 配置範例
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
 
-### 代理設定
-- `proxy.host`: 代理伺服器位址
-- `proxy.port`: 代理埠號
-- `proxy.type`: 代理類型 (`"socks4"` 或 `"socks5"`)
+[Telegram_Adapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+enabled = true
+```
 
 ### 執行模式
 
 Telegram 適配器僅支援 **Polling（輪詢）** 模式，Webhook 模式已移除。
 
-設定範例：
+### 代理配置
+
+如需透過代理連接 Telegram API，請使用系統級代理（環境變數 ` + 'ALL_PROXY' + ` / ` + 'HTTPS_PROXY' + `）。
+
+### 舊版配置遷移
+
+舊版單 token 配置會自動相容：
 ```toml
+# 舊版格式（仍可使用，但建議遷移）
 [Telegram_Adapter]
 token = "YOUR_BOT_TOKEN"
-proxy_enabled = false
+```
 
-[Telegram_Adapter.proxy]
-host = "127.0.0.1"
-port = 1080
-type = "socks5"
+建議遷移到新格式：
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
+```
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。

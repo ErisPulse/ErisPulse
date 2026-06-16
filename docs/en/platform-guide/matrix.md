@@ -13,6 +13,7 @@ MatrixAdapter is an adapter built based on the [Matrix protocol](https://spec.ma
 
 - Platform Introduction: Matrix is an open decentralized communication protocol supporting various scenarios such as private chats and group chats
 - Adapter Name: MatrixAdapter
+- Multi-account Support: Supports configuring multiple Matrix accounts simultaneously
 - Connection Method: Long Polling (through Matrix Sync API `/sync`)
 - Authentication Method: Login to obtain token based on access_token or user_id + password
 - Chaining Modifier Support: Supports chaining modifier methods such as `.Reply()`, `.At()`, `.AtAll()`
@@ -20,22 +21,35 @@ MatrixAdapter is an adapter built based on the [Matrix protocol](https://spec.ma
 
 ## Configuration Instructions
 
+MatrixAdapter supports multi-account configuration, with each account configured independently for homeserver and authentication information.
+
 ```toml
 # config.toml
-[Matrix_Adapter]
+# Account 1
+[Matrix_Adapter.accounts.default]
 homeserver = "https://matrix.org"          # Matrix server address (required)
 access_token = "YOUR_ACCESS_TOKEN"          # Access token (either this or user_id+password)
 user_id = ""                                # Matrix user ID (e.g., @bot:matrix.org)
 password = ""                               # Matrix user password
 auto_accept_invites = true                  # Whether to automatically accept room invitations (optional, defaults to true)
+enabled = true                              # Whether to enable (optional, defaults to true)
+
+# Account 2
+[Matrix_Adapter.accounts.bot2]
+homeserver = "https://matrix.example.com"
+access_token = "ANOTHER_TOKEN"
+enabled = true
 ```
 
-**Configuration Item Description:**
+> **Compatibility Note:** If an old single-account configuration (containing `access_token`) is detected, it will be automatically migrated to `accounts.default`.
+
+**Configuration Item Description (for each account):**
 - `homeserver`: Matrix server address (required), defaults to `https://matrix.org`
 - `access_token`: Access token, can be obtained from Matrix client. If you already have a token, just fill it in
 - `user_id`: Matrix user ID (e.g., `@bot:matrix.org`), used with `password` for login
 - `password`: Matrix user password, used for automatic login to obtain access_token
 - `auto_accept_invites`: Whether to automatically accept room invitations, defaults to `true`
+- `enabled`: Whether to enable this account (optional, defaults to true)
 
 **Authentication Methods:**
 - Method 1 (Recommended): Directly provide `access_token`
@@ -122,12 +136,12 @@ All sending methods return a Task object, which can be directly awaited to get t
 
 ```python
 {
-    "status": "ok",           // Execution status: "ok" or "failed"
-    "retcode": 0,             // Return code
-    "data": {...},            // Response data
-    "message_id": "$event_id", // Matrix event ID
-    "message": "",            // Error message
-    "matrix_raw": {...}       // Original response data
+    "status": "ok",           # Execution status: "ok" or "failed"
+    "retcode": 0,             # Return code
+    "data": {...},            # Response data
+    "message_id": "$event_id", # Matrix event ID
+    "message": "",            # Error message
+    "matrix_raw": {...}       # Original response data
 }
 ```
 
