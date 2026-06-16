@@ -13,7 +13,7 @@ IdeauraAdapter 是基于花枫咖啡馆（Allons）平台 API 构建的适配器
 
 - 平台简介：花枫咖啡馆（Allons）是一个即时通讯平台
 - 适配器名称：IdeauraAdapter
-- 多账户支持：支持通过 email/password 配置多个账户
+- 多账户支持：支持通过 token 或 email/password 配置多个账户
 - 链式修饰支持：支持 `.At()`、`.AtAll()`、`.Reply()` 等链式修饰方法
 - OneBot12兼容：支持发送 OneBot12 格式消息
 
@@ -325,18 +325,19 @@ async def handle_notice(event):
 
 ### 配置说明
 
-IdeauraAdapter 支持同时配置和运行多个账户。
+IdeauraAdapter 支持同时配置和运行多个账户，每个账户可选择 Token 登录或邮箱密码登录（二选一）。
 
 ```toml
 # config.toml
+# 账户1：Token 登录（推荐，无需邮箱密码）
 [IdeauraAdapter.accounts.default]
-email = "user1@example.com"     # 登录邮箱（必填）
-password = "password1"          # 登录密码（必填）
-enabled = true                  # 是否启用（可选，默认为true）
+token = "your-token-here"        # 登录Token（与 email+password 二选一）
+enabled = true                   # 是否启用（可选，默认为true）
 
+# 账户2：邮箱密码登录
 [IdeauraAdapter.accounts.bot2]
-email = "user2@example.com"
-password = "password2"
+email = "user2@example.com"      # 登录邮箱
+password = "password2"           # 登录密码
 enabled = true
 
 # 可选：自定义服务器地址
@@ -347,8 +348,9 @@ heartbeat_interval = 30
 ```
 
 **配置项说明：**
-- `email`：账户登录邮箱（必填）
-- `password`：账户登录密码（必填）
+- `token`：登录Token（选填，填写后优先使用Token登录，无需邮箱密码）
+- `email`：登录邮箱（Token登录时可不填，邮箱密码登录时必填）
+- `password`：登录密码（Token登录时可不填，邮箱密码登录时必填）
 - `enabled`：是否启用该账户（可选，默认为true）
 
 **全局配置项：**
