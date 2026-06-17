@@ -7,7 +7,9 @@
 </td>
 <td valign="middle">
 
-[English](README.en.md) | [简体中文](README.md) | **繁體中文** | [日本語](README.ja.md) | [Русский](README.ru.md)
+> [English](README.md) | [简体中文](README.zh-CN.md) | **繁體中文** | [日本語](README.ja.md) | [Русский](README.ru.md)
+
+> 🎉 **v2.5.0-dev.1 開始已支援多語言！** 框架核心及 CLI 界面已內建中文（簡/繁）、英文、日文、俄文支援，會自動偵測您的系統語言切換！
 
 # ErisPulse
 
@@ -26,9 +28,9 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=for-the-badge)](https://github.com/astral-sh/ruff)
 [![Socket](https://img.shields.io/badge/Socket-Secure-2ea043?style=for-the-badge&logo=socket&logoColor=white)](https://socket.dev/pypi/package/erispulse)
 
-[![文檔](https://img.shields.io/badge/文檔-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white)](https://www.erisdev.com)
-[![模組市場](https://img.shields.io/badge/模組市場-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white)](https://www.erisdev.com/#market)
-[![討論](https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github)](https://github.com/ErisPulse/ErisPulse/discussions)
+[![文档](https://img.shields.io/badge/文档-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white)](https://www.erisdev.com)
+[![模块市场](https://img.shields.io/badge/模块市场-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white)](https://www.erisdev.com/#market)
+[![讨论](https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github)](https://github.com/ErisPulse/ErisPulse/discussions)
 
 </td>
 </tr>
@@ -173,7 +175,7 @@ ERISPULSE_BUILD_TARGET=dev docker compose up -d --build
 如需啟動時自動更新到最新版本（無論 stable 還是 dev），顯式設置 `ERISPULSE_UPDATE_ON_START=true`：
 
 ```bash
-ERISPULSE_CHANNEL=dev ERISPpulse_UPDATE_ON_START=true docker compose up -d
+ERISPULSE_CHANNEL=dev ERISPULSE_UPDATE_ON_START=true docker compose up -d
 ```
 
 也可以拉取預建置的 dev 鏡像：
