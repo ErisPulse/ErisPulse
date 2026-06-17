@@ -1,13 +1,4 @@
-<table>
-<tr>
-<td width="35%" valign="middle" align="center">
-
-<img src=".github/assets/mascot-hero.png" width="320" alt="ErisPulse" />
-
-</td>
-<td valign="middle">
-
->  **English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
+**English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
 > 🎉 **v2.5.0-dev.1 now supports multiple languages!** The framework core and CLI interface now have built-in support for Chinese (Simplified/Traditional), English, Japanese, and Russian, automatically switching based on your system language! 
 
@@ -31,10 +22,6 @@ Based on the OneBot12 standard interface, write once, deploy across multiple pla
 [![Documentation](https://img.shields.io/badge/Documentation-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white)](https://www.erisdev.com)
 [![Module Market](https://img.shields.io/badge/Module%20Market-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white)](https://www.erisdev.com/#market)
 [![Discussion](https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github)](https://github.com/ErisPulse/ErisPulse/discussions)
-
-</td>
-</tr>
-</table>
 
 ---
 
