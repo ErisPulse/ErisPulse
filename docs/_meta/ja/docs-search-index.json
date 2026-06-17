@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1286,
+  "total_keywords": 1289,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -4525,7 +4525,7 @@
     "イベント設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 101,
+        "line": 147,
         "level": 2,
         "title": "イベント設定"
       }
@@ -5261,7 +5261,7 @@
     "コマンド設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 103,
+        "line": 149,
         "level": 3,
         "title": "コマンド設定"
       }
@@ -5531,7 +5531,7 @@
     "サーバー設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 47,
+        "line": 57,
         "level": 2,
         "title": "サーバー設定"
       }
@@ -5703,7 +5703,7 @@
     "ストレージ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 90,
+        "line": 136,
         "level": 2,
         "title": "ストレージ設定"
       }
@@ -6459,7 +6459,7 @@
     "フレームワーク設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 79,
+        "line": 90,
         "level": 2,
         "title": "フレームワーク設定"
       }
@@ -7437,7 +7437,7 @@
     "メッセージ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 119,
+        "line": 166,
         "level": 3,
         "title": "メッセージ設定"
       }
@@ -7761,7 +7761,7 @@
     "モジュール設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 130,
+        "line": 188,
         "level": 2,
         "title": "モジュール設定"
       }
@@ -8301,7 +8301,7 @@
     "ログ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 64,
+        "line": 74,
         "level": 2,
         "title": "ログ設定"
       }
@@ -8882,6 +8882,14 @@
         "title": "原生メッセージ送信"
       }
     ],
+    "厳格モード": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 109,
+        "level": 3,
+        "title": "厳格モード"
+      }
+    ],
     "参考ドキュメント": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -9082,6 +9090,14 @@
         "line": 1,
         "level": 1,
         "title": "国際化 (i18n) システム"
+      }
+    ],
+    "国際化設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 177,
+        "level": 2,
+        "title": "国際化設定"
       }
     ],
     "型アノテーション": [
@@ -10275,7 +10291,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 159,
+        "line": 217,
         "level": 2,
         "title": "次のステップ"
       },
@@ -10976,6 +10992,14 @@
         "line": 168,
         "level": 2,
         "title": "認証と API 呼び出し"
+      }
+    ],
+    "豁免リスト": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 124,
+        "level": 4,
+        "title": "豁免リスト"
       }
     ],
     "貢献の招待": [
