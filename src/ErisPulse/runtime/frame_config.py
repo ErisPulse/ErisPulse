@@ -20,6 +20,7 @@ from ..Core.constants import (
     DEFAULT_MESSAGE_IGNORE_SELF,
     DEFAULT_SERVER_HOST,
     DEFAULT_SERVER_PORT,
+    DEFAULT_STRICT_MODE,
     DEFAULT_UNINIT_TIMEOUT_SECS,
     DEFAULT_USE_GLOBAL_DB,
 )
@@ -58,6 +59,11 @@ DEFAULT_ERISPULSE_CONFIG = {
     "framework": {
         "enable_lazy_loading": DEFAULT_LAZY_LOADING_ENABLED,
         "uninit_timeout": DEFAULT_UNINIT_TIMEOUT_SECS,
+        "strict_mode": DEFAULT_STRICT_MODE,
+        "strict_mode_exceptions": {
+            "modules": [],
+            "adapters": [],
+        },
     },
     "i18n": {
         "language": DEFAULT_I18N_LANGUAGE,

@@ -12,6 +12,7 @@ ErisPulse 适配器加载器
 
 import asyncio
 import importlib.metadata
+import inspect
 import sys
 from typing import Any
 
@@ -157,6 +158,18 @@ class AdapterLoader(BaseLoader):
                 else None
             )
 
+            # 检查适配器是否继承自 BaseAdapter
+            from ..Core.Bases.adapter import BaseAdapter
+
+            is_base_adapter = inspect.isclass(loaded_class) and issubclass(
+                loaded_class, BaseAdapter
+            )
+
+            if not is_base_adapter:
+                # 严格模式：按级别决定容忍加载或拒绝（跳过）
+                if self._strict().decide(meta_name, "adapter", "not_base_class"):
+                    return objs, enabled_list, disabled_list, is_new
+
             adapter_info = {
                 "meta": {
                     "name": meta_name,
@@ -185,10 +198,16 @@ class AdapterLoader(BaseLoader):
             enabled_list.append(meta_name)
 
         except SystemExit as e:
+            self._strict().record_failure(
+                meta_name, "adapter", "systemexit", detail=f"SystemExit({e.code})"
+            )
             logger.error(
                 i18n.t("loader.adapter.systemexit_single", name=meta_name, code=e.code)
             )
         except Exception as e:
+            self._strict().record_failure(
+                meta_name, "adapter", "load_failed", detail=str(e)
+            )
             logger.error(
                 i18n.t("loader.adapter.load_single_failed", name=meta_name, error=e)
             )
@@ -245,6 +264,12 @@ class AdapterLoader(BaseLoader):
                             )
                     return success
                 except SystemExit as e:
+                    self._strict().record_failure(
+                        name,
+                        "adapter",
+                        "register_systemexit",
+                        detail=f"SystemExit({e.code})",
+                    )
                     logger.error(
                         i18n.t(
                             "loader.adapter.register_systemexit", name=name, code=e.code
@@ -257,6 +282,9 @@ class AdapterLoader(BaseLoader):
                     )
                     return False
                 except Exception as e:
+                    self._strict().record_failure(
+                        name, "adapter", "register_failed", detail=str(e)
+                    )
                     logger.error(
                         i18n.t("loader.adapter.register_failed", name=name, error=e)
                     )

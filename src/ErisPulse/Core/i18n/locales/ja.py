@@ -289,6 +289,15 @@ TRANSLATIONS = {
     "loader.module.mount_lazy": "遅延読み込みモジュールを sdk にマウント中: {name}",
     "loader.module.mount_eager": "即時読み込みモジュールを sdk にマウント中: {name}",
     "loader.module.init_lazy_start": "遅延読み込みモジュール {name} を初期化しています...",
+    # ==================== 厳格モード ====================
+    "loader.strict.config_failed": "厳格モード設定の読み取りに失敗、デフォルトを使用します: {error}",
+    "loader.strict.exempted": "{type} '{name}' は厳格モードから除外されています（{reason}）、読み込みを続行します",
+    "loader.strict.tolerated": "寛容モード：{type} '{name}' {reason}、読み込みを続行します",
+    "loader.strict.rejected": "厳格モード：{type} '{name}' を拒否しました（{reason}）、スキップ。必ず読み込む必要がある場合は、'{name}' を ErisPulse.framework.strict_mode_exceptions.{list_key} 除外リストに追加するか、ErisPulse.framework.strict_mode を 0（寛容モード）に設定してください",
+    "loader.strict.rejected_fatal": "厳格モード(致命)：{type} '{name}' を拒否しました（{reason}）、記録済み。必ず読み込む必要がある場合は、'{name}' を ErisPulse.framework.strict_mode_exceptions.{list_key} 除外リストに追加するか、ErisPulse.framework.strict_mode を 0（寛容モード）に設定してください",
+    "loader.strict.fatal_report_header": "厳格モード(致命)が {count} 件の違反を検出、起動を中止します：",
+    "loader.strict.fatal_report_item": "  [{index}] {type} '{name}': {reason} {detail}",
+    "loader.strict.fatal_abort": "厳格モード(致命)：{count} 件の違反を収集、起動を中止しました",
     # ==================== ストレージルーター表示 ====================
     "core.router.lan_ipv4": "LAN IPv4",
     "core.router.lan_ipv6": "LAN IPv6",
