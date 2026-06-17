@@ -107,6 +107,51 @@ class TestStrictModeSharedCollection:
         assert mgr.has_fatal_violations() is True
 
 
+# ==================== rejections：与级别无关的拒绝追踪 ====================
+
+
+class TestStrictModeRejections:
+    """rejections 在所有级别都记录被拒绝/跳过的组件，用于摘要展示"""
+
+    def test_decide_rejection_tracked_at_skip_level(self):
+        # Level 1（默认）拒绝也应进入 rejections
+        mgr = StrictModeManager(level=1)
+        mgr.decide("BadMod", "module", "not_base_class")
+        assert len(mgr.rejections) == 1
+        assert mgr.rejections[0].name == "BadMod"
+        # 但不进入致命 violations
+        assert mgr.has_fatal_violations() is False
+
+    def test_decide_rejection_tracked_at_fatal_level(self):
+        mgr = StrictModeManager(level=2)
+        mgr.decide("BadMod", "module", "not_base_class")
+        # 同时进入 rejections 和 violations
+        assert len(mgr.rejections) == 1
+        assert len(mgr.violations) == 1
+
+    def test_record_failure_always_tracked_in_rejections(self):
+        # 异常类失败在所有级别都进入 rejections
+        mgr = StrictModeManager(level=1)
+        mgr.record_failure("CrashMod", "module", "load_failed", detail="boom")
+        assert len(mgr.rejections) == 1
+        assert mgr.has_fatal_violations() is False  # Level 1 不致命
+
+    def test_exempted_not_in_rejections(self):
+        # 豁免组件不应进入 rejections
+        mgr = StrictModeManager(
+            level=1, exceptions={"modules": ["Legacy"], "adapters": []}
+        )
+        mgr.decide("Legacy", "module", "not_base_class")
+        mgr.record_failure("Legacy", "module", "load_failed")
+        assert len(mgr.rejections) == 0
+
+    def test_lenient_tolerated_not_in_rejections(self):
+        # Level 0 容忍（未拒绝）不应进入 rejections
+        mgr = StrictModeManager(level=0)
+        mgr.decide("Foo", "module", "not_base_class")
+        assert len(mgr.rejections) == 0
+
+
 # ==================== raise_if_fatal：检查点 ====================
 
 

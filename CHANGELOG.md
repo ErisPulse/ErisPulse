@@ -63,6 +63,39 @@
 
 ---
 
+## [2.5.0-dev.4] - 2026/06/17
+> 开发版本
+
+**版本摘要**
+2.5.0-dev.4 增强启动摘要输出（懒加载标注、禁用组件列表、严格模式拒绝清单）；修正 Core i18n 语言优先级链，`set_language()` / `epsdk i18n` 全局持久化对 SDK 运行时生效。
+
+### 新增
+- @wsu2059q
+  - `Core/logger.py` `print_tree_item` 新增 `tag` / `tag_style` 参数，支持树状项尾部标注样式化标签（如 `[懒加载]`）
+  - `loaders/strict.py` `StrictModeManager` 新增与级别无关的 `_rejections` 拒绝追踪列表：
+    - `decide()` 返回拒绝时记录（包括 Level 1）
+    - `record_failure()` 始终记录拒绝（与致命 `_violations` 分离）
+    - `rejections` 属性供摘要阶段展示被拒组件清单
+  - `sdk.py` 初始化完成阶段摘要增强：
+    - 模块树每项标注 `[懒加载]` / `[立即加载]` 标签
+    - 新增「已禁用适配器」/「已禁用模块」显示行
+    - 新增「严格模式已拒绝」段，逐项列出被拒组件及原因
+  - `Core/i18n/__init__.py` 全局持久化语言能力：
+    - `_load_global_language()` 从 `~/.erispulse/cli_state.json` 读取 `epsdk i18n` 设置
+    - `set_language()` 默认同时写入全局持久化（不需额外参数），调用后跨项目跨重启生效
+    - `_persist_global_language()` 写入全局状态文件，保留已有键（如 `lang_hint_count`）
+    - 新优先级链：`set_language()` > `ERISPULSE_LANG` 环境变量 > 全局持久化 > 项目配置
+  - 5 个语言文件新增 `core.sdk.init.tag_lazy`、`tag_eager`、`disabled_adapters`、`disabled_modules`、`strict_rejected`、`strict_rejected_reason` 翻译键
+  - `tests/unit/test_unit_strict_mode.py` 新增 5 个拒绝追踪测试
+  - `tests/unit/test_unit_i18n.py` 新增 4 个语言优先级测试
+
+### 变更
+- @wsu2059q
+  - Core i18n 语言检测优先级调整：`epsdk i18n` / `set_language()` 的全局持久化选择 > 项目 `ErisPulse.i18n.language` 配置
+  - `set_language()` 行为变更：调用即持久化到全局状态文件，不再仅内存生效。临时覆盖请用 `ERISPULSE_LANG` 环境变量
+
+---
+
 ## [2.5.0-dev.3] - 2026/06/17
 > 开发版本
 
