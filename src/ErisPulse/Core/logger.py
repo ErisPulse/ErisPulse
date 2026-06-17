@@ -469,13 +469,22 @@ class Logger:
         """
         self._console.print(Text("  " + "─" * 48, style="dim"))
 
-    def print_tree_item(self, text: str, level: int = 0, is_last: bool = False):
+    def print_tree_item(
+        self,
+        text: str,
+        level: int = 0,
+        is_last: bool = False,
+        tag: str = "",
+        tag_style: str = "dim",
+    ):
         """
         打印树状结构项目
 
         :param text: 文本内容
         :param level: 缩进层级
         :param is_last: 是否是最后一项
+        :param tag: 可选的样式化后缀标签（如 "[懒加载]"）
+        :param tag_style: 标签的 rich 样式（默认 dim）
         """
         indent = "    " * (level + 1)
         connector = "╰─ " if is_last else "├─ "
@@ -483,6 +492,8 @@ class Logger:
         line.append(indent)
         line.append(connector, style="dim")
         line.append(text)
+        if tag:
+            line.append(f"  {tag}", style=tag_style)
         self._console.print(line)
 
     def print_info(self, text: str, level: int = 1):
