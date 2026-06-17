@@ -1,4 +1,13 @@
-**English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
+<table>
+<tr>
+<td width="35%" valign="middle" align="center">
+
+<img src=".github/assets/mascot-hero.png" width="320" alt="ErisPulse" />
+
+</td>
+<td valign="middle">
+
+>  **English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
 > 🎉 **v2.5.0-dev.1 now supports multiple languages!** The framework core and CLI interface now have built-in support for Chinese (Simplified/Traditional), English, Japanese, and Russian, automatically switching based on your system language! 
 
