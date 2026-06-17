@@ -18000,6 +18000,836 @@ async def handle_message(event):
 8. プログラムを終了する際は `shutdown()` を呼び出してリソースの解放を確実にしてください
 
 
+### Discord 适配
+
+# Discord プラットフォーム仕様ドキュメント
+
+DiscordAdapter は Discord Gateway (WebSocket) および REST API v10 プロトコルに基づいて構築されたアダプタであり、Discord Bot のコア機能を統合し、統一されたイベント処理とメッセージ操作インターフェースを提供します。
+
+---
+
+## ドキュメント情報
+
+- 対応モジュールバージョン: 4.0.0
+- メンテナー: ErisPulse
+- Discord API バージョン: v10
+
+## 基本情報
+
+- プラットフォームの概要：Discord は広く人気のあるコミュニティ通話プラットフォームであり、サーバー、チャンネル、DM（DM: Direct Message）など、多様な会話形式をサポートし、完全な Bot 開発インターフェースを提供します
+- アダプタ名：DiscordAdapter
+- マルチアカウントサポート：複数の Discord Bot を同時に設定可能
+- 接続方式：Gateway WebSocket（イベント受信）+ REST API（メッセージ送信/インターフェース呼び出し）
+- 認証方式：Bot Token（HTTP ヘッダー `Authorization: Bot {token}`、Gateway IDENTIFY payload に token を含める）
+- チェーン修飾サポート：`.Reply()`、`.At()`、`.AtAll()` などのチェーン修飾メソッドをサポート
+- OneBot12 互換性：OneBot12 形式メッセージの送信をサポート
+
+## 設定説明
+
+DiscordAdapter はマルチアカウント設定をサポートしており、各アカウントは独立した Discord Bot に対応します。
+
+```toml
+# config.toml
+
+# アカウント1
+[DiscordAdapter.accounts.default]
+token = "YOUR_BOT_TOKEN"       # Discord Bot Token（必須）
+intents = 33281                 # Gateway Intents（オプション、デフォルト 33281）
+enabled = true                  # 有効にするかどうか（オプション、デフォルト true）
+
+# アカウント2
+[DiscordAdapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+intents = 33281
+enabled = true
+```
+
+**設定項目説明（各アカウントについて）：**
+
+- `token`：Discord Bot Token（必須）。[Discord Developer Portal](https://discord.com/developers/applications) から取得
+- `intents`：Gateway Intents ビットマスク（オプション、デフォルト `33281`）。Bot が訂閲するイベントタイプを決定します
+- `bot_id`：Bot のユーザー ID（オプション、実行時 READY イベントから自動的に取得されるため手動で入力する必要はありません）
+- `enabled`：このアカウントを有効にするかどうか（オプション、デフォルト `true`）
+
+### Gateway Intents
+
+Intents はビットマスクを使用し、各 Intent 値のビット OR（`|`）演算で計算されます：
+
+| Intent | ビット | 値 | 説明 | Privileged |
+|-------|------|------|------|------|
+| GUILDS | `1 << 0` | 1 | サーバー作成/削除/更新、チャンネル、ロールの変更 | 否 |
+| GUILD_MEMBERS | `1 << 1` | 2 | メンバーの追加/削除/更新 | 是 |
+| GUILD_MESSAGES | `1 << 9` | 512 | サーバーメッセージの送受信 | 否 |
+| MESSAGE_CONTENT | `1 << 15` | 32768 | メッセージコンテンツ（この Intentsがない場合 content は空） | 是 |
+
+デフォルト値 `33281` = `GUILDS(1) | GUILD_MESSAGES(512) | MESSAGE_CONTENT(32768)`。
+
+> **注意**：Privileged Intents は Discord Developer Portal → Bot → Privileged Gateway Intents で有効にする必要があります。Bot が100個以上のサーバーにある場合は、Discord の承認を通過する必要があります。
+
+**API 環境：**
+- Discord REST API ベース URL：`https://discord.com/api/v10`
+- Gateway WebSocket URL：`GET /gateway/bot` で動的に取得します。通常は `wss://gateway.discord.gg/?v=10&encoding=json`
+
+## サポートされるメッセージ送信タイプ
+
+すべての送信メソッドはチェーン構文を実装しており、例えば以下のようになります：
+```python
+from ErisPulse.Core import adapter
+discord = adapter.get("discord")
+
+await discord.Send.To("group", channel_id).Text("Hello World!")
+```
+
+サポートされる送信タイプは以下の通りです：
+- `.Text(text: str)`：純テキストメッセージを送信します。
+- `.Embed(embed: dict | list)`：Embed 埋め込みメッセージを送信します。単一または複数の Embed をサポートします。
+- `.Image(file: bytes | str, filename: str = "image.png")`：画像を送信します。バイナリデータまたは URL をサポートします。
+- `.File(file: bytes | str, filename: str = None)`：ファイルを送信します。バイナリデータまたは URL をサポートします。
+- `.Reply(content: str, message_id: str)`：指定されたメッセージに返信します（便利なショートカットメソッド）。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12 形式のメッセージを送信します。
+- `.Raw_json(json_str: str)`：任意の Discord API リクエスト JSON を送信します。
+
+### チェーン修飾メソッド（組み合わせ可能）
+
+チェーン修飾メソッドは `self` を返し、チェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
+
+- `.Reply(message_id: str)`：メッセージを返信（参照）し、`message_reference` を設定します。
+- `.At(user_id: str)`：指定したユーザーに@を付与します。`<@user_id>` に変換され、複数回呼び出すことができます。
+- `.AtAll()`：全員に@を付与します。`@everyone` に変換されます。
+
+### チェーン呼び出しの例
+
+```python
+# 基本的な送信
+await discord.Send.To("group", channel_id).Text("Hello")
+
+# メッセージに返信
+await discord.Send.To("group", channel_id).Reply(msg_id).Text("返信メッセージ")
+
+# 便利な返信（ワンステップ）
+await discord.Send.To("group", channel_id).Reply("返信内容", msg_id)
+
+# ユーザーに@を付ける
+await discord.Send.To("group", channel_id).At("user_id").Text("こんにちは")
+
+# 複数のユーザーに@を付ける
+await discord.Send.To("group", channel_id).At("user1").At("user2").Text("複数ユーザー@")
+
+# 全員に@を付ける
+await discord.Send.To("group", channel_id).AtAll().Text("お知らせ")
+
+# 組み合わせて使用
+await discord.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("複合メッセージ")
+
+# Embed 埋め込みメッセージ
+embed = {
+    "title": "通知",
+    "description": "これは埋め込みメッセージです",
+    "color": 5814783,
+    "fields": [{"name": "フィールド", "value": "値", "inline": True}],
+}
+await discord.Send.To("group", channel_id).Embed(embed)
+
+# 画像を送信
+await discord.Send.To("group", channel_id).Image("https://example.com/image.png")
+```
+
+### DM（Direct Message）送信
+
+DM を送信する際、アダプタは自動的に DM チャンネルを作成します：
+
+```python
+# DM を送信
+await discord.Send.To("user", user_id).Text("DMコンテンツ")
+await discord.Send.To("user", user_id).Embed(embed)
+```
+
+### メッセージ操作
+
+```python
+# メッセージを取り消す（撤回）
+await discord.Send.To("group", channel_id).Recall(msg_id)
+
+# OneBot12 形式
+ob12_msg = [
+    {"type": "text", "data": {"text": "Hello "}},
+    {"type": "mention", "data": {"user_id": "user_id"}},
+]
+await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
+```
+
+## 送信メソッドの戻り値
+
+すべての送信メソッドは Task オブジェクトを返し、直接 await して送信結果を取得できます。戻り値は ErisPulse アダプタの標準化された戻り値仕様に従います：
+
+```python
+{
+    "status": "ok",           // 実行状態: "ok" または "failed"
+    "retcode": 0,             // 戻りコード（0 は成功）
+    "data": {...},            // Discord API の元のレスポンス
+    "message_id": "xxx",      // メッセージID（メッセージを送信する場合）
+    "message": "",            // エラーメッセージ
+    "discord_raw": {...}      // 元のレスポンスデータ
+}
+```
+
+### エラーコードの説明
+
+| retcode | 説明 |
+|---------|------|
+| 0 | 成功 |
+| 33001 | ネットワークエラー（接続失敗、タイムアウトなど） |
+| 34000 | Discord API エラー（権限不足、パラメータエラーなど） |
+
+## 固有のイベントタイプ
+
+プラットフォーム固有の機能を使用するには、`platform == "discord"` の検査が必要です。
+
+### コアの違い点
+
+1. **サーバー/チャンネルシステム**：Discord はサーバー（Guild）とチャンネル（Channel）の2層構造を使用しており、チャンネルがメッセージの基本的な送信ターゲットです
+2. **Gateway イベント**：すべてのイベントは WebSocket Gateway 経由で受信され、Opcode + Dispatch メカニズムを使用します
+3. **Intents 訂閲**：ビットマスクを使用してイベントタイプを訂閲し、`MESSAGE_CONTENT` には Privileged 権限が必要です
+4. **メッセージセグメントタイプ**：テキスト、画像、ファイル、動画、音声、Embed、Sticker などのメッセージセグメントをサポート
+5. **Mention 形式**：Discord はユーザー参照に `<@user_id>` 形式を使用します
+
+### 拡張フィールド
+
+すべての固有フィールドは `discord_` プレフィックスで識別されます：
+- `discord_raw`：元の Discord イベントデータ
+- `discord_raw_type`：元のイベントタイプ名（例：`MESSAGE_CREATE`）
+- `discord_guild_id`：サーバー ID
+- `discord_channel_id`：チャンネル ID
+
+### detail_type マッピング
+
+| Discord のシナリオ | detail_type | 説明 |
+|---|---|---|
+| チャンネルメッセージ | `channel` | ErisPulse 拡張タイプ |
+| DM（プライベートメッセージ） | `private` | OneBot12 標準タイプ |
+
+### イベントタイプマッピング
+
+| Discord イベント | OneBot12 type | detail_type | 説明 |
+|---|---|---|---|
+| MESSAGE_CREATE | message | channel/private | メッセージ作成 |
+| MESSAGE_UPDATE | message | channel/private | メッセージ編集 |
+| MESSAGE_DELETE | notice | group_message_delete / private_message_delete | メッセージ削除 |
+| GUILD_MEMBER_ADD | notice | group_member_increase | メンバー追加 |
+| GUILD_MEMBER_REMOVE | notice | group_member_decrease | メンバー削除 |
+| GUILD_MEMBER_UPDATE | notice | group_member_update | メンバー情報更新 |
+| GUILD_ROLE_CREATE | notice | group_role_create | ロール作成 |
+| GUILD_ROLE_DELETE | notice | group_role_delete | ロール削除 |
+| CHANNEL_CREATE | notice | channel_create | チャンネル作成 |
+| CHANNEL_DELETE | notice | channel_delete | チャンネル削除 |
+| INTERACTION_CREATE | request | interaction | インタラクション（ボタン、コマンドなど） |
+
+### 特殊フィールドの例
+
+```python
+# チャンネルテキストメッセージ
+{
+  "type": "message",
+  "detail_type": "channel",
+  "user_id": "送信者ID",
+  "user_nickname": "ユーザー名",
+  "group_id": "チャンネルID",
+  "message_id": "メッセージID",
+  "discord_raw": {...},
+  "discord_raw_type": "MESSAGE_CREATE",
+  "discord_guild_id": "サーバーID",
+  "discord_channel_id": "チャンネルID",
+  "message": [
+    {"type": "text", "data": {"text": "Hello"}}
+  ],
+  "alt_message": "Hello"
+}
+
+# DMメッセージ
+{
+  "type": "message",
+  "detail_type": "private",
+  "user_id": "送信者ID",
+  "user_nickname": "ユーザー名",
+  "message_id": "メッセージID",
+  "discord_raw": {...},
+  "discord_raw_type": "MESSAGE_CREATE",
+  "discord_channel_id": "DMチャンネルID",
+  "message": [
+    {"type": "text", "data": {"text": "DMコンテンツ"}}
+  ],
+  "alt_message": "DMコンテンツ"
+}
+
+# Embed を含むメッセージ
+{
+  "type": "message",
+  "detail_type": "channel",
+  "message": [
+    {"type": "discord_embed", "data": {"embed": {...}}}
+  ],
+  "alt_message": "[埋め込みメッセージ]"
+}
+
+# 添付ファイルを含むメッセージ
+{
+  "type": "message",
+  "detail_type": "channel",
+  "message": [
+    {"type": "text", "data": {"text": "この画像を見て"}},
+    {"type": "image", "data": {"file": "画像URL", "url": "画像URL", "file_name": "image.png"}}
+  ],
+  "alt_message": "この画像を見て[画像]"
+}
+```
+
+### メッセージセグメントタイプ
+
+Discord のメッセージコンテンツは、`content`、`attachments`、`embeds` フィールドに基づいて対応するメッセージセグメントに自動的に変換されます：
+
+| 出典 | 変換タイプ | 説明 |
+|---|---|---|
+| content テキスト | `text` | 純テキストコンテンツ |
+| content `<@id>` | `mention` | ユーザー参照 |
+| content `<@&id>` | `discord_role_mention` | ロール参照 |
+| content `<#id>` | `discord_channel_mention` | チャンネル参照 |
+| attachments (image/*) | `image` | 画像添付ファイル |
+| attachments (video/*) | `video` | 動画添付ファイル |
+| attachments (audio/*) | `audio` | 音声添付ファイル |
+| attachments (その他) | `file` | ファイル添付ファイル |
+| embeds | `discord_embed` | 埋め込みメッセージ |
+| sticker_items | `discord_sticker` | スタンプ |
+
+### discord_embed メッセージセグメント
+
+```json
+{
+  "type": "discord_embed",
+  "data": {
+    "embed": {
+      "title": "タイトル",
+      "description": "説明",
+      "color": 12345,
+      "fields": [...],
+      "image": {"url": "..."},
+      "thumbnail": {"url": "..."},
+      "footer": {"text": "..."}
+    }
+  }
+}
+```
+
+## Gateway 接続
+
+### 接続フロー
+
+1. `GET /gateway/bot` を呼び出して WebSocket Gateway URL を取得
+2. `wss://gateway.discord.gg/?v=10&encoding=json` に接続
+3. opcode 10 HELLO を受信：`heartbeat_interval` を含みます
+4. opcode 2 IDENTIFY を送信：token、intents、properties を含みます
+5. ハートビートループ開始：`heartbeat_interval` ごとに opcode 1 Heartbeat を送信
+6. opcode 0 Dispatch を受信：イベント配信（`t`=イベント名、`s`=シーケンス番号、`d`=データ）
+7. opcode 11 Heartbeat ACK を受信：ハートビート確認
+
+### Opcode の説明
+
+| Opcode | 名前 | 方向 | 説明 |
+|--------|------|------|------|
+| 0 | Dispatch | 受信 | イベント配信（`t`、`s`、`d` フィールドを含む） |
+| 1 | Heartbeat | 送信/受信 | ハートビート（最後の seq を含む） |
+| 2 | Identify | 送信 | 認証 |
+| 6 | Resume | 送信 | セッション復旧 |
+| 7 | Reconnect | 受信 | サーバーによる再接続要求 |
+| 9 | Invalid Session | 受信 | 無効なセッション |
+| 10 | Hello | 受信 | 接続ハンドシェイク（`heartbeat_interval` を含む） |
+| 11 | Heartbeat ACK | 受信 | ハートビート確認 |
+
+### 切断再接続と RESUME
+
+- 接続が切断された後、アダプタは自動的に再接続を試みます
+- 前回の `session_id` がある場合は、RESUME（opcode 6）を優先してセッションを復旧します
+- RESUME は `token`、`session_id`、最後の `seq` を含みます。復旧後、漏れているイベントを送信し足します
+- opcode 7（Reconnect）を受信した場合は、セッション状態を維持したまま再接続します
+- opcode 9（Invalid Session）を受信して `d=false` の場合は、セッションをクリアして再び IDENTIFY を行います
+
+### ハートビートメカニズム
+
+- HELLO を受信した後、`heartbeat_interval * random()` ミリ秒待って最初のハートビートを送信します
+- その後は、`heartbeat_interval` ミリ秒ごとにハートビートを送信します
+- ハートビートは最後の `seq` 値を含みます（opcode 1、`d: seq`）
+- ハートビートを送信してから `heartbeat_interval` 内に ACK（opcode 11）を受信しなかった場合は、接続異常とみなして再接続します
+
+## 使用例
+
+### チャンネルメッセージの処理
+
+```python
+from ErisPulse.Core.Event import message
+from ErisPulse import sdk
+
+discord = sdk.adapter.get("discord")
+
+@message.on_message()
+async def handle_group_msg(event):
+    if event.get("platform") != "discord":
+        return
+
+    text = event.get_text()
+    channel_id = event.get("group_id")
+
+    if text == "hello":
+        await discord.Send.To("group", channel_id).Text("Hello!")
+```
+
+### DMの処理
+
+```python
+@message.on_message()
+async def handle_private_msg(event):
+    if event.get("platform") != "discord":
+        return
+    if not event.is_dm():
+        return
+
+    text = event.get_text()
+    user_id = event.get("user_id")
+
+    await discord.Send.To("user", user_id).Text(f"あなたは言いました: {text}")
+```
+
+### Embed メッセージの送信
+
+```python
+embed = {
+    "title": "サーバーのお知らせ",
+    "description": "ErisPulse Discord アダプターへようこそ",
+    "color": 3447003,
+    "fields": [
+        {"name": "バージョン", "value": "4.0.0", "inline": True},
+        {"name": "フレームワーク", "value": "ErisPulse", "inline": True},
+    ],
+    "footer": {"text": "Powered by ErisPulse"},
+    "timestamp": "2025-01-01T00:00:00.000Z",
+}
+await discord.Send.To("group", channel_id).Embed(embed)
+```
+
+### Discord 固有メソッドの使用
+
+```python
+@message.on_message()
+async def handle(event):
+    if event.get("platform") != "discord":
+        return
+
+    channel_id = event.get_channel_id()
+    guild_id = event.get_guild_id()
+    is_dm = event.is_dm()
+    embeds = event.get_embeds()
+    attachments = event.get_attachments()
+
+    if embeds:
+        await discord.Send.To("group", channel_id).Text(
+            f"{len(embeds)} 個の Embed を受け取りました"
+        )
+```
+
+### インタラクションイベントの処理
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_request()
+async def handle_interaction(event):
+    if event.get("platform") != "discord":
+        return
+
+    interaction = event.get_interaction_data()
+    if interaction.get("type") == 3:  # MESSAGE_COMPONENT
+        await event.reply("ボタンがクリックされました！")
+
+
+### Webhook 适配
+
+# プラットフォームの特徴説明 — Webhook 一般ブリッジアダプタ
+
+このドキュメントは、Webhookアダプタの双方向ブリッジプロトコル、フィールドマッピング、実装の特徴について詳しく説明します。
+
+## 概要
+
+Webhookアダプタは**プロトコルレベルのブリッジ**であり、特定のプラットフォームに縛られていません。HTTP経由でメッセージを送受信することで、HTTPリクエストを発行可能な任意のシステムをErisPulseに接続できます。
+
+```
+インバウンド方向                                オットバウンド方向
+────────                                ────────
+外部システム                                ErisPulse モジュール
+   │                                       │
+   │ POST JSON                             │ Send.Text(...)
+   ▼                                       ▼
+┌──────────────────────────────────────────────────┐
+│              WebhookAdapter                       │
+│  ┌──────────────────┐   ┌──────────────────┐    │
+│  │ 入力ルーティング  │   │ 出力フォワード    │    │
+│  │ GET  (ヘルスチェック)   │   │ client.post()    │    │
+│  │ POST (イベント受信)   │   │ → outgoing_url   │    │
+│  └────────┬─────────┘   └────────▲─────────┘    │
+│           │                      │               │
+│           ▼                      │               │
+│  ┌──────────────────┐   ┌──────────────────┐    │
+│  │ WebhookConverter │   │ Send クラス        │    │
+│  │ JSON → OneBot12  │   │ メッセージセグメント → JSON │    │
+│  └────────┬─────────┘   └────────▲─────────┘    │
+└───────────┼──────────────────────┼───────────────┘
+            ▼                      │
+     adapter.emit(event)    call_api("send_message")
+            │                      │
+            ▼                      │
+       ErisPulse イベントシステム ◄────────┘
+```
+
+## 複数アカウントモデル
+
+各アカウントは独立したブリッジ設定であり、互いに影響しません。
+
+| アカウント | bot_id | callback_path | outgoing_url | secret |
+|------|--------|---------------|--------------|--------|
+| `default` | `webhook_bot` | `/webhook/default` | `https://a.com/recv` | `key1` |
+| `discord` | `discord_bot` | `/webhook/discord` | `https://b.com/send` | `key2` |
+
+各アカウントは起動時に独立したルーティングを登録し、独立して emit connect を行います。
+
+## 入力プロトコル
+
+### 1. ヘルスチェック（GET）
+
+- **パス**: `{callback_path}`
+- **メソッド**: `GET`
+- **認証**: なし
+- **レスポンス**:
+
+```json
+{"status": "ok", "account": "default"}
+```
+
+### 2. イベント受信（POST）
+
+- **パス**: `{callback_path}`
+- **メソッド**: `POST`
+- **Content-Type**: `application/json`
+- **認証**（secretを設定した場合）: ヘッダー `X-Webhook-Secret` またはクエリ `?secret=`
+
+#### リクエストボディ
+
+```json
+{
+  "user_id": "u123",
+  "user_nickname": "ユーザー名",
+  "group_id": "グループID（グループ会話のみ）",
+  "detail_type": "private",
+  "message": [
+    {"type": "text", "data": {"text": "メッセージ内容"}}
+  ],
+  "raw": {}
+}
+```
+
+| フィールド | 必須 | 説明 |
+|------|------|------|
+| `user_id` | はい | 送信者ID |
+| `user_nickname` | いいえ | 送信者ニックネーム |
+| `group_id` | いいえ | グループ/チャンネルID（グループ会話時に提供） |
+| `detail_type` | いいえ | 会話タイプ（`private`/`group`）、未指定時はアカウントのデフォルト値を使用 |
+| `message` | はい | OneBot12 メッセージセグメント配列 |
+| `raw` | いいえ | 送信元データ、`webhook_raw` にそのまま格納 |
+
+#### レスポンス
+
+```json
+{"status": "ok"}
+```
+
+エラーの場合はHTTPステータスコードを含みます：
+
+| ステータスコード | 意味 |
+|--------|------|
+| 400 | 不正なJSON / bodyがオブジェクトでない |
+| 401 | 認証失敗 |
+| 404 | 未知のアカウント |
+| 500 | イベントの配信失敗 |
+
+### 3. フィールドマッピング（入力JSON → OneBot12 イベント）
+
+| 入力JSON | OneBot12 イベントフィールド | 説明 |
+|-----------|-------------------|------|
+| — | `id` | 自動生成 |
+| — | `time` | 現在のUnixタイムスタンプ（秒） |
+| — | `type` | 固定 `message` |
+| `detail_type` | `detail_type` | 未指定時はアカウントのデフォルト値を使用 |
+| — | `platform` | 固定 `webhook` |
+| — | `self.platform` | 固定 `webhook` |
+| — | `self.user_id` | アカウント `bot_id` |
+| `user_id` | `user_id` | そのまま透過 |
+| `user_nickname` | `user_nickname` | そのまま透過（オプション） |
+| `group_id` | `group_id` | そのまま透過（オプション） |
+| `message` | `message` | そのまま透過 |
+| 完全なbody | `webhook_raw` | 元のリクエスト |
+| アカウント名 | `webhook_account` | イベントを生成したアカウント名 |
+| `type` または `message` | `webhook_raw_type` | 元のイベントタイプ |
+
+## 出力プロトコル
+
+### 1. メッセージ送信
+
+モジュールが `Send.To(...).Text(...)` などのメソッドを呼び出すと、アダプタは `outgoing_url` にPOSTリクエストを送信します：
+
+- **メソッド**: `POST`
+- **Content-Type**: `application/json`
+- **認証ヘッダー**（secretを設定した場合）: `X-Webhook-Secret: {secret}`
+
+#### リクエストボディ
+
+```json
+{
+  "target_type": "private",
+  "target_id": "target_user_id",
+  "account": "default",
+  "message": [
+    {"type": "text", "data": {"text": "メッセージ内容"}}
+  ],
+  "timestamp": 1700000000
+}
+```
+
+| フィールド | 説明 |
+|------|------|
+| `target_type` | 目標タイプ（`Send.To(type, id)` から取得）、未指定時はアカウントのデフォルト値を使用 |
+| `target_id` | 目標ID（`Send.To` から取得） |
+| `account` | 送信アカウント名 |
+| `message` | OneBot12 メッセージセグメント配列 |
+| `timestamp` | 送信タイムスタンプ（秒） |
+
+### 2. レスポンスの標準化
+
+アダプタは出力先が返すレスポンスをErisPulseの標準レスポンス形式に標準化します：
+
+```json
+{
+  "status": "ok",
+  "retcode": 0,
+  "data": {"message_id": "...", ...},
+  "message_id": "...",
+  "message": "",
+  "webhook_raw": {}
+}
+```
+
+出力先のレスポンスJSONの `message_id` フィールドからメッセージIDを抽出します。出力先が `message_id` を返さない場合は空文字列です。
+
+リクエストが失敗した場合はエラーレスポンスを返します（`status: "failed"`, `retcode: 33001`）。
+
+## Send メソッド
+
+| メソッド | 説明 |
+|------|------|
+| `Text(text)` | テキストを送信し、`[{"type":"text","data":{"text":text}}]` にラップ |
+| `Image(file)` | 画像を送信し、`[{"type":"image","data":{"file":file}}]` にラップ |
+| `Raw_ob12(message)` | OneBot12の元のメッセージセグメントを送信 |
+| `Json(data)` | 元のJSONを透過し、`[{"type":"json","data":{"raw":data}}]` にラップ |
+
+`At` / `AtAll` / `Reply` 修飾子はフレームワークの基底クラスが提供し、`_apply_modifiers` でメッセージセグメントにマージされます。
+
+## イベント拡張メソッド（WebhookEventMixin）
+
+| メソッド | 説明 |
+|------|------|
+| `get_raw_data()` | 元のリクエストbody（`webhook_raw`）を取得 |
+| `get_detail_type()` | 会話タイプを取得 |
+| `get_webhook_account()` | このイベントを生成したアカウント名を取得 |
+
+## 特性マトリクス
+
+| 特性 | 対応状況 |
+|------|----------|
+| 複数アカウント | ✅ 各アカウントが独立したブリッジを提供 |
+| 入力認証 | ✅ ヘッダー / クエリの両モード |
+| ヘルスチェック | ✅ GETでステータスを返す |
+| 出力認証 | ✅ ヘッダーにsecretを含む |
+| OneBot12標準イベント | ✅ 完全な標準フィールド |
+| Metaイベント | ✅ connect / disconnect |
+| ルーティング発見 | ✅ `webhook`名前空間に登録 |
+| WebSocket | ❌ HTTPのみ |
+| メディアアップロード | ❌ URLを透過するのみ、バイナリデータの代行送信は行わない |
+
+## 注意事項
+
+1. **単方向出力**: `outgoing_url` が空の場合は、このアカウントは入力受信のみを行い、送信操作はエラーを返します。
+2. **秘密鍵のセキュリティ**: `secret` は設定で暗号化された形式で保存され（metadata secret）、転送にはHTTPSの使用を推奨します。
+3. **パスのユニーク性**: 複数のアカウントの `callback_path` は互いに異なる必要があります。ルーティングの競合を避けるためです。
+4. **冪等性**: アダプタは入力イベントの重複除去を保証しません。外部システムはリトライ処理を独自に行う必要があります。
+5. **タイムアウト**: 出力リクエストはErisPulseの組み込み `client` を使用し、グローバルのタイムアウト設定を継承します。
+
+
+### 微信公众号适配
+
+# WeChat 公衆アカウント (WechatMp) アダプタ - プラットフォーム特性ドキュメント
+
+## 基本情報
+- モジュール名: `ErisPulse-WechatMpAdapter`
+- プラットフォーム識別子: `mp`（別名: `wechat_mp`）
+- モジュールバージョン: 4.0.0
+- メンテナ: ErisPulse
+- 依存関係: `cryptography`
+
+## サポートされているメッセージ送信タイプ
+
+| メソッド | 説明 | WeChat API |
+|------|------|---------|
+| `Text(text)` | テキスト送信 | カスタマーサービスメッセージ `message/custom/send` |
+| `Image(file)` | 画像送信（自動アップロードして media_id を取得） | カスタマーサービスメッセージ + `media/upload` |
+| `Voice(file)` | 音声送信（自動アップロードして media_id を取得） | カスタマーサービスメッセージ + `media/upload` |
+| `Video(file, title, description)` | 動画送信（自動アップロードして media_id を取得） | カスタマーサービスメッセージ + `media/upload` |
+| `Music(url, title, description, ...)` | 音楽送信 | カスタマーサービスメッセージ |
+| `News(articles)` | 記事グループ送信 | カスタマーサービスメッセージ |
+| `Template(template_id, data, url)` | テンプレートメッセージ送信 | `message/template/send` |
+| `Menu(head_content, list, tail_content)` | メニューメッセージ送信 | カスタマーサービスメッセージ `msgmenu` |
+| `Raw_ob12(message)` | OneBot12 標準メッセージセグメント送信 | - |
+
+### メディアファイルの説明
+- サポートされているパラメータタイプは3種類です：
+  - `str` URL（`http://` / `https://` で始まる）：自動ダウンロード後にアップロード
+  - `str` ローカルファイルパス：自動読み込み後にアップロード
+  - `bytes` バイナリデータ：直接アップロード
+  - `str` media_id：`media:` プレフィックスを使用して、既にアップロード済みの media_id を直接再利用可能
+- アップロード後、有効期間 3 日の一時メディア `media_id` を取得します
+
+### 重要な制限
+- カスタマーサービスメッセージは、ユーザーが公衆アカウントと対話した後 **48時間以内** にのみ、主動的に送信可能です
+- 48時間を超える場合、テンプレートメッセージを使用する必要があります（ユーザー承認が必要なシナリオ）
+
+## イベントタイプ
+
+### メッセージイベント (message)
+すべてのユーザーメッセージは `detail_type: private` です（公衆アカウント 1v1 シナリオ）。
+
+| WeChat MsgType | メッセージセグメントタイプ | 説明 |
+|-------------|-----------|------|
+| `text` | `text` | テキストメッセージ |
+| `image` | `image` | 画像メッセージ |
+| `voice` | `voice` | 音声メッセージ（音声認識結果を含む） |
+| `video` | `video` | 動画メッセージ |
+| `shortvideo` | `video` | ショート動画（マーク `mp_shortvideo`） |
+| `location` | `location` | 場所メッセージ |
+| `link` | `text` | リンクメッセージ（テキストに変換） |
+
+### 通知イベント (notice)
+イベントは `mp_event` フィールドで具体的なタイプを区別します。
+
+| WeChat Event | `mp_event` | 説明 |
+|-----------|-----------|------|
+| `subscribe` | `subscribe` | 公衆アカウントフォロー |
+| `unsubscribe` | `unsubscribe` | アンフォロー |
+| `SCAN` | `scan` | パラメータ付きQRコードスキャン |
+| `LOCATION` | `location_report` | 場所報告 |
+| `CLICK` | `menu_click` | カスタムメニュークリック |
+| `VIEW` | `menu_view` | メニューリンク移動 |
+| `TEMPLATESENDJOBFINISH` | `template_send_finish` | テンプレートメッセージ送信結果 |
+| `MASSSENDJOBFINISH` | `mass_send_finish` | グループ送信メッセージ送信結果 |
+
+## プラットフォーム拡張フィールド
+
+イベントオブジェクト内の WeChat 固有のフィールド（`mp_` プレフィックス）：
+
+| フィールド | 型 | 説明 |
+|------|------|------|
+| `mp_raw` | str | 原始 XML データ |
+| `mp_raw_type` | str | 原始メッセージ/イベントタイプ |
+| `mp_msg_id` | str | WeChat メッセージ ID |
+| `mp_event` | str | イベントタイプ（イベント通知のみ） |
+| `mp_event_key` | str | イベントキー（メニュークリック/スキャンなど） |
+| `mp_to_user` | str | 受信側 WeChat ID（公衆アカウント元ID） |
+| `mp_from_user` | str | 送信側 OpenID |
+| `mp_data` | dict | 解析された XML 辞書データ |
+
+## イベント拡張メソッド
+
+`register_event_mixin("mp", ...)` 経由で登録し、イベントオブジェクト上で直接呼び出せます：
+
+| メソッド | 戻り値 | 説明 |
+|------|--------|------|
+| `get_openid()` | str | 送信者 OpenID |
+| `get_msg_type()` | str | WeChat 原始メッセージタイプ |
+| `get_event()` | str | イベントタイプ（イベント通知のみ） |
+| `get_content()` | str | メッセージの純テキスト内容 |
+| `get_raw_xml()` | str | 原始 XML データ |
+
+## 設定オプション
+
+### 複数アカウント設定
+
+各アカウントは一つの公衆アカウントに対応します：
+
+```toml
+[WechatMpAdapter.accounts.main]
+appid = "wx1234567890abcdef"
+appsecret = "your_app_secret_here"
+token = "your_callback_token"
+encoding_aes_key = ""                    # セキュアモード/互換モードのみ必要（43桁）
+callback_path = "/mp/main"               # コールバックパス
+enable = true
+
+[WechatMpAdapter.accounts.secondary]
+appid = "wx0987654321fedcba"
+appsecret = "another_app_secret"
+token = "another_callback_token"
+callback_path = "/mp/secondary"
+enable = true
+```
+
+### 設定フィールドの説明
+
+| フィールド | 必須 | 説明 |
+|------|------|------|
+| `appid` | Yes | 公衆アカウント AppID |
+| `appsecret` | Yes | 公衆アカウント AppSecret（secret） |
+| `token` | No | コールバック検証 Token（署名検証を有効にするために推奨） |
+| `encoding_aes_key` | No | メッセージの暗号化/復号化キー（43桁、セキュアモード必須） |
+| `callback_path` | No | コールバックパステンプレート、デフォルト `/mp/{account}`、`{account}` はアカウント名で置換されます |
+| `enable` | No | 有効かどうか、デフォルト true |
+
+## 暗号化モードの説明
+
+WeChat 公衆アカウントは3種類のメッセージ暗号化/復号化モードを提供します：
+
+| モード | 説明 | encoding_aes_key | 検証フィールド |
+|------|------|-----------------|---------|
+| 明文モード | XML 明文転送 | 必要なし | `signature` |
+| 互換モード | 明文+暗文が共存 | オプション | `signature` / `msg_signature` |
+| セキュアモード | 完全暗号化 | 必須 | `msg_signature` |
+
+このアダプタは自動的に処理します：
+- 明文モード：`signature` を検証し、XML を直接解析
+- セキュア/互換モード：`Encrypt` フィールドを検出し、`msg_signature` を検証、AES-256-CBC で復号
+- 復号は `cryptography` ライブラリに依存します（依存関係に宣言済み）
+
+## コールバックルーティング
+
+アダプタは有効になっている各アカウントに対して2つのルート（GET + POST）を登録します：
+
+- **GET**：WeChat サーバー接入検証、署名検証後に `echostr` を返す
+- **POST**：ユーザーメッセージとイベントを受け取り、署名検証→復号（必要な場合）→変換→emit
+
+実際のアクセスパスにはモジュールプレフィックスが自動的に追加されます。例えば、登録パス `/mp/main` の場合、
+実際のアクセスパスは `/mp_{account}_verify/mp/main` と `/mp_{account}_message/mp/main` になります。
+
+## API レスポンス
+
+すべての `call_api` 呼び出しは標準化されたレスポンスを返します：
+
+- 成功：`status: "ok"`, `retcode: 0`
+- 失敗：`status: "failed"`, `retcode: 34000+errcode`
+- 常に `mp_raw`（原始レスポンス）、`message_id` を含みます
+
+
 ====
 代码规范
 ====
