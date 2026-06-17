@@ -11,10 +11,12 @@ ErisPulse 国际化模块
 {!--< /tips >!--}
 """
 
+import json
 import locale as _locale_module
 import os
 import sys
 import threading
+from pathlib import Path
 from typing import Any
 
 from .constants import (
@@ -32,10 +34,11 @@ class I18nManager:
 
     语言检测优先级:
     1. 手动通过 set_language() 设置的语言
-    2. 配置项 ErisPulse.i18n.language
-    3. 环境变量 LANGUAGE / LC_ALL / LC_MESSAGES / LANG
-    4. 系统默认 locale (locale.getdefaultlocale)
-    5. 默认语言 (zh-CN)
+    2. 环境变量 ERISPULSE_LANG（临时覆盖）
+    3. 全局持久化设置（epsdk i18n 写入 ~/.erispulse/cli_state.json）
+    4. 配置项 ErisPulse.i18n.language（"auto" 表示自动检测）
+    5. 系统默认 locale (locale.getdefaultlocale)
+    6. 默认语言 (zh-CN)
 
     就近映射规则:
     - zh-TW, zh-HK, zh-MO, zh-Hant -> zh-TW (繁体中文)
@@ -338,7 +341,7 @@ class I18nManager:
         """
         获取当前生效的语言
 
-        优先级: 手动设置 > 配置项 > 检测到的语言
+        优先级: 手动设置 > ERISPULSE_LANG 环境变量 > 全局持久化设置 > 配置项 > 检测到的语言
 
         配置值为 "auto" 时使用自动检测的语言。
 
@@ -348,7 +351,17 @@ class I18nManager:
         if self._current_lang is not None:
             return self._current_lang
 
-        # 尝试从配置读取
+        # 环境变量 ERISPULSE_LANG（临时覆盖，用于测试/运维）
+        erispulse_lang = os.environ.get("ERISPULSE_LANG", "")
+        if erispulse_lang:
+            return self._resolve_nearest(erispulse_lang)
+
+        # 全局持久化设置（epsdk i18n 写入，所有项目共享）
+        global_lang = self._load_global_language()
+        if global_lang:
+            return global_lang
+
+        # 项目配置项
         try:
             from ..config import config
 
@@ -364,14 +377,50 @@ class I18nManager:
 
         return self._detected_lang
 
+    @staticmethod
+    def _global_state_path() -> Path:
+        """
+        全局状态文件路径
+
+        :return: Path 全局状态文件路径 (~/.erispulse/cli_state.json)
+
+        {!--< internal-use >!--}
+        与 CLI 的 i18n 共享同一文件，作为跨项目的语言持久化位置
+        {!--< /internal-use >!--}
+        """
+        return Path.home() / ".erispulse" / "cli_state.json"
+
+    def _load_global_language(self) -> str | None:
+        """
+        从全局状态文件读取持久化的语言选择
+
+        :return: 语言代码或 None
+
+        {!--< internal-use >!--}
+        读取失败或未设置时返回 None，不影响后续优先级
+        {!--< /internal-use >!--}
+        """
+        try:
+            with open(self._global_state_path(), "r", encoding="utf-8") as f:
+                state = json.load(f)
+            lang = state.get("language")
+            if lang and isinstance(lang, str):
+                return self._resolve_nearest(lang)
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            pass
+        return None
+
     # ==================== 公开 API ====================
 
     def set_language(self, lang: str) -> None:
         """
-        手动设置当前语言
+        手动设置当前语言，同时写入全局持久化
 
         :param lang: 语言代码，如 "zh-CN", "en", "ja", "ru"
         会自动按就近原则映射到支持的语言。
+        设置后立即生效，并写入 `~/.erispulse/cli_state.json`
+        跨所有项目生效（等效于 `epsdk i18n`）。
+        如需临时覆盖，使用环境变量 `ERISPULSE_LANG`
 
         :example:
         >>> i18n.set_language("en")
@@ -380,6 +429,33 @@ class I18nManager:
         resolved = self._resolve_nearest(lang)
         with self._lock:
             self._current_lang = resolved
+        self._persist_global_language(resolved)
+
+    def _persist_global_language(self, lang: str) -> None:
+        """
+        将语言选择写入全局状态文件
+
+        :param lang: 已解析的语言代码
+
+        {!--< internal-use >!--}
+        与 CLI i18n 的 _persist_language 写入同一文件，覆盖 language 键
+        {!--< /internal-use >!--}
+        """
+        try:
+            state_path = self._global_state_path()
+            state_path.parent.mkdir(parents=True, exist_ok=True)
+            # 读取现有状态，保留其它键（如 lang_hint_count）
+            state = {}
+            try:
+                with open(state_path, "r", encoding="utf-8") as f:
+                    state = json.load(f)
+            except (FileNotFoundError, json.JSONDecodeError):
+                pass
+            state["language"] = lang
+            with open(state_path, "w", encoding="utf-8") as f:
+                json.dump(state, f, ensure_ascii=False, indent=2)
+        except OSError:
+            pass
 
     def get_language(self) -> str:
         """
