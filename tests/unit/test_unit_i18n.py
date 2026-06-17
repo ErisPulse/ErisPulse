@@ -339,3 +339,64 @@ class TestGlobalI18n:
         ref = all_keys["zh-CN"]
         for lang in langs[1:]:
             assert all_keys[lang] == ref, f"{lang} has different keys than zh-CN"
+
+
+# ==================== 语言优先级测试 ====================
+
+
+class TestLanguagePriority:
+    """测试 _get_effective_language 的优先级链"""
+
+    @pytest.fixture
+    def manager(self):
+        """创建干净的 I18nManager，无手动覆盖"""
+        manager = I18nManager()
+        manager._current_lang = None
+        return manager
+
+    def test_env_var_highest_after_programmatic(self, manager, tmp_path):
+        """ERISPULSE_LANG 环境变量 > 全局持久化 > 项目 config > 自动检测"""
+        # 写入全局状态 en
+        state_path = tmp_path / "cli_state.json"
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        state_path.write_text('{"language": "en"}', encoding="utf-8")
+        I18nManager._global_state_path = staticmethod(lambda: state_path)
+
+        with patch.dict(os.environ, {"ERISPULSE_LANG": "ja"}):
+            # env=ja 应覆盖 global=en
+            assert manager._get_effective_language() == "ja"
+
+    def test_global_over_config(self, manager, tmp_path):
+        """全局持久化 > 项目 config"""
+        os.environ.pop("ERISPULSE_LANG", None)
+        state_path = tmp_path / "cli_state.json"
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        state_path.write_text('{"language": "en"}', encoding="utf-8")
+        I18nManager._global_state_path = staticmethod(lambda: state_path)
+
+        lang = manager._get_effective_language()
+        # 全局 en 应生效（忽略 config 中的 auto/其他值）
+        assert lang == "en"
+
+    def test_no_global_falls_to_detected(self, manager, tmp_path):
+        """无全局持久化时回退到自动检测"""
+        os.environ.pop("ERISPULSE_LANG", None)
+        state_path = tmp_path / "nonexistent" / "cli_state.json"
+        I18nManager._global_state_path = staticmethod(lambda: state_path)
+
+        # _load_global_language 应返回 None
+        assert manager._load_global_language() is None
+        # _get_effective_language 应回退（检测值可能是任意支持的语种）
+        result = manager._get_effective_language()
+        assert result in ("zh-CN", "zh-TW", "en", "ja", "ru")
+
+    def test_missing_global_file_returns_none(self, manager):
+        """全局状态文件不存在时 _load_global_language 应返回 None"""
+        import tempfile
+        from pathlib import Path
+
+        fake_path = (
+            Path(tempfile.mkdtemp()) / "definitely_nonexistent" / "cli_state.json"
+        )
+        I18nManager._global_state_path = staticmethod(lambda: fake_path)
+        assert manager._load_global_language() is None

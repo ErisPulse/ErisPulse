@@ -92,6 +92,7 @@ class StrictModeManager:
     level: int = DEFAULT_STRICT_MODE
     exceptions: dict[str, Any] = field(default_factory=dict)
     _violations: list[Violation] = field(default_factory=list)
+    _rejections: list[Violation] = field(default_factory=list)
     _exemption_sets: dict[str, set] = field(default_factory=dict, repr=False)
 
     def __post_init__(self) -> None:
@@ -166,7 +167,9 @@ class StrictModeManager:
         list_key = "modules" if component_type == "module" else "adapters"
 
         if self.level >= StrictModeLevel.FATAL:
-            self._violations.append(Violation(name, component_type, reason))
+            violation = Violation(name, component_type, reason)
+            self._violations.append(violation)
+            self._rejections.append(violation)
             logger.error(
                 i18n.t(
                     "loader.strict.rejected_fatal",
@@ -179,6 +182,7 @@ class StrictModeManager:
             return True
 
         if self.level >= StrictModeLevel.SKIP:
+            self._rejections.append(Violation(name, component_type, reason))
             logger.error(
                 i18n.t(
                     "loader.strict.rejected",
@@ -209,10 +213,11 @@ class StrictModeManager:
         detail: str = "",
     ) -> None:
         """
-        记录一次异常类失败（仅致命级别且非豁免时记录）
+        记录一次异常类失败
 
-        与 decide 不同，此方法假定调用方已自行跳过该组件（例如捕获了异常），
-        这里仅在致命级别下补充记录，以便检查点统一报告并中止。
+        与 decide 不同，此方法假定调用方已自行跳过该组件（例如捕获了异常）。
+        被拒绝的组件会记入 _rejections（与级别无关，用于摘要展示）；
+        仅在致命级别下额外记入 _violations，以便检查点统一报告并中止。
 
         :param name: 组件名称
         :param component_type: 组件类型
@@ -223,11 +228,12 @@ class StrictModeManager:
         调用方应同时输出自己的具体错误日志，此方法不重复输出
         {!--< /internal-use >!--}
         """
-        if self.level < StrictModeLevel.FATAL:
-            return
         if self.is_exempt(name, component_type):
             return
-        self._violations.append(Violation(name, component_type, reason, detail=detail))
+        rejection = Violation(name, component_type, reason, detail=detail)
+        self._rejections.append(rejection)
+        if self.level >= StrictModeLevel.FATAL:
+            self._violations.append(rejection)
 
     def has_fatal_violations(self) -> bool:
         """
@@ -239,8 +245,13 @@ class StrictModeManager:
 
     @property
     def violations(self) -> list[Violation]:
-        """已收集的违规列表（只读视图）"""
+        """已收集的致命违规列表（只读视图）"""
         return list(self._violations)
+
+    @property
+    def rejections(self) -> list[Violation]:
+        """被拒绝/跳过的组件列表（只读视图，与级别无关，用于摘要展示）"""
+        return list(self._rejections)
 
     def raise_if_fatal(self) -> None:
         """
