@@ -65,8 +65,9 @@ class Logger:
             "done": "[DONE]",
             "fail": "[FAIL]",
             "retry": "[RETRY]",
+            "check": "[CHECK]",
             "check_pass": "[PASS]",
-            "check_fail": "[CHECK]",
+            "check_fail": "[CHK!]",
             "rate_limit": "[429]",
         }.get(status, f"[{status.upper()}]")
         line = f"  {tag} {rel_path} -> {target_lang}"
@@ -101,8 +102,8 @@ class DocsTranslator:
     }
 
     LANG_SWITCHER_ITEMS = [
-        {"lang": "en", "label": "English", "file": "README.en.md"},
-        {"lang": "zh-CN", "label": "简体中文", "file": "README.md"},
+        {"lang": "en", "label": "English", "file": "README.md"},
+        {"lang": "zh-CN", "label": "简体中文", "file": "README.zh-CN.md"},
         {"lang": "zh-TW", "label": "繁體中文", "file": "README.zh-TW.md"},
         {"lang": "ja", "label": "日本語", "file": "README.ja.md"},
         {"lang": "ru", "label": "Русский", "file": "README.ru.md"},
@@ -238,7 +239,7 @@ class DocsTranslator:
             return "README.md"
         return str(file_path.relative_to(self.source_dir)).replace("\\", "/")
 
-    ROOT_README_SOURCE = "README.md"
+    ROOT_README_SOURCE = "README.zh-CN.md"
 
     def _is_root_readme(self, file_path: Path) -> bool:
         return file_path.name == self.ROOT_README_SOURCE and file_path.parent == Path(
@@ -264,6 +265,8 @@ class DocsTranslator:
         if self._is_root_readme(file_path):
             if target_lang == "en":
                 return self.cache_dir / "README.md.cache"
+            elif target_lang == "zh-CN":
+                return self.cache_dir / "README.zh-CN.md.cache"
             return self.cache_dir / f"README.{target_lang}.md.cache"
         rel_path = self._get_rel_path(file_path)
         return self.cache_dir / target_lang / f"{rel_path}.cache"
@@ -308,7 +311,10 @@ class DocsTranslator:
         self, file_path: Path, target_lang: str
     ) -> Optional[str]:
         if self._is_root_readme(file_path):
-            ref_file = Path(f"README.{target_lang}.md")
+            if target_lang == "en":
+                ref_file = Path("README.md")
+            else:
+                ref_file = Path(f"README.{target_lang}.md")
         else:
             rel_path = file_path.relative_to(self.source_dir)
             ref_file = Path("docs") / target_lang / rel_path
@@ -364,7 +370,12 @@ class DocsTranslator:
             reference_section = (
                 f"\n\n**已有翻译参考（请保持术语和风格一致性）：**\n"
                 f"```\n{reference_translation}\n```\n"
-                f"注意：源文档可能有更新，请以源文档为准进行翻译，但术语、用词风格应与参考翻译保持一致。"
+                f"\n"
+                f"**重要 — 源文档与参考翻译冲突处理规则：**\n"
+                f"1. 如果参考翻译与源文档存在差异，**以源文档为准进行翻译**\n"
+                f"2. 但请注意区分：源文档中**新增加的内容**应直接按源文档翻译\n"
+                f"3. 源文档中**被修改的部分**可能是人工修正过的内容，不应盲目恢复为参考翻译的旧版本\n"
+                f"4. 术语、用词风格应与参考翻译保持一致，不要随意更换已有译法"
             )
 
         return (
@@ -773,6 +784,9 @@ class DocsTranslator:
                 return False
 
             if self.enable_self_check and not no_check:
+                Logger.progress(
+                    rel_path, target_lang, "check", "正在 AI 自检翻译质量..."
+                )
                 issues = await self._ai_validate_translation(
                     content, translated_content, target_lang, rel_path, pidx
                 )
@@ -825,7 +839,10 @@ class DocsTranslator:
                 buf.flush()
 
             if self._is_root_readme(file_path):
-                target_file = Path(f"README.{target_lang}.md")
+                if target_lang == "en":
+                    target_file = Path("README.md")
+                else:
+                    target_file = Path(f"README.{target_lang}.md")
             else:
                 target_dir = Path("docs") / target_lang / Path(rel_path).parent
                 target_dir.mkdir(parents=True, exist_ok=True)

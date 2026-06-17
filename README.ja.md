@@ -7,7 +7,7 @@
 </td>
 <td valign="middle">
 
-> [English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-TW.md) | **日本語** | [Русский](README.ru.md)
+> [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | **日本語** | [Русский](README.ru.md)
 
 > 🎉 **v2.5.0-dev.1 は多言語をサポートしました！** フレームワークのコアと CLI インターフェースには、中国語（簡体/繁体）、英語、日本語、ロシア語が内蔵されており、システム言語を自動検出して切り替えます！
 
