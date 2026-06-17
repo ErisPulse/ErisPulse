@@ -13796,6 +13796,836 @@ async def handle_message(event):
 8. 程序退出時請調用 `shutdown()` 確保資源釋放
 
 
+### Discord 适配
+
+# Discord 平台特性文件
+
+DiscordAdapter 是一個基於 Discord Gateway (WebSocket) 和 REST API v10 協議構建的適配器，整合了 Discord Bot 的核心功能，提供統一的事件處理和訊息操作介面。
+
+---
+
+## 文件資訊
+
+- 對應模組版本: 4.0.0
+- 維護者: ErisPulse
+- Discord API 版本: v10
+
+## 基本資訊
+
+- 平台簡介：Discord 是一款廣受歡迎的社群通訊平台，支援伺服器、頻道、私信等多種會話形式，提供完善的 Bot 開發介面
+- 適配器名稱：DiscordAdapter
+- 多帳號支援：支援同時配置多個 Discord 機器人
+- 連線方式：Gateway WebSocket（接收事件）+ REST API（發送訊息/呼叫介面）
+- 認證方式：Bot Token（HTTP 標頭 `Authorization: Bot {token}`，Gateway IDENTIFY payload 携带 token）
+- 鏈式修飾支援：支援 `.Reply()`、`.At()`、`.AtAll()` 等鏈式修飾方法
+- OneBot12 相容：支援發送 OneBot12 格式訊息
+
+## 設定說明
+
+DiscordAdapter 支援多帳號配置，每個帳號對應一個獨立的 Discord Bot。
+
+```toml
+# config.toml
+
+# 帳戶1
+[DiscordAdapter.accounts.default]
+token = "YOUR_BOT_TOKEN"       # Discord Bot Token（必填）
+intents = 33281                 # Gateway Intents（選擇性，預設 33281）
+enabled = true                  # 是否啟用（選擇性，預設 true）
+
+# 帳戶2
+[DiscordAdapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+intents = 33281
+enabled = true
+```
+
+**配置項目說明（每個帳號）：**
+
+- `token`：Discord Bot Token（必填），從 [Discord Developer Portal](https://discord.com/developers/applications) 取得
+- `intents`：Gateway Intents 位元遮罩（選擇性，預設 `33281`），決定 Bot 訂閱的事件類型
+- `bot_id`：Bot 的使用者 ID（選擇性，執行時從 READY 事件自動取得，無需手動填寫）
+- `enabled`：是否啟用該帳號（選擇性，預設 `true`）
+
+### Gateway Intents
+
+Intents 使用位元遮罩，計算方式為各 Intent 值按位或（`|`）：
+
+| Intent | 位 | 值 | 說明 | Privileged |
+|-------|------|------|------|------|
+| GUILDS | `1 << 0` | 1 | 伺服器建立/刪除/更新、頻道、角色變更 | 否 |
+| GUILD_MEMBERS | `1 << 1` | 2 | 成員加入/離開/更新 | 是 |
+| GUILD_MESSAGES | `1 << 9` | 512 | 伺服器訊息收發 | 否 |
+| MESSAGE_CONTENT | `1 << 15` | 32768 | 訊息內容（無此 Intent 時 content 為空） | 是 |
+
+預設值 `33281` = `GUILDS(1) | GUILD_MESSAGES(512) | MESSAGE_CONTENT(32768)`。
+
+> **注意**：Privileged Intents 需在 Discord Developer Portal → Bot → Privileged Gateway Intents 中開啟。如果 Bot 在超過 100 個伺服器中，還需透過 Discord 審核。
+
+**API 環境：**
+- Discord REST API 基礎位址：`https://discord.com/api/v10`
+- Gateway WebSocket 位址：透過 `GET /gateway/bot` 動態取得，通常為 `wss://gateway.discord.gg/?v=10&encoding=json`
+
+## 支援的訊息發送類型
+
+所有發送方法均透過鏈式語法實現，例如：
+```python
+from ErisPulse.Core import adapter
+discord = adapter.get("discord")
+
+await discord.Send.To("group", channel_id).Text("Hello World!")
+```
+
+支援的發送類型包括：
+- `.Text(text: str)`：發送純文字訊息。
+- `.Embed(embed: dict | list)`：發送 Embed 嵌入訊息，支援單個或多個 Embed。
+- `.Image(file: bytes | str, filename: str = "image.png")`：發送圖片，支援二進位資料或 URL。
+- `.File(file: bytes | str, filename: str = None)`：發送檔案，支援二進位資料或 URL。
+- `.Reply(content: str, message_id: str)`：回覆指定訊息（便捷終端方法）。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式訊息。
+- `.Raw_json(json_str: str)`：發送任意 Discord API 請求 JSON。
+
+### 鏈式修飾方法（可組合使用）
+
+鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終發送方法前呼叫：
+
+- `.Reply(message_id: str)`：回覆（引用）指定訊息，設定 `message_reference`。
+- `.At(user_id: str)`：@指定使用者，轉換為 `<@user_id>`，可多次呼叫。
+- `.AtAll()`：@所有人，轉換為 `@everyone`。
+
+### 鏈式呼叫範例
+
+```python
+# 基礎發送
+await discord.Send.To("group", channel_id).Text("Hello")
+
+# 回覆訊息
+await discord.Send.To("group", channel_id).Reply(msg_id).Text("回覆訊息")
+
+# 便捷回覆（一步到位）
+await discord.Send.To("group", channel_id).Reply("回覆內容", msg_id)
+
+# @使用者
+await discord.Send.To("group", channel_id).At("user_id").Text("你好")
+
+# @多個使用者
+await discord.Send.To("group", channel_id).At("user1").At("user2").Text("多使用者@")
+
+# @全體
+await discord.Send.To("group", channel_id).AtAll().Text("公告")
+
+# 組合使用
+await discord.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("複合訊息")
+
+# Embed 嵌入訊息
+embed = {
+    "title": "通知",
+    "description": "這是一條嵌入訊息",
+    "color": 5814783,
+    "fields": [{"name": "欄位", "value": "值", "inline": True}],
+}
+await discord.Send.To("group", channel_id).Embed(embed)
+
+# 發送圖片
+await discord.Send.To("group", channel_id).Image("https://example.com/image.png")
+```
+
+### 私信發送
+
+私信發送時，適配器會自動建立 DM 頻道：
+
+```python
+# 發送私信
+await discord.Send.To("user", user_id).Text("私信內容")
+await discord.Send.To("user", user_id).Embed(embed)
+```
+
+### 訊息操作
+
+```python
+# 撤回訊息
+await discord.Send.To("group", channel_id).Recall(msg_id)
+
+# OneBot12 格式
+ob12_msg = [
+    {"type": "text", "data": {"text": "Hello "}},
+    {"type": "mention", "data": {"user_id": "user_id"}},
+]
+await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
+```
+
+## 發送方法返回值
+
+所有發送方法均返回一個 Task 物件，可以直接 await 取得發送結果。返回結果遵循 ErisPulse 適配器標準化返回規範：
+
+```python
+{
+    "status": "ok",           // 執行狀態: "ok" 或 "failed"
+    "retcode": 0,             // 返回碼（0 為成功）
+    "data": {...},            // Discord API 原始回應
+    "message_id": "xxx",      // 訊息ID（發送訊息時）
+    "message": "",            // 錯誤資訊
+    "discord_raw": {...}      // 原始回應資料
+}
+```
+
+### 錯誤碼說明
+
+| retcode | 說明 |
+|---------|------|
+| 0 | 成功 |
+| 33001 | 網路錯誤（連線失敗、逾時等） |
+| 34000 | Discord API 返回錯誤（權限不足、參數錯誤等） |
+
+## 特有事件類型
+
+需要 `platform == "discord"` 檢測再使用本平台特性。
+
+### 核心差異點
+
+1. **伺服器/頻道系統**：Discord 使用伺服器（Guild）和頻道（Channel）兩層結構，頻道是訊息的基本發送目標
+2. **Gateway 事件**：所有事件透過 WebSocket Gateway 接收，使用 Opcode + Dispatch 機制
+3. **Intents 訂閱**：透過位元遮罩訂閱事件類型，`MESSAGE_CONTENT` 需 Privileged 權限
+4. **訊息段類型**：支援文字、圖片、檔案、影片、音訊、Embed、Sticker 等訊息段
+5. **Mention 格式**：Discord 使用 `<@user_id>` 格式表示使用者提及
+
+### 擴充欄位
+
+所有特有欄位均以 `discord_` 前綴識別：
+- `discord_raw`：原始 Discord 事件資料
+- `discord_raw_type`：原始事件類型名（如 `MESSAGE_CREATE`）
+- `discord_guild_id`：伺服器 ID
+- `discord_channel_id`：頻道 ID
+
+### detail_type 映射
+
+| Discord 場景 | detail_type | 說明 |
+|---|---|---|
+| 頻道訊息 | `channel` | ErisPulse 擴充類型 |
+| 私信（DM） | `private` | OneBot12 標準類型 |
+
+### 事件類型映射
+
+| Discord 事件 | OneBot12 type | detail_type | 說明 |
+|---|---|---|---|
+| MESSAGE_CREATE | message | channel/private | 訊息建立 |
+| MESSAGE_UPDATE | message | channel/private | 訊息編輯 |
+| MESSAGE_DELETE | notice | group_message_delete / private_message_delete | 訊息刪除 |
+| GUILD_MEMBER_ADD | notice | group_member_increase | 成員加入 |
+| GUILD_MEMBER_REMOVE | notice | group_member_decrease | 成員離開 |
+| GUILD_MEMBER_UPDATE | notice | group_member_update | 成員資訊更新 |
+| GUILD_ROLE_CREATE | notice | group_role_create | 角色建立 |
+| GUILD_ROLE_DELETE | notice | group_role_delete | 角色刪除 |
+| CHANNEL_CREATE | notice | channel_create | 頻道建立 |
+| CHANNEL_DELETE | notice | channel_delete | 頻道刪除 |
+| INTERACTION_CREATE | request | interaction | 交互（按鈕、命令等） |
+
+### 特殊欄位範例
+
+```python
+# 頻道文字訊息
+{
+  "type": "message",
+  "detail_type": "channel",
+  "user_id": "發送者ID",
+  "user_nickname": "使用者名",
+  "group_id": "頻道ID",
+  "message_id": "訊息ID",
+  "discord_raw": {...},
+  "discord_raw_type": "MESSAGE_CREATE",
+  "discord_guild_id": "伺服器ID",
+  "discord_channel_id": "頻道ID",
+  "message": [
+    {"type": "text", "data": {"text": "Hello"}}
+  ],
+  "alt_message": "Hello"
+}
+
+# 私信訊息
+{
+  "type": "message",
+  "detail_type": "private",
+  "user_id": "發送者ID",
+  "user_nickname": "使用者名",
+  "message_id": "訊息ID",
+  "discord_raw": {...},
+  "discord_raw_type": "MESSAGE_CREATE",
+  "discord_channel_id": "DM頻道ID",
+  "message": [
+    {"type": "text", "data": {"text": "私信內容"}}
+  ],
+  "alt_message": "私信內容"
+}
+
+# 带 Embed 的訊息
+{
+  "type": "message",
+  "detail_type": "channel",
+  "message": [
+    {"type": "discord_embed", "data": {"embed": {...}}}
+  ],
+  "alt_message": "[嵌入訊息]"
+}
+
+# 帶附件的訊息
+{
+  "type": "message",
+  "detail_type": "channel",
+  "message": [
+    {"type": "text", "data": {"text": "看這張圖"}},
+    {"type": "image", "data": {"file": "圖片URL", "url": "圖片URL", "file_name": "image.png"}}
+  ],
+  "alt_message": "看這張圖[圖片]"
+}
+```
+
+### 訊息段類型
+
+Discord 訊息內容根據 `content`、`attachments`、`embeds` 欄位自動轉換為對應訊息段：
+
+| 來源 | 轉換類型 | 說明 |
+|---|---|---|
+| content 文字 | `text` | 純文字內容 |
+| content `<@id>` | `mention` | 使用者提及 |
+| content `<@&id>` | `discord_role_mention` | 角色提及 |
+| content `<#id>` | `discord_channel_mention` | 頻道提及 |
+| attachments (image/*) | `image` | 圖片附件 |
+| attachments (video/*) | `video` | 影片附件 |
+| attachments (audio/*) | `audio` | 音訊附件 |
+| attachments (其他) | `file` | 檔案附件 |
+| embeds | `discord_embed` | 嵌入訊息 |
+| sticker_items | `discord_sticker` | 貼紙 |
+
+### discord_embed 訊息段
+
+```json
+{
+  "type": "discord_embed",
+  "data": {
+    "embed": {
+      "title": "標題",
+      "description": "描述",
+      "color": 12345,
+      "fields": [...],
+      "image": {"url": "..."},
+      "thumbnail": {"url": "..."},
+      "footer": {"text": "..."}
+    }
+  }
+}
+```
+
+## Gateway 連線
+
+### 連線流程
+
+1. 呼叫 `GET /gateway/bot` 取得 WebSocket 網關 URL
+2. 連線到 `wss://gateway.discord.gg/?v=10&encoding=json`
+3. 收到 opcode 10 HELLO：包含 `heartbeat_interval`
+4. 發送 opcode 2 IDENTIFY：攜帶 token、intents、properties
+5. 開始心跳循環：按 `heartbeat_interval` 定時發送 opcode 1 Heartbeat
+6. 收到 opcode 0 Dispatch：事件分發（`t`=事件名, `s`=序號, `d`=資料）
+7. 收到 opcode 11 Heartbeat ACK：心跳確認
+
+### Opcode 說明
+
+| Opcode | 名稱 | 方向 | 說明 |
+|--------|------|------|------|
+| 0 | Dispatch | 接收 | 事件分發（含 `t`、`s`、`d` 欄位） |
+| 1 | Heartbeat | 發送/接收 | 心跳（攜帶最後 seq） |
+| 2 | Identify | 發送 | 身份認證 |
+| 6 | Resume | 發送 | 恢復會話 |
+| 7 | Reconnect | 接收 | 伺服器要求重連 |
+| 9 | Invalid Session | 接收 | 無效會話 |
+| 10 | Hello | 接收 | 連線握手指 |（含 heartbeat_interval） |
+| 11 | Heartbeat ACK | 接收 | 心跳確認 |
+
+### 斷線重連與 RESUME
+
+- 連線中斷後，適配器自動重試連線
+- 如果之前有 `session_id`，優先嘗試 RESUME（opcode 6）恢復會話
+- RESUME 攜帶 `token`、`session_id`、最後 `seq`，恢復後補發遺漏事件
+- 收到 opcode 7（Reconnect）時，保持會話狀態並重連
+- 收到 opcode 9（Invalid Session）且 `d=false` 時，清除會話並重新 IDENTIFY
+
+### 心跳機制
+
+- 收到 HELLO 後，等待 `heartbeat_interval * random()` 毫秒發送首次心跳
+- 此後每隔 `heartbeat_interval` 毫秒發送一次心跳
+- 心跳攜帶最後的 `seq` 值（opcode 1，`d: seq`）
+- 若發送心跳後 `heartbeat_interval` 內未收到 ACK（opcode 11），視為連線異常並重連
+
+## 使用範例
+
+### 處理頻道訊息
+
+```python
+from ErisPulse.Core.Event import message
+from ErisPulse import sdk
+
+discord = sdk.adapter.get("discord")
+
+@message.on_message()
+async def handle_group_msg(event):
+    if event.get("platform") != "discord":
+        return
+
+    text = event.get_text()
+    channel_id = event.get("group_id")
+
+    if text == "hello":
+        await discord.Send.To("group", channel_id).Text("Hello!")
+```
+
+### 處理私信
+
+```python
+@message.on_message()
+async def handle_private_msg(event):
+    if event.get("platform") != "discord":
+        return
+    if not event.is_dm():
+        return
+
+    text = event.get_text()
+    user_id = event.get("user_id")
+
+    await discord.Send.To("user", user_id).Text(f"你說了: {text}")
+```
+
+### 發送 Embed 訊息
+
+```python
+embed = {
+    "title": "伺服器公告",
+    "description": "歡迎使用 ErisPulse Discord 適配器",
+    "color": 3447003,
+    "fields": [
+        {"name": "版本", "value": "4.0.0", "inline": True},
+        {"name": "框架", "value": "ErisPulse", "inline": True},
+    ],
+    "footer": {"text": "Powered by ErisPulse"},
+    "timestamp": "2025-01-01T00:00:00.000Z",
+}
+await discord.Send.To("group", channel_id).Embed(embed)
+```
+
+### 使用 Discord 特有方法
+
+```python
+@message.on_message()
+async def handle(event):
+    if event.get("platform") != "discord":
+        return
+
+    channel_id = event.get_channel_id()
+    guild_id = event.get_guild_id()
+    is_dm = event.is_dm()
+    embeds = event.get_embeds()
+    attachments = event.get_attachments()
+
+    if embeds:
+        await discord.Send.To("group", channel_id).Text(
+            f"收到 {len(embeds)} 個 Embed"
+        )
+```
+
+### 處理交互事件
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_request()
+async def handle_interaction(event):
+    if event.get("platform") != "discord":
+        return
+
+    interaction = event.get_interaction_data()
+    if interaction.get("type") == 3:  # MESSAGE_COMPONENT
+        await event.reply("按鈕已點擊！")
+
+
+### Webhook 适配
+
+# 平台特性說明 — Webhook 通用橋接適配器
+
+本文檔詳細說明 Webhook 适配器的雙向橋接協議、欄位映射與實現特性。
+
+## 總覽
+
+Webhook 适配器是一個**協議級橋接器**，不綁定任何特定平台。它透過 HTTP 收發訊息，使任何能發起 HTTP 請求的系統都能接入 ErisPulse。
+
+```
+入站方向                                出站方向
+────────                                ────────
+外部系統                                ErisPulse 模組
+   │                                       │
+   │ POST JSON                             │ Send.Text(...)
+   ▼                                       ▼
+┌──────────────────────────────────────────────────┐
+│              WebhookAdapter                       │
+│  ┌──────────────────┐   ┌──────────────────┐    │
+│  │ 入站路由          │   │ 出站轉發          │    │
+│  │ GET  (健康檢查)   │   │ client.post()    │    │
+│  │ POST (接收事件)   │   │ → outgoing_url   │    │
+│  └────────┬─────────┘   └────────▲─────────┘    │
+│           │                      │               │
+│           ▼                      │               │
+│  ┌──────────────────┐   ┌──────────────────┐    │
+│  │ WebhookConverter │   │ Send 類          │    │
+│  │ JSON → OneBot12  │   │ 消息段 → JSON    │    │
+│  └────────┬─────────┘   └────────▲─────────┘    │
+└───────────┼──────────────────────┼───────────────┘
+            ▼                      │
+     adapter.emit(event)    call_api("send_message")
+            │                      │
+            ▼                      │
+       ErisPulse 事件系統 ◄────────┘
+```
+
+## 多帳戶模型
+
+每個帳戶是一個獨立的橋接配置，互不干擾：
+
+| 帳戶 | bot_id | callback_path | outgoing_url | secret |
+|------|--------|---------------|--------------|--------|
+| `default` | `webhook_bot` | `/webhook/default` | `https://a.com/recv` | `key1` |
+| `discord` | `discord_bot` | `/webhook/discord` | `https://b.com/send` | `key2` |
+
+每個帳戶啟動時獨立註冊路由、獨立 emit connect。
+
+## 入站協議
+
+### 1. 健康檢查（GET）
+
+- **路徑**：`{callback_path}`
+- **方法**：`GET`
+- **鑑權**：無
+- **回應**：
+
+```json
+{"status": "ok", "account": "default"}
+```
+
+### 2. 接收事件（POST）
+
+- **路徑**：`{callback_path}`
+- **方法**：`POST`
+- **Content-Type**：`application/json`
+- **鑑權**（配置 secret 時）：Header `X-Webhook-Secret` 或 Query `?secret=`
+
+#### 請求 Body
+
+```json
+{
+  "user_id": "u123",
+  "user_nickname": "使用者名稱",
+  "group_id": "群組ID（僅群組會話）",
+  "detail_type": "private",
+  "message": [
+    {"type": "text", "data": {"text": "訊息內容"}}
+  ],
+  "raw": {}
+}
+```
+
+| 欄位 | 必填 | 說明 |
+|------|------|------|
+| `user_id` | 是 | 發送者 ID |
+| `user_nickname` | 否 | 發送者暱稱 |
+| `group_id` | 否 | 群組/頻道 ID（群組會話時提供） |
+| `detail_type` | 否 | 會話類型（`private`/`group`），預設用帳戶預設值 |
+| `message` | 是 | OneBot12 消息段陣列 |
+| `raw` | 否 | 原始資料，原樣存入 `webhook_raw` |
+
+#### 回應
+
+```json
+{"status": "ok"}
+```
+
+錯誤回應帶 HTTP 狀態碼：
+
+| 狀態碼 | 含義 |
+|--------|------|
+| 400 | 無效 JSON / body 非物件 |
+| 401 | 鑑權失敗 |
+| 404 | 未知帳戶 |
+| 500 | 事件分發失敗 |
+
+### 3. 欄位映射（入站 JSON → OneBot12 事件）
+
+| 入站 JSON | OneBot12 事件欄位 | 說明 |
+|-----------|-------------------|------|
+| — | `id` | 自動產生 |
+| — | `time` | 當前 Unix 時間戳（秒） |
+| — | `type` | 固定 `message` |
+| `detail_type` | `detail_type` | 預設用帳戶預設值 |
+| — | `platform` | 固定 `webhook` |
+| — | `self.platform` | 固定 `webhook` |
+| — | `self.user_id` | 帳戶 `bot_id` |
+| `user_id` | `user_id` | 傳遞 |
+| `user_nickname` | `user_nickname` | 傳遞（可選） |
+| `group_id` | `group_id` | 傳遞（可選） |
+| `message` | `message` | 傳遞 |
+| 完整 body | `webhook_raw` | 原始請求 |
+| 帳戶名 | `webhook_account` | 產生事件的帳戶名 |
+| `type` 或 `message` | `webhook_raw_type` | 原始事件類型 |
+
+## 出站協議
+
+### 1. 發送訊息
+
+當模組調用 `Send.To(...).Text(...)` 等方法時，適配器向 `outgoing_url` 發起 POST：
+
+- **方法**：`POST`
+- **Content-Type**：`application/json`
+- **鑑權 Header**（配置 secret 時）：`X-Webhook-Secret: {secret}`
+
+#### 請求 Body
+
+```json
+{
+  "target_type": "private",
+  "target_id": "target_user_id",
+  "account": "default",
+  "message": [
+    {"type": "text", "data": {"text": "訊息內容"}}
+  ],
+  "timestamp": 1700000000
+}
+```
+
+| 欄位 | 說明 |
+|------|------|
+| `target_type` | 目標類型（來自 `Send.To(type, id)`），預設用帳戶預設值 |
+| `target_id` | 目標 ID（來自 `Send.To`） |
+| `account` | 發送帳戶名 |
+| `message` | OneBot12 消息段陣列 |
+| `timestamp` | 發送時間戳（秒） |
+
+### 2. 回應標準化
+
+適配器把出站目標返回的回應標準化為 ErisPulse 標準回應格式：
+
+```json
+{
+  "status": "ok",
+  "retcode": 0,
+  "data": {"message_id": "...", ...},
+  "message_id": "...",
+  "message": "",
+  "webhook_raw": {}
+}
+```
+
+從目標回應 JSON 的 `message_id` 欄位提取訊息 ID。若目標未返回 `message_id`，則為空字串。
+
+請求失敗時返回錯誤回應（`status: "failed"`, `retcode: 33001`）。
+
+## Send 方法
+
+| 方法 | 說明 |
+|------|------|
+| `Text(text)` | 發送文字，封裝為 `[{"type":"text","data":{"text":text}}]` |
+| `Image(file)` | 發送圖片，封裝為 `[{"type":"image","data":{"file":file}}]` |
+| `Raw_ob12(message)` | 發送 OneBot12 原始消息段 |
+| `Json(data)` | 原始 JSON 傳遞，封裝為 `[{"type":"json","data":{"raw":data}}]` |
+
+`At` / `AtAll` / `Reply` 修飾器由框架基類提供，透過 `_apply_modifiers` 合併到消息段。
+
+## 事件擴展方法（WebhookEventMixin）
+
+| 方法 | 說明 |
+|------|------|
+| `get_raw_data()` | 取得原始請求 body（`webhook_raw`） |
+| `get_detail_type()` | 取得會話類型 |
+| `get_webhook_account()` | 取得產生該事件的帳戶名 |
+
+## 特性矩陣
+
+| 特性 | 支援情況 |
+|------|----------|
+| 多帳戶 | ✅ 每個帳戶獨立橋接 |
+| 入站鑑權 | ✅ Header / Query 雙模式 |
+| 健康檢查 | ✅ GET 返回狀態 |
+| 出站鑑權 | ✅ Header 攜帶 secret |
+| OneBot12 標準事件 | ✅ 完整標準欄位 |
+| Meta 事件 | ✅ connect / disconnect |
+| 路由發現 | ✅ 注冊到 `webhook` 命名空間 |
+| WebSocket | ❌ 僅 HTTP |
+| 媒體上傳 | ❌ 透過 URL 傳遞，不代傳二進位 |
+
+## 注意事項
+
+1. **單向出站**：若 `outgoing_url` 留空，該帳戶僅作入站接收，發送操作會返回錯誤
+2. **密鑰安全**：`secret` 在配置中以密文儲存（metadata secret），傳輸建議使用 HTTPS
+3. **路徑唯一**：多個帳戶的 `callback_path` 必須互不相同，避免路由衝突
+4. **冪等性**：適配器不保證入站事件去重，外部系統應自行處理重試
+5. **超時**：出站請求使用 ErisPulse 內建 `client`，繼承全域超時配置
+
+
+### 微信公众号适配
+
+# 微信公眾號（WechatMp）適配器 - 平台特性文檔
+
+## 基本信息資訊
+- 模組名稱: `ErisPulse-WechatMpAdapter`
+- 平台標識: `mp`（別名: `wechat_mp`）
+- 模組版本: 4.0.0
+- 維護者: ErisPulse
+- 依賴: `cryptography`
+
+## 支援的訊息發送類型
+
+| 方法 | 說明 | 微信 API |
+|------|------|---------|
+| `Text(text)` | 發送文字 | 客服訊息 `message/custom/send` |
+| `Image(file)` | 發送圖片（自動上傳獲取 media_id） | 客服訊息 + `media/upload` |
+| `Voice(file)` | 發送語音（自動上傳獲取 media_id） | 客服訊息 + `media/upload` |
+| `Video(file, title, description)` | 發送影片（自動上傳獲取 media_id） | 客服訊息 + `media/upload` |
+| `Music(url, title, description, ...)` | 發送音樂 | 客服訊息 |
+| `News(articles)` | 發送圖文訊息 | 客服訊息 |
+| `Template(template_id, data, url)` | 發送模板訊息 | `message/template/send` |
+| `Menu(head_content, list, tail_content)` | 發送選單訊息 | 客服訊息 `msgmenu` |
+| `Raw_ob12(message)` | 發送 OneBot12 標準訊息段 | - |
+
+### 媒體檔案說明
+- 支援三種參數類型：
+  - `str` URL（`http://` / `https://` 開頭）：自動下載後上傳
+  - `str` 本地檔案路徑：自動讀取後上傳
+  - `bytes` 二進位資料：直接上傳
+  - `str` media_id：以 `media:` 前綴可直接複用已上傳的 media_id
+- 上傳後獲得臨時素材 `media_id`，有效期 3 天
+
+### 重要限制
+- 客服訊息只能在使用者與公眾號互動後 **48 小時內** 主動發送
+- 超過 48 小時需使用模板訊息（需使用者授權場景）
+
+## 事件類型
+
+### 訊息事件 (message)
+所有使用者訊息均為 `detail_type: private`（公眾號 1v1 場景）。
+
+| 微信 MsgType | 訊息段類型 | 說明 |
+|-------------|-----------|------|
+| `text` | `text` | 文字訊息 |
+| `image` | `image` | 圖片訊息 |
+| `voice` | `voice` | 語音訊息（含語音識別結果） |
+| `video` | `video` | 影片訊息 |
+| `shortvideo` | `video` | 小影片（標記 `mp_shortvideo`） |
+| `location` | `location` | 地理位置訊息 |
+| `link` | `text` | 連結訊息（轉為文字） |
+
+### 通知事件 (notice)
+事件透過 `mp_event` 欄位區分具體類型。
+
+| 微信 Event | `mp_event` | 說明 |
+|-----------|-----------|------|
+| `subscribe` | `subscribe` | 關注公眾號 |
+| `unsubscribe` | `unsubscribe` | 取消關注 |
+| `SCAN` | `scan` | 掃描帶參數二維碼 |
+| `LOCATION` | `location_report` | 報告地理位置 |
+| `CLICK` | `menu_click` | 自訂選單點擊 |
+| `VIEW` | `menu_view` | 選單跳轉連結 |
+| `TEMPLATESENDJOBFINISH` | `template_send_finish` | 模板訊息發送結果 |
+| `MASSSENDJOBFINISH` | `mass_send_finish` | 群發訊息發送結果 |
+
+## 平台擴充欄位
+
+事件物件中的微信特有欄位（`mp_` 前綴）：
+
+| 欄位 | 類型 | 說明 |
+|------|------|------|
+| `mp_raw` | str | 原始 XML 資料 |
+| `mp_raw_type` | str | 原始訊息/事件類型 |
+| `mp_msg_id` | str | 微信訊息 ID |
+| `mp_event` | str | 事件類型（僅事件通知） |
+| `mp_event_key` | str | 事件 Key（選單點擊/掃碼等） |
+| `mp_to_user` | str | 接收方微信號（公眾號原始ID） |
+| `mp_from_user` | str | 發送方 OpenID |
+| `mp_data` | dict | 解析後的 XML 字典資料 |
+
+## 事件擴充方法
+
+透過 `register_event_mixin("mp", ...)` 註冊，在事件物件上可直接呼叫：
+
+| 方法 | 返回值 | 說明 |
+|------|--------|------|
+| `get_openid()` | str | 發送者 OpenID |
+| `get_msg_type()` | str | 微信原始訊息類型 |
+| `get_event()` | str | 事件類型（僅事件通知） |
+| `get_content()` | str | 訊息純文字內容 |
+| `get_raw_xml()` | str | 原始 XML 資料 |
+
+## 設定選項
+
+### 多帳號設定
+
+每個帳號對應一個公眾號：
+
+```toml
+[WechatMpAdapter.accounts.main]
+appid = "wx1234567890abcdef"
+appsecret = "your_app_secret_here"
+token = "your_callback_token"
+encoding_aes_key = ""                    # 安全模式/相容模式才需要（43位）
+callback_path = "/mp/main"               # 回調路徑
+enable = true
+
+[WechatMpAdapter.accounts.secondary]
+appid = "wx0987654321fedcba"
+appsecret = "another_app_secret"
+token = "another_callback_token"
+callback_path = "/mp/secondary"
+enable = true
+```
+
+### 設定欄位說明
+
+| 欄位 | 必填 | 說明 |
+|------|------|------|
+| `appid` | 是 | 公眾號 AppID |
+| `appsecret` | 是 | 公眾號 AppSecret（secret） |
+| `token` | 否 | 回調驗證 Token（建議填寫以啟用簽名驗證） |
+| `encoding_aes_key` | 否 | 訊息加解密密鑰（43位，安全模式必需） |
+| `callback_path` | 否 | 回調路徑範本，預設 `/mp/{account}`，`{account}` 會被帳號名替換 |
+| `enable` | 否 | 是否啟用，預設 true |
+
+## 加密模式說明
+
+微信公眾號提供三種訊息加解密模式：
+
+| 模式 | 說明 | encoding_aes_key | 驗證欄位 |
+|------|------|-----------------|---------|
+| 明文模式 | XML 明文傳輸 | 不需要 | `signature` |
+| 相容模式 | 明文+密文同時存在 | 可選 | `signature` / `msg_signature` |
+| 安全模式 | 全部加密 | 必需 | `msg_signature` |
+
+本適配器自動處理：
+- 明文模式：驗證 `signature`，直接解析 XML
+- 安全/相容模式：檢測 `Encrypt` 欄位，驗證 `msg_signature`，使用 AES-256-CBC 解密
+- 解密依賴 `cryptography` 程式庫（已宣告在 dependencies 中）
+
+## 回調路由
+
+適配器為每個已啟用帳號註冊兩個路由（GET + POST）：
+
+- **GET**：微信伺服器接入驗證，驗證簽名後返回 `echostr`
+- **POST**：接收使用者訊息和事件，驗證簽名→解密（如需）→轉換→emit
+
+實際訪問路徑會自動新增模組前綴，例如註冊路徑 `/mp/main`，
+實際訪問路徑為 `/mp_{account}_verify/mp/main` 和 `/mp_{account}_message/mp/main`。
+
+## API 回應
+
+所有 `call_api` 呼叫返回標準化回應：
+
+- 成功：`status: "ok"`, `retcode: 0`
+- 失敗：`status: "failed"`, `retcode: 34000+errcode`
+- 始終包含 `mp_raw`（原始回應）、`message_id`
+
+
 ====
 代码规范
 ====
