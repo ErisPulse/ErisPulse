@@ -236,10 +236,9 @@ class ModuleLoader(BaseLoader):
             )
 
             if not is_base_module:
-                logger.warning(
-                    f"模块 {meta_name} 未继承自 BaseModule，"
-                    "如果你是这个模块的作者，请检查 ErisPulse 的文档更新并尽快迁移！"
-                )
+                # 严格模式：按级别决定容忍加载或拒绝（跳过）
+                if self._strict().decide(meta_name, "module", "not_base_class"):
+                    return objs, enabled_list, disabled_list, is_new
 
             # 获取模块加载策略
             strategy = self._get_load_strategy(loaded_obj)
@@ -275,11 +274,17 @@ class ModuleLoader(BaseLoader):
             enabled_list.append(meta_name)
 
         except SystemExit as e:
+            self._strict().record_failure(
+                meta_name, "module", "systemexit", detail=f"SystemExit({e.code})"
+            )
             logger.error(
                 f"加载模块 {meta_name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
                 f"请不要使用 sys.exit() 或 raise SystemExit"
             )
         except Exception as e:
+            self._strict().record_failure(
+                meta_name, "module", "load_failed", detail=str(e)
+            )
             logger.error(
                 i18n.t("loader.module.load_single_failed", name=meta_name, error=e)
             )
@@ -446,12 +451,21 @@ class ModuleLoader(BaseLoader):
                         return True
                     return False
                 except SystemExit as e:
+                    self._strict().record_failure(
+                        name,
+                        "module",
+                        "register_systemexit",
+                        detail=f"SystemExit({e.code})",
+                    )
                     logger.error(
                         f"注册模块 {name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
                         f"请不要使用 sys.exit() 或 raise SystemExit"
                     )
                     return False
                 except Exception as e:
+                    self._strict().record_failure(
+                        name, "module", "register_failed", detail=str(e)
+                    )
                     logger.error(
                         i18n.t("loader.module.register_failed", name=name, error=e)
                     )
@@ -642,11 +656,20 @@ class ModuleLoader(BaseLoader):
                             )
                         )
             except SystemExit as e:
+                self._strict().record_failure(
+                    meta_name,
+                    "module",
+                    "init_systemexit",
+                    detail=f"SystemExit({e.code})",
+                )
                 logger.warning(
                     f"初始化模块 {meta_name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
                     f"请不要使用 sys.exit() 或 raise SystemExit"
                 )
             except Exception as e:
+                self._strict().record_failure(
+                    meta_name, "module", "init_failed", detail=str(e)
+                )
                 logger.warning(
                     i18n.t("loader.module.init_failed", name=meta_name, error=e)
                 )

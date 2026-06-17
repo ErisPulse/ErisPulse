@@ -12,9 +12,13 @@ ErisPulse 加载器模块
 from .adapter import AdapterLoader
 from .module import ModuleLoader
 from .strategy import ModuleLoadStrategy
+from .strict import StrictModeError, StrictModeLevel, StrictModeManager
 
 __all__ = [
     "AdapterLoader",
     "ModuleLoader",
     "ModuleLoadStrategy",
+    "StrictModeLevel",
+    "StrictModeError",
+    "StrictModeManager",
 ]
