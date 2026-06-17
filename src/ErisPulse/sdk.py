@@ -411,6 +411,14 @@ class SDK:
                         self.logger.print_tree_item(
                             adapter_name, level=1, is_last=is_last
                         )
+                    if disabled_adapters:
+                        self.logger.print_info(
+                            i18n.t(
+                                "core.sdk.init.disabled_adapters",
+                                names=", ".join(disabled_adapters),
+                            ),
+                            level=1,
+                        )
                 else:
                     self.logger.print_info(
                         i18n.t("core.sdk.init.adapter_none"), level=1
@@ -425,11 +433,53 @@ class SDK:
                     )
                     for i, module_name in enumerate(enabled_modules):
                         is_last = i == len(enabled_modules) - 1
+                        # 标注懒加载/立即加载
+                        lazy_tag = ""
+                        module_obj = module_objs.get(module_name)
+                        if module_obj is not None and getattr(
+                            module_obj, "moduleInfo", None
+                        ):
+                            is_lazy = module_obj.moduleInfo.get("meta", {}).get(
+                                "lazy_load", True
+                            )
+                            lazy_tag = (
+                                i18n.t("core.sdk.init.tag_lazy")
+                                if is_lazy
+                                else i18n.t("core.sdk.init.tag_eager")
+                            )
                         self.logger.print_tree_item(
-                            module_name, level=1, is_last=is_last
+                            module_name, level=1, is_last=is_last, tag=lazy_tag
+                        )
+                    if disabled_modules:
+                        self.logger.print_info(
+                            i18n.t(
+                                "core.sdk.init.disabled_modules",
+                                names=", ".join(disabled_modules),
+                            ),
+                            level=1,
                         )
                 else:
                     self.logger.print_info(i18n.t("core.sdk.init.module_none"), level=1)
+
+                # 严格模式已拒绝的组件
+                rejected = self._strict_manager.rejections
+                if rejected:
+                    self.logger.print_info(
+                        i18n.t("core.sdk.init.strict_rejected", count=len(rejected)),
+                        level=1,
+                    )
+                    for i, violation in enumerate(rejected):
+                        is_last = i == len(rejected) - 1
+                        self.logger.print_tree_item(
+                            violation.name,
+                            level=1,
+                            is_last=is_last,
+                            tag=i18n.t(
+                                "core.sdk.init.strict_rejected_reason",
+                                reason=violation.reason,
+                            ),
+                            tag_style="yellow",
+                        )
 
                 self.logger.print_section_footer()
 
