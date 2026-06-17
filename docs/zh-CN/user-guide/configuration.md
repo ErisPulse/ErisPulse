@@ -25,23 +25,33 @@ ssl_keyfile = ""
 
 [ErisPulse.logger]
 level = "INFO"
+format = "rich"
 log_files = []
 memory_limit = 1000
 
 [ErisPulse.framework]
 enable_lazy_loading = true
+uninit_timeout = 30
+strict_mode = 1
+
+[ErisPulse.framework.strict_mode_exceptions]
+modules = []
+adapters = []
 
 [ErisPulse.storage]
 use_global_db = false
 
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = false
+case_sensitive = true
 allow_space_prefix = false
 must_at_bot = false
 
 [ErisPulse.event.message]
 ignore_self = true
+
+[ErisPulse.i18n]
+language = "auto"
 ```
 
 ## 服务器配置
@@ -73,6 +83,7 @@ memory_limit = 1000
 | 配置项 | 类型 | 默认值 | 说明 |
 |---------|------|---------|------|
 | level | string | INFO | 日志级别：DEBUG, INFO, WARNING, ERROR, CRITICAL |
+| format | string | rich | 日志输出格式，默认使用 rich 彩色输出 |
 | log_files | array | 空 | 日志输出文件列表 |
 | memory_limit | integer | 1000 | 内存中保存的日志条数 |
 
@@ -81,11 +92,46 @@ memory_limit = 1000
 ```toml
 [ErisPulse.framework]
 enable_lazy_loading = true
+uninit_timeout = 30
+strict_mode = 1
+
+[ErisPulse.framework.strict_mode_exceptions]
+modules = []
+adapters = []
 ```
 
 | 配置项 | 类型 | 默认值 | 说明 |
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | 是否启用模块懒加载 |
+| uninit_timeout | integer | 30 | 优雅关闭的总超时时间（秒），超过后强制终止。0 表示不设超时 |
+| strict_mode | integer | 1 | 严格模式级别，见下方「严格模式」说明 |
+
+### 严格模式
+
+严格模式控制模块/适配器在加载阶段不合规或失败时的处理策略。现代模块/适配器都应继承对应的基类（`BaseModule`/`BaseAdapter`），未继承基类的组件会影响框架的上下文系统与兑底清理，可能导致资源泄露。严格模式默认开启以挡住这类组件。
+
+| 级别 | 名称 | 行为 |
+|------|------|------|
+| 0 | 宽松 | 违规仅警告，未继承基类的组件仍会尝试加载（兼容旧组件） |
+| 1 | 严格-跳过（默认） | 拒绝未继承基类的组件并跳过，其余正常启动 |
+| 2 | 严格-致命 | 收集所有违规后统一报告并中止整个启动 |
+
+各级别下，「加载/注册/初始化阶段报错」这类组件自身崩溃始终会被跳过；区别在于：
+
+- **0 → 1**：唯一行为变化是「未继承基类」从「仍加载」变为「跳过」。
+- **1 → 2**：所有违规（未继承基类、加载失败、注册失败、初始化失败等）升级为致命，会在启动检查点收集后一次性输出违规清单并中止。
+
+#### 豁免清单
+
+如果某些组件确实暂时无法迁移（例如依赖的旧模块），可以将其加入豁免清单，被列名的组件即使不合规也会按宽松模式对待，继续加载：
+
+```toml
+[ErisPulse.framework.strict_mode_exceptions]
+modules = ["SeTu", "SomeLegacyModule"]
+adapters = ["OldAdapter"]
+```
+
+> 当某个组件被严格模式拒绝时，日志会明确提示如何恢复加载（加入豁免清单或调低级别）。
 
 ## 存储配置
 
@@ -112,7 +158,7 @@ allow_space_prefix = false
 | 配置项 | 类型 | 默认值 | 说明 |
 |---------|------|---------|------|
 | prefix | string | / | 命令前缀 |
-| case_sensitive | boolean | false | 是否区分大小写 |
+| case_sensitive | boolean | true | 是否区分大小写（`/Help` 与 `/help` 是否为不同命令） |
 | allow_space_prefix | boolean | false | 是否允许空格作为前缀 |
 | must_at_bot | boolean | false | 是否必须@机器人才能触发命令（私聊不受限制） |
 
@@ -126,6 +172,17 @@ ignore_self = true
 | 配置项 | 类型 | 默认值 | 说明 |
 |---------|------|---------|------|
 | ignore_self | boolean | true | 是否忽略机器人自己的消息 |
+
+## 国际化配置
+
+```toml
+[ErisPulse.i18n]
+language = "auto"
+```
+
+| 配置项 | 类型 | 默认值 | 说明 |
+|---------|------|---------|------|
+| language | string | auto | 框架内置文本的显示语言。设为 `auto` 自动检测系统语言，也可设为具体代码：`zh-CN`、`zh-TW`、`en`、`ja`、`ru` |
 
 ## 模块配置
 

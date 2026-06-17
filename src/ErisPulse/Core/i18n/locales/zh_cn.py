@@ -289,6 +289,15 @@ TRANSLATIONS = {
     "loader.module.mount_lazy": "挂载懒加载模块到 sdk: {name}",
     "loader.module.mount_eager": "挂载立即加载模块到 sdk: {name}",
     "loader.module.init_lazy_start": "正在初始化懒加载模块 {name}...",
+    # ==================== 严格模式 ====================
+    "loader.strict.config_failed": "读取严格模式配置失败，使用默认值: {error}",
+    "loader.strict.exempted": "{type} '{name}' 已豁免严格模式（{reason}），继续加载",
+    "loader.strict.tolerated": "宽松模式：{type} '{name}' {reason}，仍继续加载",
+    "loader.strict.rejected": "严格模式：已拒绝 {type} '{name}'（{reason}），已跳过。如必须加载，请将 '{name}' 加入配置 ErisPulse.framework.strict_mode_exceptions.{list_key} 豁免清单，或将 ErisPulse.framework.strict_mode 设为 0（宽松模式）",
+    "loader.strict.rejected_fatal": "严格模式(致命)：已拒绝 {type} '{name}'（{reason}），已记录。如必须加载，请将 '{name}' 加入配置 ErisPulse.framework.strict_mode_exceptions.{list_key} 豁免清单，或将 ErisPulse.framework.strict_mode 设为 0（宽松模式）",
+    "loader.strict.fatal_report_header": "严格模式(致命)检测到 {count} 项违规，启动中止：",
+    "loader.strict.fatal_report_item": "  [{index}] {type} '{name}': {reason} {detail}",
+    "loader.strict.fatal_abort": "严格模式(致命)：共收集 {count} 项违规，已中止启动",
     # ==================== 存储路由显示 ====================
     "core.router.lan_ipv4": "局域网IPv4",
     "core.router.lan_ipv6": "局域网IPv6",

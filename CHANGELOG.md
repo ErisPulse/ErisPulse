@@ -63,6 +63,57 @@
 
 ---
 
+## [2.5.0-dev.3] - 2026/06/17
+> 开发版本
+
+**版本摘要**
+2.5.0-dev.3 引入「严格模式」加载策略，默认拒绝未继承基类的模块/适配器，避免上下文系统与兑底清理的资源泄露；补齐适配器加载器缺失的 `BaseAdapter` 继承检查，并同步更新配置文档。
+
+### 新增
+- @wsu2059q
+  - `loaders/strict.py` 新增严格模式管理模块：
+    - `StrictModeManager` 统一处理加载合规性判定与违规收集，三级策略：
+      - `0` 宽松（违规仅警告，未继承基类的组件仍尝试加载）
+      - `1` 严格-跳过（默认，拒绝未继承基类的组件并跳过，其余正常启动）
+      - `2` 严格-致命（收集所有违规后统一报告并中止整个启动）
+    - `StrictModeError` 致命异常、`Violation` 违规记录、`StrictModeLevel` 级别枚举
+    - `decide()` 用于「未继承基类」这类可容忍/可拒绝的违规判定
+    - `record_failure()` 用于异常类失败的致命记录（调用方已自行跳过）
+    - `raise_if_fatal()` 在检查点统一输出违规清单并抛出
+  - `loaders/adapter.py` 新增 `BaseAdapter` 继承检查（与模块对称）：
+    - 加载阶段校验适配器是否继承 `BaseAdapter`，不合规时按严格模式判定
+  - `loaders/bases/loader.py` 新增严格模式管理器注入接口：
+    - `set_strict_manager()` 由初始化协调器注入共享实例
+    - `_strict()` 访问器，未注入时从配置创建（兼容独立调用/测试）
+  - `Core/constants.py` 新增 `DEFAULT_STRICT_MODE = 1` 常量
+  - `runtime/frame_config.py` 新增 `[ErisPulse.framework]` 配置项：
+    - `strict_mode`（默认 1）
+    - `strict_mode_exceptions.modules` / `strict_mode_exceptions.adapters` 豁免清单
+  - `sdk.py` 初始化协调器创建共享严格模式管理器并注入两个加载器，确保跨加载器收集违规；在加载阶段与注册阶段后各设一个中止检查点
+  - 5 个语言文件（en/zh-CN/zh-TW/ja/ru）新增严格模式相关翻译键
+  - `tests/unit/test_unit_strict_mode.py` 新增 15 个单元测试（三级行为/豁免清单/跨加载器收集/检查点报告）
+
+### 变更
+- @wsu2059q
+  - `loaders/module.py` 未继承 `BaseModule` 的模块不再静默警告后加载，改为交由严格模式判定容忍或拒绝
+  - 严格模式默认开启（级别 1）：未继承基类的组件默认会被拒绝跳过，需加载旧组件时通过豁免清单或调为宽松模式
+  - 严格模式拒绝日志现给出可操作提示（加入 `strict_mode_exceptions` 豁免清单或设置 `strict_mode = 0`）
+  - 加载/注册/初始化阶段的异常处理新增严格模式记录，在致命级别下纳入统一报告
+
+### 修复
+- @wsu2059q
+  - 适配器加载器此前完全未检查是否继承 `BaseAdapter`，现补齐与模块对称的基类校验
+
+### 文档
+- @wsu2059q
+  - `docs/zh-CN/user-guide/configuration.md` 同步更新：
+    - 框架配置新增「严格模式」小节（级别表、行为差异、豁免清单用法）
+    - 补充 `uninit_timeout`、`logger.format`、`i18n.language` 等缺失字段
+    - 修正 `case_sensitive` 默认值（由错误的 `false` 改为实际默认 `true`）
+    - 新增「国际化配置」整节
+
+---
+
 ## [2.5.0-dev.2] - 2026/06/15
 > 开发版本
 

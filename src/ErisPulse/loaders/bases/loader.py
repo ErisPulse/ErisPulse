@@ -13,8 +13,9 @@ ErisPulse 基础加载器
 import importlib.metadata
 from abc import ABC, abstractmethod
 from typing import Any
-from ...Core.logger import logger
+
 from ...Core.config import config
+from ...Core.logger import logger
 
 
 class BaseLoader(ABC):
@@ -41,6 +42,36 @@ class BaseLoader(ABC):
         :param config_prefix: 配置前缀（如 "ErisPulse.adapters" 或 "ErisPulse.modules"）
         """
         self._config_prefix = config_prefix
+        # 严格模式管理器，由初始化协调器注入；未注入时按需从配置创建
+        self._strict_manager: Any = None
+
+    def set_strict_manager(self, manager: Any) -> None:
+        """
+        注入严格模式管理器
+
+        :param manager: StrictModeManager 实例
+
+        {!--< internal-use >!--}
+        由初始化协调器调用，确保多个加载器共享同一管理器实例以统一收集违规
+        {!--< /internal-use >!--}
+        """
+        self._strict_manager = manager
+
+    def _strict(self) -> Any:
+        """
+        获取严格模式管理器
+
+        :return: StrictModeManager 实例
+
+        {!--< internal-use >!--}
+        未注入时从配置创建，仅供独立调用/测试使用；正常启动流程总会被注入
+        {!--< /internal-use >!--}
+        """
+        if self._strict_manager is None:
+            from ..strict import StrictModeManager
+
+            self._strict_manager = StrictModeManager.from_config()
+        return self._strict_manager
 
     @abstractmethod
     def _get_entry_point_group(self) -> str:
