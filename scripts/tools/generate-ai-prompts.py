@@ -273,6 +273,9 @@ SECTION_PLATFORM_FULL = Section(
         DocEntry("云湖用户端适配", "platform-guide/yunhu_user.md"),
         DocEntry("平台文档维护说明", "platform-guide/maintain-notes.md"),
         DocEntry("花枫咖啡馆适配", "platform-guide/ideaura.md"),
+        DocEntry("Discord 适配", "platform-guide/discord.md"),
+        DocEntry("Webhook 适配", "platform-guide/webhook.md"),
+        DocEntry("微信公众号适配", "platform-guide/wechatmp.md"),
     ],
 )
 
