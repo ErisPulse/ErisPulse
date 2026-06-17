@@ -289,6 +289,15 @@ TRANSLATIONS = {
     "loader.module.mount_lazy": "掛載懶載入模組到 sdk: {name}",
     "loader.module.mount_eager": "掛載立即載入模組到 sdk: {name}",
     "loader.module.init_lazy_start": "正在初始化懶載入模組 {name}...",
+    # ==================== 嚴格模式 ====================
+    "loader.strict.config_failed": "讀取嚴格模式設定失敗，使用預設值: {error}",
+    "loader.strict.exempted": "{type} '{name}' 已豁免嚴格模式（{reason}），繼續載入",
+    "loader.strict.tolerated": "寬鬆模式：{type} '{name}' {reason}，仍繼續載入",
+    "loader.strict.rejected": "嚴格模式：已拒絕 {type} '{name}'（{reason}），已跳過。如必須載入，請將 '{name}' 加入設定 ErisPulse.framework.strict_mode_exceptions.{list_key} 豁免清單，或將 ErisPulse.framework.strict_mode 設為 0（寬鬆模式）",
+    "loader.strict.rejected_fatal": "嚴格模式(致命)：已拒絕 {type} '{name}'（{reason}），已記錄。如必須載入，請將 '{name}' 加入設定 ErisPulse.framework.strict_mode_exceptions.{list_key} 豁免清單，或將 ErisPulse.framework.strict_mode 設為 0（寬鬆模式）",
+    "loader.strict.fatal_report_header": "嚴格模式(致命)偵測到 {count} 項違規，啟動中止：",
+    "loader.strict.fatal_report_item": "  [{index}] {type} '{name}': {reason} {detail}",
+    "loader.strict.fatal_abort": "嚴格模式(致命)：共收集 {count} 項違規，已中止啟動",
     # ==================== 儲存路由顯示 ====================
     "core.router.lan_ipv4": "區域網IPv4",
     "core.router.lan_ipv6": "區域網IPv6",

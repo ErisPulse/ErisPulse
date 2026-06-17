@@ -32,6 +32,7 @@ from .loaders.adapter import AdapterLoader
 
 # 导入懒加载模块类
 from .loaders.module import LazyModule, ModuleLoader
+from .loaders.strict import StrictModeManager
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -255,6 +256,11 @@ class SDK:
             self._sdk = sdk_instance
             self._adapter_loader = AdapterLoader()
             self._module_loader = ModuleLoader()
+            # 创建共享的严格模式管理器并注入到两个加载器，
+            # 确保跨加载器统一收集违规、在检查点统一报告
+            self._strict_manager = StrictModeManager.from_config()
+            self._adapter_loader.set_strict_manager(self._strict_manager)
+            self._module_loader.set_strict_manager(self._strict_manager)
 
         def __getattr__(self, name: str):
             """将未找到的属性委托给 SDK 实例（如 logger、adapter 等）"""
@@ -314,6 +320,9 @@ class SDK:
                 adapter_objs, enabled_adapters, disabled_adapters = adapter_result  # type: ignore
                 module_objs, enabled_modules, disabled_modules = module_result  # type: ignore
 
+                # 严格模式检查点 1：加载阶段违规统一报告与中止（在任何副作用前）
+                self._strict_manager.raise_if_fatal()
+
                 # 2. 注册适配器
                 self.logger.print_section_header(
                     i18n.t("core.sdk.init.adapter_register_phase")
@@ -340,6 +349,9 @@ class SDK:
                     enabled_modules, module_objs, module_manager
                 ):
                     self.logger.warning(i18n.t("core.sdk.init.module_register_partial"))
+
+                # 严格模式检查点 2：注册阶段违规统一报告与中止（在模块初始化前）
+                self._strict_manager.raise_if_fatal()
 
                 # 4. 初始化模块（创建实例并挂载到 SDK）
                 self.logger.print_section_header(
