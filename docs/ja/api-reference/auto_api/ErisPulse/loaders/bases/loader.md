@@ -46,6 +46,30 @@ ErisPulse 基础加载器
 ---
 
 
+##### `set_strict_manager(manager: Any)`
+
+注入严格模式管理器
+
+:param manager: StrictModeManager 实例
+
+> **内部方法** 
+由初始化协调器调用，确保多个加载器共享同一管理器实例以统一收集违规
+
+---
+
+
+##### `_strict()`
+
+获取严格模式管理器
+
+:return: StrictModeManager 实例
+
+> **内部方法** 
+未注入时从配置创建，仅供独立调用/测试使用；正常启动流程总会被注入
+
+---
+
+
 ##### `_get_entry_point_group()`
 
 获取 entry-point 组名
