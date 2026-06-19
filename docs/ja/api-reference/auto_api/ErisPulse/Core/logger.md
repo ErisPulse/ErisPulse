@@ -263,13 +263,15 @@ JSON 日志格式化器
 ---
 
 
-##### `print_tree_item(text: str, level: int = 0, is_last: bool = False)`
+##### `print_tree_item(text: str, level: int = 0, is_last: bool = False, tag: str = '', tag_style: str = 'dim')`
 
 打印树状结构项目
 
 :param text: 文本内容
 :param level: 缩进层级
 :param is_last: 是否是最后一项
+:param tag: 可选的样式化后缀标签（如 "[懒加载]"）
+:param tag_style: 标签的 rich 样式（默认 dim）
 
 ---
 
