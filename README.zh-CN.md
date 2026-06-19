@@ -4,7 +4,9 @@
 
 # ErisPulse
 
-**事件驱动的多平台机器人开发框架**
+**一次编写，多平台部署。**
+
+事件驱动的多平台机器人开发框架。
 
 基于 OneBot12 标准接口，一次编写，多平台部署。灵活的插件系统、热重载支持和完整的开发者工具链，适用于从简单聊天机器人到复杂自动化系统的各种场景。
 
@@ -28,16 +30,9 @@
 
 <div align="center">
 
-### 核心特性 · AI 模块构建器
+### 核心特性
 
 </div>
-
-> 👉 **用自然语言描述需求，AI 查阅官方文档后自动生成完整模块/适配器代码并打包下载**
-> [**立即体验 → `https://www.erisdev.com/#builder`**](https://www.erisdev.com/#builder)
->
-> 支持构建：适配器模块 · 功能模块 · 插件模板
->
-> 同样支持 Vibe Coding 工作流 — 下载 AI 物料后发给 AI 即可使用 [查看](docs/zh-CN/ai-support/README.md)
 
 <table>
 <tr>
@@ -77,6 +72,135 @@
 </td>
 </tr>
 </table>
+
+---
+
+## 同一份代码。多个平台。
+
+*完全相同的命令处理器。不同的平台。无需修改任何业务逻辑。*
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Kook**
+
+<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**QQ**
+
+<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**云湖**
+
+<img src=".github/assets/demo-yunhu.png" alt="云湖 演示" />
+
+</td>
+</tr>
+</table>
+
+---
+
+## 生态
+
+ErisPulse 不仅仅是框架。装上就能开始，不需要从零造轮子。
+
+<table>
+<tr>
+<td align="center" width="25%">
+
+**框架**
+
+核心运行时
+
+统一事件 & 消息模型
+
+</td>
+<td align="center" width="25%">
+
+**Dashboard**
+
+可视化管理
+
+插件 · 日志 · 配置
+
+[在线演示 →](https://dashdemo.erisdev.com/)
+
+</td>
+<td align="center" width="25%">
+
+**AI Builder**
+
+自然语言 → 可用模块
+
+[立即体验 →](https://www.erisdev.com/#builder)
+
+</td>
+<td align="center" width="25%">
+
+**模块市场**
+
+即装即用的插件
+
+[浏览模块 →](https://www.erisdev.com/#market)
+
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+
+**适配器**
+
+15+ 平台接入
+
+</td>
+<td align="center" width="25%">
+
+**文档**
+
+[erisdev.com](https://www.erisdev.com)
+
+</td>
+<td align="center" width="25%">
+
+**Docker**
+
+多架构支持
+
+`erispulse/erispulse`
+
+</td>
+<td align="center" width="25%">
+
+**CLI**
+
+`epsdk` 脚手架工具
+
+</td>
+</tr>
+</table>
+
+---
+
+## 项目起源
+
+ErisPulse 并非为了成为框架而诞生。
+
+它最早源于 **Amer** —— 一个用于不同平台之间消息互联与同步的项目。
+
+随着接入的平台不断增加，我们开始维护 **ryunhusdk2 的异步版本**，并逐步抽象出统一的事件模型与适配器体系。
+
+这些实践最终演变成了今天的 ErisPulse。
+
+它的目标始终没有改变：
+
+**让开发者专注于业务，而不是平台差异。**
 
 ---
 
@@ -211,59 +335,6 @@ pip install ErisPulse
 ```
 
 > 也可以使用上方的一键安装脚本，自动检测环境并引导配置。
-
-#### 运行效果
-
-
-##### 仪表盘：
-
-[![在线演示](https://img.shields.io/badge/在线演示-Dashboard-FF6B9D?style=for-the-badge&logo=github&logoColor=white)](https://dashdemo.erisdev.com/)
-
-> 💡 在线体验演示仪表盘：[DashDemo](https://dashdemo.erisdev.com/)
-
-<table>
-<tr>
-<td width="50%">
-
-<img src=".github/assets/docs/dashboard.png" alt="Dashboard 演示" />
-
-</td>
-<td width="50%">
-
-<video src="https://github.com/user-attachments/assets/157191c4-9a84-433c-b311-0c57e3a21151" controls width="100%"></video>
-
-</td>
-</tr>
-</table>
-
-
-##### 同一端代码，多个平台响应：
-
-<table>
-<tr>
-<td align="center" width="33%">
-
-**Kook**
-
-<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
-
-</td>
-<td align="center" width="33%">
-
-**QQ**
-
-<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
-
-</td>
-<td align="center" width="33%">
-
-**云湖**
-
-<img src=".github/assets/demo-yunhu.png" alt="云湖 演示" />
-
-</td>
-</tr>
-</table>
 
 #### 初始化项目
 
@@ -425,7 +496,7 @@ async def menu_handler(event):
 
 ---
 
-### 支持的适配器
+## 支持的平台
 
 欢迎您贡献适配器！
 
@@ -462,6 +533,28 @@ async def menu_handler(event):
 
 ---
 
+## 社区
+
+欢迎加入 ErisPulse 社区，与开发者共同交流和构建生态。
+
+### 云湖
+
+群 ID：`635409929`
+
+加入群聊：
+
+https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199
+
+### QQ 群
+
+https://qm.qq.com/q/TOwnCmypcy
+
+### Telegram
+
+https://t.me/ErisPulse
+
+---
+
 ### 贡献指南
 
 ErisPulse 项目的健全性还需要您的一份力！我们欢迎各种形式的贡献：
@@ -487,6 +580,15 @@ ErisPulse 项目的健全性还需要您的一份力！我们欢迎各种形式�
 
 <img src=".github/assets/thanks.png" width="200" alt="感谢" />
 
-本项目部分代码基于 [sdkFrame](https://github.com/runoneall/sdkFrame) · 核心适配器标准化层基于 [OneBot12 规范](https://12.onebot.dev/) · 感谢所有为开源社区做出贡献的开发者和作者
+本项目部分代码基于 [sdkFrame](https://github.com/runoneall/sdkFrame)。
+
+核心适配器标准化层参考并受益于 [OneBot12 规范](https://12.onebot.dev/)。
+
+特别感谢云湖生态与社区。
+
+ErisPulse 的早期探索与成长离不开云湖开发者社区的支持，
+许多想法、适配器和实践经验都诞生于此。
+
+同时感谢所有为 ErisPulse、OneBot 生态以及开源社区做出贡献的开发者与项目作者。
 
 </div>
