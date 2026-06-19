@@ -246,14 +246,18 @@ class DocsTranslator:
             "."
         )
 
-    def _build_lang_switcher_hint(self, target_lang: str) -> str:
+    def _build_lang_switcher_line(self, target_lang: str) -> str:
+        """构建语言切换行：当前目标语言使用粗体，其他语言为链接。"""
         parts = []
         for item in self.LANG_SWITCHER_ITEMS:
             if item["lang"] == target_lang:
                 parts.append(f"**{item['label']}**")
             else:
                 parts.append(f"[{item['label']}]({item['file']})")
-        expected_line = " | ".join(parts)
+        return " | ".join(parts)
+
+    def _build_lang_switcher_hint(self, target_lang: str) -> str:
+        expected_line = self._build_lang_switcher_line(target_lang)
         return (
             f"8. **重要：语言切换行本地化**\n"
             f"   - 必须将语言切换行替换为以下内容（不要修改）：\n"
@@ -349,16 +353,19 @@ class DocsTranslator:
             f"8. 直接输出翻译后的Markdown内容，不要用```markdown等代码块包裹"
         )
 
-        path_replacement_hint = ""
+        lang_switcher_hint = ""
         if file_name == "README.md":
             lang_switcher_hint = self._build_lang_switcher_hint(target_lang)
-            path_replacement_hint = (
-                f"\n7. **重要：路径替换规则**\n"
-                f"   - 将文档链接中的 `docs/{source_lang}/` 替换为 `docs/{target_lang}/`\n"
-                f"   - 例如：`docs/{source_lang}/quick-start.md` 应改为 `docs/{target_lang}/quick-start.md`\n"
-                f"   - 这确保了链接指向正确语言的文档版本\n"
-                f"{lang_switcher_hint}"
-            )
+
+        path_replacement_hint = (
+            f"\n7. **重要：路径替换规则**\n"
+            f"   - 将文档链接中的 `docs/{source_lang}/` 替换为 `docs/{target_lang}/`\n"
+            f"   - 例如：`docs/{source_lang}/quick-start.md` 应改为 `docs/{target_lang}/quick-start.md`\n"
+            f"   - 对于指向非当前语言版本文件的链接（如 `README.xx.md` 形式的链接），保持原样不要修改\n"
+            f"   - 这确保了链接指向正确语言的文档版本\n"
+        )
+        if lang_switcher_hint:
+            path_replacement_hint += f"{lang_switcher_hint}\n"
 
         review_section = ""
         if review_notes:
@@ -698,6 +705,33 @@ class DocsTranslator:
     ) -> List[str]:
         return []
 
+    def _localize_links(
+        self, content: str, target_lang: str, file_name: str = ""
+    ) -> str:
+        """
+        后处理翻译内容，修复未正确本地化的链接。
+
+        在 AI 可能遗漏的情况下，进行额外的链接替换以确保
+        翻译后的文档链接指向正确的语言版本。
+        """
+        source_lang = self.config["source_lang"]
+
+        # 1. 替换 docs/{source_lang}/ 为 docs/{target_lang}/
+        #    涵盖 Markdown 链接 [text](path)、图片链接 ![alt](path) 以及裸 URL
+        source_path = f"docs/{source_lang}/"
+        target_path = f"docs/{target_lang}/"
+        if source_path in content:
+            content = content.replace(source_path, target_path)
+
+        # 2. 对于根 README 文件，强制修正语言切换行
+        if file_name == "README.md":
+            expected_line = self._build_lang_switcher_line(target_lang)
+            # 匹配以 [English](README.md) 开头的语言切换行
+            pattern = r"^\[English\]\(README\.md\)[^\n]*$"
+            content = re.sub(pattern, expected_line, content, flags=re.MULTILINE)
+
+        return content
+
     async def translate_file(
         self,
         file_path: Path,
@@ -832,6 +866,11 @@ class DocsTranslator:
                         self.stats["validation_failed"].append(
                             f"{rel_path} -> {target_lang}"
                         )
+
+            # 后处理：确保链接、语言切换行指向正确的语言版本
+            translated_content = self._localize_links(
+                translated_content, target_lang, file_name=rel_path
+            )
 
             if buf:
                 buf.flush()
