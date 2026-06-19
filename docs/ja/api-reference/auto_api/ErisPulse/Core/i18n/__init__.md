@@ -28,10 +28,11 @@ ErisPulse 国际化模块
 
 语言检测优先级:
 1. 手动通过 set_language() 设置的语言
-2. 配置项 ErisPulse.i18n.language
-3. 环境变量 LANGUAGE / LC_ALL / LC_MESSAGES / LANG
-4. 系统默认 locale (locale.getdefaultlocale)
-5. 默认语言 (zh-CN)
+2. 环境变量 ERISPULSE_LANG（临时覆盖）
+3. 全局持久化设置（epsdk i18n 写入 ~/.erispulse/cli_state.json）
+4. 配置项 ErisPulse.i18n.language（"auto" 表示自动检测）
+5. 系统默认 locale (locale.getdefaultlocale)
+6. 默认语言 (zh-CN)
 
 就近映射规则:
 - zh-TW, zh-HK, zh-MO, zh-Hant -> zh-TW (繁体中文)
@@ -119,7 +120,7 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 
 获取当前生效的语言
 
-优先级: 手动设置 > 配置项 > 检测到的语言
+优先级: 手动设置 > ERISPULSE_LANG 环境变量 > 全局持久化设置 > 配置项 > 检测到的语言
 
 配置值为 "auto" 时使用自动检测的语言。
 
@@ -128,18 +129,57 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 ---
 
 
+##### `_global_state_path()`
+
+全局状态文件路径
+
+:return: Path 全局状态文件路径 (~/.erispulse/cli_state.json)
+
+> **内部方法** 
+与 CLI 的 i18n 共享同一文件，作为跨项目的语言持久化位置
+
+---
+
+
+##### `_load_global_language()`
+
+从全局状态文件读取持久化的语言选择
+
+:return: 语言代码或 None
+
+> **内部方法** 
+读取失败或未设置时返回 None，不影响后续优先级
+
+---
+
+
 ##### `set_language(lang: str)`
 
-手动设置当前语言
+手动设置当前语言，同时写入全局持久化
 
 :param lang: 语言代码，如 "zh-CN", "en", "ja", "ru"
 会自动按就近原则映射到支持的语言。
+设置后立即生效，并写入 `~/.erispulse/cli_state.json`
+跨所有项目生效（等效于 `epsdk i18n`）。
+如需临时覆盖，使用环境变量 `ERISPULSE_LANG`
 
 **示例**:
 ```python
 >>> i18n.set_language("en")
 >>> i18n.set_language("zh-TW")  # 繁体中文
 ```
+
+---
+
+
+##### `_persist_global_language(lang: str)`
+
+将语言选择写入全局状态文件
+
+:param lang: 已解析的语言代码
+
+> **内部方法** 
+与 CLI i18n 的 _persist_language 写入同一文件，覆盖 language 键
 
 ---
 
