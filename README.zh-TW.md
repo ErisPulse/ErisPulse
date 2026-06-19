@@ -212,59 +212,6 @@ pip install ErisPulse
 
 > 也可以使用上方的一鍵安裝腳本，自動檢測環境並引導設定。
 
-#### 運行效果
-
-
-##### 儀表板：
-
-[![線上示範](https://img.shields.io/badge/線上示範-Dashboard-FF6B9D?style=for-the-badge&logo=github&logoColor=white)](https://dashdemo.erisdev.com/)
-
-> 💡 線上體驗示範儀表板：[DashDemo](https://dashdemo.erisdev.com/)
-
-<table>
-<tr>
-<td width="50%">
-
-<img src=".github/assets/docs/dashboard.png" alt="Dashboard 演示" />
-
-</td>
-<td width="50%">
-
-<video src="https://github.com/user-attachments/assets/157191c4-9a84-433c-b311-0c57e3a21151" controls width="100%"></video>
-
-</td>
-</tr>
-</table>
-
-
-##### 同一端程式碼，多個平台響應：
-
-<table>
-<tr>
-<td align="center" width="33%">
-
-**Kook**
-
-<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
-
-</td>
-<td align="center" width="33%">
-
-**QQ**
-
-<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
-
-</td>
-<td align="center" width="33%">
-
-**雲湖**
-
-<img src=".github/assets/demo-yunhu.png" alt="雲湖 演示" />
-
-</td>
-</tr>
-</table>
-
 #### 初始化專案
 
 ```bash
