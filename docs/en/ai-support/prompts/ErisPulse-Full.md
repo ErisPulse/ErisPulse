@@ -2632,23 +2632,33 @@ ssl_keyfile = ""
 
 [ErisPulse.logger]
 level = "INFO"
+format = "rich"
 log_files = []
 memory_limit = 1000
 
 [ErisPulse.framework]
 enable_lazy_loading = true
+uninit_timeout = 30
+strict_mode = 1
+
+[ErisPulse.framework.strict_mode_exceptions]
+modules = []
+adapters = []
 
 [ErisPulse.storage]
 use_global_db = false
 
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = false
+case_sensitive = true
 allow_space_prefix = false
 must_at_bot = false
 
 [ErisPulse.event.message]
 ignore_self = true
+
+[ErisPulse.i18n]
+language = "auto"
 ```
 
 ## Server Configuration
@@ -2680,6 +2690,7 @@ memory_limit = 1000
 | Config Item | Type | Default | Description |
 |---------|------|---------|------|
 | level | string | INFO | Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL |
+| format | string | rich | Log output format; defaults to rich colored output |
 | log_files | array | empty | List of log output files |
 | memory_limit | integer | 1000 | Number of log entries saved in memory |
 
@@ -2688,11 +2699,46 @@ memory_limit = 1000
 ```toml
 [ErisPulse.framework]
 enable_lazy_loading = true
+uninit_timeout = 30
+strict_mode = 1
+
+[ErisPulse.framework.strict_mode_exceptions]
+modules = []
+adapters = []
 ```
 
 | Config Item | Type | Default | Description |
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | Whether to enable module lazy loading |
+| uninit_timeout | integer | 30 | Graceful shutdown timeout in seconds; if exceeded, forcefully terminate. 0 means no timeout |
+| strict_mode | integer | 1 | Strict mode level; see below for "Strict Mode" explanation |
+
+### Strict Mode
+
+Strict mode controls the handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit the corresponding base classes (`BaseModule`/`BaseAdapter`). Components that do not inherit these base classes may affect the framework's context system and cleanup, potentially causing resource leaks. Strict mode is enabled by default to block such components.
+
+| Level | Name | Behavior |
+|------|------|------|
+| 0 | Permissive | Non-compliance only triggers warnings; components not inheriting base classes will still be attempted to load (for compatibility with old components) |
+| 1 | Strict-Skip (Default) | Rejects components not inheriting base classes and skips them; other components start normally |
+| 2 | Strict-Fatal | Collects all non-compliant components and reports them collectively, then terminates the entire startup process |
+
+Under each level, component crashes during the "loading/registration/initialization" phases are always skipped; the difference lies in:
+
+- **0 → 1**: The only behavioral change is that components "not inheriting base classes" change from "still loaded" to "skipped".
+- **1 → 2**: All non-compliance (not inheriting base classes, loading failure, registration failure, initialization failure, etc.) is upgraded to fatal, and a list of non-compliant components is output at the startup checkpoint and the process is terminated.
+
+#### Exception List
+
+If certain components cannot be migrated temporarily (e.g., due to dependencies on old modules), they can be added to the exception list. Components listed in the exception list will be treated as permissive mode even if they are non-compliant, and will continue to be loaded:
+
+```toml
+[ErisPulse.framework.strict_mode_exceptions]
+modules = ["SeTu", "SomeLegacyModule"]
+adapters = ["OldAdapter"]
+```
+
+> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to the exception list or lower the level).
 
 ## Storage Configuration
 
@@ -2714,12 +2760,13 @@ use_global_db = false
 prefix = "/"
 case_sensitive = false
 allow_space_prefix = false
+must_at_bot = false
 ```
 
 | Config Item | Type | Default | Description |
 |---------|------|---------|------|
 | prefix | string | / | Command prefix |
-| case_sensitive | boolean | false | Whether to be case sensitive |
+| case_sensitive | boolean | true | Whether to be case sensitive (i.e., whether `/Help` and `/help` are different commands) |
 | allow_space_prefix | boolean | false | Whether to allow spaces as prefix |
 | must_at_bot | boolean | false | Whether the bot must be mentioned (@bot) to trigger the command (DMs are not restricted) |
 
@@ -2733,6 +2780,17 @@ ignore_self = true
 | Config Item | Type | Default | Description |
 |---------|------|---------|------|
 | ignore_self | boolean | true | Whether to ignore messages sent by the bot itself |
+
+## Internationalization Configuration
+
+```toml
+[ErisPulse.i18n]
+language = "auto"
+```
+
+| Config Item | Type | Default | Description |
+|---------|------|---------|------|
+| language | string | auto | Language for displaying framework built-in text. Set to `auto` to automatically detect system language, or set to a specific code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru` |
 
 ## Module Configuration
 

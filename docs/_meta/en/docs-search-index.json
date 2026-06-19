@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1255,
+  "total_keywords": 1258,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -3425,7 +3425,7 @@
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 103,
+        "line": 149,
         "level": 3,
         "title": "Command Configuration"
       }
@@ -4959,7 +4959,7 @@
     "Event Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 101,
+        "line": 147,
         "level": 2,
         "title": "Event Configuration"
       }
@@ -5332,6 +5332,14 @@
         "title": "Exception Hierarchy"
       }
     ],
+    "Exception List": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 124,
+        "level": 4,
+        "title": "Exception List"
+      }
+    ],
     "Execution Control Commands": [
       {
         "document": "user-guide/cli-reference.md",
@@ -5525,7 +5533,7 @@
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 79,
+        "line": 90,
         "level": 2,
         "title": "Framework Configuration"
       }
@@ -6454,6 +6462,14 @@
         "title": "Internationalization (i18n) System"
       }
     ],
+    "Internationalization Configuration": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 177,
+        "level": 2,
+        "title": "Internationalization Configuration"
+      }
+    ],
     "Introduction to Module Development": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -6785,7 +6801,7 @@
     "Logging Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 64,
+        "line": 74,
         "level": 2,
         "title": "Logging Configuration"
       }
@@ -6923,7 +6939,7 @@
     "Message Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 119,
+        "line": 166,
         "level": 3,
         "title": "Message Configuration"
       }
@@ -7459,7 +7475,7 @@
     "Module Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 130,
+        "line": 188,
         "level": 2,
         "title": "Module Configuration"
       }
@@ -7793,7 +7809,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 159,
+        "line": 217,
         "level": 2,
         "title": "Next Steps"
       },
@@ -9797,7 +9813,7 @@
     "Server Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 47,
+        "line": 57,
         "level": 2,
         "title": "Server Configuration"
       }
@@ -10165,7 +10181,7 @@
     "Storage Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 90,
+        "line": 136,
         "level": 2,
         "title": "Storage Configuration"
       }
@@ -10198,6 +10214,14 @@
         "line": 178,
         "level": 3,
         "title": "Storage（存储）"
+      }
+    ],
+    "Strict Mode": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 109,
+        "level": 3,
+        "title": "Strict Mode"
       }
     ],
     "Style Guide": [
