@@ -121,10 +121,11 @@ ErisPulse 严格模式
 
 ##### `record_failure(name: str, component_type: str, reason: str, detail: str = '')`
 
-记录一次异常类失败（仅致命级别且非豁免时记录）
+记录一次异常类失败
 
-与 decide 不同，此方法假定调用方已自行跳过该组件（例如捕获了异常），
-这里仅在致命级别下补充记录，以便检查点统一报告并中止。
+与 decide 不同，此方法假定调用方已自行跳过该组件（例如捕获了异常）。
+被拒绝的组件会记入 _rejections（与级别无关，用于摘要展示）；
+仅在致命级别下额外记入 _violations，以便检查点统一报告并中止。
 
 :param name: 组件名称
 :param component_type: 组件类型
@@ -148,7 +149,14 @@ ErisPulse 严格模式
 
 ##### `violations()`
 
-已收集的违规列表（只读视图）
+已收集的致命违规列表（只读视图）
+
+---
+
+
+##### `rejections()`
+
+被拒绝/跳过的组件列表（只读视图，与级别无关，用于摘要展示）
 
 ---
 
