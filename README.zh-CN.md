@@ -40,9 +40,14 @@
 
 <div align="center">
 
-### 核心特性
+### 核心特性 · AI 模块构建器
 
 </div>
+
+> 👉 **用自然语言描述需求，AI 查阅官方文档后自动生成完整模块/适配器代码并打包下载**  
+> [**立即体验 → `https://www.erisdev.com/#builder`**](https://www.erisdev.com/#builder)
+>
+> 支持构建：适配器模块 · 功能模块 · 插件模板
 
 <table>
 <tr>
@@ -75,9 +80,9 @@
 <td width="50%" align="center" valign="top">
 <br/>
 
-### 🔄 热重载支持
+### 🔄 热重载 + AI 辅助
 
-开发时无需重启即可重新加载代码，大幅提升开发迭代效率
+开发时无需重启即可重新加载代码；AI 辅助开发让需求直达可用模块
 
 </td>
 </tr>
