@@ -28,16 +28,9 @@ OneBot12標準インターフェースを基に、1回の記述で複数プラ�
 
 <div align="center">
 
-### 核心特性 · AI モジュールビルダー
+### 核心特性
 
 </div>
-
-> 👉 **自然言語で要望を記述し、AIが公式ドキュメントを参照してモジュール/アダプターのコードを生成し、ダウンロードできる**  
-> [**今すぐ体験 → `https://www.erisdev.com/#builder`**](https://www.erisdev.com/#builder)
->
-> 生成可能なモジュール: アダプター、機能モジュール、プラグインテンプレート
->
-> Vibe Coding ワークフローもサポート — AIが生成した素材をダウンロードして、AIに送信するだけで使用可能 [詳細](docs/ja/quick-start.md)
 
 <table>
 <tr>
@@ -77,6 +70,135 @@ OneBot12標準に基づく明確なイベントモデルにより、メッセー
 </td>
 </tr>
 </table>
+
+---
+
+## 同一份コード。複数のプラットフォーム。
+
+*完全同じコマンドハンドラ。異なるプラットフォーム。ビジネスロジックを一切変更せずに。*
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Kook**
+
+<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**QQ**
+
+<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**云湖**
+
+<img src=".github/assets/demo-yunhu.png" alt="云湖 演示" />
+
+</td>
+</tr>
+</table>
+
+---
+
+## エコシステム
+
+ErisPulse は単なるフレームワークではありません。インストールしてすぐに使える状態で、ゼロから車輪を作らなくても済みます。
+
+<table>
+<tr>
+<td align="center" width="25%">
+
+**フレームワーク**
+
+コアランタイム
+
+統一イベント & メッセージモデル
+
+</td>
+<td align="center" width="25%">
+
+**Dashboard**
+
+可視化管理
+
+プラグイン · ログ · 設定
+
+[オンラインデモ →](https://dashdemo.erisdev.com/)
+
+</td>
+<td align="center" width="25%">
+
+**AI モジュールビルダー**
+
+自然言語 → 使用可能なモジュール
+
+[今すぐ体験 →](https://www.erisdev.com/#builder)
+
+</td>
+<td align="center" width="25%">
+
+**モジュール市場**
+
+即座に使えるプラグイン
+
+[モジュールを見る →](https://www.erisdev.com/#market)
+
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+
+**アダプター**
+
+15+ プラットフォーム接続
+
+</td>
+<td align="center" width="25%">
+
+**ドキュメント**
+
+[erisdev.com](https://www.erisdev.com)
+
+</td>
+<td align="center" width="25%">
+
+**Docker**
+
+多アーキテクチャ対応
+
+`erispulse/erispulse`
+
+</td>
+<td align="center" width="25%">
+
+**CLI**
+
+`epsdk` フレームワークツール
+
+</td>
+</tr>
+</table>
+
+---
+
+## プロジェクトの起源
+
+ErisPulse はフレームワークになるために生まれたわけではありません。
+
+最初は **Amer** というプロジェクトから始まりました。これは、異なるプラットフォーム間でメッセージを相互接続・同期するためのプロジェクトでした。
+
+プラットフォームが増えるにつれて、**ryunhusdk2 の非同期版**を維持し始め、統一されたイベントモデルとアダプターシステムを段階的に抽象化していきました。
+
+これらの実践が、今日の ErisPulse に進化しました。
+
+ErisPulse の目的は、常に変わっていません：
+
+**開発者は業務に集中し、プラットフォームの違いに悩まされない。**
 
 ---
 
@@ -211,58 +333,6 @@ pip install ErisPulse
 ```
 
 > 上記の1クリックインストールスクリプトを使用することもでき、環境を自動検出し、設定を案内します。
-
-#### 実行効果
-
-##### ダッシュボード:
-
-[![オンラインデモ](https://img.shields.io/badge/オンラインデモ-Dashboard-FF6B9D?style=for-the-badge&logo=github&logoColor=white)](https://dashdemo.erisdev.com/)
-
-> 💡 オンラインデモダッシュボードを体験: [DashDemo](https://dashdemo.erisdev.com/)
-
-<table>
-<tr>
-<td width="50%">
-
-<img src=".github/assets/docs/dashboard.png" alt="Dashboardデモ" />
-
-</td>
-<td width="50%">
-
-<video src="https://github.com/user-attachments/assets/157191c4-9a84-433c-b311-0c57e3a21151" controls width="100%"></video>
-
-</td>
-</tr>
-</table>
-
-
-##### 同じコードで、複数のプラットフォームに反応:
-
-<table>
-<tr>
-<td align="center" width="33%">
-
-**Kook**
-
-<img src=".github/assets/demo-kook.png" alt="Kookデモ" />
-
-</td>
-<td align="center" width="33%">
-
-**QQ**
-
-<img src=".github/assets/demo-qq.png" alt="QQデモ" />
-
-</td>
-<td align="center" width="33%">
-
-**云湖**
-
-<img src=".github/assets/demo-yunhu.png" alt="云湖デモ" />
-
-</td>
-</tr>
-</table>
 
 #### プロジェクトの初期化
 
@@ -458,6 +528,28 @@ async def menu_handler(event):
 | 複数プラットフォームに<br>同じ機能のロボットを展開 | AIチャットモジュールを接続<br>エンターテインメントとインタラクションを実現 | メッセージ通知、タスク管理<br>データ収集 | 複数プラットフォーム間のメッセージ<br>同期と転送 |
 
 </div>
+
+---
+
+### 社区
+
+ErisPulseコミュニティに参加して、開発者と共同でエコシステムを構築しましょう。
+
+### 云湖
+
+群 ID：`635409929`
+
+加入群聊：
+
+https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199
+
+### QQ 群
+
+https://qm.qq.com/q/TOwnCmypcy
+
+### Telegram
+
+https://t.me/ErisPulse
 
 ---
 
