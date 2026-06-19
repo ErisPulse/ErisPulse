@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1291,
+  "total_keywords": 1294,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -3475,7 +3475,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 168,
+        "line": 217,
         "level": 2,
         "title": "Далее"
       }
@@ -4877,7 +4877,7 @@
     "Конфигурация команд": [
       {
         "document": "user-guide/configuration.md",
-        "line": 103,
+        "line": 149,
         "level": 3,
         "title": "Конфигурация команд"
       }
@@ -4885,15 +4885,23 @@
     "Конфигурация логов": [
       {
         "document": "user-guide/configuration.md",
-        "line": 64,
+        "line": 74,
         "level": 2,
         "title": "Конфигурация логов"
+      }
+    ],
+    "Конфигурация локализации": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 177,
+        "level": 2,
+        "title": "Конфигурация локализации"
       }
     ],
     "Конфигурация модулей": [
       {
         "document": "user-guide/configuration.md",
-        "line": 130,
+        "line": 188,
         "level": 2,
         "title": "Конфигурация модулей"
       }
@@ -4973,7 +4981,7 @@
     "Конфигурация сервера": [
       {
         "document": "user-guide/configuration.md",
-        "line": 47,
+        "line": 57,
         "level": 2,
         "title": "Конфигурация сервера"
       }
@@ -4981,7 +4989,7 @@
     "Конфигурация событий": [
       {
         "document": "user-guide/configuration.md",
-        "line": 101,
+        "line": 147,
         "level": 2,
         "title": "Конфигурация событий"
       }
@@ -4989,7 +4997,7 @@
     "Конфигурация сообщений": [
       {
         "document": "user-guide/configuration.md",
-        "line": 119,
+        "line": 166,
         "level": 3,
         "title": "Конфигурация сообщений"
       }
@@ -5005,7 +5013,7 @@
     "Конфигурация фреймворка": [
       {
         "document": "user-guide/configuration.md",
-        "line": 79,
+        "line": 90,
         "level": 2,
         "title": "Конфигурация фреймворка"
       }
@@ -5013,7 +5021,7 @@
     "Конфигурация хранилища": [
       {
         "document": "user-guide/configuration.md",
-        "line": 90,
+        "line": 136,
         "level": 2,
         "title": "Конфигурация хранилища"
       }
@@ -10284,6 +10292,14 @@
         "title": "Список документации"
       }
     ],
+    "Список исключений": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 124,
+        "level": 4,
+        "title": "Список исключений"
+      }
+    ],
     "Список маршрутов": [
       {
         "document": "advanced/router.md",
@@ -10578,6 +10594,14 @@
         "line": 175,
         "level": 2,
         "title": "Стратегия загрузки модулей"
+      }
+    ],
+    "Строгий режим": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 109,
+        "level": 3,
+        "title": "Строгий режим"
       }
     ],
     "Структура возвращаемого значения": [

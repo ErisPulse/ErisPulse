@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1281,
+  "total_keywords": 1284,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3719,7 +3719,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 159,
+        "line": 217,
         "level": 2,
         "title": "下一步"
       }
@@ -4087,7 +4087,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 101,
+        "line": 148,
         "level": 2,
         "title": "事件配置"
       }
@@ -4309,7 +4309,7 @@
     "伺服器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 47,
+        "line": 57,
         "level": 2,
         "title": "伺服器配置"
       }
@@ -4679,7 +4679,7 @@
     "儲存配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 90,
+        "line": 137,
         "level": 2,
         "title": "儲存配置"
       }
@@ -5284,6 +5284,14 @@
         "title": "單帳戶設定"
       }
     ],
+    "嚴格模式": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 110,
+        "level": 3,
+        "title": "嚴格模式"
+      }
+    ],
     "回應": [
       {
         "document": "platform-guide/webhook.md",
@@ -5358,6 +5366,14 @@
         "line": 1,
         "level": 1,
         "title": "國際化 (i18n) 系統"
+      }
+    ],
+    "國際化配置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 177,
+        "level": 2,
+        "title": "國際化配置"
       }
     ],
     "圖片下載和儲存": [
@@ -7013,7 +7029,7 @@
     "指令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 103,
+        "line": 150,
         "level": 3,
         "title": "指令配置"
       }
@@ -7605,7 +7621,7 @@
     "日誌配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 64,
+        "line": 74,
         "level": 2,
         "title": "日誌配置"
       }
@@ -7991,7 +8007,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 79,
+        "line": 91,
         "level": 2,
         "title": "框架配置"
       }
@@ -8253,7 +8269,7 @@
     "模組配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 130,
+        "line": 188,
         "level": 2,
         "title": "模組配置"
       }
@@ -10055,7 +10071,7 @@
     "訊息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 119,
+        "line": 166,
         "level": 3,
         "title": "訊息配置"
       }
@@ -10378,6 +10394,14 @@
         "line": 105,
         "level": 3,
         "title": "讀取設定"
+      }
+    ],
+    "豁免清單": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 125,
+        "level": 4,
+        "title": "豁免清單"
       }
     ],
     "貢獻流程": [

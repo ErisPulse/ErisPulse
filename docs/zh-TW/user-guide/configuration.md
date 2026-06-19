@@ -25,23 +25,33 @@ ssl_keyfile = ""
 
 [ErisPulse.logger]
 level = "INFO"
+format = "rich"
 log_files = []
 memory_limit = 1000
 
 [ErisPulse.framework]
 enable_lazy_loading = true
+uninit_timeout = 30
+strict_mode = 1
+
+[ErisPulse.framework.strict_mode_exceptions]
+modules = []
+adapters = []
 
 [ErisPulse.storage]
 use_global_db = false
 
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = false
+case_sensitive = true
 allow_space_prefix = false
 must_at_bot = false
 
 [ErisPulse.event.message]
 ignore_self = true
+
+[ErisPulse.i18n]
+language = "auto"
 ```
 
 ## 伺服器配置
@@ -66,6 +76,7 @@ ssl_keyfile = "/path/to/key.pem"
 ```toml
 [ErisPulse.logger]
 level = "INFO"
+format = "rich"
 log_files = ["app.log", "debug.log"]
 memory_limit = 1000
 ```
@@ -73,6 +84,7 @@ memory_limit = 1000
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | level | string | INFO | 日誌層級：DEBUG, INFO, WARNING, ERROR, CRITICAL |
+| format | string | rich | 日誌輸出格式，預設使用 rich 彩色輸出 |
 | log_files | array | 空 | 日誌輸出檔案列表 |
 | memory_limit | integer | 1000 | 記憶體中保存的日誌筆數 |
 
@@ -81,11 +93,46 @@ memory_limit = 1000
 ```toml
 [ErisPulse.framework]
 enable_lazy_loading = true
+uninit_timeout = 30
+strict_mode = 1
+
+[ErisPulse.framework.strict_mode_exceptions]
+modules = []
+adapters = []
 ```
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | 是否啟用模組懶加載 |
+| uninit_timeout | integer | 30 | 優雅關閉的總超時時間（秒），超過後強制終止。0 表示不設超時 |
+| strict_mode | integer | 1 | 嚴格模式級別，見下方「嚴格模式」說明 |
+
+### 嚴格模式
+
+嚴格模式控制模組/適配器在加載階段不合規或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的組件會影響框架的上下文系統與資源清理，可能導致資源洩漏。嚴格模式預設開啟以阻止這類組件。
+
+| 級別 | 名稱 | 行為 |
+|------|------|------|
+| 0 | 寬鬆 | 違規僅警告，未繼承基類的組件仍會嘗試加載（相容舊組件） |
+| 1 | 嚴格-跳過（預設） | 拒絕未繼承基類的組件並跳過，其餘正常啟動 |
+| 2 | 嚴格-致命 | 收集所有違規後統一報告並中止整個啟動 |
+
+各級別下，「加載/註冊/初始化階段報錯」這類組件自身崩潰始終會被跳過；區別在於：
+
+- **0 → 1**：唯一行為變化是「未繼承基類」從「仍加載」變為「跳過」。
+- **1 → 2**：所有違規（未繼承基類、加載失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。
+
+#### 豁免清單
+
+如果某些組件確實暫時無法遷移（例如依賴的舊模組），可以將其加入豁免清單，被列名的組件即使不合規也會按寬鬆模式對待，繼續加載：
+
+```toml
+[ErisPulse.framework.strict_mode_exceptions]
+modules = ["SeTu", "SomeLegacyModule"]
+adapters = ["OldAdapter"]
+```
+
+> 當某個組件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低級別）。
 
 ## 儲存配置
 
@@ -96,7 +143,7 @@ use_global_db = false
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| use_global_db | boolean | false | 是否使用全域資料庫（套件內）而非專案資料庫。`true` 時所有項目共用 ErisPulse 套件內的 SQLite 資料庫；`false`（預設）時每個項目使用 `config/` 目錄下獨立的資料庫 |
+| use_global_db | boolean | false | 是否使用全域資料庫（套件內）而非專案資料庫。`true` 時所有項目共享 ErisPulse 套件內的 SQLite 資料庫；`false`（預設）時每個項目使用 `config/` 目錄下獨立的資料庫 |
 
 ## 事件配置
 
@@ -105,14 +152,14 @@ use_global_db = false
 ```toml
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = false
+case_sensitive = true
 allow_space_prefix = false
 ```
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | prefix | string | / | 指令前綴 |
-| case_sensitive | boolean | false | 是否區分大小寫 |
+| case_sensitive | boolean | true | 是否區分大小寫（`/Help` 與 `/help` 是否為不同指令） |
 | allow_space_prefix | boolean | false | 是否允許空格作為前綴 |
 | must_at_bot | boolean | false | 是否必須@機器人才能觸發指令（私聊不受限制） |
 
@@ -126,6 +173,17 @@ ignore_self = true
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | ignore_self | boolean | true | 是否忽略機器人自己的訊息 |
+
+## 國際化配置
+
+```toml
+[ErisPulse.i18n]
+language = "auto"
+```
+
+| 配置項 | 類型 | 預設值 | 說明 |
+|---------|------|---------|------|
+| language | string | auto | 框架內建文本的顯示語言。設為 `auto` 自動檢測系統語言，也可設為具體代碼：`zh-CN`、`zh-TW`、`en`、`ja`、`ru` |
 
 ## 模組配置
 
