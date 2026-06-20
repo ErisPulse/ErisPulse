@@ -373,6 +373,7 @@ class DocsTranslator:
             review_section = f"\n\n**人工审查备注（必须严格遵守）：**\n{notes_text}"
 
         reference_section = ""
+        """
         if reference_translation:
             reference_section = (
                 f"\n\n**已有翻译参考（请保持术语和风格一致性）：**\n"
@@ -382,7 +383,7 @@ class DocsTranslator:
                 f"1. 源文档中**被修改的部分**可能是人工修正过的内容，不应盲目恢复为参考翻译的旧版本\n"
                 f"2. 术语、用词风格应与参考翻译保持一致，不要随意更换已有译法"
             )
-
+        """
         return (
             f"你是一个专业的技术文档翻译专家。请将以下Markdown文档翻译成{lang_name}。\n\n"
             f"{base_rules}{path_replacement_hint}{review_section}{reference_section}\n\n"
