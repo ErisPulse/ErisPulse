@@ -285,11 +285,45 @@ ALTER TABLE 构建器
 ---
 
 
+##### `_get_nested_value(obj: Any, key_path: list[str])`
+
+从嵌套对象中获取值
+
+:param obj: 嵌套对象(dict/list)
+:param key_path: 键路径列表，如 ["user", "settings", "theme"]
+:return: 嵌套值或None
+
+---
+
+
+##### `_parse_nested_key(key: str, conn = None)`
+
+> **内部方法** 
+解析嵌套键
+
+点号(.)总是表示嵌套访问，即使根键不存在也会创建嵌套结构。
+如果根键存在但不是嵌套对象，会被覆盖为嵌套对象。
+
+> **提示**
+> 此方法确保 '.' 始终作为嵌套访问分隔符，
+> storage.set("user.name", "value") 会自动创建嵌套结构
+
+- **key** (`str`): 键名，如 "user.settings.theme"
+- **conn** (`sqlite3.Connection, optional`): 数据库连接 (未使用，保留用于兼容性) (默认: None)
+:return:
+    str: 根键名
+    list[str]: 路径列表，如 ["settings", "theme"] 或 []
+
+---
+
+
 ##### `get(key: str, default: Any = None)`
 
 获取存储项的值
 
-:param key: 存储项键名
+支持嵌套键访问，如 "user.settings.theme" 会从存储的嵌套对象中获取值
+
+:param key: 存储项键名，支持嵌套路径（如 "user.settings.theme"）
 :param default: 默认值(当键不存在时返回)
 :return: 存储项的值
 
@@ -297,6 +331,7 @@ ALTER TABLE 构建器
 ```python
 >>> timeout = storage.get("network.timeout", 30)
 >>> user_settings = storage.get("user.settings", {})
+>>> theme = storage.get("user.settings.theme", "light")  # 嵌套访问
 ```
 
 ---
@@ -332,11 +367,36 @@ ALTER TABLE 构建器
 ---
 
 
+##### `_set_nested_value(obj: Any, key_path: list[str], value: Any)`
+
+在嵌套对象中设置值
+
+:param obj: 嵌套对象(dict/list)
+:param key_path: 键路径列表，如 ["settings", "theme"]
+:param value: 要设置的值
+:return: 更新后的对象
+
+---
+
+
+##### `_delete_nested_value(obj: Any, key_path: list[str])`
+
+从嵌套对象中删除值
+
+:param obj: 嵌套对象(dict/list)
+:param key_path: 键路径列表，如 ["settings", "theme"]
+:return: (更新后的对象, 是否删除成功)
+
+---
+
+
 ##### `set(key: str, value: Any)`
 
 设置存储项的值
 
-:param key: 存储项键名
+支持嵌套键设置，如 "user.settings.theme" 会更新存储的嵌套对象中的对应字段
+
+:param key: 存储项键名，支持嵌套路径（如 "user.settings.theme"）
 :param value: 存储项的值
 :return: 操作是否成功
 
@@ -344,6 +404,7 @@ ALTER TABLE 构建器
 ```python
 >>> storage.set("app.name", "MyApp")
 >>> storage.set("user.settings", {"theme": "dark"})
+>>> storage.set("user.settings.theme", "light")  # 嵌套设置
 ```
 
 ---
@@ -398,12 +459,15 @@ ALTER TABLE 构建器
 
 删除存储项
 
-:param key: 存储项键名
+支持嵌套键删除，如 "user.settings.theme" 会删除嵌套对象中的对应字段
+
+:param key: 存储项键名，支持嵌套路径（如 "user.settings.theme"）
 :return: 操作是否成功
 
 **示例**:
 ```python
 >>> storage.delete("temp.session")
+>>> storage.delete("user.settings.theme")  # 删除嵌套字段
 ```
 
 ---
