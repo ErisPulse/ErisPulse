@@ -17,9 +17,8 @@ from argparse import ArgumentParser
 import pytest
 
 from ErisPulse.CLI.base import Command
-from ErisPulse.CLI.registry import CommandRegistry
 from ErisPulse.CLI.cli import CLI
-
+from ErisPulse.CLI.registry import CommandRegistry
 
 # ==================== Expected commands & aliases ====================
 
@@ -33,6 +32,7 @@ EXPECTED_COMMANDS = {
     "list": ["l", "ls"],
     "list-remote": ["lr"],
     "run": ["r"],
+    "i18n": ["language", "lang"],
 }
 
 
@@ -308,14 +308,18 @@ class TestCommandRouting:
 
     def test_version_flag_short_circuits(self, fresh_cli, monkeypatch):
         for cmd in fresh_cli.registry.get_all():
-            monkeypatch.setattr(cmd, "execute", lambda *a: pytest.fail("should not run"))
+            monkeypatch.setattr(
+                cmd, "execute", lambda *a: pytest.fail("should not run")
+            )
 
         monkeypatch.setattr(sys, "argv", ["epsdk", "--version"])
         fresh_cli.run()  # passes if no exception
 
     def test_no_command_prints_help(self, fresh_cli, monkeypatch):
         for cmd in fresh_cli.registry.get_all():
-            monkeypatch.setattr(cmd, "execute", lambda *a: pytest.fail("should not run"))
+            monkeypatch.setattr(
+                cmd, "execute", lambda *a: pytest.fail("should not run")
+            )
 
         printed = {"help": False}
         monkeypatch.setattr(

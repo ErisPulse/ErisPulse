@@ -572,30 +572,105 @@ class StorageManager(BaseStorage):
             logger.error(i18n.t("core.storage.init_db_error", error=e))
             raise
 
+    def _get_nested_value(self, obj: Any, key_path: list[str]) -> Any:
+        """
+        从嵌套对象中获取值
+
+        :param obj: 嵌套对象(dict/list)
+        :param key_path: 键路径列表，如 ["user", "settings", "theme"]
+        :return: 嵌套值或None
+        """
+        current = obj
+        for key in key_path:
+            if isinstance(current, dict) and key in current:
+                current = current[key]
+            elif isinstance(current, list) and key.isdigit():
+                index = int(key)
+                if 0 <= index < len(current):
+                    current = current[index]
+                else:
+                    return None
+            else:
+                return None
+        return current
+
+    def _parse_nested_key(self, key: str, conn=None) -> tuple[str, list[str]]:
+        """
+        {!--< internal-use >!--}
+        解析嵌套键
+
+        点号(.)总是表示嵌套访问，即使根键不存在也会创建嵌套结构。
+        如果根键存在但不是嵌套对象，会被覆盖为嵌套对象。
+
+        {!--< tips >!--}
+        此方法确保 '.' 始终作为嵌套访问分隔符，
+        storage.set("user.name", "value") 会自动创建嵌套结构
+        {!--< /tips >!--}
+
+        :param key: [str] 键名，如 "user.settings.theme"
+        :param conn: [sqlite3.Connection, optional] 数据库连接 (未使用，保留用于兼容性) (默认: None)
+        :return:
+            str: 根键名
+            list[str]: 路径列表，如 ["settings", "theme"] 或 []
+        """
+        if "." not in key:
+            return key, []
+
+        parts = key.split(".", 1)
+        root_key = parts[0]
+        path = parts[1].split(".")
+        return root_key, path
+
     def get(self, key: str, default: Any = None) -> Any:
         """
         获取存储项的值
 
-        :param key: 存储项键名
+        支持嵌套键访问，如 "user.settings.theme" 会从存储的嵌套对象中获取值
+
+        :param key: 存储项键名，支持嵌套路径（如 "user.settings.theme"）
         :param default: 默认值(当键不存在时返回)
         :return: 存储项的值
 
         :example:
         >>> timeout = storage.get("network.timeout", 30)
         >>> user_settings = storage.get("user.settings", {})
+        >>> theme = storage.get("user.settings.theme", "light")  # 嵌套访问
         """
         if not self._is_ready():
             return default
 
         try:
             with self._get_connection() as conn:
+                # 解析嵌套键（传入连接对象以提高性能）
+                root_key, nested_path = self._parse_nested_key(key, conn)
+
                 cursor = conn.cursor()
-                cursor.execute("SELECT value FROM config WHERE key = ?", (key,))
+                cursor.execute("SELECT value FROM config WHERE key = ?", (root_key,))
                 if result := cursor.fetchone():
                     try:
-                        return json.loads(result[0])
+                        value = json.loads(result[0])
                     except json.JSONDecodeError:
-                        return result[0]
+                        value = result[0]
+
+                    # 如果有嵌套路径，尝试获取嵌套值
+                    if nested_path:
+                        if isinstance(value, (dict, list)):
+                            nested_value = self._get_nested_value(value, nested_path)
+                            return nested_value if nested_value is not None else default
+                        else:
+                            return default
+                    else:
+                        return value
+
+                # 尝试完整键名查找（向后兼容）
+                if nested_path:
+                    cursor.execute("SELECT value FROM config WHERE key = ?", (key,))
+                    if result := cursor.fetchone():
+                        try:
+                            return json.loads(result[0])
+                        except json.JSONDecodeError:
+                            return result[0]
+
                 return default
         except sqlite3.OperationalError as e:
             if "no such table" in str(e):
@@ -647,28 +722,192 @@ class StorageManager(BaseStorage):
         """
         return self.get_all_keys()
 
+    def _set_nested_value(self, obj: Any, key_path: list[str], value: Any) -> Any:
+        """
+        在嵌套对象中设置值
+
+        :param obj: 嵌套对象(dict/list)
+        :param key_path: 键路径列表，如 ["settings", "theme"]
+        :param value: 要设置的值
+        :return: 更新后的对象
+        """
+        if not key_path:
+            return value
+
+        current = obj
+        # 遍历到倒数第二个键
+        for i, key in enumerate(key_path[:-1]):
+            if isinstance(current, dict):
+                if key not in current:
+                    # 预创建下一个层级
+                    next_key = key_path[i + 1]
+                    current[key] = {} if not next_key.isdigit() else []
+                current = current[key]
+            elif isinstance(current, list) and key.isdigit():
+                index = int(key)
+                if index >= len(current):
+                    # 扩展列表
+                    current.extend([None] * (index - len(current) + 1))
+                current = current[index]
+            else:
+                # 无法继续嵌套，创建新的字典
+                new_obj = {}
+                next_key = key_path[i + 1]
+                obj = new_obj if i == 0 else current
+                current = new_obj
+                if i > 0:
+                    # 需要重新设置父级引用
+                    return self._set_nested_value(obj, key_path, value)
+
+        # 设置最后一个键的值
+        last_key = key_path[-1]
+        if isinstance(current, dict):
+            current[last_key] = value
+        elif isinstance(current, list) and last_key.isdigit():
+            index = int(last_key)
+            if index >= len(current):
+                current.extend([None] * (index - len(current) + 1))
+            current[index] = value
+        else:
+            # 无法设置，创建新的字典
+            new_obj = {last_key: value}
+            if key_path[:-1]:
+                return self._set_nested_value({}, key_path[:-1] + [last_key], value)
+            return new_obj
+
+        return obj
+
+    def _delete_nested_value(self, obj: Any, key_path: list[str]) -> tuple[Any, bool]:
+        """
+        从嵌套对象中删除值
+
+        :param obj: 嵌套对象(dict/list)
+        :param key_path: 键路径列表，如 ["settings", "theme"]
+        :return: (更新后的对象, 是否删除成功)
+        """
+        if not key_path:
+            return obj, False
+
+        if len(key_path) == 1:
+            # 删除根级别的键
+            if isinstance(obj, dict) and key_path[0] in obj:
+                del obj[key_path[0]]
+                return obj, True
+            elif isinstance(obj, list) and key_path[0].isdigit():
+                index = int(key_path[0])
+                if 0 <= index < len(obj):
+                    obj.pop(index)
+                    return obj, True
+            return obj, False
+
+        # 递归删除嵌套值
+        current = obj
+        for i, key in enumerate(key_path[:-1]):
+            if isinstance(current, dict) and key in current:
+                if i == len(key_path) - 2:
+                    # 到达倒数第二层，删除最后一层的键
+                    last_key = key_path[-1]
+                    if isinstance(current[key], dict) and last_key in current[key]:
+                        del current[key][last_key]
+                        return obj, True
+                    elif isinstance(current[key], list) and last_key.isdigit():
+                        index = int(last_key)
+                        if 0 <= index < len(current[key]):
+                            current[key].pop(index)
+                            return obj, True
+                    return obj, False
+                current = current[key]
+            elif isinstance(current, list) and key.isdigit():
+                index = int(key)
+                if 0 <= index < len(current):
+                    if i == len(key_path) - 2:
+                        # 到达倒数第二层，删除最后一层的键
+                        last_key = key_path[-1]
+                        if (
+                            isinstance(current[index], dict)
+                            and last_key in current[index]
+                        ):
+                            del current[index][last_key]
+                            return obj, True
+                        elif isinstance(current[index], list) and last_key.isdigit():
+                            last_index = int(last_key)
+                            if 0 <= last_index < len(current[index]):
+                                current[index].pop(last_index)
+                                return obj, True
+                        return obj, False
+                    current = current[index]
+                else:
+                    return obj, False
+            else:
+                return obj, False
+
+        return obj, False
+
     def set(self, key: str, value: Any) -> bool:
         """
         设置存储项的值
 
-        :param key: 存储项键名
+        支持嵌套键设置，如 "user.settings.theme" 会更新存储的嵌套对象中的对应字段
+
+        :param key: 存储项键名，支持嵌套路径（如 "user.settings.theme"）
         :param value: 存储项的值
         :return: 操作是否成功
 
         :example:
         >>> storage.set("app.name", "MyApp")
         >>> storage.set("user.settings", {"theme": "dark"})
+        >>> storage.set("user.settings.theme", "light")  # 嵌套设置
         """
         if not self._is_ready():
             return False
 
         try:
-            serialized_value = json.dumps(value)
             with self._get_connection() as conn:
+                # 解析嵌套键（传入连接对象以提高性能）
+                root_key, nested_path = self._parse_nested_key(key, conn)
+
+                # 如果不是嵌套键，直接设置
+                if not nested_path:
+                    serialized_value = json.dumps(value)
+                    cursor = conn.cursor()
+                    cursor.execute(
+                        "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+                        (key, serialized_value),
+                    )
+                    self._auto_commit(conn)
+                    return True
+
+                # 处理嵌套键
                 cursor = conn.cursor()
+
+                # 获取现有的根键值
+                cursor.execute("SELECT value FROM config WHERE key = ?", (root_key,))
+                result = cursor.fetchone()
+
+                if result:
+                    try:
+                        current_value = json.loads(result[0])
+                    except json.JSONDecodeError:
+                        # 如果现有值不是JSON，无法进行嵌套操作
+                        current_value = {}
+                else:
+                    # 根键不存在，创建新的嵌套结构
+                    current_value = {}
+
+                # 确保值是字典或列表，以便进行嵌套操作
+                if not isinstance(current_value, (dict, list)):
+                    current_value = {}
+
+                # 设置嵌套值
+                updated_value = self._set_nested_value(
+                    current_value, nested_path, value
+                )
+
+                # 存储更新后的值
+                serialized_value = json.dumps(updated_value)
                 cursor.execute(
                     "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
-                    (key, serialized_value),
+                    (root_key, serialized_value),
                 )
                 self._auto_commit(conn)
 
@@ -749,19 +988,64 @@ class StorageManager(BaseStorage):
         """
         删除存储项
 
-        :param key: 存储项键名
+        支持嵌套键删除，如 "user.settings.theme" 会删除嵌套对象中的对应字段
+
+        :param key: 存储项键名，支持嵌套路径（如 "user.settings.theme"）
         :return: 操作是否成功
 
         :example:
         >>> storage.delete("temp.session")
+        >>> storage.delete("user.settings.theme")  # 删除嵌套字段
         """
         if not self._is_ready():
             return False
 
         try:
             with self._get_connection() as conn:
+                # 解析嵌套键（传入连接对象以提高性能）
+                root_key, nested_path = self._parse_nested_key(key, conn)
+
+                # 如果不是嵌套键，直接删除
+                if not nested_path:
+                    cursor = conn.cursor()
+                    cursor.execute("DELETE FROM config WHERE key = ?", (key,))
+                    self._auto_commit(conn)
+                    return True
+
+                # 处理嵌套键删除
                 cursor = conn.cursor()
-                cursor.execute("DELETE FROM config WHERE key = ?", (key,))
+
+                # 获取现有的根键值
+                cursor.execute("SELECT value FROM config WHERE key = ?", (root_key,))
+                result = cursor.fetchone()
+
+                if not result:
+                    return False
+
+                try:
+                    current_value = json.loads(result[0])
+                except json.JSONDecodeError:
+                    # 如果现有值不是JSON，无法进行嵌套操作
+                    return False
+
+                # 确保值是字典或列表，以便进行嵌套操作
+                if not isinstance(current_value, (dict, list)):
+                    return False
+
+                # 删除嵌套值
+                updated_value, deleted = self._delete_nested_value(
+                    current_value, nested_path
+                )
+
+                if not deleted:
+                    return False
+
+                # 存储更新后的值
+                serialized_value = json.dumps(updated_value)
+                cursor.execute(
+                    "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+                    (root_key, serialized_value),
+                )
                 self._auto_commit(conn)
 
             return True

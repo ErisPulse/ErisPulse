@@ -4,10 +4,11 @@
 测试 ConfigManager + StorageManager 联合操作、事务回滚、并发读写。
 """
 
-import pytest
 import threading
 import time
 from unittest.mock import patch
+
+import pytest
 
 from ErisPulse.Core.config import ConfigManager
 from ErisPulse.Core.storage import StorageManager
@@ -167,7 +168,8 @@ class TestConfigStorageIntegration:
         def write_thread(thread_id):
             try:
                 for i in range(writes_per_thread):
-                    key = f"thread.{thread_id}.{i}"
+                    # 使用下划线避免被解析为嵌套键
+                    key = f"thread_{thread_id}_{i}"
                     temp_storage.set(key, f"value_{thread_id}_{i}")
             except Exception as e:
                 errors.append(e)
