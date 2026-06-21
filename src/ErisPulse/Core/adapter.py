@@ -13,15 +13,10 @@ from collections import defaultdict
 from collections.abc import Callable
 from typing import Any
 
-from .Bases.adapter import BaseAdapter
-from .config import config
-from .i18n import i18n
-from .lifecycle import lifecycle
-from .logger import logger
-
-_msg_logger = logger.get_child("Message", relative=False)
 from ..runtime.context import current_owner, handler_waits
+from .Bases.adapter import BaseAdapter
 from .Bases.manager import ManagerBase
+from .config import config
 from .constants import (
     ADAPTER_RETRY_BACKOFF_INTERVALS,
     ADAPTER_RETRY_FIXED_DELAY_SECS,
@@ -30,6 +25,23 @@ from .constants import (
     DEFAULT_ADAPTER_ENABLED,
     HANDLER_SLOW_THRESHOLD_SECS,
 )
+from .i18n import i18n
+from .lifecycle import lifecycle
+from .logger import logger
+
+# 按事件类型分类的日志器
+_msg_logger = logger.get_child("Message", relative=False)
+_notice_logger = logger.get_child("Notice", relative=False)
+_request_logger = logger.get_child("Request", relative=False)
+_meta_logger = logger.get_child("Meta", relative=False)
+
+# 事件类型 -> 日志器 映射
+_event_loggers = {
+    "message": _msg_logger,
+    "notice": _notice_logger,
+    "request": _request_logger,
+    "meta": _meta_logger,
+}
 
 
 class AdapterManager(ManagerBase):
@@ -936,11 +948,10 @@ class AdapterManager(ManagerBase):
             alt_msg = data.get("alt_message", "")
             if len(alt_msg) > 50:
                 alt_msg = alt_msg[:50] + "..."
-            _msg_logger.message(
-                f"[Recv] {platform}/{detail_type}({user_id}): {alt_msg}"
-            )
+            _msg_logger.event(f"[Recv] {platform}/{detail_type}({user_id}): {alt_msg}")
         else:
-            _msg_logger.message(f"[Recv] {platform}/{event_type}/{detail_type}")
+            _logger = _event_loggers.get(event_type, _meta_logger)
+            _logger.event(f"[Recv] {platform}/{detail_type}")
 
         # 钩子: 事件接收（最早期，所有事件都经过此处）
         await lifecycle.emit(
