@@ -203,6 +203,7 @@ TRANSLATIONS = {
     "core.router.already_running": "サーバーは既に実行中です",
     "core.router.starting": "ルーターサーバーを起動しています {url}",
     "core.router.routes_registered": "{count} 件のルートを登録しました: {routes}",
+    "core.router.routes_summary": "ルート準備完了: HTTP={http}, WebSocket={ws}, SSE={sse}",
     "core.router.started": "ルーターサーバーが起動しました",
     "core.router.start_failed_msg": "ルーターサーバーの起動に失敗しました",
     "core.router.start_failed": "サーバーの起動に失敗しました: {error}",

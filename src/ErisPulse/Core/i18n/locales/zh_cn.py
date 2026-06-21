@@ -203,6 +203,7 @@ TRANSLATIONS = {
     "core.router.already_running": "服务器已在运行中",
     "core.router.starting": "启动路由服务器 {url}",
     "core.router.routes_registered": "已注册 {count} 条路由: {routes}",
+    "core.router.routes_summary": "路由就绪: HTTP={http}, WebSocket={ws}, SSE={sse}",
     "core.router.started": "路由服务器已启动",
     "core.router.start_failed_msg": "路由服务器启动失败",
     "core.router.start_failed": "启动服务器失败: {error}",

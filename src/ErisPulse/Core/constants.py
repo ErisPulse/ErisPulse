@@ -122,6 +122,21 @@ DEFAULT_LOG_LEVEL = "INFO"
 # 修改影响: 终端日志输出的时间显示样式。
 LOG_TIME_FORMAT = "[%H:%M:%S]"
 
+# Rich 日志配色主题。
+# 键为 Rich 样式名（Theme key），值为 rich 样式字符串。
+# 修改影响: 终端中各级别日志的显示颜色。
+# 设计原则: 低饱和度、语义化——INFO 不着色只加粗，仅 WARNING/ERROR 用颜色高亮。
+LOG_RICH_THEME = {
+    "log.time": "dim",  # 时间戳
+    "logging.level.trace": "dim",  # TRACE
+    "logging.level.debug": "dim cyan",  # DEBUG
+    "logging.level.event": "cyan",  # EVENT
+    "logging.level.info": "bold",  # INFO（加粗无颜色）
+    "logging.level.warning": "yellow",  # WARNING
+    "logging.level.error": "red",  # ERROR
+    "logging.level.critical": "bold white on red",  # CRITICAL（红底白字）
+}
+
 # ==============================================================================
 # SQLite 存储引擎
 #
