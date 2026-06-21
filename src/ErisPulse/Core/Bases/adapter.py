@@ -11,16 +11,16 @@ ErisPulse 适配器基础模块
 
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Any
 from collections.abc import Awaitable, Callable
+from typing import Any
+
 from ..constants import (
-    RETCODE_NOT_IMPLEMENTED,
-    STATUS_FAILED,
     DEFAULT_SEND_METHOD,
     DEFAULT_SEND_TARGET_TYPE,
     DETAIL_TYPE_PRIVATE,
+    RETCODE_NOT_IMPLEMENTED,
+    STATUS_FAILED,
 )
-
 
 _CHAIN_MODIFIER_NAMES = frozenset({"At", "AtAll", "Reply", "To", "Using", "Account"})
 
@@ -32,6 +32,7 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
     仅对返回 Task/Awaitable 的发送方法生效，链式修饰方法（返回 SendDSL）不受影响。
     不改变原方法的返回值类型或执行行为，仅在 Task 上添加回调来触发钩子。
     """
+
     def hooked(*args, **kwargs):
         result = original_method(*args, **kwargs)
 
@@ -51,23 +52,32 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
         }
 
         from ..adapter import _msg_logger
+
         target_type = send_dsl._target_type or ""
         target_id = send_dsl._target_id or ""
-        log_target = f"{target_type}/{target_id}" if target_type and target_id else target_id or "?"
+        log_target = (
+            f"{target_type}/{target_id}"
+            if target_type and target_id
+            else target_id or "?"
+        )
         if method_name in ("Text", "Markdown", "Html") and args:
             content = str(args[0])
             if len(content) > 50:
                 content = content[:50] + "..."
-            _msg_logger.message(f"[Send] {platform}/{method_name} -> {log_target}: {content}")
+            _msg_logger.event(
+                f"[Send] {platform}/{method_name} -> {log_target}: {content}"
+            )
         else:
-            _msg_logger.message(f"[Send] {platform}/{method_name} -> {log_target}")
+            _msg_logger.event(f"[Send] {platform}/{method_name} -> {log_target}")
 
         async def _emit_hooks():
             from ..lifecycle import lifecycle
+
             await lifecycle.emit("message.sending", send_ctx)
 
         async def _emit_hooks_done(_):
             from ..lifecycle import lifecycle
+
             await lifecycle.emit("message.sent", send_ctx)
 
         sending_task = asyncio.ensure_future(_emit_hooks())
@@ -783,9 +793,9 @@ class BaseAdapter(ABC):
         :return: AdapterConfig 实例
         """
         from ...runtime.config_schema import (
-            dict_to_dataclass,
             dataclass_to_defaults_dict,
             dataclass_to_toml_with_comments,
+            dict_to_dataclass,
         )
         from ..config import config as config_mgr
 
@@ -812,8 +822,8 @@ class BaseAdapter(ABC):
         :return: 账户配置字典 {name: config_instance}
         """
         from ...runtime.config_schema import (
-            dict_to_dataclass,
             dataclass_to_defaults_dict,
+            dict_to_dataclass,
             validate_config,
         )
         from ..config import config as config_mgr

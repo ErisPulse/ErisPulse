@@ -598,7 +598,7 @@ class RouterManager:
         self.app.router.routes.append(route)
         self._sse_routes[module_name][full_path] = handler
 
-        logger.info(
+        logger.debug(
             i18n.t("core.router.register_sse", module=module_name, path=full_path)
         )
 
@@ -1355,7 +1355,7 @@ class RouterManager:
             if rate_limit:
                 self._apply_rate_limit(full_path, rate_limit)
 
-            logger.info(
+            logger.debug(
                 i18n.t(
                     "core.router.register_http",
                     module=module_name,
@@ -1595,7 +1595,7 @@ class RouterManager:
         if rate_limit:
             self._apply_rate_limit(full_path, rate_limit)
 
-        logger.info(
+        logger.debug(
             i18n.t(
                 "core.router.register_http",
                 module=module_name,
@@ -1632,7 +1632,7 @@ class RouterManager:
 
             # 获取所有方法
             methods = list(http_routes[full_path].keys())
-            logger.info(
+            logger.debug(
                 i18n.t("core.router.unregister_http", path=full_path, methods=methods)
             )
             del http_routes[full_path]
@@ -1761,7 +1761,7 @@ class RouterManager:
             auto_accept,
         )
 
-        logger.info(
+        logger.debug(
             i18n.t(
                 "core.router.register_ws",
                 module=module_name,
@@ -1815,7 +1815,7 @@ class RouterManager:
             if (
                 ws_routes := self._websocket_routes.get(module_name)
             ) and full_path in ws_routes:
-                logger.info(i18n.t("core.router.unregister_ws", path=full_path))
+                logger.debug(i18n.t("core.router.unregister_ws", path=full_path))
                 del ws_routes[full_path]
 
                 # 从 FastAPI 路由列表中移除对应的 WebSocket 路由
@@ -1880,7 +1880,7 @@ class RouterManager:
             if (
                 sse_routes := self._sse_routes.get(module_name)
             ) and full_path in sse_routes:
-                logger.info(i18n.t("core.router.unregister_sse", path=full_path))
+                logger.debug(i18n.t("core.router.unregister_sse", path=full_path))
                 del sse_routes[full_path]
 
                 self.app.router.routes = [
@@ -2520,15 +2520,25 @@ class RouterManager:
 
             self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
             display_url = self._format_display_url(self.base_url)
-            registered_routes = [
-                r.path for r in self.app.router.routes if hasattr(r, "path")
-            ]
+            http_count = sum(len(paths) for paths in self._http_routes.values())
+            ws_count = sum(len(paths) for paths in self._websocket_routes.values())
+            sse_count = sum(len(paths) for paths in self._sse_routes.values())
             logger.info(i18n.t("core.router.starting", url=display_url))
+            logger.info(
+                i18n.t(
+                    "core.router.routes_summary",
+                    http=http_count,
+                    ws=ws_count,
+                    sse=sse_count,
+                )
+            )
             logger.debug(
                 i18n.t(
                     "core.router.routes_registered",
-                    count=len(registered_routes),
-                    routes=registered_routes,
+                    count=http_count + ws_count + sse_count,
+                    routes=[
+                        r.path for r in self.app.router.routes if hasattr(r, "path")
+                    ],
                 )
             )
 
