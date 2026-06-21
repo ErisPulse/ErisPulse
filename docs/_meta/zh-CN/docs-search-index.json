@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1239,
+  "total_keywords": 1235,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -302,14 +302,6 @@
         "title": "1. 说明"
       }
     ],
-    "1. 选择物料文档": [
-      {
-        "document": "ai-support/README.md",
-        "line": 32,
-        "level": 3,
-        "title": "1. 选择物料文档"
-      }
-    ],
     "1. 配置 pyproject.toml": [
       {
         "document": "developer-guide/publishing.md",
@@ -572,14 +564,6 @@
         "line": 61,
         "level": 3,
         "title": "2. 接收事件（POST）"
-      }
-    ],
-    "2. 提供上下文": [
-      {
-        "document": "ai-support/README.md",
-        "line": 40,
-        "level": 3,
-        "title": "2. 提供上下文"
       }
     ],
     "2. 支持的消息发送类型": [
@@ -1042,14 +1026,6 @@
         "title": "3. 特有事件类型"
       }
     ],
-    "3. 编写需求描述": [
-      {
-        "document": "ai-support/README.md",
-        "line": 48,
-        "level": 3,
-        "title": "3. 编写需求描述"
-      }
-    ],
     "3. 缺少 `self` 字段": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -1288,14 +1264,6 @@
         "line": 185,
         "level": 3,
         "title": "4. 连接信息暴露"
-      }
-    ],
-    "4. 验证生成结果": [
-      {
-        "document": "ai-support/README.md",
-        "line": 52,
-        "level": 3,
-        "title": "4. 验证生成结果"
       }
     ],
     "4.1 Event 方法列表": [
@@ -2550,6 +2518,14 @@
         "title": "Logger（日志）"
       }
     ],
+    "MCP 服务器": [
+      {
+        "document": "ai-support/README.md",
+        "line": 60,
+        "level": 2,
+        "title": "MCP 服务器"
+      }
+    ],
     "Matrix平台特性文档": [
       {
         "document": "platform-guide/matrix.md",
@@ -3735,7 +3711,7 @@
     "下一步": [
       {
         "document": "ai-support/README.md",
-        "line": 125,
+        "line": 117,
         "level": 2,
         "title": "下一步"
       },
@@ -4500,12 +4476,12 @@
         "title": "使用懒加载模块"
       }
     ],
-    "使用步骤": [
+    "使用方式": [
       {
         "document": "ai-support/README.md",
         "line": 30,
-        "level": 2,
-        "title": "使用步骤"
+        "level": 3,
+        "title": "使用方式"
       }
     ],
     "使用生命周期事件": [
@@ -5384,14 +5360,6 @@
         "line": 439,
         "level": 3,
         "title": "可用属性"
-      }
-    ],
-    "各文档覆盖范围": [
-      {
-        "document": "ai-support/README.md",
-        "line": 15,
-        "level": 3,
-        "title": "各文档覆盖范围"
       }
     ],
     "同时发布到 Docker Hub": [
@@ -6711,7 +6679,7 @@
     "常见问题": [
       {
         "document": "ai-support/README.md",
-        "line": 103,
+        "line": 109,
         "level": 2,
         "title": "常见问题"
       },
@@ -7478,6 +7446,22 @@
         "title": "排序、分页"
       }
     ],
+    "接入 Claude Desktop": [
+      {
+        "document": "ai-support/README.md",
+        "line": 77,
+        "level": 3,
+        "title": "接入 Claude Desktop"
+      }
+    ],
+    "接入 Cursor": [
+      {
+        "document": "ai-support/README.md",
+        "line": 93,
+        "level": 3,
+        "title": "接入 Cursor"
+      }
+    ],
     "接收消息": [
       {
         "document": "advanced/http-client.md",
@@ -7508,6 +7492,14 @@
         "line": 100,
         "level": 3,
         "title": "推荐禁用懒加载的场景（lazy_load=False）"
+      }
+    ],
+    "提供的工具": [
+      {
+        "document": "ai-support/README.md",
+        "line": 64,
+        "level": 3,
+        "title": "提供的工具"
       }
     ],
     "插入数据": [
@@ -8692,14 +8684,6 @@
         "title": "模块间通信"
       }
     ],
-    "模块需求": [
-      {
-        "document": "ai-support/README.md",
-        "line": 63,
-        "level": 3,
-        "title": "模块需求"
-      }
-    ],
     "模式一：HTML/JS 注入（推荐）": [
       {
         "document": "advanced/dashboard-view.md",
@@ -9219,7 +9203,7 @@
     "物料文档": [
       {
         "document": "ai-support/README.md",
-        "line": 5,
+        "line": 18,
         "level": 2,
         "title": "物料文档"
       }
@@ -10128,14 +10112,6 @@
         "title": "获取方法详细信息"
       }
     ],
-    "获取最新版本": [
-      {
-        "document": "ai-support/README.md",
-        "line": 23,
-        "level": 3,
-        "title": "获取最新版本"
-      }
-    ],
     "获取目标 ID": [
       {
         "document": "advanced/session-types.md",
@@ -10884,14 +10860,6 @@
         "title": "适配器系统 API"
       }
     ],
-    "适配器需求": [
-      {
-        "document": "ai-support/README.md",
-        "line": 82,
-        "level": 3,
-        "title": "适配器需求"
-      }
-    ],
     "适配器：注册平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
@@ -11599,8 +11567,8 @@
     "需求描述模板": [
       {
         "document": "ai-support/README.md",
-        "line": 61,
-        "level": 2,
+        "line": 36,
+        "level": 3,
         "title": "需求描述模板"
       }
     ],
