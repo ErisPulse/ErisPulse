@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1294,
+  "total_keywords": 1289,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -16,14 +16,6 @@
         "line": 502,
         "level": 3,
         "title": "1. Unit-тесты"
-      }
-    ],
-    "1. Выбор документации по материалам": [
-      {
-        "document": "ai-support/README.md",
-        "line": 32,
-        "level": 3,
-        "title": "1. Выбор документации по материалам"
       }
     ],
     "1. Декларативная конфигурация (Рекомендуется)": [
@@ -616,14 +608,6 @@
         "title": "2. Правильное использование асинхронных операций"
       }
     ],
-    "2. Предоставление контекста": [
-      {
-        "document": "ai-support/README.md",
-        "line": 40,
-        "level": 3,
-        "title": "2. Предоставление контекста"
-      }
-    ],
     "2. Приём событий (POST)": [
       {
         "document": "platform-guide/webhook.md",
@@ -928,14 +912,6 @@
         "title": "3. Карта соответствия типов платформ"
       }
     ],
-    "3. Написание описания требований": [
-      {
-        "document": "ai-support/README.md",
-        "line": 48,
-        "level": 3,
-        "title": "3. Написание описания требований"
-      }
-    ],
     "3. Отправка в магазин модулей": [
       {
         "document": "developer-guide/publishing.md",
@@ -1198,14 +1174,6 @@
         "line": 64,
         "level": 3,
         "title": "4. Описание расширенных полей"
-      }
-    ],
-    "4. Проверка сгенерированного результата": [
-      {
-        "document": "ai-support/README.md",
-        "line": 52,
-        "level": 3,
-        "title": "4. Проверка сгенерированного результата"
       }
     ],
     "4. Расширение пользовательских типов": [
@@ -1830,20 +1798,20 @@
         "title": "9. Связанные документы"
       }
     ],
-    "AI-ассистированная разработка": [
-      {
-        "document": "ai-support/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "AI-ассистированная разработка"
-      }
-    ],
     "AI-поддержка разработки": [
       {
         "document": "README.md",
         "line": 85,
         "level": 3,
         "title": "AI-поддержка разработки"
+      }
+    ],
+    "AI-помощь в разработке": [
+      {
+        "document": "ai-support/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "AI-помощь в разработке"
       }
     ],
     "API Справочник": [
@@ -2028,6 +1996,14 @@
         "line": 217,
         "level": 3,
         "title": "Logger (Логирование)"
+      }
+    ],
+    "MCP-сервер": [
+      {
+        "document": "ai-support/README.md",
+        "line": 60,
+        "level": 2,
+        "title": "MCP-сервер"
       }
     ],
     "Message 消息模块": [
@@ -3490,6 +3466,12 @@
     ],
     "Дальнейшие шаги": [
       {
+        "document": "ai-support/README.md",
+        "line": 117,
+        "level": 2,
+        "title": "Дальнейшие шаги"
+      },
+      {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 424,
         "level": 2,
@@ -3663,7 +3645,7 @@
     "Документация по материалам": [
       {
         "document": "ai-support/README.md",
-        "line": 5,
+        "line": 18,
         "level": 2,
         "title": "Документация по материалам"
       }
@@ -4256,14 +4238,6 @@
         "line": 63,
         "level": 3,
         "title": "Инициализация ядра"
-      }
-    ],
-    "Инструкции по использованию": [
-      {
-        "document": "ai-support/README.md",
-        "line": 30,
-        "level": 2,
-        "title": "Инструкции по использованию"
       }
     ],
     "Инструкции по поддержке документации": [
@@ -7270,14 +7244,6 @@
         "title": "Отправка сообщения с кнопками в личный чат пользователя"
       }
     ],
-    "Охват содержания каждого документа": [
-      {
-        "document": "ai-support/README.md",
-        "line": 15,
-        "level": 3,
-        "title": "Охват содержания каждого документа"
-      }
-    ],
     "Ошибка конфигурации": [
       {
         "document": "user-guide/installation.md",
@@ -7756,6 +7722,22 @@
         "title": "Подключение WebSocket"
       }
     ],
+    "Подключение к Claude Desktop": [
+      {
+        "document": "ai-support/README.md",
+        "line": 77,
+        "level": 3,
+        "title": "Подключение к Claude Desktop"
+      }
+    ],
+    "Подключение к Cursor": [
+      {
+        "document": "ai-support/README.md",
+        "line": 93,
+        "level": 3,
+        "title": "Подключение к Cursor"
+      }
+    ],
     "Подписка на события (Intents)": [
       {
         "document": "platform-guide/qqbot.md",
@@ -7942,14 +7924,6 @@
         "title": "Получение помощи"
       }
     ],
-    "Получение последней версии": [
-      {
-        "document": "ai-support/README.md",
-        "line": 23,
-        "level": 3,
-        "title": "Получение последней версии"
-      }
-    ],
     "Получение сообщений": [
       {
         "document": "advanced/http-client.md",
@@ -8082,6 +8056,14 @@
         "line": 26,
         "level": 2,
         "title": "Предварительные требования"
+      }
+    ],
+    "Предоставляемые инструменты": [
+      {
+        "document": "ai-support/README.md",
+        "line": 64,
+        "level": 3,
+        "title": "Предоставляемые инструменты"
       }
     ],
     "Преимущества использования стандарта": [
@@ -9722,14 +9704,6 @@
         "title": "Скрипт для одной команды (Рекомендуется)"
       }
     ],
-    "Следующие шаги": [
-      {
-        "document": "ai-support/README.md",
-        "line": 125,
-        "level": 2,
-        "title": "Следующие шаги"
-      }
-    ],
     "Слушание событий": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -10356,6 +10330,14 @@
         "title": "Способ с pip"
       }
     ],
+    "Способы использования": [
+      {
+        "document": "ai-support/README.md",
+        "line": 30,
+        "level": 3,
+        "title": "Способы использования"
+      }
+    ],
     "Способы разработки": [
       {
         "document": "README.md",
@@ -10896,22 +10878,6 @@
         "line": 28,
         "level": 3,
         "title": "Транзакционные операции"
-      }
-    ],
-    "Требования для адаптера": [
-      {
-        "document": "ai-support/README.md",
-        "line": 82,
-        "level": 3,
-        "title": "Требования для адаптера"
-      }
-    ],
-    "Требования для модуля": [
-      {
-        "document": "ai-support/README.md",
-        "line": 63,
-        "level": 3,
-        "title": "Требования для модуля"
       }
     ],
     "Требования к обновлению": [
@@ -11605,7 +11571,7 @@
     "Часто задаваемые вопросы": [
       {
         "document": "ai-support/README.md",
-        "line": 103,
+        "line": 109,
         "level": 2,
         "title": "Часто задаваемые вопросы"
       },
@@ -11694,20 +11660,20 @@
         "title": "Что такое адаптер"
       }
     ],
+    "Шаблон описания задачи": [
+      {
+        "document": "ai-support/README.md",
+        "line": 36,
+        "level": 3,
+        "title": "Шаблон описания задачи"
+      }
+    ],
     "Шаблоны (Wildcard)": [
       {
         "document": "advanced/lifecycle.md",
         "line": 49,
         "level": 3,
         "title": "Шаблоны (Wildcard)"
-      }
-    ],
-    "Шаблоны описания требований": [
-      {
-        "document": "ai-support/README.md",
-        "line": 61,
-        "level": 2,
-        "title": "Шаблоны описания требований"
       }
     ],
     "Шаблоны проектов": [

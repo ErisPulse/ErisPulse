@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1289,
+  "total_keywords": 1286,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -290,14 +290,6 @@
         "title": "1. 機密データの保護"
       }
     ],
-    "1. 物料ドキュメントの選択": [
-      {
-        "document": "ai-support/README.md",
-        "line": 54,
-        "level": 3,
-        "title": "1. 物料ドキュメントの選択"
-      }
-    ],
     "1. 説明": [
       {
         "document": "standards/api-response.md",
@@ -472,14 +464,6 @@
         "line": 368,
         "level": 3,
         "title": "2. エラーコード規約"
-      }
-    ],
-    "2. コンテキストの提供": [
-      {
-        "document": "ai-support/README.md",
-        "line": 62,
-        "level": 3,
-        "title": "2. コンテキストの提供"
       }
     ],
     "2. サポートされているメッセージ送信タイプ": [
@@ -1016,14 +1000,6 @@
         "title": "3. 条件処理"
       }
     ],
-    "3. 要求の記述": [
-      {
-        "document": "ai-support/README.md",
-        "line": 70,
-        "level": 3,
-        "title": "3. 要求の記述"
-      }
-    ],
     "3. 送信アカウントを指定する": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -1222,14 +1198,6 @@
         "line": 185,
         "level": 3,
         "title": "4. 接続情報の公開"
-      }
-    ],
-    "4. 生成結果の検証": [
-      {
-        "document": "ai-support/README.md",
-        "line": 74,
-        "level": 3,
-        "title": "4. 生成結果の検証"
       }
     ],
     "4. 組み合わせて使用する": [
@@ -1718,20 +1686,20 @@
         "title": "A2UIメッセージの送信"
       }
     ],
-    "AI アシスト開発": [
-      {
-        "document": "ai-support/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "AI アシスト開発"
-      }
-    ],
     "AI サポート開発": [
       {
         "document": "README.md",
         "line": 85,
         "level": 3,
         "title": "AI サポート開発"
+      }
+    ],
+    "AI補助開発": [
+      {
+        "document": "ai-support/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "AI補助開発"
       }
     ],
     "API エラーハンドリング": [
@@ -2032,6 +2000,14 @@
         "title": "CORS 設定"
       }
     ],
+    "Claude Desktop への接続": [
+      {
+        "document": "ai-support/README.md",
+        "line": 77,
+        "level": 3,
+        "title": "Claude Desktop への接続"
+      }
+    ],
     "ClientWebSocket 属性": [
       {
         "document": "advanced/http-client.md",
@@ -2094,6 +2070,14 @@
         "line": 45,
         "level": 2,
         "title": "Core.py - 基本モジュール"
+      }
+    ],
+    "Cursor への接続": [
+      {
+        "document": "ai-support/README.md",
+        "line": 93,
+        "level": 3,
+        "title": "Cursor への接続"
       }
     ],
     "DMの処理": [
@@ -2518,6 +2502,14 @@
         "line": 216,
         "level": 3,
         "title": "Logger（ログ）"
+      }
+    ],
+    "MCP サーバー": [
+      {
+        "document": "ai-support/README.md",
+        "line": 60,
+        "level": 2,
+        "title": "MCP サーバー"
       }
     ],
     "Matrixプラットフォーム特性ドキュメント": [
@@ -3844,12 +3836,6 @@
     ],
     "よくある質問": [
       {
-        "document": "ai-support/README.md",
-        "line": 125,
-        "level": 2,
-        "title": "よくある質問"
-      },
-      {
         "document": "developer-guide/publishing.md",
         "line": 133,
         "level": 2,
@@ -4096,14 +4082,6 @@
         "line": 1,
         "level": 1,
         "title": "アダプター標準化変換仕様"
-      }
-    ],
-    "アダプター要件": [
-      {
-        "document": "ai-support/README.md",
-        "line": 104,
-        "level": 3,
-        "title": "アダプター要件"
       }
     ],
     "アダプター開発": [
@@ -7750,14 +7728,6 @@
         "title": "モジュール発見メカニズム"
       }
     ],
-    "モジュール要件": [
-      {
-        "document": "ai-support/README.md",
-        "line": 85,
-        "level": 3,
-        "title": "モジュール要件"
-      }
-    ],
     "モジュール設定": [
       {
         "document": "user-guide/configuration.md",
@@ -8378,6 +8348,14 @@
         "title": "一般的な設定の場所"
       }
     ],
+    "一般的な質問": [
+      {
+        "document": "ai-support/README.md",
+        "line": 109,
+        "level": 2,
+        "title": "一般的な質問"
+      }
+    ],
     "不支持的方法調用": [
       {
         "document": "platform-guide/onebot12.md",
@@ -8536,12 +8514,12 @@
         "title": "使用例"
       }
     ],
-    "使用手順": [
+    "使用方法": [
       {
         "document": "ai-support/README.md",
-        "line": 52,
-        "level": 2,
-        "title": "使用手順"
+        "line": 30,
+        "level": 3,
+        "title": "使用方法"
       }
     ],
     "例": [
@@ -8952,14 +8930,6 @@
         "line": 7,
         "level": 3,
         "title": "受信タイプ (ReceiveType)"
-      }
-    ],
-    "各ドキュメントのカバー範囲": [
-      {
-        "document": "ai-support/README.md",
-        "line": 15,
-        "level": 3,
-        "title": "各ドキュメントのカバー範囲"
       }
     ],
     "同期フロー": [
@@ -9926,6 +9896,14 @@
         "title": "接続管理"
       }
     ],
+    "提供されるツール": [
+      {
+        "document": "ai-support/README.md",
+        "line": 64,
+        "level": 3,
+        "title": "提供されるツール"
+      }
+    ],
     "文書情報": [
       {
         "document": "platform-guide/kook.md",
@@ -10012,14 +9990,6 @@
         "line": 116,
         "level": 4,
         "title": "最小限のモジュール"
-      }
-    ],
-    "最新バージョンの入手": [
-      {
-        "document": "ai-support/README.md",
-        "line": 45,
-        "level": 3,
-        "title": "最新バージョンの入手"
       }
     ],
     "最終ユーザー向け": [
@@ -10243,7 +10213,7 @@
     "次のステップ": [
       {
         "document": "ai-support/README.md",
-        "line": 147,
+        "line": 117,
         "level": 2,
         "title": "次のステップ"
       },
@@ -10372,14 +10342,6 @@
         "line": 229,
         "level": 3,
         "title": "添付ファイルメッセージセグメント"
-      }
-    ],
-    "物料ドキュメント": [
-      {
-        "document": "ai-support/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "物料ドキュメント"
       }
     ],
     "特性マトリクス": [
@@ -10586,6 +10548,14 @@
         "title": "管理者のチェック"
       }
     ],
+    "素材ドキュメント": [
+      {
+        "document": "ai-support/README.md",
+        "line": 18,
+        "level": 2,
+        "title": "素材ドキュメント"
+      }
+    ],
     "組み合わせ修飾": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -10757,8 +10727,8 @@
     "要求記述テンプレート": [
       {
         "document": "ai-support/README.md",
-        "line": 83,
-        "level": 2,
+        "line": 36,
+        "level": 3,
         "title": "要求記述テンプレート"
       }
     ],
