@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1284,
+  "total_keywords": 1280,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -302,14 +302,6 @@
         "title": "1. 說明"
       }
     ],
-    "1. 選擇物料文件": [
-      {
-        "document": "ai-support/README.md",
-        "line": 32,
-        "level": 3,
-        "title": "1. 選擇物料文件"
-      }
-    ],
     "1. 配置 pyproject.toml": [
       {
         "document": "developer-guide/publishing.md",
@@ -556,14 +548,6 @@
         "line": 61,
         "level": 3,
         "title": "2. 接收事件（POST）"
-      }
-    ],
-    "2. 提供上下文": [
-      {
-        "document": "ai-support/README.md",
-        "line": 40,
-        "level": 3,
-        "title": "2. 提供上下文"
       }
     ],
     "2. 支援的訊息傳送類型": [
@@ -1034,14 +1018,6 @@
         "title": "3. 特有事件類型"
       }
     ],
-    "3. 編寫需求描述": [
-      {
-        "document": "ai-support/README.md",
-        "line": 48,
-        "level": 3,
-        "title": "3. 編寫需求描述"
-      }
-    ],
     "3. 缺少 `self` 欄位": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -1280,14 +1256,6 @@
         "line": 185,
         "level": 3,
         "title": "4. 連線資訊暴露"
-      }
-    ],
-    "4. 驗證產生結果": [
-      {
-        "document": "ai-support/README.md",
-        "line": 52,
-        "level": 3,
-        "title": "4. 驗證產生結果"
       }
     ],
     "4.1 Event 方法列表": [
@@ -2478,6 +2446,14 @@
         "line": 217,
         "level": 3,
         "title": "Logger（日誌）"
+      }
+    ],
+    "MCP 伺服器": [
+      {
+        "document": "ai-support/README.md",
+        "line": 60,
+        "level": 2,
+        "title": "MCP 伺服器"
       }
     ],
     "Matrix平台特性文件": [
@@ -3671,7 +3647,7 @@
     "下一步": [
       {
         "document": "ai-support/README.md",
-        "line": 125,
+        "line": 117,
         "level": 2,
         "title": "下一步"
       },
@@ -4394,12 +4370,12 @@
         "title": "使用延遲載入模組"
       }
     ],
-    "使用步驟": [
+    "使用方式": [
       {
         "document": "ai-support/README.md",
         "line": 30,
-        "level": 2,
-        "title": "使用步驟"
+        "level": 3,
+        "title": "使用方式"
       }
     ],
     "使用生命週期事件": [
@@ -5132,14 +5108,6 @@
         "line": 439,
         "level": 3,
         "title": "可用屬性"
-      }
-    ],
-    "各文件覆蓋範圍": [
-      {
-        "document": "ai-support/README.md",
-        "line": 15,
-        "level": 3,
-        "title": "各文件覆蓋範圍"
       }
     ],
     "同時發布到 Docker Hub": [
@@ -6429,7 +6397,7 @@
     "常見問題": [
       {
         "document": "ai-support/README.md",
-        "line": 103,
+        "line": 109,
         "level": 2,
         "title": "常見問題"
       },
@@ -7080,6 +7048,22 @@
         "title": "排序、分頁"
       }
     ],
+    "接入 Claude Desktop": [
+      {
+        "document": "ai-support/README.md",
+        "line": 77,
+        "level": 3,
+        "title": "接入 Claude Desktop"
+      }
+    ],
+    "接入 Cursor": [
+      {
+        "document": "ai-support/README.md",
+        "line": 93,
+        "level": 3,
+        "title": "接入 Cursor"
+      }
+    ],
     "接收訊息": [
       {
         "document": "advanced/http-client.md",
@@ -7094,6 +7078,14 @@
         "line": 7,
         "level": 3,
         "title": "接收類型 (ReceiveType)"
+      }
+    ],
+    "提供的工具": [
+      {
+        "document": "ai-support/README.md",
+        "line": 64,
+        "level": 3,
+        "title": "提供的工具"
       }
     ],
     "插入資料": [
@@ -8312,14 +8304,6 @@
         "title": "模組間通訊"
       }
     ],
-    "模組需求": [
-      {
-        "document": "ai-support/README.md",
-        "line": 63,
-        "level": 3,
-        "title": "模組需求"
-      }
-    ],
     "機器人公告看板事件示例": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -8591,7 +8575,7 @@
     "物料文件": [
       {
         "document": "ai-support/README.md",
-        "line": 5,
+        "line": 18,
         "level": 2,
         "title": "物料文件"
       }
@@ -8740,14 +8724,6 @@
         "line": 121,
         "level": 2,
         "title": "獲取幫助"
-      }
-    ],
-    "獲取最新版本": [
-      {
-        "document": "ai-support/README.md",
-        "line": 23,
-        "level": 3,
-        "title": "獲取最新版本"
       }
     ],
     "獲取目標 ID": [
@@ -10998,14 +10974,6 @@
         "title": "適配器開發入門"
       }
     ],
-    "適配器需求": [
-      {
-        "document": "ai-support/README.md",
-        "line": 82,
-        "level": 3,
-        "title": "適配器需求"
-      }
-    ],
     "適配器：註冊平台擴展方法": [
       {
         "document": "api-reference/event-system.md",
@@ -11581,8 +11549,8 @@
     "需求描述範本": [
       {
         "document": "ai-support/README.md",
-        "line": 61,
-        "level": 2,
+        "line": 36,
+        "level": 3,
         "title": "需求描述範本"
       }
     ],
