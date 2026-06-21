@@ -1,0 +1,15 @@
+{
+  "name": "erispulse-get",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ErisPulse Installer Worker — 提供 install.ps1 / install.sh 安装脚本代理",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}

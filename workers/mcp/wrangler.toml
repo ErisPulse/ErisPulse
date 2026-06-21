@@ -1,0 +1,13 @@
+name = "erispulse-mcp"
+main = "src/index.js"
+compatibility_date = "2025-04-01"
+
+routes = [
+  { pattern = "mcp.erisdev.com", custom_domain = true }
+]
+
+[vars]
+DEFAULT_LANG = "zh-CN"
+
+# Secret
+#   wrangler secret put MCP_TOKEN
