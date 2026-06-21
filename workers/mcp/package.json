@@ -1,0 +1,15 @@
+{
+  "name": "erispulse-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ErisPulse MCP Server — 为 AI 编码助手提供 ErisPulse 官方文档检索能力",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}
