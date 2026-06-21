@@ -1,129 +1,122 @@
 # AI 辅助开发
 
-ErisPulse 提供了预构建的 AI 物料文档，你可以将其作为上下文提供给 AI 模型，从而生成符合框架规范的模块和适配器代码。
+ErisPulse 提供两种互补的 AI 辅助开发方式，让 AI 能基于最新框架规范生成代码：
+
+- **物料文档**：一份大 Markdown，一次性灌入上下文，适合整项目开发
+- **MCP 服务器**：让 AI 按需检索官方文档，适合日常代码补全和查 API
+
+| | 物料文档 | MCP 服务器 |
+|---|---|---|
+| 形式 | 一份大 Markdown，**一次性灌入** | AI **按需检索** |
+| 上下文成本 | 高（占 token） | 低（只取相关片段） |
+| 时效性 | 随版本发布更新 | 实时（GitHub 拉取 + 缓存） |
+| 适合 | 上下文窗口大、做整项目开发 | 日常代码补全、查 API |
+| 客户端 | 任何 AI 工具 | 仅支持 MCP 的客户端 |
+
+两者并不冲突：开发大型项目时可以同时用——物料文档打底，MCP 兜底查漏。
 
 ## 物料文档
 
-物料文档位于本目录的 `prompts/` 子目录下，按开发场景分为三种：
+物料文档位于 `prompts/` 目录下，按开发场景分为三种：
 
-| 文档 | 场景 | 规模 | 说明 |
-|------|------|------|------|
-| **ErisPulse-ModuleDev.md** | 模块开发 | 中 | 覆盖模块开发全流程，适合大多数场景 |
-| **ErisPulse-AdapterDev.md** | 适配器开发 | 中 | 覆盖适配器开发全流程，包含平台适配规范 |
-| **ErisPulse-Full.md** | 全栈参考 | 大 | 完整开发文档合集，需要大上下文窗口的模型 |
+| 文档 | 场景 | 说明 |
+|------|------|------|
+| **ErisPulse-ModuleDev.md** | 模块开发 | 覆盖模块开发全流程（事件处理、路由、生命周期等） |
+| **ErisPulse-AdapterDev.md** | 适配器开发 | 在模块开发基础上，外加适配器核心概念、SendDSL、平台适配指南 |
+| **ErisPulse-Full.md** | 全栈参考 | 上述全部内容 + 完整用户指南与 API 参考合集 |
 
-### 各文档覆盖范围
+获取方式：从 `prompts/` 目录直接获取（与文档同步更新），或从 [GitHub Releases](https://github.com/ErisPulse/ErisPulse/releases) 下载对应版本。
 
-**ModuleDev** 包含：基础概念、事件处理入门、模块核心概念、Event 包装类、Conversation 多轮对话、MessageBuilder、路由系统、生命周期管理、懒加载系统、会话类型标准、模块发布流程。
+### 使用方式
 
-**AdapterDev** 包含：上述基础内容，外加适配器核心概念、SendDSL 链式调用、事件转换器设计、事件转换/API 响应/发送方法三项技术标准、全部平台适配指南、文档字符串规范。
+1. 根据目标选择文档（模块 → `ModuleDev`，适配器 → `AdapterDev`，复杂需求 → `Full`）
+2. 将文档内容作为上下文提供给 AI：IDE 内放入工作区，对话类直接粘贴，API 调用作为 system message 注入
+3. 用下方模板描述需求，越具体生成质量越高
 
-**Full** 包含：上述全部内容，外加完整的用户指南（安装、配置、部署）、全部 API 参考、已知问题追踪。仅建议用于上下文窗口 >= 128K tokens 的模型。
+### 需求描述模板
 
-### 获取最新版本
-
-物料文档随框架发布自动更新，获取方式：
-
-- 从 `prompts/` 目录直接获取（与文档同步更新）
-- 从 [GitHub Releases](https://github.com/ErisPulse/ErisPulse/releases) 下载对应版本
-
-## 使用步骤
-
-### 1. 选择物料文档
-
-根据你的开发目标选择对应的文档：
-
-- 开发功能模块 → `ErisPulse-ModuleDev.md`
-- 开发平台适配器 → `ErisPulse-AdapterDev.md`
-- 不确定或需求复杂 → `ErisPulse-Full.md`（确保模型上下文窗口足够大）
-
-### 2. 提供上下文
-
-将选中的物料文档内容提供给 AI，方式取决于你使用的工具：
-
-- **IDE 内置 AI（Copilot / Cursor）**：将文档放入工作区，或在对话中直接粘贴
-- **对话式 AI（ChatGPT / Claude）**：在对话开头粘贴文档内容，告知 AI "请基于以下文档作为知识库回答问题"
-- **API 调用**：将文档作为 system message 或上下文注入
-
-### 3. 编写需求描述
-
-使用下方的模板描述你的需求，填充后发送给 AI。描述越具体，生成质量越高。
-
-### 4. 验证生成结果
-
-AI 生成代码后，建议：
-
-1. 检查代码是否继承了正确的基类（`BaseModule` 或 `BaseAdapter`）
-2. 确认事件处理器使用了正确的装饰器（`@message.on_message` 等）
-3. 运行 `epsdk create module` 或 `epsdk create adapter` 创建项目骨架，将生成代码填入对应文件
-4. 执行测试验证功能是否正常
-
-## 需求描述模板
-
-### 模块需求
+**模块：**
 
 ```
 请基于 ErisPulse 模块开发规范，生成一个 [模块名称] 模块的完整代码。
 
-功能描述：
-[描述模块的核心功能]
-
-需要监听的事件：
-- 事件类型：[消息 / 命令 / 通知 / 请求]
-- 处理逻辑：[描述事件触发后执行的操作]
-
-需要的配置项：
-- [配置键名]：[用途说明]（[必填/可选]，默认值：[值]）
-
-其他要求：
-- [额外的功能或约束]
+功能描述：[核心功能]
+需要监听的事件：[消息 / 命令 / 通知 / 请求]，处理逻辑：[操作]
+需要的配置项：[键名]：[用途]（[必填/可选]，默认值：[值]）
+其他要求：[额外约束]
 ```
 
-### 适配器需求
+**适配器：**
 
 ```
 请基于 ErisPulse 适配器开发规范，生成一个 [适配器名称] 适配器的完整代码。
 
-平台信息：
-- 平台名称：[名称]
-- 通信协议：[WebSocket / WebHook / HTTP 轮询]
-- API 文档地址：[如有]
-
-事件转换：
-- 平台事件类型：[列出平台的主要事件]
-- OneBot12 映射关系：[描述平台事件到 OB12 标准的映射]
-
-需要实现的发送方法：
-- [Text / Image / Voice 等消息类型]：[是否需要实现]
-
-配置项：
-- [配置键名]：[用途说明]（[必填/可选]）
+平台信息：[名称]，通信协议：[WebSocket / WebHook / HTTP 轮询]，API 文档：[地址]
+事件转换：平台事件 [类型] → OneBot12 映射 [关系]
+需要实现的发送方法：[Text / Image / Voice ...]
+配置项：[键名]：[用途]（[必填/可选]）
 ```
+
+## MCP 服务器
+
+ErisPulse 提供官方 **MCP（Model Context Protocol）服务器**，部署在 [`mcp.erisdev.com`](https://mcp.erisdev.com/)。接入支持 MCP 的 AI 编码助手（Claude Desktop、Cursor 等）后，AI 就能在你写代码时**直接检索、查阅 ErisPulse 官方文档**，而不需要手动粘贴。
+
+### 提供的工具
+
+接入后，AI 会获得以下工具：
+
+| 工具 | 参数 | 说明 |
+|------|------|------|
+| **`search_docs`** | `query` (必填), `top_k?=5`, `lang?=zh-CN` | BM25 关键词检索，可一次传多个关键词 |
+| **`read_document`** | `doc_path` (必填), `lang?=zh-CN` | 读取单篇文档完整 Markdown |
+| **`list_documents`** | `lang?=zh-CN` | 列出当前语言下所有文档标题、路径、分类 |
+| **`list_languages`** | — | 列出文档支持的所有语言及文档数量 |
+
+支持语言：`zh-CN` / `en` / `zh-TW` / `ja` / `ru`。检索技巧：用**多个关键词**而不是整句，例如 `命令注册 事件监听` 比 `怎么注册一个命令` 更好。
+
+### 接入 Claude Desktop
+
+编辑配置文件（macOS：`~/Library/Application Support/Claude/claude_desktop_config.json`；Windows：`%APPDATA%\Claude\claude_desktop_config.json`）：
+
+```json
+{
+  "mcpServers": {
+    "erispulse": {
+      "url": "https://mcp.erisdev.com/"
+    }
+  }
+}
+```
+
+> 需要 Claude Desktop 0.85+。旧版本可通过 `mcp-remote` 桥接：`{ "command": "npx", "args": ["mcp-remote", "https://mcp.erisdev.com/"] }`。
+
+### 接入 Cursor
+
+编辑 `~/.cursor/mcp.json`（全局）或项目内 `.cursor/mcp.json`：
+
+```json
+{
+  "mcpServers": {
+    "erispulse": {
+      "url": "https://mcp.erisdev.com/"
+    }
+  }
+}
+```
+
+服务默认公开，无需 Token。为防滥用有 IP 限流（每 IP 每分钟 60 次）。Worker 源码在本库 workers 文件夹下，支持自部署。
 
 ## 常见问题
 
-**推荐哪些 AI 工具？**
+**生成的代码不符合预期？**
+检查是否提供了完整文档；在需求中补充更多细节（输入输出示例、边界条件）；让 AI 分步生成（先骨架再补功能）；参考 [examples/](../../examples/) 目录示例作为补充上下文。
 
-- IDE 集成类：Cursor、VS Code + Copilot —— 可直接操作文件系统，适合项目级开发
-- 对话类：ChatGPT、Claude —— 适合快速原型和单文件生成
-- API 调用：适合批量生成或 CI 集成场景
-
-**生成的代码不符合预期怎么办？**
-
-1. 检查是否提供了完整且正确的物料文档
-2. 在需求描述中补充更多细节（具体的输入输出示例、边界条件等）
-3. 让 AI 分步生成：先生成骨架代码，确认无误后再逐步补充功能
-4. 参考 [examples/](../../examples/) 目录中的示例代码，将示例作为补充上下文提供
-
-**如何提高生成质量？**
-
-- 在需求中明确指定模块名称、需要继承的基类
-- 提供具体的消息格式示例（平台原始事件 → 期望的 OB12 格式）
-- 要求 AI 同时生成测试代码
-- 对于适配器，提供平台 API 文档的关键接口信息作为补充
+**MCP 接入后 AI 没调用 `search_docs`？**
+确认客户端加载了该 server（Claude Desktop 重启后右下角应有图标）；部分客户端需要在 prompt 里显式提示「使用 ErisPulse 文档工具查证 API」。
 
 ## 下一步
 
 - [模块开发入门](../developer-guide/modules/getting-started.md) -- 手动开发模块的完整教程
 - [适配器开发入门](../developer-guide/adapters/getting-started.md) -- 手动开发适配器的完整教程
 - [示例代码](../../examples/) -- 参考已有的模块和适配器实现
+- [模块构建器](https://www.erisdev.com/builder.html) -- 浏览器内的可视化 AI 模块生成器
