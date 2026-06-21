@@ -203,6 +203,7 @@ TRANSLATIONS = {
     "core.router.already_running": "Server is already running",
     "core.router.starting": "Starting router server {url}",
     "core.router.routes_registered": "Registered {count} routes: {routes}",
+    "core.router.routes_summary": "Routes ready: HTTP={http}, WebSocket={ws}, SSE={sse}",
     "core.router.started": "Router server started",
     "core.router.start_failed_msg": "Router server startup failed",
     "core.router.start_failed": "Failed to start server: {error}",

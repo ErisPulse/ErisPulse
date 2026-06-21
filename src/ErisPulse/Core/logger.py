@@ -16,17 +16,26 @@ import json as _json
 import logging
 
 from rich.console import Console
+from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
 from rich.text import Text
+from rich.theme import Theme
 
-from .constants import DEFAULT_LOG_MEMORY_LIMIT, LOG_TIME_FORMAT, LOGGER_NAME
+from .constants import (
+    DEFAULT_LOG_MEMORY_LIMIT,
+    LOG_RICH_THEME,
+    LOG_TIME_FORMAT,
+    LOGGER_NAME,
+)
 from .i18n import i18n
 
 TRACE = 5
-MESSAGE = 60
+EVENT = 21  # 等同 INFO 级别，用于事件收发日志
 
 logging.addLevelName(TRACE, "TRACE")
-logging.addLevelName(MESSAGE, "MESSAGE")
+logging.addLevelName(EVENT, "EVENT")
+
+_LOG_THEME = Theme(LOG_RICH_THEME)
 
 
 class _JsonFormatter(logging.Formatter):
@@ -69,7 +78,7 @@ class Logger:
         self._logger = logging.getLogger(LOGGER_NAME)
         self._logger.setLevel(logging.DEBUG)
         self._file_handlers: list[logging.FileHandler] = []
-        self._console = Console()
+        self._console = Console(theme=_LOG_THEME)
         if not self._logger.handlers:
             console_handler = RichHandler(
                 console=self._console,
@@ -77,6 +86,7 @@ class Logger:
                 show_level=True,
                 show_path=False,
                 markup=False,
+                highlighter=NullHighlighter(),
                 log_time_format=LOG_TIME_FORMAT,
             )
             self._logger.addHandler(console_handler)
@@ -215,6 +225,7 @@ class Logger:
                 show_level=True,
                 show_path=False,
                 markup=False,
+                highlighter=NullHighlighter(),
                 log_time_format=LOG_TIME_FORMAT,
             )
             self._logger.addHandler(console_handler)
@@ -416,9 +427,9 @@ class Logger:
         """记录 TRACE 级别日志（比 DEBUG 更细粒度）"""
         self._log("trace", TRACE, msg, *args, **kwargs)
 
-    def message(self, msg, *args, **kwargs):
-        """记录 MESSAGE 级别日志（消息收发专用）"""
-        self._log("message", MESSAGE, msg, *args, **kwargs)
+    def event(self, msg, *args, **kwargs):
+        """记录 EVENT 级别日志（事件收发专用，级别等同 INFO）"""
+        self._log("event", EVENT, msg, *args, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
         """记录 DEBUG 级别日志"""
@@ -580,9 +591,9 @@ class LoggerChild:
         """记录 TRACE 级别日志（比 DEBUG 更细粒度）"""
         self._log("trace", TRACE, msg, *args, **kwargs)
 
-    def message(self, msg, *args, **kwargs):
-        """记录 MESSAGE 级别日志（消息收发专用）"""
-        self._log("message", MESSAGE, msg, *args, **kwargs)
+    def event(self, msg, *args, **kwargs):
+        """记录 EVENT 级别日志（事件收发专用，级别等同 INFO）"""
+        self._log("event", EVENT, msg, *args, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
         """记录 DEBUG 级别日志"""

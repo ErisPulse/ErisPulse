@@ -203,6 +203,7 @@ TRANSLATIONS = {
     "core.router.already_running": "Сервер уже запущен",
     "core.router.starting": "Запуск сервера маршрутизации {url}",
     "core.router.routes_registered": "Зарегистрировано {count} маршрутов: {routes}",
+    "core.router.routes_summary": "Маршруты готовы: HTTP={http}, WebSocket={ws}, SSE={sse}",
     "core.router.started": "Сервер маршрутизации запущен",
     "core.router.start_failed_msg": "Ошибка запуска сервера маршрутизации",
     "core.router.start_failed": "Ошибка запуска сервера: {error}",
