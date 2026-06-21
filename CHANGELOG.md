@@ -68,6 +68,16 @@
 ### 新增
 - StorageManager 支持嵌套键访问，可以使用点号语法操作嵌套数据结构
 - 添加嵌套键自动创建功能，无需预先创建根对象
+- 新增 `EVENT` 日志级别（等同 INFO），用于消息/事件收发日志，用户设置 WARNING+ 级别即可过滤掉事件日志
+
+### 变更
+- 日志级别 `MESSAGE`(60) 重命名为 `EVENT`(21)，行为从「高于 CRITICAL」改为「等同 INFO」，可被 WARNING+ 级别过滤
+- `Logger.message()` / `LoggerChild.message()` 方法更名为 `event()`
+- 适配器事件日志按 OneBot12 事件类型分类显示（`[Message]`/`[Notice]`/`[Request]`/`[Meta]`）
+
+### 优化
+- 统一日志配色方案至 `constants.py`（`LOG_RICH_THEME`），降低视觉噪音：INFO 仅加粗不着色，路径/字符串不再被 Rich 自动高亮为紫色
+- 路由注册/注销日志降为 DEBUG 级别，新增 INFO 级别的路由摘要日志，避免批量操作时刷屏
 
 ### 修复
 - 修复并发存储写入测试的键名冲突问题
