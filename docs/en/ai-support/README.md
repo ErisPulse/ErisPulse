@@ -1,129 +1,122 @@
 # AI-Assisted Development
 
-ErisPulse provides pre-built AI documentation assets that you can provide as context to AI models, enabling the generation of module and adapter code that complies with the framework specifications.
+ErisPulse provides two complementary AI-assisted development approaches, allowing AI to generate code based on the latest framework specifications:
 
-## Documentation Assets
+- **Material Documentation**: A single large Markdown file, loaded once with context, suitable for full project development
+- **MCP Server**: Allows AI to retrieve official documentation on demand, suitable for daily code completion and API lookup
 
-The documentation assets are located in the `prompts/` subdirectory of this directory and are categorized by development scenarios:
+| | Material Documentation | MCP Server |
+|---|---|---|
+| Format | A large Markdown file, **loaded once** | AI **retrieves on demand** |
+| Context Cost | High (uses tokens) | Low (only fetches relevant fragments) |
+| Timeliness | Updated with version releases | Real-time (GitHub pull + cache) |
+| Suitable For | Large context window, full project development | Daily code completion, API lookup |
+| Client | Any AI tool | Only clients supporting MCP |
 
-| Document Name | Applicable Scenario | Content Size | Recommendation |
-|---------------|---------------------|--------------|----------------|
-| **ErisPulse-ModuleDev.md** | Module Development | Medium | Covers the entire module development workflow, suitable for most scenarios |
-| **ErisPulse-AdapterDev.md** | Adapter Development | Medium | Covers the entire adapter development workflow, including platform adapter specifications |
-| **ErisPulse-Full.md** | Full Reference | Large | Complete collection of development documentation, requires models with large context windows |
+The two approaches are not mutually exclusive: for large projects, both can be used simultaneously—Material Documentation as the foundation, and MCP as a safety net for missing information.
 
-### Coverage of Each Document
+## Material Documentation
 
-**ModuleDev** includes: basic concepts, introduction to event handling, core concepts of module development, Event wrapper class, Conversation multi-turn dialog, MessageBuilder, routing system, lifecycle management, lazy loading system, session type standards, and module publishing process.
+Material documentation is located in the `prompts/` directory and is divided into three types based on development scenarios:
 
-**AdapterDev** includes: the above basic content, plus core concepts of adapter development, SendDSL fluent interface, event converter design, three technical standards (event conversion, API response, send method), complete platform adapter guides, and documentation string conventions.
+| Document | Scenario | Description |
+|------|------|------|
+| **ErisPulse-ModuleDev.md** | Module Development | Covers the entire module development process (event handling, routing, lifecycle, etc.) |
+| **ErisPulse-AdapterDev.md** | Adapter Development | Builds on module development, adding adapter core concepts, SendDSL, and platform adaptation guides |
+| **ErisPulse-Full.md** | Full Stack Reference | All above content + complete user guide and API reference collection |
 
-**Full** includes: all the above content, plus a complete user guide (installation, configuration, deployment), full API reference, and known issues tracking. Only recommended for models with context windows >= 128K tokens.
+Access method: Directly obtain from the `prompts/` directory (synchronized with documentation updates), or download the corresponding version from [GitHub Releases](https://github.com/ErisPulse/ErisPulse/releases).
 
-### Getting the Latest Version
+### Usage
 
-The documentation assets are automatically updated with framework releases. You can obtain them via:
+1. Select the document based on your target (module → `ModuleDev`, adapter → `AdapterDev`, complex needs → `Full`)
+2. Provide the document content as context to the AI: place it in the IDE workspace, paste directly in chat-based tools, or inject as a system message in API calls
+3. Use the template below to describe your requirements; the more specific the description, the higher the quality of generated code
 
-- Directly from the `prompts/` directory (synchronized with documentation updates)
-- Download from [GitHub Releases](https://github.com/ErisPulse/ErisPulse/releases) for the corresponding version
+### Requirement Description Template
 
-## Usage Steps
-
-### 1. Select the Documentation Asset
-
-Choose the appropriate document based on your development goal:
-
-- Developing functional modules → `ErisPulse-ModuleDev.md`
-- Developing platform adapters → `ErisPulse-AdapterDev.md`
-- Uncertain or complex requirements → `ErisPulse-Full.md` (ensure the model has sufficient context window)
-
-### 2. Provide Context
-
-Provide the selected documentation asset to the AI, depending on the tool you are using:
-
-- **IDE-integrated AI (Copilot / Cursor)**: Place the document in the workspace, or paste it directly into the conversation
-- **Conversational AI (ChatGPT / Claude)**: Paste the document content at the beginning of the conversation and inform the AI "Please answer questions based on the following document as a knowledge base"
-- **API calls**: Inject the document as a system message or context
-
-### 3. Write a Requirement Description
-
-Use the templates below to describe your requirements. Fill in the details and send them to the AI. The more specific the description, the higher the quality of the generated code.
-
-### 4. Verify the Generated Results
-
-After the AI generates the code, it is recommended to:
-
-1. Check if the code inherits the correct base class (`BaseModule` or `BaseAdapter`)
-2. Confirm that event handlers use the correct decorators (`@message.on_message`, etc.)
-3. Run `epsdk create module` or `epsdk create adapter` to create the project skeleton, and fill the generated code into the corresponding files
-4. Execute tests to verify that the functionality works as expected
-
-## Requirement Description Templates
-
-### Module Requirement Template
+**Module:**
 
 ```
-Please generate the complete code for a [Module Name] module based on the ErisPulse module development specification.
+Please generate a complete code for a [Module Name] module based on the ErisPulse module development specification.
 
-Functional Description:
-[Describe the core functionality of the module]
-
-Events to Listen To:
-- Event Type: [Message/Command/Notice/Request]
-- Handling Logic: [Describe the operations executed when the event is triggered]
-
-Required Configuration Items:
-- [Configuration Key]: [Purpose Description] ([Required/Optional], Default Value: [Value])
-
-Additional Requirements:
-- [Additional features or constraints]
+Function Description: [Core Function]
+Events to listen to: [Message / Command / Notification / Request], Handling Logic: [Operation]
+Required Configuration Items: [Key Name]: [Purpose] ([Required/Optional], Default Value: [Value])
+Other Requirements: [Additional Constraints]
 ```
 
-### Adapter Requirement Template
+**Adapter:**
 
 ```
-Please generate the complete code for an [Adapter Name] adapter based on the ErisPulse adapter development specification.
+Please generate a complete code for a [Adapter Name] adapter based on the ErisPulse adapter development specification.
 
-Platform Information:
-- Platform Name: [Name]
-- Communication Protocol: [WebSocket/WebHook/HTTP Polling]
-- API Documentation URL: [If applicable]
-
-Event Conversion:
-- Platform Event Types: [List the main event types of the platform]
-- OneBot12 Mapping: [Describe the mapping of platform events to the OB12 standard]
-
-Implemented Send Methods:
-- [Text/Image/Voice message types]: [Whether implementation is required]
-
-Configuration Items:
-- [Configuration Key]: [Purpose Description] ([Required/Optional])
+Platform Information: [Name], Communication Protocol: [WebSocket / WebHook / HTTP Polling], API Documentation: [Address]
+Event Mapping: Platform Event [Type] → OneBot12 Mapping [Relationship]
+Required Send Methods to Implement: [Text / Image / Voice ...]
+Configuration Items: [Key Name]: [Purpose] ([Required/Optional])
 ```
+
+## MCP Server
+
+ErisPulse provides an official **MCP (Model Context Protocol) server** deployed at [`mcp.erisdev.com`](https://mcp.erisdev.com/). After integrating with an AI coding assistant that supports MCP (such as Claude Desktop, Cursor, etc.), the AI can directly **retrieve and consult the official ErisPulse documentation** while you write code, without manually pasting.
+
+### Provided Tools
+
+After integration, the AI will gain access to the following tools:
+
+| Tool | Parameters | Description |
+|------|------|------|
+| **`search_docs`** | `query` (required), `top_k?=5`, `lang?=zh-CN` | BM25 keyword search, multiple keywords can be passed at once |
+| **`read_document`** | `doc_path` (required), `lang?=zh-CN` | Reads the full Markdown of a single document |
+| **`list_documents`** | `lang?=zh-CN` | Lists all document titles, paths, and categories in the current language |
+| **`list_languages`** | — | Lists all supported languages and the number of documents |
+
+Supported languages: `zh-CN` / `en` / `zh-TW` / `ja` / `ru`. Search tips: use **multiple keywords** instead of full sentences, for example `command registration event listening` is better than `how to register a command`.
+
+### Integrating with Claude Desktop
+
+Edit the configuration file (macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`; Windows: `%APPDATA%\Claude\claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "erispulse": {
+      "url": "https://mcp.erisdev.com/"
+    }
+  }
+}
+```
+
+> Requires Claude Desktop 0.85+. For older versions, use the `mcp-remote` bridge: `{ "command": "npx", "args": ["mcp-remote", "https://mcp.erisdev.com/"] }`.
+
+### Integrating with Cursor
+
+Edit `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` within the project:
+
+```json
+{
+  "mcpServers": {
+    "erispulse": {
+      "url": "https://mcp.erisdev.com/"
+    }
+  }
+}
+```
+
+The service is publicly accessible by default, no token required. To prevent abuse, there is an IP rate limit (60 requests per minute per IP). The worker source code is in the `workers` folder of this repository, supporting self-deployment.
 
 ## Frequently Asked Questions
 
-**What AI tools are recommended?**
+**The generated code does not meet expectations?**  
+Check if the complete documentation was provided; add more details in the requirements (input/output examples, boundary conditions); ask the AI to generate step-by-step (first skeleton, then functionality); refer to the [examples/](../../examples/) directory for supplementary context.
 
-- **IDE-integrated tools**: Cursor, VS Code + Copilot —— Can directly manipulate the file system, suitable for project-level development
-- **Conversational tools**: ChatGPT, Claude —— Suitable for rapid prototyping and single-file generation
-- **API calls**: Suitable for batch generation or CI integration scenarios
-
-**What should I do if the generated code does not meet expectations?**
-
-1. Check if the complete and correct documentation asset was provided
-2. Supplement more details in the requirement description (specific input/output examples, edge cases, etc.)
-3. Ask the AI to generate step-by-step: first generate the skeleton code, confirm it is correct, then gradually add functionality
-4. Refer to the example code in the [examples/](../../examples/) directory and provide the examples as supplementary context
-
-**How can I improve the generation quality?**
-
-- Clearly specify the module name and the base class to inherit in the requirement
-- Provide specific message format examples (platform raw events → desired OB12 format)
-- Request the AI to also generate test code
-- For adapters, provide key interface information from the platform API documentation as supplementary context
+**After integrating MCP, the AI did not call `search_docs`?**  
+Confirm that the client has loaded this server (after restarting Claude Desktop, an icon should appear in the bottom-right corner); some clients require explicit prompt instructions such as "use the ErisPulse documentation tool to verify the API."
 
 ## Next Steps
 
-- [Module Development Guide](../developer-guide/modules/getting-started.md) -- Complete tutorial for manual module development
-- [Adapter Development Guide](../developer-guide/adapters/getting-started.md) -- Complete tutorial for manual adapter development
+- [Getting Started with Module Development](../developer-guide/modules/getting-started.md) -- A complete tutorial for manual module development
+- [Getting Started with Adapter Development](../developer-guide/adapters/getting-started.md) -- A complete tutorial for manual adapter development
 - [Example Code](../../examples/) -- Reference existing module and adapter implementations
+- [Module Builder](https://www.erisdev.com/builder.html) -- A browser-based visual AI module generator

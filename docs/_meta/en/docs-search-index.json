@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1258,
+  "total_keywords": 1254,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -182,14 +182,6 @@
         "line": 47,
         "level": 3,
         "title": "1. SDK Object"
-      }
-    ],
-    "1. Select the Documentation Asset": [
-      {
-        "document": "ai-support/README.md",
-        "line": 32,
-        "level": 3,
-        "title": "1. Select the Documentation Asset"
       }
     ],
     "1. Send Message": [
@@ -612,14 +604,6 @@
         "line": 130,
         "level": 3,
         "title": "2. Proper Use of Lazy Loading"
-      }
-    ],
-    "2. Provide Context": [
-      {
-        "document": "ai-support/README.md",
-        "line": 40,
-        "level": 3,
-        "title": "2. Provide Context"
       }
     ],
     "2. Publish to PyPI": [
@@ -1078,14 +1062,6 @@
         "title": "3. Trigger Build"
       }
     ],
-    "3. Write a Requirement Description": [
-      {
-        "document": "ai-support/README.md",
-        "line": 48,
-        "level": 3,
-        "title": "3. Write a Requirement Description"
-      }
-    ],
     "3.1 Chained Calls": [
       {
         "document": "standards/request-action-spec.md",
@@ -1284,14 +1260,6 @@
         "line": 311,
         "level": 3,
         "title": "4. Using Non-standard Values for detail_type"
-      }
-    ],
-    "4. Verify the Generated Results": [
-      {
-        "document": "ai-support/README.md",
-        "line": 52,
-        "level": 3,
-        "title": "4. Verify the Generated Results"
       }
     ],
     "4.1 Event Method List": [
@@ -2230,14 +2198,6 @@
         "line": 131,
         "level": 2,
         "title": "Adapter Module"
-      }
-    ],
-    "Adapter Requirement Template": [
-      {
-        "document": "ai-support/README.md",
-        "line": 82,
-        "level": 3,
-        "title": "Adapter Requirement Template"
       }
     ],
     "Adapter Send Method Query": [
@@ -4256,14 +4216,6 @@
         "title": "Count and Existence Check"
       }
     ],
-    "Coverage of Each Document": [
-      {
-        "document": "ai-support/README.md",
-        "line": 15,
-        "level": 3,
-        "title": "Coverage of Each Document"
-      }
-    ],
     "Create Table": [
       {
         "document": "advanced/sql-builder.md",
@@ -4664,14 +4616,6 @@
         "line": 14,
         "level": 2,
         "title": "Document Structure Standards"
-      }
-    ],
-    "Documentation Assets": [
-      {
-        "document": "ai-support/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "Documentation Assets"
       }
     ],
     "Documentation Information": [
@@ -5549,7 +5493,7 @@
     "Frequently Asked Questions": [
       {
         "document": "ai-support/README.md",
-        "line": 103,
+        "line": 109,
         "level": 2,
         "title": "Frequently Asked Questions"
       }
@@ -5742,14 +5686,6 @@
         "line": 1,
         "level": 1,
         "title": "Getting Started with Event Handling"
-      }
-    ],
-    "Getting the Latest Version": [
-      {
-        "document": "ai-support/README.md",
-        "line": 23,
-        "level": 3,
-        "title": "Getting the Latest Version"
       }
     ],
     "Global Configuration": [
@@ -6380,6 +6316,22 @@
         "title": "Installing Modules via Dashboard"
       }
     ],
+    "Integrating with Claude Desktop": [
+      {
+        "document": "ai-support/README.md",
+        "line": 77,
+        "level": 3,
+        "title": "Integrating with Claude Desktop"
+      }
+    ],
+    "Integrating with Cursor": [
+      {
+        "document": "ai-support/README.md",
+        "line": 93,
+        "level": 3,
+        "title": "Integrating with Cursor"
+      }
+    ],
     "Inter-module Communication": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -6822,6 +6774,14 @@
         "title": "Low-level Methods"
       }
     ],
+    "MCP Server": [
+      {
+        "document": "ai-support/README.md",
+        "line": 60,
+        "level": 2,
+        "title": "MCP Server"
+      }
+    ],
     "Mail Platform Feature Documentation": [
       {
         "document": "platform-guide/email.md",
@@ -6894,6 +6854,14 @@
         "line": 653,
         "level": 3,
         "title": "Manual Response Construction (Old method still compatible)"
+      }
+    ],
+    "Material Documentation": [
+      {
+        "document": "ai-support/README.md",
+        "line": 18,
+        "level": 2,
+        "title": "Material Documentation"
       }
     ],
     "Matrix Platform Features Document": [
@@ -7586,14 +7554,6 @@
         "title": "Module Overview"
       }
     ],
-    "Module Requirement Template": [
-      {
-        "document": "ai-support/README.md",
-        "line": 63,
-        "level": 3,
-        "title": "Module Requirement Template"
-      }
-    ],
     "Module Store Overview": [
       {
         "document": "developer-guide/publishing.md",
@@ -7761,7 +7721,7 @@
     "Next Steps": [
       {
         "document": "ai-support/README.md",
-        "line": 125,
+        "line": 117,
         "level": 2,
         "title": "Next Steps"
       },
@@ -8474,6 +8434,14 @@
         "line": 51,
         "level": 3,
         "title": "Protocol Methods"
+      }
+    ],
+    "Provided Tools": [
+      {
+        "document": "ai-support/README.md",
+        "line": 64,
+        "level": 3,
+        "title": "Provided Tools"
       }
     ],
     "Proximity Mapping Principle": [
@@ -9236,12 +9204,12 @@
         "title": "Required Fields"
       }
     ],
-    "Requirement Description Templates": [
+    "Requirement Description Template": [
       {
         "document": "ai-support/README.md",
-        "line": 61,
-        "level": 2,
-        "title": "Requirement Description Templates"
+        "line": 36,
+        "level": 3,
+        "title": "Requirement Description Template"
       }
     ],
     "Reserved Error Ranges": [
@@ -10788,6 +10756,14 @@
         "title": "Upgrading Modules"
       }
     ],
+    "Usage": [
+      {
+        "document": "ai-support/README.md",
+        "line": 30,
+        "level": 3,
+        "title": "Usage"
+      }
+    ],
     "Usage Example in Modules": [
       {
         "document": "advanced/lifecycle.md",
@@ -10832,14 +10808,6 @@
         "line": 287,
         "level": 3,
         "title": "Usage Examples"
-      }
-    ],
-    "Usage Steps": [
-      {
-        "document": "ai-support/README.md",
-        "line": 30,
-        "level": 2,
-        "title": "Usage Steps"
       }
     ],
     "Usage in Adapters": [
