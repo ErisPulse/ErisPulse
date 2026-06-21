@@ -199,9 +199,9 @@ JSON 日志格式化器
 ---
 
 
-##### `message(msg)`
+##### `event(msg)`
 
-记录 MESSAGE 级别日志（消息收发专用）
+记录 EVENT 级别日志（事件收发专用，级别等同 INFO）
 
 ---
 
@@ -353,9 +353,9 @@ JSON 日志格式化器
 ---
 
 
-##### `message(msg)`
+##### `event(msg)`
 
-记录 MESSAGE 级别日志（消息收发专用）
+记录 EVENT 级别日志（事件收发专用，级别等同 INFO）
 
 ---
 
