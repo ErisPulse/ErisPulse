@@ -575,7 +575,7 @@ https://t.me/ErisPulse
 
 ### Благодарности
 
-![](https://github.com/ErisPulse/ErisPulse/blob/main/.github/assets/thanks.png?raw=true)
+<img src=".github/assets/thanks.png" width="200" alt="thx" />
 
 Часть кода этого проекта основана на [sdkFrame](https://github.com/runoneall/sdkFrame).
 
