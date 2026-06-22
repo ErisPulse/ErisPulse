@@ -1,4 +1,5 @@
-![](https://github.com/ErisPulse/ErisPulse/blob/main/.github/assets/mascot-hero.png?raw=true)  
+<img src=".github/assets/mascot-hero.png" align="right" width="300" alt="ErisPulse" style="margin-left: 24px; margin-bottom: 16px; border-radius: 12px;" />
+
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | **Русский**
 
 # ErisPulse
