@@ -36,38 +36,66 @@
 
 <table>
 <tr>
-<td width="50%" align="center" valign="top">
+<td width="33%" align="center" valign="top">
 <br/>
 
-### ⚡ 事件驱动架构
+<img src=".github/assets/icon/icon_event_driven.png.png" width="50" alt="事件驱动架构" />
+
+### 事件驱动架构
 
 基于 OneBot12 标准的清晰事件模型，让消息处理逻辑更加直观和高效
 
 </td>
-<td width="50%" align="center" valign="top">
+<td width="33%" align="center" valign="top">
 <br/>
 
-### 🌐 跨平台兼容
+<img src=".github/assets/icon/icon_cross_platform.png.png" width="50" alt="跨平台兼容" />
+
+### 跨平台兼容
 
 插件模块编写一次即可在所有平台使用，无需为不同平台重复开发
 
 </td>
-</tr>
-<tr>
-<td width="50%" align="center" valign="top">
+<td width="33%" align="center" valign="top">
 <br/>
 
-### 🧩 模块化设计
+<img src=".github/assets/icon/icon_modular.png" width="50" alt="模块化设计" />
+
+### 模块化设计
 
 灵活的插件系统，易于扩展和集成，支持热插拔模块管理
 
 </td>
-<td width="50%" align="center" valign="top">
+</tr>
+<tr>
+<td width="33%" align="center" valign="top">
 <br/>
 
-### 🔄 热重载 + AI 辅助
+<img src=".github/assets/icon/icon_hot_reload.png" width="50" alt="热重载" />
 
-开发时无需重启即可重新加载代码；AI 辅助开发让需求直达可用模块
+### 热重载
+
+开发时无需重启即可重新加载代码
+
+</td>
+<td width="33%" align="center" valign="top">
+<br/>
+
+<img src=".github/assets/icon/icon_ai_assist.png" width="50" alt="AI 辅助" />
+
+### AI 辅助
+
+AI 辅助开发让需求直达可用模块
+
+</td>
+<td width="33%" align="center" valign="top">
+<br/>
+
+<img src=".github/assets/icon/icon_lightweight.png" width="50" alt="简洁优雅" />
+
+### 简洁优雅
+
+直觉化的 API 设计，让代码如羽毛般轻盈可读
 
 </td>
 </tr>
@@ -327,6 +355,8 @@ docker pull erispulse/erispulse:dev
 ```bash
 bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 ```
+
+ErisPulse 已上架 1Panel 第三方应用商店，可使用 [okxlin/appstore](https://github.com/okxlin/appstore) 第三方仓库安装。
 
 #### 使用 pip 安装
 
