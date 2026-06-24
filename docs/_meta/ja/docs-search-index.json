@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1286,
+  "total_keywords": 1283,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1747,7 +1747,7 @@
     "API 呼び出し": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 160,
+        "line": 164,
         "level": 2,
         "title": "API 呼び出し"
       },
@@ -1832,14 +1832,6 @@
         "title": "Adapter モジュール"
       }
     ],
-    "Adapter 管理器": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 5,
-        "level": 2,
-        "title": "Adapter 管理器"
-      }
-    ],
     "AdapterManager アダプター管理マネージャー": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -1867,7 +1859,7 @@
     "BaseAdapter メソッド": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 188,
+        "line": 192,
         "level": 3,
         "title": "BaseAdapter メソッド"
       }
@@ -1896,28 +1888,12 @@
         "title": "Bot の状態管理と Meta イベント"
       }
     ],
-    "Bot ステータスの照会": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 362,
-        "level": 3,
-        "title": "Bot ステータスの照会"
-      }
-    ],
     "Bot ステータスの確認": [
       {
         "document": "api-reference/event-system.md",
         "line": 239,
         "level": 3,
         "title": "Bot ステータスの確認"
-      }
-    ],
-    "Bot ステータス値": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 396,
-        "level": 3,
-        "title": "Bot ステータス値"
       }
     ],
     "Bot ステータス照会": [
@@ -1936,14 +1912,6 @@
         "title": "Bot ステータス確認"
       }
     ],
-    "Bot ステータス管理": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 232,
-        "level": 2,
-        "title": "Bot ステータス管理"
-      }
-    ],
     "Bot ライフサイクルの監視": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -1954,13 +1922,33 @@
     ],
     "Bot 状態の照会": [
       {
+        "document": "api-reference/adapter-system.md",
+        "line": 366,
+        "level": 3,
+        "title": "Bot 状態の照会"
+      },
+      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 862,
         "level": 3,
         "title": "Bot 状態の照会"
       }
     ],
+    "Bot 状態値": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 400,
+        "level": 3,
+        "title": "Bot 状態値"
+      }
+    ],
     "Bot 状態管理": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 236,
+        "level": 2,
+        "title": "Bot 状態管理"
+      },
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 796,
@@ -2913,7 +2901,7 @@
     "Send ネストクラス": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 214,
+        "line": 218,
         "level": 3,
         "title": "Send ネストクラス"
       }
@@ -2932,14 +2920,6 @@
         "line": 42,
         "level": 3,
         "title": "Send メソッドチェーン"
-      }
-    ],
-    "Send メッセージ送信": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 99,
-        "level": 2,
-        "title": "Send メッセージ送信"
       }
     ],
     "Send メッセージ送信 DSL": [
@@ -3405,7 +3385,7 @@
     "call_api メソッド": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 162,
+        "line": 166,
         "level": 3,
         "title": "call_api メソッド"
       }
@@ -3458,12 +3438,12 @@
         "title": "confirm(prompt=None, **kwargs)"
       }
     ],
-    "connect — 接続開始": [
+    "connect — 接続上线": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 260,
+        "line": 264,
         "level": 4,
-        "title": "connect — 接続開始"
+        "title": "connect — 接続上线"
       }
     ],
     "conv.context": [
@@ -3506,12 +3486,12 @@
         "title": "detail_type マッピング"
       }
     ],
-    "disconnect — 接続切断": [
+    "disconnect — 断开连接": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 300,
+        "line": 304,
         "level": 4,
-        "title": "disconnect — 接続切断"
+        "title": "disconnect — 断开连接"
       }
     ],
     "discord_embed メッセージセグメント": [
@@ -3554,12 +3534,12 @@
         "title": "guild"
       }
     ],
-    "heartbeat — ハートビート": [
+    "heartbeat — 心跳": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 282,
+        "line": 286,
         "level": 4,
-        "title": "heartbeat — ハートビート"
+        "title": "heartbeat — 心跳"
       }
     ],
     "install のパラメータ": [
@@ -3605,7 +3585,7 @@
     "meta イベントのフォーマット": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 258,
+        "line": 262,
         "level": 3,
         "title": "meta イベントのフォーマット"
       }
@@ -3613,7 +3593,7 @@
     "meta イベントの種類": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 236,
+        "line": 240,
         "level": 3,
         "title": "meta イベントの種類"
       }
@@ -3701,7 +3681,7 @@
     "self フィールドの拡張": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 246,
+        "line": 250,
         "level": 3,
         "title": "self フィールドの拡張"
       }
@@ -3936,36 +3916,12 @@
         "title": "アクティブ状態の管理"
       }
     ],
-    "アダプタの取得": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 7,
-        "level": 3,
-        "title": "アダプタの取得"
-      }
-    ],
-    "アダプタの基本クラス": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 186,
-        "level": 2,
-        "title": "アダプタの基本クラス"
-      }
-    ],
     "アダプタの送信メソッドのクエリ": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 75,
         "level": 2,
         "title": "アダプタの送信メソッドのクエリ"
-      }
-    ],
-    "アダプタイベントの監視": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 19,
-        "level": 3,
-        "title": "アダプタイベントの監視"
       }
     ],
     "アダプター": [
@@ -3980,6 +3936,22 @@
         "line": 17,
         "level": 3,
         "title": "アダプター"
+      }
+    ],
+    "アダプター イベントのリッスン": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 19,
+        "level": 3,
+        "title": "アダプター イベントのリッスン"
+      }
+    ],
+    "アダプター マネージャー": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 5,
+        "level": 2,
+        "title": "アダプター マネージャー"
       }
     ],
     "アダプターでの使用": [
@@ -4012,6 +3984,14 @@
         "title": "アダプターのアーキテクチャ"
       }
     ],
+    "アダプターの取得": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 7,
+        "level": 3,
+        "title": "アダプターの取得"
+      }
+    ],
     "アダプターの核心概念": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4026,6 +4006,14 @@
         "line": 5,
         "level": 2,
         "title": "アダプターの概要"
+      }
+    ],
+    "アダプターの管理": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 41,
+        "level": 3,
+        "title": "アダプターの管理"
       }
     ],
     "アダプターの終了": [
@@ -4076,6 +4064,22 @@
         "title": "アダプターライフサイクル"
       }
     ],
+    "アダプター基底クラス": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 190,
+        "level": 2,
+        "title": "アダプター基底クラス"
+      }
+    ],
+    "アダプター接続の例": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 326,
+        "level": 3,
+        "title": "アダプター接続の例"
+      }
+    ],
     "アダプター標準化変換仕様": [
       {
         "document": "standards/event-conversion.md",
@@ -4112,22 +4116,6 @@
         "line": 1,
         "level": 1,
         "title": "アダプター開発入門"
-      }
-    ],
-    "アダプタ実装例": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 322,
-        "level": 3,
-        "title": "アダプタ実装例"
-      }
-    ],
-    "アダプタ管理": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 40,
-        "level": 3,
-        "title": "アダプタ管理"
       }
     ],
     "アダプタ開発者向け": [
@@ -5414,20 +5402,20 @@
         "title": "サポートされている提出タイプ"
       }
     ],
-    "サポートされている送信メソッドのクエリ": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 124,
-        "level": 3,
-        "title": "サポートされている送信メソッドのクエリ"
-      }
-    ],
     "サポートされている送信メソッドのリスト": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 79,
         "level": 3,
         "title": "サポートされている送信メソッドのリスト"
+      }
+    ],
+    "サポートされている送信メソッドの確認": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 128,
+        "level": 3,
+        "title": "サポートされている送信メソッドの確認"
       }
     ],
     "サポートされるファイルタイプ": [
@@ -5790,6 +5778,14 @@
         "title": "チェーンコールモード（インスタンス）"
       }
     ],
+    "チェーンメソッド": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 148,
+        "level": 3,
+        "title": "チェーンメソッド"
+      }
+    ],
     "チェーン修飾メソッド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5884,14 +5880,6 @@
         "line": 75,
         "level": 3,
         "title": "チェーン構文修飾メソッド（組み合わせ可能）"
-      }
-    ],
-    "チェーン構造修飾": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 144,
-        "level": 3,
-        "title": "チェーン構造修飾"
       }
     ],
     "チャンネルメッセージの処理": [
@@ -6943,7 +6931,7 @@
     "ミドルウェア": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 65,
+        "line": 66,
         "level": 2,
         "title": "ミドルウェア"
       },
@@ -6957,7 +6945,7 @@
     "ミドルウェアの実行モデル": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 76,
+        "line": 79,
         "level": 3,
         "title": "ミドルウェアの実行モデル"
       }
@@ -6973,7 +6961,7 @@
     "ミドルウェアの登録": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 67,
+        "line": 70,
         "level": 3,
         "title": "ミドルウェアの登録"
       }
@@ -7433,6 +7421,12 @@
         "document": "advanced/lifecycle.md",
         "line": 130,
         "level": 3,
+        "title": "メッセージ送信"
+      },
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 103,
+        "level": 2,
         "title": "メッセージ送信"
       }
     ],
@@ -7899,7 +7893,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 404,
+        "line": 408,
         "level": 3,
         "title": "ライフサイクルイベント"
       }
@@ -9285,7 +9279,7 @@
     "基本的な送信": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 101,
+        "line": 105,
         "level": 3,
         "title": "基本的な送信"
       },
@@ -9950,6 +9944,14 @@
         "line": 371,
         "level": 3,
         "title": "旧設定のマイグレーション"
+      }
+    ],
+    "普通イベントの自動発見": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 322,
+        "level": 3,
+        "title": "普通イベントの自動発見"
       }
     ],
     "暗号化モードの説明": [
@@ -11107,7 +11109,7 @@
     "送信アカウントの指定": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 114,
+        "line": 118,
         "level": 3,
         "title": "送信アカウントの指定"
       }
@@ -11222,14 +11224,6 @@
         "line": 546,
         "level": 2,
         "title": "逆変換とメッセージ構築"
-      }
-    ],
-    "通常イベントの自動検出": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 318,
-        "level": 3,
-        "title": "通常イベントの自動検出"
       }
     ],
     "通知イベント": [
@@ -11493,7 +11487,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 425,
+        "line": 429,
         "level": 2,
         "title": "関連ドキュメント"
       },

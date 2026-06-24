@@ -1939,7 +1939,7 @@
     "API 调用": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 163,
+        "line": 164,
         "level": 2,
         "title": "API 调用"
       },
@@ -2033,7 +2033,7 @@
     "BaseAdapter 方法": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 191,
+        "line": 192,
         "level": 3,
         "title": "BaseAdapter 方法"
       }
@@ -2049,7 +2049,7 @@
     "Bot 状态值": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 399,
+        "line": 400,
         "level": 3,
         "title": "Bot 状态值"
       }
@@ -2083,7 +2083,7 @@
     "Bot 状态管理": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 235,
+        "line": 236,
         "level": 2,
         "title": "Bot 状态管理"
       },
@@ -2875,7 +2875,7 @@
     "Send 嵌套类": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 217,
+        "line": 218,
         "level": 3,
         "title": "Send 嵌套类"
       }
@@ -2891,7 +2891,7 @@
     "Send 消息发送": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 102,
+        "line": 103,
         "level": 2,
         "title": "Send 消息发送"
       }
@@ -3319,7 +3319,7 @@
     "call_api 方法": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 165,
+        "line": 166,
         "level": 3,
         "title": "call_api 方法"
       }
@@ -3367,7 +3367,7 @@
     "connect — 连接上线": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 263,
+        "line": 264,
         "level": 4,
         "title": "connect — 连接上线"
       }
@@ -3415,7 +3415,7 @@
     "disconnect — 断开连接": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 303,
+        "line": 304,
         "level": 4,
         "title": "disconnect — 断开连接"
       }
@@ -3463,7 +3463,7 @@
     "heartbeat — 心跳": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 285,
+        "line": 286,
         "level": 4,
         "title": "heartbeat — 心跳"
       }
@@ -3511,7 +3511,7 @@
     "meta 事件格式": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 261,
+        "line": 262,
         "level": 3,
         "title": "meta 事件格式"
       }
@@ -3519,7 +3519,7 @@
     "meta 事件类型": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 239,
+        "line": 240,
         "level": 3,
         "title": "meta 事件类型"
       }
@@ -3599,7 +3599,7 @@
     "self 字段扩展": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 249,
+        "line": 250,
         "level": 3,
         "title": "self 字段扩展"
       }
@@ -5777,7 +5777,7 @@
     "基本发送": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 104,
+        "line": 105,
         "level": 3,
         "title": "基本发送"
       }
@@ -7403,7 +7403,7 @@
     "指定发送账号": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 117,
+        "line": 118,
         "level": 3,
         "title": "指定发送账号"
       }
@@ -7963,7 +7963,7 @@
     "普通事件的自动发现": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 321,
+        "line": 322,
         "level": 3,
         "title": "普通事件的自动发现"
       }
@@ -8149,7 +8149,7 @@
     "查询 Bot 状态": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 365,
+        "line": 366,
         "level": 3,
         "title": "查询 Bot 状态"
       }
@@ -8173,7 +8173,7 @@
     "查询支持的发送方法": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 127,
+        "line": 128,
         "level": 3,
         "title": "查询支持的发送方法"
       }
@@ -9367,7 +9367,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 407,
+        "line": 408,
         "level": 3,
         "title": "生命周期事件"
       },
@@ -9577,7 +9577,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 428,
+        "line": 429,
         "level": 2,
         "title": "相关文档"
       },
@@ -10755,7 +10755,7 @@
     "适配器基类": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 189,
+        "line": 190,
         "level": 2,
         "title": "适配器基类"
       }
@@ -10793,7 +10793,7 @@
     "适配器接入示例": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 325,
+        "line": 326,
         "level": 3,
         "title": "适配器接入示例"
       }
@@ -11321,7 +11321,7 @@
     "链式修饰": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 147,
+        "line": 148,
         "level": 3,
         "title": "链式修饰"
       },

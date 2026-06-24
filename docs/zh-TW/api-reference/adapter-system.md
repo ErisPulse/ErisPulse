@@ -1,6 +1,6 @@
 # 介面卡系統 API
 
-本文檔詳細介紹了 ErisPulse 介面卡系統的 API。
+本文檔詳細介紹 ErisPulse 介面卡系統的 API。
 
 ## Adapter 管理器
 
@@ -17,9 +17,9 @@ adapter = sdk.adapter.platform_name
 ```
 
 ### 使用介面卡事件監聽
-> 一般情況下，更建議使用 `Event` 模組進行事件的監聽/處理;
+> 一般情況下，更建議使用`Event`模組進行事件的監聽/處理;
 >
-> 同時 `Event` 模組提供了強大的包裝器，可以為您的模組開發帶來更多便利
+> 同時`Event`模組提供了強大的包裝器，可以為您的模組開發帶來更多便利
 
 ```python
 # 監聽 OneBot12 標準事件
@@ -27,7 +27,7 @@ adapter = sdk.adapter.platform_name
 async def handle_message(event):
     pass
 
-# 監聽特定平台的標準事件
+# 監聽特定平台標準事件
 @sdk.adapter.on("message", platform="yunhu")
 async def handle_yunhu_message(event):
     pass
@@ -63,24 +63,24 @@ is_running = sdk.adapter.is_running("platform_name")
 running = sdk.adapter.list_running()
 ```
 
-## 中介軟體
+## 中間件
 
-中介軟體在事件分發到處理器之前執行，可以對事件資料進行修改、過濾或記錄。
+中間件在事件分發到處理器之前執行，可以對事件資料進行修改、過濾或記錄。
 
-### 註冊中介軟體
+### 註冊中間件
 
 ```python
 @sdk.adapter.middleware
 async def my_middleware(event):
-    sdk.logger.info(f"中介軟體處理: {event}")
+    sdk.logger.info(f"中間件處理: {event}")
     return event
 ```
 
-### 中介軟體執行模型
+### 中間件執行模型
 
-- **執行順序**：中介軟體按註冊順序執行（先註冊先執行）
-- **資料傳遞**：每個中介軟體接收上一個中介軟體返回的 `event` 資料；如果某個中介軟體返回 `None`，則忽略該返回值並保留原資料繼續傳遞（同時輸出 `warning` 級別日誌）
-- **修改資料**：中介軟體可以修改事件資料並返回修改後的字典
+- **執行順序**：中間件按註冊順序執行（先註冊先執行）
+- **資料傳遞**：每個中間件接收上一個中間件傳回的 `event` 資料；如果某個中間件傳回 `None`，則忽略該傳回值並保留原資料繼續傳遞（同時輸出 `warning` 級別日誌）
+- **修改資料**：中間件可以修改事件資料並傳回修改後的字典
 
 ```python
 @sdk.adapter.middleware
@@ -93,11 +93,12 @@ async def filter_spam(event):
     if event.get("detail_type") == "private":
         text = event.get("alt_message", "")
         if "垃圾廣告" in text:
-            return None   # 返回 None 不會阻止事件傳播，僅忽略此返回值
+            return None   # 傳回 None 不會阻止事件傳播，僅忽略此傳回值
     return event
 ```
 
-> **注意**：中介軟體目前不支援阻斷事件傳播。如需過濾特定事件，請在事件處理器中透過條件判斷實現。
+> **注意**：中間件目前不支援阻斷事件傳播。如需過濾特定事件，請在事件處理器中透過條件判斷實作。
+> 但您可以在Event模組中設定高優先級處理器然後在處理器內使用設定 `event.mark_processed()` 來阻斷低優先級事件處理器
 
 ## Send 訊息發送
 
@@ -117,10 +118,10 @@ await adapter.Send.To("group", "456").Image("https://example.com/image.jpg")
 ### 指定發送帳號
 
 ```python
-# 使用帳戶名
+# 使用帳號名稱
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# 使用帳戶 ID
+# 使用帳號 ID
 await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 ```
 
@@ -129,11 +130,11 @@ await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 ```python
 # 列出平台支援的所有發送方法
 methods = sdk.adapter.list_sends("onebot11")
-# 回傳: ["Text", "Image", "Voice", "Markdown", ...]
+# 返回: ["Text", "Image", "Voice", "Markdown", ...]
 
 # 取得某個方法的詳細資訊
 info = sdk.adapter.send_info("onebot11", "Text")
-# 回傳:
+# 返回:
 # {
 #     "name": "Text",
 #     "parameters": [
@@ -147,7 +148,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 ### 鏈式修飾
 
 ```python
-# @使用者
+# @用戶
 await adapter.Send.To("group", "456").At("789").Text("你好")
 
 # @全體成員
@@ -164,7 +165,7 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的
 
 ### call_api 方法
 
-> **注意**：`call_api` 是直接呼叫平台原生 API 的底層方法，各平台的參數和回傳值可能不同，請參考對應平台介面卡文件。**推薦使用 Send DSL 發送訊息**，僅在 Send DSL 不支援的場景（如取得平台特有的資料、呼叫平台管理介面等）中使用 `call_api`。
+> **注意**：`call_api` 是直接呼叫平台原生 API 的底層方法，各平台的參數和傳回值可能不同，請參考對應平台介面卡文件。**推薦使用 Send DSL 發送訊息**，僅在 Send DSL 不支援的場景（如取得平台特有的資料、呼叫平台管理介面等）中使用 `call_api`。
 
 ```python
 # 呼叫平台 API
@@ -214,7 +215,7 @@ class MyAdapter(BaseAdapter):
         pass
 ```
 
-### Send 巢狀類別
+### Send 嵌套類
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -248,15 +249,15 @@ class MyAdapter(BaseAdapter):
 
 ### self 欄位擴展
 
-ErisPulse 在 OneBot12 標準的 `self` 欄位上擴展了以下可選欄位：
+ErisPulse 在 OneBot12 標準的 `self` 欄位上擴展了以下選用欄位：
 
 | 欄位 | 類型 | 說明 |
 |------|------|------|
 | `self.platform` | string | 平台名稱（OB12 標準） |
-| `self.user_id` | string | Bot 使用者 ID（OB12 標準） |
+| `self.user_id` | string | Bot 用戶 ID（OB12 標準） |
 | `self.user_name` | string | Bot 暱稱（ErisPulse 擴展） |
 | `self.avatar` | string | Bot 頭像 URL（ErisPulse 擴展） |
-| `self.account_id` | string | 多帳戶標識（ErisPulse 擴展） |
+| `self.account_id` | string | 多帳號識別（ErisPulse 擴展） |
 
 ### meta 事件格式
 
@@ -318,9 +319,9 @@ await adapter.emit({
 
 系統處理：標記 Bot 為 `offline`，觸發 `adapter.bot.offline` 生命週期事件。
 
-### 普通事件的自動發現
+### 一般事件的自動發現
 
-除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 欄位也會自動發現並註冊 Bot、更新活躍時間。這意味著即使介面卡不發送 `connect` 事件，框架也能從第一條普通事件中發現 Bot。
+除了 `meta` 事件外，一般事件（`message`/`notice`/`request`）中的 `self` 欄位也會自動發現並註冊 Bot、更新活躍時間。這意味著即使介面卡不發送 `connect` 事件，框架也能從第一條一般事件中發現 Bot。
 
 ### 介面卡接入範例
 
@@ -365,7 +366,7 @@ class MyAdapter(BaseAdapter):
 ### 查詢 Bot 狀態
 
 ```python
-# 取得所有介面卡與 Bot 的完整狀態（WebUI 友善）
+# 取得所有介面卡與 Bot 的完整狀態（WebUI 友好）
 summary = sdk.adapter.get_status_summary()
 # {
 #     "adapters": {
@@ -388,19 +389,19 @@ all_bots = sdk.adapter.list_bots()
 # 列出指定平台的 Bot
 tg_bots = sdk.adapter.list_bots("telegram")
 
-# 取得單個 Bot 詳細資訊
+# 取得單個 Bot 詳情
 info = sdk.adapter.get_bot_info("telegram", "123456")
 
-# 檢查 Bot 是否線上
+# 檢查 Bot 是否在線
 if sdk.adapter.is_bot_online("telegram", "123456"):
-    print("Bot 線上")
+    print("Bot 在線")
 ```
 
 ### Bot 狀態值
 
 | 狀態 | 說明 |
 |------|------|
-| `online` | 線上（持續收到事件或介面卡主動標記） |
+| `online` | 在線（持續收到事件或介面卡主動標記） |
 | `offline` | 離線（介面卡主動標記或系統關閉時自動設定） |
 | `unknown` | 未知（僅註冊但未確認狀態） |
 
@@ -427,6 +428,6 @@ def on_status_change(event):
 
 ## 相關文件
 
-- [核心模組 API](core-modules.md) - 核心模組 API
-- [事件系統 API](event-system.md) - Event 模組 API
+- [核心模組 API](docs/zh-TW/core-modules.md) - 核心模組 API
+- [事件系統 API](docs/zh-TW/event-system.md) - Event 模組 API
 - [介面卡開發指南](../developer-guide/adapters/) - 開發平台介面卡
