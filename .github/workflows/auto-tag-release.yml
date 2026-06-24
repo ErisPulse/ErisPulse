@@ -21,7 +21,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install dependencies
         run: |
@@ -37,30 +37,30 @@ jobs:
           # Read current version
           version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
           tag_name="v$version"
-          
+
           echo "Current version: $version"
           echo "Tag name: $tag_name"
-          
+
           # Extract changelog from CHANGELOG.md
           if [ -f "CHANGELOG.md" ]; then
             # Fix version format: replace -de. with -dev.
             fixed_version=$(echo "$version" | sed 's/-de\./-dev./g')
-            
+
             echo "Trying to match version: $version or $fixed_version"
-            
+
             # Use sed to extract version changelog
             # First try matching the original version number
             changelog_section=$(sed -n "/^## \[$version\] -/,/^## \[.*\] -/p" CHANGELOG.md | sed '$d')
-            
+
             # If not found, try matching the fixed version number
             if [ -z "$changelog_section" ]; then
               changelog_section=$(sed -n "/^## \[$fixed_version\] -/,/^## \[.*\] -/p" CHANGELOG.md | sed '$d')
             fi
-            
+
             # Remove the first line (title line)
             if [ -n "$changelog_section" ]; then
               changelog=$(echo "$changelog_section" | tail -n +2)
-              
+
               # Determine if this is a dev version
               if [[ $version =~ dev|alpha|beta|pre|a|b ]]; then
                 is_dev="true"
@@ -69,7 +69,7 @@ jobs:
                 is_dev="false"
                 latest_flag="--latest"
               fi
-              
+
               # Check if tag already exists
               if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
                 echo "Creating new tag $tag_name"
@@ -78,7 +78,7 @@ jobs:
               else
                 echo "Tag $tag_name already exists"
               fi
-              
+
               # Check if release exists
               if gh release view "$tag_name" &>/dev/null; then
                 # Update release
@@ -99,7 +99,7 @@ jobs:
                 echo "Release created $tag_name"
                 echo "release_created=true" >> $GITHUB_OUTPUT
               fi
-              
+
               echo "Release page: https://github.com/${{ github.repository }}/releases/tag/$tag_name"
             else
               echo "No changelog found for version $version"
@@ -118,7 +118,7 @@ jobs:
               mkdir -p "docs/$lang/ai-support/prompts"
             fi
           done
-          
+
           if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
             python scripts/tools/generate-ai-prompts.py
             echo "AI material documents generated"
@@ -126,16 +126,11 @@ jobs:
             echo "AI Prompt generation script not found, skipping this step"
           fi
 
-      - name: Upload AI material documents to Release
+      - name: Collect AI material documents
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
-          tag_name="v$version"
-          
-          mkdir -p temp_release_assets
-          
+          mkdir -p release_assets
+
           # Dynamically scan all language directories
           PROMPT_FILES="ErisPulse-ModuleDev.md ErisPulse-AdapterDev.md ErisPulse-Full.md"
           for lang_dir in docs/*/; do
@@ -146,17 +141,118 @@ jobs:
             for prompt_file in $PROMPT_FILES; do
               if [ -f "$prompts_dir/$prompt_file" ]; then
                 base="${prompt_file%.md}"
-                cp "$prompts_dir/$prompt_file" "temp_release_assets/${base}-${lang}.md"
+                cp "$prompts_dir/$prompt_file" "release_assets/${base}-${lang}.md"
               fi
             done
           done
-          
-          echo "Checking files..."
-          ls -la temp_release_assets/
-          
-          if [ -n "$(ls -A temp_release_assets)" ]; then
-            gh release upload "$tag_name" temp_release_assets/* --clobber
-            echo "Upload complete"
+
+          echo "AI docs collected:"
+          ls -la release_assets/ || true
+
+      - name: Build standalone executables (pybuild)
+        id: pybuild
+        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
+
+          # --- 1. Build ErisPulse wheel ---
+          python -m pip install --upgrade pip build
+          python -m build --wheel
+          WHEEL=$(ls dist/erispulse-*.whl | head -1)
+          echo "Built wheel: $WHEEL"
+
+          # --- 2. Download pybuild ---
+          PYBUILD_VERSION="v1"
+          curl -fSL "https://github.com/pybuild-org/pybuild/releases/download/${PYBUILD_VERSION}/pybuild_linux_amd64" -o pybuild
+          chmod +x pybuild
+
+          # --- 3. Prepare minimal source dir (ErisPulse comes from pip) ---
+          mkdir -p standalone_src
+
+          # --- 4. Build each platform ---
+          # Fields: target_name  python_arch  python_os  pip_platform
+          PLATFORMS="
+            linux-amd64     x86_64  unknown-linux-gnu manylinux_2_17_x86_64
+            linux-arm64     aarch64 unknown-linux-gnu manylinux_2_17_aarch64
+            windows-amd64   x86_64  pc-windows-msvc   win_amd64
+            windows-arm64   aarch64 pc-windows-msvc   win_arm64
+            macos-amd64     x86_64  apple-darwin      macosx_10_9_x86_64
+            macos-arm64     aarch64 apple-darwin      macosx_11_0_arm64
+          "
+
+          mkdir -p build_dist
+
+          echo "$PLATFORMS" | while read -r target py_arch py_os pip_plat; do
+            [ -z "$target" ] && continue
+            echo "\n=== Building $target ==="
+
+            # Windows needs colorama (click's conditional dep, not resolved in cross-compile)
+            EXTRA_DOWNLOADS=""
+            case "$target" in
+              windows-*) EXTRA_DOWNLOADS='<prop name="download" value="colorama" />' ;;
+            esac
+
+            cat > "target_${target}.xml" << XML
+          <build name="ErisPulse">
+            <builder>
+              <prop name="source" value="standalone_src" />
+              <prop name="output" value="build_dist" />
+              <prop name="release" value="20260610" />
+              <prop name="version" value="3.12.13" />
+            </builder>
+            <python>
+              <prop name="arch" value="x86_64" />
+              <prop name="os" value="unknown-linux-gnu" />
+            </python>
+            <target>
+              <python>
+                <prop name="arch" value="${py_arch}" />
+                <prop name="os" value="${py_os}" />
+              </python>
+              <pip>
+                <prop name="platform" value="${pip_plat}" />
+                <prop name="download" value="${WHEEL}" />
+                <prop name="download" value="ErisPulse-Dashboard" />
+                ${EXTRA_DOWNLOADS}
+              </pip>
+              <launcher>
+                <prop name="run" value="-m ErisPulse run" />
+              </launcher>
+            </target>
+          </build>
+          XML
+
+            # Build and immediately move output (pybuild cleans build_dist on each run)
+            if ./pybuild "target_${target}.xml"; then
+              mv build_dist/*.zip "release_assets/ErisPulse-${version}-${target}.zip" 2>/dev/null \
+                && echo "$target" \
+                || echo "⚠️ $target: no output found"
+            else
+              echo "⚠️ $target build failed, skipping"
+            fi
+          done
+
+          echo "\n=== Build output ==="
+          ls -la release_assets/App-* 2>/dev/null || echo "No standalone executables built"
+
+      - name: Upload all assets to Release
+        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
+          tag_name="v$version"
+
+          # release_assets/ has AI docs + App-*.zip standalone executables
+          echo "All release assets:"
+          ls -la release_assets/
+
+          if [ -n "$(ls -A release_assets)" ]; then
+            gh release upload "$tag_name" release_assets/* --clobber
+            echo "Uploaded $(ls release_assets | wc -l) assets to $tag_name"
           else
-            echo "No AI material files found"
+            echo "No assets to upload"
           fi
