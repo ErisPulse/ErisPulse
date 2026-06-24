@@ -19,6 +19,8 @@
 #   ERISPULSE_UPDATE_ON_START   - "true" to auto-update on every start (default: true for dev, false for stable)
 #   ERISPULSE_PORT              - Dashboard 端口 (默认: 8000)
 #   ERISPULSE_DASHBOARD_TOKEN   - Dashboard 登录令牌
+#   LANG                        - 系统语言，自动检测启动界面语言 (默认: en_US.UTF-8)
+#   ERISPULSE_LANG              - 强制启动界面语言: zh, zh_TW, en, ja, ru (覆盖 LANG)
 #   TZ                          - 时区 (默认: Asia/Shanghai)
 #
 # Docs: https://github.com/ErisPulse/ErisPulse
@@ -36,6 +38,8 @@ services:
       - ./config:/app/config
     environment:
       - TZ=${TZ:-Asia/Shanghai}
+      - LANG=${LANG:-en_US.UTF-8}
+      - ERISPULSE_LANG=${ERISPULSE_LANG:-}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
       - ERISPULSE_CHANNEL=${ERISPULSE_CHANNEL:-}
       - ERISPULSE_UPDATE_ON_START=${ERISPULSE_UPDATE_ON_START:-}
