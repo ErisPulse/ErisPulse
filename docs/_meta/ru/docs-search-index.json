@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1289,
+  "total_keywords": 1291,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -1822,14 +1822,6 @@
         "title": "API Справочник"
       }
     ],
-    "API адаптерной системы": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 1,
-        "level": 1,
-        "title": "API адаптерной системы"
-      }
-    ],
     "API основных модулей ядра": [
       {
         "document": "api-reference/core-modules.md",
@@ -2024,16 +2016,18 @@
     ],
     "Middleware": [
       {
-        "document": "api-reference/adapter-system.md",
-        "line": 66,
-        "level": 2,
-        "title": "Middleware"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 208,
         "level": 3,
         "title": "Middleware"
+      }
+    ],
+    "Middleware (промежуточное ПО)": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 66,
+        "level": 2,
+        "title": "Middleware (промежуточное ПО)"
       }
     ],
     "Middleware маршрутов": [
@@ -2469,7 +2463,7 @@
     "connect — Подключение": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 244,
+        "line": 264,
         "level": 4,
         "title": "connect — Подключение"
       }
@@ -2501,7 +2495,7 @@
     "disconnect — Отключение": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 284,
+        "line": 304,
         "level": 4,
         "title": "disconnect — Отключение"
       }
@@ -2530,12 +2524,12 @@
         "title": "guild"
       }
     ],
-    "heartbeat — Пульсация": [
+    "heartbeat — Пульс (Сердцебиение)": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 266,
+        "line": 286,
         "level": 4,
-        "title": "heartbeat — Пульсация"
+        "title": "heartbeat — Пульс (Сердцебиение)"
       }
     ],
     "is_active": [
@@ -2653,7 +2647,7 @@
     "Автоматическое обнаружение обычных событий": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 302,
+        "line": 322,
         "level": 3,
         "title": "Автоматическое обнаружение обычных событий"
       }
@@ -2871,7 +2865,7 @@
     "Базовая отправка": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 85,
+        "line": 105,
         "level": 3,
         "title": "Базовая отправка"
       },
@@ -2987,7 +2981,7 @@
     "Базовый класс адаптера": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 170,
+        "line": 190,
         "level": 2,
         "title": "Базовый класс адаптера"
       }
@@ -3193,7 +3187,7 @@
     "Вложенный класс Send": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 198,
+        "line": 218,
         "level": 3,
         "title": "Вложенный класс Send"
       }
@@ -3347,7 +3341,7 @@
     "Вызов API": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 144,
+        "line": 164,
         "level": 2,
         "title": "Вызов API"
       }
@@ -3896,6 +3890,12 @@
     ],
     "Жизненный цикл событий": [
       {
+        "document": "api-reference/adapter-system.md",
+        "line": 408,
+        "level": 3,
+        "title": "Жизненный цикл событий"
+      },
+      {
         "document": "architecture.md",
         "line": 121,
         "level": 2,
@@ -3961,7 +3961,7 @@
     "Запрос поддерживаемых методов отправки": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 108,
+        "line": 128,
         "level": 3,
         "title": "Запрос поддерживаемых методов отправки"
       }
@@ -3972,14 +3972,6 @@
         "line": 86,
         "level": 3,
         "title": "Запрос полей ID"
-      }
-    ],
-    "Запрос состояния Bot": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 346,
-        "level": 3,
-        "title": "Запрос состояния Bot"
       }
     ],
     "Запрос состояния бота": [
@@ -4003,6 +3995,12 @@
       }
     ],
     "Запрос статуса бота": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 366,
+        "level": 3,
+        "title": "Запрос статуса бота"
+      },
       {
         "document": "api-reference/event-system.md",
         "line": 239,
@@ -4088,12 +4086,12 @@
         "title": "Зачем нужны стандарты?"
       }
     ],
-    "Значения состояния Bot": [
+    "Значения статуса бота": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 380,
+        "line": 400,
         "level": 3,
-        "title": "Значения состояния Bot"
+        "title": "Значения статуса бота"
       }
     ],
     "Идентификатор учетной записи в событиях": [
@@ -4554,6 +4552,14 @@
         "line": 101,
         "level": 3,
         "title": "Использование переводов"
+      }
+    ],
+    "Использование прослушивателей событий адаптера": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 19,
+        "level": 3,
+        "title": "Использование прослушивателей событий адаптера"
       }
     ],
     "Использование с Send": [
@@ -5185,7 +5191,7 @@
     "Метод call_api": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 146,
+        "line": 166,
         "level": 3,
         "title": "Метод call_api"
       }
@@ -5225,7 +5231,7 @@
     "Методы BaseAdapter": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 172,
+        "line": 192,
         "level": 3,
         "title": "Методы BaseAdapter"
       }
@@ -5600,6 +5606,14 @@
         "line": 1,
         "level": 1,
         "title": "Многопроходный диалог (Conversation)"
+      }
+    ],
+    "Модель выполнения middleware": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 79,
+        "level": 3,
+        "title": "Модель выполнения middleware"
       }
     ],
     "Модель многоаккаунтности": [
@@ -7212,12 +7226,14 @@
         "line": 130,
         "level": 3,
         "title": "Отправка сообщений"
-      },
+      }
+    ],
+    "Отправка сообщений (Send)": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 83,
+        "line": 103,
         "level": 2,
-        "title": "Отправка сообщений"
+        "title": "Отправка сообщений (Send)"
       }
     ],
     "Отправка сообщения A2UI": [
@@ -7990,12 +8006,6 @@
     ],
     "Порядок выполнения Middleware": [
       {
-        "document": "api-reference/adapter-system.md",
-        "line": 79,
-        "level": 3,
-        "title": "Порядок выполнения Middleware"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 228,
         "level": 4,
@@ -8153,7 +8163,7 @@
     "Пример интеграции адаптера": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 306,
+        "line": 326,
         "level": 3,
         "title": "Пример интеграции адаптера"
       }
@@ -8841,7 +8851,7 @@
     "Расширение поля self": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 230,
+        "line": 250,
         "level": 3,
         "title": "Расширение поля self"
       }
@@ -8950,20 +8960,20 @@
         "title": "Реализация SendDSL"
       }
     ],
-    "Регистрация Middleware": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 68,
-        "level": 3,
-        "title": "Регистрация Middleware"
-      }
-    ],
     "Регистрация WebSocket": [
       {
         "document": "advanced/router.md",
         "line": 129,
         "level": 3,
         "title": "Регистрация WebSocket"
+      }
+    ],
+    "Регистрация middleware": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 70,
+        "level": 3,
+        "title": "Регистрация middleware"
       }
     ],
     "Регистрация и отмена": [
@@ -9390,6 +9400,12 @@
         "title": "Связанные документы"
       },
       {
+        "document": "api-reference/adapter-system.md",
+        "line": 429,
+        "level": 2,
+        "title": "Связанные документы"
+      },
+      {
         "document": "developer-guide/README.md",
         "line": 99,
         "level": 2,
@@ -9618,6 +9634,14 @@
         "title": "Синхронная инициализация"
       }
     ],
+    "Система API адаптеров": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 1,
+        "level": 1,
+        "title": "Система API адаптеров"
+      }
+    ],
     "Система интернационализации (i18n)": [
       {
         "document": "advanced/i18n.md",
@@ -9712,14 +9736,6 @@
         "title": "Слушание событий"
       }
     ],
-    "Слушание событий адаптера": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 19,
-        "level": 3,
-        "title": "Слушание событий адаптера"
-      }
-    ],
     "Слушатель событий": [
       {
         "document": "platform-guide/README.md",
@@ -9769,12 +9785,6 @@
       }
     ],
     "См. также": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 409,
-        "level": 2,
-        "title": "См. также"
-      },
       {
         "document": "api-reference/core-modules.md",
         "line": 278,
@@ -9947,12 +9957,6 @@
         "document": "advanced/http-client.md",
         "line": 197,
         "level": 2,
-        "title": "События жизненного цикла"
-      },
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 388,
-        "level": 3,
         "title": "События жизненного цикла"
       }
     ],
@@ -10867,7 +10871,7 @@
     "Типы событий meta": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 220,
+        "line": 240,
         "level": 3,
         "title": "Типы событий meta"
       }
@@ -10944,12 +10948,12 @@
         "title": "Указание бота с помощью Send DSL"
       }
     ],
-    "Указание учетной записи отправки": [
+    "Указание отправляющего аккаунта": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 98,
+        "line": 118,
         "level": 3,
-        "title": "Указание учетной записи отправки"
+        "title": "Указание отправляющего аккаунта"
       }
     ],
     "Улучшение обработки событий": [
@@ -11094,15 +11098,13 @@
         "title": "Управление правами доступа"
       }
     ],
-    "Управление состоянием Bot": [
+    "Управление состоянием бота": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 216,
+        "line": 236,
         "level": 2,
-        "title": "Управление состоянием Bot"
-      }
-    ],
-    "Управление состоянием бота": [
+        "title": "Управление состоянием бота"
+      },
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 799,
@@ -11361,7 +11363,7 @@
     "Формат событий meta": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 242,
+        "line": 262,
         "level": 3,
         "title": "Формат событий meta"
       }
@@ -11538,6 +11540,14 @@
         "title": "Цепочечные модификаторы (возвращает self для поддержки цепочечного вызова)"
       }
     ],
+    "Цепочка вызовов (Chain calls)": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 148,
+        "level": 3,
+        "title": "Цепочка вызовов (Chain calls)"
+      }
+    ],
     "Цепочка вызовов Send": [
       {
         "document": "platform-guide/README.md",
@@ -11547,12 +11557,6 @@
       }
     ],
     "Цепочка методов": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 128,
-        "level": 3,
-        "title": "Цепочка методов"
-      },
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 31,
