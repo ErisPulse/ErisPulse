@@ -63,11 +63,11 @@
 
 ---
 
-## [2.5.1] - 2026/06/22
+## [2.5.1] - 2026/06/24
 > 正式发布
 
 **版本摘要**
-2.5.1 版本聚焦日志系统优化与 Storage 增强：新增 `EVENT` 日志级别取代旧的 `MESSAGE`，事件日志现在可按 OneBot12 类型分类显示并被 WARNING+ 级别过滤；全面优化日志配色（统一管理、关闭 Rich 自动高亮）和路由日志输出（避免批量注册/注销时刷屏）；Storage 模块支持嵌套键访问。
+2.5.1 版本聚焦日志系统优化与 Storage 增强：新增 `EVENT` 日志级别取代旧的 `MESSAGE`，事件日志现在可按 OneBot12 类型分类显示并被 WARNING+ 级别过滤；全面优化日志配色（统一管理、关闭 Rich 自动高亮）和路由日志输出（避免批量注册/注销时刷屏）；Storage 模块支持嵌套键访问。Docker 镜像支持国际化（entrypoint 多语言、locale 生成、`LANG` 环境变量自动检测与透传）。
 
 **升级建议**
 - **建议升级**
@@ -83,6 +83,9 @@
 - StorageManager 支持嵌套键访问，可以使用点号语法操作嵌套数据结构
 - 添加嵌套键自动创建功能，无需预先创建根对象
 - 新增 `EVENT` 日志级别（等同 INFO），用于消息/事件收发日志，用户设置 WARNING+ 级别即可过滤掉事件日志
+- Docker entrypoint 支持国际化（5 种语言：zh/zh_TW/en/ja/ru），根据 `LANG`/`LC_ALL` 环境变量自动检测语言，支持 `ERISPULSE_LANG` 显式覆盖
+- Dockerfile 安装并生成 5 种 locale（en_US/zh_CN/zh_TW/ja_JP/ru_RU UTF-8），设置默认 `LANG=en_US.UTF-8`
+- docker-compose.yml 透传 `LANG` 与 `ERISPULSE_LANG` 环境变量，容器自动继承宿主机语言设置
 
 ### 变更
 - 日志级别 `MESSAGE`(60) 重命名为 `EVENT`(21)，行为从「高于 CRITICAL」改为「等同 INFO」，可被 WARNING+ 级别过滤
@@ -92,6 +95,9 @@
 ### 优化
 - 统一日志配色方案至 `constants.py`（`LOG_RICH_THEME`），降低视觉噪音：INFO 仅加粗不着色，路径/字符串不再被 Rich 自动高亮为紫色
 - 路由注册/注销日志降为 DEBUG 级别，新增 INFO 级别的路由摘要日志，避免批量操作时刷屏
+- Docker entrypoint 使用 ErisPulse ASCII Banner 替代 `==========` 分隔线
+- Docker entrypoint 提取 `get_version()` 函数消除重复调用，`uv pip install` 失败时输出错误日志而非静默吞掉
+- Docker CI 工作流（docker-publish.yml）同步使用 ASCII Banner
 
 ### 修复
 - 修复并发存储写入测试的键名冲突问题
