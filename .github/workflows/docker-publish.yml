@@ -79,14 +79,19 @@ jobs:
 
       - name: Print image info
         run: |
-          echo "==========================================="
+          echo ""
+          echo "███████╗██████╗ ███████╗██████╗ ██╗  ██╗"
+          echo "██╔════╝██╔══██╗██╔════╝██╔══██╗██║ ██╔╝"
+          echo "█████╗  ██████╔╝███████╗██║  ██║█████╔╝"
+          echo "██╔══╝  ██╔═══╝ ╚════██║██║  ██║██╔═██╗"
+          echo "███████╗██║     ███████║██████╔╝██║  ██╗"
+          echo "╚══════╝╚═╝     ╚══════╝╚═════╝ ╚═╝  ╚═╝"
           echo "  Docker image published successfully"
-          echo "==========================================="
+          echo ""
           echo "Image: ${{ env.IMAGE_NAME }}"
           echo "Registry: Docker Hub + GitHub Container Registry"
           echo "Tags:"
           echo "${{ steps.meta.outputs.tags }}" | while IFS= read -r tag; do
             echo "  - ${tag}"
           done
-          echo "Platforms: linux/amd64, linux/arm64"
-          echo "==========================================="
+          echo "Platforms: linux/amd64,linux/arm64"
