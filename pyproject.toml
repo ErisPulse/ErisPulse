@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 license = { file = "LICENSE" }
 
 authors = [
-    { name = "ErisDev", email = "erisdev@88.com" }
+    { name = "ErisDev" }
 ]
 
 maintainers = [
@@ -59,7 +59,6 @@ classifiers = [
 ]
 
 dependencies = [
-    "pip>=23.0",        # 显式声明，防止部分情况下cli报错 | 绝对！！！不要删除这个依赖项
     "rich>=13.0.0",
     "toml>=0.10.2",
 
@@ -69,6 +68,14 @@ dependencies = [
     "fastapi>=0.116.1",
     "uvicorn>=0.30.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/ErisPulse/ErisPulse"
+Documentation = "https://www.erisdev.com#docs"
+Repository = "https://github.com/ErisPulse/ErisPulse"
+Issues = "https://github.com/ErisPulse/ErisPulse/issues"
+"Bug Tracker" = "https://github.com/ErisPulse/ErisPulse/blob/main/docs/en/bug-tracker.md"
+Changelog = "https://github.com/ErisPulse/ErisPulse/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 test = [
