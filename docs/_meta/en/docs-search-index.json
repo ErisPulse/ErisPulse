@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1254,
+  "total_keywords": 1256,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -1850,13 +1850,15 @@
         "title": "AI-Assisted Development"
       }
     ],
-    "API Calls": [
+    "API Calling": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 163,
+        "line": 164,
         "level": 2,
-        "title": "API Calls"
-      },
+        "title": "API Calling"
+      }
+    ],
+    "API Calls": [
       {
         "document": "platform-guide/yunhu_user.md",
         "line": 558,
@@ -2109,7 +2111,7 @@
     "Adapter Base Class": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 188,
+        "line": 190,
         "level": 2,
         "title": "Adapter Base Class"
       }
@@ -2155,7 +2157,7 @@
     "Adapter Integration Example": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 324,
+        "line": 326,
         "level": 3,
         "title": "Adapter Integration Example"
       }
@@ -2454,20 +2456,20 @@
         "title": "Auto Documentation"
       }
     ],
-    "Auto-Discovery via Normal Events": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 320,
-        "level": 3,
-        "title": "Auto-Discovery via Normal Events"
-      }
-    ],
     "Automatic Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 795,
         "level": 3,
         "title": "Automatic Discovery Mechanism"
+      }
+    ],
+    "Automatic Discovery of Normal Events": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 322,
+        "level": 3,
+        "title": "Automatic Discovery of Normal Events"
       }
     ],
     "Automatic Inference": [
@@ -2513,7 +2515,7 @@
     "BaseAdapter Methods": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 190,
+        "line": 192,
         "level": 3,
         "title": "BaseAdapter Methods"
       }
@@ -2675,7 +2677,7 @@
     "Basic Sending": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 104,
+        "line": 105,
         "level": 3,
         "title": "Basic Sending"
       },
@@ -2863,7 +2865,7 @@
     "Bot Status Management": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 234,
+        "line": 236,
         "level": 2,
         "title": "Bot Status Management"
       },
@@ -2911,7 +2913,7 @@
     "Bot Status Values": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 398,
+        "line": 400,
         "level": 3,
         "title": "Bot Status Values"
       }
@@ -3157,7 +3159,7 @@
     "Chained Modifiers": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 147,
+        "line": 148,
         "level": 3,
         "title": "Chained Modifiers"
       }
@@ -5602,6 +5604,14 @@
         "title": "Generic request"
       }
     ],
+    "Get Adapter": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 7,
+        "level": 3,
+        "title": "Get Adapter"
+      }
+    ],
     "Get Method Details": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -5632,14 +5642,6 @@
         "line": 239,
         "level": 3,
         "title": "Getting Adapter Instances"
-      }
-    ],
-    "Getting Adapters": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 7,
-        "level": 3,
-        "title": "Getting Adapters"
       }
     ],
     "Getting Help": [
@@ -6527,7 +6529,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 406,
+        "line": 408,
         "level": 3,
         "title": "Lifecycle Events"
       },
@@ -7238,14 +7240,6 @@
         "title": "MessageBuilder Detailed Explanation"
       }
     ],
-    "Meta Event Format": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 260,
-        "level": 3,
-        "title": "Meta Event Format"
-      }
-    ],
     "Meta Event Handling": [
       {
         "document": "getting-started/event-handling.md",
@@ -7263,12 +7257,6 @@
       }
     ],
     "Meta Event Types": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 238,
-        "level": 3,
-        "title": "Meta Event Types"
-      },
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 813,
@@ -8564,6 +8552,14 @@
         "title": "Quality Checklist"
       }
     ],
+    "Query Bot Status": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 366,
+        "level": 3,
+        "title": "Query Bot Status"
+      }
+    ],
     "Query Data": [
       {
         "document": "advanced/sql-builder.md",
@@ -8591,17 +8587,9 @@
     "Query Supported Sending Methods": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 127,
+        "line": 128,
         "level": 3,
         "title": "Query Supported Sending Methods"
-      }
-    ],
-    "Querying Bot Status": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 364,
-        "level": 3,
-        "title": "Querying Bot Status"
       }
     ],
     "Querying Registered Methods": [
@@ -8794,6 +8782,14 @@
         "title": "References"
       }
     ],
+    "Register Middleware": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 70,
+        "level": 3,
+        "title": "Register Middleware"
+      }
+    ],
     "Registering Commands": [
       {
         "document": "api-reference/event-system.md",
@@ -8824,14 +8820,6 @@
         "line": 485,
         "level": 4,
         "title": "Registering Individual Methods"
-      }
-    ],
-    "Registering Middleware": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 70,
-        "level": 3,
-        "title": "Registering Middleware"
       }
     ],
     "Registration API": [
@@ -8901,7 +8889,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 427,
+        "line": 429,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9536,14 +9524,6 @@
         "title": "Security Recommendations"
       }
     ],
-    "Self Field Extension": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 248,
-        "level": 3,
-        "title": "Self Field Extension"
-      }
-    ],
     "Send A2UI message": [
       {
         "document": "platform-guide/yunhu.md",
@@ -9563,7 +9543,7 @@
     "Send Message Sending": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 102,
+        "line": 103,
         "level": 2,
         "title": "Send Message Sending"
       }
@@ -9595,7 +9575,7 @@
     "Send Nested Class": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 216,
+        "line": 218,
         "level": 3,
         "title": "Send Nested Class"
       }
@@ -9965,7 +9945,7 @@
     "Specify Sending Account": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 117,
+        "line": 118,
         "level": 3,
         "title": "Specify Sending Account"
       }
@@ -10818,6 +10798,14 @@
         "title": "Usage in Adapters"
       }
     ],
+    "Use Adapter Event Listeners": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 19,
+        "level": 3,
+        "title": "Use Adapter Event Listeners"
+      }
+    ],
     "Use Send DSL to Specify Account": [
       {
         "document": "platform-guide/ideaura.md",
@@ -10870,14 +10858,6 @@
         "line": 426,
         "level": 4,
         "title": "Users: Using Platform Extension Methods"
-      }
-    ],
-    "Using Adapter Event Listening": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 19,
-        "level": 3,
-        "title": "Using Adapter Event Listening"
       }
     ],
     "Using Configuration": [
@@ -11343,7 +11323,7 @@
     "call_api Method": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 165,
+        "line": 166,
         "level": 3,
         "title": "call_api Method"
       }
@@ -11388,12 +11368,12 @@
         "title": "confirm(prompt=None, **kwargs)"
       }
     ],
-    "connect — Connection Online": [
+    "connect — Connect Online": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 262,
+        "line": 264,
         "level": 4,
-        "title": "connect — Connection Online"
+        "title": "connect — Connect Online"
       }
     ],
     "conv.context": [
@@ -11436,12 +11416,12 @@
         "title": "detail_type Mapping"
       }
     ],
-    "disconnect — Disconnection": [
+    "disconnect — Disconnect": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 302,
+        "line": 304,
         "level": 4,
-        "title": "disconnect — Disconnection"
+        "title": "disconnect — Disconnect"
       }
     ],
     "discord_embed Message Segment": [
@@ -11487,7 +11467,7 @@
     "heartbeat — Heartbeat": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 284,
+        "line": 286,
         "level": 4,
         "title": "heartbeat — Heartbeat"
       }
@@ -11530,6 +11510,22 @@
         "line": 306,
         "level": 3,
         "title": "mention_all Message Segment"
+      }
+    ],
+    "meta Event Format": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 262,
+        "level": 3,
+        "title": "meta Event Format"
+      }
+    ],
+    "meta Event Types": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 240,
+        "level": 3,
+        "title": "meta Event Types"
       }
     ],
     "metadata Conventions": [
@@ -11602,6 +11598,14 @@
         "line": 38,
         "level": 3,
         "title": "say(content, **kwargs)"
+      }
+    ],
+    "self Field Extensions": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 250,
+        "level": 3,
+        "title": "self Field Extensions"
       }
     ],
     "self_id Automatic Mapping": [
