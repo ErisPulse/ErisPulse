@@ -21,6 +21,7 @@ from ...runtime.context import current_owner, handler_waits
 from .. import adapter, logger
 from ..constants import (
     DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
+    DEFAULT_COMMAND_DISPATCHER_PRIORITY,
     DEFAULT_COMMAND_MUST_AT_BOT,
     DEFAULT_SEND_METHOD,
     DEFAULT_WAIT_TIMEOUT_SECS,
@@ -65,12 +66,11 @@ class CommandHandler:
         # 等待回复相关
         self._waiting_replies = {}  # 存储等待回复的用户信息
 
-        # 创建消息事件处理器
-        self.handler = BaseEventHandler("message", "command")
-
-        # 将命令分发器 _handle_message 挂载到适配器消息事件总线
-        if not self.handler._linked_to_adapter_bus:
-            self.handler.register(self._handle_message)
+        # 共享的消息事件处理器引用（由 bind_message_handler() 设置）
+        # 命令分发器 _handle_message 以高优先级注册在同一个队列中，
+        # 确保命令 /xxx 始终优先于 on_message / on_group_message 触发
+        self._bound_handler: BaseEventHandler | None = None
+        self._dispatcher_registered: bool = False
 
     def __call__(
         self,
@@ -98,8 +98,9 @@ class CommandHandler:
         """
 
         def decorator(func: Callable):
-            if not self.handler._linked_to_adapter_bus:
-                self.handler.register(self._handle_message)
+            # 确保命令分发器已注册到共享 handler
+            if not self._dispatcher_registered:
+                self._register_dispatcher()
 
             cmd_names = []
             if isinstance(name, str):
@@ -162,8 +163,10 @@ class CommandHandler:
         :param handler: 要注销的命令处理器
         :return: 是否成功注销
         """
-        # 从基础处理器中移除
-        result = self.handler.unregister(handler)
+        # 从共享 handler 中注销命令函数（如已注册）
+        result = False
+        if self._bound_handler is not None:
+            result = self._bound_handler.unregister(handler)
 
         # 从命令映射中移除
         commands_to_remove = []
@@ -667,10 +670,35 @@ class CommandHandler:
         except Exception as e:
             logger.error(f"发送命令错误消息失败: {e}")
 
+    def bind_message_handler(self, handler: BaseEventHandler) -> None:
+        """
+        {!--< internal-use >!--}
+        绑定到共享的消息事件处理器
+
+        将命令分发器 _handle_message 注册到共享的 BaseEventHandler 中，
+        使命令处理和通用消息处理共享同一个优先级队列。
+
+        :param handler: MessageHandler 持有的 BaseEventHandler 实例
+        """
+        self._bound_handler = handler
+        self._register_dispatcher()
+
+    def _register_dispatcher(self) -> None:
+        """
+        {!--< internal-use >!--}
+        将命令分发器注册到共享 handler（如尚未注册）
+        """
+        if self._bound_handler is not None and not self._dispatcher_registered:
+            self._bound_handler.register(
+                self._handle_message,
+                priority=DEFAULT_COMMAND_DISPATCHER_PRIORITY,
+            )
+            self._dispatcher_registered = True
+
     def _clear_commands(self):
         """
         {!--< internal-use >!--}
-        清除所有已注册的命令，并断开与适配器事件总线的连接
+        清除所有已注册的命令，并从共享 handler 中注销命令分发器
 
         :return: 被清除的命令数量
         """
@@ -680,7 +708,10 @@ class CommandHandler:
         self.groups.clear()
         self.permissions.clear()
         self._waiting_replies.clear()
-        self.handler._clear_handlers()
+        # 从共享 handler 中注销命令分发器（不清除其他 handler 的消息处理器）
+        if self._bound_handler is not None and self._dispatcher_registered:
+            self._bound_handler.unregister(self._handle_message)
+            self._dispatcher_registered = False
         return count
 
     def get_command(self, name: str) -> dict | None:
