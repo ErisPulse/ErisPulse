@@ -319,6 +319,10 @@ DEFAULT_MESSAGE_IGNORE_SELF = True
 # 修改影响: 未指定 priority 的处理器的执行顺序。
 DEFAULT_HANDLER_PRIORITY = 0
 
+# 命令分发器优先级（远高于默认值，确保命令在消息处理器之前执行）。
+# 修改影响: 命令 /xxx 总是优先于 on_message / on_group_message 等处理器触发。
+DEFAULT_COMMAND_DISPATCHER_PRIORITY = 100
+
 # 等待用户回复的默认超时时间（秒）。
 # 使用位置: command.wait_reply(), Event.wait_reply(), Event.wait_for() 等 8 处。
 # 修改影响: 所有等待用户交互的默认超时。设大用户有更多反应时间，设小释放资源更快。
