@@ -273,6 +273,12 @@ SDK 初始化入口，返回 Task 对象
 
 无头模式运行 ErisPulse
 
+> **提示**
+> 异常处理原则：
+> 1. 模块/适配器的任何错误都会被拦截，不会导致进程退出
+> 2. 只有 KeyboardInterrupt（Ctrl+C）会正常向上传播，触发优雅关闭
+> 3. 其他 BaseException（如 SystemExit）会被拦截并记录，防止意外终止
+
 :param keep_running: bool 是否保持运行
 
 **示例**:
