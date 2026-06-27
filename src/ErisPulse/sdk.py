@@ -898,6 +898,13 @@ class SDK:
         """
         无头模式运行 ErisPulse
 
+        {!--< tips >!--}
+        异常处理原则：
+        1. 模块/适配器的任何错误都会被拦截，不会导致进程退出
+        2. 只有 KeyboardInterrupt（Ctrl+C）会正常向上传播，触发优雅关闭
+        3. 其他 BaseException（如 SystemExit）会被拦截并记录，防止意外终止
+        {!--< /tips >!--}
+
         :param keep_running: bool 是否保持运行
 
         :example:
@@ -915,8 +922,17 @@ class SDK:
                 await shutdown_event.wait()
         except asyncio.CancelledError:
             self.logger.info(i18n.t("core.sdk.run.shutdown_signal"))
+        except KeyboardInterrupt:
+            # Ctrl+C / SIGINT: 允许正常传播，触发优雅关闭
+            self.logger.info(i18n.t("core.sdk.run.shutdown_signal"))
+            raise
         except Exception as e:
+            # 常规异常（模块/适配器错误等），记录但不向上传播
             self.logger.error(e)
+        except BaseException as e:
+            # 其他 BaseException（SystemExit 等），拦截并记录
+            # 模块/适配器不应能终止进程
+            self.logger.error(i18n.t("core.sdk.run.unexpected_error", error=repr(e)))
         finally:
             if keep_running:
                 try:

@@ -57,6 +57,7 @@ TRANSLATIONS = {
     # ==================== Запуск SDK ====================
     "core.sdk.run.init_failed": "Ошибка инициализации ErisPulse, проверьте журналы",
     "core.sdk.run.shutdown_signal": "Получен сигнал завершения, выполняется очистка...",
+    "core.sdk.run.unexpected_error": "Перехвачен неожиданный сигнал завершения: {error}, процесс продолжает работу",
     # ==================== Перезагрузка SDK ====================
     "core.sdk.reload.starting": "[Reload] Начинается перезагрузка SDK...",
     "core.sdk.reload.collected_top_modules": "[Reload] Собраны модули верхнего уровня внешних пакетов: {modules}",
