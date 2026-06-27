@@ -109,6 +109,7 @@
 - @wsu2059q
   - `docker-compose.yml` 和 1Panel 模板添加 `stop_grace_period: 30s`，为优雅关闭留出充足时间
   - `Dockerfile` 注释补充 `ERISPULSE_RESET_VENV` 环境变量说明和 venv 持久化机制文档
+  - 将 `Event` cmd和msg的处理进行合并
 
 ---
 
