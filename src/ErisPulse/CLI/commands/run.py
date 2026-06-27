@@ -193,6 +193,9 @@ class RunCommand(Command):
         if reload_mode:
             self._run_script_with_reload(script_path_abs)
         else:
+            script_dir = os.path.dirname(script_path_abs)
+            if script_dir not in sys.path:
+                sys.path.insert(0, script_dir)
             try:
                 runpy.run_path(script_path_abs, run_name="__main__")
             except SystemExit:
