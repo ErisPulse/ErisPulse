@@ -99,11 +99,11 @@
     - 修复：虚拟环境迁移至 `/app/config/.venv`，所有包（含第三方模块/适配器）随卷持久化
     - `docker-entrypoint.sh` 的 `update_erispulse()` 移除 `--system` 参数，改为安装到 venv
   - **容器停止时无优雅关闭流程**：
-    - 原因：`docker-entrypoint.sh` 使用 `exec "$@"` 替换进程后 trap 失效；SDK `run()` 中 `shutdown_event` 从未被设置；`epsdk run` 子进程未转发 SIGTERM
-    - 修复信号链（三层保障）：
-      1. `docker-entrypoint.sh`：`exec` 改为后台进程 + `trap` 转发 SIGTERM 到子进程
-      2. `sdk.py` 的 `run()`：注册 `loop.add_signal_handler` 监听 SIGTERM/SIGINT，触发 `shutdown_event` 使 `finally` 块执行 `uninit()`
-      3. `CLI/commands/run.py`：`_run_internal()` 注册信号处理器转发 SIGTERM/SIGINT 到 SDK 子进程
+    - 原因：SDK `run()` 中 `shutdown_event` 从未被设置；`epsdk run` 子进程未转发 SIGTERM
+    - 修复信号链（两层保障）：
+      1. `sdk.py` 的 `run()`：注册 `loop.add_signal_handler` 监听 SIGTERM/SIGINT，触发 `shutdown_event` 使 `finally` 块执行 `uninit()`
+      2. `CLI/commands/run.py`：`_run_internal()` 注册信号处理器转发 SIGTERM/SIGINT 到 SDK 子进程；子进程异常退出时记录退出码
+    - entrypoint 保持 `exec "$@"` 使应用成为 PID 1，避免 bash trap + `set -e` 导致的意外重启
 
 ### 优化
 - @wsu2059q

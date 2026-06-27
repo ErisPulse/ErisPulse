@@ -194,6 +194,12 @@ class RunCommand(Command):
                     console.print(f"[info]{i18n.t('cli.run.restart_request')}[/]")
                     time.sleep(0.5)
                     continue
+
+                # 记录退出码，便于诊断意外重启
+                if process.returncode != 0:
+                    console.print(
+                        f"[warning]SDK process exited with code {process.returncode}[/]"
+                    )
                 break
         except KeyboardInterrupt:
             pass

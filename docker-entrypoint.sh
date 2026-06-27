@@ -213,12 +213,15 @@ setup_venv() {
         # 创建前保存系统包列表（用于迁移已部署用户的包）
         system_pkgs=$(python3 -m pip freeze 2>/dev/null || true)
         echo "[ErisPulse] $(t 'venv_creating')"
+        # 先取消系统 Python 标记，避免 uv venv 警告
+        unset UV_SYSTEM_PYTHON
         uv venv --system-site-packages "${VENV_DIR}"
         is_fresh=true
     # venv 存在但 Python 不可用（版本变更/损坏）→ 重建
     elif [ ! -x "${VENV_DIR}/bin/python" ]; then
         echo "[ErisPulse] $(t 'venv_recreating')"
         rm -rf "${VENV_DIR}"
+        unset UV_SYSTEM_PYTHON
         uv venv --system-site-packages "${VENV_DIR}"
         is_fresh=true
     fi
@@ -226,8 +229,6 @@ setup_venv() {
     # 激活 venv：后续所有 uv/pip 操作和 epsdk 都使用此环境
     export VIRTUAL_ENV="${VENV_DIR}"
     export PATH="${VENV_DIR}/bin:${PATH}"
-    # 不再强制使用系统 Python，让 uv 遵循 VIRTUAL_ENV
-    unset UV_SYSTEM_PYTHON
 
     # 首次创建 venv：迁移 + 恢复快照 + 安装基础包
     if [ "${is_fresh}" = true ]; then
@@ -237,10 +238,12 @@ setup_venv() {
         fi
 
         # 1. 迁移：将系统 Python 中的包安装到 venv（向后兼容已部署用户）
-        #    过滤掉镜像基础包，只迁移用户额外安装的包
-        if [ -n "${system_pkgs}" ] && [ -f "/app/base-packages.txt" ]; then
-            local user_pkgs
-            user_pkgs=$(echo "${system_pkgs}" | grep -vxFf "/app/base-packages.txt" 2>/dev/null || true)
+        #    如果有基础包清单则只迁移用户包；否则迁移全部系统包
+        if [ -n "${system_pkgs}" ]; then
+            local user_pkgs="${system_pkgs}"
+            if [ -f "/app/base-packages.txt" ]; then
+                user_pkgs=$(echo "${system_pkgs}" | grep -vxFf "/app/base-packages.txt" 2>/dev/null || true)
+            fi
             if [ -n "${user_pkgs}" ]; then
                 echo "[ErisPulse] $(t 'venv_migrating')"
                 local tmp_file
@@ -336,23 +339,6 @@ EOF
     fi
 }
 
-# ==================== Signal Handling ====================
-# 使用后台进程 + 信号转发，确保容器停止时能优雅关闭
-
-APP_PID=""
-
-shutdown() {
-    echo ""
-    echo "[ErisPulse] $(t 'stopping')"
-    if [ -n "${APP_PID}" ]; then
-        kill -TERM "${APP_PID}" 2>/dev/null
-        wait "${APP_PID}" 2>/dev/null
-    fi
-    exit 0
-}
-
-trap shutdown SIGTERM SIGINT
-
 # ==================== Main ====================
 
 detect_lang
@@ -391,10 +377,6 @@ echo "[ErisPulse] $(t 'channel_label'): ${ERISPULSE_CHANNEL}"
 echo "[ErisPulse] Dashboard: http://0.0.0.0:8000"
 echo "[ErisPulse] $(t 'starting')"
 
-# 后台运行主程序，保留 trap 以转发 SIGTERM
-"$@" &
-APP_PID=$!
-
-# 等待主程序退出，传递退出码
-wait "${APP_PID}"
-exit $?
+# exec 替换当前 shell 进程，使应用成为 PID 1
+# 优雅关闭由 SDK 的信号处理器负责（loop.add_signal_handler）
+exec "$@"
