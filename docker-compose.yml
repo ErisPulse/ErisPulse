@@ -45,3 +45,4 @@ services:
       - ERISPULSE_UPDATE_ON_START=${ERISPULSE_UPDATE_ON_START:-}
     command: ["epsdk", "run"]
     restart: unless-stopped
+    stop_grace_period: 30s

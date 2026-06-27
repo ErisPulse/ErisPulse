@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1235,
+  "total_keywords": 1236,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3266,6 +3266,14 @@
         "line": 282,
         "level": 3,
         "title": "[BUG-017] 配置文件路径依赖工作目录"
+      }
+    ],
+    "[BUG-018] 子进程模式 `ep run <script>` 找不到脚本所在目录的子包": [
+      {
+        "document": "bug-tracker.md",
+        "line": 298,
+        "level": 3,
+        "title": "[BUG-018] 子进程模式 `ep run <script>` 找不到脚本所在目录的子包"
       }
     ],
     "__init__.py": [
