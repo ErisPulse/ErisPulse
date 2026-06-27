@@ -1,22 +1,14 @@
 # ErisPulse Docker Compose
 #
 # Usage:
-#   Stable (default):
-#     docker compose up -d
+#   docker compose up -d
 #
-#   Pre-release / Dev:
-#     ERISPULSE_CHANNEL=dev docker compose up -d
-#     # or use the dev target:
-#     docker compose --profile dev up -d
 #
 # China Mirror (if Docker Hub is inaccessible):
 #   Replace the image with:
 #     image: ghcr.io/erispulse/erispulse:latest
 #
 # Environment variables:
-#   ERISPULSE_CHANNEL           - "stable" or "dev" (default: stable)
-#                                  dev: auto-update to latest pre-release on start
-#   ERISPULSE_UPDATE_ON_START   - "true" to auto-update on every start (default: true for dev, false for stable)
 #   ERISPULSE_PORT              - Dashboard 端口 (默认: 8000)
 #   ERISPULSE_DASHBOARD_TOKEN   - Dashboard 登录令牌
 #   LANG                        - 系统语言，自动检测启动界面语言 (默认: en_US.UTF-8)
@@ -31,17 +23,26 @@ services:
       context: .
       target: ${ERISPULSE_BUILD_TARGET:-production}
     image: erispulse/erispulse:${ERISPULSE_TAG:-latest}
-    container_name: erispulse
+    container_name: ${CONTAINER_NAME:-erispulse}
     ports:
       - "${ERISPULSE_PORT:-8000}:8000"
     volumes:
       - ./config:/app/config
+      # 持久化 Python site-packages，保证 Dashboard 热更新安装的包在重建后不丢失
+      # 首次启动时 Docker 会自动将镜像内的 site-packages 复制到此卷
+      - packages:/usr/local/lib/python3.13/site-packages
     environment:
       - TZ=${TZ:-Asia/Shanghai}
       - LANG=${LANG:-en_US.UTF-8}
       - ERISPULSE_LANG=${ERISPULSE_LANG:-}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
-      - ERISPULSE_CHANNEL=${ERISPULSE_CHANNEL:-}
-      - ERISPULSE_UPDATE_ON_START=${ERISPULSE_UPDATE_ON_START:-}
     command: ["epsdk", "run"]
-    restart: unless-stopped
+    restart: on-failure:5
+    # 防止 OOM 导致重启（根据实际情况调整）
+    # mem_limit: 512m
+    # mem_reservation: 256m
+
+volumes:
+  packages:
+    # 绑定容器名，保证多实例各自独立
+    name: ${CONTAINER_NAME:-erispulse}-packages
