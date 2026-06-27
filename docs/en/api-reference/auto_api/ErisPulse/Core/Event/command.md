@@ -145,10 +145,31 @@ ErisPulse 命令处理模块
 ---
 
 
+##### `bind_message_handler(handler: BaseEventHandler)`
+
+> **内部方法** 
+绑定到共享的消息事件处理器
+
+将命令分发器 _handle_message 注册到共享的 BaseEventHandler 中，
+使命令处理和通用消息处理共享同一个优先级队列。
+
+:param handler: MessageHandler 持有的 BaseEventHandler 实例
+
+---
+
+
+##### `_register_dispatcher()`
+
+> **内部方法** 
+将命令分发器注册到共享 handler（如尚未注册）
+
+---
+
+
 ##### `_clear_commands()`
 
 > **内部方法** 
-清除所有已注册的命令，并断开与适配器事件总线的连接
+清除所有已注册的命令，并从共享 handler 中注销命令分发器
 
 :return: 被清除的命令数量
 
