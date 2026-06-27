@@ -273,6 +273,10 @@ SDK 初始化入口，返回 Task 对象
 
 无头模式运行 ErisPulse
 
+监听 SIGTERM/SIGINT 信号以实现优雅关闭：
+收到信号后触发 shutdown_event，使 finally 块中的 uninit() 正常执行，
+确保适配器断开、模块卸载、数据落盘等清理工作完成。
+
 :param keep_running: bool 是否保持运行
 
 **示例**:

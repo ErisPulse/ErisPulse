@@ -280,9 +280,26 @@ ErisPulse包管理器
    并将目标 Python 解析为当前虚拟环境的解释器，
    避免安装到全局环境。
 
+操作成功后自动保存包快照到持久化目录，
+供 Docker 容器重建后恢复使用。
+
 - **args** (`List[str`): ] pip 子命令与参数，如 ["install", "--upgrade", pkg]
 - **description** (`str`): 展示给用户的操作描述
 **返回值** (`bool`): 执行成功返回 True
+
+---
+
+
+##### `_save_package_snapshot()`
+
+> **内部方法** 
+将当前已安装的包列表保存到持久化目录。
+
+快照文件用于 Docker 容器重建后的包恢复：
+entrypoint 创建新 venv 时会读取 .pip-snapshot.txt
+并尝试重新安装这些包。
+
+仅在 config/ 目录存在时保存（即项目环境或 Docker 环境）。
 
 ---
 
