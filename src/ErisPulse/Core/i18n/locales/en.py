@@ -57,6 +57,7 @@ TRANSLATIONS = {
     # ==================== SDK Run ====================
     "core.sdk.run.init_failed": "ErisPulse initialization failed, please check the logs",
     "core.sdk.run.shutdown_signal": "Shutdown signal received, cleaning up...",
+    "core.sdk.run.unexpected_error": "Unexpected termination signal intercepted: {error}, process kept alive",
     # ==================== SDK Reload ====================
     "core.sdk.reload.starting": "[Reload] Starting SDK reload...",
     "core.sdk.reload.collected_top_modules": "[Reload] Collected external package top-level modules: {modules}",
