@@ -57,6 +57,7 @@ TRANSLATIONS = {
     # ==================== SDK 実行 ====================
     "core.sdk.run.init_failed": "ErisPulse の初期化に失敗しました、ログを確認してください",
     "core.sdk.run.shutdown_signal": "シャットダウンシグナルを受信しました、クリーンアップ中...",
+    "core.sdk.run.unexpected_error": "予期しない終了シグナルを遮断しました: {error}、プロセスは維持されます",
     # ==================== SDK リロード ====================
     "core.sdk.reload.starting": "[Reload] SDK の再読み込みを開始しています...",
     "core.sdk.reload.collected_top_modules": "[Reload] 外部パッケージのトップレベルモジュールを収集しました: {modules}",

@@ -10,11 +10,12 @@
 #     docker build --target dev -t erispulse/erispulse:dev .
 #
 # Environment variables (runtime):
-#   ERISPULSE_CHANNEL           - "stable" or "dev" (default: stable)
-#   ERISPULSE_UPDATE_ON_START   - "true" to auto-update on start (default: false)
 #   ERISPULSE_DASHBOARD_TOKEN   - Dashboard login token
 #   LANG                        - System locale, auto-detects entrypoint language (default: en_US.UTF-8)
 #   ERISPULSE_LANG              - Force entrypoint language: zh, zh_TW, en, ja, ru (overrides LANG)
+#
+# Note:
+#   框架更新由 Dashboard 热更新完成，Docker 不参与包管理。
 #
 # Docker Hub: https://hub.docker.com/r/erispulse/erispulse
 # ===========================================================================
@@ -40,8 +41,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     ERISPULSE_DASHBOARD_TOKEN="" \
-    ERISPULSE_CHANNEL="" \
-    ERISPULSE_UPDATE_ON_START="" \
     ERISPULSE_LANG=""
 
 LABEL org.opencontainers.image.title="ErisPulse" \
@@ -75,4 +74,3 @@ RUN if [ -n "$ERISPULSE_VERSION" ]; then \
 FROM base AS dev
 
 RUN uv pip install --system --pre ErisPulse ErisPulse-Dashboard
-ENV ERISPULSE_CHANNEL="dev"

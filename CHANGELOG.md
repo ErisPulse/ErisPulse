@@ -83,6 +83,43 @@
 
 ---
 
+## [2.5.2-dev.1] - 2026/06/27
+> 开发版本
+
+**版本摘要**
+2.5.2-dev.1 强化 Docker 容器运行稳定性：去除 entrypoint 中的框架自动更新逻辑（由 Dashboard 热更新取代），
+防止模块/适配器内部错误导致容器意外重启，子进程异常退出时主进程自动重试而不退出。
+
+**升级建议**
+- 建议升级：所有使用 Docker 部署的用户
+- Docker 不再参与包管理，框架更新由 Dashboard 热更新完成；容器不再因内部错误而反复重启
+
+### 修复
+
+- @wsu2059q
+  - `CLI/commands/run.py` `_run_internal()` 强化子进程崩溃容错，防止 Docker 容器意外重启：
+    - 子进程非硬重启退出码（≠42）时不再退出主进程，改为记录日志并递增退避后自动重试
+    - 只有 `KeyboardInterrupt`（Ctrl+C / SIGTERM）才会停止主进程
+    - 模块/适配器的任何内部错误都不会导致 Docker 容器重启
+  - `sdk.py` `run()` 增加 `except BaseException` 拦截 `SystemExit` 等非标准退出信号：
+    - 模块中调用 `sys.exit()` 不再导致子进程终止
+    - `KeyboardInterrupt` 仍正常向上传播，保持优雅关闭能力
+  - `src/ErisPulse/CLI/i18n/locales/*.py` 新增 `cli.run.subprocess_crashed_retry` 键（5 种语言）
+  - `src/ErisPulse/Core/i18n/locales/*.py` 新增 `core.sdk.run.unexpected_error` 键（5 种语言）
+
+### 移除
+
+- @wsu2059q
+  - `docker-entrypoint.sh` 移除框架自动更新逻辑：
+    - 删除 `update_erispulse()`、`resolve_channel()`、`resolve_update_flag()`、`get_version()` 函数
+    - 删除 `ERISPULSE_CHANNEL` 和 `ERISPULSE_UPDATE_ON_START` 变量
+    - 删除更新相关 i18n 键（`checking_update`、`updated`、`already_latest`、`update_failed`、`channel_label`）
+    - 理念：Docker 仅是容器运行时，不参与包管理；框架更新由 Dashboard 热更新完成
+  - `Dockerfile` 移除 `ERISPULSE_CHANNEL` 和 `ERISPULSE_UPDATE_ON_START` 环境变量，移除 dev target 的 `ENV ERISPULSE_CHANNEL="dev"`
+  - `docker-compose.yml` 移除 `ERISPULSE_CHANNEL` 和 `ERISPULSE_UPDATE_ON_START` 环境变量，`restart` 策略从 `unless-stopped` 改为 `on-failure:5`
+
+---
+
 ## [2.5.1] - 2026/06/24
 > 正式发布
 

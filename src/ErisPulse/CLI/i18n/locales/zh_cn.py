@@ -249,6 +249,7 @@ TRANSLATIONS = {
     "cli.run.file_changed_restart": "检测到文件变更 ([cmd]{file}[/])，正在重启...",
     "cli.run.process_exited": "进程已正常退出，等待文件变更后重启",
     "cli.run.process_crashed": "进程异常退出（退出码 {code}），修复后保存文件将自动重启",
+    "cli.run.subprocess_crashed_retry": "子进程异常终止，将在 {seconds} 秒后自动重试...",
     # ==================== uninstall 命令 ====================
     "cli.uninstall.description": "卸载模块/适配器包",
     "cli.uninstall.package_help": "要卸载的包名（可指定多个）",

@@ -249,6 +249,7 @@ TRANSLATIONS = {
     "cli.run.file_changed_restart": "File change detected ([cmd]{file}[/]), restarting...",
     "cli.run.process_exited": "Process exited normally, waiting for file changes to restart",
     "cli.run.process_crashed": "Process crashed (exit code {code}), fix and save to restart",
+    "cli.run.subprocess_crashed_retry": "Subprocess crashed, will auto-retry in {seconds}s...",
     # ==================== uninstall command ====================
     "cli.uninstall.description": "Uninstall module/adapter packages",
     "cli.uninstall.package_help": "Package name(s) to uninstall (multiple allowed)",
