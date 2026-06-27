@@ -128,13 +128,20 @@ class RunCommand(Command):
             self._run_internal(reload_mode)
 
     _RESTART_EXIT_CODE = 42
+    _MAX_CRASH_BACKOFF = 60.0
 
     def _run_internal(self, reload_mode: bool):
         """
         直接运行 SDK（不指定脚本时）
 
-        以子进程方式运行 SDK，支持硬重启：当 SDK 进程以特定退出码退出时，
-        自动重新启动新进程，确保资源完全释放。
+        以子进程方式运行 SDK，支持硬重启。
+
+        {!--< tips >!--}
+        重要设计原则：
+        1. 只有硬重启（退出码 42）或 KeyboardInterrupt 才能停止主进程
+        2. 模块/适配器的任何错误都**不会**导致主进程退出
+        3. 子进程异常退出时自动重试，使用递增退避策略避免刷屏
+        {!--< /tips >!--}
         """
 
         if reload_mode:
@@ -168,6 +175,7 @@ class RunCommand(Command):
             "asyncio.run(sdk.run(keep_running=True))",
         ]
 
+        crash_count = 0
         try:
             while True:
                 process = subprocess.Popen(cmd)
@@ -175,9 +183,22 @@ class RunCommand(Command):
 
                 if process.returncode == self._RESTART_EXIT_CODE:
                     console.print(f"[info]{i18n.t('cli.run.restart_request')}[/]")
+                    crash_count = 0
                     time.sleep(0.5)
                     continue
-                break
+
+                # 非硬重启退出码：模块/适配器内部错误导致子进程异常终止
+                # 不退出主进程，等待后自动重试
+                crash_count += 1
+                backoff = min(self._MAX_CRASH_BACKOFF, 3.0 * crash_count)
+                console.print(
+                    f"[warning]{i18n.t('cli.run.process_crashed', code=process.returncode)}[/]"
+                )
+                console.print(
+                    f"[info]{i18n.t('cli.run.subprocess_crashed_retry', seconds=backoff)}[/]"
+                )
+                time.sleep(backoff)
+                # 继续循环，重新启动子进程
         except KeyboardInterrupt:
             pass
 
