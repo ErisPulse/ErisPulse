@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1281,
+  "total_keywords": 1285,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3084,20 +3084,20 @@
         "title": "Windows PowerShell 执行策略"
       }
     ],
-    "[BUG-001] Init 指令適配器配置路徑類型錯誤": [
+    "[BUG-001] Init 命令適配器配置路徑類型錯誤": [
       {
         "document": "bug-tracker.md",
         "line": 9,
         "level": 3,
-        "title": "[BUG-001] Init 指令適配器配置路徑類型錯誤"
+        "title": "[BUG-001] Init 命令適配器配置路徑類型錯誤"
       }
     ],
-    "[BUG-002] 重啟後指令事件失效": [
+    "[BUG-002] 重啟後命令事件失效": [
       {
         "document": "bug-tracker.md",
         "line": 29,
         "level": 3,
-        "title": "[BUG-002] 重啟後指令事件失效"
+        "title": "[BUG-002] 重啟後命令事件失效"
       }
     ],
     "[BUG-003] 生命週期事件處理器未清理": [
@@ -3148,12 +3148,12 @@
         "title": "[BUG-008] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()"
       }
     ],
-    "[BUG-009] Event.collect() 字段缺少 key 時靜默跳過": [
+    "[BUG-009] Event.collect() 欄位缺少 key 時靜默跳過": [
       {
         "document": "bug-tracker.md",
         "line": 141,
         "level": 3,
-        "title": "[BUG-009] Event.collect() 字段缺少 key 時靜默跳過"
+        "title": "[BUG-009] Event.collect() 欄位缺少 key 時靜默跳過"
       }
     ],
     "[BUG-010] LazyModule 同步存取 BaseModule 導致未初始化完成": [
@@ -3164,20 +3164,20 @@
         "title": "[BUG-010] LazyModule 同步存取 BaseModule 導致未初始化完成"
       }
     ],
-    "[BUG-011] 配置系統多線寫入導致資料遺失": [
+    "[BUG-011] 配置系統多執行緒寫入導致資料遺失": [
       {
         "document": "bug-tracker.md",
         "line": 173,
         "level": 3,
-        "title": "[BUG-011] 配置系統多線寫入導致資料遺失"
+        "title": "[BUG-011] 配置系統多執行緒寫入導致資料遺失"
       }
     ],
-    "[BUG-012] SDK 屬性存取錯誤資訊不準確": [
+    "[BUG-012] SDK 屬性存取錯誤訊息不準確": [
       {
         "document": "bug-tracker.md",
         "line": 192,
         "level": 3,
-        "title": "[BUG-012] SDK 屬性存取錯誤資訊不準確"
+        "title": "[BUG-012] SDK 屬性存取錯誤訊息不準確"
       }
     ],
     "[BUG-013] Uninitializer 對未初始化 LazyModule 的清理邏輯過於複雜": [
@@ -3194,6 +3194,38 @@
         "line": 230,
         "level": 3,
         "title": "[BUG-014] Windows 下 CTRL+C 無法停止程式"
+      }
+    ],
+    "[BUG-015] 模組載入策略排序邏輯錯誤": [
+      {
+        "document": "bug-tracker.md",
+        "line": 250,
+        "level": 3,
+        "title": "[BUG-015] 模組載入策略排序邏輯錯誤"
+      }
+    ],
+    "[BUG-016] 適配器中介軟體傳回 None 導致事件資料遺失": [
+      {
+        "document": "bug-tracker.md",
+        "line": 266,
+        "level": 3,
+        "title": "[BUG-016] 適配器中介軟體傳回 None 導致事件資料遺失"
+      }
+    ],
+    "[BUG-017] 配置檔案路徑依賴工作目錄": [
+      {
+        "document": "bug-tracker.md",
+        "line": 282,
+        "level": 3,
+        "title": "[BUG-017] 配置檔案路徑依賴工作目錄"
+      }
+    ],
+    "[BUG-018] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子套件": [
+      {
+        "document": "bug-tracker.md",
+        "line": 298,
+        "level": 3,
+        "title": "[BUG-018] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子套件"
       }
     ],
     "__init__.py": [
