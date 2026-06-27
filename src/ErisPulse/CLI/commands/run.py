@@ -168,10 +168,27 @@ class RunCommand(Command):
             "asyncio.run(sdk.run(keep_running=True))",
         ]
 
+        import signal
+
         try:
             while True:
                 process = subprocess.Popen(cmd)
+
+                # 转发 SIGTERM/SIGINT 到子进程，使 SDK 能优雅关闭
+                def _forward_signal(signum, frame):
+                    try:
+                        process.send_signal(signum)
+                    except Exception:
+                        pass
+
+                old_term = signal.signal(signal.SIGTERM, _forward_signal)
+                old_int = signal.signal(signal.SIGINT, _forward_signal)
+
                 process.wait()
+
+                # 恢复默认信号处理
+                signal.signal(signal.SIGTERM, old_term)
+                signal.signal(signal.SIGINT, old_int)
 
                 if process.returncode == self._RESTART_EXIT_CODE:
                     console.print(f"[info]{i18n.t('cli.run.restart_request')}[/]")

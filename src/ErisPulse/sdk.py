@@ -898,12 +898,37 @@ class SDK:
         """
         无头模式运行 ErisPulse
 
+        监听 SIGTERM/SIGINT 信号以实现优雅关闭：
+        收到信号后触发 shutdown_event，使 finally 块中的 uninit() 正常执行，
+        确保适配器断开、模块卸载、数据落盘等清理工作完成。
+
         :param keep_running: bool 是否保持运行
 
         :example:
         >>> await sdk.run(keep_running=True)
         """
+        import signal
+
+        shutdown_event = asyncio.Event()
+        loop = asyncio.get_running_loop()
+        _registered_signals: list[int] = []
+
+        def _request_shutdown() -> None:
+            """信号回调：设置关闭事件，使 run() 退出等待并进入清理流程"""
+            if not shutdown_event.is_set():
+                self.logger.info(i18n.t("core.sdk.run.shutdown_signal"))
+                shutdown_event.set()
+
         try:
+            # 注册信号处理器，使 Docker SIGTERM / Ctrl+C 能触发优雅关闭
+            for sig in (signal.SIGTERM, signal.SIGINT):
+                try:
+                    loop.add_signal_handler(sig, _request_shutdown)
+                    _registered_signals.append(sig)
+                except (NotImplementedError, RuntimeError):
+                    # Windows 不支持 add_signal_handler，跳过
+                    pass
+
             isInit = await self.init()
 
             if not isInit:
@@ -911,13 +936,19 @@ class SDK:
                 return
 
             if keep_running:
-                shutdown_event = asyncio.Event()
                 await shutdown_event.wait()
         except asyncio.CancelledError:
             self.logger.info(i18n.t("core.sdk.run.shutdown_signal"))
         except Exception as e:
             self.logger.error(e)
         finally:
+            # 清理信号处理器，避免重复触发
+            for sig in _registered_signals:
+                try:
+                    loop.remove_signal_handler(sig)
+                except Exception:
+                    pass
+
             if keep_running:
                 try:
                     await self.uninit()

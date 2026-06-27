@@ -67,7 +67,24 @@
 > 开发版本
 
 **版本摘要**
-2.5.2-dev.0 修复非热重载模式下 `ep run <script>` 找不到脚本所在目录子包的问题
+2.5.2-dev.0 修复非热重载模式下 `ep run <script>` 找不到脚本所在目录子包的问题；修复在 1panel Docker 容器重建后运行时安装的 pip 包全部丢失的严重问题（虚拟环境持久化）；修复容器停止时无优雅关闭流程导致连接和数据未能正常清理的问题。
+
+### 新增
+- @wsu2059q
+  - `docker-entrypoint.sh` 新增虚拟环境持久化机制：
+    - 在持久化卷 `/app/config/.venv` 内创建虚拟环境，运行时通过 Dashboard/CLI 安装的第三方模块/适配器在容器重建后不再丢失
+    - 新增 `setup_venv()` 函数管理 venv 的创建、激活和基础包安装
+    - 新增 `ERISPULSE_RESET_VENV` 环境变量，设为 `true` 可在下次启动时重建虚拟环境
+    - 检测 venv 内 Python 不可用时（版本变更/损坏）自动重建
+    - venv 使用 `--system-site-packages` 创建，确保向后兼容（venv 可访问镜像预装的系统包）
+    - 支持 zh/zh_TW/en/ja/ru 五种语言的 venv 相关日志国际化
+  - `package_manager.py` 新增包快照机制：
+    - `PackageManager._save_package_snapshot()` 在每次安装/卸载/升级包后，自动将当前包列表保存到 `config/.pip-snapshot.txt`
+    - entrypoint 创建新 venv 时从快照恢复包，提供容器重建后的兜底保障
+  - `docker-entrypoint.sh` 新增已部署用户包迁移机制（三层保障）：
+    - 第一层（系统迁移）：venv 首次创建时，扫描系统 Python 的包列表，与镜像基础包清单 (`/app/base-packages.txt`) 对比，将用户额外安装的包迁移到 venv
+    - 第二层（快照恢复）：从 `config/.pip-snapshot.txt` 恢复包列表（适用于容器重建后系统包已丢失的场景）
+    - 第三层（基础包保障）：无论迁移/恢复是否成功，都确保 ErisPulse + Dashboard 可用
 
 ### 修复
 - @wsu2059q
@@ -76,6 +93,22 @@
       导致脚本中 `from local_package import ...` 等相对导入失败（例如 `from qg import ...`）
     - 而热重载模式使用 `subprocess.Popen` 子进程运行，自动继承工作目录，`sys.path[0]` 即为脚本所在目录
     - 在 `runpy.run_path()` 调用前手动将脚本所在目录插入 `sys.path[0]`，与热重载模式的行为保持一致
+  - **Docker 容器重建后 pip 包全部丢失**（严重问题）：
+    - 原因：运行时安装的 pip 包位于容器层 `/usr/local/lib/python3.13/site-packages/`（ephemeral），
+      不在持久化卷 `/app/config/` 中，1Panel/Docker 更新镜像重建容器后必然丢失
+    - 修复：虚拟环境迁移至 `/app/config/.venv`，所有包（含第三方模块/适配器）随卷持久化
+    - `docker-entrypoint.sh` 的 `update_erispulse()` 移除 `--system` 参数，改为安装到 venv
+  - **容器停止时无优雅关闭流程**：
+    - 原因：`docker-entrypoint.sh` 使用 `exec "$@"` 替换进程后 trap 失效；SDK `run()` 中 `shutdown_event` 从未被设置；`epsdk run` 子进程未转发 SIGTERM
+    - 修复信号链（三层保障）：
+      1. `docker-entrypoint.sh`：`exec` 改为后台进程 + `trap` 转发 SIGTERM 到子进程
+      2. `sdk.py` 的 `run()`：注册 `loop.add_signal_handler` 监听 SIGTERM/SIGINT，触发 `shutdown_event` 使 `finally` 块执行 `uninit()`
+      3. `CLI/commands/run.py`：`_run_internal()` 注册信号处理器转发 SIGTERM/SIGINT 到 SDK 子进程
+
+### 优化
+- @wsu2059q
+  - `docker-compose.yml` 和 1Panel 模板添加 `stop_grace_period: 30s`，为优雅关闭留出充足时间
+  - `Dockerfile` 注释补充 `ERISPULSE_RESET_VENV` 环境变量说明和 venv 持久化机制文档
 
 ---
 
