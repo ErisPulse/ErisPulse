@@ -57,6 +57,7 @@ TRANSLATIONS = {
     # ==================== SDK 執行 ====================
     "core.sdk.run.init_failed": "ErisPulse 初始化失敗，請檢查日誌",
     "core.sdk.run.shutdown_signal": "收到關閉訊號，正在清理...",
+    "core.sdk.run.unexpected_error": "攔截到意外終止訊號: {error}，已阻止程序退出",
     # ==================== SDK 重新載入 ====================
     "core.sdk.reload.starting": "[Reload] 開始重新載入SDK...",
     "core.sdk.reload.collected_top_modules": "[Reload] 收集到外部套件頂層模組: {modules}",
