@@ -13,8 +13,14 @@
 #   ERISPULSE_CHANNEL           - "stable" or "dev" (default: stable)
 #   ERISPULSE_UPDATE_ON_START   - "true" to auto-update on start (default: false)
 #   ERISPULSE_DASHBOARD_TOKEN   - Dashboard login token
+#   ERISPULSE_RESET_VENV        - "true" to recreate the persistent venv on next start (default: false)
 #   LANG                        - System locale, auto-detects entrypoint language (default: en_US.UTF-8)
 #   ERISPULSE_LANG              - Force entrypoint language: zh, zh_TW, en, ja, ru (overrides LANG)
+#
+# The venv is stored at /app/config/.venv (inside the persistent volume),
+# so runtime-installed packages survive container rebuilds.
+# The venv uses --system-site-packages for backward compatibility.
+# /app/base-packages.txt records the image's pre-installed packages for migration filtering.
 #
 # Docker Hub: https://hub.docker.com/r/erispulse/erispulse
 # ===========================================================================
@@ -69,10 +75,12 @@ RUN if [ -n "$ERISPULSE_VERSION" ]; then \
       uv pip install --system "ErisPulse==${ERISPULSE_VERSION}" ErisPulse-Dashboard; \
     else \
       uv pip install --system ErisPulse ErisPulse-Dashboard; \
-    fi
+    fi \
+    && python3 -m pip freeze > /app/base-packages.txt
 
 # --- Dev: latest pre-release from PyPI ---
 FROM base AS dev
 
-RUN uv pip install --system --pre ErisPulse ErisPulse-Dashboard
+RUN uv pip install --system --pre ErisPulse ErisPulse-Dashboard \
+    && python3 -m pip freeze > /app/base-packages.txt
 ENV ERISPULSE_CHANNEL="dev"
