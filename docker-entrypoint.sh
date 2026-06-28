@@ -115,6 +115,16 @@ ensure_config_dir() {
     mkdir -p "${CONFIG_DIR}"
 }
 
+ensure_packages() {
+    # 如果 site-packages 为空（首次 bind mount），从镜像备份初始化
+    local pkg_dir="/usr/local/lib/python3.13/site-packages"
+    local init_dir="/opt/site-packages-init"
+    if [ -d "$init_dir" ] && [ -z "$(ls -A "$pkg_dir" 2>/dev/null)" ]; then
+        echo "[ErisPulse] Initializing packages from image..."
+        cp -a "$init_dir"/* "$pkg_dir"/ 2>/dev/null || true
+    fi
+}
+
 ensure_dashboard_config() {
     if [ -z "${ERISPULSE_DASHBOARD_TOKEN}" ]; then
         return
@@ -174,6 +184,7 @@ echo "  ErisPulse Docker"
 echo ""
 
 ensure_config_dir
+ensure_packages
 ensure_dashboard_config
 
 if [ -f "${CONFIG_FILE}" ]; then
