@@ -278,6 +278,7 @@ class TestI18nManager:
                 os.environ, {"LANG": "en_US.UTF-8", "LANGUAGE": "", "LC_ALL": ""}
             ),
             patch.object(I18nManager, "_detect_windows_locale", return_value="zh-CN"),
+            patch("sys.platform", "win32"),
         ):
             manager = I18nManager()
             detected = manager._detect_language()
