@@ -12,13 +12,22 @@ jobs:
   ruff-check:
     runs-on: ubuntu-latest
     steps:
+      - name: Generate App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.ERISBOT_APP_ID }}
+          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup environment
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install ruff
         run: pip install ruff
@@ -45,7 +54,7 @@ jobs:
         if: steps.ruff-check.outputs.has_ruff_issues == 'true' && github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -54,7 +63,7 @@ jobs:
             });
 
             const botComment = comments.find(comment =>
-              comment.user.login === 'github-actions[bot]' &&
+              comment.user.login === 'erispulse[bot]' &&
               comment.body.includes('Ruff Code Check')
             );
 
@@ -86,15 +95,23 @@ jobs:
   pytest-check:
     runs-on: ubuntu-latest
     steps:
+      - name: Generate App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.ERISBOT_APP_ID }}
+          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup environment
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install project dependencies
         run: |
@@ -135,7 +152,7 @@ jobs:
         if: always() && steps.pytest-check.outputs.has_errors != 'true' && github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -144,7 +161,7 @@ jobs:
             });
 
             const botComment = comments.find(comment =>
-              comment.user.login === 'github-actions[bot]' &&
+              comment.user.login === 'erispulse[bot]' &&
               (comment.body.includes('Test Results') || comment.body.includes('Test Passed'))
             );
 
@@ -173,7 +190,7 @@ jobs:
         if: always() && steps.pytest-check.outputs.has_errors == 'true' && github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -182,7 +199,7 @@ jobs:
             });
 
             const botComment = comments.find(comment =>
-              comment.user.login === 'github-actions[bot]' &&
+              comment.user.login === 'erispulse[bot]' &&
               (comment.body.includes('Test Results') || comment.body.includes('Test Passed'))
             );
 

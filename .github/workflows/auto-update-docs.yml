@@ -16,30 +16,37 @@ on:
   workflow_dispatch:
     inputs:
       force_translate:
-        description: 'Force re-translate all documents'
+        description: "Force re-translate all documents"
         required: false
-        default: 'false'
+        default: "false"
 
 jobs:
   update-and-generate-docs:
     runs-on: ubuntu-latest
     steps:
+      - name: Generate App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.ERISBOT_APP_ID }}
+          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup environment
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests openai
-    
+
       - name: Check cache directory status
         run: |
           echo "=== Checking cache directory ==="
@@ -54,12 +61,12 @@ jobs:
             ls -la .github/.translate_cache/*.cache 2>/dev/null | head -3
           fi
           echo "==================="
-    
+
       - name: Update API docs (multilingual)
         id: update-api
         run: |
           echo "Starting API docs update..."
-          
+
           # Run API docs update script (auto-generates for all languages)
           if [ -f "scripts/tools/generate-api-docs.py" ]; then
             python scripts/tools/generate-api-docs.py
@@ -67,7 +74,7 @@ jobs:
           else
             echo "API docs update script not found, skipping this step"
           fi
-          
+
           # Check if API docs were updated
           if git diff --quiet docs/*/api-reference/; then
             echo "No changes in API docs"
@@ -86,14 +93,14 @@ jobs:
           DEBUG_TRANSLATE: "1"
         run: |
           echo "Starting document translation..."
-          
+
           # Check if force translation is needed
           FORCE_FLAG=""
           if [ "${{ github.event.inputs.force_translate }}" == "true" ]; then
             FORCE_FLAG="--force"
             echo "Force re-translation mode enabled"
           fi
-          
+
           # Run translation script (auto-translates for all languages)
           TRANSLATE_EXIT_CODE=0
           if [ -f "scripts/tools/translate-docs.py" ]; then
@@ -108,7 +115,7 @@ jobs:
           else
             echo "Translation script not found, skipping this step"
           fi
-          
+
           # Check if translated docs were updated (including root README.*.md files)
           if git diff --quiet -- docs/ README.md README.*.md 2>/dev/null; then
             echo "No changes in translated docs"
@@ -117,7 +124,7 @@ jobs:
             echo "Translated docs changes detected"
             echo "docs_updated=true" >> $GITHUB_OUTPUT
           fi
-          
+
           # Record translation failure status (but don't interrupt the workflow)
           if [ $TRANSLATE_EXIT_CODE -ne 0 ]; then
             echo "⚠️ Some files failed to translate, but successfully translated files will be committed"
@@ -130,7 +137,7 @@ jobs:
         id: generate-ai-prompts
         run: |
           echo "Starting AI Prompt document generation..."
-          
+
           # Run AI prompt generation script (auto-generates for all languages)
           if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
             python scripts/tools/generate-ai-prompts.py
@@ -138,7 +145,7 @@ jobs:
           else
             echo "AI Prompt generation script not found, skipping this step"
           fi
-          
+
           # Check if AI Prompt docs were updated
           if git diff --quiet docs/*/ai-support/prompts/; then
             echo "No changes in AI Prompt docs"
@@ -152,7 +159,7 @@ jobs:
         id: generate-docs-index
         run: |
           echo "Starting docs index generation..."
-          
+
           # Run docs index generation script (auto-generates for all languages)
           if [ -f "scripts/tools/generate-docs-index.py" ]; then
             python scripts/tools/generate-docs-index.py
@@ -160,7 +167,7 @@ jobs:
           else
             echo "Docs index generation script not found, skipping this step"
           fi
-          
+
           # Check if docs index was updated
           if git diff --quiet docs/_meta/; then
             echo "No changes in docs index"
@@ -173,28 +180,26 @@ jobs:
       - name: Summarize updates
         run: |
           echo "Summarizing document updates..."
-          
+
           # Count API doc updates
           api_files=$(git diff --name-only docs/*/api-reference/ 2>/dev/null | wc -l)
           echo "API docs updated files: $api_files"
-          
+
           # Count translated doc updates
           translated_files=$(git diff --name-only docs/en/ docs/zh-TW/ docs/ja/ docs/ru/ 2>/dev/null | grep -v "api-reference\|ai-support" | wc -l)
           echo "Translated docs updated files: $translated_files"
-          
+
           # Count AI Prompt doc updates
           ai_prompts=$(git diff --name-only docs/*/ai-support/prompts/ 2>/dev/null | wc -l)
           echo "AI Prompt docs updated files: $ai_prompts"
-          
+
           # Count docs index updates
           docs_index=$(git diff --name-only docs/_meta/ 2>/dev/null | wc -l)
           echo "Docs index updated files: $docs_index"
-          
+
           # Count translation cache updates
           cache_files=$(git diff --name-only .github/.translate_cache/ 2>/dev/null | wc -l)
           echo "Translation cache updated files: $cache_files"
-
-
 
       - name: Configure Git identity
         if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
@@ -206,16 +211,16 @@ jobs:
         if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         run: |
           echo "Saving document updates..."
-          
+
           # Add all updated docs and cache
           git add docs/ .github/.translate_cache/ README.md README.*.md
-          
+
           # Commit changes
           git commit -m "chore(docs): auto-update docs [skip ci]" || echo "No changes to commit"
           # Pull latest remote changes before pushing to avoid push rejection due to concurrent pushes during translation
           git pull --rebase --autostash || echo "Failed to pull remote updates, attempting direct push"
           git push || echo "No new commits to push"
-          
+
           # If there were translation failures, output warning
           if [ "${{ steps.translate-docs.outputs.translate_failed }}" == "true" ]; then
             echo ""
