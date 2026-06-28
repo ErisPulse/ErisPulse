@@ -379,9 +379,7 @@ flowchart TD
 - 联系维护者
 
 
-====
-快速开始
-====
+### 快速开始
 
 # 快速开始
 
@@ -543,6 +541,627 @@ level = "INFO"
 - [创建第一个机器人](getting-started/first-bot.md) - 创建一个简单的机器人
 - [用户使用指南](user-guide/) - 深入了解配置和模块管理
 - [开发者指南](developer-guide/) - 开发自定义模块和适配器
+
+
+
+====
+快速开始
+====
+
+
+### 文档首页
+
+# ErisPulse 文档
+
+ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配器与不同平台进行交互，提供灵活的模块系统用于功能扩展。
+
+> 遇到不理解的术语？查看 [术语表](terminology.md) 获取通俗易懂的解释。
+
+## 文档导航
+
+### 快速开始
+
+- [快速开始指南](quick-start.md) - 安装和运行 ErisPulse 的入门指南
+
+### 架构概览
+
+- [架构概览](architecture.md) - 通过可视化图表了解 SDK 核心架构、初始化流程、事件处理和生命周期
+
+### 新手入门
+
+如果你是第一次使用 ErisPulse，建议按以下顺序阅读：
+
+1. [入门指南总览](getting-started/README.md)
+2. [创建第一个机器人](getting-started/first-bot.md)
+3. [基础概念](getting-started/basic-concepts.md)
+4. [事件处理入门](getting-started/event-handling.md)
+5. [常见任务示例](getting-started/common-tasks.md)
+
+### 用户使用指南
+
+- [安装和配置](user-guide/installation.md)
+- [CLI 命令参考](user-guide/cli-reference.md)
+- [配置文件说明](user-guide/configuration.md)
+- [部署指南](user-guide/deployment.md)
+
+### 开发者指南
+
+#### 模块开发
+
+- [模块开发入门](developer-guide/modules/getting-started.md)
+- [模块核心概念](developer-guide/modules/core-concepts.md)
+- [Event 包装类详解](developer-guide/modules/event-wrapper.md)
+- [模块开发最佳实践](developer-guide/modules/best-practices.md)
+
+#### 适配器开发
+
+- [适配器开发入门](developer-guide/adapters/getting-started.md)
+- [适配器核心概念](developer-guide/adapters/core-concepts.md)
+- [SendDSL 详解](developer-guide/adapters/send-dsl.md)
+- [适配器开发最佳实践](developer-guide/adapters/best-practices.md)
+
+
+#### 发布
+
+- [发布与模块商店指南](developer-guide/publishing.md) - 将模块、适配器发布到 ErisPulse 模块商店
+
+### 平台特性指南
+
+- [平台特性说明](platform-guide/README.md)
+- [云湖平台特性](platform-guide/yunhu.md)
+- [Telegram 平台特性](platform-guide/telegram.md)
+- [OneBot11 平台特性](platform-guide/onebot11.md)
+- [OneBot12 平台特性](platform-guide/onebot12.md)
+- [邮件平台特性](platform-guide/email.md)
+
+### API 参考
+
+- [核心模块 API](api-reference/core-modules.md)
+- [事件系统 API](api-reference/event-system.md)
+- [适配器系统 API](api-reference/adapter-system.md)
+
+### 技术标准
+
+- [事件转换标准](standards/event-conversion.md)
+- [API 响应标准](standards/api-response.md)
+- [发送方法规范](standards/send-method-spec.md)
+
+### 高级主题
+
+- [懒加载系统](advanced/lazy-loading.md)
+- [生命周期管理](advanced/lifecycle.md)
+- [路由系统](advanced/router.md)
+- [MessageBuilder 详解](advanced/message-builder.md)
+- [会话类型系统](advanced/session-types.md)
+- [Conversation 多轮对话](advanced/conversation.md)
+
+### AI 辅助开发
+
+- [AI 辅助开发](ai-support/README.md)
+
+### 风格指南
+
+- [文档风格指南](styleguide/docstring.md)
+
+## 开发方式
+
+ErisPulse 支持两种开发方式：
+
+### 1. 模块开发（推荐）
+
+创建独立的模块包，通过包管理器安装使用。这种方式便于分发和管理，适合公开发布的功能。
+
+### 2. 嵌入式开发
+
+直接在项目中嵌入 ErisPulse 代码，无需创建独立模块。这种方式适合快速原型开发或项目内部专用功能。
+
+示例：
+
+```python
+# 直接嵌入使用
+import asyncio
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+# 注册命令处理器
+@command("hello")
+async def hello_handler(event):
+    await event.reply("你好！")
+
+# 运行 SDK 并且维持运行 | 需要在异步环境中运行
+asyncio.run(sdk.run(keep_running=True))
+```
+
+## 获取帮助
+
+- GitHub 仓库：[https://github.com/ErisPulse/ErisPulse](https://github.com/ErisPulse/ErisPulse)
+- 问题反馈：提交 Issue
+- 技术讨论：查看 Discussions
+
+## 相关链接
+
+- [OneBot12 标准](https://12.onebot.dev/)
+- [云湖官方文档](https://www.yhchat.com/document/)
+- [Telegram Bot API](https://core.telegram.org/bots/api)
+
+
+### 快速开始
+
+# 快速开始
+
+> 遇到不理解的术语？查看 [术语表](terminology.md) 获取通俗易懂的解释。
+
+## 安装 ErisPulse
+
+### 一键安装脚本（推荐）
+
+安装脚本会自动检测您的环境（Docker、Python、uv），并引导您选择最适合的安装方式。
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
+脚本会引导您完成：
+
+- **Docker 安装**（检测到 Docker 时推荐）：选择镜像源（Docker Hub / GHCR）、版本通道（稳定版 / 预发布版）、Dashboard 管理面板配置、端口设置
+- **传统安装**：自动创建虚拟环境、选择 ErisPulse 版本、可选安装 Dashboard 管理面板模块
+
+### 使用 Docker
+
+Docker 镜像已内置 ErisPulse 框架和 Dashboard 管理面板。
+
+```bash
+# 下载 docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# 设置 Dashboard 令牌并启动
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+<details>
+<summary>Docker Hub 不可用？</summary>
+
+使用 GitHub Container Registry 镜像，修改 `docker-compose.yml` 中的 image：
+
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+启动后访问 `http://<host>:8000/Dashboard`，使用设置的令牌登录。
+
+### 使用 pip 安装
+
+确保你的 Python 版本 >= 3.10，然后使用 pip 安装：
+
+```bash
+pip install ErisPulse
+```
+
+如果你已安装 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安装速度更快。
+
+## 初始化项目
+
+### 交互式初始化（推荐）
+
+```bash
+epsdk init
+```
+
+这将启动一个交互式向导，引导您完成：
+- 项目名称设置
+- 日志级别配置
+- 服务器配置（主机和端口）
+- 适配器选择和配置
+- 项目结构创建
+
+### 快速初始化
+
+```bash
+# 指定项目名称的快速模式
+epsdk init -q -n my_bot
+
+# 或者只指定项目名称
+epsdk init -n my_bot
+```
+
+### 手动创建项目
+
+如果更喜欢手动创建项目：
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## 安装模块
+
+### 通过 CLI 安装
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### 查看可用模块
+
+```bash
+epsdk list-remote
+```
+
+### 交互式安装
+
+不指定包名时进入交互式安装界面：
+
+```bash
+epsdk install
+```
+
+## 运行项目
+
+```bash
+# 普通运行
+epsdk run main.py
+
+# 热重载模式（开发时推荐）
+epsdk run main.py --reload
+```
+
+## 项目结构
+
+初始化后的项目结构：
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # 配置文件
+└── main.py                  # 入口文件
+
+```
+
+## 配置文件
+
+基本的 `config.toml` 配置：
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# 适配器配置
+```
+
+## 下一步
+
+- [入门指南总览](getting-started/README.md) - 了解 ErisPulse 的基本概念
+- [创建第一个机器人](getting-started/first-bot.md) - 创建一个简单的机器人
+- [用户使用指南](user-guide/) - 深入了解配置和模块管理
+- [开发者指南](developer-guide/) - 开发自定义模块和适配器
+
+
+
+### Bug 追踪器
+
+# Bug 追踪器
+
+本文档记录 ErisPulse SDK 的已知 Bug 和修复情况。
+
+---
+
+## 已修复的 Bug
+
+### [BUG-001] Init 命令适配器配置路径类型错误
+
+**问题**: 使用 `ep init` 命令进行交互式初始化时，选择配置适配器会出现类型错误：
+
+```
+交互式初始化失败: unsupported operand type(s) for /: 'str' and 'str'
+```
+
+**原因**: 2.3.7 版本调整配置文件路径时，方法参数类型不一致。`_configure_adapters_interactive_sync` 接收 `str` 类型参数，但内部使用 `Path` 的 `/` 操作符拼接路径。
+
+**影响版本**: 2.3.7 - 2.3.9-dev.1
+
+**修复版本**: 2.3.9-dev.1
+
+**修复内容**: 将 `_configure_adapters_interactive_sync` 方法的参数类型从 `str` 改为 `Path`，调用时直接传递 `Path` 对象。
+
+**修复日期**: 2026/03/23
+
+---
+
+### [BUG-002] 重启后命令事件失效
+
+**问题**: 调用 `sdk.restart()` 后，通过 `@command` 注册的命令无法被触发，表现为发送命令后机器人无响应。
+
+**原因**: `adapter.shutdown()` 清空事件总线后，`BaseEventHandler` 的 `_linked_to_adapter_bus` 状态未重置为 `False`，导致 `_process_event` 方法认为已经挂载到适配器总线，跳过重新挂载操作。
+
+**影响版本**: 2.2.x - 2.4.0-dev.2
+
+**修复版本**: 2.4.0-dev.3
+
+**修复内容**: 引入 `_linked_to_adapter_bus` 状态追踪，`_clear_handlers()` 断开总线连接后，下次 `register()` 自动重新挂载，适配 shutdown/restart 场景。
+
+**修复日期**: 2026/04/09
+
+---
+
+### [BUG-003] 生命周期事件处理器未清理
+
+**问题**: `sdk.restart()` 后，旧的生命周期事件处理器仍然存在并重复触发，导致同一个事件被多次处理。
+
+**原因**: `lifecycle._handlers` 字典在 `uninit()` 时从未被清理，restart 后旧处理器与新处理器同时存在。
+
+**影响版本**: 2.3.0 - 2.4.0-dev.2
+
+**修复版本**: 2.4.0-dev.3
+
+**修复内容**: 在 `Uninitializer` 的清理流程末尾（所有事件提交之后），清空 `lifecycle._handlers`。
+
+**修复日期**: 2026/04/09
+
+---
+
+### [BUG-004] Event.confirm() 确认词集合赋值重复
+
+**问题**: `Event.confirm()` 方法中，`_yes`、`_no`、`_all` 三个变量的赋值代码被完全重复了两次（共6行），导致无意义的重复计算。
+
+**原因**: 代码复制粘贴错误。
+
+**影响版本**: 2.4.0-dev.4
+
+**修复版本**: 2.4.2-dev.1
+
+**修复内容**: 删除 `wrapper.py` 中 739-741 行的重复赋值代码。
+
+**修复日期**: 2026/04/13
+
+---
+
+### [BUG-005] MessageBuilder.at 方法定义被覆盖（死代码）
+
+**问题**: `MessageBuilder` 类中 `at` 方法被定义了三次：一个实例方法、一个静态方法、最后被 `_DualMethod` 赋值覆盖。前两个定义是永远不会被执行的死代码。
+
+**原因**: 重构为 `_DualMethod` 双模式描述符时，忘记删除旧的手动定义。
+
+**影响版本**: 2.4.0-dev.0
+
+**修复版本**: 2.4.2-dev.1
+
+**修复内容**: 删除 `message_builder.py` 中 159-181 行的两个死 `at` 方法定义，只保留 `_DualMethod` 赋值。
+
+**修复日期**: 2026/04/13
+
+---
+
+### [BUG-006] Event.is_friend_add/is_friend_delete 的 detail_type 与 OB12 标准不一致
+
+**问题**: `Event.is_friend_add()` 检查 `detail_type == "friend_add"`，`Event.is_friend_delete()` 检查 `detail_type == "friend_delete"`，但 OneBot12 标准定义的 `detail_type` 值为 `"friend_increase"` 和 `"friend_decrease"`。与 `notice.py` 中 `on_friend_add`/`on_friend_remove` 装饰器使用的值不一致，导致通过装饰器注册的处理器触发时，对应的 `is_friend_add()`/`is_friend_delete()` 判断方法返回 `False`。
+
+**原因**: `wrapper.py` 中使用了非标准的命名，而 `notice.py` 使用了正确的 OB12 标准命名。
+
+**影响版本**: rq实装至今
+
+**修复版本**: 2.4.2-dev.1
+
+**修复内容**: 将 `is_friend_add()` 的匹配值从 `"friend_add"` 改为 `"friend_increase"`，`is_friend_delete()` 从 `"friend_delete"` 改为 `"friend_decrease"`。
+
+**修复日期**: 2026/04/13
+
+---
+
+### [BUG-007] adapter.clear() 未清理 _started_instances 导致重启后状态不正确
+
+**问题**: `AdapterManager.clear()` 方法清除了 `_adapters`、`_adapter_info`、处理器和 `_bots`，但遗漏了 `_started_instances` 集合。如果适配器正在运行时调用 `clear()`，`_started_instances` 会保留悬空引用，导致重启后状态判断错误。
+
+**原因**: 2.4.0-dev.1 引入 `_started_instances` 时未在 `clear()` 中同步清理。
+
+**影响版本**: 2.4.0-dev.1 - 2.4.2-dev.0
+
+**修复版本**: 2.4.2-dev.1
+
+**修复内容**: 在 `clear()` 方法中添加 `self._started_instances.clear()`。
+
+**修复日期**: 2026/04/13
+
+---
+
+### [BUG-008] command.wait_reply() 使用已弃用的 asyncio.get_event_loop()
+
+**问题**: `CommandHandler.wait_reply()` 方法使用 `asyncio.get_event_loop()` 创建 future 和获取时间戳，该方法在 Python 3.10+ 中已弃用，在异步上下文中应使用 `asyncio.get_running_loop()`。与同文件中 `wrapper.py` 的 `wait_for()` 方法使用的 `get_running_loop()` 不一致。
+
+**原因**: 开发时使用了旧版 API，后续新增的 `wait_for()` 使用了正确的 API 但未回溯修复旧代码。
+
+**影响版本**: 2.3.0-dev.0
+
+**修复版本**: 2.4.2-dev.1
+
+**修复内容**: 将 `command.py` 中两处 `asyncio.get_event_loop()` 替换为 `asyncio.get_running_loop()`。
+
+**修复日期**: 2026/04/13
+
+---
+
+### [BUG-009] Event.collect() 字段缺少 key 时静默跳过
+
+**问题**: `Event.collect()` 方法在遍历字段列表时，如果某个字段字典缺少 `key`，会静默跳过该字段，不输出任何日志或警告。开发者如果拼写错误（如 `"Key"` 而非 `"key"`），整个字段会被悄悄忽略，导致下游行为难以排查。
+
+**原因**: 缺少输入验证和错误反馈。
+
+**影响版本**: 2.4.0-dev.4
+
+**修复版本**: 2.4.2-dev.1
+
+**修复内容**: 在跳过前添加 `logger.warning()` 记录缺少 `key` 的字段信息。
+
+**修复日期**: 2026/04/13
+
+---
+
+### [BUG-010] LazyModule 同步访问 BaseModule 导致未初始化完成
+
+**问题**: 用户在同步上下文中访问懒加载的 BaseModule 属性时，模块使用 `loop.create_task()` 异步初始化但不等待，导致属性访问时可能未初始化完成，引发竞态条件。
+
+**原因**: `_ensure_initialized()` 对 BaseModule 使用 `loop.create_task(self._initialize())` 后立即返回，未确保初始化完成。
+
+**影响版本**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**修复版本**: 2.4.2-dev.2
+
+**修复内容**: 在同步上下文中，BaseModule 的初始化改为使用 `asyncio.run(self._initialize())`，确保初始化完成后再返回。保持透明代理特性，用户无需感知同步/异步差异。
+
+**修复日期**: 2026/04/21
+
+---
+
+### [BUG-011] 配置系统多线程写入导致数据丢失
+
+**问题**: 在多线程环境下，多个线程同时调用 `config.setConfig()` 时，`_flush_config()` 读取-修改-写入操作不是原子性的，可能导致部分写入丢失。
+
+**原因**: `_flush_config()` 虽然使用了 `RLock`，但文件读取和写入之间没有文件锁保护，且 `_schedule_write` 的 Timer 可能被多次触发导致覆盖。
+
+**影响版本**: 2.3.0 - 2.4.2-dev.1
+
+**修复版本**: 2.4.2-dev.2
+
+**修复内容**:
+1. 添加文件锁机制（`_file_lock`）确保文件操作原子性
+2. 使用临时文件写入后原子性重命名（`os.replace`/`os.rename`）
+3. 改进 `_schedule_write` 的 Timer 取消和重新调度逻辑
+
+**修复日期**: 2026/04/21
+
+---
+
+### [BUG-012] SDK 属性访问错误信息不准确
+
+**问题**: 访问不存在的属性时，错误提示"您可能使用了错误的SDK注册对象"，可能误导用户，实际可能是模块未启用或名称拼写错误。
+
+**原因**: `__getattribute__` 的错误信息没有区分不同场景，统一给出模糊的提示。
+
+**影响版本**: 2.0.0 - 2.4.2-dev.1
+
+**修复版本**: 2.4.2-dev.2
+
+**修复内容**: 根据属性名称区分不同场景：
+1. 已注册但未启用：提示模块/适配器未启用
+2. 完全不存在：提示检查名称拼写
+同时将原始 AttributeError 重新抛出，便于上层捕获。
+
+**修复日期**: 2026/04/21
+
+---
+
+### [BUG-013] Uninitializer 对未初始化 LazyModule 的清理逻辑过于复杂
+
+**问题**: `Uninitializer` 为从未被访问过的 LazyModule 创建临时实例来调用 `on_unload`，代码复杂且容易出错。
+
+**原因**: 试图为所有 LazyModule 调用生命周期方法，但未初始化的模块不需要也不应该被初始化。
+
+**影响版本**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**修复版本**: 2.4.2-dev.2
+
+**修复内容**: 简化清理逻辑，只处理已初始化的 LazyModule：
+1. 跳过未初始化的 LazyModule，不创建临时实例
+2. 只为已初始化的模块调用 `on_unload`
+3. 删除复杂的临时实例创建逻辑
+
+**修复日期**: 2026/04/21
+
+---
+
+### [BUG-014] Windows 下 CTRL+C 无法停止程序
+
+**问题**: 在 Windows 上直接运行 `python main.py` 时，按下 CTRL+C 无法终止程序。程序正常启动并输出路由服务器信息后，CTRL+C 完全无响应，只能通过任务管理器强杀进程。而通过 `epsdk run` 启动时可以正常停止——但 `epsdk run` 是通过子进程模型运行的。
+
+**原因**: Hypercorn ASGI 服务器的 `serve()` 函数内部通过 `signal.signal(SIGINT, handler)` 注册了自己的 SIGINT 处理器，覆盖了 Python 默认的 `KeyboardInterrupt` 处理机制。当通过 `asyncio.create_task()` 启动 Hypercorn 作为后台任务时，Hypercorn 的内部 shutdown 流程无法正常触发（因为它期望的是 `worker_serve` 模式），导致 CTRL+C 信号被 Hypercorn 吞掉但不会引发任何清理动作。
+
+**影响版本**: [2.3.6 - 2.4.2]
+
+**修复版本**: 2.4.3-dev.0
+
+**修复内容**:
+1. 将 ASGI 服务器从 Hypercorn 切换为 Uvicorn（`pyproject.toml` 依赖变更）
+2. 使用 `uvicorn.Server._serve()` 直接启动服务器，**绕过** `capture_signals()` 信号处理上下文管理器
+3. 通过 `server.should_exit = True` 实现优雅停止，超时则取消后台任务
+4. 同步移除子进程运行模型和 `runtime/cleanup.py` 清理模块（子进程清理机制不再需要）
+
+**修复日期**: 2026/04/28
+
+---
+
+### [BUG-015] 模块加载策略排序逻辑错误
+
+**问题**: `ModuleLoadStrategy` 提供了 `priority` 字段用于声明模块的初始化优先级，但加载策略的实现存在失误，导致模块未按预期的优先级顺序初始化，实际按 `entry_points()` 的默认顺序加载。当模块间存在加载依赖时，无法通过 `priority` 确保正确的初始化先后关系。
+
+**原因**: 加载策略的实现中排序逻辑有误，`initialize_modules()` 未使用 `priority` 对模块列表进行排序。
+
+**影响版本**: 2.3.4 - 2.4.5-dev.2
+
+**修复版本**: 2.4.5-dev.3
+
+**修复内容**: 在 `initialize_modules()` 遍历前，按 `priority` 降序排序模块列表。同 priority 的模块保持原有相对顺序（稳定排序）。
+
+**修复日期**: 2026/05/15
+
+---
+
+### [BUG-016] 适配器中间件返回 None 导致事件数据丢失
+
+**问题**: `adapter.emit()` 在执行 OneBot12 中间件链时，如果某个中间件返回 `None`（例如忘记 `return data`），后续中间件和所有事件处理器收到的 `processed_data` 变为 `None`，导致事件处理完全失效。
+
+**原因**: 中间件链的实现 `processed_data = await middleware(processed_data)` 未检查返回值是否为 `None`，直接覆盖了上一步的处理结果。
+
+**影响版本**: unknown - 2.4.5-dev.3
+
+**修复版本**: 2.4.5-dev.4
+
+**修复内容**: 中间件返回 `None` 时忽略该返回值，保留原数据继续传递，并输出 warning 级别日志。
+
+**修复日期**: 2026/05/15
+
+---
+
+### [BUG-017] 配置文件路径依赖工作目录
+
+**问题**: `ConfigManager` 的配置文件路径默认为相对路径 `"config/config.toml"`，在运行时依赖 `os.getcwd()` 解析。如果工作目录在运行期间发生变化（例如通过 `os.chdir()`），配置文件的读写操作会指向错误的位置，导致配置丢失或读取到旧数据。
+
+**原因**: `__init__` 中直接存储相对路径，未在初始化时将其解析为绝对路径。
+
+**影响版本**: 2.3.7 - 2.4.5-dev.3
+
+**修复版本**: 2.4.5-dev.4
+
+**修复内容**: 在 `ConfigManager.__init__()` 中，如果传入的路径为相对路径，自动通过 `os.path.abspath()` 解析为绝对路径。
+
+**修复日期**: 2026/05/15
+
+---
+
+### [BUG-018] 子进程模式 `ep run <script>` 找不到脚本所在目录的子包
+
+**问题**: 使用 `ep r .\main.py` 非热重载模式运行脚本时，如果脚本有相对导入（如 `from qg import ...`），会报 `No module named 'qg'` 错误。而 `--reload` 模式可以正常运行。
+
+**原因**: 非热重载模式直接调用 `runpy.run_path()` 执行脚本，该函数不会自动将脚本所在目录加入 `sys.path`。而 `--reload` 模式通过 `subprocess.Popen` 子进程运行，子进程自动继承当前工作目录，`sys.path[0]` 即为脚本所在目录，所以能正常工作。
+
+**影响版本**: 2.5.0 - 2.5.2-dev.0
+
+**修复版本**: 2.5.2-dev.0
+
+**修复内容**: 在 `runpy.run_path()` 调用前，手动将脚本所在目录插入 `sys.path[0]`。
+
+**修复日期**: 2026/06/27
 
 
 
@@ -2235,6 +2854,54 @@ async def _identify_image(url):
 ====
 用户指南
 ====
+
+
+### 用户使用指南
+
+# 用户使用指南
+
+本指南帮助你安装、配置和管理 ErisPulse 项目。
+
+## 内容列表
+
+| 文档 | 说明 |
+|------|------|
+| [安装和配置](installation.md) | 系统要求、安装方式（pip/uv/Docker）、验证安装 |
+| [CLI 命令参考](cli-reference.md) | `epsdk` 命令行工具的完整使用说明 |
+| [配置文件说明](configuration.md) | `config/config.toml` 各配置项的详细说明 |
+| [部署指南](deployment.md) | Docker 部署、systemd 服务、SSL 配置 |
+
+## 快速参考
+
+### 常用命令
+
+| 命令 | 说明 |
+|------|------|
+| `epsdk init` | 初始化项目（`-q` 快速模式，`-n` 指定名称） |
+| `epsdk install <包名>` | 安装模块/适配器（不带参数进入交互模式） |
+| `epsdk run main.py` | 运行项目（`--reload` 热重载模式） |
+| `epsdk list` | 列出已安装的模块/适配器 |
+| `epsdk upgrade <包名>` | 升级模块/适配器 |
+
+> 完整的命令列表和参数说明请参考 [CLI 命令参考](cli-reference.md)。
+
+### 常见配置位置
+
+| 配置项 | 说明 | 详见 |
+|--------|------|------|
+| `[ErisPulse.server]` | 服务器配置（主机、端口） | [配置文件说明](configuration.md#服务器配置) |
+| `[ErisPulse.logger]` | 日志配置（级别、输出文件） | [配置文件说明](configuration.md#日志配置) |
+| `[ErisPulse.framework]` | 框架配置（懒加载） | [配置文件说明](configuration.md#框架配置) |
+| `[ErisPulse.event.command]` | 命令事件配置（前缀） | [配置文件说明](configuration.md#事件配置) |
+| `[适配器名]` | 各适配器的特定配置 | [平台特性指南](../platform-guide/) |
+
+## 相关文档
+
+- [快速开始](../quick-start.md) - 快速入门指南
+- [新手入门](../getting-started/) - 入门教程
+- [开发者指南](../developer-guide/) - 开发自定义模块和适配器
+- [API 参考](../api-reference/) - API 文档
+
 
 
 ### 安装和配置
@@ -7467,6 +8134,64 @@ API 参考
 ======
 
 
+### API 参考总览
+
+# API 参考
+
+本目录包含 ErisPulse 框架的 API 参考文档。
+
+## 文档列表
+
+| 文档 | 说明 |
+|------|------|
+| [核心模块 API](core-modules.md) | Storage、Config、Logger、Adapter、Module、Lifecycle、Router、HTTP Client 的 API 快速参考 |
+| [事件系统 API](event-system.md) | Command、Message、Notice、Request、Meta 事件模块的 API 参考 |
+| [适配器系统 API](adapter-system.md) | Adapter 管理器、SendDSL、中间件、Bot 状态管理的 API 参考 |
+| [自动生成 API](auto_api/README.md) | 从源码 docstring 自动生成的完整 API 文档 |
+
+> 手动编写的 API 文档侧重于用法示例和快速查阅；自动生成的 API 文档包含完整的类/方法签名，两者互补。
+
+## 模块概览
+
+### 核心模块
+
+| 模块 | 访问路径 | 说明 |
+|------|---------|------|
+| `sdk.storage` | `sdk.storage` | 基于 SQLite 的键值存储 + SQL 链式查询 |
+| `sdk.config` | `sdk.config` | TOML 格式的配置管理 |
+| `sdk.logger` | `sdk.logger` | 模块化日志系统，支持子日志器 |
+| `sdk.adapter` | `sdk.adapter` | 多平台适配器管理 |
+| `sdk.module` | `sdk.module` | 模块注册、加载、卸载管理 |
+| `sdk.lifecycle` | `sdk.lifecycle` | 生命周期事件管理 |
+| `sdk.router` | `sdk.router` | HTTP/WebSocket 路由管理 |
+| `sdk.client` | `sdk.client` | 统一 HTTP/WS 客户端 |
+
+### 事件系统
+
+| 模块 | 导入路径 | 说明 |
+|------|---------|------|
+| `command` | `ErisPulse.Core.Event.command` | 命令处理（前缀解析、别名） |
+| `message` | `ErisPulse.Core.Event.message` | 消息事件（私聊、群聊、@消息） |
+| `notice` | `ErisPulse.Core.Event.notice` | 通知事件（好友、群成员变化） |
+| `request` | `ErisPulse.Core.Event.request` | 请求事件（好友请求、群邀请） |
+| `meta` | `ErisPulse.Core.Event.meta` | 元事件（连接、断开、心跳） |
+
+### 基类
+
+| 基类 | 导入路径 | 说明 |
+|------|---------|------|
+| `BaseModule` | `ErisPulse.Core.Bases.module.BaseModule` | 模块基类（on_load/on_unload） |
+| `BaseAdapter` | `ErisPulse.Core.Bases.adapter.BaseAdapter` | 适配器基类（start/shutdown/call_api） |
+
+## 相关文档
+
+- [核心概念](../getting-started/basic-concepts.md) - 理解框架核心概念
+- [模块开发指南](../developer-guide/modules/) - 开发自定义模块
+- [适配器开发指南](../developer-guide/adapters/) - 开发平台适配器
+- [高级主题](../advanced/) - 路由、HTTP 客户端、SQL 构建器等深入文档
+
+
+
 ### 核心模块 API
 
 # 核心模块 API
@@ -8756,6 +9481,114 @@ def on_status_change(event):
 ====
 技术标准
 ====
+
+
+### 技术标准总览
+
+# 技术标准
+
+本文档包含 ErisPulse 的技术标准规范，确保各组件间的一致性和兼容性。
+
+## 标准文档列表
+
+1. [会话类型标准](session-types.md) - ErisPulse 会话类型定义和映射规范
+2. [事件转换标准](event-conversion.md) - 平台事件转换规范、扩展命名规范、消息段标准
+3. [API 响应标准](api-response.md) - 适配器 API 响应格式标准及扩展要求
+4. [发送方法规范](send-method-spec.md) - Send 类方法命名、参数规范及反向转换要求
+5. [请求操作规范](request-action-spec.md) - 请求事件字段要求、HandleRequest DSL 及适配器实现要求
+
+## 标准概述
+
+ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了扩展和细化。
+
+### 核心原则
+
+1. **兼容性**：所有标准都必须与 OneBot12 标准保持兼容
+2. **扩展性**：平台特有功能通过前缀方式扩展，避免冲突
+3. **一致性**：时间戳、ID 格式等关键字段需要统一处理
+4. **可追溯性**：保留原始数据以便调试和问题排查
+
+## 为什么需要标准？
+
+### 1. 确保跨平台兼容
+
+不同平台的事件格式各不相同，标准化的转换确保：
+- 模块代码只需编写一次，即可在所有平台运行
+- 事件处理逻辑保持一致
+- 降低开发和维护成本
+
+### 2. 规范 API 接口
+
+统一的 API 响应格式确保：
+- 模块可以一致地处理 API 错误
+- 错误信息统一且易于理解
+- 返回数据结构一致
+
+### 3. 提高代码质量
+
+标准规范帮助：
+- 保持代码风格一致
+- 减少命名冲突
+- 提高代码可读性
+
+## 遵循标准的好处
+
+### 对适配器开发者
+
+- 清晰的转换规则
+- 统一的响应格式
+- 易于调试和测试
+
+### 对模块开发者
+
+- 一致的事件接口
+- 可预测的 API 行为
+- 简化的跨平台开发
+
+### 对最终用户
+
+- 稳定的系统行为
+- 统一的消息格式
+- 良好的兼容性
+
+## 标准遵循检查清单
+
+### 事件转换
+
+- [ ] 所有标准字段已正确映射
+- [ ] 平台特有字段已添加前缀
+- [ ] 时间戳已转换为10位秒级
+- [ ] 原始数据保存在 {platform}_raw
+- [ ] 原始事件类型保存在 {platform}_raw_type
+- [ ] 消息段的 alt_message 已生成
+- [ ] 请求事件包含 request_id 字段
+
+### API 响应
+
+- [ ] 包含 status 字段
+- [ ] 包含 retcode 字段
+- [ ] 包含 data 字段
+- [ ] 包含 message_id 字段
+- [ ] 包含 message 字段
+- [ ] 返回码遵循 OneBot12 规范
+
+### 发送方法命名
+
+- [ ] 使用大驼峰命名法（PascalCase）
+- [ ] 返回 Task 对象
+- [ ] 修饰方法返回 self
+- [ ] 参数命名符合规范
+
+### 请求操作
+
+- [ ] HandleRequest 类已实现 _do_accept / _do_reject
+- [ ] 操作返回标准 API 响应格式
+- [ ] 不支持的操作返回 retcode=10002
+
+## 相关文档
+
+- [平台特性指南](../platform-guide/) - 了解各平台的特性差异
+- [开发者指南](../developer-guide/) - 开发自定义模块和适配器
 
 
 ### 会话类型标准
@@ -19214,6 +20047,45 @@ enable = true
 ====
 代码规范
 ====
+
+
+### 风格指南总览
+
+# 风格指南
+
+本目录包含 ErisPulse 项目的代码和文档风格规范。
+
+## 文档列表
+
+- [注释风格规范](docstring.md) - 方法注释和文档字符串的格式规范
+
+## 适用对象
+
+这些文档适合以下开发者：
+
+- ErisPulse 核心贡献者
+- 模块和适配器开发者
+- 需要生成 API 文档的开发者
+
+## 目的
+
+风格指南的目的：
+
+- 确保代码注释的一致性
+- 支持自动 API 文档生成
+- 提高代码可读性和可维护性
+
+## 遵循规范的好处
+
+- 统一的代码风格
+- 完善的 API 文档
+- 更好的团队协作
+- 自动化文档生成支持
+
+## 相关文档
+
+- [开发者指南](../developer-guide/) - 开发自定义模块和适配器
+- [技术标准](../standards/) - 框架技术规范
 
 
 ### 文档字符串规范

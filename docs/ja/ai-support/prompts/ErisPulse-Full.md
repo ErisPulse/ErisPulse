@@ -379,9 +379,7 @@ flowchart TD
 - メンテナに連絡する
 
 
-====
-快速开始
-====
+### 快速开始
 
 # クイックスタート
 
@@ -543,6 +541,625 @@ level = "INFO"
 - [最初のボットを作成](getting-started/first-bot.md) - シンプルなボットを作成する
 - [ユーザーガイド](user-guide/) - 設定やモジュール管理を深く理解する
 - [開発者ガイド](developer-guide/) - カスタムモジュールやアダプターを開発する
+
+
+====
+快速开始
+====
+
+
+### 文档首页
+
+# ErisPulse ドキュメント
+
+ErisPulse は拡張可能なマルチプラットフォームメッセージ処理フレームワークです。アダプターを介した異なるプラットフォームとのやり取りをサポートし、機能拡張用の柔軟なモジュールシステムを提供します。
+
+> 分からない用語がありますか？[用語集](terminology.md) で分かりやすい説明を確認してください。
+
+## ドキュメントナビゲーション
+
+### クイックスタート
+
+- [クイックスタートガイド](quick-start.md) - ErisPulse のインストールと実行に関する入門ガイド
+
+### アーキテクチャ概要
+
+- [アーキテクチャ概要](architecture.md) - ビジュアル図を通じて SDK のコアアーキテクチャ、初期化プロセス、イベント処理、ライフサイクルを理解する
+
+### 初心者向けガイド
+
+初めて ErisPulse を使用する場合は、以下の順序で読むことをお勧めします：
+
+1. [入門ガイド概要](getting-started/README.md)
+2. [最初のボットを作成する](getting-started/first-bot.md)
+3. [基本概念](getting-started/basic-concepts.md)
+4. [イベント処理の入門](getting-started/event-handling.md)
+5. [一般的なタスクの例](getting-started/common-tasks.md)
+
+### ユーザーガイド
+
+- [インストールと設定](user-guide/installation.md)
+- [CLI コマンドリファレンス](user-guide/cli-reference.md)
+- [設定ファイルの説明](user-guide/configuration.md)
+- [デプロイガイド](user-guide/deployment.md)
+
+### 開発者ガイド
+
+#### モジュール開発
+
+- [モジュール開発の入門](developer-guide/modules/getting-started.md)
+- [モジュールのコア概念](developer-guide/modules/core-concepts.md)
+- [Event ラッパークラスの詳細](developer-guide/modules/event-wrapper.md)
+- [モジュール開発のベストプラクティス](developer-guide/modules/best-practices.md)
+
+#### アダプター開発
+
+- [アダプター開発の入門](developer-guide/adapters/getting-started.md)
+- [アダプターのコア概念](developer-guide/adapters/core-concepts.md)
+- [SendDSL の詳細](developer-guide/adapters/send-dsl.md)
+- [アダプター開発のベストプラクティス](developer-guide/adapters/best-practices.md)
+
+
+#### リリース
+
+- [公開とモジュールストアのガイド](developer-guide/publishing.md) - モジュールやアダプターを ErisPulse モジュールストアに公開する
+
+### プラットフォーム機能ガイド
+
+- [プラットフォーム機能の説明](platform-guide/README.md)
+- [雲湖 (Yunhu) プラットフォームの機能](platform-guide/yunhu.md)
+- [Telegram プラットフォームの機能](platform-guide/telegram.md)
+- [OneBot11 プラットフォームの機能](platform-guide/onebot11.md)
+- [OneBot12 プラットフォームの機能](platform-guide/onebot12.md)
+- [メールプラットフォームの機能](platform-guide/email.md)
+
+### API リファレンス
+
+- [コアモジュール API](api-reference/core-modules.md)
+- [イベントシステム API](api-reference/event-system.md)
+- [アダプターシステム API](api-reference/adapter-system.md)
+
+### 技術標準
+
+- [イベント変換の標準](standards/event-conversion.md)
+- [API レスポンスの標準](standards/api-response.md)
+- [送信メソッドの仕様](standards/send-method-spec.md)
+
+### 高度なトピック
+
+- [遅延読み込み (Lazy Loading) システム](advanced/lazy-loading.md)
+- [ライフサイクル管理](advanced/lifecycle.md)
+- [ルーティングシステム](advanced/router.md)
+- [MessageBuilder の詳細](advanced/message-builder.md)
+- [セッションタイプシステム](advanced/session-types.md)
+- [Conversation マルチターン対話](advanced/conversation.md)
+
+### AI サポート開発
+
+- [AI サポート開発](ai-support/README.md)
+
+### スタイルガイド
+
+- [ドキュメントスタイルガイド](styleguide/docstring.md)
+
+## 開発手法
+
+ErisPulse は2つの開発手法をサポートしています：
+
+### 1. モジュール開発（推奨）
+
+独立したモジュールパッケージを作成し、パッケージマネージャーを介してインストールして使用します。この方法は配布や管理が容易で、一般に公開する機能に適しています。
+
+### 2. 組み込み開発
+
+ErisPulse のコードをプロジェクトに直接組み込み、独立したモジュールを作成する必要はありません。この方法は迅速なプロトタイピングやプロジェクト内部専用の機能に適しています。
+
+例：
+
+```python
+# 直接組み込んで使用する
+import asyncio
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+# コマンドハンドラを登録する
+@command("hello")
+async def hello_handler(event):
+    await event.reply("こんにちは！")
+
+# SDK を実行し、実行状態を維持する | 非同期環境で実行する必要があります
+asyncio.run(sdk.run(keep_running=True))
+```
+
+## ヘルプの入手
+
+- GitHub リポジトリ：[https://github.com/ErisPulse/ErisPulse](https://github.com/ErisPulse/ErisPulse)
+- 問題報告：Issue を提出する
+- 技術議論：Discussions を確認する
+
+## 関連リンク
+
+- [OneBot12 標準](https://12.onebot.dev/)
+- [雲湖公式ドキュメント](https://www.yhchat.com/document/)
+- [Telegram Bot API](https://core.telegram.org/bots/api)
+
+
+### 快速开始
+
+# クイックスタート
+
+> わからない用語がありますか？[用語集](terminology.md)で分かりやすい説明を確認してください。
+
+## ErisPulseのインストール
+
+### ワンクリックインストールスクリプト（推奨）
+
+インストールスクリプトは、お使いの環境（Docker、Python、uv）を自動的に検出し、最適なインストール方法を選択するようにガイドします。
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
+スクリプトは以下をガイドします：
+
+- **Docker インストール**（Dockerが検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャンネル（安定版 / プレリリース版）、ダッシュボード管理パネルの設定、ポートの選択
+- **従来のインストール**：仮想環境の自動作成、ErisPulseバージョンの選択、ダッシュボード管理パネルモジュールのオプションインストール
+
+### Dockerを使用する
+
+Dockerイメージには、ErisPulseフレームワークとダッシュボード管理パネルが組み込まれています。
+
+```bash
+# docker-compose.ymlをダウンロード
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# ダッシュボードトークンを設定して起動
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+<details>
+<summary>Docker Hubが利用できませんか？</summary>
+
+GitHub Container Registryイメージを使用するには、`docker-compose.yml`のimageを変更します：
+
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+起動後、`http://<host>:8000/Dashboard`にアクセスし、設定したトークンでログインします。
+
+### pipを使用したインストール
+
+Pythonのバージョンが3.10以上であることを確認し、pipを使用してインストールします：
+
+```bash
+pip install ErisPulse
+```
+
+[uv](https://github.com/astral-sh/uv)がインストールされている場合は、`uv pip install ErisPulse`を使用すると、より高速にインストールできます。
+
+## プロジェクトの初期化
+
+### インタラクティブな初期化（推奨）
+
+```bash
+epsdk init
+```
+
+これによりインタラクティブなウィザードが起動し、以下をガイドします：
+- プロジェクト名の設定
+- ログレベルの設定
+- サーバー設定（ホストとポート）
+- アダプターの選択と設定
+- プロジェクト構造の作成
+
+### クイック初期化
+
+```bash
+# プロジェクト名を指定したクイックモード
+epsdk init -q -n my_bot
+
+# またはプロジェクト名のみを指定
+epsdk init -n my_bot
+```
+
+### プロジェクトの手動作成
+
+手動でプロジェクトを作成したい場合は以下を実行します：
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## モジュールのインストール
+
+### CLI経由でのインストール
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### 利用可能なモジュールの確認
+
+```bash
+epsdk list-remote
+```
+
+### インタラクティブなインストール
+
+パッケージ名を指定せずに実行すると、インタラクティブなインストール画面に入ります：
+
+```bash
+epsdk install
+```
+
+## プロジェクトの実行
+
+```bash
+# 通常の実行
+epsdk run main.py
+
+# ホットリロードモード（開発時に推奨）
+epsdk run main.py --reload
+```
+
+## プロジェクト構造
+
+初期化後のプロジェクト構造：
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # 設定ファイル
+└── main.py                  # エントリファイル
+
+```
+
+## 設定ファイル
+
+基本的な`config.toml`の設定：
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# アダプターの設定
+```
+
+## 次のステップ
+
+- [スタートガイド概要](getting-started/README.md) - ErisPulseの基本概念を理解する
+- [最初のボットを作成](getting-started/first-bot.md) - シンプルなボットを作成する
+- [ユーザーガイド](user-guide/) - 設定やモジュール管理を深く理解する
+- [開発者ガイド](developer-guide/) - カスタムモジュールやアダプターを開発する
+
+
+### Bug 追踪器
+
+# バグ追跡ツール
+
+このドキュメントでは、ErisPulse SDK の既知のバグと修正状況を記録しています。
+
+---
+
+## 修正済みのバグ
+
+### [BUG-001] Init コマンドアダプタ構成パスの型エラー
+
+**問題**: `ep init` コマンドを使用して対話式に初期化する際、構成アダプタを選択すると型エラーが発生します。
+
+```
+対話式の初期化に失敗しました: unsupported operand type(s) for /: 'str' and 'str'
+```
+
+**原因**: 2.3.7 バージョンで構成ファイルパスを調整した際、メソッドのパラメータ型の一貫性がありませんでした。`_configure_adapters_interactive_sync` は `str` 型のパラメータを受け取りますが、内部で `Path` の `/` 演算子を使用してパスを結合しています。
+
+**影響バージョン**: 2.3.7 - 2.3.9-dev.1
+
+**修正バージョン**: 2.3.9-dev.1
+
+**修正内容**: `_configure_adapters_interactive_sync` メソッドのパラメータ型を `str` から `Path` に変更し、呼び出し時に直接 `Path` オブジェクトを渡すようにしました。
+
+**修正日**: 2026/03/23
+
+---
+
+### [BUG-002] 再起動後にコマンドイベントが無効になる
+
+**問題**: `sdk.restart()` を呼び出した後、`@command` で登録したコマンドが発火できなくなります（コマンドを送信してもボットが応答しない）。
+
+**原因**: `adapter.shutdown()` でイベントバスをクリアした後、`BaseEventHandler` の `_linked_to_adapter_bus` ステータスが `False` にリセットされませんでした。これにより、`_process_event` メソッドはすでにアダプタバスにマウントされていると判断し、再マウント操作をスキップしてしまいました。
+
+**影響バージョン**: 2.2.x - 2.4.0-dev.2
+
+**修正バージョン**: 2.4.0-dev.3
+
+**修正内容**: `_linked_to_adapter_bus` ステータスの追跡を導入し、`_clear_handlers()` でバス接続を切断した後、次回の `register()` で自動的に再マウントすることで、shutdown/restart のシナリオに対応しました。
+
+**修正日**: 2026/04/09
+
+---
+
+### [BUG-003] ライフサイクルイベントハンドラがクリアされない
+
+**問題**: `sdk.restart()` 後、古いライフサイクルイベントハンドラが残存し、重複して発火するため、同じイベントが複数回処理されてしまいます。
+
+**原因**: `lifecycle._handlers` 辞書は `uninit()` の際に一度もクリアされていませんでした。再起動後、古いハンドラと新しいハンドラが同時に存在します。
+
+**影響バージョン**: 2.3.0 - 2.4.0-dev.2
+
+**修正バージョン**: 2.4.0-dev.3
+
+**修正内容**: `Uninitializer` のクリーンアップ処理の末尾（すべてのイベントの送信が終わった後）、`lifecycle._handlers` をクリアしました。
+
+**修正日**: 2026/04/09
+
+---
+
+### [BUG-004] Event.confirm() 確認語の集合代入が重複している
+
+**問題**: `Event.confirm()` メソッド内で、`_yes`、`_no`、`_all` の3つの変数の代入コードが完全に2回繰り返されており（計6行）、無意味な重複計算が発生しています。
+
+**原因**: コードのコピー＆ペーストエラーです。
+
+**影響バージョン**: 2.4.0-dev.4
+
+**修正バージョン**: 2.4.2-dev.1
+
+**修正内容**: `wrapper.py` の 739-741 行にある重複した代入コードを削除しました。
+
+**修正日**: 2026/04/13
+
+---
+
+### [BUG-005] MessageBuilder.at メソッド定義が上書きされている（デッドコード）
+
+**問題**: `MessageBuilder` クラス内で `at` メソッドが3回定義されています。インスタンスメソッド、スタティックメソッド、そして最後に `_DualMethod` で上書きされています。最初の2つの定義は決して実行されないデッドコードです。
+
+**原因**: `_DualMethod` デュアルモディファイアへのリファクタリング時に、古い手動定義の削除を忘れていました。
+
+**影響バージョン**: 2.4.0-dev.0
+
+**修正バージョン**: 2.4.2-dev.1
+
+**修正内容**: `message_builder.py` の 159-181 行にある2つの死んだ `at` メソッド定義を削除し、`_DualMethod` の代入のみを残しました。
+
+**修正日**: 2026/04/13
+
+---
+
+### [BUG-006] Event.is_friend_add/is_friend_delete の detail_type と OB12 標準が一致しない
+
+**問題**: `Event.is_friend_add()` は `detail_type == "friend_add"` をチェックし、`Event.is_friend_delete()` は `detail_type == "friend_delete"` をチェックしますが、OneBot12 標準では `detail_type` の値が `"friend_increase"` および `"friend_decrease"` として定義されています。`notice.py` 内の `on_friend_add`/`on_friend_remove` デコレータで使用される値と不一致であり、デコレータ経由で登録されたハンドラが発火した際、対応する `is_friend_add()`/`is_friend_delete()` 判定メソッドが `False` を返します。
+
+**原因**: `wrapper.py` で非標準の命名が使用されており、一方で `notice.py` では正しい OB12 標準の命名が使用されています。
+
+**影響バージョン**: rq実装以来
+
+**修正バージョン**: 2.4.2-dev.1
+
+**修正内容**: `is_friend_add()` の一致値を `"friend_add"` から `"friend_increase"` に変更し、`is_friend_delete()` を `"friend_delete"` から `"friend_decrease"` に変更しました。
+
+**修正日**: 2026/04/13
+
+---
+
+### [BUG-007] adapter.clear() が _started_instances をクリアしないことによる再起動後の状態不正
+
+**問題**: `AdapterManager.clear()` メソッドは `_adapters`、`_adapter_info`、ハンドラ、`_bots` をクリアしましたが、`_started_instances` セットが漏れていました。アダプタが実行中に `clear()` が呼び出されると、`_started_instances` にまだ参照が残り、再起動後の状態判断が誤ってしまいます。
+
+**原因**: 2.4.0-dev.1 で `_started_instances` を導入した際、`clear()` 内で同期してクリアしていませんでした。
+
+**影響バージョン**: 2.4.0-dev.1 - 2.4.2-dev.0
+
+**修正バージョン**: 2.4.2-dev.1
+
+**修正内容**: `clear()` メソッド内に `self._started_instances.clear()` を追加しました。
+
+**修正日**: 2026/04/13
+
+---
+
+### [BUG-008] command.wait_reply() で非推奨の asyncio.get_event_loop() が使用されている
+
+**問題**: `CommandHandler.wait_reply()` メソッドは `asyncio.get_event_loop()` を使用して future を作成し、タイムスタンプを取得します。このメソッドは Python 3.10+ で非推奨となり、非同期コンテキストでは `asyncio.get_running_loop()` を使用すべきです。同じファイル内の `wrapper.py` の `wait_for()` メソッドが使用する `get_running_loop()` とは不一致です。
+
+**原因**: 開発時に古い API を使用しており、その後追加された `wait_for()` は正しい API を使用しましたが、古いコードへの修正は行われませんでした。
+
+**影響バージョン**: 2.3.0-dev.0
+
+**修正バージョン**: 2.4.2-dev.1
+
+**修正内容**: `command.py` 内の2箇所の `asyncio.get_event_loop()` を `asyncio.get_running_loop()` に置換しました。
+
+**修正日**: 2026/04/13
+
+---
+
+### [BUG-009] Event.collect() でキーが欠けている場合、無警告でスキップされる
+
+**問題**: `Event.collect()` メソッドはフィールドリストを走査する際、特定のフィールド辞書に `key` がない場合、フィールドを無警告でスキップします。開発者がスペルミス（例: `"Key"` ではなく `"key"`）をした場合、フィールド全体が黙って無視されるため、下流の動作を調査するのが困難になります。
+
+**原因**: 入力検証とエラーフィードバックが欠けています。
+
+**影響バージョン**: 2.4.0-dev.4
+
+**修正バージョン**: 2.4.2-dev.1
+
+**修正内容**: スキップする前に `logger.warning()` を追加して、`key` がないフィールドの情報を記録しました。
+
+**修正日**: 2026/04/13
+
+---
+
+### [BUG-010] LazyModule 同期アクセスによる BaseModule 未初期化完了
+
+**問題**: ユーザーが同期コンテキストで遅延読み込みの BaseModule プロパティにアクセスすると、モジュールは `loop.create_task()` を使用して非同期に初期化されますが待機せず、プロパティアクセス時に初期化が完了していない可能性があり、レースコンディションを引き起こします。
+
+**原因**: `_ensure_initialized()` は BaseModule に `loop.create_task(self._initialize())` を使用した直後に返され、初期化完了が保証されていません。
+
+**影響バージョン**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**修正バージョン**: 2.4.2-dev.2
+
+**修正内容**: 同期コンテキスト内では、BaseModule の初期化を `asyncio.run(self._initialize())` に変更し、返す前に初期化が完了することを保証しました。透過プロキシの特性を維持し、ユーザーは同期/非同期の差異を感知する必要がなくなりました。
+
+**修正日**: 2026/04/21
+
+---
+
+### [BUG-011] 設定システムのマルチスレッド書き込みによるデータ消失
+
+**問題**: マルチスレッド環境下で、複数のスレッドが同時に `config.setConfig()` を呼び出す場合、`_flush_config()` の読み取り-変更-書き込み操作はアトミックではなく、一部の書き込みが失われる可能性があります。
+
+**原因**: `_flush_config()` は `RLock` を使用していますが、ファイルの読み書きの間にファイルロックによる保護がなく、さらに `_schedule_write` の Timer は複数回トリガーされる可能性があり、上書きが発生します。
+
+**影響バージョン**: 2.3.0 - 2.4.2-dev.1
+
+**修正バージョン**: 2.4.2-dev.2
+
+**修正内容**:
+1. ファイルロックメカニズム（`_file_lock`）を追加してファイル操作のアトミック性を保証
+2. 一時ファイルに書き込んだ後、`os.replace`/`os.rename` でアトミックにリネーム
+3. `_schedule_write` の Timer キャンセルと再スケジュールロジックの改善
+
+**修正日**: 2026/04/21
+
+---
+
+### [BUG-012] SDK プロパティアクセスエラーメッセージが不正確
+
+**問題**: 存在しないプロパティにアクセスした際、エラーメッセージとして「SDK登録オブジェクトの使用に間違いがあるかもしれません」と表示されます。これは誤解を招く可能性があり、実際にはモジュールが有効になっていないか、名前のスペルミスであることがあります。
+
+**原因**: `__getattribute__` のエラーメッセージが異なる状況を区別していずず、曖昧な提示を統一して行っていました。
+
+**影響バージョン**: 2.0.0 - 2.4.2-dev.1
+
+**修正バージョン**: 2.4.2-dev.2
+
+**修正内容**: プロパティ名に基づいて異なる状況を区別します：
+1. 登録済みだが有効になっていない場合：モジュール/アダプタが有効になっていないことを提示
+2. 完全に存在しない場合：名前のスペルを確認してくださいと提示
+同時に、元の AttributeError を再スローし、上位層での捕捉を容易にします。
+
+**修正日**: 2026/04/21
+
+---
+
+### [BUG-013] 未初期化の LazyModule の Uninitializer クリーンアップロジックが複雑すぎる
+
+**問題**: `Uninitializer` は一度もアクセスされない LazyModule のために一時インスタンスを作成し `on_unload` を呼び出します。コードが複雑でエラーが発生しやすいです。
+
+**原因**: すべての LazyModule のライフサイクルメソッドを呼び出そうとしましたが、未初期化のモジュールは必要であり、かつ初期化されるべきではありません。
+
+**影響バージョン**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**修正バージョン**: 2.4.2-dev.2
+
+**修正内容**: クリーンアップロジックを簡素化し、初期化済みの LazyModule のみを処理します：
+1. 未初期化の LazyModule をスキップし、一時インスタンスを作成しません
+2. 初期化済みのモジュールに対してのみ `on_unload` を呼び出します
+3. 複雑な一時インスタンス作成ロジックを削除します
+
+**修正日**: 2026/04/21
+
+---
+
+### [BUG-014] Windows で CTRL+C がプログラムを停止できない
+
+**問題**: Windows 上で `python main.py` を直接実行した場合、CTRL+C を押してもプログラムを終了できません。プログラムは正常に起動しルーター（ルーティング）サーバーの情報を出力した後、CTRL+C は完全に反応しません。タスクマネージャーでプロセスを強制終了するしかありません。一方、`epsdk run` を使用して起動した場合は正常に停止できます——しかし、`epsdk run` は子プロセスモデルを使用しています。
+
+**原因**: Hypercorn ASGI サーバーの `serve()` 関数の内部で `signal.signal(SIGINT, handler)` を使用して独自の SIGINT ハンドラーを登録しており、Python のデフォルトの `KeyboardInterrupt` 処理機構が上書きされています。`asyncio.create_task()` を使用して Hypercorn をバックグラウンドタスクとして起動した場合、Hypercorn の内部シャットダウンフローは正常にトリガーされません（`worker_serve` モードを想定しているため）、その結果 CTRL+C 信号は Hypercorn によって処理されますが、どのようなクリーンアップ動作も引き起こされません。
+
+**影響バージョン**: [2.3.6 - 2.4.2]
+
+**修正バージョン**: 2.4.3-dev.0
+
+**修正内容**:
+1. ASGI サーバーを Hypercorn から Uvicorn に切り替え（`pyproject.toml` の依存関係変更）
+2. `uvicorn.Server._serve()` を直接使用してサーバーを起動し、`capture_signals()` 信号処理コンテキストマネージャーを**迂回**します
+3. `server.should_exit = True` で優雅な停止を実現し、タイムアウトした場合はバックグラウンドタスクをキャンセルします
+4. 同時に子プロセス実行モデルと `runtime/cleanup.py` クリーンアップモジュールを削除します（子プロセスクリーンアップメカニズムはもはや必要ありません）
+
+**修正日**: 2026/04/28
+
+---
+
+### [BUG-015] モジュール読み込み戦略のソートロジックエラー
+
+**問題**: `ModuleLoadStrategy` はモジュールの初期化優先順位を宣言するために `priority` フィールドを提供していますが、ロード戦略の実装に不備があり、モジュールが期待された優先順位の順序で初期化されず、実際には `entry_points()` のデフォルトの順序でロードされます。モジュール間に読み込み依存関係がある場合、`priority` で正しい初期化の順序関係を保証することはできません。
+
+**原因**: ロード戦略の実装内のソートロジックに誤りがあり、`initialize_modules()` がモジュールリストをソートしていませんでした。
+
+**影響バージョン**: 2.3.4 - 2.4.5-dev.2
+
+**修正バージョン**: 2.4.5-dev.3
+
+**修正内容**: `initialize_modules()` の走査前に、モジュールリストを `priority` で降順にソートします。同じ priority のモジュールは元の相対的な順序を維持します（安定ソート）。
+
+**修正日**: 2026/05/15
+
+---
+
+### [BUG-016] アダプタミドルウェアが None を返すことによるイベントデータの消失
+
+**問題**: `adapter.emit()` が OneBot12 ミドルウェアチェーンを実行する際、特定のミドルウェアが `None` を返すと（例: `return data` を忘れた場合）、後続のミドルウェアおよびすべてのイベントハンドラが受け取る `processed_data` が `None` になってしまい、イベント処理が完全に無効になります。
+
+**原因**: ミドルウェアチェーンの実装 `processed_data = await middleware(processed_data)` は、戻り値が `None` であるかをチェックせず、そのまま上書きしてしまいました。
+
+**影響バージョン**: unknown - 2.4.5-dev.3
+
+**修正バージョン**: 2.4.5-dev.4
+
+**修正内容**: ミドルウェアが `None` を返した場合、その戻り値を無視して元のデータを引き続き渡し、警告レベルのログを出力します。
+
+**修正日**: 2026/05/15
+
+---
+
+### [BUG-017] 設定ファイルパスが作業ディレクトリに依存する
+
+**問題**: `ConfigManager` の設定ファイルパスはデフォルトで相対パス `"config/config.toml"` です。実行時に `os.getcwd()` で解決されます。作業ディレクトリが実行中に変更された場合（例: `os.chdir()` 経由）、設定ファイルの読み書き操作は誤った場所を指し、設定の消失や古いデータの読み込みを引き起こします。
+
+**原因**: `__init__` で相対パスを直接保存し、初期化時に絶対パスに解決していませんでした。
+
+**影響バージョン**: 2.3.7 - 2.4.5-dev.3
+
+**修正バージョン**: 2.4.5-dev.4
+
+**修正内容**: `ConfigManager.__init__()` 内で、渡されたパスが相対パスの場合、`os.path.abspath()` を使用して自動的に絶対パスに解決します。
+
+**修正日**: 2026/05/15
+
+---
+
+### [BUG-018] 子プロセスモード `ep run <script>` でスクリプトのあるディレクトリのサブパッケージが見つからない
+
+**問題**: `ep r .\main.py` を使用して非ホットリロードモードでスクリプトを実行する場合、スクリプトに相対インポート（例: `from qg import ...`）があると、`No module named 'qg'` エラーが発生します。一方、`--reload` モードは正常に実行できます。
+
+**原因**: 非ホットリロードモードは `runpy.run_path()` を直接呼び出してスクリプトを実行しますが、この関数はスクリプトのあるディレクトリを `sys.path` に自動的に追加しません。一方、`--reload` モードは `subprocess.Popen` の子プロセスを使用して実行され、子プロセスは現在の作業ディレクトリを自動的に継承し、`sys.path[0]` はスクリプトのあるディレクトリとなるため、正常に動作します。
+
+**影響バージョン**: 2.5.0 - 2.5.2-dev.0
+
+**修正バージョン**: 2.5.2-dev.0
+
+**修正内容**: `runpy.run_path()` を呼び出す前に、手動でスクリプトのあるディレクトリを `sys.path[0]` に挿入します。
+
+**修正日**: 2026/06/27
 
 
 ====
@@ -2265,6 +2882,53 @@ async def _identify_image(url):
 ====
 用户指南
 ====
+
+
+### 用户使用指南
+
+# ユーザー使用ガイド
+
+このガイドは、ErisPulse プロジェクトのインストール、設定、および管理を支援します。
+
+## 内容リスト
+
+| ドキュメント | 説明 |
+|------|------|
+| [インストールと設定](installation.md) | システム要件、インストール方法（pip/uv/Docker）、インストールの検証 |
+| [CLI コマンドリファレンス](cli-reference.md) | `epsdk` コマンドラインツールの完全な使用説明 |
+| [設定ファイルの説明](configuration.md) | `config/config.toml` 各設定項目の詳細な説明 |
+| [デプロイガイド](deployment.md) | Docker 部署、systemd サービス、SSL 設定 |
+
+## クイックリファレンス
+
+### 一般的なコマンド
+
+| コマンド | 説明 |
+|------|------|
+| `epsdk init` | プロジェクトの初期化（`-q` はクイックモード、`-n` は名前指定） |
+| `epsdk install <パッケージ名>` | モジュール/アダプターのインストール（パラメータなしで対話モードに入る） |
+| `epsdk run main.py` | プロジェクトの実行（`--reload` はホットリロードモード） |
+| `epsdk list` | インストール済みのモジュール/アダプターの一覧表示 |
+| `epsdk upgrade <パッケージ名>` | モジュール/アダプターのアップグレード |
+
+> 完全なコマンドリストとパラメータの説明は [CLI コマンドリファレンス](cli-reference.md) を参照してください。
+
+### 一般的な設定の場所
+
+| 設定項目 | 説明 | 詳細 |
+|--------|------|------|
+| `[ErisPulse.server]` | サーバー設定（ホスト、ポート） | [設定ファイルの説明](configuration.md#サーバー設定) |
+| `[ErisPulse.logger]` | ログ設定（レベル、出力ファイル） | [設定ファイルの説明](configuration.md#ログ設定) |
+| `[ErisPulse.framework]` | フレームワーク設定（遅延読み込み） | [設定ファイルの説明](configuration.md#フレームワーク設定) |
+| `[ErisPulse.event.command]` | コマンドイベント設定（プレフィックス） | [設定ファイルの説明](configuration.md#イベント設定) |
+| `[アダプター名]` | 各アダプターの特定設定 | [プラットフォーム機能ガイド](../platform-guide/) |
+
+## 関連ドキュメント
+
+- [クイックスタート](../quick-start.md) - クイックスタートガイド
+- [入門ガイド](../getting-started/) - 入門チュートリアル
+- [開発者ガイド](../developer-guide/) - カスタムモジュールとアダプターの開発
+- [API リファレンス](../api-reference/) - API ドキュメント
 
 
 ### 安装和配置
@@ -7493,6 +8157,63 @@ API 参考
 ======
 
 
+### API 参考总览
+
+# API リファレンス
+
+このディレクトリには、ErisPulse フレームワークの API リファレンスドキュメントが含まれています。
+
+## ドキュメント一覧
+
+| ドキュメント | 説明 |
+|------|------|
+| [コアモジュール API](core-modules.md) | Storage、Config、Logger、Adapter、Module、Lifecycle、Router、HTTP Client の API クイックリファレンス |
+| [イベントシステム API](event-system.md) | Command、Message、Notice、Request、Meta イベントモジュールの API リファレンス |
+| [アダプターシステム API](adapter-system.md) | Adapter マネージャー、SendDSL、ミドルウェア、Bot ステータス管理の API リファレンス |
+| [自動生成 API](auto_api/README.md) | ソースコード docstring から自動生成された完全な API ドキュメント |
+
+> 手動作成された API ドキュメントは主に使用例とクイックリファレンスに重点を置いています。自動生成された API ドキュメントには完全なクラス/メソッドの署名が含まれており、両者は互いに補完し合います。
+
+## モジュール概要
+
+### コアモジュール
+
+| モジュール | アクセスパス | 説明 |
+|------|------|------|
+| `sdk.storage` | `sdk.storage` | SQLite ベースのキーバリューストレージ + SQL チェーンクエリ |
+| `sdk.config` | `sdk.config` | TOML 形式の設定管理 |
+| `sdk.logger` | `sdk.logger` | モジュールログシステム、サブロガーをサポート |
+| `sdk.adapter` | `sdk.adapter` | マルチプラットフォームアダプター管理 |
+| `sdk.module` | `sdk.module` | モジュール登録、ロード、アンロード管理 |
+| `sdk.lifecycle` | `sdk.lifecycle` | ライフサイクルイベント管理 |
+| `sdk.router` | `sdk.router` | HTTP/WebSocket ルーティング管理 |
+| `sdk.client` | `sdk.client` | 統一 HTTP/WS クライアント |
+
+### イベントシステム
+
+| モジュール | インポートパス | 説明 |
+|------|------|------|
+| `command` | `ErisPulse.Core.Event.command` | コマンド処理（プレフィックス解析、エイリアス） |
+| `message` | `ErisPulse.Core.Event.message` | メッセージイベント（プライベートチャット、グループチャット、@メッセージ） |
+| `notice` | `ErisPulse.Core.Event.notice` | 通知イベント（フレンド、グループメンバー変化） |
+| `request` | `ErisPulse.Core.Event.request` | リクエストイベント（フレンドリクエスト、グループ招待） |
+| `meta` | `ErisPulse.Core.Event.meta` | メタイベント（接続、切断、ハートビート） |
+
+### 基底クラス
+
+| 基底クラス | インポートパス | 説明 |
+|------|------|------|
+| `BaseModule` | `ErisPulse.Core.Bases.module.BaseModule` | モジュール基底クラス（on_load/on_unload） |
+| `BaseAdapter` | `ErisPulse.Core.Bases.adapter.BaseAdapter` | アダプター基底クラス（start/shutdown/call_api） |
+
+## 関連ドキュメント
+
+- [コアコンセプト](../getting-started/basic-concepts.md) - フレームワークのコアコンセプトを理解する
+- [モジュール開発ガイド](../developer-guide/modules/) - カスタムモジュールの開発
+- [アダプター開発ガイド](../developer-guide/adapters/) - プラットフォームアダプターの開発
+- [高度なトピック](../advanced/) - ルーティング、HTTP クライアント、SQL ビルダーなどの詳細なドキュメント
+
+
 ### 核心模块 API
 
 # コアモジュール API
@@ -8808,6 +9529,114 @@ def on_status_change(event):
 ====
 技术标准
 ====
+
+
+### 技术标准总览
+
+# 技術標準
+
+このドキュメントには、ErisPulseの技術標準仕様が含まれており、各コンポーネント間の一貫性と互換性を確保します。
+
+## 標準ドキュメント一覧
+
+1. [セッションタイプ標準](session-types.md) - ErisPulse セッションタイプの定義およびマッピング仕様
+2. [イベント変換標準](event-conversion.md) - プラットフォームイベントの変換仕様、拡張命名仕様、メッセージセグメント標準
+3. [API応答標準](api-response.md) - アダプタAPI応答フォーマットの標準および拡張要件
+4. [送信メソッド仕様](send-method-spec.md) - Sendクラスのメソッド命名規則、パラメータ仕様、および逆変換要件
+5. [リクエスト操作仕様](request-action-spec.md) - リクエストイベントのフィールド要件、HandleRequest DSL、およびアダプタの実装要件
+
+## 標準の概要
+
+ErisPulseはOneBot12をコアイベント標準として採用し、それに基づいて拡張および詳細化を行っています。
+
+### コア原則
+
+1. **互換性**：すべての標準はOneBot12標準と互換性を維持しなければなりません
+2. **拡張性**：プラットフォーム固有の機能はプレフィックス方式で拡張し、競合を回避します
+3. **一貫性**：タイムスタンプ、ID形式などの重要なフィールドは一括処理する必要があります
+4. **追跡可能性**：デバッグおよび問題調査のために元のデータを保持します
+
+## 標準が必要な理由？
+
+### 1. 跨プラットフォーム互換性の確保
+
+異なるプラットフォームのイベント形式はそれぞれ異なります。標準化された変換により、以下を確保します：
+- モジュールコードは一度書くだけで、すべてのプラットフォームで動作します
+- イベント処理ロジックが一貫して維持されます
+- 開発およびメンテナンスコストを削減します
+
+### 2. APIインターフェースの標準化
+
+統一されたAPI応答フォーマットにより、以下を確保します：
+- モジュールが一貫してAPIエラーを処理できます
+- エラーメッセージが統一され、理解しやすくなります
+- 返却データの構造が一貫しています
+
+### 3. コード品質の向上
+
+標準仕様は以下の助けになります：
+- コードスタイルの一貫性を維持します
+- 命名衝突を減らします
+- コードの可読性を向上させます
+
+## 標準の遵守によるメリット
+
+### アダプタ開発者向け
+
+- 明確な変換ルール
+- 統一された応答フォーマット
+- デバッグとテストが容易です
+
+### モジュール開発者向け
+
+- 一貫したイベントインターフェース
+- 予測可能なAPIの挙動
+- 跨プラットフォーム開発の簡素化
+
+### 最終ユーザー向け
+
+- 安定したシステム挙動
+- 統一されたメッセージ形式
+- 良好な互換性
+
+## 標準の遵守チェックリスト
+
+### イベント変換
+
+- [ ] すべての標準フィールドが正しくマップされています
+- [ ] プラットフォーム固有のフィールドにプレフィックスが追加されています
+- [ ] タイムスタンプが10桁の秒単位に変換されています
+- [ ] 元のデータは{platform}_rawに保存されています
+- [ ] 元のイベントタイプは{platform}_raw_typeに保存されています
+- [ ] メッセージセグメントのalt_messageが生成されています
+- [ ] リクエストイベントにrequest_idフィールドが含まれています
+
+### API応答
+
+- [ ] statusフィールドが含まれています
+- [ ] retcodeフィールドが含まれています
+- [ ] dataフィールドが含まれています
+- [ ] message_idフィールドが含まれています
+- [ ] messageフィールドが含まれています
+- [ ] リターンコードがOneBot12仕様に準拠しています
+
+### 送信メソッド命名
+
+- [ ] パスカルケース（PascalCase）を使用しています
+- [ ] Taskオブジェクトを返します
+- [ ] 修飾子がselfを返します
+- [ ] パラメータ命名が規則に準拠しています
+
+### リクエスト操作
+
+- [ ] HandleRequestクラスで_do_accept / _do_rejectが実装されています
+- [ ] 操作が標準API応答フォーマットを返します
+- [ ] サポートしていない操作はretcode=10002を返します
+
+## 関連ドキュメント
+
+- [プラットフォーム特性ガイド](../platform-guide/) - 各プラットフォームの特性の違いを理解する
+- [開発者ガイド](../developer-guide/) - カスタムモジュールおよびアダプタの開発
 
 
 ### 会话类型标准
@@ -18895,6 +19724,45 @@ WeChat 公衆アカウントは3種類のメッセージ暗号化/復号化モ�
 ====
 代码规范
 ====
+
+
+### 风格指南总览
+
+# スタイルガイド
+
+このディレクトリには、ErisPulse プロジェクトのコードおよびドキュメントのスタイルガイドが含まれています。
+
+## ドキュメント一覧
+
+- [コメントスタイルガイド](docstring.md) - メソッドコメントおよびドキュメント文字列のフォーマット仕様
+
+## 対象者
+
+これらのドキュメントは、以下の開発者向けです：
+
+- ErisPulse のコア貢献者
+- モジュールおよびアダプタの開発者
+- API ドキュメントの生成が必要な開発者
+
+## 目的
+
+スタイルガイドの目的：
+
+- コードコメントの一貫性を確保する
+- 自動 API ドキュメント生成をサポートする
+- コードの読みやすさと保守性を高める
+
+## スタイルガイド準拠のメリット
+
+- 一貫したコードスタイル
+- 完備された API ドキュメント
+- より良いチームでの協力
+- 自動ドキュメント生成のサポート
+
+## 関連ドキュメント
+
+- [開発者ガイド](../developer-guide/) - カスタムモジュールおよびアダプタの開発
+- [技術標準](../standards/) - フレームワークの技術仕様
 
 
 ### 文档字符串规范

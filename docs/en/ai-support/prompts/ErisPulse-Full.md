@@ -379,9 +379,7 @@ If you find other terms in the documentation that you do not understand, feel fr
 - Contact the maintainers
 
 
-====
-快速开始
-====
+### 快速开始
 
 # Quick Start
 
@@ -543,6 +541,624 @@ level = "INFO"
 - [Create Your First Bot](getting-started/first-bot.md) - Create a simple bot
 - [User Guide](user-guide/) - Deep dive into configuration and module management
 - [Developer Guide](developer-guide/) - Develop custom modules and adapters
+
+
+====
+快速开始
+====
+
+
+### 文档首页
+
+# ErisPulse Documentation
+
+ErisPulse is an extensible, multi-platform messaging processing framework that supports interaction with different platforms through adapters and provides a flexible module system for feature expansion.
+
+> Confused by some terms? Check out the [Glossary](terminology.md) for accessible explanations.
+
+## Documentation Navigation
+
+### Quick Start
+
+- [Quick Start Guide](quick-start.md) - An introductory guide for installing and running ErisPulse
+
+### Architecture Overview
+
+- [Architecture Overview](architecture.md) - Understand the SDK core architecture, initialization process, event handling, and lifecycle through visual diagrams
+
+### Getting Started
+
+If this is your first time using ErisPulse, we recommend reading the following in order:
+
+1. [Getting Started Overview](getting-started/README.md)
+2. [Create Your First Bot](getting-started/first-bot.md)
+3. [Basic Concepts](getting-started/basic-concepts.md)
+4. [Introduction to Event Handling](getting-started/event-handling.md)
+5. [Common Task Examples](getting-started/common-tasks.md)
+
+### User Guide
+
+- [Installation and Configuration](user-guide/installation.md)
+- [CLI Command Reference](user-guide/cli-reference.md)
+- [Configuration File Guide](user-guide/configuration.md)
+- [Deployment Guide](user-guide/deployment.md)
+
+### Developer Guide
+
+#### Module Development
+
+- [Module Development Introduction](developer-guide/modules/getting-started.md)
+- [Module Core Concepts](developer-guide/modules/core-concepts.md)
+- [Event Wrapper Class Detailed Explanation](developer-guide/modules/event-wrapper.md)
+- [Module Development Best Practices](developer-guide/modules/best-practices.md)
+
+#### Adapter Development
+
+- [Adapter Development Introduction](developer-guide/adapters/getting-started.md)
+- [Adapter Core Concepts](developer-guide/adapters/core-concepts.md)
+- [SendDSL Detailed Explanation](developer-guide/adapters/send-dsl.md)
+- [Adapter Development Best Practices](developer-guide/adapters/best-practices.md)
+
+#### Publishing
+
+- [Publishing and Module Store Guide](developer-guide/publishing.md) - Publish modules and adapters to the ErisPulse Module Store
+
+### Platform Features Guide
+
+- [Platform Features Overview](platform-guide/README.md)
+- [Yunhu Platform Features](platform-guide/yunhu.md)
+- [Telegram Platform Features](platform-guide/telegram.md)
+- [OneBot11 Platform Features](platform-guide/onebot11.md)
+- [OneBot12 Platform Features](platform-guide/onebot12.md)
+- [Email Platform Features](platform-guide/email.md)
+
+### API Reference
+
+- [Core Modules API](api-reference/core-modules.md)
+- [Event System API](api-reference/event-system.md)
+- [Adapter System API](api-reference/adapter-system.md)
+
+### Technical Standards
+
+- [Event Conversion Standard](standards/event-conversion.md)
+- [API Response Standard](standards/api-response.md)
+- [Send Method Specification](standards/send-method-spec.md)
+
+### Advanced Topics
+
+- [Lazy Loading System](advanced/lazy-loading.md)
+- [Lifecycle Management](advanced/lifecycle.md)
+- [Router System](advanced/router.md)
+- [MessageBuilder Detailed Explanation](advanced/message-builder.md)
+- [Session Type System](advanced/session-types.md)
+- [Conversation Multi-turn Dialogue](advanced/conversation.md)
+
+### AI-Assisted Development
+
+- [AI-Assisted Development](ai-support/README.md)
+
+### Style Guide
+
+- [Documentation Style Guide](styleguide/docstring.md)
+
+## Development Methods
+
+ErisPulse supports two development methods:
+
+### 1. Module Development (Recommended)
+
+Create independent module packages, install and use them via a package manager. This method facilitates distribution and management, suitable for publicly released features.
+
+### 2. Embedded Development
+
+Embed ErisPulse code directly into your project without creating a separate module. This method is suitable for rapid prototyping or internal project-specific features.
+
+Example:
+
+```python
+# Direct embedding usage
+import asyncio
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+# Register command handler
+@command("hello")
+async def hello_handler(event):
+    await event.reply("Hello!")
+
+# Run SDK and maintain running | Must run in async environment
+asyncio.run(sdk.run(keep_running=True))
+```
+
+## Getting Help
+
+- GitHub Repository: [https://github.com/ErisPulse/ErisPulse](https://github.com/ErisPulse/ErisPulse)
+- Issue Reporting: Submit an Issue
+- Technical Discussions: Check Discussions
+
+## Related Links
+
+- [OneBot12 Standard](https://12.onebot.dev/)
+- [Yunhu Official Documentation](https://www.yhchat.com/document/)
+- [Telegram Bot API](https://core.telegram.org/bots/api)
+
+
+### 快速开始
+
+# Quick Start
+
+> Confused by terminology? Check the [Glossary](terminology.md) for easy-to-understand explanations.
+
+## Install ErisPulse
+
+### One-click Installation Script (Recommended)
+
+The installation script will automatically detect your environment (Docker, Python, uv) and guide you to choose the most suitable installation method.
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
+The script will guide you through:
+
+- **Docker installation** (Recommended when Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Pre-release), Dashboard management panel configuration, port settings
+- **Traditional installation**: Automatically create virtual environment, select ErisPulse version, optionally install Dashboard management panel module
+
+### Using Docker
+
+Docker images come pre-built with the ErisPulse framework and Dashboard management panel.
+
+```bash
+# Download docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# Set Dashboard token and start
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+<details>
+<summary>Docker Hub Not Available?</summary>
+
+Use the GitHub Container Registry image by modifying the `image` in `docker-compose.yml`:
+
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+After starting, access `http://<host>:8000/Dashboard` and log in with the set token.
+
+### Install using pip
+
+Ensure your Python version is >= 3.10, then use pip to install:
+
+```bash
+pip install ErisPulse
+```
+
+If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse`, which is faster.
+
+## Initialize Project
+
+### Interactive Initialization (Recommended)
+
+```bash
+epsdk init
+```
+
+This will launch an interactive wizard to guide you through:
+- Project name setting
+- Log level configuration
+- Server configuration (host and port)
+- Adapter selection and configuration
+- Project structure creation
+
+### Quick Initialization
+
+```bash
+# Quick mode with specified project name
+epsdk init -q -n my_bot
+
+# Or just specify project name
+epsdk init -n my_bot
+```
+
+### Manual Project Creation
+
+If you prefer to create the project manually:
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## Install Modules
+
+### Install via CLI
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### View Available Modules
+
+```bash
+epsdk list-remote
+```
+
+### Interactive Installation
+
+Enter the interactive installation interface when no package name is specified:
+
+```bash
+epsdk install
+```
+
+## Run Project
+
+```bash
+# Normal run
+epsdk run main.py
+
+# Hot reload mode (recommended for development)
+epsdk run main.py --reload
+```
+
+## Project Structure
+
+Project structure after initialization:
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # Configuration file
+└── main.py                  # Entry file
+
+```
+
+## Configuration File
+
+Basic `config.toml` configuration:
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# Adapter configuration
+```
+
+## Next Steps
+
+- [Getting Started Overview](getting-started/README.md) - Learn the basic concepts of ErisPulse
+- [Create Your First Bot](getting-started/first-bot.md) - Create a simple bot
+- [User Guide](user-guide/) - Deep dive into configuration and module management
+- [Developer Guide](developer-guide/) - Develop custom modules and adapters
+
+
+### Bug 追踪器
+
+# Bug Tracker
+
+This document records known bugs and fixes for the ErisPulse SDK.
+
+---
+
+## Fixed Bugs
+
+### [BUG-001] Init command adapter configuration path type error
+
+**Issue**: When using the `ep init` command for interactive initialization, selecting a configuration adapter results in a type error:
+
+```
+Interactive initialization failed: unsupported operand type(s) for /: 'str' and 'str'
+```
+
+**Cause**: In version 2.3.7, when adjusting the configuration file path, the method parameter type was inconsistent. `_configure_adapters_interactive_sync` receives `str` type parameters, but internally uses the `Path` `/` operator to concatenate paths.
+
+**Affected Versions**: 2.3.7 - 2.3.9-dev.1
+
+**Fixed Version**: 2.3.9-dev.1
+
+**Fix**: Changed the parameter type of the `_configure_adapters_interactive_sync` method from `str` to `Path`, passing `Path` objects directly when calling.
+
+**Fix Date**: 2026/03/23
+
+---
+
+### [BUG-002] Command events stop working after restart
+
+**Issue**: After calling `sdk.restart()`, commands registered via `@command` cannot be triggered. This manifests as the bot not responding after sending a command.
+
+**Cause**: After `adapter.shutdown()` clears the event bus, the `_linked_to_adapter_bus` state of `BaseEventHandler` is not reset to `False`, causing the `_process_event` method to believe it is already mounted to the adapter bus and skipping the remount operation.
+
+**Affected Versions**: 2.2.x - 2.4.0-dev.2
+
+**Fixed Version**: 2.4.0-dev.3
+
+**Fix**: Introduced `_linked_to_adapter_bus` state tracking. After `_clear_handlers()` disconnects from the bus, `register()` automatically remounts on the next call, adapting to shutdown/restart scenarios.
+
+**Fix Date**: 2026/04/09
+
+---
+
+### [BUG-003] Lifecycle event handlers are not cleaned up
+
+**Issue**: After `sdk.restart()`, old lifecycle event handlers remain active and trigger repeatedly, causing a single event to be processed multiple times.
+
+**Cause**: The `lifecycle._handlers` dictionary is never cleaned up during `uninit()`, resulting in old handlers coexisting with new ones after a restart.
+
+**Affected Versions**: 2.3.0 - 2.4.0-dev.2
+
+**Fixed Version**: 2.4.0-dev.3
+
+**Fix**: At the end of the cleanup flow in `Uninitializer` (after all events are submitted), clear `lifecycle._handlers`.
+
+**Fix Date**: 2026/04/09
+
+---
+
+### [BUG-004] Duplicate assignment of confirmation word collection in Event.confirm()
+
+**Issue**: In the `Event.confirm()` method, the assignment code for the three variables `_yes`, `_no`, and `_all` is completely duplicated twice (6 lines total), resulting in meaningless duplicate calculations.
+
+**Cause**: A code copy-paste error.
+
+**Affected Versions**: 2.4.0-dev.4
+
+**Fixed Version**: 2.4.2-dev.1
+
+**Fix**: Remove the duplicate assignment code in lines 739-741 of `wrapper.py`.
+
+**Fix Date**: 2026/04/13
+
+---
+
+### [BUG-005] MessageBuilder.at method definition is overridden (Dead code)
+
+**Issue**: The `at` method in the `MessageBuilder` class is defined three times: once as an instance method, once as a static method, and finally overridden by a `_DualMethod` assignment. The first two definitions are dead code that will never execute.
+
+**Cause**: When refactoring to the `_DualMethod` dual-mode descriptor, the old manual definitions were forgotten and not deleted.
+
+**Affected Versions**: 2.4.0-dev.0
+
+**Fixed Version**: 2.4.2-dev.1
+
+**Fix**: Delete the two dead `at` method definitions in lines 159-181 of `message_builder.py`, keeping only the `_DualMethod` assignment.
+
+**Fix Date**: 2026/04/13
+
+---
+
+### [BUG-006] Inconsistency between Event.is_friend_add/is_friend_delete detail_type and OB12 standard
+
+**Issue**: `Event.is_friend_add()` checks `detail_type == "friend_add"`, and `Event.is_friend_delete()` checks `detail_type == "friend_delete"`. However, the OneBot12 standard defines the `detail_type` values as `"friend_increase"` and `"friend_decrease"`. This is inconsistent with the values used by the `on_friend_add`/`on_friend_remove` decorators in `notice.py`, causing the corresponding `is_friend_add()`/`is_friend_delete()` judgment methods to return `False` when handlers are triggered via the decorators.
+
+**Cause**: Non-standard naming was used in `wrapper.py`, while `notice.py` used the correct OB12 standard naming.
+
+**Affected Versions**: Since implementation of rq
+
+**Fixed Version**: 2.4.2-dev.1
+
+**Fix**: Changed the matching value of `is_friend_add()` from `"friend_add"` to `"friend_increase"`, and changed `is_friend_delete()` from `"friend_delete"` to `"friend_decrease"`.
+
+**Fix Date**: 2026/04/13
+
+---
+
+### [BUG-007] adapter.clear() does not clear _started_instances causing incorrect state after restart
+
+**Issue**: The `AdapterManager.clear()` method clears `_adapters`, `_adapter_info`, handlers, and `_bots`, but omits the `_started_instances` collection. If `clear()` is called while an adapter is running, `_started_instances` retains dangling references, causing incorrect state judgments after a restart.
+
+**Cause**: When introducing `_started_instances` in version 2.4.0-dev.1, it was not cleaned up synchronously in `clear()`.
+
+**Affected Versions**: 2.4.0-dev.1 - 2.4.2-dev.0
+
+**Fixed Version**: 2.4.2-dev.1
+
+**Fix**: Added `self._started_instances.clear()` to the `clear()` method.
+
+**Fix Date**: 2026/04/13
+
+---
+
+### [BUG-008] command.wait_reply() uses deprecated asyncio.get_event_loop()
+
+**Issue**: The `CommandHandler.wait_reply()` method uses `asyncio.get_event_loop()` to create futures and get timestamps. This method is deprecated in Python 3.10+, and `asyncio.get_running_loop()` should be used in async contexts. This is inconsistent with the `wait_for()` method in `wrapper.py` in the same file, which uses `get_running_loop()`.
+
+**Cause**: The older API was used during development, and while the newly added `wait_for()` used the correct API, the old code was not backported.
+
+**Affected Versions**: 2.3.0-dev.0
+
+**Fixed Version**: 2.4.2-dev.1
+
+**Fix**: Replaced the two occurrences of `asyncio.get_event_loop()` in `command.py` with `asyncio.get_running_loop()`.
+
+**Fix Date**: 2026/04/13
+
+---
+
+### [BUG-009] Event.collect() silently skips when field is missing key
+
+**Issue**: When traversing the list of fields in the `Event.collect()` method, if a field dictionary is missing a `key`, the field is silently skipped without outputting any logs or warnings. If a developer makes a typo (e.g., `"Key"` instead of `"key"`), the entire field is quietly ignored, making it difficult to troubleshoot downstream behavior.
+
+**Cause**: Lack of input validation and error feedback.
+
+**Affected Versions**: 2.4.0-dev.4
+
+**Fixed Version**: 2.4.2-dev.1
+
+**Fix**: Added `logger.warning()` to log the field information before skipping when a `key` is missing.
+
+**Fix Date**: 2026/04/13
+
+---
+
+### [BUG-010] LazyModule synchronous access to BaseModule causes initialization not to complete
+
+**Issue**: When a user accesses a lazy-loaded BaseModule property in a synchronous context, the module uses `loop.create_task()` for asynchronous initialization but does not wait. This may result in the property not being fully initialized during access, leading to a race condition.
+
+**Cause**: `_ensure_initialized()` returns immediately after using `loop.create_task(self._initialize())` for the BaseModule, without ensuring initialization is complete.
+
+**Affected Versions**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**Fixed Version**: 2.4.2-dev.2
+
+**Fix**: Changed the BaseModule initialization in synchronous contexts to use `asyncio.run(self._initialize())`, ensuring initialization completes before returning. The transparent proxy behavior is preserved, so users do not need to be aware of the synchronous/asynchronous difference.
+
+**Fix Date**: 2026/04/21
+
+---
+
+### [BUG-011] Multithreaded writing in the configuration system leads to data loss
+
+**Issue**: In a multithreaded environment, when multiple threads call `config.setConfig()` simultaneously, the read-modify-write operation of `_flush_config()` is not atomic, which may result in partial data loss.
+
+**Cause**: Although `_flush_config()` uses an `RLock`, there is no file lock protection between file reading and writing. Additionally, the Timer in `_schedule_write` might be triggered multiple times, leading to overwrites.
+
+**Affected Versions**: 2.3.0 - 2.4.2-dev.1
+
+**Fixed Version**: 2.4.2-dev.2
+
+**Fix**:
+1. Added a file lock mechanism (`_file_lock`) to ensure atomicity of file operations.
+2. Use temporary files for writing and then rename them atomically (`os.replace`/`os.rename`).
+3. Improved the Timer cancellation and rescheduling logic for `_schedule_write`.
+
+**Fix Date**: 2026/04/21
+
+---
+
+### [BUG-012] Inaccurate error message for SDK attribute access
+
+**Issue**: When accessing a non-existent attribute, the error message "You may be using the wrong SDK registration object" may mislead users, when in reality the module may simply not be enabled or the name may be misspelled.
+
+**Cause**: The error message in `__getattribute__` does not distinguish between different scenarios, providing a vague hint uniformly.
+
+**Affected Versions**: 2.0.0 - 2.4.2-dev.1
+
+**Fixed Version**: 2.4.2-dev.2
+
+**Fix**: Distinguish between different scenarios based on the attribute name:
+1. Registered but not enabled: Hint that the module/adapter is not enabled.
+2. Does not exist at all: Hint to check the name spelling.
+Also re-raise the original `AttributeError` to facilitate catching by upper layers.
+
+**Fix Date**: 2026/04/21
+
+---
+
+### [BUG-013] Uninitializer's cleanup logic for uninitialized LazyModule is overly complex
+
+**Issue**: `Uninitializer` creates temporary instances for LazyModules that have never been accessed to call `on_unload`, making the code complex and error-prone.
+
+**Cause**: It attempts to call lifecycle methods for all LazyModules, but uninitialized modules do not need and should not be initialized.
+
+**Affected Versions**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**Fixed Version**: 2.4.2-dev.2
+
+**Fix**: Simplify the cleanup logic to only handle initialized LazyModules:
+1. Skip uninitialized LazyModules without creating temporary instances.
+2. Call `on_unload` only for initialized modules.
+3. Remove the complex temporary instance creation logic.
+
+**Fix Date**: 2026/04/21
+
+---
+
+### [BUG-014] CTRL+C cannot stop the program on Windows
+
+**Issue**: When running `python main.py` directly on Windows, pressing CTRL+C cannot terminate the program. The program starts normally and outputs routing server information, after which CTRL+C is completely unresponsive, and the process can only be killed via Task Manager. However, starting via `epsdk run` works fine to stop—but `epsdk run` runs via a subprocess model.
+
+**Cause**: Hypercorn ASGI server's `serve()` function internally registers its own SIGINT handler via `signal.signal(SIGINT, handler)`, which overrides Python's default `KeyboardInterrupt` handling mechanism. When Hypercorn is started as a background task via `asyncio.create_task()`, Hypercorn's internal shutdown flow cannot trigger properly (as it expects the `worker_serve` mode), causing the CTRL+C signal to be swallowed by Hypercorn without triggering any cleanup actions.
+
+**Affected Versions**: [2.3.6 - 2.4.2]
+
+**Fixed Version**: 2.4.3-dev.0
+
+**Fix**:
+1. Switched the ASGI server from Hypercorn to Uvicorn (change in `pyproject.toml` dependencies).
+2. Use `uvicorn.Server._serve()` to start the server directly, **bypassing** the `capture_signals()` signal handling context manager.
+3. Implement graceful shutdown via `server.should_exit = True`, cancelling the background task on timeout.
+4. Synchronously remove the subprocess runtime model and the `runtime/cleanup.py` cleanup module (subprocess cleanup mechanism is no longer needed).
+
+**Fix Date**: 2026/04/28
+
+---
+
+### [BUG-015] Incorrect sorting logic in module loading strategy
+
+**Issue**: `ModuleLoadStrategy` provides a `priority` field to declare the initialization priority of modules, but the implementation of the loading strategy has a flaw, causing modules to not be initialized in the expected priority order. Instead, they are loaded in the default order of `entry_points()`. When there are loading dependencies between modules, the correct initialization order cannot be guaranteed via `priority`.
+
+**Cause**: The sorting logic in the loading strategy implementation is incorrect, and `initialize_modules()` does not sort the module list by `priority`.
+
+**Affected Versions**: 2.3.4 - 2.4.5-dev.2
+
+**Fixed Version**: 2.4.5-dev.3
+
+**Fix**: Sort the module list by `priority` in descending order before iterating in `initialize_modules()`. Modules with the same priority maintain their original relative order (stable sort).
+
+**Fix Date**: 2026/05/15
+
+---
+
+### [BUG-016] Event data loss due to adapter middleware returning None
+
+**Issue**: When `adapter.emit()` executes the OneBot12 middleware chain, if a middleware returns `None` (for example, forgetting `return data`), the `processed_data` received by subsequent middleware and all event handlers becomes `None`, causing event processing to fail completely.
+
+**Cause**: The implementation of the middleware chain `processed_data = await middleware(processed_data)` does not check if the return value is `None`, directly overwriting the result of the previous step.
+
+**Affected Versions**: unknown - 2.4.5-dev.3
+
+**Fixed Version**: 2.4.5-dev.4
+
+**Fix**: Ignore the return value when middleware returns `None`, preserve the original data to continue passing it, and output a warning-level log.
+
+**Fix Date**: 2026/05/15
+
+---
+
+### [BUG-017] Configuration file path depends on working directory
+
+**Issue**: The configuration file path in `ConfigManager` defaults to the relative path `"config/config.toml"`, relying on `os.getcwd()` to resolve it at runtime. If the working directory changes during runtime (e.g., via `os.chdir()`), read/write operations on the configuration file will point to the wrong location, leading to configuration loss or reading old data.
+
+**Cause**: Relative paths are stored directly in `__init__` without being parsed into absolute paths during initialization.
+
+**Affected Versions**: 2.3.7 - 2.4.5-dev.3
+
+**Fixed Version**: 2.4.5-dev.4
+
+**Fix**: In `ConfigManager.__init__()`, if the passed path is a relative path, automatically resolve it to an absolute path using `os.path.abspath()`.
+
+**Fix Date**: 2026/05/15
+
+---
+
+### [BUG-018] Subprocess mode `ep run <script>` cannot find submodule of script directory
+
+**Issue**: When running a script with `ep r .\main.py` in non-hot-reload mode, if the script has relative imports (e.g., `from qg import ...`), a `No module named 'qg'` error is raised. However, the `--reload` mode runs normally.
+
+**Cause**: The non-hot-reload mode directly calls `runpy.run_path()` to execute the script, which does not automatically add the script's directory to `sys.path`. The `--reload` mode runs via a `subprocess.Popen` subprocess, which inherits the current working directory automatically. Thus, `sys.path[0]` is the script's directory, allowing it to work normally.
+
+**Affected Versions**: 2.5.0 - 2.5.2-dev.0
+
+**Fixed Version**: 2.5.2-dev.0
+
+**Fix**: Manually insert the directory where the script is located into `sys.path[0]` before calling `runpy.run_path()`.
+
+**Fix Date**: 2026/06/27
 
 
 ====
@@ -2225,6 +2841,53 @@ async def _identify_image(url):
 ====
 用户指南
 ====
+
+
+### 用户使用指南
+
+# User Guide
+
+This guide helps you install, configure, and manage the ErisPulse project.
+
+## Table of Contents
+
+| Document | Description |
+|----------|-------------|
+| [Installation and Configuration](installation.md) | System requirements, installation methods (pip/uv/Docker), verification of installation |
+| [CLI Command Reference](cli-reference.md) | Complete usage instructions for the command-line tool `epsdk` |
+| [Configuration File Guide](configuration.md) | Detailed explanation of configuration items in `config/config.toml` |
+| [Deployment Guide](deployment.md) | Docker deployment, systemd service, SSL configuration |
+
+## Quick Reference
+
+### Common Commands
+
+| Command | Description |
+|---------|-------------|
+| `epsdk init` | Initialize project (`-q` quick mode, `-n` specify name) |
+| `epsdk install <package name>` | Install module/adapter (enter interactive mode without parameters) |
+| `epsdk run main.py` | Run project (`--reload` hot reload mode) |
+| `epsdk list` | List installed modules/adapters |
+| `epsdk upgrade <package name>` | Upgrade module/adapter |
+
+> For a complete list of commands and parameter descriptions, see [CLI Command Reference](cli-reference.md).
+
+### Common Configuration Locations
+
+| Configuration Item | Description | See Also |
+|--------------------|-------------|----------|
+| `[ErisPulse.server]` | Server configuration (host, port) | [Configuration File Guide](configuration.md#server-configuration) |
+| `[ErisPulse.logger]` | Logging configuration (level, output file) | [Configuration File Guide](configuration.md#logging-configuration) |
+| `[ErisPulse.framework]` | Framework configuration (lazy loading) | [Configuration File Guide](configuration.md#framework-configuration) |
+| `[ErisPulse.event.command]` | Command event configuration (prefix) | [Configuration File Guide](configuration.md#event-configuration) |
+| `[Adapter Name]` | Specific configuration for each adapter | [Platform Features Guide](../platform-guide/) |
+
+## Related Documentation
+
+- [Quick Start](../quick-start.md) - Quick start guide
+- [Getting Started](../getting-started/) - Getting started tutorials
+- [Developer Guide](../developer-guide/) - Develop custom modules and adapters
+- [API Reference](../api-reference/) - API documentation
 
 
 ### 安装和配置
@@ -7370,6 +8033,63 @@ API 参考
 ======
 
 
+### API 参考总览
+
+# API Reference
+
+This directory contains the API reference documentation for the ErisPulse framework.
+
+## Documentation List
+
+| Document | Description |
+|------|------|
+| [Core Modules API](core-modules.md) | Quick reference for Storage, Config, Logger, Adapter, Module, Lifecycle, Router, and HTTP Client APIs |
+| [Event System API](event-system.md) | API reference for Command, Message, Notice, Request, and Meta event modules |
+| [Adapter System API](adapter-system.md) | API reference for Adapter Manager, SendDSL, Middleware, and Bot State Management |
+| [Auto-generated API](auto_api/README.md) | Complete API documentation automatically generated from source code docstrings |
+
+> Manually written API documentation focuses on usage examples and quick lookup; auto-generated API documentation includes complete class/method signatures. They complement each other.
+
+## Module Overview
+
+### Core Modules
+
+| Module | Path | Description |
+|------|------|------|
+| `sdk.storage` | `sdk.storage` | SQLite-based Key-Value Storage + SQL Chained Query |
+| `sdk.config` | `sdk.config` | TOML format Configuration Management |
+| `sdk.logger` | `sdk.logger` | Modular Logging System with support for sub-loggers |
+| `sdk.adapter` | `sdk.adapter` | Multi-platform Adapter Management |
+| `sdk.module` | `sdk.module` | Module Registration, Loading, and Unloading Management |
+| `sdk.lifecycle` | `sdk.lifecycle` | Lifecycle Event Management |
+| `sdk.router` | `sdk.router` | HTTP/WebSocket Routing Management |
+| `sdk.client` | `sdk.client` | Unified HTTP/WS Client |
+
+### Event System
+
+| Module | Import Path | Description |
+|------|------|------|
+| `command` | `ErisPulse.Core.Event.command` | Command Handling (Prefix parsing, Aliases) |
+| `message` | `ErisPulse.Core.Event.message` | Message Events (Private, Group, @ mention) |
+| `notice` | `ErisPulse.Core.Event.notice` | Notice Events (Friend, Group member changes) |
+| `request` | `ErisPulse.Core.Event.request` | Request Events (Friend request, Group invite) |
+| `meta` | `ErisPulse.Core.Event.meta` | Meta Events (Connect, Disconnect, Heartbeat) |
+
+### Base Classes
+
+| Base Class | Import Path | Description |
+|------|------|------|
+| `BaseModule` | `ErisPulse.Core.Bases.module.BaseModule` | Module Base Class (on_load/on_unload) |
+| `BaseAdapter` | `ErisPulse.Core.Bases.adapter.BaseAdapter` | Adapter Base Class (start/shutdown/call_api) |
+
+## Related Documentation
+
+- [Core Concepts](../getting-started/basic-concepts.md) - Understand framework core concepts
+- [Module Development Guide](../developer-guide/modules/) - Develop custom modules
+- [Adapter Development Guide](../developer-guide/adapters/) - Develop platform adapters
+- [Advanced Topics](../advanced/) - Deep dive into Routing, HTTP Client, SQL Builder, etc.
+
+
 ### 核心模块 API
 
 # Core Module API
@@ -8686,6 +9406,114 @@ def on_status_change(event):
 ====
 技术标准
 ====
+
+
+### 技术标准总览
+
+# Technical Standards
+
+This document contains ErisPulse technical standards specifications to ensure consistency and compatibility between components.
+
+## Standard Document List
+
+1. [Session Types Standard](session-types.md) - ErisPulse session type definition and mapping specification
+2. [Event Conversion Standard](event-conversion.md) - Platform event conversion spec, extension naming conventions, and message segment standards
+3. [API Response Standard](api-response.md) - Standard for adapter API response formats and extension requirements
+4. [Send Method Naming Conventions](send-method-spec.md) - Send class method naming, parameter specifications, and reverse conversion requirements
+5. [Request Action Standard](request-action-spec.md) - Request event field requirements, HandleRequest DSL, and adapter implementation requirements
+
+## Standard Overview
+
+ErisPulse adopts OneBot12 as the core event standard, building upon this foundation with extensions and refinements.
+
+### Core Principles
+
+1. **Compatibility**: All standards must remain compatible with the OneBot12 standard
+2. **Extensibility**: Platform-specific features are extended via prefixing to avoid conflicts
+3. **Consistency**: Key fields such as timestamps and ID formats require unified handling
+4. **Traceability**: Retain original data for debugging and issue troubleshooting
+
+## Why Do We Need Standards?
+
+### 1. Ensure Cross-Platform Compatibility
+
+Event formats differ across various platforms, and standardized conversion ensures:
+- Modular code only needs to be written once to run on all platforms
+- Event handling logic remains consistent
+- Reduces development and maintenance costs
+
+### 2. Standardize API Interfaces
+
+Unified API response formats ensure:
+- Modules can handle API errors consistently
+- Error messages are unified and easy to understand
+- Returned data structures are consistent
+
+### 3. Improve Code Quality
+
+Standard specifications help:
+- Maintain consistent code style
+- Reduce naming conflicts
+- Improve code readability
+
+## Benefits of Following Standards
+
+### For Adapter Developers
+
+- Clear conversion rules
+- Unified response formats
+- Easy to debug and test
+
+### For Module Developers
+
+- Consistent event interfaces
+- Predictable API behavior
+- Simplified cross-platform development
+
+### For End Users
+
+- Stable system behavior
+- Unified message formats
+- Good compatibility
+
+## Standard Compliance Checklist
+
+### Event Conversion
+
+- [ ] All standard fields are correctly mapped
+- [ ] Platform-specific fields have been prefixed
+- [ ] Timestamps have been converted to 10-digit second-level precision
+- [ ] Raw data is saved in {platform}_raw
+- [ ] Original event type is saved in {platform}_raw_type
+- [ ] The alt_message for message segments has been generated
+- [ ] Request events include the request_id field
+
+### API Response
+
+- [ ] Includes the status field
+- [ ] Includes the retcode field
+- [ ] Includes the data field
+- [ ] Includes the message_id field
+- [ ] Includes the message field
+- [ ] Return codes follow OneBot12 specifications
+
+### Send Method Naming
+
+- [ ] Uses PascalCase
+- [ ] Returns a Task object
+- [ ] Decorated methods return self
+- [ ] Parameter naming complies with specifications
+
+### Request Action
+
+- [ ] HandleRequest class has implemented _do_accept / _do_reject
+- [ ] Operations return standard API response format
+- [ ] Unsupported operations return retcode=10002
+
+## Related Documentation
+
+- [Platform Features Guide](../platform-guide/) - Understand the feature differences of each platform
+- [Developer Guide](../developer-guide/) - Develop custom modules and adapters
 
 
 ### 会话类型标准
@@ -19147,6 +19975,45 @@ All `call_api` calls return standardized response:
 ====
 代码规范
 ====
+
+
+### 风格指南总览
+
+# Style Guide
+
+This directory contains the code and documentation style guidelines for the ErisPulse project.
+
+## Documentation List
+
+- [Comment Style Guidelines](docstring.md) - Formatting standards for method comments and docstrings
+
+## Target Audience
+
+These documents are suitable for the following developers:
+
+- ErisPulse core contributors
+- Module and adapter developers
+- Developers who need to generate API documentation
+
+## Purpose
+
+The purpose of this style guide:
+
+- Ensure consistency in code comments
+- Support automatic API documentation generation
+- Improve code readability and maintainability
+
+## Benefits of Following the Guidelines
+
+- Unified code style
+- Comprehensive API documentation
+- Better team collaboration
+- Support for automated documentation generation
+
+## Related Documentation
+
+- [Developer Guide](../developer-guide/) - Developing custom modules and adapters
+- [Technical Standards](../standards/) - Framework technical specifications
 
 
 ### 文档字符串规范

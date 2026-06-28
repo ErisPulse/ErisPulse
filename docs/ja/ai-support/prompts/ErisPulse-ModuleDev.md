@@ -375,6 +375,170 @@ flowchart TD
 - メンテナに連絡する
 
 
+### 快速开始
+
+# クイックスタート
+
+> わからない用語がありますか？[用語集](terminology.md)で分かりやすい説明を確認してください。
+
+## ErisPulseのインストール
+
+### ワンクリックインストールスクリプト（推奨）
+
+インストールスクリプトは、お使いの環境（Docker、Python、uv）を自動的に検出し、最適なインストール方法を選択するようにガイドします。
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
+スクリプトは以下をガイドします：
+
+- **Docker インストール**（Dockerが検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャンネル（安定版 / プレリリース版）、ダッシュボード管理パネルの設定、ポートの選択
+- **従来のインストール**：仮想環境の自動作成、ErisPulseバージョンの選択、ダッシュボード管理パネルモジュールのオプションインストール
+
+### Dockerを使用する
+
+Dockerイメージには、ErisPulseフレームワークとダッシュボード管理パネルが組み込まれています。
+
+```bash
+# docker-compose.ymlをダウンロード
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# ダッシュボードトークンを設定して起動
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+<details>
+<summary>Docker Hubが利用できませんか？</summary>
+
+GitHub Container Registryイメージを使用するには、`docker-compose.yml`のimageを変更します：
+
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+起動後、`http://<host>:8000/Dashboard`にアクセスし、設定したトークンでログインします。
+
+### pipを使用したインストール
+
+Pythonのバージョンが3.10以上であることを確認し、pipを使用してインストールします：
+
+```bash
+pip install ErisPulse
+```
+
+[uv](https://github.com/astral-sh/uv)がインストールされている場合は、`uv pip install ErisPulse`を使用すると、より高速にインストールできます。
+
+## プロジェクトの初期化
+
+### インタラクティブな初期化（推奨）
+
+```bash
+epsdk init
+```
+
+これによりインタラクティブなウィザードが起動し、以下をガイドします：
+- プロジェクト名の設定
+- ログレベルの設定
+- サーバー設定（ホストとポート）
+- アダプターの選択と設定
+- プロジェクト構造の作成
+
+### クイック初期化
+
+```bash
+# プロジェクト名を指定したクイックモード
+epsdk init -q -n my_bot
+
+# またはプロジェクト名のみを指定
+epsdk init -n my_bot
+```
+
+### プロジェクトの手動作成
+
+手動でプロジェクトを作成したい場合は以下を実行します：
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## モジュールのインストール
+
+### CLI経由でのインストール
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### 利用可能なモジュールの確認
+
+```bash
+epsdk list-remote
+```
+
+### インタラクティブなインストール
+
+パッケージ名を指定せずに実行すると、インタラクティブなインストール画面に入ります：
+
+```bash
+epsdk install
+```
+
+## プロジェクトの実行
+
+```bash
+# 通常の実行
+epsdk run main.py
+
+# ホットリロードモード（開発時に推奨）
+epsdk run main.py --reload
+```
+
+## プロジェクト構造
+
+初期化後のプロジェクト構造：
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # 設定ファイル
+└── main.py                  # エントリファイル
+
+```
+
+## 設定ファイル
+
+基本的な`config.toml`の設定：
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# アダプターの設定
+```
+
+## 次のステップ
+
+- [スタートガイド概要](getting-started/README.md) - ErisPulseの基本概念を理解する
+- [最初のボットを作成](getting-started/first-bot.md) - シンプルなボットを作成する
+- [ユーザーガイド](user-guide/) - 設定やモジュール管理を深く理解する
+- [開発者ガイド](developer-guide/) - カスタムモジュールやアダプターを開発する
+
+
 ====
 快速开始
 ====
@@ -3769,6 +3933,63 @@ epsdk create module -n MyModule -f
 ======
 API 参考
 ======
+
+
+### API 参考总览
+
+# API リファレンス
+
+このディレクトリには、ErisPulse フレームワークの API リファレンスドキュメントが含まれています。
+
+## ドキュメント一覧
+
+| ドキュメント | 説明 |
+|------|------|
+| [コアモジュール API](core-modules.md) | Storage、Config、Logger、Adapter、Module、Lifecycle、Router、HTTP Client の API クイックリファレンス |
+| [イベントシステム API](event-system.md) | Command、Message、Notice、Request、Meta イベントモジュールの API リファレンス |
+| [アダプターシステム API](adapter-system.md) | Adapter マネージャー、SendDSL、ミドルウェア、Bot ステータス管理の API リファレンス |
+| [自動生成 API](auto_api/README.md) | ソースコード docstring から自動生成された完全な API ドキュメント |
+
+> 手動作成された API ドキュメントは主に使用例とクイックリファレンスに重点を置いています。自動生成された API ドキュメントには完全なクラス/メソッドの署名が含まれており、両者は互いに補完し合います。
+
+## モジュール概要
+
+### コアモジュール
+
+| モジュール | アクセスパス | 説明 |
+|------|------|------|
+| `sdk.storage` | `sdk.storage` | SQLite ベースのキーバリューストレージ + SQL チェーンクエリ |
+| `sdk.config` | `sdk.config` | TOML 形式の設定管理 |
+| `sdk.logger` | `sdk.logger` | モジュールログシステム、サブロガーをサポート |
+| `sdk.adapter` | `sdk.adapter` | マルチプラットフォームアダプター管理 |
+| `sdk.module` | `sdk.module` | モジュール登録、ロード、アンロード管理 |
+| `sdk.lifecycle` | `sdk.lifecycle` | ライフサイクルイベント管理 |
+| `sdk.router` | `sdk.router` | HTTP/WebSocket ルーティング管理 |
+| `sdk.client` | `sdk.client` | 統一 HTTP/WS クライアント |
+
+### イベントシステム
+
+| モジュール | インポートパス | 説明 |
+|------|------|------|
+| `command` | `ErisPulse.Core.Event.command` | コマンド処理（プレフィックス解析、エイリアス） |
+| `message` | `ErisPulse.Core.Event.message` | メッセージイベント（プライベートチャット、グループチャット、@メッセージ） |
+| `notice` | `ErisPulse.Core.Event.notice` | 通知イベント（フレンド、グループメンバー変化） |
+| `request` | `ErisPulse.Core.Event.request` | リクエストイベント（フレンドリクエスト、グループ招待） |
+| `meta` | `ErisPulse.Core.Event.meta` | メタイベント（接続、切断、ハートビート） |
+
+### 基底クラス
+
+| 基底クラス | インポートパス | 説明 |
+|------|------|------|
+| `BaseModule` | `ErisPulse.Core.Bases.module.BaseModule` | モジュール基底クラス（on_load/on_unload） |
+| `BaseAdapter` | `ErisPulse.Core.Bases.adapter.BaseAdapter` | アダプター基底クラス（start/shutdown/call_api） |
+
+## 関連ドキュメント
+
+- [コアコンセプト](../getting-started/basic-concepts.md) - フレームワークのコアコンセプトを理解する
+- [モジュール開発ガイド](../developer-guide/modules/) - カスタムモジュールの開発
+- [アダプター開発ガイド](../developer-guide/adapters/) - プラットフォームアダプターの開発
+- [高度なトピック](../advanced/) - ルーティング、HTTP クライアント、SQL ビルダーなどの詳細なドキュメント
 
 
 ### 核心模块 API
@@ -7570,6 +7791,114 @@ async def on_unload(self, event):
 ====
 技术标准
 ====
+
+
+### 技术标准总览
+
+# 技術標準
+
+このドキュメントには、ErisPulseの技術標準仕様が含まれており、各コンポーネント間の一貫性と互換性を確保します。
+
+## 標準ドキュメント一覧
+
+1. [セッションタイプ標準](session-types.md) - ErisPulse セッションタイプの定義およびマッピング仕様
+2. [イベント変換標準](event-conversion.md) - プラットフォームイベントの変換仕様、拡張命名仕様、メッセージセグメント標準
+3. [API応答標準](api-response.md) - アダプタAPI応答フォーマットの標準および拡張要件
+4. [送信メソッド仕様](send-method-spec.md) - Sendクラスのメソッド命名規則、パラメータ仕様、および逆変換要件
+5. [リクエスト操作仕様](request-action-spec.md) - リクエストイベントのフィールド要件、HandleRequest DSL、およびアダプタの実装要件
+
+## 標準の概要
+
+ErisPulseはOneBot12をコアイベント標準として採用し、それに基づいて拡張および詳細化を行っています。
+
+### コア原則
+
+1. **互換性**：すべての標準はOneBot12標準と互換性を維持しなければなりません
+2. **拡張性**：プラットフォーム固有の機能はプレフィックス方式で拡張し、競合を回避します
+3. **一貫性**：タイムスタンプ、ID形式などの重要なフィールドは一括処理する必要があります
+4. **追跡可能性**：デバッグおよび問題調査のために元のデータを保持します
+
+## 標準が必要な理由？
+
+### 1. 跨プラットフォーム互換性の確保
+
+異なるプラットフォームのイベント形式はそれぞれ異なります。標準化された変換により、以下を確保します：
+- モジュールコードは一度書くだけで、すべてのプラットフォームで動作します
+- イベント処理ロジックが一貫して維持されます
+- 開発およびメンテナンスコストを削減します
+
+### 2. APIインターフェースの標準化
+
+統一されたAPI応答フォーマットにより、以下を確保します：
+- モジュールが一貫してAPIエラーを処理できます
+- エラーメッセージが統一され、理解しやすくなります
+- 返却データの構造が一貫しています
+
+### 3. コード品質の向上
+
+標準仕様は以下の助けになります：
+- コードスタイルの一貫性を維持します
+- 命名衝突を減らします
+- コードの可読性を向上させます
+
+## 標準の遵守によるメリット
+
+### アダプタ開発者向け
+
+- 明確な変換ルール
+- 統一された応答フォーマット
+- デバッグとテストが容易です
+
+### モジュール開発者向け
+
+- 一貫したイベントインターフェース
+- 予測可能なAPIの挙動
+- 跨プラットフォーム開発の簡素化
+
+### 最終ユーザー向け
+
+- 安定したシステム挙動
+- 統一されたメッセージ形式
+- 良好な互換性
+
+## 標準の遵守チェックリスト
+
+### イベント変換
+
+- [ ] すべての標準フィールドが正しくマップされています
+- [ ] プラットフォーム固有のフィールドにプレフィックスが追加されています
+- [ ] タイムスタンプが10桁の秒単位に変換されています
+- [ ] 元のデータは{platform}_rawに保存されています
+- [ ] 元のイベントタイプは{platform}_raw_typeに保存されています
+- [ ] メッセージセグメントのalt_messageが生成されています
+- [ ] リクエストイベントにrequest_idフィールドが含まれています
+
+### API応答
+
+- [ ] statusフィールドが含まれています
+- [ ] retcodeフィールドが含まれています
+- [ ] dataフィールドが含まれています
+- [ ] message_idフィールドが含まれています
+- [ ] messageフィールドが含まれています
+- [ ] リターンコードがOneBot12仕様に準拠しています
+
+### 送信メソッド命名
+
+- [ ] パスカルケース（PascalCase）を使用しています
+- [ ] Taskオブジェクトを返します
+- [ ] 修飾子がselfを返します
+- [ ] パラメータ命名が規則に準拠しています
+
+### リクエスト操作
+
+- [ ] HandleRequestクラスで_do_accept / _do_rejectが実装されています
+- [ ] 操作が標準API応答フォーマットを返します
+- [ ] サポートしていない操作はretcode=10002を返します
+
+## 関連ドキュメント
+
+- [プラットフォーム特性ガイド](../platform-guide/) - 各プラットフォームの特性の違いを理解する
+- [開発者ガイド](../developer-guide/) - カスタムモジュールおよびアダプタの開発
 
 
 ### 会话类型标准

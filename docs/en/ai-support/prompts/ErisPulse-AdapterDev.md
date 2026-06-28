@@ -376,6 +376,170 @@ If you find other terms in the documentation that you do not understand, feel fr
 - Contact the maintainers
 
 
+### 快速开始
+
+# Quick Start
+
+> Confused by terminology? Check the [Glossary](terminology.md) for easy-to-understand explanations.
+
+## Install ErisPulse
+
+### One-click Installation Script (Recommended)
+
+The installation script will automatically detect your environment (Docker, Python, uv) and guide you to choose the most suitable installation method.
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
+The script will guide you through:
+
+- **Docker installation** (Recommended when Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Pre-release), Dashboard management panel configuration, port settings
+- **Traditional installation**: Automatically create virtual environment, select ErisPulse version, optionally install Dashboard management panel module
+
+### Using Docker
+
+Docker images come pre-built with the ErisPulse framework and Dashboard management panel.
+
+```bash
+# Download docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# Set Dashboard token and start
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+<details>
+<summary>Docker Hub Not Available?</summary>
+
+Use the GitHub Container Registry image by modifying the `image` in `docker-compose.yml`:
+
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+After starting, access `http://<host>:8000/Dashboard` and log in with the set token.
+
+### Install using pip
+
+Ensure your Python version is >= 3.10, then use pip to install:
+
+```bash
+pip install ErisPulse
+```
+
+If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse`, which is faster.
+
+## Initialize Project
+
+### Interactive Initialization (Recommended)
+
+```bash
+epsdk init
+```
+
+This will launch an interactive wizard to guide you through:
+- Project name setting
+- Log level configuration
+- Server configuration (host and port)
+- Adapter selection and configuration
+- Project structure creation
+
+### Quick Initialization
+
+```bash
+# Quick mode with specified project name
+epsdk init -q -n my_bot
+
+# Or just specify project name
+epsdk init -n my_bot
+```
+
+### Manual Project Creation
+
+If you prefer to create the project manually:
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## Install Modules
+
+### Install via CLI
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### View Available Modules
+
+```bash
+epsdk list-remote
+```
+
+### Interactive Installation
+
+Enter the interactive installation interface when no package name is specified:
+
+```bash
+epsdk install
+```
+
+## Run Project
+
+```bash
+# Normal run
+epsdk run main.py
+
+# Hot reload mode (recommended for development)
+epsdk run main.py --reload
+```
+
+## Project Structure
+
+Project structure after initialization:
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # Configuration file
+└── main.py                  # Entry file
+
+```
+
+## Configuration File
+
+Basic `config.toml` configuration:
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# Adapter configuration
+```
+
+## Next Steps
+
+- [Getting Started Overview](getting-started/README.md) - Learn the basic concepts of ErisPulse
+- [Create Your First Bot](getting-started/first-bot.md) - Create a simple bot
+- [User Guide](user-guide/) - Deep dive into configuration and module management
+- [Developer Guide](developer-guide/) - Develop custom modules and adapters
+
+
 ====
 基础概念
 ====
@@ -4601,6 +4765,63 @@ API 参考
 ======
 
 
+### API 参考总览
+
+# API Reference
+
+This directory contains the API reference documentation for the ErisPulse framework.
+
+## Documentation List
+
+| Document | Description |
+|------|------|
+| [Core Modules API](core-modules.md) | Quick reference for Storage, Config, Logger, Adapter, Module, Lifecycle, Router, and HTTP Client APIs |
+| [Event System API](event-system.md) | API reference for Command, Message, Notice, Request, and Meta event modules |
+| [Adapter System API](adapter-system.md) | API reference for Adapter Manager, SendDSL, Middleware, and Bot State Management |
+| [Auto-generated API](auto_api/README.md) | Complete API documentation automatically generated from source code docstrings |
+
+> Manually written API documentation focuses on usage examples and quick lookup; auto-generated API documentation includes complete class/method signatures. They complement each other.
+
+## Module Overview
+
+### Core Modules
+
+| Module | Path | Description |
+|------|------|------|
+| `sdk.storage` | `sdk.storage` | SQLite-based Key-Value Storage + SQL Chained Query |
+| `sdk.config` | `sdk.config` | TOML format Configuration Management |
+| `sdk.logger` | `sdk.logger` | Modular Logging System with support for sub-loggers |
+| `sdk.adapter` | `sdk.adapter` | Multi-platform Adapter Management |
+| `sdk.module` | `sdk.module` | Module Registration, Loading, and Unloading Management |
+| `sdk.lifecycle` | `sdk.lifecycle` | Lifecycle Event Management |
+| `sdk.router` | `sdk.router` | HTTP/WebSocket Routing Management |
+| `sdk.client` | `sdk.client` | Unified HTTP/WS Client |
+
+### Event System
+
+| Module | Import Path | Description |
+|------|------|------|
+| `command` | `ErisPulse.Core.Event.command` | Command Handling (Prefix parsing, Aliases) |
+| `message` | `ErisPulse.Core.Event.message` | Message Events (Private, Group, @ mention) |
+| `notice` | `ErisPulse.Core.Event.notice` | Notice Events (Friend, Group member changes) |
+| `request` | `ErisPulse.Core.Event.request` | Request Events (Friend request, Group invite) |
+| `meta` | `ErisPulse.Core.Event.meta` | Meta Events (Connect, Disconnect, Heartbeat) |
+
+### Base Classes
+
+| Base Class | Import Path | Description |
+|------|------|------|
+| `BaseModule` | `ErisPulse.Core.Bases.module.BaseModule` | Module Base Class (on_load/on_unload) |
+| `BaseAdapter` | `ErisPulse.Core.Bases.adapter.BaseAdapter` | Adapter Base Class (start/shutdown/call_api) |
+
+## Related Documentation
+
+- [Core Concepts](../getting-started/basic-concepts.md) - Understand framework core concepts
+- [Module Development Guide](../developer-guide/modules/) - Develop custom modules
+- [Adapter Development Guide](../developer-guide/adapters/) - Develop platform adapters
+- [Advanced Topics](../advanced/) - Deep dive into Routing, HTTP Client, SQL Builder, etc.
+
+
 ### 适配器系统 API
 
 # Adapter System API
@@ -7233,6 +7454,114 @@ After unregistering, the Dashboard frontend will remove the sidebar navigation i
 ====
 技术标准
 ====
+
+
+### 技术标准总览
+
+# Technical Standards
+
+This document contains ErisPulse technical standards specifications to ensure consistency and compatibility between components.
+
+## Standard Document List
+
+1. [Session Types Standard](session-types.md) - ErisPulse session type definition and mapping specification
+2. [Event Conversion Standard](event-conversion.md) - Platform event conversion spec, extension naming conventions, and message segment standards
+3. [API Response Standard](api-response.md) - Standard for adapter API response formats and extension requirements
+4. [Send Method Naming Conventions](send-method-spec.md) - Send class method naming, parameter specifications, and reverse conversion requirements
+5. [Request Action Standard](request-action-spec.md) - Request event field requirements, HandleRequest DSL, and adapter implementation requirements
+
+## Standard Overview
+
+ErisPulse adopts OneBot12 as the core event standard, building upon this foundation with extensions and refinements.
+
+### Core Principles
+
+1. **Compatibility**: All standards must remain compatible with the OneBot12 standard
+2. **Extensibility**: Platform-specific features are extended via prefixing to avoid conflicts
+3. **Consistency**: Key fields such as timestamps and ID formats require unified handling
+4. **Traceability**: Retain original data for debugging and issue troubleshooting
+
+## Why Do We Need Standards?
+
+### 1. Ensure Cross-Platform Compatibility
+
+Event formats differ across various platforms, and standardized conversion ensures:
+- Modular code only needs to be written once to run on all platforms
+- Event handling logic remains consistent
+- Reduces development and maintenance costs
+
+### 2. Standardize API Interfaces
+
+Unified API response formats ensure:
+- Modules can handle API errors consistently
+- Error messages are unified and easy to understand
+- Returned data structures are consistent
+
+### 3. Improve Code Quality
+
+Standard specifications help:
+- Maintain consistent code style
+- Reduce naming conflicts
+- Improve code readability
+
+## Benefits of Following Standards
+
+### For Adapter Developers
+
+- Clear conversion rules
+- Unified response formats
+- Easy to debug and test
+
+### For Module Developers
+
+- Consistent event interfaces
+- Predictable API behavior
+- Simplified cross-platform development
+
+### For End Users
+
+- Stable system behavior
+- Unified message formats
+- Good compatibility
+
+## Standard Compliance Checklist
+
+### Event Conversion
+
+- [ ] All standard fields are correctly mapped
+- [ ] Platform-specific fields have been prefixed
+- [ ] Timestamps have been converted to 10-digit second-level precision
+- [ ] Raw data is saved in {platform}_raw
+- [ ] Original event type is saved in {platform}_raw_type
+- [ ] The alt_message for message segments has been generated
+- [ ] Request events include the request_id field
+
+### API Response
+
+- [ ] Includes the status field
+- [ ] Includes the retcode field
+- [ ] Includes the data field
+- [ ] Includes the message_id field
+- [ ] Includes the message field
+- [ ] Return codes follow OneBot12 specifications
+
+### Send Method Naming
+
+- [ ] Uses PascalCase
+- [ ] Returns a Task object
+- [ ] Decorated methods return self
+- [ ] Parameter naming complies with specifications
+
+### Request Action
+
+- [ ] HandleRequest class has implemented _do_accept / _do_reject
+- [ ] Operations return standard API response format
+- [ ] Unsupported operations return retcode=10002
+
+## Related Documentation
+
+- [Platform Features Guide](../platform-guide/) - Understand the feature differences of each platform
+- [Developer Guide](../developer-guide/) - Develop custom modules and adapters
 
 
 ### 会话类型标准
@@ -14733,6 +15062,45 @@ All `call_api` calls return standardized response:
 ====
 代码规范
 ====
+
+
+### 风格指南总览
+
+# Style Guide
+
+This directory contains the code and documentation style guidelines for the ErisPulse project.
+
+## Documentation List
+
+- [Comment Style Guidelines](docstring.md) - Formatting standards for method comments and docstrings
+
+## Target Audience
+
+These documents are suitable for the following developers:
+
+- ErisPulse core contributors
+- Module and adapter developers
+- Developers who need to generate API documentation
+
+## Purpose
+
+The purpose of this style guide:
+
+- Ensure consistency in code comments
+- Support automatic API documentation generation
+- Improve code readability and maintainability
+
+## Benefits of Following the Guidelines
+
+- Unified code style
+- Comprehensive API documentation
+- Better team collaboration
+- Support for automated documentation generation
+
+## Related Documentation
+
+- [Developer Guide](../developer-guide/) - Developing custom modules and adapters
+- [Technical Standards](../standards/) - Framework technical specifications
 
 
 ### 文档字符串规范

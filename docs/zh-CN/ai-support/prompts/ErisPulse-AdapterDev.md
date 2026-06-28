@@ -376,6 +376,171 @@ flowchart TD
 - 联系维护者
 
 
+### 快速开始
+
+# 快速开始
+
+> 遇到不理解的术语？查看 [术语表](terminology.md) 获取通俗易懂的解释。
+
+## 安装 ErisPulse
+
+### 一键安装脚本（推荐）
+
+安装脚本会自动检测您的环境（Docker、Python、uv），并引导您选择最适合的安装方式。
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
+脚本会引导您完成：
+
+- **Docker 安装**（检测到 Docker 时推荐）：选择镜像源（Docker Hub / GHCR）、版本通道（稳定版 / 预发布版）、Dashboard 管理面板配置、端口设置
+- **传统安装**：自动创建虚拟环境、选择 ErisPulse 版本、可选安装 Dashboard 管理面板模块
+
+### 使用 Docker
+
+Docker 镜像已内置 ErisPulse 框架和 Dashboard 管理面板。
+
+```bash
+# 下载 docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# 设置 Dashboard 令牌并启动
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+<details>
+<summary>Docker Hub 不可用？</summary>
+
+使用 GitHub Container Registry 镜像，修改 `docker-compose.yml` 中的 image：
+
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+启动后访问 `http://<host>:8000/Dashboard`，使用设置的令牌登录。
+
+### 使用 pip 安装
+
+确保你的 Python 版本 >= 3.10，然后使用 pip 安装：
+
+```bash
+pip install ErisPulse
+```
+
+如果你已安装 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安装速度更快。
+
+## 初始化项目
+
+### 交互式初始化（推荐）
+
+```bash
+epsdk init
+```
+
+这将启动一个交互式向导，引导您完成：
+- 项目名称设置
+- 日志级别配置
+- 服务器配置（主机和端口）
+- 适配器选择和配置
+- 项目结构创建
+
+### 快速初始化
+
+```bash
+# 指定项目名称的快速模式
+epsdk init -q -n my_bot
+
+# 或者只指定项目名称
+epsdk init -n my_bot
+```
+
+### 手动创建项目
+
+如果更喜欢手动创建项目：
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## 安装模块
+
+### 通过 CLI 安装
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### 查看可用模块
+
+```bash
+epsdk list-remote
+```
+
+### 交互式安装
+
+不指定包名时进入交互式安装界面：
+
+```bash
+epsdk install
+```
+
+## 运行项目
+
+```bash
+# 普通运行
+epsdk run main.py
+
+# 热重载模式（开发时推荐）
+epsdk run main.py --reload
+```
+
+## 项目结构
+
+初始化后的项目结构：
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # 配置文件
+└── main.py                  # 入口文件
+
+```
+
+## 配置文件
+
+基本的 `config.toml` 配置：
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# 适配器配置
+```
+
+## 下一步
+
+- [入门指南总览](getting-started/README.md) - 了解 ErisPulse 的基本概念
+- [创建第一个机器人](getting-started/first-bot.md) - 创建一个简单的机器人
+- [用户使用指南](user-guide/) - 深入了解配置和模块管理
+- [开发者指南](developer-guide/) - 开发自定义模块和适配器
+
+
+
 ====
 基础概念
 ====
@@ -4733,6 +4898,64 @@ API 参考
 ======
 
 
+### API 参考总览
+
+# API 参考
+
+本目录包含 ErisPulse 框架的 API 参考文档。
+
+## 文档列表
+
+| 文档 | 说明 |
+|------|------|
+| [核心模块 API](core-modules.md) | Storage、Config、Logger、Adapter、Module、Lifecycle、Router、HTTP Client 的 API 快速参考 |
+| [事件系统 API](event-system.md) | Command、Message、Notice、Request、Meta 事件模块的 API 参考 |
+| [适配器系统 API](adapter-system.md) | Adapter 管理器、SendDSL、中间件、Bot 状态管理的 API 参考 |
+| [自动生成 API](auto_api/README.md) | 从源码 docstring 自动生成的完整 API 文档 |
+
+> 手动编写的 API 文档侧重于用法示例和快速查阅；自动生成的 API 文档包含完整的类/方法签名，两者互补。
+
+## 模块概览
+
+### 核心模块
+
+| 模块 | 访问路径 | 说明 |
+|------|---------|------|
+| `sdk.storage` | `sdk.storage` | 基于 SQLite 的键值存储 + SQL 链式查询 |
+| `sdk.config` | `sdk.config` | TOML 格式的配置管理 |
+| `sdk.logger` | `sdk.logger` | 模块化日志系统，支持子日志器 |
+| `sdk.adapter` | `sdk.adapter` | 多平台适配器管理 |
+| `sdk.module` | `sdk.module` | 模块注册、加载、卸载管理 |
+| `sdk.lifecycle` | `sdk.lifecycle` | 生命周期事件管理 |
+| `sdk.router` | `sdk.router` | HTTP/WebSocket 路由管理 |
+| `sdk.client` | `sdk.client` | 统一 HTTP/WS 客户端 |
+
+### 事件系统
+
+| 模块 | 导入路径 | 说明 |
+|------|---------|------|
+| `command` | `ErisPulse.Core.Event.command` | 命令处理（前缀解析、别名） |
+| `message` | `ErisPulse.Core.Event.message` | 消息事件（私聊、群聊、@消息） |
+| `notice` | `ErisPulse.Core.Event.notice` | 通知事件（好友、群成员变化） |
+| `request` | `ErisPulse.Core.Event.request` | 请求事件（好友请求、群邀请） |
+| `meta` | `ErisPulse.Core.Event.meta` | 元事件（连接、断开、心跳） |
+
+### 基类
+
+| 基类 | 导入路径 | 说明 |
+|------|---------|------|
+| `BaseModule` | `ErisPulse.Core.Bases.module.BaseModule` | 模块基类（on_load/on_unload） |
+| `BaseAdapter` | `ErisPulse.Core.Bases.adapter.BaseAdapter` | 适配器基类（start/shutdown/call_api） |
+
+## 相关文档
+
+- [核心概念](../getting-started/basic-concepts.md) - 理解框架核心概念
+- [模块开发指南](../developer-guide/modules/) - 开发自定义模块
+- [适配器开发指南](../developer-guide/adapters/) - 开发平台适配器
+- [高级主题](../advanced/) - 路由、HTTP 客户端、SQL 构建器等深入文档
+
+
+
 ### 适配器系统 API
 
 # 适配器系统 API
@@ -7333,6 +7556,114 @@ async def on_unload(self, event):
 ====
 技术标准
 ====
+
+
+### 技术标准总览
+
+# 技术标准
+
+本文档包含 ErisPulse 的技术标准规范，确保各组件间的一致性和兼容性。
+
+## 标准文档列表
+
+1. [会话类型标准](session-types.md) - ErisPulse 会话类型定义和映射规范
+2. [事件转换标准](event-conversion.md) - 平台事件转换规范、扩展命名规范、消息段标准
+3. [API 响应标准](api-response.md) - 适配器 API 响应格式标准及扩展要求
+4. [发送方法规范](send-method-spec.md) - Send 类方法命名、参数规范及反向转换要求
+5. [请求操作规范](request-action-spec.md) - 请求事件字段要求、HandleRequest DSL 及适配器实现要求
+
+## 标准概述
+
+ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了扩展和细化。
+
+### 核心原则
+
+1. **兼容性**：所有标准都必须与 OneBot12 标准保持兼容
+2. **扩展性**：平台特有功能通过前缀方式扩展，避免冲突
+3. **一致性**：时间戳、ID 格式等关键字段需要统一处理
+4. **可追溯性**：保留原始数据以便调试和问题排查
+
+## 为什么需要标准？
+
+### 1. 确保跨平台兼容
+
+不同平台的事件格式各不相同，标准化的转换确保：
+- 模块代码只需编写一次，即可在所有平台运行
+- 事件处理逻辑保持一致
+- 降低开发和维护成本
+
+### 2. 规范 API 接口
+
+统一的 API 响应格式确保：
+- 模块可以一致地处理 API 错误
+- 错误信息统一且易于理解
+- 返回数据结构一致
+
+### 3. 提高代码质量
+
+标准规范帮助：
+- 保持代码风格一致
+- 减少命名冲突
+- 提高代码可读性
+
+## 遵循标准的好处
+
+### 对适配器开发者
+
+- 清晰的转换规则
+- 统一的响应格式
+- 易于调试和测试
+
+### 对模块开发者
+
+- 一致的事件接口
+- 可预测的 API 行为
+- 简化的跨平台开发
+
+### 对最终用户
+
+- 稳定的系统行为
+- 统一的消息格式
+- 良好的兼容性
+
+## 标准遵循检查清单
+
+### 事件转换
+
+- [ ] 所有标准字段已正确映射
+- [ ] 平台特有字段已添加前缀
+- [ ] 时间戳已转换为10位秒级
+- [ ] 原始数据保存在 {platform}_raw
+- [ ] 原始事件类型保存在 {platform}_raw_type
+- [ ] 消息段的 alt_message 已生成
+- [ ] 请求事件包含 request_id 字段
+
+### API 响应
+
+- [ ] 包含 status 字段
+- [ ] 包含 retcode 字段
+- [ ] 包含 data 字段
+- [ ] 包含 message_id 字段
+- [ ] 包含 message 字段
+- [ ] 返回码遵循 OneBot12 规范
+
+### 发送方法命名
+
+- [ ] 使用大驼峰命名法（PascalCase）
+- [ ] 返回 Task 对象
+- [ ] 修饰方法返回 self
+- [ ] 参数命名符合规范
+
+### 请求操作
+
+- [ ] HandleRequest 类已实现 _do_accept / _do_reject
+- [ ] 操作返回标准 API 响应格式
+- [ ] 不支持的操作返回 retcode=10002
+
+## 相关文档
+
+- [平台特性指南](../platform-guide/) - 了解各平台的特性差异
+- [开发者指南](../developer-guide/) - 开发自定义模块和适配器
 
 
 ### 会话类型标准
@@ -14863,6 +15194,45 @@ enable = true
 ====
 代码规范
 ====
+
+
+### 风格指南总览
+
+# 风格指南
+
+本目录包含 ErisPulse 项目的代码和文档风格规范。
+
+## 文档列表
+
+- [注释风格规范](docstring.md) - 方法注释和文档字符串的格式规范
+
+## 适用对象
+
+这些文档适合以下开发者：
+
+- ErisPulse 核心贡献者
+- 模块和适配器开发者
+- 需要生成 API 文档的开发者
+
+## 目的
+
+风格指南的目的：
+
+- 确保代码注释的一致性
+- 支持自动 API 文档生成
+- 提高代码可读性和可维护性
+
+## 遵循规范的好处
+
+- 统一的代码风格
+- 完善的 API 文档
+- 更好的团队协作
+- 自动化文档生成支持
+
+## 相关文档
+
+- [开发者指南](../developer-guide/) - 开发自定义模块和适配器
+- [技术标准](../standards/) - 框架技术规范
 
 
 ### 文档字符串规范
