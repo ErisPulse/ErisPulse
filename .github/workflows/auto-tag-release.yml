@@ -12,11 +12,18 @@ jobs:
   update-latest-release:
     runs-on: ubuntu-latest
     steps:
+      - name: Generate App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.ERISBOT_APP_ID }}
+          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -31,7 +38,7 @@ jobs:
       - name: Create tag and release
         id: create-release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         shell: bash
         run: |
           # Read current version
@@ -240,7 +247,7 @@ jobs:
       - name: Upload all assets to Release
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         shell: bash
         run: |
           version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')

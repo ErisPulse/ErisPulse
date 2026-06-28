@@ -147,6 +147,7 @@ SECTION_FRAMEWORK = Section(
     entries=[
         DocEntry("架构概览", "architecture.md"),
         DocEntry("术语表", "terminology.md"),
+        DocEntry("快速开始", "quick-start.md"),
     ],
 )
 
@@ -225,6 +226,7 @@ SECTION_ADVANCED_FULL = Section(
 SECTION_STANDARDS_MODULE = Section(
     title="技术标准",
     entries=[
+        DocEntry("技术标准总览", "standards/README.md"),
         DocEntry("会话类型标准", "standards/session-types.md"),
     ],
 )
@@ -232,6 +234,7 @@ SECTION_STANDARDS_MODULE = Section(
 SECTION_STANDARDS_ADAPTER = Section(
     title="技术标准",
     entries=[
+        DocEntry("技术标准总览", "standards/README.md"),
         DocEntry("会话类型标准", "standards/session-types.md"),
         DocEntry("事件转换标准", "standards/event-conversion.md"),
         DocEntry("API 响应标准", "standards/api-response.md"),
@@ -243,6 +246,7 @@ SECTION_STANDARDS_ADAPTER = Section(
 SECTION_STANDARDS_FULL = Section(
     title="技术标准",
     entries=[
+        DocEntry("技术标准总览", "standards/README.md"),
         DocEntry("会话类型标准", "standards/session-types.md"),
         DocEntry("事件转换标准", "standards/event-conversion.md"),
         DocEntry("API 响应标准", "standards/api-response.md"),
@@ -282,6 +286,7 @@ SECTION_PLATFORM_FULL = Section(
 SECTION_STYLEGUIDE = Section(
     title="代码规范",
     entries=[
+        DocEntry("风格指南总览", "styleguide/README.md"),
         DocEntry("文档字符串规范", "styleguide/docstring.md"),
     ],
 )
@@ -321,6 +326,7 @@ PROMPT_SPECS: list[PromptSpec] = [
             Section(
                 title="API 参考",
                 entries=[
+                    DocEntry("API 参考总览", "api-reference/README.md"),
                     DocEntry("核心模块 API", "api-reference/core-modules.md"),
                     DocEntry("事件系统 API", "api-reference/event-system.md"),
                 ],
@@ -360,6 +366,7 @@ PROMPT_SPECS: list[PromptSpec] = [
             Section(
                 title="API 参考",
                 entries=[
+                    DocEntry("API 参考总览", "api-reference/README.md"),
                     DocEntry("适配器系统 API", "api-reference/adapter-system.md"),
                     DocEntry("核心模块 API", "api-reference/core-modules.md"),
                 ],
@@ -385,7 +392,9 @@ PROMPT_SPECS: list[PromptSpec] = [
             Section(
                 title="快速开始",
                 entries=[
-                    DocEntry("", "quick-start.md"),
+                    DocEntry("文档首页", "README.md"),
+                    DocEntry("快速开始", "quick-start.md"),
+                    DocEntry("Bug 追踪器", "bug-tracker.md"),
                 ],
             ),
             Section(
@@ -401,6 +410,7 @@ PROMPT_SPECS: list[PromptSpec] = [
             Section(
                 title="用户指南",
                 entries=[
+                    DocEntry("用户使用指南", "user-guide/README.md"),
                     DocEntry("安装和配置", "user-guide/installation.md"),
                     DocEntry("CLI 命令参考", "user-guide/cli-reference.md"),
                     DocEntry("配置文件说明", "user-guide/configuration.md"),
@@ -459,6 +469,7 @@ PROMPT_SPECS: list[PromptSpec] = [
             Section(
                 title="API 参考",
                 entries=[
+                    DocEntry("API 参考总览", "api-reference/README.md"),
                     DocEntry("核心模块 API", "api-reference/core-modules.md"),
                     DocEntry("事件系统 API", "api-reference/event-system.md"),
                     DocEntry("适配器系统 API", "api-reference/adapter-system.md"),
