@@ -44,10 +44,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     ERISPULSE_LANG=""
 
 LABEL org.opencontainers.image.title="ErisPulse" \
-      org.opencontainers.image.description="ErisPulse - 事件驱动的多平台机器人开发框架" \
-      org.opencontainers.image.url="https://github.com/ErisPulse/ErisPulse" \
-      org.opencontainers.image.source="https://github.com/ErisPulse/ErisPulse" \
-      org.opencontainers.image.vendor="ErisDev"
+    org.opencontainers.image.description="ErisPulse - 事件驱动的多平台机器人开发框架" \
+    org.opencontainers.image.url="https://github.com/ErisPulse/ErisPulse" \
+    org.opencontainers.image.source="https://github.com/ErisPulse/ErisPulse" \
+    org.opencontainers.image.vendor="ErisDev"
 
 WORKDIR /app
 
@@ -65,12 +65,16 @@ FROM base AS production
 
 ARG ERISPULSE_VERSION=""
 RUN if [ -n "$ERISPULSE_VERSION" ]; then \
-      uv pip install --system "ErisPulse==${ERISPULSE_VERSION}" ErisPulse-Dashboard; \
+    uv pip install --system "ErisPulse==${ERISPULSE_VERSION}" ErisPulse-Dashboard; \
     else \
-      uv pip install --system ErisPulse ErisPulse-Dashboard; \
+    uv pip install --system ErisPulse ErisPulse-Dashboard; \
     fi
+# 备份 site-packages，用于持久化卷首次挂载时初始化
+RUN cp -a /usr/local/lib/python3.13/site-packages /opt/site-packages-init
 
 # --- Dev: latest pre-release from PyPI ---
 FROM base AS dev
 
 RUN uv pip install --system --pre ErisPulse ErisPulse-Dashboard
+# 备份 site-packages，用于持久化卷首次挂载时初始化
+RUN cp -a /usr/local/lib/python3.13/site-packages /opt/site-packages-init
