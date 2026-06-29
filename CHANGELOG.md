@@ -63,23 +63,42 @@
 
 ---
 
-## [2.5.2-dev.0] - 2026/06/27
+## [2.5.2-dev.2] - 2026/06/29
 > 开发版本
 
 **版本摘要**
-2.5.2-dev.0 修复非热重载模式下 `ep run <script>` 找不到脚本所在目录子包的问题
+2.5.2-dev.2 优化 Docker 部署体验、提升配置持久化健壮性、完善 CI/CD 流程与开发规范。
 
-### 修复
+**升级建议**
+- 建议升级：所有 Docker 部署用户
+- 新增 Docker 健康检查，compose 中 `command` 冗余已移除（由 Dockerfile CMD 生效）
+
+### 新增
+
 - @wsu2059q
-  - `CLI/commands/run.py` 修复非热重载模式下运行脚本时找不到脚本所在目录子包的问题：
-    - 非热重载模式直接调用 `runpy.run_path()` 执行脚本，该函数不会自动将脚本所在目录加入 `sys.path`，
-      导致脚本中 `from local_package import ...` 等相对导入失败（例如 `from qg import ...`）
-    - 而热重载模式使用 `subprocess.Popen` 子进程运行，自动继承工作目录，`sys.path[0]` 即为脚本所在目录
-    - 在 `runpy.run_path()` 调用前手动将脚本所在目录插入 `sys.path[0]`，与热重载模式的行为保持一致
+  - `Dockerfile` 新增 HEALTHCHECK 指令，复用 `/ping` 端点检测容器运行状态
+  - 新增 `.pre-commit-config.yaml`（ruff check + format），防止未格式化代码推到 CI
 
 ### 优化
+
 - @wsu2059q
-  - 将 `Event` cmd和msg的处理逻辑进行合并
+  - `Core/config.py` `_sort_config_dict()` 重写为字典推导式，消除手动循环与二次 `__getitem__`
+  - `Core/config.py` 新增 `atexit` 钩子：进程异常退出时自动 flush 未持久化的脏配置
+  - `Core/router.py` `start()` 中重新注册异步异常处理器，确保在 uvicorn 事件循环中生效
+
+### 变更
+
+- @wsu2059q
+  - `.dockerignore` 排除 `config/.packages`，保留多语言 README（`!README.*.md`）
+  - `.gitignore` 排除 `config/.packages`（Docker 持久化的二进制包）
+  - `docker-compose.yml` 移除冗余 `command: ["epsdk", "run"]`（Dockerfile CMD 已定义）
+  - `Dockerfile` 移除多余 `VOLUME` 声明（compose 已显式挂载）
+
+### CI/CD
+
+- @wsu2059q
+  - `.github/workflows/code-quality-check.yml` Ruff 检查范围扩展至 `tests/`，PR 测试只跑单元测试
+  - `pytest.ini` 配置迁移至 `pyproject.toml` 的 `[tool.pytest.ini_options]`，原文件已删除
 
 ---
 
@@ -117,6 +136,22 @@
     - 理念：Docker 仅是容器运行时，不参与包管理；框架更新由 Dashboard 热更新完成
   - `Dockerfile` 移除 `ERISPULSE_CHANNEL` 和 `ERISPULSE_UPDATE_ON_START` 环境变量，移除 dev target 的 `ENV ERISPULSE_CHANNEL="dev"`
   - `docker-compose.yml` 移除 `ERISPULSE_CHANNEL` 和 `ERISPULSE_UPDATE_ON_START` 环境变量，`restart` 策略从 `unless-stopped` 改为 `on-failure:5`
+
+---
+
+## [2.5.2-dev.0] - 2026/06/27
+> 开发版本
+
+**版本摘要**
+2.5.2-dev.0 修复非热重载模式下 `ep run <script>` 找不到脚本所在目录子包的问题
+
+### 修复
+- @wsu2059q
+  - `CLI/commands/run.py` 修复非热重载模式下运行脚本时找不到脚本所在目录子包的问题：
+
+### 优化
+- @wsu2059q
+  - 将 `Event` cmd和msg的处理逻辑进行合并
 
 ---
 
