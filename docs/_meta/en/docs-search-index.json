@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1268,
+  "total_keywords": 1269,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -11232,60 +11232,60 @@
         "title": "Yunhu User Platform Features Documentation"
       }
     ],
-    "[BUG-001] Init command adapter configuration path type error": [
+    "[BUG-001] Incorrect path type for Init command adapter configuration": [
       {
         "document": "bug-tracker.md",
         "line": 9,
         "level": 3,
-        "title": "[BUG-001] Init command adapter configuration path type error"
+        "title": "[BUG-001] Incorrect path type for Init command adapter configuration"
       }
     ],
-    "[BUG-002] Command events stop working after restart": [
+    "[BUG-002] Command events fail after restart": [
       {
         "document": "bug-tracker.md",
         "line": 29,
         "level": 3,
-        "title": "[BUG-002] Command events stop working after restart"
+        "title": "[BUG-002] Command events fail after restart"
       }
     ],
-    "[BUG-003] Lifecycle event handlers are not cleaned up": [
+    "[BUG-003] Lifecycle event handlers not cleaned up": [
       {
         "document": "bug-tracker.md",
         "line": 45,
         "level": 3,
-        "title": "[BUG-003] Lifecycle event handlers are not cleaned up"
+        "title": "[BUG-003] Lifecycle event handlers not cleaned up"
       }
     ],
-    "[BUG-004] Duplicate assignment of confirmation word collection in Event.confirm()": [
+    "[BUG-004] Duplicate assignment of keywords in Event.confirm()": [
       {
         "document": "bug-tracker.md",
         "line": 61,
         "level": 3,
-        "title": "[BUG-004] Duplicate assignment of confirmation word collection in Event.confirm()"
+        "title": "[BUG-004] Duplicate assignment of keywords in Event.confirm()"
       }
     ],
-    "[BUG-005] MessageBuilder.at method definition is overridden (Dead code)": [
+    "[BUG-005] MessageBuilder.at method definition overwritten (Dead Code)": [
       {
         "document": "bug-tracker.md",
         "line": 77,
         "level": 3,
-        "title": "[BUG-005] MessageBuilder.at method definition is overridden (Dead code)"
+        "title": "[BUG-005] MessageBuilder.at method definition overwritten (Dead Code)"
       }
     ],
-    "[BUG-006] Inconsistency between Event.is_friend_add/is_friend_delete detail_type and OB12 standard": [
+    "[BUG-006] detail_type mismatch in Event.is_friend_add/is_friend_delete with OB12 standard": [
       {
         "document": "bug-tracker.md",
         "line": 93,
         "level": 3,
-        "title": "[BUG-006] Inconsistency between Event.is_friend_add/is_friend_delete detail_type and OB12 standard"
+        "title": "[BUG-006] detail_type mismatch in Event.is_friend_add/is_friend_delete with OB12 standard"
       }
     ],
-    "[BUG-007] adapter.clear() does not clear _started_instances causing incorrect state after restart": [
+    "[BUG-007] adapter.clear() fails to clean up _started_instances causing incorrect state after restart": [
       {
         "document": "bug-tracker.md",
         "line": 109,
         "level": 3,
-        "title": "[BUG-007] adapter.clear() does not clear _started_instances causing incorrect state after restart"
+        "title": "[BUG-007] adapter.clear() fails to clean up _started_instances causing incorrect state after restart"
       }
     ],
     "[BUG-008] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
@@ -11296,44 +11296,44 @@
         "title": "[BUG-008] command.wait_reply() uses deprecated asyncio.get_event_loop()"
       }
     ],
-    "[BUG-009] Event.collect() silently skips when field is missing key": [
+    "[BUG-009] Event.collect() silently skips fields missing a key": [
       {
         "document": "bug-tracker.md",
         "line": 141,
         "level": 3,
-        "title": "[BUG-009] Event.collect() silently skips when field is missing key"
+        "title": "[BUG-009] Event.collect() silently skips fields missing a key"
       }
     ],
-    "[BUG-010] LazyModule synchronous access to BaseModule causes initialization not to complete": [
+    "[BUG-010] LazyModule synchronous access to BaseModule causes incomplete initialization": [
       {
         "document": "bug-tracker.md",
         "line": 157,
         "level": 3,
-        "title": "[BUG-010] LazyModule synchronous access to BaseModule causes initialization not to complete"
+        "title": "[BUG-010] LazyModule synchronous access to BaseModule causes incomplete initialization"
       }
     ],
-    "[BUG-011] Multithreaded writing in the configuration system leads to data loss": [
+    "[BUG-011] Data loss in configuration system due to multi-threaded writes": [
       {
         "document": "bug-tracker.md",
         "line": 173,
         "level": 3,
-        "title": "[BUG-011] Multithreaded writing in the configuration system leads to data loss"
+        "title": "[BUG-011] Data loss in configuration system due to multi-threaded writes"
       }
     ],
-    "[BUG-012] Inaccurate error message for SDK attribute access": [
+    "[BUG-012] Inaccurate error messages for SDK attribute access": [
       {
         "document": "bug-tracker.md",
         "line": 192,
         "level": 3,
-        "title": "[BUG-012] Inaccurate error message for SDK attribute access"
+        "title": "[BUG-012] Inaccurate error messages for SDK attribute access"
       }
     ],
-    "[BUG-013] Uninitializer's cleanup logic for uninitialized LazyModule is overly complex": [
+    "[BUG-013] Uninitializer cleanup logic for uninitialized LazyModules is too complex": [
       {
         "document": "bug-tracker.md",
         "line": 211,
         "level": 3,
-        "title": "[BUG-013] Uninitializer's cleanup logic for uninitialized LazyModule is overly complex"
+        "title": "[BUG-013] Uninitializer cleanup logic for uninitialized LazyModules is too complex"
       }
     ],
     "[BUG-014] CTRL+C cannot stop the program on Windows": [
@@ -11360,20 +11360,28 @@
         "title": "[BUG-016] Event data loss due to adapter middleware returning None"
       }
     ],
-    "[BUG-017] Configuration file path depends on working directory": [
+    "[BUG-017] Configuration file path relies on working directory": [
       {
         "document": "bug-tracker.md",
         "line": 282,
         "level": 3,
-        "title": "[BUG-017] Configuration file path depends on working directory"
+        "title": "[BUG-017] Configuration file path relies on working directory"
       }
     ],
-    "[BUG-018] Subprocess mode `ep run <script>` cannot find submodule of script directory": [
+    "[BUG-018] subprocess mode `ep run <script>` cannot find subpackages of script directory": [
       {
         "document": "bug-tracker.md",
         "line": 298,
         "level": 3,
-        "title": "[BUG-018] Subprocess mode `ep run <script>` cannot find submodule of script directory"
+        "title": "[BUG-018] subprocess mode `ep run <script>` cannot find subpackages of script directory"
+      }
+    ],
+    "[BUG-019] SQL query builder rejects valid wildcards and column expressions": [
+      {
+        "document": "bug-tracker.md",
+        "line": 314,
+        "level": 3,
+        "title": "[BUG-019] SQL query builder rejects valid wildcards and column expressions"
       }
     ],
     "__init__.py": [
