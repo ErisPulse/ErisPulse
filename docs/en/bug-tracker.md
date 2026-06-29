@@ -6,7 +6,7 @@ This document records known bugs and fixes for the ErisPulse SDK.
 
 ## Fixed Bugs
 
-### [BUG-001] Init command adapter configuration path type error
+### [BUG-001] Incorrect path type for Init command adapter configuration
 
 **Issue**: When using the `ep init` command for interactive initialization, selecting a configuration adapter results in a type error:
 
@@ -14,109 +14,109 @@ This document records known bugs and fixes for the ErisPulse SDK.
 Interactive initialization failed: unsupported operand type(s) for /: 'str' and 'str'
 ```
 
-**Cause**: In version 2.3.7, when adjusting the configuration file path, the method parameter type was inconsistent. `_configure_adapters_interactive_sync` receives `str` type parameters, but internally uses the `Path` `/` operator to concatenate paths.
+**Cause**: In version 2.3.7, when adjusting configuration file paths, method parameter types were inconsistent. `_configure_adapters_interactive_sync` receives `str` type parameters but uses the `/` operator of `Path` internally to concatenate paths.
 
 **Affected Versions**: 2.3.7 - 2.3.9-dev.1
 
 **Fixed Version**: 2.3.9-dev.1
 
-**Fix**: Changed the parameter type of the `_configure_adapters_interactive_sync` method from `str` to `Path`, passing `Path` objects directly when calling.
+**Fix Details**: Changed the parameter type of `_configure_adapters_interactive_sync` method from `str` to `Path`, passing `Path` objects directly when calling.
 
 **Fix Date**: 2026/03/23
 
 ---
 
-### [BUG-002] Command events stop working after restart
+### [BUG-002] Command events fail after restart
 
-**Issue**: After calling `sdk.restart()`, commands registered via `@command` cannot be triggered. This manifests as the bot not responding after sending a command.
+**Issue**: After calling `sdk.restart()`, commands registered via `@command` cannot be triggered; the bot shows no response after sending a command.
 
-**Cause**: After `adapter.shutdown()` clears the event bus, the `_linked_to_adapter_bus` state of `BaseEventHandler` is not reset to `False`, causing the `_process_event` method to believe it is already mounted to the adapter bus and skipping the remount operation.
+**Cause**: After `adapter.shutdown()` clears the event bus, the `_linked_to_adapter_bus` state of `BaseEventHandler` is not reset to `False`, causing the `_process_event` method to think it is already mounted to the adapter bus and skipping the remounting operation.
 
 **Affected Versions**: 2.2.x - 2.4.0-dev.2
 
 **Fixed Version**: 2.4.0-dev.3
 
-**Fix**: Introduced `_linked_to_adapter_bus` state tracking. After `_clear_handlers()` disconnects from the bus, `register()` automatically remounts on the next call, adapting to shutdown/restart scenarios.
+**Fix Details**: Introduced `_linked_to_adapter_bus` state tracking. After `_clear_handlers()` disconnects the bus, the next `register()` automatically remounts, adapting to shutdown/restart scenarios.
 
 **Fix Date**: 2026/04/09
 
 ---
 
-### [BUG-003] Lifecycle event handlers are not cleaned up
+### [BUG-003] Lifecycle event handlers not cleaned up
 
-**Issue**: After `sdk.restart()`, old lifecycle event handlers remain active and trigger repeatedly, causing a single event to be processed multiple times.
+**Issue**: After `sdk.restart()`, old lifecycle event handlers persist and trigger repeatedly, causing a single event to be processed multiple times.
 
-**Cause**: The `lifecycle._handlers` dictionary is never cleaned up during `uninit()`, resulting in old handlers coexisting with new ones after a restart.
+**Cause**: The `lifecycle._handlers` dictionary was never cleaned up during `uninit()`, causing old handlers to coexist with new handlers after restart.
 
 **Affected Versions**: 2.3.0 - 2.4.0-dev.2
 
 **Fixed Version**: 2.4.0-dev.3
 
-**Fix**: At the end of the cleanup flow in `Uninitializer` (after all events are submitted), clear `lifecycle._handlers`.
+**Fix Details**: At the end of the cleanup process in `Uninitializer` (after all events are submitted), clear `lifecycle._handlers`.
 
 **Fix Date**: 2026/04/09
 
 ---
 
-### [BUG-004] Duplicate assignment of confirmation word collection in Event.confirm()
+### [BUG-004] Duplicate assignment of keywords in Event.confirm()
 
-**Issue**: In the `Event.confirm()` method, the assignment code for the three variables `_yes`, `_no`, and `_all` is completely duplicated twice (6 lines total), resulting in meaningless duplicate calculations.
+**Issue**: In the `Event.confirm()` method, the assignment code for three variables `_yes`, `_no`, and `_all` is completely duplicated twice (6 lines total), leading to meaningless repeated calculation.
 
-**Cause**: A code copy-paste error.
+**Cause**: Code copy-paste error.
 
 **Affected Versions**: 2.4.0-dev.4
 
 **Fixed Version**: 2.4.2-dev.1
 
-**Fix**: Remove the duplicate assignment code in lines 739-741 of `wrapper.py`.
+**Fix Details**: Remove the duplicate assignment code at lines 739-741 in `wrapper.py`.
 
 **Fix Date**: 2026/04/13
 
 ---
 
-### [BUG-005] MessageBuilder.at method definition is overridden (Dead code)
+### [BUG-005] MessageBuilder.at method definition overwritten (Dead Code)
 
-**Issue**: The `at` method in the `MessageBuilder` class is defined three times: once as an instance method, once as a static method, and finally overridden by a `_DualMethod` assignment. The first two definitions are dead code that will never execute.
+**Issue**: The `at` method in the `MessageBuilder` class is defined three times: once as an instance method, once as a static method, and finally overwritten by the `_DualMethod` assignment. The first two definitions are dead code that will never be executed.
 
-**Cause**: When refactoring to the `_DualMethod` dual-mode descriptor, the old manual definitions were forgotten and not deleted.
+**Cause**: When refactoring to `_DualMethod` dual-mode descriptor, the old manual definitions were forgotten to be deleted.
 
 **Affected Versions**: 2.4.0-dev.0
 
 **Fixed Version**: 2.4.2-dev.1
 
-**Fix**: Delete the two dead `at` method definitions in lines 159-181 of `message_builder.py`, keeping only the `_DualMethod` assignment.
+**Fix Details**: Remove the two dead `at` method definitions at lines 159-181 in `message_builder.py`, keeping only the `_DualMethod` assignment.
 
 **Fix Date**: 2026/04/13
 
 ---
 
-### [BUG-006] Inconsistency between Event.is_friend_add/is_friend_delete detail_type and OB12 standard
+### [BUG-006] detail_type mismatch in Event.is_friend_add/is_friend_delete with OB12 standard
 
-**Issue**: `Event.is_friend_add()` checks `detail_type == "friend_add"`, and `Event.is_friend_delete()` checks `detail_type == "friend_delete"`. However, the OneBot12 standard defines the `detail_type` values as `"friend_increase"` and `"friend_decrease"`. This is inconsistent with the values used by the `on_friend_add`/`on_friend_remove` decorators in `notice.py`, causing the corresponding `is_friend_add()`/`is_friend_delete()` judgment methods to return `False` when handlers are triggered via the decorators.
+**Issue**: `Event.is_friend_add()` checks `detail_type == "friend_add"` and `Event.is_friend_delete()` checks `detail_type == "friend_delete"`. However, the OneBot12 standard defines these values as `"friend_increase"` and `"friend_decrease"`. This is inconsistent with the values used by the `on_friend_add`/`on_friend_remove` decorators in `notice.py`. As a result, handlers registered via decorators trigger correctly, but the corresponding `is_friend_add()`/`is_friend_delete()` judgment methods return `False`.
 
-**Cause**: Non-standard naming was used in `wrapper.py`, while `notice.py` used the correct OB12 standard naming.
+**Cause**: `wrapper.py` uses non-standard naming, while `notice.py` uses the correct OB12 standard naming.
 
-**Affected Versions**: Since implementation of rq
+**Affected Versions**: rq implementation onwards
 
 **Fixed Version**: 2.4.2-dev.1
 
-**Fix**: Changed the matching value of `is_friend_add()` from `"friend_add"` to `"friend_increase"`, and changed `is_friend_delete()` from `"friend_delete"` to `"friend_decrease"`.
+**Fix Details**: Change the matching value for `is_friend_add()` from `"friend_add"` to `"friend_increase"` and for `is_friend_delete()` from `"friend_delete"` to `"friend_decrease"`.
 
 **Fix Date**: 2026/04/13
 
 ---
 
-### [BUG-007] adapter.clear() does not clear _started_instances causing incorrect state after restart
+### [BUG-007] adapter.clear() fails to clean up _started_instances causing incorrect state after restart
 
-**Issue**: The `AdapterManager.clear()` method clears `_adapters`, `_adapter_info`, handlers, and `_bots`, but omits the `_started_instances` collection. If `clear()` is called while an adapter is running, `_started_instances` retains dangling references, causing incorrect state judgments after a restart.
+**Issue**: The `AdapterManager.clear()` method clears `_adapters`, `_adapter_info`, handlers, and `_bots`, but omits the `_started_instances` collection. If `clear()` is called while adapters are running, `_started_instances` retains dangling references, causing incorrect state judgment after restart.
 
-**Cause**: When introducing `_started_instances` in version 2.4.0-dev.1, it was not cleaned up synchronously in `clear()`.
+**Cause**: `_started_instances` introduced in 2.4.0-dev.1 was not cleared synchronously in `clear()`.
 
 **Affected Versions**: 2.4.0-dev.1 - 2.4.2-dev.0
 
 **Fixed Version**: 2.4.2-dev.1
 
-**Fix**: Added `self._started_instances.clear()` to the `clear()` method.
+**Fix Details**: Add `self._started_instances.clear()` in the `clear()` method.
 
 **Fix Date**: 2026/04/13
 
@@ -124,23 +124,23 @@ Interactive initialization failed: unsupported operand type(s) for /: 'str' and 
 
 ### [BUG-008] command.wait_reply() uses deprecated asyncio.get_event_loop()
 
-**Issue**: The `CommandHandler.wait_reply()` method uses `asyncio.get_event_loop()` to create futures and get timestamps. This method is deprecated in Python 3.10+, and `asyncio.get_running_loop()` should be used in async contexts. This is inconsistent with the `wait_for()` method in `wrapper.py` in the same file, which uses `get_running_loop()`.
+**Issue**: The `CommandHandler.wait_reply()` method uses `asyncio.get_event_loop()` to create futures and get timestamps. This method is deprecated in Python 3.10+, and `asyncio.get_running_loop()` should be used in async contexts. This is inconsistent with the `wait_for()` method in `wrapper.py` within the same file, which uses `get_running_loop()`.
 
-**Cause**: The older API was used during development, and while the newly added `wait_for()` used the correct API, the old code was not backported.
+**Cause**: Old API was used during development; later additions like `wait_for()` used the correct API but did not backport the fix to the old code.
 
 **Affected Versions**: 2.3.0-dev.0
 
 **Fixed Version**: 2.4.2-dev.1
 
-**Fix**: Replaced the two occurrences of `asyncio.get_event_loop()` in `command.py` with `asyncio.get_running_loop()`.
+**Fix Details**: Replace two instances of `asyncio.get_event_loop()` with `asyncio.get_running_loop()` in `command.py`.
 
 **Fix Date**: 2026/04/13
 
 ---
 
-### [BUG-009] Event.collect() silently skips when field is missing key
+### [BUG-009] Event.collect() silently skips fields missing a key
 
-**Issue**: When traversing the list of fields in the `Event.collect()` method, if a field dictionary is missing a `key`, the field is silently skipped without outputting any logs or warnings. If a developer makes a typo (e.g., `"Key"` instead of `"key"`), the entire field is quietly ignored, making it difficult to troubleshoot downstream behavior.
+**Issue**: In the `Event.collect()` method, when iterating over a list of fields, if a field dictionary is missing a `key`, that field is silently skipped without any log or warning output. If a developer makes a typo (e.g., using `"Key"` instead of `"key"`), the entire field is quietly ignored, making downstream behavior difficult to troubleshoot.
 
 **Cause**: Lack of input validation and error feedback.
 
@@ -148,80 +148,80 @@ Interactive initialization failed: unsupported operand type(s) for /: 'str' and 
 
 **Fixed Version**: 2.4.2-dev.1
 
-**Fix**: Added `logger.warning()` to log the field information before skipping when a `key` is missing.
+**Fix Details**: Add `logger.warning()` before skipping to log information about the field missing a `key`.
 
 **Fix Date**: 2026/04/13
 
 ---
 
-### [BUG-010] LazyModule synchronous access to BaseModule causes initialization not to complete
+### [BUG-010] LazyModule synchronous access to BaseModule causes incomplete initialization
 
-**Issue**: When a user accesses a lazy-loaded BaseModule property in a synchronous context, the module uses `loop.create_task()` for asynchronous initialization but does not wait. This may result in the property not being fully initialized during access, leading to a race condition.
+**Issue**: When a user accesses a lazily loaded BaseModule property in a synchronous context, the module uses `loop.create_task()` for asynchronous initialization but does not wait. As a result, the property access may occur before initialization is complete, causing a race condition.
 
-**Cause**: `_ensure_initialized()` returns immediately after using `loop.create_task(self._initialize())` for the BaseModule, without ensuring initialization is complete.
+**Cause**: `_ensure_initialized()` immediately returns after calling `loop.create_task(self._initialize())` for BaseModule without ensuring completion.
 
 **Affected Versions**: 2.4.0-dev.0 - 2.4.2-dev.1
 
 **Fixed Version**: 2.4.2-dev.2
 
-**Fix**: Changed the BaseModule initialization in synchronous contexts to use `asyncio.run(self._initialize())`, ensuring initialization completes before returning. The transparent proxy behavior is preserved, so users do not need to be aware of the synchronous/asynchronous difference.
+**Fix Details**: In synchronous contexts, change the initialization of BaseModule to use `asyncio.run(self._initialize())` to ensure completion before returning. Maintain transparent proxy behavior so users are unaware of sync/async differences.
 
 **Fix Date**: 2026/04/21
 
 ---
 
-### [BUG-011] Multithreaded writing in the configuration system leads to data loss
+### [BUG-011] Data loss in configuration system due to multi-threaded writes
 
-**Issue**: In a multithreaded environment, when multiple threads call `config.setConfig()` simultaneously, the read-modify-write operation of `_flush_config()` is not atomic, which may result in partial data loss.
+**Issue**: In a multi-threaded environment, when multiple threads call `config.setConfig()` simultaneously, the read-modify-write operation in `_flush_config()` is not atomic, potentially leading to lost writes.
 
-**Cause**: Although `_flush_config()` uses an `RLock`, there is no file lock protection between file reading and writing. Additionally, the Timer in `_schedule_write` might be triggered multiple times, leading to overwrites.
+**Cause**: Although `_flush_config()` uses `RLock`, there is no file lock protection between file read and write operations, and the Timer in `_schedule_write` might be triggered multiple times causing overwrites.
 
 **Affected Versions**: 2.3.0 - 2.4.2-dev.1
 
 **Fixed Version**: 2.4.2-dev.2
 
-**Fix**:
-1. Added a file lock mechanism (`_file_lock`) to ensure atomicity of file operations.
-2. Use temporary files for writing and then rename them atomically (`os.replace`/`os.rename`).
-3. Improved the Timer cancellation and rescheduling logic for `_schedule_write`.
+**Fix Details**:
+1. Add a file lock mechanism (`_file_lock`) to ensure atomicity of file operations
+2. Use temporary file writes followed by atomic rename (`os.replace`/`os.rename`)
+3. Improve `_schedule_write` Timer cancel and reschedule logic
 
 **Fix Date**: 2026/04/21
 
 ---
 
-### [BUG-012] Inaccurate error message for SDK attribute access
+### [BUG-012] Inaccurate error messages for SDK attribute access
 
-**Issue**: When accessing a non-existent attribute, the error message "You may be using the wrong SDK registration object" may mislead users, when in reality the module may simply not be enabled or the name may be misspelled.
+**Issue**: When accessing a non-existent attribute, the error message "You may have used the wrong SDK registration object" can mislead users. The actual issue might be that the module is not enabled or the name is misspelled.
 
-**Cause**: The error message in `__getattribute__` does not distinguish between different scenarios, providing a vague hint uniformly.
+**Cause**: The error message in `__getattribute__` does not distinguish between different scenarios, providing a generic, vague hint in all cases.
 
 **Affected Versions**: 2.0.0 - 2.4.2-dev.1
 
 **Fixed Version**: 2.4.2-dev.2
 
-**Fix**: Distinguish between different scenarios based on the attribute name:
-1. Registered but not enabled: Hint that the module/adapter is not enabled.
-2. Does not exist at all: Hint to check the name spelling.
-Also re-raise the original `AttributeError` to facilitate catching by upper layers.
+**Fix Details**: Distinguish different scenarios based on attribute name:
+1. Registered but not enabled: Prompt that module/adapter is not enabled
+2. Does not exist at all: Prompt to check spelling
+Also re-raise the original `AttributeError` for upper layers to catch.
 
 **Fix Date**: 2026/04/21
 
 ---
 
-### [BUG-013] Uninitializer's cleanup logic for uninitialized LazyModule is overly complex
+### [BUG-013] Uninitializer cleanup logic for uninitialized LazyModules is too complex
 
-**Issue**: `Uninitializer` creates temporary instances for LazyModules that have never been accessed to call `on_unload`, making the code complex and error-prone.
+**Issue**: `Uninitializer` creates temporary instances for LazyModules that have never been accessed just to call `on_unload`. This code is complex and error-prone.
 
-**Cause**: It attempts to call lifecycle methods for all LazyModules, but uninitialized modules do not need and should not be initialized.
+**Cause**: An attempt was made to call lifecycle methods for all LazyModules, but uninitialized modules do not need nor should they be initialized.
 
 **Affected Versions**: 2.4.0-dev.0 - 2.4.2-dev.1
 
 **Fixed Version**: 2.4.2-dev.2
 
-**Fix**: Simplify the cleanup logic to only handle initialized LazyModules:
-1. Skip uninitialized LazyModules without creating temporary instances.
-2. Call `on_unload` only for initialized modules.
-3. Remove the complex temporary instance creation logic.
+**Fix Details**: Simplify cleanup logic to only process initialized LazyModules:
+1. Skip uninitialized LazyModules without creating temporary instances
+2. Call `on_unload` only for initialized modules
+3. Remove complex temporary instance creation logic
 
 **Fix Date**: 2026/04/21
 
@@ -229,19 +229,19 @@ Also re-raise the original `AttributeError` to facilitate catching by upper laye
 
 ### [BUG-014] CTRL+C cannot stop the program on Windows
 
-**Issue**: When running `python main.py` directly on Windows, pressing CTRL+C cannot terminate the program. The program starts normally and outputs routing server information, after which CTRL+C is completely unresponsive, and the process can only be killed via Task Manager. However, starting via `epsdk run` works fine to stop—but `epsdk run` runs via a subprocess model.
+**Issue**: When running `python main.py` directly on Windows, pressing CTRL+C does not terminate the program. After the program starts normally and outputs the router server information, CTRL+C has no response at all, and the process can only be killed via Task Manager. However, it works fine when stopped via `epsdk run`—but `epsdk run` runs via the subprocess model.
 
-**Cause**: Hypercorn ASGI server's `serve()` function internally registers its own SIGINT handler via `signal.signal(SIGINT, handler)`, which overrides Python's default `KeyboardInterrupt` handling mechanism. When Hypercorn is started as a background task via `asyncio.create_task()`, Hypercorn's internal shutdown flow cannot trigger properly (as it expects the `worker_serve` mode), causing the CTRL+C signal to be swallowed by Hypercorn without triggering any cleanup actions.
+**Cause**: Inside Hypercorn ASGI server's `serve()` function, it registers its own SIGINT handler via `signal.signal(SIGINT, handler)`, overriding Python's default `KeyboardInterrupt` handling mechanism. When starting Hypercorn as a background task via `asyncio.create_task()`, Hypercorn's internal shutdown flow cannot trigger properly (because it expects `worker_serve` mode). As a result, the CTRL+C signal is swallowed by Hypercorn but triggers no cleanup actions.
 
 **Affected Versions**: [2.3.6 - 2.4.2]
 
 **Fixed Version**: 2.4.3-dev.0
 
-**Fix**:
-1. Switched the ASGI server from Hypercorn to Uvicorn (change in `pyproject.toml` dependencies).
-2. Use `uvicorn.Server._serve()` to start the server directly, **bypassing** the `capture_signals()` signal handling context manager.
-3. Implement graceful shutdown via `server.should_exit = True`, cancelling the background task on timeout.
-4. Synchronously remove the subprocess runtime model and the `runtime/cleanup.py` cleanup module (subprocess cleanup mechanism is no longer needed).
+**Fix Details**:
+1. Switch ASGI server from Hypercorn to Uvicorn (change dependency in `pyproject.toml`)
+2. Use `uvicorn.Server._serve()` to start the server directly, **bypassing** the `capture_signals()` signal handling context manager
+3. Implement graceful shutdown via `server.should_exit = True`, canceling background task on timeout
+4. Synchronously remove subprocess runtime model and `runtime/cleanup.py` cleanup module (subprocess cleanup mechanism is no longer needed)
 
 **Fix Date**: 2026/04/28
 
@@ -249,15 +249,15 @@ Also re-raise the original `AttributeError` to facilitate catching by upper laye
 
 ### [BUG-015] Incorrect sorting logic in module loading strategy
 
-**Issue**: `ModuleLoadStrategy` provides a `priority` field to declare the initialization priority of modules, but the implementation of the loading strategy has a flaw, causing modules to not be initialized in the expected priority order. Instead, they are loaded in the default order of `entry_points()`. When there are loading dependencies between modules, the correct initialization order cannot be guaranteed via `priority`.
+**Issue**: `ModuleLoadStrategy` provides a `priority` field to declare module initialization priority, but the implementation of the loading strategy contains a flaw, causing modules to be initialized in the order returned by `entry_points()` instead of the expected priority order. When there are loading dependencies between modules, the correct initialization sequence cannot be guaranteed via `priority`.
 
-**Cause**: The sorting logic in the loading strategy implementation is incorrect, and `initialize_modules()` does not sort the module list by `priority`.
+**Cause**: The sorting logic in the loading strategy implementation is incorrect; `initialize_modules()` does not sort the module list by `priority`.
 
 **Affected Versions**: 2.3.4 - 2.4.5-dev.2
 
 **Fixed Version**: 2.4.5-dev.3
 
-**Fix**: Sort the module list by `priority` in descending order before iterating in `initialize_modules()`. Modules with the same priority maintain their original relative order (stable sort).
+**Fix Details**: Before iterating in `initialize_modules()`, sort the module list in descending order of `priority`. Modules with the same priority maintain their original relative order (stable sort).
 
 **Fix Date**: 2026/05/15
 
@@ -265,46 +265,72 @@ Also re-raise the original `AttributeError` to facilitate catching by upper laye
 
 ### [BUG-016] Event data loss due to adapter middleware returning None
 
-**Issue**: When `adapter.emit()` executes the OneBot12 middleware chain, if a middleware returns `None` (for example, forgetting `return data`), the `processed_data` received by subsequent middleware and all event handlers becomes `None`, causing event processing to fail completely.
+**Issue**: When `adapter.emit()` executes the OneBot12 middleware chain, if a middleware returns `None` (e.g., forgetting to `return data`), `processed_data` becomes `None` for subsequent middlewares and all event handlers, causing event processing to fail completely.
 
-**Cause**: The implementation of the middleware chain `processed_data = await middleware(processed_data)` does not check if the return value is `None`, directly overwriting the result of the previous step.
+**Cause**: The middleware chain implementation `processed_data = await middleware(processed_data)` does not check if the return value is `None`, simply overwriting the result of the previous step.
 
 **Affected Versions**: unknown - 2.4.5-dev.3
 
 **Fixed Version**: 2.4.5-dev.4
 
-**Fix**: Ignore the return value when middleware returns `None`, preserve the original data to continue passing it, and output a warning-level log.
+**Fix Details**: When middleware returns `None`, ignore that return value and preserve the original data for continued propagation, while outputting a warning-level log.
 
 **Fix Date**: 2026/05/15
 
 ---
 
-### [BUG-017] Configuration file path depends on working directory
+### [BUG-017] Configuration file path relies on working directory
 
-**Issue**: The configuration file path in `ConfigManager` defaults to the relative path `"config/config.toml"`, relying on `os.getcwd()` to resolve it at runtime. If the working directory changes during runtime (e.g., via `os.chdir()`), read/write operations on the configuration file will point to the wrong location, leading to configuration loss or reading old data.
+**Issue**: The default configuration file path for `ConfigManager` is the relative path `"config/config.toml"`, relying on `os.getcwd()` to resolve at runtime. If the working directory changes during runtime (e.g., via `os.chdir()`), read and write operations for the config file will point to the wrong location, causing configuration loss or reading of stale data.
 
-**Cause**: Relative paths are stored directly in `__init__` without being parsed into absolute paths during initialization.
+**Cause**: The relative path was stored directly in `__init__` without being resolved to an absolute path during initialization.
 
 **Affected Versions**: 2.3.7 - 2.4.5-dev.3
 
 **Fixed Version**: 2.4.5-dev.4
 
-**Fix**: In `ConfigManager.__init__()`, if the passed path is a relative path, automatically resolve it to an absolute path using `os.path.abspath()`.
+**Fix Details**: In `ConfigManager.__init__()`, if the provided path is a relative path, automatically resolve it to an absolute path using `os.path.abspath()`.
 
 **Fix Date**: 2026/05/15
 
 ---
 
-### [BUG-018] Subprocess mode `ep run <script>` cannot find submodule of script directory
+### [BUG-018] subprocess mode `ep run <script>` cannot find subpackages of script directory
 
-**Issue**: When running a script with `ep r .\main.py` in non-hot-reload mode, if the script has relative imports (e.g., `from qg import ...`), a `No module named 'qg'` error is raised. However, the `--reload` mode runs normally.
+**Issue**: When running a script using `ep r .\main.py` in non-hot-reload mode, if the script has relative imports (e.g., `from qg import ...`), it raises `No module named 'qg'` error. However, the `--reload` mode works correctly.
 
-**Cause**: The non-hot-reload mode directly calls `runpy.run_path()` to execute the script, which does not automatically add the script's directory to `sys.path`. The `--reload` mode runs via a `subprocess.Popen` subprocess, which inherits the current working directory automatically. Thus, `sys.path[0]` is the script's directory, allowing it to work normally.
+**Cause**: The non-hot-reload mode calls `runpy.run_path()` directly to execute the script, which does not automatically add the script's directory to `sys.path`. The `--reload` mode runs via `subprocess.Popen`, which automatically inherits the current working directory, making `sys.path[0]` the script's directory, thus working correctly.
 
 **Affected Versions**: 2.5.0 - 2.5.2-dev.0
 
 **Fixed Version**: 2.5.2-dev.0
 
-**Fix**: Manually insert the directory where the script is located into `sys.path[0]` before calling `runpy.run_path()`.
+**Fix Details**: Before calling `runpy.run_path()`, manually insert the script's directory into `sys.path[0]`.
 
 **Fix Date**: 2026/06/27
+
+---
+
+### [BUG-019] SQL query builder rejects valid wildcards and column expressions
+
+**Issue**: `_build_select_sql()` in `SQLiteQueryBuilder` calls `_validate_identifier()` for all SELECT columns. This function uses a strict whitelist regex `^[a-zA-Z_][a-zA-Z0-9_]*$`, causing legitimate SQL syntax to be misjudged as unsafe column names:
+
+- `SELECT *` — `*` is a SQL standard wildcard
+- `SELECT COUNT(*)` — aggregate function
+- `SELECT users.name` — qualified column name
+- `SELECT col AS alias` — column alias
+
+Notably, `Select("*")` is used by modules like Cron, causing `on_load` execution to fail and preventing module loading.
+
+**Cause**: Version 2.4.6 enhanced SQL injection protection by introducing `_validate_identifier()` whitelist validation. This validation applies to all column names but does not distinguish between the read side (SELECT/ORDER BY) and write side (INSERT/UPDATE). SELECT columns allow complex SQL expressions and should not be restricted by a simple identifier whitelist.
+
+**Affected Versions**: 2.4.6 - 2.5.2-dev.1
+
+**Fixed Version**: 2.5.2-dev.2
+
+**Fix Details**: Change column validation for SELECT/ORDER BY from whitelist mode to blacklist mode:
+1. Add new `_validate_select_column()` function that only intercepts SQL injection dangerous characters (`;` `'` `"` `--` `/*` `*/` `\x00` newline)
+2. Allow any legitimate SQL column expression (`*`, `table.*`, `table.column`, `COUNT(*)`, `col AS alias`, etc.)
+3. Keep strict whitelist validation for INSERT/UPDATE column names (only simple identifiers allowed)
+
+**Fix Date**: 2026/06/29
