@@ -78,6 +78,10 @@
 - @wsu2059q
   - `Dockerfile` 新增 HEALTHCHECK 指令，复用 `/ping` 端点检测容器运行状态
   - 新增 `.pre-commit-config.yaml`（ruff check + format），防止未格式化代码推到 CI
+  - `Core/logger.py` 新增日志订阅系统（推模式），供 Dashboard 等模块实时接收结构化日志：
+    - `handler(id, *, min_level)` — 装饰器/直接调用两用，按级别筛选，自动补发历史日志
+    - `remove_handler(id)` — 移除订阅器
+    - 每条日志以 dict 推送（`timestamp`/`level`/`level_num`/`module`/`message`）
 
 ### 优化
 
@@ -130,7 +134,7 @@
     - SELECT/ORDER BY 改为黑名单模式：仅拦截注入危险字符（`;` `'` `"` `--` `/*` `*/` `\x00` 换行）
     - 支持任意合法 SQL 列表达式：`COUNT(*)`、`col AS alias`、`table.*`、`col1 || col2` 等
     - INSERT/UPDATE 列名仍保持严格白名单校验（仅允许简单标识符）
-    - 修复 `*` 通配符被拒绝的问题
+    - 修复 `*` 通配符自 2.4.6 引入 SQL 注入防护后被拒绝的问题（影响 Cron 等模块加载）
   - `Core/logger.py` 修复 `set_level()` / `set_module_level()` 无法识别自定义级别的问题：
     - 原因：仅检查 `hasattr(logging, level)`，而 `TRACE`/`EVENT` 是自定义常量未挂载到 `logging` 模块
     - 新增 `_resolve_level()` 方法，先查标准 `logging` 属性，再查 `_CUSTOM_LEVELS` 字典
@@ -138,6 +142,16 @@
     - `StarletteDeprecationWarning`（starlette.testclient 依赖旧版 httpx）
     - `RuntimeWarning: coroutine never awaited`（`test_unit_client.py` 中 `release` mock 应为同步 `MagicMock`）
     - `ResourceWarning: unclosed database`（新增 session fixture 清理 sqlite 连接）
+  - `Core/client.py` HttpClient 增加代理支持与重试优化：
+    - 新增 `proxy` 参数，支持显式指定代理 URL
+    - `None`（默认）时启用 `trust_env=True` 自动检测环境变量（HTTP_PROXY/HTTPS_PROXY）
+    - 默认最大重试次数从 `0` 改为 `1`，减少代理环境下偶发连接失败导致的请求错误
+  - 更新文档：
+    - `docs/zh-CN/bug-tracker.md` 新增 [BUG-019] SQL 通配符被拒绝
+    - `docs/zh-CN/user-guide/configuration.md` 更新严格模式默认值为 0，日志级别加入 TRACE
+    - `docs/zh-CN/api-reference/core-modules.md` 日志级别控制加入 TRACE 说明，新增日志订阅 API 文档
+    - `docs/zh-CN/developer-guide/README.md` 调试技巧加入 TRACE 级别
+  - 新增 `tests/devs/test_logger_handler.py` 日志订阅系统手动测试脚本
 
 ---
 
