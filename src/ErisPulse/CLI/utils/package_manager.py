@@ -381,6 +381,8 @@ class PackageManager:
         :param name: [str] 原始名称
         :return: [str] 标准化后的名称
         """
+        if not name:
+            return ""
         return name.lower().strip()
 
     async def _find_package_by_alias(self, alias: str) -> Optional[str]:
@@ -494,7 +496,7 @@ class PackageManager:
         :param force_refresh: [bool] 是否强制刷新缓存 (默认: False)
         :return: [Optional[str]] 最新版本号，失败时返回 None
         """
-        cache_key = package_name.lower()
+        cache_key = (package_name or "").lower()
         if not force_refresh and cache_key in self._pypi_cache:
             if time.time() - self._pypi_cache_time[cache_key] < self.CACHE_EXPIRY:
                 return self._pypi_cache[cache_key]
@@ -621,7 +623,7 @@ class PackageManager:
             proxy_hint = f" [dim](proxy: {safe_proxy})[/]"
 
         console.print(
-            f"\n[bold blue]⚙ {description}[/] [dim]({backend})[/]{proxy_hint}"
+            f"\n[bold blue][*] {description}[/] [dim]({backend})[/]{proxy_hint}"
         )
         console.print("[dim]─────────────────────────────────────────────────[/]")
 

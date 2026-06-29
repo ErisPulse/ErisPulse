@@ -34,7 +34,6 @@ services:
       - LANG=${LANG:-en_US.UTF-8}
       - ERISPULSE_LANG=${ERISPULSE_LANG:-}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
-    command: ["epsdk", "run"]
     restart: on-failure:5
     # 防止 OOM 导致重启（根据实际情况调整）
     # mem_limit: 512m

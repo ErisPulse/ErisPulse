@@ -11,6 +11,7 @@ ErisPulse 配置中心
 {!--< /tips >!--}
 """
 
+import atexit
 import os
 import threading
 import time
@@ -47,8 +48,10 @@ class ConfigManager:
         self._write_timer: threading.Timer | None = None  # 写入定时器
         self._lock = threading.RLock()  # 线程安全锁
         self._file_lock = threading.RLock()  # 文件操作锁
+        self._atexit_registered = False  # atexit 钩子注册标记
         self._migrate_config()  # 迁移旧配置文件
         self._load_config()  # 初始化时加载配置
+        self._register_atexit()
 
     def _migrate_config(self) -> None:
         """
@@ -145,9 +148,10 @@ class ConfigManager:
                 self._cache = {}
                 self._cache_timestamp = time.time()
 
-    def _sort_config_dict(self, config_dict: dict[str, Any]) -> dict[str, Any]:
+    @staticmethod
+    def _sort_config_dict(config_dict: dict[str, Any]) -> dict[str, Any]:
         """
-        递归地对配置字典进行排序
+        递归地对配置字典按键排序
 
         :param config_dict: dict 待排序的配置字典
         :return: dict 排序后的配置字典
@@ -155,19 +159,10 @@ class ConfigManager:
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
-        if not isinstance(config_dict, dict):
-            return config_dict
-
-        sorted_dict = {}
-        for key in sorted(config_dict.keys()):
-            value = config_dict[key]
-            # 递归处理嵌套字典
-            if isinstance(value, dict):
-                sorted_dict[key] = self._sort_config_dict(value)
-            else:
-                sorted_dict[key] = value
-
-        return sorted_dict
+        return {
+            k: ConfigManager._sort_config_dict(v) if isinstance(v, dict) else v
+            for k, v in sorted(config_dict.items())
+        }
 
     def _flush_config(self) -> None:
         """
@@ -242,6 +237,31 @@ class ConfigManager:
                             os.remove(temp_file)
                         except Exception:
                             pass
+
+    def _register_atexit(self) -> None:
+        """
+        注册 atexit 钩子，确保进程退出时未持久化的配置被 flush
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        if not self._atexit_registered:
+            atexit.register(self._flush_on_exit)
+            self._atexit_registered = True
+
+    def _flush_on_exit(self) -> None:
+        """
+        atexit 回调：进程退出时强制刷新所有脏配置
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        try:
+            if self._write_timer:
+                self._write_timer.cancel()
+            self._flush_config()
+        except Exception:
+            pass
 
     def _schedule_write(self) -> None:
         """
@@ -326,7 +346,9 @@ class ConfigManager:
 
             # 触发配置变更钩子
             from .lifecycle import lifecycle
+            from .logger import logger
 
+            logger.trace(f"config.setConfig: key={key}")
             lifecycle.emit_sync(
                 "config.set",
                 {

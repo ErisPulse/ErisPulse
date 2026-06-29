@@ -598,7 +598,7 @@ class RouterManager:
         self.app.router.routes.append(route)
         self._sse_routes[module_name][full_path] = handler
 
-        logger.debug(
+        logger.trace(
             i18n.t("core.router.register_sse", module=module_name, path=full_path)
         )
 
@@ -623,7 +623,7 @@ class RouterManager:
                 if inspect.isawaitable(result):
                     await result
             except Exception as e:
-                logger.debug(i18n.t("core.router.ws_hook_error", error=e))
+                logger.trace(i18n.t("core.router.ws_hook_error", error=e))
 
     def _setup_core_routes(self) -> None:
         """
@@ -1139,7 +1139,7 @@ class RouterManager:
                 restored_sse += 1
 
         if restored_http or restored_ws or restored_sse:
-            logger.debug(
+            logger.trace(
                 i18n.t(
                     "core.router.routes_restored",
                     http=restored_http,
@@ -1238,7 +1238,7 @@ class RouterManager:
 
                 return response
         except RuntimeError:
-            logger.debug(i18n.t("core.router.middleware_skip"))
+            logger.trace(i18n.t("core.router.middleware_skip"))
 
     def middleware(self, *paths: str):
         """
@@ -1355,7 +1355,7 @@ class RouterManager:
             if rate_limit:
                 self._apply_rate_limit(full_path, rate_limit)
 
-            logger.debug(
+            logger.trace(
                 i18n.t(
                     "core.router.register_http",
                     module=module_name,
@@ -1595,7 +1595,7 @@ class RouterManager:
         if rate_limit:
             self._apply_rate_limit(full_path, rate_limit)
 
-        logger.debug(
+        logger.trace(
             i18n.t(
                 "core.router.register_http",
                 module=module_name,
@@ -1623,7 +1623,7 @@ class RouterManager:
 
             http_routes = self._http_routes.get(module_name)
             if http_routes is None or full_path not in http_routes:
-                logger.debug(
+                logger.trace(
                     "\n"
                     + i18n.t("core.router.unregister_not_exist", path=full_path)
                     + "\n"
@@ -1632,7 +1632,7 @@ class RouterManager:
 
             # 获取所有方法
             methods = list(http_routes[full_path].keys())
-            logger.debug(
+            logger.trace(
                 i18n.t("core.router.unregister_http", path=full_path, methods=methods)
             )
             del http_routes[full_path]
@@ -1718,7 +1718,7 @@ class RouterManager:
                         "reason": "client_disconnect",
                     },
                 )
-                logger.debug(i18n.t("core.router.client_disconnect", path=full_path))
+                logger.trace(i18n.t("core.router.client_disconnect", path=full_path))
             except asyncio.CancelledError:
                 await self._run_ws_hooks(ws_conn, "disconnect", reason="cancelled")
                 await lifecycle.emit(
@@ -1729,7 +1729,7 @@ class RouterManager:
                         "reason": "cancelled",
                     },
                 )
-                logger.debug(i18n.t("core.router.ws_cancelled", path=full_path))
+                logger.trace(i18n.t("core.router.ws_cancelled", path=full_path))
                 raise
             except Exception as e:
                 await self._run_ws_hooks(ws_conn, "error", error=str(e))
@@ -1761,7 +1761,7 @@ class RouterManager:
             auto_accept,
         )
 
-        logger.debug(
+        logger.trace(
             i18n.t(
                 "core.router.register_ws",
                 module=module_name,
@@ -1815,7 +1815,7 @@ class RouterManager:
             if (
                 ws_routes := self._websocket_routes.get(module_name)
             ) and full_path in ws_routes:
-                logger.debug(i18n.t("core.router.unregister_ws", path=full_path))
+                logger.trace(i18n.t("core.router.unregister_ws", path=full_path))
                 del ws_routes[full_path]
 
                 # 从 FastAPI 路由列表中移除对应的 WebSocket 路由
@@ -1828,7 +1828,7 @@ class RouterManager:
                 ]
                 return True
 
-            logger.debug(
+            logger.trace(
                 "\n" + i18n.t("core.router.unregister_not_exist", path=full_path) + "\n"
             )
             return False
@@ -1880,7 +1880,7 @@ class RouterManager:
             if (
                 sse_routes := self._sse_routes.get(module_name)
             ) and full_path in sse_routes:
-                logger.debug(i18n.t("core.router.unregister_sse", path=full_path))
+                logger.trace(i18n.t("core.router.unregister_sse", path=full_path))
                 del sse_routes[full_path]
 
                 self.app.router.routes = [
@@ -1894,7 +1894,7 @@ class RouterManager:
                 ]
                 return True
 
-            logger.debug(
+            logger.trace(
                 "\n" + i18n.t("core.router.unregister_not_exist", path=full_path) + "\n"
             )
             return False
@@ -2437,7 +2437,7 @@ class RouterManager:
             if security and security.get("enabled"):
                 self.setup_security_headers(security.get("headers"))
         except Exception as e:
-            logger.debug(i18n.t("core.router.apply_config_failed", error=e))
+            logger.trace(i18n.t("core.router.apply_config_failed", error=e))
 
     # ==================== 服务器管理 ====================
 
@@ -2481,7 +2481,7 @@ class RouterManager:
                 except ValueError:
                     continue
         except Exception as e:
-            logger.debug(i18n.t("core.router.get_local_ip_failed", error=e))
+            logger.trace(i18n.t("core.router.get_local_ip_failed", error=e))
 
     async def start(
         self,
@@ -2543,6 +2543,11 @@ class RouterManager:
             )
 
             self._server_task = asyncio.create_task(self._uvicorn_server._serve())
+
+            # 确保异步异常处理器已注册到当前事件循环
+            from ..runtime.exceptions import setup_exception_handling
+
+            setup_exception_handling()
 
             await lifecycle.submit_event(
                 "server.start",

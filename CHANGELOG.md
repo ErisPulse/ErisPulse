@@ -63,23 +63,95 @@
 
 ---
 
-## [2.5.2-dev.0] - 2026/06/27
+## [2.5.2-dev.2] - 2026/06/29
 > 开发版本
 
 **版本摘要**
-2.5.2-dev.0 修复非热重载模式下 `ep run <script>` 找不到脚本所在目录子包的问题
+2.5.2-dev.2 优化 Docker 部署体验、提升配置持久化健壮性、完善 CI/CD 流程与开发规范，修复日志级别设置与配色问题，调整严格模式默认策略为宽松。
 
-### 修复
+**升级建议**
+- 建议升级：所有 Docker 部署用户
+- 新增 Docker 健康检查，compose 中 `command` 冗余已移除（由 Dockerfile CMD 生效）
+
+### 新增
+
 - @wsu2059q
-  - `CLI/commands/run.py` 修复非热重载模式下运行脚本时找不到脚本所在目录子包的问题：
-    - 非热重载模式直接调用 `runpy.run_path()` 执行脚本，该函数不会自动将脚本所在目录加入 `sys.path`，
-      导致脚本中 `from local_package import ...` 等相对导入失败（例如 `from qg import ...`）
-    - 而热重载模式使用 `subprocess.Popen` 子进程运行，自动继承工作目录，`sys.path[0]` 即为脚本所在目录
-    - 在 `runpy.run_path()` 调用前手动将脚本所在目录插入 `sys.path[0]`，与热重载模式的行为保持一致
+  - `Dockerfile` 新增 HEALTHCHECK 指令，复用 `/ping` 端点检测容器运行状态
+  - 新增 `.pre-commit-config.yaml`（ruff check + format），防止未格式化代码推到 CI
+  - `Core/logger.py` 新增日志订阅系统（推模式），供 Dashboard 等模块实时接收结构化日志：
+    - `handler(id, *, min_level)` — 装饰器/直接调用两用，按级别筛选，自动补发历史日志
+    - `remove_handler(id)` — 移除订阅器
+    - 每条日志以 dict 推送（`timestamp`/`level`/`level_num`/`module`/`message`）
 
 ### 优化
+
 - @wsu2059q
-  - 将 `Event` cmd和msg的处理逻辑进行合并
+  - `Core/config.py` `_sort_config_dict()` 重写为字典推导式，消除手动循环与二次 `__getitem__`
+  - `Core/config.py` 新增 `atexit` 钩子：进程异常退出时自动 flush 未持久化的脏配置
+  - `Core/router.py` `start()` 中重新注册异步异常处理器，确保在 uvicorn 事件循环中生效
+  - `Core/logger.py`/`Core/constants.py` 重构日志配色主题
+    - INFO 从加粗无色改为绿色，DEBUG 改为白色，CRITICAL 改为红底黑字
+    - 致谢： @mmmpipi
+  - CLI Emoji替换为纯 ASCII（`[*]`/`[OK]`/`[FAIL]`），优化部分终端显示乱码
+  - 框架内部大量调试日志从 `DEBUG` 降级为 `TRACE`，减少默认输出噪音 （感谢 @wuliya336 ）：
+    - 路由器：HTTP/WS/SSE 路由注册与注销（原启动时 80+ 行 DEBUG 噪音）
+    - 事件系统：处理器注册/注销、耗时统计、自定义会话类型、平台扩展方法
+    - 适配器：资源清理、路由清理、Bot 自动发现、事件分发耗时
+    - 路由器：WebSocket 连接/断开/取消、中间件跳过、配置应用失败、本地 IP 检测
+    - 懒加载：属性访问/设置/删除/获取表示字符串
+    - 模块加载器：模块挂载（mount_lazy/mount_eager）
+    - 发现器：entry-points 查找、缓存清除
+    - 命令系统：清理命令、wait_reply 超时
+  - 在关键内部流程新增 `TRACE` 观测点，提供更细颗粒度调试：
+    - 事件分发：记录事件类型/平台/处理器数量
+    - 模块加载：记录加载开始
+    - 存储写入：记录 key 名
+    - 配置写入：记录 key 名
+
+### 变更
+
+- @wsu2059q
+  - `.dockerignore` 排除 `config/.packages`，保留多语言 README（`!README.*.md`）
+  - `.gitignore` 排除 `config/.packages`（Docker 持久化的二进制包）
+  - `docker-compose.yml` 移除冗余 `command: ["epsdk", "run"]`（Dockerfile CMD 已定义）
+  - `Dockerfile` 移除多余 `VOLUME` 声明（compose 已显式挂载）
+  - `Core/constants.py` 严格模式默认级别从 `1`（跳过）改为 `0`（宽松）：
+    - 未继承基类的模块/适配器不再被拒绝，而是以 WARNING 提示并尝试加载
+    - 减少用户初次使用时的困惑，保持向上兼容（可显式配置 `strict_mode = 1` 恢复原行为）
+  - 优化严格模式提示文案，精简冗余描述（5 种语言）
+
+### CI/CD
+
+- @wsu2059q
+  - `.github/workflows/code-quality-check.yml` Ruff 检查范围扩展至 `tests/`，PR 测试只跑单元测试
+  - `pytest.ini` 配置迁移至 `pyproject.toml` 的 `[tool.pytest.ini_options]`，原文件已删除
+
+### 修复
+
+- @wsu2059q
+  - 修复一个无关痛痒的关于cli在执行upgrade时极小可能会报 `执行命令时出错: 'NoneType' object has no attribute 'lower'` 的问题
+  - `Core/storage.py` 重构 SQL 查询构建器的列名校验策略：
+    - SELECT/ORDER BY 改为黑名单模式：仅拦截注入危险字符（`;` `'` `"` `--` `/*` `*/` `\x00` 换行）
+    - 支持任意合法 SQL 列表达式：`COUNT(*)`、`col AS alias`、`table.*`、`col1 || col2` 等
+    - INSERT/UPDATE 列名仍保持严格白名单校验（仅允许简单标识符）
+    - 修复 `*` 通配符自 2.4.6 引入 SQL 注入防护后被拒绝的问题（影响 Cron 等模块加载）
+  - `Core/logger.py` 修复 `set_level()` / `set_module_level()` 无法识别自定义级别的问题：
+    - 原因：仅检查 `hasattr(logging, level)`，而 `TRACE`/`EVENT` 是自定义常量未挂载到 `logging` 模块
+    - 新增 `_resolve_level()` 方法，先查标准 `logging` 属性，再查 `_CUSTOM_LEVELS` 字典
+  - 修复测试中的 3 个 warning：
+    - `StarletteDeprecationWarning`（starlette.testclient 依赖旧版 httpx）
+    - `RuntimeWarning: coroutine never awaited`（`test_unit_client.py` 中 `release` mock 应为同步 `MagicMock`）
+    - `ResourceWarning: unclosed database`（新增 session fixture 清理 sqlite 连接）
+  - `Core/client.py` HttpClient 增加代理支持与重试优化：
+    - 新增 `proxy` 参数，支持显式指定代理 URL
+    - `None`（默认）时启用 `trust_env=True` 自动检测环境变量（HTTP_PROXY/HTTPS_PROXY）
+    - 默认最大重试次数从 `0` 改为 `1`，减少代理环境下偶发连接失败导致的请求错误
+  - 更新文档：
+    - `docs/zh-CN/bug-tracker.md` 新增 [BUG-019] SQL 通配符被拒绝
+    - `docs/zh-CN/user-guide/configuration.md` 更新严格模式默认值为 0，日志级别加入 TRACE
+    - `docs/zh-CN/api-reference/core-modules.md` 日志级别控制加入 TRACE 说明，新增日志订阅 API 文档
+    - `docs/zh-CN/developer-guide/README.md` 调试技巧加入 TRACE 级别
+  - 新增 `tests/devs/test_logger_handler.py` 日志订阅系统手动测试脚本
 
 ---
 
@@ -117,6 +189,22 @@
     - 理念：Docker 仅是容器运行时，不参与包管理；框架更新由 Dashboard 热更新完成
   - `Dockerfile` 移除 `ERISPULSE_CHANNEL` 和 `ERISPULSE_UPDATE_ON_START` 环境变量，移除 dev target 的 `ENV ERISPULSE_CHANNEL="dev"`
   - `docker-compose.yml` 移除 `ERISPULSE_CHANNEL` 和 `ERISPULSE_UPDATE_ON_START` 环境变量，`restart` 策略从 `unless-stopped` 改为 `on-failure:5`
+
+---
+
+## [2.5.2-dev.0] - 2026/06/27
+> 开发版本
+
+**版本摘要**
+2.5.2-dev.0 修复非热重载模式下 `ep run <script>` 找不到脚本所在目录子包的问题
+
+### 修复
+- @wsu2059q
+  - `CLI/commands/run.py` 修复非热重载模式下运行脚本时找不到脚本所在目录子包的问题：
+
+### 优化
+- @wsu2059q
+  - 将 `Event` cmd和msg的处理逻辑进行合并
 
 ---
 

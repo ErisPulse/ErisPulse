@@ -41,6 +41,47 @@ JSON 日志格式化器
 #### 方法列表
 
 
+##### `handler(handler_id: str = '')`
+
+日志订阅装饰器
+
+>>> @sdk.logger.handler("dashboard", min_level="INFO")
+... def on_log(log_data: dict): ...
+
+>>> sdk.logger.handler("dashboard", min_level="INFO")(on_log)
+
+:param handler_id: 订阅器唯一标识，为空时使用函数名
+:param min_level: 最低日志级别
+
+---
+
+
+##### `_register_handler(handler_id: str, callback: Callable[[dict], None], min_level: str)`
+
+> **内部方法** 
+内部注册逻辑
+
+---
+
+
+##### `remove_handler(handler_id: str)`
+
+移除日志订阅器
+
+:param handler_id: 注册时使用的标识
+:return: bool 是否成功移除
+
+---
+
+
+##### `_notify_handlers(level_name: str, level_const: int, module: str, msg: str)`
+
+> **内部方法** 
+向所有符合条件的订阅器推送结构化日志
+
+---
+
+
 ##### `set_memory_limit(limit: int)`
 
 设置日志内存存储上限
@@ -51,11 +92,26 @@ JSON 日志格式化器
 ---
 
 
+##### `_resolve_level(level: str)`
+
+将字符串级别名解析为对应的数值常量
+
+:param level: 日志级别名称
+:return: 对应的 logging 级别数值，无效时返回 None
+
+> **内部方法**
+
+---
+
+
 ##### `set_level(level: str)`
 
 设置全局日志级别
 
-:param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
+支持标准级别 (DEBUG/INFO/WARNING/ERROR/CRITICAL)
+及自定义级别 (TRACE/EVENT)
+
+:param level: 日志级别名称
 :return: bool 设置是否成功
 
 ---
@@ -65,8 +121,11 @@ JSON 日志格式化器
 
 设置指定模块日志级别
 
+支持标准级别 (DEBUG/INFO/WARNING/ERROR/CRITICAL)
+及自定义级别 (TRACE/EVENT)
+
 :param module_name: 模块名称
-:param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
+:param level: 日志级别名称
 :return: bool 设置是否成功
 
 ---
@@ -119,7 +178,7 @@ JSON 日志格式化器
 
 获取日志内容
 
-在 JSON 模式下返回结构化 dict 列表，在 Rich 模式下返回字符串列表。
+JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表。
 
 :param module_name (可选): 模块名称，None表示获取所有日志
 :return: dict 日志内容
@@ -134,7 +193,7 @@ JSON 日志格式化器
 适合处理大量日志或推送到 SSE / WebSocket。
 
 - **module_name** (`str`): 模块名称，None 表示所有模块
-**返回值** (`Iterator[dict | str`): ] 每行日志，JSON 模式下为 dict，Rich 模式下为 str
+**返回值** (`Iterator[dict | str`): ] JSON 模式下为 dict，Rich 模式下为 str
 
 **示例**:
 ```python
@@ -145,9 +204,18 @@ JSON 日志格式化器
 ---
 
 
-##### `_save_in_memory(ModuleName, msg)`
+##### `_format_for_output(entries: list)`
 
-> **内部方法**
+> **内部方法** 
+将内部 dict 转换为向后兼容的输出格式
+
+---
+
+
+##### `_save_in_memory(module_name: str, level_name: str, level_const: int, msg: str)`
+
+> **内部方法** 
+将日志保存到内存
 
 ---
 

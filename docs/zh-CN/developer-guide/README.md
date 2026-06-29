@@ -62,10 +62,12 @@ epsdk run main.py --reload
 
 ### 调试技巧
 
-在 `config/config.toml` 中启用 DEBUG 级别日志：
+在 `config/config.toml` 中启用 DEBUG 或 TRACE 级别日志：
 
 ```toml
 [ErisPulse.logger]
+# DEBUG: 输出模块加载、路由注册等开发调试信息
+# TRACE: 最低级别，输出事件分发、存储写入、懒加载等框架内部详细流程
 level = "DEBUG"
 ```
 
