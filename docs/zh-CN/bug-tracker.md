@@ -308,3 +308,29 @@
 **修复内容**: 在 `runpy.run_path()` 调用前，手动将脚本所在目录插入 `sys.path[0]`。
 
 **修复日期**: 2026/06/27
+
+---
+
+### [BUG-019] SQL 查询构建器拒绝合法通配符和列表达式
+
+**问题**: `SQLiteQueryBuilder` 的 `_build_select_sql()` 对所有 SELECT 列调用 `_validate_identifier()`，该函数使用严格的白名单正则 `^[a-zA-Z_][a-zA-Z0-9_]*$`，导致合法 SQL 语法被误判为不安全列名：
+
+- `SELECT *` — `*` 是 SQL 标准通配符
+- `SELECT COUNT(*)` — 聚合函数
+- `SELECT users.name` — 限定列名
+- `SELECT col AS alias` — 列别名
+
+其中 `Select("*")` 被 Cron 等模块使用，导致模块 `on_load` 执行失败，模块无法加载。
+
+**原因**: 2.4.6 版本增强了 SQL 注入防护，引入了 `_validate_identifier()` 白名单校验。该校验应用于所有列名，但未区分读取端（SELECT/ORDER BY）和写入端（INSERT/UPDATE）。SELECT 列允许复杂的 SQL 表达式，不应受简单标识符白名单限制。
+
+**影响版本**: 2.4.6 - 2.5.2-dev.1
+
+**修复版本**: 2.5.2-dev.2
+
+**修复内容**: 将 SELECT/ORDER BY 的列校验从白名单模式改为黑名单模式：
+1. 新增 `_validate_select_column()` 函数，仅拦截 SQL 注入危险字符（`;` `'` `"` `--` `/*` `*/` `\x00` 换行符）
+2. 允许任意合法 SQL 列表达式（`*`、`table.*`、`table.column`、`COUNT(*)`、`col AS alias` 等）
+3. INSERT/UPDATE 列名仍保持严格白名单校验（仅允许简单标识符）
+
+**修复日期**: 2026/06/29

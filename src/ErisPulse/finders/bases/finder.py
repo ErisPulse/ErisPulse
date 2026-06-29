@@ -15,6 +15,7 @@ import time
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from typing import Any
+
 from ...Core.logger import logger
 
 
@@ -70,7 +71,7 @@ class BaseFinder(ABC):
             if time.time() - self._cache_time < self._cache_expiry:
                 return list(self._cache.values())
 
-        logger.debug(f"正在从 entry-points 查找 {group_name}...")
+        logger.trace(f"正在从 entry-points 查找 {group_name}...")
 
         try:
             # 加载 entry-points
@@ -85,7 +86,7 @@ class BaseFinder(ABC):
             self._cache = {entry.name: entry for entry in entries}
             self._cache_time = time.time()
 
-            logger.debug(f"找到 {len(entries)} 个 {group_name} entry-points")
+            logger.trace(f"找到 {len(entries)} 个 {group_name} entry-points")
 
             return entries
 
@@ -161,7 +162,7 @@ class BaseFinder(ABC):
                     if name.strip()
                 ]
         except Exception as e:
-            logger.debug(f"读取 {package_name} 的 top_level.txt 失败: {e}")
+            logger.trace(f"读取 {package_name} 的 top_level.txt 失败: {e}")
 
         top_level_set = set()
         for entry in self.find_all():
@@ -191,7 +192,7 @@ class BaseFinder(ABC):
         """
         self._cache = None
         self._cache_time = None
-        logger.debug("发现器缓存已清除")
+        logger.trace("发现器缓存已清除")
 
     def set_cache_expiry(self, expiry: int) -> None:
         """

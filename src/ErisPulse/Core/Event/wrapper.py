@@ -14,40 +14,39 @@ ErisPulse 事件包装类
 
 import asyncio
 import inspect
+from collections.abc import Awaitable, Callable
 from typing import Any, Optional
-from collections.abc import Callable, Awaitable
+
 from .. import adapter, logger
-from .session_type import (
-    get_send_type_and_target_id,
-    convert_to_send_type,
-    infer_receive_type,
-)
 from ..constants import (
-    CONFIRM_YES_WORDS,
     CONFIRM_NO_WORDS,
-    DEFAULT_WAIT_TIMEOUT_SECS,
+    CONFIRM_YES_WORDS,
+    CONVERSATION_KEY_PREFIX,
     DEFAULT_MAX_RETRIES,
     DEFAULT_SEND_METHOD,
-    TEXT_BASED_METHODS,
-    CONVERSATION_KEY_PREFIX,
+    DEFAULT_WAIT_TIMEOUT_SECS,
+    DETAIL_TYPE_FRIEND,
+    DETAIL_TYPE_FRIEND_DECREASE,
+    DETAIL_TYPE_FRIEND_INCREASE,
+    DETAIL_TYPE_GROUP,
+    DETAIL_TYPE_GROUP_MEMBER_DECREASE,
+    DETAIL_TYPE_GROUP_MEMBER_INCREASE,
+    DETAIL_TYPE_PRIVATE,
     EVENT_TYPE_MESSAGE,
     EVENT_TYPE_NOTICE,
     EVENT_TYPE_REQUEST,
-    DETAIL_TYPE_PRIVATE,
-    DETAIL_TYPE_GROUP,
-    DETAIL_TYPE_FRIEND,
-    DETAIL_TYPE_FRIEND_INCREASE,
-    DETAIL_TYPE_FRIEND_DECREASE,
-    DETAIL_TYPE_GROUP_MEMBER_INCREASE,
-    DETAIL_TYPE_GROUP_MEMBER_DECREASE,
+    TEXT_BASED_METHODS,
 )
-
+from .session_type import (
+    convert_to_send_type,
+    get_send_type_and_target_id,
+    infer_receive_type,
+)
 
 # ==================== 平台事件方法注册系统 ====================
 
 # 注册表: {platform: {method_name: callable}}
 _platform_event_methods: dict[str, dict[str, Callable]] = {}
-
 
 
 def register_event_mixin(platform: str, mixin_cls: type) -> int:
@@ -84,7 +83,7 @@ def register_event_mixin(platform: str, mixin_cls: type) -> int:
         _platform_event_methods[platform][name] = func
         registered += 1
 
-    logger.debug(f"[Event] 平台 '{platform}' 注册了 {registered} 个扩展方法")
+    logger.trace(f"[Event] 平台 '{platform}' 注册了 {registered} 个扩展方法")
     return registered
 
 
@@ -115,7 +114,7 @@ def register_event_method(platform: str):
             return func
 
         _platform_event_methods[platform][name] = func
-        logger.debug(f"[Event] 平台 '{platform}' 注册了扩展方法 '{name}'")
+        logger.trace(f"[Event] 平台 '{platform}' 注册了扩展方法 '{name}'")
         return func
 
     return decorator
@@ -150,7 +149,7 @@ def unregister_platform_event_methods(platform: str) -> int:
     if platform in _platform_event_methods:
         count = len(_platform_event_methods[platform])
         del _platform_event_methods[platform]
-        logger.debug(f"[Event] 平台 '{platform}' 注销了 {count} 个扩展方法")
+        logger.trace(f"[Event] 平台 '{platform}' 注销了 {count} 个扩展方法")
         return count
     return 0
 
@@ -221,7 +220,11 @@ async def _builtin_confirm(
         return text in _all
 
     result = await _builtin_wait_reply(
-        event, prompt=prompt, timeout=timeout, validator=validator, method=method,
+        event,
+        prompt=prompt,
+        timeout=timeout,
+        validator=validator,
+        method=method,
     )
 
     if result is None:
@@ -261,15 +264,21 @@ async def _builtin_choose(
     if method in TEXT_BASED_METHODS:
         full_prompt = f"{prompt}\n{options_text}" if prompt else options_text
         result = await _builtin_wait_reply(
-            event, prompt=full_prompt, timeout=timeout,
-            validator=validator, method=method,
+            event,
+            prompt=full_prompt,
+            timeout=timeout,
+            validator=validator,
+            method=method,
         )
     else:
         if prompt:
             await event.reply(prompt, method=method)
         result = await _builtin_wait_reply(
-            event, prompt=options_text, timeout=timeout,
-            validator=validator, method=DEFAULT_SEND_METHOD,
+            event,
+            prompt=options_text,
+            timeout=timeout,
+            validator=validator,
+            method=DEFAULT_SEND_METHOD,
         )
 
     if result is None:
@@ -314,7 +323,10 @@ async def _builtin_collect(
         method = field.get("method", DEFAULT_SEND_METHOD)
 
         reply = await _builtin_wait_reply(
-            event, prompt=prompt, timeout=timeout_per_field, method=method,
+            event,
+            prompt=prompt,
+            timeout=timeout_per_field,
+            method=method,
         )
 
         if reply is None:
@@ -327,7 +339,10 @@ async def _builtin_collect(
                 if retries >= max_retries:
                     return None
                 reply = await _builtin_wait_reply(
-                    event, prompt=retry_prompt, timeout=timeout_per_field, method=method,
+                    event,
+                    prompt=retry_prompt,
+                    timeout=timeout_per_field,
+                    method=method,
                 )
                 if reply is None:
                     return None
@@ -630,7 +645,10 @@ class Event(dict):
 
         :return: 是否为群成员增加事件
         """
-        return self.is_notice() and self.get_detail_type() == DETAIL_TYPE_GROUP_MEMBER_INCREASE
+        return (
+            self.is_notice()
+            and self.get_detail_type() == DETAIL_TYPE_GROUP_MEMBER_INCREASE
+        )
 
     def is_group_member_decrease(self) -> bool:
         """
@@ -638,7 +656,10 @@ class Event(dict):
 
         :return: 是否为群成员减少事件
         """
-        return self.is_notice() and self.get_detail_type() == DETAIL_TYPE_GROUP_MEMBER_DECREASE
+        return (
+            self.is_notice()
+            and self.get_detail_type() == DETAIL_TYPE_GROUP_MEMBER_DECREASE
+        )
 
     def is_friend_add(self) -> bool:
         """
@@ -646,7 +667,9 @@ class Event(dict):
 
         :return: 是否为好友添加事件
         """
-        return self.is_notice() and self.get_detail_type() == DETAIL_TYPE_FRIEND_INCREASE
+        return (
+            self.is_notice() and self.get_detail_type() == DETAIL_TYPE_FRIEND_INCREASE
+        )
 
     def is_friend_delete(self) -> bool:
         """
@@ -654,7 +677,9 @@ class Event(dict):
 
         :return: 是否为好友删除事件
         """
-        return self.is_notice() and self.get_detail_type() == DETAIL_TYPE_FRIEND_DECREASE
+        return (
+            self.is_notice() and self.get_detail_type() == DETAIL_TYPE_FRIEND_DECREASE
+        )
 
     # ==================== 请求事件专用方法 ====================
 
@@ -750,7 +775,9 @@ class Event(dict):
                 f"请确保适配器在转换请求事件时正确设置了 request_id 字段。"
             )
 
-        bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+        bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get(
+            "user_id", ""
+        )
 
         handler = adapter_instance.Request(request_id)
 
@@ -977,7 +1004,9 @@ class Event(dict):
         :param method: 发送方法，默认为 "Text"（可选: "Image", "Markdown", "Html" 等）
         :return: 用户回复的事件数据，如果超时则返回None
         """
-        return await _builtin_wait_reply(self, prompt, timeout, callback, validator, method)
+        return await _builtin_wait_reply(
+            self, prompt, timeout, callback, validator, method
+        )
 
     # ==================== 交互式对话方法 ====================
 
@@ -1009,7 +1038,9 @@ class Event(dict):
         >>> if await event.confirm("https://example.com/image.jpg", method="Image"):
         ...     await event.reply("已确认")
         """
-        return await _builtin_confirm(self, prompt, timeout, yes_words, no_words, method)
+        return await _builtin_confirm(
+            self, prompt, timeout, yes_words, no_words, method
+        )
 
     async def choose(
         self,
@@ -1134,7 +1165,9 @@ class Event(dict):
             except (ValueError, KeyError):
                 pass
 
-    def conversation(self, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS) -> "Conversation":
+    def conversation(
+        self, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS
+    ) -> "Conversation":
         """
         创建多轮对话上下文
 
@@ -1366,7 +1399,9 @@ class Conversation:
         return self
 
     async def wait(
-        self, prompt: str = None, timeout: float = None,
+        self,
+        prompt: str = None,
+        timeout: float = None,
         method: str = DEFAULT_SEND_METHOD,
     ) -> Optional["Event"]:
         """

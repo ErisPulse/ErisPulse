@@ -57,11 +57,11 @@ class TestStrictModeDecide:
         )
         assert mgr.decide("OldAdapter", "adapter", "not_base_class") is False
 
-    def test_default_level_is_skip(self):
-        # 默认应为 1（严格-跳过）
+    def test_default_level_is_lenient(self):
+        # 默认应为 0（宽松）
         mgr = StrictModeManager()
-        assert mgr.level == 1
-        assert mgr.level == int(StrictModeLevel.SKIP)
+        assert mgr.level == 0
+        assert mgr.level == int(StrictModeLevel.LENIENT)
 
 
 # ==================== record_failure：异常类失败场景 ====================
