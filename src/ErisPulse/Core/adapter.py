@@ -396,7 +396,7 @@ class AdapterManager(ManagerBase):
                 task = self._adapter_tasks.pop(platform, None)
                 if task and not task.done():
                     task.cancel()
-                    logger.debug(
+                    logger.trace(
                         i18n.t("core.adapter.task_cancelled_debug", platform=platform)
                     )
 
@@ -561,7 +561,7 @@ class AdapterManager(ManagerBase):
             ws_c = result_ns["websocket_count"] + result_owner["websocket_count"]
             sse_c = result_ns["sse_count"] + result_owner["sse_count"]
             if http_c or ws_c or sse_c:
-                logger.debug(
+                logger.trace(
                     i18n.t(
                         "core.adapter.routes_cleaned",
                         platform=platform,
@@ -571,7 +571,7 @@ class AdapterManager(ManagerBase):
                     )
                 )
         except Exception as e:
-            logger.debug(
+            logger.trace(
                 i18n.t("core.adapter.routes_clean_failed", platform=platform, error=e)
             )
 
@@ -582,7 +582,7 @@ class AdapterManager(ManagerBase):
             for event_handler in (message, notice, request, meta):
                 cleaned += event_handler.handler.unregister_by_owner(platform)
             if cleaned > 0:
-                logger.debug(
+                logger.trace(
                     i18n.t(
                         "core.adapter.handlers_cleaned",
                         platform=platform,
@@ -590,7 +590,7 @@ class AdapterManager(ManagerBase):
                     )
                 )
         except Exception as e:
-            logger.debug(
+            logger.trace(
                 i18n.t("core.adapter.handlers_clean_failed", platform=platform, error=e)
             )
 
@@ -665,7 +665,7 @@ class AdapterManager(ManagerBase):
         for platform in list(self._adapters.keys()):
             result = router.unregister_all_by_namespace(platform)
             if result["http_count"] > 0 or result["websocket_count"] > 0:
-                logger.debug(
+                logger.trace(
                     i18n.t(
                         "core.adapter.clear_routes_result",
                         platform=platform,
@@ -697,7 +697,7 @@ class AdapterManager(ManagerBase):
         # 清除Bot状态
         self._bots.clear()
 
-        logger.debug(i18n.t("core.adapter.cleared"))
+        logger.trace(i18n.t("core.adapter.cleared"))
 
     # ==================== 适配器配置管理 ====================
 
@@ -719,7 +719,7 @@ class AdapterManager(ManagerBase):
             if enabled
             else i18n.t("core.adapter.status_disabled")
         )
-        logger.debug(
+        logger.trace(
             i18n.t("core.adapter.registered_status", platform=platform, status=status)
         )
         return True
@@ -1048,6 +1048,10 @@ class AdapterManager(ManagerBase):
         # 处理通配符处理器
         handlers_to_call.extend(self._onebot_handlers.get("*", []))
 
+        logger.trace(
+            f"分发事件: type={event_type} platform={platform} detail={detail_type} handlers={len(handlers_to_call)}"
+        )
+
         # 将符合条件的处理器分发到独立 Task
         for handler_wrapper in handlers_to_call:
             handler_platform = handler_wrapper.get("platform")
@@ -1162,7 +1166,7 @@ class AdapterManager(ManagerBase):
                             f"type={event_type} platform={platform}{_owner_tag}"
                         )
                     else:
-                        logger.debug(
+                        logger.trace(
                             f"事件处理器 [{_func_name}] 耗时 {elapsed:.2f}s "
                             f"(wait_reply={_wait_total:.2f}s, pure={_pure:.2f}s) "
                             f"interactive-wait, suppressed slow-warning "
@@ -1237,7 +1241,7 @@ class AdapterManager(ManagerBase):
         }
 
         if is_new:
-            logger.debug(
+            logger.trace(
                 i18n.t(
                     "core.adapter.auto_discover_bot", platform=platform, bot_id=bot_id
                 )

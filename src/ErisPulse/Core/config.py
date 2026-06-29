@@ -346,7 +346,9 @@ class ConfigManager:
 
             # 触发配置变更钩子
             from .lifecycle import lifecycle
+            from .logger import logger
 
+            logger.trace(f"config.setConfig: key={key}")
             lifecycle.emit_sync(
                 "config.set",
                 {

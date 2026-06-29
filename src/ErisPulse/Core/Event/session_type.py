@@ -123,7 +123,7 @@ def register_custom_type(
         _custom_receive_to_send[receive_type_key] = send_type
         _custom_send_to_receive[send_type] = receive_type_key
 
-        logger.debug(
+        logger.trace(
             f"已注册自定义会话类型: {receive_type_key} → {send_type} (ID字段: {id_field})"
         )
         return True
@@ -155,7 +155,7 @@ def unregister_custom_type(receive_type: str, platform: str | None = None) -> bo
             del _custom_receive_to_send[receive_type_key]
             del _custom_send_to_receive[send_type]
 
-            logger.debug(f"已注销自定义会话类型: {receive_type_key}")
+            logger.trace(f"已注销自定义会话类型: {receive_type_key}")
             return True
         return False
     except Exception as e:

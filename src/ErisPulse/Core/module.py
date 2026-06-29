@@ -161,6 +161,8 @@ class ModuleManager(ManagerBase):
             logger.info(i18n.t("core.module.already_loaded", name=module_name))
             return True
 
+        logger.trace(f"开始加载模块: {module_name}")
+
         try:
             module_class = self._module_classes[module_name]
 
