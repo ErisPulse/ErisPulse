@@ -51,11 +51,26 @@ JSON 日志格式化器
 ---
 
 
+##### `_resolve_level(level: str)`
+
+将字符串级别名解析为对应的数值常量
+
+:param level: 日志级别名称
+:return: 对应的 logging 级别数值，无效时返回 None
+
+> **内部方法**
+
+---
+
+
 ##### `set_level(level: str)`
 
 设置全局日志级别
 
-:param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
+支持标准级别 (DEBUG/INFO/WARNING/ERROR/CRITICAL)
+及自定义级别 (TRACE/EVENT)
+
+:param level: 日志级别名称
 :return: bool 设置是否成功
 
 ---
@@ -65,8 +80,11 @@ JSON 日志格式化器
 
 设置指定模块日志级别
 
+支持标准级别 (DEBUG/INFO/WARNING/ERROR/CRITICAL)
+及自定义级别 (TRACE/EVENT)
+
 :param module_name: 模块名称
-:param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
+:param level: 日志级别名称
 :return: bool 设置是否成功
 
 ---
