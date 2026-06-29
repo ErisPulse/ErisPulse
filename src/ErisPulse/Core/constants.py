@@ -548,7 +548,7 @@ DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS = 10.0
 
 # HTTP 客户端默认最大重试次数。
 # 修改影响: 请求失败后的自动重试次数。0 = 不重试。
-DEFAULT_HTTP_CLIENT_MAX_RETRIES = 0
+DEFAULT_HTTP_CLIENT_MAX_RETRIES = 1
 
 # HTTP 客户端重试间隔（秒）。
 # 修改影响: 每次重试之间的等待时间。
