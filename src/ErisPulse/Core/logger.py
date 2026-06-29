@@ -35,6 +35,8 @@ EVENT = 21  # 等同 INFO 级别，用于事件收发日志
 logging.addLevelName(TRACE, "TRACE")
 logging.addLevelName(EVENT, "EVENT")
 
+_CUSTOM_LEVELS: dict[str, int] = {"TRACE": TRACE, "EVENT": EVENT}
+
 _LOG_THEME = Theme(LOG_RICH_THEME)
 
 
@@ -110,17 +112,35 @@ class Logger:
             self._logger.warning(i18n.t("core.logger.memory_limit_invalid"))
             return False
 
+    def _resolve_level(self, level: str) -> int | None:
+        """
+        将字符串级别名解析为对应的数值常量
+
+        :param level: 日志级别名称
+        :return: 对应的 logging 级别数值，无效时返回 None
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        level = level.upper()
+        if hasattr(logging, level):
+            return getattr(logging, level)
+        return _CUSTOM_LEVELS.get(level)
+
     def set_level(self, level: str) -> bool:
         """
         设置全局日志级别
 
-        :param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
+        支持标准级别 (DEBUG/INFO/WARNING/ERROR/CRITICAL)
+        及自定义级别 (TRACE/EVENT)
+
+        :param level: 日志级别名称
         :return: bool 设置是否成功
         """
         try:
-            level = level.upper()
-            if hasattr(logging, level):
-                self._logger.setLevel(getattr(logging, level))
+            level_value = self._resolve_level(level)
+            if level_value is not None:
+                self._logger.setLevel(level_value)
                 return True
             return False
         except Exception:
@@ -131,15 +151,22 @@ class Logger:
         """
         设置指定模块日志级别
 
+        支持标准级别 (DEBUG/INFO/WARNING/ERROR/CRITICAL)
+        及自定义级别 (TRACE/EVENT)
+
         :param module_name: 模块名称
-        :param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
+        :param level: 日志级别名称
         :return: bool 设置是否成功
         """
-        level = level.upper()
-        if hasattr(logging, level):
-            self._module_levels[module_name] = getattr(logging, level)
+        level_value = self._resolve_level(level)
+        if level_value is not None:
+            self._module_levels[module_name] = level_value
             self._logger.info(
-                i18n.t("core.logger.module_level_set", module=module_name, level=level)
+                i18n.t(
+                    "core.logger.module_level_set",
+                    module=module_name,
+                    level=level.upper(),
+                )
             )
             return True
         else:
