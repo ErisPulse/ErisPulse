@@ -54,8 +54,10 @@ WORKDIR /app
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-VOLUME ["/app/config"]
 EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/ping')" || exit 1
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["epsdk", "run"]
