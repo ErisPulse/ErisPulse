@@ -300,9 +300,9 @@ TRANSLATIONS = {
     # ==================== 严格模式 ====================
     "loader.strict.config_failed": "读取严格模式配置失败，使用默认值: {error}",
     "loader.strict.exempted": "{type} '{name}' 已豁免严格模式（{reason}），继续加载",
-    "loader.strict.tolerated": "宽松模式：{type} '{name}' {reason}，仍继续加载",
-    "loader.strict.rejected": "严格模式：已拒绝 {type} '{name}'（{reason}），已跳过。如必须加载，请将 '{name}' 加入配置 ErisPulse.framework.strict_mode_exceptions.{list_key} 豁免清单，或将 ErisPulse.framework.strict_mode 设为 0（宽松模式）",
-    "loader.strict.rejected_fatal": "严格模式(致命)：已拒绝 {type} '{name}'（{reason}），已记录。如必须加载，请将 '{name}' 加入配置 ErisPulse.framework.strict_mode_exceptions.{list_key} 豁免清单，或将 ErisPulse.framework.strict_mode 设为 0（宽松模式）",
+    "loader.strict.tolerated": "宽松模式：{type} '{name}' {reason}，仍尝试加载",
+    "loader.strict.rejected": "严格模式：已跳过 {type} '{name}'（{reason}）。如必须加载，请在配置 ErisPulse.framework.strict_mode_exceptions.{list_key} 中添加豁免，或将 ErisPulse.framework.strict_mode 设为 0",
+    "loader.strict.rejected_fatal": "严格模式(致命)：已拒绝 {type} '{name}'（{reason}）。如必须加载，请在配置 ErisPulse.framework.strict_mode_exceptions.{list_key} 中添加豁免，或将 ErisPulse.framework.strict_mode 设为 0",
     "loader.strict.fatal_report_header": "严格模式(致命)检测到 {count} 项违规，启动中止：",
     "loader.strict.fatal_report_item": "  [{index}] {type} '{name}': {reason} {detail}",
     "loader.strict.fatal_abort": "严格模式(致命)：共收集 {count} 项违规，已中止启动",

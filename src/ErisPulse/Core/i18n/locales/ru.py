@@ -300,9 +300,9 @@ TRANSLATIONS = {
     # ==================== Строгий режим ====================
     "loader.strict.config_failed": "Не удалось прочитать конфигурацию строгого режима, используется значение по умолчанию: {error}",
     "loader.strict.exempted": "{type} ‘{name}’ исключён из строгого режима ({reason}), загрузка продолжается",
-    "loader.strict.tolerated": "Мягкий режим: {type} ‘{name}’ {reason}, загрузка продолжается",
-    "loader.strict.rejected": "Строгий режим: {type} '{name}' отклонён ({reason}), пропущен. Чтобы загрузить принудительно, добавьте '{name}' в список исключений ErisPulse.framework.strict_mode_exceptions.{list_key} или установите ErisPulse.framework.strict_mode = 0 (мягкий режим)",
-    "loader.strict.rejected_fatal": "Строгий режим (критический): {type} '{name}' отклонён ({reason}), записано. Чтобы загрузить принудительно, добавьте '{name}' в список исключений ErisPulse.framework.strict_mode_exceptions.{list_key} или установите ErisPulse.framework.strict_mode = 0 (мягкий режим)",
+    "loader.strict.tolerated": "Мягкий режим: {type} '{name}' {reason}, попытка загрузки",
+    "loader.strict.rejected": "Строгий режим: пропущен {type} '{name}' ({reason}). Чтобы загрузить принудительно, добавьте исключение в ErisPulse.framework.strict_mode_exceptions.{list_key} или установите ErisPulse.framework.strict_mode = 0",
+    "loader.strict.rejected_fatal": "Строгий режим (критический): отклонён {type} '{name}' ({reason}). Чтобы загрузить принудительно, добавьте исключение в ErisPulse.framework.strict_mode_exceptions.{list_key} или установите ErisPulse.framework.strict_mode = 0",
     "loader.strict.fatal_report_header": "Строгий режим (критический) обнаружил {count} нарушений, запуск прерван:",
     "loader.strict.fatal_report_item": "  [{index}] {type} ‘{name}’: {reason} {detail}",
     "loader.strict.fatal_abort": "Строгий режим (критический): собрано {count} нарушений, запуск прерван",
