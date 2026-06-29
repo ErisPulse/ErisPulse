@@ -67,7 +67,7 @@
 > 开发版本
 
 **版本摘要**
-2.5.2-dev.2 优化 Docker 部署体验、提升配置持久化健壮性、完善 CI/CD 流程与开发规范，修复日志级别设置与配色问题。
+2.5.2-dev.2 优化 Docker 部署体验、提升配置持久化健壮性、完善 CI/CD 流程与开发规范，修复日志级别设置与配色问题，调整严格模式默认策略为宽松。
 
 **升级建议**
 - 建议升级：所有 Docker 部署用户
@@ -89,6 +89,20 @@
     - INFO 从加粗无色改为绿色，DEBUG 改为白色，CRITICAL 改为红底黑字
     - 致谢： @mmmpipi
   - CLI Emoji替换为纯 ASCII（`[*]`/`[OK]`/`[FAIL]`），优化部分终端显示乱码
+  - 框架内部大量调试日志从 `DEBUG` 降级为 `TRACE`，减少默认输出噪音 （感谢 @wuliya336 ）：
+    - 路由器：HTTP/WS/SSE 路由注册与注销（原启动时 80+ 行 DEBUG 噪音）
+    - 事件系统：处理器注册/注销、耗时统计、自定义会话类型、平台扩展方法
+    - 适配器：资源清理、路由清理、Bot 自动发现、事件分发耗时
+    - 路由器：WebSocket 连接/断开/取消、中间件跳过、配置应用失败、本地 IP 检测
+    - 懒加载：属性访问/设置/删除/获取表示字符串
+    - 模块加载器：模块挂载（mount_lazy/mount_eager）
+    - 发现器：entry-points 查找、缓存清除
+    - 命令系统：清理命令、wait_reply 超时
+  - 在关键内部流程新增 `TRACE` 观测点，提供更细颗粒度调试：
+    - 事件分发：记录事件类型/平台/处理器数量
+    - 模块加载：记录加载开始
+    - 存储写入：记录 key 名
+    - 配置写入：记录 key 名
 
 ### 变更
 
@@ -97,6 +111,10 @@
   - `.gitignore` 排除 `config/.packages`（Docker 持久化的二进制包）
   - `docker-compose.yml` 移除冗余 `command: ["epsdk", "run"]`（Dockerfile CMD 已定义）
   - `Dockerfile` 移除多余 `VOLUME` 声明（compose 已显式挂载）
+  - `Core/constants.py` 严格模式默认级别从 `1`（跳过）改为 `0`（宽松）：
+    - 未继承基类的模块/适配器不再被拒绝，而是以 WARNING 提示并尝试加载
+    - 减少用户初次使用时的困惑，保持向上兼容（可显式配置 `strict_mode = 1` 恢复原行为）
+  - 优化严格模式提示文案，精简冗余描述（5 种语言）
 
 ### CI/CD
 
@@ -108,6 +126,11 @@
 
 - @wsu2059q
   - 修复一个无关痛痒的关于cli在执行upgrade时极小可能会报 `执行命令时出错: 'NoneType' object has no attribute 'lower'` 的问题
+  - `Core/storage.py` 重构 SQL 查询构建器的列名校验策略：
+    - SELECT/ORDER BY 改为黑名单模式：仅拦截注入危险字符（`;` `'` `"` `--` `/*` `*/` `\x00` 换行）
+    - 支持任意合法 SQL 列表达式：`COUNT(*)`、`col AS alias`、`table.*`、`col1 || col2` 等
+    - INSERT/UPDATE 列名仍保持严格白名单校验（仅允许简单标识符）
+    - 修复 `*` 通配符被拒绝的问题
   - `Core/logger.py` 修复 `set_level()` / `set_module_level()` 无法识别自定义级别的问题：
     - 原因：仅检查 `hasattr(logging, level)`，而 `TRACE`/`EVENT` 是自定义常量未挂载到 `logging` 模块
     - 新增 `_resolve_level()` 方法，先查标准 `logging` 属性，再查 `_CUSTOM_LEVELS` 字典

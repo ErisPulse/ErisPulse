@@ -231,7 +231,7 @@ class CommandHandler:
         if to_remove:
             from ..logger import logger as _logger
 
-            _logger.debug(
+            _logger.trace(
                 f"[Command] 已清理 {owner} 的 {len(to_remove)} 个命令: {to_remove}"
             )
         return len(to_remove)
@@ -329,7 +329,7 @@ class CommandHandler:
             # 清理超时的等待
             if wait_key in self._waiting_replies:
                 del self._waiting_replies[wait_key]
-            logger.debug(f"wait_reply 超时: key={wait_key}, timeout={timeout}s")
+            logger.trace(f"wait_reply 超时: key={wait_key}, timeout={timeout}s")
             return None
         except Exception as e:
             # 清理异常情况

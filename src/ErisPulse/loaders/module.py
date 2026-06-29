@@ -639,14 +639,14 @@ class ModuleLoader(BaseLoader):
                         manager_instance,
                     )
                     setattr(sdk_instance, meta_name, lazy_module)
-                    logger.debug(i18n.t("loader.module.mount_lazy", name=meta_name))
+                    logger.trace(i18n.t("loader.module.mount_lazy", name=meta_name))
                 else:
                     result = await manager_instance.load(meta_name)
                     if result:
                         setattr(
                             sdk_instance, meta_name, manager_instance.get(meta_name)
                         )
-                        logger.debug(
+                        logger.trace(
                             i18n.t("loader.module.mount_eager", name=meta_name)
                         )
                     else:
@@ -1010,7 +1010,7 @@ class LazyModule:
         :param name: str 属性名
         :return: Any 属性值
         """
-        logger.debug(
+        logger.trace(
             f"正在访问懒加载模块 {object.__getattribute__(self, '_module_name')} 的属性 {name}..."
         )
 
@@ -1032,7 +1032,7 @@ class LazyModule:
         :param name: str 属性名
         :param value: Any 属性值
         """
-        logger.debug(
+        logger.trace(
             f"正在设置懒加载模块 {object.__getattribute__(self, '_module_name')} 的属性 {name}..."
         )
 
@@ -1054,7 +1054,7 @@ class LazyModule:
 
         :param name: str 属性名
         """
-        logger.debug(
+        logger.trace(
             f"正在删除懒加载模块 {object.__getattribute__(self, '_module_name')} 的属性 {name}..."
         )
         self._ensure_initialized()
@@ -1111,7 +1111,7 @@ class LazyModule:
 
         :return: str 表示字符串
         """
-        logger.debug(
+        logger.trace(
             f"正在获取懒加载模块 {object.__getattribute__(self, '_module_name')} 的表示字符串..."
         )
         if object.__getattribute__(self, "_initialized"):

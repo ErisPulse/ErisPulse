@@ -30,8 +30,10 @@ from .i18n import i18n
 StorageKey: TypeAlias = str
 StorageValue: TypeAlias = Any
 
-# SQL 标识符（表名/列名）合法模式
+# SQL 标识符（表名/列名）合法模式——用于 INSERT/UPDATE 列名、表名等必须为简单标识符的场景
 _IDENTIFIER_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+# SQL 注入危险字符黑名单
+_SQL_DANGEROUS_RE = re.compile(r"[;'\"\\]|--|/\*|\*/|\x00|\n|\r", re.IGNORECASE)
 # SQLite 合法列类型
 _VALID_COLUMN_TYPES = {
     "TEXT",
@@ -80,6 +82,28 @@ def _validate_identifier(name: str, context: str = "标识符") -> None:
     :raises ValueError: 当标识符包含非法字符时
     """
     if not name or not _IDENTIFIER_RE.match(name):
+        raise ValueError(
+            i18n.t("core.storage.unsafe_identifier", context=context, name=name)
+        )
+
+
+def _validate_select_column(name: str, context: str = "列名") -> None:
+    """
+    {!--< internal-use >!--}
+    验证 SELECT/ORDER BY 列表达式是否安全
+
+    采用黑名单模式：仅拦截 SQL 注入危险字符（; ' " -- /* */ \x00 换行），
+    允许任意合法 SQL 列表达式，包括：
+    - 简单列名、table.column、*、table.*
+    - 聚合函数：COUNT(*)、SUM(col)
+    - 别名：col AS alias
+    - 表达式：col1 || col2
+
+    :param name: 列表达式
+    :param context: 上下文描述（用于错误消息）
+    :raises ValueError: 当包含注入危险字符时
+    """
+    if not name or _SQL_DANGEROUS_RE.search(name):
         raise ValueError(
             i18n.t("core.storage.unsafe_identifier", context=context, name=name)
         )
@@ -245,7 +269,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
     def _build_select_sql(self) -> tuple[str, list[Any]]:
         if self._columns:
             for col in self._columns:
-                _validate_identifier(col, "列名")
+                _validate_select_column(col)
         cols = ", ".join(self._columns) if self._columns else "*"
         sql = f"SELECT {cols} FROM {self._table}"
         params: list[Any] = []
@@ -309,7 +333,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
         if self._order_by:
             order_parts = []
             for col, desc in self._order_by:
-                _validate_identifier(col, "排序列名")
+                _validate_select_column(col, context="排序列名")
                 order_parts.append(f"{col} DESC" if desc else f"{col} ASC")
             sql += f" ORDER BY {', '.join(order_parts)}"
         return sql
@@ -911,6 +935,9 @@ class StorageManager(BaseStorage):
                 )
                 self._auto_commit(conn)
 
+            from .logger import logger
+
+            logger.trace(f"storage.set: key={key}")
             return True
         except Exception as e:
             from .logger import logger
