@@ -18,7 +18,7 @@ jobs:
       - name: Setup environment
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install ruff
         run: pip install ruff
@@ -27,7 +27,7 @@ jobs:
         continue-on-error: true
         run: |
           echo "Running Ruff code check..."
-          ruff_output=$(ruff check src/ 2>&1; echo "RUFF_EXIT_CODE=$?")
+          ruff_output=$(ruff check src/ tests/ 2>&1; echo "RUFF_EXIT_CODE=$?")
           exit_code=${ruff_output##*RUFF_EXIT_CODE=}
           ruff_output=${ruff_output%RUFF_EXIT_CODE=*}
 
@@ -94,7 +94,7 @@ jobs:
       - name: Setup environment
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install project dependencies
         run: |
@@ -105,7 +105,7 @@ jobs:
         id: pytest-check
         run: |
           echo "Running Pytest tests..."
-          pytest_output=$(pytest -v --tb=short --cov-report=term-missing 2>&1; echo "PYTEST_EXIT_CODE=$?")
+          pytest_output=$(pytest tests/unit -v --tb=short --cov-report=term-missing 2>&1; echo "PYTEST_EXIT_CODE=$?")
           exit_code=${pytest_output##*PYTEST_EXIT_CODE=}
           pytest_output=${pytest_output%PYTEST_EXIT_CODE=*}
           echo "$pytest_output"

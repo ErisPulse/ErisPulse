@@ -2544,6 +2544,11 @@ class RouterManager:
 
             self._server_task = asyncio.create_task(self._uvicorn_server._serve())
 
+            # 确保异步异常处理器已注册到当前事件循环
+            from ..runtime.exceptions import setup_exception_handling
+
+            setup_exception_handling()
+
             await lifecycle.submit_event(
                 "server.start",
                 msg=i18n.t("core.router.started"),
