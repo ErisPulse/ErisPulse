@@ -300,9 +300,9 @@ TRANSLATIONS = {
     # ==================== Strict Mode ====================
     "loader.strict.config_failed": "Failed to read strict_mode config, using default: {error}",
     "loader.strict.exempted": "{type} '{name}' is exempted from strict mode ({reason}), continuing to load",
-    "loader.strict.tolerated": "Lenient mode: {type} '{name}' {reason}, still loading",
-    "loader.strict.rejected": "Strict mode: rejected {type} '{name}' ({reason}), skipped. To load it anyway, add '{name}' to ErisPulse.framework.strict_mode_exceptions.{list_key}, or set ErisPulse.framework.strict_mode = 0 (lenient)",
-    "loader.strict.rejected_fatal": "Strict mode (fatal): rejected {type} '{name}' ({reason}), recorded. To load it anyway, add '{name}' to ErisPulse.framework.strict_mode_exceptions.{list_key}, or set ErisPulse.framework.strict_mode = 0 (lenient)",
+    "loader.strict.tolerated": "Lenient mode: {type} '{name}' {reason}, attempting to load",
+    "loader.strict.rejected": "Strict mode: skipped {type} '{name}' ({reason}). To load it anyway, add exemption in ErisPulse.framework.strict_mode_exceptions.{list_key}, or set ErisPulse.framework.strict_mode = 0",
+    "loader.strict.rejected_fatal": "Strict mode (fatal): rejected {type} '{name}' ({reason}). To load it anyway, add exemption in ErisPulse.framework.strict_mode_exceptions.{list_key}, or set ErisPulse.framework.strict_mode = 0",
     "loader.strict.fatal_report_header": "Strict mode (fatal) detected {count} violation(s), aborting startup:",
     "loader.strict.fatal_report_item": "  [{index}] {type} '{name}': {reason} {detail}",
     "loader.strict.fatal_abort": "Strict mode (fatal): {count} violation(s) collected, startup aborted",
