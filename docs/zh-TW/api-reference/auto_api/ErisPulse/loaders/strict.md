@@ -10,7 +10,7 @@ ErisPulse 严格模式
 提供统一的模块/适配器加载合规性管理。
 
 > **提示**
-> 1. 通过 ErisPulse.framework.strict_mode 配置级别（0=宽松, 1=跳过, 2=致命）
+> 1. 通过 ErisPulse.framework.strict_mode 配置级别（0=宽松(默认), 1=跳过, 2=致命）
 > 2. 通过 ErisPulse.framework.strict_mode_exceptions 配置豁免清单
 > 3. StrictModeManager 由初始化协调器创建并注入到各加载器，确保跨加载器收集违规
 
