@@ -117,7 +117,38 @@ child_logger.get_child("utils")  # 支持嵌套
 ```python
 sdk.logger.set_level("DEBUG")                          # 全局级别
 sdk.logger.set_module_level("MyModule", "DEBUG")       # 模块级别
+
+# 支持的级别（从低到高）：
+# TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
+# TRACE 为最低级别，输出框架内部详细调试信息（事件分发、路由注册等）
+sdk.logger.set_level("TRACE")                          # 开启全部日志
 ```
+
+### 日志订阅（推模式）
+
+供 Dashboard 等模块实时接收结构化日志，支持等级筛选和历史补发。
+
+```python
+# 装饰器方式
+@sdk.logger.handler("my-handler", min_level="INFO")
+def on_log(log_data: dict):
+    # log_data = {
+    #     "timestamp": "2026-06-29T22:00:00.123456",
+    #     "level": "WARNING", "level_num": 30,
+    #     "module": "ErisPulse.Core.adapter",
+    #     "message": "严格模式：...",
+    # }
+    pass
+
+# 直接调用方式
+sdk.logger.handler("my-handler", min_level="INFO")(on_log)
+sdk.logger.remove_handler("my-handler")
+```
+
+| 方法 | 说明 |
+|------|------|
+| `handler(id, *, min_level)(func)` | 装饰器/直接调用两用。`id` 为空时取函数名。注册时自动补发历史日志 |
+| `remove_handler(id)` | 移除订阅器 |
 
 ### 输出控制
 
