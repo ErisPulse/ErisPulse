@@ -7,12 +7,12 @@ HTTP 客户端单元测试
 """
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
 
+from ErisPulse.Core.Bases.errors import ClientConnectionError, ClientError
 from ErisPulse.Core.client import HttpClient, HttpResponse
-from ErisPulse.Core.Bases.errors import ClientError, ClientConnectionError
-
 
 # ==================== HttpResponse 测试 ====================
 
@@ -39,7 +39,7 @@ class TestHttpResponse:
         raw.read = AsyncMock(return_value=b'{"key": "value"}')
         raw.text = AsyncMock(return_value='{"key": "value"}')
         raw.json = AsyncMock(return_value={"key": "value"})
-        raw.release = AsyncMock()
+        raw.release = MagicMock()  # aiohttp.ClientResponse.release 是同步方法
         return raw
 
     def test_status_property(self):
