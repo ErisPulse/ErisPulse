@@ -125,16 +125,16 @@ LOG_TIME_FORMAT = "[%H:%M:%S]"
 # Rich 日志配色主题。
 # 键为 Rich 样式名（Theme key），值为 rich 样式字符串。
 # 修改影响: 终端中各级别日志的显示颜色。
-# 设计原则: 低饱和度、语义化——INFO 不着色只加粗，仅 WARNING/ERROR 用颜色高亮。
+# 设计原则: 参考 Rust env_logger 风格，每种级别使用独立语义色。
 LOG_RICH_THEME = {
     "log.time": "dim",  # 时间戳
-    "logging.level.trace": "dim",  # TRACE
-    "logging.level.debug": "dim cyan",  # DEBUG
+    "logging.level.trace": "dim",  # TRACE（最低可见度）
+    "logging.level.debug": "white",  # DEBUG
     "logging.level.event": "cyan",  # EVENT
-    "logging.level.info": "bold",  # INFO（加粗无颜色）
+    "logging.level.info": "green",  # INFO
     "logging.level.warning": "yellow",  # WARNING
     "logging.level.error": "red",  # ERROR
-    "logging.level.critical": "bold white on red",  # CRITICAL（红底白字）
+    "logging.level.critical": "black on red",  # CRITICAL（红底黑字）
 }
 
 # ==============================================================================
@@ -513,10 +513,10 @@ DEFAULT_LAZY_LOADING_ENABLED = True
 # 严格模式默认级别。
 # 配置默认值，可被 ErisPulse.framework.strict_mode 覆盖。
 # 0 = 宽松（违规仅警告，未继承基类的组件仍尝试加载）
-# 1 = 严格-跳过（拒绝未继承基类的组件，继续启动其余；默认值）
+# 1 = 严格-跳过（拒绝未继承基类的组件，继续启动其余）
 # 2 = 严格-致命（收集所有违规后中止整个启动）
 # 修改影响: 模块/适配器加载失败或不合规时的处理策略。
-DEFAULT_STRICT_MODE = 1
+DEFAULT_STRICT_MODE = 0
 
 # ==============================================================================
 # 国际化 (i18n) 默认值
@@ -548,7 +548,7 @@ DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS = 10.0
 
 # HTTP 客户端默认最大重试次数。
 # 修改影响: 请求失败后的自动重试次数。0 = 不重试。
-DEFAULT_HTTP_CLIENT_MAX_RETRIES = 0
+DEFAULT_HTTP_CLIENT_MAX_RETRIES = 1
 
 # HTTP 客户端重试间隔（秒）。
 # 修改影响: 每次重试之间的等待时间。

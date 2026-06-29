@@ -407,14 +407,16 @@ class HttpClient(BaseHttpClient):
         retry_delay: float | None = None,
         headers: dict[str, str] | None = None,
         user_agent: str | None = None,
+        proxy: str | None = None,
     ):
         """
         :param timeout: float | None 请求总超时 (秒) (默认: 30)
         :param connect_timeout: float | None 连接超时 (秒) (默认: 10)
-        :param max_retries: int 最大重试次数 (默认: 0)
+        :param max_retries: int 最大重试次数 (默认: 1)
         :param retry_delay: float 重试间隔 (秒) (默认: 1)
         :param headers: dict[str, str] 全局默认请求头 (可选)
         :param user_agent: str User-Agent 字符串 (可选)
+        :param proxy: str | None 代理 URL（如 http://127.0.0.1:7890），为 None 时自动检测环境变量
         """
         self._timeout = (
             timeout if timeout is not None else DEFAULT_HTTP_CLIENT_TIMEOUT_SECS
@@ -440,12 +442,24 @@ class HttpClient(BaseHttpClient):
         self._session = None
         self._ws_session = None
         self._session_lock = asyncio.Lock()
+        self._proxy = proxy  # None = 自动从环境变量检测
         self._stats = {
             "total_requests": 0,
             "total_errors": 0,
             "total_bytes_sent": 0,
             "total_bytes_received": 0,
         }
+
+    def _build_session_kwargs(self, timeout):
+        """构建 aiohttp.ClientSession 参数，自动注入代理"""
+        kwargs = {
+            "timeout": timeout,
+            "headers": self._default_headers,
+            "trust_env": True,
+        }
+        if self._proxy is not None:
+            kwargs["proxy"] = self._proxy
+        return kwargs
 
     # ---- Session 管理 ----
 
@@ -454,10 +468,8 @@ class HttpClient(BaseHttpClient):
             if self._ws_session is None or self._ws_session.closed:
                 import aiohttp
 
-                self._ws_session = aiohttp.ClientSession(
-                    timeout=aiohttp.ClientTimeout(),
-                    headers=self._default_headers or None,
-                )
+                kwargs = self._build_session_kwargs(aiohttp.ClientTimeout())
+                self._ws_session = aiohttp.ClientSession(**kwargs)
             return self._ws_session
 
     async def _drain_sessions(self):
@@ -486,10 +498,8 @@ class HttpClient(BaseHttpClient):
                     total=self._timeout,
                     connect=self._connect_timeout,
                 )
-                self._session = aiohttp.ClientSession(
-                    timeout=timeout,
-                    headers=self._default_headers,
-                )
+                kwargs = self._build_session_kwargs(timeout)
+                self._session = aiohttp.ClientSession(**kwargs)
             return self._session
 
     async def close(self) -> None:

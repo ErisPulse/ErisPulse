@@ -9,19 +9,24 @@ ErisPulse 事件处理基础模块
 {!--< /tips >!--}
 """
 
-from .. import adapter, logger
-from ...runtime import get_event_config
-from ...runtime.context import current_owner, handler_waits
-from ..constants import DEFAULT_HANDLER_PRIORITY, UNKNOWN_PLATFORM, EVENT_TYPE_MESSAGE, HANDLER_SLOW_THRESHOLD_SECS
-from typing import Any
-from collections.abc import Callable
 import asyncio
 import inspect
 import time as _time
+from collections.abc import Callable
 from itertools import groupby
-from .wrapper import Event
-from ..lifecycle import lifecycle
+from typing import Any
 
+from ...runtime import get_event_config
+from ...runtime.context import current_owner, handler_waits
+from .. import adapter, logger
+from ..constants import (
+    DEFAULT_HANDLER_PRIORITY,
+    EVENT_TYPE_MESSAGE,
+    HANDLER_SLOW_THRESHOLD_SECS,
+    UNKNOWN_PLATFORM,
+)
+from ..lifecycle import lifecycle
+from .wrapper import Event
 
 _sentinel = object()
 
@@ -35,7 +40,9 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     :param event: 事件对象
     """
     handler = handler_info["func"]
-    _hname = getattr(handler, "__qualname__", getattr(handler, "__name__", str(handler)))
+    _hname = getattr(
+        handler, "__qualname__", getattr(handler, "__name__", str(handler))
+    )
     _owner = handler_info.get("owner") or current_owner.get()
 
     # 切换到本 handler 的局部 wait 记录器。
@@ -76,7 +83,7 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
                 f"waits=[{_wait_keys}]){_owner_tag}"
             )
         else:
-            logger.debug(
+            logger.trace(
                 f"[EventHandler] {_hname} took {_elapsed:.4f}s "
                 f"(wait_reply={_wait_total:.4f}s, pure={_pure:.4f}s) "
                 f"interactive-wait, suppressed slow-warning{_owner_tag}"
@@ -118,7 +125,10 @@ class BaseEventHandler:
         self._linked_to_adapter_bus: bool = False
 
     def register(
-        self, handler: Callable, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable = None
+        self,
+        handler: Callable,
+        priority: int = DEFAULT_HANDLER_PRIORITY,
+        condition: Callable = None,
     ):
         """
         注册事件处理器
@@ -141,7 +151,7 @@ class BaseEventHandler:
         if self.event_type and not self._linked_to_adapter_bus:
             adapter.on(self.event_type)(self._process_event)
             self._linked_to_adapter_bus = True
-        logger.debug(
+        logger.trace(
             f"[Event] 已注册事件处理器: {self.event_type}, Called by: {self.module_name}, Owner: {current_owner.get() or 'N/A'}"
         )
 
@@ -172,10 +182,14 @@ class BaseEventHandler:
         self._handler_map = {id(h["func"]): h for h in self.handlers}
         removed = before - len(self.handlers)
         if removed > 0:
-            logger.debug(f"[Event] 已清理 {owner} 的 {removed} 个 {self.event_type} 处理器")
+            logger.trace(
+                f"[Event] 已清理 {owner} 的 {removed} 个 {self.event_type} 处理器"
+            )
         return removed
 
-    def __call__(self, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable = None):
+    def __call__(
+        self, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable = None
+    ):
         """
         装饰器方式注册事件处理器
 
@@ -204,11 +218,14 @@ class BaseEventHandler:
             event = Event(event)
 
         # 钩子: 事件预处理
-        await lifecycle.emit("event.pre_process", {
-            "event_type": self.event_type,
-            "platform": event.get("platform", UNKNOWN_PLATFORM),
-            "detail_type": event.get("detail_type", "unknown"),
-        })
+        await lifecycle.emit(
+            "event.pre_process",
+            {
+                "event_type": self.event_type,
+                "platform": event.get("platform", UNKNOWN_PLATFORM),
+                "detail_type": event.get("detail_type", "unknown"),
+            },
+        )
 
         # 忽略自己发送的消息
         if self.event_type == EVENT_TYPE_MESSAGE:
