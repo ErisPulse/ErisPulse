@@ -14,6 +14,7 @@ import datetime
 import inspect
 import json as _json
 import logging
+from collections.abc import Callable
 
 from rich.console import Console
 from rich.highlighter import NullHighlighter
@@ -81,6 +82,8 @@ class Logger:
         self._logger.setLevel(logging.DEBUG)
         self._file_handlers: list[logging.FileHandler] = []
         self._console = Console(theme=_LOG_THEME)
+        # 外部日志订阅者：{handler_id: (callback, min_level_num)}
+        self._log_handlers: dict[str, tuple[Callable, int]] = {}
         if not self._logger.handlers:
             console_handler = RichHandler(
                 console=self._console,
@@ -93,6 +96,80 @@ class Logger:
             )
             self._logger.addHandler(console_handler)
         self._setup_config()
+
+    # ==================== 日志订阅 ====================
+
+    def handler(self, handler_id: str = "", *, min_level: str = "TRACE"):
+        """
+        日志订阅装饰器
+
+        >>> @sdk.logger.handler("dashboard", min_level="INFO")
+        ... def on_log(log_data: dict): ...
+
+        >>> sdk.logger.handler("dashboard", min_level="INFO")(on_log)
+
+        :param handler_id: 订阅器唯一标识，为空时使用函数名
+        :param min_level: 最低日志级别
+        """
+
+        def decorate(f):
+            hid = handler_id or f.__name__
+            self._register_handler(hid, f, min_level)
+            return f
+
+        return decorate
+
+    def _register_handler(
+        self, handler_id: str, callback: Callable[[dict], None], min_level: str
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        内部注册逻辑
+        """
+        level_value = self._resolve_level(min_level)
+        if level_value is None:
+            return
+        self._log_handlers[handler_id] = (callback, level_value)
+        # 补发内存中已有的历史日志（按 level 筛选）
+        for logs in self._logs.values():
+            for log_data in logs:
+                if log_data.get("level_num", 0) >= level_value:
+                    try:
+                        callback(log_data)
+                    except Exception:
+                        pass
+
+    def remove_handler(self, handler_id: str) -> bool:
+        """
+        移除日志订阅器
+
+        :param handler_id: 注册时使用的标识
+        :return: bool 是否成功移除
+        """
+        return self._log_handlers.pop(handler_id, None) is not None
+
+    def _notify_handlers(
+        self, level_name: str, level_const: int, module: str, msg: str
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        向所有符合条件的订阅器推送结构化日志
+        """
+        if not self._log_handlers:
+            return
+        log_data = {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "level": level_name,
+            "level_num": level_const,
+            "module": module,
+            "message": str(msg),
+        }
+        for callback, min_level in self._log_handlers.values():
+            if level_const >= min_level:
+                try:
+                    callback(log_data)
+                except Exception:
+                    pass  # 订阅器异常不应影响日志流程
 
     def set_memory_limit(self, limit: int) -> bool:
         """
@@ -303,14 +380,14 @@ class Logger:
         """
         获取日志内容
 
-        在 JSON 模式下返回结构化 dict 列表，在 Rich 模式下返回字符串列表。
+        JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表。
 
         :param module_name (可选): 模块名称，None表示获取所有日志
         :return: dict 日志内容
         """
         if module_name is None:
-            return {k: v.copy() for k, v in self._logs.items()}
-        return {module_name: self._logs.get(module_name, [])}
+            return {k: self._format_for_output(v) for k, v in self._logs.items()}
+        return {module_name: self._format_for_output(self._logs.get(module_name, []))}
 
     def iter_logs(self, module_name: str = None):
         """
@@ -319,39 +396,56 @@ class Logger:
         适合处理大量日志或推送到 SSE / WebSocket。
 
         :param module_name: [str] 模块名称，None 表示所有模块
-        :return: [Iterator[dict | str]] 每行日志，JSON 模式下为 dict，Rich 模式下为 str
+        :return: [Iterator[dict | str]] JSON 模式下为 dict，Rich 模式下为 str
 
         :example:
         >>> for log in logger.iter_logs():
         ...     print(log)
         """
         if module_name:
-            yield from self._logs.get(module_name, [])
+            yield from self._format_for_output(self._logs.get(module_name, []))
         else:
             for logs in self._logs.values():
-                yield from logs
+                yield from self._format_for_output(logs)
 
-    def _save_in_memory(self, ModuleName, msg):
+    def _format_for_output(self, entries: list) -> list:
         """
         {!--< internal-use >!--}
+        将内部 dict 转换为向后兼容的输出格式
         """
-        if ModuleName not in self._logs:
-            self._logs[ModuleName] = []
-
-        if len(self._logs[ModuleName]) >= self._max_logs:
-            self._logs[ModuleName].pop(0)
-
         if self._json_mode:
-            self._logs[ModuleName].append(
+            return [
                 {
-                    "timestamp": datetime.datetime.now().isoformat(),
-                    "module": ModuleName,
-                    "message": msg,
+                    "timestamp": e["timestamp"],
+                    "module": e["module"],
+                    "message": e["message"],
                 }
-            )
-        else:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            self._logs[ModuleName].append(f"{timestamp} - {msg}")
+                for e in entries
+            ]
+        return [f"{e['timestamp'][:19]} - {e['message']}" for e in entries]
+
+    def _save_in_memory(
+        self, module_name: str, level_name: str, level_const: int, msg: str
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        将日志保存到内存
+        """
+        if module_name not in self._logs:
+            self._logs[module_name] = []
+
+        if len(self._logs[module_name]) >= self._max_logs:
+            self._logs[module_name].pop(0)
+
+        self._logs[module_name].append(
+            {
+                "timestamp": datetime.datetime.now().isoformat(),
+                "level": level_name,
+                "level_num": level_const,
+                "module": module_name,
+                "message": str(msg),
+            }
+        )
 
     def _setup_config(self):
         from ..runtime import get_logger_config
@@ -381,7 +475,8 @@ class Logger:
         """
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= level_const:
-            self._save_in_memory(caller_module, msg)
+            self._save_in_memory(caller_module, level_name, level_const, msg)
+            self._notify_handlers(level_name, level_const, caller_module, msg)
             self._logger.log(level_const, f"[{caller_module}] {msg}", *args, **kwargs)
 
     def _get_caller(self):
@@ -609,7 +704,8 @@ class LoggerChild:
         display_name = ".".join(deduped)
 
         if self._parent._get_effective_level(display_name.split(".")[0]) <= level_const:
-            self._parent._save_in_memory(display_name, msg)
+            self._parent._save_in_memory(display_name, level_name, level_const, msg)
+            self._parent._notify_handlers(level_name, level_const, display_name, msg)
             self._parent._logger.log(
                 level_const, f"[{display_name}] {msg}", *args, **kwargs
             )
