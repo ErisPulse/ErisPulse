@@ -77,7 +77,7 @@ ConfigManager 类提供相关功能。
 
 ##### `_sort_config_dict(config_dict: dict[str, Any])`
 
-递归地对配置字典进行排序
+递归地对配置字典按键排序
 
 :param config_dict: dict 待排序的配置字典
 :return: dict 排序后的配置字典
@@ -92,6 +92,24 @@ ConfigManager 类提供相关功能。
 将待写入的配置刷新到文件
 
 使用文件锁确保多线程环境下的原子性操作
+
+> **内部方法**
+
+---
+
+
+##### `_register_atexit()`
+
+注册 atexit 钩子，确保进程退出时未持久化的配置被 flush
+
+> **内部方法**
+
+---
+
+
+##### `_flush_on_exit()`
+
+atexit 回调：进程退出时强制刷新所有脏配置
 
 > **内部方法**
 
