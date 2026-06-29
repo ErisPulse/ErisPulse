@@ -2650,7 +2650,7 @@ memory_limit = 1000
 [ErisPulse.framework]
 enable_lazy_loading = true
 uninit_timeout = 30
-strict_mode = 1
+strict_mode = 0
 
 [ErisPulse.framework.strict_mode_exceptions]
 modules = []
@@ -2700,7 +2700,7 @@ memory_limit = 1000
 
 | 配置项 | 类型 | 默认值 | 说明 |
 |---------|------|---------|------|
-| level | string | INFO | 日志级别：DEBUG, INFO, WARNING, ERROR, CRITICAL |
+| level | string | INFO | 日志级别：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 为最低级别，输出框架内部详细调试信息） |
 | format | string | rich | 日志输出格式，默认使用 rich 彩色输出 |
 | log_files | array | 空 | 日志输出文件列表 |
 | memory_limit | integer | 1000 | 内存中保存的日志条数 |
@@ -2711,7 +2711,7 @@ memory_limit = 1000
 [ErisPulse.framework]
 enable_lazy_loading = true
 uninit_timeout = 30
-strict_mode = 1
+strict_mode = 0
 
 [ErisPulse.framework.strict_mode_exceptions]
 modules = []
@@ -2722,16 +2722,18 @@ adapters = []
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | 是否启用模块懒加载 |
 | uninit_timeout | integer | 30 | 优雅关闭的总超时时间（秒），超过后强制终止。0 表示不设超时 |
-| strict_mode | integer | 1 | 严格模式级别，见下方「严格模式」说明 |
+| strict_mode | integer | 0 | 严格模式级别，见下方「严格模式」说明 |
 
 ### 严格模式
 
-严格模式控制模块/适配器在加载阶段不合规或失败时的处理策略。现代模块/适配器都应继承对应的基类（`BaseModule`/`BaseAdapter`），未继承基类的组件会影响框架的上下文系统与兑底清理，可能导致资源泄露。严格模式默认开启以挡住这类组件。
+严格模式控制模块/适配器在加载阶段不合规或失败时的处理策略。现代模块/适配器都应继承对应的基类（`BaseModule`/`BaseAdapter`），未继承基类的组件会影响框架的上下文系统与兜底清理，可能导致资源泄露。
+
+> **2.5.2 变更**：默认级别从 `1`（跳过）调整为 `0`（宽松），以减少新用户初次使用时遇到的加载问题。未继承基类的组件将以 WARNING 提示并尝试加载，而非直接拒绝。如需恢复旧行为，请显式设置 `strict_mode = 1`。
 
 | 级别 | 名称 | 行为 |
 |------|------|------|
-| 0 | 宽松 | 违规仅警告，未继承基类的组件仍会尝试加载（兼容旧组件） |
-| 1 | 严格-跳过（默认） | 拒绝未继承基类的组件并跳过，其余正常启动 |
+| 0 | 宽松（默认） | 违规仅警告，未继承基类的组件仍会尝试加载（兼容旧组件） |
+| 1 | 严格-跳过 | 拒绝未继承基类的组件并跳过，其余正常启动 |
 | 2 | 严格-致命 | 收集所有违规后统一报告并中止整个启动 |
 
 各级别下，「加载/注册/初始化阶段报错」这类组件自身崩溃始终会被跳过；区别在于：
@@ -3180,10 +3182,12 @@ epsdk run main.py --reload
 
 ### 调试技巧
 
-在 `config/config.toml` 中启用 DEBUG 级别日志：
+在 `config/config.toml` 中启用 DEBUG 或 TRACE 级别日志：
 
 ```toml
 [ErisPulse.logger]
+# DEBUG: 输出模块加载、路由注册等开发调试信息
+# TRACE: 最低级别，输出事件分发、存储写入、懒加载等框架内部详细流程
 level = "DEBUG"
 ```
 
@@ -7588,7 +7592,38 @@ child_logger.get_child("utils")  # 支持嵌套
 ```python
 sdk.logger.set_level("DEBUG")                          # 全局级别
 sdk.logger.set_module_level("MyModule", "DEBUG")       # 模块级别
+
+# 支持的级别（从低到高）：
+# TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
+# TRACE 为最低级别，输出框架内部详细调试信息（事件分发、路由注册等）
+sdk.logger.set_level("TRACE")                          # 开启全部日志
 ```
+
+### 日志订阅（推模式）
+
+供 Dashboard 等模块实时接收结构化日志，支持等级筛选和历史补发。
+
+```python
+# 装饰器方式
+@sdk.logger.handler("my-handler", min_level="INFO")
+def on_log(log_data: dict):
+    # log_data = {
+    #     "timestamp": "2026-06-29T22:00:00.123456",
+    #     "level": "WARNING", "level_num": 30,
+    #     "module": "ErisPulse.Core.adapter",
+    #     "message": "严格模式：...",
+    # }
+    pass
+
+# 直接调用方式
+sdk.logger.handler("my-handler", min_level="INFO")(on_log)
+sdk.logger.remove_handler("my-handler")
+```
+
+| 方法 | 说明 |
+|------|------|
+| `handler(id, *, min_level)(func)` | 装饰器/直接调用两用。`id` 为空时取函数名。注册时自动补发历史日志 |
+| `remove_handler(id)` | 移除订阅器 |
 
 ### 输出控制
 
