@@ -67,7 +67,7 @@
 > 开发版本
 
 **版本摘要**
-2.5.2-dev.2 优化 Docker 部署体验、提升配置持久化健壮性、完善 CI/CD 流程与开发规范。
+2.5.2-dev.2 优化 Docker 部署体验、提升配置持久化健壮性、完善 CI/CD 流程与开发规范，修复日志级别设置与配色问题。
 
 **升级建议**
 - 建议升级：所有 Docker 部署用户
@@ -85,6 +85,10 @@
   - `Core/config.py` `_sort_config_dict()` 重写为字典推导式，消除手动循环与二次 `__getitem__`
   - `Core/config.py` 新增 `atexit` 钩子：进程异常退出时自动 flush 未持久化的脏配置
   - `Core/router.py` `start()` 中重新注册异步异常处理器，确保在 uvicorn 事件循环中生效
+  - `Core/logger.py`/`Core/constants.py` 重构日志配色主题
+    - INFO 从加粗无色改为绿色，DEBUG 改为白色，CRITICAL 改为红底黑字
+    - 致谢： @mmmpipi
+  - CLI Emoji替换为纯 ASCII（`[*]`/`[OK]`/`[FAIL]`），优化部分终端显示乱码
 
 ### 变更
 
@@ -99,6 +103,18 @@
 - @wsu2059q
   - `.github/workflows/code-quality-check.yml` Ruff 检查范围扩展至 `tests/`，PR 测试只跑单元测试
   - `pytest.ini` 配置迁移至 `pyproject.toml` 的 `[tool.pytest.ini_options]`，原文件已删除
+
+### 修复
+
+- @wsu2059q
+  - 修复一个无关痛痒的关于cli在执行upgrade时极小可能会报 `执行命令时出错: 'NoneType' object has no attribute 'lower'` 的问题
+  - `Core/logger.py` 修复 `set_level()` / `set_module_level()` 无法识别自定义级别的问题：
+    - 原因：仅检查 `hasattr(logging, level)`，而 `TRACE`/`EVENT` 是自定义常量未挂载到 `logging` 模块
+    - 新增 `_resolve_level()` 方法，先查标准 `logging` 属性，再查 `_CUSTOM_LEVELS` 字典
+  - 修复测试中的 3 个 warning：
+    - `StarletteDeprecationWarning`（starlette.testclient 依赖旧版 httpx）
+    - `RuntimeWarning: coroutine never awaited`（`test_unit_client.py` 中 `release` mock 应为同步 `MagicMock`）
+    - `ResourceWarning: unclosed database`（新增 session fixture 清理 sqlite 连接）
 
 ---
 
