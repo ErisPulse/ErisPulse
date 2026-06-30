@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1286,
+  "total_keywords": 1287,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1863,19 +1863,19 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 135,
+        "line": 166,
         "level": 3,
         "title": "API 概覽"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 175,
+        "line": 206,
         "level": 3,
         "title": "API 概覽"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 202,
+        "line": 233,
         "level": 3,
         "title": "API 概覽"
       }
@@ -1915,7 +1915,7 @@
     "Adapter 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 131,
+        "line": 162,
         "level": 2,
         "title": "Adapter 模組"
       }
@@ -1987,7 +1987,7 @@
     "Bot 狀態查詢": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 160,
+        "line": 191,
         "level": 3,
         "title": "Bot 狀態查詢"
       },
@@ -2323,7 +2323,7 @@
     "HTTP Client 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 257,
+        "line": 288,
         "level": 2,
         "title": "HTTP Client 模組"
       }
@@ -2427,7 +2427,7 @@
     "Lifecycle 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 198,
+        "line": 229,
         "level": 2,
         "title": "Lifecycle 模組"
       }
@@ -2507,7 +2507,7 @@
     "Module 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 171,
+        "line": 202,
         "level": 2,
         "title": "Module 模組"
       }
@@ -2745,7 +2745,7 @@
     "Router 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 230,
+        "line": 261,
         "level": 2,
         "title": "Router 模組"
       }
@@ -2788,20 +2788,20 @@
         "title": "SDK 物件"
       }
     ],
+    "SQL 串接查詢": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 43,
+        "level": 3,
+        "title": "SQL 串接查詢"
+      }
+    ],
     "SQL 查詢建構器": [
       {
         "document": "advanced/sql-builder.md",
         "line": 1,
         "level": 1,
         "title": "SQL 查詢建構器"
-      }
-    ],
-    "SQL 鏈式查詢": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 43,
-        "level": 3,
-        "title": "SQL 鏈式查詢"
       }
     ],
     "SSE (Server-Sent Events) 支援": [
@@ -3743,7 +3743,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 217,
+        "line": 218,
         "level": 2,
         "title": "下一步"
       }
@@ -4113,7 +4113,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 148,
+        "line": 149,
         "level": 2,
         "title": "事件配置"
       }
@@ -4688,6 +4688,14 @@
         "title": "儲存"
       }
     ],
+    "儲存後端抽象": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 59,
+        "level": 3,
+        "title": "儲存後端抽象"
+      }
+    ],
     "儲存系統": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -4700,14 +4708,6 @@
         "line": 128,
         "level": 2,
         "title": "儲存系統"
-      }
-    ],
-    "儲存配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 137,
-        "level": 2,
-        "title": "儲存配置"
       }
     ],
     "元事件": [
@@ -5254,6 +5254,14 @@
         "title": "命令資訊"
       }
     ],
+    "命令配置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 151,
+        "level": 3,
+        "title": "命令配置"
+      }
+    ],
     "命名規範": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -5305,7 +5313,7 @@
     "嚴格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 110,
+        "line": 109,
         "level": 3,
         "title": "嚴格模式"
       }
@@ -5389,7 +5397,7 @@
     "國際化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 177,
+        "line": 178,
         "level": 2,
         "title": "國際化配置"
       }
@@ -6010,12 +6018,12 @@
         "title": "子日誌器"
       }
     ],
-    "存儲後端抽象": [
+    "存儲配置": [
       {
-        "document": "api-reference/core-modules.md",
-        "line": 59,
-        "level": 3,
-        "title": "存儲後端抽象"
+        "document": "user-guide/configuration.md",
+        "line": 138,
+        "level": 2,
+        "title": "存儲配置"
       }
     ],
     "存取核心模組": [
@@ -6218,14 +6226,6 @@
         "title": "專案管理命令"
       }
     ],
-    "專案範本": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 48,
-        "level": 3,
-        "title": "專案範本"
-      }
-    ],
     "專案結構": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -6289,7 +6289,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 190,
+        "line": 221,
         "level": 3,
         "title": "屬性存取"
       },
@@ -6811,13 +6811,13 @@
     "快速參考": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 236,
+        "line": 267,
         "level": 3,
         "title": "快速參考"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 263,
+        "line": 294,
         "level": 3,
         "title": "快速參考"
       },
@@ -6958,12 +6958,12 @@
         "title": "扩展字段說明"
       }
     ],
-    "批次操作": [
+    "批量操作": [
       {
         "document": "api-reference/core-modules.md",
         "line": 20,
         "level": 3,
-        "title": "批次操作"
+        "title": "批量操作"
       }
     ],
     "批量註冊（Mixin 類）": [
@@ -7042,14 +7042,6 @@
         "line": 65,
         "level": 2,
         "title": "指令資訊獲取"
-      }
-    ],
-    "指令配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 150,
-        "level": 3,
-        "title": "指令配置"
       }
     ],
     "指定發送帳號": [
@@ -7622,12 +7614,20 @@
         "title": "日誌信息"
       }
     ],
-    "日誌層級控制": [
+    "日誌等級控制": [
       {
         "document": "api-reference/core-modules.md",
         "line": 115,
         "level": 3,
-        "title": "日誌層級控制"
+        "title": "日誌等級控制"
+      }
+    ],
+    "日誌訂閱（推模式）": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 127,
+        "level": 3,
+        "title": "日誌訂閱（推模式）"
       }
     ],
     "日誌訊息": [
@@ -8041,7 +8041,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 91,
+        "line": 90,
         "level": 2,
         "title": "框架配置"
       }
@@ -8303,7 +8303,7 @@
     "模組配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 188,
+        "line": 189,
         "level": 2,
         "title": "模組配置"
       }
@@ -8550,6 +8550,14 @@
         "line": 145,
         "level": 2,
         "title": "消息過濾"
+      }
+    ],
+    "消息配置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 167,
+        "level": 3,
+        "title": "消息配置"
       }
     ],
     "測試": [
@@ -8900,12 +8908,12 @@
         "title": "發布"
       }
     ],
-    "發布您的模組": [
+    "發布你的模組": [
       {
         "document": "developer-guide/README.md",
-        "line": 81,
+        "line": 74,
         "level": 2,
-        "title": "發布您的模組"
+        "title": "發布你的模組"
       }
     ],
     "發布指南": [
@@ -9170,8 +9178,14 @@
         "title": "相關文件"
       },
       {
+        "document": "api-reference/core-modules.md",
+        "line": 309,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
         "document": "developer-guide/README.md",
-        "line": 85,
+        "line": 78,
         "level": 2,
         "title": "相關文件"
       },
@@ -9240,12 +9254,6 @@
       {
         "document": "advanced/message-builder.md",
         "line": 185,
-        "level": 2,
-        "title": "相關文檔"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 278,
         "level": 2,
         "title": "相關文檔"
       },
@@ -9441,7 +9449,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 214,
+        "line": 245,
         "level": 3,
         "title": "範例"
       },
@@ -10086,14 +10094,6 @@
         "title": "訊息管理方法"
       }
     ],
-    "訊息配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 166,
-        "level": 3,
-        "title": "訊息配置"
-      }
-    ],
     "訊息類型判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -10290,6 +10290,14 @@
         "title": "語言偵測機制"
       }
     ],
+    "調試技巧": [
+      {
+        "document": "developer-guide/README.md",
+        "line": 63,
+        "level": 3,
+        "title": "調試技巧"
+      }
+    ],
     "請求 Body": [
       {
         "document": "platform-guide/webhook.md",
@@ -10417,7 +10425,7 @@
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
-        "line": 125,
+        "line": 126,
         "level": 4,
         "title": "豁免清單"
       }
@@ -10551,7 +10559,7 @@
     "輸出控制": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 122,
+        "line": 153,
         "level": 3,
         "title": "輸出控制"
       }
@@ -10949,7 +10957,7 @@
     "適配器事件": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 148,
+        "line": 179,
         "level": 3,
         "title": "適配器事件"
       }
@@ -11556,14 +11564,6 @@
         "title": "附件消息段"
       }
     ],
-    "除錯技巧": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 63,
-        "level": 3,
-        "title": "除錯技巧"
-      }
-    ],
     "雙模式機制": [
       {
         "document": "advanced/message-builder.md",
@@ -11654,6 +11654,14 @@
         "line": 359,
         "level": 2,
         "title": "非同步處理機制"
+      }
+    ],
+    "項目範本": [
+      {
+        "document": "developer-guide/README.md",
+        "line": 48,
+        "level": 3,
+        "title": "項目範本"
       }
     ],
     "預設設定": [

@@ -6,55 +6,55 @@ This guide helps you develop custom modules and adapters to extend the functiona
 
 ### Module Development
 
-1. [Getting Started with Modules](modules/getting-started.md) - Create your first module
-2. [Module Core Concepts](modules/core-concepts.md) - Core concepts and architecture of modules
-3. [Event Wrapper Details](modules/event-wrapper.md) - Full description of the Event object
-4. [Module Best Practices](modules/best-practices.md) - Recommendations for developing high-quality modules
+1. [Getting Started with Module Development](modules/getting-started.md) - Create your first module
+2. [Core Concepts of Modules](modules/core-concepts.md) - Core concepts and architecture of modules
+3. [Event Wrapper Class Detailed Explanation](modules/event-wrapper.md) - Complete explanation of the Event object
+4. [Best Practices for Module Development](modules/best-practices.md) - Recommendations for developing high-quality modules
 
 ### Adapter Development
 
-1. [Getting Started with Adapters](adapters/getting-started.md) - Create your first adapter
-2. [Adapter Core Concepts](adapters/core-concepts.md) - Core concepts of adapters
-3. [SendDSL Details](adapters/send-dsl.md) - Full description of the Send message sending DSL
-4. [Event Converter](adapters/converter.md) - Implementing event converters
-5. [Adapter Best Practices](adapters/best-practices.md) - Recommendations for developing high-quality adapters
+1. [Getting Started with Adapter Development](adapters/getting-started.md) - Create your first adapter
+2. [Core Concepts of Adapters](adapters/core-concepts.md) - Core concepts of adapters
+3. [Detailed Explanation of SendDSL](adapters/send-dsl.md) - Complete explanation of the Send message sending DSL
+4. [Event Converters](adapters/converter.md) - Implement event converters
+5. [Best Practices for Adapter Development](adapters/best-practices.md) - Recommendations for developing high-quality adapters
 
 ### Publishing Guide
 
-- [Publishing and Module Store Guide](publishing.md) - Publish your work to PyPI and the ErisPulse Module Store
+- [Publishing and Module Store Guide](publishing.md) - Publish your work to PyPI and the ErisPulse module store
 
-## Prerequisites
+## Development Preparation
 
 Before starting development, ensure that you:
 
-1. Have read [Basic Concepts](../getting-started/basic-concepts.md)
-2. Are familiar with [Event Handling](../getting-started/event-handling.md)
-3. Installed the development environment (Python >= 3.10)
-4. Installed the ErisPulse SDK
+1. Read the [Basic Concepts](../getting-started/basic-concepts.md)
+2. Familiarize yourself with [Event Handling](../getting-started/event-handling.md)
+3. Install the development environment (Python >= 3.10)
+4. Install the ErisPulse SDK
 
 ## Choosing a Development Type
 
 Choose the appropriate development type based on your needs:
 
-| Development Type | Use Cases | Getting Started Guide |
-|------------------|-----------|-----------------------|
-| **Module Development** | Extending bot functionality, implementing specific business logic, providing commands and message handling | [Getting Started with Modules](modules/getting-started.md) |
-| **Adapter Development** | Connecting to new messaging platforms, implementing cross-platform communication, providing platform-specific features | [Getting Started with Adapters](adapters/getting-started.md) |
+| Development Type | Use Case | Getting Started Guide |
+|------------------|----------|-----------------------|
+| **Module Development** | Extend robot functionality, implement business logic, provide commands and message handling | [Getting Started with Module Development](modules/getting-started.md) |
+| **Adapter Development** | Connect to new messaging platforms, implement cross-platform communication, provide platform-specific features | [Getting Started with Adapter Development](adapters/getting-started.md) |
 
-> If you want to extend the bot's functionality (such as adding commands or handling messages), choose **Module Development**. If you need to connect the bot to a new platform, choose **Adapter Development**.
+> If you want to extend the robot's functionality (such as adding commands or handling messages), choose **Module Development**. If you need to connect the robot to a new platform, choose **Adapter Development**.
 
 ## Development Tools
 
 ### Project Templates
 
-ErisPulse provides example projects for reference:
+ErisPulse provides example projects as references:
 
-- [Module Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - Complete project structure for a module
-- [Adapter Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - Complete project structure for an adapter
+- [Module Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - Complete project structure for modules
+- [Adapter Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - Complete project structure for adapters
 
 ### Development Mode
 
-Use hot reload mode for development, where code changes are automatically reloaded:
+Use the hot-reload mode for development, where code changes automatically reload:
 
 ```bash
 epsdk run main.py --reload
@@ -62,41 +62,20 @@ epsdk run main.py --reload
 
 ### Debugging Tips
 
-Enable DEBUG level logging in `config/config.toml`:
+Enable DEBUG or TRACE level logging in `config/config.toml`:
 
 ```toml
 [ErisPulse.logger]
+# DEBUG: Outputs development and debugging information such as module loading and route registration
+# TRACE: The lowest level, outputs detailed internal framework processes such as event dispatching, storage writing, and lazy loading
 level = "DEBUG"
-```
-
-Use the module's own logger:
-
-```python
-from ErisPulse import sdk
-
-logger = sdk.logger.get_child("MyModule")
-logger.debug("Debug info")
 ```
 
 ## Publishing Your Module
 
-For the complete publishing process, refer to [Publishing and Module Store Guide](publishing.md), including:
-
-- PyPI publishing steps
-- ErisPulse Module Store submission process
-- Publishing adapters
-
-### Quick Reference
-
-```bash
-# Build and publish to PyPI
-python -m build
-python -m twine upload dist/*
-```
-
-Then go to [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) to submit to the module store.
+For the complete publishing process, refer to the [Publishing and Module Store Guide](publishing.md), which includes PyPI publishing steps and the ErisPulse module store submission process.
 
 ## Related Documentation
 
 - [Standards](../standards/) - Technical standards to ensure compatibility
-- [Platform Guide](../platform-guide/) - Learn about the features of various platform adapters
+- [Platform Features Guide](../platform-guide/) - Learn about the features of each platform adapter
