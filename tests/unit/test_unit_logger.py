@@ -275,12 +275,12 @@ class TestLogger:
     def test_save_in_memory(self, temp_logger):
         """测试内存存储日志"""
         # 执行
-        temp_logger._save_in_memory("TestModule", "Test message")
+        temp_logger._save_in_memory("TestModule", "INFO", logging.INFO, "Test message")
 
         # 验证
         assert "TestModule" in temp_logger._logs
         assert len(temp_logger._logs["TestModule"]) == 1
-        assert "Test message" in temp_logger._logs["TestModule"][0]
+        assert "Test message" in temp_logger._logs["TestModule"][0]["message"]
 
     def test_memory_limit_enforcement(self, temp_logger):
         """测试内存限制执行"""
@@ -289,11 +289,13 @@ class TestLogger:
 
         # 记录10条日志
         for i in range(10):
-            temp_logger._save_in_memory("TestModule", f"Message {i}")
+            temp_logger._save_in_memory(
+                "TestModule", "INFO", logging.INFO, f"Message {i}"
+            )
 
         # 验证（应该只保留最后5条）
         assert len(temp_logger._logs["TestModule"]) == 5
-        assert "Message 9" in temp_logger._logs["TestModule"][-1]
+        assert "Message 9" in temp_logger._logs["TestModule"][-1]["message"]
 
     # ==================== 文件输出测试 ====================
 
@@ -340,8 +342,12 @@ class TestLogger:
     def test_save_logs(self, temp_logger):
         """测试保存日志到文件"""
         # 添加一些内存日志
-        temp_logger._save_in_memory("TestModule", "Test message 1")
-        temp_logger._save_in_memory("TestModule", "Test message 2")
+        temp_logger._save_in_memory(
+            "TestModule", "INFO", logging.INFO, "Test message 1"
+        )
+        temp_logger._save_in_memory(
+            "TestModule", "INFO", logging.INFO, "Test message 2"
+        )
 
         with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".log") as f:
             temp_file = f.name
@@ -383,9 +389,9 @@ class TestLogger:
     def test_get_logs(self, temp_logger):
         """测试获取日志"""
         # 添加一些内存日志
-        temp_logger._save_in_memory("Module1", "Message 1")
-        temp_logger._save_in_memory("Module2", "Message 2")
-        temp_logger._save_in_memory("Module1", "Message 3")
+        temp_logger._save_in_memory("Module1", "INFO", logging.INFO, "Message 1")
+        temp_logger._save_in_memory("Module2", "INFO", logging.INFO, "Message 2")
+        temp_logger._save_in_memory("Module1", "INFO", logging.INFO, "Message 3")
 
         # 获取所有日志
         all_logs = temp_logger.get_logs()
