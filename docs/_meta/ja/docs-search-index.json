@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1284,
+  "total_keywords": 1285,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3182,12 +3182,12 @@
         "title": "Yunhu ユーザープラットフォーム特性ドキュメント"
       }
     ],
-    "[BUG-001] Init コマンドアダプタ構成パスの型エラー": [
+    "[BUG-001] Init コマンドアダプター設定パスの型エラー": [
       {
         "document": "bug-tracker.md",
         "line": 9,
         "level": 3,
-        "title": "[BUG-001] Init コマンドアダプタ構成パスの型エラー"
+        "title": "[BUG-001] Init コマンドアダプター設定パスの型エラー"
       }
     ],
     "[BUG-002] 再起動後にコマンドイベントが無効になる": [
@@ -3198,116 +3198,116 @@
         "title": "[BUG-002] 再起動後にコマンドイベントが無効になる"
       }
     ],
-    "[BUG-003] ライフサイクルイベントハンドラがクリアされない": [
+    "[BUG-003] ライフサイクルイベントハンドラのクリア漏れ": [
       {
         "document": "bug-tracker.md",
         "line": 45,
         "level": 3,
-        "title": "[BUG-003] ライフサイクルイベントハンドラがクリアされない"
+        "title": "[BUG-003] ライフサイクルイベントハンドラのクリア漏れ"
       }
     ],
-    "[BUG-004] Event.confirm() 確認語の集合代入が重複している": [
+    "[BUG-004] Event.confirm() 確認語コレクションの代入が重複している": [
       {
         "document": "bug-tracker.md",
         "line": 61,
         "level": 3,
-        "title": "[BUG-004] Event.confirm() 確認語の集合代入が重複している"
+        "title": "[BUG-004] Event.confirm() 確認語コレクションの代入が重複している"
       }
     ],
-    "[BUG-005] MessageBuilder.at メソッド定義が上書きされている（デッドコード）": [
+    "[BUG-005] MessageBuilder.at メソッド定義が上書きされる（デッドコード）": [
       {
         "document": "bug-tracker.md",
         "line": 77,
         "level": 3,
-        "title": "[BUG-005] MessageBuilder.at メソッド定義が上書きされている（デッドコード）"
+        "title": "[BUG-005] MessageBuilder.at メソッド定義が上書きされる（デッドコード）"
       }
     ],
-    "[BUG-006] Event.is_friend_add/is_friend_delete の detail_type と OB12 標準が一致しない": [
+    "[BUG-006] Event.is_friend_add/is_friend_delete の detail_type と OB12 標準の不一致": [
       {
         "document": "bug-tracker.md",
         "line": 93,
         "level": 3,
-        "title": "[BUG-006] Event.is_friend_add/is_friend_delete の detail_type と OB12 標準が一致しない"
+        "title": "[BUG-006] Event.is_friend_add/is_friend_delete の detail_type と OB12 標準の不一致"
       }
     ],
-    "[BUG-007] adapter.clear() が _started_instances をクリアしないことによる再起動後の状態不正": [
+    "[BUG-007] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が不正になる": [
       {
         "document": "bug-tracker.md",
         "line": 109,
         "level": 3,
-        "title": "[BUG-007] adapter.clear() が _started_instances をクリアしないことによる再起動後の状態不正"
+        "title": "[BUG-007] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が不正になる"
       }
     ],
-    "[BUG-008] command.wait_reply() で非推奨の asyncio.get_event_loop() が使用されている": [
+    "[BUG-008] command.wait_reply() が非推奨の asyncio.get_event_loop() を使用している": [
       {
         "document": "bug-tracker.md",
         "line": 125,
         "level": 3,
-        "title": "[BUG-008] command.wait_reply() で非推奨の asyncio.get_event_loop() が使用されている"
+        "title": "[BUG-008] command.wait_reply() が非推奨の asyncio.get_event_loop() を使用している"
       }
     ],
-    "[BUG-009] Event.collect() でキーが欠けている場合、無警告でスキップされる": [
+    "[BUG-009] Event.collect() で key が欠落している場合に黙ってスキップされる": [
       {
         "document": "bug-tracker.md",
         "line": 141,
         "level": 3,
-        "title": "[BUG-009] Event.collect() でキーが欠けている場合、無警告でスキップされる"
+        "title": "[BUG-009] Event.collect() で key が欠落している場合に黙ってスキップされる"
       }
     ],
-    "[BUG-010] LazyModule 同期アクセスによる BaseModule 未初期化完了": [
+    "[BUG-010] LazyModule 同期アクセス BaseModule 导致未初始化完成": [
       {
         "document": "bug-tracker.md",
         "line": 157,
         "level": 3,
-        "title": "[BUG-010] LazyModule 同期アクセスによる BaseModule 未初期化完了"
+        "title": "[BUG-010] LazyModule 同期アクセス BaseModule 导致未初始化完成"
       }
     ],
-    "[BUG-011] 設定システムのマルチスレッド書き込みによるデータ消失": [
+    "[BUG-011] 設定システムのマルチスレッド書き込みによりデータが失われる": [
       {
         "document": "bug-tracker.md",
         "line": 173,
         "level": 3,
-        "title": "[BUG-011] 設定システムのマルチスレッド書き込みによるデータ消失"
+        "title": "[BUG-011] 設定システムのマルチスレッド書き込みによりデータが失われる"
       }
     ],
-    "[BUG-012] SDK プロパティアクセスエラーメッセージが不正確": [
+    "[BUG-012] SDK プロパティアクセスエラーのメッセージが不正確": [
       {
         "document": "bug-tracker.md",
         "line": 192,
         "level": 3,
-        "title": "[BUG-012] SDK プロパティアクセスエラーメッセージが不正確"
+        "title": "[BUG-012] SDK プロパティアクセスエラーのメッセージが不正確"
       }
     ],
-    "[BUG-013] 未初期化の LazyModule の Uninitializer クリーンアップロジックが複雑すぎる": [
+    "[BUG-013] Uninitializer が未初期化の LazyModule のクリアロジックが複雑すぎる": [
       {
         "document": "bug-tracker.md",
         "line": 211,
         "level": 3,
-        "title": "[BUG-013] 未初期化の LazyModule の Uninitializer クリーンアップロジックが複雑すぎる"
+        "title": "[BUG-013] Uninitializer が未初期化の LazyModule のクリアロジックが複雑すぎる"
       }
     ],
-    "[BUG-014] Windows で CTRL+C がプログラムを停止できない": [
+    "[BUG-014] Windows で CTRL+C がプログラムの停止に失敗する": [
       {
         "document": "bug-tracker.md",
         "line": 230,
         "level": 3,
-        "title": "[BUG-014] Windows で CTRL+C がプログラムを停止できない"
+        "title": "[BUG-014] Windows で CTRL+C がプログラムの停止に失敗する"
       }
     ],
-    "[BUG-015] モジュール読み込み戦略のソートロジックエラー": [
+    "[BUG-015] モジュール読み込み戦略の並べ替えロジックエラー": [
       {
         "document": "bug-tracker.md",
         "line": 250,
         "level": 3,
-        "title": "[BUG-015] モジュール読み込み戦略のソートロジックエラー"
+        "title": "[BUG-015] モジュール読み込み戦略の並べ替えロジックエラー"
       }
     ],
-    "[BUG-016] アダプタミドルウェアが None を返すことによるイベントデータの消失": [
+    "[BUG-016] アダプターミドルウェアが None を返すとイベントデータが失われる": [
       {
         "document": "bug-tracker.md",
         "line": 266,
         "level": 3,
-        "title": "[BUG-016] アダプタミドルウェアが None を返すことによるイベントデータの消失"
+        "title": "[BUG-016] アダプターミドルウェアが None を返すとイベントデータが失われる"
       }
     ],
     "[BUG-017] 設定ファイルパスが作業ディレクトリに依存する": [
@@ -3318,12 +3318,20 @@
         "title": "[BUG-017] 設定ファイルパスが作業ディレクトリに依存する"
       }
     ],
-    "[BUG-018] 子プロセスモード `ep run <script>` でスクリプトのあるディレクトリのサブパッケージが見つからない": [
+    "[BUG-018] サブプロセスモード `ep run <script>` でスクリプトのサブパッケージが見つからない": [
       {
         "document": "bug-tracker.md",
         "line": 298,
         "level": 3,
-        "title": "[BUG-018] 子プロセスモード `ep run <script>` でスクリプトのあるディレクトリのサブパッケージが見つからない"
+        "title": "[BUG-018] サブプロセスモード `ep run <script>` でスクリプトのサブパッケージが見つからない"
+      }
+    ],
+    "[BUG-019] SQL クエリビルダーが有効なワイルドカードと列式を拒否する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 314,
+        "level": 3,
+        "title": "[BUG-019] SQL クエリビルダーが有効なワイルドカードと列式を拒否する"
       }
     ],
     "__init__.py": [
@@ -8574,12 +8582,12 @@
         "title": "例外階層"
       }
     ],
-    "修正済みのバグ": [
+    "修正済みバグ": [
       {
         "document": "bug-tracker.md",
         "line": 7,
         "level": 2,
-        "title": "修正済みのバグ"
+        "title": "修正済みバグ"
       }
     ],
     "修飾メソッド": [
