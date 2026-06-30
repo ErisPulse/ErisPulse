@@ -63,6 +63,32 @@
 
 ---
 
+## [2.5.2-dev.3] - 2026/06/30
+> 开发版本
+
+**版本摘要**
+2.5.2-dev.3 修复存储模块 `synchronous=NORMAL` PRAGMA 对事务外高频操作不生效的问题（写操作实际回落到 FULL，每次 commit 触发 fsync），新增 `wal_checkpoint()` 手动检查点方法。
+
+### 新增
+
+- @wsu2059q
+  - `Core/storage.py` 新增 `wal_checkpoint(mode="PASSIVE")` 方法，手动执行 WAL checkpoint 回收 `-wal` 文件体积：
+    - 支持四种模式：`PASSIVE`（默认，不阻塞读写）、`FULL`、`RESTART`、`TRUNCATE`（截断 `-wal` 至 0 字节）
+    - `mode` 参数经白名单校验后再拼接到 PRAGMA 语句，避免 SQL 注入风险
+    - 适合低峰期或进程退出前调用，缓解默认自动 checkpoint 在高写入速率下跟不上的问题
+
+### 修复
+
+- @wsu2059q
+  - `Core/storage.py` 修复 `synchronous=NORMAL` 对事务外 `get/set` 等高频操作不生效的问题：
+    - 原因：`PRAGMA synchronous=NORMAL` 是 per-connection 设置、不跨连接持久化；此前仅在 `_init_db()` 的临时连接上设置过一次，`_get_connection()` 每次新建的连接会回落到默认的 `synchronous=FULL`
+    - 修复：新增 `_open_connection()` 统一连接创建入口，对每个新连接应用 `journal_mode=WAL` + `synchronous=NORMAL`；`_get_connection()`、`_init_db()`、`_Transaction` 全部改走该方法
+  - `tests/unit/test_unit_logger.py` 修复 4 个测试调用 `_save_in_memory()` 时参数不匹配的问题：
+    - 源码签名已重构为 `(module_name, level_name, level_const, msg)`，测试仍按旧的 2 参数形式调用
+    - 补齐 `level_name`/`level_const` 参数，并修正直接读取 `_logs` 条目（现为 dict）的断言
+
+---
+
 ## [2.5.2-dev.2] - 2026/06/29
 > 开发版本
 
