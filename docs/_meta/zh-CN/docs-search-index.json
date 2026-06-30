@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1237,
+  "total_keywords": 1238,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1919,19 +1919,19 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 135,
+        "line": 166,
         "level": 3,
         "title": "API 概览"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 175,
+        "line": 206,
         "level": 3,
         "title": "API 概览"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 202,
+        "line": 233,
         "level": 3,
         "title": "API 概览"
       }
@@ -1985,7 +1985,7 @@
     "Adapter 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 131,
+        "line": 162,
         "level": 2,
         "title": "Adapter 模块"
       }
@@ -2057,7 +2057,7 @@
     "Bot 状态查询": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 160,
+        "line": 191,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -2393,7 +2393,7 @@
     "HTTP Client 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 257,
+        "line": 288,
         "level": 2,
         "title": "HTTP Client 模块"
       }
@@ -2497,7 +2497,7 @@
     "Lifecycle 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 198,
+        "line": 229,
         "level": 2,
         "title": "Lifecycle 模块"
       }
@@ -2577,7 +2577,7 @@
     "Module 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 171,
+        "line": 202,
         "level": 2,
         "title": "Module 模块"
       }
@@ -2813,7 +2813,7 @@
     "Router 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 230,
+        "line": 261,
         "level": 2,
         "title": "Router 模块"
       }
@@ -3775,7 +3775,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 216,
+        "line": 218,
         "level": 2,
         "title": "下一步"
       },
@@ -4207,7 +4207,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 147,
+        "line": 149,
         "level": 2,
         "title": "事件配置"
       }
@@ -5179,7 +5179,7 @@
     "发布你的模块": [
       {
         "document": "developer-guide/README.md",
-        "line": 72,
+        "line": 74,
         "level": 2,
         "title": "发布你的模块"
       }
@@ -5537,7 +5537,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 149,
+        "line": 151,
         "level": 3,
         "title": "命令配置"
       }
@@ -5629,7 +5629,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 176,
+        "line": 178,
         "level": 2,
         "title": "国际化配置"
       }
@@ -6317,7 +6317,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 136,
+        "line": 138,
         "level": 2,
         "title": "存储配置"
       }
@@ -6561,7 +6561,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 190,
+        "line": 221,
         "level": 3,
         "title": "属性访问"
       },
@@ -7127,13 +7127,13 @@
     "快速参考": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 236,
+        "line": 267,
         "level": 3,
         "title": "快速参考"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 263,
+        "line": 294,
         "level": 3,
         "title": "快速参考"
       },
@@ -7938,6 +7938,14 @@
         "title": "日志级别控制"
       }
     ],
+    "日志订阅（推模式）": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 127,
+        "level": 3,
+        "title": "日志订阅（推模式）"
+      }
+    ],
     "日志记录": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -8687,7 +8695,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 187,
+        "line": 189,
         "level": 2,
         "title": "模块配置"
       }
@@ -9171,7 +9179,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 165,
+        "line": 167,
         "level": 3,
         "title": "消息配置"
       }
@@ -9599,7 +9607,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 278,
+        "line": 309,
         "level": 2,
         "title": "相关文档"
       },
@@ -9611,7 +9619,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 76,
+        "line": 78,
         "level": 2,
         "title": "相关文档"
       },
@@ -9701,7 +9709,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 214,
+        "line": 245,
         "level": 3,
         "title": "示例"
       },
@@ -10375,7 +10383,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 124,
+        "line": 126,
         "level": 4,
         "title": "豁免清单"
       }
@@ -10559,7 +10567,7 @@
     "输出控制": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 122,
+        "line": 153,
         "level": 3,
         "title": "输出控制"
       }
@@ -10747,7 +10755,7 @@
     "适配器事件": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 148,
+        "line": 179,
         "level": 3,
         "title": "适配器事件"
       }

@@ -283,10 +283,18 @@ HTTP/WS 客户端 (基于 aiohttp)
 
 :param timeout: float | None 请求总超时 (秒) (默认: 30)
 :param connect_timeout: float | None 连接超时 (秒) (默认: 10)
-:param max_retries: int 最大重试次数 (默认: 0)
+:param max_retries: int 最大重试次数 (默认: 1)
 :param retry_delay: float 重试间隔 (秒) (默认: 1)
 :param headers: dict[str, str] 全局默认请求头 (可选)
 :param user_agent: str User-Agent 字符串 (可选)
+:param proxy: str | None 代理 URL（如 http://127.0.0.1:7890），为 None 时自动检测环境变量
+
+---
+
+
+##### `_build_session_kwargs(timeout)`
+
+构建 aiohttp.ClientSession 参数，自动注入代理
 
 ---
 
