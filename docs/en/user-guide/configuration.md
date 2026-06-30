@@ -1,11 +1,11 @@
 # Configuration File Guide
-> This document introduces the framework's configuration files. If third-party modules require configuration, please refer to the module's documentation.
+> This document will introduce the framework's configuration file. If any third-party module requires configuration, please refer to the module's documentation.
 
-ErisPulse uses TOML format configuration files `config/config.toml` to manage project configuration.
+ErisPulse uses a TOML format configuration file `config/config.toml` to manage project configurations.
 
 ## Configuration File Location
 
-The configuration file is located in the `config/` folder of the project root directory:
+The configuration file is located in the `config/` folder at the project root:
 
 ```
 project/
@@ -32,7 +32,7 @@ memory_limit = 1000
 [ErisPulse.framework]
 enable_lazy_loading = true
 uninit_timeout = 30
-strict_mode = 1
+strict_mode = 0
 
 [ErisPulse.framework.strict_mode_exceptions]
 modules = []
@@ -64,12 +64,12 @@ ssl_certfile = "/path/to/cert.pem"
 ssl_keyfile = "/path/to/key.pem"
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| host | string | 0.0.0.0 | Listening address; 0.0.0.0 means all interfaces |
+| host | string | 0.0.0.0 | Listening address, 0.0.0.0 means all interfaces |
 | port | integer | 8000 | Listening port number |
-| ssl_certfile | string | empty | SSL certificate file path |
-| ssl_keyfile | string | empty | SSL private key file path |
+| ssl_certfile | string | empty | Path to SSL certificate file |
+| ssl_keyfile | string | empty | Path to SSL private key file |
 
 ## Logging Configuration
 
@@ -80,12 +80,12 @@ log_files = ["app.log", "debug.log"]
 memory_limit = 1000
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| level | string | INFO | Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL |
-| format | string | rich | Log output format; defaults to rich colored output |
+| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed framework internal debug information) |
+| format | string | rich | Log output format, defaults to rich colored output |
 | log_files | array | empty | List of log output files |
-| memory_limit | integer | 1000 | Number of log entries saved in memory |
+| memory_limit | integer | 1000 | Number of log entries to keep in memory |
 
 ## Framework Configuration
 
@@ -93,37 +93,39 @@ memory_limit = 1000
 [ErisPulse.framework]
 enable_lazy_loading = true
 uninit_timeout = 30
-strict_mode = 1
+strict_mode = 0
 
 [ErisPulse.framework.strict_mode_exceptions]
 modules = []
 adapters = []
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | Whether to enable module lazy loading |
-| uninit_timeout | integer | 30 | Graceful shutdown timeout in seconds; if exceeded, forcefully terminate. 0 means no timeout |
-| strict_mode | integer | 1 | Strict mode level; see below for "Strict Mode" explanation |
+| uninit_timeout | integer | 30 | Total graceful shutdown timeout (seconds), force termination after timeout. 0 means no timeout set |
+| strict_mode | integer | 0 | Strict mode level, see below "Strict Mode" explanation |
 
 ### Strict Mode
 
-Strict mode controls the handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit the corresponding base classes (`BaseModule`/`BaseAdapter`). Components that do not inherit these base classes may affect the framework's context system and cleanup, potentially causing resource leaks. Strict mode is enabled by default to block such components.
+Strict mode controls the handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit the corresponding base class (`BaseModule`/`BaseAdapter`). Components that do not inherit the base class will affect the framework's context system and fallback cleanup, potentially causing resource leaks.
+
+> **2.5.2 Change**: The default level has been adjusted from `1` (skip) to `0` (lenient) to reduce loading issues for new users. Components that do not inherit the base class will be warned and attempted to load, rather than being directly rejected. To restore the previous behavior, explicitly set `strict_mode = 1`.
 
 | Level | Name | Behavior |
 |------|------|------|
-| 0 | Permissive | Non-compliance only triggers warnings; components not inheriting base classes will still be attempted to load (for compatibility with old components) |
-| 1 | Strict-Skip (Default) | Rejects components not inheriting base classes and skips them; other components start normally |
-| 2 | Strict-Fatal | Collects all non-compliant components and reports them collectively, then terminates the entire startup process |
+| 0 | Lenient (default) | Non-compliance only warns, components that do not inherit the base class will still attempt to load (compatibility with old components) |
+| 1 | Strict - Skip | Rejects components that do not inherit the base class and skips them, others start normally |
+| 2 | Strict - Fatal | Collects all violations and reports them together, then terminates the entire startup |
 
-Under each level, component crashes during the "loading/registration/initialization" phases are always skipped; the difference lies in:
+Under each level, component crashes during the "loading/registration/initialization phase" are always skipped. The differences are:
 
-- **0 → 1**: The only behavioral change is that components "not inheriting base classes" change from "still loaded" to "skipped".
-- **1 → 2**: All non-compliance (not inheriting base classes, loading failure, registration failure, initialization failure, etc.) is upgraded to fatal, and a list of non-compliant components is output at the startup checkpoint and the process is terminated.
+- **0 → 1**: The only behavioral change is that "not inheriting the base class" changes from "still loading" to "skip".
+- **1 → 2**: All violations (not inheriting the base class, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, collected at the startup checkpoint, and a violation list is output and terminated.
 
-#### Exception List
+#### Exemption List
 
-If certain components cannot be migrated temporarily (e.g., due to dependencies on old modules), they can be added to the exception list. Components listed in the exception list will be treated as permissive mode even if they are non-compliant, and will continue to be loaded:
+If certain components cannot be migrated temporarily (e.g., depending on old modules), they can be added to the exemption list. Components listed will be treated leniently and continue loading even if non-compliant:
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -131,7 +133,7 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to the exception list or lower the level).
+> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to exemption list or lower the level).
 
 ## Storage Configuration
 
@@ -140,9 +142,9 @@ adapters = ["OldAdapter"]
 use_global_db = false
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| use_global_db | boolean | false | Whether to use the global database (within package) instead of the project database. When `true`, all projects share the ErisPulse package's internal SQLite database; when `false` (default), each project uses a separate database in the `config/` directory |
+| use_global_db | boolean | false | Whether to use the global database (within package) rather than the project database. If `true`, all projects share the SQLite database within the ErisPulse package; if `false` (default), each project uses an independent database in the `config/` directory |
 
 ## Event Configuration
 
@@ -153,15 +155,14 @@ use_global_db = false
 prefix = "/"
 case_sensitive = false
 allow_space_prefix = false
-must_at_bot = false
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
 | prefix | string | / | Command prefix |
-| case_sensitive | boolean | true | Whether to be case sensitive (i.e., whether `/Help` and `/help` are different commands) |
+| case_sensitive | boolean | true | Whether to distinguish case (whether `/Help` and `/help` are different commands) |
 | allow_space_prefix | boolean | false | Whether to allow spaces as prefix |
-| must_at_bot | boolean | false | Whether the bot must be mentioned (@bot) to trigger the command (DMs are not restricted) |
+| must_at_bot | boolean | false | Whether the command must be triggered by mentioning the bot (private chats are not restricted) |
 
 ### Message Configuration
 
@@ -170,9 +171,9 @@ must_at_bot = false
 ignore_self = true
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| ignore_self | boolean | true | Whether to ignore messages sent by the bot itself |
+| ignore_self | boolean | true | Whether to ignore messages from the bot itself |
 
 ## Internationalization Configuration
 
@@ -181,9 +182,9 @@ ignore_self = true
 language = "auto"
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| language | string | auto | Language for displaying framework built-in text. Set to `auto` to automatically detect system language, or set to a specific code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru` |
+| language | string | auto | Display language for framework built-in text. Set to `auto` to automatically detect system language, or set to a specific code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru` |
 
 ## Module Configuration
 
@@ -196,25 +197,25 @@ timeout = 30
 enabled = true
 ```
 
-Reading and writing configuration in modules:
+Read and write configuration within the module:
 
 ```python
 from ErisPulse import sdk
 
-# Read config
+# Read configuration
 config = sdk.config.getConfig("MyModule", {})
 api_url = config.get("api_url", "https://default.api.com")
 
-# Runtime write config (delayed save)
+# Write configuration at runtime (delayed save)
 sdk.config.setConfig("MyModule.timeout", 60)
 
-# Save to file immediately
+# Immediately save to file
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` defaults to delayed writing (batch saving to file every ~5 seconds). Setting `immediate=True` will persist immediately. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` defaults to delayed writing (batched save to file approximately every 5 seconds). Setting `immediate=True` will immediately persist. Configuration changes will trigger the `config.set` lifecycle event.
 
 ## Next Steps
 
-- [CLI Command Reference](cli-reference.md) - Learn about all command line commands
+- [CLI Command Reference](cli-reference.md) - Learn about all command-line commands
 - [Developer Guide](../developer-guide/) - Learn how to develop custom modules
