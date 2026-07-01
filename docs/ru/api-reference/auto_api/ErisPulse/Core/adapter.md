@@ -171,12 +171,12 @@ ErisPulse 适配器系统
 ---
 
 
-##### `_config_register(platform: str, enabled: bool = False)`
+##### `_config_register(platform: str, enabled: bool = True)`
 
 注册新平台适配器（仅当平台不存在时注册）
 
 :param platform: 平台名称
-- **enabled** (`bool`): 是否启用适配器
+- **enabled** (`bool`): 是否启用适配器 (默认: True，新适配器默认启用)
 **返回值** (`bool`): 操作是否成功
 
 ---
@@ -203,7 +203,7 @@ ErisPulse 适配器系统
 > 适配器启用条件：
 > 1. 适配器在配置文件中（ErisPulse.adapters.status.{platform} 存在）
 > 2. 配置值为启用状态
-> 如果适配器未在配置中，返回 False
+> 如果适配器未在配置中，默认启用并自动写入配置
 
 ---
 
@@ -253,6 +253,8 @@ ErisPulse 适配器系统
 ##### `list_items()`
 
 列出所有平台适配器状态
+
+合并配置项与已注册适配器，确保禁用适配器也可见。
 
 :return: {平台名: 是否启用} 字典
 
@@ -464,6 +466,7 @@ self字段标准扩展：
 获取适配器与Bot的完整状态摘要
 
 返回所有适配器的运行状态及各适配器下的Bot状态，便于WebUI展示。
+包含已禁用适配器以便于管理。
 
 :return: 状态摘要字典
 
@@ -481,6 +484,11 @@ self字段标准扩展：
 >>> #                     "info": {"nickname": "MyBot"}
 >>> #                 }
 >>> #             }
+>>> #         },
+>>> #         "disabled_platform": {
+>>> #             "status": "disabled",
+>>> #             "enabled": False,
+>>> #             "bots": {}
 >>> #         }
 >>> #     }
 >>> # }
