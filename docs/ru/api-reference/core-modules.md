@@ -1,10 +1,10 @@
-# API основных модулей ядра
+# API ядра
 
-В этом документе представлен быстрый справочник по API основных модулей ядра ErisPulse, включая сигнатуры методов и краткое описание. Подробные инструкции и примеры доступны по ссылкам "Полная документация" для каждого модуля.
+Данная документация предоставляет краткий справочник API ядра ErisPulse, включающий сигнатуры методов и краткие описания. Подробное использование и примеры можно найти, нажав на ссылку "Полная документация" для каждого модуля.
 
 ## Модуль Storage
 
-Базирующаяся на SQLite система хранения ключей, поддерживающая универсальный конструктор SQL-запросов со стилем цепного вызова.
+Система хранения ключ-значение на основе SQLite, поддерживающая общие SQL-цепочные запросы.
 
 ### Основные операции
 
@@ -33,16 +33,16 @@ with sdk.storage.transaction():
     sdk.storage.set("key2", "value2")
 ```
 
-### Доступ по атрибутам
+### Доступ к свойствам
 
 ```python
-sdk.storage.my_key          # Эквивалент sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # Эквивалент sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # эквивалентно sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # эквивалентно sdk.storage.set("my_key", "val")
 ```
 
-### SQL-запросы с цепочкой вызовов
+### SQL-цепочные запросы
 
-Модуль Storage предоставляет универсальный конструктор SQL-запросов со стилем цепного вызова, поддерживающий CRUD-операции для пользовательских таблиц.
+Модуль Storage предоставляет универсальный SQL-конструктор запросов с цепочечным вызовом, поддерживающий CRUD-операции для пользовательских таблиц.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -54,11 +54,11 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> Полное API для цепных запросов (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, транзакции и т.д.) см. в разделе [SQL Query Builder](../advanced/sql-builder.md).
+> Полный API цепочечных запросов (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, транзакции и т.д.) см. в [SQL-конструкторе запросов](../advanced/sql-builder.md).
 
 ### Абстракция хранилища
 
-`StorageManager` наследуется от абстрактного базового класса `BaseStorage` и поддерживает расширение других носителей хранения (Redis, MySQL и т.д.) в будущем.
+`StorageManager` наследуется от абстрактного базового класса `BaseStorage`, поддерживает расширение других типов хранилищ (Redis, MySQL и т.д.).
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -66,18 +66,18 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ## Модуль Config
 
-Управление файлами конфигурации в формате TOML, поддерживающее раздельные по точкам пути ключей.
+Управление конфигурационными файлами в формате TOML, поддерживает ключи с разделителями точек.
 
 ### Обзор API
 
 | Метод | Описание |
 |------|------|
 | `getConfig(key, default)` | Чтение конфигурации, поддерживает пути с точками, например `"MyModule.subkey"` |
-| `setConfig(key, value, immediate=False)` | Запись конфигурации. При `immediate=True` сохранение в файл выполняется немедленно |
-| `force_save()` | Принудительная запись конфигурации из памяти в файл |
+| `setConfig(key, value, immediate=False)` | Запись конфигурации. Если `immediate=True`, сохранение производится немедленно |
+| `force_save()` | Принудительное сохранение конфигурации из памяти в файл |
 | `reload()` | Перезагрузка конфигурации из файла |
 
-### Пример
+### Примеры
 
 ```python
 config = sdk.config.getConfig("MyModule", {})
@@ -87,37 +87,68 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> По умолчанию `setConfig` использует отложенную запись (пакетное сохранение каждые 5 секунд). Установка `immediate=True` обеспечивает немедленное постоянное сохранение в файл. Изменения конфигурации запускают событие жизненного цикла `config.set`.
+> `setConfig` по умолчанию использует отложенную запись (каждые 5 секунд сохраняются пакетно), установка `immediate=True` позволяет немедленно сохранить в конфигурационный файл. Изменения конфигурации вызывают событие жизненного цикла `config.set`.
 
 ## Модуль Logger
 
-Модульная система логирования, основанная на Rich, поддерживающая вложенные дочерние логгеры и управление уровнем на уровне модулей.
+Модульная система логирования, основанная на Rich, поддерживает под-логгеры и управление уровнем на уровне модуля.
 
-### Базовое использование
+### Основное использование
 
 ```python
 sdk.logger.debug("Отладочная информация")
-sdk.logger.info("Информация о работе")
+sdk.logger.info("Информационные сообщения")
 sdk.logger.warning("Предупреждение")
 sdk.logger.error("Ошибка")
 sdk.logger.critical("Критическая ошибка")
 ```
 
-### Дочерние логгеры
+### Под-логгеры
 
 ```python
 child_logger = sdk.logger.get_child("MyModule")
-child_logger.info("Лог дочернего модуля")
+child_logger.info("Лог подмодуля")
 
-child_logger.get_child("utils")  # Поддержка вложенности
+child_logger.get_child("utils")  # поддержка вложенности
 ```
 
 ### Управление уровнем логирования
 
 ```python
-sdk.logger.set_level("DEBUG")                          # Глобальный уровень
-sdk.logger.set_module_level("MyModule", "DEBUG")       # Уровень модуля
+sdk.logger.set_level("DEBUG")                          # глобальный уровень
+sdk.logger.set_module_level("MyModule", "DEBUG")       # уровень на уровне модуля
+
+# Поддерживаемые уровни (от низкого к высокому):
+# TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
+# TRACE — самый низкий уровень, выводит подробную отладочную информацию (диспетчер событий, регистрация маршрутов и т.д.)
+sdk.logger.set_level("TRACE")                          # включить все логи
 ```
+
+### Подписка на логи (push-модель)
+
+Для получения структурированных логов в реальном времени, например, для Dashboard, поддерживается фильтрация по уровню и отправка истории.
+
+```python
+# Способ с декоратором
+@sdk.logger.handler("my-handler", min_level="INFO")
+def on_log(log_data: dict):
+    # log_data = {
+    #     "timestamp": "2026-06-29T22:00:00.123456",
+    #     "level": "WARNING", "level_num": 30,
+    #     "module": "ErisPulse.Core.adapter",
+    #     "message": "Строгий режим:...",
+    # }
+    pass
+
+# Прямой вызов
+sdk.logger.handler("my-handler", min_level="INFO")(on_log)
+sdk.logger.remove_handler("my-handler")
+```
+
+| Метод | Описание |
+|------|------|
+| `handler(id, *, min_level)(func)` | Декоратор/прямой вызов. Если `id` пуст, берется имя функции. При регистрации автоматически отправляются исторические логи |
+| `remove_handler(id)` | Удаление подписчика |
 
 ### Управление выводом
 
@@ -130,20 +161,20 @@ sdk.logger.set_memory_limit(1000)
 
 ## Модуль Adapter
 
-Менеджер адаптеров, управляющий регистрацией, запуском и остановкой адаптеров для нескольких платформ.
+Менеджер адаптеров, управляет регистрацией, запуском и остановкой адаптеров для различных платформ.
 
 ### Обзор API
 
 | Метод | Описание |
 |------|------|
-| `get(platform)` | Получение экземпляра адаптера |
-| `exists(platform)` | Проверка, зарегистрирован ли адаптер |
-| `enable(platform)` / `disable(platform)` | Включение/Отключение адаптера |
-| `is_enabled(platform)` | Проверка, включен ли адаптер |
-| `startup(platforms)` / `shutdown(platforms)` | Запуск/Остановка адаптеров |
-| `is_running(platform)` | Проверка, запущен ли адаптер |
+| `get(platform)` | Получить экземпляр адаптера |
+| `exists(platform)` | Проверить, зарегистрирован ли адаптер |
+| `enable(platform)` / `disable(platform)` | Включить/выключить адаптер |
+| `is_enabled(platform)` | Проверить, включен ли адаптер |
+| `startup(platforms)` / `shutdown(platforms)` | Запустить/остановить адаптеры |
+| `is_running(platform)` | Проверить, запущен ли адаптер |
 | `list_running()` | Список всех запущенных адаптеров |
-| `platforms` | Получение списка имен всех платформ |
+| `platforms` | Получить список всех платформ |
 
 ### События адаптера
 
@@ -166,52 +197,52 @@ sdk.adapter.is_bot_online("telegram", "123456")
 sdk.adapter.get_status_summary()
 ```
 
-> Полный API управления адаптерами см. в разделе [Adapter System API](adapter-system.md).
+> Полный API управления адаптерами см. в [API системы адаптеров](adapter-system.md).
 
 ## Модуль Module
 
-Менеджер модулей, управляющий регистрацией, загрузкой и выгрузкой плагинов.
+Менеджер модулей, управляет регистрацией, загрузкой и выгрузкой плагинов.
 
 ### Обзор API
 
 | Метод | Описание |
 |------|------|
-| `get(name)` | Получение экземпляра модуля |
-| `exists(name)` | Проверка, зарегистрирован ли модуль |
-| `is_loaded(name)` | Проверка, загружен ли модуль |
-| `is_enabled(name)` | Проверка, включен ли модуль |
-| `enable(name)` / `disable(name)` | Включение/Отключение модуля |
-| `load(name)` / `unload(name)` | Загрузка/Выгрузка модуля |
+| `get(name)` | Получить экземпляр модуля |
+| `exists(name)` | Проверить, зарегистрирован ли модуль |
+| `is_loaded(name)` | Проверить, загружен ли модуль |
+| `is_enabled(name)` | Проверить, включен ли модуль |
+| `enable(name)` / `disable(name)` | Включить/выключить модуль |
+| `load(name)` / `unload(name)` | Загрузить/выгрузить модуль |
 | `list_registered()` | Список зарегистрированных модулей |
 | `list_loaded()` | Список загруженных модулей |
-| `get_info(name)` | Получение информации о модуле |
-| `get_status_summary()` | Получение сводки статуса модуля |
+| `get_info(name)` | Получить информацию о модуле |
+| `get_status_summary()` | Получить сводку о состоянии модуля |
 
-### Доступ по атрибутам
+### Доступ к свойствам
 
 ```python
 module = sdk.module.get("ModuleName")
 module = sdk.module.ModuleName
-module = sdk.ModuleName  # Эквивалентная сокращенная запись
+module = sdk.ModuleName  # эквивалентный быстрый способ
 ```
 
 ## Модуль Lifecycle
 
-Менеджер жизненного цикла, управляемый событиями, предоставляющий функционал отправки и прослушивания событий.
+Система управления жизненным циклом на основе событий, предоставляет функции отправки и прослушивания событий.
 
 ### Обзор API
 
 | Метод | Описание |
 |------|------|
-| `on(event, priority=0)` | Регистрация обработчика событий с помощью декоратора, поддерживает точечное совпадение и подстановочный знак `*` |
-| `register(event, handler, priority=0)` | Функциональная регистрация обработчика |
-| `unregister(event, handler=None)` | Удаление обработчика |
-| `emit(event, data)` | Асинхронный запуск события |
-| `emit_sync(event, data)` | Синхронный запуск события |
-| `submit_event(event_type, msg, data, source)` | Отправка события в стандартном формате (совместимо с предыдущими версиями) |
-| `start_timer(id)` / `stop_timer(id)` | Системный таймер для измерения производительности |
+| `on(event, priority=0)` | Декоратор для регистрации обработчика события, поддерживает совпадение по точке и подстановочный знак `*` |
+| `register(event, handler, priority=0)` | Функциональный способ регистрации обработчика |
+| `unregister(event, handler=None)` | Удалить обработчик |
+| `emit(event, data)` | Асинхронно запустить событие |
+| `emit_sync(event, data)` | Синхронно запустить событие |
+| `submit_event(event_type, msg, data, source)` | Подать событие в стандартном формате (совместимость со старыми версиями) |
+| `start_timer(id)` / `stop_timer(id)` | Таймер производительности |
 
-### Пример
+### Примеры
 
 ```python
 @sdk.lifecycle.on("module.init")
@@ -225,23 +256,23 @@ async def handle_any_module_event(event_data):
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-> Полный список стандартных событий и подробное описание см. в разделе [Lifecycle Management](../advanced/lifecycle.md).
+> Полный список стандартных событий и подробное использование см. в [Управление жизненным циклом](../advanced/lifecycle.md).
 
 ## Модуль Router
 
-Менеджер маршрутизации HTTP/WebSocket, основанный на FastAPI + Uvicorn, поддерживающий декораторную маршрутизацию, промежуточное ПО, группы, ограничение частоты запросов (Rate Limiting), CORS.
+Менеджер маршрутизации HTTP/WebSocket, на основе FastAPI + Uvicorn, поддерживает маршрутизацию с декораторами, промежуточные обработчики, группы, ограничение скорости, CORS.
 
-> Полный документ по API маршрутизации (декораторная маршрутизация, WebSocket, middleware, Rate Limiting, CORS, заголовки безопасности и т.д.) см. в разделе [Router Manager](../advanced/router.md).
+> Полная документация API маршрутизатора (маршрутизация с декораторами, WebSocket, промежуточные обработчики, ограничение скорости, CORS, заголовки безопасности и т.д.) см. в [Менеджере маршрутизации](../advanced/router.md).
 
-### Быстрый справочник
+### Краткий справочник
 
 ```python
-# HTTP маршруты
+# HTTP-маршрутизация
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# WebSocket маршруты
+# WebSocket-маршрутизация
 @sdk.router.ws("MyModule", "/ws")
 async def ws_handler(ws: WebSocketConnection):
     async for text in ws.iter_text():
@@ -256,16 +287,16 @@ async def list_users(request: HttpRequest):
 
 ## Модуль HTTP Client
 
-Унифицированный HTTP/WS клиент на основе aiohttp, предоставляющий статистику запросов, повторные попытки, логирование и систему исключений ErisPulse.
+Единый HTTP/WS-клиент, на основе aiohttp, предоставляет статистику запросов, повторные попытки, логирование, систему исключений ErisPulse.
 
-> Полная документация HTTP клиента (методы запросов, объекты ответов, WebSocket клиент, система исключений и т.д.) см. в разделе [HTTP Client](../advanced/http-client.md).
+> Полная документация HTTP-клиента (методы запроса, объекты ответа, WebSocket-клиент, система исключений и т.д.) см. в [HTTP-клиенте](../advanced/http-client.md).
 
-### Быстрый справочник
+### Краткий справочник
 
 ```python
 from ErisPulse.Core import client
 
-# HTTP запросы
+# HTTP-запрос
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
@@ -275,11 +306,11 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-## См. также
+## Связанная документация
 
-- [Система событий API](event-system.md) - API модуля Event
-- [API системы адаптеров](adapter-system.md) - API управления адаптером
-- [SQL Query Builder](../advanced/sql-builder.md) - Полная документация по SQL-запросам
-- [Router Manager](../advanced/router.md) - Полная документация менеджера маршрутизации
-- [HTTP Client](../advanced/http-client.md) - Полная документация HTTP клиента
-- [Lifecycle Management](../advanced/lifecycle.md) - Полная документация жизненного цикла
+- [API системы событий](event-system.md) - API модуля Event
+- [API системы адаптеров](adapter-system.md) - API управления адаптерами
+- [SQL-конструктор запросов](../advanced/sql-builder.md) - Полная документация цепочечных SQL-запросов
+- [Менеджер маршрутизации](../advanced/router.md) - Полная документация менеджера маршрутизации
+- [HTTP-клиент](../advanced/http-client.md) - Полная документация HTTP-клиента
+- [Управление жизненным циклом](../advanced/lifecycle.md) - Полная документация управления жизненным циклом

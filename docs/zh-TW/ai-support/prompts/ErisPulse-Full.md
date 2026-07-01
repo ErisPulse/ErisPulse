@@ -2613,7 +2613,7 @@ epsdk create module -n MyModule -f
 ### 配置文件说明
 
 # 配置檔案說明
-> 這份文件將介紹框架的配置檔案，如果有第三方模組需要配置，請參考模組的文件。
+> 這個文件會介紹框架的配置檔案，如果有第三方模組需要配置，請參考模組的文件。
 
 ErisPulse 使用 TOML 格式的配置檔案 `config/config.toml` 來管理專案配置。
 
@@ -2646,7 +2646,7 @@ memory_limit = 1000
 [ErisPulse.framework]
 enable_lazy_loading = true
 uninit_timeout = 30
-strict_mode = 1
+strict_mode = 0
 
 [ErisPulse.framework.strict_mode_exceptions]
 modules = []
@@ -2682,7 +2682,7 @@ ssl_keyfile = "/path/to/key.pem"
 |---------|------|---------|------|
 | host | string | 0.0.0.0 | 監聽位址，0.0.0.0 表示所有介面 |
 | port | integer | 8000 | 監聽埠號 |
-| ssl_certfile | string | 空 | SSL 憑證檔案路徑 |
+| ssl_certfile | string | 空 | SSL 證書檔案路徑 |
 | ssl_keyfile | string | 空 | SSL 私鑰檔案路徑 |
 
 ## 日誌配置
@@ -2690,17 +2690,16 @@ ssl_keyfile = "/path/to/key.pem"
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-format = "rich"
 log_files = ["app.log", "debug.log"]
 memory_limit = 1000
 ```
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| level | string | INFO | 日誌層級：DEBUG, INFO, WARNING, ERROR, CRITICAL |
+| level | string | INFO | 日誌等級：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低等級，輸出框架內部詳細除錯資訊） |
 | format | string | rich | 日誌輸出格式，預設使用 rich 彩色輸出 |
 | log_files | array | 空 | 日誌輸出檔案列表 |
-| memory_limit | integer | 1000 | 記憶體中保存的日誌筆數 |
+| memory_limit | integer | 1000 | 內存中保存的日誌條數 |
 
 ## 框架配置
 
@@ -2708,7 +2707,7 @@ memory_limit = 1000
 [ErisPulse.framework]
 enable_lazy_loading = true
 uninit_timeout = 30
-strict_mode = 1
+strict_mode = 0
 
 [ErisPulse.framework.strict_mode_exceptions]
 modules = []
@@ -2719,19 +2718,21 @@ adapters = []
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | 是否啟用模組懶加載 |
 | uninit_timeout | integer | 30 | 優雅關閉的總超時時間（秒），超過後強制終止。0 表示不設超時 |
-| strict_mode | integer | 1 | 嚴格模式級別，見下方「嚴格模式」說明 |
+| strict_mode | integer | 0 | 嚴格模式等級，見下方「嚴格模式」說明 |
 
 ### 嚴格模式
 
-嚴格模式控制模組/適配器在加載階段不合規或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的組件會影響框架的上下文系統與資源清理，可能導致資源洩漏。嚴格模式預設開啟以阻止這類組件。
+嚴格模式控制模組/適配器在加載階段不合規或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的組件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
 
-| 級別 | 名稱 | 行為 |
+> **2.5.2 變更**：預設等級從 `1`（跳過）調整為 `0`（寬鬆），以減少新使用者初次使用時遇到的加載問題。未繼承基類的組件將以 WARNING 提示並嘗試加載，而非直接拒絕。如需恢復舊行為，請顯式設定 `strict_mode = 1`。
+
+| 等級 | 名稱 | 行為 |
 |------|------|------|
-| 0 | 寬鬆 | 違規僅警告，未繼承基類的組件仍會嘗試加載（相容舊組件） |
-| 1 | 嚴格-跳過（預設） | 拒絕未繼承基類的組件並跳過，其餘正常啟動 |
+| 0 | 寬鬆（預設） | 違規僅警告，未繼承基類的組件仍會嘗試加載（相容舊組件） |
+| 1 | 嚴格-跳過 | 拒絕未繼承基類的組件並跳過，其餘正常啟動 |
 | 2 | 嚴格-致命 | 收集所有違規後統一報告並中止整個啟動 |
 
-各級別下，「加載/註冊/初始化階段報錯」這類組件自身崩潰始終會被跳過；區別在於：
+各等級下，「加載/註冊/初始化階段報錯」這類組件自身崩潰始終會被跳過；區別在於：
 
 - **0 → 1**：唯一行為變化是「未繼承基類」從「仍加載」變為「跳過」。
 - **1 → 2**：所有違規（未繼承基類、加載失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。
@@ -2746,9 +2747,9 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> 當某個組件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低級別）。
+> 當某個組件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低等級）。
 
-## 儲存配置
+## 存儲配置
 
 ```toml
 [ErisPulse.storage]
@@ -2757,27 +2758,27 @@ use_global_db = false
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| use_global_db | boolean | false | 是否使用全域資料庫（套件內）而非專案資料庫。`true` 時所有項目共享 ErisPulse 套件內的 SQLite 資料庫；`false`（預設）時每個項目使用 `config/` 目錄下獨立的資料庫 |
+| use_global_db | boolean | false | 是否使用全域資料庫（包內）而非專案資料庫。`true` 時所有專案共享 ErisPulse 包內的 SQLite 資料庫；`false`（預設）時每個專案使用 `config/` 目錄下獨立的資料庫 |
 
 ## 事件配置
 
-### 指令配置
+### 命令配置
 
 ```toml
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = true
+case_sensitive = false
 allow_space_prefix = false
 ```
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| prefix | string | / | 指令前綴 |
-| case_sensitive | boolean | true | 是否區分大小寫（`/Help` 與 `/help` 是否為不同指令） |
+| prefix | string | / | 命令前綴 |
+| case_sensitive | boolean | true | 是否區分大小寫（`/Help` 與 `/help` 是否為不同命令） |
 | allow_space_prefix | boolean | false | 是否允許空格作為前綴 |
-| must_at_bot | boolean | false | 是否必須@機器人才能觸發指令（私聊不受限制） |
+| must_at_bot | boolean | false | 是否必須 @ 機器人才能觸發命令（私聊不受限制） |
 
-### 訊息配置
+### 消息配置
 
 ```toml
 [ErisPulse.event.message]
@@ -2786,7 +2787,7 @@ ignore_self = true
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| ignore_self | boolean | true | 是否忽略機器人自己的訊息 |
+| ignore_self | boolean | true | 是否忽略機器人自己的消息 |
 
 ## 國際化配置
 
@@ -2819,19 +2820,19 @@ from ErisPulse import sdk
 config = sdk.config.getConfig("MyModule", {})
 api_url = config.get("api_url", "https://default.api.com")
 
-# 執行階段寫入配置（延遲保存）
+# 運行時寫入配置（延遲保存）
 sdk.config.setConfig("MyModule.timeout", 60)
 
 # 立即保存到檔案
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` 預設採用延遲寫入（約每 5 秒批次保存到檔案），設置 `immediate=True` 可立即持久化。配置變更會觸發 `config.set` 生命週期事件。
+> `setConfig` 預設採用延遲寫入（約每 5 秒批量保存到檔案），設定 `immediate=True` 可立即持久化。配置變更會觸發 `config.set` 生命週期事件。
 
 ## 下一步
 
-- [CLI 命令參考](cli-reference.md) - 了解所有命令列命令
-- [開發者指南](../developer-guide/) - 學習開發自定義模組
+- [CLI 命令參考](docs/zh-TW/cli-reference.md) - 了解所有命令列命令
+- [開發者指南](docs/zh-TW/developer-guide/) - 學習開發自訂模組
 
 
 ### 部署指南
@@ -3113,32 +3114,32 @@ tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
 # 開發者指南
 
-本指南協助您開發自訂模組和適配器，以擴充 ErisPulse 的功能。
+本指南幫助你開發自訂模組和適配器，以擴展 ErisPulse 的功能。
 
 ## 內容列表
 
 ### 模組開發
 
-1. [模組開發入門](modules/getting-started.md) - 建立第一個模組
-2. [模組核心概念](modules/core-concepts.md) - 模組的核心概念與架構
-3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 物件的完整說明
+1. [模組開發入門](modules/getting-started.md) - 創建第一個模組
+2. [模組核心概念](modules/core-concepts.md) - 模組的核心概念和架構
+3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 對象的完整說明
 4. [模組最佳實踐](modules/best-practices.md) - 開發高品質模組的建議
 
 ### 適配器開發
 
-1. [適配器開發入門](adapters/getting-started.md) - 建立第一個適配器
+1. [適配器開發入門](adapters/getting-started.md) - 創建第一個適配器
 2. [適配器核心概念](adapters/core-concepts.md) - 適配器的核心概念
-3. [SendDSL 詳解](adapters/send-dsl.md) - Send 訊息傳送 DSL 的完整說明
-4. [事件轉換器](adapters/converter.md) - 實作事件轉換器
+3. [SendDSL 詳解](adapters/send-dsl.md) - Send 消息發送 DSL 的完整說明
+4. [事件轉換器](adapters/converter.md) - 實現事件轉換器
 5. [適配器最佳實踐](adapters/best-practices.md) - 開發高品質適配器的建議
 
 ### 發布指南
 
-- [發布與模組商店指南](publishing.md) - 將您的作品發布到 PyPI 和 ErisPulse 模組商店
+- [發布與模組商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模組商店
 
 ## 開發準備
 
-在開始開發之前，請確保您：
+在開始開發之前，請確保你：
 
 1. 閱讀了[基礎概念](../getting-started/basic-concepts.md)
 2. 熟悉了[事件處理](../getting-started/event-handling.md)
@@ -3147,51 +3148,44 @@ tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
 ## 開發類型選擇
 
-根據您的需求選擇合適的開發類型：
+根據你的需求選擇合適的開發類型：
 
 | 開發類型 | 適用場景 | 入門指南 |
 |---------|---------|---------|
-| **模組開發** | 擴充機器人功能、實作業務邏輯、提供指令與訊息處理 | [模組開發入門](modules/getting-started.md) |
-| **適配器開發** | 連接新的訊息平台、實作跨平台通訊、提供平台特定功能 | [適配器開發入門](adapters/getting-started.md) |
+| **模組開發** | 擴展機器人功能、實現業務邏輯、提供命令和訊息處理 | [模組開發入門](modules/getting-started.md) |
+| **適配器開發** | 連接新的訊息平台、實現跨平台通信、提供平台特定功能 | [適配器開發入門](adapters/getting-started.md) |
 
-> 如果您想擴充機器人的功能（如新增指令、處理訊息），選擇**模組開發**。如果您需要讓機器人連接到一個新的平台，選擇**適配器開發**。
+> 如果你想擴展機器人的功能（如新增命令、處理訊息），選擇**模組開發**。如果你需要讓機器人連接到一個新的平台，選擇**適配器開發**。
 
 ## 開發工具
 
-### 專案範本
+### 項目範本
 
-ErisPulse 提供了範例專案作為參考：
+ErisPulse 提供了範例項目作為參考：
 
-- [模組範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整專案結構
-- [適配器範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 適配器的完整專案結構
+- [模組範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整項目結構
+- [適配器範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 適配器的完整項目結構
 
 ### 開發模式
 
-使用熱重載模式進行開發，程式碼修改後自動重新載入：
+使用熱重載模式進行開發，程式碼修改後自動重載：
 
 ```bash
 epsdk run main.py --reload
 ```
 
-### 除錯技巧
+### 調試技巧
 
-在 `config/config.toml` 中啟用 DEBUG 級別日誌：
+在 `config/config.toml` 中啟用 DEBUG 或 TRACE 級別日誌：
 
 ```toml
 [ErisPulse.logger]
+# DEBUG: 輸出模組載入、路由註冊等開發調試資訊
+# TRACE: 最低級別，輸出事件分發、儲存寫入、懶加載等框架內部詳細流程
 level = "DEBUG"
 ```
 
-使用模組自己的日誌記錄器：
-
-```python
-from ErisPulse import sdk
-
-logger = sdk.logger.get_child("MyModule")
-logger.debug("除錯資訊")
-```
-
-## 發布您的模組
+## 發布你的模組
 
 完整的發布流程請參考 [發布與模組商店指南](publishing.md)，包括 PyPI 發布步驟、ErisPulse 模組商店提交流程等。
 
@@ -7472,11 +7466,11 @@ API 参考
 
 # 核心模組 API
 
-本文檔提供 ErisPulse 核心模組的 API 快速參考，包含方法簽名和簡要說明。詳細用法和範例請點擊各模組的「完整文檔」連結。
+本文檔提供 ErisPulse 核心模組的 API 快速參考，包含方法簽名和簡要說明。詳細用法和範例請點擊各模組的「完整文件」連結。
 
 ## Storage 模組
 
-基於 SQLite 的鍵值存儲系統，支援通用 SQL 鏈式查詢。
+基於 SQLite 的鍵值儲存系統，支援通用 SQL 串接查詢。
 
 ### 基本操作
 
@@ -7489,7 +7483,7 @@ keys = sdk.storage.keys()
 sdk.storage.delete("key")
 ```
 
-### 批次操作
+### 批量操作
 
 ```python
 sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
@@ -7508,13 +7502,13 @@ with sdk.storage.transaction():
 ### 屬性存取
 
 ```python
-sdk.storage.my_key          # 等價於 sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # 等價於 sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # 等同於 sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # 等同於 sdk.storage.set("my_key", "val")
 ```
 
-### SQL 鏈式查詢
+### SQL 串接查詢
 
-Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
+Storage 模組提供串接呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -7526,11 +7520,11 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> 完整的鏈式查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事務等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。
+> 完整的串接查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事務等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。
 
-### 存儲後端抽象
+### 儲存後端抽象
 
-`StorageManager` 繼承自 `BaseStorage` 抽象基類，支援擴展其他存儲介質（Redis、MySQL 等）。
+`StorageManager` 繼承自 `BaseStorage` 抽象基類，支援擴展其他儲存介質（Redis、MySQL 等）。
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -7538,16 +7532,16 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ## Config 模組
 
-TOML 格式的配置檔案管理，支援點號分隔的鍵路徑。
+TOML 格式的設定檔管理，支援點號分隔的鍵路徑。
 
 ### API 概覽
 
 | 方法 | 說明 |
 |------|------|
-| `getConfig(key, default)` | 讀取配置，支援點號路徑如 `"MyModule.subkey"` |
-| `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即儲存到檔案 |
-| `force_save()` | 強制將記憶體中的配置寫入檔案 |
-| `reload()` | 從檔案重新載入配置 |
+| `getConfig(key, default)` | 讀取設定，支援點號路徑如 `"MyModule.subkey"` |
+| `setConfig(key, value, immediate=False)` | 寫入設定。`immediate=True` 時立即保存到檔案 |
+| `force_save()` | 強制將記憶體中的設定寫入檔案 |
+| `reload()` | 從檔案重新載入設定 |
 
 ### 範例
 
@@ -7559,11 +7553,11 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` 預設採用延遲寫入（每 5 秒批次儲存），設定 `immediate=True` 可立即持久化到配置檔案。配置變更會觸發 `config.set` 生命週期事件。
+> `setConfig` 預設採用延遲寫入（每 5 秒批量保存），設定 `immediate=True` 可立即持久化到設定檔。設定變更會觸發 `config.set` 生命週期事件。
 
 ## Logger 模組
 
-模組化日誌系統，基於 Rich 輸出，支援子日誌器和模組層級控制。
+模組化日誌系統，基於 Rich 輸出，支援子日誌器和模組級別控制。
 
 ### 基本用法
 
@@ -7581,15 +7575,46 @@ sdk.logger.critical("致命錯誤")
 child_logger = sdk.logger.get_child("MyModule")
 child_logger.info("子模組日誌")
 
-child_logger.get_child("utils")  # 支援巢狀
+child_logger.get_child("utils")  # 支援嵌套
 ```
 
-### 日誌層級控制
+### 日誌等級控制
 
 ```python
-sdk.logger.set_level("DEBUG")                          # 全局層級
-sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組層級
+sdk.logger.set_level("DEBUG")                          # 全域等級
+sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組等級
+
+# 支援的等級（由低到高）：
+# TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
+# TRACE 為最低等級，輸出框架內部詳細除錯資訊（事件分發、路由註冊等）
+sdk.logger.set_level("TRACE")                          # 開啟全部日誌
 ```
+
+### 日誌訂閱（推模式）
+
+供 Dashboard 等模組即時接收結構化日誌，支援等級篩選和歷史補發。
+
+```python
+# 裝飾器方式
+@sdk.logger.handler("my-handler", min_level="INFO")
+def on_log(log_data: dict):
+    # log_data = {
+    #     "timestamp": "2026-06-29T22:00:00.123456",
+    #     "level": "WARNING", "level_num": 30,
+    #     "module": "ErisPulse.Core.adapter",
+    #     "message": "嚴格模式：...",
+    # }
+    pass
+
+# 直接呼叫方式
+sdk.logger.handler("my-handler", min_level="INFO")(on_log)
+sdk.logger.remove_handler("my-handler")
+```
+
+| 方法 | 說明 |
+|------|------|
+| `handler(id, *, min_level)(func)` | 裝飾器/直接呼叫兩用。`id` 為空時取函數名。註冊時自動補發歷史日誌 |
+| `remove_handler(id)` | 移除訂閱器 |
 
 ### 輸出控制
 
@@ -7613,8 +7638,8 @@ sdk.logger.set_memory_limit(1000)
 | `enable(platform)` / `disable(platform)` | 啟用/停用適配器 |
 | `is_enabled(platform)` | 檢查是否啟用 |
 | `startup(platforms)` / `shutdown(platforms)` | 啟動/關閉適配器 |
-| `is_running(platform)` | 檢查適配器是否正在運行 |
-| `list_running()` | 列出所有正在運行的適配器 |
+| `is_running(platform)` | 檢查適配器是否正在執行 |
+| `list_running()` | 列出所有正在執行的適配器 |
 | `platforms` | 取得所有平台名稱列表 |
 
 ### 適配器事件
@@ -7642,7 +7667,7 @@ sdk.adapter.get_status_summary()
 
 ## Module 模組
 
-模組管理器，管理外掛的註冊、載入和卸載。
+模組管理器，管理插件的註冊、載入和卸載。
 
 ### API 概覽
 
@@ -7675,13 +7700,13 @@ module = sdk.ModuleName  # 等價快捷方式
 
 | 方法 | 說明 |
 |------|------|
-| `on(event, priority=0)` | 裝飾器註冊事件處理器，支援點號匹配和萬用字元 `*` |
-| `register(event, handler, priority=0)` | 函式式註冊處理器 |
+| `on(event, priority=0)` | 裝飾器註冊事件處理器，支援點號匹配和通配符 `*` |
+| `register(event, handler, priority=0)` | 函數式註冊處理器 |
 | `unregister(event, handler=None)` | 移除處理器 |
-| `emit(event, data)` | 非同步觸發事件 |
+| `emit(event, data)` | 異步觸發事件 |
 | `emit_sync(event, data)` | 同步觸發事件 |
 | `submit_event(event_type, msg, data, source)` | 提交標準格式事件（相容舊版） |
-| `start_timer(id)` / `stop_timer(id)` | 效能計時器 |
+| `start_timer(id)` / `stop_timer(id)` | 性能計時器 |
 
 ### 範例
 
@@ -7703,7 +7728,7 @@ await sdk.lifecycle.emit("custom.event", {"key": "value"})
 
 HTTP/WebSocket 路由管理器，基於 FastAPI + Uvicorn，支援裝飾器路由、中間件、分組、限流、CORS。
 
-> 完整的路由 API 文檔（裝飾器路由、WebSocket、中間件、速率限制、CORS、安全頭等）請參考 [路由管理器](../advanced/router.md)。
+> 完整的路由 API 文件（裝飾器路由、WebSocket、中間件、速率限制、CORS、安全標頭等）請參考 [路由管理器](../advanced/router.md)。
 
 ### 快速參考
 
@@ -7730,7 +7755,7 @@ async def list_users(request: HttpRequest):
 
 統一 HTTP/WS 客戶端，基於 aiohttp，提供請求統計、重試、日誌、ErisPulse 異常體系。
 
-> 完整的 HTTP 客戶端文檔（請求方法、響應物件、WebSocket 客戶端、異常體系等）請參考 [HTTP 客戶端](../advanced/http-client.md)。
+> 完整的 HTTP 客戶端文件（請求方法、回應物件、WebSocket 客戶端、異常體系等）請參考 [HTTP 客戶端](../advanced/http-client.md)。
 
 ### 快速參考
 
@@ -7747,14 +7772,14 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-## 相關文檔
+## 相關文件
 
 - [事件系統 API](event-system.md) - Event 模組 API
 - [適配器系統 API](adapter-system.md) - Adapter 管理 API
-- [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 鏈式查詢完整文檔
-- [路由管理器](../advanced/router.md) - 路由管理器完整文檔
-- [HTTP 客戶端](../advanced/http-client.md) - HTTP 客戶端完整文檔
-- [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文檔
+- [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 串接查詢完整文件
+- [路由管理器](../advanced/router.md) - 路由管理器完整文件
+- [HTTP 客戶端](../advanced/http-client.md) - HTTP 客戶端完整文件
+- [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文件
 
 
 ### 事件系统 API
