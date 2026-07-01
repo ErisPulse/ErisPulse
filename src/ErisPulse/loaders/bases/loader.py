@@ -181,13 +181,15 @@ class BaseLoader(ABC):
 
         {!--< internal-use >!--}
         内部方法，用于获取配置状态
+        默认情况下（无配置），返回 True（启用）并写入配置
         {!--< /internal-use >!--}
         """
         config_key = f"{self._config_prefix}.status.{name}"
         status = config.getConfig(config_key)
 
         if status is None:
-            return False
+            config.setConfig(config_key, True)
+            return True
 
         if isinstance(status, str):
             return status.lower() not in ("false", "0", "no", "off")

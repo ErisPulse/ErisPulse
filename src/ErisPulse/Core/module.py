@@ -451,7 +451,7 @@ class ModuleManager(ManagerBase):
 
     # ==================== 模块配置管理 ====================
 
-    def _config_register(self, module_name: str, enabled: bool = False) -> bool:
+    def _config_register(self, module_name: str, enabled: bool = True) -> bool:
         """
         注册新模块信息
 
@@ -459,7 +459,7 @@ class ModuleManager(ManagerBase):
         此方法仅供内部使用
 
         :param module_name: 模块名称
-        :param enabled: 是否启用模块 (默认: False)
+        :param enabled: 是否启用模块 (默认: True，新模块默认启用)
         :return: 操作是否成功
         """
         existing = config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name))
@@ -490,16 +490,17 @@ class ModuleManager(ManagerBase):
         1. 模块在配置文件中（ErisPulse.modules.status.{module_name} 存在）
         2. 配置值为启用状态
 
-        如果模块未在配置中，返回 False
+        如果模块未在配置中，默认启用并自动写入配置
         {!--< /tips >!--}
         """
         from .config import parse_bool_config
 
         status = config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name))
 
-        # 模块未在配置中，返回 False
+        # 模块未在配置中，默认启用并写入配置
         if status is None:
-            return False
+            config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), True)
+            return True
 
         # 解析配置值
         return parse_bool_config(status)
@@ -641,9 +642,16 @@ class ModuleManager(ManagerBase):
         """
         列出所有模块状态
 
+        合并配置项与已注册模块，确保禁用模块也可见。
+
         :return: [dict[str, bool]] {模块名: 是否启用} 字典
         """
-        return config.getConfig(CONFIG_KEY_MODULES_STATUS, {})
+        items = dict(config.getConfig(CONFIG_KEY_MODULES_STATUS, {}))
+        # 补充已在管理器中注册但配置中不存在的模块
+        for name in self._module_classes:
+            if name not in items:
+                items[name] = self.is_enabled(name)
+        return items
 
     def get_info(self, module_name: str) -> dict | None:
         """
@@ -661,7 +669,8 @@ class ModuleManager(ManagerBase):
         """
         获取模块的完整状态摘要
 
-        便于WebUI展示所有模块的注册、加载和启用状态。
+        便于WebUI展示所有模块的注册、加载和启用状态，
+        包含已禁用模块以便于管理。
 
         :return: 状态摘要字典
 
@@ -673,10 +682,17 @@ class ModuleManager(ManagerBase):
         >>> #             "status": "loaded",
         >>> #             "enabled": True,
         >>> #             "is_base_module": True
+        >>> #         },
+        >>> #         "DisabledModule": {
+        >>> #             "status": "disabled",
+        >>> #             "enabled": False,
+        >>> #             "is_base_module": None
         >>> #         }
         >>> #     }
         >>> # }
         """
+        from .config import parse_bool_config
+
         modules_summary = {}
         for name in self._module_classes:
             module_class = self._module_classes[name]
@@ -685,6 +701,17 @@ class ModuleManager(ManagerBase):
                 "enabled": self.is_enabled(name),
                 "is_base_module": self._is_subclass(module_class, BaseModule),
             }
+
+        # 补充配置中存在但未加载的模块（被禁用的模块），方便管理界面显示并开启
+        config_status = config.getConfig(CONFIG_KEY_MODULES_STATUS, {})
+        for name in config_status:
+            if name not in modules_summary:
+                modules_summary[name] = {
+                    "status": "disabled",
+                    "enabled": parse_bool_config(config_status[name]),
+                    "is_base_module": None,
+                }
+
         return {"modules": modules_summary}
 
     # 兼容性方法 - 保持向后兼容
