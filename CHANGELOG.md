@@ -63,6 +63,34 @@
 
 ---
 
+## [2.5.2-dev.3] - 2026/06/30
+> 开发版本
+
+**版本摘要**
+2.5.2-dev.3 修复存储模块 `synchronous=NORMAL` PRAGMA 对事务外高频操作不生效的问题（写操作实际回落到 FULL，每次 commit 触发 fsync）；调整模块/适配器发现策略为"默认启用"，管理界面支持显示已禁用组件。
+
+### 变更
+
+- @wsu2059q
+  - `Core/module.py` / `Core/adapter.py` 调整模块与适配器的发现策略，新安装组件默认启用：
+    - `is_enabled()` 无配置项时默认返回 `True` 并自动写入配置，取代原先的默认 `False`
+    - `_config_register()` 默认 `enabled` 参数改为 `True`
+    - `list_items()` 合并配置项与已注册组件，确保禁用组件也可见
+    - `get_status_summary()` 额外包含配置中存在但未加载的禁用模块/适配器（`status: "disabled"`）
+  - `loaders/bases/loader.py` `_get_config_status()` 同样改为无配置时默认 `True` 并自动写入
+
+### 修复
+
+- @wsu2059q
+  - `Core/storage.py` 修复 `synchronous=NORMAL` 对事务外 `get/set` 等高频操作不生效的问题：
+    - 原因：`PRAGMA synchronous=NORMAL` 是 per-connection 设置、不跨连接持久化；此前仅在 `_init_db()` 的临时连接上设置过一次，`_get_connection()` 每次新建的连接会回落到默认的 `synchronous=FULL`
+    - 修复：新增 `_open_connection()` 统一连接创建入口，对每个新连接应用 `journal_mode=WAL` + `synchronous=NORMAL`；`_get_connection()`、`_init_db()`、`_Transaction` 全部改走该方法
+  - `tests/unit/test_unit_logger.py` 修复 4 个测试调用 `_save_in_memory()` 时参数不匹配的问题：
+    - 源码签名已重构为 `(module_name, level_name, level_const, msg)`，测试仍按旧的 2 参数形式调用
+    - 补齐 `level_name`/`level_const` 参数，并修正直接读取 `_logs` 条目（现为 dict）的断言
+
+---
+
 ## [2.5.2-dev.2] - 2026/06/29
 > 开发版本
 

@@ -2606,13 +2606,13 @@ epsdk create module -n MyModule -f
 ### 配置文件说明
 
 # Configuration File Guide
-> This document introduces the framework's configuration files. If third-party modules require configuration, please refer to the module's documentation.
+> This document will introduce the framework's configuration file. If any third-party module requires configuration, please refer to the module's documentation.
 
-ErisPulse uses TOML format configuration files `config/config.toml` to manage project configuration.
+ErisPulse uses a TOML format configuration file `config/config.toml` to manage project configurations.
 
 ## Configuration File Location
 
-The configuration file is located in the `config/` folder of the project root directory:
+The configuration file is located in the `config/` folder at the project root:
 
 ```
 project/
@@ -2639,7 +2639,7 @@ memory_limit = 1000
 [ErisPulse.framework]
 enable_lazy_loading = true
 uninit_timeout = 30
-strict_mode = 1
+strict_mode = 0
 
 [ErisPulse.framework.strict_mode_exceptions]
 modules = []
@@ -2671,12 +2671,12 @@ ssl_certfile = "/path/to/cert.pem"
 ssl_keyfile = "/path/to/key.pem"
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| host | string | 0.0.0.0 | Listening address; 0.0.0.0 means all interfaces |
+| host | string | 0.0.0.0 | Listening address, 0.0.0.0 means all interfaces |
 | port | integer | 8000 | Listening port number |
-| ssl_certfile | string | empty | SSL certificate file path |
-| ssl_keyfile | string | empty | SSL private key file path |
+| ssl_certfile | string | empty | Path to SSL certificate file |
+| ssl_keyfile | string | empty | Path to SSL private key file |
 
 ## Logging Configuration
 
@@ -2687,12 +2687,12 @@ log_files = ["app.log", "debug.log"]
 memory_limit = 1000
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| level | string | INFO | Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL |
-| format | string | rich | Log output format; defaults to rich colored output |
+| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed framework internal debug information) |
+| format | string | rich | Log output format, defaults to rich colored output |
 | log_files | array | empty | List of log output files |
-| memory_limit | integer | 1000 | Number of log entries saved in memory |
+| memory_limit | integer | 1000 | Number of log entries to keep in memory |
 
 ## Framework Configuration
 
@@ -2700,37 +2700,39 @@ memory_limit = 1000
 [ErisPulse.framework]
 enable_lazy_loading = true
 uninit_timeout = 30
-strict_mode = 1
+strict_mode = 0
 
 [ErisPulse.framework.strict_mode_exceptions]
 modules = []
 adapters = []
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | Whether to enable module lazy loading |
-| uninit_timeout | integer | 30 | Graceful shutdown timeout in seconds; if exceeded, forcefully terminate. 0 means no timeout |
-| strict_mode | integer | 1 | Strict mode level; see below for "Strict Mode" explanation |
+| uninit_timeout | integer | 30 | Total graceful shutdown timeout (seconds), force termination after timeout. 0 means no timeout set |
+| strict_mode | integer | 0 | Strict mode level, see below "Strict Mode" explanation |
 
 ### Strict Mode
 
-Strict mode controls the handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit the corresponding base classes (`BaseModule`/`BaseAdapter`). Components that do not inherit these base classes may affect the framework's context system and cleanup, potentially causing resource leaks. Strict mode is enabled by default to block such components.
+Strict mode controls the handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit the corresponding base class (`BaseModule`/`BaseAdapter`). Components that do not inherit the base class will affect the framework's context system and fallback cleanup, potentially causing resource leaks.
+
+> **2.5.2 Change**: The default level has been adjusted from `1` (skip) to `0` (lenient) to reduce loading issues for new users. Components that do not inherit the base class will be warned and attempted to load, rather than being directly rejected. To restore the previous behavior, explicitly set `strict_mode = 1`.
 
 | Level | Name | Behavior |
 |------|------|------|
-| 0 | Permissive | Non-compliance only triggers warnings; components not inheriting base classes will still be attempted to load (for compatibility with old components) |
-| 1 | Strict-Skip (Default) | Rejects components not inheriting base classes and skips them; other components start normally |
-| 2 | Strict-Fatal | Collects all non-compliant components and reports them collectively, then terminates the entire startup process |
+| 0 | Lenient (default) | Non-compliance only warns, components that do not inherit the base class will still attempt to load (compatibility with old components) |
+| 1 | Strict - Skip | Rejects components that do not inherit the base class and skips them, others start normally |
+| 2 | Strict - Fatal | Collects all violations and reports them together, then terminates the entire startup |
 
-Under each level, component crashes during the "loading/registration/initialization" phases are always skipped; the difference lies in:
+Under each level, component crashes during the "loading/registration/initialization phase" are always skipped. The differences are:
 
-- **0 → 1**: The only behavioral change is that components "not inheriting base classes" change from "still loaded" to "skipped".
-- **1 → 2**: All non-compliance (not inheriting base classes, loading failure, registration failure, initialization failure, etc.) is upgraded to fatal, and a list of non-compliant components is output at the startup checkpoint and the process is terminated.
+- **0 → 1**: The only behavioral change is that "not inheriting the base class" changes from "still loading" to "skip".
+- **1 → 2**: All violations (not inheriting the base class, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, collected at the startup checkpoint, and a violation list is output and terminated.
 
-#### Exception List
+#### Exemption List
 
-If certain components cannot be migrated temporarily (e.g., due to dependencies on old modules), they can be added to the exception list. Components listed in the exception list will be treated as permissive mode even if they are non-compliant, and will continue to be loaded:
+If certain components cannot be migrated temporarily (e.g., depending on old modules), they can be added to the exemption list. Components listed will be treated leniently and continue loading even if non-compliant:
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -2738,7 +2740,7 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to the exception list or lower the level).
+> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to exemption list or lower the level).
 
 ## Storage Configuration
 
@@ -2747,9 +2749,9 @@ adapters = ["OldAdapter"]
 use_global_db = false
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| use_global_db | boolean | false | Whether to use the global database (within package) instead of the project database. When `true`, all projects share the ErisPulse package's internal SQLite database; when `false` (default), each project uses a separate database in the `config/` directory |
+| use_global_db | boolean | false | Whether to use the global database (within package) rather than the project database. If `true`, all projects share the SQLite database within the ErisPulse package; if `false` (default), each project uses an independent database in the `config/` directory |
 
 ## Event Configuration
 
@@ -2760,15 +2762,14 @@ use_global_db = false
 prefix = "/"
 case_sensitive = false
 allow_space_prefix = false
-must_at_bot = false
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
 | prefix | string | / | Command prefix |
-| case_sensitive | boolean | true | Whether to be case sensitive (i.e., whether `/Help` and `/help` are different commands) |
+| case_sensitive | boolean | true | Whether to distinguish case (whether `/Help` and `/help` are different commands) |
 | allow_space_prefix | boolean | false | Whether to allow spaces as prefix |
-| must_at_bot | boolean | false | Whether the bot must be mentioned (@bot) to trigger the command (DMs are not restricted) |
+| must_at_bot | boolean | false | Whether the command must be triggered by mentioning the bot (private chats are not restricted) |
 
 ### Message Configuration
 
@@ -2777,9 +2778,9 @@ must_at_bot = false
 ignore_self = true
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| ignore_self | boolean | true | Whether to ignore messages sent by the bot itself |
+| ignore_self | boolean | true | Whether to ignore messages from the bot itself |
 
 ## Internationalization Configuration
 
@@ -2788,9 +2789,9 @@ ignore_self = true
 language = "auto"
 ```
 
-| Config Item | Type | Default | Description |
+| Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| language | string | auto | Language for displaying framework built-in text. Set to `auto` to automatically detect system language, or set to a specific code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru` |
+| language | string | auto | Display language for framework built-in text. Set to `auto` to automatically detect system language, or set to a specific code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru` |
 
 ## Module Configuration
 
@@ -2803,27 +2804,27 @@ timeout = 30
 enabled = true
 ```
 
-Reading and writing configuration in modules:
+Read and write configuration within the module:
 
 ```python
 from ErisPulse import sdk
 
-# Read config
+# Read configuration
 config = sdk.config.getConfig("MyModule", {})
 api_url = config.get("api_url", "https://default.api.com")
 
-# Runtime write config (delayed save)
+# Write configuration at runtime (delayed save)
 sdk.config.setConfig("MyModule.timeout", 60)
 
-# Save to file immediately
+# Immediately save to file
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` defaults to delayed writing (batch saving to file every ~5 seconds). Setting `immediate=True` will persist immediately. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` defaults to delayed writing (batched save to file approximately every 5 seconds). Setting `immediate=True` will immediately persist. Configuration changes will trigger the `config.set` lifecycle event.
 
 ## Next Steps
 
-- [CLI Command Reference](cli-reference.md) - Learn about all command line commands
+- [CLI Command Reference](cli-reference.md) - Learn about all command-line commands
 - [Developer Guide](../developer-guide/) - Learn how to develop custom modules
 
 
@@ -3112,55 +3113,55 @@ This guide helps you develop custom modules and adapters to extend the functiona
 
 ### Module Development
 
-1. [Getting Started with Modules](modules/getting-started.md) - Create your first module
-2. [Module Core Concepts](modules/core-concepts.md) - Core concepts and architecture of modules
-3. [Event Wrapper Details](modules/event-wrapper.md) - Full description of the Event object
-4. [Module Best Practices](modules/best-practices.md) - Recommendations for developing high-quality modules
+1. [Getting Started with Module Development](modules/getting-started.md) - Create your first module
+2. [Core Concepts of Modules](modules/core-concepts.md) - Core concepts and architecture of modules
+3. [Event Wrapper Class Detailed Explanation](modules/event-wrapper.md) - Complete explanation of the Event object
+4. [Best Practices for Module Development](modules/best-practices.md) - Recommendations for developing high-quality modules
 
 ### Adapter Development
 
-1. [Getting Started with Adapters](adapters/getting-started.md) - Create your first adapter
-2. [Adapter Core Concepts](adapters/core-concepts.md) - Core concepts of adapters
-3. [SendDSL Details](adapters/send-dsl.md) - Full description of the Send message sending DSL
-4. [Event Converter](adapters/converter.md) - Implementing event converters
-5. [Adapter Best Practices](adapters/best-practices.md) - Recommendations for developing high-quality adapters
+1. [Getting Started with Adapter Development](adapters/getting-started.md) - Create your first adapter
+2. [Core Concepts of Adapters](adapters/core-concepts.md) - Core concepts of adapters
+3. [Detailed Explanation of SendDSL](adapters/send-dsl.md) - Complete explanation of the Send message sending DSL
+4. [Event Converters](adapters/converter.md) - Implement event converters
+5. [Best Practices for Adapter Development](adapters/best-practices.md) - Recommendations for developing high-quality adapters
 
 ### Publishing Guide
 
-- [Publishing and Module Store Guide](publishing.md) - Publish your work to PyPI and the ErisPulse Module Store
+- [Publishing and Module Store Guide](publishing.md) - Publish your work to PyPI and the ErisPulse module store
 
-## Prerequisites
+## Development Preparation
 
 Before starting development, ensure that you:
 
-1. Have read [Basic Concepts](../getting-started/basic-concepts.md)
-2. Are familiar with [Event Handling](../getting-started/event-handling.md)
-3. Installed the development environment (Python >= 3.10)
-4. Installed the ErisPulse SDK
+1. Read the [Basic Concepts](../getting-started/basic-concepts.md)
+2. Familiarize yourself with [Event Handling](../getting-started/event-handling.md)
+3. Install the development environment (Python >= 3.10)
+4. Install the ErisPulse SDK
 
 ## Choosing a Development Type
 
 Choose the appropriate development type based on your needs:
 
-| Development Type | Use Cases | Getting Started Guide |
-|------------------|-----------|-----------------------|
-| **Module Development** | Extending bot functionality, implementing specific business logic, providing commands and message handling | [Getting Started with Modules](modules/getting-started.md) |
-| **Adapter Development** | Connecting to new messaging platforms, implementing cross-platform communication, providing platform-specific features | [Getting Started with Adapters](adapters/getting-started.md) |
+| Development Type | Use Case | Getting Started Guide |
+|------------------|----------|-----------------------|
+| **Module Development** | Extend robot functionality, implement business logic, provide commands and message handling | [Getting Started with Module Development](modules/getting-started.md) |
+| **Adapter Development** | Connect to new messaging platforms, implement cross-platform communication, provide platform-specific features | [Getting Started with Adapter Development](adapters/getting-started.md) |
 
-> If you want to extend the bot's functionality (such as adding commands or handling messages), choose **Module Development**. If you need to connect the bot to a new platform, choose **Adapter Development**.
+> If you want to extend the robot's functionality (such as adding commands or handling messages), choose **Module Development**. If you need to connect the robot to a new platform, choose **Adapter Development**.
 
 ## Development Tools
 
 ### Project Templates
 
-ErisPulse provides example projects for reference:
+ErisPulse provides example projects as references:
 
-- [Module Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - Complete project structure for a module
-- [Adapter Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - Complete project structure for an adapter
+- [Module Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - Complete project structure for modules
+- [Adapter Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - Complete project structure for adapters
 
 ### Development Mode
 
-Use hot reload mode for development, where code changes are automatically reloaded:
+Use the hot-reload mode for development, where code changes automatically reload:
 
 ```bash
 epsdk run main.py --reload
@@ -3168,44 +3169,23 @@ epsdk run main.py --reload
 
 ### Debugging Tips
 
-Enable DEBUG level logging in `config/config.toml`:
+Enable DEBUG or TRACE level logging in `config/config.toml`:
 
 ```toml
 [ErisPulse.logger]
+# DEBUG: Outputs development and debugging information such as module loading and route registration
+# TRACE: The lowest level, outputs detailed internal framework processes such as event dispatching, storage writing, and lazy loading
 level = "DEBUG"
-```
-
-Use the module's own logger:
-
-```python
-from ErisPulse import sdk
-
-logger = sdk.logger.get_child("MyModule")
-logger.debug("Debug info")
 ```
 
 ## Publishing Your Module
 
-For the complete publishing process, refer to [Publishing and Module Store Guide](publishing.md), including:
-
-- PyPI publishing steps
-- ErisPulse Module Store submission process
-- Publishing adapters
-
-### Quick Reference
-
-```bash
-# Build and publish to PyPI
-python -m build
-python -m twine upload dist/*
-```
-
-Then go to [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) to submit to the module store.
+For the complete publishing process, refer to the [Publishing and Module Store Guide](publishing.md), which includes PyPI publishing steps and the ErisPulse module store submission process.
 
 ## Related Documentation
 
 - [Standards](../standards/) - Technical standards to ensure compatibility
-- [Platform Guide](../platform-guide/) - Learn about the features of various platform adapters
+- [Platform Features Guide](../platform-guide/) - Learn about the features of each platform adapter
 
 
 ====
@@ -7374,11 +7354,11 @@ API 参考
 
 # Core Module API
 
-This document provides a quick reference to the ErisPulse core module API, including method signatures and brief descriptions. For detailed usage and examples, please click the "Complete Documentation" link for each module.
+This document provides a quick reference for ErisPulse core module APIs, including method signatures and brief descriptions. For detailed usage and examples, please click the "Full Documentation" link for each module.
 
 ## Storage Module
 
-A SQLite-based key-value storage system supporting general-purpose SQL chain queries.
+A key-value storage system based on SQLite, supporting general SQL chainable queries.
 
 ### Basic Operations
 
@@ -7414,9 +7394,9 @@ sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
 sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
 ```
 
-### SQL Chain Query
+### SQL Chainable Queries
 
-The Storage module provides a chain-call style general-purpose SQL query builder, supporting CRUD operations for custom tables.
+The Storage module provides a chainable style of general SQL query builder, supporting CRUD operations for custom tables.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -7428,11 +7408,11 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> For complete chain-query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
+> For the complete chainable query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
 
 ### Storage Backend Abstraction
 
-`StorageManager` inherits from the `BaseStorage` abstract base class, supporting expansion to other storage media (Redis, MySQL, etc.).
+`StorageManager` inherits from the `BaseStorage` abstract base class, supporting extension to other storage media (Redis, MySQL, etc.).
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -7446,12 +7426,12 @@ TOML format configuration file management, supporting dot-separated key paths.
 
 | Method | Description |
 |------|------|
-| `getConfig(key, default)` | Read configuration, supports dot paths like "MyModule.subkey" |
-| `setConfig(key, value, immediate=False)` | Write configuration. `immediate=True` saves to file immediately |
-| `force_save()` | Force save configuration in memory to file |
+| `getConfig(key, default)` | Read configuration, supports dot paths like `"MyModule.subkey"` |
+| `setConfig(key, value, immediate=False)` | Write configuration. `immediate=True` saves immediately to file |
+| `force_save()` | Force writing configuration from memory to file |
 | `reload()` | Reload configuration from file |
 
-### Examples
+### Example
 
 ```python
 config = sdk.config.getConfig("MyModule", {})
@@ -7461,23 +7441,23 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` uses lazy writing by default (batch save every 5 seconds). Setting `immediate=True` will persist to the config file immediately. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` uses delayed writing by default (batch saved every 5 seconds). Setting `immediate=True` persists immediately to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Logger Module
 
-A modular logging system based on Rich output, supporting child loggers and module-level control.
+A modular logging system based on Rich output, supporting sub-loggers and module-level control.
 
 ### Basic Usage
 
 ```python
-sdk.logger.debug("Debug info")
-sdk.logger.info("Runtime info")
-sdk.logger.warning("Warning info")
-sdk.logger.error("Error info")
-sdk.logger.critical("Fatal error")
+sdk.logger.debug("Debug information")
+sdk.logger.info("Runtime information")
+sdk.logger.warning("Warning information")
+sdk.logger.error("Error information")
+sdk.logger.critical("Critical error")
 ```
 
-### Child Loggers
+### Sub-loggers
 
 ```python
 child_logger = sdk.logger.get_child("MyModule")
@@ -7491,7 +7471,38 @@ child_logger.get_child("utils")  # Supports nesting
 ```python
 sdk.logger.set_level("DEBUG")                          # Global level
 sdk.logger.set_module_level("MyModule", "DEBUG")       # Module level
+
+# Supported levels (from low to high):
+# TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
+# TRACE is the lowest level, outputs detailed framework internal debug information (event dispatch, route registration, etc.)
+sdk.logger.set_level("TRACE")                          # Enable all logs
 ```
+
+### Log Subscription (Push Mode)
+
+For modules like Dashboard to receive structured logs in real-time, supporting level filtering and historical replay.
+
+```python
+# Decorator style
+@sdk.logger.handler("my-handler", min_level="INFO")
+def on_log(log_data: dict):
+    # log_data = {
+    #     "timestamp": "2026-06-29T22:00:00.123456",
+    #     "level": "WARNING", "level_num": 30,
+    #     "module": "ErisPulse.Core.adapter",
+    #     "message": "Strict mode:...",
+    # }
+    pass
+
+# Direct call style
+sdk.logger.handler("my-handler", min_level="INFO")(on_log)
+sdk.logger.remove_handler("my-handler")
+```
+
+| Method | Description |
+|------|------|
+| `handler(id, *, min_level)(func)` | Decorator/multi-use direct call. If `id` is empty, it takes the function name. Automatically replays historical logs on registration |
+| `remove_handler(id)` | Remove subscriber |
 
 ### Output Control
 
@@ -7504,7 +7515,7 @@ sdk.logger.set_memory_limit(1000)
 
 ## Adapter Module
 
-Adapter manager managing registration, startup, and shutdown of multi-platform adapters.
+Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters.
 
 ### API Overview
 
@@ -7514,7 +7525,7 @@ Adapter manager managing registration, startup, and shutdown of multi-platform a
 | `exists(platform)` | Check if adapter is registered |
 | `enable(platform)` / `disable(platform)` | Enable/disable adapter |
 | `is_enabled(platform)` | Check if enabled |
-| `startup(platforms)` / `shutdown(platforms)` | Start/stop adapters |
+| `startup(platforms)` / `shutdown(platforms)` | Startup/shutdown adapters |
 | `is_running(platform)` | Check if adapter is running |
 | `list_running()` | List all running adapters |
 | `platforms` | Get list of all platform names |
@@ -7540,11 +7551,11 @@ sdk.adapter.is_bot_online("telegram", "123456")
 sdk.adapter.get_status_summary()
 ```
 
-> For complete adapter management API, please refer to [Adapter System API](adapter-system.md).
+> For the complete adapter management API, please refer to [Adapter System API](adapter-system.md).
 
 ## Module Module
 
-Module manager managing plugin registration, loading, and unloading.
+Module manager, managing plugin registration, loading, and unloading.
 
 ### API Overview
 
@@ -7558,7 +7569,7 @@ Module manager managing plugin registration, loading, and unloading.
 | `load(name)` / `unload(name)` | Load/unload module |
 | `list_registered()` | List registered modules |
 | `list_loaded()` | List loaded modules |
-| `get_info(name)` | Get module info |
+| `get_info(name)` | Get module information |
 | `get_status_summary()` | Get module status summary |
 
 ### Attribute Access
@@ -7566,31 +7577,31 @@ Module manager managing plugin registration, loading, and unloading.
 ```python
 module = sdk.module.get("ModuleName")
 module = sdk.module.ModuleName
-module = sdk.ModuleName  # Shortcut equivalent
+module = sdk.ModuleName  # Equivalent shortcut
 ```
 
 ## Lifecycle Module
 
-Event-driven lifecycle manager providing event submission and listening functions.
+Event-driven lifecycle manager, providing event submission and listening functionality.
 
 ### API Overview
 
 | Method | Description |
 |------|------|
-| `on(event, priority=0)` | Decorator registration for event handlers, supports dot matching and wildcard `*` |
-| `register(event, handler, priority=0)` | Functional registration for handlers |
+| `on(event, priority=0)` | Decorator to register event handler, supports dot matching and wildcard `*` |
+| `register(event, handler, priority=0)` | Function-style registration of handler |
 | `unregister(event, handler=None)` | Remove handler |
-| `emit(event, data)` | Async trigger event |
-| `emit_sync(event, data)` | Sync trigger event |
+| `emit(event, data)` | Asynchronously trigger event |
+| `emit_sync(event, data)` | Synchronously trigger event |
 | `submit_event(event_type, msg, data, source)` | Submit standard format event (compatible with old version) |
 | `start_timer(id)` / `stop_timer(id)` | Performance timer |
 
-### Examples
+### Example
 
 ```python
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
-    print(f"Module initialized: {event_data}")
+    print(f"Module initialization: {event_data}")
 
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
@@ -7599,29 +7610,29 @@ async def handle_any_module_event(event_data):
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-> For complete list of standard events and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
+> For the complete standard event list and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
 
 ## Router Module
 
-HTTP/WebSocket route manager based on FastAPI + Uvicorn, supporting decorator routing, middleware, grouping, rate limiting, CORS.
+HTTP/WebSocket route manager, based on FastAPI + Uvicorn, supporting decorator routes, middleware, grouping, rate limiting, CORS.
 
-> For complete routing API documentation (decorator routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Router Manager](../advanced/router.md).
+> For the complete route API documentation (decorator routes, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Router Manager](../advanced/router.md).
 
 ### Quick Reference
 
 ```python
-# HTTP route
+# HTTP Route
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# WebSocket route
+# WebSocket Route
 @sdk.router.ws("MyModule", "/ws")
 async def ws_handler(ws: WebSocketConnection):
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 
-# Route grouping
+# Route Grouping
 group = sdk.router.group("MyModule", prefix="/v1")
 @group.get("/users")
 async def list_users(request: HttpRequest):
@@ -7630,16 +7641,16 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client Module
 
-Unified HTTP/WS client based on aiohttp, providing request statistics, retries, logging, and the ErisPulse exception system.
+Unified HTTP/WS client, based on aiohttp, providing request statistics, retry, logging, and ErisPulse exception system.
 
-> For complete HTTP client documentation (request methods, response object, WebSocket client, exception system, etc.), please refer to [HTTP Client](../advanced/http-client.md).
+> For the complete HTTP client documentation (request methods, response objects, WebSocket client, exception system, etc.), please refer to [HTTP Client](../advanced/http-client.md).
 
 ### Quick Reference
 
 ```python
 from ErisPulse.Core import client
 
-# HTTP request
+# HTTP Request
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
@@ -7651,12 +7662,12 @@ async for text in ws.iter_text():
 
 ## Related Documentation
 
-- [Event System API](event-system.md) - Event Module API
-- [Adapter System API](adapter-system.md) - Adapter Management API
-- [SQL Query Builder](../advanced/sql-builder.md) - SQL Chain Query Complete Documentation
-- [Router Manager](../advanced/router.md) - Router Manager Complete Documentation
-- [HTTP Client](../advanced/http-client.md) - HTTP Client Complete Documentation
-- [Lifecycle Management](../advanced/lifecycle.md) - Lifecycle Complete Documentation
+- [Event System API](event-system.md) - Event module API
+- [Adapter System API](adapter-system.md) - Adapter management API
+- [SQL Query Builder](../advanced/sql-builder.md) - Full documentation for SQL chainable queries
+- [Router Manager](../advanced/router.md) - Full documentation for router manager
+- [HTTP Client](../advanced/http-client.md) - Full documentation for HTTP client
+- [Lifecycle Management](../advanced/lifecycle.md) - Full documentation for lifecycle
 
 
 ### 事件系统 API

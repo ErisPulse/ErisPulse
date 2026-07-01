@@ -517,6 +517,24 @@ class StorageManager(BaseStorage):
         ):
             conn.commit()
 
+    def _open_connection(self) -> sqlite3.Connection:
+        """
+        {!--< internal-use >!--}
+        打开一个新的 SQLite 连接并应用标准 PRAGMA
+
+        - journal_mode=WAL：持久化在数据库文件头，重复设置无副作用
+        - synchronous=NORMAL：per-connection 设置，必须在每个新连接上重新应用。
+          此前仅在 _init_db 的临时连接上设置过一次，而该 PRAGMA 不跨连接持久化，
+          导致事务外的 get/set 等高频操作实际回落到默认的 synchronous=FULL
+          （每次 commit 都触发 fsync），与文档宣称的 WAL+NORMAL 提速不符。
+
+        :return: 已应用标准 PRAGMA 的 sqlite3.Connection
+        """
+        conn = sqlite3.connect(self.db_path)
+        conn.execute(SQLITE_JOURNAL_MODE)
+        conn.execute(SQLITE_SYNCHRONOUS_MODE)
+        return conn
+
     @contextmanager
     def _get_connection(self) -> sqlite3.Connection:  # type: ignore
         """
@@ -524,7 +542,7 @@ class StorageManager(BaseStorage):
         获取数据库连接（支持事务）
 
         如果在事务中，返回事务的连接
-        否则创建新连接
+        否则新建一个应用了标准 PRAGMA 的短生命周期连接
 
         :return: sqlite3.Connection 数据库连接
         """
@@ -536,7 +554,7 @@ class StorageManager(BaseStorage):
             conn = self._local.transaction_conn
             should_close = False
         else:
-            conn = sqlite3.connect(self.db_path)
+            conn = self._open_connection()
             should_close = True
 
         try:
@@ -574,11 +592,8 @@ class StorageManager(BaseStorage):
             pass  # 如果无法创建目录，则继续尝试连接数据库
 
         try:
-            conn = sqlite3.connect(self.db_path)
-
-            # 启用WAL模式提高并发性能
-            conn.execute(SQLITE_JOURNAL_MODE)
-            conn.execute(SQLITE_SYNCHRONOUS_MODE)
+            # 连接创建统一走 _open_connection，确保 WAL/synchronous PRAGMA 一致应用
+            conn = self._open_connection()
 
             cursor = conn.cursor()
             cursor.execute("""
@@ -1195,7 +1210,7 @@ class StorageManager(BaseStorage):
 
             :return: 事务对象
             """
-            self.conn = sqlite3.connect(self.storage_manager.db_path)
+            self.conn = self.storage_manager._open_connection()
             self.cursor = self.conn.cursor()
             self.cursor.execute("BEGIN TRANSACTION")
             # 将连接存储到线程本地存储，供其他方法复用
