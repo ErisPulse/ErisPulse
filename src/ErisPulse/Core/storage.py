@@ -611,38 +611,6 @@ class StorageManager(BaseStorage):
             logger.error(i18n.t("core.storage.init_db_error", error=e))
             raise
 
-    def wal_checkpoint(self, mode: str = "PASSIVE") -> bool:
-        """
-        手动执行 WAL checkpoint
-
-        将 -wal 日志合并回主数据库文件，回收 -wal 体积。适合在低峰期或进程
-        退出前调用，避免 -wal 文件长期增长（默认的自动 checkpoint 在高写入
-        速率下可能跟不上）。
-
-        :param mode: checkpoint 模式，可选：
-                     - "PASSIVE"（默认，不阻塞读写）
-                     - "FULL"（等待所有读连接释放）
-                     - "RESTART"（类似 FULL，并要求 checkpoint 接力重新开始）
-                     - "TRUNCATE"（checkpoint 后将 -wal 截断至 0 字节）
-        :return: 操作是否成功
-
-        :example:
-        >>> storage.wal_checkpoint("TRUNCATE")
-        """
-        mode = (mode or "PASSIVE").upper()
-        # 白名单校验，避免拼接到 PRAGMA 语句时产生注入风险
-        if mode not in ("PASSIVE", "FULL", "RESTART", "TRUNCATE"):
-            mode = "PASSIVE"
-        try:
-            with self._get_connection() as conn:
-                conn.execute(f"PRAGMA wal_checkpoint({mode})")
-            return True
-        except Exception as e:
-            from .logger import logger
-
-            logger.debug(f"wal_checkpoint({mode}) failed: {e}")
-            return False
-
     def _get_nested_value(self, obj: Any, key_path: list[str]) -> Any:
         """
         从嵌套对象中获取值
