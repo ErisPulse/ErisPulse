@@ -701,12 +701,12 @@ class AdapterManager(ManagerBase):
 
     # ==================== 适配器配置管理 ====================
 
-    def _config_register(self, platform: str, enabled: bool = False) -> bool:
+    def _config_register(self, platform: str, enabled: bool = True) -> bool:
         """
         注册新平台适配器（仅当平台不存在时注册）
 
         :param platform: 平台名称
-        :param enabled: [bool] 是否启用适配器
+        :param enabled: [bool] 是否启用适配器 (默认: True，新适配器默认启用)
         :return: [bool] 操作是否成功
         """
         existing = config.getConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform))
@@ -745,16 +745,17 @@ class AdapterManager(ManagerBase):
         1. 适配器在配置文件中（ErisPulse.adapters.status.{platform} 存在）
         2. 配置值为启用状态
 
-        如果适配器未在配置中，返回 False
+        如果适配器未在配置中，默认启用并自动写入配置
         {!--< /tips >!--}
         """
         from .config import parse_bool_config
 
         status = config.getConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform))
 
-        # 适配器未在配置中，返回 False
+        # 适配器未在配置中，默认启用并写入配置
         if status is None:
-            return False
+            config.setConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform), True)
+            return True
 
         return parse_bool_config(status)
 
@@ -825,9 +826,16 @@ class AdapterManager(ManagerBase):
         """
         列出所有平台适配器状态
 
+        合并配置项与已注册适配器，确保禁用适配器也可见。
+
         :return: {平台名: 是否启用} 字典
         """
-        return config.getConfig(CONFIG_KEY_ADAPTER_STATUS, {})
+        items = dict(config.getConfig(CONFIG_KEY_ADAPTER_STATUS, {}))
+        # 补充已在管理器中注册但配置中不存在的适配器
+        for platform in self._adapters:
+            if platform not in items:
+                items[platform] = self.is_enabled(platform)
+        return items
 
     # 兼容性方法 - 保持向后兼容
     def list_adapters(self) -> dict[str, bool]:
@@ -1387,6 +1395,7 @@ class AdapterManager(ManagerBase):
         获取适配器与Bot的完整状态摘要
 
         返回所有适配器的运行状态及各适配器下的Bot状态，便于WebUI展示。
+        包含已禁用适配器以便于管理。
 
         :return: 状态摘要字典
 
@@ -1403,10 +1412,17 @@ class AdapterManager(ManagerBase):
         >>> #                     "info": {"nickname": "MyBot"}
         >>> #                 }
         >>> #             }
+        >>> #         },
+        >>> #         "disabled_platform": {
+        >>> #             "status": "disabled",
+        >>> #             "enabled": False,
+        >>> #             "bots": {}
         >>> #         }
         >>> #     }
         >>> # }
         """
+        from .config import parse_bool_config
+
         adapters_summary = {}
         for platform_name in self._adapters:
             adapter_instance = self._adapters[platform_name]
@@ -1417,8 +1433,19 @@ class AdapterManager(ManagerBase):
 
             adapters_summary[platform_name] = {
                 "status": adapter_status,
+                "enabled": self.is_enabled(platform_name),
                 "bots": dict(self._bots.get(platform_name, {})),
             }
+
+        # 补充配置中存在但未注册的适配器（被禁用的适配器），方便管理界面显示并开启
+        config_status = config.getConfig(CONFIG_KEY_ADAPTER_STATUS, {})
+        for platform_name in config_status:
+            if platform_name not in adapters_summary:
+                adapters_summary[platform_name] = {
+                    "status": "disabled",
+                    "enabled": parse_bool_config(config_status[platform_name]),
+                    "bots": {},
+                }
 
         return {"adapters": adapters_summary}
 

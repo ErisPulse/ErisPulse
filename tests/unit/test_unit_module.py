@@ -255,7 +255,8 @@ class TestModuleManager:
 
     def test_module_is_enabled(self, manager):
         """测试检查模块是否启用"""
-        with patch.object(config, "getConfig") as mock_get:
+        with patch.object(config, "getConfig") as mock_get, \
+             patch.object(config, "setConfig") as mock_set:
             # 启用状态
             mock_get.return_value = True
             assert manager.is_enabled("test_module") is True
@@ -271,9 +272,10 @@ class TestModuleManager:
             mock_get.return_value = "false"
             assert manager.is_enabled("test_module") is False
 
-            # 未配置状态
+            # 未配置状态 - 默认启用并自动写入配置
             mock_get.return_value = None
-            assert manager.is_enabled("test_module") is False
+            assert manager.is_enabled("test_module") is True
+            mock_set.assert_called_once()
 
     def test_module_enable(self, manager, test_module_class):
         """测试启用模块"""
