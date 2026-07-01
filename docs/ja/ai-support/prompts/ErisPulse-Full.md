@@ -2646,13 +2646,13 @@ epsdk create module -n MyModule -f
 ### 配置文件说明
 
 # 設定ファイルの説明
-> このドキュメントでは、フレームワークの設定ファイルについて説明します。サードパーティのモジュールで設定が必要な場合は、モジュールのドキュメントを参照してください。
+> このドキュメントでは、フレームワークの設定ファイルについて説明します。サードパーティのモジュールに設定が必要な場合は、モジュールのドキュメントを参照してください。
 
-ErisPulse はプロジェクトの設定を管理するために、TOML 形式の設定ファイル `config/config.toml` を使用します。
+ErisPulse は、TOML 形式の設定ファイル `config/config.toml` を使用してプロジェクトの設定を管理します。
 
-## 設定ファイルの場所
+## 設定ファイルの位置
 
-設定ファイルはプロジェクトのルートディレクトリにある `config/` フォルダに配置されています：
+設定ファイルはプロジェクトのルートディレクトリの `config/` フォルダ内にあります：
 
 ```
 project/
@@ -2679,7 +2679,7 @@ memory_limit = 1000
 [ErisPulse.framework]
 enable_lazy_loading = true
 uninit_timeout = 30
-strict_mode = 1
+strict_mode = 0
 
 [ErisPulse.framework.strict_mode_exceptions]
 modules = []
@@ -2713,8 +2713,8 @@ ssl_keyfile = "/path/to/key.pem"
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
-| host | string | 0.0.0.0 | リッスンするアドレス。0.0.0.0 はすべてのネットワークインターフェースを意味します |
-| port | integer | 8000 | リッスンポート番号 |
+| host | string | 0.0.0.0 | 監視するアドレス。0.0.0.0 はすべてのインターフェースを意味します |
+| port | integer | 8000 | 監視するポート番号 |
 | ssl_certfile | string | 空 | SSL 証明書ファイルのパス |
 | ssl_keyfile | string | 空 | SSL 秘密鍵ファイルのパス |
 
@@ -2729,10 +2729,10 @@ memory_limit = 1000
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
-| level | string | INFO | ログレベル：DEBUG, INFO, WARNING, ERROR, CRITICAL |
-| format | string | rich | ログ出力フォーマット。デフォルトで rich を使用してカラフルな出力を提供します |
+| level | string | INFO | ログレベル：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE は最低レベルで、フレームワーク内部の詳細なデバッグ情報を出力します） |
+| format | string | rich | ログ出力フォーマット。デフォルトでは rich 彩色出力を使用します |
 | log_files | array | 空 | ログ出力ファイルのリスト |
-| memory_limit | integer | 1000 | メモリに保持するログの件数 |
+| memory_limit | integer | 1000 | メモリ内に保持するログの件数 |
 
 ## フレームワーク設定
 
@@ -2740,7 +2740,7 @@ memory_limit = 1000
 [ErisPulse.framework]
 enable_lazy_loading = true
 uninit_timeout = 30
-strict_mode = 1
+strict_mode = 0
 
 [ErisPulse.framework.strict_mode_exceptions]
 modules = []
@@ -2749,28 +2749,30 @@ adapters = []
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
-| enable_lazy_loading | boolean | true | モジュールのレイジーローディングを有効にするかどうか |
-| uninit_timeout | integer | 30 | エレガントなシャットダウンの総タイムアウト時間（秒）。超えた場合は強制終了します。0 はタイムアウトを設定しないことを意味します |
-| strict_mode | integer | 1 | 严格模式レベル。下記「厳格モード」の説明を参照してください |
+| enable_lazy_loading | boolean | true | モジュールのラジーロードを有効にするかどうか |
+| uninit_timeout | integer | 30 | エレガントなシャットダウンの総タイムアウト時間（秒）。超過すると強制終了します。0 はタイムアウトを設定しないことを意味します |
+| strict_mode | integer | 0 | 厳密モードのレベル。下記「厳密モード」の説明を参照してください |
 
-### 厳格モード
+### 厳密モード
 
-厳格モードは、モジュール/アダプタがロード段階で不正または失敗した場合の処理戦略を制御します。現代のモジュール/アダプタはすべて対応する基底クラス（`BaseModule`/`BaseAdapter`）を継承する必要があります。基底クラスを継承していないコンポーネントはフレームワークのコンテキストシステムとリソースのクリーンアップに影響を与え、リソースリークを引き起こす可能性があります。厳格モードはデフォルトで有効になっており、このようなコンポーネントを遮断します。
+厳密モードは、モジュール/アダプターがロード段階で不正または失敗した場合の処理戦略を制御します。現代のモジュール/アダプターはすべて対応する基底クラス（`BaseModule`/`BaseAdapter`）を継承する必要があります。基底クラスを継承していないコンポーネントは、フレームワークのコンテキストシステムとバックアップクリーンアップに影響を与え、リソースリークを引き起こす可能性があります。
+
+> **2.5.2 変更**：デフォルトのレベルは `1`（スキップ）から `0`（緩和）に変更され、新規ユーザーが初めて使用する際に発生するロード問題を減らしました。基底クラスを継承していないコンポーネントは、WARNING ログとして警告を表示し、直接拒否するのではなく、ロードを試みます。旧来の動作を復元するには、`strict_mode = 1` と明示的に設定してください。
 
 | レベル | 名称 | 行動 |
 |------|------|------|
-| 0 | フレキシブル | 不正は警告のみ。基底クラスを継承していないコンポーネントもロードを試みます（旧コンポーネントの互換性） |
-| 1 | 厳格-スキップ（デフォルト） | 基底クラスを継承していないコンポーネントを拒否してスキップし、他のコンポーネントは正常に起動します |
-| 2 | 厳格-致命 | すべての不正を収集して一括で報告し、起動を中止します |
+| 0 | 緩和（デフォルト） | 不正は警告のみ。基底クラスを継承していないコンポーネントもロードを試みます（旧コンポーネントとの互換性） |
+| 1 | 厳密-スキップ | 基底クラスを継承していないコンポーネントを拒否し、スキップします。それ以外は正常に起動します |
+| 2 | 厳密-致命 | すべての不正を収集し、一括で報告して起動を中止します |
 
-各レベルにおいて、「ロード/登録/初期化段階でのエラー」は常にそのコンポーネント自身のクラッシュとしてスキップされます。違いは以下の通りです：
+各レベルにおいて、「ロード/登録/初期化段階でのエラー」はコンポーネント自身のクラッシュとして常にスキップされます。違いは以下の通りです：
 
-- **0 → 1**: 唯一の動作変化は「基底クラスを継承していない」コンポーネントが「ロードされる」から「スキップされる」ようになることです。
-- **1 → 2**: すべての不正（基底クラスを継承していない、ロード失敗、登録失敗、初期化失敗など）が致命的となり、起動チェックポイントで一括で不正リストを出力して中止されます。
+- **0 → 1**：唯一の動作変化は「基底クラスを継承していない」が「ロードを試みる」から「スキップ」に変わる点です。
+- **1 → 2**：すべての不正（基底クラスを継承していない、ロード失敗、登録失敗、初期化失敗など）が致命的になり、起動チェックポイントで一括して不正リストを出力し、中止します。
 
-#### 豁免リスト
+#### 裁量リスト
 
-もし特定のコンポーネントが一時的に移行できない場合（例えば依存する旧モジュールなど）、そのコンポーネントを豁免リストに追加することで、不正なコンポーネントでもフレキシブルモードとして扱い、ロードを継続させることができます：
+一部のコンポーネントが一時的に移行できない場合（依存する旧モジュールなど）、そのコンポーネントを裁量リストに追加できます。リストに含まれるコンポーネントは、不正であっても緩和モードで扱われ、ロードを続けます：
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -2778,7 +2780,7 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> 厳格モードによってコンポーネントが拒否された場合、ログには明確にそのコンポーネントをロードを回復する方法（豁免リストに追加するか、レベルを下げること）が表示されます。
+> 厳密モードによってコンポーネントが拒否された場合、ログには明確にどのようにロードを回復するか（裁量リストに追加するか、レベルを下げること）が示されます。
 
 ## ストレージ設定
 
@@ -2789,7 +2791,7 @@ use_global_db = false
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
-| use_global_db | boolean | false | プロジェクトのデータベースではなく、パッケージ内のグローバルデータベースを使用するかどうか。`true` の場合、すべてのプロジェクトで ErisPulse パッケージ内の SQLite データベースが共有されます。`false`（デフォルト）の場合、各プロジェクトは `config/` ディレクトリで独立したデータベースを使用します |
+| use_global_db | boolean | false | プロジェクトデータベースではなく、ErisPulse パッケージ内のグローバルデータベースを使用するかどうか。`true` の場合、すべてのプロジェクトは ErisPulse パッケージ内の SQLite データベースを共有します。`false`（デフォルト）の場合は、各プロジェクトは `config/` ディレクトリ内の独立したデータベースを使用します |
 
 ## イベント設定
 
@@ -2798,17 +2800,16 @@ use_global_db = false
 ```toml
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = true
+case_sensitive = false
 allow_space_prefix = false
-must_at_bot = false
 ```
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
 | prefix | string | / | コマンドのプレフィックス |
-| case_sensitive | boolean | true | 大文字と小文字を区別するかどうか（`/Help` と `/help` が異なるコマンドかどうか） |
-| allow_space_prefix | boolean | false | 空白をプレフィックスとして許可するかどうか |
-| must_at_bot | boolean | false | コマンドをトリガーするために必ずロボットを @ する必要があるかどうか（プライベートメッセージでは制限されません） |
+| case_sensitive | boolean | true | 大文字小文字を区別するかどうか（`/Help` と `/help` が異なるコマンドになるかどうか） |
+| allow_space_prefix | boolean | false | スペースをプレフィックスとして許可するかどうか |
+| must_at_bot | boolean | false | コマンドをトリガーする際に必ず@ボットを指定する必要があるかどうか（プライベートチャットは制限されません） |
 
 ### メッセージ設定
 
@@ -2830,11 +2831,11 @@ language = "auto"
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
-| language | string | auto | フレームワークの内蔵テキストの表示言語。`auto` に設定するとシステム言語を自動検出します。具体的な言語コード（`zh-CN`、`zh-TW`、`en`、`ja`、`ru`）を設定することもできます |
+| language | string | auto | フレームワーク内に含まれるテキストの表示言語。`auto` に設定するとシステム言語を自動検出します。具体的な言語コード（`zh-CN`、`zh-TW`、`en`、`ja`、`ru`）を指定することもできます |
 
 ## モジュール設定
 
-各モジュールは設定ファイルで独自の設定を定義できます：
+各モジュールは、設定ファイル内で独自の設定を定義できます：
 
 ```toml
 [MyModule]
@@ -2843,28 +2844,28 @@ timeout = 30
 enabled = true
 ```
 
-モジュール内で設定を読み取る方法：
+モジュール内で設定を読み取り、書き込みます：
 
 ```python
 from ErisPulse import sdk
 
-# 读取配置
+# 設定を読み取る
 config = sdk.config.getConfig("MyModule", {})
 api_url = config.get("api_url", "https://default.api.com")
 
-# 运行时写入配置（延迟保存）
+# 実行時に設定を書き込む（遅延保存）
 sdk.config.setConfig("MyModule.timeout", 60)
 
-# 立即保存到文件
+# ファイルに即時保存
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` はデフォルトで遅延書き込み（約 5 秒ごとにファイルへのバッチ保存）を採用します。`immediate=True` を設定すると、即座に永続化できます。設定の変更は `config.set` ライフサイクルイベントをトリガーします。
+> `setConfig` はデフォルトで遅延書き込み（約 5 秒ごとにバッチ保存）を使用します。`immediate=True` を設定すると即時永続化されます。設定の変更は `config.set` ライフサイクルイベントをトリガーします。
 
-## 次のステップ
+## 次に進む
 
-- [CLI コマンドリファレンス](cli-reference.md) - すべてのコマンドラインコマンドを確認する
-- [開発者ガイド](../developer-guide/) - カスタムモジュールの開発を学ぶ
+- [CLI コマンドリファレンス](cli-reference.md) - すべてのコマンドラインコマンドを理解する
+- [開発者ガイド](../developer-guide/) - 自作モジュールの開発方法を学ぶ
 
 
 ### 部署指南
@@ -3146,106 +3147,85 @@ tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
 # 開発者ガイド
 
-このガイドは、カスタムモジュールやアダプターを開発し、ErisPulse の機能を拡張する際に役立ちます。
+このガイドは、ErisPulse の機能を拡張するためのカスタムモジュールやアダプターを開発する方法を説明します。
 
-## 内容リスト
+## 目次
 
 ### モジュール開発
 
-1. [モジュール開発入門](modules/getting-started.md) - 最初のモジュールを作成
-2. [モジュールのコア概念](modules/core-concepts.md) - モジュールのコア概念とアーキテクチャ
-3. [Event ラッパークラスの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明
-4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するためのアドバイス
+1. [モジュール開発の入門](modules/getting-started.md) - 最初のモジュールを作成する
+2. [モジュールの基本概念](modules/core-concepts.md) - モジュールの基本的な概念とアーキテクチャ
+3. [Event クラスの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明
+4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュール開発に関する提案
 
 ### アダプター開発
 
-1. [アダプター開発入門](adapters/getting-started.md) - 最初のアダプターを作成
-2. [アダプターのコア概念](adapters/core-concepts.md) - アダプターのコア概念
-3. [SendDSL 詳細](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明
-4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装
-5. [アダプターのベストプラクティス](adapters/best-practices.md) - 高品質なアダプターを開発するためのアドバイス
+1. [アダプター開発の入門](adapters/getting-started.md) - 最初のアダプターを作成する
+2. [アダプターの基本概念](adapters/core-concepts.md) - アダプターの基本的な概念
+3. [SendDSL の詳細](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明
+4. [イベント変換器](adapters/converter.md) - イベント変換器の実装
+5. [アダプターのベストプラクティス](adapters/best-practices.md) - 高品質なアダプター開発に関する提案
 
-### 公開ガイド
+### リリースガイド
 
-- [公開とモジュールストアのガイド](publishing.md) - あなたの作品を PyPI と ErisPulse モジュールストアに公開
+- [リリースとモジュールストアのガイド](publishing.md) - あなたの作品を PyPI と ErisPulse モジュールストアにリリースする方法
 
-## 開発の準備
+## 開発準備
 
-開発を始める前に、以下の準備ができていることを確認してください。
+開発を開始する前に、以下の事項を確認してください：
 
-1. [基本概念](../getting-started/basic-concepts.md)を読んでいる
-2. [イベント処理](../getting-started/event-handling.md)に慣れている
-3. 開発環境（Python >= 3.10）がインストールされている
-4. ErisPulse SDKがインストールされている
+1. [基本概念](../getting-started/basic-concepts.md) を読んでいること
+2. [イベント処理](../getting-started/event-handling.md) に精通していること
+3. 開発環境のインストール（Python >= 3.10）
+4. ErisPulse SDK のインストール
 
-## 開発の種類の選択
+## 開発タイプの選択
 
-あなたのニーズに合わせて、適切な開発の種類を選択してください。
+ニーズに応じて、適切な開発タイプを選択してください：
 
-| 開発の種類 | 適用シナリオ | 入門ガイド |
+| 開発タイプ | 適用シーン | 入門ガイド |
 |---------|---------|---------|
-| **モジュール開発** | ボットの機能拡張、特定のビジネスロジックの実装、コマンドとメッセージ処理の提供 | [モジュール開発入門](modules/getting-started.md) |
-| **アダプター開発** | 新しいメッセージングプラットフォームへの接続、クロスプラットフォーム通信の実装、プラットフォーム固有機能の提供 | [アダプター開発入門](adapters/getting-started.md) |
+| **モジュール開発** | ロボット機能の拡張、ビジネスロジックの実装、コマンドやメッセージ処理の提供 | [モジュール開発の入門](modules/getting-started.md) |
+| **アダプター開発** | 新しいメッセージプラットフォームへの接続、クロスプラットフォーム通信の実現、プラットフォーム固有の機能の提供 | [アダプター開発の入門](adapters/getting-started.md) |
 
-> ボットの機能を拡張したい場合（コマンドやメッセージの処理など）、**モジュール開発**を選択してください。新しいプラットフォームにボットを接続したい場合は、**アダプター開発**を選択してください。
+> ロボットの機能を拡張したい場合（コマンドの追加、メッセージの処理など）は、**モジュール開発**を選択してください。ロボットを新しいプラットフォームに接続したい場合は、**アダプター開発**を選択してください。
 
 ## 開発ツール
 
 ### プロジェクトテンプレート
 
-ErisPulse は参考としてサンプルプロジェクトを提供しています。
+ErisPulse は、参考用のサンプルプロジェクトを提供しています：
 
 - [モジュールの例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - モジュールの完全なプロジェクト構造
 - [アダプターの例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - アダプターの完全なプロジェクト構造
 
 ### 開発モード
 
-コードの変更後に自動的に再読み込みするホットリロードモードを使用して開発を行います。
+コードを変更すると自動的に再読み込みされるホットリロードモードを使用して開発を行います：
 
 ```bash
 epsdk run main.py --reload
 ```
 
-### デバッグのコツ
+### デバッグのヒント
 
-`config/config.toml` で DEBUG レベルのログを有効にします。
+`config/config.toml` で DEBUG または TRACE レベルのログを有効化します：
 
 ```toml
 [ErisPulse.logger]
+# DEBUG: モジュールのロード、ルーティングの登録などの開発用デバッグ情報を出力
+# TRACE: 最低レベル、イベントの配信、ストレージへの書き込み、遅延読み込みなどのフレームワーク内部の詳細なフローを出力
 level = "DEBUG"
 ```
 
-### モジュール独自のロガーの使用
+## あなたのモジュールをリリースする
 
-```python
-from ErisPulse import sdk
-
-logger = sdk.logger.get_child("MyModule")
-logger.debug("デバッグ情報")
-```
-
-## モジュールの公開
-
-公開の完全なフローについては、[公開とモジュールストアのガイド](publishing.md)を参照してください。以下が含まれます。
-
-- PyPI への公開手順
-- ErisPulse モジュールストアへの提出プロセス
-- アダプターの公開
-
-### クイックリファレンス
-
-```bash
-# ビルドして PyPI に公開
-python -m build
-python -m twine upload dist/*
-```
-
-その後、[ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) にアクセスして、モジュールストアに提出します。
+完全なリリースプロセスについては、[リリースとモジュールストアのガイド](publishing.md)を参照してください。PyPI へのリリース手順や、ErisPulse モジュールストアへの提出プロセスなどが含まれています。
 
 ## 関連ドキュメント
 
-- [標準仕様](../standards/) - 互換性を確保するための技術標準
-- [プラットフォーム特性ガイド](../platform-guide/) - 各プラットフォームのアダプターの特性を理解する
+- [標準規格](../standards/) - 互換性を確保するための技術的規格
+- [プラットフォーム特性ガイド](../platform-guide/) - 各プラットフォームアダプターの特性について理解する
 
 
 ====
@@ -7497,13 +7477,13 @@ API 参考
 
 # コアモジュール API
 
-このドキュメントでは、ErisPulseのコアモジュールのAPIのクイックリファレンスを提供します。メソッドの署名と簡単な説明が含まれています。詳細な使用方法と例については、各モジュールの「完全なドキュメント」リンクをクリックしてください。
+このドキュメントは、ErisPulse コアモジュールの API リファレンスを提供し、メソッドの署名と簡潔な説明を含んでいます。詳細な使用方法と例については、各モジュールの「完全なドキュメント」リンクをクリックしてください。
 
 ## Storage モジュール
 
-SQLite ベースのキーバリューストアシステムで、汎用 SQL のチェーン呼び出しクエリをサポートしています。
+SQLite に基づく鍵値ストアシステムで、一般的な SQL チェーンクエリをサポートしています。
 
-### 基本的な操作
+### 基本操作
 
 ```python
 from ErisPulse import sdk
@@ -7530,16 +7510,16 @@ with sdk.storage.transaction():
     sdk.storage.set("key2", "value2")
 ```
 
-### プロパティアクセス
+### 属性アクセス
 
 ```python
-sdk.storage.my_key          # sdk.storage.get("my_key") と等価です
-sdk.storage.my_key = "val"  # sdk.storage.set("my_key", "val") と等価です
+sdk.storage.my_key          # sdk.storage.get("my_key") と同等
+sdk.storage.my_key = "val"  # sdk.storage.set("my_key", "val") と同等
 ```
 
-### SQL チェーン呼び出しクエリ
+### SQL チェーンクエリ
 
-Storage モジュールは、チェーン呼び出しスタイルの汎用 SQL クエリビルダーを提供し、カスタムテーブルの CRUD 操作をサポートしています。
+Storage モジュールは、カスタムテーブルの CRUD 操作をサポートするチェーン呼び出しスタイルの一般的な SQL クエリビルダーを提供します。
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -7551,11 +7531,11 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> 完全なチェーン呼び出しクエリ API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、トランザクションなど）については、[SQL クエリビルダー](../advanced/sql-builder.md)を参照してください。
+> 完全なチェーンクエリ API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、トランザクションなど）については、[SQL クエリビルダー](../advanced/sql-builder.md)を参照してください。
 
-### ストレージバックエンド抽象
+### ストレージバックエンド抽象化
 
-`StorageManager` は `BaseStorage` 抽象基底クラスを継承しており、将来の他のストレージメディア（Redis、MySQL など）の拡張をサポートしています。
+`StorageManager` は `BaseStorage` 抽象基底クラスを継承しており、Redis、MySQL などの他のストレージメディアを拡張できます。
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -7563,15 +7543,15 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ## Config モジュール
 
-TOML 形式の設定ファイル管理で、ドット（.）で区切られたキーパスをサポートしています。
+TOML 形式の設定ファイル管理で、ドット区切りのキー経路をサポートしています。
 
 ### API 概要
 
 | メソッド | 説明 |
 |------|------|
-| `getConfig(key, default)` | 設定を読み込みます。`"MyModule.subkey"` のようなドット区切りのパスをサポートします |
-| `setConfig(key, value, immediate=False)` | 設定を書き込みます。`immediate=True` の場合、ファイルにすぐに保存されます |
-| `force_save()` | メモリ内の設定を強制的にファイルに書き込みます |
+| `getConfig(key, default)` | 設定を読み込みます。ドット経路 `"MyModule.subkey"` がサポートされます |
+| `setConfig(key, value, immediate=False)` | 設定を書き込みます。`immediate=True` の場合、ファイルに即時保存されます |
+| `force_save()` | メモリ内の設定をファイルに強制的に書き込みます |
 | `reload()` | ファイルから設定を再読み込みします |
 
 ### 例
@@ -7584,13 +7564,13 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` はデフォルトで遅延書き込み（毎 5 秒でバッチ保存）を使用します。`immediate=True` に設定すると、設定ファイルにすぐに永続化されます。設定の変更は `config.set` ライフサイクルイベントをトリガーします。
+> `setConfig` はデフォルトで遅延書き込み（5 秒ごとにバッチ保存）を使用します。`immediate=True` を設定すると、即時永続化されます。設定の変更は `config.set` ライフサイクルイベントをトリガーします。
 
 ## Logger モジュール
 
-モジュール化されたログシステムで、Rich 出力ベースで、サブロガーとモジュールレベルの制御をサポートしています。
+モジュール化されたロギングシステムで、Rich による出力サポート、サブロガーとモジュールレベルの制御を提供します。
 
-### 基本的な使用方法
+### 基本的な使い方
 
 ```python
 sdk.logger.debug("デバッグ情報")
@@ -7604,9 +7584,9 @@ sdk.logger.critical("致命的なエラー")
 
 ```python
 child_logger = sdk.logger.get_child("MyModule")
-child_logger.info("サブモジュールログ")
+child_logger.info("サブモジュールのログ")
 
-child_logger.get_child("utils")  # ネストされたサブモジュールをサポートします
+child_logger.get_child("utils")  # 嵌套もサポート
 ```
 
 ### ログレベル制御
@@ -7614,7 +7594,38 @@ child_logger.get_child("utils")  # ネストされたサブモジュールをサ
 ```python
 sdk.logger.set_level("DEBUG")                          # グローバルレベル
 sdk.logger.set_module_level("MyModule", "DEBUG")       # モジュールレベル
+
+# 支持されるレベル（低い順）：
+# TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
+# TRACE は最下位レベルで、フレームワーク内部の詳細なデバッグ情報を出力します（イベント配信、ルーティング登録など）
+sdk.logger.set_level("TRACE")                          # 全てのログを有効にします
 ```
+
+### ログサブスクリプション（プッシュ方式）
+
+Dashboard などのモジュールが構造化ログをリアルタイムで受信できるようにし、レベルフィルタリングと履歴ログの補送をサポートします。
+
+```python
+# デコレータ方式
+@sdk.logger.handler("my-handler", min_level="INFO")
+def on_log(log_data: dict):
+    # log_data = {
+    #     "timestamp": "2026-06-29T22:00:00.123456",
+    #     "level": "WARNING", "level_num": 30,
+    #     "module": "ErisPulse.Core.adapter",
+    #     "message": "厳密モード：...",
+    # }
+    pass
+
+# 直接呼び出し方式
+sdk.logger.handler("my-handler", min_level="INFO")(on_log)
+sdk.logger.remove_handler("my-handler")
+```
+
+| メソッド | 説明 |
+|------|------|
+| `handler(id, *, min_level)(func)` | デコレータ/直接呼び出しの両方に対応。`id` が空の場合は関数名が使用されます。登録時に履歴ログが自動的に補送されます |
+| `remove_handler(id)` | サブスクライバを削除します |
 
 ### 出力制御
 
@@ -7627,22 +7638,22 @@ sdk.logger.set_memory_limit(1000)
 
 ## Adapter モジュール
 
-アダプターマネージャーで、マルチプラットフォームアダプターの登録、起動、シャットダウンを管理します。
+アダプタマネージャーで、複数のプラットフォームアダプタの登録、起動、停止を管理します。
 
 ### API 概要
 
 | メソッド | 説明 |
 |------|------|
-| `get(platform)` | アダプターインスタンスを取得します |
-| `exists(platform)` | アダプターが登録されているか確認します |
-| `enable(platform)` / `disable(platform)` | アダプターを有効化/無効化します |
-| `is_enabled(platform)` | 有効になっているか確認します |
-| `startup(platforms)` / `shutdown(platforms)` | アダプターを起動/シャットダウンします |
-| `is_running(platform)` | アダプターが実行中か確認します |
-| `list_running()` | 実行中のすべてのアダプターを一覧表示します |
+| `get(platform)` | アダプタのインスタンスを取得します |
+| `exists(platform)` | アダプタが登録されているかを確認します |
+| `enable(platform)` / `disable(platform)` | アダプタを有効化/無効化します |
+| `is_enabled(platform)` | アダプタが有効化されているかを確認します |
+| `startup(platforms)` / `shutdown(platforms)` | アダプタを起動/停止します |
+| `is_running(platform)` | アダプタが実行中かを確認します |
+| `list_running()` | 実行中のアダプタをすべてリストします |
 | `platforms` | すべてのプラットフォーム名のリストを取得します |
 
-### アダプターエベント
+### アダプタイベント
 
 ```python
 @sdk.adapter.on("message")
@@ -7654,7 +7665,7 @@ async def handle_yunhu_message(event):
     pass
 ```
 
-### Bot ステータス照会
+### Bot 状態照会
 
 ```python
 sdk.adapter.get_bot_info("telegram", "123456")
@@ -7663,28 +7674,28 @@ sdk.adapter.is_bot_online("telegram", "123456")
 sdk.adapter.get_status_summary()
 ```
 
-> 完全なアダプターマネジメント API については、[アダプターシステム API](adapter-system.md) を参照してください。
+> 完全なアダプタ管理 API については、[アダプタシステム API](adapter-system.md) を参照してください。
 
 ## Module モジュール
 
-モジュールマネージャーで、プラグインの登録、読み込み、アンロードを管理します。
+モジュールマネージャーで、プラグインの登録、ロード、アンロードを管理します。
 
 ### API 概要
 
 | メソッド | 説明 |
 |------|------|
-| `get(name)` | モジュールインスタンスを取得します |
-| `exists(name)` | 登録されているか確認します |
-| `is_loaded(name)` | 読み込み済みか確認します |
-| `is_enabled(name)` | 有効になっているか確認します |
+| `get(name)` | モジュールのインスタンスを取得します |
+| `exists(name)` | モジュールが登録されているかを確認します |
+| `is_loaded(name)` | モジュールがロードされているかを確認します |
+| `is_enabled(name)` | モジュールが有効化されているかを確認します |
 | `enable(name)` / `disable(name)` | モジュールを有効化/無効化します |
-| `load(name)` / `unload(name)` | モジュールを読み込み/アンロードします |
-| `list_registered()` | 登録済みのモジュールを一覧表示します |
-| `list_loaded()` | 読み込み済みのモジュールを一覧表示します |
-| `get_info(name)` | モジュール情報を取得します |
-| `get_status_summary()` | モジュールステータスの要約を取得します |
+| `load(name)` / `unload(name)` | モジュールをロード/アンロードします |
+| `list_registered()` | 登録済みのモジュールをすべてリストします |
+| `list_loaded()` | ロード済みのモジュールをすべてリストします |
+| `get_info(name)` | モジュールの情報を取得します |
+| `get_status_summary()` | モジュールの状態の概要を取得します |
 
-### プロパティアクセス
+### 属性アクセス
 
 ```python
 module = sdk.module.get("ModuleName")
@@ -7694,26 +7705,26 @@ module = sdk.ModuleName  # 等価なショートカット
 
 ## Lifecycle モジュール
 
-イベント駆動型のライフサイクルマネージャーで、イベントの送信と監視機能を提供します。
+イベント駆動のライフサイクルマネージャーで、イベントの送信と監視機能を提供します。
 
 ### API 概要
 
 | メソッド | 説明 |
 |------|------|
-| `on(event, priority=0)` | デコレーターを使用してイベントハンドラーを登録します。ドット区切りのマッチングとワイルドカード `*` をサポートします |
-| `register(event, handler, priority=0)` | 関数型でハンドラーを登録します |
-| `unregister(event, handler=None)` | ハンドラーを削除します |
+| `on(event, priority=0)` | イベントハンドラのデコレータ登録。ドットマッチとワイルドカード `*` をサポートします |
+| `register(event, handler, priority=0)` | 関数形式でハンドラを登録します |
+| `unregister(event, handler=None)` | ハンドラを削除します |
 | `emit(event, data)` | 非同期でイベントをトリガーします |
 | `emit_sync(event, data)` | 同期でイベントをトリガーします |
-| `submit_event(event_type, msg, data, source)` | 標準形式のイベントを送信します（旧バージョンと互換性あり） |
-| `start_timer(id)` / `stop_timer(id)` | パフォーマンスタイマー |
+| `submit_event(event_type, msg, data, source)` | 標準形式のイベントを送信します（旧版と互換性があります） |
+| `start_timer(id)` / `stop_timer(id)` | パフォーマンスタイマーを開始/停止します |
 
 ### 例
 
 ```python
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
-    print(f"モジュール初期化: {event_data}")
+    print(f"モジュールの初期化: {event_data}")
 
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
@@ -7726,38 +7737,38 @@ await sdk.lifecycle.emit("custom.event", {"key": "value"})
 
 ## Router モジュール
 
-HTTP/WebSocket ルーターマネージャーで、FastAPI + Uvicorn ベースで、デコレーターローター、ミドルウェア、グループ化、レート制限、CORS をサポートしています。
+HTTP/WebSocket ルーティングマネージャーで、FastAPI + Uvicorn に基づき、デコレータルーティング、ミドルウェア、グループ化、リクエスト制限、CORS をサポートします。
 
-> 完全なルーター API ドキュメント（デコレーターローター、WebSocket、ミドルウェア、レート制限、CORS、セキュリティヘッダーなど）については、[ルーター管理](../advanced/router.md)を参照してください。
+> 完全なルーティング API ドキュメント（デコレータルーティング、WebSocket、ミドルウェア、レート制限、CORS、セキュリティヘッダーなど）については、[ルーティングマネージャー](../advanced/router.md)を参照してください。
 
-### クイックリファレンス
+### 快速リファレンス
 
 ```python
-# HTTP ルーター
+# HTTP ルーティング
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# WebSocket ルーター
+# WebSocket ルーティング
 @sdk.router.ws("MyModule", "/ws")
 async def ws_handler(ws: WebSocketConnection):
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 
-# ルーターグループ
+# ルーティンググループ
 group = sdk.router.group("MyModule", prefix="/v1")
 @group.get("/users")
 async def list_users(request: HttpRequest):
     return {"users": []}
 ```
 
-## HTTP Client モジュール
+## HTTP クライアント モジュール
 
-統一された HTTP/WS クライアントで、aiohttp ベースで、リクエスト統計、リトライ、ログ、ErisPulse 例外体系を提供します。
+統一された HTTP/WS クライアントで、aiohttp に基づき、リクエスト統計、リトライ、ログ、ErisPulse 例外体系を提供します。
 
 > 完全な HTTP クライアントドキュメント（リクエストメソッド、レスポンスオブジェクト、WebSocket クライアント、例外体系など）については、[HTTP クライアント](../advanced/http-client.md)を参照してください。
 
-### クイックリファレンス
+### 快速リファレンス
 
 ```python
 from ErisPulse.Core import client
@@ -7775,9 +7786,9 @@ async for text in ws.iter_text():
 ## 関連ドキュメント
 
 - [イベントシステム API](event-system.md) - Event モジュール API
-- [アダプターシステム API](adapter-system.md) - Adapter 管理 API
-- [SQL クエリビルダー](../advanced/sql-builder.md) - SQL チェーン呼び出しクエリの完全なドキュメント
-- [ルーター管理](../advanced/router.md) - ルーターマネージャーの完全なドキュメント
+- [アダプタシステム API](adapter-system.md) - アダプタ管理 API
+- [SQL クエリビルダー](../advanced/sql-builder.md) - SQL チェーンクエリの完全なドキュメント
+- [ルーティングマネージャー](../advanced/router.md) - ルーティングマネージャーの完全なドキュメント
 - [HTTP クライアント](../advanced/http-client.md) - HTTP クライアントの完全なドキュメント
 - [ライフサイクル管理](../advanced/lifecycle.md) - ライフサイクルの完全なドキュメント
 
