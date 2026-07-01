@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1293,
+  "total_keywords": 1295,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -1822,14 +1822,6 @@
         "title": "API Справочник"
       }
     ],
-    "API основных модулей ядра": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 1,
-        "level": 1,
-        "title": "API основных модулей ядра"
-      }
-    ],
     "API регистрации": [
       {
         "document": "advanced/dashboard-view.md",
@@ -1844,6 +1836,14 @@
         "line": 1,
         "level": 1,
         "title": "API системы событий"
+      }
+    ],
+    "API ядра": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 1,
+        "level": 1,
+        "title": "API ядра"
       }
     ],
     "API 调用": [
@@ -2150,12 +2150,12 @@
         "title": "SQL Query Builder"
       }
     ],
-    "SQL-запросы с цепочкой вызовов": [
+    "SQL-цепочные запросы": [
       {
         "document": "api-reference/core-modules.md",
         "line": 43,
         "level": 3,
-        "title": "SQL-запросы с цепочкой вызовов"
+        "title": "SQL-цепочные запросы"
       }
     ],
     "SendDSL": [
@@ -2906,12 +2906,6 @@
         "title": "Базовое использование"
       },
       {
-        "document": "api-reference/core-modules.md",
-        "line": 96,
-        "level": 3,
-        "title": "Базовое использование"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 62,
         "level": 3,
@@ -3057,18 +3051,6 @@
       }
     ],
     "Быстрый справочник": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 236,
-        "level": 3,
-        "title": "Быстрый справочник"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 263,
-        "level": 3,
-        "title": "Быстрый справочник"
-      },
       {
         "document": "user-guide/README.md",
         "line": 14,
@@ -3461,7 +3443,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 217,
+        "line": 218,
         "level": 2,
         "title": "Далее"
       }
@@ -3780,18 +3762,18 @@
         "title": "Доступ к основным модулям"
       }
     ],
-    "Доступ по атрибутам": [
+    "Доступ к свойствам": [
       {
         "document": "api-reference/core-modules.md",
         "line": 36,
         "level": 3,
-        "title": "Доступ по атрибутам"
+        "title": "Доступ к свойствам"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 190,
+        "line": 221,
         "level": 3,
-        "title": "Доступ по атрибутам"
+        "title": "Доступ к свойствам"
       }
     ],
     "Доступ через свойства": [
@@ -3824,14 +3806,6 @@
         "line": 443,
         "level": 3,
         "title": "Доступные свойства"
-      }
-    ],
-    "Дочерние логгеры": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 106,
-        "level": 3,
-        "title": "Дочерние логгеры"
       }
     ],
     "Другие термины": [
@@ -3993,7 +3967,7 @@
     "Запрос состояния бота": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 160,
+        "line": 191,
         "level": 3,
         "title": "Запрос состояния бота"
       },
@@ -4873,23 +4847,23 @@
     "Конфигурация команд": [
       {
         "document": "user-guide/configuration.md",
-        "line": 149,
+        "line": 151,
         "level": 3,
         "title": "Конфигурация команд"
       }
     ],
-    "Конфигурация логов": [
+    "Конфигурация логирования": [
       {
         "document": "user-guide/configuration.md",
         "line": 74,
         "level": 2,
-        "title": "Конфигурация логов"
+        "title": "Конфигурация логирования"
       }
     ],
     "Конфигурация локализации": [
       {
         "document": "user-guide/configuration.md",
-        "line": 177,
+        "line": 178,
         "level": 2,
         "title": "Конфигурация локализации"
       }
@@ -4897,7 +4871,7 @@
     "Конфигурация модулей": [
       {
         "document": "user-guide/configuration.md",
-        "line": 188,
+        "line": 189,
         "level": 2,
         "title": "Конфигурация модулей"
       }
@@ -4985,7 +4959,7 @@
     "Конфигурация событий": [
       {
         "document": "user-guide/configuration.md",
-        "line": 147,
+        "line": 149,
         "level": 2,
         "title": "Конфигурация событий"
       }
@@ -4993,7 +4967,7 @@
     "Конфигурация сообщений": [
       {
         "document": "user-guide/configuration.md",
-        "line": 166,
+        "line": 167,
         "level": 3,
         "title": "Конфигурация сообщений"
       }
@@ -5017,9 +4991,23 @@
     "Конфигурация хранилища": [
       {
         "document": "user-guide/configuration.md",
-        "line": 136,
+        "line": 138,
         "level": 2,
         "title": "Конфигурация хранилища"
+      }
+    ],
+    "Краткий справочник": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 267,
+        "level": 3,
+        "title": "Краткий справочник"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 294,
+        "level": 3,
+        "title": "Краткий справочник"
       }
     ],
     "Ленивая загрузка (Lazy Loading)": [
@@ -5659,7 +5647,7 @@
     "Модуль Adapter": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 131,
+        "line": 162,
         "level": 2,
         "title": "Модуль Adapter"
       }
@@ -5675,7 +5663,7 @@
     "Модуль HTTP Client": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 257,
+        "line": 288,
         "level": 2,
         "title": "Модуль HTTP Client"
       }
@@ -5683,7 +5671,7 @@
     "Модуль Lifecycle": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 198,
+        "line": 229,
         "level": 2,
         "title": "Модуль Lifecycle"
       }
@@ -5699,7 +5687,7 @@
     "Модуль Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 171,
+        "line": 202,
         "level": 2,
         "title": "Модуль Module"
       }
@@ -5707,7 +5695,7 @@
     "Модуль Router": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 230,
+        "line": 261,
         "level": 2,
         "title": "Модуль Router"
       }
@@ -5915,19 +5903,19 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 135,
+        "line": 166,
         "level": 3,
         "title": "Обзор API"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 175,
+        "line": 206,
         "level": 3,
         "title": "Обзор API"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 202,
+        "line": 233,
         "level": 3,
         "title": "Обзор API"
       }
@@ -6824,6 +6812,14 @@
         "title": "Основная структура"
       }
     ],
+    "Основное использование": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 96,
+        "level": 3,
+        "title": "Основное использование"
+      }
+    ],
     "Основной API": [
       {
         "document": "advanced/conversation.md",
@@ -7534,6 +7530,14 @@
         "title": "Повторное подключение при обрыве"
       }
     ],
+    "Под-логгеры": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 106,
+        "level": 3,
+        "title": "Под-логгеры"
+      }
+    ],
     "Подготовка к разработке": [
       {
         "document": "developer-guide/README.md",
@@ -7768,6 +7772,14 @@
         "line": 93,
         "level": 3,
         "title": "Подключение к Cursor"
+      }
+    ],
+    "Подписка на логи (push-модель)": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 127,
+        "level": 3,
+        "title": "Подписка на логи (push-модель)"
       }
     ],
     "Подписка на события (Intents)": [
@@ -8158,18 +8170,6 @@
     ],
     "Пример": [
       {
-        "document": "api-reference/core-modules.md",
-        "line": 80,
-        "level": 3,
-        "title": "Пример"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 214,
-        "level": 3,
-        "title": "Пример"
-      },
-      {
         "document": "platform-guide/email.md",
         "line": 110,
         "level": 3,
@@ -8288,6 +8288,20 @@
         "line": 33,
         "level": 4,
         "title": "Пример успешного ответа"
+      }
+    ],
+    "Примеры": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 80,
+        "level": 3,
+        "title": "Примеры"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 245,
+        "level": 3,
+        "title": "Примеры"
       }
     ],
     "Примеры запроса сообщений": [
@@ -8751,7 +8765,7 @@
     "Публикация вашего модуля": [
       {
         "document": "developer-guide/README.md",
-        "line": 81,
+        "line": 74,
         "level": 2,
         "title": "Публикация вашего модуля"
       }
@@ -8832,20 +8846,20 @@
         "title": "Разрешение аккаунта"
       }
     ],
+    "Расположение конфигурационного файла": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 6,
+        "level": 2,
+        "title": "Расположение конфигурационного файла"
+      }
+    ],
     "Расположение общих настроек": [
       {
         "document": "user-guide/README.md",
         "line": 28,
         "level": 3,
         "title": "Расположение общих настроек"
-      }
-    ],
-    "Расположение файла конфигурации": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 6,
-        "level": 2,
-        "title": "Расположение файла конфигурации"
       }
     ],
     "Распространение приложений через образ Docker": [
@@ -9354,6 +9368,12 @@
     ],
     "Связанная документация": [
       {
+        "document": "api-reference/core-modules.md",
+        "line": 309,
+        "level": 2,
+        "title": "Связанная документация"
+      },
+      {
         "document": "styleguide/README.md",
         "line": 32,
         "level": 2,
@@ -9423,7 +9443,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 99,
+        "line": 78,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -9800,14 +9820,6 @@
         "title": "Слушивание жизненного цикла бота"
       }
     ],
-    "См. также": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 278,
-        "level": 2,
-        "title": "См. также"
-      }
-    ],
     "Смена языка через конфигурационный файл": [
       {
         "document": "advanced/i18n.md",
@@ -9963,7 +9975,7 @@
     "События адаптера": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 148,
+        "line": 179,
         "level": 3,
         "title": "События адаптера"
       }
@@ -10030,14 +10042,6 @@
         "line": 146,
         "level": 3,
         "title": "События уведомлений (Notice Events)"
-      }
-    ],
-    "Советы по отладке": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 63,
-        "level": 3,
-        "title": "Советы по отладке"
       }
     ],
     "Совместимость со старой конфигурацией": [
@@ -10289,7 +10293,7 @@
     "Список исключений": [
       {
         "document": "user-guide/configuration.md",
-        "line": 124,
+        "line": 126,
         "level": 4,
         "title": "Список исключений"
       }
@@ -10396,14 +10400,6 @@
         "line": 1,
         "level": 1,
         "title": "Справочник по командам CLI"
-      }
-    ],
-    "Справочные материалы": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 89,
-        "level": 3,
-        "title": "Справочные материалы"
       }
     ],
     "Ссылки": [
@@ -10752,6 +10748,14 @@
         "title": "Тестовая команда"
       }
     ],
+    "Техники отладки": [
+      {
+        "document": "developer-guide/README.md",
+        "line": 63,
+        "level": 3,
+        "title": "Техники отладки"
+      }
+    ],
     "Технические стандарты": [
       {
         "document": "README.md",
@@ -11043,7 +11047,7 @@
     "Управление выводом": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 122,
+        "line": 153,
         "level": 3,
         "title": "Управление выводом"
       }
