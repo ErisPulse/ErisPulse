@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1269,
+  "total_keywords": 1270,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -1883,19 +1883,19 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 135,
+        "line": 166,
         "level": 3,
         "title": "API Overview"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 175,
+        "line": 206,
         "level": 3,
         "title": "API Overview"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 202,
+        "line": 233,
         "level": 3,
         "title": "API Overview"
       }
@@ -2149,7 +2149,7 @@
     "Adapter Events": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 148,
+        "line": 179,
         "level": 3,
         "title": "Adapter Events"
       }
@@ -2197,7 +2197,7 @@
     "Adapter Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 131,
+        "line": 162,
         "level": 2,
         "title": "Adapter Module"
       }
@@ -2435,7 +2435,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 190,
+        "line": 221,
         "level": 3,
         "title": "Attribute Access"
       }
@@ -2887,7 +2887,7 @@
     "Bot Status Query": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 160,
+        "line": 191,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -3264,14 +3264,6 @@
         "title": "Checking Platform Status"
       }
     ],
-    "Child Loggers": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 106,
-        "level": 3,
-        "title": "Child Loggers"
-      }
-    ],
     "Choose Menu": [
       {
         "document": "getting-started/event-handling.md",
@@ -3387,7 +3379,7 @@
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 149,
+        "line": 151,
         "level": 3,
         "title": "Command Configuration"
       }
@@ -4428,6 +4420,14 @@
         "title": "Development Mode Testing"
       }
     ],
+    "Development Preparation": [
+      {
+        "document": "developer-guide/README.md",
+        "line": 26,
+        "level": 2,
+        "title": "Development Preparation"
+      }
+    ],
     "Development Related Terms": [
       {
         "document": "terminology.md",
@@ -4905,7 +4905,7 @@
     "Event Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 147,
+        "line": 149,
         "level": 2,
         "title": "Event Configuration"
       }
@@ -5228,24 +5228,22 @@
     ],
     "Example": [
       {
+        "document": "api-reference/core-modules.md",
+        "line": 80,
+        "level": 3,
+        "title": "Example"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 245,
+        "level": 3,
+        "title": "Example"
+      },
+      {
         "document": "platform-guide/email.md",
         "line": 110,
         "level": 3,
         "title": "Example"
-      }
-    ],
-    "Examples": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 80,
-        "level": 3,
-        "title": "Examples"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 214,
-        "level": 3,
-        "title": "Examples"
       }
     ],
     "Exception Catching": [
@@ -5278,20 +5276,20 @@
         "title": "Exception Hierarchy"
       }
     ],
-    "Exception List": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 124,
-        "level": 4,
-        "title": "Exception List"
-      }
-    ],
     "Execution Control Commands": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 23,
         "level": 2,
         "title": "Execution Control Commands"
+      }
+    ],
+    "Exemption List": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 126,
+        "level": 4,
+        "title": "Exemption List"
       }
     ],
     "Expression/Sticker Message Segment (yunhu_expression)": [
@@ -5789,7 +5787,7 @@
     "HTTP Client Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 257,
+        "line": 288,
         "level": 2,
         "title": "HTTP Client Module"
       }
@@ -6419,7 +6417,7 @@
     "Internationalization Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 177,
+        "line": 178,
         "level": 2,
         "title": "Internationalization Configuration"
       }
@@ -6567,7 +6565,7 @@
     "Lifecycle Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 198,
+        "line": 229,
         "level": 2,
         "title": "Lifecycle Module"
       }
@@ -6720,6 +6718,14 @@
         "line": 249,
         "level": 3,
         "title": "Log Messages"
+      }
+    ],
+    "Log Subscription (Push Mode)": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 127,
+        "level": 3,
+        "title": "Log Subscription (Push Mode)"
       }
     ],
     "Logger Module": [
@@ -6909,7 +6915,7 @@
     "Message Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 166,
+        "line": 167,
         "level": 3,
         "title": "Message Configuration"
       }
@@ -7431,7 +7437,7 @@
     "Module Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 188,
+        "line": 189,
         "level": 2,
         "title": "Module Configuration"
       }
@@ -7529,7 +7535,7 @@
     "Module Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 171,
+        "line": 202,
         "level": 2,
         "title": "Module Module"
       }
@@ -7757,7 +7763,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 217,
+        "line": 218,
         "level": 2,
         "title": "Next Steps"
       },
@@ -8053,7 +8059,7 @@
     "Output Control": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 122,
+        "line": 153,
         "level": 3,
         "title": "Output Control"
       }
@@ -8338,12 +8344,6 @@
         "line": 26,
         "level": 2,
         "title": "Prerequisites"
-      },
-      {
-        "document": "developer-guide/README.md",
-        "line": 26,
-        "level": 2,
-        "title": "Prerequisites"
       }
     ],
     "Priority": [
@@ -8475,7 +8475,7 @@
     "Publishing Your Module": [
       {
         "document": "developer-guide/README.md",
-        "line": 81,
+        "line": 74,
         "level": 2,
         "title": "Publishing Your Module"
       }
@@ -8641,19 +8641,13 @@
     "Quick Reference": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 236,
+        "line": 267,
         "level": 3,
         "title": "Quick Reference"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 263,
-        "level": 3,
-        "title": "Quick Reference"
-      },
-      {
-        "document": "developer-guide/README.md",
-        "line": 89,
+        "line": 294,
         "level": 3,
         "title": "Quick Reference"
       },
@@ -8895,7 +8889,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 278,
+        "line": 309,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -8907,7 +8901,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 99,
+        "line": 78,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9375,7 +9369,7 @@
     "Router Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 230,
+        "line": 261,
         "level": 2,
         "title": "Router Module"
       }
@@ -9452,12 +9446,12 @@
         "title": "SDK Objects"
       }
     ],
-    "SQL Chain Query": [
+    "SQL Chainable Queries": [
       {
         "document": "api-reference/core-modules.md",
         "line": 43,
         "level": 3,
-        "title": "SQL Chain Query"
+        "title": "SQL Chainable Queries"
       }
     ],
     "SQL Query Builder": [
@@ -10129,7 +10123,7 @@
     "Storage Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 136,
+        "line": 138,
         "level": 2,
         "title": "Storage Configuration"
       }
@@ -10184,6 +10178,14 @@
         "line": 1,
         "level": 1,
         "title": "Style Guide"
+      }
+    ],
+    "Sub-loggers": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 106,
+        "level": 3,
+        "title": "Sub-loggers"
       }
     ],
     "Success Response": [
