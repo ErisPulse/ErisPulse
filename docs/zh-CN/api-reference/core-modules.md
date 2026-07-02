@@ -287,9 +287,9 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client 模块
 
-统一 HTTP/WS 客户端，基于 aiohttp，提供请求统计、重试、日志、ErisPulse 异常体系。
+统一网络客户端，聚合 HTTP 请求、WebSocket 连接、连接池管理、自动重试、请求统计和生命周期事件集成。
 
-> 完整的 HTTP 客户端文档（请求方法、响应对象、WebSocket 客户端、异常体系等）请参考 [HTTP 客户端](../advanced/http-client.md)。
+> 完整的网络客户端文档（请求方法、响应对象、WebSocket 客户端、异常体系等）请参考 [网络客户端](../advanced/http-client.md)。
 
 ### 快速参考
 
@@ -306,11 +306,35 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
+## SDK 调试
+
+### dump_state()
+
+导出框架当前运行状态的快照，用于调试和诊断。
+
+```python
+import json
+state = sdk.dump_state()
+print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
+```
+
+返回结构包含以下子系统的状态：
+
+| 字段 | 说明 |
+|------|------|
+| `sdk` | SDK 初始化状态、Python 版本、运行平台、时间戳 |
+| `adapters` | 已注册/已启动的适配器列表、各平台 Bot 在线状态 |
+| `modules` | 已注册/已启用/已禁用/懒加载的模块列表 |
+| `events` | 各类事件处理器数量（message/notice/request/meta/commands） |
+| `router` | 服务器运行状态、HTTP/WebSocket 路由数量 |
+
+> 新增于 2.5.2
+
 ## 相关文档
 
 - [事件系统 API](event-system.md) - Event 模块 API
 - [适配器系统 API](adapter-system.md) - Adapter 管理 API
 - [SQL 查询构建器](../advanced/sql-builder.md) - SQL 链式查询完整文档
 - [路由管理器](../advanced/router.md) - 路由管理器完整文档
-- [HTTP 客户端](../advanced/http-client.md) - HTTP 客户端完整文档
+- [网络客户端](../advanced/http-client.md) - 网络客户端完整文档
 - [生命周期管理](../advanced/lifecycle.md) - 生命周期完整文档
