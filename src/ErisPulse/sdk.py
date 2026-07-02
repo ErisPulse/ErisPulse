@@ -750,6 +750,73 @@ class SDK:
 
     # ==================== SDK 逻辑方法 ====================
 
+    def dump_state(self) -> dict:
+        """
+        导出框架当前运行状态的快照
+
+        :return: dict 包含所有子系统状态的字典
+        """
+        import sys
+        import time
+
+        state: dict = {
+            "sdk": {
+                "initialized": self._initialized,
+                "python_version": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
+                "platform": sys.platform,
+                "timestamp": time.time(),
+            },
+            "adapters": {"registered": [], "started": [], "bots": {}},
+            "modules": {"registered": [], "lazy": [], "enabled": [], "disabled": []},
+            "events": {"message_handlers": 0, "notice_handlers": 0, "request_handlers": 0, "meta_handlers": 0, "commands": 0},
+            "router": {"running": False, "http_routes": 0, "ws_routes": 0},
+        }
+
+        try:
+            adapter_mgr = self.adapter
+            state["adapters"]["registered"] = list(adapter_mgr._adapters.keys())
+            state["adapters"]["started"] = [getattr(a, "_platform", str(a)) for a in adapter_mgr._started_instances]
+            state["adapters"]["bots"] = {}
+            for platform, bots in adapter_mgr._bots.items():
+                state["adapters"]["bots"][platform] = {
+                    bid: {"status": info.get("status", "unknown"), "last_active": info.get("last_active", 0)}
+                    for bid, info in bots.items()
+                }
+        except Exception:
+            state["adapters"]["error"] = "failed to get adapter state"
+
+        try:
+            module_mgr = self.module
+            state["modules"]["registered"] = list(module_mgr._module_classes.keys())
+            state["modules"]["lazy"] = list(getattr(module_mgr, "_lazy_modules", {}).keys())
+            state["modules"]["enabled"] = [n for n in module_mgr._module_classes if module_mgr.is_enabled(n)]
+            state["modules"]["disabled"] = [n for n in module_mgr._module_classes if not module_mgr.is_enabled(n)]
+        except Exception:
+            state["modules"]["error"] = "failed to get module state"
+
+        try:
+            from .Core.Event import message, notice, request, meta
+            from .Core.Event.command import command as cmd_handler
+            state["events"] = {
+                "message_handlers": len(message.handler.handlers),
+                "notice_handlers": len(notice.handler.handlers),
+                "request_handlers": len(request.handler.handlers),
+                "meta_handlers": len(meta.handler.handlers),
+                "commands": len(cmd_handler.commands),
+            }
+        except Exception:
+            state["events"]["error"] = "failed to get event state"
+
+        try:
+            router_mgr = self.router
+            state["router"]["running"] = getattr(router_mgr, "_server_started", False)
+            state["router"]["http_routes"] = len(getattr(router_mgr, "_http_routes", []))
+            state["router"]["ws_routes"] = len(getattr(router_mgr, "_ws_routes", []))
+        except Exception:
+            state["router"]["error"] = "failed to get router state"
+
+        return state
+
     async def init(self) -> bool:
         """
         SDK 初始化入口
