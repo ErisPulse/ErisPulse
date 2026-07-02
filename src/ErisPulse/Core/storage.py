@@ -678,6 +678,10 @@ class StorageManager(BaseStorage):
         if not self._is_ready():
             return default
 
+        from .logger import logger
+
+        logger.trace(i18n.t("core.storage.kv_get", key=key))
+
         try:
             with self._get_connection() as conn:
                 # 解析嵌套键（传入连接对象以提高性能）
@@ -1042,6 +1046,10 @@ class StorageManager(BaseStorage):
         if not self._is_ready():
             return False
 
+        from .logger import logger
+
+        logger.trace(i18n.t("core.storage.kv_delete", key=key))
+
         try:
             with self._get_connection() as conn:
                 # 解析嵌套键（传入连接对象以提高性能）
@@ -1179,6 +1187,9 @@ class StorageManager(BaseStorage):
             hasattr(self._local, "transaction_conn")
             and self._local.transaction_conn is not None
         ):
+            from .logger import logger
+
+            logger.trace(i18n.t("core.storage.transaction_nested"))
 
             class NestedTransaction:
                 def __enter__(self):
@@ -1210,6 +1221,9 @@ class StorageManager(BaseStorage):
 
             :return: 事务对象
             """
+            from .logger import logger
+
+            logger.trace(i18n.t("core.storage.transaction_begin"))
             self.conn = self.storage_manager._open_connection()
             self.cursor = self.conn.cursor()
             self.cursor.execute("BEGIN TRANSACTION")
@@ -1237,9 +1251,17 @@ class StorageManager(BaseStorage):
                 try:
                     if exc_type is None:
                         if hasattr(self.conn, "commit"):
+                            from .logger import logger
+
+                            logger.trace(i18n.t("core.storage.transaction_commit"))
                             self.conn.commit()
                     else:
                         if hasattr(self.conn, "rollback"):
+                            from .logger import logger
+
+                            logger.trace(
+                                i18n.t("core.storage.transaction_rollback", error=exc_val)
+                            )
                             self.conn.rollback()
                         from .logger import logger
 

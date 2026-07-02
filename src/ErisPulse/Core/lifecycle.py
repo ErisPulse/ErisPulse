@@ -24,6 +24,9 @@ from .i18n import i18n
 class _NullLogger:
     """静默日志器，在 logger 模块尚未初始化时作为替代"""
 
+    def trace(self, *args, **kwargs):
+        pass
+
     def debug(self, *args, **kwargs):
         pass
 
@@ -188,20 +191,30 @@ class LifecycleManager:
         :example:
         >>> result = await lifecycle.emit("config.set", {"key": "test", "value": 42})
         """
+        # 统计匹配的处理器总数
+        parts = event.split(".")
+        total_count = len(self._hooks.get("*", [])) + len(self._hooks.get(event, []))
+        for i in range(len(parts) - 1, 0, -1):
+            total_count += len(self._hooks.get(".".join(parts[:i]), []))
+        _get_logger().trace(i18n.t("core.lifecycle.emit_enter", event=event, count=total_count))
 
         # 通配符处理器
         if "*" in self._hooks:
+            _get_logger().trace(i18n.t("core.lifecycle.emit_wildcard", event=event, count=len(self._hooks["*"])))
             data = await self._execute_handlers("*", event, data)
 
         # 完整事件名处理器
         if event in self._hooks:
+            _get_logger().trace(i18n.t("core.lifecycle.emit_exact", event=event, count=len(self._hooks[event])))
             data = await self._execute_handlers(event, event, data)
 
         # 父级事件处理器（点式结构）
-        parts = event.split(".")
         for i in range(len(parts) - 1, 0, -1):
             parent_event = ".".join(parts[:i])
             if parent_event in self._hooks:
+                _get_logger().trace(
+                    i18n.t("core.lifecycle.emit_parent", parent=parent_event, event=event)
+                )
                 data = await self._execute_handlers(parent_event, event, data)
 
         return data
@@ -270,6 +283,8 @@ class LifecycleManager:
             )
             return
 
+        _get_logger().trace(i18n.t("core.lifecycle.submit_event_enter", event=event_type, source=source))
+
         if timestamp is None:
             timestamp = time.time()
         if data is None:
@@ -336,6 +351,9 @@ class LifecycleManager:
                 _t = _time.monotonic()
                 _hname = getattr(
                     handler, "__qualname__", getattr(handler, "__name__", str(handler))
+                )
+                _get_logger().trace(
+                    i18n.t("core.lifecycle.handler_exec", handler=_hname, priority=priority, event=event)
                 )
                 if inspect.iscoroutinefunction(handler):
                     result = await handler(data)

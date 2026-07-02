@@ -63,6 +63,34 @@
 
 ---
 
+## [2.5.2-dev.4] - 2026/07/03
+> 开发版本
+
+**版本摘要**
+2.5.2-dev.4 聚焦内部友好性与可观测性改进：新增 `sdk.dump_state()` 运行时状态快照导出；为事件/命令/存储/路由子系统补齐 TRACE 级别链路追踪日志与对应 i18n keys；优化 constants 类型注解与导出声明。
+
+### 新增
+
+- @wsu2059q
+  - `sdk.py` 新增 `dump_state()` 方法，导出框架运行时状态快照（SDK/适配器/模块/事件/路由），便于调试与诊断
+  - `Core/Event/` 事件系统新增链路追踪：事件分发链路 TRACE 日志（`core.event.trace_chain`）、handler 耗时追踪与慢 handler 告警
+  - 新增 TRACE 级别日志覆盖以下子系统：
+    - Lifecycle：emit/wildcard/exact/parent 分发链路、handler 执行（`core.lifecycle.*`）
+    - Command：解析/匹配/执行/跳过/权限/回复等待全流程（`core.command.*`）
+    - Storage：事务 BEGIN/COMMIT/ROLLBACK、嵌套事务、kv get/delete（`core.storage.*`）
+    - Router：中间件请求/短路、handler 调用、限流、WebSocket 连接（`core.router.*`）
+  - `Core/i18n/locales/` 5 个 locale 文件（en/zh_cn/zh_tw/ja/ru）统一新增上述所有 i18n keys
+
+### 优化
+
+- @wsu2059q
+  - `Core/constants.py` 为内置常量补齐 `Final` 类型注解，便于静态分析与 IDE 提示
+  - 相关模块引入 `TypedDict` 以增强字典结构的类型安全
+  - 修正部分函数/方法的类型签名
+  - 将 `_builtin_*` 私有成员移出模块 `__all__` 导出列表，避免污染公开 API
+
+---
+
 ## [2.5.2-dev.3] - 2026/06/30
 > 开发版本
 

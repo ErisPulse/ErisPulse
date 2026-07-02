@@ -29,6 +29,7 @@ from ..constants import (
     DETAIL_TYPE_USER,
     UNKNOWN_PLATFORM,
 )
+from ..i18n import i18n
 from .base import BaseEventHandler
 from .session_type import get_send_type_and_target_id, infer_receive_type
 
@@ -350,10 +351,24 @@ class CommandHandler:
 
         # 检查是否已经被其他处理器标记为已处理
         if event.get("_processed"):
+            logger.trace(
+                i18n.t(
+                    "core.command.skip_processed",
+                    platform=event.get("platform", UNKNOWN_PLATFORM),
+                    user_id=event.get("user_id", ""),
+                )
+            )
             return
 
         # 检查是否为文本消息
         if event.get("type") != "message":
+            logger.trace(
+                i18n.t(
+                    "core.command.skip_non_message",
+                    event_type=self.event_type,
+                    platform=event.get("platform", UNKNOWN_PLATFORM),
+                )
+            )
             return
 
         async def _process_text_for_command(event: dict[str, Any], text: str) -> bool:
@@ -390,6 +405,13 @@ class CommandHandler:
                     break
 
             if matched_prefix is None:
+                logger.trace(
+                    i18n.t(
+                        "core.command.prefix_not_matched",
+                        platform=event.get("platform", UNKNOWN_PLATFORM),
+                        user_id=event.get("user_id", ""),
+                    )
+                )
                 return False
 
             # 检查是否必须@机器人
@@ -410,6 +432,13 @@ class CommandHandler:
                             break
 
                     if not has_mention:
+                        logger.trace(
+                            i18n.t(
+                                "core.command.must_at_bot_failed",
+                                platform=event.get("platform", UNKNOWN_PLATFORM),
+                                user_id=event.get("user_id", ""),
+                            )
+                        )
                         return False
 
             # 尝试执行命令
@@ -474,8 +503,27 @@ class CommandHandler:
         # 处理别名
         actual_cmd_name = self.aliases.get(cmd_name, cmd_name)
 
+        logger.trace(
+            i18n.t(
+                "core.command.parsed",
+                cmd_name=actual_cmd_name,
+                args=args,
+                platform=event.get("platform", UNKNOWN_PLATFORM),
+                user_id=event.get("user_id", ""),
+            )
+        )
+
         # 查找命令处理器
         if actual_cmd_name in self.commands:
+            logger.trace(
+                i18n.t(
+                    "core.command.matched",
+                    cmd_name=actual_cmd_name,
+                    alias=cmd_name if actual_cmd_name != cmd_name else "",
+                    platform=event.get("platform", UNKNOWN_PLATFORM),
+                    user_id=event.get("user_id", ""),
+                )
+            )
             cmd_info = self.commands[actual_cmd_name]
             handler = cmd_info["func"]
 
@@ -491,6 +539,14 @@ class CommandHandler:
                         else await permission_func(event)
                     )
                     if not has_permission:
+                        logger.trace(
+                            i18n.t(
+                                "core.command.permission_denied",
+                                cmd_name=actual_cmd_name,
+                                user_id=event.get("user_id", ""),
+                                platform=event.get("platform", UNKNOWN_PLATFORM),
+                            )
+                        )
                         await self._send_permission_denied(event)
                         return
                 except Exception as e:
@@ -530,6 +586,15 @@ class CommandHandler:
             try:
                 # 把注册时记录的 owner 注入上下文，让用户 handler 内部的
                 # wait_reply / 日志等能正确归因到具体业务模块。
+                logger.trace(
+                    i18n.t(
+                        "core.command.executing",
+                        cmd_name=actual_cmd_name,
+                        handler=handler.__qualname__,
+                        platform=event.get("platform", UNKNOWN_PLATFORM),
+                        user_id=event.get("user_id", ""),
+                    )
+                )
                 cmd_owner = cmd_info.get("owner")
                 _owner_token = current_owner.set(cmd_owner) if cmd_owner else None
                 try:
@@ -575,6 +640,14 @@ class CommandHandler:
 
             return True
 
+        logger.trace(
+            i18n.t(
+                "core.command.not_registered",
+                cmd_name=actual_cmd_name,
+                platform=event.get("platform", UNKNOWN_PLATFORM),
+                user_id=event.get("user_id", ""),
+            )
+        )
         return False
 
     async def _check_pending_reply(self, event: dict[str, Any]):
@@ -596,6 +669,14 @@ class CommandHandler:
 
         # 检查是否有等待的处理器
         if wait_key in self._waiting_replies:
+            logger.trace(
+                i18n.t(
+                    "core.command.reply_matched",
+                    wait_key=wait_key,
+                    user_id=user_id,
+                    platform=platform,
+                )
+            )
             wait_info = self._waiting_replies[wait_key]
             validator = wait_info.get("validator")
 
@@ -603,6 +684,14 @@ class CommandHandler:
             if validator:
                 if not validator(event):
                     # 验证失败，不处理此回复，继续等待
+                    logger.trace(
+                        i18n.t(
+                            "core.command.reply_validation_failed",
+                            wait_key=wait_key,
+                            user_id=user_id,
+                            platform=platform,
+                        )
+                    )
                     return
 
             # 设置 future 结果

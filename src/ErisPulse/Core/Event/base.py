@@ -25,6 +25,7 @@ from ..constants import (
     HANDLER_SLOW_THRESHOLD_SECS,
     UNKNOWN_PLATFORM,
 )
+from ..i18n import i18n
 from ..lifecycle import lifecycle
 from .wrapper import Event
 
@@ -58,7 +59,7 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
         else:
             handler(event)
     except Exception as e:
-        logger.error(f"事件处理器执行错误: {e}")
+        logger.error(i18n.t("core.event.handler_error", error=e))
         return
     finally:
         _elapsed = _time.monotonic() - _t
@@ -78,20 +79,26 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
         _wait_keys = ",".join(w.get("wait_key", "") for w in _local_waits)
         if _pure > HANDLER_SLOW_THRESHOLD_SECS:
             logger.warning(
-                f"[EventHandler] Slow handler {_hname} took {_elapsed:.4f}s "
-                f"(wait_reply={_wait_total:.4f}s, pure={_pure:.4f}s, "
-                f"waits=[{_wait_keys}]){_owner_tag}"
+                i18n.t(
+                    "core.event.slow_handler_wait",
+                    handler=_hname, elapsed=f"{_elapsed:.4f}",
+                    wait=f"{_wait_total:.4f}", pure=f"{_pure:.4f}",
+                    waits=_wait_keys, owner=_owner_tag,
+                )
             )
         else:
             logger.trace(
-                f"[EventHandler] {_hname} took {_elapsed:.4f}s "
-                f"(wait_reply={_wait_total:.4f}s, pure={_pure:.4f}s) "
-                f"interactive-wait, suppressed slow-warning{_owner_tag}"
+                i18n.t(
+                    "core.event.trace_handler_wait",
+                    handler=_hname, elapsed=f"{_elapsed:.4f}",
+                    wait=f"{_wait_total:.4f}", pure=f"{_pure:.4f}",
+                    owner=_owner_tag,
+                )
             )
     else:
         if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
             logger.warning(
-                f"[EventHandler] Slow handler {_hname} took {_elapsed:.4f}s{_owner_tag}"
+                i18n.t("core.event.slow_handler", handler=_hname, elapsed=f"{_elapsed:.4f}", owner=_owner_tag)
             )
 
 
@@ -152,7 +159,12 @@ class BaseEventHandler:
             adapter.on(self.event_type)(self._process_event)
             self._linked_to_adapter_bus = True
         logger.trace(
-            f"[Event] 已注册事件处理器: {self.event_type}, Called by: {self.module_name}, Owner: {current_owner.get() or 'N/A'}"
+            i18n.t(
+                "core.event.handler_registered",
+                event_type=self.event_type,
+                module=self.module_name,
+                owner=current_owner.get() or "N/A",
+            )
         )
 
     def unregister(self, handler: Callable) -> bool:
@@ -183,7 +195,12 @@ class BaseEventHandler:
         removed = before - len(self.handlers)
         if removed > 0:
             logger.trace(
-                f"[Event] 已清理 {owner} 的 {removed} 个 {self.event_type} 处理器"
+                i18n.t(
+                    "core.event.handlers_cleaned",
+                    count=removed,
+                    event_type=self.event_type,
+                    owner=owner,
+                )
             )
         return removed
 
@@ -217,6 +234,10 @@ class BaseEventHandler:
         if not isinstance(event, Event):
             event = Event(event)
 
+        # 事件链路追踪
+        _trace_chain: list[dict] = []
+        _trace_start = _time.monotonic()
+
         # 钩子: 事件预处理
         await lifecycle.emit(
             "event.pre_process",
@@ -249,16 +270,38 @@ class BaseEventHandler:
 
             # 单个处理器：直接传原事件（零拷贝）
             if len(active) == 1:
-                await _invoke_handler(active[0], event)
+                _h0 = active[0]
+                _h_name = getattr(_h0["func"], "__qualname__", getattr(_h0["func"], "__name__", str(_h0["func"])))
+                _t0 = _time.monotonic()
+                await _invoke_handler(_h0, event)
+                _elapsed_0 = _time.monotonic() - _t0
+                _trace_chain.append({
+                    "handler": _h_name,
+                    "priority": _priority,
+                    "elapsed_ms": round(_elapsed_0 * 1000, 2),
+                    "processed": event.is_processed(),
+                })
                 if event.is_processed():
                     break
                 continue
 
             # 多个同优先级处理器：各自独立副本并行执行
             copies = [Event(dict(event)) for _ in active]
+            _multi_t = _time.monotonic()
             await asyncio.gather(
                 *(_invoke_handler(h, c) for h, c in zip(active, copies))
             )
+            _multi_elapsed = _time.monotonic() - _multi_t
+
+            # 记录多处理器链路（并行执行，统一计时）
+            for h in active:
+                _h_name = getattr(h["func"], "__qualname__", getattr(h["func"], "__name__", str(h["func"])))
+                _trace_chain.append({
+                    "handler": _h_name,
+                    "priority": _priority,
+                    "elapsed_ms": round(_multi_elapsed * 1000, 2),
+                    "processed": False,
+                })
 
             # 合并修改（后者覆盖前者）
             for copy in copies:
@@ -270,6 +313,25 @@ class BaseEventHandler:
 
             if event.is_processed():
                 break
+
+        # 输出事件链路追踪日志
+        if _trace_chain:
+            _total = _time.monotonic() - _trace_start
+            _chain_str = " → ".join(
+                f"{c['handler']}({c['elapsed_ms']}ms)"
+                + ("[short-circuit]" if c["processed"] else "")
+                for c in _trace_chain
+            )
+            logger.trace(
+                i18n.t(
+                    "core.event.trace_chain",
+                    event_type=self.event_type,
+                    platform=event.get("platform", "?"),
+                    detail_type=event.get("detail_type", "?"),
+                    chain=_chain_str,
+                    total=f"{_total * 1000:.2f}",
+                )
+            )
 
     def _clear_handlers(self):
         """

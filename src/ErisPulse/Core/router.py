@@ -1169,6 +1169,14 @@ class RouterManager:
             async def route_middleware_pipeline(request: Request, call_next):
                 path = request.url.path
 
+                logger.trace(
+                    i18n.t(
+                        "core.router.middleware_request",
+                        method=request.method,
+                        path=path,
+                    )
+                )
+
                 # 钩子: HTTP请求接收
                 await lifecycle.emit(
                     "server.request",
@@ -1187,6 +1195,9 @@ class RouterManager:
                             else mw._before(request)
                         )
                         if isinstance(result, Response):
+                            logger.trace(
+                                i18n.t("core.router.middleware_short_circuit", path=path)
+                            )
                             return result
 
                 for pattern, mws in self._route_middlewares.items():
@@ -1199,8 +1210,18 @@ class RouterManager:
                                     else mw._before(request)
                                 )
                                 if isinstance(result, Response):
+                                    logger.trace(
+                                        i18n.t("core.router.middleware_short_circuit", path=path)
+                                    )
                                     return result
 
+                logger.trace(
+                    i18n.t(
+                        "core.router.handler_called",
+                        method=request.method,
+                        path=path,
+                    )
+                )
                 response = await call_next(request)
 
                 # 钩子: HTTP响应发送
@@ -1692,6 +1713,7 @@ class RouterManager:
                         return
 
                 # 钩子: WebSocket连接建立
+                logger.trace(i18n.t("core.router.ws_connected", path=full_path))
                 await lifecycle.emit(
                     "server.websocket.connect",
                     {
@@ -2282,6 +2304,14 @@ class RouterManager:
                 retry_after = window - (now - self._rate_limit_store[key][0])
                 from fastapi.responses import JSONResponse
 
+                logger.trace(
+                    i18n.t(
+                        "core.router.rate_limited",
+                        path=full_path,
+                        client_ip=client_ip,
+                        retry_after=int(retry_after),
+                    )
+                )
                 return JSONResponse(
                     {"error": "Rate limit exceeded", "retry_after": int(retry_after)},
                     status_code=429,
