@@ -165,7 +165,7 @@ jobs:
 
           # --- 2. Download pybuild ---
           PYBUILD_VERSION="v1"
-          curl -fSL "https://github.com/pybuild-org/pybuild/releases/download/${PYBUILD_VERSION}/pybuild_linux_amd64" -o pybuild
+          curl -fSL "https://github.com/pybuild-org/pybuild-archive-v1/releases/download/${PYBUILD_VERSION}/pybuild_linux_amd64" -o pybuild
           chmod +x pybuild
 
           # --- 3. Prepare minimal source dir (ErisPulse comes from pip) ---
