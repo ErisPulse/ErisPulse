@@ -1,0 +1,302 @@
+{
+  "repo_notes": [
+    {
+      "content": "检索与回答规则：\n\n1. 以下目录在 AI 检索文档时应被忽略，不纳入检索范围：\n   - `api-reference/auto_api/` — 自动生成的 API 文档，内容与手写文档重复且结构机械，检索它会导致冗余和不准确的结果。所有语言版本（en / ja / ru / zh-CN / zh-TW）均应忽略此目录。\n   - `ai-support/prompts/` — AI 提示词目录，这是供 AI 开发使用的物料文档（prompts），不是供最终用户查阅的文档。所有语言版本均应忽略此目录。\n\n2. 语言优先级：所有语言版本的文档内容是一致的（同一份文档翻译为 5 种语言）。在检索和回答时，优先阅读简体中文（zh-CN）版本的文档进行回答，因为中文文档的表达更精确、与源码注释一致。只有在中文文档缺失或需要核对原文时才回退到其他语言版本。\n\n3. 检索时请只使用以下手写的文档目录：\n   - 根目录：`README.md`、`quick-start.md`、`architecture.md`、`terminology.md`、`bug-tracker.md`\n   - `getting-started/` — 入门指南\n   - `user-guide/` — 用户使用指南（安装、配置、CLI、部署）\n   - `developer-guide/` — 开发者指南（模块开发、适配器开发、发布）\n   - `platform-guide/` — 平台特性指南\n   - `api-reference/` — API 参考（排除 auto_api 子目录）\n   - `advanced/` — 高级主题\n   - `standards/` — 技术标准\n   - `styleguide/` — 风格指南"
+    }
+  ],
+  "pages": [
+    {
+      "title": "ErisPulse Overview",
+      "purpose": "High-level introduction to ErisPulse: what it is, its design philosophy, key architectural concepts, and how the major subsystems relate. Links to all child sections for deeper exploration.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Getting Started",
+      "purpose": "Step-by-step guide for new developers: installation (pip, uv, install scripts), project initialization with `epsdk init`, running a first bot, and understanding the project layout (config.toml, config.db, logs/).",
+      "parent": "ErisPulse Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Deployment Guide",
+      "purpose": "Covers all deployment topologies: standalone Python environment, Docker with Dashboard, reverse proxy (Nginx) configuration, environment variables, and volume mapping for persistence.",
+      "parent": "ErisPulse Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Core Architecture",
+      "purpose": "Overview of the ErisPulse SDK's internal architecture: the SDK singleton, manager pattern, initialization pipeline, lifecycle management, and how all core subsystems interconnect. Links to child pages for each subsystem.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "SDK Singleton and Initialization Pipeline",
+      "purpose": "Deep dive into the `SDK` class in sdk.py: the Initializer/Uninitializer inner classes, the init/run/restart/uninit lifecycle methods, headless mode, hot-reload mechanism (_do_restart), and how adapters and modules are discovered and mounted.",
+      "parent": "Core Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Core Managers: Logger, Config, Storage, and Lifecycle",
+      "purpose": "Detailed reference for the four foundational singleton managers exported from ErisPulse.Core: Logger (hierarchical, RichHandler, memory limit), ConfigManager (TOML, delayed write, dot-notation), StorageManager (SQLite KV, WAL, transactions), and LifecycleManager (event bubbling, standard hooks).",
+      "parent": "Core Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Router Manager and Web Server Integration",
+      "purpose": "Explains the RouterManager wrapping FastAPI/uvicorn: programmatic server start/stop, /health and /ping endpoints, register_http_route() and register_websocket() APIs, SSL support, and the _format_display_url LAN address utility.",
+      "parent": "Core Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Runtime Configuration (frame_config)",
+      "purpose": "Documents the ErisPulse runtime configuration schema defined in runtime/frame_config.py: DEFAULT_ERISPULSE_CONFIG structure, section accessors (get_server_config, get_logger_config, get_storage_config, get_event_config, get_framework_config), and the deep-merge integrity logic.",
+      "parent": "Core Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Adapter System",
+      "purpose": "Overview of the adapter layer: how platform-specific adapters bridge external messaging platforms to ErisPulse's internal OneBot12 standard. Links to child pages covering the base classes, event emission, and the Send DSL.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "BaseAdapter and Send DSL",
+      "purpose": "Complete reference for BaseAdapter: required methods (call_api, start, shutdown), the inner Send class (SendDSL), fluent chaining with To()/Using()/At()/Reply()/AtAll(), Raw_ob12() as the OneBot12 integration point, and case-insensitive dynamic method dispatch via __getattr__.",
+      "parent": "Adapter System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "AdapterManager: Registration, Startup, and Bot Tracking",
+      "purpose": "Covers AdapterManager internals: adapter.register(), adapter.startup(), adapter.on() decorator, adapter.emit() ingestion pipeline, middleware chain, raw vs. standard event routing, and the _bots dictionary for tracking online/offline status and last_active timestamps.",
+      "parent": "Adapter System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Event Converter and Platform Standards",
+      "purpose": "Explains the Converter pattern used in adapters to translate native platform payloads into OneBot12 events (convert) and back (reverse_convert), session type inference (infer_receive_type, get_send_type_and_target_id), and the standardized return/conversion specifications.",
+      "parent": "Adapter System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Adapter Discovery and Loading",
+      "purpose": "Documents how adapters are discovered via the erispulse.adapter entry-point group, the AdapterLoader and AdapterFinder classes, the adapterInfo dictionary convention for multi-platform packages, and lifecycle events emitted during adapter.load.",
+      "parent": "Adapter System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Module System",
+      "purpose": "Overview of the ErisPulse module (plugin) system: how modules extend bot functionality, the distinction between adapters and modules, and links to child pages covering base classes, loading strategies, and the module manager.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "BaseModule and Module Lifecycle",
+      "purpose": "Reference for BaseModule: on_load/on_unload hooks, get_load_strategy() static method, ModuleLoadStrategy (lazy_load, priority), inter-module communication via sdk.ModuleName, and configuration self-documentation pattern.",
+      "parent": "Module System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "ModuleManager: Registration, Loading, and Lazy Loading",
+      "purpose": "Covers ModuleManager internals: module.register(), module.load(), module.enable/disable(), LazyModule proxy (__getattr__/__getattribute__, _initialize, _ensure_initialized), eager vs. lazy loading decision logic, and the erispulse.module entry-point group.",
+      "parent": "Module System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Module Finder and Loader Internals",
+      "purpose": "Documents the BaseFinder/ModuleFinder/AdapterFinder classes, find_all() and get_top_level_modules() methods, the 60-second entry-point cache, BaseLoader, and how top-level module names are used for sys.modules cleanup during hot-reload.",
+      "parent": "Module System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Event System",
+      "purpose": "Overview of the ErisPulse event pipeline: how events flow from adapters through the dispatcher to handlers, the OneBot12 event taxonomy, and links to child pages for each subsystem.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Event Wrapper and the Event Object",
+      "purpose": "Deep dive into the Event class (inherits dict): dot-notation access, get_id/get_type/get_platform/get_text/get_sender methods, reply()/reply_ob12(), mark_processed(), platform-specific method injection via register_event_mixin/register_event_method, and the EventMixin pattern.",
+      "parent": "Event System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "BaseEventHandler and Dispatch Pipeline",
+      "purpose": "Covers BaseEventHandler: register/unregister/decorator interface, priority-based serial-parallel execution model (asyncio.gather within groups, serial across groups), zero-copy optimization, short-circuit via mark_processed(), and handler cleanup for hot-reload.",
+      "parent": "Event System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Command System",
+      "purpose": "Documents the CommandHandler singleton: @command decorator (name, aliases, group, permission, help, hidden), prefix matching, case sensitivity, must_at_bot, alias resolution, permission validation, wait_reply() stateful sessions (wait_key, future, validator, callback), and help() generation.",
+      "parent": "Event System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Message, Notice, Request, and Meta Event Handlers",
+      "purpose": "Reference for the four specialized event handler types: message (on_message, on_private_message, on_group_message, on_at_message), notice (on_friend_add, on_group_increase), request (on_friend_request), and meta (on_connect). Covers filtering, conditions, and registration patterns.",
+      "parent": "Event System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Interactive Conversations and MessageBuilder",
+      "purpose": "Covers advanced event interaction patterns: wait_reply(), confirm(), choose(), collect(), the Conversation context manager (is_active, say(), wait()), multi-turn dialogue state management, and the MessageBuilder fluent API for constructing OB12 message segments.",
+      "parent": "Event System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "CLI Toolchain (epsdk)",
+      "purpose": "Overview of the epsdk command-line interface: its role in project management, the command registry pattern, and links to child pages for each major command group.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "CLI Architecture and Command Registry",
+      "purpose": "Documents the CLI class, CommandRegistry singleton, auto-discovery of commands via pkgutil.iter_modules, the Command base class, argparse integration, --version/--verbose global flags, and the console (rich) output system.",
+      "parent": "CLI Toolchain (epsdk)",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Package Manager: Install, Uninstall, and Update",
+      "purpose": "Deep dive into PackageManager: get_remote_packages() with 3600s cache, alias resolution, SDK version compatibility (min_sdk_version), pip subprocess execution with rich progress tracking, install/uninstall/update_self commands, Windows deferred-update script, and PyPI JSON API fallback.",
+      "parent": "CLI Toolchain (epsdk)",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Project Init and Run Commands",
+      "purpose": "Covers `epsdk init` (interactive and quiet modes, project scaffolding), `epsdk run` (file execution, --reload hot-reload flag, uvicorn integration), and `epsdk list`/`epsdk list-remote` for inspecting installed and available packages.",
+      "parent": "CLI Toolchain (epsdk)",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Extension Development Guide",
+      "purpose": "Practical guide for third-party developers building adapters and modules for ErisPulse: project structure, pyproject.toml entry-point registration, and links to child pages for adapter and module development.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Building an Adapter",
+      "purpose": "Step-by-step guide to creating a custom adapter: inheriting BaseAdapter, implementing call_api/start/shutdown, building the Send inner class with Raw_ob12, writing a Converter (convert/reverse_convert), registering via erispulse.adapter entry-point, and best practices for error handling and configuration.",
+      "parent": "Extension Development Guide",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Building a Module",
+      "purpose": "Step-by-step guide to creating a custom module: inheriting BaseModule, implementing on_load/on_unload, defining get_load_strategy(), registering event handlers with decorators, accessing SDK services (logger, storage, config, adapter), inter-module communication, and registering via erispulse.module entry-point.",
+      "parent": "Extension Development Guide",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    }
+  ]
+}
