@@ -8,7 +8,7 @@
 
 事件驅動的多平台聊天機器人開發框架。
 
-基於 OneBot12 標準介面，一次編寫，多平台部署。靈活的插件系統、熱重載支援和完整的開發者工具鏈，適用於從簡單聊天機器人到複雜自動化系統的各種場景。
+基於 OneBot12 標準接口，一次編寫，多平台部署。靈活的插件系統、熱重載支援和完整的開發者工具鏈，適用於從簡單聊天機器人到複雜自動化系統的各種場景。
 
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -20,6 +20,7 @@
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=for-the-badge" alt="Ruff"></a>
   <a href="https://socket.dev/pypi/package/erispulse"><img src="https://img.shields.io/badge/Socket-Secure-2ea043?style=for-the-badge&logo=socket&logoColor=white" alt="Socket"></a>
   <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/文件-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="文件"></a>
+  <a href="https://deepwiki.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/DeepWiki-ErisPulse-8A2BE2?style=for-the-badge&logo=readthedocs&logoColor=white" alt="DeepWiki"></a>
   <a href="https://www.erisdev.com/#market"><img src="https://img.shields.io/badge/模組市場-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white" alt="模組市場"></a>
   <a href="https://github.com/ErisPulse/ErisPulse/discussions"><img src="https://img.shields.io/badge/GitHub-討論-181717?style=for-the-badge&logo=github" alt="討論"></a>
 </p>
@@ -85,7 +86,7 @@
 
 ### AI 輔助
 
-AI 輔助開發讓需求直接可用模組
+AI 輔助開發讓需求直接轉化為可用模組
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -105,7 +106,7 @@ AI 輔助開發讓需求直接可用模組
 
 ## 同一份程式碼。多個平台。
 
-*完全相同的命令處理器。不同的平台。無需修改任何業務邏輯。*
+*完全相同的指令處理器。不同的平台。無需修改任何業務邏輯。*
 
 <table>
 <tr>
@@ -137,7 +138,7 @@ AI 輔助開發讓需求直接可用模組
 
 ## 生態
 
-ErisPulse 不僅是框架。裝上就能開始，不需要從零造輪子。
+ErisPulse 不僅僅是框架。裝上就能開始，不需要從零造輪子。
 
 <table>
 <tr>
@@ -154,7 +155,7 @@ ErisPulse 不僅是框架。裝上就能開始，不需要從零造輪子。
 
 **Dashboard**
 
-可視化管理
+視覺化管理
 
 插件 · 日誌 · 配置
 
@@ -220,9 +221,9 @@ ErisPulse 不僅是框架。裝上就能開始，不需要從零造輪子。
 
 ErisPulse 並非為了成為框架而誕生。
 
-它最早源於 **Amer** —— 一個用於不同平台之間訊息互聯與同步的專案。
+它最早源於 **Amer** —— 一個用於不同平台之間訊息互聯與同步的項目。
 
-隨著接入的平台不斷增加，我們開始維護 **ryunhusdk2 的非同步版本**，並逐步抽象出統一的事件模型與適配器體系。
+隨著接入的平台不斷增加，我們開始維護 **ryunhusdk2 的異步版本**，並逐步抽象出統一的事件模型與適配器體系。
 
 這些實踐最終演變為今天的 ErisPulse。
 
@@ -302,7 +303,7 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 > 鏡像內建 ErisPulse 框架和 Dashboard 管理介面，支援 `linux/amd64` 和 `linux/arm64` 架構。
 
-啟動後存取 `http://<主機>:<埠>/Dashboard`，使用設定的令牌作為密碼登入 Dashboard 管理介面。
+啟動後存取 `http://<host>:<port>/Dashboard`，使用設定的令牌作為密碼登入 Dashboard 管理介面。
 
 </details>
 
@@ -384,7 +385,7 @@ epsdk init -q -n my_bot
 <tr>
 <td width="50%" valign="top">
 
-**命令處理器**
+**指令處理器**
 
 ```python
 from ErisPulse import sdk
@@ -543,11 +544,11 @@ async def menu_handler(event):
 | <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [雲湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企業級即時通訊平台（機器人接入） |
 | <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [雲湖使用者](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基於雲湖使用者協定的接入適配器 |
 | [花楓咖啡館](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
-| <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | 全球性社群通訊平台，支援伺服器、頻道、私信 |
+| <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | 全球性社群通訊平台，支援伺服器、頻道、私訊 |
 | <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | 通用 HTTP 橋接適配器，對接任意系統 |
 | <img src=".github/assets/adapter_logo/wechatmp.svg" height="20" alt="WechatMp" /> [微信公眾號](https://github.com/ErisPulse/ErisPulse-WechatMpAdapter) | 微信官方公眾號平台 |
 
-查看 [適配器詳情介紹](docs/zh-TW/platform-guide/README.md)
+查看 [適配器詳細介紹](docs/zh-TW/platform-guide/README.md)
 
 ---
 
