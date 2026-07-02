@@ -1,10 +1,10 @@
-# HTTP 客户端
+# 网络客户端
 
-ErisPulse 提供了统一的 HTTP/WS 客户端，模块和适配器应优先使用此客户端发送 HTTP 请求和建立 WebSocket 连接，而非自行导入 `aiohttp` / `httpx` 等第三方库。
+ErisPulse 提供了统一的网络客户端，聚合了 HTTP 请求、WebSocket 连接和连接池管理。模块和适配器**必须优先使用**此客户端，而非自行导入 `aiohttp` / `httpx` / `requests` 等第三方库。
 
 ## 概述
 
-HTTP/WS 客户端的主要功能：
+网络客户端的主要功能：
 
 - **统一接口**：提供 `get` / `post` / `put` / `delete` / `patch` / `request` 方法
 - **WebSocket 客户端**：通过 `ws_connect` 建立客户端 WebSocket 连接

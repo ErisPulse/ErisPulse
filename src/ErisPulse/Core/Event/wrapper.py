@@ -15,7 +15,7 @@ ErisPulse 事件包装类
 import asyncio
 import inspect
 from collections.abc import Awaitable, Callable
-from typing import Any, Optional
+from typing import Any, Optional, TypedDict
 
 from .. import adapter, logger
 from ..constants import (
@@ -42,6 +42,57 @@ from .session_type import (
     get_send_type_and_target_id,
     infer_receive_type,
 )
+
+
+class EventData(TypedDict, total=False):
+    """
+    OneBot12 标准事件数据结构
+
+    {!--< tips >!--}
+    所有字段均为可选（total=False），实际字段取决于事件类型。
+    详见 [适配器标准化转换规范](../../standards/event-conversion.md)
+    {!--< /tips >!--}
+
+    :ivar id: str 事件唯一标识符
+    :ivar time: int Unix时间戳（秒级）
+    :ivar type: str 事件类型（message/notice/request/meta）
+    :ivar detail_type: str 事件详细类型（详见会话类型标准）
+    :ivar sub_type: str 子类型
+    :ivar platform: str 平台名称
+    :ivar self: dict 机器人信息（含 platform, user_id）
+    :ivar message_id: str 消息ID
+    :ivar message: list 消息段数组
+    :ivar alt_message: str 纯文本消息
+    :ivar user_id: str 用户ID
+    :ivar user_nickname: str 用户昵称
+    :ivar group_id: str 群组ID
+    :ivar guild_id: str 频道ID
+    :ivar channel_id: str 子频道ID
+    :ivar thread_id: str 主题ID
+    :ivar operator_id: str 操作者ID
+    :ivar comment: str 请求附言
+    :ivar request_id: str 请求标识符
+    """
+    id: str
+    time: int
+    type: str
+    detail_type: str
+    sub_type: str
+    platform: str
+    self: dict
+    message_id: str
+    message: list
+    alt_message: str
+    user_id: str
+    user_nickname: str
+    group_id: str
+    guild_id: str
+    channel_id: str
+    thread_id: str
+    operator_id: str
+    comment: str
+    request_id: str
+
 
 # ==================== 平台事件方法注册系统 ====================
 
@@ -171,7 +222,7 @@ def get_platform_event_methods(platform: str) -> list[str]:
 
 async def _builtin_wait_reply(
     event: "Event",
-    prompt: str = None,
+    prompt: str | None = None,
     timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
     callback: Callable[[dict[str, Any]], Awaitable[Any]] = None,
     validator: Callable[[dict[str, Any]], bool] = None,
@@ -200,7 +251,7 @@ async def _builtin_wait_reply(
 
 async def _builtin_confirm(
     event: "Event",
-    prompt: str = None,
+    prompt: str | None = None,
     timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
     yes_words: set[str] | frozenset[str] = None,
     no_words: set[str] | frozenset[str] = None,
@@ -701,7 +752,7 @@ class Event(dict):
         """
         return self.get("request_id", "")
 
-    async def approve(self, comment: str = None) -> Any:
+    async def approve(self, comment: str | None = None) -> Any:
         """
         同意当前请求事件
 
@@ -722,7 +773,7 @@ class Event(dict):
         """
         return await self._handle_request_action("accept", comment)
 
-    async def reject(self, comment: str = None) -> Any:
+    async def reject(self, comment: str | None = None) -> Any:
         """
         拒绝当前请求事件
 
@@ -741,7 +792,7 @@ class Event(dict):
         """
         return await self._handle_request_action("reject", comment)
 
-    async def _handle_request_action(self, action: str, comment: str = None) -> Any:
+    async def _handle_request_action(self, action: str, comment: str | None = None) -> Any:
         """
         执行请求操作的内部方法
 
@@ -818,7 +869,7 @@ class Event(dict):
 
     # ==================== 回复功能 ====================
 
-    def _get_adapter_and_target(self) -> tuple:
+    def _get_adapter_and_target(self) -> tuple[Any, str, str, str]:
         """
         获取适配器实例和目标信息
 
@@ -859,7 +910,7 @@ class Event(dict):
         content: str,
         method: str = DEFAULT_SEND_METHOD,
         at_users: list[str] = None,
-        reply_to: str = None,
+        reply_to: str | None = None,
         at_all: bool = False,
         **kwargs,
     ) -> Any:
@@ -988,7 +1039,7 @@ class Event(dict):
 
     async def wait_reply(
         self,
-        prompt: str = None,
+        prompt: str | None = None,
         timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
         callback: Callable[[dict[str, Any]], Awaitable[Any]] = None,
         validator: Callable[[dict[str, Any]], bool] = None,
@@ -1012,7 +1063,7 @@ class Event(dict):
 
     async def confirm(
         self,
-        prompt: str = None,
+        prompt: str | None = None,
         timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
         yes_words: set[str] | frozenset[str] = None,
         no_words: set[str] | frozenset[str] = None,
@@ -1400,7 +1451,7 @@ class Conversation:
 
     async def wait(
         self,
-        prompt: str = None,
+        prompt: str | None = None,
         timeout: float = None,
         method: str = DEFAULT_SEND_METHOD,
     ) -> Optional["Event"]:
@@ -1423,7 +1474,7 @@ class Conversation:
             self._alive = False
         return result
 
-    async def confirm(self, prompt: str = None, **kwargs) -> Optional[bool]:
+    async def confirm(self, prompt: str | None = None, **kwargs) -> Optional[bool]:
         """
         等待用户确认
 
@@ -1635,7 +1686,7 @@ class Conversation:
                 },
             )
         except Exception:
-            pass
+            logger.trace("[Conversation] save failed")
 
     async def resume(self, event: "Event" = None) -> bool:
         """

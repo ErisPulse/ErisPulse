@@ -256,22 +256,27 @@ async def handler(request: HttpRequest):
 
 > 完整的路由 API（WebSocket、中间件、速率限制、CORS 等）请参考 [路由管理器](../advanced/router.md)。
 
-### Client（HTTP 客户端）
+### Client（网络客户端）
 
-统一的 HTTP/WS 客户端，提供自动重试、超时控制、请求统计和生命周期事件集成。模块和适配器应优先使用全局客户端（`sdk.client`）而非直接导入 `aiohttp`。
+统一的网络客户端，聚合了 HTTP 请求、WebSocket 连接、连接池管理、自动重试、超时控制、请求统计和生命周期事件集成。
 
 ```python
 from ErisPulse.Core import client
 
+# HTTP 请求
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
+# 带重试和超时
+resp = await client.get(url, timeout=30, max_retries=3)
+
+# WebSocket 连接
 ws = await client.ws_connect("wss://example.com/ws")
 async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> 完整的 HTTP 客户端 API 请参考 [HTTP 客户端](../advanced/http-client.md)。
+> 完整的网络客户端 API 请参考 [网络客户端](../advanced/http-client.md)。
 
 ## SendDSL 消息发送
 

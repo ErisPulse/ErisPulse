@@ -5,9 +5,18 @@ ErisPulse 模块基础模块
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, TypedDict
 from ...loaders.strategy import ModuleLoadStrategy
 from ..constants import DEFAULT_LAZY_LOADING_ENABLED, DEFAULT_MODULE_PRIORITY
+
+
+class ModuleEvent(TypedDict):
+    """
+    on_load / on_unload 事件数据
+
+    :ivar module_name: str 模块名称
+    """
+    module_name: str
 
 
 class BaseModule(ABC):
@@ -76,7 +85,7 @@ class BaseModule(ABC):
     #     return not (strategy.lazy_load if 'lazy_load' in strategy else True)
 
     @abstractmethod
-    async def on_load(self, event: dict) -> bool:
+    async def on_load(self, event: dict[str, Any]) -> bool:
         """
         当模块被加载时调用
 
@@ -91,7 +100,7 @@ class BaseModule(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def on_unload(self, event: dict) -> bool:
+    async def on_unload(self, event: dict[str, Any]) -> bool:
         """
         当模块被卸载时调用
 
