@@ -70,19 +70,6 @@ async def handle_disconnect(event):
     """处理断开连接事件"""
     sdk.logger.info(f"平台 {event['platform']} 断开连接")
 
-# 测试中间件
-@message.handler.middleware
-async def message_middleware(event):
-    """消息中间件"""
-    sdk.logger.info(f"消息中间件处理: {event['message_id']}")
-    return event
-
-@command.handler.middleware
-async def command_middleware(event):
-    """命令中间件"""
-    sdk.logger.info(f"命令中间件处理: {event}")
-    return event
-
 async def test_event_system():
     """运行事件处理系统测试"""
     try:
