@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1295,
+  "total_keywords": 1299,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -1862,12 +1862,12 @@
         "title": "AdapterManager — менеджер адаптеров"
       }
     ],
-    "Client (HTTP-клиент)": [
+    "Client (Сетевой клиент)": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 259,
         "level": 3,
-        "title": "Client (HTTP-клиент)"
+        "title": "Client (Сетевой клиент)"
       }
     ],
     "Config (Конфигурация)": [
@@ -1948,14 +1948,6 @@
         "line": 20,
         "level": 3,
         "title": "HTTP-запросы"
-      }
-    ],
-    "HTTP-клиент": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 1,
-        "level": 1,
-        "title": "HTTP-клиент"
       }
     ],
     "HTTPStatusError": [
@@ -2142,6 +2134,14 @@
         "title": "SDK"
       }
     ],
+    "SDK: отладка": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 309,
+        "level": 2,
+        "title": "SDK: отладка"
+      }
+    ],
     "SQL Query Builder": [
       {
         "document": "advanced/sql-builder.md",
@@ -2150,12 +2150,12 @@
         "title": "SQL Query Builder"
       }
     ],
-    "SQL-цепочные запросы": [
+    "SQL-цепочка запросов": [
       {
         "document": "api-reference/core-modules.md",
         "line": 43,
         "level": 3,
-        "title": "SQL-цепочные запросы"
+        "title": "SQL-цепочка запросов"
       }
     ],
     "SendDSL": [
@@ -2164,14 +2164,6 @@
         "line": 108,
         "level": 3,
         "title": "SendDSL"
-      }
-    ],
-    "SendDSL для отправки сообщений": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 276,
-        "level": 2,
-        "title": "SendDSL для отправки сообщений"
       }
     ],
     "SendDSL: Подробное руководство": [
@@ -2524,6 +2516,14 @@
         "title": "docker-compose.yml"
       }
     ],
+    "dump_state()": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 311,
+        "level": 3,
+        "title": "dump_state()"
+      }
+    ],
     "group": [
       {
         "document": "standards/session-types.md",
@@ -2786,12 +2786,12 @@
         "title": "Архитектура адаптера"
       }
     ],
-    "Архитектура, управляемая событиями": [
+    "Архитектура на основе событий": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 5,
         "level": 2,
-        "title": "Архитектура, управляемая событиями"
+        "title": "Архитектура на основе событий"
       }
     ],
     "Архитектура, управляемая событиями (Event-Driven Architecture)": [
@@ -2887,18 +2887,12 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 280,
+        "line": 285,
         "level": 3,
         "title": "Базовая отправка"
       }
     ],
     "Базовое использование": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 236,
-        "level": 3,
-        "title": "Базовое использование"
-      },
       {
         "document": "advanced/lazy-loading.md",
         "line": 61,
@@ -3048,6 +3042,20 @@
         "line": 34,
         "level": 2,
         "title": "Быстрая публикация"
+      }
+    ],
+    "Быстрый обзор": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 267,
+        "level": 3,
+        "title": "Быстрый обзор"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 294,
+        "level": 3,
+        "title": "Быстрый обзор"
       }
     ],
     "Быстрый справочник": [
@@ -3360,12 +3368,12 @@
         "title": "Выполнение PowerShell"
       }
     ],
-    "Высокоуровневые методы (рекомендуются)": [
+    "Высокоуровневые методы (рекомендуется)": [
       {
         "document": "advanced/http-client.md",
         "line": 250,
         "level": 4,
-        "title": "Высокоуровневые методы (рекомендуются)"
+        "title": "Высокоуровневые методы (рекомендуется)"
       }
     ],
     "Глобальная настройка": [
@@ -3418,12 +3426,6 @@
     ],
     "Далее": [
       {
-        "document": "getting-started/basic-concepts.md",
-        "line": 346,
-        "level": 2,
-        "title": "Далее"
-      },
-      {
         "document": "getting-started/common-tasks.md",
         "line": 442,
         "level": 2,
@@ -3466,6 +3468,12 @@
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 424,
+        "level": 2,
+        "title": "Дальнейшие шаги"
+      },
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 351,
         "level": 2,
         "title": "Дальнейшие шаги"
       },
@@ -3824,14 +3832,6 @@
         "title": "Другие типы сообщений"
       }
     ],
-    "Жизненные цикл-хуки": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 317,
-        "level": 3,
-        "title": "Жизненные цикл-хуки"
-      }
-    ],
     "Жизненный цикл (Lifecycle)": [
       {
         "document": "terminology.md",
@@ -3880,6 +3880,12 @@
     ],
     "Жизненный цикл событий": [
       {
+        "document": "advanced/http-client.md",
+        "line": 197,
+        "level": 2,
+        "title": "Жизненный цикл событий"
+      },
+      {
         "document": "api-reference/adapter-system.md",
         "line": 408,
         "level": 3,
@@ -3890,6 +3896,14 @@
         "line": 121,
         "level": 2,
         "title": "Жизненный цикл событий"
+      }
+    ],
+    "Жизненный цикл хуки": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 317,
+        "level": 3,
+        "title": "Жизненный цикл хуки"
       }
     ],
     "Заголовки безопасности": [
@@ -4109,12 +4123,6 @@
       }
     ],
     "Иерархия исключений": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 341,
-        "level": 2,
-        "title": "Иерархия исключений"
-      },
       {
         "document": "advanced/http-client.md",
         "line": 347,
@@ -4806,6 +4814,14 @@
         "title": "Контекст и персистентность"
       }
     ],
+    "Контекстный менеджер": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 223,
+        "level": 2,
+        "title": "Контекстный менеджер"
+      }
+    ],
     "Конфигурация": [
       {
         "document": "platform-guide/kook.md",
@@ -4996,20 +5012,6 @@
         "title": "Конфигурация хранилища"
       }
     ],
-    "Краткий справочник": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 267,
-        "level": 3,
-        "title": "Краткий справочник"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 294,
-        "level": 3,
-        "title": "Краткий справочник"
-      }
-    ],
     "Ленивая загрузка (Lazy Loading)": [
       {
         "document": "terminology.md",
@@ -5047,12 +5049,6 @@
       }
     ],
     "Лучшие практики": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 444,
-        "level": 2,
-        "title": "Лучшие практики"
-      },
       {
         "document": "advanced/lazy-loading.md",
         "line": 94,
@@ -5328,12 +5324,12 @@
         "title": "Методы запросов"
       }
     ],
-    "Методы ответа Event": [
+    "Методы ответа через Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 306,
+        "line": 311,
         "level": 3,
-        "title": "Методы ответа Event"
+        "title": "Методы ответа через Event"
       }
     ],
     "Методы отправки": [
@@ -5660,12 +5656,12 @@
         "title": "Модуль Config"
       }
     ],
-    "Модуль HTTP Client": [
+    "Модуль HTTP-клиент": [
       {
         "document": "api-reference/core-modules.md",
         "line": 288,
         "level": 2,
-        "title": "Модуль HTTP Client"
+        "title": "Модуль HTTP-клиент"
       }
     ],
     "Модуль Lifecycle": [
@@ -6036,6 +6032,14 @@
         "title": "Обработка изображений"
       }
     ],
+    "Обработка исключений": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 359,
+        "level": 3,
+        "title": "Обработка исключений"
+      }
+    ],
     "Обработка личных сообщений": [
       {
         "document": "platform-guide/discord.md",
@@ -6282,6 +6286,14 @@
         "title": "Обратный прокси"
       }
     ],
+    "Общая обработка": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 394,
+        "level": 3,
+        "title": "Общая обработка"
+      }
+    ],
     "Общие методы объекта Event": [
       {
         "document": "getting-started/event-handling.md",
@@ -6306,20 +6318,20 @@
         "title": "Общие поля (для всех типов событий)"
       }
     ],
+    "Общий request": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 121,
+        "level": 3,
+        "title": "Общий request"
+      }
+    ],
     "Общий интерфейс": [
       {
         "document": "platform-guide/README.md",
         "line": 40,
         "level": 2,
         "title": "Общий интерфейс"
-      }
-    ],
-    "Общий метод request": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 121,
-        "level": 3,
-        "title": "Общий метод request"
       }
     ],
     "Объект SDK": [
@@ -6588,12 +6600,6 @@
         "title": "Описание параметров"
       },
       {
-        "document": "advanced/http-client.md",
-        "line": 133,
-        "level": 2,
-        "title": "Описание параметров"
-      },
-      {
         "document": "user-guide/cli-reference.md",
         "line": 45,
         "level": 2,
@@ -6813,6 +6819,12 @@
       }
     ],
     "Основное использование": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 236,
+        "level": 3,
+        "title": "Основное использование"
+      },
       {
         "document": "api-reference/core-modules.md",
         "line": 96,
@@ -7248,6 +7260,14 @@
         "title": "Отправка сообщений (Send)"
       }
     ],
+    "Отправка сообщений SendDSL": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 281,
+        "level": 2,
+        "title": "Отправка сообщений SendDSL"
+      }
+    ],
     "Отправка сообщения A2UI": [
       {
         "document": "platform-guide/yunhu.md",
@@ -7310,6 +7330,14 @@
         "line": 305,
         "level": 2,
         "title": "Параметризованные запросы"
+      }
+    ],
+    "Параметры": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 133,
+        "level": 2,
+        "title": "Параметры"
       }
     ],
     "Параметры HTTP-запроса": [
@@ -7413,12 +7441,6 @@
       }
     ],
     "Перехват исключений": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 359,
-        "level": 3,
-        "title": "Перехват исключений"
-      },
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 200,
@@ -7774,12 +7796,12 @@
         "title": "Подключение к Cursor"
       }
     ],
-    "Подписка на логи (push-модель)": [
+    "Подписка на логи (режим push)": [
       {
         "document": "api-reference/core-modules.md",
         "line": 127,
         "level": 3,
-        "title": "Подписка на логи (push-модель)"
+        "title": "Подписка на логи (режим push)"
       }
     ],
     "Подписка на события (Intents)": [
@@ -7966,14 +7988,6 @@
         "line": 122,
         "level": 2,
         "title": "Получение помощи"
-      }
-    ],
-    "Получение сообщений": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 248,
-        "level": 3,
-        "title": "Получение сообщений"
       }
     ],
     "Получение целевого ID": [
@@ -8166,6 +8180,14 @@
         "line": 328,
         "level": 3,
         "title": "Приглашения в комнату"
+      }
+    ],
+    "Прием сообщений": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 248,
+        "level": 3,
+        "title": "Прием сообщений"
       }
     ],
     "Пример": [
@@ -9140,6 +9162,14 @@
         "title": "Резервное копирование"
       }
     ],
+    "Рекомендации": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 444,
+        "level": 2,
+        "title": "Рекомендации"
+      }
+    ],
     "Рекомендации по `__init__`": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -9369,7 +9399,7 @@
     "Связанная документация": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 309,
+        "line": 333,
         "level": 2,
         "title": "Связанная документация"
       },
@@ -9638,6 +9668,14 @@
         "title": "Сегменты сообщений канала"
       }
     ],
+    "Сетевой клиент": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 1,
+        "level": 1,
+        "title": "Сетевой клиент"
+      }
+    ],
     "Сигнатура метода": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -9686,6 +9724,14 @@
         "title": "Система интернационализации (i18n)"
       }
     ],
+    "Система исключений": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 341,
+        "level": 2,
+        "title": "Система исключений"
+      }
+    ],
     "Система команд": [
       {
         "document": "advanced/lifecycle.md",
@@ -9697,7 +9743,7 @@
     "Система ленивой загрузки": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 323,
+        "line": 328,
         "level": 2,
         "title": "Система ленивой загрузки"
       }
@@ -9964,28 +10010,20 @@
         "title": "События HTTP-запросов"
       }
     ],
-    "События WebSocket-соединения": [
+    "События WebSocket-соединений": [
       {
         "document": "advanced/http-client.md",
         "line": 211,
         "level": 3,
-        "title": "События WebSocket-соединения"
+        "title": "События WebSocket-соединений"
       }
     ],
-    "События адаптера": [
+    "События адаптеров": [
       {
         "document": "api-reference/core-modules.md",
         "line": 179,
         "level": 3,
-        "title": "События адаптера"
-      }
-    ],
-    "События жизненного цикла": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 197,
-        "level": 2,
-        "title": "События жизненного цикла"
+        "title": "События адаптеров"
       }
     ],
     "События запросов (Request Events)": [
@@ -10998,14 +11036,6 @@
         "title": "Уменьшение участников группы"
       }
     ],
-    "Универсальный перехват": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 394,
-        "level": 3,
-        "title": "Универсальный перехват"
-      }
-    ],
     "Уникальные типы событий": [
       {
         "document": "platform-guide/qqbot.md",
@@ -11058,14 +11088,6 @@
         "line": 1,
         "level": 1,
         "title": "Управление жизненным циклом"
-      }
-    ],
-    "Управление контекстом": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 223,
-        "level": 2,
-        "title": "Управление контекстом"
       }
     ],
     "Управление конфигурацией": [
@@ -11528,14 +11550,6 @@
         "title": "Цепные методы-модификаторы (можно комбинировать)"
       }
     ],
-    "Цепные модификаторы": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 293,
-        "level": 3,
-        "title": "Цепные модификаторы"
-      }
-    ],
     "Цепные модификаторы (можно комбинировать)": [
       {
         "document": "platform-guide/ideaura.md",
@@ -11545,6 +11559,12 @@
       }
     ],
     "Цепочечные модификаторы": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 298,
+        "level": 3,
+        "title": "Цепочечные модификаторы"
+      },
       {
         "document": "platform-guide/onebot12.md",
         "line": 299,

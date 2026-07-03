@@ -64,6 +64,16 @@ ErisPulse 命令行接口主类
 ---
 
 
+##### `_check_command_typo()`
+
+在 argparse 解析之前检查命令拼写
+
+argparse 的子命令 choices 验证遇到无效命令时会直接打印错误并退出，
+无法附加自定义提示。因此在此提前拦截，给出"你是不是想用 xxx"的拼写建议。
+
+---
+
+
 ##### `_maybe_show_language_hint()`
 
 在前几次启动时提醒用户确认语言

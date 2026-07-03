@@ -14,6 +14,13 @@ ErisPulse 模块基础模块
 ## 类列表
 
 
+### `class ModuleEvent(TypedDict)`
+
+on_load / on_unload 事件数据
+
+:ivar module_name: str 模块名称
+
+
 ### `class BaseModule(ABC)`
 
 模块基类
@@ -57,7 +64,7 @@ ErisPulse 模块基础模块
 ---
 
 
-##### `async async on_load(event: dict)`
+##### `async async on_load(event: dict[str, Any])`
 
 当模块被加载时调用
 
@@ -71,7 +78,7 @@ ErisPulse 模块基础模块
 ---
 
 
-##### `async async on_unload(event: dict)`
+##### `async async on_unload(event: dict[str, Any])`
 
 当模块被卸载时调用
 

@@ -1,10 +1,10 @@
 # 基本概念
 
-本ガイドでは ErisPulse のコアコンセプトを紹介し、フレームワークの設計思想と基本アーキテクチャを理解するのに役立ちます。
+このガイドでは ErisPulse の核心概念を紹介し、フレームワークの設計思想と基本的なアーキテクチャを理解するのに役立ちます。
 
-## イベント駆動アーキテクチャ
+## イベント駆動型アーキテクチャ
 
-ErisPulse はイベント駆動アーキテクチャを採用しており、すべての対話はイベントを通じて伝達および処理されます。
+ErisPulse はイベント駆動型アーキテクチャを採用しており、すべての対話はイベントを介して送信および処理されます。
 
 ### イベントフロー
 
@@ -15,22 +15,22 @@ ErisPulse はイベント駆動アーキテクチャを採用しており、す�
 プラットフォームが受信
       │
       ▼
-アダプターがプラットフォームのネイティブイベントを受信
+アダプタがプラットフォームのネイティブイベントを受信
       │
       ▼
-OneBot12 標準イベントに変換
+OneBot12 標準イベントへ変換
       │
       ▼
-イベントシステムに提出
+イベントシステムへ提出
       │
       ▼
-登録されたプロセッサに配信
+登録済みハンドラーへ配信
       │
       ▼
 モジュールがイベントを処理
       │
       ▼
-アダプター経由で応答を送信
+アダプタ経由でレスポンスを送信
       │
       ▼
 プラットフォームがユーザーに表示
@@ -38,9 +38,9 @@ OneBot12 標準イベントに変換
 
 ### OneBot12 標準
 
-ErisPulse は OneBot12 をコアイベント標準として使用しています。OneBot12 は汎用のチャットボットアプリケーションインターフェース標準であり、統一されたイベント形式を定義しています。
+ErisPulse は OneBot12 をコアイベント標準として使用します。OneBot12 は汎用チャットボットアプリケーションインターフェース標準であり、統一されたイベント形式を定義しています。
 
-すべてのアダプターはプラットフォーム固有のイベントを OneBot12 形式に変換し、コードの一貫性を確保します。
+すべてのアダプタは、プラットフォーム固有のイベントを OneBot12 形式に変換し、コードの一貫性を保証します。
 
 ## コアコンポーネント
 
@@ -51,14 +51,14 @@ SDK はすべての機能の統一されたエントリーポイントであり�
 ```python
 from ErisPulse import sdk
 
-# コアモジュールにアクセス
+# コアモジュールへのアクセス
 sdk.storage    # ストレージシステム
 sdk.config     # 設定システム
-sdk.logger     # ログシステム
-sdk.adapter    # アダプターシステム
+sdk.logger     # ロギングシステム
+sdk.adapter    # アダプタシステム
 sdk.module     # モジュールシステム
-sdk.router     # ルーター（ルーティング）システム
-sdk.client     # HTTP クライアント
+sdk.router     # ルーティングシステム
+sdk.client     # HTTPクライアント
 sdk.lifecycle  # ライフサイクルシステム
 ```
 
@@ -69,7 +69,7 @@ Event オブジェクトはイベントデータをカプセル化し、便利�
 ```python
 @command("info")
 async def info_handler(event):
-    # イベント情報を取得
+    # イベント情報の取得
     event_id = event.get_id()
     user_id = event.get_user_id()
     platform = event.get_platform()
@@ -79,41 +79,42 @@ async def info_handler(event):
     await event.reply(f"ユーザー: {user_id}, プラットフォーム: {platform}")
 ```
 
-### 3. アダプター
+### 3. アダプタ
 
-アダプターは ErisPulse と外部プラットフォーム間のブリッジです。
+アダプタは ErisPulse と外部プラットフォームの間の橋渡しです。
 
-**役割：**
+**責任：**
 - プラットフォームのネイティブイベントを受信
-- OneBot12 標準形式に変換
-- 標準形式のイベントをプラットフォームに送信
+- OneBot12 標準形式へ変換
+- 標準形式イベントをプラットフォームへ送信
 
-**代表的なアダプター：**
-- Yunhu アダプター：クラウド湖（Yunhu）プラットフォームとの通信
-- Telegram アダプター：Telegram Bot API との通信
-- OneBot11 アダプター：OneBot11 互換のアプリケーションとの通信
-- Email アダプター：メールの送受信処理
+**サンプルアダプタ：**
+- Yunhu アダプタ：Yunhu プラットフォームと通信
+- Telegram アダプタ：Telegram Bot API と通信
+- OneBot11 アダプタ：OneBot11 互換のアプリケーションと通信
+- Email アダプタ：メールの送受信を処理
 
 ### 4. モジュール
 
-モジュールは機能拡張の基本単位であり、以下のことができます：
-- イベントハンドラーの登録
-- ビジネスロジックの実装
-- アダプターを呼び出してメッセージを送信
-- コアモジュールが提供するサービスの使用
+モジュールは機能拡張の基本単位であり、以下のことが可能です。
 
-#### モジュール発見メカニズム
+- イベントハンドラーを登録
+- ビジネスロジックを実装
+- アダプタを使用してメッセージを送信
+- コアモジュールが提供するサービスを使用
 
-ErisPulse は Python の `importlib.metadata.entry_points` を使用してインストール済みのモジュールを発見します。モジュールは `pyproject.toml` でエントリーポイントを宣言します：
+#### モジュール検出メカニズム
+
+ErisPulse は Python の `importlib.metadata.entry_points` を使用してインストール済みのモジュールを検出します。モジュールは `pyproject.toml` でエントリーポイントを宣言します：
 
 ```toml
 [project.entry-points."erispulse.module"]
 MyModule = "my_package:Main"
 ```
 
-SDK の初期化時に、`erispulse.module` グループのすべてのエントリーポイントをスキャンし、モジュールクラスを `ModuleManager` に登録してから、依存関係のトポロジカル順序で初期化します。
+SDK の初期化時に、すべての `erispulse.module` グループのエントリーポイントがスキャンされ、モジュールクラスが `ModuleManager` に登録され、依存関係のトポロジカルソート後に順次初期化されます。
 
-#### 最小限のモジュール
+#### 最小限の使用可能モジュール
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -125,21 +126,21 @@ class Main(BaseModule):
         self.logger = sdk.logger.get_child("MyModule")
 
     async def on_load(self, event):
-        self.logger.info("モジュールが読み込まれました")
+        self.logger.info("モジュールがロードされました")
 
     async def on_unload(self, event):
         self.logger.info("モジュールがアンロードされました")
 ```
 
-#### モジュールのライフサイクル
+#### モジュールライフサイクル
 
-- **登録**：SDK がモジュールクラスを発見し、マネージャーに登録
-- **ロード**：モジュールインスタンスを作成し、`on_load(event)` を呼び出す（`event = {"module_name": "MyModule"}`）
+- **登録**：SDK がモジュールクラスを発見してマネージャーに登録
+- **ロード**：モジュールインスタンスを作成し、`on_load(event)` を呼び出し（`event = {"module_name": "MyModule"}`）
 - **アンロード**：`on_unload(event)` を呼び出し、リソースをクリーンアップ
 
-#### 加速戦略
+#### ロード戦略
 
-`get_load_strategy()` を使ってモジュールのロード動作を宣言します：
+`get_load_strategy()` を使用してモジュールのロード動作を宣言します：
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -148,36 +149,36 @@ class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(
-            lazy_load=True,   # レイジーロードを有効にする（デフォルト True）
-            priority=0        # 加速優先度、数値が大きいほど先に初期化される
+            lazy_load=True,   # レイジーロードを行うかどうか（デフォルト True）
+            priority=0        # ロード優先度、数値が大きいほど先に初期化
         )
 ```
 
-- **`lazy_load=True`（デフォルト）**：モジュールは `sdk.MyModule` に初めてアクセスされたときにのみ初期化され、起動時間を短縮
-- **`lazy_load=False`**：SDK の起動時に即座に初期化、ライフサイクルイベントを監視するモジュールや定時タスクモジュールに適している
-- **`priority`**：同じ優先度のモジュールは登録順にロード、数値が大きいほど先に初期化される
+- **`lazy_load=True`（デフォルト）**：初めて `sdk.MyModule` にアクセスされたときにモジュールが初期化され、起動時間を短縮
+- **`lazy_load=False`**：SDK の起動時に即時初期化、ライフサイクルイベントを監視するモジュールや定時タスクを実行するモジュールに適している
+- **`priority`**：優先度が同じモジュールは登録順でロード；数値が大きいほど先に初期化
 
-> レイジーロードの詳細なメカニズムについては [レイジーロードシステム](../advanced/lazy-loading.md) を参照してください。
+> 詳細なレイジーロードメカニズムについては、[レイジーロードシステム](../advanced/lazy-loading.md)を参照してください。
 
 ## イベントタイプ
 
-ErisPulse は 5 種類のイベントをサポートしています：
+ErisPulse は 5 つの種類のイベントをサポートしています。
 
 | イベントタイプ | デコレータ | 説明 |
 |---------|--------|------|
-| メッセージイベント | `@message.on_message()` | ユーザーが送信するすべてのメッセージ（プライベートチャットおよびグループチャットを含む） |
-| コマンドイベント | `@command("name")` | コマンドプレフィックス（例: `/hello`）で始まるメッセージ |
-| 通知イベント | `@notice.on_friend_add()` など | システム通知（フレンド追加、グループメンバーの変化など） |
-| リクエストイベント | `@request.on_friend_request()` など | ユーザーのリクエスト（フレンドリクエスト、グループ招待） |
-| メタイベント | `@meta.on_connect()` など | システムレベルのイベント（接続、切断、ハートビート） |
+| メッセージイベント | `@message.on_message()` | ユーザーが送信する任意のメッセージ（プライベートチャット、グループチャット） |
+| コマンドイベント | `@command("name")` | コマンドプレフィックスで始まるメッセージ（例：`/hello`） |
+| 通知イベント | `@notice.on_friend_add()` 等 | システム通知（フレンド追加、メンバー変更など） |
+| リクエストイベント | `@request.on_friend_request()` 等 | ユーザーリクエスト（フレンド申請、グループ招待） |
+| メタイベント | `@meta.on_connect()` 等 | システムレベルイベント（接続、切断、ハートビート） |
 
-> 各イベントタイプの詳細な使い方とコード例については [イベント処理の入門](event-handling.md) を参照してください。
+> 各イベントタイプの詳細な使用法とコード例については、[イベント処理入門](event-handling.md)を参照してください。
 
 ## コアモジュールの説明
 
 ### Storage（ストレージ）
 
-SQLite をベースにしたキーバリューストレージシステムであり、データの永続化に使用されます。
+SQLite ベースのキーバリューストレージシステムで、永続化データに使用されます。
 
 ```python
 # 値の設定
@@ -200,22 +201,22 @@ with sdk.storage.transaction():
 
 ### Config（設定）
 
-TOML 形式の設定ファイル管理。
+TOML形式の設定ファイル管理。
 
 ```python
-# 設定を取得
+# 設定の取得
 config = sdk.config.getConfig("MyModule", {})
 
-# 設定を設定
+# 設定の設定
 sdk.config.setConfig("MyModule", {"key": "value"})
 
-# 嵌套された設定を読み取る
+# ネストされた設定の読み込み
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
 ### Logger（ログ）
 
-モジュール化されたログシステム。
+モジュラーログシステム。
 
 ```python
 # ログの記録
@@ -223,97 +224,68 @@ sdk.logger.info("これは情報です")
 sdk.logger.warning("これは警告です")
 sdk.logger.error("これはエラーです")
 
-# 子ロガーを取得
+# 子ロガーの取得
 child_logger = sdk.logger.get_child("submodule")
 child_logger.info("サブモジュールログ")
 ```
 
-**プロパティアクセスのシンタックスシュガー**
+**属性アクセスシンタックスシュガー**
 
-`get_child()` メソッドを使用する以外に、**プロパティアクセス**を使用して子ロガーを作成することもできます。これはより簡潔な**シンタックスシュガー**（構文糖衣）の記法です。
+`get_child()` メソッドを使用する以外に、**属性アクセス**の方法で子ロガーを作成することもでき、これはより簡潔な**シンタックスシュガー**の記述方法です：
 
 ```python
-# プロパティアクセスで子ロガーを作成
+# 属性アクセスで子ロガーを作成
 sdk.logger.mymodule.info("モジュールメッセージ")
 
-# ネストされたアクセスもサポートされています
+# ネストされたアクセスをサポート
 sdk.logger.mymodule.database.info("データベースメッセージ")
 ```
 
-### Router（ルーター）
+### Router（ルーティング）
 
-HTTP および WebSocket のルーティング管理をサポートし、FastAPI のネイティブ型と ErisPulse 抽象型をサポートしています。
-
-> ルーターハンドラーは 2 つの型アノテーションをサポートしています：FastAPI のネイティブ型（`fastapi.Request` / `fastapi.WebSocket`）と ErisPulse 抽象型（`HttpRequest` / `WebSocketConnection`）。より良い移植性を得るために抽象型を使用することをお勧めします。
+HTTP および WebSocket ルーティング管理、FastAPI + Uvicorn ベース。デコレータルーティング、ミドルウェア、グループ化、レート制限、CORS をサポートします。
 
 ```python
-from ErisPulse import sdk
-
-# 方法1：ErisPulse 抽象型を使用する（推奨）
-from ErisPulse.Core import HttpRequest, WebSocketConnection
+from ErisPulse.Core import HttpRequest
 
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     data = await request.json()
     return {"status": "ok"}
-
-@sdk.router.ws("MyModule", "/ws")
-async def ws_handler(ws: WebSocketConnection):
-    data = await ws.receive_text()
-    await ws.send_text(f"Echo: {data}")
-
-# 方法2：FastAPI のネイティブ型を使用する（既存のコードとの互換性）
-from fastapi import Request, WebSocket
-
-@sdk.router.get("MyModule", "/api2")
-async def handler2(request: Request):
-    return {"status": "ok"}
 ```
 
-{!--< tips >!--}
-> **自動インジェクション**：ルーターシステムはパラメータアノテーションに基づいて、対応する型のオブジェクトを自動的に注入します。手動で作成する必要はありません。
-> 
-> **よくある問題**：`{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` エラーが表示される場合は、型アノテーションが不足していることを示しています。HTTP ハンドラーのパラメータには `request`、WebSocket ハンドラーのパラメータには `websocket` または `ws` のアノテーションを使用していることを確認してください。
+> 完全なルーティング API（WebSocket、ミドルウェア、レート制限、CORS など）については、[ルーティングマネージャー](../advanced/router.md)を参照してください。
 
-より詳しいルーター機能については [ルーター管理者](../advanced/router.md) を参照してください。
+### Client（ネットワーククライアント）
 
-### Client（HTTP クライアント）
-
-HTTP リクエストを送信するための統一された HTTP クライアントです。モジュールとアダプターは、直接 `aiohttp` をインポートする代わりに、グローバルクライアントを優先して使用する必要があります。
+統合されたネットワーククライアントで、HTTP リクエスト、WebSocket 接続、コネクションプール管理、自動再試行、タイムアウト制御、リクエスト統計、ライフサイクルイベント統合を集約しています。
 
 ```python
 from ErisPulse.Core import client
 
-# GET リクエスト
+# HTTP リクエスト
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
-# POST リクエスト
-resp = await client.post(
-    "https://api.example.com/users",
-    json={"name": "Alice"},
-)
+# 再試行とタイムアウト付き
+resp = await client.get(url, timeout=30, max_retries=3)
 
-# レスポンスのプロパティ
-resp.status        # ステータスコード（例: 200）
-resp.headers       # レスポンスヘッダー
-body = await resp.text()   # テキストレスポンスボディ
-data = await resp.json()   # JSON パース
+# WebSocket 接続
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
 ```
 
-{!--< tips >!--}
-> グローバルクライアントには、自動再試行、タイムアウト制御、リクエスト統計、およびライフサイクルイベントの統合などの機能があります。詳細は [HTTP クライアント](../advanced/http-client.md) を参照してください。
->
-> また、`from ErisPulse import sdk` を使用して `sdk.client` にアクセスすることもでき、効果は同じです。
+> 完全なネットワーククライアント API については、[ネットワーククライアント](../advanced/http-client.md)を参照してください。
 
 ## SendDSL メッセージ送信
 
-アダプターはチェーンコール方式のメッセージ送信インターフェースを提供します。
+アダプタはチェーン呼び出しのメッセージ送信インターフェースを提供します。
 
-### 基本的な送信
+### 基本送信
 
 ```python
-# アダプターインスタンスを取得
+# アダプタインスタンスの取得
 yunhu = sdk.adapter.get("yunhu")
 
 # メッセージを送信
@@ -323,27 +295,27 @@ await yunhu.Send.To("user", "U1001").Text("Hello")
 await yunhu.Send.Using("bot1").To("group", "G1001").Text("グループメッセージ")
 ```
 
-### チェーン修飾子
+### チェーン修飾
 
 ```python
-# ユーザーにメンション
+# @ユーザー
 await yunhu.Send.To("group", "G1001").At("U2001").Text("@メッセージ")
 
 # 返信メッセージ
 await yunhu.Send.To("group", "G1001").Reply("msg123").Text("返信")
 
-# 全体にメンション
+# @全体
 await yunhu.Send.To("group", "G1001").AtAll().Text("告知")
 ```
 
 ### Event 返信メソッド
 
-Event オブジェクトは便利な返信メソッドを提供します。
+Event オブジェクトは便利な返信メソッドを提供します：
 
 ```python
 @command("test")
 async def test_handler(event):
-    # シンプルなテキスト返信
+    # 簡単なテキスト返信
     await event.reply("返信内容")
     
     # 画像を送信
@@ -355,7 +327,7 @@ async def test_handler(event):
 
 ## レイジーロードシステム
 
-ErisPulse はモジュールのレイジーロード（Lazy Load）をサポートしており、モジュールは初めてアクセスされたときにのみ初期化され、起動速度が向上します。
+ErisPulse はデフォルトでモジュールレイジーロードを有効にしており、モジュールは初めてアクセスされたとき（`sdk.MyModule` など）にのみ初期化され、起動速度を大幅に向上させます。
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -365,18 +337,18 @@ class Main(BaseModule):
     def get_load_strategy():
         return ModuleLoadStrategy(
             lazy_load=True,   # レイジーロードを有効にする（デフォルト）
-            priority=0       # 加速優先度、数値が大きいほど先に初期化される
+            priority=0        # ロード優先度、数値が大きいほど先に初期化
         )
 ```
 
-**即時ロードが必要なシナリオ（`lazy_load=False`）：**
-- ライフサイクルイベントを監視するモジュール（例: `core.init.complete`）
-- 定期タスクモジュール
-- アプリケーションの起動時に初期化が必要なモジュール
+**レイジーロードを無効にする必要があるシナリオ（`lazy_load=False`）：**
+- ライフサイクルイベントを監視するモジュール（例：`core.init.complete`）
+- 起動時の定時タスクまたはバックグラウンドサービスを実行するモジュール
+- 他のモジュールのロード前に初期化を完了する必要があるモジュール
 
-> 详细的レイジーロードメカニズムと注意事項については [レイジーロードシステム](../advanced/lazy-loading.md) を参照してください。
+> 詳細なレイジーロードメカニズムと注意点については、[レイジーロードシステム](../advanced/lazy-loading.md)を参照してください。
 
 ## 次のステップ
 
-- [イベント処理の入門](event-handling.md) - 各種イベントの処理方法を学ぶ
+- [イベント処理入門](event-handling.md) - 各種イベントの処理方法を学ぶ
 - [一般的なタスクの例](common-tasks.md) - 一般的な機能の実装をマスターする

@@ -325,7 +325,7 @@
           "level": 1
         },
         {
-          "title": "HTTP クライアント",
+          "title": "ネットワーククライアント",
           "path": "advanced/http-client.md",
           "level": 1
         },

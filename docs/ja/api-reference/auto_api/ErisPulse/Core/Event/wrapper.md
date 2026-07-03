@@ -103,7 +103,7 @@ ErisPulse 事件包装类
 ---
 
 
-### `async async _builtin_wait_reply(event: 'Event', prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
+### `async async _builtin_wait_reply(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
 
 内置 wait_reply 实现
 
@@ -112,7 +112,7 @@ ErisPulse 事件包装类
 ---
 
 
-### `async async _builtin_confirm(event: 'Event', prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None, method: str = DEFAULT_SEND_METHOD)`
+### `async async _builtin_confirm(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None, method: str = DEFAULT_SEND_METHOD)`
 
 内置 confirm 实现
 
@@ -143,6 +143,35 @@ ErisPulse 事件包装类
 
 
 ## 类列表
+
+
+### `class EventData(TypedDict)`
+
+OneBot12 标准事件数据结构
+
+> **提示**
+> 所有字段均为可选（total=False），实际字段取决于事件类型。
+> 详见 [适配器标准化转换规范](../../standards/event-conversion.md)
+
+:ivar id: str 事件唯一标识符
+:ivar time: int Unix时间戳（秒级）
+:ivar type: str 事件类型（message/notice/request/meta）
+:ivar detail_type: str 事件详细类型（详见会话类型标准）
+:ivar sub_type: str 子类型
+:ivar platform: str 平台名称
+:ivar self: dict 机器人信息（含 platform, user_id）
+:ivar message_id: str 消息ID
+:ivar message: list 消息段数组
+:ivar alt_message: str 纯文本消息
+:ivar user_id: str 用户ID
+:ivar user_nickname: str 用户昵称
+:ivar group_id: str 群组ID
+:ivar guild_id: str 频道ID
+:ivar channel_id: str 子频道ID
+:ivar thread_id: str 主题ID
+:ivar operator_id: str 操作者ID
+:ivar comment: str 请求附言
+:ivar request_id: str 请求标识符
 
 
 ### `class Event(dict)`
@@ -486,7 +515,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async approve(comment: str = None)`
+##### `async async approve(comment: str | None = None)`
 
 同意当前请求事件
 
@@ -510,7 +539,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async reject(comment: str = None)`
+##### `async async reject(comment: str | None = None)`
 
 拒绝当前请求事件
 
@@ -532,7 +561,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async _handle_request_action(action: str, comment: str = None)`
+##### `async async _handle_request_action(action: str, comment: str | None = None)`
 
 执行请求操作的内部方法
 
@@ -582,7 +611,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async reply(content: str, method: str = DEFAULT_SEND_METHOD, at_users: list[str] = None, reply_to: str = None, at_all: bool = False)`
+##### `async async reply(content: str, method: str = DEFAULT_SEND_METHOD, at_users: list[str] = None, reply_to: str | None = None, at_all: bool = False)`
 
 通用回复方法
 
@@ -662,7 +691,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async wait_reply(prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
+##### `async async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户回复
 
@@ -676,7 +705,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async confirm(prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None, method: str = DEFAULT_SEND_METHOD)`
+##### `async async confirm(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户确认 (是/否)
 
@@ -988,7 +1017,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async wait(prompt: str = None, timeout: float = None, method: str = DEFAULT_SEND_METHOD)`
+##### `async async wait(prompt: str | None = None, timeout: float = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户回复
 
@@ -1000,7 +1029,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async confirm(prompt: str = None)`
+##### `async async confirm(prompt: str | None = None)`
 
 等待用户确认
 

@@ -435,12 +435,12 @@ ErisPulse 採用事件驅動架構，核心由以下系統組成：
 
 ## 事件驅動架構
 
-ErisPulse 採用事件驅動架構，所有的交互都通過事件來傳遞和處理。
+ErisPulse 採用事件驅動架構，所有的互動都透過事件來傳遞和處理。
 
 ### 事件流程
 
 ```
-用戶發送消息
+使用者發送訊息
       │
       ▼
 平台接收
@@ -461,28 +461,28 @@ ErisPulse 採用事件驅動架構，所有的交互都通過事件來傳遞和�
 模組處理事件
       │
       ▼
-通過適配器發送響應
+透過適配器發送回應
       │
       ▼
-平台顯示給用戶
+平台顯示給使用者
 ```
 
 ### OneBot12 標準
 
 ErisPulse 使用 OneBot12 作為核心事件標準。OneBot12 是一個通用的聊天機器人應用介面標準，定義了統一的事件格式。
 
-所有適配器都將平台特定的事件轉換為 OneBot12 格式，確保代碼的一致性。
+所有適配器都會將平台特定的事件轉換為 OneBot12 格式，確保程式碼的一致性。
 
-## 核心組件
+## 核心元件
 
-### 1. SDK 對象
+### 1. SDK 物件
 
-SDK 是所有功能的統一入口點，提供對核心組件的訪問。
+SDK 是所有功能的統一入口點，提供對核心元件的存取。
 
 ```python
 from ErisPulse import sdk
 
-# 訪問核心模組
+# 存取核心模組
 sdk.storage    # 存儲系統
 sdk.config     # 配置系統
 sdk.logger     # 日誌系統
@@ -493,21 +493,21 @@ sdk.client     # HTTP 客戶端
 sdk.lifecycle  # 生命週期系統
 ```
 
-### 2. Event 對象
+### 2. Event 物件
 
-Event 對象封裝了事件數據，提供了便捷的訪問方法。
+Event 物件封裝了事件資料，提供了便捷的存取方法。
 
 ```python
 @command("info")
 async def info_handler(event):
-    # 獲取事件信息
+    # 獲取事件資訊
     event_id = event.get_id()
     user_id = event.get_user_id()
     platform = event.get_platform()
     text = event.get_text()
     
     # 發送回覆
-    await event.reply(f"用戶: {user_id}, 平台: {platform}")
+    await event.reply(f"使用者: {user_id}, 平台: {platform}")
 ```
 
 ### 3. 適配器
@@ -520,18 +520,18 @@ async def info_handler(event):
 - 將標準格式事件發送到平台
 
 **示例適配器：**
-- Yunhu 適配器：與雲湖平台通信
-- Telegram 適配器：與 Telegram Bot API 通信
-- OneBot11 適配器：與 OneBot11 兼容的應用通信
+- Yunhu 適配器：與雲湖平台通訊
+- Telegram 適配器：與 Telegram Bot API 通訊
+- OneBot11 適配器：與 OneBot11 相容的應用通訊
 - Email 適配器：處理郵件收發
 
 ### 4. 模組
 
-模組是功能擴展的基本單位，可以：
+模組是功能擴充的基本單位，可以：
 
 - 註冊事件處理器
 - 實現業務邏輯
-- 調用適配器發送消息
+- 呼叫適配器發送訊息
 - 使用核心模組提供的服務
 
 #### 模組發現機制
@@ -557,7 +557,7 @@ class Main(BaseModule):
         self.logger = sdk.logger.get_child("MyModule")
 
     async def on_load(self, event):
-        self.logger.info("模組已加載")
+        self.logger.info("模組已載入")
 
     async def on_unload(self, event):
         self.logger.info("模組已卸載")
@@ -566,12 +566,12 @@ class Main(BaseModule):
 #### 模組生命週期
 
 - **註冊**：SDK 發現模組類並註冊到管理器
-- **加載**：建立模組實例，呼叫 `on_load(event)`（`event = {"module_name": "MyModule"}`）
+- **載入**：建立模組實例，呼叫 `on_load(event)`（`event = {"module_name": "MyModule"}`）
 - **卸載**：呼叫 `on_unload(event)`，清理資源
 
-#### 加載策略
+#### 載入策略
 
-透過 `get_load_strategy()` 聲明模組的加載行為：
+透過 `get_load_strategy()` 宣告模組的載入行為：
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -580,16 +580,16 @@ class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(
-            lazy_load=True,   # 是否懶加載（預設 True）
-            priority=0        # 加載優先級，數值越大越先初始化
+            lazy_load=True,   # 是否懶載入（預設 True）
+            priority=0        # 載入優先級，數值越大越先初始化
         )
 ```
 
-- **`lazy_load=True`（預設）**：模組在首次被 `sdk.MyModule` 訪問時才初始化，減少啟動時間
+- **`lazy_load=True`（預設）**：模組在首次被 `sdk.MyModule` 存取時才初始化，減少啟動時間
 - **`lazy_load=False`**：SDK 啟動時立即初始化，適合需要監聽生命週期事件或執行定時任務的模組
-- **`priority`**：同優先級的模組按註冊順序加載；數值越大越先初始化
+- **`priority`**：同優先級的模組按註冊順序載入；數值越大越先初始化
 
-> 詳細的懶加載機制說明請參考 [懶加載系統](../advanced/lazy-loading.md)。
+> 詳細的懶載入機制說明請參考 [懶載入系統](../advanced/lazy-loading.md)。
 
 ## 事件類型
 
@@ -597,22 +597,22 @@ ErisPulse 支援 5 類事件：
 
 | 事件類型 | 裝飾器 | 說明 |
 |---------|--------|------|
-| 消息事件 | `@message.on_message()` | 用戶發送的任何訊息（私聊、群聊） |
-| 命令事件 | `@command("name")` | 以命令前綴開頭的訊息（如 `/hello`） |
-| 通知事件 | `@notice.on_friend_add()` 等 | 系統通知（好友添加、群成員變化等） |
-| 請求事件 | `@request.on_friend_request()` 等 | 用戶請求（好友請求、群邀請） |
-| 元事件 | `@meta.on_connect()` 等 | 系統級事件（連接、斷開、心跳） |
+| 訊息事件 | `@message.on_message()` | 使用者發送的任何訊息（私聊、群聊） |
+| 命令事件 | `@command("name")` | 以命令字首開頭的訊息（如 `/hello`） |
+| 通知事件 | `@notice.on_friend_add()` 等 | 系統通知（好友新增、群成員變化等） |
+| 請求事件 | `@request.on_friend_request()` 等 | 使用者請求（好友請求、群邀請） |
+| 元事件 | `@meta.on_connect()` 等 | 系統級事件（連線、斷線、心跳） |
 
 > 各事件類型的詳細用法和程式碼範例請參考 [事件處理入門](event-handling.md)。
 
 ## 核心模組說明
 
-### Storage（儲存）
+### Storage（存儲）
 
-基於 SQLite 的鍵值儲存系統，用於持久化數據。
+基於 SQLite 的鍵值存儲系統，用於持久化資料。
 
 ```python
-# 設定值
+# 設置值
 sdk.storage.set("key", "value")
 
 # 獲取值
@@ -632,13 +632,13 @@ with sdk.storage.transaction():
 
 ### Config（配置）
 
-TOML 格式的配置文件管理。
+TOML 格式的配置檔案管理。
 
 ```python
 # 獲取配置
 config = sdk.config.getConfig("MyModule", {})
 
-# 設定配置
+# 設置配置
 sdk.config.setConfig("MyModule", {"key": "value"})
 
 # 讀取嵌套配置
@@ -660,21 +660,21 @@ child_logger = sdk.logger.get_child("submodule")
 child_logger.info("子模組日誌")
 ```
 
-**屬性訪問語法糖**
+**屬性存取語法糖**
 
-除了使用 `get_child()` 方法外，你還可以透過**屬性訪問**的方式建立子logger，這是一種更簡潔的**語法糖**寫法：
+除了使用 `get_child()` 方法外，你還可以透過**屬性存取**的方式建立子logger，這是一種更簡潔的**語法糖**寫法：
 
 ```python
-# 透過屬性訪問建立子logger
+# 透過屬性存取建立子logger
 sdk.logger.mymodule.info("模組訊息")
 
-# 支援嵌套訪問
+# 支援嵌套存取
 sdk.logger.mymodule.database.info("資料庫訊息")
 ```
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理，基於 FastAPI + Uvicorn。支援裝飾器路由、中間件、分組、限流、CORS。
+HTTP 和 WebSocket 路由管理，基於 FastAPI + Uvicorn。支援裝飾器路由、中介軟體、分組、限流、CORS。
 
 ```python
 from ErisPulse.Core import HttpRequest
@@ -685,28 +685,33 @@ async def handler(request: HttpRequest):
     return {"status": "ok"}
 ```
 
-> 完整的路由 API（WebSocket、中間件、速率限制、CORS 等）請參考 [路由管理器](../advanced/router.md)。
+> 完整的路由 API（WebSocket、中介軟體、速率限制、CORS 等）請參考 [路由管理器](../advanced/router.md)。
 
-### Client（HTTP 客戶端）
+### Client（網絡客戶端）
 
-統一的 HTTP/WS 客戶端，提供自動重試、超時控制、請求統計和生命週期事件整合。模組和適配器應優先使用全域客戶端（`sdk.client`）而非直接導入 `aiohttp`。
+統一的網絡客戶端，聚合了 HTTP 請求、WebSocket 連線、連線池管理、自動重試、逾時控制、請求統計和生命週期事件整合。
 
 ```python
 from ErisPulse.Core import client
 
+# HTTP 請求
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
+# 帶重試和逾時
+resp = await client.get(url, timeout=30, max_retries=3)
+
+# WebSocket 連線
 ws = await client.ws_connect("wss://example.com/ws")
 async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> 完整的 HTTP 客戶端 API 請參考 [HTTP 客戶端](../advanced/http-client.md)。
+> 完整的網絡客戶端 API 請參考 [網絡客戶端](../advanced/http-client.md)。
 
-## SendDSL 消息發送
+## SendDSL 訊息發送
 
-適配器提供鏈式呼叫的消息發送介面。
+適配器提供鏈式呼叫的訊息發送介面。
 
 ### 基礎發送
 
@@ -724,7 +729,7 @@ await yunhu.Send.Using("bot1").To("group", "G1001").Text("群訊息")
 ### 鏈式修飾
 
 ```python
-# @用戶
+# @使用者
 await yunhu.Send.To("group", "G1001").At("U2001").Text("@訊息")
 
 # 回覆訊息
@@ -736,12 +741,12 @@ await yunhu.Send.To("group", "G1001").AtAll().Text("公告")
 
 ### Event 回覆方法
 
-Event 對象提供了便捷的回覆方法：
+Event 物件提供了便捷的回覆方法：
 
 ```python
 @command("test")
 async def test_handler(event):
-    # 簡單文本回覆
+    # 簡單文字回覆
     await event.reply("回覆內容")
     
     # 發送圖片
@@ -751,9 +756,9 @@ async def test_handler(event):
     await event.reply("http://example.com/voice.mp3", method="Voice")
 ```
 
-## 懶加載系統
+## 懶載入系統
 
-ErisPulse 預設啟用模組懶加載，模組只在首次被訪問（如 `sdk.MyModule`）時才初始化，顯著提高啟動速度。
+ErisPulse 預設啟用模組懶載入，模組只在首次被存取（如 `sdk.MyModule`）時才初始化，顯著提高啟動速度。
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -762,17 +767,17 @@ class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(
-            lazy_load=True,   # 啟用懶加載（預設）
-            priority=0        # 加載優先級，數值越大越先初始化
+            lazy_load=True,   # 啟用懶載入（預設）
+            priority=0        # 載入優先級，數值越大越先初始化
         )
 ```
 
-**需要禁用懶加載的場景（`lazy_load=False`）：**
+**需要停用懶載入的場景（`lazy_load=False`）：**
 - 監聽生命週期事件的模組（如 `core.init.complete`）
 - 啟動定時任務或後台服務的模組
-- 需要在其他模組加載前完成初始化的模組
+- 需要在其他模組載入前完成初始化的模組
 
-> 詳細的懶加載機制和注意事項請參考 [懶加載系統](../advanced/lazy-loading.md)。
+> 詳細的懶載入機制和注意事項請參考 [懶載入系統](../advanced/lazy-loading.md)。
 
 ## 下一步
 
@@ -5169,7 +5174,7 @@ def on_status_change(event):
 
 # 核心模組 API
 
-本文檔提供 ErisPulse 核心模組的 API 快速參考，包含方法簽名和簡要說明。詳細用法和範例請點擊各模組的「完整文件」連結。
+本文檔提供 ErisPulse 核心模組的 API 快速參考，包含方法簽名和簡要說明。詳細用法和示例請點擊各模組的「完整文件」連結。
 
 ## Storage 模組
 
@@ -5205,8 +5210,8 @@ with sdk.storage.transaction():
 ### 屬性存取
 
 ```python
-sdk.storage.my_key          # 等同於 sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # 等同於 sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # 等價於 sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # 等價於 sdk.storage.set("my_key", "val")
 ```
 
 ### SQL 串接查詢
@@ -5235,16 +5240,16 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ## Config 模組
 
-TOML 格式的設定檔管理，支援點號分隔的鍵路徑。
+TOML 格式的配置文件管理，支援點號分隔的鍵路徑。
 
 ### API 概覽
 
 | 方法 | 說明 |
 |------|------|
-| `getConfig(key, default)` | 讀取設定，支援點號路徑如 `"MyModule.subkey"` |
-| `setConfig(key, value, immediate=False)` | 寫入設定。`immediate=True` 時立即保存到檔案 |
-| `force_save()` | 強制將記憶體中的設定寫入檔案 |
-| `reload()` | 從檔案重新載入設定 |
+| `getConfig(key, default)` | 讀取配置，支援點號路徑如 `"MyModule.subkey"` |
+| `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即保存到文件 |
+| `force_save()` | 強制將記憶體中的配置寫入文件 |
+| `reload()` | 從文件重新載入配置 |
 
 ### 範例
 
@@ -5256,7 +5261,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` 預設採用延遲寫入（每 5 秒批量保存），設定 `immediate=True` 可立即持久化到設定檔。設定變更會觸發 `config.set` 生命週期事件。
+> `setConfig` 預設採用延遲寫入（每 5 秒批量保存），設定 `immediate=True` 可立即持久化到配置文件。配置變更會觸發 `config.set` 生命週期事件。
 
 ## Logger 模組
 
@@ -5265,8 +5270,8 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ### 基本用法
 
 ```python
-sdk.logger.debug("除錯資訊")
-sdk.logger.info("執行資訊")
+sdk.logger.debug("調試資訊")
+sdk.logger.info("運行資訊")
 sdk.logger.warning("警告資訊")
 sdk.logger.error("錯誤資訊")
 sdk.logger.critical("致命錯誤")
@@ -5284,12 +5289,12 @@ child_logger.get_child("utils")  # 支援嵌套
 ### 日誌等級控制
 
 ```python
-sdk.logger.set_level("DEBUG")                          # 全域等級
+sdk.logger.set_level("DEBUG")                          # 全局等級
 sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組等級
 
 # 支援的等級（由低到高）：
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE 為最低等級，輸出框架內部詳細除錯資訊（事件分發、路由註冊等）
+# TRACE 為最低等級，輸出框架內部詳細調試資訊（事件分發、路由註冊等）
 sdk.logger.set_level("TRACE")                          # 開啟全部日誌
 ```
 
@@ -5341,8 +5346,8 @@ sdk.logger.set_memory_limit(1000)
 | `enable(platform)` / `disable(platform)` | 啟用/停用適配器 |
 | `is_enabled(platform)` | 檢查是否啟用 |
 | `startup(platforms)` / `shutdown(platforms)` | 啟動/關閉適配器 |
-| `is_running(platform)` | 檢查適配器是否正在執行 |
-| `list_running()` | 列出所有正在執行的適配器 |
+| `is_running(platform)` | 檢查適配器是否正在運行 |
+| `list_running()` | 列出所有正在運行的適配器 |
 | `platforms` | 取得所有平台名稱列表 |
 
 ### 適配器事件
@@ -5431,7 +5436,7 @@ await sdk.lifecycle.emit("custom.event", {"key": "value"})
 
 HTTP/WebSocket 路由管理器，基於 FastAPI + Uvicorn，支援裝飾器路由、中間件、分組、限流、CORS。
 
-> 完整的路由 API 文件（裝飾器路由、WebSocket、中間件、速率限制、CORS、安全標頭等）請參考 [路由管理器](../advanced/router.md)。
+> 完整的路由 API 文件（裝飾器路由、WebSocket、中間件、速率限制、CORS、安全頭等）請參考 [路由管理器](../advanced/router.md)。
 
 ### 快速參考
 
@@ -5456,9 +5461,9 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client 模組
 
-統一 HTTP/WS 客戶端，基於 aiohttp，提供請求統計、重試、日誌、ErisPulse 異常體系。
+統一網路客戶端，聚合 HTTP 請求、WebSocket 連接、連接池管理、自動重試、請求統計和生命週期事件整合。
 
-> 完整的 HTTP 客戶端文件（請求方法、回應物件、WebSocket 客戶端、異常體系等）請參考 [HTTP 客戶端](../advanced/http-client.md)。
+> 完整的網路客戶端文件（請求方法、回應物件、WebSocket 客戶端、例外體系等）請參考 [網路客戶端](../advanced/http-client.md)。
 
 ### 快速參考
 
@@ -5475,13 +5480,37 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
+## SDK 調試
+
+### dump_state()
+
+導出框架當前運行狀態的快照，用於調試和診斷。
+
+```python
+import json
+state = sdk.dump_state()
+print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
+```
+
+回傳結構包含以下子系統的狀態：
+
+| 字段 | 說明 |
+|------|------|
+| `sdk` | SDK 初始化狀態、Python 版本、運行平台、時間戳 |
+| `adapters` | 已註冊/已啟動的適配器列表、各平台 Bot 在線狀態 |
+| `modules` | 已註冊/已啟用/已停用/懶加載的模組列表 |
+| `events` | 各類事件處理器數量（message/notice/request/meta/commands） |
+| `router` | 伺服器運行狀態、HTTP/WebSocket 路由數量 |
+
+> 新增於 2.5.2
+
 ## 相關文件
 
 - [事件系統 API](event-system.md) - Event 模組 API
 - [適配器系統 API](adapter-system.md) - Adapter 管理 API
 - [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 串接查詢完整文件
 - [路由管理器](../advanced/router.md) - 路由管理器完整文件
-- [HTTP 客戶端](../advanced/http-client.md) - HTTP 客戶端完整文件
+- [網路客戶端](../advanced/http-client.md) - 網路客戶端完整文件
 - [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文件
 
 
@@ -5492,21 +5521,21 @@ async for text in ws.iter_text():
 
 ### HTTP 客户端
 
-# HTTP 客戶端
+# 網路客戶端
 
-ErisPulse 提供了統一的 HTTP/WS 客戶端，模組和適配器應優先使用此客戶端發送 HTTP 請求和建立 WebSocket 連線，而非自行匯入 `aiohttp` / `httpx` 等第三方函式庫。
+ErisPulse 提供了統一的網路客戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模組和適配器**必須優先使用**此客戶端，而非自行導入 `aiohttp` / `httpx` / `requests` 等第三方庫。
 
 ## 概述
 
-HTTP/WS 客戶端的主要功能：
+網路客戶端的主要功能：
 
 - **統一介面**：提供 `get` / `post` / `put` / `delete` / `patch` / `request` 方法
-- **WebSocket 客戶端**：透過 `ws_connect` 建立客戶端 WebSocket 連線
+- **WebSocket 客戶端**：透過 `ws_connect` 建立客戶端 WebSocket 連接
 - **自動日誌**：所有請求自動記錄日誌和統計資訊
-- **生命週期整合**：每次請求觸發 `client.request` 生命週期事件，WS 連線觸發 `client.ws.connect` 事件
+- **生命週期整合**：每次請求觸發 `client.request` 生命週期事件，WS 連接觸發 `client.ws.connect` 事件
 - **重試支援**：可配置自動重試次數和間隔
-- **逾時控制**：獨立的連線逾時和請求逾時
-- **連線集區複用**：基於 aiohttp.ClientSession 的連線集區管理
+- **超時控制**：獨立的連接超時和請求超時
+- **連接池重用**：基於 aiohttp.ClientSession 的連接池管理
 - **異常體系**：aiohttp 異常自動轉換為 ErisPulse 異常 (ClientError 體系)
 
 ## 快速開始
@@ -5529,7 +5558,7 @@ resp = await client.post(
 data = await resp.json()
 ```
 
-### WebSocket 連線
+### WebSocket 連接
 
 ```python
 from ErisPulse.Core import client
@@ -5542,7 +5571,7 @@ async for text in ws.iter_text():
 
 ## HttpResponse
 
-所有請求方法傳回 `HttpResponse` 物件：
+所有請求方法回傳 `HttpResponse` 物件：
 
 ```python
 from ErisPulse.Core import client
@@ -5551,12 +5580,12 @@ resp = await client.get("https://httpbin.org/get")
 
 resp.status       # int - HTTP 狀態碼 (如 200, 404)
 resp.reason       # str | None - 狀態描述 (如 "OK")
-resp.headers      # 回應標頭 (大小寫不敏感)
+resp.headers      # 回應頭 (大小寫不敏感)
 resp.content_type # str | None - Content-Type
 resp.url          # 最終 URL (可能因重定向變化)
 resp.raw          # 底層原生回應物件 (目前為 aiohttp.ClientResponse)
 
-# 讀取回應主體
+# 讀取回應體
 body = await resp.read()       # bytes
 text = await resp.text()       # str
 data = await resp.json()       # 解析 JSON
@@ -5632,10 +5661,10 @@ resp = await client.request(
 |------|------|------|
 | `url` | `str` | 請求 URL |
 | `params` | `dict[str, str]` | 查詢參數 (可選) |
-| `headers` | `dict[str, str]` | 額外請求標頭 (可選) |
+| `headers` | `dict[str, str]` | 預設請求頭 (可選) |
 | `data` | `Any` | 請求體 (表單或原始資料) (可選) |
 | `json` | `Any` | JSON 請求體 (可選) |
-| `timeout` | `float` | 本次請求逾時 (秒) (可選, 覆蓋預設值) |
+| `timeout` | `float` | 本次請求超時 (秒) (可選, 覆蓋預設值) |
 | `max_retries` | `int` | 本次最大重試次數 (可選, 覆蓋預設值) |
 
 ### ws_connect 參數
@@ -5643,27 +5672,27 @@ resp = await client.request(
 | 參數 | 類型 | 說明 |
 |------|------|------|
 | `url` | `str` | WebSocket 伺服器 URL |
-| `headers` | `dict[str, str]` | 額外請求標頭 (可選) |
+| `headers` | `dict[str, str]` | 預設請求頭 (可選) |
 | `heartbeat` | `float` | 心跳間隔秒數 (可選) |
 
-## 逾時與重試
+## 超時與重試
 
 ```python
 from ErisPulse.Core import HttpClient
 
-# 建立帶自訂逾時的客戶端
+# 建立帶自訂超時的客戶端
 client = HttpClient(
-    timeout=60,           # 請求總逾時 60s
-    connect_timeout=5,    # 連線逾時 5s
+    timeout=60,           # 請求總超時 60s
+    connect_timeout=5,    # 連接超時 5s
     max_retries=3,        # 失敗自動重試 3 次
     retry_delay=2,        # 重試間隔 2s
 )
 
-# 單次請求覆蓋逾時
+# 單次請求覆蓋超時
 resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
-## 自訂預設標頭
+## 自訂預設頭
 
 ```python
 client = HttpClient(
@@ -5684,7 +5713,7 @@ from ErisPulse.Core import client
 stats = client.stats
 # {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
 
-# 重置統計
+# 重設統計
 client.reset_stats()
 ```
 
@@ -5702,16 +5731,16 @@ async def on_request(event_data):
     print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
 ```
 
-### WebSocket 連線事件
+### WebSocket 連接事件
 
-每次 WebSocket 連線建立後觸發 `client.ws.connect` 事件：
+每次 WebSocket 連接建立後觸發 `client.ws.connect` 事件：
 
 ```python
 from ErisPulse.Core import lifecycle
 
 @lifecycle.on("client.ws.connect")
 async def on_ws_connect(event_data):
-    print(f"WS 連線: {event_data['url']}")
+    print(f"WS 連接: {event_data['url']}")
 ```
 
 ## 上下文管理
@@ -5725,7 +5754,7 @@ async with HttpClient(timeout=30) as client:
 
 ## WebSocket 客戶端
 
-透過 `client.ws_connect()` 建立 WebSocket 客戶端連線，傳回 `ClientWebSocket` 物件。客戶端和服務端 WebSocket 共享相同的 `WebSocketConnectionBase` 基類，send/receive/iter 介面完全一致。
+透過 `client.ws_connect()` 建立 WebSocket 客戶端連接，回傳 `ClientWebSocket` 物件。客戶端和伺服器 WebSocket 共享相同的 `WebSocketConnectionBase` 基類，send/receive/iter 接口完全一致。
 
 ### 基本用法
 
@@ -5767,7 +5796,7 @@ async for obj in ws.iter_json():
     print(obj)
 ```
 
-#### 低階方法
+#### 低級方法
 
 使用 `receive()` 和 `iter_messages()` 處理原始訊息類型，可區分 TEXT / BINARY / CLOSE / ERROR：
 
@@ -5785,14 +5814,14 @@ msg = await ws.receive()
 # 迭代原始訊息 (CLOSE/ERROR 時自動停止)
 async for msg in ws.iter_messages():
     if msg.type == WSMessage.TEXT:
-        print(f"文本: {msg.data}")
+        print(f"文字: {msg.data}")
     elif msg.type == WSMessage.BINARY:
         print(f"二進位: {len(msg.data)} bytes")
 ```
 
 ### WSMessage
 
-`WSMessage` 是統一的 WebSocket 訊息類型，不依賴底層函式庫：
+`WSMessage` 是統一的 WebSocket 訊息類型，不依賴底層庫：
 
 | 屬性 | 類型 | 說明 |
 |------|------|------|
@@ -5803,14 +5832,14 @@ async for msg in ws.iter_messages():
 
 | 屬性 | 類型 | 說明 |
 |------|------|------|
-| `url` | `URL` | 連線 URL |
-| `headers` | `Headers` | 回應標頭 |
-| `closed` | `bool` | 連線是否已關閉 |
+| `url` | `URL` | 連接 URL |
+| `headers` | `Headers` | 回應頭 |
+| `closed` | `bool` | 連接是否已關閉 |
 | `raw` | `object` | 底層原生物件 (aiohttp.ClientWebSocketResponse) |
 
-### 生命週期鉤子
+### 生命週期鈎子
 
-與 `服務端 WebSocketConnection` 一致，支援 `on_disconnect` 和 `on_error` 回調：
+與 `伺服器 WebSocketConnection` 一致，支援 `on_disconnect` 和 `on_error` 回呼：
 
 ```python
 from ErisPulse.Core import client
@@ -5819,14 +5848,14 @@ ws = await client.ws_connect("wss://example.com/ws")
 
 @ws.on_disconnect
 async def handle_disconnect(ws, reason="unknown"):
-    print(f"連線斷開: {reason}")
+    print(f"連接斷開: {reason}")
 
 @ws.on_error
 async def handle_error(ws, error=""):
-    print(f"連線錯誤: {error}")
+    print(f"連接錯誤: {error}")
 ```
 
-### 關閉連線
+### 關閉連接
 
 ```python
 await ws.close(code=1000, reason="Normal closure")
@@ -5843,11 +5872,11 @@ ErisPulse 定義了統一的異常層級，透過 `sdk.client` 發起的請求�
 ```
 ErisPulseError
 ├── ClientError                  # 所有 HTTP/WS 客戶端請求異常的基類
-│   ├── ClientConnectionError    # 連線失敗 (DNS 解析失敗、連線被拒絕、網路不可達)
-│   ├── ClientTimeoutError       # 連線逾時或請求逾時
+│   ├── ClientConnectionError    # 連接失敗 (DNS 解析失敗、連接被拒絕、網路不可達)
+│   ├── ClientTimeoutError       # 連接超時或請求超時
 │   └── HTTPStatusError          # HTTP 4xx/5xx 狀態碼錯誤
 └── WebSocketError               # WebSocket 異常基類
-    └── WebSocketDisconnect      # WebSocket 連線斷開 (客戶端和服務端通用)
+    └── WebSocketDisconnect      # WebSocket 連接斷開 (客戶端和伺服器通用)
 ```
 
 ### 異常捕獲
@@ -5868,9 +5897,9 @@ try:
     resp = await client.get("https://api.example.com/data")
     data = await resp.json()
 except ClientConnectionError:
-    print("無法連線到伺服器")
+    print("無法連接到伺服器")
 except ClientTimeoutError:
-    print("請求逾時")
+    print("請求超時")
 except ClientError as e:
     print(f"請求失敗: {e}")
 
@@ -5880,7 +5909,7 @@ try:
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 except WebSocketDisconnect as e:
-    print(f"連線斷開: code={e.code}, reason={e.reason}")
+    print(f"連接斷開: code={e.code}, reason={e.reason}")
 except WebSocketError as e:
     print(f"WebSocket 錯誤: {e}")
 ```
@@ -5929,7 +5958,7 @@ class MyAdapter(BaseAdapter):
             )
             return await resp.json()
         except ClientError as e:
-            self.logger.error(f"API 呼叫失敗: {e}")
+            self.logger.error(f"API 調用失敗: {e}")
             raise
 ```
 
@@ -5938,18 +5967,18 @@ class MyAdapter(BaseAdapter):
 ## 最佳實踐
 
 1. **優先使用全域客戶端**：使用 `from ErisPulse.Core import client` 取得全域單例，便於框架統一管理和監控
-2. **避免直接匯入 aiohttp**：使用 `client` 取代 `aiohttp.ClientSession`，未來更換底層實作無需修改程式碼。舊程式碼直接使用 aiohttp 仍可正常工作，兩種方式可以共存
-3. **使用 ErisPulse 異常體系**：透過 `sdk.client` 請求時捕獲 `ClientError` 而非 `aiohttp.ClientError`，確保程式碼不依賴特定 HTTP 函式庫。直接使用 aiohttp 的舊程式碼不受影響
-4. **合理設定逾時**：根據 API 回應速度設定合理的逾時時間，避免長時間封鎖
+2. **避免直接導入 aiohttp**：使用 `client` 替代 `aiohttp.ClientSession`，未來更換底層實作無需修改程式碼。舊程式碼直接使用 aiohttp 仍可正常運作，兩種方式可以共存
+3. **使用 ErisPulse 異常體系**：透過 `sdk.client` 請求時捕獲 `ClientError` 而非 `aiohttp.ClientError`，確保程式碼不依賴特定 HTTP 庫。直接使用 aiohttp 的舊程式碼不受影響
+4. **合理設定超時**：根據 API 回應速度設定合理的超時時間，避免長時間阻塞
 5. **使用重試機制**：對不穩定的 API 啟用重試，提高可靠性
 6. **監控請求統計**：透過 `sdk.client.stats` 或 `client.request` 生命週期事件監控請求情況
-7. **WebSocket 使用高階方法**：優先使用 `iter_text` / `iter_json` 等高階方法，僅在需要區分訊息類型時使用 `iter_messages`
+7. **WebSocket 使用高級方法**：優先使用 `iter_text` / `iter_json` 等高級方法，僅在需要區分訊息類型時使用 `iter_messages`
 
 ## 相關文件
 
-- [路由管理器](router.md) - HTTP/WebSocket 伺服器端路由（服務端 WebSocketConnection 與客戶端共享同一基類）
-- [適配器開發指南](../developer-guide/adapters/getting-started.md) - 適配器中使用 HTTP 客戶端
-- [生命週期管理](lifecycle.md) - 監聽請求事件
+- [路由管理器](docs/zh-TW/router.md) - HTTP/WebSocket 伺服器路由（伺服器 WebSocketConnection 與客戶端共享同一基類）
+- [適配器開發指南](docs/zh-TW/developer-guide/adapters/getting-started.md) - 適配器中使用 HTTP 客戶端
+- [生命週期管理](docs/zh-TW/lifecycle.md) - 監聽請求事件
 
 
 ### SQL 查询构建器

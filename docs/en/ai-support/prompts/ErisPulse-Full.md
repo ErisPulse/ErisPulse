@@ -785,7 +785,7 @@ This guide introduces the core concepts of ErisPulse, helping you understand the
 
 ## Event-Driven Architecture
 
-ErisPulse adopts an event-driven architecture, where all interactions are conveyed and processed through events.
+ErisPulse adopts an event-driven architecture, where all interactions are passed and processed through events.
 
 ### Event Flow
 
@@ -796,22 +796,22 @@ User sends message
 Platform receives
       │
       ▼
-Adapter receives platform-native event
+Adapter receives platform native event
       │
       ▼
-Converted to OneBot12 standard event
+Convert to OneBot12 standard event
       │
       ▼
-Submitted to event system
+Submit to event system
       │
       ▼
-Dispatched to registered handlers
+Dispatch to registered handlers
       │
       ▼
 Module processes event
       │
       ▼
-Response sent via adapter
+Send response through adapter
       │
       ▼
 Platform displays to user
@@ -819,7 +819,7 @@ Platform displays to user
 
 ### OneBot12 Standard
 
-ErisPulse uses OneBot12 as its core event standard. OneBot12 is a generic chatbot application interface standard that defines a unified event format.
+ErisPulse uses OneBot12 as the core event standard. OneBot12 is a generic chatbot application interface standard that defines a unified event format.
 
 All adapters convert platform-specific events into OneBot12 format to ensure code consistency.
 
@@ -839,13 +839,13 @@ sdk.logger     # Logging system
 sdk.adapter    # Adapter system
 sdk.module     # Module system
 sdk.router     # Routing system
-sdk.client     # HTTP Client
+sdk.client     # HTTP client
 sdk.lifecycle  # Lifecycle system
 ```
 
 ### 2. Event Object
 
-The Event object encapsulates event data, providing convenient access methods.
+Event objects encapsulate event data and provide convenient access methods.
 
 ```python
 @command("info")
@@ -860,24 +860,25 @@ async def info_handler(event):
     await event.reply(f"User: {user_id}, Platform: {platform}")
 ```
 
-### 3. Adapters
+### 3. Adapter
 
-Adapters are bridges between ErisPulse and external platforms.
+Adapters are the bridge between ErisPulse and external platforms.
 
 **Responsibilities:**
-- Receive platform-native events
+- Receive platform native events
 - Convert to OneBot12 standard format
 - Send standard format events to the platform
 
 **Example Adapters:**
-- Yunhu Adapter: Communicates with the Yunhu platform
-- Telegram Adapter: Communicates with the Telegram Bot API
-- OneBot11 Adapter: Communicates with OneBot11 compatible applications
-- Email Adapter: Handles email sending and receiving
+- Yunhu Adapter: Communicate with Yunhu platform
+- Telegram Adapter: Communicate with Telegram Bot API
+- OneBot11 Adapter: Communicate with OneBot11 compatible applications
+- Email Adapter: Handle email sending and receiving
 
-### 4. Modules
+### 4. Module
 
-Modules are the basic unit of functional extension and can:
+Modules are the basic unit for functional extensions and can:
+
 - Register event handlers
 - Implement business logic
 - Call adapters to send messages
@@ -885,16 +886,16 @@ Modules are the basic unit of functional extension and can:
 
 #### Module Discovery Mechanism
 
-ErisPulse discovers installed modules through Python's `importlib.metadata.entry_points`. Modules declare entry points in `pyproject.toml`:
+ErisPulse discovers installed modules via Python's `importlib.metadata.entry_points`. Modules declare entry points in `pyproject.toml`:
 
 ```toml
 [project.entry-points."erispulse.module"]
 MyModule = "my_package:Main"
 ```
 
-When the SDK initializes, it scans all entry points in the `erispulse.module` group, registers the module classes to `ModuleManager`, and then initializes them in topological order based on dependencies.
+When the SDK initializes, it scans all entry points in the `erispulse.module` group, registers module classes to `ModuleManager`, and then initializes them sequentially after topological sorting by dependencies.
 
-#### Minimal Viable Module
+#### Minimum Viable Module
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -914,13 +915,13 @@ class Main(BaseModule):
 
 #### Module Lifecycle
 
-- **Registration**: The SDK discovers module classes and registers them with the manager
-- **Loading**: Creates a module instance and calls `on_load(event)` (`event = {"module_name": "MyModule"}`)
-- **Unloading**: Calls `on_unload(event)` to clean up resources
+- **Registration**: SDK discovers module class and registers to manager
+- **Loading**: Creates module instance, calls `on_load(event)` (`event = {"module_name": "MyModule"}`)
+- **Unloading**: Calls `on_unload(event)`, cleans up resources
 
 #### Load Strategy
 
-Declare the module's loading behavior through `get_load_strategy()`:
+Declare the module's loading behavior via `get_load_strategy()`:
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -929,36 +930,36 @@ class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(
-            lazy_load=True,   # Whether to enable lazy loading (default True)
-            priority=0        # Load priority, higher values initialize earlier
+            lazy_load=True,   # Whether to lazy load (default True)
+            priority=0        # Load priority, larger numbers initialize earlier
         )
 ```
 
-- **`lazy_load=True` (default)**: The module is initialized only when first accessed via `sdk.MyModule`, reducing startup time
-- **`lazy_load=False`**: The module is initialized immediately during SDK startup, suitable for modules that need to listen to lifecycle events or execute scheduled tasks
-- **`priority`**: Modules with the same priority are loaded in registration order; higher values initialize earlier
+- **`lazy_load=True` (default)**: Module initializes only when first accessed (e.g., `sdk.MyModule`), reducing startup time
+- **`lazy_load=False`**: Module initializes immediately when SDK starts, suitable for modules that need to listen to lifecycle events or execute scheduled tasks
+- **`priority`**: Modules with the same priority load in registration order; larger numbers initialize earlier
 
-> For detailed information on the lazy loading mechanism, please refer to [Lazy Loading System](../advanced/lazy-loading.md).
+> For a detailed explanation of the lazy loading mechanism, please refer to [Lazy Loading System](../advanced/lazy-loading.md).
 
 ## Event Types
 
-ErisPulse supports 5 types of events:
+ErisPulse supports 5 categories of events:
 
 | Event Type | Decorator | Description |
 |---------|--------|------|
-| Message Event | `@message.on_message()` | Any message sent by a user (private chat, group chat) |
-| Command Event | `@command("name")` | Messages starting with a command prefix (e.g., `/hello`) |
-| Notice Event | `@notice.on_friend_add()` etc. | System notifications (e.g., friend addition, group member changes) |
-| Request Event | `@request.on_friend_request()` etc. | User requests (e.g., friend requests, group invitations) |
-| Meta Event | `@meta.on_connect()` etc. | System-level events (e.g., connection, heartbeat) |
+| Message Event | `@message.on_message()` | Any message sent by the user (private chat, group chat) |
+| Command Event | `@command("name")` | Messages starting with the command prefix (e.g., `/hello`) |
+| Notice Event | `@notice.on_friend_add()` etc. | System notifications (friend added, group member changes, etc.) |
+| Request Event | `@request.on_friend_request()` etc. | User requests (friend request, group invite) |
+| Meta Event | `@meta.on_connect()` etc. | System-level events (connect, disconnect, heartbeat) |
 
-> For detailed usage and code examples of each event type, please refer to [Event Handling Intro](event-handling.md).
+> For detailed usage and code examples of each event type, please refer to [Getting Started with Event Handling](event-handling.md).
 
 ## Core Module Explanations
 
-### Storage（存储）
+### Storage (Storage)
 
-A SQLite-based key-value storage system for persistent data.
+SQLite-based key-value storage system for persistent data.
 
 ```python
 # Set value
@@ -979,7 +980,7 @@ with sdk.storage.transaction():
     sdk.storage.set("key2", "value2")
 ```
 
-### Config（配置）
+### Config (Configuration)
 
 TOML format configuration file management.
 
@@ -994,12 +995,12 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
-### Logger（日志）
+### Logger (Logging)
 
-A modular logging system.
+Modular logging system.
 
 ```python
-# Log message
+# Log messages
 sdk.logger.info("This is an info message")
 sdk.logger.warning("This is a warning message")
 sdk.logger.error("This is an error message")
@@ -1011,7 +1012,7 @@ child_logger.info("Submodule log")
 
 **Property Access Syntax Sugar**
 
-In addition to using the `get_child()` method, you can also create child loggers via **property access**. This is a more concise **syntax sugar** approach:
+In addition to using the `get_child()` method, you can create child loggers via **property access**, which is a more concise **syntax sugar**:
 
 ```python
 # Create child logger via property access
@@ -1021,9 +1022,9 @@ sdk.logger.mymodule.info("Module message")
 sdk.logger.mymodule.database.info("Database message")
 ```
 
-### Router（路由）
+### Router (Routing)
 
-HTTP and WebSocket route management, based on FastAPI + Uvicorn. Supports decorator routing, middleware, grouping, rate limiting, CORS.
+HTTP and WebSocket routing management, based on FastAPI + Uvicorn. Supports decorator routing, middleware, grouping, rate limiting, CORS.
 
 ```python
 from ErisPulse.Core import HttpRequest
@@ -1036,26 +1037,31 @@ async def handler(request: HttpRequest):
 
 > For the complete routing API (WebSocket, middleware, rate limiting, CORS, etc.), please refer to [Router Manager](../advanced/router.md).
 
-### Client（HTTP 客户端）
+### Client (Network Client)
 
-A unified HTTP/WS client, providing automatic retries, timeout control, request statistics, and lifecycle event integration. Modules and adapters should prioritize using the global client (`sdk.client`) rather than directly importing `aiohttp`.
+Unified network client aggregating HTTP requests, WebSocket connections, connection pool management, automatic retry, timeout control, request statistics, and lifecycle event integration.
 
 ```python
 from ErisPulse.Core import client
 
+# HTTP request
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
+# With retry and timeout
+resp = await client.get(url, timeout=30, max_retries=3)
+
+# WebSocket connection
 ws = await client.ws_connect("wss://example.com/ws")
 async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> For the complete HTTP client API, please refer to [HTTP Client](../advanced/http-client.md).
+> For the complete network client API, please refer to [Network Client](../advanced/http-client.md).
 
 ## SendDSL Message Sending
 
-Adapters provide a chain-call interface for sending messages.
+Adapters provide message sending interfaces with method chaining.
 
 ### Basic Sending
 
@@ -1076,16 +1082,16 @@ await yunhu.Send.Using("bot1").To("group", "G1001").Text("Group message")
 # @User
 await yunhu.Send.To("group", "G1001").At("U2001").Text("@message")
 
-# Reply message
-await yunhu.Send.To("group", "G1001").Reply("msg123").Text("Reply")
+# Reply to message
+await yunhu.Send.To("group", "G1001").Reply("msg123").Text("reply")
 
 # @All
-await yunhu.Send.To("group", "G1001").AtAll().Text("Announcement")
+await yunhu.Send.To("group", "G1001").AtAll().Text("announcement")
 ```
 
 ### Event Reply Methods
 
-The Event object provides convenient reply methods:
+Event objects provide convenient reply methods:
 
 ```python
 @command("test")
@@ -1112,21 +1118,21 @@ class Main(BaseModule):
     def get_load_strategy():
         return ModuleLoadStrategy(
             lazy_load=True,   # Enable lazy loading (default)
-            priority=0        # Load priority, higher values initialize earlier
+            priority=0        # Load priority, larger numbers initialize earlier
         )
 ```
 
-**Scenarios requiring immediate loading (`lazy_load=False`):**
+**Scenarios where lazy loading needs to be disabled (`lazy_load=False`):**
 - Modules listening to lifecycle events (e.g., `core.init.complete`)
-- Modules that execute scheduled tasks or run background services
+- Modules starting scheduled tasks or background services
 - Modules that need to complete initialization before other modules load
 
-> For detailed information on the lazy loading mechanism and best practices, please refer to [Lazy Loading System](../advanced/lazy-loading.md).
+> For a detailed description of the lazy loading mechanism and precautions, please refer to [Lazy Loading System](../advanced/lazy-loading.md).
 
 ## Next Steps
 
-- [Event Handling Intro](event-handling.md) - Learn how to handle various events
-- [Common Tasks Examples](common-tasks.md) - Master the implementation of common functions
+- [Getting Started with Event Handling](event-handling.md) - Learn how to handle various events
+- [Common Task Examples](common-tasks.md) - Master the implementation of common features
 
 
 ### 事件处理入门
@@ -7354,11 +7360,11 @@ API 参考
 
 # Core Module API
 
-This document provides a quick reference for ErisPulse core module APIs, including method signatures and brief descriptions. For detailed usage and examples, please click the "Full Documentation" link for each module.
+This document provides a quick reference for the API of ErisPulse core modules, including method signatures and brief descriptions. For detailed usage and examples, please click the "Full Documentation" link for each module.
 
 ## Storage Module
 
-A key-value storage system based on SQLite, supporting general SQL chainable queries.
+A key-value storage system based on SQLite, supporting generic SQL chained queries.
 
 ### Basic Operations
 
@@ -7390,13 +7396,13 @@ with sdk.storage.transaction():
 ### Attribute Access
 
 ```python
-sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # equivalent to sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # equivalent to sdk.storage.set("my_key", "val")
 ```
 
-### SQL Chainable Queries
+### SQL Chained Queries
 
-The Storage module provides a chainable style of general SQL query builder, supporting CRUD operations for custom tables.
+The Storage module provides a chained-call style generic SQL query builder, supporting CRUD operations for custom tables.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -7408,7 +7414,7 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> For the complete chainable query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
+> For the complete chained query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
 
 ### Storage Backend Abstraction
 
@@ -7425,10 +7431,10 @@ TOML format configuration file management, supporting dot-separated key paths.
 ### API Overview
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `getConfig(key, default)` | Read configuration, supports dot paths like `"MyModule.subkey"` |
-| `setConfig(key, value, immediate=False)` | Write configuration. `immediate=True` saves immediately to file |
-| `force_save()` | Force writing configuration from memory to file |
+| `setConfig(key, value, immediate=False)` | Write configuration. If `immediate=True`, save immediately to file |
+| `force_save()` | Force write configuration from memory to file |
 | `reload()` | Reload configuration from file |
 
 ### Example
@@ -7441,11 +7447,11 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` uses delayed writing by default (batch saved every 5 seconds). Setting `immediate=True` persists immediately to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` uses delayed writing by default (batch saved every 5 seconds). Setting `immediate=True` will persist immediately to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Logger Module
 
-A modular logging system based on Rich output, supporting sub-loggers and module-level control.
+A modular logging system based on Rich output, supporting child loggers and module-level control.
 
 ### Basic Usage
 
@@ -7457,7 +7463,7 @@ sdk.logger.error("Error information")
 sdk.logger.critical("Critical error")
 ```
 
-### Sub-loggers
+### Child Loggers
 
 ```python
 child_logger = sdk.logger.get_child("MyModule")
@@ -7474,7 +7480,7 @@ sdk.logger.set_module_level("MyModule", "DEBUG")       # Module level
 
 # Supported levels (from low to high):
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE is the lowest level, outputs detailed framework internal debug information (event dispatch, route registration, etc.)
+# TRACE is the lowest level, outputting detailed framework internal debugging information (event dispatching, route registration, etc.)
 sdk.logger.set_level("TRACE")                          # Enable all logs
 ```
 
@@ -7500,8 +7506,8 @@ sdk.logger.remove_handler("my-handler")
 ```
 
 | Method | Description |
-|------|------|
-| `handler(id, *, min_level)(func)` | Decorator/multi-use direct call. If `id` is empty, it takes the function name. Automatically replays historical logs on registration |
+|--------|-------------|
+| `handler(id, *, min_level)(func)` | Decorator/direct call dual-use. If `id` is empty, use function name. Automatically replay historical logs upon registration |
 | `remove_handler(id)` | Remove subscriber |
 
 ### Output Control
@@ -7515,12 +7521,12 @@ sdk.logger.set_memory_limit(1000)
 
 ## Adapter Module
 
-Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters.
+Adapter manager, managing registration, startup, and shutdown of multiple platform adapters.
 
 ### API Overview
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `get(platform)` | Get adapter instance |
 | `exists(platform)` | Check if adapter is registered |
 | `enable(platform)` / `disable(platform)` | Enable/disable adapter |
@@ -7560,7 +7566,7 @@ Module manager, managing plugin registration, loading, and unloading.
 ### API Overview
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `get(name)` | Get module instance |
 | `exists(name)` | Check if registered |
 | `is_loaded(name)` | Check if loaded |
@@ -7587,7 +7593,7 @@ Event-driven lifecycle manager, providing event submission and listening functio
 ### API Overview
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `on(event, priority=0)` | Decorator to register event handler, supports dot matching and wildcard `*` |
 | `register(event, handler, priority=0)` | Function-style registration of handler |
 | `unregister(event, handler=None)` | Remove handler |
@@ -7601,7 +7607,7 @@ Event-driven lifecycle manager, providing event submission and listening functio
 ```python
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
-    print(f"Module initialization: {event_data}")
+    print(f"Module initialized: {event_data}")
 
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
@@ -7610,29 +7616,29 @@ async def handle_any_module_event(event_data):
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-> For the complete standard event list and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
+> For the complete list of standard events and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
 
 ## Router Module
 
 HTTP/WebSocket route manager, based on FastAPI + Uvicorn, supporting decorator routes, middleware, grouping, rate limiting, CORS.
 
-> For the complete route API documentation (decorator routes, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Router Manager](../advanced/router.md).
+> For the complete route API documentation (decorator routes, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Route Manager](../advanced/router.md).
 
 ### Quick Reference
 
 ```python
-# HTTP Route
+# HTTP route
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# WebSocket Route
+# WebSocket route
 @sdk.router.ws("MyModule", "/ws")
 async def ws_handler(ws: WebSocketConnection):
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 
-# Route Grouping
+# Route grouping
 group = sdk.router.group("MyModule", prefix="/v1")
 @group.get("/users")
 async def list_users(request: HttpRequest):
@@ -7641,16 +7647,16 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client Module
 
-Unified HTTP/WS client, based on aiohttp, providing request statistics, retry, logging, and ErisPulse exception system.
+Unified network client, aggregating HTTP requests, WebSocket connections, connection pool management, automatic retries, request statistics, and lifecycle event integration.
 
-> For the complete HTTP client documentation (request methods, response objects, WebSocket client, exception system, etc.), please refer to [HTTP Client](../advanced/http-client.md).
+> For the complete network client documentation (request methods, response objects, WebSocket client, exception system, etc.), please refer to [Network Client](../advanced/http-client.md).
 
 ### Quick Reference
 
 ```python
 from ErisPulse.Core import client
 
-# HTTP Request
+# HTTP request
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
@@ -7660,13 +7666,37 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
+## SDK Debugging
+
+### dump_state()
+
+Exports a snapshot of the current running state of the framework, for debugging and diagnostics.
+
+```python
+import json
+state = sdk.dump_state()
+print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
+```
+
+The returned structure contains the status of the following subsystems:
+
+| Field | Description |
+|-------|-------------|
+| `sdk` | SDK initialization status, Python version, running platform, timestamp |
+| `adapters` | List of registered/started adapters, online status of Bots on each platform |
+| `modules` | List of registered/enabled/disabled/lazy-loaded modules |
+| `events` | Number of handlers for each type of event (message/notice/request/meta/commands) |
+| `router` | Server running status, number of HTTP/WebSocket routes |
+
+> Added in 2.5.2
+
 ## Related Documentation
 
 - [Event System API](event-system.md) - Event module API
 - [Adapter System API](adapter-system.md) - Adapter management API
-- [SQL Query Builder](../advanced/sql-builder.md) - Full documentation for SQL chainable queries
-- [Router Manager](../advanced/router.md) - Full documentation for router manager
-- [HTTP Client](../advanced/http-client.md) - Full documentation for HTTP client
+- [SQL Query Builder](../advanced/sql-builder.md) - Full documentation for SQL chained queries
+- [Route Manager](../advanced/router.md) - Full documentation for route manager
+- [Network Client](../advanced/http-client.md) - Full documentation for network client
 - [Lifecycle Management](../advanced/lifecycle.md) - Full documentation for lifecycle
 
 
@@ -10546,22 +10576,22 @@ Recommended error codes for request operations (following [API Response Standard
 
 ### HTTP 客户端
 
-# HTTP Client
+# Network Client
 
-ErisPulse provides a unified HTTP/WS client. Modules and adapters should prioritize using this client for sending HTTP requests and establishing WebSocket connections, rather than importing third-party libraries like `aiohttp` / `httpx` themselves.
+ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must** prioritize using this client instead of directly importing third-party libraries such as `aiohttp`, `httpx`, or `requests`.
 
 ## Overview
 
-Main features of the HTTP/WS client:
+The main features of the network client are:
 
 - **Unified Interface**: Provides `get` / `post` / `put` / `delete` / `patch` / `request` methods
-- **WebSocket Client**: Establish client WebSocket connections via `ws_connect`
-- **Auto Logging**: Automatically logs all requests and statistics
-- **Lifecycle Integration**: Triggers `client.request` lifecycle events for every request, `client.ws.connect` events for WS connections
-- **Retry Support**: Configurable automatic retry counts and intervals
+- **WebSocket Client**: Establishes a client WebSocket connection via `ws_connect`
+- **Automatic Logging**: All requests are automatically logged and tracked for statistics
+- **Lifecycle Integration**: Each request triggers the `client.request` lifecycle event, and WebSocket connections trigger the `client.ws.connect` event
+- **Retry Support**: Configurable automatic retry count and interval
 - **Timeout Control**: Independent connection and request timeouts
 - **Connection Pool Reuse**: Connection pool management based on `aiohttp.ClientSession`
-- **Exception Hierarchy**: Automatically converts `aiohttp` exceptions to ErisPulse exceptions (ClientError hierarchy)
+- **Exception System**: `aiohttp` exceptions are automatically converted to ErisPulse exceptions (ClientError system)
 
 ## Quick Start
 
@@ -10570,12 +10600,12 @@ Main features of the HTTP/WS client:
 ```python
 from ErisPulse.Core import client
 
-# GET Request
+# GET request
 resp = await client.get("https://httpbin.org/get")
 data = await resp.json()
 print(resp.status)  # 200
 
-# POST Request
+# POST request
 resp = await client.post(
     "https://httpbin.org/post",
     json={"key": "value"},
@@ -10604,17 +10634,17 @@ from ErisPulse.Core import client
 resp = await client.get("https://httpbin.org/get")
 
 resp.status       # int - HTTP status code (e.g., 200, 404)
-resp.reason       # str | None - Status description (e.g., "OK")
-resp.headers      # Response headers (case-insensitive)
+resp.reason       # str | None - status description (e.g., "OK")
+resp.headers      # response headers (case-insensitive)
 resp.content_type # str | None - Content-Type
-resp.url          # Final URL (may change due to redirects)
-resp.raw          # Underlying native response object (currently `aiohttp.ClientResponse`)
+resp.url          # final URL (may change due to redirects)
+resp.raw          # underlying raw response object (currently aiohttp.ClientResponse)
 
-# Read response body
+# Reading response body
 body = await resp.read()       # bytes
 text = await resp.text()       # str
-data = await resp.json()       # Parse JSON
-text = await resp.text("gbk")  # Specify encoding
+data = await resp.json()       # parse JSON
+text = await resp.text("gbk")  # specify encoding
 ```
 
 ## Request Methods
@@ -10678,7 +10708,7 @@ resp = await client.request(
 )
 ```
 
-## Parameters
+## Parameter Explanation
 
 ### HTTP Request Parameters
 
@@ -10689,8 +10719,8 @@ resp = await client.request(
 | `headers` | `dict[str, str]` | Additional request headers (optional) |
 | `data` | `Any` | Request body (form or raw data) (optional) |
 | `json` | `Any` | JSON request body (optional) |
-| `timeout` | `float` | Timeout for this specific request (seconds) (optional, overrides default) |
-| `max_retries` | `int` | Maximum retry attempts for this specific request (optional, overrides default) |
+| `timeout` | `float` | Request timeout (seconds) (optional, overrides default value) |
+| `max_retries` | `int` | Maximum retry attempts for this request (optional, overrides default value) |
 
 ### ws_connect Parameters
 
@@ -10709,7 +10739,7 @@ from ErisPulse.Core import HttpClient
 client = HttpClient(
     timeout=60,           # Total request timeout 60s
     connect_timeout=5,    # Connection timeout 5s
-    max_retries=3,        # Auto retry 3 times on failure
+    max_retries=3,        # Automatic retry 3 times on failure
     retry_delay=2,        # Retry interval 2s
 )
 
@@ -10744,9 +10774,9 @@ client.reset_stats()
 
 ## Lifecycle Events
 
-### HTTP Request Event
+### HTTP Request Events
 
-Triggers `client.request` event after each request is completed, useful for monitoring:
+The `client.request` event is triggered after each request completes, useful for monitoring:
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -10756,22 +10786,22 @@ async def on_request(event_data):
     print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
 ```
 
-### WebSocket Connection Event
+### WebSocket Connection Events
 
-Triggers `client.ws.connect` event after each WebSocket connection is established:
+The `client.ws.connect` event is triggered after each WebSocket connection is established:
 
 ```python
 from ErisPulse.Core import lifecycle
 
 @lifecycle.on("client.ws.connect")
 async def on_ws_connect(event_data):
-    print(f"WS Connection: {event_data['url']}")
+    print(f"WS connection: {event_data['url']}")
 ```
 
 ## Context Management
 
 ```python
-# Use as a context manager to automatically close sessions
+# As a context manager, automatically closes the session
 async with HttpClient(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
@@ -10779,7 +10809,7 @@ async with HttpClient(timeout=30) as client:
 
 ## WebSocket Client
 
-Establish client WebSocket connections via `client.ws_connect()`, returning a `ClientWebSocket` object. The client and server WebSocket share the same `WebSocketConnectionBase` base class, with send/receive/iter interfaces completely identical.
+Establish a WebSocket client connection via `client.ws_connect()`, returning a `ClientWebSocket` object. The client and server WebSocket share the same `WebSocketConnectionBase` base class, and their `send/receive/iter` interfaces are completely consistent.
 
 ### Basic Usage
 
@@ -10795,9 +10825,9 @@ await ws.send_json({"type": "ping"})
 
 ### Receiving Messages
 
-#### High-level Methods (Recommended)
+#### Advanced Methods (Recommended)
 
-Automatically filter message types, raises `WebSocketDisconnect` on disconnect:
+Automatically filters message types and raises `WebSocketDisconnect` on disconnection:
 
 ```python
 from ErisPulse.Core import client
@@ -10805,12 +10835,12 @@ from ErisPulse.Core.Bases.errors import WebSocketDisconnect
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# Receive single message
+# Single message receive
 text = await ws.receive_text()    # str
 data = await ws.receive_bytes()   # bytes
 obj = await ws.receive_json()     # dict / list
 
-# Iterative receive (automatically stops on disconnect)
+# Iterate messages (automatically stops on disconnect)
 async for text in ws.iter_text():
     print(text)
 
@@ -10821,9 +10851,9 @@ async for obj in ws.iter_json():
     print(obj)
 ```
 
-#### Low-level Methods
+#### Low-Level Methods
 
-Use `receive()` and `iter_messages()` to handle raw message types, distinguish between TEXT / BINARY / CLOSE / ERROR:
+Use `receive()` and `iter_messages()` to handle raw message types, distinguishing between TEXT / BINARY / CLOSE / ERROR:
 
 ```python
 from ErisPulse.Core import client
@@ -10831,12 +10861,12 @@ from ErisPulse.Core.Bases.websocket import WSMessage
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# Receive single raw message
+# Single raw message receive
 msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
 
-# Iterative raw messages (automatically stops on CLOSE/ERROR)
+# Iterate raw messages (automatically stops on CLOSE/ERROR)
 async for msg in ws.iter_messages():
     if msg.type == WSMessage.TEXT:
         print(f"Text: {msg.data}")
@@ -10846,10 +10876,10 @@ async for msg in ws.iter_messages():
 
 ### WSMessage
 
-`WSMessage` is a unified WebSocket message type, independent of the underlying library:
+`WSMessage` is a unified WebSocket message type independent of the underlying library:
 
-| Property | Type | Description |
-|----------|------|-------------|
+| Attribute | Type | Description |
+|-----------|------|-------------|
 | `type` | `str` | Message type: `WSMessage.TEXT` / `WSMessage.BINARY` / `WSMessage.CLOSE` / `WSMessage.ERROR` |
 | `data` | `Any` | Message data |
 
@@ -10860,11 +10890,11 @@ async for msg in ws.iter_messages():
 | `url` | `URL` | Connection URL |
 | `headers` | `Headers` | Response headers |
 | `closed` | `bool` | Whether the connection is closed |
-| `raw` | `object` | Underlying native object (`aiohttp.ClientWebSocketResponse`) |
+| `raw` | `object` | Underlying raw object (aiohttp.ClientWebSocketResponse) |
 
 ### Lifecycle Hooks
 
-Consistent with `server WebSocketConnection`, supports `on_disconnect` and `on_error` callbacks:
+Consistent with `server-side WebSocketConnection`, supports `on_disconnect` and `on_error` callbacks:
 
 ```python
 from ErisPulse.Core import client
@@ -10873,35 +10903,35 @@ ws = await client.ws_connect("wss://example.com/ws")
 
 @ws.on_disconnect
 async def handle_disconnect(ws, reason="unknown"):
-    print(f"Connection disconnected: {reason}")
+    print(f"Connection closed: {reason}")
 
 @ws.on_error
 async def handle_error(ws, error=""):
     print(f"Connection error: {error}")
 ```
 
-### Closing Connection
+### Closing the Connection
 
 ```python
 await ws.close(code=1000, reason="Normal closure")
 ```
 
-## Exception Hierarchy
+## Exception System
 
-ErisPulse defines a unified exception hierarchy. Requests initiated via `sdk.client` will automatically convert underlying `aiohttp` exceptions to ErisPulse exceptions.
+ErisPulse defines a unified exception hierarchy. Requests initiated through `sdk.client` automatically convert underlying `aiohttp` exceptions into ErisPulse exceptions.
 
-> **Backward Compatibility**: Old modules/adapters directly using `aiohttp.ClientSession` are completely unaffected. Exception conversion only takes effect when requests are initiated via `sdk.client`. Code directly using `aiohttp` will still catch native exceptions like `aiohttp.ClientError`. Both methods can coexist.
+> **Backward Compatibility**: Old modules/adapters that directly use `aiohttp.ClientSession` remain unaffected. Exception conversion only occurs when requests are made through `sdk.client`. Code directly using `aiohttp` still catches `aiohttp.ClientError` and other native exceptions. Both approaches can coexist.
 
 ### Exception Hierarchy
 
 ```
 ErisPulseError
 ├── ClientError                  # Base class for all HTTP/WS client request exceptions
-│   ├── ClientConnectionError    # Connection failed (DNS resolution failed, connection refused, network unreachable)
+│   ├── ClientConnectionError    # Connection failure (DNS resolution failed, connection refused, network unreachable)
 │   ├── ClientTimeoutError       # Connection timeout or request timeout
 │   └── HTTPStatusError          # HTTP 4xx/5xx status code errors
-└── WebSocketError               # WebSocket exception base class
-    └── WebSocketDisconnect      # WebSocket connection disconnected (common to client and server)
+└── WebSocketError               # Base class for WebSocket exceptions
+    └── WebSocketDisconnect      # WebSocket connection closed (common to both client and server)
 ```
 
 ### Exception Handling
@@ -10917,31 +10947,31 @@ from ErisPulse.Core.Bases.errors import (
     WebSocketError,
 )
 
-# HTTP request exception handling
+# Handling HTTP request exceptions
 try:
     resp = await client.get("https://api.example.com/data")
     data = await resp.json()
 except ClientConnectionError:
-    print("Unable to connect to server")
+    print("Unable to connect to the server")
 except ClientTimeoutError:
-    print("Request timeout")
+    print("Request timed out")
 except ClientError as e:
     print(f"Request failed: {e}")
 
-# WebSocket exception handling
+# Handling WebSocket exceptions
 try:
     ws = await client.ws_connect("wss://example.com/ws")
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 except WebSocketDisconnect as e:
-    print(f"Connection disconnected: code={e.code}, reason={e.reason}")
+    print(f"Connection closed: code={e.code}, reason={e.reason}")
 except WebSocketError as e:
     print(f"WebSocket error: {e}")
 ```
 
-### Unified Catching
+### Unified Exception Handling
 
-Use `ClientError` to catch all HTTP/WS client request exceptions uniformly:
+Use `ClientError` to catch all HTTP/WS client request exceptions:
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError
@@ -10954,7 +10984,7 @@ except ClientError as e:
 
 ### HTTPStatusError
 
-When you need to check the status code after a request and raise an exception manually, you can use:
+When you need to check the status code after a request and raise an exception manually, you can use `HTTPStatusError`:
 
 ```python
 from ErisPulse.Core.Bases.errors import HTTPStatusError
@@ -10964,7 +10994,7 @@ if resp.status >= 400:
     raise HTTPStatusError(resp.status, await resp.text())
 ```
 
-## Usage in Adapters
+## Using in Adapters
 
 Adapters can use the global client or create their own client instance to send platform API requests:
 
@@ -10987,22 +11017,22 @@ class MyAdapter(BaseAdapter):
             raise
 ```
 
-> You can also use `sdk.client` via `from ErisPulse import sdk` for the same effect.
+> You can also use `from ErisPulse import sdk` and `sdk.client`, which has the same effect.
 
 ## Best Practices
 
-1. **Prioritize the global client**: Use `from ErisPulse.Core import client` to get the global singleton, facilitating unified framework management and monitoring
-2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession` so future changes to the underlying implementation require no code modifications. Old code directly using `aiohttp` still works fine, and both methods can coexist
-3. **Use the ErisPulse exception hierarchy**: Catch `ClientError` instead of `aiohttp.ClientError` when making requests via `sdk.client` to ensure code does not depend on a specific HTTP library. Old code directly using `aiohttp` is unaffected
-4. **Set timeouts reasonably**: Set reasonable timeout durations based on API response speeds to avoid long-term blocking
-5. **Use the retry mechanism**: Enable retries for unstable APIs to improve reliability
-6. **Monitor request statistics**: Monitor request status via `sdk.client.stats` or `client.request` lifecycle events
-7. **Use high-level WebSocket methods**: Prioritize high-level methods like `iter_text` / `iter_json`, and only use `iter_messages` when you need to distinguish message types
+1. **Prefer the global client**: Use `from ErisPulse.Core import client` to obtain the global singleton, facilitating unified management and monitoring by the framework
+2. **Avoid direct imports of aiohttp**: Use `client` instead of `aiohttp.ClientSession`, allowing seamless switching of underlying implementations without code changes. Old code using aiohttp directly still works, and both approaches can coexist
+3. **Use the ErisPulse exception system**: When using `sdk.client`, catch `ClientError` instead of `aiohttp.ClientError`, ensuring code independence from specific HTTP libraries. Old code using aiohttp directly remains unaffected
+4. **Set timeouts appropriately**: Set reasonable timeout values based on API response speed to avoid long blocking
+5. **Use retry mechanisms**: Enable retries for unstable APIs to improve reliability
+6. **Monitor request statistics**: Use `sdk.client.stats` or `client.request` lifecycle events to monitor request status
+7. **Use advanced WebSocket methods**: Prefer `iter_text` / `iter_json` and other advanced methods; use `iter_messages` only when distinguishing message types is necessary
 
 ## Related Documentation
 
-- [Router Manager](router.md) - HTTP/WebSocket server routing (Server WebSocketConnection and client share the same base class)
-- [Adapter Development Guide](../developer-guide/adapters/getting-started.md) - Using the HTTP client in adapters
+- [Router Manager](router.md) - HTTP/WebSocket server-side routing (server-side WebSocketConnection shares the same base class with client)
+- [Adapter Development Guide](../developer-guide/adapters/getting-started.md) - Using HTTP client in adapters
 - [Lifecycle Management](lifecycle.md) - Listening to request events
 
 
