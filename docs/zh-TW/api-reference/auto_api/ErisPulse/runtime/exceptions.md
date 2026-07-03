@@ -8,10 +8,27 @@
 ErisPulse 全局异常处理系统
 
 提供统一的异常捕获和格式化功能，支持同步和异步代码的异常处理。
+在异常发生时自动生成友好的拼写纠错提示（"你是不是想写 xxx？"）。
 
 ---
 
 ## 函数列表
+
+
+### `_t(key: str)`
+
+> **内部方法** 
+尝试用 i18n 翻译，失败时用英文 fallback
+
+---
+
+
+### `_get_error_logger()`
+
+> **内部方法** 
+获取错误日志输出函数，优先使用框架 logger，失败时 fallback 到 stderr
+
+---
 
 
 ### `global_exception_handler(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
@@ -73,6 +90,33 @@ ExceptionHandler 类提供相关功能。
 
 :param exception: 异常对象
 :return: 格式化后的异常信息
+
+---
+
+
+##### `generate_hints(exc_value: Exception, exc_traceback: Any = None)`
+
+为异常生成友好的提示行
+
+根据 异常类型智能推断：
+- AttributeError: 查找对象上最相似的属性，给出"你是不是想写 xxx"
+- ImportError / ModuleNotFoundError: 暂不深入分析，给出通用提示
+
+:param exc_value: 异常对象
+:param exc_traceback: traceback 对象（可选，用于 AttributeError 上下文推断）
+:return: 提示行列表，无提示时为空列表
+
+---
+
+
+##### `format_exception_with_hints(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
+
+格式化异常信息并附带友好提示
+
+:param exc_type: 异常类型
+:param exc_value: 异常值
+:param exc_traceback: 追踪信息
+:return: 格式化后的异常信息（可能包含多行提示）
 
 ---
 

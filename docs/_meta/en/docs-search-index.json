@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1270,
+  "total_keywords": 1273,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -870,12 +870,12 @@
         "title": "2xxxx Action Handler Errors (Handler Error)"
       }
     ],
-    "3. Adapters": [
+    "3. Adapter": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 82,
         "level": 3,
-        "title": "3. Adapters"
+        "title": "3. Adapter"
       }
     ],
     "3. Clean Up on Adapter Shutdown": [
@@ -1230,12 +1230,12 @@
         "title": "4. Message Segment Standards"
       }
     ],
-    "4. Modules": [
+    "4. Module": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 97,
         "level": 3,
-        "title": "4. Modules"
+        "title": "4. Module"
       }
     ],
     "4. Parameter Naming Specifications": [
@@ -2274,6 +2274,14 @@
         "title": "Admin Check"
       }
     ],
+    "Advanced Methods (Recommended)": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 250,
+        "level": 4,
+        "title": "Advanced Methods (Recommended)"
+      }
+    ],
     "Advanced Topics": [
       {
         "document": "README.md",
@@ -2683,7 +2691,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 279,
+        "line": 285,
         "level": 3,
         "title": "Basic Sending"
       }
@@ -3079,7 +3087,7 @@
     "Chain Modifiers": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 292,
+        "line": 298,
         "level": 3,
         "title": "Chain Modifiers"
       }
@@ -3264,6 +3272,14 @@
         "title": "Checking Platform Status"
       }
     ],
+    "Child Loggers": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 106,
+        "level": 3,
+        "title": "Child Loggers"
+      }
+    ],
     "Choose Menu": [
       {
         "document": "getting-started/event-handling.md",
@@ -3288,6 +3304,14 @@
         "title": "Choosing a Development Type"
       }
     ],
+    "Client (Network Client)": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 259,
+        "level": 3,
+        "title": "Client (Network Client)"
+      }
+    ],
     "ClientWebSocket Properties": [
       {
         "document": "advanced/http-client.md",
@@ -3296,20 +3320,12 @@
         "title": "ClientWebSocket Properties"
       }
     ],
-    "Client（HTTP 客户端）": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 258,
-        "level": 3,
-        "title": "Client（HTTP 客户端）"
-      }
-    ],
-    "Closing Connection": [
+    "Closing the Connection": [
       {
         "document": "advanced/http-client.md",
         "line": 335,
         "level": 3,
-        "title": "Closing Connection"
+        "title": "Closing the Connection"
       }
     ],
     "Code Example Standards": [
@@ -3646,6 +3662,14 @@
         "title": "Conditional Listening"
       }
     ],
+    "Config (Configuration)": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 202,
+        "level": 3,
+        "title": "Config (Configuration)"
+      }
+    ],
     "Config Module": [
       {
         "document": "api-reference/core-modules.md",
@@ -3844,14 +3868,6 @@
         "line": 30,
         "level": 2,
         "title": "Configuring Lazy Loading"
-      }
-    ],
-    "Config（配置）": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 201,
-        "level": 3,
-        "title": "Config（配置）"
       }
     ],
     "Confirm Dialog": [
@@ -4167,7 +4183,7 @@
     "Core Module Explanations": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 176,
+        "line": 177,
         "level": 2,
         "title": "Core Module Explanations"
       }
@@ -5131,7 +5147,7 @@
     "Event Reply Methods": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 305,
+        "line": 311,
         "level": 3,
         "title": "Event Reply Methods"
       }
@@ -5193,7 +5209,7 @@
     "Event Types": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 162,
+        "line": 163,
         "level": 2,
         "title": "Event Types"
       },
@@ -5265,15 +5281,17 @@
     "Exception Hierarchy": [
       {
         "document": "advanced/http-client.md",
-        "line": 341,
-        "level": 2,
-        "title": "Exception Hierarchy"
-      },
-      {
-        "document": "advanced/http-client.md",
         "line": 347,
         "level": 3,
         "title": "Exception Hierarchy"
+      }
+    ],
+    "Exception System": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 341,
+        "level": 2,
+        "title": "Exception System"
       }
     ],
     "Execution Control Commands": [
@@ -5776,14 +5794,6 @@
         "title": "Guided Registration"
       }
     ],
-    "HTTP Client": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 1,
-        "level": 1,
-        "title": "HTTP Client"
-      }
-    ],
     "HTTP Client Module": [
       {
         "document": "api-reference/core-modules.md",
@@ -5800,12 +5810,12 @@
         "title": "HTTP Decorators"
       }
     ],
-    "HTTP Request Event": [
+    "HTTP Request Events": [
       {
         "document": "advanced/http-client.md",
         "line": 199,
         "level": 3,
-        "title": "HTTP Request Event"
+        "title": "HTTP Request Events"
       }
     ],
     "HTTP Request Parameters": [
@@ -5964,14 +5974,6 @@
         "line": 322,
         "level": 3,
         "title": "Heartbeat Mechanism"
-      }
-    ],
-    "High-level Methods (Recommended)": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 250,
-        "level": 4,
-        "title": "High-level Methods (Recommended)"
       }
     ],
     "Hook Points Overview": [
@@ -6489,7 +6491,7 @@
     "Lazy Loading System": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 322,
+        "line": 328,
         "level": 2,
         "title": "Lazy Loading System"
       }
@@ -6661,7 +6663,7 @@
     "Load Strategy": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 140,
+        "line": 141,
         "level": 4,
         "title": "Load Strategy"
       }
@@ -6728,20 +6730,20 @@
         "title": "Log Subscription (Push Mode)"
       }
     ],
+    "Logger (Logging)": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 217,
+        "level": 3,
+        "title": "Logger (Logging)"
+      }
+    ],
     "Logger Module": [
       {
         "document": "api-reference/core-modules.md",
         "line": 92,
         "level": 2,
         "title": "Logger Module"
-      }
-    ],
-    "Logger（日志）": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 216,
-        "level": 3,
-        "title": "Logger（日志）"
       }
     ],
     "Logging": [
@@ -6774,12 +6776,12 @@
         "title": "Looping Conversation"
       }
     ],
-    "Low-level Methods": [
+    "Low-Level Methods": [
       {
         "document": "advanced/http-client.md",
         "line": 276,
         "level": 4,
-        "title": "Low-level Methods"
+        "title": "Low-Level Methods"
       }
     ],
     "MCP Server": [
@@ -7388,12 +7390,12 @@
         "title": "Migration from Old Configuration"
       }
     ],
-    "Minimal Viable Module": [
+    "Minimum Viable Module": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 116,
+        "line": 117,
         "level": 4,
-        "title": "Minimal Viable Module"
+        "title": "Minimum Viable Module"
       }
     ],
     "Mode 1: HTML/JS Injection (Recommended)": [
@@ -7483,7 +7485,7 @@
     "Module Discovery Mechanism": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 105,
+        "line": 106,
         "level": 4,
         "title": "Module Discovery Mechanism"
       }
@@ -7519,7 +7521,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 134,
+        "line": 135,
         "level": 4,
         "title": "Module Lifecycle"
       }
@@ -7704,6 +7706,14 @@
         "title": "Naming Conventions"
       }
     ],
+    "Network Client": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 1,
+        "level": 1,
+        "title": "Network Client"
+      }
+    ],
     "New Feature: Raw Event Type Field": [
       {
         "document": "platform-guide/onebot12.md",
@@ -7733,7 +7743,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 345,
+        "line": 351,
         "level": 2,
         "title": "Next Steps"
       },
@@ -8130,6 +8140,14 @@
         "title": "Parameter Description"
       }
     ],
+    "Parameter Explanation": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 133,
+        "level": 2,
+        "title": "Parameter Explanation"
+      }
+    ],
     "Parameter Reference": [
       {
         "document": "user-guide/cli-reference.md",
@@ -8144,14 +8162,6 @@
         "line": 304,
         "level": 2,
         "title": "Parameterized Queries"
-      }
-    ],
-    "Parameters": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 133,
-        "level": 2,
-        "title": "Parameters"
       }
     ],
     "PascalCase Naming": [
@@ -8889,7 +8899,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 309,
+        "line": 333,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9358,6 +9368,14 @@
         "title": "Router"
       }
     ],
+    "Router (Routing)": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 244,
+        "level": 3,
+        "title": "Router (Routing)"
+      }
+    ],
     "Router Manager": [
       {
         "document": "advanced/router.md",
@@ -9372,14 +9390,6 @@
         "line": 261,
         "level": 2,
         "title": "Router Module"
-      }
-    ],
-    "Router（路由）": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 243,
-        "level": 3,
-        "title": "Router（路由）"
       }
     ],
     "Run Project": [
@@ -9430,6 +9440,14 @@
         "title": "SDK Core Architecture"
       }
     ],
+    "SDK Debugging": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 309,
+        "level": 2,
+        "title": "SDK Debugging"
+      }
+    ],
     "SDK Object": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -9446,12 +9464,12 @@
         "title": "SDK Objects"
       }
     ],
-    "SQL Chainable Queries": [
+    "SQL Chained Queries": [
       {
         "document": "api-reference/core-modules.md",
         "line": 43,
         "level": 3,
-        "title": "SQL Chainable Queries"
+        "title": "SQL Chained Queries"
       }
     ],
     "SQL Query Builder": [
@@ -9625,7 +9643,7 @@
     "SendDSL Message Sending": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 275,
+        "line": 281,
         "level": 2,
         "title": "SendDSL Message Sending"
       }
@@ -10112,6 +10130,14 @@
         "title": "Storage"
       }
     ],
+    "Storage (Storage)": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 179,
+        "level": 3,
+        "title": "Storage (Storage)"
+      }
+    ],
     "Storage Backend Abstraction": [
       {
         "document": "api-reference/core-modules.md",
@@ -10150,14 +10176,6 @@
         "title": "Storage System"
       }
     ],
-    "Storage（存储）": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 178,
-        "level": 3,
-        "title": "Storage（存储）"
-      }
-    ],
     "Strict Mode": [
       {
         "document": "user-guide/configuration.md",
@@ -10178,14 +10196,6 @@
         "line": 1,
         "level": 1,
         "title": "Style Guide"
-      }
-    ],
-    "Sub-loggers": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 106,
-        "level": 3,
-        "title": "Sub-loggers"
       }
     ],
     "Success Response": [
@@ -10622,12 +10632,12 @@
         "title": "Typical Flow Patterns"
       }
     ],
-    "Unified Catching": [
+    "Unified Exception Handling": [
       {
         "document": "advanced/http-client.md",
         "line": 394,
         "level": 3,
-        "title": "Unified Catching"
+        "title": "Unified Exception Handling"
       }
     ],
     "Uninstalling Modules": [
@@ -10792,14 +10802,6 @@
         "title": "Usage Examples"
       }
     ],
-    "Usage in Adapters": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 419,
-        "level": 2,
-        "title": "Usage in Adapters"
-      }
-    ],
     "Use Adapter Event Listeners": [
       {
         "document": "api-reference/adapter-system.md",
@@ -10932,6 +10934,14 @@
         "line": 77,
         "level": 2,
         "title": "Using i18n in Modules"
+      }
+    ],
+    "Using in Adapters": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 419,
+        "level": 2,
+        "title": "Using in Adapters"
       }
     ],
     "Using in Module Classes": [
@@ -11138,12 +11148,12 @@
         "title": "WebSocket Connection"
       }
     ],
-    "WebSocket Connection Event": [
+    "WebSocket Connection Events": [
       {
         "document": "advanced/http-client.md",
         "line": 211,
         "level": 3,
-        "title": "WebSocket Connection Event"
+        "title": "WebSocket Connection Events"
       }
     ],
     "WebSocket Decorators": [
@@ -11544,6 +11554,14 @@
         "line": 40,
         "level": 3,
         "title": "docker-compose.yml"
+      }
+    ],
+    "dump_state()": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 311,
+        "level": 3,
+        "title": "dump_state()"
       }
     ],
     "get() Method": [

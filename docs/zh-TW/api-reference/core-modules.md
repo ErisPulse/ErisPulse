@@ -1,6 +1,6 @@
 # 核心模組 API
 
-本文檔提供 ErisPulse 核心模組的 API 快速參考，包含方法簽名和簡要說明。詳細用法和範例請點擊各模組的「完整文件」連結。
+本文檔提供 ErisPulse 核心模組的 API 快速參考，包含方法簽名和簡要說明。詳細用法和示例請點擊各模組的「完整文件」連結。
 
 ## Storage 模組
 
@@ -36,8 +36,8 @@ with sdk.storage.transaction():
 ### 屬性存取
 
 ```python
-sdk.storage.my_key          # 等同於 sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # 等同於 sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # 等價於 sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # 等價於 sdk.storage.set("my_key", "val")
 ```
 
 ### SQL 串接查詢
@@ -66,16 +66,16 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ## Config 模組
 
-TOML 格式的設定檔管理，支援點號分隔的鍵路徑。
+TOML 格式的配置文件管理，支援點號分隔的鍵路徑。
 
 ### API 概覽
 
 | 方法 | 說明 |
 |------|------|
-| `getConfig(key, default)` | 讀取設定，支援點號路徑如 `"MyModule.subkey"` |
-| `setConfig(key, value, immediate=False)` | 寫入設定。`immediate=True` 時立即保存到檔案 |
-| `force_save()` | 強制將記憶體中的設定寫入檔案 |
-| `reload()` | 從檔案重新載入設定 |
+| `getConfig(key, default)` | 讀取配置，支援點號路徑如 `"MyModule.subkey"` |
+| `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即保存到文件 |
+| `force_save()` | 強制將記憶體中的配置寫入文件 |
+| `reload()` | 從文件重新載入配置 |
 
 ### 範例
 
@@ -87,7 +87,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` 預設採用延遲寫入（每 5 秒批量保存），設定 `immediate=True` 可立即持久化到設定檔。設定變更會觸發 `config.set` 生命週期事件。
+> `setConfig` 預設採用延遲寫入（每 5 秒批量保存），設定 `immediate=True` 可立即持久化到配置文件。配置變更會觸發 `config.set` 生命週期事件。
 
 ## Logger 模組
 
@@ -96,8 +96,8 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ### 基本用法
 
 ```python
-sdk.logger.debug("除錯資訊")
-sdk.logger.info("執行資訊")
+sdk.logger.debug("調試資訊")
+sdk.logger.info("運行資訊")
 sdk.logger.warning("警告資訊")
 sdk.logger.error("錯誤資訊")
 sdk.logger.critical("致命錯誤")
@@ -115,12 +115,12 @@ child_logger.get_child("utils")  # 支援嵌套
 ### 日誌等級控制
 
 ```python
-sdk.logger.set_level("DEBUG")                          # 全域等級
+sdk.logger.set_level("DEBUG")                          # 全局等級
 sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組等級
 
 # 支援的等級（由低到高）：
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE 為最低等級，輸出框架內部詳細除錯資訊（事件分發、路由註冊等）
+# TRACE 為最低等級，輸出框架內部詳細調試資訊（事件分發、路由註冊等）
 sdk.logger.set_level("TRACE")                          # 開啟全部日誌
 ```
 
@@ -172,8 +172,8 @@ sdk.logger.set_memory_limit(1000)
 | `enable(platform)` / `disable(platform)` | 啟用/停用適配器 |
 | `is_enabled(platform)` | 檢查是否啟用 |
 | `startup(platforms)` / `shutdown(platforms)` | 啟動/關閉適配器 |
-| `is_running(platform)` | 檢查適配器是否正在執行 |
-| `list_running()` | 列出所有正在執行的適配器 |
+| `is_running(platform)` | 檢查適配器是否正在運行 |
+| `list_running()` | 列出所有正在運行的適配器 |
 | `platforms` | 取得所有平台名稱列表 |
 
 ### 適配器事件
@@ -262,7 +262,7 @@ await sdk.lifecycle.emit("custom.event", {"key": "value"})
 
 HTTP/WebSocket 路由管理器，基於 FastAPI + Uvicorn，支援裝飾器路由、中間件、分組、限流、CORS。
 
-> 完整的路由 API 文件（裝飾器路由、WebSocket、中間件、速率限制、CORS、安全標頭等）請參考 [路由管理器](../advanced/router.md)。
+> 完整的路由 API 文件（裝飾器路由、WebSocket、中間件、速率限制、CORS、安全頭等）請參考 [路由管理器](../advanced/router.md)。
 
 ### 快速參考
 
@@ -287,9 +287,9 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client 模組
 
-統一 HTTP/WS 客戶端，基於 aiohttp，提供請求統計、重試、日誌、ErisPulse 異常體系。
+統一網路客戶端，聚合 HTTP 請求、WebSocket 連接、連接池管理、自動重試、請求統計和生命週期事件整合。
 
-> 完整的 HTTP 客戶端文件（請求方法、回應物件、WebSocket 客戶端、異常體系等）請參考 [HTTP 客戶端](../advanced/http-client.md)。
+> 完整的網路客戶端文件（請求方法、回應物件、WebSocket 客戶端、例外體系等）請參考 [網路客戶端](../advanced/http-client.md)。
 
 ### 快速參考
 
@@ -306,11 +306,35 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
+## SDK 調試
+
+### dump_state()
+
+導出框架當前運行狀態的快照，用於調試和診斷。
+
+```python
+import json
+state = sdk.dump_state()
+print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
+```
+
+回傳結構包含以下子系統的狀態：
+
+| 字段 | 說明 |
+|------|------|
+| `sdk` | SDK 初始化狀態、Python 版本、運行平台、時間戳 |
+| `adapters` | 已註冊/已啟動的適配器列表、各平台 Bot 在線狀態 |
+| `modules` | 已註冊/已啟用/已停用/懶加載的模組列表 |
+| `events` | 各類事件處理器數量（message/notice/request/meta/commands） |
+| `router` | 伺服器運行狀態、HTTP/WebSocket 路由數量 |
+
+> 新增於 2.5.2
+
 ## 相關文件
 
 - [事件系統 API](event-system.md) - Event 模組 API
 - [適配器系統 API](adapter-system.md) - Adapter 管理 API
 - [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 串接查詢完整文件
 - [路由管理器](../advanced/router.md) - 路由管理器完整文件
-- [HTTP 客戶端](../advanced/http-client.md) - HTTP 客戶端完整文件
+- [網路客戶端](../advanced/http-client.md) - 網路客戶端完整文件
 - [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文件

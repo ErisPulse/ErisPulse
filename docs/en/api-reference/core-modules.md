@@ -1,10 +1,10 @@
 # Core Module API
 
-This document provides a quick reference for ErisPulse core module APIs, including method signatures and brief descriptions. For detailed usage and examples, please click the "Full Documentation" link for each module.
+This document provides a quick reference for the API of ErisPulse core modules, including method signatures and brief descriptions. For detailed usage and examples, please click the "Full Documentation" link for each module.
 
 ## Storage Module
 
-A key-value storage system based on SQLite, supporting general SQL chainable queries.
+A key-value storage system based on SQLite, supporting generic SQL chained queries.
 
 ### Basic Operations
 
@@ -36,13 +36,13 @@ with sdk.storage.transaction():
 ### Attribute Access
 
 ```python
-sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # equivalent to sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # equivalent to sdk.storage.set("my_key", "val")
 ```
 
-### SQL Chainable Queries
+### SQL Chained Queries
 
-The Storage module provides a chainable style of general SQL query builder, supporting CRUD operations for custom tables.
+The Storage module provides a chained-call style generic SQL query builder, supporting CRUD operations for custom tables.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -54,7 +54,7 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> For the complete chainable query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
+> For the complete chained query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
 
 ### Storage Backend Abstraction
 
@@ -71,10 +71,10 @@ TOML format configuration file management, supporting dot-separated key paths.
 ### API Overview
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `getConfig(key, default)` | Read configuration, supports dot paths like `"MyModule.subkey"` |
-| `setConfig(key, value, immediate=False)` | Write configuration. `immediate=True` saves immediately to file |
-| `force_save()` | Force writing configuration from memory to file |
+| `setConfig(key, value, immediate=False)` | Write configuration. If `immediate=True`, save immediately to file |
+| `force_save()` | Force write configuration from memory to file |
 | `reload()` | Reload configuration from file |
 
 ### Example
@@ -87,11 +87,11 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` uses delayed writing by default (batch saved every 5 seconds). Setting `immediate=True` persists immediately to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` uses delayed writing by default (batch saved every 5 seconds). Setting `immediate=True` will persist immediately to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Logger Module
 
-A modular logging system based on Rich output, supporting sub-loggers and module-level control.
+A modular logging system based on Rich output, supporting child loggers and module-level control.
 
 ### Basic Usage
 
@@ -103,7 +103,7 @@ sdk.logger.error("Error information")
 sdk.logger.critical("Critical error")
 ```
 
-### Sub-loggers
+### Child Loggers
 
 ```python
 child_logger = sdk.logger.get_child("MyModule")
@@ -120,7 +120,7 @@ sdk.logger.set_module_level("MyModule", "DEBUG")       # Module level
 
 # Supported levels (from low to high):
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE is the lowest level, outputs detailed framework internal debug information (event dispatch, route registration, etc.)
+# TRACE is the lowest level, outputting detailed framework internal debugging information (event dispatching, route registration, etc.)
 sdk.logger.set_level("TRACE")                          # Enable all logs
 ```
 
@@ -146,8 +146,8 @@ sdk.logger.remove_handler("my-handler")
 ```
 
 | Method | Description |
-|------|------|
-| `handler(id, *, min_level)(func)` | Decorator/multi-use direct call. If `id` is empty, it takes the function name. Automatically replays historical logs on registration |
+|--------|-------------|
+| `handler(id, *, min_level)(func)` | Decorator/direct call dual-use. If `id` is empty, use function name. Automatically replay historical logs upon registration |
 | `remove_handler(id)` | Remove subscriber |
 
 ### Output Control
@@ -161,12 +161,12 @@ sdk.logger.set_memory_limit(1000)
 
 ## Adapter Module
 
-Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters.
+Adapter manager, managing registration, startup, and shutdown of multiple platform adapters.
 
 ### API Overview
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `get(platform)` | Get adapter instance |
 | `exists(platform)` | Check if adapter is registered |
 | `enable(platform)` / `disable(platform)` | Enable/disable adapter |
@@ -206,7 +206,7 @@ Module manager, managing plugin registration, loading, and unloading.
 ### API Overview
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `get(name)` | Get module instance |
 | `exists(name)` | Check if registered |
 | `is_loaded(name)` | Check if loaded |
@@ -233,7 +233,7 @@ Event-driven lifecycle manager, providing event submission and listening functio
 ### API Overview
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `on(event, priority=0)` | Decorator to register event handler, supports dot matching and wildcard `*` |
 | `register(event, handler, priority=0)` | Function-style registration of handler |
 | `unregister(event, handler=None)` | Remove handler |
@@ -247,7 +247,7 @@ Event-driven lifecycle manager, providing event submission and listening functio
 ```python
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
-    print(f"Module initialization: {event_data}")
+    print(f"Module initialized: {event_data}")
 
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
@@ -256,29 +256,29 @@ async def handle_any_module_event(event_data):
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-> For the complete standard event list and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
+> For the complete list of standard events and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
 
 ## Router Module
 
 HTTP/WebSocket route manager, based on FastAPI + Uvicorn, supporting decorator routes, middleware, grouping, rate limiting, CORS.
 
-> For the complete route API documentation (decorator routes, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Router Manager](../advanced/router.md).
+> For the complete route API documentation (decorator routes, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Route Manager](../advanced/router.md).
 
 ### Quick Reference
 
 ```python
-# HTTP Route
+# HTTP route
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# WebSocket Route
+# WebSocket route
 @sdk.router.ws("MyModule", "/ws")
 async def ws_handler(ws: WebSocketConnection):
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 
-# Route Grouping
+# Route grouping
 group = sdk.router.group("MyModule", prefix="/v1")
 @group.get("/users")
 async def list_users(request: HttpRequest):
@@ -287,16 +287,16 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client Module
 
-Unified HTTP/WS client, based on aiohttp, providing request statistics, retry, logging, and ErisPulse exception system.
+Unified network client, aggregating HTTP requests, WebSocket connections, connection pool management, automatic retries, request statistics, and lifecycle event integration.
 
-> For the complete HTTP client documentation (request methods, response objects, WebSocket client, exception system, etc.), please refer to [HTTP Client](../advanced/http-client.md).
+> For the complete network client documentation (request methods, response objects, WebSocket client, exception system, etc.), please refer to [Network Client](../advanced/http-client.md).
 
 ### Quick Reference
 
 ```python
 from ErisPulse.Core import client
 
-# HTTP Request
+# HTTP request
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
@@ -306,11 +306,35 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
+## SDK Debugging
+
+### dump_state()
+
+Exports a snapshot of the current running state of the framework, for debugging and diagnostics.
+
+```python
+import json
+state = sdk.dump_state()
+print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
+```
+
+The returned structure contains the status of the following subsystems:
+
+| Field | Description |
+|-------|-------------|
+| `sdk` | SDK initialization status, Python version, running platform, timestamp |
+| `adapters` | List of registered/started adapters, online status of Bots on each platform |
+| `modules` | List of registered/enabled/disabled/lazy-loaded modules |
+| `events` | Number of handlers for each type of event (message/notice/request/meta/commands) |
+| `router` | Server running status, number of HTTP/WebSocket routes |
+
+> Added in 2.5.2
+
 ## Related Documentation
 
 - [Event System API](event-system.md) - Event module API
 - [Adapter System API](adapter-system.md) - Adapter management API
-- [SQL Query Builder](../advanced/sql-builder.md) - Full documentation for SQL chainable queries
-- [Router Manager](../advanced/router.md) - Full documentation for router manager
-- [HTTP Client](../advanced/http-client.md) - Full documentation for HTTP client
+- [SQL Query Builder](../advanced/sql-builder.md) - Full documentation for SQL chained queries
+- [Route Manager](../advanced/router.md) - Full documentation for route manager
+- [Network Client](../advanced/http-client.md) - Full documentation for network client
 - [Lifecycle Management](../advanced/lifecycle.md) - Full documentation for lifecycle

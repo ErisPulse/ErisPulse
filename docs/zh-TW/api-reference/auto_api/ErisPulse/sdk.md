@@ -206,6 +206,15 @@ ErisPulse SDK 主类
 ---
 
 
+##### `dump_state()`
+
+导出框架当前运行状态的快照
+
+:return: dict 包含所有子系统状态的字典
+
+---
+
+
 ##### `async async init()`
 
 SDK 初始化入口

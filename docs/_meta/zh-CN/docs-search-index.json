@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1238,
+  "total_keywords": 1240,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2134,12 +2134,12 @@
         "title": "ClientWebSocket 属性"
       }
     ],
-    "Client（HTTP 客户端）": [
+    "Client（网络客户端）": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 259,
         "level": 3,
-        "title": "Client（HTTP 客户端）"
+        "title": "Client（网络客户端）"
       }
     ],
     "Command 命令模块": [
@@ -2345,7 +2345,7 @@
     "Event 回复方法": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 306,
+        "line": 311,
         "level": 3,
         "title": "Event 回复方法"
       }
@@ -2396,14 +2396,6 @@
         "line": 288,
         "level": 2,
         "title": "HTTP Client 模块"
-      }
-    ],
-    "HTTP 客户端": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 1,
-        "level": 1,
-        "title": "HTTP 客户端"
       }
     ],
     "HTTP 装饰器": [
@@ -2856,6 +2848,14 @@
         "title": "SDK 核心架构"
       }
     ],
+    "SDK 调试": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 309,
+        "level": 2,
+        "title": "SDK 调试"
+      }
+    ],
     "SQL 查询构建器": [
       {
         "document": "advanced/sql-builder.md",
@@ -2931,7 +2931,7 @@
     "SendDSL 消息发送": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 276,
+        "line": 281,
         "level": 2,
         "title": "SendDSL 消息发送"
       }
@@ -3452,6 +3452,14 @@
         "title": "docker-compose.yml"
       }
     ],
+    "dump_state()": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 311,
+        "level": 3,
+        "title": "dump_state()"
+      }
+    ],
     "get() 方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -3745,7 +3753,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 346,
+        "line": 351,
         "level": 2,
         "title": "下一步"
       },
@@ -5885,7 +5893,7 @@
     "基础发送": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 280,
+        "line": 285,
         "level": 3,
         "title": "基础发送"
       }
@@ -7245,7 +7253,7 @@
     "懒加载系统": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 323,
+        "line": 328,
         "level": 2,
         "title": "懒加载系统"
       }
@@ -9607,7 +9615,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 309,
+        "line": 333,
         "level": 2,
         "title": "相关文档"
       },
@@ -9960,6 +9968,14 @@
         "line": 430,
         "level": 3,
         "title": "继承关系"
+      }
+    ],
+    "网络客户端": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 1,
+        "level": 1,
+        "title": "网络客户端"
       }
     ],
     "群成员减少": [
@@ -11351,7 +11367,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 293,
+        "line": 298,
         "level": 3,
         "title": "链式修饰"
       }

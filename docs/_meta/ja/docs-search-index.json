@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1290,
+  "total_keywords": 1291,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -840,12 +840,12 @@
         "title": "3. `self` フィールドの欠落"
       }
     ],
-    "3. アダプター": [
+    "3. アダプタ": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 82,
         "level": 3,
-        "title": "3. アダプター"
+        "title": "3. アダプタ"
       }
     ],
     "3. アダプターのメインクラスの作成": [
@@ -1920,6 +1920,12 @@
         "title": "Bot 状態の照会"
       },
       {
+        "document": "api-reference/core-modules.md",
+        "line": 191,
+        "level": 3,
+        "title": "Bot 状態の照会"
+      },
+      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 862,
         "level": 3,
@@ -1932,14 +1938,6 @@
         "line": 400,
         "level": 3,
         "title": "Bot 状態値"
-      }
-    ],
-    "Bot 状態照会": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 191,
-        "level": 3,
-        "title": "Bot 状態照会"
       }
     ],
     "Bot 状態管理": [
@@ -2004,12 +2002,12 @@
         "title": "ClientWebSocket 属性"
       }
     ],
-    "Client（HTTP クライアント）": [
+    "Client（ネットワーククライアント）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 280,
+        "line": 259,
         "level": 3,
-        "title": "Client（HTTP クライアント）"
+        "title": "Client（ネットワーククライアント）"
       }
     ],
     "Command コマンドモジュール": [
@@ -2031,7 +2029,7 @@
     "Config（設定）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 201,
+        "line": 202,
         "level": 3,
         "title": "Config（設定）"
       }
@@ -2327,7 +2325,7 @@
     "Event 返信メソッド": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 339,
+        "line": 311,
         "level": 3,
         "title": "Event 返信メソッド"
       }
@@ -2356,14 +2354,6 @@
         "title": "Gateway 接続"
       }
     ],
-    "HTTP クライアント": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 1,
-        "level": 1,
-        "title": "HTTP クライアント"
-      }
-    ],
     "HTTP クライアント モジュール": [
       {
         "document": "api-reference/core-modules.md",
@@ -2380,36 +2370,36 @@
         "title": "HTTP デコレーター"
       }
     ],
-    "HTTP リクエスト": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 20,
-        "level": 3,
-        "title": "HTTP リクエスト"
-      }
-    ],
-    "HTTP リクエストイベント": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 199,
-        "level": 3,
-        "title": "HTTP リクエストイベント"
-      }
-    ],
-    "HTTP リクエストパラメーター": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 135,
-        "level": 3,
-        "title": "HTTP リクエストパラメーター"
-      }
-    ],
     "HTTPStatusError": [
       {
         "document": "advanced/http-client.md",
         "line": 407,
         "level": 3,
         "title": "HTTPStatusError"
+      }
+    ],
+    "HTTPリクエスト": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 20,
+        "level": 3,
+        "title": "HTTPリクエスト"
+      }
+    ],
+    "HTTPリクエストイベント": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 199,
+        "level": 3,
+        "title": "HTTPリクエストイベント"
+      }
+    ],
+    "HTTPリクエストパラメータ": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 135,
+        "level": 3,
+        "title": "HTTPリクエストパラメータ"
       }
     ],
     "HTTPルーティング": [
@@ -2487,7 +2477,7 @@
     "Logger（ログ）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 216,
+        "line": 217,
         "level": 3,
         "title": "Logger（ログ）"
       }
@@ -2802,12 +2792,12 @@
         "title": "Router モジュール"
       }
     ],
-    "Router（ルーター）": [
+    "Router（ルーティング）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 243,
+        "line": 244,
         "level": 3,
-        "title": "Router（ルーター）"
+        "title": "Router（ルーティング）"
       }
     ],
     "SDK": [
@@ -2840,6 +2830,14 @@
         "line": 5,
         "level": 2,
         "title": "SDK コア・アーキテクチャ"
+      }
+    ],
+    "SDK デバッグ": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 309,
+        "level": 2,
+        "title": "SDK デバッグ"
       }
     ],
     "SDKオブジェクト": [
@@ -2949,7 +2947,7 @@
     "SendDSL メッセージ送信": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 309,
+        "line": 281,
         "level": 2,
         "title": "SendDSL メッセージ送信"
       }
@@ -2981,7 +2979,7 @@
     "Storage（ストレージ）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 178,
+        "line": 179,
         "level": 3,
         "title": "Storage（ストレージ）"
       }
@@ -3090,14 +3088,6 @@
         "title": "WebSocket"
       }
     ],
-    "WebSocket クライアント": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 232,
-        "level": 2,
-        "title": "WebSocket クライアント"
-      }
-    ],
     "WebSocket デコレーター": [
       {
         "document": "advanced/router.md",
@@ -3116,24 +3106,10 @@
     ],
     "WebSocket 接続": [
       {
-        "document": "advanced/http-client.md",
-        "line": 38,
-        "level": 3,
-        "title": "WebSocket 接続"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 577,
         "level": 3,
         "title": "WebSocket 接続"
-      }
-    ],
-    "WebSocket 接続イベント": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 211,
-        "level": 3,
-        "title": "WebSocket 接続イベント"
       }
     ],
     "WebSocket 登録": [
@@ -3144,7 +3120,21 @@
         "title": "WebSocket 登録"
       }
     ],
+    "WebSocketクライアント": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 232,
+        "level": 2,
+        "title": "WebSocketクライアント"
+      }
+    ],
     "WebSocket接続": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 38,
+        "level": 3,
+        "title": "WebSocket接続"
+      },
       {
         "document": "platform-guide/kook.md",
         "line": 317,
@@ -3156,6 +3146,14 @@
         "line": 255,
         "level": 2,
         "title": "WebSocket接続"
+      }
+    ],
+    "WebSocket接続イベント": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 211,
+        "level": 3,
+        "title": "WebSocket接続イベント"
       }
     ],
     "Whereのパラメータ渡しルール": [
@@ -3526,6 +3524,14 @@
         "title": "docker-compose.yml"
       }
     ],
+    "dump_state()": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 311,
+        "level": 3,
+        "title": "dump_state()"
+      }
+    ],
     "get() メソッド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -3766,12 +3772,12 @@
         "title": "wait(prompt=None, timeout=None)"
       }
     ],
-    "ws_connect パラメーター": [
+    "ws_connect パラメータ": [
       {
         "document": "advanced/http-client.md",
         "line": 147,
         "level": 3,
-        "title": "ws_connect パラメーター"
+        "title": "ws_connect パラメータ"
       }
     ],
     "あなたのモジュールをリリースする": [
@@ -4263,7 +4269,7 @@
     "イベントタイプ": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 162,
+        "line": 163,
         "level": 2,
         "title": "イベントタイプ"
       },
@@ -4530,16 +4536,18 @@
     ],
     "イベント駆動アーキテクチャ": [
       {
-        "document": "getting-started/basic-concepts.md",
-        "line": 5,
-        "level": 2,
-        "title": "イベント駆動アーキテクチャ"
-      },
-      {
         "document": "terminology.md",
         "line": 7,
         "level": 3,
         "title": "イベント駆動アーキテクチャ"
+      }
+    ],
+    "イベント駆動型アーキテクチャ": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 5,
+        "level": 2,
+        "title": "イベント駆動型アーキテクチャ"
       }
     ],
     "インストールと設定": [
@@ -4750,14 +4758,6 @@
         "title": "カスタムタイプの登録"
       }
     ],
-    "カスタムデフォルトヘッダー": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 172,
-        "level": 2,
-        "title": "カスタムデフォルトヘッダー"
-      }
-    ],
     "カスタムメッセージセグメント": [
       {
         "document": "advanced/message-builder.md",
@@ -4790,12 +4790,6 @@
         "title": "クイックスタート"
       },
       {
-        "document": "advanced/http-client.md",
-        "line": 18,
-        "level": 2,
-        "title": "クイックスタート"
-      },
-      {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 47,
         "level": 2,
@@ -4815,6 +4809,18 @@
       }
     ],
     "クイックリファレンス": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 267,
+        "level": 3,
+        "title": "クイックリファレンス"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 294,
+        "level": 3,
+        "title": "クイックリファレンス"
+      },
       {
         "document": "user-guide/README.md",
         "line": 14,
@@ -5039,7 +5045,7 @@
     "コアモジュールの説明": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 176,
+        "line": 177,
         "level": 2,
         "title": "コアモジュールの説明"
       }
@@ -5246,12 +5252,12 @@
         "title": "コンテキストと永続化"
       }
     ],
-    "コンテキスト管理": [
+    "コンテキストマネージャー": [
       {
         "document": "advanced/http-client.md",
         "line": 223,
         "level": 2,
-        "title": "コンテキスト管理"
+        "title": "コンテキストマネージャー"
       }
     ],
     "コンテンツ一覧": [
@@ -5664,12 +5670,12 @@
         "title": "ストレージシステム"
       }
     ],
-    "ストレージバックエンド抽象化": [
+    "ストレージバックエンド抽象": [
       {
         "document": "api-reference/core-modules.md",
         "line": 59,
         "level": 3,
-        "title": "ストレージバックエンド抽象化"
+        "title": "ストレージバックエンド抽象"
       }
     ],
     "ストレージ設定": [
@@ -5792,6 +5798,14 @@
         "title": "チェーンメソッド"
       }
     ],
+    "チェーン修飾": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 298,
+        "level": 3,
+        "title": "チェーン修飾"
+      }
+    ],
     "チェーン修飾メソッド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5826,14 +5840,6 @@
         "line": 88,
         "level": 3,
         "title": "チェーン修飾メソッド（組み合わせ可能）"
-      }
-    ],
-    "チェーン修飾子": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 326,
-        "level": 3,
-        "title": "チェーン修飾子"
       }
     ],
     "チェーン修飾子メソッド（組み合わせて使用可能）": [
@@ -6002,6 +6008,14 @@
         "line": 63,
         "level": 3,
         "title": "デバッグのヒント"
+      }
+    ],
+    "デフォルトヘッダーのカスタマイズ": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 172,
+        "level": 2,
+        "title": "デフォルトヘッダーのカスタマイズ"
       }
     ],
     "デフォルト設定": [
@@ -6238,6 +6252,14 @@
         "title": "ドット区切りのイベント構造"
       }
     ],
+    "ネットワーククライアント": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 1,
+        "level": 1,
+        "title": "ネットワーククライアント"
+      }
+    ],
     "ハンドラの登録": [
       {
         "document": "advanced/lifecycle.md",
@@ -6342,18 +6364,16 @@
     ],
     "パラメータの説明": [
       {
+        "document": "advanced/http-client.md",
+        "line": 133,
+        "level": 2,
+        "title": "パラメータの説明"
+      },
+      {
         "document": "user-guide/cli-reference.md",
         "line": 45,
         "level": 2,
         "title": "パラメータの説明"
-      }
-    ],
-    "パラメーターの説明": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 133,
-        "level": 2,
-        "title": "パラメーターの説明"
       }
     ],
     "パラメータ化クエリ": [
@@ -6761,12 +6781,6 @@
       }
     ],
     "ベストプラクティス": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 444,
-        "level": 2,
-        "title": "ベストプラクティス"
-      },
       {
         "document": "advanced/i18n.md",
         "line": 221,
@@ -7604,12 +7618,6 @@
         "line": 5,
         "level": 2,
         "title": "モジュールのライフサイクル"
-      },
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 134,
-        "level": 4,
-        "title": "モジュールのライフサイクル"
       }
     ],
     "モジュールの一覧表示": [
@@ -7658,6 +7666,12 @@
         "line": 85,
         "level": 3,
         "title": "モジュールライフサイクル"
+      },
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 135,
+        "level": 4,
+        "title": "モジュールライフサイクル"
       }
     ],
     "モジュールレベルでの制御": [
@@ -7684,20 +7698,20 @@
         "title": "モジュール内での使用例"
       }
     ],
+    "モジュール検出メカニズム": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 106,
+        "level": 4,
+        "title": "モジュール検出メカニズム"
+      }
+    ],
     "モジュール概要": [
       {
         "document": "api-reference/README.md",
         "line": 16,
         "level": 2,
         "title": "モジュール概要"
-      }
-    ],
-    "モジュール発見メカニズム": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 105,
-        "level": 4,
-        "title": "モジュール発見メカニズム"
       }
     ],
     "モジュール設定": [
@@ -8179,7 +8193,7 @@
     "レイジーロードシステム": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 356,
+        "line": 328,
         "level": 2,
         "title": "レイジーロードシステム"
       }
@@ -8286,6 +8300,12 @@
         "line": 7,
         "level": 3,
         "title": "ロード戦略"
+      },
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 141,
+        "level": 4,
+        "title": "ロード戦略"
       }
     ],
     "ワイルドカード": [
@@ -8310,6 +8330,14 @@
         "line": 100,
         "level": 3,
         "title": "ワンステップで送信情報を取得"
+      }
+    ],
+    "一般的な request": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 121,
+        "level": 3,
+        "title": "一般的な request"
       }
     ],
     "一般的なコマンド": [
@@ -8764,14 +8792,6 @@
         "title": "前提知識"
       }
     ],
-    "加速戦略": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 140,
-        "level": 4,
-        "title": "加速戦略"
-      }
-    ],
     "動作原理": [
       {
         "document": "advanced/dashboard-view.md",
@@ -9190,14 +9210,6 @@
         "title": "基本構造"
       }
     ],
-    "基本用法": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 236,
-        "level": 3,
-        "title": "基本用法"
-      }
-    ],
     "基本的なコマンド": [
       {
         "document": "getting-started/event-handling.md",
@@ -9208,8 +9220,8 @@
     ],
     "基本的な使い方": [
       {
-        "document": "api-reference/core-modules.md",
-        "line": 96,
+        "document": "advanced/http-client.md",
+        "line": 236,
         "level": 3,
         "title": "基本的な使い方"
       }
@@ -9244,6 +9256,12 @@
     ],
     "基本的な使用法": [
       {
+        "document": "api-reference/core-modules.md",
+        "line": 96,
+        "level": 3,
+        "title": "基本的な使用法"
+      },
+      {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 469,
         "level": 3,
@@ -9262,12 +9280,6 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 105,
-        "level": 3,
-        "title": "基本的な送信"
-      },
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 313,
         "level": 3,
         "title": "基本的な送信"
       }
@@ -9294,6 +9306,14 @@
         "line": 160,
         "level": 4,
         "title": "基本返信"
+      }
+    ],
+    "基本送信": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 285,
+        "level": 3,
+        "title": "基本送信"
       }
     ],
     "基本送信メソッド": [
@@ -9608,26 +9628,20 @@
         "title": "必須フィールドのマッピング"
       }
     ],
-    "快速リファレンス": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 267,
-        "level": 3,
-        "title": "快速リファレンス"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 294,
-        "level": 3,
-        "title": "快速リファレンス"
-      }
-    ],
     "快速構築モード（静的）": [
       {
         "document": "advanced/message-builder.md",
         "line": 37,
         "level": 3,
         "title": "快速構築モード（静的）"
+      }
+    ],
+    "快速開始": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 18,
+        "level": 2,
+        "title": "快速開始"
       }
     ],
     "情報照会コマンド": [
@@ -9824,12 +9838,12 @@
         "title": "按钮消息段 (yunhu_user_button)"
       }
     ],
-    "接続の閉じ方": [
+    "接続の終了": [
       {
         "document": "advanced/http-client.md",
         "line": 335,
         "level": 3,
-        "title": "接続の閉じ方"
+        "title": "接続の終了"
       }
     ],
     "接続イベント": [
@@ -9996,12 +10010,12 @@
         "title": "最初のボットを作成する"
       }
     ],
-    "最小限のモジュール": [
+    "最小限の使用可能モジュール": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 116,
+        "line": 117,
         "level": 4,
-        "title": "最小限のモジュール"
+        "title": "最小限の使用可能モジュール"
       }
     ],
     "最終ユーザー向け": [
@@ -10010,6 +10024,14 @@
         "line": 61,
         "level": 3,
         "title": "最終ユーザー向け"
+      }
+    ],
+    "最適な実践方法": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 444,
+        "level": 2,
+        "title": "最適な実践方法"
       }
     ],
     "机器人公告看板事件の例": [
@@ -10251,7 +10273,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 379,
+        "line": 351,
         "level": 2,
         "title": "次のステップ"
       },
@@ -10284,14 +10306,6 @@
         "line": 189,
         "level": 2,
         "title": "次のステップ"
-      }
-    ],
-    "汎用 request": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 121,
-        "level": 3,
-        "title": "汎用 request"
       }
     ],
     "汎用インターフェース": [
@@ -11513,7 +11527,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 309,
+        "line": 333,
         "level": 2,
         "title": "関連ドキュメント"
       },
