@@ -1,33 +1,33 @@
-# HTTP クライアント
+# ネットワーククライアント
 
-ErisPulse は統一された HTTP/WS クライアントを提供します。モジュールやアダプターは、サードパーティ製ライブラリである `aiohttp` や `httpx` を独自にインポートするのではなく、このクライアントを優先的に使用して HTTP リクエストを送信し、WebSocket 接続を確立する必要があります。
+ErisPulse は、HTTPリクエスト、WebSocket接続、接続プール管理を統合した統一されたネットワーククライアントを提供しています。モジュールやアダプターは**必ず**このクライアントを使用し、aiohttp / httpx / requestsなどのサードパーティライブラリを直接インポートしてはいけません。
 
 ## 概要
 
-HTTP/WS クライアントの主な機能：
+ネットワーククライアントの主な機能：
 
 - **統一インターフェース**：`get` / `post` / `put` / `delete` / `patch` / `request` メソッドを提供
-- **WebSocket クライアント**：`ws_connect` を使用してクライアント WebSocket 接続を確立
-- **自動ログ**：すべてのリクエストのログと統計情報を自動的に記録
-- **ライフサイクル統合**：各リクエストで `client.request` ライフサイクルイベントをトリガー、WS 接続で `client.ws.connect` イベントをトリガー
-- **リトライサポート**：自動リトライの回数と間隔を設定可能
-- **タイムアウト制御**：接続タイムアウトとリクエストタイムアウトを個別に設定
-- **コネクションプールの再利用**：aiohttp.ClientSession に基づくコネクションプール管理
-- **例外体系**：aiohttp 例外が自動的に ErisPulse 例外 (ClientError 体系) に変換されます
+- **WebSocketクライアント**：`ws_connect` を使ってクライアント側のWebSocket接続を確立
+- **自動ログ**：すべてのリクエストが自動的にログと統計情報を記録
+- **ライフサイクル統合**：リクエストごとに `client.request` ライフサイクルイベントがトリガーされ、WS接続時は `client.ws.connect` イベントが発生
+- **リトライサポート**：自動リトライ回数と間隔を設定可能
+- **タイムアウト制御**：接続タイムアウトとリクエストタイムアウトを個別に制御
+- **接続プールの再利用**：aiohttp.ClientSessionに基づく接続プール管理
+- **例外体系**：aiohttpの例外は自動的にErisPulseの例外（ClientError体系）に変換
 
-## クイックスタート
+## 快速開始
 
-### HTTP リクエスト
+### HTTPリクエスト
 
 ```python
 from ErisPulse.Core import client
 
-# GET リクエスト
+# GETリクエスト
 resp = await client.get("https://httpbin.org/get")
 data = await resp.json()
 print(resp.status)  # 200
 
-# POST リクエスト
+# POSTリクエスト
 resp = await client.post(
     "https://httpbin.org/post",
     json={"key": "value"},
@@ -35,7 +35,7 @@ resp = await client.post(
 data = await resp.json()
 ```
 
-### WebSocket 接続
+### WebSocket接続
 
 ```python
 from ErisPulse.Core import client
@@ -55,18 +55,18 @@ from ErisPulse.Core import client
 
 resp = await client.get("https://httpbin.org/get")
 
-resp.status       # int - HTTP ステータスコード (例: 200, 404)
-resp.reason       # str | None - ステータスの説明 (例: "OK")
+resp.status       # int - HTTPステータスコード (例: 200, 404)
+resp.reason       # str | None - ステータス説明 (例: "OK")
 resp.headers      # レスポンスヘッダー (大文字小文字を区別しない)
 resp.content_type # str | None - Content-Type
-resp.url          # 最終 URL (リダイレクトにより変更される可能性あり)
-resp.raw          # 基盤となるネイティブレスポンスオブジェクト (現在は aiohttp.ClientResponse)
+resp.url          # 最終URL (リダイレクトにより変化する可能性がある)
+resp.raw          # ベースの生のレスポンスオブジェクト (現在はaiohttp.ClientResponse)
 
-# レスポンスボディの読み取り
+# レスポンスボディを読み取る
 body = await resp.read()       # bytes
 text = await resp.text()       # str
-data = await resp.json()       # JSON の解析
-text = await resp.text("gbk")  # エンコーディングの指定
+data = await resp.json()       # JSONを解析
+text = await resp.text("gbk")  # 指定したエンコーディング
 ```
 
 ## リクエストメソッド
@@ -88,7 +88,7 @@ resp = await client.get(
 ```python
 from ErisPulse.Core import client
 
-# JSON リクエストボディ
+# JSONリクエストボディ
 resp = await client.post(
     "https://api.example.com/users",
     json={"name": "Alice", "age": 30},
@@ -100,7 +100,7 @@ resp = await client.post(
     data={"username": "admin", "password": "123"},
 )
 
-# 生データ
+# ロウデータ
 resp = await client.post(
     "https://api.example.com/upload",
     data=b"raw bytes",
@@ -118,7 +118,7 @@ resp = await client.delete("https://api.example.com/users/1")
 resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
 ```
 
-### 汎用 request
+### 一般的な request
 
 ```python
 from ErisPulse.Core import client
@@ -130,46 +130,46 @@ resp = await client.request(
 )
 ```
 
-## パラメーターの説明
+## パラメータの説明
 
-### HTTP リクエストパラメーター
+### HTTPリクエストパラメータ
 
-| パラメーター | 型 | 説明 |
+| パラメータ | 型 | 説明 |
 |------|------|------|
-| `url` | `str` | リクエスト URL |
-| `params` | `dict[str, str]` | クエリパラメーター (任意) |
-| `headers` | `dict[str, str]` | 追加のリクエストヘッダー (任意) |
-| `data` | `Any` | リクエストボディ (フォームまたは生データ) (任意) |
-| `json` | `Any` | JSON リクエストボディ (任意) |
-| `timeout` | `float` | 今回のリクエストタイムアウト (秒) (任意, デフォルト値を上書き) |
-| `max_retries` | `int` | 今回の最大リトライ回数 (任意, デフォルト値を上書き) |
+| `url` | `str` | リクエストURL |
+| `params` | `dict[str, str]` | クエリパラメータ (オプション) |
+| `headers` | `dict[str, str]` | 追加リクエストヘッダー (オプション) |
+| `data` | `Any` | リクエストボディ (フォームまたはロウデータ) (オプション) |
+| `json` | `Any` | JSONリクエストボディ (オプション) |
+| `timeout` | `float` | 今回のリクエストタイムアウト (秒) (オプション、デフォルト値を上書き) |
+| `max_retries` | `int` | 今回の最大リトライ回数 (オプション、デフォルト値を上書き) |
 
-### ws_connect パラメーター
+### ws_connect パラメータ
 
-| パラメーター | 型 | 説明 |
+| パラメータ | 型 | 説明 |
 |------|------|------|
-| `url` | `str` | WebSocket サーバー URL |
-| `headers` | `dict[str, str]` | 追加のリクエストヘッダー (任意) |
-| `heartbeat` | `float` | ハートビート間隔 (秒) (任意) |
+| `url` | `str` | WebSocketサーバーのURL |
+| `headers` | `dict[str, str]` | 追加リクエストヘッダー (オプション) |
+| `heartbeat` | `float` | ハートビート間隔 (秒) (オプション) |
 
 ## タイムアウトとリトライ
 
 ```python
 from ErisPulse.Core import HttpClient
 
-# カスタムタイムアウト付きのクライアントを作成
+# タイムアウトを設定してクライアントを作成
 client = HttpClient(
-    timeout=60,           # リクエスト総合タイムアウト 60s
-    connect_timeout=5,    # 接続タイムアウト 5s
-    max_retries=3,        # 失敗時に自動リトライ 3 回
-    retry_delay=2,        # リトライ間隔 2s
+    timeout=60,           # リクエスト全体のタイムアウト 60秒
+    connect_timeout=5,    # 接続タイムアウト 5秒
+    max_retries=3,        # 失敗した場合の自動リトライ 3回
+    retry_delay=2,        # リトライ間隔 2秒
 )
 
-# 単一リクエストでタイムアウトを上書き
+# 今回のリクエストでタイムアウトを上書き
 resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
-## カスタムデフォルトヘッダー
+## デフォルトヘッダーのカスタマイズ
 
 ```python
 client = HttpClient(
@@ -186,19 +186,19 @@ client = HttpClient(
 ```python
 from ErisPulse.Core import client
 
-# 統計の確認
+# 統計を確認
 stats = client.stats
 # {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
 
-# 統計のリセット
+# 統計をリセット
 client.reset_stats()
 ```
 
 ## ライフサイクルイベント
 
-### HTTP リクエストイベント
+### HTTPリクエストイベント
 
-各リクエストの完了後に `client.request` イベントがトリガーされ、監視に使用できます。
+リクエスト完了後に `client.request` イベントがトリガーされ、監視に使用できます：
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -208,19 +208,19 @@ async def on_request(event_data):
     print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
 ```
 
-### WebSocket 接続イベント
+### WebSocket接続イベント
 
-各 WebSocket 接続の確立後に `client.ws.connect` イベントがトリガーされます。
+WebSocket接続確立後に `client.ws.connect` イベントがトリガーされます：
 
 ```python
 from ErisPulse.Core import lifecycle
 
 @lifecycle.on("client.ws.connect")
 async def on_ws_connect(event_data):
-    print(f"WS 接続: {event_data['url']}")
+    print(f"WS接続: {event_data['url']}")
 ```
 
-## コンテキスト管理
+## コンテキストマネージャー
 
 ```python
 # コンテキストマネージャーとして使用し、セッションを自動的に閉じる
@@ -229,11 +229,11 @@ async with HttpClient(timeout=30) as client:
     data = await resp.json()
 ```
 
-## WebSocket クライアント
+## WebSocketクライアント
 
-`client.ws_connect()` を使用して WebSocket クライアント接続を確立し、`ClientWebSocket` オブジェクトを返します。クライアントとサーバーの WebSocket は同じ `WebSocketConnectionBase` 基クラスを共有し、send/receive/iter インターフェースは完全に一致しています。
+`client.ws_connect()` を使ってWebSocketクライアント接続を確立し、`ClientWebSocket` オブジェクトを返します。クライアントとサーバーのWebSocketは同じ `WebSocketConnectionBase` 基底クラスを共有し、send/receive/iterのインターフェースは完全に同じです。
 
-### 基本用法
+### 基本的な使い方
 
 ```python
 from ErisPulse.Core import client
@@ -249,7 +249,7 @@ await ws.send_json({"type": "ping"})
 
 #### 高度なメソッド (推奨)
 
-メッセージタイプを自動的にフィルタリングし、切断時に `WebSocketDisconnect` をスローします：
+メッセージの種類を自動的にフィルタし、切断時に `WebSocketDisconnect` を投げる：
 
 ```python
 from ErisPulse.Core import client
@@ -257,12 +257,12 @@ from ErisPulse.Core.Bases.errors import WebSocketDisconnect
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# 1件ずつ受信
+# 1件のメッセージを受信
 text = await ws.receive_text()    # str
 data = await ws.receive_bytes()   # bytes
 obj = await ws.receive_json()     # dict / list
 
-# 反復して受信 (切断時に自動停止)
+# 受信メッセージをイテレート (切断時に自動的に停止)
 async for text in ws.iter_text():
     print(text)
 
@@ -275,7 +275,7 @@ async for obj in ws.iter_json():
 
 #### 低レベルメソッド
 
-`receive()` と `iter_messages()` を使用して生のメッセージタイプを処理し、TEXT / BINARY / CLOSE / ERROR を区別できます：
+`receive()` と `iter_messages()` を使って生のメッセージタイプを処理し、TEXT / BINARY / CLOSE / ERROR を区別できる：
 
 ```python
 from ErisPulse.Core import client
@@ -283,12 +283,12 @@ from ErisPulse.Core.Bases.websocket import WSMessage
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# 1件ずつ生のメッセージを受信
+# 1件の生のメッセージを受信
 msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
 
-# 生のメッセージを反復 (CLOSE/ERROR 時に自動停止)
+# 生のメッセージをイテレート (CLOSE/ERROR時に自動的に停止)
 async for msg in ws.iter_messages():
     if msg.type == WSMessage.TEXT:
         print(f"テキスト: {msg.data}")
@@ -298,7 +298,7 @@ async for msg in ws.iter_messages():
 
 ### WSMessage
 
-`WSMessage` は統一された WebSocket メッセージタイプで、基盤となるライブラリに依存しません：
+`WSMessage` は、下層ライブラリに依存しない統一されたWebSocketメッセージタイプです：
 
 | 属性 | 型 | 説明 |
 |------|------|------|
@@ -309,14 +309,14 @@ async for msg in ws.iter_messages():
 
 | 属性 | 型 | 説明 |
 |------|------|------|
-| `url` | `URL` | 接続 URL |
+| `url` | `URL` | 接続URL |
 | `headers` | `Headers` | レスポンスヘッダー |
-| `closed` | `bool` | 接続が既に閉じられているかどうか |
-| `raw` | `object` | 基盤となるネイティブオブジェクト (aiohttp.ClientWebSocketResponse) |
+| `closed` | `bool` | 接続が閉じられているか |
+| `raw` | `object` | ベースの生のオブジェクト (aiohttp.ClientWebSocketResponse) |
 
 ### ライフサイクルフック
 
-`サーバー側 WebSocketConnection` と一致し、`on_disconnect` および `on_error` コールバックをサポートします：
+`サービス側 WebSocketConnection` と同じように、`on_disconnect` と `on_error` コールバックをサポート：
 
 ```python
 from ErisPulse.Core import client
@@ -325,14 +325,14 @@ ws = await client.ws_connect("wss://example.com/ws")
 
 @ws.on_disconnect
 async def handle_disconnect(ws, reason="unknown"):
-    print(f"接続切断: {reason}")
+    print(f"接続が切断されました: {reason}")
 
 @ws.on_error
 async def handle_error(ws, error=""):
     print(f"接続エラー: {error}")
 ```
 
-### 接続の閉じ方
+### 接続の終了
 
 ```python
 await ws.close(code=1000, reason="Normal closure")
@@ -340,20 +340,20 @@ await ws.close(code=1000, reason="Normal closure")
 
 ## 例外体系
 
-ErisPulse は統一された例外階層を定義し、`sdk.client` を介して発行されたリクエストは、基盤となる aiohttp 例外を自動的に ErisPulse 例外に変換します。
+ErisPulse は、統一された例外階層を定義しています。`sdk.client` からリクエストを発行すると、下層の aiohttp 例外は自動的に ErisPulse 例外に変換されます。
 
-> **後方互換性**：`aiohttp.ClientSession` を直接使用する古いモジュール/アダプターは完全に影響を受けません。例外変換は `sdk.client` を介してリクエストが発行された場合にのみ有効です。aiohttp を直接使用するコードは依然として `aiohttp.ClientError` などのネイティブ例外をキャッチします。2つの方法は共存可能です。
+> **互換性の維持**：aiohttp.ClientSession を直接使用している旧モジュール/アダプターは完全に影響を受けません。例外変換は `sdk.client` からリクエストを発行した場合にのみ有効で、aiohttp を直接使用するコードは引き続き `aiohttp.ClientError` などの生の例外をキャッチします。両方の方法を共存させることができます。
 
 ### 例外階層
 
 ```
 ErisPulseError
-├── ClientError                  # すべての HTTP/WS クライアントリクエスト例外の基底クラス
-│   ├── ClientConnectionError    # 接続失敗 (DNS 解析失敗、接続拒否、ネットワーク不可達)
+├── ClientError                  # すべてのHTTP/WSクライアントリクエスト例外の基底クラス
+│   ├── ClientConnectionError    # 接続失敗 (DNSの解決失敗、接続拒否、ネットワークに到達できない)
 │   ├── ClientTimeoutError       # 接続タイムアウトまたはリクエストタイムアウト
-│   └── HTTPStatusError          # HTTP 4xx/5xx ステータスコードエラー
-└── WebSocketError               # WebSocket 例外基底クラス
-    └── WebSocketDisconnect      # WebSocket 接続切断 (クライアントとサーバー共通)
+│   └── HTTPStatusError          # HTTP 4xx/5xxステータスコードエラー
+└── WebSocketError               # WebSocket例外の基底クラス
+    └── WebSocketDisconnect      # WebSocket接続切断 (クライアントとサーバーの両方に共通)
 ```
 
 ### 例外のキャッチ
@@ -369,7 +369,7 @@ from ErisPulse.Core.Bases.errors import (
     WebSocketError,
 )
 
-# HTTP リクエスト例外処理
+# HTTPリクエストの例外処理
 try:
     resp = await client.get("https://api.example.com/data")
     data = await resp.json()
@@ -378,22 +378,22 @@ except ClientConnectionError:
 except ClientTimeoutError:
     print("リクエストがタイムアウトしました")
 except ClientError as e:
-    print(f"リクエスト失敗: {e}")
+    print(f"リクエストが失敗しました: {e}")
 
-# WebSocket 例外処理
+# WebSocketの例外処理
 try:
     ws = await client.ws_connect("wss://example.com/ws")
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 except WebSocketDisconnect as e:
-    print(f"接続切断: code={e.code}, reason={e.reason}")
+    print(f"接続が切断されました: code={e.code}, reason={e.reason}")
 except WebSocketError as e:
-    print(f"WebSocket エラー: {e}")
+    print(f"WebSocketエラー: {e}")
 ```
 
 ### 統一的なキャッチ
 
-`ClientError` を使用してすべての HTTP/WS クライアントリクエスト例外を統一的にキャッチします：
+`ClientError` を使って、すべてのHTTP/WSクライアントリクエスト例外を一括でキャッチします：
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError
@@ -406,7 +406,7 @@ except ClientError as e:
 
 ### HTTPStatusError
 
-リクエスト後にステータスコードを確認し、例外をスローする必要がある場合、手動で使用できます：
+リクエスト後にステータスコードをチェックして例外を投げる必要がある場合、手動で使用できます：
 
 ```python
 from ErisPulse.Core.Bases.errors import HTTPStatusError
@@ -418,7 +418,7 @@ if resp.status >= 400:
 
 ## アダプターでの使用
 
-アダプターは、グローバルクライアントを使用するか、独自にクライアントインスタンスを作成してプラットフォーム API リクエストを送信できます。
+アダプターはグローバルクライアントまたは独自のクライアントインスタンスを使って、プラットフォームAPIリクエストを送信できます：
 
 ```python
 from ErisPulse.Core import client
@@ -435,24 +435,24 @@ class MyAdapter(BaseAdapter):
             )
             return await resp.json()
         except ClientError as e:
-            self.logger.error(f"API コール失敗: {e}")
+            self.logger.error(f"API呼び出しに失敗しました: {e}")
             raise
 ```
 
-> `from ErisPulse import sdk` から `sdk.client` を使用することもでき、効果は同じです。
+> `from ErisPulse import sdk` を使って `sdk.client` を使用することもできます。効果は同じです。
 
-## ベストプラクティス
+## 最適な実践方法
 
-1. **グローバルクライアントを優先的に使用**：`from ErisPulse.Core import client` を使用してグローバルシングルトンを取得し、フレームワークによる統一管理と監視を容易にします。
-2. **aiohttp の直接インポートを避ける**：`aiohttp.ClientSession` の代わりに `client` を使用することで、将来的に基盤の実装を変更する際にコードを修正する必要がなくなります。
-3. **ErisPulse 例外体系の使用**：`sdk.client` を介してリクエストする場合、`aiohttp.ClientError` ではなく `ClientError` をキャッチし、コードが特定の HTTP ライブラリに依存しないようにします。aiohttp を直接使用する古いコードは影響を受けません。
-4. **適切なタイムアウトの設定**：API の応答速度に応じて適切なタイムアウト時間を設定し、長時間のブロッキングを回避します。
-5. **リトライメカニズムの使用**：不安定な API に対してリトライを有効にし、信頼性を向上させます。
-6. **リクエスト統計の監視**：`sdk.client.stats` または `client.request` ライフサイクルイベントを通じてリクエストの状況を監視します。
-7. **WebSocket の高度なメソッドの使用**：優先して `iter_text` / `iter_json` などの高度なメソッドを使用し、メッセージタイプを区別する必要がある場合のみ `iter_messages` を使用します。
+1. **グローバルクライアントの優先使用**：`from ErisPulse.Core import client` を使ってグローバルシングルトンを取得し、フレームワークの統一管理と監視を容易にします。
+2. **aiohttpの直接インポートを避ける**：`client` を使って `aiohttp.ClientSession` を置き換え、将来の下層実装の変更時にコードを変更する必要がありません。旧コードは直接 aiohttp を使用しても正常に動作し、両方の方法を共存させることができます。
+3. **ErisPulseの例外体系を使用する**：`sdk.client` を使ってリクエストする際は `aiohttp.ClientError` ではなく `ClientError` をキャッチし、特定のHTTPライブラリに依存しないコードを保証します。直接 aiohttp を使用する旧コードは影響を受けません。
+4. **適切なタイムアウトの設定**：APIの応答速度に応じて適切なタイムアウト時間を設定し、長時間のブロッキングを防ぎます。
+5. **リトライメカニズムの使用**：不安定なAPIに対してリトライを有効にして信頼性を高めます。
+6. **リクエスト統計の監視**：`sdk.client.stats` または `client.request` ライフサイクルイベントを使ってリクエスト状況を監視します。
+7. **WebSocketの高レベルメソッドの使用**：`iter_text` / `iter_json` などの高レベルメソッドを優先し、メッセージタイプを区別する必要がある場合にのみ `iter_messages` を使用します。
 
 ## 関連ドキュメント
 
-- [ルートマネージャー](router.md) - HTTP/WebSocket サーバー側のルーティング（サーバー側 WebSocketConnection はクライアントと同じ基底クラスを共有）
-- [アダプター開発ガイド](../developer-guide/adapters/getting-started.md) - アダプターでの HTTP クライアントの使用
-- [ライフサイクル管理](lifecycle.md) - リクエストイベントのリッスン
+- [ルーティングマネージャー](docs/ja/router.md) - HTTP/WebSocketサービス側ルーティング（サービス側WebSocketConnectionとクライアントは同一の基底クラスを共有）
+- [アダプター開発ガイド](docs/ja/developer-guide/adapters/getting-started.md) - アダプターでのHTTPクライアントの使用
+- [ライフサイクル管理](docs/ja/lifecycle.md) - リクエストイベントの監視

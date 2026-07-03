@@ -18,12 +18,12 @@
         "title": "1. BaseAdapter 層（大多數情況不需要重寫）"
       }
     ],
-    "1. SDK 對象": [
+    "1. SDK 物件": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 47,
         "level": 3,
-        "title": "1. SDK 對象"
+        "title": "1. SDK 物件"
       }
     ],
     "1. 何時發送 Meta 事件": [
@@ -438,12 +438,12 @@
         "title": "1xxxx 動作請求錯誤（Request Error）"
       }
     ],
-    "2. Event 對象": [
+    "2. Event 物件": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 65,
         "level": 3,
-        "title": "2. Event 對象"
+        "title": "2. Event 物件"
       }
     ],
     "2. Send 內部類（大多數情況不需要重寫）": [
@@ -2064,12 +2064,12 @@
         "title": "ClientWebSocket 屬性"
       }
     ],
-    "Client（HTTP 客戶端）": [
+    "Client（網絡客戶端）": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 259,
         "level": 3,
-        "title": "Client（HTTP 客戶端）"
+        "title": "Client（網絡客戶端）"
       }
     ],
     "Command 命令模組": [
@@ -2275,7 +2275,7 @@
     "Event 回覆方法": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 306,
+        "line": 311,
         "level": 3,
         "title": "Event 回覆方法"
       }
@@ -2326,14 +2326,6 @@
         "line": 288,
         "level": 2,
         "title": "HTTP Client 模組"
-      }
-    ],
-    "HTTP 客戶端": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 1,
-        "level": 1,
-        "title": "HTTP 客戶端"
       }
     ],
     "HTTP 裝飾器": [
@@ -2788,6 +2780,14 @@
         "title": "SDK 物件"
       }
     ],
+    "SDK 調試": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 309,
+        "level": 2,
+        "title": "SDK 調試"
+      }
+    ],
     "SQL 串接查詢": [
       {
         "document": "api-reference/core-modules.md",
@@ -2868,12 +2868,12 @@
         "title": "SendDSL 實作"
       }
     ],
-    "SendDSL 消息發送": [
+    "SendDSL 訊息發送": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 276,
+        "line": 281,
         "level": 2,
-        "title": "SendDSL 消息發送"
+        "title": "SendDSL 訊息發送"
       }
     ],
     "SendDSL 詳解": [
@@ -2900,12 +2900,12 @@
         "title": "Storage 模組"
       }
     ],
-    "Storage（儲存）": [
+    "Storage（存儲）": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 179,
         "level": 3,
-        "title": "Storage（儲存）"
+        "title": "Storage（存儲）"
       }
     ],
     "Supervisor": [
@@ -3030,26 +3030,24 @@
     ],
     "WebSocket 連接": [
       {
+        "document": "advanced/http-client.md",
+        "line": 38,
+        "level": 3,
+        "title": "WebSocket 連接"
+      },
+      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 575,
         "level": 3,
         "title": "WebSocket 連接"
       }
     ],
-    "WebSocket 連線": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 38,
-        "level": 3,
-        "title": "WebSocket 連線"
-      }
-    ],
-    "WebSocket 連線事件": [
+    "WebSocket 連接事件": [
       {
         "document": "advanced/http-client.md",
         "line": 211,
         "level": 3,
-        "title": "WebSocket 連線事件"
+        "title": "WebSocket 連接事件"
       }
     ],
     "WebSocket連接": [
@@ -3404,6 +3402,14 @@
         "title": "docker-compose.yml"
       }
     ],
+    "dump_state()": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 311,
+        "level": 3,
+        "title": "dump_state()"
+      }
+    ],
     "get() 方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -3713,7 +3719,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 346,
+        "line": 351,
         "level": 2,
         "title": "下一步"
       },
@@ -4340,12 +4346,12 @@
         "title": "伺服器配置"
       }
     ],
-    "低階方法": [
+    "低級方法": [
       {
         "document": "advanced/http-client.md",
         "line": 276,
         "level": 4,
-        "title": "低階方法"
+        "title": "低級方法"
       }
     ],
     "使用 Discord 特有方法": [
@@ -4980,14 +4986,6 @@
         "line": 126,
         "level": 2,
         "title": "加密模式說明"
-      }
-    ],
-    "加載策略": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 141,
-        "level": 4,
-        "title": "加載策略"
       }
     ],
     "動態內容": [
@@ -5727,7 +5725,7 @@
     "基礎發送": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 280,
+        "line": 285,
         "level": 3,
         "title": "基礎發送"
       }
@@ -6886,12 +6884,12 @@
         "title": "快速體驗"
       }
     ],
-    "懶加載系統": [
+    "懶載入系統": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 323,
+        "line": 328,
         "level": 2,
-        "title": "懶加載系統"
+        "title": "懶載入系統"
       }
     ],
     "成功回應": [
@@ -7862,6 +7860,14 @@
         "title": "核心 API"
       }
     ],
+    "核心元件": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 45,
+        "level": 2,
+        "title": "核心元件"
+      }
+    ],
     "核心初始化": [
       {
         "document": "advanced/lifecycle.md",
@@ -8020,14 +8026,6 @@
         "line": 5,
         "level": 2,
         "title": "核心特性"
-      }
-    ],
-    "核心組件": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 45,
-        "level": 2,
-        "title": "核心組件"
       }
     ],
     "框架輔助方法": [
@@ -8836,12 +8834,12 @@
         "title": "生命週期管理"
       }
     ],
-    "生命週期鉤子": [
+    "生命週期鈎子": [
       {
         "document": "advanced/http-client.md",
         "line": 317,
         "level": 3,
-        "title": "生命週期鉤子"
+        "title": "生命週期鈎子"
       }
     ],
     "生產環境配置": [
@@ -9179,7 +9177,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 309,
+        "line": 333,
         "level": 2,
         "title": "相關文件"
       },
@@ -9524,6 +9522,14 @@
         "title": "統一捕獲"
       }
     ],
+    "網路客戶端": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 1,
+        "level": 1,
+        "title": "網路客戶端"
+      }
+    ],
     "總結": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -9668,12 +9674,12 @@
         "title": "自訂儲存後端"
       }
     ],
-    "自訂預設標頭": [
+    "自訂預設頭": [
       {
         "document": "advanced/http-client.md",
         "line": 172,
         "level": 2,
-        "title": "自訂預設標頭"
+        "title": "自訂預設頭"
       }
     ],
     "自訂類型註冊": [
@@ -10484,6 +10490,14 @@
         "title": "账户配置文件"
       }
     ],
+    "超時與重試": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 155,
+        "level": 2,
+        "title": "超時與重試"
+      }
+    ],
     "超級文件分享事件示例": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -10553,6 +10567,12 @@
         "document": "developer-guide/modules/core-concepts.md",
         "line": 7,
         "level": 3,
+        "title": "載入策略"
+      },
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 141,
+        "level": 4,
         "title": "載入策略"
       }
     ],
@@ -10892,14 +10912,6 @@
         "line": 75,
         "level": 3,
         "title": "進階主題"
-      }
-    ],
-    "逾時與重試": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 155,
-        "level": 2,
-        "title": "逾時與重試"
       }
     ],
     "運行測試": [
@@ -11309,7 +11321,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 293,
+        "line": 298,
         "level": 3,
         "title": "鏈式修飾"
       }
@@ -11548,12 +11560,12 @@
         "title": "關閉介接器"
       }
     ],
-    "關閉連線": [
+    "關閉連接": [
       {
         "document": "advanced/http-client.md",
         "line": 335,
         "level": 3,
-        "title": "關閉連線"
+        "title": "關閉連接"
       }
     ],
     "附件消息段": [

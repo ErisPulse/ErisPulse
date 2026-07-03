@@ -1,19 +1,19 @@
-# HTTP Client
+# Network Client
 
-ErisPulse provides a unified HTTP/WS client. Modules and adapters should prioritize using this client for sending HTTP requests and establishing WebSocket connections, rather than importing third-party libraries like `aiohttp` / `httpx` themselves.
+ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must** prioritize using this client instead of directly importing third-party libraries such as `aiohttp`, `httpx`, or `requests`.
 
 ## Overview
 
-Main features of the HTTP/WS client:
+The main features of the network client are:
 
 - **Unified Interface**: Provides `get` / `post` / `put` / `delete` / `patch` / `request` methods
-- **WebSocket Client**: Establish client WebSocket connections via `ws_connect`
-- **Auto Logging**: Automatically logs all requests and statistics
-- **Lifecycle Integration**: Triggers `client.request` lifecycle events for every request, `client.ws.connect` events for WS connections
-- **Retry Support**: Configurable automatic retry counts and intervals
+- **WebSocket Client**: Establishes a client WebSocket connection via `ws_connect`
+- **Automatic Logging**: All requests are automatically logged and tracked for statistics
+- **Lifecycle Integration**: Each request triggers the `client.request` lifecycle event, and WebSocket connections trigger the `client.ws.connect` event
+- **Retry Support**: Configurable automatic retry count and interval
 - **Timeout Control**: Independent connection and request timeouts
 - **Connection Pool Reuse**: Connection pool management based on `aiohttp.ClientSession`
-- **Exception Hierarchy**: Automatically converts `aiohttp` exceptions to ErisPulse exceptions (ClientError hierarchy)
+- **Exception System**: `aiohttp` exceptions are automatically converted to ErisPulse exceptions (ClientError system)
 
 ## Quick Start
 
@@ -22,12 +22,12 @@ Main features of the HTTP/WS client:
 ```python
 from ErisPulse.Core import client
 
-# GET Request
+# GET request
 resp = await client.get("https://httpbin.org/get")
 data = await resp.json()
 print(resp.status)  # 200
 
-# POST Request
+# POST request
 resp = await client.post(
     "https://httpbin.org/post",
     json={"key": "value"},
@@ -56,17 +56,17 @@ from ErisPulse.Core import client
 resp = await client.get("https://httpbin.org/get")
 
 resp.status       # int - HTTP status code (e.g., 200, 404)
-resp.reason       # str | None - Status description (e.g., "OK")
-resp.headers      # Response headers (case-insensitive)
+resp.reason       # str | None - status description (e.g., "OK")
+resp.headers      # response headers (case-insensitive)
 resp.content_type # str | None - Content-Type
-resp.url          # Final URL (may change due to redirects)
-resp.raw          # Underlying native response object (currently `aiohttp.ClientResponse`)
+resp.url          # final URL (may change due to redirects)
+resp.raw          # underlying raw response object (currently aiohttp.ClientResponse)
 
-# Read response body
+# Reading response body
 body = await resp.read()       # bytes
 text = await resp.text()       # str
-data = await resp.json()       # Parse JSON
-text = await resp.text("gbk")  # Specify encoding
+data = await resp.json()       # parse JSON
+text = await resp.text("gbk")  # specify encoding
 ```
 
 ## Request Methods
@@ -130,7 +130,7 @@ resp = await client.request(
 )
 ```
 
-## Parameters
+## Parameter Explanation
 
 ### HTTP Request Parameters
 
@@ -141,8 +141,8 @@ resp = await client.request(
 | `headers` | `dict[str, str]` | Additional request headers (optional) |
 | `data` | `Any` | Request body (form or raw data) (optional) |
 | `json` | `Any` | JSON request body (optional) |
-| `timeout` | `float` | Timeout for this specific request (seconds) (optional, overrides default) |
-| `max_retries` | `int` | Maximum retry attempts for this specific request (optional, overrides default) |
+| `timeout` | `float` | Request timeout (seconds) (optional, overrides default value) |
+| `max_retries` | `int` | Maximum retry attempts for this request (optional, overrides default value) |
 
 ### ws_connect Parameters
 
@@ -161,7 +161,7 @@ from ErisPulse.Core import HttpClient
 client = HttpClient(
     timeout=60,           # Total request timeout 60s
     connect_timeout=5,    # Connection timeout 5s
-    max_retries=3,        # Auto retry 3 times on failure
+    max_retries=3,        # Automatic retry 3 times on failure
     retry_delay=2,        # Retry interval 2s
 )
 
@@ -196,9 +196,9 @@ client.reset_stats()
 
 ## Lifecycle Events
 
-### HTTP Request Event
+### HTTP Request Events
 
-Triggers `client.request` event after each request is completed, useful for monitoring:
+The `client.request` event is triggered after each request completes, useful for monitoring:
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -208,22 +208,22 @@ async def on_request(event_data):
     print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
 ```
 
-### WebSocket Connection Event
+### WebSocket Connection Events
 
-Triggers `client.ws.connect` event after each WebSocket connection is established:
+The `client.ws.connect` event is triggered after each WebSocket connection is established:
 
 ```python
 from ErisPulse.Core import lifecycle
 
 @lifecycle.on("client.ws.connect")
 async def on_ws_connect(event_data):
-    print(f"WS Connection: {event_data['url']}")
+    print(f"WS connection: {event_data['url']}")
 ```
 
 ## Context Management
 
 ```python
-# Use as a context manager to automatically close sessions
+# As a context manager, automatically closes the session
 async with HttpClient(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
@@ -231,7 +231,7 @@ async with HttpClient(timeout=30) as client:
 
 ## WebSocket Client
 
-Establish client WebSocket connections via `client.ws_connect()`, returning a `ClientWebSocket` object. The client and server WebSocket share the same `WebSocketConnectionBase` base class, with send/receive/iter interfaces completely identical.
+Establish a WebSocket client connection via `client.ws_connect()`, returning a `ClientWebSocket` object. The client and server WebSocket share the same `WebSocketConnectionBase` base class, and their `send/receive/iter` interfaces are completely consistent.
 
 ### Basic Usage
 
@@ -247,9 +247,9 @@ await ws.send_json({"type": "ping"})
 
 ### Receiving Messages
 
-#### High-level Methods (Recommended)
+#### Advanced Methods (Recommended)
 
-Automatically filter message types, raises `WebSocketDisconnect` on disconnect:
+Automatically filters message types and raises `WebSocketDisconnect` on disconnection:
 
 ```python
 from ErisPulse.Core import client
@@ -257,12 +257,12 @@ from ErisPulse.Core.Bases.errors import WebSocketDisconnect
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# Receive single message
+# Single message receive
 text = await ws.receive_text()    # str
 data = await ws.receive_bytes()   # bytes
 obj = await ws.receive_json()     # dict / list
 
-# Iterative receive (automatically stops on disconnect)
+# Iterate messages (automatically stops on disconnect)
 async for text in ws.iter_text():
     print(text)
 
@@ -273,9 +273,9 @@ async for obj in ws.iter_json():
     print(obj)
 ```
 
-#### Low-level Methods
+#### Low-Level Methods
 
-Use `receive()` and `iter_messages()` to handle raw message types, distinguish between TEXT / BINARY / CLOSE / ERROR:
+Use `receive()` and `iter_messages()` to handle raw message types, distinguishing between TEXT / BINARY / CLOSE / ERROR:
 
 ```python
 from ErisPulse.Core import client
@@ -283,12 +283,12 @@ from ErisPulse.Core.Bases.websocket import WSMessage
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# Receive single raw message
+# Single raw message receive
 msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
 
-# Iterative raw messages (automatically stops on CLOSE/ERROR)
+# Iterate raw messages (automatically stops on CLOSE/ERROR)
 async for msg in ws.iter_messages():
     if msg.type == WSMessage.TEXT:
         print(f"Text: {msg.data}")
@@ -298,10 +298,10 @@ async for msg in ws.iter_messages():
 
 ### WSMessage
 
-`WSMessage` is a unified WebSocket message type, independent of the underlying library:
+`WSMessage` is a unified WebSocket message type independent of the underlying library:
 
-| Property | Type | Description |
-|----------|------|-------------|
+| Attribute | Type | Description |
+|-----------|------|-------------|
 | `type` | `str` | Message type: `WSMessage.TEXT` / `WSMessage.BINARY` / `WSMessage.CLOSE` / `WSMessage.ERROR` |
 | `data` | `Any` | Message data |
 
@@ -312,11 +312,11 @@ async for msg in ws.iter_messages():
 | `url` | `URL` | Connection URL |
 | `headers` | `Headers` | Response headers |
 | `closed` | `bool` | Whether the connection is closed |
-| `raw` | `object` | Underlying native object (`aiohttp.ClientWebSocketResponse`) |
+| `raw` | `object` | Underlying raw object (aiohttp.ClientWebSocketResponse) |
 
 ### Lifecycle Hooks
 
-Consistent with `server WebSocketConnection`, supports `on_disconnect` and `on_error` callbacks:
+Consistent with `server-side WebSocketConnection`, supports `on_disconnect` and `on_error` callbacks:
 
 ```python
 from ErisPulse.Core import client
@@ -325,35 +325,35 @@ ws = await client.ws_connect("wss://example.com/ws")
 
 @ws.on_disconnect
 async def handle_disconnect(ws, reason="unknown"):
-    print(f"Connection disconnected: {reason}")
+    print(f"Connection closed: {reason}")
 
 @ws.on_error
 async def handle_error(ws, error=""):
     print(f"Connection error: {error}")
 ```
 
-### Closing Connection
+### Closing the Connection
 
 ```python
 await ws.close(code=1000, reason="Normal closure")
 ```
 
-## Exception Hierarchy
+## Exception System
 
-ErisPulse defines a unified exception hierarchy. Requests initiated via `sdk.client` will automatically convert underlying `aiohttp` exceptions to ErisPulse exceptions.
+ErisPulse defines a unified exception hierarchy. Requests initiated through `sdk.client` automatically convert underlying `aiohttp` exceptions into ErisPulse exceptions.
 
-> **Backward Compatibility**: Old modules/adapters directly using `aiohttp.ClientSession` are completely unaffected. Exception conversion only takes effect when requests are initiated via `sdk.client`. Code directly using `aiohttp` will still catch native exceptions like `aiohttp.ClientError`. Both methods can coexist.
+> **Backward Compatibility**: Old modules/adapters that directly use `aiohttp.ClientSession` remain unaffected. Exception conversion only occurs when requests are made through `sdk.client`. Code directly using `aiohttp` still catches `aiohttp.ClientError` and other native exceptions. Both approaches can coexist.
 
 ### Exception Hierarchy
 
 ```
 ErisPulseError
 ├── ClientError                  # Base class for all HTTP/WS client request exceptions
-│   ├── ClientConnectionError    # Connection failed (DNS resolution failed, connection refused, network unreachable)
+│   ├── ClientConnectionError    # Connection failure (DNS resolution failed, connection refused, network unreachable)
 │   ├── ClientTimeoutError       # Connection timeout or request timeout
 │   └── HTTPStatusError          # HTTP 4xx/5xx status code errors
-└── WebSocketError               # WebSocket exception base class
-    └── WebSocketDisconnect      # WebSocket connection disconnected (common to client and server)
+└── WebSocketError               # Base class for WebSocket exceptions
+    └── WebSocketDisconnect      # WebSocket connection closed (common to both client and server)
 ```
 
 ### Exception Handling
@@ -369,31 +369,31 @@ from ErisPulse.Core.Bases.errors import (
     WebSocketError,
 )
 
-# HTTP request exception handling
+# Handling HTTP request exceptions
 try:
     resp = await client.get("https://api.example.com/data")
     data = await resp.json()
 except ClientConnectionError:
-    print("Unable to connect to server")
+    print("Unable to connect to the server")
 except ClientTimeoutError:
-    print("Request timeout")
+    print("Request timed out")
 except ClientError as e:
     print(f"Request failed: {e}")
 
-# WebSocket exception handling
+# Handling WebSocket exceptions
 try:
     ws = await client.ws_connect("wss://example.com/ws")
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 except WebSocketDisconnect as e:
-    print(f"Connection disconnected: code={e.code}, reason={e.reason}")
+    print(f"Connection closed: code={e.code}, reason={e.reason}")
 except WebSocketError as e:
     print(f"WebSocket error: {e}")
 ```
 
-### Unified Catching
+### Unified Exception Handling
 
-Use `ClientError` to catch all HTTP/WS client request exceptions uniformly:
+Use `ClientError` to catch all HTTP/WS client request exceptions:
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError
@@ -406,7 +406,7 @@ except ClientError as e:
 
 ### HTTPStatusError
 
-When you need to check the status code after a request and raise an exception manually, you can use:
+When you need to check the status code after a request and raise an exception manually, you can use `HTTPStatusError`:
 
 ```python
 from ErisPulse.Core.Bases.errors import HTTPStatusError
@@ -416,7 +416,7 @@ if resp.status >= 400:
     raise HTTPStatusError(resp.status, await resp.text())
 ```
 
-## Usage in Adapters
+## Using in Adapters
 
 Adapters can use the global client or create their own client instance to send platform API requests:
 
@@ -439,20 +439,20 @@ class MyAdapter(BaseAdapter):
             raise
 ```
 
-> You can also use `sdk.client` via `from ErisPulse import sdk` for the same effect.
+> You can also use `from ErisPulse import sdk` and `sdk.client`, which has the same effect.
 
 ## Best Practices
 
-1. **Prioritize the global client**: Use `from ErisPulse.Core import client` to get the global singleton, facilitating unified framework management and monitoring
-2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession` so future changes to the underlying implementation require no code modifications. Old code directly using `aiohttp` still works fine, and both methods can coexist
-3. **Use the ErisPulse exception hierarchy**: Catch `ClientError` instead of `aiohttp.ClientError` when making requests via `sdk.client` to ensure code does not depend on a specific HTTP library. Old code directly using `aiohttp` is unaffected
-4. **Set timeouts reasonably**: Set reasonable timeout durations based on API response speeds to avoid long-term blocking
-5. **Use the retry mechanism**: Enable retries for unstable APIs to improve reliability
-6. **Monitor request statistics**: Monitor request status via `sdk.client.stats` or `client.request` lifecycle events
-7. **Use high-level WebSocket methods**: Prioritize high-level methods like `iter_text` / `iter_json`, and only use `iter_messages` when you need to distinguish message types
+1. **Prefer the global client**: Use `from ErisPulse.Core import client` to obtain the global singleton, facilitating unified management and monitoring by the framework
+2. **Avoid direct imports of aiohttp**: Use `client` instead of `aiohttp.ClientSession`, allowing seamless switching of underlying implementations without code changes. Old code using aiohttp directly still works, and both approaches can coexist
+3. **Use the ErisPulse exception system**: When using `sdk.client`, catch `ClientError` instead of `aiohttp.ClientError`, ensuring code independence from specific HTTP libraries. Old code using aiohttp directly remains unaffected
+4. **Set timeouts appropriately**: Set reasonable timeout values based on API response speed to avoid long blocking
+5. **Use retry mechanisms**: Enable retries for unstable APIs to improve reliability
+6. **Monitor request statistics**: Use `sdk.client.stats` or `client.request` lifecycle events to monitor request status
+7. **Use advanced WebSocket methods**: Prefer `iter_text` / `iter_json` and other advanced methods; use `iter_messages` only when distinguishing message types is necessary
 
 ## Related Documentation
 
-- [Router Manager](router.md) - HTTP/WebSocket server routing (Server WebSocketConnection and client share the same base class)
-- [Adapter Development Guide](../developer-guide/adapters/getting-started.md) - Using the HTTP client in adapters
+- [Router Manager](router.md) - HTTP/WebSocket server-side routing (server-side WebSocketConnection shares the same base class with client)
+- [Adapter Development Guide](../developer-guide/adapters/getting-started.md) - Using HTTP client in adapters
 - [Lifecycle Management](lifecycle.md) - Listening to request events
