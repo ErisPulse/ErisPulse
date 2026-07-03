@@ -81,6 +81,11 @@ TRANSLATIONS = {
     "core.sdk.attr.adapter_not_enabled": "[SDK] アダプター '{name}' は登録されていますが有効化されていません、アダプター設定を確認してください",
     "core.sdk.attr.not_found": "[SDK] 属性またはモジュール/アダプター '{name}' が見つかりません、名前が正しいか確認してください",
     "core.sdk.attr.no_attribute": "ErisPulse SDK has no attribute '{name}'",
+    "core.sdk.attr.did_you_mean": "もしかして '{name}' ですか？",
+    # ==================== ヒント ====================
+    "core.hints.did_you_mean": "ヒント：もしかして '{name}' ですか？",
+    "core.hints.import_did_you_mean": "ヒント：もしかして '{name}' を import ですか？",
+    "core.hints.key_did_you_mean": "ヒント：もしかして '{name}' ですか？",
     # ==================== アダプター管理 ====================
     "core.adapter.set_sdk_failed": "SDK 参照の設定に失敗しました: {error}",
     "core.adapter.must_inherit_base": "アダプターは BaseAdapter を継承する必要があります。そうでない場合、このアダプターを読み込めず、未知のエラーが発生する可能性があります",
@@ -319,6 +324,7 @@ TRANSLATIONS = {
     "core.logger.set_output_failed": "ログファイル {path} の設定に失敗しました: {error}",
     "core.logger.no_output_set": "ログファイルを1つも設定できませんでした。",
     "core.logger.memory_limit_invalid": "ログ保存上限は0より大きい値にしてください。",
+    "core.logger.attr.did_you_mean": "ロガーモジュール名 '{input}' は登録済みの '{suggestion}' と非常に似ています。タイプミスの可能性があります",
     # ==================== Event System ====================
     "core.event.handler_error": "Event handler execution error: {error}",
     "core.event.slow_handler_wait": "[EventHandler] Slow handler {handler} took {elapsed}s (wait_reply={wait}s, pure={pure}s, waits=[{waits}]){owner}",

@@ -15,6 +15,7 @@ TRANSLATIONS = {
     "cli.parser.optionals_title": "選項",
     "cli.run.unknown_args": "無法識別的參數: {args}",
     "cli.run.unknown_command": "未知的命令: {command}",
+    "cli.run.did_you_mean": "你是不是想用 '{name}' 指令？",
     "cli.run.user_interrupted": "操作被使用者中斷",
     "cli.run.exec_error": "執行命令時發生錯誤: {error}",
     "cli.run.version_text": "ErisPulse SDK 版本: {version}",

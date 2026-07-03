@@ -81,6 +81,11 @@ TRANSLATIONS = {
     "core.sdk.attr.adapter_not_enabled": "[SDK] 適配器 '{name}' 已註冊但未啟用，請檢查適配器設定",
     "core.sdk.attr.not_found": "[SDK] 未找到屬性或模組/適配器 '{name}'，請檢查名稱是否正確",
     "core.sdk.attr.no_attribute": "ErisPulse SDK has no attribute '{name}'",
+    "core.sdk.attr.did_you_mean": "你是不是想寫 '{name}'？",
+    # ==================== 友好提示 ====================
+    "core.hints.did_you_mean": "提示：你是不是想寫 '{name}'？",
+    "core.hints.import_did_you_mean": "提示：你是不是想 import '{name}'？",
+    "core.hints.key_did_you_mean": "提示：你是不是想用 '{name}'？",
     # ==================== 適配器管理 ====================
     "core.adapter.set_sdk_failed": "設定SDK參考失敗: {error}",
     "core.adapter.must_inherit_base": "適配器必須繼承自BaseAdapter，否則我們無法載入這個適配器，它會導致未知的錯誤",
@@ -319,6 +324,7 @@ TRANSLATIONS = {
     "core.logger.set_output_failed": "無法設定日誌檔案 {path}: {error}",
     "core.logger.no_output_set": "未能成功設定任何日誌檔案。",
     "core.logger.memory_limit_invalid": "日誌儲存上限必須大於0。",
+    "core.logger.attr.did_you_mean": "日誌模組名稱 '{input}' 與已註冊的 '{suggestion}' 非常相似，可能是拼寫錯誤",
     # ==================== Event System ====================
     "core.event.handler_error": "Event handler execution error: {error}",
     "core.event.slow_handler_wait": "[EventHandler] Slow handler {handler} took {elapsed}s (wait_reply={wait}s, pure={pure}s, waits=[{waits}]){owner}",
