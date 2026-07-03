@@ -197,6 +197,137 @@ def suggest_for_attribute_error(
     return best_match(attr_name, candidates, cutoff=0.6)
 
 
+# ImportError / ModuleNotFoundError 消息的正则模式
+_IMPORT_NO_MODULE_PATTERN = re.compile(
+    r"No module named ['\"]([^'\"]+)['\"]"
+)
+_IMPORT_CANNOT_IMPORT_PATTERN = re.compile(
+    r"cannot import name ['\"]([^'\"]+)['\"]\s+from ['\"]([^'\"]+)['\"]"
+)
+
+
+def suggest_for_import_error(exc: ImportError) -> Optional[str]:
+    """
+    为 ImportError / ModuleNotFoundError 生成拼写建议
+
+    利用 Python 动态特性：解析模块路径，动态 import 父包并检查
+    其实际包含的子模块/属性，给出最接近的匹配。
+
+    支持两种场景:
+    - ``import ErisPulse.Core.evnt`` -> 检查 ErisPulse.Core 下的子模块
+    - ``from ErisPulse.Core import evnt`` -> 检查 ErisPulse.Core 的导出属性
+
+    :param exc: ImportError 或 ModuleNotFoundError 异常
+    :return: 建议的名称，无建议时返回 None
+    """
+    import importlib
+    import sys
+
+    msg = str(exc)
+
+    # 场景 2: cannot import name 'xxx' from 'yyy'
+    m = _IMPORT_CANNOT_IMPORT_PATTERN.search(msg)
+    if m:
+        target = m.group(1)
+        source_mod = m.group(2)
+        candidates: list[str] = []
+        try:
+            mod = sys.modules.get(source_mod) or importlib.import_module(source_mod)
+            candidates = [
+                a for a in dir(mod) if not a.startswith("_") and a != target
+            ]
+        except Exception:
+            pass
+        if candidates:
+            return best_match_with_prefix(target, candidates, cutoff=0.5)
+        return None
+
+    # 场景 1: No module named 'xxx'
+    mod_name = getattr(exc, "name", None)
+    if not mod_name:
+        m2 = _IMPORT_NO_MODULE_PATTERN.search(msg)
+        if m2:
+            mod_name = m2.group(1)
+
+    if not mod_name or mod_name.startswith("."):
+        return None
+
+    parts = mod_name.split(".")
+    target = parts[-1]
+    candidates = []
+
+    if len(parts) > 1:
+        # 动态检查父包下实际存在的子模块
+        parent_path = ".".join(parts[:-1])
+        try:
+            parent_mod = sys.modules.get(parent_path)
+            if parent_mod is None:
+                parent_mod = importlib.import_module(parent_path)
+
+            if hasattr(parent_mod, "__path__"):
+                import pkgutil
+
+                for _, name, _ in pkgutil.iter_modules(parent_mod.__path__):
+                    candidates.append(name)
+            else:
+                candidates = [
+                    a for a in dir(parent_mod) if not a.startswith("_")
+                ]
+        except Exception:
+            pass
+
+    # 补充：同深度已加载模块
+    for loaded in sys.modules:
+        loaded_parts = loaded.split(".")
+        if len(loaded_parts) == len(parts) and loaded_parts[-1] != target:
+            candidates.append(loaded_parts[-1])
+
+    if not candidates:
+        return None
+
+    return best_match_with_prefix(target, candidates, cutoff=0.5)
+
+
+def suggest_for_key_error(exc: KeyError, tb: Any = None) -> Optional[str]:
+    """
+    为 KeyError 生成拼写建议
+
+    利用 Python 动态特性：遍历 traceback 帧的局部变量，
+    找到 dict-like 对象并在其 keys 中查找最相似的匹配。
+
+    :param exc: KeyError 异常
+    :param tb: traceback 对象
+    :return: 建议的 key，无建议时返回 None
+    """
+    if not exc.args:
+        return None
+
+    missing_key = exc.args[0]
+    if not isinstance(missing_key, str) or len(missing_key) < 2:
+        return None
+
+    if tb is None:
+        return None
+
+    # 遍历帧的局部变量，收集 dict-like 对象的字符串 key
+    all_candidates: set[str] = set()
+    frame = tb
+    depth = 0
+    while frame and depth < 5:
+        for var_val in frame.tb_frame.f_locals.values():
+            if isinstance(var_val, dict):
+                for k in var_val.keys():
+                    if isinstance(k, str) and k != missing_key:
+                        all_candidates.add(k)
+        frame = frame.tb_next
+        depth += 1
+
+    if not all_candidates:
+        return None
+
+    return best_match(missing_key, list(all_candidates), cutoff=0.6)
+
+
 __all__ = [
     "suggest_similar",
     "best_match",
@@ -204,4 +335,6 @@ __all__ = [
     "parse_attr_error",
     "get_object_from_traceback",
     "suggest_for_attribute_error",
+    "suggest_for_import_error",
+    "suggest_for_key_error",
 ]
