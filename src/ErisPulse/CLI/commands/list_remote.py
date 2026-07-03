@@ -26,7 +26,7 @@ class ListRemoteCommand(Command):
 
     name = "list-remote"
     description = i18n.t("cli.list_remote.description")
-    aliases = ["lr"]
+    aliases = ["lsr"]
 
     def __init__(self):
         """

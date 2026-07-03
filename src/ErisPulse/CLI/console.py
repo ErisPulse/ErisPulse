@@ -89,6 +89,7 @@ theme = Theme(
         "module": "#80CBC4",
         "adapter": "#7DBFE0",
         "cli": "#A0B0C0",
+        "hint": "#CE93D8",
     }
 )
 

@@ -67,7 +67,7 @@
 > 开发版本
 
 **版本摘要**
-2.5.2-dev.4 聚焦内部友好性与可观测性改进：新增 `sdk.dump_state()` 运行时状态快照导出；为事件/命令/存储/路由子系统补齐 TRACE 级别链路追踪日志与对应 i18n keys；优化 constants 类型注解与导出声明。
+2.5.2-dev.4 聚焦内部友好性与可观测性改进：新增 `sdk.dump_state()` 运行时状态快照导出；为事件/命令/存储/路由子系统补齐 TRACE 级别链路追踪日志与对应 i18n keys；新增全局友好错误提示引擎（拼写纠错）；优化 constants 类型注解与导出声明。
 
 ### 新增
 
@@ -81,6 +81,21 @@
     - Router：中间件请求/短路、handler 调用、限流、WebSocket 连接（`core.router.*`）
   - `Core/i18n/locales/` 5 个 locale 文件（en/zh_cn/zh_tw/ja/ru）统一新增上述所有 i18n keys
 
+- @wsu2059q
+  - 新增全局友好错误提示引擎（`runtime/hints.py`），利用 Python 动态特性进行运行时内省，自动生成拼写纠错建议：
+    - `suggest_similar()` / `best_match()` — 基于 `difflib.SequenceMatcher` 的模糊匹配
+    - `best_match_with_prefix()` — 带前缀加成的匹配（确保 `ins` → `install` 而非 `list`）
+    - `suggest_for_attribute_error()` — AttributeError 场景，从 `exc.obj`（3.12+）或 traceback 帧的 `self` 中提取对象，在其 `dir()` 中查找相似属性
+    - `suggest_for_import_error()` — ImportError 场景，动态 import 父包并检查其子模块/属性
+    - `suggest_for_key_error()` — KeyError 场景，遍历 traceback 帧的局部变量，在 dict keys 中查找相似匹配
+  - `runtime/exceptions.py` 全局异常 hook 增强：
+    - 同步异常（`sys.excepthook`）和异步异常（`loop.set_exception_handler`）均支持 AttributeError / ImportError / KeyError 的拼写建议
+    - i18n 失败时自动回退到英文提示
+  - `sdk.py` `__getattr__` 增强：未找到属性时收集核心模块名 + 已注册模块/适配器名作为候选，给出 "你是不是想写 'xxx'？" 提示
+  - `CLI/cli.py` 新增 `_check_command_typo()`：在 argparse choices 验证之前拦截无效命令，给出拼写建议
+  - `CLI/console.py` 新增 `hint` 样式（`#CE93D8` 紫色）
+  - `Core/i18n/locales/` + `CLI/i18n/locales/` 10 个 locale 文件统一新增友好提示 i18n keys（`core.hints.*` / `cli.run.did_you_mean`）
+
 ### 优化
 
 - @wsu2059q
@@ -88,6 +103,14 @@
   - 相关模块引入 `TypedDict` 以增强字典结构的类型安全
   - 修正部分函数/方法的类型签名
   - 将 `_builtin_*` 私有成员移出模块 `__all__` 导出列表，避免污染公开 API
+
+### 变更
+
+- @wsu2059q
+  - `CLI/commands/init.py` 移除 `ini` 别名（与 `install` 前缀过于相似，容易在拼写建议中误导用户）
+  - `CLI/commands/list_remote.py` 别名 `lr` 改为 `lsr`（更直觉）
+  - `runtime/exceptions.py` 修正拼写错误 `Unkonw` → `Unknown`、中文全角冒号 `：` → 英文 `:`
+  - `runtime/exceptions.py` 将重复的 logger 获取逻辑提取为 `_get_error_logger()`
 
 ---
 

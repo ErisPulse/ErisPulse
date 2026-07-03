@@ -24,13 +24,13 @@ from ErisPulse.CLI.registry import CommandRegistry
 
 EXPECTED_COMMANDS = {
     "create": ["c", "new"],
-    "init": ["ini"],
+    "init": [],
     "install": ["i", "add"],
     "uninstall": ["rm", "remove"],
     "upgrade": ["up"],
     "self-update": ["su", "update"],
     "list": ["l", "ls"],
-    "list-remote": ["lr"],
+    "list-remote": ["lsr"],
     "run": ["r"],
     "i18n": ["language", "lang"],
 }
@@ -341,13 +341,13 @@ class TestAliasScheme:
         Full alias reference (any change fails this test, alerting maintainers):
 
             create       -> c, new
-            init         -> ini
+            init         -> (none)
             install      -> i, add
             uninstall    -> rm, remove
             upgrade      -> up
             self-update  -> su, update
             list         -> l, ls
-            list-remote  -> lr
+            list-remote  -> lsr
             run          -> r
         """
         actual = {

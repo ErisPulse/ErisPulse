@@ -149,6 +149,51 @@ class CLI:
             )
         )
 
+    def _check_command_typo(self) -> None:
+        """
+        在 argparse 解析之前检查命令拼写
+
+        argparse 的子命令 choices 验证遇到无效命令时会直接打印错误并退出，
+        无法附加自定义提示。因此在此提前拦截，给出"你是不是想用 xxx"的拼写建议。
+        """
+        # 所有有效命令（规范名 + 别名），用于检查输入是否有效
+        all_valid = set(self.registry.list_all()) | set(
+            self.registry.list_aliases().keys()
+        )
+        # 仅规范命令名作为建议候选（不含短别名/缩写，避免扰民）
+        canonical_names = self.registry.list_all()
+
+        # 从 sys.argv 中找到第一个非选项参数（即命令名）
+        cmd = None
+        for arg in sys.argv[1:]:
+            if not arg.startswith("-"):
+                cmd = arg
+                break
+
+        if not cmd or cmd in all_valid:
+            return
+
+        # 命令无效，给出拼写建议（前缀加成确保 ins → install 而非 list）
+        from ..runtime.hints import best_match_with_prefix
+
+        print_banner()
+        suggestion = best_match_with_prefix(
+            cmd, canonical_names, cutoff=0.5
+        )
+
+        console.print(
+            f"[error]{i18n.t('cli.run.unknown_command', command=cmd)}[/]"
+        )
+        if suggestion:
+            console.print(
+                f"[hint]{i18n.t('cli.run.did_you_mean', name=suggestion)}[/]"
+            )
+            console.print()
+            console.print(f"  [dim]epsdk {suggestion} --help[/]")
+        else:
+            self.parser.print_help()
+        sys.exit(1)
+
     def _maybe_show_language_hint(self) -> None:
         """
         在前几次启动时提醒用户确认语言
@@ -197,6 +242,9 @@ class CLI:
         :raises KeyboardInterrupt: 用户中断时抛出
         :raises Exception: 命令执行失败时抛出
         """
+        # 在 argparse 之前检查命令拼写（argparse 的 choices 验证会直接报错退出）
+        self._check_command_typo()
+
         args, unknown = self.parser.parse_known_args()
         args._unknown_args = unknown
 
@@ -240,6 +288,16 @@ class CLI:
                 console.print()
                 command.execute(args)
             else:
+                # 拼写建议：检查是否输入了与已知命令相似的名称
+                from ..runtime.hints import best_match_with_prefix
+
+                suggestion = best_match_with_prefix(
+                    args.command, self.registry.list_all(), cutoff=0.5
+                )
+                if suggestion:
+                    console.print(
+                        f"[hint]{i18n.t('cli.run.did_you_mean', name=suggestion)}[/]"
+                    )
                 console.print(
                     f"[error]{i18n.t('cli.run.unknown_command', command=args.command)}[/]"
                 )

@@ -15,6 +15,7 @@ TRANSLATIONS = {
     "cli.parser.optionals_title": "Параметры",
     "cli.run.unknown_args": "Неизвестные аргументы: {args}",
     "cli.run.unknown_command": "Неизвестная команда: {command}",
+    "cli.run.did_you_mean": "Возможно, вы имели в виду команду '{name}'?",
     "cli.run.user_interrupted": "Операция прервана пользователем",
     "cli.run.exec_error": "Ошибка при выполнении команды: {error}",
     "cli.run.version_text": "ErisPulse SDK версия: {version}",

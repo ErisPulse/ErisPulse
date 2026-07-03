@@ -24,6 +24,12 @@ from .exceptions import (
     global_exception_handler,
     setup_exception_handling,
 )
+from .hints import (
+    best_match,
+    best_match_with_prefix,
+    suggest_for_attribute_error,
+    suggest_similar,
+)
 from .frame_config import (
     DEFAULT_ERISPULSE_CONFIG,
     get_config,
@@ -43,6 +49,11 @@ __all__ = [
     "global_exception_handler",
     "async_exception_handler",
     "setup_exception_handling",
+    # 友好提示
+    "suggest_similar",
+    "best_match",
+    "best_match_with_prefix",
+    "suggest_for_attribute_error",
     # 配置管理
     "DEFAULT_ERISPULSE_CONFIG",
     "get_erispulse_config",
