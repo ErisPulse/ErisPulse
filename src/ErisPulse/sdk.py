@@ -209,10 +209,15 @@ class SDK:
         except Exception:
             err_logger = lambda msg: None
 
+        # 收集候选名称用于拼写检查
+        candidates = list(_CORE_ATTR_NAMES)
         if not name.startswith("_"):
             try:
                 mod_mgr = _resolve_core("module")
                 adap_mgr = _resolve_core("adapter")
+                candidates.extend(mod_mgr._module_classes.keys())
+                candidates.extend(adap_mgr._adapters.keys())
+
                 if name in mod_mgr._module_classes:
                     err_logger(i18n.t("core.sdk.attr.module_not_loaded", name=name))
                 elif name in adap_mgr._adapters:
@@ -222,7 +227,15 @@ class SDK:
             except Exception:
                 err_logger(i18n.t("core.sdk.attr.not_found", name=name))
 
-        raise AttributeError(i18n.t("core.sdk.attr.no_attribute", name=name))
+        # 拼写检查：给出"你是不是想写 xxx"提示
+        from .runtime.hints import best_match
+
+        msg = i18n.t("core.sdk.attr.no_attribute", name=name)
+        suggestion = best_match(name, candidates, cutoff=0.5)
+        if suggestion and suggestion != name:
+            msg += "\n" + i18n.t("core.sdk.attr.did_you_mean", name=suggestion)
+
+        raise AttributeError(msg)
 
     def __repr__(self) -> str:
         """

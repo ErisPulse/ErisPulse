@@ -34,7 +34,7 @@ class InitCommand(Command):
 
     name = "init"
     description = i18n.t("cli.init.description")
-    aliases = ["ini"]
+    aliases = []
 
     def __init__(self):
         """

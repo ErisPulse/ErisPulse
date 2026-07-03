@@ -81,6 +81,11 @@ TRANSLATIONS = {
     "core.sdk.attr.adapter_not_enabled": "[SDK] Adapter '{name}' is registered but not enabled, please check the adapter configuration",
     "core.sdk.attr.not_found": "[SDK] Attribute or module/adapter '{name}' not found, please check that the name is correct",
     "core.sdk.attr.no_attribute": "ErisPulse SDK has no attribute '{name}'",
+    "core.sdk.attr.did_you_mean": "Did you mean '{name}'?",
+    # ==================== Hints ====================
+    "core.hints.did_you_mean": "Hint: Did you mean '{name}'?",
+    "core.hints.import_did_you_mean": "Hint: Did you mean to import '{name}'?",
+    "core.hints.key_did_you_mean": "Hint: Did you mean '{name}'?",
     # ==================== Adapter Management ====================
     "core.adapter.set_sdk_failed": "Failed to set SDK reference: {error}",
     "core.adapter.must_inherit_base": "Adapters must inherit from BaseAdapter, otherwise we cannot load this adapter, which may cause unknown errors",
@@ -319,6 +324,7 @@ TRANSLATIONS = {
     "core.logger.set_output_failed": "Failed to set log file {path}: {error}",
     "core.logger.no_output_set": "Failed to set any log file.",
     "core.logger.memory_limit_invalid": "Log memory limit must be greater than 0.",
+    "core.logger.attr.did_you_mean": "Logger module name '{input}' is very similar to registered '{suggestion}', possibly a typo",
     # ==================== Event System ====================
     "core.event.handler_error": "Event handler execution error: {error}",
     "core.event.slow_handler_wait": "[EventHandler] Slow handler {handler} took {elapsed}s (wait_reply={wait}s, pure={pure}s, waits=[{waits}]){owner}",

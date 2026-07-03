@@ -81,6 +81,11 @@ TRANSLATIONS = {
     "core.sdk.attr.adapter_not_enabled": "[SDK] Адаптер '{name}' зарегистрирован, но не включён, проверьте конфигурацию адаптера",
     "core.sdk.attr.not_found": "[SDK] Атрибут или модуль/адаптер '{name}' не найден, проверьте правильность имени",
     "core.sdk.attr.no_attribute": "ErisPulse SDK has no attribute '{name}'",
+    "core.sdk.attr.did_you_mean": "Возможно, вы имели в виду '{name}'?",
+    # ==================== Подсказки ====================
+    "core.hints.did_you_mean": "Подсказка: Возможно, вы имели в виду '{name}'?",
+    "core.hints.import_did_you_mean": "Подсказка: Возможно, вы имели в виду import '{name}'?",
+    "core.hints.key_did_you_mean": "Подсказка: Возможно, вы имели в виду '{name}'?",
     # ==================== Управление адаптерами ====================
     "core.adapter.set_sdk_failed": "Ошибка установки ссылки на SDK: {error}",
     "core.adapter.must_inherit_base": "Адаптеры должны наследоваться от BaseAdapter, иначе мы не сможем загрузить этот адаптер, что приведёт к неизвестным ошибкам",
@@ -319,6 +324,7 @@ TRANSLATIONS = {
     "core.logger.set_output_failed": "Не удалось установить файл лога {path}: {error}",
     "core.logger.no_output_set": "Не удалось установить ни одного файла лога.",
     "core.logger.memory_limit_invalid": "Лимит памяти логов должен быть больше 0.",
+    "core.logger.attr.did_you_mean": "Имя модуля логгера '{input}' очень похоже на зарегистрированное '{suggestion}' — возможна опечатка",
     # ==================== Event System ====================
     "core.event.handler_error": "Event handler execution error: {error}",
     "core.event.slow_handler_wait": "[EventHandler] Slow handler {handler} took {elapsed}s (wait_reply={wait}s, pure={pure}s, waits=[{waits}]){owner}",
