@@ -177,6 +177,7 @@ TRANSLATIONS = {
     "cli.list.status_disabled": "停用",
     "cli.list.count_modules": "{count} 個模組",
     "cli.list.no_modules": "沒有符合條件的模組",
+    "cli.list.scripts_header": "模組註冊的命令列工具：",
     "cli.list.header_adapter": "適配器名",
     "cli.list.count_adapters": "{count} 個適配器",
     "cli.list.no_adapters": "沒有符合條件的適配器",

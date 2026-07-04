@@ -177,6 +177,7 @@ TRANSLATIONS = {
     "cli.list.status_disabled": "禁用",
     "cli.list.count_modules": "{count} 个模块",
     "cli.list.no_modules": "没有符合条件的模块",
+    "cli.list.scripts_header": "模块注册的命令行工具：",
     "cli.list.header_adapter": "适配器名",
     "cli.list.count_adapters": "{count} 个适配器",
     "cli.list.no_adapters": "没有符合条件的适配器",

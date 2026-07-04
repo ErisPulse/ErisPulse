@@ -177,6 +177,7 @@ TRANSLATIONS = {
     "cli.list.status_disabled": "無効",
     "cli.list.count_modules": "{count} 個のモジュール",
     "cli.list.no_modules": "該当するモジュールはありません",
+    "cli.list.scripts_header": "モジュール登録のコマンドラインツール：",
     "cli.list.header_adapter": "アダプター名",
     "cli.list.count_adapters": "{count} 個のアダプター",
     "cli.list.no_adapters": "該当するアダプターはありません",
