@@ -101,6 +101,10 @@ async def friend_add_handler(event):
 - `get_self_account_id()` - 获取机器人账户ID（多Bot模式）
 - `get_self_info()` - 获取机器人完整信息字典
 
+#### 会话标识
+- `get_target_id()` - 获取统一目标 ID（群聊返回 `group_id`，频道返回 `channel_id`，私聊返回 `user_id`，按 group → channel → guild → thread → user 顺序取首个非空值）
+- `get_session_id()` - 获取会话唯一标识，格式为 `{platform}:{detail_type}:{target_id}`
+
 ### 消息事件方法
 
 #### 消息内容
@@ -158,17 +162,22 @@ async def friend_add_handler(event):
 ### 回复功能
 
 #### 基础回复
-- `reply(content, method="Text", at_users=None, reply_to=None, at_all=False, **kwargs)` - 通用回复方法
+- `reply(content, method="Text", at_sender=False, reply_to_message=False, at_users=None, reply_to=None, at_all=False, **kwargs)` - 通用回复方法
   - `content`: 发送内容（文本、URL等）
-  - `method`: 发送方法，默认 "Text"
+  - `method`: 发送方法，默认 "Text"，可选 "Image"/"Voice"/"Video"/"File" 等
+  - `at_sender`: 是否@发送者（自动提取 user_id）
+  - `quote`: 是否引用回复当前消息（自动提取 message_id）
   - `at_users`: @用户列表，如 `["user1", "user2"]`
-  - `reply_to`: 回复消息ID
+  - `reply_to`: 手动指定回复的消息 ID
   - `at_all`: 是否@全体成员
-  - 支持 "Text", "Image", "Voice", "Video", "File", "Mention" 等
   - `**kwargs`: 额外参数（如 Mention 方法的 user_id）
 
 - `reply_ob12(message)` - 使用 OneBot12 消息段回复
   - `message`: OneBot12 消息段列表或字典，可配合 MessageBuilder 构建
+
+#### 平台能力查询
+- `supports(method)` - 检查当前平台是否支持某发送方法（如 `"Image"`、`"Voice"`），返回 `bool`
+- `available_methods()` - 列出当前平台所有可用发送方法，返回方法名列表
 
 #### 转发功能
 
@@ -320,7 +329,24 @@ hasattr(event, "get_subject")   # 仅当 platform="email" 时返回 True
 "get_subject" in dir(event)     # 同上
 ```
 
-> 适配器开发者注册扩展方法的方式请参阅 [事件系统 API - 适配器：注册平台扩展方法](../../api-reference/event-system.md#适配器注册平台扩展方法)。
+### 跨平台扩展（通配符）
+
+`register_event_method` 和 `register_event_mixin` 支持传 `"*"` 作为平台名，注册的方法在**所有平台**的 Event 实例上都可用。适合 AI 对话、上下文管理等需要跨平台复用的功能。
+
+```python
+from ErisPulse.Core.Event.wrapper import register_event_method
+
+@register_event_method("*")
+async def ai_chat(self, prompt: str):
+    # self 为 Event 实例，可访问事件数据和内置方法
+    await self.reply(f"AI: {prompt}")
+```
+
+注册后，任何平台的事件处理器都能调用 `event.ai_chat(...)`。
+
+方法解析优先级（从高到低）：平台特定方法 → 通配符方法 → 内置方法 → 字典键访问。
+
+> 适配器开发者注册扩展方法的方式请参阅 [事件系统 API - 跨平台扩展](../../api-reference/event-system.md#跨平台扩展通配符)。
 
 ## 相关文档
 

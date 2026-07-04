@@ -393,6 +393,51 @@ class ConfigManager:
             self._dirty_keys.clear()
             self._load_config()
 
+    # ==================== 异步接口（通过线程池桥接） ====================
+
+    async def agetConfig(self, key: str, default: Any = None) -> Any:
+        """
+        异步获取配置项
+
+        :param key: str 配置键, 支持点分隔符
+        :param default: Any 默认值
+        :return: Any 配置值
+        """
+        import asyncio
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.getConfig, key, default)
+
+    async def asetConfig(self, key: str, value: Any, immediate: bool = False) -> bool:
+        """
+        异步设置配置项
+
+        :param key: str 配置键
+        :param value: Any 配置值
+        :param immediate: bool 是否立即写入磁盘
+        :return: bool 操作是否成功
+        """
+        import asyncio
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None, lambda: self.setConfig(key, value, immediate)
+        )
+
+    async def aforce_save(self) -> None:
+        """
+        异步强制保存所有待写入的配置到磁盘
+        """
+        import asyncio
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self.force_save)
+
+    async def areload(self) -> None:
+        """
+        异步重新从磁盘加载配置
+        """
+        import asyncio
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self.reload)
+
 
 config: ConfigManager = ConfigManager()
 
