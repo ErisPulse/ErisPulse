@@ -177,6 +177,7 @@ TRANSLATIONS = {
     "cli.list.status_disabled": "Disabled",
     "cli.list.count_modules": "{count} module(s)",
     "cli.list.no_modules": "No matching modules",
+    "cli.list.scripts_header": "Module-registered CLI tools:",
     "cli.list.header_adapter": "Adapter Name",
     "cli.list.count_adapters": "{count} adapter(s)",
     "cli.list.no_adapters": "No matching adapters",

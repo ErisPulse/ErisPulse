@@ -106,6 +106,7 @@
   - `Core/Bases/storage.py` `BaseStorage` 新增异步接口（`aget/aset/adelete/aget_all_keys/aclear` 等），默认通过 `run_in_executor` 桥接同步方法，不阻塞事件循环
   - `Core/Bases/kv_builder.py` `KVQueryBuilder` 新增异步查询接口（`aExecute/aExecuteOne/aCount/aExists`）
   - `Core/config.py` `ConfigManager` 新增异步接口（`agetConfig/asetConfig/aforce_save/areload`）
+  - `CLI/commands/list.py` `epsdk list` 新增模块脚本入口发现（`console_scripts`）
 
 ### 优化
 
