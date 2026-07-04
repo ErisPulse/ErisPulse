@@ -64,6 +64,30 @@ rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
+### 异步接口
+
+Storage 和 Config 模块均提供异步方法（前缀 `a`），可在异步处理器中安全调用。同步方法继续保留，无需修改现有代码。
+
+```python
+# 异步存储
+value = await sdk.storage.aget("key")
+await sdk.storage.aset("key", "value")
+await sdk.storage.adelete("key")
+keys = await sdk.storage.aget_all_keys()
+await sdk.storage.aclear()
+
+# 异步批量操作
+values = await sdk.storage.aget_multi(["k1", "k2"])
+await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
+await sdk.storage.adelete_multi(["k1", "k2"])
+
+# 异步配置
+value = await sdk.config.agetConfig("MyModule.key")
+await sdk.config.asetConfig("MyModule.key", "value")
+await sdk.config.aforce_save()
+await sdk.config.areload()
+```
+
 ## Config 模块
 
 TOML 格式的配置文件管理，支持点号分隔的键路径。
@@ -76,6 +100,10 @@ TOML 格式的配置文件管理，支持点号分隔的键路径。
 | `setConfig(key, value, immediate=False)` | 写入配置。`immediate=True` 时立即保存到文件 |
 | `force_save()` | 强制将内存中的配置写入文件 |
 | `reload()` | 从文件重新加载配置 |
+| `agetConfig(key, default)` | 异步读取配置 |
+| `asetConfig(key, value, immediate)` | 异步写入配置 |
+| `aforce_save()` | 异步强制保存 |
+| `areload()` | 异步重新加载 |
 
 ### 示例
 
