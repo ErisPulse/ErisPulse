@@ -3706,6 +3706,10 @@ async def friend_add_handler(event):
 - `get_self_account_id()` - 获取机器人账户ID（多Bot模式）
 - `get_self_info()` - 获取机器人完整信息字典
 
+#### 会话标识
+- `get_target_id()` - 获取统一目标 ID（群聊返回 `group_id`，频道返回 `channel_id`，私聊返回 `user_id`，按 group → channel → guild → thread → user 顺序取首个非空值）
+- `get_session_id()` - 获取会话唯一标识，格式为 `{platform}:{detail_type}:{target_id}`
+
 ### 消息事件方法
 
 #### 消息内容
@@ -3763,17 +3767,22 @@ async def friend_add_handler(event):
 ### 回复功能
 
 #### 基础回复
-- `reply(content, method="Text", at_users=None, reply_to=None, at_all=False, **kwargs)` - 通用回复方法
+- `reply(content, method="Text", at_sender=False, reply_to_message=False, at_users=None, reply_to=None, at_all=False, **kwargs)` - 通用回复方法
   - `content`: 发送内容（文本、URL等）
-  - `method`: 发送方法，默认 "Text"
+  - `method`: 发送方法，默认 "Text"，可选 "Image"/"Voice"/"Video"/"File" 等
+  - `at_sender`: 是否@发送者（自动提取 user_id）
+  - `quote`: 是否引用回复当前消息（自动提取 message_id）
   - `at_users`: @用户列表，如 `["user1", "user2"]`
-  - `reply_to`: 回复消息ID
+  - `reply_to`: 手动指定回复的消息 ID
   - `at_all`: 是否@全体成员
-  - 支持 "Text", "Image", "Voice", "Video", "File", "Mention" 等
   - `**kwargs`: 额外参数（如 Mention 方法的 user_id）
 
 - `reply_ob12(message)` - 使用 OneBot12 消息段回复
   - `message`: OneBot12 消息段列表或字典，可配合 MessageBuilder 构建
+
+#### 平台能力查询
+- `supports(method)` - 检查当前平台是否支持某发送方法（如 `"Image"`、`"Voice"`），返回 `bool`
+- `available_methods()` - 列出当前平台所有可用发送方法，返回方法名列表
 
 #### 转发功能
 
@@ -3925,7 +3934,24 @@ hasattr(event, "get_subject")   # 仅当 platform="email" 时返回 True
 "get_subject" in dir(event)     # 同上
 ```
 
-> 适配器开发者注册扩展方法的方式请参阅 [事件系统 API - 适配器：注册平台扩展方法](../../api-reference/event-system.md#适配器注册平台扩展方法)。
+### 跨平台扩展（通配符）
+
+`register_event_method` 和 `register_event_mixin` 支持传 `"*"` 作为平台名，注册的方法在**所有平台**的 Event 实例上都可用。适合 AI 对话、上下文管理等需要跨平台复用的功能。
+
+```python
+from ErisPulse.Core.Event.wrapper import register_event_method
+
+@register_event_method("*")
+async def ai_chat(self, prompt: str):
+    # self 为 Event 实例，可访问事件数据和内置方法
+    await self.reply(f"AI: {prompt}")
+```
+
+注册后，任何平台的事件处理器都能调用 `event.ai_chat(...)`。
+
+方法解析优先级（从高到低）：平台特定方法 → 通配符方法 → 内置方法 → 字典键访问。
+
+> 适配器开发者注册扩展方法的方式请参阅 [事件系统 API - 跨平台扩展](../../api-reference/event-system.md#跨平台扩展通配符)。
 
 ## 相关文档
 
@@ -7544,6 +7570,30 @@ rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
+### 异步接口
+
+Storage 和 Config 模块均提供异步方法（前缀 `a`），可在异步处理器中安全调用。同步方法继续保留，无需修改现有代码。
+
+```python
+# 异步存储
+value = await sdk.storage.aget("key")
+await sdk.storage.aset("key", "value")
+await sdk.storage.adelete("key")
+keys = await sdk.storage.aget_all_keys()
+await sdk.storage.aclear()
+
+# 异步批量操作
+values = await sdk.storage.aget_multi(["k1", "k2"])
+await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
+await sdk.storage.adelete_multi(["k1", "k2"])
+
+# 异步配置
+value = await sdk.config.agetConfig("MyModule.key")
+await sdk.config.asetConfig("MyModule.key", "value")
+await sdk.config.aforce_save()
+await sdk.config.areload()
+```
+
 ## Config 模块
 
 TOML 格式的配置文件管理，支持点号分隔的键路径。
@@ -7556,6 +7606,10 @@ TOML 格式的配置文件管理，支持点号分隔的键路径。
 | `setConfig(key, value, immediate=False)` | 写入配置。`immediate=True` 时立即保存到文件 |
 | `force_save()` | 强制将内存中的配置写入文件 |
 | `reload()` | 从文件重新加载配置 |
+| `agetConfig(key, default)` | 异步读取配置 |
+| `asetConfig(key, value, immediate)` | 异步写入配置 |
+| `aforce_save()` | 异步强制保存 |
+| `areload()` | 异步重新加载 |
 
 ### 示例
 
@@ -8085,6 +8139,19 @@ self_user_id = event.get_self_user_id()
 self_info = event.get_self_info()
 ```
 
+### 会话标识
+
+```python
+# 统一目标 ID：群聊返回 group_id，私聊返回 user_id，以此类推
+target_id = event.get_target_id()
+
+# 会话唯一标识，格式: {platform}:{detail_type}:{target_id}
+session_id = event.get_session_id()
+# 示例: "telegram:private:12345"、"qq:group:67890"
+```
+
+`get_target_id()` 按以下顺序返回首个非空值：`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`。适用于上下文管理、状态存储等需要统一标识会话的场景。
+
 ### 消息方法
 
 ```python
@@ -8147,6 +8214,54 @@ await event.reply_ob12(msg)
 # 等待回复
 reply = await event.wait_reply(timeout=30)
 ```
+
+### 平台能力查询
+
+```python
+# 检查当前平台是否支持某种发送方法
+if event.supports("Image"):
+    await event.reply(url, method="Image")
+
+# 列出当前平台所有可用发送方法
+methods = event.available_methods()
+# ["Text", "Image", "Voice", ...]
+```
+
+### 回复方法
+
+`reply()` 方法支持通过 `method` 参数指定发送类型，以及两个便捷的布尔参数：
+
+```python
+# 简单文本回复
+await event.reply("你好")
+
+# 回复并@发送者
+await event.reply("你好", at_sender=True)
+
+# 回复并引用当前消息
+await event.reply("收到", reply_to_message=True)
+
+# 组合使用
+await event.reply("收到", at_sender=True, reply_to_message=True)
+
+# 发送图片（使用 method 参数）
+if event.supports("Image"):
+    await event.reply("http://example.com/img.jpg", method="Image")
+else:
+    await event.reply("[图片] http://example.com/img.jpg")
+```
+
+**参数说明**：
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `content` | str | 发送内容 |
+| `method` | str | 发送方法，默认 "Text"，可选 "Image"/"Voice"/"Video"/"File" 等 |
+| `at_sender` | bool | 是否@发送者（自动提取 user_id） |
+| `quote` | bool | 是否引用回复当前消息（自动提取 message_id） |
+| `at_users` | list[str] | @指定用户列表 |
+| `reply_to` | str | 手动指定回复的消息 ID |
+| `at_all` | bool | 是否@全体成员 |
 
 ### 交互方法
 
@@ -8355,6 +8470,42 @@ class YunhuEventMixin:
 
 register_event_mixin("yunhu", YunhuEventMixin)
 ```
+
+## 跨平台扩展（通配符）
+
+`register_event_method` 和 `register_event_mixin` 支持传 `"*"` 作为平台名，注册的方法在**所有平台**的 Event 实例上都可用。适合 AI 对话、上下文管理等需要跨平台复用的功能模块。
+
+### 注册跨平台方法
+
+```python
+from ErisPulse.Core.Event.wrapper import register_event_method
+
+@register_event_method("*")
+async def ai_chat(self, prompt: str):
+    """self 为 Event 实例，可自由访问事件数据和内置方法"""
+    await self.reply(f"AI: {prompt}")
+```
+
+注册后，所有平台的事件处理器都能调用：
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handler(event):
+    await event.ai_chat(event.get_text())
+```
+
+### 方法解析优先级
+
+通过属性访问 Event 方法时，解析顺序为：
+
+1. **平台特定方法**（当前平台的覆写）
+2. **通配符方法**（`"*"` 注册的跨平台方法）
+3. **内置方法**（`reply`、`confirm` 等）
+4. **字典键访问**
+
+> 因此通配符方法可以覆写内置方法（如 `reply`），但会被同名的平台特定方法进一步覆写。
 
 ## 优先级系统
 

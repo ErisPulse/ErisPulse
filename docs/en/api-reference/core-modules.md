@@ -1,6 +1,6 @@
 # Core Module API
 
-This document provides a quick reference for the API of ErisPulse core modules, including method signatures and brief descriptions. For detailed usage and examples, please click the "Full Documentation" link for each module.
+This document provides a quick reference for ErisPulse core module APIs, including method signatures and brief descriptions. For detailed usage and examples, please click the "Full Documentation" link for each module.
 
 ## Storage Module
 
@@ -25,7 +25,7 @@ values = sdk.storage.get_multi(["key1", "key2"])
 sdk.storage.delete_multi(["key1", "key2"])
 ```
 
-### Transaction Operations
+### Transactional Operations
 
 ```python
 with sdk.storage.transaction():
@@ -36,13 +36,13 @@ with sdk.storage.transaction():
 ### Attribute Access
 
 ```python
-sdk.storage.my_key          # equivalent to sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # equivalent to sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
 ```
 
 ### SQL Chained Queries
 
-The Storage module provides a chained-call style generic SQL query builder, supporting CRUD operations for custom tables.
+The Storage module provides a fluent-style generic SQL query builder, supporting CRUD operations on custom tables.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -64,6 +64,30 @@ rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
+### Asynchronous Interfaces
+
+Both Storage and Config modules provide asynchronous methods (prefixed with `a`), which can be safely called in asynchronous handlers. Synchronous methods are retained and do not require modification of existing code.
+
+```python
+# Asynchronous storage
+value = await sdk.storage.aget("key")
+await sdk.storage.aset("key", "value")
+await sdk.storage.adelete("key")
+keys = await sdk.storage.aget_all_keys()
+await sdk.storage.aclear()
+
+# Asynchronous batch operations
+values = await sdk.storage.aget_multi(["k1", "k2"])
+await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
+await sdk.storage.adelete_multi(["k1", "k2"])
+
+# Asynchronous configuration
+value = await sdk.config.agetConfig("MyModule.key")
+await sdk.config.asetConfig("MyModule.key", "value")
+await sdk.config.aforce_save()
+await sdk.config.areload()
+```
+
 ## Config Module
 
 TOML format configuration file management, supporting dot-separated key paths.
@@ -71,13 +95,17 @@ TOML format configuration file management, supporting dot-separated key paths.
 ### API Overview
 
 | Method | Description |
-|--------|-------------|
+|------|------|
 | `getConfig(key, default)` | Read configuration, supports dot paths like `"MyModule.subkey"` |
 | `setConfig(key, value, immediate=False)` | Write configuration. If `immediate=True`, save immediately to file |
-| `force_save()` | Force write configuration from memory to file |
+| `force_save()` | Forcefully write in-memory configuration to file |
 | `reload()` | Reload configuration from file |
+| `agetConfig(key, default)` | Asynchronously read configuration |
+| `asetConfig(key, value, immediate)` | Asynchronously write configuration |
+| `aforce_save()` | Asynchronously force save |
+| `areload()` | Asynchronously reload |
 
-### Example
+### Examples
 
 ```python
 config = sdk.config.getConfig("MyModule", {})
@@ -87,7 +115,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` uses delayed writing by default (batch saved every 5 seconds). Setting `immediate=True` will persist immediately to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` uses delayed write by default (batch saved every 5 seconds). Setting `immediate=True` will persist immediately to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Logger Module
 
@@ -97,7 +125,7 @@ A modular logging system based on Rich output, supporting child loggers and modu
 
 ```python
 sdk.logger.debug("Debug information")
-sdk.logger.info("Runtime information")
+sdk.logger.info("Running information")
 sdk.logger.warning("Warning information")
 sdk.logger.error("Error information")
 sdk.logger.critical("Critical error")
@@ -120,13 +148,13 @@ sdk.logger.set_module_level("MyModule", "DEBUG")       # Module level
 
 # Supported levels (from low to high):
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE is the lowest level, outputting detailed framework internal debugging information (event dispatching, route registration, etc.)
+# TRACE is the lowest level, outputting detailed framework internal debug information (event dispatch, route registration, etc.)
 sdk.logger.set_level("TRACE")                          # Enable all logs
 ```
 
 ### Log Subscription (Push Mode)
 
-For modules like Dashboard to receive structured logs in real-time, supporting level filtering and historical replay.
+For modules like Dashboard to receive structured logs in real-time, supporting level filtering and historical log replay.
 
 ```python
 # Decorator style
@@ -146,8 +174,8 @@ sdk.logger.remove_handler("my-handler")
 ```
 
 | Method | Description |
-|--------|-------------|
-| `handler(id, *, min_level)(func)` | Decorator/direct call dual-use. If `id` is empty, use function name. Automatically replay historical logs upon registration |
+|------|------|
+| `handler(id, *, min_level)(func)` | Decorator/direct call dual-use. If `id` is empty, function name is used. History logs are automatically replayed on registration |
 | `remove_handler(id)` | Remove subscriber |
 
 ### Output Control
@@ -161,12 +189,12 @@ sdk.logger.set_memory_limit(1000)
 
 ## Adapter Module
 
-Adapter manager, managing registration, startup, and shutdown of multiple platform adapters.
+Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters.
 
 ### API Overview
 
 | Method | Description |
-|--------|-------------|
+|------|------|
 | `get(platform)` | Get adapter instance |
 | `exists(platform)` | Check if adapter is registered |
 | `enable(platform)` / `disable(platform)` | Enable/disable adapter |
@@ -206,7 +234,7 @@ Module manager, managing plugin registration, loading, and unloading.
 ### API Overview
 
 | Method | Description |
-|--------|-------------|
+|------|------|
 | `get(name)` | Get module instance |
 | `exists(name)` | Check if registered |
 | `is_loaded(name)` | Check if loaded |
@@ -215,7 +243,7 @@ Module manager, managing plugin registration, loading, and unloading.
 | `load(name)` / `unload(name)` | Load/unload module |
 | `list_registered()` | List registered modules |
 | `list_loaded()` | List loaded modules |
-| `get_info(name)` | Get module information |
+| `get_info(name)` | Get module info |
 | `get_status_summary()` | Get module status summary |
 
 ### Attribute Access
@@ -233,9 +261,9 @@ Event-driven lifecycle manager, providing event submission and listening functio
 ### API Overview
 
 | Method | Description |
-|--------|-------------|
-| `on(event, priority=0)` | Decorator to register event handler, supports dot matching and wildcard `*` |
-| `register(event, handler, priority=0)` | Function-style registration of handler |
+|------|------|
+| `on(event, priority=0)` | Decorator to register event handlers, supports dot matching and wildcard `*` |
+| `register(event, handler, priority=0)` | Functional registration of handlers |
 | `unregister(event, handler=None)` | Remove handler |
 | `emit(event, data)` | Asynchronously trigger event |
 | `emit_sync(event, data)` | Synchronously trigger event |
@@ -247,7 +275,7 @@ Event-driven lifecycle manager, providing event submission and listening functio
 ```python
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
-    print(f"Module initialized: {event_data}")
+    print(f"Module initialization: {event_data}")
 
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
@@ -256,23 +284,23 @@ async def handle_any_module_event(event_data):
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-> For the complete list of standard events and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
+> For the complete standard event list and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
 
 ## Router Module
 
-HTTP/WebSocket route manager, based on FastAPI + Uvicorn, supporting decorator routes, middleware, grouping, rate limiting, CORS.
+HTTP/WebSocket router manager, based on FastAPI + Uvicorn, supporting decorator routing, middleware, grouping, rate limiting, CORS.
 
-> For the complete route API documentation (decorator routes, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Route Manager](../advanced/router.md).
+> For the complete routing API documentation (decorator routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Router Manager](../advanced/router.md).
 
 ### Quick Reference
 
 ```python
-# HTTP route
+# HTTP routing
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# WebSocket route
+# WebSocket routing
 @sdk.router.ws("MyModule", "/ws")
 async def ws_handler(ws: WebSocketConnection):
     async for text in ws.iter_text():
@@ -287,7 +315,7 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client Module
 
-Unified network client, aggregating HTTP requests, WebSocket connections, connection pool management, automatic retries, request statistics, and lifecycle event integration.
+Unified network client, aggregating HTTP requests, WebSocket connections, connection pool management, automatic retry, request statistics, and lifecycle event integration.
 
 > For the complete network client documentation (request methods, response objects, WebSocket client, exception system, etc.), please refer to [Network Client](../advanced/http-client.md).
 
@@ -310,7 +338,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-Exports a snapshot of the current running state of the framework, for debugging and diagnostics.
+Exports a snapshot of the current runtime state of the framework, used for debugging and diagnostics.
 
 ```python
 import json
@@ -318,12 +346,12 @@ state = sdk.dump_state()
 print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ```
 
-The returned structure contains the status of the following subsystems:
+The returned structure contains the states of the following subsystems:
 
 | Field | Description |
-|-------|-------------|
-| `sdk` | SDK initialization status, Python version, running platform, timestamp |
-| `adapters` | List of registered/started adapters, online status of Bots on each platform |
+|------|------|
+| `sdk` | SDK initialization status, Python version, runtime platform, timestamp |
+| `adapters` | List of registered/started adapters, online status of bots on each platform |
 | `modules` | List of registered/enabled/disabled/lazy-loaded modules |
 | `events` | Number of handlers for each type of event (message/notice/request/meta/commands) |
 | `router` | Server running status, number of HTTP/WebSocket routes |
@@ -334,7 +362,7 @@ The returned structure contains the status of the following subsystems:
 
 - [Event System API](event-system.md) - Event module API
 - [Adapter System API](adapter-system.md) - Adapter management API
-- [SQL Query Builder](../advanced/sql-builder.md) - Full documentation for SQL chained queries
-- [Route Manager](../advanced/router.md) - Full documentation for route manager
-- [Network Client](../advanced/http-client.md) - Full documentation for network client
-- [Lifecycle Management](../advanced/lifecycle.md) - Full documentation for lifecycle
+- [SQL Query Builder](../advanced/sql-builder.md) - Complete documentation for SQL chained queries
+- [Router Manager](../advanced/router.md) - Complete documentation for router manager
+- [Network Client](../advanced/http-client.md) - Complete documentation for network client
+- [Lifecycle Management](../advanced/lifecycle.md) - Complete documentation for lifecycle

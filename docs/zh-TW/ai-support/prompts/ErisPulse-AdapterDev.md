@@ -5238,6 +5238,30 @@ rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
+### 異步介面
+
+Storage 和 Config 模組均提供異步方法（前綴 `a`），可在異步處理器中安全呼叫。同步方法繼續保留，無需修改現有程式碼。
+
+```python
+# 異步儲存
+value = await sdk.storage.aget("key")
+await sdk.storage.aset("key", "value")
+await sdk.storage.adelete("key")
+keys = await sdk.storage.aget_all_keys()
+await sdk.storage.aclear()
+
+# 異步批量操作
+values = await sdk.storage.aget_multi(["k1", "k2"])
+await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
+await sdk.storage.adelete_multi(["k1", "k2"])
+
+# 異步配置
+value = await sdk.config.agetConfig("MyModule.key")
+await sdk.config.asetConfig("MyModule.key", "value")
+await sdk.config.aforce_save()
+await sdk.config.areload()
+```
+
 ## Config 模組
 
 TOML 格式的配置文件管理，支援點號分隔的鍵路徑。
@@ -5250,6 +5274,10 @@ TOML 格式的配置文件管理，支援點號分隔的鍵路徑。
 | `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即保存到文件 |
 | `force_save()` | 強制將記憶體中的配置寫入文件 |
 | `reload()` | 從文件重新載入配置 |
+| `agetConfig(key, default)` | 異步讀取配置 |
+| `asetConfig(key, value, immediate)` | 異步寫入配置 |
+| `aforce_save()` | 異步強制保存 |
+| `areload()` | 異步重新載入 |
 
 ### 範例
 
@@ -5286,15 +5314,15 @@ child_logger.info("子模組日誌")
 child_logger.get_child("utils")  # 支援嵌套
 ```
 
-### 日誌等級控制
+### 日誌級別控制
 
 ```python
-sdk.logger.set_level("DEBUG")                          # 全局等級
-sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組等級
+sdk.logger.set_level("DEBUG")                          # 全域級別
+sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組級別
 
-# 支援的等級（由低到高）：
+# 支援的級別（從低到高）：
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE 為最低等級，輸出框架內部詳細調試資訊（事件分發、路由註冊等）
+# TRACE 為最低級別，輸出框架內部詳細調試資訊（事件分發、路由註冊等）
 sdk.logger.set_level("TRACE")                          # 開啟全部日誌
 ```
 
@@ -5341,14 +5369,14 @@ sdk.logger.set_memory_limit(1000)
 
 | 方法 | 說明 |
 |------|------|
-| `get(platform)` | 取得適配器實例 |
+| `get(platform)` | 獲取適配器實例 |
 | `exists(platform)` | 檢查適配器是否已註冊 |
-| `enable(platform)` / `disable(platform)` | 啟用/停用適配器 |
+| `enable(platform)` / `disable(platform)` | 啟用/禁用適配器 |
 | `is_enabled(platform)` | 檢查是否啟用 |
 | `startup(platforms)` / `shutdown(platforms)` | 啟動/關閉適配器 |
 | `is_running(platform)` | 檢查適配器是否正在運行 |
 | `list_running()` | 列出所有正在運行的適配器 |
-| `platforms` | 取得所有平台名稱列表 |
+| `platforms` | 獲取所有平台名稱列表 |
 
 ### 適配器事件
 
@@ -5381,16 +5409,16 @@ sdk.adapter.get_status_summary()
 
 | 方法 | 說明 |
 |------|------|
-| `get(name)` | 取得模組實例 |
+| `get(name)` | 獲取模組實例 |
 | `exists(name)` | 檢查是否已註冊 |
 | `is_loaded(name)` | 檢查是否已載入 |
 | `is_enabled(name)` | 檢查是否啟用 |
-| `enable(name)` / `disable(name)` | 啟用/停用模組 |
+| `enable(name)` / `disable(name)` | 啟用/禁用模組 |
 | `load(name)` / `unload(name)` | 載入/卸載模組 |
 | `list_registered()` | 列出已註冊模組 |
 | `list_loaded()` | 列出已載入模組 |
-| `get_info(name)` | 取得模組資訊 |
-| `get_status_summary()` | 取得模組狀態摘要 |
+| `get_info(name)` | 獲取模組資訊 |
+| `get_status_summary()` | 獲取模組狀態摘要 |
 
 ### 屬性存取
 
@@ -5461,7 +5489,7 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client 模組
 
-統一網路客戶端，聚合 HTTP 請求、WebSocket 連接、連接池管理、自動重試、請求統計和生命週期事件整合。
+統一網路客戶端，聚合 HTTP 請求、WebSocket 連線、連線池管理、自動重試、請求統計和生命週期事件集成。
 
 > 完整的網路客戶端文件（請求方法、回應物件、WebSocket 客戶端、例外體系等）請參考 [網路客戶端](../advanced/http-client.md)。
 
@@ -5484,7 +5512,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-導出框架當前運行狀態的快照，用於調試和診斷。
+匯出框架目前運行狀態的快照，用於調試和診斷。
 
 ```python
 import json
@@ -5498,7 +5526,7 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 |------|------|
 | `sdk` | SDK 初始化狀態、Python 版本、運行平台、時間戳 |
 | `adapters` | 已註冊/已啟動的適配器列表、各平台 Bot 在線狀態 |
-| `modules` | 已註冊/已啟用/已停用/懶加載的模組列表 |
+| `modules` | 已註冊/已啟用/已禁用/懶載入的模組列表 |
 | `events` | 各類事件處理器數量（message/notice/request/meta/commands） |
 | `router` | 伺服器運行狀態、HTTP/WebSocket 路由數量 |
 
