@@ -62,12 +62,19 @@ ErisPulse KV 查询构建器
 ---
 
 
+##### `_bind_clauses()`
+
+将 WHERE 子句中的 ? 替换为实际参数（只执行一次）
+
+---
+
+
 ##### `_eval_clause(row: dict, clause: str)`
 
-评估单条 WHERE 子句
+评估单条已绑定的 WHERE 子句
 
+clause 中的占位符 `?` 已在 `_bind_clauses` 中替换为实际值。
 支持的操作符: =, !=, >, >=, <, <=, LIKE
-格式: "column op value" 或带占位符 "column op ?"（参数在 _where_params 中）
 
 ---
 
