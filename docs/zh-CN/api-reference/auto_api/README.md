@@ -22,7 +22,7 @@
 - **模块总数**: 85
 - **类总数**: 90（包括 5 个嵌套类）
 - **函数总数**: 88
-- **方法总数**: 861
+- **方法总数**: 863
 
 ---
 
@@ -71,7 +71,7 @@
 
 ### [ErisPulse.CLI.commands.list](ErisPulse/CLI/commands/list.md)
 
-📦 1 个类 | 🔧 3 个方法
+📦 1 个类 | 🔧 4 个方法
 
 
 ### [ErisPulse.CLI.commands.list_remote](ErisPulse/CLI/commands/list_remote.md)
@@ -186,7 +186,7 @@
 
 ### [ErisPulse.Core.Bases.kv_builder](ErisPulse/Core/Bases/kv_builder.md)
 
-📦 1 个类 | 🔧 8 个方法
+📦 1 个类 | 🔧 9 个方法
 
 
 ### [ErisPulse.Core.Bases.manager](ErisPulse/Core/Bases/manager.md)

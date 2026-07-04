@@ -52,3 +52,12 @@ list 命令
 
 ---
 
+
+##### `_print_package_scripts(packages: dict)`
+
+发现并展示已安装模块包注册的 console_scripts 入口
+
+- **packages** (`dict`): 模块信息字典 {name: {package, version, ...}}
+
+---
+
