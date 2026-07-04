@@ -187,3 +187,40 @@ atexit 回调：进程退出时强制刷新所有脏配置
 
 ---
 
+
+##### `async async agetConfig(key: str, default: Any = None)`
+
+异步获取配置项
+
+:param key: str 配置键, 支持点分隔符
+:param default: Any 默认值
+:return: Any 配置值
+
+---
+
+
+##### `async async asetConfig(key: str, value: Any, immediate: bool = False)`
+
+异步设置配置项
+
+:param key: str 配置键
+:param value: Any 配置值
+:param immediate: bool 是否立即写入磁盘
+:return: bool 操作是否成功
+
+---
+
+
+##### `async async aforce_save()`
+
+异步强制保存所有待写入的配置到磁盘
+
+---
+
+
+##### `async async areload()`
+
+异步重新从磁盘加载配置
+
+---
+

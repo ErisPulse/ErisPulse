@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1291,
+  "total_keywords": 1301,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1670,6 +1670,14 @@
         "title": "@メッセージを監視する"
       }
     ],
+    "@メッセージ関連": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 127,
+        "level": 4,
+        "title": "@メッセージ関連"
+      }
+    ],
     "A2UI 消息段 (a2ui)": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -1769,25 +1777,25 @@
     "API 概要": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 71,
+        "line": 95,
         "level": 3,
         "title": "API 概要"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 166,
+        "line": 194,
         "level": 3,
         "title": "API 概要"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 206,
+        "line": 234,
         "level": 3,
         "title": "API 概要"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 233,
+        "line": 261,
         "level": 3,
         "title": "API 概要"
       }
@@ -1827,7 +1835,7 @@
     "Adapter モジュール": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 162,
+        "line": 190,
         "level": 2,
         "title": "Adapter モジュール"
       }
@@ -1888,15 +1896,13 @@
         "title": "Bot の状態管理と Meta イベント"
       }
     ],
-    "Bot ステータスの確認": [
+    "Bot ステータス確認": [
       {
         "document": "api-reference/event-system.md",
         "line": 239,
         "level": 3,
-        "title": "Bot ステータスの確認"
-      }
-    ],
-    "Bot ステータス確認": [
+        "title": "Bot ステータス確認"
+      },
       {
         "document": "getting-started/event-handling.md",
         "line": 278,
@@ -1921,7 +1927,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 191,
+        "line": 219,
         "level": 3,
         "title": "Bot 状態の照会"
       },
@@ -2021,7 +2027,7 @@
     "Config モジュール": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 67,
+        "line": 91,
         "level": 2,
         "title": "Config モジュール"
       }
@@ -2298,20 +2304,20 @@
         "title": "Event オブジェクトの一般的なメソッド"
       }
     ],
-    "Event ラッパークラス": [
+    "Event クラス": [
       {
         "document": "api-reference/event-system.md",
-        "line": 275,
+        "line": 243,
         "level": 2,
-        "title": "Event ラッパークラス"
+        "title": "Event クラス"
       }
     ],
-    "Event ラッパークラス詳細解説": [
+    "Event 包装クラスの詳細解説": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 1,
         "level": 1,
-        "title": "Event ラッパークラス詳細解説"
+        "title": "Event 包装クラスの詳細解説"
       }
     ],
     "Event 快捷方法": [
@@ -2354,12 +2360,12 @@
         "title": "Gateway 接続"
       }
     ],
-    "HTTP クライアント モジュール": [
+    "HTTP クライアントモジュール": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 288,
+        "line": 316,
         "level": 2,
-        "title": "HTTP クライアント モジュール"
+        "title": "HTTP クライアントモジュール"
       }
     ],
     "HTTP デコレーター": [
@@ -2461,7 +2467,7 @@
     "Lifecycle モジュール": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 229,
+        "line": 257,
         "level": 2,
         "title": "Lifecycle モジュール"
       }
@@ -2469,7 +2475,7 @@
     "Logger モジュール": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 92,
+        "line": 120,
         "level": 2,
         "title": "Logger モジュール"
       }
@@ -2541,7 +2547,7 @@
     "Module モジュール": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 202,
+        "line": 230,
         "level": 2,
         "title": "Module モジュール"
       }
@@ -2787,7 +2793,7 @@
     "Router モジュール": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 261,
+        "line": 289,
         "level": 2,
         "title": "Router モジュール"
       }
@@ -2835,7 +2841,7 @@
     "SDK デバッグ": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 309,
+        "line": 337,
         "level": 2,
         "title": "SDK デバッグ"
       }
@@ -3348,18 +3354,18 @@
         "title": "`__init__` の注意点"
       }
     ],
-    "`hasattr` / `dir` のサポート": [
+    "`hasattr` / `dir` サポート": [
       {
         "document": "api-reference/event-system.md",
-        "line": 473,
+        "line": 489,
         "level": 4,
-        "title": "`hasattr` / `dir` のサポート"
+        "title": "`hasattr` / `dir` サポート"
       }
     ],
     "`hasattr` と `dir` のサポート": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 316,
+        "line": 320,
         "level": 3,
         "title": "`hasattr` と `dir` のサポート"
       }
@@ -3527,7 +3533,7 @@
     "dump_state()": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 311,
+        "line": 339,
         "level": 3,
         "title": "dump_state()"
       }
@@ -3957,7 +3963,7 @@
     "アダプタイベント": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 179,
+        "line": 207,
         "level": 3,
         "title": "アダプタイベント"
       }
@@ -4159,7 +4165,7 @@
     "アダプタ：プラットフォーム拡張メソッドの登録": [
       {
         "document": "api-reference/event-system.md",
-        "line": 480,
+        "line": 496,
         "level": 3,
         "title": "アダプタ：プラットフォーム拡張メソッドの登録"
       }
@@ -4607,7 +4613,7 @@
     "インタラクションメソッド": [
       {
         "document": "api-reference/event-system.md",
-        "line": 358,
+        "line": 387,
         "level": 3,
         "title": "インタラクションメソッド"
       }
@@ -4626,6 +4632,22 @@
         "line": 63,
         "level": 3,
         "title": "インタラクティブな初期化（推奨）"
+      }
+    ],
+    "インタラクティブメソッド": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 203,
+        "level": 4,
+        "title": "インタラクティブメソッド"
+      }
+    ],
+    "インタラクティブメソッドの例": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 228,
+        "level": 4,
+        "title": "インタラクティブメソッドの例"
       }
     ],
     "インタラクティブ処理": [
@@ -4811,13 +4833,13 @@
     "クイックリファレンス": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 267,
+        "line": 295,
         "level": 3,
         "title": "クイックリファレンス"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 294,
+        "line": 322,
         "level": 3,
         "title": "クイックリファレンス"
       },
@@ -4866,10 +4888,26 @@
         "title": "クエリ条件の再利用"
       }
     ],
+    "クロスプラットフォームメソッドの登録": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 599,
+        "level": 3,
+        "title": "クロスプラットフォームメソッドの登録"
+      }
+    ],
+    "クロスプラットフォーム拡張（ワイルドカード）": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 595,
+        "level": 2,
+        "title": "クロスプラットフォーム拡張（ワイルドカード）"
+      }
+    ],
     "グループ/チャンネル情報": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 117,
+        "line": 121,
         "level": 4,
         "title": "グループ/チャンネル情報"
       }
@@ -4998,14 +5036,6 @@
         "title": "コアコンポーネント"
       }
     ],
-    "コアフィールドメソッド": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 12,
-        "level": 2,
-        "title": "コアフィールドメソッド"
-      }
-    ],
     "コアメソッド": [
       {
         "document": "advanced/i18n.md",
@@ -5015,13 +5045,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 279,
-        "level": 3,
-        "title": "コアメソッド"
-      },
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 89,
+        "line": 247,
         "level": 3,
         "title": "コアメソッド"
       }
@@ -5128,14 +5152,6 @@
         "title": "コマンドのプレフィックスを変更する方法？"
       }
     ],
-    "コマンドの登録": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 7,
-        "level": 3,
-        "title": "コマンドの登録"
-      }
-    ],
     "コマンドイベント処理": [
       {
         "document": "getting-started/event-handling.md",
@@ -5187,7 +5203,7 @@
     "コマンド基本": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 273,
+        "line": 282,
         "level": 4,
         "title": "コマンド基本"
       }
@@ -5209,23 +5225,23 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 322,
+        "line": 303,
         "level": 3,
         "title": "コマンド情報"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 271,
+        "line": 280,
         "level": 3,
         "title": "コマンド情報"
       }
     ],
-    "コマンド情報の取得": [
+    "コマンド情報取得": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 65,
         "level": 2,
-        "title": "コマンド情報の取得"
+        "title": "コマンド情報取得"
       }
     ],
     "コマンド権限": [
@@ -5234,6 +5250,14 @@
         "line": 123,
         "level": 3,
         "title": "コマンド権限"
+      }
+    ],
+    "コマンド登録": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 7,
+        "level": 3,
+        "title": "コマンド登録"
       }
     ],
     "コマンド設定": [
@@ -5367,7 +5391,7 @@
     "サブロガー": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 106,
+        "line": 134,
         "level": 3,
         "title": "サブロガー"
       }
@@ -5670,12 +5694,12 @@
         "title": "ストレージシステム"
       }
     ],
-    "ストレージバックエンド抽象": [
+    "ストレージバックエンド抽象化": [
       {
         "document": "api-reference/core-modules.md",
         "line": 59,
         "level": 3,
-        "title": "ストレージバックエンド抽象"
+        "title": "ストレージバックエンド抽象化"
       }
     ],
     "ストレージ設定": [
@@ -5716,6 +5740,14 @@
         "line": 1,
         "level": 1,
         "title": "セッションタイプシステム"
+      }
+    ],
+    "セッション識別子": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 263,
+        "level": 3,
+        "title": "セッション識別子"
       }
     ],
     "ソート、ページネーション": [
@@ -6314,6 +6346,14 @@
         "title": "バッチ操作"
       }
     ],
+    "バッチ登録（Mixin クラス）": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 516,
+        "level": 4,
+        "title": "バッチ登録（Mixin クラス）"
+      }
+    ],
     "バリデーション付きで返信を待機する": [
       {
         "document": "getting-started/event-handling.md",
@@ -6496,12 +6536,12 @@
         "title": "プラットフォーム"
       }
     ],
-    "プラットフォームに登録されたメソッドの確認": [
+    "プラットフォームで登録されたメソッドの照会": [
       {
         "document": "api-reference/event-system.md",
-        "line": 442,
+        "line": 458,
         "level": 4,
-        "title": "プラットフォームに登録されたメソッドの確認"
+        "title": "プラットフォームで登録されたメソッドの照会"
       }
     ],
     "プラットフォームの一覧": [
@@ -6536,12 +6576,12 @@
         "title": "プラットフォームネイティブイベント"
       }
     ],
-    "プラットフォームメソッドの隔離": [
+    "プラットフォームメソッドの分離": [
       {
         "document": "api-reference/event-system.md",
-        "line": 457,
+        "line": 473,
         "level": 4,
-        "title": "プラットフォームメソッドの隔離"
+        "title": "プラットフォームメソッドの分離"
       }
     ],
     "プラットフォーム固有のメソッド": [
@@ -6585,13 +6625,13 @@
     "プラットフォーム拡張メソッド": [
       {
         "document": "api-reference/event-system.md",
-        "line": 421,
+        "line": 437,
         "level": 3,
         "title": "プラットフォーム拡張メソッド"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 285,
+        "line": 289,
         "level": 3,
         "title": "プラットフォーム拡張メソッド"
       },
@@ -6624,6 +6664,22 @@
         "line": 55,
         "level": 3,
         "title": "プラットフォーム機能ガイド"
+      }
+    ],
+    "プラットフォーム機能照会": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 339,
+        "level": 3,
+        "title": "プラットフォーム機能照会"
+      }
+    ],
+    "プラットフォーム機能確認": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 178,
+        "level": 4,
+        "title": "プラットフォーム機能確認"
       }
     ],
     "プラットフォーム状態の確認": [
@@ -6858,14 +6914,6 @@
         "title": "ボタン引数の説明"
       }
     ],
-    "ボット情報": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 98,
-        "level": 4,
-        "title": "ボット情報"
-      }
-    ],
     "ボット設定": [
       {
         "document": "platform-guide/yunhu.md",
@@ -6985,7 +7033,7 @@
     "メソッドの登録解除": [
       {
         "document": "api-reference/event-system.md",
-        "line": 546,
+        "line": 562,
         "level": 4,
         "title": "メソッドの登録解除"
       }
@@ -7104,12 +7152,20 @@
         "title": "メソッドリスト"
       }
     ],
-    "メソッド早見表": [
+    "メソッド一覧表": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 87,
         "level": 2,
-        "title": "メソッド早見表"
+        "title": "メソッド一覧表"
+      }
+    ],
+    "メソッド解決の優先順位": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 620,
+        "level": 3,
+        "title": "メソッド解決の優先順位"
       }
     ],
     "メタイベント": [
@@ -7217,7 +7273,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 104,
+        "line": 108,
         "level": 3,
         "title": "メッセージイベントメソッド"
       }
@@ -7306,18 +7362,18 @@
         "title": "メッセージセグメント標準"
       }
     ],
-    "メッセージタイプの判定": [
+    "メッセージタイプ判定": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 38,
         "level": 2,
-        "title": "メッセージタイプの判定"
+        "title": "メッセージタイプ判定"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 127,
+        "line": 131,
         "level": 3,
-        "title": "メッセージタイプの判定"
+        "title": "メッセージタイプ判定"
       }
     ],
     "メッセージフィルタリング": [
@@ -7331,7 +7387,7 @@
     "メッセージメソッド": [
       {
         "document": "api-reference/event-system.md",
-        "line": 295,
+        "line": 276,
         "level": 3,
         "title": "メッセージメソッド"
       }
@@ -7339,7 +7395,7 @@
     "メッセージ内容": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 106,
+        "line": 110,
         "level": 4,
         "title": "メッセージ内容"
       }
@@ -7512,14 +7568,6 @@
         "line": 42,
         "level": 3,
         "title": "メディア送信メソッド"
-      }
-    ],
-    "メンション関連": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 123,
-        "level": 4,
-        "title": "メンション関連"
       }
     ],
     "メンバー変更の監視": [
@@ -7832,12 +7880,12 @@
         "title": "ユーザー使用ガイド"
       }
     ],
-    "ユーザー：プラットフォーム拡張メソッドを使用": [
+    "ユーザー：プラットフォーム拡張メソッドの使用": [
       {
         "document": "api-reference/event-system.md",
-        "line": 425,
+        "line": 441,
         "level": 4,
-        "title": "ユーザー：プラットフォーム拡張メソッドを使用"
+        "title": "ユーザー：プラットフォーム拡張メソッドの使用"
       }
     ],
     "ユーティリティ": [
@@ -7863,7 +7911,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 406,
+        "line": 422,
         "level": 3,
         "title": "ユーティリティメソッド"
       }
@@ -8002,28 +8050,12 @@
         "title": "リクエストイベントの変換"
       }
     ],
-    "リクエストイベントメソッド": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 148,
-        "level": 3,
-        "title": "リクエストイベントメソッド"
-      }
-    ],
     "リクエストイベント処理": [
       {
         "document": "getting-started/event-handling.md",
         "line": 222,
         "level": 2,
         "title": "リクエストイベント処理"
-      }
-    ],
-    "リクエストタイプの判定": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 153,
-        "level": 4,
-        "title": "リクエストタイプの判定"
       }
     ],
     "リクエストパラメータの使用": [
@@ -8054,14 +8086,6 @@
         "line": 72,
         "level": 2,
         "title": "リクエストメソッド"
-      }
-    ],
-    "リクエスト情報": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 150,
-        "level": 4,
-        "title": "リクエスト情報"
       }
     ],
     "リクエスト操作": [
@@ -8206,6 +8230,28 @@
         "title": "レスポンス"
       }
     ],
+    "レプリーメソッド": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 51,
+        "level": 2,
+        "title": "レプリーメソッド"
+      },
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 162,
+        "level": 3,
+        "title": "レプリーメソッド"
+      }
+    ],
+    "レプリー待ち機能": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 193,
+        "level": 3,
+        "title": "レプリー待ち機能"
+      }
+    ],
     "レート制限": [
       {
         "document": "advanced/router.md",
@@ -8230,12 +8276,12 @@
         "title": "ログ"
       }
     ],
-    "ログサブスクリプション（プッシュ方式）": [
+    "ログのサブスクリプション（プッシュモデル）": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 127,
+        "line": 155,
         "level": 3,
-        "title": "ログサブスクリプション（プッシュ方式）"
+        "title": "ログのサブスクリプション（プッシュモデル）"
       }
     ],
     "ログメッセージ": [
@@ -8246,12 +8292,12 @@
         "title": "ログメッセージ"
       }
     ],
-    "ログレベル制御": [
+    "ログレベルの制御": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 115,
+        "line": 143,
         "level": 3,
-        "title": "ログレベル制御"
+        "title": "ログレベルの制御"
       }
     ],
     "ログ情報": [
@@ -8276,6 +8322,14 @@
         "line": 74,
         "level": 2,
         "title": "ログ設定"
+      }
+    ],
+    "ロボット情報": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 98,
+        "level": 4,
+        "title": "ロボット情報"
       }
     ],
     "ローカルからインストール": [
@@ -8396,14 +8450,6 @@
         "title": "主な差異点"
       }
     ],
-    "主な特徴": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 5,
-        "level": 2,
-        "title": "主な特徴"
-      }
-    ],
     "主な相違点": [
       {
         "document": "platform-guide/email.md",
@@ -8484,6 +8530,14 @@
         "title": "会話の作成"
       }
     ],
+    "会話識別子": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 104,
+        "level": 4,
+        "title": "会話識別子"
+      }
+    ],
     "低レベルメソッド": [
       {
         "document": "advanced/http-client.md",
@@ -8541,13 +8595,13 @@
     "例": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 80,
+        "line": 108,
         "level": 3,
         "title": "例"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 245,
+        "line": 273,
         "level": 3,
         "title": "例"
       },
@@ -8615,7 +8669,7 @@
     "優先度システム": [
       {
         "document": "api-reference/event-system.md",
-        "line": 562,
+        "line": 631,
         "level": 2,
         "title": "優先度システム"
       }
@@ -8711,7 +8765,7 @@
     "出力制御": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 153,
+        "line": 181,
         "level": 3,
         "title": "出力制御"
       }
@@ -8825,7 +8879,7 @@
     "単一メソッドの登録": [
       {
         "document": "api-reference/event-system.md",
-        "line": 484,
+        "line": 500,
         "level": 4,
         "title": "単一メソッドの登録"
       }
@@ -8940,14 +8994,6 @@
         "line": 85,
         "level": 3,
         "title": "同期初期化"
-      }
-    ],
-    "名前衝突の検出": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 558,
-        "level": 4,
-        "title": "名前衝突の検出"
       }
     ],
     "命名規則": [
@@ -9110,10 +9156,18 @@
         "title": "基本メッセージタイプ"
       }
     ],
+    "基本レプリー": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 164,
+        "level": 4,
+        "title": "基本レプリー"
+      }
+    ],
     "基本判定": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 129,
+        "line": 133,
         "level": 4,
         "title": "基本判定"
       }
@@ -9224,6 +9278,12 @@
         "line": 236,
         "level": 3,
         "title": "基本的な使い方"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 124,
+        "level": 3,
+        "title": "基本的な使い方"
       }
     ],
     "基本的な使用": [
@@ -9255,12 +9315,6 @@
       }
     ],
     "基本的な使用法": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 96,
-        "level": 3,
-        "title": "基本的な使用法"
-      },
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 469,
@@ -9298,14 +9352,6 @@
         "line": 338,
         "level": 3,
         "title": "基本的要件"
-      }
-    ],
-    "基本返信": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 160,
-        "level": 4,
-        "title": "基本返信"
       }
     ],
     "基本送信": [
@@ -9512,22 +9558,6 @@
         "title": "審査にはどのくらい時間がかかりますか？"
       }
     ],
-    "対話メソッド": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 194,
-        "level": 4,
-        "title": "対話メソッド"
-      }
-    ],
-    "対話メソッド例": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 219,
-        "level": 4,
-        "title": "対話メソッド例"
-      }
-    ],
     "対話式インストール": [
       {
         "document": "user-guide/cli-reference.md",
@@ -9591,7 +9621,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 221,
+        "line": 249,
         "level": 3,
         "title": "属性アクセス"
       }
@@ -9698,6 +9728,14 @@
         "line": 267,
         "level": 2,
         "title": "戻り値の説明"
+      }
+    ],
+    "戻り値仕様": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 537,
+        "level": 4,
+        "title": "戻り値仕様"
       }
     ],
     "手动调用 Request DSL": [
@@ -10050,12 +10088,12 @@
         "title": "条件フィルタリング"
       }
     ],
-    "条件付きリスニング": [
+    "条件付き監視": [
       {
         "document": "api-reference/event-system.md",
         "line": 143,
         "level": 3,
-        "title": "条件付きリスニング"
+        "title": "条件付き監視"
       }
     ],
     "核心な違い": [
@@ -10074,12 +10112,36 @@
         "title": "核心の差異点"
       }
     ],
+    "核心フィールドメソッド": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 12,
+        "level": 2,
+        "title": "核心フィールドメソッド"
+      }
+    ],
+    "核心メソッド": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 89,
+        "level": 3,
+        "title": "核心メソッド"
+      }
+    ],
     "核心概念": [
       {
         "document": "terminology.md",
         "line": 5,
         "level": 2,
         "title": "核心概念"
+      }
+    ],
+    "核心機能": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 5,
+        "level": 2,
+        "title": "核心機能"
       }
     ],
     "検索メソッド": [
@@ -10444,14 +10506,6 @@
         "title": "環境変数による切り替え"
       }
     ],
-    "生データ": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 280,
-        "level": 3,
-        "title": "生データ"
-      }
-    ],
     "生メッセージとメッセージ構築": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -10508,20 +10562,20 @@
         "title": "登録 API"
       }
     ],
+    "登録されたメソッドの確認": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 311,
+        "level": 3,
+        "title": "登録されたメソッドの確認"
+      }
+    ],
     "登録と解除": [
       {
         "document": "advanced/lifecycle.md",
         "line": 221,
         "level": 3,
         "title": "登録と解除"
-      }
-    ],
-    "登録済みメソッドの照会": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 307,
-        "level": 3,
-        "title": "登録済みメソッドの照会"
       }
     ],
     "目次": [
@@ -10606,6 +10660,14 @@
         "line": 498,
         "level": 3,
         "title": "組み込みの確認語"
+      }
+    ],
+    "組み込みメソッドの上書き": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 574,
+        "level": 4,
+        "title": "組み込みメソッドの上書き"
       }
     ],
     "結果を待たない": [
@@ -10728,14 +10790,6 @@
         "title": "裁量リスト"
       }
     ],
-    "複数の登録（Mixin クラス）": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 500,
-        "level": 4,
-        "title": "複数の登録（Mixin クラス）"
-      }
-    ],
     "複数アカウントモデル": [
       {
         "document": "platform-guide/webhook.md",
@@ -10750,6 +10804,30 @@
         "line": 94,
         "level": 3,
         "title": "複数アカウント設定"
+      }
+    ],
+    "要求イベントメソッド": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 152,
+        "level": 3,
+        "title": "要求イベントメソッド"
+      }
+    ],
+    "要求タイプ判定": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 157,
+        "level": 4,
+        "title": "要求タイプ判定"
+      }
+    ],
+    "要求情報": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 154,
+        "level": 4,
+        "title": "要求情報"
       }
     ],
     "要求操作の戻り値": [
@@ -11048,6 +11126,14 @@
         "title": "超级文件分享事件の例"
       }
     ],
+    "跨プラットフォーム拡張（ワイルドカード）": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 327,
+        "level": 3,
+        "title": "跨プラットフォーム拡張（ワイルドカード）"
+      }
+    ],
     "転送メッセージセグメント (ideaura_forwarded)": [
       {
         "document": "platform-guide/ideaura.md",
@@ -11059,7 +11145,7 @@
     "転送機能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 173,
+        "line": 182,
         "level": 4,
         "title": "転送機能"
       }
@@ -11070,14 +11156,6 @@
         "line": 64,
         "level": 3,
         "title": "近接マッピングの原則"
-      }
-    ],
-    "返り値仕様": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 521,
-        "level": 4,
-        "title": "返り値仕様"
       }
     ],
     "返信": [
@@ -11096,38 +11174,26 @@
         "title": "返信を送信する"
       }
     ],
-    "返信待機": [
+    "返信メソッド": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 351,
+        "level": 3,
+        "title": "返信メソッド"
+      }
+    ],
+    "返信待ち": [
       {
         "document": "api-reference/event-system.md",
         "line": 57,
         "level": 3,
-        "title": "返信待機"
-      }
-    ],
-    "返信待機機能": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 184,
-        "level": 3,
-        "title": "返信待機機能"
+        "title": "返信待ち"
       }
     ],
     "返信機能": [
       {
         "document": "api-reference/event-system.md",
-        "line": 334,
-        "level": 3,
-        "title": "返信機能"
-      },
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 51,
-        "level": 2,
-        "title": "返信機能"
-      },
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 158,
+        "line": 315,
         "level": 3,
         "title": "返信機能"
       }
@@ -11239,7 +11305,7 @@
     "送信者情報": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 112,
+        "line": 116,
         "level": 4,
         "title": "送信者情報"
       }
@@ -11309,7 +11375,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 135,
+        "line": 139,
         "level": 3,
         "title": "通知イベントメソッド"
       }
@@ -11322,18 +11388,18 @@
         "title": "通知イベント処理"
       }
     ],
-    "通知タイプの判定": [
+    "通知タイプ判定": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 141,
+        "line": 145,
         "level": 4,
-        "title": "通知タイプの判定"
+        "title": "通知タイプ判定"
       }
     ],
     "通知操作者": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 137,
+        "line": 141,
         "level": 4,
         "title": "通知操作者"
       }
@@ -11526,14 +11592,8 @@
         "title": "関連ドキュメント"
       },
       {
-        "document": "api-reference/core-modules.md",
-        "line": 333,
-        "level": 2,
-        "title": "関連ドキュメント"
-      },
-      {
         "document": "api-reference/event-system.md",
-        "line": 578,
+        "line": 647,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -11575,7 +11635,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 325,
+        "line": 346,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -11608,6 +11668,12 @@
     ],
     "関連文書": [
       {
+        "document": "api-reference/core-modules.md",
+        "line": 361,
+        "level": 2,
+        "title": "関連文書"
+      },
+      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 903,
         "level": 2,
@@ -11628,6 +11694,14 @@
         "line": 1,
         "level": 1,
         "title": "雲湖プラットフォーム特性ドキュメント"
+      }
+    ],
+    "非同期インターフェース": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 67,
+        "level": 3,
+        "title": "非同期インターフェース"
       }
     ],
     "非同期プログラミング": [
