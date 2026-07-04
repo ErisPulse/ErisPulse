@@ -104,6 +104,8 @@ class ListCommand(Command):
                 console.print(
                     f"[dim]  {i18n.t('cli.list.count_modules', count=count)}[/]"
                 )
+                # 展示模块注册的脚本入口
+                self._print_package_scripts(installed["modules"])
             else:
                 console.print(f"[dim]  {i18n.t('cli.list.no_modules')}[/]")
 
@@ -162,3 +164,33 @@ class ListCommand(Command):
             if adapter_info["package"] == package_name:
                 return adapter_info["version"] != current_version
         return False
+
+    def _print_package_scripts(self, packages: dict) -> None:
+        """
+        发现并展示已安装模块包注册的 console_scripts 入口
+
+        :param packages: [dict] 模块信息字典 {name: {package, version, ...}}
+        """
+        import importlib.metadata
+
+        all_scripts: list[tuple[str, str]] = []
+
+        for module_name, info in packages.items():
+            package_name = info.get("package", "")
+            if not package_name:
+                continue
+            try:
+                dist = importlib.metadata.distribution(package_name)
+                for ep in dist.entry_points:
+                    if ep.group == "console_scripts":
+                        all_scripts.append((module_name, ep.name))
+            except Exception:
+                continue
+
+        if not all_scripts:
+            return
+
+        console.print()
+        console.print(f"  [dim]{i18n.t('cli.list.scripts_header')}[/]")
+        for module_name, script_name in all_scripts:
+            console.print(f"  [module]{module_name}[/]  [cyan]{script_name}[/]")

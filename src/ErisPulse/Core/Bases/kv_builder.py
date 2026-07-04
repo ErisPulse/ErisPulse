@@ -40,6 +40,7 @@ class KVQueryBuilder(BaseQueryBuilder):
     def __init__(self, storage, table: str):
         super().__init__(storage, table)
         self._table_prefix = f"{_TABLE_PREFIX}:{table}"
+        self._bound_clauses: list[str] | None = None
 
     # ---- key helpers ----
 
@@ -94,36 +95,39 @@ class KVQueryBuilder(BaseQueryBuilder):
 
     def _match_row(self, row: dict) -> bool:
         """检查行是否满足所有 WHERE 条件"""
-        if not self._where_clauses:
-            return True
-
-        for clause in self._where_clauses:
+        if self._bound_clauses is None:
+            self._bind_clauses()
+        for clause in self._bound_clauses:
             if not self._eval_clause(row, clause):
                 return False
         return True
 
-    def _eval_clause(self, row: dict, clause: str) -> bool:
-        """评估单条 WHERE 子句
+    def _bind_clauses(self):
+        """将 WHERE 子句中的 ? 替换为实际参数（只执行一次）"""
+        self._bound_clauses = []
+        params = list(self._where_params)
+        for clause in self._where_clauses:
+            if "?" in clause and params:
+                val = params.pop(0)
+                if isinstance(val, str):
+                    val = f"'{val}'"
+                clause = clause.replace("?", str(val), 1)
+            self._bound_clauses.append(clause)
 
+    def _eval_clause(self, row: dict, clause: str) -> bool:
+        """评估单条已绑定的 WHERE 子句
+
+        clause 中的占位符 `?` 已在 `_bind_clauses` 中替换为实际值。
         支持的操作符: =, !=, >, >=, <, <=, LIKE
-        格式: "column op value" 或带占位符 "column op ?"（参数在 _where_params 中）
         """
-        # 简单解析：按空格拆三部分
         parts = clause.strip().split(None, 2)
         if len(parts) < 3:
             return True
 
         column, op, expected = parts[0], parts[1], parts[2]
 
-        # 处理占位符 ?
-        if expected == "?":
-            if self._where_params:
-                expected = self._where_params.pop(0)
-            else:
-                return False
-        else:
-            # 去掉引号
-            expected = expected.strip("'\"")
+        # 去掉引号
+        expected = expected.strip("'\"")
 
         actual = row.get(column)
 

@@ -177,6 +177,7 @@ TRANSLATIONS = {
     "cli.list.status_disabled": "Отключен",
     "cli.list.count_modules": "{count} модуля(ей)",
     "cli.list.no_modules": "Нет подходящих модулей",
+    "cli.list.scripts_header": "Инструменты командной строки модулей:",
     "cli.list.header_adapter": "Имя адаптера",
     "cli.list.count_adapters": "{count} адаптера(ов)",
     "cli.list.no_adapters": "Нет подходящих адаптеров",
