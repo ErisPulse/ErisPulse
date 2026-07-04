@@ -97,6 +97,7 @@ class EventData(TypedDict, total=False):
 # ==================== 平台事件方法注册系统 ====================
 
 # 注册表: {platform: {method_name: callable}}
+# platform 为 "*" 时表示跨所有平台生效（通配符）
 _platform_event_methods: dict[str, dict[str, Callable]] = {}
 
 
@@ -110,7 +111,7 @@ def register_event_mixin(platform: str, mixin_cls: type) -> int:
     注册的方法会通过 Event.__getattribute__ 优先于内置方法生效，
     因此可以覆写 confirm / choose / collect / wait_reply 等内置交互式方法。
 
-    :param platform: 平台名称（需与适配器注册名一致）
+    :param platform: 平台名称（需与适配器注册名一致），传 "*" 表示对所有平台生效
     :param mixin_cls: 包含平台方法的类
     :return: 成功注册的方法数量
 
@@ -147,12 +148,17 @@ def register_event_method(platform: str):
     注册的方法会通过 Event.__getattribute__ 优先于内置方法生效，
     因此可以覆写 confirm / choose / collect / wait_reply 等内置交互式方法。
 
-    :param platform: 平台名称（需与适配器注册名一致）
+    :param platform: 平台名称（需与适配器注册名一致），传 "*" 表示对所有平台生效
 
     :example:
     >>> @register_event_method("email")
     ... def get_subject(self):
     ...     return self.get("email_raw", {}).get("subject", "")
+    >>>
+    >>> # 跨平台通配符
+    >>> @register_event_method("*")
+    ... def ai_chat(self, prompt):
+    ...     return await self.reply(f"AI: {prompt}")
     """
 
     def decorator(func: Callable) -> Callable:
@@ -616,6 +622,49 @@ class Event(dict):
         """
         return self.get("thread_id", "")
 
+    def get_target_id(self) -> str:
+        """
+        获取当前会话的目标ID（统一接口）
+
+        根据事件类型自动返回对应的目标ID：
+        群聊 → group_id，频道 → channel_id，私聊 → user_id，以此类推。
+
+        :return: 目标ID字符串，无法确定时返回空字符串
+
+        :example:
+        >>> target = event.get_target_id()
+        >>> # 群聊事件 → group_id
+        >>> # 私聊事件 → user_id
+        """
+        for key in (
+            "group_id",
+            "channel_id",
+            "guild_id",
+            "thread_id",
+            "user_id",
+        ):
+            value = self.get(key, "")
+            if value:
+                return str(value)
+        return ""
+
+    def get_session_id(self) -> str:
+        """
+        生成会话唯一标识
+
+        格式: ``{platform}:{detail_type}:{target_id}``
+        如: ``telegram:private:12345``、``qq:group:67890``
+
+        用于存储、上下文管理等需要唯一标识会话的场景。
+
+        :return: 会话标识字符串
+
+        :example:
+        >>> session_id = event.get_session_id()
+        >>> # "qq:group:123456"
+        """
+        return f"{self.get_platform()}:{self.get_detail_type()}:{self.get_target_id()}"
+
     def get_sender(self) -> dict[str, Any]:
         """
         获取发送者信息字典
@@ -909,6 +958,8 @@ class Event(dict):
         self,
         content: str,
         method: str = DEFAULT_SEND_METHOD,
+        at_sender: bool = False,
+        quote: bool = False,
         at_users: list[str] = None,
         reply_to: str | None = None,
         at_all: bool = False,
@@ -922,8 +973,10 @@ class Event(dict):
         :param content: 发送内容（文本、URL等，取决于method参数）
         :param method: 适配器发送方法，默认为"Text"
                        可选值: "Text", "Image", "Voice", "Video", "File" 等
+        :param at_sender: 是否@发送者（自动从事件中提取 user_id）
+        :param quote: 是否引用回复当前消息（自动从事件中提取 message_id）
         :param at_users: @用户列表（可选），如 ["user1", "user2"]
-        :param reply_to: 回复消息ID（可选）
+        :param reply_to: 回复消息ID（可选，手动指定）
         :param at_all: 是否@全体成员（可选），默认为 False
         :param kwargs: 额外参数，例如Mention方法的user_id
         :return: 适配器发送方法的返回值
@@ -932,20 +985,20 @@ class Event(dict):
         >>> # 简单回复
         >>> await event.reply("你好")
         >>>
+        >>> # 回复并@发送者
+        >>> await event.reply("你好", at_sender=True)
+        >>>
+        >>> # 回复并引用当前消息
+        >>> await event.reply("收到", quote=True)
+        >>>
         >>> # 发送图片
         >>> await event.reply("http://example.com/image.jpg", method="Image")
         >>>
-        >>> # @用户
+        >>> # @指定用户
         >>> await event.reply("你好", at_users=["user123"])
-        >>>
-        >>> # 回复消息
-        >>> await event.reply("回复内容", reply_to="msg_id")
         >>>
         >>> # @全体成员
         >>> await event.reply("公告", at_all=True)
-        >>>
-        >>> # 组合使用：@用户 + 回复消息
-        >>> await event.reply("内容", at_users=["user1"], reply_to="msg_id")
         """
         adapter_instance, detail_type, target_id, bot_id = (
             self._get_adapter_and_target()
@@ -957,6 +1010,12 @@ class Event(dict):
         # 多Bot: 使用接收事件的Bot发送
         if bot_id:
             send_chain = send_chain.Using(bot_id)
+
+        # 处理@发送者
+        if at_sender:
+            sender_id = self.get_user_id()
+            if sender_id and hasattr(send_chain, "At"):
+                send_chain = send_chain.At(sender_id)
 
         # 处理@用户
         if at_users:
@@ -970,6 +1029,9 @@ class Event(dict):
                 send_chain = send_chain.AtAll()
 
         # 处理回复消息
+        # quote=True 时自动获取当前消息ID
+        if quote and not reply_to:
+            reply_to = self.get("message_id", "")
         if reply_to:
             if hasattr(send_chain, "Reply"):
                 send_chain = send_chain.Reply(reply_to)
@@ -1034,6 +1096,41 @@ class Event(dict):
         if bot_id:
             send_chain = send_chain.Using(bot_id)
         return await send_chain.Raw_ob12(message)
+
+    # ==================== 平台能力查询 ====================
+
+    def supports(self, method: str) -> bool:
+        """
+        检查当前事件所在平台是否支持某发送方法
+
+        :param method: 发送方法名，如 "Image"、"Voice"、"Video"
+        :return: 是否支持
+
+        :example:
+        >>> if event.supports("Image"):
+        ...     await event.reply(url, method="Image")
+        """
+        platform = self.get_platform()
+        try:
+            return method in adapter.list_sends(platform)
+        except (ValueError, AttributeError):
+            return False
+
+    def available_methods(self) -> list[str]:
+        """
+        列出当前平台所有可用发送方法
+
+        :return: 发送方法名列表
+
+        :example:
+        >>> methods = event.available_methods()
+        >>> # ["Text", "Image", "Voice", ...]
+        """
+        platform = self.get_platform()
+        try:
+            return adapter.list_sends(platform)
+        except (ValueError, AttributeError):
+            return []
 
     # ==================== 等待回复功能 ====================
 
@@ -1332,16 +1429,23 @@ class Event(dict):
     def __getattribute__(self, name: str) -> Any:
         """
         属性查找优先级:
-        1. 平台注册的方法覆写（仅当前平台，优先于内置方法）
-        2. 内置方法/属性（正常解析）
+        1. 当前平台的注册方法覆写（优先于内置方法）
+        2. 通配符 "*" 平台的注册方法
+        3. 内置方法/属性（正常解析）
 
         :param name: str - 属性名
         :return: Any - 属性值
         """
         platform = dict.get(self, "platform", "")
+        # 1. 当前平台特定方法
         platform_methods = _platform_event_methods.get(platform)
         if platform_methods and name in platform_methods:
             func = platform_methods[name]
+            return func.__get__(self, type(self))
+        # 2. 通配符方法
+        wildcard_methods = _platform_event_methods.get("*")
+        if wildcard_methods and name in wildcard_methods:
+            func = wildcard_methods[name]
             return func.__get__(self, type(self))
 
         return object.__getattribute__(self, name)
@@ -1349,23 +1453,30 @@ class Event(dict):
     def __getattr__(self, name: str) -> Any:
         """
         属性查找优先级:
-        1. 平台注册的扩展方法（仅当前平台）
-        2. 字典键访问（点式访问 event.platform 等）
+        1. 当前平台的扩展方法
+        2. 通配符 "*" 平台的扩展方法
+        3. 字典键访问（点式访问 event.platform 等）
 
         :param name: str - 属性名
         :return: Any - 属性值
         :raises AttributeError: 属性不存在
         """
-        # 1. 查找当前平台的扩展方法
         platform = dict.get(self, "platform", "")
+        # 1. 当前平台特定方法
         if (
             platform_methods := _platform_event_methods.get(platform)
         ) and name in platform_methods:
             func = platform_methods[name]
-            # 使用方法描述符协议绑定 self，使 isinstance 检查和 super() 正常工作
             return func.__get__(self, type(self))
 
-        # 2. 兜底：字典键访问
+        # 2. 通配符方法
+        if (
+            wildcard_methods := _platform_event_methods.get("*")
+        ) and name in wildcard_methods:
+            func = wildcard_methods[name]
+            return func.__get__(self, type(self))
+
+        # 3. 兜底：字典键访问
         try:
             return self[name]
         except KeyError:
@@ -1375,7 +1486,7 @@ class Event(dict):
 
     def __dir__(self) -> list[str]:
         """
-        让 dir(event) 包含当前平台注册的扩展方法名
+        让 dir(event) 包含当前平台和通配符注册的扩展方法名
         """
         names = super().__dir__()
         # 添加当前平台的扩展方法名
@@ -1383,6 +1494,10 @@ class Event(dict):
         platform_methods = _platform_event_methods.get(platform)
         if platform_methods:
             names = list(names) + list(platform_methods.keys())
+        # 添加通配符平台的扩展方法名
+        wildcard_methods = _platform_event_methods.get("*")
+        if wildcard_methods:
+            names = list(names) + list(wildcard_methods.keys())
         return sorted(set(names))
 
     def __repr__(self) -> str:

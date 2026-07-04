@@ -260,6 +260,19 @@ self_user_id = event.get_self_user_id()
 self_info = event.get_self_info()
 ```
 
+### 会话标识
+
+```python
+# 统一目标 ID：群聊返回 group_id，私聊返回 user_id，以此类推
+target_id = event.get_target_id()
+
+# 会话唯一标识，格式: {platform}:{detail_type}:{target_id}
+session_id = event.get_session_id()
+# 示例: "telegram:private:12345"、"qq:group:67890"
+```
+
+`get_target_id()` 按以下顺序返回首个非空值：`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`。适用于上下文管理、状态存储等需要统一标识会话的场景。
+
 ### 消息方法
 
 ```python
@@ -322,6 +335,54 @@ await event.reply_ob12(msg)
 # 等待回复
 reply = await event.wait_reply(timeout=30)
 ```
+
+### 平台能力查询
+
+```python
+# 检查当前平台是否支持某种发送方法
+if event.supports("Image"):
+    await event.reply(url, method="Image")
+
+# 列出当前平台所有可用发送方法
+methods = event.available_methods()
+# ["Text", "Image", "Voice", ...]
+```
+
+### 回复方法
+
+`reply()` 方法支持通过 `method` 参数指定发送类型，以及两个便捷的布尔参数：
+
+```python
+# 简单文本回复
+await event.reply("你好")
+
+# 回复并@发送者
+await event.reply("你好", at_sender=True)
+
+# 回复并引用当前消息
+await event.reply("收到", reply_to_message=True)
+
+# 组合使用
+await event.reply("收到", at_sender=True, reply_to_message=True)
+
+# 发送图片（使用 method 参数）
+if event.supports("Image"):
+    await event.reply("http://example.com/img.jpg", method="Image")
+else:
+    await event.reply("[图片] http://example.com/img.jpg")
+```
+
+**参数说明**：
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `content` | str | 发送内容 |
+| `method` | str | 发送方法，默认 "Text"，可选 "Image"/"Voice"/"Video"/"File" 等 |
+| `at_sender` | bool | 是否@发送者（自动提取 user_id） |
+| `quote` | bool | 是否引用回复当前消息（自动提取 message_id） |
+| `at_users` | list[str] | @指定用户列表 |
+| `reply_to` | str | 手动指定回复的消息 ID |
+| `at_all` | bool | 是否@全体成员 |
 
 ### 交互方法
 
@@ -530,6 +591,42 @@ class YunhuEventMixin:
 
 register_event_mixin("yunhu", YunhuEventMixin)
 ```
+
+## 跨平台扩展（通配符）
+
+`register_event_method` 和 `register_event_mixin` 支持传 `"*"` 作为平台名，注册的方法在**所有平台**的 Event 实例上都可用。适合 AI 对话、上下文管理等需要跨平台复用的功能模块。
+
+### 注册跨平台方法
+
+```python
+from ErisPulse.Core.Event.wrapper import register_event_method
+
+@register_event_method("*")
+async def ai_chat(self, prompt: str):
+    """self 为 Event 实例，可自由访问事件数据和内置方法"""
+    await self.reply(f"AI: {prompt}")
+```
+
+注册后，所有平台的事件处理器都能调用：
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handler(event):
+    await event.ai_chat(event.get_text())
+```
+
+### 方法解析优先级
+
+通过属性访问 Event 方法时，解析顺序为：
+
+1. **平台特定方法**（当前平台的覆写）
+2. **通配符方法**（`"*"` 注册的跨平台方法）
+3. **内置方法**（`reply`、`confirm` 等）
+4. **字典键访问**
+
+> 因此通配符方法可以覆写内置方法（如 `reply`），但会被同名的平台特定方法进一步覆写。
 
 ## 优先级系统
 

@@ -67,7 +67,7 @@
 > 开发版本
 
 **版本摘要**
-2.5.2-dev.4 聚焦内部友好性与可观测性改进：新增 `sdk.dump_state()` 运行时状态快照导出；为事件/命令/存储/路由子系统补齐 TRACE 级别链路追踪日志与对应 i18n keys；新增全局友好错误提示引擎（拼写纠错）；优化 constants 类型注解与导出声明。
+2.5.2-dev.4 聚焦内部友好性、可观测性与事件系统增强：新增 `sdk.dump_state()` 运行时状态快照导出；为事件/命令/存储/路由子系统补齐 TRACE 级别链路追踪日志与对应 i18n keys；新增全局友好错误提示引擎（拼写纠错）；Event 包装类增强；优化 constants 类型注解与导出声明。
 
 ### 新增
 
@@ -96,6 +96,17 @@
   - `CLI/console.py` 新增 `hint` 样式（`#CE93D8` 紫色）
   - `Core/i18n/locales/` + `CLI/i18n/locales/` 10 个 locale 文件统一新增友好提示 i18n keys（`core.hints.*` / `cli.run.did_you_mean`）
 
+- @wsu2059q
+  - `Core/Event/wrapper.py` Event 包装类新增方法：
+    - `get_target_id()` — 统一目标ID（群聊返回 group_id，私聊返回 user_id，以此类推）
+    - `get_session_id()` — 会话唯一标识，格式 `{platform}:{detail_type}:{target_id}`
+    - `supports(method)` / `available_methods()` — 平台能力查询
+    - `reply()` 新增 `at_sender` / `quote` 便捷参数
+  - `Core/Event/wrapper.py` `register_event_method` / `register_event_mixin` 新增 `"*"` 通配符支持，可注册跨所有平台生效的扩展方法
+  - `Core/Bases/storage.py` `BaseStorage` 新增异步接口（`aget/aset/adelete/aget_all_keys/aclear` 等），默认通过 `run_in_executor` 桥接同步方法，不阻塞事件循环
+  - `Core/Bases/kv_builder.py` `KVQueryBuilder` 新增异步查询接口（`aExecute/aExecuteOne/aCount/aExists`）
+  - `Core/config.py` `ConfigManager` 新增异步接口（`agetConfig/asetConfig/aforce_save/areload`）
+
 ### 优化
 
 - @wsu2059q
@@ -111,6 +122,11 @@
   - `CLI/commands/list_remote.py` 别名 `lr` 改为 `lsr`（更直觉）
   - `runtime/exceptions.py` 修正拼写错误 `Unkonw` → `Unknown`、中文全角冒号 `：` → 英文 `:`
   - `runtime/exceptions.py` 将重复的 logger 获取逻辑提取为 `_get_error_logger()`
+
+### 文档
+
+- @wsu2059q
+  - 更新 Event 相关文档
 
 ---
 

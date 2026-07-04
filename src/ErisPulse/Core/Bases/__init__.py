@@ -7,6 +7,7 @@ ErisPulse 基础模块
 from .adapter import SendDSL, RequestDSL, BaseAdapter
 from .module import BaseModule
 from .storage import BaseStorage, BaseQueryBuilder
+from .kv_builder import KVQueryBuilder
 from .errors import (
     ErisPulseError,
     ClientError,
@@ -27,6 +28,7 @@ __all__ = [
     "BaseModule",
     "BaseStorage",
     "BaseQueryBuilder",
+    "KVQueryBuilder",
     "HttpRequest",
     "WebSocketConnection",
     "WebSocketConnectionBase",

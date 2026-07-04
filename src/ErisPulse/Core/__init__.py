@@ -13,6 +13,7 @@ from .Bases import (
     RequestDSL,
     BaseStorage,
     BaseQueryBuilder,
+    KVQueryBuilder,
 )
 from .Bases import HttpRequest, WebSocketConnection, WebSocketConnectionBase, WSMessage
 from .Bases import (
@@ -55,6 +56,7 @@ __all__ = [
     "StorageManager",  # 存储管理器类
     "BaseStorage",  # 存储基类
     "BaseQueryBuilder",  # 查询构建器基类
+    "KVQueryBuilder",  # KV 查询构建器
     "config",  # 配置模块单例
     "env",  # 配置管理器别名
     "ConfigManager",  # 配置管理器类

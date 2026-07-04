@@ -267,6 +267,7 @@ class BaseStorage(ABC):
     1. 键值操作（get/set/delete）用于简单数据存取
     2. Table/CreateTable/DropTable 用于结构化数据操作
     3. transaction 提供事务支持
+    4. 异步方法（aget/aset/...）默认桥接到同步方法，异步后端可覆写
     {!--< /tips >!--}
     """
 
@@ -415,6 +416,104 @@ class BaseStorage(ABC):
         :return: 键名列表
         """
         return self.get_all_keys()
+
+    # ==================== 异步接口（默认通过线程池桥接同步方法） ====================
+
+    async def aget(self, key: str, default: Any = None) -> Any:
+        """
+        异步获取存储项的值
+
+        默认实现通过线程池执行同步 ``get()``，避免阻塞事件循环。
+        异步后端（如 Redis）应覆写此方法为原生异步实现。
+
+        :param key: 存储项键名
+        :param default: 默认值
+        :return: 存储项的值
+        """
+        import asyncio
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.get, key, default)
+
+    async def aset(self, key: str, value: Any) -> bool:
+        """
+        异步设置存储项的值
+
+        :param key: 存储项键名
+        :param value: 存储项的值
+        :return: 操作是否成功
+        """
+        import asyncio
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.set, key, value)
+
+    async def adelete(self, key: str) -> bool:
+        """
+        异步删除存储项
+
+        :param key: 存储项键名
+        :return: 操作是否成功
+        """
+        import asyncio
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.delete, key)
+
+    async def aget_all_keys(self) -> list[str]:
+        """
+        异步获取所有存储项的键名
+
+        :return: 键名列表
+        """
+        import asyncio
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.get_all_keys)
+
+    async def aclear(self) -> bool:
+        """
+        异步清空所有存储项
+
+        :return: 操作是否成功
+        """
+        import asyncio
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.clear)
+
+    async def aget_multi(self, keys: list[str]) -> dict[str, Any]:
+        """
+        异步批量获取多个存储项的值
+
+        :param keys: 键名列表
+        :return: 键值对字典
+        """
+        results = {}
+        for key in keys:
+            value = await self.aget(key, _SENTINEL)
+            if value is not _SENTINEL:
+                results[key] = value
+        return results
+
+    async def aset_multi(self, items: dict[str, Any]) -> bool:
+        """
+        异步批量设置多个存储项
+
+        :param items: 键值对字典
+        :return: 操作是否成功
+        """
+        for key, value in items.items():
+            if not await self.aset(key, value):
+                return False
+        return True
+
+    async def adelete_multi(self, keys: list[str]) -> bool:
+        """
+        异步批量删除多个存储项
+
+        :param keys: 键名列表
+        :return: 操作是否成功
+        """
+        for key in keys:
+            if not await self.adelete(key):
+                return False
+        return True
 
     def __getattr__(self, key: str) -> Any:
         if key.startswith("_"):
