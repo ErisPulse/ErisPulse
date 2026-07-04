@@ -245,6 +245,7 @@ ErisPulse 存储基类
 > 1. 键值操作（get/set/delete）用于简单数据存取
 > 2. Table/CreateTable/DropTable 用于结构化数据操作
 > 3. transaction 提供事务支持
+> 4. 异步方法（aget/aset/...）默认桥接到同步方法，异步后端可覆写
 
 
 #### 方法列表
@@ -385,6 +386,89 @@ ErisPulse 存储基类
 获取所有存储项的键名（代理到 get_all_keys）
 
 :return: 键名列表
+
+---
+
+
+##### `async async aget(key: str, default: Any = None)`
+
+异步获取存储项的值
+
+默认实现通过线程池执行同步 ``get()``，避免阻塞事件循环。
+异步后端（如 Redis）应覆写此方法为原生异步实现。
+
+:param key: 存储项键名
+:param default: 默认值
+:return: 存储项的值
+
+---
+
+
+##### `async async aset(key: str, value: Any)`
+
+异步设置存储项的值
+
+:param key: 存储项键名
+:param value: 存储项的值
+:return: 操作是否成功
+
+---
+
+
+##### `async async adelete(key: str)`
+
+异步删除存储项
+
+:param key: 存储项键名
+:return: 操作是否成功
+
+---
+
+
+##### `async async aget_all_keys()`
+
+异步获取所有存储项的键名
+
+:return: 键名列表
+
+---
+
+
+##### `async async aclear()`
+
+异步清空所有存储项
+
+:return: 操作是否成功
+
+---
+
+
+##### `async async aget_multi(keys: list[str])`
+
+异步批量获取多个存储项的值
+
+:param keys: 键名列表
+:return: 键值对字典
+
+---
+
+
+##### `async async aset_multi(items: dict[str, Any])`
+
+异步批量设置多个存储项
+
+:param items: 键值对字典
+:return: 操作是否成功
+
+---
+
+
+##### `async async adelete_multi(keys: list[str])`
+
+异步批量删除多个存储项
+
+:param keys: 键名列表
+:return: 操作是否成功
 
 ---
 

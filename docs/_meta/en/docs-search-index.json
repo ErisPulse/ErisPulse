@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1273,
+  "total_keywords": 1284,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -1812,12 +1812,12 @@
         "title": "9. Related Documentation"
       }
     ],
-    "@ Mention related": [
+    "@Message Related": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 123,
+        "line": 127,
         "level": 4,
-        "title": "@ Mention related"
+        "title": "@Message Related"
       }
     ],
     "@conv.branch(name) Decorator": [
@@ -1877,25 +1877,25 @@
     "API Overview": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 71,
+        "line": 95,
         "level": 3,
         "title": "API Overview"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 166,
+        "line": 194,
         "level": 3,
         "title": "API Overview"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 206,
+        "line": 234,
         "level": 3,
         "title": "API Overview"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 233,
+        "line": 261,
         "level": 3,
         "title": "API Overview"
       }
@@ -2149,7 +2149,7 @@
     "Adapter Events": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 179,
+        "line": 207,
         "level": 3,
         "title": "Adapter Events"
       }
@@ -2197,7 +2197,7 @@
     "Adapter Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 162,
+        "line": 190,
         "level": 2,
         "title": "Adapter Module"
       }
@@ -2234,20 +2234,20 @@
         "title": "Adapter System API"
       }
     ],
+    "Adapter: Register Platform Extension Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 496,
+        "level": 3,
+        "title": "Adapter: Register Platform Extension Methods"
+      }
+    ],
     "AdapterManager 适配器管理器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 46,
         "level": 2,
         "title": "AdapterManager 适配器管理器"
-      }
-    ],
-    "Adapters: Registering Platform Extension Methods": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 481,
-        "level": 3,
-        "title": "Adapters: Registering Platform Extension Methods"
       }
     ],
     "Adding Middleware": [
@@ -2380,6 +2380,14 @@
         "title": "Asynchronous Initialization"
       }
     ],
+    "Asynchronous Interfaces": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 67,
+        "level": 3,
+        "title": "Asynchronous Interfaces"
+      }
+    ],
     "Asynchronous Processing Mechanism": [
       {
         "document": "platform-guide/onebot12.md",
@@ -2443,7 +2451,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 221,
+        "line": 249,
         "level": 3,
         "title": "Attribute Access"
       }
@@ -2552,6 +2560,14 @@
         "title": "Basic Concepts"
       }
     ],
+    "Basic Detection": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 133,
+        "level": 4,
+        "title": "Basic Detection"
+      }
+    ],
     "Basic Format": [
       {
         "document": "styleguide/docstring.md",
@@ -2628,14 +2644,6 @@
         "title": "Basic Information"
       }
     ],
-    "Basic Judgment": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 129,
-        "level": 4,
-        "title": "Basic Judgment"
-      }
-    ],
     "Basic Message Types": [
       {
         "document": "platform-guide/onebot12.md",
@@ -2669,7 +2677,7 @@
     "Basic Reply": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 160,
+        "line": 164,
         "level": 4,
         "title": "Basic Reply"
       }
@@ -2733,7 +2741,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 96,
+        "line": 124,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -2773,7 +2781,7 @@
     "Batch Registration (Mixin Class)": [
       {
         "document": "api-reference/event-system.md",
-        "line": 501,
+        "line": 516,
         "level": 4,
         "title": "Batch Registration (Mixin Class)"
       }
@@ -2895,7 +2903,7 @@
     "Bot Status Query": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 191,
+        "line": 219,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -3275,7 +3283,7 @@
     "Child Loggers": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 106,
+        "line": 134,
         "level": 3,
         "title": "Child Loggers"
       }
@@ -3384,12 +3392,12 @@
         "title": "Command Arguments"
       }
     ],
-    "Command Basic": [
+    "Command Basics": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 273,
+        "line": 282,
         "level": 4,
-        "title": "Command Basic"
+        "title": "Command Basics"
       }
     ],
     "Command Configuration": [
@@ -3424,22 +3432,24 @@
         "title": "Command Groups"
       }
     ],
-    "Command Information": [
+    "Command Info": [
       {
         "document": "api-reference/event-system.md",
         "line": 41,
         "level": 3,
-        "title": "Command Information"
+        "title": "Command Info"
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 322,
+        "line": 303,
         "level": 3,
-        "title": "Command Information"
-      },
+        "title": "Command Info"
+      }
+    ],
+    "Command Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 271,
+        "line": 280,
         "level": 3,
         "title": "Command Information"
       }
@@ -3673,7 +3683,7 @@
     "Config Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 67,
+        "line": 91,
         "level": 2,
         "title": "Config Module"
       }
@@ -4153,7 +4163,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 279,
+        "line": 247,
         "level": 3,
         "title": "Core Methods"
       },
@@ -4264,6 +4274,22 @@
         "line": 5,
         "level": 2,
         "title": "Creating a Conversation"
+      }
+    ],
+    "Cross-Platform Extensions (Wildcard)": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 595,
+        "level": 2,
+        "title": "Cross-Platform Extensions (Wildcard)"
+      }
+    ],
+    "Cross-platform Extension (Wildcard)": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 332,
+        "level": 3,
+        "title": "Cross-platform Extension (Wildcard)"
       }
     ],
     "Custom Default Headers": [
@@ -4388,14 +4414,6 @@
         "line": 1,
         "level": 1,
         "title": "Deployment Guide"
-      }
-    ],
-    "Detailed Explanation of the Event Wrapper Class": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 1,
-        "level": 1,
-        "title": "Detailed Explanation of the Event Wrapper Class"
       }
     ],
     "Developer Guide": [
@@ -4700,14 +4718,6 @@
         "line": 24,
         "level": 3,
         "title": "Domestic Mirror Acceleration"
-      }
-    ],
-    "Dot Notation Access": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 299,
-        "level": 3,
-        "title": "Dot Notation Access"
       }
     ],
     "Dot-structured Events": [
@@ -5223,9 +5233,17 @@
     "Event Wrapper Class": [
       {
         "document": "api-reference/event-system.md",
-        "line": 275,
+        "line": 243,
         "level": 2,
         "title": "Event Wrapper Class"
+      }
+    ],
+    "Event Wrapper Class Overview": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 1,
+        "level": 1,
+        "title": "Event Wrapper Class Overview"
       }
     ],
     "Event-Driven Architecture": [
@@ -5245,13 +5263,7 @@
     "Example": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 80,
-        "level": 3,
-        "title": "Example"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 245,
+        "line": 273,
         "level": 3,
         "title": "Example"
       },
@@ -5260,6 +5272,14 @@
         "line": 110,
         "level": 3,
         "title": "Example"
+      }
+    ],
+    "Examples": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 108,
+        "level": 3,
+        "title": "Examples"
       }
     ],
     "Exception Catching": [
@@ -5479,7 +5499,7 @@
     "Forward Functionality": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 173,
+        "line": 182,
         "level": 4,
         "title": "Forward Functionality"
       }
@@ -5781,7 +5801,7 @@
     "Group/Channel Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 117,
+        "line": 121,
         "level": 4,
         "title": "Group/Channel Information"
       }
@@ -5797,7 +5817,7 @@
     "HTTP Client Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 288,
+        "line": 316,
         "level": 2,
         "title": "HTTP Client Module"
       }
@@ -6342,25 +6362,11 @@
         "title": "Inter-module Communication"
       }
     ],
-    "Interaction Method Examples": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 219,
-        "level": 4,
-        "title": "Interaction Method Examples"
-      }
-    ],
     "Interaction Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 358,
+        "line": 387,
         "level": 3,
-        "title": "Interaction Methods"
-      },
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 194,
-        "level": 4,
         "title": "Interaction Methods"
       }
     ],
@@ -6406,6 +6412,22 @@
         "line": 125,
         "level": 3,
         "title": "Interactive Installation"
+      }
+    ],
+    "Interactive Method Examples": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 228,
+        "level": 4,
+        "title": "Interactive Method Examples"
+      }
+    ],
+    "Interactive Methods": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 203,
+        "level": 4,
+        "title": "Interactive Methods"
       }
     ],
     "Internationalization (i18n) System": [
@@ -6567,7 +6589,7 @@
     "Lifecycle Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 229,
+        "line": 257,
         "level": 2,
         "title": "Lifecycle Module"
       }
@@ -6709,7 +6731,7 @@
     "Log Level Control": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 115,
+        "line": 143,
         "level": 3,
         "title": "Log Level Control"
       }
@@ -6725,7 +6747,7 @@
     "Log Subscription (Push Mode)": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 127,
+        "line": 155,
         "level": 3,
         "title": "Log Subscription (Push Mode)"
       }
@@ -6741,7 +6763,7 @@
     "Logger Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 92,
+        "line": 120,
         "level": 2,
         "title": "Logger Module"
       }
@@ -6925,7 +6947,7 @@
     "Message Content": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 106,
+        "line": 110,
         "level": 4,
         "title": "Message Content"
       }
@@ -7003,7 +7025,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 104,
+        "line": 108,
         "level": 3,
         "title": "Message Event Methods"
       }
@@ -7059,7 +7081,7 @@
     "Message Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 295,
+        "line": 276,
         "level": 3,
         "title": "Message Methods"
       }
@@ -7210,18 +7232,18 @@
         "title": "Message Statistics"
       }
     ],
-    "Message Type Judgment": [
+    "Message Type Detection": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 38,
         "level": 2,
-        "title": "Message Type Judgment"
+        "title": "Message Type Detection"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 127,
+        "line": 131,
         "level": 3,
-        "title": "Message Type Judgment"
+        "title": "Message Type Detection"
       }
     ],
     "Message with Inline Keyboard": [
@@ -7256,14 +7278,6 @@
         "title": "Meta Event Handling"
       }
     ],
-    "Meta Event Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 214,
-        "level": 2,
-        "title": "Meta Event Module"
-      }
-    ],
     "Meta Event Types": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -7286,6 +7300,14 @@
         "line": 210,
         "level": 3,
         "title": "Meta Events (Meta Events)"
+      }
+    ],
+    "Meta Module": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 214,
+        "level": 2,
+        "title": "Meta Module"
       }
     ],
     "Method 1: Install via pip": [
@@ -7334,6 +7356,14 @@
         "line": 87,
         "level": 2,
         "title": "Method Quick Reference"
+      }
+    ],
+    "Method Resolution Priority": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 620,
+        "level": 3,
+        "title": "Method Resolution Priority"
       }
     ],
     "Method Return Values": [
@@ -7537,7 +7567,7 @@
     "Module Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 202,
+        "line": 230,
         "level": 2,
         "title": "Module Module"
       }
@@ -7690,14 +7720,6 @@
         "title": "Multi-round Conversation"
       }
     ],
-    "Naming Conflict Detection": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 559,
-        "level": 4,
-        "title": "Naming Conflict Detection"
-      }
-    ],
     "Naming Conventions": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -7827,7 +7849,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 135,
+        "line": 139,
         "level": 3,
         "title": "Notice Event Methods"
       }
@@ -7859,17 +7881,17 @@
     "Notice Operator": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 137,
+        "line": 141,
         "level": 4,
         "title": "Notice Operator"
       }
     ],
-    "Notice Type Judgment": [
+    "Notice Type Detection": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 141,
+        "line": 145,
         "level": 4,
-        "title": "Notice Type Judgment"
+        "title": "Notice Type Detection"
       }
     ],
     "Notification Event (notice)": [
@@ -8069,9 +8091,17 @@
     "Output Control": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 153,
+        "line": 181,
         "level": 3,
         "title": "Output Control"
+      }
+    ],
+    "Override Built-in Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 574,
+        "level": 4,
+        "title": "Override Built-in Methods"
       }
     ],
     "Overview": [
@@ -8204,6 +8234,20 @@
         "title": "Platform"
       }
     ],
+    "Platform Capability Query": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 339,
+        "level": 3,
+        "title": "Platform Capability Query"
+      },
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 178,
+        "level": 4,
+        "title": "Platform Capability Query"
+      }
+    ],
     "Platform Event Method Extension": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -8237,20 +8281,14 @@
     "Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 422,
+        "line": 437,
         "level": 3,
         "title": "Platform Extension Methods"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 285,
+        "line": 294,
         "level": 3,
-        "title": "Platform Extension Methods"
-      },
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 309,
-        "level": 2,
         "title": "Platform Extension Methods"
       },
       {
@@ -8287,7 +8325,7 @@
     "Platform Method Isolation": [
       {
         "document": "api-reference/event-system.md",
-        "line": 458,
+        "line": 473,
         "level": 4,
         "title": "Platform Method Isolation"
       }
@@ -8367,7 +8405,7 @@
     "Priority System": [
       {
         "document": "api-reference/event-system.md",
-        "line": 563,
+        "line": 631,
         "level": 2,
         "title": "Priority System"
       }
@@ -8586,12 +8624,20 @@
         "title": "Query Methods"
       }
     ],
-    "Query Registered Platform Methods": [
+    "Query Platform Registered Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 443,
+        "line": 458,
         "level": 4,
-        "title": "Query Registered Platform Methods"
+        "title": "Query Platform Registered Methods"
+      }
+    ],
+    "Query Registered Methods": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 316,
+        "level": 3,
+        "title": "Query Registered Methods"
       }
     ],
     "Query Supported Sending Methods": [
@@ -8600,14 +8646,6 @@
         "line": 128,
         "level": 3,
         "title": "Query Supported Sending Methods"
-      }
-    ],
-    "Querying Registered Methods": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 329,
-        "level": 3,
-        "title": "Querying Registered Methods"
       }
     ],
     "Quick Build Mode (Static)": [
@@ -8651,13 +8689,13 @@
     "Quick Reference": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 267,
+        "line": 295,
         "level": 3,
         "title": "Quick Reference"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 294,
+        "line": 322,
         "level": 3,
         "title": "Quick Reference"
       },
@@ -8711,7 +8749,7 @@
     "Raw Data": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 280,
+        "line": 289,
         "level": 3,
         "title": "Raw Data"
       }
@@ -8786,6 +8824,22 @@
         "title": "References"
       }
     ],
+    "Register Commands": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 7,
+        "level": 3,
+        "title": "Register Commands"
+      }
+    ],
+    "Register Cross-Platform Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 599,
+        "level": 3,
+        "title": "Register Cross-Platform Methods"
+      }
+    ],
     "Register Middleware": [
       {
         "document": "api-reference/adapter-system.md",
@@ -8794,12 +8848,12 @@
         "title": "Register Middleware"
       }
     ],
-    "Registering Commands": [
+    "Register Single Method": [
       {
         "document": "api-reference/event-system.md",
-        "line": 7,
-        "level": 3,
-        "title": "Registering Commands"
+        "line": 500,
+        "level": 4,
+        "title": "Register Single Method"
       }
     ],
     "Registering Custom Translations": [
@@ -8816,14 +8870,6 @@
         "line": 12,
         "level": 3,
         "title": "Registering Handlers"
-      }
-    ],
-    "Registering Individual Methods": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 485,
-        "level": 4,
-        "title": "Registering Individual Methods"
       }
     ],
     "Registration API": [
@@ -8899,13 +8945,13 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 333,
+        "line": 361,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 579,
+        "line": 647,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -8953,7 +8999,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 347,
+        "line": 351,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9016,14 +9062,6 @@
         "title": "Reply"
       }
     ],
-    "Reply Features": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 334,
-        "level": 3,
-        "title": "Reply Features"
-      }
-    ],
     "Reply Functionality": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -9033,9 +9071,17 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 158,
+        "line": 162,
         "level": 3,
         "title": "Reply Functionality"
+      }
+    ],
+    "Reply Functions": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 315,
+        "level": 3,
+        "title": "Reply Functions"
       }
     ],
     "Reply Method": [
@@ -9044,6 +9090,14 @@
         "line": 80,
         "level": 3,
         "title": "Reply Method"
+      }
+    ],
+    "Reply Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 351,
+        "level": 3,
+        "title": "Reply Methods"
       }
     ],
     "Replying with Events": [
@@ -9095,7 +9149,7 @@
     "Request Event Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 148,
+        "line": 152,
         "level": 3,
         "title": "Request Event Methods"
       }
@@ -9119,7 +9173,7 @@
     "Request Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 150,
+        "line": 154,
         "level": 4,
         "title": "Request Information"
       }
@@ -9172,12 +9226,12 @@
         "title": "Request Statistics"
       }
     ],
-    "Request Type Judgment": [
+    "Request Type Detection": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 153,
+        "line": 157,
         "level": 4,
-        "title": "Request Type Judgment"
+        "title": "Request Type Detection"
       }
     ],
     "Required Field Mapping": [
@@ -9244,12 +9298,12 @@
         "title": "Return Value Processing Examples"
       }
     ],
-    "Return Value Specifications": [
+    "Return Value Specification": [
       {
         "document": "api-reference/event-system.md",
-        "line": 522,
+        "line": 537,
         "level": 4,
-        "title": "Return Value Specifications"
+        "title": "Return Value Specification"
       }
     ],
     "Return Value Structure": [
@@ -9387,7 +9441,7 @@
     "Router Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 261,
+        "line": 289,
         "level": 2,
         "title": "Router Module"
       }
@@ -9443,7 +9497,7 @@
     "SDK Debugging": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 309,
+        "line": 337,
         "level": 2,
         "title": "SDK Debugging"
       }
@@ -9651,7 +9705,7 @@
     "Sender Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 112,
+        "line": 116,
         "level": 4,
         "title": "Sender Information"
       }
@@ -9776,6 +9830,22 @@
         "line": 57,
         "level": 2,
         "title": "Server Configuration"
+      }
+    ],
+    "Session Identifier": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 263,
+        "level": 3,
+        "title": "Session Identifier"
+      }
+    ],
+    "Session Identifiers": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 104,
+        "level": 4,
+        "title": "Session Identifiers"
       }
     ],
     "Session Type System": [
@@ -10552,20 +10622,20 @@
         "title": "Traditional Registration Method"
       }
     ],
-    "Transaction Operations": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 28,
-        "level": 3,
-        "title": "Transaction Operations"
-      }
-    ],
     "Transaction Usage": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 143,
         "level": 3,
         "title": "Transaction Usage"
+      }
+    ],
+    "Transactional Operations": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 28,
+        "level": 3,
+        "title": "Transactional Operations"
       }
     ],
     "Translation Key Naming": [
@@ -10679,7 +10749,7 @@
     "Unregister Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 547,
+        "line": 562,
         "level": 4,
         "title": "Unregister Methods"
       }
@@ -10856,12 +10926,12 @@
         "title": "User Status Change Event"
       }
     ],
-    "Users: Using Platform Extension Methods": [
+    "User: Using Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 426,
+        "line": 441,
         "level": 4,
-        "title": "Users: Using Platform Extension Methods"
+        "title": "User: Using Platform Extension Methods"
       }
     ],
     "Using Configuration": [
@@ -10991,13 +11061,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 407,
-        "level": 3,
-        "title": "Utility Methods"
-      },
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 293,
+        "line": 422,
         "level": 3,
         "title": "Utility Methods"
       }
@@ -11045,7 +11109,7 @@
     "Wait Reply Functionality": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 184,
+        "line": 193,
         "level": 3,
         "title": "Wait Reply Functionality"
       }
@@ -11058,20 +11122,20 @@
         "title": "Wait for Any Event"
       }
     ],
+    "Wait for Reply": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 57,
+        "level": 3,
+        "title": "Wait for Reply"
+      }
+    ],
     "Wait for Result": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 132,
         "level": 3,
         "title": "Wait for Result"
-      }
-    ],
-    "Waiting for Reply": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 57,
-        "level": 3,
-        "title": "Waiting for Reply"
       }
     ],
     "Waiting for Reply with Callback": [
@@ -11415,7 +11479,7 @@
     "`hasattr` / `dir` Support": [
       {
         "document": "api-reference/event-system.md",
-        "line": 474,
+        "line": 489,
         "level": 4,
         "title": "`hasattr` / `dir` Support"
       }
@@ -11423,7 +11487,7 @@
     "`hasattr` and `dir` Support": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 338,
+        "line": 325,
         "level": 3,
         "title": "`hasattr` and `dir` Support"
       }
@@ -11559,7 +11623,7 @@
     "dump_state()": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 311,
+        "line": 339,
         "level": 3,
         "title": "dump_state()"
       }
