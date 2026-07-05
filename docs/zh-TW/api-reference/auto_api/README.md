@@ -21,7 +21,7 @@
 
 - **模块总数**: 85
 - **类总数**: 90（包括 5 个嵌套类）
-- **函数总数**: 88
+- **函数总数**: 90
 - **方法总数**: 863
 
 ---
@@ -441,7 +441,7 @@
 
 ### [ErisPulse.runtime.hints](ErisPulse/runtime/hints.md)
 
-⚙️ 8 个函数
+⚙️ 10 个函数
 
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
