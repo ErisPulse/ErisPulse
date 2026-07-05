@@ -86,6 +86,8 @@ TRANSLATIONS = {
     "core.hints.did_you_mean": "ヒント：もしかして '{name}' ですか？",
     "core.hints.import_did_you_mean": "ヒント：もしかして '{name}' を import ですか？",
     "core.hints.key_did_you_mean": "ヒント：もしかして '{name}' ですか？",
+    "core.hints.event_loop_closed": "ヒント：イベントループが閉じられました。一般的な原因：1）ループ終了後に非同期コードを呼び出した；2）閉じたループを再利用した；3）同期コードが内部的にループを閉じた。プロセスを再起動するか、asyncio.run() / loop.close() の誤用を確認してください。",
+    "core.hints.invalid_await": "ヒント：非コルーチンオブジェクトに対して await を使用しました。一般的な原因：1）関数に async キーワードがない；2）コルーチンではなく通常の戻り値を await した；3）非同期関数の同期ラッパーを呼び出した。関数定義に async を追加するか、await を削除してください。",
     # ==================== アダプター管理 ====================
     "core.adapter.set_sdk_failed": "SDK 参照の設定に失敗しました: {error}",
     "core.adapter.must_inherit_base": "アダプターは BaseAdapter を継承する必要があります。そうでない場合、このアダプターを読み込めず、未知のエラーが発生する可能性があります",
