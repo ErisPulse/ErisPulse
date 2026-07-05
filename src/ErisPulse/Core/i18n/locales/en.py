@@ -86,6 +86,8 @@ TRANSLATIONS = {
     "core.hints.did_you_mean": "Hint: Did you mean '{name}'?",
     "core.hints.import_did_you_mean": "Hint: Did you mean to import '{name}'?",
     "core.hints.key_did_you_mean": "Hint: Did you mean '{name}'?",
+    "core.hints.event_loop_closed": "Hint: The event loop was closed. Common causes: 1) calling async code after the loop was shut down; 2) reusing a closed loop; 3) calling sync code that internally closed the loop. Try restarting the process or check for asyncio.run() / loop.close() misuse.",
+    "core.hints.invalid_await": "Hint: You awaited a non-coroutine object. Common causes: 1) the function is missing the 'async' keyword; 2) you awaited a plain return value instead of a coroutine; 3) you called a synchronous wrapper around an async function. Add 'async' to the function definition or remove the 'await'.",
     # ==================== Adapter Management ====================
     "core.adapter.set_sdk_failed": "Failed to set SDK reference: {error}",
     "core.adapter.must_inherit_base": "Adapters must inherit from BaseAdapter, otherwise we cannot load this adapter, which may cause unknown errors",
