@@ -328,6 +328,40 @@ def suggest_for_key_error(exc: KeyError, tb: Any = None) -> Optional[str]:
     return best_match(missing_key, list(all_candidates), cutoff=0.6)
 
 
+def suggest_for_event_loop_error(exc: RuntimeError) -> Optional[str]:
+    """
+    为 RuntimeError: Event loop is closed 生成诊断提示
+
+    检测事件循环被意外关闭的常见原因，返回修复建议。
+    与拼写建议类函数不同，这里返回的是一个标识符字符串，
+    由 exceptions.py 通过 i18n 翻译为最终的多语言提示。
+
+    :param exc: RuntimeError 异常
+    :return: 诊断提示标识符，不匹配时返回 None
+    """
+    msg = str(exc)
+    if "event loop is closed" not in msg.lower():
+        return None
+    return "event_loop_closed"
+
+
+def suggest_for_invalid_await(exc: TypeError) -> Optional[str]:
+    """
+    为 TypeError: object X can't be used in 'await' expression 生成诊断提示
+
+    检测对非协程对象使用 await 的常见原因。
+    与拼写建议类函数不同，这里返回的是一个标识符字符串，
+    由 exceptions.py 通过 i18n 翻译为最终的多语言提示。
+
+    :param exc: TypeError 异常
+    :return: 诊断提示标识符，不匹配时返回 None
+    """
+    msg = str(exc)
+    if "can't be used in 'await' expression" not in msg.lower():
+        return None
+    return "invalid_await"
+
+
 __all__ = [
     "suggest_similar",
     "best_match",
@@ -337,4 +371,6 @@ __all__ = [
     "suggest_for_attribute_error",
     "suggest_for_import_error",
     "suggest_for_key_error",
+    "suggest_for_event_loop_error",
+    "suggest_for_invalid_await",
 ]

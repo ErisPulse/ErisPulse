@@ -1,0 +1,4 @@
+# PEP 561 marker file.
+# Presence of this file declares that this package ships inline type
+# information (and .pyi stubs). Type checkers (mypy / pyright / PyCharm)
+# may read the annotations from the installed distribution.

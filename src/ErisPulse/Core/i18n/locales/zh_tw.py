@@ -86,6 +86,8 @@ TRANSLATIONS = {
     "core.hints.did_you_mean": "提示：你是不是想寫 '{name}'？",
     "core.hints.import_did_you_mean": "提示：你是不是想 import '{name}'？",
     "core.hints.key_did_you_mean": "提示：你是不是想用 '{name}'？",
+    "core.hints.event_loop_closed": "提示：事件循環已被關閉。常見原因：1）在事件循環關閉後呼叫了非同步程式碼；2）重複使用了已關閉的事件循環；3）同步程式碼內部意外關閉了事件循環。請嘗試重啟程序，或檢查 asyncio.run() / loop.close() 的誤用。",
+    "core.hints.invalid_await": "提示：你對一個非協程物件使用了 await。常見原因：1）函式缺少 async 關鍵字；2）await 了一個普通回傳值而非協程；3）呼叫了非同步函式的同步包裝。請在函式定義中加入 async，或移除 await。",
     # ==================== 適配器管理 ====================
     "core.adapter.set_sdk_failed": "設定SDK參考失敗: {error}",
     "core.adapter.must_inherit_base": "適配器必須繼承自BaseAdapter，否則我們無法載入這個適配器，它會導致未知的錯誤",
