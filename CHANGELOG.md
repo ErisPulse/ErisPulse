@@ -61,6 +61,22 @@
     - 优化某模块的性能
   ```
 
+
+---
+
+## [2.5.2-dev.5] - 2026/07/05
+> 开发版本
+
+**版本摘要**
+2.5.2-dev.5 为友好错误提示引擎补齐测试覆盖：新增 `suggest_for_event_loop_error`（RuntimeError: Event loop is closed）和 `suggest_for_invalid_await`（TypeError: invalid await）两个提示函数的真实环境测试用例。
+
+### 测试
+
+- @wsu2059q
+  - `main.py` 友好错误提示测试新增 2 个用例：
+    - RuntimeError — Event loop is closed：关闭事件循环后调用 `run_until_complete()`，验证 `suggest_for_event_loop_error` 提示
+    - TypeError — await 非协程对象（invalid await）：对 `int` 使用 `await`，验证 `suggest_for_invalid_await` 提示
+
 ---
 
 ## [2.5.2-dev.4] - 2026/07/03
