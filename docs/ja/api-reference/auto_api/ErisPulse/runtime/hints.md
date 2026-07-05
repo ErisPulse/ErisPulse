@@ -132,3 +132,31 @@ ErisPulse 友好错误提示引擎
 
 ---
 
+
+### `suggest_for_event_loop_error(exc: RuntimeError)`
+
+为 RuntimeError: Event loop is closed 生成诊断提示
+
+检测事件循环被意外关闭的常见原因，返回修复建议。
+与拼写建议类函数不同，这里返回的是一个标识符字符串，
+由 exceptions.py 通过 i18n 翻译为最终的多语言提示。
+
+:param exc: RuntimeError 异常
+:return: 诊断提示标识符，不匹配时返回 None
+
+---
+
+
+### `suggest_for_invalid_await(exc: TypeError)`
+
+为 TypeError: object X can't be used in 'await' expression 生成诊断提示
+
+检测对非协程对象使用 await 的常见原因。
+与拼写建议类函数不同，这里返回的是一个标识符字符串，
+由 exceptions.py 通过 i18n 翻译为最终的多语言提示。
+
+:param exc: TypeError 异常
+:return: 诊断提示标识符，不匹配时返回 None
+
+---
+
