@@ -18,9 +18,9 @@ class NewsModule(BaseModule):
     """News query module"""
     pass
 
-# Bad design: One module is responsible for multiple unrelated functions
+# Bad design: A module responsible for multiple unrelated functions
 class UtilityModule(BaseModule):
-    """Contains weather, news, jokes, and other multiple functions"""
+    """Contains weather, news, jokes, and other functions"""
     pass
 ```
 
@@ -28,32 +28,45 @@ class UtilityModule(BaseModule):
 
 ```toml
 [project]
-name = "ErisPulse-ModuleName"  # Use ErisPulse- prefix
+name = "ErisPulse-ModuleName"  # Use the ErisPulse- prefix
 ```
 
 ### 3. Clear Configuration Management
 
+It is recommended to use declarative configuration (`ConfigClass` + `BaseConfig`) to gain capabilities such as type safety, automatic template generation, and WebUI form support:
+
 ```python
-def _load_config(self):
-    config = self.sdk.config.getConfig("MyModule")
-    if not config:
-        default_config = {
-            "api_url": "https://api.example.com",
-            "timeout": 30,
-            "cache_ttl": 3600
-        }
-        self.sdk.config.setConfig("MyModule", default_config)
-        self.logger.warning("Default configuration created")
-        return default_config
-    return config
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_url: str = field(default="https://api.example.com", metadata={
+        "description": {"i18n": "my_module.api_url", "default": "API address"},
+    })
+    timeout: int = field(default=30, metadata={
+        "description": {"i18n": "my_module.timeout", "default": "Timeout (seconds)"},
+    })
+    cache_ttl: int = field(default=3600, metadata={
+        "description": {"i18n": "my_module.cache_ttl", "default": "Cache TTL (seconds)"},
+    })
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    async def do_something(self):
+        cfg = self.cfg  # Type safe, real-time reading
+        await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
+
+You can also continue to use the manual method to read and write configuration storage (see [Module Core Concepts](docs/en/core-concepts.md#configuration-management)).
 
 ## Asynchronous Programming
 
 ### 1. Use Asynchronous Libraries
 
 ```python
-# Recommended: Use SDK built-in HTTP client (asynchronous, with automatic logging and statistics)
+# Recommended to use SDK built-in HTTP client (asynchronous, automatic logging and statistics)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -61,7 +74,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# Can also be used via sdk.client (same effect)
+# Can also use sdk.client (same effect)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -69,7 +82,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Do not import aiohttp directly (inconvenient for unified framework management)
+# Do not import aiohttp directly (not convenient for unified framework management)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -78,22 +91,22 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Do not use requests (synchronous, will block the event loop)
+# Do not use requests (synchronous, will block event loop)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # Will block the event loop
+        return requests.get(url).json()  # Will block event loop
 ```
 
 ### 2. Correct Asynchronous Operations
 
 ```python
 async def handle_command(self, event):
-    # Use create_task to let time-consuming operations run in the background
+    # Use create_task to let time-consuming operations execute in background
     task = asyncio.create_task(self._long_operation())
     
-    # If you need to wait for the result
+    # If you need to wait for result
     result = await task
 ```
 
@@ -101,11 +114,11 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # The SDK client automatically manages the connection pool, no need to manually create a session
+    # SDK client automatically manages connection pool, no need to manually create session
     pass
     
 async def on_unload(self, event):
-    # If using a custom client, remember to clean up resources
+    # If custom client is needed, remember to clean up resources
     pass
 ```
 
@@ -114,29 +127,29 @@ async def on_unload(self, event):
 ### 1. Use Event Wrapper Class
 
 ```python
-# Use the convenient methods of the Event wrapper class
+# Convenient methods using Event wrapper class
 @command("info")
 async def info_command(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"Hello, {nickname}!")
 
-# Instead of directly accessing the dictionary
+# Instead of directly accessing dictionary
 @command("info")
 async def info_command(event):
-    user_id = event["user_id"]  # Not clear enough, prone to errors
+    user_id = event["user_id"]  # Not clear enough, easy to make mistakes
 ```
 
-### 2. Proper Use of Lazy Loading
+### 2. Reasonable Use of Lazy Loading
 
 ```python
-# Command handling modules need to be loaded immediately
+# Command processing modules need to load immediately
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# Listener modules need to be loaded immediately
+# Listener modules need to load immediately
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -162,7 +175,7 @@ async def on_load(self, event):
     async def group_handler(event):
         self.logger.info("Received group message")
     
-    # No need to manually unregister, the framework handles it automatically
+    # No need to manually unregister, framework handles it automatically
 ```
 
 ## Error Handling
@@ -174,24 +187,25 @@ async def handle_event(self, event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # Expected business error
+        # Expected business errors
         self.logger.warning(f"Business warning: {e}")
-        await event.reply(f"Invalid argument: {e}")
+        await event.reply(f"Parameter error: {e}")
     except aiohttp.ClientError as e:
-        # Network error (this exception is rare when using sdk.client due to the built-in retry mechanism)
+        # Network error (recommend using sdk.client + ClientError instead)
+        # Old code using aiohttp directly still works, but new code recommends using ErisPulse exception system
         self.logger.error(f"Network error: {e}")
         await event.reply("Network request failed, please try again later")
     except Exception as e:
-        # Unexpected error
+        # Unexpected errors
         self.logger.error(f"Unknown error: {e}", exc_info=True)
-        await event.reply("Processing failed, please contact the administrator")
+        await event.reply("Processing failed, please contact administrator")
         raise
 ```
 
 ### 2. Timeout Handling
 
 ```python
-# Recommended: Use the SDK built-in client (comes with timeout and retry)
+# Recommended to use SDK built-in client (with built-in timeout and retry)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -218,7 +232,7 @@ async def update_user(self, user_id, data):
 # ❌ Not using transactions may lead to data inconsistency
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # If an error occurs here, the setting above cannot be rolled back
+    # If an error occurs here, the above setting cannot be rolled back
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
@@ -239,26 +253,26 @@ def cache_multiple_items(self, items):
 
 ## Logging
 
-### 1. Proper Use of Log Levels
+### 1. Use Log Levels Reasonably
 
 ```python
-# DEBUG: Detailed debug information (development only)
+# DEBUG: Detailed debug information (only for development)
 self.logger.debug(f"Input parameters: {params}")
 
-# INFO: Normal operation information
+# INFO: Normal running information
 self.logger.info("Module loaded")
 self.logger.info(f"Processing request: {request_id}")
 
-# WARNING: Warning information, does not affect main functionality
-self.logger.warning(f"Configuration item {key} not set, using default value")
-self.logger.warning("API response slow, may need optimization")
+# WARNING: Warning messages, do not affect main functionality
+self.logger.warning(f"Config item {key} not set, using default value")
+self.logger.warning("API response slow, optimization may be needed")
 
-# ERROR: Error information
+# ERROR: Error messages
 self.logger.error(f"API request failed: {e}")
-self.logger.error(f"Failed to process event: {e}", exc_info=True)
+self.logger.error(f"Event processing failed: {e}", exc_info=True)
 
-# CRITICAL: Fatal error, requires immediate attention
-self.logger.critical("Database connection failed, the bot cannot run normally")
+# CRITICAL: Critical errors requiring immediate handling
+self.logger.critical("Database connection failed, bot cannot run properly")
 ```
 
 ### 2. Structured Logging
@@ -267,8 +281,8 @@ self.logger.critical("Database connection failed, the bot cannot run normally")
 # Use structured logging for easier parsing
 self.logger.info(f"Processing request: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
-# ❌ Use unstructured logging
-self.logger.info(f"Request processed, from user {user_id}, took {duration} ms")
+# ❌ Using unstructured logging
+self.logger.info(f"Processed request, from user {user_id}, took {duration} milliseconds")
 ```
 
 ## Performance Optimization
@@ -302,9 +316,9 @@ async def process_message(self, event):
     # Asynchronous processing
     await self._async_process(event)
 
-# ❌ Blocking operations
+# ❌ Blocking operation
 async def process_message(self, event):
-    # Synchronous operation, blocks the event loop
+    # Synchronous operation, blocks event loop
     result = self._sync_process(event)
 ```
 
@@ -313,7 +327,7 @@ async def process_message(self, event):
 ### 1. Sensitive Data Protection
 
 ```python
-# Store sensitive data in configuration
+# Sensitive data stored in configuration
 class MyModule(BaseModule):
     def _load_config(self):
         config = self.sdk.config.getConfig("MyModule")
@@ -341,13 +355,13 @@ async def process_command(self, event):
     
     # Validate input format
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
-        await event.reply("Incorrect input format")
+        await event.reply("Invalid input format")
         return
 ```
 
 ## Testing
 
-### 1. Unit Testing
+### 1. Unit Tests
 
 ```python
 import pytest
@@ -362,7 +376,7 @@ class TestMyModule:
         assert "api_url" in config
 ```
 
-### 2. Integration Testing
+### 2. Integration Tests
 
 ```python
 @pytest.mark.asyncio
@@ -388,25 +402,25 @@ version = "1.0.0"
 
 Follow Semantic Versioning:
 - MAJOR.MINOR.PATCH
-- Major: Incompatible API changes
-- Minor: Backwards-compatible functionality additions
-- Patch: Backwards-compatible bug fixes
+- Major version: Incompatible API changes
+- Minor version: Backward-compatible new features
+- Patch version: Backward-compatible bug fixes
 
-### 2. Complete Documentation
+### 2. Documentation Completeness
 
 ```markdown
 # README.md
 
-- Module Introduction
-- Installation Instructions
-- Configuration Instructions
-- Usage Examples
-- API Documentation
-- Contributing Guidelines
+- Module introduction
+- Installation instructions
+- Configuration instructions
+- Usage examples
+- API documentation
+- Contribution guide
 ```
 
 ## Related Documentation
 
-- [Module Development Getting Started](getting-started.md) - Create your first module
-- [Module Core Concepts](core-concepts.md) - Understand module architecture
-- [Event Wrapper Class](event-wrapper.md) - Detailed event handling explanation
+- [Getting Started with Module Development](docs/en/getting-started.md) - Create your first module
+- [Module Core Concepts](docs/en/core-concepts.md) - Understand module architecture
+- [Event Wrapper Class](docs/en/event-wrapper.md) - Detailed explanation of event handling

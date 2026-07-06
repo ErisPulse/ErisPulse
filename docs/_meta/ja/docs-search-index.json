@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1301,
+  "total_keywords": 1308,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -10,12 +10,12 @@
         "title": "0 成功（OK）"
       }
     ],
-    "1. BaseAdapter レイヤー（`super().__init__()` の呼び出しが必須）": [
+    "1. BaseAdapter 層（ほとんどの場合、オーバーライドする必要はない）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 364,
         "level": 3,
-        "title": "1. BaseAdapter レイヤー（`super().__init__()` の呼び出しが必須）"
+        "title": "1. BaseAdapter 層（ほとんどの場合、オーバーライドする必要はない）"
       }
     ],
     "1. Dockerfile の作成": [
@@ -29,33 +29,25 @@
     "1. Event ラッパークラスの使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 114,
+        "line": 127,
         "level": 3,
         "title": "1. Event ラッパークラスの使用"
-      }
-    ],
-    "1. Meta イベントを送信するタイミング": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 9,
-        "level": 3,
-        "title": "1. Meta イベントを送信するタイミング"
       }
     ],
     "1. Mixin クラスを使用した一括登録（推奨）": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 560,
+        "line": 566,
         "level": 3,
         "title": "1. Mixin クラスを使用した一括登録（推奨）"
       }
     ],
-    "1. OneBot12 標準の厳格な遵守": [
+    "1. OneBot12 標準に厳密に従う": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 224,
         "level": 3,
-        "title": "1. OneBot12 標準の厳格な遵守"
+        "title": "1. OneBot12 標準に厳密に従う"
       }
     ],
     "1. SDK オブジェクト": [
@@ -64,14 +56,6 @@
         "line": 47,
         "level": 3,
         "title": "1. SDK オブジェクト"
-      }
-    ],
-    "1. Task オブジェクトを返さなければならない": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 280,
-        "level": 3,
-        "title": "1. Task オブジェクトを返さなければならない"
       }
     ],
     "1. `{platform}_raw` フィールドの欠落": [
@@ -90,10 +74,18 @@
         "title": "1. pyproject.toml の設定"
       }
     ],
+    "1. エラーの分類処理": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 454,
+        "level": 3,
+        "title": "1. エラーの分類処理"
+      }
+    ],
     "1. キャッシュの使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 276,
+        "line": 290,
         "level": 3,
         "title": "1. キャッシュの使用"
       }
@@ -125,7 +117,7 @@
     "1. トランザクションの使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 209,
+        "line": 223,
         "level": 3,
         "title": "1. トランザクションの使用"
       }
@@ -133,17 +125,17 @@
     "1. バージョン管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 381,
+        "line": 395,
         "level": 3,
         "title": "1. バージョン管理"
       }
     ],
-    "1. プラットフォーム特性ドキュメントの維持": [
+    "1. プラットフォームの機能ドキュメントの維持": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 612,
+        "line": 618,
         "level": 3,
-        "title": "1. プラットフォーム特性ドキュメントの維持"
+        "title": "1. プラットフォームの機能ドキュメントの維持"
       }
     ],
     "1. プロジェクトの作成": [
@@ -160,6 +152,14 @@
         "line": 50,
         "level": 3,
         "title": "1. ヘルスチェック（GET）"
+      }
+    ],
+    "1. メタイベントを送信するタイミング": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 9,
+        "level": 3,
+        "title": "1. メタイベントを送信するタイミング"
       }
     ],
     "1. メッセージ送信": [
@@ -181,25 +181,9 @@
     "1. ユニットテスト": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 350,
+        "line": 364,
         "level": 3,
         "title": "1. ユニットテスト"
-      }
-    ],
-    "1. レスポンス形式の標準化": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 341,
-        "level": 3,
-        "title": "1. レスポンス形式の標準化"
-      }
-    ],
-    "1. ログレベルの適切な使用": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 242,
-        "level": 3,
-        "title": "1. ログレベルの適切な使用"
       }
     ],
     "1. 例外処理": [
@@ -210,42 +194,26 @@
         "title": "1. 例外処理"
       }
     ],
-    "1. 再接続の実装": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 107,
-        "level": 3,
-        "title": "1. 再接続の実装"
-      }
-    ],
     "1. 分類された例外処理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 170,
+        "line": 183,
         "level": 3,
         "title": "1. 分類された例外処理"
       }
     ],
-    "1. 分類別の例外処理": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 448,
-        "level": 3,
-        "title": "1. 分類別の例外処理"
-      }
-    ],
-    "1. 単一責任原則": [
+    "1. 単一責任の原則": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 7,
         "level": 3,
-        "title": "1. 単一責任原則"
+        "title": "1. 単一責任の原則"
       }
     ],
     "1. 単体テスト": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 502,
+        "line": 508,
         "level": 3,
         "title": "1. 単体テスト"
       }
@@ -258,12 +226,44 @@
         "title": "1. 基本情報のセクション"
       }
     ],
-    "1. 声明式設定（推奨）": [
+    "1. 宣言的構成（推奨）": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 392,
         "level": 3,
-        "title": "1. 声明式設定（推奨）"
+        "title": "1. 宣言的構成（推奨）"
+      }
+    ],
+    "1. 必ず Task オブジェクトを返す": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 280,
+        "level": 3,
+        "title": "1. 必ず Task オブジェクトを返す"
+      }
+    ],
+    "1. 応答形式の標準化": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 341,
+        "level": 3,
+        "title": "1. 応答形式の標準化"
+      }
+    ],
+    "1. 接続の再試行の実装": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 107,
+        "level": 3,
+        "title": "1. 接続の再試行の実装"
+      }
+    ],
+    "1. 敏感データの保護": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 327,
+        "level": 3,
+        "title": "1. 敏感データの保護"
       }
     ],
     "1. 概要": [
@@ -282,14 +282,6 @@
         "title": "1. 標準メソッド命名"
       }
     ],
-    "1. 機密データの保護": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 313,
-        "level": 3,
-        "title": "1. 機密データの保護"
-      }
-    ],
     "1. 説明": [
       {
         "document": "standards/api-response.md",
@@ -306,10 +298,18 @@
         "title": "1. 跨プラットフォーム互換性の確保"
       }
     ],
+    "1. 適切なログレベルの使用": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 256,
+        "level": 3,
+        "title": "1. 適切なログレベルの使用"
+      }
+    ],
     "1. 非同期ライブラリの使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 53,
+        "line": 66,
         "level": 3,
         "title": "1. 非同期ライブラリの使用"
       }
@@ -362,6 +362,14 @@
         "title": "1.4 推奨される拡張命名規則"
       }
     ],
+    "10. SSE (Server-Sent Events) のサポート": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 482,
+        "level": 3,
+        "title": "10. SSE (Server-Sent Events) のサポート"
+      }
+    ],
     "1xxxx アクションリクエストエラー（Request Error）": [
       {
         "document": "standards/api-response.md",
@@ -410,14 +418,6 @@
         "title": "2. IDのみを指定する"
       }
     ],
-    "2. Meta イベントを送信する": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 17,
-        "level": 3,
-        "title": "2. Meta イベントを送信する"
-      }
-    ],
     "2. PyPI への公開": [
       {
         "document": "developer-guide/publishing.md",
@@ -426,12 +426,12 @@
         "title": "2. PyPI への公開"
       }
     ],
-    "2. Send 内部クラス（ほとんどの場合、オーバーライド不要）": [
+    "2. Send 内部クラス（ほとんどの場合、オーバーライドする必要はない）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 378,
+        "line": 395,
         "level": 3,
-        "title": "2. Send 内部クラス（ほとんどの場合、オーバーライド不要）"
+        "title": "2. Send 内部クラス（ほとんどの場合、オーバーライドする必要はない）"
       }
     ],
     "2. pyproject.toml の作成": [
@@ -445,7 +445,7 @@
     "2. アカウント選択メカニズム": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 431,
+        "line": 432,
         "level": 3,
         "title": "2. アカウント選択メカニズム"
       }
@@ -458,12 +458,12 @@
         "title": "2. イベント受信（POST）"
       }
     ],
-    "2. エラーコード規約": [
+    "2. エラーコード規格": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 368,
         "level": 3,
-        "title": "2. エラーコード規約"
+        "title": "2. エラーコード規格"
       }
     ],
     "2. サポートされているメッセージ送信タイプ": [
@@ -477,7 +477,7 @@
     "2. タイムアウト処理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 191,
+        "line": 205,
         "level": 3,
         "title": "2. タイムアウト処理"
       }
@@ -490,14 +490,6 @@
         "title": "2. タイムスタンプの形式エラー"
       }
     ],
-    "2. タイムスタンプの標準化": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 246,
-        "level": 3,
-        "title": "2. タイムスタンプの標準化"
-      }
-    ],
     "2. チェーン修飾メソッドは self を返す": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -506,26 +498,26 @@
         "title": "2. チェーン修飾メソッドは self を返す"
       }
     ],
-    "2. デコレータを使用した単一メソッド登録": [
+    "2. デコレーターを使用した個別メソッド登録": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 586,
+        "line": 592,
         "level": 3,
-        "title": "2. デコレータを使用した単一メソッド登録"
+        "title": "2. デコレーターを使用した個別メソッド登録"
       }
     ],
-    "2. ドキュメントの充実": [
+    "2. ドキュメントの整備": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 395,
+        "line": 409,
         "level": 3,
-        "title": "2. ドキュメントの充実"
+        "title": "2. ドキュメントの整備"
       }
     ],
     "2. バッチ操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 225,
+        "line": 239,
         "level": 3,
         "title": "2. バッチ操作"
       }
@@ -533,7 +525,7 @@
     "2. バージョン情報の更新": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 633,
+        "line": 639,
         "level": 3,
         "title": "2. バージョン情報の更新"
       }
@@ -546,12 +538,20 @@
         "title": "2. パラメータ仕様詳細"
       }
     ],
-    "2. ブロック操作の回避": [
+    "2. ブロッキング操作の回避": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 297,
+        "line": 311,
         "level": 3,
-        "title": "2. ブロック操作の回避"
+        "title": "2. ブロッキング操作の回避"
+      }
+    ],
+    "2. メタイベントの送信": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 17,
+        "level": 3,
+        "title": "2. メタイベントの送信"
       }
     ],
     "2. モジュール命名規則": [
@@ -568,14 +568,6 @@
         "line": 40,
         "level": 2,
         "title": "2. リクエストイベントフィールド要件"
-      }
-    ],
-    "2. レイジーロード（遅延読み込み）の適切な使用": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 130,
-        "level": 3,
-        "title": "2. レイジーロード（遅延読み込み）の適切な使用"
       }
     ],
     "2. レスポンスの標準化": [
@@ -597,7 +589,7 @@
     "2. ログ記録": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 481,
+        "line": 487,
         "level": 3,
         "title": "2. ログ記録"
       }
@@ -605,7 +597,7 @@
     "2. 入力検証": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 330,
+        "line": 344,
         "level": 3,
         "title": "2. 入力検証"
       }
@@ -618,18 +610,26 @@
         "title": "2. 基本戻り構造"
       }
     ],
-    "2. 接続状態管理": [
+    "2. 接続状態の管理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 136,
         "level": 3,
-        "title": "2. 接続状態管理"
+        "title": "2. 接続状態の管理"
+      }
+    ],
+    "2. 時間スタンプの標準化": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 246,
+        "level": 3,
+        "title": "2. 時間スタンプの標準化"
       }
     ],
     "2. 構造化ログ": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 264,
+        "line": 278,
         "level": 3,
         "title": "2. 構造化ログ"
       }
@@ -653,7 +653,7 @@
     "2. 正しい非同期操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 89,
+        "line": 102,
         "level": 3,
         "title": "2. 正しい非同期操作"
       }
@@ -669,15 +669,23 @@
     "2. 統合テスト": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 526,
+        "line": 532,
         "level": 3,
         "title": "2. 統合テスト"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 365,
+        "line": 379,
         "level": 3,
         "title": "2. 統合テスト"
+      }
+    ],
+    "2. 適切な遅延読み込み（Lazy Load）の使用": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 143,
+        "level": 3,
+        "title": "2. 適切な遅延読み込み（Lazy Load）の使用"
       }
     ],
     "2.1 OneBot12 標準型": [
@@ -824,12 +832,12 @@
         "title": "3. Request DSL"
       }
     ],
-    "3. Request 内部クラス（ほとんどの場合、オーバーライド不要）": [
+    "3. Request 内部クラス（ほとんどの場合、オーバーライドする必要はない）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 402,
+        "line": 419,
         "level": 3,
-        "title": "3. Request 内部クラス（ほとんどの場合、オーバーライド不要）"
+        "title": "3. Request 内部クラス（ほとんどの場合、オーバーライドする必要はない）"
       }
     ],
     "3. `self` フィールドの欠落": [
@@ -848,20 +856,20 @@
         "title": "3. アダプタ"
       }
     ],
-    "3. アダプターのメインクラスの作成": [
+    "3. アダプタの終了時のクリーンアップ": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 602,
+        "level": 3,
+        "title": "3. アダプタの終了時のクリーンアップ"
+      }
+    ],
+    "3. アダプター主クラスの作成": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 78,
         "level": 3,
-        "title": "3. アダプターのメインクラスの作成"
-      }
-    ],
-    "3. アダプター終了時のクリーンアップ": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 596,
-        "level": 3,
-        "title": "3. アダプター終了時のクリーンアップ"
+        "title": "3. アダプター主クラスの作成"
       }
     ],
     "3. イベント ID の生成": [
@@ -875,7 +883,7 @@
     "3. イベントハンドラーの登録": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 152,
+        "line": 165,
         "level": 3,
         "title": "3. イベントハンドラーの登録"
       }
@@ -904,12 +912,12 @@
         "title": "3. ハートビートイベント"
       }
     ],
-    "3. ハートビートキープアライブと Meta ハートビート": [
+    "3. ハートビート保活と Meta ハートビート": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 160,
         "level": 3,
-        "title": "3. ハートビートキープアライブと Meta ハートビート"
+        "title": "3. ハートビート保活と Meta ハートビート"
       }
     ],
     "3. ビルドのトリガー": [
@@ -936,12 +944,12 @@
         "title": "3. プラットフォーム固有のイベントタイプ"
       }
     ],
-    "3. プラットフォーム固有のメソッドのサポート": [
+    "3. プラットフォーム固有のメソッドをサポート": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 314,
         "level": 3,
-        "title": "3. プラットフォーム固有のメソッドのサポート"
+        "title": "3. プラットフォーム固有のメソッドをサポート"
       }
     ],
     "3. プラットフォーム固有メソッド命名": [
@@ -971,7 +979,7 @@
     "3. リソース管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 100,
+        "line": 113,
         "level": 3,
         "title": "3. リソース管理"
       }
@@ -1104,12 +1112,12 @@
         "title": "4. Event 便利メソッド"
       }
     ],
-    "4. `self` フィールドの自動検出": [
+    "4. `self` フィールドの自動発見": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 55,
         "level": 3,
-        "title": "4. `self` フィールドの自動検出"
+        "title": "4. `self` フィールドの自動発見"
       }
     ],
     "4. detail_type に非標準の値を使用する": [
@@ -1256,12 +1264,12 @@
         "title": "4.3 カスタム型の解除"
       }
     ],
-    "5. Bot の状態照会": [
+    "5. Bot 状態の照会": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 80,
         "level": 3,
-        "title": "5. Bot の状態照会"
+        "title": "5. Bot 状態の照会"
       }
     ],
     "5. Send クラスの実装": [
@@ -1640,6 +1648,14 @@
         "title": "8.4 リクエストイベントの処理"
       }
     ],
+    "9. 接続情報とルート発見": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 441,
+        "level": 3,
+        "title": "9. 接続情報とルート発見"
+      }
+    ],
     "9. 関連ドキュメント": [
       {
         "document": "standards/event-conversion.md",
@@ -1713,7 +1729,7 @@
     "API エラーハンドリング": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 768,
+        "line": 785,
         "level": 3,
         "title": "API エラーハンドリング"
       }
@@ -1727,7 +1743,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 141,
+        "line": 236,
         "level": 2,
         "title": "API リファレンス"
       },
@@ -1740,16 +1756,18 @@
     ],
     "API レスポンス": [
       {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 339,
-        "level": 2,
-        "title": "API レスポンス"
-      },
-      {
         "document": "platform-guide/wechatmp.md",
         "line": 151,
         "level": 2,
         "title": "API レスポンス"
+      }
+    ],
+    "API レスポンス標準": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 652,
+        "level": 2,
+        "title": "API レスポンス標準"
       }
     ],
     "API 呼び出し": [
@@ -1766,12 +1784,12 @@
         "title": "API 呼び出し"
       }
     ],
-    "API 応答標準": [
+    "API 応答": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 635,
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 339,
         "level": 2,
-        "title": "API 応答標準"
+        "title": "API 応答"
       }
     ],
     "API 概要": [
@@ -1840,12 +1858,12 @@
         "title": "Adapter モジュール"
       }
     ],
-    "AdapterManager アダプター管理マネージャー": [
+    "AdapterManager アダプター管理クラス": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 48,
+        "line": 46,
         "level": 2,
-        "title": "AdapterManager アダプター管理マネージャー"
+        "title": "AdapterManager アダプター管理クラス"
       }
     ],
     "At メソッド": [
@@ -1875,7 +1893,7 @@
     "BaseAdapter 基底クラス": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 259,
+        "line": 257,
         "level": 2,
         "title": "BaseAdapter 基底クラス"
       }
@@ -1888,12 +1906,28 @@
         "title": "BaseModule 基底クラス"
       }
     ],
-    "Bot の状態管理と Meta イベント": [
+    "Bot のライフサイクルを監視": [
       {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 5,
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 902,
+        "level": 3,
+        "title": "Bot のライフサイクルを監視"
+      }
+    ],
+    "Bot の状態照会": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 879,
+        "level": 3,
+        "title": "Bot の状態照会"
+      }
+    ],
+    "Bot の状態管理": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 813,
         "level": 2,
-        "title": "Bot の状態管理と Meta イベント"
+        "title": "Bot の状態管理"
       }
     ],
     "Bot ステータス確認": [
@@ -1910,14 +1944,6 @@
         "title": "Bot ステータス確認"
       }
     ],
-    "Bot ライフサイクルの監視": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 885,
-        "level": 3,
-        "title": "Bot ライフサイクルの監視"
-      }
-    ],
     "Bot 状態の照会": [
       {
         "document": "api-reference/adapter-system.md",
@@ -1928,12 +1954,6 @@
       {
         "document": "api-reference/core-modules.md",
         "line": 219,
-        "level": 3,
-        "title": "Bot 状態の照会"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 862,
         "level": 3,
         "title": "Bot 状態の照会"
       }
@@ -1952,18 +1972,20 @@
         "line": 236,
         "level": 2,
         "title": "Bot 状態管理"
-      },
+      }
+    ],
+    "Bot 状態管理と Meta イベント": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 796,
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 5,
         "level": 2,
-        "title": "Bot 状態管理"
+        "title": "Bot 状態管理と Meta イベント"
       }
     ],
     "CLI i18n との関係": [
       {
         "document": "advanced/i18n.md",
-        "line": 259,
+        "line": 354,
         "level": 2,
         "title": "CLI i18n との関係"
       }
@@ -2427,7 +2449,7 @@
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
-        "line": 143,
+        "line": 238,
         "level": 3,
         "title": "I18nManager"
       }
@@ -2531,7 +2553,7 @@
     "Meta イベントタイプ": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 818,
+        "line": 835,
         "level": 3,
         "title": "Meta イベントタイプ"
       }
@@ -2617,7 +2639,7 @@
     "OneBot12 標準イベント": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 157,
+        "line": 155,
         "level": 4,
         "title": "OneBot12 標準イベント"
       }
@@ -2785,8 +2807,8 @@
     "RouteGroup での使用": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 512,
-        "level": 3,
+        "line": 529,
+        "level": 4,
         "title": "RouteGroup での使用"
       }
     ],
@@ -2817,12 +2839,18 @@
     "SDK インスタンスからのアクセス": [
       {
         "document": "advanced/i18n.md",
-        "line": 177,
+        "line": 272,
         "level": 3,
         "title": "SDK インスタンスからのアクセス"
       }
     ],
     "SDK オブジェクト": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 54,
+        "level": 2,
+        "title": "SDK オブジェクト"
+      },
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 128,
@@ -2846,14 +2874,6 @@
         "title": "SDK デバッグ"
       }
     ],
-    "SDKオブジェクト": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 54,
-        "level": 2,
-        "title": "SDKオブジェクト"
-      }
-    ],
     "SQL チェーンクエリ": [
       {
         "document": "api-reference/core-modules.md",
@@ -2868,14 +2888,6 @@
         "line": 1,
         "level": 1,
         "title": "SQLクエリビルダー"
-      }
-    ],
-    "SSE (Server-Sent Events) 支持": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 465,
-        "level": 2,
-        "title": "SSE (Server-Sent Events) 支持"
       }
     ],
     "Send DSL を使用したアカウント指定": [
@@ -2929,7 +2941,7 @@
     "Send メッセージ送信 DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 430,
+        "line": 447,
         "level": 2,
         "title": "Send メッセージ送信 DSL"
       }
@@ -2942,20 +2954,20 @@
         "title": "SendDSL"
       }
     ],
-    "SendDSL の実装": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 276,
-        "level": 2,
-        "title": "SendDSL の実装"
-      }
-    ],
     "SendDSL メッセージ送信": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 281,
         "level": 2,
         "title": "SendDSL メッセージ送信"
+      }
+    ],
+    "SendDSL 実装": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 276,
+        "level": 2,
+        "title": "SendDSL 実装"
       }
     ],
     "SendDSL 詳解": [
@@ -2969,8 +2981,8 @@
     "SseEmitter API": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 503,
-        "level": 3,
+        "line": 520,
+        "level": 4,
         "title": "SseEmitter API"
       }
     ],
@@ -3081,7 +3093,7 @@
     "WebHook 接続": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 611,
+        "line": 628,
         "level": 3,
         "title": "WebHook 接続"
       }
@@ -3113,7 +3125,7 @@
     "WebSocket 接続": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 577,
+        "line": 594,
         "level": 3,
         "title": "WebSocket 接続"
       }
@@ -3160,6 +3172,14 @@
         "line": 211,
         "level": 3,
         "title": "WebSocket接続イベント"
+      }
+    ],
+    "WebUI の消費方法": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 222,
+        "level": 3,
+        "title": "WebUI の消費方法"
       }
     ],
     "Whereのパラメータ渡しルール": [
@@ -3346,12 +3366,12 @@
         "title": "__init__.py"
       }
     ],
-    "`__init__` の注意点": [
+    "`__init__` 注意事項": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 360,
         "level": 2,
-        "title": "`__init__` の注意点"
+        "title": "`__init__` 注意事項"
       }
     ],
     "`hasattr` / `dir` サポート": [
@@ -3378,18 +3398,18 @@
         "title": "`reply` メソッドを使用して返信を送信する"
       }
     ],
-    "`self` 字段扩展信息": [
+    "`self` フィールドの拡張情報": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 851,
+        "line": 868,
         "level": 3,
-        "title": "`self` 字段扩展信息"
+        "title": "`self` フィールドの拡張情報"
       }
     ],
     "`t()` メソッドの詳細": [
       {
         "document": "advanced/i18n.md",
-        "line": 159,
+        "line": 254,
         "level": 4,
         "title": "`t()` メソッドの詳細"
       }
@@ -3541,7 +3561,7 @@
     "get() メソッド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 243,
+        "line": 241,
         "level": 4,
         "title": "get() メソッド"
       }
@@ -3568,6 +3588,14 @@
         "line": 286,
         "level": 4,
         "title": "heartbeat — 心跳"
+      }
+    ],
+    "i18n 説明の宣言": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 164,
+        "level": 3,
+        "title": "i18n 説明の宣言"
       }
     ],
     "install のパラメータ": [
@@ -3626,12 +3654,12 @@
         "title": "meta イベントの種類"
       }
     ],
-    "metadata 約定": [
+    "metadata の契約": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 364,
+        "line": 371,
         "level": 4,
-        "title": "metadata 約定"
+        "title": "metadata の契約"
       }
     ],
     "on_load メソッド": [
@@ -3717,7 +3745,7 @@
     "self.user_id と Using の関係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 725,
+        "line": 742,
         "level": 3,
         "title": "self.user_id と Using の関係"
       }
@@ -3821,7 +3849,7 @@
     "まとめ": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 415,
+        "line": 432,
         "level": 3,
         "title": "まとめ"
       }
@@ -3896,6 +3924,14 @@
         "title": "アカウントの動的有効化/無効化（アダプターの再起動が必要）"
       }
     ],
+    "アカウントの解決": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 398,
+        "level": 4,
+        "title": "アカウントの解決"
+      }
+    ],
     "アカウント名を使用してメッセージを送信": [
       {
         "document": "platform-guide/yunhu.md",
@@ -3912,14 +3948,6 @@
         "title": "アカウント管理"
       }
     ],
-    "アカウント解析": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 383,
-        "level": 4,
-        "title": "アカウント解析"
-      }
-    ],
     "アカウント設定": [
       {
         "document": "platform-guide/onebot12.md",
@@ -3931,7 +3959,7 @@
     "アカウント設定ファイル": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 698,
+        "line": 715,
         "level": 3,
         "title": "アカウント設定ファイル"
       }
@@ -3950,14 +3978,6 @@
         "line": 157,
         "level": 2,
         "title": "アクティブ状態の管理"
-      }
-    ],
-    "アダプタの送信メソッドのクエリ": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 75,
-        "level": 2,
-        "title": "アダプタの送信メソッドのクエリ"
       }
     ],
     "アダプタイベント": [
@@ -3998,6 +4018,14 @@
         "title": "アダプター マネージャー"
       }
     ],
+    "アダプターからの Meta イベント送信": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 843,
+        "level": 3,
+        "title": "アダプターからの Meta イベント送信"
+      }
+    ],
     "アダプターでの使用": [
       {
         "document": "advanced/http-client.md",
@@ -4026,6 +4054,14 @@
         "line": 16,
         "level": 3,
         "title": "アダプターのアーキテクチャ"
+      }
+    ],
+    "アダプターの停止": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 108,
+        "level": 4,
+        "title": "アダプターの停止"
       }
     ],
     "アダプターの取得": [
@@ -4060,18 +4096,10 @@
         "title": "アダプターの管理"
       }
     ],
-    "アダプターの終了": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 110,
-        "level": 4,
-        "title": "アダプターの終了"
-      }
-    ],
     "アダプターの起動": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 87,
+        "line": 85,
         "level": 4,
         "title": "アダプターの起動"
       }
@@ -4079,7 +4107,7 @@
     "アダプターインスタンスの取得": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 241,
+        "line": 239,
         "level": 3,
         "title": "アダプターインスタンスの取得"
       }
@@ -4138,20 +4166,28 @@
         "title": "アダプター開発"
       }
     ],
-    "アダプター開発ベストプラクティス": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 1,
-        "level": 1,
-        "title": "アダプター開発ベストプラクティス"
-      }
-    ],
     "アダプター開発入門": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 1,
         "level": 1,
         "title": "アダプター開発入門"
+      }
+    ],
+    "アダプタ送信メソッドの照会": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 75,
+        "level": 2,
+        "title": "アダプタ送信メソッドの照会"
+      }
+    ],
+    "アダプタ開発のベストプラクティス": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 1,
+        "level": 1,
+        "title": "アダプタ開発のベストプラクティス"
       }
     ],
     "アダプタ開発者向け": [
@@ -4243,7 +4279,7 @@
     "イベントコンバーター": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 502,
+        "line": 519,
         "level": 2,
         "title": "イベントコンバーター"
       }
@@ -4310,14 +4346,6 @@
         "title": "イベントタイプ概要"
       }
     ],
-    "イベントディスパッチメカニズム": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 192,
-        "level": 4,
-        "title": "イベントディスパッチメカニズム"
-      }
-    ],
     "イベントデータへのアクセス": [
       {
         "document": "getting-started/event-handling.md",
@@ -4329,7 +4357,7 @@
     "イベントハンドラのライフサイクル": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 171,
+        "line": 212,
         "level": 3,
         "title": "イベントハンドラのライフサイクル"
       }
@@ -4337,7 +4365,7 @@
     "イベントハンドラの登録": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 155,
+        "line": 196,
         "level": 3,
         "title": "イベントハンドラの登録"
       }
@@ -4369,7 +4397,7 @@
     "イベントリスニング": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 155,
+        "line": 153,
         "level": 3,
         "title": "イベントリスニング"
       }
@@ -4393,13 +4421,13 @@
     "イベント処理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 112,
+        "line": 125,
         "level": 2,
         "title": "イベント処理"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 153,
+        "line": 194,
         "level": 2,
         "title": "イベント処理"
       }
@@ -4538,6 +4566,14 @@
         "line": 280,
         "level": 2,
         "title": "イベント購読"
+      }
+    ],
+    "イベント配布メカニズム": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 190,
+        "level": 4,
+        "title": "イベント配布メカニズム"
       }
     ],
     "イベント駆動アーキテクチャ": [
@@ -4718,26 +4754,14 @@
     ],
     "エラーハンドリング": [
       {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 446,
-        "level": 2,
-        "title": "エラーハンドリング"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 742,
+        "line": 759,
         "level": 2,
         "title": "エラーハンドリング"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 168,
-        "level": 2,
-        "title": "エラーハンドリング"
-      },
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 198,
+        "line": 181,
         "level": 2,
         "title": "エラーハンドリング"
       },
@@ -4749,6 +4773,18 @@
       }
     ],
     "エラー処理": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 452,
+        "level": 2,
+        "title": "エラー処理"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 239,
+        "level": 2,
+        "title": "エラー処理"
+      },
       {
         "document": "platform-guide/onebot11.md",
         "line": 465,
@@ -4812,8 +4848,8 @@
         "title": "クイックスタート"
       },
       {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 47,
+        "document": "advanced/i18n.md",
+        "line": 15,
         "level": 2,
         "title": "クイックスタート"
       },
@@ -4848,14 +4884,6 @@
         "line": 14,
         "level": 2,
         "title": "クイックリファレンス"
-      }
-    ],
-    "クイック体験": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 15,
-        "level": 2,
-        "title": "クイック体験"
       }
     ],
     "クイック公開": [
@@ -5039,7 +5067,7 @@
     "コアメソッド": [
       {
         "document": "advanced/i18n.md",
-        "line": 145,
+        "line": 240,
         "level": 4,
         "title": "コアメソッド"
       },
@@ -5123,7 +5151,7 @@
     "コア機能": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 52,
+        "line": 50,
         "level": 3,
         "title": "コア機能"
       }
@@ -5308,12 +5336,12 @@
         "title": "コントリビューションフロー"
       }
     ],
-    "コンバーターの例": [
+    "コンバーター例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 534,
+        "line": 551,
         "level": 3,
-        "title": "コンバーターの例"
+        "title": "コンバーター例"
       }
     ],
     "コンポーネントの関係": [
@@ -5322,14 +5350,6 @@
         "line": 7,
         "level": 3,
         "title": "コンポーネントの関係"
-      }
-    ],
-    "コードでの手動切り替え": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 39,
-        "level": 3,
-        "title": "コードでの手動切り替え"
       }
     ],
     "コードの説明": [
@@ -5346,6 +5366,14 @@
         "line": 89,
         "level": 3,
         "title": "コード例の基準"
+      }
+    ],
+    "コード内で手動で切り替える": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 39,
+        "level": 3,
+        "title": "コード内で手動で切り替える"
       }
     ],
     "コールバッククエリイベント": [
@@ -5438,12 +5466,12 @@
         "title": "サポートされている提出タイプ"
       }
     ],
-    "サポートされている送信メソッドのリスト": [
+    "サポートされている言語": [
       {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 79,
-        "level": 3,
-        "title": "サポートされている送信メソッドのリスト"
+        "document": "advanced/i18n.md",
+        "line": 5,
+        "level": 2,
+        "title": "サポートされている言語"
       }
     ],
     "サポートされている送信メソッドの確認": [
@@ -5480,14 +5508,6 @@
         "line": 20,
         "level": 2,
         "title": "サポートされるメッセージ送信タイプ"
-      }
-    ],
-    "サポートされる言語": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 5,
-        "level": 2,
-        "title": "サポートされる言語"
       }
     ],
     "サポートするメッセージ送信タイプ": [
@@ -5683,13 +5703,13 @@
     "ストレージシステム": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 207,
+        "line": 221,
         "level": 2,
         "title": "ストレージシステム"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 128,
+        "line": 169,
         "level": 2,
         "title": "ストレージシステム"
       }
@@ -5713,7 +5733,7 @@
     "セキュリティ": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 311,
+        "line": 325,
         "level": 2,
         "title": "セキュリティ"
       }
@@ -5840,12 +5860,6 @@
     ],
     "チェーン修飾メソッド": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 488,
-        "level": 3,
-        "title": "チェーン修飾メソッド"
-      },
-      {
         "document": "platform-guide/onebot12.md",
         "line": 298,
         "level": 3,
@@ -5872,6 +5886,14 @@
         "line": 88,
         "level": 3,
         "title": "チェーン修飾メソッド（組み合わせ可能）"
+      }
+    ],
+    "チェーン修飾子メソッド": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 505,
+        "level": 3,
+        "title": "チェーン修飾子メソッド"
       }
     ],
     "チェーン修飾子メソッド（組み合わせて使用可能）": [
@@ -5951,13 +5973,13 @@
     "テスト": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 500,
+        "line": 506,
         "level": 2,
         "title": "テスト"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 348,
+        "line": 362,
         "level": 2,
         "title": "テスト"
       }
@@ -6064,6 +6086,14 @@
         "title": "デフォルト設定"
       }
     ],
+    "デプロイ": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 393,
+        "level": 2,
+        "title": "デプロイ"
+      }
+    ],
     "デプロイメントガイド": [
       {
         "document": "user-guide/deployment.md",
@@ -6131,7 +6161,7 @@
     "トランザクションの使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 143,
+        "line": 184,
         "level": 3,
         "title": "トランザクションの使用"
       }
@@ -6155,7 +6185,7 @@
     "ドキュメントの維持": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 610,
+        "line": 616,
         "level": 2,
         "title": "ドキュメントの維持"
       }
@@ -6397,7 +6427,7 @@
     "パフォーマンス最適化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 274,
+        "line": 288,
         "level": 2,
         "title": "パフォーマンス最適化"
       }
@@ -6483,7 +6513,7 @@
     "フレームワーク補助メソッド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 458,
+        "line": 475,
         "level": 3,
         "title": "フレームワーク補助メソッド"
       }
@@ -6544,12 +6574,12 @@
         "title": "プラットフォームで登録されたメソッドの照会"
       }
     ],
-    "プラットフォームの一覧": [
+    "プラットフォームのリスト表示": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 141,
+        "line": 139,
         "level": 4,
-        "title": "プラットフォームの一覧"
+        "title": "プラットフォームのリスト表示"
       }
     ],
     "プラットフォームの特徴説明 — Webhook 一般ブリッジアダプタ": [
@@ -6560,10 +6590,18 @@
         "title": "プラットフォームの特徴説明 — Webhook 一般ブリッジアダプタ"
       }
     ],
+    "プラットフォームの状態確認": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 125,
+        "level": 4,
+        "title": "プラットフォームの状態確認"
+      }
+    ],
     "プラットフォームイベントメソッド拡張": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 556,
+        "line": 562,
         "level": 2,
         "title": "プラットフォームイベントメソッド拡張"
       }
@@ -6571,7 +6609,7 @@
     "プラットフォームネイティブイベント": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 178,
+        "line": 176,
         "level": 4,
         "title": "プラットフォームネイティブイベント"
       }
@@ -6680,14 +6718,6 @@
         "line": 178,
         "level": 4,
         "title": "プラットフォーム機能確認"
-      }
-    ],
-    "プラットフォーム状態の確認": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 127,
-        "level": 4,
-        "title": "プラットフォーム状態の確認"
       }
     ],
     "プラットフォーム関連用語": [
@@ -6801,7 +6831,7 @@
     "プロパティアクセス": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 251,
+        "line": 249,
         "level": 4,
         "title": "プロパティアクセス"
       }
@@ -6839,7 +6869,7 @@
     "ベストプラクティス": [
       {
         "document": "advanced/i18n.md",
-        "line": 221,
+        "line": 316,
         "level": 2,
         "title": "ベストプラクティス"
       },
@@ -6922,14 +6952,6 @@
         "title": "ボット設定"
       }
     ],
-    "マルチアカウントサポート": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 390,
-        "level": 2,
-        "title": "マルチアカウントサポート"
-      }
-    ],
     "マルチアカウント設定": [
       {
         "document": "platform-guide/ideaura.md",
@@ -6993,7 +7015,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 206,
+        "line": 204,
         "level": 3,
         "title": "ミドルウェア"
       }
@@ -7004,14 +7026,6 @@
         "line": 79,
         "level": 3,
         "title": "ミドルウェアの実行モデル"
-      }
-    ],
-    "ミドルウェアの実行順序": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 226,
-        "level": 4,
-        "title": "ミドルウェアの実行順序"
       }
     ],
     "ミドルウェアの登録": [
@@ -7025,9 +7039,17 @@
     "ミドルウェアの追加": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 208,
+        "line": 206,
         "level": 4,
         "title": "ミドルウェアの追加"
+      }
+    ],
+    "ミドルウェア実行順序": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 224,
+        "level": 4,
+        "title": "ミドルウェア実行順序"
       }
     ],
     "メソッドの登録解除": [
@@ -7184,12 +7206,12 @@
         "title": "メタイベント (Meta Events)"
       }
     ],
-    "メタイベントの主動送信": [
+    "メタイベントの送信": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 156,
         "level": 4,
-        "title": "メタイベントの主動送信"
+        "title": "メタイベントの送信"
       }
     ],
     "メタイベント処理": [
@@ -7600,12 +7622,12 @@
         "title": "モジュール"
       }
     ],
-    "モジュールでの i18n の使用": [
+    "モジュールでの i18n 使用": [
       {
         "document": "advanced/i18n.md",
         "line": 77,
         "level": 2,
-        "title": "モジュールでの i18n の使用"
+        "title": "モジュールでの i18n 使用"
       }
     ],
     "モジュールのアップグレード": [
@@ -8061,8 +8083,8 @@
     "リクエストパラメータの使用": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 485,
-        "level": 3,
+        "line": 502,
+        "level": 4,
         "title": "リクエストパラメータの使用"
       }
     ],
@@ -8116,6 +8138,14 @@
         "line": 226,
         "level": 2,
         "title": "リッチメディアメッセージ変換例"
+      }
+    ],
+    "リバースコンバートとメッセージ構築": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 552,
+        "level": 2,
+        "title": "リバースコンバートとメッセージ構築"
       }
     ],
     "リバースプロキシ": [
@@ -8193,8 +8223,8 @@
     "ルート発見": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 522,
-        "level": 3,
+        "line": 539,
+        "level": 4,
         "title": "ルート発見"
       }
     ],
@@ -8263,7 +8293,7 @@
     "ロギング": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 240,
+        "line": 254,
         "level": 2,
         "title": "ロギング"
       }
@@ -8287,7 +8317,7 @@
     "ログメッセージ": [
       {
         "document": "advanced/i18n.md",
-        "line": 249,
+        "line": 344,
         "level": 3,
         "title": "ログメッセージ"
       }
@@ -8311,7 +8341,7 @@
     "ログ記録": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 215,
+        "line": 256,
         "level": 3,
         "title": "ログ記録"
       }
@@ -8349,12 +8379,6 @@
       }
     ],
     "ロード戦略": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 7,
-        "level": 3,
-        "title": "ロード戦略"
-      },
       {
         "document": "getting-started/basic-concepts.md",
         "line": 141,
@@ -8482,14 +8506,6 @@
         "title": "予約済みエラーセグメント"
       }
     ],
-    "仕組み": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 177,
-        "level": 3,
-        "title": "仕組み"
-      }
-    ],
     "仮想環境": [
       {
         "document": "terminology.md",
@@ -8584,6 +8600,14 @@
         "title": "使用例"
       }
     ],
+    "使用可能な属性": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 458,
+        "level": 3,
+        "title": "使用可能な属性"
+      }
+    ],
     "使用方法": [
       {
         "document": "ai-support/README.md",
@@ -8621,7 +8645,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 200,
+        "line": 241,
         "level": 3,
         "title": "例外のキャッチ"
       }
@@ -8809,7 +8833,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 409,
+        "line": 424,
         "level": 3,
         "title": "初期化プロセス"
       }
@@ -8830,20 +8854,20 @@
         "title": "利用可能なモジュールの確認"
       }
     ],
-    "利用可能な属性": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 441,
-        "level": 3,
-        "title": "利用可能な属性"
-      }
-    ],
     "前提知識": [
       {
         "document": "advanced/README.md",
         "line": 26,
         "level": 2,
         "title": "前提知識"
+      }
+    ],
+    "加載戦略": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 7,
+        "level": 3,
+        "title": "加載戦略"
       }
     ],
     "動作原理": [
@@ -8858,12 +8882,18 @@
         "line": 14,
         "level": 2,
         "title": "動作原理"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 218,
+        "level": 3,
+        "title": "動作原理"
       }
     ],
     "動的コンテンツ": [
       {
         "document": "advanced/i18n.md",
-        "line": 237,
+        "line": 332,
         "level": 3,
         "title": "動的コンテンツ"
       }
@@ -8871,7 +8901,7 @@
     "単一アカウント設定": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 307,
+        "line": 305,
         "level": 4,
         "title": "単一アカウント設定"
       }
@@ -8892,12 +8922,12 @@
         "title": "単一レコードの取得"
       }
     ],
-    "即時ロード": [
+    "即時加載": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 185,
+        "line": 226,
         "level": 3,
-        "title": "即時ロード"
+        "title": "即時加載"
       }
     ],
     "原生メッセージ送信": [
@@ -9136,12 +9166,6 @@
     ],
     "基本メソッド": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 465,
-        "level": 3,
-        "title": "基本メソッド"
-      },
-      {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 41,
         "level": 3,
@@ -9256,20 +9280,20 @@
         "title": "基本概念"
       }
     ],
-    "基本構造": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 261,
-        "level": 3,
-        "title": "基本構造"
-      }
-    ],
     "基本的なコマンド": [
       {
         "document": "getting-started/event-handling.md",
         "line": 68,
         "level": 3,
         "title": "基本的なコマンド"
+      }
+    ],
+    "基本的なメソッド": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 482,
+        "level": 3,
+        "title": "基本的なメソッド"
       }
     ],
     "基本的な使い方": [
@@ -9288,8 +9312,8 @@
     ],
     "基本的な使用": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 60,
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 171,
         "level": 3,
         "title": "基本的な使用"
       }
@@ -9302,14 +9326,14 @@
         "title": "基本的な使用方法"
       },
       {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 245,
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 58,
         "level": 3,
         "title": "基本的な使用方法"
       },
       {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 130,
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 245,
         "level": 3,
         "title": "基本的な使用方法"
       }
@@ -9317,8 +9341,8 @@
     "基本的な使用法": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 469,
-        "level": 3,
+        "line": 486,
+        "level": 4,
         "title": "基本的な使用法"
       }
     ],
@@ -9328,6 +9352,14 @@
         "line": 5,
         "level": 2,
         "title": "基本的な呼び出し方"
+      }
+    ],
+    "基本的な構造": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 259,
+        "level": 3,
+        "title": "基本的な構造"
       }
     ],
     "基本的な送信": [
@@ -9370,36 +9402,20 @@
         "title": "基本送信メソッド"
       }
     ],
-    "声明式設定（推奨）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 671,
-        "level": 3,
-        "title": "声明式設定（推奨）"
-      }
-    ],
     "変換フロー": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 504,
+        "line": 521,
         "level": 3,
         "title": "変換フロー"
       }
     ],
-    "多アカウントサポート": [
+    "多アカウント対応": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 669,
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 390,
         "level": 2,
-        "title": "多アカウントサポート"
-      }
-    ],
-    "多アカウント設定": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 336,
-        "level": 4,
-        "title": "多アカウント設定"
+        "title": "多アカウント対応"
       }
     ],
     "多アカウント送信構文": [
@@ -9418,12 +9434,12 @@
         "title": "多回の対話 (conversation)"
       }
     ],
-    "多言語のオーバーライド": [
+    "多言語のカバー": [
       {
         "document": "advanced/i18n.md",
-        "line": 233,
+        "line": 328,
         "level": 3,
-        "title": "多言語のオーバーライド"
+        "title": "多言語のカバー"
       }
     ],
     "大小写不敏感調用": [
@@ -9545,9 +9561,25 @@
     "実行時設定": [
       {
         "document": "advanced/i18n.md",
-        "line": 189,
+        "line": 284,
         "level": 2,
         "title": "実行時設定"
+      }
+    ],
+    "宣言型設定（推奨）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 688,
+        "level": 3,
+        "title": "宣言型設定（推奨）"
+      }
+    ],
+    "宣言的設定（推奨）": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 105,
+        "level": 3,
+        "title": "宣言的設定（推奨）"
       }
     ],
     "審査にはどのくらい時間がかかりますか？": [
@@ -9645,7 +9677,7 @@
     "必須フィールド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 514,
+        "line": 531,
         "level": 3,
         "title": "必須フィールド"
       }
@@ -9682,12 +9714,20 @@
         "title": "情報照会コマンド"
       }
     ],
-    "成功応答": [
+    "慣性加載メカニズム": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 216,
+        "level": 2,
+        "title": "慣性加載メカニズム"
+      }
+    ],
+    "成功レスポンス": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 639,
+        "line": 656,
         "level": 3,
-        "title": "成功応答"
+        "title": "成功レスポンス"
       }
     ],
     "成功応答例": [
@@ -9746,6 +9786,14 @@
         "title": "手动调用 Request DSL"
       }
     ],
+    "手動での設定読み取り（互換モード）": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 150,
+        "level": 3,
+        "title": "手動での設定読み取り（互換モード）"
+      }
+    ],
     "手動デプロイ（pip）": [
       {
         "document": "user-guide/deployment.md",
@@ -9754,12 +9802,12 @@
         "title": "手動デプロイ（pip）"
       }
     ],
-    "手動構築のレスポンス（旧版方式でも互換性あり）": [
+    "手動レスポンス構築（旧方式も互換性維持）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 655,
+        "line": 672,
         "level": 3,
-        "title": "手動構築のレスポンス（旧版方式でも互換性あり）"
+        "title": "手動レスポンス構築（旧方式も互換性維持）"
       }
     ],
     "技術標準": [
@@ -9860,12 +9908,12 @@
         "title": "指定がない場合、最初に有効になったbotが使用されます"
       }
     ],
-    "指定アカウントでの送信": [
+    "指定されたアカウントからの送信": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 712,
+        "line": 729,
         "level": 3,
-        "title": "指定アカウントでの送信"
+        "title": "指定されたアカウントからの送信"
       }
     ],
     "按钮消息段 (yunhu_user_button)": [
@@ -9874,6 +9922,14 @@
         "line": 414,
         "level": 4,
         "title": "按钮消息段 (yunhu_user_button)"
+      }
+    ],
+    "接続の再試行": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 761,
+        "level": 3,
+        "title": "接続の再試行"
       }
     ],
     "接続の終了": [
@@ -9906,28 +9962,12 @@
         "title": "接続フロー"
       }
     ],
-    "接続リトライ": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 744,
-        "level": 3,
-        "title": "接続リトライ"
-      }
-    ],
     "接続切断時の再接続": [
       {
         "document": "platform-guide/kook.md",
         "line": 339,
         "level": 3,
         "title": "接続切断時の再接続"
-      }
-    ],
-    "接続情報とルート発見": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 424,
-        "level": 2,
-        "title": "接続情報とルート発見"
       }
     ],
     "接続手順": [
@@ -9947,7 +9987,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 575,
+        "line": 592,
         "level": 2,
         "title": "接続管理"
       }
@@ -9958,6 +9998,14 @@
         "line": 64,
         "level": 3,
         "title": "提供されるツール"
+      }
+    ],
+    "支持される送信メソッドの一覧表示": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 79,
+        "level": 3,
+        "title": "支持される送信メソッドの一覧表示"
       }
     ],
     "文書情報": [
@@ -10070,6 +10118,14 @@
         "line": 444,
         "level": 2,
         "title": "最適な実践方法"
+      }
+    ],
+    "最適マッピング原理": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 64,
+        "level": 3,
+        "title": "最適マッピング原理"
       }
     ],
     "机器人公告看板事件の例": [
@@ -10308,6 +10364,12 @@
     ],
     "次に進む": [
       {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 559,
+        "level": 2,
+        "title": "次に進む"
+      },
+      {
         "document": "user-guide/configuration.md",
         "line": 218,
         "level": 2,
@@ -10318,12 +10380,6 @@
       {
         "document": "ai-support/README.md",
         "line": 117,
-        "level": 2,
-        "title": "次のステップ"
-      },
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 542,
         "level": 2,
         "title": "次のステップ"
       },
@@ -10498,12 +10554,12 @@
         "title": "環境変数"
       }
     ],
-    "環境変数による切り替え": [
+    "環境変数を使用して切り替える": [
       {
         "document": "advanced/i18n.md",
         "line": 17,
         "level": 3,
-        "title": "環境変数による切り替え"
+        "title": "環境変数を使用して切り替える"
       }
     ],
     "生メッセージとメッセージ構築": [
@@ -10705,7 +10761,7 @@
     "継承関係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 432,
+        "line": 449,
         "level": 3,
         "title": "継承関係"
       }
@@ -10721,7 +10777,7 @@
     "翻訳のアンインストール": [
       {
         "document": "advanced/i18n.md",
-        "line": 132,
+        "line": 151,
         "level": 3,
         "title": "翻訳のアンインストール"
       }
@@ -10737,7 +10793,7 @@
     "翻訳キーの命名": [
       {
         "document": "advanced/i18n.md",
-        "line": 223,
+        "line": 318,
         "level": 3,
         "title": "翻訳キーの命名"
       }
@@ -10761,7 +10817,7 @@
     "自動発見メカニズム": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 800,
+        "line": 817,
         "level": 3,
         "title": "自動発見メカニズム"
       }
@@ -10798,7 +10854,21 @@
         "title": "複数アカウントモデル"
       }
     ],
+    "複数アカウント対応": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 686,
+        "level": 2,
+        "title": "複数アカウント対応"
+      }
+    ],
     "複数アカウント設定": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 334,
+        "level": 4,
+        "title": "複数アカウント設定"
+      },
       {
         "document": "platform-guide/wechatmp.md",
         "line": 94,
@@ -10870,28 +10940,20 @@
         "title": "設定"
       }
     ],
-    "設定 API 経由で i18n 設定を読み取る": [
+    "設定 API を使用して i18n 設定を読み取る": [
       {
         "document": "advanced/i18n.md",
-        "line": 191,
+        "line": 286,
         "level": 3,
-        "title": "設定 API 経由で i18n 設定を読み取る"
+        "title": "設定 API を使用して i18n 設定を読み取る"
       }
     ],
-    "設定のホット更新": [
+    "設定のホットアップデート": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 396,
+        "line": 411,
         "level": 4,
-        "title": "設定のホット更新"
-      }
-    ],
-    "設定の使用": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 120,
-        "level": 3,
-        "title": "設定の使用"
+        "title": "設定のホットアップデート"
       }
     ],
     "設定の説明": [
@@ -10900,14 +10962,6 @@
         "line": 89,
         "level": 3,
         "title": "設定の説明"
-      }
-    ],
-    "設定の読み取り": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 105,
-        "level": 3,
-        "title": "設定の読み取り"
       }
     ],
     "設定エラー": [
@@ -10952,14 +11006,6 @@
         "title": "設定ファイル"
       }
     ],
-    "設定ファイルによる切り替え": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 28,
-        "level": 3,
-        "title": "設定ファイルによる切り替え"
-      }
-    ],
     "設定ファイルの位置": [
       {
         "document": "user-guide/configuration.md",
@@ -10974,6 +11020,22 @@
         "line": 1,
         "level": 1,
         "title": "設定ファイルの説明"
+      }
+    ],
+    "設定ファイルを使用して切り替える": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 28,
+        "level": 3,
+        "title": "設定ファイルを使用して切り替える"
+      }
+    ],
+    "設定フィールドの多言語対応": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 160,
+        "level": 2,
+        "title": "設定フィールドの多言語対応"
       }
     ],
     "設定フィールドの説明": [
@@ -11015,13 +11077,13 @@
     "設定管理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 125,
+        "line": 123,
         "level": 3,
         "title": "設定管理"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 303,
+        "line": 301,
         "level": 3,
         "title": "設定管理"
       },
@@ -11030,6 +11092,14 @@
         "line": 103,
         "level": 2,
         "title": "設定管理"
+      }
+    ],
+    "設定翻訳の登録": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 190,
+        "level": 3,
+        "title": "設定翻訳の登録"
       }
     ],
     "設定説明": [
@@ -11073,7 +11143,7 @@
     "設定項目の説明": [
       {
         "document": "advanced/i18n.md",
-        "line": 203,
+        "line": 298,
         "level": 3,
         "title": "設定項目の説明"
       }
@@ -11110,12 +11180,12 @@
         "title": "贴纸消息段 (yunhu_user_sticker)"
       }
     ],
-    "起動と終了": [
+    "起動と停止": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 85,
+        "line": 83,
         "level": 3,
-        "title": "起動と終了"
+        "title": "起動と停止"
       }
     ],
     "超级文件分享事件の例": [
@@ -11148,14 +11218,6 @@
         "line": 182,
         "level": 4,
         "title": "転送機能"
-      }
-    ],
-    "近接マッピングの原則": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 64,
-        "level": 3,
-        "title": "近接マッピングの原則"
       }
     ],
     "返信": [
@@ -11310,22 +11372,6 @@
         "title": "送信者情報"
       }
     ],
-    "适配器发送 Meta 事件": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 826,
-        "level": 3,
-        "title": "适配器发送 Meta 事件"
-      }
-    ],
-    "逆変換とメッセージ構築": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 546,
-        "level": 2,
-        "title": "逆変換とメッセージ構築"
-      }
-    ],
     "通知イベント": [
       {
         "document": "api-reference/event-system.md",
@@ -11404,12 +11450,12 @@
         "title": "通知操作者"
       }
     ],
-    "遅延ロードメカニズム": [
+    "速習": [
       {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 175,
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 47,
         "level": 2,
-        "title": "遅延ロードメカニズム"
+        "title": "速習"
       }
     ],
     "遅延読み込み": [
@@ -11434,14 +11480,6 @@
         "line": 411,
         "level": 3,
         "title": "選択メニュー (choose)"
-      }
-    ],
-    "部署": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 379,
-        "level": 2,
-        "title": "部署"
       }
     ],
     "重要な制限": [
@@ -11605,13 +11643,19 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 642,
+        "line": 648,
         "level": 2,
         "title": "関連ドキュメント"
       },
       {
         "document": "developer-guide/adapters/converter.md",
         "line": 327,
+        "level": 2,
+        "title": "関連ドキュメント"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 920,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -11623,13 +11667,13 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 408,
+        "line": 422,
         "level": 2,
         "title": "関連ドキュメント"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 226,
+        "line": 267,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -11672,12 +11716,6 @@
         "line": 361,
         "level": 2,
         "title": "関連文書"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 903,
-        "level": 2,
-        "title": "関連文書"
       }
     ],
     "閲覧と検索": [
@@ -11707,7 +11745,7 @@
     "非同期プログラミング": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 51,
+        "line": 64,
         "level": 2,
         "title": "非同期プログラミング"
       },

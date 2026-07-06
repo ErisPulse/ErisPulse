@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1292,
+  "total_keywords": 1297,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -37,23 +37,23 @@
     "1. 使用 Event 包裝類別": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 114,
+        "line": 127,
         "level": 3,
         "title": "1. 使用 Event 包裝類別"
       }
     ],
-    "1. 使用 Mixin 類別批量註冊（推薦）": [
+    "1. 使用 Mixin 類批量註冊（推薦）": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 560,
+        "line": 566,
         "level": 3,
-        "title": "1. 使用 Mixin 類別批量註冊（推薦）"
+        "title": "1. 使用 Mixin 類批量註冊（推薦）"
       }
     ],
     "1. 使用交易": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 210,
+        "line": 223,
         "level": 3,
         "title": "1. 使用交易"
       }
@@ -61,7 +61,7 @@
     "1. 使用快取": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 277,
+        "line": 290,
         "level": 3,
         "title": "1. 使用快取"
       }
@@ -69,7 +69,7 @@
     "1. 使用非同步程式庫": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 53,
+        "line": 66,
         "level": 3,
         "title": "1. 使用非同步程式庫"
       }
@@ -85,13 +85,13 @@
     "1. 分類異常處理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 448,
+        "line": 454,
         "level": 3,
         "title": "1. 分類異常處理"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 170,
+        "line": 183,
         "level": 3,
         "title": "1. 分類異常處理"
       }
@@ -99,7 +99,7 @@
     "1. 合理使用日誌層級": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 243,
+        "line": 256,
         "level": 3,
         "title": "1. 合理使用日誌層級"
       }
@@ -115,13 +115,13 @@
     "1. 單元測試": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 502,
+        "line": 508,
         "level": 3,
         "title": "1. 單元測試"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 351,
+        "line": 364,
         "level": 3,
         "title": "1. 單元測試"
       }
@@ -142,20 +142,12 @@
         "title": "1. 基本資訊部分"
       }
     ],
-    "1. 宣告式設定（推薦）": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 392,
-        "level": 3,
-        "title": "1. 宣告式設定（推薦）"
-      }
-    ],
-    "1. 實作連線重試": [
+    "1. 實現連線重試": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 107,
         "level": 3,
-        "title": "1. 實作連線重試"
+        "title": "1. 實現連線重試"
       }
     ],
     "1. 建立 Dockerfile": [
@@ -193,7 +185,7 @@
     "1. 敏感資料保護": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 314,
+        "line": 327,
         "level": 3,
         "title": "1. 敏感資料保護"
       }
@@ -249,7 +241,7 @@
     "1. 版本管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 382,
+        "line": 395,
         "level": 3,
         "title": "1. 版本管理"
       }
@@ -281,7 +273,7 @@
     "1. 維護平台特性文件": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 612,
+        "line": 618,
         "level": 3,
         "title": "1. 維護平台特性文件"
       }
@@ -292,6 +284,14 @@
         "line": 277,
         "level": 3,
         "title": "1. 缺少 `{platform}_raw` 欄位"
+      }
+    ],
+    "1. 聲明式配置（推薦）": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 392,
+        "level": 3,
+        "title": "1. 聲明式配置（推薦）"
       }
     ],
     "1. 說明": [
@@ -356,6 +356,14 @@
         "line": 44,
         "level": 3,
         "title": "1.4 推薦的擴展命名約定"
+      }
+    ],
+    "10. SSE (Server-Sent Events) 支援": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 482,
+        "level": 3,
+        "title": "10. SSE (Server-Sent Events) 支援"
       }
     ],
     "10. 適配器實作檢查清單": [
@@ -454,12 +462,12 @@
         "title": "2. Send 內部類（大多數情況不需要重寫）"
       }
     ],
-    "2. 使用裝飾器註冊單一方法": [
+    "2. 使用裝飾器註冊單個方法": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 586,
+        "line": 592,
         "level": 3,
-        "title": "2. 使用裝飾器註冊單一方法"
+        "title": "2. 使用裝飾器註冊單個方法"
       }
     ],
     "2. 僅指定 ID": [
@@ -478,12 +486,12 @@
         "title": "2. 參數規範詳解"
       }
     ],
-    "2. 合理使用延遲載入": [
+    "2. 合理使用懶載入": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 130,
+        "line": 143,
         "level": 3,
-        "title": "2. 合理使用延遲載入"
+        "title": "2. 合理使用懶載入"
       }
     ],
     "2. 回應標準化": [
@@ -510,12 +518,12 @@
         "title": "2. 嵌入式開發"
       }
     ],
-    "2. 帳號選擇機制": [
+    "2. 帳戶選擇機制": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 431,
+        "line": 432,
         "level": 3,
-        "title": "2. 帳號選擇機制"
+        "title": "2. 帳戶選擇機制"
       }
     ],
     "2. 建立 GitHub Actions 工作流": [
@@ -537,7 +545,7 @@
     "2. 批次操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 226,
+        "line": 239,
         "level": 3,
         "title": "2. 批次操作"
       }
@@ -560,14 +568,8 @@
     ],
     "2. 整合測試": [
       {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 526,
-        "level": 3,
-        "title": "2. 整合測試"
-      },
-      {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 366,
+        "line": 379,
         "level": 3,
         "title": "2. 整合測試"
       }
@@ -575,7 +577,7 @@
     "2. 文件完善": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 396,
+        "line": 409,
         "level": 3,
         "title": "2. 文件完善"
       }
@@ -583,7 +585,7 @@
     "2. 日誌記錄": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 481,
+        "line": 487,
         "level": 3,
         "title": "2. 日誌記錄"
       },
@@ -613,7 +615,7 @@
     "2. 更新版本資訊": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 633,
+        "line": 639,
         "level": 3,
         "title": "2. 更新版本資訊"
       }
@@ -645,7 +647,7 @@
     "2. 正確的非同步操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 89,
+        "line": 102,
         "level": 3,
         "title": "2. 正確的非同步操作"
       }
@@ -669,7 +671,7 @@
     "2. 結構化日誌": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 265,
+        "line": 278,
         "level": 3,
         "title": "2. 結構化日誌"
       }
@@ -693,7 +695,7 @@
     "2. 超時處理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 192,
+        "line": 205,
         "level": 3,
         "title": "2. 超時處理"
       }
@@ -701,7 +703,7 @@
     "2. 輸入驗證": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 331,
+        "line": 344,
         "level": 3,
         "title": "2. 輸入驗證"
       }
@@ -714,12 +716,12 @@
         "title": "2. 連線狀態管理"
       }
     ],
-    "2. 避免阻塞操作": [
+    "2. 避免阻斷操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 298,
+        "line": 311,
         "level": 3,
-        "title": "2. 避免阻塞操作"
+        "title": "2. 避免阻斷操作"
       }
     ],
     "2. 錯誤碼規範": [
@@ -736,6 +738,14 @@
         "line": 300,
         "level": 3,
         "title": "2. 鏈式修飾方法返回 self"
+      }
+    ],
+    "2. 集成測試": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 532,
+        "level": 3,
+        "title": "2. 集成測試"
       }
     ],
     "2.1 OneBot12 標準類型": [
@@ -882,12 +892,12 @@
         "title": "3. Request 內部類（大多數情況不需要重寫）"
       }
     ],
-    "3. 事件 ID 產生": [
+    "3. 事件 ID 生成": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 262,
         "level": 3,
-        "title": "3. 事件 ID 產生"
+        "title": "3. 事件 ID 生成"
       }
     ],
     "3. 事件格式範例": [
@@ -901,7 +911,7 @@
     "3. 事件處理器註冊": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 152,
+        "line": 165,
         "level": 3,
         "title": "3. 事件處理器註冊"
       }
@@ -1002,12 +1012,12 @@
         "title": "3. 欄位映射（入站 JSON → OneBot12 事件）"
       }
     ],
-    "3. 清晰的設定管理": [
+    "3. 清晰的配置管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 34,
         "level": 3,
-        "title": "3. 清晰的設定管理"
+        "title": "3. 清晰的配置管理"
       }
     ],
     "3. 特有事件類型": [
@@ -1037,7 +1047,7 @@
     "3. 資源管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 100,
+        "line": 113,
         "level": 3,
         "title": "3. 資源管理"
       }
@@ -1050,12 +1060,12 @@
         "title": "3. 適配器"
       }
     ],
-    "3. 配接器關閉時清理": [
+    "3. 適配器關閉時清理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 596,
+        "line": 602,
         "level": 3,
-        "title": "3. 配接器關閉時清理"
+        "title": "3. 適配器關閉時清理"
       }
     ],
     "3.1 對應原則": [
@@ -1154,12 +1164,12 @@
         "title": "4. Event 便捷方法"
       }
     ],
-    "4. `self` 欄位自動發現": [
+    "4. `self` 字段自動發現": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 55,
         "level": 3,
-        "title": "4. `self` 欄位自動發現"
+        "title": "4. `self` 字段自動發現"
       }
     ],
     "4. detail_type 使用了非標準值": [
@@ -1178,20 +1188,20 @@
         "title": "4. 參數命名規範"
       }
     ],
-    "4. 實作必要方法": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 126,
-        "level": 3,
-        "title": "4. 實作必要方法"
-      }
-    ],
     "4. 實作要求": [
       {
         "document": "standards/api-response.md",
         "line": 100,
         "level": 2,
         "title": "4. 實作要求"
+      }
+    ],
+    "4. 實現必需方法": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 126,
+        "level": 3,
+        "title": "4. 實現必需方法"
       }
     ],
     "4. 擴展欄位說明": [
@@ -1250,12 +1260,12 @@
         "title": "4. 設定鏡像為公開"
       }
     ],
-    "4. 連線資訊暴露": [
+    "4. 連線資訊揭露": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 185,
         "level": 3,
-        "title": "4. 連線資訊暴露"
+        "title": "4. 連線資訊揭露"
       }
     ],
     "4.1 Event 方法列表": [
@@ -1314,12 +1324,12 @@
         "title": "5. Bot 狀態查詢"
       }
     ],
-    "5. 實作 Send 類": [
+    "5. 實現 Send 類": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 183,
         "level": 3,
-        "title": "5. 實作 Send 類"
+        "title": "5. 實現 Send 類"
       }
     ],
     "5. 往返一致性": [
@@ -1482,12 +1492,12 @@
         "title": "6. 反向轉換規範（OneBot12 → 平台）"
       }
     ],
-    "6. 實作轉換器": [
+    "6. 實現轉換器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 246,
         "level": 3,
-        "title": "6. 實作轉換器"
+        "title": "6. 實現轉換器"
       }
     ],
     "6. 擴展命名規範": [
@@ -1650,12 +1660,12 @@
         "title": "6.6 `self` 欄位擴展"
       }
     ],
-    "7. 實作 Request 類（請求操作）": [
+    "7. 實現 Request 類（請求操作）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 288,
         "level": 3,
-        "title": "7. 實作 Request 類（請求操作）"
+        "title": "7. 實現 Request 類（請求操作）"
       }
     ],
     "7. 方法發現": [
@@ -1722,12 +1732,12 @@
         "title": "8. 常見問題"
       }
     ],
-    "8. 建立套件入口": [
+    "8. 建立包入口": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 353,
         "level": 3,
-        "title": "8. 建立套件入口"
+        "title": "8. 建立包入口"
       }
     ],
     "8. 相關文檔": [
@@ -1744,6 +1754,14 @@
         "line": 277,
         "level": 2,
         "title": "9. 相關文件"
+      }
+    ],
+    "9. 連接資訊與路由發現": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 441,
+        "level": 3,
+        "title": "9. 連接資訊與路由發現"
       }
     ],
     "9. 適配器開發注意事項": [
@@ -1801,7 +1819,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 141,
+        "line": 236,
         "level": 2,
         "title": "API 參考"
       },
@@ -1843,7 +1861,7 @@
     "API 回應標準": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 637,
+        "line": 652,
         "level": 2,
         "title": "API 回應標準"
       },
@@ -1899,7 +1917,7 @@
     "API 錯誤處理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 770,
+        "line": 785,
         "level": 3,
         "title": "API 錯誤處理"
       }
@@ -1928,12 +1946,12 @@
         "title": "Adapter 管理器"
       }
     ],
-    "AdapterManager 介接器管理器": [
+    "AdapterManager 適配器管理器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 46,
         "level": 2,
-        "title": "AdapterManager 介接器管理器"
+        "title": "AdapterManager 適配器管理器"
       }
     ],
     "At 方法": [
@@ -1999,7 +2017,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 864,
+        "line": 879,
         "level": 3,
         "title": "Bot 狀態查詢"
       },
@@ -2019,7 +2037,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 798,
+        "line": 813,
         "level": 2,
         "title": "Bot 狀態管理"
       }
@@ -2387,7 +2405,7 @@
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
-        "line": 143,
+        "line": 238,
         "level": 3,
         "title": "I18nManager"
       }
@@ -2483,7 +2501,7 @@
     "Meta 事件類型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 820,
+        "line": 835,
         "level": 3,
         "title": "Meta 事件類型"
       }
@@ -2758,6 +2776,14 @@
         "title": "SDK"
       }
     ],
+    "SDK 對象": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 54,
+        "level": 2,
+        "title": "SDK 對象"
+      }
+    ],
     "SDK 核心架構": [
       {
         "document": "architecture.md",
@@ -2767,12 +2793,6 @@
       }
     ],
     "SDK 物件": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 54,
-        "level": 2,
-        "title": "SDK 物件"
-      },
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 128,
@@ -2804,14 +2824,6 @@
         "title": "SQL 查詢建構器"
       }
     ],
-    "SSE (Server-Sent Events) 支援": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 482,
-        "level": 2,
-        "title": "SSE (Server-Sent Events) 支援"
-      }
-    ],
     "Send 嵌套類": [
       {
         "document": "api-reference/adapter-system.md",
@@ -2839,7 +2851,7 @@
     "Send 訊息發送 DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 428,
+        "line": 447,
         "level": 2,
         "title": "Send 訊息發送 DSL"
       }
@@ -2860,12 +2872,12 @@
         "title": "SendDSL"
       }
     ],
-    "SendDSL 實作": [
+    "SendDSL 實現": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 276,
         "level": 2,
-        "title": "SendDSL 實作"
+        "title": "SendDSL 實現"
       }
     ],
     "SendDSL 訊息發送": [
@@ -2983,7 +2995,7 @@
     "WebHook 連接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 611,
+        "line": 628,
         "level": 3,
         "title": "WebHook 連接"
       }
@@ -3037,7 +3049,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 575,
+        "line": 594,
         "level": 3,
         "title": "WebSocket 連接"
       }
@@ -3064,6 +3076,14 @@
         "line": 316,
         "level": 2,
         "title": "WebSocket連線"
+      }
+    ],
+    "WebUI 如何消費": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 222,
+        "level": 3,
+        "title": "WebUI 如何消費"
       }
     ],
     "Where 參數傳遞規則": [
@@ -3269,7 +3289,7 @@
     "`self` 欄位擴展資訊": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 853,
+        "line": 868,
         "level": 3,
         "title": "`self` 欄位擴展資訊"
       }
@@ -3277,7 +3297,7 @@
     "`t()` 方法詳解": [
       {
         "document": "advanced/i18n.md",
-        "line": 159,
+        "line": 254,
         "level": 4,
         "title": "`t()` 方法詳解"
       }
@@ -3501,7 +3521,7 @@
     "metadata 約定": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 362,
+        "line": 371,
         "level": 4,
         "title": "metadata 約定"
       }
@@ -3581,7 +3601,7 @@
     "self.user_id 與 Using 的關係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 727,
+        "line": 742,
         "level": 3,
         "title": "self.user_id 與 Using 的關係"
       }
@@ -3975,13 +3995,13 @@
     "事件處理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 112,
+        "line": 125,
         "level": 2,
         "title": "事件處理"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 153,
+        "line": 194,
         "level": 2,
         "title": "事件處理"
       }
@@ -4005,7 +4025,7 @@
     "事件處理器生命週期": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 171,
+        "line": 212,
         "level": 3,
         "title": "事件處理器生命週期"
       }
@@ -4013,7 +4033,7 @@
     "事件處理器註冊": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 155,
+        "line": 196,
         "level": 3,
         "title": "事件處理器註冊"
       }
@@ -4103,7 +4123,7 @@
     "事件轉換器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 500,
+        "line": 519,
         "level": 2,
         "title": "事件轉換器"
       }
@@ -4182,6 +4202,14 @@
         "title": "事務中使用"
       }
     ],
+    "事務使用": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 184,
+        "level": 3,
+        "title": "事務使用"
+      }
+    ],
     "事務操作": [
       {
         "document": "api-reference/core-modules.md",
@@ -4256,44 +4284,12 @@
         "title": "互動方法示例"
       }
     ],
-    "交易使用": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 143,
-        "level": 3,
-        "title": "交易使用"
-      }
-    ],
     "什麼是適配器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 7,
         "level": 3,
         "title": "什麼是適配器"
-      }
-    ],
-    "介接器架構": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 5,
-        "level": 2,
-        "title": "介接器架構"
-      }
-    ],
-    "介接器核心概念": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1,
-        "level": 1,
-        "title": "介接器核心概念"
-      }
-    ],
-    "介接器發送 Meta 事件": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 828,
-        "level": 3,
-        "title": "介接器發送 Meta 事件"
       }
     ],
     "介面卡基類": [
@@ -4512,28 +4508,12 @@
         "title": "使用者：使用平台擴展方法"
       }
     ],
-    "使用設定": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 120,
-        "level": 3,
-        "title": "使用設定"
-      }
-    ],
     "使用請求參數": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 502,
         "level": 4,
         "title": "使用請求參數"
-      }
-    ],
-    "例外捕獲": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 200,
-        "level": 3,
-        "title": "例外捕獲"
       }
     ],
     "保留錯誤段": [
@@ -4711,13 +4691,13 @@
     "儲存系統": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 208,
+        "line": 221,
         "level": 2,
         "title": "儲存系統"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 128,
+        "line": 169,
         "level": 2,
         "title": "儲存系統"
       }
@@ -4925,7 +4905,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 407,
+        "line": 424,
         "level": 3,
         "title": "初始化過程"
       }
@@ -4994,10 +4974,18 @@
         "title": "加密模式說明"
       }
     ],
+    "加載策略": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 7,
+        "level": 3,
+        "title": "加載策略"
+      }
+    ],
     "動態內容": [
       {
         "document": "advanced/i18n.md",
-        "line": 237,
+        "line": 332,
         "level": 3,
         "title": "動態內容"
       }
@@ -5127,17 +5115,9 @@
     "反向轉換與訊息建構": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 546,
+        "line": 552,
         "level": 2,
         "title": "反向轉換與訊息建構"
-      }
-    ],
-    "取得介接器實例": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 239,
-        "level": 3,
-        "title": "取得介接器實例"
       }
     ],
     "取得介面卡": [
@@ -5148,18 +5128,18 @@
         "title": "取得介面卡"
       }
     ],
-    "取得方法詳細資訊": [
+    "取得適配器實例": [
       {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 87,
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 239,
         "level": 3,
-        "title": "取得方法詳細資訊"
+        "title": "取得適配器實例"
       }
     ],
     "可用屬性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 439,
+        "line": 458,
         "level": 3,
         "title": "可用屬性"
       }
@@ -5296,20 +5276,20 @@
         "title": "命名規範"
       }
     ],
-    "啟動介接器": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 85,
-        "level": 4,
-        "title": "啟動介接器"
-      }
-    ],
     "啟動和關閉": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 83,
         "level": 3,
         "title": "啟動和關閉"
+      }
+    ],
+    "啟動適配器": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 85,
+        "level": 4,
+        "title": "啟動適配器"
       }
     ],
     "啟用虛擬環境": [
@@ -5328,12 +5308,12 @@
         "title": "單個方法註冊"
       }
     ],
-    "單帳戶設定": [
+    "單帳號設定": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 305,
         "level": 4,
-        "title": "單帳戶設定"
+        "title": "單帳號設定"
       }
     ],
     "嚴格模式": [
@@ -5533,7 +5513,7 @@
     "執行階段設定": [
       {
         "document": "advanced/i18n.md",
-        "line": 189,
+        "line": 284,
         "level": 2,
         "title": "執行階段設定"
       }
@@ -5565,7 +5545,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 130,
+        "line": 171,
         "level": 3,
         "title": "基本使用"
       }
@@ -5605,7 +5585,7 @@
     "基本方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 463,
+        "line": 482,
         "level": 3,
         "title": "基本方法"
       },
@@ -5790,14 +5770,6 @@
         "title": "基類"
       }
     ],
-    "声明式配置（推薦）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 673,
-        "level": 3,
-        "title": "声明式配置（推薦）"
-      }
-    ],
     "多元素消息": [
       {
         "document": "advanced/message-builder.md",
@@ -5824,8 +5796,8 @@
     ],
     "多帳戶支援": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 671,
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 390,
         "level": 2,
         "title": "多帳戶支援"
       }
@@ -5836,14 +5808,6 @@
         "line": 37,
         "level": 2,
         "title": "多帳戶模型"
-      }
-    ],
-    "多帳戶設定": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 334,
-        "level": 4,
-        "title": "多帳戶設定"
       }
     ],
     "多帳戶配置": [
@@ -5870,13 +5834,19 @@
     ],
     "多帳號支援": [
       {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 390,
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 686,
         "level": 2,
         "title": "多帳號支援"
       }
     ],
     "多帳號設定": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 334,
+        "level": 4,
+        "title": "多帳號設定"
+      },
       {
         "document": "platform-guide/wechatmp.md",
         "line": 94,
@@ -5903,7 +5873,7 @@
     "多語言覆蓋": [
       {
         "document": "advanced/i18n.md",
-        "line": 233,
+        "line": 328,
         "level": 3,
         "title": "多語言覆蓋"
       }
@@ -6060,14 +6030,6 @@
         "title": "存儲配置"
       }
     ],
-    "存取核心模組": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 56,
-        "level": 3,
-        "title": "存取核心模組"
-      }
-    ],
     "學習路徑": [
       {
         "document": "getting-started/README.md",
@@ -6087,7 +6049,7 @@
     "安全性": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 312,
+        "line": 325,
         "level": 2,
         "title": "安全性"
       }
@@ -6228,6 +6190,22 @@
         "title": "定時任務"
       }
     ],
+    "宣告 i18n 描述": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 164,
+        "level": 3,
+        "title": "宣告 i18n 描述"
+      }
+    ],
+    "宣告式設定（推薦）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 688,
+        "level": 3,
+        "title": "宣告式設定（推薦）"
+      }
+    ],
     "富媒體訊息轉換示例": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -6306,12 +6284,12 @@
         "title": "導入方式"
       }
     ],
-    "就近對應原則": [
+    "就近映射原則": [
       {
         "document": "advanced/i18n.md",
         "line": 64,
         "level": 3,
-        "title": "就近對應原則"
+        "title": "就近映射原則"
       }
     ],
     "屬性存取": [
@@ -6349,7 +6327,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 177,
+        "line": 218,
         "level": 3,
         "title": "工作原理"
       }
@@ -6390,14 +6368,6 @@
         "title": "已修復的 Bug"
       }
     ],
-    "帳戶解析": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 381,
-        "level": 4,
-        "title": "帳戶解析"
-      }
-    ],
     "帳戶配置": [
       {
         "document": "platform-guide/onebot12.md",
@@ -6414,12 +6384,28 @@
         "title": "帳號管理"
       }
     ],
+    "帳號解析": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 398,
+        "level": 4,
+        "title": "帳號解析"
+      }
+    ],
     "帳號解析優先級": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 448,
         "level": 3,
         "title": "帳號解析優先級"
+      }
+    ],
+    "帳號設定檔案": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 715,
+        "level": 3,
+        "title": "帳號設定檔案"
       }
     ],
     "帳號設定欄位": [
@@ -6536,12 +6522,12 @@
         "title": "平台"
       }
     ],
-    "平台事件方法擴充": [
+    "平台事件方法擴展": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 556,
+        "line": 562,
         "level": 2,
-        "title": "平台事件方法擴充"
+        "title": "平台事件方法擴展"
       }
     ],
     "平台原生事件": [
@@ -6698,14 +6684,6 @@
         "title": "延遲載入模組系統"
       }
     ],
-    "延遲載入機制": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 175,
-        "level": 2,
-        "title": "延遲載入機制"
-      }
-    ],
     "建立第一個機器人": [
       {
         "document": "getting-started/first-bot.md",
@@ -6765,7 +6743,7 @@
     "從 SDK 執行個體存取": [
       {
         "document": "advanced/i18n.md",
-        "line": 177,
+        "line": 272,
         "level": 3,
         "title": "從 SDK 執行個體存取"
       }
@@ -6835,7 +6813,7 @@
     "必需欄位": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 512,
+        "line": 531,
         "level": 3,
         "title": "必需欄位"
       }
@@ -6932,6 +6910,14 @@
         "title": "快速體驗"
       }
     ],
+    "慢加載機制": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 216,
+        "level": 2,
+        "title": "慢加載機制"
+      }
+    ],
     "懶載入系統": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -6943,7 +6929,7 @@
     "成功回應": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 641,
+        "line": 656,
         "level": 3,
         "title": "成功回應"
       }
@@ -6972,20 +6958,28 @@
         "title": "手動呼叫 Request DSL"
       }
     ],
-    "手動建構回應（舊版方式仍然相容）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 657,
-        "level": 3,
-        "title": "手動建構回應（舊版方式仍然相容）"
-      }
-    ],
     "手動建立專案": [
       {
         "document": "quick-start.md",
         "line": 86,
         "level": 3,
         "title": "手動建立專案"
+      }
+    ],
+    "手動構造回應（舊版方式仍然相容）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 672,
+        "level": 3,
+        "title": "手動構造回應（舊版方式仍然相容）"
+      }
+    ],
+    "手動讀取配置（相容方式）": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 150,
+        "level": 3,
+        "title": "手動讀取配置（相容方式）"
       }
     ],
     "手動部署（pip）": [
@@ -7066,20 +7060,20 @@
         "title": "指令裝飾器"
       }
     ],
+    "指定帳號發送": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 729,
+        "level": 3,
+        "title": "指定帳號發送"
+      }
+    ],
     "指定發送帳號": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 118,
         "level": 3,
         "title": "指定發送帳號"
-      }
-    ],
-    "指定账户发送": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 714,
-        "level": 3,
-        "title": "指定账户发送"
       }
     ],
     "按鈕參數說明": [
@@ -7362,12 +7356,12 @@
         "title": "收集表單 (collect)"
       }
     ],
-    "效能優化": [
+    "效能最佳化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 275,
+        "line": 288,
         "level": 2,
-        "title": "效能優化"
+        "title": "效能最佳化"
       }
     ],
     "文件列表": [
@@ -7411,7 +7405,7 @@
     "文件維護": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 610,
+        "line": 616,
         "level": 2,
         "title": "文件維護"
       }
@@ -7663,7 +7657,7 @@
     "日誌訊息": [
       {
         "document": "advanced/i18n.md",
-        "line": 249,
+        "line": 344,
         "level": 3,
         "title": "日誌訊息"
       }
@@ -7671,13 +7665,13 @@
     "日誌記錄": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 241,
+        "line": 254,
         "level": 2,
         "title": "日誌記錄"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 215,
+        "line": 256,
         "level": 3,
         "title": "日誌記錄"
       }
@@ -7733,7 +7727,7 @@
     "最佳實務": [
       {
         "document": "advanced/i18n.md",
-        "line": 221,
+        "line": 316,
         "level": 2,
         "title": "最佳實務"
       }
@@ -8005,7 +7999,7 @@
     "核心方法": [
       {
         "document": "advanced/i18n.md",
-        "line": 145,
+        "line": 240,
         "level": 4,
         "title": "核心方法"
       },
@@ -8085,7 +8079,7 @@
     "框架輔助方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 456,
+        "line": 475,
         "level": 3,
         "title": "框架輔助方法"
       }
@@ -8382,20 +8376,20 @@
         "title": "模組開發入門"
       }
     ],
-    "模組開發最佳實務": [
+    "模組開發最佳實踐": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 1,
         "level": 1,
-        "title": "模組開發最佳實務"
+        "title": "模組開發最佳實踐"
       }
     ],
-    "模組間通訊": [
+    "模組間通信": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 67,
         "level": 3,
-        "title": "模組間通訊"
+        "title": "模組間通信"
       }
     ],
     "機器人公告看板事件示例": [
@@ -8635,13 +8629,13 @@
     "測試": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 500,
+        "line": 506,
         "level": 2,
         "title": "測試"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 349,
+        "line": 362,
         "level": 2,
         "title": "測試"
       }
@@ -8848,6 +8842,14 @@
         "title": "獲取幫助"
       }
     ],
+    "獲取方法詳細資訊": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 87,
+        "level": 3,
+        "title": "獲取方法詳細資訊"
+      }
+    ],
     "獲取目標 ID": [
       {
         "document": "advanced/session-types.md",
@@ -8952,6 +8954,12 @@
       {
         "document": "advanced/http-client.md",
         "line": 359,
+        "level": 3,
+        "title": "異常捕獲"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 241,
         "level": 3,
         "title": "異常捕獲"
       }
@@ -9123,7 +9131,7 @@
     "監聽 Bot 生命週期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 887,
+        "line": 902,
         "level": 3,
         "title": "監聽 Bot 生命週期"
       }
@@ -9269,13 +9277,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 642,
-        "level": 2,
-        "title": "相關文件"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 905,
+        "line": 648,
         "level": 2,
         "title": "相關文件"
       },
@@ -9287,13 +9289,13 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 409,
+        "line": 422,
         "level": 2,
         "title": "相關文件"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 226,
+        "line": 267,
         "level": 2,
         "title": "相關文件"
       },
@@ -9340,6 +9342,12 @@
         "line": 327,
         "level": 2,
         "title": "相關文檔"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 920,
+        "level": 2,
+        "title": "相關文檔"
       }
     ],
     "相關連結": [
@@ -9382,12 +9390,12 @@
         "title": "程式碼說明"
       }
     ],
-    "立即載入": [
+    "立即加載": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 185,
+        "line": 226,
         "level": 3,
-        "title": "立即載入"
+        "title": "立即加載"
       }
     ],
     "第一步：建立專案": [
@@ -9623,7 +9631,7 @@
     "繼承關係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 430,
+        "line": 449,
         "level": 3,
         "title": "繼承關係"
       }
@@ -9703,9 +9711,17 @@
     "翻譯鍵命名": [
       {
         "document": "advanced/i18n.md",
-        "line": 223,
+        "line": 318,
         "level": 3,
         "title": "翻譯鍵命名"
+      }
+    ],
+    "聲明式配置（推薦）": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 105,
+        "level": 3,
+        "title": "聲明式配置（推薦）"
       }
     ],
     "自動推斷": [
@@ -9727,7 +9743,7 @@
     "自動發現機制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 802,
+        "line": 817,
         "level": 3,
         "title": "自動發現機制"
       }
@@ -9767,7 +9783,7 @@
     "與 CLI i18n 的關係": [
       {
         "document": "advanced/i18n.md",
-        "line": 259,
+        "line": 354,
         "level": 2,
         "title": "與 CLI i18n 的關係"
       }
@@ -9965,7 +9981,7 @@
     "解除安裝翻譯": [
       {
         "document": "advanced/i18n.md",
-        "line": 132,
+        "line": 151,
         "level": 3,
         "title": "解除安裝翻譯"
       }
@@ -10152,6 +10168,14 @@
         "title": "訊息管理方法"
       }
     ],
+    "訪問核心模組": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 56,
+        "level": 3,
+        "title": "訪問核心模組"
+      }
+    ],
     "設定": [
       {
         "document": "terminology.md",
@@ -10168,6 +10192,14 @@
         "title": "設定檔"
       }
     ],
+    "設定欄位多語言": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 160,
+        "level": 2,
+        "title": "設定欄位多語言"
+      }
+    ],
     "設定欄位說明": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -10179,7 +10211,7 @@
     "設定熱更新": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 394,
+        "line": 411,
         "level": 4,
         "title": "設定熱更新"
       }
@@ -10195,12 +10227,6 @@
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 301,
         "level": 3,
-        "title": "設定管理"
-      },
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 103,
-        "level": 2,
         "title": "設定管理"
       }
     ],
@@ -10249,7 +10275,7 @@
     "設定項說明": [
       {
         "document": "advanced/i18n.md",
-        "line": 203,
+        "line": 298,
         "level": 3,
         "title": "設定項說明"
       }
@@ -10300,6 +10326,14 @@
         "line": 12,
         "level": 3,
         "title": "註冊處理器"
+      }
+    ],
+    "註冊設定翻譯": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 190,
+        "level": 3,
+        "title": "註冊設定翻譯"
       }
     ],
     "註冊跨平台方法": [
@@ -10474,14 +10508,6 @@
         "title": "請求類型判斷"
       }
     ],
-    "讀取設定": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 105,
-        "level": 3,
-        "title": "讀取設定"
-      }
-    ],
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
@@ -10534,14 +10560,6 @@
         "line": 114,
         "level": 2,
         "title": "質量檢查清單"
-      }
-    ],
-    "账户配置文件": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 700,
-        "level": 3,
-        "title": "账户配置文件"
       }
     ],
     "超時與重試": [
@@ -10634,12 +10652,6 @@
     ],
     "載入策略": [
       {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 7,
-        "level": 3,
-        "title": "載入策略"
-      },
-      {
         "document": "getting-started/basic-concepts.md",
         "line": 141,
         "level": 4,
@@ -10654,18 +10666,18 @@
         "title": "輸出控制"
       }
     ],
-    "轉換器示例": [
+    "轉換器範例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 532,
+        "line": 551,
         "level": 3,
-        "title": "轉換器示例"
+        "title": "轉換器範例"
       }
     ],
     "轉換流程": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 502,
+        "line": 521,
         "level": 3,
         "title": "轉換流程"
       }
@@ -10726,6 +10738,14 @@
         "title": "返回值說明"
       }
     ],
+    "适配器核心概念": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "适配器核心概念"
+      }
+    ],
     "透過 CLI 安裝": [
       {
         "document": "quick-start.md",
@@ -10761,17 +10781,17 @@
     "透過設定 API 讀取 i18n 設定": [
       {
         "document": "advanced/i18n.md",
-        "line": 191,
+        "line": 286,
         "level": 3,
         "title": "透過設定 API 讀取 i18n 設定"
       }
     ],
-    "透過設定檔切換": [
+    "透過設定檔案切換": [
       {
         "document": "advanced/i18n.md",
         "line": 28,
         "level": 3,
-        "title": "透過設定檔切換"
+        "title": "透過設定檔案切換"
       }
     ],
     "通用 request": [
@@ -10925,23 +10945,15 @@
     "連接管理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 573,
+        "line": 592,
         "level": 2,
         "title": "連接管理"
-      }
-    ],
-    "連接資訊與路由發現": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 441,
-        "level": 2,
-        "title": "連接資訊與路由發現"
       }
     ],
     "連接重試": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 746,
+        "line": 761,
         "level": 3,
         "title": "連接重試"
       }
@@ -11046,6 +11058,12 @@
     ],
     "適配器架構": [
       {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 5,
+        "level": 2,
+        "title": "適配器架構"
+      },
+      {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 16,
         "level": 3,
@@ -11066,6 +11084,14 @@
         "line": 94,
         "level": 3,
         "title": "適配器生命週期"
+      }
+    ],
+    "適配器發送 Meta 事件": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 843,
+        "level": 3,
+        "title": "適配器發送 Meta 事件"
       }
     ],
     "適配器發送方法查詢": [
@@ -11106,6 +11132,14 @@
         "title": "適配器開發入門"
       }
     ],
+    "適配器開發最佳實踐": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 1,
+        "level": 1,
+        "title": "適配器開發最佳實踐"
+      }
+    ],
     "適配器：註冊平台擴展方法": [
       {
         "document": "api-reference/event-system.md",
@@ -11141,7 +11175,7 @@
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 380,
+        "line": 393,
         "level": 2,
         "title": "部署"
       }
@@ -11178,14 +11212,6 @@
         "title": "配合 Send 使用"
       }
     ],
-    "配接器開發最佳實踐": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 1,
-        "level": 1,
-        "title": "配接器開發最佳實踐"
-      }
-    ],
     "配置延遲載入": [
       {
         "document": "advanced/lazy-loading.md",
@@ -11208,6 +11234,14 @@
         "line": 1,
         "level": 1,
         "title": "配置檔案說明"
+      }
+    ],
+    "配置管理": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 103,
+        "level": 2,
+        "title": "配置管理"
       }
     ],
     "配置範例": [
@@ -11347,25 +11381,25 @@
     "錯誤處理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 446,
+        "line": 452,
         "level": 2,
         "title": "錯誤處理"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 744,
+        "line": 759,
         "level": 2,
         "title": "錯誤處理"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 168,
+        "line": 181,
         "level": 2,
         "title": "錯誤處理"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 198,
+        "line": 239,
         "level": 2,
         "title": "錯誤處理"
       },
@@ -11399,7 +11433,7 @@
     "鏈式修飾方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 486,
+        "line": 505,
         "level": 3,
         "title": "鏈式修飾方法"
       },
@@ -11622,20 +11656,20 @@
         "title": "關鍵詞過濾"
       }
     ],
-    "關閉介接器": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 108,
-        "level": 4,
-        "title": "關閉介接器"
-      }
-    ],
     "關閉連接": [
       {
         "document": "advanced/http-client.md",
         "line": 335,
         "level": 3,
         "title": "關閉連接"
+      }
+    ],
+    "關閉適配器": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 108,
+        "level": 4,
+        "title": "關閉適配器"
       }
     ],
     "附件消息段": [
@@ -11705,7 +11739,7 @@
     "非同步程式設計": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 51,
+        "line": 64,
         "level": 2,
         "title": "非同步程式設計"
       },

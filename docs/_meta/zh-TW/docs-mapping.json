@@ -133,7 +133,7 @@
               "level": 1
             },
             {
-              "title": "模組開發最佳實務",
+              "title": "模組開發最佳實踐",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1
             }
@@ -148,7 +148,7 @@
               "level": 1
             },
             {
-              "title": "介接器核心概念",
+              "title": "适配器核心概念",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1
             },
@@ -158,7 +158,7 @@
               "level": 1
             },
             {
-              "title": "配接器開發最佳實踐",
+              "title": "適配器開發最佳實踐",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1
             },

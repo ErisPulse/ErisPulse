@@ -1,10 +1,10 @@
-# 配接器開發最佳實踐
+# 適配器開發最佳實踐
 
-本文檔提供了 ErisPulse 配接器開發的最佳實踐建議。
+本文檔提供了 ErisPulse 適配器開發的最佳實踐建議。
 
 ## Bot 狀態管理與 Meta 事件
 
-配接器應主動透過 `adapter.emit()` 發送 meta 事件，讓框架自動追蹤 Bot 的連線狀態、上下線和心跳資訊。
+適配器應主動透過 `adapter.emit()` 發送 meta 事件，讓框架自動追蹤 Bot 的連線狀態、上下線和心跳資訊。
 
 ### 1. 何時發送 Meta 事件
 
@@ -41,7 +41,7 @@ class MyAdapter(BaseAdapter):
 
 ### 3. 心跳事件
 
-配接器應在連線存活期間定期發送心跳事件，更新 Bot 的活躍時間：
+適配器應在連線存活期間定期發送心跳事件，更新 Bot 的活躍時間：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -52,15 +52,15 @@ class MyAdapter(BaseAdapter):
             await asyncio.sleep(30)
 ```
 
-### 4. `self` 欄位自動發現
+### 4. `self` 字段自動發現
 
-框架的 `adapter.emit()` 會自動處理所有事件（不僅是 meta 事件）中的 `self` 欄位：
+框架的 `adapter.emit()` 會自動處理所有事件（不僅是 meta 事件）中的 `self` 字段：
 
-- **普通事件**（message/notice/request）中的 `self` 欄位會自動發現並註冊 Bot
-- **`self` 欄位擴充資訊**：支援 `user_name`、`nickname`、`avatar`、`account_id` 可選欄位
+- **一般事件**（message/notice/request）中的 `self` 字段會自動發現並註冊 Bot
+- **`self` 字段擴展資訊**：支援 `user_name`、`nickname`、`avatar`、`account_id` 可選欄位
 
 ```python
-# 轉換器中包含 self 欄位即可自動註冊 Bot
+# 轉換器中包含 self 字段即可自動註冊 Bot
 onebot_event = {
     "type": "message",
     "detail_type": "private",
@@ -94,17 +94,17 @@ all_bots = sdk.adapter.list_bots()
 # 列出指定平台的 Bot
 platform_bots = sdk.adapter.list_bots("myplatform")
 
-# 檢查 Bot 是否在線
+# 檢查 Bot 是否線上
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# 取得完整狀態摘要（適合 WebUI 展示）
+# 取得完整狀態摘要（適合 WebUI 顯示）
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
 ```
 
 ## 連線管理
 
-### 1. 實作連線重試
+### 1. 實現連線重試
 
 ```python
 import asyncio
@@ -159,7 +159,7 @@ class MyAdapter(BaseAdapter):
 
 ### 3. 心跳保活與 Meta 心跳
 
-配接器的心跳應同時完成兩個任務：向平台發送心跳保活，並向框架發送 meta heartbeat 事件。
+適配器的心跳應同時完成兩個任務：向平台發送心跳保活，並向框架發送 meta heartbeat 事件。
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -182,9 +182,9 @@ class MyAdapter(BaseAdapter):
                 break
 ```
 
-### 4. 連線資訊暴露
+### 4. 連線資訊揭露
 
-配接器註冊的路由應對使用者可見，便於使用者配置平台側的回調地址。推薦在 `start()` 中主動輸出連線資訊：
+適配器註冊的路由應對使用者可見，便於使用者設定平台端的回呼位址。建議在 `start()` 中主動輸出連線資訊：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -203,21 +203,21 @@ class MyAdapter(BaseAdapter):
                     f"{info.get('connection', {}).get('websocket_routes', [])}")
 ```
 
-使用者可以透過以下 API 查看配接器的所有路由和連線地址：
+使用者可透過以下 API 查看適配器的所有路由和連線位址：
 
 ```python
 from ErisPulse import sdk
 
-# 配接器層級的連線資訊（推薦）
+# 適配器層級的連線資訊（推薦）
 info = sdk.adapter.get_connection_info("myplatform")
 
-# 路由管理員層級的查詢
+# 路由管理器層級的查詢
 sdk.router.list_namespaces()              # 列出所有命名空間
 sdk.router.get_module_routes("myplatform")  # 詳細路由資訊
 sdk.router.get_module_urls("myplatform")    # 完整連線 URL
 ```
 
-> **注意**：路由註冊時的 `module_name` 必須與配接器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則 `get_connection_info()` 將無法關聯路由。多帳號配接器應為每個帳號註冊子路徑（如 `/account1/webhook`、`/account2/webhook`），而非使用不同的 `module_name`。
+> **注意**：路由註冊時的 `module_name` 必須與適配器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則 `get_connection_info()` 將無法關聯路由。多帳戶適配器應為每個帳戶註冊子路徑（如 `/account1/webhook`、`/account2/webhook`），而非使用不同的 `module_name`。
 
 ## 事件轉換
 
@@ -259,30 +259,30 @@ def _convert_timestamp(self, timestamp):
     return int(timestamp)
 ```
 
-### 3. 事件 ID 產生
+### 3. 事件 ID 生成
 
 ```python
 import uuid
 
 def _generate_event_id(self, raw_event):
-    """產生事件 ID"""
+    """生成事件 ID"""
     event_id = raw_event.get("event_id")
     if event_id:
         return str(event_id)
-    # 如果平台沒有提供 ID，產生 UUID
+    # 如果平台沒有提供 ID，生成 UUID
     return str(uuid.uuid4())
 ```
 
-## SendDSL 實作
+## SendDSL 實現
 
-`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建，配接器只需實作 `Raw_ob12` 和具體傳送方法。使用 `self._apply_modifiers(message)` 和 `self.send_context` 簡化開發。
+`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建，適配器只需實現 `Raw_ob12` 和具體發送方法。使用 `self._apply_modifiers(message)` 和 `self.send_context` 簡化開發。
 
 ### 1. 必須返回 Task 物件
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """推薦實作：使用框架輔助方法"""
+        """推薦實現：使用框架輔助方法"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -308,7 +308,7 @@ class Send(BaseAdapter.Send):
 
     def Button(self, content: list) -> 'Send':
         self.buttons.append(content)
-        return self # 必須返回 self
+        return self # 返回 self
 ```
 
 ### 3. 支援平台特有方法
@@ -316,7 +316,7 @@ class Send(BaseAdapter.Send):
 ```python
 class Send(BaseAdapter.Send):
     def Sticker(self, sticker_id: str):
-        """傳送表情包"""
+        """發送貼圖"""
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_sticker",
@@ -326,11 +326,11 @@ class Send(BaseAdapter.Send):
         )
     
     def Card(self, card_data: dict):
-        """傳送卡片訊息"""
+        """發送卡片訊息"""
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_card",
-                message=[{"type": "card", "data": {"card_data": card_data}}],
+                message=[{"type": "card", "data": card_data}],
                 **self.send_context
             )
         )
@@ -340,7 +340,7 @@ class Send(BaseAdapter.Send):
 
 ### 1. 標準化回應格式
 
-框架提供 `make_response()` 和 `make_error()` 方法構造標準化回應：
+框架提供 `make_response()` 和 `make_error()` 方法建構標準化回應：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -363,7 +363,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-`make_response()` 會自動生成包含 `{platform}_raw` 鍵的回應字典。`make_error()` 預設使用 `retcode=34000`（Platform Error）。
+`make_response()` 會自動產生包含 `{platform}_raw` 鍵的回應字典。`make_error()` 預設使用 `retcode=34000`（Platform Error）。
 
 ### 2. 錯誤碼規範
 
@@ -387,11 +387,11 @@ async def call_api(self, endpoint: str, **params):
 35000: Logic Error
 ```
 
-## 多帳號支援
+## 多帳戶支援
 
-### 1. 宣告式設定（推薦）
+### 1. 聲明式配置（推薦）
 
-使用 `AccountConfigClass` 宣告設定類後，框架自動管理多帳號載入、校驗和範本產生：
+使用 `AccountConfigClass` 聲明配置類後，框架自動管理多帳戶載入、驗證和範本生成。`BotAccountConfig` 基類提供 `enabled` 和 `name` 欄位，適配器無需聲明：
 
 ```python
 from dataclasses import dataclass, field
@@ -400,7 +400,7 @@ from ErisPulse.runtime.config_schema import BotAccountConfig
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
-        "description": "Bot Token",
+        "description": {"i18n": "my_adapter.bot_token", "default": "Bot Token"},
         "required": True,
         "secret": True,
     })
@@ -412,6 +412,7 @@ class MyAdapter(BaseAdapter):
         for name, account in self.enabled_accounts.items():
             self.logger.info(f"啟動帳戶 {name}")
             await self._connect(name, account.token)
+            # bot_id 由框架自動從平台協議/登入回應中取得並回填
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
@@ -419,7 +420,7 @@ class MyAdapter(BaseAdapter):
         # name: 帳戶名, account: MyBotConfig 實例
 ```
 
-設定檔案自動生為：
+配置檔案自动生成為：
 
 ```toml
 [MyAdapter.accounts.default]
@@ -428,15 +429,20 @@ enabled = true
 name = ""
 ```
 
-### 2. 帳號選擇機制
+### 2. 帳戶選擇機制
 
-框架內建 `_resolve_account()` 方法，支援多種匹配策略：
+框架內建 `_resolve_account()` 方法，匹配優先順序：
+
+1. **帳戶名** — 配置鍵名精確匹配
+2. **`bot_id` 欄位** — 自動取得的 bot_id（即 `event["self"]["user_id"]`）
+3. **任意 str 欄位** — 配置中其他字串欄位
+4. **兜底** — 第一個啟用的帳戶
 
 ```python
 # 按帳戶名匹配
 name, account = self._resolve_account("account1")
 
-# 按 bot_id 欄位匹配（如果設定中有 bot_id 欄位）
+# 按 bot_id 匹配（最常用的方式，來自事件）
 name, account = self._resolve_account("bot_123")
 
 # 取得第一個啟用的帳戶（傳入 None）
@@ -447,7 +453,7 @@ name, account = self._resolve_account(None)
 
 ### 1. 分類異常處理
 
-使用 `make_error()` 構造標準化錯誤回應。透過 `sdk.client` 請求時捕獲 ErisPulse 異常：
+使用 `make_error()` 建構標準化錯誤回應。透過 `sdk.client` 請求時捕獲 ErisPulse 異常：
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
@@ -463,8 +469,8 @@ async def call_api(self, endpoint: str, **params):
         response = await resp.json()
         return self.make_response(data=response, raw=response)
     except ClientTimeoutError:
-        self.logger.error(f"請求逾時: {endpoint}")
-        return self.make_error(retcode=32000, message="請求逾時")
+        self.logger.error(f"請求超時: {endpoint}")
+        return self.make_error(retcode=32000, message="請求超時")
     except ClientError as e:
         self.logger.error(f"網路錯誤: {e}")
         return self.make_error(retcode=33000, message="網路請求失敗")
@@ -476,25 +482,25 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-> **向後相容**：直接使用 `aiohttp` 的舊配接器程式碼不受影響，仍可捕獲 `aiohttp.ClientError`。異常轉換僅在透過 `sdk.client` 發起請求時生效。
+> **向後相容**：直接使用 `aiohttp` 的舊適配器程式碼不受影響，仍可捕獲 `aiohttp.ClientError`。異常轉換僅在透過 `sdk.client` 發起請求時生效。
 
 ### 2. 日誌記錄
 
-框架自動為配接器建立子 logger（`sdk.logger.get_child("MyAdapter")`），無需手動初始化：
+框架自動為適配器建立子 logger（`sdk.logger.get_child("MyAdapter")`），無需手動初始化：
 
 ```python
 class MyAdapter(BaseAdapter):
-    # ConfigClass = ...  # 宣告設定類後 self.logger 自動可用
+    # ConfigClass = ...  # 聲明配置類後 self.logger 自動可用
     
     async def start(self):
-        self.logger.info("配接器啟動中...")
+        self.logger.info("適配器啟動中...")
         # ...
-        self.logger.info("配接器啟動完成")
+        self.logger.info("適配器啟動完成")
     
     async def shutdown(self):
-        self.logger.info("配接器關閉中...")
+        self.logger.info("適配器關閉中...")
         # ...
-        self.logger.info("配接器關閉完成")
+        self.logger.info("適配器關閉完成")
 ```
 
 ## 測試
@@ -523,19 +529,19 @@ class TestMyAdapter:
         assert "retcode" in response
 ```
 
-### 2. 整合測試
+### 2. 集成測試
 
 ```python
 @pytest.mark.asyncio
 async def test_adapter_start():
-    """測試配接器啟動"""
+    """測試適配器啟動"""
     adapter = MyAdapter()
     await adapter.start()
     assert adapter._connected is True
 
 @pytest.mark.asyncio
 async def test_send_message():
-    """測試傳送訊息"""
+    """測試發送訊息"""
     adapter = MyAdapter()
     await adapter.start()
     
@@ -545,24 +551,24 @@ async def test_send_message():
 
 ## 反向轉換與訊息建構
 
-`Raw_ob12` 是配接器**必須實作**的方法，是反向轉換（OneBot12 → 平台）的統一入口。標準方法（`Text`、`Image` 等）應委託給 `Raw_ob12`，修飾器狀態（`At`/`Reply`/`AtAll`）需在 `Raw_ob12` 內合併為訊息段。
+`Raw_ob12` 是適配器**必須實現**的方法，是反向轉換（OneBot12 → 平台）的統一入口。標準方法（`Text`、`Image` 等）應委託給 `Raw_ob12`，修飾器狀態（`At`/`Reply`/`AtAll`）需在 `Raw_ob12` 內合併為訊息段。
 
-`MessageBuilder` 是配合 `Raw_ob12` 使用的訊息段構建工具，支援鏈式呼叫和快速建構。
+`MessageBuilder` 是配合 `Raw_ob12` 使用的訊息段建構工具，支援鏈式呼叫和快速建構。
 
-> 完整的實作規範、程式碼示例和使用方法請參閱：
-> - [傳送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
-> - [傳送方法規範 §11 訊息建構器](../../standards/send-method-spec.md#11-訊息建構器-messagebuilder)
+> 完整的實現規範、程式碼範例和使用方法請參閱：
+> - [發送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
+> - [發送方法規範 §11 訊息建構器](../../standards/send-method-spec.md#11-訊息建構器-messagebuilder)
 
-## 平台事件方法擴充
+## 平台事件方法擴展
 
-配接器可以為 Event 包裝類註冊平台專有方法，讓模組開發者能更方便地存取平台特有資料。
+適配器可以為 Event 包裝類註冊平台專有方法，讓模組開發者能更方便地存取平台特有資料。
 
-### 1. 使用 Mixin 類別批量註冊（推薦）
+### 1. 使用 Mixin 類批量註冊（推薦）
 
-當平台有多個專有方法時，推薦使用 Mixin 類別：
+當平台有多個專有方法時，推薦使用 Mixin 類：
 
 ```python
-# 在配接器的 start() 或模組層級註冊
+# 在適配器的 start() 或模組層級註冊
 from ErisPulse.Core.Event import register_event_mixin
 
 class MyPlatformEventMixin:
@@ -583,7 +589,7 @@ class MyPlatformEventMixin:
 register_event_mixin("myplatform", MyPlatformEventMixin)
 ```
 
-### 2. 使用裝飾器註冊單一方法
+### 2. 使用裝飾器註冊單個方法
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -593,7 +599,7 @@ def get_chat_name(self):
     return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 ```
 
-### 3. 配接器關閉時清理
+### 3. 適配器關閉時清理
 
 ```python
 from ErisPulse.Core.Event import unregister_platform_event_methods
@@ -605,28 +611,28 @@ class MyAdapter(BaseAdapter):
         # ... 其他清理
 ```
 
-> 更詳細的註冊和註銷說明請參閱 [事件系統 API - 註冊平台擴充方法](../../api-reference/event-system.md#配接器註冊平台擴充方法)。
+> 更詳細的註冊和註銷說明請參閱 [事件系統 API - 註冊平台擴展方法](../../api-reference/event-system.md#適配器註冊平台擴展方法)。
 
 ## 文件維護
 
 ### 1. 維護平台特性文件
 
-在 `docs/zh-CN/platform-guide/` 下建立 `{platform}.md` 文件(其它語言版本會自動生成)：
+在 `docs/zh-TW/platform-guide/` 下建立 `{platform}.md` 文件(其它語言版本會自動產生)：
 
 ```markdown
-# 平台名稱配接器文件
+# 平台名稱適配器文件
 
 ## 基本資訊
 - 對應模組版本: 1.0.0
 - 維護者: Your Name
 
-## 支援的訊息傳送類型
+## 支援的訊息發送類型
 ...
 
 ## 特有事件類型
 ...
 
-## 設定選項
+## 配置選項
 ...
 ```
 
@@ -641,6 +647,6 @@ version = "2.0.0"  # 更新版本號
 
 ## 相關文件
 
-- [配接器開發入門](getting-started.md) - 建立第一個配接器
-- [配接器核心概念](core-concepts.md) - 了解配接器架構
-- [SendDSL 詳解](send-dsl.md) - 學習訊息傳送
+- [適配器開發入門](getting-started.md) - 創建第一個適配器
+- [適配器核心概念](core-concepts.md) - 瞭解適配器架構
+- [SendDSL 詳解](send-dsl.md) - 學習訊息發送

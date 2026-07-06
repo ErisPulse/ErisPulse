@@ -2208,7 +2208,7 @@ sdk.lifecycle  # Система жизненного цикла
 
 ### 模块核心概念
 
-# Основные концепции модулей
+# Основные концепции модуля
 
 Понимание основных концепций модуля ErisPulse является основой для разработки высококачественных модулей.
 
@@ -2225,13 +2225,13 @@ class MyModule(BaseModule):
     def get_load_strategy():
         """Возвращает стратегию загрузки модуля"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # Ленивая загрузка или немедленная
-            priority=0,       # Приоритет загрузки (чем больше число, тем раньше загружается)
-            depends=["OtherModule"]  # Необязательно: объявление других модулей, от которых зависит текущий
+            lazy_load=True,   # Ленивая загрузка или немедленная загрузка
+            priority=0,       # Приоритет загрузки (чем больше значение, тем раньше загрузка)
+            depends=["OtherModule"]  # Опционально: объявление зависимостей от других модулей
         )
 ```
 
-> Если модули, объявленные в `depends`, не зарегистрированы, текущий модуль будет пропущен и будет записано предупреждение. Порядок загрузки определяется топологической сортировкой, а для модулей одного уровня используется приоритет в порядке убывания.
+> Если модули, объявленные в `depends`, не зарегистрированы, текущий модуль будет пропущен и будет записано предупреждение. Порядок загрузки определяется топологической сортировкой, а на одном уровне сортировка происходит по убыванию `priority`.
 
 ### Метод on_load
 
@@ -2239,13 +2239,13 @@ class MyModule(BaseModule):
 
 ```python
 async def on_load(self, event):
-    # Регистрация обработчика событий
+    # Регистрация обработчика события
     @command("hello", help="Команда приветствия")
     async def hello_handler(event):
         await event.reply("Привет!")
     
-    # Использование встроенного HTTP-клиента SDK (автоматическое управление пулом соединений, создание сессии вручную не требуется)
-    # Запросы можно отправлять через sdk.client
+    # Использование встроенного HTTP-клиента SDK (автоматически управляет пулом соединений, не нужно создавать session вручную)
+    # Отправлять запросы можно через sdk.client
 ```
 
 ### Метод on_unload
@@ -2255,10 +2255,10 @@ async def on_load(self, event):
 ```python
 async def on_unload(self, event):
     # Очистка пользовательских ресурсов
-    # sdk.client управляется фреймворком, закрывать его вручную не требуется
+    # sdk.client управляется фреймворком, закрывать вручную не нужно
     
-    # Отмена обработчика событий (фреймворк обрабатывает это автоматически)
-    self.logger.info("Модуль был выгружен")
+    # Отмена обработчика события (фреймворк обрабатывает автоматически)
+    self.logger.info("Модуль выгружен")
 ```
 
 ## Объект SDK
@@ -2269,12 +2269,12 @@ async def on_unload(self, event):
 from ErisPulse import sdk
 
 # Доступ ко всем основным модулям через объект sdk
-sdk.logger.info("Лог")
+sdk.logger.info("Логирование")
 sdk.storage.set("key", "value")
 config = sdk.config.getConfig("MyModule")
 ```
 
-### Взаимодействие между модулями
+### Коммуникация между модулями
 
 ```python
 # Доступ к другим модулям
@@ -2284,12 +2284,12 @@ result = await other_module.some_method()
 
 ## Запрос методов отправки адаптера
 
-Поскольку новый стандартный протокол требует использования переопределения метода `__getattr__` для реализации механизма отправки на случай неудачи, использование метода `hasattr` для проверки существования метода больше невозможно. С версии 2.3.5 добавлена функция для запроса методов отправки.
+Из-за нового стандарта, требующего использования перегрузки метода `__getattr__` для реализации механизма отправки по умолчанию, невозможно использовать метод `hasattr` для проверки существования метода. Начиная с версии `2.3.5`, добавлена функция для запроса методов отправки.
 
-### Перечень поддерживаемых методов отправки
+### Перечисление поддерживаемых методов отправки
 
 ```python
-# Перечислить все методы отправки, поддерживаемые платформой
+# Перечисление всех методов отправки, поддерживаемых платформой
 methods = sdk.adapter.list_sends("onebot11")
 # Возвращает: ["Text", "Image", "Voice", "Markdown", ...]
 ```
@@ -2297,7 +2297,7 @@ methods = sdk.adapter.list_sends("onebot11")
 ### Получение подробной информации о методе
 
 ```python
-# Получить подробную информацию о конкретном методе
+# Получение подробной информации о методе
 info = sdk.adapter.send_info("onebot11", "Text")
 # Возвращает:
 # {
@@ -2306,13 +2306,60 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "Отправка текстовых сообщений..."
+#     "docstring": "Отправка текстового сообщения..."
 # }
 ```
 
 ## Управление конфигурацией
 
-### Чтение конфигурации
+### Декларативная конфигурация (рекомендуется)
+
+Начиная с версии v2.5.2, модули могут объявлять класс конфигурации с помощью `ConfigClass`, используя ту же систему схемы конфигурации, что и адаптеры. Конфигурация читается в реальном времени через `self.cfg`, и изменения применяются немедленно:
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_module.api_key", "default": "Ключ API"},
+            "required": True,
+            "secret": True,
+            "ui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
+    timeout: int = field(
+        default=30,
+        metadata={
+            "description": {"i18n": "my_module.timeout", "default": "Время ожидания (секунды)"},
+            "ui": {"widget": "number", "group": "advanced", "order": 2},
+        },
+    )
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    async def on_load(self, event):
+        self.logger.info("Модуль загружен")
+
+    async def on_unload(self, event):
+        pass
+
+    async def do_something(self):
+        cfg = self.cfg  # Чтение в реальном времени, типобезопасно
+        api_key = cfg.api_key
+        timeout = cfg.timeout
+```
+
+`BaseConfig` — это базовый класс конфигурации, подходящий для адаптеров, модулей, внешних проектов и любых других сценариев. Поля конфигурации поддерживают многоязычные описания i18n (см. [документацию по i18n](../../advanced/i18n.md#многоязычные-описания-полей-конфигурации)).
+
+### Ручное чтение конфигурации (совместимый способ)
+
+Если декларативная конфигурация не используется, можно напрямую читать и записывать конфигурацию:
 
 ```python
 def _load_config(self):
@@ -2327,37 +2374,31 @@ def _load_config(self):
     return config
 ```
 
-### Использование конфигурации
-
-```python
-async def do_something(self):
-    api_key = self.config.get("api_key")
-    timeout = self.config.get("timeout", 30)
-```
+> **Внимание:** при использовании ручного способа избегайте использования `self.config` в качестве имени атрибута, рекомендуется использовать `self.cfg` или другое имя, чтобы избежать конфликтов с будущими атрибутами фреймворка.
 
 ## Система хранения
 
-### Базовое использование
+### Основное использование
 
 ```python
-# Сохранить данные
-sdk.storage.set("user:123", {"name": "张三"})
+# Сохранение данных
+sdk.storage.set("user:123", {"name": "Чжан Сань"})
 
-# Получить данные
+# Получение данных
 user = sdk.storage.get("user:123", {})
 
-# Удалить данные
+# Удаление данных
 sdk.storage.delete("user:123")
 ```
 
 ### Использование транзакций
 
 ```python
-# Использование транзакции для обеспечения целостности данных
+# Использование транзакции для обеспечения согласованности данных
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
-    # Если какая-либо операция завершится ошибкой, все изменения будут откатаны
+    # Если любая операция не удалась, все изменения будут отменены
 ```
 
 ## Обработка событий
@@ -2368,7 +2409,7 @@ with sdk.storage.transaction():
 from ErisPulse.Core.Event import command, message
 
 # Регистрация команды
-@command("info", help="Получение информации")
+@command("info", help="Получить информацию")
 async def info_handler(event):
     await event.reply("Это информация")
 
@@ -2378,23 +2419,23 @@ async def group_handler(event):
     sdk.logger.info(f"Получено групповое сообщение: {event.get_text()}")
 ```
 
-### Жизненный цикл обработчика событий
+### Жизненный цикл обработчиков событий
 
-Фреймворк автоматически управляет регистрацией и отменой регистрации обработчиков событий, вам нужно регистрировать их только в `on_load`.
+Фреймворк автоматически управляет регистрацией и отменой обработчиков событий, вам нужно только зарегистрировать их в `on_load`.
 
 ## Механизм ленивой загрузки
 
-### Как это работает
+### Принцип работы
 
 ```python
-# Модуль инициализируется только при первом обращении к нему
+# Модуль инициализируется только при первом обращении
 result = await sdk.my_module.some_method()
-# ↑ Здесь срабатывает инициализация модуля
+# ↑ Здесь происходит инициализация модуля
 ```
 
 ### Немедленная загрузка
 
-Для модулей, требующих немедленной инициализации (например, слушателей, таймеров):
+Для модулей, которые необходимо инициализировать немедленно (например, слушатели, таймеры):
 
 ```python
 @staticmethod
@@ -2415,29 +2456,29 @@ async def handle_event(self, event):
         # Бизнес-логика
         await self.process_event(event)
     except ValueError as e:
-        self.logger.warning(f"Ошибка параметра: {e}")
-        await event.reply(f"Ошибка параметра: {e}")
+        self.logger.warning(f"Неверный параметр: {e}")
+        await event.reply(f"Неверный параметр: {e}")
     except Exception as e:
-        self.logger.error(f"Ошибка обработки: {e}")
+        self.logger.error(f"Обработка не удалась: {e}")
         raise
 ```
 
-### Логирование
+### Запись в лог
 
 ```python
-# Использование различных уровней логирования
-self.logger.debug("Отладочная информация")    # Подробная информация для отладки
-self.logger.info("Статус работы")              # Нормальная информация о работе
-self.logger.warning("Предупреждение")          # Информация о предупреждении
-self.logger.error("Информация об ошибке")    # Информация об ошибке
+# Использование разных уровней логирования
+self.logger.debug("Отладочная информация")    # Подробная отладочная информация
+self.logger.info("Состояние работы")      # Информация о нормальной работе
+self.logger.warning("Предупреждение")  # Предупреждение
+self.logger.error("Ошибка")    # Ошибка
 self.logger.critical("Критическая ошибка") # Критическая ошибка
 ```
 
 ## Связанные документы
 
-- [Основы разработки модулей](getting-started.md) - Создание первого модуля
-- [Класс обертки событий](event-wrapper.md) - Подробное описание обработки событий
-- [Лучшие практики](best-practices.md) - Разработка модулей высокого качества
+- [Введение в разработку модулей](getting-started.md) - Создание первого модуля
+- [Объект Event](event-wrapper.md) - Подробное описание обработки событий
+- [Лучшие практики](best-practices.md) - Разработка высококачественных модулей
 
 
 ### Event 包装类详解
@@ -2800,33 +2841,33 @@ async def ai_chat(self, prompt: str):
 
 ### 模块开发最佳实践
 
-# Лучшие практики разработки модулей
+# Рекомендации по разработке модулей
 
-В этом документе представлены рекомендации по лучшим практикам разработки модулей ErisPulse.
+В этом документе содержатся рекомендации по разработке модулей ErisPulse.
 
-## Дизайн модулей
+## Разработка модулей
 
-### 1. Принцип единой ответственности
+### 1. Принцип единственной ответственности
 
 Каждый модуль должен отвечать только за одну основную функцию:
 
 ```python
-# Хорошая конструкция: каждый модуль отвечает только за одну функцию
+# Хорошее проектирование: каждый модуль отвечает только за одну функцию
 class WeatherModule(BaseModule):
-    """Модуль погоды"""
+    """Модуль запроса погоды"""
     pass
 
 class NewsModule(BaseModule):
-    """Модуль новостей"""
+    """Модуль запроса новостей"""
     pass
 
-# Плохая конструкция: один модуль отвечает за несколько несвязанных функций
+# Плохое проектирование: модуль отвечает за несколько несвязанных функций
 class UtilityModule(BaseModule):
-    """Включает в себя погоду, новости, шутки и другие функции"""
+    """Содержит погоду, новости, шутки и другие функции"""
     pass
 ```
 
-### 2. Правила именования модулей
+### 2. Нейминг модулей
 
 ```toml
 [project]
@@ -2835,20 +2876,33 @@ name = "ErisPulse-ModuleName"  # Использовать префикс ErisPul
 
 ### 3. Четкое управление конфигурацией
 
+Рекомендуется использовать декларативную конфигурацию (`ConfigClass` + `BaseConfig`), что обеспечивает типобезопасность, автоматическое создание шаблонов, поддержку форм WebUI и другие возможности:
+
 ```python
-def _load_config(self):
-    config = self.sdk.config.getConfig("MyModule")
-    if not config:
-        default_config = {
-            "api_url": "https://api.example.com",
-            "timeout": 30,
-            "cache_ttl": 3600
-        }
-        self.sdk.config.setConfig("MyModule", default_config)
-        self.logger.warning("Создана конфигурация по умолчанию")
-        return default_config
-    return config
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_url: str = field(default="https://api.example.com", metadata={
+        "description": {"i18n": "my_module.api_url", "default": "Адрес API"},
+    })
+    timeout: int = field(default=30, metadata={
+        "description": {"i18n": "my_module.timeout", "default": "Время ожидания (сек)"},
+    })
+    cache_ttl: int = field(default=3600, metadata={
+        "description": {"i18n": "my_module.cache_ttl", "default": "Время жизни кэша (сек)"},
+    })
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    async def do_something(self):
+        cfg = self.cfg  # Типобезопасность, чтение в реальном времени
+        await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
+
+Также можно продолжить использовать ручной способ чтения и записи конфигурации (см. [Основные концепции модулей](core-concepts.md#управление-конфигурацией)).
 
 ## Асинхронное программирование
 
@@ -2863,7 +2917,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# Также можно использовать sdk.client (эффект тот же)
+# Также можно использовать sdk.client (эффект аналогичный)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -2871,7 +2925,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Не импортируйте aiohttp напрямую (сложно для унифицированного управления фреймворком)
+# Не импортируйте aiohttp напрямую (неудобно для унифицированного управления фреймворком)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -2880,22 +2934,22 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Не используйте requests (синхронный, блокирует событийный цикл)
+# Не используйте requests (синхронный, блокирует цикл событий)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # Заблокирует событийный цикл
+        return requests.get(url).json()  # Блокирует цикл событий
 ```
 
-### 2. Правильное использование асинхронных операций
+### 2. Корректная асинхронная операция
 
 ```python
 async def handle_command(self, event):
-    # Используйте create_task для выполнения трудоемких операций в фоне
+    # Используйте create_task для выполнения трудоемких операций в фоновом режиме
     task = asyncio.create_task(self._long_operation())
     
-    # Если результат нужен
+    # Если необходимо получить результат
     result = await task
 ```
 
@@ -2903,48 +2957,48 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # Клиент SDK автоматически управляет пулом соединений, создание session вручную не требуется
+    # Клиент SDK автоматически управляет пулом соединений, создание сессии вручную не требуется
     pass
     
 async def on_unload(self, event):
-    # Если нужен собственный клиент, не забудьте очистить ресурсы
+    # Если требуется настройка клиента, не забудьте освободить ресурсы
     pass
 ```
 
 ## Обработка событий
 
-### 1. Использование класса-обертки событий
+### 1. Использование обертки для событий
 
 ```python
-# Удобный метод с использованием класса-обертки событий
+# Удобные методы с использованием обертки события
 @command("info")
 async def info_command(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"Привет, {nickname}!")
 
-# Вместо прямого доступа к словарю
+# В отличие от прямого доступа к словарю
 @command("info")
 async def info_command(event):
-    user_id = event["user_id"]  # Не слишком четко, легко допустить ошибку
+    user_id = event["user_id"]  # Менее явно,容易出现 ошибок
 ```
 
 ### 2. Рациональное использование ленивой загрузки
 
 ```python
-# Модули обработки команд необходимо загружать немедленно
+# Модули обработки команд должны загружаться немедленно
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# Модули-слушатели необходимо загружать немедленно
+# Модули прослушивателей должны загружаться немедленно
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# Утилитарные модули подходят для ленивой загрузки
+# Утилитные модули подходят для ленивой загрузки
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -2962,46 +3016,48 @@ async def on_load(self, event):
     
     @message.on_group_message()
     async def group_handler(event):
-        self.logger.info("Получено сообщение в группе")
+        self.logger.info("Получено сообщение из группы")
     
-    # Не нужно вручную отменять регистрацию, фреймворк обрабатывает это автоматически
+    # Регистрация вручную не требуется, фреймворк обрабатывает это автоматически
 ```
 
 ## Обработка ошибок
 
-### 1. Категоризация обработки исключений
+### 1. Классификация обработки исключений
 
 ```python
 async def handle_event(self, event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # Ожидаемые бизнес-ошибки
-        self.logger.warning(f"Бизнес-предупреждение: {e}")
-        await event.reply(f"Ошибка параметров: {e}")
+        # Предполагаемые ошибки бизнес-логики
+        self.logger.warning(f"Предупреждение бизнес-логики: {e}")
+        await event.reply(f"Ошибка параметра: {e}")
     except aiohttp.ClientError as e:
-        # Сетевые ошибки (при использовании sdk.client этот тип исключений встречается редко из-за встроенного механизма повторных попыток)
+        # Сетевая ошибка (рекомендуется использовать sdk.client + ClientError)
+        # Старый код, использующий aiohttp напрямую, все еще может работать, но в новом коде рекомендуется использовать систему исключений ErisPulse
         self.logger.error(f"Сетевая ошибка: {e}")
-        await event.reply("Ошибка сетевого запроса, повторите попытку позже")
+        await event.reply("Сетевой запрос не удался, попробуйте позже")
     except Exception as e:
         # Непредвиденные ошибки
         self.logger.error(f"Неизвестная ошибка: {e}", exc_info=True)
-        await event.reply("Не удалось обработать, свяжитесь с администратором")
+        await event.reply("Обработка не удалась, обратитесь к администратору")
         raise
 ```
 
 ### 2. Обработка тайм-аутов
 
 ```python
-# Рекомендуется использовать встроенный клиент SDK (с тайм-аутом и повторными попытками)
+# Рекомендуется использовать встроенный клиент SDK (встроенный тайм-аут и повторные попытки)
 from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
 async def fetch_with_timeout(self, url, timeout=30):
     try:
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"Тайм-аут запроса: {url}")
+        self.logger.warning(f"Превышение времени ожидания запроса: {url}")
         raise
 ```
 
@@ -3016,23 +3072,23 @@ async def update_user(self, user_id, data):
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ Использование без транзакций может привести к несогласованности данных
+# ❌ Отсутствие транзакций может привести к несогласованности данных
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # Если здесь произойдет ошибка, вышеустановленные значения не будут откачены
+    # Если здесь произойдет ошибка, предыдущее изменение не будет откачено
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
-### 2. Пакетные операции
+### 2. Массовые операции
 
 ```python
-# Использование пакетных операций для повышения производительности
+# Использование массовых операций для повышения производительности
 def cache_multiple_items(self, items):
     self.sdk.storage.set_multi({
         f"item:{k}": v for k, v in items.items()
     })
 
-# ❌ Несколько вызовов низкой эффективности
+# ❌ Низкая эффективность при многократных вызовах
 def cache_multiple_items(self, items):
     for k, v in items.items():
         self.sdk.storage.set(f"item:{k}", v)
@@ -3043,38 +3099,38 @@ def cache_multiple_items(self, items):
 ### 1. Рациональное использование уровней логирования
 
 ```python
-# DEBUG: Подробная отладочная информация (только при разработке)
+# DEBUG: Подробная информация отладки (только для разработки)
 self.logger.debug(f"Входные параметры: {params}")
 
-# INFO: Информация о нормальном функционировании
+# INFO: Информация о нормальной работе
 self.logger.info("Модуль загружен")
 self.logger.info(f"Обработка запроса: {request_id}")
 
-# WARNING: Предупреждения, не влияющие на основные функции
-self.logger.warning(f"Параметр {key} не задан, используется значение по умолчанию")
-self.logger.warning("API медленно отвечает, возможно, требуется оптимизация")
+# WARNING: Предупреждающая информация, не влияющая на основную функциональность
+self.logger.warning(f"Параметр конфигурации {key} не установлен, используется значение по умолчанию")
+self.logger.warning("API-ответ медленный, возможно, требуется оптимизация")
 
 # ERROR: Информация об ошибках
-self.logger.error(f"Ошибка запроса к API: {e}")
-self.logger.error(f"Ошибка обработки события: {e}", exc_info=True)
+self.logger.error(f"Не удалось выполнить запрос API: {e}")
+self.logger.error(f"Не удалось обработать событие: {e}", exc_info=True)
 
-# CRITICAL: Критическая ошибка, требует немедленного реагирования
-self.logger.critical("Сбой подключения к базе данных, бот не может работать")
+# CRITICAL: Критические ошибки, требующие немедленного вмешательства
+self.logger.critical("Не удалось подключиться к базе данных, робот не может работать нормально")
 ```
 
 ### 2. Структурированное логирование
 
 ```python
-# Использование структурированного логирования для удобства анализа
+# Использование структурированного логирования для облегчения анализа
 self.logger.info(f"Обработка запроса: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
 # ❌ Использование неструктурированного логирования
-self.logger.info(f"Запрос обработан, от пользователя {user_id}, время {duration} мс")
+self.logger.info(f"Запрос обработан, от пользователя {user_id}, затрачено {duration} миллисекунд")
 ```
 
 ## Оптимизация производительности
 
-### 1. Использование кэширования
+### 1. Использование кэша
 
 ```python
 class MyModule(BaseModule):
@@ -3087,7 +3143,7 @@ class MyModule(BaseModule):
             if key in self._cache:
                 return self._cache[key]
             
-            # Получение данных из базы данных
+            # Получение из базы данных
             data = await self._fetch_from_db(key)
             
             # Кэширование данных
@@ -3103,9 +3159,9 @@ async def process_message(self, event):
     # Асинхронная обработка
     await self._async_process(event)
 
-# ❌ Блокирующая операция
+# ❌ Блокирующие операции
 async def process_message(self, event):
-    # Синхронная операция, блокирует событийный цикл
+    # Синхронная операция, блокирующая цикл событий
     result = self._sync_process(event)
 ```
 
@@ -3121,23 +3177,23 @@ class MyModule(BaseModule):
         self.api_key = config.get("api_key")
         
         if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("Пожалуйста, укажите действительный API ключ в config.toml")
+            raise ValueError("Укажите действительный API-ключ в config.toml")
 
-# ❌ Хардкод чувствительных данных
+# ❌ Жестко заданный API-ключ
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # Так делать нельзя!
+    API_KEY = "sk-1234567890"  # Не делайте так!
 ```
 
 ### 2. Валидация входных данных
 
 ```python
-# Валидация пользовательского ввода
+# Валидация ввода пользователя
 async def process_command(self, event):
     user_input = event.get_text()
     
     # Проверка длины ввода
     if len(user_input) > 1000:
-        await event.reply("Ввод слишком длинный, попробуйте еще раз")
+        await event.reply("Слишком длинный ввод, пожалуйста, введите заново")
         return
     
     # Проверка формата ввода
@@ -3148,7 +3204,7 @@ async def process_command(self, event):
 
 ## Тестирование
 
-### 1. Юнит-тестирование
+### 1. Модульное тестирование
 
 ```python
 import pytest
@@ -3156,7 +3212,7 @@ from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
     def test_load_config(self):
-        """Тест загрузки конфигурации"""
+        """Тестирование загрузки конфигурации"""
         module = MyModule()
         config = module._load_config()
         assert config is not None
@@ -3168,11 +3224,11 @@ class TestMyModule:
 ```python
 @pytest.mark.asyncio
 async def test_command_handling():
-    """Тест обработки команд"""
+    """Тестирование обработки команд"""
     module = MyModule()
     await module.on_load({})
     
-    # Симуляция события команды
+    # Моделирование события команды
     event = create_test_command_event("hello")
     await module.handle_command(event)
 ```
@@ -3189,11 +3245,11 @@ version = "1.0.0"
 
 Соблюдение семантического версионирования:
 - MAJOR.MINOR.PATCH
-- MAJOR: несовместимые изменения API
-- MINOR: обратимая функциональность
-- PATCH: обратимые исправления ошибок
+- Основная версия: несовместимые изменения API
+- Младшая версия: новые функции, обратная совместимость
+- Редакция: исправление ошибок, обратная совместимость
 
-### 2. Документация
+### 2. Улучшение документации
 
 ```markdown
 # README.md
@@ -3202,15 +3258,15 @@ version = "1.0.0"
 - Инструкция по установке
 - Инструкция по конфигурации
 - Примеры использования
-- API документация
+- Документация по API
 - Руководство по вкладу
 ```
 
-## Связанные документы
+## Смежные документы
 
-- [Модульное программирование](getting-started.md) - Создание первого модуля
-- [Основные концепции модуля](core-concepts.md) - Понимание архитектуры модулей
-- [Класс-обертка событий](event-wrapper.md) - Детализация обработки событий
+- [Введение в разработку модулей](getting-started.md) - Создание первого модуля
+- [Основные концепции модулей](core-concepts.md) - Понимание архитектуры модулей
+- [Класс обертки событий](event-wrapper.md) - Подробности обработки событий
 
 
 =====
@@ -7122,21 +7178,21 @@ clear_custom_types(platform="discord")  # очистить только для �
 
 # Система интернационализации (i18n)
 
-В версии ErisPulse v2.5.0 была интегрирована полная поддержка интернационализации. Ядро фреймворка и интерфейс CLI могут автоматически переключать отображаемый текст в соответствии с языком вашей системы, а также поддерживают регистрацию переводов внешними модулями.
+Начиная с ErisPulse v2.5.0, в систему встроена полная поддержка интернационализации. Ядро фреймворка и интерфейс CLI могут автоматически переключать отображаемый текст в зависимости от системного языка, а также поддерживают регистрацию переводов внешними модулями.
 
 ## Поддерживаемые языки
 
 | Язык | Код | Описание |
 |------|------|------|
-| Упрощенный китайский | `zh-CN` | Язык по умолчанию (родной язык фреймворка) |
-| Традиционный китайский | `zh-TW` | Традиционный китайский (Гонконг/Макао/Тайвань) |
-| English | `en` | Английский (общий язык по умолчанию) |
+| Упрощённый китайский | `zh-CN` | Язык по умолчанию (родной язык фреймворка) |
+| Традиционный китайский | `zh-TW` | Традиционный китайский (Гонконг, Макао, Тайвань) |
+| English | `en` | Английский (универсальный язык по умолчанию) |
 | 日本語 | `ja` | Японский |
 | Русский | `ru` | Русский |
 
 ## Быстрый старт
 
-### Смена языка через переменные окружения
+### Переключение через переменную среды
 
 ```bash
 # Windows PowerShell
@@ -7147,7 +7203,7 @@ epsdk run
 ERISPULSE_LANG=ja epsdk run
 ```
 
-### Смена языка через конфигурационный файл
+### Переключение через файл конфигурации
 
 Добавьте в `config/config.toml`:
 
@@ -7156,14 +7212,14 @@ ERISPULSE_LANG=ja epsdk run
 language = "zh-TW"
 ```
 
-Установка значения в `"auto"` (значение по умолчанию) приведет к автоматическому определению языка системы.
+Если установить значение `"auto"` (по умолчанию), будет автоматически определен системный язык.
 
-### Ручная смена языка в коде
+### Ручное переключение в коде
 
 ```python
 from ErisPulse import i18n
 
-# Ручная установка языка
+# Установка языка вручную
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
@@ -7175,44 +7231,44 @@ i18n.reset_language()
 
 ## Механизм определения языка
 
-Фреймворк определяет язык пользователя в следующем порядке приоритета:
+Фреймворк определяет язык пользователя по следующему приоритету:
 
-1. **Переменная окружения `ERISPULSE_LANG`** — наивысший приоритет, используется для тестов и временных переключений
-2. **Windows API** — `GetUserDefaultLocaleName` (только для Windows, не затрагивается влиянием `LANG` от инструментов вроде Git Bash)
-3. **Переменные окружения** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (стандарт для Unix/macOS)
+1. **Переменная окружения `ERISPULSE_LANG`** — максимальный приоритет, используется для тестирования и временного переключения
+2. **Windows API** — `GetUserDefaultLocaleName` (только Windows, не затрагивается инструментами вроде Git Bash, меняющими `LANG`)
+3. **Переменная окружения** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (стандарт Unix/macOS)
 4. **Системный Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
-5. **Запасной вариант** — en (английский)
+5. **Универсальный язык** — en (английский)
 
-### Принцип близкого соответствия
+### Принцип ближайшего соответствия
 
-Когда определенный язык не имеет точного соответствия, он сопоставляется с поддерживаемым языком по принципу близкого соответствия:
+Когда определённый язык не является точным совпадением, он сопоставляется с поддерживаемыми языками по принципу ближайшего соответствия:
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **Традиционный китайский**
-- Все остальные `zh-*` (например, `zh-CN`, `zh-SG`) → **Упрощенный китайский**
-- `en-US`, `en-GB`, `en-AU` и т.д. → **Английский**
+- Все остальные `zh-*` (например, `zh-CN`, `zh-SG`) → **Упрощённый китайский**
+- `en-US`, `en-GB`, `en-AU` и др. → **Английский**
 - `ja-JP` → **Японский**
 - `ru-RU` → **Русский**
-- Другие нераспознанные языки → **Упрощенный китайский (резервный вариант)**
+- Неизвестные языки → **Упрощённый китайский (универсальный язык)**
 
 ---
 
 ## Использование i18n в модулях
 
-Вы можете зарегистрировать тексты переводов для своего модуля, чтобы он также поддерживал несколько языков.
+Вы можете регистрировать тексты переводов для своих модулей, чтобы ваш модуль также поддерживал несколько языков.
 
 ### Регистрация пользовательских переводов
 
 ```python
 from ErisPulse import i18n
 
-# Регистрация китайского перевода
+# Регистрация перевода на китайский
 i18n.register("zh-CN", {
     "my_module.welcome": "Добро пожаловать в мой модуль!",
     "my_module.goodbye": "До свидания!",
-    "my_module.hello": "Здравствуйте, {name}!",
+    "my_module.hello": "Привет, {name}!",
 }, domain="my_module")
 
-# Регистрация английского перевода
+# Регистрация перевода на английский
 i18n.register("en", {
     "my_module.welcome": "Welcome to my module!",
     "my_module.goodbye": "Goodbye!",
@@ -7225,42 +7281,137 @@ i18n.register("en", {
 ```python
 from ErisPulse import i18n
 
-# Простое получение перевода
-i18n.t("my_module.welcome")  # Автоматически использует текущий язык
+# Простой перевод
+i18n.t("my_module.welcome")  # Автоматически используется текущий язык
 
-# С форматированием параметров
+# Перевод с параметрами форматирования
 i18n.t("my_module.hello", name="Alice")
 
-# Указание значения по умолчанию (возвращается, если ключ перевода отсутствует)
+# Указание значения по умолчанию (возвращается, если ключ перевода не найден)
 i18n.t("my_module.unknown_key", default="Значение по умолчанию")
 ```
 
-### Использование в классах модулей
+### Использование в классе модуля
 
 ```python
+from dataclasses import dataclass, field
 from ErisPulse import i18n
 from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    welcome_msg: str = field(
+        default="Добро пожаловать",
+        metadata={
+            "description": {"i18n": "my_module.welcome_msg", "default": "Сообщение приветствия"},
+            "ui": {"widget": "text", "group": "basic", "order": 1},
+        },
+    )
 
 class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
     async def on_load(self, event):
+        # Чтение конфигурации в реальном времени (отражает самые свежие значения при каждом доступе)
+        self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
-    
+
     @command("hello")
     async def hello_handler(self, event):
         name = event.get_user_nickname() or "друг"
         await event.reply(i18n.t("my_module.hello", name=name))
+
+    async def on_unload(self, event):
+        pass
 ```
 
 ### Отмена регистрации переводов
 
 ```python
-# Отмена регистрации переводов всего домена
+# Отмена регистрации всех переводов для домена
 i18n.unregister_domain("my_module")
 ```
 
 ---
 
-## Справочник по API
+## Мультиязычные описания полей конфигурации
+
+Начиная с v2.5.2, схема конфигурации поддерживает i18n. Описание полей конфигурации адаптеров/модулей (атрибут `description`) может ссылаться на ключи i18n, а WebUI и другие потребители автоматически преобразуют их в соответствующий текст в зависимости от текущего языка.
+
+### Объявление i18n описания
+
+В `field(metadata=...)` свойство `description` может быть:
+
+- **Обычная строка** (обратная совместимость): `"Токен платформы"`
+- **Словарь i18n** (рекомендуется): `{"i18n": "my_adapter.token", "default": "Токен платформы"}`
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyAdapterConfig(BaseConfig):
+    token: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_adapter.token", "default": "Токен платформы"},
+            "required": True,
+            "secret": True,
+            "ui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
+```
+
+`default` — универсальный текст, который отображается, когда перевод не зарегистрирован или не найден.
+
+### Регистрация переводов конфигурации
+
+Ключи i18n для полей конфигурации регистрируются так же, как и обычные ключи, с помощью `i18n.register()`:
+
+```python
+from ErisPulse import i18n
+
+# Регистрация перевода на китайский (совпадает с default, также может быть разным)
+i18n.register("zh-CN", {
+    "my_adapter.token": "Токен платформы",
+}, domain="my_adapter")
+
+# Регистрация перевода на английский
+i18n.register("en", {
+    "my_adapter.token": "Platform Token",
+}, domain="my_adapter")
+```
+
+Также предоставляется удобная функция `register_config_i18n()`, которая автоматически извлекает ключи из класса конфигурации и регистрирует их:
+
+```python
+from ErisPulse.runtime.config_schema import register_config_i18n
+
+# Автоматическое извлечение description.default в качестве перевода на китайский
+register_config_i18n(MyAdapterConfig, "zh-CN")
+
+# Ручная регистрация перевода на английский
+register_config_i18n(MyAdapterConfig, "en", {
+    "my_adapter.token": "Platform Token",
+})
+```
+
+### Как потребляет WebUI
+
+В схеме, возвращаемой методом `get_config_schema()`, поле `description` прозрачно передает словарь i18n. Клиентская часть WebUI может вызывать `i18n.t()` для解析 в зависимости от текущего языка.
+
+Если необходимо, чтобы сервер сразу преобразовывал в строку (например, для передачи фронту, который не поддерживает i18n), используйте `resolve_config_schema()`:
+
+```python
+from ErisPulse.runtime.config_schema import resolve_config_schema
+
+# description преобразовано в строку текущего языка
+schema = resolve_config_schema(MyAdapterConfig)
+print(schema["fields"]["token"]["description"])  # "Токен платформы" или "Platform Token"
+```
+
+## Справочник API
 
 ### I18nManager
 
@@ -7268,49 +7419,49 @@ i18n.unregister_domain("my_module")
 
 | Метод | Описание |
 |------|------|
-| `t(key, default=None, **kwargs)` | Получение текста перевода (также есть псевдоним `gettext()`) |
+| `t(key, default=None, **kwargs)` | Получение текста перевода (аналог `gettext()`) |
 | `set_language(lang)` | Ручная установка языка |
 | `get_language()` | Получение текущего языка |
-| `reset_language()` | Сброс до автоматического определения (и повторное определение переменных окружения) |
+| `reset_language()` | Сброс до автоматического определения (с повторной проверкой окружения) |
 | `get_supported_languages()` | Получение списка всех поддерживаемых языков |
-| `has_translation(key, lang=None)` | Проверка наличия ключа перевода |
+| `has_translation(key, lang=None)` | Проверка существования ключа перевода |
 | `register(lang, translations, domain)` | Регистрация пользовательских переводов |
-| `unregister_domain(domain)` | Отмена регистрации всех переводов указанного домена |
-| `reload()` | Повторная загрузка встроенных переводов и повторное определение языка |
+| `unregister_domain(domain)` | Удаление всех переводов для указанного домена |
+| `reload()` | Перезагрузка встроенных переводов и повторное определение языка |
 
-#### Подробное описание метода `t()`
+#### Подробно о методе `t()`
 
 ```python
 def t(self, key, /, default=None, **kwargs):
 ```
 
-- `key` — ключ перевода (только позиционный аргумент, не конфликтует с `key=` в `**kwargs`)
-- `default` — значение, возвращаемое при отсутствии перевода; по умолчанию `None` (возвращается сам ключ)
+- `key` — ключ перевода (только позиционный параметр, не конфликтует с `key=` внутри `**kwargs`)
+- `default` — значение, возвращаемое при отсутствии перевода, по умолчанию `None` (возвращается сам ключ)
 - `**kwargs` — параметры форматирования, используются для заполнения `{placeholder}` в значении перевода
 
 Пример:
 
 ```python
-# Определение перевода: "greeting": "Здравствуйте, {name}! Добро пожаловать в {place}."
+# Определение перевода: "greeting": "Привет, {name}! Добро пожаловать в{place}."
 i18n.t("greeting", name="Alice", place="ErisPulse")
-# Возврат: "Здравствуйте, Alice! Добро пожаловать в ErisPulse."
+# Возвращает: "Привет, Alice! Добро пожаловать вErisPulse."
 ```
 
-### Доступ через экземпляр SDK
+### Доступ к экземпляру SDK
 
 ```python
 from ErisPulse import sdk
 
-# sdk.i18n — это тот же объект, что и напрямую импортированный i18n
+# sdk.i18n — тот же объект, что и импортированный напрямую i18n
 sdk.i18n.set_language("en")
 print(sdk.i18n.t("core.sdk.init.starting"))
 ```
 
 ---
 
-## Настройки времени выполнения
+## Конфигурация времени выполнения
 
-### Чтение настроек i18n через API конфигурации
+### Чтение конфигурации i18n через API конфигурации
 
 ```python
 from ErisPulse.runtime import get_i18n_config, I18nConfig
@@ -7318,7 +7469,7 @@ from ErisPulse.runtime import get_i18n_config, I18nConfig
 config = get_i18n_config()
 print(config["language"])  # "auto" или конкретный код языка
 
-# I18nConfig — это dataclass, можно использовать для генерации шаблона конфигурации
+# I18nConfig — это dataclass, может быть использован для генерации шаблона конфигурации
 schema = I18nConfig.__dataclass_fields__
 ```
 
@@ -7329,8 +7480,8 @@ schema = I18nConfig.__dataclass_fields__
 ```toml
 [ErisPulse.i18n]
 # Язык отображения, возможные значения:
-# - "auto"      — автоматическое определение языка системы (по умолчанию)
-# - "zh-CN"     — упрощенный китайский
+# - "auto"      — автоматическое определение системного языка (по умолчанию)
+# - "zh-CN"     — упрощённый китайский
 # - "zh-TW"     — традиционный китайский
 # - "en"        — английский
 # - "ja"        — японский
@@ -7340,37 +7491,37 @@ language = "auto"
 
 ---
 
-## Рекомендации по использованию
+## Best Practices
 
 ### Нейминг ключей переводов
 
-Рекомендуется использовать формат с разделением точками для пространств имен:
+Рекомендуется использовать формат с точкой для разделения пространств имён:
 
 ```
-<Имя_модуля>.<Категория>.<Описание>
+<Имя модуля>.<Категория>.<Описание>
 ```
 
-Например: `my_module.command.hello_desc`, `core.adapter.start_failed`
+Пример: `my_module.command.hello_desc`, `core.adapter.start_failed`
 
-### Переопределения на нескольких языках
+### Перекрытие переводов
 
-Не обязательно предоставлять переводы для всех языков сразу. Для отсутствующих языков автоматически будет использован английский язык, а если его нет, будет отображен сам ключ.
+Нет необходимости предоставлять переводы на все языки сразу. Отсутствующие языки автоматически используют английский как запасной вариант, а если английского нет, отображается сам ключ.
 
 ### Динамический контент
 
-Для динамически генерируемого контента (например, имен пользователей, количеств и т.д.) используйте форматирование с `{placeholder}`:
+Для динамически генерируемого контента (например, имя пользователя, количество и т.д.) используйте форматирование с `{placeholder}`:
 
 ```python
 # Определение перевода
-"user_count": "Текущих онлайн-пользователей: {count} человек"
+"user_count": "Текущих пользователей онлайн: {count}"
 
 # Использование
 i18n.t("user_count", count=len(users))
 ```
 
-### Сообщения в логах
+### Логирование
 
-Если ваш модуль использует Logger фреймворка, эти сообщения также автоматически будут использовать текущий язык:
+Если ваш модуль использует Logger фреймворка, эти сообщения также автоматически будут на текущем языке:
 
 ```python
 self.logger.info(i18n.t("my_module.startup"))
@@ -7380,12 +7531,12 @@ self.logger.info(i18n.t("my_module.startup"))
 
 ## Связь с CLI i18n
 
-CLI имеет **отдельный** модуль интернационализации (`ErisPulse.CLI.i18n`), полностью декомпонованный с модулем интернационализации ядра фреймворка.
+CLI имеет **независимый** модуль интернационализации (`ErisPulse.CLI.i18n`), полностью развязанный с модулем интернационализации ядра фреймворка.
 
-- **Core i18n** — используется ядром фреймворка; внешние модули могут регистрировать переводы
-- **CLI i18n** — используется внутри интерфейса командной строки; не делит данные переводов с Core
+- **Core i18n** — используется ядром фреймворка, внешние модули могут регистрировать переводы
+- **CLI i18n** — используется внутри командной строки, не использует общие с Core данные переводов
 
-Такой дизайн обеспечивает, что изменения переводов в CLI не повлияют на стабильность ядра фреймворка.
+Такая архитектура гарантирует, что изменения переводов в CLI не влияют на стабильность ядра фреймворка.
 
 
 ### Dashboard 视窗注册

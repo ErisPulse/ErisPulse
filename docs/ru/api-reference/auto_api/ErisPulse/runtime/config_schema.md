@@ -5,29 +5,63 @@
 ## 模块概述
 
 
-ErisPulse 适配器配置 Schema 模块
+ErisPulse 通用配置 Schema 模块
 
-提供基于 dataclass 的配置定义，支持 TOML 注释生成和 WebUI 表单元数据。
+提供基于 dataclass 的配置定义，支持 TOML 注释生成和多语言 WebUI 表单元数据。
+
+适用于适配器、模块、外部项目等任何需要声明式配置的场景。
 
 > **提示**
-> 1. 使用 AdapterConfig 作为单账户/全局配置基类
+> 1. 使用 BaseConfig 作为单账户/全局配置基类（AdapterConfig 为其别名，保持兼容）
 > 2. 使用 BotAccountConfig 作为多账户配置基类
 > 3. 通过 field(metadata=...) 声明字段描述、控件类型等信息
-> 4. 使用 dataclass_to_toml_with_comments() 生成带注释的配置模板
-> 5. 使用 dict_to_dataclass() 从 TOML 字典填充 dataclass
-> 6. 使用 validate_config() 校验配置实例
+> 4. description 支持 i18n 多语言：{"i18n": "key.path", "default": "默认文本"}
+> 5. 使用 dataclass_to_toml_with_comments() 生成带注释的配置模板
+> 6. 使用 dict_to_dataclass() 从 TOML 字典填充 dataclass
+> 7. 使用 validate_config() 校验配置实例
+> 8. 使用 get_config_schema() 生成 WebUI JSON Schema（含 i18n 支持）
 
 ---
 
 ## 函数列表
 
 
-### `dataclass_to_defaults_dict(config_class: type)`
+### `_resolve_description_text(meta: Mapping | None)`
 
-从 dataclass 类生成默认值字典
+从 metadata 提取人类可读的描述文本
 
-:param config_class: dataclass 类
-:return: 默认值字典
+用于 TOML 注释生成、校验错误信息等不需要多语言的场景。
+description 可以是:
+  - 普通字符串: "账户备注名称"
+  - i18n 字典:   {"i18n": "module.field.desc", "default": "账户备注名称"}
+
+:param meta: field.metadata 字典
+:return: 人类可读的描述字符串
+
+---
+
+
+### `_resolve_description_schema(meta: Mapping | None)`
+
+从 metadata 提取 schema 可用的描述信息
+
+- 普通字符串原样返回（WebUI 直接展示）
+- i18n 字典原样返回（WebUI 根据 language 查找翻译）
+
+:param meta: field.metadata 字典
+:return: 字符串或 i18n 描述字典
+
+---
+
+
+### `_get_ui_meta(meta: Mapping | None)`
+
+从 metadata 获取 UI 配置（兼容新旧键名）
+
+优先级: "ui"（新） > "webui"（旧，保留兼容）
+
+:param meta: field.metadata 字典
+:return: UI 元数据字典
 
 ---
 
@@ -53,10 +87,43 @@ ErisPulse 适配器配置 Schema 模块
 ---
 
 
+### `_get_field_default(f)`
+
+获取字段的默认值
+
+---
+
+
+### `_is_empty(value)`
+
+判断值是否为空
+
+---
+
+
+### `_coerce_value(value, type_hint)`
+
+将值强制转换为目标类型
+
+---
+
+
+### `dataclass_to_defaults_dict(config_class: type)`
+
+从 dataclass 类生成默认值字典
+
+:param config_class: dataclass 类
+:return: 默认值字典
+
+---
+
+
 ### `dataclass_to_toml_with_comments(config_class: type, existing_values: dict | None = None)`
 
 将 dataclass class 转为带注释的 TOML 文本
-用于首次写入配置文件时生成可读的配置模板
+
+用于首次写入配置文件时生成可读的配置模板。
+description 若为 i18n 字典，则使用其 default/fallback 文本。
 
 :param config_class: dataclass 类
 :param existing_values: 已有的配置值（覆盖默认值）
@@ -80,29 +147,16 @@ ErisPulse 适配器配置 Schema 模块
 ---
 
 
-### `_coerce_value(value, type_hint)`
-
-将值强制转换为目标类型
-
----
-
-
 ### `validate_config(instance)`
 
 校验 dataclass 实例
 
 - 检查 required 字段是否非空
 - 返回错误信息列表（空列表表示通过）
+- description 若为 i18n 字典，错误信息使用其 fallback/default 文本
 
 :param instance: dataclass 实例
 :return: 错误信息列表
-
----
-
-
-### `_is_empty(value)`
-
-判断值是否为空
 
 ---
 
@@ -111,7 +165,8 @@ ErisPulse 适配器配置 Schema 模块
 
 从 dataclass 生成 WebUI 可用的 JSON Schema
 
-包含字段名、类型、描述、控件类型、分组、排序等
+包含字段名、类型、描述（支持 i18n）、控件类型、分组、排序等。
+description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻译。
 
 :param config_class: dataclass 类
 :return: schema 字典
@@ -119,9 +174,57 @@ ErisPulse 适配器配置 Schema 模块
 ---
 
 
-### `_get_field_default(f)`
+### `register_config_i18n(config_class: type, lang: str, translations: dict[str, str] | None = None, domain: str = 'config')`
 
-获取字段的默认值
+将配置类的字段描述注册到 i18n 系统
+
+遍历 config_class 的所有字段，提取 description 中的 i18n 键，
+调用 i18n.register() 注册翻译。
+
+两种用法：
+1. 自动模式（translations=None）：将字段 description.default 作为 zh-CN 翻译注册
+2. 手动模式：提供 translations 字典（{i18n_key: translated_text}）
+
+使用示例::
+
+    # 自动注册默认值作为中文翻译
+    register_config_i18n(MyAdapterConfig, "zh-CN")
+
+    # 手动注册英文翻译
+    register_config_i18n(MyAdapterConfig, "en", {
+        "my_adapter.endpoint": "API Endpoint",
+        "my_adapter.token": "Platform Token",
+    })
+
+    # 多账户配置同理
+    register_config_i18n(MyBotConfig, "zh-CN")
+    register_config_i18n(MyBotConfig, "en", {
+        "my_adapter.bot_id": "Bot ID",
+        "my_adapter.bot_token": "Bot Token",
+    })
+
+:param config_class: dataclass 配置类
+:param lang: 语言代码（如 "zh-CN", "en"）
+:param translations: 手动提供的翻译字典，None 则自动提取
+:param domain: i18n 域标识，默认 "config"
+:return: 注册的翻译条目数
+
+---
+
+
+### `resolve_config_schema(config_class: type, resolve_i18n: bool = True)`
+
+获取配置 Schema，可选地将 i18n description 解析为当前语言的文本
+
+与 get_config_schema() 的区别：
+- 当 resolve_i18n=True 时，description 字段为解析后的字符串（适合直接展示）
+- 当 resolve_i18n=False 时，等同于 get_config_schema()（透传 i18n 字典）
+
+适合需要在服务端直接渲染描述文本的场景（如 Dashboard API 返回给不支持 i18n 的前端）。
+
+:param config_class: dataclass 配置类
+:param resolve_i18n: 是否将 i18n 描述解析为当前语言文本
+:return: schema 字典
 
 ---
 
@@ -129,19 +232,52 @@ ErisPulse 适配器配置 Schema 模块
 ## 类列表
 
 
+### `class BaseConfig`
+
+通用配置基类
+
+适用于任何模块/项目的单账户或全局配置场景。
+继承此类即可获得 TOML 序列化、校验、WebUI Schema 等能力。
+
+使用示例::
+
+    @dataclass
+    class MyModuleConfig(BaseConfig):
+        api_key: str = field(
+            default="",
+            metadata={
+                "description": {"i18n": "my_module.api_key", "default": "API 密钥"},
+                "required": True,
+                "secret": True,
+                "ui": {"widget": "password", "group": "connection", "order": 1},
+            },
+        )
+
+
+### `class BotAccountConfig`
+
+多账户配置基类
+
+适用于需要管理多个账户的场景（如多 Bot）。
+继承此类自动获得 enabled/name 基础字段。
+
+使用示例::
+
+    @dataclass
+    class MyBotConfig(BotAccountConfig):
+        bot_id: str = field(
+            default="",
+            metadata={
+                "description": {"i18n": "my_adapter.bot_id", "default": "Bot ID"},
+                "required": True,
+                "ui": {"widget": "text", "group": "basic", "order": 1},
+            },
+        )
+
+
 ### `class I18nConfig`
 
 国际化配置
 
 控制框架的显示语言和翻译行为
-
-
-### `class AdapterConfig`
-
-适配器全局配置基类（单账户/无账户适配器使用）
-
-
-### `class BotAccountConfig`
-
-Bot 账户配置基类（多账户适配器使用）
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1284,
+  "total_keywords": 1285,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -10,12 +10,12 @@
         "title": "0 Success (OK)"
       }
     ],
-    "1. BaseAdapter Level (Most cases do not need to override)": [
+    "1. BaseAdapter Level (Most cases do not require overriding)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 364,
         "level": 3,
-        "title": "1. BaseAdapter Level (Most cases do not need to override)"
+        "title": "1. BaseAdapter Level (Most cases do not require overriding)"
       }
     ],
     "1. Basic Information Section": [
@@ -29,13 +29,13 @@
     "1. Categorized Exception Handling": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 448,
+        "line": 454,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 170,
+        "line": 183,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       }
@@ -131,7 +131,7 @@
     "1. Maintain Platform Feature Documentation": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 612,
+        "line": 618,
         "level": 3,
         "title": "1. Maintain Platform Feature Documentation"
       }
@@ -152,12 +152,12 @@
         "title": "1. Module Development (Recommended)"
       }
     ],
-    "1. Must Return Task Object": [
+    "1. Must Return a Task Object": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 280,
         "level": 3,
-        "title": "1. Must Return Task Object"
+        "title": "1. Must Return a Task Object"
       }
     ],
     "1. Overview": [
@@ -166,14 +166,6 @@
         "line": 5,
         "level": 2,
         "title": "1. Overview"
-      }
-    ],
-    "1. Proper Use of Log Levels": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 242,
-        "level": 3,
-        "title": "1. Proper Use of Log Levels"
       }
     ],
     "1. SDK Object": [
@@ -195,7 +187,7 @@
     "1. Sensitive Data Protection": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 313,
+        "line": 327,
         "level": 3,
         "title": "1. Sensitive Data Protection"
       }
@@ -232,26 +224,24 @@
         "title": "1. Standardized Response Format"
       }
     ],
-    "1. Strictly Follow OneBot12 Standard": [
+    "1. Strictly Follow the OneBot12 Standard": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 224,
         "level": 3,
-        "title": "1. Strictly Follow OneBot12 Standard"
-      }
-    ],
-    "1. Unit Testing": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 350,
-        "level": 3,
-        "title": "1. Unit Testing"
+        "title": "1. Strictly Follow the OneBot12 Standard"
       }
     ],
     "1. Unit Tests": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 502,
+        "line": 508,
+        "level": 3,
+        "title": "1. Unit Tests"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 364,
         "level": 3,
         "title": "1. Unit Tests"
       }
@@ -259,7 +249,7 @@
     "1. Use Asynchronous Libraries": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 53,
+        "line": 66,
         "level": 3,
         "title": "1. Use Asynchronous Libraries"
       }
@@ -267,7 +257,7 @@
     "1. Use Caching": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 276,
+        "line": 290,
         "level": 3,
         "title": "1. Use Caching"
       }
@@ -275,15 +265,23 @@
     "1. Use Event Wrapper Class": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 114,
+        "line": 127,
         "level": 3,
         "title": "1. Use Event Wrapper Class"
+      }
+    ],
+    "1. Use Log Levels Reasonably": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 256,
+        "level": 3,
+        "title": "1. Use Log Levels Reasonably"
       }
     ],
     "1. Use Mixin Class for Batch Registration (Recommended)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 560,
+        "line": 566,
         "level": 3,
         "title": "1. Use Mixin Class for Batch Registration (Recommended)"
       }
@@ -291,7 +289,7 @@
     "1. Use Transactions": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 209,
+        "line": 223,
         "level": 3,
         "title": "1. Use Transactions"
       }
@@ -299,7 +297,7 @@
     "1. Version Management": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 381,
+        "line": 395,
         "level": 3,
         "title": "1. Version Management"
       }
@@ -366,6 +364,14 @@
         "line": 461,
         "level": 2,
         "title": "10. Adapter Implementation Checklist"
+      }
+    ],
+    "10. SSE (Server-Sent Events) Support": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 482,
+        "level": 3,
+        "title": "10. SSE (Server-Sent Events) Support"
       }
     ],
     "11. MessageBuilder": [
@@ -443,7 +449,7 @@
     "2. Account Selection Mechanism": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 431,
+        "line": 432,
         "level": 3,
         "title": "2. Account Selection Mechanism"
       }
@@ -451,7 +457,7 @@
     "2. Avoid Blocking Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 297,
+        "line": 311,
         "level": 3,
         "title": "2. Avoid Blocking Operations"
       }
@@ -467,7 +473,7 @@
     "2. Batch Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 225,
+        "line": 239,
         "level": 3,
         "title": "2. Batch Operations"
       }
@@ -478,14 +484,6 @@
         "line": 300,
         "level": 3,
         "title": "2. Chainable Modifier Methods Return self"
-      }
-    ],
-    "2. Complete Documentation": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 395,
-        "level": 3,
-        "title": "2. Complete Documentation"
       }
     ],
     "2. Connection State Management": [
@@ -499,7 +497,7 @@
     "2. Correct Asynchronous Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 89,
+        "line": 102,
         "level": 3,
         "title": "2. Correct Asynchronous Operations"
       }
@@ -518,6 +516,14 @@
         "line": 55,
         "level": 3,
         "title": "2. Create pyproject.toml"
+      }
+    ],
+    "2. Documentation Completeness": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 409,
+        "level": 3,
+        "title": "2. Documentation Completeness"
       }
     ],
     "2. Embedded Development": [
@@ -547,23 +553,21 @@
     "2. Input Validation": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 330,
+        "line": 344,
         "level": 3,
         "title": "2. Input Validation"
-      }
-    ],
-    "2. Integration Testing": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 365,
-        "level": 3,
-        "title": "2. Integration Testing"
       }
     ],
     "2. Integration Tests": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 526,
+        "line": 532,
+        "level": 3,
+        "title": "2. Integration Tests"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 379,
         "level": 3,
         "title": "2. Integration Tests"
       }
@@ -571,7 +575,7 @@
     "2. Logging": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 481,
+        "line": 487,
         "level": 3,
         "title": "2. Logging"
       },
@@ -598,14 +602,6 @@
         "title": "2. Parameter Specifications Detail"
       }
     ],
-    "2. Proper Use of Lazy Loading": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 130,
-        "level": 3,
-        "title": "2. Proper Use of Lazy Loading"
-      }
-    ],
     "2. Publish to PyPI": [
       {
         "document": "developer-guide/publishing.md",
@@ -614,12 +610,28 @@
         "title": "2. Publish to PyPI"
       }
     ],
+    "2. Reasonable Use of Lazy Loading": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 143,
+        "level": 3,
+        "title": "2. Reasonable Use of Lazy Loading"
+      }
+    ],
     "2. Receive Event (POST)": [
       {
         "document": "platform-guide/webhook.md",
         "line": 61,
         "level": 3,
         "title": "2. Receive Event (POST)"
+      }
+    ],
+    "2. Register Single Method Using Decorator": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 592,
+        "level": 3,
+        "title": "2. Register Single Method Using Decorator"
       }
     ],
     "2. Request Event Field Requirements": [
@@ -638,12 +650,12 @@
         "title": "2. Response Standardization"
       }
     ],
-    "2. Send Inner Class (Most cases do not need to override)": [
+    "2. Send Inner Class (Most cases do not require overriding)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 395,
         "level": 3,
-        "title": "2. Send Inner Class (Most cases do not need to override)"
+        "title": "2. Send Inner Class (Most cases do not require overriding)"
       }
     ],
     "2. Sending Meta Events": [
@@ -697,7 +709,7 @@
     "2. Structured Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 264,
+        "line": 278,
         "level": 3,
         "title": "2. Structured Logging"
       }
@@ -713,7 +725,7 @@
     "2. Timeout Handling": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 191,
+        "line": 205,
         "level": 3,
         "title": "2. Timeout Handling"
       }
@@ -729,17 +741,9 @@
     "2. Update Version Information": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 633,
+        "line": 639,
         "level": 3,
         "title": "2. Update Version Information"
-      }
-    ],
-    "2. Use Decorator to Register Single Method": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 586,
-        "level": 3,
-        "title": "2. Use Decorator to Register Single Method"
       }
     ],
     "2.1 Media Message Parameter Specifications": [
@@ -881,7 +885,7 @@
     "3. Clean Up on Adapter Shutdown": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 596,
+        "line": 602,
         "level": 3,
         "title": "3. Clean Up on Adapter Shutdown"
       }
@@ -929,7 +933,7 @@
     "3. Event Handler Registration": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 152,
+        "line": 165,
         "level": 3,
         "title": "3. Event Handler Registration"
       }
@@ -958,12 +962,12 @@
         "title": "3. Heartbeat Events"
       }
     ],
-    "3. Heartbeat Keep-alive and Meta Heartbeat": [
+    "3. Heartbeat Keepalive and Meta Heartbeat": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 160,
         "level": 3,
-        "title": "3. Heartbeat Keep-alive and Meta Heartbeat"
+        "title": "3. Heartbeat Keepalive and Meta Heartbeat"
       }
     ],
     "3. Improve Code Quality": [
@@ -1014,18 +1018,18 @@
         "title": "3. Request DSL"
       }
     ],
-    "3. Request Inner Class (Most cases do not need to override)": [
+    "3. Request Inner Class (Most cases do not require overriding)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 419,
         "level": 3,
-        "title": "3. Request Inner Class (Most cases do not need to override)"
+        "title": "3. Request Inner Class (Most cases do not require overriding)"
       }
     ],
     "3. Resource Management": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 100,
+        "line": 113,
         "level": 3,
         "title": "3. Resource Management"
       }
@@ -1046,12 +1050,12 @@
         "title": "3. Submit to Module Store"
       }
     ],
-    "3. Support Platform-specific Methods": [
+    "3. Support Platform-Specific Methods": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 314,
         "level": 3,
-        "title": "3. Support Platform-specific Methods"
+        "title": "3. Support Platform-Specific Methods"
       }
     ],
     "3. Trigger Build": [
@@ -1166,6 +1170,14 @@
         "title": "4. Combine Usage"
       }
     ],
+    "4. Connection Information Exposure": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 185,
+        "level": 3,
+        "title": "4. Connection Information Exposure"
+      }
+    ],
     "4. Custom Type Extensions": [
       {
         "document": "standards/session-types.md",
@@ -1180,14 +1192,6 @@
         "line": 153,
         "level": 2,
         "title": "4. Event Convenience Methods"
-      }
-    ],
-    "4. Exposing Connection Information": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 185,
-        "level": 3,
-        "title": "4. Exposing Connection Information"
       }
     ],
     "4. Extended Field Description": [
@@ -1670,12 +1674,12 @@
         "title": "7. Error Code Extensions"
       }
     ],
-    "7. Implement Request Class (Request Actions)": [
+    "7. Implement Request Class (Request Operations)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 288,
         "level": 3,
-        "title": "7. Implement Request Class (Request Actions)"
+        "title": "7. Implement Request Class (Request Operations)"
       }
     ],
     "7. Method Discovery": [
@@ -1798,6 +1802,14 @@
         "title": "9. Adapter Development Notes"
       }
     ],
+    "9. Connection Information and Route Discovery": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 441,
+        "level": 3,
+        "title": "9. Connection Information and Route Discovery"
+      }
+    ],
     "9. Related Documentation": [
       {
         "document": "standards/event-conversion.md",
@@ -1869,7 +1881,7 @@
     "API Error Handling": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 763,
+        "line": 785,
         "level": 3,
         "title": "API Error Handling"
       }
@@ -1909,7 +1921,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 141,
+        "line": 236,
         "level": 2,
         "title": "API Reference"
       },
@@ -1943,7 +1955,7 @@
     "API Response Standard": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 633,
+        "line": 652,
         "level": 2,
         "title": "API Response Standard"
       },
@@ -1970,20 +1982,20 @@
         "title": "Abstract Types"
       }
     ],
-    "Access from SDK Instance": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 177,
-        "level": 3,
-        "title": "Access from SDK Instance"
-      }
-    ],
     "Accessing Core Modules": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 56,
         "level": 3,
         "title": "Accessing Core Modules"
+      }
+    ],
+    "Accessing via SDK Instance": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 272,
+        "level": 3,
+        "title": "Accessing via SDK Instance"
       }
     ],
     "Account Configuration": [
@@ -2005,7 +2017,7 @@
     "Account Configuration File": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 696,
+        "line": 715,
         "level": 3,
         "title": "Account Configuration File"
       }
@@ -2043,7 +2055,7 @@
     "Account Resolution": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 381,
+        "line": 398,
         "level": 4,
         "title": "Account Resolution"
       }
@@ -2070,14 +2082,6 @@
         "line": 157,
         "level": 2,
         "title": "Active State Management"
-      }
-    ],
-    "Actively Send Meta Events": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 156,
-        "level": 4,
-        "title": "Actively Send Meta Events"
       }
     ],
     "Adapter": [
@@ -2162,14 +2166,6 @@
         "title": "Adapter Integration Example"
       }
     ],
-    "Adapter Introduction": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 5,
-        "level": 2,
-        "title": "Adapter Introduction"
-      }
-    ],
     "Adapter Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
@@ -2213,7 +2209,7 @@
     "Adapter Sending Meta Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 821,
+        "line": 843,
         "level": 3,
         "title": "Adapter Sending Meta Events"
       }
@@ -2242,20 +2238,20 @@
         "title": "Adapter: Register Platform Extension Methods"
       }
     ],
-    "AdapterManager 适配器管理器": [
+    "AdapterManager Adapter Manager": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 46,
         "level": 2,
-        "title": "AdapterManager 适配器管理器"
+        "title": "AdapterManager Adapter Manager"
       }
     ],
-    "Adding Middleware": [
+    "Add Middleware": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 206,
         "level": 4,
-        "title": "Adding Middleware"
+        "title": "Add Middleware"
       }
     ],
     "Additional Operation Methods": [
@@ -2399,7 +2395,7 @@
     "Asynchronous Programming": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 51,
+        "line": 64,
         "level": 2,
         "title": "Asynchronous Programming"
       },
@@ -2454,6 +2450,12 @@
         "line": 249,
         "level": 3,
         "title": "Attribute Access"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 249,
+        "level": 4,
+        "title": "Attribute Access"
       }
     ],
     "Authentication and API Calls": [
@@ -2472,12 +2474,12 @@
         "title": "Auto Documentation"
       }
     ],
-    "Automatic Discovery Mechanism": [
+    "Auto-Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 795,
+        "line": 817,
         "level": 3,
-        "title": "Automatic Discovery Mechanism"
+        "title": "Auto-Discovery Mechanism"
       }
     ],
     "Automatic Discovery of Normal Events": [
@@ -2499,7 +2501,7 @@
     "Available Properties": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 439,
+        "line": 458,
         "level": 3,
         "title": "Available Properties"
       }
@@ -2655,7 +2657,7 @@
     "Basic Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 463,
+        "line": 482,
         "level": 3,
         "title": "Basic Methods"
       },
@@ -2752,6 +2754,12 @@
         "title": "Basic Usage"
       },
       {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 486,
+        "level": 4,
+        "title": "Basic Usage"
+      },
+      {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 5,
         "level": 2,
@@ -2765,7 +2773,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 130,
+        "line": 171,
         "level": 3,
         "title": "Basic Usage"
       }
@@ -2811,7 +2819,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 221,
+        "line": 316,
         "level": 2,
         "title": "Best Practices"
       },
@@ -2887,7 +2895,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 791,
+        "line": 813,
         "level": 2,
         "title": "Bot Status Management"
       }
@@ -2915,7 +2923,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 857,
+        "line": 879,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -3145,7 +3153,7 @@
     "Chained Modifier Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 486,
+        "line": 505,
         "level": 3,
         "title": "Chained Modifier Methods"
       }
@@ -3264,20 +3272,20 @@
         "title": "Check Installation"
       }
     ],
+    "Check Platform Status": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 125,
+        "level": 4,
+        "title": "Check Platform Status"
+      }
+    ],
     "Check if Table Exists": [
       {
         "document": "advanced/sql-builder.md",
         "line": 45,
         "level": 3,
         "title": "Check if Table Exists"
-      }
-    ],
-    "Checking Platform Status": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 125,
-        "level": 4,
-        "title": "Checking Platform Status"
       }
     ],
     "Child Loggers": [
@@ -3680,6 +3688,14 @@
         "title": "Config (Configuration)"
       }
     ],
+    "Config Hot Reload": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 411,
+        "level": 4,
+        "title": "Config Hot Reload"
+      }
+    ],
     "Config Module": [
       {
         "document": "api-reference/core-modules.md",
@@ -3774,6 +3790,14 @@
         "title": "Configuration Field Description"
       }
     ],
+    "Configuration Field Descriptions": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 298,
+        "level": 3,
+        "title": "Configuration Field Descriptions"
+      }
+    ],
     "Configuration File": [
       {
         "document": "quick-start.md",
@@ -3816,14 +3840,6 @@
         "line": 21,
         "level": 2,
         "title": "Configuration Instructions"
-      }
-    ],
-    "Configuration Item Descriptions": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 203,
-        "level": 3,
-        "title": "Configuration Item Descriptions"
       }
     ],
     "Configuration Management": [
@@ -3919,7 +3935,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 573,
+        "line": 592,
         "level": 2,
         "title": "Connection Management"
       }
@@ -3935,7 +3951,7 @@
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 739,
+        "line": 761,
         "level": 3,
         "title": "Connection Retry"
       }
@@ -4007,7 +4023,7 @@
     "Conversion Process": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 502,
+        "line": 521,
         "level": 3,
         "title": "Conversion Process"
       }
@@ -4023,7 +4039,7 @@
     "Converter Example": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 532,
+        "line": 551,
         "level": 3,
         "title": "Converter Example"
       }
@@ -4070,6 +4086,14 @@
         "line": 5,
         "level": 2,
         "title": "Core Concepts"
+      }
+    ],
+    "Core Concepts of Modules": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "Core Concepts of Modules"
       }
     ],
     "Core Differences": [
@@ -4124,6 +4148,12 @@
     ],
     "Core Features": [
       {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 50,
+        "level": 3,
+        "title": "Core Features"
+      },
+      {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 5,
         "level": 2,
@@ -4138,14 +4168,6 @@
         "title": "Core Field Methods"
       }
     ],
-    "Core Functions": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 50,
-        "level": 3,
-        "title": "Core Functions"
-      }
-    ],
     "Core Initialization": [
       {
         "document": "advanced/lifecycle.md",
@@ -4157,7 +4179,7 @@
     "Core Methods": [
       {
         "document": "advanced/i18n.md",
-        "line": 145,
+        "line": 240,
         "level": 4,
         "title": "Core Methods"
       },
@@ -4365,9 +4387,23 @@
     "Declarative Configuration (Recommended)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 669,
+        "line": 688,
         "level": 3,
         "title": "Declarative Configuration (Recommended)"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 105,
+        "level": 3,
+        "title": "Declarative Configuration (Recommended)"
+      }
+    ],
+    "Declaring i18n Descriptions": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 164,
+        "level": 3,
+        "title": "Declaring i18n Descriptions"
       }
     ],
     "Decorator Routes (Recommended)": [
@@ -4403,7 +4439,7 @@
     "Deployment": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 379,
+        "line": 393,
         "level": 2,
         "title": "Deployment"
       }
@@ -4691,7 +4727,7 @@
     "Documentation Maintenance": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 610,
+        "line": 616,
         "level": 2,
         "title": "Documentation Maintenance"
       }
@@ -4747,7 +4783,7 @@
     "Dynamic Content": [
       {
         "document": "advanced/i18n.md",
-        "line": 237,
+        "line": 332,
         "level": 3,
         "title": "Dynamic Content"
       }
@@ -4869,25 +4905,25 @@
     "Error Handling": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 446,
+        "line": 452,
         "level": 2,
         "title": "Error Handling"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 737,
+        "line": 759,
         "level": 2,
         "title": "Error Handling"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 168,
+        "line": 181,
         "level": 2,
         "title": "Error Handling"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 198,
+        "line": 239,
         "level": 2,
         "title": "Error Handling"
       },
@@ -4953,7 +4989,7 @@
     "Event Converter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 500,
+        "line": 519,
         "level": 2,
         "title": "Event Converter"
       }
@@ -4974,12 +5010,12 @@
         "title": "Event Data Access"
       }
     ],
-    "Event Distribution Mechanism": [
+    "Event Dispatching Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 190,
         "level": 4,
-        "title": "Event Distribution Mechanism"
+        "title": "Event Dispatching Mechanism"
       }
     ],
     "Event Examples": [
@@ -5037,29 +5073,21 @@
     "Event Handler Lifecycle": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 171,
+        "line": 212,
         "level": 3,
         "title": "Event Handler Lifecycle"
-      }
-    ],
-    "Event Handler Registration": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 155,
-        "level": 3,
-        "title": "Event Handler Registration"
       }
     ],
     "Event Handling": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 112,
+        "line": 125,
         "level": 2,
         "title": "Event Handling"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 153,
+        "line": 194,
         "level": 2,
         "title": "Event Handling"
       }
@@ -5282,18 +5310,16 @@
         "title": "Examples"
       }
     ],
-    "Exception Catching": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 200,
-        "level": 3,
-        "title": "Exception Catching"
-      }
-    ],
     "Exception Handling": [
       {
         "document": "advanced/http-client.md",
         "line": 359,
+        "level": 3,
+        "title": "Exception Handling"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 241,
         "level": 3,
         "title": "Exception Handling"
       }
@@ -5398,14 +5424,6 @@
         "line": 393,
         "level": 2,
         "title": "Extended Fields Description"
-      }
-    ],
-    "Extended `self` Field Information": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 846,
-        "level": 3,
-        "title": "Extended `self` Field Information"
       }
     ],
     "Extension Field Descriptions": [
@@ -5523,7 +5541,7 @@
     "Framework Helper Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 456,
+        "line": 475,
         "level": 3,
         "title": "Framework Helper Methods"
       }
@@ -5648,6 +5666,14 @@
         "title": "Get Adapter"
       }
     ],
+    "Get Adapter Instance": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 239,
+        "level": 3,
+        "title": "Get Adapter Instance"
+      }
+    ],
     "Get Method Details": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -5670,14 +5696,6 @@
         "line": 124,
         "level": 4,
         "title": "Get single record"
-      }
-    ],
-    "Getting Adapter Instances": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 239,
-        "level": 3,
-        "title": "Getting Adapter Instances"
       }
     ],
     "Getting Help": [
@@ -6004,14 +6022,6 @@
         "title": "Hook Points Overview"
       }
     ],
-    "Hot Configuration Update": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 394,
-        "level": 4,
-        "title": "Hot Configuration Update"
-      }
-    ],
     "Hot Reload": [
       {
         "document": "terminology.md",
@@ -6035,9 +6045,17 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 177,
+        "line": 218,
         "level": 3,
         "title": "How It Works"
+      }
+    ],
+    "How WebUI Consumes It": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 222,
+        "level": 3,
+        "title": "How WebUI Consumes It"
       }
     ],
     "How long does the review take?": [
@@ -6075,7 +6093,7 @@
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
-        "line": 143,
+        "line": 238,
         "level": 3,
         "title": "I18nManager"
       }
@@ -6123,7 +6141,7 @@
     "Immediate Loading": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 185,
+        "line": 226,
         "level": 3,
         "title": "Immediate Loading"
       }
@@ -6171,7 +6189,7 @@
     "Inheritance Relationship": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 430,
+        "line": 449,
         "level": 3,
         "title": "Inheritance Relationship"
       }
@@ -6191,7 +6209,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 407,
+        "line": 424,
         "level": 3,
         "title": "Initialization Process"
       }
@@ -6354,12 +6372,12 @@
         "title": "Integrating with Cursor"
       }
     ],
-    "Inter-module Communication": [
+    "Inter-Module Communication": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 67,
         "level": 3,
-        "title": "Inter-module Communication"
+        "title": "Inter-Module Communication"
       }
     ],
     "Interaction Methods": [
@@ -6446,6 +6464,14 @@
         "title": "Internationalization Configuration"
       }
     ],
+    "Introduction to Adapters": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 5,
+        "level": 2,
+        "title": "Introduction to Adapters"
+      }
+    ],
     "Introduction to Module Development": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -6497,7 +6523,7 @@
     "Lazy Loading Mechanism": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 175,
+        "line": 216,
         "level": 2,
         "title": "Lazy Loading Mechanism"
       }
@@ -6594,6 +6620,14 @@
         "title": "Lifecycle Module"
       }
     ],
+    "List Platforms": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 139,
+        "level": 4,
+        "title": "List Platforms"
+      }
+    ],
     "List Supported Send Methods": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -6605,7 +6639,7 @@
     "Listen to Bot Lifecycle": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 880,
+        "line": 902,
         "level": 3,
         "title": "Listen to Bot Lifecycle"
       }
@@ -6674,14 +6708,6 @@
         "title": "Listing Modules"
       }
     ],
-    "Listing Platforms": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 139,
-        "level": 4,
-        "title": "Listing Platforms"
-      }
-    ],
     "Load Strategy": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -6690,12 +6716,12 @@
         "title": "Load Strategy"
       }
     ],
-    "Loading Strategy": [
+    "Loading Strategies": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 7,
         "level": 3,
-        "title": "Loading Strategy"
+        "title": "Loading Strategies"
       }
     ],
     "Local Testing": [
@@ -6739,7 +6765,7 @@
     "Log Messages": [
       {
         "document": "advanced/i18n.md",
-        "line": 249,
+        "line": 344,
         "level": 3,
         "title": "Log Messages"
       }
@@ -6771,13 +6797,13 @@
     "Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 240,
+        "line": 254,
         "level": 2,
         "title": "Logging"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 215,
+        "line": 256,
         "level": 3,
         "title": "Logging"
       }
@@ -6856,6 +6882,14 @@
         "title": "Management Interface"
       }
     ],
+    "Manual Configuration Reading (Compatibility Mode)": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 150,
+        "level": 3,
+        "title": "Manual Configuration Reading (Compatibility Mode)"
+      }
+    ],
     "Manual Deployment (pip)": [
       {
         "document": "user-guide/deployment.md",
@@ -6883,9 +6917,17 @@
     "Manual Response Construction (Old method still compatible)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 653,
+        "line": 672,
         "level": 3,
         "title": "Manual Response Construction (Old method still compatible)"
+      }
+    ],
+    "Manual Switching in Code": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 39,
+        "level": 3,
+        "title": "Manual Switching in Code"
       }
     ],
     "Material Documentation": [
@@ -7281,7 +7323,7 @@
     "Meta Event Types": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 813,
+        "line": 835,
         "level": 3,
         "title": "Meta Event Types"
       }
@@ -7474,14 +7516,6 @@
         "title": "Module Configuration"
       }
     ],
-    "Module Core Concepts": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 1,
-        "level": 1,
-        "title": "Module Core Concepts"
-      }
-    ],
     "Module Design": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -7642,8 +7676,14 @@
     ],
     "Multi-Account Support": [
       {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 390,
+        "level": 2,
+        "title": "Multi-Account Support"
+      },
+      {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 667,
+        "line": 686,
         "level": 2,
         "title": "Multi-Account Support"
       }
@@ -7672,14 +7712,6 @@
         "title": "Multi-account Sending Syntax"
       }
     ],
-    "Multi-account Support": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 390,
-        "level": 2,
-        "title": "Multi-account Support"
-      }
-    ],
     "Multi-element Message": [
       {
         "document": "advanced/message-builder.md",
@@ -7694,14 +7726,6 @@
         "line": 231,
         "level": 2,
         "title": "Multi-instance Deployment"
-      }
-    ],
-    "Multi-language Coverage": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 233,
-        "level": 3,
-        "title": "Multi-language Coverage"
       }
     ],
     "Multi-platform Adaptation": [
@@ -7720,12 +7744,36 @@
         "title": "Multi-round Conversation"
       }
     ],
+    "Multilingual Configuration Fields": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 160,
+        "level": 2,
+        "title": "Multilingual Configuration Fields"
+      }
+    ],
+    "Multilingual Coverage": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 328,
+        "level": 3,
+        "title": "Multilingual Coverage"
+      }
+    ],
     "Naming Conventions": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 145,
         "level": 2,
         "title": "Naming Conventions"
+      }
+    ],
+    "Native Platform Events": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 176,
+        "level": 4,
+        "title": "Native Platform Events"
       }
     ],
     "Network Client": [
@@ -7753,7 +7801,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 441,
+        "line": 559,
         "level": 2,
         "title": "Next Steps"
       },
@@ -8213,7 +8261,7 @@
     "Performance Optimization": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 274,
+        "line": 288,
         "level": 2,
         "title": "Performance Optimization"
       }
@@ -8251,7 +8299,7 @@
     "Platform Event Method Extension": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 556,
+        "line": 562,
         "level": 2,
         "title": "Platform Event Method Extension"
       }
@@ -8328,14 +8376,6 @@
         "line": 473,
         "level": 4,
         "title": "Platform Method Isolation"
-      }
-    ],
-    "Platform Native Events": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 176,
-        "level": 4,
-        "title": "Platform Native Events"
       }
     ],
     "Platform Related Terms": [
@@ -8454,14 +8494,6 @@
         "line": 48,
         "level": 3,
         "title": "Project Templates"
-      }
-    ],
-    "Property Access": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 249,
-        "level": 4,
-        "title": "Property Access"
       }
     ],
     "Protocol Methods": [
@@ -8656,14 +8688,6 @@
         "title": "Quick Build Mode (Static)"
       }
     ],
-    "Quick Experience": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 15,
-        "level": 2,
-        "title": "Quick Experience"
-      }
-    ],
     "Quick Initialization": [
       {
         "document": "quick-start.md",
@@ -8716,6 +8740,12 @@
       {
         "document": "advanced/http-client.md",
         "line": 18,
+        "level": 2,
+        "title": "Quick Start"
+      },
+      {
+        "document": "advanced/i18n.md",
+        "line": 15,
         "level": 2,
         "title": "Quick Start"
       },
@@ -8776,20 +8806,12 @@
         "title": "Raw Messages and Message Building"
       }
     ],
-    "Reading Configuration": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 105,
-        "level": 3,
-        "title": "Reading Configuration"
-      }
-    ],
-    "Reading i18n Configuration via Configuration API": [
+    "Reading i18n Config via Config API": [
       {
         "document": "advanced/i18n.md",
-        "line": 191,
+        "line": 286,
         "level": 3,
-        "title": "Reading i18n Configuration via Configuration API"
+        "title": "Reading i18n Config via Config API"
       }
     ],
     "Receive Type": [
@@ -8856,12 +8878,28 @@
         "title": "Register Single Method"
       }
     ],
+    "Registering Configuration Translations": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 190,
+        "level": 3,
+        "title": "Registering Configuration Translations"
+      }
+    ],
     "Registering Custom Translations": [
       {
         "document": "advanced/i18n.md",
         "line": 81,
         "level": 3,
         "title": "Registering Custom Translations"
+      }
+    ],
+    "Registering Event Handlers": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 196,
+        "level": 3,
+        "title": "Registering Event Handlers"
       }
     ],
     "Registering Handlers": [
@@ -8963,7 +9001,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 642,
+        "line": 648,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -8975,7 +9013,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 898,
+        "line": 920,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -8987,13 +9025,13 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 408,
+        "line": 422,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 226,
+        "line": 267,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9041,7 +9079,7 @@
     "Relationship between self.user_id and Using": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 720,
+        "line": 742,
         "level": 3,
         "title": "Relationship between self.user_id and Using"
       }
@@ -9049,7 +9087,7 @@
     "Relationship with CLI i18n": [
       {
         "document": "advanced/i18n.md",
-        "line": 259,
+        "line": 354,
         "level": 2,
         "title": "Relationship with CLI i18n"
       }
@@ -9245,7 +9283,7 @@
     "Required Fields": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 512,
+        "line": 531,
         "level": 3,
         "title": "Required Fields"
       }
@@ -9361,7 +9399,7 @@
     "Reverse Conversion and Message Building": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 546,
+        "line": 552,
         "level": 2,
         "title": "Reverse Conversion and Message Building"
       }
@@ -9388,6 +9426,14 @@
         "line": 328,
         "level": 3,
         "title": "Room Invitation"
+      }
+    ],
+    "Route Discovery": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 539,
+        "level": 4,
+        "title": "Route Discovery"
       }
     ],
     "Route Grouping": [
@@ -9473,7 +9519,7 @@
     "Runtime Configuration": [
       {
         "document": "advanced/i18n.md",
-        "line": 189,
+        "line": 284,
         "level": 2,
         "title": "Runtime Configuration"
       }
@@ -9502,15 +9548,13 @@
         "title": "SDK Debugging"
       }
     ],
-    "SDK Object": [
+    "SDK Objects": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 54,
         "level": 2,
-        "title": "SDK Object"
-      }
-    ],
-    "SDK Objects": [
+        "title": "SDK Objects"
+      },
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 128,
@@ -9569,7 +9613,7 @@
     "Security": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 311,
+        "line": 325,
         "level": 2,
         "title": "Security"
       }
@@ -9617,7 +9661,7 @@
     "Send Message Sending DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 428,
+        "line": 447,
         "level": 2,
         "title": "Send Message Sending DSL"
       }
@@ -9754,6 +9798,14 @@
         "title": "Sending Media Messages"
       }
     ],
+    "Sending Meta Events Proactively": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 156,
+        "level": 4,
+        "title": "Sending Meta Events Proactively"
+      }
+    ],
     "Sending Method Return Values": [
       {
         "document": "platform-guide/discord.md",
@@ -9856,12 +9908,12 @@
         "title": "Session Type System"
       }
     ],
-    "Shutting Down Adapters": [
+    "Shutdown Adapter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 108,
         "level": 4,
-        "title": "Shutting Down Adapters"
+        "title": "Shutdown Adapter"
       }
     ],
     "Sidebar Groups": [
@@ -10016,12 +10068,12 @@
         "title": "Specific Event Types"
       }
     ],
-    "Specify Account for Sending": [
+    "Specify Account to Send": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 710,
+        "line": 729,
         "level": 3,
-        "title": "Specify Account for Sending"
+        "title": "Specify Account to Send"
       }
     ],
     "Specify Sending Account": [
@@ -10030,6 +10082,14 @@
         "line": 118,
         "level": 3,
         "title": "Specify Sending Account"
+      }
+    ],
+    "SseEmitter API": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 520,
+        "level": 4,
+        "title": "SseEmitter API"
       }
     ],
     "Standard Compliance Checklist": [
@@ -10112,20 +10172,20 @@
         "title": "Standardized Response"
       }
     ],
+    "Start Adapter": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 85,
+        "level": 4,
+        "title": "Start Adapter"
+      }
+    ],
     "Start Learning": [
       {
         "document": "getting-started/README.md",
         "line": 38,
         "level": 2,
         "title": "Start Learning"
-      }
-    ],
-    "Starting Adapters": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 85,
-        "level": 4,
-        "title": "Starting Adapters"
       }
     ],
     "Startup and Shutdown": [
@@ -10235,13 +10295,13 @@
     "Storage System": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 207,
+        "line": 221,
         "level": 2,
         "title": "Storage System"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 128,
+        "line": 169,
         "level": 2,
         "title": "Storage System"
       }
@@ -10271,7 +10331,7 @@
     "Success Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 637,
+        "line": 656,
         "level": 3,
         "title": "Success Response"
       }
@@ -10414,14 +10474,6 @@
         "title": "Supported Submission Types"
       }
     ],
-    "Switch Manually in Code": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 39,
-        "level": 3,
-        "title": "Switch Manually in Code"
-      }
-    ],
     "Switch via Configuration File": [
       {
         "document": "advanced/i18n.md",
@@ -10430,12 +10482,12 @@
         "title": "Switch via Configuration File"
       }
     ],
-    "Switch via Environment Variables": [
+    "Switch via Environment Variable": [
       {
         "document": "advanced/i18n.md",
         "line": 17,
         "level": 3,
-        "title": "Switch via Environment Variables"
+        "title": "Switch via Environment Variable"
       }
     ],
     "Sync API Connection": [
@@ -10563,13 +10615,13 @@
     "Testing": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 500,
+        "line": 506,
         "level": 2,
         "title": "Testing"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 348,
+        "line": 362,
         "level": 2,
         "title": "Testing"
       }
@@ -10622,14 +10674,6 @@
         "title": "Traditional Registration Method"
       }
     ],
-    "Transaction Usage": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 143,
-        "level": 3,
-        "title": "Transaction Usage"
-      }
-    ],
     "Transactional Operations": [
       {
         "document": "api-reference/core-modules.md",
@@ -10641,7 +10685,7 @@
     "Translation Key Naming": [
       {
         "document": "advanced/i18n.md",
-        "line": 223,
+        "line": 318,
         "level": 3,
         "title": "Translation Key Naming"
       }
@@ -10738,20 +10782,20 @@
         "title": "Unique Event Types"
       }
     ],
-    "Unloading Translations": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 132,
-        "level": 3,
-        "title": "Unloading Translations"
-      }
-    ],
     "Unregister Methods": [
       {
         "document": "api-reference/event-system.md",
         "line": 562,
         "level": 4,
         "title": "Unregister Methods"
+      }
+    ],
+    "Unregistering Translations": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 151,
+        "level": 3,
+        "title": "Unregistering Translations"
       }
     ],
     "Unregistering Views": [
@@ -10934,14 +10978,6 @@
         "title": "User: Using Platform Extension Methods"
       }
     ],
-    "Using Configuration": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 120,
-        "level": 3,
-        "title": "Using Configuration"
-      }
-    ],
     "Using Discord-Specific Methods": [
       {
         "document": "platform-guide/discord.md",
@@ -10982,12 +11018,28 @@
         "title": "Using Method"
       }
     ],
+    "Using Request Parameters": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 502,
+        "level": 4,
+        "title": "Using Request Parameters"
+      }
+    ],
     "Using Send DSL to Specify Accounts": [
       {
         "document": "platform-guide/yunhu_user.md",
         "line": 486,
         "level": 3,
         "title": "Using Send DSL to Specify Accounts"
+      }
+    ],
+    "Using Transactions": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 184,
+        "level": 3,
+        "title": "Using Transactions"
       }
     ],
     "Using Translations": [
@@ -11020,6 +11072,14 @@
         "line": 116,
         "level": 3,
         "title": "Using in Module Classes"
+      }
+    ],
+    "Using in RouteGroup": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 529,
+        "level": 4,
+        "title": "Using in RouteGroup"
       }
     ],
     "Using in Transactions": [
@@ -11165,7 +11225,7 @@
     "WebHook Connection": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 609,
+        "line": 628,
         "level": 3,
         "title": "WebHook Connection"
       }
@@ -11195,7 +11255,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 575,
+        "line": 594,
         "level": 3,
         "title": "WebSocket Connection"
       },
@@ -11468,12 +11528,12 @@
         "title": "__init__.py"
       }
     ],
-    "`__init__` Considerations": [
+    "`__init__` Notes": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 360,
         "level": 2,
-        "title": "`__init__` Considerations"
+        "title": "`__init__` Notes"
       }
     ],
     "`hasattr` / `dir` Support": [
@@ -11492,10 +11552,18 @@
         "title": "`hasattr` and `dir` Support"
       }
     ],
+    "`self` Field Extended Info": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 868,
+        "level": 3,
+        "title": "`self` Field Extended Info"
+      }
+    ],
     "`t()` Method Details": [
       {
         "document": "advanced/i18n.md",
-        "line": 159,
+        "line": 254,
         "level": 4,
         "title": "`t()` Method Details"
       }
@@ -11716,12 +11784,12 @@
         "title": "meta Event Types"
       }
     ],
-    "metadata Conventions": [
+    "metadata Convention": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 362,
+        "line": 371,
         "level": 4,
-        "title": "metadata Conventions"
+        "title": "metadata Convention"
       }
     ],
     "on_load Method": [

@@ -1,37 +1,37 @@
 # アダプター開発入門
 
-このガイドは、ErisPulse アダプターの開発を開始し、新しいメッセージ プラットフォームに接続するのに役立ちます。
+このガイドは、ErisPulse アダプターを開発し、新しいメッセージプラットフォームを接続する方法を紹介します。
 
 ## アダプターの概要
 
 ### アダプターとは何か
 
-アダプターは ErisPulse と各メッセージ プラットフォーム間のブリッジであり、以下の責務を負います：
+アダプターは、ErisPulse と各メッセージプラットフォームの橋渡し役であり、以下の機能を提供します。
 
-1. **正方向変換**：プラットフォーム イベントを受け取り、OneBot12 標準形式に変換（Converter）
-2. **逆方向変換**：OneBot12 メッセージ セグメントをプラットフォーム API コールに変換（`Raw_ob12`）
-3. 管理とプラットフォームの接続（WebSocket/WebHook）
-4. 統一された SendDSL メッセージ送信インターフェースを提供
+1. **正方向変換**：プラットフォームイベントを受け取り、OneBot12 標準形式に変換する（Converter）
+2. **逆方向変換**：OneBot12 メッセージセグメントをプラットフォーム API 呼び出しに変換する（`Raw_ob12`）
+3. プラットフォームとの接続管理（WebSocket/WebHook）
+4. 統一された SendDSL メッセージ送信インターフェースの提供
 
 ### アダプターのアーキテクチャ
 
 ```
-正方向変換（受信）                        反向変換（送信）
+正方向変換（受信）                        逆方向変換（送信）
 ─────────────                        ─────────────
-プラットフォーム イベント                    モジュールが構築するメッセージ
+プラットフォームイベント                               モジュールが構築したメッセージ
     ↓                                    ↓
 Converter.convert()               Send.Raw_ob12()
     ↓                                    ↓
-OneBot12 標準イベント                    平台ネイティブ API コール
+OneBot12 標準イベント                   プラットフォームネイティブ API 呼び出し
     ↓                                    ↓
-イベントシステム                         標準応答フォーマット
+イベントシステム                             標準レスポンス形式
     ↓
-モジュールの処理
+モジュール処理
 ```
 
 ## ディレクトリ構造
 
-標準的なアダプター パッケージ構造：
+標準的なアダプターパッケージの構造は以下の通りです。
 
 ```
 MyAdapter/
@@ -40,11 +40,11 @@ MyAdapter/
 ├── LICENSE                 # ライセンス
 └── MyAdapter/
     ├── __init__.py          # パッケージエントリ
-    ├── Core.py               # アダプターのメインクラス
+    ├── Core.py               # アダプター主クラス
     └── Converter.py          # イベント変換器
 ```
 
-## クイックスタート
+## 速習
 
 ### 1. プロジェクトの作成
 
@@ -65,7 +65,7 @@ license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
-    "ErisPulse>=2.4.0"  # ErisPulse には aiohttp が組み込まれているため、通常は個別の依存関係は不要です
+    "ErisPulse>=2.4.0"  # ErisPulse は aiohttp を内蔵しているため、通常は個別に依存関係を指定する必要はない
 ]
 
 [project.urls]
@@ -75,63 +75,63 @@ dependencies = [
 "MyAdapter" = "MyAdapter:MyAdapter"
 ```
 
-### 3. アダプターのメインクラスの作成
+### 3. アダプター主クラスの作成
 
-フレームワークは `ConfigClass` / `AccountConfigClass` の宣言的構成管理を提供しており、アダプターは単に構成クラスを宣言するだけで、自動的に構成の読み込み、検証、および構成テンプレートの生成が行われます。
+フレームワークは `ConfigClass` / `AccountConfigClass` を用いた宣言的構成管理を提供しており、アダプターは構成クラスを宣言するだけで自動的にロード、検証、構成テンプレートを生成します。
 
 ```python
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import AdapterConfig
+from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
-class MyAdapterConfig(AdapterConfig):
-    """MyAdapter 配置"""
+class MyAdapterConfig(BaseConfig):
+    """MyAdapter 構成"""
     api_endpoint: str = field(
         default="https://api.example.com",
         metadata={
-            "description": "API アドレス",
+            "description": {"i18n": "my_adapter.api_endpoint", "default": "API アドレス"},
             "required": False,
-            "webui": {"widget": "text", "group": "connection", "order": 1},
+            "ui": {"widget": "text", "group": "connection", "order": 1},
         },
     )
     token: str = field(
         default="",
         metadata={
-            "description": "プラットフォーム トークン",
+            "description": {"i18n": "my_adapter.token", "default": "プラットフォームトークン"},
             "required": True,
             "secret": True,
-            "webui": {"widget": "password", "group": "basic", "order": 2},
+            "ui": {"widget": "password", "group": "basic", "order": 2},
         },
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # 構成クラスを宣言し、フレームワークが自動管理
-
-    # __init__ をオーバーライドする必要はありません！フレームワークが自動処理：
+    ConfigClass = MyAdapterConfig  # 構成クラスを宣言すると、フレームワークが自動的に管理する
+    
+    # __init__ をオーバーライドする必要はない！フレームワークが自動的に処理する：
     # - self.sdk / self.logger が自動設定される
-    # - self.config が自動的に構成をロードされる
-    # - self.Send / self.Request が自動的に初期化される
-
+    # - self.cfg が構成をリアルタイムに読み取る
+    # - self.Send / self.Request が自動初期化される
+    
     def _setup_converter(self):
         from .Converter import MyPlatformConverter
         return MyPlatformConverter()
 ```
 
-> ⚠️ **`__init__` について**：新バージョンでは `BaseAdapter.__init__(self, sdk=None)` は SDK リファレンス、ログ初期化、構成のロードを自動的に処理します。ほとんどのアダプターでは **`__init__` をオーバーライドする必要はありません**。詳細は [__init__ の注意点](#init-注意事项) を参照してください。
+> ⚠️ **__init__ について**：新しいバージョンでは `BaseAdapter.__init__(self, sdk=None)` が SDK リファレンス、ログ初期化、構成の読み込みを自動的に処理する。ほとんどのアダプターは**`__init__` をオーバーライドする必要はない**。詳細は [__init__ 注意事項](#init-注意事项) を参照してください。
 
-> ⚠️ **`super().__init__()` について**：`BaseAdapter.__init__()` は `Send` と `Request` のファクトリインスタンスの作成を担当します。これを忘れると、すべてのメッセージ送信とリクエスト操作で `AttributeError` が発生します。詳細は [__init__ の注意点](#init-注意事项) を参照してください。
+> ⚠️ **super().__init__() について**：`BaseAdapter.__init__()` は `Send` と `Request` ファクトリインスタンスを作成する。これを忘れると、すべてのメッセージ送信とリクエスト操作で `AttributeError` が発生する。詳細は [__init__ 注意事項](#init-注意事项) を参照してください。
 
 ### 4. 必須メソッドの実装
 
 ```python
 class MyAdapter(BaseAdapter):
-    # ... __init__ のコード ...
+    # ... __init__ 代码 ...
     
     async def start(self):
         """アダプターの起動（実装必須）"""
-        # WebSocket または WebHook ルートの登録
+        # WebSocket または WebHook ルートを登録
         router.register_websocket(
             module_name="myplatform",
             path="/ws",
@@ -140,29 +140,29 @@ class MyAdapter(BaseAdapter):
         self.logger.info("アダプターが起動しました")
     
     async def shutdown(self):
-        """アダプターのシャットダウン（実装必須）"""
+        """アダプターの停止（実装必須）"""
         router.unregister_websocket(
             module_name="myplatform",
             path="/ws"
         )
         # 接続とリソースのクリーンアップ
-        self.logger.info("アダプターがシャットダウンしました")
+        self.logger.info("アダプターが停止しました")
     
     async def call_api(self, endpoint: str, **params):
         """プラットフォーム API の呼び出し（実装必須）"""
-        raise NotImplementedError("call_api の実装が必要です")
+        raise NotImplementedError("call_api を実装する必要があります")
 ```
 
-#### メタイベントの主動送信
+#### メタイベントの送信
 
-アダプターはフレームワークが Bot のオンライン状態を追跡できるように、メタイベントを主動的に送信する必要があります。`emit_meta()` を 1 行で実現できます：
+アダプターは Bot のオンライン状態をフレームワークに追跡させるために、メタイベントを送信する必要があります。`emit_meta()` を使用すれば、一行で完了します。
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Bot オンライン
+        # Bot がオンライン
         await self.emit_meta("connect", bot_id, user_name="MyBot")
 
         try:
@@ -174,34 +174,34 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Bot オフライン
+            # Bot がオフライン
             await self.emit_meta("disconnect", bot_id)
 ```
 
-> Bot の状態管理とメタイベントの詳細については、[アダプターのベストプラクティス - Bot 状態管理](best-practices.md#bot-状态管理与-meta-事件) を参照してください。
+> Bot の状態管理とメタイベントの詳細は、[アダプターのベストプラクティス - Bot 状態管理](best-practices.md#bot-状態管理と-meta-イベント) を参照してください。
 
 ### 5. Send クラスの実装
 
-`At`/`AtAll`/`Reply` デコレータはフレームワークの SendDSL ベースクラスに実装されているため、アダプターは `Raw_ob12` と具体的な送信メソッドを実装するだけで済みます。
+`At`/`AtAll`/`Reply` 修飾子は SendDSL 基底クラスに内蔵されているため、アダプターは `Raw_ob12` と具体的な送信メソッドを実装するだけで済みます。
 
-フレームワークは2つの重要な補助メソッドを提供します：
-- `self._apply_modifiers(message)` — メッセージセグメントに `At`/`AtAll`/`Reply` デコレータを自動的にマージ
+フレームワークは以下の重要な補助メソッドを提供します：
+- `self._apply_modifiers(message)` — 修飾子（At/AtAll/Reply）を自動的にメッセージセグメントにマージ
 - `self.send_context` — 送信コンテキスト辞書（`target_type`、`target_id`、`account_id`）を取得
 
 ```python
 import asyncio
 
 class MyAdapter(BaseAdapter):
-    # ... 他のコード ...
+    # ... その他のコード ...
     
     class Send(BaseAdapter.Send):
         
         def Raw_ob12(self, message, **kwargs):
             """
-            OneBot12 形式メッセージの送信（実装必須）
+            OneBot12 形式のメッセージを送信する（実装必須）
 
-            _apply_modifiers を使用してデコレータの状態を自動的にマージし、
-            send_context を使用して送信コンテキストを取得します。
+            _apply_modifiers を使用して修飾子の状態を自動的にマージし、
+            send_context を使用して送信コンテキストを取得する。
             """
             async def _do_send():
                 segments = self._apply_modifiers(message)
@@ -214,33 +214,33 @@ class MyAdapter(BaseAdapter):
             return asyncio.create_task(_do_send())
         
         def Text(self, text: str):
-            """テキストメッセージを送信"""
+            """テキストメッセージを送信する"""
             return self.Raw_ob12([
                 {"type": "text", "data": {"text": text}}
             ])
         
         def Image(self, file):
-            """画像メッセージを送信"""
+            """画像メッセージを送信する"""
             return self.Raw_ob12([
                 {"type": "image", "data": {"file": file}}
             ])
 ```
 
-**メディアクラス送信メソッド（Image/Video/File）の実装のポイント：**
+**メディア送信メソッド（Image/Video/File）の実装ポイント：**
 
-- `file` パラメータは `bytes` バイナリデータと `str` URL の両方をサポートする必要があります
-- URL が渡された場合は、まずファイルをダウンロードしてからプラットフォームにアップロードする必要があります
-- プラットフォームは通常、送信インターフェースを呼び出す前にアップロードインターフェースを呼び出してファイル識別子を取得する必要があります
+- `file` パラメータは `bytes` 二進データと `str` URL の両方をサポートする
+- URL を渡した場合、まずファイルをダウンロードしてからプラットフォームにアップロードする必要がある
+- プラットフォームは通常、まずアップロードインターフェースを呼び出してファイル識別子を取得し、次に送信インターフェースを呼び出す
 
 **`__getattr__` マジックメソッド：**
 
-- メソッド名の大文字小文字を区別しないように実装（`Text`、`text`、`TEXT` すべて呼び出し可能）
-- 未定義のメソッドはエラーを返すのではなく、ヒントメッセージを返すべきです
+- メソッド名の大小文字を区別しない（`Text`、`text`、`TEXT` はすべて呼び出せる）
+- 定義されていないメソッドはエラーではなく、エラーメッセージを返す
 
 **`Raw_ob12` メソッド：**
 
-- OneBot12 標準メッセージ形式をプラットフォーム形式に変換して送信
-- `self._apply_modifiers(message)` を使用して `At`/`AtAll`/`Reply` デコレータを自動的に処理
+- OneBot12 標準メッセージ形式をプラットフォーム形式に変換して送信する
+- `self._apply_modifiers(message)` を使用して At/AtAll/Reply 修飾子を自動的に処理する
 - `**self.send_context` を使用して送信先情報とアカウント情報を渡す
 
 ### 6. 変換器の実装
@@ -252,7 +252,7 @@ import uuid
 
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """プラットフォームネイティブイベントを OneBot12 標準形式に変換"""
+        """プラットフォームネイティブイベントを OneBot12 標準形式に変換する"""
         if not isinstance(raw_event, dict):
             return None
         
@@ -273,7 +273,7 @@ class MyPlatformConverter:
         return onebot_event
     
     def _convert_event_type(self, event_type):
-        """イベントタイプの変換"""
+        """イベントタイプを変換する"""
         type_map = {
             "message": "message",
             "notice": "notice"
@@ -281,25 +281,25 @@ class MyPlatformConverter:
         return type_map.get(event_type, "unknown")
     
     def _convert_detail_type(self, raw_event):
-        """詳細タイプの変換"""
-        return "private"  # 簡略化された例
+        """詳細タイプを変換する"""
+        return "private"  # 簡単化のため
 ```
 
 ### 7. Request クラスの実装（リクエスト操作）
 
-プラットフォームが Bot が意思決定を行う必要のある要求（フレンドリクエスト、グループ招待など）をサポートしている場合、`Request` 内部クラスを実装できます：
+プラットフォームがフレンドリクエスト、グループ招待など Bot が判断を下す必要があるリクエストをサポートしている場合、`Request` 内部クラスを実装できます。
 
 ```python
 from ErisPulse.Core import BaseAdapter, RequestDSL
 
 class MyAdapter(BaseAdapter):
-    # ... Send と他のコード ...
+    # ... Send とその他のコード ...
 
     class Request(RequestDSL):
         """リクエスト操作の実装（フレンドリクエスト、グループ招待など）"""
 
         def accept(self, **kwargs):
-            """リクエストを承認"""
+            """リクエストを承認する"""
             async def _do():
                 result = await self._adapter.call_api(
                     endpoint="/set_request",
@@ -317,7 +317,7 @@ class MyAdapter(BaseAdapter):
             return self._create_task(_do())
 
         def reject(self, **kwargs):
-            """リクエストを拒否"""
+            """リクエストを拒否する"""
             async def _do():
                 result = await self._adapter.call_api(
                     endpoint="/set_request",
@@ -342,13 +342,13 @@ from ErisPulse.Core.Event import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # Event から便利なメソッド経由
+    # Event 便利メソッドを使用
     await event.approve()
     # またはアダプターを直接操作
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> プラットフォームがリクエスト操作をサポートしていない場合は、`Request` 内部クラスを実装する必要はありません。ベースクラスはデフォルトで `retcode=10002`（サポートされていない操作）を返します。詳細は [リクエスト操作仕様](../../standards/request-action-spec.md) を参照してください。
+> プラットフォームがリクエスト操作をサポートしていない場合は、`Request` 内部クラスを実装する必要はありません。基底クラスはデフォルトで `retcode=10002`（サポートされていない操作）を返します。詳細は [リクエスト操作規格](../../standards/request-action-spec.md) を参照してください。
 
 ### 8. パッケージエントリの作成
 
@@ -357,73 +357,90 @@ async def handle_friend_request(event):
 from .Core import MyAdapter
 ```
 
-## `__init__` の注意点
+## `__init__` 注意事項
 
-アダプター開発には `__init__` のオーバーライドに関与する3つのレイヤーがあります。各レイヤーの正しい方法は以下の通りです。
+アダプター開発では、`__init__` のオーバーライドが3つのレベルに関与する場合があります。以下は各レベルの正しい実装方法です。
 
-### 1. BaseAdapter レイヤー（`super().__init__()` の呼び出しが必須）
+### 1. BaseAdapter 層（ほとんどの場合、オーバーライドする必要はない）
 
-`BaseAdapter.__init__(self, sdk=None)` は**`Send` と `Request` のファクトリインスタンスの作成**を担当します。アダプターに独自の `__init__` がある場合、必ず親クラスの初期化を呼び出す必要があります：
+`BaseAdapter.__init__(self, sdk=None)` は `Send` / `Request` ファクトリインスタンスを作成し、以下の処理を自動的に行います：
+
+- `sdk` パラメータを受け取り、`self.sdk`、`self.logger` を設定
+- `ConfigClass` を宣言した場合、`self.cfg` を通じてグローバル構成をリアルタイムに読み取れる
+- `AccountConfigClass` を宣言した場合、`self.accounts` を通じて複数アカウント構成をリアルタイムに読み取れる
+
+**ほとんどの場合、`__init__` をオーバーライドする必要はない**。`ConfigClass` を宣言するだけで済みます：
 
 ```python
 class MyAdapter(BaseAdapter):
+    ConfigClass = MyAdapterConfig  # 構成クラスを宣言すると、フレームワークが自動的に管理
+    
+    async def start(self):
+        cfg = self.cfg  # タイプセーフで、リアルタイムに読み取れる
+        ...
+```
+
+もし本当にカスタム初期化が必要な場合は、`super().__init__(sdk)` を呼び出すだけです：
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyAdapterConfig
+    
     def __init__(self, sdk=None):
-        super().__init__(sdk)  # ← 必須！さもないと Send / Request は初期化されません
+        super().__init__(sdk)  # sdk を渡す
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
 
-**呼び出しを忘れた場合の結果**：`adapter.Send.To(...)` と `adapter.Request(...)` の両方が `AttributeError` を返します。
+### 2. Send 内部クラス（ほとんどの場合、オーバーライドする必要はない）
 
-### 2. Send 内部クラス（ほとんどの場合、オーバーライド不要）
+`SendDSL.__init__` は、連鎖呼び出しの状態を伝達します（対象タイプ、対象ID、アカウントなど）。**ほとんどの場合、メソッド（`Raw_ob12`、`Text` など）をオーバーライドするだけで済み、`__init__` をオーバーライドする必要はない**。
 
-`SendDSL.__init__` はチェイン呼び出しの状態の受け渡し（ターゲットタイプ、ターゲットID、アカウントなど）を担当します。**ほとんどの場合、`__init__` をオーバーライドする必要はなく、メソッドだけをオーバーライドする**（`Raw_ob12`、`Text` など）必要があります。
-
-実際に必要な場合（プラットフォーム固有の状態の初期化など）、**すべてのパラメータを透過する**必要があります：
+もし本当に必要（例えば、プラットフォーム特有の状態の初期化）な場合は、**すべてのパラメータを透過する必要がある**：
 
 ```python
 class MyAdapter(BaseAdapter):
     class Send(BaseAdapter.Send):
         # パラメータ：adapter, target_type, target_id, account_id
         def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
-            super().__init__(adapter, target_type, target_id, account_id)  # ← パラメータを透過する必要があります
-            self._my_state = None  # プラットフォーム固有の初期化
+            super().__init__(adapter, target_type, target_id, account_id)  # ← 必須透過
+            self._my_state = None  # プラットフォーム特有の初期化
 ```
 
-**なぜパラメータを透過する必要があるのか**：チェイン呼び出しの各ステップは `self.__class__(...)` を使用して新しいインスタンスを作成します：
+**なぜ透過する必要があるのか？** 連鎖呼び出しの各ステップは `self.__class__(...)` を通じて新しいインスタンスを作成する：
 
 ```python
 adapter.Send.To("user", "123")               # → Send(adapter, "user", "123", None)
 adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123", "bot1")
 ```
 
-もし `__init__` のシグネチャが一致しないか `super()` が呼ばれていなければ、チェイン呼び出しは中断します。
+もし `__init__` のシグネチャが一致しない、または `super()` を呼び出さない場合、連鎖呼び出しは中断する。
 
-### 3. Request 内部クラス（ほとんどの場合、オーバーライド不要）
+### 3. Request 内部クラス（ほとんどの場合、オーバーライドする必要はない）
 
-Send と同様です。パラメータは `adapter`, `request_id`, `account_id` です：
+Send と同じ。パラメータは `adapter`, `request_id`, `account_id`：
 
 ```python
 class MyAdapter(BaseAdapter):
     class Request(RequestDSL):
         # パラメータ：adapter, request_id, account_id
         def __init__(self, adapter, request_id=None, account_id=None):
-            super().__init__(adapter, request_id, account_id)  # ← パラメータを透過する必要があります
-            self._my_state = None  # プラットフォーム固有の初期化
+            super().__init__(adapter, request_id, account_id)  # ← 必須透過
+            self._my_state = None  # プラットフォーム特有の初期化
 ```
 
 ### まとめ
 
-| レイヤー | いつオーバーライドするか | 必須なこと |
+| 層 | いつオーバーライドするか | 必須のこと |
 |------|------------|-----------|
-| **BaseAdapter** | アダプターの状態を初期化する必要がある場合 | `super().__init__(sdk)` （引数あり） |
+| **BaseAdapter** | カスタム初期化ロジックが必要な場合 | `super().__init__(sdk)` （sdk パラメータを渡す） |
 | **Send 内部クラス** | 送信関連の状態を初期化する必要がある場合 | `super().__init__(adapter, target_type, target_id, account_id)` |
 | **Request 内部クラス** | リクエスト関連の状態を初期化する必要がある場合 | `super().__init__(adapter, request_id, account_id)` |
-| 3つのレイヤー | ほとんどの場合 | **メソッドだけをオーバーライドし、`__init__` には触れない** |
+| 3つの層 | ほとんどの場合 | **ConfigClass を宣言するだけで、`__init__` は触らない** |
 
-## 接続情報とルート発見
+### 9. 接続情報とルート発見
 
-アダプターがルートを登録した後、フレームワークはすべてのルート情報を記録します。ユーザーは以下の API を使用してアダプターの接続アドレスを確認できます：
+アダプターがルートを登録すると、フレームワークはすべてのルート情報を記録する。ユーザーは以下の API を使って、アダプターの接続アドレスを確認できる：
 
 ```python
 from ErisPulse import sdk
@@ -460,13 +477,13 @@ routes = sdk.router.get_module_routes("myplatform")
 #  "websocket": [{"path": "/myplatform/ws", "auth": false}]}
 ```
 
-> **ヒント**：`get_connection_info()` が返す情報は、ユーザーに表示するのに適しています（例：WebUI）。プラットフォーム側のコールバックアドレスや WebSocket 接続アドレスを設定するのに役立ちます。ルート登録時の `module_name` は、ErisPulse に登録されたアダプターの `platform` 名と完全に一致する必要があります。そうしないと、ルート発見は正しく関連付けられません。
+> **ヒント**：`get_connection_info()` が返す情報は、ユーザーに表示するのに適している（例：WebUI）。プラットフォーム側のコールバックアドレスや WebSocket 接続アドレスの設定に役立つ。ルート登録時の `module_name` は、ErisPulse で登録した `platform` 名と完全に一致している必要がある。そうしないと、ルート発見が正しく関連付けられない。
 
-## SSE (Server-Sent Events) 支持
+### 10. SSE (Server-Sent Events) のサポート
 
-ErisPulse はサーバーに依存しない SSE を内蔵しており、モジュールやアダプターは `@sdk.router.sse()` を使用して SSE エンドポイントを登録できます。
+ErisPulse はサーバーに依存しない SSE を内蔵しており、モジュールやアダプターは `@sdk.router.sse()` を使って SSE エンドポイントを登録できる。
 
-### 基本的な使用法
+#### 基本的な使用法
 
 ```python
 import asyncio
@@ -474,7 +491,7 @@ from ErisPulse import sdk
 
 @sdk.router.sse("MyModule", "/events")
 async def event_stream(sse):
-    """SSE イベントを送信"""
+    """SSE イベントを送信する"""
     count = 0
     while not sse.closed:
         await sse.send({"count": count}, event="update")
@@ -482,9 +499,9 @@ async def event_stream(sse):
         await asyncio.sleep(1)
 ```
 
-### リクエストパラメータの使用
+#### リクエストパラメータの使用
 
-ハンドラは `request` パラメータを宣言してクライアントリクエスト情報をアクセスできます：
+ハンドラは `request` パラメータを宣言してクライアントリクエスト情報をアクセスできる：
 
 ```python
 @sdk.router.sse("MyModule", "/events")
@@ -500,16 +517,16 @@ async def event_stream(request, sse):
         await asyncio.sleep(5)
 ```
 
-### SseEmitter API
+#### SseEmitter API
 
 | メソッド | 説明 |
 |------|------|
-| `sse.send(data, event=None, id=None, retry=None)` | SSE イベントを送信。str 以外の data は自動的に JSON シリアライズされる |
-| `sse.close()` | SSE 接続を優雅に閉じる（安全に呼び出せる、複数回呼び出しても問題ない） |
+| `sse.send(data, event=None, id=None, retry=None)` | SSE イベントを送信する。str 以外の data は自動的に JSON シリアライズされる |
+| `sse.close()` | SSE 接続を安全に閉じる（複数回呼び出しても安全） |
 | `sse.closed` | 接続が閉じられているかどうか |
-| `sse.request` | ベースリクエストオブジェクト（クエリパラメータ、headers を読み取るのに使用可能） |
+| `sse.request` | ベースのリクエストオブジェクト（クエリパラメータ、ヘッダーの読み取りに使用可能） |
 
-### RouteGroup での使用
+#### RouteGroup での使用
 
 ```python
 api = sdk.router.group("MyModule", "/api", version="1")
@@ -519,9 +536,9 @@ async def events(sse):
     await sse.send({"msg": "hello"})
 ```
 
-### ルート発見
+#### ルート発見
 
-SSE ルートはルート発見 API に自動的に含まれます：
+SSE ルートは自動的にルート発見 API に含まれる：
 
 ```python
 # list_namespaces は "sse" キーを含む
@@ -537,11 +554,11 @@ sdk.router.get_module_urls("MyModule")
 # {"sse": [{"path": "/MyModule/events", "url": "http://localhost:8080/MyModule/events"}]}
 ```
 
-> **サーバーに依存しない設計**：`SseEmitter` はコールバックを通じて下層 HTTP フレームワークと分離されています。フレームワークは `register_sse()` と `@sse` デコレータを統一された登録エントリとして提供しており、アダプターは下層 HTTP フレームワークに直接依存することなく SSE エンドポイントを実装できます。
+> **サーバーに依存しない設計**：`SseEmitter` はコールバックを通じて下層の HTTP フレームワークと分離されている。フレームワークは `register_sse()` と `@sse` デコレータを統一された登録エントリとして提供しており、アダプターは下層の HTTP フレームワークに直接依存することなく SSE エンドポイントを実装できる。
 
-## 次のステップ
+## 次に進む
 
-- [アダプターの核心概念](core-concepts.md) - アダプターのアーキテクチャを理解する
-- [SendDSL の詳細](send-dsl.md) - メッセージ送信を学ぶ
+- [アダプターのコアコンセプト](core-concepts.md) - アダプターのアーキテクチャを理解する
+- [SendDSL 詳解](send-dsl.md) - メッセージ送信を学ぶ
 - [変換器の実装](converter.md) - イベント変換を理解する
-- [アダプターのベストプラクティス](best-practices.md) - 高品質なアダプターの開発
+- [アダプターのベストプラクティス](best-practices.md) - 高品質なアダプターを開発する
