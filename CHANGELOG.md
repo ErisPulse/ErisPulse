@@ -68,7 +68,52 @@
 > 正式发布
 
 **版本摘要**
-2.5.2 落地配置 Schema 通用化、多语言支持与实时读取：`BaseConfig` 作为通用配置基类；`description` 支持 i18n 多语言字典格式；配置访问统一使用 `self.cfg` 实时读取；`BaseModule` 新增声明式配置支持；Dashboard 新增模块配置视图与 API。
+2.5.2 版本聚焦配置系统全面升级与 Dashboard 模块管理能力增强。配置 Schema 实现通用化（`BaseConfig` 替代 `AdapterConfig`），支持 i18n 多语言描述与实时读取；模块引入声明式配置支持（`ConfigClass` + `self.cfg`）；Dashboard 新增模块配置视图与 API。同时优化了框架内部友好性，新增运行时状态快照导出、全局友好错误提示引擎、事件/命令/存储/路由子系统链路追踪日志（TRACE 级别），以及 Event 包装类增强。
+
+**升级建议**
+- **强烈建议升级**
+- 升级原因：
+  - 配置 Schema 通用化使适配器、模块、外部项目均可统一使用 `BaseConfig`，降低学习成本
+  - 模块支持声明式配置，通过 `self.cfg` 实时读取配置，无需手动管理配置加载
+  - Dashboard 新增模块配置管理界面，方便用户在 WebUI 中动态调整模块配置
+  - 新增全局友好错误提示引擎，在 AttributeError/ImportError/KeyError 等常见错误时自动给出拼写建议，大幅提升调试体验
+  - 新增 `sdk.dump_state()` 运行时状态快照导出，便于问题诊断与调试
+  - 事件系统、命令系统、存储系统、路由系统全面新增 TRACE 级别链路追踪日志，满足深度调试需求
+  - Event 包装类新增 `get_target_id()`、`get_session_id()`、`supports()` 等便捷方法，简化事件处理
+
+**注意事项**
+- ⚠️ **配置访问方式变更**：适配器推荐使用 `self.cfg` 替代 `self.config` 访问配置（`self.config` 作为兼容别名保留，但建议逐步迁移）
+- ⚠️ **适配器配置类变更**：`AdapterConfig` 已由 `BaseConfig` 替代（提供兼容别名，但推荐使用新名称）
+- ⚠️ **metadata 字段变更**：`webui` 键已统一为 `ui`（旧名仍兼容，推荐使用新名称）
+- 模块声明式配置**不提供** `self.config` 属性（避免与现有模块的 `self.config` 冲突），统一使用 `self.cfg`
+- 模块 `ConfigClass` 使用**模块注册名**（`_module_name`）作为配置键，而非类名
+- 新增的 TRACE 级别日志默认不输出，需通过 `logger.set_level("TRACE")` 或配置启用
+- CLI 别名 `ini`（`init` 命令）已移除，请使用 `init` 或 `i18n` 命令
+- CLI 别名 `lr`（`list-remote`）已改为 `lsr`，请更新使用习惯
+- 存储模块修复了 `synchronous=NORMAL` 对事务外操作不生效的问题，升级后数据库连接默认使用 `synchronous=NORMAL` + `journal_mode=WAL`
+
+**主要变更概览**
+
+| 模块 | 变更内容 |
+|------|----------|
+| 配置系统 | `BaseConfig` 通用配置基类，支持 i18n 多语言描述、`extra`/`meta` 扩展字段、`resolve_config_schema()` 解析 |
+| 适配器 | `self.cfg` 实时读取配置，移除缓存加载方法（`_load_config()`/`_load_accounts()`） |
+| 模块 | 声明式配置支持（`ConfigClass` + `self.cfg` + `on_config_update()` 回调） |
+| Dashboard | 新增模块配置页面与 API，配置描述支持 i18n 自动解析 |
+| 友好错误提示 | 全局异常 hook 支持 AttributeError/ImportError/KeyError 拼写建议；`sdk.__getattr__` 增强提示 |
+| 链路追踪 | 事件/命令/存储/路由子系统新增 TRACE 级别日志 |
+| Event 包装类 | 新增 `get_target_id()`、`get_session_id()`、`supports()`、`available_methods()`、`reply()` 增强 |
+| Storage | 新增异步接口（`aget/aset/adelete` 等），修复 `synchronous=NORMAL` 不生效问题 |
+| Docker | 新增健康检查，移除 entrypoint 框架自动更新逻辑（由 Dashboard 热更新替代） |
+| CLI | 拼写建议、`epsdk list` 新增模块脚本入口发现、`--no-uv` 标志、`--here` 标志 |
+
+---
+
+## [2.5.2-dev.6] - 2026/07/06
+> 随正式版发布
+
+**版本摘要**
+2.5.2-dev.6 为正式版发布当天的最终整合版本，包含正式版发布时合并的所有变更。
 
 ### 新增
 
