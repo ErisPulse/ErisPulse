@@ -400,7 +400,7 @@ from ErisPulse.runtime.config_schema import BotAccountConfig
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
-        "description": "Bot Token",
+        "description": {"i18n": "my_adapter.bot_token", "default": "Bot Token"},
         "required": True,
         "secret": True,
     })

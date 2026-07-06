@@ -83,26 +83,26 @@ dependencies = [
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import AdapterConfig
+from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
-class MyAdapterConfig(AdapterConfig):
+class MyAdapterConfig(BaseConfig):
     """MyAdapter 配置"""
     api_endpoint: str = field(
         default="https://api.example.com",
         metadata={
-            "description": "API 地址",
+            "description": {"i18n": "my_adapter.api_endpoint", "default": "API 地址"},
             "required": False,
-            "webui": {"widget": "text", "group": "connection", "order": 1},
+            "ui": {"widget": "text", "group": "connection", "order": 1},
         },
     )
     token: str = field(
         default="",
         metadata={
-            "description": "平台 Token",
+            "description": {"i18n": "my_adapter.token", "default": "平台 Token"},
             "required": True,
             "secret": True,
-            "webui": {"widget": "password", "group": "basic", "order": 2},
+            "ui": {"widget": "password", "group": "basic", "order": 2},
         },
     )
 
@@ -111,7 +111,7 @@ class MyAdapter(BaseAdapter):
     
     # 不需要覆写 __init__！框架自动处理：
     # - self.sdk / self.logger 自动设置
-    # - self.config 自动加载配置
+    # - self.cfg 实时读取配置
     # - self.Send / self.Request 自动初始化
     
     def _setup_converter(self):
@@ -366,8 +366,8 @@ from .Core import MyAdapter
 `BaseAdapter.__init__(self, sdk=None)` 负责创建 `Send` / `Request` 工厂实例，并自动完成以下工作：
 
 - 接受 `sdk` 参数并设置 `self.sdk`、`self.logger`
-- 如果声明了 `ConfigClass`，自动加载全局配置到 `self.config`
-- 如果声明了 `AccountConfigClass`，自动加载多账户配置到 `self.accounts`
+- 如果声明了 `ConfigClass`，可通过 `self.cfg` 实时读取全局配置
+- 如果声明了 `AccountConfigClass`，可通过 `self.accounts` 实时读取多账户配置
 
 **大多数情况下不需要覆写 `__init__`**，只需声明 `ConfigClass` 即可：
 
@@ -376,7 +376,7 @@ class MyAdapter(BaseAdapter):
     ConfigClass = MyAdapterConfig  # 声明后框架自动管理配置
     
     async def start(self):
-        cfg = self.config  # 类型安全，自动加载
+        cfg = self.cfg  # 类型安全，实时读取
         ...
 ```
 
