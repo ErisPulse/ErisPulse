@@ -184,6 +184,9 @@ class ModuleManager(ManagerBase):
                 if module_name in self._module_info:
                     setattr(instance, "moduleInfo", self._module_info[module_name])
 
+                # 注入模块注册名，用于配置键解析等
+                setattr(instance, "_module_name", module_name)
+
                 if hasattr(instance, "on_load"):
                     try:
                         if inspect.iscoroutinefunction(instance.on_load):

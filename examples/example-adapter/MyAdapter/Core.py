@@ -1,27 +1,27 @@
 import asyncio
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter, RequestDSL, SendDSL
-from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
+from ErisPulse.runtime.config_schema import BaseConfig, BotAccountConfig
 
 
 @dataclass
-class MyAdapterConfig(AdapterConfig):
+class MyAdapterConfig(BaseConfig):
     """MyAdapter 全局配置"""
 
     api_endpoint: str = field(
         default="https://api.example.com",
         metadata={
-            "description": "API 地址",
+            "description": {"i18n": "my_adapter.api_endpoint", "default": "API 地址"},
             "required": False,
-            "webui": {"widget": "text", "group": "connection", "order": 1},
+            "ui": {"widget": "text", "group": "connection", "order": 1},
         },
     )
     mode: str = field(
         default="server",
         metadata={
-            "description": "运行模式（server 或 client）",
+            "description": {"i18n": "my_adapter.mode", "default": "运行模式（server 或 client）"},
             "required": False,
-            "webui": {
+            "ui": {
                 "widget": "select",
                 "group": "connection",
                 "order": 2,
@@ -35,10 +35,10 @@ class MyAdapterConfig(AdapterConfig):
     token: str = field(
         default="",
         metadata={
-            "description": "平台 Token",
+            "description": {"i18n": "my_adapter.token", "default": "平台 Token"},
             "required": True,
             "secret": True,
-            "webui": {"widget": "password", "group": "basic", "order": 3},
+            "ui": {"widget": "password", "group": "basic", "order": 3},
         },
     )
 
@@ -50,18 +50,18 @@ class MyBotConfig(BotAccountConfig):
     bot_id: str = field(
         default="",
         metadata={
-            "description": "Bot ID",
+            "description": {"i18n": "my_adapter.bot_id", "default": "Bot ID"},
             "required": True,
-            "webui": {"widget": "text", "group": "basic", "order": 1},
+            "ui": {"widget": "text", "group": "basic", "order": 1},
         },
     )
     bot_token: str = field(
         default="",
         metadata={
-            "description": "Bot Token",
+            "description": {"i18n": "my_adapter.bot_token", "default": "Bot Token"},
             "required": True,
             "secret": True,
-            "webui": {"widget": "password", "group": "basic", "order": 2},
+            "ui": {"widget": "password", "group": "basic", "order": 2},
         },
     )
 
@@ -83,6 +83,13 @@ class MyAdapter(BaseAdapter):
 
     ConfigClass = MyAdapterConfig
     # AccountConfigClass = MyBotConfig  # 多账户时取消注释
+
+    def on_config_update(self, old_config, new_config):
+        """配置热更新回调"""
+        self.logger.info(f"适配器配置已更新")
+        if old_config:
+            self.logger.info(f"旧配置: {old_config}")
+        self.logger.info(f"新配置: {new_config}")
 
     class Request(RequestDSL):
         """
@@ -169,7 +176,7 @@ class MyAdapter(BaseAdapter):
 
         使用 make_response / make_error 构造标准化响应
         """
-        cfg = self.config
+        cfg = self.cfg
         try:
             raise NotImplementedError(f"需要实现平台特定的API调用: {endpoint}")
         except Exception as e:
@@ -177,7 +184,7 @@ class MyAdapter(BaseAdapter):
 
     async def start(self):
         """启动适配器"""
-        cfg = self.config
+        cfg = self.cfg
         self.logger.info(f"启动MyAdapter，配置模式: {cfg.mode}")
 
         # Bot 上线示例（使用 emit_meta 一行完成）

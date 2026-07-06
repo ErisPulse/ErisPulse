@@ -10,12 +10,15 @@ ErisPulse 运行时配置和管理模块
 
 from .config_schema import (
     AdapterConfig,
+    BaseConfig,
     BotAccountConfig,
     I18nConfig,
     dataclass_to_defaults_dict,
     dataclass_to_toml_with_comments,
     dict_to_dataclass,
     get_config_schema,
+    register_config_i18n,
+    resolve_config_schema,
     validate_config,
 )
 from .exceptions import (
@@ -65,8 +68,9 @@ __all__ = [
     "get_event_config",
     "get_framework_config",
     "get_i18n_config",
-    # 适配器配置 Schema
-    "AdapterConfig",
+    # 通用配置 Schema（适配器/模块/外部项目均可使用）
+    "BaseConfig",
+    "AdapterConfig",  # ← BaseConfig 的别名
     "BotAccountConfig",
     "I18nConfig",
     "dataclass_to_toml_with_comments",
@@ -74,4 +78,6 @@ __all__ = [
     "dict_to_dataclass",
     "validate_config",
     "get_config_schema",
+    "register_config_i18n",
+    "resolve_config_schema",
 ]

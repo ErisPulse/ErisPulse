@@ -64,6 +64,63 @@
 
 ---
 
+## [2.5.2] - 2026/07/06
+> 正式发布
+
+**版本摘要**
+2.5.2 落地配置 Schema 通用化、多语言支持与实时读取：`BaseConfig` 作为通用配置基类；`description` 支持 i18n 多语言字典格式；配置访问统一使用 `self.cfg` 实时读取；`BaseModule` 新增声明式配置支持；Dashboard 新增模块配置视图与 API。
+
+### 新增
+
+- @wsu2059q
+  - `runtime/config_schema.py` 配置 Schema 系统重构：
+    - 新增 `BaseConfig` 通用配置基类（`AdapterConfig` 为其兼容别名），适用于适配器、模块、外部项目等任何场景
+    - `description` 支持 i18n 多语言格式：`{"i18n": "key.path", "default": "兜底文本"}`
+    - metadata 中 `webui` 键统一为 `ui`（旧名仍兼容）
+    - 新增 `register_config_i18n()` 便捷函数，自动从配置类提取 i18n 键注册到翻译系统
+    - 新增 `resolve_config_schema()`，返回已解析为当前语言文本的 schema
+    - 移除 `AccountConfig` 别名，多账户配置仅保留 `BotAccountConfig`
+    - 新增 `extra` 和 `meta` 冗余扩展字段，透传到 schema 输出
+  - `Core/Bases/adapter.py` 配置访问重构：
+    - 新增 `self.cfg` 属性作为推荐配置访问方式（实时读取，每次访问从存储拉取最新值）
+    - `self.config` 作为 `self.cfg` 的兼容别名保留
+    - `accounts` 属性同样改为实时读取
+    - 新增 `_ensure_config_exists()` / `_ensure_accounts_exists()` 负责首次模板生成
+    - 移除 `_load_config()` / `_load_accounts()` 缓存加载方法
+  - `Core/Bases/module.py` 新增声明式配置支持：
+    - 新增 `ConfigClass` 类属性、`self.cfg` 属性（实时读取）、`on_config_update()` 回调
+    - 模块 **不提供** `self.config` 属性，避免与现有模块的 `self.config` 冲突
+    - `_get_config_key()` 使用模块注册名（`_module_name`）而非类名
+  - `Core/module.py` `ModuleManager.load()` 注入 `_module_name` 到模块实例
+
+- @wsu2059q
+  - `ErisPulse-Dashboard/ErisPulse_Dashboard/Core.py` Dashboard 后端更新：
+    - 适配器/账户配置 schema 使用 `resolve_config_schema()` 自动解析 i18n 描述
+    - 简化配置热更新回调逻辑（适配器配置现为实时读取）
+    - 移除 `_reload_adapter_if_running()` 中对已删除的 `_load_accounts()` 的调用
+    - 新增模块配置 API：`_get_module_config_info()`、`GET/PUT /api/module/{name}/config`
+    - `_api_modules` 模块列表新增 `has_config` 字段，适配器列表新增 `has_config` / `has_accounts`
+  - `ErisPulse-Dashboard/ErisPulse_Dashboard/static/dash.html` / `dash.js` 前端：
+    - 新增「模块配置」页面（齿轮图标），筛选有 schema 的模块，复用适配器配置渲染
+    - 新增 5 语言 i18n 键（`module_config` / `module_config_desc` / `module_config_empty` / `save_module_config` / `module_config_saved`）
+    - 将 `module-config` 注册到 `go()` / `toggleLang()` / `_PAGE_CAPABILITY_MAP`
+
+### 变更
+
+- @wsu2059q
+  - `CLI/commands/create.py` 适配器模板：`AdapterConfig` → `BaseConfig`、`self.config` → `self.cfg`、`webui` → `ui`、修复 `{name_lower}` 变量缺失
+  - `CLI/commands/create.py` 模块模板：重构为声明式配置（`ConfigClass` + `BaseConfig`），移除 `self.config = self._load_config()`
+
+### 文档
+
+- @wsu2059q
+  - 更新适配器/模块的 developer-guide 文档（`core-concepts.md`、`getting-started.md`、`best-practices.md`）
+  - `advanced/i18n.md` 新增「配置字段多语言」章节
+  - 更新示例适配器和示例模块（声明式配置 + `on_config_update` 日志输出 + i18n description）
+  - 新增 `AGENTS.md` 智能体开发规则
+
+---
+
 ## [2.5.2-dev.5] - 2026/07/05
 > 开发版本
 
