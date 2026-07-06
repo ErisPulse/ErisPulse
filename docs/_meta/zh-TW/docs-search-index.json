@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1297,
+  "total_keywords": 1302,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -153,7 +153,7 @@
     "1. 建立 Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 163,
+        "line": 202,
         "level": 3,
         "title": "1. 建立 Dockerfile"
       }
@@ -526,12 +526,12 @@
         "title": "2. 帳戶選擇機制"
       }
     ],
-    "2. 建立 GitHub Actions 工作流": [
+    "2. 建立 GitHub Actions 工作流程": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 191,
+        "line": 230,
         "level": 3,
-        "title": "2. 建立 GitHub Actions 工作流"
+        "title": "2. 建立 GitHub Actions 工作流程"
       }
     ],
     "2. 建立 pyproject.toml": [
@@ -1039,7 +1039,7 @@
     "3. 觸發建構": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 260,
+        "line": 299,
         "level": 3,
         "title": "3. 觸發建構"
       }
@@ -1220,12 +1220,12 @@
         "title": "4. 模組"
       }
     ],
-    "4. 管理已發布模組": [
+    "4. 管理已發布的模組": [
       {
         "document": "developer-guide/publishing.md",
         "line": 106,
         "level": 3,
-        "title": "4. 管理已發布模組"
+        "title": "4. 管理已發布的模組"
       }
     ],
     "4. 組合使用": [
@@ -1252,12 +1252,12 @@
         "title": "4. 訊息段標準"
       }
     ],
-    "4. 設定鏡像為公開": [
+    "4. 設置映像為公開": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 275,
+        "line": 314,
         "level": 3,
-        "title": "4. 設定鏡像為公開"
+        "title": "4. 設置映像為公開"
       }
     ],
     "4. 連線資訊揭露": [
@@ -1324,6 +1324,14 @@
         "title": "5. Bot 狀態查詢"
       }
     ],
+    "5. 使用者使用": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 321,
+        "level": 3,
+        "title": "5. 使用者使用"
+      }
+    ],
     "5. 實現 Send 類": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -1354,14 +1362,6 @@
         "line": 179,
         "level": 2,
         "title": "5. 未知事件處理"
-      }
-    ],
-    "5. 用戶使用": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 282,
-        "level": 3,
-        "title": "5. 用戶使用"
       }
     ],
     "5. 自動類型推斷": [
@@ -2178,20 +2178,20 @@
         "title": "Docker 方式"
       }
     ],
+    "Docker 映像 vs PyPI 發布": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 376,
+        "level": 3,
+        "title": "Docker 映像 vs PyPI 發布"
+      }
+    ],
     "Docker 部署（推薦）": [
       {
         "document": "user-guide/deployment.md",
         "line": 5,
         "level": 2,
         "title": "Docker 部署（推薦）"
-      }
-    ],
-    "Docker 鏡像 vs PyPI 發布": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 339,
-        "level": 3,
-        "title": "Docker 鏡像 vs PyPI 發布"
       }
     ],
     "ErisPulse PlatformFeatures 文檔": [
@@ -3665,7 +3665,7 @@
     "一個套件可以註冊多個模組嗎？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 139,
+        "line": 178,
         "level": 3,
         "title": "一個套件可以註冊多個模組嗎？"
       }
@@ -4330,6 +4330,14 @@
         "line": 367,
         "level": 3,
         "title": "代理配置"
+      }
+    ],
+    "代碼品質": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 127,
+        "level": 3,
+        "title": "代碼品質"
       }
     ],
     "伺服器配置": [
@@ -5147,7 +5155,7 @@
     "同時發布到 Docker Hub": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 316,
+        "line": 353,
         "level": 3,
         "title": "同時發布到 Docker Hub"
       }
@@ -5902,12 +5910,12 @@
         "title": "失敗回應範例"
       }
     ],
-    "套件名稱必須以 `ErisPulse-` 開頭嗎？": [
+    "套件名必須以 `ErisPulse-` 開頭嗎？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 135,
+        "line": 174,
         "level": 3,
-        "title": "套件名稱必須以 `ErisPulse-` 開頭嗎？"
+        "title": "套件名必須以 `ErisPulse-` 開頭嗎？"
       }
     ],
     "套件管理命令": [
@@ -6214,12 +6222,12 @@
         "title": "富媒體訊息轉換示例"
       }
     ],
-    "審核需要多長時間？": [
+    "審核需要多久時間？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 149,
+        "line": 188,
         "level": 3,
-        "title": "審核需要多長時間？"
+        "title": "審核需要多久時間？"
       }
     ],
     "專案初始化": [
@@ -6473,7 +6481,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 133,
+        "line": 172,
         "level": 2,
         "title": "常見問題"
       },
@@ -7362,6 +7370,14 @@
         "line": 288,
         "level": 2,
         "title": "效能最佳化"
+      }
+    ],
+    "文件": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 148,
+        "level": 3,
+        "title": "文件"
       }
     ],
     "文件列表": [
@@ -8986,6 +9002,12 @@
         "line": 50,
         "level": 4,
         "title": "發布"
+      },
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 155,
+        "level": 3,
+        "title": "發布"
       }
     ],
     "發布你的模組": [
@@ -8994,6 +9016,14 @@
         "line": 74,
         "level": 2,
         "title": "發布你的模組"
+      }
+    ],
+    "發布前檢查清單": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 123,
+        "level": 2,
+        "title": "發布前檢查清單"
       }
     ],
     "發布指南": [
@@ -9206,6 +9236,14 @@
         "line": 32,
         "level": 2,
         "title": "目錄結構"
+      }
+    ],
+    "相容性": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 135,
+        "level": 3,
+        "title": "相容性"
       }
     ],
     "相關文件": [
@@ -10762,12 +10800,12 @@
         "title": "透過 Dashboard 安裝模組"
       }
     ],
-    "透過 Docker 鏡像分發應用": [
+    "透過 Docker 映像分發應用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 153,
+        "line": 192,
         "level": 2,
-        "title": "透過 Docker 鏡像分發應用"
+        "title": "透過 Docker 映像分發應用"
       }
     ],
     "透過環境變數切換": [
@@ -11007,7 +11045,7 @@
     "適用場景": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 157,
+        "line": 196,
         "level": 3,
         "title": "適用場景"
       }
@@ -11210,6 +11248,14 @@
         "line": 62,
         "level": 2,
         "title": "配合 Send 使用"
+      }
+    ],
+    "配置": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 142,
+        "level": 3,
+        "title": "配置"
       }
     ],
     "配置延遲載入": [
@@ -11605,7 +11651,7 @@
     "開發模式測試": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 123,
+        "line": 162,
         "level": 2,
         "title": "開發模式測試"
       }

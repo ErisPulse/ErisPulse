@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1321,
+  "total_keywords": 1324,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -243,7 +243,7 @@
     "1. Создание Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 163,
+        "line": 202,
         "level": 3,
         "title": "1. Создание Dockerfile"
       }
@@ -606,12 +606,12 @@
         "title": "2. Приём событий (POST)"
       }
     ],
-    "2. Публикация на PyPI": [
+    "2. Публикация в PyPI": [
       {
         "document": "developer-guide/publishing.md",
         "line": 75,
         "level": 3,
-        "title": "2. Публикация на PyPI"
+        "title": "2. Публикация в PyPI"
       }
     ],
     "2. Рациональное использование ленивой загрузки": [
@@ -638,12 +638,12 @@
         "title": "2. Создание pyproject.toml"
       }
     ],
-    "2. Создание workflow в GitHub Actions": [
+    "2. Создание рабочего процесса GitHub Actions": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 191,
+        "line": 230,
         "level": 3,
-        "title": "2. Создание workflow в GitHub Actions"
+        "title": "2. Создание рабочего процесса GitHub Actions"
       }
     ],
     "2. Стандартизация временных меток": [
@@ -905,7 +905,7 @@
     "3. Запуск сборки": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 260,
+        "line": 299,
         "level": 3,
         "title": "3. Запуск сборки"
       }
@@ -926,12 +926,12 @@
         "title": "3. Карта соответствия типов платформ"
       }
     ],
-    "3. Отправка в магазин модулей": [
+    "3. Отправка в модуль магазина": [
       {
         "document": "developer-guide/publishing.md",
         "line": 90,
         "level": 3,
-        "title": "3. Отправка в магазин модулей"
+        "title": "3. Отправка в модуль магазина"
       }
     ],
     "3. Отсутствие поля `self`": [
@@ -1206,14 +1206,6 @@
         "title": "4. Реализация обязательных методов"
       }
     ],
-    "4. Сделание образа публичным": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 275,
-        "level": 3,
-        "title": "4. Сделание образа публичным"
-      }
-    ],
     "4. Спецификация именования параметров": [
       {
         "document": "standards/send-method-spec.md",
@@ -1252,6 +1244,14 @@
         "line": 106,
         "level": 3,
         "title": "4. Управление опубликованными модулями"
+      }
+    ],
+    "4. Установка образа как публичного": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 314,
+        "level": 3,
+        "title": "4. Установка образа как публичного"
       }
     ],
     "4.1 Регистрация пользовательского типа": [
@@ -1318,12 +1318,12 @@
         "title": "5. Запрос состояния бота"
       }
     ],
-    "5. Использование пользователем": [
+    "5. Использование пользователями": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 282,
+        "line": 321,
         "level": 3,
-        "title": "5. Использование пользователем"
+        "title": "5. Использование пользователями"
       }
     ],
     "5. Обработка неизвестных событий": [
@@ -1930,6 +1930,14 @@
         "line": 102,
         "level": 4,
         "title": "Discord"
+      }
+    ],
+    "Docker-образ vs Публикация в PyPI": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 376,
+        "level": 3,
+        "title": "Docker-образ vs Публикация в PyPI"
       }
     ],
     "ErisPulse Спецификация операций запросов": [
@@ -2724,18 +2732,16 @@
     ],
     "Адаптер": [
       {
+        "document": "developer-guide/publishing.md",
+        "line": 60,
+        "level": 4,
+        "title": "Адаптер"
+      },
+      {
         "document": "terminology.md",
         "line": 17,
         "level": 3,
         "title": "Адаптер"
-      }
-    ],
-    "Адаптер (Adapter)": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 60,
-        "level": 4,
-        "title": "Адаптер (Adapter)"
       }
     ],
     "Адаптер WeChatMp (微信公众号适配器) — Документация по платформенным особенностям": [
@@ -3608,6 +3614,12 @@
     ],
     "Документация": [
       {
+        "document": "developer-guide/publishing.md",
+        "line": 148,
+        "level": 3,
+        "title": "Документация"
+      },
+      {
         "document": "styleguide/README.md",
         "line": 5,
         "level": 2,
@@ -4210,14 +4222,6 @@
         "title": "Импорт"
       }
     ],
-    "Имя пакола должно начинаться с `ErisPulse-`?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 135,
-        "level": 3,
-        "title": "Имя пакола должно начинаться с `ErisPulse-`?"
-      }
-    ],
     "Инициализационный процесс": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4666,14 +4670,6 @@
         "title": "Исходящий протокол"
       }
     ],
-    "Как долго длится проверка?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 149,
-        "level": 3,
-        "title": "Как долго длится проверка?"
-      }
-    ],
     "Как изменить префикс команды?": [
       {
         "document": "getting-started/first-bot.md",
@@ -4712,6 +4708,14 @@
         "line": 32,
         "level": 2,
         "title": "Картирование типов"
+      }
+    ],
+    "Качество кода": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 127,
+        "level": 3,
+        "title": "Качество кода"
       }
     ],
     "Класс LazyModule": [
@@ -5668,18 +5672,16 @@
     ],
     "Модуль": [
       {
+        "document": "developer-guide/publishing.md",
+        "line": 42,
+        "level": 4,
+        "title": "Модуль"
+      },
+      {
         "document": "terminology.md",
         "line": 22,
         "level": 3,
         "title": "Модуль"
-      }
-    ],
-    "Модуль (Module)": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 42,
-        "level": 4,
-        "title": "Модуль (Module)"
       }
     ],
     "Модуль Adapter": [
@@ -5746,12 +5748,12 @@
         "title": "Модуль Storage"
       }
     ],
-    "Можно ли зарегистрировать несколько модулей в одном пакете?": [
+    "Можно ли в одном пакете зарегистрировать несколько модулей?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 139,
+        "line": 178,
         "level": 3,
-        "title": "Можно ли зарегистрировать несколько модулей в одном пакете?"
+        "title": "Можно ли в одном пакете зарегистрировать несколько модулей?"
       }
     ],
     "Мониторинг жизненных цикл событий": [
@@ -5792,6 +5794,14 @@
         "line": 7,
         "level": 2,
         "title": "Навигация по документации"
+      }
+    ],
+    "Настройка": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 142,
+        "level": 3,
+        "title": "Настройка"
       }
     ],
     "Настройка отложенной загрузки": [
@@ -6042,12 +6052,12 @@
         "title": "Обновление модулей"
       }
     ],
-    "Обновление опубликованных модулей": [
+    "Обновление опубликованного модуля": [
       {
         "document": "developer-guide/publishing.md",
         "line": 115,
         "level": 2,
-        "title": "Обновление опубликованных модулей"
+        "title": "Обновление опубликованного модуля"
       }
     ],
     "Обновление токена": [
@@ -6430,6 +6440,14 @@
         "title": "Обязанности конвертера"
       }
     ],
+    "Обязательно ли имя пакета должно начинаться с `ErisPulse-`?": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 174,
+        "level": 3,
+        "title": "Обязательно ли имя пакета должно начинаться с `ErisPulse-`?"
+      }
+    ],
     "Обязательные поля": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -6444,6 +6462,14 @@
         "line": 228,
         "level": 2,
         "title": "Ограничение скорости (Rate Limiting)"
+      }
+    ],
+    "Одновременная публикация в Docker Hub": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 353,
+        "level": 3,
+        "title": "Одновременная публикация в Docker Hub"
       }
     ],
     "Ожидание любого события (wait_for)": [
@@ -7748,12 +7774,12 @@
         "title": "Поддерживаемые исходные типы событий"
       }
     ],
-    "Поддерживаемые типы (Submission types)": [
+    "Поддерживаемые типы выпусков": [
       {
         "document": "developer-guide/publishing.md",
         "line": 27,
         "level": 3,
-        "title": "Поддерживаемые типы (Submission types)"
+        "title": "Поддерживаемые типы выпусков"
       }
     ],
     "Поддерживаемые типы отправки сообщений": [
@@ -8946,6 +8972,12 @@
         "line": 51,
         "level": 4,
         "title": "Публикация"
+      },
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 155,
+        "level": 3,
+        "title": "Публикация"
       }
     ],
     "Публикация вашего модуля": [
@@ -8954,14 +8986,6 @@
         "line": 74,
         "level": 2,
         "title": "Публикация вашего модуля"
-      }
-    ],
-    "Публикация одновременно в Docker Hub": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 314,
-        "level": 3,
-        "title": "Публикация одновременно в Docker Hub"
       }
     ],
     "Путь к обучению": [
@@ -8994,6 +9018,14 @@
         "line": 231,
         "level": 2,
         "title": "Развертывание нескольких экземпляров"
+      }
+    ],
+    "Развертывание приложения через Docker-образ": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 192,
+        "level": 2,
+        "title": "Развертывание приложения через Docker-образ"
       }
     ],
     "Развертывание с Docker (рекомендуется)": [
@@ -9052,14 +9084,6 @@
         "line": 28,
         "level": 3,
         "title": "Расположение общих настроек"
-      }
-    ],
-    "Распространение приложений через образ Docker": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 153,
-        "level": 2,
-        "title": "Распространение приложений через образ Docker"
       }
     ],
     "Расширение методов событий платформы": [
@@ -10008,6 +10032,14 @@
         "title": "Скачивание и хранение изображений"
       }
     ],
+    "Сколько времени занимает проверка?": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 188,
+        "level": 3,
+        "title": "Сколько времени занимает проверка?"
+      }
+    ],
     "Скрипт для одной команды (Рекомендуется)": [
       {
         "document": "quick-start.md",
@@ -10302,6 +10334,14 @@
         "line": 146,
         "level": 3,
         "title": "События уведомлений (Notice Events)"
+      }
+    ],
+    "Совместимость": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 135,
+        "level": 3,
+        "title": "Совместимость"
       }
     ],
     "Совместимость со старой конфигурацией": [
@@ -10903,7 +10943,7 @@
     "Сценарии использования": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 157,
+        "line": 196,
         "level": 3,
         "title": "Сценарии использования"
       }
@@ -10979,7 +11019,7 @@
     "Тестирование в режиме разработки": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 123,
+        "line": 162,
         "level": 2,
         "title": "Тестирование в режиме разработки"
       }
@@ -11839,7 +11879,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 133,
+        "line": 172,
         "level": 2,
         "title": "Часто задаваемые вопросы"
       },
@@ -11888,6 +11928,14 @@
         "line": 114,
         "level": 2,
         "title": "Чек-лист качества"
+      }
+    ],
+    "Чек-лист перед публикацией": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 123,
+        "level": 2,
+        "title": "Чек-лист перед публикацией"
       }
     ],
     "Чек-лист соответствия стандартам": [
