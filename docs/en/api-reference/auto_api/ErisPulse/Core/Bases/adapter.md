@@ -382,7 +382,7 @@ ErisPulse 适配器基础模块
 > 4. 通过on装饰器注册事件处理器
 > 5. 支持OneBot12协议的事件处理
 > 6. 通过 ConfigClass / AccountConfigClass 声明配置类，框架自动管理配置
-> 7. 通过 self.config / self.accounts 访问类型安全的配置对象
+> 7. 通过 self.cfg / self.accounts 访问类型安全的配置对象（实时读取）
 > 8. 通过 self.emit_meta() 发送 meta 事件
 > 9. 通过 self.make_response() / self.make_error() 构造标准化响应
 
@@ -507,22 +507,54 @@ ErisPulse 适配器基础模块
 ---
 
 
+##### `cfg()`
+
+类型安全的配置对象（实时读取）
+
+每次访问都从配置存储读取最新值，确保用户修改配置后立即生效。
+返回的 dataclass 实例是只读快照，修改它不会回写存储。
+
+:return: AdapterConfig / BaseConfig 实例
+**异常**: `AttributeError` - 未声明 ConfigClass 时抛出
+
+> **提示**
+> 推荐使用 ``self.cfg`` 而非 ``self.config``，
+> 后者已弃用且可能被子类属性覆盖产生冲突。
+
+---
+
+
+##### `cfg(value)`
+
+设置配置实例，同时同步写入配置存储（保证实时性）
+
+---
+
+
 ##### `config()`
 
-类型安全的配置对象
+``self.cfg`` 的兼容别名
 
-:return: AdapterConfig 实例
-**异常**: `AttributeError` - 未声明 ConfigClass 时抛出
+功能与 ``self.cfg`` 完全一致，推荐新代码使用 ``self.cfg``。
 
 ---
 
 
 ##### `accounts()`
 
-类型安全的账户配置字典 {name: config_instance}
+类型安全的账户配置字典（实时读取）
 
-:return: 账户配置字典
+每次访问都从配置存储读取最新值，确保用户修改账户配置后立即生效。
+
+:return: 账户配置字典 {name: config_instance}
 **异常**: `AttributeError` - 未声明 AccountConfigClass 时抛出
+
+---
+
+
+##### `accounts(value)`
+
+设置账户配置字典，同时同步写入配置存储
 
 ---
 
@@ -561,29 +593,20 @@ ErisPulse 适配器基础模块
 ---
 
 
-##### `_load_config()`
+##### `_ensure_config_exists()`
 
-从 TOML 加载全局配置
+确保全局配置模板存在，不存在则生成默认配置
 
-1. 读取 {ConfigKey} 键
-2. 如果不存在，用 dataclass 默认值生成模板并写入
-3. 用 dict_to_dataclass() 转为类型安全的实例
-
-:return: AdapterConfig 实例
+> **内部方法**
 
 ---
 
 
-##### `_load_accounts()`
+##### `_ensure_accounts_exist()`
 
-从 TOML 加载多账户配置
+确保多账户配置模板存在，不存在则生成默认账户配置
 
-1. 读取 {ConfigKey}.accounts 键
-2. 如果不存在，创建包含一个 default 账户的模板
-3. 对每个账户做 validate_config() 校验
-4. 跳过校验失败的账户并记录错误
-
-:return: 账户配置字典 {name: config_instance}
+> **内部方法**
 
 ---
 

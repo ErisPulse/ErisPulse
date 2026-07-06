@@ -3473,7 +3473,54 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ## 配置管理
 
-### 读取配置
+### 声明式配置（推荐）
+
+从 v2.5.2 起，模块可通过 `ConfigClass` 声明配置类，与适配器使用同一套配置 Schema 系统。配置通过 `self.cfg` 实时读取，修改后立即生效：
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_module.api_key", "default": "API 密钥"},
+            "required": True,
+            "secret": True,
+            "ui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
+    timeout: int = field(
+        default=30,
+        metadata={
+            "description": {"i18n": "my_module.timeout", "default": "超时时间（秒）"},
+            "ui": {"widget": "number", "group": "advanced", "order": 2},
+        },
+    )
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    async def on_load(self, event):
+        self.logger.info("模块已加载")
+
+    async def on_unload(self, event):
+        pass
+
+    async def do_something(self):
+        cfg = self.cfg  # 实时读取，类型安全
+        api_key = cfg.api_key
+        timeout = cfg.timeout
+```
+
+`BaseConfig` 是通用配置基类，适用于适配器、模块、外部项目等任何场景。配置字段支持 i18n 多语言描述（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
+
+### 手动读取配置（兼容方式）
+
+如果不使用声明式配置，也可以直接读写配置存储：
 
 ```python
 def _load_config(self):
@@ -3488,13 +3535,7 @@ def _load_config(self):
     return config
 ```
 
-### 使用配置
-
-```python
-async def do_something(self):
-    api_key = self.config.get("api_key")
-    timeout = self.config.get("timeout", 30)
-```
+> **注意**：手动方式下请避免使用 `self.config` 作为属性名，推荐使用 `self.cfg` 或自定义名称，以免与框架未来的属性冲突。
 
 ## 存储系统
 
@@ -3996,20 +4037,33 @@ name = "ErisPulse-ModuleName"  # 使用 ErisPulse- 前缀
 
 ### 3. 清晰的配置管理
 
+推荐使用声明式配置（`ConfigClass` + `BaseConfig`），获得类型安全、自动模板生成、WebUI 表单支持等能力：
+
 ```python
-def _load_config(self):
-    config = self.sdk.config.getConfig("MyModule")
-    if not config:
-        default_config = {
-            "api_url": "https://api.example.com",
-            "timeout": 30,
-            "cache_ttl": 3600
-        }
-        self.sdk.config.setConfig("MyModule", default_config)
-        self.logger.warning("已创建默认配置")
-        return default_config
-    return config
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_url: str = field(default="https://api.example.com", metadata={
+        "description": {"i18n": "my_module.api_url", "default": "API 地址"},
+    })
+    timeout: int = field(default=30, metadata={
+        "description": {"i18n": "my_module.timeout", "default": "超时时间（秒）"},
+    })
+    cache_ttl: int = field(default=3600, metadata={
+        "description": {"i18n": "my_module.cache_ttl", "default": "缓存存活时间（秒）"},
+    })
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    async def do_something(self):
+        cfg = self.cfg  # 类型安全，实时读取
+        await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
+
+也可以继续使用手动方式读写配置存储（见[模块核心概念](core-concepts.md#配置管理)）。
 
 ## 异步编程
 
@@ -4472,26 +4526,26 @@ dependencies = [
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import AdapterConfig
+from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
-class MyAdapterConfig(AdapterConfig):
+class MyAdapterConfig(BaseConfig):
     """MyAdapter 配置"""
     api_endpoint: str = field(
         default="https://api.example.com",
         metadata={
-            "description": "API 地址",
+            "description": {"i18n": "my_adapter.api_endpoint", "default": "API 地址"},
             "required": False,
-            "webui": {"widget": "text", "group": "connection", "order": 1},
+            "ui": {"widget": "text", "group": "connection", "order": 1},
         },
     )
     token: str = field(
         default="",
         metadata={
-            "description": "平台 Token",
+            "description": {"i18n": "my_adapter.token", "default": "平台 Token"},
             "required": True,
             "secret": True,
-            "webui": {"widget": "password", "group": "basic", "order": 2},
+            "ui": {"widget": "password", "group": "basic", "order": 2},
         },
     )
 
@@ -4500,7 +4554,7 @@ class MyAdapter(BaseAdapter):
     
     # 不需要覆写 __init__！框架自动处理：
     # - self.sdk / self.logger 自动设置
-    # - self.config 自动加载配置
+    # - self.cfg 实时读取配置
     # - self.Send / self.Request 自动初始化
     
     def _setup_converter(self):
@@ -4755,8 +4809,8 @@ from .Core import MyAdapter
 `BaseAdapter.__init__(self, sdk=None)` 负责创建 `Send` / `Request` 工厂实例，并自动完成以下工作：
 
 - 接受 `sdk` 参数并设置 `self.sdk`、`self.logger`
-- 如果声明了 `ConfigClass`，自动加载全局配置到 `self.config`
-- 如果声明了 `AccountConfigClass`，自动加载多账户配置到 `self.accounts`
+- 如果声明了 `ConfigClass`，可通过 `self.cfg` 实时读取全局配置
+- 如果声明了 `AccountConfigClass`，可通过 `self.accounts` 实时读取多账户配置
 
 **大多数情况下不需要覆写 `__init__`**，只需声明 `ConfigClass` 即可：
 
@@ -4765,7 +4819,7 @@ class MyAdapter(BaseAdapter):
     ConfigClass = MyAdapterConfig  # 声明后框架自动管理配置
     
     async def start(self):
-        cfg = self.config  # 类型安全，自动加载
+        cfg = self.cfg  # 类型安全，实时读取
         ...
 ```
 
@@ -5218,18 +5272,18 @@ await adapter.Send.To("user", "123").Text("Hello")
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
+from ErisPulse.runtime.config_schema import BaseConfig, BotAccountConfig
 
 @dataclass
-class MyConfig(AdapterConfig):
+class MyConfig(BaseConfig):
     """适配器配置（声明后框架自动管理）"""
     token: str = field(
         default="",
         metadata={
-            "description": "Bot Token",
+            "description": {"i18n": "my_adapter.token", "default": "Bot Token"},
             "required": True,
             "secret": True,
-            "webui": {"widget": "password", "group": "basic", "order": 1},
+            "ui": {"widget": "password", "group": "basic", "order": 1},
         },
     )
 
@@ -5238,12 +5292,12 @@ class MyAdapter(BaseAdapter):
     
     # 无需覆写 __init__，框架自动处理：
     # - self.sdk, self.logger
-    # - self.config（类型安全的配置实例）
+    # - self.cfg（类型安全的配置实例，实时读取）
     # - self.Send, self.Request
     
     async def start(self):
         """启动适配器（必须实现）"""
-        cfg = self.config  # 自动加载的类型安全配置
+        cfg = self.cfg  # 自动加载的类型安全配置
         pass
     
     async def shutdown(self):
@@ -5263,26 +5317,26 @@ class MyAdapter(BaseAdapter):
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import AdapterConfig
+from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
-class TelegramConfig(AdapterConfig):
+class TelegramConfig(BaseConfig):
     token: str = field(default="", metadata={
-        "description": "Bot Token",
+        "description": {"i18n": "telegram.token", "default": "Bot Token"},
         "required": True,
         "secret": True,
-        "webui": {"widget": "password", "group": "basic", "order": 1},
+        "ui": {"widget": "password", "group": "basic", "order": 1},
     })
     proxy: str = field(default="", metadata={
-        "description": "代理地址",
-        "webui": {"widget": "text", "group": "advanced", "order": 10},
+        "description": {"i18n": "telegram.proxy", "default": "代理地址"},
+        "ui": {"widget": "text", "group": "advanced", "order": 10},
     })
 
 class TelegramAdapter(BaseAdapter):
     ConfigClass = TelegramConfig
     
     async def start(self):
-        cfg = self.config  # 类型安全，自动加载
+        cfg = self.cfg  # 类型安全，实时读取
         if not cfg.token:
             raise ValueError("未配置 Token")
         await self._connect(cfg.token, proxy=cfg.proxy)
@@ -5299,13 +5353,22 @@ from ErisPulse.runtime.config_schema import BotAccountConfig
 # 大多数适配器：bot_id 运行时自动获取，无需配置
 @dataclass
 class MyBotConfig(BotAccountConfig):
-    token: str = field(default="", metadata={"description": "Token", "required": True})
+    token: str = field(default="", metadata={
+        "description": {"i18n": "my_adapter.bot_token", "default": "Token"},
+        "required": True,
+    })
 
 # 如果登录时无法获取 bot_id，可以让用户在配置中填写
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
-    bot_id: str = field(default="", metadata={"description": "机器人ID", "required": True})
-    token: str = field(default="", metadata={"description": "Token", "required": True})
+    bot_id: str = field(default="", metadata={
+        "description": {"i18n": "yunhu.bot_id", "default": "机器人ID"},
+        "required": True,
+    })
+    token: str = field(default="", metadata={
+        "description": {"i18n": "yunhu.token", "default": "Token"},
+        "required": True,
+    })
 
 class MyAdapter(BaseAdapter):
     AccountConfigClass = MyBotConfig
@@ -5322,18 +5385,26 @@ class MyAdapter(BaseAdapter):
 
 ```python
 metadata = {
-    "description": str,       # 字段描述（TOML注释 + WebUI label）
+    "description": str | dict,  # 字段描述（支持 i18n）
     "required": bool,         # 是否必填（校验 + WebUI 必填标记）
     "secret": bool,           # 是否敏感（WebUI 显示为 ***，日志中脱敏）
-    "webui": {
+    "ui": {                   # WebUI 控件配置（旧名 "webui" 仍兼容）
         "widget": str,        # 控件类型: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # 分组: "basic" | "advanced" | "connection" 等
         "order": int,         # 排序权重（越小越靠前）
         "options": list,      # select 控件的可选项 [{label, value}]
         "placeholder": str,   # 输入框占位符
-    }
+    },
+    "extra": dict,            # 额外扩展字段（透传到 schema）
 }
 ```
+
+`description` 支持两种格式：
+
+- **普通字符串**（向后兼容）：`"Bot Token"`
+- **i18n 字典**（推荐，支持多语言）：`{"i18n": "my_adapter.token", "default": "Bot Token"}`
+
+使用 i18n 字典时，需提前将翻译键注册到 i18n 系统（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
 
 #### 账户解析
 
@@ -5367,8 +5438,10 @@ class MyAdapter(BaseAdapter):
 
 1. **SDK 引用**：设置 `self.sdk`、`self.logger`
 2. **Send/Request 工厂**：创建 `self.Send` 和 `self.Request`
-3. **配置加载**：如果声明了 `ConfigClass`，自动加载到 `self.config`
-4. **账户加载**：如果声明了 `AccountConfigClass`，自动加载到 `self.accounts`
+3. **配置模板**：如果声明了 `ConfigClass`，自动生成默认配置模板（首次）
+4. **账户模板**：如果声明了 `AccountConfigClass`，自动生成默认账户模板（首次）
+
+配置通过 `self.cfg` / `self.accounts` 实时读取（每次访问都从配置存储读取最新值）。`self.config` 作为 `self.cfg` 的兼容别名仍可使用。
 
 大多数适配器无需覆写 `__init__`。如需自定义初始化：
 
@@ -6556,7 +6629,7 @@ from ErisPulse.runtime.config_schema import BotAccountConfig
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
-        "description": "Bot Token",
+        "description": {"i18n": "my_adapter.bot_token", "default": "Bot Token"},
         "required": True,
         "secret": True,
     })
@@ -13266,17 +13339,36 @@ i18n.t("my_module.unknown_key", default="默认文本")
 ### 在模块类中使用
 
 ```python
+from dataclasses import dataclass, field
 from ErisPulse import i18n
 from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    welcome_msg: str = field(
+        default="欢迎",
+        metadata={
+            "description": {"i18n": "my_module.welcome_msg", "default": "欢迎消息"},
+            "ui": {"widget": "text", "group": "basic", "order": 1},
+        },
+    )
 
 class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
     async def on_load(self, event):
+        # 实时读取配置（每次访问都反映最新值）
+        self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
-    
+
     @command("hello")
     async def hello_handler(self, event):
         name = event.get_user_nickname() or "friend"
         await event.reply(i18n.t("my_module.hello", name=name))
+
+    async def on_unload(self, event):
+        pass
 ```
 
 ### 卸载翻译
@@ -13287,6 +13379,82 @@ i18n.unregister_domain("my_module")
 ```
 
 ---
+
+## 配置字段多语言
+
+从 v2.5.2 起，配置 Schema 支持 i18n。适配器/模块的配置字段描述（`description`）可以引用 i18n 键，WebUI 和其他消费者会自动根据当前语言解析为对应文本。
+
+### 声明 i18n 描述
+
+在 `field(metadata=...)` 中，`description` 可以是：
+
+- **普通字符串**（向后兼容）：`"平台 Token"`
+- **i18n 字典**（推荐）：`{"i18n": "my_adapter.token", "default": "平台 Token"}`
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyAdapterConfig(BaseConfig):
+    token: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_adapter.token", "default": "平台 Token"},
+            "required": True,
+            "secret": True,
+            "ui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
+```
+
+`default` 是兜底文本——当翻译未注册或查找失败时显示。
+
+### 注册配置翻译
+
+配置字段的 i18n 键和普通翻译键一样，使用 `i18n.register()` 注册：
+
+```python
+from ErisPulse import i18n
+
+# 注册中文（与 default 一致，也可以不同）
+i18n.register("zh-CN", {
+    "my_adapter.token": "平台 Token",
+}, domain="my_adapter")
+
+# 注册英文
+i18n.register("en", {
+    "my_adapter.token": "Platform Token",
+}, domain="my_adapter")
+```
+
+也提供了便捷函数 `register_config_i18n()`，可自动从配置类提取键并注册：
+
+```python
+from ErisPulse.runtime.config_schema import register_config_i18n
+
+# 自动提取 description.default 作为 zh-CN 翻译
+register_config_i18n(MyAdapterConfig, "zh-CN")
+
+# 手动提供英文翻译
+register_config_i18n(MyAdapterConfig, "en", {
+    "my_adapter.token": "Platform Token",
+})
+```
+
+### WebUI 如何消费
+
+`get_config_schema()` 返回的 schema 中，`description` 字段会原样透传 i18n 字典。WebUI 前端可以根据当前语言调用 `i18n.t()` 解析。
+
+如果需要服务端直接解析为字符串（如返回给不支持 i18n 的前端），使用 `resolve_config_schema()`：
+
+```python
+from ErisPulse.runtime.config_schema import resolve_config_schema
+
+# description 已解析为当前语言的字符串
+schema = resolve_config_schema(MyAdapterConfig)
+print(schema["fields"]["token"]["description"])  # "平台 Token" 或 "Platform Token"
+```
 
 ## API 参考
 
