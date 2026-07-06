@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1285,
+  "total_keywords": 1288,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -67,7 +67,7 @@
     "1. Create Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 162,
+        "line": 201,
         "level": 3,
         "title": "1. Create Dockerfile"
       }
@@ -505,7 +505,7 @@
     "2. Create GitHub Actions Workflow": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 190,
+        "line": 229,
         "level": 3,
         "title": "2. Create GitHub Actions Workflow"
       }
@@ -1061,7 +1061,7 @@
     "3. Trigger Build": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 259,
+        "line": 298,
         "level": 3,
         "title": "3. Trigger Build"
       }
@@ -1250,12 +1250,12 @@
         "title": "4. Parameter Naming Specifications"
       }
     ],
-    "4. Set Image as Public": [
+    "4. Set Image to Public": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 274,
+        "line": 313,
         "level": 3,
-        "title": "4. Set Image as Public"
+        "title": "4. Set Image to Public"
       }
     ],
     "4. Using Non-standard Values for detail_type": [
@@ -1389,7 +1389,7 @@
     "5. User Usage": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 281,
+        "line": 320,
         "level": 3,
         "title": "5. User Usage"
       }
@@ -2311,7 +2311,7 @@
     "Applicable Scenarios": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 156,
+        "line": 195,
         "level": 3,
         "title": "Applicable Scenarios"
       }
@@ -2958,12 +2958,12 @@
         "title": "Branches and Jumps"
       }
     ],
-    "Browse and Discover": [
+    "Browsing and Discovery": [
       {
         "document": "developer-guide/publishing.md",
         "line": 9,
         "level": 3,
-        "title": "Browse and Discover"
+        "title": "Browsing and Discovery"
       }
     ],
     "Bug Tracker": [
@@ -3055,7 +3055,7 @@
     "Can a single package register multiple modules?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 138,
+        "line": 177,
         "level": 3,
         "title": "Can a single package register multiple modules?"
       }
@@ -3360,6 +3360,14 @@
         "title": "Code Explanation"
       }
     ],
+    "Code Quality": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 126,
+        "level": 3,
+        "title": "Code Quality"
+      }
+    ],
     "Collect Form": [
       {
         "document": "getting-started/event-handling.md",
@@ -3580,14 +3588,6 @@
         "title": "Common Pitfalls"
       }
     ],
-    "Common Questions": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 132,
-        "level": 2,
-        "title": "Common Questions"
-      }
-    ],
     "Common Task Examples": [
       {
         "document": "getting-started/common-tasks.md",
@@ -3602,6 +3602,14 @@
         "line": 89,
         "level": 2,
         "title": "Common Usage"
+      }
+    ],
+    "Compatibility": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 134,
+        "level": 3,
+        "title": "Compatibility"
       }
     ],
     "Complete API Reference": [
@@ -3705,6 +3713,12 @@
       }
     ],
     "Configuration": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 141,
+        "level": 3,
+        "title": "Configuration"
+      },
       {
         "document": "platform-guide/ideaura.md",
         "line": 324,
@@ -4485,7 +4499,7 @@
     "Development Mode Testing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 122,
+        "line": 161,
         "level": 2,
         "title": "Development Mode Testing"
       }
@@ -4573,7 +4587,7 @@
     "Distribute Applications via Docker Images": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 152,
+        "line": 191,
         "level": 2,
         "title": "Distribute Applications via Docker Images"
       }
@@ -4586,14 +4600,6 @@
         "title": "Do Not Wait for Result"
       }
     ],
-    "Do package names have to start with `ErisPulse-`?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 134,
-        "level": 3,
-        "title": "Do package names have to start with `ErisPulse-`?"
-      }
-    ],
     "Docker Deployment (Recommended)": [
       {
         "document": "user-guide/deployment.md",
@@ -4602,12 +4608,12 @@
         "title": "Docker Deployment (Recommended)"
       }
     ],
-    "Docker Images vs PyPI Publishing": [
+    "Docker Image vs PyPI Publishing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 338,
+        "line": 375,
         "level": 3,
-        "title": "Docker Images vs PyPI Publishing"
+        "title": "Docker Image vs PyPI Publishing"
       }
     ],
     "Docker Method": [
@@ -4688,6 +4694,14 @@
         "line": 14,
         "level": 2,
         "title": "Document Structure Standards"
+      }
+    ],
+    "Documentation": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 147,
+        "level": 3,
+        "title": "Documentation"
       }
     ],
     "Documentation Information": [
@@ -5552,6 +5566,12 @@
         "line": 109,
         "level": 2,
         "title": "Frequently Asked Questions"
+      },
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 171,
+        "level": 2,
+        "title": "Frequently Asked Questions"
       }
     ],
     "Friend Add": [
@@ -6061,7 +6081,7 @@
     "How long does the review take?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 148,
+        "line": 187,
         "level": 3,
         "title": "How long does the review take?"
       }
@@ -7760,6 +7780,14 @@
         "title": "Multilingual Coverage"
       }
     ],
+    "Must the package name start with `ErisPulse-`?": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 173,
+        "level": 3,
+        "title": "Must the package name start with `ErisPulse-`?"
+      }
+    ],
     "Naming Conventions": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -8426,6 +8454,14 @@
         "title": "Platform-specific Responses"
       }
     ],
+    "Pre-Publish Checklist": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 122,
+        "level": 2,
+        "title": "Pre-Publish Checklist"
+      }
+    ],
     "Prerequisites": [
       {
         "document": "advanced/README.md",
@@ -8528,12 +8564,12 @@
         "title": "Proxy Configuration"
       }
     ],
-    "Publish to Docker Hub Simultaneously": [
+    "Publish to Docker Hub simultaneously": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 315,
+        "line": 352,
         "level": 3,
-        "title": "Publish to Docker Hub Simultaneously"
+        "title": "Publish to Docker Hub simultaneously"
       }
     ],
     "Publishing": [
@@ -8542,6 +8578,20 @@
         "line": 50,
         "level": 4,
         "title": "Publishing"
+      },
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 154,
+        "level": 3,
+        "title": "Publishing"
+      }
+    ],
+    "Publishing & Module Store Guide": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 1,
+        "level": 1,
+        "title": "Publishing & Module Store Guide"
       }
     ],
     "Publishing Guide": [
@@ -8558,14 +8608,6 @@
         "line": 74,
         "level": 2,
         "title": "Publishing Your Module"
-      }
-    ],
-    "Publishing and Module Store Guide": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 1,
-        "level": 1,
-        "title": "Publishing and Module Store Guide"
       }
     ],
     "Purpose": [
@@ -8702,12 +8744,12 @@
         "title": "Quick Initialization"
       }
     ],
-    "Quick Publishing": [
+    "Quick Publish": [
       {
         "document": "developer-guide/publishing.md",
         "line": 34,
         "level": 2,
-        "title": "Quick Publishing"
+        "title": "Quick Publish"
       }
     ],
     "Quick Reference": [

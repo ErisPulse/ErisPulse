@@ -3414,6 +3414,45 @@ pip install ErisPulse-MyModule
 
 用户通过 `epsdk upgrade MyModule` 即可升级。
 
+## 发布前检查清单
+
+在推送到 PyPI 之前，请逐项确认以下内容：
+
+### 代码质量
+
+- [ ] 所有公开 API 有类型注解（函数签名和返回值）
+- [ ] 所有公开方法有文档字符串（`"""..."""` 格式，包含 `:param` / `:return` / `:raises`）
+- [ ] 通过 `ruff check`（无警告）
+- [ ] 测试覆盖率 ≥ 80%
+- [ ] 通过 `pytest` 全部用例
+
+### 兼容性
+
+- [ ] `pyproject.toml` 声明了最低 SDK 版本：`dependencies = ["ErisPulse>=x.y.z"]`
+- [ ] 测试了 Python 3.10 / 3.11 / 3.12 / 3.13
+- [ ] 测试了目标操作系统（Windows / Linux / macOS，如适用）
+- [ ] 无循环导入依赖
+
+### 配置
+
+- [ ] 如果使用声明式配置（`ConfigClass` + `BaseConfig` / `BotAccountConfig`），配置字段有 `description`（推荐 i18n 格式）和 `ui` 元数据
+- [ ] 如果注册了 i18n 翻译键，已覆盖所有 5 种语言（zh-CN / zh-TW / en / ja / ru）
+- [ ] 敏感字段标记了 `secret=True`
+
+### 文档
+
+- [ ] `README.md` 有安装说明和基本使用示例
+- [ ] `README.md` 说明了配置方式（配置文件示例 + 环境变量）
+- [ ] `CHANGELOG.md` 记录了所有变更
+- [ ] 适配器更新了平台特性文档（支持的 Send 类型、事件类型等）
+
+### 发布
+
+- [ ] `pyproject.toml` 版本号已更新
+- [ ] 构建通过：`python -m build`
+- [ ] 已推送到 PyPI：`python -m twine upload dist/*`
+- [ ] 安装验证通过：`pip install ErisPulse-xxx && epsdk run`
+
 ## 开发模式测试
 
 在正式发布前，可以使用可编辑模式在本地测试：
