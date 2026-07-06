@@ -532,7 +532,7 @@ class BaseAdapter(ABC):
     4. 通过on装饰器注册事件处理器
     5. 支持OneBot12协议的事件处理
     6. 通过 ConfigClass / AccountConfigClass 声明配置类，框架自动管理配置
-    7. 通过 self.config / self.accounts 访问类型安全的配置对象
+    7. 通过 self.cfg / self.accounts 访问类型安全的配置对象（实时读取）
     8. 通过 self.emit_meta() 发送 meta 事件
     9. 通过 self.make_response() / self.make_error() 构造标准化响应
     {!--< /tips >!--}
@@ -672,10 +672,11 @@ class BaseAdapter(ABC):
         self._config_instance = None
         self._accounts_data = None
 
+        # 初始化时确保配置模板存在（不缓存实例，config 属性会实时读取）
         if self.ConfigClass is not None:
-            self._config_instance = self._load_config()
+            self._ensure_config_exists()
         if self.AccountConfigClass is not None:
-            self._accounts_data = self._load_accounts()
+            self._ensure_accounts_exist()
 
     @abstractmethod
     async def call_api(self, endpoint: str, **params: Any) -> Any:
@@ -708,40 +709,115 @@ class BaseAdapter(ABC):
         raise NotImplementedError("适配器必须实现shutdown方法")
 
     @property
-    def config(self):
+    def cfg(self):
         """
-        类型安全的配置对象
+        类型安全的配置对象（实时读取）
 
-        :return: AdapterConfig 实例
+        每次访问都从配置存储读取最新值，确保用户修改配置后立即生效。
+        返回的 dataclass 实例是只读快照，修改它不会回写存储。
+
+        :return: AdapterConfig / BaseConfig 实例
         :raises AttributeError: 未声明 ConfigClass 时抛出
+
+        {!--< tips >!--}
+        推荐使用 ``self.cfg`` 而非 ``self.config``，
+        后者已弃用且可能被子类属性覆盖产生冲突。
+        {!--< /tips >!--}
         """
-        if self._config_instance is None:
+        if self.ConfigClass is None:
             raise AttributeError(
                 "未声明 ConfigClass，请设置 MyAdapter.ConfigClass = MyConfig"
             )
-        return self._config_instance
+        from ...runtime.config_schema import dict_to_dataclass
+        from ..config import config as config_mgr
+
+        data = config_mgr.getConfig(self._get_config_key())
+        if data is None:
+            # 配置不存在时生成默认模板后重试
+            self._ensure_config_exists()
+            data = config_mgr.getConfig(self._get_config_key()) or {}
+        return dict_to_dataclass(self.ConfigClass, data)
+
+    @cfg.setter
+    def cfg(self, value):
+        """设置配置实例，同时同步写入配置存储（保证实时性）"""
+        self._config_instance = value
+        if value is not None:
+            from dataclasses import asdict
+            from ..config import config as config_mgr
+
+            try:
+                config_mgr.setConfig(self._get_config_key(), asdict(value))
+            except Exception:
+                pass
+
+    @property
+    def config(self):
+        """
+        ``self.cfg`` 的兼容别名
+
+        功能与 ``self.cfg`` 完全一致，推荐新代码使用 ``self.cfg``。
+        """
+        return self.cfg
 
     @config.setter
     def config(self, value):
-        self._config_instance = value
+        self.cfg = value
 
     @property
     def accounts(self) -> dict:
         """
-        类型安全的账户配置字典 {name: config_instance}
+        类型安全的账户配置字典（实时读取）
 
-        :return: 账户配置字典
+        每次访问都从配置存储读取最新值，确保用户修改账户配置后立即生效。
+
+        :return: 账户配置字典 {name: config_instance}
         :raises AttributeError: 未声明 AccountConfigClass 时抛出
         """
-        if self._accounts_data is None:
+        if self.AccountConfigClass is None:
             raise AttributeError(
                 "未声明 AccountConfigClass，请设置 MyAdapter.AccountConfigClass = MyBotConfig"
             )
-        return self._accounts_data
+        from ...runtime.config_schema import dict_to_dataclass, validate_config
+        from ..config import config as config_mgr
+
+        key = f"{self._get_config_key()}.accounts"
+        data = config_mgr.getConfig(key)
+        if data is None:
+            # 配置不存在时生成默认账户模板后重试
+            self._ensure_accounts_exist()
+            data = config_mgr.getConfig(key) or {}
+
+        accounts = {}
+        for name, account_data in data.items():
+            if not isinstance(account_data, dict):
+                continue
+            instance = dict_to_dataclass(self.AccountConfigClass, account_data)
+            errors = validate_config(instance)
+            if errors:
+                self._get_logger().error(
+                    f"账户 {name} 配置校验失败: {', '.join(errors)}"
+                )
+                continue
+            accounts[name] = instance
+
+        return accounts
 
     @accounts.setter
     def accounts(self, value):
+        """设置账户配置字典，同时同步写入配置存储"""
         self._accounts_data = value
+        if value is not None:
+            from dataclasses import asdict
+            from ..config import config as config_mgr
+
+            key = f"{self._get_config_key()}.accounts"
+            try:
+                config_mgr.setConfig(
+                    key, {name: asdict(cfg) for name, cfg in value.items()}
+                )
+            except Exception:
+                pass
 
     @property
     def enabled_accounts(self) -> dict:
@@ -782,20 +858,18 @@ class BaseAdapter(ABC):
 
             return logging.getLogger(self.__class__.__name__)
 
-    def _load_config(self):
+    def _ensure_config_exists(self):
         """
-        从 TOML 加载全局配置
+        确保全局配置模板存在，不存在则生成默认配置
 
-        1. 读取 {ConfigKey} 键
-        2. 如果不存在，用 dataclass 默认值生成模板并写入
-        3. 用 dict_to_dataclass() 转为类型安全的实例
-
-        :return: AdapterConfig 实例
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
         """
+        if self.ConfigClass is None:
+            return
         from ...runtime.config_schema import (
             dataclass_to_defaults_dict,
             dataclass_to_toml_with_comments,
-            dict_to_dataclass,
         )
         from ..config import config as config_mgr
 
@@ -808,24 +882,16 @@ class BaseAdapter(ABC):
             config_mgr.setConfig(key, data, immediate=True)
             self._get_logger().info(f"已生成 {key} 默认配置模板:\n{toml_str}")
 
-        return dict_to_dataclass(self.ConfigClass, data)
-
-    def _load_accounts(self) -> dict:
+    def _ensure_accounts_exist(self):
         """
-        从 TOML 加载多账户配置
+        确保多账户配置模板存在，不存在则生成默认账户配置
 
-        1. 读取 {ConfigKey}.accounts 键
-        2. 如果不存在，创建包含一个 default 账户的模板
-        3. 对每个账户做 validate_config() 校验
-        4. 跳过校验失败的账户并记录错误
-
-        :return: 账户配置字典 {name: config_instance}
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
         """
-        from ...runtime.config_schema import (
-            dataclass_to_defaults_dict,
-            dict_to_dataclass,
-            validate_config,
-        )
+        if self.AccountConfigClass is None:
+            return
+        from ...runtime.config_schema import dataclass_to_defaults_dict
         from ..config import config as config_mgr
 
         key = f"{self._get_config_key()}.accounts"
@@ -836,21 +902,6 @@ class BaseAdapter(ABC):
             data = {"default": default_account}
             config_mgr.setConfig(key, data, immediate=True)
             self._get_logger().info(f"已生成 {key} 默认账户配置")
-
-        accounts = {}
-        for name, account_data in data.items():
-            if not isinstance(account_data, dict):
-                continue
-            instance = dict_to_dataclass(self.AccountConfigClass, account_data)
-            errors = validate_config(instance)
-            if errors:
-                self._get_logger().error(
-                    f"账户 {name} 配置校验失败: {', '.join(errors)}"
-                )
-                continue
-            accounts[name] = instance
-
-        return accounts
 
     def _resolve_account(self, account_id: str | None = None) -> tuple:
         """

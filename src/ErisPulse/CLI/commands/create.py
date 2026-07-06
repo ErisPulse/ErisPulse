@@ -62,8 +62,21 @@ dependencies = [
 _MODULE_INIT = """from .Core import Main
 """
 
-_MODULE_CORE = """from ErisPulse.Core.Bases import BaseModule
+_MODULE_CORE = """from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.Event import command, message, notice
+from ErisPulse.runtime.config_schema import BaseConfig
+
+
+@dataclass
+class {name}Config(BaseConfig):
+    \"\"\"{name} 模块配置\"\"\"
+    enabled: bool = field(
+        default=True,
+        metadata={{
+            \"description\": \"是否启用模块\",
+        }},
+    )
 
 
 class Main(BaseModule):
@@ -73,16 +86,17 @@ class Main(BaseModule):
     继承自BaseModule基类，实现了标准化的模块生命周期管理和事件处理
     \"\"\"
 
+    ConfigClass = {name}Config
+
     def __init__(self, sdk=None):
         from ErisPulse import sdk as _sdk
         self.sdk = _sdk if sdk is None else sdk
-        self.logger = self.sdk.logger.get_child("{name}")
+        self.logger = self.sdk.logger.get_child(\"{name}\")
         self.storage = self.sdk.storage
         self.adapter = self.sdk.adapter
         self.client = self.sdk.client
 
-        self.logger.info("{name} 初始化完成")
-        self.config = self._load_config()
+        self.logger.info(\"{name} 初始化完成\")
 
     @staticmethod
     def get_load_strategy():
@@ -101,7 +115,7 @@ class Main(BaseModule):
         \"\"\"
         await self._register_commands()
         await self._register_message_handlers()
-        self.logger.info(f"模块已加载: {{event}}")
+        self.logger.info(f\"模块已加载: {{event}}\")
         return True
 
     async def on_unload(self, event: dict) -> bool:
@@ -111,29 +125,18 @@ class Main(BaseModule):
         :param event: 事件内容
         :return: 处理结果
         \"\"\"
-        self.logger.info(f"模块已卸载: {{event}}")
+        self.logger.info(f\"模块已卸载: {{event}}\")
         return True
 
-    def _load_config(self):
-        config = self.sdk.config.getConfig("{name}")
-        if not config:
-            default_config = {{
-                "enabled": True,
-            }}
-            self.sdk.config.setConfig("{name}", default_config)
-            self.logger.warning("未找到模块配置, 已创建默认配置到config.toml")
-            return default_config
-        return config
-
     async def _register_commands(self):
-        @command("hello", help="发送问候消息")
+        @command(\"hello\", help=\"发送问候消息\")
         async def hello_command(event):
-            await event.reply("Hello from {name}!")
+            await event.reply(\"Hello from {name}!\")
 
     async def _register_message_handlers(self):
         @message.on_private_message()
         async def private_message_handler(event):
-            self.logger.info(f"收到私聊消息: {{event.get_text()}}")
+            self.logger.info(f\"收到私聊消息: {{event.get_text()}}\")
 
         @message.on_group_message()
         async def group_message_handler(event):
@@ -141,7 +144,7 @@ class Main(BaseModule):
 
         @notice.on_friend_add()
         async def friend_add_handler(event):
-            self.logger.info(f"新好友添加: {{event.get_user_nickname()}}")
+            self.logger.info(f\"新好友添加: {{event.get_user_nickname()}}\")
 """
 
 _ADAPTER_PYPROJECT = """[project]
@@ -176,20 +179,29 @@ _ADAPTER_CORE = """import asyncio
 import json
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import AdapterConfig
+from ErisPulse.runtime.config_schema import BaseConfig
 from ErisPulse.Core import router
 
 
 @dataclass
-class {name}Config(AdapterConfig):
+class {name}Config(BaseConfig):
     \"\"\"{name} 适配器配置\"\"\"
     endpoint: str = field(
         default="https://api.example.com",
-        metadata={{"description": "平台 API 地址"}},
+        metadata={{
+            "description": {{"i18n": "adapter.{name}.endpoint", "default": "平台 API 地址"}},
+            "required": False,
+            "ui": {{"widget": "text", "group": "connection", "order": 1}},
+        }},
     )
     token: str = field(
         default="",
-        metadata={{"description": "平台 Token", "required": True, "secret": True}},
+        metadata={{
+            "description": {{"i18n": "adapter.{name}.token", "default": "平台 Token"}},
+            "required": True,
+            "secret": True,
+            "ui": {{"widget": "password", "group": "basic", "order": 2}},
+        }},
     )
 
 
@@ -284,7 +296,7 @@ class {name}(BaseAdapter):
 
     async def start(self):
         \"\"\"启动适配器\"\"\"
-        cfg = self.config
+        cfg = self.cfg
         self.logger.info(f"启动 {{cfg.endpoint}} 适配器")
 
         router.register_websocket(
@@ -322,7 +334,7 @@ class {name}(BaseAdapter):
         \"\"\"调用平台 API\"\"\"
         from ErisPulse.Core import client
 
-        cfg = self.config
+        cfg = self.cfg
         headers = {{"Authorization": "Bearer " + cfg.token}}
         url = cfg.endpoint + endpoint
 

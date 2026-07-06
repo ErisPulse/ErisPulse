@@ -261,18 +261,18 @@ await adapter.Send.To("user", "123").Text("Hello")
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
+from ErisPulse.runtime.config_schema import BaseConfig, BotAccountConfig
 
 @dataclass
-class MyConfig(AdapterConfig):
+class MyConfig(BaseConfig):
     """适配器配置（声明后框架自动管理）"""
     token: str = field(
         default="",
         metadata={
-            "description": "Bot Token",
+            "description": {"i18n": "my_adapter.token", "default": "Bot Token"},
             "required": True,
             "secret": True,
-            "webui": {"widget": "password", "group": "basic", "order": 1},
+            "ui": {"widget": "password", "group": "basic", "order": 1},
         },
     )
 
@@ -281,12 +281,12 @@ class MyAdapter(BaseAdapter):
     
     # 无需覆写 __init__，框架自动处理：
     # - self.sdk, self.logger
-    # - self.config（类型安全的配置实例）
+    # - self.cfg（类型安全的配置实例，实时读取）
     # - self.Send, self.Request
     
     async def start(self):
         """启动适配器（必须实现）"""
-        cfg = self.config  # 自动加载的类型安全配置
+        cfg = self.cfg  # 自动加载的类型安全配置
         pass
     
     async def shutdown(self):
@@ -306,26 +306,26 @@ class MyAdapter(BaseAdapter):
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import AdapterConfig
+from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
-class TelegramConfig(AdapterConfig):
+class TelegramConfig(BaseConfig):
     token: str = field(default="", metadata={
-        "description": "Bot Token",
+        "description": {"i18n": "telegram.token", "default": "Bot Token"},
         "required": True,
         "secret": True,
-        "webui": {"widget": "password", "group": "basic", "order": 1},
+        "ui": {"widget": "password", "group": "basic", "order": 1},
     })
     proxy: str = field(default="", metadata={
-        "description": "代理地址",
-        "webui": {"widget": "text", "group": "advanced", "order": 10},
+        "description": {"i18n": "telegram.proxy", "default": "代理地址"},
+        "ui": {"widget": "text", "group": "advanced", "order": 10},
     })
 
 class TelegramAdapter(BaseAdapter):
     ConfigClass = TelegramConfig
     
     async def start(self):
-        cfg = self.config  # 类型安全，自动加载
+        cfg = self.cfg  # 类型安全，实时读取
         if not cfg.token:
             raise ValueError("未配置 Token")
         await self._connect(cfg.token, proxy=cfg.proxy)
@@ -342,13 +342,22 @@ from ErisPulse.runtime.config_schema import BotAccountConfig
 # 大多数适配器：bot_id 运行时自动获取，无需配置
 @dataclass
 class MyBotConfig(BotAccountConfig):
-    token: str = field(default="", metadata={"description": "Token", "required": True})
+    token: str = field(default="", metadata={
+        "description": {"i18n": "my_adapter.bot_token", "default": "Token"},
+        "required": True,
+    })
 
 # 如果登录时无法获取 bot_id，可以让用户在配置中填写
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
-    bot_id: str = field(default="", metadata={"description": "机器人ID", "required": True})
-    token: str = field(default="", metadata={"description": "Token", "required": True})
+    bot_id: str = field(default="", metadata={
+        "description": {"i18n": "yunhu.bot_id", "default": "机器人ID"},
+        "required": True,
+    })
+    token: str = field(default="", metadata={
+        "description": {"i18n": "yunhu.token", "default": "Token"},
+        "required": True,
+    })
 
 class MyAdapter(BaseAdapter):
     AccountConfigClass = MyBotConfig
@@ -365,18 +374,26 @@ class MyAdapter(BaseAdapter):
 
 ```python
 metadata = {
-    "description": str,       # 字段描述（TOML注释 + WebUI label）
+    "description": str | dict,  # 字段描述（支持 i18n）
     "required": bool,         # 是否必填（校验 + WebUI 必填标记）
     "secret": bool,           # 是否敏感（WebUI 显示为 ***，日志中脱敏）
-    "webui": {
+    "ui": {                   # WebUI 控件配置（旧名 "webui" 仍兼容）
         "widget": str,        # 控件类型: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # 分组: "basic" | "advanced" | "connection" 等
         "order": int,         # 排序权重（越小越靠前）
         "options": list,      # select 控件的可选项 [{label, value}]
         "placeholder": str,   # 输入框占位符
-    }
+    },
+    "extra": dict,            # 额外扩展字段（透传到 schema）
 }
 ```
+
+`description` 支持两种格式：
+
+- **普通字符串**（向后兼容）：`"Bot Token"`
+- **i18n 字典**（推荐，支持多语言）：`{"i18n": "my_adapter.token", "default": "Bot Token"}`
+
+使用 i18n 字典时，需提前将翻译键注册到 i18n 系统（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
 
 #### 账户解析
 
@@ -410,8 +427,10 @@ class MyAdapter(BaseAdapter):
 
 1. **SDK 引用**：设置 `self.sdk`、`self.logger`
 2. **Send/Request 工厂**：创建 `self.Send` 和 `self.Request`
-3. **配置加载**：如果声明了 `ConfigClass`，自动加载到 `self.config`
-4. **账户加载**：如果声明了 `AccountConfigClass`，自动加载到 `self.accounts`
+3. **配置模板**：如果声明了 `ConfigClass`，自动生成默认配置模板（首次）
+4. **账户模板**：如果声明了 `AccountConfigClass`，自动生成默认账户模板（首次）
+
+配置通过 `self.cfg` / `self.accounts` 实时读取（每次访问都从配置存储读取最新值）。`self.config` 作为 `self.cfg` 的兼容别名仍可使用。
 
 大多数适配器无需覆写 `__init__`。如需自定义初始化：
 
