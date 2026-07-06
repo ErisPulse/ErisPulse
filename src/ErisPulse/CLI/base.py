@@ -24,7 +24,7 @@ class Command(ABC):
 
     name: str = ""  # 命令名称
     description: str = ""  # 命令描述
-    aliases: list = []  # 命令别名（简化形式，如 "install" -> ["i", "add"]）
+    aliases: list[str] = []  # 命令别名
 
     @abstractmethod
     def add_arguments(self, parser: ArgumentParser):

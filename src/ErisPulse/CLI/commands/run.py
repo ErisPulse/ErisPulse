@@ -103,10 +103,27 @@ class RunCommand(Command):
             default=False,
             help=i18n.t("cli.run.reload_help"),
         )
+        parser.add_argument(
+            "--daemon",
+            "-d",
+            action="store_true",
+            default=False,
+            help=i18n.t("cli.run.daemon_help"),
+        )
+        parser.add_argument(
+            "--name",
+            default=None,
+            help=i18n.t("cli.run.daemon_name_help"),
+        )
 
     def execute(self, args):
         script = args.script
         reload_mode = args.reload
+
+        # 后台模式
+        if getattr(args, "daemon", False):
+            self._run_daemon(script, reload_mode, getattr(args, "name", None))
+            return
 
         if script:
             if not os.path.exists(script):
@@ -130,6 +147,119 @@ class RunCommand(Command):
     _RESTART_EXIT_CODE = 42
     _MAX_CRASH_BACKOFF = 60.0
 
+    def _start_stdin_watcher(self, daemon_name: str):
+        """
+        启动后台线程监听 stdin：用户输入 'bg' 回车即可将当前进程切到后台
+
+        :param daemon_name: 守护进程名称
+        """
+        import threading
+
+        def _watch():
+            try:
+                while True:
+                    line = sys.stdin.readline()
+                    if not line:
+                        break
+                    line = line.strip().lower()
+                    if line in ("bg", "background"):
+                        # 切后台：复用 _run_daemon 逻辑，但直接 detach 当前进程
+                        self._detach_to_background(daemon_name)
+                        break
+            except (EOFError, OSError):
+                pass
+
+        t = threading.Thread(target=_watch, daemon=True)
+        t.start()
+
+    def _detach_to_background(self, name: str):
+        """将当前进程 detach 为后台守护进程"""
+        console.print(f"\n[info]{i18n.t('cli.run.detaching', name=name)}[/]")
+
+        if sys.platform != "win32":
+            # Unix: fork + 父进程退出
+            pid = os.fork()
+            if pid > 0:
+                # 父进程
+                console.print(f"[success]{i18n.t('cli.run.detached', name=name, pid=pid)}[/]")
+                console.print(f"[info]{i18n.t('cli.run.daemon_tip', name=name)}[/]")
+                os._exit(0)
+            # 子进程：继续运行，写入 PID 文件
+            os.setsid()
+            from .daemon import _write_daemon
+            _write_daemon(name, {
+                "pid": os.getpid(),
+                "name": name,
+                "start_time": time.time(),
+                "cwd": os.getcwd(),
+            })
+        else:
+            # Windows: 无法 fork，提示用户使用 --daemon
+            console.print(f"[warning]{i18n.t('cli.run.detach_unsupported_win')}[/]")
+
+    def _run_daemon(self, script: str | None, reload_mode: bool, name: str | None):
+        """
+        以后台守护进程方式运行 SDK
+
+        :param script: 脚本路径（None 则运行内置 SDK）
+        :param reload_mode: 是否启用热重载
+        :param name: 守护进程名称（默认 "erispulse"）
+        """
+        daemon_name = name or os.path.basename(os.getcwd())
+
+        from .daemon import _list_daemons, _start_daemon, _is_alive, _read_daemon
+
+        # 检查同名进程是否已在运行
+        existing = _read_daemon(daemon_name)
+        if existing and _is_alive(existing["pid"]):
+            console.print(f"[warning]{i18n.t('cli.run.daemon_already_running', name=daemon_name, pid=existing['pid'])}[/]")
+            return
+
+        if script:
+            cmd = [sys.executable, os.path.abspath(script)]
+            if reload_mode:
+                cmd.append("--reload")
+        else:
+            cmd = [
+                sys.executable,
+                "-c",
+                "import asyncio; from ErisPulse import sdk; "
+                "asyncio.run(sdk.run(keep_running=True))",
+            ]
+
+        pid = _start_daemon(daemon_name, cmd, cwd=os.getcwd())
+        console.print(f"[success]{i18n.t('cli.run.daemon_started', name=daemon_name, pid=pid)}[/]")
+        console.print(f"[info]{i18n.t('cli.run.daemon_tip', name=daemon_name)}[/]")
+
+        # 多重轮询检查进程是否真正存活（启动后 1s / 2s / 3s 各检查一次）
+        import time as _time
+        from .daemon import _is_alive as _da, _remove_daemon as _rm, _read_daemon as _rd
+        ok = False
+        for t in (1, 2, 3):
+            _time.sleep(1)
+            if _da(pid):
+                ok = True
+            else:
+                break
+        if ok:
+            console.print(f"[success]{i18n.t('cli.run.daemon_running_ok', name=daemon_name)}[/]")
+        else:
+            console.print(f"[error]{i18n.t('cli.run.daemon_start_failed', name=daemon_name, pid=pid)}[/]")
+            # 检查日志末尾，帮助用户诊断
+            data = _rd(daemon_name)
+            if data:
+                cwd = data.get("cwd", os.getcwd())
+                log_dir = Path(cwd) / "logs"
+                if log_dir.exists():
+                    log_files = sorted(log_dir.glob("*.log"), key=lambda p: p.stat().st_mtime, reverse=True)
+                    if log_files:
+                        console.print(f"[dim]{i18n.t('cli.run.daemon_last_logs')}:[/]")
+                        content = log_files[0].read_text(encoding="utf-8", errors="replace")
+                        lines = content.strip().split("\n")
+                        for line in lines[-8:]:
+                            console.print(f"  [dim]{line}[/]")
+            _rm(daemon_name)
+
     def _run_internal(self, reload_mode: bool):
         """
         直接运行 SDK（不指定脚本时）
@@ -141,6 +271,7 @@ class RunCommand(Command):
         1. 只有硬重启（退出码 42）或 KeyboardInterrupt 才能停止主进程
         2. 模块/适配器的任何错误都**不会**导致主进程退出
         3. 子进程异常退出时自动重试，使用递增退避策略避免刷屏
+        4. 前台运行时输入 [cyan]bg[/] 回车可切到后台
         {!--< /tips >!--}
         """
 
@@ -174,6 +305,10 @@ class RunCommand(Command):
             "import asyncio; from ErisPulse import sdk; "
             "asyncio.run(sdk.run(keep_running=True))",
         ]
+
+        daemon_name = os.path.basename(os.getcwd())
+        console.print(f"[dim]{i18n.t('cli.run.bg_tip')}[/]")
+        self._start_stdin_watcher(daemon_name)
 
         crash_count = 0
         try:
