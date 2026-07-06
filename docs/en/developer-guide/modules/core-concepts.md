@@ -1,10 +1,10 @@
-# Module Core Concepts
+# Core Concepts of Modules
 
 Understanding the core concepts of ErisPulse modules is the foundation for developing high-quality modules.
 
 ## Module Lifecycle
 
-### Loading Strategy
+### Loading Strategies
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -13,19 +13,19 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """Return module load strategy"""
+        """Return the module loading strategy"""
         return ModuleLoadStrategy(
             lazy_load=True,   # Lazy load or immediate load
-            priority=0,       # Load priority (higher values load first)
+            priority=0,       # Loading priority (higher value loads first)
             depends=["OtherModule"]  # Optional: declare dependencies on other modules
         )
 ```
 
-> `depends` declared modules that are not registered will cause the current module to be skipped with a warning. The loading order is determined by topological sorting, with the same level loaded in descending order of `priority`.
+> If modules declared in `depends` are not registered, the current module will be skipped and a warning will be logged. The loading order is determined by topological sorting, with modules at the same level sorted by `priority` in descending order.
 
 ### on_load Method
 
-Called when the module is loaded, used to initialize resources and register event handlers:
+Called when the module is loaded, used for initializing resources and registering event handlers:
 
 ```python
 async def on_load(self, event):
@@ -34,37 +34,37 @@ async def on_load(self, event):
     async def hello_handler(event):
         await event.reply("Hello!")
     
-    # Use the SDK built-in HTTP client (automatically manages connection pool, no need to manually create session)
-    # Send requests via sdk.client
+    # Use SDK's built-in HTTP client (automatically manages connection pool, no need to manually create session)
+    # Requests can be sent directly via sdk.client
 ```
 
 ### on_unload Method
 
-Called when the module is unloaded, used to clean up resources:
+Called when the module is unloaded, used for cleaning up resources:
 
 ```python
 async def on_unload(self, event):
     # Clean up custom resources
     # sdk.client is managed by the framework, no need to manually close
     
-    # Unregister event handlers (handled automatically by framework)
+    # Cancel event handlers (handled automatically by the framework)
     self.logger.info("Module unloaded")
 ```
 
-## SDK Object
+## SDK Objects
 
 ### Accessing Core Modules
 
 ```python
 from ErisPulse import sdk
 
-# Access all core modules via the sdk object
-sdk.logger.info("Log")
+# Access all core modules through the sdk object
+sdk.logger.info("Logging")
 sdk.storage.set("key", "value")
 config = sdk.config.getConfig("MyModule")
 ```
 
-### Inter-module Communication
+### Inter-Module Communication
 
 ```python
 # Access other modules
@@ -74,12 +74,12 @@ result = await other_module.some_method()
 
 ## Adapter Send Method Query
 
-Due to new standard specifications requiring the overwriting of the `__getattr__` method to implement a fallback sending mechanism, it is impossible to use the `hasattr` method to check if a method exists. Starting from version `2.3.5`, functionality to query sending methods has been added.
+Due to the new standard specification requiring the use of the `__getattr__` method to implement a fallback sending mechanism, it is no longer possible to use the `hasattr` method to check for method existence. Starting from version `2.3.5`, a new feature to query send methods has been added.
 
 ### List Supported Send Methods
 
 ```python
-# List all sending methods supported by the platform
+# List all send methods supported by the platform
 methods = sdk.adapter.list_sends("onebot11")
 # Returns: ["Text", "Image", "Voice", "Markdown", ...]
 ```
@@ -87,7 +87,7 @@ methods = sdk.adapter.list_sends("onebot11")
 ### Get Method Details
 
 ```python
-# Get detailed information for a specific method
+# Get detailed information about a method
 info = sdk.adapter.send_info("onebot11", "Text")
 # Returns:
 # {
@@ -96,13 +96,60 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "Send text message..."
+#     "docstring": "Send a text message..."
 # }
 ```
 
 ## Configuration Management
 
-### Reading Configuration
+### Declarative Configuration (Recommended)
+
+Starting from v2.5.2, modules can declare configuration classes using `ConfigClass`, which uses the same configuration Schema system as adapters. Configuration is read in real-time via `self.cfg`, and changes take effect immediately:
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_module.api_key", "default": "API Key"},
+            "required": True,
+            "secret": True,
+            "ui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
+    timeout: int = field(
+        default=30,
+        metadata={
+            "description": {"i18n": "my_module.timeout", "default": "Timeout (seconds)"},
+            "ui": {"widget": "number", "group": "advanced", "order": 2},
+        },
+    )
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    async def on_load(self, event):
+        self.logger.info("Module loaded")
+
+    async def on_unload(self, event):
+        pass
+
+    async def do_something(self):
+        cfg = self.cfg  # Read in real-time, type-safe
+        api_key = cfg.api_key
+        timeout = cfg.timeout
+```
+
+`BaseConfig` is a generic configuration base class applicable to adapters, modules, and external projects in any scenario. Configuration fields support i18n multilingual descriptions (see [i18n documentation](../../advanced/i18n.md#multilingual-configuration-fields)).
+
+### Manual Configuration Reading (Compatibility Mode)
+
+If you do not use declarative configuration, you can also read and write configuration storage directly:
 
 ```python
 def _load_config(self):
@@ -117,13 +164,7 @@ def _load_config(self):
     return config
 ```
 
-### Using Configuration
-
-```python
-async def do_something(self):
-    api_key = self.config.get("api_key")
-    timeout = self.config.get("timeout", 30)
-```
+> **Note**: When using manual configuration, avoid using `self.config` as a property name. It is recommended to use `self.cfg` or a custom name to prevent conflicts with future framework properties.
 
 ## Storage System
 
@@ -133,14 +174,14 @@ async def do_something(self):
 # Store data
 sdk.storage.set("user:123", {"name": "Zhang San"})
 
-# Get data
+# Retrieve data
 user = sdk.storage.get("user:123", {})
 
 # Delete data
 sdk.storage.delete("user:123")
 ```
 
-### Transaction Usage
+### Using Transactions
 
 ```python
 # Use transactions to ensure data consistency
@@ -152,13 +193,13 @@ with sdk.storage.transaction():
 
 ## Event Handling
 
-### Event Handler Registration
+### Registering Event Handlers
 
 ```python
 from ErisPulse.Core.Event import command, message
 
 # Register command
-@command("info", help="Get info")
+@command("info", help="Get information")
 async def info_handler(event):
     await event.reply("This is information")
 
@@ -177,14 +218,14 @@ The framework automatically manages the registration and unregistration of event
 ### How It Works
 
 ```python
-# Module initializes only when first accessed
+# The module is initialized only when first accessed
 result = await sdk.my_module.some_method()
 # ↑ This triggers module initialization
 ```
 
 ### Immediate Loading
 
-For modules that require immediate initialization (e.g., listeners, timers):
+For modules that require immediate initialization (such as listeners or timers):
 
 ```python
 @staticmethod
@@ -197,7 +238,7 @@ def get_load_strategy():
 
 ## Error Handling
 
-### Exception Catching
+### Exception Handling
 
 ```python
 async def handle_event(self, event):
@@ -216,15 +257,15 @@ async def handle_event(self, event):
 
 ```python
 # Use different log levels
-self.logger.debug("Debug info")    # Verbose debug info
-self.logger.info("Running status")      # Normal operation info
-self.logger.warning("Warning info")  # Warning info
-self.logger.error("Error info")    # Error info
-self.logger.critical("Fatal error") # Fatal error
+self.logger.debug("Debug information")    # Detailed debug information
+self.logger.info("Running status")      # Normal running information
+self.logger.warning("Warning information")  # Warning information
+self.logger.error("Error information")    # Error information
+self.logger.critical("Critical error")  # Critical error
 ```
 
 ## Related Documentation
 
-- [Module Development Getting Started](getting-started.md) - Create your first module
-- [Event Wrapper](event-wrapper.md) - Detailed Event Handling
-- [Best Practices](best-practices.md) - Develop high-quality modules
+- [Getting Started with Module Development](getting-started.md) - Create your first module
+- [Event Wrapper Class](event-wrapper.md) - Detailed event handling
+- [Best Practices](best-practices.md) - Developing high-quality modules

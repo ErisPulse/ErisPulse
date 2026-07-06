@@ -7,57 +7,53 @@
 ### Отношения компонентов
 
 ```
-Прямое преобразование (направление приема)                           Обратное преобразование (направление отправки)
-─────────────────                           ─────────────────
+Прямое преобразование (направление получения)               Обратное преобразование (направление отправки)
+─────────────────────────────────────────────────           ─────────────────────────────────────────────────
                                              
 ┌──────────────────┐                        ┌──────────────────┐
-│ Событие нативного │                        │ Сообщение, сконст- │
-│   платформенного  │                        │   рированное мод. │
-│     типа          │                        │   (Module)        │
+│ Нативные события платформы     │                        │ Построенное сообщение модуля     │
 └────────┬─────────┘                        └────────┬─────────┘
          │                                           │
          ↓                                           ↓
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│                  │   │  Адаптер (MyAdapter) │   │ Send.Raw_ob12()  │
-│  Преобразователь  │   │ ┌──────────────┐ │   │ (вход для обрат- │
-│  (Converter)     │──→│ │              │ │   │  ного преобразова-│
-│                  │   │ │              │ │   │  ния)            │
+│                  │   │ Адаптер (MyAdapter) │   │                  │
+│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
+│  (конвертер событий) │──→│ │              │ │   │ (вход обратного преобразования)   │
+│                  │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
                                 │                      ↓
                                 ↓              ┌──────────────────┐
-                       ┌──────────────────┐    │ Вызов платформ.  │
-                       │ Стандартное собы- │    │    API           │
-                       │       тие        │    └────────┬─────────┘
-                       │ OneBot12 (OB12)   │             │
-                       └────────┬─────────┘             ↓
-                                │              ┌──────────────────┐
-                       ┌──────────────────┐    │ Стандартный фор- │
-                       │  Система событий  │    │   мат ответа      │
-                       └────────┬─────────┘    └──────────────────┘
+                       ┌──────────────────┐    │ Вызов платформенного API    │
+                       │ Событие OneBot12 (стандарт) │    └────────┬─────────┘
+                       └────────┬─────────┘             │
+                                │                      ↓
+                                ↓              ┌──────────────────┐
+                       ┌──────────────────┐    │ Стандартный формат ответа     │
+                       │  Система событий         │    └──────────────────┘
+                       └────────┬─────────┘
                                 │
                                 ↓
                        ┌──────────────────┐
-                       │  Модуль (обработ- │
-                       │  ка событий)     │
+                       │  Модуль (обработка событий)  │
                        └──────────────────┘
 ```
 
-**Ключевая симметрия**:
-- **Прямое преобразование (Converter)**: Событие нативного типа платформы → Стандартное событие OneBot12. Исходные данные сохраняются в `{platform}_raw`.
-- **Обратное преобразование (Raw_ob12)**: Сегмент сообщения OneBot12 → Вызов платформенного API. Возвращает стандартный формат ответа.
+**Ядро симметрии**:
+- **Прямое преобразование** (Converter): Нативные события платформы → Событие OneBot12 (стандарт), исходные данные сохраняются в `{platform}_raw`
+- **Обратное преобразование** (Raw_ob12): Сегменты сообщений OneBot12 → Вызов платформенного API, возвращается стандартный формат ответа
 
-## AdapterManager — менеджер адаптеров
+## АдаптерAdapterManager
 
-`AdapterManager` — это основной компонент системы адаптеров ErisPulse, отвечающий за управление регистрацией, запуском, остановкой и распределением событий всех платформенных адаптеров.
+`AdapterManager` является центральным компонентом системы адаптеров ErisPulse, отвечающим за управление регистрацией, запуском, остановкой и распределением событий всех платформенных адаптеров.
 
 ### Основные функции
 
-- **Регистрация адаптера**: Регистрация и управление несколькими адаптерами платформ
+- **Регистрация адаптера**: Регистрация и управление несколькими платформенными адаптерами
 - **Управление жизненным циклом**: Управление запуском и остановкой адаптеров
-- **Распределение событий**: Распределение стандартных событий OneBot12 и событий нативного типа платформы
+- **Распределение событий**: Распределение событий OneBot12 (стандарт) и нативных событий платформы
 - **Управление конфигурацией**: Управление состоянием включения/выключения адаптеров
-- **Поддержка Middleware**: Поддержка Middleware OneBot12
+- **Поддержка middleware**: Поддержка middleware событий OneBot12
 
 ### Базовое использование
 
@@ -96,18 +92,18 @@ await sdk.adapter.startup()
 await sdk.adapter.startup(["platform1", "platform2"])
 ```
 
-**Процесс запуска:**
+**Процесс запуска**:
 
-1. Предоставление жизненного цикла события `adapter.start`.
-2. Предоставление события `adapter.status.change` (starting).
-3. Параллельный запуск отдельных адаптеров.
-4. Автоматическая повторная попытка при сбое запуска (стратегия экспоненциальной задержки).
-5. После успешного запуска предоставление события `adapter.status.change` (started).
+1. Отправка события жизненного цикла `adapter.start`
+2. Отправка события `adapter.status.change` (starting)
+3. Параллельный запуск отдельных адаптеров
+4. При неудачном запуске автоматическая повторная попытка (стратегия экспоненциального затухания)
+5. После успешного запуска отправка события жизненного цикла `adapter.status.change` (started)
 
-**Механизм повтора:**
+**Механизм повторных попыток**:
 
-- Первые 4 повтора: 60 сек, 10 мин, 30 мин, 60 мин.
-- 5-й и последующие повторы: фиксированный интервал 3 часа.
+- Первые 4 попытки: 60 секунд, 10 минут, 30 минут, 60 минут
+- 5-я и последующие: фиксированный интервал 3 часа
 
 #### Остановка адаптера
 
@@ -116,13 +112,13 @@ await sdk.adapter.startup(["platform1", "platform2"])
 await sdk.adapter.shutdown()
 ```
 
-**Процесс остановки:**
+**Процесс остановки**:
 
-1. Предоставление жизненного цикла события `adapter.stop`.
-2. Вызов метода `shutdown()` для всех адаптеров.
-3. Остановка сервера маршрутизации.
-4. Очистка обработчиков событий.
-5. Предоставление жизненного цикла события `adapter.stopped`.
+1. Отправка события жизненного цикла `adapter.stop`
+2. Вызов метода `shutdown()` для всех адаптеров
+3. Остановка сервера маршрутизации
+4. Очистка обработчиков событий
+5. Отправка события жизненного цикла `adapter.stopped`
 
 ### Управление конфигурацией
 
@@ -156,36 +152,36 @@ enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
 
 ### Слушание событий
 
-#### Стандартные события OneBot12
+#### События OneBot12 (стандарт)
 
 ```python
 from ErisPulse import sdk
 
-# Слушать стандартные события сообщений для всех платформ
+# Слушание стандартного события сообщений на всех платформах
 @sdk.adapter.on("message")
 async def handle_message(data):
     print(f"Получено сообщение OneBot12: {data}")
 
-# Слушать стандартные события сообщений для определенной платформы
+# Слушание стандартного события сообщений конкретной платформы
 @sdk.adapter.on("message", platform="myplatform")
 async def handle_platform_message(data):
     print(f"Получено сообщение myplatform: {data}")
 
-# Слушать все события
+# Слушание всех событий
 @sdk.adapter.on("*")
 async def handle_any_event(data):
     print(f"Получено событие: {data.get('type')}")
 ```
 
-#### События нативного типа платформы
+#### Нативные события платформы
 
 ```python
-# Слушать нативные события определенной платформы
+# Слушание нативных событий конкретной платформы
 @sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
 async def handle_raw_event(data):
     print(f"Получено нативное событие: {data}")
 
-# Слушать нативные события всех платформ (шаблон)
+# Слушание нативных событий всех платформ (шаблон)
 @sdk.adapter.on("*", raw=True)
 async def handle_all_raw_events(data):
     print(f"Получено нативное событие: {data}")
@@ -195,41 +191,41 @@ async def handle_all_raw_events(data):
 
 При вызове `adapter.emit(event_data)`:
 
-1. **Обработка Middleware**: Сначала выполняются все Middleware OneBot12.
-2. **Распределение стандартных событий**: Распределяются к соответствующим обработчикам стандартных событий OneBot12.
-3. **Распределение нативных событий**: Если присутствуют исходные данные, распределяются к обработчикам нативных событий.
+1. **Обработка middleware**: Сначала выполняются все middleware OneBot12
+2. **Распределение стандартных событий**: Распределяются в соответствующие обработчики событий OneBot12
+3. **Распределение нативных событий**: Если присутствуют исходные данные, распределяются в обработчики нативных событий
 
-**Правила сопоставления:**
+**Правила сопоставления**:
 
-- Точное сопоставление: `@sdk.adapter.on("message")` сопоставляет только событие `message`.
-- Шаблон (wildcard): `@sdk.adapter.on("*")` сопоставляет со всеми событиями.
-- Фильтрация платформы: `platform="myplatform"` распределяет только события указанной платформы.
+- Точное совпадение: `@sdk.adapter.on("message")` совпадает только с событием `message`
+- Шаблон: `@sdk.adapter.on("*")` совпадает со всеми событиями
+- Фильтрация по платформе: `platform="myplatform"` распределяет события только указанной платформы
 
 ### Middleware
 
-#### Добавление Middleware
+#### Добавление middleware
 
 ```python
 @sdk.adapter.middleware
 async def logging_middleware(data):
-    """Middleware для логирования"""
+    """Middleware логирования"""
     print(f"Обработка события: {data.get('type')}")
-    return data  # Обязан вернуть данные
+    return data  # Должен вернуть данные
 
 @sdk.adapter.middleware
 async def filter_middleware(data):
-    """Middleware для фильтрации событий"""
-    # Фильтровать ненужные события
+    """Middleware фильтрации событий"""
+    # Фильтрация ненужных событий
     if data.get("type") == "notice":
-        return None  # При возврате None middleware-цепочка игнорирует это значение и передает исходные данные дальше
-    return data  # Обязан вернуть данные для продолжения передачи
+        return None  # При возврате None middleware-цепь игнорирует это возвращаемое значение, сохраняя исходные данные для передачи
+    return data  # Должен вернуть данные для продолжения передачи
 ```
 
-#### Порядок выполнения Middleware
+#### Порядок выполнения middleware
 
-Middleware выполняются в порядке регистрации. Middleware, зарегистрированные позже, выполняются первыми.
+Middleware выполняются в порядке регистрации, более поздние зарегистрированные middleware выполняются первыми.
 
-> **Примечание**: Если Middleware возвращает `None` (например, забыт `return data`), фреймворк игнорирует это значение и передает исходные данные дальше, одновременно выводя предупреждение в лог. Это гарантирует, что ошибка в одном Middleware не приведет к сбою всей цепочки событий.
+> **Примечание**: Если middleware возвращает `None` (например, забыт `return data`), фреймворк игнорирует это возвращаемое значение и сохраняет исходные данные для передачи, одновременно выводя предупреждение уровня warning. Это обеспечивает, что сбой одного middleware не приводит к прерыванию всей цепочки событий.
 
 ```python
 # Порядок регистрации
@@ -260,76 +256,76 @@ await adapter.Send.To("user", "123").Text("Hello")
 
 ## Базовый класс BaseAdapter
 
-### Основная структура
+### Базовая структура
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
+from ErisPulse.runtime.config_schema import BaseConfig, BotAccountConfig
 
 @dataclass
-class MyConfig(AdapterConfig):
-    """Конфигурация адаптера (декларативная, управляется фреймворком автоматически)"""
+class MyConfig(BaseConfig):
+    """Конфигурация адаптера (автоматически управляется фреймворком после объявления)"""
     token: str = field(
         default="",
         metadata={
-            "description": "Токен бота",
+            "description": {"i18n": "my_adapter.token", "default": "Bot Token"},
             "required": True,
             "secret": True,
-            "webui": {"widget": "password", "group": "basic", "order": 1},
+            "ui": {"widget": "password", "group": "basic", "order": 1},
         },
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyConfig  # Указание класса конфигурации
+    ConfigClass = MyConfig  # Объявление класса конфигурации
     
-    # Не требуется переопределять __init__, фреймворк автоматически обрабатывает:
+    # Переопределение __init__ не требуется, фреймворк автоматически обрабатывает:
     # - self.sdk, self.logger
-    # - self.config (тибобезопасный экземпляр конфигурации)
+    # - self.cfg (экземпляр конфигурации с безопасным типом, чтение в реальном времени)
     # - self.Send, self.Request
     
     async def start(self):
-        """Запуск адаптера (необходимо реализовать)"""
-        cfg = self.config  # Автоматически загруженная типобезопасная конфигурация
+        """Запуск адаптера (обязательно к реализации)"""
+        cfg = self.cfg  # Автоматически загруженная конфигурация с безопасным типом
         pass
     
     async def shutdown(self):
-        """Остановка адаптера (необходимо реализовать)"""
+        """Остановка адаптера (обязательно к реализации)"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """Вызов платформенного API (необходимо реализовать)"""
+        """Вызов платформенного API (обязательно к реализации)"""
         pass
 ```
 
 ### Управление конфигурацией
 
-Фреймворк предоставляет декларативное управление конфигурацией: конфигурация определяется через dataclass, а фреймворк автоматически обрабатывает загрузку, валидацию и генерацию шаблонов.
+Фреймворк обеспечивает декларативное управление конфигурацией, определение структуры конфигурации через dataclass, фреймворк автоматически обрабатывает загрузку, валидацию и генерацию шаблонов.
 
 #### Конфигурация одного аккаунта
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import AdapterConfig
+from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
-class TelegramConfig(AdapterConfig):
+class TelegramConfig(BaseConfig):
     token: str = field(default="", metadata={
-        "description": "Токен бота",
+        "description": {"i18n": "telegram.token", "default": "Bot Token"},
         "required": True,
         "secret": True,
-        "webui": {"widget": "password", "group": "basic", "order": 1},
+        "ui": {"widget": "password", "group": "basic", "order": 1},
     })
     proxy: str = field(default="", metadata={
-        "description": "Адрес прокси",
-        "webui": {"widget": "text", "group": "advanced", "order": 10},
+        "description": {"i18n": "telegram.proxy", "default": "Адрес прокси"},
+        "ui": {"widget": "text", "group": "advanced", "order": 10},
     })
 
 class TelegramAdapter(BaseAdapter):
     ConfigClass = TelegramConfig
     
     async def start(self):
-        cfg = self.config  # Типобезопасно, загружается автоматически
+        cfg = self.cfg  # Безопасный тип, чтение в реальном времени
         if not cfg.token:
             raise ValueError("Токен не настроен")
         await self._connect(cfg.token, proxy=cfg.proxy)
@@ -337,22 +333,31 @@ class TelegramAdapter(BaseAdapter):
 
 #### Конфигурация нескольких аккаунтов
 
-`BotAccountConfig` базовый класс предоставляет поля `enabled` и `name`. У большинства адаптеров bot_id может быть автоматически получен из платформенного протокола или ответа на вход, и внедрен в конфигурацию учетной записи при преобразовании событий.：
+Базовый класс `BotAccountConfig` предоставляет поля `enabled` и `name`. Большинство адаптеров могут автоматически получать `bot_id` из протокола платформы или ответа на вход, и внедрять его в конфигурацию аккаунта во время преобразования событий.：
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.runtime.config_schema import BotAccountConfig
 
-# Большинство адаптеров: bot_id автоматически получается во время выполнения, конфигурация не требуется
+# Большинство адаптеров: bot_id автоматически получается во время выполнения, не нужно настраивать
 @dataclass
 class MyBotConfig(BotAccountConfig):
-    token: str = field(default="", metadata={"description": "Токен", "required": True})
+    token: str = field(default="", metadata={
+        "description": {"i18n": "my_adapter.bot_token", "default": "Токен"},
+        "required": True,
+    })
 
-# Если bot_id не удается получить при входе, его можно заполнить пользователем в конфигурации
+# Если bot_id не удается получить при входе в систему, пользователь может заполнить его в конфигурации
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
-    bot_id: str = field(default="", metadata={"description": "ID бота", "required": True})
-    token: str = field(default="", metadata={"description": "Токен", "required": True})
+    bot_id: str = field(default="", metadata={
+        "description": {"i18n": "yunhu.bot_id", "default": "ID бота"},
+        "required": True,
+    })
+    token: str = field(default="", metadata={
+        "description": {"i18n": "yunhu.token", "default": "Токен"},
+        "required": True,
+    })
 
 class MyAdapter(BaseAdapter):
     AccountConfigClass = MyBotConfig
@@ -363,26 +368,34 @@ class MyAdapter(BaseAdapter):
             await self.emit_meta("connect", user_id)
 ```
 
-#### Соглашения о metadata
+#### Соглашения metadata
 
-Metadata-поля используются одновременно для генерации комментариев TOML и рендеринга форм WebUI:
+Метаданные полей одновременно служат для генерации комментариев TOML и рендеринга форм WebUI:
 
 ```python
 metadata = {
-    "description": str,       # Описание поля (комментарий TOML + label WebUI)
-    "required": bool,         # Обязательное поле (валидация + пометка WebUI)
-    "secret": bool,           # Чувствительное поле (показывается как *** в WebUI, маскируется в логах)
-    "webui": {
+    "description": str | dict,  # Описание поля (поддержка i18n)
+    "required": bool,         # Обязательно (валидация + отметка WebUI)
+    "secret": bool,           # Чувствительно (показывается как *** в WebUI, обезличивается в логах)
+    "ui": {                   # Конфигурация элементов управления WebUI (старое имя "webui" по-прежнему совместимо)
         "widget": str,        # Тип элемента управления: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # Группа: "basic" | "advanced" | "connection" и т.д.
         "order": int,         # Вес сортировки (чем меньше, тем раньше)
-        "options": list,      # Варианты для select: [{label, value}]
-        "placeholder": str,   # Заполнитель для ввода
-    }
+        "options": list,      # Варианты для элемента select [{label, value}]
+        "placeholder": str,   # Заполнитель для поля ввода
+    },
+    "extra": dict,            # Дополнительные расширенные поля (передаются в schema)
 }
 ```
 
-#### Разрешение аккаунта
+`description` поддерживает два формата:
+
+- **Обычная строка** (обратная совместимость): `"Bot Token"`
+- **Словарь i18n** (рекомендуется, поддержка многоязычия): `{"i18n": "my_adapter.token", "default": "Bot Token"}`
+
+При использовании словаря i18n необходимо заранее зарегистрировать ключи перевода в системе i18n (подробнее в [документации i18n](../../advanced/i18n.md#конфигурация_полей_многоязычия))。
+
+#### Разбор аккаунтов
 
 Адаптеры с несколькими аккаунтами могут использовать `_resolve_account()` для автоматического разрешения целевого аккаунта:
 
@@ -393,11 +406,11 @@ async def call_api(self, endpoint: str, **params):
     # name: имя аккаунта, account: экземпляр конфигурации
 ```
 
-Стратегия разрешения: точное совпадение имени аккаунта → совпадение поля `bot_id` → совпадение других строковых полей → первый включенный аккаунт.
+Стратегия разрешения: совпадение имени аккаунта → совпадение поля `bot_id` → совпадение других строковых полей → первый включенный аккаунт.
 
 #### Горячее обновление конфигурации
 
-Подклассы могут переопределить `on_config_update()` для отклика на изменения конфигурации:
+Подклассы могут переопределить `on_config_update()` для реакции на изменения конфигурации:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -405,19 +418,21 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Токен обновлен, будет выполнено переподключение")
+            self.logger.info("Токен обновлен, повторное подключение")
 ```
 
-### Процесс инициализации
+### Инициализационный процесс
 
-Фреймворк автоматически выполняет следующие действия в `BaseAdapter.__init__(self, sdk=None)`:
+Фреймворк автоматически выполняет следующую работу в `BaseAdapter.__init__(self, sdk=None)`:
 
-1. **Ссылка на SDK**: Установка `self.sdk`, `self.logger`
-2. **Фабрика Send/Request**: Создание `self.Send` и `self.Request`
-3. **Загрузка конфигурации**: Если указан `ConfigClass`, автоматически загружается в `self.config`
-4. **Загрузка аккаунтов**: Если указан `AccountConfigClass`, автоматически загружается в `self.accounts`
+1. **Ссылка SDK**: Установка `self.sdk`, `self.logger`
+2. **Фабрики Send/Request**: Создание `self.Send` и `self.Request`
+3. **Шаблон конфигурации**: Если объявлен `ConfigClass`, автоматически генерируется шаблон конфигурации по умолчанию (при первом запуске)
+4. **Шаблон аккаунта**: Если объявлен `AccountConfigClass`, автоматически генерируется шаблон аккаунта по умолчанию (при первом запуске)
 
-Большинству адаптеров не требуется переопределять `__init__`. Для кастомной инициализации:
+Конфигурация считывается в реальном времени через `self.cfg` / `self.accounts` (каждый раз считывается последнее значение из хранилища конфигурации). `self.config` как совместимый псевдоним для `self.cfg` также может использоваться.
+
+Большинству адаптеров не требуется переопределять `__init__`. Если необходимо пользовательская инициализация:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -429,9 +444,9 @@ class MyAdapter(BaseAdapter):
         self.convert = self.converter.convert
 ```
 
-## DSL для отправки сообщений Send
+## DSL отправки сообщений Send
 
-### Наследование
+### Иерархия наследования
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -449,27 +464,27 @@ class MyAdapter(BaseAdapter):
 | `_target_id` | ID цели | `To(id)` или `To(type, id)` |
 | `_target_type` | Тип цели | `To(type, id)` |
 | `_target_to` | Упрощенный ID цели | `To(id)` |
-| `_account_id` | ID учетной записи отправки | `Using(account_id)` |
+| `_account_id` | ID аккаунта отправителя | `Using(account_id)` |
 | `_adapter` | Экземпляр адаптера | Устанавливается автоматически |
 | `_at_user_ids` | Список @пользователей | `At(user_id)` |
 | `_reply_message_id` | ID сообщения для ответа | `Reply(message_id)` |
-| `_at_all` | Быть @всем | `AtAll()` |
+| `_at_all` | Делать @всем | `AtAll()` |
 
-> **Рекомендация**: Используйте свойство `self.send_context`, чтобы получить `target_type`, `target_id`, `account_id` сразу, это более наглядно, чем прямой доступ к экземплярным переменным.
+> **Рекомендация**: Используйте свойство `self.send_context` для одновременного получения `target_type`, `target_id`, `account_id`, это более наглядно, чем прямой доступ к переменным экземпляра.
 
-### Вспомогательные методы фреймворка
+### Методы вспомогательной функции фреймворка
 
 | Метод/Свойство | Описание |
 |-----------|------|
-| `self._apply_modifiers(message)` | Объединяет состояние модификаторов At/AtAll/Reply в список сегментов сообщения |
+| `self._apply_modifiers(message)` | Объединение состояния модификаторов At/AtAll/Reply со списком сегментов сообщения |
 | `self.send_context` | Возвращает словарь `{target_type, target_id, account_id}` |
 
-### Основные методы
+### Базовые методы
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """Рекомендуемая реализация"""
+        """Рекомендуемый способ реализации"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -487,7 +502,7 @@ class Send(BaseAdapter.Send):
         ])
 ```
 
-### Методы цепочки модификаторов
+### Цепные методы модификаторов
 
 ```python
 class Send(BaseAdapter.Send):
@@ -501,16 +516,16 @@ class Send(BaseAdapter.Send):
         return self
 ```
 
-## Преобразователь событий
+## Конвертер событий
 
 ### Процесс преобразования
 
 ```
-Событие нативного типа платформы (Raw Event)
+Платформенное нативное событие
     ↓
 Converter.convert()
     ↓
-Стандартное событие OneBot12
+Событие OneBot12 (стандарт)
 ```
 
 ### Обязательные поля
@@ -520,32 +535,32 @@ Converter.convert()
 ```python
 {
     "id": "Уникальный идентификатор события",
-    "time": 1234567890,           # 10-битный Unix-таймстамп
+    "time": 1234567890,           # 10-значная временная метка Unix
     "type": "message/notice/request/meta",
     "detail_type": "Детальный тип события",
     "platform": "Название платформы",
     "self": {
         "platform": "Название платформы",
-        "user_id": "ID бота"
+        "user_id": "ID бота"     # Должен совпадать с bot_id
     },
     "{platform}_raw": {...},       # Исходные данные (обязательно)
     "{platform}_raw_type": "..."    # Исходный тип (обязательно)
 }
 ```
 
-### Пример преобразователя
+### Пример конвертера
 
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """Преобразование события нативного типа платформы в стандартный формат OneBot12"""
+        """Преобразование нативного события платформы в стандартный формат OneBot12"""
         if not isinstance(raw_event, dict):
             return None
         
         # Генерация ID события
         event_id = raw_event.get("event_id") or str(uuid.uuid4())
         
-        # Преобразование таймстампа
+        # Преобразование временной метки
         timestamp = raw_event.get("timestamp")
         if timestamp and timestamp > 10**12:
             timestamp = int(timestamp / 1000)
@@ -574,16 +589,14 @@ class MyPlatformConverter:
         return onebot_event
 ```
 
-## Управление подключением
+## Управление соединениями
 
-### WebSocket подключение
+### WebSocket соединение
 
 ```python
-from fastapi import WebSocket
-
 class MyAdapter(BaseAdapter):
     async def start(self):
-        """Регистрация WebSocket маршрута"""
+        """Регистрация маршрута WebSocket"""
         router.register_websocket(
             module_name="myplatform",
             path="/ws",
@@ -591,8 +604,8 @@ class MyAdapter(BaseAdapter):
             auth_handler=self._auth_handler
         )
     
-    async def _ws_handler(self, websocket: WebSocket):
-        """Обработчик WebSocket подключения"""
+    async def _ws_handler(self, websocket):
+        """Обработчик WebSocket соединения"""
         self.connection = websocket
         
         try:
@@ -602,24 +615,22 @@ class MyAdapter(BaseAdapter):
                 if onebot_event:
                     await self.adapter.emit(onebot_event)
         except WebSocketDisconnect:
-            self.logger.info("Подключение разорвано")
+            self.logger.info("Соединение закрыто")
         finally:
             self.connection = None
     
-    async def _auth_handler(self, websocket: WebSocket) -> bool:
+    async def _auth_handler(self, websocket) -> bool:
         """Аутентификация WebSocket"""
         token = websocket.query_params.get("token")
         return token == "valid_token"
 ```
 
-### WebHook подключение
+### WebHook соединение
 
 ```python
-from fastapi import Request
-
 class MyAdapter(BaseAdapter):
     async def start(self):
-        """Регистрация WebHook маршрута"""
+        """Регистрация маршрута WebHook"""
         router.register_http_route(
             module_name="myplatform",
             path="/webhook",
@@ -627,8 +638,8 @@ class MyAdapter(BaseAdapter):
             methods=["POST"]
         )
     
-    async def _webhook_handler(self, request: Request):
-        """Обработчик запроса WebHook"""
+    async def _webhook_handler(self, request):
+        """Обработчик запросов WebHook"""
         data = await request.json()
         onebot_event = self.convert(data)
         if onebot_event:
@@ -636,11 +647,11 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> **Информация о маршрутах**: Регистрируемые маршруты адаптера (HTTP, WebSocket, SSE) можно запросить через `sdk.adapter.get_connection_info(platform)` и `sdk.router.get_module_urls(module_name)`. Это возвращает полные URL-адреса подключения (включая `base_url` + путь). Подробнее см. в разделе [Руководство по разработке адаптера — Информация о соединении и обнаружение маршрутов](getting-started.md#9-информация-о-соединении-и-обнаружение-маршрутов) и [Поддержка SSE](getting-started.md#10-sse-server-sent-events-поддержка).
+> **Запрос информации о маршруте**: Маршруты, зарегистрированные адаптерами (HTTP, WebSocket, SSE), могут быть запрошены через `sdk.adapter.get_connection_info(platform)` и `sdk.router.get_module_urls(module_name)` для получения полных адресов соединений (включая `base_url` + путь). Подробнее в [Начало работы с разработкой адаптера - Информация о соединении и обнаружение маршрутов](getting-started.md#9-информация_о_соединении_и_обнаружение_маршрутов) и [Поддержка SSE](getting-started.md#10-поддержка_sse-server_sent_events)。
 
-## Стандарт ответа API
+## Стандарт ответов API
 
-Фреймворк предоставляет методы `make_response()` и `make_error()` для построения стандартизированных ответов, без необходимости ручного создания словарей ответов.
+Фреймворк предоставляет методы `make_response()` и `make_error()` для конструирования стандартизированных ответов, без необходимости вручную строить словарь ответа.
 
 ### Успешный ответ
 
@@ -658,7 +669,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e), raw=None)
 ```
 
-### Ручное построение ответа (старый способ по-прежнему совместим)
+### Ручное построение ответа (старый способ, по-прежнему совместим)
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -672,11 +683,11 @@ async def call_api(self, endpoint: str, **params):
     }
 ```
 
-## Поддержка нескольких учетных записей
+## Поддержка нескольких аккаунтов
 
 ### Декларативная конфигурация (рекомендуется)
 
-После объявления класса конфигурации с помощью `AccountConfigClass` фреймворк автоматически управляет загрузкой, валидацией и генерацией шаблонов для нескольких аккаунтов:
+После объявления класса конфигурации через `AccountConfigClass`, фреймворк автоматически управляет загрузкой, валидацией и генерацией шаблонов для нескольких аккаунтов:
 
 ```python
 from dataclasses import dataclass, field
@@ -715,36 +726,39 @@ token = "token2"
 enabled = true
 ```
 
-### Отправка от указанного аккаунта
+### Отправка указанному аккаунту
 
 ```python
 # Использование метода Using для указания аккаунта
 my_adapter = adapter.get("myplatform")
 
+# Через self.user_id из события (рекомендуется, наиболее универсально)
+await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
+
 # Через имя аккаунта
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
-
-# Через ID аккаунта
-await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
 
-### self.user_id 与 Using 的关系
+### Связь self.user_id и Using
+
+Механизм ответа на события фреймворка автоматически извлекает `account_id` (приоритет) или `user_id` из поля `self` события, передавая его как параметр `Using`. Разработчикам адаптеров необходимо убедиться, что значение `self.user_id` в Converter корректно сопоставляется с `_resolve_account()`.
+
+**Внутреннее поведение фреймворка** (`Event._get_adapter_and_target`):
 
 ```python
-# Внутреннее поведение фреймворка (Event._get_adapter_and_target)
-# Логика извлечения bot_id из события
+# Логика извлечения bot_id фреймворком
 bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
 
-# Вызов Using только при непустом bot_id
+# Вызов Using только если bot_id не пустой
 if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **Ключевой момент**: Даже если адаптер использует только одну конфигурацию бота, фреймворк передаст `self.user_id` как параметр `Using`, при условии, что Converter правильно установил это значение. Адаптер должен гарантировать, что `self.user_id` соответствует идентификационному полю в `AccountConfigClass` (например, `bot_id`), чтобы `_resolve_account()` мог сопоставить правильный аккаунт. Если `self.user_id` пуст, фреймворк не будет вызывать `Using`, и в этом случае `account_id`, полученный в `call_api`, будет равен `None`, а `_resolve_account(None)` вернет первый включенный аккаунт.
+> **Ключевой момент**: Даже если адаптер использует только одну конфигурацию бота, при правильной установке `self.user_id` в Converter, фреймворк передаст его как параметр `Using`. Адаптер должен обеспечить, чтобы `self.user_id` совпадал с идентифицирующим полем в `AccountConfigClass` (например, `bot_id`), чтобы `_resolve_account()` мог сопоставить правильный аккаунт. Если `self.user_id` пуст, фреймворк не вызовет `Using`, в этом случае `account_id`, полученный `call_api`, будет `None`, а `_resolve_account(None)` вернет первый включенный аккаунт.
 
 ## Обработка ошибок
 
-### Повтор подключения
+### Повторные попытки соединения
 
 ```python
 import asyncio
@@ -762,7 +776,7 @@ class MyAdapter(BaseAdapter):
                 retry_count += 1
                 if retry_count < max_retries:
                     wait_time = min(60 * (2 ** retry_count), 600)
-                    self.logger.warning(f"Сбой подключения, повтор через {wait_time} сек")
+                    self.logger.warning(f"Соединение не удалось, повторная попытка через {wait_time} секунд")
                     await asyncio.sleep(wait_time)
                 else:
                     raise
@@ -784,31 +798,31 @@ async def call_api(self, endpoint: str, **params):
         response = await resp.json()
         return self._standardize_response(response)
     except ClientTimeoutError:
-        self.logger.error(f"Тайм-аут запроса: {endpoint}")
-        return self._error_response("Тайм-аут запроса", 32000)
+        self.logger.error(f"Запрос истек: {endpoint}")
+        return self._error_response("Запрос истек", 32000)
     except ClientError as e:
         self.logger.error(f"Ошибка сети: {e}")
-        return self._error_response("Сбой сетевого запроса", 33000)
+        return self._error_response("Ошибка сетевого запроса", 33000)
     except Exception as e:
         self.logger.error(f"Неизвестная ошибка: {e}")
         return self._error_response(str(e), 34000)
 ```
 
-> **Обратная совместимость**: Старый код адаптеров, использующий напрямую `aiohttp.ClientSession`, не затронут и по-прежнему может перехватывать `aiohttp.ClientError`. Оба способа могут сосуществовать. Для нового кода рекомендуется использовать `sdk.client` + иерархию исключений ErisPulse.
+> **Обратная совместимость**: Старый код адаптера, использующий напрямую `aiohttp.ClientSession`, не затронут и все еще может перехватывать `aiohttp.ClientError`. Оба способа могут сосуществовать. Для нового кода рекомендуется использовать `sdk.client` + иерархию исключений ErisPulse.
 
 ## Управление состоянием бота
 
 AdapterManager содержит встроенную систему отслеживания состояния бота, автоматически поддерживающую онлайн-статус, время активности и метаданные всех зарегистрированных ботов.
 
-### Механизм автоматического обнаружения
+### Автоматическое обнаружение
 
-Когда адаптер отправляет событие через `adapter.emit()`, фреймворк автоматически проверяет поле `self` в событии:
+Когда адаптер отправляет события через `adapter.emit()`, фреймворк автоматически проверяет поле `self` в событии:
 
-- **meta-событие**: Выполняет соответствующие операции на основе `detail_type` (connect — регистрация / disconnect — отметка оффлайн / heartbeat — обновление активности).
-- **Обычные события** (message/notice/request): Автоматическое обнаружение бота и обновление времени активности.
+- **meta-события**: Выполняются соответствующие операции на основе `detail_type` (connect регистрация/отметка офлайн/heartbeat обновление времени активности)
+- **обычные события** (message/notice/request): Автоматическое обнаружение бота и обновление времени активности
 
 ```python
-# Все события, содержащие поле self, триггерят автообнаружение
+# Все события, содержащие поле self, вызывают автоматическое обнаружение
 await self.adapter.emit({
     "type": "message",
     "platform": "myplatform",
@@ -822,9 +836,9 @@ await self.adapter.emit({
 
 | `detail_type` | Описание | Поведение фреймворка |
 |---|---|
-| `connect` | Подключение бота | Регистрация бота и триггер события жизненного цикла `adapter.bot.online` |
-| `disconnect` | Отключение бота | Пометка бота как офлайн и триггер события жизненного цикла `adapter.bot.offline` |
-| `heartbeat` | Пульс бота | Обновление времени активности бота и метаданных |
+| `connect` | Подключение бота | Регистрация бота и запуск события жизненного цикла `adapter.bot.online` |
+| `disconnect` | Отключение бота | Отметка бота как офлайн и запуск события жизненного цикла `adapter.bot.offline` |
+| `heartbeat` | Сердцебиение бота | Обновление времени активности и метаданных бота |
 
 ### Отправка meta-событий адаптером
 
@@ -834,13 +848,13 @@ await self.adapter.emit({
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
         # Отправка события connect одной строкой
-        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="Мой робот")
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="Мой_робот")
 
     async def _on_bot_disconnect(self, bot_id: str):
         await self.emit_meta("disconnect", bot_id)
 ```
 
-Поддерживается также ручное построение (старый способ по-прежнему совместим):
+Также поддерживается ручное построение (старый способ, по-прежнему совместим):
 
 ```python
 await self.adapter.emit({
@@ -853,7 +867,7 @@ await self.adapter.emit({
 
 ### Расширенная информация поля `self`
 
-Поле `self` поддерживает следующие необязательные поля, помимо обязательных `platform` и `user_id`:
+Помимо обязательных полей `platform` и `user_id`, поле `self` поддерживает следующие необязательные поля:
 
 | Поле | Описание |
 |---|---|
@@ -867,25 +881,25 @@ await self.adapter.emit({
 ```python
 from ErisPulse import sdk
 
-# Получение информации о конкретном боте
+# Получение информации об отдельном боте
 info = sdk.adapter.get_bot_info("myplatform", "bot123")
 # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
 
 # Перечисление всех ботов
 all_bots = sdk.adapter.list_bots()
 
-# Перечисление ботов для конкретной платформы
+# Перечисление ботов указанной платформы
 platform_bots = sdk.adapter.list_bots("myplatform")
 
-# Проверка, находится ли бот в сети
+# Проверка, онлайн ли бот
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# Получение полного сводного состояния (подходит для отображения в WebUI)
+# Получение полного сводного статуса (подходит для отображения в WebUI)
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
 ```
 
-### Слушивание жизненного цикла бота
+### Слушание жизненного цикла бота
 
 ```python
 from ErisPulse import sdk
@@ -900,11 +914,11 @@ async def on_bot_online(data):
 async def on_bot_offline(data):
     platform = data.get("platform")
     bot_id = data.get("bot_id")
-    sdk.logger.info(f"Бот оффлайн: {platform}/{bot_id}")
+    sdk.logger.info(f"Бот офлайн: {platform}/{bot_id}")
 ```
 
 ## Связанные документы
 
-- [Руководство по разработке адаптера](getting-started.md) - Создание первого адаптера
+- [Начало работы с разработкой адаптера](getting-started.md) - Создание первого адаптера
 - [Подробное описание SendDSL](send-dsl.md) - Изучение отправки сообщений
-- [Рекомендации по разработке адаптера](best-practices.md) - Создание качественных адаптеров
+- [Рекомендации по разработке адаптера](best-practices.md) - Разработка качественного адаптера

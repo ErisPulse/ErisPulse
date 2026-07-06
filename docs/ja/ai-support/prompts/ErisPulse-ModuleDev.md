@@ -2224,11 +2224,11 @@ sdk.lifecycle  # ライフサイクルシステム
 
 # モジュールのコアコンセプト
 
-ErisPulseモジュールのコアコンセプトを理解することは、高品質なモジュールを開発するための基礎となります。
+ErisPulse モジュールのコアコンセプトを理解することは、高品質なモジュールを開発するための基礎です。
 
 ## モジュールのライフサイクル
 
-### ロード戦略
+### 加載戦略
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -2237,19 +2237,19 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """モジュールのロード戦略を返す"""
+        """モジュールの加載戦略を返す"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # 遅延ロードするか即時ロードするか
-            priority=0,       # ロードの優先度（数値が大きいほど先にロードされる）
-            depends=["OtherModule"]  # オプション：依存する他のモジュールを宣言
+            lazy_load=True,   # 慣性加載か即時加載
+            priority=0,       # 加載優先度（数値が大きいほど先に加載）
+            depends=["OtherModule"]  # 任意：依存する他のモジュールを宣言
         )
 ```
 
-> `depends` で宣言されたモジュールが登録されていない場合、現在のモジュールはスキップされ、警告が記録されます。ロード順序はトポロジカルソートによって決定され、同じ階層内では `priority` の降順でロードされます。
+> `depends` で宣言されたモジュールが登録されていない場合、現在のモジュールはスキップされ、警告が記録されます。加載順序はトポロジカルソートによって決定され、同じレベルでは `priority` 降順で処理されます。
 
 ### on_load メソッド
 
-モジュールのロード時に呼び出され、リソースの初期化とイベントハンドラの登録に使用されます：
+モジュールが加載されるときに呼び出され、リソースの初期化とイベントハンドラの登録に使用されます：
 
 ```python
 async def on_load(self, event):
@@ -2258,31 +2258,31 @@ async def on_load(self, event):
     async def hello_handler(event):
         await event.reply("こんにちは！")
     
-    # SDK内蔵のHTTPクライアントを使用（コネクションプールを自動管理し、手動でのセッション作成は不要）
-    # sdk.client経由でリクエストを送信可能
+    # SDK に内蔵された HTTP クライアントを使用（接続プールの管理が自動的に行われ、手動で session を作成する必要はありません）
+    # sdk.client を使用してリクエストを送信できます
 ```
 
 ### on_unload メソッド
 
-モジュールのアンロード時に呼び出され、リソースのクリーンアップに使用されます：
+モジュールがアンロードされるときに呼び出され、リソースのクリーンアップに使用されます：
 
 ```python
 async def on_unload(self, event):
-    # カスタムリソースのクリーンアップ
-    # sdk.clientはフレームワークによって管理されるため、手動で閉じる必要はありません
+    # 自作リソースのクリーンアップ
+    # sdk.client はフレームワークが管理するため、手動で閉じる必要はありません
     
-    # イベントハンドラの登録解除（フレームワークが自動的に処理します）
+    # イベントハンドラのキャンセル（フレームワークが自動的に処理します）
     self.logger.info("モジュールがアンロードされました")
 ```
 
-## SDKオブジェクト
+## SDK オブジェクト
 
 ### コアモジュールへのアクセス
 
 ```python
 from ErisPulse import sdk
 
-# sdkオブジェクトを通じてすべてのコアモジュールにアクセス
+# sdk オブジェクトを介してすべてのコアモジュールにアクセス
 sdk.logger.info("ログ")
 sdk.storage.set("key", "value")
 config = sdk.config.getConfig("MyModule")
@@ -2296,14 +2296,14 @@ other_module = sdk.OtherModule
 result = await other_module.some_method()
 ```
 
-## アダプタの送信メソッドのクエリ
+## アダプタ送信メソッドの照会
 
-新しい標準仕様では、フォールバック送信メカニズムを実装するために `__getattr__` メソッドのオーバーライドが要求されるため、`hasattr` メソッドを使用してメソッドの存在をチェックすることができません。`2.3.5` 以降、送信メソッドをクエリする機能が追加されました。
+新しい標準規格では、デフォルト送信メカニズムを実装するために `__getattr__` メソッドをオーバーライドする必要があるため、`hasattr` メソッドでメソッドの存在をチェックすることはできません。`2.3.5` 以降では、送信メソッドを照会する機能が追加されました。
 
-### サポートされている送信メソッドのリスト
+### 支持される送信メソッドの一覧表示
 
 ```python
-# プラットフォームがサポートするすべての送信メソッドをリストアップ
+# プラットフォームがサポートするすべての送信メソッドをリスト表示
 methods = sdk.adapter.list_sends("onebot11")
 # 戻り値: ["Text", "Image", "Voice", "Markdown", ...]
 ```
@@ -2311,7 +2311,7 @@ methods = sdk.adapter.list_sends("onebot11")
 ### メソッドの詳細情報の取得
 
 ```python
-# 特定のメソッドの詳細情報を取得
+# あるメソッドの詳細情報を取得
 info = sdk.adapter.send_info("onebot11", "Text")
 # 戻り値:
 # {
@@ -2326,7 +2326,54 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ## 設定管理
 
-### 設定の読み取り
+### 宣言的設定（推奨）
+
+`v2.5.2` 以降、モジュールは `ConfigClass` を使って設定クラスを宣言でき、アダプタと同じ設定スキーマシステムを使用できます。設定は `self.cfg` を介してリアルタイムに読み取られ、変更後はすぐに反映されます：
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_module.api_key", "default": "API キー"},
+            "required": True,
+            "secret": True,
+            "ui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
+    timeout: int = field(
+        default=30,
+        metadata={
+            "description": {"i18n": "my_module.timeout", "default": "タイムアウト時間（秒）"},
+            "ui": {"widget": "number", "group": "advanced", "order": 2},
+        },
+    )
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    async def on_load(self, event):
+        self.logger.info("モジュールが加載されました")
+
+    async def on_unload(self, event):
+        pass
+
+    async def do_something(self):
+        cfg = self.cfg  # 実時読み取り、型安全
+        api_key = cfg.api_key
+        timeout = cfg.timeout
+```
+
+`BaseConfig` は、アダプタ、モジュール、外部プロジェクトなど、あらゆる場面で使用できる一般的な設定基底クラスです。設定フィールドには i18n 多言語の説明がサポートされています（[i18n ドキュメント](../../advanced/i18n.md#設定フィールド多言語)を参照）。
+
+### 手動での設定読み取り（互換モード）
+
+宣言的設定を使用しない場合、設定ストアを直接読み書きすることも可能です：
 
 ```python
 def _load_config(self):
@@ -2341,37 +2388,31 @@ def _load_config(self):
     return config
 ```
 
-### 設定の使用
-
-```python
-async def do_something(self):
-    api_key = self.config.get("api_key")
-    timeout = self.config.get("timeout", 30)
-```
+> **注意**：手動モードでは、`self.config` を属性名として使用しないでください。将来のフレームワークの属性との衝突を避けるために、`self.cfg` またはカスタム名を使用することを推奨します。
 
 ## ストレージシステム
 
-### 基本的な使用方法
+### 基本的な使用
 
 ```python
-# データの保存
+# データをストア
 sdk.storage.set("user:123", {"name": "張三"})
 
-# データの取得
+# データを取得
 user = sdk.storage.get("user:123", {})
 
-# データの削除
+# データを削除
 sdk.storage.delete("user:123")
 ```
 
 ### トランザクションの使用
 
 ```python
-# トランザクションを使用してデータの整合性を確保
+# トランザクションを使用してデータの一貫性を確保
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
-    # いずれかの操作が失敗した場合、すべての変更がロールバックされます
+    # いずれかの操作が失敗した場合、すべての変更はロールバックされます
 ```
 
 ## イベント処理
@@ -2382,44 +2423,44 @@ with sdk.storage.transaction():
 from ErisPulse.Core.Event import command, message
 
 # コマンドの登録
-@command("info", help="情報の取得")
+@command("info", help="情報を取得")
 async def info_handler(event):
     await event.reply("これは情報です")
 
 # メッセージハンドラの登録
 @message.on_group_message()
 async def group_handler(event):
-    sdk.logger.info(f"グループメッセージを受信: {event.get_text()}")
+    sdk.logger.info(f"グループメッセージを受信しました: {event.get_text()}")
 ```
 
 ### イベントハンドラのライフサイクル
 
-フレームワークはイベントハンドラの登録と解除を自動的に管理するため、`on_load` 内で登録するだけで済みます。
+フレームワークはイベントハンドラの登録とアンロードを自動的に管理します。`on_load` で登録するだけで済みます。
 
-## 遅延ロードメカニズム
+## 慣性加載メカニズム
 
-### 仕組み
+### 動作原理
 
 ```python
-# モジュールは初めてアクセスされたときに初期化されます
+# モジュールが最初にアクセスされたときにのみ初期化されます
 result = await sdk.my_module.some_method()
 # ↑ ここでモジュールの初期化がトリガーされます
 ```
 
-### 即時ロード
+### 即時加載
 
-即座に初期化する必要があるモジュール（リスナーやタイマーなど）の場合：
+即時初期化が必要なモジュール（リスナー、タイマーなど）：
 
 ```python
 @staticmethod
 def get_load_strategy():
     return ModuleLoadStrategy(
-        lazy_load=False,  # 即時ロード
+        lazy_load=False,  # 即時加載
         priority=100
     )
 ```
 
-## エラーハンドリング
+## エラー処理
 
 ### 例外のキャッチ
 
@@ -2439,19 +2480,19 @@ async def handle_event(self, event):
 ### ログ記録
 
 ```python
-# 異なるログレベルを使用
+# さまざまなログレベルを使用
 self.logger.debug("デバッグ情報")    # 詳細なデバッグ情報
 self.logger.info("実行状態")      # 正常な実行情報
 self.logger.warning("警告情報")  # 警告情報
 self.logger.error("エラー情報")    # エラー情報
-self.logger.critical("致命的エラー") # 致命的なエラー
+self.logger.critical("致命的エラー") # 致命的エラー
 ```
 
 ## 関連ドキュメント
 
-- [モジュール開発入門](getting-started.md) - 最初のモジュールを作成
-- [Eventラッパークラス](event-wrapper.md) - イベント処理の詳細
-- [ベストプラクティス](best-practices.md) - 高品質なモジュールの開発
+- [モジュール開発入門](docs/ja/getting-started.md) - 最初のモジュールを作成する
+- [Event 包装クラス](docs/ja/event-wrapper.md) - イベント処理の詳細
+- [ベストプラクティス](docs/ja/best-practices.md) - 高品質なモジュールを開発するための方法
 
 
 ### Event 包装类详解
@@ -2811,16 +2852,16 @@ async def ai_chat(self, prompt: str):
 
 # モジュール開発のベストプラクティス
 
-本ドキュメントは、ErisPulse モジュール開発のためのベストプラクティス（最善の手法）に関する提案を提供します。
+このドキュメントでは、ErisPulse モジュール開発に関するベストプラクティスを提供します。
 
 ## モジュール設計
 
-### 1. 単一責任原則
+### 1. 単一責任の原則
 
-各モジュールは、1つのコア機能のみを担当するべきです：
+各モジュールは 1 つの核心的な機能のみを担当すべきです：
 
 ```python
-# よい設計：モジュールは1つの機能のみを担当
+# 良い設計：各モジュールは 1 つの機能のみを担当
 class WeatherModule(BaseModule):
     """天気照会モジュール"""
     pass
@@ -2829,9 +2870,9 @@ class NewsModule(BaseModule):
     """ニュース照会モジュール"""
     pass
 
-# 悪い設計：モジュールが複数の無関係な機能を担当
+# 悪い設計：1 つのモジュールが複数の無関係な機能を担当
 class UtilityModule(BaseModule):
-    """天気、ニュース、ジョークなど複数の機能を含む"""
+    """天気、ニュース、ジョークなどを含む複数の機能"""
     pass
 ```
 
@@ -2844,27 +2885,40 @@ name = "ErisPulse-ModuleName"  # ErisPulse- 接頭辞を使用
 
 ### 3. 明確な設定管理
 
+宣言型設定（`ConfigClass` + `BaseConfig`）の使用を推奨します。これにより、型安全性、自動テンプレート生成、WebUI フォームサポートなどの機能が得られます。
+
 ```python
-def _load_config(self):
-    config = self.sdk.config.getConfig("MyModule")
-    if not config:
-        default_config = {
-            "api_url": "https://api.example.com",
-            "timeout": 30,
-            "cache_ttl": 3600
-        }
-        self.sdk.config.setConfig("MyModule", default_config)
-        self.logger.warning("デフォルト設定を作成しました")
-        return default_config
-    return config
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_url: str = field(default="https://api.example.com", metadata={
+        "description": {"i18n": "my_module.api_url", "default": "API アドレス"},
+    })
+    timeout: int = field(default=30, metadata={
+        "description": {"i18n": "my_module.timeout", "default": "タイムアウト時間（秒）"},
+    })
+    cache_ttl: int = field(default=3600, metadata={
+        "description": {"i18n": "my_module.cache_ttl", "default": "キャッシュの有効期間（秒）"},
+    })
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    async def do_something(self):
+        cfg = self.cfg  # 型安全で、リアルタイム読み取り
+        await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
+
+マニュアル方式（設定ストアの読み書き）も引き続き使用できます（[モジュールの核となる概念](core-concepts.md#設定管理)を参照）。
 
 ## 非同期プログラミング
 
 ### 1. 非同期ライブラリの使用
 
 ```python
-# SDK 内蔵 HTTP クライアント（非同期、自動ログおよび統計）の使用を推奨
+# SDK 内蔵 HTTP クライアント（非同期、自動ログと統計）を使用を推奨
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -2872,7 +2926,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# sdk.client 経由でも使用可能（効果は同じ）
+# sdk.client 経由でも使用可能（同じ効果）
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -2880,7 +2934,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# aiohttp を直接インポートしないでください（フレームワークによる統一管理が困難）
+# aiohttp を直接インポートしないでください（フレームワークの統一管理が困難になります）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -2889,7 +2943,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# requests を使用しないでください（同期であり、イベントループをブロックします）
+# requests を使用しないでください（同期で、イベントループをブロックします）
 import requests
 
 class MyModule(BaseModule):
@@ -2901,10 +2955,10 @@ class MyModule(BaseModule):
 
 ```python
 async def handle_command(self, event):
-    # 負荷の高い操作をバックグラウンドで実行するために create_task を使用
+    # create_task を使用して、重い処理をバックグラウンドで実行する
     task = asyncio.create_task(self._long_operation())
     
-    # 結果が必要な場合
+    # 結果を待つ必要がある場合
     result = await task
 ```
 
@@ -2912,11 +2966,11 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # SDK クライアントは接続プールを自動的に管理するため、手動で session を作成する必要はありません
+    # SDK クライアントは接続プールを自動的に管理するため、手動でセッションを作成する必要はありません
     pass
     
 async def on_unload(self, event):
-    # カスタムクライアントが必要な場合は、リソースのクリーンアップを忘れずに行ってください
+    # カスタムクライアントが必要な場合は、リソースをクリーンアップすることを忘れないでください
     pass
 ```
 
@@ -2925,35 +2979,35 @@ async def on_unload(self, event):
 ### 1. Event ラッパークラスの使用
 
 ```python
-# Event ラッパークラスを使用した簡便なメソッド
+# Event ラッパークラスの便利なメソッドを使用
 @command("info")
 async def info_command(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"こんにちは、{nickname}！")
 
-# 辞書への直接アクセスは避けてください
+# 辞書への直接アクセスは避ける
 @command("info")
 async def info_command(event):
-    user_id = event["user_id"]  # 不明確でエラーが発生しやすい
+    user_id = event["user_id"]  # 不明確で、間違いを起こしやすい
 ```
 
-### 2. レイジーロード（遅延読み込み）の適切な使用
+### 2. 適切な遅延読み込み（Lazy Load）の使用
 
 ```python
-# コマンド処理モジュールは即座にロードする必要があります
+# コマンド処理モジュールはすぐに読み込む必要がある
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# リスナー（リスニング）モジュールは即座にロードする必要があります
+# リスナーモジュールはすぐに読み込む必要がある
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# ユーティリティモジュールはレイジーロードに適しています
+# ユーティリティモジュールは遅延読み込みに適している
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -2964,16 +3018,16 @@ class UtilityModule(BaseModule):
 
 ```python
 async def on_load(self, event):
-    # on_load 内でイベントハンドラーを登録
+    # on_load でイベントハンドラーを登録する
     @command("hello")
     async def hello_handler(event):
         await event.reply("こんにちは！")
     
     @message.on_group_message()
     async def group_handler(event):
-        self.logger.info("グループメッセージを受信しました")
+        self.logger.info("グループメッセージを受信")
     
-    # 手動でアン登録する必要はありません。フレームワークが自動的に処理します
+    # 手動で登録解除する必要はなく、フレームワークが自動的に処理します
 ```
 
 ## エラーハンドリング
@@ -2985,16 +3039,17 @@ async def handle_event(self, event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # 予期されるビジネスエラー
+        # 予期されたビジネスエラー
         self.logger.warning(f"ビジネス警告: {e}")
         await event.reply(f"パラメータエラー: {e}")
     except aiohttp.ClientError as e:
-        # ネットワークエラー（sdk.client を使用する場合、この例外はほとんど発生しません。組み込みリトライ機構のため）
+        # ネットワークエラー（sdk.client + ClientError の使用を推奨）
+        # 古いコードでも aiohttp を直接使用している場合は正常に動作しますが、新規コードでは ErisPulse の例外体系を使用することを推奨します
         self.logger.error(f"ネットワークエラー: {e}")
-        await event.reply("ネットワークリクエストに失敗しました。後でもう一度お試しください")
+        await event.reply("ネットワークリクエストに失敗しました。しばらくしてからやり直してください")
     except Exception as e:
         # 予期しないエラー
-        self.logger.error(f"不明なエラー: {e}", exc_info=True)
+        self.logger.error(f"未知のエラー: {e}", exc_info=True)
         await event.reply("処理に失敗しました。管理者に連絡してください")
         raise
 ```
@@ -3002,7 +3057,7 @@ async def handle_event(self, event):
 ### 2. タイムアウト処理
 
 ```python
-# SDK 内蔵クライアントの使用を推奨（タイムアウトおよびリトライ機能付き）
+# SDK 内蔵クライアント（タイムアウトとリトライを備えている）を使用を推奨
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -3011,7 +3066,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"リクエストがタイムアウトしました: {url}")
+        self.logger.warning(f"リクエストのタイムアウト: {url}")
         raise
 ```
 
@@ -3020,13 +3075,13 @@ async def fetch_with_timeout(self, url, timeout=30):
 ### 1. トランザクションの使用
 
 ```python
-# トランザクションを使用してデータの一貫性を確保
+# トランザクションを使用してデータの整合性を確保する
 async def update_user(self, user_id, data):
     with self.sdk.storage.transaction():
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ トランザクションを使用しないと、データの一貫性が損なわれる可能性があります
+# ❌ トランザクションを使用しないと、データの整合性が保証されない可能性があります
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
     # ここでエラーが発生した場合、上記の設定はロールバックされません
@@ -3042,7 +3097,7 @@ def cache_multiple_items(self, items):
         f"item:{k}": v for k, v in items.items()
     })
 
-# ❌ 複数回の呼び出しは効率が悪い
+# ❌ 複数回呼び出すのは効率が低い
 def cache_multiple_items(self, items):
     for k, v in items.items():
         self.sdk.storage.set(f"item:{k}", v)
@@ -3050,25 +3105,25 @@ def cache_multiple_items(self, items):
 
 ## ロギング
 
-### 1. ログレベルの適切な使用
+### 1. 適切なログレベルの使用
 
 ```python
 # DEBUG: 詳細なデバッグ情報（開発時のみ）
 self.logger.debug(f"入力パラメータ: {params}")
 
-# INFO: 正常な動作に関する情報
-self.logger.info("モジュールがロードされました")
-self.logger.info(f"リクエストを処理中: {request_id}")
+# INFO: 正常な動作情報
+self.logger.info("モジュールが読み込まれました")
+self.logger.info(f"リクエスト処理中: {request_id}")
 
-# WARNING: 警告メッセージ、主要機能には影響しない
+# WARNING: 警告情報。主要な機能には影響しない
 self.logger.warning(f"設定項目 {key} が設定されていません。デフォルト値を使用します")
-self.logger.warning("API レスポンスが遅い可能性があります。最適化が必要です")
+self.logger.warning("API レスポンスが遅い。最適化が必要かもしれません")
 
-# ERROR: エラーメッセージ
+# ERROR: エラー情報
 self.logger.error(f"API リクエストに失敗: {e}")
 self.logger.error(f"イベント処理に失敗: {e}", exc_info=True)
 
-# CRITICAL: 致命的なエラー、即座に対応が必要
+# CRITICAL: 致命的なエラー。すぐに対処する必要があります
 self.logger.critical("データベース接続に失敗しました。ボットが正常に動作できません")
 ```
 
@@ -3076,10 +3131,10 @@ self.logger.critical("データベース接続に失敗しました。ボット�
 
 ```python
 # 構造化ログを使用すると、解析が容易になります
-self.logger.info(f"リクエストを処理中: request_id={request_id}, user_id={user_id}, duration={duration}ms")
+self.logger.info(f"リクエスト処理中: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
 # ❌ 非構造化ログを使用する
-self.logger.info(f"リクエストを処理しました。ユーザー {user_id}からのものです。所要時間 {duration} ミリ秒")
+self.logger.info(f"リクエストを処理しました。ユーザー {user_id} からのもの。所要時間は {duration} ミリ秒です")
 ```
 
 ## パフォーマンス最適化
@@ -3105,26 +3160,26 @@ class MyModule(BaseModule):
             return data
 ```
 
-### 2. ブロック操作の回避
+### 2. ブロッキング操作の回避
 
 ```python
-# 非同期操作を使用
+# 非同期操作を使用する
 async def process_message(self, event):
     # 非同期処理
     await self._async_process(event)
 
-# ❌ ブロック操作
+# ❌ ブロッキング操作
 async def process_message(self, event):
-    # 同期操作。イベントループをブロックします
+    # 同期操作で、イベントループをブロックします
     result = self._sync_process(event)
 ```
 
 ## セキュリティ
 
-### 1. 機密データの保護
+### 1. 敏感データの保護
 
 ```python
-# 機密データは設定に保存します
+# 敏感データは設定に保存する
 class MyModule(BaseModule):
     def _load_config(self):
         config = self.sdk.config.getConfig("MyModule")
@@ -3133,21 +3188,21 @@ class MyModule(BaseModule):
         if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
             raise ValueError("config.toml で有効な API キーを設定してください")
 
-# ❌ 機密データをハードコードしないでください
+# ❌ 敏感データをハードコーディングする
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # これを行わないでください！
+    API_KEY = "sk-1234567890"  # これは行わないでください！
 ```
 
 ### 2. 入力検証
 
 ```python
-# ユーザー入力を検証します
+# ユーザー入力を検証する
 async def process_command(self, event):
     user_input = event.get_text()
     
     # 入力長を検証
     if len(user_input) > 1000:
-        await event.reply("入力が長すぎます。再度入力してください")
+        await event.reply("入力が長すぎます。もう一度入力してください")
         return
     
     # 入力形式を検証
@@ -3166,7 +3221,7 @@ from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
     def test_load_config(self):
-        """設定ロードのテスト"""
+        """設定の読み込みをテストする"""
         module = MyModule()
         config = module._load_config()
         assert config is not None
@@ -3178,7 +3233,7 @@ class TestMyModule:
 ```python
 @pytest.mark.asyncio
 async def test_command_handling():
-    """コマンド処理のテスト"""
+    """コマンド処理をテストする"""
     module = MyModule()
     await module.on_load({})
     
@@ -3187,7 +3242,7 @@ async def test_command_handling():
     await module.handle_command(event)
 ```
 
-## 部署
+## デプロイ
 
 ### 1. バージョン管理
 
@@ -3197,29 +3252,29 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-セマンティックバージョニング（Semantic Versioning）に従います：
+セマンティックバージョンに従う：
 - MAJOR.MINOR.PATCH
-- メジャーバージョン：非互換な API の変更
-- マイナーバージョン：下位互換の機能の追加
-- パッチバージョン：下位互換の問題修正
+- メジャーバージョン：互換性のない API 変更
+- マイナーバージョン：下位互換のある新機能の追加
+- パッチバージョン：下位互換のある問題修正
 
-### 2. ドキュメントの充実
+### 2. ドキュメントの整備
 
 ```markdown
 # README.md
 
 - モジュールの概要
 - インストール手順
-- 設定方法
+- 設定説明
 - 使用例
 - API ドキュメント
-- 貢献ガイド
+- 貢献ガイドライン
 ```
 
 ## 関連ドキュメント
 
 - [モジュール開発入門](getting-started.md) - 最初のモジュールを作成する
-- [モジュールの核心的概念](core-concepts.md) - モジュールアーキテクチャを理解する
+- [モジュールの核となる概念](core-concepts.md) - モジュールアーキテクチャを理解する
 - [Event ラッパークラス](event-wrapper.md) - イベント処理の詳細
 
 
@@ -7114,21 +7169,21 @@ clear_custom_types(platform="discord")  # 指定したプラットフォーム�
 
 # 国際化 (i18n) システム
 
-ErisPulse v2.5.0 から、完全な国際化サポートが組み込まれました。フレームワークのコアおよび CLI インターフェースは、システム言語に基づいて表示テキストを自動的に切り替えることができ、外部モジュールによる独自の翻訳の登録もサポートしています。
+ErisPulse v2.5.0 より、完全な国際化 (i18n) サポートが組み込まれています。フレームワークの Core および CLI インターフェースは、システム言語に応じて表示テキストを自動的に切り替えたり、外部モジュールによる独自の翻訳登録をサポートしています。
 
-## サポートされる言語
+## サポートされている言語
 
 | 言語 | コード | 説明 |
 |------|------|------|
 | 簡体字中国語 | `zh-CN` | デフォルト言語（フレームワークのネイティブ言語） |
-| 繁体字中国語 | `zh-TW` | 繁体字中国語（香港・マカオ・台湾） |
-| English | `en` | 英語（一般的なフォールバック言語） |
+| 繁体字中国語 | `zh-TW` | 繁体字中国語（香港/マカオ/台湾） |
+| English | `en` | 英語（汎用的なフォールバック言語） |
 | 日本語 | `ja` | 日本語 |
 | Русский | `ru` | ロシア語 |
 
-## クイック体験
+## クイックスタート
 
-### 環境変数による切り替え
+### 環境変数を使用して切り替える
 
 ```bash
 # Windows PowerShell
@@ -7139,9 +7194,9 @@ epsdk run
 ERISPULSE_LANG=ja epsdk run
 ```
 
-### 設定ファイルによる切り替え
+### 設定ファイルを使用して切り替える
 
-`config/config.toml` に以下を追加します：
+`config/config.toml` に追加します：
 
 ```toml
 [ErisPulse.i18n]
@@ -7150,7 +7205,7 @@ language = "zh-TW"
 
 `"auto"`（デフォルト値）に設定すると、システム言語を自動的に検出します。
 
-### コードでの手動切り替え
+### コード内で手動で切り替える
 
 ```python
 from ErisPulse import i18n
@@ -7167,30 +7222,30 @@ i18n.reset_language()
 
 ## 言語検出メカニズム
 
-フレームワークは、以下の優先順位に従ってユーザーの言語を検出します。
+フレームワークは以下の優先順位でユーザーの言語を検出します：
 
-1. **環境変数 `ERISPULSE_LANG`** — 最高の優先度。テストや一時的な切り替えに使用
-2. **Windows API** — `GetUserDefaultLocaleName`（Windows のみ。Git Bash などのツールによる `LANG` の上書きの影響を受けません）
+1. **環境変数 `ERISPULSE_LANG`** — 最優先度。テストや一時的な切り替えに使用
+2. **Windows API** — `GetUserDefaultLocaleName`（Windows のみ。Git Bash 等のツールによる `LANG` の上書き影響を受けません）
 3. **環境変数** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG`（Unix/macOS 標準）
-4. **システムロケール** — `locale.getlocale()` / `locale.getdefaultlocale()`
+4. **システム Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
 5. **フォールバック** — en（英語）
 
-### 近接マッピングの原則
+### 最適マッピング原理
 
-検出された言語が正確に一致しない場合、近接原則に従ってサポートされる言語にマッピングされます。
+検出された言語が完全一致しない場合、サポートされている言語へ最適マッピング原理に従ってマッピングされます：
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **繁体字中国語**
 - その他すべての `zh-*`（例: `zh-CN`, `zh-SG`）→ **簡体字中国語**
-- `en-US`, `en-GB`, `en-AU` など → **英語**
+- `en-US`, `en-GB`, `en-AU` 等→ **英語**
 - `ja-JP` → **日本語**
 - `ru-RU` → **ロシア語**
 - その他認識できない言語 → **簡体字中国語（フォールバック）**
 
 ---
 
-## モジュールでの i18n の使用
+## モジュールでの i18n 使用
 
-独自の翻訳テキストを登録することで、自分のモジュールでも多言語をサポートさせることができます。
+独自の翻訳テキストを登録して、モジュール自身もマルチ言語対応させることができます。
 
 ### カスタム翻訳の登録
 
@@ -7218,29 +7273,48 @@ i18n.register("en", {
 from ErisPulse import i18n
 
 # シンプルな翻訳
-i18n.t("my_module.welcome")  # 現在の言語を自動的に使用
+i18n.t("my_module.welcome")  # 現在の言語を自動使用
 
-# フォーマットパラメータ付き
+# 書式設定パラメータ付き
 i18n.t("my_module.hello", name="Alice")
 
-# デフォルト値を指定（翻訳キーが存在しない場合に返却）
-i18n.t("my_module.unknown_key", default="デフォルトテキスト")
+# デフォルト値の指定（翻訳キーが存在しない場合に返却）
+i18n.t("my_module.unknown_key", default="デフォルトのテキスト")
 ```
 
 ### モジュールクラスでの使用
 
 ```python
+from dataclasses import dataclass, field
 from ErisPulse import i18n
 from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    welcome_msg: str = field(
+        default="ようこそ",
+        metadata={
+            "description": {"i18n": "my_module.welcome_msg", "default": "ウェルカムメッセージ"},
+            "ui": {"widget": "text", "group": "basic", "order": 1},
+        },
+    )
 
 class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
     async def on_load(self, event):
+        # 設定をリアルタイムで読み込み（アクセスするたびに最新値を反映）
+        self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
-    
+
     @command("hello")
     async def hello_handler(self, event):
         name = event.get_user_nickname() or "friend"
         await event.reply(i18n.t("my_module.hello", name=name))
+
+    async def on_unload(self, event):
+        pass
 ```
 
 ### 翻訳のアンインストール
@@ -7251,6 +7325,82 @@ i18n.unregister_domain("my_module")
 ```
 
 ---
+
+## 設定フィールドの多言語対応
+
+v2.5.2 以降、設定 Schema は i18n をサポートしています。アダプタ/モジュールの設定フィールド説明（`description`）は i18n キーを参照でき、WebUI やその他のコンシューマーは現在の言語に基づいて自動的に対応するテキストを解釈します。
+
+### i18n 説明の宣言
+
+`field(metadata=...)` 内で、`description` は以下のいずれかになります：
+
+- **通常の文字列**（後方互換性）：`"プラットフォームトークン"`
+- **i18n 辞書**（推奨）：`{"i18n": "my_adapter.token", "default": "プラットフォームトークン"}`
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyAdapterConfig(BaseConfig):
+    token: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_adapter.token", "default": "プラットフォームトークン"},
+            "required": True,
+            "secret": True,
+            "ui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
+```
+
+`default` はフォールバックテキストです。翻訳が登録されていないか検索に失敗した場合に表示されます。
+
+### 設定翻訳の登録
+
+設定フィールドの i18n キーは通常の翻訳キーと同様に、`i18n.register()` を使用して登録します：
+
+```python
+from ErisPulse import i18n
+
+# 中国語を登録（default と一致しても可、異なっていても可）
+i18n.register("zh-CN", {
+    "my_adapter.token": "プラットフォームトークン",
+}, domain="my_adapter")
+
+# 英語を登録
+i18n.register("en", {
+    "my_adapter.token": "Platform Token",
+}, domain="my_adapter")
+```
+
+また、設定クラスからキーを自動的に抽出して登録する簡便な関数 `register_config_i18n()` も提供されています：
+
+```python
+from ErisPulse.runtime.config_schema import register_config_i18n
+
+# description.default を自動的に zh-CN の翻訳として抽出
+register_config_i18n(MyAdapterConfig, "zh-CN")
+
+# 英語の翻訳を手動で指定
+register_config_i18n(MyAdapterConfig, "en", {
+    "my_adapter.token": "Platform Token",
+})
+```
+
+### WebUI の消費方法
+
+`get_config_schema()` が返す schema では、`description` フィールドは i18n 辞書をそのまま透過的に渡します。WebUI フロントエンドは現在の言語に基づいて `i18n.t()` を呼び出して解釈できます。
+
+サーバー側で直接文字列として解釈する必要がある場合（例: i18n をサポートしないフロントエンドに返す場合）は、`resolve_config_schema()` を使用します：
+
+```python
+from ErisPulse.runtime.config_schema import resolve_config_schema
+
+# description は現在の言語の文字列として解釈済み
+schema = resolve_config_schema(MyAdapterConfig)
+print(schema["fields"]["token"]["description"])  # "プラットフォームトークン" または "Platform Token"
+```
 
 ## API リファレンス
 
@@ -7263,12 +7413,12 @@ i18n.unregister_domain("my_module")
 | `t(key, default=None, **kwargs)` | 翻訳テキストを取得（`gettext()` のエイリアス） |
 | `set_language(lang)` | 手動で言語を設定 |
 | `get_language()` | 現在の言語を取得 |
-| `reset_language()` | 自動検出にリセット（環境の再検出も行います） |
+| `reset_language()` | 自動検出にリセット（環境を再検出） |
 | `get_supported_languages()` | サポートされているすべての言語リストを取得 |
 | `has_translation(key, lang=None)` | 翻訳キーが存在するかチェック |
 | `register(lang, translations, domain)` | カスタム翻訳を登録 |
 | `unregister_domain(domain)` | 指定されたドメインのすべての翻訳をアンインストール |
-| `reload()` | 組み込み翻訳を再読み込みし、言語を再検出 |
+| `reload()` | 組み込み翻訳を再読み込みして言語を再検出 |
 
 #### `t()` メソッドの詳細
 
@@ -7276,16 +7426,16 @@ i18n.unregister_domain("my_module")
 def t(self, key, /, default=None, **kwargs):
 ```
 
-- `key` — 翻訳キー（位置引数のみ。`**kwargs` 内の `key=` と競合しません）
-- `default` — 翻訳が存在しない場合に返されるデフォルト値。デフォルトは `None`（キー名自体を返します）
-- `**kwargs` — フォーマットパラメータ。翻訳値内の `{placeholder}` を埋めます
+- `key` — 翻訳キー（位置引数のみ。`**kwargs` での `key=` と競合しない）
+- `default` — 翻訳が存在しない場合に返すデフォルト値。デフォルトは `None`（キー名そのものを返す）
+- `**kwargs` — 書式設定パラメータ。翻訳値内の `{placeholder}` を埋めるために使用
 
 例：
 
 ```python
 # 翻訳定義: "greeting": "こんにちは、{name}！{place}へようこそ。"
 i18n.t("greeting", name="Alice", place="ErisPulse")
-# 返却: "こんにちは、Alice！ErisPulseへようこそ。"
+# 返却値: "こんにちは、Alice！ErisPulseへようこそ。"
 ```
 
 ### SDK インスタンスからのアクセス
@@ -7293,7 +7443,7 @@ i18n.t("greeting", name="Alice", place="ErisPulse")
 ```python
 from ErisPulse import sdk
 
-# sdk.i18n は直接インポートした i18n と同じオブジェクトです
+# sdk.i18n は直接インポートした i18n と同じオブジェクト
 sdk.i18n.set_language("en")
 print(sdk.i18n.t("core.sdk.init.starting"))
 ```
@@ -7302,7 +7452,7 @@ print(sdk.i18n.t("core.sdk.init.starting"))
 
 ## 実行時設定
 
-### 設定 API 経由で i18n 設定を読み取る
+### 設定 API を使用して i18n 設定を読み取る
 
 ```python
 from ErisPulse.runtime import get_i18n_config, I18nConfig
@@ -7310,13 +7460,13 @@ from ErisPulse.runtime import get_i18n_config, I18nConfig
 config = get_i18n_config()
 print(config["language"])  # "auto" または具体的な言語コード
 
-# I18nConfig は dataclass で、設定テンプレートの生成に使用できます
+# I18nConfig は dataclass で、設定テンプレートの生成に使用可能
 schema = I18nConfig.__dataclass_fields__
 ```
 
 ### 設定項目の説明
 
-`config/config.toml` の `[ErisPulse.i18n]` セクション：
+`config/config.toml` の `[ErisPulse.i18n]` セクション内：
 
 ```toml
 [ErisPulse.i18n]
@@ -7336,7 +7486,7 @@ language = "auto"
 
 ### 翻訳キーの命名
 
-ドットで区切られた名前空間形式の使用を推奨します。
+ドット区切りのネームスペース形式の使用を推奨します：
 
 ```
 <モジュール名>.<カテゴリ>.<説明>
@@ -7344,13 +7494,13 @@ language = "auto"
 
 例: `my_module.command.hello_desc`、`core.adapter.start_failed`
 
-### 多言語のオーバーライド
+### 多言語のカバー
 
-すべての言語の翻訳を一度に提供する必要はありません。言語が欠落している場合は自動的に英語にフォールバックします。英語もない場合はキー名自体が表示されます。
+すべての言語の翻訳を一度に提供する必要はありません。欠落している言語は英語にフォールバックし、英語もない場合はキー名自体が表示されます。
 
 ### 動的コンテンツ
 
-動的に生成されるコンテンツ（ユーザー名、数量など）については、`{placeholder}` 形式を使用します。
+動的に生成されるコンテンツ（ユーザー名、数量など）については、`{placeholder}` 形式のフォーマットを使用します：
 
 ```python
 # 翻訳定義
@@ -7362,7 +7512,7 @@ i18n.t("user_count", count=len(users))
 
 ### ログメッセージ
 
-モジュールでフレームワークの Logger を使用している場合、これらのメッセージも現在の言語が自動的に使用されます。
+モジュールでフレームワークの Logger を使用している場合、これらのメッセージも自動的に現在の言語が使用されます：
 
 ```python
 self.logger.info(i18n.t("my_module.startup"))
@@ -7372,12 +7522,12 @@ self.logger.info(i18n.t("my_module.startup"))
 
 ## CLI i18n との関係
 
-CLI は**独立**した国際化モジュール（`ErisPulse.CLI.i18n`）を持ち、フレームワークコアの国際化モジュールとは完全に疎結合です。
+CLI には**独立**した国際化モジュール（`ErisPulse.CLI.i18n`）があり、フレームワーク Core の国際化モジュールとは完全に独立しています。
 
-- **Core i18n** — フレームワークコアモジュールで使用。外部モジュールが翻訳を登録できます
-- **CLI i18n** — コマンドラインインターフェース内部で使用。Core と翻訳データを共有しません
+- **Core i18n** — フレームワーク Core モジュールが使用。外部モジュールは翻訳を登録可能
+- **CLI i18n** — コマンドラインインターフェース内部で使用。Core と翻訳データを共有しない
 
-この設計により、CLI の翻訳変更がフレームワークコアの安定性に影響することはありません。
+この設計により、CLI の翻訳変更がフレームワーク Core の安定性に影響することはありません。
 
 
 ### Dashboard 视窗注册

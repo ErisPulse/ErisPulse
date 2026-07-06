@@ -3364,11 +3364,11 @@ sdk.lifecycle  # ライフサイクルシステム
 
 # モジュールのコアコンセプト
 
-ErisPulseモジュールのコアコンセプトを理解することは、高品質なモジュールを開発するための基礎となります。
+ErisPulse モジュールのコアコンセプトを理解することは、高品質なモジュールを開発するための基礎です。
 
 ## モジュールのライフサイクル
 
-### ロード戦略
+### 加載戦略
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -3377,19 +3377,19 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """モジュールのロード戦略を返す"""
+        """モジュールの加載戦略を返す"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # 遅延ロードするか即時ロードするか
-            priority=0,       # ロードの優先度（数値が大きいほど先にロードされる）
-            depends=["OtherModule"]  # オプション：依存する他のモジュールを宣言
+            lazy_load=True,   # 慣性加載か即時加載
+            priority=0,       # 加載優先度（数値が大きいほど先に加載）
+            depends=["OtherModule"]  # 任意：依存する他のモジュールを宣言
         )
 ```
 
-> `depends` で宣言されたモジュールが登録されていない場合、現在のモジュールはスキップされ、警告が記録されます。ロード順序はトポロジカルソートによって決定され、同じ階層内では `priority` の降順でロードされます。
+> `depends` で宣言されたモジュールが登録されていない場合、現在のモジュールはスキップされ、警告が記録されます。加載順序はトポロジカルソートによって決定され、同じレベルでは `priority` 降順で処理されます。
 
 ### on_load メソッド
 
-モジュールのロード時に呼び出され、リソースの初期化とイベントハンドラの登録に使用されます：
+モジュールが加載されるときに呼び出され、リソースの初期化とイベントハンドラの登録に使用されます：
 
 ```python
 async def on_load(self, event):
@@ -3398,31 +3398,31 @@ async def on_load(self, event):
     async def hello_handler(event):
         await event.reply("こんにちは！")
     
-    # SDK内蔵のHTTPクライアントを使用（コネクションプールを自動管理し、手動でのセッション作成は不要）
-    # sdk.client経由でリクエストを送信可能
+    # SDK に内蔵された HTTP クライアントを使用（接続プールの管理が自動的に行われ、手動で session を作成する必要はありません）
+    # sdk.client を使用してリクエストを送信できます
 ```
 
 ### on_unload メソッド
 
-モジュールのアンロード時に呼び出され、リソースのクリーンアップに使用されます：
+モジュールがアンロードされるときに呼び出され、リソースのクリーンアップに使用されます：
 
 ```python
 async def on_unload(self, event):
-    # カスタムリソースのクリーンアップ
-    # sdk.clientはフレームワークによって管理されるため、手動で閉じる必要はありません
+    # 自作リソースのクリーンアップ
+    # sdk.client はフレームワークが管理するため、手動で閉じる必要はありません
     
-    # イベントハンドラの登録解除（フレームワークが自動的に処理します）
+    # イベントハンドラのキャンセル（フレームワークが自動的に処理します）
     self.logger.info("モジュールがアンロードされました")
 ```
 
-## SDKオブジェクト
+## SDK オブジェクト
 
 ### コアモジュールへのアクセス
 
 ```python
 from ErisPulse import sdk
 
-# sdkオブジェクトを通じてすべてのコアモジュールにアクセス
+# sdk オブジェクトを介してすべてのコアモジュールにアクセス
 sdk.logger.info("ログ")
 sdk.storage.set("key", "value")
 config = sdk.config.getConfig("MyModule")
@@ -3436,14 +3436,14 @@ other_module = sdk.OtherModule
 result = await other_module.some_method()
 ```
 
-## アダプタの送信メソッドのクエリ
+## アダプタ送信メソッドの照会
 
-新しい標準仕様では、フォールバック送信メカニズムを実装するために `__getattr__` メソッドのオーバーライドが要求されるため、`hasattr` メソッドを使用してメソッドの存在をチェックすることができません。`2.3.5` 以降、送信メソッドをクエリする機能が追加されました。
+新しい標準規格では、デフォルト送信メカニズムを実装するために `__getattr__` メソッドをオーバーライドする必要があるため、`hasattr` メソッドでメソッドの存在をチェックすることはできません。`2.3.5` 以降では、送信メソッドを照会する機能が追加されました。
 
-### サポートされている送信メソッドのリスト
+### 支持される送信メソッドの一覧表示
 
 ```python
-# プラットフォームがサポートするすべての送信メソッドをリストアップ
+# プラットフォームがサポートするすべての送信メソッドをリスト表示
 methods = sdk.adapter.list_sends("onebot11")
 # 戻り値: ["Text", "Image", "Voice", "Markdown", ...]
 ```
@@ -3451,7 +3451,7 @@ methods = sdk.adapter.list_sends("onebot11")
 ### メソッドの詳細情報の取得
 
 ```python
-# 特定のメソッドの詳細情報を取得
+# あるメソッドの詳細情報を取得
 info = sdk.adapter.send_info("onebot11", "Text")
 # 戻り値:
 # {
@@ -3466,7 +3466,54 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ## 設定管理
 
-### 設定の読み取り
+### 宣言的設定（推奨）
+
+`v2.5.2` 以降、モジュールは `ConfigClass` を使って設定クラスを宣言でき、アダプタと同じ設定スキーマシステムを使用できます。設定は `self.cfg` を介してリアルタイムに読み取られ、変更後はすぐに反映されます：
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_module.api_key", "default": "API キー"},
+            "required": True,
+            "secret": True,
+            "ui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
+    timeout: int = field(
+        default=30,
+        metadata={
+            "description": {"i18n": "my_module.timeout", "default": "タイムアウト時間（秒）"},
+            "ui": {"widget": "number", "group": "advanced", "order": 2},
+        },
+    )
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    async def on_load(self, event):
+        self.logger.info("モジュールが加載されました")
+
+    async def on_unload(self, event):
+        pass
+
+    async def do_something(self):
+        cfg = self.cfg  # 実時読み取り、型安全
+        api_key = cfg.api_key
+        timeout = cfg.timeout
+```
+
+`BaseConfig` は、アダプタ、モジュール、外部プロジェクトなど、あらゆる場面で使用できる一般的な設定基底クラスです。設定フィールドには i18n 多言語の説明がサポートされています（[i18n ドキュメント](../../advanced/i18n.md#設定フィールド多言語)を参照）。
+
+### 手動での設定読み取り（互換モード）
+
+宣言的設定を使用しない場合、設定ストアを直接読み書きすることも可能です：
 
 ```python
 def _load_config(self):
@@ -3481,37 +3528,31 @@ def _load_config(self):
     return config
 ```
 
-### 設定の使用
-
-```python
-async def do_something(self):
-    api_key = self.config.get("api_key")
-    timeout = self.config.get("timeout", 30)
-```
+> **注意**：手動モードでは、`self.config` を属性名として使用しないでください。将来のフレームワークの属性との衝突を避けるために、`self.cfg` またはカスタム名を使用することを推奨します。
 
 ## ストレージシステム
 
-### 基本的な使用方法
+### 基本的な使用
 
 ```python
-# データの保存
+# データをストア
 sdk.storage.set("user:123", {"name": "張三"})
 
-# データの取得
+# データを取得
 user = sdk.storage.get("user:123", {})
 
-# データの削除
+# データを削除
 sdk.storage.delete("user:123")
 ```
 
 ### トランザクションの使用
 
 ```python
-# トランザクションを使用してデータの整合性を確保
+# トランザクションを使用してデータの一貫性を確保
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
-    # いずれかの操作が失敗した場合、すべての変更がロールバックされます
+    # いずれかの操作が失敗した場合、すべての変更はロールバックされます
 ```
 
 ## イベント処理
@@ -3522,44 +3563,44 @@ with sdk.storage.transaction():
 from ErisPulse.Core.Event import command, message
 
 # コマンドの登録
-@command("info", help="情報の取得")
+@command("info", help="情報を取得")
 async def info_handler(event):
     await event.reply("これは情報です")
 
 # メッセージハンドラの登録
 @message.on_group_message()
 async def group_handler(event):
-    sdk.logger.info(f"グループメッセージを受信: {event.get_text()}")
+    sdk.logger.info(f"グループメッセージを受信しました: {event.get_text()}")
 ```
 
 ### イベントハンドラのライフサイクル
 
-フレームワークはイベントハンドラの登録と解除を自動的に管理するため、`on_load` 内で登録するだけで済みます。
+フレームワークはイベントハンドラの登録とアンロードを自動的に管理します。`on_load` で登録するだけで済みます。
 
-## 遅延ロードメカニズム
+## 慣性加載メカニズム
 
-### 仕組み
+### 動作原理
 
 ```python
-# モジュールは初めてアクセスされたときに初期化されます
+# モジュールが最初にアクセスされたときにのみ初期化されます
 result = await sdk.my_module.some_method()
 # ↑ ここでモジュールの初期化がトリガーされます
 ```
 
-### 即時ロード
+### 即時加載
 
-即座に初期化する必要があるモジュール（リスナーやタイマーなど）の場合：
+即時初期化が必要なモジュール（リスナー、タイマーなど）：
 
 ```python
 @staticmethod
 def get_load_strategy():
     return ModuleLoadStrategy(
-        lazy_load=False,  # 即時ロード
+        lazy_load=False,  # 即時加載
         priority=100
     )
 ```
 
-## エラーハンドリング
+## エラー処理
 
 ### 例外のキャッチ
 
@@ -3579,19 +3620,19 @@ async def handle_event(self, event):
 ### ログ記録
 
 ```python
-# 異なるログレベルを使用
+# さまざまなログレベルを使用
 self.logger.debug("デバッグ情報")    # 詳細なデバッグ情報
 self.logger.info("実行状態")      # 正常な実行情報
 self.logger.warning("警告情報")  # 警告情報
 self.logger.error("エラー情報")    # エラー情報
-self.logger.critical("致命的エラー") # 致命的なエラー
+self.logger.critical("致命的エラー") # 致命的エラー
 ```
 
 ## 関連ドキュメント
 
-- [モジュール開発入門](getting-started.md) - 最初のモジュールを作成
-- [Eventラッパークラス](event-wrapper.md) - イベント処理の詳細
-- [ベストプラクティス](best-practices.md) - 高品質なモジュールの開発
+- [モジュール開発入門](docs/ja/getting-started.md) - 最初のモジュールを作成する
+- [Event 包装クラス](docs/ja/event-wrapper.md) - イベント処理の詳細
+- [ベストプラクティス](docs/ja/best-practices.md) - 高品質なモジュールを開発するための方法
 
 
 ### Event 包装类详解
@@ -3951,16 +3992,16 @@ async def ai_chat(self, prompt: str):
 
 # モジュール開発のベストプラクティス
 
-本ドキュメントは、ErisPulse モジュール開発のためのベストプラクティス（最善の手法）に関する提案を提供します。
+このドキュメントでは、ErisPulse モジュール開発に関するベストプラクティスを提供します。
 
 ## モジュール設計
 
-### 1. 単一責任原則
+### 1. 単一責任の原則
 
-各モジュールは、1つのコア機能のみを担当するべきです：
+各モジュールは 1 つの核心的な機能のみを担当すべきです：
 
 ```python
-# よい設計：モジュールは1つの機能のみを担当
+# 良い設計：各モジュールは 1 つの機能のみを担当
 class WeatherModule(BaseModule):
     """天気照会モジュール"""
     pass
@@ -3969,9 +4010,9 @@ class NewsModule(BaseModule):
     """ニュース照会モジュール"""
     pass
 
-# 悪い設計：モジュールが複数の無関係な機能を担当
+# 悪い設計：1 つのモジュールが複数の無関係な機能を担当
 class UtilityModule(BaseModule):
-    """天気、ニュース、ジョークなど複数の機能を含む"""
+    """天気、ニュース、ジョークなどを含む複数の機能"""
     pass
 ```
 
@@ -3984,27 +4025,40 @@ name = "ErisPulse-ModuleName"  # ErisPulse- 接頭辞を使用
 
 ### 3. 明確な設定管理
 
+宣言型設定（`ConfigClass` + `BaseConfig`）の使用を推奨します。これにより、型安全性、自動テンプレート生成、WebUI フォームサポートなどの機能が得られます。
+
 ```python
-def _load_config(self):
-    config = self.sdk.config.getConfig("MyModule")
-    if not config:
-        default_config = {
-            "api_url": "https://api.example.com",
-            "timeout": 30,
-            "cache_ttl": 3600
-        }
-        self.sdk.config.setConfig("MyModule", default_config)
-        self.logger.warning("デフォルト設定を作成しました")
-        return default_config
-    return config
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_url: str = field(default="https://api.example.com", metadata={
+        "description": {"i18n": "my_module.api_url", "default": "API アドレス"},
+    })
+    timeout: int = field(default=30, metadata={
+        "description": {"i18n": "my_module.timeout", "default": "タイムアウト時間（秒）"},
+    })
+    cache_ttl: int = field(default=3600, metadata={
+        "description": {"i18n": "my_module.cache_ttl", "default": "キャッシュの有効期間（秒）"},
+    })
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    async def do_something(self):
+        cfg = self.cfg  # 型安全で、リアルタイム読み取り
+        await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
+
+マニュアル方式（設定ストアの読み書き）も引き続き使用できます（[モジュールの核となる概念](core-concepts.md#設定管理)を参照）。
 
 ## 非同期プログラミング
 
 ### 1. 非同期ライブラリの使用
 
 ```python
-# SDK 内蔵 HTTP クライアント（非同期、自動ログおよび統計）の使用を推奨
+# SDK 内蔵 HTTP クライアント（非同期、自動ログと統計）を使用を推奨
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -4012,7 +4066,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# sdk.client 経由でも使用可能（効果は同じ）
+# sdk.client 経由でも使用可能（同じ効果）
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -4020,7 +4074,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# aiohttp を直接インポートしないでください（フレームワークによる統一管理が困難）
+# aiohttp を直接インポートしないでください（フレームワークの統一管理が困難になります）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -4029,7 +4083,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# requests を使用しないでください（同期であり、イベントループをブロックします）
+# requests を使用しないでください（同期で、イベントループをブロックします）
 import requests
 
 class MyModule(BaseModule):
@@ -4041,10 +4095,10 @@ class MyModule(BaseModule):
 
 ```python
 async def handle_command(self, event):
-    # 負荷の高い操作をバックグラウンドで実行するために create_task を使用
+    # create_task を使用して、重い処理をバックグラウンドで実行する
     task = asyncio.create_task(self._long_operation())
     
-    # 結果が必要な場合
+    # 結果を待つ必要がある場合
     result = await task
 ```
 
@@ -4052,11 +4106,11 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # SDK クライアントは接続プールを自動的に管理するため、手動で session を作成する必要はありません
+    # SDK クライアントは接続プールを自動的に管理するため、手動でセッションを作成する必要はありません
     pass
     
 async def on_unload(self, event):
-    # カスタムクライアントが必要な場合は、リソースのクリーンアップを忘れずに行ってください
+    # カスタムクライアントが必要な場合は、リソースをクリーンアップすることを忘れないでください
     pass
 ```
 
@@ -4065,35 +4119,35 @@ async def on_unload(self, event):
 ### 1. Event ラッパークラスの使用
 
 ```python
-# Event ラッパークラスを使用した簡便なメソッド
+# Event ラッパークラスの便利なメソッドを使用
 @command("info")
 async def info_command(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"こんにちは、{nickname}！")
 
-# 辞書への直接アクセスは避けてください
+# 辞書への直接アクセスは避ける
 @command("info")
 async def info_command(event):
-    user_id = event["user_id"]  # 不明確でエラーが発生しやすい
+    user_id = event["user_id"]  # 不明確で、間違いを起こしやすい
 ```
 
-### 2. レイジーロード（遅延読み込み）の適切な使用
+### 2. 適切な遅延読み込み（Lazy Load）の使用
 
 ```python
-# コマンド処理モジュールは即座にロードする必要があります
+# コマンド処理モジュールはすぐに読み込む必要がある
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# リスナー（リスニング）モジュールは即座にロードする必要があります
+# リスナーモジュールはすぐに読み込む必要がある
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# ユーティリティモジュールはレイジーロードに適しています
+# ユーティリティモジュールは遅延読み込みに適している
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -4104,16 +4158,16 @@ class UtilityModule(BaseModule):
 
 ```python
 async def on_load(self, event):
-    # on_load 内でイベントハンドラーを登録
+    # on_load でイベントハンドラーを登録する
     @command("hello")
     async def hello_handler(event):
         await event.reply("こんにちは！")
     
     @message.on_group_message()
     async def group_handler(event):
-        self.logger.info("グループメッセージを受信しました")
+        self.logger.info("グループメッセージを受信")
     
-    # 手動でアン登録する必要はありません。フレームワークが自動的に処理します
+    # 手動で登録解除する必要はなく、フレームワークが自動的に処理します
 ```
 
 ## エラーハンドリング
@@ -4125,16 +4179,17 @@ async def handle_event(self, event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # 予期されるビジネスエラー
+        # 予期されたビジネスエラー
         self.logger.warning(f"ビジネス警告: {e}")
         await event.reply(f"パラメータエラー: {e}")
     except aiohttp.ClientError as e:
-        # ネットワークエラー（sdk.client を使用する場合、この例外はほとんど発生しません。組み込みリトライ機構のため）
+        # ネットワークエラー（sdk.client + ClientError の使用を推奨）
+        # 古いコードでも aiohttp を直接使用している場合は正常に動作しますが、新規コードでは ErisPulse の例外体系を使用することを推奨します
         self.logger.error(f"ネットワークエラー: {e}")
-        await event.reply("ネットワークリクエストに失敗しました。後でもう一度お試しください")
+        await event.reply("ネットワークリクエストに失敗しました。しばらくしてからやり直してください")
     except Exception as e:
         # 予期しないエラー
-        self.logger.error(f"不明なエラー: {e}", exc_info=True)
+        self.logger.error(f"未知のエラー: {e}", exc_info=True)
         await event.reply("処理に失敗しました。管理者に連絡してください")
         raise
 ```
@@ -4142,7 +4197,7 @@ async def handle_event(self, event):
 ### 2. タイムアウト処理
 
 ```python
-# SDK 内蔵クライアントの使用を推奨（タイムアウトおよびリトライ機能付き）
+# SDK 内蔵クライアント（タイムアウトとリトライを備えている）を使用を推奨
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -4151,7 +4206,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"リクエストがタイムアウトしました: {url}")
+        self.logger.warning(f"リクエストのタイムアウト: {url}")
         raise
 ```
 
@@ -4160,13 +4215,13 @@ async def fetch_with_timeout(self, url, timeout=30):
 ### 1. トランザクションの使用
 
 ```python
-# トランザクションを使用してデータの一貫性を確保
+# トランザクションを使用してデータの整合性を確保する
 async def update_user(self, user_id, data):
     with self.sdk.storage.transaction():
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ トランザクションを使用しないと、データの一貫性が損なわれる可能性があります
+# ❌ トランザクションを使用しないと、データの整合性が保証されない可能性があります
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
     # ここでエラーが発生した場合、上記の設定はロールバックされません
@@ -4182,7 +4237,7 @@ def cache_multiple_items(self, items):
         f"item:{k}": v for k, v in items.items()
     })
 
-# ❌ 複数回の呼び出しは効率が悪い
+# ❌ 複数回呼び出すのは効率が低い
 def cache_multiple_items(self, items):
     for k, v in items.items():
         self.sdk.storage.set(f"item:{k}", v)
@@ -4190,25 +4245,25 @@ def cache_multiple_items(self, items):
 
 ## ロギング
 
-### 1. ログレベルの適切な使用
+### 1. 適切なログレベルの使用
 
 ```python
 # DEBUG: 詳細なデバッグ情報（開発時のみ）
 self.logger.debug(f"入力パラメータ: {params}")
 
-# INFO: 正常な動作に関する情報
-self.logger.info("モジュールがロードされました")
-self.logger.info(f"リクエストを処理中: {request_id}")
+# INFO: 正常な動作情報
+self.logger.info("モジュールが読み込まれました")
+self.logger.info(f"リクエスト処理中: {request_id}")
 
-# WARNING: 警告メッセージ、主要機能には影響しない
+# WARNING: 警告情報。主要な機能には影響しない
 self.logger.warning(f"設定項目 {key} が設定されていません。デフォルト値を使用します")
-self.logger.warning("API レスポンスが遅い可能性があります。最適化が必要です")
+self.logger.warning("API レスポンスが遅い。最適化が必要かもしれません")
 
-# ERROR: エラーメッセージ
+# ERROR: エラー情報
 self.logger.error(f"API リクエストに失敗: {e}")
 self.logger.error(f"イベント処理に失敗: {e}", exc_info=True)
 
-# CRITICAL: 致命的なエラー、即座に対応が必要
+# CRITICAL: 致命的なエラー。すぐに対処する必要があります
 self.logger.critical("データベース接続に失敗しました。ボットが正常に動作できません")
 ```
 
@@ -4216,10 +4271,10 @@ self.logger.critical("データベース接続に失敗しました。ボット�
 
 ```python
 # 構造化ログを使用すると、解析が容易になります
-self.logger.info(f"リクエストを処理中: request_id={request_id}, user_id={user_id}, duration={duration}ms")
+self.logger.info(f"リクエスト処理中: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
 # ❌ 非構造化ログを使用する
-self.logger.info(f"リクエストを処理しました。ユーザー {user_id}からのものです。所要時間 {duration} ミリ秒")
+self.logger.info(f"リクエストを処理しました。ユーザー {user_id} からのもの。所要時間は {duration} ミリ秒です")
 ```
 
 ## パフォーマンス最適化
@@ -4245,26 +4300,26 @@ class MyModule(BaseModule):
             return data
 ```
 
-### 2. ブロック操作の回避
+### 2. ブロッキング操作の回避
 
 ```python
-# 非同期操作を使用
+# 非同期操作を使用する
 async def process_message(self, event):
     # 非同期処理
     await self._async_process(event)
 
-# ❌ ブロック操作
+# ❌ ブロッキング操作
 async def process_message(self, event):
-    # 同期操作。イベントループをブロックします
+    # 同期操作で、イベントループをブロックします
     result = self._sync_process(event)
 ```
 
 ## セキュリティ
 
-### 1. 機密データの保護
+### 1. 敏感データの保護
 
 ```python
-# 機密データは設定に保存します
+# 敏感データは設定に保存する
 class MyModule(BaseModule):
     def _load_config(self):
         config = self.sdk.config.getConfig("MyModule")
@@ -4273,21 +4328,21 @@ class MyModule(BaseModule):
         if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
             raise ValueError("config.toml で有効な API キーを設定してください")
 
-# ❌ 機密データをハードコードしないでください
+# ❌ 敏感データをハードコーディングする
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # これを行わないでください！
+    API_KEY = "sk-1234567890"  # これは行わないでください！
 ```
 
 ### 2. 入力検証
 
 ```python
-# ユーザー入力を検証します
+# ユーザー入力を検証する
 async def process_command(self, event):
     user_input = event.get_text()
     
     # 入力長を検証
     if len(user_input) > 1000:
-        await event.reply("入力が長すぎます。再度入力してください")
+        await event.reply("入力が長すぎます。もう一度入力してください")
         return
     
     # 入力形式を検証
@@ -4306,7 +4361,7 @@ from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
     def test_load_config(self):
-        """設定ロードのテスト"""
+        """設定の読み込みをテストする"""
         module = MyModule()
         config = module._load_config()
         assert config is not None
@@ -4318,7 +4373,7 @@ class TestMyModule:
 ```python
 @pytest.mark.asyncio
 async def test_command_handling():
-    """コマンド処理のテスト"""
+    """コマンド処理をテストする"""
     module = MyModule()
     await module.on_load({})
     
@@ -4327,7 +4382,7 @@ async def test_command_handling():
     await module.handle_command(event)
 ```
 
-## 部署
+## デプロイ
 
 ### 1. バージョン管理
 
@@ -4337,29 +4392,29 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-セマンティックバージョニング（Semantic Versioning）に従います：
+セマンティックバージョンに従う：
 - MAJOR.MINOR.PATCH
-- メジャーバージョン：非互換な API の変更
-- マイナーバージョン：下位互換の機能の追加
-- パッチバージョン：下位互換の問題修正
+- メジャーバージョン：互換性のない API 変更
+- マイナーバージョン：下位互換のある新機能の追加
+- パッチバージョン：下位互換のある問題修正
 
-### 2. ドキュメントの充実
+### 2. ドキュメントの整備
 
 ```markdown
 # README.md
 
 - モジュールの概要
 - インストール手順
-- 設定方法
+- 設定説明
 - 使用例
 - API ドキュメント
-- 貢献ガイド
+- 貢献ガイドライン
 ```
 
 ## 関連ドキュメント
 
 - [モジュール開発入門](getting-started.md) - 最初のモジュールを作成する
-- [モジュールの核心的概念](core-concepts.md) - モジュールアーキテクチャを理解する
+- [モジュールの核となる概念](core-concepts.md) - モジュールアーキテクチャを理解する
 - [Event ラッパークラス](event-wrapper.md) - イベント処理の詳細
 
 
@@ -4376,38 +4431,38 @@ version = "1.0.0"
 
 # アダプター開発入門
 
-このガイドは、ErisPulse アダプターの開発を開始し、新しいメッセージ プラットフォームに接続するのに役立ちます。
+このガイドは、ErisPulse アダプターを開発し、新しいメッセージプラットフォームを接続する方法を紹介します。
 
 ## アダプターの概要
 
 ### アダプターとは何か
 
-アダプターは ErisPulse と各メッセージ プラットフォーム間のブリッジであり、以下の責務を負います：
+アダプターは、ErisPulse と各メッセージプラットフォームの橋渡し役であり、以下の機能を提供します。
 
-1. **正方向変換**：プラットフォーム イベントを受け取り、OneBot12 標準形式に変換（Converter）
-2. **逆方向変換**：OneBot12 メッセージ セグメントをプラットフォーム API コールに変換（`Raw_ob12`）
-3. 管理とプラットフォームの接続（WebSocket/WebHook）
-4. 統一された SendDSL メッセージ送信インターフェースを提供
+1. **正方向変換**：プラットフォームイベントを受け取り、OneBot12 標準形式に変換する（Converter）
+2. **逆方向変換**：OneBot12 メッセージセグメントをプラットフォーム API 呼び出しに変換する（`Raw_ob12`）
+3. プラットフォームとの接続管理（WebSocket/WebHook）
+4. 統一された SendDSL メッセージ送信インターフェースの提供
 
 ### アダプターのアーキテクチャ
 
 ```
-正方向変換（受信）                        反向変換（送信）
+正方向変換（受信）                        逆方向変換（送信）
 ─────────────                        ─────────────
-プラットフォーム イベント                    モジュールが構築するメッセージ
+プラットフォームイベント                               モジュールが構築したメッセージ
     ↓                                    ↓
 Converter.convert()               Send.Raw_ob12()
     ↓                                    ↓
-OneBot12 標準イベント                    平台ネイティブ API コール
+OneBot12 標準イベント                   プラットフォームネイティブ API 呼び出し
     ↓                                    ↓
-イベントシステム                         標準応答フォーマット
+イベントシステム                             標準レスポンス形式
     ↓
-モジュールの処理
+モジュール処理
 ```
 
 ## ディレクトリ構造
 
-標準的なアダプター パッケージ構造：
+標準的なアダプターパッケージの構造は以下の通りです。
 
 ```
 MyAdapter/
@@ -4416,11 +4471,11 @@ MyAdapter/
 ├── LICENSE                 # ライセンス
 └── MyAdapter/
     ├── __init__.py          # パッケージエントリ
-    ├── Core.py               # アダプターのメインクラス
+    ├── Core.py               # アダプター主クラス
     └── Converter.py          # イベント変換器
 ```
 
-## クイックスタート
+## 速習
 
 ### 1. プロジェクトの作成
 
@@ -4441,7 +4496,7 @@ license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
-    "ErisPulse>=2.4.0"  # ErisPulse には aiohttp が組み込まれているため、通常は個別の依存関係は不要です
+    "ErisPulse>=2.4.0"  # ErisPulse は aiohttp を内蔵しているため、通常は個別に依存関係を指定する必要はない
 ]
 
 [project.urls]
@@ -4451,63 +4506,63 @@ dependencies = [
 "MyAdapter" = "MyAdapter:MyAdapter"
 ```
 
-### 3. アダプターのメインクラスの作成
+### 3. アダプター主クラスの作成
 
-フレームワークは `ConfigClass` / `AccountConfigClass` の宣言的構成管理を提供しており、アダプターは単に構成クラスを宣言するだけで、自動的に構成の読み込み、検証、および構成テンプレートの生成が行われます。
+フレームワークは `ConfigClass` / `AccountConfigClass` を用いた宣言的構成管理を提供しており、アダプターは構成クラスを宣言するだけで自動的にロード、検証、構成テンプレートを生成します。
 
 ```python
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import AdapterConfig
+from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
-class MyAdapterConfig(AdapterConfig):
-    """MyAdapter 配置"""
+class MyAdapterConfig(BaseConfig):
+    """MyAdapter 構成"""
     api_endpoint: str = field(
         default="https://api.example.com",
         metadata={
-            "description": "API アドレス",
+            "description": {"i18n": "my_adapter.api_endpoint", "default": "API アドレス"},
             "required": False,
-            "webui": {"widget": "text", "group": "connection", "order": 1},
+            "ui": {"widget": "text", "group": "connection", "order": 1},
         },
     )
     token: str = field(
         default="",
         metadata={
-            "description": "プラットフォーム トークン",
+            "description": {"i18n": "my_adapter.token", "default": "プラットフォームトークン"},
             "required": True,
             "secret": True,
-            "webui": {"widget": "password", "group": "basic", "order": 2},
+            "ui": {"widget": "password", "group": "basic", "order": 2},
         },
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # 構成クラスを宣言し、フレームワークが自動管理
-
-    # __init__ をオーバーライドする必要はありません！フレームワークが自動処理：
+    ConfigClass = MyAdapterConfig  # 構成クラスを宣言すると、フレームワークが自動的に管理する
+    
+    # __init__ をオーバーライドする必要はない！フレームワークが自動的に処理する：
     # - self.sdk / self.logger が自動設定される
-    # - self.config が自動的に構成をロードされる
-    # - self.Send / self.Request が自動的に初期化される
-
+    # - self.cfg が構成をリアルタイムに読み取る
+    # - self.Send / self.Request が自動初期化される
+    
     def _setup_converter(self):
         from .Converter import MyPlatformConverter
         return MyPlatformConverter()
 ```
 
-> ⚠️ **`__init__` について**：新バージョンでは `BaseAdapter.__init__(self, sdk=None)` は SDK リファレンス、ログ初期化、構成のロードを自動的に処理します。ほとんどのアダプターでは **`__init__` をオーバーライドする必要はありません**。詳細は [__init__ の注意点](#init-注意事项) を参照してください。
+> ⚠️ **__init__ について**：新しいバージョンでは `BaseAdapter.__init__(self, sdk=None)` が SDK リファレンス、ログ初期化、構成の読み込みを自動的に処理する。ほとんどのアダプターは**`__init__` をオーバーライドする必要はない**。詳細は [__init__ 注意事項](#init-注意事项) を参照してください。
 
-> ⚠️ **`super().__init__()` について**：`BaseAdapter.__init__()` は `Send` と `Request` のファクトリインスタンスの作成を担当します。これを忘れると、すべてのメッセージ送信とリクエスト操作で `AttributeError` が発生します。詳細は [__init__ の注意点](#init-注意事项) を参照してください。
+> ⚠️ **super().__init__() について**：`BaseAdapter.__init__()` は `Send` と `Request` ファクトリインスタンスを作成する。これを忘れると、すべてのメッセージ送信とリクエスト操作で `AttributeError` が発生する。詳細は [__init__ 注意事項](#init-注意事项) を参照してください。
 
 ### 4. 必須メソッドの実装
 
 ```python
 class MyAdapter(BaseAdapter):
-    # ... __init__ のコード ...
+    # ... __init__ 代码 ...
     
     async def start(self):
         """アダプターの起動（実装必須）"""
-        # WebSocket または WebHook ルートの登録
+        # WebSocket または WebHook ルートを登録
         router.register_websocket(
             module_name="myplatform",
             path="/ws",
@@ -4516,29 +4571,29 @@ class MyAdapter(BaseAdapter):
         self.logger.info("アダプターが起動しました")
     
     async def shutdown(self):
-        """アダプターのシャットダウン（実装必須）"""
+        """アダプターの停止（実装必須）"""
         router.unregister_websocket(
             module_name="myplatform",
             path="/ws"
         )
         # 接続とリソースのクリーンアップ
-        self.logger.info("アダプターがシャットダウンしました")
+        self.logger.info("アダプターが停止しました")
     
     async def call_api(self, endpoint: str, **params):
         """プラットフォーム API の呼び出し（実装必須）"""
-        raise NotImplementedError("call_api の実装が必要です")
+        raise NotImplementedError("call_api を実装する必要があります")
 ```
 
-#### メタイベントの主動送信
+#### メタイベントの送信
 
-アダプターはフレームワークが Bot のオンライン状態を追跡できるように、メタイベントを主動的に送信する必要があります。`emit_meta()` を 1 行で実現できます：
+アダプターは Bot のオンライン状態をフレームワークに追跡させるために、メタイベントを送信する必要があります。`emit_meta()` を使用すれば、一行で完了します。
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Bot オンライン
+        # Bot がオンライン
         await self.emit_meta("connect", bot_id, user_name="MyBot")
 
         try:
@@ -4550,34 +4605,34 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Bot オフライン
+            # Bot がオフライン
             await self.emit_meta("disconnect", bot_id)
 ```
 
-> Bot の状態管理とメタイベントの詳細については、[アダプターのベストプラクティス - Bot 状態管理](best-practices.md#bot-状态管理与-meta-事件) を参照してください。
+> Bot の状態管理とメタイベントの詳細は、[アダプターのベストプラクティス - Bot 状態管理](best-practices.md#bot-状態管理と-meta-イベント) を参照してください。
 
 ### 5. Send クラスの実装
 
-`At`/`AtAll`/`Reply` デコレータはフレームワークの SendDSL ベースクラスに実装されているため、アダプターは `Raw_ob12` と具体的な送信メソッドを実装するだけで済みます。
+`At`/`AtAll`/`Reply` 修飾子は SendDSL 基底クラスに内蔵されているため、アダプターは `Raw_ob12` と具体的な送信メソッドを実装するだけで済みます。
 
-フレームワークは2つの重要な補助メソッドを提供します：
-- `self._apply_modifiers(message)` — メッセージセグメントに `At`/`AtAll`/`Reply` デコレータを自動的にマージ
+フレームワークは以下の重要な補助メソッドを提供します：
+- `self._apply_modifiers(message)` — 修飾子（At/AtAll/Reply）を自動的にメッセージセグメントにマージ
 - `self.send_context` — 送信コンテキスト辞書（`target_type`、`target_id`、`account_id`）を取得
 
 ```python
 import asyncio
 
 class MyAdapter(BaseAdapter):
-    # ... 他のコード ...
+    # ... その他のコード ...
     
     class Send(BaseAdapter.Send):
         
         def Raw_ob12(self, message, **kwargs):
             """
-            OneBot12 形式メッセージの送信（実装必須）
+            OneBot12 形式のメッセージを送信する（実装必須）
 
-            _apply_modifiers を使用してデコレータの状態を自動的にマージし、
-            send_context を使用して送信コンテキストを取得します。
+            _apply_modifiers を使用して修飾子の状態を自動的にマージし、
+            send_context を使用して送信コンテキストを取得する。
             """
             async def _do_send():
                 segments = self._apply_modifiers(message)
@@ -4590,33 +4645,33 @@ class MyAdapter(BaseAdapter):
             return asyncio.create_task(_do_send())
         
         def Text(self, text: str):
-            """テキストメッセージを送信"""
+            """テキストメッセージを送信する"""
             return self.Raw_ob12([
                 {"type": "text", "data": {"text": text}}
             ])
         
         def Image(self, file):
-            """画像メッセージを送信"""
+            """画像メッセージを送信する"""
             return self.Raw_ob12([
                 {"type": "image", "data": {"file": file}}
             ])
 ```
 
-**メディアクラス送信メソッド（Image/Video/File）の実装のポイント：**
+**メディア送信メソッド（Image/Video/File）の実装ポイント：**
 
-- `file` パラメータは `bytes` バイナリデータと `str` URL の両方をサポートする必要があります
-- URL が渡された場合は、まずファイルをダウンロードしてからプラットフォームにアップロードする必要があります
-- プラットフォームは通常、送信インターフェースを呼び出す前にアップロードインターフェースを呼び出してファイル識別子を取得する必要があります
+- `file` パラメータは `bytes` 二進データと `str` URL の両方をサポートする
+- URL を渡した場合、まずファイルをダウンロードしてからプラットフォームにアップロードする必要がある
+- プラットフォームは通常、まずアップロードインターフェースを呼び出してファイル識別子を取得し、次に送信インターフェースを呼び出す
 
 **`__getattr__` マジックメソッド：**
 
-- メソッド名の大文字小文字を区別しないように実装（`Text`、`text`、`TEXT` すべて呼び出し可能）
-- 未定義のメソッドはエラーを返すのではなく、ヒントメッセージを返すべきです
+- メソッド名の大小文字を区別しない（`Text`、`text`、`TEXT` はすべて呼び出せる）
+- 定義されていないメソッドはエラーではなく、エラーメッセージを返す
 
 **`Raw_ob12` メソッド：**
 
-- OneBot12 標準メッセージ形式をプラットフォーム形式に変換して送信
-- `self._apply_modifiers(message)` を使用して `At`/`AtAll`/`Reply` デコレータを自動的に処理
+- OneBot12 標準メッセージ形式をプラットフォーム形式に変換して送信する
+- `self._apply_modifiers(message)` を使用して At/AtAll/Reply 修飾子を自動的に処理する
 - `**self.send_context` を使用して送信先情報とアカウント情報を渡す
 
 ### 6. 変換器の実装
@@ -4628,7 +4683,7 @@ import uuid
 
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """プラットフォームネイティブイベントを OneBot12 標準形式に変換"""
+        """プラットフォームネイティブイベントを OneBot12 標準形式に変換する"""
         if not isinstance(raw_event, dict):
             return None
         
@@ -4649,7 +4704,7 @@ class MyPlatformConverter:
         return onebot_event
     
     def _convert_event_type(self, event_type):
-        """イベントタイプの変換"""
+        """イベントタイプを変換する"""
         type_map = {
             "message": "message",
             "notice": "notice"
@@ -4657,25 +4712,25 @@ class MyPlatformConverter:
         return type_map.get(event_type, "unknown")
     
     def _convert_detail_type(self, raw_event):
-        """詳細タイプの変換"""
-        return "private"  # 簡略化された例
+        """詳細タイプを変換する"""
+        return "private"  # 簡単化のため
 ```
 
 ### 7. Request クラスの実装（リクエスト操作）
 
-プラットフォームが Bot が意思決定を行う必要のある要求（フレンドリクエスト、グループ招待など）をサポートしている場合、`Request` 内部クラスを実装できます：
+プラットフォームがフレンドリクエスト、グループ招待など Bot が判断を下す必要があるリクエストをサポートしている場合、`Request` 内部クラスを実装できます。
 
 ```python
 from ErisPulse.Core import BaseAdapter, RequestDSL
 
 class MyAdapter(BaseAdapter):
-    # ... Send と他のコード ...
+    # ... Send とその他のコード ...
 
     class Request(RequestDSL):
         """リクエスト操作の実装（フレンドリクエスト、グループ招待など）"""
 
         def accept(self, **kwargs):
-            """リクエストを承認"""
+            """リクエストを承認する"""
             async def _do():
                 result = await self._adapter.call_api(
                     endpoint="/set_request",
@@ -4693,7 +4748,7 @@ class MyAdapter(BaseAdapter):
             return self._create_task(_do())
 
         def reject(self, **kwargs):
-            """リクエストを拒否"""
+            """リクエストを拒否する"""
             async def _do():
                 result = await self._adapter.call_api(
                     endpoint="/set_request",
@@ -4718,13 +4773,13 @@ from ErisPulse.Core.Event import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # Event から便利なメソッド経由
+    # Event 便利メソッドを使用
     await event.approve()
     # またはアダプターを直接操作
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> プラットフォームがリクエスト操作をサポートしていない場合は、`Request` 内部クラスを実装する必要はありません。ベースクラスはデフォルトで `retcode=10002`（サポートされていない操作）を返します。詳細は [リクエスト操作仕様](../../standards/request-action-spec.md) を参照してください。
+> プラットフォームがリクエスト操作をサポートしていない場合は、`Request` 内部クラスを実装する必要はありません。基底クラスはデフォルトで `retcode=10002`（サポートされていない操作）を返します。詳細は [リクエスト操作規格](../../standards/request-action-spec.md) を参照してください。
 
 ### 8. パッケージエントリの作成
 
@@ -4733,73 +4788,90 @@ async def handle_friend_request(event):
 from .Core import MyAdapter
 ```
 
-## `__init__` の注意点
+## `__init__` 注意事項
 
-アダプター開発には `__init__` のオーバーライドに関与する3つのレイヤーがあります。各レイヤーの正しい方法は以下の通りです。
+アダプター開発では、`__init__` のオーバーライドが3つのレベルに関与する場合があります。以下は各レベルの正しい実装方法です。
 
-### 1. BaseAdapter レイヤー（`super().__init__()` の呼び出しが必須）
+### 1. BaseAdapter 層（ほとんどの場合、オーバーライドする必要はない）
 
-`BaseAdapter.__init__(self, sdk=None)` は**`Send` と `Request` のファクトリインスタンスの作成**を担当します。アダプターに独自の `__init__` がある場合、必ず親クラスの初期化を呼び出す必要があります：
+`BaseAdapter.__init__(self, sdk=None)` は `Send` / `Request` ファクトリインスタンスを作成し、以下の処理を自動的に行います：
+
+- `sdk` パラメータを受け取り、`self.sdk`、`self.logger` を設定
+- `ConfigClass` を宣言した場合、`self.cfg` を通じてグローバル構成をリアルタイムに読み取れる
+- `AccountConfigClass` を宣言した場合、`self.accounts` を通じて複数アカウント構成をリアルタイムに読み取れる
+
+**ほとんどの場合、`__init__` をオーバーライドする必要はない**。`ConfigClass` を宣言するだけで済みます：
 
 ```python
 class MyAdapter(BaseAdapter):
+    ConfigClass = MyAdapterConfig  # 構成クラスを宣言すると、フレームワークが自動的に管理
+    
+    async def start(self):
+        cfg = self.cfg  # タイプセーフで、リアルタイムに読み取れる
+        ...
+```
+
+もし本当にカスタム初期化が必要な場合は、`super().__init__(sdk)` を呼び出すだけです：
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyAdapterConfig
+    
     def __init__(self, sdk=None):
-        super().__init__(sdk)  # ← 必須！さもないと Send / Request は初期化されません
+        super().__init__(sdk)  # sdk を渡す
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
 
-**呼び出しを忘れた場合の結果**：`adapter.Send.To(...)` と `adapter.Request(...)` の両方が `AttributeError` を返します。
+### 2. Send 内部クラス（ほとんどの場合、オーバーライドする必要はない）
 
-### 2. Send 内部クラス（ほとんどの場合、オーバーライド不要）
+`SendDSL.__init__` は、連鎖呼び出しの状態を伝達します（対象タイプ、対象ID、アカウントなど）。**ほとんどの場合、メソッド（`Raw_ob12`、`Text` など）をオーバーライドするだけで済み、`__init__` をオーバーライドする必要はない**。
 
-`SendDSL.__init__` はチェイン呼び出しの状態の受け渡し（ターゲットタイプ、ターゲットID、アカウントなど）を担当します。**ほとんどの場合、`__init__` をオーバーライドする必要はなく、メソッドだけをオーバーライドする**（`Raw_ob12`、`Text` など）必要があります。
-
-実際に必要な場合（プラットフォーム固有の状態の初期化など）、**すべてのパラメータを透過する**必要があります：
+もし本当に必要（例えば、プラットフォーム特有の状態の初期化）な場合は、**すべてのパラメータを透過する必要がある**：
 
 ```python
 class MyAdapter(BaseAdapter):
     class Send(BaseAdapter.Send):
         # パラメータ：adapter, target_type, target_id, account_id
         def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
-            super().__init__(adapter, target_type, target_id, account_id)  # ← パラメータを透過する必要があります
-            self._my_state = None  # プラットフォーム固有の初期化
+            super().__init__(adapter, target_type, target_id, account_id)  # ← 必須透過
+            self._my_state = None  # プラットフォーム特有の初期化
 ```
 
-**なぜパラメータを透過する必要があるのか**：チェイン呼び出しの各ステップは `self.__class__(...)` を使用して新しいインスタンスを作成します：
+**なぜ透過する必要があるのか？** 連鎖呼び出しの各ステップは `self.__class__(...)` を通じて新しいインスタンスを作成する：
 
 ```python
 adapter.Send.To("user", "123")               # → Send(adapter, "user", "123", None)
 adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123", "bot1")
 ```
 
-もし `__init__` のシグネチャが一致しないか `super()` が呼ばれていなければ、チェイン呼び出しは中断します。
+もし `__init__` のシグネチャが一致しない、または `super()` を呼び出さない場合、連鎖呼び出しは中断する。
 
-### 3. Request 内部クラス（ほとんどの場合、オーバーライド不要）
+### 3. Request 内部クラス（ほとんどの場合、オーバーライドする必要はない）
 
-Send と同様です。パラメータは `adapter`, `request_id`, `account_id` です：
+Send と同じ。パラメータは `adapter`, `request_id`, `account_id`：
 
 ```python
 class MyAdapter(BaseAdapter):
     class Request(RequestDSL):
         # パラメータ：adapter, request_id, account_id
         def __init__(self, adapter, request_id=None, account_id=None):
-            super().__init__(adapter, request_id, account_id)  # ← パラメータを透過する必要があります
-            self._my_state = None  # プラットフォーム固有の初期化
+            super().__init__(adapter, request_id, account_id)  # ← 必須透過
+            self._my_state = None  # プラットフォーム特有の初期化
 ```
 
 ### まとめ
 
-| レイヤー | いつオーバーライドするか | 必須なこと |
+| 層 | いつオーバーライドするか | 必須のこと |
 |------|------------|-----------|
-| **BaseAdapter** | アダプターの状態を初期化する必要がある場合 | `super().__init__(sdk)` （引数あり） |
+| **BaseAdapter** | カスタム初期化ロジックが必要な場合 | `super().__init__(sdk)` （sdk パラメータを渡す） |
 | **Send 内部クラス** | 送信関連の状態を初期化する必要がある場合 | `super().__init__(adapter, target_type, target_id, account_id)` |
 | **Request 内部クラス** | リクエスト関連の状態を初期化する必要がある場合 | `super().__init__(adapter, request_id, account_id)` |
-| 3つのレイヤー | ほとんどの場合 | **メソッドだけをオーバーライドし、`__init__` には触れない** |
+| 3つの層 | ほとんどの場合 | **ConfigClass を宣言するだけで、`__init__` は触らない** |
 
-## 接続情報とルート発見
+### 9. 接続情報とルート発見
 
-アダプターがルートを登録した後、フレームワークはすべてのルート情報を記録します。ユーザーは以下の API を使用してアダプターの接続アドレスを確認できます：
+アダプターがルートを登録すると、フレームワークはすべてのルート情報を記録する。ユーザーは以下の API を使って、アダプターの接続アドレスを確認できる：
 
 ```python
 from ErisPulse import sdk
@@ -4836,13 +4908,13 @@ routes = sdk.router.get_module_routes("myplatform")
 #  "websocket": [{"path": "/myplatform/ws", "auth": false}]}
 ```
 
-> **ヒント**：`get_connection_info()` が返す情報は、ユーザーに表示するのに適しています（例：WebUI）。プラットフォーム側のコールバックアドレスや WebSocket 接続アドレスを設定するのに役立ちます。ルート登録時の `module_name` は、ErisPulse に登録されたアダプターの `platform` 名と完全に一致する必要があります。そうしないと、ルート発見は正しく関連付けられません。
+> **ヒント**：`get_connection_info()` が返す情報は、ユーザーに表示するのに適している（例：WebUI）。プラットフォーム側のコールバックアドレスや WebSocket 接続アドレスの設定に役立つ。ルート登録時の `module_name` は、ErisPulse で登録した `platform` 名と完全に一致している必要がある。そうしないと、ルート発見が正しく関連付けられない。
 
-## SSE (Server-Sent Events) 支持
+### 10. SSE (Server-Sent Events) のサポート
 
-ErisPulse はサーバーに依存しない SSE を内蔵しており、モジュールやアダプターは `@sdk.router.sse()` を使用して SSE エンドポイントを登録できます。
+ErisPulse はサーバーに依存しない SSE を内蔵しており、モジュールやアダプターは `@sdk.router.sse()` を使って SSE エンドポイントを登録できる。
 
-### 基本的な使用法
+#### 基本的な使用法
 
 ```python
 import asyncio
@@ -4850,7 +4922,7 @@ from ErisPulse import sdk
 
 @sdk.router.sse("MyModule", "/events")
 async def event_stream(sse):
-    """SSE イベントを送信"""
+    """SSE イベントを送信する"""
     count = 0
     while not sse.closed:
         await sse.send({"count": count}, event="update")
@@ -4858,9 +4930,9 @@ async def event_stream(sse):
         await asyncio.sleep(1)
 ```
 
-### リクエストパラメータの使用
+#### リクエストパラメータの使用
 
-ハンドラは `request` パラメータを宣言してクライアントリクエスト情報をアクセスできます：
+ハンドラは `request` パラメータを宣言してクライアントリクエスト情報をアクセスできる：
 
 ```python
 @sdk.router.sse("MyModule", "/events")
@@ -4876,16 +4948,16 @@ async def event_stream(request, sse):
         await asyncio.sleep(5)
 ```
 
-### SseEmitter API
+#### SseEmitter API
 
 | メソッド | 説明 |
 |------|------|
-| `sse.send(data, event=None, id=None, retry=None)` | SSE イベントを送信。str 以外の data は自動的に JSON シリアライズされる |
-| `sse.close()` | SSE 接続を優雅に閉じる（安全に呼び出せる、複数回呼び出しても問題ない） |
+| `sse.send(data, event=None, id=None, retry=None)` | SSE イベントを送信する。str 以外の data は自動的に JSON シリアライズされる |
+| `sse.close()` | SSE 接続を安全に閉じる（複数回呼び出しても安全） |
 | `sse.closed` | 接続が閉じられているかどうか |
-| `sse.request` | ベースリクエストオブジェクト（クエリパラメータ、headers を読み取るのに使用可能） |
+| `sse.request` | ベースのリクエストオブジェクト（クエリパラメータ、ヘッダーの読み取りに使用可能） |
 
-### RouteGroup での使用
+#### RouteGroup での使用
 
 ```python
 api = sdk.router.group("MyModule", "/api", version="1")
@@ -4895,9 +4967,9 @@ async def events(sse):
     await sse.send({"msg": "hello"})
 ```
 
-### ルート発見
+#### ルート発見
 
-SSE ルートはルート発見 API に自動的に含まれます：
+SSE ルートは自動的にルート発見 API に含まれる：
 
 ```python
 # list_namespaces は "sse" キーを含む
@@ -4913,103 +4985,101 @@ sdk.router.get_module_urls("MyModule")
 # {"sse": [{"path": "/MyModule/events", "url": "http://localhost:8080/MyModule/events"}]}
 ```
 
-> **サーバーに依存しない設計**：`SseEmitter` はコールバックを通じて下層 HTTP フレームワークと分離されています。フレームワークは `register_sse()` と `@sse` デコレータを統一された登録エントリとして提供しており、アダプターは下層 HTTP フレームワークに直接依存することなく SSE エンドポイントを実装できます。
+> **サーバーに依存しない設計**：`SseEmitter` はコールバックを通じて下層の HTTP フレームワークと分離されている。フレームワークは `register_sse()` と `@sse` デコレータを統一された登録エントリとして提供しており、アダプターは下層の HTTP フレームワークに直接依存することなく SSE エンドポイントを実装できる。
 
-## 次のステップ
+## 次に進む
 
-- [アダプターの核心概念](core-concepts.md) - アダプターのアーキテクチャを理解する
-- [SendDSL の詳細](send-dsl.md) - メッセージ送信を学ぶ
+- [アダプターのコアコンセプト](core-concepts.md) - アダプターのアーキテクチャを理解する
+- [SendDSL 詳解](send-dsl.md) - メッセージ送信を学ぶ
 - [変換器の実装](converter.md) - イベント変換を理解する
-- [アダプターのベストプラクティス](best-practices.md) - 高品質なアダプターの開発
+- [アダプターのベストプラクティス](best-practices.md) - 高品質なアダプターを開発する
 
 
 ### 适配器核心概念
 
 # アダプターの核心概念
 
-ErisPulse アダプターの核心概念を理解することは、アダプター開発の基礎となります。
+ErisPulse アダプターの核心概念を理解することは、アダプターの開発の基礎となります。
 
 ## アダプターのアーキテクチャ
 
 ### コンポーネントの関係
 
 ```
-正方向変換（受信方向）                           逆方向変換（送信方向）
+正の変換（受信方向）                           負の変換（送信方向）
 ─────────────────                           ─────────────────
                                              
 ┌──────────────────┐                        ┌──────────────────┐
-│ プラットフォーム  │                        │ モジュールによる   │
-│ 原生イベント     │                        │ メッセージ構築     │
+│ プラットフォームネイティブイベント     │                        │ モジュール構築メッセージ     │
 └────────┬─────────┘                        └────────┬─────────┘
          │                                           │
          ↓                                           ↓
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│                  │   │ 适配器 (MyAdapter) │   │                  │
+│                  │   │ アダプター │   │                  │
 │  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
-│  (事件转换器)    │──→│ │              │ │   │ (反向转换入口)   │
+│  (イベントコンバーター)    │──→│ │              │ │   │ (負の変換の入り口)   │
 │                  │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
                                 │                      ↓
                                 ↓              ┌──────────────────┐
-                       ┌──────────────────┐    │ プラットフォーム  │
-                       │ OneBot12 標準事件 │    │ API 呼び出し     │
-                       └────────┬─────────┘    └────────┬─────────┘
+                       ┌──────────────────┐    │ プラットフォーム API コール    │
+                       │ OneBot12 標準イベント │    └────────┬─────────┘
+                       └────────┬─────────┘             │
                                 │                      ↓
                                 ↓              ┌──────────────────┐
-                       ┌──────────────────┐    │ 標準レスポンス   │
-                       │ 事件システム     │    │     形式         │
-                       └────────┬─────────┘    └──────────────────┘
+                       ┌──────────────────┐    │ 標準レスポンスフォーマット     │
+                       │ イベントシステム         │    └──────────────────┘
+                       └────────┬─────────┘
                                 │
                                 ↓
                        ┌──────────────────┐
-                       │ モジュール        │
-                       │ (イベント処理)   │
+                       │ モジュール (イベント処理)  │
                        └──────────────────┘
 ```
 
 **コアの対称性**：
-- **正方向変換**（Converter）：プラットフォームネイティブイベント → OneBot12 標準イベント、元のデータは `{platform}_raw` に保持されます
-- **逆方向変換**（Raw_ob12）：OneBot12 メッセージセグメント → プラットフォーム API 呼び出し、標準のレスポンス形式を返します
+- **正の変換**（Converter）：プラットフォームネイティブイベント → OneBot12 標準イベント、元のデータは `{platform}_raw` に保持されます
+- **負の変換**（Raw_ob12）：OneBot12 メッセージセグメント → プラットフォーム API コール、標準レスポンスフォーマットを返します
 
-## AdapterManager アダプター管理マネージャー
+## AdapterManager アダプター管理クラス
 
-`AdapterManager` は、ErisPulse アダプターシステムのコアコンポーネントであり、すべてのプラットフォームアダプターの登録、起動、終了、およびイベントのディスパッチを管理します。
+`AdapterManager` は ErisPulse アダプターシステムのコアコンポーネントであり、すべてのプラットフォームアダプターの登録、起動、停止、イベント配布を管理する責任を持ちます。
 
 ### コア機能
 
-- **アダプター登録**：複数のプラットフォームアダプターを登録および管理します
-- **ライフサイクル管理**：アダプターの起動と終了を制御します
-- **イベントディスパッチ**：OneBot12 標準イベントとプラットフォームネイティブイベントをディスパッチします
-- **設定管理**：アダプターの有効/無効状態を管理します
-- **ミドルウェアサポート**：OneBot12 イベントミドルウェアをサポートします
+- **アダプター登録**：複数のプラットフォームアダプターの登録と管理
+- **ライフサイクル管理**：アダプターの起動と停止の制御
+- **イベント配布**：OneBot12 標準イベントとプラットフォームネイティブイベントの配布
+- **設定管理**：アダプターの有効/無効状態の管理
+- **ミドルウェア対応**：OneBot12 イベントミドルウェアの対応
 
-### 基本的な使用
+### 基本的な使用方法
 
 ```python
 from ErisPulse import sdk
 
-# アダプターの登録（通常はLoaderにより自動的に完了します）
+# アダプターの登録（通常は Loader が自動的に行います）
 sdk.adapter.register("myplatform", MyPlatformAdapter)
 
-# すべてのアダプターを起動
+# すべてのアダプターの起動
 await sdk.adapter.startup()
 
-# 指定したアダプターを起動
+# 指定されたアダプターの起動
 await sdk.adapter.startup(["myplatform"])
-# すべてのアダプターを起動
+# すべてのアダプターの起動
 await sdk.adapter.startup()
 
 # アダプターインスタンスの取得
 my_adapter = sdk.adapter.get("myplatform")
-# またはプロパティ経由でアクセス
+# または属性経由でアクセス
 my_adapter = sdk.adapter.myplatform
 
-# すべてのアダプターを終了
+# すべてのアダプターの停止
 await sdk.adapter.shutdown()
 ```
 
-### 起動と終了
+### 起動と停止
 
 #### アダプターの起動
 
@@ -5017,41 +5087,41 @@ await sdk.adapter.shutdown()
 # 登録済みのすべてのアダプターを起動
 await sdk.adapter.startup()
 
-# 指定したプラットフォームを起動
+# 指定されたプラットフォームを起動
 await sdk.adapter.startup(["platform1", "platform2"])
 ```
 
 **起動フロー：**
 
-1. `adapter.start` ライフサイクルイベントを送信します
-2. `adapter.status.change` イベントを送信します（starting）
-3. 各アダプターを並行して起動します
-4. 起動失敗時、自動リトライ（指数バックオフ戦略）
-5. 起動成功後、`adapter.status.change` イベントを送信します（started）
+1. `adapter.start` ライフサイクルイベントを送信
+2. `adapter.status.change` イベントを送信（starting）
+3. 各アダプターを並列で起動
+4. 起動に失敗した場合、自動的に再試行する（指数バックオフ戦略）
+5. 起動成功後、`adapter.status.change` イベントを送信（started）
 
-**リトライメカニズム：**
+**再試行メカニズム：**
 
-- 最初の4回のリトライ：60秒、10分、30分、60分
-- 5回目以降：3時間の固定間隔
+- 初回4回：60秒、10分、30分、60分
+- 5回目以降：3時間固定間隔
 
-#### アダプターの終了
+#### アダプターの停止
 
 ```python
-# すべてのアダプターを終了
+# すべてのアダプターを停止
 await sdk.adapter.shutdown()
 ```
 
-**終了フロー：**
+**停止フロー：**
 
-1. `adapter.stop` ライフサイクルイベントを送信します
-2. すべてのアダプターの `shutdown()` メソッドを呼び出します
-3. ルーティングサーバーを閉じます
-4. イベントプロセッサをクリアします
-5. `adapter.stopped` ライフサイクルイベントを送信します
+1. `adapter.stop` ライフサイクルイベントを送信
+2. すべてのアダプターの `shutdown()` メソッドを呼び出し
+3. ルーター サーバーを閉じる
+4. イベントハンドラーをクリア
+5. `adapter.stopped` ライフサイクルイベントを送信
 
 ### 設定管理
 
-#### プラットフォーム状態の確認
+#### プラットフォームの状態確認
 
 ```python
 # プラットフォームが登録されているか確認
@@ -5062,18 +5132,18 @@ enabled = sdk.adapter.is_enabled("myplatform")
 
 # in 演算子を使用
 if "myplatform" in sdk.adapter:
-    print("プラットフォームは存在し、有効です")
+    print("プラットフォームが存在し、有効です")
 ```
 
-#### プラットフォームの一覧
+#### プラットフォームのリスト表示
 
 ```python
-# 登録済みのすべてのプラットフォームを一覧表示
+# 登録されたすべてのプラットフォームをリスト表示
 platforms = sdk.adapter.list_registered()
 
-# すべてのプラットフォームとその状態を一覧表示
+# すべてのプラットフォームとその状態をリスト表示
 status_dict = sdk.adapter.list_items()
-# 返り値: {"platform1": true, "platform2": false, ...}
+# 戻り値: {"platform1": true, "platform2": false, ...}
 
 # 有効なプラットフォームのリストを取得
 enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
@@ -5086,49 +5156,49 @@ enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
 ```python
 from ErisPulse import sdk
 
-# すべてのプラットフォームの標準メッセージイベントをリッスン
+# すべてのプラットフォームの標準メッセージイベントを監視
 @sdk.adapter.on("message")
 async def handle_message(data):
-    print(f"OneBot12メッセージを受信: {data}")
+    print(f"OneBot12メッセージを受信しました: {data}")
 
-# 特定のプラットフォームの標準メッセージイベントをリッスン
+# 特定のプラットフォームの標準メッセージイベントを監視
 @sdk.adapter.on("message", platform="myplatform")
 async def handle_platform_message(data):
-    print(f"myplatform メッセージを受信: {data}")
+    print(f"myplatform メッセージを受信しました: {data}")
 
-# すべてのイベントをリッスン
+# すべてのイベントを監視
 @sdk.adapter.on("*")
 async def handle_any_event(data):
-    print(f"イベントを受信: {data.get('type')}")
+    print(f"イベントを受信しました: {data.get('type')}")
 ```
 
 #### プラットフォームネイティブイベント
 
 ```python
-# 特定のプラットフォームのネイティブイベントをリッスン
+# 特定のプラットフォームのネイティブイベントを監視
 @sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
 async def handle_raw_event(data):
-    print(f"ネイティブイベントを受信: {data}")
+    print(f"ネイティブイベントを受信しました: {data}")
 
-# すべてのプラットフォームのネイティブイベントをリッスン（ワイルドカード）
+# すべてのプラットフォームのネイティブイベントを監視（ワイルドカード）
 @sdk.adapter.on("*", raw=True)
 async def handle_all_raw_events(data):
-    print(f"ネイティブイベントを受信: {data}")
+    print(f"ネイティブイベントを受信しました: {data}")
 ```
 
-#### イベントディスパッチメカニズム
+#### イベント配布メカニズム
 
-`adapter.emit(event_data)` を呼び出すと：
+`adapter.emit(event_data)` を呼び出すとき：
 
-1. **ミドルウェア処理**：すべての OneBot12 ミドルウェアを実行します
-2. **標準イベントディスパッチ**：一致する OneBot12 イベントハンドラにディスパッチします
-3. **ネイティブイベントディスパッチ**：元のデータが存在する場合、ネイティブイベントハンドラにディスパッチします
+1. **ミドルウェア処理**：まずすべての OneBot12 ミドルウェアを実行
+2. **標準イベント配布**：マッチする OneBot12 イベントハンドラーへ配布
+3. **ネイティブイベント配布**：元のデータがある場合、ネイティブイベントハンドラーへ配布
 
-**一致ルール：**
+**マッチングルール：**
 
-- 精密一致：`@sdk.adapter.on("message")` は `message` イベントのみに一致します
-- ワイルドカード：`@sdk.adapter.on("*")` はすべてのイベントに一致します
-- プラットフォームフィルタ：`platform="myplatform"` は指定されたプラットフォームのイベントのみにディスパッチします
+- 精密マッチ：`@sdk.adapter.on("message")` は `message` イベントのみにマッチ
+- ワイルドカード：`@sdk.adapter.on("*")` はすべてのイベントにマッチ
+- プラットフォームフィルタリング：`platform="myplatform"` は指定されたプラットフォームのイベントのみを配布
 
 ### ミドルウェア
 
@@ -5138,29 +5208,29 @@ async def handle_all_raw_events(data):
 @sdk.adapter.middleware
 async def logging_middleware(data):
     """ログ記録ミドルウェア"""
-    print(f"イベントを処理: {data.get('type')}")
-    return data  # 必須でデータを返す
+    print(f"イベントを処理中: {data.get('type')}")
+    return data  # データを返す必要があります
 
 @sdk.adapter.middleware
 async def filter_middleware(data):
-    """イベントフィルタミドルウェア"""
+    """イベントフィルターミドルウェア"""
     # 不要なイベントをフィルタリング
     if data.get("type") == "notice":
-        return None  # None を返す場合、ミドルウェアチェーンはその返り値を無視し、元のデータを保持して次の処理に渡します
-    return data  # 必須でデータを返して次の処理に渡します
+        return None  # None を返す場合、ミドルウェアチェーンはその戻り値を無視し、元のデータをそのまま続けて渡します
+    return data  # データを返して継続する必要があります
 ```
 
-#### ミドルウェアの実行順序
+#### ミドルウェア実行順序
 
-ミドルウェアは登録順に実行され、後から登録されたミドルウェアが先に実行されます。
+ミドルウェアは登録順に実行されます。後で登録されたミドルウェアが先に実行されます。
 
-> **注意**：ミドルウェアが `None` を返した場合（例：`return data` を忘れている場合）、フレームワークはその返り値を無視して元のデータを保持し、次の処理に渡します。また、warning レベルのログを出力します。これにより、1つのミドルウェアのミスがイベントチェーン全体を中断することはありません。
+> **注意**：ミドルウェアが `None` を返した場合（`return data` を忘れたなど）、フレームワークはその戻り値を無視し、元のデータをそのまま続けて渡し、同時に警告レベルのログを出力します。これにより、単一のミドルウェアの失敗によってイベントチェーン全体が中断されることを防ぎます。
 
 ```python
-# 登録順
+# 登録順序
 sdk.adapter.middleware(middleware1)  # 最後に実行
 sdk.adapter.middleware(middleware2)  # 中間に実行
-sdk.adapter.middleware(middleware3)  # 最初に実行
+sdk.adapter.middleware(middleware3)  # 最先に実行
 
 # 実行順序：middleware3 -> middleware2 -> middleware1
 ```
@@ -5178,106 +5248,115 @@ if adapter:
 #### プロパティアクセス
 
 ```python
-# プロパティ名を用いたアクセス（大文字小文字を区別しない）
+# プロパティ名経由でアクセス（大文字小文字を区別しません）
 adapter = sdk.adapter.myplatform
 await adapter.Send.To("user", "123").Text("Hello")
 ```
 
 ## BaseAdapter 基底クラス
 
-### 基本構造
+### 基本的な構造
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
+from ErisPulse.runtime.config_schema import BaseConfig, BotAccountConfig
 
 @dataclass
-class MyConfig(AdapterConfig):
-    """アダプター設定（宣言後フレームワーク自動管理）"""
+class MyConfig(BaseConfig):
+    """アダプター設定（宣言後、フレームワークが自動的に管理します）"""
     token: str = field(
         default="",
         metadata={
-            "description": "Bot Token",
+            "description": {"i18n": "my_adapter.token", "default": "Bot Token"},
             "required": True,
             "secret": True,
-            "webui": {"widget": "password", "group": "basic", "order": 1},
+            "ui": {"widget": "password", "group": "basic", "order": 1},
         },
     )
 
 class MyAdapter(BaseAdapter):
     ConfigClass = MyConfig  # 設定クラスを宣言
     
-    # __init__ のオーバーライドは不要、フレームワークが自動処理：
+    # __init__ をオーバーライドする必要はありません。フレームワークが自動的に処理します：
     # - self.sdk, self.logger
-    # - self.config（型安全な設定インスタンス）
+    # - self.cfg（型安全な設定インスタンス、即時読み込み）
     # - self.Send, self.Request
     
     async def start(self):
-        """アダプターを起動（必須実装）"""
-        cfg = self.config  # 自動ロードされる型安全な設定
+        """アダプターを起動する（実装が必要です）"""
+        cfg = self.cfg  # 自動的にロードされた型安全な設定
         pass
     
     async def shutdown(self):
-        """アダプターを終了（必須実装）"""
+        """アダプターを停止する（実装が必要です）"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """プラットフォーム API を呼び出す（必須実装）"""
+        """プラットフォーム API を呼び出す（実装が必要です）"""
         pass
 ```
 
 ### 設定管理
 
-フレームワークは宣言的設定管理を提供し、dataclass で設定構造を定義して、フレームワークが自動的にロード、検証、テンプレート生成を処理します。
+フレームワークは宣言型の設定管理を提供し、dataclass で設定構造を定義することで、フレームワークが自動的にロード、検証、テンプレート生成を処理します。
 
 #### 単一アカウント設定
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import AdapterConfig
+from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
-class TelegramConfig(AdapterConfig):
+class TelegramConfig(BaseConfig):
     token: str = field(default="", metadata={
-        "description": "Bot Token",
+        "description": {"i18n": "telegram.token", "default": "Bot Token"},
         "required": True,
         "secret": True,
-        "webui": {"widget": "password", "group": "basic", "order": 1},
+        "ui": {"widget": "password", "group": "basic", "order": 1},
     })
     proxy: str = field(default="", metadata={
-        "description": "プロキシアドレス",
-        "webui": {"widget": "text", "group": "advanced", "order": 10},
+        "description": {"i18n": "telegram.proxy", "default": "プロキシアドレス"},
+        "ui": {"widget": "text", "group": "advanced", "order": 10},
     })
 
 class TelegramAdapter(BaseAdapter):
     ConfigClass = TelegramConfig
     
     async def start(self):
-        cfg = self.config  # 型安全、自動ロード
+        cfg = self.cfg  # 型安全、即時読み込み
         if not cfg.token:
-            raise ValueError("未設定 Token")
+            raise ValueError("Token が設定されていません")
         await self._connect(cfg.token, proxy=cfg.proxy)
 ```
 
-#### 多アカウント設定
+#### 複数アカウント設定
 
-`BotAccountConfig` 基クラスは `enabled` と `name` フィールドを提供します。ほとんどのアダプターはプラットフォームプロトコルまたはログイン応答から自動的に `bot_id` を取得でき、イベント変換時にアカウント設定に注入します。：
+`BotAccountConfig` 基底クラスは `enabled` と `name` フィールドを提供します。ほとんどのアダプターはプラットフォームプロトコルまたはログインレスポンスから bot_id を自動的に取得し、イベント変換時にアカウント設定に注入できます。：
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.runtime.config_schema import BotAccountConfig
 
-# 多くのアダプター：bot_id は実行時に自動的に取得され、設定不要
+# ほとんどのアダプター：bot_id は実行時に自動的に取得されるため、設定は不要です
 @dataclass
 class MyBotConfig(BotAccountConfig):
-    token: str = field(default="", metadata={"description": "Token", "required": True})
+    token: str = field(default="", metadata={
+        "description": {"i18n": "my_adapter.bot_token", "default": "Token"},
+        "required": True,
+    })
 
-# ログイン時に bot_id を取得できない場合、ユーザーが設定で入力できるようにする
+# ログイン時に bot_id を取得できない場合、ユーザーが設定で入力できるようにします
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
-    bot_id: str = field(default="", metadata={"description": "ロボットID", "required": True})
-    token: str = field(default="", metadata={"description": "Token", "required": True})
+    bot_id: str = field(default="", metadata={
+        "description": {"i18n": "yunhu.bot_id", "default": "ロボットID"},
+        "required": True,
+    })
+    token: str = field(default="", metadata={
+        "description": {"i18n": "yunhu.token", "default": "Token"},
+        "required": True,
+    })
 
 class MyAdapter(BaseAdapter):
     AccountConfigClass = MyBotConfig
@@ -5288,28 +5367,36 @@ class MyAdapter(BaseAdapter):
             await self.emit_meta("connect", user_id)
 ```
 
-#### metadata 約定
+#### metadata の契約
 
-フィールドの metadata は、TOML コメント生成と WebUI フォームレンダリングの両方に使用されます：
+フィールドの metadata は、TOML のコメント生成と WebUI フォームレンダリングの両方に役立ちます：
 
 ```python
 metadata = {
-    "description": str,       # フィールドの説明（TOMLコメント + WebUI label）
-    "required": bool,         # 必須項目かどうか（バリデーション + WebUI 必須マーク）
-    "secret": bool,           # 敏感情報かどうか（WebUI では *** として表示、ログではマスキング）
-    "webui": {
+    "description": str | dict,  # フィールドの説明（i18n をサポート）
+    "required": bool,         # 必須（検証 + WebUI 必須マーカー）
+    "secret": bool,           # 敏感（WebUI では *** として表示、ログではマスキング）
+    "ui": {                   # WebUI コントロール設定（旧名 "webui" も互換）
         "widget": str,        # コントロールタイプ: "text" | "switch" | "select" | "number" | "password"
-        "group": str,         # グループ: "basic" | "advanced" | "connection" 等
-        "order": int,         # ソートの重み（数値が小さいほど順序が先）
+        "group": str,         # グループ: "basic" | "advanced" | "connection" など
+        "order": int,         # ソート重み（数値が小さいほど優先度が高い）
         "options": list,      # select コントロールのオプション [{label, value}]
-        "placeholder": str,   # 入力欄のプレースホルダー
-    }
+        "placeholder": str,   # 入力フィールドのプレースホルダー
+    },
+    "extra": dict,            # 追加拡張フィールド（schema にそのまま渡されます）
 }
 ```
 
-#### アカウント解析
+`description` は2つの形式をサポートします：
 
-多アカウントアダプターでは `_resolve_account()` を使用してターゲットアカウントを自動的に解析できます：
+- **通常の文字列**（後方互換性のため）：`"Bot Token"`
+- **i18n ディクショナリ**（推奨、多言語をサポート）：`{"i18n": "my_adapter.token", "default": "Bot Token"}`
+
+i18n ディクショナリを使用する場合、翻訳キーを i18n システムに事前に登録する必要があります（詳細は [i18n ドキュメント](../../advanced/i18n.md#フィールドの多言語化) を参照してください）。
+
+#### アカウントの解決
+
+複数アカウントアダプターは `_resolve_account()` を使用してターゲットアカウントを自動的に解決できます：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -5318,11 +5405,11 @@ async def call_api(self, endpoint: str, **params):
     # name: アカウント名, account: 設定インスタンス
 ```
 
-解析戦略：アカウント名マッチング → `bot_id` フィールドマッチング → その他の str フィールドマッチング → 最初に有効なアカウント。
+解決戦略：アカウント名一致 → `bot_id` フィールド一致 → その他の str フィールド一致 → 最初に有効なアカウント。
 
-#### 設定のホット更新
+#### 設定のホットアップデート
 
-サブクラスで `on_config_update()` をオーバーライドして設定変更に対応できます：
+サブクラスは `on_config_update()` をオーバーライドして設定変更に対応できます：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -5330,19 +5417,21 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Token が更新され、再接続します")
+            self.logger.info("Token が更新されました。再接続します")
 ```
 
 ### 初期化プロセス
 
-フレームワークは `BaseAdapter.__init__(self, sdk=None)` で自動的に以下の処理を行います：
+フレームワークは `BaseAdapter.__init__(self, sdk=None)` 内で以下の作業を自動的に実行します：
 
-1. **SDK参照**：`self.sdk`、`self.logger` を設定します
-2. **Send/Requestファクトリ**：`self.Send` と `self.Request` を作成します
-3. **設定のロード**：`ConfigClass` が宣言されている場合、`self.config` に自動的にロードします
-4. **アカウントのロード**：`AccountConfigClass` が宣言されている場合、`self.accounts` に自動的にロードします
+1. **SDK 参照**：`self.sdk`、`self.logger` を設定
+2. **Send/Request ファクトリ**：`self.Send` と `self.Request` を作成
+3. **設定テンプレート**：`ConfigClass` を宣言した場合、デフォルト設定テンプレートを自動的に生成（初回のみ）
+4. **アカウントテンプレート**：`AccountConfigClass` を宣言した場合、デフォルトアカウントテンプレートを自動的に生成（初回のみ）
 
-大多数のアダプターでは `__init__` をオーバーライドする必要はありません。カスタム初期化が必要な場合は：
+設定は `self.cfg` / `self.accounts` 経由で即時読み込みされます（アクセスごとに設定ストアから最新値を取得）。`self.config` は `self.cfg` の互換エイリアスとして引き続き使用できます。
+
+ほとんどのアダプターで `__init__` をオーバーライドする必要はありません。独自の初期化が必要な場合は：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -5361,40 +5450,40 @@ class MyAdapter(BaseAdapter):
 ```python
 class MyAdapter(BaseAdapter):
     class Send(BaseAdapter.Send):
-        """Send ネストされたクラス、BaseAdapter.Send から継承"""
+        """Send ネストクラス。BaseAdapter.Send から継承"""
         pass
 ```
 
-### 利用可能な属性
+### 使用可能な属性
 
-`Send` クラスは呼び出し時に自動的に以下の属性を設定します：
+`Send` クラスは呼び出し時に以下の属性を自動的に設定します：
 
-| 属性 | 説明 | 設定方法 |
+| プロパティ | 説明 | 設定方法 |
 |-----|------|---------|
 | `_target_id` | ターゲットID | `To(id)` または `To(type, id)` |
 | `_target_type` | ターゲットタイプ | `To(type, id)` |
 | `_target_to` | 簡略化されたターゲットID | `To(id)` |
 | `_account_id` | 送信アカウントID | `Using(account_id)` |
 | `_adapter` | アダプターインスタンス | 自動設定 |
-| `_at_user_ids` | @ユーザーIDリスト | `At(user_id)` |
-| `_reply_message_id` | 返信するメッセージID | `Reply(message_id)` |
+| `_at_user_ids` | @ユーザーリスト | `At(user_id)` |
+| `_reply_message_id` | 返信メッセージID | `Reply(message_id)` |
 | `_at_all` | 全員に@するか | `AtAll()` |
 
-> **推奨**：`self.send_context` 属性を使って `target_type`、`target_id`、`account_id` を一度に取得する方が、直接インスタンス変数にアクセスするよりも明確です。
+> **推奨**：`self.send_context` プロパティを使用して一度に `target_type`、`target_id`、`account_id` を取得する方が、インスタンス変数に直接アクセスするよりも明確です。
 
 ### フレームワーク補助メソッド
 
-| メソッド/属性 | 説明 |
+| メソッド/プロパティ | 説明 |
 |-----------|------|
 | `self._apply_modifiers(message)` | At/AtAll/Reply 修飾子の状態をメッセージセグメントリストにマージします |
 | `self.send_context` | `{target_type, target_id, account_id}` ディクショナリを返します |
 
-### 基本メソッド
+### 基本的なメソッド
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """推奨実装方式"""
+        """推奨される実装方法"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -5412,7 +5501,7 @@ class Send(BaseAdapter.Send):
         ])
 ```
 
-### チェーン修飾メソッド
+### チェーン修飾子メソッド
 
 ```python
 class Send(BaseAdapter.Send):
@@ -5440,34 +5529,34 @@ OneBot12 標準イベント
 
 ### 必須フィールド
 
-変換後のイベントは以下のフィールドを含む必要があります：
+すべての変換後のイベントには、以下が含まれている必要があります：
 
 ```python
 {
-    "id": "イベント一意識別子",
-    "time": 1234567890,           # 10桁 Unix タイムスタンプ
+    "id": "イベントの一意な識別子",
+    "time": 1234567890,           # 10桁の Unix タイムスタンプ
     "type": "message/notice/request/meta",
-    "detail_type": "イベント詳細タイプ",
+    "detail_type": "イベントの詳細タイプ",
     "platform": "プラットフォーム名",
     "self": {
         "platform": "プラットフォーム名",
-        "user_id": "ロボットID"
+        "user_id": "ロボットID"     # bot_id と一致している必要があります
     },
     "{platform}_raw": {...},       # 元のデータ（必須）
     "{platform}_raw_type": "..."    # 元のタイプ（必須）
 }
 ```
 
-### コンバーターの例
+### コンバーター例
 
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """プラットフォームのネイティブイベントを OneBot12 標準フォーマットに変換"""
+        """プラットフォームネイティブイベントを OneBot12 標準フォーマットに変換します"""
         if not isinstance(raw_event, dict):
             return None
         
-        # イベント ID を生成
+        # イベントIDを生成
         event_id = raw_event.get("event_id") or str(uuid.uuid4())
         
         # タイムスタンプを変換
@@ -5557,13 +5646,13 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> **ルート情報の照会**：アダプターが登録したルート（HTTP、WebSocket、SSE）は、`sdk.adapter.get_connection_info(platform)` と `sdk.router.get_module_urls(module_name)` を使用して完全な接続アドレス（`base_url` + パスを含む）を照会できます。詳細は [アダプター開発入門 - 接続情報とルートの検出](getting-started.md#9-接続情報とルートの検出) と [SSE サポート](getting-started.md#10-sse-server-sent-events-サポート) を参照してください。
+> **ルート情報のクエリ**：アダプターが登録したルート（HTTP、WebSocket、SSE）は、`sdk.adapter.get_connection_info(platform)` と `sdk.router.get_module_urls(module_name)` で完全な接続アドレス（`base_url` + パスを含む）を照会できます。詳細は [アダプター開発入門 - 接続情報とルートの検出](getting-started.md#9-接続情報とルートの検出) と [SSE サポート](getting-started.md#10-sse-server-sent-events-サポート) を参照してください。
 
-## API 応答標準
+## API レスポンス標準
 
-フレームワークは `make_response()` と `make_error()` メソッドを使用して、標準化されたレスポンスを構築し、手動でレスポンス辞書を構築する必要はありません。
+フレームワークは `make_response()` と `make_error()` メソッドで標準化されたレスポンスを構築するため、レスポンスディクショナリを手動で構築する必要はありません。
 
-### 成功応答
+### 成功レスポンス
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -5579,7 +5668,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e), raw=None)
 ```
 
-### 手動構築のレスポンス（旧版方式でも互換性あり）
+### 手動レスポンス構築（旧方式も互換性維持）
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -5593,11 +5682,11 @@ async def call_api(self, endpoint: str, **params):
     }
 ```
 
-## 多アカウントサポート
+## 複数アカウント対応
 
-### 声明式設定（推奨）
+### 宣言型設定（推奨）
 
-`AccountConfigClass` を使用して設定クラスを宣言すると、フレームワークは多アカウントのロード、検証、テンプレート生成を自動的に管理します：
+`AccountConfigClass` を使用して設定クラスを宣言すると、フレームワークは自動的に複数アカウントのロード、検証、テンプレート生成を管理します：
 
 ```python
 from dataclasses import dataclass, field
@@ -5613,13 +5702,13 @@ class MyAdapter(BaseAdapter):
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            self.logger.info(f"アカウント {name} を起動: {account.bot_id}")
+            self.logger.info(f"アカウント {name} を起動中: {account.bot_id}")
             await self._connect(name, account)
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
         name, account = self._resolve_account(account_id)
-        # account.token、account.bot_id などのフィールドを使用
+        # account.token や account.bot_id などのフィールドを使用
 ```
 
 ### アカウント設定ファイル
@@ -5636,39 +5725,39 @@ token = "token2"
 enabled = true
 ```
 
-### 指定アカウントでの送信
+### 指定されたアカウントからの送信
 
 ```python
-# Using メソッドでアカウントを指定
+# Using メソッドを使用してアカウントを指定
 my_adapter = adapter.get("myplatform")
 
-# アカウント名で
-await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
+# イベント内の self.user_id 経由（推奨、最も汎用的）
+await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
 
-# アカウント ID で
-await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
+# アカウント名経由
+await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 ```
 
 ### self.user_id と Using の関係
 
-フレームワークのイベント返信メカニズムは、イベントの `self` フィールドから自動的に `account_id`（優先）または `user_id` を抽出し、`Using` パラメータとして渡します。アダプター開発者は、Converter 内の `self.user_id` の値が `_resolve_account()` で正しくマッチできることを確認する必要があります。
+フレームワークのイベント応答メカニズムは、イベントの `self` フィールドから自動的に `account_id`（優先）または `user_id` を抽出し、`Using` 引数として渡します。アダプター開発者は、Converter 内の `self.user_id` の値が `_resolve_account()` で正しく一致するように確保する必要があります。
 
 **フレームワーク内部動作**（`Event._get_adapter_and_target`）：
 
 ```python
-# フレームワークによる bot_id の抽出ロジック
+# フレームワークが bot_id を抽出するロジック
 bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
 
-# bot_id が空でない場合にのみ Using を呼び出す
+# bot_id が空でない場合のみ Using を呼び出す
 if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **重要なポイント**：アダプターが 1つの Bot 設定しか使用していない場合でも、Converter で `self.user_id` が正しく設定されている限り、フレームワークはそれを `Using` パラメータとして渡します。アダプターは、`self.user_id` が `AccountConfigClass` 内の識別フィールド（例: `bot_id`）と一致し、`_resolve_account()` で正しいアカウントにマッチできるようにする必要があります。`self.user_id` が空の場合、フレームワークは `Using` を呼び出さず、この場合 `call_api` に渡される `account_id` は `None` となり、`_resolve_account(None)` は最初の有効なアカウントを返します。
+> **重要なポイント**：アダプターが単一の Bot 設定のみを使用している場合でも、Converter で `self.user_id` が正しく設定されていれば、フレームワークはそれを `Using` 引数として渡します。アダプターは、`self.user_id` が `AccountConfigClass` 内の識別フィールド（例: `bot_id`）と一致していることを確認し、`_resolve_account()` が正しいアカウントに一致できるようにする必要があります。`self.user_id` が空の場合、フレームワークは `Using` を呼び出さず、この場合 `call_api` に渡される `account_id` は `None` となり、`_resolve_account(None)` は最初に有効なアカウントを返します。
 
 ## エラーハンドリング
 
-### 接続リトライ
+### 接続の再試行
 
 ```python
 import asyncio
@@ -5686,7 +5775,7 @@ class MyAdapter(BaseAdapter):
                 retry_count += 1
                 if retry_count < max_retries:
                     wait_time = min(60 * (2 ** retry_count), 600)
-                    self.logger.warning(f"接続失敗、{wait_time}秒後に再試行")
+                    self.logger.warning(f"接続に失敗しました。{wait_time}秒後に再試行します")
                     await asyncio.sleep(wait_time)
                 else:
                     raise
@@ -5697,7 +5786,7 @@ class MyAdapter(BaseAdapter):
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
-        # SDK 内部クライアントの使用を推奨
+        # SDK 内蔵クライアントを使用することを推奨
         from ErisPulse.Core import client
         from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
         resp = await client.post(
@@ -5712,59 +5801,59 @@ async def call_api(self, endpoint: str, **params):
         return self._error_response("リクエストがタイムアウトしました", 32000)
     except ClientError as e:
         self.logger.error(f"ネットワークエラー: {e}")
-        return self._error_response("ネットワークリクエストが失敗しました", 33000)
+        return self._error_response("ネットワークリクエストに失敗しました", 33000)
     except Exception as e:
-        self.logger.error(f"不明なエラー: {e}")
+        self.logger.error(f"未知のエラー: {e}")
         return self._error_response(str(e), 34000)
 ```
 
-> **互換性の維持**：旧版アダプターコードで直接 `aiohttp.ClientSession` を使用している場合は影響を受けず、`aiohttp.ClientError` を捕捉することもできます。両方の方式は共存できます。新しいコードでは `sdk.client` + ErisPulse 例外体系の使用を推奨します。
+> **後方互換性**：直接 `aiohttp.ClientSession` を使用する旧アダプターコードは影響を受けず、依然として `aiohttp.ClientError` をキャッチできます。2つの方式は共存できます。新しいコードでは `sdk.client` + ErisPulse 異常体系を使用することを推奨します。
 
-## Bot 状態管理
+## Bot の状態管理
 
-AdapterManager 内置了 Bot 状態追跡システム，自动维护所有已注册 Bot 的在线状态、活跃时间和元信息。
+AdapterManager には Bot の状態追跡システムが組み込まれており、登録されているすべての Bot のオンライン状態、アクティビティ時間、メタ情報を自動的に維持します。
 
 ### 自動発見メカニズム
 
-アダプターが `adapter.emit()` を呼び出すと、フレームワークはイベント内の `self` フィールドを自動的にチェックします：
+アダプターが `adapter.emit()` でイベントを送信すると、フレームワークはイベント内の `self` フィールドを自動的にチェックします：
 
-- **meta イベント**：根据 `detail_type` 执行对应操作（connect 注册/断开标记离线/heartbeat 更新活跃时间）
-- **普通イベント**（message/notice/request）：自动发现 Bot 并更新活跃时间
+- **meta イベント**：`detail_type` に基づいて対応する操作を実行します（connect 登録/切断によるオフラインマーカー/heartbeat によるアクティビティ時間更新）
+- **通常のイベント**（message/notice/request）：自動的に Bot を発見し、アクティビティ時間を更新します
 
 ```python
-# All contain self 字段的事件都会触发自动发现
+# self フィールドを含むすべてのイベントが自動発見をトリガーします
 await self.adapter.emit({
     "type": "message",
     "platform": "myplatform",
     "self": {"platform": "myplatform", "user_id": "bot123"},
     # ...
 })
-# Bot "bot123" 已自动注册（如果首次出现）并更新活跃时间
+# Bot "bot123" は（初出の場合）自動的に登録され、アクティビティ時間が更新されます
 ```
 
 ### Meta イベントタイプ
 
 | `detail_type` | 説明 | フレームワークの動作 |
 |---|---|---|
-| `connect` | Bot 接続 | Bot を登録し、`adapter.bot.online` ライフサイクルイベントを発行します |
-| `disconnect` | Bot 断开 | Bot をオフラインにマークし、`adapter.bot.offline` ライフサイクルイベントを発行します |
-| `heartbeat` | Bot ハートビート | Bot のアクティブ時間とメタ情報を更新します |
+| `connect` | Bot 接続 | Bot を登録し、`adapter.bot.online` ライフサイクルイベントをトリガー |
+| `disconnect` | Bot 切断 | Bot をオフラインとしてマークし、`adapter.bot.offline` ライフサイクルイベントをトリガー |
+| `heartbeat` | Bot ハートビート | Bot のアクティビティ時間とメタ情報を更新 |
 
-### 适配器发送 Meta 事件
+### アダプターからの Meta イベント送信
 
-使用 `emit_meta()` 一行即可发送 meta 事件：
+`emit_meta()` を1行で使用して meta イベントを送信できます：
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
-        # 一行发送 connect 事件
+        # 1行で connect イベントを送信
         await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
 
     async def _on_bot_disconnect(self, bot_id: str):
         await self.emit_meta("disconnect", bot_id)
 ```
 
-也支持手动构造（旧版方式仍然兼容）：
+手動で構築することも可能（旧方式も互換性維持）：
 
 ```python
 await self.adapter.emit({
@@ -5775,41 +5864,41 @@ await self.adapter.emit({
 })
 ```
 
-### `self` 字段扩展信息
+### `self` フィールドの拡張情報
 
-`self` 字段除必需的 `platform` 和 `user_id` 外，还支持以下可选字段：
+`self` フィールドには必須の `platform` と `user_id` に加え、以下のオプションフィールドがサポートされます：
 
-| 字段 | 説明 |
+| フィールド | 説明 |
 |---|---|
 | `user_name` | Bot ユーザー名 |
-| `nickname` | Bot ニックネーム |
-| `avatar` | Bot アバター URL |
-| `account_id` | 多アカウント識別子 |
+| `nickname` | Bot のニックネーム |
+| `avatar` | Bot のアバター URL |
+| `account_id` | 複数アカウントの識別子 |
 
-### Bot 状態の照会
+### Bot の状態照会
 
 ```python
 from ErisPulse import sdk
 
-# 获取单个 Bot 信息
+# 単一の Bot 情報を取得
 info = sdk.adapter.get_bot_info("myplatform", "bot123")
 # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
 
-# 列出所有 Bot
+# すべての Bot をリスト表示
 all_bots = sdk.adapter.list_bots()
 
-# 列出指定平台的 Bot
+# 指定されたプラットフォームの Bot をリスト表示
 platform_bots = sdk.adapter.list_bots("myplatform")
 
-# 检查 Bot 是否在线
+# Bot がオンラインかどうかを確認
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# 获取完整状态摘要（适合 WebUI 展示）
+# 完全な状態サマリーを取得（WebUI 表示に適しています）
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
 ```
 
-### Bot ライフサイクルの監視
+### Bot のライフサイクルを監視
 
 ```python
 from ErisPulse import sdk
@@ -5818,20 +5907,20 @@ from ErisPulse import sdk
 async def on_bot_online(data):
     platform = data.get("platform")
     bot_id = data.get("bot_id")
-    sdk.logger.info(f"Bot 上線: {platform}/{bot_id}")
+    sdk.logger.info(f"Bot がオンラインになりました: {platform}/{bot_id}")
 
 @sdk.lifecycle.on("adapter.bot.offline")
 async def on_bot_offline(data):
     platform = data.get("platform")
     bot_id = data.get("bot_id")
-    sdk.logger.info(f"Bot 下線: {platform}/{bot_id}")
+    sdk.logger.info(f"Bot がオフラインになりました: {platform}/{bot_id}")
 ```
 
-## 関連文書
+## 関連ドキュメント
 
 - [アダプター開発入門](getting-started.md) - 最初のアダプターを作成する
-- [SendDSL 詳解](send-dsl.md) - メッセージ送信を学ぶ
-- [アダプター開発ベストプラクティス](best-practices.md) - 高品質なアダプターを開発する
+- [SendDSL の詳細](send-dsl.md) - メッセージ送信を学ぶ
+- [アダプターのベストプラクティス](best-practices.md) - 高品質なアダプターを開発する
 
 
 ### SendDSL 详解
@@ -6126,33 +6215,33 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 
 ### 适配器开发最佳实践
 
-# アダプター開発ベストプラクティス
+# アダプタ開発のベストプラクティス
 
-本文書では、ErisPulse アダプター開発のベストプラクティスを提供します。
+このドキュメントは、ErisPulse アダプタ開発におけるベストプラクティスを提供します。
 
-## Bot の状態管理と Meta イベント
+## Bot 状態管理と Meta イベント
 
-アダプターは、`adapter.emit()` を通じて積極的に meta イベントを送信し、フレームワークに Bot の接続状態、オンライン/オフライン、ハートビート情報を自動追跡させる必要があります。
+アダプタは、`adapter.emit()` を通じてメタイベントを積極的に送信し、フレームワークが Bot の接続状態、ログイン/ログアウト、およびハートビート情報を自動的に追跡できるようにする必要があります。
 
-### 1. Meta イベントを送信するタイミング
+### 1. メタイベントを送信するタイミング
 
 | イベント | `detail_type` | 発生タイミング | フレームワークの動作 |
 |------|--------------|---------|---------|
-| 接続 | `"connect"` | Bot がプラットフォームとの接続を確立した時 | Bot を登録し、`adapter.bot.online` ライフサイクルイベントをトリガーする |
-| 切断 | `"disconnect"` | Bot がプラットフォームから切断された時 | Bot をオフラインとしてマークし、`adapter.bot.offline` ライフサイクルイベントをトリガーする |
-| ハートビート | `"heartbeat"` | 定期的に送信（推奨 30〜60 秒） | Bot のアクティブ時間とメタ情報を更新する |
+| 接続 | `"connect"` | Bot がプラットフォームと接続したとき | Bot を登録し、`adapter.bot.online` のライフサイクルイベントをトリガー |
+| 切断 | `"disconnect"` | Bot がプラットフォームから切断したとき | Bot をオフラインとしてマークし、`adapter.bot.offline` のライフサイクルイベントをトリガー |
+| ハートビート | `"heartbeat"` | 定期的に送信（推奨 30-60 秒） | Bot のアクティブ時間とメタ情報を更新 |
 
-### 2. Meta イベントを送信する
+### 2. メタイベントの送信
 
-フレームワークは `emit_meta()` メソッドを提供しており、1 行で meta イベントを送信できます。
+フレームワークは `emit_meta()` メソッドを提供しており、一行でメタイベントを送信できます：
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Botオンライン：1 行で connect イベントを送信
-        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="私のBot")
+        # Bot のオンライン：一行で connect イベントを送信
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="私のロボット")
 
         try:
             while True:
@@ -6163,32 +6252,32 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Botオフライン
+            # Bot のオフライン
             await self.emit_meta("disconnect", bot_id)
 ```
 
 ### 3. ハートビートイベント
 
-アダプターは、接続が生きている間、定期的にハートビートイベントを送信し、Bot のアクティブ時間を更新する必要があります。
+アダプタは、接続が有効な間隔で定期的にハートビートイベントを送信し、Bot のアクティブ時間を更新する必要があります：
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self, bot_id: str):
         while self._connected:
-            # フレームワークに meta heartbeat を送信（1 行で完了）
+            # フレームワークに meta heartbeat を送信（一行で完了）
             await self.emit_meta("heartbeat", bot_id)
             await asyncio.sleep(30)
 ```
 
-### 4. `self` フィールドの自動検出
+### 4. `self` フィールドの自動発見
 
-フレームワークの `adapter.emit()` は、すべてのイベント（meta イベントだけでなく）の `self` フィールドを自動的に処理します。
+フレームワークの `adapter.emit()` は、すべてのイベント（メタイベントに限らず）の `self` フィールドを自動的に処理します：
 
-- **通常のイベント**（message/notice/request）の `self` フィールドは、Bot を自動的に検出して登録します
-- **`self` フィールドの拡張情報**：`user_name`、`nickname`、`avatar`、`account_id` オプションフィールドをサポートします
+- **通常のイベント**（message/notice/request）の `self` フィールドは自動的に Bot を登録します
+- **`self` フィールドの拡張情報**：`user_name`、`nickname`、`avatar`、`account_id` のオプションフィールドがサポートされます
 
 ```python
-# コンバーターに self フィールドを含めるだけで Bot が自動登録されます
+# コンバータに self フィールドを含めることで Bot を自動的に登録
 onebot_event = {
     "type": "message",
     "detail_type": "private",
@@ -6197,17 +6286,17 @@ onebot_event = {
         "platform": "myplatform",
         "user_id": "bot123",
         "user_name": "MyBot",
-        "nickname": "私のBot",
+        "nickname": "私のロボット",
     },
-    # ... その他のフィールド
+    # ... 他のフィールド
 }
 await self.adapter.emit(onebot_event)
-# Bot "bot123" が自動登録され、アクティブ時間が更新されました
+# Bot "bot123" は自動的に登録され、アクティブ時間が更新されます
 ```
 
-### 5. Bot の状態照会
+### 5. Bot 状態の照会
 
-フレームワークは以下の照会メソッドを提供します。
+フレームワークは以下の照会メソッドを提供します：
 
 ```python
 from ErisPulse import sdk
@@ -6216,23 +6305,23 @@ from ErisPulse import sdk
 info = sdk.adapter.get_bot_info("myplatform", "bot123")
 # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
 
-# すべての Bot をリストアップ（プラットフォーム別）
+# すべての Bot をリストアップ（プラットフォーム別にグループ化）
 all_bots = sdk.adapter.list_bots()
 
-# 指定したプラットフォームの Bot をリストアップ
+# 指定されたプラットフォームの Bot をリストアップ
 platform_bots = sdk.adapter.list_bots("myplatform")
 
 # Bot がオンラインかどうかを確認
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# 完全なステータスサマリーを取得（WebUIでの表示に適しています）
+# 完全な状態サマリーを取得（WebUI 表示に適しています）
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
 ```
 
 ## 接続管理
 
-### 1. 再接続の実装
+### 1. 接続の再試行の実装
 
 ```python
 import asyncio
@@ -6253,7 +6342,7 @@ class MyAdapter(BaseAdapter):
                     # 指数バックオフ戦略
                     wait_time = min(60 * (2 ** retry_count), 600)
                     self.logger.warning(
-                        f"接続失敗、{wait_time}秒後に再試行します ({retry_count}/{max_retries}): {e}"
+                        f"接続失敗、{wait_time}秒後に再試行 ({retry_count}/{max_retries}): {e}"
                     )
                     await asyncio.sleep(wait_time)
                 else:
@@ -6261,7 +6350,7 @@ class MyAdapter(BaseAdapter):
                     raise
 ```
 
-### 2. 接続状態管理
+### 2. 接続状態の管理
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -6285,9 +6374,9 @@ class MyAdapter(BaseAdapter):
             self._connected = False
 ```
 
-### 3. ハートビートキープアライブと Meta ハートビート
+### 3. ハートビート保活と Meta ハートビート
 
-アダプターのハートビートは、プラットフォームへのキープアライブ送信と、フレームワークへの meta heartbeat イベント送信の2つのタスクを同時に実行する必要があります。
+アダプタのハートビートは、プラットフォームへのハートビート保活とフレームワークへの meta heartbeat イベントの送信の両方を完了する必要があります。
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -6298,10 +6387,10 @@ class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self):
         while self.connection:
             try:
-                # 1. プラットフォームにハートビートを送信してキープアライブ
+                # 1. プラットフォームにハートビート保活を送信
                 await self.connection.send_json({"type": "ping"})
 
-                # 2. フレームワークに meta heartbeat イベントを送信（Bot のアクティブ時間を更新）
+                # 2. フレームワークに meta heartbeat を送信（emit_meta で一行で完了）
                 await self.emit_meta("heartbeat", self._bot_id)
 
                 await asyncio.sleep(30)
@@ -6312,7 +6401,7 @@ class MyAdapter(BaseAdapter):
 
 ### 4. 接続情報の公開
 
-アダプターが登録したルートはユーザーに可視すべきであり、ユーザーがプラットフォーム側のコールバックアドレスを設定するのに役立ちます。`start()` で接続情報を主に出力することを推奨します。
+アダプタが登録したルートは、ユーザーがプラットフォーム側のコールバックアドレスを設定できるように、ユーザーに見えるようにする必要があります。`start()` で接続情報を積極的に出力することをお勧めします：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -6331,25 +6420,25 @@ class MyAdapter(BaseAdapter):
                     f"{info.get('connection', {}).get('websocket_routes', [])}")
 ```
 
-ユーザーは以下の API を通じてアダプターのすべてのルートと接続アドレスを確認できます。
+ユーザーは以下の API を通じて、アダプタのすべてのルートと接続アドレスを照会できます：
 
 ```python
 from ErisPulse import sdk
 
-# アダプターレベルの接続情報（推奨）
+# アダプタレベルの接続情報（推奨）
 info = sdk.adapter.get_connection_info("myplatform")
 
-# ルートマネージャーレベルの照会
-sdk.router.list_namespaces()              # すべてのネームスペースを一覧表示
+# ルートマネージャレベルの照会
+sdk.router.list_namespaces()              # すべての名前空間をリストアップ
 sdk.router.get_module_routes("myplatform")  # 詳細なルート情報
 sdk.router.get_module_urls("myplatform")    # 完全な接続 URL
 ```
 
-> **注意**：ルートを登録する際の `module_name` は、ErisPulse で登録されたアダプターの `platform` 名と完全に一致している必要があります。それ以外の場合、`get_connection_info()` はルートを関連付けられません。マルチアカウントアダプターは、各アカウントに対してサブパス（例: `/account1/webhook`、`/account2/webhook`）を登録する必要があります。`module_name` を使い分けることはできません。
+> **注意**: ルート登録時の `module_name` は、ErisPulse で登録されたアダプタの `platform` 名と完全に一致している必要があります。一致しない場合、`get_connection_info()` はルートを関連付けられません。複数アカウント対応アダプタは、異なる `module_name` を使用するのではなく、各アカウントにサブパス（例：`/account1/webhook`、`/account2/webhook`）を登録する必要があります。
 
 ## イベント変換
 
-### 1. OneBot12 標準の厳格な遵守
+### 1. OneBot12 標準に厳密に従う
 
 ```python
 class MyPlatformConverter:
@@ -6365,25 +6454,25 @@ class MyPlatformConverter:
                 "platform": "myplatform",
                 "user_id": str(raw_event.get("bot_id", ""))
             },
-            "myplatform_raw": raw_event,  # 原始データを保持（必須）
-            "myplatform_raw_type": raw_event.get("type", "")  # 原始タイプ（必須）
+            "myplatform_raw": raw_event,  # 保持したままの元データ（必須）
+            "myplatform_raw_type": raw_event.get("type", "")  # 元のタイプ（必須）
         }
         return onebot_event
 ```
 
-### 2. タイムスタンプの標準化
+### 2. 時間スタンプの標準化
 
 ```python
 def _convert_timestamp(self, timestamp):
-    """10桁の秒単位タイムスタンプに変換"""
+    """10桁の秒単位時間スタンプに変換"""
     if not timestamp:
         return int(time.time())
     
-    # ミリ秒単位のタイムスタンプの場合
+    # ミリ秒単位の時間スタンプの場合
     if timestamp > 10**12:
         return int(timestamp / 1000)
     
-    # 秒単位のタイムスタンプの場合
+    # 秒単位の時間スタンプの場合
     return int(timestamp)
 ```
 
@@ -6397,20 +6486,20 @@ def _generate_event_id(self, raw_event):
     event_id = raw_event.get("event_id")
     if event_id:
         return str(event_id)
-    # プラットフォームが ID を提供していない場合、UUID を生成
+    # プラットフォームが提供していない場合、UUID を生成
     return str(uuid.uuid4())
 ```
 
-## SendDSL の実装
+## SendDSL 実装
 
-`At`/`AtAll`/`Reply` 修飾子はフレームワークの SendDSL 基底クラスに組み込まれているため、アダプターは `Raw_ob12` と具体的な送信メソッドを実装するだけで済みます。`self._apply_modifiers(message)` と `self.send_context` を使用して開発を簡素化します。
+`At`/`AtAll`/`Reply` 修飾子は、フレームワークの SendDSL 基底クラスに組み込まれており、アダプタは `Raw_ob12` と具体的な送信メソッドを実装するだけで済みます。`self._apply_modifiers(message)` と `self.send_context` を使用して開発を簡素化します。
 
-### 1. Task オブジェクトを返さなければならない
+### 1. 必ず Task オブジェクトを返す
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """推奨される実装：フレームワークのヘルパーメソッドを使用"""
+        """推奨実装：フレームワークの補助メソッドを使用"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -6439,7 +6528,7 @@ class Send(BaseAdapter.Send):
         return self # self を返す
 ```
 
-### 3. プラットフォーム固有のメソッドのサポート
+### 3. プラットフォーム固有のメソッドをサポート
 
 ```python
 class Send(BaseAdapter.Send):
@@ -6458,17 +6547,17 @@ class Send(BaseAdapter.Send):
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_card",
-                message=[{"type": "card", "data": card_data}],
+                message=[{"type": "card", "data": {"data": card_data}}],
                 **self.send_context
             )
         )
 ```
 
-## API レスポンス
+## API 応答
 
-### 1. レスポンス形式の標準化
+### 1. 応答形式の標準化
 
-フレームワークは `make_response()` と `make_error()` メソッドを使用して標準化されたレスポンスを構築します。
+フレームワークは `make_response()` と `make_error()` メソッドを提供し、標準化された応答を構築します：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -6491,11 +6580,11 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-`make_response()` は、`{platform}_raw` キーを含むレスポンス辞書を自動的に生成します。`make_error()` はデフォルトで `retcode=34000`（Platform Error）を使用します。
+`make_response()` は、`{platform}_raw` キーを含む応答辞書を自動的に生成します。`make_error()` はデフォルトで `retcode=34000`（Platform Error）を使用します。
 
-### 2. エラーコード規約
+### 2. エラーコード規格
 
-OneBot12 標準のエラーコードに従います。
+OneBot12 標準エラーコードに従います：
 
 ```python
 # 1xxxx - アクションリクエストエラー
@@ -6515,11 +6604,11 @@ OneBot12 標準のエラーコードに従います。
 35000: Logic Error
 ```
 
-## マルチアカウントサポート
+## 多アカウント対応
 
-### 1. 声明式設定（推奨）
+### 1. 宣言的構成（推奨）
 
-`AccountConfigClass` を使用して設定クラスを宣言すると、フレームワークは自動的にマルチアカウントの読み込み、検証、およびテンプレート生成を管理します。
+`AccountConfigClass` を宣言して構成クラスを定義すると、フレームワークが多アカウントのロード、検証、およびテンプレート生成を自動的に管理します。`BotAccountConfig` 基底クラスは `enabled` と `name` フィールドを提供しており、アダプタは宣言する必要はありません：
 
 ```python
 from dataclasses import dataclass, field
@@ -6528,7 +6617,7 @@ from ErisPulse.runtime.config_schema import BotAccountConfig
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
-        "description": "Bot Token",
+        "description": {"i18n": "my_adapter.bot_token", "default": "Bot Token"},
         "required": True,
         "secret": True,
     })
@@ -6538,8 +6627,9 @@ class MyAdapter(BaseAdapter):
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            self.logger.info(f"启动账户 {name}")
+            self.logger.info(f"アカウント {name} を起動")
             await self._connect(name, account.token)
+            # bot_id はフレームワークが自動的にプラットフォームプロトコル/ログインレスポンスから取得して戻し埋めします
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
@@ -6547,7 +6637,7 @@ class MyAdapter(BaseAdapter):
         # name: アカウント名, account: MyBotConfig インスタンス
 ```
 
-設定ファイルは自動的に次のように生成されます。
+構成ファイルは自動的に生成されます：
 
 ```toml
 [MyAdapter.accounts.default]
@@ -6558,24 +6648,29 @@ name = ""
 
 ### 2. アカウント選択メカニズム
 
-フレームワークは `_resolve_account()` メソッドを内蔵しており、複数のマッチング戦略をサポートしています。
+フレームワークは `_resolve_account()` メソッドを内蔵しており、優先順位で一致します：
+
+1. **アカウント名** — 構成キー名の正確な一致
+2. **`bot_id` フィールド** — 自動的に取得された bot_id（イベントの `event["self"]["user_id"]` から）
+3. **任意の str フィールド** — 構成の他の文字列フィールド
+4. **バックアップ** — 最初に有効なアカウント
 
 ```python
 # アカウント名で一致
 name, account = self._resolve_account("account1")
 
-# bot_id フィールドで一致（設定に bot_id フィールドがある場合）
+# bot_id で一致（最も一般的な方法、イベントから取得）
 name, account = self._resolve_account("bot_123")
 
-# 最初に有効なアカウントを取得（None を渡す）
+# 有効な最初のアカウントを取得（None を渡す）
 name, account = self._resolve_account(None)
 ```
 
-## エラーハンドリング
+## エラー処理
 
-### 1. 分類別の例外処理
+### 1. エラーの分類処理
 
-`make_error()` を使用して標準化されたエラーレスポンスを構築します。`sdk.client` を使用してリクエストする場合、ErisPulse の例外をキャッチします。
+`make_error()` を使用して標準化されたエラー応答を構築します。`sdk.client` を通じてリクエストする際は、ErisPulse の例外をキャッチします：
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
@@ -6591,38 +6686,38 @@ async def call_api(self, endpoint: str, **params):
         response = await resp.json()
         return self.make_response(data=response, raw=response)
     except ClientTimeoutError:
-        self.logger.error(f"请求超时: {endpoint}")
-        return self.make_error(retcode=32000, message="请求超时")
+        self.logger.error(f"リクエストタイムアウト: {endpoint}")
+        return self.make_error(retcode=32000, message="リクエストタイムアウト")
     except ClientError as e:
-        self.logger.error(f"网络错误: {e}")
-        return self.make_error(retcode=33000, message="网络请求失败")
+        self.logger.error(f"ネットワークエラー: {e}")
+        return self.make_error(retcode=33000, message="ネットワークリクエスト失敗")
     except json.JSONDecodeError:
-        self.logger.error("JSON 解析失败")
-        return self.make_error(retcode=10006, message="响应格式错误")
+        self.logger.error("JSON 解析失敗")
+        return self.make_error(retcode=10006, message="レスポンス形式エラー")
     except Exception as e:
-        self.logger.error(f"未知错误: {e}", exc_info=True)
+        self.logger.error(f"未知のエラー: {e}", exc_info=True)
         return self.make_error(message=str(e))
 ```
 
-> **バック互換性**：直接 `aiohttp` を使用する旧アダプターコードは影響を受けません。引き続き `aiohttp.ClientError` をキャッチできます。例外変換は、`sdk.client` 経由でリクエストを開始した場合にのみ有効になります。
+> **後方互換性**: `aiohttp` を直接使用する古いアダプタのコードは影響を受けません。`aiohttp.ClientError` をキャッチし続けます。例外の変換は、`sdk.client` を通じてリクエストを発行する場合にのみ有効です。
 
 ### 2. ログ記録
 
-フレームワークは自動的にアダプターに子ロガー（`sdk.logger.get_child("MyAdapter")`）を作成するため、手動で初期化する必要はありません。
+フレームワークは、アダプタごとにサブロガー（`sdk.logger.get_child("MyAdapter")`）を自動的に作成します。手動での初期化は不要です：
 
 ```python
 class MyAdapter(BaseAdapter):
-    # ConfigClass = ...  # 設定クラスを宣言すると、self.logger が自動的に使用可能になります
+    # ConfigClass = ...  # 構成クラスを宣言すると self.logger が自動的に利用可能になります
     
     async def start(self):
-        self.logger.info("アダプターを起動中...")
+        self.logger.info("アダプタの起動中...")
         # ...
-        self.logger.info("アダプターの起動が完了しました")
+        self.logger.info("アダプタの起動完了")
     
     async def shutdown(self):
-        self.logger.info("アダプターをシャットダウン中...")
+        self.logger.info("アダプタの終了中...")
         # ...
-        self.logger.info("アダプターのシャットダウンが完了しました")
+        self.logger.info("アダプタの終了完了")
 ```
 
 ## テスト
@@ -6635,7 +6730,7 @@ from ErisPulse.Core.Bases import BaseAdapter
 
 class TestMyAdapter:
     def test_converter(self):
-        """テスト変換器"""
+        """コンバータのテスト"""
         converter = MyPlatformConverter()
         raw_event = {"type": "message", "content": "Hello"}
         result = converter.convert(raw_event)
@@ -6644,7 +6739,7 @@ class TestMyAdapter:
         assert "myplatform_raw" in result
     
     def test_api_response(self):
-        """テスト API 応答形式"""
+        """API 応答形式のテスト"""
         adapter = MyAdapter()
         response = adapter.call_api("/test", param="value")
         assert "status" in response
@@ -6656,14 +6751,14 @@ class TestMyAdapter:
 ```python
 @pytest.mark.asyncio
 async def test_adapter_start():
-    """テストアダプター起動"""
+    """アダプタの起動テスト"""
     adapter = MyAdapter()
     await adapter.start()
     assert adapter._connected is True
 
 @pytest.mark.asyncio
 async def test_send_message():
-    """テスト送信メッセージ"""
+    """メッセージ送信のテスト"""
     adapter = MyAdapter()
     await adapter.start()
     
@@ -6671,26 +6766,26 @@ async def test_send_message():
     assert result is not None
 ```
 
-## 逆変換とメッセージ構築
+## リバースコンバートとメッセージ構築
 
-`Raw_ob12` はアダプターが**実装しなければならない**メソッドで、OneBot12 → プラットフォームへの逆変換の統一エントリーポイントです。標準メソッド（`Text`、`Image` など）は `Raw_ob12` に委譲し、修飾子状態（`At`/`Reply`/`AtAll`）は `Raw_ob12` 内でメッセージセグメントにマージする必要があります。
+`Raw_ob12` は、アダプタが**実装しなければならない**メソッドであり、OneBot12 → プラットフォームのリバースコンバートの統一エントリーポイントです。標準メソッド（`Text`、`Image` など）は `Raw_ob12` に委譲し、修飾子の状態（`At`/`Reply`/`AtAll`）は `Raw_ob12` 内でメッセージセグメントに統合される必要があります。
 
-`MessageBuilder` は `Raw_ob12` と一緒に使用するメッセージセグメント構築ツールで、チェーン呼び出しと高速構築をサポートします。
+`MessageBuilder` は、`Raw_ob12` と一緒に使用するメッセージセグメント構築ツールで、チェーン呼び出しと迅速な構築が可能です。
 
-> 完全な実装規範、コード例、使用方法は以下を参照してください：
-> - [送信メソッド規範 §6 逆変換規范](../../standards/send-method-spec.md#6-逆変換規范onebot12--プラットフォーム)
-> - [送信メソッド規範 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
+> 完全な実装規格、コード例、および使用方法は、以下のドキュメントを参照してください：
+> - [送信メソッド規格 §6 リバースコンバート規格](../../standards/send-method-spec.md#6-リバースコンバート規格onebot12--プラットフォーム)
+> - [送信メソッド規格 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
 
 ## プラットフォームイベントメソッド拡張
 
-アダプターは Event クラスにプラットフォーム固有メソッドを登録し、モジュール開発者がプラットフォーム特有のデータに簡単にアクセスできるようにすることができます。
+アダプタは、Event 包装クラスにプラットフォーム固有のメソッドを登録し、モジュール開発者がプラットフォーム固有のデータに簡単にアクセスできるようにすることができます。
 
 ### 1. Mixin クラスを使用した一括登録（推奨）
 
-プラットフォームに複数の固有メソッドがある場合、Mixin クラスを使用することを推奨します。
+プラットフォームに複数の固有メソッドがある場合、Mixin クラスを使用することをお勧めします：
 
 ```python
-# アダプターの start() またはモジュールレベルで登録
+# アダプタの start() またはモジュールレベルで登録
 from ErisPulse.Core.Event import register_event_mixin
 
 class MyPlatformEventMixin:
@@ -6711,7 +6806,7 @@ class MyPlatformEventMixin:
 register_event_mixin("myplatform", MyPlatformEventMixin)
 ```
 
-### 2. デコレータを使用した単一メソッド登録
+### 2. デコレーターを使用した個別メソッド登録
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -6721,7 +6816,7 @@ def get_chat_name(self):
     return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 ```
 
-### 3. アダプター終了時のクリーンアップ
+### 3. アダプタの終了時のクリーンアップ
 
 ```python
 from ErisPulse.Core.Event import unregister_platform_event_methods
@@ -6733,34 +6828,34 @@ class MyAdapter(BaseAdapter):
         # ... その他のクリーンアップ
 ```
 
-> 詳細な登録とアンロードの説明は [イベントシステム API - プラットフォーム拡張メソッド登録](../../api-reference/event-system.md#アダプター登録プラットフォーム拡張メソッド) を参照してください。
+> 詳細な登録とアンロードの説明は、[イベントシステム API - プラットフォーム拡張メソッドの登録](../../api-reference/event-system.md#アダプタ登録プラットフォーム拡張メソッド) を参照してください。
 
 ## ドキュメントの維持
 
-### 1. プラットフォーム特性ドキュメントの維持
+### 1. プラットフォームの機能ドキュメントの維持
 
-`docs/zh-CN/platform-guide/` に `{platform}.md` ドキュメントを作成してください（他の言語バージョンは自動生成されます）。
+`docs/ja/platform-guide/` 以下に `{platform}.md` ドキュメントを作成します（他の言語バージョンは自動生成されます）：
 
 ```markdown
-# プラットフォーム名アダプタードキュメント
+# プラットフォーム名アダプタドキュメント
 
 ## 基本情報
 - 対応モジュールバージョン: 1.0.0
 - 維持者: Your Name
 
-## 支援するメッセージ送信タイプ
+## 支援されるメッセージ送信タイプ
 ...
 
-## 特有イベントタイプ
+## 特有のイベントタイプ
 ...
 
-## 設定オプション
+## 構成オプション
 ...
 ```
 
 ### 2. バージョン情報の更新
 
-新しいバージョンをリリースする際、ドキュメント内のバージョン情報を更新してください。
+新しいバージョンをリリースする際、ドキュメント内のバージョン情報を更新します：
 
 ```toml
 [project]
@@ -6769,8 +6864,8 @@ version = "2.0.0"  # バージョン番号を更新
 
 ## 関連ドキュメント
 
-- [アダプター開発入門](getting-started.md) - 最初のアダプターを作成する
-- [アダプターの基本概念](core-concepts.md) - アダプターのアーキテクチャを理解する
+- [アダプタ開発入門](getting-started.md) - 最初のアダプタを作成する
+- [アダプタのコアコンセプト](core-concepts.md) - アダプタアーキテクチャを理解する
 - [SendDSL 詳解](send-dsl.md) - メッセージ送信を学ぶ
 
 
@@ -12743,21 +12838,21 @@ async def chat_handler(event):
 
 # 国際化 (i18n) システム
 
-ErisPulse v2.5.0 から、完全な国際化サポートが組み込まれました。フレームワークのコアおよび CLI インターフェースは、システム言語に基づいて表示テキストを自動的に切り替えることができ、外部モジュールによる独自の翻訳の登録もサポートしています。
+ErisPulse v2.5.0 より、完全な国際化 (i18n) サポートが組み込まれています。フレームワークの Core および CLI インターフェースは、システム言語に応じて表示テキストを自動的に切り替えたり、外部モジュールによる独自の翻訳登録をサポートしています。
 
-## サポートされる言語
+## サポートされている言語
 
 | 言語 | コード | 説明 |
 |------|------|------|
 | 簡体字中国語 | `zh-CN` | デフォルト言語（フレームワークのネイティブ言語） |
-| 繁体字中国語 | `zh-TW` | 繁体字中国語（香港・マカオ・台湾） |
-| English | `en` | 英語（一般的なフォールバック言語） |
+| 繁体字中国語 | `zh-TW` | 繁体字中国語（香港/マカオ/台湾） |
+| English | `en` | 英語（汎用的なフォールバック言語） |
 | 日本語 | `ja` | 日本語 |
 | Русский | `ru` | ロシア語 |
 
-## クイック体験
+## クイックスタート
 
-### 環境変数による切り替え
+### 環境変数を使用して切り替える
 
 ```bash
 # Windows PowerShell
@@ -12768,9 +12863,9 @@ epsdk run
 ERISPULSE_LANG=ja epsdk run
 ```
 
-### 設定ファイルによる切り替え
+### 設定ファイルを使用して切り替える
 
-`config/config.toml` に以下を追加します：
+`config/config.toml` に追加します：
 
 ```toml
 [ErisPulse.i18n]
@@ -12779,7 +12874,7 @@ language = "zh-TW"
 
 `"auto"`（デフォルト値）に設定すると、システム言語を自動的に検出します。
 
-### コードでの手動切り替え
+### コード内で手動で切り替える
 
 ```python
 from ErisPulse import i18n
@@ -12796,30 +12891,30 @@ i18n.reset_language()
 
 ## 言語検出メカニズム
 
-フレームワークは、以下の優先順位に従ってユーザーの言語を検出します。
+フレームワークは以下の優先順位でユーザーの言語を検出します：
 
-1. **環境変数 `ERISPULSE_LANG`** — 最高の優先度。テストや一時的な切り替えに使用
-2. **Windows API** — `GetUserDefaultLocaleName`（Windows のみ。Git Bash などのツールによる `LANG` の上書きの影響を受けません）
+1. **環境変数 `ERISPULSE_LANG`** — 最優先度。テストや一時的な切り替えに使用
+2. **Windows API** — `GetUserDefaultLocaleName`（Windows のみ。Git Bash 等のツールによる `LANG` の上書き影響を受けません）
 3. **環境変数** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG`（Unix/macOS 標準）
-4. **システムロケール** — `locale.getlocale()` / `locale.getdefaultlocale()`
+4. **システム Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
 5. **フォールバック** — en（英語）
 
-### 近接マッピングの原則
+### 最適マッピング原理
 
-検出された言語が正確に一致しない場合、近接原則に従ってサポートされる言語にマッピングされます。
+検出された言語が完全一致しない場合、サポートされている言語へ最適マッピング原理に従ってマッピングされます：
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **繁体字中国語**
 - その他すべての `zh-*`（例: `zh-CN`, `zh-SG`）→ **簡体字中国語**
-- `en-US`, `en-GB`, `en-AU` など → **英語**
+- `en-US`, `en-GB`, `en-AU` 等→ **英語**
 - `ja-JP` → **日本語**
 - `ru-RU` → **ロシア語**
 - その他認識できない言語 → **簡体字中国語（フォールバック）**
 
 ---
 
-## モジュールでの i18n の使用
+## モジュールでの i18n 使用
 
-独自の翻訳テキストを登録することで、自分のモジュールでも多言語をサポートさせることができます。
+独自の翻訳テキストを登録して、モジュール自身もマルチ言語対応させることができます。
 
 ### カスタム翻訳の登録
 
@@ -12847,29 +12942,48 @@ i18n.register("en", {
 from ErisPulse import i18n
 
 # シンプルな翻訳
-i18n.t("my_module.welcome")  # 現在の言語を自動的に使用
+i18n.t("my_module.welcome")  # 現在の言語を自動使用
 
-# フォーマットパラメータ付き
+# 書式設定パラメータ付き
 i18n.t("my_module.hello", name="Alice")
 
-# デフォルト値を指定（翻訳キーが存在しない場合に返却）
-i18n.t("my_module.unknown_key", default="デフォルトテキスト")
+# デフォルト値の指定（翻訳キーが存在しない場合に返却）
+i18n.t("my_module.unknown_key", default="デフォルトのテキスト")
 ```
 
 ### モジュールクラスでの使用
 
 ```python
+from dataclasses import dataclass, field
 from ErisPulse import i18n
 from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    welcome_msg: str = field(
+        default="ようこそ",
+        metadata={
+            "description": {"i18n": "my_module.welcome_msg", "default": "ウェルカムメッセージ"},
+            "ui": {"widget": "text", "group": "basic", "order": 1},
+        },
+    )
 
 class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
     async def on_load(self, event):
+        # 設定をリアルタイムで読み込み（アクセスするたびに最新値を反映）
+        self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
-    
+
     @command("hello")
     async def hello_handler(self, event):
         name = event.get_user_nickname() or "friend"
         await event.reply(i18n.t("my_module.hello", name=name))
+
+    async def on_unload(self, event):
+        pass
 ```
 
 ### 翻訳のアンインストール
@@ -12880,6 +12994,82 @@ i18n.unregister_domain("my_module")
 ```
 
 ---
+
+## 設定フィールドの多言語対応
+
+v2.5.2 以降、設定 Schema は i18n をサポートしています。アダプタ/モジュールの設定フィールド説明（`description`）は i18n キーを参照でき、WebUI やその他のコンシューマーは現在の言語に基づいて自動的に対応するテキストを解釈します。
+
+### i18n 説明の宣言
+
+`field(metadata=...)` 内で、`description` は以下のいずれかになります：
+
+- **通常の文字列**（後方互換性）：`"プラットフォームトークン"`
+- **i18n 辞書**（推奨）：`{"i18n": "my_adapter.token", "default": "プラットフォームトークン"}`
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyAdapterConfig(BaseConfig):
+    token: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_adapter.token", "default": "プラットフォームトークン"},
+            "required": True,
+            "secret": True,
+            "ui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
+```
+
+`default` はフォールバックテキストです。翻訳が登録されていないか検索に失敗した場合に表示されます。
+
+### 設定翻訳の登録
+
+設定フィールドの i18n キーは通常の翻訳キーと同様に、`i18n.register()` を使用して登録します：
+
+```python
+from ErisPulse import i18n
+
+# 中国語を登録（default と一致しても可、異なっていても可）
+i18n.register("zh-CN", {
+    "my_adapter.token": "プラットフォームトークン",
+}, domain="my_adapter")
+
+# 英語を登録
+i18n.register("en", {
+    "my_adapter.token": "Platform Token",
+}, domain="my_adapter")
+```
+
+また、設定クラスからキーを自動的に抽出して登録する簡便な関数 `register_config_i18n()` も提供されています：
+
+```python
+from ErisPulse.runtime.config_schema import register_config_i18n
+
+# description.default を自動的に zh-CN の翻訳として抽出
+register_config_i18n(MyAdapterConfig, "zh-CN")
+
+# 英語の翻訳を手動で指定
+register_config_i18n(MyAdapterConfig, "en", {
+    "my_adapter.token": "Platform Token",
+})
+```
+
+### WebUI の消費方法
+
+`get_config_schema()` が返す schema では、`description` フィールドは i18n 辞書をそのまま透過的に渡します。WebUI フロントエンドは現在の言語に基づいて `i18n.t()` を呼び出して解釈できます。
+
+サーバー側で直接文字列として解釈する必要がある場合（例: i18n をサポートしないフロントエンドに返す場合）は、`resolve_config_schema()` を使用します：
+
+```python
+from ErisPulse.runtime.config_schema import resolve_config_schema
+
+# description は現在の言語の文字列として解釈済み
+schema = resolve_config_schema(MyAdapterConfig)
+print(schema["fields"]["token"]["description"])  # "プラットフォームトークン" または "Platform Token"
+```
 
 ## API リファレンス
 
@@ -12892,12 +13082,12 @@ i18n.unregister_domain("my_module")
 | `t(key, default=None, **kwargs)` | 翻訳テキストを取得（`gettext()` のエイリアス） |
 | `set_language(lang)` | 手動で言語を設定 |
 | `get_language()` | 現在の言語を取得 |
-| `reset_language()` | 自動検出にリセット（環境の再検出も行います） |
+| `reset_language()` | 自動検出にリセット（環境を再検出） |
 | `get_supported_languages()` | サポートされているすべての言語リストを取得 |
 | `has_translation(key, lang=None)` | 翻訳キーが存在するかチェック |
 | `register(lang, translations, domain)` | カスタム翻訳を登録 |
 | `unregister_domain(domain)` | 指定されたドメインのすべての翻訳をアンインストール |
-| `reload()` | 組み込み翻訳を再読み込みし、言語を再検出 |
+| `reload()` | 組み込み翻訳を再読み込みして言語を再検出 |
 
 #### `t()` メソッドの詳細
 
@@ -12905,16 +13095,16 @@ i18n.unregister_domain("my_module")
 def t(self, key, /, default=None, **kwargs):
 ```
 
-- `key` — 翻訳キー（位置引数のみ。`**kwargs` 内の `key=` と競合しません）
-- `default` — 翻訳が存在しない場合に返されるデフォルト値。デフォルトは `None`（キー名自体を返します）
-- `**kwargs` — フォーマットパラメータ。翻訳値内の `{placeholder}` を埋めます
+- `key` — 翻訳キー（位置引数のみ。`**kwargs` での `key=` と競合しない）
+- `default` — 翻訳が存在しない場合に返すデフォルト値。デフォルトは `None`（キー名そのものを返す）
+- `**kwargs` — 書式設定パラメータ。翻訳値内の `{placeholder}` を埋めるために使用
 
 例：
 
 ```python
 # 翻訳定義: "greeting": "こんにちは、{name}！{place}へようこそ。"
 i18n.t("greeting", name="Alice", place="ErisPulse")
-# 返却: "こんにちは、Alice！ErisPulseへようこそ。"
+# 返却値: "こんにちは、Alice！ErisPulseへようこそ。"
 ```
 
 ### SDK インスタンスからのアクセス
@@ -12922,7 +13112,7 @@ i18n.t("greeting", name="Alice", place="ErisPulse")
 ```python
 from ErisPulse import sdk
 
-# sdk.i18n は直接インポートした i18n と同じオブジェクトです
+# sdk.i18n は直接インポートした i18n と同じオブジェクト
 sdk.i18n.set_language("en")
 print(sdk.i18n.t("core.sdk.init.starting"))
 ```
@@ -12931,7 +13121,7 @@ print(sdk.i18n.t("core.sdk.init.starting"))
 
 ## 実行時設定
 
-### 設定 API 経由で i18n 設定を読み取る
+### 設定 API を使用して i18n 設定を読み取る
 
 ```python
 from ErisPulse.runtime import get_i18n_config, I18nConfig
@@ -12939,13 +13129,13 @@ from ErisPulse.runtime import get_i18n_config, I18nConfig
 config = get_i18n_config()
 print(config["language"])  # "auto" または具体的な言語コード
 
-# I18nConfig は dataclass で、設定テンプレートの生成に使用できます
+# I18nConfig は dataclass で、設定テンプレートの生成に使用可能
 schema = I18nConfig.__dataclass_fields__
 ```
 
 ### 設定項目の説明
 
-`config/config.toml` の `[ErisPulse.i18n]` セクション：
+`config/config.toml` の `[ErisPulse.i18n]` セクション内：
 
 ```toml
 [ErisPulse.i18n]
@@ -12965,7 +13155,7 @@ language = "auto"
 
 ### 翻訳キーの命名
 
-ドットで区切られた名前空間形式の使用を推奨します。
+ドット区切りのネームスペース形式の使用を推奨します：
 
 ```
 <モジュール名>.<カテゴリ>.<説明>
@@ -12973,13 +13163,13 @@ language = "auto"
 
 例: `my_module.command.hello_desc`、`core.adapter.start_failed`
 
-### 多言語のオーバーライド
+### 多言語のカバー
 
-すべての言語の翻訳を一度に提供する必要はありません。言語が欠落している場合は自動的に英語にフォールバックします。英語もない場合はキー名自体が表示されます。
+すべての言語の翻訳を一度に提供する必要はありません。欠落している言語は英語にフォールバックし、英語もない場合はキー名自体が表示されます。
 
 ### 動的コンテンツ
 
-動的に生成されるコンテンツ（ユーザー名、数量など）については、`{placeholder}` 形式を使用します。
+動的に生成されるコンテンツ（ユーザー名、数量など）については、`{placeholder}` 形式のフォーマットを使用します：
 
 ```python
 # 翻訳定義
@@ -12991,7 +13181,7 @@ i18n.t("user_count", count=len(users))
 
 ### ログメッセージ
 
-モジュールでフレームワークの Logger を使用している場合、これらのメッセージも現在の言語が自動的に使用されます。
+モジュールでフレームワークの Logger を使用している場合、これらのメッセージも自動的に現在の言語が使用されます：
 
 ```python
 self.logger.info(i18n.t("my_module.startup"))
@@ -13001,12 +13191,12 @@ self.logger.info(i18n.t("my_module.startup"))
 
 ## CLI i18n との関係
 
-CLI は**独立**した国際化モジュール（`ErisPulse.CLI.i18n`）を持ち、フレームワークコアの国際化モジュールとは完全に疎結合です。
+CLI には**独立**した国際化モジュール（`ErisPulse.CLI.i18n`）があり、フレームワーク Core の国際化モジュールとは完全に独立しています。
 
-- **Core i18n** — フレームワークコアモジュールで使用。外部モジュールが翻訳を登録できます
-- **CLI i18n** — コマンドラインインターフェース内部で使用。Core と翻訳データを共有しません
+- **Core i18n** — フレームワーク Core モジュールが使用。外部モジュールは翻訳を登録可能
+- **CLI i18n** — コマンドラインインターフェース内部で使用。Core と翻訳データを共有しない
 
-この設計により、CLI の翻訳変更がフレームワークコアの安定性に影響することはありません。
+この設計により、CLI の翻訳変更がフレームワーク Core の安定性に影響することはありません。
 
 
 ### Dashboard 视窗注册

@@ -1,6 +1,6 @@
-# 模組開發最佳實務
+# 模組開發最佳實踐
 
-本文檔提供了 ErisPulse 模組開發的最佳實務建議。
+本文件提供了 ErisPulse 模組開發的最佳實踐建議。
 
 ## 模組設計
 
@@ -31,22 +31,35 @@ class UtilityModule(BaseModule):
 name = "ErisPulse-ModuleName"  # 使用 ErisPulse- 前綴
 ```
 
-### 3. 清晰的設定管理
+### 3. 清晰的配置管理
+
+推薦使用宣告式配置（`ConfigClass` + `BaseConfig`），獲得類型安全、自動範本產生、WebUI 表單支援等能力：
 
 ```python
-def _load_config(self):
-    config = self.sdk.config.getConfig("MyModule")
-    if not config:
-        default_config = {
-            "api_url": "https://api.example.com",
-            "timeout": 30,
-            "cache_ttl": 3600
-        }
-        self.sdk.config.setConfig("MyModule", default_config)
-        self.logger.warning("已建立預設設定")
-        return default_config
-    return config
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_url: str = field(default="https://api.example.com", metadata={
+        "description": {"i18n": "my_module.api_url", "default": "API 位址"},
+    })
+    timeout: int = field(default=30, metadata={
+        "description": {"i18n": "my_module.timeout", "default": "超時時間（秒）"},
+    })
+    cache_ttl: int = field(default=3600, metadata={
+        "description": {"i18n": "my_module.cache_ttl", "default": "快取存活時間（秒）"},
+    })
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    async def do_something(self):
+        cfg = self.cfg  # 類型安全，即時讀取
+        await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
+
+也可以繼續使用手動方式讀寫配置儲存（見[模組核心概念](core-concepts.md#配置管理)）。
 
 ## 非同步程式設計
 
@@ -78,12 +91,12 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# 不要使用 requests（同步，會阻塞事件迴圈）
+# 不要使用 requests（同步，會阻斷事件迴圈）
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # 會阻塞事件迴圈
+        return requests.get(url).json()  # 會阻斷事件迴圈
 ```
 
 ### 2. 正確的非同步操作
@@ -101,7 +114,7 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # SDK 用戶端已自動管理連線集區，無需手動建立 session
+    # SDK 用戶端已自動管理連線池，無需手動建立 session
     pass
     
 async def on_unload(self, event):
@@ -127,10 +140,10 @@ async def info_command(event):
     user_id = event["user_id"]  # 不夠清晰，容易出錯
 ```
 
-### 2. 合理使用延遲載入
+### 2. 合理使用懶載入
 
 ```python
-# 命令處理模組需要立即載入
+# 指令處理模組需要立即載入
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -142,7 +155,7 @@ class ListenerModule(BaseModule):
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# 工具模組適合延遲載入
+# 工具模組適合懶載入
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -162,7 +175,7 @@ async def on_load(self, event):
     async def group_handler(event):
         self.logger.info("收到群訊息")
     
-    # 不需要手動註銷，框架會自動處理
+    # 不需要手動登註，框架會自動處理
 ```
 
 ## 錯誤處理
@@ -201,7 +214,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"請求逾時: {url}")
+        self.logger.warning(f"請求超時: {url}")
         raise
 ```
 
@@ -252,7 +265,7 @@ self.logger.info(f"處理請求: {request_id}")
 
 # WARNING: 警告資訊，不影響主要功能
 self.logger.warning(f"設定項 {key} 未設定，使用預設值")
-self.logger.warning("API 回應慢，可能需要優化")
+self.logger.warning("API 回應慢，可能需要最佳化")
 
 # ERROR: 錯誤資訊
 self.logger.error(f"API 請求失敗: {e}")
@@ -269,10 +282,10 @@ self.logger.critical("資料庫連線失敗，機器人無法正常執行")
 self.logger.info(f"處理請求: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
 # ❌ 使用非結構化日誌
-self.logger.info(f"處理請求了，來自使用者 {user_id}，用時 {duration} 毫秒")
+self.logger.info(f"處理請求了，來自用戶 {user_id}，用時 {duration} 毫秒")
 ```
 
-## 效能優化
+## 效能最佳化
 
 ### 1. 使用快取
 
@@ -295,7 +308,7 @@ class MyModule(BaseModule):
             return data
 ```
 
-### 2. 避免阻塞操作
+### 2. 避免阻斷操作
 
 ```python
 # 使用非同步操作
@@ -303,9 +316,9 @@ async def process_message(self, event):
     # 非同步處理
     await self._async_process(event)
 
-# ❌ 阻塞操作
+# ❌ 阻斷操作
 async def process_message(self, event):
-    # 同步操作，阻塞事件迴圈
+    # 同步操作，阻斷事件迴圈
     result = self._sync_process(event)
 ```
 
@@ -323,7 +336,7 @@ class MyModule(BaseModule):
         if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
             raise ValueError("請在 config.toml 中設定有效的 API 金鑰")
 
-# ❌ 敏感資料硬式編碼
+# ❌ 敏感資料硬編碼
 class MyModule(BaseModule):
     API_KEY = "sk-1234567890"  # 不要這樣做！
 ```
@@ -331,7 +344,7 @@ class MyModule(BaseModule):
 ### 2. 輸入驗證
 
 ```python
-# 驗證使用者輸入
+# 驗證用戶輸入
 async def process_command(self, event):
     user_input = event.get_text()
     
@@ -368,11 +381,11 @@ class TestMyModule:
 ```python
 @pytest.mark.asyncio
 async def test_command_handling():
-    """測試命令處理"""
+    """測試指令處理"""
     module = MyModule()
     await module.on_load({})
     
-    # 模擬命令事件
+    # 模擬指令事件
     event = create_test_command_event("hello")
     await module.handle_command(event)
 ```
@@ -387,7 +400,7 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-遵循語意化版本：
+遵循語義化版本：
 - MAJOR.MINOR.PATCH
 - 主版本：不相容的 API 變更
 - 次版本：向下相容的功能新增
@@ -408,6 +421,6 @@ version = "1.0.0"
 
 ## 相關文件
 
-- [模組開發入門](getting-started.md) - 建立第一個模組
-- [模組核心概念](core-concepts.md) - 理解模組架構
-- [Event 包裝類別](event-wrapper.md) - 事件處理詳解
+- [模組開發入門](docs/zh-TW/getting-started.md) - 建立第一個模組
+- [模組核心概念](docs/zh-TW/core-concepts.md) - 理解模組架構
+- [Event 包裝類別](docs/zh-TW/event-wrapper.md) - 事件處理詳解

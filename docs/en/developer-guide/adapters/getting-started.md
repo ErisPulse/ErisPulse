@@ -1,30 +1,30 @@
 # Getting Started with Adapter Development
 
-This guide helps you get started with developing ErisPulse adapters to connect new messaging platforms.
+This guide helps you start developing ErisPulse adapters to connect new messaging platforms.
 
-## Adapter Introduction
+## Introduction to Adapters
 
 ### What is an Adapter
 
-The adapter is a bridge between ErisPulse and various messaging platforms, responsible for:
+An adapter serves as a bridge between ErisPulse and various messaging platforms, responsible for:
 
-1. **Forward Conversion**: Receiving platform events and converting them to OneBot12 standard format (Converter)
-2. **Reverse Conversion**: Converting OneBot12 message segments to platform API calls (`Raw_ob12`)
+1. **Forward Conversion**: Receiving platform events and converting them into OneBot12 standard format (Converter)
+2. **Reverse Conversion**: Converting OneBot12 message segments into platform API calls (`Raw_ob12`)
 3. Managing connections with the platform (WebSocket/WebHook)
 4. Providing a unified SendDSL message sending interface
 
 ### Adapter Architecture
 
 ```
-Forward Conversion (Receive)                 Reverse Conversion (Send)
-────────────────────────                 ────────────────────────
-Platform Event                             Module Building Message
-    ↓                                          ↓
-Converter.convert()                    Send.Raw_ob12()
-    ↓                                          ↓
-OneBot12 Standard Event              Platform Native API Call
-    ↓                                          ↓
-Event System                            Standard Response Format
+Forward Conversion (Receiving)                        Reverse Conversion (Sending)
+─────────────                        ─────────────
+Platform Events                               Module-built Messages
+    ↓                                    ↓
+Converter.convert()               Send.Raw_ob12()
+    ↓                                    ↓
+OneBot12 Standard Events                   Platform-native API Calls
+    ↓                                    ↓
+Event System                             Standard Response Format
     ↓
 Module Processing
 ```
@@ -39,8 +39,8 @@ MyAdapter/
 ├── README.md               # Project description
 ├── LICENSE                 # License
 └── MyAdapter/
-    ├── __init__.py          # Package entry
-    ├── Core.py               # Adapter main class
+    ├── __init__.py          # Package entry point
+    ├── Core.py               # Main adapter class
     └── Converter.py          # Event converter
 ```
 
@@ -65,7 +65,7 @@ license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
-    "ErisPulse>=2.4.0"  # ErisPulse already includes aiohttp built-in, usually no need for separate dependency
+    "ErisPulse>=2.4.0"  # ErisPulse already includes aiohttp, usually no need for separate dependency
 ]
 
 [project.urls]
@@ -77,51 +77,51 @@ dependencies = [
 
 ### 3. Create Adapter Main Class
 
-The framework provides `ConfigClass` / `AccountConfigClass` declarative configuration management. The adapter only needs to declare the configuration class to automatically load, validate, and generate configuration templates.
+The framework provides `ConfigClass` / `AccountConfigClass` for declarative configuration management. The adapter only needs to declare the configuration class, and the framework will automatically load, validate, and generate the configuration template.
 
 ```python
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import AdapterConfig
+from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
-class MyAdapterConfig(AdapterConfig):
-    """MyAdapter configuration"""
+class MyAdapterConfig(BaseConfig):
+    """MyAdapter Configuration"""
     api_endpoint: str = field(
         default="https://api.example.com",
         metadata={
-            "description": "API endpoint",
+            "description": {"i18n": "my_adapter.api_endpoint", "default": "API address"},
             "required": False,
-            "webui": {"widget": "text", "group": "connection", "order": 1},
+            "ui": {"widget": "text", "group": "connection", "order": 1},
         },
     )
     token: str = field(
         default="",
         metadata={
-            "description": "Platform token",
+            "description": {"i18n": "my_adapter.token", "default": "Platform token"},
             "required": True,
             "secret": True,
-            "webui": {"widget": "password", "group": "basic", "order": 2},
+            "ui": {"widget": "password", "group": "basic", "order": 2},
         },
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # Declare the configuration class, framework manages automatically
+    ConfigClass = MyAdapterConfig  # Declare configuration class, framework will manage it automatically
     
     # No need to override __init__! Framework handles automatically:
     # - self.sdk / self.logger are automatically set
-    # - self.config is automatically loaded
-    # - self.Send / self.Request are automatically initialized
+    # - self.cfg reads configuration in real time
+    # - self.Send / self.Request are initialized automatically
     
     def _setup_converter(self):
         from .Converter import MyPlatformConverter
         return MyPlatformConverter()
 ```
 
-> ⚠️ **About `__init__`**: In the new version, `BaseAdapter.__init__(self, sdk=None)` automatically handles SDK reference, log initialization, and configuration loading. Most adapters **do not need to override `__init__`**. See [__init__ Considerations](#init-considerations) for details.
+> ⚠️ **About `__init__`**: In newer versions, `BaseAdapter.__init__(self, sdk=None)` automatically handles SDK references, logging initialization, and configuration loading. Most adapters **do not need to override `__init__`**. See [__init__ Notes](#init-注意事项).
 
-> ⚠️ **About `super().__init__()`**: `BaseAdapter.__init__()` is responsible for creating `Send` and `Request` factory instances. If you forget to call it, all message sending and request operations will raise an `AttributeError`. See [__init__ Considerations](#init-considerations) for details.
+> ⚠️ **About `super().__init__()`**: `BaseAdapter.__init__()` is responsible for creating `Send` and `Request` factory instances. If you forget to call it, all message sending and request operations will raise `AttributeError`. See [__init__ Notes](#init-注意事项).
 
 ### 4. Implement Required Methods
 
@@ -131,7 +131,7 @@ class MyAdapter(BaseAdapter):
     
     async def start(self):
         """Start adapter (must implement)"""
-        # Register WebSocket or WebHook route
+        # Register WebSocket or WebHook routes
         router.register_websocket(
             module_name="myplatform",
             path="/ws",
@@ -146,16 +146,16 @@ class MyAdapter(BaseAdapter):
             path="/ws"
         )
         # Clean up connections and resources
-        self.logger.info("Adapter shutdown")
+        self.logger.info("Adapter stopped")
     
     async def call_api(self, endpoint: str, **params):
         """Call platform API (must implement)"""
-        raise NotImplementedError("call_api needs to be implemented")
+        raise NotImplementedError("call_api must be implemented")
 ```
 
-#### Actively Send Meta Events
+#### Sending Meta Events Proactively
 
-The adapter should actively send meta events to let the framework track the Bot's online status. Use `emit_meta()` in one line to complete:
+Adapters should proactively send meta events to let the framework track the Bot's online status. Use `emit_meta()` to complete this in one line:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -178,30 +178,30 @@ class MyAdapter(BaseAdapter):
             await self.emit_meta("disconnect", bot_id)
 ```
 
-> For detailed Bot status management and Meta event descriptions, please refer to [Adapter Best Practices - Bot Status Management](best-practices.md#bot-status-management-and-meta-events).
+> For detailed Bot status management and meta event explanations, see [Adapter Best Practices - Bot Status Management](best-practices.md#bot-状态管理与-meta-事件).
 
 ### 5. Implement Send Class
 
-The `At`/`AtAll`/`Reply` modifiers have been built-in implemented by the framework SendDSL base class, the adapter only needs to implement `Raw_ob12` and specific sending methods.
+`At`/`AtAll`/`Reply` decorators are already implemented by the framework's SendDSL base class. The adapter only needs to implement `Raw_ob12` and specific send methods.
 
 The framework provides two key helper methods:
-- `self._apply_modifiers(message)` — Automatically merges At/AtAll/Reply modifiers into message segments
-- `self.send_context` — Gets the send context dictionary (`target_type`, `target_id`, `account_id`)
+- `self._apply_modifiers(message)` — Automatically merge At/AtAll/Reply decorators into message segments
+- `self.send_context` — Get the send context dictionary (`target_type`, `target_id`, `account_id`)
 
 ```python
 import asyncio
 
 class MyAdapter(BaseAdapter):
-    # ... Other code ...
+    # ... other code ...
     
     class Send(BaseAdapter.Send):
         
         def Raw_ob12(self, message, **kwargs):
             """
-            Send OneBot12 format message (must implement)
+            Send OneBot12 formatted message (must implement)
 
             Use _apply_modifiers to automatically merge modifier states,
-            use send_context to get the send context.
+            Use send_context to get send context.
             """
             async def _do_send():
                 segments = self._apply_modifiers(message)
@@ -226,22 +226,22 @@ class MyAdapter(BaseAdapter):
             ])
 ```
 
-**Key points for media sending methods (Image/Video/File) implementation:**
+**Media-type send method implementation points (Image/Video/File):**
 
 - The `file` parameter should support both `bytes` binary data and `str` URL types
-- When a URL is passed, the file needs to be downloaded first and then uploaded to the platform
-- Platforms usually require calling an upload interface first to get a file identifier, then calling the send interface
+- When a URL is passed, the file must be downloaded first and then uploaded to the platform
+- The platform usually requires calling an upload interface first to get the file identifier, then calling the send interface
 
-**`__getattr__` magic method:**
+**`__getattr__` Magic Method:**
 
 - Implement case-insensitive method names (`Text`, `text`, `TEXT` can all be called)
 - Undefined methods should return a prompt message instead of raising an error
 
-**`Raw_ob12` method:**
+**`Raw_ob12` Method:**
 
-- Convert OneBot12 standard message format to platform format and send
-- Use `self._apply_modifiers(message)` to automatically handle At/AtAll/Reply modifiers
-- Use `**self.send_context` to pass target information and account information
+- Convert OneBot12 standard message format to platform format for sending
+- Use `self._apply_modifiers(message)` to automatically handle At/AtAll/Reply decorators
+- Use `**self.send_context` to pass send target information and account information
 
 ### 6. Implement Converter
 
@@ -252,7 +252,7 @@ import uuid
 
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """Convert platform native event to OneBot12 standard format"""
+        """Convert platform-native events to OneBot12 standard format"""
         if not isinstance(raw_event, dict):
             return None
         
@@ -285,9 +285,9 @@ class MyPlatformConverter:
         return "private"  # Simplified example
 ```
 
-### 7. Implement Request Class (Request Actions)
+### 7. Implement Request Class (Request Operations)
 
-If your platform supports friend requests, group invitations, or other requests that require the Bot to make decisions, you can implement the `Request` inner class:
+If your platform supports friend requests, group invitations, and other requests that require the Bot to make decisions, you can implement the `Request` inner class:
 
 ```python
 from ErisPulse.Core import BaseAdapter, RequestDSL
@@ -296,7 +296,7 @@ class MyAdapter(BaseAdapter):
     # ... Send and other code ...
 
     class Request(RequestDSL):
-        """Request action implementation (friend request, group invitation, etc.)"""
+        """Request operation implementation (friend requests, group invitations, etc.)"""
 
         def accept(self, **kwargs):
             """Accept request"""
@@ -335,20 +335,20 @@ class MyAdapter(BaseAdapter):
             return self._create_task(_do())
 ```
 
-Module developer usage:
+Module developers use it as follows:
 
 ```python
 from ErisPulse.Core.Event import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # Via Event convenience method
+    # Using Event convenience methods
     await event.approve()
-    # Or operate directly via adapter
+    # Or directly through adapter
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> If the platform does not support request actions, the `Request` inner class does not need to be implemented. The base class returns `retcode=10002` (unsupported action) by default. See [Request Action Specification](../../standards/request-action-spec.md) for details.
+> If the platform does not support request operations, you can omit implementing the `Request` inner class. The base class defaults to returning `retcode=10002` (operation not supported). See [Request Action Specification](../../standards/request-action-spec.md).
 
 ### 8. Create Package Entry
 
@@ -357,46 +357,46 @@ async def handle_friend_request(event):
 from .Core import MyAdapter
 ```
 
-## `__init__` Considerations
+## `__init__` Notes
 
-Adapter development may involve `__init__` overrides at three levels. Here are the correct practices for each level.
+In adapter development, there are three levels where `__init__` might be overridden. Here are the correct practices for each level.
 
-### 1. BaseAdapter Level (Most cases do not need to override)
+### 1. BaseAdapter Level (Most cases do not require overriding)
 
 `BaseAdapter.__init__(self, sdk=None)` is responsible for creating `Send` / `Request` factory instances and automatically performs the following tasks:
 
 - Accepts the `sdk` parameter and sets `self.sdk`, `self.logger`
-- If `ConfigClass` is declared, automatically loads global configuration into `self.config`
-- If `AccountConfigClass` is declared, automatically loads multi-account configuration into `self.accounts`
+- If `ConfigClass` is declared, you can read global configuration in real time via `self.cfg`
+- If `AccountConfigClass` is declared, you can read multi-account configuration in real time via `self.accounts`
 
-**Most cases do not need to override `__init__`**; simply declare `ConfigClass`:
+**Most cases do not require overriding `__init__`**; you just need to declare `ConfigClass`:
 
 ```python
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # After declaration, framework manages configuration automatically
+    ConfigClass = MyAdapterConfig  # After declaration, the framework manages configuration automatically
     
     async def start(self):
-        cfg = self.config  # Type-safe, automatically loaded
+        cfg = self.cfg  # Type-safe, real-time reading
         ...
 ```
 
-If you do need custom initialization, call `super().__init__(sdk)`:
+If you truly need custom initialization, call `super().__init__(sdk)`:
 
 ```python
 class MyAdapter(BaseAdapter):
     ConfigClass = MyAdapterConfig
     
     def __init__(self, sdk=None):
-        super().__init__(sdk)  # Pass in sdk
+        super().__init__(sdk)  # Pass sdk
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
 
-### 2. Send Inner Class (Most cases do not need to override)
+### 2. Send Inner Class (Most cases do not require overriding)
 
-`SendDSL.__init__` is responsible for state passing in chain calls (target type, target ID, account, etc.). **Most cases, you only need to override methods** (`Raw_ob12`, `Text`, etc.), and do not need to override `__init__`.
+`SendDSL.__init__` is responsible for passing chain-call states (target type, target ID, account, etc.). **Most cases, you only need to override methods** (`Raw_ob12`, `Text`, etc.), not `__init__`.
 
-If really necessary (such as initializing platform-specific states), **all parameters must be passed through**:
+If you truly need to (e.g., initializing platform-specific states), **you must pass all parameters**:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -416,9 +416,9 @@ adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123",
 
 If the `__init__` signature does not match or `super()` is not called, the chain call will break.
 
-### 3. Request Inner Class (Most cases do not need to override)
+### 3. Request Inner Class (Most cases do not require overriding)
 
-Same principle as Send. Parameters are `adapter`, `request_id`, `account_id`:
+Same as Send. Parameters are `adapter`, `request_id`, `account_id`:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -431,16 +431,134 @@ class MyAdapter(BaseAdapter):
 
 ### Summary
 
-| Level | When to override | Must do |
+| Level | When to Override | Must Do |
 |------|------------|-----------|
-| **BaseAdapter** | When adapter state needs to be initialized | `super().__init__(sdk)` (pass sdk parameter) |
-| **Send Inner Class** | When send-related state needs to be initialized | `super().__init__(adapter, target_type, target_id, account_id)` |
-| **Request Inner Class** | When request-related state needs to be initialized | `super().__init__(adapter, request_id, account_id)` |
-| All three levels | In most cases | **Only override methods, do not touch `__init__`** |
+| **BaseAdapter** | When custom initialization logic is needed | `super().__init__(sdk)` (pass sdk parameter) |
+| **Send Inner Class** | When initializing send-related states is needed | `super().__init__(adapter, target_type, target_id, account_id)` |
+| **Request Inner Class** | When initializing request-related states is needed | `super().__init__(adapter, request_id, account_id)` |
+| All Three Levels | Most cases | **Declare ConfigClass, do not touch `__init__`** |
+
+### 9. Connection Information and Route Discovery
+
+After registering routes, the framework records all route information. Users can view the adapter's connection address through the following API:
+
+```python
+from ErisPulse import sdk
+
+# Get complete adapter connection information
+info = sdk.adapter.get_connection_info("myplatform")
+# {
+#   "platform": "myplatform",
+#   "status": "started",
+#   "connection": {
+#     "base_url": "http://localhost:8080",
+#     "http_routes": [
+#       {"path": "/myplatform/webhook", "method": "POST",
+#        "url": "http://localhost:8080/myplatform/webhook"}
+#     ],
+#     "websocket_routes": [
+#       {"path": "/myplatform/ws",
+#        "url": "ws://localhost:8080/myplatform/ws"}
+#     ]
+#   }
+# }
+
+# List routes for all namespaces (adapters/modules)
+namespaces = sdk.router.list_namespaces()
+# {"myplatform": {"http": ["/myplatform/webhook"], "websocket": ["/myplatform/ws"]}}
+
+# Get complete connection URLs for a namespace
+urls = sdk.router.get_module_urls("myplatform")
+# {"base_url": "http://localhost:8080", "http": [...], "websocket": [...]}
+
+# Get detailed route information for a namespace
+routes = sdk.router.get_module_routes("myplatform")
+# {"http": [{"path": "/myplatform/webhook", "methods": ["POST"]}],
+#  "websocket": [{"path": "/myplatform/ws", "auth": false}]}
+```
+
+> **Tip**: The information returned by `get_connection_info()` is suitable for displaying to users (e.g., WebUI), helping users configure the callback address or WebSocket connection address on the platform side. The `module_name` registered when registering routes must exactly match the `platform` name registered by the adapter in ErisPulse, otherwise route discovery will not associate correctly.
+
+### 10. SSE (Server-Sent Events) Support
+
+ErisPulse includes built-in, server-agnostic SSE support. Modules and adapters can register SSE endpoints via `@sdk.router.sse()`.
+
+#### Basic Usage
+
+```python
+import asyncio
+from ErisPulse import sdk
+
+@sdk.router.sse("MyModule", "/events")
+async def event_stream(sse):
+    """Push SSE events"""
+    count = 0
+    while not sse.closed:
+        await sse.send({"count": count}, event="update")
+        count += 1
+        await asyncio.sleep(1)
+```
+
+#### Using Request Parameters
+
+Handlers can declare a `request` parameter to access client request information:
+
+```python
+@sdk.router.sse("MyModule", "/events")
+async def event_stream(request, sse):
+    token = request.query_params.get("token")
+    if not validate_token(token):
+        await sse.close()
+        return
+
+    while not sse.closed:
+        data = await fetch_data(token)
+        await sse.send(data)
+        await asyncio.sleep(5)
+```
+
+#### SseEmitter API
+
+| Method | Description |
+|------|------|
+| `sse.send(data, event=None, id=None, retry=None)` | Send an SSE event. Non-str data is automatically JSON serialized |
+| `sse.close()` | Gracefully close the SSE connection (safe to call multiple times) |
+| `sse.closed` | Whether the connection is closed |
+| `sse.request` | The underlying request object (can be used to read query params, headers) |
+
+#### Using in RouteGroup
+
+```python
+api = sdk.router.group("MyModule", "/api", version="1")
+
+@api.sse("/events")
+async def events(sse):
+    await sse.send({"msg": "hello"})
+```
+
+#### Route Discovery
+
+SSE routes will automatically appear in route discovery APIs:
+
+```python
+# list_namespaces will include the "sse" key
+sdk.router.list_namespaces()
+# {"MyModule": {"http": [...], "websocket": [...], "sse": ["/MyModule/events"]}}
+
+# get_module_routes will mark streaming: true
+sdk.router.get_module_routes("MyModule")
+# {"http": [...], "websocket": [...], "sse": [{"path": "/MyModule/events", "streaming": true}]}
+
+# get_module_urls will generate complete URLs
+sdk.router.get_module_urls("MyModule")
+# {"sse": [{"path": "/MyModule/events", "url": "http://localhost:8080/MyModule/events"}]}
+```
+
+> **Server-agnostic Design**: `SseEmitter` decouples through callbacks from the underlying HTTP framework. The framework provides `register_sse()` and `@sse` decorators as unified registration entry points, allowing adapters to implement SSE endpoints without directly depending on any underlying HTTP framework.
 
 ## Next Steps
 
-- [Adapter Core Concepts](core-concepts.md) - Learn about adapter architecture
-- [SendDSL Details](send-dsl.md) - Learn about message sending
-- [Converter Implementation](converter.md) - Learn about event conversion
+- [Adapter Core Concepts](core-concepts.md) - Understand adapter architecture
+- [SendDSL Detailed Explanation](send-dsl.md) - Learn message sending
+- [Converter Implementation](converter.md) - Understand event conversion
 - [Adapter Best Practices](best-practices.md) - Develop high-quality adapters
