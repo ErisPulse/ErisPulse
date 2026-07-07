@@ -672,11 +672,13 @@ class BaseAdapter(ABC):
         self._config_instance = None
         self._accounts_data = None
 
-        # 初始化时确保配置模板存在（不缓存实例，config 属性会实时读取）
+        # 初始化时确保配置模板存在
         if self.ConfigClass is not None:
             self._ensure_config_exists()
         if self.AccountConfigClass is not None:
             self._ensure_accounts_exist()
+            # 填充 _accounts_data 以保持向后兼容（适配器可能覆写 _load_accounts）
+            self._accounts_data = self.accounts
 
     @abstractmethod
     async def call_api(self, endpoint: str, **params: Any) -> Any:
@@ -920,18 +922,21 @@ class BaseAdapter(ABC):
         """
         from dataclasses import fields as dc_fields
 
+        # 单账户适配器（未声明 AccountConfigClass 或未填充 _accounts_data）
         if self._accounts_data is None:
-            raise ValueError("未声明 AccountConfigClass，无法解析账户")
+            return None, None
+
+        accounts = self._accounts_data
 
         if account_id is not None:
-            if account_id in self._accounts_data:
-                return account_id, self._accounts_data[account_id]
+            if account_id in accounts:
+                return account_id, accounts[account_id]
 
-            for name, cfg in self._accounts_data.items():
+            for name, cfg in accounts.items():
                 if hasattr(cfg, "bot_id") and cfg.bot_id == account_id:
                     return name, cfg
 
-            for name, cfg in self._accounts_data.items():
+            for name, cfg in accounts.items():
                 for f in dc_fields(cfg):
                     if f.name in ("enabled", "name"):
                         continue
@@ -939,7 +944,7 @@ class BaseAdapter(ABC):
                     if isinstance(val, str) and val == account_id:
                         return name, cfg
 
-        for name, cfg in self._accounts_data.items():
+        for name, cfg in accounts.items():
             if cfg.enabled:
                 return name, cfg
 

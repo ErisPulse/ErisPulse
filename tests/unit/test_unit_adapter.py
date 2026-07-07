@@ -6,7 +6,7 @@
 
 import asyncio
 from typing import Any, Dict
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
 
 import pytest
 
@@ -650,6 +650,227 @@ class TestBaseAdapter:
         # 使用 ABC，无法实例化未实现抽象方法的类
         with pytest.raises(TypeError, match="Can't instantiate abstract class"):
             IncompleteAdapter()
+
+    # ==================== _resolve_account 测试 ====================
+
+    def test_resolve_account_single_adapter_no_config_class(self):
+        """未声明 AccountConfigClass 的单账户适配器返回 (None, None)"""
+
+        class SingleAdapter(BaseAdapter):
+            ConfigClass = None
+            AccountConfigClass = None
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok"}
+
+        adapter = SingleAdapter()
+        name, cfg = adapter._resolve_account()
+        assert name is None
+        assert cfg is None
+
+    def test_resolve_account_multi_adapter_returns_first_enabled(self):
+        """多账户适配器返回第一个启用的账户"""
+        from dataclasses import dataclass
+
+        @dataclass
+        class BotConfig:
+            bot_id: str = ""
+            enabled: bool = True
+            token: str = ""
+
+        class MultiAdapter(BaseAdapter):
+            ConfigClass = None
+            AccountConfigClass = BotConfig
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok"}
+
+        adapter = MultiAdapter()
+        # 模拟适配器加载后的账户数据
+        adapter._accounts_data = {
+            "default": BotConfig(bot_id="123", enabled=True, token="abc"),
+            "disabled": BotConfig(bot_id="456", enabled=False, token="def"),
+        }
+
+        name, cfg = adapter._resolve_account()
+        assert name == "default"
+        assert cfg.bot_id == "123"
+
+    def test_resolve_account_by_name(self):
+        """按账户名解析账户"""
+        from dataclasses import dataclass
+
+        @dataclass
+        class BotConfig:
+            bot_id: str = ""
+            enabled: bool = True
+            token: str = ""
+
+        class MultiAdapter(BaseAdapter):
+            ConfigClass = None
+            AccountConfigClass = BotConfig
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok"}
+
+        adapter = MultiAdapter()
+        adapter._accounts_data = {
+            "default": BotConfig(bot_id="123", enabled=True, token="abc"),
+            "second": BotConfig(bot_id="456", enabled=True, token="def"),
+        }
+
+        name, cfg = adapter._resolve_account("second")
+        assert name == "second"
+        assert cfg.bot_id == "456"
+
+    def test_resolve_account_by_bot_id(self):
+        """按 bot_id 字段解析账户"""
+        from dataclasses import dataclass
+
+        @dataclass
+        class BotConfig:
+            bot_id: str = ""
+            enabled: bool = True
+            token: str = ""
+
+        class MultiAdapter(BaseAdapter):
+            ConfigClass = None
+            AccountConfigClass = BotConfig
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok"}
+
+        adapter = MultiAdapter()
+        adapter._accounts_data = {
+            "default": BotConfig(bot_id="123", enabled=True, token="abc"),
+            "second": BotConfig(bot_id="456", enabled=True, token="def"),
+        }
+
+        name, cfg = adapter._resolve_account("456")
+        assert name == "second"
+        assert cfg.token == "def"
+
+    def test_resolve_account_not_found_raises(self):
+        """未找到账户时抛出 ValueError"""
+        from dataclasses import dataclass
+
+        @dataclass
+        class BotConfig:
+            bot_id: str = ""
+            enabled: bool = True
+            token: str = ""
+
+        class MultiAdapter(BaseAdapter):
+            ConfigClass = None
+            AccountConfigClass = BotConfig
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok"}
+
+        adapter = MultiAdapter()
+        adapter._accounts_data = {
+            "default": BotConfig(bot_id="123", enabled=False, token="abc"),
+        }
+
+        with pytest.raises(ValueError, match="未找到可用账户"):
+            adapter._resolve_account()
+
+    def test_resolve_account_no_enabled_raises(self):
+        """所有账户都禁用时抛出 ValueError"""
+        from dataclasses import dataclass
+
+        @dataclass
+        class BotConfig:
+            bot_id: str = ""
+            enabled: bool = True
+            token: str = ""
+
+        class MultiAdapter(BaseAdapter):
+            ConfigClass = None
+            AccountConfigClass = BotConfig
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok"}
+
+        adapter = MultiAdapter()
+        adapter._accounts_data = {
+            "default": BotConfig(bot_id="123", enabled=False, token="abc"),
+            "second": BotConfig(bot_id="456", enabled=False, token="def"),
+        }
+
+        with pytest.raises(ValueError, match="未找到可用账户"):
+            adapter._resolve_account()
+
+    def test_resolve_account_adapter_override_accounts_data(self):
+        """适配器覆写后直接设置 _accounts_data 的场景（向后兼容）"""
+        from dataclasses import dataclass
+
+        @dataclass
+        class BotConfig:
+            bot_id: str = ""
+            enabled: bool = True
+            token: str = ""
+
+        class CustomAdapter(BaseAdapter):
+            ConfigClass = None
+            AccountConfigClass = BotConfig
+
+            def __init__(self):
+                super().__init__()
+                # 模拟适配器覆写 _load_accounts 后填充自定义数据
+                self._accounts_data = {
+                    "custom": BotConfig(bot_id="custom_999", enabled=True, token="xyz"),
+                }
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok"}
+
+        adapter = CustomAdapter()
+        name, cfg = adapter._resolve_account()
+        assert name == "custom"
+        assert cfg.bot_id == "custom_999"
 
 
 # ==================== SendDSL Raw_ob12 测试 ====================
