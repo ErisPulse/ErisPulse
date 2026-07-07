@@ -262,6 +262,7 @@ async def _builtin_confirm(
     yes_words: set[str] | frozenset[str] = None,
     no_words: set[str] | frozenset[str] = None,
     method: str = DEFAULT_SEND_METHOD,
+    hint: bool = False,
 ) -> Optional[bool]:
     """
     内置 confirm 实现
@@ -276,9 +277,24 @@ async def _builtin_confirm(
         text = event_dict.get("alt_message", "").strip().lower()
         return text in _all
 
+    actual_prompt = prompt
+    if hint and prompt:
+        from ..i18n import i18n
+        from ..constants import CONFIRM_HINT_WORDS
+
+        lang = i18n.language or "zh-CN"
+        yes_word, no_word = CONFIRM_HINT_WORDS.get(lang, CONFIRM_HINT_WORDS["en"])
+        actual_prompt = i18n.t(
+            "core.event.confirm_hint",
+            prompt=prompt,
+            yes=yes_word,
+            no=no_word,
+            default=f"{prompt} ({yes_word}/{no_word})",
+        )
+
     result = await _builtin_wait_reply(
         event,
-        prompt=prompt,
+        prompt=actual_prompt,
         timeout=timeout,
         validator=validator,
         method=method,
@@ -291,24 +307,43 @@ async def _builtin_confirm(
     return text in _yes
 
 
+def _format_options(
+    options: list[str],
+    fmt: str | Callable[[list[str]], str],
+) -> str:
+    """
+    格式化选项列表为文本
+
+    :param options: 选项列表
+    :param fmt: 格式类型，支持 "list"、"inline" 或自定义函数
+    :return: 格式化后的选项文本
+    """
+    if callable(fmt):
+        return fmt(options)
+    if fmt == "inline":
+        return " | ".join(f"{i + 1}.{opt}" for i, opt in enumerate(options))
+    # 默认 "list"
+    return "\n".join(f"{i + 1}. {opt}" for i, opt in enumerate(options))
+
+
 async def _builtin_choose(
     event: "Event",
     prompt: str,
     options: list[str],
     timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
     method: str = DEFAULT_SEND_METHOD,
+    options_format: str | Callable[[list[str]], str] = "list",
+    merge_prompt: bool = False,
 ) -> Optional[int]:
     """
     内置 choose 实现
 
     供覆写函数调用以复用内置选择逻辑。
-    文本类方法 (Text/Markdown/Html) 会将选项拼接到 prompt 后一条消息发送；
-    富媒体类方法会先发富媒体内容，再单独发 Text 选项列表。
     """
     if not options:
         raise ValueError("选项列表不能为空")
 
-    options_text = "\n".join(f"{i + 1}. {opt}" for i, opt in enumerate(options))
+    options_text = _format_options(options, options_format)
 
     index_map = {str(i + 1): i for i in range(len(options))}
     lower_text_map = {opt.lower(): i for i, opt in enumerate(options)}
@@ -318,16 +353,20 @@ async def _builtin_choose(
         text = event_dict.get("alt_message", "").strip().lower()
         return text in valid_inputs
 
-    if method in TEXT_BASED_METHODS:
+    if method in TEXT_BASED_METHODS or merge_prompt:
+        # 文本类方法：拼接后一条消息发送
+        # merge_prompt=True 时非文本方法也合并为一条 Text 消息
+        send_method = method if method in TEXT_BASED_METHODS else DEFAULT_SEND_METHOD
         full_prompt = f"{prompt}\n{options_text}" if prompt else options_text
         result = await _builtin_wait_reply(
             event,
             prompt=full_prompt,
             timeout=timeout,
             validator=validator,
-            method=method,
+            method=send_method,
         )
     else:
+        # 非文本方法：先发富媒体，再发 Text 选项列表
         if prompt:
             await event.reply(prompt, method=method)
         result = await _builtin_wait_reply(
@@ -378,6 +417,24 @@ async def _builtin_collect(
         retry_prompt = field.get("retry_prompt", "输入无效，请重新输入")
         max_retries = field.get("max_retries", DEFAULT_MAX_RETRIES)
         method = field.get("method", DEFAULT_SEND_METHOD)
+        options = field.get("options")
+        options_format = field.get("options_format", "list")
+        merge_prompt = field.get("merge_prompt", False)
+
+        if options:
+            reply = await _builtin_choose(
+                event,
+                prompt=prompt,
+                options=options,
+                timeout=timeout_per_field,
+                method=method,
+                options_format=options_format,
+                merge_prompt=merge_prompt,
+            )
+            if reply is None:
+                return None
+            result[key] = options[reply]
+            continue
 
         reply = await _builtin_wait_reply(
             event,
@@ -1165,6 +1222,7 @@ class Event(dict):
         yes_words: set[str] | frozenset[str] = None,
         no_words: set[str] | frozenset[str] = None,
         method: str = DEFAULT_SEND_METHOD,
+        hint: bool = False,
     ) -> Optional[bool]:
         """
         等待用户确认 (是/否)
@@ -1177,17 +1235,18 @@ class Event(dict):
         :param yes_words: set[str] - 自定义确认词集合（默认: 内置 CONFIRM_YES_WORDS）
         :param no_words: set[str] - 自定义否定词集合（默认: 内置 CONFIRM_NO_WORDS）
         :param method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
+        :param hint: bool - 是否在提示消息末尾自动追加确认词提示，如 "（是/否）"（默认: False）
         :return: bool|None - True=确认, False=否定, None=超时
 
         :example:
-        >>> if await event.confirm("确定要执行此操作吗？"):
+        >>> if await event.confirm("确定要执行此操作吗？", hint=True):
         ...     await event.reply("已执行")
         >>> # 发送图片作为确认提示
         >>> if await event.confirm("https://example.com/image.jpg", method="Image"):
         ...     await event.reply("已确认")
         """
         return await _builtin_confirm(
-            self, prompt, timeout, yes_words, no_words, method
+            self, prompt, timeout, yes_words, no_words, method, hint
         )
 
     async def choose(
@@ -1196,28 +1255,47 @@ class Event(dict):
         options: list[str],
         timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
         method: str = DEFAULT_SEND_METHOD,
+        options_format: str | Callable[[list[str]], str] = "list",
+        merge_prompt: bool = False,
     ) -> Optional[int]:
         """
         等待用户从选项中选择
 
-        自动发送编号选项列表 (1.选项1 2.选项2 ...)，用户可回复编号或选项文本。
-        文本类方法 (Text/Markdown/Html) 将选项拼接到 prompt 后一条消息发送；
-        富媒体类方法 (Image/Voice 等) 先发富媒体内容，再单独发 Text 选项列表。
+        自动发送编号选项列表，用户可回复编号或选项文本。
+
+        发送行为取决于 method 和 merge_prompt：
+        - 文本类方法 (Text/Markdown/Html): 选项拼接到 prompt 后一条消息发送
+        - 非文本方法 + merge_prompt=False (默认): 先发富媒体，再单独发 Text 选项
+        - 非文本方法 + merge_prompt=True: 合并为一条 Text 消息发送
 
         :param prompt: str - 提示消息（必须）
         :param options: list[str] - 选项列表（不能为空）
         :param timeout: float - 超时时间(秒)（默认: 60.0）
         :param method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
+        :param options_format: str|callable - 选项格式（默认: "list"）
+            - "list": 每行一个，如 ``1. 选项A\n2. 选项B``
+            - "inline": 单行展示，如 ``1.选项A | 2.选项B``
+            - callable: 自定义函数，接收 ``list[str]`` 返回 ``str``
+        :param merge_prompt: bool - 非文本方法时是否强制合并为一条 Text 消息（默认: False）
         :return: int|None - 选中选项的索引(0-based), 超时返回 None
 
         :raises ValueError: 当 options 为空时
 
         :example:
+        >>> # 基本用法
         >>> choice = await event.choose("请选择颜色:", ["红", "绿", "蓝"])
-        >>> if choice is not None:
-        ...     await event.reply(f"你选择了: {['红','绿','蓝'][choice]}")
+        >>> # 内联格式
+        >>> choice = await event.choose("请选择:", ["A", "B"], options_format="inline")
+        >>> # 自定义格式
+        >>> choice = await event.choose("请选择:", ["A", "B"],
+        ...     options_format=lambda opts: " / ".join(opts))
+        >>> # 发送图片提示 + 合并选项到文本
+        >>> choice = await event.choose("看图选择:", ["猫", "狗"],
+        ...     method="Image", merge_prompt=True)
         """
-        return await _builtin_choose(self, prompt, options, timeout, method)
+        return await _builtin_choose(
+            self, prompt, options, timeout, method, options_format, merge_prompt
+        )
 
     async def collect(
         self,
@@ -1236,6 +1314,9 @@ class Event(dict):
             - retry_prompt: str - 验证失败时的重试提示（默认: "输入无效，请重新输入"）
             - max_retries: int - 最大重试次数（默认: 3）
             - method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
+            - options: list[str] - 可选值列表，提供时该字段变为选择题（可选）
+            - options_format: str|callable - 选项格式（默认: "list"，详见 choose()）
+            - merge_prompt: bool - 非文本方法时是否合并为一条消息（默认: False）
         :param timeout_per_field: float - 每个字段的超时时间(秒)（默认: 60.0）
         :return: dict|None - 收集到的数据字典, 任何步骤超时或重试耗尽返回 None
 
