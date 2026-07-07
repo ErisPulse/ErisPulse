@@ -335,6 +335,7 @@ TRANSLATIONS = {
     "core.event.handler_registered": "[Event] Registered handler: {event_type}, Called by: {module}, Owner: {owner}",
     "core.event.handlers_cleaned": "[Event] Cleaned {count} handlers of {owner} for {event_type}",
     "core.event.trace_chain": "[Event-trace] {event_type} | platform={platform} type={detail_type} | chain: {chain} | total={total}ms",
+    "core.event.confirm_hint": "{prompt}（{yes}/{no}）",
     # ==================== Command System ====================
     "core.command.skip_processed": "[Command] skip: already processed, platform={platform} user={user_id}",
     "core.command.skip_non_message": "[Command] skip: non-message type={event_type} platform={platform}",

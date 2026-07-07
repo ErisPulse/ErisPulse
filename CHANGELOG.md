@@ -68,13 +68,24 @@
 > 正式发布
 
 **版本摘要**
-2.5.3 版本修复 2.5.2 配置系统重构引入的账户解析回归 Bug。配置访问从缓存模式切换为实时读取后，`_accounts_data` 未被填充，导致 `_resolve_account()` 始终返回 `(None, None)`，多账户适配器的 `wait_reply` 等消息发送功能报错"未声明 AccountConfigClass"。
+2.5.3 版本修复 2.5.2 配置系统重构引入的账户解析回归 Bug，并增强交互式方法的个性化能力。
 
 **升级建议**
 - **强烈建议升级**（尤其是使用多账户适配器的用户）
 - 升级原因：
   - 修复 2.5.2 引入的 `_resolve_account()` 回归 Bug，多账户适配器发送消息时不再报错
   - 保持与 2.5.2 之前版本的完全向后兼容
+  - 交互式方法 (`choose`/`confirm`/`collect`) 新增选项格式化、消息合并等能力
+
+### 新增
+
+- @wsu2059q
+  - `Core/Event/wrapper.py` 交互式方法个性化增强：
+    - `Event.choose()` 新增 `options_format` 参数，支持 `"list"`（默认）、`"inline"` 或自定义函数格式化选项列表
+    - `Event.choose()` 新增 `merge_prompt` 参数，非文本方法时强制合并为一条 Text 消息
+    - `Event.confirm()` 新增 `hint` 参数，自动在提示末尾追加确认词提示（如 "（是/否）"）
+    - `Event.collect()` 字段字典新增 `options`、`options_format`、`merge_prompt` 键，支持将收集字段变为选择题
+    - 新增内部函数 `_format_options()` 用于统一选项格式化
 
 ### 修复
 
