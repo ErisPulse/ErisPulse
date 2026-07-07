@@ -5035,7 +5035,7 @@ sdk.router.get_module_urls("MyModule")
 
 # 适配器核心概念
 
-了解 ErisPulse 适配器的核心概念是開發適配器的基礎。
+了解 ErisPulse 適配器的核心概念是開發適配器的基礎。
 
 ## 適配器架構
 
@@ -5046,7 +5046,7 @@ sdk.router.get_module_urls("MyModule")
 ─────────────────                           ─────────────────
                                              
 ┌──────────────────┐                        ┌──────────────────┐
-│ 平台原生事件     │                        │ 模組構建訊息     │
+│ 平台原生事件     │                        │ 模組建構訊息     │
 └────────┬─────────┘                        └────────┬─────────┘
          │                                           │
          ↓                                           ↓
@@ -5076,7 +5076,7 @@ sdk.router.get_module_urls("MyModule")
 
 **核心對稱性**：
 - **正向轉換**（Converter）：平台原生事件 → OneBot12 標準事件，原始資料保留在 `{platform}_raw`
-- **反向轉換**（Raw_ob12）：OneBot12 訊息段 → 平台 API 呼叫，返回標準回應格式
+- **反向轉換**（Raw_ob12）：OneBot12 訊息段 → 平台 API 呼叫，回傳標準回應格式
 
 ## AdapterManager 適配器管理器
 
@@ -5087,7 +5087,7 @@ sdk.router.get_module_urls("MyModule")
 - **適配器註冊**：註冊和管理多個平台適配器
 - **生命週期管理**：控制適配器的啟動和關閉
 - **事件分發**：分發 OneBot12 標準事件和平台原生事件
-- **設定管理**：管理適配器的啟用/停用狀態
+- **配置管理**：管理適配器的啟用/禁用狀態
 - **中介軟體支援**：支援 OneBot12 事件中介軟體
 
 ### 基本使用
@@ -5155,7 +5155,7 @@ await sdk.adapter.shutdown()
 4. 清空事件處理器
 5. 提交 `adapter.stopped` 生命週期事件
 
-### 設定管理
+### 配置管理
 
 #### 檢查平台狀態
 
@@ -5166,7 +5166,7 @@ exists = sdk.adapter.exists("myplatform")
 # 檢查平台是否啟用
 enabled = sdk.adapter.is_enabled("myplatform")
 
-# 使用 in 運算子
+# 使用 in 操作子
 if "myplatform" in sdk.adapter:
     print("平台存在且已啟用")
 ```
@@ -5300,7 +5300,7 @@ from ErisPulse.runtime.config_schema import BaseConfig, BotAccountConfig
 
 @dataclass
 class MyConfig(BaseConfig):
-    """適配器設定（宣告後框架自動管理）"""
+    """適配器配置（宣告後框架自動管理）"""
     token: str = field(
         default="",
         metadata={
@@ -5312,32 +5312,32 @@ class MyConfig(BaseConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyConfig  # 宣告設定類
+    ConfigClass = MyConfig  # 宣告配置類
     
     # 無需覆寫 __init__，框架自動處理：
     # - self.sdk, self.logger
-    # - self.cfg（類型安全的設定實例，即時讀取）
+    # - self.cfg（型別安全的配置實例，即時讀取）
     # - self.Send, self.Request
     
     async def start(self):
-        """啟動適配器（必須實作）"""
-        cfg = self.cfg  # 自動載入的類型安全設定
+        """啟動適配器（必須實現）"""
+        cfg = self.cfg  # 自動載入的型別安全配置
         pass
     
     async def shutdown(self):
-        """關閉適配器（必須實作）"""
+        """關閉適配器（必須實現）"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """呼叫平台 API（必須實作）"""
+        """呼叫平台 API（必須實現）"""
         pass
 ```
 
-### 設定管理
+### 配置管理
 
-框架提供了宣告式設定管理，透過 dataclass 定義設定結構，框架自動處理載入、校驗和範本產生。
+框架提供了宣告式配置管理，透過 dataclass 定義配置結構，框架自動處理載入、校驗和範本生成。
 
-#### 單帳號設定
+#### 單帳號配置
 
 ```python
 from dataclasses import dataclass, field
@@ -5360,21 +5360,21 @@ class TelegramAdapter(BaseAdapter):
     ConfigClass = TelegramConfig
     
     async def start(self):
-        cfg = self.cfg  # 類型安全，即時讀取
+        cfg = self.cfg  # 型別安全，即時讀取
         if not cfg.token:
             raise ValueError("未配置 Token")
         await self._connect(cfg.token, proxy=cfg.proxy)
 ```
 
-#### 多帳號設定
+#### 多帳號配置
 
-`BotAccountConfig` 基類提供 `enabled` 和 `name` 欄位。絕大多數適配器能從平台協定或登入回應中自動取得 bot_id，在事件轉換時注入到帳號設定中。：
+`BotAccountConfig` 基類提供 `enabled` 和 `name` 欄位。絕大多數適配器能從平台協定或登入回應中自動取得 bot_id，在事件轉換時注入到帳號配置中。：
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.runtime.config_schema import BotAccountConfig
 
-# 大多數適配器：bot_id 執行時自動取得，無需設定
+# 大多數適配器：bot_id 執行時自動取得，無需配置
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
@@ -5382,7 +5382,7 @@ class MyBotConfig(BotAccountConfig):
         "required": True,
     })
 
-# 如果登入時無法取得 bot_id，可以讓使用者在設定中填寫
+# 如果登入時無法取得 bot_id，可以讓使用者配置中填寫
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
     bot_id: str = field(default="", metadata={
@@ -5405,30 +5405,77 @@ class MyAdapter(BaseAdapter):
 
 #### metadata 約定
 
-欄位 metadata 同時服務於 TOML 註解產生和 WebUI 表單渲染：
+欄位 metadata 同時服務於 TOML 註釋生成和 WebUI 表單渲染：
 
 ```python
 metadata = {
     "description": str | dict,  # 欄位描述（支援 i18n）
     "required": bool,         # 是否必填（校驗 + WebUI 必填標記）
     "secret": bool,           # 是否敏感（WebUI 顯示為 ***，日誌中脫敏）
-    "ui": {                   # WebUI 控件設定（舊名 "webui" 仍相容）
+    "ui": {                   # WebUI 控件配置（舊名 "webui" 仍相容）
         "widget": str,        # 控件類型: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # 分組: "basic" | "advanced" | "connection" 等
         "order": int,         # 排序權重（越小越靠前）
-        "options": list,      # select 控件的可選項 [{label, value}]
-        "placeholder": str,   # 輸入框佔位符
+        "options": list,      # select 控件的可選項 [{label, value}]，label 支援 i18n
+        "placeholder": str | dict,  # 輸入框佔位符（支援 i18n）
     },
     "extra": dict,            # 額外擴展欄位（透傳到 schema）
 }
 ```
 
-`description` 支援兩種格式：
+所有使用者可見的純文字欄位均支援 i18n，統一採用 `{"i18n": "key", "default": "文本"}` 格式，
+純字串則原樣透傳（向後相容）。支援的 i18n 欄位：
 
-- **普通字串**（向後相容）：`"Bot Token"`
-- **i18n 字典**（推薦，支援多語言）：`{"i18n": "my_adapter.token", "default": "Bot Token"}`
+| 欄位 | 位置 | 說明 |
+|------|------|------|
+| `description` | field metadata | 欄位描述 |
+| `options[].label` | `ui.options` | select 控件選項標籤 |
+| `placeholder` | `ui.placeholder` | 輸入框佔位符 |
+| `group_labels` | `_schema_meta` | 分組顯示名（Dashboard 區域標題） |
 
-使用 i18n 字典時，需提前將翻譯鍵註冊到 i18n 系統（詳見 [i18n 文檔](../../advanced/i18n.md#配置字段多語言)）。
+使用 i18n 時，需提前將翻譯鍵註冊到 i18n 系統（詳見 [i18n 文檔](../../advanced/i18n.md#配置字段多語言)）。
+
+**description / placeholder / options label** 範例：
+
+```python
+token: str = field(
+    default="",
+    metadata={
+        "description": {"i18n": "my_adapter.token", "default": "Bot Token"},
+        "ui": {
+            "widget": "text",
+            "placeholder": {"i18n": "my_adapter.token.ph", "default": "請輸入 Token"},
+        },
+    },
+)
+mode: str = field(
+    default="a",
+    metadata={
+        "description": {"i18n": "my_adapter.mode", "default": "模式"},
+        "ui": {
+            "widget": "select",
+            "options": [
+                {"label": {"i18n": "my_adapter.mode.a", "default": "選項A"}, "value": "a"},
+                {"label": "純字串標籤", "value": "b"},  # 純字串原樣透傳
+            ],
+        },
+    },
+)
+```
+
+**group_labels** 範例（在配置類定義後宣告）：
+
+```python
+MyConfig._schema_meta = {
+    "group_labels": {
+        "basic": {"i18n": "my_adapter.group.basic", "default": "基本設置"},
+        "advanced": {"i18n": "my_adapter.group.advanced", "default": "高級設置"},
+    }
+}
+```
+
+框架的 `resolve_config_schema()` 會根據當前語言自動解析上述所有欄位的 i18n 鍵；
+`get_config_schema()` 則原樣透傳 i18n 字典，由前端自行解析。
 
 #### 帳號解析
 
@@ -5438,14 +5485,14 @@ metadata = {
 async def call_api(self, endpoint: str, **params):
     account_id = params.pop("account_id", None)
     name, account = self._resolve_account(account_id)
-    # name: 帳號名, account: 設定實例
+    # name: 帳號名, account: 配置實例
 ```
 
 解析策略：帳號名匹配 → `bot_id` 欄位匹配 → 其他 str 欄位匹配 → 第一個啟用帳號。
 
-#### 設定熱更新
+#### 配置熱更新
 
-子類可覆寫 `on_config_update()` 回應設定變更：
+子類可覆寫 `on_config_update()` 回應配置變更：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -5453,19 +5500,19 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Token 已更新，將重新連接")
+            self.logger.info("Token 已更新，將重新連線")
 ```
 
 ### 初始化過程
 
 框架在 `BaseAdapter.__init__(self, sdk=None)` 中自動完成以下工作：
 
-1. **SDK 引用**：設定 `self.sdk`、`self.logger`
+1. **SDK 參考**：設定 `self.sdk`、`self.logger`
 2. **Send/Request 工廠**：建立 `self.Send` 和 `self.Request`
-3. **設定範本**：如果宣告了 `ConfigClass`，自動產生預設設定範本（首次）
-4. **帳號範本**：如果宣告了 `AccountConfigClass`，自動產生預設帳號範本（首次）
+3. **配置範本**：如果宣告了 `ConfigClass`，自動生成預設配置範本（首次）
+4. **帳號範本**：如果宣告了 `AccountConfigClass`，自動生成預設帳號範本（首次）
 
-設定透過 `self.cfg` / `self.accounts` 即時讀取（每次存取都從設定儲存讀取最新值）。`self.config` 作為 `self.cfg` 的相容別名仍可使用。
+配置透過 `self.cfg` / `self.accounts` 即時讀取（每次存取都從配置儲存讀取最新值）。`self.config` 作為 `self.cfg` 的相容別名仍可使用。
 
 大多數適配器無需覆寫 `__init__`。如需自訂初始化：
 
@@ -5505,13 +5552,13 @@ class MyAdapter(BaseAdapter):
 | `_reply_message_id` | 回覆的訊息ID | `Reply(message_id)` |
 | `_at_all` | 是否@全體 | `AtAll()` |
 
-> **推薦**：使用 `self.send_context` 屬性一次性取得 `target_type`、`target_id`、`account_id`，比直接存取實例變數更清楚。
+> **推薦**：使用 `self.send_context` 屬性一次取得 `target_type`、`target_id`、`account_id`，比直接存取實例變數更清晰。
 
 ### 框架輔助方法
 
 | 方法/屬性 | 說明 |
 |-----------|------|
-| `self._apply_modifiers(message)` | 將 At/AtAll/Reply 修飾符狀態合併到訊息段列表 |
+| `self._apply_modifiers(message)` | 將 At/AtAll/Reply 修飾子狀態合併到訊息段列表 |
 | `self.send_context` | 返回 `{target_type, target_id, account_id}` 字典 |
 
 ### 基本方法
@@ -5519,7 +5566,7 @@ class MyAdapter(BaseAdapter):
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """推薦實作方式"""
+        """推薦實現方式"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -5531,7 +5578,7 @@ class Send(BaseAdapter.Send):
         return asyncio.create_task(_do_send())
 
     def Text(self, text: str):
-        """發送文字訊息"""
+        """傳送文字訊息"""
         return self.Raw_ob12([
             {"type": "text", "data": {"text": text}}
         ])
@@ -5569,7 +5616,7 @@ OneBot12 標準事件
 
 ```python
 {
-    "id": "事件唯一標識",
+    "id": "事件唯一識別",
     "time": 1234567890,           # 10位 Unix 時間戳
     "type": "message/notice/request/meta",
     "detail_type": "事件詳細類型",
@@ -5592,7 +5639,7 @@ class MyPlatformConverter:
         if not isinstance(raw_event, dict):
             return None
         
-        # 產生事件 ID
+        # 生成事件 ID
         event_id = raw_event.get("event_id") or str(uuid.uuid4())
         
         # 轉換時間戳
@@ -5606,7 +5653,7 @@ class MyPlatformConverter:
         event_type = self._convert_type(raw_event.get("type"))
         detail_type = self._convert_detail_type(raw_event)
         
-        # 構建標準事件
+        # 建構標準事件
         onebot_event = {
             "id": str(event_id),
             "time": timestamp,
@@ -5624,9 +5671,9 @@ class MyPlatformConverter:
         return onebot_event
 ```
 
-## 連接管理
+## 連線管理
 
-### WebSocket 連接
+### WebSocket 連線
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -5640,7 +5687,7 @@ class MyAdapter(BaseAdapter):
         )
     
     async def _ws_handler(self, websocket):
-        """WebSocket 連接處理器"""
+        """WebSocket 連線處理器"""
         self.connection = websocket
         
         try:
@@ -5655,12 +5702,12 @@ class MyAdapter(BaseAdapter):
             self.connection = None
     
     async def _auth_handler(self, websocket) -> bool:
-        """WebSocket 驗證"""
+        """WebSocket 認證"""
         token = websocket.query_params.get("token")
         return token == "valid_token"
 ```
 
-### WebHook 連接
+### WebHook 連線
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -5682,11 +5729,11 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> **路由資訊查詢**：適配器註冊的路由（HTTP、WebSocket、SSE）可以透過 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查詢完整連線位址（包含 `base_url` + 路徑）。詳見 [適配器開發入門 - 連線資訊與路由發現](docs/zh-TW/getting-started.md#9-連線資訊與路由發現) 和 [SSE 支援](docs/zh-TW/getting-started.md#10-sse-server-sent-events-支援)。
+> **路由資訊查詢**：適配器註冊的路由（HTTP、WebSocket、SSE）可以透過 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查詢完整連線地址（包含 `base_url` + 路徑）。詳見 [適配器開發入門 - 連線資訊與路由發現](getting-started.md#9-連線資訊與路由發現) 和 [SSE 支援](getting-started.md#10-sse-server-sent-events-支援)。
 
 ## API 回應標準
 
-框架提供 `make_response()` 和 `make_error()` 方法構造標準化回應，無需手動構造回應字典。
+框架提供 `make_response()` 和 `make_error()` 方法建構標準化回應，無需手動建構回應字典。
 
 ### 成功回應
 
@@ -5704,7 +5751,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e), raw=None)
 ```
 
-### 手動構造回應（舊版方式仍然相容）
+### 手動建構回應（舊版方式仍然相容）
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -5720,9 +5767,9 @@ async def call_api(self, endpoint: str, **params):
 
 ## 多帳號支援
 
-### 宣告式設定（推薦）
+### 宣告式配置（推薦）
 
-使用 `AccountConfigClass` 宣告設定類後，框架自動管理多帳號載入、校驗和範本產生：
+使用 `AccountConfigClass` 宣告配置類後，框架自動管理多帳號載入、校驗和範本生成：
 
 ```python
 from dataclasses import dataclass, field
@@ -5747,7 +5794,7 @@ class MyAdapter(BaseAdapter):
         # 使用 account.token, account.bot_id 等欄位
 ```
 
-### 帳號設定檔案
+### 帳號配置檔
 
 ```toml
 [MyAdapter.accounts.account1]
@@ -5789,11 +5836,11 @@ if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **關鍵點**：即使適配器只使用一個 Bot 設定，只要 Converter 正確設定了 `self.user_id`，框架就會將其作為 `Using` 參數傳入。適配器需確保 `self.user_id` 與 `AccountConfigClass` 中的標識欄位（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正確帳號。如果 `self.user_id` 為空，框架不會呼叫 `Using`，此時 `call_api` 收到的 `account_id` 為 `None`，`_resolve_account(None)` 返回第一個啟用的帳號。
+> **關鍵點**：即使適配器只使用一個 Bot 配置，只要 Converter 正確設定了 `self.user_id`，框架就會將其作為 `Using` 參數傳入。適配器需確保 `self.user_id` 與 `AccountConfigClass` 中的識別欄位（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正確帳號。如果 `self.user_id` 為空，框架不會呼叫 `Using`，此時 `call_api` 收到的 `account_id` 為 `None`，`_resolve_account(None)` 返回第一個啟用的帳號。
 
 ## 錯誤處理
 
-### 連接重試
+### 連線重試
 
 ```python
 import asyncio
@@ -5833,8 +5880,8 @@ async def call_api(self, endpoint: str, **params):
         response = await resp.json()
         return self._standardize_response(response)
     except ClientTimeoutError:
-        self.logger.error(f"請求逾時: {endpoint}")
-        return self._error_response("請求逾時", 32000)
+        self.logger.error(f"請求超時: {endpoint}")
+        return self._error_response("請求超時", 32000)
     except ClientError as e:
         self.logger.error(f"網路錯誤: {e}")
         return self._error_response("網路請求失敗", 33000)
@@ -5847,7 +5894,7 @@ async def call_api(self, endpoint: str, **params):
 
 ## Bot 狀態管理
 
-AdapterManager 內建了 Bot 狀態追蹤系統，自動維護所有已註冊 Bot 的在線狀態、活躍時間和元資訊。
+AdapterManager 內建了 Bot 狀態追蹤系統，自動維護所有已註冊 Bot 的線上狀態、活躍時間和元資訊。
 
 ### 自動發現機制
 
@@ -5871,7 +5918,7 @@ await self.adapter.emit({
 
 | `detail_type` | 說明 | 框架行為 |
 |---|---|---|
-| `connect` | Bot 連接 | 註冊 Bot 並觸發 `adapter.bot.online` 生命週期事件 |
+| `connect` | Bot 連線 | 註冊 Bot 並觸發 `adapter.bot.online` 生命週期事件 |
 | `disconnect` | Bot 斷開 | 標記 Bot 離線並觸發 `adapter.bot.offline` 生命週期事件 |
 | `heartbeat` | Bot 心跳 | 更新 Bot 活躍時間和元資訊 |
 
@@ -5889,7 +5936,7 @@ class MyAdapter(BaseAdapter):
         await self.emit_meta("disconnect", bot_id)
 ```
 
-也支援手動構造（舊版方式仍然相容）：
+也支援手動建構（舊版方式仍然相容）：
 
 ```python
 await self.adapter.emit({
@@ -5902,14 +5949,14 @@ await self.adapter.emit({
 
 ### `self` 欄位擴展資訊
 
-`self` 欄位除必需的 `platform` 和 `user_id` 外，還支援以下可選欄位：
+`self` 欄位除必需的 `platform` 和 `user_id` 外，還支援以下選擇性欄位：
 
 | 欄位 | 說明 |
 |---|---|
-| `user_name` | Bot 使用者名 |
+| `user_name` | Bot 使用者名稱 |
 | `nickname` | Bot 昵稱 |
 | `avatar` | Bot 頭像 URL |
-| `account_id` | 多帳號標識 |
+| `account_id` | 多帳號識別 |
 
 ### Bot 狀態查詢
 
@@ -5929,7 +5976,7 @@ platform_bots = sdk.adapter.list_bots("myplatform")
 # 檢查 Bot 是否在線
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# 取得完整狀態摘要（適合 WebUI 展示）
+# 取得完整狀態摘要（適合 WebUI 顯示）
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
 ```
@@ -5957,6 +6004,8 @@ async def on_bot_offline(data):
 - [適配器開發入門](getting-started.md) - 建立第一個適配器
 - [SendDSL 詳解](send-dsl.md) - 學習訊息發送
 - [適配器最佳實踐](best-practices.md) - 開發高品質適配器
+
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
 
 ### SendDSL 详解
@@ -13077,10 +13126,10 @@ ErisPulse v2.5.0 起內建了完整的國際化支援。框架核心及 CLI 界�
 
 ## 支援的語言
 
-| 語言 | 程式碼 | 說明 |
+| 語言 | 代碼 | 說明 |
 |------|------|------|
 | 簡體中文 | `zh-CN` | 預設語言（框架原生語言） |
-| 繁體中文 | `zh-TW` | 繁體中文（香港/澳門/臺灣） |
+| 繁體中文 | `zh-TW` | 繁體中文（香港/澳門/台灣） |
 | English | `en` | 英文（通用回退語言） |
 | 日本語 | `ja` | 日文 |
 | Русский | `ru` | 俄文 |
@@ -13098,7 +13147,7 @@ epsdk run
 ERISPULSE_LANG=ja epsdk run
 ```
 
-### 透過設定檔案切換
+### 透過配置檔案切換
 
 在 `config/config.toml` 中新增：
 
@@ -13126,9 +13175,9 @@ i18n.reset_language()
 
 ## 語言偵測機制
 
-框架按以下優先順序偵測使用者語言：
+框架按以下優先級偵測使用者語言：
 
-1. **環境變數 `ERISPULSE_LANG`** — 最高優先順序，用於測試和暫時切換
+1. **環境變數 `ERISPULSE_LANG`** — 最高優先級，用於測試和暫時切換
 2. **Windows API** — `GetUserDefaultLocaleName`（僅 Windows，不受 Git Bash 等工具覆蓋 `LANG` 的影響）
 3. **環境變數** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG`（Unix/macOS 標準）
 4. **系統 Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
@@ -13136,7 +13185,7 @@ i18n.reset_language()
 
 ### 就近映射原則
 
-當偵測到的語言不是精確匹配時，按就近原則映射到支援的語言：
+當偵測到的語言不是精確匹配時，按就近原則對映到支援的語言：
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **繁體中文**
 - 其他所有 `zh-*`（如 `zh-CN`, `zh-SG`）→ **簡體中文**
@@ -13177,12 +13226,12 @@ i18n.register("en", {
 from ErisPulse import i18n
 
 # 簡單翻譯
-i18n.t("my_module.welcome")  # 自動使用目前語言
+i18n.t("my_module.welcome")  # 自動使用當前語言
 
 # 帶格式化參數
 i18n.t("my_module.hello", name="Alice")
 
-# 指定預設值（翻譯鍵不存在時傳回）
+# 指定預設值（翻譯鍵不存在時返回）
 i18n.t("my_module.unknown_key", default="預設文字")
 ```
 
@@ -13208,7 +13257,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # 即時讀取設定（每次存取都反映最新值）
+        # 即時讀取配置（每次訪問都反映最新值）
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -13221,25 +13270,33 @@ class MyModule(BaseModule):
         pass
 ```
 
-### 解除安裝翻譯
+### 解除註冊翻譯
 
 ```python
-# 解除安裝整個域的翻譯
+# 解除註冊整個域的翻譯
 i18n.unregister_domain("my_module")
 ```
 
 ---
 
-## 設定欄位多語言
+## 配置欄位多語言
 
-從 v2.5.2 起，設定 Schema 支援 i18n。配接器/模組的設定欄位描述（`description`）可以引用 i18n 鍵，WebUI 和其他消費者會自動根據目前語言解析為對應文字。
+從 v2.5.2 起，配置 Schema 全面支援 i18n。所有使用者可見的文字欄位均可引用 i18n 鍵，WebUI 和其他消費者會自動根據當前語言解析為對應文字。
 
-### 宣告 i18n 描述
+### 支援的 i18n 欄位
 
-在 `field(metadata=...)` 中，`description` 可以是：
+| 欄位 | 位置 | 說明 |
+|------|------|------|
+| `description` | field metadata | 欄位描述 |
+| `options[].label` | `ui.options` | select 控制項選項標籤 |
+| `placeholder` | `ui.placeholder` | 輸入框佔位符 |
+| `group_labels` | `_schema_meta` | 分組顯示名（Dashboard 區域標題） |
 
-- **一般字串**（向後相容）：`"平台 Token"`
-- **i18n 字典**（推薦）：`{"i18n": "my_adapter.token", "default": "平台 Token"}`
+統一採用 `{"i18n": "key", "default": "文本"}` 格式，純字串則原樣透傳（向後相容）。
+
+### 宣告 i18n 欄位
+
+所有使用者可見文字欄位都支援 i18n：
 
 ```python
 from dataclasses import dataclass, field
@@ -13247,22 +13304,52 @@ from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
+    # description i18n
     token: str = field(
         default="",
         metadata={
             "description": {"i18n": "my_adapter.token", "default": "平台 Token"},
             "required": True,
             "secret": True,
-            "ui": {"widget": "password", "group": "basic", "order": 1},
+            "ui": {
+                "widget": "password",
+                "group": "basic",
+                "order": 1,
+                # placeholder i18n
+                "placeholder": {"i18n": "my_adapter.token.ph", "default": "請輸入 Token"},
+            },
         },
     )
+    # options label i18n
+    mode: str = field(
+        default="a",
+        metadata={
+            "description": {"i18n": "my_adapter.mode", "default": "運行模式"},
+            "ui": {
+                "widget": "select",
+                "group": "basic",
+                "order": 2,
+                "options": [
+                    {"label": {"i18n": "my_adapter.mode.a", "default": "模式A"}, "value": "a"},
+                    {"label": {"i18n": "my_adapter.mode.b", "default": "模式B"}, "value": "b"},
+                ],
+            },
+        },
+    )
+
+    # group_labels i18n（分組顯示名）
+    _schema_meta = {
+        "group_labels": {
+            "basic": {"i18n": "my_adapter.group.basic", "default": "基本設置"},
+        }
+    }
 ```
 
-`default` 是兜底文字——當翻譯未註冊或查找失敗時顯示。
+`default` 是兜底文字——當翻譯未註冊或查詢失敗時顯示。
 
-### 註冊設定翻譯
+### 註冊配置翻譯
 
-設定欄位的 i18n 鍵和一般翻譯鍵一樣，使用 `i18n.register()` 註冊：
+配置欄位的 i18n 鍵和普通翻譯鍵一樣，使用 `i18n.register()` 註冊：
 
 ```python
 from ErisPulse import i18n
@@ -13278,7 +13365,7 @@ i18n.register("en", {
 }, domain="my_adapter")
 ```
 
-也提供了便捷函數 `register_config_i18n()`，可自動從設定類別提取鍵並註冊：
+也提供了便捷函式 `register_config_i18n()`，可自動從配置類別提取鍵並註冊：
 
 ```python
 from ErisPulse.runtime.config_schema import register_config_i18n
@@ -13294,16 +13381,19 @@ register_config_i18n(MyAdapterConfig, "en", {
 
 ### WebUI 如何消費
 
-`get_config_schema()` 回傳的 schema 中，`description` 欄位會原樣透傳 i18n 字典。WebUI 前端可以根據目前語言呼叫 `i18n.t()` 解析。
+`get_config_schema()` 返回的 schema 中，i18n 字典會原樣透傳。WebUI 前端可以根據當前語言呼叫 `i18n.t()` 解析。
 
-如果需要伺服器端直接解析為字串（如回傳給不支援 i18n 的前端），使用 `resolve_config_schema()`：
+如果需要伺服器端直接解析為字串（如返回給不支援 i18n 的前端），使用 `resolve_config_schema()`，它會將 `description`、`options[].label`、`placeholder`、`group_labels` 全部解析為當前語言的文字：
 
 ```python
 from ErisPulse.runtime.config_schema import resolve_config_schema
 
-# description 已解析為目前語言的字串
+# 所有 i18n 欄位已解析為當前語言的字串
 schema = resolve_config_schema(MyAdapterConfig)
-print(schema["fields"]["token"]["description"])  # "平台 Token" 或 "Platform Token"
+print(schema["fields"]["token"]["description"])    # "平台 Token" 或 "Platform Token"
+print(schema["fields"]["token"]["placeholder"])   # "請輸入 Token" 或 "Enter Token"
+print(schema["fields"]["mode"]["options"][0]["label"])  # "模式A" 或 "Mode A"
+print(schema["group_labels"]["basic"])             # "基本設置" 或 "Basic"
 ```
 
 ## API 參考
@@ -13316,12 +13406,12 @@ print(schema["fields"]["token"]["description"])  # "平台 Token" 或 "Platform 
 |------|------|
 | `t(key, default=None, **kwargs)` | 取得翻譯文字（`gettext()` 是別名） |
 | `set_language(lang)` | 手動設定語言 |
-| `get_language()` | 取得目前語言 |
+| `get_language()` | 取得當前語言 |
 | `reset_language()` | 重設為自動偵測（並重新偵測環境） |
-| `get_supported_languages()` | 取得所有支援的語言清單 |
+| `get_supported_languages()` | 取得所有支援的語言列表 |
 | `has_translation(key, lang=None)` | 檢查翻譯鍵是否存在 |
 | `register(lang, translations, domain)` | 註冊自訂翻譯 |
-| `unregister_domain(domain)` | 解除安裝指定域的所有翻譯 |
+| `unregister_domain(domain)` | 解除註冊指定域的所有翻譯 |
 | `reload()` | 重新載入內建翻譯並重新偵測語言 |
 
 #### `t()` 方法詳解
@@ -13331,18 +13421,18 @@ def t(self, key, /, default=None, **kwargs):
 ```
 
 - `key` — 翻譯鍵（僅位置參數，不與 `**kwargs` 中的 `key=` 衝突）
-- `default` — 翻譯不存在時傳回的預設值，預設為 `None`（傳回鍵名本身）
-- `**kwargs` — 格式化參數，用於填入翻譯值中的 `{placeholder}`
+- `default` — 翻譯不存在時返回的預設值，預設為 `None`（返回鍵名本身）
+- `**kwargs` — 格式化參數，用於填充翻譯值中的 `{placeholder}`
 
 範例：
 
 ```python
 # 翻譯定義: "greeting": "你好，{name}！歡迎來到{place}。"
 i18n.t("greeting", name="Alice", place="ErisPulse")
-# 傳回: "你好，Alice！歡迎來到ErisPulse。"
+# 返回: "你好，Alice！歡迎來到ErisPulse。"
 ```
 
-### 從 SDK 執行個體存取
+### 從 SDK 實例訪問
 
 ```python
 from ErisPulse import sdk
@@ -13354,9 +13444,9 @@ print(sdk.i18n.t("core.sdk.init.starting"))
 
 ---
 
-## 執行階段設定
+## 執行時配置
 
-### 透過設定 API 讀取 i18n 設定
+### 透過配置 API 讀取 i18n 配置
 
 ```python
 from ErisPulse.runtime import get_i18n_config, I18nConfig
@@ -13364,17 +13454,17 @@ from ErisPulse.runtime import get_i18n_config, I18nConfig
 config = get_i18n_config()
 print(config["language"])  # "auto" 或具體語言代碼
 
-# I18nConfig 是 dataclass，可用於產生設定範本
+# I18nConfig 是 dataclass，可用於生成配置範本
 schema = I18nConfig.__dataclass_fields__
 ```
 
-### 設定項說明
+### 配置項說明
 
 在 `config/config.toml` 的 `[ErisPulse.i18n]` 部分：
 
 ```toml
 [ErisPulse.i18n]
-# 顯示語言，選項值:
+# 顯示語言，可選值:
 # - "auto"      — 自動偵測系統語言（預設）
 # - "zh-CN"     — 簡體中文
 # - "zh-TW"     — 繁體中文
@@ -13386,7 +13476,7 @@ language = "auto"
 
 ---
 
-## 最佳實務
+## 最佳實踐
 
 ### 翻譯鍵命名
 
@@ -13400,15 +13490,15 @@ language = "auto"
 
 ### 多語言覆蓋
 
-不必一次性提供所有語言的翻譯，遺失的語言會自動回退到英文，如果英文也沒有則顯示鍵名本身。
+不必一次提供所有語言的翻譯，遺失的語言會自動回退到英文，如果英文也沒有則顯示鍵名本身。
 
 ### 動態內容
 
-對於動態產生的內容（如使用者名稱、數量等），使用 `{placeholder}` 格式化：
+對於動態生成的內容（如使用者名稱、數量等），使用 `{placeholder}` 格式化：
 
 ```python
 # 翻譯定義
-"user_count": "目前線上使用者：{count} 人"
+"user_count": "當前線上使用者：{count} 人"
 
 # 使用
 i18n.t("user_count", count=len(users))
@@ -13416,7 +13506,7 @@ i18n.t("user_count", count=len(users))
 
 ### 日誌訊息
 
-如果您的模組使用了框架的 Logger，這些訊息也會自動使用目前語言：
+如果您的模組使用了框架的 Logger，這些訊息也會自動使用當前語言：
 
 ```python
 self.logger.info(i18n.t("my_module.startup"))

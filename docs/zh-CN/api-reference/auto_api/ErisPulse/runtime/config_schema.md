@@ -212,18 +212,38 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
 ---
 
 
+### `_resolve_i18n_text(value, i18n_mgr)`
+
+解析单个值的 i18n 文本
+
+接受纯字符串（原样返回）或 i18n 字典（解析为当前语言文本）。
+
+:param value: 原始值（str 或 {"i18n": ..., "default": ...}）
+:param i18n_mgr: I18nManager 实例
+:return: 解析后的字符串
+
+---
+
+
 ### `resolve_config_schema(config_class: type, resolve_i18n: bool = True)`
 
-获取配置 Schema，可选地将 i18n description 解析为当前语言的文本
+获取配置 Schema，可选地将所有 i18n 文本字段解析为当前语言的文本
 
 与 get_config_schema() 的区别：
-- 当 resolve_i18n=True 时，description 字段为解析后的字符串（适合直接展示）
+- 当 resolve_i18n=True 时，所有用户可见文本字段（description、options label、
+  placeholder、group_labels）为解析后的字符串（适合直接展示）
 - 当 resolve_i18n=False 时，等同于 get_config_schema()（透传 i18n 字典）
 
-适合需要在服务端直接渲染描述文本的场景（如 Dashboard API 返回给不支持 i18n 的前端）。
+支持的 i18n 字段（均采用 ``{"i18n": "key", "default": "文本"}`` 格式）：
+- ``description``: 字段描述
+- ``options[].label``: select 控件选项标签
+- ``placeholder``: 输入框占位符
+- ``group_labels``: 分组显示名（通过 ``_schema_meta["group_labels"]`` 声明）
+
+纯字符串值会被原样透传（向后兼容）。
 
 :param config_class: dataclass 配置类
-:param resolve_i18n: 是否将 i18n 描述解析为当前语言文本
+:param resolve_i18n: 是否将 i18n 文本解析为当前语言
 :return: schema 字典
 
 ---

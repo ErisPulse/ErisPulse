@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1325,
+  "total_keywords": 1321,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -1876,12 +1876,12 @@
         "title": "API 调用"
       }
     ],
-    "Best Practices": [
+    "AdapterManager Менеджер адаптеров": [
       {
-        "document": "advanced/i18n.md",
-        "line": 316,
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 46,
         "level": 2,
-        "title": "Best Practices"
+        "title": "AdapterManager Менеджер адаптеров"
       }
     ],
     "Client (Сетевой клиент)": [
@@ -1914,14 +1914,6 @@
         "line": 45,
         "level": 2,
         "title": "Core.py - Основной модуль"
-      }
-    ],
-    "DSL отправки сообщений Send": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 447,
-        "level": 2,
-        "title": "DSL отправки сообщений Send"
       }
     ],
     "Discord": [
@@ -2007,7 +1999,7 @@
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
-        "line": 238,
+        "line": 279,
         "level": 3,
         "title": "I18nManager"
       }
@@ -2196,6 +2188,14 @@
         "title": "SQL-цепочные запросы"
       }
     ],
+    "Send DSL для отправки сообщений": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 494,
+        "level": 2,
+        "title": "Send DSL для отправки сообщений"
+      }
+    ],
     "SendDSL": [
       {
         "document": "terminology.md",
@@ -2255,7 +2255,7 @@
     "WebHook соединение": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 628,
+        "line": 675,
         "level": 3,
         "title": "WebHook соединение"
       }
@@ -2279,7 +2279,7 @@
     "WebSocket соединение": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 594,
+        "line": 641,
         "level": 3,
         "title": "WebSocket соединение"
       }
@@ -2698,14 +2698,6 @@
         "title": "Автоматическая документация"
       }
     ],
-    "Автоматическое обнаружение": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 817,
-        "level": 3,
-        "title": "Автоматическое обнаружение"
-      }
-    ],
     "Автоматическое обнаружение обычных событий": [
       {
         "document": "api-reference/adapter-system.md",
@@ -2766,14 +2758,6 @@
         "line": 496,
         "level": 3,
         "title": "Адаптер: регистрация платформенных методов"
-      }
-    ],
-    "АдаптерAdapterManager": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 46,
-        "level": 2,
-        "title": "АдаптерAdapterManager"
       }
     ],
     "Активация виртуального окружения": [
@@ -2981,12 +2965,6 @@
       }
     ],
     "Базовые методы": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 482,
-        "level": 3,
-        "title": "Базовые методы"
-      },
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 41,
@@ -3292,6 +3270,14 @@
         "title": "Возвращаемые значения методов отправки"
       }
     ],
+    "Вспомогательные методы фреймворка": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 522,
+        "level": 3,
+        "title": "Вспомогательные методы фреймворка"
+      }
+    ],
     "Вставка данных": [
       {
         "document": "advanced/sql-builder.md",
@@ -3407,7 +3393,7 @@
     "Горячее обновление конфигурации": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 411,
+        "line": 458,
         "level": 4,
         "title": "Горячее обновление конфигурации"
       }
@@ -3521,7 +3507,7 @@
     "Декларативная конфигурация (рекомендуется)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 688,
+        "line": 735,
         "level": 3,
         "title": "Декларативная конфигурация (рекомендуется)"
       },
@@ -3559,7 +3545,7 @@
     "Динамический контент": [
       {
         "document": "advanced/i18n.md",
-        "line": 332,
+        "line": 373,
         "level": 3,
         "title": "Динамический контент"
       }
@@ -3770,6 +3756,14 @@
         "title": "Дополнительные примеры"
       }
     ],
+    "Доступ из экземпляра SDK": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 313,
+        "level": 3,
+        "title": "Доступ из экземпляра SDK"
+      }
+    ],
     "Доступ к данным события": [
       {
         "document": "getting-started/event-handling.md",
@@ -3784,14 +3778,6 @@
         "line": 56,
         "level": 3,
         "title": "Доступ к основным модулям"
-      }
-    ],
-    "Доступ к экземпляру SDK": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 272,
-        "level": 3,
-        "title": "Доступ к экземпляру SDK"
       }
     ],
     "Доступ по атрибутам": [
@@ -3819,7 +3805,7 @@
     "Доступные свойства": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 458,
+        "line": 505,
         "level": 3,
         "title": "Доступные свойства"
       }
@@ -4005,7 +3991,7 @@
     "Запрос состояния бота": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 879,
+        "line": 926,
         "level": 3,
         "title": "Запрос состояния бота"
       },
@@ -4163,7 +4149,7 @@
     "Иерархия наследования": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 449,
+        "line": 496,
         "level": 3,
         "title": "Иерархия наследования"
       }
@@ -4216,6 +4202,14 @@
         "title": "Изоляция платформенных методов"
       }
     ],
+    "Именование ключей перевода": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 359,
+        "level": 3,
+        "title": "Именование ключей перевода"
+      }
+    ],
     "Именование методов отправки": [
       {
         "document": "standards/README.md",
@@ -4236,14 +4230,6 @@
         "line": 22,
         "level": 2,
         "title": "Импорт"
-      }
-    ],
-    "Инициализационный процесс": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 424,
-        "level": 3,
-        "title": "Инициализационный процесс"
       }
     ],
     "Инициализация проекта": [
@@ -4713,7 +4699,7 @@
     "Как потребляет WebUI": [
       {
         "document": "advanced/i18n.md",
-        "line": 222,
+        "line": 260,
         "level": 3,
         "title": "Как потребляет WebUI"
       }
@@ -4883,7 +4869,7 @@
     "Конвертер событий": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 519,
+        "line": 566,
         "level": 2,
         "title": "Конвертер событий"
       }
@@ -4937,7 +4923,7 @@
     "Конфигурация времени выполнения": [
       {
         "document": "advanced/i18n.md",
-        "line": 284,
+        "line": 325,
         "level": 2,
         "title": "Конфигурация времени выполнения"
       }
@@ -5121,7 +5107,7 @@
     "Логирование": [
       {
         "document": "advanced/i18n.md",
-        "line": 344,
+        "line": 385,
         "level": 3,
         "title": "Логирование"
       },
@@ -5340,14 +5326,6 @@
         "line": 177,
         "level": 2,
         "title": "Методы Send"
-      }
-    ],
-    "Методы вспомогательной функции фреймворка": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 475,
-        "level": 3,
-        "title": "Методы вспомогательной функции фреймворка"
       }
     ],
     "Методы для друзей": [
@@ -5582,6 +5560,14 @@
         "title": "Механизм heartbeat"
       }
     ],
+    "Механизм автоматического обнаружения": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 864,
+        "level": 3,
+        "title": "Механизм автоматического обнаружения"
+      }
+    ],
     "Механизм асинхронной обработки": [
       {
         "document": "platform-guide/onebot12.md",
@@ -5646,12 +5632,12 @@
         "title": "Механизм пульсации"
       }
     ],
-    "Механизм распределения событий": [
+    "Механизм рассылки событий": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 190,
         "level": 4,
-        "title": "Механизм распределения событий"
+        "title": "Механизм рассылки событий"
       }
     ],
     "Минимально рабочий модуль": [
@@ -5804,12 +5790,12 @@
         "title": "Мониторинг результатов проверки сообщений"
       }
     ],
-    "Мультиязычные описания полей конфигурации": [
+    "Мультиязычные конфигурационные поля": [
       {
         "document": "advanced/i18n.md",
         "line": 160,
         "level": 2,
-        "title": "Мультиязычные описания полей конфигурации"
+        "title": "Мультиязычные конфигурационные поля"
       }
     ],
     "Навигация по документации": [
@@ -5874,14 +5860,6 @@
         "line": 147,
         "level": 3,
         "title": "Нейминг PascalCase"
-      }
-    ],
-    "Нейминг ключей переводов": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 318,
-        "level": 3,
-        "title": "Нейминг ключей переводов"
       }
     ],
     "Немедленная загрузка": [
@@ -6155,7 +6133,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 759,
+        "line": 806,
         "level": 2,
         "title": "Обработка ошибок"
       },
@@ -6187,7 +6165,7 @@
     "Обработка ошибок API": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 785,
+        "line": 832,
         "level": 3,
         "title": "Обработка ошибок API"
       }
@@ -6440,12 +6418,12 @@
         "title": "Объект Task"
       }
     ],
-    "Объявление i18n описания": [
+    "Объявление полей i18n": [
       {
         "document": "advanced/i18n.md",
-        "line": 164,
+        "line": 175,
         "level": 3,
-        "title": "Объявление i18n описания"
+        "title": "Объявление полей i18n"
       }
     ],
     "Объяснение кода": [
@@ -6475,7 +6453,7 @@
     "Обязательные поля": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 531,
+        "line": 578,
         "level": 3,
         "title": "Обязательные поля"
       }
@@ -6704,14 +6682,6 @@
         "line": 88,
         "level": 3,
         "title": "Описание параметров кнопок"
-      }
-    ],
-    "Описание параметров конфигурации": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 298,
-        "level": 3,
-        "title": "Описание параметров конфигурации"
       }
     ],
     "Описание полей конфигурации": [
@@ -7031,13 +7001,19 @@
     "Основные методы": [
       {
         "document": "advanced/i18n.md",
-        "line": 240,
+        "line": 281,
         "level": 4,
         "title": "Основные методы"
       },
       {
         "document": "api-reference/event-system.md",
         "line": 247,
+        "level": 3,
+        "title": "Основные методы"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 529,
         "level": 3,
         "title": "Основные методы"
       },
@@ -7306,14 +7282,6 @@
         "title": "Отправка KMarkdown и карточных сообщений"
       }
     ],
-    "Отправка meta-событий адаптером": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 843,
-        "level": 3,
-        "title": "Отправка meta-событий адаптером"
-      }
-    ],
     "Отправка в разные цели": [
       {
         "document": "platform-guide/ideaura.md",
@@ -7386,6 +7354,14 @@
         "title": "Отправка ответов с использованием метода reply"
       }
     ],
+    "Отправка событий meta адаптером": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 890,
+        "level": 3,
+        "title": "Отправка событий meta адаптером"
+      }
+    ],
     "Отправка сообщений": [
       {
         "document": "advanced/lifecycle.md",
@@ -7437,7 +7413,7 @@
     "Отправка указанному аккаунту": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 729,
+        "line": 776,
         "level": 3,
         "title": "Отправка указанному аккаунту"
       }
@@ -7574,28 +7550,20 @@
         "title": "Параметры события"
       }
     ],
-    "Переключение через переменную среды": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 17,
-        "level": 3,
-        "title": "Переключение через переменную среды"
-      }
-    ],
-    "Переключение через файл конфигурации": [
+    "Переключение через конфигурационный файл": [
       {
         "document": "advanced/i18n.md",
         "line": 28,
         "level": 3,
-        "title": "Переключение через файл конфигурации"
+        "title": "Переключение через конфигурационный файл"
       }
     ],
-    "Перекрытие переводов": [
+    "Переключение через переменные окружения": [
       {
         "document": "advanced/i18n.md",
-        "line": 328,
+        "line": 17,
         "level": 3,
-        "title": "Перекрытие переводов"
+        "title": "Переключение через переменные окружения"
       }
     ],
     "Переменные окружения": [
@@ -7612,6 +7580,14 @@
         "line": 574,
         "level": 4,
         "title": "Переопределение встроенных методов"
+      }
+    ],
+    "Переопределение переводов": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 369,
+        "level": 3,
+        "title": "Переопределение переводов"
       }
     ],
     "Переподключение и RESUME": [
@@ -7734,20 +7710,20 @@
         "title": "Повторное использование условий запроса"
       }
     ],
+    "Повторное подключение": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 808,
+        "level": 3,
+        "title": "Повторное подключение"
+      }
+    ],
     "Повторное подключение при обрыве": [
       {
         "document": "platform-guide/qqbot.md",
         "line": 265,
         "level": 3,
         "title": "Повторное подключение при обрыве"
-      }
-    ],
-    "Повторные попытки соединения": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 761,
-        "level": 3,
-        "title": "Повторные попытки соединения"
       }
     ],
     "Под-логгеры": [
@@ -7788,6 +7764,14 @@
         "line": 171,
         "level": 3,
         "title": "Поддерживаемые исходные типы событий"
+      }
+    ],
+    "Поддерживаемые поля i18n": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 164,
+        "level": 3,
+        "title": "Поддерживаемые поля i18n"
       }
     ],
     "Поддерживаемые типы выпусков": [
@@ -7909,7 +7893,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 686,
+        "line": 733,
         "level": 2,
         "title": "Поддержка нескольких аккаунтов"
       }
@@ -8019,7 +8003,7 @@
     "Подробно о методе `t()`": [
       {
         "document": "advanced/i18n.md",
-        "line": 254,
+        "line": 295,
         "level": 4,
         "title": "Подробно о методе `t()`"
       }
@@ -8274,6 +8258,14 @@
         "title": "Пояснение кодов ошибок"
       }
     ],
+    "Пояснение конфигурационных параметров": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 339,
+        "level": 3,
+        "title": "Пояснение конфигурационных параметров"
+      }
+    ],
     "Права групп": [
       {
         "document": "getting-started/common-tasks.md",
@@ -8427,7 +8419,7 @@
     "Пример конвертера": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 551,
+        "line": 598,
         "level": 3,
         "title": "Пример конвертера"
       }
@@ -8744,12 +8736,12 @@
         "title": "Примечания к `__init__`"
       }
     ],
-    "Принцип ближайшего соответствия": [
+    "Принцип наименьшего различия": [
       {
         "document": "advanced/i18n.md",
         "line": 64,
         "level": 3,
-        "title": "Принцип ближайшего соответствия"
+        "title": "Принцип наименьшего различия"
       }
     ],
     "Принцип работы": [
@@ -8936,6 +8928,12 @@
         "line": 55,
         "level": 2,
         "title": "Процесс инициализации"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 471,
+        "level": 3,
+        "title": "Процесс инициализации"
       }
     ],
     "Процесс обработки событий": [
@@ -8969,7 +8967,7 @@
     "Процесс преобразования": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 521,
+        "line": 568,
         "level": 3,
         "title": "Процесс преобразования"
       }
@@ -9015,7 +9013,7 @@
     "Разбор аккаунтов": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 398,
+        "line": 445,
         "level": 4,
         "title": "Разбор аккаунтов"
       }
@@ -9145,7 +9143,7 @@
     "Расширенная информация поля `self`": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 868,
+        "line": 915,
         "level": 3,
         "title": "Расширенная информация поля `self`"
       }
@@ -9283,7 +9281,7 @@
     "Регистрация переводов конфигурации": [
       {
         "document": "advanced/i18n.md",
-        "line": 190,
+        "line": 228,
         "level": 3,
         "title": "Регистрация переводов конфигурации"
       }
@@ -9296,20 +9294,20 @@
         "title": "Регистрация по шагам (Guided Registration)"
       }
     ],
-    "Регистрация пользовательских переводов": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 81,
-        "level": 3,
-        "title": "Регистрация пользовательских переводов"
-      }
-    ],
     "Регистрация пользовательских типов": [
       {
         "document": "advanced/session-types.md",
         "line": 122,
         "level": 2,
         "title": "Регистрация пользовательских типов"
+      }
+    ],
+    "Регистрация пользовательского перевода": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 81,
+        "level": 3,
+        "title": "Регистрация пользовательского перевода"
       }
     ],
     "Регистрация представлений Dashboard": [
@@ -9394,6 +9392,12 @@
       {
         "document": "advanced/http-client.md",
         "line": 444,
+        "level": 2,
+        "title": "Рекомендации"
+      },
+      {
+        "document": "advanced/i18n.md",
+        "line": 357,
         "level": 2,
         "title": "Рекомендации"
       }
@@ -9570,12 +9574,12 @@
         "title": "Ручное переключение в коде"
       }
     ],
-    "Ручное построение ответа (старый способ, по-прежнему совместим)": [
+    "Ручное построение ответа (старый способ также совместим)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 672,
+        "line": 719,
         "level": 3,
-        "title": "Ручное построение ответа (старый способ, по-прежнему совместим)"
+        "title": "Ручное построение ответа (старый способ также совместим)"
       }
     ],
     "Ручное развертывание (pip)": [
@@ -9727,7 +9731,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 920,
+        "line": 967,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -9797,7 +9801,7 @@
     "Связь self.user_id и Using": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 742,
+        "line": 789,
         "level": 3,
         "title": "Связь self.user_id и Using"
       }
@@ -9805,7 +9809,7 @@
     "Связь с CLI i18n": [
       {
         "document": "advanced/i18n.md",
-        "line": 354,
+        "line": 395,
         "level": 2,
         "title": "Связь с CLI i18n"
       }
@@ -10067,7 +10071,7 @@
     "Слушание жизненного цикла бота": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 902,
+        "line": 949,
         "level": 3,
         "title": "Слушание жизненного цикла бота"
       }
@@ -10280,14 +10284,6 @@
         "title": "События HTTP-запросов"
       }
     ],
-    "События OneBot12 (стандарт)": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 155,
-        "level": 4,
-        "title": "События OneBot12 (стандарт)"
-      }
-    ],
     "События WebSocket-соединений": [
       {
         "document": "advanced/http-client.md",
@@ -10366,14 +10362,6 @@
         "line": 567,
         "level": 3,
         "title": "Совместимость со старой конфигурацией"
-      }
-    ],
-    "Соглашения metadata": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 371,
-        "level": 4,
-        "title": "Соглашения metadata"
       }
     ],
     "Соглашения об именовании": [
@@ -10694,17 +10682,19 @@
         "title": "Способы установки"
       }
     ],
+    "Справка по API": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 277,
+        "level": 2,
+        "title": "Справка по API"
+      }
+    ],
     "Справочник API": [
       {
         "document": "README.md",
         "line": 64,
         "level": 3,
-        "title": "Справочник API"
-      },
-      {
-        "document": "advanced/i18n.md",
-        "line": 236,
-        "level": 2,
         "title": "Справочник API"
       }
     ],
@@ -10768,12 +10758,12 @@
         "title": "Стандарт OneBot12"
       }
     ],
-    "Стандарт ответов API": [
+    "Стандарт ответа API": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 652,
+        "line": 699,
         "level": 2,
-        "title": "Стандарт ответов API"
+        "title": "Стандарт ответа API"
       }
     ],
     "Стандарт сегментов сообщений": [
@@ -10817,6 +10807,12 @@
       }
     ],
     "Стандартные события OneBot12": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 155,
+        "level": 4,
+        "title": "Стандартные события OneBot12"
+      },
       {
         "document": "platform-guide/onebot12.md",
         "line": 93,
@@ -11094,14 +11090,6 @@
         "title": "Типы (Type Annotation)"
       }
     ],
-    "Типы meta-событий": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 835,
-        "level": 3,
-        "title": "Типы meta-событий"
-      }
-    ],
     "Типы базовых сообщений": [
       {
         "document": "platform-guide/onebot12.md",
@@ -11200,6 +11188,12 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 240,
+        "level": 3,
+        "title": "Типы событий meta"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 882,
         "level": 3,
         "title": "Типы событий meta"
       }
@@ -11386,6 +11380,12 @@
         "line": 105,
         "level": 2,
         "title": "Управление подключениями"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 639,
+        "level": 2,
+        "title": "Управление подключениями"
       }
     ],
     "Управление правами доступа": [
@@ -11394,14 +11394,6 @@
         "line": 229,
         "level": 2,
         "title": "Управление правами доступа"
-      }
-    ],
-    "Управление соединениями": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 592,
-        "level": 2,
-        "title": "Управление соединениями"
       }
     ],
     "Управление состоянием бота": [
@@ -11413,7 +11405,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 813,
+        "line": 860,
         "level": 2,
         "title": "Управление состоянием бота"
       }
@@ -11493,7 +11485,7 @@
     "Успешный ответ": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 656,
+        "line": 703,
         "level": 3,
         "title": "Успешный ответ"
       }
@@ -11621,7 +11613,7 @@
     "Файл конфигурации аккаунта": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 715,
+        "line": 762,
         "level": 3,
         "title": "Файл конфигурации аккаунта"
       }
@@ -11803,7 +11795,7 @@
     "Цепные методы модификаторов": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 505,
+        "line": 552,
         "level": 3,
         "title": "Цепные методы модификаторов"
       }
@@ -11954,12 +11946,12 @@
         "title": "Чек-лист соответствия стандартам"
       }
     ],
-    "Чтение конфигурации i18n через API конфигурации": [
+    "Чтение конфигурации i18n через API": [
       {
         "document": "advanced/i18n.md",
-        "line": 286,
+        "line": 327,
         "level": 3,
-        "title": "Чтение конфигурации i18n через API конфигурации"
+        "title": "Чтение конфигурации i18n через API"
       }
     ],
     "Что такое адаптер": [
