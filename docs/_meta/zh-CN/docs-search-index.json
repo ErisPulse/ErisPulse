@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1255,
+  "total_keywords": 1256,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1871,7 +1871,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 236,
+        "line": 277,
         "level": 2,
         "title": "API 参考"
       },
@@ -1905,7 +1905,7 @@
     "API 响应标准": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 652,
+        "line": 699,
         "level": 2,
         "title": "API 响应标准"
       }
@@ -1953,7 +1953,7 @@
     "API 错误处理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 785,
+        "line": 832,
         "level": 3,
         "title": "API 错误处理"
       }
@@ -2069,7 +2069,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 879,
+        "line": 926,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -2089,7 +2089,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 813,
+        "line": 860,
         "level": 2,
         "title": "Bot 状态管理"
       }
@@ -2457,7 +2457,7 @@
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
-        "line": 238,
+        "line": 279,
         "level": 3,
         "title": "I18nManager"
       }
@@ -2553,7 +2553,7 @@
     "Meta 事件类型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 835,
+        "line": 882,
         "level": 3,
         "title": "Meta 事件类型"
       }
@@ -2899,7 +2899,7 @@
     "Send 消息发送 DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 447,
+        "line": 494,
         "level": 2,
         "title": "Send 消息发送 DSL"
       }
@@ -3035,7 +3035,7 @@
     "WebHook 连接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 628,
+        "line": 675,
         "level": 3,
         "title": "WebHook 连接"
       }
@@ -3089,7 +3089,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 594,
+        "line": 641,
         "level": 3,
         "title": "WebSocket 连接"
       }
@@ -3119,7 +3119,7 @@
     "WebUI 如何消费": [
       {
         "document": "advanced/i18n.md",
-        "line": 222,
+        "line": 260,
         "level": 3,
         "title": "WebUI 如何消费"
       }
@@ -3335,7 +3335,7 @@
     "`self` 字段扩展信息": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 868,
+        "line": 915,
         "level": 3,
         "title": "`self` 字段扩展信息"
       }
@@ -3343,7 +3343,7 @@
     "`t()` 方法详解": [
       {
         "document": "advanced/i18n.md",
-        "line": 254,
+        "line": 295,
         "level": 4,
         "title": "`t()` 方法详解"
       }
@@ -3647,7 +3647,7 @@
     "self.user_id 与 Using 的关系": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 742,
+        "line": 789,
         "level": 3,
         "title": "self.user_id 与 Using 的关系"
       }
@@ -3837,7 +3837,7 @@
     "与 CLI i18n 的关系": [
       {
         "document": "advanced/i18n.md",
-        "line": 354,
+        "line": 395,
         "level": 2,
         "title": "与 CLI i18n 的关系"
       }
@@ -4215,7 +4215,7 @@
     "事件转换器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 519,
+        "line": 566,
         "level": 2,
         "title": "事件转换器"
       }
@@ -4367,7 +4367,7 @@
     "从 SDK 实例访问": [
       {
         "document": "advanced/i18n.md",
-        "line": 272,
+        "line": 313,
         "level": 3,
         "title": "从 SDK 实例访问"
       }
@@ -4931,7 +4931,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 424,
+        "line": 471,
         "level": 3,
         "title": "初始化过程"
       }
@@ -5023,7 +5023,7 @@
     "动态内容": [
       {
         "document": "advanced/i18n.md",
-        "line": 332,
+        "line": 373,
         "level": 3,
         "title": "动态内容"
       }
@@ -5433,7 +5433,7 @@
     "可用属性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 458,
+        "line": 505,
         "level": 3,
         "title": "可用属性"
       }
@@ -5893,7 +5893,7 @@
     "基本方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 482,
+        "line": 529,
         "level": 3,
         "title": "基本方法"
       },
@@ -6006,18 +6006,18 @@
         "title": "基类"
       }
     ],
-    "声明 i18n 描述": [
+    "声明 i18n 字段": [
       {
         "document": "advanced/i18n.md",
-        "line": 164,
+        "line": 175,
         "level": 3,
-        "title": "声明 i18n 描述"
+        "title": "声明 i18n 字段"
       }
     ],
     "声明式配置（推荐）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 688,
+        "line": 735,
         "level": 3,
         "title": "声明式配置（推荐）"
       },
@@ -6171,7 +6171,7 @@
     "多语言覆盖": [
       {
         "document": "advanced/i18n.md",
-        "line": 328,
+        "line": 369,
         "level": 3,
         "title": "多语言覆盖"
       }
@@ -6199,7 +6199,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 686,
+        "line": 733,
         "level": 2,
         "title": "多账户支持"
       }
@@ -7201,7 +7201,7 @@
     "必需字段": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 531,
+        "line": 578,
         "level": 3,
         "title": "必需字段"
       }
@@ -7357,7 +7357,7 @@
     "成功响应": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 656,
+        "line": 703,
         "level": 3,
         "title": "成功响应"
       }
@@ -7389,7 +7389,7 @@
     "手动构造响应（旧版方式仍然兼容）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 672,
+        "line": 719,
         "level": 3,
         "title": "手动构造响应（旧版方式仍然兼容）"
       }
@@ -7539,7 +7539,7 @@
     "指定账户发送": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 729,
+        "line": 776,
         "level": 3,
         "title": "指定账户发送"
       }
@@ -7644,6 +7644,14 @@
         "line": 327,
         "level": 2,
         "title": "搜索功能"
+      }
+    ],
+    "支持的 i18n 字段": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 164,
+        "level": 3,
+        "title": "支持的 i18n 字段"
       }
     ],
     "支持的原始事件类型": [
@@ -8053,7 +8061,7 @@
     "日志消息": [
       {
         "document": "advanced/i18n.md",
-        "line": 344,
+        "line": 385,
         "level": 3,
         "title": "日志消息"
       }
@@ -8161,7 +8169,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 316,
+        "line": 357,
         "level": 2,
         "title": "最佳实践"
       },
@@ -8531,7 +8539,7 @@
     "核心方法": [
       {
         "document": "advanced/i18n.md",
-        "line": 240,
+        "line": 281,
         "level": 4,
         "title": "核心方法"
       },
@@ -8611,7 +8619,7 @@
     "框架辅助方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 475,
+        "line": 522,
         "level": 3,
         "title": "框架辅助方法"
       }
@@ -8911,7 +8919,7 @@
     "注册配置翻译": [
       {
         "document": "advanced/i18n.md",
-        "line": 190,
+        "line": 228,
         "level": 3,
         "title": "注册配置翻译"
       }
@@ -9611,7 +9619,7 @@
     "监听 Bot 生命周期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 902,
+        "line": 949,
         "level": 3,
         "title": "监听 Bot 生命周期"
       }
@@ -9781,7 +9789,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 920,
+        "line": 967,
         "level": 2,
         "title": "相关文档"
       },
@@ -10101,7 +10109,7 @@
     "继承关系": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 449,
+        "line": 496,
         "level": 3,
         "title": "继承关系"
       }
@@ -10189,7 +10197,7 @@
     "翻译键命名": [
       {
         "document": "advanced/i18n.md",
-        "line": 318,
+        "line": 359,
         "level": 3,
         "title": "翻译键命名"
       }
@@ -10197,7 +10205,7 @@
     "自动发现机制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 817,
+        "line": 864,
         "level": 3,
         "title": "自动发现机制"
       }
@@ -10551,7 +10559,7 @@
     "账户解析": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 398,
+        "line": 445,
         "level": 4,
         "title": "账户解析"
       }
@@ -10583,7 +10591,7 @@
     "账户配置文件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 715,
+        "line": 762,
         "level": 3,
         "title": "账户配置文件"
       }
@@ -10709,7 +10717,7 @@
     "转换器示例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 551,
+        "line": 598,
         "level": 3,
         "title": "转换器示例"
       }
@@ -10717,7 +10725,7 @@
     "转换流程": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 521,
+        "line": 568,
         "level": 3,
         "title": "转换流程"
       }
@@ -10741,7 +10749,7 @@
     "运行时配置": [
       {
         "document": "advanced/i18n.md",
-        "line": 284,
+        "line": 325,
         "level": 2,
         "title": "运行时配置"
       }
@@ -10853,7 +10861,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 592,
+        "line": 639,
         "level": 2,
         "title": "连接管理"
       }
@@ -10861,7 +10869,7 @@
     "连接重试": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 761,
+        "line": 808,
         "level": 3,
         "title": "连接重试"
       }
@@ -10921,7 +10929,7 @@
     "适配器发送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 843,
+        "line": 890,
         "level": 3,
         "title": "适配器发送 Meta 事件"
       }
@@ -11195,7 +11203,7 @@
     "通过配置 API 读取 i18n 配置": [
       {
         "document": "advanced/i18n.md",
-        "line": 286,
+        "line": 327,
         "level": 3,
         "title": "通过配置 API 读取 i18n 配置"
       }
@@ -11353,7 +11361,7 @@
     "配置热更新": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 411,
+        "line": 458,
         "level": 4,
         "title": "配置热更新"
       }
@@ -11485,7 +11493,7 @@
     "配置项说明": [
       {
         "document": "advanced/i18n.md",
-        "line": 298,
+        "line": 339,
         "level": 3,
         "title": "配置项说明"
       }
@@ -11531,7 +11539,7 @@
     "链式修饰方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 505,
+        "line": 552,
         "level": 3,
         "title": "链式修饰方法"
       },
@@ -11689,7 +11697,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 759,
+        "line": 806,
         "level": 2,
         "title": "错误处理"
       },

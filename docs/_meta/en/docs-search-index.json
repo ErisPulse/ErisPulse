@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1289,
+  "total_keywords": 1293,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -1881,7 +1881,7 @@
     "API Error Handling": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 785,
+        "line": 832,
         "level": 3,
         "title": "API Error Handling"
       }
@@ -1921,7 +1921,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 236,
+        "line": 277,
         "level": 2,
         "title": "API Reference"
       },
@@ -1954,16 +1954,18 @@
     ],
     "API Response Standard": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 652,
-        "level": 2,
-        "title": "API Response Standard"
-      },
-      {
         "document": "platform-guide/onebot12.md",
         "line": 306,
         "level": 2,
         "title": "API Response Standard"
+      }
+    ],
+    "API Response Standards": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 699,
+        "level": 2,
+        "title": "API Response Standards"
       }
     ],
     "API Standard": [
@@ -1990,12 +1992,12 @@
         "title": "Accessing Core Modules"
       }
     ],
-    "Accessing via SDK Instance": [
+    "Accessing from SDK Instance": [
       {
         "document": "advanced/i18n.md",
-        "line": 272,
+        "line": 313,
         "level": 3,
-        "title": "Accessing via SDK Instance"
+        "title": "Accessing from SDK Instance"
       }
     ],
     "Account Configuration": [
@@ -2017,7 +2019,7 @@
     "Account Configuration File": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 715,
+        "line": 762,
         "level": 3,
         "title": "Account Configuration File"
       }
@@ -2055,7 +2057,7 @@
     "Account Resolution": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 398,
+        "line": 445,
         "level": 4,
         "title": "Account Resolution"
       }
@@ -2209,7 +2211,7 @@
     "Adapter Sending Meta Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 843,
+        "line": 890,
         "level": 3,
         "title": "Adapter Sending Meta Events"
       }
@@ -2450,12 +2452,6 @@
         "line": 249,
         "level": 3,
         "title": "Attribute Access"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 249,
-        "level": 4,
-        "title": "Attribute Access"
       }
     ],
     "Authentication and API Calls": [
@@ -2474,12 +2470,12 @@
         "title": "Auto Documentation"
       }
     ],
-    "Auto-Discovery Mechanism": [
+    "Automatic Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 817,
+        "line": 864,
         "level": 3,
-        "title": "Auto-Discovery Mechanism"
+        "title": "Automatic Discovery Mechanism"
       }
     ],
     "Automatic Discovery of Normal Events": [
@@ -2498,12 +2494,12 @@
         "title": "Automatic Inference"
       }
     ],
-    "Available Properties": [
+    "Available Attributes": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 458,
+        "line": 505,
         "level": 3,
-        "title": "Available Properties"
+        "title": "Available Attributes"
       }
     ],
     "Backup": [
@@ -2657,7 +2653,7 @@
     "Basic Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 482,
+        "line": 529,
         "level": 3,
         "title": "Basic Methods"
       },
@@ -2819,7 +2815,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 316,
+        "line": 357,
         "level": 2,
         "title": "Best Practices"
       },
@@ -2895,7 +2891,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 813,
+        "line": 860,
         "level": 2,
         "title": "Bot Status Management"
       }
@@ -2923,7 +2919,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 879,
+        "line": 926,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -3153,7 +3149,7 @@
     "Chained Modifier Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 505,
+        "line": 552,
         "level": 3,
         "title": "Chained Modifier Methods"
       }
@@ -3696,14 +3692,6 @@
         "title": "Config (Configuration)"
       }
     ],
-    "Config Hot Reload": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 411,
-        "level": 4,
-        "title": "Config Hot Reload"
-      }
-    ],
     "Config Module": [
       {
         "document": "api-reference/core-modules.md",
@@ -3804,14 +3792,6 @@
         "title": "Configuration Field Description"
       }
     ],
-    "Configuration Field Descriptions": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 298,
-        "level": 3,
-        "title": "Configuration Field Descriptions"
-      }
-    ],
     "Configuration File": [
       {
         "document": "quick-start.md",
@@ -3836,6 +3816,14 @@
         "title": "Configuration File Location"
       }
     ],
+    "Configuration Hot Update": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 458,
+        "level": 4,
+        "title": "Configuration Hot Update"
+      }
+    ],
     "Configuration Instructions": [
       {
         "document": "platform-guide/kook.md",
@@ -3854,6 +3842,14 @@
         "line": 21,
         "level": 2,
         "title": "Configuration Instructions"
+      }
+    ],
+    "Configuration Item Description": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 339,
+        "level": 3,
+        "title": "Configuration Item Description"
       }
     ],
     "Configuration Management": [
@@ -3949,7 +3945,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 592,
+        "line": 639,
         "level": 2,
         "title": "Connection Management"
       }
@@ -3965,7 +3961,7 @@
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 761,
+        "line": 808,
         "level": 3,
         "title": "Connection Retry"
       }
@@ -4034,12 +4030,12 @@
         "title": "Conversation Multi-turn Dialogue"
       }
     ],
-    "Conversion Process": [
+    "Conversion Flow": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 521,
+        "line": 568,
         "level": 3,
-        "title": "Conversion Process"
+        "title": "Conversion Flow"
       }
     ],
     "Convert tuples to dictionaries": [
@@ -4053,7 +4049,7 @@
     "Converter Example": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 551,
+        "line": 598,
         "level": 3,
         "title": "Converter Example"
       }
@@ -4162,12 +4158,6 @@
     ],
     "Core Features": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 50,
-        "level": 3,
-        "title": "Core Features"
-      },
-      {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 5,
         "level": 2,
@@ -4182,6 +4172,14 @@
         "title": "Core Field Methods"
       }
     ],
+    "Core Functions": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 50,
+        "level": 3,
+        "title": "Core Functions"
+      }
+    ],
     "Core Initialization": [
       {
         "document": "advanced/lifecycle.md",
@@ -4193,7 +4191,7 @@
     "Core Methods": [
       {
         "document": "advanced/i18n.md",
-        "line": 240,
+        "line": 281,
         "level": 4,
         "title": "Core Methods"
       },
@@ -4401,7 +4399,7 @@
     "Declarative Configuration (Recommended)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 688,
+        "line": 735,
         "level": 3,
         "title": "Declarative Configuration (Recommended)"
       },
@@ -4412,12 +4410,12 @@
         "title": "Declarative Configuration (Recommended)"
       }
     ],
-    "Declaring i18n Descriptions": [
+    "Declaring i18n Fields": [
       {
         "document": "advanced/i18n.md",
-        "line": 164,
+        "line": 175,
         "level": 3,
-        "title": "Declaring i18n Descriptions"
+        "title": "Declaring i18n Fields"
       }
     ],
     "Decorator Routes (Recommended)": [
@@ -4797,7 +4795,7 @@
     "Dynamic Content": [
       {
         "document": "advanced/i18n.md",
-        "line": 332,
+        "line": 373,
         "level": 3,
         "title": "Dynamic Content"
       }
@@ -4925,7 +4923,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 759,
+        "line": 806,
         "level": 2,
         "title": "Error Handling"
       },
@@ -5003,7 +5001,7 @@
     "Event Converter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 519,
+        "line": 566,
         "level": 2,
         "title": "Event Converter"
       }
@@ -5024,12 +5022,12 @@
         "title": "Event Data Access"
       }
     ],
-    "Event Dispatching Mechanism": [
+    "Event Distribution Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 190,
         "level": 4,
-        "title": "Event Dispatching Mechanism"
+        "title": "Event Distribution Mechanism"
       }
     ],
     "Event Examples": [
@@ -5555,7 +5553,7 @@
     "Framework Helper Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 475,
+        "line": 522,
         "level": 3,
         "title": "Framework Helper Methods"
       }
@@ -6073,7 +6071,7 @@
     "How WebUI Consumes It": [
       {
         "document": "advanced/i18n.md",
-        "line": 222,
+        "line": 260,
         "level": 3,
         "title": "How WebUI Consumes It"
       }
@@ -6113,7 +6111,7 @@
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
-        "line": 238,
+        "line": 279,
         "level": 3,
         "title": "I18nManager"
       }
@@ -6209,7 +6207,7 @@
     "Inheritance Relationship": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 449,
+        "line": 496,
         "level": 3,
         "title": "Inheritance Relationship"
       }
@@ -6229,7 +6227,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 424,
+        "line": 471,
         "level": 3,
         "title": "Initialization Process"
       }
@@ -6656,20 +6654,20 @@
         "title": "List Supported Send Methods"
       }
     ],
-    "Listen to Bot Lifecycle": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 902,
-        "level": 3,
-        "title": "Listen to Bot Lifecycle"
-      }
-    ],
     "Listening to @ mentions": [
       {
         "document": "getting-started/event-handling.md",
         "line": 56,
         "level": 3,
         "title": "Listening to @ mentions"
+      }
+    ],
+    "Listening to Bot Lifecycle": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 949,
+        "level": 3,
+        "title": "Listening to Bot Lifecycle"
       }
     ],
     "Listening to Lifecycle Events": [
@@ -6785,7 +6783,7 @@
     "Log Messages": [
       {
         "document": "advanced/i18n.md",
-        "line": 344,
+        "line": 385,
         "level": 3,
         "title": "Log Messages"
       }
@@ -6937,17 +6935,17 @@
     "Manual Response Construction (Old method still compatible)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 672,
+        "line": 719,
         "level": 3,
         "title": "Manual Response Construction (Old method still compatible)"
       }
     ],
-    "Manual Switching in Code": [
+    "Manually Switch in Code": [
       {
         "document": "advanced/i18n.md",
         "line": 39,
         "level": 3,
-        "title": "Manual Switching in Code"
+        "title": "Manually Switch in Code"
       }
     ],
     "Material Documentation": [
@@ -7343,7 +7341,7 @@
     "Meta Event Types": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 835,
+        "line": 882,
         "level": 3,
         "title": "Meta Event Types"
       }
@@ -7703,7 +7701,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 686,
+        "line": 733,
         "level": 2,
         "title": "Multi-Account Support"
       }
@@ -7748,6 +7746,22 @@
         "title": "Multi-instance Deployment"
       }
     ],
+    "Multi-language Configuration Fields": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 160,
+        "level": 2,
+        "title": "Multi-language Configuration Fields"
+      }
+    ],
+    "Multi-language Coverage": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 369,
+        "level": 3,
+        "title": "Multi-language Coverage"
+      }
+    ],
     "Multi-platform Adaptation": [
       {
         "document": "getting-started/common-tasks.md",
@@ -7764,22 +7778,6 @@
         "title": "Multi-round Conversation"
       }
     ],
-    "Multilingual Configuration Fields": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 160,
-        "level": 2,
-        "title": "Multilingual Configuration Fields"
-      }
-    ],
-    "Multilingual Coverage": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 328,
-        "level": 3,
-        "title": "Multilingual Coverage"
-      }
-    ],
     "Must the package name start with `ErisPulse-`?": [
       {
         "document": "developer-guide/publishing.md",
@@ -7794,14 +7792,6 @@
         "line": 145,
         "level": 2,
         "title": "Naming Conventions"
-      }
-    ],
-    "Native Platform Events": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 176,
-        "level": 4,
-        "title": "Native Platform Events"
       }
     ],
     "Network Client": [
@@ -8406,6 +8396,14 @@
         "title": "Platform Method Isolation"
       }
     ],
+    "Platform Native Events": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 176,
+        "level": 4,
+        "title": "Platform Native Events"
+      }
+    ],
     "Platform Related Terms": [
       {
         "document": "terminology.md",
@@ -8530,6 +8528,14 @@
         "line": 48,
         "level": 3,
         "title": "Project Templates"
+      }
+    ],
+    "Property Access": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 249,
+        "level": 4,
+        "title": "Property Access"
       }
     ],
     "Protocol Methods": [
@@ -8848,12 +8854,12 @@
         "title": "Raw Messages and Message Building"
       }
     ],
-    "Reading i18n Config via Config API": [
+    "Reading i18n Configuration via Config API": [
       {
         "document": "advanced/i18n.md",
-        "line": 286,
+        "line": 327,
         "level": 3,
-        "title": "Reading i18n Config via Config API"
+        "title": "Reading i18n Configuration via Config API"
       }
     ],
     "Receive Type": [
@@ -8904,6 +8910,14 @@
         "title": "Register Cross-Platform Methods"
       }
     ],
+    "Register Custom Translations": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 81,
+        "level": 3,
+        "title": "Register Custom Translations"
+      }
+    ],
     "Register Middleware": [
       {
         "document": "api-reference/adapter-system.md",
@@ -8923,17 +8937,9 @@
     "Registering Configuration Translations": [
       {
         "document": "advanced/i18n.md",
-        "line": 190,
+        "line": 228,
         "level": 3,
         "title": "Registering Configuration Translations"
-      }
-    ],
-    "Registering Custom Translations": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 81,
-        "level": 3,
-        "title": "Registering Custom Translations"
       }
     ],
     "Registering Event Handlers": [
@@ -9054,12 +9060,6 @@
         "title": "Related Documentation"
       },
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 920,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 281,
         "level": 2,
@@ -9108,6 +9108,12 @@
         "line": 376,
         "level": 2,
         "title": "Related Documents"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 967,
+        "level": 2,
+        "title": "Related Documents"
       }
     ],
     "Related Links": [
@@ -9121,7 +9127,7 @@
     "Relationship between self.user_id and Using": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 742,
+        "line": 789,
         "level": 3,
         "title": "Relationship between self.user_id and Using"
       }
@@ -9129,7 +9135,7 @@
     "Relationship with CLI i18n": [
       {
         "document": "advanced/i18n.md",
-        "line": 354,
+        "line": 395,
         "level": 2,
         "title": "Relationship with CLI i18n"
       }
@@ -9325,7 +9331,7 @@
     "Required Fields": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 531,
+        "line": 578,
         "level": 3,
         "title": "Required Fields"
       }
@@ -9561,7 +9567,7 @@
     "Runtime Configuration": [
       {
         "document": "advanced/i18n.md",
-        "line": 284,
+        "line": 325,
         "level": 2,
         "title": "Runtime Configuration"
       }
@@ -9703,7 +9709,7 @@
     "Send Message Sending DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 447,
+        "line": 494,
         "level": 2,
         "title": "Send Message Sending DSL"
       }
@@ -10110,20 +10116,20 @@
         "title": "Specific Event Types"
       }
     ],
-    "Specify Account to Send": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 729,
-        "level": 3,
-        "title": "Specify Account to Send"
-      }
-    ],
     "Specify Sending Account": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 118,
         "level": 3,
         "title": "Specify Sending Account"
+      }
+    ],
+    "Specifying Account for Sending": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 776,
+        "level": 3,
+        "title": "Specifying Account for Sending"
       }
     ],
     "SseEmitter API": [
@@ -10214,20 +10220,20 @@
         "title": "Standardized Response"
       }
     ],
-    "Start Adapter": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 85,
-        "level": 4,
-        "title": "Start Adapter"
-      }
-    ],
     "Start Learning": [
       {
         "document": "getting-started/README.md",
         "line": 38,
         "level": 2,
         "title": "Start Learning"
+      }
+    ],
+    "Startup Adapter": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 85,
+        "level": 4,
+        "title": "Startup Adapter"
       }
     ],
     "Startup and Shutdown": [
@@ -10373,7 +10379,7 @@
     "Success Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 656,
+        "line": 703,
         "level": 3,
         "title": "Success Response"
       }
@@ -10516,6 +10522,14 @@
         "title": "Supported Submission Types"
       }
     ],
+    "Supported i18n Fields": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 164,
+        "level": 3,
+        "title": "Supported i18n Fields"
+      }
+    ],
     "Switch via Configuration File": [
       {
         "document": "advanced/i18n.md",
@@ -10524,12 +10538,12 @@
         "title": "Switch via Configuration File"
       }
     ],
-    "Switch via Environment Variable": [
+    "Switch via Environment Variables": [
       {
         "document": "advanced/i18n.md",
         "line": 17,
         "level": 3,
-        "title": "Switch via Environment Variable"
+        "title": "Switch via Environment Variables"
       }
     ],
     "Sync API Connection": [
@@ -10727,7 +10741,7 @@
     "Translation Key Naming": [
       {
         "document": "advanced/i18n.md",
-        "line": 318,
+        "line": 359,
         "level": 3,
         "title": "Translation Key Naming"
       }
@@ -10832,12 +10846,12 @@
         "title": "Unregister Methods"
       }
     ],
-    "Unregistering Translations": [
+    "Unregister Translations": [
       {
         "document": "advanced/i18n.md",
         "line": 151,
         "level": 3,
-        "title": "Unregistering Translations"
+        "title": "Unregister Translations"
       }
     ],
     "Unregistering Views": [
@@ -11267,7 +11281,7 @@
     "WebHook Connection": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 628,
+        "line": 675,
         "level": 3,
         "title": "WebHook Connection"
       }
@@ -11297,7 +11311,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 594,
+        "line": 641,
         "level": 3,
         "title": "WebSocket Connection"
       },
@@ -11602,18 +11616,18 @@
         "title": "`hasattr` and `dir` Support"
       }
     ],
-    "`self` Field Extended Info": [
+    "`self` Field Extended Information": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 868,
+        "line": 915,
         "level": 3,
-        "title": "`self` Field Extended Info"
+        "title": "`self` Field Extended Information"
       }
     ],
     "`t()` Method Details": [
       {
         "document": "advanced/i18n.md",
-        "line": 254,
+        "line": 295,
         "level": 4,
         "title": "`t()` Method Details"
       }

@@ -5423,19 +5423,66 @@ metadata = {
         "widget": str,        # 控件类型: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # 分组: "basic" | "advanced" | "connection" 等
         "order": int,         # 排序权重（越小越靠前）
-        "options": list,      # select 控件的可选项 [{label, value}]
-        "placeholder": str,   # 输入框占位符
+        "options": list,      # select 控件的可选项 [{label, value}]，label 支持 i18n
+        "placeholder": str | dict,  # 输入框占位符（支持 i18n）
     },
     "extra": dict,            # 额外扩展字段（透传到 schema）
 }
 ```
 
-`description` 支持两种格式：
+所有用户可见的文本字段均支持 i18n，统一采用 `{"i18n": "key", "default": "文本"}` 格式，
+纯字符串则原样透传（向后兼容）。支持的 i18n 字段：
 
-- **普通字符串**（向后兼容）：`"Bot Token"`
-- **i18n 字典**（推荐，支持多语言）：`{"i18n": "my_adapter.token", "default": "Bot Token"}`
+| 字段 | 位置 | 说明 |
+|------|------|------|
+| `description` | field metadata | 字段描述 |
+| `options[].label` | `ui.options` | select 控件选项标签 |
+| `placeholder` | `ui.placeholder` | 输入框占位符 |
+| `group_labels` | `_schema_meta` | 分组显示名（Dashboard 分区标题） |
 
-使用 i18n 字典时，需提前将翻译键注册到 i18n 系统（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
+使用 i18n 时，需提前将翻译键注册到 i18n 系统（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
+
+**description / placeholder / options label** 示例：
+
+```python
+token: str = field(
+    default="",
+    metadata={
+        "description": {"i18n": "my_adapter.token", "default": "Bot Token"},
+        "ui": {
+            "widget": "text",
+            "placeholder": {"i18n": "my_adapter.token.ph", "default": "请输入 Token"},
+        },
+    },
+)
+mode: str = field(
+    default="a",
+    metadata={
+        "description": {"i18n": "my_adapter.mode", "default": "模式"},
+        "ui": {
+            "widget": "select",
+            "options": [
+                {"label": {"i18n": "my_adapter.mode.a", "default": "选项A"}, "value": "a"},
+                {"label": "纯字符串标签", "value": "b"},  # 纯字符串原样透传
+            ],
+        },
+    },
+)
+```
+
+**group_labels** 示例（在配置类定义后声明）：
+
+```python
+MyConfig._schema_meta = {
+    "group_labels": {
+        "basic": {"i18n": "my_adapter.group.basic", "default": "基本设置"},
+        "advanced": {"i18n": "my_adapter.group.advanced", "default": "高级设置"},
+    }
+}
+```
+
+框架的 `resolve_config_schema()` 会根据当前语言自动解析上述所有字段的 i18n 键；
+`get_config_schema()` 则原样透传 i18n 字典，由前端自行解析。
 
 #### 账户解析
 
@@ -13452,14 +13499,22 @@ i18n.unregister_domain("my_module")
 
 ## 配置字段多语言
 
-从 v2.5.2 起，配置 Schema 支持 i18n。适配器/模块的配置字段描述（`description`）可以引用 i18n 键，WebUI 和其他消费者会自动根据当前语言解析为对应文本。
+从 v2.5.2 起，配置 Schema 全面支持 i18n。所有用户可见的文本字段均可引用 i18n 键，WebUI 和其他消费者会自动根据当前语言解析为对应文本。
 
-### 声明 i18n 描述
+### 支持的 i18n 字段
 
-在 `field(metadata=...)` 中，`description` 可以是：
+| 字段 | 位置 | 说明 |
+|------|------|------|
+| `description` | field metadata | 字段描述 |
+| `options[].label` | `ui.options` | select 控件选项标签 |
+| `placeholder` | `ui.placeholder` | 输入框占位符 |
+| `group_labels` | `_schema_meta` | 分组显示名（Dashboard 分区标题） |
 
-- **普通字符串**（向后兼容）：`"平台 Token"`
-- **i18n 字典**（推荐）：`{"i18n": "my_adapter.token", "default": "平台 Token"}`
+统一采用 `{"i18n": "key", "default": "文本"}` 格式，纯字符串则原样透传（向后兼容）。
+
+### 声明 i18n 字段
+
+所有用户可见文本字段都支持 i18n：
 
 ```python
 from dataclasses import dataclass, field
@@ -13467,15 +13522,45 @@ from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
+    # description i18n
     token: str = field(
         default="",
         metadata={
             "description": {"i18n": "my_adapter.token", "default": "平台 Token"},
             "required": True,
             "secret": True,
-            "ui": {"widget": "password", "group": "basic", "order": 1},
+            "ui": {
+                "widget": "password",
+                "group": "basic",
+                "order": 1,
+                # placeholder i18n
+                "placeholder": {"i18n": "my_adapter.token.ph", "default": "请输入 Token"},
+            },
         },
     )
+    # options label i18n
+    mode: str = field(
+        default="a",
+        metadata={
+            "description": {"i18n": "my_adapter.mode", "default": "运行模式"},
+            "ui": {
+                "widget": "select",
+                "group": "basic",
+                "order": 2,
+                "options": [
+                    {"label": {"i18n": "my_adapter.mode.a", "default": "模式A"}, "value": "a"},
+                    {"label": {"i18n": "my_adapter.mode.b", "default": "模式B"}, "value": "b"},
+                ],
+            },
+        },
+    )
+
+    # group_labels i18n（分组显示名）
+    _schema_meta = {
+        "group_labels": {
+            "basic": {"i18n": "my_adapter.group.basic", "default": "基本设置"},
+        }
+    }
 ```
 
 `default` 是兜底文本——当翻译未注册或查找失败时显示。
@@ -13514,16 +13599,19 @@ register_config_i18n(MyAdapterConfig, "en", {
 
 ### WebUI 如何消费
 
-`get_config_schema()` 返回的 schema 中，`description` 字段会原样透传 i18n 字典。WebUI 前端可以根据当前语言调用 `i18n.t()` 解析。
+`get_config_schema()` 返回的 schema 中，i18n 字典会原样透传。WebUI 前端可以根据当前语言调用 `i18n.t()` 解析。
 
-如果需要服务端直接解析为字符串（如返回给不支持 i18n 的前端），使用 `resolve_config_schema()`：
+如果需要服务端直接解析为字符串（如返回给不支持 i18n 的前端），使用 `resolve_config_schema()`，它会将 `description`、`options[].label`、`placeholder`、`group_labels` 全部解析为当前语言的文本：
 
 ```python
 from ErisPulse.runtime.config_schema import resolve_config_schema
 
-# description 已解析为当前语言的字符串
+# 所有 i18n 字段已解析为当前语言的字符串
 schema = resolve_config_schema(MyAdapterConfig)
-print(schema["fields"]["token"]["description"])  # "平台 Token" 或 "Platform Token"
+print(schema["fields"]["token"]["description"])    # "平台 Token" 或 "Platform Token"
+print(schema["fields"]["token"]["placeholder"])   # "请输入 Token" 或 "Enter Token"
+print(schema["fields"]["mode"]["options"][0]["label"])  # "模式A" 或 "Mode A"
+print(schema["group_labels"]["basic"])             # "基本设置" 或 "Basic"
 ```
 
 ## API 参考
