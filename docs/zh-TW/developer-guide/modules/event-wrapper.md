@@ -4,12 +4,12 @@ Event 模塊提供了功能強大的 Event 包裝類，簡化事件處理。
 
 ## 核心特性
 
-- **完全相容字典**：Event 繼承自 dict
+- **完全兼容字典**：Event 繼承自 dict
 - **便捷方法**：提供大量便捷方法
-- **點式存取**：支援使用點號存取事件欄位
-- **向後相容**：所有方法都是可選的
+- **點式訪問**：支持使用點號訪問事件字段
+- **向後兼容**：所有方法都是可選的
 
-## 核心欄位方法
+## 核心字段方法
 
 ```python
 from ErisPulse.Core.Event import command
@@ -95,11 +95,11 @@ async def friend_add_handler(event):
 - `get_detail_type()` - 獲取事件詳細類型（private/group/friend等）
 - `get_platform()` - 獲取平台名稱
 
-#### 机器人資訊
-- `get_self_platform()` - 獲取机器人平台名稱
-- `get_self_user_id()` - 獲取机器人使用者ID
-- `get_self_account_id()` - 獲取机器人帳戶ID（多Bot模式）
-- `get_self_info()` - 獲取机器人完整資訊字典
+#### 機器人資訊
+- `get_self_platform()` - 獲取機器人平台名稱
+- `get_self_user_id()` - 獲取機器人用戶ID
+- `get_self_account_id()` - 獲取機器人帳號ID（多Bot模式）
+- `get_self_info()` - 獲取機器人完整資訊字典
 
 #### 會話標識
 - `get_target_id()` - 獲取統一目標 ID（群聊返回 `group_id`，頻道返回 `channel_id`，私聊返回 `user_id`，按 group → channel → guild → thread → user 顺序取首个非空值）
@@ -108,13 +108,13 @@ async def friend_add_handler(event):
 ### 消息事件方法
 
 #### 消息內容
-- `get_message()` - 獲取消息段陣列（OneBot12格式）
-- `get_alt_message()` - 獲取消息備用文字
-- `get_text()` - 獲取純文字內容（`get_alt_message()` 的別名）
-- `get_message_text()` - 獲取純文字內容（`get_alt_message()` 的別名）
+- `get_message()` - 獲取消息段數組（OneBot12格式）
+- `get_alt_message()` - 獲取消息備用文本
+- `get_text()` - 獲取純文本內容（`get_alt_message()` 的別名）
+- `get_message_text()` - 獲取純文本內容（`get_alt_message()` 的別名）
 
 #### 發送者資訊
-- `get_user_id()` - 獲取發送者使用者ID
+- `get_user_id()` - 獲取發送者用戶ID
 - `get_user_nickname()` - 獲取發送者暱稱
 - `get_sender()` - 獲取發送者完整資訊字典
 
@@ -125,8 +125,8 @@ async def friend_add_handler(event):
 - `get_thread_id()` - 獲取話題/子頻道ID（話題消息）
 
 #### @消息相關
-- `has_mention()` - 是否包含@机器人
-- `get_mentions()` - 獲取所有被@的使用者ID列表
+- `has_mention()` - 是否包含@機器人
+- `get_mentions()` - 獲取所有被@的用戶ID列表
 
 ### 消息類型判斷
 
@@ -144,8 +144,8 @@ async def friend_add_handler(event):
 
 #### 通知類型判斷
 - `is_notice()` - 是否為通知事件
-- `is_group_member_increase()` - 群組成員增加事件
-- `is_group_member_decrease()` - 群組成員減少事件
+- `is_group_member_increase()` - 群成員增加事件
+- `is_group_member_decrease()` - 群成員減少事件
 - `is_friend_add()` - 好友添加事件（匹配 `detail_type == "friend_increase"`）
 - `is_friend_delete()` - 好友刪除事件（匹配 `detail_type == "friend_decrease"`）
 
@@ -163,21 +163,21 @@ async def friend_add_handler(event):
 
 #### 基礎回覆
 - `reply(content, method="Text", at_sender=False, reply_to_message=False, at_users=None, reply_to=None, at_all=False, **kwargs)` - 通用回覆方法
-  - `content`: 發送內容（文字、URL等）
+  - `content`: 發送內容（文本、URL等）
   - `method`: 發送方法，預設 "Text"，可選 "Image"/"Voice"/"Video"/"File" 等
   - `at_sender`: 是否@發送者（自動提取 user_id）
   - `quote`: 是否引用回覆當前消息（自動提取 message_id）
-  - `at_users`: @使用者列表，如 `["user1", "user2"]`
+  - `at_users`: @用戶列表，如 `["user1", "user2"]`
   - `reply_to`: 手動指定回覆的消息 ID
   - `at_all`: 是否@全體成員
-  - `**kwargs`: 額外參數（如 Mention 方法的 user_id）
+  - `**kwargs`: 預留參數（如 Mention 方法的 user_id）
 
 - `reply_ob12(message)` - 使用 OneBot12 消息段回覆
   - `message`: OneBot12 消息段列表或字典，可配合 MessageBuilder 構建
 
 #### 平台能力查詢
-- `supports(method)` - 檢查當前平台是否支援某發送方法（如 `"Image"`、`"Voice"`），回傳 `bool`
-- `available_methods()` - 列出當前平台所有可用發送方法，回傳方法名列表
+- `supports(method)` - 檢查當前平台是否支援某發送方法（如 `"Image"`、`"Voice"`），返回 `bool`
+- `available_methods()` - 列出當前平台所有可用發送方法，返回方法名列表
 
 #### 轉發功能
 
@@ -192,37 +192,42 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ### 等待回覆功能
 
-- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - 等待使用者回覆
-  - `prompt`: 提示訊息，如果提供會發送給使用者
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - 等待用戶回覆
+  - `prompt`: 提示消息，如果提供會發送給用戶
   - `timeout`: 等待超時時間（秒），預設60秒
   - `callback`: 回調函數，當收到回覆時執行
   - `validator`: 驗證函數，用於驗證回覆是否有效
-  - `method`: 發送提示訊息的方法，預設 "Text"
-  - 回傳使用者回覆的 Event 對象，超時回傳 None
+  - `method`: 發送提示消息的方法，預設 "Text"
+  - 返回用戶回覆的 Event 對象，超時返回 None
 
 #### 互動方法
 
-- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text")` - 確認對話
-  - 回傳 `True`（確認）/ `False`（否認）/ `None`（超時）
+- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - 確認對話
+  - 返回 `True`（確認）/ `False`（否認）/ `None`（超時）
   - 內建中英文確認詞自動識別，可自訂詞集
   - `method`: 發送方法，預設 "Text"；支援 "Image"/"Markdown" 等非文字方式發送提示
+  - `hint`: 是否在提示末尾自動追加確認詞提示（如 "（是/否）"），預設 False
 
-- `choose(prompt, options, timeout=60.0, method="Text")` - 選擇選單
-  - `options`: 選項文字列表
-  - 回傳選項索引（0-based），超時回傳 `None`
-  - `method`: 發送方法；文字類方法 (Text/Markdown/Html) 將選項拼接到 prompt 一條訊息發送；富媒體方法先發富媒體內容再發 Text 選項列表
+- `choose(prompt, options, timeout=60.0, method="Text", options_format="list", merge_prompt=False)` - 選擇菜單
+  - `options`: 選項文本列表
+  - 返回選項索引（0-based），超時返回 `None`
+  - `method`: 發送方法；文字類方法 (Text/Markdown/Html) 將選項拼接到 prompt 一條消息發送；富媒體方法先發富媒體內容再發 Text 選項列表
+  - `options_format`: 選項格式，支援 `"list"`（預設，每行一個）、`"inline"`（單行 `1.A | 2.B`）或自訂函數 `(list[str]) -> str`
+  - `merge_prompt`: 非文字方法時是否強制合併為一條 Text 消息，預設 False
 
 - `collect(fields, timeout_per_field=60.0)` - 表單收集
-  - `fields`: 欄位列表，每項包含 `key`、`prompt`、可選 `validator`、可選 `method`
-  - 回傳 `{key: value}` 字典，任一欄位超時回傳 `None`
+  - `fields`: 字段列表，每項包含 `key`、`prompt`、可選 `validator`、可選 `method`
+  - 返回 `{key: value}` 字典，任一字段超時返回 `None`
   - 每個 field 支援 `method` 鍵指定發送方法，例如收集圖片時用 `{"key": "avatar", "prompt": "請發送頭像", "method": "Image"}`
+  - 每個 field 可選 `options` 鍵（列表），提供時該字段變為選擇題（自動調用 choose 逻辑）
+  - 每個 field 可選 `options_format` 和 `merge_prompt` 鍵，控制選項格式和消息合併行為`
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - 等待任意事件
-  - `condition`: 過濾函數，回傳 `True` 時匹配
-  - 回傳匹配的 Event 對象，超時回傳 `None`
+  - `condition`: 過濾函數，返回 `True` 時匹配
+  - 返回匹配的 Event 對象，超時返回 `None`
 
-- `conversation(timeout=60.0)` - 建立多輪對話上下文
-  - 回傳 `Conversation` 對象，支援 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
+- `conversation(timeout=60.0)` - 創建多輪對話上下文
+  - 返回 `Conversation` 對象，支援 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
   - `is_active` 屬性表示對話是否活躍
 
 #### 互動方法示例
@@ -230,16 +235,25 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 **confirm() - 確認對話：**
 
 ```python
-@command("delete", help="刪除資料")
+@command("delete", help="刪除數據")
 async def delete_handler(event):
-    if await event.confirm("確定要刪除所有資料嗎？"):
+    if await event.confirm("確定要刪除所有數據嗎？"):
         sdk.storage.delete("all_data")
-        await event.reply("資料已刪除")
+        await event.reply("數據已刪除")
     else:
         await event.reply("已取消")
 ```
 
-**choose() - 選擇選單：**
+**confirm() - 帶提示詞：**
+
+```python
+# hint=True 會在提示末尾追加 "（是/否）"
+if await event.confirm("確定繼續？", hint=True):
+    await event.reply("已繼續")
+# 用戶看到：確定繼續？（是/否）
+```
+
+**choose() - 選擇菜單：**
 
 ```python
 @command("color", help="選擇顏色")
@@ -248,6 +262,23 @@ async def color_handler(event):
     if choice is not None:
         colors = ["紅色", "綠色", "藍色"]
         await event.reply(f"你選擇了：{colors[choice]}")
+```
+
+**choose() - 選項格式化與消息合併：**
+
+```python
+# inline 格式：選項顯示在同一行
+choice = await event.choose("請選擇：", ["A", "B", "C"], options_format="inline")
+# 輸出：1.A | 2.B | 3.C
+
+# 自訂格式
+choice = await event.choose("請選擇：", ["貓", "狗"],
+    options_format=lambda opts: " / ".join(opts))
+# 輸出：貓 / 狗
+
+# 非文字方法 + 合併選項到文字
+choice = await event.choose("看圖選擇：", ["貓", "狗"],
+    method="Image", merge_prompt=True)
 ```
 
 **collect() - 表單收集：**
@@ -293,19 +324,19 @@ await event.reply_ob12(segments)
 
 ### 平台擴展方法
 
-適配器可以為 Event 包裝類註冊平台專有方法。方法僅在對應平台的 Event 實例上可用，其他平台存取時拋出 `AttributeError`。
+適配器可以為 Event 包裝類註冊平台專有方法。方法僅在對應平台的 Event 實例上可用，其他平台訪問時拋出 `AttributeError`。
 
-平台方法透過 `Event.__getattribute__` 優先於內建方法生效，因此可以覆寫 `confirm`、`choose`、`collect`、`wait_reply` 等內建互動方法，提供平台特色實作（如按鈕、卡片等）。內建實作為 `_builtin_*` 函數導出供覆寫方調用。
+平台方法透過 `Event.__getattribute__` 優先於內建方法生效，因此可以覆寫 `confirm`、`choose`、`collect`、`wait_reply` 等內建互動方法，提供平台特色實現（如按鈕、卡片等）。內建實現作為 `_builtin_*` 函數導出供覆寫方調用。
 
 ```python
 # 郵件事件 - 只有郵件方法
 event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
-event.get_subject()      # ✅ 回傳 "Hello"
+event.get_subject()      # ✅ 返回 "Hello"
 event.get_chat_type()    # ❌ AttributeError
 
 # Telegram 事件 - 只有 Telegram 方法
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
-event.get_chat_type()    # ✅ 回傳 "private"
+event.get_chat_type()    # ✅ 返回 "private"
 event.get_subject()      # ❌ AttributeError
 
 # 內建方法始終可用
@@ -325,30 +356,30 @@ methods = get_platform_event_methods("email")
 ### `hasattr` 和 `dir` 支援
 
 ```python
-hasattr(event, "get_subject")   # 僅當 platform="email" 時回傳 True
+hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
 "get_subject" in dir(event)     # 同上
 ```
 
 ### 跨平台擴展（通配符）
 
-`register_event_method` 和 `register_event_mixin` 支援傳 `"*"` 作為平台名，註冊的方法在**所有平台**的 Event 實例上都可用。適合 AI 對話、上下文管理等需要跨平台重用的功能。
+`register_event_method` 和 `register_event_mixin` 支援傳 `"*"` 作為平台名，註冊的方法在**所有平台**的 Event 實例上都可用。適合 AI 對話、上下文管理等需要跨平台複用的功能。
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    # self 為 Event 實例，可存取事件資料和內建方法
+    # self 為 Event 實例，可訪問事件資料和內建方法
     await self.reply(f"AI: {prompt}")
 ```
 
 註冊後，任何平台的事件處理器都能調用 `event.ai_chat(...)`。
 
-方法解析優先級（由高到低）：平台特定方法 → 通配符方法 → 內建方法 → 字典鍵存取。
+方法解析優先級（從高到低）：平台特定方法 → 通配符方法 → 內建方法 → 字典鍵訪問。
 
 > 適配器開發者註冊擴展方法的方式請參閱 [事件系統 API - 跨平台擴展通配符](../../api-reference/event-system.md#跨平台擴展通配符)。
 
 ## 相關文件
 
-- [模組開發入門](getting-started.md) - 建立第一個模組
+- [模組開發入門](getting-started.md) - 創建第一個模組
 - [最佳實踐](best-practices.md) - 開發高品質模組

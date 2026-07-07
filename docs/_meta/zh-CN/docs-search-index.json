@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1254,
+  "total_keywords": 1255,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3292,6 +3292,14 @@
         "title": "[BUG-019] SQL 查询构建器拒绝合法通配符和列表达式"
       }
     ],
+    "[BUG-020] _resolve_account() 账户解析回归（_accounts_data 未填充）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 340,
+        "level": 3,
+        "title": "[BUG-020] _resolve_account() 账户解析回归（_accounts_data 未填充）"
+      }
+    ],
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -3319,7 +3327,7 @@
     "`hasattr` 和 `dir` 支持": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 325,
+        "line": 356,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支持"
       }
@@ -4343,7 +4351,7 @@
     "交互方法示例": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 228,
+        "line": 233,
         "level": 4,
         "title": "交互方法示例"
       }
@@ -5087,7 +5095,7 @@
     "原始数据": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 289,
+        "line": 320,
         "level": 3,
         "title": "原始数据"
       }
@@ -5509,7 +5517,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 280,
+        "line": 311,
         "level": 3,
         "title": "命令信息"
       }
@@ -5541,7 +5549,7 @@
     "命令基础": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 282,
+        "line": 313,
         "level": 4,
         "title": "命令基础"
       }
@@ -6847,7 +6855,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 294,
+        "line": 325,
         "level": 3,
         "title": "平台扩展方法"
       },
@@ -8301,7 +8309,7 @@
     "查询已注册方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 316,
+        "line": 347,
         "level": 3,
         "title": "查询已注册方法"
       }
@@ -9797,7 +9805,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 351,
+        "line": 382,
         "level": 2,
         "title": "相关文档"
       },
@@ -10621,7 +10629,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 332,
+        "line": 363,
         "level": 3,
         "title": "跨平台扩展（通配符）"
       }

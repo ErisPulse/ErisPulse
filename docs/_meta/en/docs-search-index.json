@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1288,
+  "total_keywords": 1289,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -3411,7 +3411,7 @@
     "Command Basics": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 282,
+        "line": 313,
         "level": 4,
         "title": "Command Basics"
       }
@@ -3465,7 +3465,7 @@
     "Command Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 280,
+        "line": 311,
         "level": 3,
         "title": "Command Information"
       }
@@ -4323,7 +4323,7 @@
     "Cross-platform Extension (Wildcard)": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 332,
+        "line": 363,
         "level": 3,
         "title": "Cross-platform Extension (Wildcard)"
       }
@@ -5280,12 +5280,12 @@
         "title": "Event Wrapper Class"
       }
     ],
-    "Event Wrapper Class Overview": [
+    "Event Wrapper Class Detailed Explanation": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 1,
         "level": 1,
-        "title": "Event Wrapper Class Overview"
+        "title": "Event Wrapper Class Detailed Explanation"
       }
     ],
     "Event-Driven Architecture": [
@@ -6455,7 +6455,7 @@
     "Interactive Method Examples": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 228,
+        "line": 233,
         "level": 4,
         "title": "Interactive Method Examples"
       }
@@ -8363,7 +8363,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 294,
+        "line": 325,
         "level": 3,
         "title": "Platform Extension Methods"
       },
@@ -8709,7 +8709,7 @@
     "Query Registered Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 316,
+        "line": 347,
         "level": 3,
         "title": "Query Registered Methods"
       }
@@ -8821,7 +8821,7 @@
     "Raw Data": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 289,
+        "line": 320,
         "level": 3,
         "title": "Raw Data"
       }
@@ -9079,7 +9079,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 351,
+        "line": 382,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11410,12 +11410,12 @@
         "title": "Yunhu User Platform Features Documentation"
       }
     ],
-    "[BUG-001] Incorrect path type for Init command adapter configuration": [
+    "[BUG-001] Init command adapter configuration path type mismatch": [
       {
         "document": "bug-tracker.md",
         "line": 9,
         "level": 3,
-        "title": "[BUG-001] Incorrect path type for Init command adapter configuration"
+        "title": "[BUG-001] Init command adapter configuration path type mismatch"
       }
     ],
     "[BUG-002] Command events fail after restart": [
@@ -11434,36 +11434,36 @@
         "title": "[BUG-003] Lifecycle event handlers not cleaned up"
       }
     ],
-    "[BUG-004] Duplicate assignment of keywords in Event.confirm()": [
+    "[BUG-004] Duplicate assignment of confirmation word set in Event.confirm()": [
       {
         "document": "bug-tracker.md",
         "line": 61,
         "level": 3,
-        "title": "[BUG-004] Duplicate assignment of keywords in Event.confirm()"
+        "title": "[BUG-004] Duplicate assignment of confirmation word set in Event.confirm()"
       }
     ],
-    "[BUG-005] MessageBuilder.at method definition overwritten (Dead Code)": [
+    "[BUG-005] MessageBuilder.at method definition overwritten (dead code)": [
       {
         "document": "bug-tracker.md",
         "line": 77,
         "level": 3,
-        "title": "[BUG-005] MessageBuilder.at method definition overwritten (Dead Code)"
+        "title": "[BUG-005] MessageBuilder.at method definition overwritten (dead code)"
       }
     ],
-    "[BUG-006] detail_type mismatch in Event.is_friend_add/is_friend_delete with OB12 standard": [
+    "[BUG-006] Detail type of Event.is_friend_add/is_friend_delete inconsistent with OB12 standard": [
       {
         "document": "bug-tracker.md",
         "line": 93,
         "level": 3,
-        "title": "[BUG-006] detail_type mismatch in Event.is_friend_add/is_friend_delete with OB12 standard"
+        "title": "[BUG-006] Detail type of Event.is_friend_add/is_friend_delete inconsistent with OB12 standard"
       }
     ],
-    "[BUG-007] adapter.clear() fails to clean up _started_instances causing incorrect state after restart": [
+    "[BUG-007] adapter.clear() does not clean _started_instances causing incorrect state after restart": [
       {
         "document": "bug-tracker.md",
         "line": 109,
         "level": 3,
-        "title": "[BUG-007] adapter.clear() fails to clean up _started_instances causing incorrect state after restart"
+        "title": "[BUG-007] adapter.clear() does not clean _started_instances causing incorrect state after restart"
       }
     ],
     "[BUG-008] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
@@ -11490,28 +11490,28 @@
         "title": "[BUG-010] LazyModule synchronous access to BaseModule causes incomplete initialization"
       }
     ],
-    "[BUG-011] Data loss in configuration system due to multi-threaded writes": [
+    "[BUG-011] Multithreaded writing in the configuration system causes data loss": [
       {
         "document": "bug-tracker.md",
         "line": 173,
         "level": 3,
-        "title": "[BUG-011] Data loss in configuration system due to multi-threaded writes"
+        "title": "[BUG-011] Multithreaded writing in the configuration system causes data loss"
       }
     ],
-    "[BUG-012] Inaccurate error messages for SDK attribute access": [
+    "[BUG-012] Inaccurate error message for SDK property access": [
       {
         "document": "bug-tracker.md",
         "line": 192,
         "level": 3,
-        "title": "[BUG-012] Inaccurate error messages for SDK attribute access"
+        "title": "[BUG-012] Inaccurate error message for SDK property access"
       }
     ],
-    "[BUG-013] Uninitializer cleanup logic for uninitialized LazyModules is too complex": [
+    "[BUG-013] Uninitializer cleanup logic for uninitialized LazyModules is overly complex": [
       {
         "document": "bug-tracker.md",
         "line": 211,
         "level": 3,
-        "title": "[BUG-013] Uninitializer cleanup logic for uninitialized LazyModules is too complex"
+        "title": "[BUG-013] Uninitializer cleanup logic for uninitialized LazyModules is overly complex"
       }
     ],
     "[BUG-014] CTRL+C cannot stop the program on Windows": [
@@ -11522,44 +11522,52 @@
         "title": "[BUG-014] CTRL+C cannot stop the program on Windows"
       }
     ],
-    "[BUG-015] Incorrect sorting logic in module loading strategy": [
+    "[BUG-015] Sorting logic error in module loading strategy": [
       {
         "document": "bug-tracker.md",
         "line": 250,
         "level": 3,
-        "title": "[BUG-015] Incorrect sorting logic in module loading strategy"
+        "title": "[BUG-015] Sorting logic error in module loading strategy"
       }
     ],
-    "[BUG-016] Event data loss due to adapter middleware returning None": [
+    "[BUG-016] Event data loss due to middleware returning None": [
       {
         "document": "bug-tracker.md",
         "line": 266,
         "level": 3,
-        "title": "[BUG-016] Event data loss due to adapter middleware returning None"
+        "title": "[BUG-016] Event data loss due to middleware returning None"
       }
     ],
-    "[BUG-017] Configuration file path relies on working directory": [
+    "[BUG-017] Configuration file path depends on working directory": [
       {
         "document": "bug-tracker.md",
         "line": 282,
         "level": 3,
-        "title": "[BUG-017] Configuration file path relies on working directory"
+        "title": "[BUG-017] Configuration file path depends on working directory"
       }
     ],
-    "[BUG-018] subprocess mode `ep run <script>` cannot find subpackages of script directory": [
+    "[BUG-018] Subprocess mode `ep run <script>` cannot find subpackages in the script's directory": [
       {
         "document": "bug-tracker.md",
         "line": 298,
         "level": 3,
-        "title": "[BUG-018] subprocess mode `ep run <script>` cannot find subpackages of script directory"
+        "title": "[BUG-018] Subprocess mode `ep run <script>` cannot find subpackages in the script's directory"
       }
     ],
-    "[BUG-019] SQL query builder rejects valid wildcards and column expressions": [
+    "[BUG-019] SQLite query builder rejects valid wildcards and column expressions": [
       {
         "document": "bug-tracker.md",
         "line": 314,
         "level": 3,
-        "title": "[BUG-019] SQL query builder rejects valid wildcards and column expressions"
+        "title": "[BUG-019] SQLite query builder rejects valid wildcards and column expressions"
+      }
+    ],
+    "[BUG-020] Account resolution regression in _resolve_account() (_accounts_data not populated)": [
+      {
+        "document": "bug-tracker.md",
+        "line": 340,
+        "level": 3,
+        "title": "[BUG-020] Account resolution regression in _resolve_account() (_accounts_data not populated)"
       }
     ],
     "__init__.py": [
@@ -11589,7 +11597,7 @@
     "`hasattr` and `dir` Support": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 325,
+        "line": 356,
         "level": 3,
         "title": "`hasattr` and `dir` Support"
       }

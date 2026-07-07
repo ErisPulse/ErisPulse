@@ -3637,16 +3637,16 @@ self.logger.critical("致命的エラー") # 致命的エラー
 
 ### Event 包装类详解
 
-# Event 包装クラスの詳細解説
+# Event 包装类详解
 
-Event モジュールは、イベント処理を簡素化する強力な Event 包装クラスを提供します。
+Event モジュールは、強力な Event 包装クラスを提供し、イベント処理を簡素化します。
 
-## 核心機能
+## 核心特性
 
-- **完全な辞書互換性**：Event は dict を継承しています
+- **完全な辞書互換性**：Event は dict を継承
 - **便利なメソッド**：多数の便利なメソッドを提供
-- **点アクセス**：ドット記法でイベントフィールドにアクセス可能
-- **後方互換性**：すべてのメソッドはオプションです
+- **ドットアクセス**：ドットを使用したイベントフィールドのアクセスをサポート
+- **後方互換性**：すべてのメソッドはオプション
 
 ## 核心フィールドメソッド
 
@@ -3674,7 +3674,7 @@ async def private_handler(event):
     await event.reply(f"こんにちは、{nickname}！")
 ```
 
-## メッセージタイプ判定
+## メッセージタイプ判断
 
 ```python
 from ErisPulse.Core.Event import message
@@ -3687,14 +3687,14 @@ async def group_handler(event):
     await event.reply(f"タイプ: {'プライベートチャット' if is_private else 'グループチャット'}")
 ```
 
-## レプリーメソッド
+## 回答機能
 
 ```python
 from ErisPulse.Core.Event import command
 
 @command("ask")
 async def ask_command(event):
-    await event.reply("お名前を教えてください:")
+    await event.reply("あなたの名前を入力してください:")
     reply = await event.wait_reply(timeout=30)
     if reply:
         name = reply.get_text()
@@ -3720,60 +3720,60 @@ from ErisPulse.Core.Event import notice
 
 @notice.on_friend_add()
 async def friend_add_handler(event):
-    await event.reply("友達追加ありがとうございます！")
+    await event.reply("友達として追加してくれてありがとう！")
 ```
 
-## メソッド一覧表
+## メソッド速查表
 
 ### 核心メソッド
 
 #### イベント基本情報
 - `get_id()` - イベントIDを取得
-- `get_time()` - イベントタイムスタンプ（Unix秒）を取得
-- `get_type()` - イベントタイプ（message/notice/request/meta）を取得
-- `get_detail_type()` - イベント詳細タイプ（private/group/friend等）を取得
+- `get_time()` - イベントタイムスタンプ（Unix秒単位）を取得
+- `get_type()` - イベントタイプを取得（message/notice/request/meta）
+- `get_detail_type()` - イベント詳細タイプを取得（private/group/friend等）
 - `get_platform()` - プラットフォーム名を取得
 
 #### ロボット情報
 - `get_self_platform()` - ロボットのプラットフォーム名を取得
-- `get_self_user_id()` - ロボットのユーザIDを取得
-- `get_self_account_id()` - ロボットのアカウントID（多Botモード）を取得
+- `get_self_user_id()` - ロボットのユーザーIDを取得
+- `get_self_account_id()` - ロボットのアカウントIDを取得（複数Botモード）
 - `get_self_info()` - ロボットの完全な情報辞書を取得
 
 #### 会話識別子
-- `get_target_id()` - 統一されたターゲットIDを取得（グループチャットは `group_id`、チャンネルは `channel_id`、プライベートチャットは `user_id`、group → channel → guild → thread → user の順序で最初の非空値を返す）
-- `get_session_id()` - 会話のユニークな識別子を取得、形式は `{platform}:{detail_type}:{target_id}`
+- `get_target_id()` - 統一されたターゲットIDを取得（グループチャットは `group_id` を返す、チャンネルは `channel_id` を返す、プライベートチャットは `user_id` を返す、group → channel → guild → thread → user の順序で最初の非空値を取得）
+- `get_session_id()` - セッションのユニークな識別子を取得、形式は `{platform}:{detail_type}:{target_id}`
 
 ### メッセージイベントメソッド
 
 #### メッセージ内容
 - `get_message()` - メッセージセグメント配列を取得（OneBot12形式）
 - `get_alt_message()` - メッセージの代替テキストを取得
-- `get_text()` - 純粋なテキスト内容を取得（`get_alt_message()`のエイリアス）
-- `get_message_text()` - 純粋なテキスト内容を取得（`get_alt_message()`のエイリアス）
+- `get_text()` - 純粋なテキスト内容を取得（`get_alt_message()` の別名）
+- `get_message_text()` - 純粋なテキスト内容を取得（`get_alt_message()` の別名）
 
 #### 送信者情報
-- `get_user_id()` - 送信者のユーザIDを取得
+- `get_user_id()` - 送信者のユーザーIDを取得
 - `get_user_nickname()` - 送信者のニックネームを取得
 - `get_sender()` - 送信者の完全な情報辞書を取得
 
 #### グループ/チャンネル情報
 - `get_group_id()` - グループIDを取得（グループメッセージ）
 - `get_channel_id()` - チャンネルIDを取得（チャンネルメッセージ）
-- `get_guild_id()` - サーバIDを取得（サーバメッセージ）
+- `get_guild_id()` - サーバーIDを取得（サーバーメッセージ）
 - `get_thread_id()` - トピック/サブチャンネルIDを取得（トピックメッセージ）
 
 #### @メッセージ関連
 - `has_mention()` - @ロボットが含まれているか
-- `get_mentions()` - すべての@されたユーザIDリストを取得
+- `get_mentions()` - すべての@されたユーザーIDリストを取得
 
-### メッセージタイプ判定
+### メッセージタイプ判断
 
-#### 基本判定
+#### 基本判断
 - `is_message()` - メッセージイベントかどうか
 - `is_private_message()` - プライベートチャットメッセージかどうか
 - `is_group_message()` - グループチャットメッセージかどうか
-- `is_at_message()` - @メッセージかどうか（`has_mention()`のエイリアス）
+- `is_at_message()` - @メッセージかどうか（`has_mention()` の別名）
 
 ### 通知イベントメソッド
 
@@ -3781,46 +3781,46 @@ async def friend_add_handler(event):
 - `get_operator_id()` - 操作者のIDを取得
 - `get_operator_nickname()` - 操作者のニックネームを取得
 
-#### 通知タイプ判定
+#### 通知タイプ判断
 - `is_notice()` - 通知イベントかどうか
 - `is_group_member_increase()` - グループメンバー増加イベント
 - `is_group_member_decrease()` - グループメンバー減少イベント
-- `is_friend_add()` - 友達追加イベント（`detail_type == "friend_increase"`に一致）
-- `is_friend_delete()` - 友達削除イベント（`detail_type == "friend_decrease"`に一致）
+- `is_friend_add()` - 友達追加イベント（`detail_type == "friend_increase"` に一致）
+- `is_friend_delete()` - 友達削除イベント（`detail_type == "friend_decrease"` に一致）
 
 ### 要求イベントメソッド
 
 #### 要求情報
-- `get_comment()` - 要求のコメントを取得
+- `get_comment()` - 要求の付言を取得
 
-#### 要求タイプ判定
+#### 要求タイプ判断
 - `is_request()` - 要求イベントかどうか
 - `is_friend_request()` - 友達要求かどうか
 - `is_group_request()` - グループ要求かどうか
 
-### レプリーメソッド
+### 回答機能
 
-#### 基本レプリー
-- `reply(content, method="Text", at_sender=False, reply_to_message=False, at_users=None, reply_to=None, at_all=False, **kwargs)` - 一般的なレプリー方法
-  - `content`: 送信内容（テキスト、URL等）
-  - `method`: 送信方法、デフォルトは "Text"、"Image"/"Voice"/"Video"/"File" 等が選択可能
-  - `at_sender`: 送信者を@するかどうか（user_idを自動抽出）
-  - `quote`: 現在のメッセージを引用して返信するかどうか（message_idを自動抽出）
-  - `at_users`: @するユーザリスト、例: `["user1", "user2"]`
+#### 基本回答
+- `reply(content, method="Text", at_sender=False, reply_to_message=False, at_users=None, reply_to=None, at_all=False, **kwargs)` - 一般的な回答メソッド
+  - `content`: 送信内容（テキスト、URLなど）
+  - `method`: 送信方法、デフォルトは "Text"、"Image"/"Voice"/"Video"/"File" など
+  - `at_sender`: 送信者を@するかどうか（自動的に user_id を抽出）
+  - `quote`: 現在のメッセージに引用して返信するかどうか（自動的に message_id を抽出）
+  - `at_users`: @するユーザーのリスト、例: `["user1", "user2"]`
   - `reply_to`: 手動で指定した返信メッセージID
   - `at_all`: 全員を@するかどうか
-  - `**kwargs`: 余分なパラメータ（例: Mentionメソッドのuser_id）
+  - `**kwargs`: 余分なパラメータ（例: Mentionメソッドの user_id）
 
 - `reply_ob12(message)` - OneBot12メッセージセグメントを使って返信
-  - `message`: OneBot12メッセージセグメントリストまたは辞書、MessageBuilderを使って構築可能
+  - `message`: OneBot12メッセージセグメントのリストまたは辞書、MessageBuilderを使って構築できる
 
-#### プラットフォーム機能確認
-- `supports(method)` - 現在のプラットフォームが特定の送信方法（例: `"Image"`、`"Voice"`）をサポートしているか確認、`bool`を返す
-- `available_methods()` - 現在のプラットフォームで利用可能なすべての送信方法をリストで返す
+#### プラットフォーム能力照会
+- `supports(method)` - 現在のプラットフォームが特定の送信方法（例: `"Image"`、`"Voice"`）をサポートしているかを確認し、`bool`を返す
+- `available_methods()` - 現在のプラットフォームで利用可能なすべての送信方法をリスト形式で返す
 
 #### 転送機能
 
-> **注意**: 転送機能はアダプタの Send DSL を通じて実現する必要があり、Event 包装クラス自体は直接的な転送メソッドを提供していません。
+> **注意**：転送機能はアダプタの Send DSL を通じて実現する必要があり、Event 包装クラス自体は直接的な転送メソッドを提供しない。
 
 ```python
 # メッセージをグループに転送
@@ -3829,67 +3829,98 @@ target_id = event.get_group_id()  # または他のグループIDを指定
 await adapter.Send.To("group", target_id).Text(event.get_text())
 ```
 
-### レプリー待ち機能
+### 返信待ち機能
 
 - `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - ユーザーの返信を待つ
-  - `prompt`: プロンプトメッセージ、提供された場合ユーザに送信
-  - `timeout`: 待機タイムアウト時間（秒）、デフォルト60秒
+  - `prompt`: プロンプトメッセージ、提供された場合ユーザーに送信される
+  - `timeout`: 待ち時間のタイムアウト（秒）、デフォルトは60秒
   - `callback`: 返信を受け取ったときに実行されるコールバック関数
   - `validator`: 返信が有効かどうかを検証する関数
-  - `method`: プロンプトメッセージを送信する方法、デフォルトは "Text"、"Image"/"Markdown" 等の非テキスト方法もサポート
-  - ユーザーの返信されたEventオブジェクトを返す、タイムアウト時はNoneを返す
+  - `method`: プロンプトメッセージの送信方法、デフォルトは "Text"
+  - ユーザーの返信された Event オブジェクトを返す、タイムアウトは None を返す
 
 #### インタラクティブメソッド
 
-- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text")` - 確認対話
-  - "True"（確認）/ "False"（否定）/ "None"（タイムアウト）を返す
-  - 内部的に中英語の確認語を自動認識、カスタム語集を指定可能
-  - `method`: 送信方法、デフォルトは "Text"、"Image"/"Markdown" 等の非テキスト方法もサポート
+- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - 確認対話
+  - 確認（True）/ 否定（False）/ タイムアウト（None）を返す
+  - 内部的に中英語の確認語を自動的に認識し、カスタム語集を指定可能
+  - `method`: 送信方法、デフォルトは "Text"、"Image"/"Markdown" などの非テキスト方法もサポート
+  - `hint`: プロンプトの末尾に自動的に確認語のプロンプトを追加するかどうか、デフォルトは False
 
-- `choose(prompt, options, timeout=60.0, method="Text")` - 選択メニュー
-  - `options`: 選択肢のテキストリスト
-  - 選択肢のインデックス（0ベース）を返す、タイムアウト時はNoneを返す
-  - `method`: 送信方法、テキスト系メソッド(Text/Markdown/Html)では選択肢をpromptに結合して1つのメッセージとして送信、豊富なメディアメソッドではまず豊富なメディアコンテンツを送信してからText選択肢リストを送信
+- `choose(prompt, options, timeout=60.0, method="Text", options_format="list", merge_prompt=False)` - 選択メニュー
+  - `options`: オプションのテキストリスト
+  - オプションのインデックス（0ベース）を返す、タイムアウトは None を返す
+  - `method`: 送信方法、テキスト系方法 (Text/Markdown/Html) はオプションを prompt に1つのメッセージとして送信、豊富なメディア方法はまず豊富なメディアコンテンツを送信してから Text オプションリストを送信
+  - `options_format`: オプションのフォーマット、"list"（デフォルト、各行に1つ）、"inline"（1行に `1.A | 2.B`）またはカスタム関数 `(list[str]) -> str` をサポート
+  - `merge_prompt`: 非テキスト方法の場合、強制的に1つの Text メッセージに統合するかどうか、デフォルトは False
 
 - `collect(fields, timeout_per_field=60.0)` - フォーム収集
-  - `fields`: フィールドリスト、各項目には`key`、`prompt`、オプションの`validator`、オプションの`method`が含まれる
-  - `{key: value}`の辞書を返す、1つのフィールドがタイムアウトした場合はNoneを返す
-  - 各フィールドは`method`キーで送信方法を指定可能、例: 画像を収集する場合 `{"key": "avatar", "prompt": "プロフィール画像を送ってください", "method": "Image"}`
+  - `fields`: フィールドのリスト、各項目は `key`、`prompt`、オプションの `validator`、オプションの `method` を含む
+  - `{key: value}` 辞書を返す、任意のフィールドがタイムアウトした場合は None を返す
+  - 各フィールドは `method` キーで送信方法を指定可能、例: 画像を収集する場合 `{"key": "avatar", "prompt": "プロフィール画像を送ってください", "method": "Image"}`
+  - 各フィールドはオプションの `options` キー（リスト）を提供可能、提供された場合、このフィールドは選択問題に変換され（自動的に choose ロジックを呼び出す）
+  - 各フィールドはオプションの `options_format` と `merge_prompt` キーを提供可能、オプションのフォーマットとメッセージの統合動作を制御
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - 任意のイベントを待つ
-  - `condition`: 条件関数、Trueを返した場合に一致
-  - 一致するEventオブジェクトを返す、タイムアウト時はNoneを返す
+  - `condition`: 条件を満たす場合 True を返すフィルタ関数
+  - 条件に一致する Event オブジェクトを返す、タイムアウトは None を返す
 
-- `conversation(timeout=60.0)` - 複数ラウンド対話コンテキストを作成
-  - `Conversation`オブジェクトを返す、`say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`をサポート
-  - `is_active`属性は対話がアクティブかどうかを示す
+- `conversation(timeout=60.0)` - マルチラウンド対話コンテキストを作成
+  - `Conversation` オブジェクトを返す、`say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()` をサポート
+  - `is_active` 属性は対話がアクティブかどうかを示す
 
 #### インタラクティブメソッドの例
 
-**confirm() - 確認対話:**
+**confirm() - 確認対話：**
 
 ```python
 @command("delete", help="データを削除")
 async def delete_handler(event):
     if await event.confirm("すべてのデータを削除してもよろしいですか？"):
         sdk.storage.delete("all_data")
-        await event.reply("データを削除しました")
+        await event.reply("データが削除されました")
     else:
         await event.reply("キャンセルしました")
 ```
 
-**choose() - 選択メニュー:**
+**confirm() - プロンプト付き：**
+
+```python
+# hint=True はプロンプトの末尾に "（はい/いいえ）" を追加
+if await event.confirm("続行してもよろしいですか？", hint=True):
+    await event.reply("続行しました")
+# ユーザーが見る：続行してもよろしいですか？（はい/いいえ）
+```
+
+**choose() - 選択メニュー：**
 
 ```python
 @command("color", help="色を選択")
 async def color_handler(event):
-    choice = await event.choose("色を選んでください：", ["赤", "緑", "青"])
+    choice = await event.choose("色を選択してください：", ["赤", "緑", "青"])
     if choice is not None:
         colors = ["赤", "緑", "青"]
         await event.reply(f"選択した色は：{colors[choice]}")
 ```
 
-**collect() - フォーム収集:**
+**choose() - オプションのフォーマットとメッセージの統合：**
+
+```python
+# inline 形式：オプションを1行に表示
+choice = await event.choose("選択してください：", ["A", "B", "C"], options_format="inline")
+# 出力：1.A | 2.B | 3.C
+
+# カスタムフォーマット
+choice = await event.choose("選択してください：", ["猫", "犬"],
+    options_format=lambda opts: " / ".join(opts))
+# 出力：猫 / 犬
+
+# 非テキスト方法 + テキストにオプションを統合
+choice = await event.choose("画像を見て選択してください：", ["猫", "犬"],
+    method="Image", merge_prompt=True)
+```
+
+**collect() - フォーム収集：**
 
 ```python
 @command("register", help="登録")
@@ -3903,51 +3934,56 @@ async def register_handler(event):
         await event.reply(f"登録完了！{data['name']}、{data['age']}歳")
 ```
 
-**非テキスト方法のreply:**
+**非 Text 方法の reply：**
 
 ```python
 await event.reply("http://example.com/img.jpg", method="Image")
 await event.reply("http://example.com/audio.mp3", method="Voice")
 
 from ErisPulse.Core.Event import MessageBuilder
-segments = MessageBuilder.text("この画像を見てください：").image("http://example.com/img.jpg").build()
+segments = MessageBuilder.text("こちらの画像を見てください：").image("http://example.com/img.jpg").build()
 await event.reply_ob12(segments)
 ```
 
-> 完全なConversation多ラウンド対話の使い方は [Conversation 多ラウンド対話](../../advanced/conversation.md) を参照してください。
+> 完全な Conversation マルチラウンド対話の使い方は [Conversation 多段対話](../../advanced/conversation.md) を参照してください。
 
 ### コマンド情報
 
-#### コマンド基本
+#### コマンド基礎
 - `get_command_name()` - コマンド名を取得
-- `get_command_args()` - コマンド引数リストを取得
+- `get_command_args()` - コマンド引数のリストを取得
 - `get_command_raw()` - コマンドの元のテキストを取得
-- `get_command_info()` - 完全なコマンド情報辞書を取得
+- `get_command_info()` - 完全なコマンド情報の辞書を取得
 - `is_command()` - コマンドかどうか
+
+### 元データ
+
+- `get_raw()` - プラットフォームの元のイベントデータを取得
+- `get_raw_type()` - プラットフォームの元のイベントタイプを取得
 
 ### プラットフォーム拡張メソッド
 
-アダプタはEvent包装クラスにプラットフォーム固有のメソッドを登録できます。メソッドは対応するプラットフォームのEventインスタンスでのみ利用可能で、他のプラットフォームでアクセスすると`AttributeError`が発生します。
+アダプタは Event 包装クラスにプラットフォーム固有のメソッドを登録できます。メソッドは対応するプラットフォームの Event インスタンスでのみ利用可能で、他のプラットフォームでアクセスすると `AttributeError` が発生します。
 
-プラットフォームメソッドは`Event.__getattribute__`によって、組み込みメソッドよりも優先的に有効になるため、`confirm`、`choose`、`collect`、`wait_reply`などの組み込みインタラクティブメソッドを覆写して、プラットフォーム特有の実装（例: ボタン、カード等）を提供できます。組み込み実装は`_builtin_*`関数としてエクスポートされ、覆写用に利用できます。
+プラットフォームメソッドは `Event.__getattribute__` により、組み込みメソッドよりも優先して有効になるため、`confirm`、`choose`、`collect`、`wait_reply` などの組み込みインタラクティブメソッドを覆写し、プラットフォーム固有の実装（例: ボタン、カードなど）を提供できます。組み込み実装は覆写可能な `_builtin_*` 関数としてエクスポートされています。
 
 ```python
 # メールイベント - メールメソッドのみ
 event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
-event.get_subject()      # ✅ "Hello"を返す
+event.get_subject()      # ✅ "Hello" を返す
 event.get_chat_type()    # ❌ AttributeError
 
-# Telegramイベント - Telegramメソッドのみ
+# Telegram イベント - Telegram メソッドのみ
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
-event.get_chat_type()    # ✅ "private"を返す
+event.get_chat_type()    # ✅ "private" を返す
 event.get_subject()      # ❌ AttributeError
 
 # 組み込みメソッドは常に利用可能
-event.get_text()         # ✅ どのプラットフォームでも
-event.reply("hi")        # ✅ どのプラットフォームでも
+event.get_text()         # ✅ 任意のプラットフォーム
+event.reply("hi")        # ✅ 任意のプラットフォーム
 ```
 
-### 登録されたメソッドの確認
+### 登録されたメソッドの照会
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -3959,33 +3995,33 @@ methods = get_platform_event_methods("email")
 ### `hasattr` と `dir` のサポート
 
 ```python
-hasattr(event, "get_subject")   # platform="email" のみTrueを返す
+hasattr(event, "get_subject")   # platform="email" のみで True を返す
 "get_subject" in dir(event)     # 同上
 ```
 
 ### 跨プラットフォーム拡張（ワイルドカード）
 
-`register_event_method` と `register_event_mixin` は `"*"` をプラットフォーム名として渡すことができ、登録されたメソッドは**すべてのプラットフォーム**のEventインスタンスで利用可能になります。AI対話、コンテキスト管理など、跨プラットフォームで再利用可能な機能に適しています。
+`register_event_method` と `register_event_mixin` は `"*"` をプラットフォーム名として渡すことができ、登録されたメソッドは**すべてのプラットフォーム**の Event インスタンスで利用可能になります。AI対話、コンテキスト管理など、跨プラットフォームで再利用可能な機能に適しています。
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    # self はEventインスタンス、イベントデータと組み込みメソッドにアクセス可能
+    # self は Event インスタンス、イベントデータと組み込みメソッドにアクセス可能
     await self.reply(f"AI: {prompt}")
 ```
 
-登録後、どのプラットフォームのイベントハンドラでも `event.ai_chat(...)` を呼び出すことができます。
+登録後、任意のプラットフォームのイベントハンドラで `event.ai_chat(...)` を呼び出すことができます。
 
-メソッドの優先順位（高い順）: プラットフォーム固有のメソッド → ワイルドカードメソッド → 組み込みメソッド → 辞書キーのアクセス。
+メソッドの優先順位（高い順）：プラットフォーム固有のメソッド → ワイルドカードメソッド → 組み込みメソッド → 辞書キーのアクセス
 
-> アダプタ開発者が拡張メソッドを登録する方法については [イベントシステム API - 跨プラットフォーム拡張ワイルドカード](../../api-reference/event-system.md#跨平台扩展通配符) を参照してください。
+> アダプタ開発者が拡張メソッドを登録する方法は [イベントシステム API - 跨プラットフォーム拡張ワイルドカード](../../api-reference/event-system.md#跨平台扩展通配符) を参照してください。
 
 ## 関連ドキュメント
 
 - [モジュール開発入門](getting-started.md) - 最初のモジュールを作成
-- [ベストプラクティス](best-practices.md) - 高品質なモジュールの開発
+- [ベストプラクティス](best-practices.md) - 高品質なモジュールを開発
 
 
 ### 模块开发最佳实践
