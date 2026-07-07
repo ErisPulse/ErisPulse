@@ -392,4 +392,162 @@ class TestGlobalConfig:
         assert result is True
 
 
+# ==================== Config Schema i18n 测试 ====================
+
+class TestConfigSchemaI18n:
+    """配置 Schema i18n 解析测试（含 select options label i18n）"""
+
+    @pytest.fixture
+    def config_class(self):
+        """构造带 i18n 文本的配置类（description / placeholder / options label / group_labels）"""
+        from dataclasses import dataclass, field
+        from ErisPulse.runtime.config_schema import BaseConfig
+
+        @dataclass
+        class TestConfig(BaseConfig):
+            mode: str = field(
+                default="sliding",
+                metadata={
+                    "description": {
+                        "i18n": "test.mode.desc",
+                        "default": "模式",
+                    },
+                    "ui": {
+                        "widget": "select",
+                        "group": "basic",
+                        "options": [
+                            {
+                                "label": {"i18n": "test.mode.option.a", "default": "选项A"},
+                                "value": "a",
+                            },
+                            {
+                                "label": "纯字符串标签",
+                                "value": "b",
+                            },
+                        ],
+                    },
+                },
+            )
+            name: str = field(
+                default="",
+                metadata={
+                    "description": {
+                        "i18n": "test.name.desc",
+                        "default": "名称",
+                    },
+                    "ui": {
+                        "widget": "text",
+                        "group": "advanced",
+                        "placeholder": {
+                            "i18n": "test.name.placeholder",
+                            "default": "请输入名称",
+                        },
+                    },
+                },
+            )
+
+        # 声明分组显示名（i18n）
+        TestConfig._schema_meta = {
+            "group_labels": {
+                "basic": {"i18n": "test.group.basic", "default": "基本设置"},
+                "advanced": {"i18n": "test.group.advanced", "default": "高级设置"},
+            }
+        }
+
+        return TestConfig
+
+    def test_get_config_schema_preserves_i18n_dict(self, config_class):
+        """get_config_schema 应原样透传 i18n 字典（不解析）"""
+        from ErisPulse.runtime.config_schema import get_config_schema
+
+        schema = get_config_schema(config_class)
+        options = schema["fields"]["mode"]["options"]
+
+        # i18n dict label 原样保留
+        assert options[0]["label"] == {
+            "i18n": "test.mode.option.a",
+            "default": "选项A",
+        }
+        # 纯字符串 label 原样保留
+        assert options[1]["label"] == "纯字符串标签"
+
+    def test_resolve_config_schema_resolves_option_labels(self, config_class):
+        """resolve_config_schema(resolve_i18n=True) 应解析所有 i18n 文本字段"""
+        from ErisPulse.runtime.config_schema import resolve_config_schema
+        from ErisPulse.Core.i18n import i18n
+
+        # 注册翻译
+        i18n.register("en", {
+            "test.mode.desc": "Mode",
+            "test.mode.option.a": "Option A",
+            "test.name.desc": "Name",
+            "test.name.placeholder": "Enter name",
+            "test.group.basic": "Basic",
+            "test.group.advanced": "Advanced",
+        }, domain="test_schema")
+
+        # 保存并临时切换语言（不持久化到磁盘，避免影响其他测试）
+        saved_lang = i18n._current_lang
+        i18n._current_lang = "en"
+
+        try:
+            schema = resolve_config_schema(config_class, resolve_i18n=True)
+
+            # description 被解析
+            assert schema["fields"]["mode"]["description"] == "Mode"
+            assert schema["fields"]["name"]["description"] == "Name"
+
+            # options label 被解析
+            options = schema["fields"]["mode"]["options"]
+            assert options[0]["label"] == "Option A"
+            assert options[0]["value"] == "a"
+            assert options[1]["label"] == "纯字符串标签"  # 纯字符串原样保留
+
+            # placeholder 被解析
+            assert schema["fields"]["name"]["placeholder"] == "Enter name"
+
+            # group_labels 被解析
+            assert schema["group_labels"]["basic"] == "Basic"
+            assert schema["group_labels"]["advanced"] == "Advanced"
+        finally:
+            i18n._current_lang = saved_lang
+            i18n.unregister_domain("test_schema")
+
+    def test_resolve_config_schema_no_i18n_preserves_dict(self, config_class):
+        """resolve_config_schema(resolve_i18n=False) 应等同于 get_config_schema"""
+        from ErisPulse.runtime.config_schema import resolve_config_schema
+
+        schema = resolve_config_schema(config_class, resolve_i18n=False)
+
+        # i18n dict 原样保留
+        assert isinstance(schema["fields"]["mode"]["description"], dict)
+        assert isinstance(schema["fields"]["mode"]["options"][0]["label"], dict)
+        assert isinstance(schema["fields"]["name"]["placeholder"], dict)
+        # 无 group_labels 解析（未 resolve）
+        assert "group_labels" not in schema
+
+    def test_resolve_config_schema_fallback_to_default(self, config_class):
+        """未注册翻译时，所有 i18n 文本字段应回退到 default"""
+        from ErisPulse.runtime.config_schema import resolve_config_schema
+        from ErisPulse.Core.i18n import i18n
+
+        # 确保没有注册该 key
+        i18n.unregister_domain("test_schema")
+
+        # 临时切换到英文（不持久化到磁盘）
+        saved_lang = i18n._current_lang
+        i18n._current_lang = "en"
+
+        try:
+            schema = resolve_config_schema(config_class, resolve_i18n=True)
+
+            # 所有字段回退到 default
+            assert schema["fields"]["mode"]["description"] == "模式"
+            assert schema["fields"]["mode"]["options"][0]["label"] == "选项A"
+            assert schema["fields"]["name"]["placeholder"] == "请输入名称"
+            assert schema["group_labels"]["basic"] == "基本设置"
+        finally:
+            i18n._current_lang = saved_lang
+
+
 
