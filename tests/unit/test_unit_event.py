@@ -1363,9 +1363,46 @@ class TestInteractiveMethods:
         assert "no" in CONFIRM_NO_WORDS
         assert "n" in CONFIRM_NO_WORDS
 
+    # ==================== _format_options 测试 ====================
+
+    def test_format_options_list(self):
+        """list 格式：每行一个"""
+        from ErisPulse.Core.Event.wrapper import _format_options
+        result = _format_options(["红", "绿", "蓝"], "list")
+        assert "1. 红" in result
+        assert "2. 绿" in result
+        assert "3. 蓝" in result
+        assert "\n" in result
+
+    def test_format_options_inline(self):
+        """inline 格式：单行展示"""
+        from ErisPulse.Core.Event.wrapper import _format_options
+        result = _format_options(["红", "绿", "蓝"], "inline")
+        assert "1.红" in result
+        assert "2.绿" in result
+        assert "3.蓝" in result
+        assert " | " in result
+        assert "\n" not in result
+
+    def test_format_options_custom_callable(self):
+        """自定义函数格式"""
+        from ErisPulse.Core.Event.wrapper import _format_options
+        result = _format_options(["A", "B", "C"], lambda opts: " / ".join(opts))
+        assert result == "A / B / C"
+
+    def test_format_options_default_is_list(self):
+        """默认格式为 list"""
+        from ErisPulse.Core.Event.wrapper import _format_options
+        result = _format_options(["X"], "unknown_format")
+        assert result == "1. X"
+
     def test_conversation_creation(self, sample_event):
         """测试 Conversation 创建"""
         conv = sample_event.conversation(timeout=30)
+
+
+
+        
         assert conv is not None
         assert conv.is_active is True
 
