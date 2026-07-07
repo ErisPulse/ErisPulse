@@ -381,19 +381,66 @@ metadata = {
         "widget": str,        # 控件类型: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # 分组: "basic" | "advanced" | "connection" 等
         "order": int,         # 排序权重（越小越靠前）
-        "options": list,      # select 控件的可选项 [{label, value}]
-        "placeholder": str,   # 输入框占位符
+        "options": list,      # select 控件的可选项 [{label, value}]，label 支持 i18n
+        "placeholder": str | dict,  # 输入框占位符（支持 i18n）
     },
     "extra": dict,            # 额外扩展字段（透传到 schema）
 }
 ```
 
-`description` 支持两种格式：
+所有用户可见的文本字段均支持 i18n，统一采用 `{"i18n": "key", "default": "文本"}` 格式，
+纯字符串则原样透传（向后兼容）。支持的 i18n 字段：
 
-- **普通字符串**（向后兼容）：`"Bot Token"`
-- **i18n 字典**（推荐，支持多语言）：`{"i18n": "my_adapter.token", "default": "Bot Token"}`
+| 字段 | 位置 | 说明 |
+|------|------|------|
+| `description` | field metadata | 字段描述 |
+| `options[].label` | `ui.options` | select 控件选项标签 |
+| `placeholder` | `ui.placeholder` | 输入框占位符 |
+| `group_labels` | `_schema_meta` | 分组显示名（Dashboard 分区标题） |
 
-使用 i18n 字典时，需提前将翻译键注册到 i18n 系统（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
+使用 i18n 时，需提前将翻译键注册到 i18n 系统（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
+
+**description / placeholder / options label** 示例：
+
+```python
+token: str = field(
+    default="",
+    metadata={
+        "description": {"i18n": "my_adapter.token", "default": "Bot Token"},
+        "ui": {
+            "widget": "text",
+            "placeholder": {"i18n": "my_adapter.token.ph", "default": "请输入 Token"},
+        },
+    },
+)
+mode: str = field(
+    default="a",
+    metadata={
+        "description": {"i18n": "my_adapter.mode", "default": "模式"},
+        "ui": {
+            "widget": "select",
+            "options": [
+                {"label": {"i18n": "my_adapter.mode.a", "default": "选项A"}, "value": "a"},
+                {"label": "纯字符串标签", "value": "b"},  # 纯字符串原样透传
+            ],
+        },
+    },
+)
+```
+
+**group_labels** 示例（在配置类定义后声明）：
+
+```python
+MyConfig._schema_meta = {
+    "group_labels": {
+        "basic": {"i18n": "my_adapter.group.basic", "default": "基本设置"},
+        "advanced": {"i18n": "my_adapter.group.advanced", "default": "高级设置"},
+    }
+}
+```
+
+框架的 `resolve_config_schema()` 会根据当前语言自动解析上述所有字段的 i18n 键；
+`get_config_schema()` 则原样透传 i18n 字典，由前端自行解析。
 
 #### 账户解析
 

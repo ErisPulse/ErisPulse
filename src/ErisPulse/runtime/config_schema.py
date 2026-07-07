@@ -18,7 +18,7 @@ ErisPulse 通用配置 Schema 模块
 """
 
 from dataclasses import MISSING, dataclass, field, fields
-from typing import Mapping
+from typing import ClassVar, Mapping
 
 
 # ---------------------------------------------------------------------------
@@ -197,7 +197,8 @@ class BaseConfig:
             )
     """
 
-    pass
+    # Schema 级别的扩展元数据（如 group_labels），由 get_config_schema 透传
+    _schema_meta: ClassVar[dict] = {}
 
 
 # 向后兼容别名：AdapterConfig → BaseConfig
@@ -520,18 +521,42 @@ def register_config_i18n(
     return count
 
 
+def _resolve_i18n_text(value, i18n_mgr):
+    """
+    解析单个值的 i18n 文本
+
+    接受纯字符串（原样返回）或 i18n 字典（解析为当前语言文本）。
+
+    :param value: 原始值（str 或 {"i18n": ..., "default": ...}）
+    :param i18n_mgr: I18nManager 实例
+    :return: 解析后的字符串
+    """
+    if isinstance(value, dict) and "i18n" in value:
+        key = value["i18n"]
+        default = value.get("default", key)
+        return i18n_mgr.t(key, default=default)
+    return value
+
+
 def resolve_config_schema(config_class: type, resolve_i18n: bool = True) -> dict:
     """
-    获取配置 Schema，可选地将 i18n description 解析为当前语言的文本
+    获取配置 Schema，可选地将所有 i18n 文本字段解析为当前语言的文本
 
     与 get_config_schema() 的区别：
-    - 当 resolve_i18n=True 时，description 字段为解析后的字符串（适合直接展示）
+    - 当 resolve_i18n=True 时，所有用户可见文本字段（description、options label、
+      placeholder、group_labels）为解析后的字符串（适合直接展示）
     - 当 resolve_i18n=False 时，等同于 get_config_schema()（透传 i18n 字典）
 
-    适合需要在服务端直接渲染描述文本的场景（如 Dashboard API 返回给不支持 i18n 的前端）。
+    支持的 i18n 字段（均采用 ``{"i18n": "key", "default": "文本"}`` 格式）：
+    - ``description``: 字段描述
+    - ``options[].label``: select 控件选项标签
+    - ``placeholder``: 输入框占位符
+    - ``group_labels``: 分组显示名（通过 ``_schema_meta["group_labels"]`` 声明）
+
+    纯字符串值会被原样透传（向后兼容）。
 
     :param config_class: dataclass 配置类
-    :param resolve_i18n: 是否将 i18n 描述解析为当前语言文本
+    :param resolve_i18n: 是否将 i18n 文本解析为当前语言
     :return: schema 字典
     """
     schema = get_config_schema(config_class)
@@ -542,11 +567,38 @@ def resolve_config_schema(config_class: type, resolve_i18n: bool = True) -> dict
     from ErisPulse.Core.i18n import i18n
 
     for field_name, field_schema in schema["fields"].items():
-        desc = field_schema.get("description", "")
-        if isinstance(desc, dict) and "i18n" in desc:
-            key = desc["i18n"]
-            default = desc.get("default", key)
-            field_schema["description"] = i18n.t(key, default=default)
+        # description
+        field_schema["description"] = _resolve_i18n_text(
+            field_schema.get("description", ""), i18n
+        )
+
+        # placeholder
+        if "placeholder" in field_schema:
+            field_schema["placeholder"] = _resolve_i18n_text(
+                field_schema["placeholder"], i18n
+            )
+
+        # options[].label
+        options = field_schema.get("options")
+        if isinstance(options, list):
+            resolved_options = []
+            for opt in options:
+                if isinstance(opt, dict) and "label" in opt:
+                    resolved = dict(opt)
+                    resolved["label"] = _resolve_i18n_text(opt["label"], i18n)
+                    resolved_options.append(resolved)
+                else:
+                    resolved_options.append(opt)
+            field_schema["options"] = resolved_options
+
+    # group_labels: 通过 _schema_meta 声明的分组显示名
+    meta = schema.get("meta", {})
+    group_labels = meta.get("group_labels", {})
+    if group_labels:
+        schema["group_labels"] = {
+            name: _resolve_i18n_text(label, i18n)
+            for name, label in group_labels.items()
+        }
 
     return schema
 

@@ -64,6 +64,40 @@
 
 ---
 
+## [2.5.4-dev.0] - 2026/07/08
+
+**版本摘要**
+配置 Schema 全面支持 i18n——从仅 `description` 扩展到 `options` 标签、`placeholder`、分组标题（`group_labels`）四个维度，统一采用 `{"i18n": "key", "default": "文本"}` 格式，纯字符串原样透传（向后兼容）。
+
+### 新增
+
+- @wsu2059q
+  - `runtime/config_schema.py` 配置 Schema 全面 i18n 支持：
+    - 新增 `_resolve_i18n_text()` 辅助函数，统一解析 `{"i18n": ..., "default": ...}` 格式
+    - `resolve_config_schema()` 从仅解析 `description` 扩展为解析全部用户可见文本字段：`description` / `options[].label` / `placeholder` / `group_labels`
+    - `BaseConfig` 新增 `_schema_meta: ClassVar[dict]` 属性，作为 `group_labels` 等扩展元数据的正式声明入口
+    - select 控件的 `options[].label` 支持 i18n，格式与 `description` 一致
+    - 输入框 `placeholder` 支持 i18n
+    - 分组显示名 `group_labels` 可通过 `_schema_meta` 声明，Dashboard 据此渲染分区标题
+
+### 文档
+
+- @wsu2059q
+  - 更新文档以反映全面 i18n 支持：
+    - `advanced/i18n.md`：「配置字段多语言」章节从仅覆盖 `description` 扩展为全面覆盖 4 种字段，新增 i18n 字段一览表、完整代码示例、`resolve_config_schema()` 解析全部字段的示例
+    - `developer-guide/adapters/core-concepts.md`：metadata 约定章节重写，新增 i18n 字段表与代码示例
+
+### 测试
+
+- @wsu2059q
+  - `tests/unit/test_unit_config.py` 新增 `TestConfigSchemaI18n` 测试类（4 个用例）：
+    - `test_get_config_schema_preserves_i18n_dict`：验证 `get_config_schema()` 原样透传 i18n 字典
+    - `test_resolve_config_schema_resolves_option_labels`：验证 `resolve_config_schema()` 解析全部 i18n 字段（description / options label / placeholder / group_labels）
+    - `test_resolve_config_schema_no_i18n_preserves_dict`：验证 `resolve_i18n=False` 时不解析
+    - `test_resolve_config_schema_fallback_to_default`：验证未注册翻译时回退到 `default`
+
+---
+
 ## [2.5.3] - 2026/07/07
 > 正式发布
 
