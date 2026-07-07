@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ErisPulse"
-version = "2.5.2"
-description = "ErisPulse 是一个模块化、可扩展的异步 Python SDK 框架，主要用于构建高效、可维护的机器人应用程序。"
+version = "2.5.3"
+description = "Event-driven modular async bot framework — write once, deploy to any platform | 事件驱动的模块化异步机器人框架，一次编写，多平台部署"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }

@@ -202,20 +202,25 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 #### 交互方法
 
-- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text")` - 确认对话
+- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - 确认对话
   - 返回 `True`（确认）/ `False`（否定）/ `None`（超时）
   - 内置中英文确认词自动识别，可自定义词集
   - `method`: 发送方法，默认 "Text"；支持 "Image"/"Markdown" 等非文本方式发送提示
+  - `hint`: 是否在提示末尾自动追加确认词提示（如 "（是/否）"），默认 False
 
-- `choose(prompt, options, timeout=60.0, method="Text")` - 选择菜单
+- `choose(prompt, options, timeout=60.0, method="Text", options_format="list", merge_prompt=False)` - 选择菜单
   - `options`: 选项文本列表
   - 返回选项索引（0-based），超时返回 `None`
   - `method`: 发送方法；文本类方法 (Text/Markdown/Html) 将选项拼接到 prompt 一条消息发送；富媒体方法先发富媒体内容再发 Text 选项列表
+  - `options_format`: 选项格式，支持 `"list"`（默认，每行一个）、`"inline"`（单行 `1.A | 2.B`）或自定义函数 `(list[str]) -> str`
+  - `merge_prompt`: 非文本方法时是否强制合并为一条 Text 消息，默认 False
 
 - `collect(fields, timeout_per_field=60.0)` - 表单收集
   - `fields`: 字段列表，每项包含 `key`、`prompt`、可选 `validator`、可选 `method`
   - 返回 `{key: value}` 字典，任一字段超时返回 `None`
   - 每个 field 支持 `method` 键指定发送方法，例如收集图片时用 `{"key": "avatar", "prompt": "请发送头像", "method": "Image"}`
+  - 每个 field 可选 `options` 键（列表），提供时该字段变为选择题（自动调用 choose 逻辑）
+  - 每个 field 可选 `options_format` 和 `merge_prompt` 键，控制选项格式和消息合并行为`
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - 等待任意事件
   - `condition`: 过滤函数，返回 `True` 时匹配
@@ -239,6 +244,15 @@ async def delete_handler(event):
         await event.reply("已取消")
 ```
 
+**confirm() - 带提示词：**
+
+```python
+# hint=True 会在提示末尾追加 "（是/否）"
+if await event.confirm("确定继续？", hint=True):
+    await event.reply("已继续")
+# 用户看到：确定继续？（是/否）
+```
+
 **choose() - 选择菜单：**
 
 ```python
@@ -248,6 +262,23 @@ async def color_handler(event):
     if choice is not None:
         colors = ["红色", "绿色", "蓝色"]
         await event.reply(f"你选择了：{colors[choice]}")
+```
+
+**choose() - 选项格式化与消息合并：**
+
+```python
+# inline 格式：选项显示在同一行
+choice = await event.choose("请选择：", ["A", "B", "C"], options_format="inline")
+# 输出：1.A | 2.B | 3.C
+
+# 自定义格式
+choice = await event.choose("请选择：", ["猫", "狗"],
+    options_format=lambda opts: " / ".join(opts))
+# 输出：猫 / 狗
+
+# 非文本方法 + 合并选项到文本
+choice = await event.choose("看图选择：", ["猫", "狗"],
+    method="Image", merge_prompt=True)
 ```
 
 **collect() - 表单收集：**

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1313,
+  "total_keywords": 1315,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2334,12 +2334,12 @@
         "title": "Event クラス"
       }
     ],
-    "Event 包装クラスの詳細解説": [
+    "Event 包装类详解": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 1,
         "level": 1,
-        "title": "Event 包装クラスの詳細解説"
+        "title": "Event 包装类详解"
       }
     ],
     "Event 快捷方法": [
@@ -3206,12 +3206,12 @@
         "title": "Yunhu ユーザープラットフォーム特性ドキュメント"
       }
     ],
-    "[BUG-001] Init コマンドアダプター設定パスの型エラー": [
+    "[BUG-001] Init コマンドアダプタ構成パスの型エラー": [
       {
         "document": "bug-tracker.md",
         "line": 9,
         "level": 3,
-        "title": "[BUG-001] Init コマンドアダプター設定パスの型エラー"
+        "title": "[BUG-001] Init コマンドアダプタ構成パスの型エラー"
       }
     ],
     "[BUG-002] 再起動後にコマンドイベントが無効になる": [
@@ -3222,140 +3222,148 @@
         "title": "[BUG-002] 再起動後にコマンドイベントが無効になる"
       }
     ],
-    "[BUG-003] ライフサイクルイベントハンドラのクリア漏れ": [
+    "[BUG-003] ライフサイクルイベントハンドラがクリアされていない": [
       {
         "document": "bug-tracker.md",
         "line": 45,
         "level": 3,
-        "title": "[BUG-003] ライフサイクルイベントハンドラのクリア漏れ"
+        "title": "[BUG-003] ライフサイクルイベントハンドラがクリアされていない"
       }
     ],
-    "[BUG-004] Event.confirm() 確認語コレクションの代入が重複している": [
+    "[BUG-004] Event.confirm() の確認語句集合への代入が重複している": [
       {
         "document": "bug-tracker.md",
         "line": 61,
         "level": 3,
-        "title": "[BUG-004] Event.confirm() 確認語コレクションの代入が重複している"
+        "title": "[BUG-004] Event.confirm() の確認語句集合への代入が重複している"
       }
     ],
-    "[BUG-005] MessageBuilder.at メソッド定義が上書きされる（デッドコード）": [
+    "[BUG-005] MessageBuilder.at メソッド定義が上書きされている（デッドコード）": [
       {
         "document": "bug-tracker.md",
         "line": 77,
         "level": 3,
-        "title": "[BUG-005] MessageBuilder.at メソッド定義が上書きされる（デッドコード）"
+        "title": "[BUG-005] MessageBuilder.at メソッド定義が上書きされている（デッドコード）"
       }
     ],
-    "[BUG-006] Event.is_friend_add/is_friend_delete の detail_type と OB12 標準の不一致": [
+    "[BUG-006] Event.is_friend_add/is_friend_delete の detail_type と OB12 標準が不一致": [
       {
         "document": "bug-tracker.md",
         "line": 93,
         "level": 3,
-        "title": "[BUG-006] Event.is_friend_add/is_friend_delete の detail_type と OB12 標準の不一致"
+        "title": "[BUG-006] Event.is_friend_add/is_friend_delete の detail_type と OB12 標準が不一致"
       }
     ],
-    "[BUG-007] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が不正になる": [
+    "[BUG-007] adapter.clear() が _started_instances をクリアしないため再起動後に状態が不正": [
       {
         "document": "bug-tracker.md",
         "line": 109,
         "level": 3,
-        "title": "[BUG-007] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が不正になる"
+        "title": "[BUG-007] adapter.clear() が _started_instances をクリアしないため再起動後に状態が不正"
       }
     ],
-    "[BUG-008] command.wait_reply() が非推奨の asyncio.get_event_loop() を使用している": [
+    "[BUG-008] command.wait_reply() で非推奨の asyncio.get_event_loop() が使用されている": [
       {
         "document": "bug-tracker.md",
         "line": 125,
         "level": 3,
-        "title": "[BUG-008] command.wait_reply() が非推奨の asyncio.get_event_loop() を使用している"
+        "title": "[BUG-008] command.wait_reply() で非推奨の asyncio.get_event_loop() が使用されている"
       }
     ],
-    "[BUG-009] Event.collect() で key が欠落している場合に黙ってスキップされる": [
+    "[BUG-009] Event.collect() で key が欠落している場合に静かにスキップされる": [
       {
         "document": "bug-tracker.md",
         "line": 141,
         "level": 3,
-        "title": "[BUG-009] Event.collect() で key が欠落している場合に黙ってスキップされる"
+        "title": "[BUG-009] Event.collect() で key が欠落している場合に静かにスキップされる"
       }
     ],
-    "[BUG-010] LazyModule 同期アクセス BaseModule 导致未初始化完成": [
+    "[BUG-010] LazyModule 同期アクセスによる未初期化完了の状態": [
       {
         "document": "bug-tracker.md",
         "line": 157,
         "level": 3,
-        "title": "[BUG-010] LazyModule 同期アクセス BaseModule 导致未初始化完成"
+        "title": "[BUG-010] LazyModule 同期アクセスによる未初期化完了の状態"
       }
     ],
-    "[BUG-011] 設定システムのマルチスレッド書き込みによりデータが失われる": [
+    "[BUG-011] 設定システムのマルチスレッド書き込みによるデータ損失": [
       {
         "document": "bug-tracker.md",
         "line": 173,
         "level": 3,
-        "title": "[BUG-011] 設定システムのマルチスレッド書き込みによりデータが失われる"
+        "title": "[BUG-011] 設定システムのマルチスレッド書き込みによるデータ損失"
       }
     ],
-    "[BUG-012] SDK プロパティアクセスエラーのメッセージが不正確": [
+    "[BUG-012] SDK プロパティアクセスのエラーメッセージが不正確": [
       {
         "document": "bug-tracker.md",
         "line": 192,
         "level": 3,
-        "title": "[BUG-012] SDK プロパティアクセスエラーのメッセージが不正確"
+        "title": "[BUG-012] SDK プロパティアクセスのエラーメッセージが不正確"
       }
     ],
-    "[BUG-013] Uninitializer が未初期化の LazyModule のクリアロジックが複雑すぎる": [
+    "[BUG-013] Uninitializer の未初期化 LazyModule へのクリアロジックが過度に複雑": [
       {
         "document": "bug-tracker.md",
         "line": 211,
         "level": 3,
-        "title": "[BUG-013] Uninitializer が未初期化の LazyModule のクリアロジックが複雑すぎる"
+        "title": "[BUG-013] Uninitializer の未初期化 LazyModule へのクリアロジックが過度に複雑"
       }
     ],
-    "[BUG-014] Windows で CTRL+C がプログラムの停止に失敗する": [
+    "[BUG-014] Windows での CTRL+C でプログラムが停止しない": [
       {
         "document": "bug-tracker.md",
         "line": 230,
         "level": 3,
-        "title": "[BUG-014] Windows で CTRL+C がプログラムの停止に失敗する"
+        "title": "[BUG-014] Windows での CTRL+C でプログラムが停止しない"
       }
     ],
-    "[BUG-015] モジュール読み込み戦略の並べ替えロジックエラー": [
+    "[BUG-015] モジュール読み込み戦略のソートロジックエラー": [
       {
         "document": "bug-tracker.md",
         "line": 250,
         "level": 3,
-        "title": "[BUG-015] モジュール読み込み戦略の並べ替えロジックエラー"
+        "title": "[BUG-015] モジュール読み込み戦略のソートロジックエラー"
       }
     ],
-    "[BUG-016] アダプターミドルウェアが None を返すとイベントデータが失われる": [
+    "[BUG-016] アダプタミドルウェアが None を返すことでイベントデータが失われる": [
       {
         "document": "bug-tracker.md",
         "line": 266,
         "level": 3,
-        "title": "[BUG-016] アダプターミドルウェアが None を返すとイベントデータが失われる"
+        "title": "[BUG-016] アダプタミドルウェアが None を返すことでイベントデータが失われる"
       }
     ],
-    "[BUG-017] 設定ファイルパスが作業ディレクトリに依存する": [
+    "[BUG-017] 設定ファイルパスが作業ディレクトリに依存している": [
       {
         "document": "bug-tracker.md",
         "line": 282,
         "level": 3,
-        "title": "[BUG-017] 設定ファイルパスが作業ディレクトリに依存する"
+        "title": "[BUG-017] 設定ファイルパスが作業ディレクトリに依存している"
       }
     ],
-    "[BUG-018] サブプロセスモード `ep run <script>` でスクリプトのサブパッケージが見つからない": [
+    "[BUG-018] サブプロセスモード `ep run <script>` でスクリプトがあるディレクトリのサブパッケージが見つからない": [
       {
         "document": "bug-tracker.md",
         "line": 298,
         "level": 3,
-        "title": "[BUG-018] サブプロセスモード `ep run <script>` でスクリプトのサブパッケージが見つからない"
+        "title": "[BUG-018] サブプロセスモード `ep run <script>` でスクリプトがあるディレクトリのサブパッケージが見つからない"
       }
     ],
-    "[BUG-019] SQL クエリビルダーが有効なワイルドカードと列式を拒否する": [
+    "[BUG-019] SQL クエリビルダが合法なワイルドカードと列式を拒否する": [
       {
         "document": "bug-tracker.md",
         "line": 314,
         "level": 3,
-        "title": "[BUG-019] SQL クエリビルダーが有効なワイルドカードと列式を拒否する"
+        "title": "[BUG-019] SQL クエリビルダが合法なワイルドカードと列式を拒否する"
+      }
+    ],
+    "[BUG-020] _resolve_account() アカウント解釈の回帰（_accounts_data が未填充）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 340,
+        "level": 3,
+        "title": "[BUG-020] _resolve_account() アカウント解釈の回帰（_accounts_data が未填充）"
       }
     ],
     "__init__.py": [
@@ -3385,7 +3393,7 @@
     "`hasattr` と `dir` のサポート": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 320,
+        "line": 356,
         "level": 3,
         "title": "`hasattr` と `dir` のサポート"
       }
@@ -4681,7 +4689,7 @@
     "インタラクティブメソッドの例": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 228,
+        "line": 233,
         "level": 4,
         "title": "インタラクティブメソッドの例"
       }
@@ -5228,12 +5236,12 @@
         "title": "コマンド優先度"
       }
     ],
-    "コマンド基本": [
+    "コマンド基礎": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 282,
+        "line": 313,
         "level": 4,
-        "title": "コマンド基本"
+        "title": "コマンド基礎"
       }
     ],
     "コマンド引数": [
@@ -5259,7 +5267,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 280,
+        "line": 311,
         "level": 3,
         "title": "コマンド情報"
       }
@@ -6685,7 +6693,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 289,
+        "line": 325,
         "level": 3,
         "title": "プラットフォーム拡張メソッド"
       },
@@ -6728,12 +6736,12 @@
         "title": "プラットフォーム機能照会"
       }
     ],
-    "プラットフォーム機能確認": [
+    "プラットフォーム能力照会": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 178,
         "level": 4,
-        "title": "プラットフォーム機能確認"
+        "title": "プラットフォーム能力照会"
       }
     ],
     "プラットフォーム関連用語": [
@@ -7190,20 +7198,20 @@
         "title": "メソッドリスト"
       }
     ],
-    "メソッド一覧表": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 87,
-        "level": 2,
-        "title": "メソッド一覧表"
-      }
-    ],
     "メソッド解決の優先順位": [
       {
         "document": "api-reference/event-system.md",
         "line": 620,
         "level": 3,
         "title": "メソッド解決の優先順位"
+      }
+    ],
+    "メソッド速查表": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 87,
+        "level": 2,
+        "title": "メソッド速查表"
       }
     ],
     "メタイベント": [
@@ -7400,18 +7408,18 @@
         "title": "メッセージセグメント標準"
       }
     ],
-    "メッセージタイプ判定": [
+    "メッセージタイプ判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 38,
         "level": 2,
-        "title": "メッセージタイプ判定"
+        "title": "メッセージタイプ判断"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 131,
         "level": 3,
-        "title": "メッセージタイプ判定"
+        "title": "メッセージタイプ判断"
       }
     ],
     "メッセージフィルタリング": [
@@ -8276,28 +8284,6 @@
         "title": "レスポンス"
       }
     ],
-    "レプリーメソッド": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 51,
-        "level": 2,
-        "title": "レプリーメソッド"
-      },
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 162,
-        "level": 3,
-        "title": "レプリーメソッド"
-      }
-    ],
-    "レプリー待ち機能": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 193,
-        "level": 3,
-        "title": "レプリー待ち機能"
-      }
-    ],
     "レート制限": [
       {
         "document": "advanced/router.md",
@@ -8690,12 +8676,12 @@
         "title": "例外階層"
       }
     ],
-    "修正済みバグ": [
+    "修正済みのバグ": [
       {
         "document": "bug-tracker.md",
         "line": 7,
         "level": 2,
-        "title": "修正済みバグ"
+        "title": "修正済みのバグ"
       }
     ],
     "修飾メソッド": [
@@ -8720,6 +8706,14 @@
         "line": 631,
         "level": 2,
         "title": "優先度システム"
+      }
+    ],
+    "元データ": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 320,
+        "level": 3,
+        "title": "元データ"
       }
     ],
     "入力プロトコル": [
@@ -9074,6 +9068,20 @@
         "title": "品質チェックリスト"
       }
     ],
+    "回答機能": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 51,
+        "level": 2,
+        "title": "回答機能"
+      },
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 162,
+        "level": 3,
+        "title": "回答機能"
+      }
+    ],
     "固有のイベントタイプ": [
       {
         "document": "platform-guide/discord.md",
@@ -9212,20 +9220,20 @@
         "title": "基本メッセージタイプ"
       }
     ],
-    "基本レプリー": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 164,
-        "level": 4,
-        "title": "基本レプリー"
-      }
-    ],
-    "基本判定": [
+    "基本判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 133,
         "level": 4,
-        "title": "基本判定"
+        "title": "基本判断"
+      }
+    ],
+    "基本回答": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 164,
+        "level": 4,
+        "title": "基本回答"
       }
     ],
     "基本情報": [
@@ -10224,12 +10232,12 @@
         "title": "核心概念"
       }
     ],
-    "核心機能": [
+    "核心特性": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 5,
         "level": 2,
-        "title": "核心機能"
+        "title": "核心特性"
       }
     ],
     "検索メソッド": [
@@ -10658,12 +10666,12 @@
         "title": "登録 API"
       }
     ],
-    "登録されたメソッドの確認": [
+    "登録されたメソッドの照会": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 311,
+        "line": 347,
         "level": 3,
-        "title": "登録されたメソッドの確認"
+        "title": "登録されたメソッドの照会"
       }
     ],
     "登録と解除": [
@@ -10924,12 +10932,12 @@
         "title": "要求イベントメソッド"
       }
     ],
-    "要求タイプ判定": [
+    "要求タイプ判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 157,
         "level": 4,
-        "title": "要求タイプ判定"
+        "title": "要求タイプ判断"
       }
     ],
     "要求情報": [
@@ -11245,7 +11253,7 @@
     "跨プラットフォーム拡張（ワイルドカード）": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 327,
+        "line": 363,
         "level": 3,
         "title": "跨プラットフォーム拡張（ワイルドカード）"
       }
@@ -11296,6 +11304,14 @@
         "line": 57,
         "level": 3,
         "title": "返信待ち"
+      }
+    ],
+    "返信待ち機能": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 193,
+        "level": 3,
+        "title": "返信待ち機能"
       }
     ],
     "返信機能": [
@@ -11480,12 +11496,12 @@
         "title": "通知イベント処理"
       }
     ],
-    "通知タイプ判定": [
+    "通知タイプ判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 145,
         "level": 4,
-        "title": "通知タイプ判定"
+        "title": "通知タイプ判断"
       }
     ],
     "通知操作者": [
@@ -11725,7 +11741,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 346,
+        "line": 382,
         "level": 2,
         "title": "関連ドキュメント"
       },

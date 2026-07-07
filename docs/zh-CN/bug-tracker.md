@@ -334,3 +334,38 @@
 3. INSERT/UPDATE 列名仍保持严格白名单校验（仅允许简单标识符）
 
 **修复日期**: 2026/06/29
+
+---
+
+### [BUG-020] _resolve_account() 账户解析回归（_accounts_data 未填充）
+
+**问题**: 2.5.2 配置系统重构后，声明了 `AccountConfigClass` 的多账户适配器在调用 `wait_reply`、`reply` 等需要发送消息的方法时，报错 `ValueError("未声明 AccountConfigClass，无法解析账户")`。即使适配器正确配置了多账户信息，账户解析仍然失败。
+
+**原因**: 2.5.2-dev.5 将 `_load_accounts()`（负责读取配置 + 校验 + 填充 `_accounts_data`）重构为 `_ensure_accounts_exist()`（仅生成配置模板），但 `_resolve_account()` 仍检查 `self._accounts_data is None`。由于 `_ensure_accounts_exist()` 不再填充 `_accounts_data`，该属性始终为 `None`，导致 `_resolve_account()` 提前返回 `(None, None)`，账户解析完全失效。
+
+**根因链路**:
+```
+_load_accounts() 被删除
+  → __init__ 不再填充 _accounts_data
+    → _accounts_data 恒为 None
+      → _resolve_account() 检查 _accounts_data is None → return (None, None)
+        → 下游调用 _resolve_account 的地方（如 call_api）拿到 None
+          → 触发报错
+```
+
+**影响版本**: 2.5.2-dev.5 - 2.5.2
+
+**修复版本**: 2.5.3
+
+**修复内容**: 在 `BaseAdapter.__init__` 中，`_ensure_accounts_exist()` 之后恢复 `_accounts_data` 的填充：
+```python
+if self.AccountConfigClass is not None:
+    self._ensure_accounts_exist()
+    self._accounts_data = self.accounts  # 恢复填充，数据源为实时读取的 accounts 属性
+```
+`_resolve_account()` 逻辑保持不变，完全向后兼容：
+- 不声明 `AccountConfigClass` 的适配器：`_accounts_data` 保持 `None` → 返回 `(None, None)`
+- 声明了 `AccountConfigClass` 的适配器：`_accounts_data` 被填充 → 正常解析
+- 覆写 `_load_accounts` 或手动设置 `_accounts_data` 的适配器：在 `super().__init__()` 后覆盖，优先级最高
+
+**修复日期**: 2026/07/07

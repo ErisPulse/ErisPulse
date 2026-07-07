@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1302,
+  "total_keywords": 1303,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3102,12 +3102,12 @@
         "title": "Windows PowerShell 执行策略"
       }
     ],
-    "[BUG-001] Init 指令適配器設定路徑類型錯誤": [
+    "[BUG-001] Init 指令適配器配置路徑類型錯誤": [
       {
         "document": "bug-tracker.md",
         "line": 9,
         "level": 3,
-        "title": "[BUG-001] Init 指令適配器設定路徑類型錯誤"
+        "title": "[BUG-001] Init 指令適配器配置路徑類型錯誤"
       }
     ],
     "[BUG-002] 重啟後指令事件失效": [
@@ -3126,12 +3126,12 @@
         "title": "[BUG-003] 生命週期事件處理器未清理"
       }
     ],
-    "[BUG-004] Event.confirm() 確認詞集合指派重複": [
+    "[BUG-004] Event.confirm() 確認詞集合賦值重複": [
       {
         "document": "bug-tracker.md",
         "line": 61,
         "level": 3,
-        "title": "[BUG-004] Event.confirm() 確認詞集合指派重複"
+        "title": "[BUG-004] Event.confirm() 確認詞集合賦值重複"
       }
     ],
     "[BUG-005] MessageBuilder.at 方法定義被覆蓋（死程式碼）": [
@@ -3182,12 +3182,12 @@
         "title": "[BUG-010] LazyModule 同步存取 BaseModule 導致未初始化完成"
       }
     ],
-    "[BUG-011] 設定系統多執行緒寫入導致資料遺失": [
+    "[BUG-011] 配置系統多執行緒寫入導致資料遺失": [
       {
         "document": "bug-tracker.md",
         "line": 173,
         "level": 3,
-        "title": "[BUG-011] 設定系統多執行緒寫入導致資料遺失"
+        "title": "[BUG-011] 配置系統多執行緒寫入導致資料遺失"
       }
     ],
     "[BUG-012] SDK 屬性存取錯誤資訊不準確": [
@@ -3230,12 +3230,12 @@
         "title": "[BUG-016] 適配器中介軟體傳回 None 導致事件資料遺失"
       }
     ],
-    "[BUG-017] 設定檔路徑相依工作目錄": [
+    "[BUG-017] 配置檔案路徑依賴工作目錄": [
       {
         "document": "bug-tracker.md",
         "line": 282,
         "level": 3,
-        "title": "[BUG-017] 設定檔路徑相依工作目錄"
+        "title": "[BUG-017] 配置檔案路徑依賴工作目錄"
       }
     ],
     "[BUG-018] 子行程模式 `ep run <script>` 找不到腳本所在目錄的子套件": [
@@ -3252,6 +3252,14 @@
         "line": 314,
         "level": 3,
         "title": "[BUG-019] SQL 查詢建構器拒絕合法萬用字元和欄位運算式"
+      }
+    ],
+    "[BUG-020] _resolve_account() 帳戶解析回歸（_accounts_data 未填充）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 340,
+        "level": 3,
+        "title": "[BUG-020] _resolve_account() 帳戶解析回歸（_accounts_data 未填充）"
       }
     ],
     "__init__.py": [
@@ -3281,7 +3289,7 @@
     "`hasattr` 和 `dir` 支援": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 325,
+        "line": 356,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支援"
       }
@@ -4279,7 +4287,7 @@
     "互動方法示例": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 228,
+        "line": 233,
         "level": 4,
         "title": "互動方法示例"
       }
@@ -5047,7 +5055,7 @@
     "原始資料": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 289,
+        "line": 320,
         "level": 3,
         "title": "原始資料"
       }
@@ -5211,7 +5219,7 @@
     "命令基礎": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 282,
+        "line": 313,
         "level": 4,
         "title": "命令基礎"
       }
@@ -5255,7 +5263,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 280,
+        "line": 311,
         "level": 3,
         "title": "命令資訊"
       }
@@ -6563,7 +6571,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 294,
+        "line": 325,
         "level": 3,
         "title": "平台擴展方法"
       },
@@ -7826,14 +7834,6 @@
         "title": "本地測試"
       }
     ],
-    "机器人資訊": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 98,
-        "level": 4,
-        "title": "机器人資訊"
-      }
-    ],
     "架構概覽": [
       {
         "document": "README.md",
@@ -7873,7 +7873,7 @@
     "查詢已註冊方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 316,
+        "line": 347,
         "level": 3,
         "title": "查詢已註冊方法"
       }
@@ -7960,6 +7960,14 @@
         "line": 17,
         "level": 3,
         "title": "核心原則"
+      }
+    ],
+    "核心字段方法": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 12,
+        "level": 2,
+        "title": "核心字段方法"
       }
     ],
     "核心差異點": [
@@ -8074,14 +8082,6 @@
         "line": 177,
         "level": 2,
         "title": "核心模組說明"
-      }
-    ],
-    "核心欄位方法": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 12,
-        "level": 2,
-        "title": "核心欄位方法"
       }
     ],
     "核心特性": [
@@ -8414,6 +8414,14 @@
         "line": 258,
         "level": 3,
         "title": "機器人公告看板事件示例"
+      }
+    ],
+    "機器人資訊": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 98,
+        "level": 4,
+        "title": "機器人資訊"
       }
     ],
     "檢查安裝": [
@@ -9339,7 +9347,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 351,
+        "line": 382,
         "level": 2,
         "title": "相關文件"
       },
@@ -10627,7 +10635,7 @@
     "跨平台擴展（通配符）": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 332,
+        "line": 363,
         "level": 3,
         "title": "跨平台擴展（通配符）"
       }
