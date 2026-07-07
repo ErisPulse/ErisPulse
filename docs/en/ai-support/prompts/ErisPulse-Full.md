@@ -5029,25 +5029,25 @@ sdk.router.get_module_urls("MyModule")
 
 # Adapter Core Concepts
 
-Understanding the core concepts of the ErisPulse Adapter is the foundation for developing adapters.
+Understanding the core concepts of the ErisPulse adapter is the foundation for developing adapters.
 
 ## Adapter Architecture
 
 ### Component Relationships
 
 ```
-Forward Conversion (Receive Direction)                           Reverse Conversion (Send Direction)
-─────────────────────────────────────────                           ────────────────────────────────────
-                                             
-┌──────────────────┐                        ┌──────────────────┐
-│ Native Platform Event     │                        │ Module Built Message     │
-└────────┬─────────┘                        └────────┬─────────┘
-         │                                           │
-         ↓                                           ↓
+Forward Conversion (Receive Direction)                  Reverse Conversion (Send Direction)
+─────────────────                                        ─────────────────
+                                                                 
+┌──────────────────┐                                    ┌──────────────────┐
+│ Platform Native Event                                   │ Module Constructed Message
+└────────┬─────────┘                                    └────────┬─────────┘
+         │                                                    │
+         ↓                                                    ↓
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│                  │   │ Adapter (MyAdapter) │   │ Send.Raw_ob12()  │
-│  Converter       │   │ ┌──────────────┐ │   │ (Reverse Conversion Entry)   │
-│  (Event Converter)    │──→│ │              │ │   │                  │
+│                  │   │  Adapter (MyAdapter) │   │                  │
+│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
+│  (Event Converter)│──→│ │              │ │   │ (Reverse Conversion Entry) │
 │                  │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
@@ -5058,7 +5058,7 @@ Forward Conversion (Receive Direction)                           Reverse Convers
                        └────────┬─────────┘             │
                                 │                      ↓
                                 ↓              ┌──────────────────┐
-                       ┌──────────────────┐    │ Standard Response Format     │
+                       ┌──────────────────┐    │ Standard Response Format │
                        │  Event System         │    └──────────────────┘
                        └────────┬─────────┘
                                 │
@@ -5069,19 +5069,19 @@ Forward Conversion (Receive Direction)                           Reverse Convers
 ```
 
 **Core Symmetry**:
-- **Forward Conversion** (Converter): Native Platform Event → OneBot12 Standard Event, raw data preserved in `{platform}_raw`
-- **Reverse Conversion** (Raw_ob12): OneBot12 Message Segment → Platform API Call, returns standard response format
+- **Forward Conversion** (Converter): Platform native event → OneBot12 standard event, original data retained in `{platform}_raw`
+- **Reverse Conversion** (Raw_ob12): OneBot12 message segment → Platform API call, returns standard response format
 
 ## AdapterManager Adapter Manager
 
-`AdapterManager` is the core component of the ErisPulse adapter system, responsible for managing the registration, startup, shutdown, and event dispatching of all platform adapters.
+`AdapterManager` is the core component of the ErisPulse adapter system, responsible for managing the registration, startup, shutdown, and event distribution of all platform adapters.
 
-### Core Features
+### Core Functions
 
 - **Adapter Registration**: Register and manage multiple platform adapters
-- **Lifecycle Management**: Control the startup and shutdown of adapters
-- **Event Dispatching**: Dispatch OneBot12 standard events and native platform events
-- **Configuration Management**: Manage the enabled/disabled state of adapters
+- **Lifecycle Management**: Control adapter startup and shutdown
+- **Event Distribution**: Distribute OneBot12 standard events and platform native events
+- **Configuration Management**: Manage adapter enable/disable status
 - **Middleware Support**: Support OneBot12 event middleware
 
 ### Basic Usage
@@ -5111,7 +5111,7 @@ await sdk.adapter.shutdown()
 
 ### Startup and Shutdown
 
-#### Start Adapter
+#### Startup Adapter
 
 ```python
 # Start all registered adapters
@@ -5125,14 +5125,14 @@ await sdk.adapter.startup(["platform1", "platform2"])
 
 1. Submit `adapter.start` lifecycle event
 2. Submit `adapter.status.change` event (starting)
-3. Start each adapter in parallel
+3. Parallel start individual adapters
 4. If startup fails, automatically retry (exponential backoff strategy)
-5. After startup succeeds, submit `adapter.status.change` event (started)
+5. After successful startup, submit `adapter.status.change` event (started)
 
 **Retry Mechanism**:
 
-- First 4 retries: 60s, 10m, 30m, 60m
-- 5th and later: 3 hour fixed interval
+- First 4 retries: 60s, 10min, 30min, 60min
+- 5th and subsequent: 3 hours fixed interval
 
 #### Shutdown Adapter
 
@@ -5145,7 +5145,7 @@ await sdk.adapter.shutdown()
 
 1. Submit `adapter.stop` lifecycle event
 2. Call `shutdown()` method of all adapters
-3. Close route server
+3. Close router server
 4. Clear event handlers
 5. Submit `adapter.stopped` lifecycle event
 
@@ -5186,12 +5186,12 @@ enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
 ```python
 from ErisPulse import sdk
 
-# Listen to standard message events on all platforms
+# Listen to standard message events from all platforms
 @sdk.adapter.on("message")
 async def handle_message(data):
     print(f"Received OneBot12 message: {data}")
 
-# Listen to standard message events on specific platform
+# Listen to standard message events from specific platform
 @sdk.adapter.on("message", platform="myplatform")
 async def handle_platform_message(data):
     print(f"Received myplatform message: {data}")
@@ -5202,33 +5202,33 @@ async def handle_any_event(data):
     print(f"Received event: {data.get('type')}")
 ```
 
-#### Native Platform Events
+#### Platform Native Events
 
 ```python
-# Listen to native events of specific platform
+# Listen to native events from specific platform
 @sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
 async def handle_raw_event(data):
-    print(f"Received native event: {data}")
+    print(f"Received raw event: {data}")
 
-# Listen to native events on all platforms (wildcard)
+# Listen to native events from all platforms (wildcard)
 @sdk.adapter.on("*", raw=True)
 async def handle_all_raw_events(data):
-    print(f"Received native event: {data}")
+    print(f"Received raw event: {data}")
 ```
 
-#### Event Dispatching Mechanism
+#### Event Distribution Mechanism
 
 When calling `adapter.emit(event_data)`:
 
 1. **Middleware Processing**: Execute all OneBot12 middleware first
-2. **Standard Event Dispatching**: Dispatch to matching OneBot12 event handlers
-3. **Native Event Dispatching**: If raw data exists, dispatch to native event handlers
+2. **Standard Event Distribution**: Distribute to matching OneBot12 event handlers
+3. **Native Event Distribution**: If original data exists, distribute to native event handlers
 
 **Matching Rules**:
 
 - Exact match: `@sdk.adapter.on("message")` only matches `message` event
 - Wildcard: `@sdk.adapter.on("*")` matches all events
-- Platform filter: `platform="myplatform"` only dispatches events for specified platform
+- Platform filter: `platform="myplatform"` only distributes events from specified platform
 
 ### Middleware
 
@@ -5237,29 +5237,29 @@ When calling `adapter.emit(event_data)`:
 ```python
 @sdk.adapter.middleware
 async def logging_middleware(data):
-    """Log middleware"""
+    """Logging middleware"""
     print(f"Processing event: {data.get('type')}")
     return data  # Must return data
 
 @sdk.adapter.middleware
 async def filter_middleware(data):
     """Event filter middleware"""
-    # Filter out unwanted events
+    # Filter unwanted events
     if data.get("type") == "notice":
-        return None  # When middleware returns None, the middleware chain ignores this return value and preserves original data to continue propagation
-    return data  # Must return data to continue propagation
+        return None  # When middleware returns None, the middleware chain ignores this return value, preserves original data and continues passing
+    return data  # Must return data to continue passing
 ```
 
 #### Middleware Execution Order
 
-Middleware executes in the order of registration, with later-registered middleware executing first.
+Middleware execute in registration order; the most recently registered middleware executes first.
 
-> **Note**: If middleware returns `None` (e.g., forgot `return data`), the framework will ignore that return value and preserve original data to continue propagation, while outputting a warning-level log. This ensures that a single middleware failure does not cause the entire event chain to break.
+> **Note**: If a middleware returns `None` (e.g., forgetting `return data`), the framework ignores that return value and preserves the original data to continue passing, while outputting a warning level log. This ensures a single middleware failure does not interrupt the entire event chain.
 
 ```python
 # Registration order
 sdk.adapter.middleware(middleware1)  # Executes last
-sdk.adapter.middleware(middleware2)  # Executes middle
+sdk.adapter.middleware(middleware2)  # Executes in middle
 sdk.adapter.middleware(middleware3)  # Executes first
 
 # Execution order: middleware3 -> middleware2 -> middleware1
@@ -5275,10 +5275,10 @@ if adapter:
     await adapter.Send.To("user", "123").Text("Hello")
 ```
 
-#### Attribute Access
+#### Property Access
 
 ```python
-# Access via attribute name (case-insensitive)
+# Access via property name (case-insensitive)
 adapter = sdk.adapter.myplatform
 await adapter.Send.To("user", "123").Text("Hello")
 ```
@@ -5294,7 +5294,7 @@ from ErisPulse.runtime.config_schema import BaseConfig, BotAccountConfig
 
 @dataclass
 class MyConfig(BaseConfig):
-    """Adapter configuration (automatically managed by framework after declaration)"""
+    """Adapter configuration (framework automatically manages after declaration)"""
     token: str = field(
         default="",
         metadata={
@@ -5306,7 +5306,7 @@ class MyConfig(BaseConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyConfig  # Declare configuration class
+    ConfigClass = MyConfig  # Declare config class
     
     # No need to override __init__, framework handles automatically:
     # - self.sdk, self.logger
@@ -5329,7 +5329,7 @@ class MyAdapter(BaseAdapter):
 
 ### Configuration Management
 
-The framework provides declarative configuration management, defining configuration structures via dataclass, and automatically handles loading, validation, and template generation.
+The framework provides declarative configuration management, defining configuration structure through dataclass, automatically handling loading, validation, and template generation.
 
 #### Single Account Configuration
 
@@ -5362,13 +5362,13 @@ class TelegramAdapter(BaseAdapter):
 
 #### Multi-Account Configuration
 
-The `BotAccountConfig` base class provides `enabled` and `name` fields. The vast majority of adapters can automatically obtain `bot_id` from platform protocols or login responses, injecting it into the account configuration during event conversion.：
+The `BotAccountConfig` base class provides `enabled` and `name` fields. The vast majority of adapters can automatically obtain `bot_id` from platform protocols or login responses and inject it into account configurations during event conversion.:
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.runtime.config_schema import BotAccountConfig
 
-# Most adapters: bot_id obtained automatically at runtime, no need to configure
+# Most adapters: bot_id automatically obtained at runtime, no need to configure
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
@@ -5376,7 +5376,7 @@ class MyBotConfig(BotAccountConfig):
         "required": True,
     })
 
-# If bot_id cannot be obtained during login, user can fill in configuration
+# If bot_id cannot be obtained during login, let users fill it in configuration
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
     bot_id: str = field(default="", metadata={
@@ -5399,30 +5399,77 @@ class MyAdapter(BaseAdapter):
 
 #### metadata Convention
 
-The field metadata serves both TOML comment generation and WebUI form rendering:
+Field metadata serves both TOML comment generation and WebUI form rendering:
 
 ```python
 metadata = {
     "description": str | dict,  # Field description (supports i18n)
-    "required": bool,         # Whether required (validation + WebUI required marker)
-    "secret": bool,           # Whether sensitive (WebUI displays as ***, redacted in logs)
-    "ui": {                   # WebUI widget configuration (old name "webui" still compatible)
-        "widget": str,        # Widget type: "text" | "switch" | "select" | "number" | "password"
+    "required": bool,         # Required (validation + WebUI required marker)
+    "secret": bool,           # Sensitive (WebUI displays as ***, redacted in logs)
+    "ui": {                   # WebUI control configuration (old name "webui" still compatible)
+        "widget": str,        # Control type: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # Group: "basic" | "advanced" | "connection" etc.
-        "order": int,         # Sort weight (smaller means earlier)
-        "options": list,      # Options for select widget [{label, value}]
-        "placeholder": str,   # Input placeholder
+        "order": int,         # Sort weight (smaller comes first)
+        "options": list,      # Select control options [{label, value}], label supports i18n
+        "placeholder": str | dict,  # Input placeholder (supports i18n)
     },
-    "extra": dict,            # Additional extension fields (passed through to schema)
+    "extra": dict,            # Extra extension fields (passed through to schema)
 }
 ```
 
-`description` supports two formats:
+All user-visible text fields support i18n, unified format: `{"i18n": "key", "default": "text"}`,
+pure strings are passed through as is (backward compatible). Supported i18n fields:
 
-- **Plain string** (backward compatible): `"Bot Token"`
-- **i18n dict** (recommended, supports multiple languages): `{"i18n": "my_adapter.token", "default": "Bot Token"}`
+| Field | Location | Description |
+|------|------|------|
+| `description` | field metadata | Field description |
+| `options[].label` | `ui.options` | Select control option label |
+| `placeholder` | `ui.placeholder` | Input placeholder |
+| `group_labels` | `_schema_meta` | Group display name (Dashboard partition title) |
 
-When using an i18n dict, you must register the translation key to the i18n system in advance (see [i18n docs](../../advanced/i18n.md#field-multilingual) for details).
+When using i18n, translation keys need to be registered to the i18n system in advance (see [i18n documentation](../../advanced/i18n.md#configuring-field-multi-language)).
+
+**description / placeholder / options label** examples:
+
+```python
+token: str = field(
+    default="",
+    metadata={
+        "description": {"i18n": "my_adapter.token", "default": "Bot Token"},
+        "ui": {
+            "widget": "text",
+            "placeholder": {"i18n": "my_adapter.token.ph", "default": "Please enter Token"},
+        },
+    },
+)
+mode: str = field(
+    default="a",
+    metadata={
+        "description": {"i18n": "my_adapter.mode", "default": "Mode"},
+        "ui": {
+            "widget": "select",
+            "options": [
+                {"label": {"i18n": "my_adapter.mode.a", "default": "Option A"}, "value": "a"},
+                {"label": "Pure string label", "value": "b"},  # Pure string passed through as is
+            ],
+        },
+    },
+)
+```
+
+**group_labels** example (declare after configuration class definition):
+
+```python
+MyConfig._schema_meta = {
+    "group_labels": {
+        "basic": {"i18n": "my_adapter.group.basic", "default": "Basic Settings"},
+        "advanced": {"i18n": "my_adapter.group.advanced", "default": "Advanced Settings"},
+    }
+}
+```
+
+The framework's `resolve_config_schema()` automatically resolves the i18n keys of all the above fields based on the current language;
+`get_config_schema()` passes through the i18n dictionary as is, left to the frontend to parse.
 
 #### Account Resolution
 
@@ -5432,12 +5479,12 @@ Multi-account adapters can use `_resolve_account()` to automatically resolve the
 async def call_api(self, endpoint: str, **params):
     account_id = params.pop("account_id", None)
     name, account = self._resolve_account(account_id)
-    # name: Account name, account: Config instance
+    # name: account name, account: config instance
 ```
 
-Resolution strategy: Account name match → `bot_id` field match → Other str field match → First enabled account.
+Resolution strategy: account name match → `bot_id` field match → other str field match → first enabled account.
 
-#### Config Hot Reload
+#### Configuration Hot Update
 
 Subclasses can override `on_config_update()` to respond to configuration changes:
 
@@ -5447,19 +5494,19 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Token updated, reconnecting")
+            self.logger.info("Token updated, will reconnect")
 ```
 
 ### Initialization Process
 
-The framework automatically completes the following in `BaseAdapter.__init__(self, sdk=None)`:
+The framework automatically completes the following work in `BaseAdapter.__init__(self, sdk=None)`:
 
 1. **SDK Reference**: Sets `self.sdk`, `self.logger`
 2. **Send/Request Factory**: Creates `self.Send` and `self.Request`
-3. **Config Template**: If `ConfigClass` is declared, automatically generates default configuration template (first time)
+3. **Configuration Template**: If `ConfigClass` is declared, automatically generates default configuration template (first time)
 4. **Account Template**: If `AccountConfigClass` is declared, automatically generates default account template (first time)
 
-Configuration is read in real-time via `self.cfg` / `self.accounts` (each access reads the latest value from the config store). `self.config` as a compatibility alias for `self.cfg` can still be used.
+Configuration is read real-time via `self.cfg` / `self.accounts` (reads the latest value from the config store every time it is accessed). `self.config` as a compatible alias for `self.cfg` can still be used.
 
 Most adapters do not need to override `__init__`. If custom initialization is needed:
 
@@ -5480,32 +5527,32 @@ class MyAdapter(BaseAdapter):
 ```python
 class MyAdapter(BaseAdapter):
     class Send(BaseAdapter.Send):
-        """Send nested class, inheriting from BaseAdapter.Send"""
+        """Send nested class, inherits from BaseAdapter.Send"""
         pass
 ```
 
-### Available Properties
+### Available Attributes
 
-The `Send` class automatically sets the following properties when called:
+The `Send` class automatically sets the following attributes when called:
 
-| Property | Description | How to Set |
+| Attribute | Description | Setting Method |
 |-----|------|---------|
 | `_target_id` | Target ID | `To(id)` or `To(type, id)` |
-| `_target_type` | Target Type | `To(type, id)` |
-| `_target_to` | Simplified Target ID | `To(id)` |
-| `_account_id` | Sending Account ID | `Using(account_id)` |
-| `_adapter` | Adapter Instance | Automatically set |
-| `_at_user_ids` | @User List | `At(user_id)` |
-| `_reply_message_id` | Reply Message ID | `Reply(message_id)` |
-| `_at_all` | Whether @All | `AtAll()` |
+| `_target_type` | Target type | `To(type, id)` |
+| `_target_to` | Simplified target ID | `To(id)` |
+| `_account_id` | Sender account ID | `Using(account_id)` |
+| `_adapter` | Adapter instance | Automatically set |
+| `_at_user_ids` | @user list | `At(user_id)` |
+| `_reply_message_id` | Message ID being replied to | `Reply(message_id)` |
+| `_at_all` | Whether to @all | `AtAll()` |
 
-> **Recommendation**: Use the `self.send_context` property to get `target_type`, `target_id`, `account_id` at once, which is clearer than directly accessing instance variables.
+> **Recommended**: Use the `self.send_context` property to get `target_type`, `target_id`, and `account_id` in one go, which is clearer than directly accessing instance variables.
 
 ### Framework Helper Methods
 
 | Method/Property | Description |
 |-----------|------|
-| `self._apply_modifiers(message)` | Merge At/AtAll/Reply modifier state into message segment list |
+| `self._apply_modifiers(message)` | Merge At/AtAll/Reply modifier states into the message segment list |
 | `self.send_context` | Returns `{target_type, target_id, account_id}` dictionary |
 
 ### Basic Methods
@@ -5513,7 +5560,7 @@ The `Send` class automatically sets the following properties when called:
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """Recommended implementation"""
+        """Recommended implementation method"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -5547,7 +5594,7 @@ class Send(BaseAdapter.Send):
 
 ## Event Converter
 
-### Conversion Process
+### Conversion Flow
 
 ```
 Platform Raw Event
@@ -5570,7 +5617,7 @@ All converted events must contain:
     "platform": "Platform name",
     "self": {
         "platform": "Platform name",
-        "user_id": "Bot ID"     # Must match bot_id
+        "user_id": "Bot ID"     # Must be consistent with bot_id
     },
     "{platform}_raw": {...},       # Raw data (required)
     "{platform}_raw_type": "..."    # Raw type (required)
@@ -5582,7 +5629,7 @@ All converted events must contain:
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """Convert native platform event to OneBot12 standard format"""
+        """Convert platform native event to OneBot12 standard format"""
         if not isinstance(raw_event, dict):
             return None
         
@@ -5676,9 +5723,9 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> **Route Info Query**: Adapter-registered routes (HTTP, WebSocket, SSE) can be queried for complete connection addresses (including `base_url` + path) via `sdk.adapter.get_connection_info(platform)` and `sdk.router.get_module_urls(module_name)`. See [Getting Started - Connection Info and Route Discovery](getting-started.md#9-connection-info-and-route-discovery) and [SSE Support](getting-started.md#10-sse-server-sent-events-support).
+> **Route Information Query**: Adapter registered routes (HTTP, WebSocket, SSE) can be queried for complete connection addresses (including `base_url` + path) via `sdk.adapter.get_connection_info(platform)` and `sdk.router.get_module_urls(module_name)`. See [Getting Started with Adapter Development - Connection Info and Route Discovery](getting-started.md#9-connection-info-and-route-discovery) and [SSE Support](getting-started.md#10-sse-server-sent-events-support) for details.
 
-## API Response Standard
+## API Response Standards
 
 The framework provides `make_response()` and `make_error()` methods to construct standardized responses, eliminating the need to manually build response dictionaries.
 
@@ -5738,7 +5785,7 @@ class MyAdapter(BaseAdapter):
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
         name, account = self._resolve_account(account_id)
-        # Use account.token, account.bot_id, etc.
+        # Use account.token, account.bot_id etc fields
 ```
 
 ### Account Configuration File
@@ -5755,7 +5802,7 @@ token = "token2"
 enabled = true
 ```
 
-### Specify Account to Send
+### Specifying Account for Sending
 
 ```python
 # Use Using method to specify account
@@ -5770,12 +5817,12 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
 ### Relationship between self.user_id and Using
 
-The framework's event reply mechanism automatically extracts `account_id` (priority) or `user_id` from the event's `self` field and passes it as the `Using` parameter. Adapter developers need to ensure the value of `self.user_id` in the Converter matches correctly with `_resolve_account()`.
+The framework's event reply mechanism automatically extracts `account_id` (priority) or `user_id` from the event's `self` field and passes it as the `Using` parameter. Adapter developers need to ensure that the value of `self.user_id` in the Converter can correctly match with `_resolve_account()`.
 
 **Framework Internal Behavior** (`Event._get_adapter_and_target`):
 
 ```python
-# Framework logic for extracting bot_id
+# Framework logic to extract bot_id
 bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
 
 # Only call Using if bot_id is not empty
@@ -5783,7 +5830,7 @@ if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **Key Point**: Even if an adapter only uses one Bot configuration, as long as `self.user_id` is correctly set in the Converter, the framework will pass it as the `Using` parameter. The adapter must ensure `self.user_id` matches the identification field in `AccountConfigClass` (e.g., `bot_id`) so that `_resolve_account()` can match the correct account. If `self.user_id` is empty, the framework will not call `Using`, at which point `account_id` received by `call_api` is `None`, and `_resolve_account(None)` returns the first enabled account.
+> **Key Point**: Even if the adapter uses only one Bot configuration, as long as the Converter correctly sets `self.user_id`, the framework will pass it as the `Using` parameter. The adapter needs to ensure that `self.user_id` is consistent with the identification field (such as `bot_id`) in `AccountConfigClass` so that `_resolve_account()` can match the correct account. If `self.user_id` is empty, the framework will not call `Using`, at which point `account_id` received by `call_api` is `None`, and `_resolve_account(None)` returns the first enabled account.
 
 ## Error Handling
 
@@ -5816,7 +5863,7 @@ class MyAdapter(BaseAdapter):
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
-        # Recommend using SDK built-in client
+        # It is recommended to use SDK built-in client
         from ErisPulse.Core import client
         from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
         resp = await client.post(
@@ -5837,47 +5884,47 @@ async def call_api(self, endpoint: str, **params):
         return self._error_response(str(e), 34000)
 ```
 
-> **Backward Compatibility**: Old adapter code using `aiohttp.ClientSession` directly is unaffected and can still catch `aiohttp.ClientError`. Both ways can coexist. New code is recommended to use `sdk.client` + ErisPulse exception hierarchy.
+> **Backward Compatibility**: Old adapter code using `aiohttp.ClientSession` directly is not affected and can still catch `aiohttp.ClientError`. The two ways can coexist. It is recommended for new code to use `sdk.client` + ErisPulse exception system.
 
 ## Bot Status Management
 
-AdapterManager includes a built-in Bot status tracking system that automatically maintains the online status, activity time, and metadata for all registered Bots.
+AdapterManager includes a built-in Bot status tracking system that automatically maintains the online status, active time, and metadata of all registered Bots.
 
-### Auto-Discovery Mechanism
+### Automatic Discovery Mechanism
 
-When the adapter sends an event via `adapter.emit()`, the framework automatically checks the `self` field in the event:
+When the adapter sends events via `adapter.emit()`, the framework automatically checks the `self` field in the event:
 
-- **Meta events**: Execute corresponding operations based on `detail_type` (connect register/disconnect mark offline/heartbeat update active time)
-- **Regular events** (message/notice/request): Automatically discover Bot and update activity time
+- **meta events**: Perform corresponding operations based on `detail_type` (connect register / disconnect mark offline / heartbeat update active time)
+- **normal events** (message/notice/request): Automatically discover Bot and update active time
 
 ```python
-# All events containing the self field will trigger auto-discovery
+# All events containing the self field will trigger automatic discovery
 await self.adapter.emit({
     "type": "message",
     "platform": "myplatform",
     "self": {"platform": "myplatform", "user_id": "bot123"},
     # ...
 })
-# Bot "bot123" is automatically registered (if first time) and active time updated
+# Bot "bot123" has been automatically registered (if first appearance) and active time updated
 ```
 
 ### Meta Event Types
 
 | `detail_type` | Description | Framework Behavior |
 |---|---|---|
-| `connect` | Bot Connect | Register Bot and trigger `adapter.bot.online` lifecycle event |
-| `disconnect` | Bot Disconnect | Mark Bot offline and trigger `adapter.bot.offline` lifecycle event |
-| `heartbeat` | Bot Heartbeat | Update Bot activity time and metadata |
+| `connect` | Bot Connect | Registers Bot and triggers `adapter.bot.online` lifecycle event |
+| `disconnect` | Bot Disconnect | Marks Bot offline and triggers `adapter.bot.offline` lifecycle event |
+| `heartbeat` | Bot Heartbeat | Updates Bot active time and metadata |
 
 ### Adapter Sending Meta Events
 
-You can send meta events with a single line using `emit_meta()`:
+Sending meta events can be done with a single line using `emit_meta()`:
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
         # Send connect event in one line
-        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="My Robot")
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="My Bot")
 
     async def _on_bot_disconnect(self, bot_id: str):
         await self.emit_meta("disconnect", bot_id)
@@ -5894,12 +5941,12 @@ await self.adapter.emit({
 })
 ```
 
-### `self` Field Extended Info
+### `self` Field Extended Information
 
 In addition to the required `platform` and `user_id`, the `self` field supports the following optional fields:
 
 | Field | Description |
-|---|---|
+|------|------|
 | `user_name` | Bot username |
 | `nickname` | Bot nickname |
 | `avatar` | Bot avatar URL |
@@ -5928,7 +5975,7 @@ summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
 ```
 
-### Listen to Bot Lifecycle
+### Listening to Bot Lifecycle
 
 ```python
 from ErisPulse import sdk
@@ -5946,10 +5993,10 @@ async def on_bot_offline(data):
     sdk.logger.info(f"Bot offline: {platform}/{bot_id}")
 ```
 
-## Related Documentation
+## Related Documents
 
 - [Getting Started with Adapter Development](getting-started.md) - Create your first adapter
-- [SendDSL Deep Dive](send-dsl.md) - Learn message sending
+- [SendDSL Detailed Explanation](send-dsl.md) - Learn message sending
 - [Adapter Best Practices](best-practices.md) - Develop high-quality adapters
 
 
@@ -13265,21 +13312,21 @@ async def chat_handler(event):
 
 # Internationalization (i18n) System
 
-ErisPulse v2.5.0 includes built-in full internationalization support. The framework core and CLI interface can automatically switch display text according to your system language, and external modules can also register their own translations.
+ErisPulse v2.5.0 and later includes built-in full internationalization support. The framework core and CLI interface can automatically switch display text based on your system language, and it also supports external modules registering their own translations.
 
 ## Supported Languages
 
 | Language | Code | Description |
-|------|------|------|
-| Simplified Chinese | `zh-CN` | Default language (native language of the framework) |
-| Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong/Macao/Taiwan) |
-| English | `en` | English (universal fallback language) |
+|----------|------|-------------|
+| Simplified Chinese | `zh-CN` | Default language (Framework native language) |
+| Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong/Macau/Taiwan) |
+| English | `en` | English (General fallback language) |
 | 日本語 | `ja` | Japanese |
 | Русский | `ru` | Russian |
 
 ## Quick Start
 
-### Switch via Environment Variable
+### Switch via Environment Variables
 
 ```bash
 # Windows PowerShell
@@ -13299,9 +13346,9 @@ Add the following to `config/config.toml`:
 language = "zh-TW"
 ```
 
-Setting it to `"auto"` (default value) will automatically detect the system language.
+Setting it to `"auto"` (default) automatically detects the system language.
 
-### Manual Switching in Code
+### Manually Switch in Code
 
 ```python
 from ErisPulse import i18n
@@ -13310,7 +13357,7 @@ from ErisPulse import i18n
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
-# Reset to automatic detection
+# Reset to auto-detection
 i18n.reset_language()
 ```
 
@@ -13318,32 +13365,32 @@ i18n.reset_language()
 
 ## Language Detection Mechanism
 
-The framework detects the user language in the following priority:
+The framework detects the user language with the following priority:
 
-1. **Environment variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching
-2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, unaffected by tools like Git Bash overriding `LANG`)
-3. **Environment variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standard)
+1. **Environment Variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching
+2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, not affected by tools like Git Bash overwriting `LANG`)
+3. **Environment Variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standard)
 4. **System Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
 5. **Fallback** — en (English)
 
 ### Proximity Mapping Principle
 
-When the detected language is not an exact match, map it to a supported language according to the proximity principle:
+When the detected language is not an exact match, map it to a supported language based on the proximity principle:
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **Traditional Chinese**
 - All other `zh-*` (e.g., `zh-CN`, `zh-SG`) → **Simplified Chinese**
-- `en-US`, `en-GB`, `en-AU`, etc. → **English**
+- `en-US`, `en-GB`, `en-AU` etc. → **English**
 - `ja-JP` → **Japanese**
 - `ru-RU` → **Russian**
-- Other unrecognized languages → **Simplified Chinese (fallback)**
+- Other unrecognized languages → **Simplified Chinese (Fallback)**
 
 ---
 
 ## Using i18n in Modules
 
-You can register translation texts for your own modules to make them support multiple languages as well.
+You can register translation text for your own module to also support multiple languages.
 
-### Registering Custom Translations
+### Register Custom Translations
 
 ```python
 from ErisPulse import i18n
@@ -13369,13 +13416,13 @@ i18n.register("en", {
 from ErisPulse import i18n
 
 # Simple translation
-i18n.t("my_module.welcome")  # Automatically uses current language
+i18n.t("my_module.welcome")  # Automatically uses the current language
 
 # With formatting parameters
 i18n.t("my_module.hello", name="Alice")
 
-# Specify default value (returned when translation key does not exist)
-i18n.t("my_module.unknown_key", default="默认文本")
+# Specify a default value (returned when the translation key does not exist)
+i18n.t("my_module.unknown_key", default="Default text")
 ```
 
 ### Using in Module Classes
@@ -13391,7 +13438,7 @@ class MyModuleConfig(BaseConfig):
     welcome_msg: str = field(
         default="欢迎",
         metadata={
-            "description": {"i18n": "my_module.welcome_msg", "default": "欢迎消息"},
+            "description": {"i18n": "my_module.welcome_msg", "default": "Welcome message"},
             "ui": {"widget": "text", "group": "basic", "order": 1},
         },
     )
@@ -13400,7 +13447,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # Real-time read configuration (reflects latest value on every access)
+        # Real-time read configuration (reflects latest values on every access)
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -13413,25 +13460,33 @@ class MyModule(BaseModule):
         pass
 ```
 
-### Unregistering Translations
+### Unregister Translations
 
 ```python
-# Unregister translations for the entire domain
+# Unregister translations for an entire domain
 i18n.unregister_domain("my_module")
 ```
 
 ---
 
-## Multilingual Configuration Fields
+## Multi-language Configuration Fields
 
-Starting from v2.5.2, configuration Schemas support i18n. The descriptions (`description`) of adapter/module configuration fields can reference i18n keys, and WebUI or other consumers will automatically parse them into corresponding text based on the current language.
+Starting from v2.5.2, configuration schemas fully support i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically resolve them to the corresponding text based on the current language.
 
-### Declaring i18n Descriptions
+### Supported i18n Fields
 
-In `field(metadata=...)`, the `description` can be:
+| Field | Location | Description |
+|-------|----------|-------------|
+| `description` | field metadata | Field description |
+| `options[].label` | `ui.options` | Select control option label |
+| `placeholder` | `ui.placeholder` | Input box placeholder |
+| `group_labels` | `_schema_meta` | Group display name (Dashboard section title) |
 
-- **Plain string** (backward compatible): `"Platform Token"`
-- **i18n dictionary** (recommended): `{"i18n": "my_adapter.token", "default": "Platform Token"}`
+The unified format is `{"i18n": "key", "default": "text"}`, while pure strings are passed through as-is (backward compatible).
+
+### Declaring i18n Fields
+
+All user-visible text fields support i18n:
 
 ```python
 from dataclasses import dataclass, field
@@ -13439,22 +13494,52 @@ from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
+    # description i18n
     token: str = field(
         default="",
         metadata={
             "description": {"i18n": "my_adapter.token", "default": "Platform Token"},
             "required": True,
             "secret": True,
-            "ui": {"widget": "password", "group": "basic", "order": 1},
+            "ui": {
+                "widget": "password",
+                "group": "basic",
+                "order": 1,
+                # placeholder i18n
+                "placeholder": {"i18n": "my_adapter.token.ph", "default": "Please enter Token"},
+            },
         },
     )
+    # options label i18n
+    mode: str = field(
+        default="a",
+        metadata={
+            "description": {"i18n": "my_adapter.mode", "default": "Runtime mode"},
+            "ui": {
+                "widget": "select",
+                "group": "basic",
+                "order": 2,
+                "options": [
+                    {"label": {"i18n": "my_adapter.mode.a", "default": "Mode A"}, "value": "a"},
+                    {"label": {"i18n": "my_adapter.mode.b", "default": "Mode B"}, "value": "b"},
+                ],
+            },
+        },
+    )
+
+    # group_labels i18n (Group display name)
+    _schema_meta = {
+        "group_labels": {
+            "basic": {"i18n": "my_adapter.group.basic", "default": "Basic Settings"},
+        }
+    }
 ```
 
 `default` is the fallback text — displayed when the translation is not registered or lookup fails.
 
 ### Registering Configuration Translations
 
-Configuration field i18n keys are registered just like regular translation keys using `i18n.register()`:
+Configuration field i18n keys work the same as normal translation keys, registered using `i18n.register()`:
 
 ```python
 from ErisPulse import i18n
@@ -13470,7 +13555,7 @@ i18n.register("en", {
 }, domain="my_adapter")
 ```
 
-There is also a convenience function `register_config_i18n()` that can automatically extract keys and register them from the config class:
+A convenience function `register_config_i18n()` is also provided to automatically extract keys from the configuration class and register them:
 
 ```python
 from ErisPulse.runtime.config_schema import register_config_i18n
@@ -13486,16 +13571,19 @@ register_config_i18n(MyAdapterConfig, "en", {
 
 ### How WebUI Consumes It
 
-In the schema returned by `get_config_schema()`, the `description` field passes through the i18n dictionary as-is. The WebUI frontend can call `i18n.t()` to parse it based on the current language.
+In the schema returned by `get_config_schema()`, i18n dictionaries are passed through as-is. The WebUI frontend can call `i18n.t()` based on the current language to resolve them.
 
-If you need the server to resolve it directly to a string (e.g., returning to a frontend that doesn't support i18n), use `resolve_config_schema()`:
+If you need the server to resolve directly to a string (e.g., returning to a frontend that doesn't support i18n), use `resolve_config_schema()`, which resolves `description`, `options[].label`, `placeholder`, and `group_labels` to the text of the current language:
 
 ```python
 from ErisPulse.runtime.config_schema import resolve_config_schema
 
-# description has been resolved to a string of the current language
+# All i18n fields have been resolved to strings in the current language
 schema = resolve_config_schema(MyAdapterConfig)
-print(schema["fields"]["token"]["description"])  # "平台 Token" or "Platform Token"
+print(schema["fields"]["token"]["description"])    # "平台 Token" or "Platform Token"
+print(schema["fields"]["token"]["placeholder"])   # "请输入 Token" or "Enter Token"
+print(schema["fields"]["mode"]["options"][0]["label"])  # "模式A" or "Mode A"
+print(schema["group_labels"]["basic"])             # "基本设置" or "Basic"
 ```
 
 ## API Reference
@@ -13505,16 +13593,16 @@ print(schema["fields"]["token"]["description"])  # "平台 Token" or "Platform T
 #### Core Methods
 
 | Method | Description |
-|------|------|
-| `t(key, default=None, **kwargs)` | Get translation text (alias for `gettext()`) |
-| `set_language(lang)` | Manually set language |
-| `get_language()` | Get current language |
-| `reset_language()` | Reset to automatic detection (and re-detect environment) |
-| `get_supported_languages()` | Get list of all supported languages |
-| `has_translation(key, lang=None)` | Check if translation key exists |
-| `register(lang, translations, domain)` | Register custom translations |
-| `unregister_domain(domain)` | Unregister all translations for a specified domain |
-| `reload()` | Reload built-in translations and re-detect language |
+|--------|-------------|
+| `t(key, default=None, **kwargs)` | Gets translated text (`gettext()` is an alias) |
+| `set_language(lang)` | Manually sets the language |
+| `get_language()` | Gets the current language |
+| `reset_language()` | Resets to auto-detection (and re-detects environment) |
+| `get_supported_languages()` | Gets the list of all supported languages |
+| `has_translation(key, lang=None)` | Checks if a translation key exists |
+| `register(lang, translations, domain)` | Registers custom translations |
+| `unregister_domain(domain)` | Unregisters all translations for a specified domain |
+| `reload()` | Reloads built-in translations and re-detects language |
 
 #### `t()` Method Details
 
@@ -13523,8 +13611,8 @@ def t(self, key, /, default=None, **kwargs):
 ```
 
 - `key` — Translation key (positional argument only, does not conflict with `key=` in `**kwargs`)
-- `default` — Default value to return if translation does not exist, defaults to `None` (returns key name itself)
-- `**kwargs` — Formatting parameters, used to fill `{placeholder}` in the translation value
+- `default` — Default value returned when the translation does not exist, defaults to `None` (returns the key name itself)
+- `**kwargs` — Formatting parameters used to fill in `{placeholder}` in the translation value
 
 Example:
 
@@ -13534,12 +13622,12 @@ i18n.t("greeting", name="Alice", place="ErisPulse")
 # Returns: "你好，Alice！欢迎来到ErisPulse。"
 ```
 
-### Accessing via SDK Instance
+### Accessing from SDK Instance
 
 ```python
 from ErisPulse import sdk
 
-# sdk.i18n is the same object as the i18n imported directly
+# sdk.i18n is the same object as the directly imported i18n
 sdk.i18n.set_language("en")
 print(sdk.i18n.t("core.sdk.init.starting"))
 ```
@@ -13548,7 +13636,7 @@ print(sdk.i18n.t("core.sdk.init.starting"))
 
 ## Runtime Configuration
 
-### Reading i18n Config via Config API
+### Reading i18n Configuration via Config API
 
 ```python
 from ErisPulse.runtime import get_i18n_config, I18nConfig
@@ -13560,7 +13648,7 @@ print(config["language"])  # "auto" or specific language code
 schema = I18nConfig.__dataclass_fields__
 ```
 
-### Configuration Field Descriptions
+### Configuration Item Description
 
 In the `[ErisPulse.i18n]` section of `config/config.toml`:
 
@@ -13582,25 +13670,25 @@ language = "auto"
 
 ### Translation Key Naming
 
-It is recommended to use the dot-separated namespace format:
+We recommend using the dot-separated namespace format:
 
 ```
 <module_name>.<category>.<description>
 ```
 
-Example: `my_module.command.hello_desc`, `core.adapter.start_failed`
+For example: `my_module.command.hello_desc`, `core.adapter.start_failed`
 
-### Multilingual Coverage
+### Multi-language Coverage
 
-There is no need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
+You don't need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
 
 ### Dynamic Content
 
-For dynamically generated content (such as usernames, counts, etc.), use the `{placeholder}` format:
+For dynamically generated content (such as usernames, counts, etc.), use the `{placeholder}` formatting:
 
 ```python
 # Translation definition
-"user_count": "当前在线用户：{count} 人"
+"user_count": "Current online users: {count} people"
 
 # Usage
 i18n.t("user_count", count=len(users))
@@ -13618,12 +13706,12 @@ self.logger.info(i18n.t("my_module.startup"))
 
 ## Relationship with CLI i18n
 
-The CLI has its own **independent** internationalization module (`ErisPulse.CLI.i18n`), completely decoupled from the framework core's internationalization module.
+The CLI has a **separate** internationalization module (`ErisPulse.CLI.i18n`), completely decoupled from the framework core's i18n module.
 
-- **Core i18n** — Used by the framework core module, external modules can register translations
-- **CLI i18n** — Used internally by the Command Line Interface, does not share translation data with Core
+- **Core i18n** — Used by the framework core module; external modules can register translations
+- **CLI i18n** — Used internally by the command-line interface; does not share translation data with Core
 
-This design ensures that changes to CLI translations do not affect the stability of the framework core.
+This design ensures that translation changes to the CLI do not affect the stability of the framework core.
 
 
 ### Dashboard 视窗注册

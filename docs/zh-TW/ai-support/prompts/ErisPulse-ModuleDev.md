@@ -7215,10 +7215,10 @@ ErisPulse v2.5.0 起內建了完整的國際化支援。框架核心及 CLI 界�
 
 ## 支援的語言
 
-| 語言 | 程式碼 | 說明 |
+| 語言 | 代碼 | 說明 |
 |------|------|------|
 | 簡體中文 | `zh-CN` | 預設語言（框架原生語言） |
-| 繁體中文 | `zh-TW` | 繁體中文（香港/澳門/臺灣） |
+| 繁體中文 | `zh-TW` | 繁體中文（香港/澳門/台灣） |
 | English | `en` | 英文（通用回退語言） |
 | 日本語 | `ja` | 日文 |
 | Русский | `ru` | 俄文 |
@@ -7236,7 +7236,7 @@ epsdk run
 ERISPULSE_LANG=ja epsdk run
 ```
 
-### 透過設定檔案切換
+### 透過配置檔案切換
 
 在 `config/config.toml` 中新增：
 
@@ -7264,9 +7264,9 @@ i18n.reset_language()
 
 ## 語言偵測機制
 
-框架按以下優先順序偵測使用者語言：
+框架按以下優先級偵測使用者語言：
 
-1. **環境變數 `ERISPULSE_LANG`** — 最高優先順序，用於測試和暫時切換
+1. **環境變數 `ERISPULSE_LANG`** — 最高優先級，用於測試和暫時切換
 2. **Windows API** — `GetUserDefaultLocaleName`（僅 Windows，不受 Git Bash 等工具覆蓋 `LANG` 的影響）
 3. **環境變數** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG`（Unix/macOS 標準）
 4. **系統 Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
@@ -7274,7 +7274,7 @@ i18n.reset_language()
 
 ### 就近映射原則
 
-當偵測到的語言不是精確匹配時，按就近原則映射到支援的語言：
+當偵測到的語言不是精確匹配時，按就近原則對映到支援的語言：
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **繁體中文**
 - 其他所有 `zh-*`（如 `zh-CN`, `zh-SG`）→ **簡體中文**
@@ -7315,12 +7315,12 @@ i18n.register("en", {
 from ErisPulse import i18n
 
 # 簡單翻譯
-i18n.t("my_module.welcome")  # 自動使用目前語言
+i18n.t("my_module.welcome")  # 自動使用當前語言
 
 # 帶格式化參數
 i18n.t("my_module.hello", name="Alice")
 
-# 指定預設值（翻譯鍵不存在時傳回）
+# 指定預設值（翻譯鍵不存在時返回）
 i18n.t("my_module.unknown_key", default="預設文字")
 ```
 
@@ -7346,7 +7346,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # 即時讀取設定（每次存取都反映最新值）
+        # 即時讀取配置（每次訪問都反映最新值）
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -7359,25 +7359,33 @@ class MyModule(BaseModule):
         pass
 ```
 
-### 解除安裝翻譯
+### 解除註冊翻譯
 
 ```python
-# 解除安裝整個域的翻譯
+# 解除註冊整個域的翻譯
 i18n.unregister_domain("my_module")
 ```
 
 ---
 
-## 設定欄位多語言
+## 配置欄位多語言
 
-從 v2.5.2 起，設定 Schema 支援 i18n。配接器/模組的設定欄位描述（`description`）可以引用 i18n 鍵，WebUI 和其他消費者會自動根據目前語言解析為對應文字。
+從 v2.5.2 起，配置 Schema 全面支援 i18n。所有使用者可見的文字欄位均可引用 i18n 鍵，WebUI 和其他消費者會自動根據當前語言解析為對應文字。
 
-### 宣告 i18n 描述
+### 支援的 i18n 欄位
 
-在 `field(metadata=...)` 中，`description` 可以是：
+| 欄位 | 位置 | 說明 |
+|------|------|------|
+| `description` | field metadata | 欄位描述 |
+| `options[].label` | `ui.options` | select 控制項選項標籤 |
+| `placeholder` | `ui.placeholder` | 輸入框佔位符 |
+| `group_labels` | `_schema_meta` | 分組顯示名（Dashboard 區域標題） |
 
-- **一般字串**（向後相容）：`"平台 Token"`
-- **i18n 字典**（推薦）：`{"i18n": "my_adapter.token", "default": "平台 Token"}`
+統一採用 `{"i18n": "key", "default": "文本"}` 格式，純字串則原樣透傳（向後相容）。
+
+### 宣告 i18n 欄位
+
+所有使用者可見文字欄位都支援 i18n：
 
 ```python
 from dataclasses import dataclass, field
@@ -7385,22 +7393,52 @@ from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
+    # description i18n
     token: str = field(
         default="",
         metadata={
             "description": {"i18n": "my_adapter.token", "default": "平台 Token"},
             "required": True,
             "secret": True,
-            "ui": {"widget": "password", "group": "basic", "order": 1},
+            "ui": {
+                "widget": "password",
+                "group": "basic",
+                "order": 1,
+                # placeholder i18n
+                "placeholder": {"i18n": "my_adapter.token.ph", "default": "請輸入 Token"},
+            },
         },
     )
+    # options label i18n
+    mode: str = field(
+        default="a",
+        metadata={
+            "description": {"i18n": "my_adapter.mode", "default": "運行模式"},
+            "ui": {
+                "widget": "select",
+                "group": "basic",
+                "order": 2,
+                "options": [
+                    {"label": {"i18n": "my_adapter.mode.a", "default": "模式A"}, "value": "a"},
+                    {"label": {"i18n": "my_adapter.mode.b", "default": "模式B"}, "value": "b"},
+                ],
+            },
+        },
+    )
+
+    # group_labels i18n（分組顯示名）
+    _schema_meta = {
+        "group_labels": {
+            "basic": {"i18n": "my_adapter.group.basic", "default": "基本設置"},
+        }
+    }
 ```
 
-`default` 是兜底文字——當翻譯未註冊或查找失敗時顯示。
+`default` 是兜底文字——當翻譯未註冊或查詢失敗時顯示。
 
-### 註冊設定翻譯
+### 註冊配置翻譯
 
-設定欄位的 i18n 鍵和一般翻譯鍵一樣，使用 `i18n.register()` 註冊：
+配置欄位的 i18n 鍵和普通翻譯鍵一樣，使用 `i18n.register()` 註冊：
 
 ```python
 from ErisPulse import i18n
@@ -7416,7 +7454,7 @@ i18n.register("en", {
 }, domain="my_adapter")
 ```
 
-也提供了便捷函數 `register_config_i18n()`，可自動從設定類別提取鍵並註冊：
+也提供了便捷函式 `register_config_i18n()`，可自動從配置類別提取鍵並註冊：
 
 ```python
 from ErisPulse.runtime.config_schema import register_config_i18n
@@ -7432,16 +7470,19 @@ register_config_i18n(MyAdapterConfig, "en", {
 
 ### WebUI 如何消費
 
-`get_config_schema()` 回傳的 schema 中，`description` 欄位會原樣透傳 i18n 字典。WebUI 前端可以根據目前語言呼叫 `i18n.t()` 解析。
+`get_config_schema()` 返回的 schema 中，i18n 字典會原樣透傳。WebUI 前端可以根據當前語言呼叫 `i18n.t()` 解析。
 
-如果需要伺服器端直接解析為字串（如回傳給不支援 i18n 的前端），使用 `resolve_config_schema()`：
+如果需要伺服器端直接解析為字串（如返回給不支援 i18n 的前端），使用 `resolve_config_schema()`，它會將 `description`、`options[].label`、`placeholder`、`group_labels` 全部解析為當前語言的文字：
 
 ```python
 from ErisPulse.runtime.config_schema import resolve_config_schema
 
-# description 已解析為目前語言的字串
+# 所有 i18n 欄位已解析為當前語言的字串
 schema = resolve_config_schema(MyAdapterConfig)
-print(schema["fields"]["token"]["description"])  # "平台 Token" 或 "Platform Token"
+print(schema["fields"]["token"]["description"])    # "平台 Token" 或 "Platform Token"
+print(schema["fields"]["token"]["placeholder"])   # "請輸入 Token" 或 "Enter Token"
+print(schema["fields"]["mode"]["options"][0]["label"])  # "模式A" 或 "Mode A"
+print(schema["group_labels"]["basic"])             # "基本設置" 或 "Basic"
 ```
 
 ## API 參考
@@ -7454,12 +7495,12 @@ print(schema["fields"]["token"]["description"])  # "平台 Token" 或 "Platform 
 |------|------|
 | `t(key, default=None, **kwargs)` | 取得翻譯文字（`gettext()` 是別名） |
 | `set_language(lang)` | 手動設定語言 |
-| `get_language()` | 取得目前語言 |
+| `get_language()` | 取得當前語言 |
 | `reset_language()` | 重設為自動偵測（並重新偵測環境） |
-| `get_supported_languages()` | 取得所有支援的語言清單 |
+| `get_supported_languages()` | 取得所有支援的語言列表 |
 | `has_translation(key, lang=None)` | 檢查翻譯鍵是否存在 |
 | `register(lang, translations, domain)` | 註冊自訂翻譯 |
-| `unregister_domain(domain)` | 解除安裝指定域的所有翻譯 |
+| `unregister_domain(domain)` | 解除註冊指定域的所有翻譯 |
 | `reload()` | 重新載入內建翻譯並重新偵測語言 |
 
 #### `t()` 方法詳解
@@ -7469,18 +7510,18 @@ def t(self, key, /, default=None, **kwargs):
 ```
 
 - `key` — 翻譯鍵（僅位置參數，不與 `**kwargs` 中的 `key=` 衝突）
-- `default` — 翻譯不存在時傳回的預設值，預設為 `None`（傳回鍵名本身）
-- `**kwargs` — 格式化參數，用於填入翻譯值中的 `{placeholder}`
+- `default` — 翻譯不存在時返回的預設值，預設為 `None`（返回鍵名本身）
+- `**kwargs` — 格式化參數，用於填充翻譯值中的 `{placeholder}`
 
 範例：
 
 ```python
 # 翻譯定義: "greeting": "你好，{name}！歡迎來到{place}。"
 i18n.t("greeting", name="Alice", place="ErisPulse")
-# 傳回: "你好，Alice！歡迎來到ErisPulse。"
+# 返回: "你好，Alice！歡迎來到ErisPulse。"
 ```
 
-### 從 SDK 執行個體存取
+### 從 SDK 實例訪問
 
 ```python
 from ErisPulse import sdk
@@ -7492,9 +7533,9 @@ print(sdk.i18n.t("core.sdk.init.starting"))
 
 ---
 
-## 執行階段設定
+## 執行時配置
 
-### 透過設定 API 讀取 i18n 設定
+### 透過配置 API 讀取 i18n 配置
 
 ```python
 from ErisPulse.runtime import get_i18n_config, I18nConfig
@@ -7502,17 +7543,17 @@ from ErisPulse.runtime import get_i18n_config, I18nConfig
 config = get_i18n_config()
 print(config["language"])  # "auto" 或具體語言代碼
 
-# I18nConfig 是 dataclass，可用於產生設定範本
+# I18nConfig 是 dataclass，可用於生成配置範本
 schema = I18nConfig.__dataclass_fields__
 ```
 
-### 設定項說明
+### 配置項說明
 
 在 `config/config.toml` 的 `[ErisPulse.i18n]` 部分：
 
 ```toml
 [ErisPulse.i18n]
-# 顯示語言，選項值:
+# 顯示語言，可選值:
 # - "auto"      — 自動偵測系統語言（預設）
 # - "zh-CN"     — 簡體中文
 # - "zh-TW"     — 繁體中文
@@ -7524,7 +7565,7 @@ language = "auto"
 
 ---
 
-## 最佳實務
+## 最佳實踐
 
 ### 翻譯鍵命名
 
@@ -7538,15 +7579,15 @@ language = "auto"
 
 ### 多語言覆蓋
 
-不必一次性提供所有語言的翻譯，遺失的語言會自動回退到英文，如果英文也沒有則顯示鍵名本身。
+不必一次提供所有語言的翻譯，遺失的語言會自動回退到英文，如果英文也沒有則顯示鍵名本身。
 
 ### 動態內容
 
-對於動態產生的內容（如使用者名稱、數量等），使用 `{placeholder}` 格式化：
+對於動態生成的內容（如使用者名稱、數量等），使用 `{placeholder}` 格式化：
 
 ```python
 # 翻譯定義
-"user_count": "目前線上使用者：{count} 人"
+"user_count": "當前線上使用者：{count} 人"
 
 # 使用
 i18n.t("user_count", count=len(users))
@@ -7554,7 +7595,7 @@ i18n.t("user_count", count=len(users))
 
 ### 日誌訊息
 
-如果您的模組使用了框架的 Logger，這些訊息也會自動使用目前語言：
+如果您的模組使用了框架的 Logger，這些訊息也會自動使用當前語言：
 
 ```python
 self.logger.info(i18n.t("my_module.startup"))
