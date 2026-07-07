@@ -22,7 +22,7 @@
           "level": 1
         },
         {
-          "title": "Трекер багов",
+          "title": "Отслеживание багов",
           "path": "bug-tracker.md",
           "level": 1
         },
@@ -128,7 +128,7 @@
               "level": 1
             },
             {
-              "title": "Подробное объяснение класса-обертки Event",
+              "title": "Подробное объяснение класса обертки Event",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1
             },

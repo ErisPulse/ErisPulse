@@ -64,6 +64,38 @@
 
 ---
 
+## [2.5.3] - 2026/07/07
+> 正式发布
+
+**版本摘要**
+2.5.3 版本修复 2.5.2 配置系统重构引入的账户解析回归 Bug，并增强交互式方法的个性化能力。
+
+**升级建议**
+- **强烈建议升级**（尤其是使用多账户适配器的用户）
+- 升级原因：
+  - 修复 2.5.2 引入的 `_resolve_account()` 回归 Bug，多账户适配器发送消息时不再报错
+  - 保持与 2.5.2 之前版本的完全向后兼容
+  - 交互式方法 (`choose`/`confirm`/`collect`) 新增选项格式化、消息合并等能力
+
+### 新增
+
+- @wsu2059q
+  - `Core/Event/wrapper.py` 交互式方法个性化增强：
+    - `Event.choose()` 新增 `options_format` 参数，支持 `"list"`（默认）、`"inline"` 或自定义函数格式化选项列表
+    - `Event.choose()` 新增 `merge_prompt` 参数，非文本方法时强制合并为一条 Text 消息
+    - `Event.confirm()` 新增 `hint` 参数，自动在提示末尾追加确认词提示（如 "（是/否）"）
+    - `Event.collect()` 字段字典新增 `options`、`options_format`、`merge_prompt` 键，支持将收集字段变为选择题
+    - 新增内部函数 `_format_options()` 用于统一选项格式化
+
+### 修复
+
+- @wsu2059q
+  - `Core/Bases/adapter.py` 修复 `_resolve_account()` 账户解析回归 Bug：
+    - **问题**：2.5.2-dev.5 将 `_load_accounts()` 重构为 `_ensure_accounts_exist()`，但后者只生成配置模板，不再填充 `_accounts_data`。而 `_resolve_account()` 仍然检查 `_accounts_data is None`，导致声明了 `AccountConfigClass` 的多账户适配器在调用 `wait_reply`、`reply` 等需要发送消息的方法时，账户解析始终返回 `(None, None)`，最终报错 `ValueError("未声明 AccountConfigClass，无法解析账户")`
+    - **修复**：在 `__init__` 中 `_ensure_accounts_exist()` 之后恢复 `_accounts_data` 的填充（通过 `self.accounts` 实时读取属性获取数据）。`_resolve_account()` 逻辑保持不变，完全向后兼容不声明 `AccountConfigClass` 的单账户适配器
+
+---
+
 ## [2.5.2] - 2026/07/06
 > 正式发布
 
