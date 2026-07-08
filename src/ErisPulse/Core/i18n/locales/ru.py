@@ -220,6 +220,7 @@ TRANSLATIONS = {
     "core.router.stopped_cancelled": "Работа сервера маршрутизации была отменена",
     "core.router.stop_timeout": "Превышено время ожидания остановки сервера маршрутизации, принудительное завершение",
     "core.router.stop_error": "Ошибка при остановке сервера маршрутизации: {error}",
+    "core.router.stop_ws_close_race": "WebSocket-соединение уже закрывается при остановке сервера (безвредная гонка): {error}",
     "core.router.clearing_routes": "Очистка всех зарегистрированных маршрутов...",
     "core.router.server_stopped": "Сервер остановлен",
     "core.router.root_page_text": "Похоже, вы перешли на корневой путь, здесь нет содержимого~",

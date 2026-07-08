@@ -220,6 +220,7 @@ TRANSLATIONS = {
     "core.router.stopped_cancelled": "Router server was cancelled",
     "core.router.stop_timeout": "Router server stop timed out, forcefully terminating",
     "core.router.stop_error": "Error occurred while stopping router server: {error}",
+    "core.router.stop_ws_close_race": "WebSocket connection already closing during server stop (harmless): {error}",
     "core.router.clearing_routes": "Clearing all registered routes...",
     "core.router.server_stopped": "Server stopped",
     "core.router.root_page_text": "You seem to have accessed the root path, there is no content here~",

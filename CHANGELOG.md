@@ -61,6 +61,45 @@
     - 优化某模块的性能
   ```
 
+---
+
+## [2.5.4] - 2026/07/09
+> 正式发布
+
+**版本摘要**
+2.5.4 版本修复了修改账户配置后适配器缓存未刷新导致账户解析失败的关键问题，以及服务器停止时 WebSocket 竞争条件的误报日志问题；同时为适配器基类恢复 `_load_accounts()` / `_load_config()` 向后兼容支持，确保旧适配器无需修改即可正常工作。
+
+**升级建议**
+- **强烈建议升级**
+- 升级原因：
+  - 修复 Dashboard 修改 token 等账户配置后，多账户适配器仍使用旧缓存导致 `未找到可用账户 (account_id=default)` 的问题
+  - 修复服务器停止时 WebSocket 连接关闭触发 ERROR 级别误报日志的问题
+  - 恢复 `_load_accounts()` / `_load_config()` 向后兼容支持，旧适配器无需修改
+
+**注意事项**
+- `_accounts_data` 现在在每次 `adapter.start()` 启动时刷新，不再仅在 `__init__` 时读取一次
+- 新增 i18n 翻译键 `core.router.stop_ws_close_race`，需同步更新语言文件
+
+### 修复
+
+- @wsu2059q
+  - `Core/adapter.py` 修复 `_accounts_data` 缓存过期问题：
+    - **问题**：`_accounts_data` 仅在 `__init__` 时从配置存储读取一次，用户通过 Dashboard 修改账户配置后（如填写 token），`_accounts_data` 仍为旧值，导致 `_resolve_account()` 找不到账户（典型表现：`未找到可用账户 (account_id=default)`）
+    - **修复**：在 `AdapterManager._run_adapter()` 和 `restart()` 中，调用 `adapter.start()` 之前刷新 `adapter._accounts_data = adapter.accounts`，确保每次启动时使用最新配置
+  - `Core/router.py` 修复服务器停止时的 WebSocket 竞争条件误报：
+    - **问题**：服务器停止时，uvicorn 尝试对已关闭的 WebSocket 连接发送关闭帧，触发 `websockets.exceptions.InvalidState: connection is closing` 并以 ERROR 级别日志输出，造成误导
+    - **修复**：在 `RouterManager.stop()` 中检测此特定异常，降级为 DEBUG 级别日志
+  - 新增 i18n 翻译键 `core.router.stop_ws_close_race`，同步更新 zh-CN / zh-TW / en / ja / ru 五语言文件
+
+### 新增
+
+- @wsu2059q
+  - `Core/Bases/adapter.py` 恢复 `_load_accounts()` / `_load_config()` 向后兼容支持：
+    - 新增 `_load_accounts()` 方法（默认返回 None），子类可覆写实现自定义账户加载逻辑（如全局配置合并、旧格式迁移等）
+    - 新增 `_load_config()` 方法（默认返回 None），子类可覆写实现自定义配置加载逻辑
+    - `accounts` 属性优先调用 `_load_accounts()`，返回非 None 时使用其结果；否则使用默认配置存储读取
+    - `cfg` 属性优先调用 `_load_config()`，返回非 None 时使用其结果；否则使用默认配置存储读取
+    - 旧适配器覆写 `_load_accounts()` / `_load_config()` 的代码无需修改即可正常工作
 
 ---
 

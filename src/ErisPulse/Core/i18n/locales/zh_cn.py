@@ -220,6 +220,7 @@ TRANSLATIONS = {
     "core.router.stopped_cancelled": "路由服务器已被取消",
     "core.router.stop_timeout": "路由服务器停止超时，强制终止",
     "core.router.stop_error": "路由服务器停止时发生错误: {error}",
+    "core.router.stop_ws_close_race": "路由服务器停止时 WebSocket 连接已关闭 (无害竞争): {error}",
     "core.router.clearing_routes": "清理所有注册的路由...",
     "core.router.server_stopped": "服务器已停止",
     "core.router.root_page_text": "你似乎访问了根路径，这里没有内容哦~",
