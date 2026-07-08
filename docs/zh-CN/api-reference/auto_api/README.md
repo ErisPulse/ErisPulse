@@ -22,7 +22,7 @@
 - **模块总数**: 85
 - **类总数**: 90（包括 5 个嵌套类）
 - **函数总数**: 97
-- **方法总数**: 871
+- **方法总数**: 873
 
 ---
 
@@ -171,7 +171,7 @@
 
 ### [ErisPulse.Core.Bases.adapter](ErisPulse/Core/Bases/adapter.md)
 
-📦 3 个类 | 🔧 41 个方法 | ⚙️ 1 个函数
+📦 3 个类 | 🔧 43 个方法 | ⚙️ 1 个函数
 
 
 ### [ErisPulse.Core.Bases.client](ErisPulse/Core/Bases/client.md)

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1316,
+  "total_keywords": 1325,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2582,6 +2582,14 @@
         "title": "Notice 通知モジュール"
       }
     ],
+    "OB12 メッセージセグメントの逆変換 (Raw_ob12)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 106,
+        "level": 3,
+        "title": "OB12 メッセージセグメントの逆変換 (Raw_ob12)"
+      }
+    ],
     "OneBot11": [
       {
         "document": "standards/session-types.md",
@@ -2650,14 +2658,6 @@
         "line": 1,
         "level": 1,
         "title": "OneBot12プラットフォームの特徴"
-      }
-    ],
-    "OneBot12プロトコル変換の説明": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 95,
-        "level": 2,
-        "title": "OneBot12プロトコル変換の説明"
       }
     ],
     "OneBot12メッセージサポート": [
@@ -3964,6 +3964,14 @@
         "title": "アカウント設定"
       }
     ],
+    "アカウント設定 (EmailAdapter.accounts)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 36,
+        "level": 3,
+        "title": "アカウント設定 (EmailAdapter.accounts)"
+      }
+    ],
     "アカウント設定ファイル": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4441,6 +4449,12 @@
       }
     ],
     "イベント処理の例": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 282,
+        "level": 2,
+        "title": "イベント処理の例"
+      },
       {
         "document": "platform-guide/ideaura.md",
         "line": 284,
@@ -5034,6 +5048,14 @@
         "title": "グローバル設定"
       }
     ],
+    "グローバル設定 (EmailAdapter)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 23,
+        "level": 3,
+        "title": "グローバル設定 (EmailAdapter)"
+      }
+    ],
     "コア API": [
       {
         "document": "advanced/conversation.md",
@@ -5441,12 +5463,6 @@
       }
     ],
     "サポートされているメッセージ送信タイプ": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 13,
-        "level": 2,
-        "title": "サポートされているメッセージ送信タイプ"
-      },
       {
         "document": "platform-guide/kook.md",
         "line": 54,
@@ -7150,6 +7166,14 @@
         "title": "メソッドチェーンによる修飾（組み合わせ可能）"
       }
     ],
+    "メソッドチェーンの修飾メソッド（self を返すため、組み合わせて使用可能）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 96,
+        "level": 3,
+        "title": "メソッドチェーンの修飾メソッド（self を返すため、組み合わせて使用可能）"
+      }
+    ],
     "メソッドチェーンの呼び出し例": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -7630,12 +7654,12 @@
         "title": "メンバー変更の監視"
       }
     ],
-    "メールプラットフォーム特性ドキュメント": [
+    "メールプラットフォームの機能ドキュメント": [
       {
         "document": "platform-guide/email.md",
         "line": 1,
         "level": 1,
-        "title": "メールプラットフォーム特性ドキュメント"
+        "title": "メールプラットフォームの機能ドキュメント"
       }
     ],
     "モジュール": [
@@ -8490,14 +8514,6 @@
         "title": "主な差異点"
       }
     ],
-    "主な相違点": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 99,
-        "level": 3,
-        "title": "主な相違点"
-      }
-    ],
     "主な違い": [
       {
         "document": "platform-guide/kook.md",
@@ -8650,12 +8666,6 @@
       {
         "document": "api-reference/core-modules.md",
         "line": 273,
-        "level": 3,
-        "title": "例"
-      },
-      {
-        "document": "platform-guide/email.md",
-        "line": 110,
         "level": 3,
         "title": "例"
       }
@@ -9082,6 +9092,14 @@
         "title": "品質チェックリスト"
       }
     ],
+    "回答メールイベント (email_reply)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 177,
+        "level": 3,
+        "title": "回答メールイベント (email_reply)"
+      }
+    ],
     "回答機能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -9100,12 +9118,6 @@
       {
         "document": "platform-guide/discord.md",
         "line": 180,
-        "level": 2,
-        "title": "固有のイベントタイプ"
-      },
-      {
-        "document": "platform-guide/email.md",
-        "line": 53,
         "level": 2,
         "title": "固有のイベントタイプ"
       },
@@ -9160,14 +9172,6 @@
         "line": 233,
         "level": 2,
         "title": "固有イベントタイプ"
-      }
-    ],
-    "固有パラメータの説明": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 42,
-        "level": 3,
-        "title": "固有パラメータの説明"
       }
     ],
     "国内イメージミラーサイトの高速化": [
@@ -9254,6 +9258,12 @@
       {
         "document": "platform-guide/discord.md",
         "line": 13,
+        "level": 2,
+        "title": "基本情報"
+      },
+      {
+        "document": "platform-guide/email.md",
+        "line": 12,
         "level": 2,
         "title": "基本情報"
       },
@@ -9426,6 +9436,12 @@
     ],
     "基本的な送信メソッド": [
       {
+        "document": "platform-guide/email.md",
+        "line": 88,
+        "level": 3,
+        "title": "基本的な送信メソッド"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 29,
         "level": 3,
@@ -9534,6 +9550,14 @@
         "line": 219,
         "level": 2,
         "title": "完全なAPIリファレンス"
+      }
+    ],
+    "完全なメールイベント": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 203,
+        "level": 3,
+        "title": "完全なメールイベント"
       }
     ],
     "完全なモジュールの例": [
@@ -9915,7 +9939,7 @@
     "拡張フィールドの説明": [
       {
         "document": "platform-guide/email.md",
-        "line": 90,
+        "line": 191,
         "level": 2,
         "title": "拡張フィールドの説明"
       },
@@ -10068,6 +10092,14 @@
         "line": 376,
         "level": 4,
         "title": "文章消息段 (yunhu_user_post)"
+      }
+    ],
+    "新しいメールイベント (email_new)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 127,
+        "level": 3,
+        "title": "新しいメールイベント (email_new)"
       }
     ],
     "新機能：元のイベントタイプフィールド": [
@@ -10246,6 +10278,14 @@
         "title": "核心特性"
       }
     ],
+    "核心的な違い": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 119,
+        "level": 3,
+        "title": "核心的な違い"
+      }
+    ],
     "検索メソッド": [
       {
         "document": "platform-guide/onebot11.md",
@@ -10382,6 +10422,14 @@
         "line": 212,
         "level": 3,
         "title": "標準化されたレスポンス"
+      }
+    ],
+    "標準的なイベントの例": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 201,
+        "level": 2,
+        "title": "標準的なイベントの例"
       }
     ],
     "権限制御": [
@@ -10553,6 +10601,12 @@
       }
     ],
     "特有のイベントタイプ": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 117,
+        "level": 2,
+        "title": "特有のイベントタイプ"
+      },
       {
         "document": "platform-guide/qqbot.md",
         "line": 134,
@@ -11164,6 +11218,12 @@
         "title": "設定説明"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 21,
+        "level": 2,
+        "title": "設定説明"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 326,
         "level": 3,
@@ -11418,6 +11478,14 @@
         "title": "送信メソッドの戻り値"
       }
     ],
+    "送信メソッドの返り値": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 263,
+        "level": 2,
+        "title": "送信メソッドの返り値"
+      }
+    ],
     "送信メソッド命名": [
       {
         "document": "standards/README.md",
@@ -11432,6 +11500,14 @@
         "line": 81,
         "level": 3,
         "title": "送信例"
+      }
+    ],
+    "送信可能なメッセージの種類": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 58,
+        "level": 2,
+        "title": "送信可能なメッセージの種類"
       }
     ],
     "送信者情報": [
@@ -11794,6 +11870,14 @@
         "line": 9,
         "level": 3,
         "title": "閲覧と検索"
+      }
+    ],
+    "附件付きのメール": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 154,
+        "level": 3,
+        "title": "附件付きのメール"
       }
     ],
     "雲湖プラットフォーム特性ドキュメント": [
