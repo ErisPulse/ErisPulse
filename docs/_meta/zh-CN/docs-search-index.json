@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1256,
+  "total_keywords": 1263,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2582,6 +2582,14 @@
         "title": "Notice 通知模块"
       }
     ],
+    "OB12 消息段反向转换（Raw_ob12）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 106,
+        "level": 3,
+        "title": "OB12 消息段反向转换（Raw_ob12）"
+      }
+    ],
     "OneBot11": [
       {
         "document": "standards/session-types.md",
@@ -2634,14 +2642,6 @@
         "line": 155,
         "level": 4,
         "title": "OneBot12 标准事件"
-      }
-    ],
-    "OneBot12协议转换说明": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 95,
-        "level": 2,
-        "title": "OneBot12协议转换说明"
       }
     ],
     "OneBot12平台特性文档": [
@@ -4052,6 +4052,12 @@
     ],
     "事件处理示例": [
       {
+        "document": "platform-guide/email.md",
+        "line": 282,
+        "level": 2,
+        "title": "事件处理示例"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 284,
         "level": 3,
@@ -4726,6 +4732,14 @@
         "title": "全局配置"
       }
     ],
+    "全局配置（EmailAdapter）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 23,
+        "level": 3,
+        "title": "全局配置（EmailAdapter）"
+      }
+    ],
     "关键词过滤": [
       {
         "document": "getting-started/common-tasks.md",
@@ -5358,6 +5372,12 @@
         "title": "发送方法返回值"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 263,
+        "level": 2,
+        "title": "发送方法返回值"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 98,
         "level": 2,
@@ -5654,6 +5674,14 @@
         "title": "回复方法"
       }
     ],
+    "回复邮件事件（email_reply）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 177,
+        "level": 3,
+        "title": "回复邮件事件（email_reply）"
+      }
+    ],
     "回调查询事件": [
       {
         "document": "platform-guide/telegram.md",
@@ -5794,6 +5822,12 @@
       {
         "document": "platform-guide/discord.md",
         "line": 13,
+        "level": 2,
+        "title": "基本信息"
+      },
+      {
+        "document": "platform-guide/email.md",
+        "line": 12,
         "level": 2,
         "title": "基本信息"
       },
@@ -5959,6 +5993,12 @@
       }
     ],
     "基础发送方法": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 88,
+        "level": 3,
+        "title": "基础发送方法"
+      },
       {
         "document": "platform-guide/onebot11.md",
         "line": 40,
@@ -6546,6 +6586,14 @@
         "title": "完整示例"
       }
     ],
+    "完整邮件事件": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 203,
+        "level": 3,
+        "title": "完整邮件事件"
+      }
+    ],
     "完整配置示例": [
       {
         "document": "user-guide/configuration.md",
@@ -6724,6 +6772,14 @@
         "line": 374,
         "level": 3,
         "title": "带回调的等待回复"
+      }
+    ],
+    "带附件的邮件": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 154,
+        "level": 3,
+        "title": "带附件的邮件"
       }
     ],
     "带验证的等待回复": [
@@ -7447,7 +7503,7 @@
     "扩展字段说明": [
       {
         "document": "platform-guide/email.md",
-        "line": 90,
+        "line": 191,
         "level": 2,
         "title": "扩展字段说明"
       },
@@ -7687,7 +7743,7 @@
       },
       {
         "document": "platform-guide/email.md",
-        "line": 13,
+        "line": 58,
         "level": 2,
         "title": "支持的消息发送类型"
       },
@@ -7970,6 +8026,14 @@
         "line": 17,
         "level": 3,
         "title": "新手入门"
+      }
+    ],
+    "新邮件事件（email_new）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 127,
+        "level": 3,
+        "title": "新邮件事件（email_new）"
       }
     ],
     "方式一：使用 pip 安装": [
@@ -8378,6 +8442,14 @@
         "title": "标准事件格式"
       }
     ],
+    "标准事件示例": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 201,
+        "level": 2,
+        "title": "标准事件示例"
+      }
+    ],
     "标准化响应": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -8495,7 +8567,7 @@
       },
       {
         "document": "platform-guide/email.md",
-        "line": 99,
+        "line": 119,
         "level": 3,
         "title": "核心差异点"
       },
@@ -9401,7 +9473,7 @@
       },
       {
         "document": "platform-guide/email.md",
-        "line": 53,
+        "line": 117,
         "level": 2,
         "title": "特有事件类型"
       },
@@ -9452,14 +9524,6 @@
         "line": 145,
         "level": 2,
         "title": "特有事件类型"
-      }
-    ],
-    "特有参数说明": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 42,
-        "level": 3,
-        "title": "特有参数说明"
       }
     ],
     "特有消息段类型": [
@@ -9862,12 +9926,6 @@
       {
         "document": "api-reference/core-modules.md",
         "line": 273,
-        "level": 3,
-        "title": "示例"
-      },
-      {
-        "document": "platform-guide/email.md",
-        "line": 110,
         "level": 3,
         "title": "示例"
       }
@@ -10594,6 +10652,14 @@
         "line": 762,
         "level": 3,
         "title": "账户配置文件"
+      }
+    ],
+    "账户配置（EmailAdapter.accounts）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 36,
+        "level": 3,
+        "title": "账户配置（EmailAdapter.accounts）"
       }
     ],
     "质量检查清单": [
@@ -11414,6 +11480,12 @@
         "title": "配置说明"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 21,
+        "level": 2,
+        "title": "配置说明"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 326,
         "level": 3,
@@ -11604,6 +11676,14 @@
         "line": 82,
         "level": 3,
         "title": "链式修饰方法（可组合使用）"
+      }
+    ],
+    "链式修饰方法（返回 self，可组合使用）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 96,
+        "level": 3,
+        "title": "链式修饰方法（返回 self，可组合使用）"
       }
     ],
     "链式修饰方法（返回self支持链式调用）": [

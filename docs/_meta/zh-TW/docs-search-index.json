@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1303,
+  "total_keywords": 1312,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2530,6 +2530,14 @@
         "title": "Notice 通知模組"
       }
     ],
+    "OB12 訊息段反向轉換（Raw_ob12）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 106,
+        "level": 3,
+        "title": "OB12 訊息段反向轉換（Raw_ob12）"
+      }
+    ],
     "OneBot11": [
       {
         "document": "standards/session-types.md",
@@ -2552,14 +2560,6 @@
         "line": 103,
         "level": 3,
         "title": "OneBot11/12"
-      }
-    ],
-    "OneBot12 協議轉換說明": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 95,
-        "level": 2,
-        "title": "OneBot12 協議轉換說明"
       }
     ],
     "OneBot12 平台特性文件": [
@@ -4100,6 +4100,14 @@
         "title": "事件處理示例"
       }
     ],
+    "事件處理範例": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 282,
+        "level": 2,
+        "title": "事件處理範例"
+      }
+    ],
     "事件處理關鍵步驟": [
       {
         "document": "architecture.md",
@@ -4820,6 +4828,14 @@
         "title": "全域設定"
       }
     ],
+    "全域配置（EmailAdapter）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 23,
+        "level": 3,
+        "title": "全域配置（EmailAdapter）"
+      }
+    ],
     "兩種注入模式": [
       {
         "document": "advanced/dashboard-view.md",
@@ -5386,6 +5402,14 @@
         "title": "回覆方法"
       }
     ],
+    "回覆郵件事件（email_reply）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 177,
+        "level": 3,
+        "title": "回覆郵件事件（email_reply）"
+      }
+    ],
     "回調查詢事件": [
       {
         "document": "platform-guide/telegram.md",
@@ -5676,6 +5700,12 @@
         "title": "基本資訊"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 12,
         "level": 2,
@@ -5762,6 +5792,14 @@
         "line": 285,
         "level": 3,
         "title": "基礎發送"
+      }
+    ],
+    "基礎發送方法": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 88,
+        "level": 3,
+        "title": "基礎發送方法"
       }
     ],
     "基礎要求": [
@@ -6194,6 +6232,14 @@
         "title": "完整範例"
       }
     ],
+    "完整郵件事件": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 203,
+        "level": 3,
+        "title": "完整郵件事件"
+      }
+    ],
     "完整配置範例": [
       {
         "document": "user-guide/configuration.md",
@@ -6396,6 +6442,14 @@
         "title": "帳戶配置"
       }
     ],
+    "帳戶配置（EmailAdapter.accounts）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 36,
+        "level": 3,
+        "title": "帳戶配置（EmailAdapter.accounts）"
+      }
+    ],
     "帳號管理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -6450,6 +6504,14 @@
         "line": 373,
         "level": 3,
         "title": "帶回呼的等待回覆"
+      }
+    ],
+    "帶附件的郵件": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 154,
+        "level": 3,
+        "title": "帶附件的郵件"
       }
     ],
     "帶驗證的等待回覆": [
@@ -7192,12 +7254,6 @@
     ],
     "擴充欄位說明": [
       {
-        "document": "platform-guide/email.md",
-        "line": 90,
-        "level": 2,
-        "title": "擴充欄位說明"
-      },
-      {
         "document": "platform-guide/yunhu.md",
         "line": 405,
         "level": 2,
@@ -7243,6 +7299,12 @@
       }
     ],
     "擴展欄位說明": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 191,
+        "level": 2,
+        "title": "擴展欄位說明"
+      },
       {
         "document": "platform-guide/onebot11.md",
         "line": 306,
@@ -7324,12 +7386,6 @@
     ],
     "支援的訊息傳送類型": [
       {
-        "document": "platform-guide/email.md",
-        "line": 13,
-        "level": 2,
-        "title": "支援的訊息傳送類型"
-      },
-      {
         "document": "platform-guide/onebot11.md",
         "line": 20,
         "level": 2,
@@ -7358,6 +7414,12 @@
       {
         "document": "platform-guide/discord.md",
         "line": 69,
+        "level": 2,
+        "title": "支援的訊息發送類型"
+      },
+      {
+        "document": "platform-guide/email.md",
+        "line": 58,
         "level": 2,
         "title": "支援的訊息發送類型"
       },
@@ -7462,6 +7524,12 @@
         "title": "文件資訊"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 7,
         "level": 2,
@@ -7532,14 +7600,6 @@
         "title": "文檔維護說明"
       }
     ],
-    "文檔資訊": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 7,
-        "level": 2,
-        "title": "文檔資訊"
-      }
-    ],
     "文章消息段 (yunhu_user_post)": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -7570,6 +7630,14 @@
         "line": 17,
         "level": 3,
         "title": "新手入門"
+      }
+    ],
+    "新郵件事件（email_new）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 127,
+        "level": 3,
+        "title": "新郵件事件（email_new）"
       }
     ],
     "斷線重連": [
@@ -7989,7 +8057,7 @@
       },
       {
         "document": "platform-guide/email.md",
-        "line": 99,
+        "line": 119,
         "level": 3,
         "title": "核心差異點"
       },
@@ -8176,6 +8244,14 @@
         "line": 159,
         "level": 3,
         "title": "標準事件格式"
+      }
+    ],
+    "標準事件範例": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 201,
+        "level": 2,
+        "title": "標準事件範例"
       }
     ],
     "標準化回應": [
@@ -8747,7 +8823,7 @@
       },
       {
         "document": "platform-guide/email.md",
-        "line": 53,
+        "line": 117,
         "level": 2,
         "title": "特有事件類型"
       },
@@ -8798,14 +8874,6 @@
         "line": 145,
         "level": 2,
         "title": "特有事件類型"
-      }
-    ],
-    "特有參數說明": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 42,
-        "level": 3,
-        "title": "特有參數說明"
       }
     ],
     "特有消息段類型": [
@@ -9126,6 +9194,14 @@
         "line": 88,
         "level": 3,
         "title": "發送方法命名"
+      }
+    ],
+    "發送方法回傳值": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 263,
+        "level": 2,
+        "title": "發送方法回傳值"
       }
     ],
     "發送方法返回值": [
@@ -9586,12 +9662,6 @@
       {
         "document": "api-reference/core-modules.md",
         "line": 273,
-        "level": 3,
-        "title": "範例"
-      },
-      {
-        "document": "platform-guide/email.md",
-        "line": 110,
         "level": 3,
         "title": "範例"
       }
@@ -11204,12 +11274,12 @@
         "title": "部署指南"
       }
     ],
-    "郵件平台特性文檔": [
+    "郵件平台特性文件": [
       {
         "document": "platform-guide/email.md",
         "line": 1,
         "level": 1,
-        "title": "郵件平台特性文檔"
+        "title": "郵件平台特性文件"
       }
     ],
     "配合 Event 回覆": [
@@ -11311,6 +11381,12 @@
       }
     ],
     "配置說明": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 21,
+        "level": 2,
+        "title": "配置說明"
+      },
       {
         "document": "platform-guide/ideaura.md",
         "line": 326,
@@ -11554,6 +11630,14 @@
         "line": 71,
         "level": 3,
         "title": "鏈式修飾方法（返回 self 支援鏈式呼叫）"
+      }
+    ],
+    "鏈式修飾方法（返回 self，可組合使用）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 96,
+        "level": 3,
+        "title": "鏈式修飾方法（返回 self，可組合使用）"
       }
     ],
     "鏈式呼叫模式（實例）": [

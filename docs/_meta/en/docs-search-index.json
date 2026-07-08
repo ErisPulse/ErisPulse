@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1293,
+  "total_keywords": 1300,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2008,6 +2008,14 @@
         "title": "Account Configuration"
       }
     ],
+    "Account Configuration (EmailAdapter.accounts)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 36,
+        "level": 3,
+        "title": "Account Configuration (EmailAdapter.accounts)"
+      }
+    ],
     "Account Configuration Fields": [
       {
         "document": "platform-guide/onebot11.md",
@@ -2582,6 +2590,12 @@
         "title": "Basic Information"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 12,
         "level": 2,
@@ -2703,6 +2717,12 @@
       }
     ],
     "Basic Sending Methods": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 88,
+        "level": 3,
+        "title": "Basic Sending Methods"
+      },
       {
         "document": "platform-guide/onebot11.md",
         "line": 40,
@@ -3624,6 +3644,14 @@
         "title": "Complete Configuration Example"
       }
     ],
+    "Complete Email Event": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 203,
+        "level": 3,
+        "title": "Complete Email Event"
+      }
+    ],
     "Complete Example": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -3825,6 +3853,12 @@
       }
     ],
     "Configuration Instructions": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 21,
+        "level": 2,
+        "title": "Configuration Instructions"
+      },
       {
         "document": "platform-guide/kook.md",
         "line": 22,
@@ -4115,7 +4149,7 @@
       },
       {
         "document": "platform-guide/email.md",
-        "line": 99,
+        "line": 119,
         "level": 3,
         "title": "Core Differences"
       },
@@ -4638,6 +4672,12 @@
         "title": "Document Information"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 7,
         "level": 2,
@@ -4703,12 +4743,6 @@
       }
     ],
     "Documentation Information": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 7,
-        "level": 2,
-        "title": "Documentation Information"
-      },
       {
         "document": "platform-guide/onebot11.md",
         "line": 7,
@@ -4798,6 +4832,22 @@
         "line": 373,
         "level": 3,
         "title": "Dynamic Content"
+      }
+    ],
+    "Email Platform Feature Documentation": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 1,
+        "level": 1,
+        "title": "Email Platform Feature Documentation"
+      }
+    ],
+    "Email with Attachments": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 154,
+        "level": 3,
+        "title": "Email with Attachments"
       }
     ],
     "Encryption Mode Description": [
@@ -5114,6 +5164,12 @@
     ],
     "Event Handling Example": [
       {
+        "document": "platform-guide/email.md",
+        "line": 282,
+        "level": 2,
+        "title": "Event Handling Example"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 282,
         "level": 3,
@@ -5306,12 +5362,6 @@
         "line": 273,
         "level": 3,
         "title": "Example"
-      },
-      {
-        "document": "platform-guide/email.md",
-        "line": 110,
-        "level": 3,
-        "title": "Example"
       }
     ],
     "Examples": [
@@ -5392,12 +5442,6 @@
     ],
     "Extended Field Descriptions": [
       {
-        "document": "platform-guide/email.md",
-        "line": 90,
-        "level": 2,
-        "title": "Extended Field Descriptions"
-      },
-      {
         "document": "platform-guide/telegram.md",
         "line": 338,
         "level": 2,
@@ -5439,6 +5483,12 @@
       }
     ],
     "Extension Field Descriptions": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 191,
+        "level": 2,
+        "title": "Extension Field Descriptions"
+      },
       {
         "document": "platform-guide/onebot11.md",
         "line": 306,
@@ -5492,6 +5542,14 @@
         "line": 7,
         "level": 2,
         "title": "Fixed Bugs"
+      }
+    ],
+    "Fluent Modifier Methods (return self, can be combined)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 96,
+        "level": 3,
+        "title": "Fluent Modifier Methods (return self, can be combined)"
       }
     ],
     "For Adapter Developers": [
@@ -5768,6 +5826,14 @@
         "line": 32,
         "level": 3,
         "title": "Global Configuration"
+      }
+    ],
+    "Global Configuration (EmailAdapter)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 23,
+        "level": 3,
+        "title": "Global Configuration (EmailAdapter)"
       }
     ],
     "Group Chat Message (with @mention)": [
@@ -6858,14 +6924,6 @@
         "title": "MCP Server"
       }
     ],
-    "Mail Platform Feature Documentation": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 1,
-        "level": 1,
-        "title": "Mail Platform Feature Documentation"
-      }
-    ],
     "Management Functions": [
       {
         "document": "platform-guide/onebot12.md",
@@ -7802,6 +7860,14 @@
         "title": "Network Client"
       }
     ],
+    "New Email Event (email_new)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 127,
+        "level": 3,
+        "title": "New Email Event (email_new)"
+      }
+    ],
     "New Feature: Raw Event Type Field": [
       {
         "document": "platform-guide/onebot12.md",
@@ -7976,6 +8042,14 @@
         "title": "Notification Event Handling"
       }
     ],
+    "OB12 Message Segment Reverse Conversion (Raw_ob12)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 106,
+        "level": 3,
+        "title": "OB12 Message Segment Reverse Conversion (Raw_ob12)"
+      }
+    ],
     "One-Step Send Information Retrieval": [
       {
         "document": "advanced/session-types.md",
@@ -8060,14 +8134,6 @@
         "line": 1,
         "level": 1,
         "title": "OneBot12 Platform Features Documentation"
-      }
-    ],
-    "OneBot12 Protocol Conversion Explanation": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 95,
-        "level": 2,
-        "title": "OneBot12 Protocol Conversion Explanation"
       }
     ],
     "OneBot12 Standard": [
@@ -9148,6 +9214,14 @@
         "title": "Reply"
       }
     ],
+    "Reply Email Event (email_reply)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 177,
+        "level": 3,
+        "title": "Reply Email Event (email_reply)"
+      }
+    ],
     "Reply Functionality": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -9862,6 +9936,12 @@
         "title": "Sending Method Return Values"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 263,
+        "level": 2,
+        "title": "Sending Method Return Values"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 141,
         "level": 2,
@@ -10022,12 +10102,6 @@
     ],
     "Special Event Types": [
       {
-        "document": "platform-guide/email.md",
-        "line": 53,
-        "level": 2,
-        "title": "Special Event Types"
-      },
-      {
         "document": "platform-guide/ideaura.md",
         "line": 112,
         "level": 2,
@@ -10084,14 +10158,6 @@
         "line": 361,
         "level": 3,
         "title": "Special Message Segment Types"
-      }
-    ],
-    "Special Parameters Explanation": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 42,
-        "level": 3,
-        "title": "Special Parameters Explanation"
       }
     ],
     "Special Tags (For API Documentation Generation)": [
@@ -10162,6 +10228,14 @@
         "line": 196,
         "level": 2,
         "title": "Standard Event Definition"
+      }
+    ],
+    "Standard Event Examples": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 201,
+        "level": 2,
+        "title": "Standard Event Examples"
       }
     ],
     "Standard Event Format": [
@@ -10441,7 +10515,7 @@
       },
       {
         "document": "platform-guide/email.md",
-        "line": 13,
+        "line": 58,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -10822,6 +10896,12 @@
       {
         "document": "platform-guide/discord.md",
         "line": 180,
+        "level": 2,
+        "title": "Unique Event Types"
+      },
+      {
+        "document": "platform-guide/email.md",
+        "line": 117,
         "level": 2,
         "title": "Unique Event Types"
       },
