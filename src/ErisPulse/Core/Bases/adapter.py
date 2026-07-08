@@ -675,10 +675,42 @@ class BaseAdapter(ABC):
         # 初始化时确保配置模板存在
         if self.ConfigClass is not None:
             self._ensure_config_exists()
+            # 向后兼容：子类可覆写 _load_config() 实现自定义加载
+            custom_cfg = self._load_config()
+            if custom_cfg is not None:
+                self._config_instance = custom_cfg
         if self.AccountConfigClass is not None:
             self._ensure_accounts_exist()
-            # 填充 _accounts_data 以保持向后兼容（适配器可能覆写 _load_accounts）
-            self._accounts_data = self.accounts
+            # 向后兼容：子类可覆写 _load_accounts() 实现自定义加载
+            custom = self._load_accounts()
+            if custom is not None:
+                self._accounts_data = custom
+            else:
+                self._accounts_data = self.accounts
+
+    def _load_accounts(self) -> dict | None:
+        """
+        {!--< internal-use >!--}
+        加载账户配置（可被子类覆写）
+
+        子类可覆写此方法实现自定义账户加载逻辑（如全局配置合并、旧格式迁移等）。
+        返回 None 时使用默认配置存储读取逻辑。
+
+        :return: 账户配置字典，或 None 表示使用默认逻辑
+        """
+        return None
+
+    def _load_config(self):
+        """
+        {!--< internal-use >!--}
+        加载适配器配置（可被子类覆写）
+
+        子类可覆写此方法实现自定义配置加载逻辑（如旧格式迁移等）。
+        返回 None 时使用默认配置存储读取逻辑。
+
+        :return: 配置实例，或 None 表示使用默认逻辑
+        """
+        return None
 
     @abstractmethod
     async def call_api(self, endpoint: str, **params: Any) -> Any:
@@ -730,6 +762,7 @@ class BaseAdapter(ABC):
             raise AttributeError(
                 "未声明 ConfigClass，请设置 MyAdapter.ConfigClass = MyConfig"
             )
+
         from ...runtime.config_schema import dict_to_dataclass
         from ..config import config as config_mgr
 
@@ -780,6 +813,7 @@ class BaseAdapter(ABC):
             raise AttributeError(
                 "未声明 AccountConfigClass，请设置 MyAdapter.AccountConfigClass = MyBotConfig"
             )
+
         from ...runtime.config_schema import dict_to_dataclass, validate_config
         from ..config import config as config_mgr
 

@@ -2626,7 +2626,13 @@ class RouterManager:
                     pass
                 logger.warning(i18n.t("core.router.stop_timeout"))
             except Exception as e:
-                logger.error(i18n.t("core.router.stop_error", error=e), exc_info=True)
+                # websockets.exceptions.InvalidState is a known race condition during shutdown:
+                # uvicorn tries to send a WebSocket close frame on connections that are already closing.
+                # This is harmless and expected — log at debug level only.
+                if type(e).__module__ == "websockets.exceptions" and type(e).__qualname__ == "InvalidState":
+                    logger.debug(i18n.t("core.router.stop_ws_close_race", error=str(e)))
+                else:
+                    logger.error(i18n.t("core.router.stop_error", error=e), exc_info=True)
             finally:
                 self._server_task = None
                 self._uvicorn_server = None
