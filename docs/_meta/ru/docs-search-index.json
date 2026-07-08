@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1321,
+  "total_keywords": 1329,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -3252,6 +3252,12 @@
         "title": "Возвращаемые значения методов отправки"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 263,
+        "level": 2,
+        "title": "Возвращаемые значения методов отправки"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 144,
         "level": 2,
@@ -3372,6 +3378,14 @@
         "line": 250,
         "level": 4,
         "title": "Высокоуровневые методы (рекомендуется)"
+      }
+    ],
+    "Глобальная конфигурация (EmailAdapter)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 23,
+        "level": 3,
+        "title": "Глобальная конфигурация (EmailAdapter)"
       }
     ],
     "Глобальная настройка": [
@@ -3716,12 +3730,12 @@
         "title": "Документация по функциям платформы Yunhu"
       }
     ],
-    "Документация по характеристикам платформы электронной почты": [
+    "Документация по функциям почтовой платформы": [
       {
         "document": "platform-guide/email.md",
         "line": 1,
         "level": 1,
-        "title": "Документация по характеристикам платформы электронной почты"
+        "title": "Документация по функциям почтовой платформы"
       }
     ],
     "Дополнительные методы операций": [
@@ -4490,14 +4504,6 @@
         "title": "Информация о команде"
       }
     ],
-    "Информация о конвертации в протокол OneBot12": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 95,
-        "level": 2,
-        "title": "Информация о конвертации в протокол OneBot12"
-      }
-    ],
     "Информация об обновлениях версий": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -5072,6 +5078,14 @@
         "title": "Конфигурация учетных записей"
       }
     ],
+    "Конфигурация учётной записи (EmailAdapter.accounts)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 36,
+        "level": 3,
+        "title": "Конфигурация учётной записи (EmailAdapter.accounts)"
+      }
+    ],
     "Конфигурация фреймворка": [
       {
         "document": "user-guide/configuration.md",
@@ -5534,6 +5548,14 @@
         "line": 66,
         "level": 3,
         "title": "Методы цепочечных модификаторов (можно комбинировать)"
+      }
+    ],
+    "Методы цепочки (возвращают self, могут использоваться вместе)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 96,
+        "level": 3,
+        "title": "Методы цепочки (возвращают self, могут использоваться вместе)"
       }
     ],
     "Методы цепочки (можно комбинировать)": [
@@ -6324,6 +6346,14 @@
         "title": "Обратное преобразование и построение сообщений"
       }
     ],
+    "Обратное преобразование сообщений OB12 (Raw_ob12)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 106,
+        "level": 3,
+        "title": "Обратное преобразование сообщений OB12 (Raw_ob12)"
+      }
+    ],
     "Обратный прокси": [
       {
         "document": "user-guide/deployment.md",
@@ -6588,6 +6618,12 @@
         "title": "Описание конфигурации"
       },
       {
+        "document": "platform-guide/email.md",
+        "line": 21,
+        "level": 2,
+        "title": "Описание конфигурации"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 326,
         "level": 3,
@@ -6695,7 +6731,7 @@
     "Описание расширенных полей": [
       {
         "document": "platform-guide/email.md",
-        "line": 90,
+        "line": 191,
         "level": 2,
         "title": "Описание расширенных полей"
       },
@@ -6736,14 +6772,6 @@
         "line": 126,
         "level": 2,
         "title": "Описание режимов шифрования"
-      }
-    ],
-    "Описание специальных параметров": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 42,
-        "level": 3,
-        "title": "Описание специальных параметров"
       }
     ],
     "Описание функций платформы — универсальный адаптер Webhook": [
@@ -6844,6 +6872,12 @@
       {
         "document": "platform-guide/discord.md",
         "line": 13,
+        "level": 2,
+        "title": "Основная информация"
+      },
+      {
+        "document": "platform-guide/email.md",
+        "line": 12,
         "level": 2,
         "title": "Основная информация"
       },
@@ -7026,6 +7060,12 @@
     ],
     "Основные методы отправки": [
       {
+        "document": "platform-guide/email.md",
+        "line": 88,
+        "level": 3,
+        "title": "Основные методы отправки"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 29,
         "level": 3,
@@ -7059,7 +7099,7 @@
     "Основные отличия": [
       {
         "document": "platform-guide/email.md",
-        "line": 99,
+        "line": 119,
         "level": 3,
         "title": "Основные отличия"
       },
@@ -7646,6 +7686,14 @@
         "title": "Персистентность данных"
       }
     ],
+    "Письмо с вложениями": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 154,
+        "level": 3,
+        "title": "Письмо с вложениями"
+      }
+    ],
     "Плановые задачи": [
       {
         "document": "getting-started/common-tasks.md",
@@ -7785,7 +7833,7 @@
     "Поддерживаемые типы отправки сообщений": [
       {
         "document": "platform-guide/email.md",
-        "line": 13,
+        "line": 58,
         "level": 2,
         "title": "Поддерживаемые типы отправки сообщений"
       },
@@ -8054,6 +8102,14 @@
         "line": 394,
         "level": 3,
         "title": "Подтверждение диалога (confirm)"
+      }
+    ],
+    "Полное событие письма": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 203,
+        "level": 3,
+        "title": "Полное событие письма"
       }
     ],
     "Полный пример": [
@@ -8392,12 +8448,6 @@
         "line": 273,
         "level": 3,
         "title": "Пример"
-      },
-      {
-        "document": "platform-guide/email.md",
-        "line": 110,
-        "level": 3,
-        "title": "Пример"
       }
     ],
     "Пример интеграции адаптера": [
@@ -8590,6 +8640,14 @@
         "title": "Примеры обработки возвращаемых значений"
       }
     ],
+    "Примеры обработки событий": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 282,
+        "level": 2,
+        "title": "Примеры обработки событий"
+      }
+    ],
     "Примеры особых полей": [
       {
         "document": "platform-guide/qqbot.md",
@@ -8654,6 +8712,14 @@
         "line": 223,
         "level": 3,
         "title": "Примеры специфических полей"
+      }
+    ],
+    "Примеры стандартных событий": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 201,
+        "level": 2,
+        "title": "Примеры стандартных событий"
       }
     ],
     "Примеры управления группами": [
@@ -10188,6 +10254,22 @@
         "title": "Событие изменения статуса пользователя"
       }
     ],
+    "Событие нового письма (email_new)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 127,
+        "level": 3,
+        "title": "Событие нового письма (email_new)"
+      }
+    ],
+    "Событие ответа на письмо (email_reply)": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 177,
+        "level": 3,
+        "title": "Событие ответа на письмо (email_reply)"
+      }
+    ],
     "Событие отзыва сообщения": [
       {
         "document": "platform-guide/ideaura.md",
@@ -10497,12 +10579,6 @@
       }
     ],
     "Специальные типы событий": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 53,
-        "level": 2,
-        "title": "Специальные типы событий"
-      },
       {
         "document": "platform-guide/yunhu_user.md",
         "line": 148,
@@ -11293,6 +11369,12 @@
       }
     ],
     "Уникальные типы событий": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 117,
+        "level": 2,
+        "title": "Уникальные типы событий"
+      },
       {
         "document": "platform-guide/qqbot.md",
         "line": 133,
