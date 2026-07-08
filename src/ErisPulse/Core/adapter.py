@@ -281,6 +281,17 @@ class AdapterManager(ManagerBase):
 
             while True:
                 try:
+                    # 刷新账户缓存，确保 Dashboard 配置变更后 _accounts_data 不过期
+                    if hasattr(adapter, 'AccountConfigClass') and adapter.AccountConfigClass is not None:
+                        try:
+                            # 向后兼容：先尝试子类覆写的 _load_accounts()
+                            custom = adapter._load_accounts()
+                            if custom is not None:
+                                adapter._accounts_data = custom
+                            else:
+                                adapter._accounts_data = adapter.accounts
+                        except Exception:
+                            pass
                     # 注入 owner，使适配器 start() 期间注册的资源（路由/事件处理器/命令）
                     # 自动归属到该平台，从而支持后续按 owner 兜底清理（与模块卸载对齐颗粒度）
                     token = current_owner.set(platform)
@@ -632,6 +643,17 @@ class AdapterManager(ManagerBase):
         )
         token = current_owner.set(platform)
         try:
+            # 刷新账户缓存，确保 Dashboard 配置变更后 _accounts_data 不过期
+            if hasattr(adapter_instance, 'AccountConfigClass') and adapter_instance.AccountConfigClass is not None:
+                try:
+                    # 向后兼容：先尝试子类覆写的 _load_accounts()
+                    custom = adapter_instance._load_accounts()
+                    if custom is not None:
+                        adapter_instance._accounts_data = custom
+                    else:
+                        adapter_instance._accounts_data = adapter_instance.accounts
+                except Exception:
+                    pass
             await adapter_instance.start()
         except Exception as e:
             logger.error(

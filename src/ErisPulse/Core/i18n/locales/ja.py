@@ -220,6 +220,7 @@ TRANSLATIONS = {
     "core.router.stopped_cancelled": "ルーターサーバーはキャンセルされました",
     "core.router.stop_timeout": "ルーターサーバーの停止がタイムアウトしました、強制終了します",
     "core.router.stop_error": "ルーターサーバーの停止中にエラーが発生しました: {error}",
+    "core.router.stop_ws_close_race": "サーバー停止中にWebSocket接続は既に閉じられています (無害な競合): {error}",
     "core.router.clearing_routes": "登録されているすべてのルートをクリアしています...",
     "core.router.server_stopped": "サーバーが停止しました",
     "core.router.root_page_text": "ルートパスにアクセスしたようですが、ここにはコンテンツがありません～",
