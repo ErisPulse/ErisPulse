@@ -1605,7 +1605,8 @@ async def conditional_handler(event):
 
 ## 下一步
 
-- [常见任务示例](common-tasks.md) - 学习常用功能的实现
+- [常见任务示例](common-tasks.md) - 学习常用功能的实现（含消息发送进阶：重试/超时/批量）
+- [平台特性指南](../platform-guide/README.md) - Send DSL 链式发送、发送规则、批量构建的完整说明
 - [Event 包装类详解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 对象
 - [用户使用指南](../user-guide/) - 了解配置和模块管理
 
@@ -1622,10 +1623,11 @@ async def conditional_handler(event):
 2. 定时任务
 3. 消息过滤
 4. 多平台适配
-5. 权限控制
-6. 消息统计
-7. 搜索功能
-8. 图片处理
+5. 消息发送进阶（重试/超时/批量）
+6. 权限控制
+7. 消息统计
+8. 搜索功能
+9. 图片处理
 
 ## 数据持久化
 
@@ -1839,6 +1841,61 @@ async def rich_handler(event):
         # 其他平台使用纯文本
         await event.reply("加粗文本 斜体文本")
 ```
+
+## 消息发送进阶（重试/超时/批量）
+
+除了简单的 `event.reply()`，你还可以通过适配器的 Send DSL 实现更复杂的发送场景：失败自动重试、超时取消、成功后执行逻辑、批量发送多条消息。
+
+> 下面的示例用 `event.get_detail_type()` 和 `event.get_target_id()` 从事件中获取目标类型和 ID（群聊自动取 group_id，私聊自动取 user_id），避免硬编码。
+
+### 发送成功后执行逻辑
+
+```python
+@command("pay", help="模拟支付")
+async def pay_handler(event):
+    yunhu = sdk.adapter.get(event.get_platform())
+    user_id = event.get_user_id()
+    # 发送成功后才扣积分
+    await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
+           .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
+           .Text("支付成功，已扣除 10 积分"))
+```
+
+### 失败重试 + 超时取消
+
+```python
+@command("notice", help="发送重要通知")
+async def notice_handler(event):
+    adapter_inst = sdk.adapter.get(event.get_platform())
+    # 最多重试 3 次，每次超时 10 秒
+    task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
+            .Retry(3)
+            .Timeout(10)
+            .OnError(lambda ctx: sdk.logger.error(f"通知发送失败: {ctx.error}"))
+            .Text("这是一条重要通知"))
+    # 不等待，后台发送
+```
+
+### 批量发送多条消息
+
+一条链路发多条消息，统一执行：
+
+```python
+@command("announce", help="发送公告")
+async def announce_handler(event):
+    adapter_inst = sdk.adapter.get(event.get_platform())
+    # 构建多条消息，统一发送（默认并行）
+    results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
+                    .Build()
+                    .Text("📋 今日公告")
+                    .Image("https://example.com/banner.jpg")
+                    .Text("详细内容见上方图片")
+                    .Retry(2)            # 失败的条目各自重试
+                    .send_all())
+    sdk.logger.info(f"批量发送完成，共 {len(results)} 条")
+```
+
+> 更完整的规则与批量说明请参考 [平台特性指南](../platform-guide/README.md#发送规则装饰器)。
 
 ## 权限控制
 
@@ -8388,6 +8445,74 @@ task = my_adapter.Send.To("user", "123").Text("Hello")
 # 如果需要获取发送结果，稍后可以等待
 result = await task
 ```
+
+#### 发送规则装饰器
+
+在实际开发中，经常需要：发送成功后才执行后续逻辑、失败自动重试、超时取消、发送进度监控等。Send DSL 内置了一套发送规则装饰器，通过链式方法附加规则：
+
+| 方法 | 说明 |
+|--------|------|
+| `.Hook(callback)` | 发送成功后执行的回调（可多次调用） |
+| `.Retry(times=1)` | 失败自动重试 N 次（含首次共 N+1 次） |
+| `.Timeout(seconds)` | 单次发送超时，超时取消（可与 Retry 叠加） |
+| `.Defer(seconds)` | 延迟发送（进程内定时，不持久化） |
+| `.OnProgress(callback)` | 各阶段进度回调，传入 SendContext |
+| `.OnError(callback)` | 最终失败时的错误回调（仅触发一次） |
+
+```python
+yunhu = adapter.get("yunhu")
+
+# 发送成功后才扣积分
+await (yunhu.Send.To("user", "123")
+       .Hook(lambda r: deduct_points("123"))
+       .Text("消费成功"))
+
+# 失败重试 + 超时取消 + 进度监控
+def on_progress(ctx):
+    print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}")
+
+task = (yunhu.Send.To("user", "123")
+        .Retry(3)              # 最多重试 3 次
+        .Timeout(10)           # 每次超时 10 秒
+        .OnProgress(on_progress)
+        .OnError(lambda ctx: notify_admin(ctx.error))
+        .Text("重要通知"))
+```
+
+规则方法返回 `self`，必须放在发送方法（Text/Image 等）之前调用。`SendContext` 包含 `stage`（pending/sending/retrying/success/failed/timeout）、`attempt`、`elapsed`、`error`、`result` 等字段，便于监控。
+
+#### 批量构建模式（Build）
+
+一条链路中构建多个发送方法，最后统一执行。适用于“一口气发多条消息”的场景：
+
+```python
+yunhu = adapter.get("yunhu")
+
+# 构建多条消息，统一发送
+results = await (yunhu.Send.To("user", "123")
+                .Build()                     # 进入构建模式
+                .Text("通知一")
+                .Image("pic.jpg")
+                .Text("通知二")
+                .send_all())                 # 统一执行
+# results = [Text结果, Image结果, Text结果]
+```
+
+`.send_all()` 默认**并行**执行（并发发送，效率高）。需要保证消息到达顺序时调用 `.Sequential()` 串行执行：
+
+```python
+# 串行执行（保证顺序）+ 失败重试
+await (yunhu.Send.To("group", "456")
+       .Build()
+       .Sequential()                # 按顺序依次发送
+       .Retry(2)                     # 失败的条目各自重试
+       .Text("第一条").Text("第二条")
+       .send_all())
+```
+
+批量执行采用**失败继续**策略：某条失败不会中断其他条，失败的条目自动重试。批量也支持整批的 `Hook`（全部成功后触发）、`OnError`（有失败时触发）、`OnProgress`（进度回调）。
+
+> 更详细的规则与批量构建说明请参考 [SendDSL 详解](../developer-guide/adapters/send-dsl.md)。
 
 ### 事件监听
 有三种事件监听方式：

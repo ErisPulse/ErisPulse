@@ -102,6 +102,31 @@ AI 輔助開發讓需求直接轉化為可用模組
 </tr>
 </table>
 
+### 鏈式發送 DSL
+
+一條鏈式呼叫完成 @、回覆、重試、超時、回調等全部發送邏輯：
+
+```python
+yunhu = sdk.adapter.get("yunhu")
+
+# 單發：@使用者 + 回覆 + 重試 + 成功回調
+await (yunhu.Send.To("group", "123")
+       .At("456").Reply("msg_789")
+       .Retry(3).Timeout(10)
+       .Hook(lambda r: print("發送成功！"))
+       .Text("你好"))
+
+# 批量發送：一條鏈發多條訊息
+results = await (yunhu.Send.To("user", "123")
+                .Build()
+                .Text("通知一")
+                .Image("pic.jpg")
+                .Retry(2)
+                .send_all())
+```
+
+> 支援 Hook（成功回調）、Retry（失敗重試）、Timeout（超時取消）、OnProgress（進度監控）、Defer（延遲發送）、Build（批量建構）等鏈式方法，詳見 [SendDSL 文件](docs/zh-TW/developer-guide/adapters/send-dsl.md)。
+
 ---
 
 ## 同一份程式碼。多個平台。
@@ -138,7 +163,7 @@ AI 輔助開發讓需求直接轉化為可用模組
 
 ## 生態
 
-ErisPulse 不僅僅是框架。裝上就能開始，不需要從零造輪子。
+ErisPulse 不僅是框架。安裝即可開始，無需從零造輪子。
 
 <table>
 <tr>
@@ -155,11 +180,11 @@ ErisPulse 不僅僅是框架。裝上就能開始，不需要從零造輪子。
 
 **Dashboard**
 
-視覺化管理
+可視化管理
 
 插件 · 日誌 · 配置
 
-[線上示範 →](https://dashdemo.erisdev.com/)
+[在線示範 →](https://dashdemo.erisdev.com/)
 
 </td>
 <td align="center" width="25%">
@@ -221,11 +246,11 @@ ErisPulse 不僅僅是框架。裝上就能開始，不需要從零造輪子。
 
 ErisPulse 並非為了成為框架而誕生。
 
-它最早源於 **Amer** —— 一個用於不同平台之間訊息互聯與同步的項目。
+它最早源於 **Amer** —— 一個用於不同平台之間訊息互聯與同步的專案。
 
-隨著接入的平台不斷增加，我們開始維護 **ryunhusdk2 的異步版本**，並逐步抽象出統一的事件模型與適配器體系。
+隨著接入的平台不斷增加，我們開始維護 **ryunhusdk2 的非同步版本**，並逐步抽象出統一的事件模型與適配器體系。
 
-這些實踐最終演變為今天的 ErisPulse。
+這些實踐最終演變為今日的 ErisPulse。
 
 它的目標始終沒有改變：
 
@@ -237,7 +262,7 @@ ErisPulse 並非為了成為框架而誕生。
 
 #### 一鍵安裝腳本（推薦）
 
-安裝腳本會自動檢測您的環境（Docker、Python、uv），引導選擇最適合的安裝方式，支援多語言（中文/English/日本語/Русский/繁體中文）。
+安裝腳本會自動偵測您的環境（Docker、Python、uv），引導選擇最適合的安裝方式，支援多語言（中文/English/日本語/Русский/繁體中文）。
 
 Windows (PowerShell):
 ```powershell
@@ -303,7 +328,7 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 > 鏡像內建 ErisPulse 框架和 Dashboard 管理介面，支援 `linux/amd64` 和 `linux/arm64` 架構。
 
-啟動後存取 `http://<host>:<port>/Dashboard`，使用設定的令牌作為密碼登入 Dashboard 管理介面。
+啟動後訪問 `http://<host>:<port>/Dashboard`，使用設定的令牌作為密碼登入 Dashboard 管理介面。
 
 </details>
 
@@ -342,7 +367,7 @@ docker pull erispulse/erispulse:dev
 | `ERISPULSE_CHANNEL` | `stable` | 版本通道：`stable`（穩定版）或 `dev`（預發布版） |
 | `ERISPULSE_UPDATE_ON_START` | `false` | 容器啟動時是否自動更新到最新版本（需顯式啟用） |
 | `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboard 登入令牌 |
-| `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
+| `ERISPULSE_PORT` | `8000` | Dashboard 端口對映 |
 | `TZ` | `Asia/Shanghai` | 容器時區 |
 
 > 啟用 `ERISPULSE_UPDATE_ON_START=true` 可確保即使鏡像較舊，容器也能在啟動時自動獲取最新版本。
@@ -365,7 +390,7 @@ ErisPulse 已上架 1Panel 第三方應用商店，可使用 [okxlin/appstore](h
 pip install ErisPulse
 ```
 
-> 也可以使用上方的一鍵安裝腳本，自動檢測環境並引導設定。
+> 也可以使用上方的一鍵安裝腳本，自動偵測環境並引導配置。
 
 #### 初始化專案
 
@@ -377,7 +402,7 @@ epsdk init
 epsdk init -q -n my_bot
 ```
 
-#### 建立第一個機器人
+#### 創建第一個機器人
 
 建立 `main.py` 檔案：
 
@@ -438,7 +463,7 @@ epsdk run main.py --reload
 - [快速開始指南](docs/zh-TW/quick-start.md)
 - [入門指南](docs/zh-TW/getting-started/)
 
-#### 多輪對話示例
+#### 多輪對話範例
 
 ErisPulse 內建了強大的多輪對話引擎，輕鬆實現引導式操作、資訊收集等互動場景：
 
@@ -506,7 +531,7 @@ async def menu_handler(event):
     # 分支跳轉，建構複雜互動流程
     @conv.branch("main")
     async def main_menu():
-        await conv.say("=== 主選單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
+        await conv.say("=== 主菜單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "1":
             await conv.goto("profile")
@@ -544,11 +569,11 @@ async def menu_handler(event):
 | <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [雲湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企業級即時通訊平台（機器人接入） |
 | <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [雲湖使用者](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基於雲湖使用者協定的接入適配器 |
 | [花楓咖啡館](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
-| <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | 全球性社群通訊平台，支援伺服器、頻道、私訊 |
+| <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | 全球性社群通訊平台，支援伺服器、頻道、私信 |
 | <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | 通用 HTTP 橋接適配器，對接任意系統 |
 | <img src=".github/assets/adapter_logo/wechatmp.svg" height="20" alt="WechatMp" /> [微信公眾號](https://github.com/ErisPulse/ErisPulse-WechatMpAdapter) | 微信官方公眾號平台 |
 
-查看 [適配器詳細介紹](docs/zh-TW/platform-guide/README.md)
+查看 [適配器詳情介紹](docs/zh-TW/platform-guide/README.md)
 
 ---
 

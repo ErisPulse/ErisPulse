@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1300,
+  "total_keywords": 1324,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -107,7 +107,7 @@
     "1. Exception Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 584,
+        "line": 585,
         "level": 3,
         "title": "1. Exception Handling"
       }
@@ -581,7 +581,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 602,
+        "line": 603,
         "level": 3,
         "title": "2. Logging"
       }
@@ -906,12 +906,12 @@
         "title": "3. Complete Field Specification"
       }
     ],
-    "3. Conditional Handling": [
+    "3. Conditional Processing": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 618,
+        "line": 619,
         "level": 3,
-        "title": "3. Conditional Handling"
+        "title": "3. Conditional Processing"
       }
     ],
     "3. Create Adapter Main Class": [
@@ -1162,12 +1162,12 @@
         "title": "4. Automatic Discovery of `self` Field"
       }
     ],
-    "4. Combine Usage": [
+    "4. Combined Usage": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 25,
         "level": 3,
-        "title": "4. Combine Usage"
+        "title": "4. Combined Usage"
       }
     ],
     "4. Connection Information Exposure": [
@@ -2275,9 +2275,17 @@
     "Admin Check": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 231,
+        "line": 287,
         "level": 3,
         "title": "Admin Check"
+      }
+    ],
+    "Advanced Message Sending (Retry/Timeout/Batch)": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 230,
+        "level": 2,
+        "title": "Advanced Message Sending (Retry/Timeout/Batch)"
       }
     ],
     "Advanced Methods (Recommended)": [
@@ -2362,20 +2370,20 @@
         "title": "Article Message Segment (yunhu_user_post)"
       }
     ],
+    "Async Processing": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 120,
+        "level": 2,
+        "title": "Async Processing"
+      }
+    ],
     "Async Processing Mechanism": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 456,
         "level": 2,
         "title": "Async Processing Mechanism"
-      }
-    ],
-    "Asynchronous Handling": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 120,
-        "level": 2,
-        "title": "Asynchronous Handling"
       }
     ],
     "Asynchronous Initialization": [
@@ -2416,20 +2424,20 @@
         "title": "Asynchronous Programming"
       }
     ],
-    "Asynchronous Sending and Result Processing": [
+    "Asynchronous Sending and Result Handling": [
       {
         "document": "platform-guide/README.md",
-        "line": 87,
+        "line": 85,
         "level": 4,
-        "title": "Asynchronous Sending and Result Processing"
+        "title": "Asynchronous Sending and Result Handling"
       }
     ],
-    "At Method": [
+    "At Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 63,
         "level": 3,
-        "title": "At Method"
+        "title": "At Methods"
       }
     ],
     "AtAll Method": [
@@ -2510,6 +2518,14 @@
         "title": "Available Attributes"
       }
     ],
+    "Background Execution": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 380,
+        "level": 3,
+        "title": "Background Execution"
+      }
+    ],
     "Backup": [
       {
         "document": "user-guide/deployment.md",
@@ -2548,6 +2564,14 @@
         "line": 117,
         "level": 3,
         "title": "BaseModule Base Class"
+      }
+    ],
+    "Basic Call Methods": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 5,
+        "level": 2,
+        "title": "Basic Call Methods"
       }
     ],
     "Basic Commands": [
@@ -2777,13 +2801,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 5,
-        "level": 2,
-        "title": "Basic Usage"
-      },
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 245,
+        "line": 495,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -2792,6 +2810,14 @@
         "line": 171,
         "level": 3,
         "title": "Basic Usage"
+      }
+    ],
+    "Batch Build Mode (Build)": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 135,
+        "level": 4,
+        "title": "Batch Build Mode (Build)"
       }
     ],
     "Batch Operations": [
@@ -2808,6 +2834,22 @@
         "line": 516,
         "level": 4,
         "title": "Batch Registration (Mixin Class)"
+      }
+    ],
+    "Batch Rules and Callbacks": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 322,
+        "level": 3,
+        "title": "Batch Rules and Callbacks"
+      }
+    ],
+    "Batch Sending Multiple Messages": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 264,
+        "level": 3,
+        "title": "Batch Sending Multiple Messages"
       }
     ],
     "Benefits of Following Standards": [
@@ -2873,7 +2915,7 @@
     "Blacklist Filtering": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 168,
+        "line": 169,
         "level": 3,
         "title": "Blacklist Filtering"
       }
@@ -2990,20 +3032,28 @@
         "title": "Bug Tracker"
       }
     ],
-    "Built-in Confirmation Words": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 498,
-        "level": 3,
-        "title": "Built-in Confirmation Words"
-      }
-    ],
     "Built-in Defaults": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 379,
         "level": 3,
         "title": "Built-in Defaults"
+      }
+    ],
+    "Built-in confirmation words": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 499,
+        "level": 3,
+        "title": "Built-in confirmation words"
+      }
+    ],
+    "Bulk Build Mode (Build)": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 270,
+        "level": 2,
+        "title": "Bulk Build Mode (Build)"
       }
     ],
     "Button Message Segment (yunhu_user_button)": [
@@ -3084,12 +3134,12 @@
         "title": "Case-Insensitive Method Calls"
       }
     ],
-    "Chain Calling": [
+    "Chain Call": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 263,
+        "line": 513,
         "level": 3,
-        "title": "Chain Calling"
+        "title": "Chain Call"
       }
     ],
     "Chain Decoration Methods (Can be used in combination)": [
@@ -3130,6 +3180,14 @@
         "line": 74,
         "level": 2,
         "title": "Chain-style Queries"
+      }
+    ],
+    "Chainable `Send` Calls": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 40,
+        "level": 3,
+        "title": "Chainable `Send` Calls"
       }
     ],
     "Chained Call Examples": [
@@ -3312,12 +3370,12 @@
         "title": "Child Loggers"
       }
     ],
-    "Choose Menu": [
+    "Choice menu (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 411,
+        "line": 412,
         "level": 3,
-        "title": "Choose Menu"
+        "title": "Choice menu (choose)"
       }
     ],
     "Choosing a Development Approach": [
@@ -3384,20 +3442,20 @@
         "title": "Code Quality"
       }
     ],
-    "Collect Form": [
+    "Collect form (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 430,
+        "line": 431,
         "level": 3,
-        "title": "Collect Form"
+        "title": "Collect form (collect)"
       }
     ],
-    "Combine Modifiers": [
+    "Combined Modifiers": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 87,
         "level": 3,
-        "title": "Combine Modifiers"
+        "title": "Combined Modifiers"
       }
     ],
     "Command": [
@@ -3550,20 +3608,20 @@
         "title": "Common Configuration Locations"
       }
     ],
+    "Common Event Object Methods": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 508,
+        "level": 3,
+        "title": "Common Event Object Methods"
+      }
+    ],
     "Common Fields (All Event Types)": [
       {
         "document": "developer-guide/adapters/converter.md",
         "line": 63,
         "level": 3,
         "title": "Common Fields (All Event Types)"
-      }
-    ],
-    "Common Interfaces": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 40,
-        "level": 2,
-        "title": "Common Interfaces"
       }
     ],
     "Common Issues": [
@@ -3578,14 +3636,6 @@
         "line": 157,
         "level": 2,
         "title": "Common Issues"
-      }
-    ],
-    "Common Methods of the Event Object": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 507,
-        "level": 3,
-        "title": "Common Methods of the Event Object"
       }
     ],
     "Common Parameters": [
@@ -3660,6 +3710,12 @@
         "title": "Complete Example"
       },
       {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 493,
+        "level": 2,
+        "title": "Complete Example"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 177,
         "level": 3,
@@ -3670,12 +3726,6 @@
       {
         "document": "advanced/message-builder.md",
         "line": 151,
-        "level": 2,
-        "title": "Complete Examples"
-      },
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 243,
         "level": 2,
         "title": "Complete Examples"
       }
@@ -3940,20 +3990,20 @@
         "title": "Configuring Lazy Loading"
       }
     ],
-    "Confirm Dialog": [
+    "Confirmation dialog (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 394,
+        "line": 395,
         "level": 3,
-        "title": "Confirm Dialog"
+        "title": "Confirmation dialog (confirm)"
       }
     ],
-    "Connection Event": [
+    "Connection Events": [
       {
         "document": "getting-started/event-handling.md",
         "line": 253,
         "level": 3,
-        "title": "Connection Event"
+        "title": "Connection Events"
       }
     ],
     "Connection Flow": [
@@ -4008,14 +4058,6 @@
         "title": "Considerations"
       }
     ],
-    "Content List": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 5,
-        "level": 2,
-        "title": "Content List"
-      }
-    ],
     "Content Writing Standards": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -4043,7 +4085,7 @@
     "Contributing": [
       {
         "document": "platform-guide/README.md",
-        "line": 224,
+        "line": 290,
         "level": 2,
         "title": "Contributing"
       }
@@ -4411,7 +4453,7 @@
     "Data Persistence": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 16,
+        "line": 17,
         "level": 2,
         "title": "Data Persistence"
       },
@@ -4472,6 +4514,14 @@
         "line": 277,
         "level": 3,
         "title": "Default Configuration"
+      }
+    ],
+    "Delayed Send (Defer)": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 221,
+        "level": 3,
+        "title": "Delayed Send (Defer)"
       }
     ],
     "Delete Data": [
@@ -4858,6 +4908,14 @@
         "title": "Encryption Mode Description"
       }
     ],
+    "Enter Build Mode": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 274,
+        "level": 3,
+        "title": "Enter Build Mode"
+      }
+    ],
     "Environment Variables": [
       {
         "document": "user-guide/deployment.md",
@@ -5067,7 +5125,7 @@
     "Event Data Access": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 505,
+        "line": 506,
         "level": 2,
         "title": "Event Data Access"
       }
@@ -5157,7 +5215,7 @@
     "Event Handling Best Practices": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 582,
+        "line": 583,
         "level": 2,
         "title": "Event Handling Best Practices"
       }
@@ -5180,6 +5238,14 @@
         "line": 284,
         "level": 3,
         "title": "Event Handling Example"
+      }
+    ],
+    "Event Handling Introduction": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 1,
+        "level": 1,
+        "title": "Event Handling Introduction"
       }
     ],
     "Event Handling Mechanism": [
@@ -5207,7 +5273,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 102,
+        "line": 168,
         "level": 3,
         "title": "Event Listening"
       }
@@ -5402,6 +5468,14 @@
         "title": "Exception System"
       }
     ],
+    "Execute Logic After Sending Success": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 236,
+        "level": 3,
+        "title": "Execute Logic After Sending Success"
+      }
+    ],
     "Execution Control Commands": [
       {
         "document": "user-guide/cli-reference.md",
@@ -5504,12 +5578,36 @@
         "title": "Extension: Adding More Features"
       }
     ],
+    "Failure Auto-Retry (Retry)": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 180,
+        "level": 3,
+        "title": "Failure Auto-Retry (Retry)"
+      }
+    ],
+    "Failure Continue and Retry": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 310,
+        "level": 3,
+        "title": "Failure Continue and Retry"
+      }
+    ],
     "Failure Response Example": [
       {
         "document": "standards/api-response.md",
         "line": 49,
         "level": 4,
         "title": "Failure Response Example"
+      }
+    ],
+    "Failure Retry + Timeout Cancellation": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 249,
+        "level": 3,
+        "title": "Failure Retry + Timeout Cancellation"
       }
     ],
     "Feature Matrix": [
@@ -5630,12 +5728,12 @@
         "title": "Frequently Asked Questions"
       }
     ],
-    "Friend Add": [
+    "Friend Addition": [
       {
         "document": "getting-started/event-handling.md",
         "line": 190,
         "level": 3,
-        "title": "Friend Add"
+        "title": "Friend Addition"
       }
     ],
     "Friend Offline Event": [
@@ -5726,6 +5824,14 @@
         "title": "Gateway Intents"
       }
     ],
+    "General Interfaces": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 38,
+        "level": 2,
+        "title": "General Interfaces"
+      }
+    ],
     "Generic request": [
       {
         "document": "advanced/http-client.md",
@@ -5812,14 +5918,6 @@
         "title": "Getting Started with Adapter Development"
       }
     ],
-    "Getting Started with Event Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 1,
-        "level": 1,
-        "title": "Getting Started with Event Handling"
-      }
-    ],
     "Global Configuration": [
       {
         "document": "advanced/lazy-loading.md",
@@ -5844,12 +5942,12 @@
         "title": "Group Chat Message (with @mention)"
       }
     ],
-    "Group Invite Request": [
+    "Group Invitation Request": [
       {
         "document": "getting-started/event-handling.md",
         "line": 240,
         "level": 3,
-        "title": "Group Invite Request"
+        "title": "Group Invitation Request"
       }
     ],
     "Group Management Examples": [
@@ -5895,7 +5993,7 @@
     "Group Permissions": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 266,
+        "line": 322,
         "level": 3,
         "title": "Group Permissions"
       }
@@ -6076,12 +6174,12 @@
         "title": "Health Check"
       }
     ],
-    "Heartbeat Event": [
+    "Heartbeat Events": [
       {
         "document": "getting-started/event-handling.md",
         "line": 269,
         "level": 3,
-        "title": "Heartbeat Event"
+        "title": "Heartbeat Events"
       }
     ],
     "Heartbeat Mechanism": [
@@ -6201,25 +6299,25 @@
     "Image Download and Storage": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 381,
+        "line": 441,
         "level": 3,
         "title": "Image Download and Storage"
-      }
-    ],
-    "Image Identification Example": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 410,
-        "level": 3,
-        "title": "Image Identification Example"
       }
     ],
     "Image Processing": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 379,
+        "line": 439,
         "level": 2,
         "title": "Image Processing"
+      }
+    ],
+    "Image Recognition Example": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 470,
+        "level": 3,
+        "title": "Image Recognition Example"
       }
     ],
     "Immediate Loading": [
@@ -6276,6 +6374,14 @@
         "line": 496,
         "level": 3,
         "title": "Inheritance Relationship"
+      }
+    ],
+    "Inheritance of Modifiers and Rules": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 356,
+        "level": 3,
+        "title": "Inheritance of Modifiers and Rules"
       }
     ],
     "Initialization Process": [
@@ -6475,7 +6581,7 @@
     "Interactive Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 299,
+        "line": 300,
         "level": 2,
         "title": "Interactive Handling"
       }
@@ -6575,7 +6681,7 @@
     "Keyword Filtering": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 147,
+        "line": 148,
         "level": 3,
         "title": "Keyword Filtering"
       }
@@ -6720,12 +6826,20 @@
         "title": "List Supported Send Methods"
       }
     ],
-    "Listening to @ mentions": [
+    "Listening to @ Messages": [
       {
         "document": "getting-started/event-handling.md",
         "line": 56,
         "level": 3,
-        "title": "Listening to @ mentions"
+        "title": "Listening to @ Messages"
+      }
+    ],
+    "Listening to All Messages": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 25,
+        "level": 3,
+        "title": "Listening to All Messages"
       }
     ],
     "Listening to Bot Lifecycle": [
@@ -6734,6 +6848,14 @@
         "line": 949,
         "level": 3,
         "title": "Listening to Bot Lifecycle"
+      }
+    ],
+    "Listening to Group Messages": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 46,
+        "level": 3,
+        "title": "Listening to Group Messages"
       }
     ],
     "Listening to Lifecycle Events": [
@@ -6760,28 +6882,12 @@
         "title": "Listening to Message Audit Results"
       }
     ],
-    "Listening to all messages": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 25,
-        "level": 3,
-        "title": "Listening to all messages"
-      }
-    ],
-    "Listening to group messages": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 46,
-        "level": 3,
-        "title": "Listening to group messages"
-      }
-    ],
-    "Listening to private messages": [
+    "Listening to Private Messages": [
       {
         "document": "getting-started/event-handling.md",
         "line": 37,
         "level": 3,
-        "title": "Listening to private messages"
+        "title": "Listening to Private Messages"
       }
     ],
     "Listing Modules": [
@@ -6898,6 +7004,14 @@
         "line": 74,
         "level": 2,
         "title": "Logging Configuration"
+      }
+    ],
+    "Logic Executed After Send Success (Hook)": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 163,
+        "level": 3,
+        "title": "Logic Executed After Send Success (Hook)"
       }
     ],
     "Looping Conversation": [
@@ -7073,7 +7187,7 @@
     "Message Counting": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 283,
+        "line": 339,
         "level": 3,
         "title": "Message Counting"
       }
@@ -7175,7 +7289,7 @@
     "Message Filtering": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 145,
+        "line": 146,
         "level": 2,
         "title": "Message Filtering"
       }
@@ -7310,14 +7424,6 @@
         "title": "Message Sending"
       }
     ],
-    "Message Sending Failed": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 197,
-        "level": 4,
-        "title": "Message Sending Failed"
-      }
-    ],
     "Message Sending Methods": [
       {
         "document": "platform-guide/onebot12.md",
@@ -7326,12 +7432,20 @@
         "title": "Message Sending Methods"
       }
     ],
-    "Message Sending Success": [
+    "Message Sent Failed": [
       {
         "document": "platform-guide/README.md",
-        "line": 181,
+        "line": 263,
         "level": 4,
-        "title": "Message Sending Success"
+        "title": "Message Sent Failed"
+      }
+    ],
+    "Message Sent Successfully": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 247,
+        "level": 4,
+        "title": "Message Sent Successfully"
       }
     ],
     "Message Sequence Number Mechanism": [
@@ -7345,7 +7459,7 @@
     "Message Statistics": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 281,
+        "line": 337,
         "level": 2,
         "title": "Message Statistics"
       }
@@ -7823,17 +7937,17 @@
     "Multi-platform Adaptation": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 186,
+        "line": 187,
         "level": 2,
         "title": "Multi-platform Adaptation"
       }
     ],
-    "Multi-round Conversation": [
+    "Multi-turn conversation (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 471,
+        "line": 472,
         "level": 3,
-        "title": "Multi-round Conversation"
+        "title": "Multi-turn conversation (conversation)"
       }
     ],
     "Must the package name start with `ErisPulse-`?": [
@@ -7847,7 +7961,7 @@
     "Naming Conventions": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 145,
+        "line": 395,
         "level": 2,
         "title": "Naming Conventions"
       }
@@ -7903,13 +8017,13 @@
       },
       {
         "document": "getting-started/common-tasks.md",
-        "line": 442,
+        "line": 504,
         "level": 2,
         "title": "Next Steps"
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 635,
+        "line": 636,
         "level": 2,
         "title": "Next Steps"
       },
@@ -7972,6 +8086,14 @@
         "title": "Notice Event Additional Fields"
       }
     ],
+    "Notice Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 188,
+        "level": 2,
+        "title": "Notice Event Handling"
+      }
+    ],
     "Notice Event Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -8032,14 +8154,6 @@
         "line": 51,
         "level": 3,
         "title": "Notification Event (notice)"
-      }
-    ],
-    "Notification Event Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 188,
-        "level": 2,
-        "title": "Notification Event Handling"
       }
     ],
     "OB12 Message Segment Reverse Conversion (Raw_ob12)": [
@@ -8294,6 +8408,14 @@
         "title": "Parallel Event Handling"
       }
     ],
+    "Parallel and Serial": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 290,
+        "level": 3,
+        "title": "Parallel and Serial"
+      }
+    ],
     "Parameter Description": [
       {
         "document": "advanced/dashboard-view.md",
@@ -8329,7 +8451,7 @@
     "PascalCase Naming": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 147,
+        "line": 397,
         "level": 3,
         "title": "PascalCase Naming"
       }
@@ -8353,7 +8475,7 @@
     "Permission Control": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 229,
+        "line": 285,
         "level": 2,
         "title": "Permission Control"
       }
@@ -8422,12 +8544,6 @@
         "line": 325,
         "level": 3,
         "title": "Platform Extension Methods"
-      },
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 553,
-        "level": 3,
-        "title": "Platform Extension Methods"
       }
     ],
     "Platform Feature Description — Webhook Generic Bridge Adapter": [
@@ -8441,7 +8557,7 @@
     "Platform Feature Detection": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 205,
+        "line": 206,
         "level": 3,
         "title": "Platform Feature Detection"
       }
@@ -8478,12 +8594,12 @@
         "title": "Platform Related Terms"
       }
     ],
-    "Platform Specific Features": [
+    "Platform Specific Methods": [
       {
-        "document": "platform-guide/README.md",
-        "line": 16,
-        "level": 2,
-        "title": "Platform Specific Features"
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 417,
+        "level": 3,
+        "title": "Platform Specific Methods"
       }
     ],
     "Platform-Specific Event Types": [
@@ -8502,20 +8618,28 @@
         "title": "Platform-Specific Events (onebot11_ prefix)"
       }
     ],
-    "Platform-Specific Methods": [
+    "Platform-Specific Features": [
       {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 167,
-        "level": 3,
-        "title": "Platform-Specific Methods"
+        "document": "platform-guide/README.md",
+        "line": 15,
+        "level": 2,
+        "title": "Platform-Specific Features"
       }
     ],
-    "Platform-specific Responses": [
+    "Platform-specific Methods": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 554,
+        "level": 3,
+        "title": "Platform-specific Methods"
+      }
+    ],
+    "Platform-specific Response": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
-        "title": "Platform-specific Responses"
+        "title": "Platform-specific Response"
       }
     ],
     "Pre-Publish Checklist": [
@@ -8550,12 +8674,28 @@
         "title": "Priority System"
       }
     ],
+    "Priority and Backlog Drop (Priority)": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 230,
+        "level": 3,
+        "title": "Priority and Backlog Drop (Priority)"
+      }
+    ],
     "Production Configuration": [
       {
         "document": "user-guide/deployment.md",
         "line": 157,
         "level": 3,
         "title": "Production Configuration"
+      }
+    ],
+    "Progress Monitoring (OnProgress / OnError)": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 199,
+        "level": 3,
+        "title": "Progress Monitoring (OnProgress / OnError)"
       }
     ],
     "Project Initialization": [
@@ -8912,12 +9052,12 @@
         "title": "Raw Message Sending"
       }
     ],
-    "Raw Messages and Message Building": [
+    "Raw Message and Message Building": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 273,
+        "line": 523,
         "level": 3,
-        "title": "Raw Messages and Message Building"
+        "title": "Raw Message and Message Building"
       }
     ],
     "Reading i18n Configuration via Config API": [
@@ -8955,7 +9095,7 @@
     "References": [
       {
         "document": "platform-guide/README.md",
-        "line": 212,
+        "line": 278,
         "level": 2,
         "title": "References"
       }
@@ -9127,7 +9267,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 281,
+        "line": 531,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9477,7 +9617,7 @@
     "Return Values": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 192,
+        "line": 442,
         "level": 2,
         "title": "Return Values"
       }
@@ -9614,6 +9754,30 @@
         "title": "Router Module"
       }
     ],
+    "Rule Combination and Background Execution": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 242,
+        "level": 3,
+        "title": "Rule Combination and Background Execution"
+      }
+    ],
+    "Rule Methods Overview": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 151,
+        "level": 3,
+        "title": "Rule Methods Overview"
+      }
+    ],
+    "Rule Propagation": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 257,
+        "level": 3,
+        "title": "Rule Propagation"
+      }
+    ],
     "Run Project": [
       {
         "document": "quick-start.md",
@@ -9719,7 +9883,7 @@
     "Scheduled Tasks": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 75,
+        "line": 76,
         "level": 2,
         "title": "Scheduled Tasks"
       }
@@ -9727,7 +9891,7 @@
     "Search Functionality": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 325,
+        "line": 383,
         "level": 2,
         "title": "Search Functionality"
       }
@@ -9762,14 +9926,6 @@
         "line": 371,
         "level": 1,
         "title": "Send A2UI message"
-      }
-    ],
-    "Send Chained Invocation": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 42,
-        "level": 3,
-        "title": "Send Chained Invocation"
       }
     ],
     "Send Message Sending": [
@@ -9810,6 +9966,14 @@
         "line": 218,
         "level": 3,
         "title": "Send Nested Class"
+      }
+    ],
+    "Send Rule Decorators": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 100,
+        "level": 4,
+        "title": "Send Rule Decorators"
       }
     ],
     "Send Type": [
@@ -9980,12 +10144,12 @@
         "title": "Sending Methods"
       }
     ],
-    "Sending Replies using the `reply` Method": [
+    "Sending Rule System": [
       {
-        "document": "getting-started/event-handling.md",
-        "line": 301,
-        "level": 3,
-        "title": "Sending Replies using the `reply` Method"
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 145,
+        "level": 2,
+        "title": "Sending Rule System"
       }
     ],
     "Sending a Reply": [
@@ -10063,7 +10227,7 @@
     "Simple Counter": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 18,
+        "line": 19,
         "level": 3,
         "title": "Simple Counter"
       }
@@ -10071,7 +10235,7 @@
     "Simple Search": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 327,
+        "line": 385,
         "level": 3,
         "title": "Simple Search"
       }
@@ -10079,7 +10243,7 @@
     "Simple Timer": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 77,
+        "line": 78,
         "level": 3,
         "title": "Simple Timer"
       }
@@ -10241,7 +10405,7 @@
     "Standard Event Format": [
       {
         "document": "platform-guide/README.md",
-        "line": 159,
+        "line": 225,
         "level": 3,
         "title": "Standard Event Format"
       }
@@ -10249,7 +10413,7 @@
     "Standard Formats": [
       {
         "document": "platform-guide/README.md",
-        "line": 154,
+        "line": 220,
         "level": 2,
         "title": "Standard Formats"
       }
@@ -10281,7 +10445,7 @@
     "Standard Response Format": [
       {
         "document": "platform-guide/README.md",
-        "line": 180,
+        "line": 246,
         "level": 3,
         "title": "Standard Response Format"
       }
@@ -10289,7 +10453,7 @@
     "Standardized Response": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 212,
+        "line": 462,
         "level": 3,
         "title": "Standardized Response"
       }
@@ -10684,6 +10848,12 @@
         "title": "Table of Contents"
       },
       {
+        "document": "getting-started/common-tasks.md",
+        "line": 5,
+        "level": 2,
+        "title": "Table of Contents"
+      },
+      {
         "document": "user-guide/README.md",
         "line": 5,
         "level": 2,
@@ -10707,7 +10877,7 @@
     "Task Object": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 194,
+        "line": 444,
         "level": 3,
         "title": "Task Object"
       }
@@ -10778,6 +10948,14 @@
         "line": 16,
         "level": 3,
         "title": "The LazyModule Class"
+      }
+    ],
+    "Timeout Auto-Cancellation (Timeout)": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 189,
+        "level": 3,
+        "title": "Timeout Auto-Cancellation (Timeout)"
       }
     ],
     "Timeout and Retry": [
@@ -11079,7 +11257,7 @@
     "User Data Storage": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 36,
+        "line": 37,
         "level": 3,
         "title": "User Data Storage"
       }
@@ -11141,7 +11319,7 @@
     "Using Lifecycle Events": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 128,
+        "line": 129,
         "level": 3,
         "title": "Using Lifecycle Events"
       }
@@ -11224,6 +11402,14 @@
         "line": 247,
         "level": 2,
         "title": "Using in Transactions"
+      }
+    ],
+    "Using reply method to send replies": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 302,
+        "level": 3,
+        "title": "Using reply method to send replies"
       }
     ],
     "Using with Send": [
@@ -11310,14 +11496,6 @@
         "title": "Wait Reply Functionality"
       }
     ],
-    "Wait for Any Event": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 450,
-        "level": 3,
-        "title": "Wait for Any Event"
-      }
-    ],
     "Wait for Reply": [
       {
         "document": "api-reference/event-system.md",
@@ -11334,28 +11512,36 @@
         "title": "Wait for Result"
       }
     ],
-    "Waiting for Reply with Callback": [
+    "Wait for any event (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 373,
+        "line": 451,
         "level": 3,
-        "title": "Waiting for Reply with Callback"
+        "title": "Wait for any event (wait_for)"
       }
     ],
-    "Waiting for Reply with Validation": [
+    "Waiting for user reply": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 346,
+        "line": 330,
         "level": 3,
-        "title": "Waiting for Reply with Validation"
+        "title": "Waiting for user reply"
       }
     ],
-    "Waiting for User Reply": [
+    "Waiting reply with callback": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 329,
+        "line": 374,
         "level": 3,
-        "title": "Waiting for User Reply"
+        "title": "Waiting reply with callback"
+      }
+    ],
+    "Waiting reply with validation": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 347,
+        "level": 3,
+        "title": "Waiting reply with validation"
       }
     ],
     "WebHook Connection": [

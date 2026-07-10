@@ -967,7 +967,7 @@ class Main(BaseModule):
 
 ### 事件处理入门
 
-# Getting Started with Event Handling
+# Event Handling Introduction
 
 This guide introduces how to handle various events in ErisPulse.
 
@@ -976,22 +976,22 @@ This guide introduces how to handle various events in ErisPulse.
 ErisPulse supports the following event types:
 
 | Event Type | Description | Use Cases |
-|---------|------|---------|
+|---------|-------------|-----------|
 | Message Event | Any message sent by a user | Chatbots, content filtering |
-| Command Event | Messages starting with a command prefix | Command handling, feature entry points |
-| Notification Event | System notifications (friend added, group member changes, etc.) | Welcome messages, status notifications |
+| Command Event | Messages starting with command prefix | Command handling, feature entry points |
+| Notice Event | System notifications (friend additions, group member changes, etc.) | Welcome messages, status notifications |
 | Request Event | User requests (friend requests, group invitations) | Automatic request handling |
 | Meta Event | System-level events (connection, heartbeat) | Connection monitoring, status checks |
 
 ## Message Event Handling
 
-> **Tip**: It is recommended to use the `Event` type annotation in event handlers to get IDE autocomplete and type checking support.
+> **Tip**: It is recommended to use the `Event` type annotation in event handlers for IDE auto-completion and type checking support.
 
 ```python
-from ErisPulse.Core.Event import Event  # Import Event type for annotations
+from ErisPulse.Core.Event import Event  # Import event type for annotation
 ```
 
-### Listening to all messages
+### Listening to All Messages
 
 ```python
 from ErisPulse.Core.Event import message, Event
@@ -1003,7 +1003,7 @@ async def message_handler(event: Event):
     sdk.logger.info(f"Received message from {user_id}: {text}")
 ```
 
-### Listening to private messages
+### Listening to Private Messages
 
 ```python
 @message.on_private_message()
@@ -1012,17 +1012,17 @@ async def private_handler(event: Event):
     await event.reply(f"Hello, {user_id}! This is a private message.")
 ```
 
-### Listening to group messages
+### Listening to Group Messages
 
 ```python
 @message.on_group_message()
 async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"User {user_id} sent a message in group {group_id}")
+    sdk.logger.info(f"Message sent by {user_id} in group {group_id}")
 ```
 
-### Listening to @ mentions
+### Listening to @ Messages
 
 ```python
 @message.on_at_message()
@@ -1045,7 +1045,7 @@ async def help_handler(event):
 Available commands:
 /help - Display help
 /ping - Test connection
-/info - View info
+/info - View information
     """
     await event.reply(help_text)
 ```
@@ -1053,26 +1053,26 @@ Available commands:
 ### Command Aliases
 
 ```python
-@command(["help", "h"], aliases=["帮助"], help="Display help information")
+@command(["help", "h"], aliases=["help", "h"], help="Display help information")
 async def help_handler(event):
     await event.reply("Help information...")
 ```
 
-Users can invoke this command in any of the following ways:
+Users can invoke it using any of the following:
 - `/help`
 - `/h`
-- `/帮助`
+- `/help`
 
 ### Command Arguments
 
 ```python
-@command("echo", help="Echo back the message")
+@command("echo", help="Echo message")
 async def echo_handler(event):
     # Get command arguments
     args = event.get_command_args()
     
     if not args:
-        await event.reply("Please enter the message you want to echo")
+        await event.reply("Please enter a message to echo")
     else:
         await event.reply(f"You said: {' '.join(args)}")
 ```
@@ -1080,24 +1080,24 @@ async def echo_handler(event):
 ### Command Groups
 
 ```python
-@command("admin.reload", group="admin", help="Reload modules")
+@command("admin.reload", group="admin", help="Reload module")
 async def reload_handler(event):
-    await event.reply("Modules have been reloaded")
+    await event.reply("Module reloaded")
 
-@command("admin.stop", group="admin", help="Stop the bot")
+@command("admin.stop", group="admin", help="Stop bot")
 async def stop_handler(event):
-    await event.reply("Bot has stopped")
+    await event.reply("Bot stopped")
 ```
 
 ### Command Permissions
 
 ```python
 def is_admin(event):
-    """Check if the user is an administrator"""
+    """Check if user is admin"""
     admin_list = ["user123", "user456"]
     return event.get_user_id() in admin_list
 
-@command("admin", permission=is_admin, help="Admin commands")
+@command("admin", permission=is_admin, help="Admin command")
 async def admin_handler(event):
     await event.reply("This is an admin command")
 ```
@@ -1105,7 +1105,7 @@ async def admin_handler(event):
 ### Command Priority
 
 ```python
-# The higher the priority value, the earlier it executes
+# Higher priority number means earlier execution
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("High priority handler")
@@ -1117,26 +1117,26 @@ async def low_priority_handler(event):
 
 ### Parallel Event Handling
 
-ErisPulse event system adopts a **same-priority parallel, different-priority serial** scheduling model:
+ErisPulse's event system uses a **parallel within same priority, serial between different priorities** scheduling model:
 
 ```
-Event Arrived
+Event arrives
     ↓
-priority=10 Group: [Handler C || Handler D] Parallel → Merge Results
-    ↓ (If not interrupted)
-priority=0 Group: [Handler A || Handler B] Parallel → Merge Results
+priority=10 group: [handler C || handler D] parallel → merge results
+    ↓ (if not interrupted)
+priority=0 group: [handler A || handler B] parallel → merge results
     ↓
 ...
 ```
 
-- **Same priority parallel**: Multiple handlers with the same priority execute simultaneously to improve throughput
-- **Cross-level serial**: Groups of different priorities execute sequentially (higher values execute first), ensuring high-priority handlers run first
-- **Copy-On-Write**: No copies are created when handlers do not modify data, ensuring zero overhead
-- **Conflict handling**: When multiple handlers of the same priority modify the same field, the last modified value is used and a warning is logged
-- **Interruption mechanism**: After any handler calls `event.mark_processed()`, subsequent lower-priority groups are skipped
+- **Parallel within same priority**: Multiple handlers with the same priority execute simultaneously, increasing throughput
+- **Serial between priorities**: Groups with different priorities execute in order (higher priority first), ensuring high priority handlers run first
+- **Copy-On-Write**: No copy is created if handlers don't modify the event, ensuring zero overhead
+- **Conflict handling**: When multiple handlers modify the same field at the same priority, the last modification is used and a warning log is recorded
+- **Interruption mechanism**: After any handler calls `event.mark_processed()`, subsequent lower priority groups are skipped
 
 ```python
-# Example: Handlers with same priority execute in parallel
+# Example: Parallel execution of handlers with same priority
 @message.on_message(priority=0)
 async def handler_a(event):
     # Process task A
@@ -1144,19 +1144,19 @@ async def handler_a(event):
 
 @message.on_message(priority=0)
 async def handler_b(event):
-    # Execute in parallel with handler_a
+    # Parallel execution with handler_a
     event['result_b'] = process_b()
 
-# Different priorities execute serially
+# Serial execution with different priorities
 @message.on_message(priority=10)
 async def handler_c(event):
-    # Executes first due to higher priority
+    # Highest priority, executed first
     pass
 ```
 
-## Notification Event Handling
+## Notice Event Handling
 
-### Friend Add
+### Friend Addition
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -1164,7 +1164,7 @@ from ErisPulse.Core.Event import notice
 @notice.on_friend_add()
 async def friend_add_handler(event):
     user_id = event.get_user_id()
-    nickname = event.get_user_nickname() or "New Friend"
+    nickname = event.get_user_nickname() or "New friend"
     await event.reply(f"Welcome to add me as a friend, {nickname}!")
 ```
 
@@ -1175,7 +1175,7 @@ async def friend_add_handler(event):
 async def member_increase_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"Welcome new member {user_id} to join group {group_id}")
+    await event.reply(f"Welcome new member {user_id} to group {group_id}")
 ```
 
 ### Group Member Decrease
@@ -1200,13 +1200,13 @@ async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
     
-    sdk.logger.info(f"Received friend request: {user_id}, Comment: {comment}")
+    sdk.logger.info(f"Received friend request: {user_id}, comment: {comment}")
     
-    # Requests can be handled via the adapter API
+    # Handle request via adapter API
     # Refer to adapter documentation for specific implementation
 ```
 
-### Group Invite Request
+### Group Invitation Request
 
 ```python
 @request.on_group_request()
@@ -1214,12 +1214,12 @@ async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"Received an invitation to group {group_id}, from {user_id}")
+    await event.reply(f"Received group {group_id} invitation from {user_id}")
 ```
 
 ## Meta Event Handling
 
-### Connection Event
+### Connection Events
 
 ```python
 from ErisPulse.Core.Event import meta
@@ -1235,27 +1235,28 @@ async def disconnect_handler(event):
     sdk.logger.warning(f"{platform} platform disconnected")
 ```
 
-### Heartbeat Event
+### Heartbeat Events
 
 ```python
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
     platform = event.get_platform()
-    sdk.logger.debug(f"{platform} heartbeat check")
+    sdk.logger.debug(f"{platform} heartbeat detected")
 ```
 
 ### Bot Status Query
 
-After the adapter sends a meta event, the framework automatically tracks Bot status, which you can query at any time:
+After the adapter sends a meta event, the framework automatically tracks the bot status, and you can query it at any time:
 
 ```python
 from ErisPulse import sdk
 
-# Check if a specific Bot is online
+# Check if a specific bot is online
 if sdk.adapter.is_bot_online("telegram", "123456"):
-    await adapter.Send.To("user", "123456").Text("Bot is online")
+    telegram = sdk.adapter.get("telegram")
+    await telegram.Send.To("user", "123456").Text("Bot is online")
 
-# List all currently online Bots
+# List all currently online bots
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
@@ -1267,15 +1268,15 @@ summary = sdk.adapter.get_status_summary()
 
 ## Interactive Handling
 
-### Sending Replies using the `reply` Method
+### Using reply method to send replies
 
-The `event.reply()` method supports various modifier parameters for sending messages with features like @ mentions and replies:
+The `event.reply()` method supports various modifier parameters, making it easy to send messages with @, reply, and other features:
 
 ```python
 # Simple reply
 await event.reply("Hello")
 
-# Send messages of different types
+# Send different types of messages
 await event.reply("http://example.com/image.jpg", method="Image")  # Image
 await event.reply("http://example.com/voice.mp3", method="Voice")  # Voice
 
@@ -1295,10 +1296,10 @@ await event.reply("Announcement", at_all=True)
 await event.reply("Content", at_users=["user1"], reply_to="msg_id")
 ```
 
-### Waiting for User Reply
+### Waiting for user reply
 
 ```python
-@command("ask", help="Ask the user")
+@command("ask", help="Ask user")
 async def ask_handler(event):
     await event.reply("Please enter your name:")
     
@@ -1312,13 +1313,13 @@ async def ask_handler(event):
         await event.reply("Timeout, please try again.")
 ```
 
-### Waiting for Reply with Validation
+### Waiting reply with validation
 
 ```python
-@command("age", help="Ask for age")
+@command("age", help="Ask age")
 async def age_handler(event):
     def validate_age(event_data):
-        """Validate if age is valid"""
+        """Validate age is valid"""
         try:
             age = int(event_data.get_text())
             return 0 <= age <= 150
@@ -1334,25 +1335,25 @@ async def age_handler(event):
     
     if reply:
         age = int(reply.get_text())
-        await event.reply(f"Your age is {age}")
+        await event.reply(f"Your age is {age} years old")
     else:
         await event.reply("Invalid input or timeout")
 ```
 
-### Waiting for Reply with Callback
+### Waiting reply with callback
 
 ```python
-@command("confirm", help="Confirm action")
+@command("confirm", help="Confirm operation")
 async def confirm_handler(event):
     async def handle_confirmation(reply_event):
         text = reply_event.get_text().lower()
         
-        if text in ["是", "yes", "y"]:
+        if text in ["yes", "y", "是", "确认"]:
             await event.reply("Operation confirmed!")
         else:
-            await event.reply("Operation cancelled.")
+            await event.reply("Operation canceled.")
     
-    await event.reply("Confirm executing this action? (Yes/No)")
+    await event.reply("Confirm this operation? (yes/no)")
     
     await event.wait_reply(
         timeout=30,
@@ -1360,14 +1361,14 @@ async def confirm_handler(event):
     )
 ```
 
-### Confirm Dialog
+### Confirmation dialog (confirm)
 
 Wait for user confirmation or denial, automatically recognizing built-in Chinese and English confirmation words:
 
 ```python
-@command("confirm", help="Confirm action")
+@command("confirm", help="Confirm operation")
 async def confirm_handler(event):
-    if await event.confirm("Are you sure you want to perform this action?"):
+    if await event.confirm("Are you sure you want to execute this operation?"):
         await event.reply("Confirmed, executing...")
     else:
         await event.reply("Cancelled")
@@ -1377,9 +1378,9 @@ if await event.confirm("Continue?", yes_words={"go", "继续"}, no_words={"stop"
     pass
 ```
 
-### Choose Menu
+### Choice menu (choose)
 
-Users can reply with the option number or option text:
+Users can reply with option number or option text:
 
 ```python
 @command("choose", help="Choose")
@@ -1393,12 +1394,12 @@ async def choose_handler(event):
         colors = ["Red", "Green", "Blue"]
         await event.reply(f"You selected: {colors[choice]}")
     else:
-        await event.reply("Timeout or no selection made")
+        await event.reply("Timeout, no selection made")
 ```
 
-### Collect Form
+### Collect form (collect)
 
-Multi-step collection of user input:
+Collect user input in multiple steps:
 
 ```python
 @command("register", help="Register")
@@ -1416,14 +1417,14 @@ async def register_handler(event):
         await event.reply("Registration timeout or invalid input")
 ```
 
-### Wait for Any Event
+### Wait for any event (wait_for)
 
 Wait for any event that meets the condition, not limited to the same user:
 
 ```python
 @command("wait_member", help="Wait for new member")
 async def wait_member_handler(event):
-    await event.reply("Waiting for group member to join...")
+    await event.reply("Waiting for new member join...")
     
     evt = await event.wait_for(
         event_type="notice",
@@ -1434,12 +1435,12 @@ async def wait_member_handler(event):
     if evt:
         await event.reply(f"Welcome new member: {evt.get_user_id()}")
     else:
-        await event.reply("Wait timeout")
+        await event.reply("Timeout")
 ```
 
-### Multi-round Conversation
+### Multi-turn conversation (conversation)
 
-Create an interactive multi-round conversation context:
+Create an interactive multi-turn conversation context:
 
 ```python
 @command("survey", help="Survey")
@@ -1452,39 +1453,39 @@ async def survey_handler(event):
         reply = await conv.wait()
         
         if reply is None:
-            await conv.say("Conversation timed out, goodbye!")
+            await conv.say("Conversation timeout, goodbye!")
             break
         
         text = reply.get_text()
         
-        if text == "exit":
+        if text == "Exit":
             await conv.say("Goodbye!")
             break
         
-        await conv.say(f"You said: {text}, continue typing or reply 'exit' to end")
+        await conv.say(f"You said: {text}, continue entering or reply 'Exit' to end")
 ```
 
-### Built-in Confirmation Words
+### Built-in confirmation words
 
-ErisPulse includes a built-in set of Chinese and English confirmation words:
+ErisPulse includes built-in sets of Chinese and English confirmation words:
 
-- **Confirmation words** (`CONFIRM_YES_WORDS`): 是, yes, y, 确认, 确定, 好, 好的, ok, true, 对, 嗯, 行, 同意, 没问题...
-- **Negative words** (`CONFIRM_NO_WORDS`): 否, no, n, 取消, 不, 不要, 不行, cancel, false, 错, 拒绝, 不可以...
+- **Confirmation words** (`CONFIRM_YES_WORDS`): yes, y, 是, 确认, 确定, 好, 好的, ok, true, 对, 嗯, 行, 同意, 没问题...
+- **Denial words** (`CONFIRM_NO_WORDS`): no, n, 否, 取消, 不, 不要, 不行, cancel, false, 错, 拒绝, 不可以...
 
 ## Event Data Access
 
-### Common Methods of the Event Object
+### Common Event Object Methods
 
 ```python
 @command("info")
 async def info_handler(event):
-    # Basic info
+    # Basic information
     event_id = event.get_id()
     event_time = event.get_time()
     event_type = event.get_type()
     detail_type = event.get_detail_type()
     
-    # Sender info
+    # Sender information
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     
@@ -1493,10 +1494,10 @@ async def info_handler(event):
     alt_message = event.get_alt_message()
     text = event.get_text()
     
-    # Group info
+    # Group information
     group_id = event.get_group_id()
     
-    # Bot info
+    # Bot information
     self_id = event.get_self_user_id()
     self_platform = event.get_self_platform()
     
@@ -1504,24 +1505,24 @@ async def info_handler(event):
     raw_data = event.get_raw()
     raw_type = event.get_raw_type()
     
-    # Platform info
+    # Platform information
     platform = event.get_platform()
     
-    # Message type checks
+    # Message type detection
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
     
-    # Command info
+    # Command information
     if event.is_command():
         cmd_name = event.get_command_name()
         cmd_args = event.get_command_args()
         cmd_raw = event.get_command_raw()
 ```
 
-### Platform Extension Methods
+### Platform-specific Methods
 
-In addition to built-in methods, each platform adapter registers platform-specific methods to facilitate access to platform-specific data.
+In addition to built-in methods, each platform adapter registers platform-specific methods, making it convenient to access platform-specific data.
 
 ```python
 from ErisPulse.Core.Event import message
@@ -1530,14 +1531,14 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     platform = event.get_platform()
 
-    # Call specific methods based on platform
+    # Call platform-specific methods based on platform
     if platform == "telegram":
-        chat_type = event.get_chat_type()      # Telegram specific method
+        chat_type = event.get_chat_type()      # Telegram-specific method
     elif platform == "email":
-        subject = event.get_subject()           # Email specific method
+        subject = event.get_subject()           # Email-specific method
 ```
 
-If you are unsure whether a platform has registered a method, you can query which methods a platform has registered:
+If you are unsure whether a platform has registered a specific method, you can query which methods have been registered for a specific platform:
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -1546,7 +1547,7 @@ methods = get_platform_event_methods("telegram")
 # ["get_chat_type", "is_bot_message", ...]
 ```
 
-> Refer to the corresponding [Platform Documentation](../platform-guide/) for platform-specific methods registered by each platform.
+> For platform-specific methods registered by each platform, please refer to the corresponding [platform documentation](../platform-guide/README.md).
 
 ## Event Handling Best Practices
 
@@ -1578,24 +1579,24 @@ async def message_handler(event):
     
     sdk.logger.info(f"Processing message: {user_id} - {text}")
     
-    # Use module's own logger
+    # Use module-specific logging
     from ErisPulse import sdk
     logger = sdk.logger.get_child("MyHandler")
-    logger.debug(f"Detailed debug info")
+    logger.debug(f"Debug information")
 ```
 
-### 3. Conditional Handling
+### 3. Conditional Processing
 
 ```python
 @message.on_message(priority=0)
 async def conditional_handler(event):
-    """Conditional handling - Judged within the handler"""
+    """Conditional processing - check conditions inside handler"""
     # Only process messages from specific users
     if event.get_user_id() in ["bot1", "bot2"]:
         return
     
     # Only process messages containing specific keywords
-    if "Keywords" not in event.get_text():
+    if "keyword" not in event.get_text():
         return
     
     await event.reply("Condition met, processing message")
@@ -1603,8 +1604,9 @@ async def conditional_handler(event):
 
 ## Next Steps
 
-- [Common Task Examples](common-tasks.md) - Learn how to implement common features
-- [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) - Deep dive into the Event object
+- [Common Task Examples](common-tasks.md) - Learn how to implement common features (including advanced message sending: retry/timeout/batch)
+- [Platform Features Guide](../platform-guide/README.md) - Complete explanation of Send DSL, sending rules, and batch construction
+- [Event Wrapper Class Detailed Explanation](../developer-guide/modules/event-wrapper.md) - Deep dive into Event objects
 - [User Guide](../user-guide/) - Learn about configuration and module management
 
 
@@ -1612,18 +1614,19 @@ async def conditional_handler(event):
 
 # Common Task Examples
 
-This guide provides implementation examples for common features to help you quickly implement frequently used functions.
+This guide provides implementation examples for common features to help you quickly implement frequently used functionalities.
 
-## Content List
+## Table of Contents
 
 1. Data Persistence
 2. Scheduled Tasks
 3. Message Filtering
 4. Multi-platform Adaptation
-5. Permission Control
-6. Message Statistics
-7. Search Functionality
-8. Image Processing
+5. Advanced Message Sending (Retry/Timeout/Batch)
+6. Permission Control
+7. Message Statistics
+8. Search Functionality
+9. Image Processing
 
 ## Data Persistence
 
@@ -1633,7 +1636,7 @@ This guide provides implementation examples for common features to help you quic
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
-@command("count", help="View number of command invocations")
+@command("count", help="View command invocation count")
 async def count_handler(event):
     # Get count
     count = sdk.storage.get("command_count", 0)
@@ -1648,7 +1651,7 @@ async def count_handler(event):
 ### User Data Storage
 
 ```python
-@command("profile", help="View personal profile")
+@command("profile", help="View profile")
 async def profile_handler(event):
     user_id = event.get_user_id()
     
@@ -1681,7 +1684,7 @@ async def setnick_handler(event):
     user_data["nickname"] = " ".join(args)
     sdk.storage.set(f"user:{user_id}", user_data)
     
-    await event.reply(f"Nickname has been set to: {' '.join(args)}")
+    await event.reply(f"Nickname set to: {' '.join(args)}")
 ```
 
 ## Scheduled Tasks
@@ -1699,12 +1702,12 @@ class TimerModule:
         self._tasks = []
     
     async def on_load(self, event):
-        """Start scheduled tasks when module loads"""
+        """Start scheduled tasks when the module is loaded"""
         self._start_timers()
         
-        @command("timer", help="Manage timers")
+        @command("timer", help="Timer management")
         async def timer_handler(event):
-            await event.reply("Timers are running...")
+            await event.reply("Timer is running...")
     
     def _start_timers(self):
         """Start scheduled tasks"""
@@ -1712,28 +1715,28 @@ class TimerModule:
         task = asyncio.create_task(self._every_minute())
         self._tasks.append(task)
         
-        # Execute at midnight daily
+        # Execute at midnight every day
         task = asyncio.create_task(self._daily_task())
         self._tasks.append(task)
     
     async def _every_minute(self):
-        """Task executed every minute"""
-        self.sdk.logger.info("Minute task executed")
+        """Task to execute every minute"""
+        self.sdk.logger.info("Minute task execution")
         # Your logic...
     
     async def _daily_task(self):
-        """Task executed at midnight daily"""
+        """Task to execute at midnight every day (Note: based on UTC time calculation, adjust for local time if needed)"""
         import time
         
         while True:
-            # Calculate time to midnight
+            # Calculate time until midnight
             now = time.time()
             midnight = now + (86400 - now % 86400)
             
             await asyncio.sleep(midnight - now)
             
             # Execute task
-            self.sdk.logger.info("Daily task executed")
+            self.sdk.logger.info("Daily task execution")
             # Your logic...
 ```
 
@@ -1742,13 +1745,13 @@ class TimerModule:
 ```python
 @sdk.lifecycle.on("core.init.complete")
 async def init_complete_handler(event_data):
-    """Start scheduled tasks after SDK initialization"""
+    """Start scheduled tasks after SDK initialization completes"""
     import asyncio
     
     async def daily_reminder():
         """Daily reminder"""
         await asyncio.sleep(86400)  # 24 hours
-        self.sdk.logger.info("Executing daily task")
+        sdk.logger.info("Executing daily task")
     
     # Start background task
     asyncio.create_task(daily_reminder())
@@ -1761,13 +1764,13 @@ async def init_complete_handler(event_data):
 ```python
 from ErisPulse.Core.Event import message
 
-blocked_words = ["rubbish", "ads", "phishing"]
+blocked_words = ["垃圾", "广告", "钓鱼"]
 
 @message.on_message()
 async def filter_handler(event):
     text = event.get_text()
     
-    # Check if sensitive words are included
+    # Check if it contains sensitive words
     for word in blocked_words:
         if word in text:
             sdk.logger.warning(f"Intercepting sensitive message: {word}")
@@ -1780,7 +1783,7 @@ async def filter_handler(event):
 ### Blacklist Filtering
 
 ```python
-# Load blacklist from configuration or storage
+# Load blacklist from config or storage
 blacklist = sdk.storage.get("user_blacklist", [])
 
 @message.on_message()
@@ -1797,10 +1800,10 @@ async def blacklist_handler(event):
 
 ## Multi-platform Adaptation
 
-### Platform-specific Responses
+### Platform-specific Response
 
 ```python
-@command("help", help="Display help")
+@command("help", help="Show help")
 async def help_handler(event):
     platform = event.get_platform()
     
@@ -1817,7 +1820,7 @@ async def help_handler(event):
 ### Platform Feature Detection
 
 ```python
-@command("rich", help="Send rich text messages")
+@command("rich", help="Send rich text message")
 async def rich_handler(event):
     platform = event.get_platform()
     
@@ -1825,18 +1828,73 @@ async def rich_handler(event):
         # Yunhu supports HTML
         yunhu = sdk.adapter.get("yunhu")
         await yunhu.Send.To("user", event.get_user_id()).Html(
-            "<b>Bold text</b><i>Italic text</i>"
+            "<b>Bold Text</b><i>Italic Text</i>"
         )
     elif platform == "telegram":
         # Telegram supports Markdown
         telegram = sdk.adapter.get("telegram")
         await telegram.Send.To("user", event.get_user_id()).Markdown(
-            "**Bold text** *Italic text*"
+            "**Bold Text** *Italic Text*"
         )
     else:
         # Other platforms use plain text
-        await event.reply("Bold text Italic text")
+        await event.reply("Bold Text Italic Text")
 ```
+
+## Advanced Message Sending (Retry/Timeout/Batch)
+
+In addition to simple `event.reply()`, you can implement more complex sending scenarios using the adapter's Send DSL: automatic retry on failure, timeout cancellation, executing logic after success, and sending multiple messages in batches.
+
+> The following examples use `event.get_detail_type()` and `event.get_target_id()` to get the target type and ID from the event (group chats automatically get `group_id`, private chats automatically get `user_id`), avoiding hardcoding.
+
+### Execute Logic After Sending Success
+
+```python
+@command("pay", help="Simulate payment")
+async def pay_handler(event):
+    yunhu = sdk.adapter.get(event.get_platform())
+    user_id = event.get_user_id()
+    # Deduct points only after sending is successful
+    await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
+           .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
+           .Text("Payment successful, 10 points deducted"))
+```
+
+### Failure Retry + Timeout Cancellation
+
+```python
+@command("notice", help="Send important notice")
+async def notice_handler(event):
+    adapter_inst = sdk.adapter.get(event.get_platform())
+    # Retry up to 3 times, timeout 10 seconds each time
+    task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
+            .Retry(3)
+            .Timeout(10)
+            .OnError(lambda ctx: sdk.logger.error(f"Notice sending failed: {ctx.error}"))
+            .Text("This is an important notice"))
+    # Don't wait, send in background
+```
+
+### Batch Sending Multiple Messages
+
+Send multiple messages in one pipeline, executed uniformly:
+
+```python
+@command("announce", help="Send announcement")
+async def announce_handler(event):
+    adapter_inst = sdk.adapter.get(event.get_platform())
+    # Build multiple messages, send them all at once (parallel by default)
+    results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
+                    .Build()
+                    .Text("📋 Today's Announcement")
+                    .Image("https://example.com/banner.jpg")
+                    .Text("See the image above for details")
+                    .Retry(2)            # Individual retries for failed items
+                    .send_all())
+    sdk.logger.info(f"Batch sending completed, total {len(results)} items")
+```
+
+> For more complete rules and batch descriptions, please refer to [Platform Feature Guide](../platform-guide/README.md#Sending-Rules-Decorator).
 
 ## Permission Control
 
@@ -1847,7 +1905,7 @@ async def rich_handler(event):
 ADMINS = ["user123", "user456"]
 
 def is_admin(user_id):
-    """Check if the user is an admin"""
+    """Check if user is admin"""
     return user_id in ADMINS
 
 @command("admin", help="Admin command")
@@ -1855,7 +1913,7 @@ async def admin_handler(event):
     user_id = event.get_user_id()
     
     if not is_admin(user_id):
-        await event.reply("Insufficient permissions, this command is available to admins only")
+        await event.reply("Insufficient permissions, this command is only available to admins")
         return
     
     await event.reply("Admin command executed successfully")
@@ -1867,7 +1925,7 @@ async def addadmin_handler(event):
     
     args = event.get_command_args()
     if not args:
-        await event.reply("Please enter the Admin ID to add")
+        await event.reply("Please enter the admin ID to add")
         return
     
     new_admin = args[0]
@@ -1878,10 +1936,10 @@ async def addadmin_handler(event):
 ### Group Permissions
 
 ```python
-@command("groupinfo", help="View group information")
+@command("groupinfo", help="View group info")
 async def groupinfo_handler(event):
     if not event.is_group_message():
-        await event.reply("This command is limited to group chats")
+        await event.reply("This command is limited to group chats only")
         return
     
     group_id = event.get_group_id()
@@ -1893,6 +1951,8 @@ async def groupinfo_handler(event):
 ## Message Statistics
 
 ### Message Counting
+
+> **Note**: The following examples use `sdk.storage.get/set` for simple counting. In high-concurrency scenarios, it is recommended to use `sdk.storage.transaction()` to ensure atomicity.
 
 ```python
 @message.on_message()
@@ -1931,12 +1991,14 @@ async def stats_handler(event):
         f"{uid}: {count} messages" for uid, count in top_users
     )
     
-    await event.reply(f"Total messages: {stats['total']}\n\nActive Users:\n{top_text}")
+    await event.reply(f"Total messages: {stats['total']}\n\nActive users:\n{top_text}")
 ```
 
 ## Search Functionality
 
 ### Simple Search
+
+> **Note**: The following examples use an in-memory list to store message history, and **data will be lost after program restart**. For production environments, it is recommended to use `sdk.storage` or SQLite tables for persistent storage.
 
 ```python
 from ErisPulse.Core.Event import command, message
@@ -1946,7 +2008,7 @@ message_history = []
 
 @message.on_message()
 async def store_handler(event):
-    """Store messages for search"""
+    """Store message for searching"""
     user_id = event.get_user_id()
     text = event.get_text()
     
@@ -1956,7 +2018,7 @@ async def store_handler(event):
         "time": event.get_time()
     })
     
-    # Limit the number of history records
+    # Limit history size
     if len(message_history) > 1000:
         message_history.pop(0)
 
@@ -1971,7 +2033,7 @@ async def search_handler(event):
     keyword = " ".join(args)
     results = []
     
-    # Search through history
+    # Search history
     for msg in message_history:
         if keyword in msg["text"]:
             results.append(msg)
@@ -1982,7 +2044,7 @@ async def search_handler(event):
     
     # Display results
     result_text = f"Found {len(results)} matching messages:\n\n"
-    for i, msg in enumerate(results[:10], 1):  # Display at most 10
+    for i, msg in enumerate(results[:10], 1):  # Max 10 results
         result_text += f"{i}. {msg['text']}\n"
     
     await event.reply(result_text)
@@ -1997,7 +2059,7 @@ from ErisPulse.Core import client
 
 @message.on_message()
 async def image_handler(event):
-    """Handle image messages"""
+    """Process image messages"""
     message_segments = event.get_message()
     
     for segment in message_segments:
@@ -2005,12 +2067,12 @@ async def image_handler(event):
             file_url = segment.get("data", {}).get("file")
             
             if file_url:
-                # Recommend using SDK built-in client to download image
+                # Recommended to use SDK built-in client to download image
                 resp = await client.get(file_url)
                 if resp.status == 200:
                     image_data = await resp.read()
                     
-                    # Store to file
+                    # Save to file
                     filename = f"images/{event.get_time()}.jpg"
                     with open(filename, "wb") as f:
                         f.write(image_data)
@@ -2019,7 +2081,9 @@ async def image_handler(event):
                     await event.reply("Image saved")
 ```
 
-### Image Identification Example
+### Image Recognition Example
+
+> **Note**: The following examples use placeholder API addresses. Please replace them with your own image recognition service when using in production.
 
 ```python
 from ErisPulse.Core import client
@@ -2033,28 +2097,28 @@ async def identify_handler(event):
         if segment.get("type") == "image":
             file_url = segment.get("data", {}).get("file")
             
-            # Call image identification API
+            # Call image recognition API
             result = await _identify_image(file_url)
             
-            await event.reply(f"Identification result: {result}")
+            await event.reply(f"Recognition result: {result}")
             return
     
     await event.reply("No image found")
 
 async def _identify_image(url):
-    """Call image identification API (example) - Use SDK built-in client"""
+    """Call image recognition API (example) - using SDK built-in client"""
     resp = await client.post(
         "https://api.example.com/identify",
         json={"url": url}
     )
     data = await resp.json()
-    return data.get("description", "Identification failed")
+    return data.get("description", "Recognition failed")
 ```
 
 ## Next Steps
 
 - [User Guide](../user-guide/) - Learn about configuration and module management
-- [Developer Guide](../developer-guide/) - Learn how to develop modules and adapters
+- [Developer Guide](../developer-guide/) - Learn to develop modules and adapters
 - [Advanced Topics](../advanced/) - Deep dive into framework features
 
 
@@ -8306,51 +8370,49 @@ A: For non-generic or platform-specific types, use `{platform}_raw` and `{platfo
 
 # ErisPulse Platform Features Documentation
 
-> Base Protocol: [OneBot12](https://12.onebot.dev/) 
-> 
-> This document is a **Platform-Specific Features Guide** containing:
-> - Chain invocation examples of the Send method supported by each adapter
-> - Explanations of platform-specific events/message formats
-> 
-> For general usage methods, please refer to:
-> - [Basic Concepts](../getting-started/basic-concepts.md)
+> Baseline Protocol: [OneBot12](https://12.onebot.dev/)  
+> This document is a **platform-specific features guide**, including:  
+> - Examples of chainable `Send` method calls supported by each adapter  
+> - Platform-specific event/message format explanations  
+>  
+> General usage methods can be found at:  
+> - [Basic Concepts](../getting-started/basic-concepts.md)  
 > - [Event Conversion Standards](../standards/event-conversion.md)  
-> - [API Response Specifications](../standards/api-response.md)
+> - [API Response Specifications](../standards/api-response.md)  
 
 ---
 
-## Platform Specific Features
+## Platform-Specific Features
 
-This section is maintained by developers of each adapter to explain the differences and extended features of that adapter compared to the OneBot12 standard. Please refer to the detailed documentation for the following platforms:
+This section is maintained by each adapter developer to explain differences and extended features between the adapter and the OneBot12 standard. Please refer to the detailed documentation for each platform below:
 
-- [Maintenance Notes](maintain-notes.md)
+- [Maintenance Notes](maintain-notes.md)  
+- [Yunhu Platform Features](docs/en/yunhu.md)  
+- [Yunhu User Platform Features](docs/en/yunhu_user.md)  
+- [Telegram Platform Features](docs/en/telegram.md)  
+- [OneBot11 Platform Features](docs/en/onebot11.md)  
+- [OneBot12 Platform Features](docs/en/onebot12.md)  
+- [Email Platform Features](docs/en/email.md)  
+- [Kook (Let's Play Together) Platform Features](docs/en/kook.md)  
+- [Matrix Platform Features](docs/en/matrix.md)  
+- [Official QQ Bot Platform Features](docs/en/qqbot.md)  
+- [Huafeng Café](docs/en/ideaura.md)  
+- [Discord](docs/en/discord.md)  
+- [Webhook Protocol Bridge](docs/en/webhook.md)  
+- [WeChat Official Account](docs/en/wechatmp.md)  
 
-- [Yunhu Platform Features](yunhu.md)
-- [Yunhu User Platform Features](yunhu-user.md)
-- [Telegram Platform Features](telegram.md)
-- [OneBot11 Platform Features](onebot11.md)
-- [OneBot12 Platform Features](onebot12.md)
-- [Email Platform Features](email.md)
-- [Kook (Kaihei La) Platform Features](kook.md)
-- [Matrix Platform Features](matrix.md)
-- [QQ Official Bot Platform Features](qqbot.md)
-- [Ideaura Platform Features](ideaura.md)
-- [Discord](discord.md)
-- [Webhook Protocol Bridge](webhook.md)
-- [WeChat Official Account](wechatmp.md)
-
-> Additionally, there is a `sandbox` adapter, but this adapter does not require platform-specific feature documentation
+> Additionally, there is a `sandbox` adapter, but this adapter does not require a platform-specific features document.
 
 ---
 
-## Common Interfaces
+## General Interfaces
 
-### Send Chained Invocation
+### Chainable `Send` Calls  
 All adapters support the following standard calling methods:
 
-> **Note:** The `{AdapterName}` in the document needs to be replaced with the actual adapter name (e.g., `yunhu`, `telegram`, `onebot11`, `email`, etc.).
+> **Note:** `{AdapterName}` in the documentation must be replaced with the actual adapter name (e.g., `yunhu`, `telegram`, `onebot11`, `email`, etc.).
 
-1. Specify type and ID: `To(type,id).Func()`
+1. Specify type and ID: `To(type, id).Func()`  
    ```python
    # Get adapter instance
    my_adapter = adapter.get("{AdapterName}")
@@ -8362,7 +8424,7 @@ All adapters support the following standard calling methods:
    yunhu = adapter.get("yunhu")
    await yunhu.Send.To("user", "U1001").Text("Hello")
    ```
-2. Specify ID only: `To(id).Func()`
+2. Specify only ID: `To(id).Func()`  
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.To("U1001").Text("Hello")
@@ -8371,7 +8433,7 @@ All adapters support the following standard calling methods:
    telegram = adapter.get("telegram")
    await telegram.Send.To("U1001").Text("Hello")
    ```
-3. Specify sending account: `Using(account_id)`
+3. Specify sending account: `Using(account_id)`  
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
@@ -8380,7 +8442,7 @@ All adapters support the following standard calling methods:
    onebot11 = adapter.get("onebot11")
    await onebot11.Send.Using("bot1").To("U1001").Text("Hello")
    ```
-4. Direct call: `Func()`
+4. Direct call: `Func()`  
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Text("Broadcast message")
@@ -8390,31 +8452,99 @@ All adapters support the following standard calling methods:
    await email.Send.Text("Broadcast message")
    ```
 
-#### Asynchronous Sending and Result Processing
+#### Asynchronous Sending and Result Handling
 
-Methods of the Send DSL return `asyncio.Task` objects, which means you can choose whether to wait for the result immediately:
+The methods of the Send DSL return an `asyncio.Task` object, meaning you can choose whether to wait for the result immediately:
 
 ```python
 # Get adapter instance
 my_adapter = adapter.get("{AdapterName}")
 
-# Do not wait for result, message sent in background
+# Send message in the background without waiting for result
 task = my_adapter.Send.To("user", "123").Text("Hello")
 
-# If you need to get the send result, you can wait later
+# If you need to get the sending result, you can wait later
 result = await task
 ```
 
-### Event Listening
+#### Send Rule Decorators
+
+In practical development, it is often necessary to: execute subsequent logic only after successful sending, automatically retry on failure, cancel on timeout, or monitor sending progress. The Send DSL includes a set of built-in send rule decorators that can be attached via chainable methods:
+
+| Method | Description |
+|--------|-------------|
+| `.Hook(callback)` | Callback executed after successful sending (can be called multiple times) |
+| `.Retry(times=1)` | Automatically retry N times on failure (total of N+1 attempts including the first) |
+| `.Timeout(seconds)` | Single send timeout, cancel if exceeded (can be stacked with Retry) |
+| `.Defer(seconds)` | Delay sending (in-process timing, not persisted) |
+| `.OnProgress(callback)` | Progress callback at each stage, passing SendContext |
+| `.OnError(callback)` | Error callback when final failure occurs (triggers only once) |
+
+```python
+yunhu = adapter.get("yunhu")
+
+# Deduct points only after successful sending
+await (yunhu.Send.To("user", "123")
+       .Hook(lambda r: deduct_points("123"))
+       .Text("Purchase successful"))
+
+# Retry on failure + timeout cancellation + progress monitoring
+def on_progress(ctx):
+    print(f"Stage: {ctx.stage}, Attempt: {ctx.attempt + 1}/{ctx.max_attempts}")
+
+task = (yunhu.Send.To("user", "123")
+        .Retry(3)              # Retry up to 3 times
+        .Timeout(10)           # 10-second timeout per attempt
+        .OnProgress(on_progress)
+        .OnError(lambda ctx: notify_admin(ctx.error))
+        .Text("Important notification"))
+```
+
+Rule methods return `self`, so they must be called before the sending method (e.g., `Text`, `Image`, etc.). `SendContext` contains fields such as `stage` (pending/sending/retrying/success/failed/timeout), `attempt`, `elapsed`, `error`, `result`, etc., for monitoring purposes.
+
+#### Batch Build Mode (Build)
+
+Build multiple send methods in a single chain, then execute them all at once. This is suitable for scenarios where you need to send multiple messages at once:
+
+```python
+yunhu = adapter.get("yunhu")
+
+# Build multiple messages and send them all at once
+results = await (yunhu.Send.To("user", "123")
+                .Build()                     # Enter build mode
+                .Text("Notification 1")
+                .Image("pic.jpg")
+                .Text("Notification 2")
+                .send_all())                 # Execute all at once
+# results = [Text result, Image result, Text result]
+```
+
+`.send_all()` executes **in parallel** by default (high efficiency). To ensure message arrival order, call `.Sequential()` for sequential execution:
+
+```python
+# Sequential execution (ensures order) + retry on failure
+await (yunhu.Send.To("group", "456")
+       .Build()
+       .Sequential()                # Send in order
+       .Retry(2)                     # Retry failed items individually
+       .Text("First message").Text("Second message")
+       .send_all())
+```
+
+Batch execution uses a **fail-continue** strategy: if one message fails, it does not interrupt others, and failed items are automatically retried. The batch also supports batch-level `Hook` (triggered after all succeed), `OnError` (triggered when any fail), and `OnProgress` (progress callback).
+
+> For more detailed rules and batch build instructions, see [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md).
+
+### Event Listening  
 There are three ways to listen for events:
 
-1. Platform native event listening:
+1. Native platform event listening:
    ```python
    from ErisPulse.Core import adapter, logger
    
    @adapter.on("event_type", raw=True, platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"Received {AdapterName} native event: {data}")
+       logger.info(f"Received native {AdapterName} event: {data}")
    ```
 
 2. OneBot12 standard event listening:
@@ -8426,44 +8556,44 @@ There are three ways to listen for events:
    async def handler(data):
        logger.info(f"Received standard event: {data}")
 
-   # Listen for specific platform's standard events
+   # Listen for standard events specific to a platform
    @adapter.on("event_type", platform="{AdapterName}")
    async def handler(data):
        logger.info(f"Received {AdapterName} standard event: {data}")
    ```
 
-3. Event module listening:
-    The events of the `Event` module are based on the `adapter.on()` function, so the event format provided by `Event` is a OneBot12 standard event
+3. Event module listening:  
+   Events based on the `Event` module use the `adapter.on()` function, so the event format provided by the `Event` module is a OneBot12 standard event.
 
-    ```python
-    from ErisPulse.Core.Event import message, notice, request, command
+   ```python
+   from ErisPulse.Core.Event import message, notice, request, command
 
-    message.on_message()(message_handler)
-    notice.on_notice()(notice_handler)
-    request.on_request()(request_handler)
-    command("hello", help="Send greeting message", usage="hello")(command_handler)
+   message.on_message()(message_handler)
+   notice.on_notice()(notice_handler)
+   request.on_request()(request_handler)
+   command("hello", help="Send a greeting message", usage="hello")(command_handler)
 
-    async def message_handler(event):
-        logger.info(f"Received message: {event}")
-    async def notice_handler(event):
-        logger.info(f"Received notice: {event}")
-    async def request_handler(event):
-        logger.info(f"Received request: {event}")
-    async def command_handler(event):
-        logger.info(f"Received command: {event}")
-    ```
+   async def message_handler(event):
+       logger.info(f"Received message: {event}")
+   async def notice_handler(event):
+       logger.info(f"Received notice: {event}")
+   async def request_handler(event):
+       logger.info(f"Received request: {event}")
+   async def command_handler(event):
+       logger.info(f"Received command: {event}")
+   ```
 
-Among these, using the `Event` module is the most recommended approach for event handling, as it provides a variety of event types, as well as rich event processing methods.
+The most recommended approach is to use the `Event` module for event handling, as it provides a rich set of event types and various event handling methods.
 
 ---
 
-## Standard Formats
-For reference purposes, simple event formats are provided here. For detailed information, please refer to the links above.
+## Standard Formats  
+For easy reference, here are simple event formats. For detailed information, please refer to the links above.
 
-> **Note:** The following format is based on the basic OneBot12 standard format. Each adapter may have extended fields on top of this. For details, please refer to the specific feature documentation of each adapter.
+> **Note:** The following formats are based on the OneBot12 standard. Each adapter may have extended fields based on this standard. For details, please refer to the specific features documentation for each adapter.
 
-### Standard Event Format
-Event conversion format that all adapters must implement:
+### Standard Event Format  
+All adapters must implement the event conversion format:
 ```json
 {
   "id": "event_123",
@@ -8483,8 +8613,8 @@ Event conversion format that all adapters must implement:
 }
 ```
 
-### Standard Response Format
-#### Message Sending Success
+### Standard Response Format  
+#### Message Sent Successfully
 ```json
 {
   "status": "ok",
@@ -8500,7 +8630,7 @@ Event conversion format that all adapters must implement:
 }
 ```
 
-#### Message Sending Failed
+#### Message Sent Failed
 ```json
 {
   "status": "failed",
@@ -8515,24 +8645,24 @@ Event conversion format that all adapters must implement:
 
 ---
 
-## References
-ErisPulse Project:
-- [Main Repository](https://github.com/ErisPulse/ErisPulse/)
-- [Yunhu Adapter Library](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)
-- [Telegram Adapter Library](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
-- [OneBot Adapter Library](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
+## References  
+ErisPulse Project:  
+- [Main Repository](https://github.com/ErisPulse/ErisPulse/)  
+- [Yunhu Adapter Repository](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)  
+- [Telegram Adapter Repository](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)  
+- [OneBot Adapter Repository](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)  
 
-Related Official Documentation:
-- [OneBot V11 Protocol Documentation](https://github.com/botuniverse/onebot-11)
-- [Telegram Bot API Official Documentation](https://core.telegram.org/bots/api)
-- [Yunhu Official Documentation](https://www.yhchat.com/document/1-3)
+Related Official Documentation:  
+- [OneBot V11 Protocol Documentation](https://github.com/botuniverse/onebot-11)  
+- [Telegram Bot API Official Documentation](https://core.telegram.org/bots/api)  
+- [Yunhu Official Documentation](https://www.yhchat.com/document/1-3)  
 
-## Contributing
+## Contributing  
 
-We welcome more developers to participate in writing and maintaining adapter documentation! Please submit contributions by following these steps:
-1. Fork [ErisPulse](https://github.com/ErisPulse/ErisPulse) repository.
-2. Create a Markdown file in the `docs/platform-features/` directory with the naming format `<platform-name>.md`.
-3. Add a link to your contributed adapter and related official documentation in this `README.md` file.
-4. Submit Pull Request.
+We welcome more developers to contribute to writing and maintaining adapter documentation! Please follow these steps to submit contributions:  
+1. Fork the [ErisPulse](https://github.com/ErisPulse/ErisPulse) repository.  
+2. Create a Markdown file in the `docs/platform-features/` directory, naming it as `<Platform Name>.md`.  
+3. Add a link to your contributed adapter and related official documentation in this `README.md` file.  
+4. Submit a Pull Request.  
 
 Thank you for your support!

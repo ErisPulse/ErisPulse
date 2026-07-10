@@ -1,28 +1,28 @@
 # イベント処理入門
 
-このガイドでは、ErisPulse における各種イベントの処理方法を紹介します。
+このガイドでは、ErisPulse における各種イベントの処理方法について説明します。
 
-## イベントタイプ概要
+## イベントタイプの概要
 
 ErisPulse は以下のイベントタイプをサポートしています：
 
-| イベントタイプ | 説明 | 適用シーン |
+| イベントタイプ | 説明 | 適用場面 |
 |---------|------|---------|
-| メッセージイベント | ユーザーから送信された任意のメッセージ | チャットボット、コンテンツフィルタ |
-| コマンドイベント | コマンド接頭辞で始まるメッセージ | コマンド処理、機能のエントリーポイント |
-| 通知イベント | システム通知（フレンド追加、メンバーチェンジなど） | ウェルカムメッセージ、ステータス通知 |
-| リクエストイベント | ユーザーリクエスト（フレンドリクエスト、グループ招待） | リクエストの自動処理 |
-| メタイベント | システムレベルのイベント（接続、ハートビート） | 接続監視、ステータスチェック |
+| メッセージイベント | ユーザーが送信したすべてのメッセージ | チャットボット、コンテンツフィルタ |
+| コマンドイベント | コマンドプレフィックスで始まるメッセージ | コマンド処理、機能エントリ |
+| 通知イベント | システム通知（友達追加、グループメンバー変更など） | ホームメッセージ、ステータス通知 |
+| 要求イベント | ユーザーの要求（友達リクエスト、グループ招待） | 要求の自動処理 |
+| 元イベント | システムレベルのイベント（接続、ハートビート） | 接続監視、ステータスチェック |
 
 ## メッセージイベント処理
 
-> **ヒント**: イベントハンドラーでは `Event` 型アノテーションを使用することを推奨します。IDE の自動補完と型チェックのサポートを得られます。
+> **ヒント**: イベントハンドラ内で `Event` クラスの型注釈を使用することを推奨します。これにより、IDEの自動補完と型チェックがサポートされます。
 
 ```python
-from ErisPulse.Core.Event import Event  # 注釈に使用するためのイベントタイプのインポート
+from ErisPulse.Core.Event import Event  # イベントの型注釈に使用
 ```
 
-### すべてのメッセージを監視する
+### すべてのメッセージを監視
 
 ```python
 from ErisPulse.Core.Event import message, Event
@@ -31,19 +31,19 @@ from ErisPulse.Core.Event import message, Event
 async def message_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
-    sdk.logger.info(f"{user_id} からメッセージを受信: {text}")
+    sdk.logger.info(f"{user_id} からメッセージを受け取りました: {text}")
 ```
 
-### プライベートメッセージを監視する
+### プライベートメッセージを監視
 
 ```python
 @message.on_private_message()
 async def private_handler(event: Event):
     user_id = event.get_user_id()
-    await event.reply(f"こんにちは、{user_id}！プライベートメッセージです。")
+    await event.reply(f"こんにちは、{user_id}！これはプライベートメッセージです。")
 ```
 
-### グループメッセージを監視する
+### グループメッセージを監視
 
 ```python
 @message.on_group_message()
@@ -53,24 +53,24 @@ async def group_handler(event: Event):
     sdk.logger.info(f"グループ {group_id} で {user_id} がメッセージを送信しました")
 ```
 
-### @メッセージを監視する
+### @メッセージを監視
 
 ```python
 @message.on_at_message()
 async def at_handler(event: Event):
-    # メンションされたユーザーリストを取得
+    # @されたユーザーのリストを取得
     mentions = event.get_mentions()
-    await event.reply(f"あなたはこれらのユーザーをメンションしました: {mentions}")
+    await event.reply(f"以下のユーザーを@しました: {mentions}")
 ```
 
 ## コマンドイベント処理
 
-### 基本的なコマンド
+### 基本コマンド
 
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="ヘルプ情報を表示")
+@command("help", help="ヘルプ情報を表示します")
 async def help_handler(event):
     help_text = """
 利用可能なコマンド：
@@ -81,113 +81,113 @@ async def help_handler(event):
     await event.reply(help_text)
 ```
 
-### コマンドエイリアス
+### コマンドの別名
 
 ```python
-@command(["help", "h"], aliases=["帮助"], help="ヘルプ情報を表示")
+@command(["help", "h"], aliases=["ヘルプ"], help="ヘルプ情報を表示します")
 async def help_handler(event):
     await event.reply("ヘルプ情報...")
 ```
 
-ユーザーは以下のいずれかの方法で呼び出せます：
+ユーザーは以下のいずれかの方法で呼び出すことができます：
 - `/help`
 - `/h`
-- `/帮助`
+- `/ヘルプ`
 
 ### コマンド引数
 
 ```python
-@command("echo", help="メッセージをエコーバック")
+@command("echo", help="メッセージを返信します")
 async def echo_handler(event):
     # コマンド引数を取得
     args = event.get_command_args()
     
     if not args:
-        await event.reply("エコーバックするメッセージを入力してください")
+        await event.reply("返信するメッセージを入力してください")
     else:
-        await event.reply(f"あなたが言いました: {' '.join(args)}")
+        await event.reply(f"あなたが言った: {' '.join(args)}")
 ```
 
 ### コマンドグループ
 
 ```python
-@command("admin.reload", group="admin", help="モジュールを再読み込み")
+@command("admin.reload", group="admin", help="モジュールを再読み込みします")
 async def reload_handler(event):
     await event.reply("モジュールを再読み込みしました")
 
-@command("admin.stop", group="admin", help="ボットを停止")
+@command("admin.stop", group="admin", help="ロボットを停止します")
 async def stop_handler(event):
-    await event.reply("ボットを停止しました")
+    await event.reply("ロボットを停止しました")
 ```
 
-### コマンド権限
+### コマンドの権限
 
 ```python
 def is_admin(event):
-    """ユーザーが管理者であるかチェック"""
+    """ユーザーが管理者かどうかを確認します"""
     admin_list = ["user123", "user456"]
     return event.get_user_id() in admin_list
 
-@command("admin", permission=is_admin, help="管理者コマンド")
+@command("admin", permission=is_admin, help="管理者用コマンド")
 async def admin_handler(event):
-    await event.reply("これは管理者コマンドです")
+    await event.reply("これは管理者用コマンドです")
 ```
 
-### コマンド優先度
+### コマンドの優先度
 
 ```python
-# 優先度の数値が大きいほど、実行が早くなります
+# 優先度の値が大きいほど、実行が早くなります
 @message.on_message(priority=10)
 async def high_priority_handler(event):
-    await event.reply("高優先度ハンドラー")
+    await event.reply("高優先度のハンドラ")
 
 @message.on_message(priority=1)
 async def low_priority_handler(event):
-    await event.reply("低優先度ハンドラー")
+    await event.reply("低優先度のハンドラ")
 ```
 
 ### 並列イベント処理
 
-ErisPulse のイベントシステムは**同じ優先度は並列、異なる優先度は直列**のスケジューリングモデルを採用しています：
+ErisPulse のイベントシステムは**同優先度並列、異なる優先度直列**のスケジューリングモデルを採用しています：
 
 ```
 イベント到着
     ↓
-priority=10 グループ: [ハンドラーC || ハンドラーD] 並列 → 結果をマージ
-    ↓ (中断なしの場合)
-priority=0 グループ: [ハンドラーA || ハンドラーB] 並列 → 結果をマージ
+priority=10 組: [ハンドラC || ハンドラD] 並列 → 結果をマージ
+    ↓ (中断されない場合)
+priority=0 組: [ハンドラA || ハンドラB] 並列 → 結果をマージ
     ↓
 ...
 ```
 
-- **同じ優先度で並列**: 優先度が同じ複数のハンドラーは同時に実行され、スループットが向上します
-- **異なる優先度で直列**: 優先度の異なるグループは順番に実行されます（数値が大きいものが先）、高優先度ハンドラーが先に実行されることを保証します
-- **Copy-On-Write**: ハンドラーが変更を行わない場合はコピーを作成しません（オーバーヘッドなし）
-- **競合処理**: 同じ優先度で複数のハンドラーが同じフィールドを変更する場合、最後に変更された値が採用され、警告ログが記録されます
-- **割り込み機構**: 任意のハンドラーが `event.mark_processed()` を呼び出した後、後続の低優先度グループはスキップされます
+- **同優先度並列**: 優先度が同じ複数のハンドラは同時に実行され、スループットを向上させます
+- **跨級直列**: 異なる優先度の組は順番に実行されます（値が大きいほど先に実行）。これにより、高優先度のハンドラが先に実行されます
+- **Copy-On-Write**: ハンドラが変更を加えない場合はコピーを作成せず、オーバーヘッドをゼロにします
+- **競合処理**: 同優先度の複数のハンドラが同じフィールドを変更した場合、最後に変更された値が使用され、警告ログが記録されます
+- **中断メカニズム**: 任意のハンドラが `event.mark_processed()` を呼び出した後、次の低優先度の組はスキップされます
 
 ```python
-# 例：同じ優先度のハンドラーが並列実行される様子
+# 例：同優先度のハンドラが並列に実行されます
 @message.on_message(priority=0)
 async def handler_a(event):
-    # タスクAの処理
+    # タスクAを処理
     event['result_a'] = process_a()
 
 @message.on_message(priority=0)
 async def handler_b(event):
-    # handler_a と並列で実行
+    # handler_a と並列に実行されます
     event['result_b'] = process_b()
 
-# 異なる優先度で直列実行
+# 異なる優先度で直列に実行されます
 @message.on_message(priority=10)
 async def handler_c(event):
-    # 最も優先度が高く、最も先に実行されます
+    # 最も優先度が高く、最初に実行されます
     pass
 ```
 
 ## 通知イベント処理
 
-### フレンド追加
+### 友達追加
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -195,33 +195,33 @@ from ErisPulse.Core.Event import notice
 @notice.on_friend_add()
 async def friend_add_handler(event):
     user_id = event.get_user_id()
-    nickname = event.get_user_nickname() or "新しいフレンド"
-    await event.reply(f"フレンド追加ありがとうございます、{nickname}！")
+    nickname = event.get_user_nickname() or "新朋友"
+    await event.reply(f"友達追加を歓迎します、{nickname}！")
 ```
 
-### グループメンバー追加
+### グループメンバーの増加
 
 ```python
 @notice.on_group_increase()
 async def member_increase_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"{user_id} を歓迎します。グループ {group_id} に参加しました")
+    await event.reply(f"新メンバー {user_id} がグループ {group_id} に参加しました")
 ```
 
-### グループメンバー減少
+### グループメンバーの減少
 
 ```python
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"{user_id} さんがグループ {group_id} を退出しました")
+    await event.reply(f"メンバー {user_id} がグループ {group_id} を離れました")
 ```
 
-## リクエストイベント処理
+## 要求イベント処理
 
-### フレンドリクエスト
+### 友達リクエスト
 
 ```python
 from ErisPulse.Core.Event import request
@@ -231,10 +231,10 @@ async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
     
-    sdk.logger.info(f"フレンドリクエストを受信: {user_id}, コメント: {comment}")
+    sdk.logger.info(f"友達リクエストを受け取りました: {user_id}, 附言: {comment}")
     
-    # アダプター API を使用してリクエストを処理できます
-    # 具体的な実装については各アダプターのドキュメントを参照してください
+    # アダプタAPIでリクエストを処理することもできます
+    # 具体的な実装は各アダプタのドキュメントを参照してください
 ```
 
 ### グループ招待リクエスト
@@ -245,10 +245,10 @@ async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"グループ {group_id} の招待を受け取りました。送信者: {user_id}")
+    await event.reply(f"グループ {group_id} の招待を受け取りました、{user_id} から")
 ```
 
-## メタイベント処理
+## 元イベント処理
 
 ### 接続イベント
 
@@ -258,7 +258,7 @@ from ErisPulse.Core.Event import meta
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"{platform} プラットフォームに接続されました")
+    sdk.logger.info(f"{platform} プラットフォームが接続されました")
 
 @meta.on_disconnect()
 async def disconnect_handler(event):
@@ -275,81 +275,82 @@ async def heartbeat_handler(event):
     sdk.logger.debug(f"{platform} ハートビート検出")
 ```
 
-### Bot ステータス確認
+### Bot 状態の照会
 
-アダプターがメタイベントを送信した後、フレームワークは自動的に Bot のステータスを追跡します。いつでも確認できます：
+アダプタがメタイベントを送信した後、フレームワークは自動的に Bot 状態を追跡します。いつでも照会できます：
 
 ```python
 from ErisPulse import sdk
 
-# 特定の Bot がオンラインか確認
+# 特定の Bot がオンラインかどうかをチェック
 if sdk.adapter.is_bot_online("telegram", "123456"):
-    await adapter.Send.To("user", "123456").Text("Bot はオンラインです")
+    telegram = sdk.adapter.get("telegram")
+    await telegram.Send.To("user", "123456").Text("Bot がオンラインです")
 
-# 現在オンラインのすべての Bot を一覧表示
+# 現在オンラインのすべての Bot をリスト
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
         print(f"{platform}/{bot_id}: {info['status']}")
 
-# 完全なステータスサマリーを取得
+# 完全な状態サマリーを取得
 summary = sdk.adapter.get_status_summary()
 ```
 
-## インタラクティブ処理
+## インタラクティブな処理
 
-### `reply` メソッドを使用して返信を送信する
+### reply メソッドを使って返信を送信
 
-`event.reply()` メソッドは `@`、返信などの機能を備えたメッセージを送信するのに役立ち、様々な修飾パラメータをサポートします：
+`event.reply()` メソッドは、@、返信などの機能を備えた様々な修飾パラメータをサポートしています：
 
 ```python
-# シンプルな返信
+# 簡単な返信
 await event.reply("こんにちは")
 
 # 異なるタイプのメッセージを送信
 await event.reply("http://example.com/image.jpg", method="Image")  # 画像
 await event.reply("http://example.com/voice.mp3", method="Voice")  # 音声
 
-# 単一ユーザーをメンション
+# 単一ユーザーを@する
 await event.reply("こんにちは", at_users=["user123"])
 
-# 複数ユーザーをメンション
-await event.reply("みなさんこんにちは", at_users=["user1", "user2", "user3"])
+# 複数ユーザーを@する
+await event.reply("皆さんこんにちは", at_users=["user1", "user2", "user3"])
 
-# メッセージへの返信
+# メッセージに返信する
 await event.reply("返信内容", reply_to="msg_id")
 
-# 全体をメンション
-await event.reply("お知らせ", at_all=True)
+# 全員を@する
+await event.reply("公告", at_all=True)
 
-# 組み合わせ: ユーザーをメンション + メッセージへの返信
+# 組み合わせ: @ユーザー + メッセージ返信
 await event.reply("内容", at_users=["user1"], reply_to="msg_id")
 ```
 
-### ユーザーの返信を待機する
+### ユーザーの返信を待つ
 
 ```python
-@command("ask", help="ユーザーに質問する")
+@command("ask", help="ユーザーに質問します")
 async def ask_handler(event):
     await event.reply("名前を入力してください:")
     
-    # ユーザーの返信を待機。タイムアウト時間は 30 秒
+    # ユーザーの返信を待つ、タイムアウトは30秒
     reply = await event.wait_reply(timeout=30)
     
     if reply:
         name = reply.get_text()
         await event.reply(f"こんにちは、{name}！")
     else:
-        await event.reply("タイムアウトしました。もう一度入力してください。")
+        await event.reply("タイムアウトしました、再度入力してください。")
 ```
 
-### バリデーション付きで返信を待機する
+### 検証付きの返信待ち
 
 ```python
-@command("age", help="年齢を尋ねる")
+@command("age", help="年齢を尋ねます")
 async def age_handler(event):
     def validate_age(event_data):
-        """年齢が有効か検証"""
+        """年齢が有効かどうかを検証します"""
         try:
             age = int(event_data.get_text())
             return 0 <= age <= 150
@@ -367,13 +368,13 @@ async def age_handler(event):
         age = int(reply.get_text())
         await event.reply(f"あなたの年齢は {age} 歳です")
     else:
-        await event.reply("入力が無効かタイムアウトしました")
+        await event.reply("入力が無効またはタイムアウトしました")
 ```
 
-### コールバック付きで返信を待機する
+### コールバック付きの返信待ち
 
 ```python
-@command("confirm", help="操作を確認する")
+@command("confirm", help="操作を確認します")
 async def confirm_handler(event):
     async def handle_confirmation(reply_event):
         text = reply_event.get_text().lower()
@@ -393,27 +394,27 @@ async def confirm_handler(event):
 
 ### 確認対話 (confirm)
 
-ユーザーに承認または却下を待ち、組み込みの中国語・英語の確認語を自動的に認識します：
+ユーザーの確認または否定を待ち、組み込みの中英確認語を自動的に認識します：
 
 ```python
-@command("confirm", help="操作を確認する")
+@command("confirm", help="操作を確認します")
 async def confirm_handler(event):
     if await event.confirm("この操作を実行しますか？"):
-        await event.reply("確認済み。実行中...")
+        await event.reply("確認しました、実行中...")
     else:
-        await event.reply("キャンセルされました")
+        await event.reply("キャンセルしました")
 
-# カスタム確認語
-if await event.confirm("続けますか？", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
+# 自定義確認語
+if await event.confirm("続行しますか？", yes_words={"go", "続行"}, no_words={"stop", "停止"}):
     pass
 ```
 
 ### 選択メニュー (choose)
 
-ユーザーはオプションの番号またはテキストで返信できます：
+ユーザーは選択番号または選択テキストを返信できます：
 
 ```python
-@command("choose", help="選択")
+@command("choose", help="選択します")
 async def choose_handler(event):
     choice = await event.choose(
         "色を選択してください：",
@@ -422,17 +423,17 @@ async def choose_handler(event):
     
     if choice is not None:
         colors = ["赤", "緑", "青"]
-        await event.reply(f"あなたは選択しました: {colors[choice]}")
+        await event.reply(f"選択した色は：{colors[choice]}")
     else:
-        await event.reply("タイムアウトにより選択されませんでした")
+        await event.reply("選択がタイムアウトしました")
 ```
 
-### フォームの収集 (collect)
+### フォーム収集 (collect)
 
-ステップバイステップでユーザー入力を収集します：
+複数ステップでユーザーの入力を収集します：
 
 ```python
-@command("register", help="登録")
+@command("register", help="登録します")
 async def register_handler(event):
     data = await event.collect([
         {"key": "name", "prompt": "名前を入力してください："},
@@ -442,19 +443,19 @@ async def register_handler(event):
     ])
     
     if data:
-        await event.reply(f"登録成功！\n名前：{data['name']}\n年齢：{data['age']}\nメール：{data['email']}")
+        await event.reply(f"登録が成功しました！\n名前：{data['name']}\n年齢：{data['age']}\nメールアドレス：{data['email']}")
     else:
-        await event.reply("タイムアウトまたは入力が無効です")
+        await event.reply("登録がタイムアウトまたは入力が無効です")
 ```
 
-### 任意のイベントを待機 (wait_for)
+### 任意イベントを待つ (wait_for)
 
-条件を満たす任意のイベントを待ちます。同じユーザーに限定されません：
+条件を満たす任意のイベントを待つ、同一ユーザーに限定されません：
 
 ```python
-@command("wait_member", help="新規メンバーを待つ")
+@command("wait_member", help="新メンバーを待つ")
 async def wait_member_handler(event):
-    await event.reply("グループメンバーの加入を待機中...")
+    await event.reply("グループメンバーの参加を待っています...")
     
     evt = await event.wait_for(
         event_type="notice",
@@ -463,46 +464,46 @@ async def wait_member_handler(event):
     )
     
     if evt:
-        await event.reply(f"新規メンバーを歓迎します：{evt.get_user_id()}")
+        await event.reply(f"新メンバーを歓迎します：{evt.get_user_id()}")
     else:
         await event.reply("タイムアウトしました")
 ```
 
-### 多回の対話 (conversation)
+### 多段対話 (conversation)
 
-対話可能な多回の対話コンテキストを作成します：
+インタラクティブな多段対話コンテキストを作成します：
 
 ```python
 @command("survey", help="アンケート調査")
 async def survey_handler(event):
     conv = event.conversation(timeout=60)
     
-    await conv.say("アンケート調査にご参加ありがとうございます！")
+    await conv.say("アンケート調査にようこそ！")
     
     while conv.is_active:
         reply = await conv.wait()
         
         if reply is None:
-            await conv.say("対話がタイムアウトしました。さようなら！")
+            await conv.say("対話がタイムアウトしました、さようなら！")
             break
         
         text = reply.get_text()
         
-        if text == "退出":
+        if text == "終了":
             await conv.say("さようなら！")
             break
         
-        await conv.say(f"あなたは言いました：{text}。続けて入力するか、'退出'と入力して終了してください")
+        await conv.say(f"あなたが言った：{text}、続けるか、'終了'で終了します")
 ```
 
 ### 組み込みの確認語
 
-ErisPulse には中国語と英語の確認語のセットが組み込まれています：
+ErisPulse には中英の確認語の集合が組み込まれています：
 
-- **確認語** (`CONFIRM_YES_WORDS`): はい、yes、y、確認、確定、よし、良い、ok、true、対、うん、行、同意、問題ありません...
-- **否定語** (`CONFIRM_NO_WORDS`): いいえ、no、n、キャンセル、いいえ、しない、ダメ、cancel、false、間違い、拒否、できません...
+- **確認語** (`CONFIRM_YES_WORDS`): はい、yes、y、確認、確定、いい、いいね、ok、true、正しい、うん、行きます、同意、大丈夫...
+- **否定語** (`CONFIRM_NO_WORDS`): いいえ、no、n、キャンセル、しない、しないで、だめ、cancel、false、間違っている、拒否、できません...
 
-## イベントデータへのアクセス
+## イベントデータのアクセス
 
 ### Event オブジェクトの一般的なメソッド
 
@@ -527,18 +528,18 @@ async def info_handler(event):
     # グループ情報
     group_id = event.get_group_id()
     
-    # Bot 情報
+    # ロボット情報
     self_id = event.get_self_user_id()
     self_platform = event.get_self_platform()
     
-    # 原始データ
+    # 元データ
     raw_data = event.get_raw()
     raw_type = event.get_raw_type()
     
     # プラットフォーム情報
     platform = event.get_platform()
     
-    # メッセージタイプの判定
+    # メッセージタイプの判断
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
@@ -552,7 +553,7 @@ async def info_handler(event):
 
 ### プラットフォーム拡張メソッド
 
-組み込みメソッドに加え、各プラットフォームアダプターはプラットフォーム固有のメソッドを登録します。それらを利用して、プラットフォーム固有のデータにアクセスできます。
+内蔵メソッドに加えて、各プラットフォームアダプタはプラットフォーム固有のメソッドを登録し、プラットフォーム固有のデータにアクセスしやすくします。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -561,14 +562,14 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     platform = event.get_platform()
 
-    # プラットフォームに応じて固有メソッドを呼び出し
+    # プラットフォームに応じて固有メソッドを呼び出す
     if platform == "telegram":
-        chat_type = event.get_chat_type()      # Telegram 固有のメソッド
+        chat_type = event.get_chat_type()      # Telegram 固有メソッド
     elif platform == "email":
-        subject = event.get_subject()           # メール固有のメソッド
+        subject = event.get_subject()           # メール固有メソッド
 ```
 
-特定のプラットフォームにどのメソッドが登録されているかわからない場合は、プラットフォームに登録されているメソッドを確認できます：
+プラットフォームが特定のメソッドを登録しているかどうかを確認するには、そのプラットフォームが登録したメソッドを照会します：
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -577,11 +578,11 @@ methods = get_platform_event_methods("telegram")
 # ["get_chat_type", "is_bot_message", ...]
 ```
 
-> 各プラットフォームに登録されている固有のメソッドについては、対応する[プラットフォームガイド](../platform-guide/)を参照してください。
+> 各プラットフォームが登録した固有メソッドについては、対応する [プラットフォームドキュメント](../platform-guide/) を参照してください。
 
 ## イベント処理のベストプラクティス
 
-### 1. 例外処理
+### 1. エラーハンドリング
 
 ```python
 @command("process")
@@ -591,15 +592,15 @@ async def process_handler(event):
         result = await do_some_work()
         await event.reply(f"結果: {result}")
     except ValueError as e:
-        # 予期されるビジネスエラー
+        # 予期されたビジネスエラー
         await event.reply(f"パラメータエラー: {e}")
     except Exception as e:
-        # 予期しないエラー
+        # 予期されないエラー
         sdk.logger.error(f"処理失敗: {e}")
-        await event.reply("処理に失敗しました。後でもう一度お試しください")
+        await event.reply("処理に失敗しました、後でもう一度お試しください")
 ```
 
-### 2. ロギング
+### 2. ログ記録
 
 ```python
 @message.on_message()
@@ -607,12 +608,12 @@ async def message_handler(event):
     user_id = event.get_user_id()
     text = event.get_text()
     
-    sdk.logger.info(f"メッセージ処理: {user_id} - {text}")
+    sdk.logger.info(f"メッセージを処理: {user_id} - {text}")
     
-    # モジュール独自のロガーを使用
+    # モジュール独自のログを使用
     from ErisPulse import sdk
     logger = sdk.logger.get_child("MyHandler")
-    logger.debug(f"詳細デバッグ情報")
+    logger.debug(f"詳細なデバッグ情報")
 ```
 
 ### 3. 条件処理
@@ -620,20 +621,21 @@ async def message_handler(event):
 ```python
 @message.on_message(priority=0)
 async def conditional_handler(event):
-    """条件処理 - ハンドラー内部で判断"""
-    # 特定のユーザーのメッセージのみ処理
+    """条件処理 - ハンドラ内で判断"""
+    # 特定ユーザーのメッセージだけを処理
     if event.get_user_id() in ["bot1", "bot2"]:
         return
     
-    # 特定のキーワードを含むメッセージのみ処理
+    # 特定キーワードを含むメッセージだけを処理
     if "キーワード" not in event.get_text():
         return
     
-    await event.reply("条件を満たしました。メッセージを処理します")
+    await event.reply("条件が満たされました、メッセージを処理します")
 ```
 
 ## 次のステップ
 
-- [よくあるタスクの例](common-tasks.md) - よく使われる機能の実装を学ぶ
-- [Event ラッパークラスの詳細](../developer-guide/modules/event-wrapper.md) - Event オブジェクトを詳しく知る
-- [ユーザーガイド](../user-guide/) - 設定とモジュール管理を理解する
+- [よくあるタスクの例](common-tasks.md) - 消息送信の高度な実装（リトライ/タイムアウト/バッチ）を含む一般的な機能の実装を学ぶ
+- [プラットフォームの特徴ガイド](../platform-guide/README.md) - Send DSLのチェーン送信、送信ルール、バッチ構築の完全な説明
+- [Eventラッパークラスの詳細](../developer-guide/modules/event-wrapper.md) - Eventオブジェクトの詳細な理解
+- [ユーザー使用ガイド](../user-guide/) - 設定とモジュール管理の理解

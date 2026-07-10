@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1312,
+  "total_keywords": 1334,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -249,7 +249,7 @@
     "1. 異常處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 584,
+        "line": 585,
         "level": 3,
         "title": "1. 異常處理"
       }
@@ -591,7 +591,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 602,
+        "line": 603,
         "level": 3,
         "title": "2. 日誌記錄"
       }
@@ -999,7 +999,7 @@
     "3. 條件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 618,
+        "line": 619,
         "level": 3,
         "title": "3. 條件處理"
       }
@@ -2309,7 +2309,7 @@
     "Event 物件常用方法": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 507,
+        "line": 508,
         "level": 3,
         "title": "Event 物件常用方法"
       }
@@ -2683,7 +2683,7 @@
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 147,
+        "line": 397,
         "level": 3,
         "title": "PascalCase 命名"
       }
@@ -2856,12 +2856,12 @@
         "title": "Send 訊息發送 DSL"
       }
     ],
-    "Send 鏈式調用": [
+    "Send 鏈式呼叫": [
       {
         "document": "platform-guide/README.md",
         "line": 42,
         "level": 3,
-        "title": "Send 鏈式調用"
+        "title": "Send 鏈式呼叫"
       }
     ],
     "SendDSL": [
@@ -2947,7 +2947,7 @@
     "Task 物件": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 194,
+        "line": 444,
         "level": 3,
         "title": "Task 物件"
       }
@@ -3755,13 +3755,13 @@
       },
       {
         "document": "getting-started/common-tasks.md",
-        "line": 448,
+        "line": 504,
         "level": 2,
         "title": "下一步"
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 635,
+        "line": 636,
         "level": 2,
         "title": "下一步"
       },
@@ -3814,6 +3814,14 @@
         "line": 149,
         "level": 3,
         "title": "並行事件處理"
+      }
+    ],
+    "並行與串行": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 290,
+        "level": 3,
+        "title": "並行與串行"
       }
     ],
     "中介軟體": [
@@ -3942,14 +3950,6 @@
         "title": "事件擴展方法（WebhookEventMixin）"
       }
     ],
-    "事件數據訪問": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 505,
-        "level": 2,
-        "title": "事件數據訪問"
-      }
-    ],
     "事件流程": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -3967,7 +3967,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 102,
+        "line": 170,
         "level": 3,
         "title": "事件監聽"
       }
@@ -4065,7 +4065,7 @@
     "事件處理最佳實踐": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 582,
+        "line": 583,
         "level": 2,
         "title": "事件處理最佳實踐"
       }
@@ -4122,6 +4122,14 @@
         "line": 277,
         "level": 2,
         "title": "事件訂閱（Intents）"
+      }
+    ],
+    "事件資料存取": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 506,
+        "level": 2,
+        "title": "事件資料存取"
       }
     ],
     "事件轉換": [
@@ -4275,7 +4283,7 @@
     "互動式處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 299,
+        "line": 300,
         "level": 2,
         "title": "互動式處理"
       }
@@ -4417,7 +4425,7 @@
     "使用 reply 方法發送回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 301,
+        "line": 302,
         "level": 3,
         "title": "使用 reply 方法發送回覆"
       }
@@ -4457,7 +4465,7 @@
     "使用生命週期事件": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 128,
+        "line": 129,
         "level": 3,
         "title": "使用生命週期事件"
       }
@@ -4521,7 +4529,7 @@
     "使用者資料儲存": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 36,
+        "line": 37,
         "level": 3,
         "title": "使用者資料儲存"
       }
@@ -4698,6 +4706,14 @@
         "title": "優先級系統"
       }
     ],
+    "優先級與積壓丟棄（Priority）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 230,
+        "level": 3,
+        "title": "優先級與積壓丟棄（Priority）"
+      }
+    ],
     "儲存": [
       {
         "document": "terminology.md",
@@ -4796,20 +4812,20 @@
         "title": "內容編寫規範"
       }
     ],
+    "內建確認詞": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 499,
+        "level": 3,
+        "title": "內建確認詞"
+      }
+    ],
     "內建預設值": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 379,
         "level": 3,
         "title": "內建預設值"
-      }
-    ],
-    "內置確認詞": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 498,
-        "level": 3,
-        "title": "內置確認詞"
       }
     ],
     "內聯查詢事件": [
@@ -5062,12 +5078,12 @@
         "title": "原始訊息傳送"
       }
     ],
-    "原始訊息與訊息構建": [
+    "原始訊息與訊息建構": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 273,
+        "line": 523,
         "level": 3,
-        "title": "原始訊息與訊息構建"
+        "title": "原始訊息與訊息建構"
       }
     ],
     "原始資料": [
@@ -5117,7 +5133,7 @@
     "參考連結": [
       {
         "document": "platform-guide/README.md",
-        "line": 212,
+        "line": 280,
         "level": 2,
         "title": "參考連結"
       }
@@ -5125,7 +5141,7 @@
     "參與貢獻": [
       {
         "document": "platform-guide/README.md",
-        "line": 224,
+        "line": 292,
         "level": 2,
         "title": "參與貢獻"
       }
@@ -5305,7 +5321,7 @@
     "命名規範": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 145,
+        "line": 395,
         "level": 2,
         "title": "命名規範"
       }
@@ -5461,7 +5477,7 @@
     "圖片下載和儲存": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 385,
+        "line": 441,
         "level": 3,
         "title": "圖片下載和儲存"
       }
@@ -5469,17 +5485,17 @@
     "圖片處理": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 383,
+        "line": 439,
         "level": 2,
         "title": "圖片處理"
       }
     ],
-    "圖片識別示例": [
+    "圖片辨識範例": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 414,
+        "line": 470,
         "level": 3,
-        "title": "圖片識別示例"
+        "title": "圖片辨識範例"
       }
     ],
     "在 RouteGroup 中使用": [
@@ -5581,7 +5597,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 245,
+        "line": 495,
         "level": 3,
         "title": "基本使用"
       },
@@ -5915,7 +5931,7 @@
     "多平台適配": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 186,
+        "line": 187,
         "level": 2,
         "title": "多平台適配"
       }
@@ -5939,7 +5955,7 @@
     "多輪對話 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 471,
+        "line": 472,
         "level": 3,
         "title": "多輪對話 (conversation)"
       }
@@ -5958,6 +5974,30 @@
         "line": 49,
         "level": 4,
         "title": "失敗回應範例"
+      }
+    ],
+    "失敗繼續與重試": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 310,
+        "level": 3,
+        "title": "失敗繼續與重試"
+      }
+    ],
+    "失敗自動重試（Retry）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 180,
+        "level": 3,
+        "title": "失敗自動重試（Retry）"
+      }
+    ],
+    "失敗重試 + 逾時取消": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 249,
+        "level": 3,
+        "title": "失敗重試 + 逾時取消"
       }
     ],
     "套件名必須以 `ErisPulse-` 開頭嗎？": [
@@ -6000,12 +6040,12 @@
         "title": "好友操作方法"
       }
     ],
-    "好友新增": [
+    "好友添加": [
       {
         "document": "getting-started/event-handling.md",
         "line": 190,
         "level": 3,
-        "title": "好友新增"
+        "title": "好友添加"
       }
     ],
     "好友被拒事件": [
@@ -6221,7 +6261,7 @@
     "完整範例": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 243,
+        "line": 493,
         "level": 2,
         "title": "完整範例"
       },
@@ -6251,7 +6291,7 @@
     "定時任務": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 75,
+        "line": 76,
         "level": 2,
         "title": "定時任務"
       }
@@ -6434,6 +6474,14 @@
         "title": "已修復的 Bug"
       }
     ],
+    "帳戶管理": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 93,
+        "level": 2,
+        "title": "帳戶管理"
+      }
+    ],
     "帳戶配置": [
       {
         "document": "platform-guide/onebot12.md",
@@ -6448,14 +6496,6 @@
         "line": 36,
         "level": 3,
         "title": "帳戶配置（EmailAdapter.accounts）"
-      }
-    ],
-    "帳號管理": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 93,
-        "level": 2,
-        "title": "帳號管理"
       }
     ],
     "帳號解析": [
@@ -6498,12 +6538,12 @@
         "title": "帶內聯鍵盤的訊息"
       }
     ],
-    "帶回呼的等待回覆": [
+    "帶回調的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 373,
+        "line": 374,
         "level": 3,
-        "title": "帶回呼的等待回覆"
+        "title": "帶回調的等待回覆"
       }
     ],
     "帶附件的郵件": [
@@ -6517,7 +6557,7 @@
     "帶驗證的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 346,
+        "line": 347,
         "level": 3,
         "title": "帶驗證的等待回覆"
       }
@@ -6643,7 +6683,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 553,
+        "line": 554,
         "level": 3,
         "title": "平台擴展方法"
       }
@@ -6683,7 +6723,7 @@
     "平台特定回應": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
         "title": "平台特定回應"
       }
@@ -6699,7 +6739,7 @@
     "平台特性檢測": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 205,
+        "line": 206,
         "level": 3,
         "title": "平台特性檢測"
       }
@@ -6723,7 +6763,7 @@
     "平台特有方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 167,
+        "line": 417,
         "level": 3,
         "title": "平台特有方法"
       }
@@ -6748,6 +6788,14 @@
         "line": 178,
         "level": 4,
         "title": "平台能力查詢"
+      }
+    ],
+    "延遲發送（Defer）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 221,
+        "level": 3,
+        "title": "延遲發送（Defer）"
       }
     ],
     "延遲載入": [
@@ -6820,6 +6868,14 @@
         "line": 259,
         "level": 3,
         "title": "引導式註冊"
+      }
+    ],
+    "後台執行": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 380,
+        "level": 3,
+        "title": "後台執行"
       }
     ],
     "從 SDK 實例訪問": [
@@ -7080,6 +7136,28 @@
         "title": "扩展字段說明"
       }
     ],
+    "批次發送多條訊息": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 264,
+        "level": 3,
+        "title": "批次發送多條訊息"
+      }
+    ],
+    "批量建構模式（Build）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 270,
+        "level": 2,
+        "title": "批量建構模式（Build）"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 137,
+        "level": 4,
+        "title": "批量建構模式（Build）"
+      }
+    ],
     "批量操作": [
       {
         "document": "api-reference/core-modules.md",
@@ -7239,7 +7317,7 @@
     "搜尋功能": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 327,
+        "line": 383,
         "level": 2,
         "title": "搜尋功能"
       }
@@ -7441,7 +7519,7 @@
     "收集表單 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 430,
+        "line": 431,
         "level": 3,
         "title": "收集表單 (collect)"
       }
@@ -7452,6 +7530,14 @@
         "line": 288,
         "level": 2,
         "title": "效能最佳化"
+      }
+    ],
+    "整批規則與回調": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 322,
+        "level": 3,
+        "title": "整批規則與回調"
       }
     ],
     "文件": [
@@ -8241,7 +8327,7 @@
     "標準事件格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 159,
+        "line": 227,
         "level": 3,
         "title": "標準事件格式"
       }
@@ -8254,18 +8340,18 @@
         "title": "標準事件範例"
       }
     ],
-    "標準化回應": [
+    "標準化響應": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 212,
+        "line": 462,
         "level": 3,
-        "title": "標準化回應"
+        "title": "標準化響應"
       }
     ],
     "標準回應格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 180,
+        "line": 248,
         "level": 3,
         "title": "標準回應格式"
       }
@@ -8281,7 +8367,7 @@
     "標準格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 154,
+        "line": 222,
         "level": 2,
         "title": "標準格式"
       }
@@ -8545,7 +8631,7 @@
     "權限控制": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 229,
+        "line": 285,
         "level": 2,
         "title": "權限控制"
       }
@@ -8612,6 +8698,14 @@
         "title": "消息事件示例"
       }
     ],
+    "消息事件處理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 17,
+        "level": 2,
+        "title": "消息事件處理"
+      }
+    ],
     "消息內容": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -8658,14 +8752,6 @@
         "title": "消息段類型"
       }
     ],
-    "消息統計": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 281,
-        "level": 2,
-        "title": "消息統計"
-      }
-    ],
     "消息編輯事件": [
       {
         "document": "platform-guide/ideaura.md",
@@ -8690,28 +8776,12 @@
         "title": "消息編輯通知示例"
       }
     ],
-    "消息計數": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 283,
-        "level": 3,
-        "title": "消息計數"
-      }
-    ],
     "消息轉發事件": [
       {
         "document": "platform-guide/ideaura.md",
         "line": 169,
         "level": 3,
         "title": "消息轉發事件"
-      }
-    ],
-    "消息過濾": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 145,
-        "level": 2,
-        "title": "消息過濾"
       }
     ],
     "消息配置": [
@@ -9082,6 +9152,14 @@
         "title": "異步介面"
       }
     ],
+    "異步發送與結果處理": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 87,
+        "level": 4,
+        "title": "異步發送與結果處理"
+      }
+    ],
     "發布": [
       {
         "document": "README.md",
@@ -9174,6 +9252,22 @@
         "title": "發送媒體訊息"
       }
     ],
+    "發送成功後執行邏輯": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 236,
+        "level": 3,
+        "title": "發送成功後執行邏輯"
+      }
+    ],
+    "發送成功後執行邏輯（Hook）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 163,
+        "level": 3,
+        "title": "發送成功後執行邏輯（Hook）"
+      }
+    ],
     "發送方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -9244,6 +9338,22 @@
         "title": "發送者資訊"
       }
     ],
+    "發送規則系統": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 145,
+        "level": 2,
+        "title": "發送規則系統"
+      }
+    ],
+    "發送規則裝飾器": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 102,
+        "level": 4,
+        "title": "發送規則裝飾器"
+      }
+    ],
     "發送類型 (SendType)": [
       {
         "document": "advanced/session-types.md",
@@ -9276,12 +9386,12 @@
         "title": "監聽成員變更"
       }
     ],
-    "監聽所有訊息": [
+    "監聽所有消息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 25,
         "level": 3,
-        "title": "監聽所有訊息"
+        "title": "監聽所有消息"
       }
     ],
     "監聽消息審核結果": [
@@ -9300,20 +9410,20 @@
         "title": "監聽生命週期事件"
       }
     ],
-    "監聽私聊訊息": [
+    "監聽私聊消息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 37,
         "level": 3,
-        "title": "監聽私聊訊息"
+        "title": "監聽私聊消息"
       }
     ],
-    "監聽群聊訊息": [
+    "監聽群聊消息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 46,
         "level": 3,
-        "title": "監聽群聊訊息"
+        "title": "監聽群聊消息"
       }
     ],
     "目的": [
@@ -9415,7 +9525,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 281,
+        "line": 531,
         "level": 2,
         "title": "相關文件"
       },
@@ -9493,7 +9603,7 @@
     "確認對話 (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 394,
+        "line": 395,
         "level": 3,
         "title": "確認對話 (confirm)"
       }
@@ -9573,17 +9683,9 @@
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 450,
+        "line": 451,
         "level": 3,
         "title": "等待任意事件 (wait_for)"
-      }
-    ],
-    "等待使用者回覆": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 329,
-        "level": 3,
-        "title": "等待使用者回覆"
       }
     ],
     "等待回覆": [
@@ -9600,6 +9702,14 @@
         "line": 193,
         "level": 3,
         "title": "等待回覆功能"
+      }
+    ],
+    "等待用戶回覆": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 330,
+        "level": 3,
+        "title": "等待用戶回覆"
       }
     ],
     "等待結果": [
@@ -9647,7 +9757,7 @@
     "管理員檢查": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 231,
+        "line": 287,
         "level": 3,
         "title": "管理員檢查"
       }
@@ -9666,18 +9776,10 @@
         "title": "範例"
       }
     ],
-    "簡單定時器": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 77,
-        "level": 3,
-        "title": "簡單定時器"
-      }
-    ],
     "簡單搜尋": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 329,
+        "line": 385,
         "level": 3,
         "title": "簡單搜尋"
       }
@@ -9685,9 +9787,17 @@
     "簡單計數器": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 18,
+        "line": 19,
         "level": 3,
         "title": "簡單計數器"
+      }
+    ],
+    "簡單計時器": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 78,
+        "level": 3,
+        "title": "簡單計時器"
       }
     ],
     "系統路由": [
@@ -9762,6 +9872,22 @@
         "title": "繼承關係"
       }
     ],
+    "群成員增加": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 202,
+        "level": 3,
+        "title": "群成員增加"
+      }
+    ],
+    "群成員減少": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 212,
+        "level": 3,
+        "title": "群成員減少"
+      }
+    ],
     "群操作方法": [
       {
         "document": "platform-guide/onebot11.md",
@@ -9778,26 +9904,10 @@
         "title": "群組/頻道資訊"
       }
     ],
-    "群組成員增加": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 202,
-        "level": 3,
-        "title": "群組成員增加"
-      }
-    ],
-    "群組成員減少": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 212,
-        "level": 3,
-        "title": "群組成員減少"
-      }
-    ],
     "群組權限": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 266,
+        "line": 322,
         "level": 3,
         "title": "群組權限"
       }
@@ -9818,20 +9928,20 @@
         "title": "群組管理範例"
       }
     ],
-    "群組邀請請求": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 240,
-        "level": 3,
-        "title": "群組邀請請求"
-      }
-    ],
     "群聊訊息（含 @提及）": [
       {
         "document": "platform-guide/telegram.md",
         "line": 184,
         "level": 4,
         "title": "群聊訊息（含 @提及）"
+      }
+    ],
+    "群邀請請求": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 240,
+        "level": 3,
+        "title": "群邀請請求"
       }
     ],
     "翻譯鍵命名": [
@@ -10072,6 +10182,14 @@
         "title": "表管理"
       }
     ],
+    "裝飾器與規則的繼承": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 356,
+        "level": 3,
+        "title": "裝飾器與規則的繼承"
+      }
+    ],
     "裝飾器路由（推薦）": [
       {
         "document": "advanced/router.md",
@@ -10094,6 +10212,30 @@
         "line": 574,
         "level": 4,
         "title": "覆寫內建方法"
+      }
+    ],
+    "規則傳播": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 257,
+        "level": 3,
+        "title": "規則傳播"
+      }
+    ],
+    "規則方法一覽": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 151,
+        "level": 3,
+        "title": "規則方法一覽"
+      }
+    ],
+    "規則組合與後台執行": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 242,
+        "level": 3,
+        "title": "規則組合與後台執行"
       }
     ],
     "解除安裝模組": [
@@ -10160,36 +10302,12 @@
         "title": "訊息事件 detail_type 映射"
       }
     ],
-    "訊息事件處理": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 17,
-        "level": 2,
-        "title": "訊息事件處理"
-      }
-    ],
     "訊息事件額外欄位": [
       {
         "document": "developer-guide/adapters/converter.md",
         "line": 74,
         "level": 3,
         "title": "訊息事件額外欄位"
-      }
-    ],
-    "訊息傳送失敗": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 197,
-        "level": 4,
-        "title": "訊息傳送失敗"
-      }
-    ],
-    "訊息傳送成功": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 181,
-        "level": 4,
-        "title": "訊息傳送成功"
       }
     ],
     "訊息傳送方法": [
@@ -10278,6 +10396,30 @@
         "title": "訊息發送"
       }
     ],
+    "訊息發送失敗": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 265,
+        "level": 4,
+        "title": "訊息發送失敗"
+      }
+    ],
+    "訊息發送成功": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 249,
+        "level": 4,
+        "title": "訊息發送成功"
+      }
+    ],
+    "訊息發送進階（重試/逾時/批次）": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 230,
+        "level": 2,
+        "title": "訊息發送進階（重試/逾時/批次）"
+      }
+    ],
     "訊息相關": [
       {
         "document": "platform-guide/telegram.md",
@@ -10292,6 +10434,30 @@
         "line": 55,
         "level": 3,
         "title": "訊息管理方法"
+      }
+    ],
+    "訊息統計": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 337,
+        "level": 2,
+        "title": "訊息統計"
+      }
+    ],
+    "訊息計數": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 339,
+        "level": 3,
+        "title": "訊息計數"
+      }
+    ],
+    "訊息過濾": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 146,
+        "level": 2,
+        "title": "訊息過濾"
       }
     ],
     "訪問核心模組": [
@@ -10623,7 +10789,7 @@
     "資料持久化": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 16,
+        "line": 17,
         "level": 2,
         "title": "資料持久化"
       },
@@ -10648,6 +10814,14 @@
         "line": 114,
         "level": 2,
         "title": "質量檢查清單"
+      }
+    ],
+    "超時自動取消（Timeout）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 189,
+        "level": 3,
+        "title": "超時自動取消（Timeout）"
       }
     ],
     "超時與重試": [
@@ -10789,7 +10963,7 @@
     "返回值": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 192,
+        "line": 442,
         "level": 2,
         "title": "返回值"
       }
@@ -11022,20 +11196,20 @@
         "title": "連式調用示例"
       }
     ],
+    "連接事件": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 253,
+        "level": 3,
+        "title": "連接事件"
+      }
+    ],
     "連接流程": [
       {
         "document": "platform-guide/qqbot.md",
         "line": 254,
         "level": 3,
         "title": "連接流程"
-      }
-    ],
-    "連線事件": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 253,
-        "level": 3,
-        "title": "連線事件"
       }
     ],
     "連線流程": [
@@ -11072,6 +11246,22 @@
         "line": 808,
         "level": 3,
         "title": "連線重試"
+      }
+    ],
+    "進入建構模式": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 274,
+        "level": 3,
+        "title": "進入建構模式"
+      }
+    ],
+    "進度監控（OnProgress / OnError）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 199,
+        "level": 3,
+        "title": "進度監控（OnProgress / OnError）"
       }
     ],
     "進階主題": [
@@ -11253,7 +11443,7 @@
     "選擇選單 (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 411,
+        "line": 412,
         "level": 3,
         "title": "選擇選單 (choose)"
       }
@@ -11687,7 +11877,7 @@
     "鏈式調用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 263,
+        "line": 513,
         "level": 3,
         "title": "鏈式調用"
       }
@@ -11792,12 +11982,12 @@
         "title": "開發類型選擇"
       }
     ],
-    "關鍵詞過濾": [
+    "關鍵字過濾": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 147,
+        "line": 148,
         "level": 3,
-        "title": "關鍵詞過濾"
+        "title": "關鍵字過濾"
       }
     ],
     "關閉連接": [
@@ -11870,14 +12060,6 @@
         "line": 73,
         "level": 3,
         "title": "非同步初始化"
-      }
-    ],
-    "非同步發送與結果處理": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 87,
-        "level": 4,
-        "title": "非同步發送與結果處理"
       }
     ],
     "非同步程式設計": [
@@ -12021,7 +12203,7 @@
     "黑名單過濾": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 168,
+        "line": 169,
         "level": 3,
         "title": "黑名單過濾"
       }

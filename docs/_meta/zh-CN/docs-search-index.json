@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1263,
+  "total_keywords": 1285,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2733,7 +2733,7 @@
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 147,
+        "line": 397,
         "level": 3,
         "title": "PascalCase 命名"
       }
@@ -2995,7 +2995,7 @@
     "Task 对象": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 194,
+        "line": 444,
         "level": 3,
         "title": "Task 对象"
       }
@@ -3775,7 +3775,7 @@
       },
       {
         "document": "getting-started/common-tasks.md",
-        "line": 448,
+        "line": 504,
         "level": 2,
         "title": "下一步"
       },
@@ -4125,7 +4125,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 102,
+        "line": 170,
         "level": 3,
         "title": "事件监听"
       }
@@ -4434,6 +4434,14 @@
         "title": "优先级"
       }
     ],
+    "优先级与积压丢弃（Priority）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 230,
+        "level": 3,
+        "title": "优先级与积压丢弃（Priority）"
+      }
+    ],
     "优先级系统": [
       {
         "document": "api-reference/event-system.md",
@@ -4555,7 +4563,7 @@
     "使用生命周期事件": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 128,
+        "line": 129,
         "level": 3,
         "title": "使用生命周期事件"
       }
@@ -4662,6 +4670,14 @@
         "title": "修改表结构"
       }
     ],
+    "修饰器与规则的继承": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 356,
+        "level": 3,
+        "title": "修饰器与规则的继承"
+      }
+    ],
     "修饰方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -4743,7 +4759,7 @@
     "关键词过滤": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 147,
+        "line": 148,
         "level": 3,
         "title": "关键词过滤"
       }
@@ -5117,7 +5133,7 @@
     "原始消息与消息构建": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 273,
+        "line": 523,
         "level": 3,
         "title": "原始消息与消息构建"
       }
@@ -5139,7 +5155,7 @@
     "参与贡献": [
       {
         "document": "platform-guide/README.md",
-        "line": 224,
+        "line": 292,
         "level": 2,
         "title": "参与贡献"
       }
@@ -5183,7 +5199,7 @@
     "参考链接": [
       {
         "document": "platform-guide/README.md",
-        "line": 212,
+        "line": 280,
         "level": 2,
         "title": "参考链接"
       }
@@ -5342,6 +5358,22 @@
         "title": "发送带按钮的消息到群组"
       }
     ],
+    "发送成功后执行逻辑": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 236,
+        "level": 3,
+        "title": "发送成功后执行逻辑"
+      }
+    ],
+    "发送成功后执行逻辑（Hook）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 163,
+        "level": 3,
+        "title": "发送成功后执行逻辑（Hook）"
+      }
+    ],
     "发送方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -5450,6 +5482,22 @@
         "title": "发送者信息"
       }
     ],
+    "发送规则系统": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 145,
+        "level": 2,
+        "title": "发送规则系统"
+      }
+    ],
+    "发送规则装饰器": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 102,
+        "level": 4,
+        "title": "发送规则装饰器"
+      }
+    ],
     "可用属性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5480,6 +5528,14 @@
         "line": 312,
         "level": 3,
         "title": "同步流程"
+      }
+    ],
+    "后台执行": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 380,
+        "level": 3,
+        "title": "后台执行"
       }
     ],
     "启动和关闭": [
@@ -5625,7 +5681,7 @@
     "命名规范": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 145,
+        "line": 395,
         "level": 2,
         "title": "命名规范"
       }
@@ -5733,7 +5789,7 @@
     "图片下载和存储": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 385,
+        "line": 441,
         "level": 3,
         "title": "图片下载和存储"
       }
@@ -5741,7 +5797,7 @@
     "图片处理": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 383,
+        "line": 439,
         "level": 2,
         "title": "图片处理"
       }
@@ -5749,7 +5805,7 @@
     "图片识别示例": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 414,
+        "line": 470,
         "level": 3,
         "title": "图片识别示例"
       }
@@ -5807,7 +5863,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 245,
+        "line": 495,
         "level": 3,
         "title": "基本使用"
       },
@@ -6203,7 +6259,7 @@
     "多平台适配": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 186,
+        "line": 187,
         "level": 2,
         "title": "多平台适配"
       }
@@ -6300,6 +6356,30 @@
         "line": 49,
         "level": 4,
         "title": "失败响应示例"
+      }
+    ],
+    "失败继续与重试": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 310,
+        "level": 3,
+        "title": "失败继续与重试"
+      }
+    ],
+    "失败自动重试（Retry）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 180,
+        "level": 3,
+        "title": "失败自动重试（Retry）"
+      }
+    ],
+    "失败重试 + 超时取消": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 249,
+        "level": 3,
+        "title": "失败重试 + 超时取消"
       }
     ],
     "好友上线事件": [
@@ -6575,7 +6655,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 243,
+        "line": 493,
         "level": 2,
         "title": "完整示例"
       },
@@ -6605,7 +6685,7 @@
     "定时任务": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 75,
+        "line": 76,
         "level": 2,
         "title": "定时任务"
       }
@@ -6949,7 +7029,7 @@
     "平台特定响应": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
         "title": "平台特定响应"
       }
@@ -6965,7 +7045,7 @@
     "平台特性检测": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 205,
+        "line": 206,
         "level": 3,
         "title": "平台特性检测"
       }
@@ -6989,7 +7069,7 @@
     "平台特有方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 167,
+        "line": 417,
         "level": 3,
         "title": "平台特有方法"
       }
@@ -7016,12 +7096,28 @@
         "title": "平台能力查询"
       }
     ],
+    "并行与串行": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 290,
+        "level": 3,
+        "title": "并行与串行"
+      }
+    ],
     "并行事件处理": [
       {
         "document": "getting-started/event-handling.md",
         "line": 149,
         "level": 3,
         "title": "并行事件处理"
+      }
+    ],
+    "延迟发送（Defer）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 221,
+        "level": 3,
+        "title": "延迟发送（Defer）"
       }
     ],
     "开发准备": [
@@ -7546,12 +7642,34 @@
         "title": "扩展：添加更多功能"
       }
     ],
+    "批量发送多条消息": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 264,
+        "level": 3,
+        "title": "批量发送多条消息"
+      }
+    ],
     "批量操作": [
       {
         "document": "api-reference/core-modules.md",
         "line": 20,
         "level": 3,
         "title": "批量操作"
+      }
+    ],
+    "批量构建模式（Build）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 270,
+        "level": 2,
+        "title": "批量构建模式（Build）"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 137,
+        "level": 4,
+        "title": "批量构建模式（Build）"
       }
     ],
     "批量注册（Mixin 类）": [
@@ -7697,7 +7815,7 @@
     "搜索功能": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 327,
+        "line": 383,
         "level": 2,
         "title": "搜索功能"
       }
@@ -7827,7 +7945,7 @@
     "数据持久化": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 16,
+        "line": 17,
         "level": 2,
         "title": "数据持久化"
       },
@@ -7836,6 +7954,14 @@
         "line": 65,
         "level": 3,
         "title": "数据持久化"
+      }
+    ],
+    "整批规则与回调": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 322,
+        "level": 3,
+        "title": "整批规则与回调"
       }
     ],
     "文件处理特性": [
@@ -8313,7 +8439,7 @@
     "权限控制": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 229,
+        "line": 285,
         "level": 2,
         "title": "权限控制"
       }
@@ -8437,7 +8563,7 @@
     "标准事件格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 159,
+        "line": 227,
         "level": 3,
         "title": "标准事件格式"
       }
@@ -8453,7 +8579,7 @@
     "标准化响应": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 212,
+        "line": 462,
         "level": 3,
         "title": "标准化响应"
       }
@@ -8461,7 +8587,7 @@
     "标准响应格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 180,
+        "line": 248,
         "level": 3,
         "title": "标准响应格式"
       }
@@ -8477,7 +8603,7 @@
     "标准格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 154,
+        "line": 222,
         "level": 2,
         "title": "标准格式"
       }
@@ -9187,7 +9313,7 @@
     "消息发送失败": [
       {
         "document": "platform-guide/README.md",
-        "line": 197,
+        "line": 265,
         "level": 4,
         "title": "消息发送失败"
       }
@@ -9195,7 +9321,7 @@
     "消息发送成功": [
       {
         "document": "platform-guide/README.md",
-        "line": 181,
+        "line": 249,
         "level": 4,
         "title": "消息发送成功"
       }
@@ -9206,6 +9332,14 @@
         "line": 291,
         "level": 3,
         "title": "消息发送方法"
+      }
+    ],
+    "消息发送进阶（重试/超时/批量）": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 230,
+        "level": 2,
+        "title": "消息发送进阶（重试/超时/批量）"
       }
     ],
     "消息已读事件": [
@@ -9347,7 +9481,7 @@
     "消息统计": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 281,
+        "line": 337,
         "level": 2,
         "title": "消息统计"
       }
@@ -9379,7 +9513,7 @@
     "消息计数": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 283,
+        "line": 339,
         "level": 3,
         "title": "消息计数"
       }
@@ -9395,7 +9529,7 @@
     "消息过滤": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 145,
+        "line": 146,
         "level": 2,
         "title": "消息过滤"
       }
@@ -9659,7 +9793,7 @@
     "用户数据存储": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 36,
+        "line": 37,
         "level": 3,
         "title": "用户数据存储"
       }
@@ -9859,7 +9993,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 281,
+        "line": 531,
         "level": 2,
         "title": "相关文档"
       },
@@ -10029,7 +10163,7 @@
     "简单定时器": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 77,
+        "line": 78,
         "level": 3,
         "title": "简单定时器"
       }
@@ -10037,7 +10171,7 @@
     "简单搜索": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 329,
+        "line": 385,
         "level": 3,
         "title": "简单搜索"
       }
@@ -10045,7 +10179,7 @@
     "简单计数器": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 18,
+        "line": 19,
         "level": 3,
         "title": "简单计数器"
       }
@@ -10061,7 +10195,7 @@
     "管理员检查": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 231,
+        "line": 287,
         "level": 3,
         "title": "管理员检查"
       }
@@ -10215,7 +10349,7 @@
     "群组权限": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 266,
+        "line": 322,
         "level": 3,
         "title": "群组权限"
       }
@@ -10424,6 +10558,30 @@
         "line": 574,
         "level": 4,
         "title": "覆写内置方法"
+      }
+    ],
+    "规则传播": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 257,
+        "level": 3,
+        "title": "规则传播"
+      }
+    ],
+    "规则方法一览": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 151,
+        "level": 3,
+        "title": "规则方法一览"
+      }
+    ],
+    "规则组合与后台执行": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 242,
+        "level": 3,
+        "title": "规则组合与后台执行"
       }
     ],
     "触发": [
@@ -10686,6 +10844,14 @@
         "title": "超时与重试"
       }
     ],
+    "超时自动取消（Timeout）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 189,
+        "level": 3,
+        "title": "超时自动取消（Timeout）"
+      }
+    ],
     "超级文件分享事件示例": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -10853,7 +11019,7 @@
     "返回值": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 192,
+        "line": 442,
         "level": 2,
         "title": "返回值"
       }
@@ -10888,6 +11054,22 @@
         "line": 267,
         "level": 2,
         "title": "返回值说明"
+      }
+    ],
+    "进入构建模式": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 274,
+        "level": 3,
+        "title": "进入构建模式"
+      }
+    ],
+    "进度监控（OnProgress / OnError）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 199,
+        "level": 3,
+        "title": "进度监控（OnProgress / OnError）"
       }
     ],
     "连接事件": [
@@ -11705,7 +11887,7 @@
     "链式调用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 263,
+        "line": 513,
         "level": 3,
         "title": "链式调用"
       }
@@ -11965,7 +12147,7 @@
     "黑名单过滤": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 168,
+        "line": 169,
         "level": 3,
         "title": "黑名单过滤"
       }

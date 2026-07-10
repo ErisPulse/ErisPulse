@@ -8,13 +8,13 @@ ErisPulse 支援以下事件類型：
 
 | 事件類型 | 說明 | 適用場景 |
 |---------|------|---------|
-| 訊息事件 | 使用者發送的任何訊息 | 聊天機器人、內容過濾 |
-| 命令事件 | 以命令前綴開頭的訊息 | 命令處理、功能入口 |
-| 通知事件 | 系統通知（好友新增、群組成員變化等） | 歡迎訊息、狀態通知 |
-| 請求事件 | 使用者請求（好友請求、群組邀請） | 自動處理請求 |
-| 元事件 | 系統級事件（連線、心跳） | 連線監控、狀態檢查 |
+| 消息事件 | 用戶發送的任何消息 | 聊天機器人、內容過濾 |
+| 命令事件 | 以命令前綴開頭的消息 | 命令處理、功能入口 |
+| 通知事件 | 系統通知（好友添加、群成員變化等） | 歡迎訊息、狀態通知 |
+| 請求事件 | 用戶請求（好友請求、群邀請） | 自動處理請求 |
+| 元事件 | 系統級事件（連接、心跳） | 連接監控、狀態檢查 |
 
-## 訊息事件處理
+## 消息事件處理
 
 > **提示**: 建議在事件處理器中使用 `Event` 類型註解，以獲得 IDE 自動補全和類型檢查支援。
 
@@ -22,7 +22,7 @@ ErisPulse 支援以下事件類型：
 from ErisPulse.Core.Event import Event  # 導入事件類型用於註解
 ```
 
-### 監聽所有訊息
+### 監聽所有消息
 
 ```python
 from ErisPulse.Core.Event import message, Event
@@ -34,7 +34,7 @@ async def message_handler(event: Event):
     sdk.logger.info(f"收到 {user_id} 的訊息: {text}")
 ```
 
-### 監聽私聊訊息
+### 監聽私聊消息
 
 ```python
 @message.on_private_message()
@@ -43,7 +43,7 @@ async def private_handler(event: Event):
     await event.reply(f"你好，{user_id}！這是私聊訊息。")
 ```
 
-### 監聽群聊訊息
+### 監聽群聊消息
 
 ```python
 @message.on_group_message()
@@ -58,9 +58,9 @@ async def group_handler(event: Event):
 ```python
 @message.on_at_message()
 async def at_handler(event: Event):
-    # 獲取被@的使用者列表
+    # 獲取被@的用戶列表
     mentions = event.get_mentions()
-    await event.reply(f"你@了這些使用者: {mentions}")
+    await event.reply(f"你@了這些用戶: {mentions}")
 ```
 
 ## 命令事件處理
@@ -70,13 +70,13 @@ async def at_handler(event: Event):
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="顯示幫助資訊")
+@command("help", help="顯示幫助訊息")
 async def help_handler(event):
     help_text = """
 可用命令：
 /help - 顯示幫助
-/ping - 測試連線
-/info - 查看資訊
+/ping - 測試連接
+/info - 查看訊息
     """
     await event.reply(help_text)
 ```
@@ -84,12 +84,12 @@ async def help_handler(event):
 ### 命令別名
 
 ```python
-@command(["help", "h"], aliases=["幫助"], help="顯示幫助資訊")
+@command(["help", "h"], aliases=["幫助"], help="顯示幫助訊息")
 async def help_handler(event):
-    await event.reply("幫助資訊...")
+    await event.reply("幫助訊息...")
 ```
 
-使用者可以使用以下任何方式呼叫：
+用戶可以使用以下任何方式呼叫：
 - `/help`
 - `/h`
 - `/幫助`
@@ -124,7 +124,7 @@ async def stop_handler(event):
 
 ```python
 def is_admin(event):
-    """檢查使用者是否為管理員"""
+    """檢查用戶是否為管理員"""
     admin_list = ["user123", "user456"]
     return event.get_user_id() in admin_list
 
@@ -160,14 +160,14 @@ priority=0 組: [處理器A || 處理器B] 並行 → 合併結果
 ...
 ```
 
-- **同優先級並行**：優先級相同的多個處理器會同時執行，提高吞吐量
-- **跨級串行**：不同優先級的組按順序執行（數值越大越先執行），確保高優先級處理器先運行
-- **Copy-On-Write**：處理器無修改時不創建副本，確保零開銷
-- **衝突處理**：同優先級多處理器修改同一欄位時，使用最後修改值並記錄警告日誌
-- **中斷機制**：任意處理器呼叫 `event.mark_processed()` 後，跳過後續低優先級組
+- **同優先級並行**: 優先級相同的多個處理器會同時執行，提高吞吐量
+- **跨級串行**: 不同優先級的組按順序執行（數值越大越先執行），確保高優先級處理器先運行
+- **Copy-On-Write**: 處理器無修改時不建立副本，確保零開銷
+- **衝突處理**: 同優先級多處理器修改同一欄位時，使用最後修改值並記錄警告日誌
+- **中斷機制**: 任意處理器呼叫 `event.mark_processed()` 後，跳過後續低優先級組
 
 ```python
-# 示例：同優先級處理器並行執行
+# 範例：同優先級處理器並行執行
 @message.on_message(priority=0)
 async def handler_a(event):
     # 處理任務A
@@ -187,7 +187,7 @@ async def handler_c(event):
 
 ## 通知事件處理
 
-### 好友新增
+### 好友添加
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -196,10 +196,10 @@ from ErisPulse.Core.Event import notice
 async def friend_add_handler(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname() or "新朋友"
-    await event.reply(f"歡迎新增我為好友，{nickname}！")
+    await event.reply(f"歡迎添加我為好友，{nickname}！")
 ```
 
-### 群組成員增加
+### 群成員增加
 
 ```python
 @notice.on_group_increase()
@@ -209,7 +209,7 @@ async def member_increase_handler(event):
     await event.reply(f"歡迎新成員 {user_id} 加入群 {group_id}")
 ```
 
-### 群組成員減少
+### 群成員減少
 
 ```python
 @notice.on_group_decrease()
@@ -233,11 +233,11 @@ async def friend_request_handler(event):
     
     sdk.logger.info(f"收到好友請求: {user_id}, 附言: {comment}")
     
-    # 可以透過適配器 API 處理請求
-    # 具體實作請參考各適配器文件
+    # 可以通過適配器 API 處理請求
+    # 具體實現請參考各適配器文件
 ```
 
-### 群組邀請請求
+### 群邀請請求
 
 ```python
 @request.on_group_request()
@@ -250,7 +250,7 @@ async def group_request_handler(event):
 
 ## 元事件處理
 
-### 連線事件
+### 連接事件
 
 ```python
 from ErisPulse.Core.Event import meta
@@ -282,17 +282,18 @@ async def heartbeat_handler(event):
 ```python
 from ErisPulse import sdk
 
-# 檢查某個 Bot 是否上線
+# 檢查某個 Bot 是否在線
 if sdk.adapter.is_bot_online("telegram", "123456"):
-    await adapter.Send.To("user", "123456").Text("Bot 上線")
+    telegram = sdk.adapter.get("telegram")
+    await telegram.Send.To("user", "123456").Text("Bot 在線")
 
-# 列出當前所有上線 Bot
+# 列出當前所有在線 Bot
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
         print(f"{platform}/{bot_id}: {info['status']}")
 
-# 取得完整狀態摘要
+# 獲取完整狀態摘要
 summary = sdk.adapter.get_status_summary()
 ```
 
@@ -310,10 +311,10 @@ await event.reply("你好")
 await event.reply("http://example.com/image.jpg", method="Image")  # 圖片
 await event.reply("http://example.com/voice.mp3", method="Voice")  # 語音
 
-# @單個使用者
+# @單個用戶
 await event.reply("你好", at_users=["user123"])
 
-# @多個使用者
+# @多個用戶
 await event.reply("大家好", at_users=["user1", "user2", "user3"])
 
 # 回覆訊息
@@ -322,25 +323,25 @@ await event.reply("回覆內容", reply_to="msg_id")
 # @全體成員
 await event.reply("公告", at_all=True)
 
-# 組合使用：@使用者 + 回覆訊息
+# 組合使用：@用戶 + 回覆訊息
 await event.reply("內容", at_users=["user1"], reply_to="msg_id")
 ```
 
-### 等待使用者回覆
+### 等待用戶回覆
 
 ```python
-@command("ask", help="詢問使用者")
+@command("ask", help="詢問用戶")
 async def ask_handler(event):
     await event.reply("請輸入你的名字:")
     
-    # 等待使用者回覆，逾時時間 30 秒
+    # 等待用戶回覆，超時時間 30 秒
     reply = await event.wait_reply(timeout=30)
     
     if reply:
         name = reply.get_text()
         await event.reply(f"你好，{name}！")
     else:
-        await event.reply("等待逾時，請重新輸入。")
+        await event.reply("等待超時，請重新輸入。")
 ```
 
 ### 帶驗證的等待回覆
@@ -367,10 +368,10 @@ async def age_handler(event):
         age = int(reply.get_text())
         await event.reply(f"你的年齡是 {age} 歲")
     else:
-        await event.reply("輸入無效或逾時")
+        await event.reply("輸入無效或超時")
 ```
 
-### 帶回呼的等待回覆
+### 帶回調的等待回覆
 
 ```python
 @command("confirm", help="確認操作")
@@ -393,7 +394,7 @@ async def confirm_handler(event):
 
 ### 確認對話 (confirm)
 
-等待使用者確認或否定，自動識別內置中英文確認詞：
+等待用戶確認或否定，自動識別內建中英文確認詞：
 
 ```python
 @command("confirm", help="確認操作")
@@ -403,14 +404,14 @@ async def confirm_handler(event):
     else:
         await event.reply("已取消")
 
-# 自定義確認詞
+# 自訂確認詞
 if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"stop", "停止"}):
     pass
 ```
 
 ### 選擇選單 (choose)
 
-使用者可回覆選項編號或選項文本：
+用戶可回覆選項編號或選項文本：
 
 ```python
 @command("choose", help="選擇")
@@ -424,12 +425,12 @@ async def choose_handler(event):
         colors = ["紅色", "綠色", "藍色"]
         await event.reply(f"你選擇了：{colors[choice]}")
     else:
-        await event.reply("逾時未選擇")
+        await event.reply("超時未選擇")
 ```
 
 ### 收集表單 (collect)
 
-多步驟收集使用者輸入：
+多步驟收集用戶輸入：
 
 ```python
 @command("register", help="註冊")
@@ -444,17 +445,17 @@ async def register_handler(event):
     if data:
         await event.reply(f"註冊成功！\n姓名：{data['name']}\n年齡：{data['age']}\n郵箱：{data['email']}")
     else:
-        await event.reply("註冊逾時或輸入無效")
+        await event.reply("註冊超時或輸入無效")
 ```
 
 ### 等待任意事件 (wait_for)
 
-等待滿足條件的任意事件，不限於同一使用者：
+等待滿足條件的任意事件，不限於同一用戶：
 
 ```python
 @command("wait_member", help="等待新成員")
 async def wait_member_handler(event):
-    await event.reply("等待群組成員加入...")
+    await event.reply("等待群成員加入...")
     
     evt = await event.wait_for(
         event_type="notice",
@@ -465,7 +466,7 @@ async def wait_member_handler(event):
     if evt:
         await event.reply(f"歡迎新成員：{evt.get_user_id()}")
     else:
-        await event.reply("等待逾時")
+        await event.reply("等待超時")
 ```
 
 ### 多輪對話 (conversation)
@@ -483,7 +484,7 @@ async def survey_handler(event):
         reply = await conv.wait()
         
         if reply is None:
-            await conv.say("對話逾時，再見！")
+            await conv.say("對話超時，再見！")
             break
         
         text = reply.get_text()
@@ -495,14 +496,14 @@ async def survey_handler(event):
         await conv.say(f"你說了：{text}，繼續輸入或回覆'退出'結束")
 ```
 
-### 內置確認詞
+### 內建確認詞
 
-ErisPulse 內置了中英文確認詞集合：
+ErisPulse 內建了中英文確認詞集合：
 
 - **確認詞** (`CONFIRM_YES_WORDS`): 是、yes、y、確認、確定、好、好的、ok、true、對、嗯、行、同意、沒問題...
 - **否定詞** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、錯、拒絕、不可以...
 
-## 事件數據訪問
+## 事件資料存取
 
 ### Event 物件常用方法
 
@@ -552,7 +553,7 @@ async def info_handler(event):
 
 ### 平台擴展方法
 
-除了內置方法外，各平台適配器還會註冊平台專有方法，方便你存取平台特有的資料。
+除了內建方法外，各平台適配器還會註冊平台專有方法，方便你存取平台特有的資料。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -568,7 +569,7 @@ async def handle_message(event):
         subject = event.get_subject()           # 郵件專有方法
 ```
 
-如果不确定平台是否註冊了某個方法，可以查詢某個平台註冊了哪些方法：
+如果不確定平台是否註冊了某個方法，可以查詢某個平台註冊了哪些方法：
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -621,7 +622,7 @@ async def message_handler(event):
 @message.on_message(priority=0)
 async def conditional_handler(event):
     """條件處理 - 在處理器內部判斷"""
-    # 只處理特定使用者的訊息
+    # 只處理特定用戶的訊息
     if event.get_user_id() in ["bot1", "bot2"]:
         return
     
@@ -634,6 +635,7 @@ async def conditional_handler(event):
 
 ## 下一步
 
-- [常見任務範例](common-tasks.md) - 學習常用功能的實作
+- [常見任務範例](common-tasks.md) - 學習常用功能的實現（含訊息發送進階：重試/超時/批量）
+- [平台特性指南](../platform-guide/README.md) - Send DSL 鏈式發送、發送規則、批量建構的完整說明
 - [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 物件
-- [使用者使用指南](../user-guide/) - 了解設定和模組管理
+- [使用者使用指南](../user-guide/) - 了解配置和模組管理
