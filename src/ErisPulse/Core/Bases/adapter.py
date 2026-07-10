@@ -22,7 +22,74 @@ from ..constants import (
     STATUS_FAILED,
 )
 
-_CHAIN_MODIFIER_NAMES = frozenset({"At", "AtAll", "Reply", "To", "Using", "Account"})
+_CHAIN_MODIFIER_NAMES = frozenset({
+    "At", "AtAll", "Reply", "To", "Using", "Account",
+    # 发送规则装饰器（返回 self，不触发包装）
+    "Hook", "Retry", "Timeout", "Defer", "Priority", "PriorityThreshold",
+    "OnProgress", "OnError",
+    # 批量构建模式入口（返回 SendBuilder，不触发包装）
+    "Build",
+})
+
+
+# SendDSL._rules 中的键名集合，用于判断是否启用了发送规则
+_RULE_KEYS = frozenset({
+    "hooks", "retry", "timeout", "defer",
+    "priority", "drop_if_busy", "priority_threshold",
+    "on_progress", "on_error",
+})
+
+
+def _has_rules(send_dsl: "SendDSL") -> bool:
+    """
+    判断 SendDSL 实例是否附加了发送规则
+
+    :param send_dsl: SendDSL 实例
+    :return: 是否存在任意已设置的规则
+    """
+    rules = getattr(send_dsl, "_rules", None)
+    if not rules:
+        return False
+    for key in _RULE_KEYS:
+        val = rules.get(key)
+        if key == "hooks":
+            if val:
+                return True
+        elif val is not None and val is not False:
+            return True
+    return False
+
+
+def _copy_rules(rules: dict) -> dict:
+    """
+    复制规则字典（深拷贝可变值，如 hooks 列表）
+
+    用于 To/Using/Account 创建新实例时避免共享可变状态。
+    标量值（retry/timeout/defer 等）浅拷贝即可，
+    仅 hooks 列表需要创建新列表。
+
+    :param rules: 原始规则字典
+    :return: 独立的规则字典副本
+    """
+    copied = dict(rules)
+    hooks = copied.get("hooks")
+    if hooks:
+        copied["hooks"] = list(hooks)
+    return copied
+
+
+def _wrap_to_task(result: Any):
+    """
+    将任意返回值包装为 Task（用于重试路径的兼容处理）
+
+    :param result: 原始方法返回值
+    :return: asyncio.Task
+    """
+    if asyncio.iscoroutine(result):
+        return asyncio.ensure_future(result)
+    async def _const():
+        return result
+    return asyncio.ensure_future(_const())
 
 
 def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "SendDSL"):
@@ -34,7 +101,19 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
     """
 
     def hooked(*args, **kwargs):
-        result = original_method(*args, **kwargs)
+        # 嵌套委托防护：若当前已在规则包装执行中（如 Text 内部调用 Raw_ob12），
+        # 内层调用不重复应用规则与生命周期事件，直接返回原始结果
+        already_wrapping = getattr(send_dsl, "_in_rule_wrap", False)
+
+        if already_wrapping:
+            return original_method(*args, **kwargs)
+
+        # 标记进入规则包装执行，防止内部委托方法（Text → Raw_ob12）重复包装
+        send_dsl._in_rule_wrap = True
+        try:
+            result = original_method(*args, **kwargs)
+        finally:
+            send_dsl._in_rule_wrap = False
 
         if isinstance(result, SendDSL):
             return result
@@ -80,9 +159,44 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
 
             await lifecycle.emit("message.sent", send_ctx)
 
-        sending_task = asyncio.ensure_future(_emit_hooks())
-        result.add_done_callback(lambda t: asyncio.ensure_future(_emit_hooks_done(t)))
+        asyncio.ensure_future(_emit_hooks())
 
+        # 若附加了发送规则，用规则执行器统一包装 Task
+        if _has_rules(send_dsl):
+            from .send_rules import apply_send_rules
+
+            # base_task_factory 每次重试需要重新发起，因此返回 result（首次）或重新调用
+            # 这里使用工厂模式：首次返回已创建的 result，后续重试重新调用 original_method
+            call_args = (args, kwargs)
+            first_called = {"done": False}
+
+            def _base_task_factory():
+                if not first_called["done"]:
+                    first_called["done"] = True
+                    return result
+                # 重试：重新调用原始发送方法（重试子任务不重复触发生命周期事件，
+                # 仅最终包装任务完成时统一触发 message.sent）
+                send_dsl._in_rule_wrap = True
+                try:
+                    retry_result = original_method(*call_args[0], **call_args[1])
+                finally:
+                    send_dsl._in_rule_wrap = False
+                if not isinstance(retry_result, asyncio.Task):
+                    retry_result = asyncio.ensure_future(_wrap_to_task(retry_result))
+                return retry_result
+
+            wrapped = apply_send_rules(
+                _base_task_factory,
+                rules=send_dsl._rules,
+                send_ctx=send_ctx,
+            )
+            # message.sent 绑定到包装任务完成（覆盖整体重试流程），
+            # 不绑定到首次内部 result（避免失败重试时提前触发）
+            wrapped.add_done_callback(lambda t: asyncio.ensure_future(_emit_hooks_done(t)))
+            return wrapped
+
+        # 无规则：保持原有行为，message.sent 在单次发送完成后触发
+        result.add_done_callback(lambda t: asyncio.ensure_future(_emit_hooks_done(t)))
         return result
 
     return hooked
@@ -113,6 +227,7 @@ class SendDSL:
         target_type: str | None = None,
         target_id: str | None = None,
         account_id: str | None = None,
+        rules: dict | None = None,
     ):
         """
         初始化DSL发送器
@@ -121,6 +236,7 @@ class SendDSL:
         :param target_type: 目标类型(可选)
         :param target_id: 目标ID(可选)
         :param account_id: 发送账号(可选)
+        :param rules: 已附加的发送规则字典(可选，用于 To/Using/Account 传播)
         """
         self._adapter = adapter
         self._target_type = target_type
@@ -130,6 +246,11 @@ class SendDSL:
         self._at_user_ids: list[str] = []
         self._reply_message_id: str | None = None
         self._at_all: bool = False
+        # 发送规则（超时/重试/回调/延迟/优先级/进度上下文）
+        # 注意：hooks 为列表，必须深拷贝以避免多实例共享同一列表
+        self._rules: dict = _copy_rules(rules) if rules else {}
+        # 防止嵌套方法委托（如 Text → Raw_ob12）重复应用规则的标记
+        self._in_rule_wrap: bool = False
 
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)
@@ -343,7 +464,7 @@ class SendDSL:
         if target_type == DETAIL_TYPE_PRIVATE:
             target_type = "user"
 
-        return self.__class__(self._adapter, target_type, target_id, self._account_id)
+        return self.__class__(self._adapter, target_type, target_id, self._account_id, self._rules)
 
     def Using(self, account_id: str | int) -> "SendDSL":
         """
@@ -357,7 +478,7 @@ class SendDSL:
         >>> adapter.Send.To("123").Using("bot1").Text("Hello")  # 支持乱序
         """
         return self.__class__(
-            self._adapter, self._target_type, self._target_id, account_id
+            self._adapter, self._target_type, self._target_id, account_id, self._rules
         )
 
     def Account(self, account_id: str | int) -> "SendDSL":
@@ -372,8 +493,204 @@ class SendDSL:
         >>> adapter.Send.To("123").Account("bot1").Text("Hello")  # 支持乱序
         """
         return self.__class__(
-            self._adapter, self._target_type, self._target_id, account_id
+            self._adapter, self._target_type, self._target_id, account_id, self._rules
         )
+
+    # ==================== 发送规则装饰器 ====================
+
+    def Hook(self, callback: Callable) -> "SendDSL":
+        """
+        附加发送成功后的回调钩子
+
+        仅当发送最终成功（包括重试成功）时执行，失败/超时/取消不触发。
+        可链式多次调用以添加多个 Hook，按添加顺序依次执行。
+
+        :param callback: 回调函数，签名为 ``callback(result)``，可为同步或协程函数
+        :return: SendDSL实例自身，支持链式调用
+
+        :example:
+        >>> await adapter.Send.To("user", "123").Hook(
+        ...     lambda r: print("发送成功！")
+        ... ).Text("你好")
+        >>>
+        >>> async def on_success(result):
+        ...     print(f"消息ID: {result.get('message_id')}")
+        >>> await adapter.Send.To("user", "123").Hook(on_success).Text("异步回调")
+        """
+        self._rules.setdefault("hooks", []).append(callback)
+        return self
+
+    def Retry(self, times: int = 1) -> "SendDSL":
+        """
+        设置失败自动重试次数
+
+        含首次发送共尝试 ``times + 1`` 次。重试触发条件：
+        - 发送抛出异常
+        - 发送超时（配合 :meth:`Timeout` 使用）
+        - 发送返回 ``status == "failed"`` 的响应
+
+        :param times: 重试次数（不含首次发送），默认 1
+        :return: SendDSL实例自身，支持链式调用
+
+        :example:
+        >>> # 首次失败后重试2次，共3次尝试
+        >>> await adapter.Send.To("user", "123").Retry(2).Text("带重试")
+        """
+        self._rules["retry"] = max(1, int(times) + 1)
+        return self
+
+    def Timeout(self, seconds: float) -> "SendDSL":
+        """
+        设置单次发送超时时间
+
+        超时后取消当前尝试。若同时设置了 :meth:`Retry`，超时也会触发重试。
+
+        :param seconds: 超时秒数
+        :return: SendDSL实例自身，支持链式调用
+
+        :example:
+        >>> await adapter.Send.To("user", "123").Timeout(10).Text("带超时")
+        """
+        self._rules["timeout"] = max(0.0, float(seconds))
+        return self
+
+    def Defer(self, seconds: float = 1.0) -> "SendDSL":
+        """
+        延迟发送
+
+        在实际发起发送前等待 ``seconds`` 秒。用于延迟提醒、定时消息等场景。
+        注意：此延迟为进程内定时，重启进程会丢失，不提供持久化。
+
+        :param seconds: 延迟秒数，默认 1.0
+        :return: SendDSL实例自身，支持链式调用
+
+        :example:
+        >>> # 5秒后发送
+        >>> await adapter.Send.To("user", "123").Defer(5).Text("迟到消息")
+        """
+        self._rules["defer"] = max(0.0, float(seconds))
+        return self
+
+    def Priority(self, level: int = 0, *, drop_if_busy: bool = False) -> "SendDSL":
+        """
+        设置消息优先级
+
+        优先级会被记录到 :class:`SendContext` 的 ``extra["priority"]``，
+        供业务层监控或自定义调度使用。
+
+        当 ``drop_if_busy=True`` 时，启用积压丢弃：若当前在途发送任务数
+        超过阈值（默认 64，可通过 :meth:`PriorityThreshold` 调整），
+        直接放弃本次发送（返回 ``stage="dropped"``），避免队列堆积。
+
+        :param level: 优先级数值，越大越优先（默认 0）
+        :param drop_if_busy: 是否在队列积压时丢弃本消息（默认 False）
+        :return: SendDSL实例自身，支持链式调用
+
+        :example:
+        >>> # 低优先级消息，积压时自动丢弃
+        >>> await (adapter.Send.To("user", "123")
+        ...       .Priority(-1, drop_if_busy=True)
+        ...       .Text("可放弃的通知"))
+        """
+        self._rules["priority"] = int(level)
+        if drop_if_busy:
+            self._rules["drop_if_busy"] = True
+        return self
+
+    def PriorityThreshold(self, threshold: int) -> "SendDSL":
+        """
+        设置优先级丢弃的积压阈值（全局生效）
+
+        配合 :meth:`Priority` 的 ``drop_if_busy=True`` 使用。
+
+        :param threshold: 在途发送任务数阈值，超过则丢弃新消息
+        :return: SendDSL实例自身，支持链式调用
+        """
+        from .send_rules import _PriorityQueue
+
+        _PriorityQueue.set_threshold(threshold)
+        return self
+
+    def OnProgress(self, callback: Callable) -> "SendDSL":
+        """
+        设置进度回调
+
+        在发送的各个阶段（pending/sending/retrying/success/failed/timeout/cancelled/dropped）
+        调用，传入实时更新的 :class:`SendContext`。可据此实现监控、日志、介入决策。
+
+        :param callback: 回调函数，签名为 ``callback(ctx: SendContext)``，
+            可为同步或协程函数
+        :return: SendDSL实例自身，支持链式调用
+
+        :example:
+        >>> def on_progress(ctx):
+        ...     print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}")
+        ...     if ctx.stage == "failed":
+        ...         print(f"错误: {ctx.error!r}")
+        >>> task = (adapter.Send.To("user", "123")
+        ...        .Retry(3).Timeout(10).OnProgress(on_progress).Text("监控"))
+        """
+        self._rules["on_progress"] = callback
+        return self
+
+    def OnError(self, callback: Callable) -> "SendDSL":
+        """
+        设置错误回调
+
+        当发送最终失败（重试耗尽仍失败、超时、取消）时调用一次，
+        传入最终的 :class:`SendContext`（``ctx.error`` 为异常对象，超时时为
+        :class:`asyncio.TimeoutError`）。
+
+        与 :meth:`OnProgress` 的区别：OnProgress 在每个阶段都触发，
+        OnError 仅在最终失败时触发一次。
+
+        :param callback: 回调函数，签名为 ``callback(ctx: SendContext)``，
+            可为同步或协程函数
+        :return: SendDSL实例自身，支持链式调用
+
+        :example:
+        >>> async def on_error(ctx):
+        ...     await admin_notify(f"发送失败: {ctx.target_id} {ctx.error!r}")
+        >>> await (adapter.Send.To("user", "123")
+        ...       .Retry(2).OnError(on_error).Text("带错误处理"))
+        """
+        self._rules["on_error"] = callback
+        return self
+
+    # ==================== 批量构建模式 ====================
+
+    def Build(self):
+        """
+        进入批量构建模式，返回 :class:`SendBuilder`
+
+        在构建模式下，发送方法（Text/Image 等）不再立即执行，而是累积为发送意图，
+        最后通过 ``send_all()`` 统一执行。规则统一作用于整批。
+
+        进入 Build 之前的 At/AtAll/Reply 修饰器和已设置的规则会继承到整批。
+
+        :return: :class:`SendBuilder` 实例
+
+        :example:
+        >>> # 构建多条消息，统一发送
+        >>> results = await (adapter.Send.To("user", "123")
+        ...                  .Build()
+        ...                  .Text("第一句")
+        ...                  .Image("pic.jpg")
+        ...                  .Text("第二句")
+        ...                  .send_all())
+        >>> # results = [Text结果, Image结果, Text结果]
+        >>>
+        >>> # 串行执行 + 重试失败的
+        >>> await (adapter.Send.To("group", "456")
+        ...        .Build()
+        ...        .Sequential()
+        ...        .Retry(2)
+        ...        .Text("保证顺序1").Text("保证顺序2")
+        ...        .send_all())
+        """
+        from .send_builder import SendBuilder
+
+        return SendBuilder(self)
 
 
 class RequestDSL:

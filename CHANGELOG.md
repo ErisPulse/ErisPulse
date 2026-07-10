@@ -63,6 +63,108 @@
 
 ---
 
+## [2.6.0-dev.0] - 2026/07/09
+> 开发版本
+
+**语义化版本承诺**
+从 2.6.0 起，ErisPulse 将严格遵守 [语义化版本控制](https://semver.org/lang/zh-CN/)：
+- **2.6.x** 补丁版本仅修复 Bug，不引入新功能或破坏性变更
+- **2.7.0** 及以上的次版本可能引入新功能，但保持向后兼容
+- 本次 2.6.0 引入的所有新 API（SendContext、SendBuilder、BatchContext、admin、AdminManager 等）在 2.6.x 生命周期内保证签名稳定
+
+**版本摘要**
+2.6.0 首个开发版，引入两大新特性：(1) SendDSL 发送规则装饰器系统与批量构建模式，通过链式方法统一管理超时/重试/回调/延迟/优先级/进度监控；(2) 管理员权限系统，支持配置文件与运行时两种方式管理管理员，命令装饰器新增 `must_admin=True` 参数自动检查权限。同时修复了标准适配器委托链路（Text → Raw_ob12）下规则与回调重复触发的关键问题。
+
+**升级建议**
+- **建议升级**
+- 升级原因：
+  - 发送规则系统为生产环境提供统一的超时/重试/回调/监控能力，无需业务层自行封装 Task 回调
+  - 批量构建模式简化多条消息发送场景的代码
+  - 管理员系统为命令权限提供统一管理
+  - 修复委托链路下回调重复触发的问题
+
+**注意事项**
+- 规则方法（Hook/Retry/Timeout 等）返回 self，必须放在发送方法（Text/Image 等）之前调用
+- 规则随 To/Using/Account 创建的新实例传播，各实例的 hooks 列表相互独立
+- 批量构建模式下 Timeout/Retry 作用于每条发送（非整批），Hook/OnError/OnProgress 为整批语义
+- 无规则时完全保持原有行为（向后兼容）
+- 管理员配置位于 `ErisPulse.admin.users`，dict 格式按平台指定，list 格式为全局管理员
+- 新增导出符号：`SendContext`、`SendBuilder`、`BatchContext`、`admin`、`AdminManager`（已加入 `__all__`）
+- 新增 i18n 翻译键 `core.command.admin_denied`（5 语言）
+
+### 新增
+
+- @wsu2059q
+  - `Core/Bases/send_rules.py` 新增发送规则装饰器系统：
+    - `SendContext` 数据类：发送任务的实时执行上下文，包含 task_id、platform、method、stage、attempt、max_attempts、elapsed、error、result 等字段
+    - `apply_send_rules()` 规则执行引擎：统一处理超时、重试、延迟、优先级丢弃、进度/错误回调
+    - 规则存储于 `SendDSL._rules` 字典，通过链式方法附加
+  - `Core/Bases/adapter.py` 为 SendDSL 新增 7 个链式规则方法：
+    - `.Hook(callback)`：发送成功后的回调（支持同步/异步，可多次调用）
+    - `.Retry(times)`：失败自动重试 N 次（含首次共 N+1 次）
+    - `.Timeout(seconds)`：单次发送超时自动取消（可与 Retry 叠加）
+    - `.Defer(seconds)`：延迟发送（进程内定时）
+    - `.Priority(level, drop_if_busy)`：设置优先级，积压时可丢弃低优先级消息
+    - `.OnProgress(callback)`：各阶段进度回调，传入 SendContext
+    - `.OnError(callback)`：最终失败时的错误回调（仅触发一次）
+  - `Core/Bases/send_builder.py` 新增批量构建模式：
+    - `SendBuilder` 类：通过 `.Build()` 进入构建模式，累积发送意图，`.send_all()` 统一执行
+    - `BatchContext` 数据类：批量发送的实时上下文，包含 total/completed/succeeded/failed/stage/results/errors 等字段
+    - `.Sequential()` / `.Parallel()`：执行模式切换（默认并行，串行保证消息顺序）
+    - 失败继续策略：某条失败不中断其他条，失败的条目自动重试
+    - 整批规则：Hook（全部成功后触发）、OnError（有失败时触发）、OnProgress（每条完成时触发）
+    - 修饰器继承：Build 前后的 At/AtAll/Reply 作用于整批每条消息
+    - 大小写不敏感：发送方法名支持大小写不敏感解析
+  - `Core/Bases/__init__.py`、`Core/__init__.py`、`ErisPulse/__init__.py` 同步导出 `SendContext`、`SendBuilder`、`BatchContext`
+  - `Core/admin.py` 新增管理员权限系统：
+    - `AdminManager` 单例：通过 `from ErisPulse.Core import admin` 导入
+    - 配置格式：`ErisPulse.admin.users` 为 dict 时按平台指定（`{"yunhu": ["123"]}`），为 list 时全局生效（`["123"]`）
+    - `admin.is_admin(event)` / `admin.is_admin(platform, user_id)`：检查管理员身份
+    - `admin.add(platform, user_id)` / `admin.remove(platform, user_id)`：运行时增删（不持久化）
+    - `admin.list()`：获取所有管理员列表
+  - `Core/Event/command.py` 命令装饰器新增 `admin=True` 参数：
+    - 设置后框架自动检查 `admin.is_admin(event)`，非管理员执行时拒绝并记录日志
+    - 与现有 `permission` 参数独立，可同时使用
+  - `runtime/frame_config.py` 新增 `admin` 配置段与 `get_admin_config()` 函数
+  - `sdk.py` 新增 `admin` 属性动态解析（`sdk.admin` 可用）
+  - 五语言 i18n 文件同步新增 `core.command.admin_denied` 翻译键
+
+### 修复
+
+- @wsu2059q
+  - `Core/Bases/adapter.py` 修复标准适配器委托链路下规则与回调重复触发的问题：
+    - **问题**：当标准方法（如 Text）委托给 Raw_ob12 时，两者都经过 `__getattribute__` 包装并检测到 `_rules`，导致 Hook 回调被触发两次、生命周期事件和日志重复输出
+    - **修复**：新增 `_in_rule_wrap` 标记，外层方法执行期间置为 True，内部委托方法检测到标记后跳过包装，规则只在最外层应用一次
+  - `Core/Bases/adapter.py` 修复规则在 To/Using/Account 传播时的浅拷贝问题：
+    - **问题**：`dict(rules)` 浅拷贝导致 hooks 列表被多个实例共享，在一个实例追加 Hook 会影响其他实例
+    - **修复**：新增 `_copy_rules()` 函数，对 hooks 列表进行深拷贝
+  - `Core/Bases/adapter.py` 修复有规则时 message.sent 生命周期事件提前触发的问题：
+    - **问题**：message.sent 绑定到首次内部 result 的 done_callback，失败重试时会在第一次失败时就触发
+    - **修复**：有规则时将 message.sent 绑定到最终包装任务的 done_callback，覆盖整体重试流程
+
+### 文档
+
+- @wsu2059q
+  - `docs/zh-CN/developer-guide/adapters/send-dsl.md` 新增「发送规则系统」与「批量构建模式（Build）」两节完整文档
+  - `docs/zh-CN/platform-guide/README.md` 新增「发送规则装饰器」与「批量构建模式（Build）」用户向说明
+  - `docs/zh-CN/getting-started/common-tasks.md` 新增「消息发送进阶（重试/超时/批量）」章节
+  - `docs/zh-CN/getting-started/event-handling.md` 「下一步」新增发送进阶与平台指南的交叉引用
+  - `README.zh-CN.md` 新增「链式发送 DSL」展示区
+
+### 测试
+
+- @wsu2059q
+  - `tests/unit/test_unit_send_rules.py` 新增 57 个测试（含 7 个真实适配器模式集成测试）：
+    - SendContext 数据类、_is_success 判断、规则链式方法、规则传播（To/Using/Account）、Hook 回调、Retry 重试、Timeout 超时、OnProgress/OnError 回调、Defer 延迟、Priority 丢弃、向后兼容、apply_send_rules 直接测试
+    - 真实适配器模式集成测试：Raw_ob12 + _apply_modifiers + send_context 完整链路下的规则、修饰器、send_context 传递、重试、生命周期事件
+  - `tests/unit/test_unit_send_builder.py` 新增 29 个测试（含 5 个真实适配器模式集成测试）：
+    - BatchContext、Build 入口、并行/串行执行、失败继续+重试、整批回调、修饰器继承、大小写不敏感、Defer
+    - 真实适配器模式集成测试：批量 Text/Image 走 Raw_ob12、修饰器应用到每条、send_context 传递、失败重试、部分失败继续
+  - `tests/unit/test_unit_admin.py` 新增 16 个测试：
+    - dict/list 配置解析、is_admin 事件/显式检查、运行时增删、list 输出、配置+运行时组合检查
+
+---
+
 ## [2.5.4] - 2026/07/09
 > 正式发布
 

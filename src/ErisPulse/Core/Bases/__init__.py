@@ -5,6 +5,8 @@ ErisPulse 基础模块
 """
 
 from .adapter import SendDSL, RequestDSL, BaseAdapter
+from .send_rules import SendContext
+from .send_builder import SendBuilder, BatchContext
 from .module import BaseModule
 from .storage import BaseStorage, BaseQueryBuilder
 from .kv_builder import KVQueryBuilder
@@ -24,6 +26,9 @@ from .client import BaseHttpClient, BaseHttpResponse, BaseClientWebSocket
 __all__ = [
     "BaseAdapter",
     "SendDSL",
+    "SendContext",
+    "SendBuilder",
+    "BatchContext",
     "RequestDSL",
     "BaseModule",
     "BaseStorage",

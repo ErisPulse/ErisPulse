@@ -10,6 +10,9 @@ from .Bases import (
     BaseAdapter,
     BaseModule,
     SendDSL,
+    SendContext,
+    SendBuilder,
+    BatchContext,
     RequestDSL,
     BaseStorage,
     BaseQueryBuilder,
@@ -33,6 +36,7 @@ from .module import module, ModuleManager
 from .router import router, RouterManager, RouteGroup
 from .config import config, ConfigManager
 from .i18n import i18n, I18nManager
+from .admin import admin, AdminManager
 
 from . import Event
 from .Event.message_builder import MessageBuilder
@@ -47,6 +51,9 @@ __all__ = [
     "AdapterManager",  # 适配器管理器类
     "BaseAdapter",  # 适配器基类
     "SendDSL",  # 发送消息 DSL 类
+    "SendContext",  # 发送任务实时上下文类
+    "SendBuilder",  # 批量发送构建器类
+    "BatchContext",  # 批量发送上下文类
     "RequestDSL",  # 请求消息 DSL 类
     "MessageBuilder",  # 消息构建器类
     "module",  # 模块模块单例
@@ -88,4 +95,6 @@ __all__ = [
     "LifecycleManager",  # 生命周期管理器类
     "i18n",  # 国际化模块单例
     "I18nManager",  # 国际化管理器类
+    "admin",  # 管理员模块单例
+    "AdminManager",  # 管理员管理器类
 ]
