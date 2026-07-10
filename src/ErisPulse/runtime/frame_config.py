@@ -56,6 +56,12 @@ DEFAULT_ERISPULSE_CONFIG = {
             "must_at_bot": DEFAULT_COMMAND_MUST_AT_BOT,
         },
     },
+    # 管理员系统配置
+    # users 为 dict 时按平台指定: {"yunhu": ["123"], "telegram": ["456"]}
+    # users 为 list 时为全局管理员（所有平台生效）: ["123", "456"]
+    "admin": {
+        "users": {},
+    },
     "framework": {
         "enable_lazy_loading": DEFAULT_LAZY_LOADING_ENABLED,
         "uninit_timeout": DEFAULT_UNINIT_TIMEOUT_SECS,
@@ -240,6 +246,15 @@ def get_i18n_config() -> Dict[str, Any]:
     return get_config("i18n")
 
 
+def get_admin_config() -> Dict[str, Any]:
+    """
+    获取管理员系统配置
+
+    :return: 管理员配置字典
+    """
+    return get_config("admin")
+
+
 __all__ = [
     "DEFAULT_ERISPULSE_CONFIG",
     "get_erispulse_config",
@@ -251,4 +266,5 @@ __all__ = [
     "get_event_config",
     "get_framework_config",
     "get_i18n_config",
+    "get_admin_config",
 ]

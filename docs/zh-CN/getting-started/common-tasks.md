@@ -8,10 +8,11 @@
 2. 定时任务
 3. 消息过滤
 4. 多平台适配
-5. 权限控制
-6. 消息统计
-7. 搜索功能
-8. 图片处理
+5. 消息发送进阶（重试/超时/批量）
+6. 权限控制
+7. 消息统计
+8. 搜索功能
+9. 图片处理
 
 ## 数据持久化
 
@@ -225,6 +226,61 @@ async def rich_handler(event):
         # 其他平台使用纯文本
         await event.reply("加粗文本 斜体文本")
 ```
+
+## 消息发送进阶（重试/超时/批量）
+
+除了简单的 `event.reply()`，你还可以通过适配器的 Send DSL 实现更复杂的发送场景：失败自动重试、超时取消、成功后执行逻辑、批量发送多条消息。
+
+> 下面的示例用 `event.get_detail_type()` 和 `event.get_target_id()` 从事件中获取目标类型和 ID（群聊自动取 group_id，私聊自动取 user_id），避免硬编码。
+
+### 发送成功后执行逻辑
+
+```python
+@command("pay", help="模拟支付")
+async def pay_handler(event):
+    yunhu = sdk.adapter.get(event.get_platform())
+    user_id = event.get_user_id()
+    # 发送成功后才扣积分
+    await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
+           .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
+           .Text("支付成功，已扣除 10 积分"))
+```
+
+### 失败重试 + 超时取消
+
+```python
+@command("notice", help="发送重要通知")
+async def notice_handler(event):
+    adapter_inst = sdk.adapter.get(event.get_platform())
+    # 最多重试 3 次，每次超时 10 秒
+    task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
+            .Retry(3)
+            .Timeout(10)
+            .OnError(lambda ctx: sdk.logger.error(f"通知发送失败: {ctx.error}"))
+            .Text("这是一条重要通知"))
+    # 不等待，后台发送
+```
+
+### 批量发送多条消息
+
+一条链路发多条消息，统一执行：
+
+```python
+@command("announce", help="发送公告")
+async def announce_handler(event):
+    adapter_inst = sdk.adapter.get(event.get_platform())
+    # 构建多条消息，统一发送（默认并行）
+    results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
+                    .Build()
+                    .Text("📋 今日公告")
+                    .Image("https://example.com/banner.jpg")
+                    .Text("详细内容见上方图片")
+                    .Retry(2)            # 失败的条目各自重试
+                    .send_all())
+    sdk.logger.info(f"批量发送完成，共 {len(results)} 条")
+```
+
+> 更完整的规则与批量说明请参考 [平台特性指南](../platform-guide/README.md#发送规则装饰器)。
 
 ## 权限控制
 

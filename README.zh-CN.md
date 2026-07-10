@@ -102,6 +102,31 @@ AI 辅助开发让需求直达可用模块
 </tr>
 </table>
 
+### 链式发送 DSL
+
+一条链式调用完成 @、回复、重试、超时、回调等全部发送逻辑：
+
+```python
+yunhu = sdk.adapter.get("yunhu")
+
+# 单发：@用户 + 回复 + 重试 + 成功回调
+await (yunhu.Send.To("group", "123")
+       .At("456").Reply("msg_789")
+       .Retry(3).Timeout(10)
+       .Hook(lambda r: print("发送成功！"))
+       .Text("你好"))
+
+# 批量发送：一条链发多条消息
+results = await (yunhu.Send.To("user", "123")
+                .Build()
+                .Text("通知一")
+                .Image("pic.jpg")
+                .Retry(2)
+                .send_all())
+```
+
+> 支持 Hook（成功回调）、Retry（失败重试）、Timeout（超时取消）、OnProgress（进度监控）、Defer（延迟发送）、Build（批量构建）等链式方法，详见 [SendDSL 文档](docs/zh-CN/developer-guide/adapters/send-dsl.md)。
+
 ---
 
 ## 同一份代码。多个平台。
