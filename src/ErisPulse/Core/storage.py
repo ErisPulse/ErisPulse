@@ -24,6 +24,7 @@ from .constants import (
     DEFAULT_KV_TABLE_NAME,
     SQLITE_JOURNAL_MODE,
     SQLITE_SYNCHRONOUS_MODE,
+    STORAGE_MAX_LIST_INDEX,
 )
 from .i18n import i18n
 
@@ -769,6 +770,10 @@ class StorageManager(BaseStorage):
         """
         在嵌套对象中设置值
 
+        点分隔键路径的每一段本质上都是字典键，预创建中间层时始终使用字典，
+        不会因为某一段为纯数字而误判为列表索引。仅当容器本身已经是列表
+        且索引在合理范围内（小于 ``STORAGE_MAX_LIST_INDEX``）时，才按数组索引处理。
+
         :param obj: 嵌套对象(dict/list)
         :param key_path: 键路径列表，如 ["settings", "theme"]
         :param value: 要设置的值
@@ -777,30 +782,38 @@ class StorageManager(BaseStorage):
         if not key_path:
             return value
 
+        # 根对象不是可变容器时，创建新的字典
+        if not isinstance(obj, (dict, list)):
+            obj = {}
+
         current = obj
-        # 遍历到倒数第二个键
-        for i, key in enumerate(key_path[:-1]):
+        # 遍历到倒数第二个键，确保中间层为字典（点分隔路径语义为嵌套字典）
+        for key in key_path[:-1]:
+            child = None
             if isinstance(current, dict):
-                if key not in current:
-                    # 预创建下一个层级
-                    next_key = key_path[i + 1]
-                    current[key] = {} if not next_key.isdigit() else []
-                current = current[key]
+                child = current.get(key)
             elif isinstance(current, list) and key.isdigit():
                 index = int(key)
-                if index >= len(current):
-                    # 扩展列表
-                    current.extend([None] * (index - len(current) + 1))
-                current = current[index]
+                if 0 <= index < len(current):
+                    child = current[index]
             else:
-                # 无法继续嵌套，创建新的字典
-                new_obj = {}
-                next_key = key_path[i + 1]
-                obj = new_obj if i == 0 else current
-                current = new_obj
-                if i > 0:
-                    # 需要重新设置父级引用
-                    return self._set_nested_value(obj, key_path, value)
+                # 当前节点是不可继续嵌套的标量，无法设置
+                return obj
+
+            # 子节点不是容器时，用字典替换（保证可继续嵌套）
+            if not isinstance(child, (dict, list)):
+                child = {}
+                if isinstance(current, dict):
+                    current[key] = child
+                elif isinstance(current, list):
+                    index = int(key)
+                    if index >= STORAGE_MAX_LIST_INDEX:
+                        return obj
+                    if index >= len(current):
+                        current.extend([None] * (index - len(current) + 1))
+                    current[index] = child
+
+            current = child
 
         # 设置最后一个键的值
         last_key = key_path[-1]
@@ -808,15 +821,15 @@ class StorageManager(BaseStorage):
             current[last_key] = value
         elif isinstance(current, list) and last_key.isdigit():
             index = int(last_key)
+            if index >= STORAGE_MAX_LIST_INDEX:
+                # 索引过大，避免内存爆炸，放弃设置
+                return obj
             if index >= len(current):
                 current.extend([None] * (index - len(current) + 1))
             current[index] = value
         else:
-            # 无法设置，创建新的字典
-            new_obj = {last_key: value}
-            if key_path[:-1]:
-                return self._set_nested_value({}, key_path[:-1] + [last_key], value)
-            return new_obj
+            # 当前节点是不可设置的标量，无法写入
+            return obj
 
         return obj
 
