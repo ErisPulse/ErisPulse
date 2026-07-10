@@ -18,6 +18,40 @@ ErisPulse 适配器基础模块
 ## 函数列表
 
 
+### `_has_rules(send_dsl: 'SendDSL')`
+
+判断 SendDSL 实例是否附加了发送规则
+
+:param send_dsl: SendDSL 实例
+:return: 是否存在任意已设置的规则
+
+---
+
+
+### `_copy_rules(rules: dict)`
+
+复制规则字典（深拷贝可变值，如 hooks 列表）
+
+用于 To/Using/Account 创建新实例时避免共享可变状态。
+标量值（retry/timeout/defer 等）浅拷贝即可，
+仅 hooks 列表需要创建新列表。
+
+:param rules: 原始规则字典
+:return: 独立的规则字典副本
+
+---
+
+
+### `_wrap_to_task(result: Any)`
+
+将任意返回值包装为 Task（用于重试路径的兼容处理）
+
+:param result: 原始方法返回值
+:return: asyncio.Task
+
+---
+
+
 ### `_wrap_send_method(method_name: str, original_method: Callable, send_dsl: 'SendDSL')`
 
 为发送方法注入生命周期钩子
@@ -52,7 +86,7 @@ ErisPulse 适配器基础模块
 #### 方法列表
 
 
-##### `__init__(adapter: 'BaseAdapter', target_type: str | None = None, target_id: str | None = None, account_id: str | None = None)`
+##### `__init__(adapter: 'BaseAdapter', target_type: str | None = None, target_id: str | None = None, account_id: str | None = None, rules: dict | None = None)`
 
 初始化DSL发送器
 
@@ -60,6 +94,7 @@ ErisPulse 适配器基础模块
 :param target_type: 目标类型(可选)
 :param target_id: 目标ID(可选)
 :param account_id: 发送账号(可选)
+:param rules: 已附加的发送规则字典(可选，用于 To/Using/Account 传播)
 
 ---
 
@@ -229,6 +264,209 @@ ErisPulse 适配器基础模块
 ```python
 >>> adapter.Send.Account("bot1").To("123").Text("Hello")
 >>> adapter.Send.To("123").Account("bot1").Text("Hello")  # 支持乱序
+```
+
+---
+
+
+##### `Hook(callback: Callable)`
+
+附加发送成功后的回调钩子
+
+仅当发送最终成功（包括重试成功）时执行，失败/超时/取消不触发。
+可链式多次调用以添加多个 Hook，按添加顺序依次执行。
+
+:param callback: 回调函数，签名为 ``callback(result)``，可为同步或协程函数
+:return: SendDSL实例自身，支持链式调用
+
+**示例**:
+```python
+>>> await adapter.Send.To("user", "123").Hook(
+...     lambda r: print("发送成功！")
+... ).Text("你好")
+>>>
+>>> async def on_success(result):
+...     print(f"消息ID: {result.get('message_id')}")
+>>> await adapter.Send.To("user", "123").Hook(on_success).Text("异步回调")
+```
+
+---
+
+
+##### `Retry(times: int = 1)`
+
+设置失败自动重试次数
+
+含首次发送共尝试 ``times + 1`` 次。重试触发条件：
+- 发送抛出异常
+- 发送超时（配合 :meth:`Timeout` 使用）
+- 发送返回 ``status == "failed"`` 的响应
+
+:param times: 重试次数（不含首次发送），默认 1
+:return: SendDSL实例自身，支持链式调用
+
+**示例**:
+```python
+>>> # 首次失败后重试2次，共3次尝试
+>>> await adapter.Send.To("user", "123").Retry(2).Text("带重试")
+```
+
+---
+
+
+##### `Timeout(seconds: float)`
+
+设置单次发送超时时间
+
+超时后取消当前尝试。若同时设置了 :meth:`Retry`，超时也会触发重试。
+
+:param seconds: 超时秒数
+:return: SendDSL实例自身，支持链式调用
+
+**示例**:
+```python
+>>> await adapter.Send.To("user", "123").Timeout(10).Text("带超时")
+```
+
+---
+
+
+##### `Defer(seconds: float = 1.0)`
+
+延迟发送
+
+在实际发起发送前等待 ``seconds`` 秒。用于延迟提醒、定时消息等场景。
+注意：此延迟为进程内定时，重启进程会丢失，不提供持久化。
+
+:param seconds: 延迟秒数，默认 1.0
+:return: SendDSL实例自身，支持链式调用
+
+**示例**:
+```python
+>>> # 5秒后发送
+>>> await adapter.Send.To("user", "123").Defer(5).Text("迟到消息")
+```
+
+---
+
+
+##### `Priority(level: int = 0)`
+
+设置消息优先级
+
+优先级会被记录到 :class:`SendContext` 的 ``extra["priority"]``，
+供业务层监控或自定义调度使用。
+
+当 ``drop_if_busy=True`` 时，启用积压丢弃：若当前在途发送任务数
+超过阈值（默认 64，可通过 :meth:`PriorityThreshold` 调整），
+直接放弃本次发送（返回 ``stage="dropped"``），避免队列堆积。
+
+:param level: 优先级数值，越大越优先（默认 0）
+:param drop_if_busy: 是否在队列积压时丢弃本消息（默认 False）
+:return: SendDSL实例自身，支持链式调用
+
+**示例**:
+```python
+>>> # 低优先级消息，积压时自动丢弃
+>>> await (adapter.Send.To("user", "123")
+...       .Priority(-1, drop_if_busy=True)
+...       .Text("可放弃的通知"))
+```
+
+---
+
+
+##### `PriorityThreshold(threshold: int)`
+
+设置优先级丢弃的积压阈值（全局生效）
+
+配合 :meth:`Priority` 的 ``drop_if_busy=True`` 使用。
+
+:param threshold: 在途发送任务数阈值，超过则丢弃新消息
+:return: SendDSL实例自身，支持链式调用
+
+---
+
+
+##### `OnProgress(callback: Callable)`
+
+设置进度回调
+
+在发送的各个阶段（pending/sending/retrying/success/failed/timeout/cancelled/dropped）
+调用，传入实时更新的 :class:`SendContext`。可据此实现监控、日志、介入决策。
+
+:param callback: 回调函数，签名为 ``callback(ctx: SendContext)``，
+    可为同步或协程函数
+:return: SendDSL实例自身，支持链式调用
+
+**示例**:
+```python
+>>> def on_progress(ctx):
+...     print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}")
+...     if ctx.stage == "failed":
+...         print(f"错误: {ctx.error!r}")
+>>> task = (adapter.Send.To("user", "123")
+...        .Retry(3).Timeout(10).OnProgress(on_progress).Text("监控"))
+```
+
+---
+
+
+##### `OnError(callback: Callable)`
+
+设置错误回调
+
+当发送最终失败（重试耗尽仍失败、超时、取消）时调用一次，
+传入最终的 :class:`SendContext`（``ctx.error`` 为异常对象，超时时为
+:class:`asyncio.TimeoutError`）。
+
+与 :meth:`OnProgress` 的区别：OnProgress 在每个阶段都触发，
+OnError 仅在最终失败时触发一次。
+
+:param callback: 回调函数，签名为 ``callback(ctx: SendContext)``，
+    可为同步或协程函数
+:return: SendDSL实例自身，支持链式调用
+
+**示例**:
+```python
+>>> async def on_error(ctx):
+...     await admin_notify(f"发送失败: {ctx.target_id} {ctx.error!r}")
+>>> await (adapter.Send.To("user", "123")
+...       .Retry(2).OnError(on_error).Text("带错误处理"))
+```
+
+---
+
+
+##### `Build()`
+
+进入批量构建模式，返回 :class:`SendBuilder`
+
+在构建模式下，发送方法（Text/Image 等）不再立即执行，而是累积为发送意图，
+最后通过 ``send_all()`` 统一执行。规则统一作用于整批。
+
+进入 Build 之前的 At/AtAll/Reply 修饰器和已设置的规则会继承到整批。
+
+:return: :class:`SendBuilder` 实例
+
+**示例**:
+```python
+>>> # 构建多条消息，统一发送
+>>> results = await (adapter.Send.To("user", "123")
+...                  .Build()
+...                  .Text("第一句")
+...                  .Image("pic.jpg")
+...                  .Text("第二句")
+...                  .send_all())
+>>> # results = [Text结果, Image结果, Text结果]
+>>>
+>>> # 串行执行 + 重试失败的
+>>> await (adapter.Send.To("group", "456")
+...        .Build()
+...        .Sequential()
+...        .Retry(2)
+...        .Text("保证顺序1").Text("保证顺序2")
+...        .send_all())
 ```
 
 ---

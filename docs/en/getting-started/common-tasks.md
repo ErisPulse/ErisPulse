@@ -1,17 +1,18 @@
 # Common Task Examples
 
-This guide provides implementation examples for common features to help you quickly implement frequently used functions.
+This guide provides implementation examples for common features to help you quickly implement frequently used functionalities.
 
-## Content List
+## Table of Contents
 
 1. Data Persistence
 2. Scheduled Tasks
 3. Message Filtering
 4. Multi-platform Adaptation
-5. Permission Control
-6. Message Statistics
-7. Search Functionality
-8. Image Processing
+5. Advanced Message Sending (Retry/Timeout/Batch)
+6. Permission Control
+7. Message Statistics
+8. Search Functionality
+9. Image Processing
 
 ## Data Persistence
 
@@ -21,7 +22,7 @@ This guide provides implementation examples for common features to help you quic
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
-@command("count", help="View number of command invocations")
+@command("count", help="View command invocation count")
 async def count_handler(event):
     # Get count
     count = sdk.storage.get("command_count", 0)
@@ -36,7 +37,7 @@ async def count_handler(event):
 ### User Data Storage
 
 ```python
-@command("profile", help="View personal profile")
+@command("profile", help="View profile")
 async def profile_handler(event):
     user_id = event.get_user_id()
     
@@ -69,7 +70,7 @@ async def setnick_handler(event):
     user_data["nickname"] = " ".join(args)
     sdk.storage.set(f"user:{user_id}", user_data)
     
-    await event.reply(f"Nickname has been set to: {' '.join(args)}")
+    await event.reply(f"Nickname set to: {' '.join(args)}")
 ```
 
 ## Scheduled Tasks
@@ -87,12 +88,12 @@ class TimerModule:
         self._tasks = []
     
     async def on_load(self, event):
-        """Start scheduled tasks when module loads"""
+        """Start scheduled tasks when the module is loaded"""
         self._start_timers()
         
-        @command("timer", help="Manage timers")
+        @command("timer", help="Timer management")
         async def timer_handler(event):
-            await event.reply("Timers are running...")
+            await event.reply("Timer is running...")
     
     def _start_timers(self):
         """Start scheduled tasks"""
@@ -100,28 +101,28 @@ class TimerModule:
         task = asyncio.create_task(self._every_minute())
         self._tasks.append(task)
         
-        # Execute at midnight daily
+        # Execute at midnight every day
         task = asyncio.create_task(self._daily_task())
         self._tasks.append(task)
     
     async def _every_minute(self):
-        """Task executed every minute"""
-        self.sdk.logger.info("Minute task executed")
+        """Task to execute every minute"""
+        self.sdk.logger.info("Minute task execution")
         # Your logic...
     
     async def _daily_task(self):
-        """Task executed at midnight daily"""
+        """Task to execute at midnight every day (Note: based on UTC time calculation, adjust for local time if needed)"""
         import time
         
         while True:
-            # Calculate time to midnight
+            # Calculate time until midnight
             now = time.time()
             midnight = now + (86400 - now % 86400)
             
             await asyncio.sleep(midnight - now)
             
             # Execute task
-            self.sdk.logger.info("Daily task executed")
+            self.sdk.logger.info("Daily task execution")
             # Your logic...
 ```
 
@@ -130,13 +131,13 @@ class TimerModule:
 ```python
 @sdk.lifecycle.on("core.init.complete")
 async def init_complete_handler(event_data):
-    """Start scheduled tasks after SDK initialization"""
+    """Start scheduled tasks after SDK initialization completes"""
     import asyncio
     
     async def daily_reminder():
         """Daily reminder"""
         await asyncio.sleep(86400)  # 24 hours
-        self.sdk.logger.info("Executing daily task")
+        sdk.logger.info("Executing daily task")
     
     # Start background task
     asyncio.create_task(daily_reminder())
@@ -149,13 +150,13 @@ async def init_complete_handler(event_data):
 ```python
 from ErisPulse.Core.Event import message
 
-blocked_words = ["rubbish", "ads", "phishing"]
+blocked_words = ["垃圾", "广告", "钓鱼"]
 
 @message.on_message()
 async def filter_handler(event):
     text = event.get_text()
     
-    # Check if sensitive words are included
+    # Check if it contains sensitive words
     for word in blocked_words:
         if word in text:
             sdk.logger.warning(f"Intercepting sensitive message: {word}")
@@ -168,7 +169,7 @@ async def filter_handler(event):
 ### Blacklist Filtering
 
 ```python
-# Load blacklist from configuration or storage
+# Load blacklist from config or storage
 blacklist = sdk.storage.get("user_blacklist", [])
 
 @message.on_message()
@@ -185,10 +186,10 @@ async def blacklist_handler(event):
 
 ## Multi-platform Adaptation
 
-### Platform-specific Responses
+### Platform-specific Response
 
 ```python
-@command("help", help="Display help")
+@command("help", help="Show help")
 async def help_handler(event):
     platform = event.get_platform()
     
@@ -205,7 +206,7 @@ async def help_handler(event):
 ### Platform Feature Detection
 
 ```python
-@command("rich", help="Send rich text messages")
+@command("rich", help="Send rich text message")
 async def rich_handler(event):
     platform = event.get_platform()
     
@@ -213,18 +214,73 @@ async def rich_handler(event):
         # Yunhu supports HTML
         yunhu = sdk.adapter.get("yunhu")
         await yunhu.Send.To("user", event.get_user_id()).Html(
-            "<b>Bold text</b><i>Italic text</i>"
+            "<b>Bold Text</b><i>Italic Text</i>"
         )
     elif platform == "telegram":
         # Telegram supports Markdown
         telegram = sdk.adapter.get("telegram")
         await telegram.Send.To("user", event.get_user_id()).Markdown(
-            "**Bold text** *Italic text*"
+            "**Bold Text** *Italic Text*"
         )
     else:
         # Other platforms use plain text
-        await event.reply("Bold text Italic text")
+        await event.reply("Bold Text Italic Text")
 ```
+
+## Advanced Message Sending (Retry/Timeout/Batch)
+
+In addition to simple `event.reply()`, you can implement more complex sending scenarios using the adapter's Send DSL: automatic retry on failure, timeout cancellation, executing logic after success, and sending multiple messages in batches.
+
+> The following examples use `event.get_detail_type()` and `event.get_target_id()` to get the target type and ID from the event (group chats automatically get `group_id`, private chats automatically get `user_id`), avoiding hardcoding.
+
+### Execute Logic After Sending Success
+
+```python
+@command("pay", help="Simulate payment")
+async def pay_handler(event):
+    yunhu = sdk.adapter.get(event.get_platform())
+    user_id = event.get_user_id()
+    # Deduct points only after sending is successful
+    await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
+           .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
+           .Text("Payment successful, 10 points deducted"))
+```
+
+### Failure Retry + Timeout Cancellation
+
+```python
+@command("notice", help="Send important notice")
+async def notice_handler(event):
+    adapter_inst = sdk.adapter.get(event.get_platform())
+    # Retry up to 3 times, timeout 10 seconds each time
+    task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
+            .Retry(3)
+            .Timeout(10)
+            .OnError(lambda ctx: sdk.logger.error(f"Notice sending failed: {ctx.error}"))
+            .Text("This is an important notice"))
+    # Don't wait, send in background
+```
+
+### Batch Sending Multiple Messages
+
+Send multiple messages in one pipeline, executed uniformly:
+
+```python
+@command("announce", help="Send announcement")
+async def announce_handler(event):
+    adapter_inst = sdk.adapter.get(event.get_platform())
+    # Build multiple messages, send them all at once (parallel by default)
+    results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
+                    .Build()
+                    .Text("📋 Today's Announcement")
+                    .Image("https://example.com/banner.jpg")
+                    .Text("See the image above for details")
+                    .Retry(2)            # Individual retries for failed items
+                    .send_all())
+    sdk.logger.info(f"Batch sending completed, total {len(results)} items")
+```
+
+> For more complete rules and batch descriptions, please refer to [Platform Feature Guide](../platform-guide/README.md#Sending-Rules-Decorator).
 
 ## Permission Control
 
@@ -235,7 +291,7 @@ async def rich_handler(event):
 ADMINS = ["user123", "user456"]
 
 def is_admin(user_id):
-    """Check if the user is an admin"""
+    """Check if user is admin"""
     return user_id in ADMINS
 
 @command("admin", help="Admin command")
@@ -243,7 +299,7 @@ async def admin_handler(event):
     user_id = event.get_user_id()
     
     if not is_admin(user_id):
-        await event.reply("Insufficient permissions, this command is available to admins only")
+        await event.reply("Insufficient permissions, this command is only available to admins")
         return
     
     await event.reply("Admin command executed successfully")
@@ -255,7 +311,7 @@ async def addadmin_handler(event):
     
     args = event.get_command_args()
     if not args:
-        await event.reply("Please enter the Admin ID to add")
+        await event.reply("Please enter the admin ID to add")
         return
     
     new_admin = args[0]
@@ -266,10 +322,10 @@ async def addadmin_handler(event):
 ### Group Permissions
 
 ```python
-@command("groupinfo", help="View group information")
+@command("groupinfo", help="View group info")
 async def groupinfo_handler(event):
     if not event.is_group_message():
-        await event.reply("This command is limited to group chats")
+        await event.reply("This command is limited to group chats only")
         return
     
     group_id = event.get_group_id()
@@ -281,6 +337,8 @@ async def groupinfo_handler(event):
 ## Message Statistics
 
 ### Message Counting
+
+> **Note**: The following examples use `sdk.storage.get/set` for simple counting. In high-concurrency scenarios, it is recommended to use `sdk.storage.transaction()` to ensure atomicity.
 
 ```python
 @message.on_message()
@@ -319,12 +377,14 @@ async def stats_handler(event):
         f"{uid}: {count} messages" for uid, count in top_users
     )
     
-    await event.reply(f"Total messages: {stats['total']}\n\nActive Users:\n{top_text}")
+    await event.reply(f"Total messages: {stats['total']}\n\nActive users:\n{top_text}")
 ```
 
 ## Search Functionality
 
 ### Simple Search
+
+> **Note**: The following examples use an in-memory list to store message history, and **data will be lost after program restart**. For production environments, it is recommended to use `sdk.storage` or SQLite tables for persistent storage.
 
 ```python
 from ErisPulse.Core.Event import command, message
@@ -334,7 +394,7 @@ message_history = []
 
 @message.on_message()
 async def store_handler(event):
-    """Store messages for search"""
+    """Store message for searching"""
     user_id = event.get_user_id()
     text = event.get_text()
     
@@ -344,7 +404,7 @@ async def store_handler(event):
         "time": event.get_time()
     })
     
-    # Limit the number of history records
+    # Limit history size
     if len(message_history) > 1000:
         message_history.pop(0)
 
@@ -359,7 +419,7 @@ async def search_handler(event):
     keyword = " ".join(args)
     results = []
     
-    # Search through history
+    # Search history
     for msg in message_history:
         if keyword in msg["text"]:
             results.append(msg)
@@ -370,7 +430,7 @@ async def search_handler(event):
     
     # Display results
     result_text = f"Found {len(results)} matching messages:\n\n"
-    for i, msg in enumerate(results[:10], 1):  # Display at most 10
+    for i, msg in enumerate(results[:10], 1):  # Max 10 results
         result_text += f"{i}. {msg['text']}\n"
     
     await event.reply(result_text)
@@ -385,7 +445,7 @@ from ErisPulse.Core import client
 
 @message.on_message()
 async def image_handler(event):
-    """Handle image messages"""
+    """Process image messages"""
     message_segments = event.get_message()
     
     for segment in message_segments:
@@ -393,12 +453,12 @@ async def image_handler(event):
             file_url = segment.get("data", {}).get("file")
             
             if file_url:
-                # Recommend using SDK built-in client to download image
+                # Recommended to use SDK built-in client to download image
                 resp = await client.get(file_url)
                 if resp.status == 200:
                     image_data = await resp.read()
                     
-                    # Store to file
+                    # Save to file
                     filename = f"images/{event.get_time()}.jpg"
                     with open(filename, "wb") as f:
                         f.write(image_data)
@@ -407,7 +467,9 @@ async def image_handler(event):
                     await event.reply("Image saved")
 ```
 
-### Image Identification Example
+### Image Recognition Example
+
+> **Note**: The following examples use placeholder API addresses. Please replace them with your own image recognition service when using in production.
 
 ```python
 from ErisPulse.Core import client
@@ -421,26 +483,26 @@ async def identify_handler(event):
         if segment.get("type") == "image":
             file_url = segment.get("data", {}).get("file")
             
-            # Call image identification API
+            # Call image recognition API
             result = await _identify_image(file_url)
             
-            await event.reply(f"Identification result: {result}")
+            await event.reply(f"Recognition result: {result}")
             return
     
     await event.reply("No image found")
 
 async def _identify_image(url):
-    """Call image identification API (example) - Use SDK built-in client"""
+    """Call image recognition API (example) - using SDK built-in client"""
     resp = await client.post(
         "https://api.example.com/identify",
         json={"url": url}
     )
     data = await resp.json()
-    return data.get("description", "Identification failed")
+    return data.get("description", "Recognition failed")
 ```
 
 ## Next Steps
 
 - [User Guide](../user-guide/) - Learn about configuration and module management
-- [Developer Guide](../developer-guide/) - Learn how to develop modules and adapters
+- [Developer Guide](../developer-guide/) - Learn to develop modules and adapters
 - [Advanced Topics](../advanced/) - Deep dive into framework features
