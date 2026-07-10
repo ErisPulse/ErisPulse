@@ -89,6 +89,7 @@ def _resolve_core(attr: str):
         "module": ("ErisPulse.Core", "module"),
         "router": ("ErisPulse.Core", "router"),
         "client": ("ErisPulse.Core", "client"),
+        "admin": ("ErisPulse.Core", "admin"),
         "BaseAdapter": ("ErisPulse.Core", "BaseAdapter"),
         "SendDSL": ("ErisPulse.Core", "SendDSL"),
         "BaseStorage": ("ErisPulse.Core.Bases.storage", "BaseStorage"),
@@ -116,6 +117,7 @@ _CORE_ATTR_NAMES = {
     "module",
     "router",
     "client",
+    "admin",
     "BaseAdapter",
     "SendDSL",
     "BaseStorage",
@@ -170,6 +172,7 @@ class SDK:
     SendDSL: type[_SendDSL]
     BaseStorage: type[_BaseStorage]
     BaseQueryBuilder: type[_BaseQueryBuilder]
+    admin: "AdminManager"
 
     def __init__(self):
         """

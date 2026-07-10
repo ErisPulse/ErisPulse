@@ -83,6 +83,7 @@ class CommandHandler:
         help: str = None,
         usage: str = None,
         hidden: bool = False,
+        admin: bool = False,
     ):
         """
         命令装饰器
@@ -95,6 +96,7 @@ class CommandHandler:
         :param help: 命令帮助信息
         :param usage: 命令使用方法
         :param hidden: 是否在帮助中隐藏命令
+        :param admin: 是否仅允许管理员执行（框架自动检查 ``admin.is_admin(event)``）
         :return: 装饰器函数
         """
 
@@ -128,6 +130,7 @@ class CommandHandler:
                     "group": group,
                     "permission": permission,
                     "hidden": hidden,
+                    "must_admin": admin,
                     "main_name": main_name,
                     "owner": current_owner.get(),
                 }
@@ -526,6 +529,22 @@ class CommandHandler:
             )
             cmd_info = self.commands[actual_cmd_name]
             handler = cmd_info["func"]
+
+            # 检查管理员权限（must_admin）
+            if cmd_info.get("must_admin"):
+                from ..admin import admin
+
+                if not admin.is_admin(event):
+                    logger.trace(
+                        i18n.t(
+                            "core.command.admin_denied",
+                            cmd_name=actual_cmd_name,
+                            user_id=event.get("user_id", ""),
+                            platform=event.get("platform", UNKNOWN_PLATFORM),
+                        )
+                    )
+                    await self._send_permission_denied(event)
+                    return
 
             # 检查权限
             permission_func = cmd_info.get("permission") or self.permissions.get(

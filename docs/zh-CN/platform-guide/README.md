@@ -99,6 +99,74 @@ task = my_adapter.Send.To("user", "123").Text("Hello")
 result = await task
 ```
 
+#### 发送规则装饰器
+
+在实际开发中，经常需要：发送成功后才执行后续逻辑、失败自动重试、超时取消、发送进度监控等。Send DSL 内置了一套发送规则装饰器，通过链式方法附加规则：
+
+| 方法 | 说明 |
+|--------|------|
+| `.Hook(callback)` | 发送成功后执行的回调（可多次调用） |
+| `.Retry(times=1)` | 失败自动重试 N 次（含首次共 N+1 次） |
+| `.Timeout(seconds)` | 单次发送超时，超时取消（可与 Retry 叠加） |
+| `.Defer(seconds)` | 延迟发送（进程内定时，不持久化） |
+| `.OnProgress(callback)` | 各阶段进度回调，传入 SendContext |
+| `.OnError(callback)` | 最终失败时的错误回调（仅触发一次） |
+
+```python
+yunhu = adapter.get("yunhu")
+
+# 发送成功后才扣积分
+await (yunhu.Send.To("user", "123")
+       .Hook(lambda r: deduct_points("123"))
+       .Text("消费成功"))
+
+# 失败重试 + 超时取消 + 进度监控
+def on_progress(ctx):
+    print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}")
+
+task = (yunhu.Send.To("user", "123")
+        .Retry(3)              # 最多重试 3 次
+        .Timeout(10)           # 每次超时 10 秒
+        .OnProgress(on_progress)
+        .OnError(lambda ctx: notify_admin(ctx.error))
+        .Text("重要通知"))
+```
+
+规则方法返回 `self`，必须放在发送方法（Text/Image 等）之前调用。`SendContext` 包含 `stage`（pending/sending/retrying/success/failed/timeout）、`attempt`、`elapsed`、`error`、`result` 等字段，便于监控。
+
+#### 批量构建模式（Build）
+
+一条链路中构建多个发送方法，最后统一执行。适用于“一口气发多条消息”的场景：
+
+```python
+yunhu = adapter.get("yunhu")
+
+# 构建多条消息，统一发送
+results = await (yunhu.Send.To("user", "123")
+                .Build()                     # 进入构建模式
+                .Text("通知一")
+                .Image("pic.jpg")
+                .Text("通知二")
+                .send_all())                 # 统一执行
+# results = [Text结果, Image结果, Text结果]
+```
+
+`.send_all()` 默认**并行**执行（并发发送，效率高）。需要保证消息到达顺序时调用 `.Sequential()` 串行执行：
+
+```python
+# 串行执行（保证顺序）+ 失败重试
+await (yunhu.Send.To("group", "456")
+       .Build()
+       .Sequential()                # 按顺序依次发送
+       .Retry(2)                     # 失败的条目各自重试
+       .Text("第一条").Text("第二条")
+       .send_all())
+```
+
+批量执行采用**失败继续**策略：某条失败不会中断其他条，失败的条目自动重试。批量也支持整批的 `Hook`（全部成功后触发）、`OnError`（有失败时触发）、`OnProgress`（进度回调）。
+
+> 更详细的规则与批量构建说明请参考 [SendDSL 详解](../developer-guide/adapters/send-dsl.md)。
+
 ### 事件监听
 有三种事件监听方式：
 

@@ -35,6 +35,7 @@ from .hints import (
 )
 from .frame_config import (
     DEFAULT_ERISPULSE_CONFIG,
+    get_admin_config,
     get_config,
     get_erispulse_config,
     get_event_config,
@@ -68,6 +69,7 @@ __all__ = [
     "get_event_config",
     "get_framework_config",
     "get_i18n_config",
+    "get_admin_config",
     # 通用配置 Schema（适配器/模块/外部项目均可使用）
     "BaseConfig",
     "AdapterConfig",  # ← BaseConfig 的别名

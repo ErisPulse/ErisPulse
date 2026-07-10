@@ -635,6 +635,7 @@ async def conditional_handler(event):
 
 ## 下一步
 
-- [常见任务示例](common-tasks.md) - 学习常用功能的实现
+- [常见任务示例](common-tasks.md) - 学习常用功能的实现（含消息发送进阶：重试/超时/批量）
+- [平台特性指南](../platform-guide/README.md) - Send DSL 链式发送、发送规则、批量构建的完整说明
 - [Event 包装类详解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 对象
 - [用户使用指南](../user-guide/) - 了解配置和模块管理
