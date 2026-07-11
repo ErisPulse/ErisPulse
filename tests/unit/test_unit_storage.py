@@ -559,6 +559,52 @@ class TestStorageManager:
         assert item1 == "item1"
         assert item2 == "item2"
 
+    def test_nested_key_numeric_segment_as_dict_key(self, storage_manager):
+        """测试纯数字段应作为字典键而非列表索引（OOM 回归测试）"""
+        # 模拟 QQ 群号等大数字 ID 作为嵌套键路径的一段
+        # 修复前：会误判为数组索引，分配 ~7GB 内存导致 OOM Kill
+        storage_manager.set("QvQChat.groups.871684833", {"enable_ai": True})
+
+        # 验证值被正确写入为字典的字符串键
+        assert storage_manager.get("QvQChat.groups.871684833") == {"enable_ai": True}
+
+        # 验证中间层是字典而非列表
+        groups = storage_manager.get("QvQChat.groups")
+        assert isinstance(groups, dict)
+        assert "871684833" in groups
+
+        # 验证可以继续在同一节点下设置其他键
+        storage_manager.set("QvQChat.groups.871684833.name", "测试群")
+        assert storage_manager.get("QvQChat.groups.871684833.name") == "测试群"
+
+    def test_nested_key_numeric_segment_multiple(self, storage_manager):
+        """测试多个连续数字段均作为字典键"""
+        storage_manager.set("app.nodes.123.456.789", "value")
+        assert storage_manager.get("app.nodes.123.456.789") == "value"
+
+        nodes = storage_manager.get("app.nodes")
+        assert isinstance(nodes, dict)
+        assert isinstance(nodes["123"], dict)
+        assert isinstance(nodes["123"]["456"], dict)
+
+    def test_nested_key_existing_list_index_set_within_limit(self, storage_manager):
+        """测试对已存在的列表进行合理范围内的索引设置"""
+        storage_manager.set("data", {"items": ["a", "b", "c"]})
+
+        # 在已有列表范围内通过索引写入
+        storage_manager.set("data.items.1", "updated")
+        assert storage_manager.get("data.items.1") == "updated"
+        assert storage_manager.get("data.items") == ["a", "updated", "c"]
+
+    def test_nested_key_list_index_safety_limit(self, storage_manager):
+        """测试超大索引不会导致内存爆炸（安全限制）"""
+        storage_manager.set("data", {"items": [1, 2, 3]})
+
+        # 对已有列表使用超大索引应被安全拒绝，不触发内存分配
+        result = storage_manager.set("data.items.999999999", "boom")
+        assert result is True  # set 操作本身成功，但内部跳过了危险写入
+        assert storage_manager.get("data.items") == [1, 2, 3]
+
     def test_nested_key_mixed_operations(self, storage_manager):
         """测试混合的嵌套键操作"""
         # 设置初始嵌套结构

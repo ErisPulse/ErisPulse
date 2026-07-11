@@ -165,6 +165,46 @@
 
 ---
 
+## [2.5.5] - 2026/07/10
+> 正式发布
+
+**版本摘要**
+2.5.5 版本修复了 `StorageManager._set_nested_value` 在嵌套键路径包含大纯数字段（如 QQ 群号 `871684833`）时，误判为数组索引导致分配数亿元素引发 OOM Kill 的关键安全漏洞。修复后点分隔路径的每一段始终按字典键处理，并引入列表索引安全上限限制。
+
+**升级建议**
+- **强烈建议升级**
+- 升级原因：
+  - 修复 `storage.set()` 写入包含大数字ID的键时进程被OOM Kill（退出码-9）的安全问题
+  - 重写 `_set_nested_value` 为迭代实现，消除递归风险
+  - 新增 `STORAGE_MAX_LIST_INDEX` 常量（见 `Core/constants.py`），集中管理索引安全阈值
+
+**注意事项**
+- 点分隔路径的中间层首次创建时统一使用字典而非列表，数字段作为字符串键写入（不再根据下一段是否为数字猜测容器类型）
+- 若已有列表容器且在合理索引范围内（< 10000），仍按数组索引处理
+- 新增常量 `STORAGE_MAX_LIST_INDEX` 到 `Core/constants.py`
+
+### 安全
+
+- @wsu2059q
+  - `Core/storage.py` 修复 `_set_nested_value` 大列表扩展导致 OOM 的问题：
+    - **问题**：嵌套键路径中的纯数字段被 `isdigit()` 误判为列表索引，`current.extend([None] * (index - len(current) + 1))` 试图分配数亿元素，导致进程被容器 OOM Kill（退出码 -9）
+    - **修复**：
+      1. 预创建中间层时始终使用字典，不再根据下一段是否为数字猜测容器类型
+      2. 设置最终值时，仅当容器本身已是列表且索引小于 `STORAGE_MAX_LIST_INDEX`（10000）时才按索引处理，超大索引安全跳过
+      3. 将递归实现改为迭代实现，消除原代码中潜在的无限递归风险
+  - `Core/constants.py` 新增 `STORAGE_MAX_LIST_INDEX` 常量，集中管理嵌套键路径列表索引安全上限
+
+### 测试
+
+- @wsu2059q
+  - `tests/unit/test_unit_storage.py` 新增 4 个回归测试用例：
+    - `test_nested_key_numeric_segment_as_dict_key` — 精确复现 OOM 场景的回归测试
+    - `test_nested_key_numeric_segment_multiple` — 多个连续数字段均作为字典键
+    - `test_nested_key_existing_list_index_set_within_limit` — 已有列表合理索引写入
+    - `test_nested_key_list_index_safety_limit` — 超大索引安全限制验证
+
+---
+
 ## [2.5.4] - 2026/07/09
 > 正式发布
 
