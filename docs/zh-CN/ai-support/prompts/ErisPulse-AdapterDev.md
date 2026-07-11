@@ -1425,7 +1425,8 @@ async def conditional_handler(event):
 
 ## 下一步
 
-- [常见任务示例](common-tasks.md) - 学习常用功能的实现
+- [常见任务示例](common-tasks.md) - 学习常用功能的实现（含消息发送进阶：重试/超时/批量）
+- [平台特性指南](../platform-guide/README.md) - Send DSL 链式发送、发送规则、批量构建的完整说明
 - [Event 包装类详解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 对象
 - [用户使用指南](../user-guide/) - 了解配置和模块管理
 
@@ -3122,6 +3123,256 @@ print(f"发送结果: {result}")
 task = adapter.Send.To("user", "123").Text("Hello")
 # ... 其他操作 ...
 result = await task
+```
+
+## 发送规则系统
+
+SendDSL 内置了一套发送规则装饰器，通过链式方法附加规则，在最终发送时统一应用。规则覆盖常见的生产场景：超时控制、失败重试、成功回调、延迟发送、优先级丢弃、进度监控。
+
+规则方法**返回 self**（与 At/AtAll/Reply 一样），必须放在发送方法（Text/Image 等）之前调用。规则会随 `To`/`Using`/`Account` 创建的新实例传播。
+
+### 规则方法一览
+
+| 方法 | 说明 |
+|--------|------|
+| `.Hook(callback)` | 发送成功后执行的回调（可多次调用，按顺序执行） |
+| `.Retry(times=1)` | 失败自动重试 N 次（含首次共 N+1 次） |
+| `.Timeout(seconds)` | 单次发送超时，超时取消当前尝试（可与 Retry 叠加） |
+| `.Defer(seconds=1.0)` | 延迟发送（进程内定时，不持久化） |
+| `.Priority(level, drop_if_busy=False)` | 设置优先级；积压时可丢弃 |
+| `.OnProgress(callback)` | 各阶段进度回调（传入 `SendContext`） |
+| `.OnError(callback)` | 最终失败时的错误回调（仅触发一次） |
+
+### 发送成功后执行逻辑（Hook）
+
+```python
+# 同步回调
+await (adapter.Send.To("user", "123")
+       .Hook(lambda r: print(f"发送成功，消息ID: {r['message_id']}"))
+       .Text("你好"))
+
+# 异步回调
+async def deduct_points(result):
+    await db.update(user_id="123", points=-1)
+
+await adapter.Send.To("user", "123").Hook(deduct_points).Text("扣积分")
+```
+
+Hook 仅在发送最终成功（含重试成功）时执行；失败、超时、取消不触发。
+
+### 失败自动重试（Retry）
+
+```python
+# 首次失败后重试 2 次，共 3 次尝试
+result = await adapter.Send.To("user", "123").Retry(2).Text("带重试")
+```
+
+重试触发条件：发送抛出异常、发送超时、发送返回 `status == "failed"` 的响应。
+
+### 超时自动取消（Timeout）
+
+```python
+# 单次发送超过 10 秒则取消
+await adapter.Send.To("user", "123").Timeout(10).Text("带超时")
+
+# 超时 + 重试：每次尝试 10 秒，最多 3 次
+await adapter.Send.To("user", "123").Timeout(10).Retry(2).Text("超时重试")
+```
+
+### 进度监控（OnProgress / OnError）
+
+```python
+def on_progress(ctx):
+    print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}, 耗时: {ctx.elapsed:.2f}s")
+    if ctx.stage == "failed":
+        print(f"  错误: {ctx.error!r}")
+
+async def on_error(ctx):
+    await notify_admin(f"发送给 {ctx.target_id} 失败: {ctx.error!r}")
+
+await (adapter.Send.To("user", "123")
+       .Retry(3).Timeout(10)
+       .OnProgress(on_progress)
+       .OnError(on_error)
+       .Text("监控"))
+```
+
+`SendContext` 包含的字段：`task_id`、`platform`、`method`、`target_type`、`target_id`、`bot_id`、`stage`、`attempt`、`max_attempts`、`started_at`、`finished_at`、`elapsed`、`error`、`result`、`extra`。
+
+`stage` 可能的值：`pending`、`sending`、`retrying`、`success`、`failed`、`timeout`、`cancelled`、`dropped`。
+
+### 延迟发送（Defer）
+
+```python
+# 5 秒后发送
+await adapter.Send.To("user", "123").Defer(5).Text("迟到消息")
+```
+
+> 注意：延迟为进程内定时，进程重启会丢失，不提供持久化。
+
+### 优先级与积压丢弃（Priority）
+
+```python
+# 低优先级消息，队列积压时自动丢弃
+result = await (adapter.Send.To("user", "123")
+               .Priority(-1, drop_if_busy=True)
+               .Text("可放弃的通知"))
+# 若被丢弃，result["status"] == "failed"
+```
+
+`drop_if_busy` 启用后，当在途发送任务数超过阈值（默认 64）时直接放弃本次发送。可通过 `.PriorityThreshold(n)` 调整全局阈值。
+
+### 规则组合与后台执行
+
+```python
+# 不阻塞主流程，规则照样生效
+task = (adapter.Send.To("user", "123")
+        .Hook(lambda r: print("发送成功！"))
+        .Retry(3)
+        .Timeout(10)
+        .OnProgress(on_progress)
+        .Text("你好"))
+
+# 继续执行其他操作
+await handle_next_action()
+```
+
+### 规则传播
+
+规则随 `To`/`Using`/`Account` 创建的新实例传播，避免链式调用中规则丢失：
+
+```python
+# 规则在 To 之前设置，也会传播到 To 创建的实例
+builder = adapter.Send.Retry(3).Timeout(10)
+send = builder.To("user", "123")  # send 仍携带 Retry(3) 和 Timeout(10)
+await send.Text("hi")
+```
+
+多个实例的规则相互独立（hooks 列表深拷贝）。
+
+## 批量构建模式（Build）
+
+除单发模式外，SendDSL 还支持批量构建模式：一条链路中写多个发送方法，最后统一执行。适用于“一口气发多条消息”的场景。
+
+### 进入构建模式
+
+在发送方法之前调用 `.Build()`，返回 `SendBuilder`。此后发送方法（Text/Image 等）不再立即执行，而是累积为发送意图：
+
+```python
+results = await (adapter.Send.To("user", "123")
+                 .Build()                    # 进入构建模式
+                 .Text("第一句")
+                 .Image("pic.jpg")
+                 .Text("第二句")
+                 .send_all())                 # 统一执行
+# results = [Text结果, Image结果, Text结果]
+```
+
+`.send_all()` 返回 `asyncio.Task`，await 后得到结果列表（按意图顺序）。
+
+### 并行与串行
+
+默认**并行**执行（并发发送，总耗时约等于最慢的一条）。需要保证消息到达顺序时调用 `.Sequential()`：
+
+```python
+# 串行：按顺序依次发送
+await (adapter.Send.To("group", "456")
+       .Build()
+       .Sequential()
+       .Text("先发这个").Text("再发这个")
+       .send_all())
+
+# 并行（默认，可显式调用）
+await (adapter.Send.To("group", "456")
+       .Build()
+       .Parallel()
+       .Text("并发1").Text("并发2")
+       .send_all())
+```
+
+### 失败继续与重试
+
+批量执行采用**失败继续**策略：某条失败不会中断其他条的发送。配合 `.Retry()` 时，失败的条目会自动重试（重试作用于单条，不是重试整批）：
+
+```python
+await (adapter.Send.To("user", "123")
+       .Build()
+       .Retry(2)                       # 每条各自重试 2 次
+       .Text("可能失败的").Image("也可能失败的")
+       .send_all())
+```
+
+### 整批规则与回调
+
+规则统一作用于整批：
+
+| 方法 | 说明 |
+|--------|------|
+| `.Timeout(seconds)` | 每条发送的单次超时 |
+| `.Retry(times)` | 每条发送各自重试（失败继续） |
+| `.Defer(seconds)` | 延迟整批发送 |
+| `.Hook(callback)` | 整批全部成功后触发，接收 `results` 列表 |
+| `.OnError(callback)` | 批次存在失败时触发，接收 `BatchContext` |
+| `.OnProgress(callback)` | 每条完成时触发，接收 `BatchContext` |
+
+```python
+def on_progress(ctx):
+    print(f"进度: {ctx.completed}/{ctx.total}, 成功 {ctx.succeeded}, 失败 {ctx.failed}")
+
+async def on_error(ctx):
+    print(f"批次有 {ctx.failed} 条失败")
+
+results = await (adapter.Send.To("user", "123")
+               .Build()
+               .Retry(2).Timeout(10)
+               .OnProgress(on_progress)
+               .OnError(on_error)
+               .Hook(lambda rs: print("整批完成"))
+               .Text("a").Text("b").Text("c")
+               .send_all())
+```
+
+`BatchContext` 包含：`task_id`、`total`、`completed`、`succeeded`、`failed`、`stage`、`results`、`errors`、`elapsed`、`extra`。
+
+`stage` 可能的值：`pending`、`sending`、`success`（全部成功）、`partial`（部分成功）、`failed`（全部失败）。
+
+### 修饰器与规则的继承
+
+`.Build()` 之前的 At/AtAll/Reply 修饰器和规则会继承到整批，作用于每条消息：
+
+```python
+await (adapter.Send.To("group", "456")
+       .At("789")                        # 继承：每条消息都 @789
+       .Build()
+       .Retry(2)                         # 继承 + 追加：每条各自重试
+       .Text("@你的通知")
+       .Image("公告图")
+       .send_all())
+```
+
+进入 Build 后仍可追加修饰器（作用于整批）：
+
+```python
+await (adapter.Send.To("group", "456")
+       .Build()
+       .At("111").At("222")             # 追加 @，作用于整批
+       .Text("@多人")
+       .send_all())
+```
+
+### 后台执行
+
+与单发一样，`.send_all()` 返回 Task，可不 await 让其在后台执行：
+
+```python
+task = (adapter.Send.To("user", "123")
+        .Build()
+        .Hook(lambda rs: print("批量发送完成"))
+        .Text("a").Text("b")
+        .send_all())
+
+# 不阻塞主流程
+await do_something_else()
 ```
 
 ## 命名规范
@@ -9618,6 +9869,74 @@ task = my_adapter.Send.To("user", "123").Text("Hello")
 # 如果需要获取发送结果，稍后可以等待
 result = await task
 ```
+
+#### 发送规则装饰器
+
+在实际开发中，经常需要：发送成功后才执行后续逻辑、失败自动重试、超时取消、发送进度监控等。Send DSL 内置了一套发送规则装饰器，通过链式方法附加规则：
+
+| 方法 | 说明 |
+|--------|------|
+| `.Hook(callback)` | 发送成功后执行的回调（可多次调用） |
+| `.Retry(times=1)` | 失败自动重试 N 次（含首次共 N+1 次） |
+| `.Timeout(seconds)` | 单次发送超时，超时取消（可与 Retry 叠加） |
+| `.Defer(seconds)` | 延迟发送（进程内定时，不持久化） |
+| `.OnProgress(callback)` | 各阶段进度回调，传入 SendContext |
+| `.OnError(callback)` | 最终失败时的错误回调（仅触发一次） |
+
+```python
+yunhu = adapter.get("yunhu")
+
+# 发送成功后才扣积分
+await (yunhu.Send.To("user", "123")
+       .Hook(lambda r: deduct_points("123"))
+       .Text("消费成功"))
+
+# 失败重试 + 超时取消 + 进度监控
+def on_progress(ctx):
+    print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}")
+
+task = (yunhu.Send.To("user", "123")
+        .Retry(3)              # 最多重试 3 次
+        .Timeout(10)           # 每次超时 10 秒
+        .OnProgress(on_progress)
+        .OnError(lambda ctx: notify_admin(ctx.error))
+        .Text("重要通知"))
+```
+
+规则方法返回 `self`，必须放在发送方法（Text/Image 等）之前调用。`SendContext` 包含 `stage`（pending/sending/retrying/success/failed/timeout）、`attempt`、`elapsed`、`error`、`result` 等字段，便于监控。
+
+#### 批量构建模式（Build）
+
+一条链路中构建多个发送方法，最后统一执行。适用于“一口气发多条消息”的场景：
+
+```python
+yunhu = adapter.get("yunhu")
+
+# 构建多条消息，统一发送
+results = await (yunhu.Send.To("user", "123")
+                .Build()                     # 进入构建模式
+                .Text("通知一")
+                .Image("pic.jpg")
+                .Text("通知二")
+                .send_all())                 # 统一执行
+# results = [Text结果, Image结果, Text结果]
+```
+
+`.send_all()` 默认**并行**执行（并发发送，效率高）。需要保证消息到达顺序时调用 `.Sequential()` 串行执行：
+
+```python
+# 串行执行（保证顺序）+ 失败重试
+await (yunhu.Send.To("group", "456")
+       .Build()
+       .Sequential()                # 按顺序依次发送
+       .Retry(2)                     # 失败的条目各自重试
+       .Text("第一条").Text("第二条")
+       .send_all())
+```
+
+批量执行采用**失败继续**策略：某条失败不会中断其他条，失败的条目自动重试。批量也支持整批的 `Hook`（全部成功后触发）、`OnError`（有失败时触发）、`OnProgress`（进度回调）。
+
+> 更详细的规则与批量构建说明请参考 [SendDSL 详解](../developer-guide/adapters/send-dsl.md)。
 
 ### 事件监听
 有三种事件监听方式：

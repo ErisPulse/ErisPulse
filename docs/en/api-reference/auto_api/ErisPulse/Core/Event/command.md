@@ -30,7 +30,7 @@ ErisPulse 命令处理模块
 #### 方法列表
 
 
-##### `__call__(name: str | list[str] = None, aliases: list[str] = None, group: str = None, priority: int = 0, permission: Callable = None, help: str = None, usage: str = None, hidden: bool = False)`
+##### `__call__(name: str | list[str] = None, aliases: list[str] = None, group: str = None, priority: int = 0, permission: Callable = None, help: str = None, usage: str = None, hidden: bool = False, admin: bool = False)`
 
 命令装饰器
 
@@ -42,6 +42,7 @@ ErisPulse 命令处理模块
 :param help: 命令帮助信息
 :param usage: 命令使用方法
 :param hidden: 是否在帮助中隐藏命令
+:param admin: 是否仅允许管理员执行（框架自动检查 ``admin.is_admin(event)``）
 :return: 装饰器函数
 
 ---
