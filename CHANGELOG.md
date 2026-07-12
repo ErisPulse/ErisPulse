@@ -78,6 +78,7 @@
 - 事件处理器并发上限默认 64，可通过 `ErisPulse.framework.handler_max_concurrency` 配置
 - 主动 GC 默认每 300 秒执行一次，可通过 `ErisPulse.framework.proactive_gc_interval` 配置（设为 0 禁用）
 - 离线 Bot 默认 3600 秒后自动清除，可通过 `ErisPulse.framework.offline_bot_expiry` 配置
+- SendDSL `rules` 参数不再通过构造函数传递给子类，改为构造后赋值；第三方适配器 Send 子类若覆写了 `__init__` 无需额外修改即可兼容
 
 ### 新增
 
@@ -104,6 +105,7 @@
   - `sdk.py` 反初始化时关闭 HTTP 客户端连接池（`await client.close()`），修复每次软重启泄漏 `aiohttp.ClientSession` 的问题
   - `sdk.py` 反初始化时清理 `LazyModule._module_info`，修复循环引用残留
   - `Core/Event/command.py` `wait_reply` 使用 `finally` 清理 `_waiting_replies` 条目，修复 `CancelledError` 时的内存泄漏
+  - `Core/Bases/adapter.py` SendDSL 的 `To()` / `Using()` / `Account()` 不再将 `rules` 作为构造函数参数传入，改为构造后赋值，修复 dev.0 导致第三方适配器 Send 子类的兼容性问题
 
 ### 优化
 

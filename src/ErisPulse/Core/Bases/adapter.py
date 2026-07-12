@@ -464,7 +464,10 @@ class SendDSL:
         if target_type == DETAIL_TYPE_PRIVATE:
             target_type = "user"
 
-        return self.__class__(self._adapter, target_type, target_id, self._account_id, self._rules)
+        instance = self.__class__(self._adapter, target_type, target_id, self._account_id)
+        if self._rules:
+            instance._rules = _copy_rules(self._rules)
+        return instance
 
     def Using(self, account_id: str | int) -> "SendDSL":
         """
@@ -477,9 +480,12 @@ class SendDSL:
         >>> adapter.Send.Using("bot1").To("123").Text("Hello")
         >>> adapter.Send.To("123").Using("bot1").Text("Hello")  # 支持乱序
         """
-        return self.__class__(
-            self._adapter, self._target_type, self._target_id, account_id, self._rules
+        instance = self.__class__(
+            self._adapter, self._target_type, self._target_id, account_id
         )
+        if self._rules:
+            instance._rules = _copy_rules(self._rules)
+        return instance
 
     def Account(self, account_id: str | int) -> "SendDSL":
         """
@@ -492,9 +498,12 @@ class SendDSL:
         >>> adapter.Send.Account("bot1").To("123").Text("Hello")
         >>> adapter.Send.To("123").Account("bot1").Text("Hello")  # 支持乱序
         """
-        return self.__class__(
-            self._adapter, self._target_type, self._target_id, account_id, self._rules
+        instance = self.__class__(
+            self._adapter, self._target_type, self._target_id, account_id
         )
+        if self._rules:
+            instance._rules = _copy_rules(self._rules)
+        return instance
 
     # ==================== 发送规则装饰器 ====================
 
