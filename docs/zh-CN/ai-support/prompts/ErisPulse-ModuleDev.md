@@ -6739,6 +6739,10 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 
 # 取消注册
 sdk.lifecycle.unregister("module.load", on_module_load)
+
+# 按所有者批量取消注册（模块/适配器卸载时框架自动调用）
+removed = sdk.lifecycle.unregister_by_owner("MyModule")
+print(f"清理了 {removed} 个生命周期钩子")
 ```
 
 ### 优先级
