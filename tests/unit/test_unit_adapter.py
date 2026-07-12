@@ -1673,3 +1673,162 @@ class TestBotStatusTracking:
 
         assert manager.is_bot_online("telegram", "tg_bot1") is False
         assert manager.is_bot_online("discord", "dc_bot1") is True
+
+
+# ==================== 事件处理器 Task 追踪与并发控制测试 ====================
+
+
+class TestHandlerTaskTracking:
+    """事件处理器 Task 追踪、并发背压和清理功能测试"""
+
+    @pytest.fixture
+    def manager(self):
+        """创建适配器管理器实例"""
+        manager = AdapterManager()
+        manager._adapters.clear()
+        manager._started_instances.clear()
+        manager._adapter_info.clear()
+        manager._onebot_handlers.clear()
+        manager._raw_handlers.clear()
+        manager._onebot_middlewares.clear()
+        manager._pending_handler_tasks.clear()
+        manager._bots.clear()
+        manager._adapter_tasks.clear()
+        manager._handler_semaphore = None
+        manager._handler_max_concurrency = 0
+        return manager
+
+    @pytest.mark.asyncio
+    async def test_dispatch_creates_tracked_task(self, manager):
+        """测试分发处理器时 Task 被追踪到 _pending_handler_tasks"""
+
+        async def handler(data):
+            await asyncio.sleep(0.01)
+
+        manager._dispatch_handler_task(handler, {"test": True})
+
+        # Task 应被追踪
+        assert len(manager._pending_handler_tasks) == 1
+
+        # 等待 Task 完成
+        await asyncio.sleep(0.1)
+
+        # Task 完成后应自动从集合中移除
+        assert len(manager._pending_handler_tasks) == 0
+
+    @pytest.mark.asyncio
+    async def test_handler_semaphore_limits_concurrency(self, manager):
+        """测试信号量限制处理器并发数"""
+
+        # 手动设置较小的并发限制
+        manager._handler_max_concurrency = 2
+        manager._handler_semaphore = asyncio.Semaphore(2)
+
+        executing = []
+        max_concurrent = [0]
+
+        async def slow_handler(data):
+            executing.append(1)
+            max_concurrent[0] = max(max_concurrent[0], len(executing))
+            await asyncio.sleep(0.05)
+            executing.pop()
+
+        # 启动 5 个处理器
+        for i in range(5):
+            manager._dispatch_handler_task(slow_handler, {"index": i})
+
+        await asyncio.sleep(0.3)
+
+        # 最大并发数不超过 2
+        assert max_concurrent[0] <= 2
+
+    @pytest.mark.asyncio
+    async def test_drain_pending_handler_tasks(self, manager):
+        """测试 drain 方法取消所有在途 Task"""
+
+        async def long_handler(data):
+            await asyncio.sleep(100)
+
+        # 启动 3 个长时间运行的处理器
+        for i in range(3):
+            manager._dispatch_handler_task(long_handler, {"index": i})
+
+        assert len(manager._pending_handler_tasks) == 3
+
+        # 执行 drain
+        await manager._drain_pending_handler_tasks(timeout=1.0)
+
+        # 所有 Task 应被取消并清除
+        assert len(manager._pending_handler_tasks) == 0
+
+    def test_evict_offline_bots(self, manager):
+        """测试清除过期的离线 Bot 记录"""
+        import time
+
+        # 添加在线和离线 Bot
+        manager._bots = {
+            "platform1": {
+                "bot1": {
+                    "status": "online",
+                    "last_active": time.time(),
+                    "info": {},
+                },
+                "bot2": {
+                    "status": "offline",
+                    "last_active": time.time() - 7200,  # 2小时前
+                    "info": {},
+                },
+            }
+        }
+
+        # 清除 1 小时前的离线 Bot
+        evicted = manager._evict_offline_bots(expiry_secs=3600)
+
+        assert evicted == 1
+        assert "bot2" not in manager._bots["platform1"]
+        assert "bot1" in manager._bots["platform1"]
+
+    def test_evict_offline_bots_disabled(self, manager):
+        """测试 expiry_secs=0 时禁用清除"""
+        import time
+
+        manager._bots = {
+            "p1": {
+                "b1": {
+                    "status": "offline",
+                    "last_active": time.time() - 999999,
+                    "info": {},
+                }
+            }
+        }
+
+        evicted = manager._evict_offline_bots(expiry_secs=0)
+        assert evicted == 0
+        assert "b1" in manager._bots["p1"]
+
+    def test_evict_offline_bots_cleans_empty_platforms(self, manager):
+        """测试清除后空的平台也会被移除"""
+        import time
+
+        manager._bots = {
+            "p1": {
+                "b1": {
+                    "status": "offline",
+                    "last_active": time.time() - 999999,
+                    "info": {},
+                }
+            },
+            "p2": {
+                "b2": {
+                    "status": "online",
+                    "last_active": time.time(),
+                    "info": {},
+                }
+            },
+        }
+
+        manager._evict_offline_bots(expiry_secs=1)
+
+        # p1 的唯一 bot 被清除，p1 应被移除
+        assert "p1" not in manager._bots
+        assert "p2" in manager._bots
