@@ -349,6 +349,17 @@ class ModuleManager(ManagerBase):
                     )
                 )
 
+            # 清理该模块注册的生命周期钩子，避免闭包引用导致内存泄漏
+            lifecycle_removed = lifecycle.unregister_by_owner(module_name)
+            if lifecycle_removed > 0:
+                logger.debug(
+                    i18n.t(
+                        "core.module.lifecycle_hooks_cleaned",
+                        name=module_name,
+                        count=lifecycle_removed,
+                    )
+                )
+
             if self._sdk is not None:
                 sdk_dict = getattr(self._sdk, "__dict__", {})
                 if module_name in sdk_dict:
