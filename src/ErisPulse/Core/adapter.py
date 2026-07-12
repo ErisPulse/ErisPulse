@@ -23,6 +23,9 @@ from .constants import (
     CONFIG_KEY_ADAPTER_STATUS,
     CONFIG_KEY_ADAPTER_STATUS_OF,
     DEFAULT_ADAPTER_ENABLED,
+    DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS,
+    DEFAULT_HANDLER_MAX_CONCURRENCY,
+    DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
     HANDLER_SLOW_THRESHOLD_SECS,
 )
 from .i18n import i18n
@@ -90,6 +93,13 @@ class AdapterManager(ManagerBase):
 
         # 后台任务追踪 - {platform: asyncio.Task}
         self._adapter_tasks: dict[str, asyncio.Task] = {}
+
+        # 在途事件处理器 Task 集合（用于 shutdown 时等待/取消）
+        self._pending_handler_tasks: set[asyncio.Task] = set()
+
+        # 事件处理器并发控制信号量（运行时从配置加载，默认值由常量提供）
+        self._handler_semaphore: asyncio.Semaphore | None = None
+        self._handler_max_concurrency: int = 0  # 0 = 尚未初始化
 
         # Bot状态存储 - {platform: {bot_id: {"status": str, "last_active": float, "info": dict}}}
         self._bots: dict[str, dict[str, dict]] = {}
@@ -505,6 +515,8 @@ class AdapterManager(ManagerBase):
             # 仅在关闭全部适配器时清理事件处理器，避免部分关闭影响其他适配器
             all_platforms = set(self._adapters.keys())
             if set(platforms) >= all_platforms:
+                # 等待或取消所有在途的事件处理器 Task
+                await self._drain_pending_handler_tasks()
                 self._onebot_handlers.clear()
                 self._raw_handlers.clear()
                 self._onebot_middlewares.clear()
@@ -549,6 +561,39 @@ class AdapterManager(ManagerBase):
 
         # 回收该平台运行期间注册的路由/事件/命令（幂等）
         self._cleanup_adapter_resources(platform)
+
+    async def _drain_pending_handler_tasks(
+        self, timeout: float = DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        等待或取消所有在途的事件处理器 Task
+
+        :param timeout: 等待 Task 退出的最长时间（秒）
+        """
+        pending = list(self._pending_handler_tasks)
+        if not pending:
+            return
+        # 取消所有未完成的 Task
+        for task in pending:
+            if not task.done():
+                task.cancel()
+        # 等待它们退出（带超时）
+        try:
+            await asyncio.wait_for(
+                asyncio.gather(*pending, return_exceptions=True),
+                timeout=timeout,
+            )
+        except asyncio.TimeoutError:
+            logger.trace(
+                i18n.t(
+                    "core.adapter.handler_drain_timeout",
+                    count=len(pending),
+                    timeout=timeout,
+                )
+            )
+        finally:
+            self._pending_handler_tasks.clear()
 
     def _cleanup_adapter_resources(self, platform: str) -> None:
         """
@@ -604,6 +649,20 @@ class AdapterManager(ManagerBase):
             logger.trace(
                 i18n.t("core.adapter.handlers_clean_failed", platform=platform, error=e)
             )
+
+        # 清理该适配器注册的生命周期钩子
+        try:
+            lifecycle_removed = lifecycle.unregister_by_owner(platform)
+            if lifecycle_removed > 0:
+                logger.trace(
+                    i18n.t(
+                        "core.adapter.lifecycle_hooks_cleaned",
+                        platform=platform,
+                        count=lifecycle_removed,
+                    )
+                )
+        except Exception:
+            pass
 
     async def restart(self, platform: str) -> bool:
         """
@@ -715,6 +774,13 @@ class AdapterManager(ManagerBase):
             if not task.done():
                 task.cancel()
         self._adapter_tasks.clear()
+
+        # 清除在途事件处理器 Task 引用（不等待，在 shutdown 中已处理）
+        self._pending_handler_tasks.clear()
+
+        # 重置并发信号量
+        self._handler_semaphore = None
+        self._handler_max_concurrency = 0
 
         # 清除Bot状态
         self._bots.clear()
@@ -1126,6 +1192,33 @@ class AdapterManager(ManagerBase):
             },
         )
 
+    def _get_handler_semaphore(self) -> asyncio.Semaphore:
+        """
+        {!--< internal-use >!--}
+        获取事件处理器并发控制信号量
+
+        懒初始化，首次调用时从框架配置读取 handler_max_concurrency。
+        配置变更后可通过设置 _handler_max_concurrency = 0 来强制重建。
+
+        :return: asyncio.Semaphore 并发控制信号量
+        """
+        if self._handler_semaphore is None or self._handler_max_concurrency == 0:
+            max_concurrency = DEFAULT_HANDLER_MAX_CONCURRENCY
+            try:
+                from ..runtime import get_framework_config
+
+                framework_config = get_framework_config()
+                max_concurrency = framework_config.get(
+                    "handler_max_concurrency", max_concurrency
+                )
+            except Exception:
+                pass
+            if max_concurrency <= 0:
+                max_concurrency = DEFAULT_HANDLER_MAX_CONCURRENCY
+            self._handler_max_concurrency = max_concurrency
+            self._handler_semaphore = asyncio.Semaphore(max_concurrency)
+        return self._handler_semaphore
+
     def _dispatch_handler_task(
         self,
         func: Callable,
@@ -1133,7 +1226,7 @@ class AdapterManager(ManagerBase):
         *,
         event_type: str = "unknown",
         platform: str = "unknown",
-    ) -> asyncio.Task:
+    ) -> asyncio.Task | None:
         """
         {!--< internal-use >!--}
         将事件处理器包装为独立 asyncio.Task 并调度执行
@@ -1147,20 +1240,21 @@ class AdapterManager(ManagerBase):
         :param platform: 平台名称（用于日志）
         :return: asyncio.Task
         """
-        import time as _time
-
         _func_name = getattr(func, "__qualname__", getattr(func, "__name__", str(func)))
 
-        # 在 Task 顶层准备 wait_reply 累计器（list 对象，可跨 ContextVar 共享）。
+        # 在 Task 顶层准备 wait_reply 累加器（list 对象，可跨 ContextVar 共享）。
         # 注意：ContextVar 的 set()/reset() 必须在同一个 Task Context 内完成，
         # 所以下面把 .set() 移入 _safe_run，避免跨 Task token 错误。
         _task_waits: list[dict] = []
+        _sem = self._get_handler_semaphore()
 
         async def _safe_run():
             _wait_token = handler_waits.set(_task_waits)
-            t0 = _time.monotonic()
+            t0 = time.monotonic()
             try:
-                await func(data)
+                # 并发背压控制：限制同时在途的 handler Task 数量
+                async with _sem:
+                    await func(data)
             except asyncio.CancelledError:
                 pass
             except Exception as e:
@@ -1174,7 +1268,7 @@ class AdapterManager(ManagerBase):
                     )
                 )
             finally:
-                elapsed = _time.monotonic() - t0
+                elapsed = time.monotonic() - t0
                 handler_waits.reset(_wait_token)
 
                 _wait_total = sum(w.get("duration", 0.0) for w in _task_waits)
@@ -1217,9 +1311,16 @@ class AdapterManager(ManagerBase):
                         )
 
         try:
-            return asyncio.create_task(_safe_run())
+            task = asyncio.create_task(_safe_run())
+            # 追踪 Task 以便 shutdown 时取消/等待
+            self._pending_handler_tasks.add(task)
+            task.add_done_callback(self._pending_handler_tasks.discard)
+            return task
         except RuntimeError:
-            return asyncio.ensure_future(_safe_run())
+            task = asyncio.ensure_future(_safe_run())
+            self._pending_handler_tasks.add(task)
+            task.add_done_callback(self._pending_handler_tasks.discard)
+            return task
 
     # ==================== Bot状态管理 ====================
 
@@ -1364,6 +1465,43 @@ class AdapterManager(ManagerBase):
                     bot_meta[key] = self_info[key]
             if bot_meta:
                 self._bots[platform][bot_id].setdefault("info", {}).update(bot_meta)
+
+    def _evict_offline_bots(self, expiry_secs: int | None = None) -> int:
+        """
+        {!--< internal-use >!--}
+        清除过期的离线 Bot 记录
+
+        遍历 _bots，将状态为 offline 且 last_active 距今超过 expiry_secs 的条目移除。
+
+        :param expiry_secs: 过期时间（秒），None 时从框架配置读取
+        :return: int 被清除的 Bot 记录数
+        """
+        if expiry_secs is None:
+            expiry_secs = DEFAULT_OFFLINE_BOT_EXPIRY_SECS
+            try:
+                from ..runtime import get_framework_config
+
+                framework_config = get_framework_config()
+                expiry_secs = framework_config.get("offline_bot_expiry", expiry_secs)
+            except Exception:
+                pass
+        if expiry_secs <= 0:
+            return 0
+
+        now = time.time()
+        evicted = 0
+        for platform in list(self._bots.keys()):
+            for bot_id in list(self._bots[platform].keys()):
+                bot_info = self._bots[platform][bot_id]
+                if (
+                    bot_info.get("status") == "offline"
+                    and (now - bot_info.get("last_active", 0)) > expiry_secs
+                ):
+                    del self._bots[platform][bot_id]
+                    evicted += 1
+            if not self._bots[platform]:
+                del self._bots[platform]
+        return evicted
 
     def get_bot_info(self, platform: str, bot_id: str) -> dict | None:
         """

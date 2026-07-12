@@ -19,6 +19,7 @@ from typing import Any
 
 from .constants import DEFAULT_EVENT_SOURCE, HANDLER_SLOW_THRESHOLD_SECS
 from .i18n import i18n
+from ..runtime.context import current_owner
 
 
 class _NullLogger:
@@ -108,7 +109,8 @@ class LifecycleManager:
     }
 
     def __init__(self):
-        self._hooks: dict[str, list[tuple[int, Callable]]] = {}
+        # _hooks 存储 (priority, handler, owner) 三元组
+        self._hooks: dict[str, list[tuple[int, Callable, str | None]]] = {}
         self._timers: dict[str, float] = {}
 
     # ==================== 注册 API ====================
@@ -136,7 +138,8 @@ class LifecycleManager:
             raise ValueError(i18n.t("core.lifecycle.event_name_required"))
 
         def decorator(func: Callable) -> Callable:
-            self._hooks.setdefault(event, []).append((priority, func))
+            owner = current_owner.get()
+            self._hooks.setdefault(event, []).append((priority, func, owner))
             self._hooks[event].sort(key=lambda x: x[0], reverse=True)
             return func
 
@@ -155,7 +158,8 @@ class LifecycleManager:
         """
         if not isinstance(event, str) or not event:
             raise ValueError(i18n.t("core.lifecycle.event_name_required"))
-        self._hooks.setdefault(event, []).append((priority, handler))
+        owner = current_owner.get()
+        self._hooks.setdefault(event, []).append((priority, handler, owner))
         self._hooks[event].sort(key=lambda x: x[0], reverse=True)
 
     def unregister(self, event: str, handler: Callable = None):
@@ -173,7 +177,30 @@ class LifecycleManager:
             self._hooks.pop(event, None)
         else:
             handlers = self._hooks.get(event, [])
-            self._hooks[event] = [(p, h) for p, h in handlers if h != handler]
+            self._hooks[event] = [(p, h, o) for p, h, o in handlers if h != handler]
+
+    def unregister_by_owner(self, owner: str) -> int:
+        """
+        取消指定 owner 注册的所有事件处理器
+
+        用于模块/适配器卸载时自动清理其注册的钩子，避免闭包引用导致内存泄漏。
+
+        :param owner: 模块或适配器名称
+        :return: int 被移除的处理器数量
+
+        :example:
+        >>> lifecycle.unregister_by_owner("MyModule")
+        """
+        removed = 0
+        for event in list(self._hooks.keys()):
+            original_len = len(self._hooks[event])
+            self._hooks[event] = [
+                (p, h, o) for p, h, o in self._hooks[event] if o != owner
+            ]
+            removed += original_len - len(self._hooks[event])
+            if not self._hooks[event]:
+                del self._hooks[event]
+        return removed
 
     # ==================== 触发 API ====================
 
@@ -346,7 +373,7 @@ class LifecycleManager:
         """
         import time as _time
 
-        for priority, handler in self._hooks[hook_name]:
+        for priority, handler, _owner in self._hooks[hook_name]:
             try:
                 _t = _time.monotonic()
                 _hname = getattr(
@@ -381,7 +408,7 @@ class LifecycleManager:
         :param data: Any 事件数据
         :return: Any 处理后的数据
         """
-        for _, handler in self._hooks[hook_name]:
+        for _, handler, _owner in self._hooks[hook_name]:
             try:
                 if inspect.iscoroutinefunction(handler):
                     try:

@@ -44,6 +44,7 @@ from .constants import (
     DEFAULT_CORS_METHODS,
     DEFAULT_CORS_ORIGINS,
     DEFAULT_HTTP_METHODS,
+    DEFAULT_RATE_LIMIT_CLEANUP_INTERVAL_SECS,
     DEFAULT_RATE_LIMIT_MAX_REQUESTS,
     DEFAULT_RATE_LIMIT_WINDOW_SECS,
     DEFAULT_SECURITY_HEADERS,
@@ -291,6 +292,7 @@ class RouterManager:
         self._route_middlewares: dict[str, list] = defaultdict(list)
         self._global_middlewares: list = []
         self._rate_limit_store: dict[str, list[float]] = {}
+        self._rate_limit_cleanup_task: asyncio.Task | None = None
         self._middleware_installed = False
         self._setup_core_routes()
         self._setup_error_pages()
@@ -2574,6 +2576,9 @@ class RouterManager:
 
             self._server_task = asyncio.create_task(self._uvicorn_server._serve())
 
+            # 启动限流存储定期清理任务
+            self._start_rate_limit_cleanup()
+
             # 确保异步异常处理器已注册到当前事件循环
             from ..runtime.exceptions import setup_exception_handling
 
@@ -2601,6 +2606,70 @@ class RouterManager:
             )
             logger.error(i18n.t("core.router.start_failed", error=e))
             raise e
+
+    def _start_rate_limit_cleanup(self) -> None:
+        """
+        {!--< internal-use >!--}
+        启动限流存储的定期清理后台任务
+
+        定期扫描 _rate_limit_store，移除窗口已过期的 IP 记录，防止长期运行时无限增长。
+        """
+        self._stop_rate_limit_cleanup()
+
+        cleanup_interval = DEFAULT_RATE_LIMIT_CLEANUP_INTERVAL_SECS
+
+        async def _cleanup_loop():
+            while True:
+                try:
+                    await asyncio.sleep(cleanup_interval)
+                    self._cleanup_expired_rate_limits()
+                except asyncio.CancelledError:
+                    break
+                except Exception:
+                    continue
+
+        try:
+            self._rate_limit_cleanup_task = asyncio.create_task(_cleanup_loop())
+        except RuntimeError:
+            pass
+
+    def _stop_rate_limit_cleanup(self) -> None:
+        """
+        {!--< internal-use >!--}
+        停止限流存储定期清理任务
+        """
+        if (
+            self._rate_limit_cleanup_task is not None
+            and not self._rate_limit_cleanup_task.done()
+        ):
+            self._rate_limit_cleanup_task.cancel()
+        self._rate_limit_cleanup_task = None
+
+    def _cleanup_expired_rate_limits(self) -> int:
+        """
+        {!--< internal-use >!--}
+        清除过期的限流记录
+
+        扫描 _rate_limit_store，移除所有时间戳均已超出限流窗口的条目。
+
+        :return: int 被清除的条目数
+        """
+        if not self._rate_limit_store:
+            return 0
+        now = time.monotonic()
+        # 使用最大限流窗口作为清理阈值
+        max_window = DEFAULT_RATE_LIMIT_WINDOW_SECS
+        removed = 0
+        for key in list(self._rate_limit_store.keys()):
+            timestamps = self._rate_limit_store[key]
+            # 仅保留窗口内的时间戳
+            fresh = [t for t in timestamps if now - t < max_window]
+            if fresh:
+                self._rate_limit_store[key] = fresh
+            else:
+                del self._rate_limit_store[key]
+                removed += 1
+        return removed
 
     async def stop(self) -> None:
         """
@@ -2638,6 +2707,8 @@ class RouterManager:
                 self._uvicorn_server = None
 
         logger.debug(i18n.t("core.router.clearing_routes"))
+        # 停止限流清理任务
+        self._stop_rate_limit_cleanup()
         self._http_routes.clear()
         self._websocket_routes.clear()
         self._owner_namespaces.clear()
