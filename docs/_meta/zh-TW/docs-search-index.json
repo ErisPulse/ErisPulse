@@ -2381,7 +2381,7 @@
     "HTTP 路由": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 160,
+        "line": 164,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -3003,7 +3003,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 175,
+        "line": 179,
         "level": 3,
         "title": "WebSocket"
       }
@@ -3921,7 +3921,7 @@
     "事件接收與處理": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 106,
+        "line": 110,
         "level": 3,
         "title": "事件接收與處理"
       }
@@ -4693,7 +4693,7 @@
     "優先級": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 29,
+        "line": 33,
         "level": 3,
         "title": "優先級"
       }
@@ -5269,7 +5269,7 @@
     "命令系統": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 145,
+        "line": 149,
         "level": 3,
         "title": "命令系統"
       }
@@ -6223,7 +6223,7 @@
     "完整 API 參考": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 219,
+        "line": 223,
         "level": 2,
         "title": "完整 API 參考"
       }
@@ -6441,7 +6441,7 @@
     "工具": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 237,
+        "line": 241,
         "level": 3,
         "title": "工具"
       }
@@ -8099,7 +8099,7 @@
     "核心初始化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 63,
+        "line": 67,
         "level": 3,
         "title": "核心初始化"
       }
@@ -8319,7 +8319,7 @@
     "標準事件定義": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 196,
+        "line": 200,
         "level": 2,
         "title": "標準事件定義"
       }
@@ -8437,7 +8437,7 @@
     "模組中使用範例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 247,
+        "line": 251,
         "level": 2,
         "title": "模組中使用範例"
       }
@@ -8493,7 +8493,7 @@
     "模組生命週期": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 85,
+        "line": 89,
         "level": 3,
         "title": "模組生命週期"
       },
@@ -8651,7 +8651,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 274,
+        "line": 278,
         "level": 2,
         "title": "注意事項"
       },
@@ -9465,7 +9465,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 284,
+        "line": 288,
         "level": 2,
         "title": "相關文件"
       },
@@ -10051,7 +10051,7 @@
     "萬用字元": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 49,
+        "line": 53,
         "level": 3,
         "title": "萬用字元"
       }
@@ -10257,7 +10257,7 @@
     "觸發": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 229,
+        "line": 233,
         "level": 3,
         "title": "觸發"
       }
@@ -10391,7 +10391,7 @@
     "訊息發送": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 130,
+        "line": 134,
         "level": 3,
         "title": "訊息發送"
       }
@@ -10520,6 +10520,14 @@
         "title": "設定說明"
       }
     ],
+    "設定變更": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 75,
+        "level": 3,
+        "title": "設定變更"
+      }
+    ],
     "設定選項": [
       {
         "document": "platform-guide/onebot11.md",
@@ -10569,7 +10577,7 @@
     "註冊與取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 221,
+        "line": 225,
         "level": 3,
         "title": "註冊與取消"
       }
@@ -11357,7 +11365,7 @@
     "適配器生命週期": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 94,
+        "line": 98,
         "level": 3,
         "title": "適配器生命週期"
       }
@@ -11608,14 +11616,6 @@
         "title": "配置說明"
       }
     ],
-    "配置變更": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 71,
-        "level": 3,
-        "title": "配置變更"
-      }
-    ],
     "配置選項": [
       {
         "document": "platform-guide/onebot12.md",
@@ -11662,12 +11662,12 @@
         "title": "重要限制"
       }
     ],
-    "鉤子中斷點一覽": [
+    "鉤子斷點一覽": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 59,
+        "line": 63,
         "level": 2,
-        "title": "鉤子中斷點一覽"
+        "title": "鉤子斷點一覽"
       }
     ],
     "錯誤碼規範": [
@@ -12211,7 +12211,7 @@
     "點式結構事件": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 43,
+        "line": 47,
         "level": 3,
         "title": "點式結構事件"
       }

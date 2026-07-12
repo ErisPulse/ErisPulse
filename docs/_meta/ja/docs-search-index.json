@@ -2396,6 +2396,14 @@
         "title": "HTTP デコレーター"
       }
     ],
+    "HTTP ルーティング": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 164,
+        "level": 3,
+        "title": "HTTP ルーティング"
+      }
+    ],
     "HTTPStatusError": [
       {
         "document": "advanced/http-client.md",
@@ -2426,14 +2434,6 @@
         "line": 135,
         "level": 3,
         "title": "HTTPリクエストパラメータ"
-      }
-    ],
-    "HTTPルーティング": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 160,
-        "level": 3,
-        "title": "HTTPルーティング"
       }
     ],
     "HttpResponse": [
@@ -3099,7 +3099,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 175,
+        "line": 179,
         "level": 3,
         "title": "WebSocket"
       }
@@ -4137,7 +4137,7 @@
     "アダプターライフサイクル": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 94,
+        "line": 98,
         "level": 3,
         "title": "アダプターライフサイクル"
       }
@@ -4288,14 +4288,6 @@
         "line": 242,
         "level": 3,
         "title": "イベントの例"
-      }
-    ],
-    "イベントの受信と処理": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 106,
-        "level": 3,
-        "title": "イベントの受信と処理"
       }
     ],
     "イベントコンバーター": [
@@ -4518,6 +4510,14 @@
         "line": 1,
         "level": 1,
         "title": "イベント処理入門"
+      }
+    ],
+    "イベント受信と処理": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 110,
+        "level": 3,
+        "title": "イベント受信と処理"
       }
     ],
     "イベント基本情報": [
@@ -5151,7 +5151,7 @@
     "コア初期化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 63,
+        "line": 67,
         "level": 3,
         "title": "コア初期化"
       }
@@ -5245,7 +5245,7 @@
     "コマンドシステム": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 145,
+        "line": 149,
         "level": 3,
         "title": "コマンドシステム"
       }
@@ -6217,7 +6217,7 @@
     "トリガー": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 229,
+        "line": 233,
         "level": 3,
         "title": "トリガー"
       }
@@ -6354,12 +6354,12 @@
         "title": "ドキュメント構造の基準"
       }
     ],
-    "ドット区切りのイベント構造": [
+    "ドット構造イベント": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 43,
+        "line": 47,
         "level": 3,
-        "title": "ドット区切りのイベント構造"
+        "title": "ドット構造イベント"
       }
     ],
     "ネットワーククライアント": [
@@ -6370,12 +6370,12 @@
         "title": "ネットワーククライアント"
       }
     ],
-    "ハンドラの登録": [
+    "ハンドラーの登録": [
       {
         "document": "advanced/lifecycle.md",
         "line": 12,
         "level": 3,
-        "title": "ハンドラの登録"
+        "title": "ハンドラーの登録"
       }
     ],
     "ハートビートイベント": [
@@ -6564,12 +6564,12 @@
         "title": "フォーム収集 (collect)"
       }
     ],
-    "フックポイント一覧": [
+    "フック・ブレークポイント一覧": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 59,
+        "line": 63,
         "level": 2,
-        "title": "フックポイント一覧"
+        "title": "フック・ブレークポイント一覧"
       }
     ],
     "フレームワーク補助メソッド": [
@@ -7575,7 +7575,7 @@
     "メッセージ送信": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 130,
+        "line": 134,
         "level": 3,
         "title": "メッセージ送信"
       },
@@ -7708,6 +7708,14 @@
         "title": "モジュールでの i18n の使用"
       }
     ],
+    "モジュールでの使用例": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 251,
+        "level": 2,
+        "title": "モジュールでの使用例"
+      }
+    ],
     "モジュールのアップグレード": [
       {
         "document": "user-guide/cli-reference.md",
@@ -7811,7 +7819,7 @@
     "モジュールライフサイクル": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 85,
+        "line": 89,
         "level": 3,
         "title": "モジュールライフサイクル"
       },
@@ -7836,14 +7844,6 @@
         "line": 175,
         "level": 2,
         "title": "モジュール・ロード戦略"
-      }
-    ],
-    "モジュール内での使用例": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 247,
-        "level": 2,
-        "title": "モジュール内での使用例"
       }
     ],
     "モジュール検出メカニズム": [
@@ -7991,7 +7991,7 @@
     "ユーティリティ": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 237,
+        "line": 241,
         "level": 3,
         "title": "ユーティリティ"
       }
@@ -8469,7 +8469,7 @@
     "ワイルドカード": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 49,
+        "line": 53,
         "level": 3,
         "title": "ワイルドカード"
       }
@@ -8775,7 +8775,7 @@
     "優先度": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 29,
+        "line": 33,
         "level": 3,
         "title": "優先度"
       }
@@ -9654,12 +9654,12 @@
         "title": "学習パス"
       }
     ],
-    "完全なAPIリファレンス": [
+    "完全な API リファレンス": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 219,
+        "line": 223,
         "level": 2,
-        "title": "完全なAPIリファレンス"
+        "title": "完全な API リファレンス"
       }
     ],
     "完全なメールイベント": [
@@ -10489,7 +10489,7 @@
     "標準イベント定義": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 196,
+        "line": 200,
         "level": 2,
         "title": "標準イベント定義"
       }
@@ -10645,7 +10645,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 274,
+        "line": 278,
         "level": 2,
         "title": "注意事項"
       },
@@ -10844,12 +10844,12 @@
         "title": "登録されたメソッドの照会"
       }
     ],
-    "登録と解除": [
+    "登録とキャンセル": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 221,
+        "line": 225,
         "level": 3,
-        "title": "登録と解除"
+        "title": "登録とキャンセル"
       }
     ],
     "目次": [
@@ -11303,7 +11303,7 @@
     "設定変更": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 71,
+        "line": 75,
         "level": 3,
         "title": "設定変更"
       }
@@ -11917,7 +11917,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 284,
+        "line": 288,
         "level": 2,
         "title": "関連ドキュメント"
       },

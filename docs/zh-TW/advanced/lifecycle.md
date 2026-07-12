@@ -1,10 +1,10 @@
 # 生命週期管理
 
-ErisPulse 提供統一的鉤子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自訂邏輯等擴展功能。
+ErisPulse 提供統一的鉤子/生命週期系統，用於監控系統各元件的執行狀態，以及實現審計、統計、自定義邏輯等擴展功能。
 
 系統支援三種觸發方式：
 - `await lifecycle.emit("event", data)` — 精簡版，傳遞任意資料
-- `lifecycle.emit_sync("event", data)` — 同步版（用於非非同步上下文）
+- `lifecycle.emit_sync("event", data)` — 同步版（用於非異步上下文）
 - `await lifecycle.submit_event("event", ...)` — 相容舊版，自動建構標準事件格式
 
 ## 事件處理機制
@@ -24,6 +24,10 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 
 # 取消註冊
 sdk.lifecycle.unregister("module.load", on_module_load)
+
+# 按所有者批次取消註冊（模組/適配器卸載時框架自動呼叫）
+removed = sdk.lifecycle.unregister_by_owner("MyModule")
+print(f"清理了 {removed} 個生命週期鉤子")
 ```
 
 ### 優先級
@@ -56,9 +60,9 @@ async def on_anything(data):
     print(f"收到事件: {data}")
 ```
 
-## 鉤子中斷點一覽
+## 鉤子斷點一覽
 
-框架內建了以下鉤子中斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意中斷點實現自訂邏輯。
+框架內建了以下鉤子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自定義邏輯。
 
 ### 核心初始化
 
@@ -68,13 +72,13 @@ async def on_anything(data):
 | `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(僅失敗時)}` |
 | `core.uninit.complete` | SDK 反初始化完成 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(僅失敗時)}` |
 
-### 配置變更
+### 設定變更
 
 | 鉤子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `config.set` | 配置項被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
+| `config.set` | 設定項被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
 
-**示例：配置審計**
+**範例：設定審計**
 
 ```python
 @sdk.lifecycle.on("config.set")
@@ -88,7 +92,7 @@ def audit_config(data):
 |---------|---------|------|
 | `module.register` | 模組類註冊到管理器 | `{"module_name": str, "success": bool}` |
 | `module.load` | 模組載入完成（實例化成功） | `{"module_name": str, "success": bool}` |
-| `module.init` | 模組初始化完畢（含延遲載入） | `{"module_name": str, "success": bool}` |
+| `module.init` | 模組初始化完畢（含懶加載） | `{"module_name": str, "success": bool}` |
 | `module.unload` | 模組卸載 | `{"module_name": str, "success": bool}` |
 
 ### 適配器生命週期
@@ -107,11 +111,11 @@ def audit_config(data):
 
 | 鉤子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `adapter.event.receive` | 收到外部平台事件（最早） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.receive` | 收到外部平台事件（最早期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
 | `adapter.event.dispatched` | 事件分發完成 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
 | `event.pre_process` | 事件處理器開始執行前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 
-**示例：事件統計**
+**範例：事件統計**
 
 ```python
 event_counter = {}
@@ -134,7 +138,7 @@ def log_unhandled(data):
 | `message.sending` | 訊息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | 訊息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
-**示例：訊息發送審計**
+**範例：訊息發送審計**
 
 ```python
 @sdk.lifecycle.on("message.sending")
@@ -149,7 +153,7 @@ def log_sending(data):
 | `command.matched` | 命令被匹配並即將執行 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | 命令執行完成 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(僅失敗時)}` |
 
-**示例：命令統計**
+**範例：命令統計**
 
 ```python
 @sdk.lifecycle.on("command.matched")
@@ -164,7 +168,7 @@ def count_commands(data):
 | `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | HTTP 回應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
-**示例：請求日誌**
+**範例：請求日誌**
 
 ```python
 @sdk.lifecycle.on("server.response")
@@ -181,7 +185,7 @@ def log_http(data):
 | `server.websocket.connect` | WebSocket 連線建立 | `{"path": str, "module_name": str, "client_ip": str}` |
 | `server.websocket.disconnect` | WebSocket 連線斷開 | `{"path": str, "module_name": str, "reason": str, "error": str(僅異常時)}` |
 
-**示例：WebSocket 連線監控**
+**範例：WebSocket 連線監控**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -230,8 +234,8 @@ STANDARD_EVENTS = {
 
 | 方法 | 說明 |
 |------|------|
-| `await lifecycle.emit(event, data=None)` | 非同步觸發，處理器返回非 None 可修改 data |
-| `lifecycle.emit_sync(event, data=None)` | 同步觸發，非同步處理器以 create_task 調度 |
+| `await lifecycle.emit(event, data=None)` | 異步觸發，處理器傳回非 None 可修改 data |
+| `lifecycle.emit_sync(event, data=None)` | 同步觸發，異步處理器以 create_task 調度 |
 | `await lifecycle.submit_event(event_type, *, source, msg, data)` | 相容舊版，自動建構標準事件格式 |
 
 ### 工具
@@ -239,8 +243,8 @@ STANDARD_EVENTS = {
 | 方法 | 說明 |
 |------|------|
 | `lifecycle.start_timer(timer_id)` | 開始計時 |
-| `lifecycle.get_duration(timer_id)` | 獲取已持續時間（秒） |
-| `lifecycle.stop_timer(timer_id)` | 停止計時並返回持續時間 |
+| `lifecycle.get_duration(timer_id)` | 取得已持續時間（秒） |
+| `lifecycle.stop_timer(timer_id)` | 停止計時並傳回持續時間 |
 | `lifecycle.list_hooks()` | 列出所有已註冊鉤子及處理器數量 |
 | `lifecycle.clear()` | 清除所有處理器和計時器 |
 
@@ -265,21 +269,21 @@ class Main(BaseModule):
         async def log_cmd(data):
             sdk.logger.info(f"命令執行: /{data['command']} by {data['user_id']}")
         
-        # 配置變更審計
+        # 設定變更審計
         @sdk.lifecycle.on("config.set")
         def audit(data):
-            sdk.logger.info(f"配置變更: {data['key']} = {data['new_value']}")
+            sdk.logger.info(f"設定變更: {data['key']} = {data['new_value']}")
 ```
 
 ## 注意事項
 
-1. **處理器可以是同步或非同步**：系統自動識別並正確調用
-2. **資料傳遞**：`emit()` 模式下，處理器返回非 None 值會修改傳遞給後續處理器的 data
-3. **事件命名規範**：建議使用點式結構命名事件，便於使用父級監聽
+1. **處理器可以是同步或異步**：系統自動識別並正確呼叫
+2. **資料傳遞**：`emit()` 模式下，處理器傳回非 None 值會修改傳遞給後續處理器的 data
+3. **事件命名規範**：建議使用點式結構命名事件，方便使用父級監聽
 4. **錯誤隔離**：單個處理器異常不會影響其他處理器執行
-5. **同步觸發限制**：`emit_sync()` 中非同步處理器以 fire-and-forge 方式調度，返回值無法回傳
-6. **生命週期清理**：調用 `sdk.uninit()` 時，所有已註冊的處理器和計時器會被清理
-7. **載入優先性**：如需在框架初始化階段就監聽事件，建議設定高優先級並停用延遲載入
+5. **同步觸發限制**：`emit_sync()` 中異步處理器以 fire-and-forget 方式調度，傳回值無法回傳
+6. **生命週期清理**：呼叫 `sdk.uninit()` 時，所有已註冊的處理器和計時器會被清理
+7. **載入優先性**：如需在框架初始化階段就監聽事件，建議設定高優先級並禁用懶加載
 
 ## 相關文件
 

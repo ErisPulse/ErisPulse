@@ -2433,7 +2433,7 @@
     "HTTP 路由": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 160,
+        "line": 164,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -3043,7 +3043,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 175,
+        "line": 179,
         "level": 3,
         "title": "WebSocket"
       }
@@ -4095,7 +4095,7 @@
     "事件接收与处理": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 106,
+        "line": 110,
         "level": 3,
         "title": "事件接收与处理"
       }
@@ -4429,7 +4429,7 @@
     "优先级": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 29,
+        "line": 33,
         "level": 3,
         "title": "优先级"
       }
@@ -5649,7 +5649,7 @@
     "命令系统": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 145,
+        "line": 149,
         "level": 3,
         "title": "命令系统"
       }
@@ -6619,7 +6619,7 @@
     "完整 API 参考": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 219,
+        "line": 223,
         "level": 2,
         "title": "完整 API 参考"
       }
@@ -6805,7 +6805,7 @@
     "工具": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 237,
+        "line": 241,
         "level": 3,
         "title": "工具"
       }
@@ -8555,7 +8555,7 @@
     "标准事件定义": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 196,
+        "line": 200,
         "level": 2,
         "title": "标准事件定义"
       }
@@ -8649,7 +8649,7 @@
     "核心初始化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 63,
+        "line": 67,
         "level": 3,
         "title": "核心初始化"
       }
@@ -8891,7 +8891,7 @@
     "模块中使用示例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 247,
+        "line": 251,
         "level": 2,
         "title": "模块中使用示例"
       }
@@ -8985,7 +8985,7 @@
     "模块生命周期": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 85,
+        "line": 89,
         "level": 3,
         "title": "模块生命周期"
       },
@@ -9069,7 +9069,7 @@
     "注册与取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 221,
+        "line": 225,
         "level": 3,
         "title": "注册与取消"
       }
@@ -9137,7 +9137,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 274,
+        "line": 278,
         "level": 2,
         "title": "注意事项"
       },
@@ -9305,7 +9305,7 @@
     "消息发送": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 130,
+        "line": 134,
         "level": 3,
         "title": "消息发送"
       }
@@ -9561,7 +9561,7 @@
     "点式结构事件": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 43,
+        "line": 47,
         "level": 3,
         "title": "点式结构事件"
       }
@@ -9915,7 +9915,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 284,
+        "line": 288,
         "level": 2,
         "title": "相关文档"
       },
@@ -10587,7 +10587,7 @@
     "触发": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 229,
+        "line": 233,
         "level": 3,
         "title": "触发"
       }
@@ -11269,7 +11269,7 @@
     "适配器生命周期": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 94,
+        "line": 98,
         "level": 3,
         "title": "适配器生命周期"
       }
@@ -11467,7 +11467,7 @@
     "通配符": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 49,
+        "line": 53,
         "level": 3,
         "title": "通配符"
       }
@@ -11553,7 +11553,7 @@
     "配置变更": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 71,
+        "line": 75,
         "level": 3,
         "title": "配置变更"
       }
@@ -11771,7 +11771,7 @@
     "钩子断点一览": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 59,
+        "line": 63,
         "level": 2,
         "title": "钩子断点一览"
       }

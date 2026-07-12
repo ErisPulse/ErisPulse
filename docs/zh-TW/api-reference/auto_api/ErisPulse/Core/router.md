@@ -926,6 +926,36 @@ SSE 路由使用 base_url 前缀（HTTP）。
 ---
 
 
+##### `_start_rate_limit_cleanup()`
+
+> **内部方法** 
+启动限流存储的定期清理后台任务
+
+定期扫描 _rate_limit_store，移除窗口已过期的 IP 记录，防止长期运行时无限增长。
+
+---
+
+
+##### `_stop_rate_limit_cleanup()`
+
+> **内部方法** 
+停止限流存储定期清理任务
+
+---
+
+
+##### `_cleanup_expired_rate_limits()`
+
+> **内部方法** 
+清除过期的限流记录
+
+扫描 _rate_limit_store，移除所有时间戳均已超出限流窗口的条目。
+
+:return: int 被清除的条目数
+
+---
+
+
 ##### `async async stop()`
 
 停止服务器并清理所有路由
