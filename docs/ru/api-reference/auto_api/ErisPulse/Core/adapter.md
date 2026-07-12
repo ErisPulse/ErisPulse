@@ -127,6 +127,16 @@ ErisPulse 适配器系统
 ---
 
 
+##### `async async _drain_pending_handler_tasks(timeout: float = DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS)`
+
+> **内部方法** 
+等待或取消所有在途的事件处理器 Task
+
+:param timeout: 等待 Task 退出的最长时间（秒）
+
+---
+
+
 ##### `_cleanup_adapter_resources(platform: str)`
 
 > **内部方法** 
@@ -351,6 +361,19 @@ OneBot12协议事件监听装饰器
 ---
 
 
+##### `_get_handler_semaphore()`
+
+> **内部方法** 
+获取事件处理器并发控制信号量
+
+懒初始化，首次调用时从框架配置读取 handler_max_concurrency。
+配置变更后可通过设置 _handler_max_concurrency = 0 来强制重建。
+
+:return: asyncio.Semaphore 并发控制信号量
+
+---
+
+
 ##### `_dispatch_handler_task(func: Callable, data: Any)`
 
 > **内部方法** 
@@ -405,6 +428,19 @@ self字段标准扩展：
 
 :param platform: 平台名称
 :param self_info: 事件中的self字段内容
+
+---
+
+
+##### `_evict_offline_bots(expiry_secs: int | None = None)`
+
+> **内部方法** 
+清除过期的离线 Bot 记录
+
+遍历 _bots，将状态为 offline 且 last_active 距今超过 expiry_secs 的条目移除。
+
+:param expiry_secs: 过期时间（秒），None 时从框架配置读取
+:return: int 被清除的 Bot 记录数
 
 ---
 
