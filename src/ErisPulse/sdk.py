@@ -20,6 +20,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from .Core.constants import (
+    DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
     DEFAULT_UNINIT_TIMEOUT_SECS,
     LIFECYCLE_TIMER_CORE_INIT,
     LIFECYCLE_TIMER_CORE_UNINIT,
@@ -183,6 +184,7 @@ class SDK:
         """
         self._initializer: SDK.Initializer | None = None
         self._initialized: bool = False
+        self._gc_task: asyncio.Task | None = None  # 主动 GC 后台任务
 
     def __getattr__(self, name: str):
         """
@@ -519,6 +521,10 @@ class SDK:
                         },
                     },
                 )
+
+                # 启动主动 GC 后台任务
+                self._sdk._start_proactive_gc()
+
                 return True
 
             except Exception as e:
@@ -603,6 +609,14 @@ class SDK:
                 if router_manager._server_task is not None:
                     await router_manager.stop()
 
+                # 3.5. 关闭 HTTP 客户端连接池
+                try:
+                    client = self.client
+                    if hasattr(client, "close"):
+                        await client.close()
+                except Exception as e:
+                    self.logger.warning(i18n.t("core.sdk.uninit.client_close_failed", error=e))
+
                 # 4. 收集 SDK 对象上的模块属性（在 clear 之前）
                 instance_dict = object.__getattribute__(self._sdk, "__dict__")
                 module_properties_to_clear = set()
@@ -647,6 +661,7 @@ class SDK:
                         object.__setattr__(attr_value, "_instance", None)
                         object.__setattr__(attr_value, "_manager_instance", None)
                         object.__setattr__(attr_value, "_module_class", None)
+                        object.__setattr__(attr_value, "_module_info", None)
                         module_properties_to_clear.add(attr_name)
 
                 # 5. 清理所有事件处理器
@@ -684,6 +699,8 @@ class SDK:
                 # 9. 重置初始化状态
                 self._sdk._initialized = False
                 self._sdk._initializer = None
+                # 停止主动 GC 后台任务
+                self._sdk._stop_proactive_gc()
                 duration_str = (
                     f"{uninit_duration:.2f}s"
                     if uninit_duration >= 1
@@ -766,6 +783,67 @@ class SDK:
 
     # ==================== SDK 逻辑方法 ====================
 
+    def _start_proactive_gc(self) -> None:
+        """
+        {!--< internal-use >!--}
+        启动主动 GC 后台任务
+
+        定期执行 Python GC 和内部资源回收（离线 Bot 清理等），
+        防止长期运行时的内存增长。间隔由框架配置 proactive_gc_interval 控制。
+        """
+        # 停止已有的 GC 任务
+        self._stop_proactive_gc()
+
+        gc_interval = DEFAULT_PROACTIVE_GC_INTERVAL_SECS
+        try:
+            from .runtime import get_framework_config
+
+            framework_config = get_framework_config()
+            gc_interval = framework_config.get("proactive_gc_interval", gc_interval)
+        except Exception:
+            pass
+
+        if gc_interval <= 0:
+            return  # 配置禁用
+
+        async def _gc_loop():
+            import gc
+
+            while True:
+                try:
+                    await asyncio.sleep(gc_interval)
+                    # 1. Python GC
+                    collected = gc.collect()
+                    # 2. 内部资源回收
+                    try:
+                        adapter_mgr = self.adapter
+                        evicted = adapter_mgr._evict_offline_bots()
+                        if collected > 0 or evicted > 0:
+                            self.logger.trace(
+                                i18n.t("core.sdk.gc.collected", collected=collected, evicted=evicted)
+                            )
+                    except Exception:
+                        pass
+                except asyncio.CancelledError:
+                    break
+                except Exception:
+                    # GC 异常不应中断循环
+                    continue
+
+        try:
+            self._gc_task = asyncio.create_task(_gc_loop())
+        except RuntimeError:
+            pass
+
+    def _stop_proactive_gc(self) -> None:
+        """
+        {!--< internal-use >!--}
+        停止主动 GC 后台任务
+        """
+        if self._gc_task is not None and not self._gc_task.done():
+            self._gc_task.cancel()
+        self._gc_task = None
+
     def dump_state(self) -> dict:
         """
         导出框架当前运行状态的快照
@@ -784,7 +862,13 @@ class SDK:
             },
             "adapters": {"registered": [], "started": [], "bots": {}},
             "modules": {"registered": [], "lazy": [], "enabled": [], "disabled": []},
-            "events": {"message_handlers": 0, "notice_handlers": 0, "request_handlers": 0, "meta_handlers": 0, "commands": 0},
+            "events": {
+                "message_handlers": 0,
+                "notice_handlers": 0,
+                "request_handlers": 0,
+                "meta_handlers": 0,
+                "commands": 0,
+            },
             "router": {"running": False, "http_routes": 0, "ws_routes": 0},
         }
 
@@ -813,6 +897,7 @@ class SDK:
         try:
             from .Core.Event import message, notice, request, meta
             from .Core.Event.command import command as cmd_handler
+
             state["events"] = {
                 "message_handlers": len(message.handler.handlers),
                 "notice_handlers": len(notice.handler.handlers),

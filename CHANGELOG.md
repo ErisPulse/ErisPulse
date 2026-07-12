@@ -63,6 +63,59 @@
 
 ---
 
+## [2.6.0-dev.1] - 2026/07/12
+> 开发版本
+
+**版本摘要**
+2.6.0-dev.1 是聚焦于框架性能优化与资源管理的开发版本。引入事件处理器 Task 追踪与并发背压控制、生命周期钩子 owner 自动清理、主动 GC 后台任务、离线 Bot 过期回收、限流存储定期清理等机制，修复多项内存泄漏问题（HttpClient 未关闭、wait_reply CancelledError 残留、LazyModule 循环引用等），显著降低长期运行时的内存占用。
+
+**升级建议**
+- 是否建议升级：建议升级
+- 升级原因：修复多项关键内存泄漏（HttpClient session 泄漏、wait_reply 残留、生命周期钩子泄漏），优化长期运行内存稳定性
+
+**注意事项**
+- 钩子存储格式从二元组 `(priority, handler)` 改为三元组 `(priority, handler, owner)`，不影响公共 API
+- 事件处理器并发上限默认 64，可通过 `ErisPulse.framework.handler_max_concurrency` 配置
+- 主动 GC 默认每 300 秒执行一次，可通过 `ErisPulse.framework.proactive_gc_interval` 配置（设为 0 禁用）
+- 离线 Bot 默认 3600 秒后自动清除，可通过 `ErisPulse.framework.offline_bot_expiry` 配置
+
+### 新增
+
+- @wsu2059q
+  - `Core` 性能优化与主动 GC 机制：
+    - `Core/adapter.py` 事件处理器 Task 追踪与并发背压控制：
+      - 新增 `_pending_handler_tasks` 集合追踪所有在途事件处理器 Task，避免 GC 回收和关闭时丢失
+      - 新增 `_handler_semaphore` 信号量限制事件处理器最大并发数（默认 64，可配置）
+      - 新增 `_drain_pending_handler_tasks()` 方法，在 shutdown 时取消并等待所有在途 Task
+    - `Core/lifecycle.py` 生命周期钩子 owner 追踪与按 owner 批量清理：
+      - 钩子存储格式从 `(priority, handler)` 改为 `(priority, handler, owner)` 三元组
+      - 新增 `unregister_by_owner(owner)` 方法，模块/适配器卸载时自动清理其注册的钩子
+    - `sdk.py` 主动 GC 后台任务：
+      - 初始化后自动启动定期 GC 任务（默认每 300 秒），执行 Python GC + 内部资源回收
+      - 新增 `_start_proactive_gc()` / `_stop_proactive_gc()` 方法
+    - `Core/adapter.py` 离线 Bot 记录自动过期清理：
+      - 新增 `_evict_offline_bots()` 方法，定期清除过期的离线 Bot 记录
+    - `Core/router.py` 限流存储定期清理：
+      - 新增后台任务定期扫描 `_rate_limit_store`，清除过期的 IP 记录，防止无限增长
+
+### 修复
+
+- @wsu2059q
+  - `sdk.py` 反初始化时关闭 HTTP 客户端连接池（`await client.close()`），修复每次软重启泄漏 `aiohttp.ClientSession` 的问题
+  - `sdk.py` 反初始化时清理 `LazyModule._module_info`，修复循环引用残留
+  - `Core/Event/command.py` `wait_reply` 使用 `finally` 清理 `_waiting_replies` 条目，修复 `CancelledError` 时的内存泄漏
+
+### 优化
+
+- @wsu2059q
+  - `Core/adapter.py` 移除热路径中的 `import time` 语句，改为模块级导入
+  - `Core/module.py` 模块卸载时自动清理生命周期钩子（`lifecycle.unregister_by_owner`）
+  - `Core/adapter.py` 适配器资源清理时自动清理生命周期钩子
+  - `Core/constants.py` 新增性能优化相关常量：`DEFAULT_HANDLER_MAX_CONCURRENCY`、`DEFAULT_PROACTIVE_GC_INTERVAL_SECS`、`DEFAULT_OFFLINE_BOT_EXPIRY_SECS`、`DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS`、`DEFAULT_RATE_LIMIT_CLEANUP_INTERVAL_SECS`
+  - `runtime/frame_config.py` 新增框架配置项：`handler_max_concurrency`、`proactive_gc_interval`、`offline_bot_expiry`
+
+---
+
 ## [2.6.0-dev.0] - 2026/07/09
 > 开发版本
 
