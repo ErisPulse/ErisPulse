@@ -125,8 +125,8 @@ jobs:
             echo "Translation script not found, skipping this step"
           fi
           
-          # Check if translated docs were updated (including root README.*.md files)
-          if git diff --quiet -- docs/ README.md README.*.md 2>/dev/null; then
+          # Check if translated docs were updated (including root README.*.md and CHANGELOG.*.md files)
+          if git diff --quiet -- docs/ README.md README.*.md CHANGELOG.*.md 2>/dev/null; then
             echo "No changes in translated docs"
             echo "docs_updated=false" >> $GITHUB_OUTPUT
           else
@@ -228,8 +228,8 @@ jobs:
         run: |
           echo "Saving document updates..."
           
-          # Add all updated docs and cache
-          git add docs/ .github/.translate_cache/ README.md README.*.md
+          # Add all updated docs, cache and changelog translations
+          git add docs/ .github/.translate_cache/ README.md README.*.md CHANGELOG.*.md
           
           # Commit changes
           git commit -m "chore(docs): auto-update docs [skip ci]" || echo "No changes to commit"
