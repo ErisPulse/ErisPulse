@@ -63,7 +63,7 @@ init 命令
 ---
 
 
-##### `async async _fetch_available_adapters()`
+##### `async _fetch_available_adapters()`
 
 获取可用的适配器列表
 

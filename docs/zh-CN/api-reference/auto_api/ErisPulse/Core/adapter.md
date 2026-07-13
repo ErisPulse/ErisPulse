@@ -34,8 +34,8 @@ ErisPulse 适配器系统
 
 设置 SDK 引用
 
-:param sdk: SDK 实例
-:return: 是否设置成功
+- **sdk** (`SDK`): 实例
+**返回值**: 是否设置成功
 
 ---
 
@@ -44,12 +44,8 @@ ErisPulse 适配器系统
 
 注册新的适配器类（标准化注册方法）
 
-:param platform: 平台名称
-:param adapter_class: 适配器类
-:param adapter_info: 适配器信息
-:return: 注册是否成功
-
-**异常**: `TypeError` - 当适配器类无效时抛出
+- **platform** (`平台名称`): - **adapter_class**: 适配器类
+- **adapter_info** (`适配器信息`): **返回值** (`注册是否成功`): **异常**: `TypeError` - 当适配器类无效时抛出
 
 **示例**:
 ```python
@@ -59,12 +55,11 @@ ErisPulse 适配器系统
 ---
 
 
-##### `async async startup(platforms: str | list[str] | None = None)`
+##### `async startup(platforms: str | list[str] | None = None)`
 
 启动指定的适配器
 
-:param platforms: 要启动的平台，可以是单个平台名、平台名列表或None（表示所有平台）
-**异常**: `ValueError` - 当平台未注册时抛出
+- **platforms** (`要启动的平台，可以是单个平台名、平台名列表或None（表示所有平台）`): **异常**: `ValueError` - 当平台未注册时抛出
 
 **示例**:
 ```python
@@ -79,23 +74,21 @@ ErisPulse 适配器系统
 ---
 
 
-##### `async async _run_adapter(adapter: BaseAdapter, platform: str)`
+##### `async _run_adapter(adapter: BaseAdapter, platform: str)`
 
-> **内部方法** 
+> **内部方法**
 运行适配器实例
 
-:param adapter: 适配器实例
-:param platform: 平台名称
+- **adapter** (`适配器实例`): - **platform**: 平台名称
 
 ---
 
 
-##### `async async shutdown(platforms: str | list[str] | None = None)`
+##### `async shutdown(platforms: str | list[str] | None = None)`
 
 关闭指定的适配器
 
-:param platforms: 要关闭的平台，可以是单个平台名、平台名列表或None（表示所有平台）
-**异常**: `ValueError` - 当平台未注册时抛出
+- **platforms** (`要关闭的平台，可以是单个平台名、平台名列表或None（表示所有平台）`): **异常**: `ValueError` - 当平台未注册时抛出
 
 **示例**:
 ```python
@@ -110,9 +103,9 @@ ErisPulse 适配器系统
 ---
 
 
-##### `async async _stop_adapter(platform: str)`
+##### `async _stop_adapter(platform: str)`
 
-> **内部方法** 
+> **内部方法**
 停止单个平台适配器——shutdown 即清理。
 
 将"停止适配器"与"回收其注册的资源"绑定在一次调用里：调用适配器自身的
@@ -122,24 +115,24 @@ ErisPulse 适配器系统
 对未注册的平台直接返回；``shutdown()`` 与清理均幂等，半途失败的重试场景
 也能正确回收 start() 期间已注册的资源。
 
-:param platform: 平台名称
+- **platform**: 平台名称
 
 ---
 
 
-##### `async async _drain_pending_handler_tasks(timeout: float = DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS)`
+##### `async _drain_pending_handler_tasks(timeout: float = DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS)`
 
-> **内部方法** 
+> **内部方法**
 等待或取消所有在途的事件处理器 Task
 
-:param timeout: 等待 Task 退出的最长时间（秒）
+- **timeout** (`等待`): Task 退出的最长时间（秒）
 
 ---
 
 
 ##### `_cleanup_adapter_resources(platform: str)`
 
-> **内部方法** 
+> **内部方法**
 适配器资源兜底清理（与模块卸载对齐颗粒度）。
 
 清理该平台在运行期间注册的所有路由、命令与事件处理器。同时覆盖两种注册方式：
@@ -147,12 +140,12 @@ ErisPulse 适配器系统
 - 适配器以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册的路由
   （unregister_all_by_owner，依赖 start() 期间注入的 current_owner）
 
-:param platform: 平台名称
+- **platform**: 平台名称
 
 ---
 
 
-##### `async async restart(platform: str)`
+##### `async restart(platform: str)`
 
 重启指定平台适配器（shutdown + 资源兜底清理 + start）
 
@@ -160,8 +153,7 @@ ErisPulse 适配器系统
 并在重启时注入 owner，使新注册的资源可被后续按 owner 清理。
 第三方模块（如 Dashboard）的热重载应调用本方法，而非直接操作适配器实例。
 
-:param platform: 平台名称
-:return: 是否实际执行了重启（平台存在且原本在运行时为 True）
+- **platform** (`平台名称`): **返回值** (`是否实际执行了重启（平台存在且原本在运行时为`): True）
 
 **示例**:
 ```python
@@ -175,7 +167,7 @@ ErisPulse 适配器系统
 
 清除所有适配器实例和信息
 
-> **内部方法** 
+> **内部方法**
 此方法用于反初始化时完全重置适配器管理器状态
 
 ---
@@ -185,8 +177,7 @@ ErisPulse 适配器系统
 
 注册新平台适配器（仅当平台不存在时注册）
 
-:param platform: 平台名称
-- **enabled** (`bool`): 是否启用适配器 (默认: True，新适配器默认启用)
+- **platform** (`平台名称`): - **enabled** (`bool`): 是否启用适配器 (默认: True，新适配器默认启用)
 **返回值** (`bool`): 操作是否成功
 
 ---
@@ -196,8 +187,7 @@ ErisPulse 适配器系统
 
 检查平台是否已注册
 
-:param platform: 平台名称
-:return: 平台是否已注册（即 adapter.register() 已被调用）
+- **platform** (`平台名称`): **返回值** (`平台是否已注册（即`): adapter.register() 已被调用）
 
 ---
 
@@ -206,10 +196,7 @@ ErisPulse 适配器系统
 
 检查平台适配器是否启用
 
-:param platform: 平台名称
-:return: 平台适配器是否启用
-
-> **提示**
+- **platform** (`平台名称`): **返回值** (`平台适配器是否启用`): > **提示**
 > 适配器启用条件：
 > 1. 适配器在配置文件中（ErisPulse.adapters.status.{platform} 存在）
 > 2. 配置值为启用状态
@@ -222,8 +209,7 @@ ErisPulse 适配器系统
 
 启用平台适配器
 
-:param platform: 平台名称
-**返回值** (`bool`): 操作是否成功
+- **platform** (`平台名称`): **返回值** (`bool`): 操作是否成功
 
 ---
 
@@ -232,8 +218,7 @@ ErisPulse 适配器系统
 
 禁用平台适配器
 
-:param platform: 平台名称
-**返回值** (`bool`): 操作是否成功
+- **platform** (`平台名称`): **返回值** (`bool`): 操作是否成功
 
 ---
 
@@ -242,10 +227,7 @@ ErisPulse 适配器系统
 
 取消注册适配器
 
-:param platform: 平台名称
-:return: 是否取消成功
-
-> **内部方法** 
+- **platform** (`平台名称`): **返回值** (`是否取消成功`): > **内部方法**
 注意: 此方法仅取消注册, 不关闭已启动的适配器
 
 ---
@@ -255,7 +237,7 @@ ErisPulse 适配器系统
 
 列出所有已注册的平台
 
-:return: 平台名称列表
+**返回值**: 平台名称列表
 
 ---
 
@@ -266,7 +248,7 @@ ErisPulse 适配器系统
 
 合并配置项与已注册适配器，确保禁用适配器也可见。
 
-:return: {平台名: 是否启用} 字典
+**返回值** (`{平台名:`): 是否启用} 字典
 
 ---
 
@@ -275,7 +257,7 @@ ErisPulse 适配器系统
 
 兼容性方法 - 保持向后兼容
 
-:return: {平台名: 是否启用} 字典
+**返回值** (`{平台名:`): 是否启用} 字典
 
 > **已弃用** 此方法已弃用，请使用 list_items() 代替
 
@@ -286,11 +268,8 @@ ErisPulse 适配器系统
 
 OneBot12协议事件监听装饰器
 
-:param event_type: OneBot12事件类型
-:param raw: 是否监听原生事件
-:param platform: 指定平台，None表示监听所有平台
-:return: 装饰器函数
-
+- **event_type** (`OneBot12事件类型`): - **raw**: 是否监听原生事件
+- **platform** (`指定平台，None表示监听所有平台`): **返回值** (`装饰器函数`): 
 **示例**:
 ```python
 >>> # 监听OneBot12标准事件（所有平台）
@@ -321,9 +300,7 @@ OneBot12协议事件监听装饰器
 
 添加OneBot12中间件处理器
 
-:param func: 中间件函数
-:return: 中间件函数
-
+- **func** (`中间件函数`): **返回值** (`中间件函数`): 
 **示例**:
 ```python
 >>> @sdk.adapter.middleware
@@ -335,15 +312,14 @@ OneBot12协议事件监听装饰器
 ---
 
 
-##### `async async emit(data: Any)`
+##### `async emit(data: Any)`
 
 提交OneBot12协议事件到指定平台
 
 每个事件处理器（handler）都在独立的 asyncio.Task 中执行，
 单个处理器阻塞不会影响框架的事件分发和其他处理器运行。
 
-:param data: 符合OneBot12标准的事件数据
-
+- **data** (`符合OneBot12标准的事件数据`): 
 **示例**:
 ```python
 >>> await sdk.adapter.emit({
@@ -363,37 +339,35 @@ OneBot12协议事件监听装饰器
 
 ##### `_get_handler_semaphore()`
 
-> **内部方法** 
+> **内部方法**
 获取事件处理器并发控制信号量
 
 懒初始化，首次调用时从框架配置读取 handler_max_concurrency。
 配置变更后可通过设置 _handler_max_concurrency = 0 来强制重建。
 
-:return: asyncio.Semaphore 并发控制信号量
+**返回值** (`asyncio.Semaphore`): 并发控制信号量
 
 ---
 
 
 ##### `_dispatch_handler_task(func: Callable, data: Any)`
 
-> **内部方法** 
+> **内部方法**
 将事件处理器包装为独立 asyncio.Task 并调度执行
 
 处理器在独立 Task 中运行，不会阻塞 adapter.emit() 的后续流程。
 自动捕获处理器异常并记录日志，同时监控处理器执行耗时。
 
-:param func: 事件处理器函数
-:param data: 事件数据
-:param event_type: 事件类型（用于日志）
-:param platform: 平台名称（用于日志）
-:return: asyncio.Task
+- **func** (`事件处理器函数`): - **data**: 事件数据
+- **event_type** (`事件类型（用于日志）`): - **platform**: 平台名称（用于日志）
+**返回值**: asyncio.Task
 
 ---
 
 
 ##### `_auto_register_bot(platform: str, self_info: dict)`
 
-> **内部方法** 
+> **内部方法**
 自动注册Bot（从OB12事件self字段提取），提取所有扩展字段作为Bot元信息
 
 self字段标准扩展：
@@ -402,45 +376,42 @@ self字段标准扩展：
 - self.avatar (可选) - Bot头像URL
 - self.account_id (可选) - 多账户标识
 
-:param platform: 平台名称
-:param self_info: 事件中的self字段内容
-:return: 是否为新注册的Bot
+- **platform** (`平台名称`): - **self_info**: 事件中的self字段内容
+**返回值**: 是否为新注册的Bot
 
 ---
 
 
 ##### `_update_bot_status(platform: str, bot_id: str, status: str)`
 
-> **内部方法** 
+> **内部方法**
 更新Bot状态
 
-:param platform: 平台名称
-:param bot_id: Bot用户ID
-:param status: 状态值（online/offline）
+- **platform** (`平台名称`): - **bot_id**: Bot用户ID
+- **status**: 状态值（online/offline）
 
 ---
 
 
 ##### `_update_bot_heartbeat(platform: str, self_info: dict)`
 
-> **内部方法** 
+> **内部方法**
 更新Bot心跳（更新活跃时间和元信息）
 
-:param platform: 平台名称
-:param self_info: 事件中的self字段内容
+- **platform** (`平台名称`): - **self_info**: 事件中的self字段内容
 
 ---
 
 
 ##### `_evict_offline_bots(expiry_secs: int | None = None)`
 
-> **内部方法** 
+> **内部方法**
 清除过期的离线 Bot 记录
 
 遍历 _bots，将状态为 offline 且 last_active 距今超过 expiry_secs 的条目移除。
 
-:param expiry_secs: 过期时间（秒），None 时从框架配置读取
-:return: int 被清除的 Bot 记录数
+- **expiry_secs** (`过期时间（秒），None`): 时从框架配置读取
+**返回值** (`int`): 被清除的 Bot 记录数
 
 ---
 
@@ -449,10 +420,8 @@ self字段标准扩展：
 
 获取Bot详细信息
 
-:param platform: 平台名称
-:param bot_id: Bot用户ID
-:return: Bot信息字典，包含status/last_active/info，不存在则返回None
-
+- **platform** (`平台名称`): - **bot_id**: Bot用户ID
+**返回值** (`Bot信息字典，包含status/last_active/info，不存在则返回None`): 
 **示例**:
 ```python
 >>> info = adapter.get_bot_info("telegram", "123456")
@@ -466,8 +435,7 @@ self字段标准扩展：
 
 列出Bot信息
 
-:param platform: 平台名称，None表示列出所有平台的Bot
-:return: Bot信息字典 {platform: {bot_id: {status, last_active, info}}}
+- **platform** (`平台名称，None表示列出所有平台的Bot`): **返回值** (`Bot信息字典`): {platform: {bot_id: {status, last_active, info}}}
 
 **示例**:
 ```python
@@ -484,10 +452,8 @@ self字段标准扩展：
 
 检查Bot是否在线
 
-:param platform: 平台名称
-:param bot_id: Bot用户ID
-:return: Bot是否在线
-
+- **platform** (`平台名称`): - **bot_id**: Bot用户ID
+**返回值** (`Bot是否在线`): 
 **示例**:
 ```python
 >>> if adapter.is_bot_online("telegram", "123456"):
@@ -504,8 +470,7 @@ self字段标准扩展：
 返回所有适配器的运行状态及各适配器下的Bot状态，便于WebUI展示。
 包含已禁用适配器以便于管理。
 
-:return: 状态摘要字典
-
+**返回值** (`状态摘要字典`): 
 **示例**:
 ```python
 >>> summary = adapter.get_status_summary()
@@ -537,9 +502,7 @@ self字段标准扩展：
 
 获取指定平台的适配器实例
 
-:param platform: 平台名称
-:return: 适配器实例或None
-
+- **platform** (`平台名称`): **返回值** (`适配器实例或None`): 
 **示例**:
 ```python
 >>> adapter = adapter.get("MyPlatform")
@@ -552,9 +515,7 @@ self字段标准扩展：
 
 检查适配器是否正在运行（已启动）
 
-:param platform: 平台名称
-:return: 适配器是否正在运行
-
+- **platform** (`平台名称`): **返回值** (`适配器是否正在运行`): 
 **示例**:
 ```python
 >>> if adapter.is_running("onebot11"):
@@ -568,8 +529,7 @@ self字段标准扩展：
 
 列出所有正在运行的适配器（已启动）
 
-:return: 平台名称列表
-
+**返回值** (`平台名称列表`): 
 **示例**:
 ```python
 >>> running = adapter.list_running()
@@ -589,8 +549,7 @@ self字段标准扩展：
 路由注册时的 ``module_name`` 必须与适配器的 ``platform`` 名称完全一致，
 否则路由信息将无法被正确关联。
 
-:param platform: 平台名称
-:return: 连接信息字典，平台不存在时返回 None
+- **platform** (`平台名称`): **返回值** (`连接信息字典，平台不存在时返回`): None
 
 **示例**:
 ```python
@@ -623,9 +582,7 @@ self字段标准扩展：
 
 列出指定平台支持的发送方法
 
-:param platform: 平台名称
-:return: 发送方法名列表
-**异常**: `ValueError` - 当平台不存在时抛出
+- **platform** (`平台名称`): **返回值** (`发送方法名列表`): **异常**: `ValueError` - 当平台不存在时抛出
 
 **示例**:
 ```python
@@ -640,9 +597,8 @@ self字段标准扩展：
 
 获取指定发送方法的详细信息
 
-:param platform: 平台名称
-:param method_name: 发送方法名
-:return: 方法信息字典，包含name, parameters, return_type, docstring
+- **platform** (`平台名称`): - **method_name**: 发送方法名
+**返回值** (`方法信息字典，包含name,`): parameters, return_type, docstring
 **异常**: `ValueError` - 当平台或方法不存在时抛出
 
 **示例**:
@@ -666,8 +622,7 @@ self字段标准扩展：
 
 获取所有已注册的平台列表
 
-:return: 平台名称列表
-
+**返回值** (`平台名称列表`): 
 **示例**:
 ```python
 >>> print("已注册平台:", adapter.platforms)
@@ -680,9 +635,7 @@ self字段标准扩展：
 
 通过属性访问获取适配器实例
 
-:param platform: 平台名称
-:return: 适配器实例
-**异常**: `AttributeError` - 当平台不存在或未启用时
+- **platform** (`平台名称`): **返回值** (`适配器实例`): **异常**: `AttributeError` - 当平台不存在或未启用时
 
 ---
 
@@ -691,8 +644,7 @@ self字段标准扩展：
 
 检查平台是否存在且处于启用状态
 
-:param platform: 平台名称
-**返回值** (`bool`): 平台是否存在且启用
+- **platform** (`平台名称`): **返回值** (`bool`): 平台是否存在且启用
 
 ---
 

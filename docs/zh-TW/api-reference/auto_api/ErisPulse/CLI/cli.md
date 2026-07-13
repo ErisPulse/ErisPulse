@@ -35,7 +35,7 @@ ErisPulse 命令行接口主类
 
 创建命令行参数解析器
 
-:return: 配置好的 ArgumentParser 实例
+**返回值** (`配置好的`): ArgumentParser 实例
 
 ---
 

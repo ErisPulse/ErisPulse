@@ -30,20 +30,16 @@ ErisPulse 命令处理模块
 #### 方法列表
 
 
-##### `__call__(name: str | list[str] = None, aliases: list[str] = None, group: str = None, priority: int = 0, permission: Callable = None, help: str = None, usage: str = None, hidden: bool = False, admin: bool = False)`
+##### `__call__(name: str | list[str] = None, aliases: list[str] = None, group: str = None, priority: int = 0, permission: Callable = None, help: str = None, usage: str = None, hidden: bool = False, master: bool = False)`
 
 命令装饰器
 
-:param name: 命令名称，可以是字符串或字符串列表
-:param aliases: 命令别名列表
-:param group: 命令组名称
-:param priority: 处理器优先级
-:param permission: 权限检查函数，返回True时允许执行命令
-:param help: 命令帮助信息
-:param usage: 命令使用方法
-:param hidden: 是否在帮助中隐藏命令
-:param admin: 是否仅允许管理员执行（框架自动检查 ``admin.is_admin(event)``）
-:return: 装饰器函数
+- **name** (`命令名称，可以是字符串或字符串列表`): - **aliases**: 命令别名列表
+- **group** (`命令组名称`): - **priority**: 处理器优先级
+- **permission** (`权限检查函数，返回True时允许执行命令`): - **help**: 命令帮助信息
+- **usage** (`命令使用方法`): - **hidden**: 是否在帮助中隐藏命令
+- **master** (`是否仅允许框架主人执行（框架自动检查`): ``master.is_master(event)``）
+**返回值**: 装饰器函数
 
 ---
 
@@ -52,116 +48,108 @@ ErisPulse 命令处理模块
 
 注销命令处理器
 
-:param handler: 要注销的命令处理器
-:return: 是否成功注销
+- **handler** (`要注销的命令处理器`): **返回值**: 是否成功注销
 
 ---
 
 
 ##### `unregister_by_owner(owner: str)`
 
-> **内部方法** 
+> **内部方法**
 按归属者精确移除命令
 
-:param owner: 归属者（模块名）
-:return: 移除的命令数量
+- **owner** (`归属者（模块名）`): **返回值**: 移除的命令数量
 
 ---
 
 
-##### `async async wait_reply(event: dict[str, Any], prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
+##### `async wait_reply(event: dict[str, Any], prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户回复
 
-:param event: 原始事件数据
-:param prompt: 提示消息，如果提供会发送给用户
-:param timeout: 等待超时时间(秒)
-:param callback: 回调函数，当收到回复时执行
-:param validator: 验证函数，用于验证回复是否有效
-:param method: 发送方法，默认为 "Text"
-:return: 用户回复的事件数据，如果超时则返回None
+- **event** (`原始事件数据`): - **prompt**: 提示消息，如果提供会发送给用户
+- **timeout** (`等待超时时间(秒)`): - **callback**: 回调函数，当收到回复时执行
+- **validator** (`验证函数，用于验证回复是否有效`): - **method**: 发送方法，默认为 "Text"
+**返回值**: 用户回复的事件数据，如果超时则返回None
 
 ---
 
 
-##### `async async _handle_message(event: dict[str, Any])`
+##### `async _handle_message(event: dict[str, Any])`
 
 处理消息事件中的命令
 
-> **内部方法** 
+> **内部方法**
 内部使用的方法，用于从消息中解析并执行命令
 
-:param event: 消息事件数据
+- **event**: 消息事件数据
 
 ---
 
 
-##### `async async _try_execute_command(event: dict[str, Any], original_text: str, check_text: str, prefix: str)`
+##### `async _try_execute_command(event: dict[str, Any], original_text: str, check_text: str, prefix: str)`
 
 尝试执行命令
 
-> **内部方法** 
+> **内部方法**
 内部使用的方法，用于尝试解析和执行命令
 
-:param event: 消息事件数据
-:param original_text: 原始文本内容
-:param check_text: 用于检查的文本内容（可能已转换为小写）
-:param prefix: 已匹配的命令前缀（可能已转换为小写）
-:return: 是否成功执行命令
+- **event** (`消息事件数据`): - **original_text**: 原始文本内容
+- **check_text** (`用于检查的文本内容（可能已转换为小写）`): - **prefix**: 已匹配的命令前缀（可能已转换为小写）
+**返回值**: 是否成功执行命令
 
 ---
 
 
-##### `async async _check_pending_reply(event: dict[str, Any])`
+##### `async _check_pending_reply(event: dict[str, Any])`
 
 检查是否是等待回复的消息
 
-:param event: 消息事件数据
+- **event**: 消息事件数据
 
 ---
 
 
-##### `async async _send_permission_denied(event: dict[str, Any])`
+##### `async _send_permission_denied(event: dict[str, Any])`
 
 发送权限拒绝消息
 
-> **内部方法** 
+> **内部方法**
 内部使用的方法
 
-:param event: 事件数据
+- **event**: 事件数据
 
 ---
 
 
-##### `async async _send_command_error(event: dict[str, Any], error: str)`
+##### `async _send_command_error(event: dict[str, Any], error: str)`
 
 发送命令错误消息
 
-> **内部方法** 
+> **内部方法**
 内部使用的方法
 
-:param event: 事件数据
-:param error: 错误信息
+- **event** (`事件数据`): - **error**: 错误信息
 
 ---
 
 
 ##### `bind_message_handler(handler: BaseEventHandler)`
 
-> **内部方法** 
+> **内部方法**
 绑定到共享的消息事件处理器
 
 将命令分发器 _handle_message 注册到共享的 BaseEventHandler 中，
 使命令处理和通用消息处理共享同一个优先级队列。
 
-:param handler: MessageHandler 持有的 BaseEventHandler 实例
+- **handler** (`MessageHandler`): 持有的 BaseEventHandler 实例
 
 ---
 
 
 ##### `_register_dispatcher()`
 
-> **内部方法** 
+> **内部方法**
 将命令分发器注册到共享 handler（如尚未注册）
 
 ---
@@ -169,10 +157,10 @@ ErisPulse 命令处理模块
 
 ##### `_clear_commands()`
 
-> **内部方法** 
+> **内部方法**
 清除所有已注册的命令，并从共享 handler 中注销命令分发器
 
-:return: 被清除的命令数量
+**返回值**: 被清除的命令数量
 
 ---
 
@@ -181,8 +169,7 @@ ErisPulse 命令处理模块
 
 获取命令信息
 
-:param name: 命令名称
-:return: 命令信息字典，如果不存在则返回None
+- **name** (`命令名称`): **返回值**: 命令信息字典，如果不存在则返回None
 
 ---
 
@@ -191,7 +178,7 @@ ErisPulse 命令处理模块
 
 获取所有命令
 
-:return: 命令信息字典
+**返回值**: 命令信息字典
 
 ---
 
@@ -200,8 +187,7 @@ ErisPulse 命令处理模块
 
 获取命令组中的命令
 
-:param group: 命令组名称
-:return: 命令名称列表
+- **group** (`命令组名称`): **返回值**: 命令名称列表
 
 ---
 
@@ -210,7 +196,7 @@ ErisPulse 命令处理模块
 
 获取所有可见命令（非隐藏命令）
 
-:return: 可见命令信息字典
+**返回值**: 可见命令信息字典
 
 ---
 
@@ -219,9 +205,8 @@ ErisPulse 命令处理模块
 
 生成帮助信息
 
-:param command_name: 命令名称，如果为None则生成所有命令的帮助
-:param show_hidden: 是否显示隐藏命令
-:return: 帮助信息字符串
+- **command_name** (`命令名称，如果为None则生成所有命令的帮助`): - **show_hidden**: 是否显示隐藏命令
+**返回值**: 帮助信息字符串
 
 ---
 

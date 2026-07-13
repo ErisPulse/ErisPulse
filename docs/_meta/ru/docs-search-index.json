@@ -464,14 +464,6 @@
         "title": "2. Встраиваемая разработка"
       }
     ],
-    "2. Запись в лог": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 603,
-        "level": 3,
-        "title": "2. Запись в лог"
-      }
-    ],
     "2. Избегание блокирующих операций": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -508,6 +500,12 @@
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 487,
+        "level": 3,
+        "title": "2. Логирование"
+      },
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 603,
         "level": 3,
         "title": "2. Логирование"
       }
@@ -1961,7 +1959,7 @@
     "HTTP декораторы": [
       {
         "document": "advanced/router.md",
-        "line": 37,
+        "line": 38,
         "level": 3,
         "title": "HTTP декораторы"
       }
@@ -2057,7 +2055,7 @@
     "Middleware маршрутов": [
       {
         "document": "advanced/router.md",
-        "line": 211,
+        "line": 212,
         "level": 2,
         "title": "Middleware маршрутов"
       }
@@ -2281,7 +2279,7 @@
     "WebSocket декораторы": [
       {
         "document": "advanced/router.md",
-        "line": 64,
+        "line": 65,
         "level": 3,
         "title": "WebSocket декораторы"
       }
@@ -2687,7 +2685,7 @@
     "Абстрактные типы": [
       {
         "document": "advanced/router.md",
-        "line": 21,
+        "line": 22,
         "level": 2,
         "title": "Абстрактные типы"
       }
@@ -2700,12 +2698,12 @@
         "title": "Абстракция хранилища"
       }
     ],
-    "Автоматическая документация": [
+    "Автодокументация": [
       {
         "document": "advanced/router.md",
-        "line": 278,
+        "line": 279,
         "level": 2,
-        "title": "Автоматическая документация"
+        "title": "Автодокументация"
       }
     ],
     "Автоматическая отмена по таймауту (Timeout)": [
@@ -2722,6 +2720,14 @@
         "line": 180,
         "level": 3,
         "title": "Автоматическая повторная попытка (Retry)"
+      }
+    ],
+    "Автоматическая регистрация Dashboard": [
+      {
+        "document": "advanced/router.md",
+        "line": 361,
+        "level": 3,
+        "title": "Автоматическая регистрация Dashboard"
       }
     ],
     "Автоматическое обнаружение обычных событий": [
@@ -2916,14 +2922,6 @@
         "title": "Базовая информация"
       }
     ],
-    "Базовая команда": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 68,
-        "level": 3,
-        "title": "Базовая команда"
-      }
-    ],
     "Базовая отправка": [
       {
         "document": "api-reference/adapter-system.md",
@@ -2978,6 +2976,14 @@
         "line": 41,
         "level": 3,
         "title": "Базовые классы"
+      }
+    ],
+    "Базовые команды": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 68,
+        "level": 3,
+        "title": "Базовые команды"
       }
     ],
     "Базовые методы": [
@@ -3050,6 +3056,14 @@
         "line": 325,
         "level": 2,
         "title": "Безопасность"
+      }
+    ],
+    "Безопасные заголовки": [
+      {
+        "document": "advanced/router.md",
+        "line": 264,
+        "level": 2,
+        "title": "Безопасные заголовки"
       }
     ],
     "Бот не отвечает на команду?": [
@@ -3404,6 +3418,14 @@
         "title": "Высокоуровневые методы (рекомендуется)"
       }
     ],
+    "Главная страница (входы)": [
+      {
+        "document": "advanced/router.md",
+        "line": 326,
+        "level": 2,
+        "title": "Главная страница (входы)"
+      }
+    ],
     "Глобальная конфигурация (EmailAdapter)": [
       {
         "document": "platform-guide/email.md",
@@ -3436,18 +3458,10 @@
         "title": "Горячее обновление конфигурации"
       }
     ],
-    "Группировка команд": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 111,
-        "level": 3,
-        "title": "Группировка команд"
-      }
-    ],
     "Группировка маршрутов": [
       {
         "document": "advanced/router.md",
-        "line": 194,
+        "line": 195,
         "level": 2,
         "title": "Группировка маршрутов"
       }
@@ -3460,16 +3474,18 @@
         "title": "Группы боковой панели"
       }
     ],
+    "Группы команд": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 111,
+        "level": 3,
+        "title": "Группы команд"
+      }
+    ],
     "Далее": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 559,
-        "level": 2,
-        "title": "Далее"
-      },
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 504,
         "level": 2,
         "title": "Далее"
       },
@@ -3510,6 +3526,12 @@
       {
         "document": "getting-started/basic-concepts.md",
         "line": 351,
+        "level": 2,
+        "title": "Дальнейшие шаги"
+      },
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 504,
         "level": 2,
         "title": "Дальнейшие шаги"
       },
@@ -3572,12 +3594,12 @@
         "title": "Декоратор команды"
       }
     ],
-    "Декораторные маршруты (Рекомендуется)": [
+    "Декораторные маршруты (рекомендуется)": [
       {
         "document": "advanced/router.md",
-        "line": 35,
+        "line": 36,
         "level": 2,
-        "title": "Декораторные маршруты (Рекомендуется)"
+        "title": "Декораторные маршруты (рекомендуется)"
       }
     ],
     "Декораторы правил отправки": [
@@ -3946,14 +3968,6 @@
         "title": "Жизненный цикл хуки"
       }
     ],
-    "Заголовки безопасности": [
-      {
-        "document": "advanced/router.md",
-        "line": 263,
-        "level": 2,
-        "title": "Заголовки безопасности"
-      }
-    ],
     "Закрытие соединения": [
       {
         "document": "advanced/http-client.md",
@@ -3968,6 +3982,22 @@
         "line": 256,
         "level": 3,
         "title": "Запись в лог"
+      }
+    ],
+    "Запланированные задачи": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 76,
+        "level": 2,
+        "title": "Запланированные задачи"
+      }
+    ],
+    "Запрос в друзья": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 224,
+        "level": 3,
+        "title": "Запрос в друзья"
       }
     ],
     "Запрос возможностей платформы": [
@@ -4002,22 +4032,6 @@
         "title": "Запрос методов отправки адаптера"
       }
     ],
-    "Запрос на добавление в друзья": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 224,
-        "level": 3,
-        "title": "Запрос на добавление в друзья"
-      }
-    ],
-    "Запрос на приглашение в группу": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 240,
-        "level": 3,
-        "title": "Запрос на приглашение в группу"
-      }
-    ],
     "Запрос поддерживаемых методов отправки": [
       {
         "document": "api-reference/adapter-system.md",
@@ -4032,6 +4046,14 @@
         "line": 86,
         "level": 3,
         "title": "Запрос полей ID"
+      }
+    ],
+    "Запрос приглашения в группу": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 240,
+        "level": 3,
+        "title": "Запрос приглашения в группу"
       }
     ],
     "Запрос состояния бота": [
@@ -4341,7 +4363,7 @@
     "Интеграция жизненного цикла": [
       {
         "document": "advanced/router.md",
-        "line": 354,
+        "line": 365,
         "level": 2,
         "title": "Интеграция жизненного цикла"
       }
@@ -4785,7 +4807,7 @@
     "Классический способ регистрации": [
       {
         "document": "advanced/router.md",
-        "line": 103,
+        "line": 104,
         "level": 2,
         "title": "Классический способ регистрации"
       }
@@ -4856,12 +4878,12 @@
         "title": "Командная система"
       }
     ],
-    "Командные параметры": [
+    "Командные аргументы": [
       {
         "document": "getting-started/event-handling.md",
         "line": 97,
         "level": 3,
-        "title": "Командные параметры"
+        "title": "Командные аргументы"
       }
     ],
     "Командные права доступа": [
@@ -4968,6 +4990,14 @@
         "title": "Контекстный менеджер"
       }
     ],
+    "Контроль доступа": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 285,
+        "level": 2,
+        "title": "Контроль доступа"
+      }
+    ],
     "Конфигурация": [
       {
         "document": "platform-guide/kook.md",
@@ -4985,7 +5015,7 @@
     "Конфигурация CORS": [
       {
         "document": "advanced/router.md",
-        "line": 244,
+        "line": 245,
         "level": 2,
         "title": "Конфигурация CORS"
       }
@@ -5174,6 +5204,14 @@
         "title": "Конфигурация хранилища"
       }
     ],
+    "Корневая страница": [
+      {
+        "document": "advanced/router.md",
+        "line": 317,
+        "level": 3,
+        "title": "Корневая страница"
+      }
+    ],
     "Кросс-платформенное расширение (шаблон)": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -5234,6 +5272,12 @@
         "title": "Лучшие практики"
       },
       {
+        "document": "advanced/router.md",
+        "line": 379,
+        "level": 2,
+        "title": "Лучшие практики"
+      },
+      {
         "document": "platform-guide/onebot12.md",
         "line": 443,
         "level": 2,
@@ -5254,6 +5298,14 @@
         "title": "Лучшие практики обработки событий"
       }
     ],
+    "Маршрутизатор": [
+      {
+        "document": "advanced/router.md",
+        "line": 1,
+        "level": 1,
+        "title": "Маршрутизатор"
+      }
+    ],
     "Маршрутизация": [
       {
         "document": "terminology.md",
@@ -5270,6 +5322,14 @@
         "title": "Маршруты обратного вызова"
       }
     ],
+    "Массовая отправка нескольких сообщений": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 264,
+        "level": 3,
+        "title": "Массовая отправка нескольких сообщений"
+      }
+    ],
     "Матрица особенностей": [
       {
         "document": "platform-guide/webhook.md",
@@ -5284,14 +5344,6 @@
         "line": 5,
         "level": 2,
         "title": "Менеджер адаптеров"
-      }
-    ],
-    "Менеджер маршрутизации": [
-      {
-        "document": "advanced/router.md",
-        "line": 1,
-        "level": 1,
-        "title": "Менеджер маршрутизации"
       }
     ],
     "Меры предосторожности": [
@@ -5676,14 +5728,6 @@
         "line": 361,
         "level": 2,
         "title": "Механизм асинхронной обработки"
-      }
-    ],
-    "Механизм аутентификации": [
-      {
-        "document": "advanced/router.md",
-        "line": 304,
-        "level": 2,
-        "title": "Механизм аутентификации"
       }
     ],
     "Механизм ленивой загрузки": [
@@ -6148,6 +6192,14 @@
         "title": "Обнаружение маршрутов"
       }
     ],
+    "Обнаружение платформенных возможностей": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 206,
+        "level": 3,
+        "title": "Обнаружение платформенных возможностей"
+      }
+    ],
     "Обновление данных": [
       {
         "document": "advanced/sql-builder.md",
@@ -6202,14 +6254,6 @@
         "line": 359,
         "level": 3,
         "title": "Обработка исключений"
-      }
-    ],
-    "Обработка командных событий": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 66,
-        "level": 2,
-        "title": "Обработка командных событий"
       }
     ],
     "Обработка личных сообщений": [
@@ -6299,7 +6343,7 @@
     "Обработка путей": [
       {
         "document": "advanced/router.md",
-        "line": 294,
+        "line": 295,
         "level": 2,
         "title": "Обработка путей"
       }
@@ -6352,6 +6396,14 @@
         "line": 222,
         "level": 2,
         "title": "Обработка событий запросов"
+      }
+    ],
+    "Обработка событий команд": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 66,
+        "level": 2,
+        "title": "Обработка событий команд"
       }
     ],
     "Обработка событий сообщений": [
@@ -6582,12 +6634,12 @@
         "title": "Обязательные поля"
       }
     ],
-    "Ограничение скорости (Rate Limiting)": [
+    "Ограничение скорости": [
       {
         "document": "advanced/router.md",
-        "line": 228,
+        "line": 229,
         "level": 2,
-        "title": "Ограничение скорости (Rate Limiting)"
+        "title": "Ограничение скорости"
       }
     ],
     "Одновременная публикация в Docker Hub": [
@@ -6874,14 +6926,6 @@
         "line": 1,
         "level": 1,
         "title": "Описание функций платформы — универсальный адаптер Webhook"
-      }
-    ],
-    "Определение особенностей платформы": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 206,
-        "level": 3,
-        "title": "Определение особенностей платформы"
       }
     ],
     "Определение стандартных событий": [
@@ -7330,14 +7374,6 @@
         "title": "Ответы API"
       }
     ],
-    "Ответы, специфичные для платформы": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 189,
-        "level": 3,
-        "title": "Ответы, специфичные для платформы"
-      }
-    ],
     "Отложенная отправка (Defer)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -7472,14 +7508,6 @@
         "title": "Отправка мультимедийных сообщений"
       }
     ],
-    "Отправка нескольких сообщений пакетом": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 264,
-        "level": 3,
-        "title": "Отправка нескольких сообщений пакетом"
-      }
-    ],
     "Отправка оригинальных сообщений": [
       {
         "document": "platform-guide/onebot12.md",
@@ -7518,6 +7546,14 @@
         "line": 103,
         "level": 2,
         "title": "Отправка сообщений (Send)"
+      }
+    ],
+    "Отправка сообщений (повтор/тайм-аут/массовая)": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 230,
+        "level": 2,
+        "title": "Отправка сообщений (повтор/тайм-аут/массовая)"
       }
     ],
     "Отправка сообщений SendDSL": [
@@ -7820,14 +7856,6 @@
         "title": "Перечисление поддерживаемых методов отправки"
       }
     ],
-    "Периодические задачи": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 76,
-        "level": 2,
-        "title": "Периодические задачи"
-      }
-    ],
     "Письмо с вложениями": [
       {
         "document": "platform-guide/email.md",
@@ -7852,18 +7880,16 @@
         "title": "Платформенно-специфические методы"
       }
     ],
-    "Платформенно-специфичные методы": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 554,
-        "level": 3,
-        "title": "Платформенно-специфичные методы"
-      }
-    ],
     "Платформенные расширения": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 325,
+        "level": 3,
+        "title": "Платформенные расширения"
+      },
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 554,
         "level": 3,
         "title": "Платформенные расширения"
       }
@@ -7900,12 +7926,20 @@
         "title": "Платформенные функции"
       }
     ],
-    "Повтор при сбое + Отмена по тайм-ауту": [
+    "Платформо-специфичные ответы": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 189,
+        "level": 3,
+        "title": "Платформо-специфичные ответы"
+      }
+    ],
+    "Повтор при ошибке + Отмена по тайм-ауту": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 249,
         "level": 3,
-        "title": "Повтор при сбое + Отмена по тайм-ауту"
+        "title": "Повтор при ошибке + Отмена по тайм-ауту"
       }
     ],
     "Повторное использование условий запроса": [
@@ -8262,6 +8296,14 @@
         "title": "Подтверждение диалога (confirm)"
       }
     ],
+    "Поиск": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 383,
+        "level": 2,
+        "title": "Поиск"
+      }
+    ],
     "Полная справка по API": [
       {
         "document": "advanced/lifecycle.md",
@@ -8480,12 +8522,12 @@
         "title": "Пояснение конфигурационных параметров"
       }
     ],
-    "Права доступа в группах": [
+    "Права групп": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 322,
         "level": 3,
-        "title": "Права доступа в группах"
+        "title": "Права групп"
       }
     ],
     "Правила и обратные вызовы для целой партии": [
@@ -9006,14 +9048,6 @@
         "title": "Приоритет и сброс при переполнении (Priority)"
       }
     ],
-    "Приоритет команд": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 136,
-        "level": 3,
-        "title": "Приоритет команд"
-      }
-    ],
     "Приоритет разрешения методов": [
       {
         "document": "api-reference/event-system.md",
@@ -9030,12 +9064,12 @@
         "title": "Приоритеты выбора аккаунта"
       }
     ],
-    "Проверка администратора": [
+    "Приоритеты команд": [
       {
-        "document": "getting-started/common-tasks.md",
-        "line": 287,
+        "document": "getting-started/event-handling.md",
+        "line": 136,
         "level": 3,
-        "title": "Проверка администратора"
+        "title": "Приоритеты команд"
       }
     ],
     "Проверка возможностей платформы": [
@@ -9054,10 +9088,18 @@
         "title": "Проверка здоровья"
       }
     ],
+    "Проверка на администратора": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 287,
+        "level": 3,
+        "title": "Проверка на администратора"
+      }
+    ],
     "Проверка работоспособности": [
       {
         "document": "advanced/router.md",
-        "line": 339,
+        "line": 309,
         "level": 3,
         "title": "Проверка работоспособности"
       }
@@ -9124,28 +9166,28 @@
         "title": "Просмотр и поиск"
       }
     ],
-    "Простая функция подсчёта": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 19,
-        "level": 3,
-        "title": "Простая функция подсчёта"
-      }
-    ],
-    "Простой поиск": [
+    "Простое создание базы данных для поиска": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 385,
         "level": 3,
-        "title": "Простой поиск"
+        "title": "Простое создание базы данных для поиска"
       }
     ],
-    "Простой таймер": [
+    "Простые счётчики": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 19,
+        "level": 3,
+        "title": "Простые счётчики"
+      }
+    ],
+    "Простые таймеры": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 78,
         "level": 3,
-        "title": "Простой таймер"
+        "title": "Простые таймеры"
       }
     ],
     "Процесс внесения вклада": [
@@ -9404,14 +9446,6 @@
         "title": "Расширенная информация поля `self`"
       }
     ],
-    "Расширенная отправка сообщений (повтор/тайм-аут/пакетная)": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 230,
-        "level": 2,
-        "title": "Расширенная отправка сообщений (повтор/тайм-аут/пакетная)"
-      }
-    ],
     "Расширенные методы событий": [
       {
         "document": "platform-guide/onebot11.md",
@@ -9473,7 +9507,7 @@
     "Регистрация WebSocket": [
       {
         "document": "advanced/router.md",
-        "line": 129,
+        "line": 130,
         "level": 3,
         "title": "Регистрация WebSocket"
       }
@@ -9484,6 +9518,14 @@
         "line": 70,
         "level": 3,
         "title": "Регистрация middleware"
+      }
+    ],
+    "Регистрация входа": [
+      {
+        "document": "advanced/router.md",
+        "line": 330,
+        "level": 3,
+        "title": "Регистрация входа"
       }
     ],
     "Регистрация и отмена": [
@@ -9680,14 +9722,6 @@
         "line": 222,
         "level": 2,
         "title": "Рекомендации по безопасности"
-      }
-    ],
-    "Рекомендации по использованию": [
-      {
-        "document": "advanced/router.md",
-        "line": 368,
-        "level": 2,
-        "title": "Рекомендации по использованию"
       }
     ],
     "Рекомендации по лучшим практикам разработки адаптеров": [
@@ -9949,7 +9983,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 378,
+        "line": 389,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -10311,17 +10345,17 @@
     "Системные маршруты": [
       {
         "document": "advanced/router.md",
-        "line": 335,
+        "line": 305,
         "level": 2,
         "title": "Системные маршруты"
       }
     ],
-    "Скачивание и хранение изображений": [
+    "Скачивание и сохранение изображений": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 441,
         "level": 3,
-        "title": "Скачивание и хранение изображений"
+        "title": "Скачивание и сохранение изображений"
       }
     ],
     "Сколько времени занимает проверка?": [
@@ -10540,14 +10574,6 @@
         "title": "События WebSocket-соединений"
       }
     ],
-    "События heartbeat": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 269,
-        "level": 3,
-        "title": "События heartbeat"
-      }
-    ],
     "События адаптера": [
       {
         "document": "api-reference/core-modules.md",
@@ -10562,6 +10588,14 @@
         "line": 178,
         "level": 3,
         "title": "События запросов (Request Events)"
+      }
+    ],
+    "События пинга": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 269,
+        "level": 3,
+        "title": "События пинга"
       }
     ],
     "События подключения": [
@@ -10712,6 +10746,14 @@
         "title": "Сортировка, пагинация"
       }
     ],
+    "Сохранение данных": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 17,
+        "level": 2,
+        "title": "Сохранение данных"
+      }
+    ],
     "Специальные теги (для генерации API документации)": [
       {
         "document": "styleguide/docstring.md",
@@ -10826,14 +10868,6 @@
         "line": 126,
         "level": 4,
         "title": "Список исключений"
-      }
-    ],
-    "Список маршрутов": [
-      {
-        "document": "advanced/router.md",
-        "line": 347,
-        "level": 3,
-        "title": "Список маршрутов"
       }
     ],
     "Список методов": [
@@ -11628,14 +11662,6 @@
         "title": "Управление подключениями"
       }
     ],
-    "Управление правами доступа": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 285,
-        "level": 2,
-        "title": "Управление правами доступа"
-      }
-    ],
     "Управление состоянием бота": [
       {
         "document": "api-reference/adapter-system.md",
@@ -11914,14 +11940,6 @@
         "title": "Формат событий meta"
       }
     ],
-    "Функции поиска": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 383,
-        "level": 2,
-        "title": "Функции поиска"
-      }
-    ],
     "Функционал ответа": [
       {
         "document": "api-reference/event-system.md",
@@ -11978,12 +11996,6 @@
     ],
     "Хранение данных": [
       {
-        "document": "getting-started/common-tasks.md",
-        "line": 17,
-        "level": 2,
-        "title": "Хранение данных"
-      },
-      {
         "document": "user-guide/deployment.md",
         "line": 65,
         "level": 3,
@@ -12009,7 +12021,7 @@
     "Хуки жизненного цикла WebSocket": [
       {
         "document": "advanced/router.md",
-        "line": 170,
+        "line": 171,
         "level": 2,
         "title": "Хуки жизненного цикла WebSocket"
       }

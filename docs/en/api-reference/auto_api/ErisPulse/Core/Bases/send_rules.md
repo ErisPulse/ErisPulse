@@ -34,18 +34,16 @@ SendDSL 发送规则系统
 约定：标准响应 dict 中 ``status == "ok"`` 视为成功；
 非 dict 结果（无法判断）默认视为成功，避免误触发重试。
 
-:param result: 发送方法的返回值
-:return: 是否成功
+- **result** (`发送方法的返回值`): **返回值**: 是否成功
 
 ---
 
 
-### `async async _invoke_callback(callback: Any, ctx: Any)`
+### `async _invoke_callback(callback: Any, ctx: Any)`
 
 安全调用用户回调（兼容同步/异步），异常被吞掉不影响主流程
 
-:param callback: 用户回调（同步函数或协程函数）
-:param ctx: 上下文对象（SendContext 或 BatchContext）
+- **callback** (`用户回调（同步函数或协程函数）`): - **ctx**: 上下文对象（SendContext 或 BatchContext）
 
 ---
 
@@ -62,11 +60,10 @@ SendDSL 发送规则系统
 5. 应用超时（Timeout）
 6. 触发 OnProgress / OnError / Hook 回调
 
-:param base_task_factory: 无参可调用对象，每次调用返回一个新的 ``asyncio.Task``
+- **base_task_factory** (`无参可调用对象，每次调用返回一个新的`): ``asyncio.Task``
     （重试时需要重新发起，因此用工厂而非固定 Task）
-:param rules: SendDSL 的 ``_rules`` 字典
-:param send_ctx: 基础发送上下文（platform/method/target_type/target_id/bot_id）
-:return: 统一包装后的 ``asyncio.Task``
+- **rules** (`SendDSL`): 的 ``_rules`` 字典
+- **send_ctx** (`基础发送上下文（platform/method/target_type/target_id/bot_id）`): **返回值** (`统一包装后的`): ``asyncio.Task``
 
 ---
 
@@ -108,7 +105,7 @@ SendDSL 发送规则系统
 
 已耗时（秒）
 
-:return: 从 started_at 到当前时间（若已结束则为 finished_at）的秒数
+**返回值** (`从`): started_at 到当前时间（若已结束则为 finished_at）的秒数
 
 ---
 
@@ -117,7 +114,7 @@ SendDSL 发送规则系统
 
 转为可序列化字典（用于日志/上报）
 
-:return: 包含上下文字段的字典，error 字段被转为字符串
+**返回值** (`包含上下文字段的字典，error`): 字段被转为字符串
 
 ---
 
