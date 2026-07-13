@@ -17,6 +17,7 @@ ErisPulse 路由管理器提供统一的 HTTP 和 WebSocket 路由管理，支�
 - **WebSocket 支持**：完整的 WebSocket 连接管理、自定义认证和生命周期钩子
 - **生命周期集成**：与 ErisPulse 生命周期系统深度集成
 - **SSL/TLS 支持**：支持 HTTPS 和 WSS 安全连接
+- **主页入口**：支持模块在根路由 `/` 注册快捷入口按钮，支持国际化
 
 ## 抽象类型
 
@@ -303,22 +304,63 @@ router.register_http_route("my_module", "/api", handler)
 
 ## 系统路由
 
-路由管理器自动提供两个系统路由：
+路由管理器自动提供以下系统路由：
 
 ### 健康检查
 
-```python
+```
 GET /health
 # 返回:
 {"status": "ok", "service": "ErisPulse Router"}
 ```
 
-### 路由列表
+### 根页面
+
+```
+GET /
+# 返回 ErisPulse 品牌页
+```
+
+根路由 `/` 显示 ErisPulse 品牌页面，自动检测 Dashboard 可用性并添加入口按钮。
+
+## 主页入口
+
+路由管理器允许外部模块在根路由 `/` 上注册快捷入口按钮，方便用户快速访问各模块的管理页面。
+
+### 注册入口
 
 ```python
-GET /routes
-# 返回所有已注册的路由信息
+# 简单注册
+router.register_home_entry(
+    name="我的面板",
+    url="/mymodule/admin",
+)
+
+# 带图标的注册（SVG）
+router.register_home_entry(
+    name="控制台",
+    url="/console",
+    icon_svg='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>',
+)
+
+# 支持国际化的注册（项目 i18n 字典格式）
+router.register_home_entry(
+    name={"i18n": "mymodule.home.entry", "default": "我的面板"},
+    url="/mymodule/admin",
+)
 ```
+
+**参数说明：**
+
+| 参数 | 类型 | 说明 | 必填 |
+|------|------|------|------|
+| `name` | `str` / `dict` | 按钮显示文本；传入 `{"i18n": "key", "default": "文本"}` 字典时使用国际化 | 是 |
+| `url` | `str` | 按钮链接地址 | 是 |
+| `icon_svg` | `str` | 可选 SVG 图标标记 | 否 |
+
+### Dashboard 自动注册
+
+当检测到 `sdk.Dashboard` 可用时，路由管理器自动在入口列表首位添加 Dashboard 按钮，无需手动注册。
 
 ## 生命周期集成
 

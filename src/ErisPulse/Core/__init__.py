@@ -36,7 +36,7 @@ from .module import module, ModuleManager
 from .router import router, RouterManager, RouteGroup
 from .config import config, ConfigManager
 from .i18n import i18n, I18nManager
-from .admin import admin, AdminManager
+from .master import master, MasterManager
 
 from . import Event
 from .Event.message_builder import MessageBuilder
@@ -95,6 +95,6 @@ __all__ = [
     "LifecycleManager",  # 生命周期管理器类
     "i18n",  # 国际化模块单例
     "I18nManager",  # 国际化管理器类
-    "admin",  # 管理员模块单例
-    "AdminManager",  # 管理员管理器类
+    "master",  # 框架主人模块单例
+    "MasterManager",  # 框架主人管理器类
 ]

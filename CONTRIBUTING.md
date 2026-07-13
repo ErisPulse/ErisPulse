@@ -87,7 +87,6 @@ ErisPulse/
 │       ├── finders/         # Module / adapter discovery
 │       ├── loaders/         # Loaders (incl. lazy loading)
 │       ├── runtime/         # Runtime
-│       ├── web_status/      # Web status service
 │       ├── sdk.py           # SDK entry
 │       └── __init__.py      # Package entry
 ├── config/                  # Default config
@@ -258,7 +257,6 @@ ErisPulse/
 │       ├── finders/         # 模块 / 适配器发现
 │       ├── loaders/         # 加载器（含懒加载策略）
 │       ├── runtime/         # 运行时
-│       ├── web_status/      # Web 状态服务
 │       ├── sdk.py           # SDK 入口实现
 │       └── __init__.py      # 包入口
 ├── config/                  # 默认配置
@@ -439,7 +437,6 @@ ErisPulse/
 │       ├── finders/         # 模組 / 適配器發現
 │       ├── loaders/         # 載入器（含延遲載入策略）
 │       ├── runtime/         # 執行時期
-│       ├── web_status/      # Web 狀態服務
 │       ├── sdk.py           # SDK 入口實作
 │       └── __init__.py      # 套件入口
 ├── config/                  # 預設設定
@@ -620,7 +617,6 @@ ErisPulse/
 │       ├── finders/         # モジュール / アダプター検出
 │       ├── loaders/         # ローダー（遅延読み込み含む）
 │       ├── runtime/         # ランタイム
-│       ├── web_status/      # Web ステータスサービス
 │       ├── sdk.py           # SDK エントリ
 │       └── __init__.py      # パッケージエントリ
 ├── config/                  # デフォルト設定
@@ -791,7 +787,6 @@ ErisPulse/
 │       ├── finders/         # Обнаружение модулей / адаптеров
 │       ├── loaders/         # Загрузчики (вкл. ленивую загрузку)
 │       ├── runtime/         # Среда выполнения
-│       ├── web_status/      # Веб-сервис статуса
 │       ├── sdk.py           # Точка входа SDK
 │       └── __init__.py      # Точка входа пакета
 ├── config/                  # Конфигурация по умолчанию

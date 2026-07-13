@@ -173,7 +173,7 @@ class SDK:
     SendDSL: type[_SendDSL]
     BaseStorage: type[_BaseStorage]
     BaseQueryBuilder: type[_BaseQueryBuilder]
-    admin: "AdminManager"
+    master: "MasterManager"
 
     def __init__(self):
         """
