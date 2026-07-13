@@ -256,6 +256,7 @@ class TestHttpClientShortcutMethods:
             "http://example.com",
             data=None,
             json={"k": "v"},
+            files=None,
             headers=None,
         )
 
@@ -267,6 +268,7 @@ class TestHttpClientShortcutMethods:
             "http://example.com",
             data=b"raw",
             json=None,
+            files=None,
             headers=None,
         )
 
@@ -287,6 +289,7 @@ class TestHttpClientShortcutMethods:
             "http://example.com",
             data=None,
             json={"patch": True},
+            files=None,
             headers=None,
         )
 
@@ -673,3 +676,176 @@ class TestHttpClientRequest:
         call_kwargs = mock_session.request.call_args[1]
         assert call_kwargs.get("ssl") is False
         assert call_kwargs.get("allow_redirects") is False
+
+
+# ==================== HttpClient 文件上传测试 ====================
+
+
+class TestHttpClientFiles:
+    """HttpClient files 参数测试"""
+
+    @pytest.fixture
+    def client(self):
+        """创建带 mock session 的 HttpClient"""
+        c = HttpClient()
+
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.read = AsyncMock(return_value=b"")
+
+        cm = AsyncMock()
+        cm.__aenter__ = AsyncMock(return_value=mock_resp)
+        cm.__aexit__ = AsyncMock(return_value=False)
+
+        mock_session = MagicMock()
+        mock_session.closed = False
+        mock_session.request = MagicMock(return_value=cm)
+        c._session = mock_session
+
+        return c, mock_session
+
+    def _captured_kwargs(self, mock_session):
+        """从 mock_session.request 调用中提取 kwargs"""
+        return mock_session.request.call_args[1]
+
+    @pytest.mark.asyncio
+    async def test_files_builds_form_data(self, client):
+        """files 参数会构建 FormData 并作为 data 传递"""
+        c, mock_session = client
+
+        await c.post("http://example.com/upload", files={
+            "file": ("test.txt", b"hello", "text/plain"),
+        })
+
+        import aiohttp
+        kwargs = self._captured_kwargs(mock_session)
+        # data 应为 FormData 实例
+        assert isinstance(kwargs["data"], aiohttp.FormData)
+        # json 应为 None (files 时忽略 json)
+        assert kwargs["json"] is None
+
+    @pytest.mark.asyncio
+    async def test_files_with_filename_and_content_type(self, client):
+        """三元组格式: (filename, file_obj, content_type)"""
+        c, mock_session = client
+
+        await c.post("http://example.com/upload", files={
+            "file": ("photo.png", b"\x89PNG", "image/png"),
+        })
+
+        import aiohttp
+        kwargs = self._captured_kwargs(mock_session)
+        assert isinstance(kwargs["data"], aiohttp.FormData)
+
+    @pytest.mark.asyncio
+    async def test_files_with_filename_only(self, client):
+        """二元组格式: (filename, file_obj)"""
+        c, mock_session = client
+
+        await c.post("http://example.com/upload", files={
+            "file": ("data.txt", b"hello world"),
+        })
+
+        import aiohttp
+        kwargs = self._captured_kwargs(mock_session)
+        assert isinstance(kwargs["data"], aiohttp.FormData)
+
+    @pytest.mark.asyncio
+    async def test_files_with_plain_bytes(self, client):
+        """直接传 bytes"""
+        c, mock_session = client
+
+        await c.post("http://example.com/upload", files={
+            "file": b"raw bytes",
+        })
+
+        import aiohttp
+        kwargs = self._captured_kwargs(mock_session)
+        assert isinstance(kwargs["data"], aiohttp.FormData)
+
+    @pytest.mark.asyncio
+    async def test_files_with_file_like_object(self, client):
+        """直接传文件对象"""
+        import io
+        c, mock_session = client
+
+        await c.post("http://example.com/upload", files={
+            "file": io.BytesIO(b"file content"),
+        })
+
+        import aiohttp
+        kwargs = self._captured_kwargs(mock_session)
+        assert isinstance(kwargs["data"], aiohttp.FormData)
+
+    @pytest.mark.asyncio
+    async def test_files_merges_data_dict(self, client):
+        """files 与 dict 类型的 data 合并进同一个 FormData"""
+        c, mock_session = client
+
+        await c.post("http://example.com/upload", data={
+            "description": "test",
+        }, files={
+            "file": ("test.txt", b"hello"),
+        })
+
+        import aiohttp
+        kwargs = self._captured_kwargs(mock_session)
+        assert isinstance(kwargs["data"], aiohttp.FormData)
+
+    @pytest.mark.asyncio
+    async def test_files_rejects_non_dict_data(self, client):
+        """files 与 bytes 类型的 data 同时使用时报错"""
+        c, mock_session = client
+
+        with pytest.raises(ValueError, match="非 dict 类型"):
+            await c.post("http://example.com/upload", data=b"raw", files={
+                "file": ("test.txt", b"hello"),
+            })
+
+    @pytest.mark.asyncio
+    async def test_files_nullifies_json(self, client):
+        """files 存在时 json 被置为 None"""
+        c, mock_session = client
+
+        await c.post("http://example.com/upload", json={"key": "value"}, files={
+            "file": b"data",
+        })
+
+        kwargs = self._captured_kwargs(mock_session)
+        assert kwargs["json"] is None
+
+    @pytest.mark.asyncio
+    async def test_post_passes_files_to_request(self):
+        """post() 正确传递 files 参数到 request()"""
+        c = HttpClient()
+        c.request = AsyncMock(return_value=HttpResponse(MagicMock()))
+
+        files = {"file": ("test.txt", b"hello")}
+        await c.post("http://example.com", files=files)
+
+        c.request.assert_called_once_with(
+            "POST",
+            "http://example.com",
+            data=None,
+            json=None,
+            files=files,
+            headers=None,
+        )
+
+    @pytest.mark.asyncio
+    async def test_put_passes_files_to_request(self):
+        """put() 正确传递 files 参数到 request()"""
+        c = HttpClient()
+        c.request = AsyncMock(return_value=HttpResponse(MagicMock()))
+
+        files = {"file": b"data"}
+        await c.put("http://example.com", files=files)
+
+        c.request.assert_called_once_with(
+            "PUT",
+            "http://example.com",
+            data=None,
+            json=None,
+            files=files,
+            headers=None,
+        )
