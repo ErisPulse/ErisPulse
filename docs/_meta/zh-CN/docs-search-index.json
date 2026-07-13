@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1285,
+  "total_keywords": 1288,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2121,7 +2121,7 @@
     "CORS 配置": [
       {
         "document": "advanced/router.md",
-        "line": 244,
+        "line": 245,
         "level": 2,
         "title": "CORS 配置"
       }
@@ -2196,6 +2196,14 @@
         "line": 72,
         "level": 2,
         "title": "Dashboard 管理面板"
+      }
+    ],
+    "Dashboard 自动注册": [
+      {
+        "document": "advanced/router.md",
+        "line": 361,
+        "level": 3,
+        "title": "Dashboard 自动注册"
       }
     ],
     "Dashboard 视窗注册": [
@@ -2401,7 +2409,7 @@
     "HTTP 装饰器": [
       {
         "document": "advanced/router.md",
-        "line": 37,
+        "line": 38,
         "level": 3,
         "title": "HTTP 装饰器"
       }
@@ -3059,7 +3067,7 @@
     "WebSocket 注册": [
       {
         "document": "advanced/router.md",
-        "line": 129,
+        "line": 130,
         "level": 3,
         "title": "WebSocket 注册"
       }
@@ -3067,7 +3075,7 @@
     "WebSocket 生命周期钩子": [
       {
         "document": "advanced/router.md",
-        "line": 170,
+        "line": 171,
         "level": 2,
         "title": "WebSocket 生命周期钩子"
       }
@@ -3075,7 +3083,7 @@
     "WebSocket 装饰器": [
       {
         "document": "advanced/router.md",
-        "line": 64,
+        "line": 65,
         "level": 3,
         "title": "WebSocket 装饰器"
       }
@@ -3904,6 +3912,14 @@
         "title": "主动发送 Meta 事件"
       }
     ],
+    "主页入口": [
+      {
+        "document": "advanced/router.md",
+        "line": 326,
+        "level": 2,
+        "title": "主页入口"
+      }
+    ],
     "事件": [
       {
         "document": "terminology.md",
@@ -4475,7 +4491,7 @@
     "传统注册方式": [
       {
         "document": "advanced/router.md",
-        "line": 103,
+        "line": 104,
         "level": 2,
         "title": "传统注册方式"
       }
@@ -4689,7 +4705,7 @@
     "健康检查": [
       {
         "document": "advanced/router.md",
-        "line": 308,
+        "line": 309,
         "level": 3,
         "title": "健康检查"
       },
@@ -6535,7 +6551,7 @@
     "安全头": [
       {
         "document": "advanced/router.md",
-        "line": 263,
+        "line": 264,
         "level": 2,
         "title": "安全头"
       }
@@ -7697,7 +7713,7 @@
     "抽象类型": [
       {
         "document": "advanced/router.md",
-        "line": 21,
+        "line": 22,
         "level": 2,
         "title": "抽象类型"
       }
@@ -8371,7 +8387,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 337,
+        "line": 379,
         "level": 2,
         "title": "最佳实践"
       },
@@ -8814,6 +8830,14 @@
         "title": "核心组件"
       }
     ],
+    "根页面": [
+      {
+        "document": "advanced/router.md",
+        "line": 317,
+        "level": 3,
+        "title": "根页面"
+      }
+    ],
     "框架辅助方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -9080,6 +9104,14 @@
         "line": 70,
         "level": 3,
         "title": "注册中间件"
+      }
+    ],
+    "注册入口": [
+      {
+        "document": "advanced/router.md",
+        "line": 330,
+        "level": 3,
+        "title": "注册入口"
       }
     ],
     "注册命令": [
@@ -9771,7 +9803,7 @@
     "生命周期集成": [
       {
         "document": "advanced/router.md",
-        "line": 323,
+        "line": 365,
         "level": 2,
         "title": "生命周期集成"
       }
@@ -9927,7 +9959,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 347,
+        "line": 389,
         "level": 2,
         "title": "相关文档"
       },
@@ -10269,7 +10301,7 @@
     "系统路由": [
       {
         "document": "advanced/router.md",
-        "line": 304,
+        "line": 305,
         "level": 2,
         "title": "系统路由"
       }
@@ -10413,7 +10445,7 @@
     "自动文档": [
       {
         "document": "advanced/router.md",
-        "line": 278,
+        "line": 279,
         "level": 2,
         "title": "自动文档"
       }
@@ -10547,7 +10579,7 @@
     "装饰器路由（推荐）": [
       {
         "document": "advanced/router.md",
-        "line": 35,
+        "line": 36,
         "level": 2,
         "title": "装饰器路由（推荐）"
       }
@@ -10877,7 +10909,7 @@
     "路径处理": [
       {
         "document": "advanced/router.md",
-        "line": 294,
+        "line": 295,
         "level": 2,
         "title": "路径处理"
       }
@@ -10893,7 +10925,7 @@
     "路由中间件": [
       {
         "document": "advanced/router.md",
-        "line": 211,
+        "line": 212,
         "level": 2,
         "title": "路由中间件"
       }
@@ -10901,17 +10933,9 @@
     "路由分组": [
       {
         "document": "advanced/router.md",
-        "line": 194,
+        "line": 195,
         "level": 2,
         "title": "路由分组"
-      }
-    ],
-    "路由列表": [
-      {
-        "document": "advanced/router.md",
-        "line": 316,
-        "level": 3,
-        "title": "路由列表"
       }
     ],
     "路由发现": [
@@ -11475,7 +11499,7 @@
     "速率限制": [
       {
         "document": "advanced/router.md",
-        "line": 228,
+        "line": 229,
         "level": 2,
         "title": "速率限制"
       }

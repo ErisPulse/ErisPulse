@@ -303,13 +303,40 @@ class BaseEventHandler:
                     "processed": False,
                 })
 
-            # 合并修改（后者覆盖前者）
-            for copy in copies:
+            # 合并修改（后者覆盖前者），并检测同优先级冲突
+            _modified_tracker: dict[str, list[dict]] = {}  # field -> [{handler_info}]
+            for h_info, copy in zip(active, copies):
+                _h_name = getattr(
+                    h_info["func"], "__qualname__",
+                    getattr(h_info["func"], "__name__", str(h_info["func"])),
+                )
+                _h_owner = h_info.get("owner", "<unknown>")
                 for key, value in copy.items():
                     if value != event.get(key, _sentinel):
                         event[key] = value
+                        _modified_tracker.setdefault(key, []).append({
+                            "handler": _h_name,
+                            "owner": _h_owner,
+                        })
                 if copy.is_processed():
                     event.mark_processed()
+
+            # 冲突告警：同一 field 被多个同优先级 handler 修改
+            for field, mods in _modified_tracker.items():
+                if len(mods) > 1:
+                    for i in range(len(mods) - 1):
+                        _a, _b = mods[i], mods[i + 1]
+                        logger.warning(
+                            i18n.t(
+                                "core.event.same_priority_conflict",
+                                field=field,
+                                handler_a=_a["handler"],
+                                owner_a=_a["owner"],
+                                handler_b=_b["handler"],
+                                owner_b=_b["owner"],
+                                priority=_priority,
+                            )
+                        )
 
             if event.is_processed():
                 break

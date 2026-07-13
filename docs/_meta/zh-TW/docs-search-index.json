@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1334,
+  "total_keywords": 1337,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -246,14 +246,6 @@
         "title": "1. 版本管理"
       }
     ],
-    "1. 異常處理": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 585,
-        "level": 3,
-        "title": "1. 異常處理"
-      }
-    ],
     "1. 發送訊息": [
       {
         "document": "platform-guide/webhook.md",
@@ -308,6 +300,14 @@
         "line": 38,
         "level": 3,
         "title": "1. 配置 pyproject.toml"
+      }
+    ],
+    "1. 錯誤處理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 585,
+        "level": 3,
+        "title": "1. 錯誤處理"
       }
     ],
     "1.1 接收類型 && 發送類型": [
@@ -2066,12 +2066,12 @@
         "title": "CLI 命令參考"
       }
     ],
-    "CORS 配置": [
+    "CORS 設定": [
       {
         "document": "advanced/router.md",
-        "line": 247,
+        "line": 245,
         "level": 2,
-        "title": "CORS 配置"
+        "title": "CORS 設定"
       }
     ],
     "ClientWebSocket 屬性": [
@@ -2144,6 +2144,14 @@
         "line": 72,
         "level": 2,
         "title": "Dashboard 管理面板"
+      }
+    ],
+    "Dashboard 自動註冊": [
+      {
+        "document": "advanced/router.md",
+        "line": 361,
+        "level": 3,
+        "title": "Dashboard 自動註冊"
       }
     ],
     "Dashboard 視窗註冊": [
@@ -2298,20 +2306,20 @@
         "title": "Event 回覆方法"
       }
     ],
+    "Event 對象常用方法": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 508,
+        "level": 3,
+        "title": "Event 對象常用方法"
+      }
+    ],
     "Event 快捷方法": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 142,
         "level": 3,
         "title": "Event 快捷方法"
-      }
-    ],
-    "Event 物件常用方法": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 508,
-        "level": 3,
-        "title": "Event 物件常用方法"
       }
     ],
     "GET": [
@@ -2349,7 +2357,7 @@
     "HTTP 裝飾器": [
       {
         "document": "advanced/router.md",
-        "line": 37,
+        "line": 38,
         "level": 3,
         "title": "HTTP 裝飾器"
       }
@@ -3016,18 +3024,18 @@
         "title": "WebSocket 客戶端"
       }
     ],
-    "WebSocket 生命週期掛鉤": [
+    "WebSocket 生命週期鉤子": [
       {
         "document": "advanced/router.md",
-        "line": 173,
+        "line": 171,
         "level": 2,
-        "title": "WebSocket 生命週期掛鉤"
+        "title": "WebSocket 生命週期鉤子"
       }
     ],
     "WebSocket 裝飾器": [
       {
         "document": "advanced/router.md",
-        "line": 67,
+        "line": 65,
         "level": 3,
         "title": "WebSocket 裝飾器"
       }
@@ -3035,7 +3043,7 @@
     "WebSocket 註冊": [
       {
         "document": "advanced/router.md",
-        "line": 132,
+        "line": 130,
         "level": 3,
         "title": "WebSocket 註冊"
       }
@@ -3722,6 +3730,12 @@
     ],
     "下一個步驟": [
       {
+        "document": "getting-started/common-tasks.md",
+        "line": 504,
+        "level": 2,
+        "title": "下一個步驟"
+      },
+      {
         "document": "user-guide/installation.md",
         "line": 189,
         "level": 2,
@@ -3750,12 +3764,6 @@
       {
         "document": "getting-started/basic-concepts.md",
         "line": 351,
-        "level": 2,
-        "title": "下一步"
-      },
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 504,
         "level": 2,
         "title": "下一步"
       },
@@ -4585,7 +4593,7 @@
     "健康檢查": [
       {
         "document": "advanced/router.md",
-        "line": 311,
+        "line": 309,
         "level": 3,
         "title": "健康檢查"
       },
@@ -4615,7 +4623,7 @@
     "傳統註冊方式": [
       {
         "document": "advanced/router.md",
-        "line": 106,
+        "line": 104,
         "level": 2,
         "title": "傳統註冊方式"
       }
@@ -4650,6 +4658,14 @@
         "line": 357,
         "level": 1,
         "title": "傳送帶按鈕的訊息到群組"
+      }
+    ],
+    "傳送成功後執行邏輯": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 236,
+        "level": 3,
+        "title": "傳送成功後執行邏輯"
       }
     ],
     "傳送方法傳回值": [
@@ -5482,12 +5498,12 @@
         "title": "圖片處理"
       }
     ],
-    "圖片辨識範例": [
+    "圖片識別範例": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 470,
         "level": 3,
-        "title": "圖片辨識範例"
+        "title": "圖片識別範例"
       }
     ],
     "在 RouteGroup 中使用": [
@@ -6147,7 +6163,7 @@
     "安全頭": [
       {
         "document": "advanced/router.md",
-        "line": 266,
+        "line": 264,
         "level": 2,
         "title": "安全頭"
       }
@@ -7128,12 +7144,12 @@
         "title": "扩展字段說明"
       }
     ],
-    "批次發送多條訊息": [
+    "批次傳送多條訊息": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 264,
         "level": 3,
-        "title": "批次發送多條訊息"
+        "title": "批次傳送多條訊息"
       }
     ],
     "批量建構模式（Build）": [
@@ -7183,7 +7199,7 @@
     "抽象類型": [
       {
         "document": "advanced/router.md",
-        "line": 21,
+        "line": 22,
         "level": 2,
         "title": "抽象類型"
       }
@@ -7935,7 +7951,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 340,
+        "line": 379,
         "level": 2,
         "title": "最佳實踐"
       },
@@ -8254,6 +8270,14 @@
         "line": 5,
         "level": 2,
         "title": "核心特性"
+      }
+    ],
+    "根頁面": [
+      {
+        "document": "advanced/router.md",
+        "line": 317,
+        "level": 3,
+        "title": "根頁面"
       }
     ],
     "框架輔助方法": [
@@ -9069,7 +9093,7 @@
     "生命週期整合": [
       {
         "document": "advanced/router.md",
-        "line": 326,
+        "line": 365,
         "level": 2,
         "title": "生命週期整合"
       }
@@ -9252,14 +9276,6 @@
         "title": "發送媒體訊息"
       }
     ],
-    "發送成功後執行邏輯": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 236,
-        "level": 3,
-        "title": "發送成功後執行邏輯"
-      }
-    ],
     "發送成功後執行邏輯（Hook）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -9410,20 +9426,20 @@
         "title": "監聽生命週期事件"
       }
     ],
-    "監聽私聊消息": [
+    "監聽私聊訊息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 37,
         "level": 3,
-        "title": "監聽私聊消息"
+        "title": "監聽私聊訊息"
       }
     ],
-    "監聽群聊消息": [
+    "監聽群聊訊息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 46,
         "level": 3,
-        "title": "監聽群聊消息"
+        "title": "監聽群聊訊息"
       }
     ],
     "目的": [
@@ -9471,7 +9487,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 350,
+        "line": 389,
         "level": 2,
         "title": "相關文件"
       },
@@ -9803,7 +9819,7 @@
     "系統路由": [
       {
         "document": "advanced/router.md",
-        "line": 307,
+        "line": 305,
         "level": 2,
         "title": "系統路由"
       }
@@ -9971,7 +9987,7 @@
     "自動文件": [
       {
         "document": "advanced/router.md",
-        "line": 281,
+        "line": 279,
         "level": 2,
         "title": "自動文件"
       }
@@ -10185,7 +10201,7 @@
     "裝飾器路由（推薦）": [
       {
         "document": "advanced/router.md",
-        "line": 35,
+        "line": 36,
         "level": 2,
         "title": "裝飾器路由（推薦）"
       }
@@ -10318,6 +10334,14 @@
         "title": "訊息傳送方法"
       }
     ],
+    "訊息傳送進階（重試/逾時/批次）": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 230,
+        "level": 2,
+        "title": "訊息傳送進階（重試/逾時/批次）"
+      }
+    ],
     "訊息操作": [
       {
         "document": "platform-guide/discord.md",
@@ -10402,14 +10426,6 @@
         "line": 249,
         "level": 4,
         "title": "訊息發送成功"
-      }
-    ],
-    "訊息發送進階（重試/逾時/批次）": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 230,
-        "level": 2,
-        "title": "訊息發送進階（重試/逾時/批次）"
       }
     ],
     "訊息相關": [
@@ -10548,6 +10564,14 @@
         "line": 70,
         "level": 3,
         "title": "註冊中間件"
+      }
+    ],
+    "註冊入口": [
+      {
+        "document": "advanced/router.md",
+        "line": 330,
+        "level": 3,
+        "title": "註冊入口"
       }
     ],
     "註冊命令": [
@@ -10859,7 +10883,7 @@
     "路徑處理": [
       {
         "document": "advanced/router.md",
-        "line": 297,
+        "line": 295,
         "level": 2,
         "title": "路徑處理"
       }
@@ -10872,28 +10896,20 @@
         "title": "路由"
       }
     ],
-    "路由中間件": [
+    "路由中介軟體": [
       {
         "document": "advanced/router.md",
-        "line": 214,
+        "line": 212,
         "level": 2,
-        "title": "路由中間件"
+        "title": "路由中介軟體"
       }
     ],
     "路由分組": [
       {
         "document": "advanced/router.md",
-        "line": 197,
+        "line": 195,
         "level": 2,
         "title": "路由分組"
-      }
-    ],
-    "路由列表": [
-      {
-        "document": "advanced/router.md",
-        "line": 319,
-        "level": 3,
-        "title": "路由列表"
       }
     ],
     "路由發現": [
@@ -11169,7 +11185,7 @@
     "速率限制": [
       {
         "document": "advanced/router.md",
-        "line": 231,
+        "line": 229,
         "level": 2,
         "title": "速率限制"
       }
@@ -11448,12 +11464,12 @@
         "title": "遵循規範的好處"
       }
     ],
-    "選擇選單 (choose)": [
+    "選擇菜單 (choose)": [
       {
         "document": "getting-started/event-handling.md",
         "line": 412,
         "level": 3,
-        "title": "選擇選單 (choose)"
+        "title": "選擇菜單 (choose)"
       }
     ],
     "部署": [
@@ -12174,6 +12190,14 @@
         "line": 1,
         "level": 1,
         "title": "風格指南"
+      }
+    ],
+    "首頁入口": [
+      {
+        "document": "advanced/router.md",
+        "line": 326,
+        "level": 2,
+        "title": "首頁入口"
       }
     ],
     "驗證安裝": [

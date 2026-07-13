@@ -47,7 +47,7 @@ HTTP 响应封装
 
 ##### `__init__(response)`
 
-:param response: object 底层框架 Response 对象
+- **response** (`object`): 底层框架 Response 对象
 
 ---
 
@@ -56,7 +56,7 @@ HTTP 响应封装
 
 HTTP 状态码
 
-:return: int 状态码 (如 200, 404)
+**返回值** (`int`): 状态码 (如 200, 404)
 
 ---
 
@@ -65,7 +65,7 @@ HTTP 状态码
 
 状态描述
 
-:return: str | None 状态原因短语
+**返回值** (`str`): | None 状态原因短语
 
 ---
 
@@ -74,7 +74,7 @@ HTTP 状态码
 
 响应头
 
-:return: object 大小写不敏感的响应头映射
+**返回值** (`object`): 大小写不敏感的响应头映射
 
 ---
 
@@ -83,7 +83,7 @@ HTTP 状态码
 
 Content-Type 值
 
-:return: str | None 内容类型
+**返回值** (`str`): | None 内容类型
 
 ---
 
@@ -92,7 +92,7 @@ Content-Type 值
 
 字符编码
 
-:return: str | None 编码名称
+**返回值** (`str`): | None 编码名称
 
 ---
 
@@ -101,7 +101,7 @@ Content-Type 值
 
 响应 URL (可能因重定向而与请求 URL 不同)
 
-:return: object URL 对象
+**返回值** (`object`): URL 对象
 
 ---
 
@@ -110,16 +110,16 @@ Content-Type 值
 
 底层框架原生 Response 对象
 
-:return: object 原生响应实例 (当前为 aiohttp.ClientResponse)
+**返回值** (`object`): 原生响应实例 (当前为 aiohttp.ClientResponse)
 
 ---
 
 
-##### `async async read()`
+##### `async read()`
 
 读取响应体原始字节 (自动缓存)
 
-:return: bytes 响应体内容
+**返回值** (`bytes`): 响应体内容
 
 ---
 
@@ -149,7 +149,7 @@ Content-Type 值
 
 ##### `__init__(ws)`
 
-:param ws: aiohttp.ClientWebSocketResponse 底层 aiohttp WS 对象
+- **ws** (`aiohttp.ClientWebSocketResponse`): 底层 aiohttp WS 对象
 
 ---
 
@@ -158,35 +158,35 @@ Content-Type 值
 
 连接是否已关闭
 
-:return: bool 是否已关闭
+**返回值** (`bool`): 是否已关闭
 
 ---
 
 
-##### `async async send_text(data: str)`
+##### `async send_text(data: str)`
 
 发送文本消息
 
-:param data: str 文本内容
+- **data** (`str`): 文本内容
 
 ---
 
 
-##### `async async send_bytes(data: bytes)`
+##### `async send_bytes(data: bytes)`
 
 发送二进制消息
 
-:param data: bytes 二进制内容
+- **data** (`bytes`): 二进制内容
 
 ---
 
 
-##### `async async send_json(data: Any, mode: str = 'text')`
+##### `async send_json(data: Any, mode: str = 'text')`
 
 发送 JSON 消息
 
-:param data: Any 要序列化的数据
-:param mode: str 发送模式 ("text" 或 "binary") (默认: "text")
+- **data** (`Any`): 要序列化的数据
+- **mode** (`str`): 发送模式 ("text" 或 "binary") (默认: "text")
 
 ---
 
@@ -200,54 +200,54 @@ Content-Type 值
 ---
 
 
-##### `async async receive()`
+##### `async receive()`
 
 接收原始消息
 
-:return: WSMessage 消息对象
+**返回值** (`WSMessage`): 消息对象
 
 ---
 
 
-##### `async async receive_text()`
+##### `async receive_text()`
 
 接收文本消息
 
-:return: str 文本内容
+**返回值** (`str`): 文本内容
 **异常**: `WebSocketDisconnect` - 连接断开时
 **异常**: `WebSocketError` - 收到非文本消息时
 
 ---
 
 
-##### `async async receive_bytes()`
+##### `async receive_bytes()`
 
 接收二进制消息
 
-:return: bytes 二进制内容
+**返回值** (`bytes`): 二进制内容
 **异常**: `WebSocketDisconnect` - 连接断开时
 **异常**: `WebSocketError` - 收到非二进制消息时
 
 ---
 
 
-##### `async async receive_json(mode: str = 'text')`
+##### `async receive_json(mode: str = 'text')`
 
 接收 JSON 消息
 
-:param mode: str 接收模式 ("text" 或 "binary") (默认: "text")
-:return: Any 解析后的 JSON 数据
+- **mode** (`str`): 接收模式 ("text" 或 "binary") (默认: "text")
+**返回值** (`Any`): 解析后的 JSON 数据
 **异常**: `WebSocketDisconnect` - 连接断开时
 
 ---
 
 
-##### `async async close(code: int = 1000, reason: str | None = None)`
+##### `async close(code: int = 1000, reason: str | None = None)`
 
 关闭 WebSocket 连接
 
-:param code: int 关闭码 (默认: 1000)
-:param reason: str | None 关闭原因 (可选)
+- **code** (`int`): 关闭码 (默认: 1000)
+- **reason** (`str`): | None 关闭原因 (可选)
 
 ---
 
@@ -281,13 +281,13 @@ HTTP/WS 客户端 (基于 aiohttp)
 
 ##### `__init__()`
 
-:param timeout: float | None 请求总超时 (秒) (默认: 30)
-:param connect_timeout: float | None 连接超时 (秒) (默认: 10)
-:param max_retries: int 最大重试次数 (默认: 1)
-:param retry_delay: float 重试间隔 (秒) (默认: 1)
-:param headers: dict[str, str] 全局默认请求头 (可选)
-:param user_agent: str User-Agent 字符串 (可选)
-:param proxy: str | None 代理 URL（如 http://127.0.0.1:7890），为 None 时自动检测环境变量
+- **timeout** (`float`): | None 请求总超时 (秒) (默认: 30)
+- **connect_timeout** (`float`): | None 连接超时 (秒) (默认: 10)
+- **max_retries** (`int`): 最大重试次数 (默认: 1)
+- **retry_delay** (`float`): 重试间隔 (秒) (默认: 1)
+- **headers** (`dict[str,`): str] 全局默认请求头 (可选)
+- **user_agent** (`str`): User-Agent 字符串 (可选)
+- **proxy** (`str`): | None 代理 URL（如 http://127.0.0.1:7890），为 None 时自动检测环境变量
 
 ---
 
@@ -299,20 +299,19 @@ HTTP/WS 客户端 (基于 aiohttp)
 ---
 
 
-##### `async async request(method: str, url: str)`
+##### `async request(method: str, url: str)`
 
 发送 HTTP 请求
 
-:param method: str HTTP 方法 (GET, POST, PUT, DELETE, PATCH 等)
-:param url: str 请求 URL
-:param params: dict[str, str] | None 查询参数 (可选)
-:param headers: dict[str, str] | None 额外请求头 (可选)
-:param data: Any 请求体 (表单或原始数据) (可选)
-:param json: Any JSON 请求体 (可选)
-:param timeout: float | None 本次请求超时 (秒) (可选, 覆盖默认值)
-:param max_retries: int | None 本次最大重试次数 (可选, 覆盖默认值)
-:param kwargs: 传递给底层请求的额外参数
-:return: HttpResponse 响应对象
+- **method** (`str`): HTTP 方法 (GET, POST, PUT, DELETE, PATCH 等)
+- **url** (`str`): 请求 URL
+- **params** (`dict[str,`): str] | None 查询参数 (可选)
+- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+- **data** (`Any`): 请求体 (表单或原始数据) (可选)
+- **json** (`Any`): JSON 请求体 (可选)
+- **timeout** (`float`): | None 本次请求超时 (秒) (可选, 覆盖默认值)
+- **max_retries** (`int`): | None 本次最大重试次数 (可选, 覆盖默认值)
+- **kwargs** (`传递给底层请求的额外参数`): **返回值** (`HttpResponse`): 响应对象
 
 **异常**: `ClientConnectionError` - 连接失败
 **异常**: `ClientTimeoutError` - 请求超时
@@ -326,15 +325,15 @@ HTTP/WS 客户端 (基于 aiohttp)
 ---
 
 
-##### `async async ws_connect(url: str)`
+##### `async ws_connect(url: str)`
 
 建立 WebSocket 连接
 
-:param url: str WebSocket 服务器 URL
-:param headers: dict[str, str] | None 额外请求头 (可选)
-:param heartbeat: float | None 心跳间隔秒数 (可选)
-:param kwargs: 传递给底层 ws_connect 的额外参数
-:return: ClientWebSocket WebSocket 连接对象
+- **url** (`str`): WebSocket 服务器 URL
+- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+- **heartbeat** (`float`): | None 心跳间隔秒数 (可选)
+- **kwargs** (`传递给底层`): ws_connect 的额外参数
+**返回值** (`ClientWebSocket`): WebSocket 连接对象
 
 **异常**: `ClientConnectionError` - 连接失败
 **异常**: `ClientError` - 其他客户端错误
@@ -349,14 +348,14 @@ HTTP/WS 客户端 (基于 aiohttp)
 ---
 
 
-##### `async async get(url: str)`
+##### `async get(url: str)`
 
 发送 GET 请求
 
-:param url: str 请求 URL
-:param params: dict[str, str] | None 查询参数 (可选)
-:param headers: dict[str, str] | None 额外请求头 (可选)
-:return: HttpResponse 响应对象
+- **url** (`str`): 请求 URL
+- **params** (`dict[str,`): str] | None 查询参数 (可选)
+- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+**返回值** (`HttpResponse`): 响应对象
 
 **示例**:
 ```python
@@ -367,15 +366,15 @@ HTTP/WS 客户端 (基于 aiohttp)
 ---
 
 
-##### `async async post(url: str)`
+##### `async post(url: str)`
 
 发送 POST 请求
 
-:param url: str 请求 URL
-:param data: Any 请求体 (表单或原始数据) (可选)
-:param json: Any JSON 请求体 (可选)
-:param headers: dict[str, str] | None 额外请求头 (可选)
-:return: HttpResponse 响应对象
+- **url** (`str`): 请求 URL
+- **data** (`Any`): 请求体 (表单或原始数据) (可选)
+- **json** (`Any`): JSON 请求体 (可选)
+- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+**返回值** (`HttpResponse`): 响应对象
 
 **示例**:
 ```python
@@ -385,39 +384,39 @@ HTTP/WS 客户端 (基于 aiohttp)
 ---
 
 
-##### `async async put(url: str)`
+##### `async put(url: str)`
 
 发送 PUT 请求
 
-:param url: str 请求 URL
-:param data: Any 请求体 (可选)
-:param json: Any JSON 请求体 (可选)
-:param headers: dict[str, str] | None 额外请求头 (可选)
-:return: HttpResponse 响应对象
+- **url** (`str`): 请求 URL
+- **data** (`Any`): 请求体 (可选)
+- **json** (`Any`): JSON 请求体 (可选)
+- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+**返回值** (`HttpResponse`): 响应对象
 
 ---
 
 
-##### `async async delete(url: str)`
+##### `async delete(url: str)`
 
 发送 DELETE 请求
 
-:param url: str 请求 URL
-:param headers: dict[str, str] | None 额外请求头 (可选)
-:return: HttpResponse 响应对象
+- **url** (`str`): 请求 URL
+- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+**返回值** (`HttpResponse`): 响应对象
 
 ---
 
 
-##### `async async patch(url: str)`
+##### `async patch(url: str)`
 
 发送 PATCH 请求
 
-:param url: str 请求 URL
-:param data: Any 请求体 (可选)
-:param json: Any JSON 请求体 (可选)
-:param headers: dict[str, str] | None 额外请求头 (可选)
-:return: HttpResponse 响应对象
+- **url** (`str`): 请求 URL
+- **data** (`Any`): 请求体 (可选)
+- **json** (`Any`): JSON 请求体 (可选)
+- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+**返回值** (`HttpResponse`): 响应对象
 
 ---
 
@@ -426,7 +425,7 @@ HTTP/WS 客户端 (基于 aiohttp)
 
 请求统计
 
-:return: dict[str, int] 统计数据 (total_requests, total_errors 等)
+**返回值** (`dict[str,`): int] 统计数据 (total_requests, total_errors 等)
 
 ---
 

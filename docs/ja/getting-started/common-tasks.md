@@ -1,22 +1,22 @@
 # よくあるタスクの例
 
-このガイドは、一般的な機能の実装例を提供し、一般的な機能を素早く実装するのに役立ちます。
+このガイドでは、一般的な機能の実装例を提供し、一般的な機能を迅速に実装するのに役立ちます。
 
-## 内容リスト
+## 内容一覧
 
-1. データ永続化
-2. 定期タスク
-3. メッセージフィルタリング
+1. データの永続化
+2. タイマージョブ
+3. メッセージのフィルタリング
 4. マルチプラットフォーム対応
-5. メッセージ送信（リトライ/タイムアウト/一括）
-6. 権限管理
+5. メッセージ送信の応用（再試行/タイムアウト/バッチ）
+6. アクセス制御
 7. メッセージ統計
 8. 検索機能
 9. 画像処理
 
-## データ永続化
+## データの永続化
 
-### シンプルなカウンター
+### シンプルなカウンタ
 
 ```python
 from ErisPulse import sdk
@@ -27,7 +27,7 @@ async def count_handler(event):
     # カウントを取得
     count = sdk.storage.get("command_count", 0)
     
-    # カウントを増やす
+    # カウントを増加
     count += 1
     sdk.storage.set("command_count", count)
     
@@ -73,7 +73,7 @@ async def setnick_handler(event):
     await event.reply(f"ニックネームが設定されました: {' '.join(args)}")
 ```
 
-## 定期タスク
+## タイマージョブ
 
 ### シンプルなタイマー
 
@@ -88,41 +88,41 @@ class TimerModule:
         self._tasks = []
     
     async def on_load(self, event):
-        """モジュール読み込み時にタイマータスクを開始"""
+        """モジュールのロード時にタイマージョブを開始"""
         self._start_timers()
         
         @command("timer", help="タイマー管理")
         async def timer_handler(event):
-            await event.reply("タイマーは実行中です...")
+            await event.reply("タイマーが稼働中...")
     
     def _start_timers(self):
-        """定期タスクを開始"""
-        # 60 秒ごとに実行
+        """タイマージョブを開始"""
+        # 60秒ごとに実行
         task = asyncio.create_task(self._every_minute())
         self._tasks.append(task)
         
-        # 毎日午前中に実行
+        # 毎日深夜に実行
         task = asyncio.create_task(self._daily_task())
         self._tasks.append(task)
     
     async def _every_minute(self):
-        """1 分ごとに実行するタスク"""
-        self.sdk.logger.info("1 分ごとのタスク実行")
+        """毎分実行するジョブ"""
+        self.sdk.logger.info("毎分ジョブ実行")
         # あなたのロジック...
     
     async def _daily_task(self):
-        """毎日午前中に実行するタスク（注：UTC 時間ベースで計算されます。ローカル時間を使用する場合は調整してください）"""
+        """毎日深夜に実行するジョブ（注：UTC時間ベースで計算されます。ローカル時間が必要な場合は独自に調整してください）"""
         import time
         
         while True:
-            # 午前中までの時間を計算
+            # 深夜までの時間を計算
             now = time.time()
             midnight = now + (86400 - now % 86400)
             
             await asyncio.sleep(midnight - now)
             
-            # タスクを実行
-            self.sdk.logger.info("毎日のタスク実行")
+            # ジョブを実行
+            self.sdk.logger.info("毎日ジョブ実行")
             # あなたのロジック...
 ```
 
@@ -131,19 +131,19 @@ class TimerModule:
 ```python
 @sdk.lifecycle.on("core.init.complete")
 async def init_complete_handler(event_data):
-    """SDK 初期化完了後にタイマータスクを開始"""
+    """SDKの初期化完了後にタイマージョブを開始"""
     import asyncio
     
     async def daily_reminder():
         """毎日のリマインダー"""
         await asyncio.sleep(86400)  # 24時間
-        sdk.logger.info("毎日のタスクを実行")
+        sdk.logger.info("毎日のジョブを実行")
     
-    # バックグラウンドタスクを開始
+    # バックグラウンドジョブを開始
     asyncio.create_task(daily_reminder())
 ```
 
-## メッセージフィルタリング
+## メッセージのフィルタリング
 
 ### キーワードフィルタリング
 
@@ -156,20 +156,20 @@ blocked_words = ["ゴミ", "広告", "フィッシング"]
 async def filter_handler(event):
     text = event.get_text()
     
-    # 敏感単語が含まれているかチェック
+    # 敏感ワードが含まれているかチェック
     for word in blocked_words:
         if word in text:
-            sdk.logger.warning(f"機密メッセージをブロックしました: {word}")
+            sdk.logger.warning(f"敏感メッセージをブロック: {word}")
             return  # このメッセージを処理しない
     
-    # メッセージを通常処理
-    await event.reply(f"受信しました: {text}")
+    # メッセージを通常通り処理
+    await event.reply(f"受信: {text}")
 ```
 
 ### ブラックリストフィルタリング
 
 ```python
-# 設定またはストレージからブラックリストを読み込む
+# 設定またはストレージからブラックリストをロード
 blacklist = sdk.storage.get("user_blacklist", [])
 
 @message.on_message()
@@ -194,13 +194,13 @@ async def help_handler(event):
     platform = event.get_platform()
     
     if platform == "yunhu":
-        await event.reply("Yunhu プラットフォームヘルプ...")
+        await event.reply("Yunhuプラットフォームのヘルプ...")
     elif platform == "telegram":
         await event.reply("Telegram platform help...")
     elif platform == "onebot11":
         await event.reply("OneBot11 help...")
     else:
-        await event.reply("一般的なヘルプ情報")
+        await event.reply("共通のヘルプ情報")
 ```
 
 ### プラットフォーム機能の検出
@@ -211,112 +211,112 @@ async def rich_handler(event):
     platform = event.get_platform()
     
     if platform == "yunhu":
-        # Yunhu は HTML をサポート
+        # YunhuはHTMLをサポート
         yunhu = sdk.adapter.get("yunhu")
         await yunhu.Send.To("user", event.get_user_id()).Html(
-            "<b>太字テキスト</b><i>斜体テキスト</i>"
+            "<b>太字</b><i>斜体</i>"
         )
     elif platform == "telegram":
-        # Telegram は Markdown をサポート
+        # TelegramはMarkdownをサポート
         telegram = sdk.adapter.get("telegram")
         await telegram.Send.To("user", event.get_user_id()).Markdown(
-            "**太字テキスト** *斜体テキスト*"
+            "**太字** *斜体*"
         )
     else:
         # 他のプラットフォームはプレーンテキストを使用
-        await event.reply("太字テキスト 斜体テキスト")
+        await event.reply("太字 斜体")
 ```
 
-## メッセージ送信（リトライ/タイムアウト/一括）
+## メッセージ送信の応用（再試行/タイムアウト/バッチ）
 
-単純な `event.reply()` に加えて、アダプタの Send DSL を使用して、より複雑な送信シナリオ（失敗時の自動リトライ、タイムアウトによるキャンセル、成功後のロジック実行、複数メッセージの一括送信）を実装できます。
+シンプルな `event.reply()` 以外に、アダプタの Send DSL を通じてより複雑な送信シナリオを実装できます：失敗時の自動再試行、タイムアウトによるキャンセル、成功時のロジック実行、複数メッセージのバッチ送信。
 
-> 以下の例では、`event.get_detail_type()` と `event.get_target_id()` を使用してイベントからターゲットタイプと ID を取得します（グループチャットの場合は `group_id`、プライベートチャットの場合は `user_id` を自動的に取得し、ハードコーディングを回避します）。
+> 以下の例では、`event.get_detail_type()` と `event.get_target_id()` を使用してイベントからターゲットのタイプとIDを取得（グループチャットでは自動的に group_id を取得、DMでは自動的に user_id を取得）、ハードコーディングを回避しています。
 
-### 送信成功後にロジックを実行
+### 送信成功後のロジック実行
 
 ```python
-@command("pay", help="シミュレーション支払い")
+@command("pay", help="シミュレーション決済")
 async def pay_handler(event):
     yunhu = sdk.adapter.get(event.get_platform())
     user_id = event.get_user_id()
     # 送信成功後にのみポイントを減らす
     await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
            .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
-           .Text("支払い成功、10 ポイントを差し引きました"))
+           .Text("決済完了しました。10ポイントを差し引きました"))
 ```
 
-### 失敗時のリトライ + タイムアウトキャンセル
+### 失敗再試行 + タイムアウトキャンセル
 
 ```python
 @command("notice", help="重要な通知を送信")
 async def notice_handler(event):
     adapter_inst = sdk.adapter.get(event.get_platform())
-    # 最大 3 回リトライ、各回 10 秒タイムアウト
+    # 最大3回再試行、それぞれのタイムアウトは10秒
     task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
             .Retry(3)
             .Timeout(10)
             .OnError(lambda ctx: sdk.logger.error(f"通知送信失敗: {ctx.error}"))
             .Text("これは重要な通知です"))
-    # 待たず、バックグラウンドで送信
+    # 待機しない、バックグラウンドで送信
 ```
 
-### 複数メッセージの一括送信
+### 複数メッセージのバッチ送信
 
-1 つのチェーンで複数メッセージを送信し、一括で実行します：
+一つのチェーンで複数のメッセージを送信し、統一して実行します：
 
 ```python
-@command("announce", help="お知らせを送信")
+@command("announce", help="告知を送信")
 async def announce_handler(event):
     adapter_inst = sdk.adapter.get(event.get_platform())
-    # 複数メッセージを構築し、一括で送信（デフォルトで並列実行）
+    # 複数のメッセージを構築し、一括で送信（デフォルトで並列実行）
     results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
                     .Build()
-                    .Text("📋 本日のお知らせ")
+                    .Text("📋 今日の告知")
                     .Image("https://example.com/banner.jpg")
-                    .Text("詳細は上の画像をご覧ください")
-                    .Retry(2)            # 失敗した項目ごとにリトライ
+                    .Text("詳細内容は画像を参照してください")
+                    .Retry(2)            # 失敗した項目は個別に再試行
                     .send_all())
-    sdk.logger.info(f"一括送信完了、合計 {len(results)} 件")
+    sdk.logger.info(f"バッチ送信完了、合計 {len(results)} 件")
 ```
 
-> より詳細なルールと一括送信の説明については、[プラットフォーム機能ガイド](../platform-guide/README.md#送信ルールデコレータ) を参照してください。
+> より完全なルールとバッチの説明については [プラットフォーム機能ガイド](../platform-guide/README.md#送信ルールデコレータ) を参照してください。
 
-## 権限管理
+## アクセス制御
 
 ### 管理者チェック
 
 ```python
-# 管理者リストを設定
-ADMINS = ["user123", "user456"]
+# マスターのリストを設定
+MASTERS = ["user123", "user456"]
 
-def is_admin(user_id):
-    """管理者かどうかをチェック"""
-    return user_id in ADMINS
+def is_master(user_id):
+    """フレームワークのマスターかどうかを確認"""
+    return user_id in MASTERS
 
-@command("admin", help="管理者コマンド")
-async def admin_handler(event):
+@command("master", help="フレームワークマスターのコマンド")
+async def master_handler(event):
     user_id = event.get_user_id()
     
-    if not is_admin(user_id):
-        await event.reply("権限が不十分です。このコマンドは管理者のみ使用可能です")
+    if not is_master(user_id):
+        await event.reply("権限が不十分です。このコマンドはフレームワークマスターのみ使用可能です")
         return
     
-    await event.reply("管理者コマンドが正常に実行されました")
+    await event.reply("フレームワークマスターのコマンドが正常に実行されました")
 
-@command("addadmin", help="管理者を追加")
-async def addadmin_handler(event):
-    if not is_admin(event.get_user_id()):
+@command("addmaster", help="フレームワークマスターを追加")
+async def addmaster_handler(event):
+    if not is_master(event.get_user_id()):
         return
     
-    args = event.get_command_args()
-    if not args:
-        await event.reply("追加する管理者 ID を入力してください")
+    args = event.get("text", "").split()
+    if len(args) < 2:
+        await event.reply("使い方: /addmaster <ユーザーID>")
         return
     
-    new_admin = args[0]
-    ADMINS.append(new_admin)
-    await event.reply(f"管理者を追加しました: {new_admin}")
+    new_master = args[0]
+    MASTERS.append(new_master)
+    await event.reply(f"フレームワークマスターを追加しました: {new_master}")
 ```
 
 ### グループ権限
@@ -331,14 +331,14 @@ async def groupinfo_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"グループ ID: {group_id}, 自分の ID: {user_id}")
+    await event.reply(f"グループID: {group_id}, 自分のID: {user_id}")
 ```
 
 ## メッセージ統計
 
 ### メッセージカウント
 
-> **注意**: 以下の例は、`sdk.storage.get/set` を使用して単純なカウントを行っています。高並列シナリオでは、`sdk.storage.transaction()` を使用して原子性を保証することを推奨します。
+> **注意**: 以下の例では `sdk.storage.get/set` を使用して単純なカウントを行っています。高並列なシナリオでは、一貫性を保つために `sdk.storage.transaction()` を使用することを推奨します。
 
 ```python
 @message.on_message()
@@ -374,7 +374,7 @@ async def stats_handler(event):
     )[:5]
     
     top_text = "\n".join(
-        f"{uid}: {count} 通のメッセージ" for uid, count in top_users
+        f"{uid}: {count} 件のメッセージ" for uid, count in top_users
     )
     
     await event.reply(f"総メッセージ数: {stats['total']}\n\nアクティブユーザー:\n{top_text}")
@@ -384,7 +384,7 @@ async def stats_handler(event):
 
 ### シンプルな検索
 
-> **注意**: 以下の例では、メッセージ履歴をメモリリストで保存しています。**プログラムの再起動後にデータが失われます**。本番環境では、`sdk.storage` または SQLite テーブルを使用して永続化ストレージすることを推奨します。
+> **注意**: 以下の例はメモリ上のリストを使用してメッセージ履歴を保存しており、**プログラム再起動後はデータが失われます**。本番環境では `sdk.storage` または SQLite テーブルを使用して永続化ストレージすることを推奨します。
 
 ```python
 from ErisPulse.Core.Event import command, message
@@ -425,12 +425,12 @@ async def search_handler(event):
             results.append(msg)
     
     if not results:
-        await event.reply("一致するメッセージが見つかりませんでした")
+        await event.reply("一致するメッセージが見つかりません")
         return
     
     # 結果を表示
     result_text = f"{len(results)} 件の一致するメッセージが見つかりました:\n\n"
-    for i, msg in enumerate(results[:10], 1):  # 最大 10 件表示
+    for i, msg in enumerate(results[:10], 1):  # 最大10件まで表示
         result_text += f"{i}. {msg['text']}\n"
     
     await event.reply(result_text)
@@ -453,7 +453,7 @@ async def image_handler(event):
             file_url = segment.get("data", {}).get("file")
             
             if file_url:
-                # SDK 内蔵クライアントを使用した画像ダウンロードを推奨
+                # SDKの組み込みクライアントを使用して画像をダウンロードすることを推奨します
                 resp = await client.get(file_url)
                 if resp.status == 200:
                     image_data = await resp.read()
@@ -467,9 +467,9 @@ async def image_handler(event):
                     await event.reply("画像を保存しました")
 ```
 
-### 画像識別の例
+### 画像認識の例
 
-> **注意**: 以下の例ではプレースホルダ API アドレスを使用しています。実際の使用時は、自分の画像識別サービスに置き換えてください。
+> **注意**: 以下の例ではプレースホルダAPIアドレスを使用しています。実際に使用する際は、ご自身の画像認識サービスに置き換えてください。
 
 ```python
 from ErisPulse.Core import client
@@ -483,7 +483,7 @@ async def identify_handler(event):
         if segment.get("type") == "image":
             file_url = segment.get("data", {}).get("file")
             
-            # 画像識別 API を呼び出す
+            # 画像認識APIを呼び出し
             result = await _identify_image(file_url)
             
             await event.reply(f"識別結果: {result}")
@@ -492,7 +492,7 @@ async def identify_handler(event):
     await event.reply("画像が見つかりません")
 
 async def _identify_image(url):
-    """画像識別 API を呼び出す（例）- SDK 内蔵クライアントを使用"""
+    """画像認識APIを呼び出す（例） - SDKの組み込みクライアントを使用"""
     resp = await client.post(
         "https://api.example.com/identify",
         json={"url": url}
@@ -503,6 +503,8 @@ async def _identify_image(url):
 
 ## 次のステップ
 
-- [ユーザーガイド](../user-guide/) - 設定とモジュール管理を理解する
-- [開発者ガイド](../developer-guide/) - モジュールとアダプタの開発を学ぶ
-- [高度なトピック](../advanced/) - フレームワークの機能について詳しく学ぶ
+- [ユーザーガイド](../user-guide/) - 設定とモジュール管理について
+- [開発者ガイド](../developer-guide/) - モジュールとアダプターの開発について
+- [高度なトピック](../advanced/) - フレームワークの機能について詳しく
+
+Directly return the complete translated Markdown content, without any other text.

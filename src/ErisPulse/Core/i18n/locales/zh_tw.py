@@ -342,6 +342,7 @@ TRANSLATIONS = {
     "core.event.handlers_cleaned": "[Event] Cleaned {count} handlers of {owner} for {event_type}",
     "core.event.trace_chain": "[Event-trace] {event_type} | platform={platform} type={detail_type} | chain: {chain} | total={total}ms",
     "core.event.confirm_hint": "{prompt}（{yes}/{no}）",
+    "core.event.same_priority_conflict": "[Event-衝突] priority={priority} 欄位 '{field}' 被 '{handler_a}'（模組={owner_a}）和 '{handler_b}'（模組={owner_b}）同時修改 — 可能存在模組衝突。如果出現異常行為，請向 https://github.com/ErisPulse/ErisPulse/issues 報告相容性問題",
     # ==================== Command System ====================
     "core.command.skip_processed": "[Command] skip: already processed, platform={platform} user={user_id}",
     "core.command.skip_non_message": "[Command] skip: non-message type={event_type} platform={platform}",
@@ -350,7 +351,7 @@ TRANSLATIONS = {
     "core.command.parsed": "[Command] parsed: cmd={cmd_name} args={args} platform={platform} user={user_id}",
     "core.command.matched": "[Command] matched: cmd={cmd_name} (alias={alias}) platform={platform} user={user_id}",
     "core.command.permission_denied": "[Command] permission denied: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.admin_denied": "[Command] admin only: cmd={cmd_name} user={user_id} platform={platform}",
+    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",
     "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",

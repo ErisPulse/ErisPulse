@@ -44,9 +44,7 @@ on_load / on_unload 事件数据
 支持返回 ModuleLoadStrategy 对象或字典
 所有属性统一处理，没有任何预定义字段
 
-:return: 加载策略对象或字典
-
-> **提示**
+**返回值** (`加载策略对象或字典`): > **提示**
 > 常用配置项：
 > - lazy_load: bool, 是否懒加载（默认 True）
 > - priority: int, 加载优先级（默认 0，数值越大优先级越高）
@@ -70,28 +68,22 @@ on_load / on_unload 事件数据
 ---
 
 
-##### `async async on_load(event: dict[str, Any])`
+##### `async on_load(event: dict[str, Any])`
 
 当模块被加载时调用
 
-:param event: 事件内容
-:return: 处理结果
-
-> **提示**
+- **event** (`事件内容`): **返回值** (`处理结果`): > **提示**
 > 其中，event事件内容为:
 > `{ "module_name": "模块名" }`
 
 ---
 
 
-##### `async async on_unload(event: dict[str, Any])`
+##### `async on_unload(event: dict[str, Any])`
 
 当模块被卸载时调用
 
-:param event: 事件内容
-:return: 处理结果
-
-> **提示**
+- **event** (`事件内容`): **返回值** (`处理结果`): > **提示**
 > 其中，event事件内容为:
 > `{ "module_name": "模块名" }`
 
@@ -106,7 +98,7 @@ on_load / on_unload 事件数据
 这是因为多个模块的类名可能相同（如都叫 Main），
 但注册名是唯一的。
 
-:return: 配置键名字符串
+**返回值**: 配置键名字符串
 
 ---
 
@@ -127,7 +119,7 @@ on_load / on_unload 事件数据
 每次访问都从配置存储读取最新值，确保用户修改配置后立即生效。
 返回的 dataclass 实例是只读快照，修改它不会回写存储。
 
-:return: ConfigClass 对应的 dataclass 实例
+**返回值** (`ConfigClass`): 对应的 dataclass 实例
 **异常**: `AttributeError` - 未声明 ConfigClass 时抛出
 
 ---
@@ -146,8 +138,7 @@ on_load / on_unload 事件数据
 
 子类可覆写此方法以响应配置热更新。
 
-:param old_config: 变更前的配置实例
-:param new_config: 变更后的配置实例
+- **old_config** (`变更前的配置实例`): - **new_config**: 变更后的配置实例
 
 ---
 

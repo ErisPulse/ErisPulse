@@ -96,7 +96,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 从 SendDSL 实例构建批量发送器
 
-:param send_dsl: 进入 Build 前的 SendDSL 实例（继承其上下文与规则）
+- **send_dsl** (`进入`): Build 前的 SendDSL 实例（继承其上下文与规则）
 
 ---
 
@@ -105,8 +105,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 @指定用户（作用于整批所有消息）
 
-:param user_id: 要@的用户ID
-:return: SendBuilder实例自身
+- **user_id** (`要@的用户ID`): **返回值**: SendBuilder实例自身
 
 ---
 
@@ -122,7 +121,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 回复指定消息（作用于整批所有消息）
 
-:param message_id: 要回复的消息ID
+- **message_id**: 要回复的消息ID
 
 ---
 
@@ -133,7 +132,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 保证消息到达顺序，但总耗时为各条耗时之和。
 
-:return: SendBuilder实例自身
+**返回值**: SendBuilder实例自身
 
 ---
 
@@ -144,7 +143,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 并发发送所有意图，总耗时约等于最慢的一条。不保证消息到达顺序。
 
-:return: SendBuilder实例自身
+**返回值**: SendBuilder实例自身
 
 ---
 
@@ -153,7 +152,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 设置每条发送的失败重试次数（作用于每条，非整批重试）
 
-:param times: 重试次数（不含首次），默认 1
+- **times** (`重试次数（不含首次），默认`): 1
 
 ---
 
@@ -162,7 +161,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 设置每条发送的单次超时时间
 
-:param seconds: 超时秒数
+- **seconds**: 超时秒数
 
 ---
 
@@ -171,7 +170,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 延迟执行整批发送
 
-:param seconds: 延迟秒数
+- **seconds**: 延迟秒数
 
 ---
 
@@ -182,7 +181,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 仅当批次全部成功时触发一次，回调签名为 ``callback(results: list)``。
 
-:param callback: 回调函数（同步或协程），接收结果列表
+- **callback**: 回调函数（同步或协程），接收结果列表
 
 ---
 
@@ -193,7 +192,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 批次存在任意失败条目时触发一次，回调签名为 ``callback(ctx: BatchContext)``。
 
-:param callback: 回调函数（同步或协程）
+- **callback**: 回调函数（同步或协程）
 
 ---
 
@@ -204,7 +203,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 每条意图完成时触发，回调签名为 ``callback(ctx: BatchContext)``。
 
-:param callback: 回调函数（同步或协程）
+- **callback**: 回调函数（同步或协程）
 
 ---
 
@@ -226,7 +225,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 根据执行模式（默认并行 / .Sequential() 串行）发送所有意图，
 失败的条目自动重试（沿用 Retry 规则），其他条目继续发送。
 
-:return: ``asyncio.Task``，await 后返回每条结果的列表（按意图顺序）
+**返回值** (```asyncio.Task``，await`): 后返回每条结果的列表（按意图顺序）
 
 ---
 
@@ -245,12 +244,12 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 在 SendDSL 实例的类上解析发送方法（大小写不敏感）
 
-:return: 未绑定的方法对象，或 None（未找到）
+**返回值** (`未绑定的方法对象，或`): None（未找到）
 
 ---
 
 
-##### `async async _emit_lifecycle(event: str)`
+##### `async _emit_lifecycle(event: str)`
 
 触发整批的生命周期事件
 

@@ -27,11 +27,9 @@ ErisPulse 友好错误提示引擎
 使用 difflib 进行模糊匹配，适用于拼写纠错场景（如 my_moudle -> my_module）。
 匹配时不区分大小写，但返回原始大小写的候选词。
 
-:param name: 用户输入的（可能有误的）名称
-:param candidates: 候选词列表
-:param max_suggestions: 最多返回的建议数量
-:param cutoff: 相似度阈值 (0.0 ~ 1.0)，低于此值的候选会被过滤
-:return: 按相似度从高到低排序的建议列表（保留原始大小写）
+- **name** (`用户输入的（可能有误的）名称`): - **candidates**: 候选词列表
+- **max_suggestions** (`最多返回的建议数量`): - **cutoff**: 相似度阈值 (0.0 ~ 1.0)，低于此值的候选会被过滤
+**返回值**: 按相似度从高到低排序的建议列表（保留原始大小写）
 
 ---
 
@@ -40,10 +38,9 @@ ErisPulse 友好错误提示引擎
 
 返回单个最佳匹配建议
 
-:param name: 用户输入的名称
-:param candidates: 候选词列表
-:param cutoff: 相似度阈值（默认 0.6，确保只返回高置信度匹配）
-:return: 最佳匹配的候选词，无匹配时返回 None
+- **name** (`用户输入的名称`): - **candidates**: 候选词列表
+- **cutoff** (`相似度阈值（默认`): 0.6，确保只返回高置信度匹配）
+**返回值** (`最佳匹配的候选词，无匹配时返回`): None
 
 ---
 
@@ -55,11 +52,9 @@ ErisPulse 友好错误提示引擎
 当输入是候选词的前缀时（如 ins -> install），给予更高的相似度分数。
 适用于命令行补全、拼写纠错等场景，确保前缀匹配优先于字符重排匹配。
 
-:param name: 用户输入的名称
-:param candidates: 候选词列表
-:param cutoff: 基础相似度阈值
-:param prefix_bonus: 前缀匹配的最低分数（默认 0.85）
-:return: 最佳匹配的候选词，无匹配时返回 None
+- **name** (`用户输入的名称`): - **candidates**: 候选词列表
+- **cutoff** (`基础相似度阈值`): - **prefix_bonus**: 前缀匹配的最低分数（默认 0.85）
+**返回值** (`最佳匹配的候选词，无匹配时返回`): None
 
 ---
 
@@ -72,8 +67,8 @@ ErisPulse 友好错误提示引擎
 以及 exc.obj (3.12+) 推断类型名，
 否则从错误消息中正则解析。
 
-:param exc: AttributeError 异常实例
-:return: (type_name, attr_name)，无法提取时对应位置为 None
+- **exc** (`AttributeError`): 异常实例
+**返回值** (`(type_name,`): attr_name)，无法提取时对应位置为 None
 
 ---
 
@@ -82,8 +77,8 @@ ErisPulse 友好错误提示引擎
 
 尝试从 traceback 的最后一帧中获取出错的对象（通常是 self）
 
-:param tb: traceback 对象
-:return: 出错的对象，无法获取时返回 None
+- **tb** (`traceback`): 对象
+**返回值** (`出错的对象，无法获取时返回`): None
 
 ---
 
@@ -95,9 +90,9 @@ ErisPulse 友好错误提示引擎
 尝试从异常对象或 traceback 中获取目标对象，
 在其公共属性中查找最相似的。
 
-:param exc: AttributeError 异常
-:param tb: traceback 对象（可选）
-:return: 建议的属性名，无建议时返回 None
+- **exc** (`AttributeError`): 异常
+- **tb** (`traceback`): 对象（可选）
+**返回值** (`建议的属性名，无建议时返回`): None
 
 ---
 
@@ -113,8 +108,8 @@ ErisPulse 友好错误提示引擎
 - ``import ErisPulse.Core.evnt`` -> 检查 ErisPulse.Core 下的子模块
 - ``from ErisPulse.Core import evnt`` -> 检查 ErisPulse.Core 的导出属性
 
-:param exc: ImportError 或 ModuleNotFoundError 异常
-:return: 建议的名称，无建议时返回 None
+- **exc** (`ImportError`): 或 ModuleNotFoundError 异常
+**返回值** (`建议的名称，无建议时返回`): None
 
 ---
 
@@ -126,9 +121,9 @@ ErisPulse 友好错误提示引擎
 利用 Python 动态特性：遍历 traceback 帧的局部变量，
 找到 dict-like 对象并在其 keys 中查找最相似的匹配。
 
-:param exc: KeyError 异常
-:param tb: traceback 对象
-:return: 建议的 key，无建议时返回 None
+- **exc** (`KeyError`): 异常
+- **tb** (`traceback`): 对象
+**返回值** (`建议的`): key，无建议时返回 None
 
 ---
 
@@ -141,8 +136,8 @@ ErisPulse 友好错误提示引擎
 与拼写建议类函数不同，这里返回的是一个标识符字符串，
 由 exceptions.py 通过 i18n 翻译为最终的多语言提示。
 
-:param exc: RuntimeError 异常
-:return: 诊断提示标识符，不匹配时返回 None
+- **exc** (`RuntimeError`): 异常
+**返回值** (`诊断提示标识符，不匹配时返回`): None
 
 ---
 
@@ -155,8 +150,8 @@ ErisPulse 友好错误提示引擎
 与拼写建议类函数不同，这里返回的是一个标识符字符串，
 由 exceptions.py 通过 i18n 翻译为最终的多语言提示。
 
-:param exc: TypeError 异常
-:return: 诊断提示标识符，不匹配时返回 None
+- **exc** (`TypeError`): 异常
+**返回值** (`诊断提示标识符，不匹配时返回`): None
 
 ---
 
