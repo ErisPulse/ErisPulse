@@ -109,6 +109,14 @@ class DocsTranslator:
         {"lang": "ru", "label": "Русский", "file": "README.ru.md"},
     ]
 
+    CHANGELOG_SWITCHER_ITEMS = [
+        {"lang": "en", "label": "English", "file": "CHANGELOG.en.md"},
+        {"lang": "zh-CN", "label": "简体中文", "file": "CHANGELOG.md"},
+        {"lang": "zh-TW", "label": "繁體中文", "file": "CHANGELOG.zh-TW.md"},
+        {"lang": "ja", "label": "日本語", "file": "CHANGELOG.ja.md"},
+        {"lang": "ru", "label": "Русский", "file": "CHANGELOG.ru.md"},
+    ]
+
     IGNORE_DIRS = ["ai-support/prompts", "api-reference/auto_api", "_meta"]
     REPLACEMENT_CHAR = "\ufffd"
     MIN_LENGTH_RATIO = 0.20
@@ -246,10 +254,14 @@ class DocsTranslator:
             "."
         )
 
-    def _build_lang_switcher_line(self, target_lang: str) -> str:
+    def _build_lang_switcher_line(
+        self, target_lang: str, switcher_items: Optional[List[Dict]] = None
+    ) -> str:
         """构建语言切换行：当前目标语言使用粗体，其他语言为链接。"""
+        if switcher_items is None:
+            switcher_items = self.LANG_SWITCHER_ITEMS
         parts = []
-        for item in self.LANG_SWITCHER_ITEMS:
+        for item in switcher_items:
             if item["lang"] == target_lang:
                 parts.append(f"**{item['label']}**")
             else:

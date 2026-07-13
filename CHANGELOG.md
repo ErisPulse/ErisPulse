@@ -1,78 +1,83 @@
+[English](CHANGELOG.en.md) | **简体中文** | [繁體中文](CHANGELOG.zh-TW.md) | [日本語](CHANGELOG.ja.md) | [Русский](CHANGELOG.ru.md)
+
 # 更新日志
 
 所有版本更新遵循 [语义化版本控制](https://semver.org/lang/zh-CN/) 规范。
 
-  > **如何阅读本日志**
-  > 每个版本分为不同类型的变更部分。建议开发者在升级前先阅读对应版本的 "移除" 和 "变更" 部分。
+> **如何阅读本日志**
+> 每个版本分为不同类型的变更部分。建议开发者在升级前先阅读对应版本的 "移除" 和 "变更" 部分。
 
-  > **贡献日志**
-  > 如需为新版本添加日志，请在对应版本号下补充内容，并注明日期和主要贡献者。
+> **贡献日志**
+> 如需为新版本添加日志，请在对应版本号下补充内容，并注明日期和主要贡献者。
 
-  ---
+---
 
-  ## 规则
+## 规则
 
-  ### 必须包含的信息
-  1. **贡献者信息**：每项变更必须标明贡献者，格式为 `@Github用户名`
-  2. **变更类型**：明确标识变更类型（详见下方分类说明）
-  3. **日期信息**：版本发布日期采用 `YYYY/MM/DD` 格式
+### 必须包含的信息
 
-  ### 变更类型分类
+1. **贡献者信息**：每项变更必须标明贡献者，格式为 `@Github用户名`
+2. **变更类型**：明确标识变更类型（详见下方分类说明）
+3. **日期信息**：版本发布日期采用 `YYYY/MM/DD` 格式
 
-  | 类型 | 英文标签 | 说明 | 示例 |
-  |------|---------|------|------|
-  | 新增 | Added | 新功能、新API、新模块等 | 新增命令系统支持 |
-  | 优化 | Improved | 性能提升、用户体验改进、代码优化 | 优化内存使用效率 |
-  | 变更 | Changed | 功能行为变更、配置变更、API变更（非破坏性） | 调整默认配置项 |
-  | 修复 | Fixed | Bug修复 | 修复空指针异常 |
-  | 移除 | Removed | 删除的功能、API或模块 | 移除废弃的API |
-  | 废弃 | Deprecated | 标记为弃用的功能（计划未来移除） | 某方法即将废弃 |
-  | 重构 | Refactored | 内部代码重构（不影响公共API） | 重构加载系统架构 |
-  | 安全 | Security | 安全修复或增强 | 修复权限漏洞 |
+### 变更类型分类
 
-  ### 示例格式
+| 类型 | 英文标签   | 说明                                        | 示例             |
+| ---- | ---------- | ------------------------------------------- | ---------------- |
+| 新增 | Added      | 新功能、新API、新模块等                     | 新增命令系统支持 |
+| 优化 | Improved   | 性能提升、用户体验改进、代码优化            | 优化内存使用效率 |
+| 变更 | Changed    | 功能行为变更、配置变更、API变更（非破坏性） | 调整默认配置项   |
+| 修复 | Fixed      | Bug修复                                     | 修复空指针异常   |
+| 移除 | Removed    | 删除的功能、API或模块                       | 移除废弃的API    |
+| 废弃 | Deprecated | 标记为弃用的功能（计划未来移除）            | 某方法即将废弃   |
+| 重构 | Refactored | 内部代码重构（不影响公共API）               | 重构加载系统架构 |
+| 安全 | Security   | 安全修复或增强                              | 修复权限漏洞     |
 
-  ```markdown
-  ## [version] - 2025/08/20
-  > 正式发布
+### 示例格式
 
-  **版本摘要**
-  简要描述本版本的主要变更内容和亮点。
+```markdown
+## [version] - 2025/08/20
 
-  **升级建议**
-  - 是否建议升级：建议升级 / 可选升级 / 跳过升级
-  - 升级原因和理由
+> 正式发布
 
-  **注意事项**
-  - 从低版本升级时需要注意的重要事项
-  - 弃用功能说明
-  - 兼容性变更说明
+**版本摘要**
+简要描述本版本的主要变更内容和亮点。
 
-  ### 新增
+**升级建议**
 
-  - By [贡献者](https://github.com/贡献者)
-    - `模块名` 模块新增功能描述：
-      - 具体功能点1
-      - 具体功能点2
+- 是否建议升级：建议升级 / 可选升级 / 跳过升级
+- 升级原因和理由
 
-  ### 优化
+**注意事项**
 
-  - @用户名
-    - 优化某模块的性能
-  ```
+- 从低版本升级时需要注意的重要事项
+- 弃用功能说明
+- 兼容性变更说明
 
+### 新增
 
+- By [贡献者](https://github.com/贡献者)
+  - `模块名` 模块新增功能描述：
+    - 具体功能点1
+    - 具体功能点2
 
+### 优化
+
+- @用户名
+  - 优化某模块的性能
+```
 
 ---
 
 ## [2.6.0] - 2026/07/13
+
 > 正式发布
 
 **版本摘要**
 2.6.0 是 ErisPulse 面向生产环境的增强型版本，聚焦于三大核心能力升级：(1) 发送规则装饰器系统与批量构建模式，为消息发送提供统一的超时/重试/回调/进度监控能力；(2) 管理员权限系统，支持配置文件与运行时的统一管理；(3) 框架性能与资源管理优化，引入事件处理器并发背压控制、生命周期钩子 owner 追踪、主动 GC、离线 Bot 过期回收等机制，显著降低长期运行内存占用。同时完成 Web 前端资源提取重构、API 文档与类型存根生成脚本优化。
 
 **升级建议**
+
 - **强烈建议升级**
 - 升级原因：
   - 发送规则系统为生产环境提供统一的超时/重试/回调/监控能力，无需业务层自行封装 Task 回调
@@ -83,6 +88,7 @@
   - Web 前端资源重构：内联 HTML/CSS 提取至独立文件，新增 `register_home_entry()` 模块入口注册 API（含 i18n 支持）
 
 **注意事项**
+
 - ⚠️ **钩子存储格式变更**：从二元组 `(priority, handler)` 改为三元组 `(priority, handler, owner)`，不影响公共 API 但自定义钩子存储的扩展代码需要适配
 - ⚠️ **strict_mode 默认开启（级别 1）**：未继承 `BaseModule`/`BaseAdapter` 的组件默认被拒绝跳过
 - ⚠️ **i18n 语言检测优先级变更**：`set_language()` / `epsdk i18n` 全局持久化 > `ERISPULSE_LANG` 环境变量 > 项目配置
@@ -97,16 +103,19 @@
 ---
 
 ## [2.6.0-dev.2] - 2026/07/13
+
 > 随正式版发布
 
 **版本摘要**
 2.6.0-dev.2 聚焦于 Web 前端资源重构与文档质量优化。将内联于 router.py 的 HTML/CSS 模板提取至 `Core/assets/` 独立管理；新增 `register_home_entry()` API 支持模块在根路由 `/` 注册快捷入口按钮（含 i18n 字典格式）；移除 `web_status/` 包及外部吉祥物图片依赖；优化 API 文档生成脚本的 docstring 转换逻辑，修复 async 前缀重复、param/return 格式等问题；优化类型存根生成脚本的注解处理与装饰器保留。
 
 **升级建议**
+
 - 是否建议升级：建议升级
 - 升级原因：基础设施重构（前端提取、图片清理）为后续扩展奠定基础，脚本优化提升文档与类型提示质量
 
 **注意事项**
+
 - `Core/web_status/` 已移除，错误页面统一使用纯 CSS 无图样式
 - 新增 `Core/assets/` 包，未来前端资源（JS/图标/页面）统一放置于此
 - `register_home_entry(name, url, icon_svg)` 支持 `{"i18n": "key", "default": "文本"}` 字典格式
@@ -141,16 +150,19 @@
 ---
 
 ## [2.6.0-dev.1] - 2026/07/12
+
 > 开发版本
 
 **版本摘要**
 2.6.0-dev.1 是聚焦于框架性能优化与资源管理的开发版本。引入事件处理器 Task 追踪与并发背压控制、生命周期钩子 owner 自动清理、主动 GC 后台任务、离线 Bot 过期回收、限流存储定期清理等机制，修复多项内存泄漏问题（HttpClient 未关闭、wait_reply CancelledError 残留、LazyModule 循环引用等），显著降低长期运行时的内存占用。
 
 **升级建议**
+
 - 是否建议升级：建议升级
 - 升级原因：修复多项关键内存泄漏（HttpClient session 泄漏、wait_reply 残留、生命周期钩子泄漏），优化长期运行内存稳定性
 
 **注意事项**
+
 - 钩子存储格式从二元组 `(priority, handler)` 改为三元组 `(priority, handler, owner)`，不影响公共 API
 - 事件处理器并发上限默认 64，可通过 `ErisPulse.framework.handler_max_concurrency` 配置
 - 主动 GC 默认每 300 秒执行一次，可通过 `ErisPulse.framework.proactive_gc_interval` 配置（设为 0 禁用）
@@ -196,10 +208,12 @@
 ---
 
 ## [2.6.0-dev.0] - 2026/07/09
+
 > 开发版本
 
 **语义化版本承诺**
 从 2.6.0 起，ErisPulse 将严格遵守 [语义化版本控制](https://semver.org/lang/zh-CN/)：
+
 - **2.6.x** 补丁版本仅修复 Bug，不引入新功能或破坏性变更
 - **2.7.0** 及以上的次版本可能引入新功能，但保持向后兼容
 - 本次 2.6.0 引入的所有新 API（SendContext、SendBuilder、BatchContext、admin、AdminManager 等）在 2.6.x 生命周期内保证签名稳定
@@ -208,6 +222,7 @@
 2.6.0 首个开发版，引入两大新特性：(1) SendDSL 发送规则装饰器系统与批量构建模式，通过链式方法统一管理超时/重试/回调/延迟/优先级/进度监控；(2) 管理员权限系统，支持配置文件与运行时两种方式管理管理员，命令装饰器新增 `must_admin=True` 参数自动检查权限。同时修复了标准适配器委托链路（Text → Raw_ob12）下规则与回调重复触发的关键问题。
 
 **升级建议**
+
 - **建议升级**
 - 升级原因：
   - 发送规则系统为生产环境提供统一的超时/重试/回调/监控能力，无需业务层自行封装 Task 回调
@@ -216,6 +231,7 @@
   - 修复委托链路下回调重复触发的问题
 
 **注意事项**
+
 - 规则方法（Hook/Retry/Timeout 等）返回 self，必须放在发送方法（Text/Image 等）之前调用
 - 规则随 To/Using/Account 创建的新实例传播，各实例的 hooks 列表相互独立
 - 批量构建模式下 Timeout/Retry 作用于每条发送（非整批），Hook/OnError/OnProgress 为整批语义
@@ -287,8 +303,8 @@
 
 - @wsu2059q
   - `tests/unit/test_unit_send_rules.py` 新增 57 个测试（含 7 个真实适配器模式集成测试）：
-    - SendContext 数据类、_is_success 判断、规则链式方法、规则传播（To/Using/Account）、Hook 回调、Retry 重试、Timeout 超时、OnProgress/OnError 回调、Defer 延迟、Priority 丢弃、向后兼容、apply_send_rules 直接测试
-    - 真实适配器模式集成测试：Raw_ob12 + _apply_modifiers + send_context 完整链路下的规则、修饰器、send_context 传递、重试、生命周期事件
+    - SendContext 数据类、\_is_success 判断、规则链式方法、规则传播（To/Using/Account）、Hook 回调、Retry 重试、Timeout 超时、OnProgress/OnError 回调、Defer 延迟、Priority 丢弃、向后兼容、apply_send_rules 直接测试
+    - 真实适配器模式集成测试：Raw_ob12 + \_apply_modifiers + send_context 完整链路下的规则、修饰器、send_context 传递、重试、生命周期事件
   - `tests/unit/test_unit_send_builder.py` 新增 29 个测试（含 5 个真实适配器模式集成测试）：
     - BatchContext、Build 入口、并行/串行执行、失败继续+重试、整批回调、修饰器继承、大小写不敏感、Defer
     - 真实适配器模式集成测试：批量 Text/Image 走 Raw_ob12、修饰器应用到每条、send_context 传递、失败重试、部分失败继续
@@ -298,12 +314,14 @@
 ---
 
 ## [2.5.5] - 2026/07/10
+
 > 正式发布
 
 **版本摘要**
 2.5.5 版本修复了 `StorageManager._set_nested_value` 在嵌套键路径包含大纯数字段（如 QQ 群号 `871684833`）时，误判为数组索引导致分配数亿元素引发 OOM Kill 的关键安全漏洞。修复后点分隔路径的每一段始终按字典键处理，并引入列表索引安全上限限制。
 
 **升级建议**
+
 - **强烈建议升级**
 - 升级原因：
   - 修复 `storage.set()` 写入包含大数字ID的键时进程被OOM Kill（退出码-9）的安全问题
@@ -311,6 +329,7 @@
   - 新增 `STORAGE_MAX_LIST_INDEX` 常量（见 `Core/constants.py`），集中管理索引安全阈值
 
 **注意事项**
+
 - 点分隔路径的中间层首次创建时统一使用字典而非列表，数字段作为字符串键写入（不再根据下一段是否为数字猜测容器类型）
 - 若已有列表容器且在合理索引范围内（< 10000），仍按数组索引处理
 - 新增常量 `STORAGE_MAX_LIST_INDEX` 到 `Core/constants.py`
@@ -338,12 +357,14 @@
 ---
 
 ## [2.5.4] - 2026/07/09
+
 > 正式发布
 
 **版本摘要**
 2.5.4 版本修复了修改账户配置后适配器缓存未刷新导致账户解析失败的关键问题，以及服务器停止时 WebSocket 竞争条件的误报日志问题；同时为适配器基类恢复 `_load_accounts()` / `_load_config()` 向后兼容支持，确保旧适配器无需修改即可正常工作。
 
 **升级建议**
+
 - **强烈建议升级**
 - 升级原因：
   - 修复 Dashboard 修改 token 等账户配置后，多账户适配器仍使用旧缓存导致 `未找到可用账户 (account_id=default)` 的问题
@@ -351,6 +372,7 @@
   - 恢复 `_load_accounts()` / `_load_config()` 向后兼容支持，旧适配器无需修改
 
 **注意事项**
+
 - `_accounts_data` 现在在每次 `adapter.start()` 启动时刷新，不再仅在 `__init__` 时读取一次
 - 新增 i18n 翻译键 `core.router.stop_ws_close_race`，需同步更新语言文件
 
@@ -378,12 +400,14 @@
 ---
 
 ## [2.5.3] - 2026/07/08
+
 > 正式发布
 
 **版本摘要**
 2.5.3 版本修复 2.5.2 配置系统重构引入的账户解析回归 Bug，增强交互式方法的个性化能力，并将配置 Schema 的 i18n 支持从仅 `description` 扩展到 `options` 标签、`placeholder`、分组标题（`group_labels`）四个维度。
 
 **升级建议**
+
 - **强烈建议升级**（尤其是使用多账户适配器的用户）
 - 升级原因：
   - 修复 2.5.2 引入的 `_resolve_account()` 回归 Bug，多账户适配器发送消息时不再报错
@@ -435,12 +459,14 @@
 ---
 
 ## [2.5.2] - 2026/07/06
+
 > 正式发布
 
 **版本摘要**
 2.5.2 版本聚焦配置系统全面升级与 Dashboard 模块管理能力增强。配置 Schema 实现通用化（`BaseConfig` 替代 `AdapterConfig`），支持 i18n 多语言描述与实时读取；模块引入声明式配置支持（`ConfigClass` + `self.cfg`）；Dashboard 新增模块配置视图与 API。同时优化了框架内部友好性，新增运行时状态快照导出、全局友好错误提示引擎、事件/命令/存储/路由子系统链路追踪日志（TRACE 级别），以及 Event 包装类增强。
 
 **升级建议**
+
 - **强烈建议升级**
 - 升级原因：
   - 配置 Schema 通用化使适配器、模块、外部项目均可统一使用 `BaseConfig`，降低学习成本
@@ -452,6 +478,7 @@
   - Event 包装类新增 `get_target_id()`、`get_session_id()`、`supports()` 等便捷方法，简化事件处理
 
 **注意事项**
+
 - ⚠️ **配置访问方式变更**：适配器推荐使用 `self.cfg` 替代 `self.config` 访问配置（`self.config` 作为兼容别名保留，但建议逐步迁移）
 - ⚠️ **适配器配置类变更**：`AdapterConfig` 已由 `BaseConfig` 替代（提供兼容别名，但推荐使用新名称）
 - ⚠️ **metadata 字段变更**：`webui` 键已统一为 `ui`（旧名仍兼容，推荐使用新名称）
@@ -464,22 +491,23 @@
 
 **主要变更概览**
 
-| 模块 | 变更内容 |
-|------|----------|
-| 配置系统 | `BaseConfig` 通用配置基类，支持 i18n 多语言描述、`extra`/`meta` 扩展字段、`resolve_config_schema()` 解析 |
-| 适配器 | `self.cfg` 实时读取配置，移除缓存加载方法（`_load_config()`/`_load_accounts()`） |
-| 模块 | 声明式配置支持（`ConfigClass` + `self.cfg` + `on_config_update()` 回调） |
-| Dashboard | 新增模块配置页面与 API，配置描述支持 i18n 自动解析 |
-| 友好错误提示 | 全局异常 hook 支持 AttributeError/ImportError/KeyError 拼写建议；`sdk.__getattr__` 增强提示 |
-| 链路追踪 | 事件/命令/存储/路由子系统新增 TRACE 级别日志 |
-| Event 包装类 | 新增 `get_target_id()`、`get_session_id()`、`supports()`、`available_methods()`、`reply()` 增强 |
-| Storage | 新增异步接口（`aget/aset/adelete` 等），修复 `synchronous=NORMAL` 不生效问题 |
-| Docker | 新增健康检查，移除 entrypoint 框架自动更新逻辑（由 Dashboard 热更新替代） |
-| CLI | 拼写建议、`epsdk list` 新增模块脚本入口发现、`--no-uv` 标志、`--here` 标志 |
+| 模块         | 变更内容                                                                                                 |
+| ------------ | -------------------------------------------------------------------------------------------------------- |
+| 配置系统     | `BaseConfig` 通用配置基类，支持 i18n 多语言描述、`extra`/`meta` 扩展字段、`resolve_config_schema()` 解析 |
+| 适配器       | `self.cfg` 实时读取配置，移除缓存加载方法（`_load_config()`/`_load_accounts()`）                         |
+| 模块         | 声明式配置支持（`ConfigClass` + `self.cfg` + `on_config_update()` 回调）                                 |
+| Dashboard    | 新增模块配置页面与 API，配置描述支持 i18n 自动解析                                                       |
+| 友好错误提示 | 全局异常 hook 支持 AttributeError/ImportError/KeyError 拼写建议；`sdk.__getattr__` 增强提示              |
+| 链路追踪     | 事件/命令/存储/路由子系统新增 TRACE 级别日志                                                             |
+| Event 包装类 | 新增 `get_target_id()`、`get_session_id()`、`supports()`、`available_methods()`、`reply()` 增强          |
+| Storage      | 新增异步接口（`aget/aset/adelete` 等），修复 `synchronous=NORMAL` 不生效问题                             |
+| Docker       | 新增健康检查，移除 entrypoint 框架自动更新逻辑（由 Dashboard 热更新替代）                                |
+| CLI          | 拼写建议、`epsdk list` 新增模块脚本入口发现、`--no-uv` 标志、`--here` 标志                               |
 
 ---
 
 ## [2.5.2-dev.6] - 2026/07/06
+
 > 随正式版发布
 
 **版本摘要**
@@ -537,6 +565,7 @@
 ---
 
 ## [2.5.2-dev.5] - 2026/07/05
+
 > 开发版本
 
 **版本摘要**
@@ -552,6 +581,7 @@
 ---
 
 ## [2.5.2-dev.4] - 2026/07/03
+
 > 开发版本
 
 **版本摘要**
@@ -620,6 +650,7 @@
 ---
 
 ## [2.5.2-dev.3] - 2026/06/30
+
 > 开发版本
 
 **版本摘要**
@@ -648,12 +679,14 @@
 ---
 
 ## [2.5.2-dev.2] - 2026/06/29
+
 > 开发版本
 
 **版本摘要**
 2.5.2-dev.2 优化 Docker 部署体验、提升配置持久化健壮性、完善 CI/CD 流程与开发规范，修复日志级别设置与配色问题，调整严格模式默认策略为宽松。
 
 **升级建议**
+
 - 建议升级：所有 Docker 部署用户
 - 新增 Docker 健康检查，compose 中 `command` 冗余已移除（由 Dockerfile CMD 生效）
 
@@ -740,6 +773,7 @@
 ---
 
 ## [2.5.2-dev.1] - 2026/06/27
+
 > 开发版本
 
 **版本摘要**
@@ -747,6 +781,7 @@
 防止模块/适配器内部错误导致容器意外重启，子进程异常退出时主进程自动重试而不退出。
 
 **升级建议**
+
 - 建议升级：所有使用 Docker 部署的用户
 - Docker 不再参与包管理，框架更新由 Dashboard 热更新完成；容器不再因内部错误而反复重启
 
@@ -777,28 +812,33 @@
 ---
 
 ## [2.5.2-dev.0] - 2026/06/27
+
 > 开发版本
 
 **版本摘要**
 2.5.2-dev.0 修复非热重载模式下 `ep run <script>` 找不到脚本所在目录子包的问题
 
 ### 修复
+
 - @wsu2059q
   - `CLI/commands/run.py` 修复非热重载模式下运行脚本时找不到脚本所在目录子包的问题：
 
 ### 优化
+
 - @wsu2059q
   - 将 `Event` cmd和msg的处理逻辑进行合并
 
 ---
 
 ## [2.5.1] - 2026/06/24
+
 > 正式发布
 
 **版本摘要**
 2.5.1 版本聚焦日志系统优化与 Storage 增强：新增 `EVENT` 日志级别取代旧的 `MESSAGE`，事件日志现在可按 OneBot12 类型分类显示并被 WARNING+ 级别过滤；全面优化日志配色（统一管理、关闭 Rich 自动高亮）和路由日志输出（避免批量注册/注销时刷屏）；Storage 模块支持嵌套键访问。Docker 镜像支持国际化（entrypoint 多语言、locale 生成、`LANG` 环境变量自动检测与透传）。
 
 **升级建议**
+
 - **建议升级**
 - 升级原因：
   - 日志事件级别（原 `MESSAGE`/`message()`）更名为 `EVENT`/`event()`，可被 WARNING+ 过滤，只关心错误日志的用户体验更好
@@ -806,9 +846,11 @@
   - Storage 嵌套键访问简化了复杂数据结构的操作
 
 **注意事项**
+
 - ⚠️ **`message()` 方法已更名为 `event()`**：框架内部调用已全部更新，第三方模块如有直接调用 `logger.message()` 的需改为 `logger.event()`
 
 ### 新增
+
 - StorageManager 支持嵌套键访问，可以使用点号语法操作嵌套数据结构
 - 添加嵌套键自动创建功能，无需预先创建根对象
 - 新增 `EVENT` 日志级别（等同 INFO），用于消息/事件收发日志，用户设置 WARNING+ 级别即可过滤掉事件日志
@@ -817,11 +859,13 @@
 - docker-compose.yml 透传 `LANG` 与 `ERISPULSE_LANG` 环境变量，容器自动继承宿主机语言设置
 
 ### 变更
+
 - 日志级别 `MESSAGE`(60) 重命名为 `EVENT`(21)，行为从「高于 CRITICAL」改为「等同 INFO」，可被 WARNING+ 级别过滤
 - `Logger.message()` / `LoggerChild.message()` 方法更名为 `event()`
 - 适配器事件日志按 OneBot12 事件类型分类显示（`[Message]`/`[Notice]`/`[Request]`/`[Meta]`）
 
 ### 优化
+
 - 统一日志配色方案至 `constants.py`（`LOG_RICH_THEME`），降低视觉噪音：INFO 仅加粗不着色，路径/字符串不再被 Rich 自动高亮为紫色
 - 路由注册/注销日志降为 DEBUG 级别，新增 INFO 级别的路由摘要日志，避免批量操作时刷屏
 - Docker entrypoint 使用 ErisPulse ASCII Banner 替代 `==========` 分隔线
@@ -829,18 +873,21 @@
 - Docker CI 工作流（docker-publish.yml）同步使用 ASCII Banner
 
 ### 修复
+
 - 修复并发存储写入测试的键名冲突问题
 - 修复 CLI 测试中缺少 i18n 命令的配置问题
 
 ---
 
 ## [2.5.0] - 2026/06/19
+
 > 正式发布
 
 **版本摘要**
 2.5.0 版本定位为「生产就绪」版本，新增国际化（i18n）系统（5种语言）、严格模式加载策略、结构化日志（JSON 格式）、CLI 全面国际化、健康检查与就绪探针支持；移除含 C 扩展的三方依赖以提升 aarch64/ARM 等平台兼容性；修复 HTTP 客户端连接泄漏、热重载竞态等多个关键问题。这是 ErisPulse 首个面向正式生产环境的全功能大版本。
 
 **升级建议**
+
 - **强烈建议升级**
 - 升级原因：
   - 新增完整的国际化系统，SDK 及 CLI 全部内置文本支持 5 种语言（简体中文/繁体中文/英文/日文/俄文），自动检测用户语言环境
@@ -853,17 +900,20 @@
   - 修复 HTTP 客户端响应体未预读导致的连接泄漏、热重载竞态等多个关键问题
 
 **注意事项**
+
 - ⚠️ **严格模式默认开启（级别 1）**：未继承 `BaseModule`/`BaseAdapter` 的组件默认会被拒绝跳过。如需加载旧组件，请通过配置 `[ErisPulse.framework] strict_mode_exceptions.modules/adapters` 豁免清单，或设置 `strict_mode = 0` 宽松模式
 
 ---
 
 ## [2.5.0-dev.4] - 2026/06/17
+
 > 开发版本
 
 **版本摘要**
 2.5.0-dev.4 增强启动摘要输出（懒加载标注、禁用组件列表、严格模式拒绝清单）；修正 Core i18n 语言优先级链，`set_language()` / `epsdk i18n` 全局持久化对 SDK 运行时生效。
 
 ### 新增
+
 - @wsu2059q
   - `Core/logger.py` `print_tree_item` 新增 `tag` / `tag_style` 参数，支持树状项尾部标注样式化标签（如 `[懒加载]`）
   - `loaders/strict.py` `StrictModeManager` 新增与级别无关的 `_rejections` 拒绝追踪列表：
@@ -884,6 +934,7 @@
   - `tests/unit/test_unit_i18n.py` 新增 4 个语言优先级测试
 
 ### 变更
+
 - @wsu2059q
   - Core i18n 语言检测优先级调整：`epsdk i18n` / `set_language()` 的全局持久化选择 > 项目 `ErisPulse.i18n.language` 配置
   - `set_language()` 行为变更：调用即持久化到全局状态文件，不再仅内存生效。临时覆盖请用 `ERISPULSE_LANG` 环境变量
@@ -891,12 +942,14 @@
 ---
 
 ## [2.5.0-dev.3] - 2026/06/17
+
 > 开发版本
 
 **版本摘要**
 2.5.0-dev.3 引入「严格模式」加载策略，默认拒绝未继承基类的模块/适配器，避免上下文系统与兑底清理的资源泄露；补齐适配器加载器缺失的 `BaseAdapter` 继承检查，并同步更新配置文档。
 
 ### 新增
+
 - @wsu2059q
   - `loaders/strict.py` 新增严格模式管理模块：
     - `StrictModeManager` 统一处理加载合规性判定与违规收集，三级策略：
@@ -921,6 +974,7 @@
   - `tests/unit/test_unit_strict_mode.py` 新增 15 个单元测试（三级行为/豁免清单/跨加载器收集/检查点报告）
 
 ### 变更
+
 - @wsu2059q
   - `loaders/module.py` 未继承 `BaseModule` 的模块不再静默警告后加载，改为交由严格模式判定容忍或拒绝
   - 严格模式默认开启（级别 1）：未继承基类的组件默认会被拒绝跳过，需加载旧组件时通过豁免清单或调为宽松模式
@@ -928,10 +982,12 @@
   - 加载/注册/初始化阶段的异常处理新增严格模式记录，在致命级别下纳入统一报告
 
 ### 修复
+
 - @wsu2059q
   - 适配器加载器此前完全未检查是否继承 `BaseAdapter`，现补齐与模块对称的基类校验
 
 ### 文档
+
 - @wsu2059q
   - `docs/zh-CN/user-guide/configuration.md` 同步更新：
     - 框架配置新增「严格模式」小节（级别表、行为差异、豁免清单用法）
@@ -942,12 +998,14 @@
 ---
 
 ## [2.5.0-dev.2] - 2026/06/15
+
 > 开发版本
 
 **版本摘要**
 2.5.0-dev.2 移除含 C 扩展的三方依赖以提升 aarch64 等平台兼容性，新增语言切换命令与首次启动语言确认提示，完善 CLI 工具层国际化
 
 ### 新增
+
 - @wsu2059q
   - `CLI/utils/file_watcher.py` 新增纯 Python 文件变更监控模块：
     - `PollingObserver` 通过定期比较 .py 文件 mtime 检测变更，不依赖任何 C 扩展
@@ -969,6 +1027,7 @@
     - 支持 `2.5.0-dev.1`、`2.5.0a1`、`2.4.5` 等格式
 
 ### 变更
+
 - @wsu2059q
   - `CLI/commands/run.py` 热重载改用 `utils/file_watcher.PollingObserver`，不再依赖 watchdog
   - `CLI/cli.py` 帮助文本的「命令」/「选项」标题改为通过 i18n 获取
@@ -979,11 +1038,13 @@
   - `Core/Event/command` 支持设置多个前缀匹配
 
 ### 移除
+
 - @wsu2059q
   - 移除 `watchdog` 三方依赖（含 C 扩展，在 aarch64 等平台可能无预编译 wheel 导致安装失败）
   - 移除 `packaging` 三方依赖（仅用于版本比较，已由内置 `_version_key()` 替代）
 
 ### 优化
+
 - @wsu2059q
   - 减少第三方依赖数量，提升 aarch64/ARM 等无预编译 wheel 平台的兼容性
   - CLI 工具层完全国际化，所有用户可见文本支持 5 种语言
@@ -991,12 +1052,14 @@
 ---
 
 ## [2.5.0-dev.1] - 2026/06/15
+
 > 开发版本
 
 **版本摘要**
 2.5.0-dev.1 为框架添加完整的国际化（i18n）支持，覆盖所有内置文本
 
 ### 新增
+
 - @wsu2059q
   - `Core/i18n/` 新增国际化模块，支持 5 种语言：
     - zh-CN（简体中文）、zh-TW（繁体中文）、en（英文）、ja（日文）、ru（俄文）
@@ -1018,6 +1081,7 @@
   - `tests/unit/test_unit_i18n.py` 新增 48 个单元测试（语言检测/就近映射/翻译查找/注册功能/Windows API）
 
 ### 变更
+
 - @wsu2059q
   - `sdk.py` 及全部 Core 模块运行时中文文本改为通过 `i18n.t()` 获取翻译
   - `loaders/adapter.py` 及 `loaders/module.py` 运行时中文文本改为通过 `i18n.t()` 获取翻译
@@ -1027,6 +1091,7 @@
   - `tests/unit/test_unit_adapter.py` 4 个测试适配 i18n 输出
 
 ### 内部
+
 - @wsu2059q
   - `Core/i18n/__init__.py` 优化跨平台语言检测，Windows 优先系统 API 避免 Git Bash 等工具覆盖 `LANG`
   - 将 `i18n.t()` 的 `key` 参数改为仅位置参数（`/`），解决翻译值含 `{key}` 占位符时的参数冲突
@@ -1034,12 +1099,14 @@
 ---
 
 ## [2.5.0-dev.0] - 2026/06/08
+
 > 开发版本
 
 **版本摘要**
 2.5.0 定位为「生产就绪」版本，新增健康检查/就绪探针、结构化日志、优雅关闭超时等
 
 ### 新增
+
 - @wsu2059q
   - `Core/logger.py` 新增 JSON 结构化日志支持：
     - 新增 `Logger.set_json_format(enabled)` 方法
@@ -1076,6 +1143,7 @@
   - 新增 CLI 单元测试套件（`tests/unit/test_unit_cli.py`，61 个测试），覆盖命令注册/发现、参数解析、命令路由与别名体系
 
 ### 优化
+
 - @wsu2059q
   - `CLI/utils/package_manager.py` 安装路由优化：
     - 优先使用独立 uv 二进制（`shutil.which("uv")`），其次回退 `python -m uv`，最后回退 pip
@@ -1084,6 +1152,7 @@
   - `CLI` 全系统补充符合文档字符串规范的注释
 
 ### 变更
+
 - @wsu2059q
   - `sdk.Uninitializer.uninit()` 重构为异步超时控制：
     - 反初始化主体由 `asyncio.wait_for()` 包装
@@ -1094,12 +1163,14 @@
   - `Core/Event/wrapper.py` `Event.reply()` 中的 `message.sending` / `message.sent` 生命周期钩子下沉至 `SendDSL.__getattribute__`，所有适配器发送操作均触发
 
 ### 移除
+
 - @wsu2059q
   - `Core/Event/wrapper.py` 移除命名冲突检测：
-    - 移除 `_ALLOW_OVERRIDE_NAMES`、`_get_event_builtin_names()` 
+    - 移除 `_ALLOW_OVERRIDE_NAMES`、`_get_event_builtin_names()`
     - 移除相关 `warnings` 导入
 
 ### 修复
+
 - @wsu2059q
   - 修复 HTTP 客户端请求后响应体未预读导致的连接泄漏问题
   - `CLI/commands/run.py` 重构热重载机制，修复多个问题：
@@ -1111,12 +1182,14 @@
 ---
 
 ## [2.4.9] - 2026/06/12
+
 > 正式发布
 
 **版本摘要**
 2.4.9 修复适配器热重载时路由冲突导致重载失败的关键问题。框架自动管理适配器生命周期资源（路由/事件/命令），与模块卸载对齐颗粒度。
 
 **升级建议**
+
 - **强烈建议升级**
 - 升级原因：
   - 修复第三方模块（如 Dashboard）触发适配器热重载时，因旧路由未清理导致 `WebSocket路径 ... 已注册` 冲突、重载失败的问题
@@ -1124,6 +1197,7 @@
   - 新增框架级 `adapter.restart(platform)` API，第三方模块无需自行管理适配器重载生命周期
 
 **注意事项**
+
 - 适配器热重载现在由框架统一处理资源清理，第三方模块应调用 `sdk.adapter.restart(platform)` 而非直接操作适配器实例
 - 需重启进程使本版本生效（旧版本注册的路由无 owner 归属记录）
 
@@ -1168,12 +1242,14 @@
 ---
 
 ## [2.4.8] - 2026/06/12
+
 > 正式发布
 
 **版本摘要**
 2.4.8 是一个 HTTP/WS 客户端稳定性和适配器重连可靠性修复版本。
 
 **升级建议**
+
 - **强烈建议升级**
 - 升级原因：
   - 修复 WebSocket 客户端并发 `receive()` 导致 `Concurrent call to receive() is not allowed` 崩溃
@@ -1182,6 +1258,7 @@
   - 修复适配器重连竞态导致 `Cannot write to closing transport`
 
 **注意事项**
+
 - `ClientWebSocket.send_*()` 现在会在连接已关闭时抛出 `WebSocketError` 而非底层 aiohttp 异常
 
 ### 修复
@@ -1206,12 +1283,14 @@
 ---
 
 ## [2.4.7] - 2026/06/11
+
 > 正式发布
 
 **版本摘要**
 2.4.7 是一个在2.5.x系列发布之前进行功能修复的补丁版本
 
 **升级建议**
+
 - **强烈建议升级**
 - 升级原因：
   - 修复部分场景下 client 在进行轮询/post时未预读响应体，导致连接泄漏/信息丢失的错误
@@ -1219,12 +1298,14 @@
 ---
 
 ## [2.4.6] - 2026/06/08
+
 > 正式发布
 
 **版本摘要**
 2.4.6 版本是一个重大功能更新版本，主要新增了声明式配置管理系统、WebSocket 客户端共享基类、ErisPulse 统一异常体系、SSE 服务端推送支持、路由发现功能；重构了适配器开发体验为声明式配置风格；增强了 SQL 注入防护和模块属性安全校验；修复了服务重启后 WebSocket 连接挂起、存储空值混淆等多个关键问题。
 
 **升级建议**
+
 - **强烈建议升级**
 - 升级原因：
   - 适配器开发体验全面升级：声明式配置、一行发送 meta 事件、标准化响应构造
@@ -1234,15 +1315,18 @@
   - 修复多个服务重启相关的关键问题
 
 **注意事项**
+
 - ⚠️ **配置迁移**：适配器配置现已迁移至声明式 `ConfigClass` / `AccountConfigClass`，旧版适配器需要更新(不更新也没关系~会兼容的喔)
 - ⚠️ **模块命名规范**：模块名称禁止使用 `_` 前缀和与 SDK 保留属性（如 `logger`、`config`）冲突的名称
 
 ---
 
 ## [2.4.6-dev.6] - 2026/06/07
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `Core/Bases/websocket.py` 新增 `WebSocketConnectionBase` 共享基类和 `WSMessage` 消息类型：
     - 客户端和服务端 WebSocket 共享 send/receive/iter/close 接口
@@ -1287,6 +1371,7 @@
     - 精确匹配优先，无结果时自动按前缀聚合
 
 ### 变更
+
 - @wsu2059q
   - `WebSocketConnection` 改为继承 `WebSocketConnectionBase`，通用接口移至基类
   - `WebSocketDisconnect` 从 `Bases/router.py` 移至 `Bases/errors.py`（旧导入路径兼容）
@@ -1302,6 +1387,7 @@
   - `.gitignore` 新增 `config/config.toml`、`config/config.db` 等敏感配置文件排除规则
 
 ### 安全
+
 - @wsu2059q
   - `Core/storage.py` 新增 SQL 标识符（表名/列名/列类型）白名单校验，防止 SQL 注入：
     - 新增 `_validate_identifier()` 函数，仅允许 `^[a-zA-Z_][a-zA-Z0-9_]*$` 格式
@@ -1316,6 +1402,7 @@
   - `Core/Bases/storage.py` 修复 `BaseStorage.__setattr__` 静默吞没后端写入失败的问题：移除 `except` fallback，让异常正常传播
 
 ### 修复
+
 - @wsu2059q
   - 修复 `BaseStorage.get_multi()` / `__getattr__()` 将存储值 `None` 与键不存在混淆的问题：引入 `_SENTINEL` 哨兵值区分
   - 修复 `loaders/adapter.py` 异常处理捕获 `BaseException` 导致 `KeyboardInterrupt`（Ctrl+C）被静默吞没的问题
@@ -1327,6 +1414,7 @@
   - 修复 `CLI/commands/create.py` LICENSE 模板硬编码年份 `"2026"`，导致后续年份生成错误版权日期的问题
 
 ### 文档
+
 - @wsu2059q
   - HTTP 客户端文档 → HTTP/WS 客户端文档，新增 WebSocket 客户端和异常体系章节
   - 适配器开发文档更新为声明式配置风格（ConfigClass / emit_meta / make_response）
@@ -1338,9 +1426,11 @@
 ---
 
 ## [2.4.6-dev.5] - 2026/06/03
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `Core/client.py` 新增基于 aiohttp 的 HTTP 客户端模块：
     - `HttpClient` 类：提供 `get`/`post`/`put`/`delete`/`patch`/`request` 异步方法
@@ -1370,6 +1460,7 @@
     - WebSocket 生命周期钩子（on_disconnect/on_error）
 
 ### 变更
+
 - @wsu2059q
   - 路由抽象类型文件重命名：`Core/Bases/server.py` → `Core/Bases/router.py`
   - HTTP 客户端从抽象基类分离为独立实现模块：`Core/Bases/client.py`（抽象基类）→ `Core/client.py`（aiohttp 实现）
@@ -1384,6 +1475,7 @@
   - `Event/command.py:wait_reply` 去掉防御性创建 ContextVar list 的逻辑，未在 handler 内时直接跳过记录
 
 ### 文档
+
 - @wsu2059q
   - 更新 `docs/zh-CN/getting-started/basic-concepts.md`：新增 Client（HTTP 客户端）章节，Router 章节展示抽象类型和 FastAPI 原生类型两种风格
   - 更新 `docs/zh-CN/api-reference/core-modules.md`：新增 HTTP Client 模块完整文档、抽象类型章节
@@ -1393,9 +1485,11 @@
 ---
 
 ## [2.4.6-dev.4] - 2026/06/01
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `sdk.py` 新增 `hard_restart()` 硬重启方法：
     - 执行完整 `uninit()` 反初始化后调用 `os._exit(42)` 退出进程
@@ -1407,15 +1501,18 @@
     - `--reload` 热重载模式保持原有行为不变
 
 ### 变更
+
 - @wsu2059q
   - 适配器/模块加载系统全面拦截 `SystemExit` 异常，防止第三方代码调用 `sys.exit()` 导致 Docker 容器意外退出
 
 ---
 
 ## [2.4.6-dev.2] - 2026/05/31
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `Core/constants.py` 集中管理框架内部硬编码常量（100+），每个常量附带使用位置和修改影响说明
   - `runtime/context.py` 运行时上下文追踪（`current_owner` ContextVar），支持按模块自动标记资源归属
@@ -1424,6 +1521,7 @@
   - `web_status/` 移入 `src/ErisPulse/` 作为可分发包，`pyproject.toml` 已配置
 
 ### 变更
+
 - @wsu2059q
   - `adapter.py` `shutdown()` 仅全量关闭时清空全局事件处理器
   - `module.py` `load()` 使用 `current_owner` 包裹实例创建；`_unload_single_module()` 和 `disable()` 新增按 owner 的事件处理器/命令/SDK属性清理
@@ -1435,9 +1533,11 @@
 ---
 
 ## [2.4.6-dev.3] - 2026/05/31
+
 > 开发版本
 
 ### 变更
+
 - @wsu2059q
   - `adapter.py` `emit()` 事件处理器分发从顺序 `await` 改为 `asyncio.create_task()` fire-and-forget 模式：
     - 新增 `_dispatch_handler_task()` 方法，将每个 OB12 handler 和 raw handler 包装为独立 `asyncio.Task`
@@ -1446,6 +1546,7 @@
     - Task 创建失败时回退到 `asyncio.ensure_future()`
 
 ### 新增
+
 - @wsu2059q
   - `Core/constants.py` 新增 `HANDLER_SLOW_THRESHOLD_SECS = 1.0` 常量（处理器执行耗时告警阈值）
   - `adapter.py` `_dispatch_handler_task()` 内置处理器执行耗时监控，超过阈值记录 WARNING
@@ -1454,15 +1555,18 @@
   - `Event/command.py` `wait_reply()` 超时时记录 DEBUG 级别日志（包含 wait_key 和 timeout）
 
 ### 修复
+
 - @wsu2059q
   - 修复 `adapter.emit()` 中 `_update_bot_status()` 调用括号错误导致离线状态无法正确设置的问题
 
 ---
 
 ## [2.4.6-dev.1] - 2026/05/26
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `SendDSL` 框架级 At/AtAll/Reply 修饰器实现：
     - `At(user_id)` / `AtAll()` / `Reply(message_id)` 已由 `SendDSL` 基类内置实现，适配器无需重复编写
@@ -1498,6 +1602,7 @@
   - 新增 `docs/zh-CN/standards/request-action-spec.md` 请求操作标准文档
 
 ### 变更
+
 - @wsu2059q
   - `SendDSL` 基类增强：
     - `__init__` 新增修饰器状态变量（`_at_user_ids`、`_reply_message_id`、`_at_all`），`To()`/`Using()` 创建新实例时自动重置
@@ -1511,6 +1616,7 @@
   - `docs` 更新中文适配器开发文档（getting-started / send-method-spec / event-conversion），展示 Request DSL 用法
 
 ### 移除
+
 - @wsu2059q
   - `SendDSL` 移除 `_unimplemented_modifier()` 方法（`At`/`AtAll`/`Reply` 已有实际实现，不再需要 no-op 垫片）
   - `config` 移除配置审计系统：
@@ -1522,6 +1628,7 @@
     - 移除 `test_unit_config.py` 中相关审计/回调测试用例
 
 ### 优化
+
 - @wsu2059q
   - `adapter` 简化示例适配器和 CLI 脚手架模板：
     - 移除 `examples/example-adapter/MyAdapter/Core.py` 中 ~40 行 At/AtAll/Reply 样板代码
@@ -1535,18 +1642,22 @@
 ---
 
 ## [2.4.6-dev.0] - 2026/05/24
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `CLI` 新增未验证模块标识：`list-remote`/`install`交互安装中未验证模块显示「（未验证）」标记，安装时弹出风险警告需确认
 
 ### 修复
+
 - @wsu2059q
   - 修复 `adapter`/`module` 加载的启用状态检测在部分场景下可能失效的问题
   - 修复 `sdk.run` 的保持运行变量关闭的情况下，会导致继续运行代码`uninit`的bug
 
 ### 优化
+
 - @wsu2059q
   - `docs` SQL 构建器文档：明确元组返回值、新增 `Where` 多参数用法说明
   - `docs` 发布文档：精简为 3 步流程，更新商店提交入口
@@ -1562,12 +1673,14 @@
 ---
 
 ## [2.4.5] - 2026/05/17
+
 > 正式发布
 
 **版本摘要**
 2.4.5 版本是一个重大功能更新版本，主要新增了 Event 多 Bot 模式优化、配置审计系统、指标监控模块、路由系统全面增强（装饰器注册、路由分组、中间件、限流、CORS）、多轮对话扩展（分支/跳转/持久化）、模块依赖管理；重构了 SDK 生命周期为独立阶段（Router 启动从适配器解耦）；优化了日志调用方检测和 CLI 交互体验；修复了优先级加载、适配器中间件空返回、配置文件路径等多个关键问题。
 
 **升级建议**
+
 - **建议升级**
 - 升级原因：
   - Event 多 Bot 模式，提供完整的 Bot 生命周期管理
@@ -1578,19 +1691,23 @@
   - SDK 生命周期细化，Router 启动与适配器启动解耦，清理流程更完整
 
 **注意事项**
+
 - ⚠️ **路由中间件路径模式变更**：路径模式为 glob 匹配（如 `"/MyModule/*"`），而非 `(module_name, pattern)` 元组
 - ⚠️ **Router 启动解耦**：`adapter.startup()` 不再包含 `router.start()` 调用，Router 由 SDK 生命周期独立启动
 
 **兼容性**
+
 - 对外 API 完全兼容，现有模块和适配器代码无需修改
 
 ### 修复
+
 - @wsu2059q
   - 修复在本版本dev版本中反初始化耗时在显示之前就被清理导致显示耗时为0ms的问题
 
 ---
 
 ## [2.4.5-dev.3] - 2026/05/16
+
 > 开发版本
 
 ### 新增
@@ -1655,6 +1772,7 @@
 ---
 
 ## [2.4.5-dev.2] - 2026/05/13
+
 > 开发版本
 
 ### 重构
@@ -1697,15 +1815,18 @@
 ---
 
 ## [2.4.5-dev.1] - 2026/05/12
+
 > 开发版本
 
 ### 优化
+
 - @wsu2059q
   - `logger` 的 `caller` 检测进行了优化，现在显示的调用方更加智能
 
 ---
 
 ## [2.4.5-dev.0] - 2026/05/10
+
 > 开发版本
 
 ### 新增
@@ -1739,12 +1860,14 @@
 ---
 
 ## [2.4.4] - 2026/05/07
+
 > 正式发布
 
 **版本摘要**
 修复版本：简化初始化模板，重构热重载机制为子进程模式，修复 `sdk.run()` 未捕获 `CancelledError` 导致异常日志的问题。
 
 **升级建议**
+
 - **建议升级**
 - 升级原因：
   - 初始化模板大幅简化，新项目开箱即用
@@ -1752,6 +1875,7 @@
   - `sdk.run()` 正确处理关闭信号，避免异常日志
 
 **兼容性**
+
 - 对外 API 完全兼容，现有模块和适配器代码无需修改
 
 ### 变更
@@ -1771,12 +1895,14 @@
 ---
 
 ## [2.4.3] - 2026/05/06
+
 > 正式发布
 
 **版本摘要**
 架构优化版本：ASGI 服务器从 Hypercorn 切换为 Uvicorn，新增通用 SQL 链式查询构建器，移除子进程运行模型，修复热重启模块缓存和 Windows CTRL+C 等关键问题。
 
 **升级建议**
+
 - **强烈建议升级**
 - 升级原因：
   - 修复热重启后已更新模块代码未生效的关键问题
@@ -1785,6 +1911,7 @@
   - 新增 SQL 链式查询构建器，增强存储模块能力
 
 **注意事项**
+
 - ⚠️ **依赖变更**：`hypercorn>=0.14.0` 已替换为 `uvicorn>=0.30.0`，升级后需重新安装依赖
 - ⚠️ **移除子进程模型**：`ep run` 不再通过子进程运行，热重载改为事件循环内调用 `sdk.restart()`
 - ⚠️ **移除**：`runtime/cleanup.py` 模块已删除，子进程清理机制不再需要
@@ -1793,15 +1920,18 @@
 - ⚠️ **行为变更**：`sdk.run()` 的 finally 块改为完整清理（`await sdk.uninit()`），不再需要调用方手动调用 `sdk.uninit()`
 
 **兼容性**
+
 - 对外 API 完全兼容，现有模块和适配器代码无需修改
 - 仅移除内部辅助方法（`_prepare_environment`、`_init_progress`），不影响公共 API 使用者
 
 ---
 
 ## [2.4.3-dev.1] - 2026/05/03
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `Core.Storage` 存储模块新增通用 SQL 链式查询构建器：
     - 新增 `Bases/storage.py`，定义 `BaseStorage(ABC)` 和 `BaseQueryBuilder(ABC)` 抽象基类，支持未来拓展其他存储介质（Redis、MySQL 等）
@@ -1815,10 +1945,12 @@
     - 现有键值 API（`get`/`set`/`delete` 等）完全向后兼容
 
 ### 优化
+
 - @wsu2059q
   - 修改加载失败逻辑，某部分模块加载失败时不会影响整体加载
 
 ### 修复
+
 - @wsu2059q
   - 修复热重启（`sdk.restart()`）后已更新模块的 Python 代码未生效的问题：
     - **根因**：`_do_restart()` 在重新初始化时，`entry_point.load()` 从 `sys.modules` 返回了旧版本的缓存模块对象，导致新安装/更新的模块逻辑（如新增 API 路由）未生效
@@ -1831,12 +1963,14 @@
 ---
 
 ## [2.4.3-dev.0] - 2026/04/28
+
 > 开发版本
 
 **版本摘要**
 架构优化版本：ASGI 服务器从 Hypercorn 切换为 Uvicorn，移除子进程运行模型和 cleanup 模块，修复 Windows 下 CTRL+C 无法停止程序的问题。`ep run` 不指定脚本时直接内部运行 SDK，模板创建统一由 `epsdk init` 处理。
 
 **注意事项**
+
 - ⚠️ **依赖变更**：`hypercorn>=0.14.0` 已替换为 `uvicorn>=0.30.0`，升级后需重新安装依赖
 - ⚠️ **移除子进程模型**：`ep run` 不再通过子进程运行，热重载改为事件循环内调用 `sdk.restart()`
 - ⚠️ **移除**：`runtime/cleanup.py` 模块已删除，子进程清理机制不再需要
@@ -1845,6 +1979,7 @@
 - ⚠️ **行为变更**：`sdk.run()` 的 finally 块改为完整清理（`await sdk.uninit()`），不再需要调用方手动调用 `sdk.uninit()`
 
 **兼容性**
+
 - 对外 API 完全兼容，现有模块和适配器代码无需修改
 - 仅移除内部辅助方法（`_prepare_environment`、`_init_progress`），不应影响公共 API 使用者
 
@@ -1879,12 +2014,14 @@
 ---
 
 ## [2.4.2] - 2026/04/26
+
 > 正式发布
 
 **版本摘要**
 稳定性更新版本，修复了配置系统、模块加载、事件处理等关键问题，提升了系统的稳定性和可维护性。
 
 **升级建议**
+
 - **强烈建议升级**
 - 升级原因：
   - 修复配置系统多线程写入数据丢失问题
@@ -1893,22 +2030,27 @@
   - 增强异常处理和错误提示
 
 **注意事项**
+
 - ⚠️ **弃用方法正式删除**：`AdapterFather`/`adapter_server` 兼容别名已移除
 - ⚠️ **重要**：`BaseAdapter.emit()` 现在会抛出 `NotImplementedError`
 
 **兼容性**
+
 - 对外 API 保持兼容（除非使用了已移除的兼容别名）
 
 ---
 
 ## [2.4.2-dev.2] - 2026/04/24
+
 > 开发版本
 
 ### 移除
+
 - @wsu2059q
   - 弃用移除 `AdapterFather`/`adapter_server` 兼容别名
 
 ### 修复
+
 - @wsu2059q
   - 修复 `lifecycle.submit_event()` 使用可变默认参数 `data={}` 的隐患
   - 修复 `_migrate_config()` 迁移异常被静默吞掉无任何提示的问题
@@ -1916,6 +2058,7 @@
   - 修复 `_update_bot_status()` 使用 `asyncio.ensure_future` 无 task 引用追踪的问题（改为 `create_task` 并保存引用）
 
 ### 优化
+
 - @wsu2059q
   - `AdapterManager`/`ModuleManager` 新增 `__repr__()` 方法，便于调试时查看注册和运行状态
   - `list_adapters()`/`list_modules()` 已弃用方法添加 `warnings.warn(DeprecationWarning)` 实际触发弃用警告
@@ -1923,9 +2066,11 @@
 ---
 
 ## [2.4.2-dev.1] - 2026/04/21
+
 > 开发版本
 
 ### 修复
+
 - @wsu2059q
   - 修复 LazyModule 同步访问 BaseModule 导致未初始化完成的问题：
     - 在同步上下文中，BaseModule 使用 `asyncio.run()` 确保初始化完成
@@ -1949,6 +2094,7 @@
     - 然后再清理 `lifecycle._handlers`
 
 ### 优化
+
 - @wsu2059q
   - 优化 SDK 属性访问的错误提示：
     - 根据属性名称区分不同场景提供准确的错误提示
@@ -1964,6 +2110,7 @@
     - 提供多个使用场景示例和最佳实践
 
 ### 重构
+
 - @wsu2059q
   - 新增 `parse_bool_config()` 工具函数统一处理布尔值配置：
     - 支持 bool、int、str 等多种类型
@@ -1972,21 +2119,25 @@
 ---
 
 ## [2.4.2-dev.0] - 2026/04/13
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `adapter.shutdown()` 支持指定平台关闭（传入 `platforms` 参数），同时新增逐平台状态变化事件
   - `adapter.startup()` 新增后台任务追踪机制（`_adapter_tasks`），`shutdown()` 时自动取消对应任务
   - `module` 模块新增 `get_status_summary()` 和 `get_info()` 方法
 
 ### 优化
+
 - @wsu2059q
   - `adapter.shutdown()` 状态事件与 `startup()` 保持对称
   - `module.exists()` 同时检查内存注册和配置文件
   - `module.enable()` 新增模块存在性验证
 
 ### 修复
+
 - @wsu2059q
   - 修复 `Event.confirm()` 确认词集合赋值重复、`MessageBuilder.at` 方法定义被覆盖
   - 修复 `Event.is_friend_add()`/`is_friend_delete()` 的 `detail_type` 值与 OB12 标准不一致
@@ -1995,6 +2146,7 @@
   - 修复 `Event.collect()` 字段缺少 `key` 时静默跳过、`Event.collect()` 缺少 `key` 时无提示
 
 ### 移除
+
 - @wsu2059q
   - 移除第三方 CLI 扩展功能：
     - 删除 `CLIFinder` 及其相关代码
@@ -2010,12 +2162,14 @@
 ---
 
 ## [2.4.1] - 2026/04/10
+
 > 正式发布
 
 **版本摘要**
 2.4.1 版本是一个重要的功能更新版本，主要新增了 Event 交互方法（confirm/choose/collect/wait_for/conversation）、Bot 状态追踪系统、MessageBuilder 消息构建器、平台事件方法扩展系统；实现了事件处理并行化；标准化了模块/适配器生命周期；全面现代化了类型注解（Python 3.10+）；并修复了重启后多个关键功能问题。
 
 **升级建议**
+
 - **建议升级**
 - 升级原因：
   - Event 交互方法大幅简化了多轮对话和用户交互的开发流程
@@ -2025,27 +2179,34 @@
   - 生命周期标准化确保重启/卸载场景下的状态完全可控
 
 **注意事项**
+
 - ⚠️ **BREAKING CHANGE**：`Raw_ob12` 方法现在是适配器**必须实现**的核心方法，未实现时基类默认返回标准错误响应（`status: "failed"`, `retcode: 10002`）并记录 error 级别日志
 - 类型注解全面转向 Python 3.10+ 内置类型语法，要求 Python >= 3.10
 
 **兼容性**
+
 - 对外 API 保持兼容，现有代码无需修改
 - 适配器开发者需注意 `Raw_ob12` 为必须实现的方法
 
 ---
+
 ## [2.4.1-dev.0] - 2026/04/11
+
 > 开发版本
 
 ### 优化
+
 - @wsu2059q
   - 优化`Event`中优先级并发的处理逻辑
 
 ---
 
 ## [2.4.0-dev.4] - 2026/04/10
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - **Event 交互方法**：新增 `confirm`、`choose`、`collect`、`wait_for`、`conversation` 方法，提供声明式交互能力
     - `event.confirm(prompt)` - 等待用户确认，识别中英文内置确认词
@@ -2057,6 +2218,7 @@
   - **Conversation 类**：多轮对话管理器，支持 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
 
 ### 优化
+
 - @wsu2059q
   - **事件处理并行化**：同优先级处理器并行执行，不同优先级按顺序执行
     - 解决 `wait_reply` 阻塞后续处理器的问题
@@ -2066,13 +2228,16 @@
 ---
 
 ## [2.4.0-dev.3] - 2026/04/09
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - cli的install支持pip参数
 
 ### 重构
+
 - @wsu2059q
   - **模块/适配器生命周期标准化**：统一初始化与卸载流程，确保完全可控
     - `BaseEventHandler` 引入 `_linked_to_adapter_bus` 状态，明确追踪与适配器事件总线的连接关系
@@ -2082,6 +2247,7 @@
   - **Uninitializer 卸载流程修正**：先收集模块属性再清理管理器，确保重启后 sdk 状态完全重置
 
 ### 修复
+
 - @wsu2059q
   - **修复重启后命令事件失效**：`adapter.shutdown()` 清空事件总线后，`BaseEventHandler` 的 `_linked_to_adapter_bus` 未重置，导致 `_process_event` 无法重新挂载到适配器总线。表现为 `@command` 注册的命令在重启后无法触发
   - **修复重启后懒加载模块未被正常加载**：`uninit()` 在 `module_manager.clear()` 之后遍历已清空的列表，导致 sdk 上的模块属性未被清理，restart 后旧残留影响新实例
@@ -2089,13 +2255,14 @@
   - **修复生命周期事件处理器未清理**：`lifecycle._handlers` 在 uninit 时从未清理，restart 后旧处理器会重复触发
   - **Python 3.10/3.11 兼容性修复**：将 Python 3.12+ 的 `type` 语句改为 `typing.TypeAlias`
 
-
 ---
 
 ## [2.4.0-dev.2] - 2026/04/05
+
 > 开发版本
 
 ### 重构
+
 - @wsu2059q
   - **类型注解现代化**：全面转向 Python 3.10+ 内置类型语法
   - **collections.abc 替换**：
@@ -2118,9 +2285,11 @@
 ---
 
 ## [2.4.0-dev.1] - 2026/04/01
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `adapter` 模块新增 Bot 状态追踪系统：
     - 新增 `_bots` 内部存储，按平台和 Bot ID 维护状态信息（在线/离线、活跃时间、元信息）
@@ -2139,6 +2308,7 @@
     - `clear()` 时清理所有 Bot 状态
 
 ### 重构
+
 - @wsu2059q
   - `logger` 模块提取 `_log` 内部方法：
     - `Logger` 和 `LoggerChild` 各新增 `_log(level_name, level_const, msg)` 方法，统一日志记录流程
@@ -2155,10 +2325,12 @@
     - `_get_load_strategy` 由嵌套 try/except 简化为顺序调用
 
 ### 修复
+
 - @wsu2059q
   - 修复 `BaseAdapter.Send.Example` 方法中参数 `text: str` 被硬编码字典覆盖的类型矛盾问题（改用 `mock_response` 变量名）
 
 ### 测试
+
 - @wsu2059q
   - 新增 Bot 状态追踪单元测试（共 23 个用例）：
     - meta connect 事件：注册 Bot、触发生命周期事件、首次/重复注册
@@ -2173,11 +2345,13 @@
 ---
 
 ## [2.4.0-dev.0] - 2026/03/30
+
 > 开发版本
 
 > 这个dev版本的 Raw_ob12 之前已经实现，现转为必须实现项
 
 ### 新增
+
 - @wsu2059q
   - `Event.wrapper` 新增平台事件方法扩展系统：
     - 新增 `register_event_method(platform)` 装饰器，支持为指定平台注册专有方法
@@ -2188,19 +2362,19 @@
     - Event 实例根据 `platform` 字段动态注入对应平台的扩展方法，非当前平台的方法抛出 `AttributeError`
     - `dir(event)` 自动包含当前平台的扩展方法名
     - 注册时自动检测与 Event 内置方法的命名冲突，冲突时发出 `RuntimeWarning` 并跳过
-    
   - Event 模块新增 MessageBuilder 消息构建器：
     - 支持链式调用构建 OneBot12 消息段列表
     - 支持快速构建单段消息（静态方法调用）
     - 提供文本、图片、音频、视频、文件、@用户、回复、@全体等基础消息段构建方法
     - 支持自定义消息段和平台扩展消息段
-    - 提供 copy()、clear()、__len__() 等工具方法
+    - 提供 copy()、clear()、**len**() 等工具方法
   - `Event.wrapper` 新增 reply_ob12() 方法：
     - 支持使用 OneBot12 消息段列表进行回复
     - 可配合 MessageBuilder 链式构建消息
   - Core 模块导出 MessageBuilder 类，支持从 `ErisPulse.Core` 直接导入
 
 ### 变更
+
 - @wsu2059q
   - **BREAKING CHANGE**: Raw_ob12 方法现在是适配器必须实现的核心方法：
     - 未实现时基类默认实现会记录 **error 级别**日志
@@ -2216,6 +2390,7 @@
     - 提供 MessageBuilder 完整使用示例
 
 ### 文档
+
 - @wsu2059q
   - 更新 send-method-spec.md 标准文档：
     - 新增第 11 章「消息构建器（MessageBuilder）」
@@ -2228,6 +2403,7 @@
     - send-dsl.md 更新协议方法表格，标注必须实现的方法
 
 ### 测试
+
 - @wsu2059q
   - 新增 `SendDSL Raw_ob12` 单元测试：
     - 测试未重写 Raw_ob12 时返回标准错误响应
@@ -2239,20 +2415,24 @@
 ---
 
 ## [2.3.9] - 2026/03/28
+
 > 正式发布
 
 **版本摘要**
 2.3.9 版本是一个功能丰富的更新版本，主要增加了会话类型管理系统、运行状态检查API、会话类型管理模块以及完善的类型注解支持。同时增强了CI/CD工作流的质量检查功能，优化了多个核心模块的功能和性能。
 
 **升级建议**
+
 - **建议升级**
 - 升级原因：新增了会话类型管理和运行状态检查等实用功能，显著提升了开发体验和类型安全性
 
 ## 注意事项
+
 - 新增了会话类型管理模块，提供标准的会话类型定义和转换功能
 - 移除了 `/routes` 端点，出于安全考虑删除路由列表查询功能
 
 **兼容性**
+
 - 完全向后兼容
 
 ---
@@ -2260,6 +2440,7 @@
 ## [2.3.9-dev.3] - 2026/03/27
 
 ### 新增
+
 - wsu2059q
   - `CI/CD` 工作流新增 Ruff 代码质量检查：
     - 新增 `ruff-check` 任务，自动检查代码质量问题
@@ -2267,6 +2448,7 @@
     - 检查失败不会阻止合并，仅作为参考
 
 ### 优化
+
 - @wsu2059q
   - 为 SDK 核心组件添加完整的类型注解：
     - 为所有 Core 单例添加类型注解
@@ -2274,6 +2456,7 @@
     - 为 SDK 类属性提供精确的类型标注，提升 IDE 类型提示准确性
 
 ### 文档
+
 - @wsu2059q
   - 更新 `standards/README.md` 索引，移除已删除文档条目并更新描述
   - 更新文档生成脚本（`generate-docs-index.py`、`generate-ai-prompts.py`）中的文档路径引用
@@ -2283,14 +2466,17 @@
     - `message_id` 必选字段、`{platform}_raw` 原始响应规范 → `api-response.md`
 
 ---
+
 ## [2.3.9-dev.2] - 2026/03/23
 
 ### 修复
+
 - @LeslieKeys
   - 修复 `ep init` 命令交互式初始化中适配器配置的类型错误：
     - 修正 `_configure_adapters_interactive_sync` 方法的参数类型为 `Path`
 
 ### 文档
+
 - @wsu2059q
   - 新增 Bug 修复说明文档（`bug-tracker.md`）
   - 重构发送方法规范文档：
@@ -2301,9 +2487,11 @@
 ---
 
 ## [2.3.9-dev.1] - 2026/03/21
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `router` 模块新增版本信息和 ping 端点：
     - 新增 `/ping` 端点，提供连通性检查和时间戳返回
@@ -2317,6 +2505,7 @@
     - 提供类型转换和 ID 获取工具方法（`convert_to_send_type`, `get_target_id` 等）
 
 ### 优化
+
 - @wsu2059q
   - `BaseAdapter.SendDSL.To` 方法增强：
     - 支持自动类型转换：当目标类型为 `private` 时自动转换为 `user`
@@ -2331,10 +2520,12 @@
     - 统一发送逻辑，提高代码可维护性
 
 ### 移除
+
 - @wsu2059q
   - 移除 `/routes` 端点，出于安全考虑删除路由列表查询功能
 
 ### 文档
+
 - @wsu2059q
   - 新增会话类型标准文档，提供完整的类型定义和使用指南
   - 更新事件转换标准文档，引用会话类型标准
@@ -2344,30 +2535,36 @@
 ---
 
 ## [2.3.8] - 2026/03/18
+
 > 正式发布
 
 **版本摘要**
 本版本新增运行状态检查API，优化了适配器和模块的用户体验；改进了配置文件的可读性；优化了SDK初始化流程。
 
 **升级建议**
+
 - **可选升级**
 - 升级原因：新增的运行状态检查API让开发更便捷，配置文件更易读
 
 **兼容性**
+
 - 完全向后兼容
 
 ---
 
 ## [2.3.8-dev.1] - 2026/03/15
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `adapter` 和 `module` 模块新增运行状态检查API：
     - 新增 `is_running(name)` 方法，检查指定平台/模块是否正在运行
     - 新增 `list_running()` 方法，列出所有正在运行的平台/模块
 
 ### 优化
+
 - @wsu2059q
   - `BaseAdapter` 的 `SendDSL` 类新增 `__getattr__` 方法：
     - 实现大小写不敏感的方法调用，支持 `Text()`、`text()`、`TEXT()` 等任意大小写形式
@@ -2378,25 +2575,30 @@
 ---
 
 ## [2.3.8-dev.0] - 2026/03/11
+
 > 开发版本
 
 ### 变更
+
 - @wsu2059q
   - `router` 模块 WebSocket 路由增强：
     - `register_websocket` 方法新增 `auto_accept` 参数（默认 `True`）
     - `auto_accept=False` 时，handler 必须自行调用 `websocket.accept()` 或 `websocket.close()`
 
 ### 修复
+
 - @wsu2059q
   - 修复极端情况下 WebSocket 连接时 ASGI 消息顺序错误："Expected ASGI message 'websocket.send' or 'websocket.close', but got 'websocket.accept'"
 
 ### 重构
+
 - @wsu2059q
   - `config` 模块配置文件写入优化：
     - 新增 `_sort_config_dict` 方法，递归排序配置字典
     - 确保配置文件中同一模块的配置项排列在一起，提升可读性
 
 ### 文档
+
 - @wsu2059q
   - 更新所有相关文档，说明 `auto_accept` 参数的使用方法和两种模式差异
   - 更新示例代码，展示自动接受和手动控制连接两种用法
@@ -2404,26 +2606,32 @@
 ---
 
 ## [2.3.7] - 2026/03/10
+
 > 正式发布
 
 **版本摘要**
 本版本进行了多项代码质量改进和配置优化：统一使用 `inspect` 模块检查协程函数，替代将被弃用的 `asyncio` 方法；修正模块加载事件命名规范；调整项目配置文件路径结构；从构建配置中移除 stubs 目录。
 
 **升级建议**
+
 - **可选升级**
 
 **注意事项**
+
 - 配置文件路径变更：项目配置文件从 `config.toml` 迁移到 `config/config.toml`，使用 `ep init` 创建的新项目将使用新的路径结构
 
 **兼容性**
+
 - 完全向后兼容
 
 ### 修复
+
 - @wsu2059q
   - 修正模块加载事件名称为 `module.load`
   - 修改 CLI init 命令生成的配置文件路径为 `config/config.toml`
 
 ### 重构
+
 - @wsu2059q
   - 使用 `inspect.iscoroutinefunction` 替代将被弃用的 `asyncio.iscoroutinefunction`：
     - CLI 命令处理函数协程检查
@@ -2433,12 +2641,14 @@
     - 模块加载器协程检查
 
 ### 移除
+
 - @wsu2059q
   - 从 pyproject.toml 构建配置中移除 stubs 目录打包
 
 ---
 
 ## [2.3.6] - 2026/03/04
+
 > 正式发布
 
 **版本摘要**
@@ -2447,51 +2657,63 @@
 优化热重载机制，确保资源清理的完全。
 
 **升级建议**
+
 - **可选升级**
 
 **注意事项**
+
 - 内部架构变更：`loaders/initializer.py` 已移除，相关类已整合到 `SDK` 类内部
 - 热重载机制变更：现在使用信号文件进行跨进程通信，确保清理操作正确执行
 
 **兼容性**
+
 - 完全向后兼容
 
 ### 新增
+
 - @wsu2059q
   - 新增 `runtime/cleanup.py` 清理管理模块，提供跨平台进程清理机制
   - 新增 `SDK.Uninitializer` 内部类，统一管理反初始化流程
 
 ### 重构
+
 - @wsu2059q
   - 将 `Initializer` 类重构为 `SDK.Initializer` 内部类，提升代码内聚性
   - 优化热重载机制，使用信号文件进行跨进程通信，确保子进程正确执行清理
   - 简化 `main.py` 入口模板，使用 `sdk.run()` 代替手动初始化
 
 ### 修复
+
 - @wsu2059q
   - 修复 CLI run 命令脚本路径默认值和环境初始化逻辑
 
 ---
 
 ## [2.3.6-dev.1] - 2026/02/27
+
 > 开发版本
 
 ### 优化
+
 - @wsu2059q
   - 优化 `loaders/module.py` 模块中检查全局懒加载的判断逻辑
 
 ### 修复
+
 - @wsu2059q
   - 修复 `CLI/registry.py` 中 `__new__` 方法的类型注解语法错误
 
 ---
+
 ## [2.3.5] - 2026/02/26
+
 > 正式发布
 
 **版本摘要**
 本版本进行了重要的架构重构和功能增强：重构了异常处理和配置管理模块架构，引入 `runtime` 包统一管理运行时配置；新增发送方法查询功能和 Event wrapper 修饰参数支持；优化了模块加载和命令处理逻辑。
 
 **升级建议**
+
 - **建议升级**
 - 升级原因：
   - 架构重构提升了代码的可维护性和模块化程度
@@ -2500,18 +2722,22 @@
   - SendDSL 修饰方法的默认实现提供了更友好的错误提示
 
 **注意事项**
+
 - 内部架构变更：`Core.exceptions` 模块已迁移至 `runtime.exceptions`，请更新相关导入(此为全局异常处理)
 - `_bootstrap` 模块已重构为 `runtime.frame_config`，统一管理运行时配置(ep库内部的配置)
 
 **兼容性**
+
 - 完全向后兼容
 
 ---
 
 ## [2.3.5-dev.3] - 2026/02/24
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `adapter` 模块新增发送方法查询功能：
     - 新增 `list_sends(platform)` 方法，列出指定平台支持的所有发送方法
@@ -2524,9 +2750,11 @@
 ---
 
 ## [2.3.5-dev.2] - 2026/02/19 - 2026/02/24
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `runtime` 新增 `get_config` 方法
   - `BaseAdapter` 的 `SendDSL` 新增修饰方法的默认实现：
@@ -2535,6 +2763,7 @@
   - 为 `AdapterManager` 和 `ModuleManager` 添加 `set_sdk_ref()` 方法，支持设置 SDK 引用
 
 ### 重构
+
 - @wsu2059q
   - 重构异常处理和配置管理模块架构：
     - 将 `Core.exceptions` 模块移至 `runtime/exceptions.py`
@@ -2552,6 +2781,7 @@
   - 移除 `AdapterManager` 中平台名称大小写属性注册功能，简化适配器管理逻辑
 
 ### 移除
+
 - @wsu2059q
   - 移除 `Core.exceptions` 模块导出，异常处理功能已迁移至 runtime 模块
   - 移除 `AdapterManager` 中的 `_register_platform_attributes()` 方法及相关平台属性注册逻辑
@@ -2559,46 +2789,58 @@
 ---
 
 ## [2.3.5-dev.1] - 2026/02/15
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - 新增 `commands.must_at_bot` 配置，用于控制是否需要 @bot 才能执行命令
 
 ### 优化
+
 - @wsu2059q
   - 优化 `Event` 模块中包装器wait_reply方法的逻辑，并且为返回值添加Event包装以支持更方便的获取事件内容
 
 ### 重构
+
 - @wsu2059q
   - 移动 `Core._self_config` 模块到 `_bootstrap.py` 模块中，以便统一管理
   - 移动 `Core.Event` 模块的配置初始化逻辑到 `_bootstrap.py` 模块中
 
 ---
+
 ## [2.3.5-dev.0] - 2026/02/10
+
 > 开发版本
 
 ### 优化
+
 - @wsu2059q
   - 优化 `loaders/module.py` 模块中检查全局懒加载的判断逻辑
 
 ### 修复
+
 - @wsu2059q
   - 修复 `CLI/registry.py` 中 `__new__` 方法的类型注解语法错误
 
 ---
+
 ## [2.3.4] - 2026/02/10
+
 > 正式发布
 
 **版本摘要**
 本版本进行了重大架构重构：引入了统一的模块发现机制（finders）和加载策略系统（strategy），重构了模块和适配器的加载流程；新增测试基础设施，移除了 storage 快照功能和 Core.ux 模块；CLI 实现了命令自动发现机制。
 
 **升级建议**
+
 - **必须升级**（如果计划开发新模块）或 **建议升级**（现有项目）
 - 升级原因：新的加载系统提供了更好的扩展性和可维护性，支持更灵活的模块加载策略
 
 **注意事项**
 ⚠️ **重要：内部API变更与功能移除**
+
 - 从此版本开始，内部结构和实现已发生变化
 - 如果您的模块使用了部分内部API，请注意修改
 - **移除的功能**：
@@ -2610,13 +2852,17 @@
   - `BaseModule` 基类检查逻辑已调整（旧策略依然保持兼容）
 
 **兼容性**
+
 - 对外API保持兼容，现有代码无需修改
 
 ---
+
 ## [2.3.4-dev.3] - 2026/02/04
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - 新增 `finders` 模块，实现统一的模块发现机制：
     - 新增 `BaseFinder` 基类，定义统一的 finder 接口
@@ -2626,6 +2872,7 @@
     - 提供 `find_all()` 和 `find_by_name()` 方法，支持批量查找和按名称查找
 
 ### 重构
+
 - @wsu2059q
   - 重构加载系统使用 `finders` 模块：
     - `loaders/adapter.py` 现在使用 `AdapterFinder` 查找适配器
@@ -2634,6 +2881,7 @@
   - CLI中的reloader直接移动到run命令内部进行定义
 
 ### 修复
+
 - @wsu2059q
   - 修复入口直接从ErisPulse导入时发生错误的问题
   - 修复CLI部分命令中的导入错误
@@ -2641,9 +2889,11 @@
 ---
 
 ## [2.3.4-dev.2] - 2026/02/03
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - 添加模块加载策略支持：
     - 新增 `loaders/strategy`，提供可扩展的加载策略系统
@@ -2653,6 +2903,7 @@
     - `ModuleInitializer` 现在支持通过策略控制模块加载行为
 
 ### 重构
+
 - @wsu2059q
   - 重构模块加载系统架构：
     - 移除 `BaseModule` 基类中的 `should_eager_load` 方法，改使用 `LoadingStrategy` 策略控制（旧策略依然保持兼容）
@@ -2660,14 +2911,17 @@
 ---
 
 ## [2.3.4-dev.1] - 2026/02/02
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - 添加测试基础设施
   - `lifecycle` 模块：添加事件类型验证，防止空值提交
 
 ### 重构
+
 - @wsu2059q
   - 重构模块加载系统架构：
     - 引入 `ManagerBase` 基类，统一适配器和模块管理器的配置接口
@@ -2678,6 +2932,7 @@
     - 移除 `__init__.py` 中的 `LazyModule` 内部实现，迁移到 `loaders/module_loader.py`
 
 ### 优化
+
 - @wsu2059q
   - `adapter` 模块：优化 `exists()` 方法，检查 `_adapters` 而非配置；`enable()`/`disable()` 支持自动注册
   - `module` 模块：增强 `register()` 的类验证和警告机制；`unload()` 改进错误处理
@@ -2686,12 +2941,14 @@
   - `exceptions` 模块：改进事件循环异常处理器设置，避免 RuntimeError
 
 ### 修复
+
 - @wsu2059q
   - `command` 模块：修复 `aliases` 参数中的别名未正确注册的问题
   - 修复 `adapter.shutdown()` 后未清空 `_started_instances` 集合的问题
   - 修复 `logger.set_module_level()` 在模块未启用时的不必要检查
 
 ### 移除
+
 - @wsu2059q
   - 移除 `storage` 模块的快照功能：
     - 移除 `snapshot()`, `restore()`, `list_snapshots()`, `delete_snapshot()` 方法
@@ -2701,15 +2958,18 @@
   - 移除 `devs/test.py` 交互测试脚本
 
 ### 文档
+
 - @wsu2059q
   - 更新核心概念文档，添加 SDK 初始化流程和模块懒加载流程的 Mermaid 图表
 
 ---
 
 ## [2.3.4-dev.0] - 2026/01/27
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `cli`中 `epsdk run` ，如果入口不存在，现在会自动创建一个入口文件，而不是打印错误信息
   - `cli` 实现命令自动发现机制：
@@ -2718,11 +2978,13 @@
   - `cli` 交互式安装支持预加载远程包列表，提升用户体验
 
 ### 重构
+
 - @wsu2059q
   - 重构 `cli` 第三方命令执行逻辑，简化处理流程
   - 修正 `run` 命令中未使用的导入路径
 
 ### 移除
+
 - @wsu2059q
   - 移除 `Core.ux` 模块及其相关功能
   - 移除 `SDKProtocol` 中 `UXManager` 相关代码和类型定义
@@ -2730,24 +2992,29 @@
 ---
 
 ## [2.3.3] - 2026/01/19
+
 > 正式发布
 
 **版本摘要**
 本版本引入了 SDK Protocol 类型定义和 Event 包装类：SDK Protocol 提供完整的类型接口和运行时兼容性检查，显著改进了 IDE 类型提示和自动补全体验；Event 包装类提供便捷的事件访问方法，支持统一的 `reply()` 和 `wait_reply()` 方法。
 
 **升级建议**
+
 - **建议升级**
 - 升级原因：大幅改善开发体验，提供更好的类型提示、自动补全支持和便捷的事件处理接口
 
 **注意事项**
+
 - 新增 `ErisPulse.run` 方法的 `keep_running` 参数（默认为 True），可能影响无头模式的行为
 - 更新了核心模块导出列表，建议在升级后检查模块导入语句
 - Event 对象在事件处理流程中自动创建，替换原有的 dict 对象
 
 **兼容性**
+
 - 完全向后兼容，无需修改现有代码
 
 ### 新增
+
 - @wsu2059q
   - 提供 IDE 配置指南（VSCode、PyCharm、Vim/Neovim 等），支持完整的类型提示和自动补全
   - 新增 `sdk_protocol` 模块，提供 SDK Protocol 类型定义：
@@ -2756,6 +3023,7 @@
     - 改进 IDE 类型提示和自动补全体验
 
 ### 变更
+
 - @wsu2059q
   - 更新核心模块导出列表，添加：
     - `Core` 模块导出 Logger、LifecycleManager 等类
@@ -2766,17 +3034,22 @@
 ---
 
 ## [2.3.3-dev.1] - 2026/01/19
+
 > 开发版本
 
 ### 变更
+
 - @wsu2059q
   - 为 ErisPulse.run 方法添加 keep_running 参数，控制无头模式是否保持运行，默认值为 True
 
 ---
+
 ## [2.3.3-dev.0] - 2026/01/17
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `Event` 模块新增 Event 包装类，提供便捷的事件访问方法：
     - Event 类继承 dict，保持完全的字典兼容性，支持点式访问事件字段
@@ -2789,6 +3062,7 @@
     - Event 对象在事件处理流程中自动创建，替换原有的 dict 对象
 
 ### 优化
+
 - @wsu2059q
   - `Event.command` 模块新增命令判断的兜底机制：
     - 优化命令处理流程，当从 `message` 列表中提取的 text 内容没有触发命令时，会自动检查 `alt_message` 字段是否符合触发命令的逻辑
@@ -2796,6 +3070,7 @@
     - 改进 `_handle_message` 方法，确保即使适配器的 `message` 列表有问题，只要 `alt_message` 字段正确，命令仍能正常触发
 
 ### 文档
+
 - @wsu2059q
   - 更新模块开发文档，新增 Event 包装类的详细使用说明和示例
   - 更新示例模块，演示 Event 包装类的新功能
@@ -2803,87 +3078,108 @@
 ---
 
 ## [2.3.2] - 2025/01/11
+
 > 正式发布
 
 **版本摘要**
 本版本新增了第三方 CLI 模块的异步调用支持，并修复了相关异常处理问题。
 
 **升级建议**
+
 - **可选升级**
 - 升级原因：仅在使用第三方 CLI 模块时建议升级
 
 **注意事项**
+
 - 无需代码变更，直接升级即可
 
 **兼容性**
+
 - 完全向后兼容
 
 ### 新增
+
 - @wsu2059q
   - 新增第三方cli模块异步的调用支持
 
 ### 修复
+
 - @wsu2059q
   - 修复第三方命令调用时可能出现的异常
 
 ---
 
 ## [2.3.1] - 2025/12/28
+
 > 正式发布
 
 **版本摘要**
 本版本修复了 `ep-init` 命令中协程未等待的问题(直接初始化的功能，不包括交互式初始化)，并新增了同步包装器以确保命令行调用的正确性。
 
 **升级建议**
+
 - **建议升级**
 - 升级原因：修复了初始化命令的bug，避免潜在问题
 
 **注意事项**
+
 - 无需代码变更，直接升级即可
 
 **兼容性**
+
 - 完全向后兼容
 
 ### 修复
+
 - @wsu2059q
   - 修复 `ep-init` 命令使用 `init_task()` 导致协程未等待的问题
   - 新增 `init_sync()` 同步包装器，用于命令行直接调用初始化功能
 
 ---
+
 ## [2.3.0] - 2025/12/25
+
 > 正式发布
 
 **版本摘要**
 本版本进行了重大架构升级：引入 `BaseModule` 基类标准化模块生命周期；新增 `lifecycle` 模块提供完整生命周期事件管理；重构 adapter 事件处理机制支持原始事件类型；优化 CLI 架构和配置系统；新增 UX 管理器和项目初始化功能；修复控制台颜色主题导入问题。
 
 **升级建议**
+
 - **建议升级**
 - 升级原因：架构升级带来更好的可维护性和扩展性
 
 **注意事项**
 ⚠️ **重要：API变更**
+
 - `BaseAdapter` 中移除了原生事件监听方法（`emit`/`on`），统一使用 `adapter.on()` 和 `adapter.emit()`
 - 所有适配器需要在事件数据中包含 `{platform}_raw_type` 字段
 - 引入 `BaseModule` 基类，建议新模块继承该基类
 
 **兼容性**
+
 - 提供一定的向下兼容性，但建议尽快迁移到新方式
 
 ### 修复
+
 - @wsu2059q
   - 修复控制台颜色主题导入报错导致安装中断的问题
 
 ---
+
 ## [2.3.0-dev.6] - 2025/12/22
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - 新增框架配置解析文档，包括框架的默认配置项及其含义
   - 新增懒加载模块系统、路由管理器和事件系统文档
   - 新增懒加载全局配置支持，允许通过配置文件控制是否使用懒加载
 
 ### 变更
+
 - @wsu2059q
   - 优化懒加载模块初始化逻辑，支持同步初始化和异步初始化分离
     - 新增 `_initialize_sync()` 方法，用于在异步上下文中进行同步调用
@@ -2892,15 +3188,19 @@
     - 分离适配器和模块清理逻辑
 
 ### 修复
+
 - @wsu2059q
   - 修复懒加载模块在异步上下文中初始化可能出现的问题
   - 修复配置系统中的缓存一致性检查问题
 
 ---
+
 ## [2.3.0-dev.5] - 2025/12/21
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `utils` 模块新增包管理器和CLI工具：
     - 将 `PackageManager` 从主CLI模块迁移到 `utils/package_manager.py`
@@ -2908,6 +3208,7 @@
     - 将 `CLI` 从主CLI模块迁移到 `utils/cli.py`
 
 ### 变更
+
 - @wsu2059q
   - 重构 CLI 架构：
     - 简化主入口点，将大部分功能移至 `utils` 模块
@@ -2927,24 +3228,29 @@
     ```
 
 ### 修复
+
 - @wsu2059q
   - 修复适配器安装过程中可能出现的异常处理问题
   - 修复在已有事件循环中调用 asyncio.run 导致的异常
 
 ---
+
 ## [2.3.0-dev.4] - 2025/12/20
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
-    - 新增 `UXManager` UX管理器，提供友好的界面和操作
-    - 添加 `ux` 全局实例和 `ExperienceManager` 类到核心模块
-    - 新增 CLI 命令：`init`, `status`, `config-wizard`
-    - 为 CLI 添加项目初始化功能，支持指定项目名称和适配器
-    - 添加系统状态查看功能，可查看模块和适配器详细信息
-    - 新增交互式配置向导，引导用户完成基本配置
+  - 新增 `UXManager` UX管理器，提供友好的界面和操作
+  - 添加 `ux` 全局实例和 `ExperienceManager` 类到核心模块
+  - 新增 CLI 命令：`init`, `status`, `config-wizard`
+  - 为 CLI 添加项目初始化功能，支持指定项目名称和适配器
+  - 添加系统状态查看功能，可查看模块和适配器详细信息
+  - 新增交互式配置向导，引导用户完成基本配置
 
 ### 变更
+
 - @wsu2059q
   - 日志系统优化：
     - 修复 `critical` 方法不再自动抛出异常，仅记录日志
@@ -2967,6 +3273,7 @@
     - 新增交互式适配器配置功能
 
 ### 文档
+
 - @wsu2059q
   - 添加 `ux-improvements.md` 文档，详细介绍用户体验改进
   - 更新 `quick-start.md`，添加新命令的使用说明
@@ -2974,17 +3281,21 @@
   - 更新 `core/modules.md`，添加用户体验管理器模块的说明
 
 ---
+
 ## [2.3.0-dev.3] - 2025/09/06
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
-    - 为 `logger` 模块的 `_get_caller` 方法添加空值检查，解决 Pylance 报告的 OptionalMemberAccess 警告
-    - 为 `logger` 模块的方法添加显式返回值，解决所有代码路径必须返回布尔值的类型检查问题
-    - `exceptions` 模块中 `setup_async_loop` 函数添加对事件循环有效性检查，增强异常处理的健壮性
-    - 为 `Logger` 类添加更安全的调用者识别机制，增强日志记录的可靠性
+  - 为 `logger` 模块的 `_get_caller` 方法添加空值检查，解决 Pylance 报告的 OptionalMemberAccess 警告
+  - 为 `logger` 模块的方法添加显式返回值，解决所有代码路径必须返回布尔值的类型检查问题
+  - `exceptions` 模块中 `setup_async_loop` 函数添加对事件循环有效性检查，增强异常处理的健壮性
+  - 为 `Logger` 类添加更安全的调用者识别机制，增强日志记录的可靠性
 
 ### 变更
+
 - @wsu2059q
   - 重构核心模块并优化日志管理：
     - 优化 `Logger` 类的模块化和异常处理
@@ -2993,10 +3304,11 @@
   - 改进数据库操作和快照管理的异常处理
   - 调整模块加载器和初始化器的异常处理逻辑
   - 优化路由管理器中HTTP和WebSocket路由的注销功能
-  - 调整模块加载器中模块状态管理逻辑，不再强制退出未继承抽象类的模块 *2025/11/01
+  - 调整模块加载器中模块状态管理逻辑，不再强制退出未继承抽象类的模块 \*2025/11/01
   - 调整适配器加载时注解问题导致的无法访问的错误处理逻辑
 
 ### 修复
+
 - @wsu2059q
   - 修复 `Logger` 类中部分方法在极端情况下可能不返回布尔值的问题
   - 修复模块卸载功能中参数默认值处理不当的问题
@@ -3004,10 +3316,13 @@
   - 修复数据库事务处理中连接管理的问题
 
 ---
+
 ## [2.3.0-dev.2] - 2025/08/26
+
 > 开发版本
 
 ### 新增
+
 - @wsu2059q
   - `lifecycle` 模块新增完整的生命周期事件管理功能：
     - 支持标准生命周期事件的提交和监听
@@ -3016,6 +3331,7 @@
     - 增加事件数据格式验证机制
 
 ### 变更
+
 - @wsu2059q
   - 优化SDK初始化流程：
     - 改进错误处理机制，提供更详细的加载失败信息
@@ -3028,6 +3344,7 @@
     - 改进适配器状态变化事件的提交机制
 
 ### 修复
+
 - @wsu2059q
   - 修复模块加载过程中生命周期事件提交的问题
   - 修复适配器注册和加载时的异常处理机制
@@ -3038,10 +3355,12 @@
 ## [2.3.0-dev.1] - 2025/08/24
 
 ### 新增
+
 - @wsu2059q
   - `ModuleInitializer` 模块新增并行加载支持
 
 ### 变更
+
 - @wsu2059q
   - 优化SDK初始化流程：
     - 改进错误处理机制，提供更详细的加载失败信息
@@ -3050,10 +3369,12 @@
 ---
 
 ## [2.3.0-dev.0] - 2025/08/23
+
 > 由于一些机制的变更，将版本提升至 2.3.x 开发版本
 > 虽然提供了一定的向下兼容性，但仍然不建议继续使用旧方式
 
 ### 新增
+
 - @wsu2059q
   - `adapter` 模块新增平台原始事件类型字段支持：
     - 所有适配器现在需要在事件数据中包含 `{platform}_raw_type` 字段，用于标识原始事件类型
@@ -3061,6 +3382,7 @@
   - `BaseAdapter` 基类新增对原始事件类型的支持
 
 ### 变更
+
 - @wsu2059q
   - 重构 `adapter` 模块事件处理机制：
     - 移除了 `BaseAdapter` 中的原生事件监听方法（`emit`/`on`）
@@ -3071,6 +3393,7 @@
     - 模块管理器现在支持模块注册、加载和卸载功能
 
 ### 修复
+
 - @wsu2059q
   - 修复适配器事件处理中的平台匹配问题
   - 修复模块系统中模块重复加载的问题
@@ -3081,11 +3404,13 @@
 ## [2.2.2-dev.0] - 2025/08/20
 
 ### 新增
+
 - @wsu2059q
   - 新增 `lifecycle` 模块，提供生命周期管理功能
   - 新增 `module` 模块，提供模块管理功能
 
 ### 变更
+
 - @wsu2059q
   - 使用 `ruff` 作为代码检查工具
   - 删除 `模块注册器模块` 现在由 `config` 直接进行模块状态控制
@@ -3095,19 +3420,23 @@
 ---
 
 ## [2.2.1] - 2025/08/19
+
 > 正式发布
 
 **版本摘要**
 本版本新增交互式命令支持，支持命令处理器等待用户回复；增强事件处理器管理功能，支持处理器注销；修复事件处理器重复注册导致事件被多次处理的问题。
 
 **升级建议**
+
 - **建议升级**
 - 升级原因：修复了事件处理器重复注册的重要问题，新增交互式命令功能
 
 **注意事项**
+
 - 无需代码变更，直接升级即可
 
 **兼容性**
+
 - 完全向后兼容
 
 ---
@@ -3115,6 +3444,7 @@
 ## [2.2.1-dev.0] - 2025/08/18
 
 ### 新增
+
 - @wsu2059q
   - `Event.command` 模块新增交互式命令支持：
     - 添加 `wait_reply` 方法，支持命令处理器等待用户回复并进行交互
@@ -3125,12 +3455,14 @@
     - 支持通过装饰器注册的事件处理器可以被取消注册
 
 ### 变更
+
 - @wsu2059q
   - 重构 `Event` 模块内部实现：
     - 优化事件处理器的存储和查找机制，提高效率
   - 遵循 ErisPulse 注释风格规范，完善所有事件处理模块的注释
 
 ### 修复
+
 - @wsu2059q
   - 修复命令处理器注销时未能清理相关配置的缺陷
   - 修复 `wait_reply` 功能在并发情况下的潜在竞争条件问题
@@ -3142,20 +3474,24 @@
 ---
 
 ## [2.2.0] - 2025/08/18
+
 > 正式发布
 
 **版本摘要**
 本版本新增 `Event` 核心模块，提供统一的事件处理机制，支持命令、消息、通知、请求、元事件等多种事件类型的装饰器注册；新增 `module` 模块用于模块管理；命令系统支持权限检查、隐藏命令、别名配置等功能。
 
 **升级建议**
+
 - **建议升级**
 - 升级原因：Event 模块提供更便捷的事件处理方式，简化开发流程
 
 **注意事项**
+
 - 原 `mods` 模块更名为 `module_registry`，如有使用请修改导入
 - 移除了 `event_manager` 模块，统一使用 `adapter` 模块进行事件发送和接收
 
 **兼容性**
+
 - 部分内部模块重命名，核心功能保持兼容
 
 ---
@@ -3163,6 +3499,7 @@
 ## [2.2.0-dev.2] - 2025/08/18
 
 ### 新增
+
 - 添加 `Event` 模块更多功能：
   - 命令支持权限检查功能，可通过 `permission` 参数设置权限检查函数
   - 命令支持隐藏功能，可通过 `hidden` 参数控制命令在帮助中是否显示
@@ -3173,6 +3510,7 @@
   - 添加 `allow_space_prefix` 配置项，支持 "/ command" 格式的命令
 
 ### 变更
+
 - 重构 `Event` 模块设计：
   - 移除 `event_manager` 模块，避免与 `adapter` 模块功能重复
   - 简化中间件系统，移除全局和局部中间件以避免复杂性
@@ -3180,6 +3518,7 @@
 - 优化 `Event` 模块注释和文档，遵循 ErisPulse 注释风格规范
 
 ### 修复
+
 - 修复命令处理中的一些潜在错误处理问题
 - 修复命令别名处理逻辑中的边界情况
 
@@ -3188,19 +3527,23 @@
 ## [2.2.0-dev.1] - 2025/08/17
 
 ### 新增
+
 - 添加 `module` 模块，用于快速获取模块实例/信息/管理
 - 添加 `module_registry` 模块，用于管理模块注册信息
 
 ### 变更
+
 - 原 `mods` 模块更名为 `module_registry`，大多模块未使用 `mods` 模块，故未进行兼容操作，请注意修改
 - 优化 版本信息 变量，使用pip包信息
 
 ---
 
 ## [2.2.0-dev.0] - 2025/08/17
+
 > 开发版本
 
 ### 新增
+
 - 新增 `Event` 核心模块，提供统一的事件处理机制
   - `Event.command` 子模块，支持基于装饰器的命令注册和处理
   - `Event.message` 子模块，支持消息事件处理
@@ -3215,12 +3558,14 @@
 - `Event` 模块支持自定义事件类型创建和处理
 
 ### 变更
+
 - 更新文档，添加 `Event` 模块使用指南
 - 更新示例模块，演示 `Event` 模块的使用方法
 
 ---
 
 ## [2.1.15] - 2025/08/16
+
 > 正式发布
 
 ---
@@ -3228,9 +3573,11 @@
 ## [2.1.15-dev.4] - 2025/08/12
 
 ### 变更
+
 - 改进包管理器的进度显示，修复富文本进度条显示不正确的问题
 
 ### 修复
+
 - 修复Windows平台上 `self-update` 命令因文件占用导致的更新失败问题
 - 修复升级过程中可能因网络或权限问题导致的进程阻塞问题
 
@@ -3239,17 +3586,20 @@
 ## [2.1.15-dev.3] - 2025/08/12
 
 ### 新增
+
 - CLI工具新增 `self-update` 命令，支持交互式更新ErisPulse SDK本身
 - `install`、`uninstall` 和 `upgrade` 命令现在支持同时处理多个包
 - CLI新增版本兼容性检查，在安装/升级包时会检查 `min_sdk_version` 要求
 - 新增 `search` 命令，支持搜索本地和远程包
 
 ### 变更
+
 - 优化CLI交互体验，提供更友好的命令行界面
 - 改进版本排序算法，确保正确识别最新版本
 - 更新CLI文档，添加多包操作和self-update命令说明
 
 ### 修复
+
 - 修复版本比较逻辑中的错误，确保正确识别最新稳定版本
 - 修复包管理器中的异常处理问题
 
@@ -3258,22 +3608,28 @@
 ## [2.1.15-dev.2] - 2025/08/12
 
 ### 新增
+
 - 添加 `sdk.init_task` 方法，用于在异步模式下初始化 SDK
 
 ### 变更
+
 - 重构 `env` 模块为 `storage`，提供更准确的存储管理功能命名
 - 保持 `env` 向后兼容性，标记为弃用状态，建议迁移到 `storage` 模块
 
 ---
 
 ## [2.1.15-dev.1] - 2025/08/10
+
 ### 变更
+
 - 更新硬仓库地址
 
 ---
 
 ## [2.1.14] - 2025/08/03
+
 ### 修复
+
 - 加强CLI运行时重载机制，确保适配器正确停止，避免僵尸线程产生
 
 ---
@@ -3281,50 +3637,64 @@
 ## [2.1.14-alpha.1] - 2025/08/02
 
 ### 新增
+
 - logger 模块新增 get_child 方法，支持创建子模块日志记录器，便于更好地组织和识别日志来源
 
 ---
 
 ## [2.1.14-dev.2] - 2025/08/02
+
 ### 新增
+
 - `exceptions` 模块新增 `setup_async_loop` 方法，支持用户为指定事件循环设置异常处理器
 - 新增 `erispulse_config` 模块，专门管理框架自身配置，与用户配置分离
 
 ### 变更
+
 - `exceptions` 模块优化了异常处理器的工作原理
 - 将框架配置从 `config` 模块中分离，提升代码结构清晰度
 
 ---
 
 ## [2.1.14-dev.1] - 2025/08/01
+
 ### 变更
+
 - 弃用并删除 `util` 核心模块
 - 彻底弃用 `raisser` 的错误处理机制
 
 ### 新增
+
 - 新增 `exceptions` 模块替代原有的 `raiserr` 模块
 - 新增 `router` 模块代替 `server`，功能保持兼容
 
 ### 修复
+
 - 修复路由注册时的方法命名问题
 
 ---
 
 ## [2.1.14-dev.0] - 2025/07/28
+
 ### 变更
+
 - 增强 CLI 交互体验
 - 彻底弃用并删除 `env.py` 的功能实现
 
 ---
 
 ## [2.1.13] - 2025/07/23
+
 ### 新增
+
 - `__init__.py` 文件新增 `__version__` 变量，用于获取当前版本号
 
 ---
 
 ## [2.1.13-pre.3] - 2025/07/22
+
 ### 修复
+
 - 修复 `epsdk init` / `epsdk upgrade` 命令无法正常运行问题
 - 修复第三方CLI命令无法被正常加载的问题
 
@@ -3333,20 +3703,25 @@
 ## [2.1.13-pre.2] - 2025/07/22
 
 ### 新增
+
 - 新增更完善的方法注释，用于生成API文档
 
 ### 变更
+
 - 删除无用的logging模块
 
 ---
- 
+
 ## [2.1.13-pre.1] - 2025/07/22
+
 ### 新增
+
 - CLI工具新增UV工具链自动检测功能
 - 热重载功能增加对`.env`文件变更的监控支持
 - 实现远程包简称到完整包名的自动解析功能
 
 ### 变更
+
 - 重构CLI核心架构，拆分为独立的功能模块
 - 控制台输出全面升级为Rich库实现
 - `install`命令支持自动识别远程模块/适配器简称
@@ -3354,6 +3729,7 @@
 - 改进包管理器的进程安全退出机制
 
 ### 修复
+
 - 修复Windows平台颜色初始化问题
 - 解决第三方CLI命令加载时的类型检查错误
 - 修正包版本检查时的缓存一致性问题
@@ -3361,64 +3737,82 @@
 ---
 
 ## [2.1.12] - 2025/07/21
+
 ### 新增
+
 - `list` 添加 `cli拓展` 项目
 - `list-remote` 添加 `cli拓展` 项目
 
 ### 变更
+
 - `logger` 默认关闭markup，避免在控制台输出时出现混淆的情况
 
 ---
 
 ## [2.1.11] - 2025/07/21
+
 ### 变更
+
 - `epsdk run` 命令支持无参数运行，添加自动初始化功能
 
 ---
 
 ## [2.1.10] - 2025/07/20
+
 ### 新增
+
 - 新增 `config` 模块，用于分离 `env` 模块功能，提供更友好的配置管理体验
 
 ### 变更
+
 - 标准日志处理器替换为RichHandler，提供更美观的彩色控制台日志输出
 - 使用独立的 `Config` 模块处理核心配置，避免与 `env` 模块冲突
 - 兼容性性改进：解决情况下部分循环引用问题
 
 ### 修复
+
 - 修复设置模块日志等级时，调用错误的问题
 
 ---
 
 ## [2.1.7] - 2025/07/19
+
 ### 新增
+
 - 引入富文本输出支持
 - 新增 `enable` / `disable` 命令，用于启用/禁用模块
 - 优化CLI交互体验, 新增自动使用 `uv` 工具链（如果存在）
 - 添加对于第三方CLI模块的支持，运行注册到 `epsdk` 命令下的自定义命令
 
 ### 变更
+
 - 修改 `mods` 模块存储/状态前缀以适配新的模块加载机制
 - 调整 `CLI` 中的 run 方法，使其支持监控 `config.toml` 文件变化
 
 ### 修复
+
 - 修复windows依赖引入错误
 - f-string 语法兼容性修复
 
 ---
 
 ## [2.1.5] - 2025/07/18
+
 ### 新增
+
 - Core 模块新增 `AdapterBase` 类
 
 ### 变更
+
 - 标记 `raiserr` 为弃用状态，使用 原生 `raise` 语句代替
 - 删除核心部分对于 `raiserr` 的依赖
 
 ---
 
 ## [2.1.4] - 2025/07/17
+
 ### 修复
+
 - 修复 CLI 中的 response.json 强制要求请求体为 json 格式的问题
 
 ---
@@ -3426,6 +3820,7 @@
 ## [2.1.3] - 2025/07/17
 
 ### 修复
+
 - 修正 `Send` 对象中 `_account_id` 属性错误，统一使用 `_account` 属性名
 - 修复错误处理流程中二次触发相同异常的问题
 
@@ -3434,9 +3829,11 @@
 ## [2.1.2] - 2025/07/17
 
 ### 新增
+
 - `Send` 链式调用新增 `Using` 方法，用于指定账号（该操作会与 `To` 方法类似，设置 `self._account_id` 属性）
 
 ### 变更
+
 - 引入独立的 `ErisPulse` toml 配置项，用于集中管理框架相关配置
 - 将 `Send` 默认提供的 `Text` 方法更名为 `Example` 方法，避免与某些模块的 `Text` 方法检测逻辑冲突
 - 懒加载机制改进：对于定义了 `should_eager_load` 属性的模块，现在统一在代理到懒加载器后执行加载，优化模块初始化流程
@@ -3446,9 +3843,11 @@
 ## [2.1.1] - 2025/07/17
 
 ### 变更
+
 - 删除CLI `search` 命令，使用 `list-remote` 命令代替（仅包括收录模块）
 
 ### 修复
+
 - 修复懒加载时一些魔术方法无法被调用并初始化的问题
 - 修复初始化时被重复赋值None的错误
 
@@ -3457,6 +3856,7 @@
 ## [2.1.0] - 2025/07/14
 
 ### 新增
+
 - 新增统一的底层适配器服务器统一管理，支持 webhook/websocket 模式
 - 添加 `server` 核心模块
 - 新增 `list-remote` 命令
@@ -3470,6 +3870,7 @@
 - 模块加载器现在支持区分普通模块和适配器模块
 
 ### 变更
+
 - install 命令添加了对于远程package映射表的安装支持
 - `env.py` 已经弃用，启用了项目文件内的 `config.toml` 文件代替配置管理
 - BaseAdapter 中继承上的 `emit_onebot12`/`on_onebot12` 方法现在已弃用
@@ -3482,6 +3883,7 @@
 - 移除了旧版模块管理命令的相关代码
 
 ### 修复
+
 - 修复监听时可能无法获取事件的问题
 
 ---
@@ -3489,16 +3891,19 @@
 ## [2.0.0]
 
 ### 新增
+
 - Pypi包模块加载机制 | 并重构兼容部分
 - Pypi包加载时自动检查包含的模块依赖关系
 
 ### 变更
+
 - 优化模块加载逻辑，将模块加载拆分为 主加载逻辑 - 1.包加载逻辑 2.模块加载逻辑
 - 添加新的 ModuleInfo 项 -> package; 用来检测包之间的ep模块依赖关系
 - 添加贡献指南, 规范底层模块方法注释逻辑
 - 删除堆成石的模块注释, 并增加代码注释率
 
 ### 修复
+
 - 使用 `send = adapter.<适配器名>.To()` 直接创建发送器, 导致调用旧适配器方法而抛出异常的情况
 
-1.x.x 版本更新日志请查看分支日志
+  1.x.x 版本更新日志请查看分支日志

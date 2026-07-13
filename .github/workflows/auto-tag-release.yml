@@ -33,87 +33,293 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests openai
 
       - name: Create tag and release
         id: create-release
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          BIGMODEL_API_KEY: ${{ secrets.BIGMODEL_API_KEY }}
+          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
         shell: bash
         run: |
           # Read current version
           version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
           tag_name="v$version"
+          fixed_version=$(echo "$version" | sed 's/-de\./-dev./g')
 
           echo "Current version: $version"
           echo "Tag name: $tag_name"
 
-          # Extract changelog from CHANGELOG.md
-          if [ -f "CHANGELOG.md" ]; then
-            # Fix version format: replace -de. with -dev.
-            fixed_version=$(echo "$version" | sed 's/-de\./-dev./g')
+          # ---------------------------------------------------------------
+          # Helper: extract changelog section for a version from a file
+          # ---------------------------------------------------------------
+          extract_changelog() {
+            local file="$1"
+            local ver="$2"
+            local fver="$3"
+            local section
 
-            echo "Trying to match version: $version or $fixed_version"
-
-            # Use sed to extract version changelog
-            # First try matching the original version number
-            changelog_section=$(sed -n "/^## \[$version\] -/,/^## \[.*\] -/p" CHANGELOG.md | sed '$d')
-
-            # If not found, try matching the fixed version number
-            if [ -z "$changelog_section" ]; then
-              changelog_section=$(sed -n "/^## \[$fixed_version\] -/,/^## \[.*\] -/p" CHANGELOG.md | sed '$d')
+            section=$(sed -n "/^## \[$ver\] -/,/^## \[.*\] -/p" "$file" | sed '$d')
+            if [ -z "$section" ]; then
+              section=$(sed -n "/^## \[$fver\] -/,/^## \[.*\] -/p" "$file" | sed '$d')
             fi
 
-            # Remove the first line (title line)
-            if [ -n "$changelog_section" ]; then
-              changelog=$(echo "$changelog_section" | tail -n +2)
-
-              # Determine if this is a dev version
-              if [[ $version =~ dev|alpha|beta|pre|a|b ]]; then
-                is_dev="true"
-                latest_flag=""
-              else
-                is_dev="false"
-                latest_flag="--latest"
-              fi
-
-              # Check if tag already exists
-              if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
-                echo "Creating new tag $tag_name"
-                git tag "$tag_name"
-                git push origin "$tag_name"
-              else
-                echo "Tag $tag_name already exists"
-              fi
-
-              # Check if release exists
-              if gh release view "$tag_name" &>/dev/null; then
-                # Update release
-                echo "Updating release $tag_name"
-                gh release edit "$tag_name" \
-                  --notes "$changelog" \
-                  --prerelease=$is_dev
-                echo "Release updated $tag_name"
-                echo "release_updated=true" >> $GITHUB_OUTPUT
-              else
-                # Create release
-                echo "Creating release $tag_name"
-                gh release create "$tag_name" \
-                  --notes "$changelog" \
-                  --title "ErisPulse $tag_name" \
-                  --prerelease=$is_dev \
-                  $latest_flag
-                echo "Release created $tag_name"
-                echo "release_created=true" >> $GITHUB_OUTPUT
-              fi
-
-              echo "Release page: https://github.com/${{ github.repository }}/releases/tag/$tag_name"
-            else
-              echo "No changelog found for version $version"
+            if [ -n "$section" ]; then
+              echo "$section" | tail -n +2
             fi
-          else
-            echo "CHANGELOG.md file does not exist"
+          }
+
+          # Extract source changelog (Chinese) for current version
+          source_section=$(extract_changelog "CHANGELOG.md" "$version" "$fixed_version")
+          if [ -z "$source_section" ]; then
+            echo "No changelog found for version $version"
+            exit 0
           fi
+
+          # Save source section to a temp file for Python to read
+          echo "$source_section" > changelog_source.txt
+          echo "Source changelog extracted ($(wc -c < changelog_source.txt) bytes)"
+
+          # ---------------------------------------------------------------
+          # AI-translate changelog section to target languages
+          # ---------------------------------------------------------------
+          # "zh-CN" is the source, no translation needed
+          mkdir -p ".github/.translate_cache/release"
+
+          python3 << 'PYEOF'
+          import hashlib, json, os, sys
+
+          targets = ["en", "zh-TW", "ja", "ru"]
+
+          with open("changelog_source.txt", "r", encoding="utf-8") as f:
+              source_text = f.read()
+
+          # Use content hash + version as cache key
+          content_hash = hashlib.md5(source_text.encode()).hexdigest()
+          cache_dir = ".github/.translate_cache/release"
+
+          results = {}
+          needs_translate = []
+
+          for lang in targets:
+              cache_file = os.path.join(cache_dir, f"{content_hash}.{lang}.json")
+              if os.path.exists(cache_file):
+                  with open(cache_file, "r", encoding="utf-8") as f:
+                      results[lang] = json.load(f)["translation"]
+                  print(f"[cache hit] {lang}: {cache_file}")
+              else:
+                  needs_translate.append(lang)
+
+          if needs_translate:
+              # Try providers in order: SILICONFLOW -> BIGMODEL -> OPENAI
+              providers = []
+              if os.environ.get("SILICONFLOW_API_KEY"):
+                  providers.append({
+                      "api_key": os.environ["SILICONFLOW_API_KEY"],
+                      "base_url": "https://api.siliconflow.cn/v1",
+                      "model": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
+                  })
+              if os.environ.get("BIGMODEL_API_KEY"):
+                  providers.append({
+                      "api_key": os.environ["BIGMODEL_API_KEY"],
+                      "base_url": "https://open.bigmodel.cn/api/coding/paas/v4",
+                      "model": "GLM-4.7-Flash",
+                  })
+              if os.environ.get("OPENAI_API_KEY"):
+                  providers.append({
+                      "api_key": os.environ["OPENAI_API_KEY"],
+                      "base_url": "https://api.openai.com/v1",
+                      "model": "gpt-4o-mini",
+                  })
+
+              if not providers:
+                  print("WARNING: No AI API keys configured, skipping translation")
+              else:
+                  from openai import OpenAI
+
+                  lang_names = {
+                      "en": "English",
+                      "zh-TW": "繁體中文（台灣正體）",
+                      "ja": "日本語",
+                      "ru": "Русский",
+                  }
+
+                  for lang in needs_translate:
+                      target_name = lang_names.get(lang, lang)
+                      print(f"Translating to {target_name} ({lang})...", flush=True)
+
+                      prompt = (
+                          f"You are a professional software changelog translator. "
+                          f"Translate the following Chinese (zh-CN) changelog to {target_name}.\n"
+                          f"Requirements:\n"
+                          f"1. Keep all Markdown formatting intact (headings, lists, bold, code blocks, etc.)\n"
+                          f"2. Keep code, version numbers, GitHub usernames (@xxx), and technical identifiers unchanged\n"
+                          f"3. Translate only the text content and descriptions\n"
+                          f"4. Use professional technical terminology appropriate for {target_name}\n"
+                          f"5. Return ONLY the translated Markdown content, no extra text, no code fences\n"
+                          f"\nSource (Chinese):\n\n{source_text}"
+                      )
+
+                      translated = None
+                      for provider in providers:
+                          try:
+                              client = OpenAI(
+                                  api_key=provider["api_key"],
+                                  base_url=provider["base_url"],
+                              )
+                              resp = client.chat.completions.create(
+                                  model=provider["model"],
+                                  messages=[{"role": "user", "content": prompt}],
+                                  temperature=0.3,
+                                  max_tokens=16000,
+                              )
+                              translated = resp.choices[0].message.content.strip()
+                              print(f"  -> Success via {provider['model']}", flush=True)
+                              break
+                          except Exception as e:
+                              print(f"  -> {provider['model']} failed: {e}", flush=True)
+                              continue
+
+                      if translated:
+                          results[lang] = translated
+                          cache_file = os.path.join(cache_dir, f"{content_hash}.{lang}.json")
+                          with open(cache_file, "w", encoding="utf-8") as f:
+                              json.dump({"translation": translated, "source_hash": content_hash}, f, ensure_ascii=False)
+                          print(f"  -> Cached to {cache_file}", flush=True)
+                      else:
+                          print(f"  -> FAILED to translate {lang}, will fall back to source", flush=True)
+
+          # Store results as env vars for bash to consume
+          for lang, text in results.items():
+              safe_path = f"changelog_{lang}.txt"
+              with open(safe_path, "w", encoding="utf-8") as f:
+                  f.write(text)
+              print(f"Saved {lang} section to {safe_path}")
+          PYEOF
+
+          # ---------------------------------------------------------------
+          # Build multilingual release body
+          # ---------------------------------------------------------------
+          LANG_EN="English"
+          LANG_ZH_CN="简体中文"
+          LANG_ZH_TW="繁體中文"
+          LANG_JA="日本語"
+          LANG_RU="Русский"
+
+          LANG_ORDER=("en" "zh-CN" "zh-TW" "ja" "ru")
+          declare -A LANG_NAMES
+          LANG_NAMES["en"]="$LANG_EN"
+          LANG_NAMES["zh-CN"]="$LANG_ZH_CN"
+          LANG_NAMES["zh-TW"]="$LANG_ZH_TW"
+          LANG_NAMES["ja"]="$LANG_JA"
+          LANG_NAMES["ru"]="$LANG_RU"
+
+          declare -A SECTIONS
+          # Source (Chinese) is always available
+          SECTIONS["zh-CN"]="$source_section"
+          echo "[zh-CN] using source changelog"
+
+          # Check for translations
+          TRANSLATE_TARGETS=("en" "zh-TW" "ja" "ru")
+          for lang in "${TRANSLATE_TARGETS[@]}"; do
+            tfile="changelog_${lang}.txt"
+            if [ -f "$tfile" ] && [ -s "$tfile" ]; then
+              SECTIONS["$lang"]=$(cat "$tfile")
+              echo "[$lang] using AI translation"
+            else
+              echo "[$lang] no translation available, skipped"
+            fi
+          done
+
+          # Build language switcher line
+          SWITCHER_PARTS=()
+          first=true
+          for lang in "${LANG_ORDER[@]}"; do
+            if [ -n "${SECTIONS[$lang]}" ]; then
+              label="${LANG_NAMES[$lang]}"
+              if [ "$first" = true ]; then
+                SWITCHER_PARTS+=("**${label}**")
+                first=false
+              else
+                SWITCHER_PARTS+=("[${label}](#${label})")
+              fi
+            fi
+          done
+          SWITCHER_LINE=$(IFS=" | "; echo "${SWITCHER_PARTS[*]}")
+
+          # Assemble release body
+          RELEASE_BODY="$SWITCHER_LINE"
+          RELEASE_BODY+=$'\n\n---\n\n'
+
+          first=true
+          for lang in "${LANG_ORDER[@]}"; do
+            section="${SECTIONS[$lang]}"
+            if [ -z "$section" ]; then
+              continue
+            fi
+            label="${LANG_NAMES[$lang]}"
+
+            if [ "$first" = true ]; then
+              first=false
+            else
+              RELEASE_BODY+=$'\n\n---\n\n'
+            fi
+
+            RELEASE_BODY+="## ${label}"
+            RELEASE_BODY+=$'\n\n'
+            RELEASE_BODY+="$section"
+          done
+
+          # Write body to file
+          echo "$RELEASE_BODY" > release_body.md
+          echo "=== Multilingual release body (first 30 lines) ==="
+          head -30 release_body.md
+          echo "..."
+          echo "Total length: $(wc -c < release_body.md) bytes"
+
+          # ---------------------------------------------------------------
+          # Determine release type
+          # ---------------------------------------------------------------
+          if [[ $version =~ dev|alpha|beta|pre|a|b ]]; then
+            is_dev="true"
+            latest_flag=""
+          else
+            is_dev="false"
+            latest_flag="--latest"
+          fi
+
+          # ---------------------------------------------------------------
+          # Create tag and release
+          # ---------------------------------------------------------------
+          if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
+            echo "Creating new tag $tag_name"
+            git tag "$tag_name"
+            git push origin "$tag_name"
+          else
+            echo "Tag $tag_name already exists"
+          fi
+
+          if gh release view "$tag_name" &>/dev/null; then
+            echo "Updating release $tag_name"
+            gh release edit "$tag_name" \
+              --notes-file release_body.md \
+              --prerelease=$is_dev
+            echo "Release updated $tag_name"
+            echo "release_updated=true" >> $GITHUB_OUTPUT
+          else
+            echo "Creating release $tag_name"
+            gh release create "$tag_name" \
+              --notes-file release_body.md \
+              --title "ErisPulse $tag_name" \
+              --prerelease=$is_dev \
+              $latest_flag
+            echo "Release created $tag_name"
+            echo "release_created=true" >> $GITHUB_OUTPUT
+          fi
+
+          echo "Release page: https://github.com/${{ github.repository }}/releases/tag/$tag_name"
 
       - name: Generate AI material documents
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
