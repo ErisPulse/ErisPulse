@@ -70,14 +70,14 @@
 > 正式发布
 
 **版本摘要**
-2.6.0 是 ErisPulse 面向生产环境的增强型版本，聚焦于三大核心能力升级：(1) 发送规则装饰器系统与批量构建模式，为消息发送提供统一的超时/重试/回调/进度监控能力；(2) 管理员权限系统，支持配置文件与运行时的统一管理；(3) 框架性能与资源管理优化，引入事件处理器并发背压控制、生命周期钩子 owner 追踪、主动 GC、离线 Bot 过期回收等机制，显著降低长期运行内存占用。同时完成 Web 前端资源提取重构、API 文档与类型存根生成脚本优化。
+2.6.0 是 ErisPulse 面向生产环境的增强型版本，聚焦于三大核心能力升级：(1) 发送规则装饰器系统与批量构建模式，为消息发送提供统一的超时/重试/回调/进度监控能力；(2) 框架主人（Master）权限系统，支持配置文件与运行时的统一管理；(3) 框架性能与资源管理优化，引入事件处理器并发背压控制、生命周期钩子 owner 追踪、主动 GC、离线 Bot 过期回收等机制，显著降低长期运行内存占用。同时完成 Web 前端资源提取重构、API 文档与类型存根生成脚本优化。
 
 **升级建议**
 - **强烈建议升级**
 - 升级原因：
   - 发送规则系统为生产环境提供统一的超时/重试/回调/监控能力，无需业务层自行封装 Task 回调
   - 批量构建模式简化多条消息发送场景的代码
-  - 管理员系统为命令权限提供统一管理，`must_admin=True` 装饰器参数自动鉴权
+  - 框架主人系统为命令权限提供统一管理，`master=True` 装饰器参数自动鉴权
   - 框架资源管理全面增强：事件处理器并发背压控制（默认 64）、生命周期钩子 owner 自动清理、主动 GC 后台任务、离线 Bot 过期回收、限流存储定期清理
   - 修复 HttpClient session 泄漏、`wait_reply` CancelledError 残留、生命周期钩子泄漏、委托链路回调重复触发等多个关键问题
   - Web 前端资源重构：内联 HTML/CSS 提取至独立文件，新增 `register_home_entry()` 模块入口注册 API（含 i18n 支持）
@@ -92,7 +92,7 @@
 - SendDSL `rules` 参数不再通过构造函数传递给子类；第三方适配器 Send 子类若覆写 `__init__` 无需修改
 - `Core/web_status/` 已移除，错误页面统一使用纯 CSS 无图样式
 - `register_home_entry(name, url, icon_svg)` 支持 `{"i18n": "key", "default": "文本"}` 字典格式
-- 新增导出符号：`SendContext`、`SendBuilder`、`BatchContext`、`admin`、`AdminManager`
+- 新增导出符号：`SendContext`、`SendBuilder`、`BatchContext`、`master`、`MasterManager`
 
 ---
 
@@ -203,17 +203,17 @@
 从 2.6.0 起，ErisPulse 将严格遵守 [语义化版本控制](https://semver.org/lang/zh-CN/)：
 - **2.6.x** 补丁版本仅修复 Bug，不引入新功能或破坏性变更
 - **2.7.0** 及以上的次版本可能引入新功能，但保持向后兼容
-- 本次 2.6.0 引入的所有新 API（SendContext、SendBuilder、BatchContext、admin、AdminManager 等）在 2.6.x 生命周期内保证签名稳定
+- 本次 2.6.0 引入的所有新 API（SendContext、SendBuilder、BatchContext、master、MasterManager 等）在 2.6.x 生命周期内保证签名稳定
 
 **版本摘要**
-2.6.0 首个开发版，引入两大新特性：(1) SendDSL 发送规则装饰器系统与批量构建模式，通过链式方法统一管理超时/重试/回调/延迟/优先级/进度监控；(2) 管理员权限系统，支持配置文件与运行时两种方式管理管理员，命令装饰器新增 `must_admin=True` 参数自动检查权限。同时修复了标准适配器委托链路（Text → Raw_ob12）下规则与回调重复触发的关键问题。
+2.6.0 首个开发版，引入两大新特性：(1) SendDSL 发送规则装饰器系统与批量构建模式，通过链式方法统一管理超时/重试/回调/延迟/优先级/进度监控；(2) 框架主人（Master）权限系统，支持配置文件与运行时两种方式管理主人，命令装饰器新增 `master=True` 参数自动检查权限。同时修复了标准适配器委托链路（Text → Raw_ob12）下规则与回调重复触发的关键问题。
 
 **升级建议**
 - **建议升级**
 - 升级原因：
   - 发送规则系统为生产环境提供统一的超时/重试/回调/监控能力，无需业务层自行封装 Task 回调
   - 批量构建模式简化多条消息发送场景的代码
-  - 管理员系统为命令权限提供统一管理
+  - 框架主人系统为命令权限提供统一管理
   - 修复委托链路下回调重复触发的问题
 
 **注意事项**
@@ -221,9 +221,9 @@
 - 规则随 To/Using/Account 创建的新实例传播，各实例的 hooks 列表相互独立
 - 批量构建模式下 Timeout/Retry 作用于每条发送（非整批），Hook/OnError/OnProgress 为整批语义
 - 无规则时完全保持原有行为（向后兼容）
-- 管理员配置位于 `ErisPulse.admin.users`，dict 格式按平台指定，list 格式为全局管理员
-- 新增导出符号：`SendContext`、`SendBuilder`、`BatchContext`、`admin`、`AdminManager`（已加入 `__all__`）
-- 新增 i18n 翻译键 `core.command.admin_denied`（5 语言）
+- 主人配置位于 `ErisPulse.master.users`，dict 格式按平台指定，list 格式为全局主人
+- 新增导出符号：`SendContext`、`SendBuilder`、`BatchContext`、`master`、`MasterManager`（已加入 `__all__`）
+- 新增 i18n 翻译键 `core.command.master_denied`（5 语言）
 
 ### 新增
 
@@ -249,18 +249,18 @@
     - 修饰器继承：Build 前后的 At/AtAll/Reply 作用于整批每条消息
     - 大小写不敏感：发送方法名支持大小写不敏感解析
   - `Core/Bases/__init__.py`、`Core/__init__.py`、`ErisPulse/__init__.py` 同步导出 `SendContext`、`SendBuilder`、`BatchContext`
-  - `Core/admin.py` 新增管理员权限系统：
-    - `AdminManager` 单例：通过 `from ErisPulse.Core import admin` 导入
-    - 配置格式：`ErisPulse.admin.users` 为 dict 时按平台指定（`{"yunhu": ["123"]}`），为 list 时全局生效（`["123"]`）
-    - `admin.is_admin(event)` / `admin.is_admin(platform, user_id)`：检查管理员身份
-    - `admin.add(platform, user_id)` / `admin.remove(platform, user_id)`：运行时增删（不持久化）
-    - `admin.list()`：获取所有管理员列表
-  - `Core/Event/command.py` 命令装饰器新增 `admin=True` 参数：
-    - 设置后框架自动检查 `admin.is_admin(event)`，非管理员执行时拒绝并记录日志
+  - `Core/master.py` 新增框架主人（Master）权限系统：
+    - `MasterManager` 单例：通过 `from ErisPulse.Core import master` 导入
+    - 配置格式：`ErisPulse.master.users` 为 dict 时按平台指定（`{"yunhu": ["123"]}`），为 list 时全局生效（`["123"]`）
+    - `master.is_master(event)` / `master.is_master(platform, user_id)`：检查主人身份
+    - `master.add(platform, user_id)` / `master.remove(platform, user_id)`：运行时增删，默认持久化到配置文件
+    - `master.list()`：获取所有主人列表
+  - `Core/Event/command.py` 命令装饰器新增 `master=True` 参数：
+    - 设置后框架自动检查 `master.is_master(event)`，非主人执行时拒绝并记录日志
     - 与现有 `permission` 参数独立，可同时使用
-  - `runtime/frame_config.py` 新增 `admin` 配置段与 `get_admin_config()` 函数
-  - `sdk.py` 新增 `admin` 属性动态解析（`sdk.admin` 可用）
-  - 五语言 i18n 文件同步新增 `core.command.admin_denied` 翻译键
+  - `runtime/frame_config.py` 新增 `master` 配置段与 `get_master_config()` 函数
+  - `sdk.py` 新增 `master` 属性动态解析（`sdk.master` 可用）
+  - 五语言 i18n 文件同步新增 `core.command.master_denied` 翻译键
 
 ### 修复
 
@@ -293,8 +293,8 @@
   - `tests/unit/test_unit_send_builder.py` 新增 29 个测试（含 5 个真实适配器模式集成测试）：
     - BatchContext、Build 入口、并行/串行执行、失败继续+重试、整批回调、修饰器继承、大小写不敏感、Defer
     - 真实适配器模式集成测试：批量 Text/Image 走 Raw_ob12、修饰器应用到每条、send_context 传递、失败重试、部分失败继续
-  - `tests/unit/test_unit_admin.py` 新增 16 个测试：
-    - dict/list 配置解析、is_admin 事件/显式检查、运行时增删、list 输出、配置+运行时组合检查
+  - `tests/unit/test_unit_master.py` 新增 16 个测试：
+    - dict/list 配置解析、is_master 事件/显式检查、运行时增删、list 输出、配置+运行时组合检查
 
 ---
 
