@@ -175,6 +175,7 @@
       - 新增 `_evict_offline_bots()` 方法，定期清除过期的离线 Bot 记录
     - `Core/router.py` 限流存储定期清理：
       - 新增后台任务定期扫描 `_rate_limit_store`，清除过期的 IP 记录，防止无限增长
+  - `Event` 分发事件的合并时添加了警告等级的模块兼容性提醒
 
 ### 修复
 
