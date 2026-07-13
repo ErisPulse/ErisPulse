@@ -330,17 +330,14 @@ class CommandHandler:
 
             return result
         except asyncio.TimeoutError:
-            # 清理超时的等待
-            if wait_key in self._waiting_replies:
-                del self._waiting_replies[wait_key]
             logger.trace(f"wait_reply 超时: key={wait_key}, timeout={timeout}s")
             return None
         except Exception as e:
-            # 清理异常情况
-            if wait_key in self._waiting_replies:
-                del self._waiting_replies[wait_key]
             logger.error(f"等待回复时发生错误: {e}")
             return None
+        finally:
+            # 无论成功、超时、异常还是 CancelledError，都确保清理等待条目
+            self._waiting_replies.pop(wait_key, None)
 
     async def _handle_message(self, event: dict[str, Any]):
         """

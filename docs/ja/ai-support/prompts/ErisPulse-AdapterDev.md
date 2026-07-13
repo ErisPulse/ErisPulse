@@ -6749,14 +6749,14 @@ class MyStorage(BaseStorage):
 
 ### 生命周期管理
 
-# ライフサイクル管理
+# 生命周期管理
 
-ErisPulseは、システム内の各コンポーネントの稼働状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実装するための統一されたフック/ライフサイクルシステムを提供します。
+ErisPulse は、システムの各コンポーネントの稼働状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実装するために、統一されたフック/ライフサイクルシステムを提供します。
 
-システムは3つのトリガー方法をサポートしています：
-- `await lifecycle.emit("event", data)` — 簡易版、任意のデータを渡す
-- `lifecycle.emit_sync("event", data)` — 同期版（非同期コンテキスト以外で使用）
-- `await lifecycle.submit_event("event", ...)` — 旧バージョン互換、標準イベントフォーマットを自動構築
+システムは3つのトリガーメソッドをサポートしています：
+- `await lifecycle.emit("event", data)` — シンプル版、任意のデータを渡すことができます
+- `lifecycle.emit_sync("event", data)` — 同期版（非同期コンテキストでの使用）
+- `await lifecycle.submit_event("event", ...)` — 旧版との互換性を確保、標準イベント形式を自動構築します
 
 ## イベント処理メカニズム
 
@@ -6765,41 +6765,45 @@ ErisPulseは、システム内の各コンポーネントの稼働状態を監�
 ```python
 from ErisPulse import sdk
 
-# デコレータパターン
+# デコレータモード
 @sdk.lifecycle.on("module.load")
 async def on_module_load(data):
-    print(f"モジュールロード: {data}")
+    print(f"モジュール読み込み: {data}")
 
 # プログラムによる登録
 sdk.lifecycle.register("module.load", on_module_load, priority=10)
 
 # 登録解除
 sdk.lifecycle.unregister("module.load", on_module_load)
+
+# オーナー別に一括登録解除（モジュール/アダプターのアンインストール時にフレームワークが自動的に呼び出されます）
+removed = sdk.lifecycle.unregister_by_owner("MyModule")
+print(f"クリーンアップしたハンドラ数: {removed}")
 ```
 
 ### 優先度
 
-ハンドラは `priority` パラメータをサポートしており、数値が大きいほど先に実行されます（モジュールローダーと同様）：
+ハンドラは `priority` パラメータをサポートしており、数値が大きいほど先に実行されます（モジュールローダーと整合性があります）：
 
 ```python
-@sdk.lifecycle.on("adapter.event.receive", priority=10)  # 最初に実行
+@sdk.lifecycle.on("adapter.event.receive", priority=10)  # 最優先で実行
 async def first_handler(data):
     pass
 
-@sdk.lifecycle.on("adapter.event.receive", priority=0)  # 後から実行
+@sdk.lifecycle.on("adapter.event.receive", priority=0)  # 最後に実行
 async def second_handler(data):
     pass
 ```
 
-### ドット区切りのイベント構造
+### ドット構造イベント
 
-具体的なイベントをトリガーすると、その親イベントもトリガーされます：
-- `module.load` をトリガーすると、`module` もトリガーされます
-- `adapter.event.receive` をトリガーすると、`adapter.event` と `adapter` もトリガーされます
+具体的なイベントがトリガーされると、その親イベントもトリガーされます：
+- `module.load` がトリガーされると、`module` もトリガーされます
+- `adapter.event.receive` がトリガーされると、`adapter.event` と `adapter` もトリガーされます
 
 ### ワイルドカード
 
-`*` を登録するとすべてのイベントをキャプチャします：
+`*` を登録してすべてのイベントをキャッチします：
 
 ```python
 @sdk.lifecycle.on("*")
@@ -6809,23 +6813,23 @@ async def on_anything(data):
 
 ## フックポイント一覧
 
-フレームワークには以下のフックポイントが組み込まれており、ユーザーは `@sdk.lifecycle.on()` で任意のポイントをリッスンしてカスタムロジックを実装できます。
+フレームワークは以下のフックポイントを内蔵しており、ユーザーは `@sdk.lifecycle.on()` を使用して任意のフックポイントを監視し、カスタムロジックを実装できます。
 
 ### コア初期化
 
-| フック名 | トリガーのタイミング | データ |
+| フック名 | トリガー時期 | データ |
 |---------|---------|------|
-| `core.init.start` | SDK初期化開始 | `{}` |
-| `core.init.complete` | SDK初期化完了 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
-| `core.uninit.complete` | SDKアンインシャライズ完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
+| `core.init.start` | SDK 初期化開始 | `{}` |
+| `core.init.complete` | SDK 初期化完了 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
+| `core.uninit.complete` | SDK 反初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
 
 ### 設定変更
 
-| フック名 | トリガーのタイミング | データ |
+| フック名 | トリガー時期 | データ |
 |---------|---------|------|
 | `config.set` | 設定項目が変更された | `{"key": str, "old_value": Any, "new_value": Any}` |
 
-**例：設定の監査**
+**例：設定監査**
 
 ```python
 @sdk.lifecycle.on("config.set")
@@ -6835,32 +6839,32 @@ def audit_config(data):
 
 ### モジュールライフサイクル
 
-| フック名 | トリガーのタイミング | データ |
+| フック名 | トリガー時期 | データ |
 |---------|---------|------|
 | `module.register` | モジュールクラスがマネージャーに登録された | `{"module_name": str, "success": bool}` |
-| `module.load` | モジュールのロード完了（インスタンス化成功） | `{"module_name": str, "success": bool}` |
-| `module.init` | モジュールの初期化完了（遅延読み込みを含む） | `{"module_name": str, "success": bool}` |
-| `module.unload` | モジュールのアンロード | `{"module_name": str, "success": bool}` |
+| `module.load` | モジュール読み込み完了（インスタンス化成功） | `{"module_name": str, "success": bool}` |
+| `module.init` | モジュール初期化完了（遅延ロード含む） | `{"module_name": str, "success": bool}` |
+| `module.unload` | モジュールアンロード | `{"module_name": str, "success": bool}` |
 
 ### アダプターライフサイクル
 
-| フック名 | トリガーのタイミング | データ |
+| フック名 | トリガー時期 | データ |
 |---------|---------|------|
-| `adapter.load` | アダプターの登録完了 | `{"platform": str, "success": bool}` |
-| `adapter.start` | アダプターの起動 | `{"platforms": [str]}` |
-| `adapter.status.change` | アダプターの状態変化 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
-| `adapter.stop` | アダプターの終了 | `{"platforms": [str]}` |
-| `adapter.stopped` | アダプターの終了完了 | `{"platforms": [str]}` |
-| `adapter.bot.online` | Botオンライン | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
-| `adapter.bot.offline` | Botオフライン | `{"platform": str, "bot_id": str, "status": str}` |
+| `adapter.load` | アダプター登録完了 | `{"platform": str, "success": bool}` |
+| `adapter.start` | アダプター起動 | `{"platforms": [str]}` |
+| `adapter.status.change` | アダプター状態変更 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
+| `adapter.stop` | アダプター停止 | `{"platforms": [str]}` |
+| `adapter.stopped` | アダプター停止完了 | `{"platforms": [str]}` |
+| `adapter.bot.online` | Bot オンライン | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
+| `adapter.bot.offline` | Bot オフライン | `{"platform": str, "bot_id": str, "status": str}` |
 
-### イベントの受信と処理
+### イベント受信と処理
 
-| フック名 | トリガーのタイミング | データ |
+| フック名 | トリガー時期 | データ |
 |---------|---------|------|
-| `adapter.event.receive` | 外部プラットフォームイベントの受信（最初期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.dispatched` | イベントのディスパッチ完了 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | イベントハンドラの実行開始前 | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `adapter.event.receive` | 外部プラットフォームイベントを受信（最優先） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.dispatched` | イベント配信完了 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `event.pre_process` | イベントハンドラ実行開始前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **例：イベント統計**
 
@@ -6880,12 +6884,12 @@ def log_unhandled(data):
 
 ### メッセージ送信
 
-| フック名 | トリガーのタイミング | データ |
+| フック名 | トリガー時期 | データ |
 |---------|---------|------|
-| `message.sending` | メッセージの送信直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | メッセージ送信直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | メッセージ送信完了 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
-**例：メッセージ送信の監査**
+**例：メッセージ送信監査**
 
 ```python
 @sdk.lifecycle.on("message.sending")
@@ -6895,9 +6899,9 @@ def log_sending(data):
 
 ### コマンドシステム
 
-| フック名 | トリガーのタイミング | データ |
+| フック名 | トリガー時期 | データ |
 |---------|---------|------|
-| `command.matched` | コマンドがマッチし、実行直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.matched` | コマンドがマッチングされ実行直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | コマンド実行完了 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
 
 **例：コマンド統計**
@@ -6908,12 +6912,12 @@ def count_commands(data):
     print(f"[コマンド] /{data['command']} from {data['user_id']}@{data['platform']}")
 ```
 
-### HTTPルーティング
+### HTTP ルーティング
 
-| フック名 | トリガーのタイミング | データ |
+| フック名 | トリガー時期 | データ |
 |---------|---------|------|
-| `server.request` | HTTPリクエスト受信 | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTPレスポンス送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.request` | HTTP リクエスト受信 | `{"method": str, "path": str, "client_ip": str}` |
+| `server.response` | HTTP レスポンス送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
 **例：リクエストログ**
 
@@ -6925,14 +6929,14 @@ def log_http(data):
 
 ### WebSocket
 
-| フック名 | トリガーのタイミング | データ |
+| フック名 | トリガー時期 | データ |
 |---------|---------|------|
 | `server.start` | ルーティングサーバー起動 | `{"base_url": str, "host": str, "port": int}` |
 | `server.stop` | ルーティングサーバー停止 | `{}` |
-| `server.websocket.connect` | WebSocket接続確立 | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket接続切断 | `{"path": str, "module_name": str, "reason": str, "error": str(例外時のみ)}` |
+| `server.websocket.connect` | WebSocket 接続確立 | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | WebSocket 接続切断 | `{"path": str, "module_name": str, "reason": str, "error": str(例外時のみ)}` |
 
-**例：WebSocket接続の監視**
+**例：WebSocket 接続監視**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -6941,7 +6945,7 @@ def on_ws_connect(data):
 
 @sdk.lifecycle.on("server.websocket.disconnect")
 def on_ws_disconnect(data):
-    print(f"[WS] 切断: {data['path']} ({data['reason']})")
+    print(f"[WS] 断開: {data['path']} ({data['reason']})")
 ```
 
 ## 標準イベント定義
@@ -6967,15 +6971,15 @@ STANDARD_EVENTS = {
 }
 ```
 
-## 完全なAPIリファレンス
+## 完全な API リファレンス
 
 ### 登録と解除
 
 | メソッド | 説明 |
 |------|------|
-| `@lifecycle.on(event, *, priority=0)` | デコレータによるハンドラ登録 |
+| `@lifecycle.on(event, *, priority=0)` | デコレータでハンドラを登録 |
 | `lifecycle.register(event, handler, *, priority=0)` | プログラムによる登録 |
-| `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None の場合、そのイベントの全ハンドラを解除） |
+| `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None でそのイベントのすべてのハンドラを解除） |
 
 ### トリガー
 
@@ -6983,19 +6987,19 @@ STANDARD_EVENTS = {
 |------|------|
 | `await lifecycle.emit(event, data=None)` | 非同期トリガー、ハンドラが非 None を返すと data を変更可能 |
 | `lifecycle.emit_sync(event, data=None)` | 同期トリガー、非同期ハンドラは create_task でスケジュール |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 旧バージョン互換、標準イベントフォーマットを自動構築 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 旧版との互換性、標準イベント形式を自動構築 |
 
 ### ユーティリティ
 
 | メソッド | 説明 |
 |------|------|
 | `lifecycle.start_timer(timer_id)` | タイマー開始 |
-| `lifecycle.get_duration(timer_id)` | 経過時間の取得（秒） |
-| `lifecycle.stop_timer(timer_id)` | タイマー停止および経過時間を返す |
-| `lifecycle.list_hooks()` | 登録済みのすべてのフックおよびハンドラ数を一覧表示 |
+| `lifecycle.get_duration(timer_id)` | 経過時間取得（秒） |
+| `lifecycle.stop_timer(timer_id)` | タイマー停止と経過時間の返却 |
+| `lifecycle.list_hooks()` | 登録済みフックとハンドラ数のリスト表示 |
 | `lifecycle.clear()` | すべてのハンドラとタイマーをクリア |
 
-## モジュール内での使用例
+## モジュールでの使用例
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -7003,7 +7007,7 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # 簡単なメッセージ統計の実装
+        # シンプルなメッセージカウンターを実装
         self.msg_count = 0
         
         @sdk.lifecycle.on("adapter.event.receive")
@@ -7016,7 +7020,7 @@ class Main(BaseModule):
         async def log_cmd(data):
             sdk.logger.info(f"コマンド実行: /{data['command']} by {data['user_id']}")
         
-        # 設定変更の監査
+        # 設定変更監査
         @sdk.lifecycle.on("config.set")
         def audit(data):
             sdk.logger.info(f"設定変更: {data['key']} = {data['new_value']}")
@@ -7024,17 +7028,17 @@ class Main(BaseModule):
 
 ## 注意事項
 
-1. **ハンドラは同期または非同期が可能**：システムが自動的に識別し、正しく呼び出します
-2. **データの受け渡し**：`emit()` モードでは、ハンドラが非 None 値を返すと、後続のハンドラに渡される data が変更されます
-3. **イベントの命名規則**：親のリッスンを利用しやすくするため、イベント名にはドット区切り構造を使用することをお勧めします
-4. **エラーの分離**：単一のハンドラで例外が発生しても、他のハンドラの実行には影響しません
-5. **同期トリガーの制限**：`emit_sync()` では、非同期ハンドラは fire-and-forget 方式でスケジュールされるため、戻り値を返すことができません
-6. **ライフサイクルのクリーンアップ**：`sdk.uninit()` を呼び出すと、登録されているすべてのハンドラとタイマーがクリーンアップされます
-7. **ロードの優先度**：フレームワークの初期化段階でイベントをリッスンする必要がある場合は、高い優先度を設定し、遅延読み込みを無効にすることをお勧めします
+1. **ハンドラは同期または非同期で可**：システムは自動的に識別し、正しく呼び出します
+2. **データ受け渡し**：`emit()` モードでは、ハンドラが非 None を返すと、その値で data が変更され、後続のハンドラに渡されます
+3. **イベント命名規約**：親イベントの監視を容易にするために、ドット構造でイベント名を付けることを推奨します
+4. **エラー隔離**：単一のハンドラでの例外は、他のハンドラの実行に影響しません
+5. **同期トリガーの制限**：`emit_sync()` では非同期ハンドラは fire-and-forget 方式でスケジュールされ、戻り値は伝播しません
+6. **ライフサイクルクリア**：`sdk.uninit()` を呼び出すと、すべての登録済みハンドラとタイマーがクリアされます
+7. **読み込み優先順位**：フレームワーク初期化段階でイベントを監視する場合は、高い優先度を設定し遅延ロードを無効にすることを推奨します
 
 ## 関連ドキュメント
 
-- [モジュール開発ガイド](../developer-guide/modules/getting-started.md) - モジュールのライフサイクルメソッドについて
+- [モジュール開発ガイド](../developer-guide/modules/getting-started.md) - モジュールライフサイクルメソッドについて
 - [ベストプラクティス](../developer-guide/modules/best-practices.md) - ライフサイクルイベントの使用に関する推奨事項
 
 

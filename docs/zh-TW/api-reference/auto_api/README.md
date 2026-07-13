@@ -22,7 +22,7 @@
 - **模块总数**: 88
 - **类总数**: 95（包括 5 个嵌套类）
 - **函数总数**: 104
-- **方法总数**: 914
+- **方法总数**: 923
 
 ---
 
@@ -281,7 +281,7 @@
 
 ### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
 
-📦 1 个类 | 🔧 38 个方法
+📦 1 个类 | 🔧 41 个方法
 
 
 ### [ErisPulse.Core.admin](ErisPulse/Core/admin.md)
@@ -346,7 +346,7 @@
 
 ### [ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)
 
-📦 2 个类 | 🔧 13 个方法 | ⚙️ 1 个函数
+📦 2 个类 | 🔧 14 个方法 | ⚙️ 1 个函数
 
 
 ### [ErisPulse.Core.logger](ErisPulse/Core/logger.md)
@@ -361,7 +361,7 @@
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
 
-📦 3 个类 | 🔧 63 个方法
+📦 3 个类 | 🔧 66 个方法
 
 
 ### [ErisPulse.Core.storage](ErisPulse/Core/storage.md)
@@ -461,7 +461,7 @@
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
 
-📦 1 个类 | 🔧 19 个方法 | ⚙️ 1 个函数
+📦 1 个类 | 🔧 21 个方法 | ⚙️ 1 个函数
 
 
 ### [ErisPulse.web_status.__init__](ErisPulse/web_status/__init__.md)
