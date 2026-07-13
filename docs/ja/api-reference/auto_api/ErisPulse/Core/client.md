@@ -299,6 +299,19 @@ HTTP/WS 客户端 (基于 aiohttp)
 ---
 
 
+##### `_build_form_data(data: Any, files: dict[str, Any])`
+
+从 data 和 files 构建 multipart/form-data 请求体
+
+- **data** (`Any`): 表单数据 (dict 时合并进 FormData)
+- **files** (`dict[str,`): Any] 文件字段
+**返回值** (`aiohttp.FormData`): multipart 表单对象
+
+**异常**: `ValueError` - data 为非 dict 类型且不为 None
+
+---
+
+
 ##### `async request(method: str, url: str)`
 
 发送 HTTP 请求
@@ -309,6 +322,7 @@ HTTP/WS 客户端 (基于 aiohttp)
 - **headers** (`dict[str,`): str] | None 额外请求头 (可选)
 - **data** (`Any`): 请求体 (表单或原始数据) (可选)
 - **json** (`Any`): JSON 请求体 (可选)
+- **files** (`dict[str,`): Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
 - **timeout** (`float`): | None 本次请求超时 (秒) (可选, 覆盖默认值)
 - **max_retries** (`int`): | None 本次最大重试次数 (可选, 覆盖默认值)
 - **kwargs** (`传递给底层请求的额外参数`): **返回值** (`HttpResponse`): 响应对象
@@ -373,6 +387,7 @@ HTTP/WS 客户端 (基于 aiohttp)
 - **url** (`str`): 请求 URL
 - **data** (`Any`): 请求体 (表单或原始数据) (可选)
 - **json** (`Any`): JSON 请求体 (可选)
+- **files** (`dict[str,`): Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
 - **headers** (`dict[str,`): str] | None 额外请求头 (可选)
 **返回值** (`HttpResponse`): 响应对象
 
@@ -391,6 +406,7 @@ HTTP/WS 客户端 (基于 aiohttp)
 - **url** (`str`): 请求 URL
 - **data** (`Any`): 请求体 (可选)
 - **json** (`Any`): JSON 请求体 (可选)
+- **files** (`dict[str,`): Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
 - **headers** (`dict[str,`): str] | None 额外请求头 (可选)
 **返回值** (`HttpResponse`): 响应对象
 
@@ -415,6 +431,7 @@ HTTP/WS 客户端 (基于 aiohttp)
 - **url** (`str`): 请求 URL
 - **data** (`Any`): 请求体 (可选)
 - **json** (`Any`): JSON 请求体 (可选)
+- **files** (`dict[str,`): Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
 - **headers** (`dict[str,`): str] | None 额外请求头 (可选)
 **返回值** (`HttpResponse`): 响应对象
 
