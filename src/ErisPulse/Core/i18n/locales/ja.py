@@ -342,6 +342,7 @@ TRANSLATIONS = {
     "core.event.handlers_cleaned": "[Event] Cleaned {count} handlers of {owner} for {event_type}",
     "core.event.trace_chain": "[Event-trace] {event_type} | platform={platform} type={detail_type} | chain: {chain} | total={total}ms",
     "core.event.confirm_hint": "{prompt}（{yes}/{no}）",
+    "core.event.same_priority_conflict": "[Event-競合] priority={priority} フィールド '{field}' が '{handler_a}'（モジュール={owner_a}）と '{handler_b}'（モジュール={owner_b}）の両方で変更されました — モジュール間で競合の可能性があります。予期しない動作が発生した場合は、https://github.com/ErisPulse/ErisPulse/issues で互換性を報告してください",
     # ==================== Command System ====================
     "core.command.skip_processed": "[Command] skip: already processed, platform={platform} user={user_id}",
     "core.command.skip_non_message": "[Command] skip: non-message type={event_type} platform={platform}",
