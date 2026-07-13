@@ -1966,12 +1966,12 @@
         "title": "HTTP декораторы"
       }
     ],
-    "HTTP маршруты": [
+    "HTTP маршрутизация": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 160,
+        "line": 164,
         "level": 3,
-        "title": "HTTP маршруты"
+        "title": "HTTP маршрутизация"
       }
     ],
     "HTTP-запросы": [
@@ -2273,7 +2273,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 175,
+        "line": 179,
         "level": 3,
         "title": "WebSocket"
       }
@@ -3167,7 +3167,7 @@
     "Важные примечания": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 274,
+        "line": 278,
         "level": 2,
         "title": "Важные примечания"
       }
@@ -3362,14 +3362,6 @@
         "line": 35,
         "level": 2,
         "title": "Выбор типа разработки"
-      }
-    ],
-    "Вызов": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 229,
-        "level": 3,
-        "title": "Вызов"
       }
     ],
     "Вызов API": [
@@ -3891,7 +3883,7 @@
     "Жизненный цикл адаптеров": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 94,
+        "line": 98,
         "level": 3,
         "title": "Жизненный цикл адаптеров"
       }
@@ -3899,7 +3891,7 @@
     "Жизненный цикл модулей": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 85,
+        "line": 89,
         "level": 3,
         "title": "Жизненный цикл модулей"
       }
@@ -4200,6 +4192,14 @@
         "title": "Идентификация учетной записи в событиях"
       }
     ],
+    "Иерархическая структура событий": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 47,
+        "level": 3,
+        "title": "Иерархическая структура событий"
+      }
+    ],
     "Иерархия исключений": [
       {
         "document": "advanced/http-client.md",
@@ -4240,20 +4240,20 @@
         "title": "Извлечение данных сегментов сообщений"
       }
     ],
+    "Изменение конфигурации": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 75,
+        "level": 3,
+        "title": "Изменение конфигурации"
+      }
+    ],
     "Изменение структуры таблицы": [
       {
         "document": "advanced/sql-builder.md",
         "line": 59,
         "level": 3,
         "title": "Изменение структуры таблицы"
-      }
-    ],
-    "Изменения конфигурации": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 71,
-        "level": 3,
-        "title": "Изменения конфигурации"
       }
     ],
     "Изоляция платформенных методов": [
@@ -4314,14 +4314,6 @@
         "title": "Инициализация проекта"
       }
     ],
-    "Инициализация ядра": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 63,
-        "level": 3,
-        "title": "Инициализация ядра"
-      }
-    ],
     "Инструкции по поддержке документации": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -4333,7 +4325,7 @@
     "Инструменты": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 237,
+        "line": 241,
         "level": 3,
         "title": "Инструменты"
       }
@@ -4854,6 +4846,14 @@
         "line": 66,
         "level": 3,
         "title": "Команда"
+      }
+    ],
+    "Командная система": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 149,
+        "level": 3,
+        "title": "Командная система"
       }
     ],
     "Командные параметры": [
@@ -6092,12 +6092,12 @@
         "title": "Обзор архитектуры"
       }
     ],
-    "Обзор доступных точек хуков": [
+    "Обзор контрольных точек хуков": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 59,
+        "line": 63,
         "level": 2,
-        "title": "Обзор доступных точек хуков"
+        "title": "Обзор контрольных точек хуков"
       }
     ],
     "Обзор модулей": [
@@ -6887,7 +6887,7 @@
     "Определение стандартных событий": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 196,
+        "line": 200,
         "level": 2,
         "title": "Определение стандартных событий"
       }
@@ -6960,6 +6960,14 @@
         "line": 5,
         "level": 2,
         "title": "Основная архитектура SDK"
+      }
+    ],
+    "Основная инициализация": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 67,
+        "level": 3,
+        "title": "Основная инициализация"
       }
     ],
     "Основная информация": [
@@ -7499,7 +7507,7 @@
     "Отправка сообщений": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 130,
+        "line": 134,
         "level": 3,
         "title": "Отправка сообщений"
       }
@@ -8254,6 +8262,14 @@
         "title": "Подтверждение диалога (confirm)"
       }
     ],
+    "Полная справка по API": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 223,
+        "level": 2,
+        "title": "Полная справка по API"
+      }
+    ],
     "Полное событие письма": [
       {
         "document": "platform-guide/email.md",
@@ -8304,14 +8320,6 @@
         "title": "Полный пример модуля"
       }
     ],
-    "Полный справочник API": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 219,
-        "level": 2,
-        "title": "Полный справочник API"
-      }
-    ],
     "Полный формат (для сложных методов)": [
       {
         "document": "styleguide/docstring.md",
@@ -8339,7 +8347,7 @@
     "Получение и обработка событий": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 106,
+        "line": 110,
         "level": 3,
         "title": "Получение и обработка событий"
       }
@@ -8619,7 +8627,7 @@
     "Пример использования в модуле": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 247,
+        "line": 251,
         "level": 2,
         "title": "Пример использования в модуле"
       }
@@ -8985,7 +8993,7 @@
     "Приоритет": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 29,
+        "line": 33,
         "level": 3,
         "title": "Приоритет"
       }
@@ -9481,7 +9489,7 @@
     "Регистрация и отмена": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 221,
+        "line": 225,
         "level": 3,
         "title": "Регистрация и отмена"
       }
@@ -9929,7 +9937,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 284,
+        "line": 288,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -10236,14 +10244,6 @@
         "line": 341,
         "level": 2,
         "title": "Система исключений"
-      }
-    ],
-    "Система команд": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 145,
-        "level": 3,
-        "title": "Система команд"
       }
     ],
     "Система ленивой загрузки": [
@@ -10570,14 +10570,6 @@
         "line": 253,
         "level": 3,
         "title": "События подключения"
-      }
-    ],
-    "События с точечной структурой": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 43,
-        "level": 3,
-        "title": "События с точечной структурой"
       }
     ],
     "События сообщений (Message Events)": [
@@ -11464,6 +11456,14 @@
         "title": "Требования к системе"
       }
     ],
+    "Триггер": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 233,
+        "level": 3,
+        "title": "Триггер"
+      }
+    ],
     "Увеличение числа участников группы": [
       {
         "document": "getting-started/event-handling.md",
@@ -12232,12 +12232,12 @@
         "title": "Шаблон описания задачи"
       }
     ],
-    "Шаблоны (Wildcard)": [
+    "Шаблонная звезда (*)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 49,
+        "line": 53,
         "level": 3,
-        "title": "Шаблоны (Wildcard)"
+        "title": "Шаблонная звезда (*)"
       }
     ],
     "Шаблоны проектов": [

@@ -156,7 +156,11 @@ jobs:
           echo "AI docs collected:"
           ls -la release_assets/ || true
 
-      - name: Build standalone executables (pybuild)
+      - name: Setup pybuild
+        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
+        uses: pybuild-org/pybuild@main
+
+      - name: Build standalone executables (pybuild v2)
         id: pybuild
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
         continue-on-error: true
@@ -170,79 +174,143 @@ jobs:
           WHEEL=$(ls dist/erispulse-*.whl | head -1)
           echo "Built wheel: $WHEEL"
 
-          # --- 2. Download pybuild ---
-          PYBUILD_VERSION="v1"
-          curl -fSL "https://github.com/pybuild-org/pybuild-archive-v1/releases/download/${PYBUILD_VERSION}/pybuild_linux_amd64" -o pybuild
-          chmod +x pybuild
+          # --- 2. Prepare minimal source dir (ErisPulse comes from pip) ---
+          mkdir -p standalone_src build_dist release_assets
 
-          # --- 3. Prepare minimal source dir (ErisPulse comes from pip) ---
-          mkdir -p standalone_src
-
-          # --- 4. Build each platform ---
-          # Fields: target_name  python_arch  python_os  pip_platform
-          PLATFORMS="
-            linux-amd64     x86_64  unknown-linux-gnu manylinux_2_17_x86_64
-            linux-arm64     aarch64 unknown-linux-gnu manylinux_2_17_aarch64
-            windows-amd64   x86_64  pc-windows-msvc   win_amd64
-            windows-arm64   aarch64 pc-windows-msvc   win_arm64
-            macos-amd64     x86_64  apple-darwin      macosx_10_9_x86_64
-            macos-arm64     aarch64 apple-darwin      macosx_11_0_arm64
-          "
-
-          mkdir -p build_dist
-
-          echo "$PLATFORMS" | while read -r target py_arch py_os pip_plat; do
-            [ -z "$target" ] && continue
-            echo "\n=== Building $target ==="
-
-            # Windows needs colorama (click's conditional dep, not resolved in cross-compile)
-            EXTRA_DOWNLOADS=""
-            case "$target" in
-              windows-*) EXTRA_DOWNLOADS='<prop name="download" value="colorama" />' ;;
-            esac
-
-            cat > "target_${target}.xml" << XML
-          <build name="ErisPulse">
-            <builder>
+          # --- 3. Generate single build config for all 6 platforms ---
+          cat > target.xml << XML
+          <config name="builder">
+              <prop name="app" value="ErisPulse" />
               <prop name="source" value="standalone_src" />
               <prop name="output" value="build_dist" />
-              <prop name="release" value="20260610" />
               <prop name="version" value="3.12.13" />
-            </builder>
-            <python>
+              <prop name="release" value="20260610" />
+          </config>
+          <run job="setup builder" />
+          <config name="python">
               <prop name="arch" value="x86_64" />
               <prop name="os" value="unknown-linux-gnu" />
-            </python>
-            <target>
-              <python>
-                <prop name="arch" value="${py_arch}" />
-                <prop name="os" value="${py_os}" />
-              </python>
-              <pip>
-                <prop name="platform" value="${pip_plat}" />
-                <prop name="download" value="${WHEEL}" />
-                <prop name="download" value="ErisPulse-Dashboard" />
-                ${EXTRA_DOWNLOADS}
-              </pip>
-              <launcher>
-                <prop name="run" value="-m ErisPulse run" />
-              </launcher>
-            </target>
-          </build>
+          </config>
+          <run job="setup python" />
+          <config type="group" name="standalone targets">
+              <config name="python">
+                  <prop name="arch" value="x86_64" />
+                  <prop name="os" value="unknown-linux-gnu" />
+              </config>
+              <config name="pip">
+                  <prop name="platform" value="manylinux_2_17_x86_64" />
+                  <prop name="download" value="${WHEEL}" />
+                  <prop name="download" value="ErisPulse-Dashboard" />
+              </config>
+              <config name="launcher">
+                  <prop name="run" value="-m ErisPulse run" />
+              </config>
+          </config>
+          <config type="group" name="standalone targets">
+              <config name="python">
+                  <prop name="arch" value="aarch64" />
+                  <prop name="os" value="unknown-linux-gnu" />
+              </config>
+              <config name="pip">
+                  <prop name="platform" value="manylinux_2_17_aarch64" />
+                  <prop name="download" value="${WHEEL}" />
+                  <prop name="download" value="ErisPulse-Dashboard" />
+              </config>
+              <config name="launcher">
+                  <prop name="run" value="-m ErisPulse run" />
+              </config>
+          </config>
+          <config type="group" name="standalone targets">
+              <config name="python">
+                  <prop name="arch" value="x86_64" />
+                  <prop name="os" value="pc-windows-msvc" />
+              </config>
+              <config name="pip">
+                  <prop name="platform" value="win_amd64" />
+                  <prop name="download" value="${WHEEL}" />
+                  <prop name="download" value="ErisPulse-Dashboard" />
+                  <prop name="download" value="colorama" />
+              </config>
+              <config name="launcher">
+                  <prop name="run" value="-m ErisPulse run" />
+              </config>
+          </config>
+          <config type="group" name="standalone targets">
+              <config name="python">
+                  <prop name="arch" value="aarch64" />
+                  <prop name="os" value="pc-windows-msvc" />
+              </config>
+              <config name="pip">
+                  <prop name="platform" value="win_arm64" />
+                  <prop name="download" value="${WHEEL}" />
+                  <prop name="download" value="ErisPulse-Dashboard" />
+                  <prop name="download" value="colorama" />
+              </config>
+              <config name="launcher">
+                  <prop name="run" value="-m ErisPulse run" />
+              </config>
+          </config>
+          <config type="group" name="standalone targets">
+              <config name="python">
+                  <prop name="arch" value="x86_64" />
+                  <prop name="os" value="apple-darwin" />
+              </config>
+              <config name="pip">
+                  <prop name="platform" value="macosx_10_9_x86_64" />
+                  <prop name="download" value="${WHEEL}" />
+                  <prop name="download" value="ErisPulse-Dashboard" />
+              </config>
+              <config name="launcher">
+                  <prop name="run" value="-m ErisPulse run" />
+              </config>
+          </config>
+          <config type="group" name="standalone targets">
+              <config name="python">
+                  <prop name="arch" value="aarch64" />
+                  <prop name="os" value="apple-darwin" />
+              </config>
+              <config name="pip">
+                  <prop name="platform" value="macosx_11_0_arm64" />
+                  <prop name="download" value="${WHEEL}" />
+                  <prop name="download" value="ErisPulse-Dashboard" />
+              </config>
+              <config name="launcher">
+                  <prop name="run" value="-m ErisPulse run" />
+              </config>
+          </config>
+          <run job="build standalone" />
           XML
 
-            # Build and immediately move output (pybuild cleans build_dist on each run)
-            if ./pybuild "target_${target}.xml"; then
-              mv build_dist/*.zip "release_assets/ErisPulse-${version}-${target}.zip" 2>/dev/null \
-                && echo "$target" \
-                || echo "⚠️ $target: no output found"
+          # --- 4. Build all platforms in one pass ---
+          if ! pybuild target.xml; then
+            echo "⚠️ pybuild encountered errors, collecting any partial outputs"
+          fi
+
+          # --- 5. Rename outputs to release naming convention ---
+          # pybuild v2 names outputs as {python.arch}-{python.os}.zip
+          declare -A TARGET_MAP=(
+            ["x86_64-unknown-linux-gnu"]="linux-amd64"
+            ["aarch64-unknown-linux-gnu"]="linux-arm64"
+            ["x86_64-pc-windows-msvc"]="windows-amd64"
+            ["aarch64-pc-windows-msvc"]="windows-arm64"
+            ["x86_64-apple-darwin"]="macos-amd64"
+            ["aarch64-apple-darwin"]="macos-arm64"
+          )
+
+          for zip in build_dist/*.zip; do
+            [ -f "$zip" ] || continue
+            base=$(basename "$zip" .zip)
+            target="${TARGET_MAP[$base]:-}"
+            if [ -n "$target" ]; then
+              mv "$zip" "release_assets/ErisPulse-${version}-${target}.zip"
+              echo "Built: ErisPulse-${version}-${target}.zip"
             else
-              echo "⚠️ $target build failed, skipping"
+              echo "⚠️ Unknown output: $base"
             fi
           done
 
           echo "\n=== Build output ==="
-          ls -la release_assets/App-* 2>/dev/null || echo "No standalone executables built"
+          ls -la release_assets/ErisPulse-*.zip 2>/dev/null || echo "No standalone executables built"
 
       - name: Upload all assets to Release
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
@@ -253,7 +321,7 @@ jobs:
           version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
           tag_name="v$version"
 
-          # release_assets/ has AI docs + App-*.zip standalone executables
+          # release_assets/ has AI docs + ErisPulse-*.zip standalone executables
           echo "All release assets:"
           ls -la release_assets/
 

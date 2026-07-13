@@ -116,6 +116,23 @@ ErisPulse 生命周期管理模块
 ---
 
 
+##### `unregister_by_owner(owner: str)`
+
+取消指定 owner 注册的所有事件处理器
+
+用于模块/适配器卸载时自动清理其注册的钩子，避免闭包引用导致内存泄漏。
+
+:param owner: 模块或适配器名称
+:return: int 被移除的处理器数量
+
+**示例**:
+```python
+>>> lifecycle.unregister_by_owner("MyModule")
+```
+
+---
+
+
 ##### `async async emit(event: str, data: Any = None)`
 
 触发事件（异步，精简版）

@@ -2179,7 +2179,7 @@
     "Adapter Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 94,
+        "line": 98,
         "level": 3,
         "title": "Adapter Lifecycle"
       }
@@ -3579,7 +3579,7 @@
     "Command System": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 145,
+        "line": 149,
         "level": 3,
         "title": "Command System"
       }
@@ -3681,7 +3681,7 @@
     "Complete API Reference": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 219,
+        "line": 223,
         "level": 2,
         "title": "Complete API Reference"
       }
@@ -3801,7 +3801,7 @@
     "Configuration Changes": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 71,
+        "line": 75,
         "level": 3,
         "title": "Configuration Changes"
       }
@@ -4259,7 +4259,7 @@
     "Core Initialization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 63,
+        "line": 67,
         "level": 3,
         "title": "Core Initialization"
       }
@@ -4852,12 +4852,12 @@
         "title": "Domestic Mirror Acceleration"
       }
     ],
-    "Dot-structured Events": [
+    "Dot Notation Events": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 43,
+        "line": 47,
         "level": 3,
-        "title": "Dot-structured Events"
+        "title": "Dot Notation Events"
       }
     ],
     "Double Mode Mechanism": [
@@ -5311,7 +5311,7 @@
     "Event Reception and Processing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 106,
+        "line": 110,
         "level": 3,
         "title": "Event Reception and Processing"
       }
@@ -6057,7 +6057,7 @@
     "HTTP Routing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 160,
+        "line": 164,
         "level": 3,
         "title": "HTTP Routing"
       }
@@ -6196,12 +6196,12 @@
         "title": "Heartbeat Mechanism"
       }
     ],
-    "Hook Points Overview": [
+    "Hook Breakpoints Overview": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 59,
+        "line": 63,
         "level": 2,
-        "title": "Hook Points Overview"
+        "title": "Hook Breakpoints Overview"
       }
     ],
     "Hot Reload": [
@@ -7419,7 +7419,7 @@
     "Message Sending": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 130,
+        "line": 134,
         "level": 3,
         "title": "Message Sending"
       }
@@ -7763,7 +7763,7 @@
     "Module Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 85,
+        "line": 89,
         "level": 3,
         "title": "Module Lifecycle"
       },
@@ -8061,7 +8061,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 274,
+        "line": 278,
         "level": 2,
         "title": "Notes"
       },
@@ -8661,7 +8661,7 @@
     "Priority": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 29,
+        "line": 33,
         "level": 3,
         "title": "Priority"
       }
@@ -9175,7 +9175,7 @@
     "Registration and Unregistration": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 221,
+        "line": 225,
         "level": 3,
         "title": "Registration and Unregistration"
       }
@@ -9201,7 +9201,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 284,
+        "line": 288,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10389,7 +10389,7 @@
     "Standard Event Definition": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 196,
+        "line": 200,
         "level": 2,
         "title": "Standard Event Definition"
       }
@@ -11001,7 +11001,7 @@
     "Triggering": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 229,
+        "line": 233,
         "level": 3,
         "title": "Triggering"
       }
@@ -11187,7 +11187,7 @@
     "Usage Example in Modules": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 247,
+        "line": 251,
         "level": 2,
         "title": "Usage Example in Modules"
       }
@@ -11423,7 +11423,7 @@
     "Utilities": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 237,
+        "line": 241,
         "level": 3,
         "title": "Utilities"
       }
@@ -11555,7 +11555,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 175,
+        "line": 179,
         "level": 3,
         "title": "WebSocket"
       }
@@ -11658,12 +11658,12 @@
         "title": "Why Do We Need Standards?"
       }
     ],
-    "Wildcards": [
+    "Wildcard": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 49,
+        "line": 53,
         "level": 3,
-        "title": "Wildcards"
+        "title": "Wildcard"
       }
     ],
     "Windows PowerShell Execution Policy": [

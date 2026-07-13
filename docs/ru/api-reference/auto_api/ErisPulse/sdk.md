@@ -206,6 +206,25 @@ ErisPulse SDK 主类
 ---
 
 
+##### `_start_proactive_gc()`
+
+> **内部方法** 
+启动主动 GC 后台任务
+
+定期执行 Python GC 和内部资源回收（离线 Bot 清理等），
+防止长期运行时的内存增长。间隔由框架配置 proactive_gc_interval 控制。
+
+---
+
+
+##### `_stop_proactive_gc()`
+
+> **内部方法** 
+停止主动 GC 后台任务
+
+---
+
+
 ##### `dump_state()`
 
 导出框架当前运行状态的快照

@@ -585,3 +585,37 @@ DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS: Final[float] = 10.0
 # 才会按数组索引处理。超过此值的索引会被安全跳过，避免分配超大列表导致 OOM。
 # 修改影响: 运行时行为。storage.set() 写入超大列表索引时的安全阈值。
 STORAGE_MAX_LIST_INDEX: Final[int] = 10000
+
+# ==============================================================================
+# 性能优化与主动 GC
+#
+# 控制事件处理器并发上限、后台资源回收节奏和内存释放策略。
+# 使用位置: Core/adapter.py -> emit(), shutdown()
+#            Core/lifecycle.py -> register()
+#            sdk.py -> _do_uninit()
+# ==============================================================================
+
+# 事件处理器最大并发 Task 数。
+# 运行时行为。每个事件匹配的处理器在独立 Task 中执行，此值限制同时运行的 Task 数量。
+# 修改影响: 设大提高并发吞吐但增加内存占用，设小限制资源消耗但可能降低事件处理速度。
+DEFAULT_HANDLER_MAX_CONCURRENCY: Final[int] = 64
+
+# 路由限流存储的自动清理间隔（秒）。
+# 运行时行为。后台定期扫描 _rate_limit_store，清除过期的 IP 记录。
+# 修改影响: 设大减少 CPU 开销但内存占用更久，设小更积极回收内存。
+DEFAULT_RATE_LIMIT_CLEANUP_INTERVAL_SECS: Final[int] = 300
+
+# 离线 Bot 信息的自动过期时间（秒）。
+# 运行时行为。Bot 标记为 offline 后，经过此时间会被自动清除。
+# 修改影响: 设大保留更多历史 Bot 信息，设小更快回收内存。0 表示不过期。
+DEFAULT_OFFLINE_BOT_EXPIRY_SECS: Final[int] = 3600
+
+# 主动 GC（垃圾回收）间隔（秒）。
+# 运行时行为。SDK 初始化后启动定期 GC 后台任务，按此间隔触发 Python GC 和内部资源回收。
+# 修改影响: 设大减少 CPU 中断但内存峰值更高，设小更频繁回收但增加开销。0 表示禁用。
+DEFAULT_PROACTIVE_GC_INTERVAL_SECS: Final[int] = 300
+
+# shutdown 时等待在途事件处理器完成的最长时间（秒）。
+# 运行时行为。适配器关闭时取消所有 pending handler tasks 后等待它们退出的耐心时间。
+# 修改影响: 设大确保处理器完整结束，设小加速关闭流程。
+DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS: Final[float] = 5.0
