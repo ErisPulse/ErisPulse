@@ -30,7 +30,7 @@ ErisPulse 基础加载器
 > - _get_entry_point_group: 返回 entry-point 组名
 > - _process_entry_point: 处理单个 entry-point
 
-> **内部方法** 
+> **内部方法**
 此类仅供内部使用，不应直接实例化
 
 
@@ -41,7 +41,7 @@ ErisPulse 基础加载器
 
 初始化基础加载器
 
-:param config_prefix: 配置前缀（如 "ErisPulse.adapters" 或 "ErisPulse.modules"）
+- **config_prefix** (`配置前缀（如`): "ErisPulse.adapters" 或 "ErisPulse.modules"）
 
 ---
 
@@ -50,9 +50,9 @@ ErisPulse 基础加载器
 
 注入严格模式管理器
 
-:param manager: StrictModeManager 实例
+- **manager** (`StrictModeManager`): 实例
 
-> **内部方法** 
+> **内部方法**
 由初始化协调器调用，确保多个加载器共享同一管理器实例以统一收集违规
 
 ---
@@ -62,9 +62,9 @@ ErisPulse 基础加载器
 
 获取严格模式管理器
 
-:return: StrictModeManager 实例
+**返回值** (`StrictModeManager`): 实例
 
-> **内部方法** 
+> **内部方法**
 未注入时从配置创建，仅供独立调用/测试使用；正常启动流程总会被注入
 
 ---
@@ -74,38 +74,34 @@ ErisPulse 基础加载器
 
 获取 entry-point 组名
 
-:return: entry-point 组名
+**返回值** (`entry-point`): 组名
 
-> **内部方法** 
+> **内部方法**
 子类必须实现此方法
 
 ---
 
 
-##### `async async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any)`
+##### `async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any)`
 
 处理单个 entry-point
 
-:param entry_point: entry-point 对象
-:param objs: 对象字典
-:param enabled_list: 启用列表
-:param disabled_list: 禁用列表
-:param manager_instance: 管理器实例（用于调用 exists/is_enabled 等方法）
-:return: (更新后的对象字典, 更新后的启用列表, 更新后的禁用列表, 是否为新项)
+- **entry_point** (`entry-point`): 对象
+- **objs** (`对象字典`): - **enabled_list**: 启用列表
+- **disabled_list** (`禁用列表`): - **manager_instance**: 管理器实例（用于调用 exists/is_enabled 等方法）
+**返回值** (`(更新后的对象字典,`): 更新后的启用列表, 更新后的禁用列表, 是否为新项)
 
-> **内部方法** 
+> **内部方法**
 子类必须实现此方法
 
 ---
 
 
-##### `async async load(manager_instance: Any)`
+##### `async load(manager_instance: Any)`
 
 从 entry-points 加载对象
 
-:param manager_instance: 管理器实例
-:return:
-    dict[str, Any]: 对象字典
+- **manager_instance** (`管理器实例`): **返回值** (`dict[str,`): Any]: 对象字典
     list[str]: 启用列表
     list[str]: 禁用列表
 
@@ -118,11 +114,8 @@ ErisPulse 基础加载器
 
 注册配置项
 
-:param name: 名称
-:param enabled: 是否启用
-:return: 操作是否成功
-
-> **内部方法** 
+- **name** (`名称`): - **enabled**: 是否启用
+**返回值** (`操作是否成功`): > **内部方法**
 内部方法，用于注册新的配置项
 
 ---
@@ -132,10 +125,7 @@ ErisPulse 基础加载器
 
 获取配置状态
 
-:param name: 名称
-:return: 是否启用
-
-> **内部方法** 
+- **name** (`名称`): **返回值** (`是否启用`): > **内部方法**
 内部方法，用于获取配置状态
 默认情况下（无配置），返回 True（启用）并写入配置
 

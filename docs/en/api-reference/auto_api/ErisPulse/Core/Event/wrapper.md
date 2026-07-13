@@ -31,10 +31,8 @@ ErisPulse 事件包装类
 注册的方法会通过 Event.__getattribute__ 优先于内置方法生效，
 因此可以覆写 confirm / choose / collect / wait_reply 等内置交互式方法。
 
-:param platform: 平台名称（需与适配器注册名一致），传 "*" 表示对所有平台生效
-:param mixin_cls: 包含平台方法的类
-:return: 成功注册的方法数量
-
+- **platform** (`平台名称（需与适配器注册名一致），传`): "*" 表示对所有平台生效
+- **mixin_cls** (`包含平台方法的类`): **返回值** (`成功注册的方法数量`): 
 **示例**:
 ```python
 >>> class EmailEventMixin:
@@ -58,7 +56,7 @@ ErisPulse 事件包装类
 注册的方法会通过 Event.__getattribute__ 优先于内置方法生效，
 因此可以覆写 confirm / choose / collect / wait_reply 等内置交互式方法。
 
-:param platform: 平台名称（需与适配器注册名一致），传 "*" 表示对所有平台生效
+- **platform** (`平台名称（需与适配器注册名一致），传`): "*" 表示对所有平台生效
 
 **示例**:
 ```python
@@ -79,9 +77,8 @@ ErisPulse 事件包装类
 
 注销指定平台的单个扩展方法
 
-:param platform: 平台名称
-:param name: 方法名
-:return: 是否成功注销
+- **platform** (`平台名称`): - **name**: 方法名
+**返回值**: 是否成功注销
 
 ---
 
@@ -92,8 +89,7 @@ ErisPulse 事件包装类
 
 适配器关闭时应调用此方法清理注册的方法。
 
-:param platform: 平台名称
-:return: 被注销的方法数量
+- **platform** (`平台名称`): **返回值**: 被注销的方法数量
 
 ---
 
@@ -102,13 +98,12 @@ ErisPulse 事件包装类
 
 查询指定平台已注册的扩展方法名列表
 
-:param platform: 平台名称
-:return: 方法名列表
+- **platform** (`平台名称`): **返回值**: 方法名列表
 
 ---
 
 
-### `async async _builtin_wait_reply(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
+### `async _builtin_wait_reply(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
 
 内置 wait_reply 实现
 
@@ -117,7 +112,7 @@ ErisPulse 事件包装类
 ---
 
 
-### `async async _builtin_confirm(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None, method: str = DEFAULT_SEND_METHOD, hint: bool = False)`
+### `async _builtin_confirm(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None, method: str = DEFAULT_SEND_METHOD, hint: bool = False)`
 
 内置 confirm 实现
 
@@ -130,14 +125,13 @@ ErisPulse 事件包装类
 
 格式化选项列表为文本
 
-:param options: 选项列表
-:param fmt: 格式类型，支持 "list"、"inline" 或自定义函数
-:return: 格式化后的选项文本
+- **options** (`选项列表`): - **fmt**: 格式类型，支持 "list"、"inline" 或自定义函数
+**返回值**: 格式化后的选项文本
 
 ---
 
 
-### `async async _builtin_choose(event: 'Event', prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'list', merge_prompt: bool = False)`
+### `async _builtin_choose(event: 'Event', prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'list', merge_prompt: bool = False)`
 
 内置 choose 实现
 
@@ -146,7 +140,7 @@ ErisPulse 事件包装类
 ---
 
 
-### `async async _builtin_collect(event: 'Event', fields: list[dict[str, Any]], timeout_per_field: float = 60.0)`
+### `async _builtin_collect(event: 'Event', fields: list[dict[str, Any]], timeout_per_field: float = 60.0)`
 
 内置 collect 实现
 
@@ -205,7 +199,7 @@ OneBot12 标准事件数据结构
 
 初始化事件包装器
 
-:param event_data: 原始事件数据
+- **event_data**: 原始事件数据
 
 ---
 
@@ -214,7 +208,7 @@ OneBot12 标准事件数据结构
 
 获取事件ID
 
-:return: 事件ID
+**返回值**: 事件ID
 
 ---
 
@@ -223,7 +217,7 @@ OneBot12 标准事件数据结构
 
 获取事件时间戳
 
-:return: Unix时间戳（秒级）
+**返回值**: Unix时间戳（秒级）
 
 ---
 
@@ -232,7 +226,7 @@ OneBot12 标准事件数据结构
 
 获取事件类型
 
-:return: 事件类型（message/notice/request/meta等）
+**返回值**: 事件类型（message/notice/request/meta等）
 
 ---
 
@@ -241,7 +235,7 @@ OneBot12 标准事件数据结构
 
 获取事件详细类型
 
-:return: 事件详细类型（private/group/friend等）
+**返回值**: 事件详细类型（private/group/friend等）
 
 ---
 
@@ -250,7 +244,7 @@ OneBot12 标准事件数据结构
 
 获取平台名称
 
-:return: 平台名称
+**返回值**: 平台名称
 
 ---
 
@@ -259,7 +253,7 @@ OneBot12 标准事件数据结构
 
 获取机器人平台
 
-:return: 机器人平台名称
+**返回值**: 机器人平台名称
 
 ---
 
@@ -268,7 +262,7 @@ OneBot12 标准事件数据结构
 
 获取机器人用户ID
 
-:return: 机器人用户ID
+**返回值**: 机器人用户ID
 
 ---
 
@@ -279,7 +273,7 @@ OneBot12 标准事件数据结构
 
 优先返回 account_id（ErisPulse扩展），若不存在则回退到 user_id（OB12标准）
 
-:return: 机器人账户标识，单Bot模式下返回空字符串
+**返回值**: 机器人账户标识，单Bot模式下返回空字符串
 
 ---
 
@@ -288,7 +282,7 @@ OneBot12 标准事件数据结构
 
 获取机器人完整信息
 
-:return: 机器人信息字典
+**返回值**: 机器人信息字典
 
 ---
 
@@ -297,7 +291,7 @@ OneBot12 标准事件数据结构
 
 获取消息段数组
 
-:return: 消息段数组
+**返回值**: 消息段数组
 
 ---
 
@@ -306,7 +300,7 @@ OneBot12 标准事件数据结构
 
 获取消息备用文本
 
-:return: 消息备用文本
+**返回值**: 消息备用文本
 
 ---
 
@@ -315,7 +309,7 @@ OneBot12 标准事件数据结构
 
 获取纯文本内容
 
-:return: 纯文本内容
+**返回值**: 纯文本内容
 
 ---
 
@@ -324,7 +318,7 @@ OneBot12 标准事件数据结构
 
 获取纯文本内容（别名）
 
-:return: 纯文本内容
+**返回值**: 纯文本内容
 
 ---
 
@@ -333,7 +327,7 @@ OneBot12 标准事件数据结构
 
 是否包含@消息
 
-:return: 是否包含@消息
+**返回值**: 是否包含@消息
 
 ---
 
@@ -342,7 +336,7 @@ OneBot12 标准事件数据结构
 
 获取所有被@的用户ID列表
 
-:return: 被@的用户ID列表
+**返回值**: 被@的用户ID列表
 
 ---
 
@@ -351,7 +345,23 @@ OneBot12 标准事件数据结构
 
 获取发送者ID
 
-:return: 发送者用户ID
+**返回值**: 发送者用户ID
+
+---
+
+
+##### `is_master()`
+
+检查事件发送者是否为框架主人
+
+基于 ``ErisPulse.master.users`` 配置和运行时添加的主人列表判断。
+
+**返回值** (`是否为框架主人`): 
+**示例**:
+```python
+>>> if event.is_master():
+...     await event.reply("主人你好")
+```
 
 ---
 
@@ -360,7 +370,7 @@ OneBot12 标准事件数据结构
 
 获取发送者昵称
 
-:return: 发送者昵称
+**返回值**: 发送者昵称
 
 ---
 
@@ -369,7 +379,7 @@ OneBot12 标准事件数据结构
 
 获取群组ID
 
-:return: 群组ID（群聊消息）
+**返回值**: 群组ID（群聊消息）
 
 ---
 
@@ -378,7 +388,7 @@ OneBot12 标准事件数据结构
 
 获取频道ID
 
-:return: 频道ID（频道消息）
+**返回值**: 频道ID（频道消息）
 
 ---
 
@@ -387,7 +397,7 @@ OneBot12 标准事件数据结构
 
 获取服务器ID
 
-:return: 服务器ID（服务器消息）
+**返回值**: 服务器ID（服务器消息）
 
 ---
 
@@ -396,7 +406,7 @@ OneBot12 标准事件数据结构
 
 获取话题/子频道ID
 
-:return: 话题ID（话题消息）
+**返回值**: 话题ID（话题消息）
 
 ---
 
@@ -408,8 +418,7 @@ OneBot12 标准事件数据结构
 根据事件类型自动返回对应的目标ID：
 群聊 → group_id，频道 → channel_id，私聊 → user_id，以此类推。
 
-:return: 目标ID字符串，无法确定时返回空字符串
-
+**返回值** (`目标ID字符串，无法确定时返回空字符串`): 
 **示例**:
 ```python
 >>> target = event.get_target_id()
@@ -429,8 +438,7 @@ OneBot12 标准事件数据结构
 
 用于存储、上下文管理等需要唯一标识会话的场景。
 
-:return: 会话标识字符串
-
+**返回值** (`会话标识字符串`): 
 **示例**:
 ```python
 >>> session_id = event.get_session_id()
@@ -444,7 +452,7 @@ OneBot12 标准事件数据结构
 
 获取发送者信息字典
 
-:return: 发送者信息字典
+**返回值**: 发送者信息字典
 
 ---
 
@@ -453,7 +461,7 @@ OneBot12 标准事件数据结构
 
 是否为消息事件
 
-:return: 是否为消息事件
+**返回值**: 是否为消息事件
 
 ---
 
@@ -462,7 +470,7 @@ OneBot12 标准事件数据结构
 
 是否为私聊消息
 
-:return: 是否为私聊消息
+**返回值**: 是否为私聊消息
 
 ---
 
@@ -471,7 +479,7 @@ OneBot12 标准事件数据结构
 
 是否为群聊消息
 
-:return: 是否为群聊消息
+**返回值**: 是否为群聊消息
 
 ---
 
@@ -480,7 +488,7 @@ OneBot12 标准事件数据结构
 
 是否为@消息
 
-:return: 是否为@消息
+**返回值**: 是否为@消息
 
 ---
 
@@ -489,7 +497,7 @@ OneBot12 标准事件数据结构
 
 获取操作者ID
 
-:return: 操作者ID
+**返回值**: 操作者ID
 
 ---
 
@@ -498,7 +506,7 @@ OneBot12 标准事件数据结构
 
 获取操作者昵称
 
-:return: 操作者昵称
+**返回值**: 操作者昵称
 
 ---
 
@@ -507,7 +515,7 @@ OneBot12 标准事件数据结构
 
 是否为通知事件
 
-:return: 是否为通知事件
+**返回值**: 是否为通知事件
 
 ---
 
@@ -516,7 +524,7 @@ OneBot12 标准事件数据结构
 
 群成员增加
 
-:return: 是否为群成员增加事件
+**返回值**: 是否为群成员增加事件
 
 ---
 
@@ -525,7 +533,7 @@ OneBot12 标准事件数据结构
 
 群成员减少
 
-:return: 是否为群成员减少事件
+**返回值**: 是否为群成员减少事件
 
 ---
 
@@ -534,7 +542,7 @@ OneBot12 标准事件数据结构
 
 好友添加
 
-:return: 是否为好友添加事件
+**返回值**: 是否为好友添加事件
 
 ---
 
@@ -543,7 +551,7 @@ OneBot12 标准事件数据结构
 
 好友删除
 
-:return: 是否为好友删除事件
+**返回值**: 是否为好友删除事件
 
 ---
 
@@ -552,7 +560,7 @@ OneBot12 标准事件数据结构
 
 获取请求附言
 
-:return: 请求附言
+**返回值**: 请求附言
 
 ---
 
@@ -563,22 +571,19 @@ OneBot12 标准事件数据结构
 
 用于标识可操作的请求，配合 approve()/reject() 使用。
 
-:return: 请求ID，不存在时返回空字符串
+**返回值**: 请求ID，不存在时返回空字符串
 
 ---
 
 
-##### `async async approve(comment: str | None = None)`
+##### `async approve(comment: str | None = None)`
 
 同意当前请求事件
 
 通过适配器的 Request DSL 执行同意操作。
 仅对请求类型事件（type == "request"）有效。
 
-:param comment: 附带备注信息（可选，部分平台支持）
-:return: 标准响应格式
-
-**异常**: `ValueError` - 当事件不是请求类型或缺少必要字段时
+- **comment** (`附带备注信息（可选，部分平台支持）`): **返回值** (`标准响应格式`): **异常**: `ValueError` - 当事件不是请求类型或缺少必要字段时
 
 **示例**:
 ```python
@@ -592,17 +597,14 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async async reject(comment: str | None = None)`
+##### `async reject(comment: str | None = None)`
 
 拒绝当前请求事件
 
 通过适配器的 Request DSL 执行拒绝操作。
 仅对请求类型事件（type == "request"）有效。
 
-:param comment: 附带备注信息（可选，部分平台支持）
-:return: 标准响应格式
-
-**异常**: `ValueError` - 当事件不是请求类型或缺少必要字段时
+- **comment** (`附带备注信息（可选，部分平台支持）`): **返回值** (`标准响应格式`): **异常**: `ValueError` - 当事件不是请求类型或缺少必要字段时
 
 **示例**:
 ```python
@@ -614,14 +616,12 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async async _handle_request_action(action: str, comment: str | None = None)`
+##### `async _handle_request_action(action: str, comment: str | None = None)`
 
 执行请求操作的内部方法
 
-:param action: 操作类型 ("accept" / "reject")
-:param comment: 附带备注
-:return: 标准响应格式
-**异常**: `ValueError` - 当缺少必要字段时
+- **action** (`操作类型`): ("accept" / "reject")
+- **comment** (`附带备注`): **返回值** (`标准响应格式`): **异常**: `ValueError` - 当缺少必要字段时
 
 ---
 
@@ -630,7 +630,7 @@ OneBot12 标准事件数据结构
 
 是否为请求事件
 
-:return: 是否为请求事件
+**返回值**: 是否为请求事件
 
 ---
 
@@ -639,7 +639,7 @@ OneBot12 标准事件数据结构
 
 是否为好友请求
 
-:return: 是否为好友请求
+**返回值**: 是否为好友请求
 
 ---
 
@@ -648,7 +648,7 @@ OneBot12 标准事件数据结构
 
 是否为群组请求
 
-:return: 是否为群组请求
+**返回值**: 是否为群组请求
 
 ---
 
@@ -659,28 +659,24 @@ OneBot12 标准事件数据结构
 
 使用会话类型管理模块自动处理类型转换和ID获取
 
-:return: (适配器实例, 发送目标类型, 目标ID, 账户ID)
+**返回值** (`(适配器实例,`): 发送目标类型, 目标ID, 账户ID)
 
 ---
 
 
-##### `async async reply(content: str, method: str = DEFAULT_SEND_METHOD, at_sender: bool = False, quote: bool = False, at_users: list[str] = None, reply_to: str | None = None, at_all: bool = False)`
+##### `async reply(content: str, method: str = DEFAULT_SEND_METHOD, at_sender: bool = False, quote: bool = False, at_users: list[str] = None, reply_to: str | None = None, at_all: bool = False)`
 
 通用回复方法
 
 基于适配器的Text方法，但可以通过method参数指定其他发送方法
 
-:param content: 发送内容（文本、URL等，取决于method参数）
-:param method: 适配器发送方法，默认为"Text"
+- **content** (`发送内容（文本、URL等，取决于method参数）`): - **method**: 适配器发送方法，默认为"Text"
                可选值: "Text", "Image", "Voice", "Video", "File" 等
-:param at_sender: 是否@发送者（自动从事件中提取 user_id）
-:param quote: 是否引用回复当前消息（自动从事件中提取 message_id）
-:param at_users: @用户列表（可选），如 ["user1", "user2"]
-:param reply_to: 回复消息ID（可选，手动指定）
-:param at_all: 是否@全体成员（可选），默认为 False
-:param kwargs: 额外参数，例如Mention方法的user_id
-:return: 适配器发送方法的返回值
-
+- **at_sender** (`是否@发送者（自动从事件中提取`): user_id）
+- **quote** (`是否引用回复当前消息（自动从事件中提取`): message_id）
+- **at_users** (`@用户列表（可选），如`): ["user1", "user2"]
+- **reply_to** (`回复消息ID（可选，手动指定）`): - **at_all**: 是否@全体成员（可选），默认为 False
+- **kwargs** (`额外参数，例如Mention方法的user_id`): **返回值** (`适配器发送方法的返回值`): 
 **示例**:
 ```python
 >>> # 简单回复
@@ -705,19 +701,19 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async async reply_ob12(message: list[dict[str, Any]] | dict[str, Any])`
+##### `async reply_ob12(message: list[dict[str, Any]] | dict[str, Any])`
 
 使用 OneBot12 消息段回复
 
 通过适配器的 Raw_ob12 方法发送 OneBot12 标准消息段，
 是 reply() 方法的 OB12 对应版本。
 
-:param message: OneBot12 消息段列表或单个消息段
+- **message** (`OneBot12`): 消息段列表或单个消息段
     [
         {"type": "text", "data": {"text": "Hello"}},
         {"type": "image", "data": {"file": "https://..." }},
     ]
-:return: 适配器 Raw_ob12 的返回值（标准响应格式）
+**返回值** (`适配器`): Raw_ob12 的返回值（标准响应格式）
 
 **示例**:
 ```python
@@ -750,9 +746,8 @@ OneBot12 标准事件数据结构
 
 检查当前事件所在平台是否支持某发送方法
 
-:param method: 发送方法名，如 "Image"、"Voice"、"Video"
-:return: 是否支持
-
+- **method** (`发送方法名，如`): "Image"、"Voice"、"Video"
+**返回值** (`是否支持`): 
 **示例**:
 ```python
 >>> if event.supports("Image"):
@@ -766,8 +761,7 @@ OneBot12 标准事件数据结构
 
 列出当前平台所有可用发送方法
 
-:return: 发送方法名列表
-
+**返回值** (`发送方法名列表`): 
 **示例**:
 ```python
 >>> methods = event.available_methods()
@@ -777,34 +771,32 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
+##### `async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户回复
 
-:param prompt: 提示消息，如果提供会发送给用户
-:param timeout: 等待超时时间(秒)
-:param callback: 回调函数，当收到回复时执行
-:param validator: 验证函数，用于验证回复是否有效
-:param method: 发送方法，默认为 "Text"（可选: "Image", "Markdown", "Html" 等）
-:return: 用户回复的事件数据，如果超时则返回None
+- **prompt** (`提示消息，如果提供会发送给用户`): - **timeout**: 等待超时时间(秒)
+- **callback** (`回调函数，当收到回复时执行`): - **validator**: 验证函数，用于验证回复是否有效
+- **method** (`发送方法，默认为`): "Text"（可选: "Image", "Markdown", "Html" 等）
+**返回值**: 用户回复的事件数据，如果超时则返回None
 
 ---
 
 
-##### `async async confirm(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None, method: str = DEFAULT_SEND_METHOD, hint: bool = False)`
+##### `async confirm(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None, method: str = DEFAULT_SEND_METHOD, hint: bool = False)`
 
 等待用户确认 (是/否)
 
 自动发送提示消息并等待用户回复，识别内置中英文确认词。
 内置确认词: 是/yes/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题... (否/no/n/取消/不/不要/cancel/false/错/拒绝...)
 
-:param prompt: str - 提示消息（可选，发送后等待回复）
-:param timeout: float - 超时时间(秒)（默认: 60.0）
-:param yes_words: set[str] - 自定义确认词集合（默认: 内置 CONFIRM_YES_WORDS）
-:param no_words: set[str] - 自定义否定词集合（默认: 内置 CONFIRM_NO_WORDS）
-:param method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
-:param hint: bool - 是否在提示消息末尾自动追加确认词提示，如 "（是/否）"（默认: False）
-:return: bool|None - True=确认, False=否定, None=超时
+- **prompt** (`str`): - 提示消息（可选，发送后等待回复）
+- **timeout** (`float`): - 超时时间(秒)（默认: 60.0）
+- **yes_words** (`set[str]`): - 自定义确认词集合（默认: 内置 CONFIRM_YES_WORDS）
+- **no_words** (`set[str]`): - 自定义否定词集合（默认: 内置 CONFIRM_NO_WORDS）
+- **method** (`str`): - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
+- **hint** (`bool`): - 是否在提示消息末尾自动追加确认词提示，如 "（是/否）"（默认: False）
+**返回值** (`bool|None`): - True=确认, False=否定, None=超时
 
 **示例**:
 ```python
@@ -818,7 +810,7 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async async choose(prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'list', merge_prompt: bool = False)`
+##### `async choose(prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'list', merge_prompt: bool = False)`
 
 等待用户从选项中选择
 
@@ -829,17 +821,17 @@ OneBot12 标准事件数据结构
         - 非文本方法 + merge_prompt=False (默认): 先发富媒体，再单独发 Text 选项
         - 非文本方法 + merge_prompt=True: 合并为一条 Text 消息发送
 
-        :param prompt: str - 提示消息（必须）
-        :param options: list[str] - 选项列表（不能为空）
-        :param timeout: float - 超时时间(秒)（默认: 60.0）
-        :param method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
-        :param options_format: str|callable - 选项格式（默认: "list"）
+        - **prompt** (`str`): - 提示消息（必须）
+        - **options** (`list[str]`): - 选项列表（不能为空）
+        - **timeout** (`float`): - 超时时间(秒)（默认: 60.0）
+        - **method** (`str`): - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
+        - **options_format** (`str|callable`): - 选项格式（默认: "list"）
             - "list": 每行一个，如 ``1. 选项A
 2. 选项B``
             - "inline": 单行展示，如 ``1.选项A | 2.选项B``
             - callable: 自定义函数，接收 ``list[str]`` 返回 ``str``
-        :param merge_prompt: bool - 非文本方法时是否强制合并为一条 Text 消息（默认: False）
-        :return: int|None - 选中选项的索引(0-based), 超时返回 None
+        - **merge_prompt** (`bool`): - 非文本方法时是否强制合并为一条 Text 消息（默认: False）
+        **返回值** (`int|None`): - 选中选项的索引(0-based), 超时返回 None
 
         **异常**: `ValueError` - 当 options 为空时
 
@@ -858,13 +850,13 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async async collect(fields: list[dict[str, Any]], timeout_per_field: float = 60.0)`
+##### `async collect(fields: list[dict[str, Any]], timeout_per_field: float = 60.0)`
 
 多步骤收集信息 (表单式)
 
 依次向用户发送提示消息并收集回复，每个字段可配置验证器和重试逻辑
 
-:param fields: list[dict] - 字段列表，每个字段为字典:
+- **fields** (`list[dict]`): - 字段列表，每个字段为字典:
     - key: str - 字段键名（必须）
     - prompt: str - 提示消息（默认: "请输入 {key}"）
     - validator: callable - 验证函数，接收 Event 对象，返回 bool（可选）
@@ -874,8 +866,8 @@ OneBot12 标准事件数据结构
     - options: list[str] - 可选值列表，提供时该字段变为选择题（可选）
     - options_format: str|callable - 选项格式（默认: "list"，详见 choose()）
     - merge_prompt: bool - 非文本方法时是否合并为一条消息（默认: False）
-:param timeout_per_field: float - 每个字段的超时时间(秒)（默认: 60.0）
-:return: dict|None - 收集到的数据字典, 任何步骤超时或重试耗尽返回 None
+- **timeout_per_field** (`float`): - 每个字段的超时时间(秒)（默认: 60.0）
+**返回值** (`dict|None`): - 收集到的数据字典, 任何步骤超时或重试耗尽返回 None
 
 **示例**:
 ```python
@@ -892,16 +884,16 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async async wait_for(event_type: str = 'message', condition: Callable[['Event'], bool] = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS)`
+##### `async wait_for(event_type: str = 'message', condition: Callable[['Event'], bool] = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS)`
 
 等待满足条件的任意事件
 
 不限于同一用户/会话，可监听任意类型事件
 
-:param event_type: str - 事件类型 (message/notice/request/meta 等，默认: message)
-:param condition: callable - 条件函数，接收 Event 对象，返回 bool（可选）
-:param timeout: float - 超时时间(秒)（默认: 60.0）
-:return: Event|None - 匹配的事件, 超时返回 None
+- **event_type** (`str`): - 事件类型 (message/notice/request/meta 等，默认: message)
+- **condition** (`callable`): - 条件函数，接收 Event 对象，返回 bool（可选）
+- **timeout** (`float`): - 超时时间(秒)（默认: 60.0）
+**返回值** (`Event|None`): - 匹配的事件, 超时返回 None
 
 **示例**:
 ```python
@@ -925,8 +917,7 @@ OneBot12 标准事件数据结构
 
 创建多轮对话上下文
 
-:param timeout: 默认超时时间(秒)
-:return: Conversation 对象
+- **timeout** (`默认超时时间(秒)`): **返回值** (`Conversation`): 对象
 
 **示例**:
 ```python
@@ -949,7 +940,7 @@ OneBot12 标准事件数据结构
 
 获取原始事件数据
 
-:return: dict - 原始事件数据字典
+**返回值** (`dict`): - 原始事件数据字典
 
 ---
 
@@ -958,7 +949,7 @@ OneBot12 标准事件数据结构
 
 获取原始事件类型
 
-:return: str - 原始事件类型
+**返回值** (`str`): - 原始事件类型
 
 ---
 
@@ -967,7 +958,7 @@ OneBot12 标准事件数据结构
 
 获取命令名称
 
-:return: str - 命令名称
+**返回值** (`str`): - 命令名称
 
 ---
 
@@ -976,7 +967,7 @@ OneBot12 标准事件数据结构
 
 获取命令参数
 
-:return: 命令参数列表
+**返回值**: 命令参数列表
 
 ---
 
@@ -985,7 +976,7 @@ OneBot12 标准事件数据结构
 
 获取命令原始文本
 
-:return: 命令原始文本
+**返回值**: 命令原始文本
 
 ---
 
@@ -994,7 +985,7 @@ OneBot12 标准事件数据结构
 
 获取完整命令信息
 
-:return: 命令信息字典
+**返回值**: 命令信息字典
 
 ---
 
@@ -1003,7 +994,7 @@ OneBot12 标准事件数据结构
 
 是否为命令
 
-:return: 是否为命令
+**返回值**: 是否为命令
 
 ---
 
@@ -1012,7 +1003,7 @@ OneBot12 标准事件数据结构
 
 转换为字典
 
-:return: 事件数据字典
+**返回值**: 事件数据字典
 
 ---
 
@@ -1021,7 +1012,7 @@ OneBot12 标准事件数据结构
 
 是否已被处理
 
-:return: 是否已被处理
+**返回值**: 是否已被处理
 
 ---
 
@@ -1040,8 +1031,8 @@ OneBot12 标准事件数据结构
 2. 通配符 "*" 平台的注册方法
 3. 内置方法/属性（正常解析）
 
-:param name: str - 属性名
-:return: Any - 属性值
+- **name** (`str`): - 属性名
+**返回值** (`Any`): - 属性值
 
 ---
 
@@ -1053,8 +1044,8 @@ OneBot12 标准事件数据结构
 2. 通配符 "*" 平台的扩展方法
 3. 字典键访问（点式访问 event.platform 等）
 
-:param name: str - 属性名
-:return: Any - 属性值
+- **name** (`str`): - 属性名
+**返回值** (`Any`): - 属性值
 **异常**: `AttributeError` - 属性不存在
 
 ---
@@ -1071,7 +1062,7 @@ OneBot12 标准事件数据结构
 
 字符串表示
 
-:return: 字符串表示
+**返回值**: 字符串表示
 
 ---
 
@@ -1098,8 +1089,8 @@ OneBot12 标准事件数据结构
 
 初始化对话上下文
 
-:param event: Event - 事件对象
-:param timeout: float - 默认超时时间(秒)（默认: 60.0）
+- **event** (`Event`): - 事件对象
+- **timeout** (`float`): - 默认超时时间(秒)（默认: 60.0）
 
 ---
 
@@ -1108,61 +1099,61 @@ OneBot12 标准事件数据结构
 
 对话是否处于活跃状态
 
-:return: bool - 是否活跃
+**返回值** (`bool`): - 是否活跃
 
 ---
 
 
-##### `async async say(content: str)`
+##### `async say(content: str)`
 
 发送消息
 
-:param content: str - 消息内容
-:return: Conversation - self（支持链式调用）
+- **content** (`str`): - 消息内容
+**返回值** (`Conversation`): - self（支持链式调用）
 
 ---
 
 
-##### `async async wait(prompt: str | None = None, timeout: float = None, method: str = DEFAULT_SEND_METHOD)`
+##### `async wait(prompt: str | None = None, timeout: float = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户回复
 
-:param prompt: str - 提示消息（可选）
-:param timeout: float - 超时时间(秒)，默认使用对话的超时设置
-:param method: str - 发送方法（默认: "Text"）
-:return: Event|None - 用户回复的事件, 超时返回 None
+- **prompt** (`str`): - 提示消息（可选）
+- **timeout** (`float`): - 超时时间(秒)，默认使用对话的超时设置
+- **method** (`str`): - 发送方法（默认: "Text"）
+**返回值** (`Event|None`): - 用户回复的事件, 超时返回 None
 
 ---
 
 
-##### `async async confirm(prompt: str | None = None)`
+##### `async confirm(prompt: str | None = None)`
 
 等待用户确认
 
-:param prompt: str - 提示消息
-:return: bool|None - True/False/None
+- **prompt** (`str`): - 提示消息
+**返回值** (`bool|None`): - True/False/None
 
 ---
 
 
-##### `async async choose(prompt: str, options: list[str])`
+##### `async choose(prompt: str, options: list[str])`
 
 等待用户选择
 
-:param prompt: str - 提示消息
-:param options: list[str] - 选项列表
-:return: int|None - 选中索引或 None
+- **prompt** (`str`): - 提示消息
+- **options** (`list[str]`): - 选项列表
+**返回值** (`int|None`): - 选中索引或 None
 
 ---
 
 
-##### `async async collect(fields: list[dict])`
+##### `async collect(fields: list[dict])`
 
 多步骤收集信息
 
-:param fields: list[dict] - 字段列表，支持 condition 字段:
+- **fields** (`list[dict]`): - 字段列表，支持 condition 字段:
     - condition: callable - 接收已收集数据 dict, 返回 bool 决定是否收集此字段
-:return: dict|None - 收集到的数据字典或 None
+**返回值** (`dict|None`): - 收集到的数据字典或 None
 
 ---
 
@@ -1178,8 +1169,8 @@ OneBot12 标准事件数据结构
 
 注册分支处理器
 
-:param name: str 分支名称
-:return: Callable 装饰器
+- **name** (`str`): 分支名称
+**返回值** (`Callable`): 装饰器
 
 **示例**:
 ```python
@@ -1209,8 +1200,8 @@ OneBot12 标准事件数据结构
 
 跳转到指定分支
 
-:param branch_name: str 目标分支名称
-:param event: Event 传递给分支的事件对象 (可选)
+- **branch_name** (`str`): 目标分支名称
+- **event** (`Event`): 传递给分支的事件对象 (可选)
 
 **异常**: `ValueError` - 当目标分支不存在时
 
@@ -1226,8 +1217,8 @@ OneBot12 标准事件数据结构
 
 启动对话，从指定分支开始
 
-:param branch_name: str 起始分支名称
-:param event: Event 初始事件对象 (可选)
+- **branch_name** (`str`): 起始分支名称
+- **event** (`Event`): 初始事件对象 (可选)
 
 **异常**: `ValueError` - 当起始分支不存在时
 
@@ -1243,7 +1234,7 @@ OneBot12 标准事件数据结构
 
 获取当前分支名称
 
-:return: str|None 当前分支名, 未在分支中时返回 None
+**返回值** (`str|None`): 当前分支名, 未在分支中时返回 None
 
 ---
 
@@ -1252,13 +1243,13 @@ OneBot12 标准事件数据结构
 
 检查分支是否存在
 
-:param name: str 分支名称
-:return: bool 是否存在
+- **name** (`str`): 分支名称
+**返回值** (`bool`): 是否存在
 
 ---
 
 
-##### `async async save()`
+##### `async save()`
 
 保存对话状态到 storage
 
@@ -1274,12 +1265,12 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async async resume(event: 'Event' = None)`
+##### `async resume(event: 'Event' = None)`
 
 从 storage 恢复对话状态
 
-:param event: Event 新的事件对象 (可选, 不传则使用原事件)
-:return: bool 是否恢复成功
+- **event** (`Event`): 新的事件对象 (可选, 不传则使用原事件)
+**返回值** (`bool`): 是否恢复成功
 
 **示例**:
 ```python
@@ -1295,7 +1286,7 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async async clear_saved()`
+##### `async clear_saved()`
 
 清除保存的对话状态
 

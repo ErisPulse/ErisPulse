@@ -29,7 +29,7 @@ ErisPulse 基础发现器
 > 子类需要实现：
 > - _get_entry_point_group: 返回 entry-point 组名
 
-> **内部方法** 
+> **内部方法**
 此类仅供内部使用，不应直接实例化
 
 
@@ -47,9 +47,9 @@ ErisPulse 基础发现器
 
 获取 entry-point 组名
 
-:return: entry-point 组名
+**返回值** (`entry-point`): 组名
 
-> **内部方法** 
+> **内部方法**
 子类必须实现此方法
 
 ---
@@ -59,9 +59,9 @@ ErisPulse 基础发现器
 
 获取所有 entry-points
 
-:return: entry-point 对象列表
+**返回值** (`entry-point`): 对象列表
 
-> **内部方法** 
+> **内部方法**
 内部方法，使用缓存机制获取 entry-points
 
 ---
@@ -71,7 +71,7 @@ ErisPulse 基础发现器
 
 查找所有 entry-points
 
-:return: entry-point 对象列表
+**返回值** (`entry-point`): 对象列表
 
 ---
 
@@ -80,8 +80,8 @@ ErisPulse 基础发现器
 
 按名称查找 entry-point
 
-:param name: entry-point 名称
-:return: entry-point 对象，未找到返回 None
+- **name** (`entry-point`): 名称
+**返回值** (`entry-point`): 对象，未找到返回 None
 
 ---
 
@@ -90,7 +90,7 @@ ErisPulse 基础发现器
 
 获取 entry-point 映射字典
 
-:return: {name: entry_point} 字典
+**返回值** (`{name:`): entry_point} 字典
 
 ---
 
@@ -106,7 +106,7 @@ ErisPulse 基础发现器
 
 获取 entry-point 组名
 
-:return: entry-point 组名
+**返回值** (`entry-point`): 组名
 
 ---
 
@@ -115,8 +115,8 @@ ErisPulse 基础发现器
 
 获取指定 PyPI 包的顶层 Python 模块名
 
-:param package_name: PyPI 包名
-:return: 顶层 Python 模块名列表
+- **package_name** (`PyPI`): 包名
+**返回值** (`顶层`): Python 模块名列表
 
 > **提示**
 > 通过读取包的 top_level.txt 获取顶层模块名。
@@ -140,9 +140,7 @@ ErisPulse 基础发现器
 
 设置缓存过期时间
 
-:param expiry: 过期时间（秒）
-
-> **内部方法** 
+- **expiry** (`过期时间（秒）`): > **内部方法**
 内部方法，用于调整缓存策略
 
 ---
@@ -152,7 +150,7 @@ ErisPulse 基础发现器
 
 迭代器接口
 
-:return: entry-point 迭代器
+**返回值** (`entry-point`): 迭代器
 
 ---
 
@@ -161,7 +159,7 @@ ErisPulse 基础发现器
 
 返回 entry-point 数量
 
-:return: entry-point 数量
+**返回值** (`entry-point`): 数量
 
 ---
 
@@ -170,8 +168,8 @@ ErisPulse 基础发现器
 
 检查 entry-point 是否存在
 
-:param name: entry-point 名称
-:return: 是否存在
+- **name** (`entry-point`): 名称
+**返回值**: 是否存在
 
 ---
 
@@ -180,7 +178,7 @@ ErisPulse 基础发现器
 
 返回发现器的字符串表示
 
-:return: 字符串表示
+**返回值**: 字符串表示
 
 ---
 

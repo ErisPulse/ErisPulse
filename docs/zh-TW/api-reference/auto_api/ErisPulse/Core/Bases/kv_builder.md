@@ -93,14 +93,14 @@ clause 中的占位符 `?` 已在 `_bind_clauses` 中替换为实际值。
 ---
 
 
-##### `async async _ascan_rows()`
+##### `async _ascan_rows()`
 
 异步扫描所有行
 
 ---
 
 
-##### `async async aExecute()`
+##### `async aExecute()`
 
 异步执行查询
 
