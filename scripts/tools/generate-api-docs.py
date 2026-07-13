@@ -17,6 +17,10 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
     """
     将文档字符串转换为纯Markdown格式
     
+    支持两种参数格式：
+    - 带括号: ``:param name: [type] description``
+    - 不带括号: ``:param name: type description``
+    
     :param docstring: 原始文档字符串
     :return: Markdown格式的文档字符串或None（如果包含忽略标签）
     """
@@ -45,6 +49,8 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
             continue
         
         # 处理提示块（多行）
+        # 单行 tips 标签也会命中此分支，当 tips 标签后还有内容时
+        # 收集为单元素列表；后续若无 /tips 结束标签，在循环结束后补处理
         if "{!--< tips >!--}" in line:
             in_tip_block = True
             tip_content = [line.split("{!--< tips >!--}")[-1].strip()]
@@ -69,28 +75,22 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
             tip_content.append(line.strip())
             continue
         
-        # 处理单行提示标签
-        if "{!--< tips >!--}" in line:
-            content = line.split("{!--< tips >!--}")[-1].strip()
-            result.append(f"> **提示**: {content}")
-            continue
-        
         # 处理内部使用标签
         if "{!--< internal-use >!--}" in line:
             content = line.split("{!--< internal-use >!--}")[-1].strip()
-            result.append(f"> **内部方法** {content}")
+            result.append(f"> **内部方法** {content}".rstrip())
             continue
         
         # 处理过时标签
         if "{!--< deprecated >!--}" in line:
             content = line.split("{!--< deprecated >!--}")[-1].strip()
-            result.append(f"> **已弃用** {content}")
+            result.append(f"> **已弃用** {content}".rstrip())
             continue
         
         # 处理实验性功能标签
         if "{!--< experimental >!--}" in line:
             content = line.split("{!--< experimental >!--}")[-1].strip()
-            result.append(f"> **实验性功能** {content}")
+            result.append(f"> **实验性功能** {content}".rstrip())
             continue
         
         # 跳过处理过的标签行
@@ -99,26 +99,72 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
         
         result.append(line)
     
+    # 处理未闭合的单行 tips（无 /tips 结束标签的情况）
+    if in_tip_block and tip_content:
+        result.append("> **提示**")
+        for tip_line in tip_content:
+            if tip_line:
+                result.append(f"> {tip_line}")
+        result.append("")
+    
     # 处理参数说明
     processed = "\n".join(result)
     
     # 转换 :param 格式
+    # 支持带括号: :param name: [type] description
+    # 支持不带括号: :param name: type description (type 为首个单词)
     processed = re.sub(
         r":param (\w+):\s*\[([^\]]+)\]\s*(.*)",
         r"- **\1** (`\2`): \3",
         processed
     )
+    processed = re.sub(
+        r":param (\w+):\s*(\S+)\s+(.*)",
+        r"- **\1** (`\2`): \3",
+        processed
+    )
+    # :param name: description (无类型)
+    processed = re.sub(
+        r":param (\w+):\s*(.*)",
+        r"- **\1**: \2",
+        processed
+    )
     
-    # 转换 :return 格式（单行）
+    # 转换多行 :return: 格式
+    # :return:
+    #     type: description
+    # 必须在单行 :return: 转换之前处理
+    processed = re.sub(
+        r":return:\s*\n((?:\s+\S+:.*(?:\n|$))+)",
+        lambda m: "**返回值**:\n" + "\n".join(
+            f"- `{l.strip().split(':')[0].strip()}`: {':'.join(l.strip().split(':')[1:]).strip()}"
+            for l in m.group(1).strip().split('\n') if l.strip()
+        ),
+        processed
+    )
+    
+    # 转换 :return 格式
+    # 带括号: :return: [type] description
+    # 不带括号: :return: type description
     processed = re.sub(
         r":return:\s*\[([^\]]+)\]\s*(.*)",
         r"**返回值** (`\1`): \2",
         processed
     )
+    processed = re.sub(
+        r":return:\s*(\S+)\s+(.*)",
+        r"**返回值** (`\1`): \2",
+        processed
+    )
+    processed = re.sub(
+        r":return:\s*(.*)",
+        r"**返回值**: \1",
+        processed
+    )
     
     # 转换 :raises 格式
     processed = re.sub(
-        r":raises (\w+):\s*(.*)",
+        r":raises (\S+):\s*(.*)",
         r"**异常**: `\1` - \2",
         processed
     )
@@ -315,12 +361,12 @@ def generate_class_markdown(cls: Dict, base_heading_level: int = 3) -> str:
         content.append(f"{methods_heading_prefix} 方法列表\n\n")
         
         for method in cls["methods"]:
-            async_marker = "async " if method["is_async"] else ""
+            # signature 已包含 async 前缀，无需重复添加
             processed_doc = process_docstring_for_markdown(method["doc"])
             
             method_heading_level = methods_heading_level + 1
             method_heading_prefix = "#" * method_heading_level
-            content.append(f"""{method_heading_prefix} `{async_marker}{method['signature']}`
+            content.append(f"""{method_heading_prefix} `{method['signature']}`
 
 {processed_doc}
 
@@ -366,10 +412,10 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
     if functions:
         content.append("## 函数列表\n\n")
         for func in functions:
-            async_marker = "async " if func["is_async"] else ""
+            # signature 已包含 async 前缀，无需重复添加
             processed_doc = process_docstring_for_markdown(func["doc"])
             
-            content.append(f"""### `{async_marker}{func['signature']}`
+            content.append(f"""### `{func['signature']}`
 
 {processed_doc}
 
