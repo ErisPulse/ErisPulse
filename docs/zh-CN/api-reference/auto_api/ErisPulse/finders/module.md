@@ -46,7 +46,7 @@ ErisPulse 模块发现器
 
 获取 entry-point 组名
 
-:return: "erispulse.module"
+**返回值**: "erispulse.module"
 
 ---
 
@@ -55,7 +55,7 @@ ErisPulse 模块发现器
 
 获取所有模块名称
 
-:return: 模块名称列表
+**返回值**: 模块名称列表
 
 ---
 
@@ -64,7 +64,7 @@ ErisPulse 模块发现器
 
 获取所有模块所属的 PyPI 包名
 
-:return: PyPI 包名列表
+**返回值** (`PyPI`): 包名列表
 
 ---
 
@@ -73,8 +73,7 @@ ErisPulse 模块发现器
 
 获取指定模块所属的 PyPI 包名
 
-:param module_name: 模块名称
-:return: PyPI 包名，未找到返回 None
+- **module_name** (`模块名称`): **返回值** (`PyPI`): 包名，未找到返回 None
 
 ---
 
@@ -83,16 +82,14 @@ ErisPulse 模块发现器
 
 获取模块的完整信息
 
-:param module_name: 模块名称
-:return: 模块信息字典，未找到返回 None
+- **module_name** (`模块名称`): **返回值** (`模块信息字典，未找到返回`): None
 
-:return:
-    Dict: {
-        "name": 模块名称,
-        "package": PyPI 包名,
-        "version": 版本号,
-        "entry_point": entry-point 对象
-    }
+**返回值**:
+- `Dict`: {
+- `"name"`: 模块名称,
+- `"package"`: PyPI 包名,
+- `"version"`: 版本号,
+- `"entry_point"`: entry-point 对象    }
 
 ---
 
@@ -101,8 +98,8 @@ ErisPulse 模块发现器
 
 获取指定 PyPI 包下的所有模块名称
 
-:param package_name: PyPI 包名
-:return: 模块名称列表
+- **package_name** (`PyPI`): 包名
+**返回值**: 模块名称列表
 
 ---
 

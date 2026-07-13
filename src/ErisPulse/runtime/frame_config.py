@@ -59,10 +59,10 @@ DEFAULT_ERISPULSE_CONFIG = {
             "must_at_bot": DEFAULT_COMMAND_MUST_AT_BOT,
         },
     },
-    # 管理员系统配置
+    # 框架主人系统配置
     # users 为 dict 时按平台指定: {"yunhu": ["123"], "telegram": ["456"]}
-    # users 为 list 时为全局管理员（所有平台生效）: ["123", "456"]
-    "admin": {
+    # users 为 list 时为全局主人（所有平台生效）: ["123", "456"]
+    "master": {
         "users": {},
     },
     "framework": {
@@ -253,13 +253,13 @@ def get_i18n_config() -> Dict[str, Any]:
     return get_config("i18n")
 
 
-def get_admin_config() -> Dict[str, Any]:
+def get_master_config() -> Dict[str, Any]:
     """
-    获取管理员系统配置
+    获取框架主人系统配置
 
-    :return: 管理员配置字典
+    :return: 框架主人配置字典
     """
-    return get_config("admin")
+    return get_config("master")
 
 
 __all__ = [
@@ -273,5 +273,5 @@ __all__ = [
     "get_event_config",
     "get_framework_config",
     "get_i18n_config",
-    "get_admin_config",
+    "get_master_config",
 ]

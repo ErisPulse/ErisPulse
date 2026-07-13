@@ -33,8 +33,8 @@ ErisPulse 模块系统
 
 设置 SDK 引用
 
-:param sdk: SDK 实例
-:return: 是否设置成功
+- **sdk** (`SDK`): 实例
+**返回值**: 是否设置成功
 
 ---
 
@@ -43,12 +43,8 @@ ErisPulse 模块系统
 
 注册模块类
 
-:param module_name: 模块名称
-:param module_class: 模块类
-:param module_info: 模块信息
-:return: 是否注册成功
-
-**异常**: `TypeError` - 当模块类无效时抛出
+- **module_name** (`模块名称`): - **module_class**: 模块类
+- **module_info** (`模块信息`): **返回值** (`是否注册成功`): **异常**: `TypeError` - 当模块类无效时抛出
 
 **示例**:
 ```python
@@ -58,13 +54,11 @@ ErisPulse 模块系统
 ---
 
 
-##### `async async load(module_name: str)`
+##### `async load(module_name: str)`
 
 加载指定模块（标准化加载逻辑）
 
-:param module_name: 模块名称
-:return: 是否加载成功
-
+- **module_name** (`模块名称`): **返回值** (`是否加载成功`): 
 **示例**:
 ```python
 >>> await module.load("MyModule")
@@ -73,13 +67,11 @@ ErisPulse 模块系统
 ---
 
 
-##### `async async unload(module_name: str | None = None)`
+##### `async unload(module_name: str | None = None)`
 
 卸载指定模块或所有模块
 
-:param module_name: 模块名称，None表示卸载所有模块（默认None）
-:return: 是否卸载成功
-
+- **module_name** (`模块名称，None表示卸载所有模块（默认None）`): **返回值** (`是否卸载成功`): 
 **示例**:
 ```python
 >>> await module.unload("MyModule")  # 卸载单个模块
@@ -89,13 +81,12 @@ ErisPulse 模块系统
 ---
 
 
-##### `async async _unload_single_module(module_name: str)`
+##### `async _unload_single_module(module_name: str)`
 
-> **内部方法** 
+> **内部方法**
 卸载单个模块
 
-:param module_name: 模块名称
-:return: 是否卸载成功
+- **module_name** (`模块名称`): **返回值**: 是否卸载成功
 
 ---
 
@@ -104,9 +95,7 @@ ErisPulse 模块系统
 
 获取模块实例
 
-:param module_name: 模块名称
-:return: 模块实例或None
-
+- **module_name** (`模块名称`): **返回值** (`模块实例或None`): 
 **示例**:
 ```python
 >>> my_module = module.get("MyModule")
@@ -119,8 +108,7 @@ ErisPulse 模块系统
 
 检查模块是否已注册
 
-:param module_name: 模块名称
-:return: 模块是否已注册（即 module.register() 已被调用）
+- **module_name** (`模块名称`): **返回值** (`模块是否已注册（即`): module.register() 已被调用）
 
 > **提示**
 > exists() 只检查模块类是否已注册到管理器，用于验证模块是否可以加载。
@@ -133,9 +121,7 @@ ErisPulse 模块系统
 
 检查模块是否已加载
 
-:param module_name: 模块名称
-:return: 模块是否已加载
-
+- **module_name** (`模块名称`): **返回值** (`模块是否已加载`): 
 **示例**:
 ```python
 >>> if module.is_loaded("MyModule"): ...
@@ -148,9 +134,7 @@ ErisPulse 模块系统
 
 检查模块是否正在运行（已加载）
 
-:param module_name: 模块名称
-:return: 模块是否正在运行
-
+- **module_name** (`模块名称`): **返回值** (`模块是否正在运行`): 
 **示例**:
 ```python
 >>> if module.is_running("MyModule"):
@@ -164,8 +148,7 @@ ErisPulse 模块系统
 
 列出所有正在运行的模块（已加载）
 
-:return: 模块名称列表
-
+**返回值** (`模块名称列表`): 
 **示例**:
 ```python
 >>> running = module.list_running()
@@ -179,8 +162,7 @@ ErisPulse 模块系统
 
 列出所有已注册的模块
 
-:return: 模块名称列表
-
+**返回值** (`模块名称列表`): 
 **示例**:
 ```python
 >>> registered = module.list_registered()
@@ -193,8 +175,7 @@ ErisPulse 模块系统
 
 列出所有已加载的模块
 
-:return: 模块名称列表
-
+**返回值** (`模块名称列表`): 
 **示例**:
 ```python
 >>> loaded = module.list_loaded()
@@ -207,12 +188,11 @@ ErisPulse 模块系统
 
 注册新模块信息
 
-> **内部方法** 
+> **内部方法**
 此方法仅供内部使用
 
-:param module_name: 模块名称
-:param enabled: 是否启用模块 (默认: True，新模块默认启用)
-:return: 操作是否成功
+- **module_name** (`模块名称`): - **enabled**: 是否启用模块 (默认: True，新模块默认启用)
+**返回值**: 操作是否成功
 
 ---
 
@@ -221,10 +201,7 @@ ErisPulse 模块系统
 
 检查模块是否启用
 
-:param module_name: 模块名称
-:return: 模块是否启用
-
-> **提示**
+- **module_name** (`模块名称`): **返回值** (`模块是否启用`): > **提示**
 > 模块启用条件：
 > 1. 模块在配置文件中（ErisPulse.modules.status.{module_name} 存在）
 > 2. 配置值为启用状态
@@ -257,10 +234,7 @@ ErisPulse 模块系统
 
 取消注册模块
 
-:param module_name: 模块名称
-:return: 是否取消成功
-
-> **内部方法** 
+- **module_name** (`模块名称`): **返回值** (`是否取消成功`): > **内部方法**
 注意：此方法仅取消注册，不卸载已加载的模块
 
 ---
@@ -270,7 +244,7 @@ ErisPulse 模块系统
 
 清除所有模块实例和类
 
-> **内部方法** 
+> **内部方法**
 此方法用于反初始化时完全重置模块管理器状态
 
 ---
@@ -291,9 +265,7 @@ ErisPulse 模块系统
 
 获取模块信息
 
-:param module_name: 模块名称
-:return: 模块信息字典，不存在则返回None
-
+- **module_name** (`模块名称`): **返回值** (`模块信息字典，不存在则返回None`): 
 **示例**:
 ```python
 >>> info = module.get_info("MyModule")
@@ -309,8 +281,7 @@ ErisPulse 模块系统
 便于WebUI展示所有模块的注册、加载和启用状态，
 包含已禁用模块以便于管理。
 
-:return: 状态摘要字典
-
+**返回值** (`状态摘要字典`): 
 **示例**:
 ```python
 >>> summary = module.get_status_summary()

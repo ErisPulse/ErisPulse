@@ -35,8 +35,8 @@ description 可以是:
   - 普通字符串: "账户备注名称"
   - i18n 字典:   {"i18n": "module.field.desc", "default": "账户备注名称"}
 
-:param meta: field.metadata 字典
-:return: 人类可读的描述字符串
+- **meta** (`field.metadata`): 字典
+**返回值**: 人类可读的描述字符串
 
 ---
 
@@ -48,8 +48,8 @@ description 可以是:
 - 普通字符串原样返回（WebUI 直接展示）
 - i18n 字典原样返回（WebUI 根据 language 查找翻译）
 
-:param meta: field.metadata 字典
-:return: 字符串或 i18n 描述字典
+- **meta** (`field.metadata`): 字典
+**返回值** (`字符串或`): i18n 描述字典
 
 ---
 
@@ -60,8 +60,8 @@ description 可以是:
 
 优先级: "ui"（新） > "webui"（旧，保留兼容）
 
-:param meta: field.metadata 字典
-:return: UI 元数据字典
+- **meta** (`field.metadata`): 字典
+**返回值** (`UI`): 元数据字典
 
 ---
 
@@ -112,8 +112,8 @@ description 可以是:
 
 从 dataclass 类生成默认值字典
 
-:param config_class: dataclass 类
-:return: 默认值字典
+- **config_class** (`dataclass`): 类
+**返回值**: 默认值字典
 
 ---
 
@@ -125,9 +125,8 @@ description 可以是:
 用于首次写入配置文件时生成可读的配置模板。
 description 若为 i18n 字典，则使用其 default/fallback 文本。
 
-:param config_class: dataclass 类
-:param existing_values: 已有的配置值（覆盖默认值）
-:return: TOML 文本字符串
+- **config_class** (`dataclass`): 类
+- **existing_values** (`已有的配置值（覆盖默认值）`): **返回值** (`TOML`): 文本字符串
 
 ---
 
@@ -140,9 +139,9 @@ description 若为 i18n 字典，则使用其 default/fallback 文本。
 - 忽略 dataclass 中不存在的字段
 - 使用 default/default_factory 填充缺失字段
 
-:param config_class: dataclass 类
-:param data: 字典数据（通常来自 TOML 解析）
-:return: dataclass 实例
+- **config_class** (`dataclass`): 类
+- **data** (`字典数据（通常来自`): TOML 解析）
+**返回值** (`dataclass`): 实例
 
 ---
 
@@ -155,8 +154,8 @@ description 若为 i18n 字典，则使用其 default/fallback 文本。
 - 返回错误信息列表（空列表表示通过）
 - description 若为 i18n 字典，错误信息使用其 fallback/default 文本
 
-:param instance: dataclass 实例
-:return: 错误信息列表
+- **instance** (`dataclass`): 实例
+**返回值**: 错误信息列表
 
 ---
 
@@ -168,8 +167,8 @@ description 若为 i18n 字典，则使用其 default/fallback 文本。
 包含字段名、类型、描述（支持 i18n）、控件类型、分组、排序等。
 description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻译。
 
-:param config_class: dataclass 类
-:return: schema 字典
+- **config_class** (`dataclass`): 类
+**返回值** (`schema`): 字典
 
 ---
 
@@ -203,11 +202,11 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
         "my_adapter.bot_token": "Bot Token",
     })
 
-:param config_class: dataclass 配置类
-:param lang: 语言代码（如 "zh-CN", "en"）
-:param translations: 手动提供的翻译字典，None 则自动提取
-:param domain: i18n 域标识，默认 "config"
-:return: 注册的翻译条目数
+- **config_class** (`dataclass`): 配置类
+- **lang** (`语言代码（如`): "zh-CN", "en"）
+- **translations** (`手动提供的翻译字典，None`): 则自动提取
+- **domain** (`i18n`): 域标识，默认 "config"
+**返回值**: 注册的翻译条目数
 
 ---
 
@@ -218,9 +217,9 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
 
 接受纯字符串（原样返回）或 i18n 字典（解析为当前语言文本）。
 
-:param value: 原始值（str 或 {"i18n": ..., "default": ...}）
-:param i18n_mgr: I18nManager 实例
-:return: 解析后的字符串
+- **value** (`原始值（str`): 或 {"i18n": ..., "default": ...}）
+- **i18n_mgr** (`I18nManager`): 实例
+**返回值**: 解析后的字符串
 
 ---
 
@@ -242,9 +241,9 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
 
 纯字符串值会被原样透传（向后兼容）。
 
-:param config_class: dataclass 配置类
-:param resolve_i18n: 是否将 i18n 文本解析为当前语言
-:return: schema 字典
+- **config_class** (`dataclass`): 配置类
+- **resolve_i18n** (`是否将`): i18n 文本解析为当前语言
+**返回值** (`schema`): 字典
 
 ---
 

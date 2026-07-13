@@ -22,8 +22,8 @@ ErisPulse 适配器基础模块
 
 判断 SendDSL 实例是否附加了发送规则
 
-:param send_dsl: SendDSL 实例
-:return: 是否存在任意已设置的规则
+- **send_dsl** (`SendDSL`): 实例
+**返回值**: 是否存在任意已设置的规则
 
 ---
 
@@ -36,8 +36,7 @@ ErisPulse 适配器基础模块
 标量值（retry/timeout/defer 等）浅拷贝即可，
 仅 hooks 列表需要创建新列表。
 
-:param rules: 原始规则字典
-:return: 独立的规则字典副本
+- **rules** (`原始规则字典`): **返回值**: 独立的规则字典副本
 
 ---
 
@@ -46,8 +45,7 @@ ErisPulse 适配器基础模块
 
 将任意返回值包装为 Task（用于重试路径的兼容处理）
 
-:param result: 原始方法返回值
-:return: asyncio.Task
+- **result** (`原始方法返回值`): **返回值**: asyncio.Task
 
 ---
 
@@ -90,11 +88,9 @@ ErisPulse 适配器基础模块
 
 初始化DSL发送器
 
-:param adapter: 所属适配器实例
-:param target_type: 目标类型(可选)
-:param target_id: 目标ID(可选)
-:param account_id: 发送账号(可选)
-:param rules: 已附加的发送规则字典(可选，用于 To/Using/Account 传播)
+- **adapter** (`所属适配器实例`): - **target_type**: 目标类型(可选)
+- **target_id** (`目标ID(可选)`): - **account_id**: 发送账号(可选)
+- **rules** (`已附加的发送规则字典(可选，用于`): To/Using/Account 传播)
 
 ---
 
@@ -106,9 +102,7 @@ ErisPulse 适配器基础模块
 1. 如果找到匹配的方法（忽略大小写），返回该方法
 2. 如果没找到，打印警告并抛出 AttributeError
 
-:param name: 属性名
-:return: 匹配的方法或属性
-**异常**: `AttributeError` - 当属性不存在时抛出
+- **name** (`属性名`): **返回值** (`匹配的方法或属性`): **异常**: `AttributeError` - 当属性不存在时抛出
 
 ---
 
@@ -117,9 +111,7 @@ ErisPulse 适配器基础模块
 
 @指定用户（可链式多次调用）
 
-:param user_id: 要@的用户ID
-:return: SendDSL实例自身，支持链式调用
-
+- **user_id** (`要@的用户ID`): **返回值** (`SendDSL实例自身，支持链式调用`): 
 **示例**:
 ```python
 >>> await adapter.Send.To("group", "123").At("456").Text("Hello")
@@ -133,8 +125,7 @@ ErisPulse 适配器基础模块
 
 @全体成员
 
-:return: SendDSL实例自身，支持链式调用
-
+**返回值** (`SendDSL实例自身，支持链式调用`): 
 **示例**:
 ```python
 >>> await adapter.Send.To("group", "123").AtAll().Text("公告")
@@ -147,9 +138,7 @@ ErisPulse 适配器基础模块
 
 回复指定消息
 
-:param message_id: 要回复的消息ID
-:return: SendDSL实例自身，支持链式调用
-
+- **message_id** (`要回复的消息ID`): **返回值** (`SendDSL实例自身，支持链式调用`): 
 **示例**:
 ```python
 >>> await adapter.Send.To("group", "123").Reply("msg_456").Text("回复内容")
@@ -167,9 +156,8 @@ ErisPulse 适配器基础模块
 2. mention (@用户，按调用顺序)
 3. reply (回复)
 
-:param message: OneBot12 消息段（dict 或 list[dict]）
-:return: 合并后的消息段列表
-
+- **message** (`OneBot12`): 消息段（dict 或 list[dict]）
+**返回值** (`合并后的消息段列表`): 
 **示例**:
 ```python
 >>> segments = self._apply_modifiers([
@@ -184,7 +172,7 @@ ErisPulse 适配器基础模块
 
 获取当前发送上下文（目标信息 + 发送账号）
 
-:return: 包含 target_type, target_id, account_id 的字典
+**返回值** (`包含`): target_type, target_id, account_id 的字典
 
 **示例**:
 ```python
@@ -205,9 +193,8 @@ ErisPulse 适配器基础模块
 
 发送 OneBot12 格式消息段（必须由适配器子类重写）
 
-:param message: OneBot12 消息段列表或单个消息段
-:param kwargs: 其他参数
-:return: asyncio.Task
+- **message** (`OneBot12`): 消息段列表或单个消息段
+- **kwargs** (`其他参数`): **返回值**: asyncio.Task
 
 ---
 
@@ -220,10 +207,8 @@ ErisPulse 适配器基础模块
 - 当 target_type 为 "private" 时，自动转换为 "user"
 - 当只提供 target_id（字符串或数字）时，默认推断为 "user"
 
-:param target_type: 目标类型(可选)
-:param target_id: 目标ID(可选)
-:return: SendDSL实例
-
+- **target_type** (`目标类型(可选)`): - **target_id**: 目标ID(可选)
+**返回值** (`SendDSL实例`): 
 **示例**:
 ```python
 >>> # 标准用法
@@ -241,9 +226,7 @@ ErisPulse 适配器基础模块
 
 设置发送账号
 
-:param _account_id: 发送账号
-:return: SendDSL实例
-
+- **_account_id** (`发送账号`): **返回值** (`SendDSL实例`): 
 **示例**:
 ```python
 >>> adapter.Send.Using("bot1").To("123").Text("Hello")
@@ -257,9 +240,7 @@ ErisPulse 适配器基础模块
 
 设置发送账号
 
-:param _account_id: 发送账号
-:return: SendDSL实例
-
+- **_account_id** (`发送账号`): **返回值** (`SendDSL实例`): 
 **示例**:
 ```python
 >>> adapter.Send.Account("bot1").To("123").Text("Hello")
@@ -276,9 +257,8 @@ ErisPulse 适配器基础模块
 仅当发送最终成功（包括重试成功）时执行，失败/超时/取消不触发。
 可链式多次调用以添加多个 Hook，按添加顺序依次执行。
 
-:param callback: 回调函数，签名为 ``callback(result)``，可为同步或协程函数
-:return: SendDSL实例自身，支持链式调用
-
+- **callback** (`回调函数，签名为`): ``callback(result)``，可为同步或协程函数
+**返回值** (`SendDSL实例自身，支持链式调用`): 
 **示例**:
 ```python
 >>> await adapter.Send.To("user", "123").Hook(
@@ -302,9 +282,8 @@ ErisPulse 适配器基础模块
 - 发送超时（配合 :meth:`Timeout` 使用）
 - 发送返回 ``status == "failed"`` 的响应
 
-:param times: 重试次数（不含首次发送），默认 1
-:return: SendDSL实例自身，支持链式调用
-
+- **times** (`重试次数（不含首次发送），默认`): 1
+**返回值** (`SendDSL实例自身，支持链式调用`): 
 **示例**:
 ```python
 >>> # 首次失败后重试2次，共3次尝试
@@ -320,9 +299,7 @@ ErisPulse 适配器基础模块
 
 超时后取消当前尝试。若同时设置了 :meth:`Retry`，超时也会触发重试。
 
-:param seconds: 超时秒数
-:return: SendDSL实例自身，支持链式调用
-
+- **seconds** (`超时秒数`): **返回值** (`SendDSL实例自身，支持链式调用`): 
 **示例**:
 ```python
 >>> await adapter.Send.To("user", "123").Timeout(10).Text("带超时")
@@ -338,9 +315,8 @@ ErisPulse 适配器基础模块
 在实际发起发送前等待 ``seconds`` 秒。用于延迟提醒、定时消息等场景。
 注意：此延迟为进程内定时，重启进程会丢失，不提供持久化。
 
-:param seconds: 延迟秒数，默认 1.0
-:return: SendDSL实例自身，支持链式调用
-
+- **seconds** (`延迟秒数，默认`): 1.0
+**返回值** (`SendDSL实例自身，支持链式调用`): 
 **示例**:
 ```python
 >>> # 5秒后发送
@@ -361,10 +337,9 @@ ErisPulse 适配器基础模块
 超过阈值（默认 64，可通过 :meth:`PriorityThreshold` 调整），
 直接放弃本次发送（返回 ``stage="dropped"``），避免队列堆积。
 
-:param level: 优先级数值，越大越优先（默认 0）
-:param drop_if_busy: 是否在队列积压时丢弃本消息（默认 False）
-:return: SendDSL实例自身，支持链式调用
-
+- **level** (`优先级数值，越大越优先（默认`): 0）
+- **drop_if_busy** (`是否在队列积压时丢弃本消息（默认`): False）
+**返回值** (`SendDSL实例自身，支持链式调用`): 
 **示例**:
 ```python
 >>> # 低优先级消息，积压时自动丢弃
@@ -382,8 +357,7 @@ ErisPulse 适配器基础模块
 
 配合 :meth:`Priority` 的 ``drop_if_busy=True`` 使用。
 
-:param threshold: 在途发送任务数阈值，超过则丢弃新消息
-:return: SendDSL实例自身，支持链式调用
+- **threshold** (`在途发送任务数阈值，超过则丢弃新消息`): **返回值**: SendDSL实例自身，支持链式调用
 
 ---
 
@@ -395,10 +369,9 @@ ErisPulse 适配器基础模块
 在发送的各个阶段（pending/sending/retrying/success/failed/timeout/cancelled/dropped）
 调用，传入实时更新的 :class:`SendContext`。可据此实现监控、日志、介入决策。
 
-:param callback: 回调函数，签名为 ``callback(ctx: SendContext)``，
+- **callback** (`回调函数，签名为`): ``callback(ctx: SendContext)``，
     可为同步或协程函数
-:return: SendDSL实例自身，支持链式调用
-
+**返回值** (`SendDSL实例自身，支持链式调用`): 
 **示例**:
 ```python
 >>> def on_progress(ctx):
@@ -423,10 +396,9 @@ ErisPulse 适配器基础模块
 与 :meth:`OnProgress` 的区别：OnProgress 在每个阶段都触发，
 OnError 仅在最终失败时触发一次。
 
-:param callback: 回调函数，签名为 ``callback(ctx: SendContext)``，
+- **callback** (`回调函数，签名为`): ``callback(ctx: SendContext)``，
     可为同步或协程函数
-:return: SendDSL实例自身，支持链式调用
-
+**返回值** (`SendDSL实例自身，支持链式调用`): 
 **示例**:
 ```python
 >>> async def on_error(ctx):
@@ -447,7 +419,7 @@ OnError 仅在最终失败时触发一次。
 
 进入 Build 之前的 At/AtAll/Reply 修饰器和已设置的规则会继承到整批。
 
-:return: :class:`SendBuilder` 实例
+**返回值** (`:class:`SendBuilder``): 实例
 
 **示例**:
 ```python
@@ -495,9 +467,8 @@ OnError 仅在最终失败时触发一次。
 
 初始化请求操作 DSL
 
-:param adapter: 所属适配器实例
-:param request_id: 请求ID
-:param account_id: 执行操作的 Bot 账号
+- **adapter** (`所属适配器实例`): - **request_id**: 请求ID
+- **account_id** (`执行操作的`): Bot 账号
 
 ---
 
@@ -508,8 +479,7 @@ OnError 仅在最终失败时触发一次。
 
 使得 ``adapter.Request("req_id")`` 可以直接调用
 
-:param request_id: 请求ID
-:return: 新的 RequestDSL 实例
+- **request_id** (`请求ID`): **返回值** (`新的`): RequestDSL 实例
 
 ---
 
@@ -518,8 +488,7 @@ OnError 仅在最终失败时触发一次。
 
 指定执行操作的 Bot 账号
 
-:param account_id: 账号标识
-:return: 新的 RequestDSL 实例
+- **account_id** (`账号标识`): **返回值** (`新的`): RequestDSL 实例
 
 **示例**:
 ```python
@@ -533,8 +502,8 @@ OnError 仅在最终失败时触发一次。
 
 同意请求
 
-:param kwargs: 平台扩展参数（如 comment 备注）
-:return: asyncio.Task，await 后返回标准响应格式
+- **kwargs** (`平台扩展参数（如`): comment 备注）
+**返回值** (`asyncio.Task，await`): 后返回标准响应格式
 
 **示例**:
 ```python
@@ -549,8 +518,8 @@ OnError 仅在最终失败时触发一次。
 
 拒绝请求
 
-:param kwargs: 平台扩展参数（如 comment 拒绝理由）
-:return: asyncio.Task，await 后返回标准响应格式
+- **kwargs** (`平台扩展参数（如`): comment 拒绝理由）
+**返回值** (`asyncio.Task，await`): 后返回标准响应格式
 
 **示例**:
 ```python
@@ -561,22 +530,20 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
-##### `async async _do_accept()`
+##### `async _do_accept()`
 
 同意请求的具体实现（适配器子类重写）
 
-:param kwargs: 平台扩展参数
-:return: 标准响应格式
+- **kwargs** (`平台扩展参数`): **返回值**: 标准响应格式
 
 ---
 
 
-##### `async async _do_reject()`
+##### `async _do_reject()`
 
 拒绝请求的具体实现（适配器子类重写）
 
-:param kwargs: 平台扩展参数
-:return: 标准响应格式
+- **kwargs** (`平台扩展参数`): **返回值**: 标准响应格式
 
 ---
 
@@ -585,8 +552,7 @@ OnError 仅在最终失败时触发一次。
 
 生成「未实现」的标准错误响应
 
-:param action: 操作名称（accept/reject）
-:return: 标准错误响应字典
+- **action** (`操作名称（accept/reject）`): **返回值**: 标准错误响应字典
 
 ---
 
@@ -602,7 +568,7 @@ OnError 仅在最终失败时触发一次。
 
 获取当前请求操作上下文
 
-:return: 包含 request_id, account_id 的字典
+**返回值** (`包含`): request_id, account_id 的字典
 
 ---
 
@@ -658,9 +624,7 @@ OnError 仅在最终失败时触发一次。
 
 示例消息发送方法
 
-:param text: 文本内容
-:return: 异步任务
-
+- **text** (`文本内容`): **返回值** (`异步任务`): 
 **示例**:
 ```python
 >>> await adapter.Send.To("123").Example("Hello")
@@ -680,13 +644,12 @@ OnError 仅在最终失败时触发一次。
 - self._apply_modifiers(message) - 合并 At/AtAll/Reply 修饰器到消息段
 - self.send_context - 获取发送上下文 (target_type, target_id, account_id)
 
-:param message: OneBot12 格式的消息段数组或单个消息段
+- **message** (`OneBot12`): 格式的消息段数组或单个消息段
     [
         {"type": "text", "data": {"text": "Hello"}},
         {"type": "image", "data": {"file": "https://..."}},
     ]
-:param kwargs: 其他参数
-:return: asyncio.Task，await 后返回标准响应格式
+- **kwargs** (`其他参数`): **返回值** (`asyncio.Task，await`): 后返回标准响应格式
 
 **示例**:
 ```python
@@ -717,43 +680,41 @@ OnError 仅在最终失败时触发一次。
 
 ##### `_load_accounts()`
 
-> **内部方法** 
+> **内部方法**
 加载账户配置（可被子类覆写）
 
 子类可覆写此方法实现自定义账户加载逻辑（如全局配置合并、旧格式迁移等）。
 返回 None 时使用默认配置存储读取逻辑。
 
-:return: 账户配置字典，或 None 表示使用默认逻辑
+**返回值** (`账户配置字典，或`): None 表示使用默认逻辑
 
 ---
 
 
 ##### `_load_config()`
 
-> **内部方法** 
+> **内部方法**
 加载适配器配置（可被子类覆写）
 
 子类可覆写此方法实现自定义配置加载逻辑（如旧格式迁移等）。
 返回 None 时使用默认配置存储读取逻辑。
 
-:return: 配置实例，或 None 表示使用默认逻辑
+**返回值** (`配置实例，或`): None 表示使用默认逻辑
 
 ---
 
 
-##### `async async call_api(endpoint: str)`
+##### `async call_api(endpoint: str)`
 
 调用平台API的抽象方法
 
-:param endpoint: API端点
-:param params: API参数
-:return: API调用结果
-**异常**: `NotImplementedError` - 必须由子类实现
+- **endpoint** (`API端点`): - **params**: API参数
+**返回值** (`API调用结果`): **异常**: `NotImplementedError` - 必须由子类实现
 
 ---
 
 
-##### `async async start()`
+##### `async start()`
 
 启动适配器的抽象方法
 
@@ -762,7 +723,7 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
-##### `async async shutdown()`
+##### `async shutdown()`
 
 关闭适配器的抽象方法
 
@@ -778,7 +739,7 @@ OnError 仅在最终失败时触发一次。
 每次访问都从配置存储读取最新值，确保用户修改配置后立即生效。
 返回的 dataclass 实例是只读快照，修改它不会回写存储。
 
-:return: AdapterConfig / BaseConfig 实例
+**返回值** (`AdapterConfig`): / BaseConfig 实例
 **异常**: `AttributeError` - 未声明 ConfigClass 时抛出
 
 > **提示**
@@ -810,7 +771,7 @@ OnError 仅在最终失败时触发一次。
 
 每次访问都从配置存储读取最新值，确保用户修改账户配置后立即生效。
 
-:return: 账户配置字典 {name: config_instance}
+**返回值** (`账户配置字典`): {name: config_instance}
 **异常**: `AttributeError` - 未声明 AccountConfigClass 时抛出
 
 ---
@@ -827,7 +788,7 @@ OnError 仅在最终失败时触发一次。
 
 仅返回 enabled=True 的账户
 
-:return: 启用的账户配置字典
+**返回值**: 启用的账户配置字典
 
 ---
 
@@ -836,7 +797,7 @@ OnError 仅在最终失败时触发一次。
 
 获取平台名称
 
-:return: 平台名称字符串
+**返回值**: 平台名称字符串
 
 ---
 
@@ -845,7 +806,7 @@ OnError 仅在最终失败时触发一次。
 
 配置键名（默认用类名，可被子类覆写）
 
-:return: 配置键名字符串
+**返回值**: 配置键名字符串
 
 ---
 
@@ -886,20 +847,20 @@ OnError 仅在最终失败时触发一次。
 
 匹配字段优先级：账户名 > dataclass 中名为 bot_id 的字段 > 任意 str 类型字段
 
-:param account_id: 账户标识（账户名、bot_id 等）
-:return: (账户名, 账户配置实例) 元组
+- **account_id** (`账户标识（账户名、bot_id`): 等）
+**返回值** (`(账户名,`): 账户配置实例) 元组
 **异常**: `ValueError` - 未找到可用账户时抛出
 
 ---
 
 
-##### `async async emit_meta(detail_type: str, bot_id: str)`
+##### `async emit_meta(detail_type: str, bot_id: str)`
 
 发送 meta 事件的便捷方法
 
-:param detail_type: "connect" | "disconnect" | "heartbeat"
-:param bot_id: Bot 用户 ID
-:param extra_info: 扩展字段（user_name, nickname, avatar 等）
+- **detail_type** (`"connect"`): | "disconnect" | "heartbeat"
+- **bot_id** (`Bot`): 用户 ID
+- **extra_info** (`扩展字段（user_name,`): nickname, avatar 等）
 
 ---
 
@@ -908,13 +869,11 @@ OnError 仅在最终失败时触发一次。
 
 构造标准化响应
 
-:param status: 状态码（"ok" | "failed"）
-:param retcode: 返回码
-:param data: 响应数据
-:param message_id: 消息 ID
-:param message: 响应消息
-:param raw: 原始平台响应
-:return: 标准响应字典
+- **status** (`状态码（"ok"`): | "failed"）
+- **retcode** (`返回码`): - **data**: 响应数据
+- **message_id** (`消息`): ID
+- **message** (`响应消息`): - **raw**: 原始平台响应
+**返回值**: 标准响应字典
 
 ---
 
@@ -923,10 +882,8 @@ OnError 仅在最终失败时触发一次。
 
 构造错误响应
 
-:param retcode: 错误码
-:param message: 错误消息
-:param raw: 原始平台响应
-:return: 标准错误响应字典
+- **retcode** (`错误码`): - **message**: 错误消息
+- **raw** (`原始平台响应`): **返回值**: 标准错误响应字典
 
 ---
 
@@ -937,8 +894,7 @@ OnError 仅在最终失败时触发一次。
 
 子类可覆写此方法以响应配置热更新。
 
-:param old_config: 变更前的配置实例
-:param new_config: 变更后的配置实例
+- **old_config** (`变更前的配置实例`): - **new_config**: 变更后的配置实例
 
 ---
 
@@ -947,12 +903,10 @@ OnError 仅在最终失败时触发一次。
 
 发送消息的便捷方法，返回一个 asyncio Task
 
-:param target_type: 目标类型
-:param target_id: 目标ID
-:param message: 消息内容
-:param kwargs: 其他参数
+- **target_type** (`目标类型`): - **target_id**: 目标ID
+- **message** (`消息内容`): - **kwargs**: 其他参数
     - method: 发送方法名(默认为"Text")
-:return: asyncio.Task 对象，用户可以自主决定是否等待
+**返回值** (`asyncio.Task`): 对象，用户可以自主决定是否等待
 
 **异常**: `AttributeError` - 当发送方法不存在时抛出
 

@@ -80,8 +80,8 @@ HTTP 状态码异常
 
 服务器返回了错误的状态码 (4xx/5xx)。
 
-:param status: int HTTP 状态码
-:param message: str 错误消息
+- **status** (`int`): HTTP 状态码
+- **message** (`str`): 错误消息
 
 **示例**:
 ```python
@@ -106,8 +106,8 @@ WebSocket 断开连接异常
 与 starlette.websockets.WebSocketDisconnect 完全兼容。
 客户端和服务端 WebSocket 均可使用此异常表示连接断开。
 
-:param code: int 关闭码 (默认: 1000)
-:param reason: str | None 关闭原因 (可选)
+- **code** (`int`): 关闭码 (默认: 1000)
+- **reason** (`str`): | None 关闭原因 (可选)
 
 **示例**:
 ```python

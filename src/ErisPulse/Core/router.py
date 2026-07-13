@@ -17,7 +17,6 @@ import functools
 import importlib.metadata
 import inspect
 import ipaddress
-import os
 import socket
 import sys
 import time
@@ -31,7 +30,6 @@ from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
 from starlette.routing import WebSocketRoute
-from starlette.staticfiles import StaticFiles
 
 from ..runtime.context import current_owner
 from .Bases.errors import WebSocketDisconnect as _EPWebSocketDisconnect
@@ -294,6 +292,7 @@ class RouterManager:
         self._rate_limit_store: dict[str, list[float]] = {}
         self._rate_limit_cleanup_task: asyncio.Task | None = None
         self._middleware_installed = False
+        self._home_entries: list[dict] = []
         self._setup_core_routes()
         self._setup_error_pages()
 
@@ -718,182 +717,52 @@ class RouterManager:
             except Exception:
                 pass
 
-            dashboard_html = ""
-            if dashboard_available:
-                dashboard_html = """
-      <a class="card dash-link" href="/Dashboard">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
-          <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
-        </svg>
-        <span>Dashboard</span>
-      </a>"""
+            from .assets import render_root_page
 
-            html = f"""<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ErisPulse</title>
-<style>
-  * {{ margin:0;padding:0;box-sizing:border-box }}
-  html {{ -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale }}
-  :root {{
-    --bg:#0E1520;--bg-card:#151C28;--tx:#E2E8F0;--tx2:#A0B0C0;--tx3:#5A6C7D;
-    --bd:rgba(40,53,69,.6);--accent:#7DBFE0;--accent2:rgba(125,191,224,.08)
-  }}
-  @media (prefers-color-scheme:light) {{
-    :root {{
-      --bg:#F4F7FB;--bg-card:#FFFFFF;--tx:#2C3E50;--tx2:#5A6C7D;--tx3:#A0B0C0;
-      --bd:#DDE3EC;--accent:#7EB8D8;--accent2:rgba(126,184,216,.05)
-    }}
-  }}
-  body {{
-    font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','PingFang SC','Microsoft YaHei',sans-serif;
-    background:var(--bg);color:var(--tx);
-    min-height:100vh;min-height:100dvh;
-    display:flex;align-items:center;justify-content:center;
-    padding:2rem;position:relative;overflow:hidden
-  }}
-  body::before {{
-    content:'';position:absolute;inset:0;
-    background:radial-gradient(ellipse 75% 55% at 50% 38%,var(--accent2) 0%,transparent 70%);
-    pointer-events:none
-  }}
-  .hero {{ display:flex;flex-direction:column;align-items:center;position:relative;z-index:1 }}
-  .mascot-wrap {{ position:relative;margin-bottom:2rem;animation:pop .6s cubic-bezier(.34,1.56,.64,1) both }}
-  @keyframes pop {{ from{{opacity:0;transform:scale(.85)}} to{{opacity:1;transform:scale(1)}} }}
-  .mascot {{ width:280px;height:280px;object-fit:contain;border-radius:36px }}
-  .content {{ text-align:center;animation:fadeUp .6s .1s cubic-bezier(.23,1,.32,1) both }}
-  @keyframes fadeUp {{ from{{opacity:0;transform:translateY(12px)}} to{{opacity:1;transform:translateY(0)}} }}
-  h1 {{ font-size:2rem;font-weight:600;letter-spacing:-.015em;color:var(--tx);margin-bottom:.15rem }}
-  .ver {{ font-size:.68rem;font-weight:500;color:var(--tx3);letter-spacing:.06em;margin-bottom:1.2rem }}
-  p.sub {{ font-size:.9rem;font-weight:400;color:var(--tx2);margin-bottom:1.8rem }}
-  .card {{
-    display:inline-flex;align-items:center;gap:.55rem;
-    padding:.55rem 1.2rem;
-    background:var(--bg-card);border:1px solid var(--bd);border-radius:50px;
-    text-decoration:none;color:var(--accent);font-size:.8rem;font-weight:500;
-    transition:all .25s cubic-bezier(.25,.1,.25,1)
-  }}
-  .card:hover {{ border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 14px rgba(125,191,224,.12) }}
-  .card:active {{ transform:scale(.97) }}
-  .endpoints {{
-    margin-top:2.2rem;font-size:.66rem;font-weight:400;color:var(--tx3);letter-spacing:.04em;
-    display:flex;gap:.5rem;justify-content:center
-  }}
-  .endpoints a {{ color:var(--tx3);text-decoration:none;transition:color .2s }}
-  .endpoints a:hover {{ color:var(--tx2) }}
-  .links {{ margin-top:.4rem;display:flex;gap:.9rem;justify-content:center;flex-wrap:wrap }}
-  .links a {{ font-size:.66rem;font-weight:400;color:var(--tx3);text-decoration:none;transition:color .2s }}
-  .links a:hover {{ color:var(--accent) }}
-  .deco {{ position:absolute;border-radius:50%;pointer-events:none;z-index:0 }}
-  .deco-1 {{ width:100px;height:100px;background:rgba(126,184,216,.06);top:10%;right:12% }}
-  .deco-2 {{ width:70px;height:70px;background:rgba(126,184,216,.05);bottom:15%;left:10% }}
-</style>
-</head>
-<body>
-  <div class="deco deco-1"></div><div class="deco deco-2"></div>
-  <div class="hero">
-    <div class="mascot-wrap">
-      <img class="mascot" src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/mascot-hero.png" alt="ErisPulse" onerror="this.style.display='none'" />
-    </div>
-    <div class="content">
-      <h1>ErisPulse</h1>
-      <p class="ver">v{ERISPULSE_VERSION}</p>
-      <p class="sub">{i18n.t("core.router.root_page_text")}</p>
-      {dashboard_html}
-      <div class="endpoints"><a href="/health">Health</a> &middot; <a href="/ping">Ping</a></div>
-      <div class="links">
-        <a href="https://github.com/ErisPulse/ErisPulse" target="_blank">GitHub</a>
-        <a href="https://www.erisdev.com" target="_blank">{i18n.t("core.router.link_docs")}</a>
-        <a href="https://pypi.org/project/ErisPulse/" target="_blank">PyPI</a>
-        <a href="https://github.com/ErisPulse/ErisPulse/discussions" target="_blank">{i18n.t("core.router.link_community")}</a>
-      </div>
-    </div>
-  </div>
-</body>
-</html>"""
+            entries: list[dict] = []
+            for entry in self._home_entries:
+                name = entry["name"]
+                if isinstance(name, dict) and "i18n" in name:
+                    name = i18n.t(name["i18n"], default=name.get("default", ""))
+                entries.append({
+                    "name": name,
+                    "url": entry["url"],
+                    "icon_svg": entry.get("icon_svg", ""),
+                })
+            if dashboard_available:
+                entries.insert(0, {
+                    "name": "Dashboard",
+                    "url": "/Dashboard",
+                    "icon_svg": '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>'
+                })
+
+            html = render_root_page(
+                version=ERISPULSE_VERSION,
+                sub_text=i18n.t("core.router.root_page_text"),
+                docs_link=i18n.t("core.router.link_docs"),
+                community_link=i18n.t("core.router.link_community"),
+                entries=entries or None,
+            )
             return HTMLResponse(content=html)
 
     def _setup_error_pages(self) -> None:
         """
-        设置错误页面和静态资源
+        设置错误页面
 
         {!--< internal-use >!--}
-        注册 web_status/ 包目录的静态文件服务（/status-assets），
-        并为 GET 请求添加 ErisPulse 主题化错误页面。
+        为 GET 请求添加 ErisPulse 主题化错误页面。
         POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
         {!--< /internal-use >!--}
         """
-        from ..web_status import PACKAGE_DIR as _ws_dir
+        from .assets import render_error_page
 
-        if os.path.isdir(_ws_dir):
-            self.app.mount(
-                "/status-assets", StaticFiles(directory=_ws_dir), name="status-assets"
+        def _html(code: int, title: str, desc: str = "") -> str:
+            return render_error_page(
+                code=code,
+                title=title,
+                home_link=i18n.t("core.router.error_page_home"),
+                desc=desc or None,
             )
-
-        page_css = """
-  * { margin:0;padding:0;box-sizing:border-box }
-  html { -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale }
-  :root {
-    --bg:#0E1520;--bg-card:#151C28;--tx:#E2E8F0;--tx2:#A0B0C0;--tx3:#5A6C7D;
-    --bd:rgba(40,53,69,.6);--accent:#7DBFE0;--accent2:rgba(125,191,224,.08)
-  }
-  @media (prefers-color-scheme:light) {
-    :root {
-      --bg:#F4F7FB;--bg-card:#FFFFFF;--tx:#2C3E50;--tx2:#5A6C7D;--tx3:#A0B0C0;
-      --bd:#DDE3EC;--accent:#7EB8D8;--accent2:rgba(126,184,216,.05)
-    }
-  }
-  body {
-    font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','PingFang SC','Microsoft YaHei',sans-serif;
-    background:var(--bg);color:var(--tx);
-    min-height:100vh;min-height:100dvh;
-    display:flex;align-items:center;justify-content:center;
-    text-align:center;padding:2rem;position:relative;overflow:hidden
-  }
-  body::before {
-    content:'';position:absolute;inset:0;
-    background:radial-gradient(ellipse 75% 55% at 50% 38%,var(--accent2) 0%,transparent 70%);
-    pointer-events:none
-  }
-  .page-card { max-width:480px;width:100%;position:relative;z-index:1;animation:pop .6s cubic-bezier(.34,1.56,.64,1) both }
-  @keyframes pop { from{opacity:0;transform:scale(.88)} to{opacity:1;transform:scale(1)} }
-  .page-img { width:240px;height:240px;object-fit:contain;border-radius:24px;margin-bottom:2rem;filter:drop-shadow(0 4px 20px rgba(125,191,224,.08)) }
-  .page-code { font-size:4rem;font-weight:600;letter-spacing:6px;color:var(--accent2);margin-bottom:-1.2rem;user-select:none }
-  .page-title { font-size:1.25rem;font-weight:600;color:var(--tx);line-height:1.5;letter-spacing:-.01em;margin-bottom:.5rem }
-  .page-desc { font-size:.85rem;font-weight:400;color:var(--tx2);line-height:1.6;margin-bottom:2.2rem }
-  .page-link {
-    display:inline-block;padding:.55rem 1.6rem;
-    background:var(--bg-card);border:1px solid var(--bd);border-radius:50px;
-    color:var(--accent);text-decoration:none;font-size:.82rem;font-weight:500;
-    transition:all .25s cubic-bezier(.25,.1,.25,1)
-  }
-  .page-link:hover { border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 14px rgba(125,191,224,.12) }
-  .page-link:active { transform:scale(.97) }
-"""
-
-        def _html(code: int, img: str, title: str, desc: str = "") -> str:
-            desc_html = f'<p class="page-desc">{desc}</p>' if desc else ""
-            return f"""<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{code} — ErisPulse</title>
-<style>{page_css}</style>
-</head>
-<body>
-  <div class="page-card">
-    <div class="page-code">{code}</div>
-    <img class="page-img" src="/status-assets/{img}" alt="" onerror="this.style.display='none'" />
-    <h1 class="page-title">{title}</h1>
-    {desc_html}
-    <a class="page-link" href="/">{i18n.t("core.router.error_page_home")}</a>
-  </div>
-</body>
-</html>"""
 
         @self.app.exception_handler(404)
         async def _h404(request: Request, exc):
@@ -903,7 +772,6 @@ class RouterManager:
                 return HTMLResponse(
                     content=_html(
                         404,
-                        "4xx.png",
                         i18n.t("core.router.error_404_title"),
                         i18n.t("core.router.error_404_desc"),
                     ),
@@ -922,7 +790,6 @@ class RouterManager:
                 return HTMLResponse(
                     content=_html(
                         403,
-                        "4xx.png",
                         i18n.t("core.router.error_403_title"),
                         i18n.t("core.router.error_403_desc"),
                     ),
@@ -942,7 +809,6 @@ class RouterManager:
                 return HTMLResponse(
                     content=_html(
                         500,
-                        "5xx.png",
                         i18n.t("core.router.error_500_title"),
                         i18n.t("core.router.error_500_desc"),
                     ),
@@ -965,7 +831,6 @@ class RouterManager:
                 return HTMLResponse(
                     content=_html(
                         502,
-                        "5xx.png",
                         i18n.t("core.router.error_500_title"),
                         i18n.t("core.router.error_502_desc"),
                     ),
@@ -984,7 +849,6 @@ class RouterManager:
                 return HTMLResponse(
                     content=_html(
                         503,
-                        "5xx.png",
                         i18n.t("core.router.error_500_title"),
                         i18n.t("core.router.error_503_desc"),
                     ),
@@ -1008,7 +872,6 @@ class RouterManager:
                 return HTMLResponse(
                     content=_html(
                         500,
-                        "unknow.png",
                         i18n.t("core.router.error_generic_title"),
                         i18n.t("core.router.error_generic_desc"),
                     ),
@@ -1320,6 +1183,34 @@ class RouterManager:
                 self._route_middlewares[p].append(mw)
         else:
             self._global_middlewares.append(mw)
+
+    def register_home_entry(self, name: str | dict, url: str, icon_svg: str = "") -> None:
+        """
+        在根路由页面注册一个入口按钮
+
+        :param name: str | dict 按钮显示文本。纯文本直接传入字符串；
+                      也可传入 i18n 字典格式: {"i18n": "key", "default": "兜底"}
+        :param url: str 按钮链接地址
+        :param icon_svg: str 可选 SVG 图标标记
+
+        :example:
+        >>> # 纯文本
+        >>> router.register_home_entry(name="Dashboard", url="/Dashboard")
+        >>>
+        >>> # i18n 字典格式
+        >>> router.register_home_entry(
+        ...     name={"i18n": "core.router.entry_dashboard", "default": "Dashboard"},
+        ...     url="/Dashboard",
+        ... )
+        >>>
+        >>> # 带 SVG 图标
+        >>> router.register_home_entry(
+        ...     name="控制台",
+        ...     url="/console",
+        ...     icon_svg='<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\"><path d=\"M4 17l6-6-6-6\"/></svg>',
+        ... )
+        """
+        self._home_entries.append({"name": name, "url": url, "icon_svg": icon_svg})
 
     @staticmethod
     def _match_path(pattern: str, path: str) -> bool:

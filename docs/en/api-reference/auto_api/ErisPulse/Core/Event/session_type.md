@@ -24,11 +24,9 @@ ErisPulse 会话类型管理模块
 
 注册自定义会话类型
 
-:param receive_type: 接收事件类型（detail_type）
-:param send_type: 发送目标类型
-:param id_field: 对应的ID字段名
-:param platform: 平台名称（可选，用于区分同名不同平台的类型）
-:return: 是否注册成功
+- **receive_type** (`接收事件类型（detail_type）`): - **send_type**: 发送目标类型
+- **id_field** (`对应的ID字段名`): - **platform**: 平台名称（可选，用于区分同名不同平台的类型）
+**返回值**: 是否注册成功
 
 ---
 
@@ -37,9 +35,8 @@ ErisPulse 会话类型管理模块
 
 注销自定义会话类型
 
-:param receive_type: 接收事件类型
-:param platform: 平台名称
-:return: 是否注销成功
+- **receive_type** (`接收事件类型`): - **platform**: 平台名称
+**返回值**: 是否注销成功
 
 ---
 
@@ -48,9 +45,8 @@ ErisPulse 会话类型管理模块
 
 根据接收类型获取对应的ID字段名
 
-:param receive_type: 接收事件类型
-:param platform: 平台名称（可选）
-:return: ID字段名
+- **receive_type** (`接收事件类型`): - **platform**: 平台名称（可选）
+**返回值**: ID字段名
 
 ---
 
@@ -59,9 +55,8 @@ ErisPulse 会话类型管理模块
 
 根据ID字段获取对应的接收类型
 
-:param id_field: ID字段名
-:param platform: 平台名称（可选）
-:return: 接收类型
+- **id_field** (`ID字段名`): - **platform**: 平台名称（可选）
+**返回值**: 接收类型
 
 ---
 
@@ -70,10 +65,8 @@ ErisPulse 会话类型管理模块
 
 将接收类型转换为发送目标类型
 
-:param receive_type: 接收事件类型
-:param platform: 平台名称（可选）
-:return: 发送目标类型
-
+- **receive_type** (`接收事件类型`): - **platform**: 平台名称（可选）
+**返回值** (`发送目标类型`): 
 **示例**:
 ```python
 >>> convert_to_send_type("private")  # 返回 "user"
@@ -87,10 +80,8 @@ ErisPulse 会话类型管理模块
 
 将发送目标类型转换为接收类型
 
-:param send_type: 发送目标类型
-:param platform: 平台名称（可选）
-:return: 接收类型
-
+- **send_type** (`发送目标类型`): - **platform**: 平台名称（可选）
+**返回值** (`接收类型`): 
 **示例**:
 ```python
 >>> convert_to_receive_type("user")   # 返回 "private"
@@ -108,10 +99,8 @@ ErisPulse 会话类型管理模块
 1. 如果存在 detail_type，直接使用
 2. 检查各种 ID 字段，按优先级返回
 
-:param event: 事件数据字典
-:param platform: 平台名称（可选）
-:return: 推断的接收类型
-
+- **event** (`事件数据字典`): - **platform**: 平台名称（可选）
+**返回值** (`推断的接收类型`): 
 **示例**:
 ```python
 >>> event = {"group_id": "123"}
@@ -125,10 +114,8 @@ ErisPulse 会话类型管理模块
 
 获取事件的目标ID（根据推断的会话类型）
 
-:param event: 事件数据字典
-:param platform: 平台名称（可选）
-:return: 目标ID
-
+- **event** (`事件数据字典`): - **platform**: 平台名称（可选）
+**返回值** (`目标ID`): 
 **示例**:
 ```python
 >>> event = {"detail_type": "group", "group_id": "123"}
@@ -142,9 +129,8 @@ ErisPulse 会话类型管理模块
 
 获取发送类型和目标ID（一步完成类型转换和ID获取）
 
-:param event: 事件数据字典
-:param platform: 平台名称（可选）
-:return: (发送类型, 目标ID)
+- **event** (`事件数据字典`): - **platform**: 平台名称（可选）
+**返回值** (`(发送类型,`): 目标ID)
 
 **示例**:
 ```python
@@ -159,8 +145,7 @@ ErisPulse 会话类型管理模块
 
 检查是否为标准接收类型
 
-:param receive_type: 接收事件类型
-:return: 是否为标准类型
+- **receive_type** (`接收事件类型`): **返回值**: 是否为标准类型
 
 ---
 
@@ -169,8 +154,7 @@ ErisPulse 会话类型管理模块
 
 检查是否为有效的发送类型
 
-:param send_type: 发送目标类型
-:return: 是否为有效类型
+- **send_type** (`发送目标类型`): **返回值**: 是否为有效类型
 
 ---
 
@@ -179,7 +163,7 @@ ErisPulse 会话类型管理模块
 
 获取所有标准接收类型
 
-:return: 标准类型集合
+**返回值**: 标准类型集合
 
 ---
 
@@ -188,7 +172,7 @@ ErisPulse 会话类型管理模块
 
 获取所有发送类型
 
-:return: 发送类型集合
+**返回值**: 发送类型集合
 
 ---
 
@@ -197,8 +181,7 @@ ErisPulse 会话类型管理模块
 
 清除自定义类型映射
 
-:param platform: 平台名称（可选，如果指定则只清除该平台的类型）
-:return: 清除的类型数量
+- **platform** (`平台名称（可选，如果指定则只清除该平台的类型）`): **返回值**: 清除的类型数量
 
 ---
 

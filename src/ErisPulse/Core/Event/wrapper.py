@@ -639,6 +639,25 @@ class Event(dict):
         """
         return self.get("user_id", "")
 
+    def is_master(self) -> bool:
+        """
+        检查事件发送者是否为框架主人
+
+        基于 ``ErisPulse.master.users`` 配置和运行时添加的主人列表判断。
+
+        :return: 是否为框架主人
+
+        :example:
+        >>> if event.is_master():
+        ...     await event.reply("主人你好")
+        """
+        from ..master import master
+
+        return master.is_master(
+            self.get_platform(),
+            self.get_user_id(),
+        )
+
     def get_user_nickname(self) -> str:
         """
         获取发送者昵称

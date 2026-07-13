@@ -799,7 +799,7 @@ ErisPulse 支援以下事件類型：
 |---------|------|---------|
 | 消息事件 | 用戶發送的任何消息 | 聊天機器人、內容過濾 |
 | 命令事件 | 以命令前綴開頭的消息 | 命令處理、功能入口 |
-| 通知事件 | 系統通知（好友添加、群成員變化等） | 歡迎訊息、狀態通知 |
+| 通知事件 | 系統通知（好友添加、群成員變更等） | 歡迎訊息、狀態通知 |
 | 請求事件 | 用戶請求（好友請求、群邀請） | 自動處理請求 |
 | 元事件 | 系統級事件（連接、心跳） | 連接監控、狀態檢查 |
 
@@ -823,7 +823,7 @@ async def message_handler(event: Event):
     sdk.logger.info(f"收到 {user_id} 的訊息: {text}")
 ```
 
-### 監聽私聊消息
+### 監聽私聊訊息
 
 ```python
 @message.on_private_message()
@@ -832,7 +832,7 @@ async def private_handler(event: Event):
     await event.reply(f"你好，{user_id}！這是私聊訊息。")
 ```
 
-### 監聽群聊消息
+### 監聽群聊訊息
 
 ```python
 @message.on_group_message()
@@ -859,13 +859,13 @@ async def at_handler(event: Event):
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="顯示幫助訊息")
+@command("help", help="顯示幫助資訊")
 async def help_handler(event):
     help_text = """
 可用命令：
-/help - 顯示幫助
+/help - 显示帮助
 /ping - 測試連接
-/info - 查看訊息
+/info - 查看資訊
     """
     await event.reply(help_text)
 ```
@@ -873,12 +873,12 @@ async def help_handler(event):
 ### 命令別名
 
 ```python
-@command(["help", "h"], aliases=["幫助"], help="顯示幫助訊息")
+@command(["help", "h"], aliases=["幫助"], help="顯示幫助資訊")
 async def help_handler(event):
-    await event.reply("幫助訊息...")
+    await event.reply("幫助資訊...")
 ```
 
-用戶可以使用以下任何方式呼叫：
+使用者可以使用以下任何方式呼叫：
 - `/help`
 - `/h`
 - `/幫助`
@@ -912,14 +912,14 @@ async def stop_handler(event):
 ### 命令權限
 
 ```python
-def is_admin(event):
-    """檢查用戶是否為管理員"""
-    admin_list = ["user123", "user456"]
-    return event.get_user_id() in admin_list
+def is_master(event):
+    """檢查使用者是否為框架主人"""
+    master_list = ["user123", "user456"]
+    return event.get_user_id() in master_list
 
-@command("admin", permission=is_admin, help="管理員命令")
-async def admin_handler(event):
-    await event.reply("這是管理員命令")
+@command("master", permission=is_master, help="框架主人命令")
+async def master_handler(event):
+    await event.reply("這是框架主人命令")
 ```
 
 ### 命令優先級
@@ -949,11 +949,11 @@ priority=0 組: [處理器A || 處理器B] 並行 → 合併結果
 ...
 ```
 
-- **同優先級並行**: 優先級相同的多個處理器會同時執行，提高吞吐量
-- **跨級串行**: 不同優先級的組按順序執行（數值越大越先執行），確保高優先級處理器先運行
-- **Copy-On-Write**: 處理器無修改時不建立副本，確保零開銷
-- **衝突處理**: 同優先級多處理器修改同一欄位時，使用最後修改值並記錄警告日誌
-- **中斷機制**: 任意處理器呼叫 `event.mark_processed()` 後，跳過後續低優先級組
+- **同優先級並行**：優先級相同的多個處理器會同時執行，提高吞吐量
+- **跨級串行**：不同優先級的組按順序執行（數值越大越先執行），確保高優先級處理器先運行
+- **Copy-On-Write**：處理器無修改時不建立副本，確保零開銷
+- **衝突處理**：同優先級多處理器修改同一欄位時，使用最後修改值並記錄警告日誌
+- **中斷機制**：任意處理器呼叫 `event.mark_processed()` 後，跳過後續低優先級組
 
 ```python
 # 範例：同優先級處理器並行執行
@@ -1022,8 +1022,8 @@ async def friend_request_handler(event):
     
     sdk.logger.info(f"收到好友請求: {user_id}, 附言: {comment}")
     
-    # 可以通過適配器 API 處理請求
-    # 具體實現請參考各適配器文件
+    # 可以透過適配器 API 處理請求
+    # 具體實作請參考各適配器文件
 ```
 
 ### 群邀請請求
@@ -1076,7 +1076,7 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
     telegram = sdk.adapter.get("telegram")
     await telegram.Send.To("user", "123456").Text("Bot 在線")
 
-# 列出當前所有在線 Bot
+# 列出目前所有在線 Bot
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
@@ -1183,7 +1183,7 @@ async def confirm_handler(event):
 
 ### 確認對話 (confirm)
 
-等待用戶確認或否定，自動識別內建中英文確認詞：
+等待使用者確認或否定，自動識別內建中英文確認詞：
 
 ```python
 @command("confirm", help="確認操作")
@@ -1198,9 +1198,9 @@ if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"st
     pass
 ```
 
-### 選擇選單 (choose)
+### 選擇菜單 (choose)
 
-用戶可回覆選項編號或選項文本：
+使用者可回覆選項編號或選項文字：
 
 ```python
 @command("choose", help="選擇")
@@ -1219,7 +1219,7 @@ async def choose_handler(event):
 
 ### 收集表單 (collect)
 
-多步驟收集用戶輸入：
+多步驟收集使用者輸入：
 
 ```python
 @command("register", help="註冊")
@@ -1239,7 +1239,7 @@ async def register_handler(event):
 
 ### 等待任意事件 (wait_for)
 
-等待滿足條件的任意事件，不限於同一用戶：
+等待滿足條件的任意事件，不限於同一使用者：
 
 ```python
 @command("wait_member", help="等待新成員")
@@ -1294,7 +1294,7 @@ ErisPulse 內建了中英文確認詞集合：
 
 ## 事件資料存取
 
-### Event 物件常用方法
+### Event 對象常用方法
 
 ```python
 @command("info")
@@ -1371,7 +1371,7 @@ methods = get_platform_event_methods("telegram")
 
 ## 事件處理最佳實踐
 
-### 1. 異常處理
+### 1. 錯誤處理
 
 ```python
 @command("process")
@@ -1424,10 +1424,10 @@ async def conditional_handler(event):
 
 ## 下一步
 
-- [常見任務範例](common-tasks.md) - 學習常用功能的實現（含訊息發送進階：重試/超時/批量）
+- [常見任務範例](common-tasks.md) - 學習常用功能的實作（含訊息發送進階：重試/超時/批量）
 - [平台特性指南](../platform-guide/README.md) - Send DSL 鏈式發送、發送規則、批量建構的完整說明
-- [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 物件
-- [使用者使用指南](../user-guide/) - 了解配置和模組管理
+- [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 對象
+- [使用者使用指南](../user-guide/) - 了解設定和模組管理
 
 
 =====

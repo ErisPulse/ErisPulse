@@ -17,7 +17,7 @@ ErisPulse 全局异常处理系统
 
 ### `_t(key: str)`
 
-> **内部方法** 
+> **内部方法**
 尝试用 i18n 翻译，失败时用英文 fallback
 
 ---
@@ -25,7 +25,7 @@ ErisPulse 全局异常处理系统
 
 ### `_get_error_logger()`
 
-> **内部方法** 
+> **内部方法**
 获取错误日志输出函数，优先使用框架 logger，失败时 fallback 到 stderr
 
 ---
@@ -35,9 +35,8 @@ ErisPulse 全局异常处理系统
 
 全局异常处理器
 
-:param exc_type: 异常类型
-:param exc_value: 异常值
-:param exc_traceback: 追踪信息
+- **exc_type** (`异常类型`): - **exc_value**: 异常值
+- **exc_traceback**: 追踪信息
 
 ---
 
@@ -46,8 +45,7 @@ ErisPulse 全局异常处理系统
 
 异步异常处理器
 
-:param loop: 事件循环
-:param context: 上下文字典
+- **loop** (`事件循环`): - **context**: 上下文字典
 
 ---
 
@@ -76,10 +74,8 @@ ExceptionHandler 类提供相关功能。
 
 格式化异常信息
 
-:param exc_type: 异常类型
-:param exc_value: 异常值
-:param exc_traceback: 追踪信息
-:return: 格式化后的异常信息
+- **exc_type** (`异常类型`): - **exc_value**: 异常值
+- **exc_traceback** (`追踪信息`): **返回值**: 格式化后的异常信息
 
 ---
 
@@ -88,8 +84,7 @@ ExceptionHandler 类提供相关功能。
 
 格式化异步异常信息
 
-:param exception: 异常对象
-:return: 格式化后的异常信息
+- **exception** (`异常对象`): **返回值**: 格式化后的异常信息
 
 ---
 
@@ -102,9 +97,8 @@ ExceptionHandler 类提供相关功能。
 - AttributeError: 查找对象上最相似的属性，给出"你是不是想写 xxx"
 - ImportError / ModuleNotFoundError: 暂不深入分析，给出通用提示
 
-:param exc_value: 异常对象
-:param exc_traceback: traceback 对象（可选，用于 AttributeError 上下文推断）
-:return: 提示行列表，无提示时为空列表
+- **exc_value** (`异常对象`): - **exc_traceback**: traceback 对象（可选，用于 AttributeError 上下文推断）
+**返回值**: 提示行列表，无提示时为空列表
 
 ---
 
@@ -113,10 +107,8 @@ ExceptionHandler 类提供相关功能。
 
 格式化异常信息并附带友好提示
 
-:param exc_type: 异常类型
-:param exc_value: 异常值
-:param exc_traceback: 追踪信息
-:return: 格式化后的异常信息（可能包含多行提示）
+- **exc_type** (`异常类型`): - **exc_value**: 异常值
+- **exc_traceback** (`追踪信息`): **返回值**: 格式化后的异常信息（可能包含多行提示）
 
 ---
 

@@ -46,7 +46,7 @@ HTTP 响应抽象基类
 
 HTTP 状态码
 
-:return: int 状态码 (如 200, 404)
+**返回值** (`int`): 状态码 (如 200, 404)
 
 ---
 
@@ -55,7 +55,7 @@ HTTP 状态码
 
 状态描述
 
-:return: str | None 状态原因短语
+**返回值** (`str`): | None 状态原因短语
 
 ---
 
@@ -64,7 +64,7 @@ HTTP 状态码
 
 响应头
 
-:return: object 大小写不敏感的响应头映射
+**返回值** (`object`): 大小写不敏感的响应头映射
 
 ---
 
@@ -73,7 +73,7 @@ HTTP 状态码
 
 Content-Type 值
 
-:return: str | None 内容类型
+**返回值** (`str`): | None 内容类型
 
 ---
 
@@ -82,7 +82,7 @@ Content-Type 值
 
 响应 URL (可能因重定向而与请求 URL 不同)
 
-:return: object URL 对象
+**返回值** (`object`): URL 对象
 
 ---
 
@@ -91,36 +91,35 @@ Content-Type 值
 
 底层框架原生 Response 对象
 
-:return: object 原生响应实例
+**返回值** (`object`): 原生响应实例
 
 ---
 
 
-##### `async async read()`
+##### `async read()`
 
 读取响应体原始字节
 
-:return: bytes 响应体内容
+**返回值** (`bytes`): 响应体内容
 
 ---
 
 
-##### `async async text(encoding: str | None = None)`
+##### `async text(encoding: str | None = None)`
 
 读取响应体为文本
 
-:param encoding: str | None 指定编码 (可选, 默认自动检测)
-:return: str 文本内容
+- **encoding** (`str`): | None 指定编码 (可选, 默认自动检测)
+**返回值** (`str`): 文本内容
 
 ---
 
 
-##### `async async json()`
+##### `async json()`
 
 解析响应体为 JSON
 
-:param kwargs: 传递给解析器的额外参数
-:return: Any 解析后的数据
+- **kwargs** (`传递给解析器的额外参数`): **返回值** (`Any`): 解析后的数据
 
 ---
 
@@ -150,7 +149,7 @@ Content-Type 值
 
 ##### `__init__(ws)`
 
-:param ws: object 底层框架 WebSocket 对象
+- **ws** (`object`): 底层框架 WebSocket 对象
 
 ---
 
@@ -159,27 +158,27 @@ Content-Type 值
 
 连接是否已关闭
 
-:return: bool 是否已关闭
+**返回值** (`bool`): 是否已关闭
 
 ---
 
 
-##### `async async receive()`
+##### `async receive()`
 
 接收原始消息
 
-:return: WSMessage 消息对象 (包含 type 和 data 属性)
+**返回值** (`WSMessage`): 消息对象 (包含 type 和 data 属性)
 
 ---
 
 
-##### `async async iter_messages()`
+##### `async iter_messages()`
 
 迭代原始消息直到断开
 
 自动在收到 CLOSE 或 ERROR 消息时停止迭代。
 
-:return: async generator 逐条返回 WSMessage
+**返回值** (`async`): generator 逐条返回 WSMessage
 
 **示例**:
 ```python
@@ -219,33 +218,32 @@ HTTP 客户端抽象基类
 #### 方法列表
 
 
-##### `async async request(method: str, url: str)`
+##### `async request(method: str, url: str)`
 
 发送 HTTP 请求
 
-:param method: str HTTP 方法 (GET, POST, PUT, DELETE, PATCH 等)
-:param url: str 请求 URL
-:param params: dict[str, str] | None 查询参数 (可选)
-:param headers: dict[str, str] | None 额外请求头 (可选)
-:param data: Any 请求体 (表单或原始数据) (可选)
-:param json: Any JSON 请求体 (可选)
-:param timeout: float | None 本次请求超时 (秒) (可选, 覆盖默认值)
-:param max_retries: int | None 本次最大重试次数 (可选, 覆盖默认值)
-:param kwargs: 传递给底层请求的额外参数
-:return: BaseHttpResponse 响应对象
+- **method** (`str`): HTTP 方法 (GET, POST, PUT, DELETE, PATCH 等)
+- **url** (`str`): 请求 URL
+- **params** (`dict[str,`): str] | None 查询参数 (可选)
+- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+- **data** (`Any`): 请求体 (表单或原始数据) (可选)
+- **json** (`Any`): JSON 请求体 (可选)
+- **timeout** (`float`): | None 本次请求超时 (秒) (可选, 覆盖默认值)
+- **max_retries** (`int`): | None 本次最大重试次数 (可选, 覆盖默认值)
+- **kwargs** (`传递给底层请求的额外参数`): **返回值** (`BaseHttpResponse`): 响应对象
 
 ---
 
 
-##### `async async ws_connect(url: str)`
+##### `async ws_connect(url: str)`
 
 建立 WebSocket 连接
 
-:param url: str WebSocket 服务器 URL
-:param headers: dict[str, str] | None 额外请求头 (可选)
-:param heartbeat: float | None 心跳间隔秒数 (可选)
-:param kwargs: 传递给底层 WS 连接的额外参数
-:return: BaseClientWebSocket WebSocket 连接对象
+- **url** (`str`): WebSocket 服务器 URL
+- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+- **heartbeat** (`float`): | None 心跳间隔秒数 (可选)
+- **kwargs** (`传递给底层`): WS 连接的额外参数
+**返回值** (`BaseClientWebSocket`): WebSocket 连接对象
 
 **示例**:
 ```python
@@ -257,57 +255,57 @@ HTTP 客户端抽象基类
 ---
 
 
-##### `async async get(url: str)`
+##### `async get(url: str)`
 
 发送 GET 请求
 
-:param url: str 请求 URL
-:return: BaseHttpResponse 响应对象
+- **url** (`str`): 请求 URL
+**返回值** (`BaseHttpResponse`): 响应对象
 
 ---
 
 
-##### `async async post(url: str)`
+##### `async post(url: str)`
 
 发送 POST 请求
 
-:param url: str 请求 URL
-:return: BaseHttpResponse 响应对象
+- **url** (`str`): 请求 URL
+**返回值** (`BaseHttpResponse`): 响应对象
 
 ---
 
 
-##### `async async put(url: str)`
+##### `async put(url: str)`
 
 发送 PUT 请求
 
-:param url: str 请求 URL
-:return: BaseHttpResponse 响应对象
+- **url** (`str`): 请求 URL
+**返回值** (`BaseHttpResponse`): 响应对象
 
 ---
 
 
-##### `async async delete(url: str)`
+##### `async delete(url: str)`
 
 发送 DELETE 请求
 
-:param url: str 请求 URL
-:return: BaseHttpResponse 响应对象
+- **url** (`str`): 请求 URL
+**返回值** (`BaseHttpResponse`): 响应对象
 
 ---
 
 
-##### `async async patch(url: str)`
+##### `async patch(url: str)`
 
 发送 PATCH 请求
 
-:param url: str 请求 URL
-:return: BaseHttpResponse 响应对象
+- **url** (`str`): 请求 URL
+**返回值** (`BaseHttpResponse`): 响应对象
 
 ---
 
 
-##### `async async close()`
+##### `async close()`
 
 关闭客户端会话并释放资源
 
@@ -318,7 +316,7 @@ HTTP 客户端抽象基类
 
 请求统计
 
-:return: dict[str, int] 统计数据
+**返回值** (`dict[str,`): int] 统计数据
 
 ---
 

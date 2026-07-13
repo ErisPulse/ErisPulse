@@ -22,15 +22,13 @@ ErisPulse SDK 主类
 
 ### `_resolve_core(attr: str)`
 
-> **内部方法** 
+> **内部方法**
 动态解析核心模块单例引用
 
 每次访问时通过 import 系统获取最新单例，确保软重启后 SDK 始终
 指向当前有效的模块级单例对象。
 
-:param attr: 核心属性名
-:return: 对应的单例对象
-**异常**: `AttributeError` - 当属性名不在核心映射中时
+- **attr** (`核心属性名`): **返回值** (`对应的单例对象`): **异常**: `AttributeError` - 当属性名不在核心映射中时
 
 ---
 
@@ -88,7 +86,7 @@ ErisPulse SDK 主类
 
 初始化协调器
 
-:param sdk_instance: SDK 实例
+- **sdk_instance** (`SDK`): 实例
 
 ---
 
@@ -100,7 +98,7 @@ ErisPulse SDK 主类
 ---
 
 
-####### `async async init()`
+####### `async init()`
 
 初始化所有模块和适配器
 
@@ -112,7 +110,7 @@ ErisPulse SDK 主类
 5. 初始化模块
 6. 启动路由服务器
 
-:return: bool 初始化是否成功
+**返回值** (`bool`): 初始化是否成功
 
 **异常**: `ImportError` - 当加载失败时抛出
 
@@ -138,7 +136,7 @@ ErisPulse SDK 主类
 
 反初始化协调器
 
-:param sdk_instance: SDK 实例
+- **sdk_instance** (`SDK`): 实例
 
 ---
 
@@ -150,7 +148,7 @@ ErisPulse SDK 主类
 ---
 
 
-####### `async async uninit()`
+####### `async uninit()`
 
 执行反初始化
 
@@ -165,7 +163,7 @@ ErisPulse SDK 主类
 8. 清理 SDK 模块属性
 9. 重置初始化状态
 
-:return: bool 反初始化是否成功
+**返回值** (`bool`): 反初始化是否成功
 
 ---
 
@@ -190,9 +188,7 @@ ErisPulse SDK 主类
 当属性不在实例 __dict__ 中时调用。对核心属性名使用动态 import 解析，
 确保软重启后始终获取最新单例。对未知属性提供友好的错误提示。
 
-:param name: 属性名
-:return: 属性值
-**异常**: `AttributeError` - 当属性不存在时
+- **name** (`属性名`): **返回值** (`属性值`): **异常**: `AttributeError` - 当属性不存在时
 
 ---
 
@@ -201,14 +197,14 @@ ErisPulse SDK 主类
 
 返回 SDK 的字符串表示
 
-:return: str SDK 的字符串表示
+**返回值** (`str`): SDK 的字符串表示
 
 ---
 
 
 ##### `_start_proactive_gc()`
 
-> **内部方法** 
+> **内部方法**
 启动主动 GC 后台任务
 
 定期执行 Python GC 和内部资源回收（离线 Bot 清理等），
@@ -219,7 +215,7 @@ ErisPulse SDK 主类
 
 ##### `_stop_proactive_gc()`
 
-> **内部方法** 
+> **内部方法**
 停止主动 GC 后台任务
 
 ---
@@ -229,16 +225,16 @@ ErisPulse SDK 主类
 
 导出框架当前运行状态的快照
 
-:return: dict 包含所有子系统状态的字典
+**返回值** (`dict`): 包含所有子系统状态的字典
 
 ---
 
 
-##### `async async init()`
+##### `async init()`
 
 SDK 初始化入口
 
-:return: bool SDK 初始化是否成功
+**返回值** (`bool`): SDK 初始化是否成功
 
 **示例**:
 ```python
@@ -250,14 +246,14 @@ SDK 初始化入口
 ---
 
 
-##### `async async _prepare_environment()`
+##### `async _prepare_environment()`
 
-> **内部方法** 
+> **内部方法**
 准备运行环境
 
 初始化配置和全局异常处理
 
-:return: bool 环境准备是否成功
+**返回值** (`bool`): 环境准备是否成功
 
 ---
 
@@ -268,7 +264,7 @@ SDK 初始化入口（同步版本）
 
 用于命令行直接调用，自动在事件循环中运行异步初始化
 
-:return: bool SDK 初始化是否成功
+**返回值** (`bool`): SDK 初始化是否成功
 
 ---
 
@@ -277,17 +273,17 @@ SDK 初始化入口（同步版本）
 
 SDK 初始化入口，返回 Task 对象
 
-:return: asyncio.Task 初始化任务
+**返回值** (`asyncio.Task`): 初始化任务
 
 ---
 
 
-##### `async async load_module(module_name: str)`
+##### `async load_module(module_name: str)`
 
 手动加载指定模块
 
-:param module_name: str 要加载的模块名称
-:return: bool 加载是否成功
+- **module_name** (`str`): 要加载的模块名称
+**返回值** (`bool`): 加载是否成功
 
 **示例**:
 ```python
@@ -297,7 +293,7 @@ SDK 初始化入口，返回 Task 对象
 ---
 
 
-##### `async async run(keep_running: bool = True)`
+##### `async run(keep_running: bool = True)`
 
 无头模式运行 ErisPulse
 
@@ -307,7 +303,7 @@ SDK 初始化入口，返回 Task 对象
 > 2. 只有 KeyboardInterrupt（Ctrl+C）会正常向上传播，触发优雅关闭
 > 3. 其他 BaseException（如 SystemExit）会被拦截并记录，防止意外终止
 
-:param keep_running: bool 是否保持运行
+- **keep_running** (`bool`): 是否保持运行
 
 **示例**:
 ```python
@@ -317,9 +313,9 @@ SDK 初始化入口，返回 Task 对象
 ---
 
 
-##### `async async _do_restart()`
+##### `async _do_restart()`
 
-> **内部方法** 
+> **内部方法**
 实际执行重启逻辑的内部方法
 
 在后台任务中运行，与调用 restart() 的事件处理器解耦
@@ -334,49 +330,48 @@ SDK 初始化入口，返回 Task 对象
 6. 重新初始化
 7. 重新启动适配器
 
-:return: bool 重新加载是否成功
+**返回值** (`bool`): 重新加载是否成功
 
 ---
 
 
 ##### `_collect_top_level_modules()`
 
-> **内部方法** 
+> **内部方法**
 从模块和适配器管理器中收集所有已加载包的顶层 Python 模块名
 
 必须在 uninit() 之前调用，因为 uninit 会清除管理器中的注册信息
 
-:return: set[str] 顶层 Python 模块名集合
+**返回值** (`set[str]`): 顶层 Python 模块名集合
 
 ---
 
 
 ##### `_infer_top_level(info: dict)`
 
-> **内部方法** 
+> **内部方法**
 从模块/适配器信息中推导顶层 Python 模块名
 
 优先使用 top_level.txt，fallback 从 entry-point value 推导
 
-:param info: 模块或适配器信息字典
-:return: 顶层 Python 模块名列表
+- **info** (`模块或适配器信息字典`): **返回值** (`顶层`): Python 模块名列表
 
 ---
 
 
 ##### `_invalidate_module_cache(top_level_modules: set[str])`
 
-> **内部方法** 
+> **内部方法**
 清理 sys.modules 中属于已加载包的缓存，并刷新 importlib 缓存
 
-:param top_level_modules: 需要清理的顶层 Python 模块名集合
+- **top_level_modules** (`需要清理的顶层`): Python 模块名集合
 
 ---
 
 
 ##### `_invalidate_framework_cache()`
 
-> **内部方法** 
+> **内部方法**
 清理 ErisPulse 框架自身的子模块缓存，以支持框架热更新
 
 清除所有 ErisPulse.* 子模块的 sys.modules 缓存，但保留 ErisPulse 包本身。
@@ -396,7 +391,7 @@ SDK 初始化入口，返回 Task 对象
 
 ##### `_invalidate_metadata_cache()`
 
-> **内部方法** 
+> **内部方法**
 清理 importlib.metadata 相关缓存，确保 entry_points() 返回最新数据
 
 当 pip install --upgrade 更新包后，importlib.metadata 的内部缓存
@@ -410,7 +405,7 @@ SDK 初始化入口，返回 Task 对象
 ---
 
 
-##### `async async restart()`
+##### `async restart()`
 
 SDK 重新启动
 
@@ -427,7 +422,7 @@ SDK 重新启动
 > 3. **返回值语义**：方法立即返回 `True` 表示"重启任务已成功调度"，
 > 而不是"重启已完成"。实际的重启过程在后台进行。
 
-:return: bool 重启任务是否成功调度（并非重启是否完成）
+**返回值** (`bool`): 重启任务是否成功调度（并非重启是否完成）
 
 **示例**:
 ```python
@@ -437,7 +432,7 @@ SDK 重新启动
 ---
 
 
-##### `async async hard_restart()`
+##### `async hard_restart()`
 
 硬重启：反初始化后退出进程，由父进程（run.py）重新启动新实例
 
@@ -449,7 +444,7 @@ SDK 重新启动
 
 需要通过 epsdk run 启动才生效，否则进程退出后不会自动重启。
 
-:return: bool 硬重启任务是否成功调度
+**返回值** (`bool`): 硬重启任务是否成功调度
 
 **示例**:
 ```python
@@ -459,7 +454,7 @@ SDK 重新启动
 ---
 
 
-##### `async async uninit()`
+##### `async uninit()`
 
 SDK 反初始化
 
@@ -470,7 +465,7 @@ SDK 反初始化
 4. 清理适配器管理器和模块管理器
 5. 清理 SDK 对象上的模块属性
 
-:return: bool 反初始化是否成功
+**返回值** (`bool`): 反初始化是否成功
 
 **示例**:
 ```python

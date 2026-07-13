@@ -1,0 +1,37 @@
+* { margin:0;padding:0;box-sizing:border-box }
+html { -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale }
+:root {
+  --bg:#0E1520;--bg-card:#151C28;--tx:#E2E8F0;--tx2:#A0B0C0;--tx3:#5A6C7D;
+  --bd:rgba(40,53,69,.6);--accent:#7DBFE0;--accent2:rgba(125,191,224,.08)
+}
+@media (prefers-color-scheme:light) {
+  :root {
+    --bg:#F4F7FB;--bg-card:#FFFFFF;--tx:#2C3E50;--tx2:#5A6C7D;--tx3:#A0B0C0;
+    --bd:#DDE3EC;--accent:#7EB8D8;--accent2:rgba(126,184,216,.05)
+  }
+}
+body {
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','PingFang SC','Microsoft YaHei',sans-serif;
+  background:var(--bg);color:var(--tx);
+  min-height:100vh;min-height:100dvh;
+  display:flex;align-items:center;justify-content:center;
+  padding:2rem;position:relative;overflow:hidden
+}
+body::before {
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 75% 55% at 50% 38%,var(--accent2) 0%,transparent 70%);
+  pointer-events:none
+}
+.page-card { max-width:480px;width:100%;text-align:center;position:relative;z-index:1;animation:pop .6s cubic-bezier(.34,1.56,.64,1) both }
+@keyframes pop { from{opacity:0;transform:scale(.88)} to{opacity:1;transform:scale(1)} }
+.page-code { font-size:4.5rem;font-weight:700;letter-spacing:8px;color:var(--accent2);margin-bottom:1.2rem;user-select:none }
+.page-title { font-size:1.25rem;font-weight:600;color:var(--tx);line-height:1.5;letter-spacing:-.01em;margin-bottom:.5rem }
+.page-desc { font-size:.85rem;font-weight:400;color:var(--tx2);line-height:1.6;margin-top:.8rem;margin-bottom:2.4rem }
+.page-link {
+  display:inline-block;padding:.6rem 1.6rem;margin-top:.8rem;
+  background:var(--bg-card);border:1px solid var(--bd);border-radius:50px;
+  color:var(--accent);text-decoration:none;font-size:.82rem;font-weight:500;
+  transition:all .25s cubic-bezier(.25,.1,.25,1)
+}
+.page-link:hover { border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 14px rgba(125,191,224,.12) }
+.page-link:active { transform:scale(.97) }

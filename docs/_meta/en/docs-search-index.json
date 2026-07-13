@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1324,
+  "total_keywords": 1328,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -906,12 +906,12 @@
         "title": "3. Complete Field Specification"
       }
     ],
-    "3. Conditional Processing": [
+    "3. Conditional Handling": [
       {
         "document": "getting-started/event-handling.md",
         "line": 619,
         "level": 3,
-        "title": "3. Conditional Processing"
+        "title": "3. Conditional Handling"
       }
     ],
     "3. Create Adapter Main Class": [
@@ -1979,7 +1979,7 @@
     "Abstract Types": [
       {
         "document": "advanced/router.md",
-        "line": 21,
+        "line": 22,
         "level": 2,
         "title": "Abstract Types"
       }
@@ -1990,6 +1990,14 @@
         "line": 56,
         "level": 3,
         "title": "Accessing Core Modules"
+      }
+    ],
+    "Accessing Event Data": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 506,
+        "level": 2,
+        "title": "Accessing Event Data"
       }
     ],
     "Accessing from SDK Instance": [
@@ -2481,7 +2489,7 @@
     "Auto Documentation": [
       {
         "document": "advanced/router.md",
-        "line": 281,
+        "line": 279,
         "level": 2,
         "title": "Auto Documentation"
       }
@@ -2844,14 +2852,6 @@
         "title": "Batch Rules and Callbacks"
       }
     ],
-    "Batch Sending Multiple Messages": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 264,
-        "level": 3,
-        "title": "Batch Sending Multiple Messages"
-      }
-    ],
     "Benefits of Following Standards": [
       {
         "document": "standards/README.md",
@@ -2889,7 +2889,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 340,
+        "line": 379,
         "level": 2,
         "title": "Best Practices"
       },
@@ -2910,6 +2910,14 @@
         "line": 67,
         "level": 2,
         "title": "Best Practices"
+      }
+    ],
+    "Best Practices for Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 583,
+        "level": 2,
+        "title": "Best Practices for Event Handling"
       }
     ],
     "Blacklist Filtering": [
@@ -3032,6 +3040,14 @@
         "title": "Bug Tracker"
       }
     ],
+    "Built-in Confirmation Words": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 499,
+        "level": 3,
+        "title": "Built-in Confirmation Words"
+      }
+    ],
     "Built-in Defaults": [
       {
         "document": "platform-guide/onebot11.md",
@@ -3040,20 +3056,20 @@
         "title": "Built-in Defaults"
       }
     ],
-    "Built-in confirmation words": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 499,
-        "level": 3,
-        "title": "Built-in confirmation words"
-      }
-    ],
     "Bulk Build Mode (Build)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 270,
         "level": 2,
         "title": "Bulk Build Mode (Build)"
+      }
+    ],
+    "Bulk Sending Multiple Messages": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 264,
+        "level": 3,
+        "title": "Bulk Sending Multiple Messages"
       }
     ],
     "Button Message Segment (yunhu_user_button)": [
@@ -3089,7 +3105,7 @@
     "CORS Configuration": [
       {
         "document": "advanced/router.md",
-        "line": 247,
+        "line": 245,
         "level": 2,
         "title": "CORS Configuration"
       }
@@ -3370,14 +3386,6 @@
         "title": "Child Loggers"
       }
     ],
-    "Choice menu (choose)": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 412,
-        "level": 3,
-        "title": "Choice menu (choose)"
-      }
-    ],
     "Choosing a Development Approach": [
       {
         "document": "getting-started/README.md",
@@ -3442,14 +3450,6 @@
         "title": "Code Quality"
       }
     ],
-    "Collect form (collect)": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 431,
-        "level": 3,
-        "title": "Collect form (collect)"
-      }
-    ],
     "Combined Modifiers": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3474,14 +3474,6 @@
         "title": "Command Aliases"
       }
     ],
-    "Command Arguments": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 97,
-        "level": 3,
-        "title": "Command Arguments"
-      }
-    ],
     "Command Basics": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -3504,14 +3496,6 @@
         "line": 95,
         "level": 3,
         "title": "Command Decorator"
-      }
-    ],
-    "Command Event Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 66,
-        "level": 2,
-        "title": "Command Event Handling"
       }
     ],
     "Command Groups": [
@@ -3560,6 +3544,14 @@
         "title": "Command Module"
       }
     ],
+    "Command Parameters": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 97,
+        "level": 3,
+        "title": "Command Parameters"
+      }
+    ],
     "Command Permissions": [
       {
         "document": "getting-started/event-handling.md",
@@ -3568,12 +3560,12 @@
         "title": "Command Permissions"
       }
     ],
-    "Command Priority": [
+    "Command Priorities": [
       {
         "document": "getting-started/event-handling.md",
         "line": 136,
         "level": 3,
-        "title": "Command Priority"
+        "title": "Command Priorities"
       }
     ],
     "Command System": [
@@ -3990,12 +3982,12 @@
         "title": "Configuring Lazy Loading"
       }
     ],
-    "Confirmation dialog (confirm)": [
+    "Confirmation Dialog (confirm)": [
       {
         "document": "getting-started/event-handling.md",
         "line": 395,
         "level": 3,
-        "title": "Confirmation dialog (confirm)"
+        "title": "Confirmation Dialog (confirm)"
       }
     ],
     "Connection Events": [
@@ -4056,6 +4048,14 @@
         "line": 356,
         "level": 2,
         "title": "Considerations"
+      }
+    ],
+    "Content List": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 5,
+        "level": 2,
+        "title": "Content List"
       }
     ],
     "Content Writing Standards": [
@@ -4434,6 +4434,14 @@
         "title": "Custom Type Registration"
       }
     ],
+    "Dashboard Auto Registration": [
+      {
+        "document": "advanced/router.md",
+        "line": 361,
+        "level": 3,
+        "title": "Dashboard Auto Registration"
+      }
+    ],
     "Dashboard Management Panel": [
       {
         "document": "user-guide/deployment.md",
@@ -4497,7 +4505,7 @@
     "Decorator Routes (Recommended)": [
       {
         "document": "advanced/router.md",
-        "line": 35,
+        "line": 36,
         "level": 2,
         "title": "Decorator Routes (Recommended)"
       }
@@ -5122,14 +5130,6 @@
         "title": "Event Converter Implementation Guide"
       }
     ],
-    "Event Data Access": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 506,
-        "level": 2,
-        "title": "Event Data Access"
-      }
-    ],
     "Event Distribution Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5212,14 +5212,6 @@
         "title": "Event Handling"
       }
     ],
-    "Event Handling Best Practices": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 583,
-        "level": 2,
-        "title": "Event Handling Best Practices"
-      }
-    ],
     "Event Handling Example": [
       {
         "document": "platform-guide/email.md",
@@ -5238,14 +5230,6 @@
         "line": 284,
         "level": 3,
         "title": "Event Handling Example"
-      }
-    ],
-    "Event Handling Introduction": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 1,
-        "level": 1,
-        "title": "Event Handling Introduction"
       }
     ],
     "Event Handling Mechanism": [
@@ -5370,14 +5354,6 @@
         "title": "Event Type Mapping"
       }
     ],
-    "Event Type Overview": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 5,
-        "level": 2,
-        "title": "Event Type Overview"
-      }
-    ],
     "Event Types": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -5466,14 +5442,6 @@
         "line": 341,
         "level": 2,
         "title": "Exception System"
-      }
-    ],
-    "Execute Logic After Sending Success": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 236,
-        "level": 3,
-        "title": "Execute Logic After Sending Success"
       }
     ],
     "Execution Control Commands": [
@@ -5674,6 +5642,14 @@
         "title": "For Module Developers"
       }
     ],
+    "Form Collection (collect)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 431,
+        "level": 3,
+        "title": "Form Collection (collect)"
+      }
+    ],
     "Form Message Segment (yunhu_user_form)": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -5728,12 +5704,12 @@
         "title": "Frequently Asked Questions"
       }
     ],
-    "Friend Addition": [
+    "Friend Added": [
       {
         "document": "getting-started/event-handling.md",
         "line": 190,
         "level": 3,
-        "title": "Friend Addition"
+        "title": "Friend Added"
       }
     ],
     "Friend Offline Event": [
@@ -5918,6 +5894,14 @@
         "title": "Getting Started with Adapter Development"
       }
     ],
+    "Getting Started with Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 1,
+        "level": 1,
+        "title": "Getting Started with Event Handling"
+      }
+    ],
     "Global Configuration": [
       {
         "document": "advanced/lazy-loading.md",
@@ -5966,20 +5950,20 @@
         "title": "Group Management Methods"
       }
     ],
-    "Group Member Decrease": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 212,
-        "level": 3,
-        "title": "Group Member Decrease"
-      }
-    ],
-    "Group Member Increase": [
+    "Group Member Added": [
       {
         "document": "getting-started/event-handling.md",
         "line": 202,
         "level": 3,
-        "title": "Group Member Increase"
+        "title": "Group Member Added"
+      }
+    ],
+    "Group Member Removed": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 212,
+        "level": 3,
+        "title": "Group Member Removed"
       }
     ],
     "Group Operation Methods": [
@@ -6025,7 +6009,7 @@
     "HTTP Decorators": [
       {
         "document": "advanced/router.md",
-        "line": 37,
+        "line": 38,
         "level": 3,
         "title": "HTTP Decorators"
       }
@@ -6084,6 +6068,14 @@
         "title": "Handling Channel Messages"
       }
     ],
+    "Handling Command Events": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 66,
+        "level": 2,
+        "title": "Handling Command Events"
+      }
+    ],
     "Handling Direct Messages": [
       {
         "document": "platform-guide/discord.md",
@@ -6128,6 +6120,30 @@
         "title": "Handling Message Editing"
       }
     ],
+    "Handling Message Events": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 17,
+        "level": 2,
+        "title": "Handling Message Events"
+      }
+    ],
+    "Handling Meta Events": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 251,
+        "level": 2,
+        "title": "Handling Meta Events"
+      }
+    ],
+    "Handling Notice Events": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 188,
+        "level": 2,
+        "title": "Handling Notice Events"
+      }
+    ],
     "Handling Notification Events (Reaction responses, etc.)": [
       {
         "document": "platform-guide/kook.md",
@@ -6160,10 +6176,18 @@
         "title": "Handling Reactions"
       }
     ],
+    "Handling Request Events": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 222,
+        "level": 2,
+        "title": "Handling Request Events"
+      }
+    ],
     "Health Check": [
       {
         "document": "advanced/router.md",
-        "line": 311,
+        "line": 309,
         "level": 3,
         "title": "Health Check"
       },
@@ -6194,6 +6218,14 @@
         "line": 322,
         "level": 3,
         "title": "Heartbeat Mechanism"
+      }
+    ],
+    "Home Page Entry": [
+      {
+        "document": "advanced/router.md",
+        "line": 326,
+        "level": 2,
+        "title": "Home Page Entry"
       }
     ],
     "Hook Breakpoints Overview": [
@@ -6789,7 +6821,7 @@
     "Lifecycle Integration": [
       {
         "document": "advanced/router.md",
-        "line": 326,
+        "line": 365,
         "level": 2,
         "title": "Lifecycle Integration"
       }
@@ -7012,6 +7044,14 @@
         "line": 163,
         "level": 3,
         "title": "Logic Executed After Send Success (Hook)"
+      }
+    ],
+    "Logic Execution After Sending Success": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 236,
+        "level": 3,
+        "title": "Logic Execution After Sending Success"
       }
     ],
     "Looping Conversation": [
@@ -7238,14 +7278,6 @@
         "line": 187,
         "level": 3,
         "title": "Message Event Example"
-      }
-    ],
-    "Message Event Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 17,
-        "level": 2,
-        "title": "Message Event Handling"
       }
     ],
     "Message Event Methods": [
@@ -7500,14 +7532,6 @@
         "line": 1,
         "level": 1,
         "title": "MessageBuilder Detailed Explanation"
-      }
-    ],
-    "Meta Event Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 251,
-        "level": 2,
-        "title": "Meta Event Handling"
       }
     ],
     "Meta Event Types": [
@@ -7942,12 +7966,12 @@
         "title": "Multi-platform Adaptation"
       }
     ],
-    "Multi-turn conversation (conversation)": [
+    "Multi-turn Conversation (conversation)": [
       {
         "document": "getting-started/event-handling.md",
         "line": 472,
         "level": 3,
-        "title": "Multi-turn conversation (conversation)"
+        "title": "Multi-turn Conversation (conversation)"
       }
     ],
     "Must the package name start with `ErisPulse-`?": [
@@ -8084,14 +8108,6 @@
         "line": 82,
         "level": 3,
         "title": "Notice Event Additional Fields"
-      }
-    ],
-    "Notice Event Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 188,
-        "level": 2,
-        "title": "Notice Event Handling"
       }
     ],
     "Notice Event Methods": [
@@ -8376,6 +8392,14 @@
         "title": "Overview"
       }
     ],
+    "Overview of Event Types": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 5,
+        "level": 2,
+        "title": "Overview of Event Types"
+      }
+    ],
     "POST": [
       {
         "document": "advanced/http-client.md",
@@ -8459,7 +8483,7 @@
     "Path Handling": [
       {
         "document": "advanced/router.md",
-        "line": 297,
+        "line": 295,
         "level": 2,
         "title": "Path Handling"
       }
@@ -8618,20 +8642,20 @@
         "title": "Platform-Specific Events (onebot11_ prefix)"
       }
     ],
+    "Platform-Specific Extension Methods": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 554,
+        "level": 3,
+        "title": "Platform-Specific Extension Methods"
+      }
+    ],
     "Platform-Specific Features": [
       {
         "document": "platform-guide/README.md",
         "line": 15,
         "level": 2,
         "title": "Platform-Specific Features"
-      }
-    ],
-    "Platform-specific Methods": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 554,
-        "level": 3,
-        "title": "Platform-specific Methods"
       }
     ],
     "Platform-specific Response": [
@@ -9025,7 +9049,7 @@
     "Rate Limiting": [
       {
         "document": "advanced/router.md",
-        "line": 231,
+        "line": 229,
         "level": 2,
         "title": "Rate Limiting"
       }
@@ -9124,6 +9148,14 @@
         "title": "Register Custom Translations"
       }
     ],
+    "Register Entry": [
+      {
+        "document": "advanced/router.md",
+        "line": 330,
+        "level": 3,
+        "title": "Register Entry"
+      }
+    ],
     "Register Middleware": [
       {
         "document": "api-reference/adapter-system.md",
@@ -9213,7 +9245,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 350,
+        "line": 389,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9436,14 +9468,6 @@
         "line": 341,
         "level": 3,
         "title": "Request Event Conversion"
-      }
-    ],
-    "Request Event Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 222,
-        "level": 2,
-        "title": "Request Event Handling"
       }
     ],
     "Request Event Methods": [
@@ -9690,6 +9714,14 @@
         "title": "Room Invitation"
       }
     ],
+    "Root Page": [
+      {
+        "document": "advanced/router.md",
+        "line": 317,
+        "level": 3,
+        "title": "Root Page"
+      }
+    ],
     "Route Discovery": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -9698,26 +9730,18 @@
         "title": "Route Discovery"
       }
     ],
-    "Route Grouping": [
+    "Route Groups": [
       {
         "document": "advanced/router.md",
-        "line": 197,
+        "line": 195,
         "level": 2,
-        "title": "Route Grouping"
-      }
-    ],
-    "Route List": [
-      {
-        "document": "advanced/router.md",
-        "line": 319,
-        "level": 3,
-        "title": "Route List"
+        "title": "Route Groups"
       }
     ],
     "Route Middleware": [
       {
         "document": "advanced/router.md",
-        "line": 214,
+        "line": 212,
         "level": 2,
         "title": "Route Middleware"
       }
@@ -9907,7 +9931,7 @@
     "Security Headers": [
       {
         "document": "advanced/router.md",
-        "line": 266,
+        "line": 264,
         "level": 2,
         "title": "Security Headers"
       }
@@ -9918,6 +9942,14 @@
         "line": 222,
         "level": 2,
         "title": "Security Recommendations"
+      }
+    ],
+    "Selection Menu (choose)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 412,
+        "level": 3,
+        "title": "Selection Menu (choose)"
       }
     ],
     "Send A2UI message": [
@@ -10819,7 +10851,7 @@
     "System Routes": [
       {
         "document": "advanced/router.md",
-        "line": 307,
+        "line": 305,
         "level": 2,
         "title": "System Routes"
       }
@@ -10843,12 +10875,6 @@
     "Table of Contents": [
       {
         "document": "developer-guide/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "Table of Contents"
-      },
-      {
-        "document": "getting-started/common-tasks.md",
         "line": 5,
         "level": 2,
         "title": "Table of Contents"
@@ -10977,7 +11003,7 @@
     "Traditional Registration Method": [
       {
         "document": "advanced/router.md",
-        "line": 106,
+        "line": 104,
         "level": 2,
         "title": "Traditional Registration Method"
       }
@@ -11404,12 +11430,12 @@
         "title": "Using in Transactions"
       }
     ],
-    "Using reply method to send replies": [
+    "Using the reply method to send responses": [
       {
         "document": "getting-started/event-handling.md",
         "line": 302,
         "level": 3,
-        "title": "Using reply method to send replies"
+        "title": "Using the reply method to send responses"
       }
     ],
     "Using with Send": [
@@ -11512,36 +11538,36 @@
         "title": "Wait for Result"
       }
     ],
-    "Wait for any event (wait_for)": [
+    "Waiting for Any Event (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
         "line": 451,
         "level": 3,
-        "title": "Wait for any event (wait_for)"
+        "title": "Waiting for Any Event (wait_for)"
       }
     ],
-    "Waiting for user reply": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 330,
-        "level": 3,
-        "title": "Waiting for user reply"
-      }
-    ],
-    "Waiting reply with callback": [
+    "Waiting for Reply with Callback": [
       {
         "document": "getting-started/event-handling.md",
         "line": 374,
         "level": 3,
-        "title": "Waiting reply with callback"
+        "title": "Waiting for Reply with Callback"
       }
     ],
-    "Waiting reply with validation": [
+    "Waiting for Reply with Validation": [
       {
         "document": "getting-started/event-handling.md",
         "line": 347,
         "level": 3,
-        "title": "Waiting reply with validation"
+        "title": "Waiting for Reply with Validation"
+      }
+    ],
+    "Waiting for User Reply": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 330,
+        "level": 3,
+        "title": "Waiting for User Reply"
       }
     ],
     "WebHook Connection": [
@@ -11605,7 +11631,7 @@
     "WebSocket Decorators": [
       {
         "document": "advanced/router.md",
-        "line": 67,
+        "line": 65,
         "level": 3,
         "title": "WebSocket Decorators"
       }
@@ -11613,7 +11639,7 @@
     "WebSocket Lifecycle Hooks": [
       {
         "document": "advanced/router.md",
-        "line": 173,
+        "line": 171,
         "level": 2,
         "title": "WebSocket Lifecycle Hooks"
       }
@@ -11621,7 +11647,7 @@
     "WebSocket Registration": [
       {
         "document": "advanced/router.md",
-        "line": 132,
+        "line": 130,
         "level": 3,
         "title": "WebSocket Registration"
       }
