@@ -78,7 +78,7 @@ install 命令
 
 搜索并安装
 
-> **内部方法** 
+> **内部方法**
 
 - **remote_packages** (`dict`): 远程包列表
 - **upgrade** (`bool`): 是否升级

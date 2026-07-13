@@ -1264,14 +1264,14 @@ async def stop_handler(event):
 ### 命令权限
 
 ```python
-def is_admin(event):
-    """检查用户是否为管理员"""
-    admin_list = ["user123", "user456"]
-    return event.get_user_id() in admin_list
+def is_master(event):
+    """检查用户是否为框架主人"""
+    master_list = ["user123", "user456"]
+    return event.get_user_id() in master_list
 
-@command("admin", permission=is_admin, help="管理员命令")
-async def admin_handler(event):
-    await event.reply("这是管理员命令")
+@command("master", permission=is_master, help="框架主人命令")
+async def master_handler(event):
+    await event.reply("这是框架主人命令")
 ```
 
 ### 命令优先级
@@ -2073,36 +2073,36 @@ async def announce_handler(event):
 ### 管理员检查
 
 ```python
-# 配置管理员列表
-ADMINS = ["user123", "user456"]
+# 配置主人列表
+MASTERS = ["user123", "user456"]
 
-def is_admin(user_id):
-    """检查是否为管理员"""
-    return user_id in ADMINS
+def is_master(user_id):
+    """检查是否为框架主人"""
+    return user_id in MASTERS
 
-@command("admin", help="管理员命令")
-async def admin_handler(event):
+@command("master", help="框架主人命令")
+async def master_handler(event):
     user_id = event.get_user_id()
     
-    if not is_admin(user_id):
-        await event.reply("权限不足，此命令仅管理员可用")
+    if not is_master(user_id):
+        await event.reply("权限不足，此命令仅框架主人可用")
         return
     
-    await event.reply("管理员命令执行成功")
+    await event.reply("框架主人命令执行成功")
 
-@command("addadmin", help="添加管理员")
-async def addadmin_handler(event):
-    if not is_admin(event.get_user_id()):
+@command("addmaster", help="添加框架主人")
+async def addmaster_handler(event):
+    if not is_master(event.get_user_id()):
         return
     
-    args = event.get_command_args()
-    if not args:
-        await event.reply("请输入要添加的管理员 ID")
+    args = event.get("text", "").split()
+    if len(args) < 2:
+        await event.reply("用法: /addmaster <用户ID>")
         return
     
-    new_admin = args[0]
-    ADMINS.append(new_admin)
-    await event.reply(f"已添加管理员: {new_admin}")
+    new_master = args[0]
+    MASTERS.append(new_master)
+    await event.reply(f"已添加框架主人: {new_master}")
 ```
 
 ### 群组权限
@@ -12609,6 +12609,7 @@ ErisPulse 路由管理器提供统一的 HTTP 和 WebSocket 路由管理，支�
 - **WebSocket 支持**：完整的 WebSocket 连接管理、自定义认证和生命周期钩子
 - **生命周期集成**：与 ErisPulse 生命周期系统深度集成
 - **SSL/TLS 支持**：支持 HTTPS 和 WSS 安全连接
+- **主页入口**：支持模块在根路由 `/` 注册快捷入口按钮，支持国际化
 
 ## 抽象类型
 
@@ -12895,22 +12896,63 @@ router.register_http_route("my_module", "/api", handler)
 
 ## 系统路由
 
-路由管理器自动提供两个系统路由：
+路由管理器自动提供以下系统路由：
 
 ### 健康检查
 
-```python
+```
 GET /health
 # 返回:
 {"status": "ok", "service": "ErisPulse Router"}
 ```
 
-### 路由列表
+### 根页面
+
+```
+GET /
+# 返回 ErisPulse 品牌页
+```
+
+根路由 `/` 显示 ErisPulse 品牌页面，自动检测 Dashboard 可用性并添加入口按钮。
+
+## 主页入口
+
+路由管理器允许外部模块在根路由 `/` 上注册快捷入口按钮，方便用户快速访问各模块的管理页面。
+
+### 注册入口
 
 ```python
-GET /routes
-# 返回所有已注册的路由信息
+# 简单注册
+router.register_home_entry(
+    name="我的面板",
+    url="/mymodule/admin",
+)
+
+# 带图标的注册（SVG）
+router.register_home_entry(
+    name="控制台",
+    url="/console",
+    icon_svg='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>',
+)
+
+# 支持国际化的注册（项目 i18n 字典格式）
+router.register_home_entry(
+    name={"i18n": "mymodule.home.entry", "default": "我的面板"},
+    url="/mymodule/admin",
+)
 ```
+
+**参数说明：**
+
+| 参数 | 类型 | 说明 | 必填 |
+|------|------|------|------|
+| `name` | `str` / `dict` | 按钮显示文本；传入 `{"i18n": "key", "default": "文本"}` 字典时使用国际化 | 是 |
+| `url` | `str` | 按钮链接地址 | 是 |
+| `icon_svg` | `str` | 可选 SVG 图标标记 | 否 |
+
+### Dashboard 自动注册
+
+当检测到 `sdk.Dashboard` 可用时，路由管理器自动在入口列表首位添加 Dashboard 按钮，无需手动注册。
 
 ## 生命周期集成
 

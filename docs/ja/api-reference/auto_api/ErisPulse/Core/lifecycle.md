@@ -64,9 +64,9 @@ ErisPulse 生命周期管理模块
 
 注册事件处理器（装饰器模式）
 
-:param event: str 事件名称，支持点式结构和通配符
-:param priority: int 优先级，数值越大越先执行 (默认: 0)
-:return: Callable 装饰器
+- **event** (`str`): 事件名称，支持点式结构和通配符
+- **priority** (`int`): 优先级，数值越大越先执行 (默认: 0)
+**返回值** (`Callable`): 装饰器
 
 **异常**: `ValueError` - 当事件名无效时抛出
 
@@ -88,9 +88,9 @@ ErisPulse 生命周期管理模块
 
 注册事件处理器（函数调用模式）
 
-:param event: str 事件名称
-:param handler: Callable 处理函数
-:param priority: int 优先级，数值越大越先执行 (默认: 0)
+- **event** (`str`): 事件名称
+- **handler** (`Callable`): 处理函数
+- **priority** (`int`): 优先级，数值越大越先执行 (默认: 0)
 
 **示例**:
 ```python
@@ -104,8 +104,8 @@ ErisPulse 生命周期管理模块
 
 取消注册事件处理器
 
-:param event: str 事件名称
-:param handler: Callable 指定取消的处理器，为 None 时取消该事件所有处理器
+- **event** (`str`): 事件名称
+- **handler** (`Callable`): 指定取消的处理器，为 None 时取消该事件所有处理器
 
 **示例**:
 ```python
@@ -122,8 +122,7 @@ ErisPulse 生命周期管理模块
 
 用于模块/适配器卸载时自动清理其注册的钩子，避免闭包引用导致内存泄漏。
 
-:param owner: 模块或适配器名称
-:return: int 被移除的处理器数量
+- **owner** (`模块或适配器名称`): **返回值** (`int`): 被移除的处理器数量
 
 **示例**:
 ```python
@@ -133,16 +132,16 @@ ErisPulse 生命周期管理模块
 ---
 
 
-##### `async async emit(event: str, data: Any = None)`
+##### `async emit(event: str, data: Any = None)`
 
 触发事件（异步，精简版）
 
 按优先级执行匹配的处理器。处理器返回非 None 值时，
 该值将作为新的 data 传递给后续处理器。
 
-:param event: str 事件名称
-:param data: Any 事件数据
-:return: Any 经过所有处理器处理后的数据
+- **event** (`str`): 事件名称
+- **data** (`Any`): 事件数据
+**返回值** (`Any`): 经过所有处理器处理后的数据
 
 **示例**:
 ```python
@@ -159,9 +158,9 @@ ErisPulse 生命周期管理模块
 同步执行所有处理器。异步处理器会在当前事件循环中以 create_task 调度。
 注意：同步模式下异步处理器的返回值无法回传。
 
-:param event: str 事件名称
-:param data: Any 事件数据
-:return: Any 处理后的数据
+- **event** (`str`): 事件名称
+- **data** (`Any`): 事件数据
+**返回值** (`Any`): 处理后的数据
 
 **示例**:
 ```python
@@ -171,17 +170,17 @@ ErisPulse 生命周期管理模块
 ---
 
 
-##### `async async submit_event(event_type: str)`
+##### `async submit_event(event_type: str)`
 
 提交生命周期事件（兼容旧版 API）
 
 构建标准事件格式后通过 emit 触发，处理器接收标准事件字典。
 
-:param event_type: str 事件名称
-:param source: str 事件来源(默认"ErisPulse")
-:param msg: str 事件描述
-:param data: dict 事件相关数据
-:param timestamp: float 时间戳(默认当前时间)
+- **event_type** (`str`): 事件名称
+- **source** (`str`): 事件来源(默认"ErisPulse")
+- **msg** (`str`): 事件描述
+- **data** (`dict`): 事件相关数据
+- **timestamp** (`float`): 时间戳(默认当前时间)
 
 **示例**:
 ```python
@@ -195,7 +194,7 @@ ErisPulse 生命周期管理模块
 
 开始计时
 
-:param timer_id: str 计时器ID
+- **timer_id** (`str`): 计时器ID
 
 ---
 
@@ -204,8 +203,8 @@ ErisPulse 生命周期管理模块
 
 获取指定计时器的持续时间
 
-:param timer_id: str 计时器ID
-:return: float 持续时间(秒)
+- **timer_id** (`str`): 计时器ID
+**返回值** (`float`): 持续时间(秒)
 
 ---
 
@@ -214,20 +213,20 @@ ErisPulse 生命周期管理模块
 
 停止计时并返回持续时间
 
-:param timer_id: str 计时器ID
-:return: float 持续时间(秒)
+- **timer_id** (`str`): 计时器ID
+**返回值** (`float`): 持续时间(秒)
 
 ---
 
 
-##### `async async _execute_handlers(hook_name: str, event: str, data: Any)`
+##### `async _execute_handlers(hook_name: str, event: str, data: Any)`
 
 执行匹配的事件处理器（异步）
 
-:param hook_name: str 注册的钩子名
-:param event: str 实际事件名
-:param data: Any 事件数据
-:return: Any 处理后的数据
+- **hook_name** (`str`): 注册的钩子名
+- **event** (`str`): 实际事件名
+- **data** (`Any`): 事件数据
+**返回值** (`Any`): 处理后的数据
 
 ---
 
@@ -236,10 +235,10 @@ ErisPulse 生命周期管理模块
 
 执行匹配的事件处理器（同步）
 
-:param hook_name: str 注册的钩子名
-:param event: str 实际事件名
-:param data: Any 事件数据
-:return: Any 处理后的数据
+- **hook_name** (`str`): 注册的钩子名
+- **event** (`str`): 实际事件名
+- **data** (`Any`): 事件数据
+**返回值** (`Any`): 处理后的数据
 
 ---
 
@@ -260,7 +259,7 @@ ErisPulse 生命周期管理模块
 
 列出所有已注册的钩子及其处理器数量
 
-:return: dict 钩子名称到处理器数量的映射
+**返回值** (`dict`): 钩子名称到处理器数量的映射
 
 **示例**:
 ```python

@@ -49,9 +49,8 @@ OneBot12 消息段构建器
 
 用于添加平台扩展消息段或其他非标准消息段
 
-:param segment_type: 消息段类型（如 "yunhu_form"）
-:param data: 消息段数据
-:return: MessageBuilder 实例
+- **segment_type** (`消息段类型（如`): "yunhu_form"）
+- **data** (`消息段数据`): **返回值** (`MessageBuilder`): 实例
 
 **示例**:
 ```python
@@ -65,7 +64,7 @@ OneBot12 消息段构建器
 
 构建消息段列表
 
-:return: OneBot12 标准消息段列表
+**返回值** (`OneBot12`): 标准消息段列表
 
 **示例**:
 ```python
@@ -80,7 +79,7 @@ OneBot12 消息段构建器
 
 复制当前构建器（深拷贝消息段列表）
 
-:return: 新的 MessageBuilder 实例
+**返回值** (`新的`): MessageBuilder 实例
 
 **示例**:
 ```python
@@ -96,7 +95,7 @@ OneBot12 消息段构建器
 
 清空已添加的消息段
 
-:return: MessageBuilder 实例自身
+**返回值** (`MessageBuilder`): 实例自身
 
 **示例**:
 ```python

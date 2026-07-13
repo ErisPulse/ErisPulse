@@ -34,7 +34,7 @@ CLI 命令基类
 
 添加命令参数
 
-:param parser: ArgumentParser 实例
+- **parser** (`ArgumentParser`): 实例
 
 ---
 
@@ -43,7 +43,7 @@ CLI 命令基类
 
 执行命令
 
-:param args: 解析后的参数对象
+- **args**: 解析后的参数对象
 
 ---
 
@@ -52,7 +52,7 @@ CLI 命令基类
 
 获取帮助信息
 
-:return: 命令描述
+**返回值**: 命令描述
 
 ---
 

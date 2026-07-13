@@ -21,11 +21,11 @@ ErisPulse 模块加载器
 
 ### `_validate_sdk_attr_name(name: str)`
 
-> **内部方法** 
+> **内部方法**
 验证模块名称是否可以安全地作为 SDK 属性挂载
 
-:param name: 模块名称（entry-point name）
-:return: True 如果名称安全，False 如果应拒绝
+- **name** (`模块名称（entry-point`): name）
+**返回值** (`True`): 如果名称安全，False 如果应拒绝
 
 ---
 
@@ -59,18 +59,16 @@ ErisPulse 模块加载器
 
 获取 entry-point 组名
 
-:return: "erispulse.module"
+**返回值**: "erispulse.module"
 
 ---
 
 
-##### `async async load(manager_instance: Any)`
+##### `async load(manager_instance: Any)`
 
 从 entry-points 加载对象（使用 ModuleFinder）
 
-:param manager_instance: 管理器实例
-:return:
-    dict[str, Any]: 对象字典
+- **manager_instance** (`管理器实例`): **返回值** (`dict[str,`): Any]: 对象字典
     list[str]: 启用列表
     list[str]: 禁用列表
 
@@ -79,18 +77,15 @@ ErisPulse 模块加载器
 ---
 
 
-##### `async async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any)`
+##### `async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any)`
 
 处理单个模块 entry-point
 
-:param entry_point: entry-point 对象
-:param objs: 模块对象字典
-:param enabled_list: 启用的模块列表
-:param disabled_list: 停用的模块列表
-:param manager_instance: 模块管理器实例
+- **entry_point** (`entry-point`): 对象
+- **objs** (`模块对象字典`): - **enabled_list**: 启用的模块列表
+- **disabled_list** (`停用的模块列表`): - **manager_instance**: 模块管理器实例
 
-:return:
-    dict[str, Any]: 更新后的模块对象字典
+**返回值** (`dict[str,`): Any]: 更新后的模块对象字典
     list[str]: 更新后的启用模块列表
     list[str]: 更新后的禁用模块列表
     bool: 是否为新模块
@@ -104,12 +99,9 @@ ErisPulse 模块加载器
 
 从策略对象或字典中提取值
 
-:param strategy: 策略对象（dict 或 ModuleLoadStrategy）
-:param key: 键名
-:param default: 默认值
-:return: 提取到的值或默认值
-
-> **内部方法** 
+- **strategy** (`策略对象（dict`): 或 ModuleLoadStrategy）
+- **key** (`键名`): - **default**: 默认值
+**返回值** (`提取到的值或默认值`): > **内部方法**
 内部方法，统一处理 dict 和 ModuleLoadStrategy 两种策略类型
 
 ---
@@ -119,9 +111,9 @@ ErisPulse 模块加载器
 
 获取全局懒加载配置
 
-:return: 是否启用懒加载（默认 True）
+**返回值** (`是否启用懒加载（默认`): True）
 
-> **内部方法** 
+> **内部方法**
 内部方法，用于获取全局懒加载配置
 
 ---
@@ -133,10 +125,9 @@ ErisPulse 模块加载器
 
 优先级：should_eager_load()（旧版兼容） → get_load_strategy()
 
-:param module_class: 模块类
-:return: 策略对象或 None
+- **module_class** (`模块类`): **返回值** (`策略对象或`): None
 
-> **内部方法** 
+> **内部方法**
 内部方法，用于解析模块的加载策略
 
 ---
@@ -146,11 +137,8 @@ ErisPulse 模块加载器
 
 应用全局懒加载配置到策略
 
-:param strategy: 原始策略
-:param lazy_load: 懒加载值
-:return: 修改后的策略
-
-> **内部方法** 
+- **strategy** (`原始策略`): - **lazy_load**: 懒加载值
+**返回值** (`修改后的策略`): > **内部方法**
 内部方法，用于应用全局配置覆盖
 
 ---
@@ -168,25 +156,19 @@ ErisPulse 模块加载器
 
 全局配置会覆盖模块策略中的 lazy_load 设置
 
-:param module_class: Type 模块类
-:return: 加载策略对象或字典
-
-> **内部方法** 
+- **module_class** (`Type`): 模块类
+**返回值** (`加载策略对象或字典`): > **内部方法**
 内部方法，用于获取模块的加载策略
 
 ---
 
 
-##### `async async register_to_manager(modules: list[str], module_objs: dict[str, Any], manager_instance: Any)`
+##### `async register_to_manager(modules: list[str], module_objs: dict[str, Any], manager_instance: Any)`
 
 将模块类注册到管理器
 
-:param modules: 模块名称列表
-:param module_objs: 模块对象字典
-:param manager_instance: 模块管理器实例
-:return: 模块注册是否成功
-
-> **提示**
+- **modules** (`模块名称列表`): - **module_objs**: 模块对象字典
+- **manager_instance** (`模块管理器实例`): **返回值** (`模块注册是否成功`): > **提示**
 > 此方法由初始化协调器调用，仅注册模块类，不进行实例化
 
 ---
@@ -196,9 +178,9 @@ ErisPulse 模块加载器
 
 验证所有模块的依赖是否满足
 
-:param modules: list 模块名称列表
-:param module_objs: dict 模块对象字典
-:return: dict 缺少依赖的模块映射 {模块名: [缺少的依赖列表]}
+- **modules** (`list`): 模块名称列表
+- **module_objs** (`dict`): 模块对象字典
+**返回值** (`dict`): 缺少依赖的模块映射 {模块名: [缺少的依赖列表]}
 
 > **内部方法**
 
@@ -209,9 +191,9 @@ ErisPulse 模块加载器
 
 基于依赖关系和优先级的拓扑排序
 
-:param modules: list 模块名称列表
-:param module_objs: dict 模块对象字典
-:return: list 排序后的模块 meta_name 列表
+- **modules** (`list`): 模块名称列表
+- **module_objs** (`dict`): 模块对象字典
+**返回值** (`list`): 排序后的模块 meta_name 列表
 
 **异常**: `RuntimeError` - 当检测到循环依赖时
 
@@ -220,17 +202,13 @@ ErisPulse 模块加载器
 ---
 
 
-##### `async async initialize_modules(modules: list[str], module_objs: dict[str, Any], manager_instance: Any, sdk_instance: Any)`
+##### `async initialize_modules(modules: list[str], module_objs: dict[str, Any], manager_instance: Any, sdk_instance: Any)`
 
 初始化模块（创建实例并挂载到 SDK）
 
-:param modules: 模块名称列表
-:param module_objs: 模块对象字典
-:param manager_instance: 模块管理器实例
-:param sdk_instance: SDK 实例
-:return: 模块初始化是否成功
-
-> **提示**
+- **modules** (`模块名称列表`): - **module_objs**: 模块对象字典
+- **manager_instance** (`模块管理器实例`): - **sdk_instance**: SDK 实例
+**返回值** (`模块初始化是否成功`): > **提示**
 > 此方法处理模块的实际初始化和挂载
 > 支持模块间依赖声明和拓扑排序加载
 
@@ -256,22 +234,22 @@ ErisPulse 模块加载器
 
 初始化懒加载包装器
 
-:param module_name: str 模块名称
-:param module_class: Type 模块类
-:param sdk_ref: Any SDK 引用
-:param module_info: dict[str, Any] 模块信息字典
-:param manager_instance: 模块管理器实例
+- **module_name** (`str`): 模块名称
+- **module_class** (`Type`): 模块类
+- **sdk_ref** (`Any`): SDK 引用
+- **module_info** (`dict[str,`): Any] 模块信息字典
+- **manager_instance**: 模块管理器实例
 
 ---
 
 
-##### `async async _initialize()`
+##### `async _initialize()`
 
 实际初始化模块
 
 **异常**: `Exception` - 当模块初始化失败时抛出
 
-> **内部方法** 
+> **内部方法**
 内部方法，执行实际的模块初始化
 
 ---
@@ -281,9 +259,9 @@ ErisPulse 模块加载器
 
 确保模块已初始化
 
-> **内部方法** 
+> **内部方法**
 内部方法，检查并确保模块已初始化
-> **内部方法** 
+> **内部方法**
 
 设计说明：
 - 支持同步/异步透明的懒加载机制，用户无需感知差异
@@ -299,7 +277,7 @@ ErisPulse 模块加载器
 
 在辅助线程中运行异步初始化，当前线程同步等待完成
 
-> **内部方法** 
+> **内部方法**
 当 _ensure_initialized 在已有事件循环中被调用时，无法使用
 run_until_complete (会死锁)。通过在新线程中创建独立的事件循环
 来运行异步初始化，同时当前线程通过 threading.Event 同步等待。
@@ -312,17 +290,17 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 
 同步初始化模块
 
-> **内部方法** 
+> **内部方法**
 内部方法，在同步上下文中初始化模块
 
 ---
 
 
-##### `async async _complete_async_init()`
+##### `async _complete_async_init()`
 
 完成异步初始化部分
 
-> **内部方法** 
+> **内部方法**
 内部方法，处理模块的异步初始化部分
 
 ---
@@ -332,8 +310,8 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 
 属性访问时触发初始化
 
-:param name: str 属性名
-:return: Any 属性值
+- **name** (`str`): 属性名
+**返回值** (`Any`): 属性值
 
 ---
 
@@ -342,8 +320,8 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 
 属性设置
 
-:param name: str 属性名
-:param value: Any 属性值
+- **name** (`str`): 属性名
+- **value** (`Any`): 属性值
 
 ---
 
@@ -352,7 +330,7 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 
 属性删除
 
-:param name: str 属性名
+- **name** (`str`): 属性名
 
 ---
 
@@ -361,8 +339,8 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 
 属性访问，初始化后直接委托给实际实例
 
-:param name: str 属性名
-:return: Any 属性值
+- **name** (`str`): 属性名
+**返回值** (`Any`): 属性值
 
 ---
 
@@ -371,7 +349,7 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 
 返回模块属性列表
 
-:return: list[str] 属性列表
+**返回值** (`list[str]`): 属性列表
 
 ---
 
@@ -380,7 +358,7 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 
 返回模块表示字符串
 
-:return: str 表示字符串
+**返回值** (`str`): 表示字符串
 
 ---
 
@@ -389,9 +367,8 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 
 代理函数调用
 
-:param args: 位置参数
-:param kwargs: 关键字参数
-:return: 调用结果
+- **args** (`位置参数`): - **kwargs**: 关键字参数
+**返回值**: 调用结果
 
 ---
 

@@ -50,15 +50,14 @@ JSON 日志格式化器
 
 >>> sdk.logger.handler("dashboard", min_level="INFO")(on_log)
 
-:param handler_id: 订阅器唯一标识，为空时使用函数名
-:param min_level: 最低日志级别
+- **handler_id** (`订阅器唯一标识，为空时使用函数名`): - **min_level**: 最低日志级别
 
 ---
 
 
 ##### `_register_handler(handler_id: str, callback: Callable[[dict], None], min_level: str)`
 
-> **内部方法** 
+> **内部方法**
 内部注册逻辑
 
 ---
@@ -68,15 +67,14 @@ JSON 日志格式化器
 
 移除日志订阅器
 
-:param handler_id: 注册时使用的标识
-:return: bool 是否成功移除
+- **handler_id** (`注册时使用的标识`): **返回值** (`bool`): 是否成功移除
 
 ---
 
 
 ##### `_notify_handlers(level_name: str, level_const: int, module: str, msg: str)`
 
-> **内部方法** 
+> **内部方法**
 向所有符合条件的订阅器推送结构化日志
 
 ---
@@ -86,8 +84,7 @@ JSON 日志格式化器
 
 设置日志内存存储上限
 
-:param limit: 日志存储上限
-:return: bool 设置是否成功
+- **limit** (`日志存储上限`): **返回值** (`bool`): 设置是否成功
 
 ---
 
@@ -96,8 +93,7 @@ JSON 日志格式化器
 
 将字符串级别名解析为对应的数值常量
 
-:param level: 日志级别名称
-:return: 对应的 logging 级别数值，无效时返回 None
+- **level** (`日志级别名称`): **返回值** (`对应的`): logging 级别数值，无效时返回 None
 
 > **内部方法**
 
@@ -111,8 +107,7 @@ JSON 日志格式化器
 支持标准级别 (DEBUG/INFO/WARNING/ERROR/CRITICAL)
 及自定义级别 (TRACE/EVENT)
 
-:param level: 日志级别名称
-:return: bool 设置是否成功
+- **level** (`日志级别名称`): **返回值** (`bool`): 设置是否成功
 
 ---
 
@@ -124,9 +119,8 @@ JSON 日志格式化器
 支持标准级别 (DEBUG/INFO/WARNING/ERROR/CRITICAL)
 及自定义级别 (TRACE/EVENT)
 
-:param module_name: 模块名称
-:param level: 日志级别名称
-:return: bool 设置是否成功
+- **module_name** (`模块名称`): - **level**: 日志级别名称
+**返回值** (`bool`): 设置是否成功
 
 ---
 
@@ -135,8 +129,8 @@ JSON 日志格式化器
 
 设置日志输出
 
-:param path: 日志文件路径 Str/List
-:return: bool 设置是否成功
+- **path** (`日志文件路径`): Str/List
+**返回值** (`bool`): 设置是否成功
 
 ---
 
@@ -148,8 +142,8 @@ JSON 日志格式化器
 启用后，所有日志（控制台和文件）将以 JSON 格式输出，
 适合 ELK / Grafana Loki / Datadog 等日志聚合系统。
 
-:param enabled: 是否启用 JSON 格式（默认 True）
-:return: bool 设置是否成功
+- **enabled** (`是否启用`): JSON 格式（默认 True）
+**返回值** (`bool`): 设置是否成功
 
 **示例**:
 ```python
@@ -168,8 +162,8 @@ JSON 日志格式化器
 
 保存所有在内存中记录的日志
 
-:param path: 日志文件路径 Str/List
-:return: bool 设置是否成功
+- **path** (`日志文件路径`): Str/List
+**返回值** (`bool`): 设置是否成功
 
 ---
 
@@ -181,7 +175,7 @@ JSON 日志格式化器
 JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表。
 
 :param module_name (可选): 模块名称，None表示获取所有日志
-:return: dict 日志内容
+**返回值** (`dict`): 日志内容
 
 ---
 
@@ -206,7 +200,7 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 
 ##### `_format_for_output(entries: list)`
 
-> **内部方法** 
+> **内部方法**
 将内部 dict 转换为向后兼容的输出格式
 
 ---
@@ -214,7 +208,7 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 
 ##### `_save_in_memory(module_name: str, level_name: str, level_const: int, msg: str)`
 
-> **内部方法** 
+> **内部方法**
 将日志保存到内存
 
 ---
@@ -224,11 +218,9 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 
 内部日志方法，统一处理日志记录流程
 
-:param level_name: 日志级别名称（对应logging模块的方法名）
-:param level_const: 日志级别常量
-:param msg: 日志消息
-:param args: 额外的格式化参数
-:param kwargs: 额外的关键字参数
+- **level_name** (`日志级别名称（对应logging模块的方法名）`): - **level_const**: 日志级别常量
+- **msg** (`日志消息`): - **args**: 额外的格式化参数
+- **kwargs**: 额外的关键字参数
 
 ---
 
@@ -237,11 +229,10 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 
 获取子日志记录器
 
-:param child_name: 子模块名称(可选)
-:param relative: 是否相对于调用者模块（默认True）
+- **child_name** (`子模块名称(可选)`): - **relative**: 是否相对于调用者模块（默认True）
     - True: 使用"调用模块.子模块"作为完整名称
     - False: 直接使用child_name作为完整名称
-:return: LoggerChild 子日志记录器实例
+**返回值** (`LoggerChild`): 子日志记录器实例
 
 **示例**:
 ```python
@@ -319,7 +310,7 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 
 打印日志分组标题
 
-:param title: 分组标题
+- **title**: 分组标题
 
 ---
 
@@ -335,11 +326,9 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 
 打印树状结构项目
 
-:param text: 文本内容
-:param level: 缩进层级
-:param is_last: 是否是最后一项
-:param tag: 可选的样式化后缀标签（如 "[懒加载]"）
-:param tag_style: 标签的 rich 样式（默认 dim）
+- **text** (`文本内容`): - **level**: 缩进层级
+- **is_last** (`是否是最后一项`): - **tag**: 可选的样式化后缀标签（如 "[懒加载]"）
+- **tag_style** (`标签的`): rich 样式（默认 dim）
 
 ---
 
@@ -348,8 +337,7 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 
 打印信息
 
-:param text: 文本内容
-:param level: 缩进层级
+- **text** (`文本内容`): - **level**: 缩进层级
 
 ---
 
@@ -365,8 +353,7 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 
 通过属性访问自动创建子logger
 
-:param name: 子logger名称
-:return: LoggerChild 子logger实例
+- **name** (`子logger名称`): **返回值** (`LoggerChild`): 子logger实例
 **异常**: `AttributeError` - 当访问无效属性时抛出
 
 **示例**:
@@ -397,8 +384,7 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 
 初始化子日志记录器
 
-:param parent_logger: 父日志记录器实例
-:param name: 子日志记录器名称
+- **parent_logger** (`父日志记录器实例`): - **name**: 子日志记录器名称
 
 ---
 
@@ -407,9 +393,8 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 
 内部日志方法
 
-:param level_name: 日志级别名称
-:param level_const: 日志级别常量
-:param msg: 日志消息
+- **level_name** (`日志级别名称`): - **level_const**: 日志级别常量
+- **msg**: 日志消息
 
 ---
 
@@ -469,8 +454,7 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 
 获取子日志记录器的子记录器
 
-:param child_name: 子模块名称
-:return: LoggerChild 子日志记录器实例
+- **child_name** (`子模块名称`): **返回值** (`LoggerChild`): 子日志记录器实例
 
 ---
 
@@ -479,8 +463,7 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 
 通过属性访问自动创建子logger
 
-:param name: 子logger名称
-:return: LoggerChild 子logger实例
+- **name** (`子logger名称`): **返回值** (`LoggerChild`): 子logger实例
 **异常**: `AttributeError` - 当访问无效属性时抛出
 
 **示例**:

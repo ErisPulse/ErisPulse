@@ -39,9 +39,8 @@ ErisPulse 存储基类
 
 指定查询列
 
-:param columns: 列名列表，为空时表示 SELECT *
-:return: self
-
+- **columns** (`列名列表，为空时表示`): SELECT *
+**返回值** (`self`): 
 **示例**:
 ```python
 >>> storage.Table("users").Select("name", "age").Execute()
@@ -54,9 +53,7 @@ ErisPulse 存储基类
 
 插入一行数据
 
-:param data: 列名到值的映射
-:return: self
-
+- **data** (`列名到值的映射`): **返回值** (`self`): 
 **示例**:
 ```python
 >>> storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
@@ -69,9 +66,7 @@ ErisPulse 存储基类
 
 批量插入多行数据
 
-:param data: 列名到值的映射列表
-:return: self
-
+- **data** (`列名到值的映射列表`): **返回值** (`self`): 
 **示例**:
 ```python
 >>> storage.Table("users").InsertMulti([
@@ -87,9 +82,7 @@ ErisPulse 存储基类
 
 更新数据
 
-:param data: 列名到新值的映射
-:return: self
-
+- **data** (`列名到新值的映射`): **返回值** (`self`): 
 **示例**:
 ```python
 >>> storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
@@ -102,8 +95,7 @@ ErisPulse 存储基类
 
 删除行
 
-:return: self
-
+**返回值** (`self`): 
 **示例**:
 ```python
 >>> storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
@@ -118,10 +110,8 @@ ErisPulse 存储基类
 
 多次调用时条件之间以 AND 连接
 
-:param condition: 条件表达式（使用占位符，如 "age > ?"）
-:param params: 占位符对应的参数值
-:return: self
-
+- **condition** (`条件表达式（使用占位符，如`): "age > ?"）
+- **params** (`占位符对应的参数值`): **返回值** (`self`): 
 **示例**:
 ```python
 >>> storage.Table("users").Where("age > ?", 18).Where("name LIKE ?", "A%").Execute()
@@ -136,10 +126,8 @@ ErisPulse 存储基类
 
 多次调用时按添加顺序组合 ORDER BY
 
-:param column: 排序列名
-:param desc: 是否降序（默认升序）
-:return: self
-
+- **column** (`排序列名`): - **desc**: 是否降序（默认升序）
+**返回值** (`self`): 
 **示例**:
 ```python
 >>> storage.Table("users").OrderBy("age", desc=True).OrderBy("name").Execute()
@@ -152,9 +140,7 @@ ErisPulse 存储基类
 
 限制返回条数
 
-:param count: 最大返回条数
-:return: self
-
+- **count** (`最大返回条数`): **返回值** (`self`): 
 **示例**:
 ```python
 >>> storage.Table("users").Limit(10).Execute()
@@ -167,9 +153,7 @@ ErisPulse 存储基类
 
 设置偏移量
 
-:param count: 跳过的条数
-:return: self
-
+- **count** (`跳过的条数`): **返回值** (`self`): 
 **示例**:
 ```python
 >>> storage.Table("users").Limit(10).Offset(20).Execute()
@@ -182,7 +166,7 @@ ErisPulse 存储基类
 
 深拷贝当前构建器状态
 
-:return: 新的构建器实例
+**返回值**: 新的构建器实例
 
 ---
 
@@ -191,7 +175,7 @@ ErisPulse 存储基类
 
 重置构建器状态
 
-:return: self
+**返回值**: self
 
 ---
 
@@ -203,7 +187,7 @@ ErisPulse 存储基类
 - SELECT 返回 list[tuple]
 - INSERT/UPDATE/DELETE 返回受影响行数 int
 
-:return: 查询结果或受影响行数
+**返回值**: 查询结果或受影响行数
 
 ---
 
@@ -212,7 +196,7 @@ ErisPulse 存储基类
 
 执行查询并返回单条结果
 
-:return: 单行元组或 None
+**返回值** (`单行元组或`): None
 
 ---
 
@@ -221,7 +205,7 @@ ErisPulse 存储基类
 
 执行 COUNT 查询
 
-:return: 匹配的行数
+**返回值**: 匹配的行数
 
 ---
 
@@ -230,7 +214,7 @@ ErisPulse 存储基类
 
 检查是否存在匹配的记录
 
-:return: 是否存在
+**返回值**: 是否存在
 
 ---
 
@@ -255,9 +239,8 @@ ErisPulse 存储基类
 
 获取存储项的值
 
-:param key: 存储项键名
-:param default: 默认值
-:return: 存储项的值
+- **key** (`存储项键名`): - **default**: 默认值
+**返回值**: 存储项的值
 
 ---
 
@@ -266,9 +249,8 @@ ErisPulse 存储基类
 
 设置存储项的值
 
-:param key: 存储项键名
-:param value: 存储项的值
-:return: 操作是否成功
+- **key** (`存储项键名`): - **value**: 存储项的值
+**返回值**: 操作是否成功
 
 ---
 
@@ -277,8 +259,7 @@ ErisPulse 存储基类
 
 删除存储项
 
-:param key: 存储项键名
-:return: 操作是否成功
+- **key** (`存储项键名`): **返回值**: 操作是否成功
 
 ---
 
@@ -287,7 +268,7 @@ ErisPulse 存储基类
 
 获取所有存储项的键名
 
-:return: 键名列表
+**返回值**: 键名列表
 
 ---
 
@@ -296,7 +277,7 @@ ErisPulse 存储基类
 
 清空所有存储项
 
-:return: 操作是否成功
+**返回值**: 操作是否成功
 
 ---
 
@@ -305,7 +286,7 @@ ErisPulse 存储基类
 
 创建事务上下文
 
-:return: 事务上下文管理器
+**返回值**: 事务上下文管理器
 
 ---
 
@@ -314,8 +295,7 @@ ErisPulse 存储基类
 
 获取指定表的查询构建器
 
-:param table_name: 表名
-:return: 查询构建器实例
+- **table_name** (`表名`): **返回值**: 查询构建器实例
 
 ---
 
@@ -324,9 +304,8 @@ ErisPulse 存储基类
 
 创建表
 
-:param table_name: 表名
-:param columns: 列名到类型的映射（如 {"id": "INTEGER PRIMARY KEY", "name": "TEXT"}）
-:return: 操作是否成功
+- **table_name** (`表名`): - **columns**: 列名到类型的映射（如 {"id": "INTEGER PRIMARY KEY", "name": "TEXT"}）
+**返回值**: 操作是否成功
 
 ---
 
@@ -335,8 +314,7 @@ ErisPulse 存储基类
 
 删除表
 
-:param table_name: 表名
-:return: 操作是否成功
+- **table_name** (`表名`): **返回值**: 操作是否成功
 
 ---
 
@@ -345,8 +323,7 @@ ErisPulse 存储基类
 
 检查表是否存在
 
-:param table_name: 表名
-:return: 是否存在
+- **table_name** (`表名`): **返回值**: 是否存在
 
 ---
 
@@ -355,8 +332,7 @@ ErisPulse 存储基类
 
 批量获取多个存储项的值
 
-:param keys: 键名列表
-:return: 键值对字典
+- **keys** (`键名列表`): **返回值**: 键值对字典
 
 ---
 
@@ -365,8 +341,7 @@ ErisPulse 存储基类
 
 批量设置多个存储项
 
-:param items: 键值对字典
-:return: 操作是否成功
+- **items** (`键值对字典`): **返回值**: 操作是否成功
 
 ---
 
@@ -375,8 +350,7 @@ ErisPulse 存储基类
 
 批量删除多个存储项
 
-:param keys: 键名列表
-:return: 操作是否成功
+- **keys** (`键名列表`): **返回值**: 操作是否成功
 
 ---
 
@@ -385,90 +359,84 @@ ErisPulse 存储基类
 
 获取所有存储项的键名（代理到 get_all_keys）
 
-:return: 键名列表
+**返回值**: 键名列表
 
 ---
 
 
-##### `async async aget(key: str, default: Any = None)`
+##### `async aget(key: str, default: Any = None)`
 
 异步获取存储项的值
 
 默认实现通过线程池执行同步 ``get()``，避免阻塞事件循环。
 异步后端（如 Redis）应覆写此方法为原生异步实现。
 
-:param key: 存储项键名
-:param default: 默认值
-:return: 存储项的值
+- **key** (`存储项键名`): - **default**: 默认值
+**返回值**: 存储项的值
 
 ---
 
 
-##### `async async aset(key: str, value: Any)`
+##### `async aset(key: str, value: Any)`
 
 异步设置存储项的值
 
-:param key: 存储项键名
-:param value: 存储项的值
-:return: 操作是否成功
+- **key** (`存储项键名`): - **value**: 存储项的值
+**返回值**: 操作是否成功
 
 ---
 
 
-##### `async async adelete(key: str)`
+##### `async adelete(key: str)`
 
 异步删除存储项
 
-:param key: 存储项键名
-:return: 操作是否成功
+- **key** (`存储项键名`): **返回值**: 操作是否成功
 
 ---
 
 
-##### `async async aget_all_keys()`
+##### `async aget_all_keys()`
 
 异步获取所有存储项的键名
 
-:return: 键名列表
+**返回值**: 键名列表
 
 ---
 
 
-##### `async async aclear()`
+##### `async aclear()`
 
 异步清空所有存储项
 
-:return: 操作是否成功
+**返回值**: 操作是否成功
 
 ---
 
 
-##### `async async aget_multi(keys: list[str])`
+##### `async aget_multi(keys: list[str])`
 
 异步批量获取多个存储项的值
 
-:param keys: 键名列表
-:return: 键值对字典
+- **keys** (`键名列表`): **返回值**: 键值对字典
 
 ---
 
 
-##### `async async aset_multi(items: dict[str, Any])`
+##### `async aset_multi(items: dict[str, Any])`
 
 异步批量设置多个存储项
 
-:param items: 键值对字典
-:return: 操作是否成功
+- **items** (`键值对字典`): **返回值**: 操作是否成功
 
 ---
 
 
-##### `async async adelete_multi(keys: list[str])`
+##### `async adelete_multi(keys: list[str])`
 
 异步批量删除多个存储项
 
-:param keys: 键名列表
-:return: 操作是否成功
+- **keys** (`键名列表`): **返回值**: 操作是否成功
 
 ---
 

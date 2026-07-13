@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1347,
+  "total_keywords": 1351,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -578,16 +578,18 @@
         "title": "2. レスポンスの標準化"
       }
     ],
+    "2. ログの記録": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 603,
+        "level": 3,
+        "title": "2. ログの記録"
+      }
+    ],
     "2. ログ記録": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 487,
-        "level": 3,
-        "title": "2. ログ記録"
-      },
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 603,
         "level": 3,
         "title": "2. ログ記録"
       }
@@ -2007,7 +2009,7 @@
     "CORS 設定": [
       {
         "document": "advanced/router.md",
-        "line": 244,
+        "line": 245,
         "level": 2,
         "title": "CORS 設定"
       }
@@ -2130,6 +2132,14 @@
         "line": 72,
         "level": 2,
         "title": "Dashboard 管理パネル"
+      }
+    ],
+    "Dashboard 自動登録": [
+      {
+        "document": "advanced/router.md",
+        "line": 361,
+        "level": 3,
+        "title": "Dashboard 自動登録"
       }
     ],
     "Discord": [
@@ -2316,14 +2326,6 @@
         "title": "Event と組み合わせた返信"
       }
     ],
-    "Event オブジェクトの一般的なメソッド": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 508,
-        "level": 3,
-        "title": "Event オブジェクトの一般的なメソッド"
-      }
-    ],
     "Event クラス": [
       {
         "document": "api-reference/event-system.md",
@@ -2354,6 +2356,14 @@
         "line": 311,
         "level": 3,
         "title": "Event 返信メソッド"
+      }
+    ],
+    "Eventオブジェクトの一般的なメソッド": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 508,
+        "level": 3,
+        "title": "Eventオブジェクトの一般的なメソッド"
       }
     ],
     "GET": [
@@ -2388,12 +2398,12 @@
         "title": "HTTP クライアントモジュール"
       }
     ],
-    "HTTP デコレーター": [
+    "HTTP デコレータ": [
       {
         "document": "advanced/router.md",
-        "line": 37,
+        "line": 38,
         "level": 3,
-        "title": "HTTP デコレーター"
+        "title": "HTTP デコレータ"
       }
     ],
     "HTTP ルーティング": [
@@ -3104,18 +3114,18 @@
         "title": "WebSocket"
       }
     ],
-    "WebSocket デコレーター": [
+    "WebSocket デコレータ": [
       {
         "document": "advanced/router.md",
-        "line": 64,
+        "line": 65,
         "level": 3,
-        "title": "WebSocket デコレーター"
+        "title": "WebSocket デコレータ"
       }
     ],
     "WebSocket ライフサイクルフック": [
       {
         "document": "advanced/router.md",
-        "line": 170,
+        "line": 171,
         "level": 2,
         "title": "WebSocket ライフサイクルフック"
       }
@@ -3131,7 +3141,7 @@
     "WebSocket 登録": [
       {
         "document": "advanced/router.md",
-        "line": 129,
+        "line": 130,
         "level": 3,
         "title": "WebSocket 登録"
       }
@@ -3708,12 +3718,12 @@
         "title": "pyproject.toml の設定"
       }
     ],
-    "reply メソッドを使って返信を送信": [
+    "replyメソッドを使用した返信の送信": [
       {
         "document": "getting-started/event-handling.md",
         "line": 302,
         "level": 3,
-        "title": "reply メソッドを使って返信を送信"
+        "title": "replyメソッドを使用した返信の送信"
       }
     ],
     "run のパラメータ": [
@@ -3984,6 +3994,14 @@
         "line": 367,
         "level": 3,
         "title": "アカウント設定フィールド"
+      }
+    ],
+    "アクセス制御": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 285,
+        "level": 2,
+        "title": "アクセス制御"
       }
     ],
     "アクティブ状態の管理": [
@@ -4344,20 +4362,20 @@
         "title": "イベントタイプのマッピング"
       }
     ],
-    "イベントタイプの概要": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 5,
-        "level": 2,
-        "title": "イベントタイプの概要"
-      }
-    ],
     "イベントタイプマッピング": [
       {
         "document": "platform-guide/discord.md",
         "line": 207,
         "level": 3,
         "title": "イベントタイプマッピング"
+      }
+    ],
+    "イベントタイプ概要": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 5,
+        "level": 2,
+        "title": "イベントタイプ概要"
       }
     ],
     "イベントデータのアクセス": [
@@ -4682,14 +4700,6 @@
         "title": "インタラクティブなインストール"
       }
     ],
-    "インタラクティブな処理": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 300,
-        "level": 2,
-        "title": "インタラクティブな処理"
-      }
-    ],
     "インタラクティブな初期化（推奨）": [
       {
         "document": "quick-start.md",
@@ -4712,6 +4722,14 @@
         "line": 233,
         "level": 4,
         "title": "インタラクティブメソッドの例"
+      }
+    ],
+    "インタラクティブ処理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 300,
+        "level": 2,
+        "title": "インタラクティブ処理"
       }
     ],
     "インポート": [
@@ -4810,6 +4828,14 @@
         "line": 465,
         "level": 2,
         "title": "エラー処理"
+      }
+    ],
+    "エントリ登録": [
+      {
+        "document": "advanced/router.md",
+        "line": 330,
+        "level": 3,
+        "title": "エントリ登録"
       }
     ],
     "カウントと存在確認": [
@@ -5422,12 +5448,12 @@
         "title": "コールバックルーティング"
       }
     ],
-    "コールバック付きの返信待ち": [
+    "コールバック付きの返信を待つ": [
       {
         "document": "getting-started/event-handling.md",
         "line": 374,
         "level": 3,
-        "title": "コールバック付きの返信待ち"
+        "title": "コールバック付きの返信を待つ"
       }
     ],
     "サイドバーのグループ": [
@@ -5585,7 +5611,7 @@
     "システムルート": [
       {
         "document": "advanced/router.md",
-        "line": 304,
+        "line": 305,
         "level": 2,
         "title": "システムルート"
       }
@@ -5606,12 +5632,12 @@
         "title": "ショートカットメニュー"
       }
     ],
-    "シンプルなカウンター": [
+    "シンプルなカウンタ": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 19,
         "level": 3,
-        "title": "シンプルなカウンター"
+        "title": "シンプルなカウンタ"
       }
     ],
     "シンプルなタイマー": [
@@ -5765,7 +5791,7 @@
     "セキュリティヘッダー": [
       {
         "document": "advanced/router.md",
-        "line": 263,
+        "line": 264,
         "level": 2,
         "title": "セキュリティヘッダー"
       }
@@ -5816,6 +5842,14 @@
         "line": 5,
         "level": 2,
         "title": "タイプ定義"
+      }
+    ],
+    "タイマージョブ": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 76,
+        "level": 2,
+        "title": "タイマージョブ"
       }
     ],
     "タイムアウトとリトライ": [
@@ -6088,12 +6122,12 @@
         "title": "デコレーターとルールの継承"
       }
     ],
-    "デコレータールーティング（推奨）": [
+    "デコレータールート（推奨）": [
       {
         "document": "advanced/router.md",
-        "line": 35,
+        "line": 36,
         "level": 2,
-        "title": "デコレータールーティング（推奨）"
+        "title": "デコレータールート（推奨）"
       }
     ],
     "デバッグのヒント": [
@@ -6176,18 +6210,16 @@
     ],
     "データの永続化": [
       {
+        "document": "getting-started/common-tasks.md",
+        "line": 17,
+        "level": 2,
+        "title": "データの永続化"
+      },
+      {
         "document": "user-guide/deployment.md",
         "line": 65,
         "level": 3,
         "title": "データの永続化"
-      }
-    ],
-    "データ永続化": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 17,
-        "level": 2,
-        "title": "データ永続化"
       }
     ],
     "トランザクションでの使用": [
@@ -6481,7 +6513,7 @@
     "パス処理": [
       {
         "document": "advanced/router.md",
-        "line": 294,
+        "line": 295,
         "level": 2,
         "title": "パス処理"
       }
@@ -6556,12 +6588,12 @@
         "title": "ファイル処理の特徴"
       }
     ],
-    "フォーム収集 (collect)": [
+    "フォームの収集 (collect)": [
       {
         "document": "getting-started/event-handling.md",
         "line": 431,
         "level": 3,
-        "title": "フォーム収集 (collect)"
+        "title": "フォームの収集 (collect)"
       }
     ],
     "フックポイント一覧": [
@@ -6901,7 +6933,7 @@
     "ヘルスチェック": [
       {
         "document": "advanced/router.md",
-        "line": 308,
+        "line": 309,
         "level": 3,
         "title": "ヘルスチェック"
       },
@@ -6943,7 +6975,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 337,
+        "line": 379,
         "level": 2,
         "title": "ベストプラクティス"
       },
@@ -6972,6 +7004,14 @@
         "line": 54,
         "level": 3,
         "title": "ホットリロード"
+      }
+    ],
+    "ホームエントリ": [
+      {
+        "document": "advanced/router.md",
+        "line": 326,
+        "level": 2,
+        "title": "ホームエントリ"
       }
     ],
     "ボタンクリックイベントの処理例": [
@@ -7292,6 +7332,14 @@
         "title": "メタイベントの送信"
       }
     ],
+    "メッセージのフィルタリング": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 146,
+        "level": 2,
+        "title": "メッセージのフィルタリング"
+      }
+    ],
     "メッセージの受信": [
       {
         "document": "advanced/http-client.md",
@@ -7468,14 +7516,6 @@
         "title": "メッセージタイプ判断"
       }
     ],
-    "メッセージフィルタリング": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 146,
-        "level": 2,
-        "title": "メッセージフィルタリング"
-      }
-    ],
     "メッセージメソッド": [
       {
         "document": "api-reference/event-system.md",
@@ -7586,6 +7626,14 @@
         "title": "メッセージ送信"
       }
     ],
+    "メッセージ送信の応用（再試行/タイムアウト/バッチ）": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 230,
+        "level": 2,
+        "title": "メッセージ送信の応用（再試行/タイムアウト/バッチ）"
+      }
+    ],
     "メッセージ送信メソッド": [
       {
         "document": "platform-guide/onebot12.md",
@@ -7608,14 +7656,6 @@
         "line": 249,
         "level": 4,
         "title": "メッセージ送信成功"
-      }
-    ],
-    "メッセージ送信（リトライ/タイムアウト/一括）": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 230,
-        "level": 2,
-        "title": "メッセージ送信（リトライ/タイムアウト/一括）"
       }
     ],
     "メッセージ関連": [
@@ -8070,12 +8110,12 @@
         "title": "ライフサイクル・イベントの監視"
       }
     ],
-    "ライフサイクル統合": [
+    "ライフサイクル連携": [
       {
         "document": "advanced/router.md",
-        "line": 323,
+        "line": 365,
         "level": 2,
-        "title": "ライフサイクル統合"
+        "title": "ライフサイクル連携"
       }
     ],
     "ランタイム設定": [
@@ -8250,6 +8290,14 @@
         "title": "リリースガイド"
       }
     ],
+    "ルーター管理": [
+      {
+        "document": "advanced/router.md",
+        "line": 1,
+        "level": 1,
+        "title": "ルーター管理"
+      }
+    ],
     "ルーティング": [
       {
         "document": "terminology.md",
@@ -8258,36 +8306,28 @@
         "title": "ルーティング"
       }
     ],
-    "ルーティングマネージャー": [
-      {
-        "document": "advanced/router.md",
-        "line": 1,
-        "level": 1,
-        "title": "ルーティングマネージャー"
-      }
-    ],
-    "ルーティングミドルウェア": [
-      {
-        "document": "advanced/router.md",
-        "line": 211,
-        "level": 2,
-        "title": "ルーティングミドルウェア"
-      }
-    ],
     "ルートグループ化": [
       {
         "document": "advanced/router.md",
-        "line": 194,
+        "line": 195,
         "level": 2,
         "title": "ルートグループ化"
       }
     ],
-    "ルートリスト": [
+    "ルートページ": [
       {
         "document": "advanced/router.md",
-        "line": 316,
+        "line": 317,
         "level": 3,
-        "title": "ルートリスト"
+        "title": "ルートページ"
+      }
+    ],
+    "ルートミドルウェア": [
+      {
+        "document": "advanced/router.md",
+        "line": 212,
+        "level": 2,
+        "title": "ルートミドルウェア"
       }
     ],
     "ルート発見": [
@@ -8357,7 +8397,7 @@
     "レート制限": [
       {
         "document": "advanced/router.md",
-        "line": 228,
+        "line": 229,
         "level": 2,
         "title": "レート制限"
       }
@@ -8618,12 +8658,12 @@
         "title": "仮想環境の作成"
       }
     ],
-    "任意イベントを待つ (wait_for)": [
+    "任意のイベントを待つ (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
         "line": 451,
         "level": 3,
-        "title": "任意イベントを待つ (wait_for)"
+        "title": "任意のイベントを待つ (wait_for)"
       }
     ],
     "会話の作成": [
@@ -8640,6 +8680,14 @@
         "line": 104,
         "level": 4,
         "title": "会話識別子"
+      }
+    ],
+    "伝統的な登録方式": [
+      {
+        "document": "advanced/router.md",
+        "line": 104,
+        "level": 2,
+        "title": "伝統的な登録方式"
       }
     ],
     "低レベルメソッド": [
@@ -8870,16 +8918,18 @@
     ],
     "内容リスト": [
       {
-        "document": "getting-started/common-tasks.md",
-        "line": 5,
-        "level": 2,
-        "title": "内容リスト"
-      },
-      {
         "document": "user-guide/README.md",
         "line": 5,
         "level": 2,
         "title": "内容リスト"
+      }
+    ],
+    "内容一覧": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 5,
+        "level": 2,
+        "title": "内容一覧"
       }
     ],
     "内蔵デフォルト値": [
@@ -9606,20 +9656,20 @@
         "title": "大小写不敏感調用"
       }
     ],
+    "失敗再試行 + タイムアウトキャンセル": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 249,
+        "level": 3,
+        "title": "失敗再試行 + タイムアウトキャンセル"
+      }
+    ],
     "失敗応答例": [
       {
         "document": "standards/api-response.md",
         "line": 49,
         "level": 4,
         "title": "失敗応答例"
-      }
-    ],
-    "失敗時のリトライ + タイムアウトキャンセル": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 249,
-        "level": 3,
-        "title": "失敗時のリトライ + タイムアウトキャンセル"
       }
     ],
     "失敗時の継続とリトライ": [
@@ -9712,14 +9762,6 @@
         "line": 177,
         "level": 3,
         "title": "完整示例"
-      }
-    ],
-    "定期タスク": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 76,
-        "level": 2,
-        "title": "定期タスク"
       }
     ],
     "実行モード": [
@@ -9836,14 +9878,6 @@
         "line": 232,
         "level": 3,
         "title": "平台特有イベント（onebot11_ 前綴）"
-      }
-    ],
-    "従来の登録方式": [
-      {
-        "document": "advanced/router.md",
-        "line": 103,
-        "level": 2,
-        "title": "従来の登録方式"
       }
     ],
     "必須フィールド": [
@@ -9999,7 +10033,7 @@
     "抽象型": [
       {
         "document": "advanced/router.md",
-        "line": 21,
+        "line": 22,
         "level": 2,
         "title": "抽象型"
       }
@@ -10396,12 +10430,12 @@
         "title": "検索機能"
       }
     ],
-    "検証付きの返信待ち": [
+    "検証付きの返信を待つ": [
       {
         "document": "getting-started/event-handling.md",
         "line": 347,
         "level": 3,
-        "title": "検証付きの返信待ち"
+        "title": "検証付きの返信を待つ"
       }
     ],
     "概要": [
@@ -10532,14 +10566,6 @@
         "line": 201,
         "level": 2,
         "title": "標準的なイベントの例"
-      }
-    ],
-    "権限管理": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 285,
-        "level": 2,
-        "title": "権限管理"
       }
     ],
     "機能の概要": [
@@ -10804,12 +10830,12 @@
         "title": "画像処理"
       }
     ],
-    "画像識別の例": [
+    "画像認識の例": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 470,
         "level": 3,
-        "title": "画像識別の例"
+        "title": "画像認識の例"
       }
     ],
     "異なるターゲットへの送信": [
@@ -11019,7 +11045,7 @@
     "自動ドキュメント": [
       {
         "document": "advanced/router.md",
-        "line": 278,
+        "line": 279,
         "level": 2,
         "title": "自動ドキュメント"
       }
@@ -11088,12 +11114,12 @@
         "title": "複数アカウント設定"
       }
     ],
-    "複数メッセージの一括送信": [
+    "複数メッセージのバッチ送信": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 264,
         "level": 3,
-        "title": "複数メッセージの一括送信"
+        "title": "複数メッセージのバッチ送信"
       }
     ],
     "要求イベントメソッド": [
@@ -11660,12 +11686,12 @@
         "title": "送信可能なメッセージの種類"
       }
     ],
-    "送信成功後にロジックを実行": [
+    "送信成功後のロジック実行": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 236,
         "level": 3,
-        "title": "送信成功後にロジックを実行"
+        "title": "送信成功後のロジック実行"
       }
     ],
     "送信成功時の実行ロジック（Hook）": [
@@ -11929,7 +11955,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 347,
+        "line": 389,
         "level": 2,
         "title": "関連ドキュメント"
       },

@@ -46,7 +46,7 @@ ErisPulse 适配器发现器
 
 获取 entry-point 组名
 
-:return: "erispulse.adapter"
+**返回值**: "erispulse.adapter"
 
 ---
 
@@ -55,7 +55,7 @@ ErisPulse 适配器发现器
 
 获取所有适配器名称
 
-:return: 适配器名称列表
+**返回值**: 适配器名称列表
 
 ---
 
@@ -64,7 +64,7 @@ ErisPulse 适配器发现器
 
 获取所有适配器所属的 PyPI 包名
 
-:return: PyPI 包名列表
+**返回值** (`PyPI`): 包名列表
 
 ---
 
@@ -73,8 +73,7 @@ ErisPulse 适配器发现器
 
 获取指定适配器所属的 PyPI 包名
 
-:param adapter_name: 适配器名称
-:return: PyPI 包名，未找到返回 None
+- **adapter_name** (`适配器名称`): **返回值** (`PyPI`): 包名，未找到返回 None
 
 ---
 
@@ -83,16 +82,14 @@ ErisPulse 适配器发现器
 
 获取适配器的完整信息
 
-:param adapter_name: 适配器名称
-:return: 适配器信息字典，未找到返回 None
+- **adapter_name** (`适配器名称`): **返回值** (`适配器信息字典，未找到返回`): None
 
-:return:
-    Dict: {
-        "name": 适配器名称,
-        "package": PyPI 包名,
-        "version": 版本号,
-        "entry_point": entry-point 对象
-    }
+**返回值**:
+- `Dict`: {
+- `"name"`: 适配器名称,
+- `"package"`: PyPI 包名,
+- `"version"`: 版本号,
+- `"entry_point"`: entry-point 对象    }
 
 ---
 
@@ -101,8 +98,8 @@ ErisPulse 适配器发现器
 
 获取指定 PyPI 包下的所有适配器名称
 
-:param package_name: PyPI 包名
-:return: 适配器名称列表
+- **package_name** (`PyPI`): 包名
+**返回值**: 适配器名称列表
 
 ---
 

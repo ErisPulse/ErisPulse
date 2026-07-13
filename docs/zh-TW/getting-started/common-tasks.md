@@ -1,6 +1,6 @@
 # 常見任務範例
 
-本指南提供常見功能的實作範例，協助您快速實作常用功能。
+本指南提供常見功能的實作範例，幫助您快速實作常用功能。
 
 ## 內容列表
 
@@ -8,7 +8,7 @@
 2. 定時任務
 3. 訊息過濾
 4. 多平台適配
-5. 訊息發送進階（重試/逾時/批次）
+5. 訊息傳送進階（重試/逾時/批次）
 6. 權限控制
 7. 訊息統計
 8. 搜尋功能
@@ -22,7 +22,7 @@
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
-@command("count", help="查看指令呼叫次數")
+@command("count", help="檢視命令呼叫次數")
 async def count_handler(event):
     # 取得計數
     count = sdk.storage.get("command_count", 0)
@@ -31,13 +31,13 @@ async def count_handler(event):
     count += 1
     sdk.storage.set("command_count", count)
     
-    await event.reply(f"這是第 {count} 次呼叫此指令")
+    await event.reply(f"這是第 {count} 次呼叫此命令")
 ```
 
 ### 使用者資料儲存
 
 ```python
-@command("profile", help="檢視個人檔案")
+@command("profile", help="檢視個人資料")
 async def profile_handler(event):
     user_id = event.get_user_id()
     
@@ -93,7 +93,7 @@ class TimerModule:
         
         @command("timer", help="計時器管理")
         async def timer_handler(event):
-            await event.reply("計時器正在運行中...")
+            await event.reply("計時器正在執行中...")
     
     def _start_timers(self):
         """啟動定時任務"""
@@ -139,7 +139,7 @@ async def init_complete_handler(event_data):
         await asyncio.sleep(86400)  # 24小時
         sdk.logger.info("執行每日任務")
     
-    # 啟動後台任務
+    # 啟動背景任務
     asyncio.create_task(daily_reminder())
 ```
 
@@ -200,13 +200,13 @@ async def help_handler(event):
     elif platform == "onebot11":
         await event.reply("OneBot11 help...")
     else:
-        await event.reply("通用說明資訊")
+        await event.reply("通用說明訊息")
 ```
 
 ### 平台特性檢測
 
 ```python
-@command("rich", help="發送富文本訊息")
+@command("rich", help="傳送富文字訊息")
 async def rich_handler(event):
     platform = event.get_platform()
     
@@ -214,33 +214,33 @@ async def rich_handler(event):
         # 雲湖支援 HTML
         yunhu = sdk.adapter.get("yunhu")
         await yunhu.Send.To("user", event.get_user_id()).Html(
-            "<b>加粗文本</b><i>斜体文本</i>"
+            "<b>加粗文字</b><i>斜體文字</i>"
         )
     elif platform == "telegram":
         # Telegram 支援 Markdown
         telegram = sdk.adapter.get("telegram")
         await telegram.Send.To("user", event.get_user_id()).Markdown(
-            "**加粗文本** *斜体文本*"
+            "**加粗文字** *斜體文字*"
         )
     else:
-        # 其他平台使用純文本
-        await event.reply("加粗文本 斜体文本")
+        # 其他平台使用純文字
+        await event.reply("加粗文字 斜體文字")
 ```
 
-## 訊息發送進階（重試/逾時/批次）
+## 訊息傳送進階（重試/逾時/批次）
 
-除了簡單的 `event.reply()`，你還可以透過適配器的 Send DSL 實現更複雜的發送場景：失敗自動重試、逾時取消、成功後執行邏輯、批次發送多條訊息。
+除了簡單的 `event.reply()`，您還可以透過適配器的 Send DSL 實作更複雜的傳送場景：失敗自動重試、逾時取消、成功後執行邏輯、批次傳送多條訊息。
 
-> 下面的範例用 `event.get_detail_type()` 和 `event.get_target_id()` 從事件中取得目標類型和 ID（群聊自動取 group_id，私聊自動取 user_id），避免硬編碼。
+> 下方的範例用 `event.get_detail_type()` 和 `event.get_target_id()` 從事件中取得目標類型和 ID（群聊自動取 group_id，私聊自動取 user_id），避免硬編碼。
 
-### 發送成功後執行邏輯
+### 傳送成功後執行邏輯
 
 ```python
 @command("pay", help="模擬支付")
 async def pay_handler(event):
     yunhu = sdk.adapter.get(event.get_platform())
     user_id = event.get_user_id()
-    # 發送成功後才扣積分
+    # 傳送成功後才扣積分
     await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
            .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
            .Text("支付成功，已扣除 10 積分"))
@@ -249,27 +249,27 @@ async def pay_handler(event):
 ### 失敗重試 + 逾時取消
 
 ```python
-@command("notice", help="發送重要通知")
+@command("notice", help="傳送重要通知")
 async def notice_handler(event):
     adapter_inst = sdk.adapter.get(event.get_platform())
     # 最多重試 3 次，每次逾時 10 秒
     task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
             .Retry(3)
             .Timeout(10)
-            .OnError(lambda ctx: sdk.logger.error(f"通知發送失敗: {ctx.error}"))
+            .OnError(lambda ctx: sdk.logger.error(f"通知傳送失敗: {ctx.error}"))
             .Text("這是一條重要通知"))
-    # 不等待，後台發送
+    # 不等待，背景傳送
 ```
 
-### 批次發送多條訊息
+### 批次傳送多條訊息
 
-一條鏈路發多條訊息，統一執行：
+一條鏈路傳送多條訊息，統一執行：
 
 ```python
-@command("announce", help="發送公告")
+@command("announce", help="傳送公告")
 async def announce_handler(event):
     adapter_inst = sdk.adapter.get(event.get_platform())
-    # 建構多條訊息，統一發送（預設並行）
+    # 建構多條訊息，統一傳送（預設並行）
     results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
                     .Build()
                     .Text("📋 今日公告")
@@ -277,46 +277,46 @@ async def announce_handler(event):
                     .Text("詳細內容見上方圖片")
                     .Retry(2)            # 失敗的項目各自重試
                     .send_all())
-    sdk.logger.info(f"批次發送完成，共 {len(results)} 條")
+    sdk.logger.info(f"批次傳送完成，共 {len(results)} 條")
 ```
 
-> 更完整的規則與批次說明請參考 [平台特性指南](../platform-guide/README.md#發送規則裝飾器)。
+> 更完整的規則與批次說明請參考 [平台特性指南](../platform-guide/README.md#傳送規則裝飾器)。
 
 ## 權限控制
 
 ### 管理員檢查
 
 ```python
-# 設定管理員列表
-ADMINS = ["user123", "user456"]
+# 設定主人列表
+MASTERS = ["user123", "user456"]
 
-def is_admin(user_id):
-    """檢查是否為管理員"""
-    return user_id in ADMINS
+def is_master(user_id):
+    """檢查是否為框架主人"""
+    return user_id in MASTERS
 
-@command("admin", help="管理員指令")
-async def admin_handler(event):
+@command("master", help="框架主人命令")
+async def master_handler(event):
     user_id = event.get_user_id()
     
-    if not is_admin(user_id):
-        await event.reply("權限不足，此指令僅管理員可用")
+    if not is_master(user_id):
+        await event.reply("權限不足，此命令僅框架主人可用")
         return
     
-    await event.reply("管理員指令執行成功")
+    await event.reply("框架主人命令執行成功")
 
-@command("addadmin", help="新增管理員")
-async def addadmin_handler(event):
-    if not is_admin(event.get_user_id()):
+@command("addmaster", help="新增框架主人")
+async def addmaster_handler(event):
+    if not is_master(event.get_user_id()):
         return
     
-    args = event.get_command_args()
-    if not args:
-        await event.reply("請輸入要新增的管理員 ID")
+    args = event.get("text", "").split()
+    if len(args) < 2:
+        await event.reply("用法: /addmaster <使用者ID>")
         return
     
-    new_admin = args[0]
-    ADMINS.append(new_admin)
-    await event.reply(f"已新增管理員: {new_admin}")
+    new_master = args[0]
+    MASTERS.append(new_master)
+    await event.reply(f"已新增框架主人: {new_master}")
 ```
 
 ### 群組權限
@@ -325,7 +325,7 @@ async def addadmin_handler(event):
 @command("groupinfo", help="檢視群組資訊")
 async def groupinfo_handler(event):
     if not event.is_group_message():
-        await event.reply("此指令僅限群聊使用")
+        await event.reply("此命令僅限群聊使用")
         return
     
     group_id = event.get_group_id()
@@ -384,7 +384,7 @@ async def stats_handler(event):
 
 ### 簡單搜尋
 
-> **注意**：以下範例使用記憶體列表儲存訊息歷史，**程式重啟後資料會遺失**。生產環境建議使用 `sdk.storage` 或 SQLite 表進行持久化儲存。
+> **注意**：以下範例使用記憶體列表儲存訊息歷史，**程式重新啟動後資料會遺失**。生產環境建議使用 `sdk.storage` 或 SQLite 表進行持久化儲存。
 
 ```python
 from ErisPulse.Core.Event import command, message
@@ -425,11 +425,11 @@ async def search_handler(event):
             results.append(msg)
     
     if not results:
-        await event.reply("未找到相符的訊息")
+        await event.reply("未找到符合的訊息")
         return
     
     # 顯示結果
-    result_text = f"找到 {len(results)} 條相符訊息:\n\n"
+    result_text = f"找到 {len(results)} 條符合訊息:\n\n"
     for i, msg in enumerate(results[:10], 1):  # 最多顯示 10 條
         result_text += f"{i}. {msg['text']}\n"
     
@@ -453,7 +453,7 @@ async def image_handler(event):
             file_url = segment.get("data", {}).get("file")
             
             if file_url:
-                # 推薦使用 SDK 內建用戶端下載圖片
+                # 建議使用 SDK 內建用戶端下載圖片
                 resp = await client.get(file_url)
                 if resp.status == 200:
                     image_data = await resp.read()
@@ -467,44 +467,42 @@ async def image_handler(event):
                     await event.reply("圖片已儲存")
 ```
 
-### 圖片辨識範例
+### 圖片識別範例
 
-> **注意**：以下範例使用佔位 API 位址，實際使用時請替換為你自己的圖片辨識服務。
+> **注意**：以下範例使用佔位 API 位址，實際使用時請替換為您自己的圖片識別服務。
 
 ```python
 from ErisPulse.Core import client
 
-@command("identify", help="辨識圖片")
+@command("identify", help="識別圖片")
 async def identify_handler(event):
-    """辨識訊息中的圖片"""
+    """識別訊息中的圖片"""
     message_segments = event.get_message()
     
     for segment in message_segments:
         if segment.get("type") == "image":
             file_url = segment.get("data", {}).get("file")
             
-            # 呼叫圖片辨識 API
+            # 呼叫圖片識別 API
             result = await _identify_image(file_url)
             
-            await event.reply(f"辨識結果: {result}")
+            await event.reply(f"識別結果: {result}")
             return
     
     await event.reply("未找到圖片")
 
 async def _identify_image(url):
-    """呼叫圖片辨識 API（範例）- 使用 SDK 內建用戶端"""
+    """呼叫圖片識別 API（範例）- 使用 SDK 內建用戶端"""
     resp = await client.post(
         "https://api.example.com/identify",
         json={"url": url}
     )
     data = await resp.json()
-    return data.get("description", "辨識失敗")
+    return data.get("description", "識別失敗")
 ```
 
-## 下一步
+## 下一個步驟
 
 - [使用者使用指南](../user-guide/) - 了解設定和模組管理
 - [開發者指南](../developer-guide/) - 學習開發模組和適配器
 - [進階主題](../advanced/) - 深入了解框架特性
-
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。

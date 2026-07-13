@@ -23,7 +23,7 @@ ErisPulse 严格模式
 
 严格模式级别
 
-> **内部方法** 
+> **内部方法**
 内部枚举，对应配置中的 strict_mode 数值
 
 
@@ -42,11 +42,11 @@ ErisPulse 严格模式
 
 单条违规记录
 
-:param name: 组件名称（entry-point name）
-:param component_type: 组件类型，"module" 或 "adapter"
-:param reason: 违规原因标识，如 "not_base_class", "load_failed",
+- **name** (`组件名称（entry-point`): name）
+- **component_type** (`组件类型，"module"`): 或 "adapter"
+- **reason** (`违规原因标识，如`): "not_base_class", "load_failed",
     "register_failed", "init_failed", "invalid_name"
-:param detail: 可选的详细描述
+- **detail**: 可选的详细描述
 
 
 ### `class StrictModeManager`
@@ -82,9 +82,7 @@ ErisPulse 严格模式
 
 从框架配置创建管理器实例
 
-:return: 配置好的管理器实例；读取配置失败时回退到默认值
-
-> **内部方法** 
+**返回值** (`配置好的管理器实例；读取配置失败时回退到默认值`): > **内部方法**
 由初始化协调器调用，读取 ErisPulse.framework.strict_mode 及豁免清单
 
 ---
@@ -94,9 +92,8 @@ ErisPulse 严格模式
 
 判断组件是否在豁免清单中
 
-:param name: 组件名称
-:param component_type: 组件类型
-:return: 是否豁免
+- **name** (`组件名称`): - **component_type**: 组件类型
+**返回值**: 是否豁免
 
 ---
 
@@ -108,12 +105,10 @@ ErisPulse 严格模式
 主要用于"未继承基类"这类违规：在宽松级别下可容忍继续加载，
 在严格级别下应拒绝（跳过）。
 
-:param name: 组件名称
-:param component_type: 组件类型
-:param reason: 违规原因标识
-:return: True 表示应拒绝（跳过）该组件；False 表示应容忍（继续加载）
+- **name** (`组件名称`): - **component_type**: 组件类型
+- **reason** (`违规原因标识`): **返回值** (`True`): 表示应拒绝（跳过）该组件；False 表示应容忍（继续加载）
 
-> **内部方法** 
+> **内部方法**
 在致命级别下，非豁免违规会同时被记录，待检查点统一抛出
 
 ---
@@ -127,12 +122,10 @@ ErisPulse 严格模式
 被拒绝的组件会记入 _rejections（与级别无关，用于摘要展示）；
 仅在致命级别下额外记入 _violations，以便检查点统一报告并中止。
 
-:param name: 组件名称
-:param component_type: 组件类型
-:param reason: 违规原因标识
-:param detail: 详细描述（如异常信息）
+- **name** (`组件名称`): - **component_type**: 组件类型
+- **reason** (`违规原因标识`): - **detail**: 详细描述（如异常信息）
 
-> **内部方法** 
+> **内部方法**
 调用方应同时输出自己的具体错误日志，此方法不重复输出
 
 ---
@@ -142,7 +135,7 @@ ErisPulse 严格模式
 
 是否存在致命级别的违规
 
-:return: 当前为致命级别且已收集到违规时返回 True
+**返回值** (`当前为致命级别且已收集到违规时返回`): True
 
 ---
 

@@ -59,10 +59,8 @@ ErisPulse 国际化模块
 
 将任意 locale 字符串映射到最近的支持语言
 
-:param locale_str: locale 字符串，如 "zh_TW.UTF-8", "en_US", "ja"
-:return: 支持的语言代码
-
-> **内部方法**
+- **locale_str** (`locale`): 字符串，如 "zh_TW.UTF-8", "en_US", "ja"
+**返回值** (`支持的语言代码`): > **内部方法**
 
 ---
 
@@ -81,9 +79,7 @@ Unix/macOS:
 1. 环境变量 LANGUAGE / LC_ALL / LC_MESSAGES / LANG
 2. locale.getlocale() / locale.getdefaultlocale()
 
-:return: 检测到的支持语言代码
-
-> **内部方法**
+**返回值** (`检测到的支持语言代码`): > **内部方法**
 
 ---
 
@@ -94,8 +90,8 @@ Unix/macOS:
 
 locale.getlocale() 在 Windows 上可能返回语言全称而非代码
 
-:param locale_name: Windows locale 名称
-:return: 支持的语言代码或 None
+- **locale_name** (`Windows`): locale 名称
+**返回值** (`支持的语言代码或`): None
 
 > **内部方法**
 
@@ -109,7 +105,7 @@ locale.getlocale() 在 Windows 上可能返回语言全称而非代码
 使用 GetUserDefaultLocaleName / GetSystemDefaultLocaleName 获取
 BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 
-:return: locale 字符串或 None
+**返回值** (`locale`): 字符串或 None
 
 > **内部方法**
 
@@ -133,9 +129,9 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 
 全局状态文件路径
 
-:return: Path 全局状态文件路径 (~/.erispulse/cli_state.json)
+**返回值** (`Path`): 全局状态文件路径 (~/.erispulse/cli_state.json)
 
-> **内部方法** 
+> **内部方法**
 与 CLI 的 i18n 共享同一文件，作为跨项目的语言持久化位置
 
 ---
@@ -145,9 +141,9 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 
 从全局状态文件读取持久化的语言选择
 
-:return: 语言代码或 None
+**返回值** (`语言代码或`): None
 
-> **内部方法** 
+> **内部方法**
 读取失败或未设置时返回 None，不影响后续优先级
 
 ---
@@ -157,7 +153,7 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 
 手动设置当前语言，同时写入全局持久化
 
-:param lang: 语言代码，如 "zh-CN", "en", "ja", "ru"
+- **lang** (`语言代码，如`): "zh-CN", "en", "ja", "ru"
 会自动按就近原则映射到支持的语言。
 设置后立即生效，并写入 `~/.erispulse/cli_state.json`
 跨所有项目生效（等效于 `epsdk i18n`）。
@@ -176,9 +172,7 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 
 将语言选择写入全局状态文件
 
-:param lang: 已解析的语言代码
-
-> **内部方法** 
+- **lang** (`已解析的语言代码`): > **内部方法**
 与 CLI i18n 的 _persist_language 写入同一文件，覆盖 language 键
 
 ---
@@ -188,7 +182,7 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 
 获取当前生效的语言代码
 
-:return: str 语言代码，如 "zh-CN", "en"
+**返回值** (`str`): 语言代码，如 "zh-CN", "en"
 
 ---
 
@@ -197,7 +191,7 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 
 获取所有支持的语言列表
 
-:return: list[str] 支持的语言代码列表
+**返回值** (`list[str]`): 支持的语言代码列表
 
 ---
 
@@ -213,10 +207,10 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 
 获取翻译文本
 
-:param key: str 翻译键，如 "core.sdk.init.starting"
-:param default: str 默认值，当翻译不存在时返回。默认为 None（返回 key 本身）
-:param kwargs: 格式化参数，如 t("key", name="world") 会填充 {name}
-:return: str 翻译后的文本
+- **key** (`str`): 翻译键，如 "core.sdk.init.starting"
+- **default** (`str`): 默认值，当翻译不存在时返回。默认为 None（返回 key 本身）
+- **kwargs** (`格式化参数，如`): t("key", name="world") 会填充 {name}
+**返回值** (`str`): 翻译后的文本
 
 **示例**:
 ```python
@@ -232,10 +226,9 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 
 t() 的别名，兼容 gettext 风格
 
-:param key: str 翻译键
-:param default: str 默认值
-:param kwargs: 格式化参数
-:return: str 翻译后的文本
+- **key** (`str`): 翻译键
+- **default** (`str`): 默认值
+- **kwargs** (`格式化参数`): **返回值** (`str`): 翻译后的文本
 
 ---
 
@@ -253,9 +246,9 @@ t() 的别名，兼容 gettext 风格
 
 注册翻译文本（供外部模块使用）
 
-:param lang: str 语言代码，如 "en", "zh-CN"（会按就近原则映射）
-:param translations: dict[str, str] 翻译键值对，如 {"my_module.welcome": "Welcome!"}
-:param domain: str 域名，用于区分不同模块的翻译，默认 "app"
+- **lang** (`str`): 语言代码，如 "en", "zh-CN"（会按就近原则映射）
+- **translations** (`dict[str,`): str] 翻译键值对，如 {"my_module.welcome": "Welcome!"}
+- **domain** (`str`): 域名，用于区分不同模块的翻译，默认 "app"
 
 **示例**:
 ```python
@@ -276,7 +269,7 @@ t() 的别名，兼容 gettext 风格
 
 卸载指定域的所有翻译
 
-:param domain: str 域名
+- **domain** (`str`): 域名
 
 **示例**:
 ```python
@@ -290,9 +283,9 @@ t() 的别名，兼容 gettext 风格
 
 检查翻译键是否存在
 
-:param key: str 翻译键
-:param lang: str 指定语言，默认为当前语言
-:return: bool 是否存在翻译
+- **key** (`str`): 翻译键
+- **lang** (`str`): 指定语言，默认为当前语言
+**返回值** (`bool`): 是否存在翻译
 
 ---
 

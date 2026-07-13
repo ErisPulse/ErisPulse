@@ -52,9 +52,7 @@ ErisPulse 模块加载策略
 
 初始化策略，所有参数统一存储
 
-:param kwargs: 策略配置项，任意键值对
-
-> **提示**
+- **kwargs** (`策略配置项，任意键值对`): > **提示**
 > 常用配置项：
 > - lazy_load: bool, 是否懒加载（默认 True）
 > - priority: int, 加载优先级（默认 0，数值越大优先级越高）
@@ -66,10 +64,9 @@ ErisPulse 模块加载策略
 
 获取属性值
 
-:param name: 属性名
-:return: 属性值，如果不存在则返回 None
+- **name** (`属性名`): **返回值** (`属性值，如果不存在则返回`): None
 
-> **内部方法** 
+> **内部方法**
 内部方法，用于动态属性访问
 
 ---
@@ -79,10 +76,9 @@ ErisPulse 模块加载策略
 
 设置属性值
 
-:param name: 属性名
-:param value: 属性值
+- **name** (`属性名`): - **value**: 属性值
 
-> **内部方法** 
+> **内部方法**
 内部方法，用于动态属性设置
 
 ---
@@ -92,8 +88,7 @@ ErisPulse 模块加载策略
 
 检查属性是否存在
 
-:param name: 属性名
-:return: 是否存在该属性
+- **name** (`属性名`): **返回值**: 是否存在该属性
 
 ---
 
@@ -102,7 +97,7 @@ ErisPulse 模块加载策略
 
 返回策略的字符串表示
 
-:return: 字符串表示
+**返回值**: 字符串表示
 
 ---
 
@@ -111,10 +106,7 @@ ErisPulse 模块加载策略
 
 从字典创建策略实例
 
-:param config: 配置字典
-:return: 策略实例
-
-> **提示**
+- **config** (`配置字典`): **返回值** (`策略实例`): > **提示**
 > 示例：
 > >>> config = {"lazy_load": False, "priority": 100}
 > >>> strategy = ModuleLoadStrategy.from_dict(config)

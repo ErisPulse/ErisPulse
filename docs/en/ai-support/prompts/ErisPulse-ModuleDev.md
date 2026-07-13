@@ -967,28 +967,28 @@ class Main(BaseModule):
 
 ### 事件处理入门
 
-# Event Handling Introduction
+# Getting Started with Event Handling
 
 This guide introduces how to handle various events in ErisPulse.
 
-## Event Type Overview
+## Overview of Event Types
 
 ErisPulse supports the following event types:
 
 | Event Type | Description | Use Cases |
-|---------|-------------|-----------|
+|---------|------|---------|
 | Message Event | Any message sent by a user | Chatbots, content filtering |
-| Command Event | Messages starting with command prefix | Command handling, feature entry points |
+| Command Event | Messages starting with a command prefix | Command processing, feature entry points |
 | Notice Event | System notifications (friend additions, group member changes, etc.) | Welcome messages, status notifications |
 | Request Event | User requests (friend requests, group invitations) | Automatic request handling |
 | Meta Event | System-level events (connection, heartbeat) | Connection monitoring, status checks |
 
-## Message Event Handling
+## Handling Message Events
 
-> **Tip**: It is recommended to use the `Event` type annotation in event handlers for IDE auto-completion and type checking support.
+> **Tip**: It is recommended to use the `Event` type annotation in event handlers to get IDE auto-completion and type checking support.
 
 ```python
-from ErisPulse.Core.Event import Event  # Import event type for annotation
+from ErisPulse.Core.Event import Event  # Import event types for annotations
 ```
 
 ### Listening to All Messages
@@ -1032,18 +1032,18 @@ async def at_handler(event: Event):
     await event.reply(f"You mentioned these users: {mentions}")
 ```
 
-## Command Event Handling
+## Handling Command Events
 
 ### Basic Commands
 
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="Display help information")
+@command("help", help="Show help information")
 async def help_handler(event):
     help_text = """
 Available commands:
-/help - Display help
+/help - Show help
 /ping - Test connection
 /info - View information
     """
@@ -1053,17 +1053,17 @@ Available commands:
 ### Command Aliases
 
 ```python
-@command(["help", "h"], aliases=["help", "h"], help="Display help information")
+@command(["help", "h"], aliases=["帮助"], help="Show help information")
 async def help_handler(event):
     await event.reply("Help information...")
 ```
 
-Users can invoke it using any of the following:
+Users can invoke the command using any of the following:
 - `/help`
 - `/h`
-- `/help`
+- `/帮助`
 
-### Command Arguments
+### Command Parameters
 
 ```python
 @command("echo", help="Echo message")
@@ -1092,17 +1092,17 @@ async def stop_handler(event):
 ### Command Permissions
 
 ```python
-def is_admin(event):
-    """Check if user is admin"""
-    admin_list = ["user123", "user456"]
-    return event.get_user_id() in admin_list
+def is_master(event):
+    """Check if user is framework owner"""
+    master_list = ["user123", "user456"]
+    return event.get_user_id() in master_list
 
-@command("admin", permission=is_admin, help="Admin command")
-async def admin_handler(event):
-    await event.reply("This is an admin command")
+@command("master", permission=is_master, help="Framework owner command")
+async def master_handler(event):
+    await event.reply("This is a framework owner command")
 ```
 
-### Command Priority
+### Command Priorities
 
 ```python
 # Higher priority number means earlier execution
@@ -1117,26 +1117,26 @@ async def low_priority_handler(event):
 
 ### Parallel Event Handling
 
-ErisPulse's event system uses a **parallel within same priority, serial between different priorities** scheduling model:
+ErisPulse's event system uses a **parallel execution for same priority, serial execution for different priorities** scheduling model:
 
 ```
 Event arrives
     ↓
-priority=10 group: [handler C || handler D] parallel → merge results
+priority=10 group: [Handler C || Handler D] parallel → merge results
     ↓ (if not interrupted)
-priority=0 group: [handler A || handler B] parallel → merge results
+priority=0 group: [Handler A || Handler B] parallel → merge results
     ↓
 ...
 ```
 
-- **Parallel within same priority**: Multiple handlers with the same priority execute simultaneously, increasing throughput
-- **Serial between priorities**: Groups with different priorities execute in order (higher priority first), ensuring high priority handlers run first
+- **Parallel execution within same priority**: Multiple handlers with the same priority execute simultaneously, improving throughput
+- **Serial execution across priorities**: Different priority groups execute in order (higher priority first), ensuring high priority handlers run first
 - **Copy-On-Write**: No copy is created if handlers don't modify the event, ensuring zero overhead
 - **Conflict handling**: When multiple handlers modify the same field at the same priority, the last modification is used and a warning log is recorded
 - **Interruption mechanism**: After any handler calls `event.mark_processed()`, subsequent lower priority groups are skipped
 
 ```python
-# Example: Parallel execution of handlers with same priority
+# Example: Parallel execution of handlers at same priority
 @message.on_message(priority=0)
 async def handler_a(event):
     # Process task A
@@ -1144,19 +1144,19 @@ async def handler_a(event):
 
 @message.on_message(priority=0)
 async def handler_b(event):
-    # Parallel execution with handler_a
+    # Executes in parallel with handler_a
     event['result_b'] = process_b()
 
-# Serial execution with different priorities
+# Serial execution of handlers at different priorities
 @message.on_message(priority=10)
 async def handler_c(event):
-    # Highest priority, executed first
+    # Highest priority, executes first
     pass
 ```
 
-## Notice Event Handling
+## Handling Notice Events
 
-### Friend Addition
+### Friend Added
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -1168,7 +1168,7 @@ async def friend_add_handler(event):
     await event.reply(f"Welcome to add me as a friend, {nickname}!")
 ```
 
-### Group Member Increase
+### Group Member Added
 
 ```python
 @notice.on_group_increase()
@@ -1178,7 +1178,7 @@ async def member_increase_handler(event):
     await event.reply(f"Welcome new member {user_id} to group {group_id}")
 ```
 
-### Group Member Decrease
+### Group Member Removed
 
 ```python
 @notice.on_group_decrease()
@@ -1188,7 +1188,7 @@ async def member_decrease_handler(event):
     await event.reply(f"Member {user_id} left group {group_id}")
 ```
 
-## Request Event Handling
+## Handling Request Events
 
 ### Friend Request
 
@@ -1202,8 +1202,8 @@ async def friend_request_handler(event):
     
     sdk.logger.info(f"Received friend request: {user_id}, comment: {comment}")
     
-    # Handle request via adapter API
-    # Refer to adapter documentation for specific implementation
+    # Request can be handled through adapter API
+    # For specific implementation, please refer to each adapter's documentation
 ```
 
 ### Group Invitation Request
@@ -1217,7 +1217,7 @@ async def group_request_handler(event):
     await event.reply(f"Received group {group_id} invitation from {user_id}")
 ```
 
-## Meta Event Handling
+## Handling Meta Events
 
 ### Connection Events
 
@@ -1241,22 +1241,22 @@ async def disconnect_handler(event):
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
     platform = event.get_platform()
-    sdk.logger.debug(f"{platform} heartbeat detected")
+    sdk.logger.debug(f"{platform} heartbeat check")
 ```
 
 ### Bot Status Query
 
-After the adapter sends a meta event, the framework automatically tracks the bot status, and you can query it at any time:
+After the adapter sends a meta event, the framework automatically tracks the Bot status, and you can query it anytime:
 
 ```python
 from ErisPulse import sdk
 
-# Check if a specific bot is online
+# Check if a specific Bot is online
 if sdk.adapter.is_bot_online("telegram", "123456"):
     telegram = sdk.adapter.get("telegram")
     await telegram.Send.To("user", "123456").Text("Bot is online")
 
-# List all currently online bots
+# List all currently online Bots
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
@@ -1268,9 +1268,9 @@ summary = sdk.adapter.get_status_summary()
 
 ## Interactive Handling
 
-### Using reply method to send replies
+### Using the reply method to send responses
 
-The `event.reply()` method supports various modifier parameters, making it easy to send messages with @, reply, and other features:
+The `event.reply()` method supports various modifier parameters, making it convenient to send messages with features like @ mentions and replies:
 
 ```python
 # Simple reply
@@ -1292,28 +1292,28 @@ await event.reply("Reply content", reply_to="msg_id")
 # @ all members
 await event.reply("Announcement", at_all=True)
 
-# Combination: @ user + reply to message
+# Combination: @ users + reply to message
 await event.reply("Content", at_users=["user1"], reply_to="msg_id")
 ```
 
-### Waiting for user reply
+### Waiting for User Reply
 
 ```python
 @command("ask", help="Ask user")
 async def ask_handler(event):
     await event.reply("Please enter your name:")
     
-    # Wait for user reply, timeout 30 seconds
+    # Wait for user reply, timeout after 30 seconds
     reply = await event.wait_reply(timeout=30)
     
     if reply:
         name = reply.get_text()
         await event.reply(f"Hello, {name}!")
     else:
-        await event.reply("Timeout, please try again.")
+        await event.reply("Timeout, please re-enter.")
 ```
 
-### Waiting reply with validation
+### Waiting for Reply with Validation
 
 ```python
 @command("age", help="Ask age")
@@ -1340,7 +1340,7 @@ async def age_handler(event):
         await event.reply("Invalid input or timeout")
 ```
 
-### Waiting reply with callback
+### Waiting for Reply with Callback
 
 ```python
 @command("confirm", help="Confirm operation")
@@ -1348,12 +1348,12 @@ async def confirm_handler(event):
     async def handle_confirmation(reply_event):
         text = reply_event.get_text().lower()
         
-        if text in ["yes", "y", "是", "确认"]:
+        if text in ["yes", "是", "y", "确认"]:
             await event.reply("Operation confirmed!")
         else:
-            await event.reply("Operation canceled.")
+            await event.reply("Operation cancelled.")
     
-    await event.reply("Confirm this operation? (yes/no)")
+    await event.reply("Confirm this operation? (Yes/No)")
     
     await event.wait_reply(
         timeout=30,
@@ -1361,9 +1361,9 @@ async def confirm_handler(event):
     )
 ```
 
-### Confirmation dialog (confirm)
+### Confirmation Dialog (confirm)
 
-Wait for user confirmation or denial, automatically recognizing built-in Chinese and English confirmation words:
+Wait for user confirmation or negation, automatically recognizing built-in Chinese and English confirmation words:
 
 ```python
 @command("confirm", help="Confirm operation")
@@ -1378,26 +1378,26 @@ if await event.confirm("Continue?", yes_words={"go", "继续"}, no_words={"stop"
     pass
 ```
 
-### Choice menu (choose)
+### Selection Menu (choose)
 
-Users can reply with option number or option text:
+Users can reply with option numbers or option text:
 
 ```python
 @command("choose", help="Choose")
 async def choose_handler(event):
     choice = await event.choose(
         "Please select a color:",
-        ["Red", "Green", "Blue"]
+        ["红色", "绿色", "蓝色"]
     )
     
     if choice is not None:
-        colors = ["Red", "Green", "Blue"]
+        colors = ["红色", "绿色", "蓝色"]
         await event.reply(f"You selected: {colors[choice]}")
     else:
-        await event.reply("Timeout, no selection made")
+        await event.reply("Timed out without selection")
 ```
 
-### Collect form (collect)
+### Form Collection (collect)
 
 Collect user input in multiple steps:
 
@@ -1406,7 +1406,7 @@ Collect user input in multiple steps:
 async def register_handler(event):
     data = await event.collect([
         {"key": "name", "prompt": "Please enter your name:"},
-        {"key": "age", "prompt": "Please enter your age:", 
+        {"key": "age", "prompt": "Please enter your age:",
          "validator": lambda e: e.get_text().isdigit()},
         {"key": "email", "prompt": "Please enter your email:"}
     ])
@@ -1414,17 +1414,17 @@ async def register_handler(event):
     if data:
         await event.reply(f"Registration successful!\nName: {data['name']}\nAge: {data['age']}\nEmail: {data['email']}")
     else:
-        await event.reply("Registration timeout or invalid input")
+        await event.reply("Registration timed out or invalid input")
 ```
 
-### Wait for any event (wait_for)
+### Waiting for Any Event (wait_for)
 
 Wait for any event that meets the condition, not limited to the same user:
 
 ```python
 @command("wait_member", help="Wait for new member")
 async def wait_member_handler(event):
-    await event.reply("Waiting for new member join...")
+    await event.reply("Waiting for new member to join...")
     
     evt = await event.wait_for(
         event_type="notice",
@@ -1435,10 +1435,10 @@ async def wait_member_handler(event):
     if evt:
         await event.reply(f"Welcome new member: {evt.get_user_id()}")
     else:
-        await event.reply("Timeout")
+        await event.reply("Timed out")
 ```
 
-### Multi-turn conversation (conversation)
+### Multi-turn Conversation (conversation)
 
 Create an interactive multi-turn conversation context:
 
@@ -1453,7 +1453,7 @@ async def survey_handler(event):
         reply = await conv.wait()
         
         if reply is None:
-            await conv.say("Conversation timeout, goodbye!")
+            await conv.say("Conversation timed out, goodbye!")
             break
         
         text = reply.get_text()
@@ -1462,17 +1462,17 @@ async def survey_handler(event):
             await conv.say("Goodbye!")
             break
         
-        await conv.say(f"You said: {text}, continue entering or reply 'Exit' to end")
+        await conv.say(f"You said: {text}, continue typing or reply 'Exit' to end")
 ```
 
-### Built-in confirmation words
+### Built-in Confirmation Words
 
 ErisPulse includes built-in sets of Chinese and English confirmation words:
 
-- **Confirmation words** (`CONFIRM_YES_WORDS`): yes, y, 是, 确认, 确定, 好, 好的, ok, true, 对, 嗯, 行, 同意, 没问题...
-- **Denial words** (`CONFIRM_NO_WORDS`): no, n, 否, 取消, 不, 不要, 不行, cancel, false, 错, 拒绝, 不可以...
+- **Confirmation words** (`CONFIRM_YES_WORDS`): 是, yes, y, 确认, 确定, 好, 好的, ok, true, 对, 嗯, 行, 同意, 没问题...
+- **Negation words** (`CONFIRM_NO_WORDS`): 否, no, n, 取消, 不, 不要, 不行, cancel, false, 错, 拒绝, 不可以...
 
-## Event Data Access
+## Accessing Event Data
 
 ### Common Event Object Methods
 
@@ -1508,7 +1508,7 @@ async def info_handler(event):
     # Platform information
     platform = event.get_platform()
     
-    # Message type detection
+    # Message type checks
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
@@ -1520,9 +1520,9 @@ async def info_handler(event):
         cmd_raw = event.get_command_raw()
 ```
 
-### Platform-specific Methods
+### Platform-Specific Extension Methods
 
-In addition to built-in methods, each platform adapter registers platform-specific methods, making it convenient to access platform-specific data.
+In addition to built-in methods, each platform adapter registers platform-specific methods, allowing you to access platform-specific data.
 
 ```python
 from ErisPulse.Core.Event import message
@@ -1538,7 +1538,7 @@ async def handle_message(event):
         subject = event.get_subject()           # Email-specific method
 ```
 
-If you are unsure whether a platform has registered a specific method, you can query which methods have been registered for a specific platform:
+If you are unsure whether a platform has registered a specific method, you can query which methods have been registered for a particular platform:
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -1549,7 +1549,7 @@ methods = get_platform_event_methods("telegram")
 
 > For platform-specific methods registered by each platform, please refer to the corresponding [platform documentation](../platform-guide/README.md).
 
-## Event Handling Best Practices
+## Best Practices for Event Handling
 
 ### 1. Exception Handling
 
@@ -1585,12 +1585,12 @@ async def message_handler(event):
     logger.debug(f"Debug information")
 ```
 
-### 3. Conditional Processing
+### 3. Conditional Handling
 
 ```python
 @message.on_message(priority=0)
 async def conditional_handler(event):
-    """Conditional processing - check conditions inside handler"""
+    """Conditional handling - check conditions inside handler"""
     # Only process messages from specific users
     if event.get_user_id() in ["bot1", "bot2"]:
         return
@@ -1604,9 +1604,9 @@ async def conditional_handler(event):
 
 ## Next Steps
 
-- [Common Task Examples](common-tasks.md) - Learn how to implement common features (including advanced message sending: retry/timeout/batch)
+- [Common Tasks Examples](common-tasks.md) - Learn to implement common features (including advanced message sending: retry/timeout/batch)
 - [Platform Features Guide](../platform-guide/README.md) - Complete explanation of Send DSL, sending rules, and batch construction
-- [Event Wrapper Class Detailed Explanation](../developer-guide/modules/event-wrapper.md) - Deep dive into Event objects
+- [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) - Deep dive into Event objects
 - [User Guide](../user-guide/) - Learn about configuration and module management
 
 
@@ -1616,7 +1616,7 @@ async def conditional_handler(event):
 
 This guide provides implementation examples for common features to help you quickly implement frequently used functionalities.
 
-## Table of Contents
+## Content List
 
 1. Data Persistence
 2. Scheduled Tasks
@@ -1636,7 +1636,7 @@ This guide provides implementation examples for common features to help you quic
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
-@command("count", help="View command invocation count")
+@command("count", help="View command call count")
 async def count_handler(event):
     # Get count
     count = sdk.storage.get("command_count", 0)
@@ -1645,13 +1645,13 @@ async def count_handler(event):
     count += 1
     sdk.storage.set("command_count", count)
     
-    await event.reply(f"This is the {count}th invocation of this command")
+    await event.reply(f"This is the {count} time this command is called")
 ```
 
 ### User Data Storage
 
 ```python
-@command("profile", help="View profile")
+@command("profile", help="View personal profile")
 async def profile_handler(event):
     user_id = event.get_user_id()
     
@@ -1702,7 +1702,7 @@ class TimerModule:
         self._tasks = []
     
     async def on_load(self, event):
-        """Start scheduled tasks when the module is loaded"""
+        """Start scheduled tasks when module is loaded"""
         self._start_timers()
         
         @command("timer", help="Timer management")
@@ -1715,28 +1715,28 @@ class TimerModule:
         task = asyncio.create_task(self._every_minute())
         self._tasks.append(task)
         
-        # Execute at midnight every day
+        # Execute at midnight
         task = asyncio.create_task(self._daily_task())
         self._tasks.append(task)
     
     async def _every_minute(self):
-        """Task to execute every minute"""
-        self.sdk.logger.info("Minute task execution")
+        """Task executed every minute"""
+        self.sdk.logger.info("Task executed every minute")
         # Your logic...
     
     async def _daily_task(self):
-        """Task to execute at midnight every day (Note: based on UTC time calculation, adjust for local time if needed)"""
+        """Task executed every day at midnight (Note: calculated based on UTC time, please adjust for local time if needed)"""
         import time
         
         while True:
-            # Calculate time until midnight
+            # Calculate time to midnight
             now = time.time()
             midnight = now + (86400 - now % 86400)
             
             await asyncio.sleep(midnight - now)
             
             # Execute task
-            self.sdk.logger.info("Daily task execution")
+            self.sdk.logger.info("Daily task executed")
             # Your logic...
 ```
 
@@ -1764,16 +1764,16 @@ async def init_complete_handler(event_data):
 ```python
 from ErisPulse.Core.Event import message
 
-blocked_words = ["垃圾", "广告", "钓鱼"]
+blocked_words = ["garbage", "ad", "phishing"]
 
 @message.on_message()
 async def filter_handler(event):
     text = event.get_text()
     
-    # Check if it contains sensitive words
+    # Check if sensitive words are contained
     for word in blocked_words:
         if word in text:
-            sdk.logger.warning(f"Intercepting sensitive message: {word}")
+            sdk.logger.warning(f"Block sensitive message: {word}")
             return  # Do not process this message
     
     # Process message normally
@@ -1803,7 +1803,7 @@ async def blacklist_handler(event):
 ### Platform-specific Response
 
 ```python
-@command("help", help="Show help")
+@command("help", help="Display help")
 async def help_handler(event):
     platform = event.get_platform()
     
@@ -1828,33 +1828,33 @@ async def rich_handler(event):
         # Yunhu supports HTML
         yunhu = sdk.adapter.get("yunhu")
         await yunhu.Send.To("user", event.get_user_id()).Html(
-            "<b>Bold Text</b><i>Italic Text</i>"
+            "<b>Bold text</b><i>Italic text</i>"
         )
     elif platform == "telegram":
         # Telegram supports Markdown
         telegram = sdk.adapter.get("telegram")
         await telegram.Send.To("user", event.get_user_id()).Markdown(
-            "**Bold Text** *Italic Text*"
+            "**Bold text** *Italic text*"
         )
     else:
         # Other platforms use plain text
-        await event.reply("Bold Text Italic Text")
+        await event.reply("Bold text Italic text")
 ```
 
 ## Advanced Message Sending (Retry/Timeout/Batch)
 
-In addition to simple `event.reply()`, you can implement more complex sending scenarios using the adapter's Send DSL: automatic retry on failure, timeout cancellation, executing logic after success, and sending multiple messages in batches.
+In addition to simple `event.reply()`, you can implement more complex sending scenarios via the adapter's Send DSL: automatic retry on failure, timeout cancellation, logic execution after success, and sending multiple messages in bulk.
 
-> The following examples use `event.get_detail_type()` and `event.get_target_id()` to get the target type and ID from the event (group chats automatically get `group_id`, private chats automatically get `user_id`), avoiding hardcoding.
+> The following examples use `event.get_detail_type()` and `event.get_target_id()` to get target type and ID from the event (group chats automatically get group_id, private chats automatically get user_id), avoiding hardcoding.
 
-### Execute Logic After Sending Success
+### Logic Execution After Sending Success
 
 ```python
 @command("pay", help="Simulate payment")
 async def pay_handler(event):
     yunhu = sdk.adapter.get(event.get_platform())
     user_id = event.get_user_id()
-    # Deduct points only after sending is successful
+    # Deduct points only after sending success
     await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
            .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
            .Text("Payment successful, 10 points deducted"))
@@ -1866,71 +1866,71 @@ async def pay_handler(event):
 @command("notice", help="Send important notice")
 async def notice_handler(event):
     adapter_inst = sdk.adapter.get(event.get_platform())
-    # Retry up to 3 times, timeout 10 seconds each time
+    # Retry at most 3 times, timeout 10 seconds each time
     task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
             .Retry(3)
             .Timeout(10)
-            .OnError(lambda ctx: sdk.logger.error(f"Notice sending failed: {ctx.error}"))
+            .OnError(lambda ctx: sdk.logger.error(f"Notice send failed: {ctx.error}"))
             .Text("This is an important notice"))
     # Don't wait, send in background
 ```
 
-### Batch Sending Multiple Messages
+### Bulk Sending Multiple Messages
 
-Send multiple messages in one pipeline, executed uniformly:
+Send multiple messages in a single chain, executed uniformly:
 
 ```python
 @command("announce", help="Send announcement")
 async def announce_handler(event):
     adapter_inst = sdk.adapter.get(event.get_platform())
-    # Build multiple messages, send them all at once (parallel by default)
+    # Build multiple messages and send them together (parallel by default)
     results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
                     .Build()
                     .Text("📋 Today's Announcement")
                     .Image("https://example.com/banner.jpg")
                     .Text("See the image above for details")
-                    .Retry(2)            # Individual retries for failed items
+                    .Retry(2)            # Failed items retry individually
                     .send_all())
-    sdk.logger.info(f"Batch sending completed, total {len(results)} items")
+    sdk.logger.info(f"Batch send completed, {len(results)} items in total")
 ```
 
-> For more complete rules and batch descriptions, please refer to [Platform Feature Guide](../platform-guide/README.md#Sending-Rules-Decorator).
+> For more complete rules and batch sending documentation, please refer to [Platform Features Guide](../platform-guide/README.md#send-rule-decorators).
 
 ## Permission Control
 
 ### Admin Check
 
 ```python
-# Configure admin list
-ADMINS = ["user123", "user456"]
+# Configure master list
+MASTERS = ["user123", "user456"]
 
-def is_admin(user_id):
-    """Check if user is admin"""
-    return user_id in ADMINS
+def is_master(user_id):
+    """Check if the framework master"""
+    return user_id in MASTERS
 
-@command("admin", help="Admin command")
-async def admin_handler(event):
+@command("master", help="Framework master command")
+async def master_handler(event):
     user_id = event.get_user_id()
     
-    if not is_admin(user_id):
-        await event.reply("Insufficient permissions, this command is only available to admins")
+    if not is_master(user_id):
+        await event.reply("Insufficient permissions, this command is only available to framework masters")
         return
     
-    await event.reply("Admin command executed successfully")
+    await event.reply("Framework master command executed successfully")
 
-@command("addadmin", help="Add admin")
-async def addadmin_handler(event):
-    if not is_admin(event.get_user_id()):
+@command("addmaster", help="Add framework master")
+async def addmaster_handler(event):
+    if not is_master(event.get_user_id()):
         return
     
-    args = event.get_command_args()
-    if not args:
-        await event.reply("Please enter the admin ID to add")
+    args = event.get("text", "").split()
+    if len(args) < 2:
+        await event.reply("Usage: /addmaster <user_id>")
         return
     
-    new_admin = args[0]
-    ADMINS.append(new_admin)
-    await event.reply(f"Admin added: {new_admin}")
+    new_master = args[0]
+    MASTERS.append(new_master)
+    await event.reply(f"Framework master added: {new_master}")
 ```
 
 ### Group Permissions
@@ -1998,7 +1998,7 @@ async def stats_handler(event):
 
 ### Simple Search
 
-> **Note**: The following examples use an in-memory list to store message history, and **data will be lost after program restart**. For production environments, it is recommended to use `sdk.storage` or SQLite tables for persistent storage.
+> **Note**: The following examples use in-memory list storage for message history, **data will be lost after program restart**. Production environments are recommended to use `sdk.storage` or SQLite tables for persistent storage.
 
 ```python
 from ErisPulse.Core.Event import command, message
@@ -2008,7 +2008,7 @@ message_history = []
 
 @message.on_message()
 async def store_handler(event):
-    """Store message for searching"""
+    """Store messages for searching"""
     user_id = event.get_user_id()
     text = event.get_text()
     
@@ -2018,7 +2018,7 @@ async def store_handler(event):
         "time": event.get_time()
     })
     
-    # Limit history size
+    # Limit number of history records
     if len(message_history) > 1000:
         message_history.pop(0)
 
@@ -2027,7 +2027,7 @@ async def search_handler(event):
     args = event.get_command_args()
     
     if not args:
-        await event.reply("Please enter a search keyword")
+        await event.reply("Please enter search keywords")
         return
     
     keyword = " ".join(args)
@@ -2044,7 +2044,7 @@ async def search_handler(event):
     
     # Display results
     result_text = f"Found {len(results)} matching messages:\n\n"
-    for i, msg in enumerate(results[:10], 1):  # Max 10 results
+    for i, msg in enumerate(results[:10], 1):  # Display at most 10
         result_text += f"{i}. {msg['text']}\n"
     
     await event.reply(result_text)
@@ -2059,7 +2059,7 @@ from ErisPulse.Core import client
 
 @message.on_message()
 async def image_handler(event):
-    """Process image messages"""
+    """Handle image messages"""
     message_segments = event.get_message()
     
     for segment in message_segments:
@@ -2083,14 +2083,14 @@ async def image_handler(event):
 
 ### Image Recognition Example
 
-> **Note**: The following examples use placeholder API addresses. Please replace them with your own image recognition service when using in production.
+> **Note**: The following example uses a placeholder API address, please replace it with your own image recognition service when using it in production.
 
 ```python
 from ErisPulse.Core import client
 
 @command("identify", help="Identify image")
 async def identify_handler(event):
-    """Identify image in message"""
+    """Identify images in messages"""
     message_segments = event.get_message()
     
     for segment in message_segments:
@@ -2100,7 +2100,7 @@ async def identify_handler(event):
             # Call image recognition API
             result = await _identify_image(file_url)
             
-            await event.reply(f"Recognition result: {result}")
+            await event.reply(f"Identification result: {result}")
             return
     
     await event.reply("No image found")
@@ -2112,7 +2112,7 @@ async def _identify_image(url):
         json={"url": url}
     )
     data = await resp.json()
-    return data.get("description", "Recognition failed")
+    return data.get("description", "Identification failed")
 ```
 
 ## Next Steps
@@ -6350,37 +6350,38 @@ class MyStorage(BaseStorage):
 
 # Router Manager
 
-The ErisPulse Router Manager provides unified HTTP and WebSocket route management, supporting multi-adapter route registration and lifecycle management. It is encapsulated through an abstraction layer at the bottom layer (currently FastAPI + Uvicorn).
+The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. Under the hood, it is wrapped by an abstraction layer (currently FastAPI + Uvicorn)
 
 ## Overview
 
 Key features of the Router Manager:
 
-- **Decorator Routes**: Supports `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration
+- **Decorator Routes**: Support `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration
 - **Auto Injection**: Route handlers do not need to import FastAPI types; the framework automatically injects abstract objects
-- **Route Grouping**: Supports `RouteGroup` with prefixes and version numbers
-- **Route Middleware**: Supports request interception with glob pattern matching
+- **Route Groups**: Support for `RouteGroup` with prefix and version
+- **Route Middleware**: Request interception supporting glob pattern matching
 - **Rate Limiting**: Built-in sliding window rate limiting
 - **CORS Support**: One-click enable Cross-Origin Resource Sharing
-- **Security Headers**: Automatically adds security response headers
-- **Auto Documentation**: Interactive documentation based on OpenAPI
+- **Security Headers**: Automatic addition of security response headers
+- **Auto Docs**: Interactive documentation based on OpenAPI
 - **WebSocket Support**: Complete WebSocket connection management, custom authentication, and lifecycle hooks
-- **Lifecycle Integration**: Deeply integrated with the ErisPulse lifecycle system
-- **SSL/TLS Support**: Supports HTTPS and WSS secure connections
+- **Lifecycle Integration**: Deep integration with the ErisPulse lifecycle system
+- **SSL/TLS Support**: Support for HTTPS and WSS secure connections
+- **Home Page Entry**: Support for module shortcuts on the root route `/`, with internationalization support
 
 ## Abstract Types
 
-ErisPulse provides server-side abstract types so that modules do not need to directly depend on FastAPI:
+ErisPulse provides server-side abstract types to allow modules to avoid direct dependencies on FastAPI:
 
 | Abstract Type | FastAPI Equivalent | Description |
-|---------------|--------------------|-------------|
-| `HttpRequest` | `fastapi.Request` | HTTP request encapsulation, fully interface compatible |
-| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection encapsulation, additionally provides lifecycle hooks |
-| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket disconnection exception |
+|--------------|-------------------|-------------|
+| `HttpRequest` | `fastapi.Request` | HTTP request wrapper, fully compatible interface |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection wrapper, additionally provides lifecycle hooks |
+| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket disconnect exception |
 
-> `WebSocketConnection` inherits from `WebSocketConnectionBase` and shares the same send/receive/iter/close interfaces as the client WebSocket (`ClientWebSocket`). Client and server WebSockets can use the same business logic code.
+> `WebSocketConnection` inherits from `WebSocketConnectionBase` and shares the same send/receive/iter/close interface as client WebSockets (`ClientWebSocket`). Client and server WebSockets can use the same business logic code.
 >
-> The underlying FastAPI native object can be accessed via the `.raw` property. Code directly using FastAPI types is also fully compatible.
+> Access the underlying FastAPI native object via the `.raw` attribute. Code directly using FastAPI types is also fully compatible.
 
 ## Decorator Routes (Recommended)
 
@@ -6400,19 +6401,16 @@ async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
 
-# Continuing to use FastAPI types is also fully compatible
-from fastapi import Request
-
 @router.put("my_module", "/data/{item_id}")
-async def update_data(request: Request):
+async def update_data(request):
     return {"updated": True}
 
 @router.delete("my_module", "/data/{item_id}")
-async def delete_data(request: Request):
+async def delete_data(request):
     return {"deleted": True}
 ```
 
-> **Auto Injection Rules**: When the first parameter of the handler is named `request` or `req` and has no FastAPI type annotation, the framework automatically injects `HttpRequest`. Handlers with no parameters or non-request parameter names are unaffected.
+> **Auto Injection Rule**: When the first parameter name of the handler is `request` or `req` and there are no FastAPI type annotations, the framework automatically injects `HttpRequest`. Handlers with no parameters or parameters that are not named request are unaffected.
 
 ### WebSocket Decorators
 
@@ -6451,7 +6449,7 @@ async def secure_ws_handler(ws):
         await ws.send_text(f"Echo: {data}")
 ```
 
-> **Note**: WebSocket handlers and authentication handlers also support auto injection. If the parameter annotation is `fastapi.WebSocket`, the native object is passed in; otherwise, `WebSocketConnection` is passed in.
+> **Note**: WebSocket handlers and authentication handlers also support auto injection. You can get `WebSocketConnection` without parameter annotations. Annotating `fastapi.WebSocket` also passes the native object, but using abstract types is recommended.
 
 ## Traditional Registration Method
 
@@ -6467,7 +6465,7 @@ router.register_http_route(
     methods=["GET"],
 )
 
-# Registration with rate limiting and documentation info
+# With rate limiting and doc info
 router.register_http_route(
     module_name="my_module",
     path="/api/data",
@@ -6510,19 +6508,19 @@ router.register_websocket(
 
 **Parameter Description:**
 
-| Parameter | Description | Default Value |
-|----------|-------------|---------------|
-| `module_name` | Module name (required) | - |
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `module_name` | Module name (Required) | - |
 | `path` | WebSocket path | - |
 | `handler` | Handler function | - |
-| `auth_handler` | Authentication function, returning `False` will automatically close the connection | `None` |
+| `auth_handler` | Authentication function, connection closes automatically if returns `False` | `None` |
 | `auto_accept` | Whether to automatically `accept()` | `True` |
 
-> **Recommendation**: Use `auth_handler` for connection confirmation rather than disabling `auto_accept`. Only set `auto_accept=False` when you need complete control over the connection flow.
+> **Recommendation**: Use `auth_handler` for connection confirmation instead of disabling `auto_accept`. Only set `auto_accept=False` when you need full control over the connection flow.
 
 ## WebSocket Lifecycle Hooks
 
-`WebSocketConnection` provides callback registration for disconnection and errors, requiring no manual try/catch:
+`WebSocketConnection` provides registration for disconnection and error callbacks, eliminating the need for manual try/catch:
 
 ```python
 from ErisPulse.Core import WebSocketConnection
@@ -6532,9 +6530,9 @@ async def my_ws(ws: WebSocketConnection):
     # Register via decorator
     @ws.on_disconnect
     async def on_close(ws, reason="unknown"):
-        print(f"Disconnect reason: {reason}")
+        print(f"Reason for disconnect: {reason}")
 
-    # Can also be called directly
+    # Can also call directly
     async def on_err(ws, error=""):
         print(f"Error: {error}")
     ws.on_error(on_err)
@@ -6544,7 +6542,7 @@ async def my_ws(ws: WebSocketConnection):
         await ws.send_text(f"Echo: {msg}")
 ```
 
-## Route Grouping
+## Route Groups
 
 ```python
 # Create a route group with prefix
@@ -6580,7 +6578,7 @@ async def admin_middleware(request, call_next):
 
 ## Rate Limiting
 
-Use sliding window algorithm to rate limit routes:
+Rate limit routes using the sliding window algorithm:
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
@@ -6592,7 +6590,7 @@ async def submit_data(request):
     return {"submitted": True}
 ```
 
-Rate limiting format: `{count}/{time window}`, e.g., `10/minute`, `100/hour`.
+Rate limit format: `{count}/{time_window}`, e.g., `10/minute`, `100/hour`.
 
 ## CORS Configuration
 
@@ -6604,7 +6602,7 @@ router.setup_cors(
 )
 ```
 
-Can also configure through `config.toml`:
+Can also be configured via `config.toml`:
 
 ```toml
 [router.cors]
@@ -6619,9 +6617,9 @@ allow_headers = ["*"]
 router.setup_security_headers()
 ```
 
-Automatically adds security headers such as `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, etc.
+Automatically adds security headers such as `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`.
 
-Can also configure through `config.toml`:
+Can also be configured via `config.toml`:
 
 ```toml
 [router.security]
@@ -6630,13 +6628,13 @@ enabled = true
 
 ## Auto Documentation
 
-Router defaults to OpenAPI interactive documentation:
+The Router enables OpenAPI interactive documentation by default:
 
 ```python
-# Disable documentation
+# Disable docs
 router.disable_docs()
 
-# Customize documentation info
+# Custom doc info
 router.set_docs_info(
     title="My API",
     description="API Documentation",
@@ -6646,7 +6644,7 @@ router.set_docs_info(
 
 ## Path Handling
 
-Route paths automatically have the module name added as a prefix to avoid conflicts:
+Route paths are automatically prefixed with the module name to avoid conflicts:
 
 ```python
 # Register path "/api" to module "my_module"
@@ -6656,22 +6654,63 @@ router.register_http_route("my_module", "/api", handler)
 
 ## System Routes
 
-The Router Manager automatically provides two system routes:
+The Router Manager automatically provides the following system routes:
 
 ### Health Check
 
-```python
+```
 GET /health
 # Returns:
 {"status": "ok", "service": "ErisPulse Router"}
 ```
 
-### Route List
+### Root Page
+
+```
+GET /
+# Returns ErisPulse brand page
+```
+
+The root route `/` displays the ErisPulse brand page, automatically detects Dashboard availability and adds entry buttons.
+
+## Home Page Entry
+
+The Router Manager allows external modules to register shortcut entry buttons on the root route `/`, making it easy for users to quickly access management pages for various modules.
+
+### Register Entry
 
 ```python
-GET /routes
-# Returns information for all registered routes
+# Simple registration
+router.register_home_entry(
+    name="My Dashboard",
+    url="/mymodule/admin",
+)
+
+# Registration with icon (SVG)
+router.register_home_entry(
+    name="Console",
+    url="/console",
+    icon_svg='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>',
+)
+
+# Registration with internationalization (Project i18n dictionary format)
+router.register_home_entry(
+    name={"i18n": "mymodule.home.entry", "default": "我的面板"},
+    url="/mymodule/admin",
+)
 ```
+
+**Parameter Description:**
+
+| Parameter | Type | Description | Required |
+|-----------|------|-------------|----------|
+| `name` | `str` / `dict` | Button display text; uses internationalization when passed as `{"i18n": "key", "default": "text"}` dict | Yes |
+| `url` | `str` | Button link address | Yes |
+| `icon_svg` | `str` | Optional SVG icon markup | No |
+
+### Dashboard Auto Registration
+
+When `sdk.Dashboard` is detected as available, the Router Manager automatically adds a Dashboard button to the top of the entry list without manual registration.
 
 ## Lifecycle Integration
 
@@ -6689,9 +6728,9 @@ async def on_server_stop(event):
 
 ## Best Practices
 
-1. **Prioritize Abstract Types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies
+1. **Prefer Abstract Types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies
 2. **Leverage Auto Injection**: Name the first parameter of the handler `request` or `req` to get `HttpRequest` without any type annotations
-3. **Explicitly Pass module_name**: The first parameter to decorators must be the module name and cannot be omitted
+3. **Explicitly Pass module_name**: The first argument of the decorator must be the module name and cannot be omitted
 4. **Use Route Groups**: Use `group()` to organize multiple routes for the same module
 5. **Security Considerations**: Implement authentication mechanisms and security headers for sensitive operations
 6. **Reasonable Rate Limiting**: Set rate limits for high-frequency APIs
@@ -6699,9 +6738,9 @@ async def on_server_stop(event):
 
 ## Related Documentation
 
-- [HTTP Client](http-client.md) - Use the built-in HTTP client to send requests
-- [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn about module route registration
-- [Best Practices](../developer-guide/modules/best-practices.md) - Suggestions for route usage
+- [HTTP Client](http-client.md) - Sending requests using the built-in HTTP client
+- [Module Development Guide](../developer-guide/modules/getting-started.md) - Understanding module route registration
+- [Best Practices](../developer-guide/modules/best-practices.md) - Recommendations for using routes
 
 
 ### 生命周期管理

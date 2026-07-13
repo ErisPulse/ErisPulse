@@ -24,8 +24,8 @@ ErisPulse 配置中心
 
 解析配置中的布尔值
 
-:param value: Any 配置值（可以是 bool, int, str 等）
-:return: bool 解析后的布尔值
+- **value** (`Any`): 配置值（可以是 bool, int, str 等）
+**返回值** (`bool`): 解析后的布尔值
 
 > **提示**
 > 支持的值:
@@ -50,7 +50,7 @@ ConfigManager 类提供相关功能。
 
 初始化配置管理器
 
-:param config_file: str 配置文件路径 (默认: "config/config.toml")
+- **config_file** (`str`): 配置文件路径 (默认: "config/config.toml")
 
 ---
 
@@ -79,8 +79,8 @@ ConfigManager 类提供相关功能。
 
 递归地对配置字典按键排序
 
-:param config_dict: dict 待排序的配置字典
-:return: dict 排序后的配置字典
+- **config_dict** (`dict`): 待排序的配置字典
+**返回值** (`dict`): 排序后的配置字典
 
 > **内部方法**
 
@@ -138,9 +138,9 @@ atexit 回调：进程退出时强制刷新所有脏配置
 
 获取配置项
 
-:param key: str 配置键, 支持点分隔符如 "module.sub.key"
-:param default: Any 默认值 (默认: None)
-:return: Any 配置值
+- **key** (`str`): 配置键, 支持点分隔符如 "module.sub.key"
+- **default** (`Any`): 默认值 (默认: None)
+**返回值** (`Any`): 配置值
 
 **示例**:
 ```python
@@ -154,10 +154,10 @@ atexit 回调：进程退出时强制刷新所有脏配置
 
 设置配置项
 
-:param key: str 配置键, 支持点分隔符如 "module.sub.key"
-:param value: Any 配置值
-:param immediate: bool 是否立即写入磁盘 (默认: False, 延迟写入)
-:return: bool 操作是否成功
+- **key** (`str`): 配置键, 支持点分隔符如 "module.sub.key"
+- **value** (`Any`): 配置值
+- **immediate** (`bool`): 是否立即写入磁盘 (默认: False, 延迟写入)
+**返回值** (`bool`): 操作是否成功
 
 **示例**:
 ```python
@@ -188,37 +188,37 @@ atexit 回调：进程退出时强制刷新所有脏配置
 ---
 
 
-##### `async async agetConfig(key: str, default: Any = None)`
+##### `async agetConfig(key: str, default: Any = None)`
 
 异步获取配置项
 
-:param key: str 配置键, 支持点分隔符
-:param default: Any 默认值
-:return: Any 配置值
+- **key** (`str`): 配置键, 支持点分隔符
+- **default** (`Any`): 默认值
+**返回值** (`Any`): 配置值
 
 ---
 
 
-##### `async async asetConfig(key: str, value: Any, immediate: bool = False)`
+##### `async asetConfig(key: str, value: Any, immediate: bool = False)`
 
 异步设置配置项
 
-:param key: str 配置键
-:param value: Any 配置值
-:param immediate: bool 是否立即写入磁盘
-:return: bool 操作是否成功
+- **key** (`str`): 配置键
+- **value** (`Any`): 配置值
+- **immediate** (`bool`): 是否立即写入磁盘
+**返回值** (`bool`): 操作是否成功
 
 ---
 
 
-##### `async async aforce_save()`
+##### `async aforce_save()`
 
 异步强制保存所有待写入的配置到磁盘
 
 ---
 
 
-##### `async async areload()`
+##### `async areload()`
 
 异步重新从磁盘加载配置
 

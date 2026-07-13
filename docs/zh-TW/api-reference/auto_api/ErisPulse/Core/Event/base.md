@@ -18,13 +18,12 @@ ErisPulse 事件处理基础模块
 ## 函数列表
 
 
-### `async async _invoke_handler(handler_info: dict, event: Event)`
+### `async _invoke_handler(handler_info: dict, event: Event)`
 
-> **内部方法** 
+> **内部方法**
 执行单个事件处理器
 
-:param handler_info: 处理器信息字典
-:param event: 事件对象
+- **handler_info** (`处理器信息字典`): - **event**: 事件对象
 
 ---
 
@@ -49,8 +48,7 @@ ErisPulse 事件处理基础模块
 
 初始化事件处理器
 
-:param event_type: 事件类型
-:param module_name: 模块名称
+- **event_type** (`事件类型`): - **module_name**: 模块名称
 
 ---
 
@@ -59,9 +57,8 @@ ErisPulse 事件处理基础模块
 
 注册事件处理器
 
-:param handler: 事件处理器函数
-:param priority: 处理器优先级，数值越大优先级越高
-:param condition: 处理器条件函数，返回True时才会执行处理器
+- **handler** (`事件处理器函数`): - **priority**: 处理器优先级，数值越大优先级越高
+- **condition**: 处理器条件函数，返回True时才会执行处理器
 
 ---
 
@@ -70,19 +67,17 @@ ErisPulse 事件处理基础模块
 
 注销事件处理器
 
-:param handler: 要注销的事件处理器
-:return: 是否成功注销
+- **handler** (`要注销的事件处理器`): **返回值**: 是否成功注销
 
 ---
 
 
 ##### `unregister_by_owner(owner: str)`
 
-> **内部方法** 
+> **内部方法**
 按归属者精确移除事件处理器
 
-:param owner: 归属者（模块名）
-:return: 移除的处理器数量
+- **owner** (`归属者（模块名）`): **返回值**: 移除的处理器数量
 
 ---
 
@@ -91,35 +86,34 @@ ErisPulse 事件处理基础模块
 
 装饰器方式注册事件处理器
 
-:param priority: 处理器优先级，数值越大优先级越高
-:param condition: 处理器条件函数
-:return: 装饰器函数
+- **priority** (`处理器优先级，数值越大优先级越高`): - **condition**: 处理器条件函数
+**返回值**: 装饰器函数
 
 ---
 
 
-##### `async async _process_event(event: dict[str, Any])`
+##### `async _process_event(event: dict[str, Any])`
 
 处理事件
 
-> **内部方法** 
+> **内部方法**
 同优先级处理器并行执行，不同优先级按顺序串行执行。
 同优先级处理器的修改冲突采用后者覆盖前者的策略。
 
-:param event: 事件数据
+- **event**: 事件数据
 
 ---
 
 
 ##### `_clear_handlers()`
 
-> **内部方法** 
+> **内部方法**
 清除所有已注册的事件处理器，并断开与适配器事件总线的连接
 
 断开连接后，下次调用 register() 时会自动重新挂载 _process_event 到适配器总线，
 以适配 shutdown/restart 等场景下适配器总线被清空的情况。
 
-:return: 被清除的处理器数量
+**返回值**: 被清除的处理器数量
 
 ---
 

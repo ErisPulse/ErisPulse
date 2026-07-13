@@ -114,7 +114,7 @@ ErisPulse包管理器
 ---
 
 
-##### `async async _fetch_remote_packages(url: str)`
+##### `async _fetch_remote_packages(url: str)`
 
 异步获取远程包列表
 
@@ -124,7 +124,7 @@ ErisPulse包管理器
 ---
 
 
-##### `async async get_remote_packages(force_refresh: bool = False)`
+##### `async get_remote_packages(force_refresh: bool = False)`
 
 获取远程包列表，带缓存机制
 
@@ -163,7 +163,7 @@ ErisPulse包管理器
 ---
 
 
-##### `async async _find_package_by_alias(alias: str)`
+##### `async _find_package_by_alias(alias: str)`
 
 通过别名查找实际的包名，依次匹配已安装包和远程包
 
@@ -183,7 +183,7 @@ ErisPulse包管理器
 ---
 
 
-##### `async async check_package_updates()`
+##### `async check_package_updates()`
 
 检查已安装包的可用更新
 
@@ -202,7 +202,7 @@ ErisPulse包管理器
 ---
 
 
-##### `async async _get_pypi_package_version(package_name: str, force_refresh: bool = False)`
+##### `async _get_pypi_package_version(package_name: str, force_refresh: bool = False)`
 
 异步获取指定包的PyPI最新版本，带缓存机制
 
@@ -321,7 +321,7 @@ ErisPulse包管理器
 ---
 
 
-##### `async async _get_package_info(package_name: str)`
+##### `async _get_package_info(package_name: str)`
 
 从远程包列表中获取指定包的详细信息
 
@@ -414,7 +414,7 @@ ErisPulse包管理器
 ---
 
 
-##### `async async get_pypi_versions()`
+##### `async get_pypi_versions()`
 
 异步获取ErisPulse在PyPI上的所有可用版本
 
