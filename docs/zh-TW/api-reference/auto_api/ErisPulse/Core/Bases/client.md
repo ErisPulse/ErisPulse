@@ -228,6 +228,7 @@ HTTP 客户端抽象基类
 - **headers** (`dict[str,`): str] | None 额外请求头 (可选)
 - **data** (`Any`): 请求体 (表单或原始数据) (可选)
 - **json** (`Any`): JSON 请求体 (可选)
+- **files** (`dict[str,`): Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
 - **timeout** (`float`): | None 本次请求超时 (秒) (可选, 覆盖默认值)
 - **max_retries** (`int`): | None 本次最大重试次数 (可选, 覆盖默认值)
 - **kwargs** (`传递给底层请求的额外参数`): **返回值** (`BaseHttpResponse`): 响应对象
