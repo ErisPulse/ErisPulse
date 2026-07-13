@@ -123,14 +123,14 @@ async def stop_handler(event):
 ### 命令权限
 
 ```python
-def is_admin(event):
-    """检查用户是否为管理员"""
-    admin_list = ["user123", "user456"]
-    return event.get_user_id() in admin_list
+def is_master(event):
+    """检查用户是否为框架主人"""
+    master_list = ["user123", "user456"]
+    return event.get_user_id() in master_list
 
-@command("admin", permission=is_admin, help="管理员命令")
-async def admin_handler(event):
-    await event.reply("这是管理员命令")
+@command("master", permission=is_master, help="框架主人命令")
+async def master_handler(event):
+    await event.reply("这是框架主人命令")
 ```
 
 ### 命令优先级

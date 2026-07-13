@@ -137,8 +137,8 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
     processed = re.sub(
         r":return:\s*\n((?:\s+\S+:.*(?:\n|$))+)",
         lambda m: "**返回值**:\n" + "\n".join(
-            f"- `{l.strip().split(':')[0].strip()}`: {':'.join(l.strip().split(':')[1:]).strip()}"
-            for l in m.group(1).strip().split('\n') if l.strip()
+            f"- `{line.strip().split(':')[0].strip()}`: {':'.join(line.strip().split(':')[1:]).strip()}"
+            for line in m.group(1).strip().split('\n') if line.strip()
         ),
         processed
     )
@@ -683,7 +683,7 @@ if __name__ == "__main__":
         total_nested_classes = sum(count_nested_classes(info.get('classes', [])) for info in modules_info.values())
         
         print("\n" + "="*50)
-        print(f"API文档生成完成！")
+        print("API文档生成完成！")
         print(f"  语言: {args.lang}")
         print(f"  模块总数: {total_modules}")
         print(f"  类总数: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
@@ -699,7 +699,7 @@ if __name__ == "__main__":
         # 先生成到中文目录（如果有）
         if 'zh-CN' in langs:
             print(f"\n{'='*60}")
-            print(f"生成 API 文档到中文目录...")
+            print("生成 API 文档到中文目录...")
             print('='*60)
             
             zh_output_dir = docs_dir / "zh-CN" / "api-reference" / "auto_api"
@@ -726,7 +726,7 @@ if __name__ == "__main__":
             total_nested_classes = sum(count_nested_classes(info.get('classes', [])) for info in modules_info.values())
             
             print(f"\n{'='*60}")
-            print(f"所有语言的 API 文档生成完成！")
+            print("所有语言的 API 文档生成完成！")
             print(f"  模块总数: {total_modules}")
             print(f"  类总数: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
             print(f"  方法总数: {total_methods}")
@@ -739,16 +739,16 @@ if __name__ == "__main__":
             print(f"\n{'='*60}")
             print(f"生成 API 文档到 {first_lang} 目录...")
             print('='*60)
-            
+
             output_dir = docs_dir / first_lang / "api-reference" / "auto_api"
             modules_info = generate_api_docs(args.src, str(output_dir))
-            
+
             # 复制到其他语言目录
             for lang in langs[1:]:
                 print(f"\n{'='*60}")
                 print(f"复制 API 文档到语言: {lang}")
                 print('='*60)
-                
+
                 target_dir = docs_dir / lang / "api-reference" / "auto_api"
                 copy_directory(output_dir, target_dir)
                 print(f"已复制到: {target_dir}")

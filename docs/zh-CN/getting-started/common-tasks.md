@@ -287,36 +287,36 @@ async def announce_handler(event):
 ### 管理员检查
 
 ```python
-# 配置管理员列表
-ADMINS = ["user123", "user456"]
+# 配置主人列表
+MASTERS = ["user123", "user456"]
 
-def is_admin(user_id):
-    """检查是否为管理员"""
-    return user_id in ADMINS
+def is_master(user_id):
+    """检查是否为框架主人"""
+    return user_id in MASTERS
 
-@command("admin", help="管理员命令")
-async def admin_handler(event):
+@command("master", help="框架主人命令")
+async def master_handler(event):
     user_id = event.get_user_id()
     
-    if not is_admin(user_id):
-        await event.reply("权限不足，此命令仅管理员可用")
+    if not is_master(user_id):
+        await event.reply("权限不足，此命令仅框架主人可用")
         return
     
-    await event.reply("管理员命令执行成功")
+    await event.reply("框架主人命令执行成功")
 
-@command("addadmin", help="添加管理员")
-async def addadmin_handler(event):
-    if not is_admin(event.get_user_id()):
+@command("addmaster", help="添加框架主人")
+async def addmaster_handler(event):
+    if not is_master(event.get_user_id()):
         return
     
-    args = event.get_command_args()
-    if not args:
-        await event.reply("请输入要添加的管理员 ID")
+    args = event.get("text", "").split()
+    if len(args) < 2:
+        await event.reply("用法: /addmaster <用户ID>")
         return
     
-    new_admin = args[0]
-    ADMINS.append(new_admin)
-    await event.reply(f"已添加管理员: {new_admin}")
+    new_master = args[0]
+    MASTERS.append(new_master)
+    await event.reply(f"已添加框架主人: {new_master}")
 ```
 
 ### 群组权限
