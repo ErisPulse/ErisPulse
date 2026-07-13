@@ -6020,6 +6020,30 @@ resp = await client.post(
     data=b"raw bytes",
     headers={"Content-Type": "application/octet-stream"},
 )
+
+# 文件上传 (使用 files 参数, 无需导入 aiohttp)
+# 格式: {字段名: 文件对象/bytes/(filename, file)/(filename, file, content_type)}
+resp = await client.post(
+    "https://api.example.com/upload",
+    data={"description": "头像"},            # 可选: 同时携带普通表单字段
+    files={
+        "file": ("photo.png", open("photo.png", "rb"), "image/png"),
+    },
+)
+
+# 简化写法: 直接传文件对象
+resp = await client.post(
+    "https://api.example.com/upload",
+    files={"file": open("photo.png", "rb")},
+)
+
+# 内存数据直接上传 (无需落盘)
+import io
+
+resp = await client.post(
+    "https://api.example.com/upload",
+    files={"file": ("data.txt", io.BytesIO(b"file content"), "text/plain")},
+)
 ```
 
 ### PUT / DELETE / PATCH
@@ -6055,6 +6079,7 @@ resp = await client.request(
 | `headers` | `dict[str, str]` | 额外请求头 (可选) |
 | `data` | `Any` | 请求体 (表单或原始数据) (可选) |
 | `json` | `Any` | JSON 请求体 (可选) |
+| `files` | `dict[str, Any]` | 文件上传字段 (可选, 自动构建 multipart/form-data) |
 | `timeout` | `float` | 本次请求超时 (秒) (可选, 覆盖默认值) |
 | `max_retries` | `int` | 本次最大重试次数 (可选, 覆盖默认值) |
 
