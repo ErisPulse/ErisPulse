@@ -220,6 +220,7 @@ class BaseHttpClient:
         headers: dict[str, str] | None = None,
         data: Any = None,
         json: Any = None,
+        files: dict[str, Any] | None = None,
         timeout: float | None = None,
         max_retries: int | None = None,
         **kwargs,
@@ -233,6 +234,7 @@ class BaseHttpClient:
         :param headers: dict[str, str] | None 额外请求头 (可选)
         :param data: Any 请求体 (表单或原始数据) (可选)
         :param json: Any JSON 请求体 (可选)
+        :param files: dict[str, Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
         :param timeout: float | None 本次请求超时 (秒) (可选, 覆盖默认值)
         :param max_retries: int | None 本次最大重试次数 (可选, 覆盖默认值)
         :param kwargs: 传递给底层请求的额外参数

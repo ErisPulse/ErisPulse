@@ -84,8 +84,6 @@
 
 **注意事项**
 - ⚠️ **钩子存储格式变更**：从二元组 `(priority, handler)` 改为三元组 `(priority, handler, owner)`，不影响公共 API 但自定义钩子存储的扩展代码需要适配
-- ⚠️ **strict_mode 默认开启（级别 1）**：未继承 `BaseModule`/`BaseAdapter` 的组件默认被拒绝跳过
-- ⚠️ **i18n 语言检测优先级变更**：`set_language()` / `epsdk i18n` 全局持久化 > `ERISPULSE_LANG` 环境变量 > 项目配置
 - 事件处理器并发上限默认 64，可通过 `ErisPulse.framework.handler_max_concurrency` 配置
 - 主动 GC 默认每 300 秒执行一次，可通过 `ErisPulse.framework.proactive_gc_interval` 配置
 - 离线 Bot 默认 3600 秒后自动清除，可通过 `ErisPulse.framework.offline_bot_expiry` 配置
@@ -124,6 +122,11 @@
     - 根页面 `root.html` + `root.css`：全屏居中布局、药丸版版本徽章、入口按钮区
     - 错误页面 `error.html` + `error.css`：纯居中错误卡片、`page-code` 下边距修复
     - 模板在模块导入时一次性加载并缓存，运行期零 I/O
+  - `Core/client.py` HttpClient 新增 `files` 参数支持文件上传：
+    - `post` / `put` / `patch` / `request` 方法新增 `files` 参数
+    - 支持 `bytes`、文件对象、`(filename, file)`、`(filename, file, content_type)` 多种格式
+    - 内部自动构建 `multipart/form-data`，用户无需导入 `aiohttp`
+    - 可与 `data` 字典参数同时使用，合并进同一个 FormData
 
 ### 移除
 

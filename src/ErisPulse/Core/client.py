@@ -515,6 +515,42 @@ class HttpClient(BaseHttpClient):
 
     # ---- 核心请求方法 ----
 
+    def _build_form_data(self, data: Any, files: dict[str, Any]):
+        """
+        从 data 和 files 构建 multipart/form-data 请求体
+
+        :param data: Any 表单数据 (dict 时合并进 FormData)
+        :param files: dict[str, Any] 文件字段
+        :return: aiohttp.FormData multipart 表单对象
+
+        :raises ValueError: data 为非 dict 类型且不为 None
+        """
+        import aiohttp
+
+        form = aiohttp.FormData()
+
+        if isinstance(data, dict):
+            for key, value in data.items():
+                form.add_field(key, value)
+        elif data is not None:
+            raise ValueError("files 不能与非 dict 类型的 data 同时使用")
+
+        for field_name, file_spec in files.items():
+            if isinstance(file_spec, (tuple, list)):
+                if len(file_spec) == 2:
+                    filename, file_obj = file_spec
+                    form.add_field(field_name, file_obj, filename=filename)
+                elif len(file_spec) >= 3:
+                    filename, file_obj, content_type = file_spec[:3]
+                    form.add_field(
+                        field_name, file_obj,
+                        filename=filename, content_type=content_type,
+                    )
+            else:
+                form.add_field(field_name, file_spec)
+
+        return form
+
     async def request(
         self,
         method: str,
@@ -524,6 +560,7 @@ class HttpClient(BaseHttpClient):
         headers: dict[str, str] | None = None,
         data: Any = None,
         json: Any = None,
+        files: dict[str, Any] | None = None,
         timeout: float | None = None,
         max_retries: int | None = None,
         **kwargs,
@@ -537,6 +574,7 @@ class HttpClient(BaseHttpClient):
         :param headers: dict[str, str] | None 额外请求头 (可选)
         :param data: Any 请求体 (表单或原始数据) (可选)
         :param json: Any JSON 请求体 (可选)
+        :param files: dict[str, Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
         :param timeout: float | None 本次请求超时 (秒) (可选, 覆盖默认值)
         :param max_retries: int | None 本次最大重试次数 (可选, 覆盖默认值)
         :param kwargs: 传递给底层请求的额外参数
@@ -552,6 +590,9 @@ class HttpClient(BaseHttpClient):
         import aiohttp
 
         retries = max_retries if max_retries is not None else self._max_retries
+
+        if files is not None:
+            data = self._build_form_data(data, files)
 
         last_exc: ClientError | None = None
         for attempt in range(retries + 1):
@@ -572,7 +613,7 @@ class HttpClient(BaseHttpClient):
                     params=params,
                     headers=headers,
                     data=data,
-                    json=json,
+                    json=json if files is None else None,
                     timeout=request_timeout,
                     **kwargs,
                 ) as resp:
@@ -785,6 +826,7 @@ class HttpClient(BaseHttpClient):
         *,
         data: Any = None,
         json: Any = None,
+        files: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
         **kwargs,
     ) -> HttpResponse:
@@ -794,6 +836,7 @@ class HttpClient(BaseHttpClient):
         :param url: str 请求 URL
         :param data: Any 请求体 (表单或原始数据) (可选)
         :param json: Any JSON 请求体 (可选)
+        :param files: dict[str, Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
         :param headers: dict[str, str] | None 额外请求头 (可选)
         :return: HttpResponse 响应对象
 
@@ -801,7 +844,7 @@ class HttpClient(BaseHttpClient):
         >>> resp = await client.post("https://httpbin.org/post", json={"key": "value"})
         """
         return await self.request(
-            "POST", url, data=data, json=json, headers=headers, **kwargs
+            "POST", url, data=data, json=json, files=files, headers=headers, **kwargs
         )
 
     async def put(
@@ -810,6 +853,7 @@ class HttpClient(BaseHttpClient):
         *,
         data: Any = None,
         json: Any = None,
+        files: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
         **kwargs,
     ) -> HttpResponse:
@@ -819,11 +863,12 @@ class HttpClient(BaseHttpClient):
         :param url: str 请求 URL
         :param data: Any 请求体 (可选)
         :param json: Any JSON 请求体 (可选)
+        :param files: dict[str, Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
         :param headers: dict[str, str] | None 额外请求头 (可选)
         :return: HttpResponse 响应对象
         """
         return await self.request(
-            "PUT", url, data=data, json=json, headers=headers, **kwargs
+            "PUT", url, data=data, json=json, files=files, headers=headers, **kwargs
         )
 
     async def delete(
@@ -848,6 +893,7 @@ class HttpClient(BaseHttpClient):
         *,
         data: Any = None,
         json: Any = None,
+        files: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
         **kwargs,
     ) -> HttpResponse:
@@ -857,11 +903,12 @@ class HttpClient(BaseHttpClient):
         :param url: str 请求 URL
         :param data: Any 请求体 (可选)
         :param json: Any JSON 请求体 (可选)
+        :param files: dict[str, Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
         :param headers: dict[str, str] | None 额外请求头 (可选)
         :return: HttpResponse 响应对象
         """
         return await self.request(
-            "PATCH", url, data=data, json=json, headers=headers, **kwargs
+            "PATCH", url, data=data, json=json, files=files, headers=headers, **kwargs
         )
 
     # ---- 统计 ----
