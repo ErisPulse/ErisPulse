@@ -61,6 +61,83 @@
     - 优化某模块的性能
   ```
 
+
+
+
+---
+
+## [2.6.0] - 2026/07/13
+> 正式发布
+
+**版本摘要**
+2.6.0 是 ErisPulse 面向生产环境的增强型版本，聚焦于三大核心能力升级：(1) 发送规则装饰器系统与批量构建模式，为消息发送提供统一的超时/重试/回调/进度监控能力；(2) 管理员权限系统，支持配置文件与运行时的统一管理；(3) 框架性能与资源管理优化，引入事件处理器并发背压控制、生命周期钩子 owner 追踪、主动 GC、离线 Bot 过期回收等机制，显著降低长期运行内存占用。同时完成 Web 前端资源提取重构、API 文档与类型存根生成脚本优化。
+
+**升级建议**
+- **强烈建议升级**
+- 升级原因：
+  - 发送规则系统为生产环境提供统一的超时/重试/回调/监控能力，无需业务层自行封装 Task 回调
+  - 批量构建模式简化多条消息发送场景的代码
+  - 管理员系统为命令权限提供统一管理，`must_admin=True` 装饰器参数自动鉴权
+  - 框架资源管理全面增强：事件处理器并发背压控制（默认 64）、生命周期钩子 owner 自动清理、主动 GC 后台任务、离线 Bot 过期回收、限流存储定期清理
+  - 修复 HttpClient session 泄漏、`wait_reply` CancelledError 残留、生命周期钩子泄漏、委托链路回调重复触发等多个关键问题
+  - Web 前端资源重构：内联 HTML/CSS 提取至独立文件，新增 `register_home_entry()` 模块入口注册 API（含 i18n 支持）
+
+**注意事项**
+- ⚠️ **钩子存储格式变更**：从二元组 `(priority, handler)` 改为三元组 `(priority, handler, owner)`，不影响公共 API 但自定义钩子存储的扩展代码需要适配
+- ⚠️ **strict_mode 默认开启（级别 1）**：未继承 `BaseModule`/`BaseAdapter` 的组件默认被拒绝跳过
+- ⚠️ **i18n 语言检测优先级变更**：`set_language()` / `epsdk i18n` 全局持久化 > `ERISPULSE_LANG` 环境变量 > 项目配置
+- 事件处理器并发上限默认 64，可通过 `ErisPulse.framework.handler_max_concurrency` 配置
+- 主动 GC 默认每 300 秒执行一次，可通过 `ErisPulse.framework.proactive_gc_interval` 配置
+- 离线 Bot 默认 3600 秒后自动清除，可通过 `ErisPulse.framework.offline_bot_expiry` 配置
+- SendDSL `rules` 参数不再通过构造函数传递给子类；第三方适配器 Send 子类若覆写 `__init__` 无需修改
+- `Core/web_status/` 已移除，错误页面统一使用纯 CSS 无图样式
+- `register_home_entry(name, url, icon_svg)` 支持 `{"i18n": "key", "default": "文本"}` 字典格式
+- 新增导出符号：`SendContext`、`SendBuilder`、`BatchContext`、`admin`、`AdminManager`
+
+---
+
+## [2.6.0-dev.2] - 2026/07/13
+> 随正式版发布
+
+**版本摘要**
+2.6.0-dev.2 聚焦于 Web 前端资源重构与文档质量优化。将内联于 router.py 的 HTML/CSS 模板提取至 `Core/assets/` 独立管理；新增 `register_home_entry()` API 支持模块在根路由 `/` 注册快捷入口按钮（含 i18n 字典格式）；移除 `web_status/` 包及外部吉祥物图片依赖；优化 API 文档生成脚本的 docstring 转换逻辑，修复 async 前缀重复、param/return 格式等问题；优化类型存根生成脚本的注解处理与装饰器保留。
+
+**升级建议**
+- 是否建议升级：建议升级
+- 升级原因：基础设施重构（前端提取、图片清理）为后续扩展奠定基础，脚本优化提升文档与类型提示质量
+
+**注意事项**
+- `Core/web_status/` 已移除，错误页面统一使用纯 CSS 无图样式
+- 新增 `Core/assets/` 包，未来前端资源（JS/图标/页面）统一放置于此
+- `register_home_entry(name, url, icon_svg)` 支持 `{"i18n": "key", "default": "文本"}` 字典格式
+- 外部看板娘图片（mascot-hero.png）不再依赖，根页面和错误页面均使用纯 CSS 主题
+- 模板文件在模块导入时缓存，运行时无 I/O 开销
+
+### 新增
+
+- @wsu2059q
+  - `Core/router.py` 主页入口注册系统：
+    - 新增 `register_home_entry(name, url, icon_svg)` 方法，支持模块在根路由 `/` 注册快捷按钮
+    - `name` 支持纯文本或 i18n 字典格式 `{"i18n": "key", "default": ""}`，运行期自动解析
+  - `Core/assets/` 前端资源包：
+    - 从 `router.py` 提取根页面和错误页面的 HTML/CSS 模板至独立文件
+    - 根页面 `root.html` + `root.css`：全屏居中布局、药丸版版本徽章、入口按钮区
+    - 错误页面 `error.html` + `error.css`：纯居中错误卡片、`page-code` 下边距修复
+    - 模板在模块导入时一次性加载并缓存，运行期零 I/O
+
+### 移除
+
+- @wsu2059q
+  - `Core/web_status/` 整包移除（`4xx.png`、`5xx.png`、`unknow.png`、`__init__.py`）
+  - 根路由页面外部看板娘图片引用（`mascot-hero.png`）移除
+  - `router.py` 的 `/status-assets` 静态文件挂载和 `StaticFiles` 依赖移除
+
+### 优化
+
+- @wsu2059q
+  - `Core/router.py` 精简约 280 行内联 HTML/CSS（移至 `Core/assets/`）
+  - `CONTRIBUTING.md` 项目结构树移除 `web_status/` 条目
+
 ---
 
 ## [2.6.0-dev.1] - 2026/07/12
