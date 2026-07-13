@@ -2299,7 +2299,7 @@
     "Advanced Methods (Recommended)": [
       {
         "document": "advanced/http-client.md",
-        "line": 250,
+        "line": 275,
         "level": 4,
         "title": "Advanced Methods (Recommended)"
       }
@@ -2779,7 +2779,7 @@
     "Basic Usage": [
       {
         "document": "advanced/http-client.md",
-        "line": 236,
+        "line": 261,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -2871,7 +2871,7 @@
     "Best Practices": [
       {
         "document": "advanced/http-client.md",
-        "line": 444,
+        "line": 469,
         "level": 2,
         "title": "Best Practices"
       },
@@ -3410,20 +3410,20 @@
         "title": "Client (Network Client)"
       }
     ],
-    "ClientWebSocket Properties": [
+    "ClientWebSocket Attributes": [
       {
         "document": "advanced/http-client.md",
-        "line": 308,
+        "line": 333,
         "level": 3,
-        "title": "ClientWebSocket Properties"
+        "title": "ClientWebSocket Attributes"
       }
     ],
-    "Closing the Connection": [
+    "Closing Connection": [
       {
         "document": "advanced/http-client.md",
-        "line": 335,
+        "line": 360,
         "level": 3,
-        "title": "Closing the Connection"
+        "title": "Closing Connection"
       }
     ],
     "Code Example Standards": [
@@ -4069,7 +4069,7 @@
     "Context Management": [
       {
         "document": "advanced/http-client.md",
-        "line": 223,
+        "line": 248,
         "level": 2,
         "title": "Context Management"
       }
@@ -4405,7 +4405,7 @@
     "Custom Default Headers": [
       {
         "document": "advanced/http-client.md",
-        "line": 172,
+        "line": 197,
         "level": 2,
         "title": "Custom Default Headers"
       }
@@ -5417,7 +5417,7 @@
     "Exception Handling": [
       {
         "document": "advanced/http-client.md",
-        "line": 359,
+        "line": 384,
         "level": 3,
         "title": "Exception Handling"
       },
@@ -5431,7 +5431,7 @@
     "Exception Hierarchy": [
       {
         "document": "advanced/http-client.md",
-        "line": 347,
+        "line": 372,
         "level": 3,
         "title": "Exception Hierarchy"
       }
@@ -5439,7 +5439,7 @@
     "Exception System": [
       {
         "document": "advanced/http-client.md",
-        "line": 341,
+        "line": 366,
         "level": 2,
         "title": "Exception System"
       }
@@ -5811,7 +5811,7 @@
     "Generic request": [
       {
         "document": "advanced/http-client.md",
-        "line": 121,
+        "line": 145,
         "level": 3,
         "title": "Generic request"
       }
@@ -6017,7 +6017,7 @@
     "HTTP Request Events": [
       {
         "document": "advanced/http-client.md",
-        "line": 199,
+        "line": 224,
         "level": 3,
         "title": "HTTP Request Events"
       }
@@ -6025,7 +6025,7 @@
     "HTTP Request Parameters": [
       {
         "document": "advanced/http-client.md",
-        "line": 135,
+        "line": 159,
         "level": 3,
         "title": "HTTP Request Parameters"
       }
@@ -6049,7 +6049,7 @@
     "HTTPStatusError": [
       {
         "document": "advanced/http-client.md",
-        "line": 407,
+        "line": 432,
         "level": 3,
         "title": "HTTPStatusError"
       }
@@ -6793,7 +6793,7 @@
     "Lifecycle Events": [
       {
         "document": "advanced/http-client.md",
-        "line": 197,
+        "line": 222,
         "level": 2,
         "title": "Lifecycle Events"
       },
@@ -6813,7 +6813,7 @@
     "Lifecycle Hooks": [
       {
         "document": "advanced/http-client.md",
-        "line": 317,
+        "line": 342,
         "level": 3,
         "title": "Lifecycle Hooks"
       }
@@ -7065,7 +7065,7 @@
     "Low-Level Methods": [
       {
         "document": "advanced/http-client.md",
-        "line": 276,
+        "line": 301,
         "level": 4,
         "title": "Low-Level Methods"
       }
@@ -8411,7 +8411,7 @@
     "PUT / DELETE / PATCH": [
       {
         "document": "advanced/http-client.md",
-        "line": 111,
+        "line": 135,
         "level": 3,
         "title": "PUT / DELETE / PATCH"
       }
@@ -8451,7 +8451,7 @@
     "Parameter Explanation": [
       {
         "document": "advanced/http-client.md",
-        "line": 133,
+        "line": 157,
         "level": 2,
         "title": "Parameter Explanation"
       }
@@ -9103,7 +9103,7 @@
     "Receiving Messages": [
       {
         "document": "advanced/http-client.md",
-        "line": 248,
+        "line": 273,
         "level": 3,
         "title": "Receiving Messages"
       }
@@ -9221,7 +9221,7 @@
       },
       {
         "document": "advanced/http-client.md",
-        "line": 454,
+        "line": 479,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9545,7 +9545,7 @@
     "Request Statistics": [
       {
         "document": "advanced/http-client.md",
-        "line": 184,
+        "line": 209,
         "level": 2,
         "title": "Request Statistics"
       }
@@ -10987,7 +10987,7 @@
     "Timeout and Retry": [
       {
         "document": "advanced/http-client.md",
-        "line": 155,
+        "line": 180,
         "level": 2,
         "title": "Timeout and Retry"
       }
@@ -11083,7 +11083,7 @@
     "Unified Exception Handling": [
       {
         "document": "advanced/http-client.md",
-        "line": 394,
+        "line": 419,
         "level": 3,
         "title": "Unified Exception Handling"
       }
@@ -11401,7 +11401,7 @@
     "Using in Adapters": [
       {
         "document": "advanced/http-client.md",
-        "line": 419,
+        "line": 444,
         "level": 2,
         "title": "Using in Adapters"
       }
@@ -11509,7 +11509,7 @@
     "WSMessage": [
       {
         "document": "advanced/http-client.md",
-        "line": 299,
+        "line": 324,
         "level": 3,
         "title": "WSMessage"
       }
@@ -11589,7 +11589,7 @@
     "WebSocket Client": [
       {
         "document": "advanced/http-client.md",
-        "line": 232,
+        "line": 257,
         "level": 2,
         "title": "WebSocket Client"
       }
@@ -11623,7 +11623,7 @@
     "WebSocket Connection Events": [
       {
         "document": "advanced/http-client.md",
-        "line": 211,
+        "line": 236,
         "level": 3,
         "title": "WebSocket Connection Events"
       }
@@ -12271,7 +12271,7 @@
     "ws_connect Parameters": [
       {
         "document": "advanced/http-client.md",
-        "line": 147,
+        "line": 172,
         "level": 3,
         "title": "ws_connect Parameters"
       }

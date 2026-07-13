@@ -2077,7 +2077,7 @@
     "ClientWebSocket 屬性": [
       {
         "document": "advanced/http-client.md",
-        "line": 308,
+        "line": 333,
         "level": 3,
         "title": "ClientWebSocket 屬性"
       }
@@ -2373,7 +2373,7 @@
     "HTTP 請求事件": [
       {
         "document": "advanced/http-client.md",
-        "line": 199,
+        "line": 224,
         "level": 3,
         "title": "HTTP 請求事件"
       }
@@ -2381,7 +2381,7 @@
     "HTTP 請求參數": [
       {
         "document": "advanced/http-client.md",
-        "line": 135,
+        "line": 159,
         "level": 3,
         "title": "HTTP 請求參數"
       }
@@ -2397,7 +2397,7 @@
     "HTTPStatusError": [
       {
         "document": "advanced/http-client.md",
-        "line": 407,
+        "line": 432,
         "level": 3,
         "title": "HTTPStatusError"
       }
@@ -2683,7 +2683,7 @@
     "PUT / DELETE / PATCH": [
       {
         "document": "advanced/http-client.md",
-        "line": 111,
+        "line": 135,
         "level": 3,
         "title": "PUT / DELETE / PATCH"
       }
@@ -2995,7 +2995,7 @@
     "WSMessage": [
       {
         "document": "advanced/http-client.md",
-        "line": 299,
+        "line": 324,
         "level": 3,
         "title": "WSMessage"
       }
@@ -3019,7 +3019,7 @@
     "WebSocket 客戶端": [
       {
         "document": "advanced/http-client.md",
-        "line": 232,
+        "line": 257,
         "level": 2,
         "title": "WebSocket 客戶端"
       }
@@ -3059,7 +3059,7 @@
     "WebSocket 連接事件": [
       {
         "document": "advanced/http-client.md",
-        "line": 211,
+        "line": 236,
         "level": 3,
         "title": "WebSocket 連接事件"
       }
@@ -3675,7 +3675,7 @@
     "ws_connect 參數": [
       {
         "document": "advanced/http-client.md",
-        "line": 147,
+        "line": 172,
         "level": 3,
         "title": "ws_connect 參數"
       }
@@ -3715,7 +3715,7 @@
     "上下文管理": [
       {
         "document": "advanced/http-client.md",
-        "line": 223,
+        "line": 248,
         "level": 2,
         "title": "上下文管理"
       }
@@ -4385,7 +4385,7 @@
     "低級方法": [
       {
         "document": "advanced/http-client.md",
-        "line": 276,
+        "line": 301,
         "level": 4,
         "title": "低級方法"
       }
@@ -5127,7 +5127,7 @@
       },
       {
         "document": "advanced/http-client.md",
-        "line": 133,
+        "line": 157,
         "level": 2,
         "title": "參數說明"
       },
@@ -5673,7 +5673,7 @@
     "基本用法": [
       {
         "document": "advanced/http-client.md",
-        "line": 236,
+        "line": 261,
         "level": 3,
         "title": "基本用法"
       },
@@ -7298,12 +7298,12 @@
         "title": "接入 Cursor"
       }
     ],
-    "接收訊息": [
+    "接收消息": [
       {
         "document": "advanced/http-client.md",
-        "line": 248,
+        "line": 273,
         "level": 3,
-        "title": "接收訊息"
+        "title": "接收消息"
       }
     ],
     "接收類型 (ReceiveType)": [
@@ -7933,7 +7933,7 @@
     "最佳實踐": [
       {
         "document": "advanced/http-client.md",
-        "line": 444,
+        "line": 469,
         "level": 2,
         "title": "最佳實踐"
       },
@@ -9073,7 +9073,7 @@
     "生命週期事件": [
       {
         "document": "advanced/http-client.md",
-        "line": 197,
+        "line": 222,
         "level": 2,
         "title": "生命週期事件"
       },
@@ -9109,7 +9109,7 @@
     "生命週期鈎子": [
       {
         "document": "advanced/http-client.md",
-        "line": 317,
+        "line": 342,
         "level": 3,
         "title": "生命週期鈎子"
       }
@@ -9141,7 +9141,7 @@
     "異常層級": [
       {
         "document": "advanced/http-client.md",
-        "line": 347,
+        "line": 372,
         "level": 3,
         "title": "異常層級"
       }
@@ -9149,7 +9149,7 @@
     "異常捕獲": [
       {
         "document": "advanced/http-client.md",
-        "line": 359,
+        "line": 384,
         "level": 3,
         "title": "異常捕獲"
       },
@@ -9163,7 +9163,7 @@
     "異常體系": [
       {
         "document": "advanced/http-client.md",
-        "line": 341,
+        "line": 366,
         "level": 2,
         "title": "異常體系"
       }
@@ -9468,12 +9468,6 @@
     ],
     "相關文件": [
       {
-        "document": "advanced/http-client.md",
-        "line": 454,
-        "level": 2,
-        "title": "相關文件"
-      },
-      {
         "document": "advanced/lazy-loading.md",
         "line": 115,
         "level": 2,
@@ -9586,6 +9580,12 @@
       {
         "document": "advanced/conversation.md",
         "line": 317,
+        "level": 2,
+        "title": "相關文檔"
+      },
+      {
+        "document": "advanced/http-client.md",
+        "line": 479,
         "level": 2,
         "title": "相關文檔"
       },
@@ -9851,17 +9851,17 @@
     "統一捕獲": [
       {
         "document": "advanced/http-client.md",
-        "line": 394,
+        "line": 419,
         "level": 3,
         "title": "統一捕獲"
       }
     ],
-    "網路客戶端": [
+    "網絡客戶端": [
       {
         "document": "advanced/http-client.md",
         "line": 1,
         "level": 1,
-        "title": "網路客戶端"
+        "title": "網絡客戶端"
       }
     ],
     "總結": [
@@ -10008,20 +10008,20 @@
         "title": "自定義消息段"
       }
     ],
+    "自定義預設頭": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 197,
+        "level": 2,
+        "title": "自定義預設頭"
+      }
+    ],
     "自訂儲存後端": [
       {
         "document": "advanced/sql-builder.md",
         "line": 304,
         "level": 2,
         "title": "自訂儲存後端"
-      }
-    ],
-    "自訂預設頭": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 172,
-        "level": 2,
-        "title": "自訂預設頭"
       }
     ],
     "自訂類型註冊": [
@@ -10765,7 +10765,7 @@
     "請求統計": [
       {
         "document": "advanced/http-client.md",
-        "line": 184,
+        "line": 209,
         "level": 2,
         "title": "請求統計"
       }
@@ -10851,7 +10851,7 @@
     "超時與重試": [
       {
         "document": "advanced/http-client.md",
-        "line": 155,
+        "line": 180,
         "level": 2,
         "title": "超時與重試"
       }
@@ -11075,7 +11075,7 @@
     "通用 request": [
       {
         "document": "advanced/http-client.md",
-        "line": 121,
+        "line": 145,
         "level": 3,
         "title": "通用 request"
       }
@@ -11343,7 +11343,7 @@
     "適配器中使用": [
       {
         "document": "advanced/http-client.md",
-        "line": 419,
+        "line": 444,
         "level": 2,
         "title": "適配器中使用"
       }
@@ -12009,7 +12009,7 @@
     "關閉連接": [
       {
         "document": "advanced/http-client.md",
-        "line": 335,
+        "line": 360,
         "level": 3,
         "title": "關閉連接"
       }
@@ -12219,7 +12219,7 @@
     "高級方法 (推薦)": [
       {
         "document": "advanced/http-client.md",
-        "line": 250,
+        "line": 275,
         "level": 4,
         "title": "高級方法 (推薦)"
       }
