@@ -555,10 +555,24 @@ def generate_api_docs(src_dir: str, output_dir: str) -> Dict[str, Dict]:
     """
     生成API文档
     
+    每次生成前会清理输出目录中的所有旧 Markdown 文件，
+    确保没有因源码重命名/删除而残留的陈旧文档。
+    
     :param src_dir: 源代码目录
     :param output_dir: Markdown输出目录
     :return: 模块信息字典
     """
+    # 清理旧的 Markdown 文件（避免源码重命名后残留陈旧文档）
+    if os.path.isdir(output_dir):
+        for root, _, files in os.walk(output_dir):
+            for file in files:
+                if file.endswith(".md"):
+                    try:
+                        os.remove(os.path.join(root, file))
+                    except OSError:
+                        pass
+        print(f"已清理旧文档: {output_dir}")
+    
     # 确保输出目录存在
     os.makedirs(output_dir, exist_ok=True)
     
