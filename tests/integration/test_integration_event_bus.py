@@ -15,6 +15,8 @@ from ErisPulse.Core.Event import _clear_all_handlers
 from collections import defaultdict
 
 
+
+
 def _make_msg(text="/hello", **kwargs):
     data = {
         "id": "bus_001",
@@ -326,3 +328,40 @@ class TestEventBusIntegration:
         await asyncio.gather(*tasks)
 
         assert count == 100
+
+    @pytest.mark.asyncio
+    async def test_same_priority_conflict_detection(self, clean_event_state):
+        """同优先级冲突检测：两个 handler 修改同一字段，触发 WARNING"""
+        conflict_records = []
+
+        @message.on_message(priority=0)
+        async def handler_a(event):
+            event["status"] = "approved"
+
+        @message.on_message(priority=0)
+        async def handler_b(event):
+            event["status"] = "rejected"
+
+        # 订阅日志，捕获冲突告警
+        from ErisPulse.Core import logger as eris_logger
+
+        def log_watcher(log_data: dict):
+            msg = log_data.get("message", "")
+            if "Event-Conflict" in msg or "Event-冲突" in msg:
+                conflict_records.append(log_data)
+
+        eris_logger.handler("test_conflict_watcher", min_level="WARNING")(log_watcher)
+
+        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+            event = _make_msg("test conflict")
+            await adapter.emit(event)
+        await asyncio.sleep(0.5)
+
+        # 确认冲突被 WARNING 记录
+        assert len(conflict_records) > 0, "冲突应被 WARNING 日志记录，但未捕获到"
+
+        # 验证日志内容
+        log_msg = conflict_records[0]["message"]
+        assert "status" in log_msg, f"日志应包含字段名 'status'"
+        assert "handler_a" in log_msg, f"日志应包含第一个 handler 名 'handler_a'"
+        assert "handler_b" in log_msg, f"日志应包含第二个 handler 名 'handler_b'"
