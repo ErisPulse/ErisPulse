@@ -89,15 +89,20 @@ ExceptionHandler 类提供相关功能。
 ---
 
 
-##### `generate_hints(exc_value: Exception, exc_traceback: Any = None)`
+##### `generate_hints(exc_value: BaseException, exc_traceback: Any = None)`
 
 为异常生成友好的提示行
 
-根据 异常类型智能推断：
-- AttributeError: 查找对象上最相似的属性，给出"你是不是想写 xxx"
-- ImportError / ModuleNotFoundError: 暂不深入分析，给出通用提示
+根据异常类型智能推断：
+- BaseException 子类（CancelledError / KeyboardInterrupt）：关停/取消场景
+- AttributeError: 查找对象上最相似的属性，给出“你是不是想写 xxx”
+- ImportError / ModuleNotFoundError: 给出拼写建议
+- NameError / KeyError: 从上下文中找最相近的名称
+- TypeError: 多种子场景（await / 缺参 / 不可调用 / 不可下标）
+- RuntimeError: 事件循环相关多种场景
+- RecursionError / TimeoutError / ConnectionError: 常见运行期错误
 
-- **exc_value** (`异常对象`): - **exc_traceback**: traceback 对象（可选，用于 AttributeError 上下文推断）
+- **exc_value** (`异常对象`): - **exc_traceback**: traceback 对象（可选，用于上下文推断）
 **返回值**: 提示行列表，无提示时为空列表
 
 ---

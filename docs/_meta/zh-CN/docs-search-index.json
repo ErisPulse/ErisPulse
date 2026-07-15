@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1288,
+  "total_keywords": 1289,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -5533,7 +5533,7 @@
     "同步初始化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 85,
+        "line": 107,
         "level": 3,
         "title": "同步初始化"
       }
@@ -7255,7 +7255,7 @@
     "异步初始化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 73,
+        "line": 95,
         "level": 3,
         "title": "异步初始化"
       }
@@ -7799,7 +7799,7 @@
     "推荐使用懒加载的场景（lazy_load=True）": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 96,
+        "line": 118,
         "level": 3,
         "title": "推荐使用懒加载的场景（lazy_load=True）"
       }
@@ -7807,7 +7807,7 @@
     "推荐禁用懒加载的场景（lazy_load=False）": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 100,
+        "line": 122,
         "level": 3,
         "title": "推荐禁用懒加载的场景（lazy_load=False）"
       }
@@ -8381,7 +8381,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 94,
+        "line": 116,
         "level": 2,
         "title": "最佳实践"
       },
@@ -9163,7 +9163,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 109,
+        "line": 131,
         "level": 2,
         "title": "注意事项"
       },
@@ -9941,7 +9941,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 115,
+        "line": 137,
         "level": 2,
         "title": "相关文档"
       },
@@ -10328,6 +10328,14 @@
         "line": 419,
         "level": 3,
         "title": "统一捕获"
+      }
+    ],
+    "统一的模块获取入口": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 73,
+        "level": 3,
+        "title": "统一的模块获取入口"
       }
     ],
     "继承关系": [

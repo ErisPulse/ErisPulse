@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1337,
+  "total_keywords": 1339,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -4454,12 +4454,12 @@
         "title": "使用介面卡事件監聽"
       }
     ],
-    "使用延遲載入模組": [
+    "使用慢載模組": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 59,
         "level": 2,
-        "title": "使用延遲載入模組"
+        "title": "使用慢載模組"
       }
     ],
     "使用方式": [
@@ -4852,12 +4852,12 @@
         "title": "內聯查詢事件"
       }
     ],
-    "全域設定": [
+    "全域配置": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 32,
         "level": 3,
-        "title": "全域設定"
+        "title": "全域配置"
       }
     ],
     "全域配置（EmailAdapter）": [
@@ -5221,7 +5221,7 @@
     "同步初始化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 85,
+        "line": 106,
         "level": 3,
         "title": "同步初始化"
       }
@@ -6434,12 +6434,6 @@
         "title": "工作原理"
       },
       {
-        "document": "advanced/lazy-loading.md",
-        "line": 14,
-        "level": 2,
-        "title": "工作原理"
-      },
-      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 218,
         "level": 3,
@@ -6814,14 +6808,6 @@
         "title": "延遲載入"
       }
     ],
-    "延遲載入模組系統": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 1,
-        "level": 1,
-        "title": "延遲載入模組系統"
-      }
-    ],
     "建立第一個機器人": [
       {
         "document": "getting-started/first-bot.md",
@@ -6852,22 +6838,6 @@
         "line": 34,
         "level": 3,
         "title": "建立表"
-      }
-    ],
-    "建議使用延遲載入的情境 (lazy_load=True)": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 96,
-        "level": 3,
-        "title": "建議使用延遲載入的情境 (lazy_load=True)"
-      }
-    ],
-    "建議停用延遲載入的情境 (lazy_load=False)": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 100,
-        "level": 3,
-        "title": "建議停用延遲載入的情境 (lazy_load=False)"
       }
     ],
     "引導式註冊": [
@@ -7062,6 +7032,14 @@
         "line": 216,
         "level": 2,
         "title": "慢加載機制"
+      }
+    ],
+    "慢載模組系統": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 1,
+        "level": 1,
+        "title": "慢載模組系統"
       }
     ],
     "懶載入系統": [
@@ -7312,6 +7290,22 @@
         "line": 7,
         "level": 3,
         "title": "接收類型 (ReceiveType)"
+      }
+    ],
+    "推薦使用慢載的場景（lazy_load=True）": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 117,
+        "level": 3,
+        "title": "推薦使用慢載的場景（lazy_load=True）"
+      }
+    ],
+    "推薦停用慢載的場景（lazy_load=False）": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 121,
+        "level": 3,
+        "title": "推薦停用慢載的場景（lazy_load=False）"
       }
     ],
     "提供的工具": [
@@ -7945,7 +7939,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 94,
+        "line": 115,
         "level": 2,
         "title": "最佳實踐"
       },
@@ -8669,7 +8663,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 109,
+        "line": 130,
         "level": 2,
         "title": "注意事項"
       },
@@ -9176,6 +9170,14 @@
         "title": "異步介面"
       }
     ],
+    "異步初始化": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 94,
+        "level": 3,
+        "title": "異步初始化"
+      }
+    ],
     "異步發送與結果處理": [
       {
         "document": "platform-guide/README.md",
@@ -9469,7 +9471,7 @@
     "相關文件": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 115,
+        "line": 136,
         "level": 2,
         "title": "相關文件"
       },
@@ -9854,6 +9856,14 @@
         "line": 419,
         "level": 3,
         "title": "統一捕獲"
+      }
+    ],
+    "統一的模組取得入口": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 73,
+        "level": 3,
+        "title": "統一的模組取得入口"
       }
     ],
     "網絡客戶端": [
@@ -11296,6 +11306,14 @@
         "title": "進階主題"
       }
     ],
+    "運作原理": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 14,
+        "level": 2,
+        "title": "運作原理"
+      }
+    ],
     "運行測試": [
       {
         "document": "user-guide/installation.md",
@@ -11520,12 +11538,12 @@
         "title": "配置"
       }
     ],
-    "配置延遲載入": [
+    "配置慢載": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 30,
         "level": 2,
-        "title": "配置延遲載入"
+        "title": "配置慢載"
       }
     ],
     "配置檔案位置": [
@@ -12068,14 +12086,6 @@
         "line": 169,
         "level": 3,
         "title": "靜態工廠 + 鏈式混合"
-      }
-    ],
-    "非同步初始化": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 73,
-        "level": 3,
-        "title": "非同步初始化"
       }
     ],
     "非同步程式設計": [

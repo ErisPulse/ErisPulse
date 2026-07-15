@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1328,
+  "total_keywords": 1330,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2397,7 +2397,7 @@
     "Asynchronous Initialization": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 73,
+        "line": 94,
         "level": 3,
         "title": "Asynchronous Initialization"
       }
@@ -2883,7 +2883,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 94,
+        "line": 115,
         "level": 2,
         "title": "Best Practices"
       },
@@ -6252,12 +6252,6 @@
         "title": "How It Works"
       },
       {
-        "document": "advanced/lazy-loading.md",
-        "line": 14,
-        "level": 2,
-        "title": "How It Works"
-      },
-      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 218,
         "level": 3,
@@ -6750,20 +6744,28 @@
         "title": "Lazy Loading Mechanism"
       }
     ],
-    "Lazy Loading Module System": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 1,
-        "level": 1,
-        "title": "Lazy Loading Module System"
-      }
-    ],
     "Lazy Loading System": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 328,
         "level": 2,
         "title": "Lazy Loading System"
+      }
+    ],
+    "Lazy-Loaded Module System": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 1,
+        "level": 1,
+        "title": "Lazy-Loaded Module System"
+      }
+    ],
+    "LazyModule Class": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 16,
+        "level": 3,
+        "title": "LazyModule Class"
       }
     ],
     "Learning Path": [
@@ -7836,12 +7838,12 @@
         "title": "Module Store Overview"
       }
     ],
-    "Module-level Control": [
+    "Module-Level Control": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 41,
         "level": 3,
-        "title": "Module-level Control"
+        "title": "Module-Level Control"
       }
     ],
     "Module-level Documentation Comment": [
@@ -8079,7 +8081,7 @@
     "Notes": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 110,
+        "line": 130,
         "level": 2,
         "title": "Notes"
       },
@@ -9108,6 +9110,22 @@
         "title": "Receiving Messages"
       }
     ],
+    "Recommended Scenarios for Disabling Lazy Loading (lazy_load=False)": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 121,
+        "level": 3,
+        "title": "Recommended Scenarios for Disabling Lazy Loading (lazy_load=False)"
+      }
+    ],
+    "Recommended Scenarios for Lazy Loading (lazy_load=True)": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 117,
+        "level": 3,
+        "title": "Recommended Scenarios for Lazy Loading (lazy_load=True)"
+      }
+    ],
     "Reference Documents": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -9227,7 +9245,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 116,
+        "line": 136,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9886,22 +9904,6 @@
         "line": 1,
         "level": 1,
         "title": "SQL Query Builder"
-      }
-    ],
-    "Scenarios Recommended for Disabling Lazy Loading (lazy_load=False)": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 101,
-        "level": 3,
-        "title": "Scenarios Recommended for Disabling Lazy Loading (lazy_load=False)"
-      }
-    ],
-    "Scenarios Recommended for Lazy Loading (lazy_load=True)": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 96,
-        "level": 3,
-        "title": "Scenarios Recommended for Lazy Loading (lazy_load=True)"
       }
     ],
     "Scheduled Tasks": [
@@ -10835,7 +10837,7 @@
     "Synchronous Initialization": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 85,
+        "line": 106,
         "level": 3,
         "title": "Synchronous Initialization"
       }
@@ -10968,14 +10970,6 @@
         "title": "Testing the Module"
       }
     ],
-    "The LazyModule Class": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 16,
-        "level": 3,
-        "title": "The LazyModule Class"
-      }
-    ],
     "Timeout Auto-Cancellation (Timeout)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -11086,6 +11080,14 @@
         "line": 419,
         "level": 3,
         "title": "Unified Exception Handling"
+      }
+    ],
+    "Unified Module Access Entry": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 73,
+        "level": 3,
+        "title": "Unified Module Access Entry"
       }
     ],
     "Uninstalling Modules": [
@@ -11334,12 +11336,12 @@
         "title": "Using Docker"
       }
     ],
-    "Using Lazy Loaded Modules": [
+    "Using Lazy-Loaded Modules": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 59,
         "level": 2,
-        "title": "Using Lazy Loaded Modules"
+        "title": "Using Lazy-Loaded Modules"
       }
     ],
     "Using Lifecycle Events": [
@@ -11698,6 +11700,14 @@
         "line": 181,
         "level": 3,
         "title": "Windows PowerShell Execution Policy"
+      }
+    ],
+    "Working Principle": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 14,
+        "level": 2,
+        "title": "Working Principle"
       }
     ],
     "Yunhu Platform Feature Documentation": [
