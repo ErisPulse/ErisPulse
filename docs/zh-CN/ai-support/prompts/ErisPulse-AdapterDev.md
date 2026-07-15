@@ -7153,6 +7153,28 @@ from ErisPulse import sdk
 result = await sdk.my_module.my_method()
 ```
 
+### 统一的模块获取入口
+
+无论是通过 SDK 属性、模块管理器属性访问，还是通过 `module.get()` 查询，
+对于“已注册但尚未加载”的懒加载模块，都会返回同一个懒加载代理，访问其属性才会真正触发初始化：
+
+```python
+# 三种方式拿到的都是懒加载代理（在模块未加载时），行为一致、对用户透明
+sdk.my_module          # 触发加载的入口
+sdk.module.my_module   # 同样返回懒加载代理
+sdk.module.get("my_module")  # 也返回懒加载代理，本身不会触发加载
+
+# 访问代理的任意属性才会真正初始化模块
+result = await sdk.my_module.my_method()
+```
+
+`module.get()` 是**查询**接口，本身不触发加载：
+- 模块已加载 → 返回真实实例
+- 模块已注册但未加载 → 返回懒加载代理（访问属性才初始化）
+- 模块未注册 → 返回 `None`
+
+如需显式触发加载，请使用 `await sdk.load_module("my_module")`。
+
 ### 异步初始化
 
 对于需要异步初始化的模块，建议先显式加载：

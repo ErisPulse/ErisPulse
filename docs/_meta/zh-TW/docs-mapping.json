@@ -295,7 +295,7 @@
           "level": 1
         },
         {
-          "title": "延遲載入模組系統",
+          "title": "慢載模組系統",
           "path": "advanced/lazy-loading.md",
           "level": 1
         },

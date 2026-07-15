@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1350,
+  "total_keywords": 1351,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -2857,7 +2857,7 @@
     "Асинхронная инициализация": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 73,
+        "line": 94,
         "level": 3,
         "title": "Асинхронная инициализация"
       }
@@ -3162,12 +3162,6 @@
         "line": 356,
         "level": 2,
         "title": "Важные замечания"
-      },
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 110,
-        "level": 2,
-        "title": "Важные замечания"
       }
     ],
     "Важные ограничения": [
@@ -3418,20 +3412,20 @@
         "title": "Главная страница (входы)"
       }
     ],
+    "Глобальная конфигурация": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 32,
+        "level": 3,
+        "title": "Глобальная конфигурация"
+      }
+    ],
     "Глобальная конфигурация (EmailAdapter)": [
       {
         "document": "platform-guide/email.md",
         "line": 23,
         "level": 3,
         "title": "Глобальная конфигурация (EmailAdapter)"
-      }
-    ],
-    "Глобальная настройка": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 32,
-        "level": 3,
-        "title": "Глобальная настройка"
       }
     ],
     "Горячая перезагрузка (Hot Reload)": [
@@ -3884,6 +3878,14 @@
         "line": 81,
         "level": 3,
         "title": "Другие типы сообщений"
+      }
+    ],
+    "Единый вход для получения модуля": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 73,
+        "level": 3,
+        "title": "Единый вход для получения модуля"
       }
     ],
     "Жизненный цикл (Lifecycle)": [
@@ -4630,20 +4632,20 @@
         "title": "Использование в транзакциях"
       }
     ],
+    "Использование ленивых модулей": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 59,
+        "level": 2,
+        "title": "Использование ленивых модулей"
+      }
+    ],
     "Использование метода reply для отправки ответа": [
       {
         "document": "getting-started/event-handling.md",
         "line": 302,
         "level": 3,
         "title": "Использование метода reply для отправки ответа"
-      }
-    ],
-    "Использование модулей с отложенной загрузкой": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 59,
-        "level": 2,
-        "title": "Использование модулей с отложенной загрузкой"
       }
     ],
     "Использование параметров запроса": [
@@ -4748,14 +4750,6 @@
         "line": 260,
         "level": 3,
         "title": "Как потребляет WebUI"
-      }
-    ],
-    "Как это работает": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 14,
-        "level": 2,
-        "title": "Как это работает"
       }
     ],
     "Картирование типов": [
@@ -5022,6 +5016,14 @@
         "title": "Конфигурация команд"
       }
     ],
+    "Конфигурация ленивой загрузки": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 30,
+        "level": 2,
+        "title": "Конфигурация ленивой загрузки"
+      }
+    ],
     "Конфигурация логирования": [
       {
         "document": "user-guide/configuration.md",
@@ -5238,12 +5240,6 @@
       {
         "document": "advanced/http-client.md",
         "line": 469,
-        "level": 2,
-        "title": "Лучшие практики"
-      },
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 94,
         "level": 2,
         "title": "Лучшие практики"
       },
@@ -5964,14 +5960,6 @@
         "line": 197,
         "level": 2,
         "title": "Настройка заголовков по умолчанию"
-      }
-    ],
-    "Настройка отложенной загрузки": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 30,
-        "level": 2,
-        "title": "Настройка отложенной загрузки"
       }
     ],
     "Нативные события платформы": [
@@ -8970,6 +8958,12 @@
     ],
     "Примечания": [
       {
+        "document": "advanced/lazy-loading.md",
+        "line": 130,
+        "level": 2,
+        "title": "Примечания"
+      },
+      {
         "document": "platform-guide/webhook.md",
         "line": 210,
         "level": 2,
@@ -8996,6 +8990,12 @@
       {
         "document": "advanced/dashboard-view.md",
         "line": 15,
+        "level": 2,
+        "title": "Принцип работы"
+      },
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 14,
         "level": 2,
         "title": "Принцип работы"
       },
@@ -9716,6 +9716,14 @@
         "title": "Рекомендации по разработке модулей"
       }
     ],
+    "Рекомендуемые практики": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 115,
+        "level": 2,
+        "title": "Рекомендуемые практики"
+      }
+    ],
     "Рекомендуемые практики (Best Practices)": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -9724,20 +9732,20 @@
         "title": "Рекомендуемые практики (Best Practices)"
       }
     ],
-    "Рекомендуемые сценарии для отключения отложенной загрузки (lazy_load=False)": [
+    "Рекомендуемые сценарии для ленивой загрузки (lazy_load=True)": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 101,
+        "line": 117,
         "level": 3,
-        "title": "Рекомендуемые сценарии для отключения отложенной загрузки (lazy_load=False)"
+        "title": "Рекомендуемые сценарии для ленивой загрузки (lazy_load=True)"
       }
     ],
-    "Рекомендуемые сценарии использования отложенной загрузки (lazy_load=True)": [
+    "Рекомендуемые сценарии для отключения ленивой загрузки (lazy_load=False)": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 96,
+        "line": 121,
         "level": 3,
-        "title": "Рекомендуемые сценарии использования отложенной загрузки (lazy_load=True)"
+        "title": "Рекомендуемые сценарии для отключения ленивой загрузки (lazy_load=False)"
       }
     ],
     "Руководство для пользователей": [
@@ -9941,7 +9949,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 116,
+        "line": 136,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -10227,7 +10235,7 @@
     "Синхронная инициализация": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 85,
+        "line": 106,
         "level": 3,
         "title": "Синхронная инициализация"
       }
@@ -10264,12 +10272,12 @@
         "title": "Система ленивой загрузки"
       }
     ],
-    "Система модулей с отложенной загрузкой": [
+    "Система ленивой загрузки модулей": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 1,
         "level": 1,
-        "title": "Система модулей с отложенной загрузкой"
+        "title": "Система ленивой загрузки модулей"
       }
     ],
     "Система правил отправки": [
@@ -11632,12 +11640,12 @@
         "title": "Управление конфигурацией"
       }
     ],
-    "Управление на уровне модулей": [
+    "Управление на уровне модуля": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 41,
         "level": 3,
-        "title": "Управление на уровне модулей"
+        "title": "Управление на уровне модуля"
       }
     ],
     "Управление подключениями": [
