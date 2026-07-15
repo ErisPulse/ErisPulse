@@ -66,6 +66,72 @@
 
 ---
 
+## [2.6.1-dev.0] - 2026/07/15
+> 开发版
+
+**版本摘要**
+2.6.1-dev.0 聚焦于动态加载的副作用消除与资源管理优化，并统一了管理器参数命名以符合 LSP 类型契约。主要包含三部分：(1) `LazyModule` 重构——移除热路径日志、`__slots__` 内存优化、weakref 打破循环引用、缓存签名分析、初始化失败短路；(2) 懒加载透明化——`module.get()` 对已注册但未加载的模块返回懒加载代理而非 `None`，补齐 `sdk.xxx` / `module.xxx` / `module.get()` 三条访问路径的一致性；(3) 管理器参数命名对齐基类 `ManagerBase`，消除 basedpyright `reportIncompatibleMethodOverride` 违规，并保留旧关键字参数兼容。
+
+**升级建议**
+- 是否建议升级：建议升级
+- 升级原因：
+  - 显著降低长期运行下的属性访问开销与 GC 压力（移除热路径日志、打破循环引用）
+  - `module.get()` 行为更直观，不再对已注册模块返回 `None`
+  - 类型检查更严格、更诚实，子类与基类参数命名一致
+
+**注意事项**
+- ⚠️ **管理器参数命名变更（非破坏性，附兼容层）**：`ModuleManager` / `AdapterManager` 重写 `ManagerBase` 的方法主参数名统一为 `name`（`register` 同时为 `class_type` / `info`）：
+  - `module.get(module_name="x")` 等旧关键字调用**仍然可用**（已弃用，建议迁移到位置参数或 `name=`）
+  - 位置调用完全不受影响
+  - 涉及方法：`register` / `get` / `exists` / `is_running` / `is_enabled` / `enable` / `disable` / `unregister`，以及 `ModuleManager` 的 `load` / `unload` / `is_loaded` / `get_info`
+- `module.get()` 对“已注册但未加载”的模块现返回懒加载代理；如需确认是否真正加载，请使用 `module.is_loaded()`
+- `LazyModule` 现使用 `__slots__`，实例上不再有 `__dict__`；自定义代码若依赖给 `LazyModule` 包装器动态挂属性会失败（应挂到真实模块实例上）
+- `LazyModule` 初始化失败后不再每次属性访问都重试，会直接抛出 `RuntimeError`；可用 `module.load()` 重新触发加载
+
+### 新增
+
+- @wsu2059
+  - `Core/module.py` `ModuleManager` 懒加载透明化：
+    - 新增 `register_lazy()` / `unregister_lazy()`，管理 `_lazy_modules` 代理表（补齐 `sdk.py:dump_state` 中早已预留但未实现的字段）
+    - `get()` 对已注册但未加载的模块返回懒加载代理，使 `module.get()` 与 `sdk.xxx` / `module.MyModule` 行为一致
+    - `unregister` / `clear` / `_unload_single_module` / `disable` 同步清理 `_lazy_modules`
+  - 管理器旧关键字参数弃用日志：
+    - 两个管理器新增 `_warn_deprecated_kwarg` 辅助函数 + 去重集合，旧关键字使用时记录一次 `logger.warning` 说明迁移方式
+    - 涉及 11 个方法的 `module_name=` / `platform=` 兼容字段
+    - i18n 键 `core.deprecated.kwarg`（5 语言）
+
+### 优化
+
+- @wsu2059
+  - `loaders/module.py` `LazyModule` 懒加载包装器重构：
+    - 移除 `__getattribute__` / `__getattr__` / `__setattr__` / `__delattr__` / `__call__` / `__repr__` 等热路径中的 `logger.trace()` 调用，消除每次属性访问的字符串构造与日志开销
+    - 新增 `__slots__`，消除每个实例的 `__dict__`，降低内存占用
+    - `_sdk_ref` 改用 `weakref.ref`，打破 `SDK <-> LazyModule` 循环引用，减少分代 GC 循环检测压力
+    - 缓存 `inspect.signature` 结果为 `_init_needs_sdk`，避免每次初始化重复反射
+    - 初始化失败后 `_ensure_initialized` / `_initialize` / `_initialize_sync` 短路返回，不再每次访问重试
+    - `_needs_async_init` 在成功初始化后正确清除；`threading` 导入提升至模块顶层
+  - `runtime/hints.py` 友好错误提示场景大幅扩展：
+    - 新增 `suggest_for_name_error`：从帧局部/全局/内置名中为 `NameError` 生成拼写建议
+    - 新增 `suggest_for_coroutine_attribute`：检测“对协程对象访问属性”（忘记 await）
+    - 新增 `suggest_for_missing_argument`：检测“缺少必需位置参数”
+    - 新增 `suggest_for_not_callable`：覆盖不可调用/不可下标/不可迭代的 `TypeError` 子场景
+    - 扩展 `suggest_for_event_loop_error`：覆盖“no running event loop”、“asyncio.run() in running loop”、“coroutine never awaited”
+    - 新增 `suggest_for_recursion_error` / `suggest_for_timeout_error` / `suggest_for_connection_error`
+    - 新增 `suggest_for_erispulse_client_error` / `suggest_for_websocket_disconnect`：为 ErisPulse 自定义异常（`ClientConnectionError` / `ClientTimeoutError` / `HTTPStatusError` 区分 4xx/5xx / `WebSocketDisconnect` 区分正常关闭与异常断开）生成友好提示
+    - 17 个 i18n 键覆盖全部新场景；修正 `suggest_for_name_error` 的 builtins 收集（`python -c` 下 `__builtins__` 是 module 对象）；修正 `RecursionError` 被 `RuntimeError` 分支截获的排序问题
+
+### 变更
+
+- @wsu2059
+  - `Core/module.py` / `Core/adapter.py` 管理器参数命名对齐基类 `ManagerBase`：
+    - `ModuleManager` 重写方法 `module_name` → `name`（`register` 另有 `module_class` → `class_type`、`module_info` → `info`）
+    - `AdapterManager` 重写方法 `platform` → `name`（`register` 另有 `adapter_class` → `class_type`、`adapter_info` → `info`）
+    - 消除 basedpyright `reportIncompatibleMethodOverride` 全部违规
+    - 保留旧关键字参数（`module_name=` / `platform=` 等）作为兼容层，已弃用
+  - `loaders/module.py` `initialize_modules` 创建 `LazyModule` 后同步 `manager.register_lazy()` 挂载代理
+
+---
+
 ## [2.6.0] - 2026/07/13
 > 正式发布
 

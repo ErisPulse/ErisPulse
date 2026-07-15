@@ -11,6 +11,7 @@ ErisPulse 友好错误提示引擎
 {!--< /tips >!--}
 """
 
+import asyncio
 import difflib
 import re
 from typing import Any, Optional, Sequence
@@ -188,9 +189,7 @@ def suggest_for_attribute_error(
         return None
 
     # 收集对象的公共属性作为候选
-    candidates = [
-        a for a in dir(obj) if not a.startswith("_") and a != attr_name
-    ]
+    candidates = [a for a in dir(obj) if not a.startswith("_") and a != attr_name]
     if not candidates:
         return None
 
@@ -198,9 +197,7 @@ def suggest_for_attribute_error(
 
 
 # ImportError / ModuleNotFoundError 消息的正则模式
-_IMPORT_NO_MODULE_PATTERN = re.compile(
-    r"No module named ['\"]([^'\"]+)['\"]"
-)
+_IMPORT_NO_MODULE_PATTERN = re.compile(r"No module named ['\"]([^'\"]+)['\"]")
 _IMPORT_CANNOT_IMPORT_PATTERN = re.compile(
     r"cannot import name ['\"]([^'\"]+)['\"]\s+from ['\"]([^'\"]+)['\"]"
 )
@@ -233,9 +230,7 @@ def suggest_for_import_error(exc: ImportError) -> Optional[str]:
         candidates: list[str] = []
         try:
             mod = sys.modules.get(source_mod) or importlib.import_module(source_mod)
-            candidates = [
-                a for a in dir(mod) if not a.startswith("_") and a != target
-            ]
+            candidates = [a for a in dir(mod) if not a.startswith("_") and a != target]
         except Exception:
             pass
         if candidates:
@@ -270,9 +265,7 @@ def suggest_for_import_error(exc: ImportError) -> Optional[str]:
                 for _, name, _ in pkgutil.iter_modules(parent_mod.__path__):
                     candidates.append(name)
             else:
-                candidates = [
-                    a for a in dir(parent_mod) if not a.startswith("_")
-                ]
+                candidates = [a for a in dir(parent_mod) if not a.startswith("_")]
         except Exception:
             pass
 
@@ -328,21 +321,141 @@ def suggest_for_key_error(exc: KeyError, tb: Any = None) -> Optional[str]:
     return best_match(missing_key, list(all_candidates), cutoff=0.6)
 
 
+def suggest_for_name_error(exc: NameError, tb: Any = None) -> Optional[str]:
+    """
+    为 NameError 生成拼写建议
+
+    名字拼写错误（如 ``my_modlue`` -> ``my_module``）是最高频的失误之一。
+    从出错帧的局部变量、全局变量与内置名称中收集候选，给出最接近的匹配。
+
+    :param exc: NameError 异常
+    :param tb: traceback 对象（可选）
+    :return: 建议的名称，无建议时返回 None
+    """
+    if not exc.args:
+        return None
+    missing_name = str(exc.args[0])
+    if not missing_name or len(missing_name) < 2:
+        return None
+
+    # 收集候选：帧的局部 / 全局 / 内置名称
+    candidates: set[str] = set()
+    frames_checked = 0
+    frame = tb
+    # 先走 traceback 帧
+    while frame and frames_checked < 5:
+        f_locals = frame.tb_frame.f_locals
+        f_globals = frame.tb_frame.f_globals
+        for source in (f_locals, f_globals):
+            for n in source.keys():
+                if isinstance(n, str) and not n.startswith("__") and n != missing_name:
+                    candidates.add(n)
+        # 内置名称（len/range/print 等）
+        # __builtins__ 在主模块中是 module 对象，在子模块中是 dict
+        builtins = f_globals.get("__builtins__")
+        if isinstance(builtins, dict):
+            for n in builtins.keys():
+                if isinstance(n, str) and not n.startswith("_") and n != missing_name:
+                    candidates.add(n)
+        elif hasattr(builtins, "__dict__"):
+            for n in builtins.__dict__.keys():
+                if isinstance(n, str) and not n.startswith("_") and n != missing_name:
+                    candidates.add(n)
+        frame = frame.tb_next
+        frames_checked += 1
+
+    if not candidates:
+        return None
+    return best_match(missing_name, list(candidates), cutoff=0.6)
+
+
+def suggest_for_coroutine_attribute(
+    exc: AttributeError, tb: Any = None
+) -> Optional[str]:
+    """
+    检测“对协程对象访问属性”的常见错误（忘记 await）
+
+    例如 ``sdk.my_module`` 返回未 await 的协程时，访问其属性会抛
+    AttributeError。此函数返回一个标识符，由 exceptions.py 翻译为
+    “你是不是忘记 await 了？”的提示。
+
+    :param exc: AttributeError 异常
+    :param tb: traceback 对象（可选）
+    :return: 诊断提示标识符，不匹配时返回 None
+    """
+    obj: Optional[object] = getattr(exc, "obj", None)
+    if obj is None and tb is not None:
+        obj = get_object_from_traceback(tb)
+    if obj is not None and asyncio.iscoroutine(obj):
+        return "coroutine_attribute"
+    return None
+
+
+def suggest_for_missing_argument(exc: TypeError) -> Optional[str]:
+    """
+    为 TypeError: missing required positional argument 生成诊断提示
+
+    检测调用时位置参数不足的常见错误（如调用 ``f(a)`` 但定义需要两个参数）。
+
+    :param exc: TypeError 异常
+    :return: 诊断提示标识符，不匹配时返回 None
+    """
+    msg = str(exc).lower()
+    if "missing" in msg and "required positional argument" in msg:
+        return "missing_argument"
+    # 变体：“takes exactly N positional arguments but M were given”
+    if "takes exactly" in msg and "positional argument" in msg:
+        return "missing_argument"
+    return None
+
+
+def suggest_for_not_callable(exc: TypeError) -> Optional[str]:
+    """
+    为 TypeError: object is not callable / not subscriptable / not iterable 生成诊断提示
+
+    检测对不可调用 / 不可下标 / 不可迭代对象误用的常见错误，
+    多数情况下是因为覆盖了同名变量或忘记加括号。
+
+    :param exc: TypeError 异常
+    :return: 诊断提示标识符，不匹配时返回 None
+    """
+    msg = str(exc).lower()
+    if "is not callable" in msg:
+        return "not_callable"
+    if "is not subscriptable" in msg:
+        return "not_subscriptable"
+    if "is not iterable" in msg or "is not an iterator" in msg:
+        return "not_iterable"
+    return None
+
+
 def suggest_for_event_loop_error(exc: RuntimeError) -> Optional[str]:
     """
-    为 RuntimeError: Event loop is closed 生成诊断提示
+    为 RuntimeError 中与事件循环相关的错误生成诊断提示
 
-    检测事件循环被意外关闭的常见原因，返回修复建议。
+    覆盖常见场景：
+    - 事件循环已被关闭（event loop is closed）
+    - 没有当前事件循环（There is no current event loop）
+    - 在已有事件循环中调用 asyncio.run()（cannot be called from a running event loop）
+
     与拼写建议类函数不同，这里返回的是一个标识符字符串，
     由 exceptions.py 通过 i18n 翻译为最终的多语言提示。
 
     :param exc: RuntimeError 异常
     :return: 诊断提示标识符，不匹配时返回 None
     """
-    msg = str(exc)
-    if "event loop is closed" not in msg.lower():
-        return None
-    return "event_loop_closed"
+    msg = str(exc).lower()
+    if "event loop is closed" in msg:
+        return "event_loop_closed"
+    if "no current event loop" in msg or "there is no current event loop" in msg:
+        return "no_event_loop"
+    if "no running event loop" in msg:
+        return "no_event_loop"
+    if "asyncio.run()" in msg and "running event loop" in msg:
+        return "asyncio_run_in_loop"
+    if "coroutine" in msg and "was never awaited" in msg:
+        return "coroutine_never_awaited"
+    return None
 
 
 def suggest_for_invalid_await(exc: TypeError) -> Optional[str]:
@@ -362,6 +475,106 @@ def suggest_for_invalid_await(exc: TypeError) -> Optional[str]:
     return "invalid_await"
 
 
+def suggest_for_recursion_error(exc: RecursionError) -> Optional[str]:
+    """
+    为 RecursionError 生成诊断提示
+
+    检测无限递归 / 缺少递归终止条件的常见错误。
+
+    :param exc: RecursionError 异常
+    :return: 诊断提示标识符
+    """
+    return "recursion_error"
+
+
+def suggest_for_timeout_error(exc: TimeoutError) -> Optional[str]:
+    """
+    为 TimeoutError 生成诊断提示
+
+    检测网络 / 异步操作超时的常见错误。
+
+    :param exc: TimeoutError 异常
+    :return: 诊断提示标识符
+    """
+    return "timeout_error"
+
+
+def suggest_for_connection_error(exc: ConnectionError) -> Optional[str]:
+    """
+    为 ConnectionError 及其子类生成诊断提示
+
+    覆盖 ConnectionRefusedError / ConnectionResetError / ConnectionAbortedError，
+    检测网络连接问题的常见原因。
+
+    :param exc: ConnectionError 异常
+    :return: 诊断提示标识符
+    """
+    if isinstance(exc, ConnectionRefusedError):
+        return "connection_refused"
+    if isinstance(exc, ConnectionResetError):
+        return "connection_reset"
+    return "connection_error"
+
+
+def suggest_for_erispulse_client_error(exc: BaseException) -> Optional[str]:
+    """
+    为 ErisPulse 自定义客户端异常生成诊断提示
+
+    覆盖框架自身的 ClientConnectionError / ClientTimeoutError / HTTPStatusError，
+    使用户看到这些异常时能获得与原生网络异常一致的友好提示。
+    为避免循环导入，errors 模块在函数内部延迟导入。
+
+    :param exc: 异常对象
+    :return: 诊断提示标识符，不匹配时返回 None
+    """
+    try:
+        from ..Core.Bases.errors import (
+            ClientConnectionError,
+            ClientTimeoutError,
+            HTTPStatusError,
+        )
+    except ImportError:
+        return None
+
+    if isinstance(exc, ClientConnectionError):
+        return "client_connection_error"
+    if isinstance(exc, ClientTimeoutError):
+        return "client_timeout_error"
+    if isinstance(exc, HTTPStatusError):
+        status = getattr(exc, "status", 0)
+        if 400 <= status < 500:
+            return "http_client_error"
+        if 500 <= status < 600:
+            return "http_server_error"
+        return "http_status_error"
+    return None
+
+
+def suggest_for_websocket_disconnect(exc: BaseException) -> Optional[str]:
+    """
+    检测 WebSocket 断开是否为正常关闭
+
+    WebSocketDisconnect 的 code=1000（正常关闭）属于生命周期事件而非错误；
+    其他 code（如 1006 异常断开）才需要关注。为避免循环导入，
+    errors 模块在函数内部延迟导入。
+
+    :param exc: 异常对象
+    :return: 标识符（'websocket_normal_close' / 'websocket_abnormal_close'），不匹配返回 None
+    """
+    try:
+        from ..Core.Bases.errors import WebSocketDisconnect
+    except ImportError:
+        return None
+
+    if not isinstance(exc, WebSocketDisconnect):
+        return None
+    code = getattr(exc, "code", 1000)
+    # 1000 (Normal Closure) / 1001 (Going Away) 是正常关闭
+    if code in (1000, 1001):
+        return "websocket_normal_close"
+    return "websocket_abnormal_close"
+
+
 __all__ = [
     "suggest_similar",
     "best_match",
@@ -371,6 +584,15 @@ __all__ = [
     "suggest_for_attribute_error",
     "suggest_for_import_error",
     "suggest_for_key_error",
+    "suggest_for_name_error",
+    "suggest_for_coroutine_attribute",
+    "suggest_for_missing_argument",
+    "suggest_for_not_callable",
     "suggest_for_event_loop_error",
     "suggest_for_invalid_await",
+    "suggest_for_recursion_error",
+    "suggest_for_timeout_error",
+    "suggest_for_connection_error",
+    "suggest_for_erispulse_client_error",
+    "suggest_for_websocket_disconnect",
 ]

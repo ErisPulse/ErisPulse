@@ -32,6 +32,33 @@ from .i18n import i18n
 from .lifecycle import lifecycle
 from .logger import logger
 
+# 已记录过的弃用警告（owner, old_kwarg），每个组合只警告一次，避免热路径日志刷屏
+_DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
+
+
+def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
+    """
+    {!--< internal-use >!--}
+    当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
+
+    :param owner: 所属方法名（如 "AdapterManager.get"）
+    :param old: 已弃用的旧参数名
+    :param new: 推荐使用的新参数名
+    """
+    key = (owner, old)
+    if key in _DEPRECATED_KWARG_WARNED:
+        return
+    _DEPRECATED_KWARG_WARNED.add(key)
+    logger.warning(
+        i18n.t(
+            "core.deprecated.kwarg",
+            owner=owner,
+            old=old,
+            new=new,
+        )
+    )
+
+
 # 按事件类型分类的日志器
 _msg_logger = logger.get_child("Message", relative=False)
 _notice_logger = logger.get_child("Notice", relative=False)
@@ -125,16 +152,23 @@ class AdapterManager(ManagerBase):
 
     def register(
         self,
-        platform: str,
-        adapter_class: type[BaseAdapter],
+        name: str | None = None,
+        class_type: type[BaseAdapter] | None = None,
+        info: dict | None = None,
+        *,
+        platform: str | None = None,
+        adapter_class: type[BaseAdapter] | None = None,
         adapter_info: dict | None = None,
     ) -> bool:
         """
         注册新的适配器类（标准化注册方法）
 
-        :param platform: 平台名称
-        :param adapter_class: 适配器类
-        :param adapter_info: 适配器信息
+        :param name: 平台名称
+        :param class_type: 适配器类
+        :param info: 适配器信息
+        :param platform: [已弃用] 兼容旧关键字参数，等同 name
+        :param adapter_class: [已弃用] 兼容旧关键字参数，等同 class_type
+        :param adapter_info: [已弃用] 兼容旧关键字参数，等同 info
         :return: 注册是否成功
 
         :raises TypeError: 当适配器类无效时抛出
@@ -142,6 +176,27 @@ class AdapterManager(ManagerBase):
         :example:
         >>> adapter.register("MyPlatform", MyPlatformAdapter)
         """
+        # 兼容旧关键字参数（已弃用，建议改用位置参数或新参数名）
+        if platform is not None:
+            _warn_deprecated_kwarg("AdapterManager.register", "platform", "name")
+            name = platform
+        if adapter_class is not None:
+            _warn_deprecated_kwarg(
+                "AdapterManager.register", "adapter_class", "class_type"
+            )
+            class_type = adapter_class
+        if adapter_info is not None:
+            _warn_deprecated_kwarg("AdapterManager.register", "adapter_info", "info")
+            info = adapter_info
+        # 缺少必要参数时按原契约报错
+        if not isinstance(name, str) or not name:
+            raise TypeError(i18n.t("core.adapter.name_required"))
+        if class_type is None:
+            raise TypeError(i18n.t("core.adapter.must_inherit_base"))
+        # 方法体沿用语义化变量名
+        platform = name
+        adapter_class = class_type
+        adapter_info = info
         if not self._is_subclass(adapter_class, BaseAdapter):
             raise TypeError(i18n.t("core.adapter.must_inherit_base"))
 
@@ -292,7 +347,10 @@ class AdapterManager(ManagerBase):
             while True:
                 try:
                     # 刷新账户缓存，确保 Dashboard 配置变更后 _accounts_data 不过期
-                    if hasattr(adapter, 'AccountConfigClass') and adapter.AccountConfigClass is not None:
+                    if (
+                        hasattr(adapter, "AccountConfigClass")
+                        and adapter.AccountConfigClass is not None
+                    ):
                         try:
                             # 向后兼容：先尝试子类覆写的 _load_accounts()
                             custom = adapter._load_accounts()
@@ -703,7 +761,10 @@ class AdapterManager(ManagerBase):
         token = current_owner.set(platform)
         try:
             # 刷新账户缓存，确保 Dashboard 配置变更后 _accounts_data 不过期
-            if hasattr(adapter_instance, 'AccountConfigClass') and adapter_instance.AccountConfigClass is not None:
+            if (
+                hasattr(adapter_instance, "AccountConfigClass")
+                and adapter_instance.AccountConfigClass is not None
+            ):
                 try:
                     # 向后兼容：先尝试子类覆写的 _load_accounts()
                     custom = adapter_instance._load_accounts()
@@ -812,20 +873,30 @@ class AdapterManager(ManagerBase):
         )
         return True
 
-    def exists(self, platform: str) -> bool:
+    def exists(self, name: str | None = None, *, platform: str | None = None) -> bool:
         """
         检查平台是否已注册
 
-        :param platform: 平台名称
+        :param name: 平台名称
+        :param platform: [已弃用] 兼容旧关键字参数，等同 name
         :return: 平台是否已注册（即 adapter.register() 已被调用）
         """
+        if platform is not None:
+            _warn_deprecated_kwarg("AdapterManager.exists", "platform", "name")
+            name = platform
+        if name is None:
+            return False
+        platform = name
         return platform in self._adapters
 
-    def is_enabled(self, platform: str) -> bool:
+    def is_enabled(
+        self, name: str | None = None, *, platform: str | None = None
+    ) -> bool:
         """
         检查平台适配器是否启用
 
-        :param platform: 平台名称
+        :param name: 平台名称
+        :param platform: [已弃用] 兼容旧关键字参数，等同 name
         :return: 平台适配器是否启用
 
         {!--< tips >!--}
@@ -836,6 +907,12 @@ class AdapterManager(ManagerBase):
         如果适配器未在配置中，默认启用并自动写入配置
         {!--< /tips >!--}
         """
+        if platform is not None:
+            _warn_deprecated_kwarg("AdapterManager.is_enabled", "platform", "name")
+            name = platform
+        if name is None:
+            return False
+        platform = name
         from .config import parse_bool_config
 
         status = config.getConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform))
@@ -847,13 +924,20 @@ class AdapterManager(ManagerBase):
 
         return parse_bool_config(status)
 
-    def enable(self, platform: str) -> bool:
+    def enable(self, name: str | None = None, *, platform: str | None = None) -> bool:
         """
         启用平台适配器
 
-        :param platform: 平台名称
+        :param name: 平台名称
+        :param platform: [已弃用] 兼容旧关键字参数，等同 name
         :return: [bool] 操作是否成功
         """
+        if platform is not None:
+            _warn_deprecated_kwarg("AdapterManager.enable", "platform", "name")
+            name = platform
+        if name is None:
+            return False
+        platform = name
         # 启用平台时自动在配置中注册
         if platform not in self._adapters:
             logger.error(i18n.t("core.adapter.platform_not_exist", platform=platform))
@@ -863,13 +947,20 @@ class AdapterManager(ManagerBase):
         logger.info(i18n.t("core.adapter.platform_enabled", platform=platform))
         return True
 
-    def disable(self, platform: str) -> bool:
+    def disable(self, name: str | None = None, *, platform: str | None = None) -> bool:
         """
         禁用平台适配器
 
-        :param platform: 平台名称
+        :param name: 平台名称
+        :param platform: [已弃用] 兼容旧关键字参数，等同 name
         :return: [bool] 操作是否成功
         """
+        if platform is not None:
+            _warn_deprecated_kwarg("AdapterManager.disable", "platform", "name")
+            name = platform
+        if name is None:
+            return False
+        platform = name
         # 禁用平台时自动在配置中注册
         if platform not in self._adapters:
             logger.error(i18n.t("core.adapter.platform_not_exist", platform=platform))
@@ -879,17 +970,26 @@ class AdapterManager(ManagerBase):
         logger.info(i18n.t("core.adapter.platform_disabled", platform=platform))
         return True
 
-    def unregister(self, platform: str) -> bool:
+    def unregister(
+        self, name: str | None = None, *, platform: str | None = None
+    ) -> bool:
         """
         取消注册适配器
 
-        :param platform: 平台名称
+        :param name: 平台名称
+        :param platform: [已弃用] 兼容旧关键字参数，等同 name
         :return: 是否取消成功
 
         {!--< internal-use >!--}
         注意: 此方法仅取消注册, 不关闭已启动的适配器
         {!--< /internal-use >!--}
         """
+        if platform is not None:
+            _warn_deprecated_kwarg("AdapterManager.unregister", "platform", "name")
+            name = platform
+        if name is None:
+            return False
+        platform = name
         if platform not in self._adapters:
             logger.warning(
                 i18n.t("core.adapter.platform_unregistered_short", platform=platform)
@@ -1611,33 +1711,51 @@ class AdapterManager(ManagerBase):
 
     # ==================== 工具方法 ====================
 
-    def get(self, platform: str) -> BaseAdapter | None:
+    def get(
+        self, name: str | None = None, *, platform: str | None = None
+    ) -> BaseAdapter | None:
         """
         获取指定平台的适配器实例
 
-        :param platform: 平台名称
+        :param name: 平台名称
+        :param platform: [已弃用] 兼容旧关键字参数，等同 name
         :return: 适配器实例或None
 
         :example:
         >>> adapter = adapter.get("MyPlatform")
         """
+        if platform is not None:
+            _warn_deprecated_kwarg("AdapterManager.get", "platform", "name")
+            name = platform
+        if name is None:
+            return None
+        platform = name
         platform_lower = platform.lower()
         for registered, instance in self._adapters.items():
             if registered.lower() == platform_lower:
                 return instance
         return None
 
-    def is_running(self, platform: str) -> bool:
+    def is_running(
+        self, name: str | None = None, *, platform: str | None = None
+    ) -> bool:
         """
         检查适配器是否正在运行（已启动）
 
-        :param platform: 平台名称
+        :param name: 平台名称
+        :param platform: [已弃用] 兼容旧关键字参数，等同 name
         :return: 适配器是否正在运行
 
         :example:
         >>> if adapter.is_running("onebot11"):
         >>>     print("onebot11 适配器正在运行")
         """
+        if platform is not None:
+            _warn_deprecated_kwarg("AdapterManager.is_running", "platform", "name")
+            name = platform
+        if name is None:
+            return False
+        platform = name
         if (adapter_instance := self.get(platform)) is None:
             return False
         return adapter_instance in self._started_instances
