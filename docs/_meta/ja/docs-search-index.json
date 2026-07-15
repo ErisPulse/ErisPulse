@@ -6968,12 +6968,6 @@
         "title": "ベストプラクティス"
       },
       {
-        "document": "advanced/lazy-loading.md",
-        "line": 94,
-        "level": 2,
-        "title": "ベストプラクティス"
-      },
-      {
         "document": "advanced/router.md",
         "line": 379,
         "level": 2,
@@ -7870,12 +7864,12 @@
         "title": "モジュールライフサイクル"
       }
     ],
-    "モジュールレベルでの制御": [
+    "モジュールレベルの制御": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 41,
         "level": 3,
-        "title": "モジュールレベルでの制御"
+        "title": "モジュールレベルの制御"
       }
     ],
     "モジュール・ロード戦略": [
@@ -8118,52 +8112,52 @@
         "title": "ライフサイクル連携"
       }
     ],
+    "ラグロードの設定": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 30,
+        "level": 2,
+        "title": "ラグロードの設定"
+      }
+    ],
+    "ラグロードを使用することを推奨する場面（lazy_load=True）": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 119,
+        "level": 3,
+        "title": "ラグロードを使用することを推奨する場面（lazy_load=True）"
+      }
+    ],
+    "ラグロードを無効にすることを推奨する場面（lazy_load=False）": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 123,
+        "level": 3,
+        "title": "ラグロードを無効にすることを推奨する場面（lazy_load=False）"
+      }
+    ],
+    "ラグロードモジュールの使用": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 59,
+        "level": 2,
+        "title": "ラグロードモジュールの使用"
+      }
+    ],
+    "ラグロードモジュールシステム": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 1,
+        "level": 1,
+        "title": "ラグロードモジュールシステム"
+      }
+    ],
     "ランタイム設定": [
       {
         "document": "advanced/i18n.md",
         "line": 325,
         "level": 2,
         "title": "ランタイム設定"
-      }
-    ],
-    "リアルタイム読み込みの設定": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 30,
-        "level": 2,
-        "title": "リアルタイム読み込みの設定"
-      }
-    ],
-    "リアルタイム読み込みを使用することを推奨するシナリオ（lazy_load=True）": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 96,
-        "level": 3,
-        "title": "リアルタイム読み込みを使用することを推奨するシナリオ（lazy_load=True）"
-      }
-    ],
-    "リアルタイム読み込みを無効にすることを推奨するシナリオ（lazy_load=False）": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 100,
-        "level": 3,
-        "title": "リアルタイム読み込みを無効にすることを推奨するシナリオ（lazy_load=False）"
-      }
-    ],
-    "リアルタイム読み込みモジュールの使用": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 59,
-        "level": 2,
-        "title": "リアルタイム読み込みモジュールの使用"
-      }
-    ],
-    "リアルタイム読み込みモジュールシステム": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 1,
-        "level": 1,
-        "title": "リアルタイム読み込みモジュールシステム"
       }
     ],
     "リクエストイベント": [
@@ -8568,6 +8562,14 @@
         "line": 109,
         "level": 2,
         "title": "一般的な質問"
+      }
+    ],
+    "一貫したモジュール取得エントリ": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 73,
+        "level": 3,
+        "title": "一貫したモジュール取得エントリ"
       }
     ],
     "不支持的方法調用": [
@@ -9207,7 +9209,7 @@
     "同期初期化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 85,
+        "line": 108,
         "level": 3,
         "title": "同期初期化"
       }
@@ -9512,6 +9514,12 @@
     ],
     "基本的な使用": [
       {
+        "document": "advanced/lazy-loading.md",
+        "line": 61,
+        "level": 3,
+        "title": "基本的な使用"
+      },
+      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 58,
         "level": 3,
@@ -9528,14 +9536,6 @@
         "line": 171,
         "level": 3,
         "title": "基本的な使用"
-      }
-    ],
-    "基本的な使用方法": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 61,
-        "level": 3,
-        "title": "基本的な使用方法"
       }
     ],
     "基本的な使用法": [
@@ -10324,6 +10324,12 @@
         "line": 469,
         "level": 2,
         "title": "最適な実践"
+      },
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 117,
+        "level": 2,
+        "title": "最適な実践"
       }
     ],
     "机器人公告看板事件の例": [
@@ -10657,7 +10663,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 109,
+        "line": 132,
         "level": 2,
         "title": "注意事項"
       },
@@ -11937,7 +11943,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 115,
+        "line": 138,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -12143,7 +12149,7 @@
     "非同期初期化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 73,
+        "line": 96,
         "level": 3,
         "title": "非同期初期化"
       }

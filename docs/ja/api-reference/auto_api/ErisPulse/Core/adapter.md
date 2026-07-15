@@ -11,6 +11,20 @@ ErisPulse 适配器系统
 
 ---
 
+## 函数列表
+
+
+### `_warn_deprecated_kwarg(owner: str, old: str, new: str)`
+
+> **内部方法**
+当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
+
+- **owner** (`所属方法名（如`): "AdapterManager.get"）
+- **old** (`已弃用的旧参数名`): - **new**: 推荐使用的新参数名
+
+---
+
+
 ## 类列表
 
 
@@ -40,12 +54,15 @@ ErisPulse 适配器系统
 ---
 
 
-##### `register(platform: str, adapter_class: type[BaseAdapter], adapter_info: dict | None = None)`
+##### `register(name: str | None = None, class_type: type[BaseAdapter] | None = None, info: dict | None = None)`
 
 注册新的适配器类（标准化注册方法）
 
-- **platform** (`平台名称`): - **adapter_class**: 适配器类
-- **adapter_info** (`适配器信息`): **返回值** (`注册是否成功`): **异常**: `TypeError` - 当适配器类无效时抛出
+- **name** (`平台名称`): - **class_type**: 适配器类
+- **info** (`适配器信息`): - **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+- **adapter_class** (`已弃用`): 兼容旧关键字参数，等同 class_type
+- **adapter_info** (`已弃用`): 兼容旧关键字参数，等同 info
+**返回值** (`注册是否成功`): **异常**: `TypeError` - 当适配器类无效时抛出
 
 **示例**:
 ```python
@@ -183,20 +200,22 @@ ErisPulse 适配器系统
 ---
 
 
-##### `exists(platform: str)`
+##### `exists(name: str | None = None)`
 
 检查平台是否已注册
 
-- **platform** (`平台名称`): **返回值** (`平台是否已注册（即`): adapter.register() 已被调用）
+- **name** (`平台名称`): - **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`平台是否已注册（即`): adapter.register() 已被调用）
 
 ---
 
 
-##### `is_enabled(platform: str)`
+##### `is_enabled(name: str | None = None)`
 
 检查平台适配器是否启用
 
-- **platform** (`平台名称`): **返回值** (`平台适配器是否启用`): > **提示**
+- **name** (`平台名称`): - **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`平台适配器是否启用`): > **提示**
 > 适配器启用条件：
 > 1. 适配器在配置文件中（ErisPulse.adapters.status.{platform} 存在）
 > 2. 配置值为启用状态
@@ -205,29 +224,32 @@ ErisPulse 适配器系统
 ---
 
 
-##### `enable(platform: str)`
+##### `enable(name: str | None = None)`
 
 启用平台适配器
 
-- **platform** (`平台名称`): **返回值** (`bool`): 操作是否成功
+- **name** (`平台名称`): - **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`bool`): 操作是否成功
 
 ---
 
 
-##### `disable(platform: str)`
+##### `disable(name: str | None = None)`
 
 禁用平台适配器
 
-- **platform** (`平台名称`): **返回值** (`bool`): 操作是否成功
+- **name** (`平台名称`): - **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`bool`): 操作是否成功
 
 ---
 
 
-##### `unregister(platform: str)`
+##### `unregister(name: str | None = None)`
 
 取消注册适配器
 
-- **platform** (`平台名称`): **返回值** (`是否取消成功`): > **内部方法**
+- **name** (`平台名称`): - **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`是否取消成功`): > **内部方法**
 注意: 此方法仅取消注册, 不关闭已启动的适配器
 
 ---
@@ -498,11 +520,12 @@ self字段标准扩展：
 ---
 
 
-##### `get(platform: str)`
+##### `get(name: str | None = None)`
 
 获取指定平台的适配器实例
 
-- **platform** (`平台名称`): **返回值** (`适配器实例或None`): 
+- **name** (`平台名称`): - **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`适配器实例或None`): 
 **示例**:
 ```python
 >>> adapter = adapter.get("MyPlatform")
@@ -511,11 +534,12 @@ self字段标准扩展：
 ---
 
 
-##### `is_running(platform: str)`
+##### `is_running(name: str | None = None)`
 
 检查适配器是否正在运行（已启动）
 
-- **platform** (`平台名称`): **返回值** (`适配器是否正在运行`): 
+- **name** (`平台名称`): - **platform** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`适配器是否正在运行`): 
 **示例**:
 ```python
 >>> if adapter.is_running("onebot11"):
