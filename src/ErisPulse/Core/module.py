@@ -21,6 +21,33 @@ from .i18n import i18n
 from .lifecycle import lifecycle
 from .logger import logger
 
+# 已记录过的弃用警告（owner, old_kwarg），每个组合只警告一次，避免热路径日志刷屏
+_DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
+
+
+def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
+    """
+    {!--< internal-use >!--}
+    当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
+
+    :param owner: 所属方法名（如 "ModuleManager.get"）
+    :param old: 已弃用的旧参数名
+    :param new: 推荐使用的新参数名
+    """
+    key = (owner, old)
+    if key in _DEPRECATED_KWARG_WARNED:
+        return
+    _DEPRECATED_KWARG_WARNED.add(key)
+    logger.warning(
+        i18n.t(
+            "core.deprecated.kwarg",
+            owner=owner,
+            old=old,
+            new=new,
+        )
+    )
+
+
 
 class ModuleManager(ManagerBase):
     """
@@ -58,6 +85,9 @@ class ModuleManager(ManagerBase):
         self._module_classes: dict[str, type] = {}  # 模块类映射
         self._loaded_modules: set = set()  # 已加载的模块名称
         self._module_info: dict[str, dict] = {}  # 模块信息
+        self._lazy_modules: dict[
+            str, Any
+        ] = {}  # 懒加载代理（未触发初始化时 get() 返回它）
         self._sdk = None
 
     def set_sdk_ref(self, sdk) -> bool:
@@ -77,14 +107,24 @@ class ModuleManager(ManagerBase):
     # ==================== 模块注册与管理 ====================
 
     def register(
-        self, module_name: str, module_class: type, module_info: dict | None = None
+        self,
+        name: str | None = None,
+        class_type: type | None = None,
+        info: dict | None = None,
+        *,
+        module_name: str | None = None,
+        module_class: type | None = None,
+        module_info: dict | None = None,
     ) -> bool:
         """
         注册模块类
 
-        :param module_name: 模块名称
-        :param module_class: 模块类
-        :param module_info: 模块信息
+        :param name: 模块名称
+        :param class_type: 模块类
+        :param info: 模块信息
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
+        :param module_class: [已弃用] 兼容旧关键字参数，等同 class_type
+        :param module_info: [已弃用] 兼容旧关键字参数，等同 info
         :return: 是否注册成功
 
         :raises TypeError: 当模块类无效时抛出
@@ -92,6 +132,35 @@ class ModuleManager(ManagerBase):
         :example:
         >>> module.register("MyModule", MyModuleClass)
         """
+        # 兼容旧关键字参数（已弃用，建议改用位置参数或新参数名）
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.register", "module_name", "name")
+            name = module_name
+        if module_class is not None:
+            _warn_deprecated_kwarg(
+                "ModuleManager.register", "module_class", "class_type"
+            )
+            class_type = module_class
+        if module_info is not None:
+            _warn_deprecated_kwarg("ModuleManager.register", "module_info", "info")
+            info = module_info
+        # 缺少必要参数时按原契约报错
+        if not isinstance(name, str) or not name:
+            error_msg = i18n.t("core.module.name_required")
+            logger.error(error_msg)
+            raise TypeError(error_msg)
+        if class_type is None:
+            raise TypeError(
+                i18n.t(
+                    "core.module.param_must_be_class",
+                    name=name,
+                    type="NoneType",
+                )
+            )
+        # 方法体沿用语义化变量名
+        module_name = name
+        module_class = class_type
+        module_info = info
         # 严格验证模块类，确保继承自BaseModule
         # 先检查是否为类对象
         if not isinstance(module_class, type):
@@ -141,16 +210,52 @@ class ModuleManager(ManagerBase):
         logger.info(i18n.t("core.module.registered", name=module_name))
         return True
 
-    async def load(self, module_name: str) -> bool:
+    def register_lazy(self, name: str, lazy_proxy: Any) -> None:
+        """
+        注册懒加载代理
+
+        :param name: 模块名称
+        :param lazy_proxy: 懒加载代理对象（LazyModule）
+
+        {!--< internal-use >!--}
+        由加载器在创建 LazyModule 后调用。注册后 get() 会返回该代理，
+        从而使“懒加载对用户透明”：已注册但未加载的模块不再返回 None。
+        {!--< /internal-use >!--}
+        """
+        self._lazy_modules[name] = lazy_proxy
+
+    def unregister_lazy(self, name: str) -> None:
+        """
+        取消注册懒加载代理
+
+        :param name: 模块名称
+
+        {!--< internal-use >!--}
+        卸载/取消注册模块时调用，保持 _lazy_modules 与实际挂载状态一致。
+        {!--< /internal-use >!--}
+        """
+        self._lazy_modules.pop(name, None)
+
+    async def load(
+        self, name: str | None = None, *, module_name: str | None = None
+    ) -> bool:
         """
         加载指定模块（标准化加载逻辑）
 
-        :param module_name: 模块名称
+        :param name: 模块名称
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
         :return: 是否加载成功
 
         :example:
         >>> await module.load("MyModule")
         """
+        # 兼容旧关键字参数（已弃用）
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.load", "module_name", "name")
+            name = module_name
+        if name is None:
+            return False
+        module_name = name
         # 检查模块是否已注册
         if module_name not in self._module_classes:
             logger.error(i18n.t("core.module.not_registered", name=module_name))
@@ -260,22 +365,30 @@ class ModuleManager(ManagerBase):
             logger.error(i18n.t("core.module.load_failed", name=module_name, error=e))
             return False
 
-    async def unload(self, module_name: str | None = None) -> bool:
+    async def unload(
+        self, name: str | None = None, *, module_name: str | None = None
+    ) -> bool:
         """
         卸载指定模块或所有模块
 
-        :param module_name: 模块名称，None表示卸载所有模块（默认None）
+        :param name: 模块名称，None表示卸载所有模块（默认None）
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
         :return: 是否卸载成功
 
         :example:
         >>> await module.unload("MyModule")  # 卸载单个模块
         >>> await module.unload()  # 卸载所有模块
         """
+        # 兼容旧关键字参数（已弃用）
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.unload", "module_name", "name")
+            name = module_name
+        module_name = name
         if module_name is None:
             # 卸载所有模块
             success = True
-            for name in list(self._loaded_modules):
-                if not await self._unload_single_module(name):
+            for loaded_name in list(self._loaded_modules):
+                if not await self._unload_single_module(loaded_name):
                     success = False
             module_name = "All"
         else:
@@ -370,6 +483,8 @@ class ModuleManager(ManagerBase):
 
             del self._modules[module_name]
             self._loaded_modules.discard(module_name)
+            # 同步移除懒加载代理，保持与 SDK 属性被删除的状态一致
+            self.unregister_lazy(module_name)
 
             logger.info(i18n.t("core.module.unload_success", name=module_name))
             return True
@@ -378,23 +493,44 @@ class ModuleManager(ManagerBase):
             logger.error(i18n.t("core.module.unload_failed", name=module_name, error=e))
             return False
 
-    def get(self, module_name: str) -> Any:
+    def get(self, name: str | None = None, *, module_name: str | None = None) -> Any:
         """
-        获取模块实例
+        获取模块实例或懒加载代理
 
-        :param module_name: 模块名称
-        :return: 模块实例或None
+        :param name: 模块名称
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
+        :return: 模块实例 / 懒加载代理 / None
+
+        {!--< tips >!--}
+        不会触发加载。返回值优先级：
+        1. 已加载的真实实例（_modules）
+        2. 懒加载代理（_lazy_modules，访问其属性才会触发初始化）
+        3. None（模块未注册或未挂载）
+        这使得 ``module.get()`` 与 ``sdk.xxx`` / ``module.MyModule``
+        在“懒加载对用户透明”上保持一致：已注册但未加载的模块不再返回 None。
+        {!--< /tips >!--}
 
         :example:
         >>> my_module = module.get("MyModule")
         """
-        return self._modules.get(module_name)
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.get", "module_name", "name")
+            name = module_name
+        if name is None:
+            return None
+        instance = self._modules.get(name)
+        if instance is not None:
+            return instance
+        return self._lazy_modules.get(name)
 
-    def exists(self, module_name: str) -> bool:
+    def exists(
+        self, name: str | None = None, *, module_name: str | None = None
+    ) -> bool:
         """
         检查模块是否已注册
 
-        :param module_name: 模块名称
+        :param name: 模块名称
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
         :return: 模块是否已注册（即 module.register() 已被调用）
 
         {!--< tips >!--}
@@ -402,32 +538,53 @@ class ModuleManager(ManagerBase):
         如需检查模块是否启用，请使用 is_enabled()。
         {!--< /tips >!--}
         """
-        return module_name in self._module_classes
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.exists", "module_name", "name")
+            name = module_name
+        if name is None:
+            return False
+        return name in self._module_classes
 
-    def is_loaded(self, module_name: str) -> bool:
+    def is_loaded(
+        self, name: str | None = None, *, module_name: str | None = None
+    ) -> bool:
         """
         检查模块是否已加载
 
-        :param module_name: 模块名称
+        :param name: 模块名称
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
         :return: 模块是否已加载
 
         :example:
         >>> if module.is_loaded("MyModule"): ...
         """
-        return module_name in self._loaded_modules
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.is_loaded", "module_name", "name")
+            name = module_name
+        if name is None:
+            return False
+        return name in self._loaded_modules
 
-    def is_running(self, module_name: str) -> bool:
+    def is_running(
+        self, name: str | None = None, *, module_name: str | None = None
+    ) -> bool:
         """
         检查模块是否正在运行（已加载）
 
-        :param module_name: 模块名称
+        :param name: 模块名称
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
         :return: 模块是否正在运行
 
         :example:
         >>> if module.is_running("MyModule"):
         >>>     print("MyModule 正在运行")
         """
-        return self.is_loaded(module_name)
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.is_running", "module_name", "name")
+            name = module_name
+        if name is None:
+            return False
+        return self.is_loaded(name)
 
     def list_running(self) -> list[str]:
         """
@@ -492,11 +649,14 @@ class ModuleManager(ManagerBase):
         )
         return True
 
-    def is_enabled(self, module_name: str) -> bool:
+    def is_enabled(
+        self, name: str | None = None, *, module_name: str | None = None
+    ) -> bool:
         """
         检查模块是否启用
 
-        :param module_name: 模块名称
+        :param name: 模块名称
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
         :return: 模块是否启用
 
         {!--< tips >!--}
@@ -507,6 +667,12 @@ class ModuleManager(ManagerBase):
         如果模块未在配置中，默认启用并自动写入配置
         {!--< /tips >!--}
         """
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.is_enabled", "module_name", "name")
+            name = module_name
+        if name is None:
+            return False
+        module_name = name
         from .config import parse_bool_config
 
         status = config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name))
@@ -519,13 +685,22 @@ class ModuleManager(ManagerBase):
         # 解析配置值
         return parse_bool_config(status)
 
-    def enable(self, module_name: str) -> bool:
+    def enable(
+        self, name: str | None = None, *, module_name: str | None = None
+    ) -> bool:
         """
         启用模块
 
-        :param module_name: [str] 模块名称
+        :param name: [str] 模块名称
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
         :return: [bool] 操作是否成功
         """
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.enable", "module_name", "name")
+            name = module_name
+        if name is None:
+            return False
+        module_name = name
         if module_name not in self._module_classes:
             logger.error(i18n.t("core.module.module_not_exist", name=module_name))
             return False
@@ -534,13 +709,22 @@ class ModuleManager(ManagerBase):
         logger.info(i18n.t("core.module.module_enabled", name=module_name))
         return True
 
-    def disable(self, module_name: str) -> bool:
+    def disable(
+        self, name: str | None = None, *, module_name: str | None = None
+    ) -> bool:
         """
         禁用模块
 
-        :param module_name: [str] 模块名称
+        :param name: [str] 模块名称
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
         :return: [bool] 操作是否成功
         """
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.disable", "module_name", "name")
+            name = module_name
+        if name is None:
+            return False
+        module_name = name
         config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), False)
         logger.info(i18n.t("core.module.module_disabled", name=module_name))
 
@@ -588,19 +772,30 @@ class ModuleManager(ManagerBase):
         if module_name in self._modules:
             del self._modules[module_name]
         self._loaded_modules.discard(module_name)
+        # 同步移除懒加载代理，保持与 SDK 属性被删除的状态一致
+        self.unregister_lazy(module_name)
         return True
 
-    def unregister(self, module_name: str) -> bool:
+    def unregister(
+        self, name: str | None = None, *, module_name: str | None = None
+    ) -> bool:
         """
         取消注册模块
 
-        :param module_name: 模块名称
+        :param name: 模块名称
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
         :return: 是否取消成功
 
         {!--< internal-use >!--}
         注意：此方法仅取消注册，不卸载已加载的模块
         {!--< /internal-use >!--}
         """
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.unregister", "module_name", "name")
+            name = module_name
+        if name is None:
+            return False
+        module_name = name
         if module_name not in self._module_classes:
             logger.warning(i18n.t("core.module.not_registered", name=module_name))
             return False
@@ -611,6 +806,9 @@ class ModuleManager(ManagerBase):
         # 移除模块信息
         if module_name in self._module_info:
             self._module_info.pop(module_name)
+
+        # 移除懒加载代理（若存在）
+        self.unregister_lazy(module_name)
 
         logger.info(i18n.t("core.module.module_unregistered", name=module_name))
         return True
@@ -650,6 +848,9 @@ class ModuleManager(ManagerBase):
         # 清除所有模块信息
         self._module_info.clear()
 
+        # 清除所有懒加载代理
+        self._lazy_modules.clear()
+
         logger.debug(i18n.t("core.module.cleared"))
 
     def list_items(self) -> dict[str, bool]:
@@ -667,17 +868,25 @@ class ModuleManager(ManagerBase):
                 items[name] = self.is_enabled(name)
         return items
 
-    def get_info(self, module_name: str) -> dict | None:
+    def get_info(
+        self, name: str | None = None, *, module_name: str | None = None
+    ) -> dict | None:
         """
         获取模块信息
 
-        :param module_name: 模块名称
+        :param name: 模块名称
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
         :return: 模块信息字典，不存在则返回None
 
         :example:
         >>> info = module.get_info("MyModule")
         """
-        return self._module_info.get(module_name)
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.get_info", "module_name", "name")
+            name = module_name
+        if name is None:
+            return None
+        return self._module_info.get(name)
 
     def get_status_summary(self) -> dict[str, Any]:
         """
