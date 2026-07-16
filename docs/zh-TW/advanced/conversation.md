@@ -1,10 +1,10 @@
 # Conversation 多輪對話
 
-`Conversation` 類提供了在同一會話中進行多輪交互的便捷方法，適合實現引導式操作、信息收集、對話式問答等場景。
+`Conversation` 類提供了在同一會話中進行多輪互動的便捷方法，適合實現引導式操作、資訊收集、對話式問答等場景。
 
 ## 創建對話
 
-通過 `Event` 物件的 `conversation()` 方法創建：
+透過 `Event` 對象的 `conversation()` 方法創建：
 
 ```python
 from ErisPulse.Core.Event import command
@@ -37,7 +37,7 @@ async def quiz_handler(event):
 
 ### say(content, **kwargs)
 
-發送消息，返回 `self` 支援鏈式調用：
+發送訊息，返回 `self` 支持鏈式調用：
 
 ```python
 await conv.say("第一行").say("第二行").say("第三行")
@@ -51,7 +51,7 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-等待用戶回覆，返回 `Event` 物件或 `None`（超時）：
+等待使用者回覆，返回 `Event` 對象或 `None`（超時）：
 
 ```python
 # 簡單等待
@@ -68,10 +68,10 @@ resp = await conv.wait(prompt="請在10秒內回覆：", timeout=10)
 
 ### confirm(prompt=None, **kwargs)
 
-等待用戶確認（是/否），返回 `True` / `False` / `None`（超時）：
+等待使用者確認（是/否），返回 `True` / `False` / `None`（超時）：
 
 ```python
-result = await conv.confirm("確定要刪除所有數據嗎？")
+result = await conv.confirm("確定要刪除所有資料嗎？")
 if result is True:
     await conv.say("已刪除")
 elif result is False:
@@ -86,7 +86,7 @@ else:
 
 ### choose(prompt, options, **kwargs)
 
-等待用戶從選項中選擇，返回選項索引（0-based）或 `None`：
+等待使用者從選項中選擇，返回選項索引（0-based）或 `None`：
 
 ```python
 choice = await conv.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
@@ -95,11 +95,32 @@ if choice is not None:
     await conv.say(f"你選擇了 {colors[choice]}")
 ```
 
-用戶可以通過輸入編號（`1`/`2`/`3`）或選項文本（`紅色`）來選擇。
+使用者可以透過輸入編號（`1`/`2`/`3`）或選項文字（`紅色`）來選擇。
+
+`options_format="auto"`（預設）根據 method 自動選擇內建樣式：Markdown→無序列表，Html→有序列表，其他→純文字列表。  
+也支援 `"list"`、`"inline"`、`"md"`、`"html"` 或自訂函數。
+
+支援 `merge_prompt=True` 合併為一條訊息，以及占位符控制選項插入位置（預設 `{options}`，可透過 `placeholder` 自訂）：
+
+```python
+choice = await conv.choose(
+    "## 請選擇\n{options}",
+    ["選項A", "選項B"],
+    method="Markdown",
+    merge_prompt=True,
+)
+
+# 自訂占位符
+choice = await conv.choose(
+    "請選擇: [choices]",
+    ["選項A", "選項B"],
+    placeholder="[choices]",
+)
+```
 
 ### collect(fields, **kwargs)
 
-多步驟收集信息，返回數據字典或 `None`：
+多步驟收集資訊，返回資料字典或 `None`：
 
 ```python
 data = await conv.collect([
@@ -116,18 +137,18 @@ else:
     await conv.say("註冊過程中斷")
 ```
 
-字段配置：
+欄位配置：
 
 | 參數 | 說明 | 預設值 |
 |------|------|--------|
-| `key` | 字段鍵名（必須） | - |
-| `prompt` | 提示消息 | `"請輸入 {key}"` |
+| `key` | 欄位鍵名（必須） | - |
+| `prompt` | 提示訊息 | `"請輸入 {key}"` |
 | `validator` | 驗證函數，接收 Event，返回 bool | 無 |
 | `retry_prompt` | 驗證失敗重試提示 | `"輸入無效，請重新輸入"` |
 | `max_retries` | 最大重試次數 | 3 |
-| `condition` | 條件函數，接收已收集數據 dict，返回 bool | 無 |
+| `condition` | 條件函數，接收已收集資料 dict，返回 bool | 無 |
 
-**條件字段**：使用 `condition` 可以實現動態表單，只有條件滿足時才收集該字段：
+**條件欄位**：使用 `condition` 可以實現動態表單，只有條件滿足時才收集該欄位：
 
 ```python
 data = await conv.collect([
@@ -158,17 +179,17 @@ if conv.is_active:
 
 對話在以下情況會自動變為非活躍狀態：
 
-1. 調用 `stop()` 方法
-2. `wait()` 超時返回 `None`
+1. 調用 `stop()` 方法  
+2. `wait()` 超時返回 `None`  
 3. `collect()` 因任何步驟超時或重試耗盡而返回 `None`
 
-非活躍後，所有交互方法（`wait`/`confirm`/`choose`/`collect`）會立即返回 `None`，不會繼續等待用戶輸入。
+非活躍後，所有互動方法（`wait`/`confirm`/`choose`/`collect`）會立即返回 `None`，不會繼續等待使用者輸入。
 
 ## 分支與跳轉
 
 ### @conv.branch(name) 裝飾器
 
-使用 `branch()` 註冊對話分支，通過 `goto()` 在分支間跳轉：
+使用 `branch()` 註冊對話分支，透過 `goto()` 在分支間跳轉：
 
 ```python
 @command("menu")
@@ -177,7 +198,7 @@ async def menu_handler(event):
 
     @conv.branch("main")
     async def main_menu():
-        await conv.say("=== 主菜單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
+        await conv.say("=== 主選單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
         resp = await conv.wait()
         if resp is None:
             return
@@ -212,7 +233,7 @@ async def menu_handler(event):
 啟動對話，預設從第一個註冊的分支開始：
 
 ```python
-await conv.start()          # 從第一個分支開始
+await conv.start()          # 從第一個分支開始  
 await conv.start("settings") # 從指定分支開始
 ```
 
@@ -241,7 +262,7 @@ async def step2():
 ```python
 # 保存對話狀態
 conv_id = conv.save()
-# conv_id = "user_123_group_456"  # 基於用戶和群組自動生成
+# conv_id = "user_123_group_456"  # 基於使用者和群組自动生成
 
 # ... 之後在同一會話中恢復 ...
 conv2 = event.conversation()
@@ -266,11 +287,11 @@ async def register_handler(event):
     await conv.say("歡迎註冊！")
 
     data = await conv.collect([
-        {"key": "username", "prompt": "請輸入用戶名（3-20個字符）",
+        {"key": "username", "prompt": "請輸入使用者名稱（3-20個字元）",
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
-        {"key": "email", "prompt": "請輸入郵箱地址",
+        {"key": "email", "prompt": "請輸入電子信箱",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
-         "retry_prompt": "郵箱格式不正確，請重新輸入"},
+         "retry_prompt": "電子信箱格式不正確，請重新輸入"},
     ])
 
     if not data:
@@ -278,7 +299,7 @@ async def register_handler(event):
         return
 
     confirmed = await conv.confirm(
-        f"確認註冊資訊？\n用戶名: {data['username']}\n郵箱: {data['email']}"
+        f"確認註冊資訊？\n使用者名稱: {data['username']}\n電子信箱: {data['email']}"
     )
 
     if confirmed:
@@ -307,14 +328,14 @@ async def chat_handler(event):
             await conv.say("再見！")
             conv.stop()
         elif text == "幫助":
-            await conv.say("可用命令：退出、幫助、狀態")
+            await conv.say("可用指令：退出、幫助、狀態")
         elif text == "狀態":
             await conv.say("對話活躍中")
         else:
             await conv.say(f"你說的是：{text}")
 ```
 
-## 相關文檔
+## 相關文件
 
-- [Event 包裝類](../developer-guide/modules/event-wrapper.md) - Event 物件的所有方法
+- [Event 包裝類](../developer-guide/modules/event-wrapper.md) - Event 對象的所有方法  
 - [事件處理入門](../getting-started/event-handling.md) - 事件處理基礎

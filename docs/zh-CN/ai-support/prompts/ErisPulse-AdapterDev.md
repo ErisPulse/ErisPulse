@@ -1218,6 +1218,23 @@ async def choose_handler(event):
         await event.reply("超时未选择")
 ```
 
+**合并模式**：`merge_prompt=True` 时将选项拼入提示消息，用用户指定的 `method` 一条消息发送：
+
+```python
+# 用 Markdown 发送合并后的提示 + 选项
+choice = await event.choose(
+    "## 请选择颜色\n{options}\n请回复编号",
+    ["红色", "绿色", "蓝色"],
+    method="Markdown",
+    merge_prompt=True,
+)
+```
+
+> `{options}` 占位符控制选项插入位置；不写则追加到 prompt 末尾。
+> 可通过 `placeholder` 参数自定义占位符（如 `placeholder="[choices]"`）。
+> `options_format="auto"`（默认）根据 method 自动选择样式：Markdown→无序列表，Html→有序列表，其他→纯文本列表。
+> 文本类方法（Text/Markdown/Html 等）默认合并选项到末尾；非文本方法（Image 等）默认拆分为两条消息。
+
 ### 收集表单 (collect)
 
 多步骤收集用户输入：
@@ -5771,7 +5788,7 @@ sdk.adapter.get_status_summary()
 
 | 方法 | 说明 |
 |------|------|
-| `get(name)` | 获取模块实例 |
+| `get(name)` | 获取模块实例或懒加载代理（已注册但未加载时返回代理） |
 | `exists(name)` | 检查是否已注册 |
 | `is_loaded(name)` | 检查是否已加载 |
 | `is_enabled(name)` | 检查是否启用 |
