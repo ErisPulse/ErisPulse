@@ -789,29 +789,29 @@ class Main(BaseModule):
 
 # イベント処理入門
 
-このガイドでは、ErisPulseにおける各種イベントの処理方法について説明します。
+このガイドでは、ErisPulse 内のさまざまなイベントをどのように処理するかについて説明します。
 
-## イベントタイプ概要
+## イベントタイプの概要
 
-ErisPulseは以下のイベントタイプをサポートしています：
+ErisPulse は以下のイベントタイプをサポートしています：
 
 | イベントタイプ | 説明 | 適用シーン |
 |---------|------|---------|
-| メッセージイベント | ユーザーが送信した任意のメッセージ | チャットボット、コンテンツフィルタリング |
-| コマンドイベント | コマンド接頭辞で始まるメッセージ | コマンド処理、機能エントリ |
-| 通知イベント | システム通知（友達追加、グループメンバー変更など） | メッセージの歓迎、ステータス通知 |
-| 要求イベント | ユーザーの要求（友達リクエスト、グループ招待） | 要求の自動処理 |
-| 元イベント | システムレベルのイベント（接続、ハートビート） | 接続監視、ステータスチェック |
+| メッセージイベント | ユーザーが送信したすべてのメッセージ | チャットボット、コンテンツフィルタ |
+| コマンドイベント | コマンドプレフィックスで始まるメッセージ | コマンド処理、機能の入口 |
+| 通知イベント | システム通知（友達追加、グループメンバーの変更など） | ようこそメッセージ、ステータス通知 |
+| リクエストイベント | ユーザーリクエスト（友達リクエスト、グループ招待） | リクエストの自動処理 |
+| メタイベント | システムレベルのイベント（接続、ハートビート） | 接続監視、ステータスチェック |
 
 ## メッセージイベント処理
 
-> **ヒント**: イベントハンドラーで `Event` クラスの型注釈を使用することを推奨します。これにより、IDEの自動補完と型チェックがサポートされます。
+> **ヒント**: イベントハンドラーで `Event` 型アノテーションを使用することを推奨します。IDEの自動補完と型チェックをサポートします。
 
 ```python
-from ErisPulse.Core.Event import Event  # イベント型を注釈に使用
+from ErisPulse.Core.Event import Event  # アノテーション用にイベントタイプをインポート
 ```
 
-### すべてのメッセージを監視
+### すべてのメッセージを監聴する
 
 ```python
 from ErisPulse.Core.Event import message, Event
@@ -820,157 +820,157 @@ from ErisPulse.Core.Event import message, Event
 async def message_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
-    sdk.logger.info(f"{user_id} からのメッセージを受信しました: {text}")
+    sdk.logger.info(f"收到 {user_id} 的消息: {text}")
 ```
 
-### プライベートメッセージを監視
+### プライベートチャットメッセージを監聴する
 
 ```python
 @message.on_private_message()
 async def private_handler(event: Event):
     user_id = event.get_user_id()
-    await event.reply(f"こんにちは、{user_id}！これはプライベートメッセージです。")
+    await event.reply(f"你好，{user_id}！这是私聊消息。")
 ```
 
-### グループメッセージを監視
+### グループメッセージを監聴する
 
 ```python
 @message.on_group_message()
 async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"グループ {group_id} で {user_id} がメッセージを送信しました")
+    sdk.logger.info(f"群 {group_id} 中 {user_id} 发送了消息")
 ```
 
-### @メッセージを監視
+### @メッセージを監聴する
 
 ```python
 @message.on_at_message()
 async def at_handler(event: Event):
-    # @されたユーザーのリストを取得
+    # 被@的用户列表を取得
     mentions = event.get_mentions()
-    await event.reply(f"以下のユーザーを@しました: {mentions}")
+    await event.reply(f"你@了这些用户: {mentions}")
 ```
 
 ## コマンドイベント処理
 
-### 基本コマンド
+### 基本的なコマンド
 
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="ヘルプ情報を表示")
+@command("help", help="显示帮助信息")
 async def help_handler(event):
     help_text = """
-利用可能なコマンド：
-/help - ヘルプを表示
-/ping - 接続をテスト
-/info - 情報を表示
+可用命令：
+/help - 显示帮助
+/ping - 测试连接
+/info - 查看信息
     """
     await event.reply(help_text)
 ```
 
-### コマンドの別名
+### コマンドエイリアス
 
 ```python
-@command(["help", "h"], aliases=["ヘルプ"], help="ヘルプ情報を表示")
+@command(["help", "h"], aliases=["帮助"], help="显示帮助信息")
 async def help_handler(event):
-    await event.reply("ヘルプ情報...")
+    await event.reply("帮助信息...")
 ```
 
 ユーザーは以下のいずれかの方法で呼び出すことができます：
 - `/help`
 - `/h`
-- `/ヘルプ`
+- `/帮助`
 
 ### コマンド引数
 
 ```python
-@command("echo", help="メッセージを返す")
+@command("echo", help="回显消息")
 async def echo_handler(event):
     # コマンド引数を取得
     args = event.get_command_args()
     
     if not args:
-        await event.reply("返すメッセージを入力してください")
+        await event.reply("请输入要回显的消息")
     else:
-        await event.reply(f"あなたが言った: {' '.join(args)}")
+        await event.reply(f"你说了: {' '.join(args)}")
 ```
 
 ### コマンドグループ
 
 ```python
-@command("admin.reload", group="admin", help="モジュールを再読み込み")
+@command("admin.reload", group="admin", help="重新加载模块")
 async def reload_handler(event):
-    await event.reply("モジュールを再読み込みしました")
+    await event.reply("模块已重新加载")
 
-@command("admin.stop", group="admin", help="ロボットを停止")
+@command("admin.stop", group="admin", help="停止机器人")
 async def stop_handler(event):
-    await event.reply("ロボットを停止しました")
+    await event.reply("机器人已停止")
 ```
 
-### コマンドの権限
+### コマンド権限
 
 ```python
 def is_master(event):
-    """ユーザーがフレームワークの主人かどうかをチェック"""
+    """检查用户是否为框架主人"""
     master_list = ["user123", "user456"]
     return event.get_user_id() in master_list
 
-@command("master", permission=is_master, help="フレームワークの主人用コマンド")
+@command("master", permission=is_master, help="框架主人命令")
 async def master_handler(event):
-    await event.reply("これはフレームワークの主人用コマンドです")
+    await event.reply("这是框架主人命令")
 ```
 
-### コマンドの優先度
+### コマンド優先度
 
 ```python
-# 優先度の値が大きいほど、実行が早くなります
+# 優先度の数値が大きいほど、実行が早い
 @message.on_message(priority=10)
 async def high_priority_handler(event):
-    await event.reply("高優先度のハンドラー")
+    await event.reply("高优先级处理器")
 
 @message.on_message(priority=1)
 async def low_priority_handler(event):
-    await event.reply("低優先度のハンドラー")
+    await event.reply("低优先级处理器")
 ```
 
-### 並列イベント処理
+### パラレルイベント処理
 
-ErisPulseのイベントシステムは**同優先度で並列、異なる優先度で直列**のスケジューリングモデルを採用しています：
+ErisPulse イベントシステムは**同優先度でパラレル、異優先度でシーケンシャル**のスケジューリングモデルを採用しています：
 
 ```
 イベント到着
     ↓
-priority=10 組: [ハンドラーC || ハンドラーD] 並列 → 結果を結合
-    ↓ (中断されない場合)
-priority=0 組: [ハンドラーA || ハンドラーB] 並列 → 結果を結合
+priority=10 グループ: [处理器C || 处理器D] パラレル → 結果マージ
+    ↓ (もし中断されていなければ)
+priority=0 グループ: [处理器A || 处理器B] パラレル → 結果マージ
     ↓
 ...
 ```
 
-- **同優先度並列**: 優先度が同じ複数のハンドラーが同時に実行され、スループットが向上します
-- **跨級直列**: 異なる優先度のグループは順番に実行されます（値が大きいほど先に実行）、高優先度ハンドラーが先に実行されることを保証します
-- **Copy-On-Write**: ハンドラーが変更しない場合、コピーを作成せず、オーバーヘッドをゼロにします
-- **競合処理**: 同優先度の複数のハンドラーが同じフィールドを変更した場合、最後に変更された値を使用し、警告ログを記録します
-- **中断メカニズム**: 任意のハンドラーが `event.mark_processed()` を呼び出した後、以降の低優先度グループはスキップされます
+- **同優先度パラレル**: 優先度が同じ複数のハンドラーが同時に実行され、スループットを向上
+- **階層シーケンシャル**: 異なる優先度のグループは順次実行される（数値が大きいほど先に実行）、高優先度ハンドラーが先に実行されることを保証
+- **Copy-On-Write**: ハンドラーが変更しない場合、コピーを作成せず、ゼロオーバーヘッドを保証
+- **競合処理**: 同優先度の複数ハンドラーが同じフィールドを変更する場合、最後の変更値を使用し、警告ログを記録
+- **割り込み機構**: 任意のハンドラーが `event.mark_processed()` を呼び出した場合、後続の低優先度グループをスキップ
 
 ```python
-# 例：同優先度のハンドラーが並列に実行される
+# 例：同優先度ハンドラーのパラレル実行
 @message.on_message(priority=0)
 async def handler_a(event):
-    # タスクAを処理
+    # 処理タスクA
     event['result_a'] = process_a()
 
 @message.on_message(priority=0)
 async def handler_b(event):
-    # handler_a と並列に実行
+    # handler_a とパラレル実行
     event['result_b'] = process_b()
 
-# 異なる優先度で直列に実行
+# 異なる優先度でシーケンシャル実行
 @message.on_message(priority=10)
 async def handler_c(event):
-    # 最も優先度が高い、最初に実行
+    # 優先度が最も高く、最も早く実行
     pass
 ```
 
@@ -985,30 +985,30 @@ from ErisPulse.Core.Event import notice
 async def friend_add_handler(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname() or "新朋友"
-    await event.reply(f"私を友達に追加してくれてありがとう、{nickname}！")
+    await event.reply(f"欢迎添加我为好友，{nickname}！")
 ```
 
-### グループメンバーの増加
+### グループメンバー増加
 
 ```python
 @notice.on_group_increase()
 async def member_increase_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"新メンバー {user_id} がグループ {group_id} に参加しました")
+    await event.reply(f"欢迎新成员 {user_id} 加入群 {group_id}")
 ```
 
-### グループメンバーの減少
+### グループメンバー減少
 
 ```python
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"メンバー {user_id} がグループ {group_id} を離脱しました")
+    await event.reply(f"成员 {user_id} 离开了群 {group_id}")
 ```
 
-## 要求イベント処理
+## リクエストイベント処理
 
 ### 友達リクエスト
 
@@ -1020,10 +1020,10 @@ async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
     
-    sdk.logger.info(f"友達リクエストを受け取りました: {user_id}, 付言: {comment}")
+    sdk.logger.info(f"收到好友请求: {user_id}, 附言: {comment}")
     
-    # アダプタAPIを使用してリクエストを処理することもできます
-    # 具体的な実装は各アダプタのドキュメントを参照してください
+    # アダプターAPIを通じてリクエストを処理可能
+    # 具体実装については各アダプターのドキュメントを参照
 ```
 
 ### グループ招待リクエスト
@@ -1034,10 +1034,10 @@ async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"グループ {group_id} からの招待、{user_id} から")
+    await event.reply(f"收到群 {group_id} 的邀请，来自 {user_id}")
 ```
 
-## 元イベント処理
+## メタイベント処理
 
 ### 接続イベント
 
@@ -1047,12 +1047,12 @@ from ErisPulse.Core.Event import meta
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"{platform} プラットフォームが接続されました")
+    sdk.logger.info(f"{platform} 平台已连接")
 
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
-    sdk.logger.warning(f"{platform} プラットフォームが切断されました")
+    sdk.logger.warning(f"{platform} 平台已断开连接")
 ```
 
 ### ハートビートイベント
@@ -1061,12 +1061,12 @@ async def disconnect_handler(event):
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
     platform = event.get_platform()
-    sdk.logger.debug(f"{platform} ハートビート検出")
+    sdk.logger.debug(f"{platform} 心跳检测")
 ```
 
-### Bot 状態の照会
+### Botステータス照会
 
-アダプタが元イベントを送信すると、フレームワークは自動的にBotの状態を追跡し、いつでも照会できます：
+アダプターがメタイベントを送信すると、フレームワークは自動的にBotのステータスを追跡し、いつでも照会できます：
 
 ```python
 from ErisPulse import sdk
@@ -1074,79 +1074,79 @@ from ErisPulse import sdk
 # 特定のBotがオンラインかどうかをチェック
 if sdk.adapter.is_bot_online("telegram", "123456"):
     telegram = sdk.adapter.get("telegram")
-    await telegram.Send.To("user", "123456").Text("Botはオンラインです")
+    await telegram.Send.To("user", "123456").Text("Bot 在线")
 
-# 現在オンラインのすべてのBotをリスト
+# 現在オンラインのBotをリストアップ
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
         print(f"{platform}/{bot_id}: {info['status']}")
 
-# 完全な状態の概要を取得
+# 完全なステータスサマリーを取得
 summary = sdk.adapter.get_status_summary()
 ```
 
 ## インタラクティブ処理
 
-### replyメソッドを使用した返信の送信
+### replyメソッドを使用して返信を送信
 
-`event.reply()`メソッドは、@、返信などの機能を含むさまざまな修飾パラメータをサポートし、メッセージの送信を容易にします：
+`event.reply()` メソッドは複数の修飾パラメータをサポートし、@、返信などの機能を持つメッセージを送信するのに便利です：
 
 ```python
-# 簡単な返信
-await event.reply("こんにちは")
+# シンプルな返信
+await event.reply("你好")
 
 # 異なるタイプのメッセージを送信
 await event.reply("http://example.com/image.jpg", method="Image")  # 画像
 await event.reply("http://example.com/voice.mp3", method="Voice")  # 音声
 
-# 単一のユーザーを@する
-await event.reply("こんにちは", at_users=["user123"])
+# @単一ユーザー
+await event.reply("你好", at_users=["user123"])
 
-# 複数のユーザーを@する
-await event.reply("こんにちは", at_users=["user1", "user2", "user3"])
+# @複数ユーザー
+await event.reply("大家好", at_users=["user1", "user2", "user3"])
 
-# メッセージを返信する
-await event.reply("返信内容", reply_to="msg_id")
+# メッセージに返信
+await event.reply("回复内容", reply_to="msg_id")
 
-# 全員を@する
+# @すべてのメンバー
 await event.reply("公告", at_all=True)
 
-# 組み合わせ: @ユーザー + 返信メッセージ
+# 組み合わせ：@ユーザー + メッセージに返信
 await event.reply("内容", at_users=["user1"], reply_to="msg_id")
 ```
 
 ### ユーザーの返信を待つ
 
 ```python
-@command("ask", help="ユーザーに質問")
+@command("ask", help="询问用户")
 async def ask_handler(event):
-    await event.reply("あなたの名前を入力してください:")
+    await event.reply("请输入你的名字:")
     
-    # ユーザーの返信を待つ、タイムアウトは30秒
+    # ユーザーの返信を待つ、タイムアウト30秒
     reply = await event.wait_reply(timeout=30)
     
     if reply:
         name = reply.get_text()
-        await event.reply(f"こんにちは、{name}！")
+        await event.reply(f"你好，{name}！")
     else:
-        await event.reply("待機がタイムアウトしました、再度入力してください。")
+        await event.reply("等待超时，请重新输入。")
 ```
 
-### 検証付きの返信を待つ
+### 検証付きの返信待ち
 
 ```python
-@command("age", help="年齢を尋ねる")
+@command("age", help="询问年龄")
 async def age_handler(event):
     def validate_age(event_data):
-        """年齢が有効かどうかを検証"""
+        """验证年龄是否有效"""
         try:
             age = int(event_data.get_text())
             return 0 <= age <= 150
         except ValueError:
             return False
     
-    await event.reply("年齢を入力してください (0-150):")
+    await event.reply("请输入你的年龄 (0-150):")
     
     reply = await event.wait_reply(
         timeout=60,
@@ -1155,25 +1155,25 @@ async def age_handler(event):
     
     if reply:
         age = int(reply.get_text())
-        await event.reply(f"あなたの年齢は {age} 歳です")
+        await event.reply(f"你的年龄是 {age} 岁")
     else:
-        await event.reply("入力が無効またはタイムアウトしました")
+        await event.reply("输入无效或超时")
 ```
 
-### コールバック付きの返信を待つ
+### コールバック付きの返信待ち
 
 ```python
-@command("confirm", help="操作を確認")
+@command("confirm", help="确认操作")
 async def confirm_handler(event):
     async def handle_confirmation(reply_event):
         text = reply_event.get_text().lower()
         
-        if text in ["はい", "yes", "y"]:
-            await event.reply("操作が確認されました！")
+        if text in ["是", "yes", "y"]:
+            await event.reply("操作已确认！")
         else:
-            await event.reply("操作がキャンセルされました。")
+            await event.reply("操作已取消。")
     
-    await event.reply("この操作を実行しますか？(はい/いいえ)")
+    await event.reply("确认执行此操作吗？(是/否)")
     
     await event.wait_reply(
         timeout=30,
@@ -1181,70 +1181,87 @@ async def confirm_handler(event):
     )
 ```
 
-### 確認対話 (confirm)
+### 確認会話 (confirm)
 
-ユーザーの確認または否定を待つ、組み込みの中英確認語を自動的に識別します：
+ユーザーの確認または否定を待ち、内蔵の英語/中国語の確認語を自動的に認識します：
 
 ```python
-@command("confirm", help="操作を確認")
+@command("confirm", help="确认操作")
 async def confirm_handler(event):
-    if await event.confirm("この操作を実行しますか？"):
-        await event.reply("確認済み、実行中...")
+    if await event.confirm("确定要执行此操作吗？"):
+        await event.reply("已确认，执行中...")
     else:
-        await event.reply("キャンセルされました")
+        await event.reply("已取消")
 
-# 自定義確認語
-if await event.confirm("続行しますか？", yes_words={"go", "続行"}, no_words={"stop", "停止"}):
+# カスタム確認語
+if await event.confirm("继续吗？", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
     pass
 ```
 
 ### 選択メニュー (choose)
 
-ユーザーは選択肢の番号またはテキストを返信できます：
+ユーザーはオプションの番号またはオプションのテキストで返信できます：
 
 ```python
-@command("choose", help="選択")
+@command("choose", help="选择")
 async def choose_handler(event):
     choice = await event.choose(
-        "色を選択してください：",
-        ["赤", "緑", "青"]
+        "请选择颜色：",
+        ["红色", "绿色", "蓝色"]
     )
     
     if choice is not None:
-        colors = ["赤", "緑", "青"]
-        await event.reply(f"選択した色：{colors[choice]}")
+        colors = ["红色", "绿色", "蓝色"]
+        await event.reply(f"你选择了：{colors[choice]}")
     else:
-        await event.reply("選択がタイムアウトしました")
+        await event.reply("超时未选择")
 ```
 
-### フォームの収集 (collect)
-
-複数ステップでユーザーの入力を収集します：
+**マージモード**: `merge_prompt=True` の場合、オプションをプロンプトメッセージに結合し、ユーザーが指定した `method` を使用して1つのメッセージとして送信します：
 
 ```python
-@command("register", help="登録")
+# Markdownを使用してマージされたプロンプト + オプションを送信
+choice = await event.choose(
+    "## 请选择颜色\n{options}\n请回复编号",
+    ["红色", "绿色", "蓝色"],
+    method="Markdown",
+    merge_prompt=True,
+)
+```
+
+> `{options}` プレースホルダーはオプションの挿入位置を制御します。書かない場合はプロンプトの末尾に追加されます。
+> `placeholder` パラメータを使用してプレースホルダーをカスタマイズできます（例: `placeholder="[choices]"`）。
+> `options_format="auto"`（デフォルト）はmethodに基づいて自動的にスタイルを選択します：Markdown→箇条書きリスト、Html→番号付きリスト、その他→プレーンテキストリスト。
+> テキストメソッド（Text/Markdown/Html など）はデフォルトでオプションを末尾にマージします。非テキストメソッド（Image など）はデフォルトで2つのメッセージに分割します。
+
+### フォーム収集 (collect)
+
+複数ステップでユーザー入力を収集：
+
+```python
+@command("register", help="注册")
 async def register_handler(event):
     data = await event.collect([
-        {"key": "name", "prompt": "名前を入力してください："},
-        {"key": "age", "prompt": "年齢を入力してください：", 
+        {"key": "name", "prompt": "请输入姓名："},
+        {"key": "age", "prompt": "请输入年龄：", 
          "validator": lambda e: e.get_text().isdigit()},
-        {"key": "email", "prompt": "メールアドレスを入力してください："}
+        {"key": "email", "prompt": "请输入邮箱："}
     ])
     
     if data:
-        await event.reply(f"登録成功！\n名前：{data['name']}\n年齢：{data['age']}\nメールアドレス：{data['email']}")
+        await event.reply(f"注册成功！\n姓名：{data['name']}\n年龄：{data['age']}\n邮箱：{data['email']}")
     else:
-        await event.reply("登録がタイムアウトまたは入力が無効です")
+        await event.reply("注册超时或输入无效")
 ```
 
 ### 任意のイベントを待つ (wait_for)
 
-条件を満たす任意のイベントを待つ、同じユーザーに限らない：
+条件を満たす任意のイベントを待ち、同じユーザーに限定されません：
 
 ```python
-@command("wait_member", help="新メンバーを待つ")
+@command("wait_member", help="等待新成员")
 async def wait_member_handler(event):
-    await event.reply("グループメンバーの加入を待っています...")
+    await event.reply("等待群成员加入...")
     
     evt = await event.wait_for(
         event_type="notice",
@@ -1253,48 +1270,48 @@ async def wait_member_handler(event):
     )
     
     if evt:
-        await event.reply(f"新メンバーを歓迎します：{evt.get_user_id()}")
+        await event.reply(f"欢迎新成员：{evt.get_user_id()}")
     else:
-        await event.reply("待機がタイムアウトしました")
+        await event.reply("等待超时")
 ```
 
-### 多段対話 (conversation)
+### マルチラウンド会話 (conversation)
 
-インタラクティブな多段対話コンテキストを作成します：
+インタラクティブなマルチラウンド会話コンテキストを作成：
 
 ```python
-@command("survey", help="アンケート調査")
+@command("survey", help="问卷调查")
 async def survey_handler(event):
     conv = event.conversation(timeout=60)
     
-    await conv.say("アンケート調査にご参加いただきありがとうございます！")
+    await conv.say("欢迎参与问卷调查！")
     
     while conv.is_active:
         reply = await conv.wait()
         
         if reply is None:
-            await conv.say("対話がタイムアウトしました、さようなら！")
+            await conv.say("对话超时，再见！")
             break
         
         text = reply.get_text()
         
-        if text == "終了":
-            await conv.say("さようなら！")
+        if text == "退出":
+            await conv.say("再见！")
             break
         
-        await conv.say(f"あなたが言った：{text}、続けるか「終了」で終了します")
+        await conv.say(f"你说了：{text}，继续输入或回复'退出'结束")
 ```
 
-### 組み込みの確認語
+### 内蔵確認語
 
-ErisPulseには中英の確認語の集合が組み込まれています：
+ErisPulseは中英語の確認語セットを内蔵しています：
 
-- **確認語** (`CONFIRM_YES_WORDS`): はい、yes、y、確認、確定、いい、いいね、ok、true、正しい、うん、行きます、同意、大丈夫...
-- **否定語** (`CONFIRM_NO_WORDS`): いいえ、no、n、キャンセル、しない、しないで、だめ、cancel、false、間違っている、拒否、できません...
+- **確認語** (`CONFIRM_YES_WORDS`): 是、yes、y、确认、确定、好、好的、ok、true、对、嗯、行、同意、没问题...
+- **否定語** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、错、拒绝、不可以...
 
-## イベントデータのアクセス
+## イベントデータアクセス
 
-### Eventオブジェクトの一般的なメソッド
+### Eventオブジェクトの共通メソッド
 
 ```python
 @command("info")
@@ -1317,18 +1334,18 @@ async def info_handler(event):
     # グループ情報
     group_id = event.get_group_id()
     
-    # ロボット情報
+    # Bot情報
     self_id = event.get_self_user_id()
     self_platform = event.get_self_platform()
     
-    # 既存データ
+    # 原始データ
     raw_data = event.get_raw()
     raw_type = event.get_raw_type()
     
     # プラットフォーム情報
     platform = event.get_platform()
     
-    # メッセージタイプの判断
+    # メッセージタイプ判断
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
@@ -1342,7 +1359,7 @@ async def info_handler(event):
 
 ### プラットフォーム拡張メソッド
 
-内蔵メソッドに加えて、各プラットフォームアダプタはプラットフォーム固有のメソッドを登録し、プラットフォーム固有のデータに簡単にアクセスできます。
+組み込みメソッドに加えて、各プラットフォームアダプターはプラットフォーム固有のメソッドも登録し、プラットフォーム固有のデータにアクセスするのに役立ちます。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -1351,14 +1368,14 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     platform = event.get_platform()
 
-    # プラットフォームに応じて固有メソッドを呼び出す
+    # プラットフォームに基づいて固有メソッドを呼び出す
     if platform == "telegram":
-        chat_type = event.get_chat_type()      # Telegram固有メソッド
+        chat_type = event.get_chat_type()      # Telegram 固有メソッド
     elif platform == "email":
         subject = event.get_subject()           # メール固有メソッド
 ```
 
-特定のメソッドがプラットフォームに登録されているかどうか不明な場合は、各プラットフォームが登録したメソッドを照会できます：
+プラットフォームが特定のメソッドを登録しているかどうかがわからない場合は、特定のプラットフォームがどのメソッドを登録しているかを照会できます：
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -1367,29 +1384,29 @@ methods = get_platform_event_methods("telegram")
 # ["get_chat_type", "is_bot_message", ...]
 ```
 
-> 各プラットフォームが登録した固有メソッドは、対応する [プラットフォームドキュメント](../platform-guide/) を参照してください。
+> 各プラットフォームが登録した固有メソッドについては、対応する [プラットフォームガイド](../platform-guide/) を参照してください。
 
 ## イベント処理のベストプラクティス
 
-### 1. エラーハンドリング
+### 1. 例外処理
 
 ```python
 @command("process")
 async def process_handler(event):
     try:
-        # 业务逻辑
+        # ビジネスロジック
         result = await do_some_work()
-        await event.reply(f"結果: {result}")
+        await event.reply(f"结果: {result}")
     except ValueError as e:
-        # 予期された业务エラー
-        await event.reply(f"パラメータエラー: {e}")
+        # 予期されるビジネスエラー
+        await event.reply(f"参数错误: {e}")
     except Exception as e:
-        # 予期されないエラー
-        sdk.logger.error(f"処理失敗: {e}")
-        await event.reply("処理失敗、後で再試行してください")
+        # 予期しないエラー
+        sdk.logger.error(f"处理失败: {e}")
+        await event.reply("处理失败，请稍后重试")
 ```
 
-### 2. ログの記録
+### 2. ロギング
 
 ```python
 @message.on_message()
@@ -1397,9 +1414,9 @@ async def message_handler(event):
     user_id = event.get_user_id()
     text = event.get_text()
     
-    sdk.logger.info(f"メッセージを処理: {user_id} - {text}")
+    sdk.logger.info(f"处理消息: {user_id} - {text}")
     
-    # モジュール固有のログを使用
+    # モジュール自身のロガーを使用
     from ErisPulse import sdk
     logger = sdk.logger.get_child("MyHandler")
     logger.debug(f"詳細なデバッグ情報")
@@ -1410,24 +1427,26 @@ async def message_handler(event):
 ```python
 @message.on_message(priority=0)
 async def conditional_handler(event):
-    """条件処理 - ハンドラー内で判断"""
-    # 特定のユーザーのメッセージのみ処理
+    """条件処理 - ハンドラー内部で判断"""
+    # 特定ユーザーのメッセージのみ処理
     if event.get_user_id() in ["bot1", "bot2"]:
         return
     
     # 特定のキーワードを含むメッセージのみ処理
-    if "キーワード" not in event.get_text():
+    if "关键词" not in event.get_text():
         return
     
-    await event.reply("条件が満たされたため、メッセージを処理します")
+    await event.reply("条件満たし、メッセージを処理")
 ```
 
 ## 次のステップ
 
-- [よくあるタスクの例](common-tasks.md) - 消息送信の高度な実装（リトライ/タイムアウト/バッチ）を含む一般的な機能の学習
-- [プラットフォームの特徴ガイド](../platform-guide/README.md) - Send DSLの連鎖送信、送信ルール、バッチ構築の完全な説明
-- [Eventラッパークラスの詳細](../developer-guide/modules/event-wrapper.md) - Eventオブジェクトの詳細な理解
-- [ユーザーの使用ガイド](../user-guide/) - 設定とモジュール管理の理解
+- [共通タスクの例](common-tasks.md) - よく使用される機能の実装を学習（メッセージ送信の高度な機能：再試行/タイムアウト/一括含む）
+- [プラットフォーム機能ガイド](../platform-guide/README.md) - Send DSL チェーン送信、送信ルール、一括構築の完全な説明
+- [Event ラッパークラスの詳細](../developer-guide/modules/event-wrapper.md) - Event オブジェクトを深く理解
+- [ユーザーガイド](../user-guide/) - 設定とモジュール管理を理解
+
+直接翻訳された完全なMarkdownコンテンツを返してください。その他のテキストは含めないでください。
 
 
 =====
@@ -5528,11 +5547,11 @@ def on_status_change(event):
 
 # コアモジュール API
 
-本文書は ErisPulse コアモジュールの API のクイックリファレンスを提供します。メソッドの署名と簡潔な説明が含まれています。詳細な使用法と例については、各モジュールの「完全なドキュメント」リンクをクリックしてください。
+本文書は、ErisPulse コアモジュールの API 速習リファレンスを提供します。メソッドのシグネチャと簡潔な説明が含まれています。詳細な使用法と例については、各モジュールの「完全なドキュメント」リンクをクリックしてください。
 
 ## Storage モジュール
 
-SQLite をベースにしたキー/値ストレージシステムで、一般的な SQL チェーンクエリをサポートします。
+SQLite に基づくキー/値ストレージシステムで、汎用 SQL チェーンクエリをサポートします。
 
 ### 基本操作
 
@@ -5561,7 +5580,7 @@ with sdk.storage.transaction():
     sdk.storage.set("key2", "value2")
 ```
 
-### 属性アクセス
+### プロパティアクセス
 
 ```python
 sdk.storage.my_key          # sdk.storage.get("my_key") と同等
@@ -5570,7 +5589,7 @@ sdk.storage.my_key = "val"  # sdk.storage.set("my_key", "val") と同等
 
 ### SQL チェーンクエリ
 
-Storage モジュールは、カスタムテーブルの CRUD 操作をサポートするチェーン呼び出しスタイルの一般的な SQL クエリビルダーを提供します。
+Storage モジュールは、チェーン呼び出しスタイルの汎用 SQL クエリビルダーを提供し、カスタムテーブルの CRUD 操作をサポートします。
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -5582,11 +5601,11 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> 完全なチェーンクエリ API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、トランザクションなど）は [SQL クエリビルダー](../advanced/sql-builder.md) を参照してください。
+> 完全なチェーンクエリ API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、トランザクションなど）は、[SQL クエリビルダー](../advanced/sql-builder.md)を参照してください。
 
 ### ストレージバックエンド抽象化
 
-`StorageManager` は `BaseStorage` 抽象基底クラスを継承し、Redis、MySQL などの他のストレージメディアを拡張できます。
+`StorageManager` は `BaseStorage` 抽象基底クラスを継承し、他のストレージメディア（Redis、MySQL など）を拡張可能にします。
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -5594,7 +5613,7 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ### 非同期インターフェース
 
-Storage と Config モジュールは、非同期メソッド（接頭辞 `a`）を提供し、非同期プロセッサで安全に呼び出すことができます。同期メソッドは引き続き保持され、既存のコードを変更する必要はありません。
+Storage と Config モジュールは両方とも非同期メソッド（接頭辞 `a`）を提供し、非同期ハンドラで安全に呼び出すことができます。同期メソッドは引き続き保持され、既存のコードを変更する必要はありません。
 
 ```python
 # 非同期ストレージ
@@ -5609,7 +5628,7 @@ values = await sdk.storage.aget_multi(["k1", "k2"])
 await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
 await sdk.storage.adelete_multi(["k1", "k2"])
 
-# 非同期構成
+# 非同期設定
 value = await sdk.config.agetConfig("MyModule.key")
 await sdk.config.asetConfig("MyModule.key", "value")
 await sdk.config.aforce_save()
@@ -5618,20 +5637,20 @@ await sdk.config.areload()
 
 ## Config モジュール
 
-TOML 形式の構成ファイル管理で、ドット区切りのキー経路をサポートします。
+TOML 形式の設定ファイル管理で、ドット区切りのキー経路をサポートします。
 
-### API 概要
+### API概要
 
 | メソッド | 説明 |
 |------|------|
-| `getConfig(key, default)` | 構成を読み込み、ドット経路 `"MyModule.subkey"` などをサポートします |
-| `setConfig(key, value, immediate=False)` | 構成を書き込みます。`immediate=True` の場合、ファイルに即座に保存します |
-| `force_save()` | メモリ内の構成をファイルに強制的に書き込みます |
-| `reload()` | ファイルから構成を再読み込みします |
-| `agetConfig(key, default)` | 非同期で構成を読み込みます |
-| `asetConfig(key, value, immediate)` | 非同期で構成を書き込みます |
-| `aforce_save()` | 非同期で強制的に保存します |
-| `areload()` | 非同期で再読み込みします |
+| `getConfig(key, default)` | 設定を読み込み、ドット経路 `"MyModule.subkey"` などもサポート |
+| `setConfig(key, value, immediate=False)` | 設定を書き込み。`immediate=True` の場合、ファイルに即時保存 |
+| `force_save()` | メモリ内の設定をファイルに強制的に書き込む |
+| `reload()` | ファイルから設定を再読み込み |
+| `agetConfig(key, default)` | 非同期で設定を読み込み |
+| `asetConfig(key, value, immediate)` | 非同期で設定を書き込み |
+| `aforce_save()` | 非同期で強制保存 |
+| `areload()` | 非同期で再読み込み |
 
 ### 例
 
@@ -5643,7 +5662,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` はデフォルトで遅延書き込み（5秒ごとのバッチ保存）を使用します。`immediate=True` を設定すると、構成ファイルに即座に永続化されます。構成の変更は `config.set` ライフサイクルイベントをトリガーします。
+> `setConfig` はデフォルトで遅延書き込み（5秒ごとのバッチ保存）を使用し、`immediate=True` を設定すると即時永続化されます。設定の変更は `config.set` ライフサイクルイベントをトリガーします。
 
 ## Logger モジュール
 
@@ -5665,10 +5684,10 @@ sdk.logger.critical("致命的なエラー")
 child_logger = sdk.logger.get_child("MyModule")
 child_logger.info("サブモジュールのログ")
 
-child_logger.get_child("utils")  # ネストをサポート
+child_logger.get_child("utils")  # 嵌套もサポート
 ```
 
-### ログレベルの制御
+### ログレベル制御
 
 ```python
 sdk.logger.set_level("DEBUG")                          # グローバルレベル
@@ -5676,13 +5695,13 @@ sdk.logger.set_module_level("MyModule", "DEBUG")       # モジュールレベ�
 
 # 使用可能なレベル（低い順）:
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE は最低レベルで、フレームワーク内部の詳細なデバッグ情報（イベントの配信、ルーティングの登録など）を出力します
-sdk.logger.set_level("TRACE")                          # 全てのログを有効に
+# TRACE は最低レベルで、フレームワーク内部の詳細なデバッグ情報（イベント配信、ルーティング登録など）を出力
+sdk.logger.set_level("TRACE")                          # 全てのログを有効化
 ```
 
-### ログのサブスクリプション（プッシュモデル）
+### ログサブスクリプション（プッシュモード）
 
-Dashboard などのモジュールが構造化されたログをリアルタイムで受信できるようにし、レベルのフィルタリングや履歴の再送をサポートします。
+Dashboard などのモジュールが構造化されたログをリアルタイムで受信できるようにし、レベルフィルタリングと履歴の再送もサポートします。
 
 ```python
 # デコレータ方式
@@ -5703,8 +5722,8 @@ sdk.logger.remove_handler("my-handler")
 
 | メソッド | 説明 |
 |------|------|
-| `handler(id, *, min_level)(func)` | デコレータ/直接呼び出しの両方に対応。`id` が空の場合、関数名が使用されます。登録時に履歴ログが自動的に再送されます |
-| `remove_handler(id)` | サブスクライバを削除します |
+| `handler(id, *, min_level)(func)` | デコレータ/直接呼び出しの両方に対応。`id` が空の場合、関数名を使用。登録時に自動的に履歴ログを補送 |
+| `remove_handler(id)` | サブスクライバを削除 |
 
 ### 出力制御
 
@@ -5717,20 +5736,20 @@ sdk.logger.set_memory_limit(1000)
 
 ## Adapter モジュール
 
-アダプタマネージャーで、複数のプラットフォームアダプタの登録、起動、停止を管理します。
+アダプタマネージャーで、複数プラットフォームのアダプタの登録、起動、停止を管理します。
 
-### API 概要
+### API概要
 
 | メソッド | 説明 |
 |------|------|
-| `get(platform)` | アダプタインスタンスを取得します |
-| `exists(platform)` | アダプタが登録されているか確認します |
-| `enable(platform)` / `disable(platform)` | アダプタを有効化/無効化します |
-| `is_enabled(platform)` | アダプタが有効化されているか確認します |
-| `startup(platforms)` / `shutdown(platforms)` | アダプタを起動/停止します |
-| `is_running(platform)` | アダプタが実行中か確認します |
-| `list_running()` | 実行中のすべてのアダプタをリストします |
-| `platforms` | すべてのプラットフォーム名のリストを取得します |
+| `get(platform)` | アダプタインスタンスを取得 |
+| `exists(platform)` | アダプタが登録されているか確認 |
+| `enable(platform)` / `disable(platform)` | アダプタを有効化/無効化 |
+| `is_enabled(platform)` | 有効化されているか確認 |
+| `startup(platforms)` / `shutdown(platforms)` | アダプタを起動/停止 |
+| `is_running(platform)` | アダプタが実行中か確認 |
+| `list_running()` | 実行中のアダプタをすべてリスト表示 |
+| `platforms` | すべてのプラットフォーム名のリストを取得 |
 
 ### アダプタイベント
 
@@ -5744,7 +5763,7 @@ async def handle_yunhu_message(event):
     pass
 ```
 
-### Bot 状態の照会
+### Bot 状態照会
 
 ```python
 sdk.adapter.get_bot_info("telegram", "123456")
@@ -5753,28 +5772,28 @@ sdk.adapter.is_bot_online("telegram", "123456")
 sdk.adapter.get_status_summary()
 ```
 
-> 完全なアダプタ管理 API は [アダプタシステム API](adapter-system.md) を参照してください。
+> 完全なアダプタ管理 API は、[アダプタシステム API](adapter-system.md) を参照してください。
 
 ## Module モジュール
 
 モジュールマネージャーで、プラグインの登録、ロード、アンロードを管理します。
 
-### API 概要
+### API概要
 
 | メソッド | 説明 |
 |------|------|
-| `get(name)` | モジュールインスタンスを取得します |
-| `exists(name)` | モジュールが登録されているか確認します |
-| `is_loaded(name)` | モジュールがロードされているか確認します |
-| `is_enabled(name)` | モジュールが有効化されているか確認します |
-| `enable(name)` / `disable(name)` | モジュールを有効化/無効化します |
-| `load(name)` / `unload(name)` | モジュールをロード/アンロードします |
-| `list_registered()` | 登録されたすべてのモジュールをリストします |
-| `list_loaded()` | ロードされたすべてのモジュールをリストします |
-| `get_info(name)` | モジュール情報を取得します |
-| `get_status_summary()` | モジュールの状態概要を取得します |
+| `get(name)` | モジュールインスタンスまたは遅延ロードプロキシを取得（登録済みだがロードされていない場合はプロキシを返す） |
+| `exists(name)` | 登録されているか確認 |
+| `is_loaded(name)` | ロードされているか確認 |
+| `is_enabled(name)` | 有効化されているか確認 |
+| `enable(name)` / `disable(name)` | モジュールを有効化/無効化 |
+| `load(name)` / `unload(name)` | モジュールをロード/アンロード |
+| `list_registered()` | 登録済みのモジュールをすべてリスト表示 |
+| `list_loaded()` | ロード済みのモジュールをすべてリスト表示 |
+| `get_info(name)` | モジュール情報を取得 |
+| `get_status_summary()` | モジュールの状態概要を取得 |
 
-### 属性アクセス
+### プロパティアクセス
 
 ```python
 module = sdk.module.get("ModuleName")
@@ -5786,17 +5805,17 @@ module = sdk.ModuleName  # 等価なショートカット
 
 イベント駆動のライフサイクルマネージャーで、イベントの送信と監視機能を提供します。
 
-### API 概要
+### API概要
 
 | メソッド | 説明 |
 |------|------|
-| `on(event, priority=0)` | デコレータでイベントハンドラを登録し、ドットマッチとワイルドカード `*` をサポートします |
-| `register(event, handler, priority=0)` | 関数形式でハンドラを登録します |
-| `unregister(event, handler=None)` | ハンドラを削除します |
-| `emit(event, data)` | 非同期でイベントをトリガーします |
-| `emit_sync(event, data)` | 同期でイベントをトリガーします |
-| `submit_event(event_type, msg, data, source)` | 標準形式のイベントを送信します（旧版と互換性あり） |
-| `start_timer(id)` / `stop_timer(id)` | パフォーマンスタイマーを開始/停止します |
+| `on(event, priority=0)` | デコレータでイベントハンドラを登録し、ドットマッチとワイルドカード `*` をサポート |
+| `register(event, handler, priority=0)` | 関数形式でハンドラを登録 |
+| `unregister(event, handler=None)` | ハンドラを削除 |
+| `emit(event, data)` | 非同期でイベントをトリガー |
+| `emit_sync(event, data)` | 同期でイベントをトリガー |
+| `submit_event(event_type, msg, data, source)` | 標準フォーマットのイベントを送信（旧版と互換性あり） |
+| `start_timer(id)` / `stop_timer(id)` | パフォーマンス計測タイマー |
 
 ### 例
 
@@ -5812,15 +5831,15 @@ async def handle_any_module_event(event_data):
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-> 完全な標準イベントリストと詳細な使用法は [ライフサイクル管理](../advanced/lifecycle.md) を参照してください。
+> 完全な標準イベントリストと詳細な使用法は、[ライフサイクル管理](../advanced/lifecycle.md)を参照してください。
 
 ## Router モジュール
 
-HTTP/WebSocket ルーティングマネージャーで、FastAPI + Uvicorn をベースにし、デコレータルーティング、ミドルウェア、グループ化、リクエスト制限、CORS をサポートします。
+HTTP/WebSocket ルーティングマネージャーで、FastAPI + Uvicorn をベースにし、デコレータルーティング、ミドルウェア、グループ、リクエスト制限、CORS をサポートします。
 
-> 完全なルーティング API ドキュメント（デコレータルーティング、WebSocket、ミドルウェア、レート制限、CORS、セキュリティヘッダーなど）は [ルーティングマネージャー](../advanced/router.md) を参照してください。
+> 完全なルーティング API ドキュメント（デコレータルーティング、WebSocket、ミドルウェア、レート制限、CORS、セキュリティヘッダーなど）は、[ルーティングマネージャー](../advanced/router.md)を参照してください。
 
-### クイックリファレンス
+### 速習リファレンス
 
 ```python
 # HTTP ルーティング
@@ -5834,25 +5853,25 @@ async def ws_handler(ws: WebSocketConnection):
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 
-# ルーティンググループ化
+# ルーティンググループ
 group = sdk.router.group("MyModule", prefix="/v1")
 @group.get("/users")
 async def list_users(request: HttpRequest):
     return {"users": []}
 ```
 
-## HTTP クライアントモジュール
+## HTTP クライアント モジュール
 
-統一されたネットワーククライアントで、HTTPリクエスト、WebSocket接続、接続プール管理、自動リトライ、リクエスト統計、ライフサイクルイベントの統合を統合します。
+統一されたネットワーククライアントで、HTTPリクエスト、WebSocket接続、接続プール管理、自動リトライ、リクエスト統計、ライフサイクルイベントの統合を提供します。
 
-> 完全なネットワーククライアントドキュメント（リクエストメソッド、レスポンスオブジェクト、WebSocketクライアント、例外体系など）は [ネットワーククライアント](../advanced/http-client.md) を参照してください。
+> 完全なネットワーククライアントドキュメント（リクエストメソッド、レスポンスオブジェクト、WebSocketクライアント、例外体系など）は、[ネットワーククライアント](../advanced/http-client.md)を参照してください。
 
-### クイックリファレンス
+### 速習リファレンス
 
 ```python
 from ErisPulse.Core import client
 
-# HTTPリクエスト
+# HTTP リクエスト
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
@@ -5866,7 +5885,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-フレームワークの現在の実行状態のスナップショットをエクスポートし、デバッグや診断に使用します。
+フレームワークの現在の実行状態のスナップショットをエクスポートし、デバッグと診断に使用します。
 
 ```python
 import json
@@ -5878,11 +5897,11 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 
 | フィールド | 説明 |
 |------|------|
-| `sdk` | SDKの初期化状態、Pythonバージョン、実行プラットフォーム、タイムスタンプ |
-| `adapters` | 登録/起動済みのアダプタリスト、各プラットフォームのBotのオンライン状態 |
-| `modules` | 登録/有効/無効/遅延ロード済みのモジュールリスト |
+| `sdk` | SDK の初期化状態、Python バージョン、実行プラットフォーム、タイムスタンプ |
+| `adapters` | 登録済み/起動済みのアダプタのリスト、各プラットフォームの Bot のオンライン状態 |
+| `modules` | 登録済み/有効化済み/無効化済み/遅延ロード済みのモジュールのリスト |
 | `events` | 各種イベントハンドラの数（message/notice/request/meta/commands） |
-| `router` | サーバの実行状態、HTTP/WebSocketルーティングの数 |
+| `router` | サーバーの実行状態、HTTP/WebSocket ルーティングの数 |
 
 > 2.5.2 で追加
 
@@ -7069,49 +7088,49 @@ class Main(BaseModule):
 
 ### 懒加载系统
 
-# リアルタイム読み込みモジュールシステム
+# ラグロードモジュールシステム
 
-ErisPulse SDK は、モジュールを実際に必要になったときにのみ初期化できる強力な**リアルタイム読み込み（Lazy Loading）**モジュールシステムを提供しています。これにより、アプリケーションの起動速度とメモリ効率を大幅に向上させることができます。
+ErisPulse SDK は、モジュールを実際に必要になるまで初期化しない強力なラグロードモジュールシステムを提供し、アプリケーションの起動速度とメモリ効率を大幅に向上させます。
 
 ## 概要
 
-リアルタイム読み込みモジュールシステムは、ErisPulse の主要な機能の一つであり、次のように動作します：
+ラグロードモジュールシステムは、ErisPulse のコア機能の一つであり、以下の方法で動作します：
 
-- **遅延初期化**：モジュールは、初めてアクセスされたときのみ実際に読み込まれて初期化されます
-- **透過的な使用**：開発者にとって、リアルタイム読み込みモジュールは通常のモジュールと使用上ほとんど違いがありません
+- **遅延初期化**：モジュールは、初めてアクセスされたときにのみ実際にロードおよび初期化されます
+- **透明な使用**：開発者にとって、ラグロードモジュールは通常のモジュールと使用方法にほとんど違いがありません
 - **自動依存管理**：モジュールの依存関係は、使用時に自動的に初期化されます
-- **ライフサイクルサポート**：`BaseModule` を継承したモジュールの場合、ライフサイクルメソッドが自動的に呼び出されます
+- **ライフサイクルサポート**：`BaseModule` を継承したモジュールに対しては、ライフサイクルメソッドが自動的に呼び出されます
 
 ## 動作原理
 
 ### LazyModule クラス
 
-リアルタイム読み込みシステムのコアは `LazyModule` クラスであり、これは最初のアクセス時のみモジュールを実際に初期化するラッパーです。
+ラグロードシステムの中心は、`LazyModule` クラスです。これは、最初のアクセス時にのみ実際にモジュールを初期化するラッパーです。
 
 ### 初期化プロセス
 
-モジュールが初めてアクセスされるとき、`LazyModule` は以下の操作を実行します：
+モジュールが初めてアクセスされたとき、`LazyModule` は以下の操作を実行します：
 
-1. モジュールクラスの `__init__` パラメータ情報を取得
-2. パラメータに基づいて `sdk` 参照を渡すかどうかを決定
-3. モジュールの `moduleInfo` プロパティを設定
-4. `BaseModule` を継承したモジュールの場合、`on_load` メソッドを呼び出し
-5. `module.init` ライフサイクルイベントをトリガー
+1. モジュールクラスの `__init__` の引数情報を取得します
+2. 引数に基づいて `sdk` 参照を渡すかどうかを決定します
+3. モジュールの `moduleInfo` 属性を設定します
+4. `BaseModule` を継承したモジュールに対しては `on_load` メソッドを呼び出します
+5. `module.init` ライフサイクルイベントを発生させます
 
-## リアルタイム読み込みの設定
+## ラグロードの設定
 
 ### グローバル設定
 
-設定ファイルでグローバルなリアルタイム読み込みを有効化/無効化します：
+設定ファイルでグローバルなラグロードを有効/無効にします：
 
 ```toml
 [ErisPulse.framework]
-enable_lazy_loading = true  # true=リアルタイム読み込み有効（デフォルト）、false=リアルタイム読み込み無効
+enable_lazy_loading = true  # true=ラグロードを有効にする(デフォルト), false=ラグロードを無効にする
 ```
 
-### モジュールレベルでの制御
+### モジュールレベルの制御
 
-モジュールは `get_load_strategy()` 静的メソッドを実装することで読み込み戦略を制御できます：
+モジュールは、`get_load_strategy()` 静的メソッドを実装することで、ロード戦略を制御できます：
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -7120,33 +7139,56 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """モジュールの読み込み戦略を返します"""
+        """モジュールロード戦略を返す"""
         return ModuleLoadStrategy(
-            lazy_load=False,  # false を返すと即時読み込みを示します
-            priority=100      # 読み込み優先度、数値が大きいほど優先度が高くなります
+            lazy_load=False,  # False を返すと即時ロード
+            priority=100      # ロード優先度、数値が大きいほど優先度が高い
         )
 ```
 
-## リアルタイム読み込みモジュールの使用
+## ラグロードモジュールの使用
 
-### 基本的な使用方法
+### 基本的な使用
 
-開発者にとって、リアルタイム読み込みモジュールは通常のモジュールと使用上ほとんど違いがありません：
+開発者にとって、ラグロードモジュールは通常のモジュールと使用方法にほとんど違いがありません：
 
 ```python
-# SDK を介してリアルタイム読み込みモジュールにアクセス
+# SDK を通じてラグロードモジュールにアクセス
 from ErisPulse import sdk
 
-# 以下のアクセスはモジュールの遅延読み込みをトリガーします
+# 以下のようなアクセスはモジュールのラグロードをトリガーします
 result = await sdk.my_module.my_method()
 ```
 
-### 非同期初期化
+### 一貫したモジュール取得エントリ
 
-非同期初期化が必要なモジュールについては、最初に明示的に読み込むことを推奨します：
+SDK 属性、モジュールマネージャー属性を通じてアクセスする場合、または `module.get()` を使って検索する場合、
+「登録済みだがまだロードされていない」ラグロードモジュールに対しては、同じラグロードプロキシが返され、
+そのプロパティにアクセスすることで初めて初期化がトリガーされます：
 
 ```python
-# モジュールを最初に明示的に読み込み
+# 3 つの方法で取得されるのはすべてラグロードプロキシ（モジュールがロードされていない場合）、動作は一貫しており、ユーザーには透明です
+sdk.my_module          # ロードをトリガーするエントリ
+sdk.module.my_module   # 同様にラグロードプロキシを返します
+sdk.module.get("my_module")  # ラグロードプロキシを返しますが、自体はロードをトリガーしません
+
+# プロキシの任意のプロパティにアクセスすることで、モジュールが実際に初期化されます
+result = await sdk.my_module.my_method()
+```
+
+`module.get()` は**検索**インターフェースであり、自体はロードをトリガーしません：
+- モジュールがロード済み → 実際のインスタンスを返します
+- モジュールが登録済みだがロードされていない → ラグロードプロキシを返します（プロパティにアクセスすることで初期化されます）
+- モジュールが登録されていない → `None` を返します
+
+明示的にロードをトリガーするには、`await sdk.load_module("my_module")` を使用してください。
+
+### 非同期初期化
+
+非同期初期化が必要なモジュールについては、まず明示的にロードすることを推奨します：
+
+```python
+# まずモジュールを明示的にロードします
 await sdk.load_module("my_module")
 
 # その後、モジュールを使用します
@@ -7155,38 +7197,38 @@ result = await sdk.my_module.my_method()
 
 ### 同期初期化
 
-非同期初期化が不要なモジュールについては、直接アクセスできます：
+非同期初期化が必要ないモジュールについては、直接アクセスできます：
 
 ```python
-# 直接アクセスは自動的に同期初期化を行います
+# 直接アクセスすることで自動的に同期初期化されます
 result = sdk.my_module.some_sync_method()
 ```
 
-## ベストプラクティス
+## 最適な実践
 
-### リアルタイム読み込みを使用することを推奨するシナリオ（lazy_load=True）
+### ラグロードを使用することを推奨する場面（lazy_load=True）
 
-- 受動的に呼び出されるユーティリティクラス（例：データクエリーモジュール、フォーマットコンバーターなど、他のモジュールが呼び出す場合にのみ必要となるもの）
+- 他のモジュールが呼び出すときにのみ必要な受動的なユーティリティクラス（データクエリモジュール、フォーマット変換器など）
 
-### リアルタイム読み込みを無効にすることを推奨するシナリオ（lazy_load=False）
+### ラグロードを無効にすることを推奨する場面（lazy_load=False）
 
-- トリガーを登録するモジュール（例：コマンドハンドラー、メッセージハンドラー）
+- トリガーを登録するモジュール（コマンドプロセッサ、メッセージプロセッサなど）
 - ライフサイクルイベントリスナー
-- 定期的なタスクモジュール
-- アプリケーション起動時に初期化する必要があるモジュール
+- タイミングタスクモジュール
+- アプリケーション起動時に初期化が必要なモジュール
 
-> `priority` パラメータは、即時読み込みモジュール間の初期化順序を制御します。数値が大きいほど先に初期化されます。同優先度のモジュールは登録順に読み込まれます。
+> `priority` パラメータは、即時ロードモジュール間の初期化順序を制御します。数値が大きいほど先に初期化されます。同優先度のモジュールは、登録順にロードされます。
 
 ## 注意事項
 
-1. モジュールがリアルタイム読み込みを使用している場合、他のモジュールが ErisPulse 内で一度も呼び出さない場合、そのモジュールは初期化されない可能性があります。
-2. モジュールにイベントを監視する機能（Event）や、他のモジュールを積極的に監視する機能が含まれている場合は、すぐに読み込まれる必要があると宣言してください。さもないと、正常な業務動作に影響を及ぼす可能性があります。
-3. 特別な要件がない限り、リアルタイム読み込みを無効にすることは推奨しません。それにより、依存関係管理やライフサイクルイベントなどの問題が発生する可能性があります。
+1. あなたのモジュールがラグロードを使用している場合、他のモジュールがErisPulse内で一度も呼び出さない限り、あなたのモジュールは決して初期化されません。
+2. あなたのモジュールにイベントを監視するモジュールや、そのようなモジュールを積極的に監視するモジュールが含まれている場合、必ず即時ロードが必要であることを宣言してください。そうしないと、モジュールの正常な業務に影響を与えます。
+3. 特殊な要件がない限り、ラグロードを無効にすることは推奨しません。そうしないと、依存管理やライフサイクルイベントなどの問題が発生する可能性があります。
 
 ## 関連ドキュメント
 
-- [モジュール開発ガイド](../developer-guide/modules/getting-started.md) - モジュールの開発を学ぶ
-- [ベストプラクティス](../developer-guide/modules/best-practices.md) - その他のベストプラクティスについて学ぶ
+- [モジュール開発ガイド](../developer-guide/modules/getting-started.md) - モジュール開発の方法を学ぶ
+- [ベストプラクティス](../developer-guide/modules/best-practices.md) - さらに多くのベストプラクティスを学ぶ
 
 
 ### 国际化（i18n）系统

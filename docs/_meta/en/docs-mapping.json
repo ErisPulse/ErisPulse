@@ -59,7 +59,7 @@
           "level": 1
         },
         {
-          "title": "Getting Started with Event Handling",
+          "title": "Event Handling",
           "path": "getting-started/event-handling.md",
           "level": 1
         }
@@ -295,7 +295,7 @@
           "level": 1
         },
         {
-          "title": "Lazy Loading Module System",
+          "title": "Lazy-Loaded Module System",
           "path": "advanced/lazy-loading.md",
           "level": 1
         },
@@ -315,7 +315,7 @@
           "level": 1
         },
         {
-          "title": "Conversation Multi-turn Dialogue",
+          "title": "Conversation Multi-turn Conversation",
           "path": "advanced/conversation.md",
           "level": 1
         },

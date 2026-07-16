@@ -1218,6 +1218,23 @@ async def choose_handler(event):
         await event.reply("超时未选择")
 ```
 
+**合并模式**：`merge_prompt=True` 时将选项拼入提示消息，用用户指定的 `method` 一条消息发送：
+
+```python
+# 用 Markdown 发送合并后的提示 + 选项
+choice = await event.choose(
+    "## 请选择颜色\n{options}\n请回复编号",
+    ["红色", "绿色", "蓝色"],
+    method="Markdown",
+    merge_prompt=True,
+)
+```
+
+> `{options}` 占位符控制选项插入位置；不写则追加到 prompt 末尾。
+> 可通过 `placeholder` 参数自定义占位符（如 `placeholder="[choices]"`）。
+> `options_format="auto"`（默认）根据 method 自动选择样式：Markdown→无序列表，Html→有序列表，其他→纯文本列表。
+> 文本类方法（Text/Markdown/Html 等）默认合并选项到末尾；非文本方法（Image 等）默认拆分为两条消息。
+
 ### 收集表单 (collect)
 
 多步骤收集用户输入：
@@ -5771,7 +5788,7 @@ sdk.adapter.get_status_summary()
 
 | 方法 | 说明 |
 |------|------|
-| `get(name)` | 获取模块实例 |
+| `get(name)` | 获取模块实例或懒加载代理（已注册但未加载时返回代理） |
 | `exists(name)` | 检查是否已注册 |
 | `is_loaded(name)` | 检查是否已加载 |
 | `is_enabled(name)` | 检查是否启用 |
@@ -7152,6 +7169,28 @@ from ErisPulse import sdk
 # 以下访问会触发模块懒加载
 result = await sdk.my_module.my_method()
 ```
+
+### 统一的模块获取入口
+
+无论是通过 SDK 属性、模块管理器属性访问，还是通过 `module.get()` 查询，
+对于“已注册但尚未加载”的懒加载模块，都会返回同一个懒加载代理，访问其属性才会真正触发初始化：
+
+```python
+# 三种方式拿到的都是懒加载代理（在模块未加载时），行为一致、对用户透明
+sdk.my_module          # 触发加载的入口
+sdk.module.my_module   # 同样返回懒加载代理
+sdk.module.get("my_module")  # 也返回懒加载代理，本身不会触发加载
+
+# 访问代理的任意属性才会真正初始化模块
+result = await sdk.my_module.my_method()
+```
+
+`module.get()` 是**查询**接口，本身不触发加载：
+- 模块已加载 → 返回真实实例
+- 模块已注册但未加载 → 返回懒加载代理（访问属性才初始化）
+- 模块未注册 → 返回 `None`
+
+如需显式触发加载，请使用 `await sdk.load_module("my_module")`。
 
 ### 异步初始化
 

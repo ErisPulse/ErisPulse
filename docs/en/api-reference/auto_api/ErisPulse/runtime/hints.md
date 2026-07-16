@@ -128,11 +128,69 @@ ErisPulse 友好错误提示引擎
 ---
 
 
+### `suggest_for_name_error(exc: NameError, tb: Any = None)`
+
+为 NameError 生成拼写建议
+
+名字拼写错误（如 ``my_modlue`` -> ``my_module``）是最高频的失误之一。
+从出错帧的局部变量、全局变量与内置名称中收集候选，给出最接近的匹配。
+
+- **exc** (`NameError`): 异常
+- **tb** (`traceback`): 对象（可选）
+**返回值** (`建议的名称，无建议时返回`): None
+
+---
+
+
+### `suggest_for_coroutine_attribute(exc: AttributeError, tb: Any = None)`
+
+检测“对协程对象访问属性”的常见错误（忘记 await）
+
+例如 ``sdk.my_module`` 返回未 await 的协程时，访问其属性会抛
+AttributeError。此函数返回一个标识符，由 exceptions.py 翻译为
+“你是不是忘记 await 了？”的提示。
+
+- **exc** (`AttributeError`): 异常
+- **tb** (`traceback`): 对象（可选）
+**返回值** (`诊断提示标识符，不匹配时返回`): None
+
+---
+
+
+### `suggest_for_missing_argument(exc: TypeError)`
+
+为 TypeError: missing required positional argument 生成诊断提示
+
+检测调用时位置参数不足的常见错误（如调用 ``f(a)`` 但定义需要两个参数）。
+
+- **exc** (`TypeError`): 异常
+**返回值** (`诊断提示标识符，不匹配时返回`): None
+
+---
+
+
+### `suggest_for_not_callable(exc: TypeError)`
+
+为 TypeError: object is not callable / not subscriptable / not iterable 生成诊断提示
+
+检测对不可调用 / 不可下标 / 不可迭代对象误用的常见错误，
+多数情况下是因为覆盖了同名变量或忘记加括号。
+
+- **exc** (`TypeError`): 异常
+**返回值** (`诊断提示标识符，不匹配时返回`): None
+
+---
+
+
 ### `suggest_for_event_loop_error(exc: RuntimeError)`
 
-为 RuntimeError: Event loop is closed 生成诊断提示
+为 RuntimeError 中与事件循环相关的错误生成诊断提示
 
-检测事件循环被意外关闭的常见原因，返回修复建议。
+覆盖常见场景：
+- 事件循环已被关闭（event loop is closed）
+- 没有当前事件循环（There is no current event loop）
+- 在已有事件循环中调用 asyncio.run()（cannot be called from a running event loop）
+
 与拼写建议类函数不同，这里返回的是一个标识符字符串，
 由 exceptions.py 通过 i18n 翻译为最终的多语言提示。
 
@@ -152,6 +210,69 @@ ErisPulse 友好错误提示引擎
 
 - **exc** (`TypeError`): 异常
 **返回值** (`诊断提示标识符，不匹配时返回`): None
+
+---
+
+
+### `suggest_for_recursion_error(exc: RecursionError)`
+
+为 RecursionError 生成诊断提示
+
+检测无限递归 / 缺少递归终止条件的常见错误。
+
+- **exc** (`RecursionError`): 异常
+**返回值**: 诊断提示标识符
+
+---
+
+
+### `suggest_for_timeout_error(exc: TimeoutError)`
+
+为 TimeoutError 生成诊断提示
+
+检测网络 / 异步操作超时的常见错误。
+
+- **exc** (`TimeoutError`): 异常
+**返回值**: 诊断提示标识符
+
+---
+
+
+### `suggest_for_connection_error(exc: ConnectionError)`
+
+为 ConnectionError 及其子类生成诊断提示
+
+覆盖 ConnectionRefusedError / ConnectionResetError / ConnectionAbortedError，
+检测网络连接问题的常见原因。
+
+- **exc** (`ConnectionError`): 异常
+**返回值**: 诊断提示标识符
+
+---
+
+
+### `suggest_for_erispulse_client_error(exc: BaseException)`
+
+为 ErisPulse 自定义客户端异常生成诊断提示
+
+覆盖框架自身的 ClientConnectionError / ClientTimeoutError / HTTPStatusError，
+使用户看到这些异常时能获得与原生网络异常一致的友好提示。
+为避免循环导入，errors 模块在函数内部延迟导入。
+
+- **exc** (`异常对象`): **返回值** (`诊断提示标识符，不匹配时返回`): None
+
+---
+
+
+### `suggest_for_websocket_disconnect(exc: BaseException)`
+
+检测 WebSocket 断开是否为正常关闭
+
+WebSocketDisconnect 的 code=1000（正常关闭）属于生命周期事件而非错误；
+其他 code（如 1006 异常断开）才需要关注。为避免循环导入，
+errors 模块在函数内部延迟导入。
+
+- **exc** (`异常对象`): **返回值** (`标识符（'websocket_normal_close'`): / 'websocket_abnormal_close'），不匹配返回 None
 
 ---
 

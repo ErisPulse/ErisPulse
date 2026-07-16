@@ -15,6 +15,8 @@ import importlib.metadata
 import inspect
 import re
 import sys
+import threading
+import weakref
 from typing import TYPE_CHECKING, Any
 
 from ..Core.i18n import i18n
@@ -639,6 +641,8 @@ class ModuleLoader(BaseLoader):
                         manager_instance,
                     )
                     setattr(sdk_instance, meta_name, lazy_module)
+                    # 同步注册懒加载代理到管理器，使 module.get() 对未加载模块返回代理（透明懒加载）
+                    manager_instance.register_lazy(meta_name, lazy_module)
                     logger.trace(i18n.t("loader.module.mount_lazy", name=meta_name))
                 else:
                     result = await manager_instance.load(meta_name)
@@ -690,6 +694,25 @@ class LazyModule:
     {!--< /tips >!--}
     """
 
+    # 使用 __slots__ 减少每个实例的内存占用（避免 __dict__）
+    # 同时配合 _sdk_ref 的 weakref 设计，避免 SDK <-> LazyModule 循环引用
+    # 从而减少分代 GC 的循环检测压力
+    __slots__ = (
+        "_module_name",
+        "_module_class",
+        "_sdk_ref",
+        "_module_info",
+        "_instance",
+        "_initialized",
+        "_init_failed",
+        "_manager_instance",
+        "_is_base_module",
+        "_needs_async_init",
+        "_init_needs_sdk",
+        "moduleInfo",
+        "__weakref__",
+    )
+
     def __init__(
         self,
         module_name: str,
@@ -709,7 +732,10 @@ class LazyModule:
         """
         object.__setattr__(self, "_module_name", module_name)
         object.__setattr__(self, "_module_class", module_class)
-        object.__setattr__(self, "_sdk_ref", sdk_ref)
+        # SDK 对本包装器持有强引用（setattr 到 SDK 实例上），
+        # 此处使用 weakref 反向引用 SDK，打破 SDK <-> LazyModule 的循环引用，
+        # 避免触发 CPython 的循环引用检测（分代 GC 全量扫描）
+        object.__setattr__(self, "_sdk_ref", weakref.ref(sdk_ref))
         object.__setattr__(self, "_module_info", module_info)
         object.__setattr__(self, "_instance", None)
         object.__setattr__(self, "_initialized", False)
@@ -720,6 +746,13 @@ class LazyModule:
             "_is_base_module",
             module_info.get("meta", {}).get("is_base_module", False),
         )
+        # 缓存 __init__ 签名分析结果，避免每次初始化重复调用 inspect.signature
+        try:
+            init_params = inspect.signature(module_class.__init__).parameters
+            object.__setattr__(self, "_init_needs_sdk", "sdk" in init_params)
+        except (ValueError, TypeError):
+            object.__setattr__(self, "_init_needs_sdk", False)
+        object.__setattr__(self, "_needs_async_init", False)
 
     async def _initialize(self) -> None:
         """
@@ -732,6 +765,9 @@ class LazyModule:
         {!--< /internal-use >!--}
         """
         if object.__getattribute__(self, "_initialized"):
+            return
+        # 失败后不再自动重试，避免每次属性访问都触发初始化开销
+        if object.__getattribute__(self, "_init_failed"):
             return
 
         module_name = object.__getattribute__(self, "_module_name")
@@ -766,17 +802,13 @@ class LazyModule:
                 object.__setattr__(self, "_instance", instance)
             else:
                 # 非 BaseModule: 保持原有行为，LazyModule 自行实例化
-                init_signature = inspect.signature(
-                    object.__getattribute__(self, "_module_class").__init__
-                )
-                params = init_signature.parameters
+                module_class = object.__getattribute__(self, "_module_class")
 
-                if "sdk" in params:
-                    instance = object.__getattribute__(self, "_module_class")(
-                        object.__getattribute__(self, "_sdk_ref")
-                    )
+                if object.__getattribute__(self, "_init_needs_sdk"):
+                    sdk_ref = object.__getattribute__(self, "_sdk_ref")()
+                    instance = module_class(sdk_ref)
                 else:
-                    instance = object.__getattribute__(self, "_module_class")()
+                    instance = module_class()
 
                 setattr(
                     instance,
@@ -787,6 +819,8 @@ class LazyModule:
                 object.__setattr__(self, "_instance", instance)
 
             object.__setattr__(self, "_initialized", True)
+            # 清除异步初始化标志：手动 await load_module 成功后恢复正常属性访问
+            object.__setattr__(self, "_needs_async_init", False)
 
             await lifecycle.submit_event(
                 "module.init",
@@ -846,31 +880,36 @@ class LazyModule:
         - 非 BaseModule 保持原有逻辑，支持同步初始化
         {!--< internal-use >!--}
         """
-        if not object.__getattribute__(self, "_initialized"):
-            try:
-                loop = asyncio.get_running_loop()
+        if object.__getattribute__(self, "_initialized"):
+            return
+        # 已失败则不再重试，避免每次属性访问都重新进入初始化逻辑
+        if object.__getattribute__(self, "_init_failed"):
+            return
 
-                if object.__getattribute__(self, "_is_base_module"):
-                    if loop.is_running():
-                        self._init_in_background_thread()
-                    else:
-                        loop.run_until_complete(self._initialize())
-                    return
+        try:
+            loop = asyncio.get_running_loop()
 
-                init_method = getattr(
-                    object.__getattribute__(self, "_module_class"), "__init__", None
-                )
-
-                if inspect.iscoroutinefunction(init_method):
-                    object.__setattr__(self, "_needs_async_init", True)
-                    logger.warning(
-                        f"模块 {object.__getattribute__(self, '_module_name')} 需要异步初始化，请在异步上下文中调用"
-                    )
-                    return
+            if object.__getattribute__(self, "_is_base_module"):
+                if loop.is_running():
+                    self._init_in_background_thread()
                 else:
-                    self._initialize_sync()
-            except RuntimeError:
-                asyncio.run(self._initialize())
+                    loop.run_until_complete(self._initialize())
+                return
+
+            init_method = getattr(
+                object.__getattribute__(self, "_module_class"), "__init__", None
+            )
+
+            if inspect.iscoroutinefunction(init_method):
+                object.__setattr__(self, "_needs_async_init", True)
+                logger.warning(
+                    f"模块 {object.__getattribute__(self, '_module_name')} 需要异步初始化，请在异步上下文中调用"
+                )
+                return
+            else:
+                self._initialize_sync()
+        except RuntimeError:
+            asyncio.run(self._initialize())
 
     def _init_in_background_thread(self) -> None:
         """
@@ -882,8 +921,6 @@ class LazyModule:
         来运行异步初始化，同时当前线程通过 threading.Event 同步等待。
         {!--< internal-use >!--}
         """
-        import threading
-
         init_done = threading.Event()
         init_error = [None]
 
@@ -920,29 +957,28 @@ class LazyModule:
         """
         if object.__getattribute__(self, "_initialized"):
             return
+        if object.__getattribute__(self, "_init_failed"):
+            return
 
         logger.debug(
             f"正在同步初始化懒加载模块 {object.__getattribute__(self, '_module_name')}..."
         )
 
         try:
-            init_signature = inspect.signature(
-                object.__getattribute__(self, "_module_class").__init__
-            )
-            params = init_signature.parameters
+            module_class = object.__getattribute__(self, "_module_class")
 
-            if "sdk" in params:
-                instance = object.__getattribute__(self, "_module_class")(
-                    object.__getattribute__(self, "_sdk_ref")
-                )
+            if object.__getattribute__(self, "_init_needs_sdk"):
+                sdk_ref = object.__getattribute__(self, "_sdk_ref")()
+                instance = module_class(sdk_ref)
             else:
-                instance = object.__getattribute__(self, "_module_class")()
+                instance = module_class()
 
             setattr(
                 instance, "moduleInfo", object.__getattribute__(self, "_module_info")
             )
             object.__setattr__(self, "_instance", instance)
             object.__setattr__(self, "_initialized", True)
+            object.__setattr__(self, "_needs_async_init", False)
 
             logger.debug(
                 f"懒加载模块 {object.__getattribute__(self, '_module_name')} 同步初始化完成"
@@ -1005,18 +1041,15 @@ class LazyModule:
 
     def __getattr__(self, name: str) -> Any:
         """
-        属性访问时触发初始化
+        属性访问时触发初始化（仅在 __getattribute__ 未命中时调用）
 
         :param name: str 属性名
         :return: Any 属性值
         """
-        logger.trace(
-            f"正在访问懒加载模块 {object.__getattribute__(self, '_module_name')} 的属性 {name}..."
-        )
-
-        if hasattr(self, "_needs_async_init") and object.__getattribute__(
-            self, "_needs_async_init"
-        ):
+        # 注意：不要在此处添加 logger.trace 等热路径日志。
+        # __getattr__ / __getattribute__ 会在每次属性访问时触发，
+        # 额外的字符串格式化与日志调用会带来明显的 CPU 与 GC 开销。
+        if object.__getattribute__(self, "_needs_async_init"):
             raise RuntimeError(
                 f"模块 {object.__getattribute__(self, '_module_name')} 需要异步初始化，"
                 f"请使用 'await sdk.load_module(\"{object.__getattribute__(self, '_module_name')}\")' 来初始化模块"
@@ -1032,21 +1065,19 @@ class LazyModule:
         :param name: str 属性名
         :param value: Any 属性值
         """
-        logger.trace(
-            f"正在设置懒加载模块 {object.__getattribute__(self, '_module_name')} 的属性 {name}..."
-        )
-
-        if name.startswith("_") or name in ("moduleInfo",):
+        if name.startswith("_") or name == "moduleInfo":
             object.__setattr__(self, name, value)
-        else:
-            if (
-                name == "_instance"
-                or not hasattr(self, "_initialized")
-                or not object.__getattribute__(self, "_initialized")
-            ):
-                object.__setattr__(self, name, value)
-            else:
-                setattr(object.__getattribute__(self, "_instance"), name, value)
+            return
+
+        if not object.__getattribute__(self, "_initialized"):
+            # 未初始化时不要在这里隐式吞掉值落到包装器上，避免产生意外状态
+            if object.__getattribute__(self, "_init_failed"):
+                raise RuntimeError(
+                    f"模块 {object.__getattribute__(self, '_module_name')} 初始化失败，无法设置属性 '{name}'"
+                )
+            self._ensure_initialized()
+
+        setattr(object.__getattribute__(self, "_instance"), name, value)
 
     def __delattr__(self, name: str) -> None:
         """
@@ -1054,9 +1085,10 @@ class LazyModule:
 
         :param name: str 属性名
         """
-        logger.trace(
-            f"正在删除懒加载模块 {object.__getattribute__(self, '_module_name')} 的属性 {name}..."
-        )
+        if name.startswith("_") or name == "moduleInfo":
+            object.__delattr__(self, name)
+            return
+
         self._ensure_initialized()
         delattr(object.__getattribute__(self, "_instance"), name)
 
@@ -1066,34 +1098,32 @@ class LazyModule:
 
         :param name: str 属性名
         :return: Any 属性值
+
+        {!--< internal-use >!--}
+        这是极热路径（Python 内部、hasattr、repr 等都会走这里），
+        因此必须保持轻量：不做日志、不做多余的属性查找。
+        {!--< /internal-use >!--}
         """
-        if name.startswith("_") or name in ("moduleInfo",):
+        if name.startswith("_") or name == "moduleInfo":
             return object.__getattribute__(self, name)
 
-        try:
-            initialized = object.__getattribute__(self, "_initialized")
-        except AttributeError:
-            return object.__getattribute__(self, name)
-
-        if not initialized:
-            init_failed = (
-                object.__getattribute__(self, "_init_failed")
-                if hasattr(self, "_init_failed")
-                else False
-            )
-            if init_failed:
-                module_name = object.__getattribute__(self, "_module_name")
+        if not object.__getattribute__(self, "_initialized"):
+            if object.__getattribute__(self, "_init_failed"):
                 raise RuntimeError(
-                    f"模块 {module_name} 初始化失败，无法访问属性 '{name}'"
+                    f"模块 {object.__getattribute__(self, '_module_name')} 初始化失败，无法访问属性 '{name}'"
                 )
             self._ensure_initialized()
-            initialized = object.__getattribute__(self, "_initialized")
+            # 初始化可能刚刚失败（同步路径会在 _initialize_sync 中标记），
+            # 此时给出明确的 RuntimeError，避免后续回落到 AttributeError 造成困惑
+            if object.__getattribute__(self, "_init_failed"):
+                raise RuntimeError(
+                    f"模块 {object.__getattribute__(self, '_module_name')} 初始化失败，无法访问属性 '{name}'"
+                )
 
-        if initialized:
-            instance = object.__getattribute__(self, "_instance")
+        instance = object.__getattribute__(self, "_instance")
+        if instance is not None:
             return getattr(instance, name)
-        else:
-            return object.__getattribute__(self, name)
+        return object.__getattribute__(self, name)
 
     def __dir__(self) -> list[str]:
         """
@@ -1111,9 +1141,6 @@ class LazyModule:
 
         :return: str 表示字符串
         """
-        logger.trace(
-            f"正在获取懒加载模块 {object.__getattribute__(self, '_module_name')} 的表示字符串..."
-        )
         if object.__getattribute__(self, "_initialized"):
             return repr(object.__getattribute__(self, "_instance"))
         return f"<LazyModule {object.__getattribute__(self, '_module_name')} (not initialized)>"

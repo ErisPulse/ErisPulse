@@ -967,28 +967,28 @@ class Main(BaseModule):
 
 ### 事件处理入门
 
-# Getting Started with Event Handling
+# Event Handling
 
 This guide introduces how to handle various events in ErisPulse.
 
-## Overview of Event Types
+## Event Types Overview
 
 ErisPulse supports the following event types:
 
 | Event Type | Description | Use Cases |
-|---------|------|---------|
-| Message Event | Any message sent by a user | Chatbots, content filtering |
-| Command Event | Messages starting with a command prefix | Command processing, feature entry points |
-| Notice Event | System notifications (friend additions, group member changes, etc.) | Welcome messages, status notifications |
+|------------|-------------|-----------|
+| Message Event | Any message sent by a user | Chat bots, content filtering |
+| Command Event | Messages starting with a command prefix | Command handling, feature entry points |
+| Notice Event | System notifications (friend add, group member changes, etc.) | Welcome messages, status notifications |
 | Request Event | User requests (friend requests, group invitations) | Automatic request handling |
 | Meta Event | System-level events (connection, heartbeat) | Connection monitoring, status checks |
 
-## Handling Message Events
+## Message Event Handling
 
-> **Tip**: It is recommended to use the `Event` type annotation in event handlers to get IDE auto-completion and type checking support.
+> **Tip**: It is recommended to use the `Event` type annotation in event handlers to gain IDE auto-completion and type checking support.
 
 ```python
-from ErisPulse.Core.Event import Event  # Import event types for annotations
+from ErisPulse.Core.Event import Event  # Import event type for annotation
 ```
 
 ### Listening to All Messages
@@ -1019,33 +1019,33 @@ async def private_handler(event: Event):
 async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"Message sent by {user_id} in group {group_id}")
+    sdk.logger.info(f"User {user_id} sent a message in group {group_id}")
 ```
 
-### Listening to @ Messages
+### Listening to @Messages
 
 ```python
 @message.on_at_message()
 async def at_handler(event: Event):
-    # Get list of mentioned users
+    # Get the list of users mentioned
     mentions = event.get_mentions()
     await event.reply(f"You mentioned these users: {mentions}")
 ```
 
-## Handling Command Events
+## Command Event Handling
 
 ### Basic Commands
 
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="Show help information")
+@command("help", help="Display help information")
 async def help_handler(event):
     help_text = """
 Available commands:
-/help - Show help
+/help - Display help
 /ping - Test connection
-/info - View information
+/info - View info
     """
     await event.reply(help_text)
 ```
@@ -1053,20 +1053,20 @@ Available commands:
 ### Command Aliases
 
 ```python
-@command(["help", "h"], aliases=["帮助"], help="Show help information")
+@command(["help", "h"], aliases=["帮助"], help="Display help information")
 async def help_handler(event):
     await event.reply("Help information...")
 ```
 
-Users can invoke the command using any of the following:
+Users can invoke this using any of the following ways:
 - `/help`
 - `/h`
 - `/帮助`
 
-### Command Parameters
+### Command Arguments
 
 ```python
-@command("echo", help="Echo message")
+@command("echo", help="Echo back message")
 async def echo_handler(event):
     # Get command arguments
     args = event.get_command_args()
@@ -1093,19 +1093,19 @@ async def stop_handler(event):
 
 ```python
 def is_master(event):
-    """Check if user is framework owner"""
+    """Check if the user is the framework owner"""
     master_list = ["user123", "user456"]
     return event.get_user_id() in master_list
 
 @command("master", permission=is_master, help="Framework owner command")
 async def master_handler(event):
-    await event.reply("This is a framework owner command")
+    await event.reply("This is the framework owner command")
 ```
 
-### Command Priorities
+### Command Priority
 
 ```python
-# Higher priority number means earlier execution
+# Higher priority values execute earlier
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("High priority handler")
@@ -1115,28 +1115,28 @@ async def low_priority_handler(event):
     await event.reply("Low priority handler")
 ```
 
-### Parallel Event Handling
+### Parallel Event Processing
 
-ErisPulse's event system uses a **parallel execution for same priority, serial execution for different priorities** scheduling model:
+The ErisPulse event system adopts a **parallel execution for same priority, serial execution for different priorities** scheduling model:
 
 ```
 Event arrives
     ↓
-priority=10 group: [Handler C || Handler D] parallel → merge results
+priority=10 group: [Handler C || Handler D] parallel -> Merged result
     ↓ (if not interrupted)
-priority=0 group: [Handler A || Handler B] parallel → merge results
+priority=0 group: [Handler A || Handler B] parallel -> Merged result
     ↓
 ...
 ```
 
-- **Parallel execution within same priority**: Multiple handlers with the same priority execute simultaneously, improving throughput
-- **Serial execution across priorities**: Different priority groups execute in order (higher priority first), ensuring high priority handlers run first
-- **Copy-On-Write**: No copy is created if handlers don't modify the event, ensuring zero overhead
-- **Conflict handling**: When multiple handlers modify the same field at the same priority, the last modification is used and a warning log is recorded
-- **Interruption mechanism**: After any handler calls `event.mark_processed()`, subsequent lower priority groups are skipped
+- **Parallel Execution (Same Priority)**: Multiple handlers with the same priority execute simultaneously, improving throughput
+- **Serial Execution (Different Priorities)**: Groups with different priorities execute in order (higher values execute first), ensuring high-priority handlers run first
+- **Copy-On-Write**: No copy is created when handlers don't modify data, ensuring zero overhead
+- **Conflict Handling**: When multiple handlers at the same priority modify the same field, the last modification value is used and a warning log is recorded
+- **Interrupt Mechanism**: After any handler calls `event.mark_processed()`, subsequent lower-priority groups are skipped
 
 ```python
-# Example: Parallel execution of handlers at same priority
+# Example: Parallel execution of same-priority handlers
 @message.on_message(priority=0)
 async def handler_a(event):
     # Process task A
@@ -1144,19 +1144,19 @@ async def handler_a(event):
 
 @message.on_message(priority=0)
 async def handler_b(event):
-    # Executes in parallel with handler_a
+    # Execute in parallel with handler_a
     event['result_b'] = process_b()
 
-# Serial execution of handlers at different priorities
+# Serial execution of different priorities
 @message.on_message(priority=10)
 async def handler_c(event):
     # Highest priority, executes first
     pass
 ```
 
-## Handling Notice Events
+## Notice Event Handling
 
-### Friend Added
+### Friend Add
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -1168,7 +1168,7 @@ async def friend_add_handler(event):
     await event.reply(f"Welcome to add me as a friend, {nickname}!")
 ```
 
-### Group Member Added
+### Group Member Increase
 
 ```python
 @notice.on_group_increase()
@@ -1178,7 +1178,7 @@ async def member_increase_handler(event):
     await event.reply(f"Welcome new member {user_id} to group {group_id}")
 ```
 
-### Group Member Removed
+### Group Member Decrease
 
 ```python
 @notice.on_group_decrease()
@@ -1188,7 +1188,7 @@ async def member_decrease_handler(event):
     await event.reply(f"Member {user_id} left group {group_id}")
 ```
 
-## Handling Request Events
+## Request Event Handling
 
 ### Friend Request
 
@@ -1202,8 +1202,8 @@ async def friend_request_handler(event):
     
     sdk.logger.info(f"Received friend request: {user_id}, comment: {comment}")
     
-    # Request can be handled through adapter API
-    # For specific implementation, please refer to each adapter's documentation
+    # You can handle requests via the adapter API
+    # Please refer to the specific adapter documentation for implementation details
 ```
 
 ### Group Invitation Request
@@ -1214,12 +1214,12 @@ async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"Received group {group_id} invitation from {user_id}")
+    await event.reply(f"Received invitation from group {group_id}, from {user_id}")
 ```
 
-## Handling Meta Events
+## Meta Event Handling
 
-### Connection Events
+### Connection Event
 
 ```python
 from ErisPulse.Core.Event import meta
@@ -1235,42 +1235,42 @@ async def disconnect_handler(event):
     sdk.logger.warning(f"{platform} platform disconnected")
 ```
 
-### Heartbeat Events
+### Heartbeat Event
 
 ```python
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
     platform = event.get_platform()
-    sdk.logger.debug(f"{platform} heartbeat check")
+    sdk.logger.debug(f"{platform} heartbeat detection")
 ```
 
 ### Bot Status Query
 
-After the adapter sends a meta event, the framework automatically tracks the Bot status, and you can query it anytime:
+After the adapter sends a meta event, the framework automatically tracks bot status, and you can query it at any time:
 
 ```python
 from ErisPulse import sdk
 
-# Check if a specific Bot is online
+# Check if a specific bot is online
 if sdk.adapter.is_bot_online("telegram", "123456"):
     telegram = sdk.adapter.get("telegram")
     await telegram.Send.To("user", "123456").Text("Bot is online")
 
-# List all currently online Bots
+# List all currently online bots
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
         print(f"{platform}/{bot_id}: {info['status']}")
 
-# Get complete status summary
+# Get full status summary
 summary = sdk.adapter.get_status_summary()
 ```
 
 ## Interactive Handling
 
-### Using the reply method to send responses
+### Sending Replies Using the reply Method
 
-The `event.reply()` method supports various modifier parameters, making it convenient to send messages with features like @ mentions and replies:
+The `event.reply()` method supports various modifier parameters for sending messages with @, reply, etc.:
 
 ```python
 # Simple reply
@@ -1280,7 +1280,7 @@ await event.reply("Hello")
 await event.reply("http://example.com/image.jpg", method="Image")  # Image
 await event.reply("http://example.com/voice.mp3", method="Voice")  # Voice
 
-# @ a single user
+# @ single user
 await event.reply("Hello", at_users=["user123"])
 
 # @ multiple users
@@ -1303,23 +1303,23 @@ await event.reply("Content", at_users=["user1"], reply_to="msg_id")
 async def ask_handler(event):
     await event.reply("Please enter your name:")
     
-    # Wait for user reply, timeout after 30 seconds
+    # Wait for user reply, timeout 30 seconds
     reply = await event.wait_reply(timeout=30)
     
     if reply:
         name = reply.get_text()
         await event.reply(f"Hello, {name}!")
     else:
-        await event.reply("Timeout, please re-enter.")
+        await event.reply("Timeout waiting, please re-enter.")
 ```
 
-### Waiting for Reply with Validation
+### Wait for Reply with Validation
 
 ```python
 @command("age", help="Ask age")
 async def age_handler(event):
     def validate_age(event_data):
-        """Validate age is valid"""
+        """Validate if age is valid"""
         try:
             age = int(event_data.get_text())
             return 0 <= age <= 150
@@ -1340,7 +1340,7 @@ async def age_handler(event):
         await event.reply("Invalid input or timeout")
 ```
 
-### Waiting for Reply with Callback
+### Wait for Reply with Callback
 
 ```python
 @command("confirm", help="Confirm operation")
@@ -1348,12 +1348,12 @@ async def confirm_handler(event):
     async def handle_confirmation(reply_event):
         text = reply_event.get_text().lower()
         
-        if text in ["yes", "是", "y", "确认"]:
+        if text in ["是", "yes", "y"]:
             await event.reply("Operation confirmed!")
         else:
             await event.reply("Operation cancelled.")
     
-    await event.reply("Confirm this operation? (Yes/No)")
+    await event.reply("Confirm to perform this operation? (是/否)")
     
     await event.wait_reply(
         timeout=30,
@@ -1361,14 +1361,14 @@ async def confirm_handler(event):
     )
 ```
 
-### Confirmation Dialog (confirm)
+### Confirmation Conversation (confirm)
 
-Wait for user confirmation or negation, automatically recognizing built-in Chinese and English confirmation words:
+Wait for user confirmation or denial, automatically identifying built-in Chinese and English confirmation words:
 
 ```python
 @command("confirm", help="Confirm operation")
 async def confirm_handler(event):
-    if await event.confirm("Are you sure you want to execute this operation?"):
+    if await event.confirm("Are you sure you want to perform this operation?"):
         await event.reply("Confirmed, executing...")
     else:
         await event.reply("Cancelled")
@@ -1380,51 +1380,68 @@ if await event.confirm("Continue?", yes_words={"go", "继续"}, no_words={"stop"
 
 ### Selection Menu (choose)
 
-Users can reply with option numbers or option text:
+Users can reply with an option number or option text:
 
 ```python
 @command("choose", help="Choose")
 async def choose_handler(event):
     choice = await event.choose(
-        "Please select a color:",
-        ["红色", "绿色", "蓝色"]
+        "Please choose a color:",
+        ["Red", "Green", "Blue"]
     )
     
     if choice is not None:
-        colors = ["红色", "绿色", "蓝色"]
-        await event.reply(f"You selected: {colors[choice]}")
+        colors = ["Red", "Green", "Blue"]
+        await event.reply(f"You chose: {colors[choice]}")
     else:
-        await event.reply("Timed out without selection")
+        await event.reply("Timeout, no selection made")
 ```
 
-### Form Collection (collect)
+**Merge Mode**: When `merge_prompt=True`, options are appended to the prompt message and sent as a single message using the user-specified `method`:
 
-Collect user input in multiple steps:
+```python
+# Send merged prompt + options using Markdown
+choice = await event.choose(
+    "## Please choose a color\n{options}\nPlease reply with number",
+    ["Red", "Green", "Blue"],
+    method="Markdown",
+    merge_prompt=True,
+)
+```
+
+> The `{options}` placeholder controls where options are inserted; if omitted, they are appended to the end of the prompt.
+> You can customize the placeholder via the `placeholder` parameter (e.g., `placeholder="[choices]"`).
+> `options_format="auto"` (default) automatically selects the style based on the method: Markdown→Unordered list, Html→Ordered list, Other→Plain text list.
+> Text methods (Text/Markdown/Html, etc.) merge options to the end by default; non-text methods (Image, etc.) split into two messages by default.
+
+### Collecting Form (collect)
+
+Multi-step collection of user input:
 
 ```python
 @command("register", help="Register")
 async def register_handler(event):
     data = await event.collect([
-        {"key": "name", "prompt": "Please enter your name:"},
-        {"key": "age", "prompt": "Please enter your age:",
+        {"key": "name", "prompt": "Please enter name:"},
+        {"key": "age", "prompt": "Please enter age:", 
          "validator": lambda e: e.get_text().isdigit()},
-        {"key": "email", "prompt": "Please enter your email:"}
+        {"key": "email", "prompt": "Please enter email:"}
     ])
     
     if data:
         await event.reply(f"Registration successful!\nName: {data['name']}\nAge: {data['age']}\nEmail: {data['email']}")
     else:
-        await event.reply("Registration timed out or invalid input")
+        await event.reply("Registration timeout or invalid input")
 ```
 
 ### Waiting for Any Event (wait_for)
 
-Wait for any event that meets the condition, not limited to the same user:
+Wait for any event meeting a condition, not limited to the same user:
 
 ```python
 @command("wait_member", help="Wait for new member")
 async def wait_member_handler(event):
-    await event.reply("Waiting for new member to join...")
+    await event.reply("Waiting for group member to join...")
     
     evt = await event.wait_for(
         event_type="notice",
@@ -1435,7 +1452,7 @@ async def wait_member_handler(event):
     if evt:
         await event.reply(f"Welcome new member: {evt.get_user_id()}")
     else:
-        await event.reply("Timed out")
+        await event.reply("Timeout waiting")
 ```
 
 ### Multi-turn Conversation (conversation)
@@ -1443,49 +1460,49 @@ async def wait_member_handler(event):
 Create an interactive multi-turn conversation context:
 
 ```python
-@command("survey", help="Survey")
+@command("survey", help="Questionnaire")
 async def survey_handler(event):
     conv = event.conversation(timeout=60)
     
-    await conv.say("Welcome to the survey!")
+    await conv.say("Welcome to participate in the questionnaire!")
     
     while conv.is_active:
         reply = await conv.wait()
         
         if reply is None:
-            await conv.say("Conversation timed out, goodbye!")
+            await conv.say("Conversation timeout, goodbye!")
             break
         
         text = reply.get_text()
         
-        if text == "Exit":
+        if text == "退出":
             await conv.say("Goodbye!")
             break
         
-        await conv.say(f"You said: {text}, continue typing or reply 'Exit' to end")
+        await conv.say(f"You said: {text}, please continue input or reply '退出' to end")
 ```
 
 ### Built-in Confirmation Words
 
-ErisPulse includes built-in sets of Chinese and English confirmation words:
+ErisPulse has built-in sets of Chinese and English confirmation words:
 
-- **Confirmation words** (`CONFIRM_YES_WORDS`): 是, yes, y, 确认, 确定, 好, 好的, ok, true, 对, 嗯, 行, 同意, 没问题...
-- **Negation words** (`CONFIRM_NO_WORDS`): 否, no, n, 取消, 不, 不要, 不行, cancel, false, 错, 拒绝, 不可以...
+- **Confirmation Words** (`CONFIRM_YES_WORDS`): Yes, yes, y, 确认, 确定, 好, 好的, ok, true, 对, 嗯, 行, 同意, 没问题...
+- **Negation Words** (`CONFIRM_NO_WORDS`): No, no, n, 取消, 不, 不要, 不行, cancel, false, 错, 拒绝, 不可以...
 
-## Accessing Event Data
+## Event Data Access
 
-### Common Event Object Methods
+### Common Methods of the Event Object
 
 ```python
 @command("info")
 async def info_handler(event):
-    # Basic information
+    # Basic info
     event_id = event.get_id()
     event_time = event.get_time()
     event_type = event.get_type()
     detail_type = event.get_detail_type()
     
-    # Sender information
+    # Sender info
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     
@@ -1494,10 +1511,10 @@ async def info_handler(event):
     alt_message = event.get_alt_message()
     text = event.get_text()
     
-    # Group information
+    # Group info
     group_id = event.get_group_id()
     
-    # Bot information
+    # Bot info
     self_id = event.get_self_user_id()
     self_platform = event.get_self_platform()
     
@@ -1505,7 +1522,7 @@ async def info_handler(event):
     raw_data = event.get_raw()
     raw_type = event.get_raw_type()
     
-    # Platform information
+    # Platform info
     platform = event.get_platform()
     
     # Message type checks
@@ -1513,16 +1530,16 @@ async def info_handler(event):
     is_group = event.is_group_message()
     is_at = event.is_at_message()
     
-    # Command information
+    # Command info
     if event.is_command():
         cmd_name = event.get_command_name()
         cmd_args = event.get_command_args()
         cmd_raw = event.get_command_raw()
 ```
 
-### Platform-Specific Extension Methods
+### Platform Extension Methods
 
-In addition to built-in methods, each platform adapter registers platform-specific methods, allowing you to access platform-specific data.
+In addition to built-in methods, each platform adapter also registers platform-specific methods to facilitate access to platform-specific data.
 
 ```python
 from ErisPulse.Core.Event import message
@@ -1533,12 +1550,12 @@ async def handle_message(event):
 
     # Call platform-specific methods based on platform
     if platform == "telegram":
-        chat_type = event.get_chat_type()      # Telegram-specific method
+        chat_type = event.get_chat_type()      # Telegram specific method
     elif platform == "email":
-        subject = event.get_subject()           # Email-specific method
+        subject = event.get_subject()           # Email specific method
 ```
 
-If you are unsure whether a platform has registered a specific method, you can query which methods have been registered for a particular platform:
+If you are unsure if a platform has registered a method, you can query which methods a platform has registered:
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -1547,9 +1564,9 @@ methods = get_platform_event_methods("telegram")
 # ["get_chat_type", "is_bot_message", ...]
 ```
 
-> For platform-specific methods registered by each platform, please refer to the corresponding [platform documentation](../platform-guide/README.md).
+> For platform-specific methods registered on each platform, please refer to the corresponding [Platform Guide](../platform-guide/).
 
-## Best Practices for Event Handling
+## Event Handling Best Practices
 
 ### 1. Exception Handling
 
@@ -1579,10 +1596,10 @@ async def message_handler(event):
     
     sdk.logger.info(f"Processing message: {user_id} - {text}")
     
-    # Use module-specific logging
+    # Use the module's own logger
     from ErisPulse import sdk
     logger = sdk.logger.get_child("MyHandler")
-    logger.debug(f"Debug information")
+    logger.debug(f"Verbose debug info")
 ```
 
 ### 3. Conditional Handling
@@ -1590,7 +1607,7 @@ async def message_handler(event):
 ```python
 @message.on_message(priority=0)
 async def conditional_handler(event):
-    """Conditional handling - check conditions inside handler"""
+    """Conditional handling - determines inside the handler"""
     # Only process messages from specific users
     if event.get_user_id() in ["bot1", "bot2"]:
         return
@@ -1599,14 +1616,14 @@ async def conditional_handler(event):
     if "keyword" not in event.get_text():
         return
     
-    await event.reply("Condition met, processing message")
+    await event.reply("Conditions met, processing message")
 ```
 
 ## Next Steps
 
-- [Common Tasks Examples](common-tasks.md) - Learn to implement common features (including advanced message sending: retry/timeout/batch)
-- [Platform Features Guide](../platform-guide/README.md) - Complete explanation of Send DSL, sending rules, and batch construction
-- [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) - Deep dive into Event objects
+- [Common Task Examples](common-tasks.md) - Learn to implement common features (includes advanced message sending: retry/timeout/batch)
+- [Platform Features Guide](../platform-guide/README.md) - Complete guide on Send DSL chaining, sending rules, and batch building
+- [Detailed Event Wrapper Guide](../developer-guide/modules/event-wrapper.md) - Deep dive into Event objects
 - [User Guide](../user-guide/) - Learn about configuration and module management
 
 
@@ -2562,7 +2579,7 @@ The Event module provides a powerful Event wrapper class that simplifies event h
 ## Core Features
 
 - **Full Dictionary Compatibility**: Event inherits from dict
-- **Convenient Methods**: Provides a large number of convenient methods
+- **Convenient Methods**: Provides numerous convenient methods
 - **Dot-style Access**: Supports accessing event fields using dot notation
 - **Backward Compatibility**: All methods are optional
 
@@ -2631,7 +2648,7 @@ async def cmdinfo_command(event):
     await event.reply(f"Command: {cmd_name}, Args: {cmd_args}")
 ```
 
-## Notice Event Methods
+## Notification Event Methods
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -2647,19 +2664,19 @@ async def friend_add_handler(event):
 
 #### Event Basic Information
 - `get_id()` - Get event ID
-- `get_time()` - Get event timestamp (Unix seconds)
+- `get_time()` - Get event timestamp (Unix second)
 - `get_type()` - Get event type (message/notice/request/meta)
-- `get_detail_type()` - Get event detail type (private/group/friend, etc.)
+- `get_detail_type()` - Get event detail type (private/group/friend etc.)
 - `get_platform()` - Get platform name
 
 #### Bot Information
 - `get_self_platform()` - Get bot platform name
 - `get_self_user_id()` - Get bot user ID
-- `get_self_account_id()` - Get bot account ID (multi-Bot mode)
-- `get_self_info()` - Get complete bot information dictionary
+- `get_self_account_id()` - Get bot account ID (multi-bot mode)
+- `get_self_info()` - Get complete bot info dictionary
 
 #### Session Identifiers
-- `get_target_id()` - Get unified target ID (returns `group_id` for group chats, `channel_id` for channels, `user_id` for private chats, taking the first non-empty value in the order group → channel → guild → thread → user)
+- `get_target_id()` - Get unified target ID (returns `group_id` for group chat, `channel_id` for channel, `user_id` for private chat, takes the first non-empty value in order: group → channel → guild → thread → user)
 - `get_session_id()` - Get unique session identifier, format: `{platform}:{detail_type}:{target_id}`
 
 ### Message Event Methods
@@ -2673,34 +2690,34 @@ async def friend_add_handler(event):
 #### Sender Information
 - `get_user_id()` - Get sender user ID
 - `get_user_nickname()` - Get sender nickname
-- `get_sender()` - Get complete sender information dictionary
+- `get_sender()` - Get sender complete info dictionary
 
 #### Group/Channel Information
-- `get_group_id()` - Get group ID (group chat messages)
-- `get_channel_id()` - Get channel ID (channel messages)
-- `get_guild_id()` - Get server ID (server messages)
-- `get_thread_id()` - Get topic/subchannel ID (topic messages)
+- `get_group_id()` - Get group ID (group chat message)
+- `get_channel_id()` - Get channel ID (channel message)
+- `get_guild_id()` - Get server ID (server message)
+- `get_thread_id()` - Get topic/sub-channel ID (topic message)
 
 #### @Message Related
-- `has_mention()` - Whether it contains @bot
+- `has_mention()` - Whether contains @bot
 - `get_mentions()` - Get list of all mentioned user IDs
 
 ### Message Type Detection
 
 #### Basic Detection
 - `is_message()` - Whether it is a message event
-- `is_private_message()` - Whether it is a private chat message
-- `is_group_message()` - Whether it is a group chat message
-- `is_at_message()` - Whether it is an @ message (`has_mention()` alias)
+- `is_private_message()` - Whether it is a private message
+- `is_group_message()` - Whether it is a group message
+- `is_at_message()` - Whether it is an @message (`has_mention()` alias)
 
-### Notice Event Methods
+### Notification Event Methods
 
-#### Notice Operator
+#### Operator Information
 - `get_operator_id()` - Get operator ID
 - `get_operator_nickname()` - Get operator nickname
 
-#### Notice Type Detection
-- `is_notice()` - Whether it is a notice event
+#### Notification Type Detection
+- `is_notice()` - Whether it is a notification event
 - `is_group_member_increase()` - Group member increase event
 - `is_group_member_decrease()` - Group member decrease event
 - `is_friend_add()` - Friend add event (matches `detail_type == "friend_increase"`)
@@ -2722,19 +2739,19 @@ async def friend_add_handler(event):
 - `reply(content, method="Text", at_sender=False, reply_to_message=False, at_users=None, reply_to=None, at_all=False, **kwargs)` - General reply method
   - `content`: Content to send (text, URL, etc.)
   - `method`: Sending method, default "Text", optional "Image"/"Voice"/"Video"/"File", etc.
-  - `at_sender`: Whether to @ sender (automatically extract user_id)
-  - `quote`: Whether to quote reply current message (automatically extract message_id)
-  - `at_users`: List of users to @, e.g., `["user1", "user2"]`
+  - `at_sender`: Whether to @ sender (auto extracts user_id)
+  - `quote`: Whether to quote reply current message (auto extracts message_id)
+  - `at_users`: List of users to @, e.g. `["user1", "user2"]`
   - `reply_to`: Manually specify the message ID to reply to
   - `at_all`: Whether to @ all members
   - `**kwargs`: Additional parameters (e.g., user_id for Mention method)
 
 - `reply_ob12(message)` - Reply using OneBot12 message segments
-  - `message`: OneBot12 message segment list or dictionary, can be combined with MessageBuilder for construction
+  - `message`: OneBot12 message segment list or dictionary, can be built with MessageBuilder
 
 #### Platform Capability Query
 - `supports(method)` - Check if current platform supports a sending method (e.g., `"Image"`, `"Voice"`), returns `bool`
-- `available_methods()` - List all available sending methods on current platform, returns a list of method names
+- `available_methods()` - List all available sending methods on current platform, returns list of method names
 
 #### Forward Functionality
 
@@ -2750,42 +2767,51 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 ### Wait Reply Functionality
 
 - `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - Wait for user reply
-  - `prompt`: Prompt message, if provided it will be sent to the user
+  - `prompt`: Prompt message, if provided will be sent to user
   - `timeout`: Timeout time (seconds), default 60 seconds
   - `callback`: Callback function, executed when reply is received
-  - `validator`: Validation function, used to validate if the reply is valid
+  - `validator`: Validation function, used to validate if reply is valid
   - `method`: Sending method, default "Text"
-  - Returns the Event object of the user's reply, returns None on timeout
+  - Returns user reply Event object, returns None on timeout
 
 #### Interactive Methods
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - Confirmation dialog
   - Returns `True` (confirmation) / `False` (rejection) / `None` (timeout)
-  - Built-in automatic recognition of Chinese and English confirmation words, custom word sets can be defined
+  - Built-in Chinese and English confirmation words automatically recognized, custom word sets can be defined
   - `method`: Sending method, default "Text"; supports non-text methods like "Image"/"Markdown"
-  - `hint`: Whether to automatically append confirmation word prompts (e.g., "（是/否）" ) at the end of the prompt, default False
+  - `hint`: Whether to automatically append confirmation word prompt at the end of the prompt (e.g., "（是/否）"), default False
 
-- `choose(prompt, options, timeout=60.0, method="Text", options_format="list", merge_prompt=False)` - Selection menu
+- `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - Selection menu
   - `options`: List of option texts
-  - Returns the index of the option (0-based), returns `None` on timeout
-  - `method`: Sending method; text-based methods (Text/Markdown/Html) will append options to the prompt in one message; rich media methods send rich media content first, then send Text option list
-  - `options_format`: Option format, supports `"list"` (default, one per line), `"inline"` (single line `1.A | 2.B`), or custom function `(list[str]) -> str`
-  - `merge_prompt`: Whether to forcibly merge into one Text message when using non-text methods, default False
+  - Returns option index (0-based), returns `None` on timeout
+  - `method`: Sending method, default "Text"; text-based methods (Text/Markdown/md/Html/h5) automatically merge options to the end
+  - `options_format`: Option format (default: "auto", automatically select built-in style based on method)
+    - `"auto"`: Markdown→unordered list (`- 1. Option`), Html→ordered list (`<ol>`), others→plain text list
+    - `"list"`: One per line, e.g. ``1. Option A\n2. Option B``
+    - `"inline"`: Display in a single line, e.g. ``1.A | 2.B``
+    - `"md"`: Markdown unordered list
+    - `"html"`: Html ordered list
+    - `callable`: Custom function, receives ``list[str]`` returns ``str``
+  - `merge_prompt`: Whether to forcibly merge into a single message, default False
+    - `False` (default): Text-based methods automatically merge; non-text methods send prompt first then Text options
+    - `True`: Regardless of method, always merge into a single message, sent using the specified method
+  - `placeholder`: Option insertion placeholder, default `{options}`; the position where this marker appears in the prompt is replaced with the option text, set to empty string to always append to the end
 
 - `collect(fields, timeout_per_field=60.0)` - Form collection
-  - `fields`: List of fields, each containing `key`, `prompt`, optional `validator`, optional `method`
+  - `fields`: Field list, each item contains `key`, `prompt`, optional `validator`, optional `method`
   - Returns `{key: value}` dictionary, returns `None` if any field times out
-  - Each field supports the `method` key to specify the sending method, e.g., collecting images with `{"key": "avatar", "prompt": "Please send avatar", "method": "Image"}`
-  - Each field can optionally have the `options` key (list), when provided, the field becomes a multiple-choice question (automatically calls choose logic)
-  - Each field can optionally have the `options_format` and `merge_prompt` keys to control option format and message merging behavior
+  - Each field supports `method` key to specify sending method, e.g. collecting image with `{"key": "avatar", "prompt": "Please send avatar", "method": "Image"}`
+  - Each field can have optional `options` key (list), when provided, the field becomes a multiple-choice question (automatically calls choose logic)
+  - Each field can have optional `options_format`, `merge_prompt`, `placeholder` keys to control option format, message merging behavior, and placeholder
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - Wait for any event
   - `condition`: Filter function, returns `True` when matched
-  - Returns the matched Event object, returns `None` on timeout
+  - Returns matching Event object, returns `None` on timeout
 
 - `conversation(timeout=60.0)` - Create multi-turn conversation context
   - Returns `Conversation` object, supports `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
-  - `is_active` property indicates whether the conversation is active
+  - `is_active` attribute indicates whether the conversation is active
 
 #### Interactive Method Examples
 
@@ -2804,38 +2830,68 @@ async def delete_handler(event):
 **confirm() - With Prompt Words:**
 
 ```python
-# hint=True will append "（是/否）" at the end of the prompt
+# hint=True appends "（是/否）" at the end of the prompt
 if await event.confirm("Continue?", hint=True):
     await event.reply("Continued")
-# User sees: Continue? (Yes/No)
+# User sees: Continue?（是/否）
 ```
 
 **choose() - Selection Menu:**
 
 ```python
-@command("color", help="Select color")
+@command("color", help="Choose color")
 async def color_handler(event):
-    choice = await event.choose("Please select color:", ["Red", "Green", "Blue"])
+    choice = await event.choose("Please choose color:", ["Red", "Green", "Blue"])
     if choice is not None:
         colors = ["Red", "Green", "Blue"]
-        await event.reply(f"You selected: {colors[choice]}")
+        await event.reply(f"You chose: {colors[choice]}")
 ```
 
 **choose() - Option Formatting and Message Merging:**
 
 ```python
-# inline format: options displayed on the same line
-choice = await event.choose("Please select:", ["A", "B", "C"], options_format="inline")
+# inline format: options displayed in a single line
+choice = await event.choose("Please choose:", ["A", "B", "C"], options_format="inline")
 # Output: 1.A | 2.B | 3.C
 
 # Custom format
-choice = await event.choose("Please select:", ["Cat", "Dog"],
+choice = await event.choose("Please choose:", ["Cat", "Dog"],
     options_format=lambda opts: " / ".join(opts))
 # Output: Cat / Dog
 
-# Non-text method + merge options into text
-choice = await event.choose("Select by image:", ["Cat", "Dog"],
-    method="Image", merge_prompt=True)
+# options_format="auto" (default): automatically select built-in style based on method
+# Markdown → unordered list
+choice = await event.choose(
+    "## Please choose", ["Cat", "Dog"],
+    method="Markdown",  # auto recognizes as md list
+)
+# Output:
+# ## Please choose
+# - 1. Cat
+# - 2. Dog
+
+# Html → ordered list
+choice = await event.choose(
+    "<h2>Please choose</h2>", ["Cat", "Dog"],
+    method="Html", merge_prompt=True,  # auto recognizes as html list
+)
+# Output:
+# <h2>Please choose</h2>
+# <ol><li>1. Cat</li><li>2. Dog</li></ol>
+
+# Merge mode + placeholder
+choice = await event.choose(
+    "## Please choose\n{options}\nPlease reply with number",
+    ["Cat", "Dog"],
+    method="Markdown", merge_prompt=True,
+)
+
+# Custom placeholder
+choice = await event.choose(
+    "Choose: [choices]",
+    ["Cat", "Dog"],
+    placeholder="[choices]",
+)
 ```
 
 **collect() - Form Collection:**
@@ -2863,7 +2919,7 @@ segments = MessageBuilder.text("Look at this image:").image("http://example.com/
 await event.reply_ob12(segments)
 ```
 
-> For complete usage of Conversation multi-turn dialog, please refer to [Conversation Multi-turn Dialog](../../advanced/conversation.md).
+> For complete Conversation multi-turn dialog usage, see [Conversation Multi-turn Dialog](../../advanced/conversation.md).
 
 ### Command Information
 
@@ -2871,7 +2927,7 @@ await event.reply_ob12(segments)
 - `get_command_name()` - Get command name
 - `get_command_args()` - Get command argument list
 - `get_command_raw()` - Get original command text
-- `get_command_info()` - Get complete command information dictionary
+- `get_command_info()` - Get complete command info dictionary
 - `is_command()` - Whether it is a command
 
 ### Raw Data
@@ -2881,9 +2937,9 @@ await event.reply_ob12(segments)
 
 ### Platform Extension Methods
 
-Adapters can register platform-specific methods for the Event wrapper class. These methods are only available on Event instances of the corresponding platform; accessing them on other platforms raises `AttributeError`.
+Adapters can register platform-specific methods for the Event wrapper class. Methods are only available on Event instances of the corresponding platform; accessing them on other platforms raises `AttributeError`.
 
-Platform methods take precedence over built-in methods via `Event.__getattribute__`, so they can override built-in interactive methods like `confirm`, `choose`, `collect`, `wait_reply`, providing platform-specific implementations (e.g., buttons, cards). The built-in implementation is exported as `_builtin_*` functions for overriding.
+Platform methods take precedence over built-in methods via `Event.__getattribute__`, so they can override built-in interactive methods like `confirm`, `choose`, `collect`, `wait_reply`, providing platform-specific implementations (e.g., buttons, cards). Built-in implementations are exported as `_builtin_*` functions for overriding.
 
 ```python
 # Email event - only email methods
@@ -2896,7 +2952,7 @@ event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "privat
 event.get_chat_type()    # ✅ Returns "private"
 event.get_subject()      # ❌ AttributeError
 
-# Built-in methods always available
+# Built-in methods are always available
 event.get_text()         # ✅ Any platform
 event.reply("hi")        # ✅ Any platform
 ```
@@ -2913,20 +2969,20 @@ methods = get_platform_event_methods("email")
 ### `hasattr` and `dir` Support
 
 ```python
-hasattr(event, "get_subject")   # Only returns True when platform="email"
+hasattr(event, "get_subject")   # Returns True only when platform="email"
 "get_subject" in dir(event)     # Same as above
 ```
 
 ### Cross-platform Extension (Wildcard)
 
-`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods that are available on Event instances of **all platforms**. This is suitable for features requiring cross-platform reuse, such as AI chat and context management.
+`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods available on Event instances of **all platforms**. Suitable for features needing cross-platform reuse, such as AI chat, context management, etc.
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    # self is the Event instance, can access event data and built-in methods
+    # self is Event instance, can access event data and built-in methods
     await self.reply(f"AI: {prompt}")
 ```
 
@@ -2938,7 +2994,7 @@ Method resolution priority (from high to low): platform-specific methods → wil
 
 ## Related Documentation
 
-- [Module Development Introduction](getting-started.md) - Create your first module
+- [Module Development Getting Started](getting-started.md) - Create your first module
 - [Best Practices](best-practices.md) - Develop high-quality modules
 
 
@@ -3955,11 +4011,11 @@ API 参考
 
 # Core Module API
 
-This document provides a quick reference for ErisPulse core module APIs, including method signatures and brief descriptions. For detailed usage and examples, please click the "Full Documentation" link for each module.
+This document provides a quick reference for the ErisPulse core module APIs, including method signatures and brief descriptions. For detailed usage and examples, please click the "Full Documentation" links for each module.
 
 ## Storage Module
 
-A key-value storage system based on SQLite, supporting generic SQL chained queries.
+A key-value storage system based on SQLite, supporting general SQL chainable queries.
 
 ### Basic Operations
 
@@ -3980,7 +4036,7 @@ values = sdk.storage.get_multi(["key1", "key2"])
 sdk.storage.delete_multi(["key1", "key2"])
 ```
 
-### Transactional Operations
+### Transaction Operations
 
 ```python
 with sdk.storage.transaction():
@@ -3995,9 +4051,9 @@ sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
 sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
 ```
 
-### SQL Chained Queries
+### SQL Chainable Queries
 
-The Storage module provides a fluent-style generic SQL query builder, supporting CRUD operations on custom tables.
+The Storage module provides a chainable-style generic SQL query builder, supporting CRUD operations for custom tables.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -4009,7 +4065,7 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> For the complete chained query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
+> For the complete chainable query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
 
 ### Storage Backend Abstraction
 
@@ -4021,22 +4077,22 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ### Asynchronous Interfaces
 
-Both Storage and Config modules provide asynchronous methods (prefixed with `a`), which can be safely called in asynchronous handlers. Synchronous methods are retained and do not require modification of existing code.
+Both Storage and Config modules provide asynchronous methods (prefixed with `a`), which can be safely called in asynchronous handlers. Synchronous methods are retained and require no modification of existing code.
 
 ```python
-# Asynchronous storage
+# Asynchronous Storage
 value = await sdk.storage.aget("key")
 await sdk.storage.aset("key", "value")
 await sdk.storage.adelete("key")
 keys = await sdk.storage.aget_all_keys()
 await sdk.storage.aclear()
 
-# Asynchronous batch operations
+# Asynchronous Batch Operations
 values = await sdk.storage.aget_multi(["k1", "k2"])
 await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
 await sdk.storage.adelete_multi(["k1", "k2"])
 
-# Asynchronous configuration
+# Asynchronous Configuration
 value = await sdk.config.agetConfig("MyModule.key")
 await sdk.config.asetConfig("MyModule.key", "value")
 await sdk.config.aforce_save()
@@ -4045,22 +4101,22 @@ await sdk.config.areload()
 
 ## Config Module
 
-TOML format configuration file management, supporting dot-separated key paths.
+TOML-formatted configuration file management, supporting dot-separated key paths.
 
 ### API Overview
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `getConfig(key, default)` | Read configuration, supports dot paths like `"MyModule.subkey"` |
 | `setConfig(key, value, immediate=False)` | Write configuration. If `immediate=True`, save immediately to file |
-| `force_save()` | Forcefully write in-memory configuration to file |
+| `force_save()` | Force saving in-memory configuration to file |
 | `reload()` | Reload configuration from file |
 | `agetConfig(key, default)` | Asynchronously read configuration |
 | `asetConfig(key, value, immediate)` | Asynchronously write configuration |
 | `aforce_save()` | Asynchronously force save |
 | `areload()` | Asynchronously reload |
 
-### Examples
+### Example
 
 ```python
 config = sdk.config.getConfig("MyModule", {})
@@ -4070,7 +4126,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` uses delayed write by default (batch saved every 5 seconds). Setting `immediate=True` will persist immediately to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` uses delayed writing by default (batch saving every 5 seconds). Setting `immediate=True` will persist to the configuration file immediately. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Logger Module
 
@@ -4080,7 +4136,7 @@ A modular logging system based on Rich output, supporting child loggers and modu
 
 ```python
 sdk.logger.debug("Debug information")
-sdk.logger.info("Running information")
+sdk.logger.info("Runtime information")
 sdk.logger.warning("Warning information")
 sdk.logger.error("Error information")
 sdk.logger.critical("Critical error")
@@ -4103,7 +4159,7 @@ sdk.logger.set_module_level("MyModule", "DEBUG")       # Module level
 
 # Supported levels (from low to high):
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE is the lowest level, outputting detailed framework internal debug information (event dispatch, route registration, etc.)
+# TRACE is the lowest level, outputting detailed internal framework debug information (event dispatch, route registration, etc.)
 sdk.logger.set_level("TRACE")                          # Enable all logs
 ```
 
@@ -4112,7 +4168,7 @@ sdk.logger.set_level("TRACE")                          # Enable all logs
 For modules like Dashboard to receive structured logs in real-time, supporting level filtering and historical log replay.
 
 ```python
-# Decorator style
+# Decorator approach
 @sdk.logger.handler("my-handler", min_level="INFO")
 def on_log(log_data: dict):
     # log_data = {
@@ -4123,14 +4179,14 @@ def on_log(log_data: dict):
     # }
     pass
 
-# Direct call style
+# Direct call approach
 sdk.logger.handler("my-handler", min_level="INFO")(on_log)
 sdk.logger.remove_handler("my-handler")
 ```
 
 | Method | Description |
-|------|------|
-| `handler(id, *, min_level)(func)` | Decorator/direct call dual-use. If `id` is empty, function name is used. History logs are automatically replayed on registration |
+|--------|-------------|
+| `handler(id, *, min_level)(func)` | Decorator/multi-use direct call. If `id` is empty, use function name. Registering automatically replays historical logs |
 | `remove_handler(id)` | Remove subscriber |
 
 ### Output Control
@@ -4144,12 +4200,12 @@ sdk.logger.set_memory_limit(1000)
 
 ## Adapter Module
 
-Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters.
+Adapter manager, managing registration, startup, and shutdown of multi-platform adapters.
 
 ### API Overview
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `get(platform)` | Get adapter instance |
 | `exists(platform)` | Check if adapter is registered |
 | `enable(platform)` / `disable(platform)` | Enable/disable adapter |
@@ -4184,13 +4240,13 @@ sdk.adapter.get_status_summary()
 
 ## Module Module
 
-Module manager, managing plugin registration, loading, and unloading.
+Module manager, managing registration, loading, and unloading of plugins.
 
 ### API Overview
 
 | Method | Description |
-|------|------|
-| `get(name)` | Get module instance |
+|--------|-------------|
+| `get(name)` | Get module instance or lazy-loaded proxy (returns proxy if registered but not loaded) |
 | `exists(name)` | Check if registered |
 | `is_loaded(name)` | Check if loaded |
 | `is_enabled(name)` | Check if enabled |
@@ -4198,7 +4254,7 @@ Module manager, managing plugin registration, loading, and unloading.
 | `load(name)` / `unload(name)` | Load/unload module |
 | `list_registered()` | List registered modules |
 | `list_loaded()` | List loaded modules |
-| `get_info(name)` | Get module info |
+| `get_info(name)` | Get module information |
 | `get_status_summary()` | Get module status summary |
 
 ### Attribute Access
@@ -4216,9 +4272,9 @@ Event-driven lifecycle manager, providing event submission and listening functio
 ### API Overview
 
 | Method | Description |
-|------|------|
-| `on(event, priority=0)` | Decorator to register event handlers, supports dot matching and wildcard `*` |
-| `register(event, handler, priority=0)` | Functional registration of handlers |
+|--------|-------------|
+| `on(event, priority=0)` | Decorator to register event handler, supports dot matching and wildcard `*` |
+| `register(event, handler, priority=0)` | Functional registration of handler |
 | `unregister(event, handler=None)` | Remove handler |
 | `emit(event, data)` | Asynchronously trigger event |
 | `emit_sync(event, data)` | Synchronously trigger event |
@@ -4230,7 +4286,7 @@ Event-driven lifecycle manager, providing event submission and listening functio
 ```python
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
-    print(f"Module initialization: {event_data}")
+    print(f"Module initialized: {event_data}")
 
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
@@ -4245,23 +4301,23 @@ await sdk.lifecycle.emit("custom.event", {"key": "value"})
 
 HTTP/WebSocket router manager, based on FastAPI + Uvicorn, supporting decorator routing, middleware, grouping, rate limiting, CORS.
 
-> For the complete routing API documentation (decorator routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Router Manager](../advanced/router.md).
+> For the complete router API documentation (decorator routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Router Manager](../advanced/router.md).
 
 ### Quick Reference
 
 ```python
-# HTTP routing
+# HTTP Route
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# WebSocket routing
+# WebSocket Route
 @sdk.router.ws("MyModule", "/ws")
 async def ws_handler(ws: WebSocketConnection):
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 
-# Route grouping
+# Route Grouping
 group = sdk.router.group("MyModule", prefix="/v1")
 @group.get("/users")
 async def list_users(request: HttpRequest):
@@ -4270,7 +4326,7 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client Module
 
-Unified network client, aggregating HTTP requests, WebSocket connections, connection pool management, automatic retry, request statistics, and lifecycle event integration.
+Unified network client, aggregating HTTP requests, WebSocket connections, connection pool management, automatic retries, request statistics, and lifecycle event integration.
 
 > For the complete network client documentation (request methods, response objects, WebSocket client, exception system, etc.), please refer to [Network Client](../advanced/http-client.md).
 
@@ -4279,7 +4335,7 @@ Unified network client, aggregating HTTP requests, WebSocket connections, connec
 ```python
 from ErisPulse.Core import client
 
-# HTTP request
+# HTTP Request
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
@@ -4293,7 +4349,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-Exports a snapshot of the current runtime state of the framework, used for debugging and diagnostics.
+Exports a snapshot of the current running state of the framework, useful for debugging and diagnostics.
 
 ```python
 import json
@@ -4301,12 +4357,12 @@ state = sdk.dump_state()
 print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ```
 
-The returned structure contains the states of the following subsystems:
+The returned structure contains the status of the following subsystems:
 
 | Field | Description |
-|------|------|
-| `sdk` | SDK initialization status, Python version, runtime platform, timestamp |
-| `adapters` | List of registered/started adapters, online status of bots on each platform |
+|-------|-------------|
+| `sdk` | SDK initialization status, Python version, running platform, timestamp |
+| `adapters` | List of registered/started adapters, online status of Bots on each platform |
 | `modules` | List of registered/enabled/disabled/lazy-loaded modules |
 | `events` | Number of handlers for each type of event (message/notice/request/meta/commands) |
 | `router` | Server running status, number of HTTP/WebSocket routes |
@@ -4317,32 +4373,32 @@ The returned structure contains the states of the following subsystems:
 
 - [Event System API](event-system.md) - Event module API
 - [Adapter System API](adapter-system.md) - Adapter management API
-- [SQL Query Builder](../advanced/sql-builder.md) - Complete documentation for SQL chained queries
+- [SQL Query Builder](../advanced/sql-builder.md) - Complete documentation for SQL chainable queries
 - [Router Manager](../advanced/router.md) - Complete documentation for router manager
 - [Network Client](../advanced/http-client.md) - Complete documentation for network client
-- [Lifecycle Management](../advanced/lifecycle.md) - Complete documentation for lifecycle
+- [Lifecycle Management](../advanced/lifecycle.md) - Complete documentation for lifecycle management
 
 
 ### 事件系统 API
 
 # Event System API
 
-This document details the Event System API of ErisPulse.
+This document details the API for the ErisPulse event system.
 
-## Command Module
+## Command 命令模块
 
-### Register Commands
+### Registering Commands
 
 ```python
 from ErisPulse.Core.Event import command
 
 # Basic command
-@command("hello", help="Send a greeting")
+@command("hello", help="Send greeting")
 async def hello_handler(event):
     await event.reply("Hello!")
 
 # Command with aliases
-@command(["help", "h"], aliases=["help"], help="Show help")
+@command(["help", "h"], aliases=["帮助"], help="Display help")
 async def help_handler(event):
     pass
 
@@ -4360,12 +4416,12 @@ async def secret_handler(event):
     pass
 
 # Command group
-@command("admin.reload", group="admin", help="Reload module")
+@command("admin.reload", group="admin", help="Reload modules")
 async def reload_handler(event):
     pass
 ```
 
-### Command Info
+### Command Information
 
 ```python
 # Get command help
@@ -4381,11 +4437,11 @@ admin_commands = command.get_group_commands("admin")
 visible_commands = command.get_visible_commands()
 ```
 
-### Wait for Reply
+### Waiting for Reply
 
 ```python
 # Wait for user reply
-@command("ask", help="Ask user for info")
+@command("ask", help="Ask for user info")
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
@@ -4405,7 +4461,7 @@ def validate_age(event_data):
     except ValueError:
         return False
 
-@command("age", help="Ask user for age")
+@command("age", help="Ask for user age")
 async def age_command(event):
     await event.reply("Please enter your age:")
     
@@ -4417,12 +4473,12 @@ async def age_command(event):
     
     if reply:
         age = int(reply.get_text())
-        await event.reply(f"Your age is {age} years old.")
+        await event.reply(f"You are {age} years old")
 
 # Wait for reply with callback
 async def handle_confirmation(reply_event):
     text = reply_event.get_text().lower()
-    if text in ["yes", "y"]:
+    if text in ["是", "yes", "y"]:
         await event.reply("Operation confirmed!")
     else:
         await event.reply("Operation cancelled.")
@@ -4431,12 +4487,12 @@ async def handle_confirmation(reply_event):
 async def confirm_command(event):
     await command.wait_reply(
         event,
-        prompt="Please enter 'yes' or 'no':",
+        prompt="Please enter '是' or '否':",
         callback=handle_confirmation
     )
 ```
 
-## Message Module
+## Message 消息模块
 
 ### Message Events
 
@@ -4464,40 +4520,40 @@ async def group_handler(event):
 @message.on_at_message()
 async def at_handler(event):
     mentions = event.get_mentions()
-    sdk.logger.info(f"User mentioned: {mentions}")
+    sdk.logger.info(f"Mentioned users: {mentions}")
 ```
 
 ### Conditional Listening
 
 ```python
 # Use priority to control execution order
-@message.on_message(priority=10)  # Higher number means higher priority
+@message.on_message(priority=10)  # Higher number = higher priority
 async def high_priority_handler(event):
     pass
 
 # Implement conditional filtering inside the handler
 @message.on_message()
 async def filtered_handler(event):
-    if "keyword" not in event.get_text():
+    if "关键词" not in event.get_text():
         return
-    # Process messages containing keyword
+    # Handle messages containing keywords
     pass
 ```
 
-## Notice Module
+## Notice 通知模块
 
-### Notice Events
+### Notification Events
 
 ```python
 from ErisPulse.Core.Event import notice
 
-# Friend added
+# Friend add
 @notice.on_friend_add()
 async def friend_add_handler(event):
     user_id = event.get_user_id()
     await event.reply("Welcome to add me as a friend!")
 
-# Friend removed
+# Friend remove
 @notice.on_friend_remove()
 async def friend_remove_handler(event):
     user_id = event.get_user_id()
@@ -4516,7 +4572,7 @@ async def member_decrease_handler(event):
     sdk.logger.info(f"Group member left: {user_id}")
 ```
 
-## Request Module
+## Request 请求模块
 
 ### Request Events
 
@@ -4528,17 +4584,17 @@ from ErisPulse.Core.Event import request
 async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
-    sdk.logger.info(f"Friend request: {user_id}, comment: {comment}")
+    sdk.logger.info(f"Friend request: {user_id}, Comment: {comment}")
 
 # Group invite request
 @request.on_group_request()
 async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"Group invite: {group_id}, from: {user_id}")
+    sdk.logger.info(f"Group invite: {group_id}, From: {user_id}")
 ```
 
-## Meta Module
+## Meta 元事件模块
 
 ### Meta Events
 
@@ -4565,11 +4621,11 @@ async def heartbeat_handler(event):
 
 ### Bot Status Query
 
-After the adapter sends meta events, the framework automatically tracks Bot status. Refer to [Adapter System API - Bot Status Management](adapter-system.md#bot-状态管理) for query APIs and lifecycle event listeners.
+After an adapter sends a meta event, the framework automatically tracks the Bot status. Refer to [Adapter System API - Bot Status Management](adapter-system.md#bot-状态管理) for query APIs and lifecycle event listeners.
 
 ## Event Wrapper Class
 
-Event handlers in the Event module receive an instance of the Event wrapper class, which inherits from `dict` and provides convenient methods.
+Event handlers in the Event module receive an instance of the Event wrapper class, which inherits from `dict` and provides convenience methods.
 
 ### Core Methods
 
@@ -4587,10 +4643,10 @@ self_user_id = event.get_self_user_id()
 self_info = event.get_self_info()
 ```
 
-### Session Identifier
+### Session Identifiers
 
 ```python
-# Unified target ID: returns group_id for groups, user_id for private chats, etc.
+# Unified target ID: group_id for groups, user_id for private chats, etc.
 target_id = event.get_target_id()
 
 # Unique session identifier, format: {platform}:{detail_type}:{target_id}
@@ -4598,7 +4654,7 @@ session_id = event.get_session_id()
 # Example: "telegram:private:12345", "qq:group:67890"
 ```
 
-`get_target_id()` returns the first non-empty value in the following order: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`. This is suitable for scenarios like context management and state storage that require a unified identifier for sessions.
+`get_target_id()` returns the first non-empty value in the following order: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`. Suitable for contexts like context management and state storage that require a unified session identifier.
 
 ### Message Methods
 
@@ -4621,13 +4677,13 @@ is_msg = event.is_message()
 is_private = event.is_private_message()
 is_group = event.is_group_message()
 
-# @ mention related
+# @ message related
 is_at = event.is_at_message()
 has_mention = event.has_mention()
 mentions = event.get_mentions()
 ```
 
-### Command Info
+### Command Information
 
 ```python
 # Get command info
@@ -4639,7 +4695,7 @@ cmd_raw = event.get_command_raw()
 is_cmd = event.is_command()
 ```
 
-### Reply Functions
+### Reply Methods
 
 ```python
 # Basic reply
@@ -4648,11 +4704,11 @@ await event.reply("This is a message")
 # Specify send method
 await event.reply("http://example.com/image.jpg", method="Image")
 
-# Reply with @ user and reply to message
+# Reply with @user and quoted message
 await event.reply("Hello", at_users=["user1"], reply_to="msg_id")
 
 # @ everyone
-await event.reply("Announcement", at_all=True)
+await event.reply("Notice", at_all=True)
 
 # Reply using OneBot12 message segments
 from ErisPulse.Core.Event import MessageBuilder
@@ -4663,10 +4719,10 @@ await event.reply_ob12(msg)
 reply = await event.wait_reply(timeout=30)
 ```
 
-### Platform Capability Query
+### Platform Capabilities Query
 
 ```python
-# Check if current platform supports a certain send method
+# Check if the current platform supports a send method
 if event.supports("Image"):
     await event.reply(url, method="Image")
 
@@ -4675,9 +4731,9 @@ methods = event.available_methods()
 # ["Text", "Image", "Voice", ...]
 ```
 
-### Reply Methods
+### `reply()` Method Details
 
-The `reply()` method supports specifying send type via the `method` parameter, as well as two convenient boolean parameters:
+The `reply()` method supports specifying the send type via the `method` parameter, as well as two convenient boolean parameters:
 
 ```python
 # Simple text reply
@@ -4686,10 +4742,10 @@ await event.reply("Hello")
 # Reply and @ sender
 await event.reply("Hello", at_sender=True)
 
-# Reply and quote current message
+# Reply and quote the current message
 await event.reply("Received", reply_to_message=True)
 
-# Combined usage
+# Combining them
 await event.reply("Received", at_sender=True, reply_to_message=True)
 
 # Send image (using method parameter)
@@ -4702,49 +4758,55 @@ else:
 **Parameter Description**:
 
 | Parameter | Type | Description |
-|------|------|------|
-| `content` | str | Content to send |
+|-----------|------|-------------|
+| `content` | str | Message content |
 | `method` | str | Send method, default "Text", options include "Image"/"Voice"/"Video"/"File" etc. |
-| `at_sender` | bool | Whether to @ sender (automatically extracts user_id) |
-| `quote` | bool | Whether to reply to current message (automatically extracts message_id) |
+| `at_sender` | bool | Whether to @ the sender (automatically extracts user_id) |
+| `quote` | bool | Whether to reply/quote the current message (automatically extracts message_id) |
 | `at_users` | list[str] | List of users to @ |
 | `reply_to` | str | Manually specify the message ID to reply to |
 | `at_all` | bool | Whether to @ everyone |
 
-### Interaction Methods
+### Interactive Methods
 
 ```python
-# confirm — Confirm dialogue (returns True/False/None)
+# confirm — Confirm conversation (returns True/False/None)
 if await event.confirm("Are you sure you want to perform this operation?"):
     await event.reply("Confirmed")
 
-# Send confirmation prompt using non-Text method
+# Use non-Text methods to send confirmation prompts
 if await event.confirm("http://example.com/image.jpg", method="Image"):
-    await event.reply("Confirmed image prompt")
+    await event.reply("Image confirmation received")
 
-# choose — Choose menu (returns option index or None)
-choice = await event.choose("Please choose a color:", ["Red", "Green", "Blue"])
+# choose — Select menu (returns option index or None)
+choice = await event.choose("Please select a color:", ["红色", "绿色", "蓝色"])
 
-# choose supports specifying send method, rich media methods split into two messages
-choice = await event.choose("Please choose:", ["A", "B"], method="Markdown")
+# options_format="auto" (default) automatically selects style based on method:
+# Markdown→Unordered list (- 1.Option), Html→Ordered list (<ol>), Other→Plain text list
+# Text-based methods (Markdown/Html, etc.) merge options at the end by default
+# merge_prompt=True forces merging for any method; placeholder allows custom placeholder
+choice = await event.choose(
+    "## Please select\n{options}", ["A", "B"],
+    method="Markdown", merge_prompt=True,
+)
 
 # collect — Form collection (returns {key: value} dict or None)
 data = await event.collect([
-    {"key": "name", "prompt": "Please enter name:"},
-    {"key": "age", "prompt": "Please enter age:",
+    {"key": "name", "prompt": "Please enter your name:"},
+    {"key": "age", "prompt": "Please enter your age:",
      "validator": lambda e: e.get_text().isdigit()},
-    {"key": "avatar", "prompt": "Please send avatar:", "method": "Image"},
+    {"key": "avatar", "prompt": "Please send your avatar:", "method": "Image"},
 ])
 
-# wait_for — Wait for any event satisfying conditions
+# wait_for — Wait for any event meeting conditions
 evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
-# conversation — Multi-turn dialogue context
+# conversation — Multi-turn conversation context
 conv = event.conversation(timeout=60)
 await conv.say("Welcome!")
 ```
 
-> For full parameter descriptions of interaction methods and more examples, refer to [Event Wrapper Class Detailed Explanation](../developer-guide/modules/event-wrapper.md) and [Conversation Multi-turn Dialogue](../advanced/conversation.md).
+> For complete parameter descriptions and more examples of interactive methods, refer to [Event Wrapper Class Deep Dive](../developer-guide/modules/event-wrapper.md) and [Conversation Multi-turn](../advanced/conversation.md).
 
 ### Utility Methods
 
@@ -4763,11 +4825,11 @@ raw_type = event.get_raw_type()
 
 ### Platform Extension Methods
 
-Adapters can register platform-specific methods for the Event, which are only available on instances corresponding to that platform.
+Adapters can register platform-specific methods for Events, available only on instances of that platform.
 
 #### User: Using Platform Extension Methods
 
-After an adapter registers platform-specific methods, you can call them directly in event handlers. Methods vary by platform; please refer to the corresponding [Platform Documentation](../platform-guide/).
+After an adapter registers platform-specific methods, you can call them directly in event handlers. Methods vary by platform, please refer to the corresponding [Platform Documentation](../platform-guide/).
 
 ```python
 from ErisPulse.Core.Event import message
@@ -4787,11 +4849,11 @@ async def handle_message(event):
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
 
-# View which methods are registered for a platform
+# See what methods are registered for a platform
 methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", "get_attachments", ...]
 
-# Dynamically determine and call
+# Dynamically judge and call
 for method_name in get_platform_event_methods(event.get_platform()):
     method = getattr(event, method_name)
     print(f"{method_name}: {method()}")
@@ -4802,12 +4864,12 @@ for method_name in get_platform_event_methods(event.get_platform()):
 Methods registered for different platforms do not interfere with each other:
 
 ```python
-# Email event - only email methods
+# Email event - Only email methods
 event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
 event.get_subject()      # ✅ "Hello"
 event.get_chat_type()    # ❌ AttributeError
 
-# Telegram event - only Telegram methods
+# Telegram event - Only Telegram methods
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
 event.get_chat_type()    # ✅ "private"
 event.get_subject()      # ❌ AttributeError
@@ -4816,15 +4878,15 @@ event.get_subject()      # ❌ AttributeError
 #### `hasattr` / `dir` Support
 
 ```python
-hasattr(event, "get_subject")   # Returns True only when platform="email"
+hasattr(event, "get_subject")   # Only returns True if platform="email"
 "get_subject" in dir(event)     # Same as above
 ```
 
-### Adapter: Register Platform Extension Methods
+### Adapter: Registering Platform Extension Methods
 
-Adapters can register platform-specific methods for the Event using decorators. The first parameter of the method is `self` (Event instance), allowing free access to event data.
+Adapters can register platform-specific methods for Events using decorators. The first parameter of the method is `self` (the Event instance), allowing free access to event data.
 
-#### Register Single Method
+#### Registering Single Method
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -4840,7 +4902,7 @@ def get_from(self):
     return self.get("email_raw", {}).get("from", {})
 ```
 
-#### Batch Registration (Mixin Class)
+#### Registering Batch (Mixin Class)
 
 When there are many methods, it is recommended to use a Mixin class for batch registration:
 
@@ -4864,16 +4926,16 @@ register_event_mixin("email", EmailEventMixin)
 #### Return Value Specification
 
 | Scenario | Return Value | User Usage |
-|------|--------|------------|
-| Return data (text, dict, etc.) | Direct return value | `subject = event.get_subject()` |
-| Execute operation (send message, etc.) | Return `asyncio.Task` | `task = event.do_something()` (optional `await`) |
+|----------|--------------|------------|
+| Returning data (text, dict, etc.) | Direct return value | `subject = event.get_subject()` |
+| Performing operations (sending messages, etc.) | Returns `asyncio.Task` | `task = event.do_something()` (optional `await`) |
 
-> **Suggestion**: Methods that return non-data should return `asyncio.Task`, so users can decide whether to `await` themselves, even if not `awaited`, the operation will complete.
+> **Recommendation**: Methods that do not return data should return `asyncio.Task`, allowing users to decide whether to `await` themselves, even if not `awaited`, the operation will still complete.
 
 ```python
 @register_event_method("email")
 def forward_email(self, to_address: str):
-    """Forward email — returns Task, user can decide to await"""
+    """Forward email — Returns Task, user can choose to await"""
     import asyncio
     return asyncio.create_task(
         self._do_forward(to_address)
@@ -4882,27 +4944,27 @@ def forward_email(self, to_address: str):
 # User can await to wait for result
 await event.forward_email("user@example.com")
 
-# Or not await, operation runs in background
+# Or don't await, operation executes in background
 event.forward_email("user@example.com")
 ```
 
-#### Unregister Methods
+#### Unregistering Methods
 
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
 
-# Unregister single method
+# Unregister a single method
 unregister_event_method("email", "get_subject")
 
-# Unregister all methods for a platform (call during adapter shutdown)
+# Unregister all methods for a platform (call on adapter shutdown)
 unregister_platform_event_methods("email")
 ```
 
-#### Override Built-in Methods
+#### Overriding Built-in Methods
 
 `register_event_mixin` / `register_event_method` support overriding Event built-in methods (such as `confirm`, `choose`, `collect`, `wait_reply`, `reply`, etc.). Registered platform methods take precedence over built-in methods via `Event.__getattribute__`, allowing adapters to provide platform-specific interaction implementations.
 
-Built-in implementations are exported as `_builtin_*` functions, and override implementations can call them as a fallback:
+The built-in implementations are exported as `_builtin_*` functions; the overriding side can call them as a fallback:
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
@@ -4919,22 +4981,22 @@ class YunhuEventMixin:
 register_event_mixin("yunhu", YunhuEventMixin)
 ```
 
-## Cross-Platform Extensions (Wildcard)
+## Cross-Platform Extension (Wildcard)
 
-`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, making registered methods available on **all platform** Event instances. This is suitable for functional modules that require cross-platform reuse, such as AI dialogue and context management.
+`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods that are available on **all platforms'** Event instances. Suitable for functional modules that require cross-platform reuse, such as AI conversations and context management.
 
-### Register Cross-Platform Methods
+### Registering Cross-Platform Methods
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    """self is Event instance, can freely access event data and built-in methods"""
+    """self is the Event instance, can freely access event data and built-in methods"""
     await self.reply(f"AI: {prompt}")
 ```
 
-After registration, event handlers on all platforms can call it:
+After registration, all platform event handlers can call it:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -4948,24 +5010,24 @@ async def handler(event):
 
 When accessing Event methods via attribute access, the resolution order is:
 
-1. **Platform-specific methods** (overrides for current platform)
-2. **Wildcard methods** (cross-platform methods registered by `"*"`)
-3. **Built-in methods** (such as `reply`, `confirm`, etc.)
-4. **Dictionary key access**
+1. **Platform-Specific Methods** (overridden for current platform)
+2. **Wildcard Methods** (methods registered with `"*"`)
+3. **Built-in Methods** (`reply`, `confirm`, etc.)
+4. **Dict Key Access**
 
-> Therefore, wildcard methods can override built-in methods (such as `reply`), but will be further overridden by platform-specific methods with the same name.
+> Therefore, wildcard methods can override built-in methods (like `reply`), but will be further overridden by platform-specific methods with the same name.
 
 ## Priority System
 
-Event handlers support priorities; the higher the number, the higher the priority:
+Event handlers support priorities, where higher numbers indicate higher priority:
 
 ```python
-# High priority handlers execute first
+# High priority handler executes first
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     pass
 
-# Low priority handlers execute later
+# Low priority handler executes last
 @message.on_message(priority=0)
 async def low_priority_handler(event):
     pass
@@ -4985,13 +5047,13 @@ async def low_priority_handler(event):
 
 ### Conversation 多轮对话
 
-# Conversation Multi-turn Dialogue
+# Conversation Multi-turn Conversation
 
-The `Conversation` class provides convenient methods for multi-turn interaction within the same session, suitable for implementing guided operations, information collection, conversational Q&A, and other scenarios.
+The `Conversation` class provides convenient methods for multi-turn interactions within the same session, suitable for scenarios such as guided operations, information collection, and conversational question-answering.
 
 ## Creating a Conversation
 
-Create through the `Event` object's `conversation()` method:
+Create a conversation using the `conversation()` method of the `Event` object:
 
 ```python
 from ErisPulse.Core.Event import command
@@ -5000,22 +5062,22 @@ from ErisPulse.Core.Event import command
 async def quiz_handler(event):
     conv = event.conversation(timeout=30)
 
-    await conv.say("🎮 Welcome to the knowledge quiz!")
+    await conv.say("🎮 Welcome to the quiz!")
 
-    answer = await conv.choose("Question 1: Who created Python?", [
+    answer = await conv.choose("Question 1: Who is the creator of Python?", [
         "Guido van Rossum",
         "James Gosling",
         "Dennis Ritchie",
     ])
 
     if answer is None:
-        await conv.say("Timeout, please come back next time!")
+        await conv.say("Timed out, try again next time!")
         return
 
     if answer == 0:
         await conv.say("Correct!")
     else:
-        await conv.say("Wrong, the correct answer is Guido van Rossum")
+        await conv.say("Incorrect, the correct answer is Guido van Rossum")
 
     conv.stop()
 ```
@@ -5024,10 +5086,10 @@ async def quiz_handler(event):
 
 ### say(content, **kwargs)
 
-Send a message, returns `self` to support method chaining:
+Send a message, returning `self` to support method chaining:
 
 ```python
-await conv.say("First line").say("Second line").say("Third line")
+await conv.say("Line 1").say("Line 2").say("Line 3")
 ```
 
 You can also specify the sending method:
@@ -5038,7 +5100,7 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-Wait for user response, returns an `Event` object or `None` (timeout):
+Wait for user reply, returning an `Event` object or `None` (on timeout):
 
 ```python
 # Simple wait
@@ -5046,87 +5108,108 @@ resp = await conv.wait()
 if resp:
     text = resp.get_text()
 
-# Wait after sending prompt
+# Wait after sending a prompt
 resp = await conv.wait(prompt="Please enter your name:")
 
-# Use custom timeout (overrides conversation default)
+# Use custom timeout (overrides the conversation's default timeout)
 resp = await conv.wait(prompt="Please reply within 10 seconds:", timeout=10)
 ```
 
 ### confirm(prompt=None, **kwargs)
 
-Wait for user confirmation (yes/no), returns `True` / `False` / `None` (timeout):
+Wait for user confirmation (yes/no), returning `True` / `False` / `None` (on timeout):
 
 ```python
-result = await conv.confirm("确定要删除所有数据吗？")
+result = await conv.confirm("Are you sure you want to delete all data?")
 if result is True:
-    await conv.say("已删除")
+    await conv.say("Deleted")
 elif result is False:
-    await conv.say("已取消")
+    await conv.say("Cancelled")
 else:
-    await conv.say("超时未回复")
+    await conv.say("Timed out, no reply")
 ```
 
-Built-in recognized confirmation words: `是/yes/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
+Built-in recognized confirmation words: `yes/是/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
 
-Built-in recognized negation words: `否/no/n/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
+Built-in recognized denial words: `no/否/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
 
 ### choose(prompt, options, **kwargs)
 
-Wait for user to select from options, returns option index (0-based) or `None`:
+Wait for user selection from options, returning the option index (0-based) or `None`:
 
 ```python
-choice = await conv.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
+choice = await conv.choose("Please select a color:", ["Red", "Green", "Blue"])
 if choice is not None:
-    colors = ["红色", "绿色", "蓝色"]
-    await conv.say(f"你选择了 {colors[choice]}")
+    colors = ["Red", "Green", "Blue"]
+    await conv.say(f"You selected {colors[choice]}")
 ```
 
-Users can select by entering numbers (`1`/`2`/`3`) or option text (`红色`).
+Users can select by entering a number (`1`/`2`/`3`) or the option text (`Red`).
+
+`options_format="auto"` (default) automatically selects the built-in style based on method: Markdown→unordered list, Html→ordered list, others→plain text list.
+Also supports `"list"`, `"inline"`, `"md"`, `"html"`, or a custom function.
+
+Supports `merge_prompt=True` to merge into a single message, and placeholder control for option insertion position (default `{options}`, customizable via `placeholder`):
+
+```python
+choice = await conv.choose(
+    "## Please select\n{options}",
+    ["Option A", "Option B"],
+    method="Markdown",
+    merge_prompt=True,
+)
+
+# Custom placeholder
+choice = await conv.choose(
+    "Please select: [choices]",
+    ["Option A", "Option B"],
+    placeholder="[choices]",
+)
+```
 
 ### collect(fields, **kwargs)
 
-Multi-step information collection, returns a data dictionary or `None`:
+Collect information in multiple steps, returning a data dictionary or `None`:
 
 ```python
 data = await conv.collect([
-    {"key": "name", "prompt": "请输入姓名"},
-    {"key": "age", "prompt": "请输入年龄",
+    {"key": "name", "prompt": "Please enter your name"},
+    {"key": "age", "prompt": "Please enter your age",
      "validator": lambda e: e.get("alt_message", "").strip().isdigit(),
-     "retry_prompt": "年龄必须是数字，请重新输入"},
-    {"key": "city", "prompt": "请输入城市"},
+     "retry_prompt": "Age must be a number, please re-enter"},
+    {"key": "city", "prompt": "Please enter your city"},
 ])
 
 if data:
-    await conv.say(f"注册成功！\n姓名: {data['name']}\n年龄: {data['age']}\n城市: {data['city']}")
+    await conv.say(f"Registration successful!\nName: {data['name']}\nAge: {data['age']}\nCity: {data['city']}")
 else:
-    await conv.say("注册过程中断")
+    await conv.say("Registration interrupted")
 ```
 
 Field configuration:
 
-| Parameter | Description | Default Value |
-|-----------|-------------|---------------|
+| Parameter | Description | Default |
+|-----------|-------------|---------|
 | `key` | Field key name (required) | - |
-| `prompt` | Prompt message | `"请输入 {key}"` |
+| `prompt` | Prompt message | `"Please enter {key}"` |
 | `validator` | Validation function, receives Event, returns bool | None |
-| `retry_prompt` | Retry prompt on validation failure | `"输入无效，请重新输入"` |
-| `max_retries` | Maximum retry times | 3 |
+| `retry_prompt` | Retry prompt on validation failure | `"Invalid input, please re-enter"` |
+| `max_retries` | Maximum retry attempts | 3 |
 | `condition` | Condition function, receives collected data dict, returns bool | None |
 
-**Conditional Fields**: Using `condition` can implement dynamic forms, collecting a field only when the condition is met:
+**Conditional fields**: Use `condition` to implement dynamic forms, collecting only when the condition is met:
 
 ```python
 data = await conv.collect([
-    {"key": "has_car", "prompt": "你有车吗？（是/否）"},
-    {"key": "car_brand", "prompt": "请输入车型",
-     "condition": lambda d: d.get("has_car", "").lower() in ("是", "yes", "y")},
+    {"key": "has_car", "prompt": "Do you have a car? (yes/no)"},
+    {"key": "car_brand", "prompt": "Please enter the car model",
+     "condition": lambda d: d.get("has_car", "").lower() in ("yes", "y", "是")},
 ])
 ```
 
 ### stop()
 
-Manually end the conversation, sets `is_active` to `False`:
+Manually end the conversation, setting `is_active` to `False`:
 
 ```python
 conv.stop()
@@ -5138,24 +5221,24 @@ Whether the conversation is active:
 
 ```python
 if conv.is_active:
-    await conv.say("对话还在进行中")
+    await conv.say("The conversation is still ongoing")
 ```
 
 ## Active State Management
 
-The conversation automatically becomes inactive in the following situations:
+The conversation automatically becomes inactive in the following cases:
 
 1. The `stop()` method is called
-2. `wait()` times out and returns `None`
-3. `collect()` returns `None` due to any step timing out or retries being exhausted
+2. `wait()` returns `None` due to timeout
+3. `collect()` returns `None` due to timeout or exhausted retries
 
-After becoming inactive, all interaction methods (`wait`/`confirm`/`choose`/`collect`) will immediately return `None` without continuing to wait for user input.
+After becoming inactive, all interactive methods (`wait`/`confirm`/`choose`/`collect`) immediately return `None` without waiting for further user input.
 
-## Branches and Jumps
+## Branching and Navigation
 
 ### @conv.branch(name) Decorator
 
-Use `branch()` to register conversation branches and jump between them with `goto()`:
+Use `branch()` to register conversation branches and `goto()` to navigate between them:
 
 ```python
 @command("menu")
@@ -5164,7 +5247,7 @@ async def menu_handler(event):
 
     @conv.branch("main")
     async def main_menu():
-        await conv.say("=== 主菜单 ===\n1. 个人信息\n2. 设置\n3. 退出")
+        await conv.say("=== Main Menu ===\n1. Personal Info\n2. Settings\n3. Exit")
         resp = await conv.wait()
         if resp is None:
             return
@@ -5174,19 +5257,19 @@ async def menu_handler(event):
         elif text == "2":
             await conv.goto("settings")
         elif text == "3":
-            await conv.say("再见！")
+            await conv.say("Goodbye!")
             conv.stop()
 
     @conv.branch("profile")
     async def profile():
-        await conv.say("=== 个人信息 ===\n姓名: Alice\n0. 返回")
+        await conv.say("=== Personal Info ===\nName: Alice\n0. Back")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
 
     @conv.branch("settings")
     async def settings():
-        await conv.say("=== 设置 ===\n1. 通知开关\n0. 返回")
+        await conv.say("=== Settings ===\n1. Notification toggle\n0. Back")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
@@ -5196,18 +5279,18 @@ async def menu_handler(event):
 
 ### conv.start(name=None)
 
-Start the conversation, defaults to starting from the first registered branch:
+Start the conversation, defaulting from the first registered branch:
 
 ```python
 await conv.start()          # Start from the first branch
-await conv.start("settings") # Start from the specified branch
+await conv.start("settings") # Start from a specified branch
 ```
 
 ## Context and Persistence
 
 ### conv.context
 
-Each conversation instance has a built-in `context` dictionary for sharing state between branches:
+Each conversation instance has a built-in `context` dictionary to share state between branches:
 
 ```python
 @conv.branch("step1")
@@ -5217,25 +5300,25 @@ async def step1():
 
 @conv.branch("step2")
 async def step2():
-    name = conv.context.get("username", "未知")
-    await conv.say(f"你好，{name}！")
+    name = conv.context.get("username", "Unknown")
+    await conv.say(f"Hello, {name}!")
 ```
 
 ### save() / resume() / clear_saved()
 
-Conversation supports persistence and can be restored after timeout or interruption:
+Conversations support persistence, allowing recovery after timeout or interruption:
 
 ```python
 # Save conversation state
 conv_id = conv.save()
 # conv_id = "user_123_group_456"  # Auto-generated based on user and group
 
-# ... later in the same session ...
+# ... Later, resume in the same session ...
 conv2 = event.conversation()
 if conv2.resume():
-    await conv2.say("欢迎回来！继续之前的对话")
+    await conv2.say("Welcome back! Continuing the previous conversation")
 else:
-    await conv2.say("没有找到之前的对话")
+    await conv2.say("No previous conversation found")
 
 # Clear saved conversation
 conv.clear_saved()
@@ -5250,28 +5333,28 @@ conv.clear_saved()
 async def register_handler(event):
     conv = event.conversation(timeout=60)
 
-    await conv.say("欢迎注册！")
+    await conv.say("Welcome to registration!")
 
     data = await conv.collect([
-        {"key": "username", "prompt": "请输入用户名（3-20个字符）",
+        {"key": "username", "prompt": "Please enter a username (3-20 characters)",
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
-        {"key": "email", "prompt": "请输入邮箱地址",
+        {"key": "email", "prompt": "Please enter your email address",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
-         "retry_prompt": "邮箱格式不正确，请重新输入"},
+         "retry_prompt": "Invalid email format, please re-enter"},
     ])
 
     if not data:
-        await event.reply("注册已取消")
+        await event.reply("Registration cancelled")
         return
 
     confirmed = await conv.confirm(
-        f"确认注册信息？\n用户名: {data['username']}\n邮箱: {data['email']}"
+        f"Confirm registration details?\nUsername: {data['username']}\nEmail: {data['email']}"
     )
 
     if confirmed:
-        await conv.say("✅ 注册成功！")
+        await conv.say("✅ Registration successful!")
     else:
-        await conv.say("❌ 已取消注册")
+        await conv.say("❌ Registration cancelled")
 ```
 
 ### Looping Conversation
@@ -5280,31 +5363,31 @@ async def register_handler(event):
 @command("chat")
 async def chat_handler(event):
     conv = event.conversation(timeout=120)
-    await conv.say("进入对话模式，输入「退出」结束")
+    await conv.say("Entering conversation mode, type 'exit' to end")
 
     while conv.is_active:
         resp = await conv.wait()
         if resp is None:
-            await conv.say("超时，对话结束")
+            await conv.say("Timed out, conversation ended")
             break
 
         text = resp.get_text().strip()
 
-        if text == "退出":
-            await conv.say("再见！")
+        if text == "exit":
+            await conv.say("Goodbye!")
             conv.stop()
-        elif text == "帮助":
-            await conv.say("可用命令：退出、帮助、状态")
-        elif text == "状态":
-            await conv.say("对话活跃中")
+        elif text == "help":
+            await conv.say("Available commands: exit, help, status")
+        elif text == "status":
+            await conv.say("Conversation is active")
         else:
-            await conv.say(f"你说的是：{text}")
+            await conv.say(f"You said: {text}")
 ```
 
 ## Related Documentation
 
-- [Event Wrapper](../developer-guide/modules/event-wrapper.md) - All methods of the Event object
-- [Introduction to Event Handling](../getting-started/event-handling.md) - Event handling basics
+- [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - All methods of the Event object
+- [Getting Started with Event Handling](../getting-started/event-handling.md) - Basics of event handling
 
 
 ### MessageBuilder 详解
@@ -7065,33 +7148,33 @@ class Main(BaseModule):
 
 ### 懒加载系统
 
-# Lazy Loading Module System
+# Lazy-Loaded Module System
 
-The ErisPulse SDK provides a powerful lazy loading module system, allowing modules to be initialized only when actually needed, thereby significantly improving application startup speed and memory efficiency.
+The ErisPulse SDK provides a powerful lazy-loaded module system, which allows modules to be initialized only when they are actually needed, significantly improving application startup speed and memory efficiency.
 
 ## Overview
 
-The lazy loading module system is one of the core features of ErisPulse. It works through the following mechanisms:
+The lazy-loaded module system is one of the core features of ErisPulse. It works in the following ways:
 
-- **Delayed Initialization**: Modules are actually loaded and initialized only when they are accessed for the first time.
-- **Transparent Usage**: For developers, there is almost no difference in usage between lazy-loaded modules and ordinary modules.
-- **Automatic Dependency Management**: Module dependencies are automatically initialized when used.
-- **Lifecycle Support**: For modules inheriting from `BaseModule`, lifecycle methods are automatically called.
+- **Delayed Initialization**: Modules are only loaded and initialized when they are first accessed.
+- **Transparent Usage**: For developers, lazy-loaded modules are almost indistinguishable from regular modules in usage.
+- **Automatic Dependency Management**: Module dependencies are automatically initialized when they are used.
+- **Lifecycle Support**: For modules that inherit from `BaseModule`, lifecycle methods are automatically called.
 
-## How It Works
+## Working Principle
 
-### The LazyModule Class
+### LazyModule Class
 
-The core of the lazy loading system is the `LazyModule` class, which acts as a wrapper that actually initializes the module only upon first access.
+The core of the lazy-loading system is the `LazyModule` class, which acts as a wrapper that actually initializes the module only on the first access.
 
 ### Initialization Process
 
-When a module is accessed for the first time, `LazyModule` performs the following operations:
+When a module is first accessed, `LazyModule` performs the following operations:
 
 1. Retrieves the `__init__` parameter information of the module class.
-2. Decides whether to pass the `sdk` reference based on the parameters.
+2. Determines whether to pass the `sdk` reference based on the parameters.
 3. Sets the `moduleInfo` attribute of the module.
-4. For modules inheriting from `BaseModule`, calls the `on_load` method.
+4. For modules that inherit from `BaseModule`, calls the `on_load` method.
 5. Triggers the `module.init` lifecycle event.
 
 ## Configuring Lazy Loading
@@ -7105,9 +7188,9 @@ Enable/disable global lazy loading in the configuration file:
 enable_lazy_loading = true  # true=enable lazy loading (default), false=disable lazy loading
 ```
 
-### Module-level Control
+### Module-Level Control
 
-Modules can control their loading strategy by implementing the static method `get_load_strategy()`:
+Modules can control their loading strategy by implementing the `get_load_strategy()` static method:
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -7116,33 +7199,54 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """Return the module loading strategy"""
+        """Returns the module loading strategy"""
         return ModuleLoadStrategy(
-            lazy_load=False,  # Returning False means immediate loading
-            priority=100      # Loading priority, higher value means higher priority
+            lazy_load=False,  # Return False to indicate immediate loading
+            priority=100      # Loading priority, higher values have higher priority
         )
 ```
 
-## Using Lazy Loaded Modules
+## Using Lazy-Loaded Modules
 
 ### Basic Usage
 
-For developers, lazy-loaded modules are almost indistinguishable from ordinary modules in terms of usage:
+For developers, lazy-loaded modules are almost indistinguishable from regular modules in usage:
 
 ```python
-# Access lazy-loaded modules via SDK
+# Accessing lazy-loaded modules through SDK
 from ErisPulse import sdk
 
-# The following access will trigger module lazy loading
+# The following access triggers lazy loading of the module
 result = await sdk.my_module.my_method()
 ```
 
-### Asynchronous Initialization
+### Unified Module Access Entry
 
-For modules requiring asynchronous initialization, it is recommended to load them explicitly first:
+Regardless of whether you access through SDK properties, module manager properties, or via `module.get()`, for "registered but not yet loaded" lazy-loaded modules, the same lazy-loaded proxy will be returned. Accessing its properties will trigger initialization:
 
 ```python
-# Explicitly load the module first
+# All three methods return the same lazy-loaded proxy (when the module is not loaded), behavior is consistent and transparent to the user
+sdk.my_module          # Entry point that triggers loading
+sdk.module.my_module   # Also returns the lazy-loaded proxy
+sdk.module.get("my_module")  # Also returns the lazy-loaded proxy, itself does not trigger loading
+
+# Accessing any property of the proxy will actually initialize the module
+result = await sdk.my_module.my_method()
+```
+
+`module.get()` is a **query** interface and does not trigger loading by itself:
+- If the module is already loaded → returns the real instance
+- If the module is registered but not loaded → returns the lazy-loaded proxy (initialization occurs when accessing properties)
+- If the module is not registered → returns `None`
+
+To explicitly trigger loading, use `await sdk.load_module("my_module")`.
+
+### Asynchronous Initialization
+
+For modules that require asynchronous initialization, it is recommended to load them explicitly first:
+
+```python
+# First, explicitly load the module
 await sdk.load_module("my_module")
 
 # Then use the module
@@ -7151,39 +7255,38 @@ result = await sdk.my_module.my_method()
 
 ### Synchronous Initialization
 
-For modules that do not require asynchronous initialization, you can access them directly:
+For modules that do not require asynchronous initialization, you can directly access them:
 
 ```python
-# Direct access will automatically trigger synchronous initialization
+# Direct access will automatically initialize synchronously
 result = sdk.my_module.some_sync_method()
 ```
 
 ## Best Practices
 
-### Scenarios Recommended for Lazy Loading (lazy_load=True)
+### Recommended Scenarios for Lazy Loading (lazy_load=True)
 
-- Passively called utility classes
-- Passive class modules
+- Passive utility classes (such as data query modules, format converters, etc., which are only needed when called by other modules)
 
-### Scenarios Recommended for Disabling Lazy Loading (lazy_load=False)
+### Recommended Scenarios for Disabling Lazy Loading (lazy_load=False)
 
-- Modules registering triggers (e.g., command handlers, message handlers)
+- Modules that register triggers (such as command processors, message processors)
 - Lifecycle event listeners
 - Scheduled task modules
-- Modules that need to be initialized when the application starts
+- Modules that need to be initialized at application startup
 
-> The `priority` parameter controls the initialization order of modules that are loaded immediately; the higher the value, the earlier they are initialized. Modules with the same priority are loaded in registration order.
+> The `priority` parameter controls the initialization order among modules that are loaded immediately. Higher values are initialized first. Modules with the same priority are loaded in registration order.
 
 ## Notes
 
-1. If your module uses lazy loading, it will never be initialized if it is never called within ErisPulse by other modules.
-2. If your module includes components such as Event listeners, or other similar active monitoring modules, please be sure to declare that they need to be loaded immediately, otherwise it will affect the normal business logic of your module.
-3. We do not recommend disabling lazy loading; unless there are special requirements, doing so may lead to issues such as dependency management and lifecycle event problems.
+1. If your module uses lazy loading, and other modules never call it within ErisPulse, your module will never be initialized.
+2. If your module contains modules that listen to Events or other similar actively listening modules, be sure to declare that it needs to be loaded immediately, otherwise it may affect the normal operation of your module.
+3. We do not recommend disabling lazy loading unless there is a special requirement, otherwise it may cause issues such as dependency management and lifecycle events.
 
 ## Related Documentation
 
-- [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn to develop modules
-- [Best Practices](../developer-guide/modules/best-practices.md) - Learn more best practices
+- [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn how to develop modules
+- [Best Practices](../developer-guide/modules/best-practices.md) - Learn more about best practices
 
 
 ### 会话类型系统
