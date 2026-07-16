@@ -62,12 +62,56 @@
   ```
 
 
+---
 
+## [2.6.1] - 2026/07/16
+> 正式发布
+
+**版本摘要**
+2.6.1 是 ErisPulse 的维护增强版本，聚焦于三大方向：(1) 动态加载副作用消除与资源管理优化——`LazyModule` 重构（热路径日志移除、`__slots__` 内存优化、weakref 打破循环引用、缓存签名分析、初始化失败短路）；(2) 友好错误提示系统大幅扩展——覆盖 NameError/TypeError/RuntimeError/RecursionError/TimeoutError/ConnectionError 等多种场景，及 ErisPulse 自定义异常（`ClientConnectionError`/`HTTPStatusError`/`WebSocketDisconnect`）；(3) 交互式方法 `choose` 体验重写——尊重用户发送方法、自定义占位符、方法感知的选项智能样式（Markdown→无序列表，Html→手动编号列表）。
+
+**升级建议**
+- **建议升级**
+- 升级原因：
+  - 显著降低长期运行下的属性访问开销与 GC 压力
+  - `module.get()` 行为更直观，对已注册但未加载的模块不再返回 `None`
+  - 交互式方法 `choose` 的发送行为更可预期，支持自定义占位符与方法感知的内置样式
+  - 友好错误提示覆盖更多常见异常，加速调试
+
+**注意事项**
+- ⚠️ **管理器参数命名变更（非破坏性，附兼容层）**：`ModuleManager` / `AdapterManager` 重写 `ManagerBase` 的方法主参数名统一为 `name`（`register` 同时为 `class_type` / `info`）
+  - `module.get(module_name="x")` 等旧关键字调用**仍然可用**（已弃用，建议迁移到位置参数或 `name=`）
+  - 位置调用完全不受影响
+  - 涉及方法：`register` / `get` / `exists` / `is_running` / `is_enabled` / `enable` / `disable` / `unregister`，及 `ModuleManager` 的 `load` / `unload` / `is_loaded` / `get_info`
+- `module.get()` 对“已注册但未加载”的模块现返回懒加载代理；如需确认是否真正加载，请使用 `module.is_loaded()`
+- `LazyModule` 现使用 `__slots__`，实例上不再有 `__dict__`；自定义代码若依赖给 `LazyModule` 包装器动态挂属性会失败（应挂到真实模块实例上）
+- `options_format` 默认值改为 `"auto"`，根据 method 自动选择内置样式，旧代码中显式指定了 `options_format="list"` 的无需修改
+
+---
+
+## [2.6.1-dev.1] - 2026/07/16
+> 随正式版发布
+
+**版本摘要**
+2.6.1-dev.1 聚焦于交互式方法 `choose` 的发送行为重构，使其尊重用户传入的发送方法并支持占位符插入。
+
+### 优化
+
+- @wsu2059
+  - `Core/Event/wrapper.py` `choose` 交互式方法重构：
+    - 移除 `constants.py` 中旧的 `TEXT_BASED_METHODS` 硬编码集合，替换为 `TEXT_METHOD_INDICATORS`（大小写不敏感子串匹配：text/md/markdown/html/h5），文本类方法默认合并选项到末尾
+    - `merge_prompt=True` 时尊重用户传入的 `method`（如 Markdown/Html/Image），不再强制回退为 Text
+    - 新增 `placeholder` 参数（默认 `{options}`），用户可自定义选项插入占位符；设为空字符串则始终追加到末尾
+    - `collect` 的 field 字典同步支持 `placeholder` 键
+    - 新增 `_merge_prompt_options` / `_is_text_method` 辅助函数
+  - `Core/Event/wrapper.py` `_format_options` 增加方法感知的智能样式：
+    - `options_format="auto"`（新默认值）根据 method 自动选择内置样式：Markdown→无序列表（`- 1.选项`），Html→有序列表（`<ol>`），其他→纯文本列表
+    - 新增 `"md"` / `"html"` 格式选项，用户可显式指定样式
 
 ---
 
 ## [2.6.1-dev.0] - 2026/07/15
-> 开发版
+> 开发版本
 
 **版本摘要**
 2.6.1-dev.0 聚焦于动态加载的副作用消除与资源管理优化，并统一了管理器参数命名以符合 LSP 类型契约。主要包含三部分：(1) `LazyModule` 重构——移除热路径日志、`__slots__` 内存优化、weakref 打破循环引用、缓存签名分析、初始化失败短路；(2) 懒加载透明化——`module.get()` 对已注册但未加载的模块返回懒加载代理而非 `None`，补齐 `sdk.xxx` / `module.xxx` / `module.get()` 三条访问路径的一致性；(3) 管理器参数命名对齐基类 `ManagerBase`，消除 basedpyright `reportIncompatibleMethodOverride` 违规，并保留旧关键字参数兼容。

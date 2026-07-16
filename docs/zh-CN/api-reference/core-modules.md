@@ -235,7 +235,7 @@ sdk.adapter.get_status_summary()
 
 | 方法 | 说明 |
 |------|------|
-| `get(name)` | 获取模块实例 |
+| `get(name)` | 获取模块实例或懒加载代理（已注册但未加载时返回代理） |
 | `exists(name)` | 检查是否已注册 |
 | `is_loaded(name)` | 检查是否已加载 |
 | `is_enabled(name)` | 检查是否启用 |

@@ -420,9 +420,10 @@ RETCODE_OK: Final[int] = 0
 # 修改影响: 未指定 method 时默认发送文本消息。
 DEFAULT_SEND_METHOD: Final[str] = "Text"
 
-# 文本类发送方法集合：内容为纯文本，可拼接选项文本等内容。
-# 修改影响: Event.choose() 等交互式方法判断是否需要拆分消息。
-TEXT_BASED_METHODS: Final[frozenset] = frozenset({"Text", "Markdown", "Html"})
+# 文本类发送方法特征（大小写不敏感子串匹配）：方法名包含这些子串即为文本类，
+# 选项文本可直接拼接到末尾。设计原则：只要不是明确的富媒体就合并。
+# 使用位置: Core/Event/wrapper.py -> _is_text_method()
+TEXT_METHOD_INDICATORS: Final[tuple[str, ...]] = ("text", "markdown", "md", "html", "h5")
 
 # 默认发送目标类型（当无法从事件推断时的回退值）。
 # 修改影响: Send.To() 未指定类型时的目标推断。
