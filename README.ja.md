@@ -4,11 +4,11 @@
 
 # ErisPulse
 
-**一次编写，多平台部署。**
+**一次書き込み、多プラットフォーム展開。**
 
-イベント駆動型のマルチプラットフォームチャットボット開発フレームワーク。
+イベント駆動型の多プラットフォームチャットボット開発フレームワーク。
 
-OneBot12標準インターフェースに基づき、一度のコード作成で複数プラットフォームに展開可能。柔軟なプラグインシステム、ホットリロード対応、そして包括的な開発者ツールチェーンを備え、シンプルなチャットボットから複雑な自動化システムまで、あらゆるシナリオに対応します。
+OneBot12標準インターフェースに基づき、一度書くだけで複数のプラットフォームに展開できます。柔軟なプラグインシステム、ホットリロードのサポート、そして包括的な開発者ツールチェーンにより、シンプルなチャットボットから複雑な自動化システムまで、あらゆるシナリオに対応します。
 
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -44,17 +44,17 @@ OneBot12標準インターフェースに基づき、一度のコード作成で
 
 ### イベント駆動アーキテクチャ
 
-OneBot12標準に基づく明確なイベントモデルにより、メッセージ処理ロジックを直感的かつ効率的に実現します。
+OneBot12標準に基づく明確なイベントモデルにより、メッセージ処理ロジックをより直感的かつ効率的にします。
 
 </td>
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_cross_platform.png.png" width="50" alt="マルチプラットフォーム対応" />
+<img src=".github/assets/icon/icon_cross_platform.png.png" width="50" alt="多プラットフォーム互換性" />
 
-### マルチプラットフォーム対応
+### 多プラットフォーム互換性
 
-プラグインモジュールを一度書けば、すべてのプラットフォームで使用可能。異なるプラットフォームごとに再開発する必要がありません。
+プラグインモジュールを一度書けば、すべてのプラットフォームで使用可能。異なるプラットフォームごとに開発を繰り返す必要はありません。
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -64,7 +64,7 @@ OneBot12標準に基づく明確なイベントモデルにより、メッセー
 
 ### モジュール化設計
 
-柔軟なプラグインシステムにより、拡張や統合が容易で、ホットプラグイン管理が可能です。
+柔軟なプラグインシステムで、拡張や統合が容易。ホットプラグイン管理をサポートします。
 
 </td>
 </tr>
@@ -76,7 +76,7 @@ OneBot12標準に基づく明確なイベントモデルにより、メッセー
 
 ### ホットリロード
 
-開発中は再起動せずにコードを再読み込みできます。
+開発中にコードを再読み込みする際、再起動する必要がありません。
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -86,52 +86,52 @@ OneBot12標準に基づく明確なイベントモデルにより、メッセー
 
 ### AI支援
 
-AIによる開発支援により、要望を直接実用可能なモジュールに変換できます。
+AI支援開発により、要望を直ちに利用可能なモジュールに変換できます。
 
 </td>
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_lightweight.png" width="50" alt="シンプルで洗練された設計" />
+<img src=".github/assets/icon/icon_lightweight.png" width="50" alt="シンプルでエレガント" />
 
-### シンプルで洗練された設計
+### シンプルでエレガント
 
-直感的なAPI設計により、コードは羽毛のように軽く読みやすいです。
+直感的なAPI設計により、コードは羽毛のように軽やかで読みやすいです。
 
 </td>
 </tr>
 </table>
 
-### 鏈式送信DSL
+### チェーン送信DSL
 
-@ユーザー、返信、再試行、タイムアウト、コールバックなどの送信ロジックを1つのチェーンで実行できます：
+@ユーザー、返信、リトライ、タイムアウト、コールバックなどの送信ロジックをすべて1つのチェーン呼び出しで完了できます：
 
 ```python
 yunhu = sdk.adapter.get("yunhu")
 
-# 単発送信：@ユーザー + 返信 + 再試行 + 成功コールバック
+# 単発送信：@ユーザー + 返信 + リトライ + 成功コールバック
 await (yunhu.Send.To("group", "123")
        .At("456").Reply("msg_789")
        .Retry(3).Timeout(10)
        .Hook(lambda r: print("送信成功！"))
-       .Text("你好"))
+       .Text("こんにちは"))
 
-# バッチ送信：1つのチェーンで複数メッセージを送信
+# バッチ送信：1つのチェーンで複数のメッセージを送信
 results = await (yunhu.Send.To("user", "123")
                 .Build()
-                .Text("通知一")
+                .Text("通知1")
                 .Image("pic.jpg")
                 .Retry(2)
                 .send_all())
 ```
 
-> Hook（成功コールバック）、Retry（失敗再試行）、Timeout（タイムアウトキャンセル）、OnProgress（進行状況監視）、Defer（遅延送信）、Build（バッチ構築）などのチェーンメソッドがサポートされています。詳細は [SendDSLドキュメント](docs/ja/developer-guide/adapters/send-dsl.md) を参照してください。
+> Hook（成功コールバック）、Retry（失敗リトライ）、Timeout（タイムアウトキャンセル）、OnProgress（進行状況監視）、Defer（遅延送信）、Build（バッチ構築）などのチェーンメソッドがサポートされています。詳しくは [SendDSLドキュメント](docs/ja/developer-guide/adapters/send-dsl.md) を参照してください。
 
 ---
 
 ## 同じコード。複数のプラットフォーム。
 
-*完全に同じコマンドハンドラ。異なるプラットフォーム。ビジネスロジックを一切変更する必要はありません。*
+*まったく同じコマンドハンドラ。異なるプラットフォーム。ビジネスロジックを一切変更する必要はありません。*
 
 <table>
 <tr>
@@ -151,9 +151,9 @@ results = await (yunhu.Send.To("user", "123")
 </td>
 <td align="center" width="33%">
 
-**云湖**
+**Yunhu**
 
-<img src=".github/assets/demo-yunhu.png" alt="云湖デモ" />
+<img src=".github/assets/demo-yunhu.png" alt="Yunhuデモ" />
 
 </td>
 </tr>
@@ -163,7 +163,7 @@ results = await (yunhu.Send.To("user", "123")
 
 ## エコシステム
 
-ErisPulseは単なるフレームワークではありません。インストールしてすぐに使用でき、ゼロから車輪を作り直す必要はありません。
+ErisPulseは単なるフレームワークにとどまりません。インストールしてすぐに始められます。ゼロから車輪を作ることはありません。
 
 <table>
 <tr>
@@ -173,14 +173,14 @@ ErisPulseは単なるフレームワークではありません。インスト�
 
 コアランタイム
 
-統一されたイベント&メッセージモデル
+イベントとメッセージモデルの統一
 
 </td>
 <td align="center" width="25%">
 
 **ダッシュボード**
 
-ビジュアル管理
+可視化管理
 
 プラグイン・ログ・設定
 
@@ -191,27 +191,27 @@ ErisPulseは単なるフレームワークではありません。インスト�
 
 **AIビルダー**
 
-自然言語 → 実用可能なモジュール
+自然言語 → 利用可能なモジュール
 
-[体験する →](https://www.erisdev.com/#builder)
+[今すぐ体験 →](https://www.erisdev.com/#builder)
 
 </td>
 <td align="center" width="25%">
 
-**モジュールマーケット**
+**モジュール市場**
 
-即座に使用可能なプラグイン
+即座に使えるプラグイン
 
-[モジュールを見る →](https://www.erisdev.com/#market)
+[モジュールを閲覧 →](https://www.erisdev.com/#market)
 
 </td>
 </tr>
 <tr>
 <td align="center" width="25%">
 
-**アダプタ**
+**アダプター**
 
-15+のプラットフォーム対応
+15以上のプラットフォーム接続
 
 </td>
 <td align="center" width="25%">
@@ -225,7 +225,7 @@ ErisPulseは単なるフレームワークではありません。インスト�
 
 **Docker**
 
-多アーキテクチャ対応
+マルチアーキテクチャ対応
 
 `erispulse/erispulse`
 
@@ -242,27 +242,27 @@ ErisPulseは単なるフレームワークではありません。インスト�
 
 ---
 
-## プロジェクトの起源
+## 開発の起源
 
 ErisPulseは、フレームワークになるために生まれたわけではありません。
 
-それはもともと、**Amer**というプロジェクトから始まりました。これは、異なるプラットフォーム間でのメッセージの相互接続と同期を行うプロジェクトでした。
+それは、**Amer**というプロジェクトから始まりました。これは、異なるプラットフォーム間のメッセージの相互接続と同期を行うプロジェクトでした。
 
-接続するプラットフォームが増えるにつれ、**ryunhusdk2の非同期版**を維持し、統一されたイベントモデルとアダプタ体系を徐々に抽象化してきました。
+接続するプラットフォームが増えるにつれ、**ryunhusdk2の非同期版**を維持し、統一されたイベントモデルとアダプタ体系を徐々に抽象化するようになりました。
 
 これらの実践が、今日のErisPulseに進化しました。
 
-その目標は変わらず：
+その目的は、常に変わりませんでした：
 
-**開発者がプラットフォームの違いに煩わされることなく、業務に集中できるようにすること。**
+**開発者がプラットフォームの違いではなく、ビジネスに集中できるようにすること。**
 
 ---
 
 ### 速習
 
-#### 1クリックインストールスクリプト（推奨）
+#### 1ステップインストールスクリプト（推奨）
 
-インストールスクリプトは、環境（Docker、Python、uv）を自動検出し、最適なインストール方法を導き、多言語（日本語/English/日本語/Русский/繁體中文）をサポートします。
+インストールスクリプトは、環境（Docker、Python、uv）を自動的に検出し、最も適したインストール方法を導きます。多言語（中国語/English/日本語/Русский/繁体中国語）をサポートしています。
 
 Windows (PowerShell):
 ```powershell
@@ -302,13 +302,13 @@ docker pull erispulse/erispulse:latest
 <details>
 <summary>Docker Hubが利用できない？</summary>
 
-Docker Hubにアクセスできない場合は、GitHub Container Registryを使用できます。
+Docker Hubにアクセスできない場合は、GitHub Container Registryを使用できます：
 
 ```bash
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-ghcr.ioのイメージを使用する場合、`docker-compose.yml`のimageを変更する必要があります：
+ghcr.ioのイメージを使用する場合は、`docker-compose.yml`のimageを変更する必要があります：
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
 ```
@@ -322,11 +322,11 @@ image: ghcr.io/erispulse/erispulse:latest
 # docker-compose.ymlをダウンロード
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# Dashboardログイントークンを設定して起動
+# Dashboardのログイントークンを設定して起動
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-> イメージにはErisPulseフレームワークとDashboard管理パネルが含まれており、`linux/amd64`と`linux/arm64`アーキテクチャをサポートしています。
+> イメージにはErisPulseフレームワークとDashboard管理パネルが内蔵されており、`linux/amd64`と`linux/arm64`アーキテクチャをサポートしています。
 
 起動後、`http://<host>:<port>/Dashboard`にアクセスし、設定したトークンをパスワードとしてDashboard管理パネルにログインします。
 
@@ -335,23 +335,23 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 <details>
 <summary>開発版（Dev）を使用する</summary>
 
-`ERISPULSE_CHANNEL=dev`を設定することで、開発版を使用できます：
+`ERISPULSE_CHANNEL=dev`を設定することで開発版を使用できます：
 
 ```bash
-# 方式一：環境変数を使用（推奨）
+# 方式1：環境変数を使用（推奨）
 ERISPULSE_CHANNEL=dev ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
-# 方式二：Devイメージをビルド
+# 方式2：devイメージをビルド
 ERISPULSE_BUILD_TARGET=dev docker compose up -d --build
 ```
 
-起動時に最新バージョンに自動的に更新するには、`ERISPULSE_UPDATE_ON_START=true`を明示的に設定します：
+起動時に最新バージョンに自動更新する必要がある場合は、`ERISPULSE_UPDATE_ON_START=true`を明示的に設定します：
 
 ```bash
 ERISPULSE_CHANNEL=dev ERISPULSE_UPDATE_ON_START=true docker compose up -d
 ```
 
-または、事前ビルドされたDevイメージを取得することもできます：
+また、事前ビルドされたdevイメージを取得することもできます：
 
 ```bash
 docker pull erispulse/erispulse:dev
@@ -364,19 +364,19 @@ docker pull erispulse/erispulse:dev
 
 | 変数 | デフォルト値 | 説明 |
 |------|--------|------|
-| `ERISPULSE_CHANNEL` | `stable` | バージョンチャネル：`stable`（安定版）または `dev`（開発版） |
-| `ERISPULSE_UPDATE_ON_START` | `false` | コンテナ起動時に自動的に最新バージョンに更新するかどうか（明示的に有効化する必要あり） |
-| `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboardログイントークン |
-| `ERISPULSE_PORT` | `8000` | Dashboardポートマッピング |
+| `ERISPULSE_CHANNEL` | `stable` | バージョンチャンネル：`stable`（安定版）または `dev`（開発版） |
+| `ERISPULSE_UPDATE_ON_START` | `false` | コンテナ起動時に最新バージョンに自動更新するか（明示的に有効化する必要あり） |
+| `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboardのログイントークン |
+| `ERISPULSE_PORT` | `8000` | Dashboardのポートマッピング |
 | `TZ` | `Asia/Shanghai` | コンテナのタイムゾーン |
 
-> `ERISPULSE_UPDATE_ON_START=true`を有効にすることで、イメージが古い場合でも、コンテナの起動時に最新バージョンに自動的に更新されます。
+> `ERISPULSE_UPDATE_ON_START=true`を有効にすることで、イメージが古くても、コンテナ起動時に最新バージョンを自動的に取得できます。
 
 </details>
 
 #### 1Panelアプリストア
 
-[1Panel](https://1panel.cn)アプリストアからErisPulseをワンクリックでインストールできます。詳しくは[ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel)をご覧ください。
+[1Panel](https://1panel.cn)アプリストアからErisPulseをワンクリックでインストールできます。詳細は[ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel)を参照してください。
 
 ```bash
 bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
@@ -390,19 +390,19 @@ ErisPulseは1Panelのサードパーティアプリストアに登録されて�
 pip install ErisPulse
 ```
 
-> 上記のワンクリックインストールスクリプトを使用して、環境を自動検出し、設定を導くこともできます。
+> 上記のワンクリックインストールスクリプトを使用することもでき、環境を自動検出し、設定を導くことができます。
 
 #### プロジェクトの初期化
 
 ```bash
-# 対話形式で初期化
+# インタラクティブな初期化
 epsdk init
 
-# 名前を指定した高速初期化
+# ファスト初期化（プロジェクト名を指定）
 epsdk init -q -n my_bot
 ```
 
-#### 最初のボットを作成する
+#### 最初のロボットを作成する
 
 `main.py`ファイルを作成します：
 
@@ -418,12 +418,12 @@ from ErisPulse.Core.Event import command
 
 @command("hello", help="挨拶メッセージを送信")
 async def hello_handler(event):
-    user_name = event.get_user_nickname() or "朋友"
-    await event.reply(f"你好，{user_name}！")
+    user_name = event.get_user_nickname() or "友達"
+    await event.reply(f"こんにちは、{user_name}！")
 
-@command("ping", help="ボットがオンラインかテスト")
+@command("ping", help="ロボットがオンラインかテスト")
 async def ping_handler(event):
-    await event.reply("Pong！ボットは正常に動作しています。")
+    await event.reply("Pong！ロボットは正常に動作しています。")
 
 if __name__ == "__main__":
     import asyncio
@@ -433,17 +433,17 @@ if __name__ == "__main__":
 </td>
 <td width="50%" valign="top">
 
-**動作説明**
+**効果の説明**
 
 `/hello`を送信
 
-ボットは`你好，{ユーザー名}！`と返信します。
+ロボットが返信：`こんにちは、{ユーザー名}！`
 
 ---
 
 `/ping`を送信
 
-ボットは`Pong！ボットは正常に動作しています。`と返信します。
+ロボットが返信：`Pong！ロボットは正常に動作しています。`
 
 ---
 
@@ -459,13 +459,13 @@ epsdk run main.py --reload
 </tr>
 </table>
 
-詳細な説明は以下のドキュメントをご覧ください：
+詳細は以下のドキュメントを参照してください：
 - [速習ガイド](docs/ja/quick-start.md)
 - [入門ガイド](docs/ja/getting-started/)
 
-#### マルチラウンド対話の例
+#### 複数ラウンド対話の例
 
-ErisPulseには強力なマルチラウンド対話エンジンが内蔵されており、誘導型操作や情報収集などのインタラクティブなシナリオを簡単に実現できます：
+ErisPulseには強力な複数ラウンド対話エンジンが内蔵されており、誘導型操作、情報収集などのインタラクティブなシナリオを簡単に実現できます：
 
 ```python
 from ErisPulse.Core.Event import command, request
@@ -474,9 +474,9 @@ from ErisPulse.Core.Event import command, request
 async def register_handler(event):
     conv = event.conversation(timeout=60)
     
-    await conv.say("ようこそ登録！")
+    await conv.say("ようこそ登録へ！")
     
-    # 複数ステップでユーザー情報を収集し、自動で検証
+    # 複数ステップでユーザー情報を収集し、自動的に検証
     data = await conv.collect([
         {"key": "name", "prompt": "名前を入力してください"},
         {"key": "age", "prompt": "年齢を入力してください",
@@ -488,10 +488,10 @@ async def register_handler(event):
         # SendDSLを使用して通知を送信
         await sdk.adapter.get(event.get_platform()).Send.To(
             "user", event.get_user_id()
-        ).Text(f"登録成功！{data['name']}さん、ようこそ！")
-        # または await event.reply("登録成功！")
+        ).Text(f"登録に成功しました！{data['name']}さん、ようこそ")
+        # または await event.reply("登録に成功しました！")
 
-# フレンドリクエストの自動処理
+# フレンドリクエストを自動処理
 @request.on_friend_request()
 async def handle_friend_request(event):
     user_name = event.get_user_nickname() or event.get_user_id()
@@ -499,11 +499,11 @@ async def handle_friend_request(event):
     # リクエストを承認
     result = await event.approve()
     if result.get("status") == "ok":
-        await event.reply(f"自動でフレンドリクエストを承認しました。{user_name}さん、ようこそ！")
+        await event.reply(f"フレンドリクエストを自動的に承認しました。{user_name}さん、ようこそ")
 ```
 
 <details>
-<summary>Conversation APIの詳細（分岐/選択/永続化）</summary>
+<summary>Conversation APIの詳細（分岐/選択/永続化）をもっと見る</summary>
 
 ```python
 @command("quiz")
@@ -511,7 +511,7 @@ async def quiz_handler(event):
     conv = event.conversation(timeout=30)
     
     # 選択式の質問
-    answer = await conv.choose("Pythonの生みの親は誰ですか？", [
+    answer = await conv.choose("Pythonの作成者は誰ですか？", [
         "Guido van Rossum",
         "James Gosling", 
         "Dennis Ritchie",
@@ -520,7 +520,7 @@ async def quiz_handler(event):
     if answer == 0:
         await conv.say("正解です！")
     elif answer is None:
-        await conv.say("タイムアウトしました。次回お試しください！")
+        await conv.say("時間切れです。また次回お越しください！")
     else:
         await conv.say("間違っています。正解はGuido van Rossumです。")
 
@@ -528,10 +528,10 @@ async def quiz_handler(event):
 async def menu_handler(event):
     conv = event.conversation(timeout=60)
     
-    # 分岐遷移で複雑な対話フローを構築
+    # 分岐遷移で複雑なインタラクティブフローを構築
     @conv.branch("main")
     async def main_menu():
-        await conv.say("=== メインメニュー ===\n1. 情報\n2. 設定\n3. 終了")
+        await conv.say("=== メインメニュー ===\n1. 本人情報\n2. 設定\n3. 終了")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "1":
             await conv.goto("profile")
@@ -546,7 +546,7 @@ async def menu_handler(event):
     await conv.start()
 ```
 
-[Conversationマルチラウンド対話](docs/ja/advanced/conversation.md)を参照してください。
+[Conversation多ラウンド対話](docs/ja/advanced/conversation.md)を参照してください。
 
 </details>
 
@@ -554,36 +554,36 @@ async def menu_handler(event):
 
 ## 対応プラットフォーム
 
-アダプタの貢献をお待ちしています！
+アダプターの貢献をお待ちしています！
 
-| アダプタ | 説明 |
+| アダプター | 説明 |
 |--------|------|
-| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook（開黒啦）即時メッセージングプラットフォーム |
+| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook（開黒啦）リアルタイムメッセージングプラットフォーム |
 | <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix分散型通信プロトコル |
-| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 一般的なロボットプロトコル |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 一般ロボットプロトコル |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 標準プロトコル |
 | <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ公式ロボットプラットフォーム |
-| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | ウェブサイトのデバッグ用、実際のプラットフォームに接続する必要なし |
-| <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | 世界的な即時メッセージングプラットフォーム |
-| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | メールプロトコル送受信アダプタ |
-| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [云湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企業向け即時メッセージングプラットフォーム（ロボット接続） |
-| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [云湖用户](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 云湖ユーザープロトコルに基づく接続アダプタ |
+| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | ウェブ端末デバッグ、実際のプラットフォームに接続する必要なし |
+| <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | 世界的なリアルタイムメッセージングプラットフォーム |
+| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | メールプロトコル送受信アダプター |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企業向けリアルタイムメッセージングプラットフォーム（ロボット接続） |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhuユーザー](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | Yunhuユーザープロトコルに基づく接続アダプター |
 | [花枫咖啡馆](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
-| <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | 世界的なコミュニティコミュニケーションプラットフォーム、サーバー、チャンネル、プライベートメッセージをサポート |
-| <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | 一般的なHTTPブリッジアダプタ、任意のシステムに接続 |
-| <img src=".github/assets/adapter_logo/wechatmp.svg" height="20" alt="WechatMp" /> [微信公众号](https://github.com/ErisPulse/ErisPulse-WechatMpAdapter) | 微信公式公众号プラットフォーム |
+| <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | 世界的なコミュニティコミュニケーションプラットフォーム、サーバー、チャンネル、プライベートメッセージに対応 |
+| <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | 一般的なHTTPブリッジアダプター、任意のシステムに接続 |
+| <img src=".github/assets/adapter_logo/wechatmp.svg" height="20" alt="WechatMp" /> [WechatMp](https://github.com/ErisPulse/ErisPulse-WechatMpAdapter) | 微信公式公众号プラットフォーム |
 
-アダプタの詳細については[アダプタ紹介](docs/ja/platform-guide/README.md)をご覧ください。
+アダプターの詳細については、[アダプター紹介](docs/ja/platform-guide/README.md)を参照してください。
 
 ---
 
-### 応用シーン
+### 応用例
 
 <div align="center">
 
-| マルチプラットフォームロボット | チャットアシスタント | 自動化ツール | メッセージ転送 |
+| 多プラットフォームロボット | チャットアシスタント | 自動化ツール | メッセージ転送 |
 |:---:|:---:|:---:|:---:|
-| 複数プラットフォームに同じ機能のロボットを展開 | AIチャットモジュールを接続<br>エンターテイメントとインタラクションを実現 | メッセージ通知、タスク管理<br>データ収集 | 複数プラットフォーム間のメッセージ<br>同期と転送 |
+| 複数のプラットフォームに<br>同じ機能のロボットを展開 | AIチャットモジュールを接続<br>娯楽とインタラクションを実現 | メッセージ通知、タスク管理<br>データ収集 | 複数プラットフォーム間のメッセージ<br>同期と転送 |
 
 </div>
 
@@ -591,13 +591,13 @@ async def menu_handler(event):
 
 ## コミュニティ
 
-ErisPulseコミュニティに参加して、開発者一同でエコシステムを構築しましょう。
+ErisPulseコミュニティに参加し、開発者とともに交流し、エコシステムを構築しましょう。
 
-### 云湖
+### Yunhu
 
-グループID: `635409929`
+グループID：`635409929`
 
-グループチャットに参加:
+グループチャットに参加：
 
 https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199
 
@@ -613,26 +613,14 @@ https://t.me/ErisPulse
 
 ### 貢献ガイド
 
-ErisPulseプロジェクトの健全性には、皆様の力が必要です！さまざまな形での貢献を歓迎します：
+ErisPulseプロジェクトの健全性は、皆様の貢献によって支えられています！さまざまな形での貢献を歓迎します：
 
-1. **問題報告** — [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) にバグ報告を投稿
-2. **機能リクエスト** — [コミュニティディスカッション](https://github.com/ErisPulse/ErisPulse/discussions) で新アイデアを提案
-3. **コード貢献** — PRを提出する前に[コードスタイル](docs/ja/styleguide/)および[貢献ガイド](CONTRIBUTING.md)を確認してください
-4. **ドキュメント改善** — ドキュメントとサンプルコードを改善するのを手伝ってください
+1. **問題報告** — [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) でバグ報告を提出
+2. **機能リクエスト** — [コミュニティディスカッション](https://github.com/ErisPulse/ErisPulse/discussions) で新しいアイデアを提案
+3. **コード貢献** — PRを提出する前に[コードスタイル](docs/ja/styleguide/)および[貢献ガイド](CONTRIBUTING.md)を読んでください
+4. **ドキュメント改善** — ドキュメントとサンプルコードの改善を手伝ってください
 
 [コミュニティディスカッションに参加](https://github.com/ErisPulse/ErisPulse/discussions)
-
----
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=ErisPulse%2FErisPulse&type=timeline&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ErisPulse/ErisPulse&type=timeline&theme=dark&legend=top-left&sealed_token=dSxOL_p60ZstWJYFA6YhGk7dzLHnm5HUbvNqwYCJmAMHueCcrnwomVJn-q8VFHSEtBhhUIQ_FzUYAoLkGCI6x4BSL4YsnJGP68gYrSgLiMO162Ki6P6XDA" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ErisPulse/ErisPulse&type=timeline&legend=top-left&sealed_token=dSxOL_p60ZstWJYFA6YhGk7dzLHnm5HUbvNqwYCJmAMHueCcrnwomVJn-q8VFHSEtBhhUIQ_FzUYAoLkGCI6x4BSL4YsnJGP68gYrSgLiMO162Ki6P6XDA" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ErisPulse/ErisPulse&type=timeline&legend=top-left&sealed_token=dSxOL_p60ZstWJYFA6YhGk7dzLHnm5HUbvNqwYCJmAMHueCcrnwomVJn-q8VFHSEtBhhUIQ_FzUYAoLkGCI6x4BSL4YsnJGP68gYrSgLiMO162Ki6P6XDA" />
- </picture>
-</a>
 
 ---
 
@@ -642,13 +630,13 @@ ErisPulseプロジェクトの健全性には、皆様の力が必要です！�
 
 <img src=".github/assets/thanks.png" width="200" alt="感謝" />
 
-本プロジェクトの一部のコードは[sdkFrame](https://github.com/runoneall/sdkFrame)に基づいています。
+このプロジェクトの一部のコードは [sdkFrame](https://github.com/runoneall/sdkFrame) に基づいています。
 
-コアアダプタの標準化層は[OneBot12規格](https://12.onebot.dev/)を参考にしており、その恩恵を受けています。
+コアアダプターの標準化層は [OneBot12規格](https://12.onebot.dev/) を参考にしており、その恩恵を受けています。
 
-特に云湖エコシステムとコミュニティに感謝します。
+特にYunhuエコシステムとコミュニティに感謝します。
 
-ErisPulseの初期探索と成長は、云湖開発者コミュニティのサポートなくしては成り立ちません。多くのアイデア、アダプタ、実践的な経験がここから生まれました。
+ErisPulseの初期の探求と成長はYunhu開発者コミュニティのサポートに欠かせませんでした。多くのアイデア、アダプター、実践的な経験はここで生まれました。
 
 また、ErisPulse、OneBotエコシステム、およびオープンソースコミュニティに貢献したすべての開発者とプロジェクト作者に感謝します。
 
