@@ -35,7 +35,7 @@ from ..constants import (
     EVENT_TYPE_MESSAGE,
     EVENT_TYPE_NOTICE,
     EVENT_TYPE_REQUEST,
-    TEXT_BASED_METHODS,
+    TEXT_METHOD_INDICATORS,
 )
 from .session_type import (
     convert_to_send_type,
@@ -310,20 +310,74 @@ async def _builtin_confirm(
 def _format_options(
     options: list[str],
     fmt: str | Callable[[list[str]], str],
+    method: str = DEFAULT_SEND_METHOD,
 ) -> str:
     """
     格式化选项列表为文本
 
     :param options: 选项列表
-    :param fmt: 格式类型，支持 "list"、"inline" 或自定义函数
+    :param fmt: 格式类型，支持 "auto"（根据 method 自动选择）、"list"、"inline"、"md"、"html" 或自定义函数
+    :param method: 发送方法名，fmt="auto" 时用于推断合适的格式
     :return: 格式化后的选项文本
     """
     if callable(fmt):
         return fmt(options)
+
+    # auto：根据 method 选择内置样式
+    if fmt == "auto":
+        method_lower = method.lower()
+        if "md" in method_lower or "markdown" in method_lower:
+            fmt = "md"
+        elif "html" in method_lower or "h5" in method_lower:
+            fmt = "html"
+        else:
+            fmt = "list"
+
     if fmt == "inline":
         return " | ".join(f"{i + 1}.{opt}" for i, opt in enumerate(options))
+    if fmt == "md":
+        # Markdown 无序列表样式
+        return "\n".join(f"- {i + 1}. {opt}" for i, opt in enumerate(options))
+    if fmt == "html":
+        # Html 无序列表 + 手动编号（<ol> 在不同渲染器可能显示为罗马数字/字母）
+        items = "".join(f"<li>{i + 1}. {opt}</li>" for i, opt in enumerate(options))
+        return f"<ul>{items}</ul>"
     # 默认 "list"
     return "\n".join(f"{i + 1}. {opt}" for i, opt in enumerate(options))
+
+
+def _merge_prompt_options(
+    prompt: str,
+    options_text: str,
+    placeholder: str = "{options}",
+) -> str:
+    """
+    将选项文本合并到提示消息中
+
+    如果 prompt 包含占位符（默认 ``{options}``），则替换占位符；
+    否则将选项追加到 prompt 末尾（用换行分隔）。
+
+    :param prompt: 提示消息（可能包含占位符）
+    :param options_text: 已格式化的选项文本
+    :param placeholder: 占位符标记，prompt 中出现该标记的位置将被替换为选项文本
+    :return: 合并后的完整提示消息
+    """
+    if placeholder and placeholder in prompt:
+        return prompt.replace(placeholder, options_text)
+    return f"{prompt}\n{options_text}" if prompt else options_text
+
+def _is_text_method(method: str) -> bool:
+    """
+    判断发送方法是否为文本类（内容可拼接选项文本）
+
+    通过大小写不敏感的子串匹配：方法名包含 text/md/markdown/html/h5 即视为文本类。
+    设计原则是“只要不是明确的富媒体就合并”，减少拆分消息的情况。
+
+    :param method: 发送方法名
+    :return: True 表示该方法是文本类，选项可直接拼接到末尾
+    """
+    method_lower = method.lower()
+    return any(ind in method_lower for ind in TEXT_METHOD_INDICATORS)
 
 
 async def _builtin_choose(
@@ -332,18 +386,26 @@ async def _builtin_choose(
     options: list[str],
     timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
     method: str = DEFAULT_SEND_METHOD,
-    options_format: str | Callable[[list[str]], str] = "list",
+    options_format: str | Callable[[list[str]], str] = "auto",
     merge_prompt: bool = False,
+    placeholder: str = "{options}",
 ) -> Optional[int]:
     """
     内置 choose 实现
 
     供覆写函数调用以复用内置选择逻辑。
+
+    发送行为取决于 method 和 merge_prompt：
+    - 文本类方法 (Text/Markdown/md/Html/h5 等): 选项默认拼接到 prompt 末尾，一条消息发送
+    - 非文本方法 (Image/Voice 等) + merge_prompt=False: 先发富媒体 prompt，再发 Text 选项
+    - 任意方法 + merge_prompt=True: 强制合并为一条消息发送（用用户指定的 method）
+    - prompt 含占位符（默认 ``{options}``，可通过 placeholder 自定义）时，替换该位置；否则追加到末尾
+    - options_format="auto" 时根据 method 自动选择内置样式（Markdown→无序列表，Html→有序列表）
     """
     if not options:
         raise ValueError("选项列表不能为空")
 
-    options_text = _format_options(options, options_format)
+    options_text = _format_options(options, options_format, method)
 
     index_map = {str(i + 1): i for i in range(len(options))}
     lower_text_map = {opt.lower(): i for i, opt in enumerate(options)}
@@ -353,20 +415,18 @@ async def _builtin_choose(
         text = event_dict.get("alt_message", "").strip().lower()
         return text in valid_inputs
 
-    if method in TEXT_BASED_METHODS or merge_prompt:
-        # 文本类方法：拼接后一条消息发送
-        # merge_prompt=True 时非文本方法也合并为一条 Text 消息
-        send_method = method if method in TEXT_BASED_METHODS else DEFAULT_SEND_METHOD
-        full_prompt = f"{prompt}\n{options_text}" if prompt else options_text
+    if _is_text_method(method) or merge_prompt:
+        # 文本类方法 或 强制合并：选项拼入 prompt，用用户指定的 method 一条消息发送
+        full_prompt = _merge_prompt_options(prompt, options_text, placeholder) if prompt else options_text
         result = await _builtin_wait_reply(
             event,
             prompt=full_prompt,
             timeout=timeout,
             validator=validator,
-            method=send_method,
+            method=method,
         )
     else:
-        # 非文本方法：先发富媒体，再发 Text 选项列表
+        # 非文本方法：先发 prompt（用用户的 method），再发选项（用 Text）
         if prompt:
             await event.reply(prompt, method=method)
         result = await _builtin_wait_reply(
@@ -418,8 +478,9 @@ async def _builtin_collect(
         max_retries = field.get("max_retries", DEFAULT_MAX_RETRIES)
         method = field.get("method", DEFAULT_SEND_METHOD)
         options = field.get("options")
-        options_format = field.get("options_format", "list")
+        options_format = field.get("options_format", "auto")
         merge_prompt = field.get("merge_prompt", False)
+        placeholder = field.get("placeholder", "{options}")
 
         if options:
             reply = await _builtin_choose(
@@ -430,6 +491,7 @@ async def _builtin_collect(
                 method=method,
                 options_format=options_format,
                 merge_prompt=merge_prompt,
+                placeholder=placeholder,
             )
             if reply is None:
                 return None
@@ -1274,8 +1336,9 @@ class Event(dict):
         options: list[str],
         timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
         method: str = DEFAULT_SEND_METHOD,
-        options_format: str | Callable[[list[str]], str] = "list",
+        options_format: str | Callable[[list[str]], str] = "auto",
         merge_prompt: bool = False,
+        placeholder: str = "{options}",
     ) -> Optional[int]:
         """
         等待用户从选项中选择
@@ -1283,37 +1346,47 @@ class Event(dict):
         自动发送编号选项列表，用户可回复编号或选项文本。
 
         发送行为取决于 method 和 merge_prompt：
-        - 文本类方法 (Text/Markdown/Html): 选项拼接到 prompt 后一条消息发送
-        - 非文本方法 + merge_prompt=False (默认): 先发富媒体，再单独发 Text 选项
-        - 非文本方法 + merge_prompt=True: 合并为一条 Text 消息发送
+        - 文本类方法 (Text/Markdown/md/Html/h5 等): 选项默认拼接到 prompt 末尾，一条消息发送
+        - 非文本方法 (Image/Voice 等) + merge_prompt=False (默认): 先发富媒体 prompt，再发 Text 选项
+        - 任意方法 + merge_prompt=True: 强制合并为一条消息发送（用用户指定的 method）
+        - prompt 含占位符（默认 ``{options}``，可通过 placeholder 自定义）时，替换该位置；否则追加到末尾
 
-        :param prompt: str - 提示消息（必须）
+        :param prompt: str - 提示消息（必须）。可含占位符指定选项插入位置
         :param options: list[str] - 选项列表（不能为空）
         :param timeout: float - 超时时间(秒)（默认: 60.0）
-        :param method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
-        :param options_format: str|callable - 选项格式（默认: "list"）
+        :param method: str - 发送方法（默认: "Text"）
+        :param options_format: str|callable - 选项格式（默认: "auto"，根据 method 自动选择内置样式）
+            - "auto": 根据 method 自动选择（Markdown→无序列表，Html→有序列表，其他→纯文本列表）
             - "list": 每行一个，如 ``1. 选项A\n2. 选项B``
             - "inline": 单行展示，如 ``1.选项A | 2.选项B``
+            - "md": Markdown 无序列表，如 ``- 1. 选项A\n- 2. 选项B``
+            - "html": Html 有序列表，如 ``<ol><li>1. 选项A</li>...</ol>``
             - callable: 自定义函数，接收 ``list[str]`` 返回 ``str``
-        :param merge_prompt: bool - 非文本方法时是否强制合并为一条 Text 消息（默认: False）
+        :param merge_prompt: bool - 是否合并为一条消息（默认: False）
+            合并时使用用户指定的 method（如 Markdown/Html/Image 等），尊重用户选择
+        :param placeholder: str - 选项插入占位符（默认: ``{options}``），
+            prompt 中出现该标记的位置将被替换为选项文本；设为空字符串则始终追加到末尾
         :return: int|None - 选中选项的索引(0-based), 超时返回 None
 
         :raises ValueError: 当 options 为空时
 
         :example:
-        >>> # 基本用法
+        >>> # 基本用法（prompt 和选项分两条消息）
         >>> choice = await event.choose("请选择颜色:", ["红", "绿", "蓝"])
-        >>> # 内联格式
-        >>> choice = await event.choose("请选择:", ["A", "B"], options_format="inline")
-        >>> # 自定义格式
+        >>> # 合并模式：用 Markdown 一条消息发送
         >>> choice = await event.choose("请选择:", ["A", "B"],
-        ...     options_format=lambda opts: " / ".join(opts))
-        >>> # 发送图片提示 + 合并选项到文本
-        >>> choice = await event.choose("看图选择:", ["猫", "狗"],
-        ...     method="Image", merge_prompt=True)
+        ...     method="Markdown", merge_prompt=True)
+        >>> # 占位符：控制选项插入位置
+        >>> choice = await event.choose(
+        ...     "## 任务选择\n{options}\n请回复编号",
+        ...     ["下载", "上传"], method="Markdown", merge_prompt=True)
+        >>> # 自定义占位符
+        >>> choice = await event.choose(
+        ...     "请选择: [choices]",
+        ...     ["A", "B"], placeholder="[choices]")
         """
         return await _builtin_choose(
-            self, prompt, options, timeout, method, options_format, merge_prompt
+            self, prompt, options, timeout, method, options_format, merge_prompt, placeholder
         )
 
     async def collect(
@@ -1334,8 +1407,9 @@ class Event(dict):
             - max_retries: int - 最大重试次数（默认: 3）
             - method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
             - options: list[str] - 可选值列表，提供时该字段变为选择题（可选）
-            - options_format: str|callable - 选项格式（默认: "list"，详见 choose()）
-            - merge_prompt: bool - 非文本方法时是否合并为一条消息（默认: False）
+            - options_format: str|callable - 选项格式（默认: "auto"，详见 choose()）
+            - merge_prompt: bool - 是否合并为一条消息（默认: False）
+            - placeholder: str - 选项插入占位符（默认: "{options}"，详见 choose()）
         :param timeout_per_field: float - 每个字段的超时时间(秒)（默认: 60.0）
         :return: dict|None - 收集到的数据字典, 任何步骤超时或重试耗尽返回 None
 
