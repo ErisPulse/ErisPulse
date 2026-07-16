@@ -128,7 +128,7 @@
               "level": 1
             },
             {
-              "title": "Подробное объяснение класса обертки Event",
+              "title": "Подробное объяснение класса Event",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1
             },
@@ -268,7 +268,7 @@
           "level": 1
         },
         {
-          "title": "API ядра",
+          "title": "API ядра модуля",
           "path": "api-reference/core-modules.md",
           "level": 1
         },
@@ -315,7 +315,7 @@
           "level": 1
         },
         {
-          "title": "Многопроходный диалог (Conversation)",
+          "title": "Conversation Многошаговый диалог",
           "path": "advanced/conversation.md",
           "level": 1
         },

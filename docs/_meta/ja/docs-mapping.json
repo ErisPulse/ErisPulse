@@ -128,7 +128,7 @@
               "level": 1
             },
             {
-              "title": "Event 包装类详解",
+              "title": "Event 包装クラスの詳細解説",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1
             },
@@ -315,7 +315,7 @@
           "level": 1
         },
         {
-          "title": "Conversation 多層会話",
+          "title": "Conversation 多輪対話",
           "path": "advanced/conversation.md",
           "level": 1
         },
