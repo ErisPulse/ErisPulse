@@ -97,12 +97,12 @@ TOML 格式的配置文件管理，支援點號分隔的鍵路徑。
 | 方法 | 說明 |
 |------|------|
 | `getConfig(key, default)` | 讀取配置，支援點號路徑如 `"MyModule.subkey"` |
-| `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即保存到文件 |
-| `force_save()` | 強制將記憶體中的配置寫入文件 |
-| `reload()` | 從文件重新載入配置 |
+| `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即儲存到檔案 |
+| `force_save()` | 強制將記憶體中的配置寫入檔案 |
+| `reload()` | 從檔案重新載入配置 |
 | `agetConfig(key, default)` | 異步讀取配置 |
 | `asetConfig(key, value, immediate)` | 異步寫入配置 |
-| `aforce_save()` | 異步強制保存 |
+| `aforce_save()` | 異步強制儲存 |
 | `areload()` | 異步重新載入 |
 
 ### 範例
@@ -115,7 +115,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` 預設採用延遲寫入（每 5 秒批量保存），設定 `immediate=True` 可立即持久化到配置文件。配置變更會觸發 `config.set` 生命週期事件。
+> `setConfig` 預設採用延遲寫入（每 5 秒批量儲存），設定 `immediate=True` 可立即持久化到配置檔案。配置變更會觸發 `config.set` 生命週期事件。
 
 ## Logger 模組
 
@@ -143,7 +143,7 @@ child_logger.get_child("utils")  # 支援嵌套
 ### 日誌級別控制
 
 ```python
-sdk.logger.set_level("DEBUG")                          # 全域級別
+sdk.logger.set_level("DEBUG")                          # 全局級別
 sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組級別
 
 # 支援的級別（從低到高）：
@@ -235,7 +235,7 @@ sdk.adapter.get_status_summary()
 
 | 方法 | 說明 |
 |------|------|
-| `get(name)` | 獲取模組實例 |
+| `get(name)` | 獲取模組實例或懶載入代理（已註冊但未載入時返回代理） |
 | `exists(name)` | 檢查是否已註冊 |
 | `is_loaded(name)` | 檢查是否已載入 |
 | `is_enabled(name)` | 檢查是否啟用 |
@@ -315,7 +315,7 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client 模組
 
-統一網路客戶端，聚合 HTTP 請求、WebSocket 連線、連線池管理、自動重試、請求統計和生命週期事件集成。
+統一網路客戶端，聚合 HTTP 請求、WebSocket 連接、連接池管理、自動重試、請求統計和生命週期事件整合。
 
 > 完整的網路客戶端文件（請求方法、回應物件、WebSocket 客戶端、例外體系等）請參考 [網路客戶端](../advanced/http-client.md)。
 
@@ -338,7 +338,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-匯出框架目前運行狀態的快照，用於調試和診斷。
+導出框架當前運行狀態的快照，用於調試和診斷。
 
 ```python
 import json

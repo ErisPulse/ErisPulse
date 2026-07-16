@@ -121,21 +121,55 @@ ErisPulse 事件包装类
 ---
 
 
-### `_format_options(options: list[str], fmt: str | Callable[[list[str]], str])`
+### `_format_options(options: list[str], fmt: str | Callable[[list[str]], str], method: str = DEFAULT_SEND_METHOD)`
 
 格式化选项列表为文本
 
-- **options** (`选项列表`): - **fmt**: 格式类型，支持 "list"、"inline" 或自定义函数
+- **options** (`选项列表`): - **fmt**: 格式类型，支持 "auto"（根据 method 自动选择）、"list"、"inline"、"md"、"html" 或自定义函数
+- **method** (`发送方法名，fmt="auto"`): 时用于推断合适的格式
 **返回值**: 格式化后的选项文本
 
 ---
 
 
-### `async _builtin_choose(event: 'Event', prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'list', merge_prompt: bool = False)`
+### `_merge_prompt_options(prompt: str, options_text: str, placeholder: str = '{options}')`
+
+将选项文本合并到提示消息中
+
+如果 prompt 包含占位符（默认 ``{options}``），则替换占位符；
+否则将选项追加到 prompt 末尾（用换行分隔）。
+
+- **prompt** (`提示消息（可能包含占位符）`): - **options_text**: 已格式化的选项文本
+- **placeholder** (`占位符标记，prompt`): 中出现该标记的位置将被替换为选项文本
+**返回值**: 合并后的完整提示消息
+
+---
+
+
+### `_is_text_method(method: str)`
+
+判断发送方法是否为文本类（内容可拼接选项文本）
+
+通过大小写不敏感的子串匹配：方法名包含 text/md/markdown/html/h5 即视为文本类。
+设计原则是“只要不是明确的富媒体就合并”，减少拆分消息的情况。
+
+- **method** (`发送方法名`): **返回值** (`True`): 表示该方法是文本类，选项可直接拼接到末尾
+
+---
+
+
+### `async _builtin_choose(event: 'Event', prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'auto', merge_prompt: bool = False, placeholder: str = '{options}')`
 
 内置 choose 实现
 
 供覆写函数调用以复用内置选择逻辑。
+
+发送行为取决于 method 和 merge_prompt：
+- 文本类方法 (Text/Markdown/md/Html/h5 等): 选项默认拼接到 prompt 末尾，一条消息发送
+- 非文本方法 (Image/Voice 等) + merge_prompt=False: 先发富媒体 prompt，再发 Text 选项
+- 任意方法 + merge_prompt=True: 强制合并为一条消息发送（用用户指定的 method）
+- prompt 含占位符（默认 ``{options}``，可通过 placeholder 自定义）时，替换该位置；否则追加到末尾
+- options_format="auto" 时根据 method 自动选择内置样式（Markdown→无序列表，Html→有序列表）
 
 ---
 
@@ -810,42 +844,55 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async choose(prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'list', merge_prompt: bool = False)`
+##### `async choose(prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'auto', merge_prompt: bool = False, placeholder: str = '{options}')`
 
 等待用户从选项中选择
 
         自动发送编号选项列表，用户可回复编号或选项文本。
 
         发送行为取决于 method 和 merge_prompt：
-        - 文本类方法 (Text/Markdown/Html): 选项拼接到 prompt 后一条消息发送
-        - 非文本方法 + merge_prompt=False (默认): 先发富媒体，再单独发 Text 选项
-        - 非文本方法 + merge_prompt=True: 合并为一条 Text 消息发送
+        - 文本类方法 (Text/Markdown/md/Html/h5 等): 选项默认拼接到 prompt 末尾，一条消息发送
+        - 非文本方法 (Image/Voice 等) + merge_prompt=False (默认): 先发富媒体 prompt，再发 Text 选项
+        - 任意方法 + merge_prompt=True: 强制合并为一条消息发送（用用户指定的 method）
+        - prompt 含占位符（默认 ``{options}``，可通过 placeholder 自定义）时，替换该位置；否则追加到末尾
 
-        - **prompt** (`str`): - 提示消息（必须）
+        - **prompt** (`str`): - 提示消息（必须）。可含占位符指定选项插入位置
         - **options** (`list[str]`): - 选项列表（不能为空）
         - **timeout** (`float`): - 超时时间(秒)（默认: 60.0）
-        - **method** (`str`): - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
-        - **options_format** (`str|callable`): - 选项格式（默认: "list"）
+        - **method** (`str`): - 发送方法（默认: "Text"）
+        - **options_format** (`str|callable`): - 选项格式（默认: "auto"，根据 method 自动选择内置样式）
+            - "auto": 根据 method 自动选择（Markdown→无序列表，Html→有序列表，其他→纯文本列表）
             - "list": 每行一个，如 ``1. 选项A
 2. 选项B``
             - "inline": 单行展示，如 ``1.选项A | 2.选项B``
+            - "md": Markdown 无序列表，如 ``- 1. 选项A
+- 2. 选项B``
+            - "html": Html 有序列表，如 ``<ol><li>1. 选项A</li>...</ol>``
             - callable: 自定义函数，接收 ``list[str]`` 返回 ``str``
-        - **merge_prompt** (`bool`): - 非文本方法时是否强制合并为一条 Text 消息（默认: False）
+        - **merge_prompt** (`bool`): - 是否合并为一条消息（默认: False）
+            合并时使用用户指定的 method（如 Markdown/Html/Image 等），尊重用户选择
+        - **placeholder** (`str`): - 选项插入占位符（默认: ``{options}``），
+            prompt 中出现该标记的位置将被替换为选项文本；设为空字符串则始终追加到末尾
         **返回值** (`int|None`): - 选中选项的索引(0-based), 超时返回 None
 
         **异常**: `ValueError` - 当 options 为空时
 
         :example:
-        >>> # 基本用法
+        >>> # 基本用法（prompt 和选项分两条消息）
         >>> choice = await event.choose("请选择颜色:", ["红", "绿", "蓝"])
-        >>> # 内联格式
-        >>> choice = await event.choose("请选择:", ["A", "B"], options_format="inline")
-        >>> # 自定义格式
+        >>> # 合并模式：用 Markdown 一条消息发送
         >>> choice = await event.choose("请选择:", ["A", "B"],
-        ...     options_format=lambda opts: " / ".join(opts))
-        >>> # 发送图片提示 + 合并选项到文本
-        >>> choice = await event.choose("看图选择:", ["猫", "狗"],
-        ...     method="Image", merge_prompt=True)
+        ...     method="Markdown", merge_prompt=True)
+        >>> # 占位符：控制选项插入位置
+        >>> choice = await event.choose(
+        ...     "## 任务选择
+{options}
+请回复编号",
+        ...     ["下载", "上传"], method="Markdown", merge_prompt=True)
+        >>> # 自定义占位符
+        >>> choice = await event.choose(
+        ...     "请选择: [choices]",
+        ...     ["A", "B"], placeholder="[choices]")
 
 ---
 
@@ -864,8 +911,9 @@ OneBot12 标准事件数据结构
     - max_retries: int - 最大重试次数（默认: 3）
     - method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
     - options: list[str] - 可选值列表，提供时该字段变为选择题（可选）
-    - options_format: str|callable - 选项格式（默认: "list"，详见 choose()）
-    - merge_prompt: bool - 非文本方法时是否合并为一条消息（默认: False）
+    - options_format: str|callable - 选项格式（默认: "auto"，详见 choose()）
+    - merge_prompt: bool - 是否合并为一条消息（默认: False）
+    - placeholder: str - 选项插入占位符（默认: "{options}"，详见 choose()）
 - **timeout_per_field** (`float`): - 每个字段的超时时间(秒)（默认: 60.0）
 **返回值** (`dict|None`): - 收集到的数据字典, 任何步骤超时或重试耗尽返回 None
 

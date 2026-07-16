@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1330,
+  "total_keywords": 1325,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -107,7 +107,7 @@
     "1. Exception Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 585,
+        "line": 602,
         "level": 3,
         "title": "1. Exception Handling"
       }
@@ -581,7 +581,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 603,
+        "line": 620,
         "level": 3,
         "title": "2. Logging"
       }
@@ -909,7 +909,7 @@
     "3. Conditional Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 619,
+        "line": 636,
         "level": 3,
         "title": "3. Conditional Handling"
       }
@@ -1835,7 +1835,7 @@
     "@conv.branch(name) Decorator": [
       {
         "document": "advanced/conversation.md",
-        "line": 169,
+        "line": 190,
         "level": 3,
         "title": "@conv.branch(name) Decorator"
       }
@@ -1992,14 +1992,6 @@
         "title": "Accessing Core Modules"
       }
     ],
-    "Accessing Event Data": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 506,
-        "level": 2,
-        "title": "Accessing Event Data"
-      }
-    ],
     "Accessing from SDK Instance": [
       {
         "document": "advanced/i18n.md",
@@ -2097,7 +2089,7 @@
     "Active State Management": [
       {
         "document": "advanced/conversation.md",
-        "line": 157,
+        "line": 178,
         "level": 2,
         "title": "Active State Management"
       }
@@ -2248,12 +2240,12 @@
         "title": "Adapter System API"
       }
     ],
-    "Adapter: Register Platform Extension Methods": [
+    "Adapter: Registering Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 496,
+        "line": 502,
         "level": 3,
-        "title": "Adapter: Register Platform Extension Methods"
+        "title": "Adapter: Registering Platform Extension Methods"
       }
     ],
     "AdapterManager Adapter Manager": [
@@ -2836,14 +2828,6 @@
         "title": "Batch Operations"
       }
     ],
-    "Batch Registration (Mixin Class)": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 516,
-        "level": 4,
-        "title": "Batch Registration (Mixin Class)"
-      }
-    ],
     "Batch Rules and Callbacks": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -2910,14 +2894,6 @@
         "line": 67,
         "level": 2,
         "title": "Best Practices"
-      }
-    ],
-    "Best Practices for Event Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 583,
-        "level": 2,
-        "title": "Best Practices for Event Handling"
       }
     ],
     "Blacklist Filtering": [
@@ -3016,12 +2992,12 @@
         "title": "Bot does not respond?"
       }
     ],
-    "Branches and Jumps": [
+    "Branching and Navigation": [
       {
         "document": "advanced/conversation.md",
-        "line": 167,
+        "line": 188,
         "level": 2,
-        "title": "Branches and Jumps"
+        "title": "Branching and Navigation"
       }
     ],
     "Browsing and Discovery": [
@@ -3043,7 +3019,7 @@
     "Built-in Confirmation Words": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 499,
+        "line": 516,
         "level": 3,
         "title": "Built-in Confirmation Words"
       }
@@ -3450,6 +3426,14 @@
         "title": "Code Quality"
       }
     ],
+    "Collecting Form (collect)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 448,
+        "level": 3,
+        "title": "Collecting Form (collect)"
+      }
+    ],
     "Combined Modifiers": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3474,10 +3458,18 @@
         "title": "Command Aliases"
       }
     ],
+    "Command Arguments": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 97,
+        "level": 3,
+        "title": "Command Arguments"
+      }
+    ],
     "Command Basics": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 313,
+        "line": 352,
         "level": 4,
         "title": "Command Basics"
       }
@@ -3498,6 +3490,14 @@
         "title": "Command Decorator"
       }
     ],
+    "Command Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 66,
+        "level": 2,
+        "title": "Command Event Handling"
+      }
+    ],
     "Command Groups": [
       {
         "document": "getting-started/event-handling.md",
@@ -3506,24 +3506,22 @@
         "title": "Command Groups"
       }
     ],
-    "Command Info": [
+    "Command Information": [
       {
         "document": "api-reference/event-system.md",
         "line": 41,
         "level": 3,
-        "title": "Command Info"
+        "title": "Command Information"
       },
       {
         "document": "api-reference/event-system.md",
         "line": 303,
         "level": 3,
-        "title": "Command Info"
-      }
-    ],
-    "Command Information": [
+        "title": "Command Information"
+      },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 311,
+        "line": 350,
         "level": 3,
         "title": "Command Information"
       }
@@ -3536,22 +3534,6 @@
         "title": "Command Information Retrieval"
       }
     ],
-    "Command Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 5,
-        "level": 2,
-        "title": "Command Module"
-      }
-    ],
-    "Command Parameters": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 97,
-        "level": 3,
-        "title": "Command Parameters"
-      }
-    ],
     "Command Permissions": [
       {
         "document": "getting-started/event-handling.md",
@@ -3560,12 +3542,12 @@
         "title": "Command Permissions"
       }
     ],
-    "Command Priorities": [
+    "Command Priority": [
       {
         "document": "getting-started/event-handling.md",
         "line": 136,
         "level": 3,
-        "title": "Command Priorities"
+        "title": "Command Priority"
       }
     ],
     "Command System": [
@@ -3574,6 +3556,14 @@
         "line": 149,
         "level": 3,
         "title": "Command System"
+      }
+    ],
+    "Command 命令模块": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 5,
+        "level": 2,
+        "title": "Command 命令模块"
       }
     ],
     "Common CSS Class Names": [
@@ -3600,14 +3590,6 @@
         "title": "Common Configuration Locations"
       }
     ],
-    "Common Event Object Methods": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 508,
-        "level": 3,
-        "title": "Common Event Object Methods"
-      }
-    ],
     "Common Fields (All Event Types)": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -3628,6 +3610,14 @@
         "line": 157,
         "level": 2,
         "title": "Common Issues"
+      }
+    ],
+    "Common Methods of the Event Object": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 525,
+        "level": 3,
+        "title": "Common Methods of the Event Object"
       }
     ],
     "Common Parameters": [
@@ -3982,20 +3972,20 @@
         "title": "Configuring Lazy Loading"
       }
     ],
-    "Confirmation Dialog (confirm)": [
+    "Confirmation Conversation (confirm)": [
       {
         "document": "getting-started/event-handling.md",
         "line": 395,
         "level": 3,
-        "title": "Confirmation Dialog (confirm)"
+        "title": "Confirmation Conversation (confirm)"
       }
     ],
-    "Connection Events": [
+    "Connection Event": [
       {
         "document": "getting-started/event-handling.md",
         "line": 253,
         "level": 3,
-        "title": "Connection Events"
+        "title": "Connection Event"
       }
     ],
     "Connection Flow": [
@@ -4077,7 +4067,7 @@
     "Context and Persistence": [
       {
         "document": "advanced/conversation.md",
-        "line": 219,
+        "line": 240,
         "level": 2,
         "title": "Context and Persistence"
       }
@@ -4098,12 +4088,12 @@
         "title": "Contribution Flow"
       }
     ],
-    "Conversation Multi-turn Dialogue": [
+    "Conversation Multi-turn Conversation": [
       {
         "document": "advanced/conversation.md",
         "line": 1,
         "level": 1,
-        "title": "Conversation Multi-turn Dialogue"
+        "title": "Conversation Multi-turn Conversation"
       }
     ],
     "Conversion Flow": [
@@ -4386,18 +4376,18 @@
         "title": "Creating a Conversation"
       }
     ],
-    "Cross-Platform Extensions (Wildcard)": [
+    "Cross-Platform Extension (Wildcard)": [
       {
         "document": "api-reference/event-system.md",
-        "line": 595,
+        "line": 601,
         "level": 2,
-        "title": "Cross-Platform Extensions (Wildcard)"
+        "title": "Cross-Platform Extension (Wildcard)"
       }
     ],
     "Cross-platform Extension (Wildcard)": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 363,
+        "line": 402,
         "level": 3,
         "title": "Cross-platform Extension (Wildcard)"
       }
@@ -5130,6 +5120,14 @@
         "title": "Event Converter Implementation Guide"
       }
     ],
+    "Event Data Access": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 523,
+        "level": 2,
+        "title": "Event Data Access"
+      }
+    ],
     "Event Distribution Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5210,6 +5208,20 @@
         "line": 194,
         "level": 2,
         "title": "Event Handling"
+      },
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 1,
+        "level": 1,
+        "title": "Event Handling"
+      }
+    ],
+    "Event Handling Best Practices": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 600,
+        "level": 2,
+        "title": "Event Handling Best Practices"
       }
     ],
     "Event Handling Example": [
@@ -5368,6 +5380,14 @@
         "title": "Event Types"
       }
     ],
+    "Event Types Overview": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 5,
+        "level": 2,
+        "title": "Event Types Overview"
+      }
+    ],
     "Event Wrapper Class": [
       {
         "document": "api-reference/event-system.md",
@@ -5401,17 +5421,15 @@
     "Example": [
       {
         "document": "api-reference/core-modules.md",
+        "line": 108,
+        "level": 3,
+        "title": "Example"
+      },
+      {
+        "document": "api-reference/core-modules.md",
         "line": 273,
         "level": 3,
         "title": "Example"
-      }
-    ],
-    "Examples": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 108,
-        "level": 3,
-        "title": "Examples"
       }
     ],
     "Exception Handling": [
@@ -5642,14 +5660,6 @@
         "title": "For Module Developers"
       }
     ],
-    "Form Collection (collect)": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 431,
-        "level": 3,
-        "title": "Form Collection (collect)"
-      }
-    ],
     "Form Message Segment (yunhu_user_form)": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -5704,12 +5714,12 @@
         "title": "Frequently Asked Questions"
       }
     ],
-    "Friend Added": [
+    "Friend Add": [
       {
         "document": "getting-started/event-handling.md",
         "line": 190,
         "level": 3,
-        "title": "Friend Added"
+        "title": "Friend Add"
       }
     ],
     "Friend Offline Event": [
@@ -5894,14 +5904,6 @@
         "title": "Getting Started with Adapter Development"
       }
     ],
-    "Getting Started with Event Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 1,
-        "level": 1,
-        "title": "Getting Started with Event Handling"
-      }
-    ],
     "Global Configuration": [
       {
         "document": "advanced/lazy-loading.md",
@@ -5950,20 +5952,20 @@
         "title": "Group Management Methods"
       }
     ],
-    "Group Member Added": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 202,
-        "level": 3,
-        "title": "Group Member Added"
-      }
-    ],
-    "Group Member Removed": [
+    "Group Member Decrease": [
       {
         "document": "getting-started/event-handling.md",
         "line": 212,
         "level": 3,
-        "title": "Group Member Removed"
+        "title": "Group Member Decrease"
+      }
+    ],
+    "Group Member Increase": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 202,
+        "level": 3,
+        "title": "Group Member Increase"
       }
     ],
     "Group Operation Methods": [
@@ -5993,7 +5995,7 @@
     "Guided Registration": [
       {
         "document": "advanced/conversation.md",
-        "line": 259,
+        "line": 280,
         "level": 3,
         "title": "Guided Registration"
       }
@@ -6068,14 +6070,6 @@
         "title": "Handling Channel Messages"
       }
     ],
-    "Handling Command Events": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 66,
-        "level": 2,
-        "title": "Handling Command Events"
-      }
-    ],
     "Handling Direct Messages": [
       {
         "document": "platform-guide/discord.md",
@@ -6120,30 +6114,6 @@
         "title": "Handling Message Editing"
       }
     ],
-    "Handling Message Events": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 17,
-        "level": 2,
-        "title": "Handling Message Events"
-      }
-    ],
-    "Handling Meta Events": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 251,
-        "level": 2,
-        "title": "Handling Meta Events"
-      }
-    ],
-    "Handling Notice Events": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 188,
-        "level": 2,
-        "title": "Handling Notice Events"
-      }
-    ],
     "Handling Notification Events (Reaction responses, etc.)": [
       {
         "document": "platform-guide/kook.md",
@@ -6176,14 +6146,6 @@
         "title": "Handling Reactions"
       }
     ],
-    "Handling Request Events": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 222,
-        "level": 2,
-        "title": "Handling Request Events"
-      }
-    ],
     "Health Check": [
       {
         "document": "advanced/router.md",
@@ -6198,12 +6160,12 @@
         "title": "Health Check"
       }
     ],
-    "Heartbeat Events": [
+    "Heartbeat Event": [
       {
         "document": "getting-started/event-handling.md",
         "line": 269,
         "level": 3,
-        "title": "Heartbeat Events"
+        "title": "Heartbeat Event"
       }
     ],
     "Heartbeat Mechanism": [
@@ -6596,14 +6558,6 @@
         "title": "Inter-Module Communication"
       }
     ],
-    "Interaction Methods": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 387,
-        "level": 3,
-        "title": "Interaction Methods"
-      }
-    ],
     "Interactive Handling": [
       {
         "document": "getting-started/event-handling.md",
@@ -6651,12 +6605,18 @@
     "Interactive Method Examples": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 233,
+        "line": 242,
         "level": 4,
         "title": "Interactive Method Examples"
       }
     ],
     "Interactive Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 387,
+        "level": 3,
+        "title": "Interactive Methods"
+      },
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 203,
@@ -6860,12 +6820,12 @@
         "title": "List Supported Send Methods"
       }
     ],
-    "Listening to @ Messages": [
+    "Listening to @Messages": [
       {
         "document": "getting-started/event-handling.md",
         "line": 56,
         "level": 3,
-        "title": "Listening to @ Messages"
+        "title": "Listening to @Messages"
       }
     ],
     "Listening to All Messages": [
@@ -7059,7 +7019,7 @@
     "Looping Conversation": [
       {
         "document": "advanced/conversation.md",
-        "line": 290,
+        "line": 311,
         "level": 3,
         "title": "Looping Conversation"
       }
@@ -7282,6 +7242,14 @@
         "title": "Message Event Example"
       }
     ],
+    "Message Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 17,
+        "level": 2,
+        "title": "Message Event Handling"
+      }
+    ],
     "Message Event Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -7350,14 +7318,6 @@
         "line": 276,
         "level": 3,
         "title": "Message Methods"
-      }
-    ],
-    "Message Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 112,
-        "level": 2,
-        "title": "Message Module"
       }
     ],
     "Message Operations": [
@@ -7520,6 +7480,14 @@
         "title": "Message with Inline Keyboard"
       }
     ],
+    "Message 消息模块": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 112,
+        "level": 2,
+        "title": "Message 消息模块"
+      }
+    ],
     "Message-related": [
       {
         "document": "platform-guide/telegram.md",
@@ -7534,6 +7502,14 @@
         "line": 1,
         "level": 1,
         "title": "MessageBuilder Detailed Explanation"
+      }
+    ],
+    "Meta Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 251,
+        "level": 2,
+        "title": "Meta Event Handling"
       }
     ],
     "Meta Event Types": [
@@ -7560,12 +7536,12 @@
         "title": "Meta Events (Meta Events)"
       }
     ],
-    "Meta Module": [
+    "Meta 元事件模块": [
       {
         "document": "api-reference/event-system.md",
         "line": 214,
         "level": 2,
-        "title": "Meta Module"
+        "title": "Meta 元事件模块"
       }
     ],
     "Method 1: Install via pip": [
@@ -7619,7 +7595,7 @@
     "Method Resolution Priority": [
       {
         "document": "api-reference/event-system.md",
-        "line": 620,
+        "line": 626,
         "level": 3,
         "title": "Method Resolution Priority"
       }
@@ -7971,7 +7947,7 @@
     "Multi-turn Conversation (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 472,
+        "line": 489,
         "level": 3,
         "title": "Multi-turn Conversation (conversation)"
       }
@@ -8049,7 +8025,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 636,
+        "line": 653,
         "level": 2,
         "title": "Next Steps"
       },
@@ -8112,26 +8088,12 @@
         "title": "Notice Event Additional Fields"
       }
     ],
-    "Notice Event Methods": [
+    "Notice Event Handling": [
       {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 77,
+        "document": "getting-started/event-handling.md",
+        "line": 188,
         "level": 2,
-        "title": "Notice Event Methods"
-      },
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 139,
-        "level": 3,
-        "title": "Notice Event Methods"
-      }
-    ],
-    "Notice Events": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 162,
-        "level": 3,
-        "title": "Notice Events"
+        "title": "Notice Event Handling"
       }
     ],
     "Notice Events (Notice Events)": [
@@ -8142,28 +8104,12 @@
         "title": "Notice Events (Notice Events)"
       }
     ],
-    "Notice Module": [
+    "Notice 通知模块": [
       {
         "document": "api-reference/event-system.md",
         "line": 160,
         "level": 2,
-        "title": "Notice Module"
-      }
-    ],
-    "Notice Operator": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 141,
-        "level": 4,
-        "title": "Notice Operator"
-      }
-    ],
-    "Notice Type Detection": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 145,
-        "level": 4,
-        "title": "Notice Type Detection"
+        "title": "Notice 通知模块"
       }
     ],
     "Notification Event (notice)": [
@@ -8172,6 +8118,36 @@
         "line": 51,
         "level": 3,
         "title": "Notification Event (notice)"
+      }
+    ],
+    "Notification Event Methods": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 77,
+        "level": 2,
+        "title": "Notification Event Methods"
+      },
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 139,
+        "level": 3,
+        "title": "Notification Event Methods"
+      }
+    ],
+    "Notification Events": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 162,
+        "level": 3,
+        "title": "Notification Events"
+      }
+    ],
+    "Notification Type Detection": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 145,
+        "level": 4,
+        "title": "Notification Type Detection"
       }
     ],
     "OB12 Message Segment Reverse Conversion (Raw_ob12)": [
@@ -8328,6 +8304,14 @@
         "title": "Operating Mode"
       }
     ],
+    "Operator Information": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 141,
+        "level": 4,
+        "title": "Operator Information"
+      }
+    ],
     "Other Message Types": [
       {
         "document": "platform-guide/onebot12.md",
@@ -8360,12 +8344,12 @@
         "title": "Output Control"
       }
     ],
-    "Override Built-in Methods": [
+    "Overriding Built-in Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 574,
+        "line": 580,
         "level": 4,
-        "title": "Override Built-in Methods"
+        "title": "Overriding Built-in Methods"
       }
     ],
     "Overview": [
@@ -8394,14 +8378,6 @@
         "title": "Overview"
       }
     ],
-    "Overview of Event Types": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 5,
-        "level": 2,
-        "title": "Overview of Event Types"
-      }
-    ],
     "POST": [
       {
         "document": "advanced/http-client.md",
@@ -8426,12 +8402,12 @@
         "title": "Package Management Commands"
       }
     ],
-    "Parallel Event Handling": [
+    "Parallel Event Processing": [
       {
         "document": "getting-started/event-handling.md",
         "line": 149,
         "level": 3,
-        "title": "Parallel Event Handling"
+        "title": "Parallel Event Processing"
       }
     ],
     "Parallel and Serial": [
@@ -8514,13 +8490,15 @@
         "title": "Platform"
       }
     ],
-    "Platform Capability Query": [
+    "Platform Capabilities Query": [
       {
         "document": "api-reference/event-system.md",
         "line": 339,
         "level": 3,
-        "title": "Platform Capability Query"
-      },
+        "title": "Platform Capabilities Query"
+      }
+    ],
+    "Platform Capability Query": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 178,
@@ -8561,13 +8539,19 @@
     "Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 437,
+        "line": 443,
         "level": 3,
         "title": "Platform Extension Methods"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 325,
+        "line": 364,
+        "level": 3,
+        "title": "Platform Extension Methods"
+      },
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 571,
         "level": 3,
         "title": "Platform Extension Methods"
       }
@@ -8599,7 +8583,7 @@
     "Platform Method Isolation": [
       {
         "document": "api-reference/event-system.md",
-        "line": 473,
+        "line": 479,
         "level": 4,
         "title": "Platform Method Isolation"
       }
@@ -8642,14 +8626,6 @@
         "line": 232,
         "level": 3,
         "title": "Platform-Specific Events (onebot11_ prefix)"
-      }
-    ],
-    "Platform-Specific Extension Methods": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 554,
-        "level": 3,
-        "title": "Platform-Specific Extension Methods"
       }
     ],
     "Platform-Specific Features": [
@@ -8695,7 +8671,7 @@
     "Priority System": [
       {
         "document": "api-reference/event-system.md",
-        "line": 631,
+        "line": 637,
         "level": 2,
         "title": "Priority System"
       }
@@ -8939,7 +8915,7 @@
     "Query Platform Registered Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 458,
+        "line": 464,
         "level": 4,
         "title": "Query Platform Registered Methods"
       }
@@ -8947,7 +8923,7 @@
     "Query Registered Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 347,
+        "line": 386,
         "level": 3,
         "title": "Query Registered Methods"
       }
@@ -9059,7 +9035,7 @@
     "Raw Data": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 320,
+        "line": 359,
         "level": 3,
         "title": "Raw Data"
       }
@@ -9142,22 +9118,6 @@
         "title": "References"
       }
     ],
-    "Register Commands": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 7,
-        "level": 3,
-        "title": "Register Commands"
-      }
-    ],
-    "Register Cross-Platform Methods": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 599,
-        "level": 3,
-        "title": "Register Cross-Platform Methods"
-      }
-    ],
     "Register Custom Translations": [
       {
         "document": "advanced/i18n.md",
@@ -9182,12 +9142,20 @@
         "title": "Register Middleware"
       }
     ],
-    "Register Single Method": [
+    "Registering Batch (Mixin Class)": [
       {
         "document": "api-reference/event-system.md",
-        "line": 500,
+        "line": 522,
         "level": 4,
-        "title": "Register Single Method"
+        "title": "Registering Batch (Mixin Class)"
+      }
+    ],
+    "Registering Commands": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 7,
+        "level": 3,
+        "title": "Registering Commands"
       }
     ],
     "Registering Configuration Translations": [
@@ -9196,6 +9164,14 @@
         "line": 228,
         "level": 3,
         "title": "Registering Configuration Translations"
+      }
+    ],
+    "Registering Cross-Platform Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 605,
+        "level": 3,
+        "title": "Registering Cross-Platform Methods"
       }
     ],
     "Registering Event Handlers": [
@@ -9212,6 +9188,14 @@
         "line": 12,
         "level": 3,
         "title": "Registering Handlers"
+      }
+    ],
+    "Registering Single Method": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 506,
+        "level": 4,
+        "title": "Registering Single Method"
       }
     ],
     "Registration API": [
@@ -9233,7 +9217,7 @@
     "Related Documentation": [
       {
         "document": "advanced/conversation.md",
-        "line": 317,
+        "line": 338,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9293,7 +9277,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 647,
+        "line": 653,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9335,7 +9319,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 382,
+        "line": 421,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9426,14 +9410,6 @@
         "title": "Reply Functionality"
       }
     ],
-    "Reply Functions": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 315,
-        "level": 3,
-        "title": "Reply Functions"
-      }
-    ],
     "Reply Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -9445,7 +9421,7 @@
     "Reply Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 351,
+        "line": 315,
         "level": 3,
         "title": "Reply Methods"
       }
@@ -9488,6 +9464,14 @@
         "title": "Request Event Conversion"
       }
     ],
+    "Request Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 222,
+        "level": 2,
+        "title": "Request Event Handling"
+      }
+    ],
     "Request Event Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -9528,14 +9512,6 @@
         "title": "Request Methods"
       }
     ],
-    "Request Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 192,
-        "level": 2,
-        "title": "Request Module"
-      }
-    ],
     "Request Operation Return Values": [
       {
         "document": "platform-guide/onebot11.md",
@@ -9574,6 +9550,14 @@
         "line": 157,
         "level": 4,
         "title": "Request Type Detection"
+      }
+    ],
+    "Request 请求模块": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 192,
+        "level": 2,
+        "title": "Request 请求模块"
       }
     ],
     "Required Field Mapping": [
@@ -9643,7 +9627,7 @@
     "Return Value Specification": [
       {
         "document": "api-reference/event-system.md",
-        "line": 537,
+        "line": 543,
         "level": 4,
         "title": "Return Value Specification"
       }
@@ -9890,12 +9874,12 @@
         "title": "SDK Objects"
       }
     ],
-    "SQL Chained Queries": [
+    "SQL Chainable Queries": [
       {
         "document": "api-reference/core-modules.md",
         "line": 43,
         "level": 3,
-        "title": "SQL Chained Queries"
+        "title": "SQL Chainable Queries"
       }
     ],
     "SQL Query Builder": [
@@ -10178,6 +10162,14 @@
         "title": "Sending Methods"
       }
     ],
+    "Sending Replies Using the reply Method": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 302,
+        "level": 3,
+        "title": "Sending Replies Using the reply Method"
+      }
+    ],
     "Sending Rule System": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -10210,15 +10202,13 @@
         "title": "Server Configuration"
       }
     ],
-    "Session Identifier": [
+    "Session Identifiers": [
       {
         "document": "api-reference/event-system.md",
         "line": 263,
         "level": 3,
-        "title": "Session Identifier"
-      }
-    ],
-    "Session Identifiers": [
+        "title": "Session Identifiers"
+      },
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 104,
@@ -11002,12 +10992,12 @@
         "title": "Traditional Registration Method"
       }
     ],
-    "Transactional Operations": [
+    "Transaction Operations": [
       {
         "document": "api-reference/core-modules.md",
         "line": 28,
         "level": 3,
-        "title": "Transactional Operations"
+        "title": "Transaction Operations"
       }
     ],
     "Translation Key Naming": [
@@ -11069,7 +11059,7 @@
     "Typical Flow Patterns": [
       {
         "document": "advanced/conversation.md",
-        "line": 257,
+        "line": 278,
         "level": 2,
         "title": "Typical Flow Patterns"
       }
@@ -11124,20 +11114,20 @@
         "title": "Unique Event Types"
       }
     ],
-    "Unregister Methods": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 562,
-        "level": 4,
-        "title": "Unregister Methods"
-      }
-    ],
     "Unregister Translations": [
       {
         "document": "advanced/i18n.md",
         "line": 151,
         "level": 3,
         "title": "Unregister Translations"
+      }
+    ],
+    "Unregistering Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 568,
+        "level": 4,
+        "title": "Unregistering Methods"
       }
     ],
     "Unregistering Views": [
@@ -11315,7 +11305,7 @@
     "User: Using Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 441,
+        "line": 447,
         "level": 4,
         "title": "User: Using Platform Extension Methods"
       }
@@ -11432,14 +11422,6 @@
         "title": "Using in Transactions"
       }
     ],
-    "Using the reply method to send responses": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 302,
-        "level": 3,
-        "title": "Using the reply method to send responses"
-      }
-    ],
     "Using with Send": [
       {
         "document": "advanced/message-builder.md",
@@ -11471,7 +11453,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 422,
+        "line": 428,
         "level": 3,
         "title": "Utility Methods"
       }
@@ -11524,12 +11506,20 @@
         "title": "Wait Reply Functionality"
       }
     ],
-    "Wait for Reply": [
+    "Wait for Reply with Callback": [
       {
-        "document": "api-reference/event-system.md",
-        "line": 57,
+        "document": "getting-started/event-handling.md",
+        "line": 374,
         "level": 3,
-        "title": "Wait for Reply"
+        "title": "Wait for Reply with Callback"
+      }
+    ],
+    "Wait for Reply with Validation": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 347,
+        "level": 3,
+        "title": "Wait for Reply with Validation"
       }
     ],
     "Wait for Result": [
@@ -11543,25 +11533,17 @@
     "Waiting for Any Event (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 451,
+        "line": 468,
         "level": 3,
         "title": "Waiting for Any Event (wait_for)"
       }
     ],
-    "Waiting for Reply with Callback": [
+    "Waiting for Reply": [
       {
-        "document": "getting-started/event-handling.md",
-        "line": 374,
+        "document": "api-reference/event-system.md",
+        "line": 57,
         "level": 3,
-        "title": "Waiting for Reply with Callback"
-      }
-    ],
-    "Waiting for Reply with Validation": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 347,
-        "level": 3,
-        "title": "Waiting for Reply with Validation"
+        "title": "Waiting for Reply"
       }
     ],
     "Waiting for User Reply": [
@@ -11905,7 +11887,7 @@
     "`hasattr` / `dir` Support": [
       {
         "document": "api-reference/event-system.md",
-        "line": 489,
+        "line": 495,
         "level": 4,
         "title": "`hasattr` / `dir` Support"
       }
@@ -11913,9 +11895,17 @@
     "`hasattr` and `dir` Support": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 356,
+        "line": 395,
         "level": 3,
         "title": "`hasattr` and `dir` Support"
+      }
+    ],
+    "`reply()` Method Details": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 351,
+        "level": 3,
+        "title": "`reply()` Method Details"
       }
     ],
     "`self` Field Extended Information": [
@@ -11969,7 +11959,7 @@
     "collect(fields, **kwargs)": [
       {
         "document": "advanced/conversation.md",
-        "line": 100,
+        "line": 121,
         "level": 3,
         "title": "collect(fields, **kwargs)"
       }
@@ -11993,7 +11983,7 @@
     "conv.context": [
       {
         "document": "advanced/conversation.md",
-        "line": 221,
+        "line": 242,
         "level": 3,
         "title": "conv.context"
       }
@@ -12001,7 +11991,7 @@
     "conv.start(name=None)": [
       {
         "document": "advanced/conversation.md",
-        "line": 210,
+        "line": 231,
         "level": 3,
         "title": "conv.start(name=None)"
       }
@@ -12105,7 +12095,7 @@
     "is_active": [
       {
         "document": "advanced/conversation.md",
-        "line": 148,
+        "line": 169,
         "level": 3,
         "title": "is_active"
       }
@@ -12209,7 +12199,7 @@
     "save() / resume() / clear_saved()": [
       {
         "document": "advanced/conversation.md",
-        "line": 237,
+        "line": 258,
         "level": 3,
         "title": "save() / resume() / clear_saved()"
       }
@@ -12241,7 +12231,7 @@
     "stop()": [
       {
         "document": "advanced/conversation.md",
-        "line": 140,
+        "line": 161,
         "level": 3,
         "title": "stop()"
       }

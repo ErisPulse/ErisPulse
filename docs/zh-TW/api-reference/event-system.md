@@ -62,7 +62,7 @@ visible_commands = command.get_visible_commands()
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
-        prompt="請輸入你的名字:",  # 已在上面發送
+        prompt="請輸入你的名字:",  # 已在上面傳送
         timeout=30.0
     )
     
@@ -92,7 +92,7 @@ async def age_command(event):
         age = int(reply.get_text())
         await event.reply(f"你的年齡是 {age} 歲")
 
-# 帶回呼的等待回覆
+# 帶回調的等待回覆
 async def handle_confirmation(reply_event):
     text = reply_event.get_text().lower()
     if text in ["是", "yes", "y"]:
@@ -170,11 +170,11 @@ async def friend_add_handler(event):
     user_id = event.get_user_id()
     await event.reply("歡迎新增我為好友！")
 
-# 好友刪除
+# 好友移除
 @notice.on_friend_remove()
 async def friend_remove_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"好友刪除: {user_id}")
+    sdk.logger.info(f"好友移除: {user_id}")
 
 # 群成員增加
 @notice.on_group_increase()
@@ -218,17 +218,17 @@ async def group_request_handler(event):
 ```python
 from ErisPulse.Core.Event import meta
 
-# 連接事件
+# 連線事件
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"平台 {platform} 連接成功")
+    sdk.logger.info(f"平台 {platform} 連線成功")
 
-# 斷開連接事件
+# 斷線事件
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"平台 {platform} 斷開連接")
+    sdk.logger.info(f"平台 {platform} 斷線")
 
 # 心跳事件
 @meta.on_heartbeat()
@@ -238,11 +238,11 @@ async def heartbeat_handler(event):
 
 ### Bot 狀態查詢
 
-當適配器發送 meta 事件後，框架會自動追蹤 Bot 狀態。查詢 API 和生命週期事件監聽請參考 [適配器系統 API - Bot 狀態管理](adapter-system.md#bot-狀態管理)。
+當適配器傳送 meta 事件後，框架會自動追蹤 Bot 狀態。查詢 API 和生命週期事件監聽請參考 [適配器系統 API - Bot 狀態管理](adapter-system.md#bot-狀態管理)。
 
-## Event 包裝類
+## Event 包裝類別
 
-Event 模組的事件處理器接收一個 Event 包裝類實例，它繼承自 dict 並提供了便捷方法。
+Event 模組的事件處理器接收一個 Event 包裝類別實例，它繼承自 dict 並提供了便捷方法。
 
 ### 核心方法
 
@@ -260,18 +260,18 @@ self_user_id = event.get_self_user_id()
 self_info = event.get_self_info()
 ```
 
-### 會話標識
+### 會話識別
 
 ```python
 # 統一目標 ID：群聊返回 group_id，私聊返回 user_id，以此類推
 target_id = event.get_target_id()
 
-# 會話唯一標識，格式: {platform}:{detail_type}:{target_id}
+# 會話唯一識別，格式: {platform}:{detail_type}:{target_id}
 session_id = event.get_session_id()
 # 範例: "telegram:private:12345"、"qq:group:67890"
 ```
 
-`get_target_id()` 按以下順序返回首個非空值：`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`。適用於上下文管理、狀態儲存等需要統一標識會話的場景。
+`get_target_id()` 按以下順序返回首個非空值：`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`。適用於上下文管理、狀態儲存等需要統一識別會話的場景。
 
 ### 訊息方法
 
@@ -281,7 +281,7 @@ message_segments = event.get_message()
 alt_message = event.get_alt_message()
 text = event.get_text()
 
-# 取得發送者資訊
+# 取得傳送者資訊
 user_id = event.get_user_id()
 nickname = event.get_user_nickname()
 sender = event.get_sender()
@@ -318,7 +318,7 @@ is_cmd = event.is_command()
 # 基本回覆
 await event.reply("這是一條訊息")
 
-# 指定發送方法
+# 指定傳送方法
 await event.reply("http://example.com/image.jpg", method="Image")
 
 # 帶 @使用者 和回覆訊息
@@ -339,24 +339,24 @@ reply = await event.wait_reply(timeout=30)
 ### 平台能力查詢
 
 ```python
-# 檢查當前平台是否支援某種發送方法
+# 檢查當前平台是否支援某種傳送方法
 if event.supports("Image"):
     await event.reply(url, method="Image")
 
-# 列出當前平台所有可用發送方法
+# 列出當前平台所有可用傳送方法
 methods = event.available_methods()
 # ["Text", "Image", "Voice", ...]
 ```
 
 ### 回覆方法
 
-`reply()` 方法支援透過 `method` 參數指定發送類型，以及兩個便捷的布林參數：
+`reply()` 方法支援透過 `method` 參數指定傳送類型，以及兩個便捷的布林參數：
 
 ```python
 # 簡單文字回覆
 await event.reply("你好")
 
-# 回覆並@發送者
+# 回覆並@傳送者
 await event.reply("你好", at_sender=True)
 
 # 回覆並引用當前訊息
@@ -365,7 +365,7 @@ await event.reply("收到", reply_to_message=True)
 # 組合使用
 await event.reply("收到", at_sender=True, reply_to_message=True)
 
-# 發送圖片（使用 method 參數）
+# 傳送圖片（使用 method 參數）
 if event.supports("Image"):
     await event.reply("http://example.com/img.jpg", method="Image")
 else:
@@ -376,11 +376,11 @@ else:
 
 | 參數 | 類型 | 說明 |
 |------|------|------|
-| `content` | str | 發送內容 |
-| `method` | str | 發送方法，預設 "Text"，可選 "Image"/"Voice"/"Video"/"File" 等 |
-| `at_sender` | bool | 是否@發送者（自動提取 user_id） |
+| `content` | str | 傳送內容 |
+| `method` | str | 傳送方法，預設 "Text"，可選 "Image"/"Voice"/"Video"/"File" 等 |
+| `at_sender` | bool | 是否@傳送者（自動提取 user_id） |
 | `quote` | bool | 是否引用回覆當前訊息（自動提取 message_id） |
-| `at_users` | list[str] | @指定使用者清單 |
+| `at_users` | list[str] | @指定使用者列表 |
 | `reply_to` | str | 手動指定回覆的訊息 ID |
 | `at_all` | bool | 是否@全體成員 |
 
@@ -391,22 +391,28 @@ else:
 if await event.confirm("確定要執行此操作嗎？"):
     await event.reply("已確認")
 
-# 使用非 Text 方式發送確認提示
+# 使用非 Text 方式傳送確認提示
 if await event.confirm("http://example.com/image.jpg", method="Image"):
     await event.reply("已確認圖片提示")
 
 # choose — 選擇選單（返回選項索引或 None）
 choice = await event.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
 
-# choose 支援指定發送方法，富媒體方法會拆分為兩條訊息
-choice = await event.choose("請選擇：", ["A", "B"], method="Markdown")
+# options_format="auto"（預設）根據 method 自動選擇樣式：
+# Markdown→無序列表（- 1.選項），Html→有序列表（<ol>），其他→純文字列表
+# 文字類方法（Markdown/Html 等）預設合併選項到末尾
+# merge_prompt=True 可強制任意 method 合併；placeholder 可自定義佔位符
+choice = await event.choose(
+    "## 請選擇\n{options}", ["A", "B"],
+    method="Markdown", merge_prompt=True,
+)
 
 # collect — 表單收集（返回 {key: value} 字典或 None）
 data = await event.collect([
     {"key": "name", "prompt": "請輸入姓名："},
     {"key": "age", "prompt": "請輸入年齡：",
      "validator": lambda e: e.get_text().isdigit()},
-    {"key": "avatar", "prompt": "請發送頭像：", "method": "Image"},
+    {"key": "avatar", "prompt": "請傳送頭像：", "method": "Image"},
 ])
 
 # wait_for — 等待滿足條件的任意事件
@@ -417,7 +423,7 @@ conv = event.conversation(timeout=60)
 await conv.say("歡迎！")
 ```
 
-> 完整的互動方法參數說明和更多範例請參考 [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) 和 [Conversation 多輪對話](../advanced/conversation.md)。
+> 完整的互動方法參數說明和更多範例請參考 [Event 包裝類別詳解](../developer-guide/modules/event-wrapper.md) 和 [Conversation 多輪對話](../advanced/conversation.md)。
 
 ### 工具方法
 
@@ -495,9 +501,9 @@ hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
 
 ### 適配器：註冊平台擴展方法
 
-適配器可以透過裝飾器為 Event 註冊平台專有方法，方法的參數為 `self`（Event 實例），可以自由存取事件資料。
+適配器可以透過裝飾器為 Event 註冊平台專有方法，方法的第一個參數為 `self`（Event 實例），可以自由存取事件資料。
 
-#### 單個方法註冊
+#### 單一方法註冊
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -513,9 +519,9 @@ def get_from(self):
     return self.get("email_raw", {}).get("from", {})
 ```
 
-#### 批量註冊（Mixin 類）
+#### 批量註冊（Mixin 類別）
 
-當方法較多時，建議使用 Mixin 類批量註冊：
+當方法較多時，推薦使用 Mixin 類別批量註冊：
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin
@@ -539,7 +545,7 @@ register_event_mixin("email", EmailEventMixin)
 | 場景 | 返回值 | 使用者使用方式 |
 |------|--------|------------|
 | 返回資料（文字、字典等） | 直接返回值 | `subject = event.get_subject()` |
-| 執行操作（發送訊息等） | 返回 `asyncio.Task` | `task = event.do_something()` 可選 `await` |
+| 執行操作（傳送訊息等） | 返回 `asyncio.Task` | `task = event.do_something()` 可選 `await` |
 
 > **建議**：非資料返回的方法返回 `asyncio.Task`，這樣使用者可以自行決定是否 `await`，即使不 `await` 操作也會執行完成。
 
@@ -555,7 +561,7 @@ def forward_email(self, to_address: str):
 # 使用者可以 await 等待結果
 await event.forward_email("user@example.com")
 
-# 也可以不 await，操作在後台執行
+# 也可以不 await，操作在背景執行
 event.forward_email("user@example.com")
 ```
 
@@ -564,7 +570,7 @@ event.forward_email("user@example.com")
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
 
-# 註銷單個方法
+# 註銷單一方法
 unregister_event_method("email", "get_subject")
 
 # 註銷某平台全部方法（適配器 shutdown 時呼叫）
@@ -573,9 +579,9 @@ unregister_platform_event_methods("email")
 
 #### 覆寫內建方法
 
-`register_event_mixin` / `register_event_method` 支援覆寫 Event 內建方法（如 `confirm`、`choose`、`collect`、`wait_reply`、`reply` 等）。註冊的平台方法透過 `Event.__getattribute__` 優先於內建方法生效，因此適配器可以提供平台特色的互動實作。
+`register_event_mixin` / `register_event_method` 支援覆寫 Event 內建方法（如 `confirm`、`choose`、`collect`、`wait_reply`、`reply` 等）。註冊的平台方法透過 `Event.__getattribute__` 優先於內建方法生效，因此適配器可以提供平台特色的互動實現。
 
-內建實作作為 `_builtin_*` 函數導出，覆寫方可以呼叫它們作為回退：
+內建實作作為 `_builtin_*` 函數匯出，覆寫方可以呼叫它們作為回退：
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
@@ -585,7 +591,7 @@ class YunhuEventMixin:
         # 雲湖平台使用按鈕元件
         buttons = [[{"text": opt} for opt in options]]
         await self.reply(prompt)
-        # ...等待按鈕回呼或文字回覆...
+        # ...等待按鈕回調或文字回覆...
         # 回退到內建邏輯
         return await _builtin_choose(self, None, options, timeout, "Text")
 
@@ -626,7 +632,7 @@ async def handler(event):
 3. **內建方法**（`reply`、`confirm` 等）
 4. **字典鍵存取**
 
-> 因此萬用字元方法可以覆寫內建方法（如 `reply`），但會被同名的平台特定方法進一步覆寫。
+> 因此萬用字元方法可以覆寫內建方法（如 `reply`），但會被同名平台特定方法進一步覆寫。
 
 ## 優先級系統
 
@@ -650,4 +656,4 @@ async def low_priority_handler(event):
 - [適配器系統 API](adapter-system.md) - Adapter 管理 API
 - [模組開發指南](../developer-guide/modules/) - 開發自定義模組
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。

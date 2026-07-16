@@ -1398,6 +1398,23 @@ async def choose_handler(event):
         await event.reply("超时未选择")
 ```
 
+**合并模式**：`merge_prompt=True` 时将选项拼入提示消息，用用户指定的 `method` 一条消息发送：
+
+```python
+# 用 Markdown 发送合并后的提示 + 选项
+choice = await event.choose(
+    "## 请选择颜色\n{options}\n请回复编号",
+    ["红色", "绿色", "蓝色"],
+    method="Markdown",
+    merge_prompt=True,
+)
+```
+
+> `{options}` 占位符控制选项插入位置；不写则追加到 prompt 末尾。
+> 可通过 `placeholder` 参数自定义占位符（如 `placeholder="[choices]"`）。
+> `options_format="auto"`（默认）根据 method 自动选择样式：Markdown→无序列表，Html→有序列表，其他→纯文本列表。
+> 文本类方法（Text/Markdown/Html 等）默认合并选项到末尾；非文本方法（Image 等）默认拆分为两条消息。
+
 ### 收集表单 (collect)
 
 多步骤收集用户输入：
@@ -2766,19 +2783,28 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - `method`: 发送方法，默认 "Text"；支持 "Image"/"Markdown" 等非文本方式发送提示
   - `hint`: 是否在提示末尾自动追加确认词提示（如 "（是/否）"），默认 False
 
-- `choose(prompt, options, timeout=60.0, method="Text", options_format="list", merge_prompt=False)` - 选择菜单
+- `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - 选择菜单
   - `options`: 选项文本列表
   - 返回选项索引（0-based），超时返回 `None`
-  - `method`: 发送方法；文本类方法 (Text/Markdown/Html) 将选项拼接到 prompt 一条消息发送；富媒体方法先发富媒体内容再发 Text 选项列表
-  - `options_format`: 选项格式，支持 `"list"`（默认，每行一个）、`"inline"`（单行 `1.A | 2.B`）或自定义函数 `(list[str]) -> str`
-  - `merge_prompt`: 非文本方法时是否强制合并为一条 Text 消息，默认 False
+  - `method`: 发送方法，默认 "Text"；文本类方法 (Text/Markdown/md/Html/h5) 默认合并选项到末尾
+  - `options_format`: 选项格式（默认: "auto"，根据 method 自动选择内置样式）
+    - `"auto"`：Markdown→无序列表（`- 1.选项`），Html→有序列表（`<ol>`），其他→纯文本列表
+    - `"list"`：每行一个，如 ``1. 选项A\n2. 选项B``
+    - `"inline"`：单行展示，如 ``1.A | 2.B``
+    - `"md"`：Markdown 无序列表
+    - `"html"`：Html 有序列表
+    - `callable`：自定义函数，接收 ``list[str]`` 返回 ``str``
+  - `merge_prompt`: 是否强制合并为一条消息发送，默认 False
+    - `False`（默认）：文本类方法自动合并；非文本方法先发 prompt 再发 Text 选项
+    - `True`：无论什么 method 都合并为一条消息，用用户指定的 method 发送
+  - `placeholder`: 选项插入占位符，默认 `{options}`；prompt 中出现该标记的位置替换为选项文本，设为空字符串则始终追加到末尾
 
 - `collect(fields, timeout_per_field=60.0)` - 表单收集
   - `fields`: 字段列表，每项包含 `key`、`prompt`、可选 `validator`、可选 `method`
   - 返回 `{key: value}` 字典，任一字段超时返回 `None`
   - 每个 field 支持 `method` 键指定发送方法，例如收集图片时用 `{"key": "avatar", "prompt": "请发送头像", "method": "Image"}`
   - 每个 field 可选 `options` 键（列表），提供时该字段变为选择题（自动调用 choose 逻辑）
-  - 每个 field 可选 `options_format` 和 `merge_prompt` 键，控制选项格式和消息合并行为`
+  - 每个 field 可选 `options_format`、`merge_prompt`、`placeholder` 键，控制选项格式、消息合并行为和占位符
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - 等待任意事件
   - `condition`: 过滤函数，返回 `True` 时匹配
@@ -2834,9 +2860,39 @@ choice = await event.choose("请选择：", ["猫", "狗"],
     options_format=lambda opts: " / ".join(opts))
 # 输出：猫 / 狗
 
-# 非文本方法 + 合并选项到文本
-choice = await event.choose("看图选择：", ["猫", "狗"],
-    method="Image", merge_prompt=True)
+# options_format="auto"（默认）：根据 method 自动选择内置样式
+# Markdown → 无序列表
+choice = await event.choose(
+    "## 请选择", ["猫", "狗"],
+    method="Markdown",  # auto 自动识别为 md 列表
+)
+# 输出：
+# ## 请选择
+# - 1. 猫
+# - 2. 狗
+
+# Html → 有序列表
+choice = await event.choose(
+    "<h2>请选择</h2>", ["猫", "狗"],
+    method="Html", merge_prompt=True,  # auto 自动识别为 html 列表
+)
+# 输出：
+# <h2>请选择</h2>
+# <ol><li>1. 猫</li><li>2. 狗</li></ol>
+
+# 合并模式 + 占位符
+choice = await event.choose(
+    "## 请选择\n{options}\n请回复编号",
+    ["猫", "狗"],
+    method="Markdown", merge_prompt=True,
+)
+
+# 自定义占位符
+choice = await event.choose(
+    "请选择: [choices]",
+    ["猫", "狗"],
+    placeholder="[choices]",
+)
 ```
 
 **collect() - 表单收集：**
@@ -4194,7 +4250,7 @@ sdk.adapter.get_status_summary()
 
 | 方法 | 说明 |
 |------|------|
-| `get(name)` | 获取模块实例 |
+| `get(name)` | 获取模块实例或懒加载代理（已注册但未加载时返回代理） |
 | `exists(name)` | 检查是否已注册 |
 | `is_loaded(name)` | 检查是否已加载 |
 | `is_enabled(name)` | 检查是否启用 |
@@ -4730,8 +4786,14 @@ if await event.confirm("http://example.com/image.jpg", method="Image"):
 # choose — 选择菜单（返回选项索引或 None）
 choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
 
-# choose 支持指定发送方法，富媒体方法会拆分为两条消息
-choice = await event.choose("请选择：", ["A", "B"], method="Markdown")
+# options_format="auto"（默认）根据 method 自动选择样式：
+# Markdown→无序列表（- 1.选项），Html→有序列表（<ol>），其他→纯文本列表
+# 文本类方法（Markdown/Html 等）默认合并选项到末尾
+# merge_prompt=True 可强制任意 method 合并；placeholder 可自定义占位符
+choice = await event.choose(
+    "## 请选择\n{options}", ["A", "B"],
+    method="Markdown", merge_prompt=True,
+)
 
 # collect — 表单收集（返回 {key: value} 字典或 None）
 data = await event.collect([
@@ -5088,6 +5150,27 @@ if choice is not None:
 ```
 
 用户可以通过输入编号（`1`/`2`/`3`）或选项文本（`红色`）来选择。
+
+`options_format="auto"`（默认）根据 method 自动选择内置样式：Markdown→无序列表，Html→有序列表，其他→纯文本列表。
+也支持 `"list"`、`"inline"`、`"md"`、`"html"` 或自定义函数。
+
+支持 `merge_prompt=True` 合并为一条消息，以及占位符控制选项插入位置（默认 `{options}`，可通过 `placeholder` 自定义）：
+
+```python
+choice = await conv.choose(
+    "## 请选择\n{options}",
+    ["选项A", "选项B"],
+    method="Markdown",
+    merge_prompt=True,
+)
+
+# 自定义占位符
+choice = await conv.choose(
+    "请选择: [choices]",
+    ["选项A", "选项B"],
+    placeholder="[choices]",
+)
+```
 
 ### collect(fields, **kwargs)
 
