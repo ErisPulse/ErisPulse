@@ -626,7 +626,13 @@ ErisPulse 项目的健全性还需要您的一份力！我们欢迎各种形式�
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=ErisPulse/ErisPulse&type=Date)](https://star-history.com/#ErisPulse/ErisPulse&Date)
+<a href="https://www.star-history.com/?repos=ErisPulse%2FErisPulse&type=timeline&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ErisPulse/ErisPulse&type=timeline&theme=dark&legend=top-left&sealed_token=dSxOL_p60ZstWJYFA6YhGk7dzLHnm5HUbvNqwYCJmAMHueCcrnwomVJn-q8VFHSEtBhhUIQ_FzUYAoLkGCI6x4BSL4YsnJGP68gYrSgLiMO162Ki6P6XDA" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ErisPulse/ErisPulse&type=timeline&legend=top-left&sealed_token=dSxOL_p60ZstWJYFA6YhGk7dzLHnm5HUbvNqwYCJmAMHueCcrnwomVJn-q8VFHSEtBhhUIQ_FzUYAoLkGCI6x4BSL4YsnJGP68gYrSgLiMO162Ki6P6XDA" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ErisPulse/ErisPulse&type=timeline&legend=top-left&sealed_token=dSxOL_p60ZstWJYFA6YhGk7dzLHnm5HUbvNqwYCJmAMHueCcrnwomVJn-q8VFHSEtBhhUIQ_FzUYAoLkGCI6x4BSL4YsnJGP68gYrSgLiMO162Ki6P6XDA" />
+ </picture>
+</a>
 
 ---
 
