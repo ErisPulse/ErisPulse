@@ -11,6 +11,20 @@ ErisPulse 模块系统
 
 ---
 
+## 函数列表
+
+
+### `_warn_deprecated_kwarg(owner: str, old: str, new: str)`
+
+> **内部方法**
+当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
+
+- **owner** (`所属方法名（如`): "ModuleManager.get"）
+- **old** (`已弃用的旧参数名`): - **new**: 推荐使用的新参数名
+
+---
+
+
 ## 类列表
 
 
@@ -39,12 +53,15 @@ ErisPulse 模块系统
 ---
 
 
-##### `register(module_name: str, module_class: type, module_info: dict | None = None)`
+##### `register(name: str | None = None, class_type: type | None = None, info: dict | None = None)`
 
 注册模块类
 
-- **module_name** (`模块名称`): - **module_class**: 模块类
-- **module_info** (`模块信息`): **返回值** (`是否注册成功`): **异常**: `TypeError` - 当模块类无效时抛出
+- **name** (`模块名称`): - **class_type**: 模块类
+- **info** (`模块信息`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+- **module_class** (`已弃用`): 兼容旧关键字参数，等同 class_type
+- **module_info** (`已弃用`): 兼容旧关键字参数，等同 info
+**返回值** (`是否注册成功`): **异常**: `TypeError` - 当模块类无效时抛出
 
 **示例**:
 ```python
@@ -54,11 +71,35 @@ ErisPulse 模块系统
 ---
 
 
-##### `async load(module_name: str)`
+##### `register_lazy(name: str, lazy_proxy: Any)`
+
+注册懒加载代理
+
+- **name** (`模块名称`): - **lazy_proxy**: 懒加载代理对象（LazyModule）
+
+> **内部方法**
+由加载器在创建 LazyModule 后调用。注册后 get() 会返回该代理，
+从而使“懒加载对用户透明”：已注册但未加载的模块不再返回 None。
+
+---
+
+
+##### `unregister_lazy(name: str)`
+
+取消注册懒加载代理
+
+- **name** (`模块名称`): > **内部方法**
+卸载/取消注册模块时调用，保持 _lazy_modules 与实际挂载状态一致。
+
+---
+
+
+##### `async load(name: str | None = None)`
 
 加载指定模块（标准化加载逻辑）
 
-- **module_name** (`模块名称`): **返回值** (`是否加载成功`): 
+- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`是否加载成功`): 
 **示例**:
 ```python
 >>> await module.load("MyModule")
@@ -67,11 +108,12 @@ ErisPulse 模块系统
 ---
 
 
-##### `async unload(module_name: str | None = None)`
+##### `async unload(name: str | None = None)`
 
 卸载指定模块或所有模块
 
-- **module_name** (`模块名称，None表示卸载所有模块（默认None）`): **返回值** (`是否卸载成功`): 
+- **name** (`模块名称，None表示卸载所有模块（默认None）`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`是否卸载成功`): 
 **示例**:
 ```python
 >>> await module.unload("MyModule")  # 卸载单个模块
@@ -91,11 +133,21 @@ ErisPulse 模块系统
 ---
 
 
-##### `get(module_name: str)`
+##### `get(name: str | None = None)`
 
-获取模块实例
+获取模块实例或懒加载代理
 
-- **module_name** (`模块名称`): **返回值** (`模块实例或None`): 
+- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`模块实例`): / 懒加载代理 / None
+
+> **提示**
+> 不会触发加载。返回值优先级：
+> 1. 已加载的真实实例（_modules）
+> 2. 懒加载代理（_lazy_modules，访问其属性才会触发初始化）
+> 3. None（模块未注册或未挂载）
+> 这使得 ``module.get()`` 与 ``sdk.xxx`` / ``module.MyModule``
+> 在“懒加载对用户透明”上保持一致：已注册但未加载的模块不再返回 None。
+
 **示例**:
 ```python
 >>> my_module = module.get("MyModule")
@@ -104,11 +156,12 @@ ErisPulse 模块系统
 ---
 
 
-##### `exists(module_name: str)`
+##### `exists(name: str | None = None)`
 
 检查模块是否已注册
 
-- **module_name** (`模块名称`): **返回值** (`模块是否已注册（即`): module.register() 已被调用）
+- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`模块是否已注册（即`): module.register() 已被调用）
 
 > **提示**
 > exists() 只检查模块类是否已注册到管理器，用于验证模块是否可以加载。
@@ -117,11 +170,12 @@ ErisPulse 模块系统
 ---
 
 
-##### `is_loaded(module_name: str)`
+##### `is_loaded(name: str | None = None)`
 
 检查模块是否已加载
 
-- **module_name** (`模块名称`): **返回值** (`模块是否已加载`): 
+- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`模块是否已加载`): 
 **示例**:
 ```python
 >>> if module.is_loaded("MyModule"): ...
@@ -130,11 +184,12 @@ ErisPulse 模块系统
 ---
 
 
-##### `is_running(module_name: str)`
+##### `is_running(name: str | None = None)`
 
 检查模块是否正在运行（已加载）
 
-- **module_name** (`模块名称`): **返回值** (`模块是否正在运行`): 
+- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`模块是否正在运行`): 
 **示例**:
 ```python
 >>> if module.is_running("MyModule"):
@@ -197,11 +252,12 @@ ErisPulse 模块系统
 ---
 
 
-##### `is_enabled(module_name: str)`
+##### `is_enabled(name: str | None = None)`
 
 检查模块是否启用
 
-- **module_name** (`模块名称`): **返回值** (`模块是否启用`): > **提示**
+- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`模块是否启用`): > **提示**
 > 模块启用条件：
 > 1. 模块在配置文件中（ErisPulse.modules.status.{module_name} 存在）
 > 2. 配置值为启用状态
@@ -210,31 +266,34 @@ ErisPulse 模块系统
 ---
 
 
-##### `enable(module_name: str)`
+##### `enable(name: str | None = None)`
 
 启用模块
 
-- **module_name** (`str`): 模块名称
+- **name** (`str`): 模块名称
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
 **返回值** (`bool`): 操作是否成功
 
 ---
 
 
-##### `disable(module_name: str)`
+##### `disable(name: str | None = None)`
 
 禁用模块
 
-- **module_name** (`str`): 模块名称
+- **name** (`str`): 模块名称
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
 **返回值** (`bool`): 操作是否成功
 
 ---
 
 
-##### `unregister(module_name: str)`
+##### `unregister(name: str | None = None)`
 
 取消注册模块
 
-- **module_name** (`模块名称`): **返回值** (`是否取消成功`): > **内部方法**
+- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`是否取消成功`): > **内部方法**
 注意：此方法仅取消注册，不卸载已加载的模块
 
 ---
@@ -261,11 +320,12 @@ ErisPulse 模块系统
 ---
 
 
-##### `get_info(module_name: str)`
+##### `get_info(name: str | None = None)`
 
 获取模块信息
 
-- **module_name** (`模块名称`): **返回值** (`模块信息字典，不存在则返回None`): 
+- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`模块信息字典，不存在则返回None`): 
 **示例**:
 ```python
 >>> info = module.get_info("MyModule")

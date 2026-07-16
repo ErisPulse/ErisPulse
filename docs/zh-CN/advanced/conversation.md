@@ -97,6 +97,27 @@ if choice is not None:
 
 用户可以通过输入编号（`1`/`2`/`3`）或选项文本（`红色`）来选择。
 
+`options_format="auto"`（默认）根据 method 自动选择内置样式：Markdown→无序列表，Html→有序列表，其他→纯文本列表。
+也支持 `"list"`、`"inline"`、`"md"`、`"html"` 或自定义函数。
+
+支持 `merge_prompt=True` 合并为一条消息，以及占位符控制选项插入位置（默认 `{options}`，可通过 `placeholder` 自定义）：
+
+```python
+choice = await conv.choose(
+    "## 请选择\n{options}",
+    ["选项A", "选项B"],
+    method="Markdown",
+    merge_prompt=True,
+)
+
+# 自定义占位符
+choice = await conv.choose(
+    "请选择: [choices]",
+    ["选项A", "选项B"],
+    placeholder="[choices]",
+)
+```
+
 ### collect(fields, **kwargs)
 
 多步骤收集信息，返回数据字典或 `None`：

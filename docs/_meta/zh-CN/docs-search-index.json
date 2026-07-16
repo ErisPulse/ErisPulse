@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1288,
+  "total_keywords": 1289,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -185,7 +185,7 @@
     "1. 异常处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 585,
+        "line": 602,
         "level": 3,
         "title": "1. 异常处理"
       }
@@ -591,7 +591,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 603,
+        "line": 620,
         "level": 3,
         "title": "2. 日志记录"
       }
@@ -1005,7 +1005,7 @@
     "3. 条件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 619,
+        "line": 636,
         "level": 3,
         "title": "3. 条件处理"
       }
@@ -1827,7 +1827,7 @@
     "@conv.branch(name) 装饰器": [
       {
         "document": "advanced/conversation.md",
-        "line": 169,
+        "line": 190,
         "level": 3,
         "title": "@conv.branch(name) 装饰器"
       }
@@ -2361,7 +2361,7 @@
     "Event 对象常用方法": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 508,
+        "line": 525,
         "level": 3,
         "title": "Event 对象常用方法"
       }
@@ -3327,7 +3327,7 @@
     "`hasattr` / `dir` 支持": [
       {
         "document": "api-reference/event-system.md",
-        "line": 489,
+        "line": 495,
         "level": 4,
         "title": "`hasattr` / `dir` 支持"
       }
@@ -3335,7 +3335,7 @@
     "`hasattr` 和 `dir` 支持": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 356,
+        "line": 395,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支持"
       }
@@ -3391,7 +3391,7 @@
     "collect(fields, **kwargs)": [
       {
         "document": "advanced/conversation.md",
-        "line": 100,
+        "line": 121,
         "level": 3,
         "title": "collect(fields, **kwargs)"
       }
@@ -3415,7 +3415,7 @@
     "conv.context": [
       {
         "document": "advanced/conversation.md",
-        "line": 221,
+        "line": 242,
         "level": 3,
         "title": "conv.context"
       }
@@ -3423,7 +3423,7 @@
     "conv.start(name=None)": [
       {
         "document": "advanced/conversation.md",
-        "line": 210,
+        "line": 231,
         "level": 3,
         "title": "conv.start(name=None)"
       }
@@ -3527,7 +3527,7 @@
     "is_active": [
       {
         "document": "advanced/conversation.md",
-        "line": 148,
+        "line": 169,
         "level": 3,
         "title": "is_active"
       }
@@ -3631,7 +3631,7 @@
     "save() / resume() / clear_saved()": [
       {
         "document": "advanced/conversation.md",
-        "line": 237,
+        "line": 258,
         "level": 3,
         "title": "save() / resume() / clear_saved()"
       }
@@ -3671,7 +3671,7 @@
     "stop()": [
       {
         "document": "advanced/conversation.md",
-        "line": 140,
+        "line": 161,
         "level": 3,
         "title": "stop()"
       }
@@ -3743,7 +3743,7 @@
     "上下文与持久化": [
       {
         "document": "advanced/conversation.md",
-        "line": 219,
+        "line": 240,
         "level": 2,
         "title": "上下文与持久化"
       }
@@ -3789,7 +3789,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 636,
+        "line": 653,
         "level": 2,
         "title": "下一步"
       },
@@ -4045,7 +4045,7 @@
     "事件处理最佳实践": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 583,
+        "line": 600,
         "level": 2,
         "title": "事件处理最佳实践"
       }
@@ -4119,7 +4119,7 @@
     "事件数据访问": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 506,
+        "line": 523,
         "level": 2,
         "title": "事件数据访问"
       }
@@ -4373,7 +4373,7 @@
     "交互方法示例": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 233,
+        "line": 242,
         "level": 4,
         "title": "交互方法示例"
       }
@@ -4461,7 +4461,7 @@
     "优先级系统": [
       {
         "document": "api-reference/event-system.md",
-        "line": 631,
+        "line": 637,
         "level": 2,
         "title": "优先级系统"
       }
@@ -4815,7 +4815,7 @@
     "典型流程模式": [
       {
         "document": "advanced/conversation.md",
-        "line": 257,
+        "line": 278,
         "level": 2,
         "title": "典型流程模式"
       }
@@ -4859,7 +4859,7 @@
     "内置确认词": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 499,
+        "line": 516,
         "level": 3,
         "title": "内置确认词"
       }
@@ -4891,7 +4891,7 @@
     "分支与跳转": [
       {
         "document": "advanced/conversation.md",
-        "line": 167,
+        "line": 188,
         "level": 2,
         "title": "分支与跳转"
       }
@@ -5109,7 +5109,7 @@
     "单个方法注册": [
       {
         "document": "api-reference/event-system.md",
-        "line": 500,
+        "line": 506,
         "level": 4,
         "title": "单个方法注册"
       }
@@ -5141,7 +5141,7 @@
     "原始数据": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 320,
+        "line": 359,
         "level": 3,
         "title": "原始数据"
       }
@@ -5533,7 +5533,7 @@
     "同步初始化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 85,
+        "line": 107,
         "level": 3,
         "title": "同步初始化"
       }
@@ -5609,7 +5609,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 311,
+        "line": 350,
         "level": 3,
         "title": "命令信息"
       }
@@ -5641,7 +5641,7 @@
     "命令基础": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 313,
+        "line": 352,
         "level": 4,
         "title": "命令基础"
       }
@@ -6353,7 +6353,7 @@
     "多轮对话 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 472,
+        "line": 489,
         "level": 3,
         "title": "多轮对话 (conversation)"
       }
@@ -6841,7 +6841,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 422,
+        "line": 428,
         "level": 3,
         "title": "工具方法"
       }
@@ -7001,19 +7001,19 @@
     "平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 437,
+        "line": 443,
         "level": 3,
         "title": "平台扩展方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 325,
+        "line": 364,
         "level": 3,
         "title": "平台扩展方法"
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 554,
+        "line": 571,
         "level": 3,
         "title": "平台扩展方法"
       }
@@ -7029,7 +7029,7 @@
     "平台方法隔离": [
       {
         "document": "api-reference/event-system.md",
-        "line": 473,
+        "line": 479,
         "level": 4,
         "title": "平台方法隔离"
       }
@@ -7255,7 +7255,7 @@
     "异步初始化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 73,
+        "line": 95,
         "level": 3,
         "title": "异步初始化"
       }
@@ -7315,7 +7315,7 @@
     "引导式注册": [
       {
         "document": "advanced/conversation.md",
-        "line": 259,
+        "line": 280,
         "level": 3,
         "title": "引导式注册"
       }
@@ -7323,7 +7323,7 @@
     "循环对话": [
       {
         "document": "advanced/conversation.md",
-        "line": 290,
+        "line": 311,
         "level": 3,
         "title": "循环对话"
       }
@@ -7691,7 +7691,7 @@
     "批量注册（Mixin 类）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 516,
+        "line": 522,
         "level": 4,
         "title": "批量注册（Mixin 类）"
       }
@@ -7799,7 +7799,7 @@
     "推荐使用懒加载的场景（lazy_load=True）": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 96,
+        "line": 118,
         "level": 3,
         "title": "推荐使用懒加载的场景（lazy_load=True）"
       }
@@ -7807,7 +7807,7 @@
     "推荐禁用懒加载的场景（lazy_load=False）": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 100,
+        "line": 122,
         "level": 3,
         "title": "推荐禁用懒加载的场景（lazy_load=False）"
       }
@@ -7953,7 +7953,7 @@
     "收集表单 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 431,
+        "line": 448,
         "level": 3,
         "title": "收集表单 (collect)"
       }
@@ -8221,7 +8221,7 @@
     "方法解析优先级": [
       {
         "document": "api-reference/event-system.md",
-        "line": 620,
+        "line": 626,
         "level": 3,
         "title": "方法解析优先级"
       }
@@ -8381,7 +8381,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 94,
+        "line": 116,
         "level": 2,
         "title": "最佳实践"
       },
@@ -8523,7 +8523,7 @@
     "查询已注册方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 347,
+        "line": 386,
         "level": 3,
         "title": "查询已注册方法"
       }
@@ -8531,7 +8531,7 @@
     "查询平台已注册方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 458,
+        "line": 464,
         "level": 4,
         "title": "查询平台已注册方法"
       }
@@ -9141,7 +9141,7 @@
     "注册跨平台方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 599,
+        "line": 605,
         "level": 3,
         "title": "注册跨平台方法"
       }
@@ -9163,7 +9163,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 109,
+        "line": 131,
         "level": 2,
         "title": "注意事项"
       },
@@ -9197,7 +9197,7 @@
     "注销方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 562,
+        "line": 568,
         "level": 4,
         "title": "注销方法"
       }
@@ -9213,7 +9213,7 @@
     "活跃状态管理": [
       {
         "document": "advanced/conversation.md",
-        "line": 157,
+        "line": 178,
         "level": 2,
         "title": "活跃状态管理"
       }
@@ -9841,7 +9841,7 @@
     "用户：使用平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 441,
+        "line": 447,
         "level": 4,
         "title": "用户：使用平台扩展方法"
       }
@@ -9929,7 +9929,7 @@
     "相关文档": [
       {
         "document": "advanced/conversation.md",
-        "line": 317,
+        "line": 338,
         "level": 2,
         "title": "相关文档"
       },
@@ -9941,7 +9941,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 115,
+        "line": 137,
         "level": 2,
         "title": "相关文档"
       },
@@ -9995,7 +9995,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 647,
+        "line": 653,
         "level": 2,
         "title": "相关文档"
       },
@@ -10043,7 +10043,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 382,
+        "line": 421,
         "level": 2,
         "title": "相关文档"
       },
@@ -10155,7 +10155,7 @@
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 451,
+        "line": 468,
         "level": 3,
         "title": "等待任意事件 (wait_for)"
       }
@@ -10328,6 +10328,14 @@
         "line": 419,
         "level": 3,
         "title": "统一捕获"
+      }
+    ],
+    "统一的模块获取入口": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 73,
+        "level": 3,
+        "title": "统一的模块获取入口"
       }
     ],
     "继承关系": [
@@ -10587,7 +10595,7 @@
     "覆写内置方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 574,
+        "line": 580,
         "level": 4,
         "title": "覆写内置方法"
       }
@@ -10895,13 +10903,13 @@
     "跨平台扩展（通配符）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 595,
+        "line": 601,
         "level": 2,
         "title": "跨平台扩展（通配符）"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 363,
+        "line": 402,
         "level": 3,
         "title": "跨平台扩展（通配符）"
       }
@@ -11067,7 +11075,7 @@
     "返回值规范": [
       {
         "document": "api-reference/event-system.md",
-        "line": 537,
+        "line": 543,
         "level": 4,
         "title": "返回值规范"
       }
@@ -11325,7 +11333,7 @@
     "适配器：注册平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 496,
+        "line": 502,
         "level": 3,
         "title": "适配器：注册平台扩展方法"
       }

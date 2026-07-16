@@ -398,8 +398,14 @@ if await event.confirm("http://example.com/image.jpg", method="Image"):
 # choose — 选择菜单（返回选项索引或 None）
 choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
 
-# choose 支持指定发送方法，富媒体方法会拆分为两条消息
-choice = await event.choose("请选择：", ["A", "B"], method="Markdown")
+# options_format="auto"（默认）根据 method 自动选择样式：
+# Markdown→无序列表（- 1.选项），Html→有序列表（<ol>），其他→纯文本列表
+# 文本类方法（Markdown/Html 等）默认合并选项到末尾
+# merge_prompt=True 可强制任意 method 合并；placeholder 可自定义占位符
+choice = await event.choose(
+    "## 请选择\n{options}", ["A", "B"],
+    method="Markdown", merge_prompt=True,
+)
 
 # collect — 表单收集（返回 {key: value} 字典或 None）
 data = await event.collect([

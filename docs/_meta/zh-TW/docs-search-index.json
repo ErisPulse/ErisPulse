@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1337,
+  "total_keywords": 1341,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -246,6 +246,14 @@
         "title": "1. 版本管理"
       }
     ],
+    "1. 異常處理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 602,
+        "level": 3,
+        "title": "1. 異常處理"
+      }
+    ],
     "1. 發送訊息": [
       {
         "document": "platform-guide/webhook.md",
@@ -300,14 +308,6 @@
         "line": 38,
         "level": 3,
         "title": "1. 配置 pyproject.toml"
-      }
-    ],
-    "1. 錯誤處理": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 585,
-        "level": 3,
-        "title": "1. 錯誤處理"
       }
     ],
     "1.1 接收類型 && 發送類型": [
@@ -591,7 +591,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 603,
+        "line": 620,
         "level": 3,
         "title": "2. 日誌記錄"
       }
@@ -999,7 +999,7 @@
     "3. 條件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 619,
+        "line": 636,
         "level": 3,
         "title": "3. 條件處理"
       }
@@ -1775,7 +1775,7 @@
     "@conv.branch(name) 裝飾器": [
       {
         "document": "advanced/conversation.md",
-        "line": 169,
+        "line": 190,
         "level": 3,
         "title": "@conv.branch(name) 裝飾器"
       }
@@ -2282,12 +2282,12 @@
         "title": "Event Mixin 方法"
       }
     ],
-    "Event 包裝類": [
+    "Event 包裝類別": [
       {
         "document": "api-reference/event-system.md",
         "line": 243,
         "level": 2,
-        "title": "Event 包裝類"
+        "title": "Event 包裝類別"
       }
     ],
     "Event 包裝類詳解": [
@@ -2306,20 +2306,20 @@
         "title": "Event 回覆方法"
       }
     ],
-    "Event 對象常用方法": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 508,
-        "level": 3,
-        "title": "Event 對象常用方法"
-      }
-    ],
     "Event 快捷方法": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 142,
         "level": 3,
         "title": "Event 快捷方法"
+      }
+    ],
+    "Event 物件常用方法": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 525,
+        "level": 3,
+        "title": "Event 物件常用方法"
       }
     ],
     "GET": [
@@ -3291,7 +3291,7 @@
     "`hasattr` / `dir` 支援": [
       {
         "document": "api-reference/event-system.md",
-        "line": 489,
+        "line": 495,
         "level": 4,
         "title": "`hasattr` / `dir` 支援"
       }
@@ -3299,7 +3299,7 @@
     "`hasattr` 和 `dir` 支援": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 356,
+        "line": 395,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支援"
       }
@@ -3355,7 +3355,7 @@
     "collect(fields, **kwargs)": [
       {
         "document": "advanced/conversation.md",
-        "line": 100,
+        "line": 121,
         "level": 3,
         "title": "collect(fields, **kwargs)"
       }
@@ -3379,7 +3379,7 @@
     "conv.context": [
       {
         "document": "advanced/conversation.md",
-        "line": 221,
+        "line": 242,
         "level": 3,
         "title": "conv.context"
       }
@@ -3387,7 +3387,7 @@
     "conv.start(name=None)": [
       {
         "document": "advanced/conversation.md",
-        "line": 210,
+        "line": 231,
         "level": 3,
         "title": "conv.start(name=None)"
       }
@@ -3491,7 +3491,7 @@
     "is_active": [
       {
         "document": "advanced/conversation.md",
-        "line": 148,
+        "line": 169,
         "level": 3,
         "title": "is_active"
       }
@@ -3595,7 +3595,7 @@
     "save() / resume() / clear_saved()": [
       {
         "document": "advanced/conversation.md",
-        "line": 237,
+        "line": 258,
         "level": 3,
         "title": "save() / resume() / clear_saved()"
       }
@@ -3635,7 +3635,7 @@
     "stop()": [
       {
         "document": "advanced/conversation.md",
-        "line": 140,
+        "line": 161,
         "level": 3,
         "title": "stop()"
       }
@@ -3723,7 +3723,7 @@
     "上下文與持久化": [
       {
         "document": "advanced/conversation.md",
-        "line": 219,
+        "line": 240,
         "level": 2,
         "title": "上下文與持久化"
       }
@@ -3769,7 +3769,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 636,
+        "line": 653,
         "level": 2,
         "title": "下一步"
       },
@@ -3958,6 +3958,14 @@
         "title": "事件擴展方法（WebhookEventMixin）"
       }
     ],
+    "事件數據存取": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 523,
+        "level": 2,
+        "title": "事件數據存取"
+      }
+    ],
     "事件流程": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -4073,7 +4081,7 @@
     "事件處理最佳實踐": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 583,
+        "line": 600,
         "level": 2,
         "title": "事件處理最佳實踐"
       }
@@ -4130,14 +4138,6 @@
         "line": 277,
         "level": 2,
         "title": "事件訂閱（Intents）"
-      }
-    ],
-    "事件資料存取": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 506,
-        "level": 2,
-        "title": "事件資料存取"
       }
     ],
     "事件轉換": [
@@ -4313,7 +4313,7 @@
     "互動方法示例": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 233,
+        "line": 242,
         "level": 4,
         "title": "互動方法示例"
       }
@@ -4430,12 +4430,12 @@
         "title": "使用 pip 安裝"
       }
     ],
-    "使用 reply 方法發送回覆": [
+    "使用 reply 方法傳送回覆": [
       {
         "document": "getting-started/event-handling.md",
         "line": 302,
         "level": 3,
-        "title": "使用 reply 方法發送回覆"
+        "title": "使用 reply 方法傳送回覆"
       }
     ],
     "使用Send DSL指定帳戶": [
@@ -4454,12 +4454,12 @@
         "title": "使用介面卡事件監聽"
       }
     ],
-    "使用延遲載入模組": [
+    "使用慢載模組": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 59,
         "level": 2,
-        "title": "使用延遲載入模組"
+        "title": "使用慢載模組"
       }
     ],
     "使用方式": [
@@ -4545,7 +4545,7 @@
     "使用者：使用平台擴展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 441,
+        "line": 447,
         "level": 4,
         "title": "使用者：使用平台擴展方法"
       }
@@ -4717,7 +4717,7 @@
     "優先級系統": [
       {
         "document": "api-reference/event-system.md",
-        "line": 631,
+        "line": 637,
         "level": 2,
         "title": "優先級系統"
       }
@@ -4831,7 +4831,7 @@
     "內建確認詞": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 499,
+        "line": 516,
         "level": 3,
         "title": "內建確認詞"
       }
@@ -4852,12 +4852,12 @@
         "title": "內聯查詢事件"
       }
     ],
-    "全域設定": [
+    "全域配置": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 32,
         "level": 3,
-        "title": "全域設定"
+        "title": "全域配置"
       }
     ],
     "全域配置（EmailAdapter）": [
@@ -4895,7 +4895,7 @@
     "典型流程模式": [
       {
         "document": "advanced/conversation.md",
-        "line": 257,
+        "line": 278,
         "level": 2,
         "title": "典型流程模式"
       }
@@ -4911,7 +4911,7 @@
     "分支與跳轉": [
       {
         "document": "advanced/conversation.md",
-        "line": 167,
+        "line": 188,
         "level": 2,
         "title": "分支與跳轉"
       }
@@ -5105,7 +5105,7 @@
     "原始資料": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 320,
+        "line": 359,
         "level": 3,
         "title": "原始資料"
       }
@@ -5221,7 +5221,7 @@
     "同步初始化": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 85,
+        "line": 106,
         "level": 3,
         "title": "同步初始化"
       }
@@ -5269,7 +5269,7 @@
     "命令基礎": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 313,
+        "line": 352,
         "level": 4,
         "title": "命令基礎"
       }
@@ -5282,12 +5282,12 @@
         "title": "命令權限"
       }
     ],
-    "命令組": [
+    "命令群組": [
       {
         "document": "getting-started/event-handling.md",
         "line": 111,
         "level": 3,
-        "title": "命令組"
+        "title": "命令群組"
       }
     ],
     "命令資訊": [
@@ -5305,7 +5305,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 311,
+        "line": 350,
         "level": 3,
         "title": "命令資訊"
       }
@@ -5358,12 +5358,12 @@
         "title": "啟用虛擬環境"
       }
     ],
-    "單個方法註冊": [
+    "單一方法註冊": [
       {
         "document": "api-reference/event-system.md",
-        "line": 500,
+        "line": 506,
         "level": 4,
-        "title": "單個方法註冊"
+        "title": "單一方法註冊"
       }
     ],
     "單帳號配置": [
@@ -5963,7 +5963,7 @@
     "多輪對話 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 472,
+        "line": 489,
         "level": 3,
         "title": "多輪對話 (conversation)"
       }
@@ -6048,12 +6048,12 @@
         "title": "好友操作方法"
       }
     ],
-    "好友添加": [
+    "好友新增": [
       {
         "document": "getting-started/event-handling.md",
         "line": 190,
         "level": 3,
-        "title": "好友添加"
+        "title": "好友新增"
       }
     ],
     "好友被拒事件": [
@@ -6434,12 +6434,6 @@
         "title": "工作原理"
       },
       {
-        "document": "advanced/lazy-loading.md",
-        "line": 14,
-        "level": 2,
-        "title": "工作原理"
-      },
-      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 218,
         "level": 3,
@@ -6469,7 +6463,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 422,
+        "line": 428,
         "level": 3,
         "title": "工具方法"
       }
@@ -6546,12 +6540,12 @@
         "title": "帶內聯鍵盤的訊息"
       }
     ],
-    "帶回調的等待回覆": [
+    "帶回呼的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
         "line": 374,
         "level": 3,
-        "title": "帶回調的等待回覆"
+        "title": "帶回呼的等待回覆"
       }
     ],
     "帶附件的郵件": [
@@ -6668,6 +6662,14 @@
         "title": "平台原生事件"
       }
     ],
+    "平台擴充方法": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 571,
+        "level": 3,
+        "title": "平台擴充方法"
+      }
+    ],
     "平台擴充欄位": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -6679,19 +6681,13 @@
     "平台擴展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 437,
+        "line": 443,
         "level": 3,
         "title": "平台擴展方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 325,
-        "level": 3,
-        "title": "平台擴展方法"
-      },
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 554,
+        "line": 364,
         "level": 3,
         "title": "平台擴展方法"
       }
@@ -6715,7 +6711,7 @@
     "平台方法隔離": [
       {
         "document": "api-reference/event-system.md",
-        "line": 473,
+        "line": 479,
         "level": 4,
         "title": "平台方法隔離"
       }
@@ -6814,14 +6810,6 @@
         "title": "延遲載入"
       }
     ],
-    "延遲載入模組系統": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 1,
-        "level": 1,
-        "title": "延遲載入模組系統"
-      }
-    ],
     "建立第一個機器人": [
       {
         "document": "getting-started/first-bot.md",
@@ -6854,26 +6842,10 @@
         "title": "建立表"
       }
     ],
-    "建議使用延遲載入的情境 (lazy_load=True)": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 96,
-        "level": 3,
-        "title": "建議使用延遲載入的情境 (lazy_load=True)"
-      }
-    ],
-    "建議停用延遲載入的情境 (lazy_load=False)": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 100,
-        "level": 3,
-        "title": "建議停用延遲載入的情境 (lazy_load=False)"
-      }
-    ],
     "引導式註冊": [
       {
         "document": "advanced/conversation.md",
-        "line": 259,
+        "line": 280,
         "level": 3,
         "title": "引導式註冊"
       }
@@ -6913,7 +6885,7 @@
     "循環對話": [
       {
         "document": "advanced/conversation.md",
-        "line": 290,
+        "line": 311,
         "level": 3,
         "title": "循環對話"
       }
@@ -7064,6 +7036,14 @@
         "title": "慢加載機制"
       }
     ],
+    "慢載模組系統": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 1,
+        "level": 1,
+        "title": "慢載模組系統"
+      }
+    ],
     "懶載入系統": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -7174,12 +7154,12 @@
         "title": "批量操作"
       }
     ],
-    "批量註冊（Mixin 類）": [
+    "批量註冊（Mixin 類別）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 516,
+        "line": 522,
         "level": 4,
-        "title": "批量註冊（Mixin 類）"
+        "title": "批量註冊（Mixin 類別）"
       }
     ],
     "技術標準": [
@@ -7312,6 +7292,22 @@
         "line": 7,
         "level": 3,
         "title": "接收類型 (ReceiveType)"
+      }
+    ],
+    "推薦使用慢載的場景（lazy_load=True）": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 117,
+        "level": 3,
+        "title": "推薦使用慢載的場景（lazy_load=True）"
+      }
+    ],
+    "推薦停用慢載的場景（lazy_load=False）": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 121,
+        "level": 3,
+        "title": "推薦停用慢載的場景（lazy_load=False）"
       }
     ],
     "提供的工具": [
@@ -7535,7 +7531,7 @@
     "收集表單 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 431,
+        "line": 448,
         "level": 3,
         "title": "收集表單 (collect)"
       }
@@ -7799,7 +7795,7 @@
     "方法解析優先級": [
       {
         "document": "api-reference/event-system.md",
-        "line": 620,
+        "line": 626,
         "level": 3,
         "title": "方法解析優先級"
       }
@@ -7945,7 +7941,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 94,
+        "line": 115,
         "level": 2,
         "title": "最佳實踐"
       },
@@ -7986,16 +7982,18 @@
     ],
     "會話標識": [
       {
-        "document": "api-reference/event-system.md",
-        "line": 263,
-        "level": 3,
-        "title": "會話標識"
-      },
-      {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 104,
         "level": 4,
         "title": "會話標識"
+      }
+    ],
+    "會話識別": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 263,
+        "level": 3,
+        "title": "會話識別"
       }
     ],
     "會話類型系統": [
@@ -8053,7 +8051,7 @@
     "查詢已註冊方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 347,
+        "line": 386,
         "level": 3,
         "title": "查詢已註冊方法"
       }
@@ -8061,7 +8059,7 @@
     "查詢平台已註冊方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 458,
+        "line": 464,
         "level": 4,
         "title": "查詢平台已註冊方法"
       }
@@ -8140,14 +8138,6 @@
         "line": 17,
         "level": 3,
         "title": "核心原則"
-      }
-    ],
-    "核心字段方法": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 12,
-        "level": 2,
-        "title": "核心字段方法"
       }
     ],
     "核心差異點": [
@@ -8262,6 +8252,14 @@
         "line": 177,
         "level": 2,
         "title": "核心模組說明"
+      }
+    ],
+    "核心欄位方法": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 12,
+        "level": 2,
+        "title": "核心欄位方法"
       }
     ],
     "核心特性": [
@@ -8669,7 +8667,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 109,
+        "line": 130,
         "level": 2,
         "title": "注意事項"
       },
@@ -8695,7 +8693,7 @@
     "活躍狀態管理": [
       {
         "document": "advanced/conversation.md",
-        "line": 157,
+        "line": 178,
         "level": 2,
         "title": "活躍狀態管理"
       }
@@ -9176,6 +9174,14 @@
         "title": "異步介面"
       }
     ],
+    "異步初始化": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 94,
+        "level": 3,
+        "title": "異步初始化"
+      }
+    ],
     "異步發送與結果處理": [
       {
         "document": "platform-guide/README.md",
@@ -9402,12 +9408,12 @@
         "title": "監聽成員變更"
       }
     ],
-    "監聽所有消息": [
+    "監聽所有訊息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 25,
         "level": 3,
-        "title": "監聽所有消息"
+        "title": "監聽所有訊息"
       }
     ],
     "監聽消息審核結果": [
@@ -9468,8 +9474,14 @@
     ],
     "相關文件": [
       {
+        "document": "advanced/conversation.md",
+        "line": 338,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
         "document": "advanced/lazy-loading.md",
-        "line": 115,
+        "line": 136,
         "level": 2,
         "title": "相關文件"
       },
@@ -9517,7 +9529,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 647,
+        "line": 653,
         "level": 2,
         "title": "相關文件"
       },
@@ -9553,7 +9565,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 382,
+        "line": 421,
         "level": 2,
         "title": "相關文件"
       },
@@ -9577,12 +9589,6 @@
       }
     ],
     "相關文檔": [
-      {
-        "document": "advanced/conversation.md",
-        "line": 317,
-        "level": 2,
-        "title": "相關文檔"
-      },
       {
         "document": "advanced/http-client.md",
         "line": 479,
@@ -9699,9 +9705,17 @@
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 451,
+        "line": 468,
         "level": 3,
         "title": "等待任意事件 (wait_for)"
+      }
+    ],
+    "等待使用者回覆": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 330,
+        "level": 3,
+        "title": "等待使用者回覆"
       }
     ],
     "等待回覆": [
@@ -9718,14 +9732,6 @@
         "line": 193,
         "level": 3,
         "title": "等待回覆功能"
-      }
-    ],
-    "等待用戶回覆": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 330,
-        "level": 3,
-        "title": "等待用戶回覆"
       }
     ],
     "等待結果": [
@@ -9854,6 +9860,14 @@
         "line": 419,
         "level": 3,
         "title": "統一捕獲"
+      }
+    ],
+    "統一的模組取得入口": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 73,
+        "level": 3,
+        "title": "統一的模組取得入口"
       }
     ],
     "網絡客戶端": [
@@ -10217,7 +10231,7 @@
     "覆寫內建方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 574,
+        "line": 580,
         "level": 4,
         "title": "覆寫內建方法"
       }
@@ -10609,7 +10623,7 @@
     "註冊跨平台方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 599,
+        "line": 605,
         "level": 3,
         "title": "註冊跨平台方法"
       }
@@ -10633,7 +10647,7 @@
     "註銷方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 562,
+        "line": 568,
         "level": 4,
         "title": "註銷方法"
       }
@@ -10867,7 +10881,7 @@
     "跨平台擴展（萬用字元）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 595,
+        "line": 601,
         "level": 2,
         "title": "跨平台擴展（萬用字元）"
       }
@@ -10875,7 +10889,7 @@
     "跨平台擴展（通配符）": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 363,
+        "line": 402,
         "level": 3,
         "title": "跨平台擴展（通配符）"
       }
@@ -11003,7 +11017,7 @@
     "返回值規範": [
       {
         "document": "api-reference/event-system.md",
-        "line": 537,
+        "line": 543,
         "level": 4,
         "title": "返回值規範"
       }
@@ -11220,20 +11234,20 @@
         "title": "連式調用示例"
       }
     ],
-    "連接事件": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 253,
-        "level": 3,
-        "title": "連接事件"
-      }
-    ],
     "連接流程": [
       {
         "document": "platform-guide/qqbot.md",
         "line": 254,
         "level": 3,
         "title": "連接流程"
+      }
+    ],
+    "連線事件": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 253,
+        "level": 3,
+        "title": "連線事件"
       }
     ],
     "連線流程": [
@@ -11294,6 +11308,14 @@
         "line": 75,
         "level": 3,
         "title": "進階主題"
+      }
+    ],
+    "運作原理": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 14,
+        "level": 2,
+        "title": "運作原理"
       }
     ],
     "運行測試": [
@@ -11443,7 +11465,7 @@
     "適配器：註冊平台擴展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 496,
+        "line": 502,
         "level": 3,
         "title": "適配器：註冊平台擴展方法"
       }
@@ -11464,12 +11486,12 @@
         "title": "遵循規範的好處"
       }
     ],
-    "選擇菜單 (choose)": [
+    "選單選擇 (choose)": [
       {
         "document": "getting-started/event-handling.md",
         "line": 412,
         "level": 3,
-        "title": "選擇菜單 (choose)"
+        "title": "選單選擇 (choose)"
       }
     ],
     "部署": [
@@ -11520,12 +11542,12 @@
         "title": "配置"
       }
     ],
-    "配置延遲載入": [
+    "配置慢載": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 30,
         "level": 2,
-        "title": "配置延遲載入"
+        "title": "配置慢載"
       }
     ],
     "配置檔案位置": [
@@ -12068,14 +12090,6 @@
         "line": 169,
         "level": 3,
         "title": "靜態工廠 + 鏈式混合"
-      }
-    ],
-    "非同步初始化": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 73,
-        "level": 3,
-        "title": "非同步初始化"
       }
     ],
     "非同步程式設計": [
