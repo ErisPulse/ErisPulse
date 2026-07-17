@@ -2,19 +2,73 @@
 ErisPulse 文档索引生成器
 
 自动扫描 docs/ 目录，生成文档映射索引和搜索索引
+
+特性：
+- 多语言分类映射（zh-CN / zh-TW / en / ja / ru）
+- 按优先级排序分类与文档
+- 支持子分组（如 "模块开发" / "适配器开发"）
+- 同时输出映射索引（docs-mapping.json）与搜索索引（docs-search-index.json）
+
+使用方法:
+    python scripts/tools/generate-docs-index.py
+    python scripts/tools/generate-docs-index.py --lang zh-CN
+    python scripts/tools/generate-docs-index.py --docs docs --output docs/_meta
 """
 
 import os
 import re
 import json
 import argparse
+import sys
+import threading
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 from pathlib import Path
 
 
+class Logger:
+    """线程安全的标准输出日志器"""
+
+    _lock = threading.Lock()
+
+    @classmethod
+    def log(cls, msg: str):
+        """
+        输出一行日志
+
+        :param msg: 日志内容
+        """
+        with cls._lock:
+            sys.stdout.write(msg + "\n")
+            sys.stdout.flush()
+
+    @classmethod
+    def progress(cls, rel_path: str, status: str, detail: str = ""):
+        """
+        输出单条文档解析进度
+
+        :param rel_path: 文件相对路径
+        :param status: 状态标识（parse/skip/warn/done 等）
+        :param detail: 附加详情，可选
+        """
+        tag = {
+            "parse": "[PARSE]",
+            "skip": "[SKIP]",
+            "warn": "[WARN]",
+            "done": "[DONE]",
+        }.get(status, f"[{status.upper()}]")
+        line = f"  {tag} {rel_path}"
+        if detail:
+            line += f"  {detail}"
+        cls.log(line)
+
+
 class DocsIndexGenerator:
-    """文档索引生成器"""
+    """文档索引生成器
+
+    根据语言生成 Markdown 文档的映射索引与搜索索引，
+    支持多语言分类映射、优先级排序以及子分组展示。
+    """
 
     # 多语言分类映射配置
     CATEGORY_TRANSLATIONS = {
@@ -326,7 +380,9 @@ class DocsIndexGenerator:
         self._init_category_mappings()
 
     def _init_category_mappings(self):
-        """根据语言初始化分类映射"""
+        """根据语言初始化分类映射表、描述与优先级
+
+        未匹配语言时回退到中文映射。"""
         if self.lang and self.lang in self.CATEGORY_TRANSLATIONS:
             # 使用指定语言的映射
             lang_config = self.CATEGORY_TRANSLATIONS[self.lang]
@@ -496,14 +552,14 @@ class DocsIndexGenerator:
             with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
         except Exception as e:
-            print(f"  [警告] 无法读取文件 {file_info['relative_path']}: {e}")
+            Logger.progress(file_info["relative_path"], "warn", f"读取失败: {e}")
             return None
 
         # 解析标题
         headings = self.parse_headings(content)
 
         if not headings:
-            print(f"  [跳过] {file_info['relative_path']} (无标题)")
+            Logger.progress(file_info["relative_path"], "skip", "无标题")
             return None
 
         # 获取文档标题
@@ -511,6 +567,8 @@ class DocsIndexGenerator:
 
         # 获取文件修改时间
         mod_time = datetime.fromtimestamp(file_path.stat().st_mtime).isoformat()
+
+        Logger.progress(file_info["relative_path"], "parse", title)
 
         return {
             "title": title,
@@ -685,7 +743,7 @@ class DocsIndexGenerator:
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(index, f, ensure_ascii=False, indent=2)
 
-        print(f"  [完成] {filename}")
+        Logger.progress(filename, "done")
 
     def run(self, deprecated: bool = False):
         """
@@ -693,77 +751,73 @@ class DocsIndexGenerator:
 
         :param deprecated: 是否为弃用模式
         """
-        print("=" * 60)
-        print("ErisPulse 文档索引生成器 v1.0")
-        print("=" * 60)
-        print()
+        Logger.log("=" * 60)
+        Logger.log("ErisPulse 文档索引生成器")
+        Logger.log("=" * 60)
         if self.lang:
-            print(f"语言: {self.lang}")
-        print(f"文档目录: {self.actual_docs_dir}")
-        print(f"输出目录: {self.output_dir}")
-        print()
+            Logger.log(f"语言: {self.lang}")
+        Logger.log(f"文档目录: {self.actual_docs_dir}")
+        Logger.log(f"输出目录: {self.output_dir}")
+        Logger.log("")
 
         # 确保输出目录存在
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # 扫描文档
-        print("[1/4] 扫描文档目录...")
         file_infos = self.scan_docs()
-        print(f"  发现 {len(file_infos)} 个 Markdown 文件")
-        print()
+        Logger.log(f"发现 {len(file_infos)} 个 Markdown 文件")
+        Logger.log("")
 
         # 解析文档
-        print("[2/4] 解析文档内容...")
+        Logger.log("解析文档内容...")
         documents = []
         for file_info in file_infos:
             doc = self.parse_document(file_info)
             if doc:
                 documents.append(doc)
-                print(f"  [解析] {doc['path']}")
-        print(f"  成功解析 {len(documents)} 个文档")
-        print()
+        Logger.log(f"成功解析 {len(documents)} 个文档")
+        Logger.log("")
 
         # 生成映射索引
-        print("[3/4] 生成文档映射索引...")
+        Logger.log("生成文档映射索引...")
         mapping_index = self.generate_mapping_index(documents, deprecated=deprecated)
-        print(f"  生成 {len(mapping_index['categories'])} 个分类")
-        print()
+        Logger.log(f"生成 {len(mapping_index['categories'])} 个分类")
+        Logger.log("")
 
         # 生成搜索索引
-        print("[4/4] 生成文档搜索索引...")
+        Logger.log("生成文档搜索索引...")
         search_index = self.generate_search_index(documents)
-        print(f"  生成 {len(search_index['keywords'])} 个关键词")
-        print()
+        Logger.log(f"生成 {len(search_index['keywords'])} 个关键词")
+        Logger.log("")
 
         # 保存索引
-        print("保存索引文件...")
+        Logger.log("保存索引文件...")
         self.save_index(mapping_index, "docs-mapping.json")
         self.save_index(search_index, "docs-search-index.json")
-        print()
+        Logger.log("")
 
         # 完成统计
-        print("=" * 60)
-        print("索引生成完成！")
-        print(f"  文档总数: {len(documents)}")
-        print(f"  分类总数: {len(mapping_index['categories'])}")
-        print(f"  关键词总数: {len(search_index['keywords'])}")
-        print(f"  输出目录: {self.output_dir}")
-        print("=" * 60)
+        Logger.log("=" * 60)
+        Logger.log(f"文档总数: {len(documents)}")
+        Logger.log(f"分类总数: {len(mapping_index['categories'])}")
+        Logger.log(f"关键词总数: {len(search_index['keywords'])}")
+        Logger.log(f"输出目录: {self.output_dir}")
+        Logger.log("=" * 60)
 
 
 def main():
-    """主函数"""
+    """命令行入口：解析参数并运行文档索引生成器"""
     parser = argparse.ArgumentParser(
-        description="ErisPulse 文档索引生成器 v1.0",
+        description="ErisPulse 文档索引生成器",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
+        epilog="""\
 示例:
   # 使用默认设置（为所有语言生成索引）
   python scripts/tools/generate-docs-index.py
-  
+
   # 只为特定语言生成索引
   python scripts/tools/generate-docs-index.py --lang zh-CN
-  
+
   # 自定义文档目录和输出目录
   python scripts/tools/generate-docs-index.py --docs docs --output docs/_meta
         """,
@@ -776,9 +830,6 @@ def main():
     parser.add_argument(
         "--lang", help="指定语言代码（如: zh-CN, en, zh-TW），不指定则为所有语言生成"
     )
-    parser.add_argument(
-        "--version", action="version", version="ErisPulse 文档索引生成器 v1.0"
-    )
 
     args = parser.parse_args()
 
@@ -786,29 +837,27 @@ def main():
 
     # 如果指定了语言，只为该语言生成索引
     if args.lang:
-        print(f"为语言 {args.lang} 生成索引...")
         lang_output_dir = Path(args.output) / args.lang
         generator = DocsIndexGenerator(str(docs_dir), str(lang_output_dir), args.lang)
         generator.run(deprecated=False)
     else:
         # 为所有语言生成索引
         langs = DocsIndexGenerator.get_available_languages(docs_dir)
-        print(f"发现 {len(langs)} 个语言: {', '.join(langs)}")
-        print()
+        Logger.log(f"发现 {len(langs)} 个语言: {', '.join(langs)}")
+        Logger.log("")
 
         for lang in langs:
-            print(f"\n{'=' * 60}")
-            print(f"处理语言: {lang}")
-            print("=" * 60)
+            Logger.log(f"--- {lang} ---")
 
             lang_output_dir = Path(args.output) / lang
             generator = DocsIndexGenerator(str(docs_dir), str(lang_output_dir), lang)
             generator.run(deprecated=False)
+            Logger.log("")
 
         # 生成语言索引
-        print(f"\n{'=' * 60}")
-        print("生成语言索引...")
-        print("=" * 60)
+        Logger.log("=" * 60)
+        Logger.log("生成语言索引...")
+        Logger.log("=" * 60)
 
         languages_index = {
             "version": "1.0",
@@ -832,19 +881,20 @@ def main():
                             for cat in lang_data.get("categories", {}).values()
                         )
                 except Exception as e:
-                    print(f"  [警告] 无法读取 {lang} 的映射文件: {e}")
+                    Logger.progress(lang, "warn", f"无法读取映射文件: {e}")
 
             languages_index["languages"][lang] = {
                 "docs_count": total_docs,
                 "mapping_path": lang_index_path,
             }
-            print(f"  {lang}: {total_docs} 个文档")
+            Logger.log(f"  {lang}: {total_docs} 个文档")
 
         # 保存语言索引
         output_file = Path(args.output) / "docs-mapping.json"
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(languages_index, f, ensure_ascii=False, indent=2)
-        print(f"\n  [完成] 语言索引已保存到 {output_file}")
+        Logger.log("")
+        Logger.progress(str(output_file), "done", "语言索引已保存")
 
 
 if __name__ == "__main__":
