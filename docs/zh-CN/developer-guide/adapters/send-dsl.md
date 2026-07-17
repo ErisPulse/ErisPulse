@@ -36,17 +36,32 @@ Using/Account() → To() → [修饰方法] → [发送方法]
 
 ## 发送方法
 
-所有发送方法必须返回 `asyncio.Task` 对象。
+所有发送方法返回 `asyncio.Task` 对象。
 
-### 基本方法
+### 基本方法（基类内置）
+
+以下标准方法已由 `SendDSL` 基类内置实现，**默认委托给 `Raw_ob12`**，适配器子类无需重复实现即可直接使用，且 IDE 能补全：
 
 | 方法名 | 说明 | 返回值 |
 |--------|------|---------|
 | `Text(text: str)` | 发送文本消息 | `asyncio.Task` |
 | `Image(file: bytes \| str)` | 发送图片 | `asyncio.Task` |
-| `Voice(file: bytes \| str)` | 发送语音 | `asyncio.Task` |
+| `Voice(file: bytes \| str)` | 发送语音（OneBot12 `audio` 段） | `asyncio.Task` |
 | `Video(file: bytes \| str)` | 发送视频 | `asyncio.Task` |
-| `File(file: bytes \| str)` | 发送文件 | `asyncio.Task` |
+| `File(file: bytes \| str, filename: str = None)` | 发送文件 | `asyncio.Task` |
+
+适配器可覆盖单个标准方法以提供平台特定逻辑：
+
+```python
+class Send(SendDSL):
+    def Raw_ob12(self, message, **kwargs):
+        # 必须实现
+        ...
+
+    # 可选：覆盖 Text 以提供平台特定逻辑
+    # def Text(self, text: str):
+    #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
+```
 
 ### 协议方法
 
@@ -54,7 +69,20 @@ Using/Account() → To() → [修饰方法] → [发送方法]
 |--------|------|---------|---------|
 | `Raw_ob12(message)` | 发送 OneBot12 格式消息 | `asyncio.Task` | **必须实现** |
 
-> **重要**：`Raw_ob12` 是适配器的核心方法，**必须实现**。它是反向转换（OneBot12 → 平台）的统一入口。未实现时基类会记录 error 日志并返回标准错误响应（`status: "failed"`, `retcode: 10002`）。标准方法（`Text`、`Image` 等）内部应委托给 `Raw_ob12`。
+> **重要**：`Raw_ob12` 是适配器的核心方法，**必须实现**。它是反向转换（OneBot12 → 平台）的统一入口。未实现时基类会记录 error 日志并返回标准错误响应（`status: "failed"`, `retcode: 10002`）。标准方法（`Text`、`Image` 等）默认委托给 `Raw_ob12`。
+
+### 平台特有方法
+
+适配器可在 `Send` 子类中添加平台特有的发送方法（会被 `event.supports()` / `event.available_methods()` 识别）：
+
+```python
+class Send(SendDSL):
+    def Raw_ob12(self, message, **kwargs): ...
+
+    # 平台特有方法
+    def Sticker(self, sticker_id: str):
+        return self.Raw_ob12([{"type": "sticker", "data": {"id": sticker_id}}])
+```
 
 ## 修饰方法
 
@@ -443,20 +471,26 @@ def TelegramSticker(self, ...):
 
 ### Task 对象
 
-所有发送方法返回 `asyncio.Task`：
+所有发送方法返回 `asyncio.Task`。适配器只需实现 `Raw_ob12`，标准方法（Text/Image 等）默认委托给它：
 
 ```python
 import asyncio
 
-def Text(self, text: str):
-    return asyncio.create_task(
-        self._adapter.call_api(
-            endpoint="/send",
-            content=text,
-            recvId=self._target_id,
-            recvType=self._target_type
+def Raw_ob12(self, message, **kwargs):
+    async def _do_send():
+        segments = self._apply_modifiers(message)
+        return await self._adapter.call_api(
+            endpoint="/send_message",
+            message=segments,
+            **self.send_context,
+            **kwargs,
         )
-    )
+    return asyncio.create_task(_do_send())
+
+# Text/Image/Voice/Video/File 已从基类继承，自动委托给 Raw_ob12
+# 如需覆盖标准方法，返回 asyncio.Task 即可：
+# def Text(self, text: str):
+#     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 ### 标准化响应

@@ -333,31 +333,25 @@ await send.Raw_ob12([
 
 ### 6.4 `Raw_ob12` 与标准方法的关系
 
-适配器的标准发送方法（`Text`、`Image` 等）内部应委托给 `Raw_ob12`，而非独立实现：
+适配器的标准发送方法（`Text`、`Image` 等）**已由 `SendDSL` 基类内置实现并默认委托给 `Raw_ob12`**，适配器子类无需重复实现：
 
 ```python
 class Send(SendDSL):
     def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
-        """核心实现：OneBot12 消息段 → 平台 API"""
+        """核心实现：OneBot12 消息段 → 平台 API（必须实现）"""
         return asyncio.create_task(self._send_ob12(message_segments))
-    
-    def Text(self, text: str) -> asyncio.Task:
-        """标准方法，委托给 Raw_ob12"""
-        return self.Raw_ob12([
-            {"type": "text", "data": {"text": text}}
-        ])
-    
-    def Image(self, image: Union[str, bytes]) -> asyncio.Task:
-        """标准方法，委托给 Raw_ob12"""
-        return self.Raw_ob12([
-            {"type": "image", "data": {"file": image}}
-        ])
+
+    # Text/Image/Voice/Video/File 已从基类继承，自动委托 Raw_ob12
+    # 如需平台特定逻辑，可覆盖单个方法：
+    # def Text(self, text: str) -> asyncio.Task:
+    #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 **好处**：
 - 转换逻辑集中在 `Raw_ob12` 一处，减少重复代码
 - 标准方法和 `Raw_ob12` 行为完全一致
 - 模块无论使用 `Text()` 还是 `Raw_ob12()` 都能得到相同结果
+- 基类提供类型签名，IDE 能补全标准方法
 
 ### 6.5 实现示例
 

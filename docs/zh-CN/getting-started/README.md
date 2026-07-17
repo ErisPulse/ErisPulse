@@ -12,6 +12,7 @@
 | 2 | [基础概念](basic-concepts.md) | 理解 ErisPulse 的核心架构和模块设计 |
 | 3 | [事件处理入门](event-handling.md) | 学习如何处理消息、命令、通知等各类事件 |
 | 4 | [常见任务示例](common-tasks.md) | 掌握数据持久化、定时任务、权限控制等常用功能 |
+| 5 | [IDE 补全指南](ide-completion.md) | 生成类型存根，启用平台特有方法的 IDE 自动补全 |
 
 ## 开发方式选择
 

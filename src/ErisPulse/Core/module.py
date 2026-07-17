@@ -6,7 +6,7 @@ ErisPulse 模块系统
 
 import inspect
 import warnings
-from typing import Any
+from typing import Any, TypeVar
 
 from ..runtime.context import current_owner
 from .Bases import BaseModule
@@ -23,6 +23,10 @@ from .logger import logger
 
 # 已记录过的弃用警告（owner, old_kwarg），每个组合只警告一次，避免热路径日志刷屏
 _DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
+
+# 模块类型 TypeVar，用于 get() 的泛型返回，让用户可通过类型注解获得 IDE 补全
+# 用法： my_module: MyModule = sdk.module.get("MyModule")
+_TModule = TypeVar("_TModule", bound=BaseModule)
 
 
 def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
@@ -493,7 +497,7 @@ class ModuleManager(ManagerBase):
             logger.error(i18n.t("core.module.unload_failed", name=module_name, error=e))
             return False
 
-    def get(self, name: str | None = None, *, module_name: str | None = None) -> Any:
+    def get(self, name: str | None = None, *, module_name: str | None = None) -> "_TModule | Any | None":
         """
         获取模块实例或懒加载代理
 
@@ -508,6 +512,12 @@ class ModuleManager(ManagerBase):
         3. None（模块未注册或未挂载）
         这使得 ``module.get()`` 与 ``sdk.xxx`` / ``module.MyModule``
         在“懒加载对用户透明”上保持一致：已注册但未加载的模块不再返回 None。
+
+        由于框架通过 entry_points 动态发现模块，入口点无法静态获知
+        具体模块类型；返回值为泛型 ``_TModule``（默认基类）。
+        若调用方与模块同项目且能导入模块类，可添加类型注解获得更精确补全：
+
+        >>> my_module: MyModule = sdk.module.get("MyModule")
         {!--< /tips >!--}
 
         :example:
