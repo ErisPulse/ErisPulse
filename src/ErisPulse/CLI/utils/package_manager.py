@@ -90,8 +90,11 @@ class PackageManager:
         self._cache_time = {}
         self._pypi_cache = {}  # PyPI版本缓存
         self._pypi_cache_time = {}  # PyPI版本缓存时间
-        self._module_finder = ModuleFinder()
-        self._adapter_finder = AdapterFinder()
+        # 使用目标 Python 解释器（虚拟环境）创建查找器，确保与安装/卸载目标环境一致，
+        # 避免“安装在 venv 但查询读取 pipx env”这类跨环境错位问题
+        target_python = self._get_target_python()
+        self._module_finder = ModuleFinder(python_executable=target_python)
+        self._adapter_finder = AdapterFinder(python_executable=target_python)
         self._system_proxy = None
         self._system_proxy_checked = False
         self._uv_command = None  # 缓存的 uv 命令前缀
@@ -670,7 +673,8 @@ class PackageManager:
 
         策略：
         1. 优先使用 uv（自动识别独立二进制或 python -m uv）；
-           uv 会自动遵循当前虚拟环境 (VIRTUAL_ENV)。
+           通过 ``--python`` 显式指定目标解释器，确保安装到用户期望的环境
+           （特别是 epsdk 经 pipx 全局安装、用户包需装到项目 venv 的场景）。
         2. uv 不可用或执行失败时，回退到 pip，
            并将目标 Python 解析为当前虚拟环境的解释器，
            避免安装到全局环境。
@@ -679,13 +683,17 @@ class PackageManager:
         :param description: [str] 展示给用户的操作描述
         :return: [bool] 执行成功返回 True
         """
+        target_python = self._get_target_python()
         uv_cmd = self._get_uv_command()
         if uv_cmd:
-            if self._execute_backend(uv_cmd + ["pip"], args, description, "uv"):
+            # 为 uv pip 显式指定目标 Python，避免 uv 自动检测到错误的环境
+            # （例如误装到 epsdk 自身的 pipx 环境）
+            uv_args = ["--python", target_python] + args
+            if self._execute_backend(uv_cmd + ["pip"], uv_args, description, "uv"):
                 return True
             console.print(f"[warning]{i18n.t('cli.package.uv_fallback_to_pip')}[/]")
 
-        pip_cmd = [self._get_target_python(), "-m", "pip"]
+        pip_cmd = [target_python, "-m", "pip"]
         return self._execute_backend(pip_cmd, args, description, "pip")
 
     def _version_key(self, version: str) -> tuple:

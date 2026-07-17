@@ -528,10 +528,12 @@ class MyAdapter(BaseAdapter):
 
 ### 基本方法
 
+适配器只需实现 `Raw_ob12`，标准方法（Text/Image/Voice/Video/File）已从 `SendDSL` 基类继承并默认委托给它：
+
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """推荐实现方式"""
+        """必须实现：OneBot12 消息段 → 平台 API"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -542,11 +544,10 @@ class Send(BaseAdapter.Send):
             )
         return asyncio.create_task(_do_send())
 
-    def Text(self, text: str):
-        """发送文本消息"""
-        return self.Raw_ob12([
-            {"type": "text", "data": {"text": text}}
-        ])
+    # Text/Image/Voice/Video/File 已从基类继承，自动委托 Raw_ob12，无需重复实现
+    # 如需平台特定逻辑，可覆盖单个方法：
+    # def Text(self, text: str):
+    #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 ### 链式修饰方法

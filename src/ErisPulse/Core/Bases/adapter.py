@@ -12,7 +12,14 @@ ErisPulse 适配器基础模块
 import asyncio
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
+
+if TYPE_CHECKING:
+    # Self 用于让链式方法返回子类类型，使 IDE 能补全平台特有方法
+    try:
+        from typing import Self
+    except ImportError:
+        from typing_extensions import Self
 
 from ..constants import (
     DEFAULT_SEND_METHOD,
@@ -209,15 +216,19 @@ class SendDSL:
     用于实现 Send.To(...).Func(...) 风格的链式调用接口
 
     内置支持 At/AtAll/Reply 修饰器，适配器子类无需重复实现。
+    内置标准发送方法（Text/Image/Voice/Video/File），默认委托给 Raw_ob12，
+    适配器只需实现 Raw_ob12 即可获得全部标准发送能力，也可覆盖单个方法以提供平台特定逻辑。
     通过 send_context 属性可显式获取发送上下文（目标类型、目标ID、发送账号）。
     通过 _apply_modifiers() 方法可自动将修饰器状态合并到消息段。
 
     {!--< tips >!--}
-    1. 子类应实现具体的消息发送方法(如Text, Image等)
-    2. 通过__getattr__实现动态方法调用
-    3. At/AtAll/Reply 已内置实现，无需子类覆盖
-    4. 使用 self.send_context 获取发送上下文
-    5. 使用 self._apply_modifiers(message) 合并修饰器到消息段
+    1. 适配器必须实现 Raw_ob12（OneBot12 消息段 → 平台 API 的统一入口）
+    2. 标准发送方法（Text/Image/Voice/Video/File）已内置并委托给 Raw_ob12，无需子类重复实现
+    3. 子类可覆盖标准方法以提供平台特定逻辑，也可添加平台特有方法（如 Sticker）
+    4. At/AtAll/Reply 已内置实现，无需子类覆盖
+    5. 使用 self.send_context 获取发送上下文
+    6. 使用 self._apply_modifiers(message) 合并修饰器到消息段
+    7. 链式修饰方法（To/Using/At/Hook/Retry 等）返回 Self，使 IDE 能在链式调用中补全子类方法
     {!--< /tips >!--}
     """
 
@@ -297,7 +308,7 @@ class SendDSL:
             f"'{self.__class__.__name__}' object has no attribute '{name}'"
         )
 
-    def At(self, user_id: str) -> "SendDSL":
+    def At(self, user_id: str) -> "Self":
         """
         @指定用户（可链式多次调用）
 
@@ -311,7 +322,7 @@ class SendDSL:
         self._at_user_ids.append(user_id)
         return self
 
-    def AtAll(self) -> "SendDSL":
+    def AtAll(self) -> "Self":
         """
         @全体成员
 
@@ -323,7 +334,7 @@ class SendDSL:
         self._at_all = True
         return self
 
-    def Reply(self, message_id: str) -> "SendDSL":
+    def Reply(self, message_id: str) -> "Self":
         """
         回复指定消息
 
@@ -425,7 +436,86 @@ class SendDSL:
         except RuntimeError:
             return asyncio.ensure_future(_not_impl())
 
-    def To(self, target_type: str = None, target_id: str | int = None) -> "SendDSL":
+    # ==================== 标准发送方法 ====================
+    # 这些方法提供类型签名供 IDE 补全，默认实现委托给 Raw_ob12。
+    # 适配器子类可覆盖以提供平台特定逻辑，无需覆盖时自动走 Raw_ob12。
+
+    def Text(self, text: str) -> Awaitable[Any]:
+        """
+        发送文本消息
+
+        默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
+
+        :param text: 文本内容
+        :return: asyncio.Task，await 后返回标准响应格式
+
+        :example:
+        >>> await adapter.Send.To("user", "123").Text("Hello")
+        """
+        return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
+
+    def Image(self, file: str | bytes) -> Awaitable[Any]:
+        """
+        发送图片消息
+
+        默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
+
+        :param file: 图片文件（URL、路径或二进制数据）
+        :return: asyncio.Task，await 后返回标准响应格式
+
+        :example:
+        >>> await adapter.Send.To("user", "123").Image("https://example.com/img.png")
+        """
+        return self.Raw_ob12([{"type": "image", "data": {"file": file}}])
+
+    def Voice(self, file: str | bytes) -> Awaitable[Any]:
+        """
+        发送语音消息
+
+        默认实现委托给 :meth:`Raw_ob12`（OneBot12 ``audio`` 段），
+        适配器可覆盖以提供平台特定逻辑。
+
+        :param file: 语音文件（URL、路径或二进制数据）
+        :return: asyncio.Task，await 后返回标准响应格式
+
+        :example:
+        >>> await adapter.Send.To("user", "123").Voice("https://example.com/voice.mp3")
+        """
+        return self.Raw_ob12([{"type": "audio", "data": {"file": file}}])
+
+    def Video(self, file: str | bytes) -> Awaitable[Any]:
+        """
+        发送视频消息
+
+        默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
+
+        :param file: 视频文件（URL、路径或二进制数据）
+        :return: asyncio.Task，await 后返回标准响应格式
+
+        :example:
+        >>> await adapter.Send.To("user", "123").Video("https://example.com/video.mp4")
+        """
+        return self.Raw_ob12([{"type": "video", "data": {"file": file}}])
+
+    def File(self, file: str | bytes, filename: str | None = None) -> Awaitable[Any]:
+        """
+        发送文件
+
+        默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
+
+        :param file: 文件（URL、路径或二进制数据）
+        :param filename: 文件名（可选，部分平台需要）
+        :return: asyncio.Task，await 后返回标准响应格式
+
+        :example:
+        >>> await adapter.Send.To("user", "123").File("https://example.com/doc.pdf")
+        """
+        data = {"file": file}
+        if filename is not None:
+            data["filename"] = filename
+        return self.Raw_ob12([{"type": "file", "data": data}])
+
+    def To(self, target_type: str = None, target_id: str | int = None) -> "Self":
         """
         设置消息目标
 
@@ -469,7 +559,7 @@ class SendDSL:
             instance._rules = _copy_rules(self._rules)
         return instance
 
-    def Using(self, account_id: str | int) -> "SendDSL":
+    def Using(self, account_id: str | int) -> "Self":
         """
         设置发送账号
 
@@ -487,7 +577,7 @@ class SendDSL:
             instance._rules = _copy_rules(self._rules)
         return instance
 
-    def Account(self, account_id: str | int) -> "SendDSL":
+    def Account(self, account_id: str | int) -> "Self":
         """
         设置发送账号
 
@@ -507,7 +597,7 @@ class SendDSL:
 
     # ==================== 发送规则装饰器 ====================
 
-    def Hook(self, callback: Callable) -> "SendDSL":
+    def Hook(self, callback: Callable) -> "Self":
         """
         附加发送成功后的回调钩子
 
@@ -529,7 +619,7 @@ class SendDSL:
         self._rules.setdefault("hooks", []).append(callback)
         return self
 
-    def Retry(self, times: int = 1) -> "SendDSL":
+    def Retry(self, times: int = 1) -> "Self":
         """
         设置失败自动重试次数
 
@@ -548,7 +638,7 @@ class SendDSL:
         self._rules["retry"] = max(1, int(times) + 1)
         return self
 
-    def Timeout(self, seconds: float) -> "SendDSL":
+    def Timeout(self, seconds: float) -> "Self":
         """
         设置单次发送超时时间
 
@@ -563,7 +653,7 @@ class SendDSL:
         self._rules["timeout"] = max(0.0, float(seconds))
         return self
 
-    def Defer(self, seconds: float = 1.0) -> "SendDSL":
+    def Defer(self, seconds: float = 1.0) -> "Self":
         """
         延迟发送
 
@@ -580,7 +670,7 @@ class SendDSL:
         self._rules["defer"] = max(0.0, float(seconds))
         return self
 
-    def Priority(self, level: int = 0, *, drop_if_busy: bool = False) -> "SendDSL":
+    def Priority(self, level: int = 0, *, drop_if_busy: bool = False) -> "Self":
         """
         设置消息优先级
 
@@ -606,7 +696,7 @@ class SendDSL:
             self._rules["drop_if_busy"] = True
         return self
 
-    def PriorityThreshold(self, threshold: int) -> "SendDSL":
+    def PriorityThreshold(self, threshold: int) -> "Self":
         """
         设置优先级丢弃的积压阈值（全局生效）
 
@@ -620,7 +710,7 @@ class SendDSL:
         _PriorityQueue.set_threshold(threshold)
         return self
 
-    def OnProgress(self, callback: Callable) -> "SendDSL":
+    def OnProgress(self, callback: Callable) -> "Self":
         """
         设置进度回调
 
@@ -642,7 +732,7 @@ class SendDSL:
         self._rules["on_progress"] = callback
         return self
 
-    def OnError(self, callback: Callable) -> "SendDSL":
+    def OnError(self, callback: Callable) -> "Self":
         """
         设置错误回调
 
@@ -736,7 +826,7 @@ class RequestDSL:
         self._request_id = request_id
         self._account_id = account_id
 
-    def __call__(self, request_id: str) -> "RequestDSL":
+    def __call__(self, request_id: str) -> "Self":
         """
         设置请求ID，返回新的 RequestDSL 实例
 
@@ -747,7 +837,7 @@ class RequestDSL:
         """
         return self.__class__(self._adapter, request_id, self._account_id)
 
-    def Using(self, account_id: str | int) -> "RequestDSL":
+    def Using(self, account_id: str | int) -> "Self":
         """
         指定执行操作的 Bot 账号
 
@@ -853,7 +943,7 @@ class BaseAdapter(ABC):
 
     {!--< tips >!--}
     1. 必须实现call_api, start和shutdown方法
-    2. 可以自定义Send类实现平台特定的消息发送逻辑
+    2. Send 子类只需实现 Raw_ob12，即可获得全部标准发送方法（Text/Image/Voice/Video/File）
     3. 可以自定义Request类实现平台特定的请求操作逻辑
     4. 通过on装饰器注册事件处理器
     5. 支持OneBot12协议的事件处理
@@ -892,8 +982,10 @@ class BaseAdapter(ABC):
         消息发送DSL实现
 
         {!--< tips >!--}
-        1. 子类可以重写Text方法提供平台特定实现
-        2. 可以添加新的消息类型(如Image, Voice等)
+        1. 必须重写 Raw_ob12 方法（OneBot12 消息段 → 平台 API）
+        2. 标准方法（Text/Image/Voice/Video/File）已从 SendDSL 基类继承，默认委托 Raw_ob12
+        3. 如需平台特定逻辑，可覆盖单个标准方法（如 Text）
+        4. 可添加平台特有的发送方法（如 Sticker）
         {!--< /tips >!--}
         """
 
@@ -992,8 +1084,8 @@ class BaseAdapter(ABC):
             self.sdk = sdk
             self.logger = sdk.logger.get_child(self.__class__.__name__, relative=False)
 
-        self.Send = self.__class__.Send(self)
-        self.Request = self.__class__.Request(self)
+        self.Send = cast("SendDSL", self.__class__.Send(self))
+        self.Request = cast("RequestDSL", self.__class__.Request(self))
 
         self._config_instance = None
         self._accounts_data = None

@@ -33,6 +33,7 @@ EXPECTED_COMMANDS = {
     "list-remote": ["lsr"],
     "run": ["r"],
     "i18n": ["language", "lang"],
+    "types": ["t", "stub"],
 }
 
 
