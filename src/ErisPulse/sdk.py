@@ -44,6 +44,7 @@ if TYPE_CHECKING:
         I18nManager,
         LifecycleManager,
         Logger,
+        MasterManager,
         ModuleManager,
         RouterManager,
         StorageManager,
@@ -90,7 +91,7 @@ def _resolve_core(attr: str):
         "module": ("ErisPulse.Core", "module"),
         "router": ("ErisPulse.Core", "router"),
         "client": ("ErisPulse.Core", "client"),
-        "admin": ("ErisPulse.Core", "admin"),
+        "master": ("ErisPulse.Core", "master"),
         "BaseAdapter": ("ErisPulse.Core", "BaseAdapter"),
         "SendDSL": ("ErisPulse.Core", "SendDSL"),
         "BaseStorage": ("ErisPulse.Core.Bases.storage", "BaseStorage"),
@@ -118,7 +119,7 @@ _CORE_ATTR_NAMES = {
     "module",
     "router",
     "client",
-    "admin",
+    "master",
     "BaseAdapter",
     "SendDSL",
     "BaseStorage",
@@ -152,13 +153,14 @@ class SDK:
     - module: 模块管理器
     - router: 路由管理器
     - client: HTTP 客户端
+    - master: 框架主人管理器
     {!--< /tips >!--}
     """
 
     # ---- 类级别类型注解（仅供 IDE / 类型检查器使用）----
     # 注意：这些注解 *没有赋值*，不会创建实例属性，
     # 因此运行时仍然会触发 __getattr__ 进行动态解析。
-    Event: _EventModule
+    Event: type[_EventModule]
     lifecycle: LifecycleManager
     logger: Logger
     storage: StorageManager
@@ -583,7 +585,7 @@ class SDK:
 
             uninit_timeout = DEFAULT_UNINIT_TIMEOUT_SECS
             try:
-                from ..runtime import get_framework_config
+                from .runtime import get_framework_config
 
                 framework_config = get_framework_config()
                 uninit_timeout = framework_config.get("uninit_timeout", uninit_timeout)

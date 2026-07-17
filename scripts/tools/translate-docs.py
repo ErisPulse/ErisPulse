@@ -262,7 +262,10 @@ class DocsTranslator:
             f"8. **重要：语言切换行本地化**\n"
             f"   - 必须将语言切换行替换为以下内容（不要修改）：\n"
             f"   `{expected_line}`\n"
-            f"   - 规则：当前目标语言（{target_lang}）使用粗体，其他语言为链接"
+            f"   - 关键规则（严格遵守）：\n"
+            f"     a) 当前语言（{target_lang}）：**只加粗体，不加链接** → 格式为 ``**English**``\n"
+            f"     b) 其他语言：**只加链接，不加粗体** → 格式为 ``[日本語](README.ja.md)``\n"
+            f"   - **严禁写成** ``[**日本語**](README.ja.md)``（既加粗又加链接是错误格式）"
         )
 
     def get_cache_key(self, file_path: Path, target_lang: str) -> Path:
@@ -389,6 +392,9 @@ class DocsTranslator:
             f"{base_rules}{path_replacement_hint}{review_section}{reference_section}\n\n"
             f"待翻译内容：\n\n{content}\n\n"
             f"请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。"
+            f"\n\n"
+            f"再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），"
+            f"务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。"
         )
 
     def build_correction_prompt(

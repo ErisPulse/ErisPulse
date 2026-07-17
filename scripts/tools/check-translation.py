@@ -28,20 +28,41 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
 
 
 class Logger:
+    """线程安全的标准输出日志器"""
+
     _lock = threading.Lock()
 
     @classmethod
     def log(cls, msg: str):
+        """
+        输出一行日志
+
+        :param msg: 日志内容
+        """
         with cls._lock:
             sys.stdout.write(msg + "\n")
             sys.stdout.flush()
 
 
 def _has_chinese_chars(text: str) -> bool:
+    """
+    判断文本中是否包含中文字符
+
+    :param text: 待检测文本
+    :return: 包含中文字符返回 True，否则 False
+    """
     return any(0x4E00 <= ord(ch) <= 0x9FFF for ch in text)
 
 
 def extract_headings(content: str) -> List[Dict]:
+    """
+    从 Markdown 内容中提取标题结构
+
+    自动跳过代码块内的伪标题，仅识别行首 ``#`` 至 ``######`` 的标题。
+
+    :param content: Markdown 文本
+    :return: 标题信息列表，每项包含 ``level`` 与 ``text``
+    """
     headings = []
     in_code_block = False
     for line in content.split("\n"):
@@ -57,6 +78,18 @@ def extract_headings(content: str) -> List[Dict]:
 
 
 def detect_garbled(content: str, target_lang: str) -> List[str]:
+    """
+    检测翻译文件中的乱码与未翻译残留
+
+    针对不同目标语言采用不同策略：
+    - 所有语言：检测 Unicode 替换字符 U+FFFD
+    - 中文：检测形似 "字?字" 的乱码片段
+    - 英文/俄文：检测正文（排除代码块）中残留的中文字符
+
+    :param content: 翻译后的文本
+    :param target_lang: 目标语言代码
+    :return: 问题描述列表
+    """
     issues = []
     if "\ufffd" in content:
         issues.append(f"含{content.count(chr(0xFFFD))}个替换字符(U+FFFD)")
@@ -82,6 +115,12 @@ def detect_garbled(content: str, target_lang: str) -> List[str]:
 
 
 class TranslationChecker:
+    """翻译质量检查器
+
+    扫描源文档与各目标语言文档，检测缺失、截断、乱码以及 Markdown 结构问题。
+    支持可选地清理问题文件的翻译缓存，以便下次重新翻译。
+    """
+
     MIN_RATIO = 0.25
     WARN_RATIO = 0.35
     IGNORE_DIRS = ["ai-support/prompts", "api-reference/auto_api", "_meta"]
@@ -96,12 +135,23 @@ class TranslationChecker:
     def __init__(
         self, docs_dir: str = "docs", cache_dir: str = ".github/.translate_cache"
     ):
+        """
+        初始化检查器
+
+        :param docs_dir: 文档根目录 (默认: docs)
+        :param cache_dir: 翻译缓存目录，用于 --fix 模式删除问题文件缓存
+        """
         self.docs_dir = Path(docs_dir)
         self.source_dir = self.docs_dir / "zh-CN"
         self.cache_dir = Path(cache_dir)
         self.summary = {"checked": 0, "errors": 0, "warnings": 0, "missing": 0}
 
     def _scan_source(self) -> List[Path]:
+        """
+        扫描源语言目录下的所有 Markdown 文件
+
+        :return: 源文件路径列表（已排序）
+        """
         files = []
         if not self.source_dir.exists():
             return files
@@ -120,6 +170,17 @@ class TranslationChecker:
         return sorted(files)
 
     def check_file(self, src: Path, tgt: Path, lang: str, rel: str) -> List[Dict]:
+        """
+        检查单个源文件与其对应目标文件的差异
+
+        检查项包括：文件缺失、读取异常、长度比、H1 标题数量、代码块闭合与乱码。
+
+        :param src: 源文件路径
+        :param tgt: 目标文件路径
+        :param lang: 目标语言代码
+        :param rel: 相对于源语言目录的相对路径（用于日志输出）
+        :return: 问题列表，每项包含 ``severity``、``type``、``message``
+        """
         issues = []
         if not tgt.exists():
             self.summary["missing"] += 1
@@ -183,6 +244,16 @@ class TranslationChecker:
         return issues
 
     def _delete_cache(self, rel: str, lang: str):
+        """
+        删除指定文件与语言的翻译缓存
+
+        同时兼容两种缓存命名：嵌套缓存 ``{cache_dir}/{lang}/{rel}.cache``
+        与扁平缓存 ``{cache_dir}/{rel}.cache``。
+
+        :param rel: 文件相对路径
+        :param lang: 目标语言代码
+        :return: 成功删除返回 True，未找到缓存返回 False
+        """
         for candidate in [
             self.cache_dir / lang / f"{rel}.cache",
             self.cache_dir / f"{rel}.cache",
@@ -193,6 +264,16 @@ class TranslationChecker:
         return False
 
     def run(self, langs: Optional[List[str]] = None, fix: bool = False) -> Dict:
+        """
+        执行翻译质量检查
+
+        依次扫描每个目标语言下与源文档一一对应的 Markdown 文件，
+        以及根目录的 README 翻译文件，生成检查报告。
+
+        :param langs: 待检查的目标语言列表，None 表示自动发现
+        :param fix: 是否在检查过程中删除错误文件的翻译缓存
+        :return: 检查报告字典，包含 ``summary``、``results``、``fix_mode``、``fixed_caches``
+        """
         if langs is None:
             langs = sorted(
                 d.name
@@ -338,6 +419,7 @@ class TranslationChecker:
 
 
 def main():
+    """命令行入口：解析参数并运行检查器"""
     parser = argparse.ArgumentParser(description="ErisPulse 翻译质量检查器")
     parser.add_argument("--docs", default="docs")
     parser.add_argument("--cache", default=".github/.translate_cache")
