@@ -64,6 +64,58 @@
 
 ---
 
+## [2.6.2-dev.0] - 2026/07/16
+> 开发版本
+
+**版本摘要**
+聚焦于 IDE 补全体验和跨环境安装修复：SendDSL 基类内置标准发送方法（Text/Image/Voice/Video/File），让任何方式获取的实例都能补全；新增 `epsdk types` 命令生成运行时类型存根，解决跨项目场景下平台/模块特有方法的补全问题；修复跨环境安装问题。
+
+### 新增
+
+- @wsu2059
+  - `Core.Bases` 模块新增功能：
+    - `SendDSL` 基类内置标准发送方法（Text/Image/Voice/Video/File），默认委托给 `Raw_ob12`，适配器子类无需重复实现
+    - SendDSL 链式方法返回类型改为 `Self`，使 IDE 能在链式调用中补全子类方法
+  - `CLI.commands.types` 模块（新命令 `epsdk types`）：
+    - 扫描已安装的模块/适配器，生成类型存根 `_ep_types.py`
+    - **仅导出类型**，不提供实例（采用 ``TYPE_CHECKING`` 模式，零运行时开销）
+    - 类型名采用 entry-point 名的 PascalCase 形式，与 ``sdk.adapter.get()`` / ``sdk.module.get()`` 参数对应
+    - 用户在代码中用 ``my_mod: XxxModule = sdk.module.get('XxxModule')`` 作为变量标注即可获得 IDE 补全
+    - 支持跨环境场景：通过子进程在目标环境内省，避免当前进程无法加载目标环境的类
+    - 支持选项：`--output`/`--force`/`--adapters-only`/`--modules-only`
+  - `finders.bases.finder` 模块新增功能：
+    - `BaseFinder` 支持 `python_executable` 参数，查询指定 Python 环境的 entry-points
+    - 跨环境查询通过子进程实现，返回兼容 `EntryPoint` 接口的轻量代理对象
+
+### 优化
+
+- @wsu2059
+  - `Core.adapter` 模块：
+    - `list_sends` 不再排除基类方法，改为排除链式修饰方法集合，确保标准发送方法能被 `event.supports()` / `event.available_methods()` 识别
+    - `adapter.get` / `module.get` 加入泛型 TypeVar，可选性提供更精确的返回类型
+  - `CLI.commands.create` 适配器模板：移除 Text/Image 样板代码（基类已内置），演示平台特有方法 Sticker
+
+### 修复
+
+- @wsu2059
+  - `CLI.utils.package_manager` 修复跨环境安装错位问题：
+    - **现象**：epsdk 经 pipx 全局安装，用户在项目 venv 运行 `epsdk install` 显示成功，但 `epsdk list` 看不到刚装上的包
+    - **原因**：uv 默认遵从 `VIRTUAL_ENV` 装到项目 venv，但 `list` 通过 `importlib.metadata` 查询的是 epsdk 自身环境（pipx）的 entry-points，两个环境不一致
+    - **修复**：
+      - `PackageManager` 初始化时传入 `_get_target_python()` 给查找器，使 `list` 查询目标环境
+      - uv 调用额外加 `--python <target>` 显式指定目标环境，避免 uv 自动检测到错误的环境
+      - 与 `pip` 后端行为一致（原本就用 `_get_target_python()`）
+
+### 变更
+
+- @wsu2059
+  - SendDSL 标准发送方法现由基类提供默认实现：
+    - 适配器子类只需实现 `Raw_ob12`，无需重复实现 Text/Image/Voice/Video/File
+    - 已有子类覆盖这些方法的不受影响（正常继承覆盖）
+    - 未覆盖的子类会自动使用基类默认实现（委托 Raw_ob12）
+
+---
+
 ## [2.6.1] - 2026/07/16
 > 正式发布
 

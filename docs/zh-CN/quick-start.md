@@ -124,6 +124,25 @@ epsdk run main.py
 epsdk run main.py --reload
 ```
 
+## 启用 IDE 补全（可选）
+
+ErisPulse 动态发现模块/适配器，IDE 默认无法补全平台特有方法。
+运行以下命令生成类型存根：
+
+```bash
+epsdk types
+```
+
+生成后用导入的类型作为变量标注即可获得精确补全（详见 [IDE 补全指南](./getting-started/ide-completion.md)）：
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # 补全平台特有方法
+```
+
 ## 项目结构
 
 初始化后的项目结构：

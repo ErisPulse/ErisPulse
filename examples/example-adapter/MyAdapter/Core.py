@@ -140,6 +140,8 @@ class MyAdapter(BaseAdapter):
         Send消息发送DSL
 
         At/AtAll/Reply 由框架基类处理，无需手动管理状态。
+        标准发送方法（Text/Image/Voice/Video/File）已从 SendDSL 基类继承，
+        默认委托给 Raw_ob12，无需重复实现。
         使用 self._apply_modifiers(message) 合并修饰器到消息段。
         使用 self.send_context 获取发送上下文字典。
         """
@@ -158,13 +160,16 @@ class MyAdapter(BaseAdapter):
 
             return asyncio.create_task(_do_send())
 
-        def Text(self, text: str):
-            """发送文本消息（委托给 Raw_ob12）"""
-            return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
+        # 标准方法 Text/Image/Voice/Video/File 已从 SendDSL 基类继承，
+        # 默认委托给 Raw_ob12，无需重复实现。
+        # 如需平台特定逻辑，可覆盖单个方法：
+        # def Text(self, text: str):
+        #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 
-        def Image(self, file):
-            """发送图片消息（委托给 Raw_ob12）"""
-            return self.Raw_ob12([{"type": "image", "data": {"file": file}}])
+        # 添加平台特有的发送方法（会被 event.supports() / available_methods() 识别）：
+        def Sticker(self, sticker_id: str):
+            """发送平台特有贴纸（示例：平台特有方法）"""
+            return self.Raw_ob12([{"type": "sticker", "data": {"id": sticker_id}}])
 
         def Example(self, text: str):
             """发送示例消息（继承自BaseAdapter.Send）"""

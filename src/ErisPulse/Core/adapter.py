@@ -11,7 +11,7 @@ import time
 import warnings
 from collections import defaultdict
 from collections.abc import Callable
-from typing import Any
+from typing import Any, TypeVar
 
 from ..runtime.context import current_owner, handler_waits
 from .Bases.adapter import BaseAdapter
@@ -34,6 +34,10 @@ from .logger import logger
 
 # 已记录过的弃用警告（owner, old_kwarg），每个组合只警告一次，避免热路径日志刷屏
 _DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
+
+# 适配器类型 TypeVar，用于 get() 的泛型返回，让用户可通过类型注解获得 IDE 补全
+# 用法： adapter: MyAdapter = sdk.adapter.get("MyPlatform")
+_TAdapter = TypeVar("_TAdapter", bound=BaseAdapter)
 
 
 def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
@@ -1713,13 +1717,29 @@ class AdapterManager(ManagerBase):
 
     def get(
         self, name: str | None = None, *, platform: str | None = None
-    ) -> BaseAdapter | None:
+    ) -> "_TAdapter | None":
         """
         获取指定平台的适配器实例
 
         :param name: 平台名称
         :param platform: [已弃用] 兼容旧关键字参数，等同 name
         :return: 适配器实例或None
+
+        {!--< tips >!--}
+        返回类型为泛型 ``_TAdapter``（默认为 BaseAdapter）。
+        由于框架通过 entry_points 动态发现适配器，入口点无法静态获知
+        具体平台类型；但返回的实例始终是具体适配器子类的实例，
+        其 ``Send`` 属性提供标准发送方法（Text/Image/Voice/Video/File）的补全。
+
+        若调用方与适配器同项目且能导入适配器类，可添加类型注解获得更精确补全：
+
+        >>> adapter: MyAdapter = sdk.adapter.get("MyPlatform")
+
+        跨项目调用时，直接使用返回值的基类接口即可获得标准方法补全：
+
+        >>> adapter = sdk.adapter.get("MyPlatform")
+        >>> await adapter.Send.To("user", "123").Text("Hello")  # 基类已声明 Text
+        {!--< /tips >!--}
 
         :example:
         >>> adapter = adapter.get("MyPlatform")
@@ -1842,13 +1862,16 @@ class AdapterManager(ManagerBase):
         """
         列出指定平台支持的发送方法
 
+        包含标准发送方法（Text/Image/Voice/Video/File/Raw_ob12）和平台特有方法，
+        排除链式修饰方法（At/To/Hook/Retry 等）和属性。
+
         :param platform: 平台名称
         :return: 发送方法名列表
         :raises ValueError: 当平台不存在时抛出
 
         :example:
         >>> methods = adapter.list_sends("onebot11")
-        >>> print(methods)  # ["Text", "Image", "Voice", ...]
+        >>> print(methods)  # ["File", "Image", "Raw_ob12", "Text", "Video", "Voice", ...]
         """
         if (adapter_instance := self.get(platform)) is None:
             raise ValueError(
@@ -1858,22 +1881,25 @@ class AdapterManager(ManagerBase):
         # 获取Send类
         send_class = adapter_instance.Send.__class__
 
-        # 获取SendDSL基类的所有方法名称
-        from .Bases.adapter import SendDSL
+        # 链式修饰方法和非发送方法需要排除
+        from .Bases.adapter import _CHAIN_MODIFIER_NAMES
 
-        base_dsl_methods = set(dir(SendDSL))
+        # 排除集合：链式修饰方法 + 非发送的公共属性/方法
+        excluded = _CHAIN_MODIFIER_NAMES | {
+            "send_context",  # 属性
+        }
 
-        # 获取Send类中定义的方法，排除基类方法和私有方法
+        # 获取Send类中定义的发送方法
         send_methods = []
         for name in dir(send_class):
             # 跳过私有方法和魔法方法
             if name.startswith("_"):
                 continue
-            # 跳过基类中已有的方法
-            if name in base_dsl_methods:
+            # 跳过链式修饰方法和非发送方法
+            if name in excluded:
                 continue
-            # 获取属性，确保是方法或可调用对象
-            attr = getattr(send_class, name)
+            # 获取属性，确保是可调用对象（方法）
+            attr = getattr(send_class, name, None)
             if callable(attr):
                 send_methods.append(name)
 
