@@ -1,18 +1,18 @@
 # Adapter Development Best Practices
 
-This document provides best practice recommendations for ErisPulse adapter development.
+This document provides best practices for developing ErisPulse adapters.
 
-## Bot Status Management and Meta Events
+## Bot State Management and Meta Events
 
-Adapters should proactively send meta events through `adapter.emit()` to allow the framework to automatically track the Bot's connection status, online/offline status, and heartbeat information.
+Adapters should actively send meta events via `adapter.emit()` to allow the framework to automatically track the Bot's connection status, online/offline status, and heartbeat information.
 
 ### 1. When to Send Meta Events
 
 | Event | `detail_type` | Trigger Timing | Framework Behavior |
 |-------|---------------|----------------|--------------------|
-| Connect | `"connect"` | When the Bot establishes a connection with the platform | Register the Bot, trigger the `adapter.bot.online` lifecycle event |
-| Disconnect | `"disconnect"` | When the Bot disconnects from the platform | Mark the Bot as offline, trigger the `adapter.bot.offline` lifecycle event |
-| Heartbeat | `"heartbeat"` | Sent periodically (recommended: 30-60 seconds) | Update the Bot's active time and metadata |
+| Connect | `"connect"` | When the Bot establishes a connection with the platform | Registers the Bot, triggers the `adapter.bot.online` lifecycle event |
+| Disconnect | `"disconnect"` | When the Bot disconnects from the platform | Marks the Bot as offline, triggers the `adapter.bot.offline` lifecycle event |
+| Heartbeat | `"heartbeat"` | Sent periodically (recommended: 30-60 seconds) | Updates the Bot's active time and metadata |
 
 ### 2. Sending Meta Events
 
@@ -41,13 +41,13 @@ class MyAdapter(BaseAdapter):
 
 ### 3. Heartbeat Events
 
-Adapters should periodically send heartbeat events during the connection's active period to update the Bot's active time:
+Adapters should send heartbeat events periodically during the connection's active period to update the Bot's active time:
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self, bot_id: str):
         while self._connected:
-            # Send meta heartbeat to the framework (done in one line)
+            # Send meta heartbeat to the framework (one line)
             await self.emit_meta("heartbeat", bot_id)
             await asyncio.sleep(30)
 ```
@@ -56,11 +56,11 @@ class MyAdapter(BaseAdapter):
 
 The framework's `adapter.emit()` automatically handles the `self` field in all events (not just meta events):
 
-- The `self` field in ordinary events (message/notice/request) will be automatically discovered and the Bot registered.
-- **Extended information for `self` field**: Supports optional fields `user_name`, `nickname`, `avatar`, `account_id`
+- The `self` field in **regular events** (message/notice/request) is automatically discovered and registers the Bot.
+- **Extended `self` field information**: Supports optional fields such as `user_name`, `nickname`, `avatar`, and `account_id`.
 
 ```python
-# If the converter includes the `self` field, the Bot will be automatically registered
+# The converter includes the `self` field to automatically register the Bot
 onebot_event = {
     "type": "message",
     "detail_type": "private",
@@ -74,7 +74,7 @@ onebot_event = {
     # ... other fields
 }
 await self.adapter.emit(onebot_event)
-# Bot "bot123" has been automatically registered and its active time updated
+# Bot "bot123" is automatically registered and its active time is updated
 ```
 
 ### 5. Bot Status Query
@@ -173,18 +173,18 @@ class MyAdapter(BaseAdapter):
                 # 1. Send heartbeat keepalive to the platform
                 await self.connection.send_json({"type": "ping"})
 
-                # 2. Send meta heartbeat to the framework (done in one line using emit_meta)
+                # 2. Send meta heartbeat to the framework (using emit_meta in one line)
                 await self.emit_meta("heartbeat", self._bot_id)
 
                 await asyncio.sleep(30)
             except Exception as e:
-                self.logger.error(f"Failed to heartbeat: {e}")
+                self.logger.error(f"Heartbeat failed: {e}")
                 break
 ```
 
 ### 4. Connection Information Exposure
 
-The routes registered by the adapter should be visible to users, facilitating the configuration of callback addresses on the platform side. It is recommended to actively output connection information in `start()`:
+The routes registered by the adapter should be visible to users to facilitate the configuration of callback addresses on the platform side. It is recommended to proactively output connection information in `start()`:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -211,13 +211,13 @@ from ErisPulse import sdk
 # Adapter-level connection information (recommended)
 info = sdk.adapter.get_connection_info("myplatform")
 
-# Route manager-level query
+# Query at the router manager level
 sdk.router.list_namespaces()              # List all namespaces
 sdk.router.get_module_routes("myplatform")  # Detailed route information
 sdk.router.get_module_urls("myplatform")    # Complete connection URL
 ```
 
-> **Note**: The `module_name` registered during route registration must exactly match the `platform` name registered by the adapter in ErisPulse; otherwise, `get_connection_info()` will not be able to associate the route. For multi-account adapters, sub-paths should be registered for each account (e.g., `/account1/webhook`, `/account2/webhook`), rather than using different `module_name`.
+> **Note**: The `module_name` registered during routing must exactly match the `platform` name registered by the adapter in ErisPulse; otherwise, `get_connection_info()` will not associate the routes. For multi-account adapters, sub-paths (such as `/account1/webhook`, `/account2/webhook`) should be registered for each account, rather than using different `module_name`.
 
 ## Event Conversion
 
@@ -226,7 +226,7 @@ sdk.router.get_module_urls("myplatform")    # Complete connection URL
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """Convert event"""
+        """Convert events"""
         onebot_event = {
             "id": str(raw_event.get("event_id", uuid.uuid4())),
             "time": int(time.time()),
@@ -237,8 +237,8 @@ class MyPlatformConverter:
                 "platform": "myplatform",
                 "user_id": str(raw_event.get("bot_id", ""))
             },
-            "myplatform_raw": raw_event,  # Keep original data (required)
-            "myplatform_raw_type": raw_event.get("type", "")  # Original type (required)
+            "myplatform_raw": raw_event,  # Preserve raw data (required)
+            "myplatform_raw_type": raw_event.get("type", "")  # Raw type (required)
         }
         return onebot_event
 ```
@@ -251,11 +251,11 @@ def _convert_timestamp(self, timestamp):
     if not timestamp:
         return int(time.time())
     
-    # If it's a millisecond-level timestamp
+    # If it is a millisecond-level timestamp
     if timestamp > 10**12:
         return int(timestamp / 1000)
     
-    # If it's a second-level timestamp
+    # If it is a second-level timestamp
     return int(timestamp)
 ```
 
@@ -275,14 +275,14 @@ def _generate_event_id(self, raw_event):
 
 ## SendDSL Implementation
 
-The `At`/`AtAll`/`Reply` decorators are already built into the framework's SendDSL base class; adapters only need to implement `Raw_ob12` and specific send methods. Use `self._apply_modifiers(message)` and `self.send_context` to simplify development.
+The `At`/`AtAll`/`Reply` decorators are built into the framework's SendDSL base class, and adapters only need to implement `Raw_ob12` and specific send methods. Use `self._apply_modifiers(message)` and `self.send_context` to simplify development.
 
 ### 1. Must Return a Task Object
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """Recommended implementation: use framework helper methods"""
+        """Recommended implementation: Use framework helper methods"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -363,23 +363,23 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-`make_response()` will automatically generate a response dictionary containing the `{platform}_raw` key. `make_error()` defaults to `retcode=34000` (Platform Error).
+`make_response()` automatically generates a response dictionary containing the `{platform}_raw` key. `make_error()` defaults to `retcode=34000` (Platform Error).
 
 ### 2. Error Code Specification
 
 Follow the OneBot12 standard error codes:
 
 ```python
-# 1xxxx - Action Request Error
+# 1xxxx - Action request errors
 10001: Bad Request
 10002: Unsupported Action
 10003: Bad Param
 
-# 2xxxx - Action Processor Error
+# 2xxxx - Action handler errors
 20001: Bad Handler
 20002: Internal Handler Error
 
-# 3xxxx - Action Execution Error
+# 3xxxx - Action execution errors
 31000: Database Error
 32000: Filesystem Error
 33000: Network Error
@@ -391,7 +391,7 @@ Follow the OneBot12 standard error codes:
 
 ### 1. Declarative Configuration (Recommended)
 
-After declaring a configuration class with `AccountConfigClass`, the framework automatically manages multi-account loading, validation, and template generation. The `BotAccountConfig` base class provides the `enabled` and `name` fields, which the adapter does not need to declare:
+After declaring the configuration class with `AccountConfigClass`, the framework automatically manages multi-account loading, validation, and template generation. The `BotAccountConfig` base class provides the `enabled` and `name` fields, which the adapter does not need to declare:
 
 ```python
 from dataclasses import dataclass, field
@@ -412,7 +412,7 @@ class MyAdapter(BaseAdapter):
         for name, account in self.enabled_accounts.items():
             self.logger.info(f"Starting account {name}")
             await self._connect(name, account.token)
-            # bot_id is automatically retrieved from the platform protocol/login response and backfilled by the framework
+            # bot_id is automatically filled by the framework from the platform protocol/login response
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
@@ -431,18 +431,18 @@ name = ""
 
 ### 2. Account Selection Mechanism
 
-The framework includes the `_resolve_account()` method, with matching priority:
+The framework provides the built-in `_resolve_account()` method with the following matching priorities:
 
-1. **Account name** — exact match with configuration key
-2. **`bot_id` field** — automatically obtained bot_id (i.e., `event["self"]["user_id"]`)
-3. **Any str field** — other string fields in the configuration
-4. **Fallback** — the first enabled account
+1. **Account name** — Exact match with the configuration key
+2. **`bot_id` field** — Automatically obtained bot_id (i.e., `event["self"]["user_id"]`)
+3. **Any str field** — Other string fields in the configuration
+4. **Fallback** — The first enabled account
 
 ```python
 # Match by account name
 name, account = self._resolve_account("account1")
 
-# Match by bot_id (most commonly used method, from event)
+# Match by bot_id (most commonly used, from event)
 name, account = self._resolve_account("bot_123")
 
 # Get the first enabled account (pass None)
@@ -453,7 +453,7 @@ name, account = self._resolve_account(None)
 
 ### 1. Categorized Exception Handling
 
-Use `make_error()` to construct standardized error responses. When using `sdk.client` to request, catch ErisPulse exceptions:
+Use `make_error()` to construct standardized error responses. When using `sdk.client` for requests, catch ErisPulse exceptions:
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
@@ -482,11 +482,11 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-> **Backward Compatibility**: Old adapter code using `aiohttp` directly is unaffected and can still catch `aiohttp.ClientError`. Exception conversion only applies when requests are made through `sdk.client`.
+> **Backward Compatibility**: Adapters using `aiohttp` directly are unaffected and can still catch `aiohttp.ClientError`. Exception conversion only applies when requests are made through `sdk.client`.
 
 ### 2. Logging
 
-The framework automatically creates a sub-logger for the adapter (`sdk.logger.get_child("MyAdapter")`), so there is no need for manual initialization:
+The framework automatically creates a sub-logger for the adapter (`sdk.logger.get_child("MyAdapter")`), so there is no need to manually initialize:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -500,7 +500,7 @@ class MyAdapter(BaseAdapter):
     async def shutdown(self):
         self.logger.info("Adapter shutting down...")
         # ...
-        self.logger.info("Adapter shut down")
+        self.logger.info("Adapter shutdown complete")
 ```
 
 ## Testing
@@ -541,7 +541,7 @@ async def test_adapter_start():
 
 @pytest.mark.asyncio
 async def test_send_message():
-    """Test send message"""
+    """Test sending message"""
     adapter = MyAdapter()
     await adapter.start()
     
@@ -551,12 +551,12 @@ async def test_send_message():
 
 ## Reverse Conversion and Message Building
 
-`Raw_ob12` is a method that adapters **must implement**, serving as the unified entry point for reverse conversion (OneBot12 → platform). Standard methods (`Text`, `Image`, etc.) should delegate to `Raw_ob12`, and modifier states (`At`/`Reply`/`AtAll`) must be merged into message segments within `Raw_ob12`.
+`Raw_ob12` is the method that adapters **must implement**, serving as the unified entry point for reverse conversion (OneBot12 → platform). Standard methods (`Text`, `Image`, etc.) should delegate to `Raw_ob12`, and modifier states (`At`/`Reply`/`AtAll`) must be merged into message segments within `Raw_ob12`.
 
-`MessageBuilder` is a message segment builder tool designed to be used with `Raw_ob12`, supporting chainable calls and rapid construction.
+`MessageBuilder` is a message segment construction tool used in conjunction with `Raw_ob12`, supporting chainable calls and rapid construction.
 
 > For complete implementation specifications, code examples, and usage methods, please refer to:
-> - [Send Method Specification §6 Reverse Conversion Specification (OneBot12 → Platform)](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
+> - [Send Method Specification §6 Reverse Conversion Specification](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
 > - [Send Method Specification §11 MessageBuilder](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
 
 ## Platform Event Method Extension
@@ -568,7 +568,7 @@ Adapters can register platform-specific methods for Event wrapper classes, allow
 When the platform has multiple specific methods, it is recommended to use a Mixin class:
 
 ```python
-# Register at adapter's start() or module level
+# Register at the start() or module level of the adapter
 from ErisPulse.Core.Event import register_event_mixin
 
 class MyPlatformEventMixin:
@@ -585,11 +585,11 @@ class MyPlatformEventMixin:
         """Get platform message type"""
         return self.get("myplatform_raw", {}).get("msg_type", "text")
 
-# Batch register
+# Batch registration
 register_event_mixin("myplatform", MyPlatformEventMixin)
 ```
 
-### 2. Register Single Method Using Decorator
+### 2. Use Decorator to Register Single Method
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -638,7 +638,7 @@ Create a `{platform}.md` document under `docs/en/platform-guide/` (other languag
 
 ### 2. Update Version Information
 
-When releasing a new version, update the version information in the documentation:
+Update the version information in the documentation when releasing a new version:
 
 ```toml
 [project]
@@ -648,5 +648,5 @@ version = "2.0.0"  # Update version number
 ## Related Documentation
 
 - [Getting Started with Adapter Development](getting-started.md) - Create your first adapter
-- [Core Concepts of Adapters](core-concepts.md) - Understand adapter architecture
-- [Detailed Guide to SendDSL](send-dsl.md) - Learn message sending
+- [Core Concepts of Adapters](core-concepts.md) - Understand the adapter architecture
+- [Detailed SendDSL Guide](send-dsl.md) - Learn message sending
