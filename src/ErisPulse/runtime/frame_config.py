@@ -5,7 +5,7 @@ ErisPulse 框架配置管理模块
 """
 
 import copy
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from ..Core.constants import (
     CONFIG_ROOT_KEY,
@@ -90,7 +90,7 @@ def _get_config_service():
     return global_config
 
 
-def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
     """
     深度合并两个字典，override 中的值覆盖 base 中的对应值
 
@@ -107,7 +107,7 @@ def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any
     return result
 
 
-def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str, Any]:
+def _ensure_erispulse_config_structure(config_dict: dict[str, Any]) -> dict[str, Any]:
     """
     确保 ErisPulse 配置结构完整，补全缺失的配置项
 
@@ -136,7 +136,7 @@ def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str,
     return config_dict
 
 
-def get_erispulse_config() -> Dict[str, Any]:
+def get_erispulse_config() -> dict[str, Any]:
     """
     获取 ErisPulse 框架配置，自动补全缺失的配置项并保存
 
@@ -166,7 +166,7 @@ def get_erispulse_config() -> Dict[str, Any]:
     return complete_config
 
 
-def get_config(section: Optional[str] = None) -> Union[Dict[str, Any], Any]:
+def get_config(section: str | None = None) -> dict[str, Any] | Any:
     """
     获取 ErisPulse 配置
 
@@ -180,7 +180,7 @@ def get_config(section: Optional[str] = None) -> Union[Dict[str, Any], Any]:
     return erispulse_config.get(section, {})
 
 
-def update_erispulse_config(new_config: Dict[str, Any]) -> bool:
+def update_erispulse_config(new_config: dict[str, Any]) -> bool:
     """
     更新 ErisPulse 配置，自动补全缺失的配置项
 
@@ -199,7 +199,7 @@ def update_erispulse_config(new_config: Dict[str, Any]) -> bool:
     return config_service.setConfig(CONFIG_ROOT_KEY, complete_config)
 
 
-def get_server_config() -> Dict[str, Any]:
+def get_server_config() -> dict[str, Any]:
     """
     获取服务器配置，确保结构完整
 
@@ -208,7 +208,7 @@ def get_server_config() -> Dict[str, Any]:
     return get_config("server")
 
 
-def get_logger_config() -> Dict[str, Any]:
+def get_logger_config() -> dict[str, Any]:
     """
     获取日志配置，确保结构完整
 
@@ -217,7 +217,7 @@ def get_logger_config() -> Dict[str, Any]:
     return get_config("logger")
 
 
-def get_storage_config() -> Dict[str, Any]:
+def get_storage_config() -> dict[str, Any]:
     """
     获取存储模块配置
 
@@ -226,7 +226,7 @@ def get_storage_config() -> Dict[str, Any]:
     return get_config("storage")
 
 
-def get_event_config() -> Dict[str, Any]:
+def get_event_config() -> dict[str, Any]:
     """
     获取事件系统配置
 
@@ -235,7 +235,7 @@ def get_event_config() -> Dict[str, Any]:
     return get_config("event")
 
 
-def get_framework_config() -> Dict[str, Any]:
+def get_framework_config() -> dict[str, Any]:
     """
     获取框架配置
 
@@ -244,7 +244,7 @@ def get_framework_config() -> Dict[str, Any]:
     return get_config("framework")
 
 
-def get_i18n_config() -> Dict[str, Any]:
+def get_i18n_config() -> dict[str, Any]:
     """
     获取国际化配置
 
@@ -253,7 +253,7 @@ def get_i18n_config() -> Dict[str, Any]:
     return get_config("i18n")
 
 
-def get_master_config() -> Dict[str, Any]:
+def get_master_config() -> dict[str, Any]:
     """
     获取框架主人系统配置
 
@@ -264,14 +264,14 @@ def get_master_config() -> Dict[str, Any]:
 
 __all__ = [
     "DEFAULT_ERISPULSE_CONFIG",
-    "get_erispulse_config",
     "get_config",
-    "update_erispulse_config",
-    "get_server_config",
-    "get_logger_config",
-    "get_storage_config",
+    "get_erispulse_config",
     "get_event_config",
     "get_framework_config",
     "get_i18n_config",
+    "get_logger_config",
     "get_master_config",
+    "get_server_config",
+    "get_storage_config",
+    "update_erispulse_config",
 ]

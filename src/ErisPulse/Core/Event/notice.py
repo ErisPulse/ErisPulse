@@ -9,16 +9,17 @@ ErisPulse 通知处理模块
 {!--< /tips >!--}
 """
 
-from .base import BaseEventHandler
-from typing import Any
 from collections.abc import Callable
+from typing import Any
+
 from ..constants import (
-    EVENT_TYPE_NOTICE,
-    DETAIL_TYPE_FRIEND_INCREASE,
     DETAIL_TYPE_FRIEND_DECREASE,
-    DETAIL_TYPE_GROUP_MEMBER_INCREASE,
+    DETAIL_TYPE_FRIEND_INCREASE,
     DETAIL_TYPE_GROUP_MEMBER_DECREASE,
+    DETAIL_TYPE_GROUP_MEMBER_INCREASE,
+    EVENT_TYPE_NOTICE,
 )
+from .base import BaseEventHandler
 
 
 class NoticeHandler:

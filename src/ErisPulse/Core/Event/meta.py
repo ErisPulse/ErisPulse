@@ -9,10 +9,11 @@ ErisPulse 元事件处理模块
 {!--< /tips >!--}
 """
 
-from .base import BaseEventHandler
-from typing import Any
 from collections.abc import Callable
-from ..constants import EVENT_TYPE_META, DETAIL_TYPE_CONNECT, DETAIL_TYPE_DISCONNECT, DETAIL_TYPE_HEARTBEAT
+from typing import Any
+
+from ..constants import DETAIL_TYPE_CONNECT, DETAIL_TYPE_DISCONNECT, DETAIL_TYPE_HEARTBEAT, EVENT_TYPE_META
+from .base import BaseEventHandler
 
 
 class MetaHandler:

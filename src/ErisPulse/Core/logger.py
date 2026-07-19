@@ -15,6 +15,7 @@ import inspect
 import json as _json
 import logging
 from collections.abc import Callable
+from pathlib import Path
 
 from rich.console import Console
 from rich.highlighter import NullHighlighter
@@ -185,9 +186,8 @@ class Logger:
                 while len(self._logs[module_name]) > self._max_logs:
                     self._logs[module_name].pop(0)
             return True
-        else:
-            self._logger.warning(i18n.t("core.logger.memory_limit_invalid"))
-            return False
+        self._logger.warning(i18n.t("core.logger.memory_limit_invalid"))
+        return False
 
     def _resolve_level(self, level: str) -> int | None:
         """
@@ -246,9 +246,8 @@ class Logger:
                 )
             )
             return True
-        else:
-            self._logger.error(i18n.t("core.logger.invalid_level", level=level))
-            return False
+        self._logger.error(i18n.t("core.logger.invalid_level", level=level))
+        return False
 
     def set_output_file(self, path) -> bool:
         """
@@ -360,15 +359,13 @@ class Logger:
         success = False
         for p in path:
             try:
-                with open(p, "w", encoding="utf-8") as file:
+                with Path(p).open("w", encoding="utf-8") as file:
                     for module, logs in self._logs.items():
                         if self._json_mode:
-                            for log in logs:
-                                file.write(_json.dumps(log, ensure_ascii=False) + "\n")
+                            file.writelines(_json.dumps(log, ensure_ascii=False) + "\n" for log in logs)
                         else:
                             file.write(f"Module: {module}\n")
-                            for log in logs:
-                                file.write(f"  {log}\n")
+                            file.writelines(f"  {log}\n" for log in logs)
                 self._logger.info(i18n.t("core.logger.saved", path=p))
                 success = True
             except Exception as e:
@@ -376,7 +373,7 @@ class Logger:
 
         return success
 
-    def get_logs(self, module_name: str = None) -> dict:
+    def get_logs(self, module_name: str | None = None) -> dict:
         """
         获取日志内容
 
@@ -389,7 +386,7 @@ class Logger:
             return {k: self._format_for_output(v) for k, v in self._logs.items()}
         return {module_name: self._format_for_output(self._logs.get(module_name, []))}
 
-    def iter_logs(self, module_name: str = None):
+    def iter_logs(self, module_name: str | None = None):
         """
         流式迭代日志（生成器）
 
@@ -453,7 +450,7 @@ class Logger:
         logger_config = get_logger_config()
         if "level" in logger_config:
             self.set_level(logger_config["level"])
-        if "log_files" in logger_config and logger_config["log_files"]:
+        if logger_config.get("log_files"):
             self.set_output_file(logger_config["log_files"])
         if "memory_limit" in logger_config:
             self.set_memory_limit(logger_config["memory_limit"])

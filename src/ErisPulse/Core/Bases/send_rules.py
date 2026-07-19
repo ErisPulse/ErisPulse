@@ -132,7 +132,7 @@ async def _invoke_callback(callback: Any, ctx: Any) -> None:
         ret = callback(ctx)
         if asyncio.iscoroutine(ret):
             await ret
-    except Exception as exc:  # noqa: BLE001 - 用户回调异常不应影响发送主流程
+    except Exception as exc:
         from ..logger import logger
 
         logger.warning(f"SendDSL 规则回调执行异常: {exc!r}")
@@ -239,7 +239,7 @@ def apply_send_rules(
                     await _invoke_callback(on_progress, ctx)
                     await _invoke_callback(on_error, ctx)
                     raise
-                except Exception as exc:  # noqa: BLE001
+                except Exception as exc:
                     ctx.stage = "failed"
                     ctx.error = exc
                     await _invoke_callback(on_progress, ctx)
@@ -276,7 +276,7 @@ def apply_send_rules(
                         ret = hook(result)
                         if asyncio.iscoroutine(ret):
                             await ret
-                    except Exception as exc:  # noqa: BLE001
+                    except Exception as exc:
                         from ..logger import logger
 
                         logger.warning(f"SendDSL Hook 执行异常: {exc!r}")

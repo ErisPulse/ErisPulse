@@ -67,15 +67,15 @@ class ModuleManager(ManagerBase):
     """
 
     @staticmethod
-    def _is_subclass(cls: type, base_cls: type) -> bool:
+    def _is_subclass(klass: type, base_cls: type) -> bool:
         try:
-            if issubclass(cls, base_cls):
+            if issubclass(klass, base_cls):
                 return True
         except TypeError:
             pass
-        if base_cls.__name__ == cls.__name__:
+        if base_cls.__name__ == klass.__name__:
             return False
-        for parent in cls.__mro__:
+        for parent in klass.__mro__:
             if (
                 parent.__name__ == base_cls.__name__
                 and parent.__module__ == base_cls.__module__
@@ -99,12 +99,14 @@ class ModuleManager(ManagerBase):
         设置 SDK 引用
 
         :param sdk: SDK 实例
-        :return: 是否设置成功
+        :return: bool 是否设置成功
         """
         try:
             self._sdk = sdk
             return True
         except Exception as e:
+            from .logger import logger
+
             logger.error(i18n.t("core.module.set_sdk_failed", error=e))
             return False
 
@@ -291,10 +293,10 @@ class ModuleManager(ManagerBase):
                     instance = module_class()
 
                 if module_name in self._module_info:
-                    setattr(instance, "moduleInfo", self._module_info[module_name])
+                    instance.moduleInfo = self._module_info[module_name]
 
                 # 注入模块注册名，用于配置键解析等
-                setattr(instance, "_module_name", module_name)
+                instance._module_name = module_name
 
                 if hasattr(instance, "on_load"):
                     try:
@@ -324,7 +326,7 @@ class ModuleManager(ManagerBase):
                 },
                 msg=i18n.t(
                     "core.module.load_success_msg",
-                    name=module_name if module_name else "All",
+                    name=module_name or "All",
                 ),
             )
 
@@ -362,7 +364,7 @@ class ModuleManager(ManagerBase):
                 },
                 msg=i18n.t(
                     "core.module.load_failed",
-                    name=module_name if module_name else "All",
+                    name=module_name or "All",
                     error=e,
                 ),
             )
@@ -632,7 +634,7 @@ class ModuleManager(ManagerBase):
 
     # ==================== 模块配置管理 ====================
 
-    def _config_register(self, module_name: str, enabled: bool = True) -> bool:
+    def _config_register(self, module_name: str, enabled: bool = DEFAULT_MODULE_ENABLED) -> bool:
         """
         注册新模块信息
 
@@ -640,8 +642,8 @@ class ModuleManager(ManagerBase):
         此方法仅供内部使用
 
         :param module_name: 模块名称
-        :param enabled: 是否启用模块 (默认: True，新模块默认启用)
-        :return: 操作是否成功
+        :param enabled: 是否启用模块 (默认: DEFAULT_MODULE_ENABLED)
+        :return: 是否操作成功
         """
         existing = config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name))
         if existing is not None:
@@ -748,8 +750,9 @@ class ModuleManager(ManagerBase):
                     import asyncio
 
                     try:
-                        loop = asyncio.get_running_loop()
-                        loop.create_task(
+                        from ..runtime.tasks import spawn_background
+
+                        spawn_background(
                             instance.on_unload({"module_name": module_name})
                         )
                     except RuntimeError:

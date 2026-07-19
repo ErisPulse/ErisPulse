@@ -97,10 +97,8 @@ class KVQueryBuilder(BaseQueryBuilder):
         """检查行是否满足所有 WHERE 条件"""
         if self._bound_clauses is None:
             self._bind_clauses()
-        for clause in self._bound_clauses:
-            if not self._eval_clause(row, clause):
-                return False
-        return True
+        assert self._bound_clauses is not None
+        return all(self._eval_clause(row, clause) for clause in self._bound_clauses)
 
     def _bind_clauses(self):
         """将 WHERE 子句中的 ? 替换为实际参数（只执行一次）"""
@@ -139,17 +137,17 @@ class KVQueryBuilder(BaseQueryBuilder):
 
         if op == "=":
             return actual == expected
-        elif op == "!=":
+        if op == "!=":
             return actual != expected
-        elif op == ">":
+        if op == ">":
             return self._safe_cmp(actual, expected) > 0
-        elif op == ">=":
+        if op == ">=":
             return self._safe_cmp(actual, expected) >= 0
-        elif op == "<":
+        if op == "<":
             return self._safe_cmp(actual, expected) < 0
-        elif op == "<=":
+        if op == "<=":
             return self._safe_cmp(actual, expected) <= 0
-        elif op.upper() == "LIKE":
+        if op.upper() == "LIKE":
             pattern = str(expected).replace("%", ".*").replace("_", ".")
             import re
             return bool(re.match(pattern, str(actual), re.IGNORECASE))
@@ -180,7 +178,7 @@ class KVQueryBuilder(BaseQueryBuilder):
         try:
             if a < b:
                 return -1
-            elif a > b:
+            if a > b:
                 return 1
             return 0
         except TypeError:
@@ -191,13 +189,13 @@ class KVQueryBuilder(BaseQueryBuilder):
     def Execute(self) -> list[tuple] | int:
         if self._operation == "insert":
             return self._exec_insert()
-        elif self._operation == "insert_multi":
+        if self._operation == "insert_multi":
             return self._exec_insert_multi()
-        elif self._operation == "select":
+        if self._operation == "select":
             return self._exec_select()
-        elif self._operation == "update":
+        if self._operation == "update":
             return self._exec_update()
-        elif self._operation == "delete":
+        if self._operation == "delete":
             return self._exec_delete()
         raise ValueError(f"Unknown operation: {self._operation}")
 
@@ -239,8 +237,7 @@ class KVQueryBuilder(BaseQueryBuilder):
         # project
         if self._columns:
             return [tuple(r.get(c) for c in self._columns) for _, r in rows]
-        else:
-            return [tuple(r.values()) for _, r in rows]
+        return [tuple(r.values()) for _, r in rows]
 
     def _exec_update(self) -> int:
         if not isinstance(self._data, dict):
@@ -311,7 +308,7 @@ class KVQueryBuilder(BaseQueryBuilder):
             row_id = self._get_next_id()
             await self._storage.aset(self._row_key(row_id), json.dumps(self._data, ensure_ascii=False))
             return 1
-        elif self._operation == "insert_multi":
+        if self._operation == "insert_multi":
             if not isinstance(self._data, list):
                 raise ValueError("InsertMulti 操作需要列表数据")
             count = 0
@@ -320,9 +317,9 @@ class KVQueryBuilder(BaseQueryBuilder):
                 await self._storage.aset(self._row_key(row_id), json.dumps(row, ensure_ascii=False))
                 count += 1
             return count
-        elif self._operation == "select":
+        if self._operation == "select":
             return await self._aexec_select()
-        elif self._operation == "update":
+        if self._operation == "update":
             if not isinstance(self._data, dict):
                 raise ValueError("Update 操作需要字典数据")
             count = 0
@@ -332,7 +329,7 @@ class KVQueryBuilder(BaseQueryBuilder):
                     await self._storage.aset(self._row_key(row_id), json.dumps(row, ensure_ascii=False))
                     count += 1
             return count
-        elif self._operation == "delete":
+        if self._operation == "delete":
             count = 0
             for row_id, row in await self._ascan_rows():
                 if self._match_row(row):

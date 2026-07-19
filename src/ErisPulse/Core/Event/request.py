@@ -10,10 +10,11 @@ ErisPulse 请求处理模块
 {!--< /tips >!--}
 """
 
-from .base import BaseEventHandler
-from typing import Any
 from collections.abc import Callable
-from ..constants import EVENT_TYPE_REQUEST, DETAIL_TYPE_FRIEND, DETAIL_TYPE_GROUP
+from typing import Any
+
+from ..constants import DETAIL_TYPE_FRIEND, DETAIL_TYPE_GROUP, EVENT_TYPE_REQUEST
+from .base import BaseEventHandler
 
 
 class RequestHandler:

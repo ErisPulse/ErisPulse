@@ -13,8 +13,8 @@ send/receive/iter 方法签名在两端保持一致，具体实现由子类提�
 
 from __future__ import annotations
 
-from typing import Any
 from collections.abc import Callable
+from typing import Any
 
 from .errors import WebSocketDisconnect
 
@@ -34,7 +34,7 @@ class WSMessage:
     ...         break
     """
 
-    __slots__ = ("type", "data")
+    __slots__ = ("data", "type")
 
     TEXT = "text"
     BINARY = "binary"
@@ -73,7 +73,7 @@ class WebSocketConnectionBase:
     ...     await ws.send_text(f"Echo: {msg}")
     """
 
-    __slots__ = ("_ws", "_on_disconnect_handlers", "_on_error_handlers")
+    __slots__ = ("_on_disconnect_handlers", "_on_error_handlers", "_ws")
 
     def __init__(self, ws):
         """

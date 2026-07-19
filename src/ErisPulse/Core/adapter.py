@@ -11,7 +11,7 @@ import time
 import warnings
 from collections import defaultdict
 from collections.abc import Callable
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 from ..runtime.context import current_owner, handler_waits
 from .Bases.adapter import BaseAdapter
@@ -93,15 +93,15 @@ class AdapterManager(ManagerBase):
     """
 
     @staticmethod
-    def _is_subclass(cls: type, base_cls: type) -> bool:
+    def _is_subclass(klass: type, base_cls: type) -> bool:
         try:
-            if issubclass(cls, base_cls):
+            if issubclass(klass, base_cls):
                 return True
         except TypeError:
             pass
-        if base_cls.__name__ == cls.__name__:
+        if base_cls.__name__ == klass.__name__:
             return False
-        for parent in cls.__mro__:
+        for parent in klass.__mro__:
             if (
                 parent.__name__ == base_cls.__name__
                 and parent.__module__ == base_cls.__module__
@@ -213,7 +213,7 @@ class AdapterManager(ManagerBase):
 
         # 检查是否已存在相同类的适配器实例
         existing_instance = None
-        for existing_platform, existing_adapter in self._adapters.items():
+        for existing_adapter in self._adapters.values():
             if existing_adapter.__class__ == adapter_class:
                 existing_instance = existing_adapter
                 break
@@ -319,9 +319,9 @@ class AdapterManager(ManagerBase):
         """
 
         if not getattr(adapter, "_starting_lock", None):
-            adapter._starting_lock = asyncio.Lock()
+            cast("Any", adapter)._starting_lock = asyncio.Lock()
 
-        async with adapter._starting_lock:
+        async with cast("Any", adapter)._starting_lock:
             # 再次确认是否已经被启动
             if adapter in self._started_instances:
                 logger.info(
@@ -468,7 +468,6 @@ class AdapterManager(ManagerBase):
                 data={"platforms": platforms},
             )
 
-            from .router import router
 
             # 需要收集受影响的 adapter 实例（因为多个平台可能共享同一个实例）
             affected_adapters = set()
@@ -500,7 +499,9 @@ class AdapterManager(ManagerBase):
                     instance_platforms = [
                         p for p, a in self._adapters.items() if a is adapter_instance
                     ]
-                    platform_label = (
+
+                    # platform_label
+                    (
                         instance_platforms[0]
                         if instance_platforms
                         else str(id(adapter_instance))
@@ -854,12 +855,12 @@ class AdapterManager(ManagerBase):
 
     # ==================== 适配器配置管理 ====================
 
-    def _config_register(self, platform: str, enabled: bool = True) -> bool:
+    def _config_register(self, platform: str, enabled: bool = DEFAULT_ADAPTER_ENABLED) -> bool:
         """
         注册新平台适配器（仅当平台不存在时注册）
 
         :param platform: 平台名称
-        :param enabled: [bool] 是否启用适配器 (默认: True，新适配器默认启用)
+        :param enabled: [bool] 是否启用适配器 (默认: DEFAULT_ADAPTER_ENABLED)
         :return: [bool] 操作是否成功
         """
         existing = config.getConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform))
@@ -1175,7 +1176,7 @@ class AdapterManager(ManagerBase):
                 match detail_type:
                     case "connect":
                         # Bot 连接上线
-                        is_new_bot = self._auto_register_bot(platform, self_info)
+                        self._auto_register_bot(platform, self_info)
                         bot_id = str(self_info["user_id"])
                         await lifecycle.submit_event(
                             "adapter.bot.online",
@@ -1379,7 +1380,9 @@ class AdapterManager(ManagerBase):
                 _pure = max(0.0, elapsed - _wait_total)
                 # 收集所有者（去重），归因到具体业务模块
                 _owners = sorted(
-                    {w.get("owner") for w in _task_waits if w.get("owner")}
+                    str(w["owner"])
+                    for w in _task_waits
+                    if w.get("owner") is not None
                 )
                 _owner_tag = f" owners=[{','.join(_owners)}]" if _owners else ""
 
@@ -1400,19 +1403,18 @@ class AdapterManager(ManagerBase):
                             f"interactive-wait, suppressed slow-warning "
                             f"type={event_type} platform={platform}{_owner_tag}"
                         )
-                else:
-                    if elapsed > HANDLER_SLOW_THRESHOLD_SECS:
-                        logger.warning(
-                            i18n.t(
-                                "core.adapter.handler_slow",
-                                handler=_func_name,
-                                elapsed=f"{elapsed:.2f}",
-                                threshold=HANDLER_SLOW_THRESHOLD_SECS,
-                                type=event_type,
-                                platform=platform,
-                                tag=_owner_tag,
-                            )
+                elif elapsed > HANDLER_SLOW_THRESHOLD_SECS:
+                    logger.warning(
+                        i18n.t(
+                            "core.adapter.handler_slow",
+                            handler=_func_name,
+                            elapsed=f"{elapsed:.2f}",
+                            threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                            type=event_type,
+                            platform=platform,
+                            tag=_owner_tag,
                         )
+                    )
 
         try:
             task = asyncio.create_task(_safe_run())
@@ -1589,6 +1591,7 @@ class AdapterManager(ManagerBase):
                 expiry_secs = framework_config.get("offline_bot_expiry", expiry_secs)
             except Exception:
                 pass
+        assert expiry_secs is not None
         if expiry_secs <= 0:
             return 0
 
@@ -1717,7 +1720,7 @@ class AdapterManager(ManagerBase):
 
     def get(
         self, name: str | None = None, *, platform: str | None = None
-    ) -> "_TAdapter | None":
+    ) -> BaseAdapter | None:
         """
         获取指定平台的适配器实例
 

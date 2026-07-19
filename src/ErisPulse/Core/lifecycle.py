@@ -11,15 +11,14 @@ ErisPulse 生命周期管理模块
 {!--< /tips >!--}
 """
 
-import asyncio
 import inspect
 import time
 from collections.abc import Callable
 from typing import Any
 
+from ..runtime.context import current_owner
 from .constants import DEFAULT_EVENT_SOURCE, HANDLER_SLOW_THRESHOLD_SECS
 from .i18n import i18n
-from ..runtime.context import current_owner
 
 
 class _NullLogger:
@@ -162,7 +161,7 @@ class LifecycleManager:
         self._hooks.setdefault(event, []).append((priority, handler, owner))
         self._hooks[event].sort(key=lambda x: x[0], reverse=True)
 
-    def unregister(self, event: str, handler: Callable = None):
+    def unregister(self, event: str, handler: Callable | None = None):
         """
         取消注册事件处理器
 
@@ -411,11 +410,9 @@ class LifecycleManager:
         for _, handler, _owner in self._hooks[hook_name]:
             try:
                 if inspect.iscoroutinefunction(handler):
-                    try:
-                        loop = asyncio.get_running_loop()
-                        loop.create_task(handler(data))
-                    except RuntimeError:
-                        pass
+                    from ..runtime.tasks import spawn_background
+
+                    spawn_background(handler(data))
                 else:
                     result = handler(data)
                     if result is not None:

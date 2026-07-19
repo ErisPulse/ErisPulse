@@ -10,10 +10,11 @@ ErisPulse 消息处理模块
 {!--< /tips >!--}
 """
 
-from .base import BaseEventHandler
-from typing import Any
 from collections.abc import Callable
-from ..constants import EVENT_TYPE_MESSAGE, DETAIL_TYPE_PRIVATE, DETAIL_TYPE_GROUP
+from typing import Any
+
+from ..constants import DETAIL_TYPE_GROUP, DETAIL_TYPE_PRIVATE, EVENT_TYPE_MESSAGE
+from .base import BaseEventHandler
 
 
 class MessageHandler:
