@@ -83,7 +83,7 @@ class CLI:
 
         try:
             # 遍历 commands 包中的所有模块
-            for importer, module_name, ispkg in pkgutil.iter_modules(
+            for _importer, module_name, _ispkg in pkgutil.iter_modules(
                 importlib.import_module(commands_package).__path__,
                 prefix=f"{commands_package}.",
             ):

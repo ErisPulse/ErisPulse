@@ -12,8 +12,8 @@ Types 命令实现
 {!--< /tips >!--}
 """
 
-import os
 from argparse import ArgumentParser
+from pathlib import Path
 from typing import Any
 
 from rich.panel import Panel
@@ -21,7 +21,6 @@ from rich.panel import Panel
 from ..base import Command
 from ..console import console
 from ..i18n import i18n
-
 
 # 生成文件名（带前导下划线，避免与用户业务模块冲突）
 STUB_FILENAME = "_ep_types.py"
@@ -143,9 +142,10 @@ def _build_send_class_stub(send_cls: type) -> str:
         return ""
 
     # 生成方法签名（使用 Any 简化，重点在于让 IDE 知道方法存在）
-    lines = []
-    for name in sorted(platform_methods):
-        lines.append(f"    def {name}(self, *args: Any, **kwargs: Any) -> Any: ...")
+    lines = [
+        f"    def {name}(self, *args: Any, **kwargs: Any) -> Any: ..."
+        for name in sorted(platform_methods)
+    ]
     return "\n".join(lines)
 
 
@@ -227,10 +227,10 @@ class TypesCommand(Command):
         )
 
     def execute(self, args):
-        output_path = args.output or os.path.join(os.getcwd(), STUB_FILENAME)
+        output_path = Path(args.output) if args.output else Path.cwd() / STUB_FILENAME
 
         # 检查文件是否已存在
-        if os.path.exists(output_path) and not args.force:
+        if output_path.exists() and not args.force:
             console.print(
                 f"[warning]{i18n.t('cli.types.exists', path=output_path)}[/]"
             )
@@ -261,7 +261,7 @@ class TypesCommand(Command):
 
         # 写入文件
         try:
-            with open(output_path, "w", encoding="utf-8") as f:
+            with output_path.open("w", encoding="utf-8") as f:
                 f.write(stub_content)
         except OSError as e:
             console.print(
@@ -302,15 +302,16 @@ class TypesCommand(Command):
         raw_entries = self._introspect_remote(
             target_python, "erispulse.adapter", kind="adapter"
         )
-        results = []
-        for d in raw_entries:
-            results.append({
+        results = [
+            {
                 "name": d["name"],
                 "class": None,  # 跨环境下不加载实际类，使用下述字段生成存根
                 "module_path": d["module_path"],
                 "qualname": d["qualname"],
                 "send_methods": d.get("send_methods", []),
-            })
+            }
+            for d in raw_entries
+        ]
         return results
 
     def _collect_modules(self) -> list[dict]:
@@ -326,15 +327,16 @@ class TypesCommand(Command):
         raw_entries = self._introspect_remote(
             target_python, "erispulse.module", kind="module"
         )
-        results = []
-        for d in raw_entries:
-            results.append({
+        results = [
+            {
                 "name": d["name"],
                 "class": None,
                 "module_path": d["module_path"],
                 "qualname": d["qualname"],
                 "methods": d.get("methods", []),
-            })
+            }
+            for d in raw_entries
+        ]
         return results
 
     def _introspect_remote(
@@ -362,6 +364,7 @@ class TypesCommand(Command):
                 capture_output=True,
                 timeout=60,
                 text=True,
+                check=False,
             )
         except Exception as e:
             console.print(
@@ -499,7 +502,7 @@ class TypesCommand(Command):
 
         def _add_import(module_path: str, qualname: str, ep_name: str):
             """添加一个类型导入行，自动跳过重复"""
-            class_name = qualname.split(".")[-1]
+            class_name = qualname.rsplit(".", maxsplit=1)[-1]
             alias = _pascal_case_ep_name(ep_name)
             stmt = f"    from {module_path} import {class_name} as {alias}"
             if stmt in seen_imports:
