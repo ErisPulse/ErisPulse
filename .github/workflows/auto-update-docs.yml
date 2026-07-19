@@ -231,12 +231,22 @@ jobs:
           app-id: ${{ secrets.ERISBOT_APP_ID }}
           private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
 
-      - name: Commit updates
+      - name: Verify and commit updates
         if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         env:
           GH_TOKEN: ${{ steps.refresh-token.outputs.token }}
         run: |
           echo "Saving document updates..."
+          
+          # Verify token has push access
+          echo "Verifying token..."
+          TOKEN_LENGTH=${#GH_TOKEN}
+          echo "Token length: $TOKEN_LENGTH"
+          gh api "repos/${GITHUB_REPOSITORY}" --jq '.full_name' || {
+            echo "⚠️ Token verification failed, falling back to app-token"
+            GH_TOKEN="${{ steps.app-token.outputs.token }}"
+          }
+          echo "Token verified for: ${GITHUB_REPOSITORY}"
           
           # Reconfigure remote with fresh token
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
