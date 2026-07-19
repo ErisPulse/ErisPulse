@@ -33,7 +33,7 @@ class Command(ABC):
 
         :param parser: ArgumentParser 实例
         """
-        pass
+        ...
 
     @abstractmethod
     def execute(self, args):
@@ -42,7 +42,7 @@ class Command(ABC):
 
         :param args: 解析后的参数对象
         """
-        pass
+        ...
 
     @property
     def help(self) -> str:

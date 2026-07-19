@@ -65,7 +65,7 @@ class InitCommand(Command):
 
         if args.quick:
             if here:
-                name = args.project_name or Path(".").resolve().name
+                name = args.project_name or Path.cwd().name
                 success = self._init_project(name, [], in_current_dir=True)
             elif args.project_name:
                 success = self._init_project(args.project_name, [])
@@ -83,7 +83,7 @@ class InitCommand(Command):
     def _init_project(
         self,
         project_name: str,
-        adapter_list: list = None,
+        adapter_list: list | None = None,
         in_current_dir: bool = False,
     ) -> bool:
         """
@@ -95,8 +95,8 @@ class InitCommand(Command):
         :return: [bool] 初始化成功返回 True，失败返回 False
         """
         if in_current_dir:
-            project_path = Path(".")
-            display_name = project_name or Path(".").resolve().name
+            project_path = Path()
+            display_name = project_name or Path.cwd().name
         else:
             if not _validate_project_name(project_name):
                 console.print(f"[error]  {i18n.t('cli.init.invalid_name')}[/]")
@@ -127,7 +127,7 @@ class InitCommand(Command):
 
             config_file = project_path / "config" / "config.toml"
             if not config_file.exists():
-                with open(config_file, "w", encoding="utf-8") as f:
+                with config_file.open("w", encoding="utf-8") as f:
                     f.write("# ErisPulse 配置文件\n")
                     f.write("# 完整配置示例请参考 config.full.example\n\n")
                     f.write("[ErisPulse.server]\n")
@@ -137,17 +137,16 @@ class InitCommand(Command):
                     f.write('level = "INFO"\n')
                     if adapter_list:
                         f.write("\n[ErisPulse.adapters.status]\n")
-                        for adapter in adapter_list:
-                            f.write(f"{adapter} = false\n")
+                        f.writelines(f"{adapter} = false\n" for adapter in adapter_list)
 
             example_file = project_path / "config" / "config.full.example"
             if not example_file.exists():
-                with open(example_file, "w", encoding="utf-8") as f:
+                with example_file.open("w", encoding="utf-8") as f:
                     f.write(self._get_full_example_config(adapter_list))
 
             main_file = project_path / "main.py"
             if not main_file.exists():
-                with open(main_file, "w", encoding="utf-8") as f:
+                with main_file.open("w", encoding="utf-8") as f:
                     f.write(f'"""\n{display_name} 主程序\n\n')
                     f.write("这是 ErisPulse 自动生成的主程序文件\n")
                     f.write('"""\n\n')
@@ -255,8 +254,7 @@ class InitCommand(Command):
         ]
 
         if adapter_list:
-            for adapter in adapter_list:
-                lines.append(f"# {adapter} = false")
+            lines.extend(f"# {adapter} = false" for adapter in adapter_list)
         else:
             lines.extend(
                 [
@@ -305,7 +303,7 @@ class InitCommand(Command):
         }
 
     def _interactive_init(
-        self, project_name: str = None, force: bool = False, here: bool = False
+        self, project_name: str | None = None, force: bool = False, here: bool = False
     ) -> bool:
         """
         交互式初始化项目，引导用户配置项目位置及基本参数
@@ -333,14 +331,14 @@ class InitCommand(Command):
                 in_current_dir = location_choice == 1
 
             if in_current_dir:
-                default_name = Path(".").resolve().name
+                default_name = Path.cwd().name
                 project_name = prompt_validated(
                     i18n.t("cli.init.name_prompt"),
                     default=project_name or default_name,
                     validate=_validate_project_name,
                     error_msg=i18n.t("cli.init.name_error"),
                 )
-                project_path = Path(".")
+                project_path = Path()
             else:
                 project_name = prompt_validated(
                     i18n.t("cli.init.name_prompt"),

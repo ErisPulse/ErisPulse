@@ -98,8 +98,8 @@ class SelfUpdateCommand(Command):
             sys.exit(1)
 
     def _select_target_version(
-        self, versions, specified_version: str = None, include_pre: bool = False
-    ) -> str:
+        self, versions, specified_version: str | None = None, include_pre: bool = False
+    ) -> str | None:
         """
         交互式选择目标更新版本
 
@@ -178,10 +178,9 @@ class SelfUpdateCommand(Command):
                     if 1 <= idx <= len(options):
                         selected = options[idx - 1]
                         break
-                    else:
-                        console.print(
-                            f"[warning]{i18n.t('cli.self_update.invalid_option')}[/]"
-                        )
+                    console.print(
+                        f"[warning]{i18n.t('cli.self_update.invalid_option')}[/]"
+                    )
                 else:
                     console.print(
                         f"[warning]{i18n.t('cli.self_update.enter_number')}[/]"
@@ -192,7 +191,7 @@ class SelfUpdateCommand(Command):
 
         if selected == "cancel":
             return None
-        elif selected == "manual":
+        if selected == "manual":
             target_version = Prompt.ask(f"  {i18n.t('cli.self_update.enter_version')}")
             if not any(v["version"] == target_version for v in versions):
                 console.print(
@@ -203,12 +202,11 @@ class SelfUpdateCommand(Command):
                 ):
                     return None
             return target_version
-        elif selected == "all":
+        if selected == "all":
             return self._select_from_version_list(versions, include_pre)
-        else:
-            return selected
+        return selected
 
-    def _select_from_version_list(self, versions, include_pre: bool = False) -> str:
+    def _select_from_version_list(self, versions, include_pre: bool = False) -> str | None:
         """
         以分页列表形式展示版本并供用户选择
 
@@ -288,7 +286,7 @@ class SelfUpdateCommand(Command):
                     f"[warning]{i18n.t('cli.self_update.invalid_selection')}[/]"
                 )
 
-    def _parse_version_input(self, user_input: str, version_list: list) -> str:
+    def _parse_version_input(self, user_input: str, version_list: list) -> str | None:
         """
         解析用户输入的版本序号或版本号字符串
 

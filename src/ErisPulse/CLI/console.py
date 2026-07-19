@@ -10,8 +10,8 @@ CLI 控制台模块
 """
 
 from rich.console import Console
-from rich.theme import Theme
 from rich.highlighter import RegexHighlighter
+from rich.theme import Theme
 
 BANNER = (
     "\n\n"

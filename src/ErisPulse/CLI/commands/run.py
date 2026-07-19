@@ -5,13 +5,13 @@ Run 命令实现
 """
 
 import asyncio
-import os
 import runpy
 import subprocess
 import sys
 import threading
 import time
 from argparse import ArgumentParser
+from pathlib import Path
 
 from rich.panel import Panel
 
@@ -76,7 +76,7 @@ class ReloadHandler(FileSystemEventHandler):
                 )
 
             console.print(
-                i18n.t("cli.run.file_changed", file=os.path.basename(event.src_path))
+                i18n.t("cli.run.file_changed", file=Path(event.src_path).name)
             )
 
         asyncio.run_coroutine_threadsafe(_do_reload(), self._loop)
@@ -109,18 +109,18 @@ class RunCommand(Command):
         reload_mode = args.reload
 
         if script:
-            if not os.path.exists(script):
+            if not Path(script).exists():
                 console.print(
                     f"[error]{i18n.t('cli.run.script_not_found', script=script)}[/]"
                 )
                 console.print(f"[info]{i18n.t('cli.run.use_init')}[/]")
                 return
-            if os.path.isdir(script):
+            if Path(script).is_dir():
                 console.print(
                     f"[error]{i18n.t('cli.run.is_directory', script=script)}[/]"
                 )
                 console.print(
-                    "[info]{0}[/]".format(i18n.t("cli.run.specify_file", script=script))
+                    "[info]{}[/]".format(i18n.t("cli.run.specify_file", script=script))
                 )
                 return
             self._run_script(script, reload_mode)
@@ -209,12 +209,12 @@ class RunCommand(Command):
         :param script_path: [str] 脚本文件路径
         :param reload_mode: [bool] 是否启用热重载模式
         """
-        script_path_abs = os.path.abspath(script_path)
+        script_path_abs = str(Path(script_path).resolve())
 
         if reload_mode:
             self._run_script_with_reload(script_path_abs)
         else:
-            script_dir = os.path.dirname(script_path_abs)
+            script_dir = str(Path(script_path_abs).parent)
             if script_dir not in sys.path:
                 sys.path.insert(0, script_dir)
             try:
@@ -234,7 +234,7 @@ class RunCommand(Command):
 
         :param script_path_abs: [str] 脚本的绝对路径
         """
-        watch_dir = os.path.dirname(script_path_abs)
+        watch_dir = str(Path(script_path_abs).parent)
 
         reload_state = {
             "process": None,
@@ -268,7 +268,7 @@ class RunCommand(Command):
                 if not event.src_path.endswith(".py"):
                     return
                 reload_state["last_reload"] = now
-                reload_state["changed_file"] = os.path.basename(event.src_path)
+                reload_state["changed_file"] = Path(event.src_path).name
                 reload_state["reload_event"].set()
 
         observer = PollingObserver()
@@ -344,7 +344,7 @@ class RunCommand(Command):
         :param watch_dir: [str] 要监控的目录路径
         :param loop: [asyncio.AbstractEventLoop] 用于调度重载的事件循环
         """
-        if not os.path.exists(watch_dir):
+        if not Path(watch_dir).exists():
             return
 
         self._observer = PollingObserver()

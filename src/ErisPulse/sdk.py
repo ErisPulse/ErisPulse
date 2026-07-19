@@ -36,7 +36,6 @@ from .loaders.module import LazyModule, ModuleLoader
 from .loaders.strict import StrictModeManager
 
 if TYPE_CHECKING:
-    from types import ModuleType
 
     from .Core import (
         AdapterManager,
@@ -58,7 +57,6 @@ if TYPE_CHECKING:
     from .Core import (
         BaseStorage as _BaseStorage,
     )
-    from .Core import Event as _EventModule
     from .Core import (
         HttpClient as _HttpClient,
     )
@@ -160,13 +158,15 @@ class SDK:
     # ---- 类级别类型注解（仅供 IDE / 类型检查器使用）----
     # 注意：这些注解 *没有赋值*，不会创建实例属性，
     # 因此运行时仍然会触发 __getattr__ 进行动态解析。
-    Event: type[_EventModule]
+    from types import ModuleType
+
+    Event: ModuleType
     lifecycle: LifecycleManager
     logger: Logger
     storage: StorageManager
     env: StorageManager
     config: ConfigManager
-    i18n: "I18nManager"
+    i18n: I18nManager
     adapter: AdapterManager
     module: ModuleManager
     router: RouterManager
@@ -175,7 +175,7 @@ class SDK:
     SendDSL: type[_SendDSL]
     BaseStorage: type[_BaseStorage]
     BaseQueryBuilder: type[_BaseQueryBuilder]
-    master: "MasterManager"
+    master: MasterManager
 
     def __init__(self):
         """
@@ -203,10 +203,10 @@ class SDK:
         if name in _CORE_ATTR_NAMES:
             try:
                 return _resolve_core(name)
-            except (ImportError, AttributeError):
+            except (ImportError, AttributeError) as _err:
                 raise AttributeError(
                     i18n.t("core.sdk.attr.core_resolve_failed", name=name)
-                )
+                ) from _err
 
         # 非核心属性：提供友好的错误提示
         try:
@@ -736,12 +736,10 @@ class SDK:
 
             try:
                 if uninit_timeout > 0:
-                    success = await asyncio.wait_for(
+                    return await asyncio.wait_for(
                         _do_uninit(), timeout=uninit_timeout
                     )
-                    return success
-                else:
-                    return await _do_uninit()
+                return await _do_uninit()
             except asyncio.TimeoutError:
                 uninit_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_UNINIT)
                 self.logger.warning(
@@ -897,7 +895,7 @@ class SDK:
             state["modules"]["error"] = "failed to get module state"
 
         try:
-            from .Core.Event import message, notice, request, meta
+            from .Core.Event import message, meta, notice, request
             from .Core.Event.command import command as cmd_handler
 
             state["events"] = {
@@ -1040,24 +1038,22 @@ class SDK:
                     object.__setattr__(module_instance, "_needs_async_init", False)
                     return True
                 # 检查模块是否已经同步初始化但未完成异步部分
-                elif object.__getattribute__(
+                if object.__getattribute__(
                     module_instance, "_initialized"
                 ) and object.__getattribute__(module_instance, "_is_base_module"):
                     # 如果是 BaseModule 子类且已同步初始化，只需完成异步部分
                     await module_instance._complete_async_init()
                     return True
-                else:
-                    # 触发懒加载模块的完整初始化
-                    await module_instance._initialize()
-                    return True
-            elif module_instance is not None:
+                # 触发懒加载模块的完整初始化
+                await module_instance._initialize()
+                return True
+            if module_instance is not None:
                 self.logger.warning(
                     i18n.t("core.sdk.module.already_loaded", name=module_name)
                 )
                 return False
-            else:
-                self.logger.error(i18n.t("core.sdk.module.not_found", name=module_name))
-                return False
+            self.logger.error(i18n.t("core.sdk.module.not_found", name=module_name))
+            return False
         except Exception as e:
             self.logger.error(
                 i18n.t("core.sdk.module.load_failed", name=module_name, error=e)
@@ -1347,8 +1343,10 @@ class SDK:
         """
         self.logger.info(i18n.t("core.sdk.reload.starting"))
 
-        # 使用 ensure_future 将任务注册到事件循环调度器 - 不受上层协程取消影响
-        asyncio.ensure_future(self._do_restart())
+        # 使用 spawn_background 将任务注册到事件循环调度器 - 不受上层协程取消影响
+        from .runtime.tasks import spawn_background
+
+        spawn_background(self._do_restart())
 
         return True
 
@@ -1382,7 +1380,9 @@ class SDK:
                 self.logger.error(i18n.t("core.sdk.hardrestart.uninit_error", error=e))
             os._exit(self.RESTART_EXIT_CODE)
 
-        asyncio.ensure_future(_do_hard_restart())
+        from .runtime.tasks import spawn_background
+
+        spawn_background(_do_hard_restart())
         return True
 
     async def uninit(self) -> bool:
