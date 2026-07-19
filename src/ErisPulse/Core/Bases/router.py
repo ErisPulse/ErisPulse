@@ -17,11 +17,10 @@ ErisPulse 路由抽象基类
 
 from __future__ import annotations
 
-from typing import Any, Iterator, Iterable
-from collections.abc import Callable
+from collections.abc import Iterable, Iterator
+from typing import Any
 
 from .websocket import WebSocketConnectionBase
-from .errors import WebSocketDisconnect
 
 
 class HttpRequest:
@@ -524,7 +523,7 @@ class SseEmitter:
     ...         await asyncio.sleep(1)
     """
 
-    __slots__ = ("_on_send", "_on_close", "_request", "_closed", "_id_counter")
+    __slots__ = ("_closed", "_id_counter", "_on_close", "_on_send", "_request")
 
     def __init__(self, on_send, on_close=None, request=None):
         """
@@ -608,8 +607,10 @@ class SseEmitter:
         if data is not None:
             if not isinstance(data, str):
                 data = _json.dumps(data, ensure_ascii=False)
-            for line in data.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
-                payload_parts.append(f"data: {line}")
+            payload_parts.extend(
+                f"data: {line}"
+                for line in data.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+            )
 
         payload_parts.append("")
         payload = "\n".join(payload_parts) + "\n"

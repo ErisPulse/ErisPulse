@@ -17,6 +17,7 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
+from pathlib import Path
 from typing import Any
 
 from ...Core.logger import logger
@@ -126,7 +127,7 @@ class BaseFinder(ABC):
         子类必须实现此方法
         {!--< /internal-use >!--}
         """
-        pass
+        ...
 
     def _is_remote_target(self) -> bool:
         """
@@ -137,8 +138,8 @@ class BaseFinder(ABC):
         import os
 
         try:
-            target = os.path.normcase(os.path.abspath(self._python_executable))
-            current = os.path.normcase(os.path.abspath(sys.executable))
+            target = os.path.normcase(str(Path(self._python_executable).resolve()))
+            current = os.path.normcase(str(Path(sys.executable).resolve()))
             return target != current
         except Exception:
             return False
@@ -187,6 +188,7 @@ class BaseFinder(ABC):
                 capture_output=True,
                 timeout=30,
                 text=True,
+                check=False,
             )
             if result.returncode != 0:
                 logger.error(

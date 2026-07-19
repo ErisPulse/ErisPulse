@@ -38,9 +38,7 @@ from ..constants import (
     TEXT_METHOD_INDICATORS,
 )
 from .session_type import (
-    convert_to_send_type,
     get_send_type_and_target_id,
-    infer_receive_type,
 )
 
 
@@ -230,8 +228,8 @@ async def _builtin_wait_reply(
     event: "Event",
     prompt: str | None = None,
     timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
-    callback: Callable[[dict[str, Any]], Awaitable[Any]] = None,
-    validator: Callable[[dict[str, Any]], bool] = None,
+    callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None,
+    validator: Callable[[dict[str, Any]], bool] | None = None,
     method: str = DEFAULT_SEND_METHOD,
 ) -> Optional["Event"]:
     """
@@ -259,11 +257,11 @@ async def _builtin_confirm(
     event: "Event",
     prompt: str | None = None,
     timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
-    yes_words: set[str] | frozenset[str] = None,
-    no_words: set[str] | frozenset[str] = None,
+    yes_words: set[str] | frozenset[str] | None = None,
+    no_words: set[str] | frozenset[str] | None = None,
     method: str = DEFAULT_SEND_METHOD,
     hint: bool = False,
-) -> Optional[bool]:
+) -> bool | None:
     """
     内置 confirm 实现
 
@@ -279,10 +277,10 @@ async def _builtin_confirm(
 
     actual_prompt = prompt
     if hint and prompt:
-        from ..i18n import i18n
         from ..constants import CONFIRM_HINT_WORDS
+        from ..i18n import i18n
 
-        lang = i18n.language or "zh-CN"
+        lang = i18n.get_language() or "zh-CN"
         yes_word, no_word = CONFIRM_HINT_WORDS.get(lang, CONFIRM_HINT_WORDS["en"])
         actual_prompt = i18n.t(
             "core.event.confirm_hint",
@@ -389,7 +387,7 @@ async def _builtin_choose(
     options_format: str | Callable[[list[str]], str] = "auto",
     merge_prompt: bool = False,
     placeholder: str = "{options}",
-) -> Optional[int]:
+) -> int | None:
     """
     内置 choose 实现
 
@@ -452,7 +450,7 @@ async def _builtin_collect(
     event: "Event",
     fields: list[dict[str, Any]],
     timeout_per_field: float = 60.0,
-) -> Optional[dict[str, str]]:
+) -> dict[str, str] | None:
     """
     内置 collect 实现
 
@@ -1098,7 +1096,7 @@ class Event(dict):
         method: str = DEFAULT_SEND_METHOD,
         at_sender: bool = False,
         quote: bool = False,
-        at_users: list[str] = None,
+        at_users: list[str] | None = None,
         reply_to: str | None = None,
         at_all: bool = False,
         **kwargs,
@@ -1187,7 +1185,8 @@ class Event(dict):
         if not send_method or not callable(send_method):
             raise ValueError(f"适配器不支持方法: {method}")
 
-        return await send_method(content)
+        result = send_method(content)
+        return await result if inspect.isawaitable(result) else result
 
     # ==================== OB12 消息回复 ====================
 
@@ -1276,8 +1275,8 @@ class Event(dict):
         self,
         prompt: str | None = None,
         timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
-        callback: Callable[[dict[str, Any]], Awaitable[Any]] = None,
-        validator: Callable[[dict[str, Any]], bool] = None,
+        callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None,
+        validator: Callable[[dict[str, Any]], bool] | None = None,
         method: str = DEFAULT_SEND_METHOD,
     ) -> Optional["Event"]:
         """
@@ -1300,11 +1299,11 @@ class Event(dict):
         self,
         prompt: str | None = None,
         timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
-        yes_words: set[str] | frozenset[str] = None,
-        no_words: set[str] | frozenset[str] = None,
+        yes_words: set[str] | frozenset[str] | None = None,
+        no_words: set[str] | frozenset[str] | None = None,
         method: str = DEFAULT_SEND_METHOD,
         hint: bool = False,
-    ) -> Optional[bool]:
+    ) -> bool | None:
         """
         等待用户确认 (是/否)
 
@@ -1339,7 +1338,7 @@ class Event(dict):
         options_format: str | Callable[[list[str]], str] = "auto",
         merge_prompt: bool = False,
         placeholder: str = "{options}",
-    ) -> Optional[int]:
+    ) -> int | None:
         """
         等待用户从选项中选择
 
@@ -1393,7 +1392,7 @@ class Event(dict):
         self,
         fields: list[dict[str, Any]],
         timeout_per_field: float = 60.0,
-    ) -> Optional[dict[str, str]]:
+    ) -> dict[str, str] | None:
         """
         多步骤收集信息 (表单式)
 
@@ -1428,7 +1427,7 @@ class Event(dict):
     async def wait_for(
         self,
         event_type: str = "message",
-        condition: Callable[["Event"], bool] = None,
+        condition: Callable[["Event"], bool] | None = None,
         timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
     ) -> Optional["Event"]:
         """
@@ -1653,10 +1652,10 @@ class Event(dict):
         # 3. 兜底：字典键访问
         try:
             return self[name]
-        except KeyError:
+        except KeyError as _err:
             raise AttributeError(
                 f"'{self.__class__.__name__}' object has no attribute '{name}'"
-            )
+            ) from _err
 
     def __dir__(self) -> list[str]:
         """
@@ -1741,7 +1740,7 @@ class Conversation:
     async def wait(
         self,
         prompt: str | None = None,
-        timeout: float = None,
+        timeout: float | None = None,
         method: str = DEFAULT_SEND_METHOD,
     ) -> Optional["Event"]:
         """
@@ -1763,7 +1762,7 @@ class Conversation:
             self._alive = False
         return result
 
-    async def confirm(self, prompt: str | None = None, **kwargs) -> Optional[bool]:
+    async def confirm(self, prompt: str | None = None, **kwargs) -> bool | None:
         """
         等待用户确认
 
@@ -1778,7 +1777,7 @@ class Conversation:
             **kwargs,
         )
 
-    async def choose(self, prompt: str, options: list[str], **kwargs) -> Optional[int]:
+    async def choose(self, prompt: str, options: list[str], **kwargs) -> int | None:
         """
         等待用户选择
 
@@ -1795,7 +1794,7 @@ class Conversation:
             **kwargs,
         )
 
-    async def collect(self, fields: list[dict], **kwargs) -> Optional[dict]:
+    async def collect(self, fields: list[dict], **kwargs) -> dict | None:
         """
         多步骤收集信息
 
@@ -1871,7 +1870,7 @@ class Conversation:
 
         return decorator
 
-    def goto(self, branch_name: str, event: "Event" = None):
+    def goto(self, branch_name: str, event: "Event | None" = None):
         """
         跳转到指定分支
 
@@ -1913,7 +1912,7 @@ class Conversation:
         except RuntimeError:
             pass
 
-    def start(self, branch_name: str, event: "Event" = None):
+    def start(self, branch_name: str, event: "Event | None" = None):
         """
         启动对话，从指定分支开始
 
@@ -1977,7 +1976,7 @@ class Conversation:
         except Exception:
             logger.trace("[Conversation] save failed")
 
-    async def resume(self, event: "Event" = None) -> bool:
+    async def resume(self, event: "Event | None" = None) -> bool:
         """
         从 storage 恢复对话状态
 
@@ -2032,19 +2031,19 @@ class Conversation:
 
 
 __all__ = [
-    "Event",
-    "Conversation",
-    "CONFIRM_YES_WORDS",
     "CONFIRM_NO_WORDS",
-    # 平台事件方法注册
-    "register_event_mixin",
-    "register_event_method",
-    "unregister_event_method",
-    "unregister_platform_event_methods",
-    "get_platform_event_methods",
-    # 内置交互式方法实现（供平台 Mixin 覆写时调用）
-    "_builtin_wait_reply",
-    "_builtin_confirm",
+    "CONFIRM_YES_WORDS",
+    "Conversation",
+    "Event",
     "_builtin_choose",
     "_builtin_collect",
+    "_builtin_confirm",
+    # 内置交互式方法实现（供平台 Mixin 覆写时调用）
+    "_builtin_wait_reply",
+    "get_platform_event_methods",
+    "register_event_method",
+    # 平台事件方法注册
+    "register_event_mixin",
+    "unregister_event_method",
+    "unregister_platform_event_methods",
 ]

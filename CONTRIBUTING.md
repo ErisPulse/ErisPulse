@@ -126,10 +126,15 @@ Filter by marker with `-m`. Common markers: `unit`, `integration`, `e2e`, `adapt
 
 ### Lint & Format
 
-The project uses [Ruff](https://docs.astral.sh/ruff/) (config in `[tool.ruff]` of `pyproject.toml`). Ensure code passes checks before committing:
+The project uses two checking tools:
+
+1. **[Ruff](https://docs.astral.sh/ruff/)** — code style & lightweight static checks (config in `[tool.ruff]` of `pyproject.toml`)
+2. **[Basedpyright](https://docs.basedpyright.com/)** — strict type checking (config in `[tool.basedpyright]` of `pyproject.toml`)
+
+Ensure code passes both checks before committing:
 
 ```bash
-# Lint
+# Lint & static analysis
 uv run ruff check .
 
 # Auto-fix
@@ -137,7 +142,14 @@ uv run ruff check . --fix
 
 # Format
 uv run ruff format .
+
+# Type check
+uv run basedpyright src/ErisPulse
 ```
+
+> ⚠️ **Type checking rules**: `[tool.basedpyright]` uses `standard` (moderate) mode.
+> Real type bugs (return type mismatch, argument type mismatch, optional member access, etc.) are elevated to **error**.
+> Most `reportAny/Unknown*` warnings are gradual "incomplete types" — they won't block merging.
 
 ## Docstring Standards
 
@@ -296,7 +308,12 @@ uv run pytest tests/unit/test_xxx.py::TestClass::test_method
 
 ### 代码检查与格式化
 
-项目使用 [Ruff](https://docs.astral.sh/ruff/)（配置见 `pyproject.toml` 的 `[tool.ruff]`）。提交前请确保代码通过检查：
+项目使用两套检查工具：
+
+1. **[Ruff](https://docs.astral.sh/ruff/)** — 代码风格与轻量级静态检查（配置见 `pyproject.toml` 的 `[tool.ruff]`）
+2. **[Basedpyright](https://docs.basedpyright.com/)** — 严格的类型检查（配置见 `pyproject.toml` 的 `[tool.basedpyright]`）
+
+提交前请确保代码通过两套检查：
 
 ```bash
 # 代码检查
@@ -307,7 +324,14 @@ uv run ruff check . --fix
 
 # 代码格式化
 uv run ruff format .
+
+# 类型检查
+uv run basedpyright src/ErisPulse
 ```
+
+> ⚠️ **类型检查规则**：`pyproject.toml` 的 `[tool.basedpyright]` 采用 `standard` 中等级模式，
+> 已将“真实类型 bug”（如返回值与注解不匹配、参数类型不兼容、对可能 `None` 取属性等）提级为 error。
+> 大量的 `reportAny/Unknown*` 警告属于“类型不完整”，不会阻止合并。
 
 ## 代码注释规范
 
@@ -476,7 +500,12 @@ uv run pytest tests/unit/test_xxx.py::TestClass::test_method
 
 ### 程式碼檢查與格式化
 
-專案使用 [Ruff](https://docs.astral.sh/ruff/)（設定見 `pyproject.toml` 的 `[tool.ruff]`）。提交前請確保程式碼通過檢查：
+專案使用兩套檢查工具：
+
+1. **[Ruff](https://docs.astral.sh/ruff/)** — 程式碼風格與輕量級靜態檢查（設定見 `pyproject.toml` 的 `[tool.ruff]`）
+2. **[Basedpyright](https://docs.basedpyright.com/)** — 嚴格的型別檢查（設定見 `pyproject.toml` 的 `[tool.basedpyright]`）
+
+提交前請確保程式碼通過兩套檢查：
 
 ```bash
 # 程式碼檢查
@@ -487,7 +516,14 @@ uv run ruff check . --fix
 
 # 程式碼格式化
 uv run ruff format .
+
+# 型別檢查
+uv run basedpyright src/ErisPulse
 ```
+
+> ⚠️ **型別檢查規則**：`pyproject.toml` 的 `[tool.basedpyright]` 採用 `standard` 中等級模式，
+> 已將「真實型別 bug」（如返回值與註解不匹配、參數型別不相容、對可能 `None` 取屬性等）提級為 error。
+> 大量的 `reportAny/Unknown*` 警告屬於「型別不完整」，可漸進式修復，不會阻止合併。
 
 ## 程式碼註解規範
 
@@ -656,7 +692,12 @@ uv run pytest tests/unit/test_xxx.py::TestClass::test_method
 
 ### リントとフォーマット
 
-プロジェクトは [Ruff](https://docs.astral.sh/ruff/) を使用（設定は `pyproject.toml` の `[tool.ruff]`）。コミット前にコードがチェックを通ることを確認：
+プロジェクトは2つのチェックツールを使用：
+
+1. **[Ruff](https://docs.astral.sh/ruff/)** — コードスタイルと軽量静的解析（設定は `pyproject.toml` の `[tool.ruff]`）
+2. **[Basedpyright](https://docs.basedpyright.com/)** — 厳格な型チェック（設定は `pyproject.toml` の `[tool.basedpyright]`）
+
+コミット前にコードが両方のチェックを通ることを確認：
 
 ```bash
 # リント
@@ -667,7 +708,14 @@ uv run ruff check . --fix
 
 # フォーマット
 uv run ruff format .
+
+# 型チェック
+uv run basedpyright src/ErisPulse
 ```
+
+> ⚠️ **型チェックルール**：`[tool.basedpyright]` は `standard`（中程度）モードを使用。
+> 実際の型バグ（戻り値と注釈の不一致、引数型の不一致、`None` の可能性がある値へのアクセスなど）は **error** に昇格。
+> 多くの `reportAny/Unknown*` 警告は「型の不十分さ」を示すもので、マージを妨げません。
 
 ## ドキュメント文字列規範
 
@@ -826,7 +874,12 @@ uv run pytest tests/unit/test_xxx.py::TestClass::test_method
 
 ### Линт и форматирование
 
-Проект использует [Ruff](https://docs.astral.sh/ruff/) (конфиг в `[tool.ruff]` файла `pyproject.toml`). Перед коммитом убедитесь, что код проходит проверки:
+Проект использует два инструмента проверки:
+
+1. **[Ruff](https://docs.astral.sh/ruff/)** — стиль кода и лёгкий статический анализ (конфиг в `[tool.ruff]` файла `pyproject.toml`)
+2. **[Basedpyright](https://docs.basedpyright.com/)** — строгая проверка типов (конфиг в `[tool.basedpyright]` файла `pyproject.toml`)
+
+Перед коммитом убедитесь, что код проходит обе проверки:
 
 ```bash
 # Линт
@@ -837,7 +890,14 @@ uv run ruff check . --fix
 
 # Форматирование
 uv run ruff format .
+
+# Проверка типов
+uv run basedpyright src/ErisPulse
 ```
+
+> ⚠️ **Правила проверки типов**: `[tool.basedpyright]` использует режим `standard` (умеренный).
+> Реальные ошибки типов (несоответствие возвращаемого значения, несовместимость аргументов, обращение к `None` и т.д.) повышены до **error**.
+> Большинство предупреждений `reportAny/Unknown*` — это «неполные типы», они не блокируют слияние.
 
 ## Стандарты документирования
 

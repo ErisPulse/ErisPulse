@@ -370,8 +370,7 @@ class I18nManager:
                 # "auto" 表示使用自动检测的语言
                 if cfg_lang.lower() == "auto":
                     return self._detected_lang
-                resolved = self._resolve_nearest(cfg_lang)
-                return resolved
+                return self._resolve_nearest(cfg_lang)
         except Exception:
             pass
 
@@ -401,7 +400,7 @@ class I18nManager:
         {!--< /internal-use >!--}
         """
         try:
-            with open(self._global_state_path(), "r", encoding="utf-8") as f:
+            with self._global_state_path().open(encoding="utf-8") as f:
                 state = json.load(f)
             lang = state.get("language")
             if lang and isinstance(lang, str):
@@ -447,12 +446,12 @@ class I18nManager:
             # 读取现有状态，保留其它键（如 lang_hint_count）
             state = {}
             try:
-                with open(state_path, "r", encoding="utf-8") as f:
+                with state_path.open(encoding="utf-8") as f:
                     state = json.load(f)
             except (FileNotFoundError, json.JSONDecodeError):
                 pass
             state["language"] = lang
-            with open(state_path, "w", encoding="utf-8") as f:
+            with state_path.open("w", encoding="utf-8") as f:
                 json.dump(state, f, ensure_ascii=False, indent=2)
         except OSError:
             pass
@@ -621,4 +620,4 @@ class I18nManager:
 i18n: I18nManager = I18nManager()
 
 
-__all__ = ["i18n", "I18nManager"]
+__all__ = ["I18nManager", "i18n"]

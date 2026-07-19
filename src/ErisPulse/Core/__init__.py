@@ -46,55 +46,55 @@ env = storage
 client = HttpClient()
 
 __all__ = [
-    "Event",  # 事件模块包
-    "adapter",  # 适配器模块单例
     "AdapterManager",  # 适配器管理器类
     "BaseAdapter",  # 适配器基类
-    "SendDSL",  # 发送消息 DSL 类
-    "SendContext",  # 发送任务实时上下文类
-    "SendBuilder",  # 批量发送构建器类
-    "BatchContext",  # 批量发送上下文类
-    "RequestDSL",  # 请求消息 DSL 类
-    "MessageBuilder",  # 消息构建器类
-    "module",  # 模块模块单例
-    "ModuleManager",  # 模块管理器类
-    "BaseModule",  # 模块基类
-    "storage",  # 存储模块单例
-    "StorageManager",  # 存储管理器类
-    "BaseStorage",  # 存储基类
-    "BaseQueryBuilder",  # 查询构建器基类
-    "KVQueryBuilder",  # KV 查询构建器
-    "config",  # 配置模块单例
-    "env",  # 配置管理器别名
-    "ConfigManager",  # 配置管理器类
-    "router",  # 路由模块单例
-    "RouterManager",  # 路由管理器类
-    "RouteGroup",  # 路由分组类
-    "HttpRequest",  # HTTP 请求类
-    "WebSocketConnection",  # WebSocket 连接类
-    "WebSocketConnectionBase",  # WebSocket 连接基类
-    "WSMessage",  # WebSocket 消息类
-    "WebSocketDisconnect",  # WebSocket 断开连接异常类
-    "HttpClient",  # HTTP 客户端类
-    "HttpResponse",  # HTTP 响应类
-    "ClientWebSocket",  # WebSocket 客户端类
-    "client",  # HTTP 客户端别名
+    "BaseClientWebSocket",  # WebSocket 客户端基类
     "BaseHttpClient",  # HTTP 客户端基类
     "BaseHttpResponse",  # HTTP 响应基类
-    "BaseClientWebSocket",  # WebSocket 客户端基类
-    "ErisPulseError",  # ErisPulse 错误基类
-    "ClientError",  # HTTP 错误基类
+    "BaseModule",  # 模块基类
+    "BaseQueryBuilder",  # 查询构建器基类
+    "BaseStorage",  # 存储基类
+    "BatchContext",  # 批量发送上下文类
     "ClientConnectionError",  # HTTP 连接错误基类
+    "ClientError",  # HTTP 错误基类
     "ClientTimeoutError",  # HTTP 超时错误基类
+    "ClientWebSocket",  # WebSocket 客户端类
+    "ConfigManager",  # 配置管理器类
+    "ErisPulseError",  # ErisPulse 错误基类
+    "Event",  # 事件模块包
     "HTTPStatusError",  # HTTP 状态错误基类
-    "WebSocketError",  # WebSocket 错误基类
-    "logger",  # 日志模块单例
+    "HttpClient",  # HTTP 客户端类
+    "HttpRequest",  # HTTP 请求类
+    "HttpResponse",  # HTTP 响应类
+    "I18nManager",  # 国际化管理器类
+    "KVQueryBuilder",  # KV 查询构建器
+    "LifecycleManager",  # 生命周期管理器类
     "Logger",  # 日志类
     "LoggerChild",  # 日志子类
-    "lifecycle",  # 生命周期模块单例
-    "LifecycleManager",  # 生命周期管理器类
-    "i18n",  # 国际化模块单例
-    "I18nManager",  # 国际化管理器类
-    "master",  # 框架主人模块单例
     "MasterManager",  # 框架主人管理器类
+    "MessageBuilder",  # 消息构建器类
+    "ModuleManager",  # 模块管理器类
+    "RequestDSL",  # 请求消息 DSL 类
+    "RouteGroup",  # 路由分组类
+    "RouterManager",  # 路由管理器类
+    "SendBuilder",  # 批量发送构建器类
+    "SendContext",  # 发送任务实时上下文类
+    "SendDSL",  # 发送消息 DSL 类
+    "StorageManager",  # 存储管理器类
+    "WSMessage",  # WebSocket 消息类
+    "WebSocketConnection",  # WebSocket 连接类
+    "WebSocketConnectionBase",  # WebSocket 连接基类
+    "WebSocketDisconnect",  # WebSocket 断开连接异常类
+    "WebSocketError",  # WebSocket 错误基类
+    "adapter",  # 适配器模块单例
+    "client",  # HTTP 客户端别名
+    "config",  # 配置模块单例
+    "env",  # 配置管理器别名
+    "i18n",  # 国际化模块单例
+    "lifecycle",  # 生命周期模块单例
+    "logger",  # 日志模块单例
+    "master",  # 框架主人模块单例
+    "module",  # 模块模块单例
+    "router",  # 路由模块单例
+    "storage",  # 存储模块单例
 ]

@@ -392,10 +392,7 @@ class BaseStorage(ABC):
         :param items: 键值对字典
         :return: 操作是否成功
         """
-        for key, value in items.items():
-            if not self.set(key, value):
-                return False
-        return True
+        return all(self.set(key, value) for key, value in items.items())
 
     def delete_multi(self, keys: list[str]) -> bool:
         """
@@ -404,10 +401,7 @@ class BaseStorage(ABC):
         :param keys: 键名列表
         :return: 操作是否成功
         """
-        for key in keys:
-            if not self.delete(key):
-                return False
-        return True
+        return all(self.delete(key) for key in keys)
 
     def keys(self) -> list[str]:
         """
@@ -533,6 +527,6 @@ class BaseStorage(ABC):
 
 
 __all__ = [
-    "BaseStorage",
     "BaseQueryBuilder",
+    "BaseStorage",
 ]
