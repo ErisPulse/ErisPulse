@@ -62,6 +62,7 @@ ErisPulse SDK 主类
 > - module: 模块管理器
 > - router: 路由管理器
 > - client: HTTP 客户端
+> - master: 框架主人管理器
 
 
 #### 嵌套类

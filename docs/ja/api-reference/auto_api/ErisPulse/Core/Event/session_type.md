@@ -61,16 +61,17 @@ ErisPulse 会话类型管理模块
 ---
 
 
-### `convert_to_send_type(receive_type: str, platform: str | None = None)`
+### `convert_to_send_type(receive_type: str | None, platform: str | None = None)`
 
 将接收类型转换为发送目标类型
 
-- **receive_type** (`接收事件类型`): - **platform**: 平台名称（可选）
-**返回值** (`发送目标类型`): 
+- **receive_type** (`接收事件类型（``None```): 时返回默认值 ``"user"``）
+- **platform** (`平台名称（可选）`): **返回值** (`发送目标类型`): 
 **示例**:
 ```python
 >>> convert_to_send_type("private")  # 返回 "user"
 >>> convert_to_send_type("group")   # 返回 "group"
+>>> convert_to_send_type(None)       # 返回 "user"
 ```
 
 ---
@@ -184,4 +185,12 @@ ErisPulse 会话类型管理模块
 - **platform** (`平台名称（可选，如果指定则只清除该平台的类型）`): **返回值**: 清除的类型数量
 
 ---
+
+
+## 类列表
+
+
+### `class StrEnum(str, Enum)`
+
+字符串枚举：成员值同时是 str，可直接用于字符串上下文。
 

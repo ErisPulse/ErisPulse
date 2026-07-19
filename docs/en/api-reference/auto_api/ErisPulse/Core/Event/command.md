@@ -30,7 +30,7 @@ ErisPulse 命令处理模块
 #### 方法列表
 
 
-##### `__call__(name: str | list[str] = None, aliases: list[str] = None, group: str = None, priority: int = 0, permission: Callable = None, help: str = None, usage: str = None, hidden: bool = False, master: bool = False)`
+##### `__call__(name: str | list[str] | None = None, aliases: list[str] | None = None, group: str | None = None, priority: int = 0, permission: Callable | None = None, help: str | None = None, usage: str | None = None, hidden: bool = False, master: bool = False)`
 
 命令装饰器
 
@@ -63,7 +63,7 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async wait_reply(event: dict[str, Any], prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
+##### `async wait_reply(event: dict[str, Any], prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户回复
 
@@ -201,7 +201,7 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `help(command_name: str = None, show_hidden: bool = False)`
+##### `help(command_name: str | None = None, show_hidden: bool = False)`
 
 生成帮助信息
 

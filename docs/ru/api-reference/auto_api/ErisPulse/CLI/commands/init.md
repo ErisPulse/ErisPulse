@@ -41,7 +41,7 @@ init 命令
 ---
 
 
-##### `_init_project(project_name: str, adapter_list: list = None, in_current_dir: bool = False)`
+##### `_init_project(project_name: str, adapter_list: list | None = None, in_current_dir: bool = False)`
 
 创建项目目录结构并生成配置文件
 
@@ -72,7 +72,7 @@ init 命令
 ---
 
 
-##### `_interactive_init(project_name: str = None, force: bool = False, here: bool = False)`
+##### `_interactive_init(project_name: str | None = None, force: bool = False, here: bool = False)`
 
 交互式初始化项目，引导用户配置项目位置及基本参数
 

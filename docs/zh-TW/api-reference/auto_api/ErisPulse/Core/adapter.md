@@ -190,11 +190,11 @@ ErisPulse 适配器系统
 ---
 
 
-##### `_config_register(platform: str, enabled: bool = True)`
+##### `_config_register(platform: str, enabled: bool = DEFAULT_ADAPTER_ENABLED)`
 
 注册新平台适配器（仅当平台不存在时注册）
 
-- **platform** (`平台名称`): - **enabled** (`bool`): 是否启用适配器 (默认: True，新适配器默认启用)
+- **platform** (`平台名称`): - **enabled** (`bool`): 是否启用适配器 (默认: DEFAULT_ADAPTER_ENABLED)
 **返回值** (`bool`): 操作是否成功
 
 ---
@@ -525,7 +525,17 @@ self字段标准扩展：
 获取指定平台的适配器实例
 
 - **name** (`平台名称`): - **platform** (`已弃用`): 兼容旧关键字参数，等同 name
-**返回值** (`适配器实例或None`): 
+**返回值** (`适配器实例或None`): > **提示**
+> 返回类型为泛型 ``_TAdapter``（默认为 BaseAdapter）。
+> 由于框架通过 entry_points 动态发现适配器，入口点无法静态获知
+> 具体平台类型；但返回的实例始终是具体适配器子类的实例，
+> 其 ``Send`` 属性提供标准发送方法（Text/Image/Voice/Video/File）的补全。
+> 若调用方与适配器同项目且能导入适配器类，可添加类型注解获得更精确补全：
+> >>> adapter: MyAdapter = sdk.adapter.get("MyPlatform")
+> 跨项目调用时，直接使用返回值的基类接口即可获得标准方法补全：
+> >>> adapter = sdk.adapter.get("MyPlatform")
+> >>> await adapter.Send.To("user", "123").Text("Hello")  # 基类已声明 Text
+
 **示例**:
 ```python
 >>> adapter = adapter.get("MyPlatform")
@@ -606,12 +616,15 @@ self字段标准扩展：
 
 列出指定平台支持的发送方法
 
+包含标准发送方法（Text/Image/Voice/Video/File/Raw_ob12）和平台特有方法，
+排除链式修饰方法（At/To/Hook/Retry 等）和属性。
+
 - **platform** (`平台名称`): **返回值** (`发送方法名列表`): **异常**: `ValueError` - 当平台不存在时抛出
 
 **示例**:
 ```python
 >>> methods = adapter.list_sends("onebot11")
->>> print(methods)  # ["Text", "Image", "Voice", ...]
+>>> print(methods)  # ["File", "Image", "Raw_ob12", "Text", "Video", "Voice", ...]
 ```
 
 ---

@@ -103,7 +103,7 @@ ErisPulse 事件包装类
 ---
 
 
-### `async _builtin_wait_reply(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
+### `async _builtin_wait_reply(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD)`
 
 内置 wait_reply 实现
 
@@ -112,7 +112,7 @@ ErisPulse 事件包装类
 ---
 
 
-### `async _builtin_confirm(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None, method: str = DEFAULT_SEND_METHOD, hint: bool = False)`
+### `async _builtin_confirm(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] | None = None, no_words: set[str] | frozenset[str] | None = None, method: str = DEFAULT_SEND_METHOD, hint: bool = False)`
 
 内置 confirm 实现
 
@@ -698,7 +698,7 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async reply(content: str, method: str = DEFAULT_SEND_METHOD, at_sender: bool = False, quote: bool = False, at_users: list[str] = None, reply_to: str | None = None, at_all: bool = False)`
+##### `async reply(content: str, method: str = DEFAULT_SEND_METHOD, at_sender: bool = False, quote: bool = False, at_users: list[str] | None = None, reply_to: str | None = None, at_all: bool = False)`
 
 通用回复方法
 
@@ -805,7 +805,7 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
+##### `async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户回复
 
@@ -817,7 +817,7 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async confirm(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None, method: str = DEFAULT_SEND_METHOD, hint: bool = False)`
+##### `async confirm(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] | None = None, no_words: set[str] | frozenset[str] | None = None, method: str = DEFAULT_SEND_METHOD, hint: bool = False)`
 
 等待用户确认 (是/否)
 
@@ -932,7 +932,7 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async wait_for(event_type: str = 'message', condition: Callable[['Event'], bool] = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS)`
+##### `async wait_for(event_type: str = 'message', condition: Callable[['Event'], bool] | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS)`
 
 等待满足条件的任意事件
 
@@ -1162,7 +1162,7 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async wait(prompt: str | None = None, timeout: float = None, method: str = DEFAULT_SEND_METHOD)`
+##### `async wait(prompt: str | None = None, timeout: float | None = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户回复
 
@@ -1244,7 +1244,7 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `goto(branch_name: str, event: 'Event' = None)`
+##### `goto(branch_name: str, event: 'Event | None' = None)`
 
 跳转到指定分支
 
@@ -1261,7 +1261,7 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `start(branch_name: str, event: 'Event' = None)`
+##### `start(branch_name: str, event: 'Event | None' = None)`
 
 启动对话，从指定分支开始
 
@@ -1313,7 +1313,7 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async resume(event: 'Event' = None)`
+##### `async resume(event: 'Event | None' = None)`
 
 从 storage 恢复对话状态
 

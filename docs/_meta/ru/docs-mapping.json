@@ -22,7 +22,7 @@
           "level": 1
         },
         {
-          "title": "Отслеживание багов",
+          "title": "Трекер ошибок",
           "path": "bug-tracker.md",
           "level": 1
         },
@@ -36,7 +36,7 @@
     },
     "Начало работы": {
       "description": "Основные концепции и учебные материалы ErisPulse",
-      "count": 5,
+      "count": 6,
       "documents": [
         {
           "title": "Создание первого бота",
@@ -44,7 +44,7 @@
           "level": 1
         },
         {
-          "title": "Руководство по началу работы",
+          "title": "Введение",
           "path": "getting-started/README.md",
           "level": 1
         },
@@ -61,6 +61,11 @@
         {
           "title": "Введение в обработку событий",
           "path": "getting-started/event-handling.md",
+          "level": 1
+        },
+        {
+          "title": "Генерация типовых заглушек (автодополнение в IDE)",
+          "path": "getting-started/ide-completion.md",
           "level": 1
         }
       ],
@@ -86,7 +91,7 @@
           "level": 1
         },
         {
-          "title": "Справочник по командам CLI",
+          "title": "Справочник команд CLI",
           "path": "user-guide/cli-reference.md",
           "level": 1
         },
@@ -108,7 +113,7 @@
           "level": 1
         },
         {
-          "title": "Руководство по публикации и модулю магазина",
+          "title": "Руководство по публикации и магазину модулей",
           "path": "developer-guide/publishing.md",
           "level": 1
         }
@@ -128,7 +133,7 @@
               "level": 1
             },
             {
-              "title": "Подробное объяснение класса Event",
+              "title": "Подробное руководство по Event-обертке",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1
             },
@@ -153,7 +158,7 @@
               "level": 1
             },
             {
-              "title": "SendDSL — подробное руководство",
+              "title": "Подробное руководство по SendDSL",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1
             },
@@ -176,7 +181,7 @@
       "count": 15,
       "documents": [
         {
-          "title": "Документация функций платформы ErisPulse",
+          "title": "Документация по функциям платформы ErisPulse",
           "path": "platform-guide/README.md",
           "level": 1
         },
@@ -186,7 +191,7 @@
           "level": 1
         },
         {
-          "title": "Документация по особенностям платформы OneBot12",
+          "title": "OneBot12 Платформенные особенности документации",
           "path": "platform-guide/onebot12.md",
           "level": 1
         },
@@ -216,7 +221,7 @@
           "level": 1
         },
         {
-          "title": "Документ по характеристикам платформы Цветущей берёзы (Ideaura)",
+          "title": "Документация по функциям платформы Ideaura (HuaFeng Coffeehouse)",
           "path": "platform-guide/ideaura.md",
           "level": 1
         },
@@ -231,7 +236,7 @@
           "level": 1
         },
         {
-          "title": "Документация по функциональным особенностям платформы QQBot",
+          "title": "Документация по функциям платформы QQBot",
           "path": "platform-guide/qqbot.md",
           "level": 1
         },
@@ -241,12 +246,12 @@
           "level": 1
         },
         {
-          "title": "Адаптер WeChatMp (微信公众号适配器) — Документация по платформенным особенностям",
+          "title": "Адаптер WeChatMp (WeChat Public Account) - Документация по особенностям платформы",
           "path": "platform-guide/wechatmp.md",
           "level": 1
         },
         {
-          "title": "Характеристики платформы пользователей Cloud Lake (Yunhu)",
+          "title": "Документация по функциям платформы Yunhu User",
           "path": "platform-guide/yunhu_user.md",
           "level": 1
         }
@@ -263,7 +268,7 @@
           "level": 1
         },
         {
-          "title": "Система API адаптеров",
+          "title": "API системы адаптеров",
           "path": "api-reference/adapter-system.md",
           "level": 1
         },
@@ -305,7 +310,7 @@
           "level": 1
         },
         {
-          "title": "Подробное описание MessageBuilder",
+          "title": "Подробное руководство по MessageBuilder",
           "path": "advanced/message-builder.md",
           "level": 1
         },
@@ -320,7 +325,7 @@
           "level": 1
         },
         {
-          "title": "Регистрация представлений Dashboard",
+          "title": "Регистрация окон Dashboard",
           "path": "advanced/dashboard-view.md",
           "level": 1
         },
@@ -330,7 +335,7 @@
           "level": 1
         },
         {
-          "title": "Система интернационализации (i18n)",
+          "title": "Система международной локализации (i18n)",
           "path": "advanced/i18n.md",
           "level": 1
         },
@@ -379,7 +384,7 @@
           "level": 1
         },
         {
-          "title": "Спецификация методов отправки ErisPulse",
+          "title": "Спецификация метода отправки ErisPulse",
           "path": "standards/send-method-spec.md",
           "level": 1
         },

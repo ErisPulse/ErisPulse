@@ -346,6 +346,7 @@ HTTP/WS 客户端 (基于 aiohttp)
 - **url** (`str`): WebSocket 服务器 URL
 - **headers** (`dict[str,`): str] | None 额外请求头 (可选)
 - **heartbeat** (`float`): | None 心跳间隔秒数 (可选)
+- **timeout** (`float`): 连接超时秒数 (默认: DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS)
 - **kwargs** (`传递给底层`): ws_connect 的额外参数
 **返回值** (`ClientWebSocket`): WebSocket 连接对象
 

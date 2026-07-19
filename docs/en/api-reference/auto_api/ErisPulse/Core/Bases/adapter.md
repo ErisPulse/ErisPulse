@@ -70,15 +70,19 @@ ErisPulse 适配器基础模块
 用于实现 Send.To(...).Func(...) 风格的链式调用接口
 
 内置支持 At/AtAll/Reply 修饰器，适配器子类无需重复实现。
+内置标准发送方法（Text/Image/Voice/Video/File），默认委托给 Raw_ob12，
+适配器只需实现 Raw_ob12 即可获得全部标准发送能力，也可覆盖单个方法以提供平台特定逻辑。
 通过 send_context 属性可显式获取发送上下文（目标类型、目标ID、发送账号）。
 通过 _apply_modifiers() 方法可自动将修饰器状态合并到消息段。
 
 > **提示**
-> 1. 子类应实现具体的消息发送方法(如Text, Image等)
-> 2. 通过__getattr__实现动态方法调用
-> 3. At/AtAll/Reply 已内置实现，无需子类覆盖
-> 4. 使用 self.send_context 获取发送上下文
-> 5. 使用 self._apply_modifiers(message) 合并修饰器到消息段
+> 1. 适配器必须实现 Raw_ob12（OneBot12 消息段 → 平台 API 的统一入口）
+> 2. 标准发送方法（Text/Image/Voice/Video/File）已内置并委托给 Raw_ob12，无需子类重复实现
+> 3. 子类可覆盖标准方法以提供平台特定逻辑，也可添加平台特有方法（如 Sticker）
+> 4. At/AtAll/Reply 已内置实现，无需子类覆盖
+> 5. 使用 self.send_context 获取发送上下文
+> 6. 使用 self._apply_modifiers(message) 合并修饰器到消息段
+> 7. 链式修饰方法（To/Using/At/Hook/Retry 等）返回 Self，使 IDE 能在链式调用中补全子类方法
 
 
 #### 方法列表
@@ -199,19 +203,103 @@ ErisPulse 适配器基础模块
 ---
 
 
-##### `To(target_type: str = None, target_id: str | int = None)`
+##### `Text(text: str)`
+
+发送文本消息
+
+默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
+
+- **text** (`文本内容`): **返回值** (`asyncio.Task，await`): 后返回标准响应格式
+
+**示例**:
+```python
+>>> await adapter.Send.To("user", "123").Text("Hello")
+```
+
+---
+
+
+##### `Image(file: str | bytes)`
+
+发送图片消息
+
+默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
+
+- **file** (`图片文件（URL、路径或二进制数据）`): **返回值** (`asyncio.Task，await`): 后返回标准响应格式
+
+**示例**:
+```python
+>>> await adapter.Send.To("user", "123").Image("https://example.com/img.png")
+```
+
+---
+
+
+##### `Voice(file: str | bytes)`
+
+发送语音消息
+
+默认实现委托给 :meth:`Raw_ob12`（OneBot12 ``audio`` 段），
+适配器可覆盖以提供平台特定逻辑。
+
+- **file** (`语音文件（URL、路径或二进制数据）`): **返回值** (`asyncio.Task，await`): 后返回标准响应格式
+
+**示例**:
+```python
+>>> await adapter.Send.To("user", "123").Voice("https://example.com/voice.mp3")
+```
+
+---
+
+
+##### `Video(file: str | bytes)`
+
+发送视频消息
+
+默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
+
+- **file** (`视频文件（URL、路径或二进制数据）`): **返回值** (`asyncio.Task，await`): 后返回标准响应格式
+
+**示例**:
+```python
+>>> await adapter.Send.To("user", "123").Video("https://example.com/video.mp4")
+```
+
+---
+
+
+##### `File(file: str | bytes, filename: str | None = None)`
+
+发送文件
+
+默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
+
+- **file** (`文件（URL、路径或二进制数据）`): - **filename**: 文件名（可选，部分平台需要）
+**返回值** (`asyncio.Task，await`): 后返回标准响应格式
+
+**示例**:
+```python
+>>> await adapter.Send.To("user", "123").File("https://example.com/doc.pdf")
+```
+
+---
+
+
+##### `To(target_type: str | None = None, target_id: str | int | None = None)`
 
 设置消息目标
 
-支持自动类型转换：
-- 当 target_type 为 "private" 时，自动转换为 "user"
-- 当只提供 target_id（字符串或数字）时，默认推断为 "user"
+支持自动类型转换（遵循 :ref:`session-type` 规范）：
+- 如果 ``target_type`` 是接收类型（如 ``"private"``），自动转换为对应的发送类型（``"user"``）
+- 如果只提供 ``target_id``（字符串或数字）但未指定类型，默认推断为 ``"user"``
+- 发送类型（``"user"``/``"group"``/``"channel"``/``"guild"``/``"thread"``）保持原样
 
-- **target_type** (`目标类型(可选)`): - **target_id**: 目标ID(可选)
-**返回值** (`SendDSL实例`): 
+- **target_type** (`目标类型（接收类型或发送类型均可，None`): 时自动推断）
+- **target_id** (`目标ID（可选）`): **返回值** (`SendDSL`): 实例
+
 **示例**:
 ```python
->>> # 标准用法
+>>> # 标准用法（直接指定发送类型）
 >>> adapter.Send.To("user", "123").Text("Hello")
 >>> # 自动转换 private → user
 >>> adapter.Send.To("private", "123").Text("Hello")
@@ -581,7 +669,7 @@ OnError 仅在最终失败时触发一次。
 
 > **提示**
 > 1. 必须实现call_api, start和shutdown方法
-> 2. 可以自定义Send类实现平台特定的消息发送逻辑
+> 2. Send 子类只需实现 Raw_ob12，即可获得全部标准发送方法（Text/Image/Voice/Video/File）
 > 3. 可以自定义Request类实现平台特定的请求操作逻辑
 > 4. 通过on装饰器注册事件处理器
 > 5. 支持OneBot12协议的事件处理
@@ -613,8 +701,10 @@ OnError 仅在最终失败时触发一次。
 消息发送DSL实现
 
 > **提示**
-> 1. 子类可以重写Text方法提供平台特定实现
-> 2. 可以添加新的消息类型(如Image, Voice等)
+> 1. 必须重写 Raw_ob12 方法（OneBot12 消息段 → 平台 API）
+> 2. 标准方法（Text/Image/Voice/Video/File）已从 SendDSL 基类继承，默认委托 Raw_ob12
+> 3. 如需平台特定逻辑，可覆盖单个标准方法（如 Text）
+> 4. 可添加平台特有的发送方法（如 Sticker）
 
 
 ###### 方法列表
@@ -892,7 +982,7 @@ OnError 仅在最终失败时触发一次。
 
 配置变更回调（可选实现）
 
-子类可覆写此方法以响应配置热更新。
+子类可覆写此方法以响应配置热更新。默认实现为空操作。
 
 - **old_config** (`变更前的配置实例`): - **new_config**: 变更后的配置实例
 
