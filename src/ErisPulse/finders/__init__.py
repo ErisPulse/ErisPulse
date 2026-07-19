@@ -16,7 +16,7 @@ from .module import ModuleFinder
 from .adapter import AdapterFinder
 
 __all__ = [
+    "AdapterFinder",
     "BaseFinder",
     "ModuleFinder",
-    "AdapterFinder",
 ]

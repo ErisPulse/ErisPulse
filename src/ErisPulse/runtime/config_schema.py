@@ -17,9 +17,9 @@ ErisPulse 通用配置 Schema 模块
 {!--< /tips >!--}
 """
 
+from collections.abc import Mapping
 from dataclasses import MISSING, dataclass, field, fields
-from typing import ClassVar, Mapping
-
+from typing import ClassVar
 
 # ---------------------------------------------------------------------------
 # 内部辅助函数
@@ -143,9 +143,7 @@ def _is_empty(value) -> bool:
         return True
     if isinstance(value, str) and value.strip() == "":
         return True
-    if isinstance(value, (list, dict)) and len(value) == 0:
-        return True
-    return False
+    return bool(isinstance(value, (list, dict)) and len(value) == 0)
 
 
 def _coerce_value(value, type_hint):
@@ -566,7 +564,7 @@ def resolve_config_schema(config_class: type, resolve_i18n: bool = True) -> dict
 
     from ErisPulse.Core.i18n import i18n
 
-    for field_name, field_schema in schema["fields"].items():
+    for field_schema in schema["fields"].values():
         # description
         field_schema["description"] = _resolve_i18n_text(
             field_schema.get("description", ""), i18n
@@ -608,17 +606,17 @@ def resolve_config_schema(config_class: type, resolve_i18n: bool = True) -> dict
 # ---------------------------------------------------------------------------
 
 __all__ = [
+    "AdapterConfig",  # ← BaseConfig 的别名
     # 基类
     "BaseConfig",
-    "AdapterConfig",  # ← BaseConfig 的别名
     "BotAccountConfig",
     "I18nConfig",
+    "dataclass_to_defaults_dict",
     # 工具函数
     "dataclass_to_toml_with_comments",
-    "dataclass_to_defaults_dict",
     "dict_to_dataclass",
-    "validate_config",
     "get_config_schema",
     "register_config_i18n",
     "resolve_config_schema",
+    "validate_config",
 ]

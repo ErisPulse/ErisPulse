@@ -14,7 +14,8 @@ ErisPulse 友好错误提示引擎
 import asyncio
 import difflib
 import re
-from typing import Any, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 
 def suggest_similar(
@@ -53,7 +54,7 @@ def best_match(
     candidates: Sequence[str],
     *,
     cutoff: float = 0.6,
-) -> Optional[str]:
+) -> str | None:
     """
     返回单个最佳匹配建议
 
@@ -72,7 +73,7 @@ def best_match_with_prefix(
     *,
     cutoff: float = 0.5,
     prefix_bonus: float = 0.85,
-) -> Optional[str]:
+) -> str | None:
     """
     带前缀加成的模糊匹配
 
@@ -87,7 +88,7 @@ def best_match_with_prefix(
     """
     name_lower = name.lower()
     matcher = difflib.SequenceMatcher(None, name_lower)
-    best: Optional[str] = None
+    best: str | None = None
     best_score = cutoff
 
     for candidate in candidates:
@@ -113,7 +114,7 @@ _ATTR_ERROR_PATTERNS = [
 ]
 
 
-def parse_attr_error(exc: AttributeError) -> tuple[Optional[str], Optional[str]]:
+def parse_attr_error(exc: AttributeError) -> tuple[str | None, str | None]:
     """
     从 AttributeError 中提取对象类型名和属性名
 
@@ -142,7 +143,7 @@ def parse_attr_error(exc: AttributeError) -> tuple[Optional[str], Optional[str]]
     return None, attr_name
 
 
-def get_object_from_traceback(tb: Any) -> Optional[object]:
+def get_object_from_traceback(tb: Any) -> object | None:
     """
     尝试从 traceback 的最后一帧中获取出错的对象（通常是 self）
 
@@ -165,7 +166,7 @@ def get_object_from_traceback(tb: Any) -> Optional[object]:
 def suggest_for_attribute_error(
     exc: AttributeError,
     tb: Any = None,
-) -> Optional[str]:
+) -> str | None:
     """
     为 AttributeError 生成拼写建议
 
@@ -181,7 +182,7 @@ def suggest_for_attribute_error(
         return None
 
     # 尝试获取目标对象
-    obj: Optional[object] = getattr(exc, "obj", None)
+    obj: object | None = getattr(exc, "obj", None)
     if obj is None and tb is not None:
         obj = get_object_from_traceback(tb)
 
@@ -203,7 +204,7 @@ _IMPORT_CANNOT_IMPORT_PATTERN = re.compile(
 )
 
 
-def suggest_for_import_error(exc: ImportError) -> Optional[str]:
+def suggest_for_import_error(exc: ImportError) -> str | None:
     """
     为 ImportError / ModuleNotFoundError 生成拼写建议
 
@@ -281,7 +282,7 @@ def suggest_for_import_error(exc: ImportError) -> Optional[str]:
     return best_match_with_prefix(target, candidates, cutoff=0.5)
 
 
-def suggest_for_key_error(exc: KeyError, tb: Any = None) -> Optional[str]:
+def suggest_for_key_error(exc: KeyError, tb: Any = None) -> str | None:
     """
     为 KeyError 生成拼写建议
 
@@ -309,7 +310,7 @@ def suggest_for_key_error(exc: KeyError, tb: Any = None) -> Optional[str]:
     while frame and depth < 5:
         for var_val in frame.tb_frame.f_locals.values():
             if isinstance(var_val, dict):
-                for k in var_val.keys():
+                for k in var_val:
                     if isinstance(k, str) and k != missing_key:
                         all_candidates.add(k)
         frame = frame.tb_next
@@ -321,7 +322,7 @@ def suggest_for_key_error(exc: KeyError, tb: Any = None) -> Optional[str]:
     return best_match(missing_key, list(all_candidates), cutoff=0.6)
 
 
-def suggest_for_name_error(exc: NameError, tb: Any = None) -> Optional[str]:
+def suggest_for_name_error(exc: NameError, tb: Any = None) -> str | None:
     """
     为 NameError 生成拼写建议
 
@@ -347,18 +348,18 @@ def suggest_for_name_error(exc: NameError, tb: Any = None) -> Optional[str]:
         f_locals = frame.tb_frame.f_locals
         f_globals = frame.tb_frame.f_globals
         for source in (f_locals, f_globals):
-            for n in source.keys():
+            for n in source:
                 if isinstance(n, str) and not n.startswith("__") and n != missing_name:
                     candidates.add(n)
         # 内置名称（len/range/print 等）
         # __builtins__ 在主模块中是 module 对象，在子模块中是 dict
         builtins = f_globals.get("__builtins__")
         if isinstance(builtins, dict):
-            for n in builtins.keys():
+            for n in builtins:
                 if isinstance(n, str) and not n.startswith("_") and n != missing_name:
                     candidates.add(n)
         elif hasattr(builtins, "__dict__"):
-            for n in builtins.__dict__.keys():
+            for n in builtins.__dict__:
                 if isinstance(n, str) and not n.startswith("_") and n != missing_name:
                     candidates.add(n)
         frame = frame.tb_next
@@ -371,7 +372,7 @@ def suggest_for_name_error(exc: NameError, tb: Any = None) -> Optional[str]:
 
 def suggest_for_coroutine_attribute(
     exc: AttributeError, tb: Any = None
-) -> Optional[str]:
+) -> str | None:
     """
     检测“对协程对象访问属性”的常见错误（忘记 await）
 
@@ -383,7 +384,7 @@ def suggest_for_coroutine_attribute(
     :param tb: traceback 对象（可选）
     :return: 诊断提示标识符，不匹配时返回 None
     """
-    obj: Optional[object] = getattr(exc, "obj", None)
+    obj: object | None = getattr(exc, "obj", None)
     if obj is None and tb is not None:
         obj = get_object_from_traceback(tb)
     if obj is not None and asyncio.iscoroutine(obj):
@@ -391,7 +392,7 @@ def suggest_for_coroutine_attribute(
     return None
 
 
-def suggest_for_missing_argument(exc: TypeError) -> Optional[str]:
+def suggest_for_missing_argument(exc: TypeError) -> str | None:
     """
     为 TypeError: missing required positional argument 生成诊断提示
 
@@ -409,7 +410,7 @@ def suggest_for_missing_argument(exc: TypeError) -> Optional[str]:
     return None
 
 
-def suggest_for_not_callable(exc: TypeError) -> Optional[str]:
+def suggest_for_not_callable(exc: TypeError) -> str | None:
     """
     为 TypeError: object is not callable / not subscriptable / not iterable 生成诊断提示
 
@@ -429,7 +430,7 @@ def suggest_for_not_callable(exc: TypeError) -> Optional[str]:
     return None
 
 
-def suggest_for_event_loop_error(exc: RuntimeError) -> Optional[str]:
+def suggest_for_event_loop_error(exc: RuntimeError) -> str | None:
     """
     为 RuntimeError 中与事件循环相关的错误生成诊断提示
 
@@ -458,7 +459,7 @@ def suggest_for_event_loop_error(exc: RuntimeError) -> Optional[str]:
     return None
 
 
-def suggest_for_invalid_await(exc: TypeError) -> Optional[str]:
+def suggest_for_invalid_await(exc: TypeError) -> str | None:
     """
     为 TypeError: object X can't be used in 'await' expression 生成诊断提示
 
@@ -475,7 +476,7 @@ def suggest_for_invalid_await(exc: TypeError) -> Optional[str]:
     return "invalid_await"
 
 
-def suggest_for_recursion_error(exc: RecursionError) -> Optional[str]:
+def suggest_for_recursion_error(exc: RecursionError) -> str | None:
     """
     为 RecursionError 生成诊断提示
 
@@ -487,7 +488,7 @@ def suggest_for_recursion_error(exc: RecursionError) -> Optional[str]:
     return "recursion_error"
 
 
-def suggest_for_timeout_error(exc: TimeoutError) -> Optional[str]:
+def suggest_for_timeout_error(exc: TimeoutError) -> str | None:
     """
     为 TimeoutError 生成诊断提示
 
@@ -499,7 +500,7 @@ def suggest_for_timeout_error(exc: TimeoutError) -> Optional[str]:
     return "timeout_error"
 
 
-def suggest_for_connection_error(exc: ConnectionError) -> Optional[str]:
+def suggest_for_connection_error(exc: ConnectionError) -> str | None:
     """
     为 ConnectionError 及其子类生成诊断提示
 
@@ -516,7 +517,7 @@ def suggest_for_connection_error(exc: ConnectionError) -> Optional[str]:
     return "connection_error"
 
 
-def suggest_for_erispulse_client_error(exc: BaseException) -> Optional[str]:
+def suggest_for_erispulse_client_error(exc: BaseException) -> str | None:
     """
     为 ErisPulse 自定义客户端异常生成诊断提示
 
@@ -550,7 +551,7 @@ def suggest_for_erispulse_client_error(exc: BaseException) -> Optional[str]:
     return None
 
 
-def suggest_for_websocket_disconnect(exc: BaseException) -> Optional[str]:
+def suggest_for_websocket_disconnect(exc: BaseException) -> str | None:
     """
     检测 WebSocket 断开是否为正常关闭
 
@@ -576,23 +577,23 @@ def suggest_for_websocket_disconnect(exc: BaseException) -> Optional[str]:
 
 
 __all__ = [
-    "suggest_similar",
     "best_match",
     "best_match_with_prefix",
-    "parse_attr_error",
     "get_object_from_traceback",
+    "parse_attr_error",
     "suggest_for_attribute_error",
-    "suggest_for_import_error",
-    "suggest_for_key_error",
-    "suggest_for_name_error",
+    "suggest_for_connection_error",
     "suggest_for_coroutine_attribute",
-    "suggest_for_missing_argument",
-    "suggest_for_not_callable",
+    "suggest_for_erispulse_client_error",
     "suggest_for_event_loop_error",
+    "suggest_for_import_error",
     "suggest_for_invalid_await",
+    "suggest_for_key_error",
+    "suggest_for_missing_argument",
+    "suggest_for_name_error",
+    "suggest_for_not_callable",
     "suggest_for_recursion_error",
     "suggest_for_timeout_error",
-    "suggest_for_connection_error",
-    "suggest_for_erispulse_client_error",
     "suggest_for_websocket_disconnect",
+    "suggest_similar",
 ]

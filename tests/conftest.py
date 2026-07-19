@@ -145,6 +145,70 @@ def _close_storage_on_teardown() -> Generator[None, None, None]:
         pass
 
 
+@pytest.fixture(scope="function", autouse=True)
+def _isolate_i18n_state() -> Generator[None, None, None]:
+    """
+    隔离 i18n 模块的单例状态，避免测试间互相污染
+
+    问题背景：``I18nManager.set_language`` 会同时修改实例状态 ``_current_lang``
+    并写入全局持久化文件 ``~/.erispulse/cli_state.json``。
+    若某个测试设置了语言（如 ``set_language("en")``）未还原，后续依赖
+    i18n 默认语言的测试（如 router 报错消息的中文匹配）会间歇性失败。
+
+    此 fixture 在每个测试前后快照/还原 i18n 实例状态与全局状态文件。
+
+    {!--< internal-use >!--}
+    """
+    import json
+    from pathlib import Path
+
+    state_path = Path.home() / ".erispulse" / "cli_state.json"
+    snapshot_file = state_path.read_bytes() if state_path.exists() else None
+
+    # 快照 i18n 单例的实例状态
+    instance_state: dict[str, object] = {}
+    try:
+        from ErisPulse.Core.i18n import i18n as _i18n
+
+        instance_state = {
+            "_current_lang": getattr(_i18n, "_current_lang", None),
+            "_detected_lang": getattr(_i18n, "_detected_lang", None),
+        }
+    except Exception:
+        pass
+
+    yield
+
+    # 还原 i18n 实例状态
+    try:
+        from ErisPulse.Core.i18n import i18n as _i18n
+
+        for k, v in instance_state.items():
+            setattr(_i18n, k, v)
+    except Exception:
+        pass
+
+    # 还原全局状态文件
+    try:
+        if snapshot_file is not None:
+            state_path.write_bytes(snapshot_file)
+        elif state_path.exists():
+            # 测试前不存在 → 删除测试中创建的文件
+            try:
+                with state_path.open(encoding="utf-8") as f:
+                    data = json.load(f)
+                data.pop("language", None)
+                if data:
+                    with state_path.open("w", encoding="utf-8") as f:
+                        json.dump(data, f, ensure_ascii=False, indent=2)
+                else:
+                    state_path.unlink()
+            except (FileNotFoundError, json.JSONDecodeError, OSError):
+                pass
+    except Exception:
+        pass
+
+
 # ==================== SDK 测试夹具 ====================
 
 

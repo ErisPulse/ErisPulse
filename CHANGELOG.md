@@ -64,6 +64,74 @@
 
 ---
 
+## [2.6.2-dev.1] - 2026/07/19
+> 开发版本
+
+**版本摘要**
+代码质量全面升级：引入基于 pyright 的类型检查系统，修复 61 个真实类型 bug；ruff 配置严格化（16 规则集），清除 100+ 代码质量问题；所有模块级常量正式投入使用；修复跨环境安装的 uv 参数兼容性问题。
+
+### 新增
+
+- @wsu2059
+  - `runtime.tasks` 模块：`spawn_background()` 函数统一管理 fire-and-forget 后台任务，避免被 GC 提前回收（`RUF006`）
+    - 无运行中事件循环时自动创建临时循环同步执行，确保协程在任何线程下都会被运行
+  - 基于 basedpyright 的类型检查系统（`[tool.basedpyright]`），采用 `standard` 中等严格模式
+    - `reportReturnType` / `reportArgumentType` 等真实类型 bug 提级为 error
+    - `reportAny` / `reportUnknown*` 等“类型不完整”问题保持 warning
+  - 测试隔离：`tests/conftest.py` 新增 `_isolate_i18n_state` autouse fixture，快照/还原 `I18nManager` 单例状态与全局持久化文件，防止 i18n 语言切换污染后续测试
+  - `CLI.utils.package_manager._ensure_pip_available()`：pip 回退前自动通过 `ensurepip --upgrade` 自举，解决 uv venv 无 pip 时的安装失败
+  - `cli.package.pip_unavailable` / `cli.package.bootstrapping_pip` 翻译键（zh-CN/zh-TW/en/ja/ru）
+  - `Core.config` 新增文件变化监听机制：
+    - `ConfigManager._start_config_watcher()` 后台 daemon 线程，每 5 秒轮询配置文件 mtime
+    - 检测到外部编辑后自动重载缓存并发射 `config.updated` 生命周期事件
+    - 同时取消待写入定时器并清空脏键，避免 `_flush_config` 回写旧值覆盖用户编辑
+
+### 优化
+
+- @wsu2059
+  - ruff 配置全面升级：启用 E/W/F/I/B/C4/UP/SIM/RET/PIE/RUF/PTH/PERF/FURB/PL/N 共 16 个规则集，中文项目不适用的规则显式忽略（RUF001/002/003 歧义字符等）
+  - `os.path.*` → `pathlib.Path` 迁移 71 处（`config.py`/`storage.py`/`run.py`/`package_manager.py` 等 13 个文件），保留 `str()` 包装对接下游 str API
+  - `SendDSL.To()` 接入 `convert_to_send_type()`，遵循会话类型规范自动将所有接收类型（`"private"`、`"user"` 等）转为对应发送类型
+  - `session_type.py` 映射字典使用 `ReceiveType`/`SendType` 枚举值替代硬编码字符串
+  - `Core.constants` 7 个未引用常量正式投入使用：
+    - `DEFAULT_WS_CLIENT_HEARTBEAT_SECS` → `HttpClient.ws_connect()` 默认参数
+    - `RETCODE_OK` / `STATUS_OK` → `SendDSL.make_response()` / `SendDSL.Raw_ob12` 默认值
+    - `DEFAULT_ADAPTER_ENABLED` / `DEFAULT_MODULE_ENABLED` → `_config_register()` 默认参数
+    - `DEFAULT_WS_AUTO_ACCEPT` → `RouterManager._register_ws_endpoint()` 默认参数
+    - `DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS` → `HttpClient.ws_connect()` 超时参数
+    - `DEFAULT_KV_TABLE_NAME` → 替换 `StorageManager` 中全部 15 处硬编码 SQL 表名
+  - `runtime.tasks.spawn_background()` 增强：后台线程无事件循环时自动创建临时循环同步执行，替代静默关闭协程
+
+### 修复
+
+- @wsu2059
+  - 类型注解错误 61 处：
+    - 函数返回值类型修正（`-> str` → `-> str | None` 等），涉及 `CLI.commands.self_update`、`Core.Event.command`、`Core.client` 等
+    - Optional 参数类型修正（`event: "Event" = None` → `event: "Event | None" = None`）
+    - Method override 返回值类型对齐（`SendDSL.Raw_ob12`）
+    - `typing.Self` Python 3.10 兼容（用 `typing_extensions` 兜底）
+    - `StrEnum` Python 3.10 兼容（自实现 `class StrEnum(str, Enum)`）
+    - `str | int` 类型不匹配 → 显式 `str()` 转换（`SendDSL.To`/`Using`/`Account`）
+    - `B904`：4 处 `except` 块内 `raise` 追加 `from err` 保留异常链
+    - `PLW1510`：3 处 `subprocess.run` 追加显式 `check=False`
+    - `UP035`：废弃的 `typing.Dict`/`List`/`Optional`/`Union` 清理
+    - `hasattr` 类型收窄 → `isinstance`（`Core.master.is_master`）
+    - 动态属性（`_starting_lock`/`adapterInfo`/`moduleInfo`）用 `cast` 标注
+  - `CLI.utils.package_manager._run_pip_command_with_output`：修复 uv `--python` 参数位置错误
+    - **现象**：`uv pip --python TARGET install ...` 导致 `unexpected argument '--python'`
+    - **原因**：`--python` 是子命令 flag，须放在 `install`/`uninstall` 之后
+    - **修复**：动态构造 `[install|uninstall, --python, target, ...]` 参数顺序
+  - `cli.create.*` 缺失的 6 个翻译键补全（name_prompt/module_desc_prompt/author_prompt/email_prompt/homepage_prompt/name_error）× 5 语言
+  - `Convert_to_send_type` 参数接受 `str | None`，`None` 时安全返回默认值
+
+### 变更
+
+- @wsu2059
+  - SendDSL.To() 自动会话类型转换：
+    - 接收类型（`"private"`/`"user"`/`"group"` 等）自动转换为对应发送类型
+
+---
+
 ## [2.6.2-dev.0] - 2026/07/16
 > 开发版本
 

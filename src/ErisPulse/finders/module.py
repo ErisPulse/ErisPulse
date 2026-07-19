@@ -10,7 +10,8 @@ ErisPulse 模块发现器
 {!--< /tips >!--}
 """
 
-from typing import List, Optional, Any, Dict
+from typing import Any
+
 from .bases.finder import BaseFinder
 
 
@@ -43,7 +44,7 @@ class ModuleFinder(BaseFinder):
         """
         return "erispulse.module"
 
-    def get_all_names(self) -> List[str]:
+    def get_all_names(self) -> list[str]:
         """
         获取所有模块名称
 
@@ -51,7 +52,7 @@ class ModuleFinder(BaseFinder):
         """
         return list(self.get_entry_point_map().keys())
 
-    def get_all_packages(self) -> List[str]:
+    def get_all_packages(self) -> list[str]:
         """
         获取所有模块所属的 PyPI 包名
 
@@ -63,7 +64,7 @@ class ModuleFinder(BaseFinder):
                 packages.add(entry.dist.name)
         return list(packages)
 
-    def get_package_for_module(self, module_name: str) -> Optional[str]:
+    def get_package_for_module(self, module_name: str) -> str | None:
         """
         获取指定模块所属的 PyPI 包名
 
@@ -75,7 +76,7 @@ class ModuleFinder(BaseFinder):
             return entry.dist.name
         return None
 
-    def get_module_info(self, module_name: str) -> Optional[Dict[str, Any]]:
+    def get_module_info(self, module_name: str) -> dict[str, Any] | None:
         """
         获取模块的完整信息
 
@@ -102,7 +103,7 @@ class ModuleFinder(BaseFinder):
 
         return info
 
-    def get_modules_by_package(self, package_name: str) -> List[str]:
+    def get_modules_by_package(self, package_name: str) -> list[str]:
         """
         获取指定 PyPI 包下的所有模块名称
 

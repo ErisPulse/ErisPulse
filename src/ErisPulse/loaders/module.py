@@ -17,7 +17,7 @@ import re
 import sys
 import threading
 import weakref
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
@@ -26,7 +26,7 @@ from ..finders import ModuleFinder
 from .bases.loader import BaseLoader
 
 if TYPE_CHECKING:
-    from ..Core.Bases.module import BaseModule
+    pass
 
 # SDK 保留属性名，禁止模块覆盖
 _RESERVED_SDK_ATTRS = frozenset(
@@ -166,7 +166,7 @@ class ModuleLoader(BaseLoader):
                     objs,
                     enabled_list,
                     disabled_list,
-                    is_new,
+                    _is_new,
                 ) = await self._process_entry_point(
                     entry_point, objs, enabled_list, disabled_list, manager_instance
                 )
@@ -213,11 +213,11 @@ class ModuleLoader(BaseLoader):
 
         # 检查模块是否已经注册，如果未注册则进行注册（默认启用）
         if not manager_instance.exists(meta_name):
-            manager_instance._config_register(meta_name, True)
+            manager_instance._config_register(meta_name)
             is_new = True
 
         # 获取模块当前状态
-        if not (module_status := manager_instance.is_enabled(meta_name)):
+        if not manager_instance.is_enabled(meta_name):
             disabled_list.append(meta_name)
             return objs, enabled_list, disabled_list, is_new
 
@@ -270,7 +270,7 @@ class ModuleLoader(BaseLoader):
                 "strategy": strategy,
             }
 
-            setattr(module_obj, "moduleInfo", module_info)
+            cast("Any", module_obj).moduleInfo = module_info
 
             objs[meta_name] = module_obj
             enabled_list.append(meta_name)
@@ -379,7 +379,7 @@ class ModuleLoader(BaseLoader):
         """
         if isinstance(strategy, dict):
             return dict(strategy, lazy_load=lazy_load)
-        elif hasattr(strategy, "_data"):
+        if hasattr(strategy, "_data"):
             from .strategy import ModuleLoadStrategy
 
             data = dict(strategy._data)
@@ -544,7 +544,7 @@ class ModuleLoader(BaseLoader):
         graph = {}
         for name, meta in meta_map.items():
             deps = meta.get("depends", [])
-            graph[name] = set(d for d in deps if d in all_names)
+            graph[name] = {d for d in deps if d in all_names}
 
         in_degree = {name: len(deps) for name, deps in graph.items()}
         queue = [name for name, deg in in_degree.items() if deg == 0]
@@ -698,19 +698,19 @@ class LazyModule:
     # 同时配合 _sdk_ref 的 weakref 设计，避免 SDK <-> LazyModule 循环引用
     # 从而减少分代 GC 的循环检测压力
     __slots__ = (
-        "_module_name",
-        "_module_class",
-        "_sdk_ref",
-        "_module_info",
-        "_instance",
-        "_initialized",
-        "_init_failed",
-        "_manager_instance",
-        "_is_base_module",
-        "_needs_async_init",
-        "_init_needs_sdk",
-        "moduleInfo",
         "__weakref__",
+        "_init_failed",
+        "_init_needs_sdk",
+        "_initialized",
+        "_instance",
+        "_is_base_module",
+        "_manager_instance",
+        "_module_class",
+        "_module_info",
+        "_module_name",
+        "_needs_async_init",
+        "_sdk_ref",
+        "moduleInfo",
     )
 
     def __init__(
@@ -797,7 +797,7 @@ class LazyModule:
                 # 确保 moduleInfo 已设置
                 module_info = object.__getattribute__(self, "_module_info")
                 if not hasattr(instance, "moduleInfo") or instance.moduleInfo is None:
-                    setattr(instance, "moduleInfo", module_info)
+                    instance.moduleInfo = module_info
 
                 object.__setattr__(self, "_instance", instance)
             else:
@@ -810,11 +810,7 @@ class LazyModule:
                 else:
                     instance = module_class()
 
-                setattr(
-                    instance,
-                    "moduleInfo",
-                    object.__getattribute__(self, "_module_info"),
-                )
+                instance.moduleInfo = object.__getattribute__(self, "_module_info")
 
                 object.__setattr__(self, "_instance", instance)
 
@@ -906,8 +902,7 @@ class LazyModule:
                     f"模块 {object.__getattribute__(self, '_module_name')} 需要异步初始化，请在异步上下文中调用"
                 )
                 return
-            else:
-                self._initialize_sync()
+            self._initialize_sync()
         except RuntimeError:
             asyncio.run(self._initialize())
 
@@ -922,7 +917,7 @@ class LazyModule:
         {!--< internal-use >!--}
         """
         init_done = threading.Event()
-        init_error = [None]
+        init_error: list[SystemExit | Exception | None] = [None]
 
         def _run_init():
             new_loop = asyncio.new_event_loop()
@@ -973,9 +968,7 @@ class LazyModule:
             else:
                 instance = module_class()
 
-            setattr(
-                instance, "moduleInfo", object.__getattribute__(self, "_module_info")
-            )
+            instance.moduleInfo = object.__getattribute__(self, "_module_info")
             object.__setattr__(self, "_instance", instance)
             object.__setattr__(self, "_initialized", True)
             object.__setattr__(self, "_needs_async_init", False)

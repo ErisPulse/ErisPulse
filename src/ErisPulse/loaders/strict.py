@@ -290,8 +290,8 @@ class StrictModeManager:
 
 
 __all__ = [
-    "StrictModeLevel",
     "StrictModeError",
-    "Violation",
+    "StrictModeLevel",
     "StrictModeManager",
+    "Violation",
 ]

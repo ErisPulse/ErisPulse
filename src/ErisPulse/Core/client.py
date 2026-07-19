@@ -37,6 +37,8 @@ from .constants import (
     DEFAULT_HTTP_CLIENT_RETRY_DELAY_SECS,
     DEFAULT_HTTP_CLIENT_TIMEOUT_SECS,
     DEFAULT_HTTP_CLIENT_USER_AGENT,
+    DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS,
+    DEFAULT_WS_CLIENT_HEARTBEAT_SECS,
 )
 from .i18n import i18n
 from .lifecycle import lifecycle
@@ -74,7 +76,7 @@ class HttpResponse(BaseHttpResponse):
     >>> data = await resp.json()
     """
 
-    __slots__ = ("_response", "_body", "_body_read", "_released")
+    __slots__ = ("_body", "_body_read", "_released", "_response")
 
     def __init__(self, response):
         """
@@ -157,6 +159,7 @@ class HttpResponse(BaseHttpResponse):
         if not self._body_read:
             self._body = await self._response.read()
             self._body_read = True
+        assert self._body is not None
         return self._body
 
     async def _eager_read(self):
@@ -273,18 +276,17 @@ class ClientWebSocket(BaseClientWebSocket):
 
         if msg.type == aiohttp.WSMsgType.TEXT:
             return WSMessage(WSMessage.TEXT, msg.data)
-        elif msg.type == aiohttp.WSMsgType.BINARY:
+        if msg.type == aiohttp.WSMsgType.BINARY:
             return WSMessage(WSMessage.BINARY, msg.data)
-        elif msg.type in (
+        if msg.type in (
             aiohttp.WSMsgType.CLOSE,
             aiohttp.WSMsgType.CLOSING,
             aiohttp.WSMsgType.CLOSED,
         ):
             return WSMessage(WSMessage.CLOSE, msg.data)
-        elif msg.type == aiohttp.WSMsgType.ERROR:
+        if msg.type == aiohttp.WSMsgType.ERROR:
             return WSMessage(WSMessage.ERROR, str(self._ws.exception()))
-        else:
-            return WSMessage("unknown", msg.data)
+        return WSMessage("unknown", msg.data)
 
     async def receive(self) -> WSMessage:
         """
@@ -310,17 +312,16 @@ class ClientWebSocket(BaseClientWebSocket):
             msg = await self._ws.receive()
         if msg.type == aiohttp.WSMsgType.TEXT:
             return msg.data
-        elif msg.type in (
+        if msg.type in (
             aiohttp.WSMsgType.CLOSE,
             aiohttp.WSMsgType.CLOSING,
             aiohttp.WSMsgType.CLOSED,
         ):
             code = msg.data if isinstance(msg.data, int) else 1000
             raise WebSocketDisconnect(code=code)
-        elif msg.type == aiohttp.WSMsgType.ERROR:
+        if msg.type == aiohttp.WSMsgType.ERROR:
             raise WebSocketError(str(self._ws.exception()))
-        else:
-            raise WebSocketError(f"Unexpected message type: {msg.type}")
+        raise WebSocketError(f"Unexpected message type: {msg.type}")
 
     async def receive_bytes(self) -> bytes:
         """
@@ -336,17 +337,16 @@ class ClientWebSocket(BaseClientWebSocket):
             msg = await self._ws.receive()
         if msg.type == aiohttp.WSMsgType.BINARY:
             return msg.data
-        elif msg.type in (
+        if msg.type in (
             aiohttp.WSMsgType.CLOSE,
             aiohttp.WSMsgType.CLOSING,
             aiohttp.WSMsgType.CLOSED,
         ):
             code = msg.data if isinstance(msg.data, int) else 1000
             raise WebSocketDisconnect(code=code)
-        elif msg.type == aiohttp.WSMsgType.ERROR:
+        if msg.type == aiohttp.WSMsgType.ERROR:
             raise WebSocketError(str(self._ws.exception()))
-        else:
-            raise WebSocketError(f"Unexpected message type: {msg.type}")
+        raise WebSocketError(f"Unexpected message type: {msg.type}")
 
     async def receive_json(self, mode: str = "text") -> Any:
         """
@@ -739,6 +739,8 @@ class HttpClient(BaseHttpClient):
                         )
                     )
 
+        # 循环至少进入一次（range(retries+1) 且 retries>=0），所以 last_exc 必然被赋值
+        assert last_exc is not None
         raise last_exc
 
     # ---- WebSocket 连接 ----
@@ -748,7 +750,8 @@ class HttpClient(BaseHttpClient):
         url: str,
         *,
         headers: dict[str, str] | None = None,
-        heartbeat: float | None = None,
+        heartbeat: float | None = DEFAULT_WS_CLIENT_HEARTBEAT_SECS,
+        timeout: float = DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS,
         **kwargs,
     ) -> ClientWebSocket:
         """
@@ -757,6 +760,7 @@ class HttpClient(BaseHttpClient):
         :param url: str WebSocket 服务器 URL
         :param headers: dict[str, str] | None 额外请求头 (可选)
         :param heartbeat: float | None 心跳间隔秒数 (可选)
+        :param timeout: float 连接超时秒数 (默认: DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS)
         :param kwargs: 传递给底层 ws_connect 的额外参数
         :return: ClientWebSocket WebSocket 连接对象
 
@@ -772,10 +776,12 @@ class HttpClient(BaseHttpClient):
 
         try:
             session = await self._get_ws_session()
+            ws_timeout = aiohttp.ClientWSTimeout(ws_close=timeout)  # pyright: ignore[reportCallIssue]
             ws = await session.ws_connect(
                 url,
                 headers=headers,
                 heartbeat=heartbeat,
+                timeout=ws_timeout,
                 **kwargs,
             )
 

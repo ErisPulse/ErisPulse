@@ -12,11 +12,12 @@ ErisPulse 存储管理模块
 """
 
 import json
-import os
 import re
 import sqlite3
 import threading
+from collections.abc import Iterator
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Any, TypeAlias
 
 from .Bases.storage import BaseQueryBuilder, BaseStorage
@@ -86,6 +87,26 @@ def _validate_identifier(name: str, context: str = "标识符") -> None:
         raise ValueError(
             i18n.t("core.storage.unsafe_identifier", context=context, name=name)
         )
+
+
+class _EmptyTransaction:
+    """{!--< internal-use >!--}空事务上下文（未就绪时使用）"""
+
+    def __enter__(self) -> "_EmptyTransaction":
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        pass
+
+
+class _NestedTransaction:
+    """{!--< internal-use >!--}嵌套事务占位（复用外层连接）"""
+
+    def __enter__(self) -> "_NestedTransaction":
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        pass
 
 
 def _validate_select_column(name: str, context: str = "列名") -> None:
@@ -168,7 +189,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
         >>> rows = storage.Table("users").Select("name", "age").Execute()
         >>> affected = storage.Table("users").Delete().Where("age < ?", 18).Execute()
         """
-        storage: "StorageManager" = self._storage  # type: ignore
+        storage: StorageManager = self._storage  # type: ignore
 
         if self._operation == "insert_multi":
             return self._execute_insert_multi(storage)
@@ -217,7 +238,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
         :example:
         >>> row = storage.Table("users").Select("*").Where("id = ?", 1).ExecuteOne()
         """
-        storage: "StorageManager" = self._storage  # type: ignore
+        storage: StorageManager = self._storage  # type: ignore
         sql, params = self._build_sql()
 
         with storage._get_connection() as conn:
@@ -234,7 +255,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
         :example:
         >>> total = storage.Table("users").Where("age > ?", 18).Count()
         """
-        storage: "StorageManager" = self._storage  # type: ignore
+        storage: StorageManager = self._storage  # type: ignore
         sql, params = self._build_count_sql()
 
         with storage._get_connection() as conn:
@@ -258,14 +279,13 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
     def _build_sql(self) -> tuple[str, list[Any]]:
         if self._operation == "select":
             return self._build_select_sql()
-        elif self._operation == "insert":
+        if self._operation == "insert":
             return self._build_insert_sql()
-        elif self._operation == "update":
+        if self._operation == "update":
             return self._build_update_sql()
-        elif self._operation == "delete":
+        if self._operation == "delete":
             return self._build_delete_sql()
-        else:
-            raise ValueError(i18n.t("core.storage.no_op_type"))
+        raise ValueError(i18n.t("core.storage.no_op_type"))
 
     def _build_select_sql(self) -> tuple[str, list[Any]]:
         if self._columns:
@@ -299,9 +319,9 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
         if not isinstance(data, dict):
             raise ValueError(i18n.t("core.storage.update_needs_dict"))
 
-        for k in data.keys():
+        for k in data:
             _validate_identifier(k, "列名")
-        set_clause = ", ".join(f"{k} = ?" for k in data.keys())
+        set_clause = ", ".join(f"{k} = ?" for k in data)
         sql = f"UPDATE {self._table} SET {set_clause}"
         params = list(data.values())
 
@@ -453,15 +473,17 @@ class StorageManager(BaseStorage):
     _instance = None
     _instance_lock = threading.Lock()
     # 默认数据库放在项目下的 config/config.db
-    GLOBAL_DB_PATH = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "../data/config.db")
+    GLOBAL_DB_PATH = str(
+        Path(__file__).resolve().parent / "../data/config.db"
     )
+    # KV 存储使用的表名（与建表 SQL 中的 'config' 保持一致；修改需同步迁移现有数据库）
+    KV_TABLE_NAME: str = DEFAULT_KV_TABLE_NAME
     # 线程本地存储，用于跟踪活动事务的连接
     _local = threading.local()
 
     @staticmethod
     def _get_default_project_db_path() -> str:
-        return os.path.join(os.getcwd(), "config", "config.db")
+        return str(Path.cwd() / "config" / "config.db")
 
     @property
     def DEFAULT_PROJECT_DB_PATH(self) -> str:
@@ -488,7 +510,7 @@ class StorageManager(BaseStorage):
 
         use_global_db = storage_config.get("use_global_db", False)
 
-        if use_global_db and os.path.exists(self.GLOBAL_DB_PATH):
+        if use_global_db and Path(self.GLOBAL_DB_PATH).exists():
             self.db_path = self.GLOBAL_DB_PATH
         else:
             self.db_path = self.DEFAULT_PROJECT_DB_PATH
@@ -537,7 +559,7 @@ class StorageManager(BaseStorage):
         return conn
 
     @contextmanager
-    def _get_connection(self) -> sqlite3.Connection:  # type: ignore
+    def _get_connection(self) -> Iterator[sqlite3.Connection]:
         """
         {!--< internal-use >!--}
         获取数据库连接（支持事务）
@@ -570,8 +592,8 @@ class StorageManager(BaseStorage):
         确保必要的目录存在
         """
         try:
-            os.makedirs(
-                os.path.dirname(self._get_default_project_db_path()), exist_ok=True
+            Path(self._get_default_project_db_path()).parent.mkdir(
+                parents=True, exist_ok=True
             )
         except Exception:
             pass
@@ -588,7 +610,7 @@ class StorageManager(BaseStorage):
         logger.debug(i18n.t("core.storage.init_db", path=self.db_path))
 
         try:
-            os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+            Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         except Exception:
             pass  # 如果无法创建目录，则继续尝试连接数据库
 
@@ -597,8 +619,8 @@ class StorageManager(BaseStorage):
             conn = self._open_connection()
 
             cursor = conn.cursor()
-            cursor.execute("""
-            CREATE TABLE IF NOT EXISTS config (
+            cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS {self.KV_TABLE_NAME} (
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL
             )
@@ -689,7 +711,7 @@ class StorageManager(BaseStorage):
                 root_key, nested_path = self._parse_nested_key(key, conn)
 
                 cursor = conn.cursor()
-                cursor.execute("SELECT value FROM config WHERE key = ?", (root_key,))
+                cursor.execute(f"SELECT value FROM {self.KV_TABLE_NAME} WHERE key = ?", (root_key,))
                 if result := cursor.fetchone():
                     try:
                         value = json.loads(result[0])
@@ -701,14 +723,12 @@ class StorageManager(BaseStorage):
                         if isinstance(value, (dict, list)):
                             nested_value = self._get_nested_value(value, nested_path)
                             return nested_value if nested_value is not None else default
-                        else:
-                            return default
-                    else:
-                        return value
+                        return default
+                    return value
 
                 # 尝试完整键名查找（向后兼容）
                 if nested_path:
-                    cursor.execute("SELECT value FROM config WHERE key = ?", (key,))
+                    cursor.execute(f"SELECT value FROM {self.KV_TABLE_NAME} WHERE key = ?", (key,))
                     if result := cursor.fetchone():
                         try:
                             return json.loads(result[0])
@@ -720,11 +740,10 @@ class StorageManager(BaseStorage):
             if "no such table" in str(e):
                 self._init_db()
                 return self.get(key, default)
-            else:
-                from .logger import logger
+            from .logger import logger
 
-                logger.error(i18n.t("core.storage.db_op_error", error=e))
-                return default
+            logger.error(i18n.t("core.storage.db_op_error", error=e))
+            return default
         except Exception as e:
             from .logger import logger
 
@@ -747,7 +766,7 @@ class StorageManager(BaseStorage):
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("SELECT key FROM config")
+                cursor.execute(f"SELECT key FROM {self.KV_TABLE_NAME}")
                 return [row[0] for row in cursor.fetchall()]
         except Exception as e:
             from .logger import logger
@@ -849,7 +868,7 @@ class StorageManager(BaseStorage):
             if isinstance(obj, dict) and key_path[0] in obj:
                 del obj[key_path[0]]
                 return obj, True
-            elif isinstance(obj, list) and key_path[0].isdigit():
+            if isinstance(obj, list) and key_path[0].isdigit():
                 index = int(key_path[0])
                 if 0 <= index < len(obj):
                     obj.pop(index)
@@ -866,7 +885,7 @@ class StorageManager(BaseStorage):
                     if isinstance(current[key], dict) and last_key in current[key]:
                         del current[key][last_key]
                         return obj, True
-                    elif isinstance(current[key], list) and last_key.isdigit():
+                    if isinstance(current[key], list) and last_key.isdigit():
                         index = int(last_key)
                         if 0 <= index < len(current[key]):
                             current[key].pop(index)
@@ -885,7 +904,7 @@ class StorageManager(BaseStorage):
                         ):
                             del current[index][last_key]
                             return obj, True
-                        elif isinstance(current[index], list) and last_key.isdigit():
+                        if isinstance(current[index], list) and last_key.isdigit():
                             last_index = int(last_key)
                             if 0 <= last_index < len(current[index]):
                                 current[index].pop(last_index)
@@ -927,7 +946,7 @@ class StorageManager(BaseStorage):
                     serialized_value = json.dumps(value)
                     cursor = conn.cursor()
                     cursor.execute(
-                        "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+                        f"INSERT OR REPLACE INTO {self.KV_TABLE_NAME} (key, value) VALUES (?, ?)",
                         (key, serialized_value),
                     )
                     self._auto_commit(conn)
@@ -937,7 +956,7 @@ class StorageManager(BaseStorage):
                 cursor = conn.cursor()
 
                 # 获取现有的根键值
-                cursor.execute("SELECT value FROM config WHERE key = ?", (root_key,))
+                cursor.execute(f"SELECT value FROM {self.KV_TABLE_NAME} WHERE key = ?", (root_key,))
                 result = cursor.fetchone()
 
                 if result:
@@ -962,7 +981,7 @@ class StorageManager(BaseStorage):
                 # 存储更新后的值
                 serialized_value = json.dumps(updated_value)
                 cursor.execute(
-                    "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+                    f"INSERT OR REPLACE INTO {self.KV_TABLE_NAME} (key, value) VALUES (?, ?)",
                     (root_key, serialized_value),
                 )
                 self._auto_commit(conn)
@@ -1000,7 +1019,7 @@ class StorageManager(BaseStorage):
                 for key, value in items.items():
                     serialized_value = json.dumps(value)
                     cursor.execute(
-                        "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+                        f"INSERT OR REPLACE INTO {self.KV_TABLE_NAME} (key, value) VALUES (?, ?)",
                         (key, serialized_value),
                     )
                 self._auto_commit(conn)
@@ -1071,7 +1090,7 @@ class StorageManager(BaseStorage):
                 # 如果不是嵌套键，直接删除
                 if not nested_path:
                     cursor = conn.cursor()
-                    cursor.execute("DELETE FROM config WHERE key = ?", (key,))
+                    cursor.execute(f"DELETE FROM {self.KV_TABLE_NAME} WHERE key = ?", (key,))
                     self._auto_commit(conn)
                     return True
 
@@ -1079,7 +1098,7 @@ class StorageManager(BaseStorage):
                 cursor = conn.cursor()
 
                 # 获取现有的根键值
-                cursor.execute("SELECT value FROM config WHERE key = ?", (root_key,))
+                cursor.execute(f"SELECT value FROM {self.KV_TABLE_NAME} WHERE key = ?", (root_key,))
                 result = cursor.fetchone()
 
                 if not result:
@@ -1106,7 +1125,7 @@ class StorageManager(BaseStorage):
                 # 存储更新后的值
                 serialized_value = json.dumps(updated_value)
                 cursor.execute(
-                    "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+                    f"INSERT OR REPLACE INTO {self.KV_TABLE_NAME} (key, value) VALUES (?, ?)",
                     (root_key, serialized_value),
                 )
                 self._auto_commit(conn)
@@ -1132,7 +1151,7 @@ class StorageManager(BaseStorage):
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.executemany(
-                    "DELETE FROM config WHERE key = ?", [(k,) for k in keys]
+                    f"DELETE FROM {self.KV_TABLE_NAME} WHERE key = ?", [(k,) for k in keys]
                 )
                 self._auto_commit(conn)
 
@@ -1158,7 +1177,7 @@ class StorageManager(BaseStorage):
                 cursor = conn.cursor()
                 placeholders = ",".join(["?"] * len(keys))
                 cursor.execute(
-                    f"SELECT key, value FROM config WHERE key IN ({placeholders})", keys
+                    f"SELECT key, value FROM {self.KV_TABLE_NAME} WHERE key IN ({placeholders})", keys
                 )
                 results = {}
                 for row in cursor.fetchall():
@@ -1173,7 +1192,7 @@ class StorageManager(BaseStorage):
             logger.error(i18n.t("core.storage.get_multi_failed", error=e))
             return {}
 
-    def transaction(self) -> "StorageManager._Transaction":
+    def transaction(self) -> "StorageManager._Transaction | _EmptyTransaction | _NestedTransaction":
         """
         创建事务上下文
 
@@ -1186,14 +1205,7 @@ class StorageManager(BaseStorage):
         """
         if not self._is_ready():
             # 返回一个空的事务对象
-            class EmptyTransaction:
-                def __enter__(self):
-                    return self
-
-                def __exit__(self, *args):
-                    pass
-
-            return EmptyTransaction()
+            return _EmptyTransaction()
 
         # 如果已经在事务中（嵌套事务），返回一个空事务，复用现有连接
         if (
@@ -1204,14 +1216,7 @@ class StorageManager(BaseStorage):
 
             logger.trace(i18n.t("core.storage.transaction_nested"))
 
-            class NestedTransaction:
-                def __enter__(self):
-                    return self
-
-                def __exit__(self, *args):
-                    pass
-
-            return NestedTransaction()
+            return _NestedTransaction()
 
         return self._Transaction(self)
 
@@ -1300,7 +1305,7 @@ class StorageManager(BaseStorage):
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("DELETE FROM config")
+                cursor.execute(f"DELETE FROM {self.KV_TABLE_NAME}")
                 self._auto_commit(conn)
 
             return True
@@ -1473,13 +1478,13 @@ class StorageManager(BaseStorage):
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("SELECT value FROM config WHERE key = ?", (key,))
+                cursor.execute(f"SELECT value FROM {self.KV_TABLE_NAME} WHERE key = ?", (key,))
                 if (result := cursor.fetchone()) is None:
                     raise AttributeError(i18n.t("core.storage.item_not_exist", key=key))
         except AttributeError:
             raise
-        except Exception:
-            raise AttributeError(i18n.t("core.storage.item_not_exist_error", key=key))
+        except Exception as _err:
+            raise AttributeError(i18n.t("core.storage.item_not_exist_error", key=key)) from _err
 
         # 解析并返回值
         try:

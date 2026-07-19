@@ -27,12 +27,6 @@ from .exceptions import (
     global_exception_handler,
     setup_exception_handling,
 )
-from .hints import (
-    best_match,
-    best_match_with_prefix,
-    suggest_for_attribute_error,
-    suggest_similar,
-)
 from .frame_config import (
     DEFAULT_ERISPULSE_CONFIG,
     get_master_config,
@@ -46,40 +40,48 @@ from .frame_config import (
     get_storage_config,
     update_erispulse_config,
 )
+from .hints import (
+    best_match,
+    best_match_with_prefix,
+    suggest_for_attribute_error,
+    suggest_similar,
+)
+from .tasks import spawn_background
 
 __all__ = [
-    # 异常处理
-    "ExceptionHandler",
-    "global_exception_handler",
-    "async_exception_handler",
-    "setup_exception_handling",
-    # 友好提示
-    "suggest_similar",
-    "best_match",
-    "best_match_with_prefix",
-    "suggest_for_attribute_error",
     # 配置管理
     "DEFAULT_ERISPULSE_CONFIG",
-    "get_erispulse_config",
+    "AdapterConfig",  # ← BaseConfig 的别名
+    # 通用配置 Schema（适配器/模块/外部项目均可使用）
+    "BaseConfig",
+    "BotAccountConfig",
+    # 异常处理
+    "ExceptionHandler",
+    "I18nConfig",
+    "async_exception_handler",
+    "best_match",
+    "best_match_with_prefix",
+    "dataclass_to_defaults_dict",
+    "dataclass_to_toml_with_comments",
+    "dict_to_dataclass",
     "get_config",
-    "update_erispulse_config",
-    "get_server_config",
-    "get_logger_config",
-    "get_storage_config",
+    "get_config_schema",
+    "get_erispulse_config",
     "get_event_config",
     "get_framework_config",
     "get_i18n_config",
+    "get_logger_config",
     "get_master_config",
-    # 通用配置 Schema（适配器/模块/外部项目均可使用）
-    "BaseConfig",
-    "AdapterConfig",  # ← BaseConfig 的别名
-    "BotAccountConfig",
-    "I18nConfig",
-    "dataclass_to_toml_with_comments",
-    "dataclass_to_defaults_dict",
-    "dict_to_dataclass",
-    "validate_config",
-    "get_config_schema",
+    "get_server_config",
+    "get_storage_config",
+    "global_exception_handler",
     "register_config_i18n",
     "resolve_config_schema",
+    "setup_exception_handling",
+    "spawn_background",
+    "suggest_for_attribute_error",
+    # 友好提示
+    "suggest_similar",
+    "update_erispulse_config",
+    "validate_config",
 ]
