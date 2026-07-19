@@ -47,7 +47,7 @@ ErisPulse 路由系统
 #### 方法列表
 
 
-##### `__init__(module_name: str, prefix: str, version: str = None, tags: list[str] = None, middlewares: list = None, router: 'RouterManager' = None)`
+##### `__init__(module_name: str, prefix: str, version: str | None = None, tags: list[str] | None = None, middlewares: list | None = None, router: 'RouterManager | None' = None)`
 
 初始化路由分组
 
@@ -70,7 +70,7 @@ ErisPulse 路由系统
 ---
 
 
-##### `http(path: str, methods: list[str] = None)`
+##### `http(path: str, methods: list[str] | None = None)`
 
 HTTP 路由装饰器
 
@@ -343,7 +343,7 @@ POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
 ---
 
 
-##### `add_middleware(before: Callable = None, after: Callable = None)`
+##### `add_middleware(before: Callable | None = None, after: Callable | None = None)`
 
 添加中间件函数
 
@@ -398,7 +398,7 @@ POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
 ---
 
 
-##### `_http_decorate(full_path: str, module_name: str, methods: list[str] = None)`
+##### `_http_decorate(full_path: str, module_name: str, methods: list[str] | None = None)`
 
 HTTP 路由装饰器内部实现
 
@@ -416,7 +416,7 @@ WebSocket 路由装饰器内部实现
 ---
 
 
-##### `http(module_name: str, path: str, methods: list[str] = None)`
+##### `http(module_name: str, path: str, methods: list[str] | None = None)`
 
 HTTP 路由装饰器
 
@@ -583,7 +583,7 @@ SSE 路由装饰器内部实现
 ---
 
 
-##### `_register_ws_endpoint(full_path: str, module_name: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = True)`
+##### `_register_ws_endpoint(full_path: str, module_name: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT)`
 
 WebSocket 路由注册内部实现
 
@@ -846,7 +846,7 @@ SSE 路由使用 base_url 前缀（HTTP）。
 ---
 
 
-##### `setup_cors(allow_origins: list[str] = None, allow_methods: list[str] = None, allow_headers: list[str] = None, allow_credentials: bool = False, max_age: int = DEFAULT_CORS_MAX_AGE_SECS, expose_headers: list[str] = None)`
+##### `setup_cors(allow_origins: list[str] | None = None, allow_methods: list[str] | None = None, allow_headers: list[str] | None = None, allow_credentials: bool = False, max_age: int = DEFAULT_CORS_MAX_AGE_SECS, expose_headers: list[str] | None = None)`
 
 配置 CORS
 
@@ -868,7 +868,7 @@ SSE 路由使用 base_url 前缀（HTTP）。
 ---
 
 
-##### `setup_security_headers(headers: dict[str, str] = None)`
+##### `setup_security_headers(headers: dict[str, str] | None = None)`
 
 配置安全响应头
 
@@ -896,7 +896,7 @@ SSE 路由使用 base_url 前缀（HTTP）。
 ---
 
 
-##### `set_docs_info(title: str = None, description: str = None)`
+##### `set_docs_info(title: str | None = None, description: str | None = None)`
 
 更新 API 文档信息
 

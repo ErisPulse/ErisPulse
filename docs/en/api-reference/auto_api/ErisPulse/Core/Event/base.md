@@ -44,7 +44,7 @@ ErisPulse 事件处理基础模块
 #### 方法列表
 
 
-##### `__init__(event_type: str, module_name: str = None)`
+##### `__init__(event_type: str, module_name: str | None = None)`
 
 初始化事件处理器
 
@@ -53,7 +53,7 @@ ErisPulse 事件处理基础模块
 ---
 
 
-##### `register(handler: Callable, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable = None)`
+##### `register(handler: Callable, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable | None = None)`
 
 注册事件处理器
 
@@ -82,7 +82,7 @@ ErisPulse 事件处理基础模块
 ---
 
 
-##### `__call__(priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable = None)`
+##### `__call__(priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable | None = None)`
 
 装饰器方式注册事件处理器
 

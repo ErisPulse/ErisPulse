@@ -36,7 +36,7 @@
     },
     "入門指南": {
       "description": "ErisPulse 基礎概念和使用教程",
-      "count": 5,
+      "count": 6,
       "documents": [
         {
           "title": "建立第一個機器人",
@@ -61,6 +61,11 @@
         {
           "title": "事件處理入門",
           "path": "getting-started/event-handling.md",
+          "level": 1
+        },
+        {
+          "title": "類型存根生成（IDE 自動完成）",
+          "path": "getting-started/ide-completion.md",
           "level": 1
         }
       ],
@@ -148,7 +153,7 @@
               "level": 1
             },
             {
-              "title": "适配器核心概念",
+              "title": "適配器核心概念",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1
             },

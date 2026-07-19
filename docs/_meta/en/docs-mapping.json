@@ -36,7 +36,7 @@
     },
     "Getting Started": {
       "description": "ErisPulse basic concepts and tutorials",
-      "count": 5,
+      "count": 6,
       "documents": [
         {
           "title": "Create Your First Bot",
@@ -44,7 +44,7 @@
           "level": 1
         },
         {
-          "title": "Getting Started Guide",
+          "title": "Getting Started",
           "path": "getting-started/README.md",
           "level": 1
         },
@@ -59,8 +59,13 @@
           "level": 1
         },
         {
-          "title": "Event Handling",
+          "title": "Getting Started with Event Handling",
           "path": "getting-started/event-handling.md",
+          "level": 1
+        },
+        {
+          "title": "Type Stub Generation (IDE Completion)",
+          "path": "getting-started/ide-completion.md",
           "level": 1
         }
       ],
@@ -108,7 +113,7 @@
           "level": 1
         },
         {
-          "title": "Publishing & Module Store Guide",
+          "title": "Publishing and Module Store Guide",
           "path": "developer-guide/publishing.md",
           "level": 1
         }
@@ -148,12 +153,12 @@
               "level": 1
             },
             {
-              "title": "Adapter Core Concepts",
+              "title": "Core Concepts of Adapters",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1
             },
             {
-              "title": "SendDSL Deep Dive",
+              "title": "SendDSL Detailed Explanation",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1
             },
@@ -315,7 +320,7 @@
           "level": 1
         },
         {
-          "title": "Conversation Multi-turn Conversation",
+          "title": "Conversation Multi-turn Conversations",
           "path": "advanced/conversation.md",
           "level": 1
         },
@@ -379,7 +384,7 @@
           "level": 1
         },
         {
-          "title": "ErisPulse Sending Method Specifications",
+          "title": "ErisPulse Send Method Specification",
           "path": "standards/send-method-spec.md",
           "level": 1
         },
