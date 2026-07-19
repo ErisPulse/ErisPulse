@@ -31,7 +31,7 @@ self-update 命令
 ---
 
 
-##### `_select_target_version(versions, specified_version: str = None, include_pre: bool = False)`
+##### `_select_target_version(versions, specified_version: str | None = None, include_pre: bool = False)`
 
 交互式选择目标更新版本
 

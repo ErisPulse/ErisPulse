@@ -36,7 +36,7 @@
     },
     "入门指南": {
       "description": "ErisPulse 基础概念和使用教程",
-      "count": 5,
+      "count": 6,
       "documents": [
         {
           "title": "创建第一个机器人",
@@ -61,6 +61,11 @@
         {
           "title": "事件处理入门",
           "path": "getting-started/event-handling.md",
+          "level": 1
+        },
+        {
+          "title": "类型存根生成（IDE 补全）",
+          "path": "getting-started/ide-completion.md",
           "level": 1
         }
       ],

@@ -42,7 +42,7 @@ ErisPulse CLI 显示工具
 ---
 
 
-### `prompt_validated(message: str, default: str = '', validate: Optional[Callable[[str], Union[bool, str, None]]] = None, error_msg: Optional[str] = None)`
+### `prompt_validated(message: str, default: str = '', validate: Callable[[str], bool | str | None] | None = None, error_msg: str | None = None)`
 
 交互式输入，校验失败时保留上次输入并重新提示，直到通过校验。
 
@@ -93,7 +93,7 @@ ErisPulse CLI 显示工具
 ---
 
 
-### `paginated_table(table: Table, items: List[Any], row_builder, page_size: Optional[int] = None)`
+### `paginated_table(table: Table, items: list[Any], row_builder, page_size: int | None = None)`
 
 将列表项分页渲染到表格中，支持翻页交互
 
@@ -106,7 +106,7 @@ ErisPulse CLI 显示工具
 ---
 
 
-### `interactive_select_table(title_text: str, items: List[Any], columns: list, row_builder, page_size: Optional[int] = None)`
+### `interactive_select_table(title_text: str, items: list[Any], columns: list, row_builder, page_size: int | None = None)`
 
 渲染可交互多选的分页表格，支持按序号选择、翻页与确认
 

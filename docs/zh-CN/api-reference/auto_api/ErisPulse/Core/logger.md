@@ -168,7 +168,7 @@ JSON 日志格式化器
 ---
 
 
-##### `get_logs(module_name: str = None)`
+##### `get_logs(module_name: str | None = None)`
 
 获取日志内容
 
@@ -180,7 +180,7 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 ---
 
 
-##### `iter_logs(module_name: str = None)`
+##### `iter_logs(module_name: str | None = None)`
 
 流式迭代日志（生成器）
 

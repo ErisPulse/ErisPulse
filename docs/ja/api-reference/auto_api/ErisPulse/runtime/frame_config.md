@@ -14,7 +14,7 @@ ErisPulse 框架配置管理模块
 ## 函数列表
 
 
-### `_deep_merge(base: Dict[str, Any], override: Dict[str, Any])`
+### `_deep_merge(base: dict[str, Any], override: dict[str, Any])`
 
 深度合并两个字典，override 中的值覆盖 base 中的对应值
 
@@ -24,7 +24,7 @@ ErisPulse 框架配置管理模块
 ---
 
 
-### `_ensure_erispulse_config_structure(config_dict: Dict[str, Any])`
+### `_ensure_erispulse_config_structure(config_dict: dict[str, Any])`
 
 确保 ErisPulse 配置结构完整，补全缺失的配置项
 
@@ -42,7 +42,7 @@ ErisPulse 框架配置管理模块
 ---
 
 
-### `get_config(section: Optional[str] = None)`
+### `get_config(section: str | None = None)`
 
 获取 ErisPulse 配置
 
@@ -52,7 +52,7 @@ ErisPulse 框架配置管理模块
 ---
 
 
-### `update_erispulse_config(new_config: Dict[str, Any])`
+### `update_erispulse_config(new_config: dict[str, Any])`
 
 更新 ErisPulse 配置，自动补全缺失的配置项
 

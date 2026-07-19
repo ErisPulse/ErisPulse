@@ -256,7 +256,7 @@ ErisPulse包管理器
 ---
 
 
-##### `_execute_backend(base_cmd: List[str], args: List[str], description: str, backend: str)`
+##### `_execute_backend(base_cmd: list[str], args: list[str], description: str, backend: str)`
 
 使用指定的后端 (uv/pip) 执行命令并实时输出到当前终端。
 
@@ -269,13 +269,14 @@ ErisPulse包管理器
 ---
 
 
-##### `_run_pip_command_with_output(args: List[str], description: str)`
+##### `_run_pip_command_with_output(args: list[str], description: str)`
 
 执行 pip 类操作 (install/uninstall)。
 
 策略：
 1. 优先使用 uv（自动识别独立二进制或 python -m uv）；
-   uv 会自动遵循当前虚拟环境 (VIRTUAL_ENV)。
+   通过 ``--python`` 显式指定目标解释器，确保安装到用户期望的环境
+   （特别是 epsdk 经 pipx 全局安装、用户包需装到项目 venv 的场景）。
 2. uv 不可用或执行失败时，回退到 pip，
    并将目标 Python 解析为当前虚拟环境的解释器，
    避免安装到全局环境。
@@ -283,6 +284,20 @@ ErisPulse包管理器
 - **args** (`List[str`): ] pip 子命令与参数，如 ["install", "--upgrade", pkg]
 - **description** (`str`): 展示给用户的操作描述
 **返回值** (`bool`): 执行成功返回 True
+
+---
+
+
+##### `_ensure_pip_available(target_python: str)`
+
+确保目标 Python 环境可用 pip
+
+uv 创建的 venv 默认不含 pip（uv 自身可装包）。当 uv 不可用或执行失败需
+回退到 pip 时，必须先检测 pip 是否可用，否则会出现
+“No module named pip” 的错误。这里通过 ``python -m ensurepip`` 自举安装。
+
+- **target_python** (`str`): 目标 Python 解释器路径
+**返回值** (`bool`): pip 可用返回 True，无法 bootstrap 返回 False
 
 ---
 
@@ -331,7 +346,7 @@ ErisPulse包管理器
 ---
 
 
-##### `install_package(package_names: List[str], upgrade: bool = False, pre: bool = False, extra_pip_args: List[str] = None)`
+##### `install_package(package_names: list[str], upgrade: bool = False, pre: bool = False, extra_pip_args: list[str] | None = None)`
 
 安装一个或多个包，支持别名映射、未验证包确认和SDK兼容性检查
 
@@ -344,7 +359,7 @@ ErisPulse包管理器
 ---
 
 
-##### `install_direct(pip_args: List[str], description: str = 'pip install')`
+##### `install_direct(pip_args: list[str], description: str = 'pip install')`
 
 直接使用给定参数执行pip安装
 
@@ -355,7 +370,7 @@ ErisPulse包管理器
 ---
 
 
-##### `uninstall_package(package_names: List[str], skip_confirm: bool = False)`
+##### `uninstall_package(package_names: list[str], skip_confirm: bool = False)`
 
 卸载一个或多个包，支持别名映射和确认提示
 
@@ -375,7 +390,7 @@ ErisPulse包管理器
 ---
 
 
-##### `upgrade_package(package_names: List[str], pre: bool = False)`
+##### `upgrade_package(package_names: list[str], pre: bool = False)`
 
 升级指定包到最新版本
 
@@ -433,7 +448,7 @@ ErisPulse包管理器
 ---
 
 
-##### `update_self(target_version: str = None, force: bool = False)`
+##### `update_self(target_version: str | None = None, force: bool = False)`
 
 更新ErisPulse SDK到指定版本或最新版本
 

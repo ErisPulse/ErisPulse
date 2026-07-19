@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1289,
+  "total_keywords": 1309,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -13,7 +13,7 @@
     "1. BaseAdapter 层（大多数情况不需要重写）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 364,
+        "line": 359,
         "level": 3,
         "title": "1. BaseAdapter 层（大多数情况不需要重写）"
       }
@@ -361,7 +361,7 @@
     "10. SSE (Server-Sent Events) 支持": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 482,
+        "line": 477,
         "level": 3,
         "title": "10. SSE (Server-Sent Events) 支持"
       }
@@ -369,7 +369,7 @@
     "10. 消息构建器（MessageBuilder）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 480,
+        "line": 474,
         "level": 2,
         "title": "10. 消息构建器（MessageBuilder）"
       }
@@ -377,7 +377,7 @@
     "10. 适配器实现检查清单": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 461,
+        "line": 455,
         "level": 2,
         "title": "10. 适配器实现检查清单"
       }
@@ -385,7 +385,7 @@
     "11. 相关文档": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 569,
+        "line": 563,
         "level": 2,
         "title": "11. 相关文档"
       }
@@ -393,7 +393,7 @@
     "11.1 导入": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 484,
+        "line": 478,
         "level": 3,
         "title": "11.1 导入"
       }
@@ -401,7 +401,7 @@
     "11.2 链式调用构建": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 492,
+        "line": 486,
         "level": 3,
         "title": "11.2 链式调用构建"
       }
@@ -409,7 +409,7 @@
     "11.3 快速构建单段": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 509,
+        "line": 503,
         "level": 3,
         "title": "11.3 快速构建单段"
       }
@@ -417,7 +417,7 @@
     "11.4 配合 Event.reply_ob12 使用": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 520,
+        "line": 514,
         "level": 3,
         "title": "11.4 配合 Event.reply_ob12 使用"
       }
@@ -425,7 +425,7 @@
     "11.5 支持的消息段方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 535,
+        "line": 529,
         "level": 3,
         "title": "11.5 支持的消息段方法"
       }
@@ -433,7 +433,7 @@
     "11.6 工具方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 550,
+        "line": 544,
         "level": 3,
         "title": "11.6 工具方法"
       }
@@ -457,7 +457,7 @@
     "2. Send 内部类（大多数情况不需要重写）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 395,
+        "line": 390,
         "level": 3,
         "title": "2. Send 内部类（大多数情况不需要重写）"
       }
@@ -885,7 +885,7 @@
     "3. Request 内部类（大多数情况不需要重写）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 419,
+        "line": 414,
         "level": 3,
         "title": "3. Request 内部类（大多数情况不需要重写）"
       }
@@ -1493,7 +1493,7 @@
     "6. 实现转换器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 246,
+        "line": 241,
         "level": 3,
         "title": "6. 实现转换器"
       }
@@ -1637,7 +1637,7 @@
     "6.5 实现示例": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 362,
+        "line": 356,
         "level": 3,
         "title": "6.5 实现示例"
       }
@@ -1669,7 +1669,7 @@
     "7. 实现 Request 类（请求操作）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 288,
+        "line": 283,
         "level": 3,
         "title": "7. 实现 Request 类（请求操作）"
       }
@@ -1677,7 +1677,7 @@
     "7. 方法发现": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 415,
+        "line": 409,
         "level": 2,
         "title": "7. 方法发现"
       }
@@ -1725,7 +1725,7 @@
     "8. 创建包入口": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 353,
+        "line": 348,
         "level": 3,
         "title": "8. 创建包入口"
       }
@@ -1733,7 +1733,7 @@
     "8. 已注册的发送方法扩展": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 438,
+        "line": 432,
         "level": 2,
         "title": "8. 已注册的发送方法扩展"
       }
@@ -1811,7 +1811,7 @@
     "9. 连接信息与路由发现": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 441,
+        "line": 436,
         "level": 3,
         "title": "9. 连接信息与路由发现"
       }
@@ -1819,7 +1819,7 @@
     "9. 适配器开发注意事项": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 453,
+        "line": 447,
         "level": 2,
         "title": "9. 适配器开发注意事项"
       }
@@ -1905,7 +1905,7 @@
     "API 响应标准": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 699,
+        "line": 700,
         "level": 2,
         "title": "API 响应标准"
       }
@@ -1953,7 +1953,7 @@
     "API 错误处理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 832,
+        "line": 833,
         "level": 3,
         "title": "API 错误处理"
       }
@@ -1977,7 +1977,7 @@
     "Account 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 112,
+        "line": 140,
         "level": 3,
         "title": "Account 方法"
       }
@@ -2009,7 +2009,7 @@
     "At 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 63,
+        "line": 91,
         "level": 3,
         "title": "At 方法"
       }
@@ -2017,7 +2017,7 @@
     "AtAll 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 73,
+        "line": 101,
         "level": 3,
         "title": "AtAll 方法"
       }
@@ -2069,7 +2069,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 926,
+        "line": 927,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -2089,7 +2089,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 860,
+        "line": 861,
         "level": 2,
         "title": "Bot 状态管理"
       }
@@ -2561,7 +2561,7 @@
     "Meta 事件类型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 882,
+        "line": 883,
         "level": 3,
         "title": "Meta 事件类型"
       }
@@ -2741,7 +2741,7 @@
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 397,
+        "line": 425,
         "level": 3,
         "title": "PascalCase 命名"
       }
@@ -2797,7 +2797,7 @@
     "Reply 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 80,
+        "line": 108,
         "level": 3,
         "title": "Reply 方法"
       }
@@ -2955,7 +2955,7 @@
     "SseEmitter API": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 520,
+        "line": 515,
         "level": 4,
         "title": "SseEmitter API"
       }
@@ -3003,7 +3003,7 @@
     "Task 对象": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 444,
+        "line": 472,
         "level": 3,
         "title": "Task 对象"
       }
@@ -3027,7 +3027,7 @@
     "Using 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 95,
+        "line": 123,
         "level": 3,
         "title": "Using 方法"
       }
@@ -3043,7 +3043,7 @@
     "WebHook 连接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 675,
+        "line": 676,
         "level": 3,
         "title": "WebHook 连接"
       }
@@ -3097,7 +3097,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 641,
+        "line": 642,
         "level": 3,
         "title": "WebSocket 连接"
       }
@@ -3319,7 +3319,7 @@
     "`__init__` 注意事项": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 360,
+        "line": 355,
         "level": 2,
         "title": "`__init__` 注意事项"
       }
@@ -3343,7 +3343,7 @@
     "`self` 字段扩展信息": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 915,
+        "line": 916,
         "level": 3,
         "title": "`self` 字段扩展信息"
       }
@@ -3444,6 +3444,14 @@
         "title": "copy()"
       }
     ],
+    "create": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 294,
+        "level": 3,
+        "title": "create"
+      }
+    ],
     "detail_type 映射": [
       {
         "document": "platform-guide/discord.md",
@@ -3516,12 +3524,28 @@
         "title": "heartbeat — 心跳"
       }
     ],
-    "install 参数": [
+    "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 54,
+        "line": 341,
         "level": 3,
-        "title": "install 参数"
+        "title": "i18n"
+      }
+    ],
+    "init": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 264,
+        "level": 3,
+        "title": "init"
+      }
+    ],
+    "install": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 18,
+        "level": 3,
+        "title": "install"
       }
     ],
     "is_active": [
@@ -3540,12 +3564,20 @@
         "title": "len() / bool()"
       }
     ],
-    "list 参数": [
+    "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 62,
+        "line": 163,
         "level": 3,
-        "title": "list 参数"
+        "title": "list"
+      }
+    ],
+    "list-remote": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 192,
+        "level": 3,
+        "title": "list-remote"
       }
     ],
     "mention_all消息段": [
@@ -3620,12 +3652,12 @@
         "title": "pyproject.toml 配置"
       }
     ],
-    "run 参数": [
+    "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 69,
+        "line": 226,
         "level": 3,
-        "title": "run 参数"
+        "title": "run"
       }
     ],
     "save() / resume() / clear_saved()": [
@@ -3652,10 +3684,18 @@
         "title": "self 字段扩展"
       }
     ],
+    "self-update": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 123,
+        "level": 3,
+        "title": "self-update"
+      }
+    ],
     "self.user_id 与 Using 的关系": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 789,
+        "line": 790,
         "level": 3,
         "title": "self.user_id 与 Using 的关系"
       }
@@ -3690,6 +3730,30 @@
         "line": 73,
         "level": 4,
         "title": "thread"
+      }
+    ],
+    "types": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 378,
+        "level": 3,
+        "title": "types"
+      }
+    ],
+    "uninstall": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 72,
+        "level": 3,
+        "title": "uninstall"
+      }
+    ],
+    "upgrade": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 95,
+        "level": 3,
+        "title": "upgrade"
       }
     ],
     "user": [
@@ -3765,7 +3829,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 559,
+        "line": 554,
         "level": 2,
         "title": "下一步"
       },
@@ -3801,7 +3865,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 155,
+        "line": 174,
         "level": 2,
         "title": "下一步"
       },
@@ -3837,7 +3901,7 @@
     "不等待结果": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 122,
+        "line": 150,
         "level": 3,
         "title": "不等待结果"
       }
@@ -3848,6 +3912,14 @@
         "line": 395,
         "level": 2,
         "title": "与 CLI i18n 的关系"
+      }
+    ],
+    "与 SendDSL 标准方法的关系": [
+      {
+        "document": "getting-started/ide-completion.md",
+        "line": 79,
+        "level": 2,
+        "title": "与 SendDSL 标准方法的关系"
       }
     ],
     "两种注入模式": [
@@ -4237,7 +4309,7 @@
     "事件转换器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 566,
+        "line": 567,
         "level": 2,
         "title": "事件转换器"
       }
@@ -4345,7 +4417,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 76,
+        "line": 424,
         "level": 2,
         "title": "交互式安装"
       },
@@ -4453,7 +4525,7 @@
     "优先级与积压丢弃（Priority）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 230,
+        "line": 258,
         "level": 3,
         "title": "优先级与积压丢弃（Priority）"
       }
@@ -4502,6 +4574,14 @@
         "line": 301,
         "level": 4,
         "title": "低级方法"
+      }
+    ],
+    "何时重新生成": [
+      {
+        "document": "getting-started/ide-completion.md",
+        "line": 73,
+        "level": 2,
+        "title": "何时重新生成"
       }
     ],
     "使用 Discord 特有方法": [
@@ -4633,7 +4713,7 @@
     "使用请求参数": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 502,
+        "line": 497,
         "level": 4,
         "title": "使用请求参数"
       }
@@ -4673,7 +4753,7 @@
     "信息查询命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 14,
+        "line": 156,
         "level": 2,
         "title": "信息查询命令"
       }
@@ -4689,7 +4769,7 @@
     "修饰器与规则的继承": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 356,
+        "line": 384,
         "level": 3,
         "title": "修饰器与规则的继承"
       }
@@ -4697,7 +4777,7 @@
     "修饰方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 59,
+        "line": 87,
         "level": 2,
         "title": "修饰方法"
       }
@@ -4754,6 +4834,14 @@
         "line": 1,
         "level": 1,
         "title": "入门指南"
+      }
+    ],
+    "全局参数": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 413,
+        "level": 2,
+        "title": "全局参数"
       }
     ],
     "全局配置": [
@@ -4896,6 +4984,14 @@
         "title": "分支与跳转"
       }
     ],
+    "切换语言": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 501,
+        "level": 3,
+        "title": "切换语言"
+      }
+    ],
     "列出平台": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4912,12 +5008,12 @@
         "title": "列出支持的发送方法"
       }
     ],
-    "列出模块": [
+    "列出组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 104,
+        "line": 452,
         "level": 3,
-        "title": "列出模块"
+        "title": "列出组件"
       }
     ],
     "创建对话": [
@@ -4939,7 +5035,7 @@
     "创建脚手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 160,
+        "line": 534,
         "level": 3,
         "title": "创建脚手架"
       }
@@ -4999,7 +5095,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 150,
+        "line": 524,
         "level": 3,
         "title": "初始化项目"
       }
@@ -5085,23 +5181,23 @@
     "包管理命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 5,
+        "line": 9,
         "level": 2,
         "title": "包管理命令"
       }
     ],
-    "升级模块": [
+    "升级组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 127,
+        "line": 478,
         "level": 3,
-        "title": "升级模块"
+        "title": "升级组件"
       }
     ],
     "协议方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 51,
+        "line": 66,
         "level": 3,
         "title": "协议方法"
       }
@@ -5122,12 +5218,12 @@
         "title": "单账户配置"
       }
     ],
-    "卸载模块": [
+    "卸载组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 117,
+        "line": 468,
         "level": 3,
-        "title": "卸载模块"
+        "title": "卸载组件"
       }
     ],
     "卸载翻译": [
@@ -5149,7 +5245,7 @@
     "原始消息与消息构建": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 523,
+        "line": 557,
         "level": 3,
         "title": "原始消息与消息构建"
       }
@@ -5196,12 +5292,6 @@
         "line": 157,
         "level": 2,
         "title": "参数说明"
-      },
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 45,
-        "level": 2,
-        "title": "参数说明"
       }
     ],
     "参考文档": [
@@ -5239,7 +5329,7 @@
     "反向转换": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 470,
+        "line": 464,
         "level": 3,
         "title": "反向转换"
       }
@@ -5385,7 +5475,7 @@
     "发送成功后执行逻辑（Hook）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 163,
+        "line": 191,
         "level": 3,
         "title": "发送成功后执行逻辑（Hook）"
       }
@@ -5399,7 +5489,7 @@
       },
       {
         "document": "standards/send-method-spec.md",
-        "line": 463,
+        "line": 457,
         "level": 3,
         "title": "发送方法"
       }
@@ -5501,7 +5591,7 @@
     "发送规则系统": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 145,
+        "line": 173,
         "level": 2,
         "title": "发送规则系统"
       }
@@ -5549,7 +5639,7 @@
     "后台执行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 380,
+        "line": 408,
         "level": 3,
         "title": "后台执行"
       }
@@ -5568,6 +5658,14 @@
         "line": 85,
         "level": 4,
         "title": "启动适配器"
+      }
+    ],
+    "启用 IDE 补全（可选）": [
+      {
+        "document": "quick-start.md",
+        "line": 127,
+        "level": 2,
+        "title": "启用 IDE 补全（可选）"
       }
     ],
     "命令": [
@@ -5686,6 +5784,14 @@
         "title": "命令装饰器"
       }
     ],
+    "命令选项": [
+      {
+        "document": "getting-started/ide-completion.md",
+        "line": 64,
+        "level": 2,
+        "title": "命令选项"
+      }
+    ],
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
@@ -5697,7 +5803,7 @@
     "命名规范": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 395,
+        "line": 423,
         "level": 2,
         "title": "命名规范"
       }
@@ -5829,9 +5935,17 @@
     "在 RouteGroup 中使用": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 529,
+        "line": 524,
         "level": 4,
         "title": "在 RouteGroup 中使用"
+      }
+    ],
+    "在代码中使用": [
+      {
+        "document": "getting-started/ide-completion.md",
+        "line": 24,
+        "level": 2,
+        "title": "在代码中使用"
       }
     ],
     "在代码中手动切换": [
@@ -5873,13 +5987,13 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 486,
+        "line": 481,
         "level": 4,
         "title": "基本使用"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 495,
+        "line": 529,
         "level": 3,
         "title": "基本使用"
       },
@@ -6002,12 +6116,14 @@
         "line": 529,
         "level": 3,
         "title": "基本方法"
-      },
+      }
+    ],
+    "基本方法（基类内置）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 41,
         "level": 3,
-        "title": "基本方法"
+        "title": "基本方法（基类内置）"
       }
     ],
     "基本格式": [
@@ -6029,6 +6145,12 @@
         "document": "api-reference/core-modules.md",
         "line": 124,
         "level": 3,
+        "title": "基本用法"
+      },
+      {
+        "document": "getting-started/ide-completion.md",
+        "line": 14,
+        "level": 2,
         "title": "基本用法"
       }
     ],
@@ -6129,7 +6251,7 @@
     "声明式配置（推荐）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 735,
+        "line": 736,
         "level": 3,
         "title": "声明式配置（推荐）"
       },
@@ -6311,7 +6433,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 733,
+        "line": 734,
         "level": 2,
         "title": "多账户支持"
       }
@@ -6377,7 +6499,7 @@
     "失败继续与重试": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 310,
+        "line": 338,
         "level": 3,
         "title": "失败继续与重试"
       }
@@ -6385,7 +6507,7 @@
     "失败自动重试（Retry）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 180,
+        "line": 208,
         "level": 3,
         "title": "失败自动重试（Retry）"
       }
@@ -6627,7 +6749,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 91,
+        "line": 439,
         "level": 3,
         "title": "安装模块"
       }
@@ -6671,7 +6793,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 493,
+        "line": 527,
         "level": 2,
         "title": "完整示例"
       },
@@ -6816,6 +6938,12 @@
         "line": 218,
         "level": 3,
         "title": "工作原理"
+      },
+      {
+        "document": "getting-started/ide-completion.md",
+        "line": 38,
+        "level": 2,
+        "title": "工作原理"
       }
     ],
     "工具": [
@@ -6913,7 +7041,7 @@
     "常见用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 89,
+        "line": 437,
         "level": 2,
         "title": "常见用法"
       }
@@ -7085,7 +7213,13 @@
     "平台特有方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 417,
+        "line": 74,
+        "level": 3,
+        "title": "平台特有方法"
+      },
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 445,
         "level": 3,
         "title": "平台特有方法"
       }
@@ -7115,7 +7249,7 @@
     "并行与串行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 290,
+        "line": 318,
         "level": 3,
         "title": "并行与串行"
       }
@@ -7131,7 +7265,7 @@
     "延迟发送（Defer）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 221,
+        "line": 249,
         "level": 3,
         "title": "延迟发送（Defer）"
       }
@@ -7163,7 +7297,7 @@
     "开发方式选择": [
       {
         "document": "getting-started/README.md",
-        "line": 16,
+        "line": 17,
         "level": 2,
         "title": "开发方式选择"
       }
@@ -7217,7 +7351,7 @@
     "开始学习": [
       {
         "document": "getting-started/README.md",
-        "line": 38,
+        "line": 39,
         "level": 2,
         "title": "开始学习"
       }
@@ -7271,7 +7405,7 @@
     "异步处理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 120,
+        "line": 148,
         "level": 2,
         "title": "异步处理"
       }
@@ -7369,7 +7503,7 @@
     "必需字段": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 578,
+        "line": 579,
         "level": 3,
         "title": "必需字段"
       }
@@ -7477,7 +7611,7 @@
     "总结": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 432,
+        "line": 427,
         "level": 3,
         "title": "总结"
       }
@@ -7525,7 +7659,7 @@
     "成功响应": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 703,
+        "line": 704,
         "level": 3,
         "title": "成功响应"
       }
@@ -7557,7 +7691,7 @@
     "手动构造响应（旧版方式仍然兼容）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 719,
+        "line": 720,
         "level": 3,
         "title": "手动构造响应（旧版方式仍然兼容）"
       }
@@ -7677,7 +7811,7 @@
     "批量构建模式（Build）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 270,
+        "line": 298,
         "level": 2,
         "title": "批量构建模式（Build）"
       },
@@ -7729,7 +7863,7 @@
     "指定账户发送": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 776,
+        "line": 777,
         "level": 3,
         "title": "指定账户发送"
       }
@@ -7975,7 +8109,7 @@
     "整批规则与回调": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 322,
+        "line": 350,
         "level": 3,
         "title": "整批规则与回调"
       }
@@ -8491,7 +8625,7 @@
       },
       {
         "document": "getting-started/README.md",
-        "line": 27,
+        "line": 28,
         "level": 2,
         "title": "架构概览"
       }
@@ -8595,7 +8729,7 @@
     "标准化响应": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 462,
+        "line": 496,
         "level": 3,
         "title": "标准化响应"
       }
@@ -8828,6 +8962,14 @@
         "line": 45,
         "level": 2,
         "title": "核心组件"
+      }
+    ],
+    "核心设计原则": [
+      {
+        "document": "getting-started/ide-completion.md",
+        "line": 6,
+        "level": 2,
+        "title": "核心设计原则"
       }
     ],
     "根页面": [
@@ -9808,6 +9950,14 @@
         "title": "生命周期集成"
       }
     ],
+    "生成类型存根": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 514,
+        "level": 3,
+        "title": "生成类型存根"
+      }
+    ],
     "用户使用指南": [
       {
         "document": "README.md",
@@ -9849,7 +9999,7 @@
     "监听 Bot 生命周期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 949,
+        "line": 950,
         "level": 3,
         "title": "监听 Bot 生命周期"
       }
@@ -10019,13 +10169,13 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 967,
+        "line": 968,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 531,
+        "line": 565,
         "level": 2,
         "title": "相关文档"
       },
@@ -10044,6 +10194,12 @@
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 421,
+        "level": 2,
+        "title": "相关文档"
+      },
+      {
+        "document": "getting-started/ide-completion.md",
+        "line": 84,
         "level": 2,
         "title": "相关文档"
       },
@@ -10187,7 +10343,7 @@
     "等待结果": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 132,
+        "line": 160,
         "level": 3,
         "title": "等待结果"
       }
@@ -10258,6 +10414,22 @@
         "title": "管理接口"
       }
     ],
+    "类型存根命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 372,
+        "level": 2,
+        "title": "类型存根命令"
+      }
+    ],
+    "类型存根生成（IDE 补全）": [
+      {
+        "document": "getting-started/ide-completion.md",
+        "line": 1,
+        "level": 1,
+        "title": "类型存根生成（IDE 补全）"
+      }
+    ],
     "类型定义": [
       {
         "document": "advanced/session-types.md",
@@ -10317,7 +10489,7 @@
     "组合修饰": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 87,
+        "line": 115,
         "level": 3,
         "title": "组合修饰"
       }
@@ -10437,7 +10609,7 @@
     "自动发现机制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 864,
+        "line": 865,
         "level": 3,
         "title": "自动发现机制"
       }
@@ -10603,7 +10775,7 @@
     "规则传播": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 257,
+        "line": 285,
         "level": 3,
         "title": "规则传播"
       }
@@ -10611,7 +10783,7 @@
     "规则方法一览": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 151,
+        "line": 179,
         "level": 3,
         "title": "规则方法一览"
       }
@@ -10619,7 +10791,7 @@
     "规则组合与后台执行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 242,
+        "line": 270,
         "level": 3,
         "title": "规则组合与后台执行"
       }
@@ -10654,6 +10826,14 @@
         "line": 56,
         "level": 3,
         "title": "访问核心模块"
+      }
+    ],
+    "语言命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 335,
+        "level": 2,
+        "title": "语言命令"
       }
     ],
     "语言检测机制": [
@@ -10807,7 +10987,7 @@
     "账户管理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 93,
+        "line": 121,
         "level": 2,
         "title": "账户管理"
       }
@@ -10847,7 +11027,7 @@
     "账户配置文件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 762,
+        "line": 763,
         "level": 3,
         "title": "账户配置文件"
       }
@@ -10887,7 +11067,7 @@
     "超时自动取消（Timeout）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 189,
+        "line": 217,
         "level": 3,
         "title": "超时自动取消（Timeout）"
       }
@@ -10949,7 +11129,7 @@
     "路由发现": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 539,
+        "line": 534,
         "level": 4,
         "title": "路由发现"
       }
@@ -10981,7 +11161,7 @@
     "转换器示例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 598,
+        "line": 599,
         "level": 3,
         "title": "转换器示例"
       }
@@ -10989,7 +11169,7 @@
     "转换流程": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 568,
+        "line": 569,
         "level": 3,
         "title": "转换流程"
       }
@@ -11005,7 +11185,7 @@
     "运行控制命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 23,
+        "line": 220,
         "level": 2,
         "title": "运行控制命令"
       }
@@ -11043,7 +11223,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 140,
+        "line": 491,
         "level": 3,
         "title": "运行项目"
       }
@@ -11051,7 +11231,7 @@
     "返回值": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 442,
+        "line": 470,
         "level": 2,
         "title": "返回值"
       }
@@ -11091,7 +11271,7 @@
     "进入构建模式": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 274,
+        "line": 302,
         "level": 3,
         "title": "进入构建模式"
       }
@@ -11099,7 +11279,7 @@
     "进度监控（OnProgress / OnError）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 199,
+        "line": 227,
         "level": 3,
         "title": "进度监控（OnProgress / OnError）"
       }
@@ -11141,7 +11321,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 639,
+        "line": 640,
         "level": 2,
         "title": "连接管理"
       }
@@ -11149,7 +11329,7 @@
     "连接重试": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 808,
+        "line": 809,
         "level": 3,
         "title": "连接重试"
       }
@@ -11209,7 +11389,7 @@
     "适配器发送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 890,
+        "line": 891,
         "level": 3,
         "title": "适配器发送 Meta 事件"
       }
@@ -11352,14 +11532,6 @@
         "line": 145,
         "level": 3,
         "title": "通用 request"
-      }
-    ],
-    "通用参数": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 47,
-        "level": 3,
-        "title": "通用参数"
       }
     ],
     "通用字段（所有事件类型）": [
@@ -11617,7 +11789,7 @@
     "配置文件": [
       {
         "document": "quick-start.md",
-        "line": 139,
+        "line": 158,
         "level": 2,
         "title": "配置文件"
       }
@@ -11825,7 +11997,7 @@
     "链式修饰方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 552,
+        "line": 553,
         "level": 3,
         "title": "链式修饰方法"
       },
@@ -11919,7 +12091,7 @@
     "链式调用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 513,
+        "line": 547,
         "level": 3,
         "title": "链式调用"
       }
@@ -11991,7 +12163,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 806,
+        "line": 807,
         "level": 2,
         "title": "错误处理"
       },
@@ -12097,7 +12269,7 @@
     "项目管理命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 29,
+        "line": 257,
         "level": 2,
         "title": "项目管理命令"
       }
@@ -12111,7 +12283,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 127,
+        "line": 146,
         "level": 2,
         "title": "项目结构"
       }
