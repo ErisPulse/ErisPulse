@@ -1,12 +1,12 @@
 # Quick Start
 
-> Confused by terminology? Check the [Glossary](terminology.md) for easy-to-understand explanations.
+> Confused by unfamiliar terms? Check out the [Glossary](terminology.md) for clear explanations.
 
 ## Install ErisPulse
 
-### One-click Installation Script (Recommended)
+### One-Click Installation Script (Recommended)
 
-The installation script will automatically detect your environment (Docker, Python, uv) and guide you to choose the most suitable installation method.
+The installation script automatically detects your environment (Docker, Python, uv) and guides you to choose the most suitable installation method.
 
 Windows (PowerShell):
 ```powershell
@@ -20,12 +20,12 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 The script will guide you through:
 
-- **Docker installation** (Recommended when Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Pre-release), Dashboard management panel configuration, port settings
-- **Traditional installation**: Automatically create virtual environment, select ErisPulse version, optionally install Dashboard management panel module
+- **Docker Installation** (recommended if Docker is detected): Choose image source (Docker Hub / GHCR), version channel (stable / pre-release), Dashboard management panel configuration, and port settings
+- **Traditional Installation**: Automatically create a virtual environment, select ErisPulse version, optionally install Dashboard management panel module
 
 ### Using Docker
 
-Docker images come pre-built with the ErisPulse framework and Dashboard management panel.
+The Docker image comes with the ErisPulse framework and Dashboard management panel pre-installed.
 
 ```bash
 # Download docker-compose.yml
@@ -36,9 +36,9 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
-<summary>Docker Hub Not Available?</summary>
+<summary>Unable to access Docker Hub?</summary>
 
-Use the GitHub Container Registry image by modifying the `image` in `docker-compose.yml`:
+Use the GitHub Container Registry image by modifying `docker-compose.yml` to use:
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -46,17 +46,17 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-After starting, access `http://<host>:8000/Dashboard` and log in with the set token.
+After startup, access `http://<host>:8000/Dashboard` and log in using the set token.
 
-### Install using pip
+### Using pip
 
-Ensure your Python version is >= 3.10, then use pip to install:
+Ensure your Python version is >= 3.10, then install using pip:
 
 ```bash
 pip install ErisPulse
 ```
 
-If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse`, which is faster.
+If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse` for faster installation.
 
 ## Initialize Project
 
@@ -66,8 +66,8 @@ If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `u
 epsdk init
 ```
 
-This will launch an interactive wizard to guide you through:
-- Project name setting
+This starts an interactive wizard guiding you through:
+- Project name setup
 - Log level configuration
 - Server configuration (host and port)
 - Adapter selection and configuration
@@ -79,13 +79,13 @@ This will launch an interactive wizard to guide you through:
 # Quick mode with specified project name
 epsdk init -q -n my_bot
 
-# Or just specify project name
+# Or just specify the project name
 epsdk init -n my_bot
 ```
 
 ### Manual Project Creation
 
-If you prefer to create the project manually:
+If you prefer to manually create a project:
 
 ```bash
 mkdir my_bot && cd my_bot
@@ -108,7 +108,7 @@ epsdk list-remote
 
 ### Interactive Installation
 
-Enter the interactive installation interface when no package name is specified:
+Without specifying a package name, enter the interactive installation interface:
 
 ```bash
 epsdk install
@@ -117,16 +117,34 @@ epsdk install
 ## Run Project
 
 ```bash
-# Normal run
+# Normal execution
 epsdk run main.py
 
-# Hot reload mode (recommended for development)
+# Hot-reload mode (recommended for development)
 epsdk run main.py --reload
+```
+
+## Enable IDE Completion (Optional)
+
+ErisPulse dynamically discovers modules/adapters, and IDEs cannot auto-complete platform-specific methods by default. Run the following command to generate type stubs:
+
+```bash
+epsdk types
+```
+
+After generation, use the imported types as variable annotations to get precise completion (see [IDE Completion Guide](./getting-started/ide-completion.md)):
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # Auto-complete platform-specific methods
 ```
 
 ## Project Structure
 
-Project structure after initialization:
+The initialized project structure:
 
 ```
 my_bot/
@@ -154,7 +172,7 @@ level = "INFO"
 
 ## Next Steps
 
-- [Getting Started Overview](getting-started/README.md) - Learn the basic concepts of ErisPulse
+- [Getting Started Overview](getting-started/README.md) - Understand the basic concepts of ErisPulse
 - [Create Your First Bot](getting-started/first-bot.md) - Create a simple bot
-- [User Guide](user-guide/) - Deep dive into configuration and module management
+- [User Guide](user-guide/) - Learn more about configuration and module management
 - [Developer Guide](developer-guide/) - Develop custom modules and adapters

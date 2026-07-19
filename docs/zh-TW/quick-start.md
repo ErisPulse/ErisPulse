@@ -20,12 +20,12 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 腳本會引導您完成：
 
-- **Docker 安裝**（檢測到 Docker 時推薦）：選擇映像源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設置
-- **傳統安裝**：自動創建虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模組
+- **Docker 安裝**（檢測到 Docker 時推薦）：選擇鏡像源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設置
+- **傳統安裝**：自動創建虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模塊
 
 ### 使用 Docker
 
-Docker 映像已內建 ErisPulse 框架和 Dashboard 管理面板。
+Docker 鏡像已內置 ErisPulse 框架和 Dashboard 管理面板。
 
 ```bash
 # 下載 docker-compose.yml
@@ -38,7 +38,7 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 <details>
 <summary>Docker Hub 不可用？</summary>
 
-使用 GitHub Container Registry 映像，修改 `docker-compose.yml` 中的 image：
+使用 GitHub Container Registry 鏡像，修改 `docker-compose.yml` 中的 image：
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -46,99 +46,119 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-啟動後訪問 `http://<host>:8000/Dashboard`，使用設置的令牌登入。
+啟動後訪問 `http://<host>:8000/Dashboard`，使用設置的令牌登錄。
 
 ### 使用 pip 安裝
 
-確保您的 Python 版本 >= 3.10，然後使用 pip 安裝：
+確保你的 Python 版本 >= 3.10，然後使用 pip 安裝：
 
 ```bash
 pip install ErisPulse
 ```
 
-如果您已安裝 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安裝速度更快。
+如果你已安裝 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安裝速度更快。
 
-## 初始化專案
+## 初始化項目
 
-### 互動式初始化（推薦）
+### 交互式初始化（推薦）
 
 ```bash
 epsdk init
 ```
 
-這將啟動一個互動式嚮導，引導您完成：
-- 專案名稱設定
-- 日誌層級設定
-- 伺服器設定（主機和連接埠）
-- 適配器選擇和設定
-- 專案結構建立
+這將啟動一個交互式向導，引導您完成：
+
+- 項目名稱設置
+- 日誌級別配置
+- 伺服器配置（主機和端口）
+- 适配器選擇和配置
+- 項目結構創建
 
 ### 快速初始化
 
 ```bash
-# 指定專案名稱的快速模式
+# 指定項目名稱的快速模式
 epsdk init -q -n my_bot
 
-# 或者只指定專案名稱
+# 或者只指定項目名稱
 epsdk init -n my_bot
 ```
 
-### 手動建立專案
+### 手動創建項目
 
-如果更喜歡手動建立專案：
+如果更喜歡手動創建項目：
 
 ```bash
 mkdir my_bot && cd my_bot
 epsdk init
 ```
 
-## 安裝模組
+## 安裝模塊
 
-### 透過 CLI 安裝
+### 通過 CLI 安裝
 
 ```bash
 epsdk install Yunhu AIChat
 ```
 
-### 檢視可用模組
+### 查看可用模塊
 
 ```bash
 epsdk list-remote
 ```
 
-### 互動式安裝
+### 交互式安裝
 
-未指定套件名稱時進入互動式安裝介面：
+不指定包名時進入交互式安裝界面：
 
 ```bash
 epsdk install
 ```
 
-## 執行專案
+## 運行項目
 
 ```bash
-# 一般執行
+# 普通運行
 epsdk run main.py
 
 # 熱重載模式（開發時推薦）
 epsdk run main.py --reload
 ```
 
-## 專案結構
+## 啟用 IDE 補全（可選）
 
-初始化後的專案結構：
+ErisPulse 動態發現模塊/适配器，IDE 默认無法補全平台特有方法。  
+運行以下命令生成類型存根：
+
+```bash
+epsdk types
+```
+
+生成後用導入的類型作為變量標註即可獲得精確補全（詳見 [IDE 補全指南](./getting-started/ide-completion.md)）：
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # 補全平台特有方法
+```
+
+## 項目結構
+
+初始化後的項目結構：
 
 ```
 my_bot/
 ├── config/
-│   └── config.toml          # 設定檔
-└── main.py                  # 入口檔案
+│   └── config.toml          # 配置文件
+└── main.py                  # 入口文件
 
 ```
 
-## 設定檔
+## 配置文件
 
-基本的 `config.toml` 設定：
+基本的 `config.toml` 配置：
 
 ```toml
 [ErisPulse.server]
@@ -149,12 +169,12 @@ port = 8000
 level = "INFO"
 
 [Yunhu_Adapter]
-# 適配器設定
+# 适配器配置
 ```
 
 ## 下一步
 
-- [入門指南總覽](getting-started/README.md) - 瞭解 ErisPulse 的基本概念
-- [建立第一個機器人](getting-started/first-bot.md) - 建立一個簡單的機器人
-- [使用者使用指南](user-guide/) - 深入瞭解設定和模組管理
-- [開發者指南](developer-guide/) - 開發自訂模組和適配器
+- [入門指南總覽](getting-started/README.md) - 了解 ErisPulse 的基本概念
+- [創建第一個機器人](getting-started/first-bot.md) - 創建一個簡單的機器人
+- [用戶使用指南](user-guide/) - 深入了解配置和模塊管理
+- [開發者指南](developer-guide/) - 開發自定義模塊和适配器
