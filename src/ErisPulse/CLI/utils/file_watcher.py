@@ -12,6 +12,7 @@
 
 import os
 import threading
+from pathlib import Path
 
 
 class FileSystemEventHandler:
@@ -62,7 +63,7 @@ class FileChangeEvent:
     :param src_path: [str] 发生变更的文件路径
     """
 
-    __slots__ = ("src_path", "is_directory", "event_type")
+    __slots__ = ("event_type", "is_directory", "src_path")
 
     def __init__(self, src_path: str):
         """
@@ -151,7 +152,7 @@ class PollingObserver:
         for root, _dirs, files in os.walk(path):
             for name in files:
                 if name.endswith(".py"):
-                    yield os.path.join(root, name)
+                    yield str(Path(root) / name)
             if not recursive:
                 break
 
@@ -164,7 +165,7 @@ class PollingObserver:
         for _handler, path, recursive in self._watches:
             for file_path in self._walk_py(path, recursive):
                 try:
-                    self._mtimes[file_path] = os.path.getmtime(file_path)
+                    self._mtimes[file_path] = Path(file_path).stat().st_mtime
                 except OSError:
                     pass
 
@@ -178,7 +179,7 @@ class PollingObserver:
             for handler, path, recursive in self._watches:
                 for file_path in self._walk_py(path, recursive):
                     try:
-                        mtime = os.path.getmtime(file_path)
+                        mtime = Path(file_path).stat().st_mtime
                     except OSError:
                         self._mtimes.pop(file_path, None)
                         continue
@@ -187,4 +188,4 @@ class PollingObserver:
                         handler.on_modified(FileChangeEvent(file_path))
 
 
-__all__ = ["FileSystemEventHandler", "FileChangeEvent", "PollingObserver"]
+__all__ = ["FileChangeEvent", "FileSystemEventHandler", "PollingObserver"]

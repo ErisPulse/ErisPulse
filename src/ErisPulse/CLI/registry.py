@@ -4,7 +4,7 @@ CLI 命令注册器
 负责命令的注册、查找和管理
 """
 
-from typing import Optional, List, Dict
+
 from .base import Command
 
 
@@ -24,8 +24,8 @@ class CommandRegistry:
     """
 
     _instance = None
-    _commands: Dict[str, Command]
-    _aliases: Dict[str, str]
+    _commands: dict[str, Command]
+    _aliases: dict[str, str]
 
     def __new__(cls):
         """实现单例模式"""
@@ -50,7 +50,7 @@ class CommandRegistry:
             if alias and alias not in self._commands and alias not in self._aliases:
                 self._aliases[alias] = command.name
 
-    def resolve(self, name: str) -> Optional[str]:
+    def resolve(self, name: str) -> str | None:
         """
         将命令名或别名解析为规范命令名
 
@@ -61,7 +61,7 @@ class CommandRegistry:
             return name
         return self._aliases.get(name)
 
-    def get(self, name: str) -> Optional[Command]:
+    def get(self, name: str) -> Command | None:
         """
         获取命令（支持通过别名查找）
 
@@ -73,7 +73,7 @@ class CommandRegistry:
             return None
         return self._commands.get(canonical)
 
-    def get_all(self) -> List[Command]:
+    def get_all(self) -> list[Command]:
         """
         获取所有命令
 
@@ -81,7 +81,7 @@ class CommandRegistry:
         """
         return list(self._commands.values())
 
-    def list_all(self) -> List[str]:
+    def list_all(self) -> list[str]:
         """
         列出所有命令名称
 
@@ -89,7 +89,7 @@ class CommandRegistry:
         """
         return list(self._commands.keys())
 
-    def list_builtin(self) -> List[str]:
+    def list_builtin(self) -> list[str]:
         """
         列出内置命令名称
 
@@ -97,7 +97,7 @@ class CommandRegistry:
         """
         return list(self._commands.keys())
 
-    def list_aliases(self) -> Dict[str, str]:
+    def list_aliases(self) -> dict[str, str]:
         """
         列出所有命令别名映射
 

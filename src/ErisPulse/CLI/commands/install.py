@@ -233,14 +233,14 @@ class InstallCommand(Command):
             if editable_paths:
                 for path in editable_paths:
                     if not pm.install_direct(
-                        ["-e", path] + extra,
+                        ["-e", path, *extra],
                         i18n.t("cli.install.installing_editable", path=path),
                     ):
                         success = False
 
             if requirement_file:
                 if not pm.install_direct(
-                    ["-r", requirement_file] + extra,
+                    ["-r", requirement_file, *extra],
                     i18n.t(
                         "cli.install.installing_requirement",
                         requirement_file=requirement_file,
@@ -292,7 +292,7 @@ class InstallCommand(Command):
             console.print(Text(f"    q.  {i18n.t('cli.install.quit')}", style="dim"))
 
             choice = Prompt.ask(
-                "\n  {0}".format(i18n.t("cli.install.enter_option")),
+                "\n  {}".format(i18n.t("cli.install.enter_option")),
                 choices=["1", "2", "3", "4", "q"],
                 default="q",
             )
@@ -300,7 +300,7 @@ class InstallCommand(Command):
             if choice == "q":
                 console.print(f"[info]{i18n.t('cli.install.exit_wizard')}[/]")
                 break
-            elif choice == "1":
+            if choice == "1":
                 self._install_adapters(remote_packages, upgrade, pre)
             elif choice == "2":
                 self._install_modules(remote_packages, upgrade, pre)

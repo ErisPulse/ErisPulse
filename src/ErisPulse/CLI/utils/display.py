@@ -5,7 +5,8 @@ ErisPulse CLI 显示工具
 """
 
 import os
-from typing import Any, Callable, List, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 from rich.box import SIMPLE
 from rich.prompt import Prompt
@@ -54,8 +55,8 @@ def _input(prompt_label: str = ">") -> str:
 def prompt_validated(
     message: str,
     default: str = "",
-    validate: Optional[Callable[[str], Union[bool, str, None]]] = None,
-    error_msg: Optional[str] = None,
+    validate: Callable[[str], bool | str | None] | None = None,
+    error_msg: str | None = None,
 ) -> str:
     """
     交互式输入，校验失败时保留上次输入并重新提示，直到通过校验。
@@ -134,9 +135,9 @@ def info_line(text: str, level: int = 1):
 
 def paginated_table(
     table: Table,
-    items: List[Any],
+    items: list[Any],
     row_builder,
-    page_size: Optional[int] = None,
+    page_size: int | None = None,
 ) -> int:
     """
     将列表项分页渲染到表格中，支持翻页交互
@@ -194,11 +195,11 @@ def paginated_table(
 
 def interactive_select_table(
     title_text: str,
-    items: List[Any],
+    items: list[Any],
     columns: list,
     row_builder,
-    page_size: Optional[int] = None,
-) -> List[Any]:
+    page_size: int | None = None,
+) -> list[Any]:
     """
     渲染可交互多选的分页表格，支持按序号选择、翻页与确认
 
