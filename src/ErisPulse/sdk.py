@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import importlib
+import importlib.metadata
 import os
 import sys
 from typing import TYPE_CHECKING
@@ -188,6 +189,25 @@ class SDK:
         self._initialized: bool = False
         self._gc_task: asyncio.Task | None = None  # 主动 GC 后台任务
 
+    @property
+    def version(self) -> str:
+        """
+        获取当前 ErisPulse 安装版本
+
+        每次访问实时查询 importlib.metadata，确保框架热更新后
+        能读到最新版本（如果框架本身被upgrade）。
+
+        :return: str 版本号字符串，未安装时返回 "UnknownVersion"
+
+        :example:
+        >>> print(sdk.version)
+        '2.6.2'
+        """
+        try:
+            return importlib.metadata.version("ErisPulse")
+        except importlib.metadata.PackageNotFoundError:
+            return "UnknownVersion"
+
     def __getattr__(self, name: str):
         """
         动态解析核心模块属性
@@ -248,9 +268,18 @@ class SDK:
         """
         返回 SDK 的字符串表示
 
+        展示版本、初始化状态、适配器/模块计数，便于调试时一眼查看运行状态。
+        适配器/模块计数失败时静默降级为只显示版本与初始化状态。
+
         :return: str SDK 的字符串表示
         """
-        return f"<ErisPulse SDK initialized={self._initialized}>"
+        base = f"<ErisPulse SDK v{self.version} initialized={self._initialized}"
+        try:
+            adapter_count = len(self.adapter._adapters)
+            module_count = len(self.module._modules)
+            return f"{base} adapters={adapter_count} modules={module_count}>"
+        except Exception:
+            return f"{base}>"
 
     # ==================== 内部协调器类 ====================
 
@@ -922,13 +951,25 @@ class SDK:
         """
         SDK 初始化入口
 
-        :return: bool SDK 初始化是否成功
+        重复调用保护：若 SDK 已经初始化成功，重复调用不会重新初始化，
+        会记录一条警告并直接返回 True。如需强制重新初始化，请先
+        调用 ``sdk.uninit()`` 或使用 ``sdk.restart()``。
+
+        :return: bool SDK 初始化是否成功（已初始化时返回 True）
 
         :example:
         >>> success = await sdk.init()
         >>> if success:
         >>>     await sdk.adapter.startup()
         """
+        if self._initialized:
+            # 已初始化时仅警告并直接返回成功，避免重复初始化破坏内部状态
+            try:
+                self.logger.warning(i18n.t("core.sdk.init.already_initialized"))
+            except Exception:
+                pass
+            return True
+
         if not await self._prepare_environment():
             return False
 

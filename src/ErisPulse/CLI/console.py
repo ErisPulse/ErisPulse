@@ -96,7 +96,31 @@ theme = Theme(
 # 全局控制台实例
 console = Console(theme=theme, color_system="auto", highlighter=CommandHighlighter())
 
+
+def print_suggestion(title: str, suggestions: list[str], hint: str | None = None) -> None:
+    """
+    输出错误提示与建议
+
+    统一 CLI 错误输出的视觉层次：错误标题 → 建议命令 → 补充提示。
+
+    :param title: [str] 错误标题（一句话说明发生了什么）
+    :param suggestions: [list[str]] 建议的命令/名称列表（如 ["epsdk init", "epsdk install xxx"]）
+    :param hint: [str | None] 补充提示（可选，如“浏览可用包：epsdk list-remote”）
+    """
+    console.print(f"[error]✗ {title}[/]")
+    console.print()
+    console.print("[hint]Did you mean this?[/]" if len(suggestions) == 1 else "[hint]Did you mean one of these?[/]")
+    console.print()
+    for s in suggestions:
+        console.print(f"    [cmd]{s}[/]")
+    if hint:
+        console.print()
+        console.print(f"[dim]{hint}[/]")
+    console.print()
+
+
 __all__ = [
     "console",
     "print_banner",
+    "print_suggestion",
 ]

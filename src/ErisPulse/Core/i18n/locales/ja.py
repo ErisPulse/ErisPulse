@@ -7,6 +7,7 @@
 TRANSLATIONS = {
     # ==================== SDK 初期化 ====================
     "core.sdk.init.starting": "SDK を初期化しています...",
+    "core.sdk.init.already_initialized": "SDK は既に初期化済みです。init() の重複呼び出しは無視されます。再初期化するには sdk.uninit() を先に呼び出してください。",
     "core.sdk.init.discovery_phase": "エントリ発見フェーズ",
     "core.sdk.init.adapter_register_phase": "アダプター登録フェーズ",
     "core.sdk.init.adapter_start_phase": "アダプター起動フェーズ",

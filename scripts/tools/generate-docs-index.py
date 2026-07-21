@@ -266,15 +266,19 @@ class DocsIndexGenerator:
 
     # 文档优先级（数值越小越靠前）
     DOC_PRIORITY = {
-        # 快速开始
+        # 快速开始 / 根目录
         "README.md": 1,
         "quick-start.md": 2,
+        "architecture.md": 3,
+        "terminology.md": 4,
+        "bug-tracker.md": 99,
         # 入门指南
         "getting-started/first-bot.md": 1,
         "getting-started/README.md": 2,
         "getting-started/basic-concepts.md": 3,
         "getting-started/common-tasks.md": 4,
         "getting-started/event-handling.md": 5,
+        "getting-started/ide-completion.md": 6,
         # 用户使用指南
         "user-guide/README.md": 1,
         "user-guide/installation.md": 2,
@@ -300,7 +304,15 @@ class DocsIndexGenerator:
         "platform-guide/telegram.md": 4,
         "platform-guide/email.md": 5,
         "platform-guide/yunhu.md": 6,
-        "platform-guide/maintain-notes.md": 7,
+        "platform-guide/yunhu_user.md": 7,
+        "platform-guide/qqbot.md": 8,
+        "platform-guide/kook.md": 9,
+        "platform-guide/matrix.md": 10,
+        "platform-guide/discord.md": 11,
+        "platform-guide/wechatmp.md": 12,
+        "platform-guide/webhook.md": 13,
+        "platform-guide/ideaura.md": 14,
+        "platform-guide/maintain-notes.md": 99,
         # API 参考
         "api-reference/README.md": 1,
         "api-reference/adapter-system.md": 2,
@@ -315,6 +327,9 @@ class DocsIndexGenerator:
         "advanced/session-types.md": 6,
         "advanced/conversation.md": 7,
         "advanced/dashboard-view.md": 8,
+        "advanced/http-client.md": 9,
+        "advanced/sql-builder.md": 10,
+        "advanced/i18n.md": 11,
         # AI 辅助开发
         "ai-support/README.md": 1,
         # 技术标准
@@ -323,6 +338,7 @@ class DocsIndexGenerator:
         "standards/api-response.md": 3,
         "standards/event-conversion.md": 4,
         "standards/send-method-spec.md": 5,
+        "standards/request-action-spec.md": 6,
         # 风格指南
         "styleguide/README.md": 1,
         "styleguide/docstring.md": 2,

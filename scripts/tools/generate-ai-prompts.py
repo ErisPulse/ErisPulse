@@ -206,6 +206,17 @@ SECTION_FRAMEWORK = Section(
     ],
 )
 
+SECTION_QUICK_START = Section(
+    title="快速上手",
+    entries=[
+        DocEntry("快速开始", "quick-start.md"),
+        DocEntry("创建第一个机器人", "getting-started/first-bot.md"),
+        DocEntry("基础概念", "getting-started/basic-concepts.md"),
+        DocEntry("事件处理入门", "getting-started/event-handling.md"),
+        DocEntry("IDE 补全", "getting-started/ide-completion.md"),
+    ],
+)
+
 SECTION_GETTING_STARTED = Section(
     title="快速开始",
     entries=[
@@ -355,7 +366,7 @@ PROMPT_SPECS: list[PromptSpec] = [
         header="ErisPulse 模块开发指南",
         sections=[
             SECTION_FRAMEWORK,
-            SECTION_GETTING_STARTED,
+            SECTION_QUICK_START,
             Section(
                 title="模块开发",
                 entries=[
@@ -394,7 +405,7 @@ PROMPT_SPECS: list[PromptSpec] = [
         header="ErisPulse 适配器开发指南",
         sections=[
             SECTION_FRAMEWORK,
-            SECTION_GETTING_STARTED_BASIC,
+            SECTION_QUICK_START,
             Section(
                 title="适配器开发",
                 entries=[
@@ -452,6 +463,7 @@ PROMPT_SPECS: list[PromptSpec] = [
                     DocEntry("基础概念", "getting-started/basic-concepts.md"),
                     DocEntry("事件处理入门", "getting-started/event-handling.md"),
                     DocEntry("常见任务示例", "getting-started/common-tasks.md"),
+                    DocEntry("IDE 补全", "getting-started/ide-completion.md"),
                 ],
             ),
             Section(
