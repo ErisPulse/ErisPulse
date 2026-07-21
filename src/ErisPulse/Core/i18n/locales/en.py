@@ -7,6 +7,7 @@ Built-in framework translations, do not modify directly.
 TRANSLATIONS = {
     # ==================== SDK Initialization ====================
     "core.sdk.init.starting": "SDK is initializing...",
+    "core.sdk.init.already_initialized": "SDK is already initialized; repeated init() calls are ignored. Use sdk.uninit() first if you need to re-initialize.",
     "core.sdk.init.discovery_phase": "Entry Discovery Phase",
     "core.sdk.init.adapter_register_phase": "Adapter Registration Phase",
     "core.sdk.init.adapter_start_phase": "Adapter Startup Phase",

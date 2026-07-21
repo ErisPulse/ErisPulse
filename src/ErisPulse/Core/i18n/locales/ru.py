@@ -7,6 +7,7 @@
 TRANSLATIONS = {
     # ==================== Инициализация SDK ====================
     "core.sdk.init.starting": "SDK инициализируется...",
+    "core.sdk.init.already_initialized": "SDK уже инициализирован; повторные вызовы init() игнорируются. Для повторной инициации сначала вызовите sdk.uninit().",
     "core.sdk.init.discovery_phase": "Фаза обнаружения точек входа",
     "core.sdk.init.adapter_register_phase": "Фаза регистрации адаптеров",
     "core.sdk.init.adapter_start_phase": "Фаза запуска адаптеров",

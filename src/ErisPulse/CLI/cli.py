@@ -149,6 +149,43 @@ class CLI:
             )
         )
 
+    def _print_quickstart(self) -> None:
+        """
+        打印 Quick Start 面板
+
+        在 ``epsdk`` 不带任何子命令时输出，帮助新用户在 30 秒内看到
+        三步走路径（安装 / 创建项目 / 运行），降低首次使用门槛。
+        """
+        steps = [
+            (
+                i18n.t("cli.run.quickstart.step1_label"),
+                i18n.t("cli.run.quickstart.step1_cmd"),
+            ),
+            (
+                i18n.t("cli.run.quickstart.step2_label"),
+                i18n.t("cli.run.quickstart.step2_cmd"),
+            ),
+            (
+                i18n.t("cli.run.quickstart.step3_label"),
+                i18n.t("cli.run.quickstart.step3_cmd"),
+            ),
+        ]
+        lines: list[str] = []
+        for idx, (label, cmd) in enumerate(steps, start=1):
+            lines.append(f"[bold]{idx}. {label}[/]  [cmd]{cmd}[/]")
+        lines.append("")
+        lines.append(f"[dim]{i18n.t('cli.run.quickstart.docs_hint')}[/]")
+        lines.append(f"[dim]{i18n.t('cli.run.quickstart.run_help_hint')}[/]")
+
+        console.print(
+            Panel(
+                "\n".join(lines),
+                title=f"[title]{i18n.t('cli.run.quickstart.title')}[/]",
+                subtitle=i18n.t("cli.run.quickstart.subtitle"),
+                border_style="info",
+            )
+        )
+
     def _check_command_typo(self) -> None:
         """
         在 argparse 解析之前检查命令拼写
@@ -174,23 +211,24 @@ class CLI:
             return
 
         # 命令无效，给出拼写建议（前缀加成确保 ins → install 而非 list）
-        from ..runtime.hints import best_match_with_prefix
+        from .hints import best_match_with_prefix
 
         print_banner()
         suggestion = best_match_with_prefix(
             cmd, canonical_names, cutoff=0.5
         )
 
-        console.print(
-            f"[error]{i18n.t('cli.run.unknown_command', command=cmd)}[/]"
-        )
         if suggestion:
-            console.print(
-                f"[hint]{i18n.t('cli.run.did_you_mean', name=suggestion)}[/]"
+            from .console import print_suggestion
+
+            print_suggestion(
+                title=i18n.t("cli.run.unknown_command", command=cmd),
+                suggestions=[f"epsdk {suggestion} --help"],
             )
-            console.print()
-            console.print(f"  [dim]epsdk {suggestion} --help[/]")
         else:
+            console.print(
+                f"[error]{i18n.t('cli.run.unknown_command', command=cmd)}[/]"
+            )
             self.parser.print_help()
         sys.exit(1)
 
@@ -258,12 +296,13 @@ class CLI:
             self._print_version()
             return
 
-        # 没有指定命令时显示帮助
+        # 没有指定命令时显示 Quick Start + 帮助
         if not args.command:
             if unknown:
                 console.print(
                     f"[warning]{i18n.t('cli.run.unknown_args', args=' '.join(unknown))}[/]"
                 )
+            self._print_quickstart()
             self.parser.print_help()
             return
 
@@ -289,7 +328,7 @@ class CLI:
                 command.execute(args)
             else:
                 # 拼写建议：检查是否输入了与已知命令相似的名称
-                from ..runtime.hints import best_match_with_prefix
+                from .hints import best_match_with_prefix
 
                 suggestion = best_match_with_prefix(
                     args.command, self.registry.list_all(), cutoff=0.5
@@ -309,6 +348,12 @@ class CLI:
             sys.exit(1)
         except Exception as e:
             console.print(f"[error]{i18n.t('cli.run.exec_error', error=e)}[/]")
+            # 场景化友好提示：根据异常类型给出下一步建议
+            from .hints import suggest_for_exception
+
+            hint_key = suggest_for_exception(e)
+            if hint_key:
+                console.print(f"[hint]{i18n.t(hint_key)}[/]")
             if args.verbose >= 1:
                 console.print(traceback.format_exc())
             sys.exit(1)

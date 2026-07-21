@@ -110,10 +110,16 @@ class RunCommand(Command):
 
         if script:
             if not Path(script).exists():
+                # 列出当前目录的 .py 文件作为上下文参考
+                py_files = sorted(Path().glob("*.py"))
+                file_list = ", ".join(f.name for f in py_files[:5]) if py_files else None
+                hint_text = i18n.t("cli.run.use_init")
+                if file_list:
+                    hint_text += "  " + i18n.t("cli.run.available_scripts", files=file_list)
                 console.print(
                     f"[error]{i18n.t('cli.run.script_not_found', script=script)}[/]"
                 )
-                console.print(f"[info]{i18n.t('cli.run.use_init')}[/]")
+                console.print(f"[info]{hint_text}[/]")
                 return
             if Path(script).is_dir():
                 console.print(
