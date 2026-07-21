@@ -88,7 +88,42 @@
 
 ---
 
+## [2.6.2-dev.2] - 2026/07/22
+> 随版本发布
+
+**版本摘要**
+开发体验全面打磨：CLI 与框架解耦（独立 hints 模块）；CLI 友好提示系统拼写建议 / 异常 hint / Quick Start 面板）；SDK 门面增强（version 属性 / repr 状态 / init 重复保护）；
+
+### 新增
+
+- @wsu2059
+  - `CLI/hints.py` 模块：CLI 专用的模糊匹配 / 拼写建议能力，完全独立于框架 `runtime.hints`
+  - `sdk.version` property：获取当前 ErisPulse 安装版本（实时查询 `importlib.metadata`）
+  - CLI 友好提示系统：
+    - `CLI/console.py` 新增 `print_suggestion()`：统一错误输出格式（✗ 标题 → "Did you mean this?" → 建议命令 → 补充提示）
+    - `CLI/hints.py` 新增 `suggest_for_exception()`：异常诊断（`FileNotFoundError` / `PermissionError` / `ConnectionError` / `ModuleNotFoundError` 四类场景化提示）
+    - `cli.py` 新增 `_print_quickstart()`：`epsdk` 无子命令时显示 3 步 Quick Start 面板
+    - `run.py` 脚本不存在时列出当前目录 `.py` 文件作为参考
+  - i18n 同步（5 语言）：`core.sdk.init.already_initialized`、`cli.run.quickstart.*`（10 keys）、`cli.hints.*`（4 keys）、`cli.run.available_scripts`
+
+### 优化
+
+- @wsu2059
+  - `sdk.__repr__()` 增强：显示版本 + 初始化状态 + 适配器 / 模块计数（容错降级）
+  - `CLI/cli.py` 命令拼写错误输出改变（`✗ 标题` + `Did you mean this?` + 建议命令）
+  - `CLI/cli.py` 全局异常处理调用 `suggest_for_exception`，输出场景化 hint
+
+### 变更
+
+- @wsu2059
+  - `sdk.init()` 重复调用保护：已初始化时记录警告并返回 True，不再重新初始化（避免破坏内部状态）
+  - CLI 不再反向依赖框架 `runtime.hints`：`cli.py` 两处 `from ..runtime.hints import best_match_with_prefix` 改为 `from .hints import best_match_with_prefix`
+  - `pyproject.toml` 的 `readme` 字段从 `README.md` 改为 `README.pypi.md`
+
+---
+
 ## [2.6.2-dev.1] - 2026/07/19
+> 随正式版发布
 > 开发版本
 
 **版本摘要**
