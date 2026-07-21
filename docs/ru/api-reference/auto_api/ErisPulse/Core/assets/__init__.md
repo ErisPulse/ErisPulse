@@ -34,7 +34,7 @@ ErisPulse 前端资源
 ---
 
 
-### `render_root_page(version: str, sub_text: str, docs_link: str, community_link: str, entries: Optional[List[Dict[str, str]]] = None)`
+### `render_root_page(version: str, sub_text: str, docs_link: str, community_link: str, entries: list[dict[str, str]] | None = None)`
 
 渲染根路由页面 HTML
 
@@ -48,7 +48,7 @@ ErisPulse 前端资源
 ---
 
 
-### `render_error_page(code: int, title: str, home_link: str, desc: Optional[str] = None)`
+### `render_error_page(code: int, title: str, home_link: str, desc: str | None = None)`
 
 渲染错误页面 HTML
 

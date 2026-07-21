@@ -10,7 +10,8 @@ ErisPulse 适配器发现器
 {!--< /tips >!--}
 """
 
-from typing import List, Optional, Any, Dict
+from typing import Any
+
 from .bases.finder import BaseFinder
 
 
@@ -43,7 +44,7 @@ class AdapterFinder(BaseFinder):
         """
         return "erispulse.adapter"
 
-    def get_all_names(self) -> List[str]:
+    def get_all_names(self) -> list[str]:
         """
         获取所有适配器名称
 
@@ -51,7 +52,7 @@ class AdapterFinder(BaseFinder):
         """
         return list(self.get_entry_point_map().keys())
 
-    def get_all_packages(self) -> List[str]:
+    def get_all_packages(self) -> list[str]:
         """
         获取所有适配器所属的 PyPI 包名
 
@@ -63,7 +64,7 @@ class AdapterFinder(BaseFinder):
                 packages.add(entry.dist.name)
         return list(packages)
 
-    def get_package_for_adapter(self, adapter_name: str) -> Optional[str]:
+    def get_package_for_adapter(self, adapter_name: str) -> str | None:
         """
         获取指定适配器所属的 PyPI 包名
 
@@ -75,7 +76,7 @@ class AdapterFinder(BaseFinder):
             return entry.dist.name
         return None
 
-    def get_adapter_info(self, adapter_name: str) -> Optional[Dict[str, Any]]:
+    def get_adapter_info(self, adapter_name: str) -> dict[str, Any] | None:
         """
         获取适配器的完整信息
 
@@ -102,7 +103,7 @@ class AdapterFinder(BaseFinder):
 
         return info
 
-    def get_adapters_by_package(self, package_name: str) -> List[str]:
+    def get_adapters_by_package(self, package_name: str) -> list[str]:
         """
         获取指定 PyPI 包下的所有适配器名称
 

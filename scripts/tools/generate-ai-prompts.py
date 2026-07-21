@@ -16,9 +16,51 @@ ErisPulse AI Prompt 生成器
 
 import argparse
 import sys
+import threading
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+
+# ---------------------------------------------------------------------------
+# 日志器
+# ---------------------------------------------------------------------------
+
+
+class Logger:
+    """线程安全的标准输出日志器"""
+
+    _lock = threading.Lock()
+
+    @classmethod
+    def log(cls, msg: str):
+        """
+        输出一行日志
+
+        :param msg: 日志内容
+        """
+        with cls._lock:
+            sys.stdout.write(msg + "\n")
+            sys.stdout.flush()
+
+    @classmethod
+    def progress(cls, filename: str, status: str, detail: str = ""):
+        """
+        输出单条 prompt 生成进度
+
+        :param filename: 输出文件名
+        :param status: 状态标识（gen/skip/fail/miss 等）
+        :param detail: 附加详情，可选
+        """
+        tag = {
+            "gen": "[GEN]",
+            "skip": "[SKIP]",
+            "fail": "[FAIL]",
+            "miss": "[MISS]",
+        }.get(status, f"[{status.upper()}]")
+        line = f"  {tag} {filename}"
+        if detail:
+            line += f"  {detail}"
+        cls.log(line)
 
 # ---------------------------------------------------------------------------
 # 数据模型
@@ -27,7 +69,11 @@ from typing import Optional
 
 @dataclass
 class DocEntry:
-    """单个文档条目，对应 docs/ 下的一个 .md 文件"""
+    """单个文档条目，对应 docs/ 下的一个 .md 文件
+
+    :ivar title: 条目标题
+    :ivar path: 相对文档根目录的路径
+    """
 
     title: str
     path: str
@@ -35,24 +81,34 @@ class DocEntry:
 
 @dataclass
 class Section:
-    """一个章节，包含标题和若干文档条目"""
+    """一个章节，包含标题和若干文档条目
+
+    :ivar title: 章节标题
+    :ivar entries: 章节包含的文档条目列表
+    :ivar subgroup: 子分组标签（如 "模块开发"、"适配器开发"），仅用于 full 类型的二级标题
+    """
 
     title: str
     entries: list[DocEntry] = field(default_factory=list)
-    # 子分组标签（如 "模块开发"、"适配器开发"），仅用于 full 类型的二级标题
     subgroup: str = ""
 
 
 @dataclass
 class PromptSpec:
-    """一种 prompt 类型的完整定义"""
+    """一种 prompt 类型的完整定义
+
+    :ivar name: prompt 类型名称（如 ``module`` / ``adapter`` / ``full``）
+    :ivar filename: 输出文件名
+    :ivar system_prompt: System prompt 内容
+    :ivar header: 最外层标题（空字符串表示不输出）
+    :ivar preamble: 仅用于 full 类型的前置说明
+    :ivar sections: 包含的章节列表
+    """
 
     name: str
     filename: str
     system_prompt: str
-    # 最外层标题（如 "ErisPulse 模块开发指南"），空则不输出
     header: str
-    # 仅用于 full 类型的前置说明
     preamble: str = ""
     sections: list[Section] = field(default_factory=list)
 
@@ -147,6 +203,17 @@ SECTION_FRAMEWORK = Section(
     entries=[
         DocEntry("架构概览", "architecture.md"),
         DocEntry("术语表", "terminology.md"),
+    ],
+)
+
+SECTION_QUICK_START = Section(
+    title="快速上手",
+    entries=[
+        DocEntry("快速开始", "quick-start.md"),
+        DocEntry("创建第一个机器人", "getting-started/first-bot.md"),
+        DocEntry("基础概念", "getting-started/basic-concepts.md"),
+        DocEntry("事件处理入门", "getting-started/event-handling.md"),
+        DocEntry("IDE 补全", "getting-started/ide-completion.md"),
     ],
 )
 
@@ -299,7 +366,7 @@ PROMPT_SPECS: list[PromptSpec] = [
         header="ErisPulse 模块开发指南",
         sections=[
             SECTION_FRAMEWORK,
-            SECTION_GETTING_STARTED,
+            SECTION_QUICK_START,
             Section(
                 title="模块开发",
                 entries=[
@@ -338,7 +405,7 @@ PROMPT_SPECS: list[PromptSpec] = [
         header="ErisPulse 适配器开发指南",
         sections=[
             SECTION_FRAMEWORK,
-            SECTION_GETTING_STARTED_BASIC,
+            SECTION_QUICK_START,
             Section(
                 title="适配器开发",
                 entries=[
@@ -396,6 +463,7 @@ PROMPT_SPECS: list[PromptSpec] = [
                     DocEntry("基础概念", "getting-started/basic-concepts.md"),
                     DocEntry("事件处理入门", "getting-started/event-handling.md"),
                     DocEntry("常见任务示例", "getting-started/common-tasks.md"),
+                    DocEntry("IDE 补全", "getting-started/ide-completion.md"),
                 ],
             ),
             Section(
@@ -479,7 +547,10 @@ PROMPT_SPECS: list[PromptSpec] = [
 
 
 class PromptGenerator:
-    """AI Prompt 生成器 — 数据驱动，从 PromptSpec 配置生成 prompt 文档"""
+    """AI Prompt 生成器
+
+    数据驱动设计：从 ``PROMPT_SPECS`` 配置逐个读取文档内容并拼接为完整的 prompt 文档。
+    """
 
     def __init__(
         self,
@@ -489,6 +560,14 @@ class PromptGenerator:
         *,
         verbose: bool = False,
     ):
+        """
+        初始化 Prompt 生成器
+
+        :param docs_dir: 文档根目录
+        :param output_dir: prompt 输出目录
+        :param lang: 指定语言代码，未指定时直接使用 ``docs_dir``
+        :param verbose: 是否输出缺失文件的警告信息
+        """
         self.docs_dir = Path(docs_dir)
         self.lang = lang
         self.actual_docs_dir = self.docs_dir / lang if lang else self.docs_dir
@@ -500,7 +579,12 @@ class PromptGenerator:
 
     @staticmethod
     def get_available_languages(docs_dir: Path) -> list[str]:
-        """获取 docs/ 下可用的语言目录"""
+        """
+        获取 docs/ 下可用的语言目录
+
+        :param docs_dir: 文档根目录
+        :return: 排序后的语言代码列表
+        """
         return sorted(
             item.name
             for item in docs_dir.iterdir()
@@ -508,16 +592,23 @@ class PromptGenerator:
         )
 
     def generate_all(self) -> None:
-        """生成所有类型的 prompt 文档"""
+        """生成 ``PROMPT_SPECS`` 中定义的所有 prompt 文档"""
         for spec in PROMPT_SPECS:
             content = self._generate(spec)
             self._write_prompt(spec.filename, content)
-            print(f"  已生成: {spec.filename} ({len(content):,} 字符)")
+            Logger.progress(spec.filename, "gen", f"{len(content):,} 字符")
 
     # ---- 核心生成逻辑 ----
 
     def _generate(self, spec: PromptSpec) -> str:
-        """根据 PromptSpec 配置生成单个 prompt 文档"""
+        """
+        根据单个 ``PromptSpec`` 配置生成 prompt 文档
+
+        拼接顺序：System Prompt -> 前置说明（可选）-> 外层标题（可选）-> 所有章节。
+
+        :param spec: Prompt 配置
+        :return: 完整 prompt 文本
+        """
         parts: list[str] = []
 
         # 1. System prompt + 分隔线
@@ -541,8 +632,14 @@ class PromptGenerator:
         return "\n".join(parts)
 
     def _render_section(self, parts: list[str], section: Section) -> None:
-        """渲染单个章节（含标题、可选子分组标签、文档条目）"""
-        # 空标题的章节仅输出条目（用于 full 类型中的孤立条目）
+        """
+        渲染单个章节（含标题、可选子分组标签、文档条目）
+
+        空标题的章节仅输出条目内容（用于 full 类型中的孤立条目）。
+
+        :param parts: 用于拼接的可变字符串列表
+        :param section: 待渲染的章节
+        """
         if section.title:
             parts.append(self._section_header(section.title))
 
@@ -560,11 +657,16 @@ class PromptGenerator:
     # ---- 文件读取 ----
 
     def _read_file(self, rel_path: str) -> str:
-        """读取文档文件，缺失时返回空字符串并可选输出警告"""
+        """
+        读取文档文件，缺失时返回空字符串并可选输出警告
+
+        :param rel_path: 相对于文档根目录的路径
+        :return: 文件文本内容，文件不存在时返回空字符串
+        """
         full_path = self.actual_docs_dir / rel_path
         if not full_path.exists():
             if self.verbose:
-                print(f"    [WARN] 文件不存在: {rel_path}")
+                Logger.progress(rel_path, "miss", "文件不存在")
             return ""
         return full_path.read_text(encoding="utf-8")
 
@@ -572,19 +674,43 @@ class PromptGenerator:
 
     @staticmethod
     def _section_header(title: str) -> str:
+        """
+        生成章节标题（带 ``=`` 分隔线）
+
+        :param title: 章节标题
+        :return: Markdown 文本
+        """
         return f"\n{'=' * len(title)}\n{title}\n{'=' * len(title)}\n"
 
     @staticmethod
     def _subheader(title: str) -> str:
+        """
+        生成二级标题（带 ``-`` 分隔线）
+
+        :param title: 二级标题文本
+        :return: Markdown 文本
+        """
         return f"\n{title}\n{'-' * len(title)}\n"
 
     @staticmethod
     def _subsection_header(title: str) -> str:
+        """
+        生成三级标题（``###`` 前缀）
+
+        :param title: 三级标题文本
+        :return: Markdown 文本
+        """
         return f"\n### {title}\n"
 
     # ---- 输出 ----
 
     def _write_prompt(self, filename: str, content: str) -> None:
+        """
+        写入 prompt 文件
+
+        :param filename: 输出文件名
+        :param content: prompt 文本内容
+        """
         filepath = self.output_dir / filename
         filepath.write_text(content, encoding="utf-8")
 
@@ -595,6 +721,7 @@ class PromptGenerator:
 
 
 def main() -> None:
+    """命令行入口：解析参数并为指定语言或全部语言生成 prompt"""
     parser = argparse.ArgumentParser(
         description="ErisPulse AI Prompt 生成器",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -620,32 +747,47 @@ def main() -> None:
     script_dir = Path(__file__).parent
     docs_dir = script_dir.parent.parent / args.docs
 
+    Logger.log("=" * 60)
+    Logger.log("ErisPulse AI Prompt 生成器")
+    Logger.log("=" * 60)
+    Logger.log(f"文档目录: {docs_dir}")
+    Logger.log(f"语言: {args.lang if args.lang else '全部'}")
+    Logger.log(f"详细模式: {'开启' if args.verbose else '关闭'}")
+    Logger.log("")
+
     if args.lang:
         _process_language(docs_dir, args.lang, verbose=args.verbose)
     else:
         langs = PromptGenerator.get_available_languages(docs_dir)
-        print(f"发现 {len(langs)} 个语言: {', '.join(langs)}\n")
+        Logger.log(f"发现 {len(langs)} 个语言: {', '.join(langs)}")
+        Logger.log("")
         for lang in langs:
             _process_language(docs_dir, lang, verbose=args.verbose)
-        print(f"\n{'=' * 60}")
-        print("所有语言的 AI prompt 文档生成完成！")
-        print("=" * 60)
+
+    Logger.log("")
+    Logger.log("=" * 60)
+    Logger.log("所有语言的 AI prompt 文档生成完成")
+    Logger.log("=" * 60)
 
 
 def _process_language(docs_dir: Path, lang: str, *, verbose: bool = False) -> None:
-    """处理单个语言的 prompt 生成"""
-    print(f"\n{'=' * 60}")
-    print(f"处理语言: {lang}")
-    print("=" * 60)
-    print(f"  文档目录: {docs_dir / lang}")
+    """
+    处理单个语言的 prompt 生成
+
+    :param docs_dir: 文档根目录
+    :param lang: 语言代码
+    :param verbose: 是否输出缺失文件警告
+    """
+    Logger.log(f"--- {lang} ---")
+    Logger.log(f"  文档目录: {docs_dir / lang}")
 
     output_dir = docs_dir / lang / "ai-support" / "prompts"
-    print(f"  输出目录: {output_dir}\n")
+    Logger.log(f"  输出目录: {output_dir}")
+    Logger.log("")
 
-    print("开始生成 AI prompt 文档...")
     generator = PromptGenerator(docs_dir, output_dir, lang, verbose=verbose)
     generator.generate_all()
-    print(f"\n完成！输出目录: {output_dir}")
+    Logger.log("")
 
 
 if __name__ == "__main__":

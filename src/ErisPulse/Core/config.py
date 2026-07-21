@@ -15,6 +15,7 @@ import atexit
 import os
 import threading
 import time
+from pathlib import Path
 from typing import Any, TypeAlias
 
 import toml
@@ -37,8 +38,8 @@ class ConfigManager:
 
         :param config_file: str 配置文件路径 (默认: "config/config.toml")
         """
-        if not os.path.isabs(config_file):
-            config_file = os.path.abspath(config_file)
+        if not Path(config_file).is_absolute():
+            config_file = str(Path(config_file).resolve())
         self.CONFIG_FILE: str = config_file
         self._cache: dict[str, Any] = {}  # 内存缓存
         self._dirty_keys: dict[str, Any] = {}  # 待写入的配置项
@@ -51,7 +52,61 @@ class ConfigManager:
         self._atexit_registered = False  # atexit 钩子注册标记
         self._migrate_config()  # 迁移旧配置文件
         self._load_config()  # 初始化时加载配置
+        self._watch_config_file()  # 记录配置文件 mtime 以便后续监听
+        self._start_config_watcher()  # 启动后台文件变化监听
         self._register_atexit()
+
+    _CONFIG_WATCH_INTERVAL: float = 5.0  # 配置文件监听轮询间隔（秒）
+
+    def _start_config_watcher(self) -> None:
+        """
+        启动后台线程定期检查配置文件变化
+
+        当用户手动编辑 ``config.toml`` 时，后台线程检测到 mtime 变化后
+        自动重载缓存并发射 ``config.updated`` 生命周期事件。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        self._watcher_stop = threading.Event()
+
+        def _watch_loop():
+            while not self._watcher_stop.is_set():
+                self._watcher_stop.wait(timeout=self._CONFIG_WATCH_INTERVAL)
+                if self._watcher_stop.is_set():
+                    break
+                try:
+                    if self._check_file_change():
+                        # 文件被外部修改 → 取消待写入定时器并丢弃脏键，
+                        # 避免 _flush_config 回写旧值覆盖用户编辑。
+                        if self._write_timer:
+                            self._write_timer.cancel()
+                            self._write_timer = None
+                        self._dirty_keys.clear()
+                        with self._lock:
+                            old_cache = self._cache.copy() if self._cache else {}
+                        self._load_config()
+                        self._emit_config_updated(old_cache)
+                except Exception:
+                    pass
+
+        watcher = threading.Thread(target=_watch_loop, daemon=True, name="config-watcher")
+        watcher.start()
+
+    def _watch_config_file(self) -> None:
+        """
+        记录配置文件的当前 mtime，用于后续检测外部修改
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        self._config_mtime: float = 0
+        try:
+            config_path = Path(self.CONFIG_FILE)
+            if config_path.exists():
+                self._config_mtime = config_path.stat().st_mtime
+        except OSError:
+            pass
 
     def _migrate_config(self) -> None:
         """
@@ -64,21 +119,21 @@ class ConfigManager:
         """
         old_config_path = "config.toml"
 
-        if not os.path.exists(old_config_path):
+        if not Path(old_config_path).exists():
             return
 
-        if os.path.exists(self.CONFIG_FILE):
+        if Path(self.CONFIG_FILE).exists():
             return
 
         try:
-            config_dir = os.path.dirname(self.CONFIG_FILE)
-            if config_dir and not os.path.exists(config_dir):
-                os.makedirs(config_dir, exist_ok=True)
+            config_dir = Path(self.CONFIG_FILE).parent
+            if str(config_dir) and not config_dir.exists():
+                config_dir.mkdir(parents=True, exist_ok=True)
 
-            with open(old_config_path, "r", encoding="utf-8") as f:
+            with Path(old_config_path).open(encoding="utf-8") as f:
                 old_config = toml.load(f)
 
-            with open(self.CONFIG_FILE, "w", encoding="utf-8") as f:
+            with Path(self.CONFIG_FILE).open("w", encoding="utf-8") as f:
                 toml.dump(old_config, f)
 
             readme_content = f"""# 配置文件迁移说明
@@ -103,10 +158,10 @@ class ConfigManager:
 - 如需修改配置，请编辑 `config/config.toml`
 """
 
-            with open("config.readme.md", "w", encoding="utf-8") as f:
+            with Path("config.readme.md").open("w", encoding="utf-8") as f:
                 f.write(readme_content)
 
-            os.remove(old_config_path)
+            Path(old_config_path).unlink()
 
         except Exception as e:
             try:
@@ -125,12 +180,12 @@ class ConfigManager:
         """
         with self._lock:
             try:
-                if not os.path.exists(self.CONFIG_FILE):
+                if not Path(self.CONFIG_FILE).exists():
                     self._cache = {}
                     self._cache_timestamp = time.time()
                     return
 
-                with open(self.CONFIG_FILE, "r", encoding="utf-8") as f:
+                with Path(self.CONFIG_FILE).open(encoding="utf-8") as f:
                     config = toml.load(f)
                     self._cache = config
                     self._cache_timestamp = time.time()
@@ -180,8 +235,8 @@ class ConfigManager:
 
             with self._file_lock:
                 try:
-                    if os.path.exists(self.CONFIG_FILE):
-                        with open(self.CONFIG_FILE, "r", encoding="utf-8") as f:
+                    if Path(self.CONFIG_FILE).exists():
+                        with Path(self.CONFIG_FILE).open(encoding="utf-8") as f:
                             config = toml.load(f)
                     else:
                         config = {}
@@ -200,17 +255,17 @@ class ConfigManager:
                     sorted_config = self._sort_config_dict(config)
 
                     temp_file = self.CONFIG_FILE + ".tmp"
-                    with open(temp_file, "w", encoding="utf-8") as f:
+                    with Path(temp_file).open("w", encoding="utf-8") as f:
                         toml.dump(sorted_config, f)
 
                     # 原子性重命名
                     if os.name == "nt":
-                        if os.path.exists(self.CONFIG_FILE):
-                            os.replace(temp_file, self.CONFIG_FILE)
+                        if Path(self.CONFIG_FILE).exists():
+                            Path(temp_file).replace(self.CONFIG_FILE)
                         else:
-                            os.rename(temp_file, self.CONFIG_FILE)
+                            Path(temp_file).rename(self.CONFIG_FILE)
                     else:
-                        os.rename(temp_file, self.CONFIG_FILE)
+                        Path(temp_file).rename(self.CONFIG_FILE)
 
                     # 更新缓存并清除待写入队列
                     self._cache = sorted_config
@@ -232,9 +287,9 @@ class ConfigManager:
                         pass
                     # 清理临时文件
                     temp_file = self.CONFIG_FILE + ".tmp"
-                    if os.path.exists(temp_file):
+                    if Path(temp_file).exists():
                         try:
-                            os.remove(temp_file)
+                            Path(temp_file).unlink()
                         except Exception:
                             pass
 
@@ -282,12 +337,67 @@ class ConfigManager:
         """
         检查缓存有效性，必要时重新加载
 
+        同时检测配置文件是否被外部修改（手动编辑磁盘文件），
+        若文件 mtime 变化则自动重载。更新内容会在下一次
+        ``getConfig`` 调用时生效，无需重启程序。
+
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
         current_time = time.time()
         if current_time - self._cache_timestamp > self._cache_timeout:
-            self._load_config()
+            if self._check_file_change():
+                # 文件被外部修改，重载配置
+                old_cache = self._cache.copy() if self._cache else {}
+                self._load_config()
+                self._emit_config_updated(old_cache)
+            else:
+                self._load_config()
+
+    def _check_file_change(self) -> bool:
+        """
+        检测配置文件是否被外部程序或用户手动编辑
+
+        对比记录的 mtime 与当前文件 mtime，若不一致说明文件已被外部修改。
+
+        :return: bool 文件是否已变化
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        try:
+            config_path = Path(self.CONFIG_FILE)
+            if not config_path.exists():
+                return False
+            current_mtime = config_path.stat().st_mtime
+            if current_mtime != self._config_mtime:
+                self._config_mtime = current_mtime
+                return True
+        except OSError:
+            pass
+        return False
+
+    def _emit_config_updated(self, old_config: dict[str, Any]) -> None:
+        """
+        发射 ``config.updated`` 生命周期事件，通知适配器/模块配置已变更
+
+        用户手动编辑 ``config.toml`` 后，下一次 ``getConfig`` 调用会自动检测
+        到文件变更并触发此事件。适配器通过 ``on_config_update(old, new)`` 响应。
+
+        :param old_config: 变更前的配置快照
+
+        {!--< internal-use >!--}
+        """
+        try:
+            from .lifecycle import lifecycle
+
+            lifecycle.emit_sync("config.updated", {
+                "old_config": old_config,
+                "new_config": self._cache,
+                "config_file": self.CONFIG_FILE,
+            })
+        except Exception:
+            pass
 
     # ==================== 配置读写 ====================
 
@@ -468,4 +578,4 @@ def parse_bool_config(value: Any) -> bool:
     return bool(value)
 
 
-__all__ = ["config", "ConfigManager", "parse_bool_config"]
+__all__ = ["ConfigManager", "config", "parse_bool_config"]

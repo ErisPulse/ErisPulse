@@ -62,6 +62,7 @@ ErisPulse SDK 主类
 > - module: 模块管理器
 > - router: 路由管理器
 > - client: HTTP 客户端
+> - master: 框架主人管理器
 
 
 #### 嵌套类
@@ -181,6 +182,24 @@ ErisPulse SDK 主类
 ---
 
 
+##### `version()`
+
+获取当前 ErisPulse 安装版本
+
+每次访问实时查询 importlib.metadata，确保框架热更新后
+能读到最新版本（如果框架本身被upgrade）。
+
+**返回值** (`str`): 版本号字符串，未安装时返回 "UnknownVersion"
+
+**示例**:
+```python
+>>> print(sdk.version)
+'2.6.2'
+```
+
+---
+
+
 ##### `__getattr__(name: str)`
 
 动态解析核心模块属性
@@ -196,6 +215,9 @@ ErisPulse SDK 主类
 ##### `__repr__()`
 
 返回 SDK 的字符串表示
+
+展示版本、初始化状态、适配器/模块计数，便于调试时一眼查看运行状态。
+适配器/模块计数失败时静默降级为只显示版本与初始化状态。
 
 **返回值** (`str`): SDK 的字符串表示
 
@@ -234,7 +256,11 @@ ErisPulse SDK 主类
 
 SDK 初始化入口
 
-**返回值** (`bool`): SDK 初始化是否成功
+重复调用保护：若 SDK 已经初始化成功，重复调用不会重新初始化，
+会记录一条警告并直接返回 True。如需强制重新初始化，请先
+调用 ``sdk.uninit()`` 或使用 ``sdk.restart()``。
+
+**返回值** (`bool`): SDK 初始化是否成功（已初始化时返回 True）
 
 **示例**:
 ```python

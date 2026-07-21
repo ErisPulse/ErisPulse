@@ -15,7 +15,7 @@
 {!--< /tips >!--}
 """
 
-from typing import Any, Union
+from typing import Any
 
 from ..runtime.frame_config import get_master_config, update_erispulse_config
 
@@ -61,7 +61,7 @@ class MasterManager:
 
     def is_master(
         self,
-        platform_or_event: Union[str, _EventLike],
+        platform_or_event: str | _EventLike,
         user_id: str | None = None,
     ) -> bool:
         """
@@ -89,7 +89,7 @@ class MasterManager:
         >>> if master.is_master("yunhu", "123456"):
         ...     print("是主人")
         """
-        if user_id is None and hasattr(platform_or_event, "get_platform"):
+        if user_id is None and not isinstance(platform_or_event, str):
             event = platform_or_event
             platform = event.get_platform() or ""
             user_id = event.get_user_id() or ""
@@ -111,10 +111,7 @@ class MasterManager:
 
         if (None, user_id) in self._runtime_masters:
             return True
-        if platform and (platform, user_id) in self._runtime_masters:
-            return True
-
-        return False
+        return bool(platform and (platform, user_id) in self._runtime_masters)
 
     def list(self) -> dict[str, list[str]]:
         """

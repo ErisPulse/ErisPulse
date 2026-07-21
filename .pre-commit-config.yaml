@@ -5,3 +5,12 @@ repos:
       - id: ruff
         args: [check, --fix]
       - id: ruff-format
+  - repo: local
+    hooks:
+      - id: basedpyright
+        name: basedpyright (type check)
+        entry: uv run basedpyright
+        args: [src/ErisPulse]
+        language: system
+        types: [python]
+        pass_filenames: false

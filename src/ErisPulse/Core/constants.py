@@ -494,12 +494,12 @@ CONFIRM_HINT_WORDS: Final[dict[str, tuple[str, str]]] = {
 # ==============================================================================
 
 # 适配器注册时的默认启用状态。
-# 配置默认值。False 表示新注册的适配器默认禁用，需手动 enable()。
-DEFAULT_ADAPTER_ENABLED: Final[bool] = False
+# 配置默认值。True 表示新注册的适配器默认启用；改为 False 则需手动 enable()。
+DEFAULT_ADAPTER_ENABLED: Final[bool] = True
 
 # 模块注册时的默认启用状态。
-# 配置默认值。False 表示新注册的模块默认禁用，需手动 enable()。
-DEFAULT_MODULE_ENABLED: Final[bool] = False
+# 配置默认值。True 表示新注册的模块默认启用；改为 False 则需手动 enable()。
+DEFAULT_MODULE_ENABLED: Final[bool] = True
 
 # 模块默认加载优先级（数值越大越先加载）。
 # 使用位置: BaseModule.get_load_strategy() 返回值。

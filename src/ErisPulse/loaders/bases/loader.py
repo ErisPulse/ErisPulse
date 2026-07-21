@@ -84,7 +84,7 @@ class BaseLoader(ABC):
         子类必须实现此方法
         {!--< /internal-use >!--}
         """
-        pass
+        ...
 
     @abstractmethod
     async def _process_entry_point(
@@ -109,7 +109,7 @@ class BaseLoader(ABC):
         子类必须实现此方法
         {!--< /internal-use >!--}
         """
-        pass
+        ...
 
     async def load(
         self, manager_instance: Any
@@ -150,7 +150,7 @@ class BaseLoader(ABC):
 
         except Exception as e:
             logger.error(f"加载 {group_name} entry-points 失败: {e}")
-            raise ImportError(f"无法加载 {group_name}: {e}")
+            raise ImportError(f"无法加载 {group_name}: {e}") from e
 
         return objs, enabled_list, disabled_list
 

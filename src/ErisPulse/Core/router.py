@@ -18,12 +18,11 @@ import importlib.metadata
 import inspect
 import ipaddress
 import socket
-import sys
 import time
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
-from typing import Any, TypeAlias
+from typing import Any, TypeAlias, cast
 
 import uvicorn
 from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect
@@ -84,7 +83,7 @@ class FuncMiddleware:
     {!--< /internal-use >!--}
     """
 
-    def __init__(self, before: Callable = None, after: Callable = None):
+    def __init__(self, before: Callable | None = None, after: Callable | None = None):
         self._before = before
         self._after = after
 
@@ -108,10 +107,10 @@ class RouteGroup:
         self,
         module_name: str,
         prefix: str,
-        version: str = None,
-        tags: list[str] = None,
-        middlewares: list = None,
-        router: "RouterManager" = None,
+        version: str | None = None,
+        tags: list[str] | None = None,
+        middlewares: list | None = None,
+        router: "RouterManager | None" = None,
     ):
         """
         初始化路由分组
@@ -146,9 +145,10 @@ class RouteGroup:
         sub = path.strip("/")
         if sub:
             parts.append(sub)
+        assert self._router is not None
         return self._router._normalize_path(self._module_name, "/" + "/".join(parts))
 
-    def http(self, path: str, methods: list[str] = None, **kwargs):
+    def http(self, path: str, methods: list[str] | None = None, **kwargs):
         """
         HTTP 路由装饰器
 
@@ -162,6 +162,7 @@ class RouteGroup:
             kw["tags"] = self._tags
         if self._middlewares and "middlewares" not in kw:
             kw["middlewares"] = self._middlewares
+        assert self._router is not None
         return self._router._http_decorate(resolved, self._module_name, methods, **kw)
 
     def get(self, path: str, **kwargs):
@@ -209,6 +210,7 @@ class RouteGroup:
         :param auto_accept: bool 是否自动 accept (默认: True)
         """
         resolved = self._resolve_path(path)
+        assert self._router is not None
         return self._router._ws_decorate(resolved, self._module_name, **kwargs)
 
     def sse(self, path: str, **kwargs):
@@ -218,6 +220,7 @@ class RouteGroup:
         :param path: str 路由路径
         """
         resolved = self._resolve_path(path)
+        assert self._router is not None
         return self._router._sse_decorate(resolved, self._module_name, **kwargs)
 
     def group(self, prefix: str, **kwargs) -> "RouteGroup":
@@ -388,7 +391,7 @@ class RouterManager:
                 result = await result
             return result
 
-        wrapper.__signature__ = sig.replace(
+        cast("Any", wrapper).__signature__ = sig.replace(
             parameters=new_params,
             return_annotation=sig.return_annotation,
         )
@@ -545,7 +548,7 @@ class RouterManager:
                     yield payload
 
             try:
-                response = StreamingResponse(
+                return StreamingResponse(
                     generator(),
                     media_type="text/event-stream",
                     headers={
@@ -554,7 +557,6 @@ class RouterManager:
                         "X-Accel-Buffering": "no",
                     },
                 )
-                return response
             except Exception:
                 handler_task.cancel()
                 raise
@@ -710,7 +712,7 @@ class RouterManager:
         async def root_page(request: Request) -> HTMLResponse:
             dashboard_available = False
             try:
-                import ErisPulse as _pkg
+                import ErisPulse as _pkg  # noqa: N813 - 包名是 PascalCase，别名需小写以符合 PEP 8
 
                 _sdk = _pkg.sdk
                 dashboard_available = hasattr(_sdk, "Dashboard") and _sdk.Dashboard
@@ -1167,7 +1169,7 @@ class RouterManager:
         return decorator
 
     def add_middleware(
-        self, before: Callable = None, after: Callable = None, *paths: str
+        self, before: Callable | None = None, after: Callable | None = None, *paths: str
     ):
         """
         添加中间件函数
@@ -1237,7 +1239,7 @@ class RouterManager:
     # 装饰器路由
 
     def _http_decorate(
-        self, full_path: str, module_name: str, methods: list[str] = None, **kwargs
+        self, full_path: str, module_name: str, methods: list[str] | None = None, **kwargs
     ):
         """
         HTTP 路由装饰器内部实现
@@ -1291,7 +1293,7 @@ class RouterManager:
 
         def decorator(func):
             auth_handler = kwargs.get("auth_handler")
-            auto_accept = kwargs.get("auto_accept", True)
+            auto_accept = kwargs.get("auto_accept", DEFAULT_WS_AUTO_ACCEPT)
             self._register_ws_endpoint(
                 full_path, module_name, func, auth_handler, auto_accept
             )
@@ -1299,7 +1301,7 @@ class RouterManager:
 
         return decorator
 
-    def http(self, module_name: str, path: str, methods: list[str] = None, **kwargs):
+    def http(self, module_name: str, path: str, methods: list[str] | None = None, **kwargs):
         """
         HTTP 路由装饰器
 
@@ -1461,11 +1463,12 @@ class RouterManager:
         full_path = self._normalize_path(module_name, path)
 
         # 检查是否有冲突的方法
-        conflicting_methods = []
-        if full_path in self._http_routes[module_name]:
-            for method in methods:
-                if method in self._http_routes[module_name][full_path]:
-                    conflicting_methods.append(method)
+        conflicting_methods = [
+            method
+            for method in methods
+            if full_path in self._http_routes[module_name]
+            and method in self._http_routes[module_name][full_path]
+        ]
 
         if conflicting_methods:
             raise ValueError(
@@ -1478,16 +1481,17 @@ class RouterManager:
 
         self._track_owner_namespace(module_name)
 
-        route_kwargs = {}
-        for k, v in [
-            ("summary", summary),
-            ("description", description),
-            ("tags", tags),
-            ("response_model", response_model),
-            ("deprecated", deprecated),
-        ]:
-            if v is not None:
-                route_kwargs[k] = v
+        route_kwargs = {
+            k: v
+            for k, v in [
+                ("summary", summary),
+                ("description", description),
+                ("tags", tags),
+                ("response_model", response_model),
+                ("deprecated", deprecated),
+            ]
+            if v is not None
+        }
 
         # 创建路由
         route = APIRoute(
@@ -1569,7 +1573,7 @@ class RouterManager:
         module_name: str,
         handler: Callable[[WebSocket], Awaitable[Any]],
         auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None,
-        auto_accept: bool = True,
+        auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT,
     ) -> None:
         """
         WebSocket 路由注册内部实现
@@ -1804,7 +1808,7 @@ class RouterManager:
                     if not (
                         isinstance(route, APIRoute)
                         and route.path == full_path
-                        and "GET" in route.methods
+                        and "GET" in (route.methods or set())
                     )
                 ]
                 return True
@@ -1863,7 +1867,7 @@ class RouterManager:
                 for route in self.app.router.routes
                 if not (
                     isinstance(route, APIRoute)
-                    and "GET" in route.methods
+                    and "GET" in (route.methods or set())
                     and route.path in paths
                 )
             ]
@@ -2052,7 +2056,7 @@ class RouterManager:
         else:
             ws_base = ""
 
-        for path, (_, _, _) in self._websocket_routes.get(module_name, {}).items():
+        for path in self._websocket_routes.get(module_name, {}):
             ws_url = f"{ws_base}{path}" if ws_base else path
             result["websocket"].append(
                 {
@@ -2135,7 +2139,7 @@ class RouterManager:
                         {"path": path, "method": method, "url": url, "namespace": ns}
                     )
 
-            for path, (_, _, _) in self._websocket_routes.get(ns, {}).items():
+            for path in self._websocket_routes.get(ns, {}):
                 ws_url = f"{ws_base}{path}" if ws_base else path
                 result["websocket"].append(
                     {"path": path, "url": ws_url, "namespace": ns}
@@ -2254,12 +2258,12 @@ class RouterManager:
 
     def setup_cors(
         self,
-        allow_origins: list[str] = None,
-        allow_methods: list[str] = None,
-        allow_headers: list[str] = None,
+        allow_origins: list[str] | None = None,
+        allow_methods: list[str] | None = None,
+        allow_headers: list[str] | None = None,
         allow_credentials: bool = False,
         max_age: int = DEFAULT_CORS_MAX_AGE_SECS,
-        expose_headers: list[str] = None,
+        expose_headers: list[str] | None = None,
     ):
         """
         配置 CORS
@@ -2290,7 +2294,7 @@ class RouterManager:
         )
         logger.info(i18n.t("core.router.cors_configured"))
 
-    def setup_security_headers(self, headers: dict[str, str] = None):
+    def setup_security_headers(self, headers: dict[str, str] | None = None):
         """
         配置安全响应头
 
@@ -2324,7 +2328,7 @@ class RouterManager:
         self.app.redoc_url = None
         self.app.openapi_url = None
 
-    def set_docs_info(self, title: str = None, description: str = None):
+    def set_docs_info(self, title: str | None = None, description: str | None = None):
         """
         更新 API 文档信息
 
@@ -2383,9 +2387,12 @@ class RouterManager:
 
         try:
             seen = set()
-            for family, _, _, _, (ip, *_) in socket.getaddrinfo(
+            for family, _, _, _, sockaddr in socket.getaddrinfo(
                 socket.gethostname(), None
             ):
+                ip = sockaddr[0]
+                if not isinstance(ip, str):
+                    continue
                 if "%" in ip:
                     ip = ip.split("%")[0]
                 if ip in seen:
@@ -2460,7 +2467,9 @@ class RouterManager:
                     "core.router.routes_registered",
                     count=http_count + ws_count + sse_count,
                     routes=[
-                        r.path for r in self.app.router.routes if hasattr(r, "path")
+                        cast("Any", r).path
+                        for r in self.app.router.routes
+                        if hasattr(r, "path")
                     ],
                 )
             )
@@ -2623,7 +2632,7 @@ class RouterManager:
         :return: str 格式化后的URL
         """
         # 提取URL组件
-        protocol = url.split("://")[0] if "://" in url else "http"
+        protocol = url.split("://", maxsplit=1)[0] if "://" in url else "http"
         host_with_path = url.split("://")[1] if "://" in url else url
         host = host_with_path.split("/")[0]
         path = "/" + host_with_path.split("/", 1)[1] if "/" in host_with_path else ""
@@ -2662,13 +2671,13 @@ class RouterManager:
 router: RouterManager = RouterManager()
 
 __all__ = [
-    "router",
-    "RouterManager",
-    "RouteGroup",
     "HTTPHandler",
-    "WebSocketHandler",
-    "RoutePath",
     "HttpRequest",
+    "RouteGroup",
+    "RoutePath",
+    "RouterManager",
     "WebSocketConnection",
     "WebSocketDisconnect",
+    "WebSocketHandler",
+    "router",
 ]

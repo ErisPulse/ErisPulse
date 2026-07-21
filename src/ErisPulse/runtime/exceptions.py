@@ -6,10 +6,10 @@ ErisPulse 全局异常处理系统
 """
 
 import asyncio
-import os
 import sys
 import traceback
-from typing import Any, Dict, List, Type
+from pathlib import Path
+from typing import Any
 
 from .hints import (
     suggest_for_attribute_error,
@@ -78,7 +78,7 @@ def _t(key: str, **kwargs) -> str:
 class ExceptionHandler:
     @staticmethod
     def format_exception(
-        exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any
+        exc_type: type[Exception], exc_value: Exception, exc_traceback: Any
     ) -> str:
         """
         格式化异常信息
@@ -92,7 +92,7 @@ class ExceptionHandler:
             tb_list = traceback.extract_tb(exc_traceback)
             if tb_list:
                 last_frame = tb_list[-1]
-                filename = os.path.basename(last_frame.filename)
+                filename = Path(last_frame.filename).name
                 line_number = last_frame.lineno
                 function_name = last_frame.name
                 return f"ERROR: {filename}:{function_name}:{line_number}: {exc_type.__name__}: {exc_value}"
@@ -110,7 +110,7 @@ class ExceptionHandler:
             tb_list = traceback.extract_tb(exception.__traceback__)
             if tb_list:
                 last_frame = tb_list[-1]
-                filename = os.path.basename(last_frame.filename)
+                filename = Path(last_frame.filename).name
                 line_number = last_frame.lineno
                 function_name = last_frame.name
                 return f"ERROR: {filename}:{function_name}:{line_number}: {type(exception).__name__}: {exception}"
@@ -120,7 +120,7 @@ class ExceptionHandler:
     @staticmethod
     def generate_hints(
         exc_value: BaseException, exc_traceback: Any = None
-    ) -> List[str]:
+    ) -> list[str]:
         """
         为异常生成友好的提示行
 
@@ -137,7 +137,7 @@ class ExceptionHandler:
         :param exc_traceback: traceback 对象（可选，用于上下文推断）
         :return: 提示行列表，无提示时为空列表
         """
-        hints: List[str] = []
+        hints: list[str] = []
 
         # 注意：控制流异常（CancelledError / KeyboardInterrupt / SystemExit）
         # 已在 global_exception_handler / async_exception_handler 中提前处理，
@@ -215,7 +215,7 @@ class ExceptionHandler:
 
     @staticmethod
     def format_exception_with_hints(
-        exc_type: Type[Exception],
+        exc_type: type[Exception],
         exc_value: Exception,
         exc_traceback: Any,
     ) -> str:
@@ -248,7 +248,7 @@ def _get_error_logger():
 
 
 def global_exception_handler(
-    exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any
+    exc_type: type[Exception], exc_value: Exception, exc_traceback: Any
 ) -> None:
     """
     全局异常处理器
@@ -266,7 +266,7 @@ def global_exception_handler(
 
 
 def async_exception_handler(
-    loop: asyncio.AbstractEventLoop, context: Dict[str, Any]
+    loop: asyncio.AbstractEventLoop, context: dict[str, Any]
 ) -> None:
     """
     异步异常处理器
@@ -315,7 +315,7 @@ def setup_exception_handling() -> None:
 
 __all__ = [
     "ExceptionHandler",
-    "global_exception_handler",
     "async_exception_handler",
+    "global_exception_handler",
     "setup_exception_handling",
 ]

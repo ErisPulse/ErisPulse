@@ -376,57 +376,193 @@ If you find other terms in the documentation that you do not understand, feel fr
 
 
 ====
-快速开始
+快速上手
 ====
 
 
-### 入门指南总览
+### 快速开始
 
-# Getting Started Guide
+# Quick Start
 
-Welcome to the ErisPulse Getting Started Guide. If you are using ErisPulse for the first time, this guide will take you from scratch to gradually understand the core concepts and basic usage of the framework.
+> Confused by unfamiliar terms? Check out the [Glossary](terminology.md) for clear explanations.
 
-## Learning Path
+## Install ErisPulse
 
-This guide is organized in the following order, and is recommended to be read sequentially:
+### One-Click Installation Script (Recommended)
 
-| Step | Topic | Description |
-|------|-------|-------------|
-| 1 | [Create Your First Bot](first-bot.md) | From project initialization to running your first command |
-| 2 | [Basic Concepts](basic-concepts.md) | Understanding ErisPulse's core architecture and module design |
-| 3 | [Introduction to Event Handling](event-handling.md) | Learn how to handle various event types, such as messages, commands, and notices |
-| 4 | [Common Task Examples](common-tasks.md) | Master common features such as data persistence, scheduled tasks, and permission control |
+The installation script automatically detects your environment (Docker, Python, uv) and guides you to choose the most suitable installation method.
 
-## Choosing a Development Approach
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
 
-ErisPulse supports two development approaches:
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
 
-| Approach | Suitable Scenarios | Description |
-|----------|-------------------|-------------|
-| **Embedded Development** | Fast prototyping, internal project features | Write handlers directly in `main.py` without creating separate modules |
-| **Module Development** (Recommended) | Production environment, feature distribution | Create independent Python packages and install and use them via `epsdk install` |
+The script will guide you through:
 
-> For a detailed comparison and examples of both approaches, please refer to [Create Your First Bot](first-bot.md) and [Getting Started with Module Development](../developer-guide/modules/getting-started.md).
+- **Docker Installation** (recommended if Docker is detected): Choose image source (Docker Hub / GHCR), version channel (stable / pre-release), Dashboard management panel configuration, and port settings
+- **Traditional Installation**: Automatically create a virtual environment, select ErisPulse version, optionally install Dashboard management panel module
 
-## Architecture Overview
+### Using Docker
 
-ErisPulse adopts an event-driven architecture and consists of the following core systems:
+The Docker image comes with the ErisPulse framework and Dashboard management panel pre-installed.
 
-- **Adapter System** — Communicating with various platforms, converting platform events into a unified OneBot12 standard format
-- **Event System** — Handling five major types of events: messages, commands, notices, requests, and meta events
-- **Module System** — Extending functionality through independent modules, supporting dependency management and lazy loading
-- **Core Modules** — Providing basic capabilities such as Storage (storage), Config (configuration), Logger (logging), and Router (routing)
+```bash
+# Download docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-> For detailed architecture diagrams and initialization flows, please refer to [Architecture Overview](../architecture.md).
+# Set Dashboard token and start
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
 
-## Start Learning
+<details>
+<summary>Unable to access Docker Hub?</summary>
 
-Are you ready to get started?
+Use the GitHub Container Registry image by modifying `docker-compose.yml` to use:
 
-- [Create Your First Bot](first-bot.md) — Get up and running in 5 minutes
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+After startup, access `http://<host>:8000/Dashboard` and log in using the set token.
+
+### Using pip
+
+Ensure your Python version is >= 3.10, then install using pip:
+
+```bash
+pip install ErisPulse
+```
+
+If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse` for faster installation.
+
+## Initialize Project
+
+### Interactive Initialization (Recommended)
+
+```bash
+epsdk init
+```
+
+This starts an interactive wizard guiding you through:
+- Project name setup
+- Log level configuration
+- Server configuration (host and port)
+- Adapter selection and configuration
+- Project structure creation
+
+### Quick Initialization
+
+```bash
+# Quick mode with specified project name
+epsdk init -q -n my_bot
+
+# Or just specify the project name
+epsdk init -n my_bot
+```
+
+### Manual Project Creation
+
+If you prefer to manually create a project:
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## Install Modules
+
+### Install via CLI
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### View Available Modules
+
+```bash
+epsdk list-remote
+```
+
+### Interactive Installation
+
+Without specifying a package name, enter the interactive installation interface:
+
+```bash
+epsdk install
+```
+
+## Run Project
+
+```bash
+# Normal execution
+epsdk run main.py
+
+# Hot-reload mode (recommended for development)
+epsdk run main.py --reload
+```
+
+## Enable IDE Completion (Optional)
+
+ErisPulse dynamically discovers modules/adapters, and IDEs cannot auto-complete platform-specific methods by default. Run the following command to generate type stubs:
+
+```bash
+epsdk types
+```
+
+After generation, use the imported types as variable annotations to get precise completion (see [IDE Completion Guide](./getting-started/ide-completion.md)):
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # Auto-complete platform-specific methods
+```
+
+## Project Structure
+
+The initialized project structure:
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # Configuration file
+└── main.py                  # Entry file
+
+```
+
+## Configuration File
+
+Basic `config.toml` configuration:
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# Adapter configuration
+```
+
+## Next Steps
+
+- [Getting Started Overview](getting-started/README.md) - Understand the basic concepts of ErisPulse
+- [Create Your First Bot](getting-started/first-bot.md) - Create a simple bot
+- [User Guide](user-guide/) - Learn more about configuration and module management
+- [Developer Guide](developer-guide/) - Develop custom modules and adapters
 
 
-### 创建第一个模块
+### 创建第一个机器人
 
 # Create Your First Bot
 
@@ -967,25 +1103,25 @@ class Main(BaseModule):
 
 ### 事件处理入门
 
-# Event Handling
+# Getting Started with Event Handling
 
 This guide introduces how to handle various events in ErisPulse.
 
-## Event Types Overview
+## Overview of Event Types
 
 ErisPulse supports the following event types:
 
 | Event Type | Description | Use Cases |
-|------------|-------------|-----------|
-| Message Event | Any message sent by a user | Chat bots, content filtering |
-| Command Event | Messages starting with a command prefix | Command handling, feature entry points |
-| Notice Event | System notifications (friend add, group member changes, etc.) | Welcome messages, status notifications |
+|---------|------|---------|
+| Message Event | Any message sent by a user | Chatbots, content filtering |
+| Command Event | Messages starting with a command prefix | Command processing, feature entry points |
+| Notice Event | System notifications (friend additions, group member changes, etc.) | Welcome messages, status notifications |
 | Request Event | User requests (friend requests, group invitations) | Automatic request handling |
 | Meta Event | System-level events (connection, heartbeat) | Connection monitoring, status checks |
 
-## Message Event Handling
+## Handling Message Events
 
-> **Tip**: It is recommended to use the `Event` type annotation in event handlers to gain IDE auto-completion and type checking support.
+> **Tip**: It is recommended to use the `Event` type annotation in event handlers to enable IDE auto-completion and type checking support.
 
 ```python
 from ErisPulse.Core.Event import Event  # Import event type for annotation
@@ -1019,33 +1155,33 @@ async def private_handler(event: Event):
 async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"User {user_id} sent a message in group {group_id}")
+    sdk.logger.info(f"Message sent by {user_id} in group {group_id}")
 ```
 
-### Listening to @Messages
+### Listening to @ Messages
 
 ```python
 @message.on_at_message()
 async def at_handler(event: Event):
-    # Get the list of users mentioned
+    # Get list of mentioned users
     mentions = event.get_mentions()
     await event.reply(f"You mentioned these users: {mentions}")
 ```
 
-## Command Event Handling
+## Handling Command Events
 
 ### Basic Commands
 
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="Display help information")
+@command("help", help="Show help information")
 async def help_handler(event):
     help_text = """
 Available commands:
-/help - Display help
+/help - Show help
 /ping - Test connection
-/info - View info
+/info - View information
     """
     await event.reply(help_text)
 ```
@@ -1053,12 +1189,12 @@ Available commands:
 ### Command Aliases
 
 ```python
-@command(["help", "h"], aliases=["帮助"], help="Display help information")
+@command(["help", "h"], aliases=["帮助"], help="Show help information")
 async def help_handler(event):
     await event.reply("Help information...")
 ```
 
-Users can invoke this using any of the following ways:
+Users can invoke the command using any of the following:
 - `/help`
 - `/h`
 - `/帮助`
@@ -1066,7 +1202,7 @@ Users can invoke this using any of the following ways:
 ### Command Arguments
 
 ```python
-@command("echo", help="Echo back message")
+@command("echo", help="Echo the message")
 async def echo_handler(event):
     # Get command arguments
     args = event.get_command_args()
@@ -1080,13 +1216,13 @@ async def echo_handler(event):
 ### Command Groups
 
 ```python
-@command("admin.reload", group="admin", help="Reload module")
+@command("admin.reload", group="admin", help="Reload modules")
 async def reload_handler(event):
-    await event.reply("Module reloaded")
+    await event.reply("Modules have been reloaded")
 
-@command("admin.stop", group="admin", help="Stop bot")
+@command("admin.stop", group="admin", help="Stop the bot")
 async def stop_handler(event):
-    await event.reply("Bot stopped")
+    await event.reply("Bot has been stopped")
 ```
 
 ### Command Permissions
@@ -1099,13 +1235,13 @@ def is_master(event):
 
 @command("master", permission=is_master, help="Framework owner command")
 async def master_handler(event):
-    await event.reply("This is the framework owner command")
+    await event.reply("This is a framework owner command")
 ```
 
-### Command Priority
+### Command Priorities
 
 ```python
-# Higher priority values execute earlier
+# Higher priority number means earlier execution
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("High priority handler")
@@ -1115,28 +1251,28 @@ async def low_priority_handler(event):
     await event.reply("Low priority handler")
 ```
 
-### Parallel Event Processing
+### Parallel Event Handling
 
-The ErisPulse event system adopts a **parallel execution for same priority, serial execution for different priorities** scheduling model:
+ErisPulse's event system uses a **parallel execution for same priority, serial execution for different priorities** scheduling model:
 
 ```
 Event arrives
     ↓
-priority=10 group: [Handler C || Handler D] parallel -> Merged result
+priority=10 group: [handler C || handler D] parallel → merge results
     ↓ (if not interrupted)
-priority=0 group: [Handler A || Handler B] parallel -> Merged result
+priority=0 group: [handler A || handler B] parallel → merge results
     ↓
 ...
 ```
 
-- **Parallel Execution (Same Priority)**: Multiple handlers with the same priority execute simultaneously, improving throughput
-- **Serial Execution (Different Priorities)**: Groups with different priorities execute in order (higher values execute first), ensuring high-priority handlers run first
-- **Copy-On-Write**: No copy is created when handlers don't modify data, ensuring zero overhead
-- **Conflict Handling**: When multiple handlers at the same priority modify the same field, the last modification value is used and a warning log is recorded
-- **Interrupt Mechanism**: After any handler calls `event.mark_processed()`, subsequent lower-priority groups are skipped
+- **Parallel Execution**: Multiple handlers with the same priority execute simultaneously, improving throughput
+- **Cross-Level Serial Execution**: Groups with different priorities execute in order (higher priority numbers execute first), ensuring high-priority handlers run first
+- **Copy-On-Write**: No copy is created unless the handler modifies data, ensuring zero overhead
+- **Conflict Handling**: When multiple handlers with the same priority modify the same field, the last modification is used and a warning log is recorded
+- **Interruption Mechanism**: If any handler calls `event.mark_processed()`, subsequent lower-priority groups are skipped
 
 ```python
-# Example: Parallel execution of same-priority handlers
+# Example: Parallel execution of handlers with the same priority
 @message.on_message(priority=0)
 async def handler_a(event):
     # Process task A
@@ -1144,19 +1280,19 @@ async def handler_a(event):
 
 @message.on_message(priority=0)
 async def handler_b(event):
-    # Execute in parallel with handler_a
+    # Executes in parallel with handler_a
     event['result_b'] = process_b()
 
-# Serial execution of different priorities
+# Serial execution of handlers with different priorities
 @message.on_message(priority=10)
 async def handler_c(event):
     # Highest priority, executes first
     pass
 ```
 
-## Notice Event Handling
+## Handling Notice Events
 
-### Friend Add
+### Friend Addition
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -1188,7 +1324,7 @@ async def member_decrease_handler(event):
     await event.reply(f"Member {user_id} left group {group_id}")
 ```
 
-## Request Event Handling
+## Handling Request Events
 
 ### Friend Request
 
@@ -1202,8 +1338,8 @@ async def friend_request_handler(event):
     
     sdk.logger.info(f"Received friend request: {user_id}, comment: {comment}")
     
-    # You can handle requests via the adapter API
-    # Please refer to the specific adapter documentation for implementation details
+    # You can handle the request through the adapter API
+    # For specific implementation, please refer to each adapter's documentation
 ```
 
 ### Group Invitation Request
@@ -1214,12 +1350,12 @@ async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"Received invitation from group {group_id}, from {user_id}")
+    await event.reply(f"Received group {group_id} invitation from {user_id}")
 ```
 
-## Meta Event Handling
+## Handling Meta Events
 
-### Connection Event
+### Connection Events
 
 ```python
 from ErisPulse.Core.Event import meta
@@ -1235,42 +1371,42 @@ async def disconnect_handler(event):
     sdk.logger.warning(f"{platform} platform disconnected")
 ```
 
-### Heartbeat Event
+### Heartbeat Events
 
 ```python
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
     platform = event.get_platform()
-    sdk.logger.debug(f"{platform} heartbeat detection")
+    sdk.logger.debug(f"{platform} heartbeat detected")
 ```
 
-### Bot Status Query
+### Bot Status Inquiry
 
-After the adapter sends a meta event, the framework automatically tracks bot status, and you can query it at any time:
+After the adapter sends a meta event, the framework automatically tracks the Bot status, and you can query it anytime:
 
 ```python
 from ErisPulse import sdk
 
-# Check if a specific bot is online
+# Check if a specific Bot is online
 if sdk.adapter.is_bot_online("telegram", "123456"):
     telegram = sdk.adapter.get("telegram")
     await telegram.Send.To("user", "123456").Text("Bot is online")
 
-# List all currently online bots
+# List all currently online Bots
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
         print(f"{platform}/{bot_id}: {info['status']}")
 
-# Get full status summary
+# Get complete status summary
 summary = sdk.adapter.get_status_summary()
 ```
 
 ## Interactive Handling
 
-### Sending Replies Using the reply Method
+### Using the reply method to send replies
 
-The `event.reply()` method supports various modifier parameters for sending messages with @, reply, etc.:
+The `event.reply()` method supports various modifiers, making it convenient to send messages with @ mentions, replies, and more:
 
 ```python
 # Simple reply
@@ -1280,7 +1416,7 @@ await event.reply("Hello")
 await event.reply("http://example.com/image.jpg", method="Image")  # Image
 await event.reply("http://example.com/voice.mp3", method="Voice")  # Voice
 
-# @ single user
+# @ a single user
 await event.reply("Hello", at_users=["user123"])
 
 # @ multiple users
@@ -1292,7 +1428,7 @@ await event.reply("Reply content", reply_to="msg_id")
 # @ all members
 await event.reply("Announcement", at_all=True)
 
-# Combination: @ users + reply to message
+# Combine: @ user + reply to message
 await event.reply("Content", at_users=["user1"], reply_to="msg_id")
 ```
 
@@ -1303,17 +1439,17 @@ await event.reply("Content", at_users=["user1"], reply_to="msg_id")
 async def ask_handler(event):
     await event.reply("Please enter your name:")
     
-    # Wait for user reply, timeout 30 seconds
+    # Wait for user reply, timeout after 30 seconds
     reply = await event.wait_reply(timeout=30)
     
     if reply:
         name = reply.get_text()
         await event.reply(f"Hello, {name}!")
     else:
-        await event.reply("Timeout waiting, please re-enter.")
+        await event.reply("Timeout, please re-enter.")
 ```
 
-### Wait for Reply with Validation
+### Waiting for Reply with Validation
 
 ```python
 @command("age", help="Ask age")
@@ -1340,7 +1476,7 @@ async def age_handler(event):
         await event.reply("Invalid input or timeout")
 ```
 
-### Wait for Reply with Callback
+### Waiting for Reply with Callback
 
 ```python
 @command("confirm", help="Confirm operation")
@@ -1348,12 +1484,12 @@ async def confirm_handler(event):
     async def handle_confirmation(reply_event):
         text = reply_event.get_text().lower()
         
-        if text in ["是", "yes", "y"]:
+        if text in ["yes", "y", "是"]:
             await event.reply("Operation confirmed!")
         else:
             await event.reply("Operation cancelled.")
     
-    await event.reply("Confirm to perform this operation? (是/否)")
+    await event.reply("Confirm execution of this operation? (Yes/No)")
     
     await event.wait_reply(
         timeout=30,
@@ -1361,14 +1497,14 @@ async def confirm_handler(event):
     )
 ```
 
-### Confirmation Conversation (confirm)
+### Confirmation Dialogue (confirm)
 
-Wait for user confirmation or denial, automatically identifying built-in Chinese and English confirmation words:
+Wait for user confirmation or denial, automatically recognizing built-in Chinese and English confirmation words:
 
 ```python
 @command("confirm", help="Confirm operation")
 async def confirm_handler(event):
-    if await event.confirm("Are you sure you want to perform this operation?"):
+    if await event.confirm("Are you sure you want to execute this operation?"):
         await event.reply("Confirmed, executing...")
     else:
         await event.reply("Cancelled")
@@ -1378,54 +1514,54 @@ if await event.confirm("Continue?", yes_words={"go", "继续"}, no_words={"stop"
     pass
 ```
 
-### Selection Menu (choose)
+### Choice Menu (choose)
 
-Users can reply with an option number or option text:
+Users can reply with option numbers or option text:
 
 ```python
 @command("choose", help="Choose")
 async def choose_handler(event):
     choice = await event.choose(
-        "Please choose a color:",
+        "Please select a color:",
         ["Red", "Green", "Blue"]
     )
     
     if choice is not None:
         colors = ["Red", "Green", "Blue"]
-        await event.reply(f"You chose: {colors[choice]}")
+        await event.reply(f"You selected: {colors[choice]}")
     else:
-        await event.reply("Timeout, no selection made")
+        await event.reply("Timeout, no choice made")
 ```
 
-**Merge Mode**: When `merge_prompt=True`, options are appended to the prompt message and sent as a single message using the user-specified `method`:
+**Merge Mode**: When `merge_prompt=True`, options are merged into the prompt message and sent in a single message using the specified `method`:
 
 ```python
 # Send merged prompt + options using Markdown
 choice = await event.choose(
-    "## Please choose a color\n{options}\nPlease reply with number",
+    "## Please select a color\n{options}\nPlease reply with the number",
     ["Red", "Green", "Blue"],
     method="Markdown",
     merge_prompt=True,
 )
 ```
 
-> The `{options}` placeholder controls where options are inserted; if omitted, they are appended to the end of the prompt.
-> You can customize the placeholder via the `placeholder` parameter (e.g., `placeholder="[choices]"`).
-> `options_format="auto"` (default) automatically selects the style based on the method: Markdown→Unordered list, Html→Ordered list, Other→Plain text list.
-> Text methods (Text/Markdown/Html, etc.) merge options to the end by default; non-text methods (Image, etc.) split into two messages by default.
+> The `{options}` placeholder controls where options are inserted; if not specified, options are appended to the end of the prompt.
+> You can customize the placeholder using the `placeholder` parameter (e.g., `placeholder="[choices]"`).
+> `options_format="auto"` (default) automatically selects the style based on the method: unordered list for Markdown, ordered list for HTML, plain text list for others.
+> For text-based methods (Text/Markdown/Html, etc.), options are merged to the end by default; for non-text methods (Image, etc.), options are split into separate messages by default.
 
-### Collecting Form (collect)
+### Collect Form (collect)
 
-Multi-step collection of user input:
+Collect user input in multiple steps:
 
 ```python
 @command("register", help="Register")
 async def register_handler(event):
     data = await event.collect([
-        {"key": "name", "prompt": "Please enter name:"},
-        {"key": "age", "prompt": "Please enter age:", 
+        {"key": "name", "prompt": "Please enter your name:"},
+        {"key": "age", "prompt": "Please enter your age:", 
          "validator": lambda e: e.get_text().isdigit()},
-        {"key": "email", "prompt": "Please enter email:"}
+        {"key": "email", "prompt": "Please enter your email:"}
     ])
     
     if data:
@@ -1436,12 +1572,12 @@ async def register_handler(event):
 
 ### Waiting for Any Event (wait_for)
 
-Wait for any event meeting a condition, not limited to the same user:
+Wait for any event that meets the specified condition, not limited to the same user:
 
 ```python
 @command("wait_member", help="Wait for new member")
 async def wait_member_handler(event):
-    await event.reply("Waiting for group member to join...")
+    await event.reply("Waiting for new member to join...")
     
     evt = await event.wait_for(
         event_type="notice",
@@ -1452,57 +1588,57 @@ async def wait_member_handler(event):
     if evt:
         await event.reply(f"Welcome new member: {evt.get_user_id()}")
     else:
-        await event.reply("Timeout waiting")
+        await event.reply("Timeout")
 ```
 
-### Multi-turn Conversation (conversation)
+### Multi-turn Dialogue (conversation)
 
-Create an interactive multi-turn conversation context:
+Create an interactive multi-turn dialogue context:
 
 ```python
-@command("survey", help="Questionnaire")
+@command("survey", help="Survey")
 async def survey_handler(event):
     conv = event.conversation(timeout=60)
     
-    await conv.say("Welcome to participate in the questionnaire!")
+    await conv.say("Welcome to the survey!")
     
     while conv.is_active:
         reply = await conv.wait()
         
         if reply is None:
-            await conv.say("Conversation timeout, goodbye!")
+            await conv.say("Dialogue timeout, goodbye!")
             break
         
         text = reply.get_text()
         
-        if text == "退出":
+        if text == "Exit":
             await conv.say("Goodbye!")
             break
         
-        await conv.say(f"You said: {text}, please continue input or reply '退出' to end")
+        await conv.say(f"You said: {text}, continue typing or reply 'Exit' to end")
 ```
 
 ### Built-in Confirmation Words
 
-ErisPulse has built-in sets of Chinese and English confirmation words:
+ErisPulse includes built-in Chinese and English confirmation word sets:
 
-- **Confirmation Words** (`CONFIRM_YES_WORDS`): Yes, yes, y, 确认, 确定, 好, 好的, ok, true, 对, 嗯, 行, 同意, 没问题...
-- **Negation Words** (`CONFIRM_NO_WORDS`): No, no, n, 取消, 不, 不要, 不行, cancel, false, 错, 拒绝, 不可以...
+- **Confirmation words** (`CONFIRM_YES_WORDS`): 是, yes, y, 确认, 确定, 好, 好的, ok, true, 对, 嗯, 行, 同意, 没问题...
+- **Denial words** (`CONFIRM_NO_WORDS`): 否, no, n, 取消, 不, 不要, 不行, cancel, false, 错, 拒绝, 不可以...
 
 ## Event Data Access
 
-### Common Methods of the Event Object
+### Common Event Object Methods
 
 ```python
 @command("info")
 async def info_handler(event):
-    # Basic info
+    # Basic information
     event_id = event.get_id()
     event_time = event.get_time()
     event_type = event.get_type()
     detail_type = event.get_detail_type()
     
-    # Sender info
+    # Sender information
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     
@@ -1511,10 +1647,10 @@ async def info_handler(event):
     alt_message = event.get_alt_message()
     text = event.get_text()
     
-    # Group info
+    # Group information
     group_id = event.get_group_id()
     
-    # Bot info
+    # Bot information
     self_id = event.get_self_user_id()
     self_platform = event.get_self_platform()
     
@@ -1522,7 +1658,7 @@ async def info_handler(event):
     raw_data = event.get_raw()
     raw_type = event.get_raw_type()
     
-    # Platform info
+    # Platform information
     platform = event.get_platform()
     
     # Message type checks
@@ -1530,16 +1666,16 @@ async def info_handler(event):
     is_group = event.is_group_message()
     is_at = event.is_at_message()
     
-    # Command info
+    # Command information
     if event.is_command():
         cmd_name = event.get_command_name()
         cmd_args = event.get_command_args()
         cmd_raw = event.get_command_raw()
 ```
 
-### Platform Extension Methods
+### Platform-Specific Methods
 
-In addition to built-in methods, each platform adapter also registers platform-specific methods to facilitate access to platform-specific data.
+In addition to the built-in methods, each platform adapter will register platform-specific methods, making it easy to access platform-specific data.
 
 ```python
 from ErisPulse.Core.Event import message
@@ -1550,12 +1686,12 @@ async def handle_message(event):
 
     # Call platform-specific methods based on platform
     if platform == "telegram":
-        chat_type = event.get_chat_type()      # Telegram specific method
+        chat_type = event.get_chat_type()      # Telegram-specific method
     elif platform == "email":
-        subject = event.get_subject()           # Email specific method
+        subject = event.get_subject()           # Email-specific method
 ```
 
-If you are unsure if a platform has registered a method, you can query which methods a platform has registered:
+If you are unsure whether a platform has registered a specific method, you can query which methods have been registered for a specific platform:
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -1564,9 +1700,9 @@ methods = get_platform_event_methods("telegram")
 # ["get_chat_type", "is_bot_message", ...]
 ```
 
-> For platform-specific methods registered on each platform, please refer to the corresponding [Platform Guide](../platform-guide/).
+> For platform-specific methods registered by each platform, please refer to the corresponding [platform documentation](../platform-guide/).
 
-## Event Handling Best Practices
+## Best Practices for Event Handling
 
 ### 1. Exception Handling
 
@@ -1596,10 +1732,10 @@ async def message_handler(event):
     
     sdk.logger.info(f"Processing message: {user_id} - {text}")
     
-    # Use the module's own logger
+    # Use module-specific logging
     from ErisPulse import sdk
     logger = sdk.logger.get_child("MyHandler")
-    logger.debug(f"Verbose debug info")
+    logger.debug(f"Detailed debug information")
 ```
 
 ### 3. Conditional Handling
@@ -1607,7 +1743,7 @@ async def message_handler(event):
 ```python
 @message.on_message(priority=0)
 async def conditional_handler(event):
-    """Conditional handling - determines inside the handler"""
+    """Conditional handling - check inside the handler"""
     # Only process messages from specific users
     if event.get_user_id() in ["bot1", "bot2"]:
         return
@@ -1616,527 +1752,104 @@ async def conditional_handler(event):
     if "keyword" not in event.get_text():
         return
     
-    await event.reply("Conditions met, processing message")
+    await event.reply("Condition met, processing message")
 ```
 
 ## Next Steps
 
-- [Common Task Examples](common-tasks.md) - Learn to implement common features (includes advanced message sending: retry/timeout/batch)
-- [Platform Features Guide](../platform-guide/README.md) - Complete guide on Send DSL chaining, sending rules, and batch building
-- [Detailed Event Wrapper Guide](../developer-guide/modules/event-wrapper.md) - Deep dive into Event objects
+- [Common Task Examples](common-tasks.md) - Learn how to implement common features (including advanced message sending: retry/timeout/batch)
+- [Platform Features Guide](../platform-guide/README.md) - Complete explanation of Send DSL chain sending, sending rules, and batch construction
+- [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) - In-depth understanding of the Event object
 - [User Guide](../user-guide/) - Learn about configuration and module management
 
 
-### 常见任务示例
+### IDE 补全
 
-# Common Task Examples
+# Type Stub Generation (IDE Completion)
 
-This guide provides implementation examples for common features to help you quickly implement frequently used functionalities.
+ErisPulse dynamically discovers modules/adapters via entry-points, and the exact types of user classes are not known at the static level. The `epsdk types` command scans installed modules/adapters and generates a type stub file, allowing users to use these types as variable annotations to obtain IDE completion.
 
-## Content List
+## Core Design Principles
 
-1. Data Persistence
-2. Scheduled Tasks
-3. Message Filtering
-4. Multi-platform Adaptation
-5. Advanced Message Sending (Retry/Timeout/Batch)
-6. Permission Control
-7. Message Statistics
-8. Search Functionality
-9. Image Processing
+The stub file **only exports types**, without providing any runtime instances:
 
-## Data Persistence
+- All imports are under ``TYPE_CHECKING``, **zero runtime overhead, zero behavior change**
+- Type names use the PascalCase form of the entry-point name (e.g., ``yunhu`` → ``Yunhu``), corresponding to the names passed into ``sdk.adapter.get()`` / ``sdk.module.get()``
+- Users use ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` as usual to get instances, but use imported types for **variable annotations**
 
-### Simple Counter
+## Basic Usage
+
+Run in the project root directory:
+
+```bash
+epsdk types
+```
+
+This generates `_ep_types.py` in the current directory, containing types for all installed modules/adapters.
+
+## Using in Code
 
 ```python
+from _ep_types import MyModule, Yunhu
 from ErisPulse import sdk
-from ErisPulse.Core.Event import command
 
-@command("count", help="View command call count")
-async def count_handler(event):
-    # Get count
-    count = sdk.storage.get("command_count", 0)
-    
-    # Increment count
-    count += 1
-    sdk.storage.set("command_count", count)
-    
-    await event.reply(f"This is the {count} time this command is called")
+# Using imported types as variable annotations enables IDE completion for the class methods
+my_mod: MyModule = sdk.module.get("MyModule")
+my_mod.hello()                  # ← IDE completes hello
+
+my_adapter: Yunhu = sdk.adapter.get("yunhu")
+await my_adapter.Send.To("group", "123").Board(...)   # ← Completes platform-specific methods
 ```
 
-### User Data Storage
+## How It Works
+
+1. Scan `erispulse.adapter` / `erispulse.module` entry-points
+2. Use a subprocess to introspect in the target Python environment, collecting actual class information for each adapter/module (including module path and qualified name)
+3. Generate a `.py` file, where:
+   - All ``from xxx import Yyy as Zzz`` are under ``TYPE_CHECKING``
+   - ``Zzz`` is the PascalCase form of the entry-point name
+4. The IDE reads the ``TYPE_CHECKING`` section to provide completion; no code is executed at runtime
+
+Example of generated stub:
 
 ```python
-@command("profile", help="View personal profile")
-async def profile_handler(event):
-    user_id = event.get_user_id()
-    
-    # Get user data
-    user_data = sdk.storage.get(f"user:{user_id}", {
-        "nickname": "",
-        "join_date": None,
-        "message_count": 0
-    })
-    
-    profile_text = f"""
-Nickname: {user_data['nickname']}
-Join Date: {user_data['join_date']}
-Message Count: {user_data['message_count']}
-    """
-    
-    await event.reply(profile_text.strip())
+# _ep_types.py (auto-generated)
+from typing import TYPE_CHECKING
 
-@command("setnick", help="Set nickname")
-async def setnick_handler(event):
-    user_id = event.get_user_id()
-    args = event.get_command_args()
-    
-    if not args:
-        await event.reply("Please enter a nickname")
-        return
-    
-    # Update user data
-    user_data = sdk.storage.get(f"user:{user_id}", {})
-    user_data["nickname"] = " ".join(args)
-    sdk.storage.set(f"user:{user_id}", user_data)
-    
-    await event.reply(f"Nickname set to: {' '.join(args)}")
+if TYPE_CHECKING:
+    # Adapters
+    from MyAdapter.Core import MyAdapter as MyAdapter
+    from YunhuAdapter.Core import YunhuAdapter as Yunhu
+
+    # Modules
+    from MyModule.Core import Main as MyModule
+
+    __all__ = ['MyAdapter', 'Yunhu', 'MyModule']
 ```
 
-## Scheduled Tasks
+## Command Options
 
-### Simple Timer
+| Option | Description |
+|--------|-------------|
+| `-o, --output PATH` | Specify the output file path (default `./_ep_types.py`) |
+| `--force` | Overwrite existing stub file |
+| `--adapters-only` | Only scan adapters |
+| `--modules-only` | Only scan modules |
 
-```python
-from ErisPulse import sdk
-from ErisPulse.Core.Event import command
-import asyncio
+## When to Regenerate
 
-class TimerModule:
-    def __init__(self):
-        self.sdk = sdk
-        self._tasks = []
-    
-    async def on_load(self, event):
-        """Start scheduled tasks when module is loaded"""
-        self._start_timers()
-        
-        @command("timer", help="Timer management")
-        async def timer_handler(event):
-            await event.reply("Timer is running...")
-    
-    def _start_timers(self):
-        """Start scheduled tasks"""
-        # Execute every 60 seconds
-        task = asyncio.create_task(self._every_minute())
-        self._tasks.append(task)
-        
-        # Execute at midnight
-        task = asyncio.create_task(self._daily_task())
-        self._tasks.append(task)
-    
-    async def _every_minute(self):
-        """Task executed every minute"""
-        self.sdk.logger.info("Task executed every minute")
-        # Your logic...
-    
-    async def _daily_task(self):
-        """Task executed every day at midnight (Note: calculated based on UTC time, please adjust for local time if needed)"""
-        import time
-        
-        while True:
-            # Calculate time to midnight
-            now = time.time()
-            midnight = now + (86400 - now % 86400)
-            
-            await asyncio.sleep(midnight - now)
-            
-            # Execute task
-            self.sdk.logger.info("Daily task executed")
-            # Your logic...
-```
+- After installing/uninstalling new modules or adapters
+- After modules/adapters update their public API
+- When IDE completion fails or types are outdated
 
-### Using Lifecycle Events
+## Relationship with SendDSL Standard Methods
 
-```python
-@sdk.lifecycle.on("core.init.complete")
-async def init_complete_handler(event_data):
-    """Start scheduled tasks after SDK initialization completes"""
-    import asyncio
-    
-    async def daily_reminder():
-        """Daily reminder"""
-        await asyncio.sleep(86400)  # 24 hours
-        sdk.logger.info("Executing daily task")
-    
-    # Start background task
-    asyncio.create_task(daily_reminder())
-```
+The `SendDSL` base class already includes standard send methods (Text/Image/Voice/Video/File), so any way of obtaining a `SendDSL` instance can complete these methods. The `types` command is mainly used to complete **platform-specific methods** (e.g., Yunhu's `Board`, Sandbox's `Dice`) and **module-specific methods**.
 
-## Message Filtering
+## Related Documentation
 
-### Keyword Filtering
-
-```python
-from ErisPulse.Core.Event import message
-
-blocked_words = ["garbage", "ad", "phishing"]
-
-@message.on_message()
-async def filter_handler(event):
-    text = event.get_text()
-    
-    # Check if sensitive words are contained
-    for word in blocked_words:
-        if word in text:
-            sdk.logger.warning(f"Block sensitive message: {word}")
-            return  # Do not process this message
-    
-    # Process message normally
-    await event.reply(f"Received: {text}")
-```
-
-### Blacklist Filtering
-
-```python
-# Load blacklist from config or storage
-blacklist = sdk.storage.get("user_blacklist", [])
-
-@message.on_message()
-async def blacklist_handler(event):
-    user_id = event.get_user_id()
-    
-    if user_id in blacklist:
-        sdk.logger.info(f"Blacklisted user: {user_id}")
-        return  # Do not process
-    
-    # Process normally
-    await event.reply(f"Hello, {user_id}")
-```
-
-## Multi-platform Adaptation
-
-### Platform-specific Response
-
-```python
-@command("help", help="Display help")
-async def help_handler(event):
-    platform = event.get_platform()
-    
-    if platform == "yunhu":
-        await event.reply("Yunhu platform help...")
-    elif platform == "telegram":
-        await event.reply("Telegram platform help...")
-    elif platform == "onebot11":
-        await event.reply("OneBot11 help...")
-    else:
-        await event.reply("General help information")
-```
-
-### Platform Feature Detection
-
-```python
-@command("rich", help="Send rich text message")
-async def rich_handler(event):
-    platform = event.get_platform()
-    
-    if platform == "yunhu":
-        # Yunhu supports HTML
-        yunhu = sdk.adapter.get("yunhu")
-        await yunhu.Send.To("user", event.get_user_id()).Html(
-            "<b>Bold text</b><i>Italic text</i>"
-        )
-    elif platform == "telegram":
-        # Telegram supports Markdown
-        telegram = sdk.adapter.get("telegram")
-        await telegram.Send.To("user", event.get_user_id()).Markdown(
-            "**Bold text** *Italic text*"
-        )
-    else:
-        # Other platforms use plain text
-        await event.reply("Bold text Italic text")
-```
-
-## Advanced Message Sending (Retry/Timeout/Batch)
-
-In addition to simple `event.reply()`, you can implement more complex sending scenarios via the adapter's Send DSL: automatic retry on failure, timeout cancellation, logic execution after success, and sending multiple messages in bulk.
-
-> The following examples use `event.get_detail_type()` and `event.get_target_id()` to get target type and ID from the event (group chats automatically get group_id, private chats automatically get user_id), avoiding hardcoding.
-
-### Logic Execution After Sending Success
-
-```python
-@command("pay", help="Simulate payment")
-async def pay_handler(event):
-    yunhu = sdk.adapter.get(event.get_platform())
-    user_id = event.get_user_id()
-    # Deduct points only after sending success
-    await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
-           .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
-           .Text("Payment successful, 10 points deducted"))
-```
-
-### Failure Retry + Timeout Cancellation
-
-```python
-@command("notice", help="Send important notice")
-async def notice_handler(event):
-    adapter_inst = sdk.adapter.get(event.get_platform())
-    # Retry at most 3 times, timeout 10 seconds each time
-    task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
-            .Retry(3)
-            .Timeout(10)
-            .OnError(lambda ctx: sdk.logger.error(f"Notice send failed: {ctx.error}"))
-            .Text("This is an important notice"))
-    # Don't wait, send in background
-```
-
-### Bulk Sending Multiple Messages
-
-Send multiple messages in a single chain, executed uniformly:
-
-```python
-@command("announce", help="Send announcement")
-async def announce_handler(event):
-    adapter_inst = sdk.adapter.get(event.get_platform())
-    # Build multiple messages and send them together (parallel by default)
-    results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
-                    .Build()
-                    .Text("📋 Today's Announcement")
-                    .Image("https://example.com/banner.jpg")
-                    .Text("See the image above for details")
-                    .Retry(2)            # Failed items retry individually
-                    .send_all())
-    sdk.logger.info(f"Batch send completed, {len(results)} items in total")
-```
-
-> For more complete rules and batch sending documentation, please refer to [Platform Features Guide](../platform-guide/README.md#send-rule-decorators).
-
-## Permission Control
-
-### Admin Check
-
-```python
-# Configure master list
-MASTERS = ["user123", "user456"]
-
-def is_master(user_id):
-    """Check if the framework master"""
-    return user_id in MASTERS
-
-@command("master", help="Framework master command")
-async def master_handler(event):
-    user_id = event.get_user_id()
-    
-    if not is_master(user_id):
-        await event.reply("Insufficient permissions, this command is only available to framework masters")
-        return
-    
-    await event.reply("Framework master command executed successfully")
-
-@command("addmaster", help="Add framework master")
-async def addmaster_handler(event):
-    if not is_master(event.get_user_id()):
-        return
-    
-    args = event.get("text", "").split()
-    if len(args) < 2:
-        await event.reply("Usage: /addmaster <user_id>")
-        return
-    
-    new_master = args[0]
-    MASTERS.append(new_master)
-    await event.reply(f"Framework master added: {new_master}")
-```
-
-### Group Permissions
-
-```python
-@command("groupinfo", help="View group info")
-async def groupinfo_handler(event):
-    if not event.is_group_message():
-        await event.reply("This command is limited to group chats only")
-        return
-    
-    group_id = event.get_group_id()
-    user_id = event.get_user_id()
-    
-    await event.reply(f"Group ID: {group_id}, Your ID: {user_id}")
-```
-
-## Message Statistics
-
-### Message Counting
-
-> **Note**: The following examples use `sdk.storage.get/set` for simple counting. In high-concurrency scenarios, it is recommended to use `sdk.storage.transaction()` to ensure atomicity.
-
-```python
-@message.on_message()
-async def count_handler(event):
-    # Get statistics
-    stats = sdk.storage.get("message_stats", {
-        "total": 0,
-        "by_user": {},
-        "by_day": {}
-    })
-    
-    # Update statistics
-    stats["total"] += 1
-    
-    user_id = event.get_user_id()
-    stats["by_user"][user_id] = stats["by_user"].get(user_id, 0) + 1
-    
-    # Save
-    sdk.storage.set("message_stats", stats)
-
-@command("stats", help="View message statistics")
-async def stats_handler(event):
-    stats = sdk.storage.get("message_stats", {
-        "total": 0,
-        "by_user": {},
-        "by_day": {}
-    })
-    
-    top_users = sorted(
-        stats["by_user"].items(),
-        key=lambda x: x[1],
-        reverse=True
-    )[:5]
-    
-    top_text = "\n".join(
-        f"{uid}: {count} messages" for uid, count in top_users
-    )
-    
-    await event.reply(f"Total messages: {stats['total']}\n\nActive users:\n{top_text}")
-```
-
-## Search Functionality
-
-### Simple Search
-
-> **Note**: The following examples use in-memory list storage for message history, **data will be lost after program restart**. Production environments are recommended to use `sdk.storage` or SQLite tables for persistent storage.
-
-```python
-from ErisPulse.Core.Event import command, message
-
-# Store message history
-message_history = []
-
-@message.on_message()
-async def store_handler(event):
-    """Store messages for searching"""
-    user_id = event.get_user_id()
-    text = event.get_text()
-    
-    message_history.append({
-        "user_id": user_id,
-        "text": text,
-        "time": event.get_time()
-    })
-    
-    # Limit number of history records
-    if len(message_history) > 1000:
-        message_history.pop(0)
-
-@command("search", help="Search messages")
-async def search_handler(event):
-    args = event.get_command_args()
-    
-    if not args:
-        await event.reply("Please enter search keywords")
-        return
-    
-    keyword = " ".join(args)
-    results = []
-    
-    # Search history
-    for msg in message_history:
-        if keyword in msg["text"]:
-            results.append(msg)
-    
-    if not results:
-        await event.reply("No matching messages found")
-        return
-    
-    # Display results
-    result_text = f"Found {len(results)} matching messages:\n\n"
-    for i, msg in enumerate(results[:10], 1):  # Display at most 10
-        result_text += f"{i}. {msg['text']}\n"
-    
-    await event.reply(result_text)
-```
-
-## Image Processing
-
-### Image Download and Storage
-
-```python
-from ErisPulse.Core import client
-
-@message.on_message()
-async def image_handler(event):
-    """Handle image messages"""
-    message_segments = event.get_message()
-    
-    for segment in message_segments:
-        if segment.get("type") == "image":
-            file_url = segment.get("data", {}).get("file")
-            
-            if file_url:
-                # Recommended to use SDK built-in client to download image
-                resp = await client.get(file_url)
-                if resp.status == 200:
-                    image_data = await resp.read()
-                    
-                    # Save to file
-                    filename = f"images/{event.get_time()}.jpg"
-                    with open(filename, "wb") as f:
-                        f.write(image_data)
-                    
-                    sdk.logger.info(f"Image saved: {filename}")
-                    await event.reply("Image saved")
-```
-
-### Image Recognition Example
-
-> **Note**: The following example uses a placeholder API address, please replace it with your own image recognition service when using it in production.
-
-```python
-from ErisPulse.Core import client
-
-@command("identify", help="Identify image")
-async def identify_handler(event):
-    """Identify images in messages"""
-    message_segments = event.get_message()
-    
-    for segment in message_segments:
-        if segment.get("type") == "image":
-            file_url = segment.get("data", {}).get("file")
-            
-            # Call image recognition API
-            result = await _identify_image(file_url)
-            
-            await event.reply(f"Identification result: {result}")
-            return
-    
-    await event.reply("No image found")
-
-async def _identify_image(url):
-    """Call image recognition API (example) - using SDK built-in client"""
-    resp = await client.post(
-        "https://api.example.com/identify",
-        json={"url": url}
-    )
-    data = await resp.json()
-    return data.get("description", "Identification failed")
-```
-
-## Next Steps
-
-- [User Guide](../user-guide/) - Learn about configuration and module management
-- [Developer Guide](../developer-guide/) - Learn to develop modules and adapters
-- [Advanced Topics](../advanced/) - Deep dive into framework features
+- [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md) - Description of standard send methods
+- [Getting Started with Adapter Development](../developer-guide/adapters/getting-started.md) - Creating adapters
 
 
 ====
@@ -2578,8 +2291,8 @@ The Event module provides a powerful Event wrapper class that simplifies event h
 
 ## Core Features
 
-- **Full Dictionary Compatibility**: Event inherits from dict
-- **Convenient Methods**: Provides numerous convenient methods
+- **Fully Compatible with Dictionary**: Event inherits from dict
+- **Convenient Methods**: Provides a large number of convenient methods
 - **Dot-style Access**: Supports accessing event fields using dot notation
 - **Backward Compatibility**: All methods are optional
 
@@ -2619,7 +2332,7 @@ async def group_handler(event):
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
-    await event.reply(f"Type: {'Private Chat' if is_private else 'Group Chat'}")
+    await event.reply(f"Type: {'Private' if is_private else 'Group'}")
 ```
 
 ## Reply Functionality
@@ -2658,48 +2371,48 @@ async def friend_add_handler(event):
     await event.reply("Welcome to add me as a friend!")
 ```
 
-## Method Quick Reference
+## Method Quick Reference Table
 
 ### Core Methods
 
 #### Event Basic Information
 - `get_id()` - Get event ID
-- `get_time()` - Get event timestamp (Unix second)
+- `get_time()` - Get event timestamp (Unix seconds)
 - `get_type()` - Get event type (message/notice/request/meta)
-- `get_detail_type()` - Get event detail type (private/group/friend etc.)
+- `get_detail_type()` - Get event detailed type (private/group/friend etc.)
 - `get_platform()` - Get platform name
 
 #### Bot Information
 - `get_self_platform()` - Get bot platform name
 - `get_self_user_id()` - Get bot user ID
-- `get_self_account_id()` - Get bot account ID (multi-bot mode)
-- `get_self_info()` - Get complete bot info dictionary
+- `get_self_account_id()` - Get bot account ID (multi-Bot mode)
+- `get_self_info()` - Get complete bot information dictionary
 
 #### Session Identifiers
-- `get_target_id()` - Get unified target ID (returns `group_id` for group chat, `channel_id` for channel, `user_id` for private chat, takes the first non-empty value in order: group → channel → guild → thread → user)
-- `get_session_id()` - Get unique session identifier, format: `{platform}:{detail_type}:{target_id}`
+- `get_target_id()` - Get unified target ID (returns `group_id` for group chat, `channel_id` for channel, `user_id` for private chat, prioritizing non-empty values in order: group → channel → guild → thread → user)
+- `get_session_id()` - Get unique session identifier, format is `{platform}:{detail_type}:{target_id}`
 
 ### Message Event Methods
 
 #### Message Content
 - `get_message()` - Get message segment array (OneBot12 format)
 - `get_alt_message()` - Get alternative message text
-- `get_text()` - Get plain text content (`get_alt_message()` alias)
-- `get_message_text()` - Get plain text content (`get_alt_message()` alias)
+- `get_text()` - Get plain text content (alias of `get_alt_message()`)
+- `get_message_text()` - Get plain text content (alias of `get_alt_message()`)
 
 #### Sender Information
 - `get_user_id()` - Get sender user ID
 - `get_user_nickname()` - Get sender nickname
-- `get_sender()` - Get sender complete info dictionary
+- `get_sender()` - Get complete sender information dictionary
 
 #### Group/Channel Information
-- `get_group_id()` - Get group ID (group chat message)
-- `get_channel_id()` - Get channel ID (channel message)
-- `get_guild_id()` - Get server ID (server message)
-- `get_thread_id()` - Get topic/sub-channel ID (topic message)
+- `get_group_id()` - Get group ID (group chat messages)
+- `get_channel_id()` - Get channel ID (channel messages)
+- `get_guild_id()` - Get server ID (server messages)
+- `get_thread_id()` - Get topic/subchannel ID (topic messages)
 
 #### @Message Related
-- `has_mention()` - Whether contains @bot
+- `has_mention()` - Whether it contains @bot
 - `get_mentions()` - Get list of all mentioned user IDs
 
 ### Message Type Detection
@@ -2712,7 +2425,7 @@ async def friend_add_handler(event):
 
 ### Notification Event Methods
 
-#### Operator Information
+#### Notification Operator
 - `get_operator_id()` - Get operator ID
 - `get_operator_nickname()` - Get operator nickname
 
@@ -2737,21 +2450,21 @@ async def friend_add_handler(event):
 
 #### Basic Reply
 - `reply(content, method="Text", at_sender=False, reply_to_message=False, at_users=None, reply_to=None, at_all=False, **kwargs)` - General reply method
-  - `content`: Content to send (text, URL, etc.)
-  - `method`: Sending method, default "Text", optional "Image"/"Voice"/"Video"/"File", etc.
-  - `at_sender`: Whether to @ sender (auto extracts user_id)
-  - `quote`: Whether to quote reply current message (auto extracts message_id)
-  - `at_users`: List of users to @, e.g. `["user1", "user2"]`
+  - `content`: Send content (text, URL, etc.)
+  - `method`: Send method, default "Text", optional "Image"/"Voice"/"Video"/"File" etc.
+  - `at_sender`: Whether to @ sender (automatically extract user_id)
+  - `quote`: Whether to quote reply current message (automatically extract message_id)
+  - `at_users`: List of @ users, e.g. `["user1", "user2"]`
   - `reply_to`: Manually specify the message ID to reply to
   - `at_all`: Whether to @ all members
   - `**kwargs`: Additional parameters (e.g., user_id for Mention method)
 
-- `reply_ob12(message)` - Reply using OneBot12 message segments
+- `reply_ob12(message)` - Reply using OneBot12 message segment
   - `message`: OneBot12 message segment list or dictionary, can be built with MessageBuilder
 
 #### Platform Capability Query
-- `supports(method)` - Check if current platform supports a sending method (e.g., `"Image"`, `"Voice"`), returns `bool`
-- `available_methods()` - List all available sending methods on current platform, returns list of method names
+- `supports(method)` - Check if current platform supports a send method (e.g., `"Image"`, `"Voice"`), returns `bool`
+- `available_methods()` - List all available send methods of current platform, returns list of method names
 
 #### Forward Functionality
 
@@ -2771,51 +2484,51 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - `timeout`: Timeout time (seconds), default 60 seconds
   - `callback`: Callback function, executed when reply is received
   - `validator`: Validation function, used to validate if reply is valid
-  - `method`: Sending method, default "Text"
+  - `method`: Send prompt message method, default "Text"
   - Returns user reply Event object, returns None on timeout
 
-#### Interactive Methods
+#### Interaction Methods
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - Confirmation dialog
-  - Returns `True` (confirmation) / `False` (rejection) / `None` (timeout)
+  - Returns `True` (confirm) / `False` (deny) / `None` (timeout)
   - Built-in Chinese and English confirmation words automatically recognized, custom word sets can be defined
-  - `method`: Sending method, default "Text"; supports non-text methods like "Image"/"Markdown"
+  - `method`: Send method, default "Text"; supports "Image"/"Markdown" and other non-text methods to send prompts
   - `hint`: Whether to automatically append confirmation word prompt at the end of the prompt (e.g., "（是/否）"), default False
 
 - `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - Selection menu
   - `options`: List of option texts
   - Returns option index (0-based), returns `None` on timeout
-  - `method`: Sending method, default "Text"; text-based methods (Text/Markdown/md/Html/h5) automatically merge options to the end
+  - `method`: Send method, default "Text"; text-based methods (Text/Markdown/md/Html/h5) automatically merge options to the end
   - `options_format`: Option format (default: "auto", automatically select built-in style based on method)
     - `"auto"`: Markdown→unordered list (`- 1. Option`), Html→ordered list (`<ol>`), others→plain text list
-    - `"list"`: One per line, e.g. ``1. Option A\n2. Option B``
+    - `"list"`: Each line one, e.g. ``1. Option A\n2. Option B``
     - `"inline"`: Display in a single line, e.g. ``1.A | 2.B``
     - `"md"`: Markdown unordered list
     - `"html"`: Html ordered list
     - `callable`: Custom function, receives ``list[str]`` returns ``str``
-  - `merge_prompt`: Whether to forcibly merge into a single message, default False
-    - `False` (default): Text-based methods automatically merge; non-text methods send prompt first then Text options
-    - `True`: Regardless of method, always merge into a single message, sent using the specified method
-  - `placeholder`: Option insertion placeholder, default `{options}`; the position where this marker appears in the prompt is replaced with the option text, set to empty string to always append to the end
+  - `merge_prompt`: Whether to forcibly merge into a single message for sending, default False
+    - `False` (default): Text-based methods automatically merge; non-text methods first send prompt then send Text options
+    - `True`: Regardless of method, always merge into a single message and send with the user-specified method
+  - `placeholder`: Option insertion placeholder, default `{options}`; the position where this marker appears in the prompt is replaced with option text, set to empty string to always append to the end
 
 - `collect(fields, timeout_per_field=60.0)` - Form collection
   - `fields`: Field list, each item contains `key`, `prompt`, optional `validator`, optional `method`
   - Returns `{key: value}` dictionary, returns `None` if any field times out
-  - Each field supports `method` key to specify sending method, e.g. collecting image with `{"key": "avatar", "prompt": "Please send avatar", "method": "Image"}`
-  - Each field can have optional `options` key (list), when provided, the field becomes a multiple-choice question (automatically calls choose logic)
-  - Each field can have optional `options_format`, `merge_prompt`, `placeholder` keys to control option format, message merging behavior, and placeholder
+  - Each field supports `method` key to specify send method, e.g. collecting image with `{"key": "avatar", "prompt": "Please send avatar", "method": "Image"}`
+  - Each field can have optional `options` key (list), when provided this field becomes a multiple-choice question (automatically calls choose logic)
+  - Each field can have optional `options_format`, `merge_prompt`, `placeholder` keys to control option format, message merge behavior, and placeholder
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - Wait for any event
   - `condition`: Filter function, returns `True` when matched
-  - Returns matching Event object, returns `None` on timeout
+  - Returns matched Event object, returns `None` on timeout
 
 - `conversation(timeout=60.0)` - Create multi-turn conversation context
   - Returns `Conversation` object, supports `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
-  - `is_active` attribute indicates whether the conversation is active
+  - `is_active` property indicates whether the conversation is active
 
-#### Interactive Method Examples
+#### Interaction Method Examples
 
-**confirm() - Confirmation Dialog:**
+**confirm() - Confirmation dialog:**
 
 ```python
 @command("delete", help="Delete data")
@@ -2827,16 +2540,16 @@ async def delete_handler(event):
         await event.reply("Cancelled")
 ```
 
-**confirm() - With Prompt Words:**
+**confirm() - With prompt words:**
 
 ```python
-# hint=True appends "（是/否）" at the end of the prompt
+# hint=True will append "（是/否）" at the end of the prompt
 if await event.confirm("Continue?", hint=True):
     await event.reply("Continued")
 # User sees: Continue?（是/否）
 ```
 
-**choose() - Selection Menu:**
+**choose() - Selection menu:**
 
 ```python
 @command("color", help="Choose color")
@@ -2847,10 +2560,10 @@ async def color_handler(event):
         await event.reply(f"You chose: {colors[choice]}")
 ```
 
-**choose() - Option Formatting and Message Merging:**
+**choose() - Option formatting and message merging:**
 
 ```python
-# inline format: options displayed in a single line
+# inline format: options displayed on the same line
 choice = await event.choose("Please choose:", ["A", "B", "C"], options_format="inline")
 # Output: 1.A | 2.B | 3.C
 
@@ -2859,7 +2572,7 @@ choice = await event.choose("Please choose:", ["Cat", "Dog"],
     options_format=lambda opts: " / ".join(opts))
 # Output: Cat / Dog
 
-# options_format="auto" (default): automatically select built-in style based on method
+# options_format="auto" (default): Automatically select built-in style based on method
 # Markdown → unordered list
 choice = await event.choose(
     "## Please choose", ["Cat", "Dog"],
@@ -2894,7 +2607,7 @@ choice = await event.choose(
 )
 ```
 
-**collect() - Form Collection:**
+**collect() - Form collection:**
 
 ```python
 @command("register", help="Register")
@@ -2919,7 +2632,7 @@ segments = MessageBuilder.text("Look at this image:").image("http://example.com/
 await event.reply_ob12(segments)
 ```
 
-> For complete Conversation multi-turn dialog usage, see [Conversation Multi-turn Dialog](../../advanced/conversation.md).
+> Complete Conversation multi-turn dialog usage please refer to [Conversation Multi-turn Dialog](../../advanced/conversation.md).
 
 ### Command Information
 
@@ -2927,7 +2640,7 @@ await event.reply_ob12(segments)
 - `get_command_name()` - Get command name
 - `get_command_args()` - Get command argument list
 - `get_command_raw()` - Get original command text
-- `get_command_info()` - Get complete command info dictionary
+- `get_command_info()` - Get complete command information dictionary
 - `is_command()` - Whether it is a command
 
 ### Raw Data
@@ -2937,9 +2650,9 @@ await event.reply_ob12(segments)
 
 ### Platform Extension Methods
 
-Adapters can register platform-specific methods for the Event wrapper class. Methods are only available on Event instances of the corresponding platform; accessing them on other platforms raises `AttributeError`.
+Adapters can register platform-specific methods for the Event wrapper class. Methods are only available on Event instances of the corresponding platform, and an `AttributeError` is raised when accessed on other platforms.
 
-Platform methods take precedence over built-in methods via `Event.__getattribute__`, so they can override built-in interactive methods like `confirm`, `choose`, `collect`, `wait_reply`, providing platform-specific implementations (e.g., buttons, cards). Built-in implementations are exported as `_builtin_*` functions for overriding.
+Platform methods take precedence over built-in methods through `Event.__getattribute__`, allowing for overriding built-in interactive methods such as `confirm`, `choose`, `collect`, `wait_reply` to provide platform-specific implementations (e.g., buttons, cards). Built-in implementations are exported as `_builtin_*` functions for overriding.
 
 ```python
 # Email event - only email methods
@@ -2952,7 +2665,7 @@ event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "privat
 event.get_chat_type()    # ✅ Returns "private"
 event.get_subject()      # ❌ AttributeError
 
-# Built-in methods are always available
+# Built-in methods always available
 event.get_text()         # ✅ Any platform
 event.reply("hi")        # ✅ Any platform
 ```
@@ -2975,14 +2688,14 @@ hasattr(event, "get_subject")   # Returns True only when platform="email"
 
 ### Cross-platform Extension (Wildcard)
 
-`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods available on Event instances of **all platforms**. Suitable for features needing cross-platform reuse, such as AI chat, context management, etc.
+`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods that are available on Event instances of **all platforms**. Suitable for features that require cross-platform reuse, such as AI chat and context management.
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    # self is Event instance, can access event data and built-in methods
+    # self is the Event instance, can access event data and built-in methods
     await self.reply(f"AI: {prompt}")
 ```
 
@@ -2990,11 +2703,11 @@ After registration, any platform's event handler can call `event.ai_chat(...)`.
 
 Method resolution priority (from high to low): platform-specific methods → wildcard methods → built-in methods → dictionary key access.
 
-> Adapter developers register extension methods as described in [Event System API - Cross-platform Extension (Wildcard)](../../api-reference/event-system.md#跨平台扩展通配符).
+> Adapter developers register extension methods as described in [Event System API - Cross-platform Extension Wildcard](../../api-reference/event-system.md#跨平台扩展通配符).
 
 ## Related Documentation
 
-- [Module Development Getting Started](getting-started.md) - Create your first module
+- [Module Development Introduction](getting-started.md) - Create your first module
 - [Best Practices](best-practices.md) - Develop high-quality modules
 
 
@@ -3435,46 +3148,46 @@ Follow Semantic Versioning:
 
 ### 发布模块到模块商店
 
-# Publishing & Module Store Guide
+# Publishing and Module Store Guide
 
-Release the modules or adapters you develop to the ErisPulse Module Store, allowing other users to easily discover and install them.
+Publish your developed module or adapter to the ErisPulse Module Store, allowing other users to easily discover and install it.
 
 ## Module Store Overview
 
-The ErisPulse Module Store is a centralized module registry. Users can browse, search, and install community-contributed modules and adapters via the CLI tool.
+The ErisPulse Module Store is a centralized module registry where users can browse, search, and install community-contributed modules and adapters through the CLI tool.
 
 ### Browsing and Discovery
 
 ```bash
-# List all packages available remotely
+# List all available packages remotely
 epsdk list-remote
 
-# View only modules
+# Show only modules
 epsdk list-remote -t modules
 
-# View only adapters
+# Show only adapters
 epsdk list-remote -t adapters
 
 # Force refresh remote package list
 epsdk list-remote -r
 ```
 
-You can also visit [ErisPulse Official Website](https://www.erisdev.com/#market) to browse the module store online.
+You can also browse the module store online at [ErisPulse official website](https://www.erisdev.com/#market).
 
 ### Supported Submission Types
 
 | Type | Description | Entry-point Group |
-|------|-------------|------------------|
-| Module (模块) | Extend bot functionality, implement business logic | `erispulse.module` |
-| Adapter (适配器) | Connect new message platforms | `erispulse.adapter` |
+|------|-------------|-------------------|
+| Module | Extend bot functionality, implement business logic | `erispulse.module` |
+| Adapter | Connect to new messaging platforms | `erispulse.adapter` |
 
-## Quick Publish
+## Quick Publishing
 
-The entire process only takes three steps: Configure project → Publish to PyPI → Submit to module store.
+The entire process only requires three steps: configure the project → publish to PyPI → submit to the module store.
 
 ### 1. Configure pyproject.toml
 
-Ensure the project directory contains `pyproject.toml` and `README.md`, and configure entry-points based on the type:
+Ensure the project directory contains `pyproject.toml` and `README.md`, and configure entry-points according to the type:
 
 #### Module
 
@@ -3507,7 +3220,7 @@ requires-python = ">=3.10"
 "myplatform" = "MyAdapter:MyAdapter"
 ```
 
-> **Note**: The package name is recommended to start with `ErisPulse-` for easy user identification. The entry-point key name (e.g., `"MyModule"`) will serve as the module's access name within the SDK.
+> **Note**: It is recommended that package names start with `ErisPulse-` for easy identification by users. The entry-point key (e.g., `"MyModule"`) will serve as the module's access name in the SDK.
 
 ### 2. Publish to PyPI
 
@@ -3518,7 +3231,7 @@ python -m build
 python -m twine upload dist/*
 ```
 
-Verify installation after successful publishing:
+After successful publication, verify installation:
 
 ```bash
 pip install ErisPulse-MyModule
@@ -3526,24 +3239,25 @@ pip install ErisPulse-MyModule
 
 ### 3. Submit to Module Store
 
-Go to [ErisPulse Module Store](https://www.erisdev.com/#market), click "Submit Module", fill in module information after logging in.
+Go to [ErisPulse Module Store](https://www.erisdev.com/#market), click "Submit Module", log in, and fill in the module information.
 
-Supported login methods: **GitHub**, **Codeberg**, **Cloud Lake** (Yunhu). Choose one.
+Supported login methods: **GitHub**, **Codeberg**, **Yunhu**, choose any one.
 
-Key points for filling in:
+Key points to fill in:
 - Module name, description, repository address
-- Minimum SDK version: If unsure, just fill in the version number from the [ErisPulse latest release](https://pypi.org/project/ErisPulse/)
+- Minimum SDK version: If unsure, fill in the version number of the latest [ErisPulse release](https://pypi.org/project/ErisPulse/)
 
-Changes take effect immediately upon submission, and users can install via the module source. Modules will be marked as "Unverified", changing to "Verified" after the maintainer's review passes.
+After submission, it takes effect immediately, and users can install via the module source. The module will be marked as "unverified", and after the maintainer's review, it will be changed to "verified".
 
-> **Regarding Verification Status**:
-> - "Unverified" only means it has not been officially reviewed yet, it does not imply the module has issues
-> - Users will receive a risk warning when installing an unverified module via `epsdk install` and must confirm to proceed with installation
+> **About verification status**:
+> - "Unverified" only means it has not yet been officially reviewed, not that the module has problems
+> - When users install unverified modules via `epsdk install`, they will receive a risk warning and must confirm before continuing installation
 
 ### 4. Manage Published Modules
 
-After clicking "Submit Module" and logging into the module store, switch to the "My Modules" tab to:
-- **Edit** — Modify module description, repository address, tags, etc. The version number will sync automatically from PyPI
+After clicking "Submit Module" and logging in on the module store, switch to the "My Modules" tab to:
+
+- **Edit** — Modify module description, repository address, tags, etc. The version number will automatically sync from PyPI
 - **Delete** — Remove the module from the module store (irreversible)
 
 > Newly submitted modules may take a few minutes to appear in the "My Modules" list.
@@ -3556,7 +3270,7 @@ After clicking "Submit Module" and logging into the module store, switch to the 
 
 Users can upgrade via `epsdk upgrade MyModule`.
 
-## Pre-Publish Checklist
+## Pre-release Checklist
 
 Before pushing to PyPI, please confirm the following items one by one:
 
@@ -3564,40 +3278,40 @@ Before pushing to PyPI, please confirm the following items one by one:
 
 - [ ] All public APIs have type annotations (function signatures and return values)
 - [ ] All public methods have docstrings (`"""..."""` format, including `:param` / `:return` / `:raises`)
-- [ ] Passes `ruff check` (no warnings)
+- [ ] Passed `ruff check` (no warnings)
 - [ ] Test coverage ≥ 80%
-- [ ] Passes all test cases via `pytest`
+- [ ] Passed all `pytest` cases
 
 ### Compatibility
 
-- [ ] `pyproject.toml` declares minimum SDK version: `dependencies = ["ErisPulse>=x.y.z"]`
+- [ ] `pyproject.toml` declares the minimum SDK version: `dependencies = ["ErisPulse>=x.y.z"]`
 - [ ] Tested on Python 3.10 / 3.11 / 3.12 / 3.13
-- [ ] Tested on target operating system (Windows / Linux / macOS, if applicable)
+- [ ] Tested on target operating systems (Windows / Linux / macOS, if applicable)
 - [ ] No circular import dependencies
 
 ### Configuration
 
 - [ ] If using declarative configuration (`ConfigClass` + `BaseConfig` / `BotAccountConfig`), configuration fields have `description` (recommended i18n format) and `ui` metadata
-- [ ] If registered i18n translation keys, all 5 languages (zh-CN / zh-TW / en / ja / ru) are covered
+- [ ] If i18n translation keys are registered, all 5 languages (zh-CN / zh-TW / en / ja / ru) are covered
 - [ ] Sensitive fields are marked with `secret=True`
 
 ### Documentation
 
 - [ ] `README.md` has installation instructions and basic usage examples
-- [ ] `README.md` explains configuration method (configuration file examples + environment variables)
+- [ ] `README.md` explains configuration methods (configuration file examples + environment variables)
 - [ ] `CHANGELOG.md` records all changes
-- [ ] Adapters updated platform feature documentation (supported Send types, event types, etc.)
+- [ ] Adapter updates platform feature documentation (supported Send types, event types, etc.)
 
 ### Publishing
 
 - [ ] `pyproject.toml` version number has been updated
-- [ ] Build passes: `python -m build`
+- [ ] Build passed: `python -m build`
 - [ ] Pushed to PyPI: `python -m twine upload dist/*`
-- [ ] Installation verification passes: `pip install ErisPulse-xxx && epsdk run`
+- [ ] Installation verified: `pip install ErisPulse-xxx && epsdk run`
 
 ## Development Mode Testing
 
-Before official release, you can test in editable mode locally:
+Before formal release, you can test locally using editable mode:
 
 ```bash
 epsdk install -e /path/to/MyModule
@@ -3607,11 +3321,11 @@ pip install -e /path/to/MyModule
 
 ## Frequently Asked Questions
 
-### Must the package name start with `ErisPulse-`?
+### Must package names start with `ErisPulse-`?
 
 Not mandatory, but strongly recommended. This helps users identify ErisPulse ecosystem packages on PyPI.
 
-### Can a single package register multiple modules?
+### Can a package register multiple modules?
 
 Yes. Configure multiple key-value pairs in `entry-points`:
 
@@ -3623,21 +3337,21 @@ Yes. Configure multiple key-value pairs in `entry-points`:
 
 ### How long does the review take?
 
-Usually completed within 1-3 business days. You can check the verification status in "My Modules" in the module store.
+Typically completed within 1-3 working days. You can check the verification status in the "My Modules" section of the module store.
 
-## Distribute Applications via Docker Images
+## Distributing Applications via Docker Images
 
-If your application is not suitable for publishing to PyPI (e.g., contains private dependencies, requires pre-configured environment), you can publish a Docker image via **GitHub Container Registry (GHCR)**, allowing other users to `docker pull` and start with one command.
+If your application is not suitable for publishing to PyPI (e.g., contains private dependencies or requires pre-configured environments), you can publish Docker images via **GitHub Container Registry (GHCR)**, allowing other users to start with one click using `docker pull`.
 
 ### Applicable Scenarios
 
-- You have a **complete bot application** (module + config + entry script) and want to distribute it with one click
-- Module/Adapter dependencies are on **private packages** or have special installation processes, not suitable for PyPI
-- Want to provide an **out-of-the-box** deployment solution to lower the barrier to entry for users
+- You have a **complete robot application** (module + configuration + entry script) and want to distribute it with one click
+- Modules/adapters depend on **private packages** or have special installation processes, making them unsuitable for PyPI
+- You want to provide an **out-of-the-box deployment solution**, lowering the barrier to user adoption
 
 ### 1. Create Dockerfile
 
-Build based on the official ErisPulse image, just add your module:
+Build based on the ErisPulse official image, just add your module:
 
 ```dockerfile
 FROM erispulse/erispulse:latest
@@ -3653,7 +3367,7 @@ COPY MyModule/ ./MyModule/
 RUN uv pip install --system -e .
 ```
 
-If the module requires additional system dependencies (such as SSH client, etc.), add them after `RUN uv pip install`:
+If the module requires additional system dependencies (e.g., SSH client, etc.), add them after `RUN uv pip install`:
 
 ```dockerfile
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -3661,11 +3375,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 ```
 
-> `erispulse/erispulse:latest` already includes ErisPulse, ErisPulse-Dashboard, Python runtime, and uv, no need to install them repeatedly.
+> `erispulse/erispulse:latest` already includes ErisPulse, ErisPulse-Dashboard, Python runtime, and uv, no need to install repeatedly.
 
 ### 2. Create GitHub Actions Workflow
 
-Create in `.github/workflows/docker-publish.yml`:
+In `.github/workflows/docker-publish.yml`, create:
 
 ```yaml
 name: Publish Docker Image
@@ -3694,7 +3408,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up QEMU (multi-arch support)
+      - name: Set up QEMU (multi-architecture support)
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
@@ -3730,33 +3444,33 @@ jobs:
           cache-to: type=gha,mode=max
 ```
 
-> `GITHUB_TOKEN` is automatically provided by GitHub Actions, no need to manually create secrets.
+> `GITHUB_TOKEN` is automatically provided by GitHub Actions, no need to manually create a key.
 
 ### 3. Trigger Build
 
-Push code or create a Tag to trigger auto-build:
+Push code or tag to trigger automatic build:
 
 ```bash
 # Push to main branch to trigger
 git push origin main
 
-# Or create a Tag to trigger
+# Or tag to trigger
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-You can also manually trigger it in the **Actions** tab of the GitHub repository.
+You can also manually trigger it on the GitHub repository's **Actions** page.
 
-### 4. Set Image to Public
+### 4. Set Image as Public
 
-GHCR images are **private** by default. You need to set them to Public in GitHub settings so that other users can pull without logging in:
+GHCR images are private by default, and need to be set to Public in GitHub settings before other users can pull without logging in:
 
-1. Go to repository → **Packages** → Click on the corresponding Package
+1. Go to repository → **Packages** → Click the corresponding Package
 2. **Package settings** → **Danger Zone** → **Change visibility** → **Public**
 
 ### 5. User Usage
 
-After the build is complete, users can start with one command using `docker run`:
+After building, users can start with one line using `docker run`:
 
 ```bash
 docker run -d \
@@ -3786,9 +3500,9 @@ services:
     restart: unless-stopped
 ```
 
-### Publish to Docker Hub simultaneously
+### Publish to Docker Hub Simultaneously
 
-Extend the workflow, add Docker Hub login before the login steps, and add the Docker Hub address in `images`:
+Extend the workflow, add Docker Hub login before the login step, and add the Docker Hub address in `images`:
 
 ```yaml
       - name: Login to Docker Hub
@@ -3807,97 +3521,445 @@ Extend the workflow, add Docker Hub login before the login steps, and add the Do
             ghcr.io/${{ github.repository_owner }}/my-bot
 ```
 
-> You need to add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` in **Settings → Secrets** of the repository.
+> You need to add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` in the repository **Settings → Secrets**.
 
 ### Docker Image vs PyPI Publishing
 
 | Feature | Docker Image (GHCR) | PyPI Publishing |
 |---------|---------------------|-----------------|
-| Distribution | `docker pull` to run instantly | `pip install` + manual configuration |
-| Scope | Complete application/solution | Single module/adapter |
+| Distribution Method | `docker pull` one-click run | `pip install` + manual configuration |
+| Applicability | Complete applications/solutions | Individual modules/adapters |
 | Private Dependencies | Native support | Requires private PyPI source |
-| Module Store | N/A | Can be submitted to module store |
-| Multi-arch | Supports amd64/arm64 | Architecture agnostic |
+| Module Store | Not applicable | Can be submitted to module store |
+| Multi-architecture | Supports amd64/arm64 | Architecture-agnostic |
 
-The two methods do not conflict—you can simultaneously publish modules to the module store via PyPI and provide out-of-the-box Docker images via GHCR.
+These two methods are not contradictory—you can simultaneously publish modules to the module store via PyPI and provide ready-to-use Docker images via GHCR.
 
 
 ### CLI 命令参考
 
 # CLI Command Reference
 
-The ErisPulse command-line tool provides project management and package management capabilities.
+The ErisPulse command-line tool (`epsdk`) provides project management and package management features.
+
+> **Tip:** You can view detailed parameter descriptions for any command using `epsdk <command> --help`.
+
+---
 
 ## Package Management Commands
 
-| Command | Arguments | Description | Example |
-|-------|------|------|------|
-| `install` | `[package]... [--upgrade/-U] [--pre]` | Install modules/adapters | `epsdk install Yunhu` |
-| `uninstall` | `<package>...` | Uninstall modules/adapters | `epsdk uninstall old-module` |
-| `upgrade` | `[package]... [--force/-f] [--pre]` | Upgrade specified modules or all | `epsdk upgrade --force` |
-| `self-update` | `[version] [--pre] [--force/-f]` | Update SDK itself | `epsdk self-update` |
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
+| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | Install modules/adapters |
+| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | Uninstall modules/adapters |
+| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | Upgrade specified modules or all |
+| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | Update SDK itself |
+
+### install
+
+Installs ErisPulse module or adapter packages. If no package name is specified, enters interactive installation mode.
+
+**Aliases:** `i`, `add`
+
+**Parameters:**
+
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `[package]...` | | Package names to install, multiple can be specified |
+| `--upgrade` | `-U` | Upgrade to the latest version during installation |
+| `--pre` | | Allow installation of pre-release versions |
+| `--editable` | `-e` | Install in editable mode (requires path) |
+| `--user` | | Install to user site-packages directory |
+| `--no-deps` | | Do not install dependencies |
+| `--target` | `-t` | Install to specified directory |
+| `--index-url` | | Specify PyPI mirror source URL |
+| `--extra-index-url` | | Additional PyPI mirror source URL (can be specified multiple times) |
+| `--no-cache-dir` | | Disable cache |
+| `--requirement` | `-r` | Install from requirements file |
+| `--constraint` | `-c` | Install from constraint file |
+| `--force-reinstall` | | Force reinstallation |
+| `--ignore-installed` | | Ignore already installed packages |
+| `--compile` | | Compile .pyc files after installation |
+| `--no-compile` | | Do not compile .pyc files after installation |
+| `--prefix` | | Install to specified prefix directory |
+| `--src` | | Source code directory used for editable installation |
+| `--config-settings` | | Pass configuration to build backend (can be specified multiple times) |
+| `--no-binary` | | Restrict not to use binary packages (format like `:all:`) |
+| `--only-binary` | | Restrict to use only binary packages (format like `:all:`) |
+| `--prefer-binary` | | Prefer binary packages |
+| `--build-isolation` | | Enable build isolation |
+| `--no-build-isolation` | | Disable build isolation |
+| `--upgrade-strategy` | | Upgrade strategy: `eager`, `only-if-needed`, `to-satisfy-only` |
+| `--break-system-packages` | | Allow modification of system-managed Python packages |
+| `--no-uv` | | Use pip instead of uv |
+
+**Examples:**
+
+```bash
+# Install single module
+epsdk install Weather
+
+# Install multiple modules
+epsdk install Yunhu Weather
+
+# Install from mirror source and upgrade
+epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+# Editable mode installation (development mode)
+epsdk install -e ./my-adapter
+```
+
+### uninstall
+
+Uninstalls installed ErisPulse module or adapter packages. If no package name is specified, enters interactive uninstall mode.
+
+**Aliases:** `rm`, `remove`
+
+**Parameters:**
+
+| Parameter | Description |
+|-----------|-------------|
+| `<package>...` | Package names to uninstall, multiple can be specified |
+| `--no-uv` | Use pip instead of uv |
+
+**Examples:**
+
+```bash
+# Uninstall single module
+epsdk uninstall Weather
+
+# Uninstall multiple modules
+epsdk uninstall Yunhu Weather
+```
+
+### upgrade
+
+Upgrades installed ErisPulse components. If no package name is specified, upgrades interactively.
+
+**Aliases:** `up`
+
+**Parameters:**
+
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `[package]...` | | Package names to upgrade, multiple can be specified |
+| `--force` | `-f` | Force upgrade, skip confirmation |
+| `--pre` | | Allow upgrade to pre-release versions |
+| `--no-uv` | | Use pip instead of uv |
+
+**Examples:**
+
+```bash
+# Upgrade all packages
+epsdk upgrade
+
+# Upgrade specified package
+epsdk upgrade Weather
+
+# Force upgrade (skip confirmation)
+epsdk upgrade -f
+```
+
+### self-update
+
+Updates the ErisPulse SDK itself to the latest version.
+
+**Aliases:** `su`, `update`
+
+**Parameters:**
+
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `[version]` | | Specify target version number to update to |
+| `--pre` | | Allow update to pre-release versions |
+| `--force` | `-f` | Force update, skip confirmation |
+| `--no-uv` | | Use pip instead of uv |
+
+**Examples:**
+
+```bash
+# Update to latest stable version
+epsdk self-update
+
+# Update to specified version
+epsdk self-update 1.2.3
+
+# Allow pre-release version
+epsdk self-update --pre
+
+# Force update
+epsdk self-update -f
+```
+
+---
 
 ## Information Query Commands
 
-| Command | Arguments | Description | Example |
-|-------|------|------|------|
-| `list` | `[--type/-t <type>]` | List installed modules/adapters | `epsdk list -t modules` |
-| | `[--outdated/-o]` | Only show upgradable packages | `epsdk list -o` |
-| `list-remote` | `[--type/-t <type>]` | List remote available packages | `epsdk list-remote` |
-| | `[--refresh/-r]` | Force refresh package list | `epsdk list-remote -r` |
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
+| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | List installed components |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | List remote available components |
 
-## Execution Control Commands
+### list
 
-| Command | Arguments | Description | Example |
-|-------|------|------|------|
-| `run` | `<script> [--reload]` | Run specified script | `epsdk run main.py --reload` |
+Lists installed ErisPulse modules and adapters.
+
+**Aliases:** `l`, `ls`
+
+**Parameters:**
+
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
+| `--outdated` | `-o` | Only show upgradable packages |
+
+**Examples:**
+
+```bash
+# List all installed components
+epsdk list
+
+# List only modules
+epsdk list -t modules
+
+# List only adapters
+epsdk list -t adapters
+
+# Show only upgradable packages
+epsdk list -o
+```
+
+### list-remote
+
+Lists available ErisPulse modules and adapters in the remote repository.
+
+**Aliases:** `lsr`
+
+**Parameters:**
+
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
+| `--refresh` | `-r` | Force refresh remote package list cache |
+
+**Examples:**
+
+```bash
+# List all remote available components
+epsdk list-remote
+
+# List only remote modules
+epsdk list-remote -t modules
+
+# Force refresh cache and list
+epsdk list-remote -r
+```
+
+---
+
+## Runtime Control Commands
+
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
+| `run` | `r` | `[script] [--reload]` | Run specified script or SDK |
+
+### run
+
+Runs ErisPulse project script or directly starts the SDK. Supports hot reload mode.
+
+**Aliases:** `r`
+
+**Parameters:**
+
+| Parameter | Description |
+|-----------|-------------|
+| `[script]` | Script file to run, if not specified, runs the SDK |
+| `--reload` | Enable hot reload mode, automatically restarts on file changes |
+
+**Examples:**
+
+```bash
+# Run SDK directly
+epsdk run
+
+# Run specified script file
+epsdk run main.py
+
+# Run in hot reload mode (auto restart on file change)
+epsdk run main.py --reload
+
+# SDK hot reload mode
+epsdk run --reload
+```
+
+---
 
 ## Project Management Commands
 
-| Command | Arguments | Description | Example |
-|-------|------|------|------|
-| `init` | `[--project-name/-n <name>]` | Interactive project initialization | `epsdk init -n my_bot` |
-| | `[--quick/-q]` | Quick mode, skip interaction | `epsdk init -q -n bot` |
-| | `[--force/-f]` | Force override existing configuration | `epsdk init -f` |
-| `create` | `[module|adapter]` | Create scaffold project | `epsdk create` |
-| | `[--name/-n <name>]` | Project name (PascalCase) | `epsdk create module -n MyModule` |
-| | `[--description/-d <desc>]` | Project description | `epsdk create adapter -d "xx adapter"` |
-| | `[--author/-a <name>]` | Author name | `epsdk create -a yourname` |
-| | `[--email/-e <mail>]` | Author email | `epsdk create -e you@mail.com` |
-| | `[--homepage <url>]` | Project homepage URL | |
-| | `[--output/-o <dir>]` | Output directory (default current directory) | `epsdk create -o ./projects` |
-| | `[--force/-f]` | Force overwrite existing directory | `epsdk create -f` |
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
+| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | Initialize ErisPulse project |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | Create module/adapter scaffold |
 
-## Parameter Reference
+### init
 
-### Common Parameters
+Initializes a new ErisPulse project. Supports interactive and quick mode.
 
-| Parameter | Short Option | Description |
-|------|---------|------|
+**Parameters:**
+
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--project-name` | `-n` | Project name |
+| `--quick` | `-q` | Quick mode, skip interactive wizard |
+| `--force` | `-f` | Force overwrite existing configuration file |
+| `--here` | | Initialize in current directory, do not create subdirectory |
+| `--no-uv` | | Use pip instead of uv |
+
+**Examples:**
+
+```bash
+# Interactive initialization
+epsdk init
+
+# Quick initialization
+epsdk init -q -n my_bot
+
+# Force overwrite existing configuration
+epsdk init -f
+
+# Initialize in current directory
+epsdk init --here -n my_bot
+```
+
+### create
+
+Creates a scaffold project for ErisPulse module or adapter.
+
+**Parameters:**
+
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `{module,adapter}` | | Type to create: `module` or `adapter` |
+| `--name` | `-n` | Project name (PascalCase) |
+| `--description` | `-d` | Project description |
+| `--author` | `-a` | Author name |
+| `--email` | `-e` | Author email |
+| `--homepage` | | Project homepage URL |
+| `--output` | `-o` | Output directory (default is current directory) |
+| `--force` | `-f` | Force overwrite existing directory |
+
+**Examples:**
+
+```bash
+# Interactive creation (guided selection of type and filling information)
+epsdk create
+
+# Directly create Module project
+epsdk create module -n MyModule
+
+# Directly create Adapter project
+epsdk create adapter -n MyAdapter
+
+# Complete parameters
+epsdk create module -n MyModule -d "module description" -a "author" -e "mail@example.com"
+
+# Specify output directory
+epsdk create module -n MyModule -o ./projects
+
+# Force overwrite existing directory
+epsdk create module -n MyModule -f
+```
+
+---
+
+## Language Commands
+
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
+| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | View or switch CLI display language |
+
+### i18n
+
+View current CLI language, list supported languages, or switch display language. If no parameter is specified, enters interactive selection interface.
+
+**Aliases:** `language`, `lang`
+
+**Parameters:**
+
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `[lang]` | | Language code to switch to (e.g., `zh-CN`, `en`, `ja`, `ru`) |
+| `--list` | `-l` | List all supported languages |
+
+**Examples:**
+
+```bash
+# Interactive language selection
+epsdk i18n
+
+# Switch to English
+epsdk i18n en
+
+# Switch to Japanese
+epsdk i18n ja
+
+# List all supported languages
+epsdk i18n --list
+```
+
+---
+
+## Type Stub Commands
+
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
+| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | Generate type stub files to enable IDE completion |
+
+### types
+
+Scans installed ErisPulse modules and adapters, generates `.pyi` type stub files for them, thus enabling accurate code completion and type checking support in IDE.
+
+**Aliases:** `t`, `stub`
+
+**Parameters:**
+
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--output` | `-o` | Output path (default is `ep-stubs/` under current directory) |
+| `--force` | | Force overwrite existing stub files |
+| `--adapters-only` | | Generate type stubs only for adapters |
+| `--modules-only` | | Generate type stubs only for modules |
+
+> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive; if both are specified, the latter takes effect.
+
+**Examples:**
+
+```bash
+# Generate type stubs for all installed modules and adapters
+epsdk types
+
+# Generate only adapter stubs
+epsdk types --adapters-only
+
+# Output to specified directory
+epsdk types -o ./typings
+
+# Force overwrite existing files
+epsdk types --force
+```
+
+---
+
+## Global Parameters
+
+The following parameters apply to all commands:
+
+| Parameter | Short | Description |
+|-----------|-------|-------------|
 | `--help` | `-h` | Display help information |
-| `--verbose` | `-v` | Display verbose output |
+| `--verbose` | `-v` | Display detailed output |
 
-### install Parameters
-
-| Parameter | Description |
-|------|------|
-| `[package]` | Package name to install, multiple can be specified |
-| `--upgrade` | `-U` | Upgrade to latest version during install |
-| `--pre` | Allow installing pre-release versions |
-
-### list Parameters
-
-| Parameter | Description |
-|------|------|
-| `--type` | `-t` | Specify type: `modules`, `adapters`, `all` |
-| `--outdated` | `-o` | Only show upgradable packages |
-
-### run Parameters
-
-| Parameter | Description |
-|------|------|
-| `--reload` | Enable hot reload mode to monitor file changes |
-| `--no-reload` | Disable hot reload mode |
+---
 
 ## Interactive Installation
 
@@ -3917,7 +3979,7 @@ The interactive interface provides:
 ### Installing Modules
 
 ```bash
-# Install a single module
+# Install single module
 epsdk install Weather
 
 # Install multiple modules
@@ -3927,43 +3989,46 @@ epsdk install Yunhu Weather
 epsdk install Weather -U
 ```
 
-### Listing Modules
+### Listing Components
 
 ```bash
-# List all modules
+# List all components
 epsdk list
 
 # List only adapters
 epsdk list -t adapters
 
-# List only upgradable modules
+# List only upgradable components
 epsdk list -o
+
+# View remote available components
+epsdk list-remote
 ```
 
-### Uninstalling Modules
+### Uninstalling Components
 
 ```bash
-# Uninstall a single module
+# Uninstall single component
 epsdk uninstall Weather
 
-# Uninstall multiple modules
+# Uninstall multiple components
 epsdk uninstall Yunhu Weather
 ```
 
-### Upgrading Modules
+### Upgrading Components
 
 ```bash
-# Upgrade all modules
+# Upgrade all components
 epsdk upgrade
 
-# Upgrade specified module
+# Upgrade specified component
 epsdk upgrade Weather
 
 # Force upgrade
 epsdk upgrade -f
 ```
 
-### Running Projects
+### Running Project
 
 ```bash
 # Normal run
@@ -3973,7 +4038,30 @@ epsdk run main.py
 epsdk run main.py --reload
 ```
 
-### Initializing Projects
+### Switching Language
+
+```bash
+# Interactive language selection
+epsdk i18n
+
+# Directly switch to English
+epsdk i18n en
+
+# List supported languages
+epsdk i18n --list
+```
+
+### Generating Type Stubs
+
+```bash
+# Generate all type stubs
+epsdk types
+
+# Generate only module type stubs
+epsdk types --modules-only
+```
+
+### Initializing Project
 
 ```bash
 # Interactive initialization
@@ -3983,10 +4071,10 @@ epsdk init
 epsdk init -q -n my_bot
 ```
 
-### Creating Scaffolds
+### Creating Scaffold
 
 ```bash
-# Interactive creation (guided selection and information filling)
+# Interactive creation (guided selection of type and filling information)
 epsdk create
 
 # Directly create Module project
@@ -3995,8 +4083,8 @@ epsdk create module -n MyModule
 # Directly create Adapter project
 epsdk create adapter -n MyAdapter
 
-# Full parameters
-epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
+# Complete parameters
+epsdk create module -n MyModule -d "module description" -a "author" -e "mail@example.com"
 
 # Force overwrite existing directory
 epsdk create module -n MyModule -f
@@ -4383,9 +4471,9 @@ The returned structure contains the status of the following subsystems:
 
 # Event System API
 
-This document details the API for the ErisPulse event system.
+This document provides a detailed introduction to the ErisPulse event system API.
 
-## Command 命令模块
+## Command Module
 
 ### Registering Commands
 
@@ -4393,16 +4481,16 @@ This document details the API for the ErisPulse event system.
 from ErisPulse.Core.Event import command
 
 # Basic command
-@command("hello", help="Send greeting")
+@command("hello", help="Send a greeting")
 async def hello_handler(event):
     await event.reply("Hello!")
 
 # Command with aliases
-@command(["help", "h"], aliases=["帮助"], help="Display help")
+@command(["help", "h"], aliases=["help"], help="Show help")
 async def help_handler(event):
     pass
 
-# Command with permissions
+# Command with permission
 def is_admin(event):
     return event.get("user_id") in admin_ids
 
@@ -4441,11 +4529,11 @@ visible_commands = command.get_visible_commands()
 
 ```python
 # Wait for user reply
-@command("ask", help="Ask for user info")
+@command("ask", help="Ask user information")
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
-        prompt="Please enter your name:",  # Sent above
+        prompt="Please enter your name:",  # Already sent above
         timeout=30.0
     )
     
@@ -4453,7 +4541,7 @@ async def ask_command(event):
         name = reply.get_text()
         await event.reply(f"Hello, {name}!")
 
-# Wait for reply with validation
+# Waiting reply with validation
 def validate_age(event_data):
     try:
         age = int(event_data.get_text())
@@ -4461,7 +4549,7 @@ def validate_age(event_data):
     except ValueError:
         return False
 
-@command("age", help="Ask for user age")
+@command("age", help="Ask user age")
 async def age_command(event):
     await event.reply("Please enter your age:")
     
@@ -4473,26 +4561,26 @@ async def age_command(event):
     
     if reply:
         age = int(reply.get_text())
-        await event.reply(f"You are {age} years old")
+        await event.reply(f"Your age is {age} years old")
 
-# Wait for reply with callback
+# Waiting reply with callback
 async def handle_confirmation(reply_event):
     text = reply_event.get_text().lower()
-    if text in ["是", "yes", "y"]:
+    if text in ["yes", "是", "y"]:
         await event.reply("Operation confirmed!")
     else:
-        await event.reply("Operation cancelled.")
+        await event.reply("Operation canceled.")
 
 @command("confirm", help="Confirm operation")
 async def confirm_command(event):
     await command.wait_reply(
         event,
-        prompt="Please enter '是' or '否':",
+        prompt="Please enter 'yes' or 'no':",
         callback=handle_confirmation
     )
 ```
 
-## Message 消息模块
+## Message Module
 
 ### Message Events
 
@@ -4516,7 +4604,7 @@ async def group_handler(event):
     group_id = event.get_group_id()
     sdk.logger.info(f"Group message from: {group_id}")
 
-# Listen to @ mentions
+# Listen to @ messages
 @message.on_at_message()
 async def at_handler(event):
     mentions = event.get_mentions()
@@ -4527,52 +4615,52 @@ async def at_handler(event):
 
 ```python
 # Use priority to control execution order
-@message.on_message(priority=10)  # Higher number = higher priority
+@message.on_message(priority=10)  # Higher value means higher priority
 async def high_priority_handler(event):
     pass
 
 # Implement conditional filtering inside the handler
 @message.on_message()
 async def filtered_handler(event):
-    if "关键词" not in event.get_text():
+    if "keyword" not in event.get_text():
         return
-    # Handle messages containing keywords
+    # Process messages containing the keyword
     pass
 ```
 
-## Notice 通知模块
+## Notice Module
 
-### Notification Events
+### Notice Events
 
 ```python
 from ErisPulse.Core.Event import notice
 
-# Friend add
+# Friend added
 @notice.on_friend_add()
 async def friend_add_handler(event):
     user_id = event.get_user_id()
     await event.reply("Welcome to add me as a friend!")
 
-# Friend remove
+# Friend removed
 @notice.on_friend_remove()
 async def friend_remove_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"Friend removed: {user_id}")
 
-# Group member increase
+# Group member increased
 @notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
-    await event.reply(f"Welcome new member!")
+    await event.reply("Welcome new member!")
 
-# Group member decrease
+# Group member decreased
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"Group member left: {user_id}")
 ```
 
-## Request 请求模块
+## Request Module
 
 ### Request Events
 
@@ -4584,30 +4672,30 @@ from ErisPulse.Core.Event import request
 async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
-    sdk.logger.info(f"Friend request: {user_id}, Comment: {comment}")
+    sdk.logger.info(f"Friend request: {user_id}, comment: {comment}")
 
-# Group invite request
+# Group invitation request
 @request.on_group_request()
 async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"Group invite: {group_id}, From: {user_id}")
+    sdk.logger.info(f"Group invitation: {group_id}, from: {user_id}")
 ```
 
-## Meta 元事件模块
+## Meta Module
 
 ### Meta Events
 
 ```python
 from ErisPulse.Core.Event import meta
 
-# Connect event
+# Connection event
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
     sdk.logger.info(f"Platform {platform} connected successfully")
 
-# Disconnect event
+# Disconnection event
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
@@ -4616,37 +4704,37 @@ async def disconnect_handler(event):
 # Heartbeat event
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
-    sdk.logger.debug("Heartbeat received")
+    sdk.logger.debug("Received heartbeat")
 ```
 
 ### Bot Status Query
 
-After an adapter sends a meta event, the framework automatically tracks the Bot status. Refer to [Adapter System API - Bot Status Management](adapter-system.md#bot-状态管理) for query APIs and lifecycle event listeners.
+When the adapter sends a meta event, the framework automatically tracks the Bot status. For query APIs and lifecycle event listeners, refer to [Adapter System API - Bot Status Management](adapter-system.md#bot-status-management).
 
 ## Event Wrapper Class
 
-Event handlers in the Event module receive an instance of the Event wrapper class, which inherits from `dict` and provides convenience methods.
+Event module event handlers receive an Event wrapper class instance, which inherits from dict and provides convenient methods.
 
 ### Core Methods
 
 ```python
-# Get event info
+# Get event information
 event_id = event.get_id()
 event_time = event.get_time()
 event_type = event.get_type()
 detail_type = event.get_detail_type()
 platform = event.get_platform()
 
-# Get bot info
+# Get bot information
 self_platform = event.get_self_platform()
 self_user_id = event.get_self_user_id()
 self_info = event.get_self_info()
 ```
 
-### Session Identifiers
+### Session Identifier
 
 ```python
-# Unified target ID: group_id for groups, user_id for private chats, etc.
+# Unified target ID: returns group_id for group messages, user_id for private messages, etc.
 target_id = event.get_target_id()
 
 # Unique session identifier, format: {platform}:{detail_type}:{target_id}
@@ -4654,7 +4742,7 @@ session_id = event.get_session_id()
 # Example: "telegram:private:12345", "qq:group:67890"
 ```
 
-`get_target_id()` returns the first non-empty value in the following order: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`. Suitable for contexts like context management and state storage that require a unified session identifier.
+`get_target_id()` returns the first non-empty value in the following order: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`. This is suitable for scenarios requiring a unified session identifier, such as context management and state storage.
 
 ### Message Methods
 
@@ -4664,15 +4752,15 @@ message_segments = event.get_message()
 alt_message = event.get_alt_message()
 text = event.get_text()
 
-# Get sender info
+# Get sender information
 user_id = event.get_user_id()
 nickname = event.get_user_nickname()
 sender = event.get_sender()
 
-# Get group info
+# Get group information
 group_id = event.get_group_id()
 
-# Check message type
+# Determine message type
 is_msg = event.is_message()
 is_private = event.is_private_message()
 is_group = event.is_group_message()
@@ -4686,29 +4774,29 @@ mentions = event.get_mentions()
 ### Command Information
 
 ```python
-# Get command info
+# Get command information
 cmd_name = event.get_command_name()
 cmd_args = event.get_command_args()
 cmd_raw = event.get_command_raw()
 
-# Check if it is a command
+# Determine if it's a command
 is_cmd = event.is_command()
 ```
 
-### Reply Methods
+### Reply Functionality
 
 ```python
 # Basic reply
 await event.reply("This is a message")
 
-# Specify send method
+# Specify sending method
 await event.reply("http://example.com/image.jpg", method="Image")
 
-# Reply with @user and quoted message
+# Reply with @ user and reply to message
 await event.reply("Hello", at_users=["user1"], reply_to="msg_id")
 
-# @ everyone
-await event.reply("Notice", at_all=True)
+# @ all members
+await event.reply("Announcement", at_all=True)
 
 # Reply using OneBot12 message segments
 from ErisPulse.Core.Event import MessageBuilder
@@ -4719,33 +4807,33 @@ await event.reply_ob12(msg)
 reply = await event.wait_reply(timeout=30)
 ```
 
-### Platform Capabilities Query
+### Platform Capability Query
 
 ```python
-# Check if the current platform supports a send method
+# Check if current platform supports a certain sending method
 if event.supports("Image"):
     await event.reply(url, method="Image")
 
-# List all available send methods for the current platform
+# List all available sending methods for current platform
 methods = event.available_methods()
 # ["Text", "Image", "Voice", ...]
 ```
 
-### `reply()` Method Details
+### Reply Methods
 
-The `reply()` method supports specifying the send type via the `method` parameter, as well as two convenient boolean parameters:
+The `reply()` method supports specifying the sending type via the `method` parameter, as well as two convenient boolean parameters:
 
 ```python
 # Simple text reply
 await event.reply("Hello")
 
-# Reply and @ sender
+# Reply and @ sender (automatically extracts user_id)
 await event.reply("Hello", at_sender=True)
 
-# Reply and quote the current message
+# Reply and quote current message (automatically extracts message_id)
 await event.reply("Received", reply_to_message=True)
 
-# Combining them
+# Combine usage
 await event.reply("Received", at_sender=True, reply_to_message=True)
 
 # Send image (using method parameter)
@@ -4759,32 +4847,32 @@ else:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `content` | str | Message content |
-| `method` | str | Send method, default "Text", options include "Image"/"Voice"/"Video"/"File" etc. |
-| `at_sender` | bool | Whether to @ the sender (automatically extracts user_id) |
-| `quote` | bool | Whether to reply/quote the current message (automatically extracts message_id) |
+| `content` | str | Content to send |
+| `method` | str | Sending method, default "Text", optional "Image"/"Voice"/"Video"/"File" etc. |
+| `at_sender` | bool | Whether to @ sender (automatically extract user_id) |
+| `quote` | bool | Whether to quote reply to current message (automatically extract message_id) |
 | `at_users` | list[str] | List of users to @ |
 | `reply_to` | str | Manually specify the message ID to reply to |
-| `at_all` | bool | Whether to @ everyone |
+| `at_all` | bool | Whether to @ all members |
 
-### Interactive Methods
+### Interaction Methods
 
 ```python
-# confirm — Confirm conversation (returns True/False/None)
-if await event.confirm("Are you sure you want to perform this operation?"):
+# confirm — Confirmation dialog (returns True/False/None)
+if await event.confirm("Are you sure to execute this operation?"):
     await event.reply("Confirmed")
 
-# Use non-Text methods to send confirmation prompts
+# Use non-Text method to send confirmation prompt
 if await event.confirm("http://example.com/image.jpg", method="Image"):
-    await event.reply("Image confirmation received")
+    await event.reply("Confirmed image prompt")
 
-# choose — Select menu (returns option index or None)
-choice = await event.choose("Please select a color:", ["红色", "绿色", "蓝色"])
+# choose — Selection menu (returns option index or None)
+choice = await event.choose("Please select color:", ["Red", "Green", "Blue"])
 
 # options_format="auto" (default) automatically selects style based on method:
-# Markdown→Unordered list (- 1.Option), Html→Ordered list (<ol>), Other→Plain text list
-# Text-based methods (Markdown/Html, etc.) merge options at the end by default
-# merge_prompt=True forces merging for any method; placeholder allows custom placeholder
+# Markdown→unordered list (- 1. Option), Html→ordered list (<ol>), others→plain text list
+# Text-based methods (Markdown/Html etc.) default merge options to the end
+# merge_prompt=True forces any method to merge; placeholder can customize placeholder
 choice = await event.choose(
     "## Please select\n{options}", ["A", "B"],
     method="Markdown", merge_prompt=True,
@@ -4798,7 +4886,7 @@ data = await event.collect([
     {"key": "avatar", "prompt": "Please send your avatar:", "method": "Image"},
 ])
 
-# wait_for — Wait for any event meeting conditions
+# wait_for — Wait for any event that meets the condition
 evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
 # conversation — Multi-turn conversation context
@@ -4806,12 +4894,12 @@ conv = event.conversation(timeout=60)
 await conv.say("Welcome!")
 ```
 
-> For complete parameter descriptions and more examples of interactive methods, refer to [Event Wrapper Class Deep Dive](../developer-guide/modules/event-wrapper.md) and [Conversation Multi-turn](../advanced/conversation.md).
+> For complete parameter descriptions and more examples of interaction methods, refer to [Event Wrapper Class Detailed Explanation](../developer-guide/modules/event-wrapper.md) and [Conversation Multi-turn Dialogue](../advanced/conversation.md).
 
 ### Utility Methods
 
 ```python
-# Convert to dict
+# Convert to dictionary
 event_dict = event.to_dict()
 
 # Check if already processed
@@ -4825,11 +4913,11 @@ raw_type = event.get_raw_type()
 
 ### Platform Extension Methods
 
-Adapters can register platform-specific methods for Events, available only on instances of that platform.
+Adapters can register platform-specific methods for Event, which are only available on instances of the corresponding platform.
 
 #### User: Using Platform Extension Methods
 
-After an adapter registers platform-specific methods, you can call them directly in event handlers. Methods vary by platform, please refer to the corresponding [Platform Documentation](../platform-guide/).
+After adapters register platform-specific methods, you can directly call them in event handlers. Each platform's methods differ; please refer to the corresponding [Platform Documentation](../platform-guide/).
 
 ```python
 from ErisPulse.Core.Event import message
@@ -4840,20 +4928,20 @@ async def handle_message(event):
 
     # Call platform-specific methods based on platform
     if platform == "email":
-        subject = event.get_subject()           # Email specific
-        attachments = event.get_attachments()   # Email specific
+        subject = event.get_subject()           # Email-specific
+        attachments = event.get_attachments()   # Email-specific
 ```
 
-#### Query Platform Registered Methods
+#### Querying Registered Platform Methods
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
 
-# See what methods are registered for a platform
+# View which methods are registered for a platform
 methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", "get_attachments", ...]
 
-# Dynamically judge and call
+# Dynamically check and call
 for method_name in get_platform_event_methods(event.get_platform()):
     method = getattr(event, method_name)
     print(f"{method_name}: {method()}")
@@ -4864,12 +4952,12 @@ for method_name in get_platform_event_methods(event.get_platform()):
 Methods registered for different platforms do not interfere with each other:
 
 ```python
-# Email event - Only email methods
+# Email event - only email methods
 event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
 event.get_subject()      # ✅ "Hello"
 event.get_chat_type()    # ❌ AttributeError
 
-# Telegram event - Only Telegram methods
+# Telegram event - only Telegram methods
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
 event.get_chat_type()    # ✅ "private"
 event.get_subject()      # ❌ AttributeError
@@ -4878,15 +4966,15 @@ event.get_subject()      # ❌ AttributeError
 #### `hasattr` / `dir` Support
 
 ```python
-hasattr(event, "get_subject")   # Only returns True if platform="email"
+hasattr(event, "get_subject")   # Returns True only when platform="email"
 "get_subject" in dir(event)     # Same as above
 ```
 
-### Adapter: Registering Platform Extension Methods
+#### Adapter: Registering Platform Extension Methods
 
-Adapters can register platform-specific methods for Events using decorators. The first parameter of the method is `self` (the Event instance), allowing free access to event data.
+Adapters can register platform-specific methods for Event using decorators. The first parameter of the method is `self` (Event instance), allowing free access to event data.
 
-#### Registering Single Method
+##### Single Method Registration
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -4902,7 +4990,7 @@ def get_from(self):
     return self.get("email_raw", {}).get("from", {})
 ```
 
-#### Registering Batch (Mixin Class)
+##### Batch Registration (Mixin Class)
 
 When there are many methods, it is recommended to use a Mixin class for batch registration:
 
@@ -4923,32 +5011,32 @@ class EmailEventMixin:
 register_event_mixin("email", EmailEventMixin)
 ```
 
-#### Return Value Specification
+##### Return Value Specification
 
 | Scenario | Return Value | User Usage |
 |----------|--------------|------------|
-| Returning data (text, dict, etc.) | Direct return value | `subject = event.get_subject()` |
-| Performing operations (sending messages, etc.) | Returns `asyncio.Task` | `task = event.do_something()` (optional `await`) |
+| Return data (text, dict, etc.) | Direct return value | `subject = event.get_subject()` |
+| Execute operation (send message, etc.) | Return `asyncio.Task` | `task = event.do_something()` Optional `await` |
 
-> **Recommendation**: Methods that do not return data should return `asyncio.Task`, allowing users to decide whether to `await` themselves, even if not `awaited`, the operation will still complete.
+> **Recommendation**: Non-data returning methods return `asyncio.Task`, so users can decide whether to `await`. Even if not `awaited`, the operation will complete in the background.
 
 ```python
 @register_event_method("email")
 def forward_email(self, to_address: str):
-    """Forward email — Returns Task, user can choose to await"""
+    """Forward email — returns Task, user can decide whether to await"""
     import asyncio
     return asyncio.create_task(
         self._do_forward(to_address)
     )
 
-# User can await to wait for result
+# User can await and wait for the result
 await event.forward_email("user@example.com")
 
-# Or don't await, operation executes in background
+# Or not await, operation runs in the background
 event.forward_email("user@example.com")
 ```
 
-#### Unregistering Methods
+##### Unregistering Methods
 
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
@@ -4956,15 +5044,15 @@ from ErisPulse.Core.Event import unregister_event_method, unregister_platform_ev
 # Unregister a single method
 unregister_event_method("email", "get_subject")
 
-# Unregister all methods for a platform (call on adapter shutdown)
+# Unregister all methods for a platform (called during adapter shutdown)
 unregister_platform_event_methods("email")
 ```
 
-#### Overriding Built-in Methods
+##### Overriding Built-in Methods
 
-`register_event_mixin` / `register_event_method` support overriding Event built-in methods (such as `confirm`, `choose`, `collect`, `wait_reply`, `reply`, etc.). Registered platform methods take precedence over built-in methods via `Event.__getattribute__`, allowing adapters to provide platform-specific interaction implementations.
+`register_event_mixin` / `register_event_method` supports overriding Event built-in methods (such as `confirm`, `choose`, `collect`, `wait_reply`, `reply`, etc.). Registered platform methods take precedence over built-in methods through `Event.__getattribute__`, so adapters can provide platform-specific interactive implementations.
 
-The built-in implementations are exported as `_builtin_*` functions; the overriding side can call them as a fallback:
+Built-in implementations are exported as `_builtin_*` functions, and overriding methods can call them as fallback:
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
@@ -4975,7 +5063,7 @@ class YunhuEventMixin:
         buttons = [[{"text": opt} for opt in options]]
         await self.reply(prompt)
         # ...wait for button callback or text reply...
-        # Fallback to built-in logic
+        # Fall back to built-in logic
         return await _builtin_choose(self, None, options, timeout, "Text")
 
 register_event_mixin("yunhu", YunhuEventMixin)
@@ -4983,7 +5071,7 @@ register_event_mixin("yunhu", YunhuEventMixin)
 
 ## Cross-Platform Extension (Wildcard)
 
-`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods that are available on **all platforms'** Event instances. Suitable for functional modules that require cross-platform reuse, such as AI conversations and context management.
+`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods available on Event instances for **all platforms**. Suitable for cross-platform reusable features such as AI chat and context management.
 
 ### Registering Cross-Platform Methods
 
@@ -4992,11 +5080,11 @@ from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    """self is the Event instance, can freely access event data and built-in methods"""
+    """self is an Event instance, can freely access event data and built-in methods"""
     await self.reply(f"AI: {prompt}")
 ```
 
-After registration, all platform event handlers can call it:
+After registration, all platform event handlers can call:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -5008,26 +5096,26 @@ async def handler(event):
 
 ### Method Resolution Priority
 
-When accessing Event methods via attribute access, the resolution order is:
+When accessing Event methods via attributes, the resolution order is:
 
-1. **Platform-Specific Methods** (overridden for current platform)
-2. **Wildcard Methods** (methods registered with `"*"`)
-3. **Built-in Methods** (`reply`, `confirm`, etc.)
-4. **Dict Key Access**
+1. **Platform-specific methods** (overrides for current platform)
+2. **Wildcard methods** (cross-platform methods registered with `"*"` )
+3. **Built-in methods** (`reply`, `confirm`, `choose`, `collect`, `wait_reply`, etc.)
+4. **Dictionary key access**
 
-> Therefore, wildcard methods can override built-in methods (like `reply`), but will be further overridden by platform-specific methods with the same name.
+> Therefore, wildcard methods can override built-in methods (such as `reply`), but will be further overridden by same-named platform-specific methods.
 
 ## Priority System
 
-Event handlers support priorities, where higher numbers indicate higher priority:
+Event handlers support priority, with higher values meaning higher priority:
 
 ```python
-# High priority handler executes first
+# High-priority handler executes first
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     pass
 
-# Low priority handler executes last
+# Low-priority handler executes later
 @message.on_message(priority=0)
 async def low_priority_handler(event):
     pass
@@ -5035,9 +5123,9 @@ async def low_priority_handler(event):
 
 ## Related Documentation
 
-- [Core Modules API](core-modules.md) - Core modules API
-- [Adapter System API](adapter-system.md) - Adapter management API
-- [Module Development Guide](../developer-guide/modules/) - Developing custom modules
+- [Core Modules API](core-modules.md) - Core Modules API
+- [Adapter System API](adapter-system.md) - Adapter Management API
+- [Module Development Guide](../developer-guide/modules/) - Guide for Developing Custom Modules
 
 
 ====
@@ -5047,13 +5135,13 @@ async def low_priority_handler(event):
 
 ### Conversation 多轮对话
 
-# Conversation Multi-turn Conversation
+# Conversation Multi-turn Conversations
 
 The `Conversation` class provides convenient methods for multi-turn interactions within the same session, suitable for scenarios such as guided operations, information collection, and conversational question-answering.
 
 ## Creating a Conversation
 
-Create a conversation using the `conversation()` method of the `Event` object:
+Create a conversation through the `conversation()` method of an `Event` object:
 
 ```python
 from ErisPulse.Core.Event import command
@@ -5062,22 +5150,22 @@ from ErisPulse.Core.Event import command
 async def quiz_handler(event):
     conv = event.conversation(timeout=30)
 
-    await conv.say("🎮 Welcome to the quiz!")
+    await conv.say("🎮 Welcome to the knowledge quiz!")
 
-    answer = await conv.choose("Question 1: Who is the creator of Python?", [
+    answer = await conv.choose("Question 1: Who created Python?", [
         "Guido van Rossum",
         "James Gosling",
         "Dennis Ritchie",
     ])
 
     if answer is None:
-        await conv.say("Timed out, try again next time!")
+        await conv.say("Timeout, try again next time!")
         return
 
     if answer == 0:
         await conv.say("Correct!")
     else:
-        await conv.say("Incorrect, the correct answer is Guido van Rossum")
+        await conv.say("Wrong, the correct answer is Guido van Rossum")
 
     conv.stop()
 ```
@@ -5100,7 +5188,7 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-Wait for user reply, returning an `Event` object or `None` (on timeout):
+Wait for user reply, returning an `Event` object or `None` (timeout):
 
 ```python
 # Simple wait
@@ -5111,13 +5199,13 @@ if resp:
 # Wait after sending a prompt
 resp = await conv.wait(prompt="Please enter your name:")
 
-# Use custom timeout (overrides the conversation's default timeout)
+# Use custom timeout (overrides conversation default timeout)
 resp = await conv.wait(prompt="Please reply within 10 seconds:", timeout=10)
 ```
 
 ### confirm(prompt=None, **kwargs)
 
-Wait for user confirmation (yes/no), returning `True` / `False` / `None` (on timeout):
+Wait for user confirmation (yes/no), returning `True` / `False` / `None` (timeout):
 
 ```python
 result = await conv.confirm("Are you sure you want to delete all data?")
@@ -5126,16 +5214,16 @@ if result is True:
 elif result is False:
     await conv.say("Cancelled")
 else:
-    await conv.say("Timed out, no reply")
+    await conv.say("Timeout, no reply received")
 ```
 
-Built-in recognized confirmation words: `yes/是/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
+Built-in recognized confirmation words: `yes/是/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
 
-Built-in recognized denial words: `no/否/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
+Built-in recognized denial words: `no/否/n/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
 
 ### choose(prompt, options, **kwargs)
 
-Wait for user selection from options, returning the option index (0-based) or `None`:
+Wait for user to select from options, returning the option index (0-based) or `None`:
 
 ```python
 choice = await conv.choose("Please select a color:", ["Red", "Green", "Blue"])
@@ -5146,10 +5234,10 @@ if choice is not None:
 
 Users can select by entering a number (`1`/`2`/`3`) or the option text (`Red`).
 
-`options_format="auto"` (default) automatically selects the built-in style based on method: Markdown→unordered list, Html→ordered list, others→plain text list.
+`options_format="auto"` (default) automatically selects a built-in style based on the method: Markdown→unordered list, Html→ordered list, others→plain text list.  
 Also supports `"list"`, `"inline"`, `"md"`, `"html"`, or a custom function.
 
-Supports `merge_prompt=True` to merge into a single message, and placeholder control for option insertion position (default `{options}`, customizable via `placeholder`):
+Supports `merge_prompt=True` to merge into one message, and placeholders to control option insertion position (default `{options}`, customizable via `placeholder`):
 
 ```python
 choice = await conv.choose(
@@ -5201,9 +5289,9 @@ Field configuration:
 
 ```python
 data = await conv.collect([
-    {"key": "has_car", "prompt": "Do you have a car? (yes/no)"},
-    {"key": "car_brand", "prompt": "Please enter the car model",
-     "condition": lambda d: d.get("has_car", "").lower() in ("yes", "y", "是")},
+    {"key": "has_car", "prompt": "Do you have a car? (Yes/No)"},
+    {"key": "car_brand", "prompt": "Please enter car model",
+     "condition": lambda d: d.get("has_car", "").lower() in ("yes", "是", "y")},
 ])
 ```
 
@@ -5230,15 +5318,15 @@ The conversation automatically becomes inactive in the following cases:
 
 1. The `stop()` method is called
 2. `wait()` returns `None` due to timeout
-3. `collect()` returns `None` due to timeout or exhausted retries
+3. `collect()` returns `None` due to timeout or exhausted retries in any step
 
-After becoming inactive, all interactive methods (`wait`/`confirm`/`choose`/`collect`) immediately return `None` without waiting for further user input.
+After becoming inactive, all interactive methods (`wait`/`confirm`/`choose`/`collect`) immediately return `None`, without waiting for further user input.
 
-## Branching and Navigation
+## Branching and Jumping
 
 ### @conv.branch(name) Decorator
 
-Use `branch()` to register conversation branches and `goto()` to navigate between them:
+Use `branch()` to register conversation branches and `goto()` to jump between them:
 
 ```python
 @command("menu")
@@ -5262,14 +5350,14 @@ async def menu_handler(event):
 
     @conv.branch("profile")
     async def profile():
-        await conv.say("=== Personal Info ===\nName: Alice\n0. Back")
+        await conv.say("=== Personal Info ===\nName: Alice\n0. Return")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
 
     @conv.branch("settings")
     async def settings():
-        await conv.say("=== Settings ===\n1. Notification toggle\n0. Back")
+        await conv.say("=== Settings ===\n1. Notification Toggle\n0. Return")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
@@ -5279,18 +5367,18 @@ async def menu_handler(event):
 
 ### conv.start(name=None)
 
-Start the conversation, defaulting from the first registered branch:
+Start the conversation, defaulting to the first registered branch:
 
 ```python
 await conv.start()          # Start from the first branch
-await conv.start("settings") # Start from a specified branch
+await conv.start("settings") # Start from the specified branch
 ```
 
 ## Context and Persistence
 
 ### conv.context
 
-Each conversation instance has a built-in `context` dictionary to share state between branches:
+Each conversation instance has a built-in `context` dictionary for sharing state between branches:
 
 ```python
 @conv.branch("step1")
@@ -5311,12 +5399,12 @@ Conversations support persistence, allowing recovery after timeout or interrupti
 ```python
 # Save conversation state
 conv_id = conv.save()
-# conv_id = "user_123_group_456"  # Auto-generated based on user and group
+# conv_id = "user_123_group_456"  # Automatically generated based on user and group
 
-# ... Later, resume in the same session ...
+# ... later in the same session ...
 conv2 = event.conversation()
 if conv2.resume():
-    await conv2.say("Welcome back! Continuing the previous conversation")
+    await conv2.say("Welcome back! Continuing previous conversation")
 else:
     await conv2.say("No previous conversation found")
 
@@ -5336,9 +5424,9 @@ async def register_handler(event):
     await conv.say("Welcome to registration!")
 
     data = await conv.collect([
-        {"key": "username", "prompt": "Please enter a username (3-20 characters)",
+        {"key": "username", "prompt": "Please enter username (3-20 characters)",
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
-        {"key": "email", "prompt": "Please enter your email address",
+        {"key": "email", "prompt": "Please enter email address",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
          "retry_prompt": "Invalid email format, please re-enter"},
     ])
@@ -5363,12 +5451,12 @@ async def register_handler(event):
 @command("chat")
 async def chat_handler(event):
     conv = event.conversation(timeout=120)
-    await conv.say("Entering conversation mode, type 'exit' to end")
+    await conv.say("Entering chat mode, type 'exit' to end")
 
     while conv.is_active:
         resp = await conv.wait()
         if resp is None:
-            await conv.say("Timed out, conversation ended")
+            await conv.say("Timeout, conversation ended")
             break
 
         text = resp.get_text().strip()
@@ -5386,7 +5474,7 @@ async def chat_handler(event):
 
 ## Related Documentation
 
-- [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - All methods of the Event object
+- [Event Wrapper](../developer-guide/modules/event-wrapper.md) - All methods of the Event object
 - [Getting Started with Event Handling](../getting-started/event-handling.md) - Basics of event handling
 
 
@@ -7476,21 +7564,21 @@ clear_custom_types(platform="discord")  # Clear only specified platform
 
 # Internationalization (i18n) System
 
-ErisPulse v2.5.0 and later includes built-in full internationalization support. The framework core and CLI interface can automatically switch display text based on your system language, and it also supports external modules registering their own translations.
+ErisPulse v2.5.0 includes full built-in internationalization support. The framework core and CLI interface can automatically switch displayed text according to your system language, and it also supports external modules registering their own translations.
 
 ## Supported Languages
 
 | Language | Code | Description |
 |----------|------|-------------|
-| Simplified Chinese | `zh-CN` | Default language (Framework native language) |
+| Simplified Chinese | `zh-CN` | Default language (native framework language) |
 | Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong/Macau/Taiwan) |
-| English | `en` | English (General fallback language) |
+| English | `en` | English (general fallback language) |
 | 日本語 | `ja` | Japanese |
 | Русский | `ru` | Russian |
 
-## Quick Start
+## Quick Experience
 
-### Switch via Environment Variables
+### Switch via Environment Variable
 
 ```bash
 # Windows PowerShell
@@ -7503,16 +7591,16 @@ ERISPULSE_LANG=ja epsdk run
 
 ### Switch via Configuration File
 
-Add the following to `config/config.toml`:
+Add to `config/config.toml`:
 
 ```toml
 [ErisPulse.i18n]
 language = "zh-TW"
 ```
 
-Setting it to `"auto"` (default) automatically detects the system language.
+Set to `"auto"` (default) to automatically detect the system language.
 
-### Manually Switch in Code
+### Switch Manually in Code
 
 ```python
 from ErisPulse import i18n
@@ -7521,7 +7609,7 @@ from ErisPulse import i18n
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
-# Reset to auto-detection
+# Reset to auto-detect
 i18n.reset_language()
 ```
 
@@ -7529,44 +7617,44 @@ i18n.reset_language()
 
 ## Language Detection Mechanism
 
-The framework detects the user language with the following priority:
+The framework detects user language in the following priority order:
 
-1. **Environment Variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching
-2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, not affected by tools like Git Bash overwriting `LANG`)
-3. **Environment Variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standard)
+1. **Environment variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching
+2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, unaffected by `LANG` overrides from tools like Git Bash)
+3. **Environment variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standard)
 4. **System Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
 5. **Fallback** — en (English)
 
-### Proximity Mapping Principle
+### Nearest Mapping Principle
 
-When the detected language is not an exact match, map it to a supported language based on the proximity principle:
+When the detected language is not an exact match, it is mapped to a supported language based on proximity:
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **Traditional Chinese**
 - All other `zh-*` (e.g., `zh-CN`, `zh-SG`) → **Simplified Chinese**
 - `en-US`, `en-GB`, `en-AU` etc. → **English**
 - `ja-JP` → **Japanese**
 - `ru-RU` → **Russian**
-- Other unrecognized languages → **Simplified Chinese (Fallback)**
+- Other unrecognized languages → **Simplified Chinese** (fallback)
 
 ---
 
 ## Using i18n in Modules
 
-You can register translation text for your own module to also support multiple languages.
+You can register translation text for your own module to make it support multiple languages.
 
 ### Register Custom Translations
 
 ```python
 from ErisPulse import i18n
 
-# Register Chinese translation
+# Register Chinese translations
 i18n.register("zh-CN", {
     "my_module.welcome": "欢迎使用我的模块！",
     "my_module.goodbye": "再见！",
     "my_module.hello": "你好，{name}！",
 }, domain="my_module")
 
-# Register English translation
+# Register English translations
 i18n.register("en", {
     "my_module.welcome": "Welcome to my module!",
     "my_module.goodbye": "Goodbye!",
@@ -7574,22 +7662,22 @@ i18n.register("en", {
 }, domain="my_module")
 ```
 
-### Using Translations
+### Use Translations
 
 ```python
 from ErisPulse import i18n
 
 # Simple translation
-i18n.t("my_module.welcome")  # Automatically uses the current language
+i18n.t("my_module.welcome")  # Automatically uses current language
 
-# With formatting parameters
+# With formatted parameters
 i18n.t("my_module.hello", name="Alice")
 
-# Specify a default value (returned when the translation key does not exist)
+# Specify default value (returned when translation key doesn't exist)
 i18n.t("my_module.unknown_key", default="Default text")
 ```
 
-### Using in Module Classes
+### Use in Module Class
 
 ```python
 from dataclasses import dataclass, field
@@ -7602,7 +7690,7 @@ class MyModuleConfig(BaseConfig):
     welcome_msg: str = field(
         default="欢迎",
         metadata={
-            "description": {"i18n": "my_module.welcome_msg", "default": "Welcome message"},
+            "description": {"i18n": "my_module.welcome_msg", "default": "欢迎消息"},
             "ui": {"widget": "text", "group": "basic", "order": 1},
         },
     )
@@ -7611,7 +7699,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # Real-time read configuration (reflects latest values on every access)
+        # Real-time read configuration (reflects latest value on each access)
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -7627,7 +7715,7 @@ class MyModule(BaseModule):
 ### Unregister Translations
 
 ```python
-# Unregister translations for an entire domain
+# Unregister all translations in a domain
 i18n.unregister_domain("my_module")
 ```
 
@@ -7635,20 +7723,20 @@ i18n.unregister_domain("my_module")
 
 ## Multi-language Configuration Fields
 
-Starting from v2.5.2, configuration schemas fully support i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically resolve them to the corresponding text based on the current language.
+Starting from v2.5.2, the configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically resolve them to corresponding text based on the current language.
 
 ### Supported i18n Fields
 
 | Field | Location | Description |
 |-------|----------|-------------|
 | `description` | field metadata | Field description |
-| `options[].label` | `ui.options` | Select control option label |
-| `placeholder` | `ui.placeholder` | Input box placeholder |
-| `group_labels` | `_schema_meta` | Group display name (Dashboard section title) |
+| `options[].label` | `ui.options` | Label for select control options |
+| `placeholder` | `ui.placeholder` | Placeholder for input fields |
+| `group_labels` | `_schema_meta` | Group display name (Dashboard partition title) |
 
-The unified format is `{"i18n": "key", "default": "text"}`, while pure strings are passed through as-is (backward compatible).
+All use the unified format `{"i18n": "key", "default": "text"}`; pure strings are passed through as-is (for backward compatibility).
 
-### Declaring i18n Fields
+### Declare i18n Fields
 
 All user-visible text fields support i18n:
 
@@ -7658,7 +7746,7 @@ from ErisPulse.runtime.config_schema import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
-    # description i18n
+    # i18n for description
     token: str = field(
         default="",
         metadata={
@@ -7669,16 +7757,16 @@ class MyAdapterConfig(BaseConfig):
                 "widget": "password",
                 "group": "basic",
                 "order": 1,
-                # placeholder i18n
+                # i18n for placeholder
                 "placeholder": {"i18n": "my_adapter.token.ph", "default": "Please enter Token"},
             },
         },
     )
-    # options label i18n
+    # i18n for options label
     mode: str = field(
         default="a",
         metadata={
-            "description": {"i18n": "my_adapter.mode", "default": "Runtime mode"},
+            "description": {"i18n": "my_adapter.mode", "default": "Operation mode"},
             "ui": {
                 "widget": "select",
                 "group": "basic",
@@ -7691,26 +7779,26 @@ class MyAdapterConfig(BaseConfig):
         },
     )
 
-    # group_labels i18n (Group display name)
+    # i18n for group_labels (group display name)
     _schema_meta = {
         "group_labels": {
-            "basic": {"i18n": "my_adapter.group.basic", "default": "Basic Settings"},
+            "basic": {"i18n": "my_adapter.group.basic", "default": "Basic settings"},
         }
     }
 ```
 
-`default` is the fallback text — displayed when the translation is not registered or lookup fails.
+`default` is the fallback text — displayed when translation is not registered or lookup fails.
 
-### Registering Configuration Translations
+### Register Configuration Translations
 
-Configuration field i18n keys work the same as normal translation keys, registered using `i18n.register()`:
+Configuration field i18n keys are registered the same way as regular translation keys using `i18n.register()`:
 
 ```python
 from ErisPulse import i18n
 
-# Register Chinese (consistent with default, can also be different)
+# Register Chinese (same as default, but can be different)
 i18n.register("zh-CN", {
-    "my_adapter.token": "平台 Token",
+    "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 
 # Register English
@@ -7719,7 +7807,7 @@ i18n.register("en", {
 }, domain="my_adapter")
 ```
 
-A convenience function `register_config_i18n()` is also provided to automatically extract keys from the configuration class and register them:
+A convenient function `register_config_i18n()` is also provided, which automatically extracts keys from the configuration class and registers them:
 
 ```python
 from ErisPulse.runtime.config_schema import register_config_i18n
@@ -7733,21 +7821,21 @@ register_config_i18n(MyAdapterConfig, "en", {
 })
 ```
 
-### How WebUI Consumes It
+### How WebUI Consumes i18n
 
-In the schema returned by `get_config_schema()`, i18n dictionaries are passed through as-is. The WebUI frontend can call `i18n.t()` based on the current language to resolve them.
+The schema returned by `get_config_schema()` passes through the i18n dictionary as-is. The WebUI frontend can resolve it using `i18n.t()` based on the current language.
 
-If you need the server to resolve directly to a string (e.g., returning to a frontend that doesn't support i18n), use `resolve_config_schema()`, which resolves `description`, `options[].label`, `placeholder`, and `group_labels` to the text of the current language:
+If you need the server to directly resolve it to a string (e.g., for a frontend that doesn't support i18n), use `resolve_config_schema()`, which resolves `description`, `options[].label`, `placeholder`, and `group_labels` into the current language text:
 
 ```python
 from ErisPulse.runtime.config_schema import resolve_config_schema
 
-# All i18n fields have been resolved to strings in the current language
+# All i18n fields are resolved into the current language string
 schema = resolve_config_schema(MyAdapterConfig)
-print(schema["fields"]["token"]["description"])    # "平台 Token" or "Platform Token"
-print(schema["fields"]["token"]["placeholder"])   # "请输入 Token" or "Enter Token"
-print(schema["fields"]["mode"]["options"][0]["label"])  # "模式A" or "Mode A"
-print(schema["group_labels"]["basic"])             # "基本设置" or "Basic"
+print(schema["fields"]["token"]["description"])    # "Platform Token" or "Platform Token"
+print(schema["fields"]["token"]["placeholder"])   # "Please enter Token" or "Enter Token"
+print(schema["fields"]["mode"]["options"][0]["label"])  # "Mode A" or "Mode A"
+print(schema["group_labels"]["basic"])             # "Basic settings" or "Basic"
 ```
 
 ## API Reference
@@ -7758,25 +7846,25 @@ print(schema["group_labels"]["basic"])             # "基本设置" or "Basic"
 
 | Method | Description |
 |--------|-------------|
-| `t(key, default=None, **kwargs)` | Gets translated text (`gettext()` is an alias) |
-| `set_language(lang)` | Manually sets the language |
-| `get_language()` | Gets the current language |
-| `reset_language()` | Resets to auto-detection (and re-detects environment) |
-| `get_supported_languages()` | Gets the list of all supported languages |
-| `has_translation(key, lang=None)` | Checks if a translation key exists |
-| `register(lang, translations, domain)` | Registers custom translations |
-| `unregister_domain(domain)` | Unregisters all translations for a specified domain |
-| `reload()` | Reloads built-in translations and re-detects language |
+| `t(key, default=None, **kwargs)` | Get translated text (`gettext()` is an alias) |
+| `set_language(lang)` | Manually set language |
+| `get_language()` | Get current language |
+| `reset_language()` | Reset to auto-detection (and re-detect environment) |
+| `get_supported_languages()` | Get list of all supported languages |
+| `has_translation(key, lang=None)` | Check if translation key exists |
+| `register(lang, translations, domain)` | Register custom translations |
+| `unregister_domain(domain)` | Unregister all translations in a domain |
+| `reload()` | Reload built-in translations and re-detect language |
 
-#### `t()` Method Details
+#### Detailed `t()` Method
 
 ```python
 def t(self, key, /, default=None, **kwargs):
 ```
 
-- `key` — Translation key (positional argument only, does not conflict with `key=` in `**kwargs`)
-- `default` — Default value returned when the translation does not exist, defaults to `None` (returns the key name itself)
-- `**kwargs` — Formatting parameters used to fill in `{placeholder}` in the translation value
+- `key` — Translation key (positional only, to avoid conflict with `**kwargs` `key=`)
+- `default` — Default value returned when translation doesn't exist, default is `None` (returns the key itself)
+- `**kwargs` — Formatting parameters, used to fill `{placeholder}` in translation values
 
 Example:
 
@@ -7791,7 +7879,7 @@ i18n.t("greeting", name="Alice", place="ErisPulse")
 ```python
 from ErisPulse import sdk
 
-# sdk.i18n is the same object as the directly imported i18n
+# sdk.i18n is the same object as directly imported i18n
 sdk.i18n.set_language("en")
 print(sdk.i18n.t("core.sdk.init.starting"))
 ```
@@ -7800,7 +7888,7 @@ print(sdk.i18n.t("core.sdk.init.starting"))
 
 ## Runtime Configuration
 
-### Reading i18n Configuration via Config API
+### Read i18n Configuration via API
 
 ```python
 from ErisPulse.runtime import get_i18n_config, I18nConfig
@@ -7808,7 +7896,7 @@ from ErisPulse.runtime import get_i18n_config, I18nConfig
 config = get_i18n_config()
 print(config["language"])  # "auto" or specific language code
 
-# I18nConfig is a dataclass, can be used to generate config templates
+# I18nConfig is a dataclass, can be used to generate configuration templates
 schema = I18nConfig.__dataclass_fields__
 ```
 
@@ -7818,8 +7906,8 @@ In the `[ErisPulse.i18n]` section of `config/config.toml`:
 
 ```toml
 [ErisPulse.i18n]
-# Display language, optional values:
-# - "auto"      — Automatically detect system language (default)
+# Display language, options:
+# - "auto"      — Auto-detect system language (default)
 # - "zh-CN"     — Simplified Chinese
 # - "zh-TW"     — Traditional Chinese
 # - "en"        — English
@@ -7834,7 +7922,7 @@ language = "auto"
 
 ### Translation Key Naming
 
-We recommend using the dot-separated namespace format:
+It is recommended to use a dot-separated namespace format:
 
 ```
 <module_name>.<category>.<description>
@@ -7844,11 +7932,11 @@ For example: `my_module.command.hello_desc`, `core.adapter.start_failed`
 
 ### Multi-language Coverage
 
-You don't need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
+You don't need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key itself will be displayed.
 
 ### Dynamic Content
 
-For dynamically generated content (such as usernames, counts, etc.), use the `{placeholder}` formatting:
+For dynamically generated content (such as usernames, quantities, etc.), use the `{placeholder}` format:
 
 ```python
 # Translation definition
@@ -7860,7 +7948,7 @@ i18n.t("user_count", count=len(users))
 
 ### Log Messages
 
-If your module uses the framework's Logger, these messages will also automatically use the current language:
+If your module uses the framework's Logger, these messages will automatically use the current language:
 
 ```python
 self.logger.info(i18n.t("my_module.startup"))
@@ -7870,12 +7958,12 @@ self.logger.info(i18n.t("my_module.startup"))
 
 ## Relationship with CLI i18n
 
-The CLI has a **separate** internationalization module (`ErisPulse.CLI.i18n`), completely decoupled from the framework core's i18n module.
+The CLI has an **independent** internationalization module (`ErisPulse.CLI.i18n`), which is completely decoupled from the framework core's internationalization module.
 
 - **Core i18n** — Used by the framework core module; external modules can register translations
 - **CLI i18n** — Used internally by the command-line interface; does not share translation data with Core
 
-This design ensures that translation changes to the CLI do not affect the stability of the framework core.
+This design ensures that changes to CLI translations do not affect the stability of the framework core.
 
 
 ### Dashboard 视窗注册

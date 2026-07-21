@@ -95,11 +95,10 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
                     owner=_owner_tag,
                 )
             )
-    else:
-        if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
-            logger.warning(
-                i18n.t("core.event.slow_handler", handler=_hname, elapsed=f"{_elapsed:.4f}", owner=_owner_tag)
-            )
+    elif _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
+        logger.warning(
+            i18n.t("core.event.slow_handler", handler=_hname, elapsed=f"{_elapsed:.4f}", owner=_owner_tag)
+        )
 
 
 class BaseEventHandler:
@@ -112,7 +111,7 @@ class BaseEventHandler:
     确保 _process_event 在适配器总线被清空（如 shutdown/restart）后能重新挂载。
     """
 
-    def __init__(self, event_type: str, module_name: str = None):
+    def __init__(self, event_type: str, module_name: str | None = None):
         """
         初始化事件处理器
 
@@ -135,7 +134,7 @@ class BaseEventHandler:
         self,
         handler: Callable,
         priority: int = DEFAULT_HANDLER_PRIORITY,
-        condition: Callable = None,
+        condition: Callable | None = None,
     ):
         """
         注册事件处理器
@@ -205,7 +204,7 @@ class BaseEventHandler:
         return removed
 
     def __call__(
-        self, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable = None
+        self, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable | None = None
     ):
         """
         装饰器方式注册事件处理器
@@ -289,7 +288,7 @@ class BaseEventHandler:
             copies = [Event(dict(event)) for _ in active]
             _multi_t = _time.monotonic()
             await asyncio.gather(
-                *(_invoke_handler(h, c) for h, c in zip(active, copies))
+                *(_invoke_handler(h, c) for h, c in zip(active, copies, strict=False))
             )
             _multi_elapsed = _time.monotonic() - _multi_t
 
@@ -305,7 +304,7 @@ class BaseEventHandler:
 
             # 合并修改（后者覆盖前者），并检测同优先级冲突
             _modified_tracker: dict[str, list[dict]] = {}  # field -> [{handler_info}]
-            for h_info, copy in zip(active, copies):
+            for h_info, copy in zip(active, copies, strict=False):
                 _h_name = getattr(
                     h_info["func"], "__qualname__",
                     getattr(h_info["func"], "__name__", str(h_info["func"])),

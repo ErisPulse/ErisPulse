@@ -11,10 +11,20 @@ ErisPulse 会话类型管理模块
 {!--< /tips >!--}
 """
 
-from enum import StrEnum
+from __future__ import annotations
+
+from enum import Enum
 from typing import TypeAlias
 
 from .. import logger
+
+
+# Python 3.11+ 提供了 enum.StrEnum，3.10 需手动实现
+# 项目要求 >=3.10，这里统一用本地实现，避免 pyright 识别不了两种不同的 StrEnum
+class StrEnum(str, Enum):
+    """字符串枚举：成员值同时是 str，可直接用于字符串上下文。"""
+    ...
+
 
 ReceiveTypeStr: TypeAlias = str
 SendTypeStr: TypeAlias = str
@@ -51,42 +61,42 @@ SEND_TYPES = {t.value for t in SendType}
 
 # 接收类型 → ID 字段
 RECEIVE_TYPE_TO_ID_FIELD: dict[str, str] = {
-    "private": "user_id",
-    "group": "group_id",
-    "channel": "channel_id",
-    "guild": "guild_id",
-    "thread": "thread_id",
-    "user": "user_id",
+    ReceiveType.PRIVATE.value: "user_id",
+    ReceiveType.GROUP.value: "group_id",
+    ReceiveType.CHANNEL.value: "channel_id",
+    ReceiveType.GUILD.value: "guild_id",
+    ReceiveType.THREAD.value: "thread_id",
+    ReceiveType.USER.value: "user_id",
 }
 
 # ID 字段 → 接收类型（用于自动推断）
 ID_FIELD_TO_RECEIVE_TYPE: dict[str, str] = {
-    "user_id": "private",
-    "group_id": "group",
-    "channel_id": "channel",
-    "guild_id": "guild",
-    "thread_id": "thread",
+    "user_id": ReceiveType.PRIVATE.value,
+    "group_id": ReceiveType.GROUP.value,
+    "channel_id": ReceiveType.CHANNEL.value,
+    "guild_id": ReceiveType.GUILD.value,
+    "thread_id": ReceiveType.THREAD.value,
 }
 
 # ==================== 类型转换映射 ====================
 
 # 接收类型 → 发送类型
 RECEIVE_TO_SEND_TYPE: dict[str, str] = {
-    "private": "user",
-    "group": "group",
-    "channel": "channel",
-    "guild": "guild",
-    "thread": "thread",
-    "user": "user",
+    ReceiveType.PRIVATE.value: SendType.USER.value,
+    ReceiveType.GROUP.value: SendType.GROUP.value,
+    ReceiveType.CHANNEL.value: SendType.CHANNEL.value,
+    ReceiveType.GUILD.value: SendType.GUILD.value,
+    ReceiveType.THREAD.value: SendType.THREAD.value,
+    ReceiveType.USER.value: SendType.USER.value,
 }
 
 # 发送类型 → 接收类型
 SEND_TO_RECEIVE_TYPE: dict[str, str] = {
-    "user": "private",
-    "group": "group",
-    "channel": "channel",
-    "guild": "guild",
-    "thread": "thread",
+    SendType.USER.value: ReceiveType.PRIVATE.value,
+    SendType.GROUP.value: ReceiveType.GROUP.value,
+    SendType.CHANNEL.value: ReceiveType.CHANNEL.value,
+    SendType.GUILD.value: ReceiveType.GUILD.value,
+    SendType.THREAD.value: ReceiveType.THREAD.value,
 }
 
 # ==================== 自定义类型扩展 ====================
@@ -203,19 +213,23 @@ def get_receive_type(id_field: str, platform: str | None = None) -> str:
     return ID_FIELD_TO_RECEIVE_TYPE.get(id_field, "private")
 
 
-def convert_to_send_type(receive_type: str, platform: str | None = None) -> str:
+def convert_to_send_type(receive_type: str | None, platform: str | None = None) -> str:
     """
     将接收类型转换为发送目标类型
 
-    :param receive_type: 接收事件类型
+    :param receive_type: 接收事件类型（``None`` 时返回默认值 ``"user"``）
     :param platform: 平台名称（可选）
     :return: 发送目标类型
 
     :example:
     >>> convert_to_send_type("private")  # 返回 "user"
     >>> convert_to_send_type("group")   # 返回 "group"
+    >>> convert_to_send_type(None)       # 返回 "user"
     """
     # 先检查自定义类型
+    if receive_type is None:
+        return SendType.USER.value
+
     if platform:
         custom_key = f"{platform}_{receive_type}"
         if custom_key in _custom_receive_to_send:
@@ -225,7 +239,7 @@ def convert_to_send_type(receive_type: str, platform: str | None = None) -> str:
         return _custom_receive_to_send[receive_type]
 
     # 使用标准映射
-    return RECEIVE_TO_SEND_TYPE.get(receive_type, "user")
+    return RECEIVE_TO_SEND_TYPE.get(receive_type, SendType.USER.value)
 
 
 def convert_to_receive_type(send_type: str, platform: str | None = None) -> str:
@@ -388,42 +402,41 @@ def clear_custom_types(platform: str | None = None) -> int:
             id_field = _custom_type_to_id_field[key]
             send_type = _custom_receive_to_send[key]
             del _custom_type_to_id_field[key]
-            if id_field in _custom_id_field_to_type:
-                del _custom_id_field_to_type[id_field]
+            _custom_id_field_to_type.pop(id_field, None)
             del _custom_receive_to_send[key]
-            if send_type in _custom_send_to_receive:
-                del _custom_send_to_receive[send_type]
+            _custom_send_to_receive.pop(send_type, None)
         return count
-    else:
-        # 清除所有自定义类型
-        count = len(_custom_type_to_id_field)
-        _custom_type_to_id_field.clear()
-        _custom_id_field_to_type.clear()
-        _custom_receive_to_send.clear()
-        _custom_send_to_receive.clear()
-        return count
+    # 清除所有自定义类型
+    count = len(_custom_type_to_id_field)
+    _custom_type_to_id_field.clear()
+    _custom_id_field_to_type.clear()
+    _custom_receive_to_send.clear()
+    _custom_send_to_receive.clear()
+    return count
 
 
 __all__ = [
     # 标准类型常量
     "RECEIVE_TYPES",
     "SEND_TYPES",
-    # 自定义类型注册
-    "register_custom_type",
-    "unregister_custom_type",
+    "ReceiveType",
+    "SendType",
+    "clear_custom_types",
+    "convert_to_receive_type",
+    "convert_to_send_type",
     # 类型获取方法
     "get_id_field",
     "get_receive_type",
-    "convert_to_send_type",
-    "convert_to_receive_type",
+    "get_send_type_and_target_id",
+    "get_send_types",
+    "get_standard_types",
+    "get_target_id",
     # 自动推断方法
     "infer_receive_type",
-    "get_target_id",
-    "get_send_type_and_target_id",
     # 工具方法
     "is_standard_type",
     "is_valid_send_type",
-    "get_standard_types",
-    "get_send_types",
-    "clear_custom_types",
+    # 自定义类型注册
+    "register_custom_type",
+    "unregister_custom_type",
 ]

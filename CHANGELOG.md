@@ -64,6 +64,185 @@
 
 ---
 
+## [2.6.2] - 2026/07/21
+> 正式发布
+
+**版本摘要**
+2.6.2 是 ErisPulse 的代码质量与开发体验升级版本，聚焦五大方向：(1) **IDE 补全体验**——`SendDSL` 基类内置标准发送方法（Text/Image/Voice/Video/File）使任何方式获取的实例都能补全，新增 `epsdk types` 命令生成运行时类型存根，解决跨项目场景下平台/模块特有方法的补全问题；(2) **类型检查系统**——引入基于 basedpyright 的类型检查系统（standard 模式），修复 61 个真实类型 bug；(3) **代码质量严格化**——ruff 启用 16 个规则集清除 100+ 问题，`os.path.*` → `pathlib.Path` 迁移 71 处，`Core.constants` 7 个未引用常量正式投入使用；(4) **运行时健壮性**——`runtime.tasks.spawn_background()` 统一管理后台任务，`Core.config` 新增文件变化监听机制，跨环境安装的 uv 参数兼容性问题修复；(5) **跨环境安装修复**——`PackageManager` 初始化时传入目标 Python 环境，uv 调用显式指定 `--python`，使 `epsdk install` 与 `epsdk list` 查询环境一致。
+
+**升级建议**
+- **建议升级**
+- 升级原因：
+  - 显著提升 IDE 补全体验：链式调用、跨项目类型存根、标准发送方法内置
+  - 类型检查更严格、更诚实，子类与基类参数命名一致
+  - 修复跨环境安装错位问题，避免 "装得上却看不到" 的困惑
+  - 配置文件外部编辑后自动重载，避免回写覆盖
+  - 后台任务统一管理，避免被 GC 提前回收
+
+**注意事项**
+- ⚠️ **`SendDSL` 标准发送方法现由基类提供默认实现**：适配器子类只需实现 `Raw_ob12`，无需重复实现 Text/Image/Voice/Video/File；已有子类覆盖这些方法的不受影响（正常继承覆盖），未覆盖的子类会自动使用基类默认实现（委托 `Raw_ob12`）
+- ⚠️ **`SendDSL.To()` 接入自动会话类型转换**：接收类型（`"private"`/`"user"`/`"group"` 等）会自动转换为对应发送类型，遵循会话类型规范
+- `SendDSL` 链式方法返回类型改为 `Self`，IDE 能在链式调用中补全子类方法
+- `adapter.list_sends` 不再排除基类方法，改为排除链式修饰方法集合，确保标准发送方法能被 `event.supports()` / `event.available_methods()` 识别
+- 类型检查系统升级后，下游适配器/模块若启用 basedpyright 检查可能暴露此前未发现的类型问题（非破坏性，但建议关注）
+
+---
+
+## [2.6.2-dev.2] - 2026/07/22
+> 随版本发布
+
+**版本摘要**
+开发体验全面打磨：CLI 与框架解耦（独立 hints 模块）；CLI 友好提示系统拼写建议 / 异常 hint / Quick Start 面板）；SDK 门面增强（version 属性 / repr 状态 / init 重复保护）；
+
+### 新增
+
+- @wsu2059
+  - `CLI/hints.py` 模块：CLI 专用的模糊匹配 / 拼写建议能力，完全独立于框架 `runtime.hints`
+  - `sdk.version` property：获取当前 ErisPulse 安装版本（实时查询 `importlib.metadata`）
+  - CLI 友好提示系统：
+    - `CLI/console.py` 新增 `print_suggestion()`：统一错误输出格式（✗ 标题 → "Did you mean this?" → 建议命令 → 补充提示）
+    - `CLI/hints.py` 新增 `suggest_for_exception()`：异常诊断（`FileNotFoundError` / `PermissionError` / `ConnectionError` / `ModuleNotFoundError` 四类场景化提示）
+    - `cli.py` 新增 `_print_quickstart()`：`epsdk` 无子命令时显示 3 步 Quick Start 面板
+    - `run.py` 脚本不存在时列出当前目录 `.py` 文件作为参考
+  - i18n 同步（5 语言）：`core.sdk.init.already_initialized`、`cli.run.quickstart.*`（10 keys）、`cli.hints.*`（4 keys）、`cli.run.available_scripts`
+
+### 优化
+
+- @wsu2059
+  - `sdk.__repr__()` 增强：显示版本 + 初始化状态 + 适配器 / 模块计数（容错降级）
+  - `CLI/cli.py` 命令拼写错误输出改变（`✗ 标题` + `Did you mean this?` + 建议命令）
+  - `CLI/cli.py` 全局异常处理调用 `suggest_for_exception`，输出场景化 hint
+
+### 变更
+
+- @wsu2059
+  - `sdk.init()` 重复调用保护：已初始化时记录警告并返回 True，不再重新初始化（避免破坏内部状态）
+  - CLI 不再反向依赖框架 `runtime.hints`：`cli.py` 两处 `from ..runtime.hints import best_match_with_prefix` 改为 `from .hints import best_match_with_prefix`
+  - `pyproject.toml` 的 `readme` 字段从 `README.md` 改为 `README.pypi.md`
+
+---
+
+## [2.6.2-dev.1] - 2026/07/19
+> 随正式版发布
+> 开发版本
+
+**版本摘要**
+代码质量全面升级：引入基于 pyright 的类型检查系统，修复 61 个真实类型 bug；ruff 配置严格化（16 规则集），清除 100+ 代码质量问题；所有模块级常量正式投入使用；修复跨环境安装的 uv 参数兼容性问题。
+
+### 新增
+
+- @wsu2059
+  - `runtime.tasks` 模块：`spawn_background()` 函数统一管理 fire-and-forget 后台任务，避免被 GC 提前回收（`RUF006`）
+    - 无运行中事件循环时自动创建临时循环同步执行，确保协程在任何线程下都会被运行
+  - 基于 basedpyright 的类型检查系统（`[tool.basedpyright]`），采用 `standard` 中等严格模式
+    - `reportReturnType` / `reportArgumentType` 等真实类型 bug 提级为 error
+    - `reportAny` / `reportUnknown*` 等“类型不完整”问题保持 warning
+  - 测试隔离：`tests/conftest.py` 新增 `_isolate_i18n_state` autouse fixture，快照/还原 `I18nManager` 单例状态与全局持久化文件，防止 i18n 语言切换污染后续测试
+  - `CLI.utils.package_manager._ensure_pip_available()`：pip 回退前自动通过 `ensurepip --upgrade` 自举，解决 uv venv 无 pip 时的安装失败
+  - `cli.package.pip_unavailable` / `cli.package.bootstrapping_pip` 翻译键（zh-CN/zh-TW/en/ja/ru）
+  - `Core.config` 新增文件变化监听机制：
+    - `ConfigManager._start_config_watcher()` 后台 daemon 线程，每 5 秒轮询配置文件 mtime
+    - 检测到外部编辑后自动重载缓存并发射 `config.updated` 生命周期事件
+    - 同时取消待写入定时器并清空脏键，避免 `_flush_config` 回写旧值覆盖用户编辑
+
+### 优化
+
+- @wsu2059
+  - ruff 配置全面升级：启用 E/W/F/I/B/C4/UP/SIM/RET/PIE/RUF/PTH/PERF/FURB/PL/N 共 16 个规则集，中文项目不适用的规则显式忽略（RUF001/002/003 歧义字符等）
+  - `os.path.*` → `pathlib.Path` 迁移 71 处（`config.py`/`storage.py`/`run.py`/`package_manager.py` 等 13 个文件），保留 `str()` 包装对接下游 str API
+  - `SendDSL.To()` 接入 `convert_to_send_type()`，遵循会话类型规范自动将所有接收类型（`"private"`、`"user"` 等）转为对应发送类型
+  - `session_type.py` 映射字典使用 `ReceiveType`/`SendType` 枚举值替代硬编码字符串
+  - `Core.constants` 7 个未引用常量正式投入使用：
+    - `DEFAULT_WS_CLIENT_HEARTBEAT_SECS` → `HttpClient.ws_connect()` 默认参数
+    - `RETCODE_OK` / `STATUS_OK` → `SendDSL.make_response()` / `SendDSL.Raw_ob12` 默认值
+    - `DEFAULT_ADAPTER_ENABLED` / `DEFAULT_MODULE_ENABLED` → `_config_register()` 默认参数
+    - `DEFAULT_WS_AUTO_ACCEPT` → `RouterManager._register_ws_endpoint()` 默认参数
+    - `DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS` → `HttpClient.ws_connect()` 超时参数
+    - `DEFAULT_KV_TABLE_NAME` → 替换 `StorageManager` 中全部 15 处硬编码 SQL 表名
+  - `runtime.tasks.spawn_background()` 增强：后台线程无事件循环时自动创建临时循环同步执行，替代静默关闭协程
+
+### 修复
+
+- @wsu2059
+  - 类型注解错误 61 处：
+    - 函数返回值类型修正（`-> str` → `-> str | None` 等），涉及 `CLI.commands.self_update`、`Core.Event.command`、`Core.client` 等
+    - Optional 参数类型修正（`event: "Event" = None` → `event: "Event | None" = None`）
+    - Method override 返回值类型对齐（`SendDSL.Raw_ob12`）
+    - `typing.Self` Python 3.10 兼容（用 `typing_extensions` 兜底）
+    - `StrEnum` Python 3.10 兼容（自实现 `class StrEnum(str, Enum)`）
+    - `str | int` 类型不匹配 → 显式 `str()` 转换（`SendDSL.To`/`Using`/`Account`）
+    - `B904`：4 处 `except` 块内 `raise` 追加 `from err` 保留异常链
+    - `PLW1510`：3 处 `subprocess.run` 追加显式 `check=False`
+    - `UP035`：废弃的 `typing.Dict`/`List`/`Optional`/`Union` 清理
+    - `hasattr` 类型收窄 → `isinstance`（`Core.master.is_master`）
+    - 动态属性（`_starting_lock`/`adapterInfo`/`moduleInfo`）用 `cast` 标注
+  - `CLI.utils.package_manager._run_pip_command_with_output`：修复 uv `--python` 参数位置错误
+    - **现象**：`uv pip --python TARGET install ...` 导致 `unexpected argument '--python'`
+    - **原因**：`--python` 是子命令 flag，须放在 `install`/`uninstall` 之后
+    - **修复**：动态构造 `[install|uninstall, --python, target, ...]` 参数顺序
+  - `cli.create.*` 缺失的 6 个翻译键补全（name_prompt/module_desc_prompt/author_prompt/email_prompt/homepage_prompt/name_error）× 5 语言
+  - `Convert_to_send_type` 参数接受 `str | None`，`None` 时安全返回默认值
+
+### 变更
+
+- @wsu2059
+  - SendDSL.To() 自动会话类型转换：
+    - 接收类型（`"private"`/`"user"`/`"group"` 等）自动转换为对应发送类型
+
+---
+
+## [2.6.2-dev.0] - 2026/07/16
+> 开发版本
+
+**版本摘要**
+聚焦于 IDE 补全体验和跨环境安装修复：SendDSL 基类内置标准发送方法（Text/Image/Voice/Video/File），让任何方式获取的实例都能补全；新增 `epsdk types` 命令生成运行时类型存根，解决跨项目场景下平台/模块特有方法的补全问题；修复跨环境安装问题。
+
+### 新增
+
+- @wsu2059
+  - `Core.Bases` 模块新增功能：
+    - `SendDSL` 基类内置标准发送方法（Text/Image/Voice/Video/File），默认委托给 `Raw_ob12`，适配器子类无需重复实现
+    - SendDSL 链式方法返回类型改为 `Self`，使 IDE 能在链式调用中补全子类方法
+  - `CLI.commands.types` 模块（新命令 `epsdk types`）：
+    - 扫描已安装的模块/适配器，生成类型存根 `_ep_types.py`
+    - **仅导出类型**，不提供实例（采用 ``TYPE_CHECKING`` 模式，零运行时开销）
+    - 类型名采用 entry-point 名的 PascalCase 形式，与 ``sdk.adapter.get()`` / ``sdk.module.get()`` 参数对应
+    - 用户在代码中用 ``my_mod: XxxModule = sdk.module.get('XxxModule')`` 作为变量标注即可获得 IDE 补全
+    - 支持跨环境场景：通过子进程在目标环境内省，避免当前进程无法加载目标环境的类
+    - 支持选项：`--output`/`--force`/`--adapters-only`/`--modules-only`
+  - `finders.bases.finder` 模块新增功能：
+    - `BaseFinder` 支持 `python_executable` 参数，查询指定 Python 环境的 entry-points
+    - 跨环境查询通过子进程实现，返回兼容 `EntryPoint` 接口的轻量代理对象
+
+### 优化
+
+- @wsu2059
+  - `Core.adapter` 模块：
+    - `list_sends` 不再排除基类方法，改为排除链式修饰方法集合，确保标准发送方法能被 `event.supports()` / `event.available_methods()` 识别
+    - `adapter.get` / `module.get` 加入泛型 TypeVar，可选性提供更精确的返回类型
+  - `CLI.commands.create` 适配器模板：移除 Text/Image 样板代码（基类已内置），演示平台特有方法 Sticker
+
+### 修复
+
+- @wsu2059
+  - `CLI.utils.package_manager` 修复跨环境安装错位问题：
+    - **现象**：epsdk 经 pipx 全局安装，用户在项目 venv 运行 `epsdk install` 显示成功，但 `epsdk list` 看不到刚装上的包
+    - **原因**：uv 默认遵从 `VIRTUAL_ENV` 装到项目 venv，但 `list` 通过 `importlib.metadata` 查询的是 epsdk 自身环境（pipx）的 entry-points，两个环境不一致
+    - **修复**：
+      - `PackageManager` 初始化时传入 `_get_target_python()` 给查找器，使 `list` 查询目标环境
+      - uv 调用额外加 `--python <target>` 显式指定目标环境，避免 uv 自动检测到错误的环境
+      - 与 `pip` 后端行为一致（原本就用 `_get_target_python()`）
+
+### 变更
+
+- @wsu2059
+  - SendDSL 标准发送方法现由基类提供默认实现：
+    - 适配器子类只需实现 `Raw_ob12`，无需重复实现 Text/Image/Voice/Video/File
+    - 已有子类覆盖这些方法的不受影响（正常继承覆盖）
+    - 未覆盖的子类会自动使用基类默认实现（委托 Raw_ob12）
+
+---
+
 ## [2.6.1] - 2026/07/16
 > 正式发布
 
