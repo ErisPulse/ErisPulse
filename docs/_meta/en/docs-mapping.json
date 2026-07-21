@@ -22,13 +22,13 @@
           "level": 1
         },
         {
-          "title": "Bug Tracker",
-          "path": "bug-tracker.md",
+          "title": "ErisPulse Glossary",
+          "path": "terminology.md",
           "level": 1
         },
         {
-          "title": "ErisPulse Glossary",
-          "path": "terminology.md",
+          "title": "Bug Tracker",
+          "path": "bug-tracker.md",
           "level": 1
         }
       ],
@@ -211,18 +211,13 @@
           "level": 1
         },
         {
-          "title": "Documentation Maintenance Guidelines",
-          "path": "platform-guide/maintain-notes.md",
+          "title": "Yunhu User Platform Features Documentation",
+          "path": "platform-guide/yunhu_user.md",
           "level": 1
         },
         {
-          "title": "Discord Platform Feature Documentation",
-          "path": "platform-guide/discord.md",
-          "level": 1
-        },
-        {
-          "title": "Ideaura Cafe Platform Features Documentation",
-          "path": "platform-guide/ideaura.md",
+          "title": "QQBot Platform Features Documentation",
+          "path": "platform-guide/qqbot.md",
           "level": 1
         },
         {
@@ -236,13 +231,8 @@
           "level": 1
         },
         {
-          "title": "QQBot Platform Features Documentation",
-          "path": "platform-guide/qqbot.md",
-          "level": 1
-        },
-        {
-          "title": "Platform Feature Description — Webhook Generic Bridge Adapter",
-          "path": "platform-guide/webhook.md",
+          "title": "Discord Platform Feature Documentation",
+          "path": "platform-guide/discord.md",
           "level": 1
         },
         {
@@ -251,8 +241,18 @@
           "level": 1
         },
         {
-          "title": "Yunhu User Platform Features Documentation",
-          "path": "platform-guide/yunhu_user.md",
+          "title": "Platform Feature Description — Webhook Generic Bridge Adapter",
+          "path": "platform-guide/webhook.md",
+          "level": 1
+        },
+        {
+          "title": "Ideaura Cafe Platform Features Documentation",
+          "path": "platform-guide/ideaura.md",
+          "level": 1
+        },
+        {
+          "title": "Documentation Maintenance Guidelines",
+          "path": "platform-guide/maintain-notes.md",
           "level": 1
         }
       ],
@@ -335,13 +335,13 @@
           "level": 1
         },
         {
-          "title": "Internationalization (i18n) System",
-          "path": "advanced/i18n.md",
+          "title": "SQL Query Builder",
+          "path": "advanced/sql-builder.md",
           "level": 1
         },
         {
-          "title": "SQL Query Builder",
-          "path": "advanced/sql-builder.md",
+          "title": "Internationalization (i18n) System",
+          "path": "advanced/i18n.md",
           "level": 1
         }
       ],

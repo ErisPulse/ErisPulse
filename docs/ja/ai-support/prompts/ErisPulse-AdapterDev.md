@@ -377,55 +377,371 @@ flowchart TD
 
 
 ====
-基础概念
+快速上手
 ====
 
 
-### 入门指南总览
+### 快速开始
 
-# 入門ガイド
+# 速習
 
-ErisPulse 入門ガイドへようこそ。ErisPulse を初めて使用する場合、ここではフレームワークの基本的な概念と基本的な使い方をゼロから段階的に紹介します。
+> 理解できない用語に出会いましたか？ [用語集](terminology.md) を参照してわかりやすい説明を入手してください。
 
-## 学習経路
+## ErisPulse のインストール
 
-このガイドは以下の順序で構成されており、順番に読むことを推奨します：
+### 1 クリックインストールスクリプト（推奨）
 
-| ステップ | 主題 | 説明 |
-|------|------|------|
-| 1 | [最初のロボットを作成する](first-bot.md) | プロジェクトの初期化から最初のコマンドの実行まで |
-| 2 | [基本概念](basic-concepts.md) | ErisPulse のコアアーキテクチャとモジュール設計を理解する |
-| 3 | [イベント処理の入門](event-handling.md) | メッセージ、コマンド、通知などの各種イベントの処理方法を学ぶ |
-| 4 | [一般的なタスクの例](common-tasks.md) | データの永続化、定期タスク、権限制御などの一般的な機能を習得する |
-| 5 | [IDEの補完ガイド](ide-completion.md) | タイプのスタブを生成し、プラットフォーム固有のメソッドの IDE 自動補完を有効にする |
+インストールスクリプトは、環境（Docker、Python、uv）を自動的に検出し、最適なインストール方法を選択します。
 
-## 開発方法の選択
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
 
-ErisPulse は以下の2つの開発方法をサポートしています：
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
 
-| 方法 | 適用場面 | 説明 |
-|------|---------|------|
-| **埋め込み開発** | プロトタイプの迅速作成、プロジェクト内部機能 | `main.py` に直接ハンドラを記述し、独立したモジュールを作成する必要がない |
-| **モジュール開発**（推奨） | 本番環境、機能の配布 | 独立した Python パッケージを作成し、`epsdk install` を使用してインストール・使用する |
+スクリプトは以下の手順をガイドします：
 
-> 両方の方法の詳細な比較と例については、[最初のロボットを作成する](first-bot.md) と [モジュール開発の入門](../developer-guide/modules/getting-started.md) を参照してください。
+- **Docker インストール**（Docker が検出された場合推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プリリリース版）、Dashboard 管理パネルの設定、ポート設定
+- **従来のインストール**：仮想環境の自動作成、ErisPulse バージョンの選択、オプションで Dashboard 管理パネルモジュールのインストール
 
-## アーキテクチャの概要
+### Docker を使用する
 
-ErisPulse はイベント駆動型アーキテクチャを採用しており、以下のシステムで構成されています：
+Docker イメージには、ErisPulse フレームワークと Dashboard 管理パネルが既に含まれています。
 
-- **アダプタシステム** — 各プラットフォームとの通信を行い、プラットフォームイベントを統一された OneBot12 標準形式に変換する
-- **イベントシステム** — メッセージ、コマンド、通知、リクエスト、メタイベントの5種類のイベントを処理する
-- **モジュールシステム** — 独立したモジュールを通じて機能を拡張し、依存管理と遅延ロードをサポートする
-- **コアモジュール** — Storage（ストレージ）、Config（設定）、Logger（ログ）、Router（ルーティング）などの基本的な機能を提供する
+```bash
+# docker-compose.yml をダウンロード
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-> 詳細なアーキテクチャ図と初期化のフローについては、[アーキテクチャの概要](../architecture.md) を参照してください。
+# Dashboard トークンを設定して起動
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
 
-## 学習を始める
+<details>
+<summary>Docker Hub が利用できない場合？</summary>
 
-準備はできましたか？
+GitHub Container Registry イメージを使用する場合は、`docker-compose.yml` の image を次のように変更します：
 
-- [最初のロボットを作成する](first-bot.md) — 5 分で始められる
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインします。
+
+### pip を使用したインストール
+
+Python のバージョンが 3.10 以上であることを確認し、pip を使用してインストールします：
+
+```bash
+pip install ErisPulse
+```
+
+既に [uv](https://github.com/astral-sh/uv) をインストールしている場合は、`uv pip install ErisPulse` を使用することもでき、インストール速度が速くなります。
+
+## プロジェクトの初期化
+
+### インタラクティブ初期化（推奨）
+
+```bash
+epsdk init
+```
+
+これにより、インタラクティブなガイドが開始され、以下の手順がガイドされます：
+- プロジェクト名の設定
+- ログレベルの設定
+- サーバーの設定（ホストとポート）
+- アダプタの選択と設定
+- プロジェクト構造の作成
+
+### 速攻初期化
+
+```bash
+# プロジェクト名を指定した速攻モード
+epsdk init -q -n my_bot
+
+# または、プロジェクト名のみを指定
+epsdk init -n my_bot
+```
+
+### 手動でプロジェクトを作成する
+
+手動でプロジェクトを作成したい場合は：
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## モジュールのインストール
+
+### CLI でインストールする
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### 利用可能なモジュールを表示する
+
+```bash
+epsdk list-remote
+```
+
+### インタラクティブインストール
+
+パッケージ名を指定しない場合は、インタラクティブインストール画面になります：
+
+```bash
+epsdk install
+```
+
+## プロジェクトの実行
+
+```bash
+# 通常実行
+epsdk run main.py
+
+# ホットリロードモード（開発時に推奨）
+epsdk run main.py --reload
+```
+
+## IDE の補完を有効にする（オプション）
+
+ErisPulse はモジュール/アダプタを動的に発見しますが、IDE はデフォルトではプラットフォーム固有のメソッドを補完できません。以下のコマンドを実行して型のスタブを生成します：
+
+```bash
+epsdk types
+```
+
+生成後、インポートした型を変数の型として指定することで、正確な補完が得られます（[IDE 補完ガイド](./getting-started/ide-completion.md)を参照してください）：
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # プラットフォーム固有のメソッドの補完
+```
+
+## プロジェクト構造
+
+初期化後のプロジェクト構造：
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # 設定ファイル
+└── main.py                  # エントリーポイント
+
+```
+
+## 設定ファイル
+
+基本的な `config.toml` 設定：
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# アダプタの設定
+```
+
+## 次のステップ
+
+- [入門ガイド](getting-started/README.md) - ErisPulse の基本概念を理解する
+- [最初のボットを作成する](getting-started/first-bot.md) - 簡単なボットを作成する
+- [ユーザー使用ガイド](user-guide/) - 設定やモジュール管理について詳しく学ぶ
+- [開発者ガイド](developer-guide/) - 自作モジュールやアダプタの開発について学ぶ
+
+
+### 创建第一个机器人
+
+# 最初のボットを作成する
+
+このガイドでは、ゼロから簡単な ErisPulse ボットを作成する方法について解説します。
+
+## ステップ1：プロジェクトを作成
+
+CLI ツールを使用してプロジェクトを初期化します：
+
+```bash
+# 交互式初始化
+epsdk init
+
+# または快速初始化
+epsdk init -q -n my_first_bot
+```
+
+プロンプトに従って設定を完了し、以下を選択することを推奨します：
+- プロジェクト名：my_first_bot
+- ログレベル：INFO
+- サーバー：デフォルト設定
+- アダプタ：必要なプラットフォームを選択してください（例：Yunhu）
+
+## ステップ2：プロジェクト構造を確認する
+
+初期化後のプロジェクト構造：
+
+```
+my_first_bot/
+├── config/
+│   └── config.toml
+├── main.py
+└── requirements.txt
+```
+
+## ステップ3：最初のコマンドを記述する
+
+`main.py` を開き、単純なコマンドハンドラーを記述します：
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+@command("hello", help="发送问候消息")
+async def hello_handler(event):
+    """处理 hello 命令"""
+    user_name = event.get_user_nickname() or "朋友"
+    await event.reply(f"你好，{user_name}！我是 ErisPulse 机器人。")
+
+@command("ping", help="测试机器人是否在线")
+async def ping_handler(event):
+    """处理 ping 命令"""
+    await event.reply("Pong！机器人运行正常。")
+
+async def main():
+    """主入口函数"""
+    print("正在初始化 ErisPulse...")
+    # 运行 SDK 并且维持运行
+    await sdk.run(keep_running=True)
+
+    # 或者
+    # await sdk.run(keep_running=False)
+    # ...Do Something
+    # 可以做你想做的任何事
+    # 使用 await sdk.init() 等价于 `sdk.run(keep_running=False)`
+
+    print("ErisPulse 初始化完成！")
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
+```
+
+## ステップ4：ボットを実行する
+
+```bash
+# 普通运行
+epsdk run main.py
+
+# 开发模式（支持热重载）
+epsdk run main.py --reload
+```
+
+## ステップ5：ボットをテストする
+
+チャットプラットフォームでコマンドを送信します：
+
+```
+/hello
+```
+
+ボットからの返信を受け取るはずです。
+
+## コードの説明
+
+### コマンドデコレータ
+
+```python
+@command("hello", help="发送问候消息")
+```
+
+- `hello`：コマンド名。ユーザーは `/hello` で呼び出します
+- `help`：コマンドのヘルプ説明。`/help` コマンド内で表示されます
+
+### イベントパラメータ
+
+```python
+async def hello_handler(event):
+```
+
+`event` パラメータは Event オブジェクトであり、以下を含みます：
+- メッセージ内容：`event.get_text()`
+- 送信者情報：`event.get_user_id()`、`event.get_user_nickname()`
+- プラットフォーム情報：`event.get_platform()`
+- グループ情報：`event.get_group_id()`
+- 原始データ：`event.get_raw()`
+
+> 完整な Event オブジェクトメソッドについては [Event 包装クラスの詳細](../developer-guide/modules/event-wrapper.md) を参照してください。
+
+### 返信を送信する
+
+```python
+await event.reply("回复内容")
+```
+
+`event.reply()` は送信者にメッセージを送るための便利なメソッドです。
+
+## 拡張機能：追加機能の追加
+
+ErisPulse は豊富なイベント処理とデータ処理機能を提供します：
+
+- **メッセージリスナー**：`@message.on_message()` を使用して各種メッセージを監視 → [イベント処理入門](event-handling.md)
+- **通知リスナー**：`@notice.on_friend_add()` などの使用でシステム通知を監視 → [イベント処理入門](event-handling.md)
+- **データストレージ**：`sdk.storage.get/set` を使用してデータを永続化 → [一般的なタスクの例](common-tasks.md)
+
+## よくある質問
+
+### コマンドに応答がありませんか？
+
+1. アダプタが正しく設定されているか確認します（`config/config.toml` 内でアダプタの `status` が `true` であることを確認してください）
+2. 端末のログ出力を確認し、エラーメッセージがないかチェックします（特に `ERROR` レベルのログ）
+3. コマンドのプレフィックスが正しいか確認します（デフォルトは `/`）、設定ファイルの `[ErisPulse.event.command]` セクションを確認できます
+4. コマンド名のスペルミスがないか確認し、大文字と小文字の区別設定に注意してください
+
+### コマンドのプレフィックスを変更する方法？
+
+`config.toml` に追加します：
+
+```toml
+[ErisPulse.event.command]
+prefix = "!"
+case_sensitive = false
+```
+
+### マルチプラットフォームをサポートする方法？
+
+ErisPulse は OneBot12 標準を使用し、異なるプラットフォームのイベント形式を統一しました。`@command` と `@message` で登録されたハンドラーは、すべてのプラットフォームのイベントを受け取ります。`event.get_platform()` を使用してソースプラットフォームを区別できます：
+
+```python
+@command("hello")
+async def hello_handler(event):
+    platform = event.get_platform()
+    
+    if platform == "yunhu":
+        await event.reply("你好！来自云湖")
+    elif platform == "telegram":
+        await event.reply("Hello! From Telegram")
+    else:
+        await event.reply("你好！")
+```
+
+> マルチプラットフォームアダプティングのテクニックについては、[一般的なタスクの例](common-tasks.md#多平台适配) を参照してください。
+
+## 次のステップ
+
+- [基本概念](basic-concepts.md) - ErisPulse のコア概念を詳しく理解する
+- [イベント処理入門](event-handling.md) - 各種イベントの処理を学ぶ
+- [一般的なタスクの例](common-tasks.md) - より実用的な機能をマスターする
 
 
 ### 基础概念
@@ -1448,6 +1764,97 @@ async def conditional_handler(event):
 - [ユーザーガイド](../user-guide/) - 設定とモジュール管理を理解
 
 直接翻訳された完全なMarkdownコンテンツを返してください。その他のテキストは含めないでください。
+
+
+### IDE 补全
+
+# タイプのスタブ生成（IDEの補完）
+
+ErisPulse はエントリーポイントを用いてモジュール/アダプターを動的に発見します。エントリーポイントは静的レベルでユーザーのクラスの具体的な型を知ることができません。  
+`epsdk types` コマンドは、インストールされているモジュール/アダプターをスキャンして、タイプのスタブファイルを生成し、ユーザーがこれらの型を変数の注釈として使用して IDE の補完を得られるようにします。
+
+## コア設計原則
+
+スタブファイルは**型のみをエクスポート**し、実行時のインスタンスを提供しません：
+
+- すべてのインポートは ``TYPE_CHECKING`` の下にあり、**実行時のオーバーヘッドはゼロ、動作の変更はゼロ**
+- クラス名はエントリーポイント名の PascalCase 形式（例：``yunhu`` → ``Yunhu``）を使用し、``sdk.adapter.get()`` / ``sdk.module.get()`` に渡す名前に対応
+- ユーザーはコード内で ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` を通常通り使用してインスタンスを取得しますが、インポートされた型を**変数の注釈**として使用します
+
+## 基本的な使い方
+
+プロジェクトのルートディレクトリで実行します：
+
+```bash
+epsdk types
+```
+
+現在のディレクトリに `_ep_types.py` を生成し、インストールされているすべてのモジュール/アダプターの型を含みます。
+
+## コードでの使用
+
+```python
+from _ep_types import MyModule, Yunhu
+from ErisPulse import sdk
+
+# インポートされた型を変数の注釈として使用することで、IDE がそのクラスのメソッドを補完します
+my_mod: MyModule = sdk.module.get("MyModule")
+my_mod.hello()                  # ← IDE が hello を補完
+
+my_adapter: Yunhu = sdk.adapter.get("yunhu")
+await my_adapter.Send.To("group", "123").Board(...)   # ← プラットフォーム固有のメソッドを補完
+```
+
+## 動作原理
+
+1. `erispulse.adapter` / `erispulse.module` のエントリーポイントをスキャンします
+2. ターゲットの Python 環境でサブプロセスを使用して内部調査を行い、各アダプター/モジュールの実際のクラス情報を収集します（モジュールパスと限定名を含む）
+3. `.py` ファイルを生成し、その中で：
+   - ``from xxx import Yyy as Zzz`` はすべて ``TYPE_CHECKING`` の下にあります
+   - ``Zzz`` はエントリーポイント名の PascalCase 形式です
+4. IDE は ``TYPE_CHECKING`` 部分を読み取り、補完を提供します。実行時にはコードは一切実行されません
+
+生成されたスタブの例：
+
+```python
+# _ep_types.py（自動生成）
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # アダプター
+    from MyAdapter.Core import MyAdapter as MyAdapter
+    from YunhuAdapter.Core import YunhuAdapter as Yunhu
+
+    # モジュール
+    from MyModule.Core import Main as MyModule
+
+    __all__ = ['MyAdapter', 'Yunhu', 'MyModule']
+```
+
+## コマンドオプション
+
+| オプション | 説明 |
+|------|------|
+| `-o, --output PATH` | 出力ファイルのパスを指定（デフォルト：`./_ep_types.py`） |
+| `--force` | 既存のスタブファイルを上書きします |
+| `--adapters-only` | アダプターのみをスキャンします |
+| `--modules-only` | モジュールのみをスキャンします |
+
+## 再生成のタイミング
+
+- 新しいモジュールまたはアダプターをインストール/アンインストールした後
+- モジュール/アダプターが公開 API を更新した後
+- IDE の補完が失効または型が古くなった場合
+
+## SendDSL 標準メソッドとの関係
+
+`SendDSL` 基底クラスには標準の送信メソッド（Text/Image/Voice/Video/File）が既に内蔵されています。どのような方法で取得した SendDSL インスタンスでも、これらのメソッドの補完が可能です。  
+`types` コマンドは、**プラットフォーム固有のメソッド**（例：雲湖の `Board`、沙盒の `Dice`）と**モジュール固有のメソッド**の補完を主に行います。
+
+## 関連ドキュメント
+
+- [SendDSL 詳解](../developer-guide/adapters/send-dsl.md) - 標準送信メソッドの説明
+- [アダプター開発入門](../developer-guide/adapters/getting-started.md) - アダプターの作成
 
 
 =====
