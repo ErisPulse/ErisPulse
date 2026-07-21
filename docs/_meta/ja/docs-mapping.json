@@ -22,13 +22,13 @@
           "level": 1
         },
         {
-          "title": "バグ追跡ツール",
-          "path": "bug-tracker.md",
+          "title": "ErisPulse 用語集",
+          "path": "terminology.md",
           "level": 1
         },
         {
-          "title": "ErisPulse 用語集",
-          "path": "terminology.md",
+          "title": "バグ追跡ツール",
+          "path": "bug-tracker.md",
           "level": 1
         }
       ],
@@ -211,18 +211,13 @@
           "level": 1
         },
         {
-          "title": "ドキュメントメンテナンス手順",
-          "path": "platform-guide/maintain-notes.md",
+          "title": "Yunhu ユーザープラットフォーム特性ドキュメント",
+          "path": "platform-guide/yunhu_user.md",
           "level": 1
         },
         {
-          "title": "Discord プラットフォーム仕様ドキュメント",
-          "path": "platform-guide/discord.md",
-          "level": 1
-        },
-        {
-          "title": "花楓カフェ（Ideaura）プラットフォーム特性ドキュメント",
-          "path": "platform-guide/ideaura.md",
+          "title": "QQBotプラットフォーム特性",
+          "path": "platform-guide/qqbot.md",
           "level": 1
         },
         {
@@ -236,13 +231,8 @@
           "level": 1
         },
         {
-          "title": "QQBotプラットフォーム特性",
-          "path": "platform-guide/qqbot.md",
-          "level": 1
-        },
-        {
-          "title": "プラットフォームの特徴説明 — Webhook 一般ブリッジアダプタ",
-          "path": "platform-guide/webhook.md",
+          "title": "Discord プラットフォーム仕様ドキュメント",
+          "path": "platform-guide/discord.md",
           "level": 1
         },
         {
@@ -251,8 +241,18 @@
           "level": 1
         },
         {
-          "title": "Yunhu ユーザープラットフォーム特性ドキュメント",
-          "path": "platform-guide/yunhu_user.md",
+          "title": "プラットフォームの特徴説明 — Webhook 一般ブリッジアダプタ",
+          "path": "platform-guide/webhook.md",
+          "level": 1
+        },
+        {
+          "title": "花楓カフェ（Ideaura）プラットフォーム特性ドキュメント",
+          "path": "platform-guide/ideaura.md",
+          "level": 1
+        },
+        {
+          "title": "ドキュメントメンテナンス手順",
+          "path": "platform-guide/maintain-notes.md",
           "level": 1
         }
       ],
@@ -335,13 +335,13 @@
           "level": 1
         },
         {
-          "title": "国際化 (i18n) システム",
-          "path": "advanced/i18n.md",
+          "title": "SQLクエリビルダー",
+          "path": "advanced/sql-builder.md",
           "level": 1
         },
         {
-          "title": "SQLクエリビルダー",
-          "path": "advanced/sql-builder.md",
+          "title": "国際化 (i18n) システム",
+          "path": "advanced/i18n.md",
           "level": 1
         }
       ],

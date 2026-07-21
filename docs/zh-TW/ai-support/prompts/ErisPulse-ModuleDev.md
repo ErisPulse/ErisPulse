@@ -376,58 +376,195 @@ flowchart TD
 
 
 ====
-快速开始
+快速上手
 ====
 
 
-### 入门指南总览
+### 快速开始
 
-# 入門指南
+# 快速開始
 
-歡迎來到 ErisPulse 入門指南。如果你是第一次使用 ErisPulse，這裡將帶你從零開始，逐步了解框架的核心概念和基本用法。
+> 遇到不理解的術語？查看 [術語表](terminology.md) 獲取通俗易懂的解釋。
 
-## 學習路徑
+## 安裝 ErisPulse
 
-本指南按以下順序組織，建議依序閱讀：
+### 一鍵安裝腳本（推薦）
 
-| 步驟 | 主題 | 說明 |
-|------|------|------|
-| 1 | [建立第一個機器人](first-bot.md) | 從項目初始化到執行第一個指令 |
-| 2 | [基本概念](basic-concepts.md) | 理解 ErisPulse 的核心架構和模組設計 |
-| 3 | [事件處理入門](event-handling.md) | 學習如何處理訊息、指令、通知等各類事件 |
-| 4 | [常見任務範例](common-tasks.md) | 掌握資料持久化、定時任務、權限控制等常用功能 |
-| 5 | [IDE 自動補全指南](ide-completion.md) | 產生類型存根，啟用平台特定方法的 IDE 自動補全 |
+安裝腳本會自動檢測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。
 
-## 開發方式選擇
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
 
-ErisPulse 支援兩種開發方式：
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
 
-| 方式 | 適用場景 | 說明 |
-|------|---------|------|
-| **內嵌式開發** | 快速原型、專案內部功能 | 直接在 `main.py` 中編寫處理器，無需建立獨立模組 |
-| **模組開發**（推薦） | 生產環境、功能分發 | 建立獨立的 Python 套件，透過 `epsdk install` 安裝使用 |
+腳本會引導您完成：
 
-> 兩種方式的詳細對比和範例請參考 [建立第一個機器人](first-bot.md) 和 [模組開發入門](../developer-guide/modules/getting-started.md)。
+- **Docker 安裝**（檢測到 Docker 時推薦）：選擇鏡像源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設置
+- **傳統安裝**：自動創建虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模塊
 
-## 架構概覽
+### 使用 Docker
 
-ErisPulse 採用事件驅動架構，核心由以下系統組成：
+Docker 鏡像已內置 ErisPulse 框架和 Dashboard 管理面板。
 
-- **適配器系統** — 與各平台通訊，將平台事件轉換為統一的 OneBot12 標準格式
-- **事件系統** — 處理訊息、指令、通知、請求、元事件五大類事件
-- **模組系統** — 透過獨立模組擴充功能，支援依賴管理和懶加載
-- **核心模組** — 提供 Storage（儲存）、Config（設定）、Logger（日誌）、Router（路由）等基礎能力
+```bash
+# 下載 docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-> 詳細的架構圖和初始化流程請參考 [架構概覽](../architecture.md)。
+# 設置 Dashboard 令牌並啟動
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
 
-## 開始學習
+<details>
+<summary>Docker Hub 不可用？</summary>
 
-準備好開始了嗎？
+使用 GitHub Container Registry 鏡像，修改 `docker-compose.yml` 中的 image：
 
-- [建立第一個機器人](first-bot.md) — 5 分鐘上手
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+啟動後訪問 `http://<host>:8000/Dashboard`，使用設置的令牌登錄。
+
+### 使用 pip 安裝
+
+確保你的 Python 版本 >= 3.10，然後使用 pip 安裝：
+
+```bash
+pip install ErisPulse
+```
+
+如果你已安裝 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安裝速度更快。
+
+## 初始化項目
+
+### 交互式初始化（推薦）
+
+```bash
+epsdk init
+```
+
+這將啟動一個交互式向導，引導您完成：
+
+- 項目名稱設置
+- 日誌級別配置
+- 伺服器配置（主機和端口）
+- 适配器選擇和配置
+- 項目結構創建
+
+### 快速初始化
+
+```bash
+# 指定項目名稱的快速模式
+epsdk init -q -n my_bot
+
+# 或者只指定項目名稱
+epsdk init -n my_bot
+```
+
+### 手動創建項目
+
+如果更喜歡手動創建項目：
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## 安裝模塊
+
+### 通過 CLI 安裝
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### 查看可用模塊
+
+```bash
+epsdk list-remote
+```
+
+### 交互式安裝
+
+不指定包名時進入交互式安裝界面：
+
+```bash
+epsdk install
+```
+
+## 運行項目
+
+```bash
+# 普通運行
+epsdk run main.py
+
+# 熱重載模式（開發時推薦）
+epsdk run main.py --reload
+```
+
+## 啟用 IDE 補全（可選）
+
+ErisPulse 動態發現模塊/适配器，IDE 默认無法補全平台特有方法。  
+運行以下命令生成類型存根：
+
+```bash
+epsdk types
+```
+
+生成後用導入的類型作為變量標註即可獲得精確補全（詳見 [IDE 補全指南](./getting-started/ide-completion.md)）：
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # 補全平台特有方法
+```
+
+## 項目結構
+
+初始化後的項目結構：
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # 配置文件
+└── main.py                  # 入口文件
+
+```
+
+## 配置文件
+
+基本的 `config.toml` 配置：
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# 适配器配置
+```
+
+## 下一步
+
+- [入門指南總覽](getting-started/README.md) - 了解 ErisPulse 的基本概念
+- [創建第一個機器人](getting-started/first-bot.md) - 創建一個簡單的機器人
+- [用戶使用指南](user-guide/) - 深入了解配置和模塊管理
+- [開發者指南](developer-guide/) - 開發自定義模塊和适配器
 
 
-### 创建第一个模块
+### 创建第一个机器人
 
 # 建立第一個機器人
 
@@ -1630,516 +1767,95 @@ async def conditional_handler(event):
 請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 
-### 常见任务示例
+### IDE 补全
 
-# 常見任務範例
+# 類型存根生成（IDE 自動完成）
 
-本指南提供常見功能的實作範例，幫助您快速實作常用功能。
+ErisPulse 透過 entry-points 動態發現模組/適配器，入口點無法在靜態層面得知使用者類別的具體類型。  
+`epsdk types` 命令透過掃描已安裝的模組/適配器，產生一個類型存根檔案，讓使用者可以將這些類型用作變數標註，進而獲得 IDE 自動完成。
 
-## 內容列表
+## 核心設計原則
 
-1. 資料持久化
-2. 定時任務
-3. 訊息過濾
-4. 多平台適配
-5. 訊息傳送進階（重試/逾時/批次）
-6. 權限控制
-7. 訊息統計
-8. 搜尋功能
-9. 圖片處理
+存根檔案**僅導出類型**，不提供任何執行時實例：
 
-## 資料持久化
+- 所有匯入都在 ``TYPE_CHECKING`` 下，**零執行時開銷、零行為改變**
+- 類型名稱採用 entry-point 名的 PascalCase 形式（如 ``yunhu`` → ``Yunhu``），與傳入 ``sdk.adapter.get()`` / ``sdk.module.get()`` 的名稱對應
+- 使用者在程式碼中照常用 ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` 取得實例，只是用匯入的類型做**變數標註**
 
-### 簡單計數器
+## 基本用法
+
+在專案根目錄執行：
+
+```bash
+epsdk types
+```
+
+會在當前目錄產生 `_ep_types.py`，包含所有已安裝模組/適配器的類型。
+
+## 在程式碼中使用
 
 ```python
+from _ep_types import MyModule, Yunhu
 from ErisPulse import sdk
-from ErisPulse.Core.Event import command
 
-@command("count", help="檢視命令呼叫次數")
-async def count_handler(event):
-    # 取得計數
-    count = sdk.storage.get("command_count", 0)
-    
-    # 增加計數
-    count += 1
-    sdk.storage.set("command_count", count)
-    
-    await event.reply(f"這是第 {count} 次呼叫此命令")
+# 用匯入的類型作為變數標註，即可讓 IDE 自動完成該類的方法
+my_mod: MyModule = sdk.module.get("MyModule")
+my_mod.hello()                  # ← IDE 自動完成 hello
+
+my_adapter: Yunhu = sdk.adapter.get("yunhu")
+await my_adapter.Send.To("group", "123").Board(...)   # ← 自動完成平台特有方法
 ```
 
-### 使用者資料儲存
+## 工作原理
+
+1. 掃描 `erispulse.adapter` / `erispulse.module` entry-points
+2. 透過子程序在目標 Python 環境中內省，收集每個適配器/模組的實際類別資訊（包含模組路徑與限定名）
+3. 產生 `.py` 檔案，其中：
+   - 所有 ``from xxx import Yyy as Zzz`` 都在 ``TYPE_CHECKING`` 下
+   - ``Zzz`` 是 entry-point 名的 PascalCase 形式
+4. IDE 讀取 ``TYPE_CHECKING`` 部分提供自動完成；執行時不執行任何程式碼
+
+產生的存根範例：
 
 ```python
-@command("profile", help="檢視個人資料")
-async def profile_handler(event):
-    user_id = event.get_user_id()
-    
-    # 取得使用者資料
-    user_data = sdk.storage.get(f"user:{user_id}", {
-        "nickname": "",
-        "join_date": None,
-        "message_count": 0
-    })
-    
-    profile_text = f"""
-暱稱: {user_data['nickname']}
-加入時間: {user_data['join_date']}
-訊息數: {user_data['message_count']}
-    """
-    
-    await event.reply(profile_text.strip())
+# _ep_types.py（自動產生）
+from typing import TYPE_CHECKING
 
-@command("setnick", help="設定暱稱")
-async def setnick_handler(event):
-    user_id = event.get_user_id()
-    args = event.get_command_args()
-    
-    if not args:
-        await event.reply("請輸入暱稱")
-        return
-    
-    # 更新使用者資料
-    user_data = sdk.storage.get(f"user:{user_id}", {})
-    user_data["nickname"] = " ".join(args)
-    sdk.storage.set(f"user:{user_id}", user_data)
-    
-    await event.reply(f"暱稱已設定為: {' '.join(args)}")
+if TYPE_CHECKING:
+    # 適配器
+    from MyAdapter.Core import MyAdapter as MyAdapter
+    from YunhuAdapter.Core import YunhuAdapter as Yunhu
+
+    # 模組
+    from MyModule.Core import Main as MyModule
+
+    __all__ = ['MyAdapter', 'Yunhu', 'MyModule']
 ```
 
-## 定時任務
+## 命令選項
 
-### 簡單計時器
+| 選項 | 說明 |
+|------|------|
+| `-o, --output PATH` | 指定輸出檔案路徑（預設 `./_ep_types.py`） |
+| `--force` | 覆蓋已存在的存根檔案 |
+| `--adapters-only` | 僅掃描適配器 |
+| `--modules-only` | 僅掃描模組 |
 
-```python
-from ErisPulse import sdk
-from ErisPulse.Core.Event import command
-import asyncio
+## 何時重新產生
 
-class TimerModule:
-    def __init__(self):
-        self.sdk = sdk
-        self._tasks = []
-    
-    async def on_load(self, event):
-        """模組載入時啟動定時任務"""
-        self._start_timers()
-        
-        @command("timer", help="計時器管理")
-        async def timer_handler(event):
-            await event.reply("計時器正在執行中...")
-    
-    def _start_timers(self):
-        """啟動定時任務"""
-        # 每 60 秒執行一次
-        task = asyncio.create_task(self._every_minute())
-        self._tasks.append(task)
-        
-        # 每天凌晨執行
-        task = asyncio.create_task(self._daily_task())
-        self._tasks.append(task)
-    
-    async def _every_minute(self):
-        """每分鐘執行的任務"""
-        self.sdk.logger.info("每分鐘任務執行")
-        # 你的邏輯...
-    
-    async def _daily_task(self):
-        """每天凌晨執行的任務（註：基於 UTC 時間計算，如需本地時間請自行調整）"""
-        import time
-        
-        while True:
-            # 計算到凌晨的時間
-            now = time.time()
-            midnight = now + (86400 - now % 86400)
-            
-            await asyncio.sleep(midnight - now)
-            
-            # 執行任務
-            self.sdk.logger.info("每日任務執行")
-            # 你的邏輯...
-```
+- 安裝/卸載新的模組或適配器後
+- 模組/適配器更新了公開 API 後
+- IDE 自動完成失效或類型過期時
 
-### 使用生命週期事件
+## 與 SendDSL 標準方法的關係
 
-```python
-@sdk.lifecycle.on("core.init.complete")
-async def init_complete_handler(event_data):
-    """SDK 初始化完成後啟動定時任務"""
-    import asyncio
-    
-    async def daily_reminder():
-        """每日提醒"""
-        await asyncio.sleep(86400)  # 24小時
-        sdk.logger.info("執行每日任務")
-    
-    # 啟動背景任務
-    asyncio.create_task(daily_reminder())
-```
+`SendDSL` 基類已內建標準發送方法（Text/Image/Voice/Video/File），任何方式取得的 SendDSL 實例都能自動完成這些方法。  
+`types` 命令主要用於補全**平台特有方法**（如雲湖的 `Board`、沙盒的 `Dice`）和**模組特有方法**。
 
-## 訊息過濾
+## 相關文件
 
-### 關鍵字過濾
-
-```python
-from ErisPulse.Core.Event import message
-
-blocked_words = ["垃圾", "廣告", "釣魚"]
-
-@message.on_message()
-async def filter_handler(event):
-    text = event.get_text()
-    
-    # 檢查是否包含敏感詞
-    for word in blocked_words:
-        if word in text:
-            sdk.logger.warning(f"攔截敏感訊息: {word}")
-            return  # 不處理此訊息
-    
-    # 正常處理訊息
-    await event.reply(f"收到: {text}")
-```
-
-### 黑名單過濾
-
-```python
-# 從設定或儲存載入黑名單
-blacklist = sdk.storage.get("user_blacklist", [])
-
-@message.on_message()
-async def blacklist_handler(event):
-    user_id = event.get_user_id()
-    
-    if user_id in blacklist:
-        sdk.logger.info(f"黑名單使用者: {user_id}")
-        return  # 不處理
-    
-    # 正常處理
-    await event.reply(f"你好，{user_id}")
-```
-
-## 多平台適配
-
-### 平台特定回應
-
-```python
-@command("help", help="顯示說明")
-async def help_handler(event):
-    platform = event.get_platform()
-    
-    if platform == "yunhu":
-        await event.reply("雲湖平台說明...")
-    elif platform == "telegram":
-        await event.reply("Telegram platform help...")
-    elif platform == "onebot11":
-        await event.reply("OneBot11 help...")
-    else:
-        await event.reply("通用說明訊息")
-```
-
-### 平台特性檢測
-
-```python
-@command("rich", help="傳送富文字訊息")
-async def rich_handler(event):
-    platform = event.get_platform()
-    
-    if platform == "yunhu":
-        # 雲湖支援 HTML
-        yunhu = sdk.adapter.get("yunhu")
-        await yunhu.Send.To("user", event.get_user_id()).Html(
-            "<b>加粗文字</b><i>斜體文字</i>"
-        )
-    elif platform == "telegram":
-        # Telegram 支援 Markdown
-        telegram = sdk.adapter.get("telegram")
-        await telegram.Send.To("user", event.get_user_id()).Markdown(
-            "**加粗文字** *斜體文字*"
-        )
-    else:
-        # 其他平台使用純文字
-        await event.reply("加粗文字 斜體文字")
-```
-
-## 訊息傳送進階（重試/逾時/批次）
-
-除了簡單的 `event.reply()`，您還可以透過適配器的 Send DSL 實作更複雜的傳送場景：失敗自動重試、逾時取消、成功後執行邏輯、批次傳送多條訊息。
-
-> 下方的範例用 `event.get_detail_type()` 和 `event.get_target_id()` 從事件中取得目標類型和 ID（群聊自動取 group_id，私聊自動取 user_id），避免硬編碼。
-
-### 傳送成功後執行邏輯
-
-```python
-@command("pay", help="模擬支付")
-async def pay_handler(event):
-    yunhu = sdk.adapter.get(event.get_platform())
-    user_id = event.get_user_id()
-    # 傳送成功後才扣積分
-    await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
-           .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
-           .Text("支付成功，已扣除 10 積分"))
-```
-
-### 失敗重試 + 逾時取消
-
-```python
-@command("notice", help="傳送重要通知")
-async def notice_handler(event):
-    adapter_inst = sdk.adapter.get(event.get_platform())
-    # 最多重試 3 次，每次逾時 10 秒
-    task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
-            .Retry(3)
-            .Timeout(10)
-            .OnError(lambda ctx: sdk.logger.error(f"通知傳送失敗: {ctx.error}"))
-            .Text("這是一條重要通知"))
-    # 不等待，背景傳送
-```
-
-### 批次傳送多條訊息
-
-一條鏈路傳送多條訊息，統一執行：
-
-```python
-@command("announce", help="傳送公告")
-async def announce_handler(event):
-    adapter_inst = sdk.adapter.get(event.get_platform())
-    # 建構多條訊息，統一傳送（預設並行）
-    results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
-                    .Build()
-                    .Text("📋 今日公告")
-                    .Image("https://example.com/banner.jpg")
-                    .Text("詳細內容見上方圖片")
-                    .Retry(2)            # 失敗的項目各自重試
-                    .send_all())
-    sdk.logger.info(f"批次傳送完成，共 {len(results)} 條")
-```
-
-> 更完整的規則與批次說明請參考 [平台特性指南](../platform-guide/README.md#傳送規則裝飾器)。
-
-## 權限控制
-
-### 管理員檢查
-
-```python
-# 設定主人列表
-MASTERS = ["user123", "user456"]
-
-def is_master(user_id):
-    """檢查是否為框架主人"""
-    return user_id in MASTERS
-
-@command("master", help="框架主人命令")
-async def master_handler(event):
-    user_id = event.get_user_id()
-    
-    if not is_master(user_id):
-        await event.reply("權限不足，此命令僅框架主人可用")
-        return
-    
-    await event.reply("框架主人命令執行成功")
-
-@command("addmaster", help="新增框架主人")
-async def addmaster_handler(event):
-    if not is_master(event.get_user_id()):
-        return
-    
-    args = event.get("text", "").split()
-    if len(args) < 2:
-        await event.reply("用法: /addmaster <使用者ID>")
-        return
-    
-    new_master = args[0]
-    MASTERS.append(new_master)
-    await event.reply(f"已新增框架主人: {new_master}")
-```
-
-### 群組權限
-
-```python
-@command("groupinfo", help="檢視群組資訊")
-async def groupinfo_handler(event):
-    if not event.is_group_message():
-        await event.reply("此命令僅限群聊使用")
-        return
-    
-    group_id = event.get_group_id()
-    user_id = event.get_user_id()
-    
-    await event.reply(f"群組 ID: {group_id}, 你的 ID: {user_id}")
-```
-
-## 訊息統計
-
-### 訊息計數
-
-> **注意**：以下範例使用 `sdk.storage.get/set` 進行簡單計數。在高並發場景下，建議使用 `sdk.storage.transaction()` 保證原子性。
-
-```python
-@message.on_message()
-async def count_handler(event):
-    # 取得統計
-    stats = sdk.storage.get("message_stats", {
-        "total": 0,
-        "by_user": {},
-        "by_day": {}
-    })
-    
-    # 更新統計
-    stats["total"] += 1
-    
-    user_id = event.get_user_id()
-    stats["by_user"][user_id] = stats["by_user"].get(user_id, 0) + 1
-    
-    # 儲存
-    sdk.storage.set("message_stats", stats)
-
-@command("stats", help="檢視訊息統計")
-async def stats_handler(event):
-    stats = sdk.storage.get("message_stats", {
-        "total": 0,
-        "by_user": {},
-        "by_day": {}
-    })
-    
-    top_users = sorted(
-        stats["by_user"].items(),
-        key=lambda x: x[1],
-        reverse=True
-    )[:5]
-    
-    top_text = "\n".join(
-        f"{uid}: {count} 條訊息" for uid, count in top_users
-    )
-    
-    await event.reply(f"總訊息數: {stats['total']}\n\n活躍使用者:\n{top_text}")
-```
-
-## 搜尋功能
-
-### 簡單搜尋
-
-> **注意**：以下範例使用記憶體列表儲存訊息歷史，**程式重新啟動後資料會遺失**。生產環境建議使用 `sdk.storage` 或 SQLite 表進行持久化儲存。
-
-```python
-from ErisPulse.Core.Event import command, message
-
-# 儲存訊息歷史
-message_history = []
-
-@message.on_message()
-async def store_handler(event):
-    """儲存訊息用於搜尋"""
-    user_id = event.get_user_id()
-    text = event.get_text()
-    
-    message_history.append({
-        "user_id": user_id,
-        "text": text,
-        "time": event.get_time()
-    })
-    
-    # 限制歷史記錄數量
-    if len(message_history) > 1000:
-        message_history.pop(0)
-
-@command("search", help="搜尋訊息")
-async def search_handler(event):
-    args = event.get_command_args()
-    
-    if not args:
-        await event.reply("請輸入搜尋關鍵字")
-        return
-    
-    keyword = " ".join(args)
-    results = []
-    
-    # 搜尋歷史記錄
-    for msg in message_history:
-        if keyword in msg["text"]:
-            results.append(msg)
-    
-    if not results:
-        await event.reply("未找到符合的訊息")
-        return
-    
-    # 顯示結果
-    result_text = f"找到 {len(results)} 條符合訊息:\n\n"
-    for i, msg in enumerate(results[:10], 1):  # 最多顯示 10 條
-        result_text += f"{i}. {msg['text']}\n"
-    
-    await event.reply(result_text)
-```
-
-## 圖片處理
-
-### 圖片下載和儲存
-
-```python
-from ErisPulse.Core import client
-
-@message.on_message()
-async def image_handler(event):
-    """處理圖片訊息"""
-    message_segments = event.get_message()
-    
-    for segment in message_segments:
-        if segment.get("type") == "image":
-            file_url = segment.get("data", {}).get("file")
-            
-            if file_url:
-                # 建議使用 SDK 內建用戶端下載圖片
-                resp = await client.get(file_url)
-                if resp.status == 200:
-                    image_data = await resp.read()
-                    
-                    # 儲存到檔案
-                    filename = f"images/{event.get_time()}.jpg"
-                    with open(filename, "wb") as f:
-                        f.write(image_data)
-                    
-                    sdk.logger.info(f"圖片已儲存: {filename}")
-                    await event.reply("圖片已儲存")
-```
-
-### 圖片識別範例
-
-> **注意**：以下範例使用佔位 API 位址，實際使用時請替換為您自己的圖片識別服務。
-
-```python
-from ErisPulse.Core import client
-
-@command("identify", help="識別圖片")
-async def identify_handler(event):
-    """識別訊息中的圖片"""
-    message_segments = event.get_message()
-    
-    for segment in message_segments:
-        if segment.get("type") == "image":
-            file_url = segment.get("data", {}).get("file")
-            
-            # 呼叫圖片識別 API
-            result = await _identify_image(file_url)
-            
-            await event.reply(f"識別結果: {result}")
-            return
-    
-    await event.reply("未找到圖片")
-
-async def _identify_image(url):
-    """呼叫圖片識別 API（範例）- 使用 SDK 內建用戶端"""
-    resp = await client.post(
-        "https://api.example.com/identify",
-        json={"url": url}
-    )
-    data = await resp.json()
-    return data.get("description", "識別失敗")
-```
-
-## 下一個步驟
-
-- [使用者使用指南](../user-guide/) - 了解設定和模組管理
-- [開發者指南](../developer-guide/) - 學習開發模組和適配器
-- [進階主題](../advanced/) - 深入了解框架特性
+- [SendDSL 詳解](../developer-guide/adapters/send-dsl.md) - 標準發送方法說明
+- [適配器開發入門](../developer-guide/adapters/getting-started.md) - 建立適配器
 
 
 ====

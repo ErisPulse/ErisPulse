@@ -377,55 +377,371 @@ If you find other terms in the documentation that you do not understand, feel fr
 
 
 ====
-基础概念
+快速上手
 ====
 
 
-### 入门指南总览
+### 快速开始
 
-# Getting Started
+# Quick Start
 
-Welcome to the ErisPulse Getting Started Guide. If you are new to ErisPulse, this guide will take you from zero, step by step, through the core concepts and basic usage of the framework.
+> Confused by unfamiliar terms? Check out the [Glossary](terminology.md) for clear explanations.
 
-## Learning Path
+## Install ErisPulse
 
-This guide is organized in the following order. It is recommended to read them sequentially:
+### One-Click Installation Script (Recommended)
 
-| Step | Topic | Description |
-|------|-------|-------------|
-| 1 | [Create Your First Bot](first-bot.md) | From project initialization to running your first command |
-| 2 | [Basic Concepts](basic-concepts.md) | Understand the core architecture and module design of ErisPulse |
-| 3 | [Introduction to Event Handling](event-handling.md) | Learn how to handle various events such as messages, commands, notifications, etc. |
-| 4 | [Common Task Examples](common-tasks.md) | Master commonly used features such as data persistence, scheduled tasks, and permission control |
-| 5 | [IDE Completion Guide](ide-completion.md) | Generate type stubs to enable IDE auto-completion for platform-specific methods |
+The installation script automatically detects your environment (Docker, Python, uv) and guides you to choose the most suitable installation method.
 
-## Development Approaches
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
 
-ErisPulse supports two development approaches:
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
 
-| Approach | Applicable Scenarios | Description |
-|----------|----------------------|-------------|
-| **Embedded Development** | Rapid prototyping, internal project features | Write handlers directly in `main.py`, without creating a separate module |
-| **Module Development** (Recommended) | Production environments, feature distribution | Create a separate Python package and install it using `epsdk install` |
+The script will guide you through:
 
-> For a detailed comparison and examples of both approaches, please refer to [Create Your First Bot](first-bot.md) and [Introduction to Module Development](../developer-guide/modules/getting-started.md).
+- **Docker Installation** (recommended if Docker is detected): Choose image source (Docker Hub / GHCR), version channel (stable / pre-release), Dashboard management panel configuration, and port settings
+- **Traditional Installation**: Automatically create a virtual environment, select ErisPulse version, optionally install Dashboard management panel module
 
-## Architecture Overview
+### Using Docker
 
-ErisPulse adopts an event-driven architecture, primarily composed of the following systems:
+The Docker image comes with the ErisPulse framework and Dashboard management panel pre-installed.
 
-- **Adapter System** — Communicates with various platforms, converting platform events into a unified OneBot12 standard format
-- **Event System** — Handles five major types of events: messages, commands, notifications, requests, and meta-events
-- **Module System** — Extends functionality through independent modules, supporting dependency management and lazy loading
-- **Core Modules** — Provides basic capabilities such as Storage (storage), Config (configuration), Logger (logging), and Router (routing)
+```bash
+# Download docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-> For a detailed architecture diagram and initialization flow, please refer to [Architecture Overview](../architecture.md).
+# Set Dashboard token and start
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
 
-## Start Learning
+<details>
+<summary>Unable to access Docker Hub?</summary>
 
-Are you ready to begin?
+Use the GitHub Container Registry image by modifying `docker-compose.yml` to use:
 
-- [Create Your First Bot](first-bot.md) — Get started in 5 minutes
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+After startup, access `http://<host>:8000/Dashboard` and log in using the set token.
+
+### Using pip
+
+Ensure your Python version is >= 3.10, then install using pip:
+
+```bash
+pip install ErisPulse
+```
+
+If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse` for faster installation.
+
+## Initialize Project
+
+### Interactive Initialization (Recommended)
+
+```bash
+epsdk init
+```
+
+This starts an interactive wizard guiding you through:
+- Project name setup
+- Log level configuration
+- Server configuration (host and port)
+- Adapter selection and configuration
+- Project structure creation
+
+### Quick Initialization
+
+```bash
+# Quick mode with specified project name
+epsdk init -q -n my_bot
+
+# Or just specify the project name
+epsdk init -n my_bot
+```
+
+### Manual Project Creation
+
+If you prefer to manually create a project:
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## Install Modules
+
+### Install via CLI
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### View Available Modules
+
+```bash
+epsdk list-remote
+```
+
+### Interactive Installation
+
+Without specifying a package name, enter the interactive installation interface:
+
+```bash
+epsdk install
+```
+
+## Run Project
+
+```bash
+# Normal execution
+epsdk run main.py
+
+# Hot-reload mode (recommended for development)
+epsdk run main.py --reload
+```
+
+## Enable IDE Completion (Optional)
+
+ErisPulse dynamically discovers modules/adapters, and IDEs cannot auto-complete platform-specific methods by default. Run the following command to generate type stubs:
+
+```bash
+epsdk types
+```
+
+After generation, use the imported types as variable annotations to get precise completion (see [IDE Completion Guide](./getting-started/ide-completion.md)):
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # Auto-complete platform-specific methods
+```
+
+## Project Structure
+
+The initialized project structure:
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # Configuration file
+└── main.py                  # Entry file
+
+```
+
+## Configuration File
+
+Basic `config.toml` configuration:
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# Adapter configuration
+```
+
+## Next Steps
+
+- [Getting Started Overview](getting-started/README.md) - Understand the basic concepts of ErisPulse
+- [Create Your First Bot](getting-started/first-bot.md) - Create a simple bot
+- [User Guide](user-guide/) - Learn more about configuration and module management
+- [Developer Guide](developer-guide/) - Develop custom modules and adapters
+
+
+### 创建第一个机器人
+
+# Create Your First Bot
+
+This guide will take you from scratch to create a simple ErisPulse bot.
+
+## Step 1: Create Project
+
+Use the CLI tool to initialize the project:
+
+```bash
+# Interactive initialization
+epsdk init
+
+# Or quick initialization
+epsdk init -q -n my_first_bot
+```
+
+Follow the prompts to complete the configuration. It is recommended to select:
+- Project name: my_first_bot
+- Log level: INFO
+- Server: Default configuration
+- Adapter: Choose your needed platform (e.g., Yunhu)
+
+## Step 2: View Project Structure
+
+The project structure after initialization:
+
+```
+my_first_bot/
+├── config/
+│   └── config.toml
+├── main.py
+└── requirements.txt
+```
+
+## Step 3: Write Your First Command
+
+Open `main.py` and write a simple command handler:
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+@command("hello", help="Send a greeting message")
+async def hello_handler(event):
+    """Handle hello command"""
+    user_name = event.get_user_nickname() or "Friend"
+    await event.reply(f"Hello, {user_name}! I am the ErisPulse bot.")
+
+@command("ping", help="Test if the bot is online")
+async def ping_handler(event):
+    """Handle ping command"""
+    await event.reply("Pong! The bot is running normally.")
+
+async def main():
+    """Main entry function"""
+    print("Initializing ErisPulse...")
+    # Run SDK and keep it running
+    await sdk.run(keep_running=True)
+
+    # Or
+    # await sdk.run(keep_running=False)
+    # ...Do Something
+    # You can do whatever you want
+    # Using await sdk.init() is equivalent to `sdk.run(keep_running=False)`
+
+    print("ErisPulse initialization complete!")
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
+```
+
+## Step 4: Run the Bot
+
+```bash
+# Run normally
+epsdk run main.py
+
+# Development mode (supports hot reload)
+epsdk run main.py --reload
+```
+
+## Step 5: Test the Bot
+
+Send the command in your chat platform:
+
+```
+/hello
+```
+
+You should receive a response from the bot.
+
+## Code Explanation
+
+### Command Decorator
+
+```python
+@command("hello", help="Send a greeting message")
+```
+
+- `hello`: Command name, users call it via `/hello`
+- `help`: Command help description, shown in the `/help` command
+
+### Event Arguments
+
+```python
+async def hello_handler(event):
+```
+
+The `event` parameter is an Event object, containing:
+- Message content: `event.get_text()`
+- Sender information: `event.get_user_id()`, `event.get_user_nickname()`
+- Platform information: `event.get_platform()`
+- Group information: `event.get_group_id()`
+- Raw data: `event.get_raw()`
+
+> For a complete list of Event object methods, please refer to [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md).
+
+### Sending a Reply
+
+```python
+await event.reply("Reply content")
+```
+
+`event.reply()` is a convenient method for sending a message to the sender.
+
+## Extension: Adding More Features
+
+ErisPulse provides rich event handling and data processing capabilities:
+
+- **Message Listening**: Use `@message.on_message()` to listen for various messages → [Event Handling Introduction](event-handling.md)
+- **Notification Listening**: Use `@notice.on_friend_add()` to listen for system notifications → [Event Handling Introduction](event-handling.md)
+- **Data Storage**: Use `sdk.storage.get/set` to persist data → [Common Task Examples](common-tasks.md)
+
+## Common Issues
+
+### Bot does not respond?
+
+1. Check if the adapter is configured correctly and confirm that the `status` in `config/config.toml` for the adapter is `true`
+2. View terminal log output to confirm if there are error messages (especially `ERROR` level logs)
+3. Confirm if the command prefix is correct (default is `/`), you can check the `[ErisPulse.event.command]` section in the configuration file
+4. Confirm if the command name is spelled correctly, pay attention to the case sensitivity setting
+
+### How to change the command prefix?
+
+Add this to `config.toml`:
+
+```toml
+[ErisPulse.event.command]
+prefix = "!"
+case_sensitive = false
+```
+
+### How to support multiple platforms?
+
+ErisPulse uses the OneBot12 standard to unify event formats across different platforms. Handlers registered with `@command` and `@message` will automatically receive events from all platforms. You can distinguish the source platform via `event.get_platform()`:
+
+```python
+@command("hello")
+async def hello_handler(event):
+    platform = event.get_platform()
+    
+    if platform == "yunhu":
+        await event.reply("Hello! From Yunhu")
+    elif platform == "telegram":
+        await event.reply("Hello! From Telegram")
+    else:
+        await event.reply("Hello!")
+```
+
+> For more multi-platform adaptation tips, please refer to [Common Task Examples](common-tasks.md#multi-platform-adaptation).
+
+## Next Steps
+
+- [Basic Concepts](basic-concepts.md) - Understand ErisPulse core concepts deeply
+- [Event Handling Introduction](event-handling.md) - Learn how to handle various events
+- [Common Task Examples](common-tasks.md) - Master more practical functions
 
 
 ### 基础概念
@@ -1446,6 +1762,95 @@ async def conditional_handler(event):
 - [Platform Features Guide](../platform-guide/README.md) - Complete explanation of Send DSL chain sending, sending rules, and batch construction
 - [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) - In-depth understanding of the Event object
 - [User Guide](../user-guide/) - Learn about configuration and module management
+
+
+### IDE 补全
+
+# Type Stub Generation (IDE Completion)
+
+ErisPulse dynamically discovers modules/adapters via entry-points, and the exact types of user classes are not known at the static level. The `epsdk types` command scans installed modules/adapters and generates a type stub file, allowing users to use these types as variable annotations to obtain IDE completion.
+
+## Core Design Principles
+
+The stub file **only exports types**, without providing any runtime instances:
+
+- All imports are under ``TYPE_CHECKING``, **zero runtime overhead, zero behavior change**
+- Type names use the PascalCase form of the entry-point name (e.g., ``yunhu`` → ``Yunhu``), corresponding to the names passed into ``sdk.adapter.get()`` / ``sdk.module.get()``
+- Users use ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` as usual to get instances, but use imported types for **variable annotations**
+
+## Basic Usage
+
+Run in the project root directory:
+
+```bash
+epsdk types
+```
+
+This generates `_ep_types.py` in the current directory, containing types for all installed modules/adapters.
+
+## Using in Code
+
+```python
+from _ep_types import MyModule, Yunhu
+from ErisPulse import sdk
+
+# Using imported types as variable annotations enables IDE completion for the class methods
+my_mod: MyModule = sdk.module.get("MyModule")
+my_mod.hello()                  # ← IDE completes hello
+
+my_adapter: Yunhu = sdk.adapter.get("yunhu")
+await my_adapter.Send.To("group", "123").Board(...)   # ← Completes platform-specific methods
+```
+
+## How It Works
+
+1. Scan `erispulse.adapter` / `erispulse.module` entry-points
+2. Use a subprocess to introspect in the target Python environment, collecting actual class information for each adapter/module (including module path and qualified name)
+3. Generate a `.py` file, where:
+   - All ``from xxx import Yyy as Zzz`` are under ``TYPE_CHECKING``
+   - ``Zzz`` is the PascalCase form of the entry-point name
+4. The IDE reads the ``TYPE_CHECKING`` section to provide completion; no code is executed at runtime
+
+Example of generated stub:
+
+```python
+# _ep_types.py (auto-generated)
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Adapters
+    from MyAdapter.Core import MyAdapter as MyAdapter
+    from YunhuAdapter.Core import YunhuAdapter as Yunhu
+
+    # Modules
+    from MyModule.Core import Main as MyModule
+
+    __all__ = ['MyAdapter', 'Yunhu', 'MyModule']
+```
+
+## Command Options
+
+| Option | Description |
+|--------|-------------|
+| `-o, --output PATH` | Specify the output file path (default `./_ep_types.py`) |
+| `--force` | Overwrite existing stub file |
+| `--adapters-only` | Only scan adapters |
+| `--modules-only` | Only scan modules |
+
+## When to Regenerate
+
+- After installing/uninstalling new modules or adapters
+- After modules/adapters update their public API
+- When IDE completion fails or types are outdated
+
+## Relationship with SendDSL Standard Methods
+
+The `SendDSL` base class already includes standard send methods (Text/Image/Voice/Video/File), so any way of obtaining a `SendDSL` instance can complete these methods. The `types` command is mainly used to complete **platform-specific methods** (e.g., Yunhu's `Board`, Sandbox's `Dice`) and **module-specific methods**.
+
+## Related Documentation
+
+- [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md) - Description of standard send methods
+- [Getting Started with Adapter Development](../developer-guide/adapters/getting-started.md) - Creating adapters
 
 
 =====

@@ -64,6 +64,16 @@ ErisPulse 命令行接口主类
 ---
 
 
+##### `_print_quickstart()`
+
+打印 Quick Start 面板
+
+在 ``epsdk`` 不带任何子命令时输出，帮助新用户在 30 秒内看到
+三步走路径（安装 / 创建项目 / 运行），降低首次使用门槛。
+
+---
+
+
 ##### `_check_command_typo()`
 
 在 argparse 解析之前检查命令拼写

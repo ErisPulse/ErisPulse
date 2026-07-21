@@ -377,55 +377,373 @@ flowchart TD
 
 
 ====
-基础概念
+快速上手
 ====
 
 
-### 入门指南总览
+### 快速开始
 
-# 入門指南
+# 快速開始
 
-歡迎來到 ErisPulse 入門指南。如果你是第一次使用 ErisPulse，這裡將帶你從零開始，逐步了解框架的核心概念和基本用法。
+> 遇到不理解的術語？查看 [術語表](terminology.md) 獲取通俗易懂的解釋。
 
-## 學習路徑
+## 安裝 ErisPulse
 
-本指南按以下順序組織，建議依序閱讀：
+### 一鍵安裝腳本（推薦）
 
-| 步驟 | 主題 | 說明 |
-|------|------|------|
-| 1 | [建立第一個機器人](first-bot.md) | 從項目初始化到執行第一個指令 |
-| 2 | [基本概念](basic-concepts.md) | 理解 ErisPulse 的核心架構和模組設計 |
-| 3 | [事件處理入門](event-handling.md) | 學習如何處理訊息、指令、通知等各類事件 |
-| 4 | [常見任務範例](common-tasks.md) | 掌握資料持久化、定時任務、權限控制等常用功能 |
-| 5 | [IDE 自動補全指南](ide-completion.md) | 產生類型存根，啟用平台特定方法的 IDE 自動補全 |
+安裝腳本會自動檢測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。
 
-## 開發方式選擇
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
 
-ErisPulse 支援兩種開發方式：
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
 
-| 方式 | 適用場景 | 說明 |
-|------|---------|------|
-| **內嵌式開發** | 快速原型、專案內部功能 | 直接在 `main.py` 中編寫處理器，無需建立獨立模組 |
-| **模組開發**（推薦） | 生產環境、功能分發 | 建立獨立的 Python 套件，透過 `epsdk install` 安裝使用 |
+腳本會引導您完成：
 
-> 兩種方式的詳細對比和範例請參考 [建立第一個機器人](first-bot.md) 和 [模組開發入門](../developer-guide/modules/getting-started.md)。
+- **Docker 安裝**（檢測到 Docker 時推薦）：選擇鏡像源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設置
+- **傳統安裝**：自動創建虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模塊
 
-## 架構概覽
+### 使用 Docker
 
-ErisPulse 採用事件驅動架構，核心由以下系統組成：
+Docker 鏡像已內置 ErisPulse 框架和 Dashboard 管理面板。
 
-- **適配器系統** — 與各平台通訊，將平台事件轉換為統一的 OneBot12 標準格式
-- **事件系統** — 處理訊息、指令、通知、請求、元事件五大類事件
-- **模組系統** — 透過獨立模組擴充功能，支援依賴管理和懶加載
-- **核心模組** — 提供 Storage（儲存）、Config（設定）、Logger（日誌）、Router（路由）等基礎能力
+```bash
+# 下載 docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-> 詳細的架構圖和初始化流程請參考 [架構概覽](../architecture.md)。
+# 設置 Dashboard 令牌並啟動
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
 
-## 開始學習
+<details>
+<summary>Docker Hub 不可用？</summary>
 
-準備好開始了嗎？
+使用 GitHub Container Registry 鏡像，修改 `docker-compose.yml` 中的 image：
 
-- [建立第一個機器人](first-bot.md) — 5 分鐘上手
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+啟動後訪問 `http://<host>:8000/Dashboard`，使用設置的令牌登錄。
+
+### 使用 pip 安裝
+
+確保你的 Python 版本 >= 3.10，然後使用 pip 安裝：
+
+```bash
+pip install ErisPulse
+```
+
+如果你已安裝 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安裝速度更快。
+
+## 初始化項目
+
+### 交互式初始化（推薦）
+
+```bash
+epsdk init
+```
+
+這將啟動一個交互式向導，引導您完成：
+
+- 項目名稱設置
+- 日誌級別配置
+- 伺服器配置（主機和端口）
+- 适配器選擇和配置
+- 項目結構創建
+
+### 快速初始化
+
+```bash
+# 指定項目名稱的快速模式
+epsdk init -q -n my_bot
+
+# 或者只指定項目名稱
+epsdk init -n my_bot
+```
+
+### 手動創建項目
+
+如果更喜歡手動創建項目：
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## 安裝模塊
+
+### 通過 CLI 安裝
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### 查看可用模塊
+
+```bash
+epsdk list-remote
+```
+
+### 交互式安裝
+
+不指定包名時進入交互式安裝界面：
+
+```bash
+epsdk install
+```
+
+## 運行項目
+
+```bash
+# 普通運行
+epsdk run main.py
+
+# 熱重載模式（開發時推薦）
+epsdk run main.py --reload
+```
+
+## 啟用 IDE 補全（可選）
+
+ErisPulse 動態發現模塊/适配器，IDE 默认無法補全平台特有方法。  
+運行以下命令生成類型存根：
+
+```bash
+epsdk types
+```
+
+生成後用導入的類型作為變量標註即可獲得精確補全（詳見 [IDE 補全指南](./getting-started/ide-completion.md)）：
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # 補全平台特有方法
+```
+
+## 項目結構
+
+初始化後的項目結構：
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # 配置文件
+└── main.py                  # 入口文件
+
+```
+
+## 配置文件
+
+基本的 `config.toml` 配置：
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# 适配器配置
+```
+
+## 下一步
+
+- [入門指南總覽](getting-started/README.md) - 了解 ErisPulse 的基本概念
+- [創建第一個機器人](getting-started/first-bot.md) - 創建一個簡單的機器人
+- [用戶使用指南](user-guide/) - 深入了解配置和模塊管理
+- [開發者指南](developer-guide/) - 開發自定義模塊和适配器
+
+
+### 创建第一个机器人
+
+# 建立第一個機器人
+
+本指南將帶你從零開始建立一個簡單的 ErisPulse 機器人。
+
+## 第一步：建立專案
+
+使用 CLI 工具初始化專案：
+
+```bash
+# 互動式初始化
+epsdk init
+
+# 或者快速初始化
+epsdk init -q -n my_first_bot
+```
+
+按照提示完成設定，建議選擇：
+- 專案名稱：my_first_bot
+- 日誌層級：INFO
+- 伺服器：預設配置
+- 適配器：選擇你需要的平台（如 Yunhu）
+
+## 第二步：查看專案結構
+
+初始化後的專案結構：
+
+```
+my_first_bot/
+├── config/
+│   └── config.toml
+├── main.py
+└── requirements.txt
+```
+
+## 第三步：編寫第一個指令
+
+開啟 `main.py`，編寫一個簡單的指令處理器：
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+@command("hello", help="發送問候訊息")
+async def hello_handler(event):
+    """處理 hello 指令"""
+    user_name = event.get_user_nickname() or "朋友"
+    await event.reply(f"你好，{user_name}！我是 ErisPulse 機人。")
+
+@command("ping", help="測試機器人是否在線")
+async def ping_handler(event):
+    """處理 ping 指令"""
+    await event.reply("Pong！機器人運作正常。")
+
+async def main():
+    """主入口函數"""
+    print("正在初始化 ErisPulse...")
+    # 運行 SDK 並且維持運行
+    await sdk.run(keep_running=True)
+
+    # 或者
+    # await sdk.run(keep_running=False)
+    # ...Do Something
+    # 可以做你想做的任何事
+    # 使用 await sdk.init() 等價於 `sdk.run(keep_running=False)`
+
+    print("ErisPulse 初始化完成！")
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
+```
+
+## 第四步：執行機器人
+
+```bash
+# 一般執行
+epsdk run main.py
+
+# 開發模式（支援熱重載）
+epsdk run main.py --reload
+```
+
+## 第五步：測試機器人
+
+在你的聊天平台中傳送指令：
+
+```
+/hello
+```
+
+你應該會收到機器人的回覆。
+
+## 程式碼說明
+
+### 指令裝飾器
+
+```python
+@command("hello", help="發送問候訊息")
+```
+
+- `hello`：指令名稱，使用者透過 `/hello` 呼叫
+- `help`：指令說明，在 `/help` 指令中顯示
+
+### 事件參數
+
+```python
+async def hello_handler(event):
+```
+
+`event` 參數是一個 Event 物件，包含：
+- 訊息內容：`event.get_text()`
+- 發送者資訊：`event.get_user_id()`、`event.get_user_nickname()`
+- 平台資訊：`event.get_platform()`
+- 群組資訊：`event.get_group_id()`
+- 原始資料：`event.get_raw()`
+
+> 完整的 Event 物件方法請參考 [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md)。
+
+### 傳送回覆
+
+```python
+await event.reply("回覆內容")
+```
+
+`event.reply()` 是一個便捷方法，用於向發送者傳送訊息。
+
+## 擴充：新增更多功能
+
+ErisPulse 提供了豐富的事件處理和資料處理能力：
+
+- **訊息監聽**：使用 `@message.on_message()` 監聽各類訊息 → [事件處理入門](event-handling.md)
+- **通知監聽**：使用 `@notice.on_friend_add()` 等監聽系統通知 → [事件處理入門](event-handling.md)
+- **資料儲存**：使用 `sdk.storage.get/set` 持久化資料 → [常見任務範例](common-tasks.md)
+
+## 常見問題
+
+### 指令沒有回應？
+
+1. 檢查適配器是否正確設定，確認 `config/config.toml` 中適配器的 `status` 為 `true`
+2. 查看終端日誌輸出，確認是否有錯誤訊息（特別是 `ERROR` 級別日誌）
+3. 確認指令前綴是否正確（預設是 `/`），可在設定檔中查看 `[ErisPulse.event.command]` 部分
+4. 確認指令名稱拼寫正確，注意大小寫敏感性設定
+
+### 如何修改指令前綴？
+
+在 `config.toml` 中新增：
+
+```toml
+[ErisPulse.event.command]
+prefix = "!"
+case_sensitive = false
+```
+
+### 如何支援多平台？
+
+ErisPulse 使用 OneBot12 標準統一了不同平台的事件格式，`@command` 和 `@message` 註冊的處理器會自動接收所有平台的事件。透過 `event.get_platform()` 可以區分來源平台：
+
+```python
+@command("hello")
+async def hello_handler(event):
+    platform = event.get_platform()
+    
+    if platform == "yunhu":
+        await event.reply("你好！來自雲湖")
+    elif platform == "telegram":
+        await event.reply("Hello! From Telegram")
+    else:
+        await event.reply("你好！")
+```
+
+> 更多多平台適配技巧請參考 [常見任務範例](common-tasks.md#多平台適配)。
+
+## 下一步
+
+- [基礎概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
+- [事件處理入門](event-handling.md) - 學習處理各類事件
+- [常見任務範例](common-tasks.md) - 掌握更多實用功能
 
 
 ### 基础概念
@@ -1448,6 +1766,97 @@ async def conditional_handler(event):
 - [使用者使用指南](../user-guide/) - 了解設定和模組管理
 
 請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+
+### IDE 补全
+
+# 類型存根生成（IDE 自動完成）
+
+ErisPulse 透過 entry-points 動態發現模組/適配器，入口點無法在靜態層面得知使用者類別的具體類型。  
+`epsdk types` 命令透過掃描已安裝的模組/適配器，產生一個類型存根檔案，讓使用者可以將這些類型用作變數標註，進而獲得 IDE 自動完成。
+
+## 核心設計原則
+
+存根檔案**僅導出類型**，不提供任何執行時實例：
+
+- 所有匯入都在 ``TYPE_CHECKING`` 下，**零執行時開銷、零行為改變**
+- 類型名稱採用 entry-point 名的 PascalCase 形式（如 ``yunhu`` → ``Yunhu``），與傳入 ``sdk.adapter.get()`` / ``sdk.module.get()`` 的名稱對應
+- 使用者在程式碼中照常用 ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` 取得實例，只是用匯入的類型做**變數標註**
+
+## 基本用法
+
+在專案根目錄執行：
+
+```bash
+epsdk types
+```
+
+會在當前目錄產生 `_ep_types.py`，包含所有已安裝模組/適配器的類型。
+
+## 在程式碼中使用
+
+```python
+from _ep_types import MyModule, Yunhu
+from ErisPulse import sdk
+
+# 用匯入的類型作為變數標註，即可讓 IDE 自動完成該類的方法
+my_mod: MyModule = sdk.module.get("MyModule")
+my_mod.hello()                  # ← IDE 自動完成 hello
+
+my_adapter: Yunhu = sdk.adapter.get("yunhu")
+await my_adapter.Send.To("group", "123").Board(...)   # ← 自動完成平台特有方法
+```
+
+## 工作原理
+
+1. 掃描 `erispulse.adapter` / `erispulse.module` entry-points
+2. 透過子程序在目標 Python 環境中內省，收集每個適配器/模組的實際類別資訊（包含模組路徑與限定名）
+3. 產生 `.py` 檔案，其中：
+   - 所有 ``from xxx import Yyy as Zzz`` 都在 ``TYPE_CHECKING`` 下
+   - ``Zzz`` 是 entry-point 名的 PascalCase 形式
+4. IDE 讀取 ``TYPE_CHECKING`` 部分提供自動完成；執行時不執行任何程式碼
+
+產生的存根範例：
+
+```python
+# _ep_types.py（自動產生）
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # 適配器
+    from MyAdapter.Core import MyAdapter as MyAdapter
+    from YunhuAdapter.Core import YunhuAdapter as Yunhu
+
+    # 模組
+    from MyModule.Core import Main as MyModule
+
+    __all__ = ['MyAdapter', 'Yunhu', 'MyModule']
+```
+
+## 命令選項
+
+| 選項 | 說明 |
+|------|------|
+| `-o, --output PATH` | 指定輸出檔案路徑（預設 `./_ep_types.py`） |
+| `--force` | 覆蓋已存在的存根檔案 |
+| `--adapters-only` | 僅掃描適配器 |
+| `--modules-only` | 僅掃描模組 |
+
+## 何時重新產生
+
+- 安裝/卸載新的模組或適配器後
+- 模組/適配器更新了公開 API 後
+- IDE 自動完成失效或類型過期時
+
+## 與 SendDSL 標準方法的關係
+
+`SendDSL` 基類已內建標準發送方法（Text/Image/Voice/Video/File），任何方式取得的 SendDSL 實例都能自動完成這些方法。  
+`types` 命令主要用於補全**平台特有方法**（如雲湖的 `Board`、沙盒的 `Dice`）和**模組特有方法**。
+
+## 相關文件
+
+- [SendDSL 詳解](../developer-guide/adapters/send-dsl.md) - 標準發送方法說明
+- [適配器開發入門](../developer-guide/adapters/getting-started.md) - 建立適配器
 
 
 =====
