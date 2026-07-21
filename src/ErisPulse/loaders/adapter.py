@@ -14,7 +14,7 @@ import asyncio
 import importlib.metadata
 import inspect
 import sys
-from typing import Any
+from typing import Any, cast
 
 from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
@@ -89,7 +89,7 @@ class AdapterLoader(BaseLoader):
                     objs,
                     enabled_list,
                     disabled_list,
-                    is_new,
+                    _is_new,
                 ) = await self._process_entry_point(
                     entry_point, objs, enabled_list, disabled_list, manager_instance
                 )
@@ -139,7 +139,7 @@ class AdapterLoader(BaseLoader):
 
         # 检查适配器是否已经注册，如果未注册则进行注册（默认启用）
         if not manager_instance.exists(meta_name):
-            manager_instance._config_register(meta_name, True)
+            manager_instance._config_register(meta_name)
             is_new = True
 
         # 获取适配器当前状态
@@ -190,9 +190,9 @@ class AdapterLoader(BaseLoader):
             }
 
             if not hasattr(adapter_obj, "adapterInfo"):
-                setattr(adapter_obj, "adapterInfo", {})
+                cast("Any", adapter_obj).adapterInfo = {}
 
-            adapter_obj.adapterInfo[meta_name] = adapter_info
+            cast("Any", adapter_obj).adapterInfo[meta_name] = adapter_info
 
             objs[meta_name] = adapter_obj
             enabled_list.append(meta_name)

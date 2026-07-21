@@ -377,55 +377,373 @@ flowchart TD
 
 
 ====
-基础概念
+快速上手
 ====
 
 
-### 入门指南总览
+### 快速开始
 
-# 入门指南
+# 快速开始
 
-欢迎来到 ErisPulse 入门指南。如果你是第一次使用 ErisPulse，这里将带你从零开始，逐步了解框架的核心概念和基本用法。
+> 遇到不理解的术语？查看 [术语表](terminology.md) 获取通俗易懂的解释。
 
-## 学习路径
+## 安装 ErisPulse
 
-本指南按以下顺序组织，建议依次阅读：
+### 一键安装脚本（推荐）
 
-| 步骤 | 主题 | 说明 |
-|------|------|------|
-| 1 | [创建第一个机器人](first-bot.md) | 从项目初始化到运行第一个命令 |
-| 2 | [基础概念](basic-concepts.md) | 理解 ErisPulse 的核心架构和模块设计 |
-| 3 | [事件处理入门](event-handling.md) | 学习如何处理消息、命令、通知等各类事件 |
-| 4 | [常见任务示例](common-tasks.md) | 掌握数据持久化、定时任务、权限控制等常用功能 |
+安装脚本会自动检测您的环境（Docker、Python、uv），并引导您选择最适合的安装方式。
 
-## 开发方式选择
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
 
-ErisPulse 支持两种开发方式：
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
 
-| 方式 | 适用场景 | 说明 |
-|------|---------|------|
-| **嵌入式开发** | 快速原型、项目内部功能 | 直接在 `main.py` 中编写处理器，无需创建独立模块 |
-| **模块开发**（推荐） | 生产环境、功能分发 | 创建独立的 Python 包，通过 `epsdk install` 安装使用 |
+脚本会引导您完成：
 
-> 两种方式的详细对比和示例请参考 [创建第一个机器人](first-bot.md) 和 [模块开发入门](../developer-guide/modules/getting-started.md)。
+- **Docker 安装**（检测到 Docker 时推荐）：选择镜像源（Docker Hub / GHCR）、版本通道（稳定版 / 预发布版）、Dashboard 管理面板配置、端口设置
+- **传统安装**：自动创建虚拟环境、选择 ErisPulse 版本、可选安装 Dashboard 管理面板模块
 
-## 架构概览
+### 使用 Docker
 
-ErisPulse 采用事件驱动架构，核心由以下系统组成：
+Docker 镜像已内置 ErisPulse 框架和 Dashboard 管理面板。
 
-- **适配器系统** — 与各平台通信，将平台事件转换为统一的 OneBot12 标准格式
-- **事件系统** — 处理消息、命令、通知、请求、元事件五大类事件
-- **模块系统** — 通过独立模块扩展功能，支持依赖管理和懒加载
-- **核心模块** — 提供 Storage（存储）、Config（配置）、Logger（日志）、Router（路由）等基础能力
+```bash
+# 下载 docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-> 详细的架构图和初始化流程请参考 [架构概览](../architecture.md)。
+# 设置 Dashboard 令牌并启动
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
 
-## 开始学习
+<details>
+<summary>Docker Hub 不可用？</summary>
 
-准备好开始了吗？
+使用 GitHub Container Registry 镜像，修改 `docker-compose.yml` 中的 image：
 
-- [创建第一个机器人](first-bot.md) — 5 分钟上手
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
 
+</details>
+
+启动后访问 `http://<host>:8000/Dashboard`，使用设置的令牌登录。
+
+### 使用 pip 安装
+
+确保你的 Python 版本 >= 3.10，然后使用 pip 安装：
+
+```bash
+pip install ErisPulse
+```
+
+如果你已安装 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安装速度更快。
+
+## 初始化项目
+
+### 交互式初始化（推荐）
+
+```bash
+epsdk init
+```
+
+这将启动一个交互式向导，引导您完成：
+- 项目名称设置
+- 日志级别配置
+- 服务器配置（主机和端口）
+- 适配器选择和配置
+- 项目结构创建
+
+### 快速初始化
+
+```bash
+# 指定项目名称的快速模式
+epsdk init -q -n my_bot
+
+# 或者只指定项目名称
+epsdk init -n my_bot
+```
+
+### 手动创建项目
+
+如果更喜欢手动创建项目：
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## 安装模块
+
+### 通过 CLI 安装
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### 查看可用模块
+
+```bash
+epsdk list-remote
+```
+
+### 交互式安装
+
+不指定包名时进入交互式安装界面：
+
+```bash
+epsdk install
+```
+
+## 运行项目
+
+```bash
+# 普通运行
+epsdk run main.py
+
+# 热重载模式（开发时推荐）
+epsdk run main.py --reload
+```
+
+## 启用 IDE 补全（可选）
+
+ErisPulse 动态发现模块/适配器，IDE 默认无法补全平台特有方法。
+运行以下命令生成类型存根：
+
+```bash
+epsdk types
+```
+
+生成后用导入的类型作为变量标注即可获得精确补全（详见 [IDE 补全指南](./getting-started/ide-completion.md)）：
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # 补全平台特有方法
+```
+
+## 项目结构
+
+初始化后的项目结构：
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # 配置文件
+└── main.py                  # 入口文件
+
+```
+
+## 配置文件
+
+基本的 `config.toml` 配置：
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# 适配器配置
+```
+
+## 下一步
+
+- [入门指南总览](getting-started/README.md) - 了解 ErisPulse 的基本概念
+- [创建第一个机器人](getting-started/first-bot.md) - 创建一个简单的机器人
+- [用户使用指南](user-guide/) - 深入了解配置和模块管理
+- [开发者指南](developer-guide/) - 开发自定义模块和适配器
+
+
+
+### 创建第一个机器人
+
+# 创建第一个机器人
+
+本指南将带你从零开始创建一个简单的 ErisPulse 机器人。
+
+## 第一步：创建项目
+
+使用 CLI 工具初始化项目：
+
+```bash
+# 交互式初始化
+epsdk init
+
+# 或者快速初始化
+epsdk init -q -n my_first_bot
+```
+
+按照提示完成配置，建议选择：
+- 项目名称：my_first_bot
+- 日志级别：INFO
+- 服务器：默认配置
+- 适配器：选择你需要的平台（如 Yunhu）
+
+## 第二步：查看项目结构
+
+初始化后的项目结构：
+
+```
+my_first_bot/
+├── config/
+│   └── config.toml
+├── main.py
+└── requirements.txt
+```
+
+## 第三步：编写第一个命令
+
+打开 `main.py`，编写一个简单的命令处理器：
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+@command("hello", help="发送问候消息")
+async def hello_handler(event):
+    """处理 hello 命令"""
+    user_name = event.get_user_nickname() or "朋友"
+    await event.reply(f"你好，{user_name}！我是 ErisPulse 机器人。")
+
+@command("ping", help="测试机器人是否在线")
+async def ping_handler(event):
+    """处理 ping 命令"""
+    await event.reply("Pong！机器人运行正常。")
+
+async def main():
+    """主入口函数"""
+    print("正在初始化 ErisPulse...")
+    # 运行 SDK 并且维持运行
+    await sdk.run(keep_running=True)
+
+    # 或者
+    # await sdk.run(keep_running=False)
+    # ...Do Something
+    # 可以做你想做的任何事
+    # 使用 await sdk.init() 等价于 `sdk.run(keep_running=False)`
+
+    print("ErisPulse 初始化完成！")
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
+```
+
+## 第四步：运行机器人
+
+```bash
+# 普通运行
+epsdk run main.py
+
+# 开发模式（支持热重载）
+epsdk run main.py --reload
+```
+
+## 第五步：测试机器人
+
+在你的聊天平台中发送命令：
+
+```
+/hello
+```
+
+你应该会收到机器人的回复。
+
+## 代码说明
+
+### 命令装饰器
+
+```python
+@command("hello", help="发送问候消息")
+```
+
+- `hello`：命令名称，用户通过 `/hello` 调用
+- `help`：命令帮助说明，在 `/help` 命令中显示
+
+### 事件参数
+
+```python
+async def hello_handler(event):
+```
+
+`event` 参数是一个 Event 对象，包含：
+- 消息内容：`event.get_text()`
+- 发送者信息：`event.get_user_id()`、`event.get_user_nickname()`
+- 平台信息：`event.get_platform()`
+- 群组信息：`event.get_group_id()`
+- 原始数据：`event.get_raw()`
+
+> 完整的 Event 对象方法请参考 [Event 包装类详解](../developer-guide/modules/event-wrapper.md)。
+
+### 发送回复
+
+```python
+await event.reply("回复内容")
+```
+
+`event.reply()` 是一个便捷方法，用于向发送者发送消息。
+
+## 扩展：添加更多功能
+
+ErisPulse 提供了丰富的事件处理和数据处理能力：
+
+- **消息监听**：使用 `@message.on_message()` 监听各类消息 → [事件处理入门](event-handling.md)
+- **通知监听**：使用 `@notice.on_friend_add()` 等监听系统通知 → [事件处理入门](event-handling.md)
+- **数据存储**：使用 `sdk.storage.get/set` 持久化数据 → [常见任务示例](common-tasks.md)
+
+## 常见问题
+
+### 命令没有响应？
+
+1. 检查适配器是否正确配置，确认 `config/config.toml` 中适配器的 `status` 为 `true`
+2. 查看终端日志输出，确认是否有错误信息（特别是 `ERROR` 级别日志）
+3. 确认命令前缀是否正确（默认是 `/`），可在配置文件中查看 `[ErisPulse.event.command]` 部分
+4. 确认命令名称拼写正确，注意大小写敏感性设置
+
+### 如何修改命令前缀？
+
+在 `config.toml` 中添加：
+
+```toml
+[ErisPulse.event.command]
+prefix = "!"
+case_sensitive = false
+```
+
+### 如何支持多平台？
+
+ErisPulse 使用 OneBot12 标准统一了不同平台的事件格式，`@command` 和 `@message` 注册的处理器会自动接收所有平台的事件。通过 `event.get_platform()` 可以区分来源平台：
+
+```python
+@command("hello")
+async def hello_handler(event):
+    platform = event.get_platform()
+    
+    if platform == "yunhu":
+        await event.reply("你好！来自云湖")
+    elif platform == "telegram":
+        await event.reply("Hello! From Telegram")
+    else:
+        await event.reply("你好！")
+```
+
+> 更多多平台适配技巧请参考 [常见任务示例](common-tasks.md#多平台适配)。
+
+## 下一步
+
+- [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
+- [事件处理入门](event-handling.md) - 学习处理各类事件
+- [常见任务示例](common-tasks.md) - 掌握更多实用功能
 
 
 ### 基础概念
@@ -1448,6 +1766,98 @@ async def conditional_handler(event):
 - [用户使用指南](../user-guide/) - 了解配置和模块管理
 
 
+### IDE 补全
+
+# 类型存根生成（IDE 补全）
+
+ErisPulse 通过 entry-points 动态发现模块/适配器，入口点无法在静态层面获知用户类的具体类型。
+`epsdk types` 命令通过扫描已安装的模块/适配器，生成一个类型存根文件，让用户可以用这些类型作为变量标注，从而获得 IDE 补全。
+
+## 核心设计原则
+
+存根文件**只导出类型**，不提供任何运行时实例：
+
+- 所有导入都在 ``TYPE_CHECKING`` 下，**零运行时开销、零行为改变**
+- 类型名采用 entry-point 名的 PascalCase 形式（如 ``yunhu`` → ``Yunhu``），与传入 ``sdk.adapter.get()`` / ``sdk.module.get()`` 的名称对应
+- 用户在代码里照常用 ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` 获取实例，只是用导入的类型做**变量标注**
+
+## 基本用法
+
+在项目根目录运行：
+
+```bash
+epsdk types
+```
+
+会在当前目录生成 `_ep_types.py`，包含所有已安装模块/适配器的类型。
+
+## 在代码中使用
+
+```python
+from _ep_types import MyModule, Yunhu
+from ErisPulse import sdk
+
+# 用导入的类型作为变量标注，即可让 IDE 补全该类的方法
+my_mod: MyModule = sdk.module.get("MyModule")
+my_mod.hello()                  # ← IDE 补全 hello
+
+my_adapter: Yunhu = sdk.adapter.get("yunhu")
+await my_adapter.Send.To("group", "123").Board(...)   # ← 补全平台特有方法
+```
+
+## 工作原理
+
+1. 扫描 `erispulse.adapter` / `erispulse.module` entry-points
+2. 通过子进程在目标 Python 环境中内省，收集每个适配器/模块的实际类信息（包含模块路径与限定名）
+3. 生成 `.py` 文件，其中：
+   - 所有 ``from xxx import Yyy as Zzz`` 都在 ``TYPE_CHECKING`` 下
+   - ``Zzz`` 是 entry-point 名的 PascalCase 形式
+4. IDE 读取 ``TYPE_CHECKING`` 部分提供补全；运行时不执行任何代码
+
+生成的存根示例：
+
+```python
+# _ep_types.py（自动生成）
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # 适配器
+    from MyAdapter.Core import MyAdapter as MyAdapter
+    from YunhuAdapter.Core import YunhuAdapter as Yunhu
+
+    # 模块
+    from MyModule.Core import Main as MyModule
+
+    __all__ = ['MyAdapter', 'Yunhu', 'MyModule']
+```
+
+## 命令选项
+
+| 选项 | 说明 |
+|------|------|
+| `-o, --output PATH` | 指定输出文件路径（默认 `./_ep_types.py`） |
+| `--force` | 覆盖已存在的存根文件 |
+| `--adapters-only` | 仅扫描适配器 |
+| `--modules-only` | 仅扫描模块 |
+
+## 何时重新生成
+
+- 安装/卸载新的模块或适配器后
+- 模块/适配器更新了公开 API 后
+- IDE 补全失效或类型过期时
+
+## 与 SendDSL 标准方法的关系
+
+`SendDSL` 基类已内置标准发送方法（Text/Image/Voice/Video/File），任何方式获取的 SendDSL 实例都能补全这些方法。
+`types` 命令主要用于补全**平台特有方法**（如云湖的 `Board`、沙盒的 `Dice`）和**模块特有方法**。
+
+## 相关文档
+
+- [SendDSL 详解](../developer-guide/adapters/send-dsl.md) - 标准发送方法说明
+- [适配器开发入门](../developer-guide/adapters/getting-started.md) - 创建适配器
+
+
+
 =====
 适配器开发
 =====
@@ -1650,9 +2060,9 @@ import asyncio
 
 class MyAdapter(BaseAdapter):
     # ... 其他代码 ...
-    
+
     class Send(BaseAdapter.Send):
-        
+
         def Raw_ob12(self, message, **kwargs):
             """
             发送 OneBot12 格式消息（必须实现）
@@ -1669,22 +2079,17 @@ class MyAdapter(BaseAdapter):
                     **kwargs
                 )
             return asyncio.create_task(_do_send())
-        
-        def Text(self, text: str):
-            """发送文本消息"""
-            return self.Raw_ob12([
-                {"type": "text", "data": {"text": text}}
-            ])
-        
-        def Image(self, file):
-            """发送图片消息"""
-            return self.Raw_ob12([
-                {"type": "image", "data": {"file": file}}
-            ])
+
+        # Text/Image/Voice/Video/File 已从 SendDSL 基类继承，
+        # 默认委托给 Raw_ob12，无需重复实现。
+        # 如需平台特定逻辑，可覆盖单个方法：
+        # def Text(self, text: str):
+        #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 **媒体类发送方法（Image/Video/File）实现要点：**
 
+- 基类的默认实现会将 `file` 参数封装为 OneBot12 消息段传给 `Raw_ob12`，适配器需在 `Raw_ob12` 中处理下载/上传
 - `file` 参数应同时支持 `bytes` 二进制数据和 `str` URL 两种类型
 - 当传入 URL 时，需先下载文件再上传到平台
 - 平台通常需要先调用上传接口获取文件标识，再调用发送接口
@@ -2553,10 +2958,12 @@ class MyAdapter(BaseAdapter):
 
 ### 基本方法
 
+适配器只需实现 `Raw_ob12`，标准方法（Text/Image/Voice/Video/File）已从 `SendDSL` 基类继承并默认委托给它：
+
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """推荐实现方式"""
+        """必须实现：OneBot12 消息段 → 平台 API"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -2567,11 +2974,10 @@ class Send(BaseAdapter.Send):
             )
         return asyncio.create_task(_do_send())
 
-    def Text(self, text: str):
-        """发送文本消息"""
-        return self.Raw_ob12([
-            {"type": "text", "data": {"text": text}}
-        ])
+    # Text/Image/Voice/Video/File 已从基类继承，自动委托 Raw_ob12，无需重复实现
+    # 如需平台特定逻辑，可覆盖单个方法：
+    # def Text(self, text: str):
+    #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 ### 链式修饰方法
@@ -3036,17 +3442,32 @@ Using/Account() → To() → [修饰方法] → [发送方法]
 
 ## 发送方法
 
-所有发送方法必须返回 `asyncio.Task` 对象。
+所有发送方法返回 `asyncio.Task` 对象。
 
-### 基本方法
+### 基本方法（基类内置）
+
+以下标准方法已由 `SendDSL` 基类内置实现，**默认委托给 `Raw_ob12`**，适配器子类无需重复实现即可直接使用，且 IDE 能补全：
 
 | 方法名 | 说明 | 返回值 |
 |--------|------|---------|
 | `Text(text: str)` | 发送文本消息 | `asyncio.Task` |
 | `Image(file: bytes \| str)` | 发送图片 | `asyncio.Task` |
-| `Voice(file: bytes \| str)` | 发送语音 | `asyncio.Task` |
+| `Voice(file: bytes \| str)` | 发送语音（OneBot12 `audio` 段） | `asyncio.Task` |
 | `Video(file: bytes \| str)` | 发送视频 | `asyncio.Task` |
-| `File(file: bytes \| str)` | 发送文件 | `asyncio.Task` |
+| `File(file: bytes \| str, filename: str = None)` | 发送文件 | `asyncio.Task` |
+
+适配器可覆盖单个标准方法以提供平台特定逻辑：
+
+```python
+class Send(SendDSL):
+    def Raw_ob12(self, message, **kwargs):
+        # 必须实现
+        ...
+
+    # 可选：覆盖 Text 以提供平台特定逻辑
+    # def Text(self, text: str):
+    #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
+```
 
 ### 协议方法
 
@@ -3054,7 +3475,20 @@ Using/Account() → To() → [修饰方法] → [发送方法]
 |--------|------|---------|---------|
 | `Raw_ob12(message)` | 发送 OneBot12 格式消息 | `asyncio.Task` | **必须实现** |
 
-> **重要**：`Raw_ob12` 是适配器的核心方法，**必须实现**。它是反向转换（OneBot12 → 平台）的统一入口。未实现时基类会记录 error 日志并返回标准错误响应（`status: "failed"`, `retcode: 10002`）。标准方法（`Text`、`Image` 等）内部应委托给 `Raw_ob12`。
+> **重要**：`Raw_ob12` 是适配器的核心方法，**必须实现**。它是反向转换（OneBot12 → 平台）的统一入口。未实现时基类会记录 error 日志并返回标准错误响应（`status: "failed"`, `retcode: 10002`）。标准方法（`Text`、`Image` 等）默认委托给 `Raw_ob12`。
+
+### 平台特有方法
+
+适配器可在 `Send` 子类中添加平台特有的发送方法（会被 `event.supports()` / `event.available_methods()` 识别）：
+
+```python
+class Send(SendDSL):
+    def Raw_ob12(self, message, **kwargs): ...
+
+    # 平台特有方法
+    def Sticker(self, sticker_id: str):
+        return self.Raw_ob12([{"type": "sticker", "data": {"id": sticker_id}}])
+```
 
 ## 修饰方法
 
@@ -3443,20 +3877,26 @@ def TelegramSticker(self, ...):
 
 ### Task 对象
 
-所有发送方法返回 `asyncio.Task`：
+所有发送方法返回 `asyncio.Task`。适配器只需实现 `Raw_ob12`，标准方法（Text/Image 等）默认委托给它：
 
 ```python
 import asyncio
 
-def Text(self, text: str):
-    return asyncio.create_task(
-        self._adapter.call_api(
-            endpoint="/send",
-            content=text,
-            recvId=self._target_id,
-            recvType=self._target_type
+def Raw_ob12(self, message, **kwargs):
+    async def _do_send():
+        segments = self._apply_modifiers(message)
+        return await self._adapter.call_api(
+            endpoint="/send_message",
+            message=segments,
+            **self.send_context,
+            **kwargs,
         )
-    )
+    return asyncio.create_task(_do_send())
+
+# Text/Image/Voice/Video/File 已从基类继承，自动委托给 Raw_ob12
+# 如需覆盖标准方法，返回 asyncio.Task 即可：
+# def Text(self, text: str):
+#     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 ### 标准化响应
@@ -4929,78 +5369,426 @@ services:
 
 # CLI 命令参考
 
-ErisPulse 命令行工具提供项目管理和包管理功能。
+ErisPulse 命令行工具（`epsdk`）提供项目管理和包管理功能。
+
+> **提示**：所有命令均可通过 `epsdk <命令> --help` 查看详细的参数说明。
+
+---
 
 ## 包管理命令
 
-| 命令 | 参数 | 说明 | 示例 |
-|-------|------|------|------|
-| `install` | `[package]... [--upgrade/-U] [--pre]` | 安装模块/适配器 | `epsdk install Yunhu` |
-| `uninstall` | `<package>...` | 卸载模块/适配器 | `epsdk uninstall old-module` |
-| `upgrade` | `[package]... [--force/-f] [--pre]` | 升级指定模块或所有 | `epsdk upgrade --force` |
-| `self-update` | `[version] [--pre] [--force/-f]` | 更新SDK本身 | `epsdk self-update` |
+| 命令 | 别名 | 参数 | 说明 |
+|------|------|------|------|
+| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | 安装模块/适配器 |
+| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | 卸载模块/适配器 |
+| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 升级指定模块或全部 |
+| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | 更新 SDK 本身 |
+
+### install
+
+安装 ErisPulse 模块或适配器包。若不指定包名则进入交互式安装界面。
+
+**别名：** `i`, `add`
+
+**参数：**
+
+| 参数 | 短参数 | 说明 |
+|------|--------|------|
+| `[package]...` | | 要安装的包名称，可指定多个 |
+| `--upgrade` | `-U` | 安装时升级到最新版本 |
+| `--pre` | | 允许安装预发布版本 |
+| `--editable` | `-e` | 以可编辑模式安装（需指定路径） |
+| `--user` | | 安装到用户 site-packages 目录 |
+| `--no-deps` | | 不安装依赖 |
+| `--target` | `-t` | 安装到指定目录 |
+| `--index-url` | | 指定 PyPI 镜像源地址 |
+| `--extra-index-url` | | 额外 PyPI 镜像源地址（可多次指定） |
+| `--no-cache-dir` | | 禁用缓存 |
+| `--requirement` | `-r` | 从 requirements 文件安装 |
+| `--constraint` | `-c` | 从约束文件安装 |
+| `--force-reinstall` | | 强制重新安装 |
+| `--ignore-installed` | | 忽略已安装的包 |
+| `--compile` | | 安装后编译 .pyc 文件 |
+| `--no-compile` | | 安装后不编译 .pyc 文件 |
+| `--prefix` | | 安装到指定前缀目录 |
+| `--src` | | 可编辑安装时使用的源码目录 |
+| `--config-settings` | | 传递给构建后端的配置（可多次指定） |
+| `--no-binary` | | 限制不使用二进制包（格式如 `:all:`） |
+| `--only-binary` | | 限制仅使用二进制包（格式如 `:all:`） |
+| `--prefer-binary` | | 优先选择二进制包 |
+| `--build-isolation` | | 启用构建隔离 |
+| `--no-build-isolation` | | 禁用构建隔离 |
+| `--upgrade-strategy` | | 升级策略：`eager`、`only-if-needed`、`to-satisfy-only` |
+| `--break-system-packages` | | 允许修改系统包管理器管理的 Python 包 |
+| `--no-uv` | | 使用 pip 代替 uv |
+
+**示例：**
+
+```bash
+# 安装单个模块
+epsdk install Weather
+
+# 安装多个模块
+epsdk install Yunhu Weather
+
+# 从镜像源安装并升级
+epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 可编辑模式安装（开发模式）
+epsdk install -e ./my-adapter
+```
+
+### uninstall
+
+卸载已安装的 ErisPulse 模块或适配器包。若不指定包名则进入交互式卸载界面。
+
+**别名：** `rm`, `remove`
+
+**参数：**
+
+| 参数 | 说明 |
+|------|------|
+| `<package>...` | 要卸载的包名称，可指定多个 |
+| `--no-uv` | 使用 pip 代替 uv |
+
+**示例：**
+
+```bash
+# 卸载单个模块
+epsdk uninstall Weather
+
+# 卸载多个模块
+epsdk uninstall Yunhu Weather
+```
+
+### upgrade
+
+升级已安装的 ErisPulse 组件。不指定包名则交互式升级全部。
+
+**别名：** `up`
+
+**参数：**
+
+| 参数 | 短参数 | 说明 |
+|------|--------|------|
+| `[package]...` | | 要升级的包名称，可指定多个 |
+| `--force` | `-f` | 强制升级，跳过确认 |
+| `--pre` | | 允许升级到预发布版本 |
+| `--no-uv` | | 使用 pip 代替 uv |
+
+**示例：**
+
+```bash
+# 升级所有包
+epsdk upgrade
+
+# 升级指定包
+epsdk upgrade Weather
+
+# 强制升级（跳过确认）
+epsdk upgrade -f
+```
+
+### self-update
+
+更新 ErisPulse SDK 本身到最新版本。
+
+**别名：** `su`, `update`
+
+**参数：**
+
+| 参数 | 短参数 | 说明 |
+|------|--------|------|
+| `[version]` | | 指定要更新的目标版本号 |
+| `--pre` | | 允许更新到预发布版本 |
+| `--force` | `-f` | 强制更新，跳过确认 |
+| `--no-uv` | | 使用 pip 代替 uv |
+
+**示例：**
+
+```bash
+# 更新到最新稳定版
+epsdk self-update
+
+# 更新到指定版本
+epsdk self-update 1.2.3
+
+# 允许预发布版本
+epsdk self-update --pre
+
+# 强制更新
+epsdk self-update -f
+```
+
+---
 
 ## 信息查询命令
 
-| 命令 | 参数 | 说明 | 示例 |
-|-------|------|------|------|
-| `list` | `[--type/-t <type>]` | 列出已安装的模块/适配器 | `epsdk list -t modules` |
-| | `[--outdated/-o]` | 仅显示可升级的包 | `epsdk list -o` |
-| `list-remote` | `[--type/-t <type>]` | 列出远程可用的包 | `epsdk list-remote` |
-| | `[--refresh/-r]` | 强制刷新包列表 | `epsdk list-remote -r` |
+| 命令 | 别名 | 参数 | 说明 |
+|------|------|------|------|
+| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | 列出已安装的组件 |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | 列出远程可用的组件 |
+
+### list
+
+列出已安装的 ErisPulse 模块和适配器。
+
+**别名：** `l`, `ls`
+
+**参数：**
+
+| 参数 | 短参数 | 说明 |
+|------|--------|------|
+| `--type` | `-t` | 指定类型：`modules`、`adapters`、`all`（默认） |
+| `--outdated` | `-o` | 仅显示可升级的包 |
+
+**示例：**
+
+```bash
+# 列出所有已安装的组件
+epsdk list
+
+# 只列出模块
+epsdk list -t modules
+
+# 只列出适配器
+epsdk list -t adapters
+
+# 只显示可升级的包
+epsdk list -o
+```
+
+### list-remote
+
+列出远程仓库中可用的 ErisPulse 模块和适配器。
+
+**别名：** `lsr`
+
+**参数：**
+
+| 参数 | 短参数 | 说明 |
+|------|--------|------|
+| `--type` | `-t` | 指定类型：`modules`、`adapters`、`all`（默认） |
+| `--refresh` | `-r` | 强制刷新远端包列表缓存 |
+
+**示例：**
+
+```bash
+# 列出所有远程可用组件
+epsdk list-remote
+
+# 只列出远程模块
+epsdk list-remote -t modules
+
+# 强制刷新缓存后列出
+epsdk list-remote -r
+```
+
+---
 
 ## 运行控制命令
 
-| 命令 | 参数 | 说明 | 示例 |
-|-------|------|------|------|
-| `run` | `<script> [--reload]` | 运行指定脚本 | `epsdk run main.py --reload` |
+| 命令 | 别名 | 参数 | 说明 |
+|------|------|------|------|
+| `run` | `r` | `[script] [--reload]` | 运行指定脚本或 SDK |
+
+### run
+
+运行 ErisPulse 项目脚本或直接启动 SDK。支持热重载模式。
+
+**别名：** `r`
+
+**参数：**
+
+| 参数 | 说明 |
+|------|------|
+| `[script]` | 要运行的脚本文件，不指定则运行 SDK |
+| `--reload` | 启用热重载模式，监控文件变化自动重启 |
+
+**示例：**
+
+```bash
+# 直接运行 SDK
+epsdk run
+
+# 运行指定脚本文件
+epsdk run main.py
+
+# 热重载模式运行（文件变更自动重启）
+epsdk run main.py --reload
+
+# SDK 热重载模式
+epsdk run --reload
+```
+
+---
 
 ## 项目管理命令
 
-| 命令 | 参数 | 说明 | 示例 |
-|-------|------|------|------|
-| `init` | `[--project-name/-n <name>]` | 交互式初始化项目 | `epsdk init -n my_bot` |
-| | `[--quick/-q]` | 快速模式，跳过交互 | `epsdk init -q -n bot` |
-| | `[--force/-f]` | 强制覆盖现有配置 | `epsdk init -f` |
-| `create` | `[module\|adapter]` | 创建脚手架项目 | `epsdk create` |
-| | `[--name/-n <name>]` | 项目名称 (PascalCase) | `epsdk create module -n MyModule` |
-| | `[--description/-d <desc>]` | 项目描述 | `epsdk create adapter -d "xx适配器"` |
-| | `[--author/-a <name>]` | 作者名称 | `epsdk create -a yourname` |
-| | `[--email/-e <mail>]` | 作者邮箱 | `epsdk create -e you@mail.com` |
-| | `[--homepage <url>]` | 项目主页 URL | |
-| | `[--output/-o <dir>]` | 输出目录 (默认当前目录) | `epsdk create -o ./projects` |
-| | `[--force/-f]` | 强制覆盖已存在的目录 | `epsdk create -f` |
+| 命令 | 别名 | 参数 | 说明 |
+|------|------|------|------|
+| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | 初始化 ErisPulse 项目 |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 创建模块/适配器脚手架 |
 
-## 参数说明
+### init
 
-### 通用参数
+初始化一个新的 ErisPulse 项目。支持交互式与快速模式。
+
+**参数：**
 
 | 参数 | 短参数 | 说明 |
-|------|---------|------|
+|------|--------|------|
+| `--project-name` | `-n` | 项目名称 |
+| `--quick` | `-q` | 快速模式，跳过交互式向导 |
+| `--force` | `-f` | 强制覆盖现有配置文件 |
+| `--here` | | 在当前目录初始化，不创建子目录 |
+| `--no-uv` | | 使用 pip 代替 uv |
+
+**示例：**
+
+```bash
+# 交互式初始化
+epsdk init
+
+# 快速初始化
+epsdk init -q -n my_bot
+
+# 强制覆盖已有配置
+epsdk init -f
+
+# 在当前目录初始化
+epsdk init --here -n my_bot
+```
+
+### create
+
+创建 ErisPulse 模块或适配器的脚手架项目。
+
+**参数：**
+
+| 参数 | 短参数 | 说明 |
+|------|--------|------|
+| `{module,adapter}` | | 要创建的类型：`module` 或 `adapter` |
+| `--name` | `-n` | 项目名称（PascalCase） |
+| `--description` | `-d` | 项目描述 |
+| `--author` | `-a` | 作者名称 |
+| `--email` | `-e` | 作者邮箱 |
+| `--homepage` | | 项目主页 URL |
+| `--output` | `-o` | 输出目录（默认当前目录） |
+| `--force` | `-f` | 强制覆盖已存在的目录 |
+
+**示例：**
+
+```bash
+# 交互式创建（引导选择类型和填写信息）
+epsdk create
+
+# 直接创建 Module 项目
+epsdk create module -n MyModule
+
+# 直接创建 Adapter 项目
+epsdk create adapter -n MyAdapter
+
+# 完整参数
+epsdk create module -n MyModule -d "模块描述" -a "作者" -e "mail@example.com"
+
+# 指定输出目录
+epsdk create module -n MyModule -o ./projects
+
+# 强制覆盖已有目录
+epsdk create module -n MyModule -f
+```
+
+---
+
+## 语言命令
+
+| 命令 | 别名 | 参数 | 说明 |
+|------|------|------|------|
+| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | 查看或切换 CLI 显示语言 |
+
+### i18n
+
+查看当前 CLI 语言、列出支持的语言、切换显示语言。若不指定参数则进入交互式选择界面。
+
+**别名：** `language`, `lang`
+
+**参数：**
+
+| 参数 | 短参数 | 说明 |
+|------|--------|------|
+| `[lang]` | | 要切换的语言代码（如 `zh-CN`、`en`、`ja`、`ru`） |
+| `--list` | `-l` | 列出所有支持的语言 |
+
+**示例：**
+
+```bash
+# 交互式选择语言
+epsdk i18n
+
+# 切换到英文
+epsdk i18n en
+
+# 切换到日文
+epsdk i18n ja
+
+# 列出所有支持的语言
+epsdk i18n --list
+```
+
+---
+
+## 类型存根命令
+
+| 命令 | 别名 | 参数 | 说明 |
+|------|------|------|------|
+| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | 生成类型存根文件以启用 IDE 补全 |
+
+### types
+
+扫描已安装的 ErisPulse 模块和适配器，为它们生成 `.pyi` 类型存根文件，从而在 IDE 中获得准确的代码补全与类型检查支持。
+
+**别名：** `t`, `stub`
+
+**参数：**
+
+| 参数 | 短参数 | 说明 |
+|------|--------|------|
+| `--output` | `-o` | 输出路径（默认当前目录下的 `ep-stubs/`） |
+| `--force` | | 强制覆盖已存在的存根文件 |
+| `--adapters-only` | | 仅生成适配器的类型存根 |
+| `--modules-only` | | 仅生成模块的类型存根 |
+
+> **注意：** `--adapters-only` 与 `--modules-only` 互斥，同时指定时后者生效。
+
+**示例：**
+
+```bash
+# 为所有已安装的模块和适配器生成类型存根
+epsdk types
+
+# 仅生成适配器存根
+epsdk types --adapters-only
+
+# 输出到指定目录
+epsdk types -o ./typings
+
+# 强制覆盖已有文件
+epsdk types --force
+```
+
+---
+
+## 全局参数
+
+以下参数适用于所有命令：
+
+| 参数 | 短参数 | 说明 |
+|------|--------|------|
 | `--help` | `-h` | 显示帮助信息 |
 | `--verbose` | `-v` | 显示详细输出 |
 
-### install 参数
-
-| 参数 | 说明 |
-|------|------|
-| `[package]` | 要安装的包名称，可指定多个 |
-| `--upgrade` | `-U` | 安装时升级到最新版本 |
-| `--pre` | 允许安装预发布版本 |
-
-### list 参数
-
-| 参数 | 说明 |
-|------|------|
-| `--type` | `-t` | 指定类型：`modules`, `adapters`, `all` |
-| `--outdated` | `-o` | 仅显示可升级的包 |
-
-### run 参数
-
-| 参数 | 说明 |
-|------|------|
-| `--reload` | 启用热重载模式，监控文件变化 |
-| `--no-reload` | 禁用热重载模式 |
+---
 
 ## 交互式安装
 
@@ -5010,7 +5798,7 @@ ErisPulse 命令行工具提供项目管理和包管理功能。
 epsdk install
 ```
 
- 交互界面提供：
+交互界面提供：
 1. 适配器选择
 2. 模块选择
 3. 自定义安装
@@ -5030,36 +5818,39 @@ epsdk install Yunhu Weather
 epsdk install Weather -U
 ```
 
-### 列出模块
+### 列出组件
 
 ```bash
-# 列出所有模块
+# 列出所有组件
 epsdk list
 
 # 只列出适配器
 epsdk list -t adapters
 
-# 只列出可升级的模块
+# 只列出可升级的组件
 epsdk list -o
+
+# 查看远程可用组件
+epsdk list-remote
 ```
 
-### 卸载模块
+### 卸载组件
 
 ```bash
-# 卸载单个模块
+# 卸载单个组件
 epsdk uninstall Weather
 
-# 卸载多个模块
+# 卸载多个组件
 epsdk uninstall Yunhu Weather
 ```
 
-### 升级模块
+### 升级组件
 
 ```bash
-# 升级所有模块
+# 升级所有组件
 epsdk upgrade
 
-# 升级指定模块
+# 升级指定组件
 epsdk upgrade Weather
 
 # 强制升级
@@ -5074,6 +5865,29 @@ epsdk run main.py
 
 # 热重载模式
 epsdk run main.py --reload
+```
+
+### 切换语言
+
+```bash
+# 交互式选择语言
+epsdk i18n
+
+# 直接切换到英文
+epsdk i18n en
+
+# 列出支持的语言
+epsdk i18n --list
+```
+
+### 生成类型存根
+
+```bash
+# 生成所有类型存根
+epsdk types
+
+# 仅生成模块类型存根
+epsdk types --modules-only
 ```
 
 ### 初始化项目
@@ -5104,6 +5918,7 @@ epsdk create module -n MyModule -d "模块描述" -a "作者" -e "mail@example.c
 # 强制覆盖已有目录
 epsdk create module -n MyModule -f
 ```
+
 
 
 ======
@@ -9213,31 +10028,25 @@ await send.Raw_ob12([
 
 ### 6.4 `Raw_ob12` 与标准方法的关系
 
-适配器的标准发送方法（`Text`、`Image` 等）内部应委托给 `Raw_ob12`，而非独立实现：
+适配器的标准发送方法（`Text`、`Image` 等）**已由 `SendDSL` 基类内置实现并默认委托给 `Raw_ob12`**，适配器子类无需重复实现：
 
 ```python
 class Send(SendDSL):
     def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
-        """核心实现：OneBot12 消息段 → 平台 API"""
+        """核心实现：OneBot12 消息段 → 平台 API（必须实现）"""
         return asyncio.create_task(self._send_ob12(message_segments))
-    
-    def Text(self, text: str) -> asyncio.Task:
-        """标准方法，委托给 Raw_ob12"""
-        return self.Raw_ob12([
-            {"type": "text", "data": {"text": text}}
-        ])
-    
-    def Image(self, image: Union[str, bytes]) -> asyncio.Task:
-        """标准方法，委托给 Raw_ob12"""
-        return self.Raw_ob12([
-            {"type": "image", "data": {"file": image}}
-        ])
+
+    # Text/Image/Voice/Video/File 已从基类继承，自动委托 Raw_ob12
+    # 如需平台特定逻辑，可覆盖单个方法：
+    # def Text(self, text: str) -> asyncio.Task:
+    #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 **好处**：
 - 转换逻辑集中在 `Raw_ob12` 一处，减少重复代码
 - 标准方法和 `Raw_ob12` 行为完全一致
 - 模块无论使用 `Text()` 还是 `Raw_ob12()` 都能得到相同结果
+- 基类提供类型签名，IDE 能补全标准方法
 
 ### 6.5 实现示例
 

@@ -207,7 +207,7 @@ class CliI18n:
         :return: [dict] 状态字典，读取失败时返回空字典
         """
         try:
-            with open(self._state_path(), "r", encoding="utf-8") as f:
+            with self._state_path().open(encoding="utf-8") as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError, OSError):
             return {}
@@ -222,7 +222,7 @@ class CliI18n:
         """
         try:
             self._state_path().parent.mkdir(parents=True, exist_ok=True)
-            with open(self._state_path(), "w", encoding="utf-8") as f:
+            with self._state_path().open("w", encoding="utf-8") as f:
                 json.dump(state, f, ensure_ascii=False, indent=2)
         except OSError:
             pass
@@ -313,4 +313,4 @@ class CliI18n:
 i18n: CliI18n = CliI18n()
 
 
-__all__ = ["i18n", "CliI18n", "LANGUAGE_NAMES", "LANG_HINT_MAX_SHOWS"]
+__all__ = ["LANGUAGE_NAMES", "LANG_HINT_MAX_SHOWS", "CliI18n", "i18n"]

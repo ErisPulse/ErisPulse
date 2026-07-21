@@ -6,6 +6,7 @@ ErisPulse 模块基础模块
 
 from abc import ABC, abstractmethod
 from typing import Any, TypedDict
+
 from ...loaders.strategy import ModuleLoadStrategy
 from ..constants import DEFAULT_LAZY_LOADING_ENABLED, DEFAULT_MODULE_PRIORITY
 
@@ -194,6 +195,7 @@ class BaseModule(ABC):
         """设置配置实例，同时同步写入配置存储（保证实时性）"""
         if value is not None:
             from dataclasses import asdict
+
             from ..config import config as config_mgr
 
             try:
@@ -201,16 +203,15 @@ class BaseModule(ABC):
             except Exception:
                 pass
 
-    def on_config_update(self, old_config, new_config):
+    def on_config_update(self, old_config, new_config):  # noqa: B027
         """
         配置变更回调（可选实现）
 
-        子类可覆写此方法以响应配置热更新。
+        子类可覆写此方法以响应配置热更新。默认实现为空操作。
 
         :param old_config: 变更前的配置实例
         :param new_config: 变更后的配置实例
         """
-        pass
 
 
 __all__ = ["BaseModule"]

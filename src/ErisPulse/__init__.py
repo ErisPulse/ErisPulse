@@ -59,15 +59,15 @@ uninit = sdk.uninit
 
 # 导出列表
 __all__ = [
-    "sdk",
-    "__version__",
-    "__author__",
     "LazyModule",
+    "__author__",
+    "__version__",
     "init",
     "init_sync",
     "init_task",
     "load_module",
-    "run",
     "restart",
+    "run",
+    "sdk",
     "uninit",
 ]

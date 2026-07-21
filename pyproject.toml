@@ -4,9 +4,9 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ErisPulse"
-version = "2.6.1"
+version = "2.6.2"
 description = "Event-driven modular async bot framework — write once, deploy to any platform | 事件驱动的模块化异步机器人框架，一次编写，多平台部署"
-readme = "README.md"
+readme = "README.pypi.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 
@@ -90,7 +90,8 @@ test = [
 dev = [
     "pyclean>=3.6.0",
     "ruff>=0.1.7",
-]
+    "basedpyright>=1.20.0",
+    "typing_extensions>=4.7.0; python_version < '3.11'"]
 
 [project.scripts]
 ep-init = "ErisPulse.__init__:init_sync"
@@ -115,6 +116,7 @@ include = [
 
 [tool.ruff]
 target-version = "py310"
+line-length = 120
 
 include = ["src/**/*.py"]
 
@@ -125,6 +127,131 @@ extend-exclude = [
     "build",
     "dist"
 ]
+
+[tool.ruff.lint]
+# 规则集：
+# E  pycodestyle errors        语法基础错误
+# W  pycodestyle warnings      语法警告
+# F  pyflakes                  逻辑错误（未使用、未定义等）
+# I  isort                     import 排序
+# B  bugbear                   常见陷阱
+# C4 comprehensions            推导式优化
+# UP pyupgrade                 现代语法
+# SIM simplify                 简化冗余写法
+# RET return                   return 风格
+# PIE pie                      杂项清理
+# RUF ruff-specific            Ruff 专属规则
+# PTH flake8-use-pathlib       迁移到 pathlib
+# PERF perflint                性能反模式
+# FURB refurb                  现代化重写
+# PL pycodestyle-logic         圈复杂度等逻辑检查
+# N  pep8-naming               命名规范
+select = ["E", "W", "F", "I", "B", "C4", "UP", "SIM", "RET", "PIE", "RUF", "PTH", "PERF", "FURB", "PL", "N"]
+
+ignore = [
+    # 中文项目不适用的规则
+    # RUF001/002/003 把全角中文标点视为“歧义字符”，对中文项目纯误报
+    "RUF001",  # ambiguous-unicode-character-string
+    "RUF002",  # ambiguous-unicode-character-docstring
+    "RUF003",  # ambiguous-unicode-character-comment
+
+    # 框架/异步代码风格性规则（强行修会破坏 API 或语义）
+    "PLC0415",  # import-outside-top-level —— 异步框架中 lazy import 是常用且必要的模式
+    "PLR0911",  # too-many-return-statements
+    "PLR0912",  # too-many-branches
+    "PLR0913",  # too-many-arguments
+    "PLR0915",  # too-many-statements
+    "PLR2004",  # magic-value-comparison —— 数值阈值判定过于严格
+    "PLR1714",  # repeated-equality-comparison
+    "PLW0602",  # global-variable-not-assigned
+    "PLW0603",  # global-statement —— 框架单例模式必要
+    "PLW2901",  # redefined-loop-name
+    "PERF203",  # try-except-in-loop —— 异步轮询/重试场景的常见且必要写法，性能影响极小
+    "RUF012",   # mutable-class-default —— 类属性容器（handlers/事件表）是项目既有 API
+    "RUF005",   # collection-literal-concatenation —— `list + list` 有时比 unpack 更清晰
+    "RET504",   # unnecessary-assign —— “先 assign 再 return”有时更易调试
+
+    # 风格偏好（不强加于现有代码）
+    "E501",     # line-too-long —— 通过 line-length 配置控制；已存在大量长字符串/URL
+    "E731",     # lambda-assignment —— 简单回调允许 lambda
+    "SIM105",   # suppressible-exception —— contextlib.suppress 不见得更易读
+    "SIM108",   # if-else-block-instead-of-if-exp —— 三元表达式并非总是更好
+    "SIM102",   # collapsible-if —— 嵌套 if 有时更清晰
+    "SIM117",   # multiple-with-statements —— 实际未启用但保留兼容
+    "EM101",    # raw-string-in-exception
+    "EM102",    # f-string-in-exception
+    "TRY003",   # raise-vanilla-args （非 ruff 默认，仅占位）
+    "TRY301",   # raise-within-try
+    "TRY400",   # error-instead-of-exception
+
+    # 命名：保留既有 API
+    "N802",     # invalid-function-name —— 大量既有 API 名
+    "N803",     # invalid-argument-name
+    "N806",     # non-lowercase-variable-in-function —— 常量/枚举式变量
+    "N818",     # error-suffix-on-exception-name
+    "N999",     # invalid-module-name —— CLI 模板文件名受脚本入口名约束
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "PLC0415", "I001"]  # 导出式 __init__ 经常按需导入
+"tests/**/*.py" = ["S101", "PLR2004", "SLF001", "ARG", "ANN", "PTH"]
+
+[tool.ruff.lint.pep8-naming]
+# 装饰器方法、classmethod 的首参数名允许保留
+classmethod-decorators = ["classmethod"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ErisPulse"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+docstring-code-format = true
+
+[tool.basedpyright]
+# 基于 standard 模式，对项目质量影响最大的项设为 error
+include = ["src"]
+exclude = [
+    "**/__pycache__",
+    "**/.venv",
+    "**/node_modules",
+    "build",
+    "dist",
+    "tests",
+]
+typeCheckingMode = "standard"
+pythonVersion = "3.10"
+# 默认 report* 在 standard 下大多是 warning，这里把“真实类型 bug”提级为 error
+reportReturnType = "error"            # 返回值与注解不匹配（用户特别提到）
+reportArgumentType = "error"          # 实参类型不兼容
+reportAttributeAccessIssue = "error"  # 访问不存在的属性
+reportCallIssue = "error"             # 调用形式有问题
+reportOperatorIssue = "error"         # 操作符类型不匹配
+reportAssignmentType = "error"        # 赋值类型不匹配
+reportOptionalMemberAccess = "error"  # 对可能 None 取属性
+reportOptionalOperand = "error"       # None 参与运算
+reportOptionalIterable = "error"      # 对 None 做 iterable 解包
+reportIncompatibleMethodOverride = "error"  # 子类覆写签名不匹配
+reportIncompatibleVariableOverride = "error"
+reportMissingTypeArgument = "warning"  # 缺类型参数（如 list 而非 list[str]）渐进修复
+reportMissingParameterType = "warning"  # 函数参数未注解
+reportUnusedImport = "warning"
+reportUnusedParameter = "warning"
+reportUnusedFunction = "warning"
+reportUnusedVariable = "warning"
+reportUnusedCallResult = "none"       # 项目中大量 fire-and-forget 调用
+reportExplicitAny = "none"            # 项目已大量使用 Any，强制去掉不现实
+reportAny = "none"                    # 同上，渐进关闭
+reportUnknownMemberType = "none"      # 第三方库返回 Unknown 太多
+reportUnknownVariableType = "none"
+reportUnknownArgumentType = "none"
+reportUnknownLambdaType = "none"
+reportUnannotatedClassAttribute = "none"  # 类属性注解，渐进补
+reportImplicitOverride = "none"        # 项目未启用 @override 装饰器
+reportPrivateUsage = "none"            # 内部跨模块私有访问很常见
+reportImportCycles = "warning"         # 循环导入，warning 即可
+reportMissingTypeStubs = "none"        # 第三方库 stub 缺失
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

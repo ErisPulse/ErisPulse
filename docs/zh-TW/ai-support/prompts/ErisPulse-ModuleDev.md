@@ -376,57 +376,195 @@ flowchart TD
 
 
 ====
-快速开始
+快速上手
 ====
 
 
-### 入门指南总览
+### 快速开始
 
-# 入門指南
+# 快速開始
 
-歡迎來到 ErisPulse 入門指南。如果你是第一次使用 ErisPulse，這裡將帶你從零開始，逐步了解框架的核心概念和基本用法。
+> 遇到不理解的術語？查看 [術語表](terminology.md) 獲取通俗易懂的解釋。
 
-## 學習路徑
+## 安裝 ErisPulse
 
-本指南按以下順序組織，建議依次閱讀：
+### 一鍵安裝腳本（推薦）
 
-| 步驟 | 主題 | 說明 |
-|------|------|------|
-| 1 | [建立第一個機器人](first-bot.md) | 從專案初始化到執行第一個指令 |
-| 2 | [基礎概念](basic-concepts.md) | 理解 ErisPulse 的核心架構和模組設計 |
-| 3 | [事件處理入門](event-handling.md) | 學習如何處理訊息、指令、通知等各類事件 |
-| 4 | [常見任務範例](common-tasks.md) | 掌握資料持久化、定時任務、權限控制等常用功能 |
+安裝腳本會自動檢測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。
 
-## 開發方式選擇
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
 
-ErisPulse 支援兩種開發方式：
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
 
-| 方式 | 適用場景 | 說明 |
-|------|---------|------|
-| **嵌入式開發** | 快速原型、專案內部功能 | 直接在 `main.py` 中編寫處理器，無需建立獨立模組 |
-| **模組開發**（推薦） | 生產環境、功能分發 | 建立獨立的 Python 套件，透過 `epsdk install` 安裝使用 |
+腳本會引導您完成：
 
-> 兩種方式的詳細對比和範例請參考 [建立第一個機器人](first-bot.md) 和 [模組開發入門](../developer-guide/modules/getting-started.md)。
+- **Docker 安裝**（檢測到 Docker 時推薦）：選擇鏡像源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設置
+- **傳統安裝**：自動創建虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模塊
 
-## 架構概覽
+### 使用 Docker
 
-ErisPulse 採用事件驅動架構，核心由以下系統組成：
+Docker 鏡像已內置 ErisPulse 框架和 Dashboard 管理面板。
 
-- **適配器系統** — 與各平台通訊，將平台事件轉換為統一的 OneBot12 標準格式
-- **事件系統** — 處理訊息、指令、通知、請求、元事件五大類事件
-- **模組系統** — 透過獨立模組擴充功能，支援依賴管理和懶加載
-- **核心模組** — 提供 Storage（儲存）、Config（設定）、Logger（日誌）、Router（路由）等基礎能力
+```bash
+# 下載 docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-> 詳細的架構圖和初始化流程請參考 [架構概覽](../architecture.md)。
+# 設置 Dashboard 令牌並啟動
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
 
-## 開始學習
+<details>
+<summary>Docker Hub 不可用？</summary>
 
-準備好開始了嗎？
+使用 GitHub Container Registry 鏡像，修改 `docker-compose.yml` 中的 image：
 
-- [建立第一個機器人](first-bot.md) — 5 分鐘上手
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+啟動後訪問 `http://<host>:8000/Dashboard`，使用設置的令牌登錄。
+
+### 使用 pip 安裝
+
+確保你的 Python 版本 >= 3.10，然後使用 pip 安裝：
+
+```bash
+pip install ErisPulse
+```
+
+如果你已安裝 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安裝速度更快。
+
+## 初始化項目
+
+### 交互式初始化（推薦）
+
+```bash
+epsdk init
+```
+
+這將啟動一個交互式向導，引導您完成：
+
+- 項目名稱設置
+- 日誌級別配置
+- 伺服器配置（主機和端口）
+- 适配器選擇和配置
+- 項目結構創建
+
+### 快速初始化
+
+```bash
+# 指定項目名稱的快速模式
+epsdk init -q -n my_bot
+
+# 或者只指定項目名稱
+epsdk init -n my_bot
+```
+
+### 手動創建項目
+
+如果更喜歡手動創建項目：
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## 安裝模塊
+
+### 通過 CLI 安裝
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### 查看可用模塊
+
+```bash
+epsdk list-remote
+```
+
+### 交互式安裝
+
+不指定包名時進入交互式安裝界面：
+
+```bash
+epsdk install
+```
+
+## 運行項目
+
+```bash
+# 普通運行
+epsdk run main.py
+
+# 熱重載模式（開發時推薦）
+epsdk run main.py --reload
+```
+
+## 啟用 IDE 補全（可選）
+
+ErisPulse 動態發現模塊/适配器，IDE 默认無法補全平台特有方法。  
+運行以下命令生成類型存根：
+
+```bash
+epsdk types
+```
+
+生成後用導入的類型作為變量標註即可獲得精確補全（詳見 [IDE 補全指南](./getting-started/ide-completion.md)）：
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # 補全平台特有方法
+```
+
+## 項目結構
+
+初始化後的項目結構：
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # 配置文件
+└── main.py                  # 入口文件
+
+```
+
+## 配置文件
+
+基本的 `config.toml` 配置：
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# 适配器配置
+```
+
+## 下一步
+
+- [入門指南總覽](getting-started/README.md) - 了解 ErisPulse 的基本概念
+- [創建第一個機器人](getting-started/first-bot.md) - 創建一個簡單的機器人
+- [用戶使用指南](user-guide/) - 深入了解配置和模塊管理
+- [開發者指南](developer-guide/) - 開發自定義模塊和适配器
 
 
-### 创建第一个模块
+### 创建第一个机器人
 
 # 建立第一個機器人
 
@@ -1629,516 +1767,95 @@ async def conditional_handler(event):
 請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 
-### 常见任务示例
+### IDE 补全
 
-# 常見任務範例
+# 類型存根生成（IDE 自動完成）
 
-本指南提供常見功能的實作範例，幫助您快速實作常用功能。
+ErisPulse 透過 entry-points 動態發現模組/適配器，入口點無法在靜態層面得知使用者類別的具體類型。  
+`epsdk types` 命令透過掃描已安裝的模組/適配器，產生一個類型存根檔案，讓使用者可以將這些類型用作變數標註，進而獲得 IDE 自動完成。
 
-## 內容列表
+## 核心設計原則
 
-1. 資料持久化
-2. 定時任務
-3. 訊息過濾
-4. 多平台適配
-5. 訊息傳送進階（重試/逾時/批次）
-6. 權限控制
-7. 訊息統計
-8. 搜尋功能
-9. 圖片處理
+存根檔案**僅導出類型**，不提供任何執行時實例：
 
-## 資料持久化
+- 所有匯入都在 ``TYPE_CHECKING`` 下，**零執行時開銷、零行為改變**
+- 類型名稱採用 entry-point 名的 PascalCase 形式（如 ``yunhu`` → ``Yunhu``），與傳入 ``sdk.adapter.get()`` / ``sdk.module.get()`` 的名稱對應
+- 使用者在程式碼中照常用 ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` 取得實例，只是用匯入的類型做**變數標註**
 
-### 簡單計數器
+## 基本用法
+
+在專案根目錄執行：
+
+```bash
+epsdk types
+```
+
+會在當前目錄產生 `_ep_types.py`，包含所有已安裝模組/適配器的類型。
+
+## 在程式碼中使用
 
 ```python
+from _ep_types import MyModule, Yunhu
 from ErisPulse import sdk
-from ErisPulse.Core.Event import command
 
-@command("count", help="檢視命令呼叫次數")
-async def count_handler(event):
-    # 取得計數
-    count = sdk.storage.get("command_count", 0)
-    
-    # 增加計數
-    count += 1
-    sdk.storage.set("command_count", count)
-    
-    await event.reply(f"這是第 {count} 次呼叫此命令")
+# 用匯入的類型作為變數標註，即可讓 IDE 自動完成該類的方法
+my_mod: MyModule = sdk.module.get("MyModule")
+my_mod.hello()                  # ← IDE 自動完成 hello
+
+my_adapter: Yunhu = sdk.adapter.get("yunhu")
+await my_adapter.Send.To("group", "123").Board(...)   # ← 自動完成平台特有方法
 ```
 
-### 使用者資料儲存
+## 工作原理
+
+1. 掃描 `erispulse.adapter` / `erispulse.module` entry-points
+2. 透過子程序在目標 Python 環境中內省，收集每個適配器/模組的實際類別資訊（包含模組路徑與限定名）
+3. 產生 `.py` 檔案，其中：
+   - 所有 ``from xxx import Yyy as Zzz`` 都在 ``TYPE_CHECKING`` 下
+   - ``Zzz`` 是 entry-point 名的 PascalCase 形式
+4. IDE 讀取 ``TYPE_CHECKING`` 部分提供自動完成；執行時不執行任何程式碼
+
+產生的存根範例：
 
 ```python
-@command("profile", help="檢視個人資料")
-async def profile_handler(event):
-    user_id = event.get_user_id()
-    
-    # 取得使用者資料
-    user_data = sdk.storage.get(f"user:{user_id}", {
-        "nickname": "",
-        "join_date": None,
-        "message_count": 0
-    })
-    
-    profile_text = f"""
-暱稱: {user_data['nickname']}
-加入時間: {user_data['join_date']}
-訊息數: {user_data['message_count']}
-    """
-    
-    await event.reply(profile_text.strip())
+# _ep_types.py（自動產生）
+from typing import TYPE_CHECKING
 
-@command("setnick", help="設定暱稱")
-async def setnick_handler(event):
-    user_id = event.get_user_id()
-    args = event.get_command_args()
-    
-    if not args:
-        await event.reply("請輸入暱稱")
-        return
-    
-    # 更新使用者資料
-    user_data = sdk.storage.get(f"user:{user_id}", {})
-    user_data["nickname"] = " ".join(args)
-    sdk.storage.set(f"user:{user_id}", user_data)
-    
-    await event.reply(f"暱稱已設定為: {' '.join(args)}")
+if TYPE_CHECKING:
+    # 適配器
+    from MyAdapter.Core import MyAdapter as MyAdapter
+    from YunhuAdapter.Core import YunhuAdapter as Yunhu
+
+    # 模組
+    from MyModule.Core import Main as MyModule
+
+    __all__ = ['MyAdapter', 'Yunhu', 'MyModule']
 ```
 
-## 定時任務
+## 命令選項
 
-### 簡單計時器
+| 選項 | 說明 |
+|------|------|
+| `-o, --output PATH` | 指定輸出檔案路徑（預設 `./_ep_types.py`） |
+| `--force` | 覆蓋已存在的存根檔案 |
+| `--adapters-only` | 僅掃描適配器 |
+| `--modules-only` | 僅掃描模組 |
 
-```python
-from ErisPulse import sdk
-from ErisPulse.Core.Event import command
-import asyncio
+## 何時重新產生
 
-class TimerModule:
-    def __init__(self):
-        self.sdk = sdk
-        self._tasks = []
-    
-    async def on_load(self, event):
-        """模組載入時啟動定時任務"""
-        self._start_timers()
-        
-        @command("timer", help="計時器管理")
-        async def timer_handler(event):
-            await event.reply("計時器正在執行中...")
-    
-    def _start_timers(self):
-        """啟動定時任務"""
-        # 每 60 秒執行一次
-        task = asyncio.create_task(self._every_minute())
-        self._tasks.append(task)
-        
-        # 每天凌晨執行
-        task = asyncio.create_task(self._daily_task())
-        self._tasks.append(task)
-    
-    async def _every_minute(self):
-        """每分鐘執行的任務"""
-        self.sdk.logger.info("每分鐘任務執行")
-        # 你的邏輯...
-    
-    async def _daily_task(self):
-        """每天凌晨執行的任務（註：基於 UTC 時間計算，如需本地時間請自行調整）"""
-        import time
-        
-        while True:
-            # 計算到凌晨的時間
-            now = time.time()
-            midnight = now + (86400 - now % 86400)
-            
-            await asyncio.sleep(midnight - now)
-            
-            # 執行任務
-            self.sdk.logger.info("每日任務執行")
-            # 你的邏輯...
-```
+- 安裝/卸載新的模組或適配器後
+- 模組/適配器更新了公開 API 後
+- IDE 自動完成失效或類型過期時
 
-### 使用生命週期事件
+## 與 SendDSL 標準方法的關係
 
-```python
-@sdk.lifecycle.on("core.init.complete")
-async def init_complete_handler(event_data):
-    """SDK 初始化完成後啟動定時任務"""
-    import asyncio
-    
-    async def daily_reminder():
-        """每日提醒"""
-        await asyncio.sleep(86400)  # 24小時
-        sdk.logger.info("執行每日任務")
-    
-    # 啟動背景任務
-    asyncio.create_task(daily_reminder())
-```
+`SendDSL` 基類已內建標準發送方法（Text/Image/Voice/Video/File），任何方式取得的 SendDSL 實例都能自動完成這些方法。  
+`types` 命令主要用於補全**平台特有方法**（如雲湖的 `Board`、沙盒的 `Dice`）和**模組特有方法**。
 
-## 訊息過濾
+## 相關文件
 
-### 關鍵字過濾
-
-```python
-from ErisPulse.Core.Event import message
-
-blocked_words = ["垃圾", "廣告", "釣魚"]
-
-@message.on_message()
-async def filter_handler(event):
-    text = event.get_text()
-    
-    # 檢查是否包含敏感詞
-    for word in blocked_words:
-        if word in text:
-            sdk.logger.warning(f"攔截敏感訊息: {word}")
-            return  # 不處理此訊息
-    
-    # 正常處理訊息
-    await event.reply(f"收到: {text}")
-```
-
-### 黑名單過濾
-
-```python
-# 從設定或儲存載入黑名單
-blacklist = sdk.storage.get("user_blacklist", [])
-
-@message.on_message()
-async def blacklist_handler(event):
-    user_id = event.get_user_id()
-    
-    if user_id in blacklist:
-        sdk.logger.info(f"黑名單使用者: {user_id}")
-        return  # 不處理
-    
-    # 正常處理
-    await event.reply(f"你好，{user_id}")
-```
-
-## 多平台適配
-
-### 平台特定回應
-
-```python
-@command("help", help="顯示說明")
-async def help_handler(event):
-    platform = event.get_platform()
-    
-    if platform == "yunhu":
-        await event.reply("雲湖平台說明...")
-    elif platform == "telegram":
-        await event.reply("Telegram platform help...")
-    elif platform == "onebot11":
-        await event.reply("OneBot11 help...")
-    else:
-        await event.reply("通用說明訊息")
-```
-
-### 平台特性檢測
-
-```python
-@command("rich", help="傳送富文字訊息")
-async def rich_handler(event):
-    platform = event.get_platform()
-    
-    if platform == "yunhu":
-        # 雲湖支援 HTML
-        yunhu = sdk.adapter.get("yunhu")
-        await yunhu.Send.To("user", event.get_user_id()).Html(
-            "<b>加粗文字</b><i>斜體文字</i>"
-        )
-    elif platform == "telegram":
-        # Telegram 支援 Markdown
-        telegram = sdk.adapter.get("telegram")
-        await telegram.Send.To("user", event.get_user_id()).Markdown(
-            "**加粗文字** *斜體文字*"
-        )
-    else:
-        # 其他平台使用純文字
-        await event.reply("加粗文字 斜體文字")
-```
-
-## 訊息傳送進階（重試/逾時/批次）
-
-除了簡單的 `event.reply()`，您還可以透過適配器的 Send DSL 實作更複雜的傳送場景：失敗自動重試、逾時取消、成功後執行邏輯、批次傳送多條訊息。
-
-> 下方的範例用 `event.get_detail_type()` 和 `event.get_target_id()` 從事件中取得目標類型和 ID（群聊自動取 group_id，私聊自動取 user_id），避免硬編碼。
-
-### 傳送成功後執行邏輯
-
-```python
-@command("pay", help="模擬支付")
-async def pay_handler(event):
-    yunhu = sdk.adapter.get(event.get_platform())
-    user_id = event.get_user_id()
-    # 傳送成功後才扣積分
-    await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
-           .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
-           .Text("支付成功，已扣除 10 積分"))
-```
-
-### 失敗重試 + 逾時取消
-
-```python
-@command("notice", help="傳送重要通知")
-async def notice_handler(event):
-    adapter_inst = sdk.adapter.get(event.get_platform())
-    # 最多重試 3 次，每次逾時 10 秒
-    task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
-            .Retry(3)
-            .Timeout(10)
-            .OnError(lambda ctx: sdk.logger.error(f"通知傳送失敗: {ctx.error}"))
-            .Text("這是一條重要通知"))
-    # 不等待，背景傳送
-```
-
-### 批次傳送多條訊息
-
-一條鏈路傳送多條訊息，統一執行：
-
-```python
-@command("announce", help="傳送公告")
-async def announce_handler(event):
-    adapter_inst = sdk.adapter.get(event.get_platform())
-    # 建構多條訊息，統一傳送（預設並行）
-    results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
-                    .Build()
-                    .Text("📋 今日公告")
-                    .Image("https://example.com/banner.jpg")
-                    .Text("詳細內容見上方圖片")
-                    .Retry(2)            # 失敗的項目各自重試
-                    .send_all())
-    sdk.logger.info(f"批次傳送完成，共 {len(results)} 條")
-```
-
-> 更完整的規則與批次說明請參考 [平台特性指南](../platform-guide/README.md#傳送規則裝飾器)。
-
-## 權限控制
-
-### 管理員檢查
-
-```python
-# 設定主人列表
-MASTERS = ["user123", "user456"]
-
-def is_master(user_id):
-    """檢查是否為框架主人"""
-    return user_id in MASTERS
-
-@command("master", help="框架主人命令")
-async def master_handler(event):
-    user_id = event.get_user_id()
-    
-    if not is_master(user_id):
-        await event.reply("權限不足，此命令僅框架主人可用")
-        return
-    
-    await event.reply("框架主人命令執行成功")
-
-@command("addmaster", help="新增框架主人")
-async def addmaster_handler(event):
-    if not is_master(event.get_user_id()):
-        return
-    
-    args = event.get("text", "").split()
-    if len(args) < 2:
-        await event.reply("用法: /addmaster <使用者ID>")
-        return
-    
-    new_master = args[0]
-    MASTERS.append(new_master)
-    await event.reply(f"已新增框架主人: {new_master}")
-```
-
-### 群組權限
-
-```python
-@command("groupinfo", help="檢視群組資訊")
-async def groupinfo_handler(event):
-    if not event.is_group_message():
-        await event.reply("此命令僅限群聊使用")
-        return
-    
-    group_id = event.get_group_id()
-    user_id = event.get_user_id()
-    
-    await event.reply(f"群組 ID: {group_id}, 你的 ID: {user_id}")
-```
-
-## 訊息統計
-
-### 訊息計數
-
-> **注意**：以下範例使用 `sdk.storage.get/set` 進行簡單計數。在高並發場景下，建議使用 `sdk.storage.transaction()` 保證原子性。
-
-```python
-@message.on_message()
-async def count_handler(event):
-    # 取得統計
-    stats = sdk.storage.get("message_stats", {
-        "total": 0,
-        "by_user": {},
-        "by_day": {}
-    })
-    
-    # 更新統計
-    stats["total"] += 1
-    
-    user_id = event.get_user_id()
-    stats["by_user"][user_id] = stats["by_user"].get(user_id, 0) + 1
-    
-    # 儲存
-    sdk.storage.set("message_stats", stats)
-
-@command("stats", help="檢視訊息統計")
-async def stats_handler(event):
-    stats = sdk.storage.get("message_stats", {
-        "total": 0,
-        "by_user": {},
-        "by_day": {}
-    })
-    
-    top_users = sorted(
-        stats["by_user"].items(),
-        key=lambda x: x[1],
-        reverse=True
-    )[:5]
-    
-    top_text = "\n".join(
-        f"{uid}: {count} 條訊息" for uid, count in top_users
-    )
-    
-    await event.reply(f"總訊息數: {stats['total']}\n\n活躍使用者:\n{top_text}")
-```
-
-## 搜尋功能
-
-### 簡單搜尋
-
-> **注意**：以下範例使用記憶體列表儲存訊息歷史，**程式重新啟動後資料會遺失**。生產環境建議使用 `sdk.storage` 或 SQLite 表進行持久化儲存。
-
-```python
-from ErisPulse.Core.Event import command, message
-
-# 儲存訊息歷史
-message_history = []
-
-@message.on_message()
-async def store_handler(event):
-    """儲存訊息用於搜尋"""
-    user_id = event.get_user_id()
-    text = event.get_text()
-    
-    message_history.append({
-        "user_id": user_id,
-        "text": text,
-        "time": event.get_time()
-    })
-    
-    # 限制歷史記錄數量
-    if len(message_history) > 1000:
-        message_history.pop(0)
-
-@command("search", help="搜尋訊息")
-async def search_handler(event):
-    args = event.get_command_args()
-    
-    if not args:
-        await event.reply("請輸入搜尋關鍵字")
-        return
-    
-    keyword = " ".join(args)
-    results = []
-    
-    # 搜尋歷史記錄
-    for msg in message_history:
-        if keyword in msg["text"]:
-            results.append(msg)
-    
-    if not results:
-        await event.reply("未找到符合的訊息")
-        return
-    
-    # 顯示結果
-    result_text = f"找到 {len(results)} 條符合訊息:\n\n"
-    for i, msg in enumerate(results[:10], 1):  # 最多顯示 10 條
-        result_text += f"{i}. {msg['text']}\n"
-    
-    await event.reply(result_text)
-```
-
-## 圖片處理
-
-### 圖片下載和儲存
-
-```python
-from ErisPulse.Core import client
-
-@message.on_message()
-async def image_handler(event):
-    """處理圖片訊息"""
-    message_segments = event.get_message()
-    
-    for segment in message_segments:
-        if segment.get("type") == "image":
-            file_url = segment.get("data", {}).get("file")
-            
-            if file_url:
-                # 建議使用 SDK 內建用戶端下載圖片
-                resp = await client.get(file_url)
-                if resp.status == 200:
-                    image_data = await resp.read()
-                    
-                    # 儲存到檔案
-                    filename = f"images/{event.get_time()}.jpg"
-                    with open(filename, "wb") as f:
-                        f.write(image_data)
-                    
-                    sdk.logger.info(f"圖片已儲存: {filename}")
-                    await event.reply("圖片已儲存")
-```
-
-### 圖片識別範例
-
-> **注意**：以下範例使用佔位 API 位址，實際使用時請替換為您自己的圖片識別服務。
-
-```python
-from ErisPulse.Core import client
-
-@command("identify", help="識別圖片")
-async def identify_handler(event):
-    """識別訊息中的圖片"""
-    message_segments = event.get_message()
-    
-    for segment in message_segments:
-        if segment.get("type") == "image":
-            file_url = segment.get("data", {}).get("file")
-            
-            # 呼叫圖片識別 API
-            result = await _identify_image(file_url)
-            
-            await event.reply(f"識別結果: {result}")
-            return
-    
-    await event.reply("未找到圖片")
-
-async def _identify_image(url):
-    """呼叫圖片識別 API（範例）- 使用 SDK 內建用戶端"""
-    resp = await client.post(
-        "https://api.example.com/identify",
-        json={"url": url}
-    )
-    data = await resp.json()
-    return data.get("description", "識別失敗")
-```
-
-## 下一個步驟
-
-- [使用者使用指南](../user-guide/) - 了解設定和模組管理
-- [開發者指南](../developer-guide/) - 學習開發模組和適配器
-- [進階主題](../advanced/) - 深入了解框架特性
+- [SendDSL 詳解](../developer-guide/adapters/send-dsl.md) - 標準發送方法說明
+- [適配器開發入門](../developer-guide/adapters/getting-started.md) - 建立適配器
 
 
 ====
@@ -3829,82 +3546,430 @@ services:
 
 # CLI 命令參考
 
-ErisPulse 命令列工具提供專案管理和套件管理功能。
+ErisPulse 命令列工具（`epsdk`）提供專案管理和套件管理功能。
+
+> **提示**：所有命令均可透過 `epsdk <命令> --help` 查看詳細的參數說明。
+
+---
 
 ## 套件管理命令
 
-| 命令 | 參數 | 說明 | 範例 |
-|-------|------|------|------|
-| `install` | `[package]... [--upgrade/-U] [--pre]` | 安裝模組/適配器 | `epsdk install Yunhu` |
-| `uninstall` | `<package>...` | 解除安裝模組/適配器 | `epsdk uninstall old-module` |
-| `upgrade` | `[package]... [--force/-f] [--pre]` | 升級指定模組或所有 | `epsdk upgrade --force` |
-| `self-update` | `[version] [--pre] [--force/-f]` | 更新 SDK 本身 | `epsdk self-update` |
+| 命令 | 別名 | 參數 | 說明 |
+|------|------|------|------|
+| `install` | `i`, `add` | `[套件]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | 安裝模組/適配器 |
+| `uninstall` | `rm`, `remove` | `<套件>... [--no-uv]` | 卸載模組/適配器 |
+| `upgrade` | `up` | `[套件]... [--force/-f] [--pre] [--no-uv]` | 升級指定模組或全部 |
+| `self-update` | `su`, `update` | `[版本] [--pre] [--force/-f] [--no-uv]` | 更新 SDK 本身 |
+
+### install
+
+安裝 ErisPulse 模組或適配器套件。若不指定套件名則進入互動式安裝介面。
+
+**別名：** `i`, `add`
+
+**參數：**
+
+| 參數 | 短參數 | 說明 |
+|------|--------|------|
+| `[套件]...` | | 要安裝的套件名稱，可指定多個 |
+| `--upgrade` | `-U` | 安裝時升級到最新版本 |
+| `--pre` | | 允許安裝預發布版本 |
+| `--editable` | `-e` | 以可編輯模式安裝（需指定路徑） |
+| `--user` | | 安裝到使用者 site-packages 目錄 |
+| `--no-deps` | | 不安裝相依性 |
+| `--target` | `-t` | 安裝到指定目錄 |
+| `--index-url` | | 指定 PyPI 鏡像來源地址 |
+| `--extra-index-url` | | 額外 PyPI 鏡像來源地址（可多次指定） |
+| `--no-cache-dir` | | 禁用快取 |
+| `--requirement` | `-r` | 從 requirements 檔案安裝 |
+| `--constraint` | `-c` | 從約束檔案安裝 |
+| `--force-reinstall` | | 強制重新安裝 |
+| `--ignore-installed` | | 忽略已安裝的套件 |
+| `--compile` | | 安裝後編譯 .pyc 檔 |
+| `--no-compile` | | 安裝後不編譯 .pyc 檔 |
+| `--prefix` | | 安裝到指定前綴目錄 |
+| `--src` | | 可編輯安裝時使用的原始碼目錄 |
+| `--config-settings` | | 傳遞給建構後端的設定（可多次指定） |
+| `--no-binary` | | 限制不使用二進位套件（格式如 `:all:`） |
+| `--only-binary` | | 限制僅使用二進位套件（格式如 `:all:`） |
+| `--prefer-binary` | | 優先選擇二進位套件 |
+| `--build-isolation` | | 啟用建構隔離 |
+| `--no-build-isolation` | | 禁用建構隔離 |
+| `--upgrade-strategy` | | 升級策略：`eager`、`only-if-needed`、`to-satisfy-only` |
+| `--break-system-packages` | | 允許修改系統套件管理器管理的 Python 套件 |
+| `--no-uv` | | 使用 pip 代替 uv |
+
+**範例：**
+
+```bash
+# 安裝單個模組
+epsdk install Weather
+
+# 安裝多個模組
+epsdk install Yunhu Weather
+
+# 從鏡像來源安裝並升級
+epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 可編輯模式安裝（開發模式）
+epsdk install -e ./my-adapter
+```
+
+### uninstall
+
+卸載已安裝的 ErisPulse 模組或適配器套件。若不指定套件名則進入互動式卸載介面。
+
+**別名：** `rm`, `remove`
+
+**參數：**
+
+| 參數 | 說明 |
+|------|------|
+| `<套件>...` | 要卸載的套件名稱，可指定多個 |
+| `--no-uv` | 使用 pip 代替 uv |
+
+**範例：**
+
+```bash
+# 卸載單個模組
+epsdk uninstall Weather
+
+# 卸載多個模組
+epsdk uninstall Yunhu Weather
+```
+
+### upgrade
+
+升級已安裝的 ErisPulse 組件。不指定套件名則互動式升級全部。
+
+**別名：** `up`
+
+**參數：**
+
+| 參數 | 短參數 | 說明 |
+|------|--------|------|
+| `[套件]...` | | 要升級的套件名稱，可指定多個 |
+| `--force` | `-f` | 強制升級，跳過確認 |
+| `--pre` | | 允許升級到預發布版本 |
+| `--no-uv` | | 使用 pip 代替 uv |
+
+**範例：**
+
+```bash
+# 升級所有套件
+epsdk upgrade
+
+# 升級指定套件
+epsdk upgrade Weather
+
+# 強制升級（跳過確認）
+epsdk upgrade -f
+```
+
+### self-update
+
+更新 ErisPulse SDK 本身到最新版本。
+
+**別名：** `su`, `update`
+
+**參數：**
+
+| 參數 | 短參數 | 說明 |
+|------|--------|------|
+| `[版本]` | | 指定要更新的目標版本號 |
+| `--pre` | | 允許更新到預發布版本 |
+| `--force` | `-f` | 強制更新，跳過確認 |
+| `--no-uv` | | 使用 pip 代替 uv |
+
+**範例：**
+
+```bash
+# 更新到最新穩定版
+epsdk self-update
+
+# 更新到指定版本
+epsdk self-update 1.2.3
+
+# 允許預發布版本
+epsdk self-update --pre
+
+# 強制更新
+epsdk self-update -f
+```
+
+---
 
 ## 資訊查詢命令
 
-| 命令 | 參數 | 說明 | 範例 |
-|-------|------|------|------|
-| `list` | `[--type/-t <type>]` | 列出已安裝的模組/適配器 | `epsdk list -t modules` |
-| | `[--outdated/-o]` | 僅顯示可升級的套件 | `epsdk list -o` |
-| `list-remote` | `[--type/-t <type>]` | 列出遠端可用的套件 | `epsdk list-remote` |
-| | `[--refresh/-r]` | 強制刷新套件列表 | `epsdk list-remote -r` |
+| 命令 | 別名 | 參數 | 說明 |
+|------|------|------|------|
+| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | 列出已安裝的組件 |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | 列出遠端可用的組件 |
 
-## 執行控制命令
+### list
 
-| 命令 | 參數 | 說明 | 範例 |
-|-------|------|------|------|
-| `run` | `<script> [--reload]` | 執行指定腳本 | `epsdk run main.py --reload` |
+列出已安裝的 ErisPulse 模組和適配器。
+
+**別名：** `l`, `ls`
+
+**參數：**
+
+| 參數 | 短參數 | 說明 |
+|------|--------|------|
+| `--type` | `-t` | 指定類型：`modules`、`adapters`、`all`（預設） |
+| `--outdated` | `-o` | 僅顯示可升級的套件 |
+
+**範例：**
+
+```bash
+# 列出所有已安裝的組件
+epsdk list
+
+# 只列出模組
+epsdk list -t modules
+
+# 只列出適配器
+epsdk list -t adapters
+
+# 只顯示可升級的套件
+epsdk list -o
+```
+
+### list-remote
+
+列出遠端倉庫中可用的 ErisPulse 模組和適配器。
+
+**別名：** `lsr`
+
+**參數：**
+
+| 參數 | 短參數 | 說明 |
+|------|--------|------|
+| `--type` | `-t` | 指定類型：`modules`、`adapters`、`all`（預設） |
+| `--refresh` | `-r` | 強制刷新遠端套件列表快取 |
+
+**範例：**
+
+```bash
+# 列出所有遠端可用組件
+epsdk list-remote
+
+# 只列出遠端模組
+epsdk list-remote -t modules
+
+# 強制刷新快取後列出
+epsdk list-remote -r
+```
+
+---
+
+## 運行控制命令
+
+| 命令 | 別名 | 參數 | 說明 |
+|------|------|------|------|
+| `run` | `r` | `[script] [--reload]` | 運行指定腳本或 SDK |
+
+### run
+
+運行 ErisPulse 專案腳本或直接啟動 SDK。支援熱重載模式。
+
+**別名：** `r`
+
+**參數：**
+
+| 參數 | 說明 |
+|------|------|
+| `[script]` | 要運行的腳本檔案，不指定則運行 SDK |
+| `--reload` | 啟用熱重載模式，監控檔案變更自動重啟 |
+
+**範例：**
+
+```bash
+# 直接運行 SDK
+epsdk run
+
+# 運行指定腳本檔案
+epsdk run main.py
+
+# 熱重載模式運行（檔案變更自動重啟）
+epsdk run main.py --reload
+
+# SDK 熱重載模式
+epsdk run --reload
+```
+
+---
 
 ## 專案管理命令
 
-| 命令 | 參數 | 說明 | 範例 |
-|-------|------|------|------|
-| `init` | `[--project-name/-n <name>]` | 互動式初始化專案 | `epsdk init -n my_bot` |
-| | `[--quick/-q]` | 快速模式，跳過互動 | `epsdk init -q -n bot` |
-| | `[--force/-f]` | 強制覆蓋現有設定 | `epsdk init -f` |
-| `create` | `[module\|adapter]` | 建立腳手架專案 | `epsdk create` |
-| | `[--name/-n <name>]` | 專案名稱 (PascalCase) | `epsdk create module -n MyModule` |
-| | `[--description/-d <desc>]` | 專案描述 | `epsdk create adapter -d "xx適配器"` |
-| | `[--author/-a <name>]` | 作者名稱 | `epsdk create -a yourname` |
-| | `[--email/-e <mail>]` | 作者郵箱 | `epsdk create -e you@mail.com` |
-| | `[--homepage <url>]` | 專案主頁 URL | |
-| | `[--output/-o <dir>]` | 輸出目錄 (預設目前目錄) | `epsdk create -o ./projects` |
-| | `[--force/-f]` | 強制覆蓋已存在的目錄 | `epsdk create -f` |
+| 命令 | 別名 | 參數 | 說明 |
+|------|------|------|------|
+| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | 初始化 ErisPulse 專案 |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 建立模組/適配器腳手架 |
 
-## 參數說明
+### init
 
-### 通用參數
+初始化一個新的 ErisPulse 專案。支援互動式與快速模式。
+
+**參數：**
 
 | 參數 | 短參數 | 說明 |
-|------|---------|------|
-| `--help` | `-h` | 顯示幫助訊息 |
+|------|--------|------|
+| `--project-name` | `-n` | 專案名稱 |
+| `--quick` | `-q` | 快速模式，跳過互動式嚮導 |
+| `--force` | `-f` | 強制覆蓋現有設定檔案 |
+| `--here` | | 在目前目錄初始化，不建立子目錄 |
+| `--no-uv` | | 使用 pip 代替 uv |
+
+**範例：**
+
+```bash
+# 互動式初始化
+epsdk init
+
+# 快速初始化
+epsdk init -q -n my_bot
+
+# 強制覆蓋已有設定
+epsdk init -f
+
+# 在目前目錄初始化
+epsdk init --here -n my_bot
+```
+
+### create
+
+建立 ErisPulse 模組或適配器的腳手架專案。
+
+**參數：**
+
+| 參數 | 短參數 | 說明 |
+|------|--------|------|
+| `{module,adapter}` | | 要建立的類型：`module` 或 `adapter` |
+| `--name` | `-n` | 專案名稱（PascalCase） |
+| `--description` | `-d` | 專案描述 |
+| `--author` | `-a` | 作者名稱 |
+| `--email` | `-e` | 作者電子信箱 |
+| `--homepage` | | 專案首頁 URL |
+| `--output` | `-o` | 輸出目錄（預設目前目錄） |
+| `--force` | `-f` | 強制覆蓋已存在的目錄 |
+
+**範例：**
+
+```bash
+# 互動式建立（引導選擇類型和填寫資訊）
+epsdk create
+
+# 直接建立 Module 專案
+epsdk create module -n MyModule
+
+# 直接建立 Adapter 專案
+epsdk create adapter -n MyAdapter
+
+# 完整參數
+epsdk create module -n MyModule -d "模組描述" -a "作者" -e "mail@example.com"
+
+# 指定輸出目錄
+epsdk create module -n MyModule -o ./projects
+
+# 強制覆蓋已有目錄
+epsdk create module -n MyModule -f
+```
+
+---
+
+## 語言命令
+
+| 命令 | 別名 | 參數 | 說明 |
+|------|------|------|------|
+| `i18n` | `language`, `lang` | `[語言] [--list/-l]` | 查看或切換 CLI 顯示語言 |
+
+### i18n
+
+查看目前 CLI 語言、列出支援的語言、切換顯示語言。若不指定參數則進入互動式選擇介面。
+
+**別名：** `language`, `lang`
+
+**參數：**
+
+| 參數 | 短參數 | 說明 |
+|------|--------|------|
+| `[語言]` | | 要切換的語言代碼（如 `zh-CN`、`en`、`ja`、`ru`） |
+| `--list` | `-l` | 列出所有支援的語言 |
+
+**範例：**
+
+```bash
+# 互動式選擇語言
+epsdk i18n
+
+# 切換到英文
+epsdk i18n en
+
+# 切換到日文
+epsdk i18n ja
+
+# 列出所有支援的語言
+epsdk i18n --list
+```
+
+---
+
+## 類型存根命令
+
+| 命令 | 別名 | 參數 | 說明 |
+|------|------|------|------|
+| `types` | `t`, `stub` | `[--output/-o <路徑>] [--force] [--adapters-only] [--modules-only]` | 生成類型存根檔案以啟用 IDE 自動完成 |
+
+### types
+
+掃描已安裝的 ErisPulse 模組和適配器，為它們生成 `.pyi` 類型存根檔案，從而在 IDE 中獲得準確的程式碼自動完成與類型檢查支援。
+
+**別名：** `t`, `stub`
+
+**參數：**
+
+| 參數 | 短參數 | 說明 |
+|------|--------|------|
+| `--output` | `-o` | 輸出路徑（預設目前目錄下的 `ep-stubs/`） |
+| `--force` | | 強制覆蓋已存在的存根檔案 |
+| `--adapters-only` | | 僅生成適配器的類型存根 |
+| `--modules-only` | | 僅生成模組的類型存根 |
+
+> **注意：** `--adapters-only` 與 `--modules-only` 互斥，同時指定時後者生效。
+
+**範例：**
+
+```bash
+# 為所有已安裝的模組和適配器生成類型存根
+epsdk types
+
+# 僅生成適配器存根
+epsdk types --adapters-only
+
+# 輸出到指定目錄
+epsdk types -o ./typings
+
+# 強制覆蓋已有檔案
+epsdk types --force
+```
+
+---
+
+## 全域參數
+
+以下參數適用於所有命令：
+
+| 參數 | 短參數 | 說明 |
+|------|--------|------|
+| `--help` | `-h` | 顯示幫助資訊 |
 | `--verbose` | `-v` | 顯示詳細輸出 |
 
-### install 參數
-
-| 參數 | 說明 |
-|------|------|
-| `[package]` | 要安裝的套件名稱，可指定多個 |
-| `--upgrade` | `-U` | 安裝時升級到最新版本 |
-| `--pre` | 允許安裝預發行版本 |
-
-### list 參數
-
-| 參數 | 說明 |
-|------|------|
-| `--type` | `-t` | 指定類型：`modules`, `adapters`, `all` |
-| `--outdated` | `-o` | 僅顯示可升級的套件 |
-
-### run 參數
-
-| 參數 | 說明 |
-|------|------|
-| `--reload` | 啟用熱重載模式，監控檔案變化 |
-| `--no-reload` | 停用熱重載模式 |
+---
 
 ## 互動式安裝
 
-執行 `epsdk install` 不指定套件名稱時進入互動式安裝：
+執行 `epsdk install` 不指定套件名時進入互動式安裝：
 
 ```bash
 epsdk install
@@ -3930,50 +3995,76 @@ epsdk install Yunhu Weather
 epsdk install Weather -U
 ```
 
-### 列出模組
+### 列出組件
 
 ```bash
-# 列出所有模組
+# 列出所有組件
 epsdk list
 
 # 只列出適配器
 epsdk list -t adapters
 
-# 只列出可升級的模組
+# 只列出可升級的組件
 epsdk list -o
+
+# 查看遠端可用組件
+epsdk list-remote
 ```
 
-### 解除安裝模組
+### 卸載組件
 
 ```bash
-# 解除安裝單個模組
+# 卸載單個組件
 epsdk uninstall Weather
 
-# 解除安裝多個模組
+# 卸載多個組件
 epsdk uninstall Yunhu Weather
 ```
 
-### 升級模組
+### 升級組件
 
 ```bash
-# 升級所有模組
+# 升級所有組件
 epsdk upgrade
 
-# 升級指定模組
+# 升級指定組件
 epsdk upgrade Weather
 
 # 強制升級
 epsdk upgrade -f
 ```
 
-### 執行專案
+### 運行專案
 
 ```bash
-# 普通執行
+# 普通運行
 epsdk run main.py
 
 # 熱重載模式
 epsdk run main.py --reload
+```
+
+### 切換語言
+
+```bash
+# 互動式選擇語言
+epsdk i18n
+
+# 直接切換到英文
+epsdk i18n en
+
+# 列出支援的語言
+epsdk i18n --list
+```
+
+### 生成類型存根
+
+```bash
+# 生成所有類型存根
+epsdk types
+
+# 僅生成模組類型存根
+epsdk types --modules-only
 ```
 
 ### 初始化專案

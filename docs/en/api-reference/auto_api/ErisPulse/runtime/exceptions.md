@@ -31,7 +31,7 @@ ErisPulse 全局异常处理系统
 ---
 
 
-### `global_exception_handler(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
+### `global_exception_handler(exc_type: type[Exception], exc_value: Exception, exc_traceback: Any)`
 
 全局异常处理器
 
@@ -41,7 +41,7 @@ ErisPulse 全局异常处理系统
 ---
 
 
-### `async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, Any])`
+### `async_exception_handler(loop: asyncio.AbstractEventLoop, context: dict[str, Any])`
 
 异步异常处理器
 
@@ -70,7 +70,7 @@ ExceptionHandler 类提供相关功能。
 #### 方法列表
 
 
-##### `format_exception(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
+##### `format_exception(exc_type: type[Exception], exc_value: Exception, exc_traceback: Any)`
 
 格式化异常信息
 
@@ -108,7 +108,7 @@ ExceptionHandler 类提供相关功能。
 ---
 
 
-##### `format_exception_with_hints(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
+##### `format_exception_with_hints(exc_type: type[Exception], exc_value: Exception, exc_traceback: Any)`
 
 格式化异常信息并附带友好提示
 

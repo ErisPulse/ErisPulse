@@ -46,7 +46,7 @@
 ---
 
 
-##### `is_master(platform_or_event: Union[str, _EventLike], user_id: str | None = None)`
+##### `is_master(platform_or_event: str | _EventLike, user_id: str | None = None)`
 
 检查是否为框架主人
 

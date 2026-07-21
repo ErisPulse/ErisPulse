@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import importlib
+import importlib.metadata
 import os
 import sys
 from typing import TYPE_CHECKING
@@ -36,7 +37,6 @@ from .loaders.module import LazyModule, ModuleLoader
 from .loaders.strict import StrictModeManager
 
 if TYPE_CHECKING:
-    from types import ModuleType
 
     from .Core import (
         AdapterManager,
@@ -44,6 +44,7 @@ if TYPE_CHECKING:
         I18nManager,
         LifecycleManager,
         Logger,
+        MasterManager,
         ModuleManager,
         RouterManager,
         StorageManager,
@@ -57,7 +58,6 @@ if TYPE_CHECKING:
     from .Core import (
         BaseStorage as _BaseStorage,
     )
-    from .Core import Event as _EventModule
     from .Core import (
         HttpClient as _HttpClient,
     )
@@ -90,7 +90,7 @@ def _resolve_core(attr: str):
         "module": ("ErisPulse.Core", "module"),
         "router": ("ErisPulse.Core", "router"),
         "client": ("ErisPulse.Core", "client"),
-        "admin": ("ErisPulse.Core", "admin"),
+        "master": ("ErisPulse.Core", "master"),
         "BaseAdapter": ("ErisPulse.Core", "BaseAdapter"),
         "SendDSL": ("ErisPulse.Core", "SendDSL"),
         "BaseStorage": ("ErisPulse.Core.Bases.storage", "BaseStorage"),
@@ -118,7 +118,7 @@ _CORE_ATTR_NAMES = {
     "module",
     "router",
     "client",
-    "admin",
+    "master",
     "BaseAdapter",
     "SendDSL",
     "BaseStorage",
@@ -152,19 +152,22 @@ class SDK:
     - module: 模块管理器
     - router: 路由管理器
     - client: HTTP 客户端
+    - master: 框架主人管理器
     {!--< /tips >!--}
     """
 
     # ---- 类级别类型注解（仅供 IDE / 类型检查器使用）----
     # 注意：这些注解 *没有赋值*，不会创建实例属性，
     # 因此运行时仍然会触发 __getattr__ 进行动态解析。
-    Event: _EventModule
+    from types import ModuleType
+
+    Event: ModuleType
     lifecycle: LifecycleManager
     logger: Logger
     storage: StorageManager
     env: StorageManager
     config: ConfigManager
-    i18n: "I18nManager"
+    i18n: I18nManager
     adapter: AdapterManager
     module: ModuleManager
     router: RouterManager
@@ -173,7 +176,7 @@ class SDK:
     SendDSL: type[_SendDSL]
     BaseStorage: type[_BaseStorage]
     BaseQueryBuilder: type[_BaseQueryBuilder]
-    master: "MasterManager"
+    master: MasterManager
 
     def __init__(self):
         """
@@ -185,6 +188,25 @@ class SDK:
         self._initializer: SDK.Initializer | None = None
         self._initialized: bool = False
         self._gc_task: asyncio.Task | None = None  # 主动 GC 后台任务
+
+    @property
+    def version(self) -> str:
+        """
+        获取当前 ErisPulse 安装版本
+
+        每次访问实时查询 importlib.metadata，确保框架热更新后
+        能读到最新版本（如果框架本身被upgrade）。
+
+        :return: str 版本号字符串，未安装时返回 "UnknownVersion"
+
+        :example:
+        >>> print(sdk.version)
+        '2.6.2'
+        """
+        try:
+            return importlib.metadata.version("ErisPulse")
+        except importlib.metadata.PackageNotFoundError:
+            return "UnknownVersion"
 
     def __getattr__(self, name: str):
         """
@@ -201,10 +223,10 @@ class SDK:
         if name in _CORE_ATTR_NAMES:
             try:
                 return _resolve_core(name)
-            except (ImportError, AttributeError):
+            except (ImportError, AttributeError) as _err:
                 raise AttributeError(
                     i18n.t("core.sdk.attr.core_resolve_failed", name=name)
-                )
+                ) from _err
 
         # 非核心属性：提供友好的错误提示
         try:
@@ -246,9 +268,18 @@ class SDK:
         """
         返回 SDK 的字符串表示
 
+        展示版本、初始化状态、适配器/模块计数，便于调试时一眼查看运行状态。
+        适配器/模块计数失败时静默降级为只显示版本与初始化状态。
+
         :return: str SDK 的字符串表示
         """
-        return f"<ErisPulse SDK initialized={self._initialized}>"
+        base = f"<ErisPulse SDK v{self.version} initialized={self._initialized}"
+        try:
+            adapter_count = len(self.adapter._adapters)
+            module_count = len(self.module._modules)
+            return f"{base} adapters={adapter_count} modules={module_count}>"
+        except Exception:
+            return f"{base}>"
 
     # ==================== 内部协调器类 ====================
 
@@ -583,7 +614,7 @@ class SDK:
 
             uninit_timeout = DEFAULT_UNINIT_TIMEOUT_SECS
             try:
-                from ..runtime import get_framework_config
+                from .runtime import get_framework_config
 
                 framework_config = get_framework_config()
                 uninit_timeout = framework_config.get("uninit_timeout", uninit_timeout)
@@ -734,12 +765,10 @@ class SDK:
 
             try:
                 if uninit_timeout > 0:
-                    success = await asyncio.wait_for(
+                    return await asyncio.wait_for(
                         _do_uninit(), timeout=uninit_timeout
                     )
-                    return success
-                else:
-                    return await _do_uninit()
+                return await _do_uninit()
             except asyncio.TimeoutError:
                 uninit_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_UNINIT)
                 self.logger.warning(
@@ -895,7 +924,7 @@ class SDK:
             state["modules"]["error"] = "failed to get module state"
 
         try:
-            from .Core.Event import message, notice, request, meta
+            from .Core.Event import message, meta, notice, request
             from .Core.Event.command import command as cmd_handler
 
             state["events"] = {
@@ -922,13 +951,25 @@ class SDK:
         """
         SDK 初始化入口
 
-        :return: bool SDK 初始化是否成功
+        重复调用保护：若 SDK 已经初始化成功，重复调用不会重新初始化，
+        会记录一条警告并直接返回 True。如需强制重新初始化，请先
+        调用 ``sdk.uninit()`` 或使用 ``sdk.restart()``。
+
+        :return: bool SDK 初始化是否成功（已初始化时返回 True）
 
         :example:
         >>> success = await sdk.init()
         >>> if success:
         >>>     await sdk.adapter.startup()
         """
+        if self._initialized:
+            # 已初始化时仅警告并直接返回成功，避免重复初始化破坏内部状态
+            try:
+                self.logger.warning(i18n.t("core.sdk.init.already_initialized"))
+            except Exception:
+                pass
+            return True
+
         if not await self._prepare_environment():
             return False
 
@@ -1038,24 +1079,22 @@ class SDK:
                     object.__setattr__(module_instance, "_needs_async_init", False)
                     return True
                 # 检查模块是否已经同步初始化但未完成异步部分
-                elif object.__getattribute__(
+                if object.__getattribute__(
                     module_instance, "_initialized"
                 ) and object.__getattribute__(module_instance, "_is_base_module"):
                     # 如果是 BaseModule 子类且已同步初始化，只需完成异步部分
                     await module_instance._complete_async_init()
                     return True
-                else:
-                    # 触发懒加载模块的完整初始化
-                    await module_instance._initialize()
-                    return True
-            elif module_instance is not None:
+                # 触发懒加载模块的完整初始化
+                await module_instance._initialize()
+                return True
+            if module_instance is not None:
                 self.logger.warning(
                     i18n.t("core.sdk.module.already_loaded", name=module_name)
                 )
                 return False
-            else:
-                self.logger.error(i18n.t("core.sdk.module.not_found", name=module_name))
-                return False
+            self.logger.error(i18n.t("core.sdk.module.not_found", name=module_name))
+            return False
         except Exception as e:
             self.logger.error(
                 i18n.t("core.sdk.module.load_failed", name=module_name, error=e)
@@ -1345,8 +1384,10 @@ class SDK:
         """
         self.logger.info(i18n.t("core.sdk.reload.starting"))
 
-        # 使用 ensure_future 将任务注册到事件循环调度器 - 不受上层协程取消影响
-        asyncio.ensure_future(self._do_restart())
+        # 使用 spawn_background 将任务注册到事件循环调度器 - 不受上层协程取消影响
+        from .runtime.tasks import spawn_background
+
+        spawn_background(self._do_restart())
 
         return True
 
@@ -1380,7 +1421,9 @@ class SDK:
                 self.logger.error(i18n.t("core.sdk.hardrestart.uninit_error", error=e))
             os._exit(self.RESTART_EXIT_CODE)
 
-        asyncio.ensure_future(_do_hard_restart())
+        from .runtime.tasks import spawn_background
+
+        spawn_background(_do_hard_restart())
         return True
 
     async def uninit(self) -> bool:

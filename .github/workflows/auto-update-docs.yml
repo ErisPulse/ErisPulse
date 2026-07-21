@@ -44,7 +44,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ steps.app-token.outputs.token }}
+          # 不让 checkout 缓存初始 token 到 .git/config（http.extraheader）。
+          # 原因：GitHub App installation token 有效期硬编码为 1h，长任务（>1h）
+          # 中缓存的初始 token 会先过期，且 extraheader 优先级高于 URL 中嵌入的
+          # 认证，导致后续 refresh 的 token 无法生效。所有写操作统一由后续步骤
+          # 通过 git remote set-url 注入最新 token。
+          persist-credentials: false
 
       - name: Setup environment
         uses: actions/setup-python@v5
@@ -223,10 +228,38 @@ jobs:
           git config user.name "${APP_SLUG}[bot]"
           git config user.email "${BOT_USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
 
-      - name: Commit updates
+      - name: Refresh token before commit
         if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        id: refresh-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.ERISBOT_APP_ID }}
+          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
+
+      - name: Verify and commit updates
+        if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        env:
+          GH_TOKEN: ${{ steps.refresh-token.outputs.token }}
         run: |
           echo "Saving document updates..."
+          
+          # Verify token has push access
+          echo "Verifying token..."
+          TOKEN_LENGTH=${#GH_TOKEN}
+          echo "Token length: $TOKEN_LENGTH"
+          gh api "repos/${GITHUB_REPOSITORY}" --jq '.full_name' || {
+            echo "⚠️ Token verification failed, falling back to app-token"
+            GH_TOKEN="${{ steps.app-token.outputs.token }}"
+          }
+          echo "Token verified for: ${GITHUB_REPOSITORY}"
+          
+          # Reconfigure remote with fresh token
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          
+          # 防御性清理：移除 checkout 可能遗留的 http.extraheader（虽然已设
+          # persist-credentials: false，但 extraheader 优先级高于 URL 认证，
+          # 一旦残留就会覆盖上面的新 token）
+          git config --unset-all http.https://github.com/.extraheader || true
           
           # Add all updated docs and cache
           git add docs/ .github/.translate_cache/ README.md README.*.md

@@ -11,29 +11,27 @@ ErisPulse 前端资源
 {!--< /internal-use >!--}
 """
 
-import os
-from typing import Dict, List, Optional, Union
-
+from pathlib import Path
 from typing import TypedDict
 
-_StrDict = Dict[str, str]
+_StrDict = dict[str, str]
 
 class HomeEntry(TypedDict, total=False):
     """主页入口按钮描述
-    
+
     name 可为纯文本 (str) 或 i18n 字典格式 (dict[str, str])
     """
-    name: Union[str, _StrDict]
+    name: str | _StrDict
     url: str
     icon_svg: str
 
 
-_PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
+_PACKAGE_DIR = Path(__file__).resolve().parent
 
 
 def _load_file(filename: str) -> str:
     """从包目录加载文件内容"""
-    with open(os.path.join(_PACKAGE_DIR, filename), "r", encoding="utf-8") as f:
+    with (_PACKAGE_DIR / filename).open(encoding="utf-8") as f:
         return f.read()
 
 
@@ -55,7 +53,7 @@ def render_root_page(
     sub_text: str,
     docs_link: str,
     community_link: str,
-    entries: Optional[List[Dict[str, str]]] = None,
+    entries: list[dict[str, str]] | None = None,
 ) -> str:
     """
     渲染根路由页面 HTML
@@ -82,15 +80,14 @@ def render_root_page(
     html = html.replace("{{SUB_TEXT}}", sub_text)
     html = html.replace("{{ENTRIES_HTML}}", entries_html)
     html = html.replace("{{DOCS_LINK}}", docs_link)
-    html = html.replace("{{COMMUNITY_LINK}}", community_link)
-    return html
+    return html.replace("{{COMMUNITY_LINK}}", community_link)
 
 
 def render_error_page(
     code: int,
     title: str,
     home_link: str,
-    desc: Optional[str] = None,
+    desc: str | None = None,
 ) -> str:
     """
     渲染错误页面 HTML
@@ -107,5 +104,4 @@ def render_error_page(
     html = html.replace("{{CODE}}", str(code))
     html = html.replace("{{TITLE}}", title)
     html = html.replace("{{DESC_HTML}}", desc_html)
-    html = html.replace("{{HOME_LINK}}", home_link)
-    return html
+    return html.replace("{{HOME_LINK}}", home_link)

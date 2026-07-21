@@ -52,11 +52,10 @@ class UpgradeCommand(Command):
             success = self.package_manager.upgrade_package(args.package, pre=args.pre)
             if not success:
                 sys.exit(1)
-        else:
-            # 升级所有包
-            if args.force or Confirm.ask(
-                i18n.t("cli.upgrade.confirm_all"), default=False
-            ):
-                success = self.package_manager.upgrade_all()
-                if not success:
-                    sys.exit(1)
+        # 升级所有包
+        elif args.force or Confirm.ask(
+            i18n.t("cli.upgrade.confirm_all"), default=False
+        ):
+            success = self.package_manager.upgrade_all()
+            if not success:
+                sys.exit(1)

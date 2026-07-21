@@ -48,7 +48,7 @@ ErisPulse 模块系统
 设置 SDK 引用
 
 - **sdk** (`SDK`): 实例
-**返回值**: 是否设置成功
+**返回值** (`bool`): 是否设置成功
 
 ---
 
@@ -147,6 +147,10 @@ ErisPulse 模块系统
 > 3. None（模块未注册或未挂载）
 > 这使得 ``module.get()`` 与 ``sdk.xxx`` / ``module.MyModule``
 > 在“懒加载对用户透明”上保持一致：已注册但未加载的模块不再返回 None。
+> 由于框架通过 entry_points 动态发现模块，入口点无法静态获知
+> 具体模块类型；返回值为泛型 ``_TModule``（默认基类）。
+> 若调用方与模块同项目且能导入模块类，可添加类型注解获得更精确补全：
+> >>> my_module: MyModule = sdk.module.get("MyModule")
 
 **示例**:
 ```python
@@ -239,15 +243,15 @@ ErisPulse 模块系统
 ---
 
 
-##### `_config_register(module_name: str, enabled: bool = True)`
+##### `_config_register(module_name: str, enabled: bool = DEFAULT_MODULE_ENABLED)`
 
 注册新模块信息
 
 > **内部方法**
 此方法仅供内部使用
 
-- **module_name** (`模块名称`): - **enabled**: 是否启用模块 (默认: True，新模块默认启用)
-**返回值**: 操作是否成功
+- **module_name** (`模块名称`): - **enabled**: 是否启用模块 (默认: DEFAULT_MODULE_ENABLED)
+**返回值**: 是否操作成功
 
 ---
 

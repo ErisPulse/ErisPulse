@@ -18,8 +18,9 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 import asyncio
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from .send_rules import _invoke_callback, _is_success
 
@@ -257,7 +258,7 @@ class SendBuilder:
         if name.startswith("_"):
             raise AttributeError(name)
         # 防御：双下划线魔法方法等
-        if name in ("send_all",):
+        if name == "send_all":
             raise AttributeError(name)
 
         def _capture(*args, **kwargs):
@@ -357,7 +358,7 @@ class SendBuilder:
                 else:
                     ctx.failed += 1
                     ctx.errors[idx] = result
-            except BaseException as exc:  # noqa: BLE001
+            except BaseException as exc:
                 ctx.results[idx] = None
                 ctx.errors[idx] = exc
                 ctx.failed += 1
@@ -367,14 +368,11 @@ class SendBuilder:
         if self._sequential:
             for idx in range(total):
                 await _exec_one(idx)
-        else:
-            if total > 0:
-                await asyncio.gather(*[_exec_one(i) for i in range(total)])
+        elif total > 0:
+            await asyncio.gather(*[_exec_one(i) for i in range(total)])
 
         # 结果判定
-        if total == 0:
-            ctx.stage = "success"
-        elif ctx.failed == 0:
+        if total == 0 or ctx.failed == 0:
             ctx.stage = "success"
         elif ctx.succeeded == 0:
             ctx.stage = "failed"
@@ -395,7 +393,7 @@ class SendBuilder:
                     ret = hook(ctx.results)
                     if asyncio.iscoroutine(ret):
                         await ret
-                except Exception as exc:  # noqa: BLE001
+                except Exception as exc:
                     from ..logger import logger
 
                     logger.warning(f"SendBuilder Hook 执行异常: {exc!r}")
@@ -464,6 +462,6 @@ class SendBuilder:
                     "bot_id": self._account_id or "",
                 },
             )
-        except Exception:  # noqa: BLE001
+        except Exception:
             # 生命周期事件失败不应影响批量发送
             pass

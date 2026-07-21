@@ -2,6 +2,17 @@
 ErisPulse API 文档生成器
 
 从Python源代码自动生成API文档
+
+特性：
+- 解析 Python 源码的 docstring 生成 Markdown 文档
+- 支持 ``:param`` / ``:return`` / ``:raises`` / ``:example`` 等标记
+- 支持嵌套类与方法的递归提取
+- 支持多语言同步生成与复制
+
+使用方法:
+    python scripts/tools/generate-api-docs.py
+    python scripts/tools/generate-api-docs.py --lang en
+    python scripts/tools/generate-api-docs.py --src src --output docs/api-reference/auto_api
 """
 
 import os
@@ -9,18 +20,65 @@ import ast
 import re
 import argparse
 import shutil
+import sys
+import threading
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 
 
+class Logger:
+    """线程安全的标准输出日志器"""
+
+    _lock = threading.Lock()
+
+    @classmethod
+    def log(cls, msg: str):
+        """
+        输出一行日志
+
+        :param msg: 日志内容
+        """
+        with cls._lock:
+            sys.stdout.write(msg + "\n")
+            sys.stdout.flush()
+
+    @classmethod
+    def progress(cls, rel_path: str, status: str, detail: str = ""):
+        """
+        输出单条 API 文档生成进度
+
+        :param rel_path: 文件相对路径
+        :param status: 状态标识（gen/clean/done/fail 等）
+        :param detail: 附加详情，可选
+        """
+        tag = {
+            "gen": "[GEN]",
+            "clean": "[DEL]",
+            "copy": "[COPY]",
+            "done": "[DONE]",
+            "fail": "[FAIL]",
+        }.get(status, f"[{status.upper()}]")
+        line = f"  {tag} {rel_path}"
+        if detail:
+            line += f"  {detail}"
+        cls.log(line)
+
+
 def process_docstring_for_markdown(docstring: str) -> Optional[str]:
     """
-    将文档字符串转换为纯Markdown格式
-    
+    将文档字符串转换为纯 Markdown 格式
+
     支持两种参数格式：
     - 带括号: ``:param name: [type] description``
     - 不带括号: ``:param name: type description``
-    
+
+    同时处理以下特殊标签：
+    - ``{!--< ignore >!--}``：返回 None，不生成文档
+    - ``{!--< internal-use >!--}``：转换为 "内部方法" 提示
+    - ``{!--< deprecated >!--}``：转换为 "已弃用" 提示
+    - ``{!--< experimental >!--}``：转换为 "实验性功能" 提示
+    - ``{!--< tips >!--}...{!--< /tips >!--}``：转换为 Markdown 引用块
+
     :param docstring: 原始文档字符串
     :return: Markdown格式的文档字符串或None（如果包含忽略标签）
     """
@@ -187,7 +245,7 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
 def extract_class_info(class_node: ast.ClassDef, is_nested: bool = False) -> Dict:
     """
     提取类的信息，包括嵌套类
-    
+
     :param class_node: AST类节点
     :param is_nested: 是否为嵌套类
     :return: 类信息字典
@@ -257,17 +315,17 @@ def extract_class_info(class_node: ast.ClassDef, is_nested: bool = False) -> Dic
 def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[Dict]]:
     """
     解析Python文件，提取模块文档、类和函数信息
-    
+
     :param file_path: Python文件路径
     :return: (模块文档, 类列表, 函数列表)
     """
     with open(file_path, "r", encoding="utf-8") as f:
         source = f.read()
-    
+
     try:
         module = ast.parse(source)
     except SyntaxError:
-        print(f"语法错误，跳过文件: {file_path}")
+        Logger.progress(file_path, "fail", "语法错误")
         return None, [], []
     
     # 提取模块文档
@@ -324,7 +382,7 @@ def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[D
 def generate_class_markdown(cls: Dict, base_heading_level: int = 3) -> str:
     """
     生成类的Markdown文档，包括嵌套类
-    
+
     :param cls: 类信息字典
     :param base_heading_level: 基础标题级别
     :return: Markdown格式的类文档字符串
@@ -377,11 +435,11 @@ def generate_class_markdown(cls: Dict, base_heading_level: int = 3) -> str:
     return "\n".join(content)
 
 
-def generate_markdown(module_path: str, module_doc: Optional[str], 
+def generate_markdown(module_path: str, module_doc: Optional[str],
                      classes: List[Dict], functions: List[Dict]) -> str:
     """
     生成Markdown格式API文档
-    
+
     :param module_path: 模块路径（点分隔）
     :param module_doc: 模块文档
     :param classes: 类信息列表
@@ -437,7 +495,7 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
 def count_nested_classes(classes: List[Dict]) -> int:
     """
     递归统计嵌套类数量
-    
+
     :param classes: 类列表
     :return: 嵌套类总数
     """
@@ -454,7 +512,7 @@ def count_nested_classes(classes: List[Dict]) -> int:
 def count_all_methods(classes: List[Dict]) -> int:
     """
     递归统计所有类的方法数量（包括嵌套类）
-    
+
     :param classes: 类列表
     :return: 方法总数
     """
@@ -471,7 +529,7 @@ def count_all_methods(classes: List[Dict]) -> int:
 def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
     """
     生成API文档索引页
-    
+
     :param modules_info: 模块信息字典
     :return: Markdown格式的索引文档字符串
     """
@@ -494,7 +552,7 @@ def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-> **⚠️ 重要说明**
+> **重要说明**
 > 本目录下的所有文档均为**自动生成**的 API 参考文档。
 > 
 > **请不要手动编辑此目录下的任何文件**，所有更改将在下次自动生成时被覆盖。
@@ -535,12 +593,12 @@ def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
         # 统计标识
         badges = []
         if classes:
-            badges.append(f"📦 {len(classes)} 个类")
+            badges.append(f"{len(classes)} 个类")
         if methods_count > 0:
-            badges.append(f"🔧 {methods_count} 个方法")
+            badges.append(f"{methods_count} 个方法")
         if functions:
-            badges.append(f"⚙️ {len(functions)} 个函数")
-        badge_str = ' | '.join(badges) if badges else "📄 模块文档"
+            badges.append(f"{len(functions)} 个函数")
+        badge_str = ' | '.join(badges) if badges else "模块文档"
         
         content.append(f"""### [{module_path}]({md_path})
 
@@ -554,10 +612,10 @@ def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
 def generate_api_docs(src_dir: str, output_dir: str) -> Dict[str, Dict]:
     """
     生成API文档
-    
+
     每次生成前会清理输出目录中的所有旧 Markdown 文件，
     确保没有因源码重命名/删除而残留的陈旧文档。
-    
+
     :param src_dir: 源代码目录
     :param output_dir: Markdown输出目录
     :return: 模块信息字典
@@ -567,65 +625,67 @@ def generate_api_docs(src_dir: str, output_dir: str) -> Dict[str, Dict]:
         for root, _, files in os.walk(output_dir):
             for file in files:
                 if file.endswith(".md"):
+                    file_path = os.path.join(root, file)
                     try:
-                        os.remove(os.path.join(root, file))
+                        os.remove(file_path)
+                        rel = os.path.relpath(file_path, output_dir).replace(os.sep, "/")
+                        Logger.progress(rel, "clean")
                     except OSError:
                         pass
-        print(f"已清理旧文档: {output_dir}")
-    
+
     # 确保输出目录存在
     os.makedirs(output_dir, exist_ok=True)
-    
+
     modules_info = {}
-    
+
     # 遍历源代码目录
     for root, _, files in os.walk(src_dir):
         for file in files:
             if file.endswith(".py"):
                 file_path = os.path.join(root, file)
-                
+
                 # 计算模块路径
                 rel_path = os.path.relpath(file_path, src_dir)
                 module_path = rel_path.replace(".py", "").replace(os.sep, ".")
-                
+
                 # 解析Python文件
                 module_doc, classes, functions = parse_python_file(file_path)
-                
+
                 # 跳过没有文档的文件
                 if not module_doc and not classes and not functions:
                     continue
-                
+
                 # 保存模块信息
                 modules_info[module_path] = {
                     "classes": classes,
                     "functions": functions
                 }
-                
+
                 # 生成Markdown
                 md_content = generate_markdown(module_path, module_doc, classes, functions)
                 md_output_path = os.path.join(output_dir, f"{module_path.replace('.', '/')}.md")
                 os.makedirs(os.path.dirname(md_output_path), exist_ok=True)
-                
+
                 with open(md_output_path, "w", encoding="utf-8") as f:
                     f.write(md_content)
-                print(f"已生成: {md_output_path}")
-    
+                Logger.progress(module_path, "gen")
+
     # 生成索引页
     if modules_info:
         index_content = generate_index_markdown(modules_info)
         index_path = os.path.join(output_dir, "README.md")
-        
+
         with open(index_path, "w", encoding="utf-8") as f:
             f.write(index_content)
-        print(f"已生成: {index_path}")
-    
+        Logger.progress("README.md", "gen", "索引页")
+
     return modules_info
 
 
 def get_available_languages(docs_dir: Path) -> List[str]:
     """
     获取可用的语言列表
-    
+
     :param docs_dir: 文档根目录
     :return: 语言代码列表
     """
@@ -640,7 +700,9 @@ def get_available_languages(docs_dir: Path) -> List[str]:
 def copy_directory(src: Path, dst: Path) -> None:
     """
     复制目录内容
-    
+
+    目标目录存在时会先被删除以确保与源目录一致。
+
     :param src: 源目录
     :param dst: 目标目录
     """
@@ -651,134 +713,134 @@ def copy_directory(src: Path, dst: Path) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="ErisPulse API文档生成器 v10.0",
+        description="ErisPulse API 文档生成器",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
   # 使用默认设置（为所有语言生成）
   python scripts/tools/generate-api-docs.py
-  
+
   # 只为特定语言生成
   python scripts/tools/generate-api-docs.py --lang en
-  
+
   # 自定义源目录和输出目录
   python scripts/tools/generate-api-docs.py --src src --output docs/api-reference/auto_api
         """
     )
-    
+
     parser.add_argument("--src", default="src", help="源代码目录 (默认: src)")
     parser.add_argument("--docs", default="docs", help="文档根目录 (默认: docs)")
     parser.add_argument("--lang", help="指定语言代码（如: zh-CN, en, zh-TW），不指定则为所有语言生成")
-    parser.add_argument("--version", action="version", version="API文档生成器 v10.0")
-    
+
     args = parser.parse_args()
-    
+
     # 获取脚本所在目录
     script_dir = Path(__file__).parent
-    
+
     # docs 目录
     docs_dir = script_dir.parent.parent / args.docs
-    
+
+    Logger.log("=" * 60)
+    Logger.log("ErisPulse API 文档生成器")
+    Logger.log("=" * 60)
+    Logger.log(f"源代码目录: {args.src}")
+    Logger.log(f"语言: {args.lang if args.lang else '全部'}")
+    Logger.log("")
+
     # 如果指定了语言，只为该语言生成
     if args.lang:
-        print(f"为语言 {args.lang} 生成 API 文档...")
-        print(f"源代码目录: {args.src}")
-        print(f"输出目录: {docs_dir / args.lang / 'api-reference' / 'auto_api'}")
-        
         # 生成 API 文档到指定语言目录
         output_dir = docs_dir / args.lang / "api-reference" / "auto_api"
+        Logger.log(f"输出目录: {output_dir}")
+        Logger.log("")
+
         modules_info = generate_api_docs(args.src, str(output_dir))
-        
+
         # 输出统计
         total_modules = len(modules_info)
         total_classes = sum(len(info.get('classes', [])) for info in modules_info.values())
         total_functions = sum(len(info.get('functions', [])) for info in modules_info.values())
         total_methods = sum(count_all_methods(info.get('classes', [])) for info in modules_info.values())
         total_nested_classes = sum(count_nested_classes(info.get('classes', [])) for info in modules_info.values())
-        
-        print("\n" + "="*50)
-        print("API文档生成完成！")
-        print(f"  语言: {args.lang}")
-        print(f"  模块总数: {total_modules}")
-        print(f"  类总数: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
-        print(f"  方法总数: {total_methods}")
-        print(f"  函数总数: {total_functions}")
-        print("="*50)
+
+        Logger.log("")
+        Logger.log("=" * 60)
+        Logger.log(f"语言: {args.lang}")
+        Logger.log(f"模块: {total_modules}")
+        Logger.log(f"类: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
+        Logger.log(f"方法: {total_methods}")
+        Logger.log(f"函数: {total_functions}")
+        Logger.log("=" * 60)
     else:
         # 为所有语言生成
         langs = get_available_languages(docs_dir)
-        print(f"发现 {len(langs)} 个语言: {', '.join(langs)}")
-        print()
-        
+        Logger.log(f"发现 {len(langs)} 个语言: {', '.join(langs)}")
+        Logger.log("")
+
         # 先生成到中文目录（如果有）
         if 'zh-CN' in langs:
-            print(f"\n{'='*60}")
-            print("生成 API 文档到中文目录...")
-            print('='*60)
-            
+            Logger.log("--- zh-CN ---")
             zh_output_dir = docs_dir / "zh-CN" / "api-reference" / "auto_api"
+            Logger.log(f"  输出目录: {zh_output_dir}")
+            Logger.log("")
             modules_info = generate_api_docs(args.src, str(zh_output_dir))
-            
+
             # 复制到其他语言目录
             for lang in langs:
                 if lang == 'zh-CN':
                     continue
-                
-                print(f"\n{'='*60}")
-                print(f"复制 API 文档到语言: {lang}")
-                print('='*60)
-                
+
+                Logger.log("")
+                Logger.log(f"--- {lang} ---")
                 target_dir = docs_dir / lang / "api-reference" / "auto_api"
                 copy_directory(zh_output_dir, target_dir)
-                print(f"已复制到: {target_dir}")
-            
+                Logger.progress(str(target_dir), "copy", "从 zh-CN 复制")
+
             # 输出统计
             total_modules = len(modules_info)
             total_classes = sum(len(info.get('classes', [])) for info in modules_info.values())
             total_functions = sum(len(info.get('functions', [])) for info in modules_info.values())
             total_methods = sum(count_all_methods(info.get('classes', [])) for info in modules_info.values())
             total_nested_classes = sum(count_nested_classes(info.get('classes', [])) for info in modules_info.values())
-            
-            print(f"\n{'='*60}")
-            print("所有语言的 API 文档生成完成！")
-            print(f"  模块总数: {total_modules}")
-            print(f"  类总数: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
-            print(f"  方法总数: {total_methods}")
-            print(f"  函数总数: {total_functions}")
-            print(f"  已复制到 {len(langs)} 个语言")
-            print('='*60)
+
+            Logger.log("")
+            Logger.log("=" * 60)
+            Logger.log(f"模块: {total_modules}")
+            Logger.log(f"类: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
+            Logger.log(f"方法: {total_methods}")
+            Logger.log(f"函数: {total_functions}")
+            Logger.log(f"已复制到: {len(langs)} 个语言")
+            Logger.log("=" * 60)
         else:
             # 如果没有中文，使用第一个语言
             first_lang = langs[0]
-            print(f"\n{'='*60}")
-            print(f"生成 API 文档到 {first_lang} 目录...")
-            print('='*60)
+            Logger.log(f"--- {first_lang} ---")
 
             output_dir = docs_dir / first_lang / "api-reference" / "auto_api"
+            Logger.log(f"  输出目录: {output_dir}")
+            Logger.log("")
             modules_info = generate_api_docs(args.src, str(output_dir))
 
             # 复制到其他语言目录
             for lang in langs[1:]:
-                print(f"\n{'='*60}")
-                print(f"复制 API 文档到语言: {lang}")
-                print('='*60)
-
+                Logger.log("")
+                Logger.log(f"--- {lang} ---")
                 target_dir = docs_dir / lang / "api-reference" / "auto_api"
                 copy_directory(output_dir, target_dir)
-                print(f"已复制到: {target_dir}")
-            
+                Logger.progress(str(target_dir), "copy", f"从 {first_lang} 复制")
+
             # 输出统计
             total_modules = len(modules_info)
             total_classes = sum(len(info.get('classes', [])) for info in modules_info.values())
             total_functions = sum(len(info.get('functions', [])) for info in modules_info.values())
             total_methods = sum(count_all_methods(info.get('classes', [])) for info in modules_info.values())
             total_nested_classes = sum(count_nested_classes(info.get('classes', [])) for info in modules_info.values())
-            
-            print(f"\n{'='*60}")
-            print(f"所有语言的 API 文档生成完成！")
-            print(f"  模块总数: {total_modules}")
-            print(f"  类总数: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
-            print(f"  方法总数: {total_methods}")
-            print(f"  函数总数: {total_functions}")
-            print(f"  已复制到 {len(langs)} 个语言")
-            print('='*60)
+
+            Logger.log("")
+            Logger.log("=" * 60)
+            Logger.log(f"模块: {total_modules}")
+            Logger.log(f"类: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
+            Logger.log(f"方法: {total_methods}")
+            Logger.log(f"函数: {total_functions}")
+            Logger.log(f"已复制到: {len(langs)} 个语言")
+            Logger.log("=" * 60)

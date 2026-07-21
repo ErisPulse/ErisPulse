@@ -1,8 +1,8 @@
-# SendDSL Deep Dive
+# SendDSL Detailed Explanation
 
-SendDSL is a message sending interface provided by the ErisPulse adapter, featuring a chain-call style.
+SendDSL is a fluent-style message sending interface provided by the ErisPulse adapter.
 
-## Basic Call Methods
+## Basic Usage
 
 ### 1. Specify Type and ID
 
@@ -22,7 +22,7 @@ await adapter.Send.To("123").Text("Hello")
 await adapter.Send.Using("bot1").Text("Hello")
 ```
 
-### 4. Combined Usage
+### 4. Combine Usage
 
 ```python
 await adapter.Send.Using("bot1").To("group", "123").Text("Hello")
@@ -36,31 +36,59 @@ Using/Account() → To() → [Modifier Methods] → [Sending Methods]
 
 ## Sending Methods
 
-All sending methods must return an `asyncio.Task` object.
+All sending methods return an `asyncio.Task` object.
 
-### Basic Methods
+### Basic Methods (Built-in by Base Class)
+
+The following standard methods are implemented by the `SendDSL` base class, **defaulting to delegation to `Raw_ob12`**. Subclasses of adapters do not need to re-implement these methods and can be directly used, and IDE can auto-complete:
 
 | Method Name | Description | Return Value |
-|--------|------|---------|
+|-------------|-------------|--------------|
 | `Text(text: str)` | Send text message | `asyncio.Task` |
 | `Image(file: bytes \| str)` | Send image | `asyncio.Task` |
-| `Voice(file: bytes \| str)` | Send voice | `asyncio.Task` |
+| `Voice(file: bytes \| str)` | Send voice (OneBot12 `audio` segment) | `asyncio.Task` |
 | `Video(file: bytes \| str)` | Send video | `asyncio.Task` |
-| `File(file: bytes \| str)` | Send file | `asyncio.Task` |
+| `File(file: bytes \| str, filename: str = None)` | Send file | `asyncio.Task` |
+
+Adapters can override individual standard methods to provide platform-specific logic:
+
+```python
+class Send(SendDSL):
+    def Raw_ob12(self, message, **kwargs):
+        # Must be implemented
+        ...
+
+    # Optional: Override Text to provide platform-specific logic
+    # def Text(self, text: str):
+    #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
+```
 
 ### Protocol Methods
 
 | Method Name | Description | Return Value | Required |
-|--------|------|---------|---------|
-| `Raw_ob12(message)` | Send OneBot12 format message | `asyncio.Task` | **Must Implement** |
+|-------------|-------------|--------------|----------|
+| `Raw_ob12(message)` | Send OneBot12 formatted message | `asyncio.Task` | **Must be implemented** |
 
-> **Important**: `Raw_ob12` is the core method of the adapter, **must implement**. It is the unified entry point for reverse conversion (OneBot12 → Platform). When not implemented, the base class will log an error and return a standard error response (`status: "failed"`, `retcode: 10002`). Standard methods (`Text`, `Image`, etc.) should delegate internally to `Raw_ob12`.
+> **Important**: `Raw_ob12` is the core method of the adapter, **must be implemented**. It is the unified entry point for reverse conversion (OneBot12 → Platform). If not implemented, the base class will log an error and return a standard error response (`status: "failed"`, `retcode: 10002`). Standard methods (`Text`, `Image`, etc.) default to delegation to `Raw_ob12`.
+
+### Platform-Specific Methods
+
+Adapters can add platform-specific sending methods in the `Send` subclass (will be recognized by `event.supports()` / `event.available_methods()`):
+
+```python
+class Send(SendDSL):
+    def Raw_ob12(self, message, **kwargs): ...
+
+    # Platform-specific method
+    def Sticker(self, sticker_id: str):
+        return self.Raw_ob12([{"type": "sticker", "data": {"id": sticker_id}}])
+```
 
 ## Modifier Methods
 
-Modifier methods return `self` to support chaining.
+Modifier methods return `self` to support fluent chaining.
 
-### At Methods
+### At Method
 
 ```python
 # @ single user
@@ -73,14 +101,14 @@ await adapter.Send.To("group", "123").At("456").At("789").Text("你们好")
 ### AtAll Method
 
 ```python
-# @ all members
+# @ all group members
 await adapter.Send.To("group", "123").AtAll().Text("大家好")
 ```
 
 ### Reply Method
 
 ```python
-# reply message
+# Reply to message
 await adapter.Send.To("group", "123").Reply("msg_id").Text("回复内容")
 ```
 
@@ -94,18 +122,18 @@ await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回复@的
 
 ### Using Method
 
-`Using()` is used to specify the account to send the message. The passed identifier will be matched by `_resolve_account()` with the following priority:
+`Using()` is used to specify the account for sending messages. The identifier passed in will be matched by `_resolve_account()` with the following priority:
 
-1. **Account Name** — The key name in the config (e.g., `"default"`, `"bot1"`)
-2. **Runtime injected bot_id** — Identifier automatically injected when converting from the event
-3. **Any str field** — Other string fields in the config
-4. **Fallback** — The first enabled account
+1. **Account name** — the key name in the configuration (e.g., `"default"`, `"bot1"`)
+2. **Runtime injected bot_id** — the identifier automatically injected from the event conversion
+3. **Any str field** — other string fields in the configuration
+4. **Fallback** — the first enabled account
 
 ```python
 # Use account name
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# Use bot_id (the self.user_id in the event)
+# Use bot_id (i.e., self.user_id from the event)
 await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
@@ -117,12 +145,12 @@ await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 await adapter.Send.Account("account1").To("user", "123").Text("Hello")
 ```
 
-## Async Processing
+## Asynchronous Handling
 
 ### Do Not Wait for Result
 
 ```python
-# Message sent in background
+# Message is sent in the background
 task = adapter.Send.To("user", "123").Text("Hello")
 
 # Continue executing other operations
@@ -132,67 +160,67 @@ task = adapter.Send.To("user", "123").Text("Hello")
 ### Wait for Result
 
 ```python
-# Direct await to get result
+# Directly await to get the result
 result = await adapter.Send.To("user", "123").Text("Hello")
 print(f"Send result: {result}")
 
-# Save Task first, wait later
+# Save Task first, then await later
 task = adapter.Send.To("user", "123").Text("Hello")
 # ... other operations ...
 result = await task
 ```
 
-## Sending Rule System
+## Send Rule System
 
-SendDSL includes a built-in set of sending rule decorators. Rules are attached via chain methods and applied uniformly at the final send. Rules cover common production scenarios: timeout control, failure retry, success callback, delayed send, priority drop, and progress monitoring.
+SendDSL includes a set of built-in send rule decorators. Rules are attached via chainable methods and applied uniformly at the final send. The rules cover common production scenarios: timeout control, retry on failure, success callback, delayed sending, priority dropping, and progress monitoring.
 
-Rule methods **return self** (same as At/AtAll/Reply) and must be called before sending methods (Text/Image, etc.). Rules propagate with new instances created by `To`/`Using`/`Account`.
+Rule methods **return self** (same as At/AtAll/Reply), must be called before sending methods (Text/Image, etc.), and rules propagate with new instances created by `To`/`Using`/`Account`.
 
-### Rule Methods Overview
+### List of Rule Methods
 
 | Method | Description |
-|--------|------|
-| `.Hook(callback)` | Callback executed after successful send (can be called multiple times, executes sequentially) |
-| `.Retry(times=1)` | Automatically retry N times on failure (N+1 total attempts including the first) |
-| `.Timeout(seconds)` | Single send timeout; cancels current attempt on timeout (can stack with Retry) |
-| `.Defer(seconds=1.0)` | Delayed send (in-process timer, not persistent) |
-| `.Priority(level, drop_if_busy=False)` | Set priority; discard when backlog occurs |
-| `.OnProgress(callback)` | Progress callback for each stage (passes `SendContext`) |
-| `.OnError(callback)` | Error callback on final failure (triggers only once) |
+|--------|-------------|
+| `.Hook(callback)` | Callback executed after successful send (can be called multiple times, executed in order) |
+| `.Retry(times=1)` | Automatic retry N times on failure (total of N+1 attempts including first) |
+| `.Timeout(seconds)` | Single send timeout, cancels current attempt if exceeded (can be stacked with Retry) |
+| `.Defer(seconds=1.0)` | Delayed send (in-process timer, not persisted) |
+| `.Priority(level, drop_if_busy=False)` | Set priority; can drop when backlog occurs |
+| `.OnProgress(callback)` | Progress callback at each stage (receives `SendContext`) |
+| `.OnError(callback)` | Error callback when final failure occurs (triggers only once) |
 
-### Logic Executed After Send Success (Hook)
+### Execute Logic After Successful Send (Hook)
 
 ```python
-# Sync callback
+# Synchronous callback
 await (adapter.Send.To("user", "123")
-       .Hook(lambda r: print(f"Send successful, message_id: {r['message_id']}"))
+       .Hook(lambda r: print(f"Send successful, message ID: {r['message_id']}"))
        .Text("你好"))
 
-# Async callback
+# Asynchronous callback
 async def deduct_points(result):
     await db.update(user_id="123", points=-1)
 
 await adapter.Send.To("user", "123").Hook(deduct_points).Text("扣积分")
 ```
 
-Hook is executed only when the send eventually succeeds (including retries). Failure, timeout, and cancellation do not trigger.
+Hook is only executed when the send is ultimately successful (including successful retry); failures, timeouts, or cancellations do not trigger it.
 
-### Failure Auto-Retry (Retry)
+### Automatic Retry on Failure (Retry)
 
 ```python
 # Retry 2 times after first failure, total 3 attempts
 result = await adapter.Send.To("user", "123").Retry(2).Text("带重试")
 ```
 
-Retry trigger conditions: send throws an exception, send times out, or send returns a response with `status == "failed"`.
+Retry is triggered when the send throws an exception, times out, or returns a response with `status == "failed"`.
 
-### Timeout Auto-Cancellation (Timeout)
+### Automatic Cancellation on Timeout (Timeout)
 
 ```python
 # Cancel if single send exceeds 10 seconds
 await adapter.Send.To("user", "123").Timeout(10).Text("带超时")
 
-# Timeout + Retry: 10 seconds per attempt, max 3 times
+# Timeout + Retry: 10 seconds per attempt, up to 3 attempts
 await adapter.Send.To("user", "123").Timeout(10).Retry(2).Text("超时重试")
 ```
 
@@ -214,7 +242,7 @@ await (adapter.Send.To("user", "123")
        .Text("监控"))
 ```
 
-Fields contained in `SendContext`: `task_id`, `platform`, `method`, `target_type`, `target_id`, `bot_id`, `stage`, `attempt`, `max_attempts`, `started_at`, `finished_at`, `elapsed`, `error`, `result`, `extra`.
+`SendContext` includes the following fields: `task_id`, `platform`, `method`, `target_type`, `target_id`, `bot_id`, `stage`, `attempt`, `max_attempts`, `started_at`, `finished_at`, `elapsed`, `error`, `result`, `extra`.
 
 Possible values for `stage`: `pending`, `sending`, `retrying`, `success`, `failed`, `timeout`, `cancelled`, `dropped`.
 
@@ -225,24 +253,24 @@ Possible values for `stage`: `pending`, `sending`, `retrying`, `success`, `faile
 await adapter.Send.To("user", "123").Defer(5).Text("迟到消息")
 ```
 
-> Note: Delay is an in-process timer; process restarts will lose it. No persistence is provided.
+> Note: Delay is an in-process timer; it will be lost if the process restarts and does not provide persistence.
 
-### Priority and Backlog Drop (Priority)
+### Priority and Backlog Dropping (Priority)
 
 ```python
-# Low priority message, discard automatically when backlog occurs
+# Low priority message, automatically dropped when backlog occurs
 result = await (adapter.Send.To("user", "123")
                .Priority(-1, drop_if_busy=True)
                .Text("可放弃的通知"))
-# If discarded, result["status"] == "failed"
+# If dropped, result["status"] == "failed"
 ```
 
-When `drop_if_busy` is enabled, the current send is directly abandoned when the number of in-flight send tasks exceeds the threshold (default 64). The global threshold can be adjusted via `.PriorityThreshold(n)`.
+When `drop_if_busy` is enabled, if the number of in-flight send tasks exceeds the threshold (default 64), the current send is directly abandoned. The global threshold can be adjusted via `.PriorityThreshold(n)`.
 
 ### Rule Combination and Background Execution
 
 ```python
-# Non-blocking main flow, rules still take effect
+# Does not block the main flow, rules still take effect
 task = (adapter.Send.To("user", "123")
         .Hook(lambda r: print("Send successful!"))
         .Retry(3)
@@ -256,24 +284,24 @@ await handle_next_action()
 
 ### Rule Propagation
 
-Rules propagate with new instances created by `To`/`Using`/`Account`, preventing rule loss in chain calls:
+Rules propagate with new instances created by `To`/`Using`/`Account`, avoiding loss of rules in fluent chaining:
 
 ```python
-# Rules set before To are also propagated to the instance created by To
+# Rules set before To also propagate to the instance created by To
 builder = adapter.Send.Retry(3).Timeout(10)
 send = builder.To("user", "123")  # send still carries Retry(3) and Timeout(10)
 await send.Text("hi")
 ```
 
-Rules of multiple instances are independent from each other (hooks list is deep copied).
+Rules of multiple instances are independent (hooks list is deep-copied).
 
-## Bulk Build Mode (Build)
+## Batch Build Mode (Build)
 
-In addition to single send mode, SendDSL supports a bulk build mode: writing multiple sending methods in a single chain and executing them all at once. Suitable for scenarios like "sending multiple messages in one go".
+In addition to single-send mode, SendDSL also supports batch build mode: multiple send methods are written in a single chain, and executed uniformly at the end. This is suitable for scenarios where multiple messages are sent in one go.
 
 ### Enter Build Mode
 
-Call `.Build()` before sending methods to return a `SendBuilder`. Subsequent sending methods (Text/Image, etc.) will not execute immediately but accumulate into send intents:
+Call `.Build()` before sending methods, returning a `SendBuilder`. Afterward, sending methods (Text/Image, etc.) no longer execute immediately but accumulate as send intentions:
 
 ```python
 results = await (adapter.Send.To("user", "123")
@@ -281,25 +309,25 @@ results = await (adapter.Send.To("user", "123")
                  .Text("第一句")
                  .Image("pic.jpg")
                  .Text("第二句")
-                 .send_all())                 # Execute all unified
-# results = [TextResult, ImageResult, TextResult]
+                 .send_all())                 # Execute uniformly
+# results = [Text result, Image result, Text result]
 ```
 
-`.send_all()` returns an `asyncio.Task`. After await, a list of results is obtained (in the order of intents).
+`.send_all()` returns an `asyncio.Task`, and awaiting it yields the result list (in the order of intentions).
 
-### Parallel and Serial
+### Parallel vs Serial
 
-Default **parallel** execution (concurrent send, total time approx equal to the slowest one). Call `.Sequential()` to ensure message arrival order:
+By default, execution is **parallel** (concurrent sends, total time approximately equal to the slowest one). To ensure message arrival order, call `.Sequential()`:
 
 ```python
-# Sequential: send one by one in order
+# Sequential: Send in order
 await (adapter.Send.To("group", "456")
        .Build()
        .Sequential()
        .Text("先发这个").Text("再发这个")
        .send_all())
 
-# Parallel (default, can be explicit)
+# Parallel (default, can be explicitly called)
 await (adapter.Send.To("group", "456")
        .Build()
        .Parallel()
@@ -307,88 +335,88 @@ await (adapter.Send.To("group", "456")
        .send_all())
 ```
 
-### Failure Continue and Retry
+### Continue on Failure and Retry
 
-Bulk execution adopts a **failure continue** strategy: failure of one item will not interrupt the sending of others. When combined with `.Retry()`, failed items will automatically retry (retry applies to individual items, not the whole batch):
+Batch execution adopts a **continue on failure** strategy: failure of one message does not interrupt the sending of others. When combined with `.Retry()`, failed messages are automatically retried (retry applies to each individual message, not the entire batch):
 
 ```python
 await (adapter.Send.To("user", "123")
        .Build()
-       .Retry(2)                       # Each item retries 2 times individually
+       .Retry(2)                       # Each message retries 2 times
        .Text("可能失败的").Image("也可能失败的")
        .send_all())
 ```
 
 ### Batch Rules and Callbacks
 
-Rules uniformly apply to the whole batch:
+Rules uniformly apply to the entire batch:
 
 | Method | Description |
-|--------|------|
-| `.Timeout(seconds)` | Single send timeout for each item |
-| `.Retry(times)` | Each individual item retry on failure (failure continue) |
-| `.Defer(seconds)` | Delay sending the entire batch |
-| `.Hook(callback)` | Triggered after all batch items succeed, receives `results` list |
-| `.OnError(callback)` | Triggered when the batch contains failures, receives `BatchContext` |
-| `.OnProgress(callback)` | Triggered when each item completes, receives `BatchContext` |
+|--------|-------------|
+| `.Timeout(seconds)` | Single send timeout for each message |
+| `.Retry(times)` | Each message retries individually (continue on failure) |
+| `.Defer(seconds)` | Delay the entire batch send |
+| `.Hook(callback)` | Triggered after the entire batch succeeds, receives `results` list |
+| `.OnError(callback)` | Triggered if the batch has failures, receives `BatchContext` |
+| `.OnProgress(callback)` | Triggered when each message completes, receives `BatchContext` |
 
 ```python
 def on_progress(ctx):
     print(f"Progress: {ctx.completed}/{ctx.total}, Success {ctx.succeeded}, Failed {ctx.failed}")
 
 async def on_error(ctx):
-    print(f"Batch has {ctx.failed} items failed")
+    print(f"Batch has {ctx.failed} failed messages")
 
 results = await (adapter.Send.To("user", "123")
                .Build()
                .Retry(2).Timeout(10)
                .OnProgress(on_progress)
                .OnError(on_error)
-               .Hook(lambda rs: print("Whole batch done"))
+               .Hook(lambda rs: print("Batch completed"))
                .Text("a").Text("b").Text("c")
                .send_all())
 ```
 
-`BatchContext` contains: `task_id`, `total`, `completed`, `succeeded`, `failed`, `stage`, `results`, `errors`, `elapsed`, `extra`.
+`BatchContext` includes: `task_id`, `total`, `completed`, `succeeded`, `failed`, `stage`, `results`, `errors`, `elapsed`, `extra`.
 
-Possible values for `stage`: `pending`, `sending`, `success` (all succeed), `partial` (some succeed), `failed` (all fail).
+Possible values for `stage`: `pending`, `sending`, `success` (all successful), `partial` (partially successful), `failed` (all failed).
 
 ### Inheritance of Modifiers and Rules
 
-At/AtAll/Reply modifiers and rules set before `.Build()` are inherited to the whole batch and applied to each message:
+Modifiers and rules before `.Build()` are inherited by the entire batch, affecting each message:
 
 ```python
 await (adapter.Send.To("group", "456")
-       .At("789")                        # Inherited: every message @789
+       .At("789")                        # Inherited: Each message @789
        .Build()
-       .Retry(2)                         # Inherited + Appended: each item retries individually
+       .Retry(2)                         # Inherited + appended: Each message retries
        .Text("@你的通知")
        .Image("公告图")
        .send_all())
 ```
 
-Modifiers can still be appended after entering Build (applies to the whole batch):
+After entering Build, modifiers can still be appended (affecting the entire batch):
 
 ```python
 await (adapter.Send.To("group", "456")
        .Build()
-       .At("111").At("222")             # Append @, applies to whole batch
+       .At("111").At("222")             # Appended @, affects entire batch
        .Text("@多人")
        .send_all())
 ```
 
 ### Background Execution
 
-Same as single send, `.send_all()` returns Task, and you can choose not to await to let it execute in the background:
+As with single-send, `.send_all()` returns a Task, which can be executed in the background without awaiting:
 
 ```python
 task = (adapter.Send.To("user", "123")
         .Build()
-        .Hook(lambda rs: print("Bulk send done"))
+        .Hook(lambda rs: print("Batch send completed"))
         .Text("a").Text("b")
         .send_all())
 
-# Non-blocking main flow
+# Does not block the main flow
 await do_something_else()
 ```
 
@@ -396,7 +424,7 @@ await do_something_else()
 
 ### PascalCase Naming
 
-All sending methods use PascalCase:
+All sending methods use PascalCase naming:
 
 ```python
 # ✅ Correct
@@ -414,9 +442,9 @@ def send_image(self, file: bytes):
     pass
 ```
 
-### Platform Specific Methods
+### Platform-Specific Methods
 
-Adding platform prefix methods is not recommended:
+Platform prefix methods are not recommended:
 
 ```python
 # ✅ Recommended
@@ -428,7 +456,7 @@ def TelegramSticker(self, sticker_id: str):
     pass
 ```
 
-Use `Raw` method instead:
+Use `Raw` methods instead:
 
 ```python
 # ✅ Recommended
@@ -443,20 +471,26 @@ def TelegramSticker(self, ...):
 
 ### Task Object
 
-All sending methods return `asyncio.Task`:
+All sending methods return an `asyncio.Task`. Adapters only need to implement `Raw_ob12`, and standard methods (Text/Image, etc.) default to delegation to it:
 
 ```python
 import asyncio
 
-def Text(self, text: str):
-    return asyncio.create_task(
-        self._adapter.call_api(
-            endpoint="/send",
-            content=text,
-            recvId=self._target_id,
-            recvType=self._target_type
+def Raw_ob12(self, message, **kwargs):
+    async def _do_send():
+        segments = self._apply_modifiers(message)
+        return await self._adapter.call_api(
+            endpoint="/send_message",
+            message=segments,
+            **self.send_context,
+            **kwargs,
         )
-    )
+    return asyncio.create_task(_do_send())
+
+# Text/Image/Voice/Video/File are inherited from the base class and automatically delegate to Raw_ob12
+# If you need to override standard methods, return asyncio.Task:
+# def Text(self, text: str):
+#     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 ### Standardized Response
@@ -476,7 +510,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-Manual construction is also supported (old style still compatible):
+Manual construction is also supported (legacy methods are still compatible):
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -510,7 +544,7 @@ with open("document.pdf", "rb") as f:
     await my_adapter.Send.To("user", "123").File(f.read())
 ```
 
-### Chain Call
+### Fluent Chaining
 
 ```python
 # @ user + reply
@@ -522,15 +556,15 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 
 ### Raw Message and Message Building
 
-`Raw_ob12` is the core entry point for reverse conversion (receives OB12 message segments → Platform API calls), and `MessageBuilder` is a chain message segment builder tool used with it.
+`Raw_ob12` is the core entry point for reverse conversion (receives OB12 message segments → platform API call), and `MessageBuilder` is a chainable message segment builder tool that works with it.
 
 > For complete `Raw_ob12` implementation specifications, `MessageBuilder` usage, and code examples, please refer to:
-> - [Sending Method Specification §6 Reverse Conversion Specification](../../standards/send-method-spec.md#6-reverse-conversion-specification-onebot12--platform)
-> - [Sending Method Specification §11 Message Builder](../../standards/send-method-spec.md#11-message-builder-messagebuilder)
+> - [Send Method Specification §6 Reverse Conversion Specification (OneBot12 → Platform)](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
+> - [Send Method Specification §11 Message Builder](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
 
 ## Related Documentation
 
-- [Adapter Development Getting Started](getting-started.md) - Creating adapters
-- [Adapter Core Concepts](core-concepts.md) - Understanding adapter architecture
-- [Adapter Best Practices](best-practices.md) - Developing high-quality adapters
-- [Sending Method Specification](../../standards/send-method-spec.md) - Complete specification for sending methods
+- [Adapter Development Introduction](getting-started.md) - Create an adapter
+- [Adapter Core Concepts](core-concepts.md) - Understand adapter architecture
+- [Adapter Best Practices](best-practices.md) - Develop high-quality adapters
+- [Send Method Specification](../../standards/send-method-spec.md) - Complete specification of send methods

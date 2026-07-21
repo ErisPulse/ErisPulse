@@ -100,7 +100,7 @@ ErisPulse 生命周期管理模块
 ---
 
 
-##### `unregister(event: str, handler: Callable = None)`
+##### `unregister(event: str, handler: Callable | None = None)`
 
 取消注册事件处理器
 

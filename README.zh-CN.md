@@ -4,11 +4,11 @@
 
 # ErisPulse
 
-**一次编写，多平台部署。**
+**一次编写，部署到 QQ / Telegram / Kook / Yunhu / 微信公众号 / OneBot12 / ... 多个平台。**
 
 事件驱动的多平台聊天机器人开发框架。
 
-基于 OneBot12 标准接口，一次编写，多平台部署。灵活的插件系统、热重载支持和完整的开发者工具链，适用于从简单聊天机器人到复杂自动化系统的各种场景。
+基于 OneBot12 标准接口，一次编写多平台部署；灵活的插件系统、热重载支持和完整的开发者工具链，适用于从简单聊天机器人到复杂自动化系统的各种场景。
 
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -44,7 +44,7 @@
 
 ### 事件驱动架构
 
-基于 OneBot12 标准的清晰事件模型，让消息处理逻辑更加直观和高效
+基于 OneBot12 标准的统一事件模型——不再为每个平台写一套 if/elif 判断消息类型，一份 handler 自动适配所有适配器
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -54,7 +54,7 @@
 
 ### 跨平台兼容
 
-插件模块编写一次即可在所有平台使用，无需为不同平台重复开发
+同一份业务代码在所有平台运行——一次编写即可服务 QQ / Telegram / Kook / Yunhu / 微信公众号 等 15+ 平台，无需重复开发
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -64,7 +64,7 @@
 
 ### 模块化设计
 
-灵活的插件系统，易于扩展和集成，支持热插拔模块管理
+灵活的插件系统支持运行时热插拔——安装/卸载/启用/禁用模块无需重启进程，像搭积木一样组装机器人能力
 
 </td>
 </tr>
@@ -76,7 +76,7 @@
 
 ### 热重载
 
-开发时无需重启即可重新加载代码
+开发循环从重启 10 秒缩短到 0.5 秒——保存文件即生效，开发调试体验接近解释型脚本语言
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -86,7 +86,7 @@
 
 ### AI 辅助
 
-AI 辅助开发让需求直达可用模块
+自然语言描述需求直接生成可用模块——不会写适配器？告诉 AI 你要接入什么平台，它帮你写
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -96,171 +96,75 @@ AI 辅助开发让需求直达可用模块
 
 ### 简洁优雅
 
-直觉化的 API 设计，让代码如羽毛般轻盈可读
+直觉化的链式 API 设计——@用户、回复、重试、批量发送等复杂逻辑一行代码完成，代码如羽毛般轻盈可读
 
 </td>
 </tr>
 </table>
 
-### 链式发送 DSL
+---
 
-一条链式调用完成 @、回复、重试、超时、回调等全部发送逻辑：
+## 工作原理
 
-```python
-yunhu = sdk.adapter.get("yunhu")
+ErisPulse 通过适配器层屏蔽平台差异，让业务代码只关心事件本身：
 
-# 单发：@用户 + 回复 + 重试 + 成功回调
-await (yunhu.Send.To("group", "123")
-       .At("456").Reply("msg_789")
-       .Retry(3).Timeout(10)
-       .Hook(lambda r: print("发送成功！"))
-       .Text("你好"))
+```mermaid
+graph LR
+    subgraph Platforms[平台]
+        QQ["QQ"]
+        TG["Telegram"]
+        Kook["Kook"]
+        YH["云湖"]
+        WX["微信公众号"]
+    end
 
-# 批量发送：一条链发多条消息
-results = await (yunhu.Send.To("user", "123")
-                .Build()
-                .Text("通知一")
-                .Image("pic.jpg")
-                .Retry(2)
-                .send_all())
+    subgraph Adapters[适配器层]
+        A1["QQ 适配器"]
+        A2["Telegram 适配器"]
+        A3["Kook 适配器"]
+        A4["云湖适配器"]
+        A5["微信适配器"]
+    end
+
+    Event["Event 事件总线<br/>中间件 → 分发 command/message/notice/request/meta"]
+
+    subgraph Modules[业务模块]
+        M1["命令处理器<br/>@command"]
+        M2["消息处理器<br/>@message"]
+        M3["你的模块"]
+    end
+
+    QQ --> A1
+    TG --> A2
+    Kook --> A3
+    YH --> A4
+    WX --> A5
+
+    A1 -->|"OB12 事件"| Event
+    A2 -->|"OB12 事件"| Event
+    A3 -->|"OB12 事件"| Event
+    A4 -->|"OB12 事件"| Event
+    A5 -->|"OB12 事件"| Event
+
+    Event -->|"分发"| M1
+    Event -->|"分发"| M2
+    Event -->|"分发"| M3
+
+    M1 -.->|"event.reply()<br/>SendDSL"| Event
+    Event -.->|"发送"| A1
 ```
 
-> 支持 Hook（成功回调）、Retry（失败重试）、Timeout（超时取消）、OnProgress（进度监控）、Defer（延迟发送）、Build（批量构建）等链式方法，详见 [SendDSL 文档](docs/zh-CN/developer-guide/adapters/send-dsl.md)。
+- **适配器层**将各平台原生协议转换为 OneBot12 标准事件，业务模块看不到平台差异
+- **Event 总线**先执行中间件链，再按事件类型分发到五类处理器
+- **你的代码**通过装饰器订阅事件，用 `event.reply()` 或 SendDSL 回复——回复消息沿同一条路径逆流回平台
+
+完整的模块组成、初始化流程、生命周期事件等设计详情，见[架构概览](docs/zh-CN/architecture.md)。
 
 ---
 
-## 同一份代码。多个平台。
+## 快速开始
 
-*完全相同的命令处理器。不同的平台。无需修改任何业务逻辑。*
-
-<table>
-<tr>
-<td align="center" width="33%">
-
-**Kook**
-
-<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
-
-</td>
-<td align="center" width="33%">
-
-**QQ**
-
-<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
-
-</td>
-<td align="center" width="33%">
-
-**云湖**
-
-<img src=".github/assets/demo-yunhu.png" alt="云湖 演示" />
-
-</td>
-</tr>
-</table>
-
----
-
-## 生态
-
-ErisPulse 不仅仅是框架。装上就能开始，不需要从零造轮子。
-
-<table>
-<tr>
-<td align="center" width="25%">
-
-**框架**
-
-核心运行时
-
-统一事件 & 消息模型
-
-</td>
-<td align="center" width="25%">
-
-**Dashboard**
-
-可视化管理
-
-插件 · 日志 · 配置
-
-[在线演示 →](https://dashdemo.erisdev.com/)
-
-</td>
-<td align="center" width="25%">
-
-**AI Builder**
-
-自然语言 → 可用模块
-
-[立即体验 →](https://www.erisdev.com/#builder)
-
-</td>
-<td align="center" width="25%">
-
-**模块市场**
-
-即装即用的插件
-
-[浏览模块 →](https://www.erisdev.com/#market)
-
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-
-**适配器**
-
-15+ 平台接入
-
-</td>
-<td align="center" width="25%">
-
-**文档**
-
-[erisdev.com](https://www.erisdev.com)
-
-</td>
-<td align="center" width="25%">
-
-**Docker**
-
-多架构支持
-
-`erispulse/erispulse`
-
-</td>
-<td align="center" width="25%">
-
-**CLI**
-
-`epsdk` 脚手架工具
-
-</td>
-</tr>
-</table>
-
----
-
-## 项目起源
-
-ErisPulse 并非为了成为框架而诞生。
-
-它最早源于 **Amer** —— 一个用于不同平台之间消息互联与同步的项目。
-
-随着接入的平台不断增加，我们开始维护 **ryunhusdk2 的异步版本**，并逐步抽象出统一的事件模型与适配器体系。
-
-这些实践最终演变成了今天的 ErisPulse。
-
-它的目标始终没有改变：
-
-**让开发者专注于业务，而不是平台差异。**
-
----
-
-### 快速开始
-
-#### 一键安装脚本（推荐）
+### 一键安装脚本（推荐）
 
 安装脚本会自动检测您的环境（Docker、Python、uv），引导选择最适合的安装方式，支持多语言（中文/English/日本語/Русский/繁體中文）。
 
@@ -293,7 +197,7 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 </tr>
 </table>
 
-#### 使用 Docker (推荐)
+### 使用 Docker (推荐)
 
 ```bash
 docker pull erispulse/erispulse:latest
@@ -374,7 +278,7 @@ docker pull erispulse/erispulse:dev
 
 </details>
 
-#### 1Panel 应用商店
+### 1Panel 应用商店
 
 通过 [1Panel](https://1panel.cn) 应用商店一键安装 ErisPulse，详见 [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel)。
 
@@ -384,7 +288,7 @@ bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 
 ErisPulse 已上架 1Panel 第三方应用商店，可使用 [okxlin/appstore](https://github.com/okxlin/appstore) 第三方仓库安装。
 
-#### 使用 pip 安装
+### 使用 pip 安装
 
 ```bash
 pip install ErisPulse
@@ -392,7 +296,7 @@ pip install ErisPulse
 
 > 也可以使用上方的一键安装脚本，自动检测环境并引导配置。
 
-#### 初始化项目
+### 初始化项目
 
 ```bash
 # 交互式初始化
@@ -402,7 +306,7 @@ epsdk init
 epsdk init -q -n my_bot
 ```
 
-#### 创建第一个机器人
+### 创建第一个机器人
 
 创建 `main.py` 文件：
 
@@ -463,7 +367,68 @@ epsdk run main.py --reload
 - [快速开始指南](docs/zh-CN/quick-start.md)
 - [入门指南](docs/zh-CN/getting-started/)
 
-#### 多轮对话示例
+---
+
+## 同一份代码。多个平台。
+
+*完全相同的命令处理器。不同的平台。无需修改任何业务逻辑。*
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Kook**
+
+<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**QQ**
+
+<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**云湖**
+
+<img src=".github/assets/demo-yunhu.png" alt="云湖 演示" />
+
+</td>
+</tr>
+</table>
+
+---
+
+## 链式发送 DSL
+
+一条链式调用完成 @、回复、重试、超时、回调等全部发送逻辑：
+
+```python
+yunhu = sdk.adapter.get("yunhu")
+
+# 单发：@用户 + 回复 + 重试 + 成功回调
+await (yunhu.Send.To("group", "123")
+       .At("456").Reply("msg_789")
+       .Retry(3).Timeout(10)
+       .Hook(lambda r: print("发送成功！"))
+       .Text("你好"))
+
+# 批量发送：一条链发多条消息
+results = await (yunhu.Send.To("user", "123")
+                .Build()
+                .Text("通知一")
+                .Image("pic.jpg")
+                .Retry(2)
+                .send_all())
+```
+
+> 支持 Hook（成功回调）、Retry（失败重试）、Timeout（超时取消）、OnProgress（进度监控）、Defer（延迟发送）、Build（批量构建）等链式方法，详见 [SendDSL 文档](docs/zh-CN/developer-guide/adapters/send-dsl.md)。
+
+---
+
+## 多轮对话示例
 
 ErisPulse 内置了强大的多轮对话引擎，轻松实现引导式操作、信息收集等交互场景：
 
@@ -552,6 +517,123 @@ async def menu_handler(event):
 
 ---
 
+## 核心模块
+
+ErisPulse 提供完整的多平台机器人开发工具链，核心模块各司其职：
+
+```mermaid
+graph TB
+    SDK["sdk<br/>统一入口"]
+
+    SDK --> Event["Event<br/>事件系统"]
+    SDK --> AdapterMgr["Adapter<br/>适配器管理"]
+    SDK --> ModuleMgr["Module<br/>模块管理"]
+    SDK --> Router["Router<br/>HTTP/WS 路由"]
+    SDK --> Storage["Storage<br/>SQLite 存储"]
+    SDK --> Config["Config<br/>配置管理"]
+    SDK --> Lifecycle["Lifecycle<br/>生命周期"]
+    SDK --> Logger["Logger<br/>日志系统"]
+    SDK --> Client["HttpClient<br/>HTTP 客户端"]
+```
+
+| 模块 | 说明 |
+|------|------|
+| **Event** | 事件系统，提供 command / message / notice / request / meta 五类事件 + Conversation 多轮对话 |
+| **Adapter** | 适配器管理，BaseAdapter 基类统一事件转换与 SendDSL 发送，支持 QQ / Telegram / Kook / 云湖 / 微信公众号 等 15+ 平台 |
+| **Module** | 模块管理，BaseModule 基类 + 依赖声明与拓扑排序加载 |
+| **SendDSL** | 链式发送，@/回复/重试/超时/批量等复杂逻辑一行完成 |
+| **Router** | HTTP/WebSocket 路由系统（FastAPI + Uvicorn）|
+| **Storage** | 基于 SQLite 的键值存储 + 通用 SQL 链式查询 |
+| **Config** | TOML 配置管理 |
+| **Lifecycle** | 生命周期事件钩子（core.init / adapter.* / module.*）|
+| **Logger** | 模块化日志系统，支持子日志器 |
+| **HttpClient** | 统一 HTTP/WS 客户端（基于 aiohttp），内置重试与 ErisPulse 异常体系 |
+
+更多设计详情（初始化流程、生命周期事件、模块加载策略），见[架构概览](docs/zh-CN/architecture.md)。
+
+---
+
+## 生态
+
+ErisPulse 不仅仅是框架。装上就能开始，不需要从零造轮子。
+
+<table>
+<tr>
+<td align="center" width="25%">
+
+**框架**
+
+核心运行时
+
+统一事件 & 消息模型
+
+</td>
+<td align="center" width="25%">
+
+**Dashboard**
+
+可视化管理
+
+插件 · 日志 · 配置
+
+[在线演示 →](https://dashdemo.erisdev.com/)
+
+</td>
+<td align="center" width="25%">
+
+**AI Builder**
+
+自然语言 → 可用模块
+
+[立即体验 →](https://www.erisdev.com/#builder)
+
+</td>
+<td align="center" width="25%">
+
+**模块市场**
+
+即装即用的插件
+
+[浏览模块 →](https://www.erisdev.com/#market)
+
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+
+**适配器**
+
+15+ 平台接入
+
+</td>
+<td align="center" width="25%">
+
+**文档**
+
+[erisdev.com](https://www.erisdev.com)
+
+</td>
+<td align="center" width="25%">
+
+**Docker**
+
+多架构支持
+
+`erispulse/erispulse`
+
+</td>
+<td align="center" width="25%">
+
+**CLI**
+
+`epsdk` 脚手架工具
+
+</td>
+</tr>
+</table>
+
+---
+
 ## 支持的平台
 
 欢迎您贡献适配器！
@@ -577,37 +659,13 @@ async def menu_handler(event):
 
 ---
 
-### 应用场景
-
-<div align="center">
-
-| 多平台机器人 | 聊天助手 | 自动化工具 | 消息转发 |
-|:---:|:---:|:---:|:---:|
-| 在多个平台部署<br>相同功能的机器人 | 接入 AI 聊天模块<br>实现娱乐和交互 | 消息通知、任务管理<br>数据收集 | 跨平台消息<br>同步和转发 |
-
-</div>
-
----
-
 ## 社区
 
-欢迎加入 ErisPulse 社区，与开发者共同交流和构建生态。
+与我们交流：
 
-### 云湖
-
-群 ID：`635409929`
-
-加入群聊：
-
-https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199
-
-### QQ 群
-
-https://qm.qq.com/q/TOwnCmypcy
-
-### Telegram
-
-https://t.me/ErisPulse
+- Telegram：<https://t.me/ErisPulse>
+- QQ 群：<https://qm.qq.com/q/TOwnCmypcy>
+- 云湖群：<https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199>
 
 ---
 
@@ -621,12 +679,6 @@ ErisPulse 项目的健全性还需要您的一份力！我们欢迎各种形式�
 4. **文档改进** — 帮助完善文档和示例代码
 
 [加入社区讨论](https://github.com/ErisPulse/ErisPulse/discussions)
-
----
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=ErisPulse/ErisPulse&type=Date)](https://star-history.com/#ErisPulse/ErisPulse&Date)
 
 ---
 

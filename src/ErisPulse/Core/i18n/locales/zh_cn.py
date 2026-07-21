@@ -7,6 +7,7 @@
 TRANSLATIONS = {
     # ==================== SDK 初始化 ====================
     "core.sdk.init.starting": "SDK 正在初始化...",
+    "core.sdk.init.already_initialized": "SDK 已初始化，重复调用 init() 将被忽略。如需重新初始化，请先调用 sdk.uninit()。",
     "core.sdk.init.discovery_phase": "入口发现阶段",
     "core.sdk.init.adapter_register_phase": "适配器注册阶段",
     "core.sdk.init.adapter_start_phase": "适配器启动阶段",

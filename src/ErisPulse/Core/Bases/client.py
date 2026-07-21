@@ -16,10 +16,9 @@ ErisPulse HTTP 客户端抽象基类
 from __future__ import annotations
 
 from typing import Any
-from collections.abc import Callable
 
-from .websocket import WebSocketConnectionBase, WSMessage
 from .errors import WebSocketDisconnect
+from .websocket import WebSocketConnectionBase, WSMessage
 
 
 class BaseHttpResponse:

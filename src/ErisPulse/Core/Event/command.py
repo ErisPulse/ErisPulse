@@ -75,13 +75,13 @@ class CommandHandler:
 
     def __call__(
         self,
-        name: str | list[str] = None,
-        aliases: list[str] = None,
-        group: str = None,
+        name: str | list[str] | None = None,
+        aliases: list[str] | None = None,
+        group: str | None = None,
         priority: int = 0,
-        permission: Callable = None,
-        help: str = None,
-        usage: str = None,
+        permission: Callable | None = None,
+        help: str | None = None,
+        usage: str | None = None,
         hidden: bool = False,
         master: bool = False,
     ):
@@ -188,7 +188,7 @@ class CommandHandler:
                 del self.aliases[alias]
 
             # 从命令组中移除
-            for group_name, group_commands in self.groups.items():
+            for group_commands in self.groups.values():
                 if cmd_name in group_commands:
                     group_commands.remove(cmd_name)
 
@@ -243,10 +243,10 @@ class CommandHandler:
     async def wait_reply(
         self,
         event: dict[str, Any],
-        prompt: str = None,
+        prompt: str | None = None,
         timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
-        callback: Callable[[dict[str, Any]], Awaitable[Any]] = None,
-        validator: Callable[[dict[str, Any]], bool] = None,
+        callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None,
+        validator: Callable[[dict[str, Any]], bool] | None = None,
         method: str = DEFAULT_SEND_METHOD,
     ) -> dict[str, Any] | None:
         """
@@ -278,9 +278,13 @@ class CommandHandler:
                     send_dsl = send_dsl.Using(bot_id)
                 send_func = getattr(send_dsl, method, None)
                 if send_func and callable(send_func):
-                    await send_func(prompt)
+                    result = send_func(prompt)
+                    if inspect.isawaitable(result):
+                        await result
                 else:
-                    await send_dsl.Text(prompt)
+                    result = send_dsl.Text(prompt)
+                    if inspect.isawaitable(result):
+                        await result
             except Exception as e:
                 logger.warning(f"发送提示消息失败: {e}")
 
@@ -361,11 +365,12 @@ class CommandHandler:
             return
 
         # 检查是否为文本消息
-        if event.get("type") != "message":
+        event_type = event.get("type", "")
+        if event_type != "message":
             logger.trace(
                 i18n.t(
                     "core.command.skip_non_message",
-                    event_type=self.event_type,
+                    event_type=event_type,
                     platform=event.get("platform", UNKNOWN_PLATFORM),
                 )
             )
@@ -541,7 +546,7 @@ class CommandHandler:
                         )
                     )
                     await self._send_permission_denied(event)
-                    return
+                    return False
 
             # 检查权限
             permission_func = cmd_info.get("permission") or self.permissions.get(
@@ -564,11 +569,11 @@ class CommandHandler:
                             )
                         )
                         await self._send_permission_denied(event)
-                        return
+                        return False
                 except Exception as e:
                     logger.error(f"权限检查错误: {e}")
                     await self._send_permission_denied(event)
-                    return
+                    return False
 
             # 添加命令相关信息到事件
             command_info = {
@@ -676,7 +681,7 @@ class CommandHandler:
         user_id = event.get("user_id")
 
         # 使用会话类型管理模块获取发送类型和目标ID
-        send_type, target_id = get_send_type_and_target_id(event, platform)
+        _send_type, target_id = get_send_type_and_target_id(event, platform)
 
         bot_id = event.get("self", {}).get("account_id", "") or event.get(
             "self", {}
@@ -858,7 +863,7 @@ class CommandHandler:
             if not info.get("hidden", False) and name == info["main_name"]
         }
 
-    def help(self, command_name: str = None, show_hidden: bool = False) -> str:
+    def help(self, command_name: str | None = None, show_hidden: bool = False) -> str:
         """
         生成帮助信息
 
@@ -877,28 +882,26 @@ class CommandHandler:
                 help_text = cmd_info.get("help", "无帮助信息")
                 usage = cmd_info.get("usage", f"{display_prefix}{command_name}")
                 return f"命令: {command_name}\n用法: {usage}\n说明: {help_text}"
-            else:
-                return f"未找到命令: {command_name}"
-        else:
-            # 生成所有命令的帮助
-            commands_to_show = (
-                self.get_visible_commands()
-                if not show_hidden
-                else {
-                    name: info
-                    for name, info in self.commands.items()
-                    if name == info["main_name"]
-                }
-            )
+            return f"未找到命令: {command_name}"
+        # 生成所有命令的帮助
+        commands_to_show = (
+            self.get_visible_commands()
+            if not show_hidden
+            else {
+                name: info
+                for name, info in self.commands.items()
+                if name == info["main_name"]
+            }
+        )
 
-            if not commands_to_show:
-                return "暂无可用命令"
+        if not commands_to_show:
+            return "暂无可用命令"
 
-            help_lines = ["可用命令:"]
-            for cmd_name, cmd_info in commands_to_show.items():
-                help_text = cmd_info.get("help", "无说明")
-                help_lines.append(f"  {display_prefix}{cmd_name} - {help_text}")
-            return "\n".join(help_lines)
+        help_lines = ["可用命令:"]
+        for cmd_name, cmd_info in commands_to_show.items():
+            help_text = cmd_info.get("help", "无说明")
+            help_lines.append(f"  {display_prefix}{cmd_name} - {help_text}")
+        return "\n".join(help_lines)
 
 
 command: CommandHandler = CommandHandler()

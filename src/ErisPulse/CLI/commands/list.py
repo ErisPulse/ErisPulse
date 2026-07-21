@@ -175,17 +175,22 @@ class ListCommand(Command):
 
         all_scripts: list[tuple[str, str]] = []
 
-        for module_name, info in packages.items():
-            package_name = info.get("package", "")
-            if not package_name:
-                continue
-            try:
-                dist = importlib.metadata.distribution(package_name)
-                for ep in dist.entry_points:
-                    if ep.group == "console_scripts":
-                        all_scripts.append((module_name, ep.name))
-            except Exception:
-                continue
+        def _iter_scripts():
+            for module_name, info in packages.items():
+                package_name = info.get("package", "")
+                if not package_name:
+                    continue
+                try:
+                    dist = importlib.metadata.distribution(package_name)
+                    yield from (
+                        (module_name, ep.name)
+                        for ep in dist.entry_points
+                        if ep.group == "console_scripts"
+                    )
+                except Exception:
+                    continue
+
+        all_scripts.extend(_iter_scripts())
 
         if not all_scripts:
             return

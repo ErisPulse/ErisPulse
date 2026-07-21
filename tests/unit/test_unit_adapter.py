@@ -1832,3 +1832,201 @@ class TestHandlerTaskTracking:
         # p1 的唯一 bot 被清除，p1 应被移除
         assert "p1" not in manager._bots
         assert "p2" in manager._bots
+
+
+# ==================== SendDSL 标准发送方法测试 ====================
+
+
+class TestSendDSLStandardMethods:
+    """SendDSL 基类内置标准发送方法（Text/Image/Voice/Video/File）测试"""
+
+    @pytest.fixture
+    def adapter_with_raw_ob12(self):
+        """创建一个只实现 Raw_ob12 的适配器，验证标准方法是否自动委托"""
+
+        class _Send(BaseAdapter.Send):
+            def Raw_ob12(self, message, **kwargs):
+                async def _do():
+                    segments = self._apply_modifiers(message)
+                    return await self._adapter.call_api(
+                        endpoint="/send_message",
+                        message=segments,
+                        **self.send_context,
+                        **kwargs,
+                    )
+                return asyncio.ensure_future(_do())
+
+        class _Adapter(BaseAdapter):
+            Send = _Send
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {
+                    "status": "ok",
+                    "retcode": 0,
+                    "data": {"endpoint": endpoint, "params": params},
+                    "message_id": "mid_test",
+                    "message": "",
+                }
+
+        return _Adapter()
+
+    @pytest.mark.asyncio
+    async def test_text_delegates_to_raw_ob12(self, adapter_with_raw_ob12):
+        """Text 应自动委托给 Raw_ob12，无需子类实现"""
+        result = await adapter_with_raw_ob12.Send.To("user", "123").Text("hello")
+        assert result["status"] == "ok"
+        # 验证消息段是 text 类型
+        params = result["data"]["params"]
+        message = params["message"]
+        assert any(seg["type"] == "text" and seg["data"]["text"] == "hello" for seg in message)
+
+    @pytest.mark.asyncio
+    async def test_image_delegates_to_raw_ob12(self, adapter_with_raw_ob12):
+        """Image 应自动委托给 Raw_ob12"""
+        result = await adapter_with_raw_ob12.Send.To("user", "123").Image("http://example.com/img.png")
+        assert result["status"] == "ok"
+        message = result["data"]["params"]["message"]
+        assert any(seg["type"] == "image" for seg in message)
+
+    @pytest.mark.asyncio
+    async def test_voice_delegates_to_raw_ob12(self, adapter_with_raw_ob12):
+        """Voice 应自动委托给 Raw_ob12（OneBot12 audio 段）"""
+        result = await adapter_with_raw_ob12.Send.To("user", "123").Voice("http://example.com/voice.mp3")
+        assert result["status"] == "ok"
+        message = result["data"]["params"]["message"]
+        # OneBot12 标准中语音为 audio 类型
+        assert any(seg["type"] == "audio" for seg in message)
+
+    @pytest.mark.asyncio
+    async def test_video_delegates_to_raw_ob12(self, adapter_with_raw_ob12):
+        """Video 应自动委托给 Raw_ob12"""
+        result = await adapter_with_raw_ob12.Send.To("user", "123").Video("http://example.com/video.mp4")
+        assert result["status"] == "ok"
+        message = result["data"]["params"]["message"]
+        assert any(seg["type"] == "video" for seg in message)
+
+    @pytest.mark.asyncio
+    async def test_file_delegates_to_raw_ob12(self, adapter_with_raw_ob12):
+        """File 应自动委托给 Raw_ob12"""
+        result = await adapter_with_raw_ob12.Send.To("user", "123").File("http://example.com/doc.pdf")
+        assert result["status"] == "ok"
+        message = result["data"]["params"]["message"]
+        assert any(seg["type"] == "file" for seg in message)
+
+    @pytest.mark.asyncio
+    async def test_file_with_filename(self, adapter_with_raw_ob12):
+        """File 支持可选 filename 参数"""
+        result = await adapter_with_raw_ob12.Send.To("user", "123").File("http://example.com/doc.pdf", filename="doc.pdf")
+        assert result["status"] == "ok"
+        message = result["data"]["params"]["message"]
+        file_seg = next(seg for seg in message if seg["type"] == "file")
+        assert file_seg["data"]["filename"] == "doc.pdf"
+
+    @pytest.mark.asyncio
+    async def test_text_with_modifiers(self, adapter_with_raw_ob12):
+        """Text + At/Reply 修饰器应正确合并到消息段"""
+        result = await (adapter_with_raw_ob12.Send
+                        .To("group", "456")
+                        .At("789")
+                        .Reply("msg_123")
+                        .Text("带修饰器的文本"))
+        assert result["status"] == "ok"
+        message = result["data"]["params"]["message"]
+        types = [seg["type"] for seg in message]
+        assert "mention" in types
+        assert "reply" in types
+        assert "text" in types
+
+    def test_standard_methods_exist_on_base(self):
+        """标准发送方法应存在于 SendDSL 基类上（供 IDE 补全）"""
+        for method in ("Text", "Image", "Voice", "Video", "File", "Raw_ob12"):
+            assert hasattr(SendDSL, method), f"SendDSL 应定义 {method} 方法"
+            assert callable(getattr(SendDSL, method))
+
+
+class TestListSends:
+    """list_sends 方法测试（验证标准方法与平台特有方法都能被列出）"""
+
+    @pytest.fixture
+    def manager(self):
+        """创建适配器管理器实例"""
+        manager = AdapterManager()
+        manager._adapters.clear()
+        manager._started_instances.clear()
+        manager._adapter_info.clear()
+        return manager
+
+    def test_list_sends_includes_standard_methods(self, manager):
+        """list_sends 应包含标准发送方法（Text/Image 等）"""
+
+        class _Adapter(BaseAdapter):
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}}
+
+        manager.register("testplat", _Adapter)
+        methods = manager.list_sends("testplat")
+        # 标准方法应被列出
+        assert "Text" in methods
+        assert "Image" in methods
+        assert "Voice" in methods
+        assert "Video" in methods
+        assert "File" in methods
+        assert "Raw_ob12" in methods
+
+    def test_list_sends_includes_platform_methods(self, manager):
+        """list_sends 应包含平台特有的发送方法"""
+
+        class _Send(BaseAdapter.Send):
+            def Sticker(self, sticker_id: str):
+                return self.Raw_ob12([{"type": "sticker", "data": {"id": sticker_id}}])
+
+        class _Adapter(BaseAdapter):
+            Send = _Send
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}}
+
+        manager.register("testplat", _Adapter)
+        methods = manager.list_sends("testplat")
+        # 平台特有方法应被列出
+        assert "Sticker" in methods
+        # 标准方法也应被列出
+        assert "Text" in methods
+
+    def test_list_sends_excludes_chain_modifiers(self, manager):
+        """list_sends 应排除链式修饰方法（At/To/Hook 等）"""
+
+        class _Adapter(BaseAdapter):
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}}
+
+        manager.register("testplat", _Adapter)
+        methods = manager.list_sends("testplat")
+        # 链式修饰方法不应被列出
+        for chain_method in ("At", "AtAll", "Reply", "To", "Using", "Account",
+                             "Hook", "Retry", "Timeout", "Defer", "Build"):
+            assert chain_method not in methods, f"链式方法 {chain_method} 不应被列为发送方法"

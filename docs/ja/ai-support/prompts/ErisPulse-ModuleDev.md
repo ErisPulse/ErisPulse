@@ -376,57 +376,193 @@ flowchart TD
 
 
 ====
-快速开始
+快速上手
 ====
 
 
-### 入门指南总览
+### 快速开始
 
-# 入門ガイド
+# 速習
 
-ErisPulse の入門ガイドへようこそ。ErisPulse を初めて使用される方は、ここからゼロからスタートし、フレームワークのコア概念と基本的な使い方を段階的に理解していきます。
+> 理解できない用語に出会いましたか？ [用語集](terminology.md) を参照してわかりやすい説明を入手してください。
 
-## 学習パス
+## ErisPulse のインストール
 
-本ガイドは以下の順序で構成されています。順番に読み進めることを推奨します。
+### 1 クリックインストールスクリプト（推奨）
 
-| ステップ | トピック | 説明 |
-|------|------|------|
-| 1 | [最初のボットを作成する](first-bot.md) | プロジェクトの初期化から最初のコマンドの実行まで |
-| 2 | [基礎概念](basic-concepts.md) | ErisPulse のコアアーキテクチャとモジュール設計を理解する |
-| 3 | [イベント処理入門](event-handling.md) | メッセージ、コマンド、通知、リクエスト、メタイベントなど、様々なイベントの処理方法を学ぶ |
-| 4 | [一般的なタスクの例](common-tasks.md) | データ永続化、定期タスク、権限制御などの一般的な機能をマスターする |
+インストールスクリプトは、環境（Docker、Python、uv）を自動的に検出し、最適なインストール方法を選択します。
 
-## 開発方式の選択
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
 
-ErisPulse は 2 つの開発方式をサポートしており、ニーズに合わせて選択できます。
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
 
-| 方式 | 適用シーン | 説明 |
-|------|---------|------|
-| **インライン開発** | クイックプロトタイプ、プロジェクト内の機能 | `main.py` に直接処理ロジックを記述し、独立モジュールの作成は不要 |
-| **モジュール開発**（推奨） | プロダクション環境、機能の配布 | 独立した Python パッケージを作成し、`epsdk install` を使用してインストールして利用 |
+スクリプトは以下の手順をガイドします：
 
-> 2 つの方式の詳細な比較と例については、[最初のボットを作成する](first-bot.md) および [モジュール開発入門](../developer-guide/modules/getting-started.md) を参照してください。
+- **Docker インストール**（Docker が検出された場合推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プリリリース版）、Dashboard 管理パネルの設定、ポート設定
+- **従来のインストール**：仮想環境の自動作成、ErisPulse バージョンの選択、オプションで Dashboard 管理パネルモジュールのインストール
 
-## アーキテクチャ概要
+### Docker を使用する
 
-ErisPulse はイベント駆動型アーキテクチャを採用しており、コアは以下のシステムで構成されています。
+Docker イメージには、ErisPulse フレームワークと Dashboard 管理パネルが既に含まれています。
 
-- **アダプタシステム** — 各プラットフォームとの通信を担当し、プラットフォーム固有のイベントを統一された OneBot12 標準形式に変換します
-- **イベントシステム** — メッセージ、コマンド、通知、リクエスト、メタイベントの 5 つのカテゴリを処理します
-- **モジュールシステム** — 独立モジュールを使用して機能を拡張し、依存関係管理と遅延読み込み（lazy loading）をサポートします
-- **コアモジュール** — Storage（ストレージ）、Config（設定）、Logger（ログ）、Router（ルーティング）などの基本機能を提供します
+```bash
+# docker-compose.yml をダウンロード
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-> 詳細なアーキテクチャ図と初期化フローについては、[アーキテクチャ概要](../architecture.md) を参照してください。
+# Dashboard トークンを設定して起動
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
 
-## 学習を始めよう
+<details>
+<summary>Docker Hub が利用できない場合？</summary>
 
-準備はできましたか？
+GitHub Container Registry イメージを使用する場合は、`docker-compose.yml` の image を次のように変更します：
 
-- [最初のボットを作成する](first-bot.md) — 5 分で使い方を理解
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインします。
+
+### pip を使用したインストール
+
+Python のバージョンが 3.10 以上であることを確認し、pip を使用してインストールします：
+
+```bash
+pip install ErisPulse
+```
+
+既に [uv](https://github.com/astral-sh/uv) をインストールしている場合は、`uv pip install ErisPulse` を使用することもでき、インストール速度が速くなります。
+
+## プロジェクトの初期化
+
+### インタラクティブ初期化（推奨）
+
+```bash
+epsdk init
+```
+
+これにより、インタラクティブなガイドが開始され、以下の手順がガイドされます：
+- プロジェクト名の設定
+- ログレベルの設定
+- サーバーの設定（ホストとポート）
+- アダプタの選択と設定
+- プロジェクト構造の作成
+
+### 速攻初期化
+
+```bash
+# プロジェクト名を指定した速攻モード
+epsdk init -q -n my_bot
+
+# または、プロジェクト名のみを指定
+epsdk init -n my_bot
+```
+
+### 手動でプロジェクトを作成する
+
+手動でプロジェクトを作成したい場合は：
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## モジュールのインストール
+
+### CLI でインストールする
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### 利用可能なモジュールを表示する
+
+```bash
+epsdk list-remote
+```
+
+### インタラクティブインストール
+
+パッケージ名を指定しない場合は、インタラクティブインストール画面になります：
+
+```bash
+epsdk install
+```
+
+## プロジェクトの実行
+
+```bash
+# 通常実行
+epsdk run main.py
+
+# ホットリロードモード（開発時に推奨）
+epsdk run main.py --reload
+```
+
+## IDE の補完を有効にする（オプション）
+
+ErisPulse はモジュール/アダプタを動的に発見しますが、IDE はデフォルトではプラットフォーム固有のメソッドを補完できません。以下のコマンドを実行して型のスタブを生成します：
+
+```bash
+epsdk types
+```
+
+生成後、インポートした型を変数の型として指定することで、正確な補完が得られます（[IDE 補完ガイド](./getting-started/ide-completion.md)を参照してください）：
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # プラットフォーム固有のメソッドの補完
+```
+
+## プロジェクト構造
+
+初期化後のプロジェクト構造：
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # 設定ファイル
+└── main.py                  # エントリーポイント
+
+```
+
+## 設定ファイル
+
+基本的な `config.toml` 設定：
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# アダプタの設定
+```
+
+## 次のステップ
+
+- [入門ガイド](getting-started/README.md) - ErisPulse の基本概念を理解する
+- [最初のボットを作成する](getting-started/first-bot.md) - 簡単なボットを作成する
+- [ユーザー使用ガイド](user-guide/) - 設定やモジュール管理について詳しく学ぶ
+- [開発者ガイド](developer-guide/) - 自作モジュールやアダプタの開発について学ぶ
 
 
-### 创建第一个模块
+### 创建第一个机器人
 
 # 最初のボットを作成する
 
@@ -1629,518 +1765,95 @@ async def conditional_handler(event):
 直接翻訳された完全なMarkdownコンテンツを返してください。その他のテキストは含めないでください。
 
 
-### 常见任务示例
+### IDE 补全
 
-# よくあるタスクの例
+# タイプのスタブ生成（IDEの補完）
 
-このガイドでは、一般的な機能の実装例を提供し、一般的な機能を迅速に実装するのに役立ちます。
+ErisPulse はエントリーポイントを用いてモジュール/アダプターを動的に発見します。エントリーポイントは静的レベルでユーザーのクラスの具体的な型を知ることができません。  
+`epsdk types` コマンドは、インストールされているモジュール/アダプターをスキャンして、タイプのスタブファイルを生成し、ユーザーがこれらの型を変数の注釈として使用して IDE の補完を得られるようにします。
 
-## 内容一覧
+## コア設計原則
 
-1. データの永続化
-2. タイマージョブ
-3. メッセージのフィルタリング
-4. マルチプラットフォーム対応
-5. メッセージ送信の応用（再試行/タイムアウト/バッチ）
-6. アクセス制御
-7. メッセージ統計
-8. 検索機能
-9. 画像処理
+スタブファイルは**型のみをエクスポート**し、実行時のインスタンスを提供しません：
 
-## データの永続化
+- すべてのインポートは ``TYPE_CHECKING`` の下にあり、**実行時のオーバーヘッドはゼロ、動作の変更はゼロ**
+- クラス名はエントリーポイント名の PascalCase 形式（例：``yunhu`` → ``Yunhu``）を使用し、``sdk.adapter.get()`` / ``sdk.module.get()`` に渡す名前に対応
+- ユーザーはコード内で ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` を通常通り使用してインスタンスを取得しますが、インポートされた型を**変数の注釈**として使用します
 
-### シンプルなカウンタ
+## 基本的な使い方
+
+プロジェクトのルートディレクトリで実行します：
+
+```bash
+epsdk types
+```
+
+現在のディレクトリに `_ep_types.py` を生成し、インストールされているすべてのモジュール/アダプターの型を含みます。
+
+## コードでの使用
 
 ```python
+from _ep_types import MyModule, Yunhu
 from ErisPulse import sdk
-from ErisPulse.Core.Event import command
 
-@command("count", help="コマンド呼び出し回数を表示")
-async def count_handler(event):
-    # カウントを取得
-    count = sdk.storage.get("command_count", 0)
-    
-    # カウントを増加
-    count += 1
-    sdk.storage.set("command_count", count)
-    
-    await event.reply(f"これは {count} 回目のコマンド呼び出しです")
+# インポートされた型を変数の注釈として使用することで、IDE がそのクラスのメソッドを補完します
+my_mod: MyModule = sdk.module.get("MyModule")
+my_mod.hello()                  # ← IDE が hello を補完
+
+my_adapter: Yunhu = sdk.adapter.get("yunhu")
+await my_adapter.Send.To("group", "123").Board(...)   # ← プラットフォーム固有のメソッドを補完
 ```
 
-### ユーザーデータの保存
+## 動作原理
+
+1. `erispulse.adapter` / `erispulse.module` のエントリーポイントをスキャンします
+2. ターゲットの Python 環境でサブプロセスを使用して内部調査を行い、各アダプター/モジュールの実際のクラス情報を収集します（モジュールパスと限定名を含む）
+3. `.py` ファイルを生成し、その中で：
+   - ``from xxx import Yyy as Zzz`` はすべて ``TYPE_CHECKING`` の下にあります
+   - ``Zzz`` はエントリーポイント名の PascalCase 形式です
+4. IDE は ``TYPE_CHECKING`` 部分を読み取り、補完を提供します。実行時にはコードは一切実行されません
+
+生成されたスタブの例：
 
 ```python
-@command("profile", help="プロフィールを表示")
-async def profile_handler(event):
-    user_id = event.get_user_id()
-    
-    # ユーザーデータを取得
-    user_data = sdk.storage.get(f"user:{user_id}", {
-        "nickname": "",
-        "join_date": None,
-        "message_count": 0
-    })
-    
-    profile_text = f"""
-ニックネーム: {user_data['nickname']}
-参加日: {user_data['join_date']}
-メッセージ数: {user_data['message_count']}
-    """
-    
-    await event.reply(profile_text.strip())
+# _ep_types.py（自動生成）
+from typing import TYPE_CHECKING
 
-@command("setnick", help="ニックネームを設定")
-async def setnick_handler(event):
-    user_id = event.get_user_id()
-    args = event.get_command_args()
-    
-    if not args:
-        await event.reply("ニックネームを入力してください")
-        return
-    
-    # ユーザーデータを更新
-    user_data = sdk.storage.get(f"user:{user_id}", {})
-    user_data["nickname"] = " ".join(args)
-    sdk.storage.set(f"user:{user_id}", user_data)
-    
-    await event.reply(f"ニックネームが設定されました: {' '.join(args)}")
+if TYPE_CHECKING:
+    # アダプター
+    from MyAdapter.Core import MyAdapter as MyAdapter
+    from YunhuAdapter.Core import YunhuAdapter as Yunhu
+
+    # モジュール
+    from MyModule.Core import Main as MyModule
+
+    __all__ = ['MyAdapter', 'Yunhu', 'MyModule']
 ```
 
-## タイマージョブ
+## コマンドオプション
 
-### シンプルなタイマー
+| オプション | 説明 |
+|------|------|
+| `-o, --output PATH` | 出力ファイルのパスを指定（デフォルト：`./_ep_types.py`） |
+| `--force` | 既存のスタブファイルを上書きします |
+| `--adapters-only` | アダプターのみをスキャンします |
+| `--modules-only` | モジュールのみをスキャンします |
 
-```python
-from ErisPulse import sdk
-from ErisPulse.Core.Event import command
-import asyncio
+## 再生成のタイミング
 
-class TimerModule:
-    def __init__(self):
-        self.sdk = sdk
-        self._tasks = []
-    
-    async def on_load(self, event):
-        """モジュールのロード時にタイマージョブを開始"""
-        self._start_timers()
-        
-        @command("timer", help="タイマー管理")
-        async def timer_handler(event):
-            await event.reply("タイマーが稼働中...")
-    
-    def _start_timers(self):
-        """タイマージョブを開始"""
-        # 60秒ごとに実行
-        task = asyncio.create_task(self._every_minute())
-        self._tasks.append(task)
-        
-        # 毎日深夜に実行
-        task = asyncio.create_task(self._daily_task())
-        self._tasks.append(task)
-    
-    async def _every_minute(self):
-        """毎分実行するジョブ"""
-        self.sdk.logger.info("毎分ジョブ実行")
-        # あなたのロジック...
-    
-    async def _daily_task(self):
-        """毎日深夜に実行するジョブ（注：UTC時間ベースで計算されます。ローカル時間が必要な場合は独自に調整してください）"""
-        import time
-        
-        while True:
-            # 深夜までの時間を計算
-            now = time.time()
-            midnight = now + (86400 - now % 86400)
-            
-            await asyncio.sleep(midnight - now)
-            
-            # ジョブを実行
-            self.sdk.logger.info("毎日ジョブ実行")
-            # あなたのロジック...
-```
+- 新しいモジュールまたはアダプターをインストール/アンインストールした後
+- モジュール/アダプターが公開 API を更新した後
+- IDE の補完が失効または型が古くなった場合
 
-### ライフサイクルイベントの使用
+## SendDSL 標準メソッドとの関係
 
-```python
-@sdk.lifecycle.on("core.init.complete")
-async def init_complete_handler(event_data):
-    """SDKの初期化完了後にタイマージョブを開始"""
-    import asyncio
-    
-    async def daily_reminder():
-        """毎日のリマインダー"""
-        await asyncio.sleep(86400)  # 24時間
-        sdk.logger.info("毎日のジョブを実行")
-    
-    # バックグラウンドジョブを開始
-    asyncio.create_task(daily_reminder())
-```
+`SendDSL` 基底クラスには標準の送信メソッド（Text/Image/Voice/Video/File）が既に内蔵されています。どのような方法で取得した SendDSL インスタンスでも、これらのメソッドの補完が可能です。  
+`types` コマンドは、**プラットフォーム固有のメソッド**（例：雲湖の `Board`、沙盒の `Dice`）と**モジュール固有のメソッド**の補完を主に行います。
 
-## メッセージのフィルタリング
+## 関連ドキュメント
 
-### キーワードフィルタリング
-
-```python
-from ErisPulse.Core.Event import message
-
-blocked_words = ["ゴミ", "広告", "フィッシング"]
-
-@message.on_message()
-async def filter_handler(event):
-    text = event.get_text()
-    
-    # 敏感ワードが含まれているかチェック
-    for word in blocked_words:
-        if word in text:
-            sdk.logger.warning(f"敏感メッセージをブロック: {word}")
-            return  # このメッセージを処理しない
-    
-    # メッセージを通常通り処理
-    await event.reply(f"受信: {text}")
-```
-
-### ブラックリストフィルタリング
-
-```python
-# 設定またはストレージからブラックリストをロード
-blacklist = sdk.storage.get("user_blacklist", [])
-
-@message.on_message()
-async def blacklist_handler(event):
-    user_id = event.get_user_id()
-    
-    if user_id in blacklist:
-        sdk.logger.info(f"ブラックリストユーザー: {user_id}")
-        return  # 処理しない
-    
-    # 通常処理
-    await event.reply(f"こんにちは、{user_id}")
-```
-
-## マルチプラットフォーム対応
-
-### プラットフォーム固有の応答
-
-```python
-@command("help", help="ヘルプを表示")
-async def help_handler(event):
-    platform = event.get_platform()
-    
-    if platform == "yunhu":
-        await event.reply("Yunhuプラットフォームのヘルプ...")
-    elif platform == "telegram":
-        await event.reply("Telegram platform help...")
-    elif platform == "onebot11":
-        await event.reply("OneBot11 help...")
-    else:
-        await event.reply("共通のヘルプ情報")
-```
-
-### プラットフォーム機能の検出
-
-```python
-@command("rich", help="リッチテキストメッセージを送信")
-async def rich_handler(event):
-    platform = event.get_platform()
-    
-    if platform == "yunhu":
-        # YunhuはHTMLをサポート
-        yunhu = sdk.adapter.get("yunhu")
-        await yunhu.Send.To("user", event.get_user_id()).Html(
-            "<b>太字</b><i>斜体</i>"
-        )
-    elif platform == "telegram":
-        # TelegramはMarkdownをサポート
-        telegram = sdk.adapter.get("telegram")
-        await telegram.Send.To("user", event.get_user_id()).Markdown(
-            "**太字** *斜体*"
-        )
-    else:
-        # 他のプラットフォームはプレーンテキストを使用
-        await event.reply("太字 斜体")
-```
-
-## メッセージ送信の応用（再試行/タイムアウト/バッチ）
-
-シンプルな `event.reply()` 以外に、アダプタの Send DSL を通じてより複雑な送信シナリオを実装できます：失敗時の自動再試行、タイムアウトによるキャンセル、成功時のロジック実行、複数メッセージのバッチ送信。
-
-> 以下の例では、`event.get_detail_type()` と `event.get_target_id()` を使用してイベントからターゲットのタイプとIDを取得（グループチャットでは自動的に group_id を取得、DMでは自動的に user_id を取得）、ハードコーディングを回避しています。
-
-### 送信成功後のロジック実行
-
-```python
-@command("pay", help="シミュレーション決済")
-async def pay_handler(event):
-    yunhu = sdk.adapter.get(event.get_platform())
-    user_id = event.get_user_id()
-    # 送信成功後にのみポイントを減らす
-    await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
-           .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
-           .Text("決済完了しました。10ポイントを差し引きました"))
-```
-
-### 失敗再試行 + タイムアウトキャンセル
-
-```python
-@command("notice", help="重要な通知を送信")
-async def notice_handler(event):
-    adapter_inst = sdk.adapter.get(event.get_platform())
-    # 最大3回再試行、それぞれのタイムアウトは10秒
-    task = (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
-            .Retry(3)
-            .Timeout(10)
-            .OnError(lambda ctx: sdk.logger.error(f"通知送信失敗: {ctx.error}"))
-            .Text("これは重要な通知です"))
-    # 待機しない、バックグラウンドで送信
-```
-
-### 複数メッセージのバッチ送信
-
-一つのチェーンで複数のメッセージを送信し、統一して実行します：
-
-```python
-@command("announce", help="告知を送信")
-async def announce_handler(event):
-    adapter_inst = sdk.adapter.get(event.get_platform())
-    # 複数のメッセージを構築し、一括で送信（デフォルトで並列実行）
-    results = await (adapter_inst.Send.To(event.get_detail_type(), event.get_target_id())
-                    .Build()
-                    .Text("📋 今日の告知")
-                    .Image("https://example.com/banner.jpg")
-                    .Text("詳細内容は画像を参照してください")
-                    .Retry(2)            # 失敗した項目は個別に再試行
-                    .send_all())
-    sdk.logger.info(f"バッチ送信完了、合計 {len(results)} 件")
-```
-
-> より完全なルールとバッチの説明については [プラットフォーム機能ガイド](../platform-guide/README.md#送信ルールデコレータ) を参照してください。
-
-## アクセス制御
-
-### 管理者チェック
-
-```python
-# マスターのリストを設定
-MASTERS = ["user123", "user456"]
-
-def is_master(user_id):
-    """フレームワークのマスターかどうかを確認"""
-    return user_id in MASTERS
-
-@command("master", help="フレームワークマスターのコマンド")
-async def master_handler(event):
-    user_id = event.get_user_id()
-    
-    if not is_master(user_id):
-        await event.reply("権限が不十分です。このコマンドはフレームワークマスターのみ使用可能です")
-        return
-    
-    await event.reply("フレームワークマスターのコマンドが正常に実行されました")
-
-@command("addmaster", help="フレームワークマスターを追加")
-async def addmaster_handler(event):
-    if not is_master(event.get_user_id()):
-        return
-    
-    args = event.get("text", "").split()
-    if len(args) < 2:
-        await event.reply("使い方: /addmaster <ユーザーID>")
-        return
-    
-    new_master = args[0]
-    MASTERS.append(new_master)
-    await event.reply(f"フレームワークマスターを追加しました: {new_master}")
-```
-
-### グループ権限
-
-```python
-@command("groupinfo", help="グループ情報を表示")
-async def groupinfo_handler(event):
-    if not event.is_group_message():
-        await event.reply("このコマンドはグループチャットでのみ使用できます")
-        return
-    
-    group_id = event.get_group_id()
-    user_id = event.get_user_id()
-    
-    await event.reply(f"グループID: {group_id}, 自分のID: {user_id}")
-```
-
-## メッセージ統計
-
-### メッセージカウント
-
-> **注意**: 以下の例では `sdk.storage.get/set` を使用して単純なカウントを行っています。高並列なシナリオでは、一貫性を保つために `sdk.storage.transaction()` を使用することを推奨します。
-
-```python
-@message.on_message()
-async def count_handler(event):
-    # 統計を取得
-    stats = sdk.storage.get("message_stats", {
-        "total": 0,
-        "by_user": {},
-        "by_day": {}
-    })
-    
-    # 統計を更新
-    stats["total"] += 1
-    
-    user_id = event.get_user_id()
-    stats["by_user"][user_id] = stats["by_user"].get(user_id, 0) + 1
-    
-    # 保存
-    sdk.storage.set("message_stats", stats)
-
-@command("stats", help="メッセージ統計を表示")
-async def stats_handler(event):
-    stats = sdk.storage.get("message_stats", {
-        "total": 0,
-        "by_user": {},
-        "by_day": {}
-    })
-    
-    top_users = sorted(
-        stats["by_user"].items(),
-        key=lambda x: x[1],
-        reverse=True
-    )[:5]
-    
-    top_text = "\n".join(
-        f"{uid}: {count} 件のメッセージ" for uid, count in top_users
-    )
-    
-    await event.reply(f"総メッセージ数: {stats['total']}\n\nアクティブユーザー:\n{top_text}")
-```
-
-## 検索機能
-
-### シンプルな検索
-
-> **注意**: 以下の例はメモリ上のリストを使用してメッセージ履歴を保存しており、**プログラム再起動後はデータが失われます**。本番環境では `sdk.storage` または SQLite テーブルを使用して永続化ストレージすることを推奨します。
-
-```python
-from ErisPulse.Core.Event import command, message
-
-# メッセージ履歴を保存
-message_history = []
-
-@message.on_message()
-async def store_handler(event):
-    """検索用にメッセージを保存"""
-    user_id = event.get_user_id()
-    text = event.get_text()
-    
-    message_history.append({
-        "user_id": user_id,
-        "text": text,
-        "time": event.get_time()
-    })
-    
-    # 履歴の数を制限
-    if len(message_history) > 1000:
-        message_history.pop(0)
-
-@command("search", help="メッセージを検索")
-async def search_handler(event):
-    args = event.get_command_args()
-    
-    if not args:
-        await event.reply("検索キーワードを入力してください")
-        return
-    
-    keyword = " ".join(args)
-    results = []
-    
-    # 履歴を検索
-    for msg in message_history:
-        if keyword in msg["text"]:
-            results.append(msg)
-    
-    if not results:
-        await event.reply("一致するメッセージが見つかりません")
-        return
-    
-    # 結果を表示
-    result_text = f"{len(results)} 件の一致するメッセージが見つかりました:\n\n"
-    for i, msg in enumerate(results[:10], 1):  # 最大10件まで表示
-        result_text += f"{i}. {msg['text']}\n"
-    
-    await event.reply(result_text)
-```
-
-## 画像処理
-
-### 画像のダウンロードと保存
-
-```python
-from ErisPulse.Core import client
-
-@message.on_message()
-async def image_handler(event):
-    """画像メッセージを処理"""
-    message_segments = event.get_message()
-    
-    for segment in message_segments:
-        if segment.get("type") == "image":
-            file_url = segment.get("data", {}).get("file")
-            
-            if file_url:
-                # SDKの組み込みクライアントを使用して画像をダウンロードすることを推奨します
-                resp = await client.get(file_url)
-                if resp.status == 200:
-                    image_data = await resp.read()
-                    
-                    # ファイルに保存
-                    filename = f"images/{event.get_time()}.jpg"
-                    with open(filename, "wb") as f:
-                        f.write(image_data)
-                    
-                    sdk.logger.info(f"画像を保存しました: {filename}")
-                    await event.reply("画像を保存しました")
-```
-
-### 画像認識の例
-
-> **注意**: 以下の例ではプレースホルダAPIアドレスを使用しています。実際に使用する際は、ご自身の画像認識サービスに置き換えてください。
-
-```python
-from ErisPulse.Core import client
-
-@command("identify", help="画像を識別")
-async def identify_handler(event):
-    """メッセージ内の画像を識別"""
-    message_segments = event.get_message()
-    
-    for segment in message_segments:
-        if segment.get("type") == "image":
-            file_url = segment.get("data", {}).get("file")
-            
-            # 画像認識APIを呼び出し
-            result = await _identify_image(file_url)
-            
-            await event.reply(f"識別結果: {result}")
-            return
-    
-    await event.reply("画像が見つかりません")
-
-async def _identify_image(url):
-    """画像認識APIを呼び出す（例） - SDKの組み込みクライアントを使用"""
-    resp = await client.post(
-        "https://api.example.com/identify",
-        json={"url": url}
-    )
-    data = await resp.json()
-    return data.get("description", "識別に失敗しました")
-```
-
-## 次のステップ
-
-- [ユーザーガイド](../user-guide/) - 設定とモジュール管理について
-- [開発者ガイド](../developer-guide/) - モジュールとアダプターの開発について
-- [高度なトピック](../advanced/) - フレームワークの機能について詳しく
-
-Directly return the complete translated Markdown content, without any other text.
+- [SendDSL 詳解](../developer-guide/adapters/send-dsl.md) - 標準送信メソッドの説明
+- [アダプター開発入門](../developer-guide/adapters/getting-started.md) - アダプターの作成
 
 
 ====
@@ -3830,140 +3543,491 @@ services:
 
 # CLI コマンドリファレンス
 
-ErisPulse コマンドラインツールは、プロジェクト管理およびパッケージ管理機能を提供します。
+ErisPulse コマンドラインツール（`epsdk`）は、プロジェクト管理およびパッケージ管理機能を提供します。
+
+> **ヒント**：すべてのコマンドは `epsdk <コマンド> --help` で詳細なパラメータ説明を確認できます。
+
+---
 
 ## パッケージ管理コマンド
 
-| コマンド | 引数 | 説明 | 例 |
-|-------|------|------|------|
-| `install` | `[パッケージ名]... [--upgrade/-U] [--pre]` | モジュール/アダプターをインストールします | `epsdk install Yunhu` |
-| `uninstall` | `<パッケージ名>...` | モジュール/アダプターをアンインストールします | `epsdk uninstall old-module` |
-| `upgrade` | `[パッケージ名]... [--force/-f] [--pre]` | 指定されたモジュール、またはすべてをアップグレードします | `epsdk upgrade --force` |
-| `self-update` | `[バージョン] [--pre] [--force/-f]` | SDK自体を更新します | `epsdk self-update` |
+| コマンド | 別名 | パラメータ | 説明 |
+|------|------|------|------|
+| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | モジュール/アダプタのインストール |
+| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | モジュール/アダプタのアンインストール |
+| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 指定されたモジュールまたはすべてのモジュールをアップグレード |
+| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | SDK自体を更新 |
+
+### install
+
+ErisPulse モジュールまたはアダプタパッケージをインストールします。パッケージ名を指定しない場合は、対話形式のインストール画面に移行します。
+
+**別名:** `i`, `add`
+
+**パラメータ:**
+
+| パラメータ | 短パラメータ | 説明 |
+|------|--------|------|
+| `[package]...` | | インストールするパッケージ名。複数指定可能 |
+| `--upgrade` | `-U` | 最新バージョンにアップグレードしてインストール |
+| `--pre` | | プリリリースバージョンを許可 |
+| `--editable` | `-e` | 編集可能なモードでインストール（パスを指定する必要あり） |
+| `--user` | | ユーザーの site-packages ディレクトリにインストール |
+| `--no-deps` | | 依存パッケージをインストールしない |
+| `--target` | `-t` | 指定したディレクトリにインストール |
+| `--index-url` | | PyPI ミラーサーバーのアドレスを指定 |
+| `--extra-index-url` | | 追加の PyPI ミラーサーバーのアドレス（複数指定可） |
+| `--no-cache-dir` | | キャッシュを無効化 |
+| `--requirement` | `-r` | requirements ファイルからインストール |
+| `--constraint` | `-c` | constraint ファイルからインストール |
+| `--force-reinstall` | | 強制的に再インストール |
+| `--ignore-installed` | | 既にインストール済みのパッケージを無視 |
+| `--compile` | | インストール後に .pyc ファイルをコンパイル |
+| `--no-compile` | | インストール後に .pyc ファイルをコンパイルしない |
+| `--prefix` | | 指定したプレフィックスディレクトリにインストール |
+| `--src` | | 編集可能なインストール時に使用するソースコードディレクトリ |
+| `--config-settings` | | ビルドバックエンドに渡す設定（複数指定可） |
+| `--no-binary` | | 二進パッケージの使用を制限（形式: `:all:`） |
+| `--only-binary` | | 二進パッケージのみを使用する（形式: `:all:`） |
+| `--prefer-binary` | | 二進パッケージを優先 |
+| `--build-isolation` | | ビルドの隔離を有効化 |
+| `--no-build-isolation` | | ビルドの隔離を無効化 |
+| `--upgrade-strategy` | | アップグレード戦略: `eager`、`only-if-needed`、`to-satisfy-only` |
+| `--break-system-packages` | | システムパッケージマネージャーが管理する Python パッケージを変更を許可 |
+| `--no-uv` | | uv に代わる pip を使用 |
+
+**例:**
+
+```bash
+# 単一モジュールのインストール
+epsdk install Weather
+
+# 複数モジュールのインストール
+epsdk install Yunhu Weather
+
+# ミラーサーバーからインストールしてアップグレード
+epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 編集可能なモードでインストール（開発モード）
+epsdk install -e ./my-adapter
+```
+
+### uninstall
+
+インストール済みの ErisPulse モジュールまたはアダプタパッケージをアンインストールします。パッケージ名を指定しない場合は、対話形式のアンインストール画面に移行します。
+
+**別名:** `rm`, `remove`
+
+**パラメータ:**
+
+| パラメータ | 説明 |
+|------|------|
+| `<package>...` | アンインストールするパッケージ名。複数指定可能 |
+| `--no-uv` | uv に代わる pip を使用 |
+
+**例:**
+
+```bash
+# 単一モジュールのアンインストール
+epsdk uninstall Weather
+
+# 複数モジュールのアンインストール
+epsdk uninstall Yunhu Weather
+```
+
+### upgrade
+
+インストール済みの ErisPulse コンポーネントをアップグレードします。パッケージ名を指定しない場合は、対話形式ですべてをアップグレードします。
+
+**別名:** `up`
+
+**パラメータ:**
+
+| パラメータ | 短パラメータ | 説明 |
+|------|--------|------|
+| `[package]...` | | アップグレードするパッケージ名。複数指定可能 |
+| `--force` | `-f` | 確認をスキップして強制的にアップグレード |
+| `--pre` | | プリリリースバージョンへのアップグレードを許可 |
+| `--no-uv` | | uv に代わる pip を使用 |
+
+**例:**
+
+```bash
+# すべてのパッケージをアップグレード
+epsdk upgrade
+
+# 指定されたパッケージをアップグレード
+epsdk upgrade Weather
+
+# 強制アップグレード（確認をスキップ）
+epsdk upgrade -f
+```
+
+### self-update
+
+ErisPulse SDK 自体を最新バージョンに更新します。
+
+**別名:** `su`, `update`
+
+**パラメータ:**
+
+| パラメータ | 短パラメータ | 説明 |
+|------|--------|------|
+| `[version]` | | 更新するターゲットバージョン番号を指定 |
+| `--pre` | | プリリリースバージョンへの更新を許可 |
+| `--force` | `-f` | 確認をスキップして強制的に更新 |
+| `--no-uv` | | uv に代わる pip を使用 |
+
+**例:**
+
+```bash
+# 最新の安定版に更新
+epsdk self-update
+
+# 指定されたバージョンに更新
+epsdk self-update 1.2.3
+
+# プリリリースバージョンを許可
+epsdk self-update --pre
+
+# 強制更新
+epsdk self-update -f
+```
+
+---
 
 ## 情報照会コマンド
 
-| コマンド | 引数 | 説明 | 例 |
-|-------|------|------|------|
-| `list` | `[--type/-t <type>]` | インストール済みのモジュール/アダプターを一覧表示します | `epsdk list -t modules` |
-| | `[--outdated/-o]` | アップグレード可能なパッケージのみを表示します | `epsdk list -o` |
-| `list-remote` | `[--type/-t <type>]` | リモートで利用可能なパッケージを一覧表示します | `epsdk list-remote` |
-| | `[--refresh/-r]` | 強制的にパッケージリストを更新します | `epsdk list-remote -r` |
+| コマンド | 別名 | パラメータ | 説明 |
+|------|------|------|------|
+| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | インストール済みのコンポーネントを一覧表示 |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | リモートリポジトリで利用可能なコンポーネントを一覧表示 |
+
+### list
+
+インストール済みの ErisPulse モジュールとアダプタを一覧表示します。
+
+**別名:** `l`, `ls`
+
+**パラメータ:**
+
+| パラメータ | 短パラメータ | 説明 |
+|------|--------|------|
+| `--type` | `-t` | 指定するタイプ: `modules`、`adapters`、`all`（デフォルト） |
+| `--outdated` | `-o` | アップグレード可能なパッケージのみ表示 |
+
+**例:**
+
+```bash
+# すべてのインストール済みコンポーネントを一覧表示
+epsdk list
+
+# モジュールのみを一覧表示
+epsdk list -t modules
+
+# アダプタのみを一覧表示
+epsdk list -t adapters
+
+# アップグレード可能なパッケージのみを表示
+epsdk list -o
+```
+
+### list-remote
+
+リモートリポジトリで利用可能な ErisPulse モジュールとアダプタを一覧表示します。
+
+**別名:** `lsr`
+
+**パラメータ:**
+
+| パラメータ | 短パラメータ | 説明 |
+|------|--------|------|
+| `--type` | `-t` | 指定するタイプ: `modules`、`adapters`、`all`（デフォルト） |
+| `--refresh` | `-r` | リモートパッケージリストのキャッシュを強制的に更新 |
+
+**例:**
+
+```bash
+# すべてのリモートで利用可能なコンポーネントを一覧表示
+epsdk list-remote
+
+# リモートモジュールのみを一覧表示
+epsdk list-remote -t modules
+
+# キャッシュを強制的に更新した後の一覧表示
+epsdk list-remote -r
+```
+
+---
 
 ## 実行制御コマンド
 
-| コマンド | 引数 | 説明 | 例 |
-|-------|------|------|------|
-| `run` | `<スクリプト> [--reload]` | 指定されたスクリプトを実行します | `epsdk run main.py --reload` |
+| コマンド | 別名 | パラメータ | 説明 |
+|------|------|------|------|
+| `run` | `r` | `[script] [--reload]` | 指定されたスクリプトまたは SDK を実行 |
+
+### run
+
+ErisPulse プロジェクトスクリプトまたは SDK を実行します。ホットリロードモードをサポートします。
+
+**別名:** `r`
+
+**パラメータ:**
+
+| パラメータ | 説明 |
+|------|------|
+| `[script]` | 実行するスクリプトファイル。指定しない場合は SDK を実行 |
+| `--reload` | ホットリロードモードを有効化。ファイルの変更を監視して自動的に再起動 |
+
+**例:**
+
+```bash
+# SDK を直接実行
+epsdk run
+
+# 指定されたスクリプトファイルを実行
+epsdk run main.py
+
+# ホットリロードモードで実行（ファイル変更で自動再起動）
+epsdk run main.py --reload
+
+# SDK のホットリロードモード
+epsdk run --reload
+```
+
+---
 
 ## プロジェクト管理コマンド
 
-| コマンド | 引数 | 説明 | 例 |
-|-------|------|------|------|
-| `init` | `[--project-name/-n <name>]` | 対話形式でプロジェクトを初期化します | `epsdk init -n my_bot` |
-| | `[--quick/-q]` | クイックモードで対話をスキップします | `epsdk init -q -n bot` |
-| | `[--force/-f]` | 既存の設定を強制上書きします | `epsdk init -f` |
-| `create` | `[モジュール\|アダプター]` | スキャフォールドプロジェクトを作成します | `epsdk create` |
-| | `[--name/-n <name>]` | プロジェクト名 (PascalCase) | `epsdk create module -n MyModule` |
-| | `[--description/-d <desc>]` | プロジェクトの説明 | `epsdk create adapter -d "xxアダプター"` |
-| | `[--author/-a <name>]` | 著作者名 | `epsdk create -a yourname` |
-| | `[--email/-e <mail>]` | 著作者のメールアドレス | `epsdk create -e you@mail.com` |
-| | `[--homepage <url>]` | プロジェクトのホームページ URL | |
-| | `[--output/-o <dir>]` | 出力ディレクトリ (デフォルトは現在のディレクトリ) | `epsdk create -o ./projects` |
-| | `[--force/-f]` | 既存のディレクトリを強制上書きします | `epsdk create -f` |
+| コマンド | 別名 | パラメータ | 説明 |
+|------|------|------|------|
+| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | ErisPulse プロジェクトの初期化 |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | モジュール/アダプタのスクリプト作成 |
 
-## パラメータの説明
+### init
 
-### 一般的なパラメータ
+新しい ErisPulse プロジェクトを初期化します。対話形式とクイックモードをサポートします。
 
-| パラメータ | 短いパラメータ | 説明 |
-|------|---------|------|
-| `--help` | `-h` | ヘルプ情報を表示します |
-| `--verbose` | `-v` | 詳細な出力を表示します |
+**パラメータ:**
 
-### install のパラメータ
+| パラメータ | 短パラメータ | 説明 |
+|------|--------|------|
+| `--project-name` | `-n` | プロジェクト名 |
+| `--quick` | `-q` | クイックモード。対話形式のガイドをスキップ |
+| `--force` | `-f` | 既存の設定ファイルを上書き |
+| `--here` | | 現在のディレクトリで初期化。サブディレクトリを作成しない |
+| `--no-uv` | | uv に代わる pip を使用 |
 
-| パラメータ | 説明 |
-|------|------|
-| `[パッケージ名]` | インストールするパッケージ名。複数指定可能 |
-| `--upgrade` | `-U` | インストール時に最新バージョンへアップグレードします |
-| `--pre` | プレリリース版（プレリリースバージョン）のインストールを許可します |
+**例:**
 
-### list のパラメータ
+```bash
+# 対話形式で初期化
+epsdk init
 
-| パラメータ | 説明 |
-|------|------|
-| `--type` | `-t` | 指定するタイプ: `modules`, `adapters`, `all` |
-| `--outdated` | `-o` | アップグレード可能なパッケージのみを表示します |
+# クイックモードで初期化
+epsdk init -q -n my_bot
 
-### run のパラメータ
+# 既存の設定ファイルを上書き
+epsdk init -f
 
-| パラメータ | 説明 |
-|------|------|
-| `--reload` | ホットリロードモードを有効にし、ファイルの変更を監視します |
-| `--no-reload` | ホットリロードモードを無効にします |
+# 現在のディレクトリで初期化
+epsdk init --here -n my_bot
+```
 
-## 対話式インストール
+### create
 
-`epsdk install` にパッケージ名を指定せず実行すると、対話式インストールが開始されます：
+ErisPulse モジュールまたはアダプタのスクリプト作成プロジェクトを作成します。
+
+**パラメータ:**
+
+| パラメータ | 短パラメータ | 説明 |
+|------|--------|------|
+| `{module,adapter}` | | 作成するタイプ: `module` または `adapter` |
+| `--name` | `-n` | プロジェクト名（PascalCase） |
+| `--description` | `-d` | プロジェクトの説明 |
+| `--author` | `-a` | 作者名 |
+| `--email` | `-e` | 作者のメールアドレス |
+| `--homepage` | | プロジェクトのホームページ URL |
+| `--output` | `-o` | 出力ディレクトリ（デフォルトは現在のディレクトリ） |
+| `--force` | `-f` | 既存のディレクトリを上書き |
+
+**例:**
+
+```bash
+# 対話形式で作成（タイプの選択と情報入力のガイド）
+epsdk create
+
+# Module プロジェクトを直接作成
+epsdk create module -n MyModule
+
+# Adapter プロジェクトを直接作成
+epsdk create adapter -n MyAdapter
+
+# 完全なパラメータ
+epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "mail@example.com"
+
+# 出力ディレクトリを指定
+epsdk create module -n MyModule -o ./projects
+
+# 既存のディレクトリを上書き
+epsdk create module -n MyModule -f
+```
+
+---
+
+## 言語コマンド
+
+| コマンド | 別名 | パラメータ | 説明 |
+|------|------|------|------|
+| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | CLI 表示言語の確認または切り替え |
+
+### i18n
+
+現在の CLI 言語の確認、サポートされている言語の一覧表示、表示言語の切り替え。パラメータを指定しない場合は、対話形式で選択画面に移行します。
+
+**別名:** `language`, `lang`
+
+**パラメータ:**
+
+| パラメータ | 短パラメータ | 説明 |
+|------|--------|------|
+| `[lang]` | | 切り替える言語コード（例: `zh-CN`、`en`、`ja`、`ru`） |
+| `--list` | `-l` | すべてのサポートされている言語を一覧表示 |
+
+**例:**
+
+```bash
+# 対話形式で言語を選択
+epsdk i18n
+
+# 英語に切り替え
+epsdk i18n en
+
+# 日本語に切り替え
+epsdk i18n ja
+
+# サポートされている言語を一覧表示
+epsdk i18n --list
+```
+
+---
+
+## タイプスタブコマンド
+
+| コマンド | 別名 | パラメータ | 説明 |
+|------|------|------|------|
+| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | IDE の補完を有効化するためのタイプスタブファイルを生成 |
+
+### types
+
+インストール済みの ErisPulse モジュールとアダプタをスキャンし、`.pyi` タイプスタブファイルを生成します。これにより、IDE で正確なコード補完と型チェックがサポートされます。
+
+**別名:** `t`, `stub`
+
+**パラメータ:**
+
+| パラメータ | 短パラメータ | 説明 |
+|------|--------|------|
+| `--output` | `-o` | 出力パス（デフォルトは現在のディレクトリの `ep-stubs/`） |
+| `--force` | | 既存のスタブファイルを上書き |
+| `--adapters-only` | | アダプタのタイプスタブのみを生成 |
+| `--modules-only` | | モジュールのタイプスタブのみを生成 |
+
+> **注意:** `--adapters-only` と `--modules-only` は排他的です。両方指定した場合、後者の `--modules-only` が優先されます。
+
+**例:**
+
+```bash
+# インストール済みのすべてのモジュールとアダプタにタイプスタブを生成
+epsdk types
+
+# アダプタのタイプスタブのみを生成
+epsdk types --adapters-only
+
+# 指定されたディレクトリに出力
+epsdk types -o ./typings
+
+# 既存のファイルを上書き
+epsdk types --force
+```
+
+---
+
+## グローバルパラメータ
+
+以下のパラメータはすべてのコマンドに適用されます：
+
+| パラメータ | 短パラメータ | 説明 |
+|------|--------|------|
+| `--help` | `-h` | ヘルプ情報を表示 |
+| `--verbose` | `-v` | 詳細な出力を表示 |
+
+---
+
+## 対話形式でのインストール
+
+`epsdk install` をパッケージ名を指定せずに実行すると、対話形式のインストールに移行します：
 
 ```bash
 epsdk install
 ```
 
-  対話インターフェースは以下のものを提供します：
+対話インターフェースでは以下の機能が提供されます：
 1. アダプタの選択
 2. モジュールの選択
-3. カスタムインストール
+3. 自由なインストール設定
 
-## よく使われる用法
+## 一般的な使い方
 
 ### モジュールのインストール
 
 ```bash
-# 単一のモジュールをインストール
+# 単一モジュールのインストール
 epsdk install Weather
 
-# 複数のモジュールをインストール
+# 複数モジュールのインストール
 epsdk install Yunhu Weather
 
-# モジュールをアップグレード
+# モジュールのアップグレード
 epsdk install Weather -U
 ```
 
-### モジュールの一覧表示
+### コンポーネントの一覧表示
 
 ```bash
-# 全てのモジュールを一覧表示
+# すべてのコンポーネントを一覧表示
 epsdk list
 
-# アダプタのみを表示
+# アダプタのみを一覧表示
 epsdk list -t adapters
 
-# アップグレード可能なモジュールのみを表示
+# アップグレード可能なコンポーネントのみを表示
 epsdk list -o
+
+# リモートで利用可能なコンポーネントを確認
+epsdk list-remote
 ```
 
-### モジュールのアンインストール
+### コンポーネントのアンインストール
 
 ```bash
-# 単一のモジュールをアンインストール
+# 単一コンポーネントのアンインストール
 epsdk uninstall Weather
 
-# 複数のモジュールをアンインストール
+# 複数コンポーネントのアンインストール
 epsdk uninstall Yunhu Weather
 ```
 
-### モジュールのアップグレード
+### コンポーネントのアップグレード
 
 ```bash
-# 全てのモジュールをアップグレード
+# すべてのコンポーネントをアップグレード
 epsdk upgrade
 
-# 指定されたモジュールをアップグレード
+# 指定されたコンポーネントをアップグレード
 epsdk upgrade Weather
 
-# 強制アップグレード
+# 強制的にアップグレード
 epsdk upgrade -f
 ```
 
@@ -3977,20 +4041,43 @@ epsdk run main.py
 epsdk run main.py --reload
 ```
 
+### 言語の切り替え
+
+```bash
+# 対話形式で言語を選択
+epsdk i18n
+
+# 英語に直接切り替え
+epsdk i18n en
+
+# サポートされている言語を一覧表示
+epsdk i18n --list
+```
+
+### タイプスタブの生成
+
+```bash
+# すべてのタイプスタブを生成
+epsdk types
+
+# モジュールのタイプスタブのみを生成
+epsdk types --modules-only
+```
+
 ### プロジェクトの初期化
 
 ```bash
-# 対話形式での初期化
+# 対話形式で初期化
 epsdk init
 
-# クイック初期化
+# クイックモードで初期化
 epsdk init -q -n my_bot
 ```
 
-### スキャフォールドの作成
+### スクリプト作成
 
 ```bash
-# 対話式の作成（タイプ選択や情報入力をガイドされます）
+# 対話形式で作成（タイプの選択と情報入力のガイド）
 epsdk create
 
 # Module プロジェクトを直接作成
@@ -4002,7 +4089,7 @@ epsdk create adapter -n MyAdapter
 # 完全なパラメータ
 epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "mail@example.com"
 
-# 既存のディレクトリを強制上書き
+# 既存のディレクトリを上書き
 epsdk create module -n MyModule -f
 
 

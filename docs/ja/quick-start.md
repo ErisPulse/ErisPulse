@@ -1,12 +1,12 @@
-# クイックスタート
+# 速習
 
-> わからない用語がありますか？[用語集](terminology.md)で分かりやすい説明を確認してください。
+> 理解できない用語に出会いましたか？ [用語集](terminology.md) を参照してわかりやすい説明を入手してください。
 
-## ErisPulseのインストール
+## ErisPulse のインストール
 
-### ワンクリックインストールスクリプト（推奨）
+### 1 クリックインストールスクリプト（推奨）
 
-インストールスクリプトは、お使いの環境（Docker、Python、uv）を自動的に検出し、最適なインストール方法を選択するようにガイドします。
+インストールスクリプトは、環境（Docker、Python、uv）を自動的に検出し、最適なインストール方法を選択します。
 
 Windows (PowerShell):
 ```powershell
@@ -18,27 +18,27 @@ macOS / Linux:
 curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 ```
 
-スクリプトは以下をガイドします：
+スクリプトは以下の手順をガイドします：
 
-- **Docker インストール**（Dockerが検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャンネル（安定版 / プレリリース版）、ダッシュボード管理パネルの設定、ポートの選択
-- **従来のインストール**：仮想環境の自動作成、ErisPulseバージョンの選択、ダッシュボード管理パネルモジュールのオプションインストール
+- **Docker インストール**（Docker が検出された場合推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プリリリース版）、Dashboard 管理パネルの設定、ポート設定
+- **従来のインストール**：仮想環境の自動作成、ErisPulse バージョンの選択、オプションで Dashboard 管理パネルモジュールのインストール
 
-### Dockerを使用する
+### Docker を使用する
 
-Dockerイメージには、ErisPulseフレームワークとダッシュボード管理パネルが組み込まれています。
+Docker イメージには、ErisPulse フレームワークと Dashboard 管理パネルが既に含まれています。
 
 ```bash
-# docker-compose.ymlをダウンロード
+# docker-compose.yml をダウンロード
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# ダッシュボードトークンを設定して起動
+# Dashboard トークンを設定して起動
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
-<summary>Docker Hubが利用できませんか？</summary>
+<summary>Docker Hub が利用できない場合？</summary>
 
-GitHub Container Registryイメージを使用するには、`docker-compose.yml`のimageを変更します：
+GitHub Container Registry イメージを使用する場合は、`docker-compose.yml` の image を次のように変更します：
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -46,46 +46,46 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-起動後、`http://<host>:8000/Dashboard`にアクセスし、設定したトークンでログインします。
+起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインします。
 
-### pipを使用したインストール
+### pip を使用したインストール
 
-Pythonのバージョンが3.10以上であることを確認し、pipを使用してインストールします：
+Python のバージョンが 3.10 以上であることを確認し、pip を使用してインストールします：
 
 ```bash
 pip install ErisPulse
 ```
 
-[uv](https://github.com/astral-sh/uv)がインストールされている場合は、`uv pip install ErisPulse`を使用すると、より高速にインストールできます。
+既に [uv](https://github.com/astral-sh/uv) をインストールしている場合は、`uv pip install ErisPulse` を使用することもでき、インストール速度が速くなります。
 
 ## プロジェクトの初期化
 
-### インタラクティブな初期化（推奨）
+### インタラクティブ初期化（推奨）
 
 ```bash
 epsdk init
 ```
 
-これによりインタラクティブなウィザードが起動し、以下をガイドします：
+これにより、インタラクティブなガイドが開始され、以下の手順がガイドされます：
 - プロジェクト名の設定
 - ログレベルの設定
-- サーバー設定（ホストとポート）
-- アダプターの選択と設定
+- サーバーの設定（ホストとポート）
+- アダプタの選択と設定
 - プロジェクト構造の作成
 
-### クイック初期化
+### 速攻初期化
 
 ```bash
-# プロジェクト名を指定したクイックモード
+# プロジェクト名を指定した速攻モード
 epsdk init -q -n my_bot
 
-# またはプロジェクト名のみを指定
+# または、プロジェクト名のみを指定
 epsdk init -n my_bot
 ```
 
-### プロジェクトの手動作成
+### 手動でプロジェクトを作成する
 
-手動でプロジェクトを作成したい場合は以下を実行します：
+手動でプロジェクトを作成したい場合は：
 
 ```bash
 mkdir my_bot && cd my_bot
@@ -94,21 +94,21 @@ epsdk init
 
 ## モジュールのインストール
 
-### CLI経由でのインストール
+### CLI でインストールする
 
 ```bash
 epsdk install Yunhu AIChat
 ```
 
-### 利用可能なモジュールの確認
+### 利用可能なモジュールを表示する
 
 ```bash
 epsdk list-remote
 ```
 
-### インタラクティブなインストール
+### インタラクティブインストール
 
-パッケージ名を指定せずに実行すると、インタラクティブなインストール画面に入ります：
+パッケージ名を指定しない場合は、インタラクティブインストール画面になります：
 
 ```bash
 epsdk install
@@ -117,11 +117,29 @@ epsdk install
 ## プロジェクトの実行
 
 ```bash
-# 通常の実行
+# 通常実行
 epsdk run main.py
 
 # ホットリロードモード（開発時に推奨）
 epsdk run main.py --reload
+```
+
+## IDE の補完を有効にする（オプション）
+
+ErisPulse はモジュール/アダプタを動的に発見しますが、IDE はデフォルトではプラットフォーム固有のメソッドを補完できません。以下のコマンドを実行して型のスタブを生成します：
+
+```bash
+epsdk types
+```
+
+生成後、インポートした型を変数の型として指定することで、正確な補完が得られます（[IDE 補完ガイド](./getting-started/ide-completion.md)を参照してください）：
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # プラットフォーム固有のメソッドの補完
 ```
 
 ## プロジェクト構造
@@ -132,13 +150,13 @@ epsdk run main.py --reload
 my_bot/
 ├── config/
 │   └── config.toml          # 設定ファイル
-└── main.py                  # エントリファイル
+└── main.py                  # エントリーポイント
 
 ```
 
 ## 設定ファイル
 
-基本的な`config.toml`の設定：
+基本的な `config.toml` 設定：
 
 ```toml
 [ErisPulse.server]
@@ -149,12 +167,12 @@ port = 8000
 level = "INFO"
 
 [Yunhu_Adapter]
-# アダプターの設定
+# アダプタの設定
 ```
 
 ## 次のステップ
 
-- [スタートガイド概要](getting-started/README.md) - ErisPulseの基本概念を理解する
-- [最初のボットを作成](getting-started/first-bot.md) - シンプルなボットを作成する
-- [ユーザーガイド](user-guide/) - 設定やモジュール管理を深く理解する
-- [開発者ガイド](developer-guide/) - カスタムモジュールやアダプターを開発する
+- [入門ガイド](getting-started/README.md) - ErisPulse の基本概念を理解する
+- [最初のボットを作成する](getting-started/first-bot.md) - 簡単なボットを作成する
+- [ユーザー使用ガイド](user-guide/) - 設定やモジュール管理について詳しく学ぶ
+- [開発者ガイド](developer-guide/) - 自作モジュールやアダプタの開発について学ぶ

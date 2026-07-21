@@ -193,9 +193,9 @@ import asyncio
 
 class MyAdapter(BaseAdapter):
     # ... 其他代码 ...
-    
+
     class Send(BaseAdapter.Send):
-        
+
         def Raw_ob12(self, message, **kwargs):
             """
             发送 OneBot12 格式消息（必须实现）
@@ -212,22 +212,17 @@ class MyAdapter(BaseAdapter):
                     **kwargs
                 )
             return asyncio.create_task(_do_send())
-        
-        def Text(self, text: str):
-            """发送文本消息"""
-            return self.Raw_ob12([
-                {"type": "text", "data": {"text": text}}
-            ])
-        
-        def Image(self, file):
-            """发送图片消息"""
-            return self.Raw_ob12([
-                {"type": "image", "data": {"file": file}}
-            ])
+
+        # Text/Image/Voice/Video/File 已从 SendDSL 基类继承，
+        # 默认委托给 Raw_ob12，无需重复实现。
+        # 如需平台特定逻辑，可覆盖单个方法：
+        # def Text(self, text: str):
+        #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 **媒体类发送方法（Image/Video/File）实现要点：**
 
+- 基类的默认实现会将 `file` 参数封装为 OneBot12 消息段传给 `Raw_ob12`，适配器需在 `Raw_ob12` 中处理下载/上传
 - `file` 参数应同时支持 `bytes` 二进制数据和 `str` URL 两种类型
 - 当传入 URL 时，需先下载文件再上传到平台
 - 平台通常需要先调用上传接口获取文件标识，再调用发送接口

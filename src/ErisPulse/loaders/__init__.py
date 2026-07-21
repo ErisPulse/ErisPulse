@@ -16,9 +16,9 @@ from .strict import StrictModeError, StrictModeLevel, StrictModeManager
 
 __all__ = [
     "AdapterLoader",
-    "ModuleLoader",
     "ModuleLoadStrategy",
-    "StrictModeLevel",
+    "ModuleLoader",
     "StrictModeError",
+    "StrictModeLevel",
     "StrictModeManager",
 ]

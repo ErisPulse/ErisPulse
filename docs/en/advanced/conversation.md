@@ -1,10 +1,10 @@
-# Conversation Multi-turn Conversation
+# Conversation Multi-turn Conversations
 
 The `Conversation` class provides convenient methods for multi-turn interactions within the same session, suitable for scenarios such as guided operations, information collection, and conversational question-answering.
 
 ## Creating a Conversation
 
-Create a conversation using the `conversation()` method of the `Event` object:
+Create a conversation through the `conversation()` method of an `Event` object:
 
 ```python
 from ErisPulse.Core.Event import command
@@ -13,22 +13,22 @@ from ErisPulse.Core.Event import command
 async def quiz_handler(event):
     conv = event.conversation(timeout=30)
 
-    await conv.say("🎮 Welcome to the quiz!")
+    await conv.say("🎮 Welcome to the knowledge quiz!")
 
-    answer = await conv.choose("Question 1: Who is the creator of Python?", [
+    answer = await conv.choose("Question 1: Who created Python?", [
         "Guido van Rossum",
         "James Gosling",
         "Dennis Ritchie",
     ])
 
     if answer is None:
-        await conv.say("Timed out, try again next time!")
+        await conv.say("Timeout, try again next time!")
         return
 
     if answer == 0:
         await conv.say("Correct!")
     else:
-        await conv.say("Incorrect, the correct answer is Guido van Rossum")
+        await conv.say("Wrong, the correct answer is Guido van Rossum")
 
     conv.stop()
 ```
@@ -51,7 +51,7 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-Wait for user reply, returning an `Event` object or `None` (on timeout):
+Wait for user reply, returning an `Event` object or `None` (timeout):
 
 ```python
 # Simple wait
@@ -62,13 +62,13 @@ if resp:
 # Wait after sending a prompt
 resp = await conv.wait(prompt="Please enter your name:")
 
-# Use custom timeout (overrides the conversation's default timeout)
+# Use custom timeout (overrides conversation default timeout)
 resp = await conv.wait(prompt="Please reply within 10 seconds:", timeout=10)
 ```
 
 ### confirm(prompt=None, **kwargs)
 
-Wait for user confirmation (yes/no), returning `True` / `False` / `None` (on timeout):
+Wait for user confirmation (yes/no), returning `True` / `False` / `None` (timeout):
 
 ```python
 result = await conv.confirm("Are you sure you want to delete all data?")
@@ -77,16 +77,16 @@ if result is True:
 elif result is False:
     await conv.say("Cancelled")
 else:
-    await conv.say("Timed out, no reply")
+    await conv.say("Timeout, no reply received")
 ```
 
-Built-in recognized confirmation words: `yes/是/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
+Built-in recognized confirmation words: `yes/是/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
 
-Built-in recognized denial words: `no/否/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
+Built-in recognized denial words: `no/否/n/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
 
 ### choose(prompt, options, **kwargs)
 
-Wait for user selection from options, returning the option index (0-based) or `None`:
+Wait for user to select from options, returning the option index (0-based) or `None`:
 
 ```python
 choice = await conv.choose("Please select a color:", ["Red", "Green", "Blue"])
@@ -97,10 +97,10 @@ if choice is not None:
 
 Users can select by entering a number (`1`/`2`/`3`) or the option text (`Red`).
 
-`options_format="auto"` (default) automatically selects the built-in style based on method: Markdown→unordered list, Html→ordered list, others→plain text list.
+`options_format="auto"` (default) automatically selects a built-in style based on the method: Markdown→unordered list, Html→ordered list, others→plain text list.  
 Also supports `"list"`, `"inline"`, `"md"`, `"html"`, or a custom function.
 
-Supports `merge_prompt=True` to merge into a single message, and placeholder control for option insertion position (default `{options}`, customizable via `placeholder`):
+Supports `merge_prompt=True` to merge into one message, and placeholders to control option insertion position (default `{options}`, customizable via `placeholder`):
 
 ```python
 choice = await conv.choose(
@@ -152,9 +152,9 @@ Field configuration:
 
 ```python
 data = await conv.collect([
-    {"key": "has_car", "prompt": "Do you have a car? (yes/no)"},
-    {"key": "car_brand", "prompt": "Please enter the car model",
-     "condition": lambda d: d.get("has_car", "").lower() in ("yes", "y", "是")},
+    {"key": "has_car", "prompt": "Do you have a car? (Yes/No)"},
+    {"key": "car_brand", "prompt": "Please enter car model",
+     "condition": lambda d: d.get("has_car", "").lower() in ("yes", "是", "y")},
 ])
 ```
 
@@ -181,15 +181,15 @@ The conversation automatically becomes inactive in the following cases:
 
 1. The `stop()` method is called
 2. `wait()` returns `None` due to timeout
-3. `collect()` returns `None` due to timeout or exhausted retries
+3. `collect()` returns `None` due to timeout or exhausted retries in any step
 
-After becoming inactive, all interactive methods (`wait`/`confirm`/`choose`/`collect`) immediately return `None` without waiting for further user input.
+After becoming inactive, all interactive methods (`wait`/`confirm`/`choose`/`collect`) immediately return `None`, without waiting for further user input.
 
-## Branching and Navigation
+## Branching and Jumping
 
 ### @conv.branch(name) Decorator
 
-Use `branch()` to register conversation branches and `goto()` to navigate between them:
+Use `branch()` to register conversation branches and `goto()` to jump between them:
 
 ```python
 @command("menu")
@@ -213,14 +213,14 @@ async def menu_handler(event):
 
     @conv.branch("profile")
     async def profile():
-        await conv.say("=== Personal Info ===\nName: Alice\n0. Back")
+        await conv.say("=== Personal Info ===\nName: Alice\n0. Return")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
 
     @conv.branch("settings")
     async def settings():
-        await conv.say("=== Settings ===\n1. Notification toggle\n0. Back")
+        await conv.say("=== Settings ===\n1. Notification Toggle\n0. Return")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
@@ -230,18 +230,18 @@ async def menu_handler(event):
 
 ### conv.start(name=None)
 
-Start the conversation, defaulting from the first registered branch:
+Start the conversation, defaulting to the first registered branch:
 
 ```python
 await conv.start()          # Start from the first branch
-await conv.start("settings") # Start from a specified branch
+await conv.start("settings") # Start from the specified branch
 ```
 
 ## Context and Persistence
 
 ### conv.context
 
-Each conversation instance has a built-in `context` dictionary to share state between branches:
+Each conversation instance has a built-in `context` dictionary for sharing state between branches:
 
 ```python
 @conv.branch("step1")
@@ -262,12 +262,12 @@ Conversations support persistence, allowing recovery after timeout or interrupti
 ```python
 # Save conversation state
 conv_id = conv.save()
-# conv_id = "user_123_group_456"  # Auto-generated based on user and group
+# conv_id = "user_123_group_456"  # Automatically generated based on user and group
 
-# ... Later, resume in the same session ...
+# ... later in the same session ...
 conv2 = event.conversation()
 if conv2.resume():
-    await conv2.say("Welcome back! Continuing the previous conversation")
+    await conv2.say("Welcome back! Continuing previous conversation")
 else:
     await conv2.say("No previous conversation found")
 
@@ -287,9 +287,9 @@ async def register_handler(event):
     await conv.say("Welcome to registration!")
 
     data = await conv.collect([
-        {"key": "username", "prompt": "Please enter a username (3-20 characters)",
+        {"key": "username", "prompt": "Please enter username (3-20 characters)",
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
-        {"key": "email", "prompt": "Please enter your email address",
+        {"key": "email", "prompt": "Please enter email address",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
          "retry_prompt": "Invalid email format, please re-enter"},
     ])
@@ -314,12 +314,12 @@ async def register_handler(event):
 @command("chat")
 async def chat_handler(event):
     conv = event.conversation(timeout=120)
-    await conv.say("Entering conversation mode, type 'exit' to end")
+    await conv.say("Entering chat mode, type 'exit' to end")
 
     while conv.is_active:
         resp = await conv.wait()
         if resp is None:
-            await conv.say("Timed out, conversation ended")
+            await conv.say("Timeout, conversation ended")
             break
 
         text = resp.get_text().strip()
@@ -337,5 +337,5 @@ async def chat_handler(event):
 
 ## Related Documentation
 
-- [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - All methods of the Event object
+- [Event Wrapper](../developer-guide/modules/event-wrapper.md) - All methods of the Event object
 - [Getting Started with Event Handling](../getting-started/event-handling.md) - Basics of event handling
