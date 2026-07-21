@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ErisPulse"
-version = "2.6.2-dev.1"
+version = "2.6.2"
 description = "Event-driven modular async bot framework — write once, deploy to any platform | 事件驱动的模块化异步机器人框架，一次编写，多平台部署"
 readme = "README.md"
 requires-python = ">=3.10"
