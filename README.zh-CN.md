@@ -585,7 +585,7 @@ ErisPulse 不仅仅是框架。装上就能开始，不需要从零造轮子。
 
 自然语言 → 可用模块
 
-[立即体验 →](https://www.erisdev.com/#builder)
+[立即体验 →](https://builder.erisdev.com)
 
 </td>
 <td align="center" width="25%">
