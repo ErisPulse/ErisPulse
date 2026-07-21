@@ -22,13 +22,13 @@
           "level": 1
         },
         {
-          "title": "Трекер ошибок",
-          "path": "bug-tracker.md",
+          "title": "Термины ErisPulse",
+          "path": "terminology.md",
           "level": 1
         },
         {
-          "title": "Термины ErisPulse",
-          "path": "terminology.md",
+          "title": "Трекер ошибок",
+          "path": "bug-tracker.md",
           "level": 1
         }
       ],
@@ -211,18 +211,13 @@
           "level": 1
         },
         {
-          "title": "Инструкции по поддержке документации",
-          "path": "platform-guide/maintain-notes.md",
+          "title": "Документация по функциям платформы Yunhu User",
+          "path": "platform-guide/yunhu_user.md",
           "level": 1
         },
         {
-          "title": "Документация по функциям платформы Discord",
-          "path": "platform-guide/discord.md",
-          "level": 1
-        },
-        {
-          "title": "Документация по функциям платформы Ideaura (HuaFeng Coffeehouse)",
-          "path": "platform-guide/ideaura.md",
+          "title": "Документация по функциям платформы QQBot",
+          "path": "platform-guide/qqbot.md",
           "level": 1
         },
         {
@@ -236,13 +231,8 @@
           "level": 1
         },
         {
-          "title": "Документация по функциям платформы QQBot",
-          "path": "platform-guide/qqbot.md",
-          "level": 1
-        },
-        {
-          "title": "Описание функций платформы — универсальный адаптер Webhook",
-          "path": "platform-guide/webhook.md",
+          "title": "Документация по функциям платформы Discord",
+          "path": "platform-guide/discord.md",
           "level": 1
         },
         {
@@ -251,8 +241,18 @@
           "level": 1
         },
         {
-          "title": "Документация по функциям платформы Yunhu User",
-          "path": "platform-guide/yunhu_user.md",
+          "title": "Описание функций платформы — универсальный адаптер Webhook",
+          "path": "platform-guide/webhook.md",
+          "level": 1
+        },
+        {
+          "title": "Документация по функциям платформы Ideaura (HuaFeng Coffeehouse)",
+          "path": "platform-guide/ideaura.md",
+          "level": 1
+        },
+        {
+          "title": "Инструкции по поддержке документации",
+          "path": "platform-guide/maintain-notes.md",
           "level": 1
         }
       ],
@@ -335,13 +335,13 @@
           "level": 1
         },
         {
-          "title": "Система международной локализации (i18n)",
-          "path": "advanced/i18n.md",
+          "title": "SQL Query Builder",
+          "path": "advanced/sql-builder.md",
           "level": 1
         },
         {
-          "title": "SQL Query Builder",
-          "path": "advanced/sql-builder.md",
+          "title": "Система международной локализации (i18n)",
+          "path": "advanced/i18n.md",
           "level": 1
         }
       ],

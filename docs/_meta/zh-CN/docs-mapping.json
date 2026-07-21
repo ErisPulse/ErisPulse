@@ -22,13 +22,13 @@
           "level": 1
         },
         {
-          "title": "Bug 追踪器",
-          "path": "bug-tracker.md",
+          "title": "ErisPulse 术语表",
+          "path": "terminology.md",
           "level": 1
         },
         {
-          "title": "ErisPulse 术语表",
-          "path": "terminology.md",
+          "title": "Bug 追踪器",
+          "path": "bug-tracker.md",
           "level": 1
         }
       ],
@@ -211,18 +211,13 @@
           "level": 1
         },
         {
-          "title": "文档维护说明",
-          "path": "platform-guide/maintain-notes.md",
+          "title": "云湖用户平台特性文档",
+          "path": "platform-guide/yunhu_user.md",
           "level": 1
         },
         {
-          "title": "Discord 平台特性文档",
-          "path": "platform-guide/discord.md",
-          "level": 1
-        },
-        {
-          "title": "花枫咖啡馆（Ideaura）平台特性文档",
-          "path": "platform-guide/ideaura.md",
+          "title": "QQBot平台特性文档",
+          "path": "platform-guide/qqbot.md",
           "level": 1
         },
         {
@@ -236,13 +231,8 @@
           "level": 1
         },
         {
-          "title": "QQBot平台特性文档",
-          "path": "platform-guide/qqbot.md",
-          "level": 1
-        },
-        {
-          "title": "平台特性说明 — Webhook 通用桥接适配器",
-          "path": "platform-guide/webhook.md",
+          "title": "Discord 平台特性文档",
+          "path": "platform-guide/discord.md",
           "level": 1
         },
         {
@@ -251,8 +241,18 @@
           "level": 1
         },
         {
-          "title": "云湖用户平台特性文档",
-          "path": "platform-guide/yunhu_user.md",
+          "title": "平台特性说明 — Webhook 通用桥接适配器",
+          "path": "platform-guide/webhook.md",
+          "level": 1
+        },
+        {
+          "title": "花枫咖啡馆（Ideaura）平台特性文档",
+          "path": "platform-guide/ideaura.md",
+          "level": 1
+        },
+        {
+          "title": "文档维护说明",
+          "path": "platform-guide/maintain-notes.md",
           "level": 1
         }
       ],
@@ -335,13 +335,13 @@
           "level": 1
         },
         {
-          "title": "国际化 (i18n) 系统",
-          "path": "advanced/i18n.md",
+          "title": "SQL 查询构建器",
+          "path": "advanced/sql-builder.md",
           "level": 1
         },
         {
-          "title": "SQL 查询构建器",
-          "path": "advanced/sql-builder.md",
+          "title": "国际化 (i18n) 系统",
+          "path": "advanced/i18n.md",
           "level": 1
         }
       ],
