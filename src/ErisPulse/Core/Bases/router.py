@@ -628,3 +628,10 @@ class SseEmitter:
         self._closed = True
         if self._on_close is not None:
             await self._on_close()
+
+
+__all__ = [
+    "HttpRequest",
+    "SseEmitter",
+    "WebSocketConnection",
+]
