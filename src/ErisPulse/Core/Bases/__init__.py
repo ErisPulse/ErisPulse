@@ -20,7 +20,7 @@ from .errors import (
     WebSocketDisconnect,
 )
 from .websocket import WebSocketConnectionBase, WSMessage
-from .router import HttpRequest, WebSocketConnection
+from .router import HttpRequest, WebSocketConnection, SseEmitter
 from .client import BaseHttpClient, BaseHttpResponse, BaseClientWebSocket
 
 __all__ = [
@@ -43,6 +43,7 @@ __all__ = [
     "SendBuilder",
     "SendContext",
     "SendDSL",
+    "SseEmitter",
     "WSMessage",
     "WebSocketConnection",
     "WebSocketConnectionBase",

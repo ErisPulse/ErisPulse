@@ -249,3 +249,8 @@ class MasterManager:
 
 # 模块级单例
 master = MasterManager()
+
+__all__ = [
+    "MasterManager",
+    "master",
+]

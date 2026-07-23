@@ -263,3 +263,9 @@ class WebSocketConnectionBase:
             return func
 
         return decorator
+
+
+__all__ = [
+    "WSMessage",
+    "WebSocketConnectionBase",
+]
