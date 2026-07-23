@@ -168,6 +168,7 @@ TRANSLATIONS = {
     "core.adapter.list_adapters_deprecated": "list_adapters() is deprecated, please use list_items() instead",
     "core.adapter.task_cancelled_debug": "Cancelled background startup task for platform {platform}",
     "core.adapter.platform_unregistered_short": "Platform {platform} not registered",
+    "core.adapter.config_update_failed": "Adapter {platform} config hot-reload callback failed: {error}",
     # ==================== Module Management ====================
     "core.module.set_sdk_failed": "Failed to set SDK reference: {error}",
     "core.module.param_must_be_class": "Parameter for module {name} must be a class, not {type}",
@@ -200,6 +201,7 @@ TRANSLATIONS = {
     "core.module.cleared": "Module manager has been fully cleared",
     "core.module.module_not_enabled": "Module {name} does not exist or is not enabled",
     "core.module.list_modules_deprecated": "list_modules() is deprecated, please use list_items() instead",
+    "core.module.config_update_failed": "Module {name} config hot-reload callback failed: {error}",
     # ==================== Router Management ====================
     "core.router.sse_path_exists": "SSE path {path} is already registered in module {module}",
     "core.router.register_sse": "[{module}] Registering SSE route: {path}",

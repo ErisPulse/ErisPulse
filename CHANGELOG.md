@@ -64,6 +64,45 @@
 
 ---
 
+## [2.6.3-dev.0] - 2026/07/23
+> 开发版本
+
+**版本摘要**
+标准化与配置热更新修复版本：(1) **公共 API 导出规范化**——补全核心模块的 `__all__` 声明，消除“能 import 但不在导出列表”的隐性公共符号；(2) **配置热更新回调核心化**——`on_config_update` 回调现由框架核心统一路由（此前仅配置管理面板改配置时触发，手动编辑文件 / 代码 `setConfig()` 均不触发）；(3) **测试覆盖补齐**——为异常体系、KV 查询构建器、WebSocket 共享基类补充 unit 测试；
+
+**升级建议**
+- **建议升级**
+- 升级原因：配置热更新回调现覆盖全部变更路径，公共 API 导出更规范
+
+### 新增
+
+- @wsu2059
+  - `on_config_update` 配置热更新核心路由：`ModuleManager` / `AdapterManager` 订阅 `config.set`（覆盖代码 `setConfig()` 路径）与 `config.updated`（覆盖手动编辑文件路径）事件，按配置键前缀匹配后调用各组件的 `on_config_update`，传入类型安全的配置对象
+    - 此前手动编辑 `config.toml` 或代码调用 `setConfig()` 均无法触发 `on_config_update`（见 BUG-021）
+  - 核心基类 unit 测试补齐：
+    - `tests/unit/test_unit_errors.py`：异常体系（继承层级 / 属性 / 拼写纠错提示识别）
+    - `tests/unit/test_unit_kv_builder.py`：KV 查询构建器（CRUD / Where / OrderBy / 异步接口 / 键隔离）
+    - `tests/unit/test_unit_websocket.py`：WebSocket 共享基类（`WSMessage` / 迭代器 / 生命周期回调）
+    - `tests/unit/test_unit_config_routing.py`：配置变更路由（config.set / config.updated / 去重 / 容错）
+  - i18n 同步（5 语言）：`core.module.config_update_failed`、`core.adapter.config_update_failed`
+
+### 修复
+
+- @wsu2059
+  - 修复 `on_config_update` 回调未被核心路由的问题（BUG-021）：手动编辑 `config.toml` / 代码 `setConfig()` 现可正常触发热更新回调
+  - 修复 `_flush_config()` 写入文件后未同步 `_config_mtime`，导致文件监听任务把框架自身写入误判为外部修改、重复触发 `config.updated` 的问题
+
+### 优化
+
+- @wsu2059
+  - 公共 API 导出规范化：补全核心模块的 `__all__` 声明
+    - 顶层 `__init__.py`：补全从 `.Core` 重新导出的 15 个符号（`BaseAdapter` / `SendDSL` / `adapter` / `config` 等）
+    - `Core/Bases/`：补全 `errors` / `client` / `kv_builder` / `router` / `send_builder` / `send_rules` / `websocket` 的 `__all__`；`SseEmitter` 公开类补入聚合导出
+    - `Core/`：补全 `client` / `master` / `constants` 的 `__all__`
+  - 示例项目配置类改为嵌套类声明方式（`@dataclass class ConfigClass`），`description` 改为纯文本（移除未注册的 i18n key 误导）
+
+---
+
 ## [2.6.2] - 2026/07/21
 > 正式发布
 

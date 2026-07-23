@@ -1,34 +1,8 @@
 from dataclasses import dataclass, field
+
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.Event import command, message, notice
 from ErisPulse.runtime.config_schema import BaseConfig
-
-
-@dataclass
-class MyModuleConfig(BaseConfig):
-    """MyModule 模块配置"""
-
-    welcome_message: str = field(
-        default="欢迎添加我为好友！",
-        metadata={
-            "description": {"i18n": "my_module.welcome_message", "default": "新好友欢迎消息"},
-            "ui": {"widget": "text", "group": "basic", "order": 1},
-        },
-    )
-    echo_enabled: bool = field(
-        default=True,
-        metadata={
-            "description": {"i18n": "my_module.echo_enabled", "default": "是否启用回显命令"},
-            "ui": {"widget": "switch", "group": "basic", "order": 2},
-        },
-    )
-    debug_mode: bool = field(
-        default=False,
-        metadata={
-            "description": {"i18n": "my_module.debug_mode", "default": "调试模式（输出详细日志）"},
-            "ui": {"widget": "switch", "group": "advanced", "order": 3},
-        },
-    )
 
 
 class Main(BaseModule):
@@ -39,7 +13,32 @@ class Main(BaseModule):
     使用声明式配置管理（ConfigClass），通过 self.cfg 实时读取配置
     """
 
-    ConfigClass = MyModuleConfig
+    # 配置类以嵌套类形式声明（需 @dataclass 装饰），框架自动识别 ConfigClass
+    @dataclass
+    class ConfigClass(BaseConfig):
+        """MyModule 模块配置"""
+
+        welcome_message: str = field(
+            default="欢迎添加我为好友！",
+            metadata={
+                "description": "新好友欢迎消息",
+                "ui": {"widget": "text", "group": "basic", "order": 1},
+            },
+        )
+        echo_enabled: bool = field(
+            default=True,
+            metadata={
+                "description": "是否启用回显命令",
+                "ui": {"widget": "switch", "group": "basic", "order": 2},
+            },
+        )
+        debug_mode: bool = field(
+            default=False,
+            metadata={
+                "description": "调试模式（输出详细日志）",
+                "ui": {"widget": "switch", "group": "advanced", "order": 3},
+            },
+        )
 
     def __init__(self, sdk):
         self.sdk = sdk
