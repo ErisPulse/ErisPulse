@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1309,
+  "total_keywords": 1321,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3148,164 +3148,204 @@
         "title": "Windows PowerShell 执行策略"
       }
     ],
-    "[BUG-001] Init 命令适配器配置路径类型错误": [
+    "[BUG-001] 事件处理器重复注册导致事件被多次处理": [
       {
         "document": "bug-tracker.md",
-        "line": 9,
+        "line": 117,
         "level": 3,
-        "title": "[BUG-001] Init 命令适配器配置路径类型错误"
+        "title": "[BUG-001] 事件处理器重复注册导致事件被多次处理"
       }
     ],
-    "[BUG-002] 重启后命令事件失效": [
+    "[BUG-002] Init 命令适配器配置路径类型错误": [
       {
         "document": "bug-tracker.md",
-        "line": 29,
+        "line": 137,
         "level": 3,
-        "title": "[BUG-002] 重启后命令事件失效"
+        "title": "[BUG-002] Init 命令适配器配置路径类型错误"
       }
     ],
-    "[BUG-003] 生命周期事件处理器未清理": [
+    "[BUG-003] 重启后命令事件失效": [
       {
         "document": "bug-tracker.md",
-        "line": 45,
+        "line": 161,
         "level": 3,
-        "title": "[BUG-003] 生命周期事件处理器未清理"
+        "title": "[BUG-003] 重启后命令事件失效"
       }
     ],
-    "[BUG-004] Event.confirm() 确认词集合赋值重复": [
+    "[BUG-004] 生命周期事件处理器未清理": [
       {
         "document": "bug-tracker.md",
-        "line": 61,
+        "line": 181,
         "level": 3,
-        "title": "[BUG-004] Event.confirm() 确认词集合赋值重复"
+        "title": "[BUG-004] 生命周期事件处理器未清理"
       }
     ],
-    "[BUG-005] MessageBuilder.at 方法定义被覆盖（死代码）": [
+    "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 与 OB12 标准不一致": [
       {
         "document": "bug-tracker.md",
-        "line": 77,
+        "line": 201,
         "level": 3,
-        "title": "[BUG-005] MessageBuilder.at 方法定义被覆盖（死代码）"
+        "title": "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 与 OB12 标准不一致"
       }
     ],
-    "[BUG-006] Event.is_friend_add/is_friend_delete 的 detail_type 与 OB12 标准不一致": [
+    "[BUG-006] adapter.clear() 未清理 _started_instances 导致重启后状态不正确": [
       {
         "document": "bug-tracker.md",
-        "line": 93,
+        "line": 221,
         "level": 3,
-        "title": "[BUG-006] Event.is_friend_add/is_friend_delete 的 detail_type 与 OB12 标准不一致"
+        "title": "[BUG-006] adapter.clear() 未清理 _started_instances 导致重启后状态不正确"
       }
     ],
-    "[BUG-007] adapter.clear() 未清理 _started_instances 导致重启后状态不正确": [
+    "[BUG-007] command.wait_reply() 使用已弃用的 asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 109,
+        "line": 241,
         "level": 3,
-        "title": "[BUG-007] adapter.clear() 未清理 _started_instances 导致重启后状态不正确"
+        "title": "[BUG-007] command.wait_reply() 使用已弃用的 asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] command.wait_reply() 使用已弃用的 asyncio.get_event_loop()": [
+    "[BUG-008] Bot 离线事件在 shutdown 过程中被重复提交": [
       {
         "document": "bug-tracker.md",
-        "line": 125,
+        "line": 261,
         "level": 3,
-        "title": "[BUG-008] command.wait_reply() 使用已弃用的 asyncio.get_event_loop()"
+        "title": "[BUG-008] Bot 离线事件在 shutdown 过程中被重复提交"
       }
     ],
-    "[BUG-009] Event.collect() 字段缺少 key 时静默跳过": [
+    "[BUG-009] LazyModule 同步访问 BaseModule 导致未初始化完成": [
       {
         "document": "bug-tracker.md",
-        "line": 141,
+        "line": 281,
         "level": 3,
-        "title": "[BUG-009] Event.collect() 字段缺少 key 时静默跳过"
+        "title": "[BUG-009] LazyModule 同步访问 BaseModule 导致未初始化完成"
       }
     ],
-    "[BUG-010] LazyModule 同步访问 BaseModule 导致未初始化完成": [
+    "[BUG-010] 配置系统多线程写入导致数据丢失": [
       {
         "document": "bug-tracker.md",
-        "line": 157,
+        "line": 301,
         "level": 3,
-        "title": "[BUG-010] LazyModule 同步访问 BaseModule 导致未初始化完成"
+        "title": "[BUG-010] 配置系统多线程写入导致数据丢失"
       }
     ],
-    "[BUG-011] 配置系统多线程写入导致数据丢失": [
+    "[BUG-011] Windows 下 CTRL+C 无法停止程序": [
       {
         "document": "bug-tracker.md",
-        "line": 173,
+        "line": 324,
         "level": 3,
-        "title": "[BUG-011] 配置系统多线程写入导致数据丢失"
+        "title": "[BUG-011] Windows 下 CTRL+C 无法停止程序"
       }
     ],
-    "[BUG-012] SDK 属性访问错误信息不准确": [
+    "[BUG-012] 热重启后已更新模块的 Python 代码未生效": [
       {
         "document": "bug-tracker.md",
-        "line": 192,
+        "line": 348,
         "level": 3,
-        "title": "[BUG-012] SDK 属性访问错误信息不准确"
+        "title": "[BUG-012] 热重启后已更新模块的 Python 代码未生效"
       }
     ],
-    "[BUG-013] Uninitializer 对未初始化 LazyModule 的清理逻辑过于复杂": [
+    "[BUG-013] 模块加载策略排序逻辑错误": [
       {
         "document": "bug-tracker.md",
-        "line": 211,
+        "line": 368,
         "level": 3,
-        "title": "[BUG-013] Uninitializer 对未初始化 LazyModule 的清理逻辑过于复杂"
+        "title": "[BUG-013] 模块加载策略排序逻辑错误"
       }
     ],
-    "[BUG-014] Windows 下 CTRL+C 无法停止程序": [
+    "[BUG-014] 适配器中间件返回 None 导致事件数据丢失": [
       {
         "document": "bug-tracker.md",
-        "line": 230,
+        "line": 388,
         "level": 3,
-        "title": "[BUG-014] Windows 下 CTRL+C 无法停止程序"
+        "title": "[BUG-014] 适配器中间件返回 None 导致事件数据丢失"
       }
     ],
-    "[BUG-015] 模块加载策略排序逻辑错误": [
+    "[BUG-015] 配置文件路径依赖工作目录": [
       {
         "document": "bug-tracker.md",
-        "line": 250,
+        "line": 408,
         "level": 3,
-        "title": "[BUG-015] 模块加载策略排序逻辑错误"
+        "title": "[BUG-015] 配置文件路径依赖工作目录"
       }
     ],
-    "[BUG-016] 适配器中间件返回 None 导致事件数据丢失": [
+    "[BUG-016] BaseStorage 将存储值 None 与键不存在混淆": [
       {
         "document": "bug-tracker.md",
-        "line": 266,
+        "line": 428,
         "level": 3,
-        "title": "[BUG-016] 适配器中间件返回 None 导致事件数据丢失"
+        "title": "[BUG-016] BaseStorage 将存储值 None 与键不存在混淆"
       }
     ],
-    "[BUG-017] 配置文件路径依赖工作目录": [
+    "[BUG-017] WebSocket 路由 auto_accept 标志在服务重启后丢失": [
       {
         "document": "bug-tracker.md",
-        "line": 282,
+        "line": 448,
         "level": 3,
-        "title": "[BUG-017] 配置文件路径依赖工作目录"
+        "title": "[BUG-017] WebSocket 路由 auto_accept 标志在服务重启后丢失"
       }
     ],
-    "[BUG-018] 子进程模式 `ep run <script>` 找不到脚本所在目录的子包": [
+    "[BUG-018] HTTP/WS 客户端并发调用导致崩溃与连接泄漏": [
       {
         "document": "bug-tracker.md",
-        "line": 298,
+        "line": 468,
         "level": 3,
-        "title": "[BUG-018] 子进程模式 `ep run <script>` 找不到脚本所在目录的子包"
+        "title": "[BUG-018] HTTP/WS 客户端并发调用导致崩溃与连接泄漏"
       }
     ],
-    "[BUG-019] SQL 查询构建器拒绝合法通配符和列表达式": [
+    "[BUG-019] 适配器热重载时路由冲突导致重载失败": [
       {
         "document": "bug-tracker.md",
-        "line": 314,
+        "line": 496,
         "level": 3,
-        "title": "[BUG-019] SQL 查询构建器拒绝合法通配符和列表达式"
+        "title": "[BUG-019] 适配器热重载时路由冲突导致重载失败"
       }
     ],
-    "[BUG-020] _resolve_account() 账户解析回归（_accounts_data 未填充）": [
+    "[BUG-020] 子进程模式 `ep run <script>` 找不到脚本所在目录的子包": [
       {
         "document": "bug-tracker.md",
-        "line": 340,
+        "line": 520,
         "level": 3,
-        "title": "[BUG-020] _resolve_account() 账户解析回归（_accounts_data 未填充）"
+        "title": "[BUG-020] 子进程模式 `ep run <script>` 找不到脚本所在目录的子包"
+      }
+    ],
+    "[BUG-021] SQL 查询构建器拒绝合法通配符和列表达式": [
+      {
+        "document": "bug-tracker.md",
+        "line": 540,
+        "level": 3,
+        "title": "[BUG-021] SQL 查询构建器拒绝合法通配符和列表达式"
+      }
+    ],
+    "[BUG-022] _resolve_account() 账户解析回归（_accounts_data 未填充）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 570,
+        "level": 3,
+        "title": "[BUG-022] _resolve_account() 账户解析回归（_accounts_data 未填充）"
+      }
+    ],
+    "[BUG-023] 修改账户配置后适配器缓存未刷新导致账户解析失败": [
+      {
+        "document": "bug-tracker.md",
+        "line": 609,
+        "level": 3,
+        "title": "[BUG-023] 修改账户配置后适配器缓存未刷新导致账户解析失败"
+      }
+    ],
+    "[BUG-024] storage.set() 写入大数字 ID 键时触发 OOM Kill": [
+      {
+        "document": "bug-tracker.md",
+        "line": 629,
+        "level": 3,
+        "title": "[BUG-024] storage.set() 写入大数字 ID 键时触发 OOM Kill"
+      }
+    ],
+    "[BUG-025] on_config_update 回调未被核心路由": [
+      {
+        "document": "bug-tracker.md",
+        "line": 675,
+        "level": 3,
+        "title": "[BUG-025] on_config_update 回调未被核心路由"
       }
     ],
     "__init__.py": [
@@ -3936,6 +3976,14 @@
         "line": 109,
         "level": 3,
         "title": "严格模式"
+      }
+    ],
+    "严重性分级": [
+      {
+        "document": "bug-tracker.md",
+        "line": 39,
+        "level": 2,
+        "title": "严重性分级"
       }
     ],
     "中间件": [
@@ -5612,6 +5660,14 @@
         "title": "可用属性"
       }
     ],
+    "可选字段": [
+      {
+        "document": "bug-tracker.md",
+        "line": 29,
+        "level": 3,
+        "title": "可选字段"
+      }
+    ],
     "同时发布到 Docker Hub": [
       {
         "document": "developer-guide/publishing.md",
@@ -6624,6 +6680,14 @@
         "title": "子日志器"
       }
     ],
+    "字段说明": [
+      {
+        "document": "bug-tracker.md",
+        "line": 14,
+        "level": 2,
+        "title": "字段说明"
+      }
+    ],
     "存储": [
       {
         "document": "terminology.md",
@@ -6977,7 +7041,7 @@
     "已修复的 Bug": [
       {
         "document": "bug-tracker.md",
-        "line": 7,
+        "line": 115,
         "level": 2,
         "title": "已修复的 Bug"
       }
@@ -7490,6 +7554,14 @@
         "line": 322,
         "level": 3,
         "title": "心跳机制"
+      }
+    ],
+    "必填字段": [
+      {
+        "document": "bug-tracker.md",
+        "line": 16,
+        "level": 3,
+        "title": "必填字段"
       }
     ],
     "必填字段映射": [
@@ -8608,6 +8680,14 @@
         "line": 137,
         "level": 3,
         "title": "条件过滤"
+      }
+    ],
+    "条目模板": [
+      {
+        "document": "bug-tracker.md",
+        "line": 65,
+        "level": 2,
+        "title": "条目模板"
       }
     ],
     "架构概览": [
@@ -10414,6 +10494,14 @@
         "title": "管理接口"
       }
     ],
+    "类型分类": [
+      {
+        "document": "bug-tracker.md",
+        "line": 49,
+        "level": 2,
+        "title": "类型分类"
+      }
+    ],
     "类型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
@@ -10508,6 +10596,14 @@
         "line": 73,
         "level": 3,
         "title": "统一的模块获取入口"
+      }
+    ],
+    "统计概览": [
+      {
+        "document": "bug-tracker.md",
+        "line": 90,
+        "level": 2,
+        "title": "统计概览"
       }
     ],
     "继承关系": [
