@@ -138,6 +138,9 @@ class AdapterManager(ManagerBase):
         # 标记是否正在关闭，避免重复提交离线事件
         self._is_being_shutdown = False
 
+        # 注册配置变更路由：将 config.set / config.updated 事件转发到各适配器的 on_config_update
+        self._register_config_change_routing()
+
     def set_sdk_ref(self, sdk) -> bool:
         """
         设置 SDK 引用
@@ -151,6 +154,97 @@ class AdapterManager(ManagerBase):
         except Exception as e:
             logger.error(i18n.t("core.adapter.set_sdk_failed", error=e))
             return False
+
+    # ==================== 配置变更路由 ====================
+
+    def _register_config_change_routing(self) -> None:
+        """
+        {!--< internal-use >!--}
+        注册 config.set / config.updated 事件订阅，将配置变更路由到各适配器的 on_config_update
+        """
+        lifecycle.register("config.set", self._on_config_set)
+        lifecycle.register("config.updated", self._on_config_updated)
+
+    def _on_config_set(self, data: dict) -> None:
+        """
+        {!--< internal-use >!--}
+        处理 config.set 事件：找出受影响的适配器并触发 on_config_update
+        """
+        key = data.get("key", "")
+        if not key:
+            return
+        for instance in list(self._started_instances):
+            if not hasattr(instance, "on_config_update"):
+                continue
+            config_key = self._resolve_config_key(instance)
+            if key == config_key or key.startswith(config_key + "."):
+                new_dict = config.getConfig(config_key) or {}
+                self._notify_config_update(instance, None, None, new_dict)
+
+    def _on_config_updated(self, data: dict) -> None:
+        """
+        {!--< internal-use >!--}
+        处理 config.updated 事件：对比新旧配置树，找出配置变化的适配器并触发 on_config_update
+        """
+        old_config = data.get("old_config", {}) or {}
+        new_config = data.get("new_config", {}) or {}
+        for instance in list(self._started_instances):
+            if not hasattr(instance, "on_config_update"):
+                continue
+            config_key = self._resolve_config_key(instance)
+            old_dict = old_config.get(config_key)
+            new_dict = new_config.get(config_key)
+            if old_dict != new_dict:
+                self._notify_config_update(instance, None, old_dict, new_dict)
+
+    @staticmethod
+    def _resolve_config_key(instance: Any) -> str:
+        """
+        {!--< internal-use >!--}
+        解析适配器的配置键名（优先用 _get_config_key，回退类名）
+        """
+        get_key = getattr(instance, "_get_config_key", None)
+        if callable(get_key):
+            try:
+                return get_key()
+            except Exception:
+                pass
+        return instance.__class__.__name__
+
+    def _notify_config_update(
+        self,
+        instance: Any,
+        platform: str | None,
+        old_dict: dict | None,
+        new_dict: dict | None,
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        调用适配器的 on_config_update 回调，传入类型安全的配置对象
+        """
+        config_class = getattr(instance, "ConfigClass", None)
+        try:
+            if config_class is not None:
+                from ..runtime.config_schema import dict_to_dataclass
+
+                old_config = (
+                    dict_to_dataclass(config_class, old_dict) if old_dict else None
+                )
+                new_config = (
+                    dict_to_dataclass(config_class, new_dict) if new_dict else None
+                )
+            else:
+                old_config = old_dict
+                new_config = new_dict
+            instance.on_config_update(old_config, new_config)
+        except Exception as e:
+            logger.error(
+                i18n.t(
+                    "core.adapter.config_update_failed",
+                    platform=platform or instance.__class__.__name__,
+                    error=e,
+                )
+            )
 
     # ==================== 适配器注册与管理 ====================
 
