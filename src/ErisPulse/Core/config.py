@@ -272,6 +272,13 @@ class ConfigManager:
                     self._cache_timestamp = time.time()
                     self._dirty_keys.clear()
 
+                    # 同步记录的 mtime，避免文件监听任务把框架自身的写入误判为外部修改，
+                    # 从而重复触发 config.updated（与 config.set 路由重复调用 on_config_update）
+                    try:
+                        self._config_mtime = Path(self.CONFIG_FILE).stat().st_mtime
+                    except OSError:
+                        pass
+
                 except Exception as e:
                     try:
                         from .logger import logger

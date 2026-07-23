@@ -1,69 +1,8 @@
 import asyncio
 from dataclasses import dataclass, field
+
 from ErisPulse.Core import BaseAdapter, RequestDSL, SendDSL
 from ErisPulse.runtime.config_schema import BaseConfig, BotAccountConfig
-
-
-@dataclass
-class MyAdapterConfig(BaseConfig):
-    """MyAdapter 全局配置"""
-
-    api_endpoint: str = field(
-        default="https://api.example.com",
-        metadata={
-            "description": {"i18n": "my_adapter.api_endpoint", "default": "API 地址"},
-            "required": False,
-            "ui": {"widget": "text", "group": "connection", "order": 1},
-        },
-    )
-    mode: str = field(
-        default="server",
-        metadata={
-            "description": {"i18n": "my_adapter.mode", "default": "运行模式（server 或 client）"},
-            "required": False,
-            "ui": {
-                "widget": "select",
-                "group": "connection",
-                "order": 2,
-                "options": [
-                    {"label": "服务器模式", "value": "server"},
-                    {"label": "客户端模式", "value": "client"},
-                ],
-            },
-        },
-    )
-    token: str = field(
-        default="",
-        metadata={
-            "description": {"i18n": "my_adapter.token", "default": "平台 Token"},
-            "required": True,
-            "secret": True,
-            "ui": {"widget": "password", "group": "basic", "order": 3},
-        },
-    )
-
-
-@dataclass
-class MyBotConfig(BotAccountConfig):
-    """MyAdapter 多账户配置（可选）"""
-
-    bot_id: str = field(
-        default="",
-        metadata={
-            "description": {"i18n": "my_adapter.bot_id", "default": "Bot ID"},
-            "required": True,
-            "ui": {"widget": "text", "group": "basic", "order": 1},
-        },
-    )
-    bot_token: str = field(
-        default="",
-        metadata={
-            "description": {"i18n": "my_adapter.bot_token", "default": "Bot Token"},
-            "required": True,
-            "secret": True,
-            "ui": {"widget": "password", "group": "basic", "order": 2},
-        },
-    )
 
 
 class MyAdapter(BaseAdapter):
@@ -81,8 +20,51 @@ class MyAdapter(BaseAdapter):
     - _resolve_account() 自动解析多账户
     """
 
-    ConfigClass = MyAdapterConfig
-    # AccountConfigClass = MyBotConfig  # 多账户时取消注释
+    # 全局配置类以嵌套类形式声明（需 @dataclass 装饰），框架自动识别 ConfigClass
+    @dataclass
+    class ConfigClass(BaseConfig):
+        """MyAdapter 全局配置"""
+
+        api_endpoint: str = field(
+            default="https://api.example.com",
+            metadata={
+                "description": "API 地址",
+                "required": False,
+                "ui": {"widget": "text", "group": "connection", "order": 1},
+            },
+        )
+        mode: str = field(
+            default="server",
+            metadata={
+                "description": "运行模式（server 或 client）",
+                "required": False,
+                "ui": {
+                    "widget": "select",
+                    "group": "connection",
+                    "order": 2,
+                    "options": [
+                        {"label": "服务器模式", "value": "server"},
+                        {"label": "客户端模式", "value": "client"},
+                    ],
+                },
+            },
+        )
+        token: str = field(
+            default="",
+            metadata={
+                "description": "平台 Token",
+                "required": True,
+                "secret": True,
+                "ui": {"widget": "password", "group": "basic", "order": 3},
+            },
+        )
+
+    # 多账户配置类同样以嵌套类形式声明（多账户时取消注释）
+    # @dataclass
+    # class AccountConfigClass(BotAccountConfig):
+    #     """MyAdapter 多账户配置（可选）"""
+    #     bot_id: str = field(default="", metadata={"description": "Bot ID", "required": True, "ui": {"widget": "text", "group": "basic", "order": 1}})
+    #     bot_token: str = field(default="", metadata={"description": "Bot Token", "required": True, "secret": True, "ui": {"widget": "password", "group": "basic", "order": 2}})
 
     def on_config_update(self, old_config, new_config):
         """配置热更新回调"""

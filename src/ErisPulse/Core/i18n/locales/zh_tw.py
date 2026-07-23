@@ -168,6 +168,7 @@ TRANSLATIONS = {
     "core.adapter.list_adapters_deprecated": "list_adapters() 已棄用，請使用 list_items() 代替",
     "core.adapter.task_cancelled_debug": "已取消平台 {platform} 的後台啟動任務",
     "core.adapter.platform_unregistered_short": "平台 {platform} 未註冊",
+    "core.adapter.config_update_failed": "適配器 {platform} 配置熱更新回呼執行失敗: {error}",
     # ==================== 模組管理 ====================
     "core.module.set_sdk_failed": "設定SDK參考失敗: {error}",
     "core.module.param_must_be_class": "模組 {name} 的參數必須是類別，而不是 {type}",
@@ -200,6 +201,7 @@ TRANSLATIONS = {
     "core.module.cleared": "模組管理器已完全清理",
     "core.module.module_not_enabled": "模組 {name} 不存在或未啟用",
     "core.module.list_modules_deprecated": "list_modules() 已棄用，請使用 list_items() 代替",
+    "core.module.config_update_failed": "模組 {name} 配置熱更新回呼執行失敗: {error}",
     # ==================== 路由管理 ====================
     "core.router.sse_path_exists": "SSE路徑 {path} 已在模組 {module} 中註冊",
     "core.router.register_sse": "[{module}] 註冊SSE路由: {path}",
