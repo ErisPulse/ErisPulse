@@ -230,36 +230,15 @@ curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compos
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-> 镜像内置 ErisPulse 框架和 Dashboard 管理面板，支持 `linux/amd64` 和 `linux/arm64` 架构。
+启动后访问 `http://<host>:8000/Dashboard`，使用设置的令牌登录 Dashboard 管理面板。
 
-启动后访问 `http://<host>:<port>/Dashboard`，使用设置的令牌作为密码登录 Dashboard 管理面板。
+> 镜像内置 ErisPulse 框架和 Dashboard 管理面板，支持 `linux/amd64` 和 `linux/arm64` 架构。
+>
+> **持久化**：配置文件和已安装的模块/适配器通过卷挂载持久化到宿主机，容器重启后不会丢失。框架自身的更新通过 Dashboard 热更新完成。
 
 </details>
 
 <details>
-<summary>使用预发布版本 (Dev)</summary>
-
-设置 `ERISPULSE_CHANNEL=dev` 即可使用预发布版本：
-
-```bash
-# 方式一：使用环境变量（推荐）
-ERISPULSE_CHANNEL=dev ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
-
-# 方式二：构建 dev 镜像
-ERISPULSE_BUILD_TARGET=dev docker compose up -d --build
-```
-
-如需启动时自动更新到最新版本（无论 stable 还是 dev），显式设置 `ERISPULSE_UPDATE_ON_START=true`：
-
-```bash
-ERISPULSE_CHANNEL=dev ERISPULSE_UPDATE_ON_START=true docker compose up -d
-```
-
-也可以拉取预构建的 dev 镜像：
-
-```bash
-docker pull erispulse/erispulse:dev
-```
 
 </details>
 
@@ -268,13 +247,14 @@ docker pull erispulse/erispulse:dev
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `ERISPULSE_CHANNEL` | `stable` | 版本通道：`stable`（稳定版）或 `dev`（预发布版） |
-| `ERISPULSE_UPDATE_ON_START` | `false` | 容器启动时是否自动更新到最新版本（需显式启用） |
-| `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboard 登录令牌 |
+| `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboard 登录令牌（设置后自动写入配置）|
 | `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
+| `ERISPULSE_TAG` | `latest` | 镜像 tag，可设为 `dev` 使用预发布镜像 |
+| `ERISPULSE_BUILD_TARGET` | `production` | 构建目标：`production`（稳定版）或 `dev`（预发布版）|
+| `CONTAINER_NAME` | `erispulse` | 容器名称 |
 | `TZ` | `Asia/Shanghai` | 容器时区 |
-
-> 启用 `ERISPULSE_UPDATE_ON_START=true` 可确保即使镜像较旧，容器也能在启动时自动获取最新版本。
+| `LANG` | `en_US.UTF-8` | 系统语言，自动检测启动界面语言 |
+| `ERISPULSE_LANG` | 空 | 强制启动界面语言：`zh` / `zh_TW` / `en` / `ja` / `ru`（覆盖 `LANG`）|
 
 </details>
 
@@ -585,7 +565,7 @@ ErisPulse 不仅仅是框架。装上就能开始，不需要从零造轮子。
 
 自然语言 → 可用模块
 
-[立即体验 →](https://www.erisdev.com/#builder)
+[立即体验 →](https://builder.erisdev.com)
 
 </td>
 <td align="center" width="25%">

@@ -333,3 +333,9 @@ class _PriorityQueue:
     def reset(cls) -> None:
         """重置状态（主要用于测试）"""
         cls._inflight = 0
+
+
+__all__ = [
+    "SendContext",
+    "apply_send_rules",
+]

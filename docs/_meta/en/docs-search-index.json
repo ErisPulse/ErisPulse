@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1339,
+  "total_keywords": 1350,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -4970,6 +4970,14 @@
         "title": "Enter Build Mode"
       }
     ],
+    "Entry Template": [
+      {
+        "document": "bug-tracker.md",
+        "line": 65,
+        "level": 2,
+        "title": "Entry Template"
+      }
+    ],
     "Environment Variables": [
       {
         "document": "user-guide/deployment.md",
@@ -5638,6 +5646,14 @@
         "title": "Feature Overview"
       }
     ],
+    "Field Descriptions": [
+      {
+        "document": "bug-tracker.md",
+        "line": 14,
+        "level": 2,
+        "title": "Field Descriptions"
+      }
+    ],
     "File Handling Features": [
       {
         "document": "platform-guide/ideaura.md",
@@ -5649,7 +5665,7 @@
     "Fixed Bugs": [
       {
         "document": "bug-tracker.md",
-        "line": 7,
+        "line": 115,
         "level": 2,
         "title": "Fixed Bugs"
       }
@@ -8392,6 +8408,14 @@
         "title": "Operating Mode"
       }
     ],
+    "Optional Fields": [
+      {
+        "document": "bug-tracker.md",
+        "line": 29,
+        "level": 3,
+        "title": "Optional Fields"
+      }
+    ],
     "Other Message Types": [
       {
         "document": "platform-guide/onebot12.md",
@@ -9636,6 +9660,12 @@
     ],
     "Required Fields": [
       {
+        "document": "bug-tracker.md",
+        "line": 16,
+        "level": 3,
+        "title": "Required Fields"
+      },
+      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 577,
         "level": 3,
@@ -10268,6 +10298,14 @@
         "title": "Session Type System"
       }
     ],
+    "Severity Classification": [
+      {
+        "document": "bug-tracker.md",
+        "line": 39,
+        "level": 2,
+        "title": "Severity Classification"
+      }
+    ],
     "Shutdown Adapter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -10564,6 +10602,14 @@
         "line": 169,
         "level": 3,
         "title": "Static Factory + Chaining Mix"
+      }
+    ],
+    "Statistics Overview": [
+      {
+        "document": "bug-tracker.md",
+        "line": 90,
+        "level": 2,
+        "title": "Statistics Overview"
       }
     ],
     "Step 1: Create Project": [
@@ -11090,6 +11136,14 @@
         "line": 125,
         "level": 3,
         "title": "Type Annotation"
+      }
+    ],
+    "Type Classification": [
+      {
+        "document": "bug-tracker.md",
+        "line": 49,
+        "level": 2,
+        "title": "Type Classification"
       }
     ],
     "Type Conversion": [
@@ -11816,164 +11870,204 @@
         "title": "Yunhu User Platform Features Documentation"
       }
     ],
-    "[BUG-001] Init Command Adapter Configuration Path Type Error": [
+    "[BUG-001] Event handler duplicate registration causes event to be processed multiple times": [
       {
         "document": "bug-tracker.md",
-        "line": 9,
+        "line": 117,
         "level": 3,
-        "title": "[BUG-001] Init Command Adapter Configuration Path Type Error"
+        "title": "[BUG-001] Event handler duplicate registration causes event to be processed multiple times"
       }
     ],
-    "[BUG-002] Command Events Fail After Restart": [
+    "[BUG-002] Init command adapter configuration path type error": [
       {
         "document": "bug-tracker.md",
-        "line": 29,
+        "line": 137,
         "level": 3,
-        "title": "[BUG-002] Command Events Fail After Restart"
+        "title": "[BUG-002] Init command adapter configuration path type error"
       }
     ],
-    "[BUG-003] Lifecycle Event Handlers Not Cleared": [
+    "[BUG-003] Commands fail after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 45,
+        "line": 161,
         "level": 3,
-        "title": "[BUG-003] Lifecycle Event Handlers Not Cleared"
+        "title": "[BUG-003] Commands fail after restart"
       }
     ],
-    "[BUG-004] Event.confirm() Confirmation Word Set Assignment Duplicated": [
+    "[BUG-004] Lifecycle event handlers not cleared": [
       {
         "document": "bug-tracker.md",
-        "line": 61,
+        "line": 181,
         "level": 3,
-        "title": "[BUG-004] Event.confirm() Confirmation Word Set Assignment Duplicated"
+        "title": "[BUG-004] Lifecycle event handlers not cleared"
       }
     ],
-    "[BUG-005] MessageBuilder.at Method Definition Overwritten (Dead Code)": [
+    "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
       {
         "document": "bug-tracker.md",
-        "line": 77,
+        "line": 201,
         "level": 3,
-        "title": "[BUG-005] MessageBuilder.at Method Definition Overwritten (Dead Code)"
+        "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
       }
     ],
-    "[BUG-006] Event.is_friend_add/is_friend_delete detail_type Inconsistent with OB12 Standard": [
+    "[BUG-006] adapter.clear() does not clear _started_instances causing incorrect status after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 93,
+        "line": 221,
         "level": 3,
-        "title": "[BUG-006] Event.is_friend_add/is_friend_delete detail_type Inconsistent with OB12 Standard"
+        "title": "[BUG-006] adapter.clear() does not clear _started_instances causing incorrect status after restart"
       }
     ],
-    "[BUG-007] adapter.clear() Did Not Clear _started_instances, Causing Incorrect State After Restart": [
+    "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 109,
+        "line": 241,
         "level": 3,
-        "title": "[BUG-007] adapter.clear() Did Not Clear _started_instances, Causing Incorrect State After Restart"
+        "title": "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] command.wait_reply() Used Deprecated asyncio.get_event_loop()": [
+    "[BUG-008] Bot offline event repeatedly submitted during shutdown": [
       {
         "document": "bug-tracker.md",
-        "line": 125,
+        "line": 261,
         "level": 3,
-        "title": "[BUG-008] command.wait_reply() Used Deprecated asyncio.get_event_loop()"
+        "title": "[BUG-008] Bot offline event repeatedly submitted during shutdown"
       }
     ],
-    "[BUG-009] Event.collect() Silently Skips Fields Missing key": [
+    "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization": [
       {
         "document": "bug-tracker.md",
-        "line": 141,
+        "line": 281,
         "level": 3,
-        "title": "[BUG-009] Event.collect() Silently Skips Fields Missing key"
+        "title": "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization"
       }
     ],
-    "[BUG-010] LazyModule Synchronous Access to BaseModule Causes Incomplete Initialization": [
+    "[BUG-010] Multi-threaded configuration system writes cause data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 157,
+        "line": 301,
         "level": 3,
-        "title": "[BUG-010] LazyModule Synchronous Access to BaseModule Causes Incomplete Initialization"
+        "title": "[BUG-010] Multi-threaded configuration system writes cause data loss"
       }
     ],
-    "[BUG-011] Configuration System Multi-threaded Write Causes Data Loss": [
+    "[BUG-011] Windows Ctrl+C cannot stop the program": [
       {
         "document": "bug-tracker.md",
-        "line": 173,
+        "line": 324,
         "level": 3,
-        "title": "[BUG-011] Configuration System Multi-threaded Write Causes Data Loss"
+        "title": "[BUG-011] Windows Ctrl+C cannot stop the program"
       }
     ],
-    "[BUG-012] SDK Attribute Access Error Message Is Inaccurate": [
+    "[BUG-012] Hot restart does not activate updated module Python code": [
       {
         "document": "bug-tracker.md",
-        "line": 192,
+        "line": 348,
         "level": 3,
-        "title": "[BUG-012] SDK Attribute Access Error Message Is Inaccurate"
+        "title": "[BUG-012] Hot restart does not activate updated module Python code"
       }
     ],
-    "[BUG-013] Uninitializer Cleanup Logic for Uninitialized LazyModule Too Complex": [
+    "[BUG-013] Module loading strategy sort logic error": [
       {
         "document": "bug-tracker.md",
-        "line": 211,
+        "line": 368,
         "level": 3,
-        "title": "[BUG-013] Uninitializer Cleanup Logic for Uninitialized LazyModule Too Complex"
+        "title": "[BUG-013] Module loading strategy sort logic error"
       }
     ],
-    "[BUG-014] Windows Ctrl+C Cannot Stop Program": [
+    "[BUG-014] Adapter middleware returning None causes event data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 230,
+        "line": 388,
         "level": 3,
-        "title": "[BUG-014] Windows Ctrl+C Cannot Stop Program"
+        "title": "[BUG-014] Adapter middleware returning None causes event data loss"
       }
     ],
-    "[BUG-015] Module Loading Strategy Sorting Logic Error": [
+    "[BUG-015] Configuration file path depends on working directory": [
       {
         "document": "bug-tracker.md",
-        "line": 250,
+        "line": 408,
         "level": 3,
-        "title": "[BUG-015] Module Loading Strategy Sorting Logic Error"
+        "title": "[BUG-015] Configuration file path depends on working directory"
       }
     ],
-    "[BUG-016] Adapter Middleware Returning None Causes Event Data Loss": [
+    "[BUG-016] BaseStorage confuses storing None value with key not existing": [
       {
         "document": "bug-tracker.md",
-        "line": 266,
+        "line": 428,
         "level": 3,
-        "title": "[BUG-016] Adapter Middleware Returning None Causes Event Data Loss"
+        "title": "[BUG-016] BaseStorage confuses storing None value with key not existing"
       }
     ],
-    "[BUG-017] Configuration File Path Depends on Working Directory": [
+    "[BUG-017] WebSocket route auto_accept flag lost after service restart": [
       {
         "document": "bug-tracker.md",
-        "line": 282,
+        "line": 448,
         "level": 3,
-        "title": "[BUG-017] Configuration File Path Depends on Working Directory"
+        "title": "[BUG-017] WebSocket route auto_accept flag lost after service restart"
       }
     ],
-    "[BUG-018] Subprocess Mode `ep run <script>` Cannot Find Sub-packages in the Script's Directory": [
+    "[BUG-018] HTTP/WS client concurrent calls cause crash and connection leak": [
       {
         "document": "bug-tracker.md",
-        "line": 298,
+        "line": 468,
         "level": 3,
-        "title": "[BUG-018] Subprocess Mode `ep run <script>` Cannot Find Sub-packages in the Script's Directory"
+        "title": "[BUG-018] HTTP/WS client concurrent calls cause crash and connection leak"
       }
     ],
-    "[BUG-019] SQL Query Builder Rejects Legitimate Wildcard and List Expressions": [
+    "[BUG-019] Adapter hot reload causes route conflict and reload failure": [
       {
         "document": "bug-tracker.md",
-        "line": 314,
+        "line": 496,
         "level": 3,
-        "title": "[BUG-019] SQL Query Builder Rejects Legitimate Wildcard and List Expressions"
+        "title": "[BUG-019] Adapter hot reload causes route conflict and reload failure"
       }
     ],
-    "[BUG-020] _resolve_account() Account Resolution Regression (_accounts_data Not Populated)": [
+    "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in the script's directory": [
       {
         "document": "bug-tracker.md",
-        "line": 339,
+        "line": 520,
         "level": 3,
-        "title": "[BUG-020] _resolve_account() Account Resolution Regression (_accounts_data Not Populated)"
+        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in the script's directory"
+      }
+    ],
+    "[BUG-021] SQL query builder rejects legitimate wildcard and list expressions": [
+      {
+        "document": "bug-tracker.md",
+        "line": 540,
+        "level": 3,
+        "title": "[BUG-021] SQL query builder rejects legitimate wildcard and list expressions"
+      }
+    ],
+    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)": [
+      {
+        "document": "bug-tracker.md",
+        "line": 570,
+        "level": 3,
+        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)"
+      }
+    ],
+    "[BUG-023] Adapter cache not refreshed after account configuration modification causing account resolution failure": [
+      {
+        "document": "bug-tracker.md",
+        "line": 609,
+        "level": 3,
+        "title": "[BUG-023] Adapter cache not refreshed after account configuration modification causing account resolution failure"
+      }
+    ],
+    "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill": [
+      {
+        "document": "bug-tracker.md",
+        "line": 629,
+        "level": 3,
+        "title": "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill"
+      }
+    ],
+    "[BUG-025] on_config_update callback not triggered by core": [
+      {
+        "document": "bug-tracker.md",
+        "line": 675,
+        "level": 3,
+        "title": "[BUG-025] on_config_update callback not triggered by core"
       }
     ],
     "__init__.py": [

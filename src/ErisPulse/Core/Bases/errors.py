@@ -129,3 +129,14 @@ class WebSocketDisconnect(WebSocketError):
         self.code = code
         self.reason = reason or ""
         super().__init__(f"code={self.code}, reason={self.reason}")
+
+
+__all__ = [
+    "ClientConnectionError",
+    "ClientError",
+    "ClientTimeoutError",
+    "ErisPulseError",
+    "HTTPStatusError",
+    "WebSocketDisconnect",
+    "WebSocketError",
+]

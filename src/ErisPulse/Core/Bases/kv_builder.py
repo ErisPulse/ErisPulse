@@ -373,3 +373,8 @@ class KVQueryBuilder(BaseQueryBuilder):
 
     async def aExists(self) -> bool:
         return await self.aCount() > 0
+
+
+__all__ = [
+    "KVQueryBuilder",
+]
