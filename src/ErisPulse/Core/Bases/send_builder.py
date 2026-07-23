@@ -465,3 +465,9 @@ class SendBuilder:
         except Exception:
             # 生命周期事件失败不应影响批量发送
             pass
+
+
+__all__ = [
+    "BatchContext",
+    "SendBuilder",
+]
