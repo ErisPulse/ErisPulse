@@ -168,6 +168,7 @@ TRANSLATIONS = {
     "core.adapter.list_adapters_deprecated": "list_adapters() устарел, используйте list_items()",
     "core.adapter.task_cancelled_debug": "Отменена фоновая задача запуска для платформы {platform}",
     "core.adapter.platform_unregistered_short": "Платформа {platform} не зарегистрирована",
+    "core.adapter.config_update_failed": "Сбой обратного вызова горячей перезагрузки конфигурации адаптера {platform}: {error}",
     # ==================== Управление модулями ====================
     "core.module.set_sdk_failed": "Ошибка установки ссылки на SDK: {error}",
     "core.module.param_must_be_class": "Параметр для модуля {name} должен быть классом, а не {type}",
@@ -200,6 +201,7 @@ TRANSLATIONS = {
     "core.module.cleared": "Менеджер модулей полностью очищен",
     "core.module.module_not_enabled": "Модуль {name} не существует или не включён",
     "core.module.list_modules_deprecated": "list_modules() устарел, используйте list_items()",
+    "core.module.config_update_failed": "Сбой обратного вызова горячей перезагрузки конфигурации модуля {name}: {error}",
     # ==================== Управление маршрутизацией ====================
     "core.router.sse_path_exists": "SSE путь {path} уже зарегистрирован в модуле {module}",
     "core.router.register_sse": "[{module}] Регистрация SSE маршрута: {path}",

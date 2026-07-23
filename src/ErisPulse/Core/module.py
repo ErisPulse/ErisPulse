@@ -93,6 +93,8 @@ class ModuleManager(ManagerBase):
             str, Any
         ] = {}  # 懒加载代理（未触发初始化时 get() 返回它）
         self._sdk = None
+        # 注册配置变更路由：将 config.set / config.updated 事件转发到各模块的 on_config_update
+        self._register_config_change_routing()
 
     def set_sdk_ref(self, sdk) -> bool:
         """
@@ -109,6 +111,100 @@ class ModuleManager(ManagerBase):
 
             logger.error(i18n.t("core.module.set_sdk_failed", error=e))
             return False
+
+    # ==================== 配置变更路由 ====================
+
+    def _register_config_change_routing(self) -> None:
+        """
+        {!--< internal-use >!--}
+        注册 config.set / config.updated 事件订阅，将配置变更路由到各模块的 on_config_update
+
+        - ``config.set``：代码或 Dashboard 调用 setConfig 时即时触发（单 key 变更）
+        - ``config.updated``：用户手动编辑配置文件后由文件监听任务触发（整树变更）
+        """
+        lifecycle.register("config.set", self._on_config_set)
+        lifecycle.register("config.updated", self._on_config_updated)
+
+    def _on_config_set(self, data: dict) -> None:
+        """
+        {!--< internal-use >!--}
+        处理 config.set 事件：找出受影响的模块并触发 on_config_update
+        """
+        key = data.get("key", "")
+        if not key:
+            return
+        for module_name in list(self._loaded_modules):
+            instance = self._modules.get(module_name)
+            if not instance or not hasattr(instance, "on_config_update"):
+                continue
+            config_key = self._resolve_config_key(instance)
+            # key 形如 "MyModule" 或 "MyModule.field"
+            if key == config_key or key.startswith(config_key + "."):
+                new_dict = config.getConfig(config_key) or {}
+                self._notify_config_update(instance, module_name, None, new_dict)
+
+    def _on_config_updated(self, data: dict) -> None:
+        """
+        {!--< internal-use >!--}
+        处理 config.updated 事件：对比新旧配置树，找出配置变化的模块并触发 on_config_update
+        """
+        old_config = data.get("old_config", {}) or {}
+        new_config = data.get("new_config", {}) or {}
+        for module_name in list(self._loaded_modules):
+            instance = self._modules.get(module_name)
+            if not instance or not hasattr(instance, "on_config_update"):
+                continue
+            config_key = self._resolve_config_key(instance)
+            old_dict = old_config.get(config_key)
+            new_dict = new_config.get(config_key)
+            if old_dict != new_dict:
+                self._notify_config_update(instance, module_name, old_dict, new_dict)
+
+    @staticmethod
+    def _resolve_config_key(instance: Any) -> str:
+        """
+        {!--< internal-use >!--}
+        解析模块的配置键名（优先用注入的注册名，回退类名）
+        """
+        return getattr(instance, "_module_name", None) or instance.__class__.__name__
+
+    def _notify_config_update(
+        self,
+        instance: Any,
+        module_name: str,
+        old_dict: dict | None,
+        new_dict: dict | None,
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        调用模块的 on_config_update 回调，传入类型安全的配置对象
+
+        :param instance: 模块实例
+        :param module_name: 模块名（用于日志）
+        :param old_dict: 变更前的配置字典（可能为 None）
+        :param new_dict: 变更后的配置字典（可能为 None）
+        """
+        config_class = getattr(instance, "ConfigClass", None)
+        try:
+            if config_class is not None:
+                from ..runtime.config_schema import dict_to_dataclass
+
+                old_config = (
+                    dict_to_dataclass(config_class, old_dict) if old_dict else None
+                )
+                new_config = (
+                    dict_to_dataclass(config_class, new_dict) if new_dict else None
+                )
+            else:
+                old_config = old_dict
+                new_config = new_dict
+            instance.on_config_update(old_config, new_config)
+        except Exception as e:
+            logger.error(
+                i18n.t(
+                    "core.module.config_update_failed", name=module_name, error=e
+                )
+            )
 
     # ==================== 模块注册与管理 ====================
 

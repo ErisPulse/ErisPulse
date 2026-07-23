@@ -946,3 +946,10 @@ class HttpClient(BaseHttpClient):
 
     async def __aexit__(self, *args):
         await self.close()
+
+
+__all__ = [
+    "ClientWebSocket",
+    "HttpClient",
+    "HttpResponse",
+]

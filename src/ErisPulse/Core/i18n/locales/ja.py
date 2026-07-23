@@ -168,6 +168,7 @@ TRANSLATIONS = {
     "core.adapter.list_adapters_deprecated": "list_adapters() は非推奨です、list_items() を使用してください",
     "core.adapter.task_cancelled_debug": "プラットフォーム {platform} のバックグラウンド起動タスクをキャンセルしました",
     "core.adapter.platform_unregistered_short": "プラットフォーム {platform} は登録されていません",
+    "core.adapter.config_update_failed": "アダプター {platform} の設定ホットリロードコールバックの実行に失敗しました: {error}",
     # ==================== モジュール管理 ====================
     "core.module.set_sdk_failed": "SDK 参照の設定に失敗しました: {error}",
     "core.module.param_must_be_class": "モジュール {name} のパラメーターはクラスでなければなりません、{type} ではありません",
@@ -200,6 +201,7 @@ TRANSLATIONS = {
     "core.module.cleared": "モジュールマネージャーは完全にクリアされました",
     "core.module.module_not_enabled": "モジュール {name} は存在しないか有効化されていません",
     "core.module.list_modules_deprecated": "list_modules() は非推奨です、list_items() を使用してください",
+    "core.module.config_update_failed": "モジュール {name} の設定ホットリロードコールバックの実行に失敗しました: {error}",
     # ==================== ルーター管理 ====================
     "core.router.sse_path_exists": "SSE パス {path} は既にモジュール {module} に登録されています",
     "core.router.register_sse": "[{module}] SSE ルートを登録しています: {path}",

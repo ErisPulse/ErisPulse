@@ -54,6 +54,46 @@ ErisPulse 适配器系统
 ---
 
 
+##### `_register_config_change_routing()`
+
+> **内部方法**
+注册 config.set / config.updated 事件订阅，将配置变更路由到各适配器的 on_config_update
+
+---
+
+
+##### `_on_config_set(data: dict)`
+
+> **内部方法**
+处理 config.set 事件：找出受影响的适配器并触发 on_config_update
+
+---
+
+
+##### `_on_config_updated(data: dict)`
+
+> **内部方法**
+处理 config.updated 事件：对比新旧配置树，找出配置变化的适配器并触发 on_config_update
+
+---
+
+
+##### `_resolve_config_key(instance: Any)`
+
+> **内部方法**
+解析适配器的配置键名（优先用 _get_config_key，回退类名）
+
+---
+
+
+##### `_notify_config_update(instance: Any, platform: str | None, old_dict: dict | None, new_dict: dict | None)`
+
+> **内部方法**
+调用适配器的 on_config_update 回调，传入类型安全的配置对象
+
+---
+
+
 ##### `register(name: str | None = None, class_type: type[BaseAdapter] | None = None, info: dict | None = None)`
 
 注册新的适配器类（标准化注册方法）
