@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1362,
+  "total_keywords": 1374,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3110,164 +3110,204 @@
         "title": "Windows PowerShell 执行策略"
       }
     ],
-    "[BUG-001] Init 指令適配器配置路徑類型錯誤": [
+    "[BUG-001] 事件處理器重複註冊導致事件被多次處理": [
       {
         "document": "bug-tracker.md",
-        "line": 9,
+        "line": 117,
         "level": 3,
-        "title": "[BUG-001] Init 指令適配器配置路徑類型錯誤"
+        "title": "[BUG-001] 事件處理器重複註冊導致事件被多次處理"
       }
     ],
-    "[BUG-002] 重啟後指令事件失效": [
+    "[BUG-002] Init 命令適配器配置路徑類型錯誤": [
       {
         "document": "bug-tracker.md",
-        "line": 29,
+        "line": 137,
         "level": 3,
-        "title": "[BUG-002] 重啟後指令事件失效"
+        "title": "[BUG-002] Init 命令適配器配置路徑類型錯誤"
       }
     ],
-    "[BUG-003] 生命週期事件處理器未清理": [
+    "[BUG-003] 重啟後命令事件失效": [
       {
         "document": "bug-tracker.md",
-        "line": 45,
+        "line": 161,
         "level": 3,
-        "title": "[BUG-003] 生命週期事件處理器未清理"
+        "title": "[BUG-003] 重啟後命令事件失效"
       }
     ],
-    "[BUG-004] Event.confirm() 確認詞集合賦值重複": [
+    "[BUG-004] 生命週期事件處理器未清理": [
       {
         "document": "bug-tracker.md",
-        "line": 61,
+        "line": 181,
         "level": 3,
-        "title": "[BUG-004] Event.confirm() 確認詞集合賦值重複"
+        "title": "[BUG-004] 生命週期事件處理器未清理"
       }
     ],
-    "[BUG-005] MessageBuilder.at 方法定義被覆蓋（死程式碼）": [
+    "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致": [
       {
         "document": "bug-tracker.md",
-        "line": 77,
+        "line": 201,
         "level": 3,
-        "title": "[BUG-005] MessageBuilder.at 方法定義被覆蓋（死程式碼）"
+        "title": "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致"
       }
     ],
-    "[BUG-006] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致": [
+    "[BUG-006] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確": [
       {
         "document": "bug-tracker.md",
-        "line": 93,
+        "line": 221,
         "level": 3,
-        "title": "[BUG-006] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致"
+        "title": "[BUG-006] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確"
       }
     ],
-    "[BUG-007] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確": [
+    "[BUG-007] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 109,
+        "line": 241,
         "level": 3,
-        "title": "[BUG-007] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確"
+        "title": "[BUG-007] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()": [
+    "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交": [
       {
         "document": "bug-tracker.md",
-        "line": 125,
+        "line": 261,
         "level": 3,
-        "title": "[BUG-008] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()"
+        "title": "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交"
       }
     ],
-    "[BUG-009] Event.collect() 欄位缺少 key 時靜默跳過": [
+    "[BUG-009] LazyModule 同步存取 BaseModule 導致未初始化完成": [
       {
         "document": "bug-tracker.md",
-        "line": 141,
+        "line": 281,
         "level": 3,
-        "title": "[BUG-009] Event.collect() 欄位缺少 key 時靜默跳過"
+        "title": "[BUG-009] LazyModule 同步存取 BaseModule 導致未初始化完成"
       }
     ],
-    "[BUG-010] LazyModule 同步存取 BaseModule 導致未初始化完成": [
+    "[BUG-010] 配置系統多執行緒寫入導致資料丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 157,
+        "line": 301,
         "level": 3,
-        "title": "[BUG-010] LazyModule 同步存取 BaseModule 導致未初始化完成"
+        "title": "[BUG-010] 配置系統多執行緒寫入導致資料丟失"
       }
     ],
-    "[BUG-011] 配置系統多執行緒寫入導致資料遺失": [
+    "[BUG-011] Windows 下 CTRL+C 無法停止程式": [
       {
         "document": "bug-tracker.md",
-        "line": 173,
+        "line": 324,
         "level": 3,
-        "title": "[BUG-011] 配置系統多執行緒寫入導致資料遺失"
+        "title": "[BUG-011] Windows 下 CTRL+C 無法停止程式"
       }
     ],
-    "[BUG-012] SDK 屬性存取錯誤資訊不準確": [
+    "[BUG-012] 熱重啟後已更新模組的 Python 程式碼未生效": [
       {
         "document": "bug-tracker.md",
-        "line": 192,
+        "line": 348,
         "level": 3,
-        "title": "[BUG-012] SDK 屬性存取錯誤資訊不準確"
+        "title": "[BUG-012] 熱重啟後已更新模組的 Python 程式碼未生效"
       }
     ],
-    "[BUG-013] Uninitializer 對未初始化 LazyModule 的清理邏輯過於複雜": [
+    "[BUG-013] 模組加載策略排序邏輯錯誤": [
       {
         "document": "bug-tracker.md",
-        "line": 211,
+        "line": 368,
         "level": 3,
-        "title": "[BUG-013] Uninitializer 對未初始化 LazyModule 的清理邏輯過於複雜"
+        "title": "[BUG-013] 模組加載策略排序邏輯錯誤"
       }
     ],
-    "[BUG-014] Windows 下 CTRL+C 無法停止程式": [
+    "[BUG-014] 適配器中間件返回 None 導致事件資料丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 230,
+        "line": 388,
         "level": 3,
-        "title": "[BUG-014] Windows 下 CTRL+C 無法停止程式"
+        "title": "[BUG-014] 適配器中間件返回 None 導致事件資料丟失"
       }
     ],
-    "[BUG-015] 模組載入策略排序邏輯錯誤": [
+    "[BUG-015] 配置檔案路徑依賴工作目錄": [
       {
         "document": "bug-tracker.md",
-        "line": 250,
+        "line": 408,
         "level": 3,
-        "title": "[BUG-015] 模組載入策略排序邏輯錯誤"
+        "title": "[BUG-015] 配置檔案路徑依賴工作目錄"
       }
     ],
-    "[BUG-016] 適配器中介軟體傳回 None 導致事件資料遺失": [
+    "[BUG-016] BaseStorage 將儲存值 None 與鍵不存在混淆": [
       {
         "document": "bug-tracker.md",
-        "line": 266,
+        "line": 428,
         "level": 3,
-        "title": "[BUG-016] 適配器中介軟體傳回 None 導致事件資料遺失"
+        "title": "[BUG-016] BaseStorage 將儲存值 None 與鍵不存在混淆"
       }
     ],
-    "[BUG-017] 配置檔案路徑依賴工作目錄": [
+    "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 282,
+        "line": 448,
         "level": 3,
-        "title": "[BUG-017] 配置檔案路徑依賴工作目錄"
+        "title": "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失"
       }
     ],
-    "[BUG-018] 子行程模式 `ep run <script>` 找不到腳本所在目錄的子套件": [
+    "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接泄漏": [
       {
         "document": "bug-tracker.md",
-        "line": 298,
+        "line": 468,
         "level": 3,
-        "title": "[BUG-018] 子行程模式 `ep run <script>` 找不到腳本所在目錄的子套件"
+        "title": "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接泄漏"
       }
     ],
-    "[BUG-019] SQL 查詢建構器拒絕合法萬用字元和欄位運算式": [
+    "[BUG-019] 適配器熱重載時路由衝突導致重載失敗": [
       {
         "document": "bug-tracker.md",
-        "line": 314,
+        "line": 496,
         "level": 3,
-        "title": "[BUG-019] SQL 查詢建構器拒絕合法萬用字元和欄位運算式"
+        "title": "[BUG-019] 適配器熱重載時路由衝突導致重載失敗"
       }
     ],
-    "[BUG-020] _resolve_account() 帳戶解析回歸（_accounts_data 未填充）": [
+    "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包": [
       {
         "document": "bug-tracker.md",
-        "line": 340,
+        "line": 520,
         "level": 3,
-        "title": "[BUG-020] _resolve_account() 帳戶解析回歸（_accounts_data 未填充）"
+        "title": "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包"
+      }
+    ],
+    "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式": [
+      {
+        "document": "bug-tracker.md",
+        "line": 540,
+        "level": 3,
+        "title": "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式"
+      }
+    ],
+    "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填補）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 570,
+        "level": 3,
+        "title": "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填補）"
+      }
+    ],
+    "[BUG-023] 修改賬戶配置後適配器快取未刷新導致賬戶解析失敗": [
+      {
+        "document": "bug-tracker.md",
+        "line": 609,
+        "level": 3,
+        "title": "[BUG-023] 修改賬戶配置後適配器快取未刷新導致賬戶解析失敗"
+      }
+    ],
+    "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill": [
+      {
+        "document": "bug-tracker.md",
+        "line": 629,
+        "level": 3,
+        "title": "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill"
+      }
+    ],
+    "[BUG-025] on_config_update 回調未被核心路由": [
+      {
+        "document": "bug-tracker.md",
+        "line": 675,
+        "level": 3,
+        "title": "[BUG-025] on_config_update 回調未被核心路由"
       }
     ],
     "__init__.py": [
@@ -5300,6 +5340,14 @@
         "title": "可用屬性"
       }
     ],
+    "可選字段": [
+      {
+        "document": "bug-tracker.md",
+        "line": 29,
+        "level": 3,
+        "title": "可選字段"
+      }
+    ],
     "同時發布到 Docker Hub": [
       {
         "document": "developer-guide/publishing.md",
@@ -5486,6 +5534,14 @@
         "line": 109,
         "level": 3,
         "title": "嚴格模式"
+      }
+    ],
+    "嚴重性分級": [
+      {
+        "document": "bug-tracker.md",
+        "line": 39,
+        "level": 2,
+        "title": "嚴重性分級"
       }
     ],
     "回傳值": [
@@ -6232,6 +6288,14 @@
         "title": "子日誌器"
       }
     ],
+    "字段說明": [
+      {
+        "document": "bug-tracker.md",
+        "line": 14,
+        "level": 2,
+        "title": "字段說明"
+      }
+    ],
     "存儲配置": [
       {
         "document": "user-guide/configuration.md",
@@ -6569,7 +6633,7 @@
     "已修復的 Bug": [
       {
         "document": "bug-tracker.md",
-        "line": 7,
+        "line": 115,
         "level": 2,
         "title": "已修復的 Bug"
       }
@@ -7014,6 +7078,14 @@
         "line": 322,
         "level": 3,
         "title": "心跳機制"
+      }
+    ],
+    "必填字段": [
+      {
+        "document": "bug-tracker.md",
+        "line": 16,
+        "level": 3,
+        "title": "必填字段"
       }
     ],
     "必填欄位映射": [
@@ -8412,6 +8484,14 @@
         "line": 106,
         "level": 3,
         "title": "條件過濾"
+      }
+    ],
+    "條目範本": [
+      {
+        "document": "bug-tracker.md",
+        "line": 65,
+        "level": 2,
+        "title": "條目範本"
       }
     ],
     "概述": [
@@ -10002,6 +10082,14 @@
         "line": 73,
         "level": 3,
         "title": "統一的模組取得入口"
+      }
+    ],
+    "統計概覽": [
+      {
+        "document": "bug-tracker.md",
+        "line": 90,
+        "level": 2,
+        "title": "統計概覽"
       }
     ],
     "網絡客戶端": [
@@ -12324,6 +12412,14 @@
         "line": 126,
         "level": 3,
         "title": "額外操作方法"
+      }
+    ],
+    "類型分類": [
+      {
+        "document": "bug-tracker.md",
+        "line": 49,
+        "level": 2,
+        "title": "類型分類"
       }
     ],
     "類型存根命令": [

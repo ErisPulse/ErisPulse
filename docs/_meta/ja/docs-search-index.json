@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1392,
+  "total_keywords": 1403,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3408,164 +3408,204 @@
         "title": "Yunhu ユーザープラットフォーム特性ドキュメント"
       }
     ],
-    "[BUG-001] Init コマンドアダプタ構成パスの型エラー": [
+    "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される": [
       {
         "document": "bug-tracker.md",
-        "line": 9,
+        "line": 117,
         "level": 3,
-        "title": "[BUG-001] Init コマンドアダプタ構成パスの型エラー"
+        "title": "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される"
       }
     ],
-    "[BUG-002] 再起動後にコマンドイベントが無効になる": [
+    "[BUG-002] Init コマンドのアダプター設定パスの型エラー": [
       {
         "document": "bug-tracker.md",
-        "line": 29,
+        "line": 137,
         "level": 3,
-        "title": "[BUG-002] 再起動後にコマンドイベントが無効になる"
+        "title": "[BUG-002] Init コマンドのアダプター設定パスの型エラー"
       }
     ],
-    "[BUG-003] ライフサイクルイベントハンドラがクリアされていない": [
+    "[BUG-003] 再起動後にコマンドイベントが無効になる": [
       {
         "document": "bug-tracker.md",
-        "line": 45,
+        "line": 161,
         "level": 3,
-        "title": "[BUG-003] ライフサイクルイベントハンドラがクリアされていない"
+        "title": "[BUG-003] 再起動後にコマンドイベントが無効になる"
       }
     ],
-    "[BUG-004] Event.confirm() の確認語句集合への代入が重複している": [
+    "[BUG-004] ライフサイクルイベントハンドラがクリアされない": [
       {
         "document": "bug-tracker.md",
-        "line": 61,
+        "line": 181,
         "level": 3,
-        "title": "[BUG-004] Event.confirm() の確認語句集合への代入が重複している"
+        "title": "[BUG-004] ライフサイクルイベントハンドラがクリアされない"
       }
     ],
-    "[BUG-005] MessageBuilder.at メソッド定義が上書きされている（デッドコード）": [
+    "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない": [
       {
         "document": "bug-tracker.md",
-        "line": 77,
+        "line": 201,
         "level": 3,
-        "title": "[BUG-005] MessageBuilder.at メソッド定義が上書きされている（デッドコード）"
+        "title": "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない"
       }
     ],
-    "[BUG-006] Event.is_friend_add/is_friend_delete の detail_type と OB12 標準が不一致": [
+    "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後の状態が正しくない": [
       {
         "document": "bug-tracker.md",
-        "line": 93,
+        "line": 221,
         "level": 3,
-        "title": "[BUG-006] Event.is_friend_add/is_friend_delete の detail_type と OB12 標準が不一致"
+        "title": "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後の状態が正しくない"
       }
     ],
-    "[BUG-007] adapter.clear() が _started_instances をクリアしないため再起動後に状態が不正": [
+    "[BUG-007] command.wait_reply() で非推奨の asyncio.get_event_loop() を使用している": [
       {
         "document": "bug-tracker.md",
-        "line": 109,
+        "line": 241,
         "level": 3,
-        "title": "[BUG-007] adapter.clear() が _started_instances をクリアしないため再起動後に状態が不正"
+        "title": "[BUG-007] command.wait_reply() で非推奨の asyncio.get_event_loop() を使用している"
       }
     ],
-    "[BUG-008] command.wait_reply() で非推奨の asyncio.get_event_loop() が使用されている": [
+    "[BUG-008] Bot 離線イベントが shutdown 過程で重複送信される": [
       {
         "document": "bug-tracker.md",
-        "line": 125,
+        "line": 261,
         "level": 3,
-        "title": "[BUG-008] command.wait_reply() で非推奨の asyncio.get_event_loop() が使用されている"
+        "title": "[BUG-008] Bot 離線イベントが shutdown 過程で重複送信される"
       }
     ],
-    "[BUG-009] Event.collect() で key が欠落している場合に静かにスキップされる": [
+    "[BUG-009] LazyModule で同期的に BaseModule にアクセスすると初期化が完了していない": [
       {
         "document": "bug-tracker.md",
-        "line": 141,
+        "line": 281,
         "level": 3,
-        "title": "[BUG-009] Event.collect() で key が欠落している場合に静かにスキップされる"
+        "title": "[BUG-009] LazyModule で同期的に BaseModule にアクセスすると初期化が完了していない"
       }
     ],
-    "[BUG-010] LazyModule 同期アクセスによる未初期化完了の状態": [
+    "[BUG-010] 設定システムのマルチスレッド書き込みでデータが失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 157,
+        "line": 301,
         "level": 3,
-        "title": "[BUG-010] LazyModule 同期アクセスによる未初期化完了の状態"
+        "title": "[BUG-010] 設定システムのマルチスレッド書き込みでデータが失われる"
       }
     ],
-    "[BUG-011] 設定システムのマルチスレッド書き込みによるデータ損失": [
+    "[BUG-011] Windows で CTRL+C でプログラムを停止できない": [
       {
         "document": "bug-tracker.md",
-        "line": 173,
+        "line": 324,
         "level": 3,
-        "title": "[BUG-011] 設定システムのマルチスレッド書き込みによるデータ損失"
+        "title": "[BUG-011] Windows で CTRL+C でプログラムを停止できない"
       }
     ],
-    "[BUG-012] SDK プロパティアクセスのエラーメッセージが不正確": [
+    "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない": [
       {
         "document": "bug-tracker.md",
-        "line": 192,
+        "line": 348,
         "level": 3,
-        "title": "[BUG-012] SDK プロパティアクセスのエラーメッセージが不正確"
+        "title": "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない"
       }
     ],
-    "[BUG-013] Uninitializer の未初期化 LazyModule へのクリアロジックが過度に複雑": [
+    "[BUG-013] モジュールロード戦略のソートロジックにバグがある": [
       {
         "document": "bug-tracker.md",
-        "line": 211,
+        "line": 368,
         "level": 3,
-        "title": "[BUG-013] Uninitializer の未初期化 LazyModule へのクリアロジックが過度に複雑"
+        "title": "[BUG-013] モジュールロード戦略のソートロジックにバグがある"
       }
     ],
-    "[BUG-014] Windows での CTRL+C でプログラムが停止しない": [
+    "[BUG-014] アダプターミドルウェアが None を返すとイベントデータが失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 230,
+        "line": 388,
         "level": 3,
-        "title": "[BUG-014] Windows での CTRL+C でプログラムが停止しない"
+        "title": "[BUG-014] アダプターミドルウェアが None を返すとイベントデータが失われる"
       }
     ],
-    "[BUG-015] モジュール読み込み戦略のソートロジックエラー": [
+    "[BUG-015] 設定ファイルのパスが作業ディレクトリに依存している": [
       {
         "document": "bug-tracker.md",
-        "line": 250,
+        "line": 408,
         "level": 3,
-        "title": "[BUG-015] モジュール読み込み戦略のソートロジックエラー"
+        "title": "[BUG-015] 設定ファイルのパスが作業ディレクトリに依存している"
       }
     ],
-    "[BUG-016] アダプタミドルウェアが None を返すことでイベントデータが失われる": [
+    "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないことを混同する": [
       {
         "document": "bug-tracker.md",
-        "line": 266,
+        "line": 428,
         "level": 3,
-        "title": "[BUG-016] アダプタミドルウェアが None を返すことでイベントデータが失われる"
+        "title": "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないことを混同する"
       }
     ],
-    "[BUG-017] 設定ファイルパスが作業ディレクトリに依存している": [
+    "[BUG-017] WebSocket ルーティング auto_accept フラグがサービスの再起動後に失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 282,
+        "line": 448,
         "level": 3,
-        "title": "[BUG-017] 設定ファイルパスが作業ディレクトリに依存している"
+        "title": "[BUG-017] WebSocket ルーティング auto_accept フラグがサービスの再起動後に失われる"
       }
     ],
-    "[BUG-018] サブプロセスモード `ep run <script>` でスクリプトがあるディレクトリのサブパッケージが見つからない": [
+    "[BUG-018] HTTP/WS クライアントの並行呼び出しでクラッシュと接続漏れが発生する": [
       {
         "document": "bug-tracker.md",
-        "line": 298,
+        "line": 468,
         "level": 3,
-        "title": "[BUG-018] サブプロセスモード `ep run <script>` でスクリプトがあるディレクトリのサブパッケージが見つからない"
+        "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しでクラッシュと接続漏れが発生する"
       }
     ],
-    "[BUG-019] SQL クエリビルダが合法なワイルドカードと列式を拒否する": [
+    "[BUG-019] アダプターのホットリロード時にルーティングの競合によりリロードが失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 314,
+        "line": 496,
         "level": 3,
-        "title": "[BUG-019] SQL クエリビルダが合法なワイルドカードと列式を拒否する"
+        "title": "[BUG-019] アダプターのホットリロード時にルーティングの競合によりリロードが失敗する"
       }
     ],
-    "[BUG-020] _resolve_account() アカウント解釈の回帰（_accounts_data が未填充）": [
+    "[BUG-020] 子プロセスモード `ep run <script>` でスクリプトが存在するディレクトリのサブパッケージが見つからない": [
       {
         "document": "bug-tracker.md",
-        "line": 340,
+        "line": 520,
         "level": 3,
-        "title": "[BUG-020] _resolve_account() アカウント解釈の回帰（_accounts_data が未填充）"
+        "title": "[BUG-020] 子プロセスモード `ep run <script>` でスクリプトが存在するディレクトリのサブパッケージが見つからない"
+      }
+    ],
+    "[BUG-021] SQL クエリビルダーが正当なワイルドカードとリスト式を拒否する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 540,
+        "level": 3,
+        "title": "[BUG-021] SQL クエリビルダーが正当なワイルドカードとリスト式を拒否する"
+      }
+    ],
+    "[BUG-022] _resolve_account() のアカウント解析のバグ（_accounts_data が未設定）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 569,
+        "level": 3,
+        "title": "[BUG-022] _resolve_account() のアカウント解析のバグ（_accounts_data が未設定）"
+      }
+    ],
+    "[BUG-023] アカウント設定を変更した後にアダプターのキャッシュが更新されずアカウントの解析が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 608,
+        "level": 3,
+        "title": "[BUG-023] アカウント設定を変更した後にアダプターのキャッシュが更新されずアカウントの解析が失敗する"
+      }
+    ],
+    "[BUG-024] storage.set() で大きな数値のキーを書き込むと OOM Kill が発生する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 628,
+        "level": 3,
+        "title": "[BUG-024] storage.set() で大きな数値のキーを書き込むと OOM Kill が発生する"
+      }
+    ],
+    "[BUG-025] on_config_update コールバックがコアルーティングされない": [
+      {
+        "document": "bug-tracker.md",
+        "line": 674,
+        "level": 3,
+        "title": "[BUG-025] on_config_update コールバックがコアルーティングされない"
       }
     ],
     "__init__.py": [
@@ -5098,6 +5138,14 @@
         "title": "エントリ登録"
       }
     ],
+    "オプションフィールド": [
+      {
+        "document": "bug-tracker.md",
+        "line": 29,
+        "level": 3,
+        "title": "オプションフィールド"
+      }
+    ],
     "カウントと存在確認": [
       {
         "document": "advanced/sql-builder.md",
@@ -6152,6 +6200,14 @@
         "title": "タイプマッピング"
       }
     ],
+    "タイプ分類": [
+      {
+        "document": "bug-tracker.md",
+        "line": 49,
+        "level": 2,
+        "title": "タイプ分類"
+      }
+    ],
     "タイプ変換": [
       {
         "document": "advanced/session-types.md",
@@ -6746,12 +6802,12 @@
         "title": "ハートビートメカニズム"
       }
     ],
-    "バグ追跡ツール": [
+    "バグ追跡器": [
       {
         "document": "bug-tracker.md",
         "line": 1,
         "level": 1,
-        "title": "バグ追跡ツール"
+        "title": "バグ追跡器"
       }
     ],
     "バックアップ": [
@@ -6894,6 +6950,14 @@
         "line": 409,
         "level": 3,
         "title": "ファイル処理の特徴"
+      }
+    ],
+    "フィールドの説明": [
+      {
+        "document": "bug-tracker.md",
+        "line": 14,
+        "level": 2,
+        "title": "フィールドの説明"
       }
     ],
     "フォーム収集 (collect)": [
@@ -9091,7 +9155,7 @@
     "修正済みのバグ": [
       {
         "document": "bug-tracker.md",
-        "line": 7,
+        "line": 115,
         "level": 2,
         "title": "修正済みのバグ"
       }
@@ -10206,6 +10270,12 @@
     ],
     "必須フィールド": [
       {
+        "document": "bug-tracker.md",
+        "line": 16,
+        "level": 3,
+        "title": "必須フィールド"
+      },
+      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 577,
         "level": 3,
@@ -10686,6 +10756,14 @@
         "line": 143,
         "level": 3,
         "title": "条件付き監視"
+      }
+    ],
+    "条目テンプレート": [
+      {
+        "document": "bug-tracker.md",
+        "line": 65,
+        "level": 2,
+        "title": "条目テンプレート"
       }
     ],
     "核心な違い": [
@@ -11282,6 +11360,14 @@
         "line": 419,
         "level": 3,
         "title": "統一されたキャッチ"
+      }
+    ],
+    "統計概要": [
+      {
+        "document": "bug-tracker.md",
+        "line": 90,
+        "level": 2,
+        "title": "統計概要"
       }
     ],
     "絵文字リアクションの処理": [
@@ -12192,6 +12278,14 @@
         "line": 412,
         "level": 3,
         "title": "選択メニュー (choose)"
+      }
+    ],
+    "重大度分類": [
+      {
+        "document": "bug-tracker.md",
+        "line": 39,
+        "level": 2,
+        "title": "重大度分類"
       }
     ],
     "重要な制限": [
