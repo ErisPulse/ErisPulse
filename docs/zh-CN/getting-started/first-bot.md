@@ -53,22 +53,33 @@ async def ping_handler(event):
 
 async def main():
     """主入口函数"""
-    print("正在初始化 ErisPulse...")
-    # 运行 SDK 并且维持运行
+    print("正在启动 ErisPulse...")
+    
+    # keep_running=True（默认）：框架阻塞维持运行，直到收到关闭信号（如 Ctrl+C）
     await sdk.run(keep_running=True)
-
-    # 或者
-    # await sdk.run(keep_running=False)
-    # ...Do Something
-    # 可以做你想做的任何事
-    # 使用 await sdk.init() 等价于 `sdk.run(keep_running=False)`
-
-    print("ErisPulse 初始化完成！")
 
 if __name__ == "__main__":
     import asyncio
     asyncio.run(main())
 ```
+
+### `keep_running` 参数
+
+`sdk.run(keep_running)` 控制框架是否阻塞维持运行：
+
+- **`keep_running=True`（默认）**：`run()` 会一直阻塞，直到收到关闭信号（如 Ctrl+C），适合纯 bot 应用。
+- **`keep_running=False`**：`run()` 初始化完成后立即返回，**框架并不会卸载**——已启动的适配器/模块仍作为后台任务继续处理消息事件，你可以接着执行自己的逻辑，直到事件循环结束框架才随之关闭。例如：
+
+```python
+async def main():
+    await sdk.run(keep_running=False)   # 初始化后立即返回
+    # 框架已在后台运行，这里可以继续做别的事
+    while True:
+        await asyncio.sleep(3600)
+        print("每小时检查一次")
+```
+
+> 除了 `run()` 的两种模式，还有 `init()`/`uninit()` 手动控制生命周期、单独启停适配器/路由等更精细的方式，见 [启动流程与手动控制](../advanced/startup.md)。
 
 ## 第四步：运行机器人
 
