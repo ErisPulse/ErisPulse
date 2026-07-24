@@ -1,27 +1,27 @@
 # ErisPulse Documentation
 
-ErisPulse is an extensible, multi-platform messaging processing framework that supports interaction with different platforms through adapters and provides a flexible module system for feature expansion.
+ErisPulse is a scalable, multi-platform message processing framework that supports interaction with various platforms through adapters, providing a flexible module system for feature extension.
 
-> Confused by some terms? Check out the [Glossary](terminology.md) for accessible explanations.
+> Encounter unfamiliar terms? Check the [Glossary](terminology.md) for clear explanations.
 
-## Documentation Navigation
+## Document Navigation
 
 ### Quick Start
 
-- [Quick Start Guide](quick-start.md) - An introductory guide for installing and running ErisPulse
+- [Quick Start Guide](docs/en/quick-start.md) - A beginner's guide to installing and running ErisPulse
 
 ### Architecture Overview
 
-- [Architecture Overview](architecture.md) - Understand the SDK core architecture, initialization process, event handling, and lifecycle through visual diagrams
+- [Architecture Overview](docs/en/architecture.md) - Understand the SDK's core architecture, initialization process, event handling, and lifecycle through visual diagrams
 
 ### Getting Started
 
-If this is your first time using ErisPulse, we recommend reading the following in order:
+If you're new to ErisPulse, we recommend reading the following in order:
 
 1. [Getting Started Overview](getting-started/README.md)
 2. [Create Your First Bot](getting-started/first-bot.md)
 3. [Basic Concepts](getting-started/basic-concepts.md)
-4. [Introduction to Event Handling](getting-started/event-handling.md)
+4. [Event Handling Introduction](getting-started/event-handling.md)
 5. [Common Task Examples](getting-started/common-tasks.md)
 
 ### User Guide
@@ -36,24 +36,24 @@ If this is your first time using ErisPulse, we recommend reading the following i
 #### Module Development
 
 - [Module Development Introduction](developer-guide/modules/getting-started.md)
-- [Module Core Concepts](developer-guide/modules/core-concepts.md)
-- [Event Wrapper Class Detailed Explanation](developer-guide/modules/event-wrapper.md)
+- [Core Module Concepts](developer-guide/modules/core-concepts.md)
+- [Event Wrapper Class Guide](developer-guide/modules/event-wrapper.md)
 - [Module Development Best Practices](developer-guide/modules/best-practices.md)
 
 #### Adapter Development
 
 - [Adapter Development Introduction](developer-guide/adapters/getting-started.md)
-- [Adapter Core Concepts](developer-guide/adapters/core-concepts.md)
-- [SendDSL Detailed Explanation](developer-guide/adapters/send-dsl.md)
+- [Core Adapter Concepts](developer-guide/adapters/core-concepts.md)
+- [SendDSL Guide](developer-guide/adapters/send-dsl.md)
 - [Adapter Development Best Practices](developer-guide/adapters/best-practices.md)
 
 #### Publishing
 
 - [Publishing and Module Store Guide](developer-guide/publishing.md) - Publish modules and adapters to the ErisPulse Module Store
 
-### Platform Features Guide
+### Platform Feature Guides
 
-- [Platform Features Overview](platform-guide/README.md)
+- [Platform Feature Guide](platform-guide/README.md)
 - [Yunhu Platform Features](platform-guide/yunhu.md)
 - [Telegram Platform Features](platform-guide/telegram.md)
 - [OneBot11 Platform Features](platform-guide/onebot11.md)
@@ -62,7 +62,7 @@ If this is your first time using ErisPulse, we recommend reading the following i
 
 ### API Reference
 
-- [Core Modules API](api-reference/core-modules.md)
+- [Core Module API](api-reference/core-modules.md)
 - [Event System API](api-reference/event-system.md)
 - [Adapter System API](api-reference/adapter-system.md)
 
@@ -74,10 +74,11 @@ If this is your first time using ErisPulse, we recommend reading the following i
 
 ### Advanced Topics
 
+- [Startup Process and Manual Control](advanced/startup.md) - Breakdown of startup chain and manual full startup
 - [Lazy Loading System](advanced/lazy-loading.md)
 - [Lifecycle Management](advanced/lifecycle.md)
-- [Router System](advanced/router.md)
-- [MessageBuilder Detailed Explanation](advanced/message-builder.md)
+- [Routing System](advanced/router.md)
+- [MessageBuilder Guide](advanced/message-builder.md)
 - [Session Type System](advanced/session-types.md)
 - [Conversation Multi-turn Dialogue](advanced/conversation.md)
 
@@ -91,15 +92,15 @@ If this is your first time using ErisPulse, we recommend reading the following i
 
 ## Development Methods
 
-ErisPulse supports two development methods:
+ErisPulse supports two development approaches:
 
 ### 1. Module Development (Recommended)
 
-Create independent module packages, install and use them via a package manager. This method facilitates distribution and management, suitable for publicly released features.
+Create a standalone module package and install it using a package manager. This approach is suitable for distributing and managing features, especially for publicly released functionalities.
 
 ### 2. Embedded Development
 
-Embed ErisPulse code directly into your project without creating a separate module. This method is suitable for rapid prototyping or internal project-specific features.
+Directly embed ErisPulse code into your project without creating a separate module. This approach is suitable for rapid prototyping or internal project-specific features.
 
 Example:
 
@@ -114,18 +115,20 @@ from ErisPulse.Core.Event import command
 async def hello_handler(event):
     await event.reply("Hello!")
 
-# Run SDK and maintain running | Must run in async environment
+# Run SDK and keep it running | Must be executed in an asynchronous environment
 asyncio.run(sdk.run(keep_running=True))
 ```
 
-## Getting Help
+## Get Help
 
 - GitHub Repository: [https://github.com/ErisPulse/ErisPulse](https://github.com/ErisPulse/ErisPulse)
 - Issue Reporting: Submit an Issue
-- Technical Discussions: Check Discussions
+- Technical Discussion: View Discussions
 
 ## Related Links
 
 - [OneBot12 Standard](https://12.onebot.dev/)
 - [Yunhu Official Documentation](https://www.yhchat.com/document/)
 - [Telegram Bot API](https://core.telegram.org/bots/api)
+
+**English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
