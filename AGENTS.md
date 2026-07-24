@@ -33,8 +33,11 @@
   - 不要读取或修改任何语言 `ai-support/prompts` 下的文档，这是自动生成的AI提示词
   - 不要读取或修改任何语言 `api-reference/auto_api` 下的文档，这是自动生成的API文档
 - 18. 每次修改都必须更新 `CHANGELOG.md`；严重 bug 修复需同步更新 `docs/zh-CN/bug-tracker.md`（影响微小时可不写）
-
+- 19. 如果你有新增/重构文档，请务必进行以下两项任务：
+  - 更新根文档README即相关总结性文档的内容，添加/修改新的文档的相关连接 
+  - 更新文档相关生成脚本：`scripts/tools/generate-ai-prompts.py`, `scripts/tools/generate-docs-index.py` 是否需要更新
+  
 ## 模板与示例同步
-- 19. 修改适配器/模块的基类或配置规范时，必须同步更新 `src/ErisPulse/CLI/commands/create.py` 中的 `_ADAPTER_CORE` 和 `_MODULE_CORE` 模板
-- 20. 修改适配器/模块的公共 API 时，同步更新 `examples/` 下的示例项目
-- 21. `examples/` 示例项目应体现推荐写法（如配置类用嵌套类 `ConfigClass` 声明），作为开发者参考标准
+- 20. 修改适配器/模块的基类或配置规范时，必须同步更新 `src/ErisPulse/CLI/commands/create.py` 中的 `_ADAPTER_CORE` 和 `_MODULE_CORE` 模板
+- 21. 修改适配器/模块的公共 API 时，同步更新 `examples/` 下的示例项目
+- 22. `examples/` 示例项目应体现推荐写法（如配置类用嵌套类 `ConfigClass` 声明），作为开发者参考标准

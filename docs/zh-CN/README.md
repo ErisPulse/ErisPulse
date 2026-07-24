@@ -75,6 +75,7 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 
 ### 高级主题
 
+- [启动流程与手动控制](advanced/startup.md) - 启动链路拆解与手动完整启动
 - [懒加载系统](advanced/lazy-loading.md)
 - [生命周期管理](advanced/lifecycle.md)
 - [路由系统](advanced/router.md)

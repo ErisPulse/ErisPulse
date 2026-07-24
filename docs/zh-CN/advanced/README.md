@@ -4,6 +4,7 @@
 
 ## 文档列表
 
+- [启动流程与手动控制](startup.md) - 启动链路拆解（Finder/Loader/Manager/Router）与手动完整启动
 - [懒加载系统](lazy-loading.md) - 懒加载模块系统的工作原理和配置
 - [国际化 (i18n)](i18n.md) - 多语言支持、翻译注册与语言检测
 - [生命周期管理](lifecycle.md) - 生命周期事件系统的使用方法

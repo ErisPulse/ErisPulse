@@ -258,6 +258,7 @@ SECTION_ADVANCED_MODULE = Section(
         DocEntry("会话类型系统", "advanced/session-types.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("Dashboard 视窗注册", "advanced/dashboard-view.md"),
+        DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )
 
@@ -270,6 +271,7 @@ SECTION_ADVANCED_ADAPTER = Section(
         DocEntry("懒加载系统", "advanced/lazy-loading.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("Dashboard 视窗注册", "advanced/dashboard-view.md"),
+        DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )
 
@@ -286,6 +288,7 @@ SECTION_ADVANCED_FULL = Section(
         DocEntry("Conversation 多轮对话", "advanced/conversation.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("Dashboard 视窗注册", "advanced/dashboard-view.md"),
+        DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )
 
