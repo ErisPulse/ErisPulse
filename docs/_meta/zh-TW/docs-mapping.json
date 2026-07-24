@@ -7,7 +7,7 @@
       "count": 5,
       "documents": [
         {
-          "title": "ErisPulse 文檔",
+          "title": "ErisPulse 文件",
           "path": "README.md",
           "level": 1
         },
@@ -287,7 +287,7 @@
     },
     "進階主題": {
       "description": "深入理解框架的進階特性",
-      "count": 11,
+      "count": 12,
       "documents": [
         {
           "title": "高級主題",
@@ -342,6 +342,11 @@
         {
           "title": "國際化 (i18n) 系統",
           "path": "advanced/i18n.md",
+          "level": 1
+        },
+        {
+          "title": "啟動流程與手動控制",
+          "path": "advanced/startup.md",
           "level": 1
         }
       ],

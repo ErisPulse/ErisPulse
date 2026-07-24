@@ -287,7 +287,7 @@
     },
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
-      "count": 11,
+      "count": 12,
       "documents": [
         {
           "title": "高度なトピック",
@@ -342,6 +342,11 @@
         {
           "title": "国際化 (i18n) システム",
           "path": "advanced/i18n.md",
+          "level": 1
+        },
+        {
+          "title": "起動フローと手動制御",
+          "path": "advanced/startup.md",
           "level": 1
         }
       ],
