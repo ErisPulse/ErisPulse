@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1350,
+  "total_keywords": 1371,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -96,6 +96,14 @@
         "title": "1. Description"
       }
     ],
+    "1. Discovery Layer: Finder": [
+      {
+        "document": "advanced/startup.md",
+        "line": 53,
+        "level": 3,
+        "title": "1. Discovery Layer: Finder"
+      }
+    ],
     "1. Ensure Cross-Platform Compatibility": [
       {
         "document": "standards/README.md",
@@ -147,7 +155,7 @@
     "1. Module Development (Recommended)": [
       {
         "document": "README.md",
-        "line": 96,
+        "line": 97,
         "level": 3,
         "title": "1. Module Development (Recommended)"
       }
@@ -537,7 +545,7 @@
     "2. Embedded Development": [
       {
         "document": "README.md",
-        "line": 100,
+        "line": 101,
         "level": 3,
         "title": "2. Embedded Development"
       }
@@ -578,6 +586,14 @@
         "line": 379,
         "level": 3,
         "title": "2. Integration Tests"
+      }
+    ],
+    "2. Loading Layer: Loader": [
+      {
+        "document": "advanced/startup.md",
+        "line": 73,
+        "level": 3,
+        "title": "2. Loading Layer: Loader"
       }
     ],
     "2. Logging": [
@@ -1010,6 +1026,14 @@
         "title": "3. Platform-Specific Method Naming"
       }
     ],
+    "3. Registration Layer: register_to_manager": [
+      {
+        "document": "advanced/startup.md",
+        "line": 97,
+        "level": 3,
+        "title": "3. Registration Layer: register_to_manager"
+      }
+    ],
     "3. Request DSL": [
       {
         "document": "standards/request-action-spec.md",
@@ -1258,6 +1282,14 @@
         "title": "4. Set Image as Public"
       }
     ],
+    "4. Starting Adapters": [
+      {
+        "document": "advanced/startup.md",
+        "line": 111,
+        "level": 3,
+        "title": "4. Starting Adapters"
+      }
+    ],
     "4. Using Non-standard Values for detail_type": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -1360,6 +1392,14 @@
         "line": 183,
         "level": 3,
         "title": "5. Implement Send Class"
+      }
+    ],
+    "5. Initializing Modules": [
+      {
+        "document": "advanced/startup.md",
+        "line": 123,
+        "level": 3,
+        "title": "5. Initializing Modules"
       }
     ],
     "5. Return Value Specification": [
@@ -1520,6 +1560,14 @@
         "line": 225,
         "level": 2,
         "title": "6. Reverse Conversion Specification (OneBot12 → Platform)"
+      }
+    ],
+    "6. Starting Router Server": [
+      {
+        "document": "advanced/startup.md",
+        "line": 135,
+        "level": 3,
+        "title": "6. Starting Router Server"
       }
     ],
     "6.1 Conversion Model": [
@@ -1851,7 +1899,7 @@
     "AI-Assisted Development": [
       {
         "document": "README.md",
-        "line": 84,
+        "line": 85,
         "level": 3,
         "title": "AI-Assisted Development"
       },
@@ -2156,6 +2204,14 @@
         "line": 207,
         "level": 3,
         "title": "Adapter Events"
+      }
+    ],
+    "Adapter Hot Start/Stop": [
+      {
+        "document": "advanced/startup.md",
+        "line": 226,
+        "level": 3,
+        "title": "Adapter Hot Start/Stop"
       }
     ],
     "Adapter Integration Example": [
@@ -3026,14 +3082,6 @@
         "title": "Bot Status Values"
       }
     ],
-    "Bot does not respond?": [
-      {
-        "document": "getting-started/first-bot.md",
-        "line": 137,
-        "level": 3,
-        "title": "Bot does not respond?"
-      }
-    ],
     "Branching and Jumping": [
       {
         "document": "advanced/conversation.md",
@@ -3439,7 +3487,7 @@
     "Code Explanation": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 93,
+        "line": 104,
         "level": 2,
         "title": "Code Explanation"
       }
@@ -3511,7 +3559,7 @@
     "Command Decorator": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 95,
+        "line": 106,
         "level": 3,
         "title": "Command Decorator"
       }
@@ -3635,7 +3683,7 @@
     "Common Issues": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 135,
+        "line": 146,
         "level": 2,
         "title": "Common Issues"
       },
@@ -3728,6 +3776,14 @@
         "line": 151,
         "level": 2,
         "title": "Complete Examples"
+      }
+    ],
+    "Complete Manual Startup Example": [
+      {
+        "document": "advanced/startup.md",
+        "line": 148,
+        "level": 2,
+        "title": "Complete Manual Startup Example"
       }
     ],
     "Complete Module Example": [
@@ -4384,20 +4440,20 @@
         "title": "Create Virtual Environment"
       }
     ],
-    "Create Your First Bot": [
-      {
-        "document": "getting-started/first-bot.md",
-        "line": 1,
-        "level": 1,
-        "title": "Create Your First Bot"
-      }
-    ],
     "Creating Scaffold": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 534,
         "level": 3,
         "title": "Creating Scaffold"
+      }
+    ],
+    "Creating Your First Bot": [
+      {
+        "document": "getting-started/first-bot.md",
+        "line": 1,
+        "level": 1,
+        "title": "Creating Your First Bot"
       }
     ],
     "Creating a Conversation": [
@@ -4578,6 +4634,14 @@
         "title": "Deployment Guide"
       }
     ],
+    "Detailed Breakdown of Each Stage": [
+      {
+        "document": "advanced/startup.md",
+        "line": 51,
+        "level": 2,
+        "title": "Detailed Breakdown of Each Stage"
+      }
+    ],
     "Detailed `t()` Method": [
       {
         "document": "advanced/i18n.md",
@@ -4611,7 +4675,7 @@
     "Development Methods": [
       {
         "document": "README.md",
-        "line": 92,
+        "line": 93,
         "level": 2,
         "title": "Development Methods"
       }
@@ -4822,6 +4886,14 @@
         "title": "Document Information"
       }
     ],
+    "Document Navigation": [
+      {
+        "document": "README.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Navigation"
+      }
+    ],
     "Document Structure Standards": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -4880,14 +4952,6 @@
         "line": 1,
         "level": 1,
         "title": "Documentation Maintenance Guidelines"
-      }
-    ],
-    "Documentation Navigation": [
-      {
-        "document": "README.md",
-        "line": 7,
-        "level": 2,
-        "title": "Documentation Navigation"
       }
     ],
     "Domestic Mirror Acceleration": [
@@ -5133,7 +5197,7 @@
     "Event Arguments": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 104,
+        "line": 115,
         "level": 3,
         "title": "Event Arguments"
       }
@@ -5609,7 +5673,7 @@
     "Extension: Adding More Features": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 127,
+        "line": 138,
         "level": 2,
         "title": "Extension: Adding More Features"
       }
@@ -5900,6 +5964,14 @@
         "title": "Get Adapter Instance"
       }
     ],
+    "Get Help": [
+      {
+        "document": "README.md",
+        "line": 122,
+        "level": 2,
+        "title": "Get Help"
+      }
+    ],
     "Get Method Details": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -5925,12 +5997,6 @@
       }
     ],
     "Getting Help": [
-      {
-        "document": "README.md",
-        "line": 121,
-        "level": 2,
-        "title": "Getting Help"
-      },
       {
         "document": "terminology.md",
         "line": 135,
@@ -6357,7 +6423,7 @@
     "How to change the command prefix?": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 144,
+        "line": 155,
         "level": 3,
         "title": "How to change the command prefix?"
       }
@@ -6365,7 +6431,7 @@
     "How to support multiple platforms?": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 154,
+        "line": 165,
         "level": 3,
         "title": "How to support multiple platforms?"
       }
@@ -7892,6 +7958,14 @@
         "title": "Module Module"
       }
     ],
+    "Module On-Demand Loading": [
+      {
+        "document": "advanced/startup.md",
+        "line": 252,
+        "level": 3,
+        "title": "Module On-Demand Loading"
+      }
+    ],
     "Module Overview": [
       {
         "document": "api-reference/README.md",
@@ -8135,7 +8209,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 173,
+        "line": 184,
         "level": 2,
         "title": "Next Steps"
       },
@@ -8668,12 +8742,12 @@
         "title": "Platform Feature Detection"
       }
     ],
-    "Platform Features Guide": [
+    "Platform Feature Guides": [
       {
         "document": "README.md",
         "line": 54,
         "level": 3,
-        "title": "Platform Features Guide"
+        "title": "Platform Feature Guides"
       }
     ],
     "Platform Method Isolation": [
@@ -8763,7 +8837,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 26,
+        "line": 27,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -9336,6 +9410,12 @@
         "title": "Related Documentation"
       },
       {
+        "document": "advanced/startup.md",
+        "line": 309,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 48,
         "level": 2,
@@ -9443,7 +9523,7 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 127,
+        "line": 128,
         "level": 2,
         "title": "Related Links"
       }
@@ -9704,6 +9784,14 @@
         "title": "Response"
       }
     ],
+    "Restart": [
+      {
+        "document": "advanced/startup.md",
+        "line": 277,
+        "level": 2,
+        "title": "Restart"
+      }
+    ],
     "Return Value Explanation": [
       {
         "document": "advanced/sql-builder.md",
@@ -9876,6 +9964,14 @@
         "title": "Router Module"
       }
     ],
+    "Router Server": [
+      {
+        "document": "advanced/startup.md",
+        "line": 242,
+        "level": 3,
+        "title": "Router Server"
+      }
+    ],
     "Rule Combination and Background Execution": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -9932,6 +10028,14 @@
         "title": "Runtime Control Commands"
       }
     ],
+    "Runtime Granular Control": [
+      {
+        "document": "advanced/startup.md",
+        "line": 222,
+        "level": 2,
+        "title": "Runtime Granular Control"
+      }
+    ],
     "SDK": [
       {
         "document": "terminology.md",
@@ -9968,6 +10072,14 @@
         "line": 128,
         "level": 3,
         "title": "SDK Objects"
+      }
+    ],
+    "SDK Top-Level Entry Overview": [
+      {
+        "document": "advanced/startup.md",
+        "line": 9,
+        "level": 2,
+        "title": "SDK Top-Level Entry Overview"
       }
     ],
     "SQL Chainable Queries": [
@@ -10253,7 +10365,7 @@
     "Sending a Reply": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 119,
+        "line": 130,
         "level": 3,
         "title": "Sending a Reply"
       }
@@ -10588,6 +10700,22 @@
         "title": "Start Learning"
       }
     ],
+    "Startup Chain Overview": [
+      {
+        "document": "advanced/startup.md",
+        "line": 23,
+        "level": 2,
+        "title": "Startup Chain Overview"
+      }
+    ],
+    "Startup Process and Manual Control": [
+      {
+        "document": "advanced/startup.md",
+        "line": 1,
+        "level": 1,
+        "title": "Startup Process and Manual Control"
+      }
+    ],
     "Startup and Shutdown": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -10612,12 +10740,12 @@
         "title": "Statistics Overview"
       }
     ],
-    "Step 1: Create Project": [
+    "Step 1: Create the Project": [
       {
         "document": "getting-started/first-bot.md",
         "line": 5,
         "level": 2,
-        "title": "Step 1: Create Project"
+        "title": "Step 1: Create the Project"
       }
     ],
     "Step 2: View Project Structure": [
@@ -10639,7 +10767,7 @@
     "Step 4: Run the Bot": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 73,
+        "line": 84,
         "level": 2,
         "title": "Step 4: Run the Bot"
       }
@@ -10647,7 +10775,7 @@
     "Step 5: Test the Bot": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 83,
+        "line": 94,
         "level": 2,
         "title": "Step 5: Test the Bot"
       }
@@ -10725,7 +10853,7 @@
     "Style Guide": [
       {
         "document": "README.md",
-        "line": 88,
+        "line": 89,
         "level": 3,
         "title": "Style Guide"
       },
@@ -10995,7 +11123,7 @@
     "Target Audience": [
       {
         "document": "advanced/README.md",
-        "line": 18,
+        "line": 19,
         "level": 2,
         "title": "Target Audience"
       },
@@ -11072,6 +11200,22 @@
         "line": 95,
         "level": 2,
         "title": "Testing the Module"
+      }
+    ],
+    "The `keep_running` Parameter": [
+      {
+        "document": "getting-started/first-bot.md",
+        "line": 66,
+        "level": 3,
+        "title": "The `keep_running` Parameter"
+      }
+    ],
+    "The command is not responding?": [
+      {
+        "document": "getting-started/first-bot.md",
+        "line": 148,
+        "level": 3,
+        "title": "The command is not responding?"
       }
     ],
     "Timeout and Retry": [
@@ -11208,6 +11352,14 @@
         "line": 73,
         "level": 3,
         "title": "Unified Module Access Entry"
+      }
+    ],
+    "Uninstall Process": [
+      {
+        "document": "advanced/startup.md",
+        "line": 259,
+        "level": 2,
+        "title": "Uninstall Process"
       }
     ],
     "Uninstalling Components": [
@@ -11804,6 +11956,22 @@
         "line": 7,
         "level": 3,
         "title": "What is an Adapter"
+      }
+    ],
+    "When should you manually start?": [
+      {
+        "document": "advanced/startup.md",
+        "line": 212,
+        "level": 3,
+        "title": "When should you manually start?"
+      }
+    ],
+    "When should you use hard restart?": [
+      {
+        "document": "advanced/startup.md",
+        "line": 298,
+        "level": 3,
+        "title": "When should you use hard restart?"
       }
     ],
     "When to Regenerate": [

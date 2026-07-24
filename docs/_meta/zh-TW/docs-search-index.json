@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1374,
+  "total_keywords": 1393,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -233,7 +233,7 @@
     "1. 模組開發（推薦）": [
       {
         "document": "README.md",
-        "line": 96,
+        "line": 97,
         "level": 3,
         "title": "1. 模組開發（推薦）"
       }
@@ -252,6 +252,14 @@
         "line": 602,
         "level": 3,
         "title": "1. 異常處理"
+      }
+    ],
+    "1. 發現層：Finder": [
+      {
+        "document": "advanced/startup.md",
+        "line": 53,
+        "level": 3,
+        "title": "1. 發現層：Finder"
       }
     ],
     "1. 發送訊息": [
@@ -513,7 +521,7 @@
     "2. 嵌入式開發": [
       {
         "document": "README.md",
-        "line": 100,
+        "line": 101,
         "level": 3,
         "title": "2. 嵌入式開發"
       }
@@ -698,6 +706,14 @@
         "line": 205,
         "level": 3,
         "title": "2. 超時處理"
+      }
+    ],
+    "2. 載入層：Loader": [
+      {
+        "document": "advanced/startup.md",
+        "line": 73,
+        "level": 3,
+        "title": "2. 載入層：Loader"
       }
     ],
     "2. 輸入驗證": [
@@ -1044,6 +1060,14 @@
         "title": "3. 觸發建構"
       }
     ],
+    "3. 註冊層：register_to_manager": [
+      {
+        "document": "advanced/startup.md",
+        "line": 97,
+        "level": 3,
+        "title": "3. 註冊層：register_to_manager"
+      }
+    ],
     "3. 資源管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -1188,6 +1212,14 @@
         "title": "4. 參數命名規範"
       }
     ],
+    "4. 啟動適配器": [
+      {
+        "document": "advanced/startup.md",
+        "line": 111,
+        "level": 3,
+        "title": "4. 啟動適配器"
+      }
+    ],
     "4. 實作要求": [
       {
         "document": "standards/api-response.md",
@@ -1330,6 +1362,14 @@
         "line": 321,
         "level": 3,
         "title": "5. 使用者使用"
+      }
+    ],
+    "5. 初始化模組": [
+      {
+        "document": "advanced/startup.md",
+        "line": 123,
+        "level": 3,
+        "title": "5. 初始化模組"
       }
     ],
     "5. 實現 Send 類": [
@@ -1490,6 +1530,14 @@
         "line": 225,
         "level": 2,
         "title": "6. 反向轉換規範（OneBot12 → 平台）"
+      }
+    ],
+    "6. 啟動路由伺服器": [
+      {
+        "document": "advanced/startup.md",
+        "line": 135,
+        "level": 3,
+        "title": "6. 啟動路由伺服器"
       }
     ],
     "6. 實現轉換器": [
@@ -1799,7 +1847,7 @@
     "AI 輔助開發": [
       {
         "document": "README.md",
-        "line": 84,
+        "line": 85,
         "level": 3,
         "title": "AI 輔助開發"
       },
@@ -2210,12 +2258,12 @@
         "title": "ErisPulse PlatformFeatures 文檔"
       }
     ],
-    "ErisPulse 文檔": [
+    "ErisPulse 文件": [
       {
         "document": "README.md",
         "line": 1,
         "level": 1,
-        "title": "ErisPulse 文檔"
+        "title": "ErisPulse 文件"
       }
     ],
     "ErisPulse 會話類型標準": [
@@ -2816,6 +2864,14 @@
         "title": "SDK 調試"
       }
     ],
+    "SDK 頂層入口一覽": [
+      {
+        "document": "advanced/startup.md",
+        "line": 9,
+        "level": 2,
+        "title": "SDK 頂層入口一覽"
+      }
+    ],
     "SQL 串接查詢": [
       {
         "document": "api-reference/core-modules.md",
@@ -3340,6 +3396,14 @@
         "line": 395,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支援"
+      }
+    ],
+    "`keep_running` 參數": [
+      {
+        "document": "getting-started/first-bot.md",
+        "line": 66,
+        "level": 3,
+        "title": "`keep_running` 參數"
       }
     ],
     "`self` 欄位擴展資訊": [
@@ -3877,7 +3941,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 173,
+        "line": 184,
         "level": 2,
         "title": "下一步"
       },
@@ -4013,7 +4077,7 @@
     "事件參數": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 104,
+        "line": 115,
         "level": 3,
         "title": "事件參數"
       }
@@ -4428,6 +4492,14 @@
         "title": "什麼是適配器"
       }
     ],
+    "什麼時候該用硬重啟？": [
+      {
+        "document": "advanced/startup.md",
+        "line": 298,
+        "level": 3,
+        "title": "什麼時候該用硬重啟？"
+      }
+    ],
     "介面卡基類": [
       {
         "document": "api-reference/adapter-system.md",
@@ -4490,6 +4562,14 @@
         "line": 301,
         "level": 4,
         "title": "低級方法"
+      }
+    ],
+    "何時該手動啟動？": [
+      {
+        "document": "advanced/startup.md",
+        "line": 212,
+        "level": 3,
+        "title": "何時該手動啟動？"
       }
     ],
     "何時重新產生": [
@@ -4636,14 +4716,6 @@
         "title": "使用翻譯"
       }
     ],
-    "使用者指南": [
-      {
-        "document": "README.md",
-        "line": 27,
-        "level": 3,
-        "title": "使用者指南"
-      }
-    ],
     "使用者資料儲存": [
       {
         "document": "getting-started/common-tasks.md",
@@ -4752,14 +4824,6 @@
         "line": 371,
         "level": 1,
         "title": "傳送 A2UI 訊息"
-      }
-    ],
-    "傳送回覆": [
-      {
-        "document": "getting-started/first-bot.md",
-        "line": 119,
-        "level": 3,
-        "title": "傳送回覆"
       }
     ],
     "傳送帶按鈕的訊息到使用者私聊": [
@@ -5139,7 +5203,7 @@
     "前置知識": [
       {
         "document": "advanced/README.md",
-        "line": 26,
+        "line": 27,
         "level": 2,
         "title": "前置知識"
       }
@@ -5214,6 +5278,14 @@
         "line": 66,
         "level": 3,
         "title": "協議方法"
+      }
+    ],
+    "卸載流程": [
+      {
+        "document": "advanced/startup.md",
+        "line": 259,
+        "level": 2,
+        "title": "卸載流程"
       }
     ],
     "卸載組件": [
@@ -5346,6 +5418,14 @@
         "line": 29,
         "level": 3,
         "title": "可選字段"
+      }
+    ],
+    "各環節詳解": [
+      {
+        "document": "advanced/startup.md",
+        "line": 51,
+        "level": 2,
+        "title": "各環節詳解"
       }
     ],
     "同時發布到 Docker Hub": [
@@ -5488,12 +5568,28 @@
         "title": "啟動和關閉"
       }
     ],
+    "啟動流程與手動控制": [
+      {
+        "document": "advanced/startup.md",
+        "line": 1,
+        "level": 1,
+        "title": "啟動流程與手動控制"
+      }
+    ],
     "啟動適配器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 85,
         "level": 4,
         "title": "啟動適配器"
+      }
+    ],
+    "啟動鏈路總覽": [
+      {
+        "document": "advanced/startup.md",
+        "line": 23,
+        "level": 2,
+        "title": "啟動鏈路總覽"
       }
     ],
     "啟用 IDE 補全（可選）": [
@@ -5722,6 +5818,14 @@
         "line": 125,
         "level": 3,
         "title": "型別註解"
+      }
+    ],
+    "執行時細粒度控制": [
+      {
+        "document": "advanced/startup.md",
+        "line": 222,
+        "level": 2,
+        "title": "執行時細粒度控制"
       }
     ],
     "執行時配置": [
@@ -6243,7 +6347,7 @@
     "如何修改指令前綴？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 144,
+        "line": 155,
         "level": 3,
         "title": "如何修改指令前綴？"
       }
@@ -6251,7 +6355,7 @@
     "如何支援多平台？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 154,
+        "line": 165,
         "level": 3,
         "title": "如何支援多平台？"
       }
@@ -6404,6 +6508,14 @@
         "line": 223,
         "level": 2,
         "title": "完整 API 參考"
+      }
+    ],
+    "完整手動啟動範例": [
+      {
+        "document": "advanced/startup.md",
+        "line": 148,
+        "level": 2,
+        "title": "完整手動啟動範例"
       }
     ],
     "完整格式（適用於複雜方法）": [
@@ -6765,7 +6877,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 135,
+        "line": 146,
         "level": 2,
         "title": "常見問題"
       },
@@ -7104,6 +7216,14 @@
         "title": "必需欄位"
       }
     ],
+    "快速入門": [
+      {
+        "document": "README.md",
+        "line": 9,
+        "level": 3,
+        "title": "快速入門"
+      }
+    ],
     "快速初始化": [
       {
         "document": "quick-start.md",
@@ -7163,12 +7283,6 @@
       }
     ],
     "快速開始": [
-      {
-        "document": "README.md",
-        "line": 9,
-        "level": 3,
-        "title": "快速開始"
-      },
       {
         "document": "advanced/http-client.md",
         "line": 18,
@@ -7363,7 +7477,7 @@
     "指令沒有回應？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 137,
+        "line": 148,
         "level": 3,
         "title": "指令沒有回應？"
       }
@@ -7379,7 +7493,7 @@
     "指令裝飾器": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 95,
+        "line": 106,
         "level": 3,
         "title": "指令裝飾器"
       }
@@ -7518,14 +7632,6 @@
         "title": "擴充欄位說明"
       }
     ],
-    "擴充：新增更多功能": [
-      {
-        "document": "getting-started/first-bot.md",
-        "line": 127,
-        "level": 2,
-        "title": "擴充：新增更多功能"
-      }
-    ],
     "擴展字段": [
       {
         "document": "platform-guide/qqbot.md",
@@ -7574,6 +7680,14 @@
         "line": 338,
         "level": 2,
         "title": "擴展欄位說明"
+      }
+    ],
+    "擴展：添加更多功能": [
+      {
+        "document": "getting-started/first-bot.md",
+        "line": 138,
+        "level": 2,
+        "title": "擴展：添加更多功能"
       }
     ],
     "支援的 i18n 欄位": [
@@ -7730,16 +7844,18 @@
     ],
     "文件列表": [
       {
-        "document": "advanced/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "文件列表"
-      },
-      {
         "document": "api-reference/README.md",
         "line": 5,
         "level": 2,
         "title": "文件列表"
+      }
+    ],
+    "文件導航": [
+      {
+        "document": "README.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件導航"
       }
     ],
     "文件格式規範": [
@@ -7751,6 +7867,12 @@
       }
     ],
     "文件清單": [
+      {
+        "document": "advanced/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "文件清單"
+      },
       {
         "document": "styleguide/README.md",
         "line": 5,
@@ -7848,14 +7970,6 @@
         "line": 7,
         "level": 2,
         "title": "文件資訊"
-      }
-    ],
-    "文檔導航": [
-      {
-        "document": "README.md",
-        "line": 7,
-        "level": 2,
-        "title": "文檔導航"
       }
     ],
     "文檔維護說明": [
@@ -8680,6 +8794,14 @@
         "title": "模組層級文件註解"
       }
     ],
+    "模組按需載入": [
+      {
+        "document": "advanced/startup.md",
+        "line": 252,
+        "level": 3,
+        "title": "模組按需載入"
+      }
+    ],
     "模組核心概念": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -9215,7 +9337,7 @@
     "獲取幫助": [
       {
         "document": "README.md",
-        "line": 121,
+        "line": 122,
         "level": 2,
         "title": "獲取幫助"
       }
@@ -9321,6 +9443,12 @@
       }
     ],
     "用戶使用指南": [
+      {
+        "document": "README.md",
+        "line": 27,
+        "level": 3,
+        "title": "用戶使用指南"
+      },
       {
         "document": "user-guide/README.md",
         "line": 1,
@@ -9466,6 +9594,14 @@
         "line": 69,
         "level": 3,
         "title": "發送到不同目標"
+      }
+    ],
+    "發送回覆": [
+      {
+        "document": "getting-started/first-bot.md",
+        "line": 130,
+        "level": 3,
+        "title": "發送回覆"
       }
     ],
     "發送媒體消息": [
@@ -9718,6 +9854,12 @@
         "title": "相關文件"
       },
       {
+        "document": "advanced/startup.md",
+        "line": 309,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 48,
         "level": 2,
@@ -9831,7 +9973,7 @@
     "相關連結": [
       {
         "document": "README.md",
-        "line": 127,
+        "line": 128,
         "level": 2,
         "title": "相關連結"
       }
@@ -9863,7 +10005,7 @@
     "程式碼說明": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 93,
+        "line": 104,
         "level": 2,
         "title": "程式碼說明"
       }
@@ -9903,17 +10045,17 @@
     "第五步：測試機器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 83,
+        "line": 94,
         "level": 2,
         "title": "第五步：測試機器人"
       }
     ],
-    "第四步：執行機器人": [
+    "第四步：運行機器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 73,
+        "line": 84,
         "level": 2,
-        "title": "第四步：執行機器人"
+        "title": "第四步：運行機器人"
       }
     ],
     "等待任意事件 (wait_for)": [
@@ -11146,6 +11288,14 @@
         "title": "路由中介軟體"
       }
     ],
+    "路由伺服器": [
+      {
+        "document": "advanced/startup.md",
+        "line": 242,
+        "level": 3,
+        "title": "路由伺服器"
+      }
+    ],
     "路由分組": [
       {
         "document": "advanced/router.md",
@@ -11508,14 +11658,6 @@
         "title": "進度監控（OnProgress / OnError）"
       }
     ],
-    "進階主題": [
-      {
-        "document": "README.md",
-        "line": 75,
-        "level": 3,
-        "title": "進階主題"
-      }
-    ],
     "運作原理": [
       {
         "document": "advanced/lazy-loading.md",
@@ -11567,7 +11709,7 @@
     "適用對象": [
       {
         "document": "advanced/README.md",
-        "line": 18,
+        "line": 19,
         "level": 2,
         "title": "適用對象"
       },
@@ -11636,6 +11778,14 @@
         "line": 1,
         "level": 1,
         "title": "適配器標準化轉換規範"
+      }
+    ],
+    "適配器熱啟停": [
+      {
+        "document": "advanced/startup.md",
+        "line": 226,
+        "level": 3,
+        "title": "適配器熱啟停"
       }
     ],
     "適配器生命週期": [
@@ -11930,6 +12080,14 @@
         "title": "配置項說明"
       }
     ],
+    "重啟": [
+      {
+        "document": "advanced/startup.md",
+        "line": 277,
+        "level": 2,
+        "title": "重啟"
+      }
+    ],
     "重置建構器": [
       {
         "document": "advanced/sql-builder.md",
@@ -12199,7 +12357,7 @@
     "開發方式": [
       {
         "document": "README.md",
-        "line": 92,
+        "line": 93,
         "level": 2,
         "title": "開發方式"
       }
@@ -12465,7 +12623,7 @@
     "風格指南": [
       {
         "document": "README.md",
-        "line": 88,
+        "line": 89,
         "level": 3,
         "title": "風格指南"
       },
@@ -12493,6 +12651,12 @@
       }
     ],
     "高級主題": [
+      {
+        "document": "README.md",
+        "line": 75,
+        "level": 3,
+        "title": "高級主題"
+      },
       {
         "document": "advanced/README.md",
         "line": 1,

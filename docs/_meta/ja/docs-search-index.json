@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1403,
+  "total_keywords": 1422,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -290,6 +290,14 @@
         "title": "1. 標準メソッド命名"
       }
     ],
+    "1. 発見層：Finder": [
+      {
+        "document": "advanced/startup.md",
+        "line": 53,
+        "level": 3,
+        "title": "1. 発見層：Finder"
+      }
+    ],
     "1. 説明": [
       {
         "document": "standards/api-response.md",
@@ -538,6 +546,14 @@
         "title": "2. イベント受信（POST）"
       }
     ],
+    "2. インライン開発": [
+      {
+        "document": "README.md",
+        "line": 101,
+        "level": 3,
+        "title": "2. インライン開発"
+      }
+    ],
     "2. エラーコード規格": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -738,14 +754,6 @@
         "title": "2. 正しい非同期操作"
       }
     ],
-    "2. 組み込み開発": [
-      {
-        "document": "README.md",
-        "line": 101,
-        "level": 3,
-        "title": "2. 組み込み開発"
-      }
-    ],
     "2. 統合テスト": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -758,6 +766,14 @@
         "line": 379,
         "level": 3,
         "title": "2. 統合テスト"
+      }
+    ],
+    "2. 読み込み層：Loader": [
+      {
+        "document": "advanced/startup.md",
+        "line": 73,
+        "level": 3,
+        "title": "2. 読み込み層：Loader"
       }
     ],
     "2. 適切な遅延読み込み（Lazy Load）の使用": [
@@ -1088,6 +1104,14 @@
         "title": "3. 条件処理"
       }
     ],
+    "3. 登録層：register_to_manager": [
+      {
+        "document": "advanced/startup.md",
+        "line": 97,
+        "level": 3,
+        "title": "3. 登録層：register_to_manager"
+      }
+    ],
     "3. 送信アカウントを指定": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -1206,6 +1230,14 @@
         "line": 311,
         "level": 3,
         "title": "4. detail_type に非標準の値を使用する"
+      }
+    ],
+    "4. アダプタの起動": [
+      {
+        "document": "advanced/startup.md",
+        "line": 111,
+        "level": 3,
+        "title": "4. アダプタの起動"
       }
     ],
     "4. イメージをパブリックに設定する": [
@@ -1368,6 +1400,14 @@
         "title": "5. アダプター実装要件"
       }
     ],
+    "5. モジュールの初期化": [
+      {
+        "document": "advanced/startup.md",
+        "line": 123,
+        "level": 3,
+        "title": "5. モジュールの初期化"
+      }
+    ],
     "5. ユーザーが使用する方法": [
       {
         "document": "developer-guide/publishing.md",
@@ -1518,6 +1558,14 @@
         "line": 336,
         "level": 2,
         "title": "6. アダプター実装チェックリスト"
+      }
+    ],
+    "6. ルータサーバーの起動": [
+      {
+        "document": "advanced/startup.md",
+        "line": 135,
+        "level": 3,
+        "title": "6. ルータサーバーの起動"
       }
     ],
     "6. 変換器の実装": [
@@ -1894,12 +1942,12 @@
         "title": "A2UIメッセージの送信"
       }
     ],
-    "AI サポート開発": [
+    "AI支援開発": [
       {
         "document": "README.md",
         "line": 85,
         "level": 3,
-        "title": "AI サポート開発"
+        "title": "AI支援開発"
       }
     ],
     "AI補助開発": [
@@ -1913,7 +1961,7 @@
     "API リファレンス": [
       {
         "document": "README.md",
-        "line": 64,
+        "line": 63,
         "level": 3,
         "title": "API リファレンス"
       },
@@ -3070,6 +3118,14 @@
         "title": "SDK デバッグ"
       }
     ],
+    "SDK 上位エントリポイントの概要": [
+      {
+        "document": "advanced/startup.md",
+        "line": 9,
+        "level": 2,
+        "title": "SDK 上位エントリポイントの概要"
+      }
+    ],
     "SQL チェーンクエリ": [
       {
         "document": "api-reference/core-modules.md",
@@ -3640,6 +3696,14 @@
         "title": "`hasattr` と `dir` のサポート"
       }
     ],
+    "`keep_running` パラメータ": [
+      {
+        "document": "getting-started/first-bot.md",
+        "line": 66,
+        "level": 3,
+        "title": "`keep_running` パラメータ"
+      }
+    ],
     "`self` フィールドの拡張情報": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4136,6 +4200,14 @@
         "title": "あなたのモジュールをリリースする"
       }
     ],
+    "いつ手動起動すべきか？": [
+      {
+        "document": "advanced/startup.md",
+        "line": 212,
+        "level": 3,
+        "title": "いつ手動起動すべきか？"
+      }
+    ],
     "すべてのメッセージを監聴する": [
       {
         "document": "getting-started/event-handling.md",
@@ -4201,7 +4273,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 135,
+        "line": 146,
         "level": 2,
         "title": "よくある質問"
       }
@@ -4324,6 +4396,14 @@
         "line": 1,
         "level": 1,
         "title": "アダプタのコアコンセプト"
+      }
+    ],
+    "アダプタのホットスタート/ストップ": [
+      {
+        "document": "advanced/startup.md",
+        "line": 226,
+        "level": 3,
+        "title": "アダプタのホットスタート/ストップ"
       }
     ],
     "アダプタの停止": [
@@ -4546,6 +4626,14 @@
         "title": "アノテーション/デコレーター"
       }
     ],
+    "アンインストール（クリーンアップ）プロセス": [
+      {
+        "document": "advanced/startup.md",
+        "line": 259,
+        "level": 2,
+        "title": "アンインストール（クリーンアップ）プロセス"
+      }
+    ],
     "アーキテクチャの概要": [
       {
         "document": "architecture.md",
@@ -4713,7 +4801,7 @@
     "イベントパラメータ": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 104,
+        "line": 115,
         "level": 3,
         "title": "イベントパラメータ"
       }
@@ -5528,20 +5616,12 @@
         "title": "コマンド"
       }
     ],
-    "コマンドに応答がありませんか？": [
+    "コマンドが応答しない？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 137,
+        "line": 148,
         "level": 3,
-        "title": "コマンドに応答がありませんか？"
-      }
-    ],
-    "コマンドのプレフィックスを変更する方法？": [
-      {
-        "document": "getting-started/first-bot.md",
-        "line": 144,
-        "level": 3,
-        "title": "コマンドのプレフィックスを変更する方法？"
+        "title": "コマンドが応答しない？"
       }
     ],
     "コマンドの登録": [
@@ -5592,12 +5672,20 @@
         "title": "コマンドシステム"
       }
     ],
-    "コマンドデコレータ": [
+    "コマンドデコレーター": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 95,
+        "line": 106,
         "level": 3,
-        "title": "コマンドデコレータ"
+        "title": "コマンドデコレーター"
+      }
+    ],
+    "コマンドプレフィックスを変更するには？": [
+      {
+        "document": "getting-started/first-bot.md",
+        "line": 155,
+        "level": 3,
+        "title": "コマンドプレフィックスを変更するには？"
       }
     ],
     "コマンド優先度": [
@@ -5743,7 +5831,7 @@
     "コードの説明": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 93,
+        "line": 104,
         "level": 2,
         "title": "コードの説明"
       }
@@ -6042,34 +6130,34 @@
         "title": "スタティックファクトリ + チェーンの組み合わせ"
       }
     ],
-    "ステップ1：プロジェクトを作成": [
+    "ステップ1：プロジェクトの作成": [
       {
         "document": "getting-started/first-bot.md",
         "line": 5,
         "level": 2,
-        "title": "ステップ1：プロジェクトを作成"
+        "title": "ステップ1：プロジェクトの作成"
       }
     ],
-    "ステップ2：プロジェクト構造を確認する": [
+    "ステップ2：プロジェクト構造の確認": [
       {
         "document": "getting-started/first-bot.md",
         "line": 23,
         "level": 2,
-        "title": "ステップ2：プロジェクト構造を確認する"
+        "title": "ステップ2：プロジェクト構造の確認"
       }
     ],
-    "ステップ3：最初のコマンドを記述する": [
+    "ステップ3：最初のコマンドを作成する": [
       {
         "document": "getting-started/first-bot.md",
         "line": 35,
         "level": 2,
-        "title": "ステップ3：最初のコマンドを記述する"
+        "title": "ステップ3：最初のコマンドを作成する"
       }
     ],
     "ステップ4：ボットを実行する": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 73,
+        "line": 84,
         "level": 2,
         "title": "ステップ4：ボットを実行する"
       }
@@ -6077,7 +6165,7 @@
     "ステップ5：ボットをテストする": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 83,
+        "line": 94,
         "level": 2,
         "title": "ステップ5：ボットをテストする"
       }
@@ -6546,6 +6634,14 @@
         "title": "デプロイメントガイド"
       }
     ],
+    "デベロッパー向けガイド": [
+      {
+        "document": "README.md",
+        "line": 34,
+        "level": 3,
+        "title": "デベロッパー向けガイド"
+      }
+    ],
     "データのクエリ": [
       {
         "document": "advanced/sql-builder.md",
@@ -6664,15 +6760,13 @@
         "title": "ドキュメントメンテナンス手順"
       }
     ],
-    "ドキュメントリスト": [
+    "ドキュメント一覧": [
       {
         "document": "advanced/README.md",
         "line": 5,
         "level": 2,
-        "title": "ドキュメントリスト"
-      }
-    ],
-    "ドキュメント一覧": [
+        "title": "ドキュメント一覧"
+      },
       {
         "document": "api-reference/README.md",
         "line": 5,
@@ -6800,6 +6894,14 @@
         "line": 322,
         "level": 3,
         "title": "ハートビートメカニズム"
+      }
+    ],
+    "ハード再起動を使うべきタイミングは？": [
+      {
+        "document": "advanced/startup.md",
+        "line": 298,
+        "level": 3,
+        "title": "ハード再起動を使うべきタイミングは？"
       }
     ],
     "バグ追跡器": [
@@ -7171,7 +7273,7 @@
     "プラットフォーム機能ガイド": [
       {
         "document": "README.md",
-        "line": 55,
+        "line": 54,
         "level": 3,
         "title": "プラットフォーム機能ガイド"
       }
@@ -7320,12 +7422,12 @@
         "title": "ヘルスチェック"
       }
     ],
-    "ヘルプの入手": [
+    "ヘルプの取得": [
       {
         "document": "README.md",
         "line": 122,
         "level": 2,
-        "title": "ヘルプの入手"
+        "title": "ヘルプの取得"
       }
     ],
     "ヘルプを得る": [
@@ -7462,12 +7564,12 @@
         "title": "マルチエレメントメッセージ"
       }
     ],
-    "マルチプラットフォームをサポートする方法？": [
+    "マルチプラットフォームをサポートするには？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 154,
+        "line": 165,
         "level": 3,
-        "title": "マルチプラットフォームをサポートする方法？"
+        "title": "マルチプラットフォームをサポートするには？"
       }
     ],
     "マルチプラットフォーム対応": [
@@ -8148,6 +8250,14 @@
         "title": "モジュールのインストール"
       }
     ],
+    "モジュールのオンデマンド読み込み": [
+      {
+        "document": "advanced/startup.md",
+        "line": 252,
+        "level": 3,
+        "title": "モジュールのオンデマンド読み込み"
+      }
+    ],
     "モジュールのコアコンセプト": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -8336,14 +8446,6 @@
         "title": "ユーザーの返信を待つ"
       }
     ],
-    "ユーザーガイド": [
-      {
-        "document": "README.md",
-        "line": 27,
-        "level": 3,
-        "title": "ユーザーガイド"
-      }
-    ],
     "ユーザーステータス変更イベント": [
       {
         "document": "platform-guide/ideaura.md",
@@ -8361,6 +8463,12 @@
       }
     ],
     "ユーザー使用ガイド": [
+      {
+        "document": "README.md",
+        "line": 27,
+        "level": 3,
+        "title": "ユーザー使用ガイド"
+      },
       {
         "document": "user-guide/README.md",
         "line": 1,
@@ -8633,7 +8741,7 @@
     "リリース": [
       {
         "document": "README.md",
-        "line": 51,
+        "line": 50,
         "level": 4,
         "title": "リリース"
       }
@@ -8644,6 +8752,14 @@
         "line": 22,
         "level": 3,
         "title": "リリースガイド"
+      }
+    ],
+    "ルータサーバー": [
+      {
+        "document": "advanced/startup.md",
+        "line": 242,
+        "level": 3,
+        "title": "ルータサーバー"
       }
     ],
     "ルーター管理": [
@@ -9328,6 +9444,14 @@
         "title": "再生成のタイミング"
       }
     ],
+    "再起動": [
+      {
+        "document": "advanced/startup.md",
+        "line": 277,
+        "level": 2,
+        "title": "再起動"
+      }
+    ],
     "出力プロトコル": [
       {
         "document": "platform-guide/webhook.md",
@@ -9360,12 +9484,12 @@
         "title": "切断再接続と RESUME"
       }
     ],
-    "初心者向けガイド": [
+    "初心者向け": [
       {
         "document": "README.md",
         "line": 17,
         "level": 3,
-        "title": "初心者向けガイド"
+        "title": "初心者向け"
       }
     ],
     "初期化プロセス": [
@@ -9415,7 +9539,7 @@
     "前提知識": [
       {
         "document": "advanced/README.md",
-        "line": 26,
+        "line": 27,
         "level": 2,
         "title": "前提知識"
       }
@@ -9588,6 +9712,14 @@
         "line": 7,
         "level": 3,
         "title": "受信タイプ (ReceiveType)"
+      }
+    ],
+    "各ステップの詳細解説": [
+      {
+        "document": "advanced/startup.md",
+        "line": 51,
+        "level": 2,
+        "title": "各ステップの詳細解説"
       }
     ],
     "同期フロー": [
@@ -10134,6 +10266,14 @@
         "title": "完全な例"
       }
     ],
+    "完全な手動起動の例": [
+      {
+        "document": "advanced/startup.md",
+        "line": 148,
+        "level": 2,
+        "title": "完全な手動起動の例"
+      }
+    ],
     "完全な設定例": [
       {
         "document": "user-guide/configuration.md",
@@ -10172,6 +10312,14 @@
         "line": 220,
         "level": 2,
         "title": "実行制御コマンド"
+      }
+    ],
+    "実行時の細かい制御": [
+      {
+        "document": "advanced/startup.md",
+        "line": 222,
+        "level": 2,
+        "title": "実行時の細かい制御"
       }
     ],
     "宣言的設定（推奨）": [
@@ -10239,7 +10387,7 @@
     "対象読者": [
       {
         "document": "advanced/README.md",
-        "line": 18,
+        "line": 19,
         "level": 2,
         "title": "対象読者"
       }
@@ -10421,7 +10569,7 @@
     "技術標準": [
       {
         "document": "README.md",
-        "line": 70,
+        "line": 69,
         "level": 3,
         "title": "技術標準"
       },
@@ -10500,12 +10648,12 @@
         "title": "拡張フィールド説明"
       }
     ],
-    "拡張機能：追加機能の追加": [
+    "拡張：追加機能の追加": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 127,
+        "line": 138,
         "level": 2,
-        "title": "拡張機能：追加機能の追加"
+        "title": "拡張：追加機能の追加"
       }
     ],
     "指定がない場合、最初に有効になったbotが使用されます": [
@@ -11031,7 +11179,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 173,
+        "line": 184,
         "level": 2,
         "title": "次のステップ"
       },
@@ -11844,6 +11992,22 @@
         "title": "起動と停止"
       }
     ],
+    "起動フローと手動制御": [
+      {
+        "document": "advanced/startup.md",
+        "line": 1,
+        "level": 1,
+        "title": "起動フローと手動制御"
+      }
+    ],
+    "起動プロセスの概要": [
+      {
+        "document": "advanced/startup.md",
+        "line": 23,
+        "level": 2,
+        "title": "起動プロセスの概要"
+      }
+    ],
     "超级文件分享事件の例": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -11900,12 +12064,12 @@
         "title": "返信"
       }
     ],
-    "返信を送信する": [
+    "返信の送信": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 119,
+        "line": 130,
         "level": 3,
-        "title": "返信を送信する"
+        "title": "返信の送信"
       }
     ],
     "返信メソッド": [
@@ -12328,12 +12492,12 @@
         "title": "開発モードでのテスト"
       }
     ],
-    "開発手法": [
+    "開発方法": [
       {
         "document": "README.md",
         "line": 93,
         "level": 2,
-        "title": "開発手法"
+        "title": "開発方法"
       }
     ],
     "開発方法の選択": [
@@ -12353,12 +12517,6 @@
       }
     ],
     "開発者ガイド": [
-      {
-        "document": "README.md",
-        "line": 34,
-        "level": 3,
-        "title": "開発者ガイド"
-      },
       {
         "document": "developer-guide/README.md",
         "line": 1,
@@ -12420,6 +12578,12 @@
       {
         "document": "advanced/sql-builder.md",
         "line": 376,
+        "level": 2,
+        "title": "関連ドキュメント"
+      },
+      {
+        "document": "advanced/startup.md",
+        "line": 309,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -12625,7 +12789,7 @@
     "高度なトピック": [
       {
         "document": "README.md",
-        "line": 76,
+        "line": 75,
         "level": 3,
         "title": "高度なトピック"
       },
