@@ -43,10 +43,12 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Generate type stubs
-        run: |
-          python scripts/tools/generate-type-stubs.py --src src --output src --clean --force
-          echo "Type stubs generation complete"
+      # - name: Generate type stubs
+      #   run: |
+      #     python scripts/tools/generate-type-stubs.py --src src --output src --clean --force
+      #     echo "Type stubs generation complete"
+      # 存根生成器存在一些缺陷，暂时停止使用
+      # 详见 CONTRIBUTING.md -> 注解存根生成
 
       - name: Build package
         run: |
