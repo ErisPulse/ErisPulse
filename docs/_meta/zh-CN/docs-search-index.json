@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1321,
+  "total_keywords": 1341,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -142,6 +142,14 @@
         "title": "1. 单元测试"
       }
     ],
+    "1. 发现层：Finder": [
+      {
+        "document": "advanced/startup.md",
+        "line": 53,
+        "level": 3,
+        "title": "1. 发现层：Finder"
+      }
+    ],
     "1. 发送消息": [
       {
         "document": "platform-guide/webhook.md",
@@ -257,7 +265,7 @@
     "1. 模块开发（推荐）": [
       {
         "document": "README.md",
-        "line": 97,
+        "line": 98,
         "level": 3,
         "title": "1. 模块开发（推荐）"
       }
@@ -494,6 +502,14 @@
         "title": "2. 创建 pyproject.toml"
       }
     ],
+    "2. 加载层：Loader": [
+      {
+        "document": "advanced/startup.md",
+        "line": 73,
+        "level": 3,
+        "title": "2. 加载层：Loader"
+      }
+    ],
     "2. 参数规范详解": [
       {
         "document": "standards/send-method-spec.md",
@@ -545,7 +561,7 @@
     "2. 嵌入式开发": [
       {
         "document": "README.md",
-        "line": 101,
+        "line": 102,
         "level": 3,
         "title": "2. 嵌入式开发"
       }
@@ -1010,6 +1026,14 @@
         "title": "3. 条件处理"
       }
     ],
+    "3. 注册层：register_to_manager": [
+      {
+        "document": "advanced/startup.md",
+        "line": 97,
+        "level": 3,
+        "title": "3. 注册层：register_to_manager"
+      }
+    ],
     "3. 清晰的配置管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -1186,6 +1210,14 @@
         "title": "4. 参数命名规范"
       }
     ],
+    "4. 启动适配器": [
+      {
+        "document": "advanced/startup.md",
+        "line": 111,
+        "level": 3,
+        "title": "4. 启动适配器"
+      }
+    ],
     "4. 实现必需方法": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -1320,6 +1352,14 @@
         "line": 80,
         "level": 3,
         "title": "5. Bot 状态查询"
+      }
+    ],
+    "5. 初始化模块": [
+      {
+        "document": "advanced/startup.md",
+        "line": 123,
+        "level": 3,
+        "title": "5. 初始化模块"
       }
     ],
     "5. 实现 Send 类": [
@@ -1488,6 +1528,14 @@
         "line": 225,
         "level": 2,
         "title": "6. 反向转换规范（OneBot12 → 平台）"
+      }
+    ],
+    "6. 启动路由服务器": [
+      {
+        "document": "advanced/startup.md",
+        "line": 135,
+        "level": 3,
+        "title": "6. 启动路由服务器"
       }
     ],
     "6. 实现转换器": [
@@ -1851,7 +1899,7 @@
     "AI 辅助开发": [
       {
         "document": "README.md",
-        "line": 85,
+        "line": 86,
         "level": 3,
         "title": "AI 辅助开发"
       },
@@ -2864,6 +2912,14 @@
         "title": "SDK 调试"
       }
     ],
+    "SDK 顶层入口一览": [
+      {
+        "document": "advanced/startup.md",
+        "line": 9,
+        "level": 2,
+        "title": "SDK 顶层入口一览"
+      }
+    ],
     "SQL 查询构建器": [
       {
         "document": "advanced/sql-builder.md",
@@ -3378,6 +3434,14 @@
         "line": 395,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支持"
+      }
+    ],
+    "`keep_running` 参数": [
+      {
+        "document": "getting-started/first-bot.md",
+        "line": 66,
+        "level": 3,
+        "title": "`keep_running` 参数"
       }
     ],
     "`self` 字段扩展信息": [
@@ -3899,7 +3963,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 173,
+        "line": 184,
         "level": 2,
         "title": "下一步"
       },
@@ -4081,7 +4145,7 @@
     "事件参数": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 104,
+        "line": 115,
         "level": 3,
         "title": "事件参数"
       }
@@ -4498,6 +4562,14 @@
         "title": "交互方法示例"
       }
     ],
+    "什么时候该用硬重启？": [
+      {
+        "document": "advanced/startup.md",
+        "line": 298,
+        "level": 3,
+        "title": "什么时候该用硬重启？"
+      }
+    ],
     "什么是适配器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -4549,7 +4621,7 @@
     "代码说明": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 93,
+        "line": 104,
         "level": 2,
         "title": "代码说明"
       }
@@ -4622,6 +4694,14 @@
         "line": 301,
         "level": 4,
         "title": "低级方法"
+      }
+    ],
+    "何时该手动启动？": [
+      {
+        "document": "advanced/startup.md",
+        "line": 212,
+        "level": 3,
+        "title": "何时该手动启动？"
       }
     ],
     "何时重新生成": [
@@ -5167,7 +5247,7 @@
     "前置知识": [
       {
         "document": "advanced/README.md",
-        "line": 26,
+        "line": 27,
         "level": 2,
         "title": "前置知识"
       }
@@ -5264,6 +5344,14 @@
         "line": 305,
         "level": 4,
         "title": "单账户配置"
+      }
+    ],
+    "卸载流程": [
+      {
+        "document": "advanced/startup.md",
+        "line": 259,
+        "level": 2,
+        "title": "卸载流程"
       }
     ],
     "卸载组件": [
@@ -5471,7 +5559,7 @@
     "发送回复": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 119,
+        "line": 130,
         "level": 3,
         "title": "发送回复"
       }
@@ -5668,6 +5756,14 @@
         "title": "可选字段"
       }
     ],
+    "各环节详解": [
+      {
+        "document": "advanced/startup.md",
+        "line": 51,
+        "level": 2,
+        "title": "各环节详解"
+      }
+    ],
     "同时发布到 Docker Hub": [
       {
         "document": "developer-guide/publishing.md",
@@ -5708,12 +5804,28 @@
         "title": "启动和关闭"
       }
     ],
+    "启动流程与手动控制": [
+      {
+        "document": "advanced/startup.md",
+        "line": 1,
+        "level": 1,
+        "title": "启动流程与手动控制"
+      }
+    ],
     "启动适配器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 85,
         "level": 4,
         "title": "启动适配器"
+      }
+    ],
+    "启动链路总览": [
+      {
+        "document": "advanced/startup.md",
+        "line": 23,
+        "level": 2,
+        "title": "启动链路总览"
       }
     ],
     "启用 IDE 补全（可选）": [
@@ -5811,7 +5923,7 @@
     "命令没有响应？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 137,
+        "line": 148,
         "level": 3,
         "title": "命令没有响应？"
       }
@@ -5835,7 +5947,7 @@
     "命令装饰器": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 95,
+        "line": 106,
         "level": 3,
         "title": "命令装饰器"
       }
@@ -6635,7 +6747,7 @@
     "如何修改命令前缀？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 144,
+        "line": 155,
         "level": 3,
         "title": "如何修改命令前缀？"
       }
@@ -6643,7 +6755,7 @@
     "如何支持多平台？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 154,
+        "line": 165,
         "level": 3,
         "title": "如何支持多平台？"
       }
@@ -6824,6 +6936,14 @@
         "line": 223,
         "level": 2,
         "title": "完整 API 参考"
+      }
+    ],
+    "完整手动启动示例": [
+      {
+        "document": "advanced/startup.md",
+        "line": 148,
+        "level": 2,
+        "title": "完整手动启动示例"
       }
     ],
     "完整格式（适用于复杂方法）": [
@@ -7133,7 +7253,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 135,
+        "line": 146,
         "level": 2,
         "title": "常见问题"
       },
@@ -7353,7 +7473,7 @@
     "开发方式": [
       {
         "document": "README.md",
-        "line": 93,
+        "line": 94,
         "level": 2,
         "title": "开发方式"
       }
@@ -7859,7 +7979,7 @@
     "扩展：添加更多功能": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 127,
+        "line": 138,
         "level": 2,
         "title": "扩展：添加更多功能"
       }
@@ -9212,6 +9332,14 @@
         "title": "模块开发最佳实践"
       }
     ],
+    "模块按需加载": [
+      {
+        "document": "advanced/startup.md",
+        "line": 252,
+        "level": 3,
+        "title": "模块按需加载"
+      }
+    ],
     "模块核心概念": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -10206,6 +10334,12 @@
         "title": "相关文档"
       },
       {
+        "document": "advanced/startup.md",
+        "line": 309,
+        "level": 2,
+        "title": "相关文档"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 48,
         "level": 2,
@@ -10305,7 +10439,7 @@
     "相关链接": [
       {
         "document": "README.md",
-        "line": 128,
+        "line": 129,
         "level": 2,
         "title": "相关链接"
       }
@@ -10375,7 +10509,7 @@
     "第五步：测试机器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 83,
+        "line": 94,
         "level": 2,
         "title": "第五步：测试机器人"
       }
@@ -10383,7 +10517,7 @@
     "第四步：运行机器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 73,
+        "line": 84,
         "level": 2,
         "title": "第四步：运行机器人"
       }
@@ -10777,7 +10911,7 @@
     "获取帮助": [
       {
         "document": "README.md",
-        "line": 122,
+        "line": 123,
         "level": 2,
         "title": "获取帮助"
       },
@@ -11230,6 +11364,14 @@
         "title": "路由发现"
       }
     ],
+    "路由服务器": [
+      {
+        "document": "advanced/startup.md",
+        "line": 242,
+        "level": 3,
+        "title": "路由服务器"
+      }
+    ],
     "路由管理器": [
       {
         "document": "advanced/router.md",
@@ -11284,6 +11426,14 @@
         "line": 220,
         "level": 2,
         "title": "运行控制命令"
+      }
+    ],
+    "运行时细粒度控制": [
+      {
+        "document": "advanced/startup.md",
+        "line": 222,
+        "level": 2,
+        "title": "运行时细粒度控制"
       }
     ],
     "运行时配置": [
@@ -11441,7 +11591,7 @@
     "适用对象": [
       {
         "document": "advanced/README.md",
-        "line": 18,
+        "line": 19,
         "level": 2,
         "title": "适用对象"
       },
@@ -11572,6 +11722,14 @@
         "line": 1,
         "level": 1,
         "title": "适配器核心概念"
+      }
+    ],
+    "适配器热启停": [
+      {
+        "document": "advanced/startup.md",
+        "line": 226,
+        "level": 3,
+        "title": "适配器热启停"
       }
     ],
     "适配器生命周期": [
@@ -12052,6 +12210,14 @@
         "title": "配置项说明"
       }
     ],
+    "重启": [
+      {
+        "document": "advanced/startup.md",
+        "line": 277,
+        "level": 2,
+        "title": "重启"
+      }
+    ],
     "重置构建器": [
       {
         "document": "advanced/sql-builder.md",
@@ -12403,7 +12569,7 @@
     "风格指南": [
       {
         "document": "README.md",
-        "line": 89,
+        "line": 90,
         "level": 3,
         "title": "风格指南"
       },
