@@ -283,7 +283,14 @@ ErisPulse/
 
 ## 注解存根生成
 
-我们有一个用于生成 `.pyi` 存根文件的脚本，在仓库中您看不到 `.pyi` 文件。如果您需要使用这些注解，请运行 `python3 scripts/tools/generate-type-stubs.py`，它将在本地生成 `.pyi` 文件。提交时，请确保已清理本地 `.pyi` 文件，使用 `python3 scripts/tools/generate-type-stubs.py --clean-only` 完成清理。
+> **当前状态：已暂停使用**
+>
+> 存根生成器（`scripts/tools/generate-type-stubs.py`）存在一些缺陷，目前已暂时停止使用。
+> ErisPulse 是纯 Python 项目，所有源码均有完整的类型注解，类型检查器可直接从 `.py` 文件中获取类型信息，无需依赖 `.pyi` 存根。
+>
+> 欢迎有兴趣的贡献者修复存根生成器中的缺陷并重新启用。
+
+如果你仍要手动生成 `.pyi` 文件，可运行 `python3 scripts/tools/generate-type-stubs.py`（本地生成）。**请注意不要将生成的 `.pyi` 文件提交到仓库**，可使用 `python3 scripts/tools/generate-type-stubs.py --clean-only` 清理。
 
 ## 测试与代码检查
 
