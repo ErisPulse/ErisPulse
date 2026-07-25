@@ -287,7 +287,7 @@
     },
     "高级主题": {
       "description": "深入理解框架的高级特性",
-      "count": 11,
+      "count": 12,
       "documents": [
         {
           "title": "高级主题",
@@ -342,6 +342,11 @@
         {
           "title": "国际化 (i18n) 系统",
           "path": "advanced/i18n.md",
+          "level": 1
+        },
+        {
+          "title": "启动流程与手动控制",
+          "path": "advanced/startup.md",
           "level": 1
         }
       ],

@@ -39,7 +39,7 @@
       "count": 6,
       "documents": [
         {
-          "title": "Create Your First Bot",
+          "title": "Creating Your First Bot",
           "path": "getting-started/first-bot.md",
           "level": 1
         },
@@ -287,7 +287,7 @@
     },
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
-      "count": 11,
+      "count": 12,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -342,6 +342,11 @@
         {
           "title": "Internationalization (i18n) System",
           "path": "advanced/i18n.md",
+          "level": 1
+        },
+        {
+          "title": "Startup Process and Manual Control",
+          "path": "advanced/startup.md",
           "level": 1
         }
       ],

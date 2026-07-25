@@ -1,10 +1,10 @@
-# Create Your First Bot
+# Creating Your First Bot
 
-This guide will take you from scratch to create a simple ErisPulse bot.
+This guide will walk you through creating a simple ErisPulse bot from scratch.
 
-## Step 1: Create Project
+## Step 1: Create the Project
 
-Use the CLI tool to initialize the project:
+Initialize the project using the CLI tool:
 
 ```bash
 # Interactive initialization
@@ -18,11 +18,11 @@ Follow the prompts to complete the configuration. It is recommended to select:
 - Project name: my_first_bot
 - Log level: INFO
 - Server: Default configuration
-- Adapter: Choose your needed platform (e.g., Yunhu)
+- Adapter: Choose the platform you need (e.g., Yunhu)
 
 ## Step 2: View Project Structure
 
-The project structure after initialization:
+The structure of the initialized project:
 
 ```
 my_first_bot/
@@ -52,28 +52,39 @@ async def ping_handler(event):
     await event.reply("Pong! The bot is running normally.")
 
 async def main():
-    """Main entry function"""
-    print("Initializing ErisPulse...")
-    # Run SDK and keep it running
+    """Main entry point"""
+    print("Starting ErisPulse...")
+    
+    # keep_running=True (default): The framework blocks and maintains execution until a close signal is received (e.g., Ctrl+C)
     await sdk.run(keep_running=True)
-
-    # Or
-    # await sdk.run(keep_running=False)
-    # ...Do Something
-    # You can do whatever you want
-    # Using await sdk.init() is equivalent to `sdk.run(keep_running=False)`
-
-    print("ErisPulse initialization complete!")
 
 if __name__ == "__main__":
     import asyncio
     asyncio.run(main())
 ```
 
+### The `keep_running` Parameter
+
+`sdk.run(keep_running)` controls whether the framework blocks to maintain execution:
+
+- **`keep_running=True` (default)**: `run()` will block indefinitely until a close signal is received (e.g., Ctrl+C), suitable for pure bot applications.
+- **`keep_running=False`**: `run()` returns immediately after initialization; **the framework does not unload**—started adapters/modules continue to process message events as background tasks. You can continue executing your own logic until the event loop ends and the framework closes. For example:
+
+```python
+async def main():
+    await sdk.run(keep_running=False)   # Returns immediately after initialization
+    # The framework is running in the background, here you can continue doing other things
+    while True:
+        await asyncio.sleep(3600)
+        print("Check every hour")
+```
+
+> In addition to the two modes of `run()`, there are manual control methods for the lifecycle, starting and stopping adapters/routes individually, etc. See [Startup Process and Manual Control](../advanced/startup.md).
+
 ## Step 4: Run the Bot
 
 ```bash
-# Run normally
+# Normal run
 epsdk run main.py
 
 # Development mode (supports hot reload)
@@ -98,8 +109,8 @@ You should receive a response from the bot.
 @command("hello", help="Send a greeting message")
 ```
 
-- `hello`: Command name, users call it via `/hello`
-- `help`: Command help description, shown in the `/help` command
+- `hello`: Command name, called by users via `/hello`
+- `help`: Command help text, displayed in the `/help` command
 
 ### Event Arguments
 
@@ -119,31 +130,31 @@ The `event` parameter is an Event object, containing:
 ### Sending a Reply
 
 ```python
-await event.reply("Reply content")
+await event.reply("Response content")
 ```
 
-`event.reply()` is a convenient method for sending a message to the sender.
+`event.reply()` is a convenient method for sending messages to the sender.
 
 ## Extension: Adding More Features
 
 ErisPulse provides rich event handling and data processing capabilities:
 
-- **Message Listening**: Use `@message.on_message()` to listen for various messages → [Event Handling Introduction](event-handling.md)
-- **Notification Listening**: Use `@notice.on_friend_add()` to listen for system notifications → [Event Handling Introduction](event-handling.md)
+- **Message Listening**: Use `@message.on_message()` to listen for various messages → [Event Handling Basics](event-handling.md)
+- **Notification Listening**: Use `@notice.on_friend_add()` to listen for system notifications → [Event Handling Basics](event-handling.md)
 - **Data Storage**: Use `sdk.storage.get/set` to persist data → [Common Task Examples](common-tasks.md)
 
 ## Common Issues
 
-### Bot does not respond?
+### The command is not responding?
 
-1. Check if the adapter is configured correctly and confirm that the `status` in `config/config.toml` for the adapter is `true`
-2. View terminal log output to confirm if there are error messages (especially `ERROR` level logs)
-3. Confirm if the command prefix is correct (default is `/`), you can check the `[ErisPulse.event.command]` section in the configuration file
-4. Confirm if the command name is spelled correctly, pay attention to the case sensitivity setting
+1. Check if the adapter is configured correctly, confirm that the `status` of the adapter in `config/config.toml` is `true`
+2. Check the terminal log output to see if there are error messages (especially `ERROR` level logs)
+3. Confirm that the command prefix is correct (default is `/`), which can be viewed in the `[ErisPulse.event.command]` section of the configuration file
+4. Confirm that the command name is spelled correctly, pay attention to case sensitivity settings
 
 ### How to change the command prefix?
 
-Add this to `config.toml`:
+Add the following in `config.toml`:
 
 ```toml
 [ErisPulse.event.command]
@@ -153,7 +164,7 @@ case_sensitive = false
 
 ### How to support multiple platforms?
 
-ErisPulse uses the OneBot12 standard to unify event formats across different platforms. Handlers registered with `@command` and `@message` will automatically receive events from all platforms. You can distinguish the source platform via `event.get_platform()`:
+ErisPulse uses the OneBot12 standard to unify the event formats of different platforms. Handlers registered with `@command` and `@message` will automatically receive events from all platforms. You can distinguish the source platform using `event.get_platform()`:
 
 ```python
 @command("hello")
@@ -172,6 +183,6 @@ async def hello_handler(event):
 
 ## Next Steps
 
-- [Basic Concepts](basic-concepts.md) - Understand ErisPulse core concepts deeply
-- [Event Handling Introduction](event-handling.md) - Learn how to handle various events
-- [Common Task Examples](common-tasks.md) - Master more practical functions
+- [Basic Concepts](basic-concepts.md) - Understand the core concepts of ErisPulse in depth
+- [Event Handling Basics](event-handling.md) - Learn how to handle various events
+- [Common Task Examples](common-tasks.md) - Master more practical features
