@@ -11,8 +11,6 @@ concurrency:
 on:
   push:
     branches: [Develop/v2]
-  pull_request:
-    branches: [Develop/v2]
   workflow_dispatch:
     inputs:
       force_translate:

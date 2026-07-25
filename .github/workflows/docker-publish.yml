@@ -3,16 +3,9 @@ name: 🐳 Docker Hub Publish
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-      - Pre-Release/*
     tags:
       - "v*"
-  pull_request:
-    branches:
-      - main
-      - Pre-Release/*
-    types: [closed]
+  # 仅 tag 触发避免重复构建：版本管理流程合入后自动打 tag，再由此触发
 
 permissions:
   contents: read
@@ -26,7 +19,7 @@ env:
 jobs:
   docker-publish:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout code
