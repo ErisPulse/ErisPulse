@@ -972,6 +972,7 @@ class BaseAdapter(ABC):
     ConfigClass: type | None = None
     AccountConfigClass: type | None = None
     I18nClass: type | None = None
+    EventMixin: type | None = None
 
     _platform: str = ""
     _sdk: Any = None
@@ -1109,6 +1110,7 @@ class BaseAdapter(ABC):
 
         # 注册 I18nClass 中声明的翻译键（在生成配置之前）
         self._ensure_i18n_registered()
+        # EventMixin 的注册由 AdapterManager 在注入 _platform 后调用
 
         # 初始化时确保配置模板存在
         if self.ConfigClass is not None:
@@ -1203,6 +1205,9 @@ class BaseAdapter(ABC):
 
         from ..config import config as config_mgr
         from .config_schema import dict_to_dataclass
+
+        # 适配器的 EventMixin 在 AdapterManager.register() 注入 _platform 后注册
+        # __init__ 阶段 _platform 尚未注入，因此不在此处调用
 
         data = config_mgr.getConfig(self._get_config_key())
         if data is None:
@@ -1390,6 +1395,33 @@ class BaseAdapter(ABC):
             # i18n 注册失败不应中断适配器初始化
             self._get_logger().debug(
                 f"{self.__class__.__name__}.I18nClass.register() 失败",
+                exc_info=True,
+            )
+
+    def _ensure_event_mixin_registered(self):
+        """
+        注册 EventMixin 中声明的事件扩展方法
+
+        适配器声明 ``EventMixin`` 时，框架自动将其注册到适配器的平台
+        （即 ``self._platform``），而不是通配符。
+
+        {!--< internal-use >!--}
+        由 __init__() 隐式调用。
+        {!--< /internal-use >!--}
+        """
+        if self.EventMixin is None:
+            return
+        if not isinstance(self.EventMixin, type):
+            return
+
+        from ..Event import register_event_mixin
+
+        platform = self._platform or "*"
+        try:
+            register_event_mixin(platform, self.EventMixin)
+        except Exception:
+            self._get_logger().debug(
+                f"{self.__class__.__name__}.EventMixin 注册失败",
                 exc_info=True,
             )
 
