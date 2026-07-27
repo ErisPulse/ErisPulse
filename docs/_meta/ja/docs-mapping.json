@@ -128,7 +128,7 @@
               "level": 1
             },
             {
-              "title": "モジュールのコアコンセプト",
+              "title": "モジュールの核心概念",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1
             },
@@ -138,7 +138,7 @@
               "level": 1
             },
             {
-              "title": "モジュール開発のベストプラクティス",
+              "title": "モジュール開発ベストプラクティス",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1
             }
