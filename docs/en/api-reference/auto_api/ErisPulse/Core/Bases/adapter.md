@@ -677,6 +677,7 @@ OnError 仅在最终失败时触发一次。
 > 7. 通过 self.cfg / self.accounts 访问类型安全的配置对象（实时读取）
 > 8. 通过 self.emit_meta() 发送 meta 事件
 > 9. 通过 self.make_response() / self.make_error() 构造标准化响应
+> 10. 通过 I18nClass 声明翻译键集合，框架自动注册到 i18n 系统
 
 
 #### 嵌套类
@@ -913,6 +914,34 @@ OnError 仅在最终失败时触发一次。
 确保全局配置模板存在，不存在则生成默认配置
 
 > **内部方法**
+会先行调用 _ensure_i18n_registered() 注册声明的翻译键，
+确保配置描述引用的 i18n 键在生成模板时已可用。
+
+---
+
+
+##### `_ensure_i18n_registered()`
+
+注册 I18nClass 中声明的翻译键到 i18n 系统
+
+使用适配器配置键名（默认为类名）作为键名前缀和 domain，便于统一卸载。
+方法是幂等的，多次调用不会产生副作用（重复注册会覆盖旧值）。
+
+> **内部方法**
+由 __init__() 在生成配置之前隐式调用。
+
+---
+
+
+##### `_ensure_event_mixin_registered()`
+
+注册 EventMixin 中声明的事件扩展方法
+
+适配器声明 ``EventMixin`` 时，框架自动将其注册到适配器的平台
+（即 ``self._platform``），而不是通配符。
+
+> **内部方法**
+由 __init__() 隐式调用。
 
 ---
 

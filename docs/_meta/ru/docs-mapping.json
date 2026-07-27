@@ -138,7 +138,7 @@
               "level": 1
             },
             {
-              "title": "Рекомендации по разработке модулей",
+              "title": "Best Practices for Module Development",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1
             }

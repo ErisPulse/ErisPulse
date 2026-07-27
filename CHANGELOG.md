@@ -63,6 +63,52 @@
 
 ---
 
+## [2.7.0-dev.0] - 2026/07/26
+> 开发版本
+
+**版本摘要**
+i18n 键声明式注册 + Schema 定义源迁移 + 适配器 EventMixin 自动注册版本：(1) 新增 `I18nClass` 嵌套类机制，让模块/适配器能像声明 `ConfigClass` 一样集中声明翻译键，框架在初始化阶段（早于配置模板生成）自动注册；(2) **Schema 定义从 `runtime/` 迁移到 `Core/Bases/`**，确立 ``Bases`` 为「供应方」的架构层级——`BaseConfig` / `BaseI18n` 等基类定义在 Bases，`runtime/` 仅保留工具函数与向后兼容 shim；(3) 新增 `BaseAdapter.EventMixin` 嵌套类机制，适配器声明后框架自动注册到自身平台。
+
+**升级建议**
+- **建议升级**
+- 升级原因：配置描述引用的 i18n 键现可由框架自动注册，无需手动调用 `i18n.register()`；导入路径更清晰
+
+### 新增
+
+- `Core/Bases/i18n_schema.py` 模块：基于类属性的 i18n 键声明 Schema（Bases 为供应方）
+  - `BaseI18n`：翻译键集合基类（命名对齐 `BaseConfig`），子类以类属性声明多个 `I18nKey`；支持 MRO 继承与子类同名覆盖
+  - `BaseI18n.register(prefix, domain)`：类方法，将所有声明的键注册到 i18n 系统（幂等）
+  - `I18nKey`：单个翻译键声明，`default` 为语言无关的兜底文本（不注册到任何语言），可显式提供 `zh_CN` / `en` / `ja` / `ru` / `zh_TW`
+  - `key`：`I18nKey` 的简洁别名
+- `BaseModule.I18nClass` / `BaseAdapter.I18nClass`：新增可选嵌套类属性
+  - 框架在 `ModuleManager.load()`（注入 `_module_name` 后）与 `BaseAdapter.__init__` 阶段预注册翻译键
+  - `_ensure_config_exists()` 会先调用 `_ensure_i18n_registered()`，保证配置描述引用的 i18n 键在生成模板时已可用
+  - 键路径默认为 `<配置键名>.<属性名>`（模块用注册名，适配器用类名），或通过 `I18nKey(key=...)` 显式指定
+  - domain 使用配置键名，便于按域统一卸载
+- `Core/Bases/__init__.py` 导出 Schema 类型：`BaseConfig` / `BotAccountConfig` / `AdapterConfig` / `BaseI18n` / `I18nKey`
+  - 推荐从 `ErisPulse.Core.Bases` 统一导入基类与 Schema 类型
+- 示例项目 `example-module` / `example-adapter` 改为从 `Core.Bases` 统一导入，并补充 `I18nClass` 推荐写法演示
+- CLI 脚手架模板 `_MODULE_CORE` / `_ADAPTER_CORE` 同步从 `Core.Bases` 导入并生成 `I18nClass` 示例代码
+- 单元测试 `tests/unit/test_unit_i18n_schema.py`（26 个用例）：覆盖 I18nKey 构造、BaseI18n 集合行为、register() 语义、BaseModule/BaseAdapter 集成、i18n 优先于配置生成、Bases/runtime 导出一致性等场景
+- `BaseAdapter.EventMixin`：新增可选嵌套类属性，适配器声明后框架在 `AdapterManager` 注入 `_platform` 后自动注册到适配器自身平台
+  - `BaseAdapter._ensure_event_mixin_registered()`：内部方法，将 `EventMixin` 注册到 `self._platform`（或 `*` 通配符当平台未就绪时）
+  - `AdapterManager.register_adapter()` 中新增 EventMixin 注册步骤（在 `instance._platform` 注入后立即执行）
+- `Core/constants.py` 新增 `ADAPTER_EVENT_MIXIN_PLATFORM` 常量，标识适配器 EventMixin 默认注册到自身平台 (`"_self"`)
+
+### 变更
+
+- **Schema 定义源迁移**：`config_schema.py` 与 `i18n_schema.py` 的实际定义从 `runtime/` 移至 `Core/Bases/`
+  - `runtime/config_schema.py` 变为 shim（通过 `__getattr__` 懒加载），保留 `from ErisPulse.runtime.config_schema import ...` 的旧代码可用（避免循环引用）
+  - `runtime/__init__.py` 中 `config_schema` 相关符号改为懒加载，`i18n_schema` 相关符号不再导出
+  - `Core/Bases/__init__.py` 中 Schema 类型导入顺序提前，避免在 `module.py` 触发 loaders → lifecycle → runtime 循环引用时未就绪
+
+### 优化
+
+- `docs/zh-CN/advanced/i18n.md` 新增「推荐写法：通过 I18nClass 声明翻译键」章节与 `BaseI18n`/`I18nKey` API 参考
+- `docs/zh-CN/developer-guide/adapters/core-concepts.md` 新增 EventMixin 章节，说明适配器事件扩展方法的注册机制
+
+---
+
 ## [2.6.3] - 2026/07/25
 > 正式发布
 

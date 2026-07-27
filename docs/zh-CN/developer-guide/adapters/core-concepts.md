@@ -442,6 +442,72 @@ MyConfig._schema_meta = {
 框架的 `resolve_config_schema()` 会根据当前语言自动解析上述所有字段的 i18n 键；
 `get_config_schema()` 则原样透传 i18n 字典，由前端自行解析。
 
+### 声明式翻译键（v2.7.0+）
+
+适配器可以像声明 `ConfigClass` 一样，通过嵌套类 `I18nClass` 集中声明翻译键。
+框架会在 `__init__` 阶段（配置模板生成之前）自动注册所有声明的翻译键，
+确保配置描述中引用的 i18n 键在生成模板时已可用。
+
+```python
+from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
+
+class MyAdapter(BaseAdapter):
+    class I18nClass(BaseI18n):
+        endpoint: I18nKey = I18nKey(
+            default="API Endpoint",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
+            en="API Endpoint",
+            ja="APIアドレス",
+            ru="API адрес",
+        )
+        token: I18nKey = I18nKey(
+            default="Platform Token",
+            zh_CN="平台 Token",
+            zh_TW="平台權杖",
+            en="Platform Token",
+            ja="プラットフォームトークン",
+            ru="Токен платформы",
+        )
+```
+
+> ``I18nKey.default`` 是**语言无关的兜底文本**，不会注册到任何语言。
+> 要让翻译生效，必须显式传入至少一个语言参数。
+
+详细用法（键路径规则、显式 key 参数等）见 [i18n 文档](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
+
+### 声明式事件扩展方法（v2.7.0+）
+
+适配器可以通过 `EventMixin` 集中声明平台特有的事件扩展方法，框架自动注册到当前平台。
+
+```python
+from ErisPulse.Core import BaseAdapter
+
+class MyAdapter(BaseAdapter):
+    class EventMixin:
+        def get_chat_name(self):
+            """获取聊天名称"""
+            return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+
+        def is_official_message(self):
+            """判断是否为官方消息"""
+            raw = self.get("myplatform_raw", {})
+            return raw.get("sender", {}).get("is_official", False)
+```
+
+注册后，事件对象直接调用这些方法：
+
+```python
+@message.on_group_message()
+async def handler(event):
+    if event.is_official_message():
+        chat_name = event.get_chat_name()
+        await event.reply(f"[{chat_name}] 官方消息已收到")
+```
+
+> 适配器的事件扩展方法注册到自身平台（``self._platform``）。
+> 模块如需跨平台事件扩展，请使用原有的 ``register_event_mixin()`` API。
+
 #### 账户解析
 
 多账户适配器可使用 `_resolve_account()` 自动解析目标账户：
@@ -476,6 +542,7 @@ class MyAdapter(BaseAdapter):
 2. **Send/Request 工厂**：创建 `self.Send` 和 `self.Request`
 3. **配置模板**：如果声明了 `ConfigClass`，自动生成默认配置模板（首次）
 4. **账户模板**：如果声明了 `AccountConfigClass`，自动生成默认账户模板（首次）
+5. **EventMixin 注册**：如果声明了 `EventMixin`，在 `AdapterManager` 注入平台名后自动注册
 
 配置通过 `self.cfg` / `self.accounts` 实时读取（每次访问都从配置存储读取最新值）。`self.config` 作为 `self.cfg` 的兼容别名仍可使用。
 

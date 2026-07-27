@@ -2033,7 +2033,7 @@ sdk.lifecycle  # 生命週期系統
 
 ## 模組生命週期
 
-### 加載策略
+### 載入策略
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -2042,66 +2042,66 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """返回模組加載策略"""
+        """傳回模組載入策略"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # 慢加載還是立即加載
-            priority=0,       # 加載優先級（數值越大越先加載）
-            depends=["OtherModule"]  # 可選：聲明依賴的其他模組
+            lazy_load=True,   # 懶載入還是立即載入
+            priority=0,       # 載入優先級（數值越大越先載入）
+            depends=["OtherModule"]  # 可選：宣告依賴的其他模組
         )
 ```
 
-> `depends` 聲明的模組如果未註冊，當前模組將被跳過並記錄警告。加載順序由拓撲排序決定，同層級按 `priority` 降序。
+> `depends` 宣告的模組如果未註冊，當前模組將會被跳過並記錄警告。載入順序由拓樸排序決定，同層級按 `priority` 降序。
 
 ### on_load 方法
 
-模組加載時調用，用於初始化資源和註冊事件處理器：
+模組載入時呼叫，用於初始化資源和註冊事件處理器：
 
 ```python
 async def on_load(self, event):
     # 註冊事件處理器
-    @command("hello", help="問候命令")
+    @command("hello", help="問候指令")
     async def hello_handler(event):
         await event.reply("你好！")
     
     # 使用 SDK 內建 HTTP 客戶端（自動管理連接池，無需手動建立 session）
-    # 透過 sdk.client 即可發送請求
+    # 通過 sdk.client 即可發送請求
 ```
 
 ### on_unload 方法
 
-模組卸載時調用，用於清理資源：
+模組卸載時呼叫，用於清理資源：
 
 ```python
 async def on_unload(self, event):
-    # 清理自定義資源
+    # 清理自訂資源
     # sdk.client 由框架管理，無需手動關閉
     
     # 取消事件處理器（框架會自動處理）
     self.logger.info("模組已卸載")
 ```
 
-## SDK 對象
+## SDK 物件
 
-### 訪問核心模組
+### 存取核心模組
 
 ```python
 from ErisPulse import sdk
 
-# 透過 sdk 對象訪問所有核心模組
+# 通過 sdk 物件存取所有核心模組
 sdk.logger.info("日誌")
 sdk.storage.set("key", "value")
 config = sdk.config.getConfig("MyModule")
 ```
 
-### 模組間通信
+### 模組間通訊
 
 ```python
-# 訪問其他模組
+# 存取其他模組
 other_module = sdk.OtherModule
 result = await other_module.some_method()
 ```
 
-## 適配器發送方法查詢
+## 配適器發送方法查詢
 
 由於新的標準規範要求使用重寫 `__getattr__` 方法來實現兜底發送機制，導致無法使用 `hasattr` 方法來檢查方法是否存在。從 `2.3.5` 開始，新增了查詢發送方法的功能。
 
@@ -2113,10 +2113,10 @@ methods = sdk.adapter.list_sends("onebot11")
 # 返回: ["Text", "Image", "Voice", "Markdown", ...]
 ```
 
-### 獲取方法詳細資訊
+### 取得方法詳細資訊
 
 ```python
-# 獲取某個方法的詳細資訊
+# 取得某個方法的詳細資訊
 info = sdk.adapter.send_info("onebot11", "Text")
 # 返回:
 # {
@@ -2125,15 +2125,15 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "發送文本訊息..."
+#     "docstring": "傳送文字訊息..."
 # }
 ```
 
 ## 配置管理
 
-### 聲明式配置（推薦）
+### 宣告式配置（推薦）
 
-從 v2.5.2 起，模組可透過 `ConfigClass` 聲明配置類，與適配器使用同一套配置 Schema 系統。配置透過 `self.cfg` 實時讀取，修改後立即生效：
+從 v2.5.2 起，模組可透過 `ConfigClass` 宣告配置類，與配適器使用同一套配置 Schema 系統。配置透過 `self.cfg` 實時讀取，修改後立即生效：
 
 ```python
 from dataclasses import dataclass, field
@@ -2145,7 +2145,7 @@ class MyModuleConfig(BaseConfig):
     api_key: str = field(
         default="",
         metadata={
-            "description": {"i18n": "my_module.api_key", "default": "API 密鑰"},
+            "description": {"i18n": "my_module.api_key", "default": "API 金鑰"},
             "required": True,
             "secret": True,
             "ui": {"widget": "password", "group": "basic", "order": 1},
@@ -2154,7 +2154,7 @@ class MyModuleConfig(BaseConfig):
     timeout: int = field(
         default=30,
         metadata={
-            "description": {"i18n": "my_module.timeout", "default": "超時時間（秒）"},
+            "description": {"i18n": "my_module.timeout", "default": "逾時時間（秒）"},
             "ui": {"widget": "number", "group": "advanced", "order": 2},
         },
     )
@@ -2163,7 +2163,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        self.logger.info("模組已加載")
+        self.logger.info("模組已載入")
 
     async def on_unload(self, event):
         pass
@@ -2174,11 +2174,52 @@ class MyModule(BaseModule):
         timeout = cfg.timeout
 ```
 
-`BaseConfig` 是通用配置基類，適用於適配器、模組、外部專案等任何場景。配置欄位支援 i18n 多語言描述（詳見 [i18n 文檔](../../advanced/i18n.md#配置欄位多語言)）。
+`BaseConfig` 是通用配置基類，適用於配適器、模組、外部專案等任何場景。配置欄位支援 i18n 多語言描述（詳見 [i18n 文件](../../advanced/i18n.md#配置字段多語言)）。
+
+### 宣告式翻譯鍵（v2.7.0+）
+
+從 v2.7.0 起，模組還可以像宣告 `ConfigClass` 一樣，透過巢狀類 `I18nClass` 集中宣告翻譯鍵。框架會在載入時**自動註冊**所有宣告的翻譯鍵，無需手動呼叫 `i18n.register()`，且註冊時機早於配置範本生成，確保配置描述中引用的 i18n 鍵已可用。
+
+```python
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
+
+class MyModule(BaseModule):
+    # 配置類（可選）
+    @dataclass
+    class ConfigClass(BaseConfig):
+        welcome_msg: str = field(
+            default="歡迎",
+            metadata={
+                "description": {"i18n": "mymodule.welcome_msg", "default": "歡迎訊息"},
+            },
+        )
+
+    # 翻譯鍵集合類（可選）
+    class I18nClass(BaseI18n):
+        # 屬性名自動拼接為完整鍵路徑：<模組名>.<屬性名>
+        welcome_msg: I18nKey = I18nKey(
+            default="Welcome Message",   # 語言無關的兜底
+            zh_CN="歡迎訊息",
+            zh_TW="歡迎訊息",
+            en="Welcome Message",
+            ja="ウェルカムメッセージ",
+            ru="Приветственное сообщение",
+        )
+        hello: I18nKey = I18nKey(
+            default="Hello, {name}!",
+            zh_CN="你好，{name}！",
+            zh_TW="你好，{name}！",
+            en="Hello, {name}!",
+            ja="こんにちは、{name}！",
+            ru="Привет, {name}!",
+        )
+```
+
+詳情見 [i18n 推薦寫法](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
 
 ### 手動讀取配置（相容方式）
 
-如果不使用聲明式配置，也可以直接讀寫配置儲存：
+如果不使用宣告式配置，也可以直接讀寫配置儲存：
 
 ```python
 def _load_config(self):
@@ -2193,7 +2234,7 @@ def _load_config(self):
     return config
 ```
 
-> **注意**：手動方式下請避免使用 `self.config` 作為屬性名，推薦使用 `self.cfg` 或自定義名稱，以免與框架未來的屬性衝突。
+> **注意**：手動方式下請避免使用 `self.config` 作為屬性名，推薦使用 `self.cfg` 或自訂名稱，以免與框架未來的屬性衝突。
 
 ## 儲存系統
 
@@ -2203,7 +2244,7 @@ def _load_config(self):
 # 儲存資料
 sdk.storage.set("user:123", {"name": "張三"})
 
-# 獲取資料
+# 取得資料
 user = sdk.storage.get("user:123", {})
 
 # 刪除資料
@@ -2217,7 +2258,7 @@ sdk.storage.delete("user:123")
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
-    # 如果任何操作失敗，所有更改都會回滾
+    # 如果任何操作失敗，所有變更都會回滾
 ```
 
 ## 事件處理
@@ -2227,8 +2268,8 @@ with sdk.storage.transaction():
 ```python
 from ErisPulse.Core.Event import command, message
 
-# 註冊命令
-@command("info", help="獲取資訊")
+# 註冊指令
+@command("info", help="取得資訊")
 async def info_handler(event):
     await event.reply("這是資訊")
 
@@ -2242,17 +2283,17 @@ async def group_handler(event):
 
 框架會自動管理事件處理器的註冊和註銷，你只需要在 `on_load` 中註冊即可。
 
-## 慢加載機制
+## 懶載入機制
 
-### 工作原理
+### 運作原理
 
 ```python
-# 模組首次被訪問時才會初始化
+# 模組首次被存取時才會初始化
 result = await sdk.my_module.some_method()
 # ↑ 這裡會觸發模組初始化
 ```
 
-### 立即加載
+### 立即載入
 
 對於需要立即初始化的模組（如監聽器、定時器）：
 
@@ -2260,14 +2301,14 @@ result = await sdk.my_module.some_method()
 @staticmethod
 def get_load_strategy():
     return ModuleLoadStrategy(
-        lazy_load=False,  # 立即加載
+        lazy_load=False,  # 立即載入
         priority=100
     )
 ```
 
 ## 錯誤處理
 
-### 異常捕獲
+### 異常擷取
 
 ```python
 async def handle_event(self, event):
@@ -2285,9 +2326,9 @@ async def handle_event(self, event):
 ### 日誌記錄
 
 ```python
-# 使用不同的日誌等級
-self.logger.debug("調試資訊")    # 詳細調試資訊
-self.logger.info("運行狀態")      # 正常運行資訊
+# 使用不同的日誌級別
+self.logger.debug("偵錯資訊")    # 詳細偵錯資訊
+self.logger.info("執行狀態")      # 正常執行資訊
 self.logger.warning("警告資訊")  # 警告資訊
 self.logger.error("錯誤資訊")    # 錯誤資訊
 self.logger.critical("致命錯誤") # 致命錯誤
@@ -2295,9 +2336,9 @@ self.logger.critical("致命錯誤") # 致命錯誤
 
 ## 相關文件
 
-- [模組開發入門](docs/zh-TW/getting-started.md) - 建立第一個模組
-- [Event 包裝類](docs/zh-TW/event-wrapper.md) - 事件處理詳解
-- [最佳實踐](docs/zh-TW/best-practices.md) - 開發高品質模組
+- [模組開發入門](getting-started.md) - 建立第一個模組
+- [Event 包裝類](event-wrapper.md) - 事件處理詳解
+- [最佳實踐](best-practices.md) - 開發高品質模組
 
 
 ### Event 包装类详解
@@ -2732,7 +2773,7 @@ async def ai_chat(self, prompt: str):
 
 # 模組開發最佳實踐
 
-本文件提供了 ErisPulse 模組開發的最佳實踐建議。
+本文檔提供了 ErisPulse 模組開發的最佳實踐建議。
 
 ## 模組設計
 
@@ -2765,7 +2806,7 @@ name = "ErisPulse-ModuleName"  # 使用 ErisPulse- 前綴
 
 ### 3. 清晰的配置管理
 
-推薦使用宣告式配置（`ConfigClass` + `BaseConfig`），獲得類型安全、自動範本產生、WebUI 表單支援等能力：
+推薦使用宣告式配置（`ConfigClass` + `BaseConfig`），獲得類型安全、自動範本生成、WebUI 表單支援等能力：
 
 ```python
 from dataclasses import dataclass, field
@@ -2777,7 +2818,7 @@ class MyModuleConfig(BaseConfig):
         "description": {"i18n": "my_module.api_url", "default": "API 位址"},
     })
     timeout: int = field(default=30, metadata={
-        "description": {"i18n": "my_module.timeout", "default": "超時時間（秒）"},
+        "description": {"i18n": "my_module.timeout", "default": "逾時時間（秒）"},
     })
     cache_ttl: int = field(default=3600, metadata={
         "description": {"i18n": "my_module.cache_ttl", "default": "快取存活時間（秒）"},
@@ -2791,14 +2832,45 @@ class MyModule(BaseModule):
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-也可以繼續使用手動方式讀寫配置儲存（見[模組核心概念](core-concepts.md#配置管理)）。
+也可以在繼續使用手動方式讀寫配置儲存（見[模組核心概念](core-concepts.md#配置管理)）。
 
-## 非同步程式設計
+### 宣告式翻譯鍵（v2.7.0+）
 
-### 1. 使用非同步程式庫
+模組可以透過 `I18nClass` 集中宣告翻譯鍵，框架自動註冊到 i18n 系統，無需手動呼叫 `i18n.register()`。
 
 ```python
-# 推薦使用 SDK 內建 HTTP 用戶端（非同步，自動日誌和統計）
+from ErisPulse.Core.Bases import BaseI18n, I18nKey
+
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        # 帶預留位置的業務翻譯鍵
+        welcome: I18nKey = I18nKey(
+            default="Welcome, {name}!",
+            zh_CN="歡迎你，{name}！",
+            zh_TW="歡迎你，{name}！",
+            en="Welcome, {name}!",
+            ja="ようこそ、{name}！",
+            ru="Добро пожаловать, {name}!",
+        )
+        # 配置欄位描述的翻譯
+        api_url: I18nKey = I18nKey(
+            default="API URL",
+            zh_CN="API 位址",
+            zh_TW="API 位址",
+            en="API URL",
+            ja="API URL",
+            ru="API URL",
+        )
+```
+
+詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
+
+## 非同步編程
+
+### 1. 使用非同步函式庫
+
+```python
+# 推薦使用 SDK 內建 HTTP 客戶端（非同步，自動日誌和統計）
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -2823,12 +2895,12 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# 不要使用 requests（同步，會阻斷事件迴圈）
+# 不要使用 requests（同步，會阻塞事件迴圈）
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # 會阻斷事件迴圈
+        return requests.get(url).json()  # 會阻塞事件迴圈
 ```
 
 ### 2. 正確的非同步操作
@@ -2846,11 +2918,11 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # SDK 用戶端已自動管理連線池，無需手動建立 session
+    # SDK 客戶端已自動管理連線池，無需手動建立 session
     pass
     
 async def on_unload(self, event):
-    # 如需自訂用戶端，記得清理資源
+    # 如需自訂客戶端，記得清理資源
     pass
 ```
 
@@ -2875,7 +2947,7 @@ async def info_command(event):
 ### 2. 合理使用懶載入
 
 ```python
-# 指令處理模組需要立即載入
+# 命令處理模組需要立即載入
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -2907,7 +2979,7 @@ async def on_load(self, event):
     async def group_handler(event):
         self.logger.info("收到群訊息")
     
-    # 不需要手動登註，框架會自動處理
+    # 不需要手動註銷，框架會自動處理
 ```
 
 ## 錯誤處理
@@ -2930,14 +3002,14 @@ async def handle_event(self, event):
     except Exception as e:
         # 未預期的錯誤
         self.logger.error(f"未知錯誤: {e}", exc_info=True)
-        await event.reply("處理失敗，請聯絡管理員")
+        await event.reply("處理失敗，請聯繫管理員")
         raise
 ```
 
-### 2. 超時處理
+### 2. 逾時處理
 
 ```python
-# 推薦使用 SDK 內建用戶端（自帶超時和重試）
+# 推薦使用 SDK 內建客戶端（自帶逾時和重試）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -2946,22 +3018,22 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"請求超時: {url}")
+        self.logger.warning(f"請求逾時: {url}")
         raise
 ```
 
 ## 儲存系統
 
-### 1. 使用交易
+### 1. 使用事務
 
 ```python
-# 使用交易確保資料一致性
+# 使用事務確保資料一致性
 async def update_user(self, user_id, data):
     with self.sdk.storage.transaction():
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ 不使用交易可能導致資料不一致
+# ❌ 不使用事務可能導致資料不一致
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
     # 如果這裡出錯，上面的設定無法回滾
@@ -2988,23 +3060,23 @@ def cache_multiple_items(self, items):
 ### 1. 合理使用日誌層級
 
 ```python
-# DEBUG: 詳細的除錯資訊（僅開發時）
+# DEBUG: 詳細的偵錯資訊（僅開發時）
 self.logger.debug(f"輸入參數: {params}")
 
-# INFO: 正常執行資訊
+# INFO: 正常運行資訊
 self.logger.info("模組已載入")
 self.logger.info(f"處理請求: {request_id}")
 
 # WARNING: 警告資訊，不影響主要功能
 self.logger.warning(f"設定項 {key} 未設定，使用預設值")
-self.logger.warning("API 回應慢，可能需要最佳化")
+self.logger.warning("API 回應慢，可能需要優化")
 
 # ERROR: 錯誤資訊
 self.logger.error(f"API 請求失敗: {e}")
 self.logger.error(f"處理事件失敗: {e}", exc_info=True)
 
 # CRITICAL: 致命錯誤，需要立即處理
-self.logger.critical("資料庫連線失敗，機器人無法正常執行")
+self.logger.critical("資料庫連線失敗，機器人無法正常運行")
 ```
 
 ### 2. 結構化日誌
@@ -3014,10 +3086,10 @@ self.logger.critical("資料庫連線失敗，機器人無法正常執行")
 self.logger.info(f"處理請求: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
 # ❌ 使用非結構化日誌
-self.logger.info(f"處理請求了，來自用戶 {user_id}，用時 {duration} 毫秒")
+self.logger.info(f"處理請求了，來自使用者 {user_id}，用時 {duration} 毫秒")
 ```
 
-## 效能最佳化
+## 效能優化
 
 ### 1. 使用快取
 
@@ -3032,7 +3104,7 @@ class MyModule(BaseModule):
             if key in self._cache:
                 return self._cache[key]
             
-            # 從資料庫取得
+            # 從資料庫獲取
             data = await self._fetch_from_db(key)
             
             # 快取資料
@@ -3040,7 +3112,7 @@ class MyModule(BaseModule):
             return data
 ```
 
-### 2. 避免阻斷操作
+### 2. 避免阻塞性操作
 
 ```python
 # 使用非同步操作
@@ -3048,9 +3120,9 @@ async def process_message(self, event):
     # 非同步處理
     await self._async_process(event)
 
-# ❌ 阻斷操作
+# ❌ 阻塞性操作
 async def process_message(self, event):
-    # 同步操作，阻斷事件迴圈
+    # 同步操作，阻礙事件迴圈
     result = self._sync_process(event)
 ```
 
@@ -3076,7 +3148,7 @@ class MyModule(BaseModule):
 ### 2. 輸入驗證
 
 ```python
-# 驗證用戶輸入
+# 驗證使用者輸入
 async def process_command(self, event):
     user_input = event.get_text()
     
@@ -3113,11 +3185,11 @@ class TestMyModule:
 ```python
 @pytest.mark.asyncio
 async def test_command_handling():
-    """測試指令處理"""
+    """測試命令處理"""
     module = MyModule()
     await module.on_load({})
     
-    # 模擬指令事件
+    # 模擬命令事件
     event = create_test_command_event("hello")
     await module.handle_command(event)
 ```
@@ -3138,7 +3210,7 @@ version = "1.0.0"
 - 次版本：向下相容的功能新增
 - 修訂號：向下相容的問題修正
 
-### 2. 文件完善
+### 2. 文檔完善
 
 ```markdown
 # README.md
@@ -3147,15 +3219,17 @@ version = "1.0.0"
 - 安裝說明
 - 設定說明
 - 使用範例
-- API 文件
+- API 文檔
 - 貢獻指南
 ```
 
-## 相關文件
+## 相關文檔
 
-- [模組開發入門](docs/zh-TW/getting-started.md) - 建立第一個模組
-- [模組核心概念](docs/zh-TW/core-concepts.md) - 理解模組架構
-- [Event 包裝類別](docs/zh-TW/event-wrapper.md) - 事件處理詳解
+- [模組開發入門](getting-started.md) - 建立第一個模組
+- [模組核心概念](core-concepts.md) - 理解模組架構
+- [Event 包裝類別](event-wrapper.md) - 事件處理詳解
+
+請直接傳回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 
 =====
@@ -7545,7 +7619,7 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 
 # 國際化 (i18n) 系統
 
-ErisPulse v2.5.0 起內建了完整的國際化支援。框架核心及 CLI 界面均可根據您的系統語言自動切換顯示文字，也支援外部模組註冊自己的翻譯。
+ErisPulse v2.5.0 起內置了完整的國際化支援。框架核心及 CLI 界面均可根據您的系統語言自動切換顯示文本，也支援外部模組註冊自己的翻譯。
 
 ## 支援的語言
 
@@ -7570,7 +7644,7 @@ epsdk run
 ERISPULSE_LANG=ja epsdk run
 ```
 
-### 透過配置檔案切換
+### 透過配置文件切換
 
 在 `config/config.toml` 中新增：
 
@@ -7579,7 +7653,7 @@ ERISPULSE_LANG=ja epsdk run
 language = "zh-TW"
 ```
 
-設為 `"auto"`（預設值）則自動偵測系統語言。
+設為 `"auto"`（預設值）則自動檢測系統語言。
 
 ### 在程式碼中手動切換
 
@@ -7590,17 +7664,17 @@ from ErisPulse import i18n
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
-# 重設為自動偵測
+# 重置為自動檢測
 i18n.reset_language()
 ```
 
 ---
 
-## 語言偵測機制
+## 語言檢測機制
 
-框架按以下優先級偵測使用者語言：
+框架按以下優先順序檢測使用者語言：
 
-1. **環境變數 `ERISPULSE_LANG`** — 最高優先級，用於測試和暫時切換
+1. **環境變數 `ERISPULSE_LANG`** — 最高優先順序，用於測試和臨時切換
 2. **Windows API** — `GetUserDefaultLocaleName`（僅 Windows，不受 Git Bash 等工具覆蓋 `LANG` 的影響）
 3. **環境變數** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG`（Unix/macOS 標準）
 4. **系統 Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
@@ -7608,7 +7682,7 @@ i18n.reset_language()
 
 ### 就近映射原則
 
-當偵測到的語言不是精確匹配時，按就近原則對映到支援的語言：
+當檢測到的語言不是精確匹配時，按就近原則映射到支援的語言：
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **繁體中文**
 - 其他所有 `zh-*`（如 `zh-CN`, `zh-SG`）→ **簡體中文**
@@ -7621,9 +7695,117 @@ i18n.reset_language()
 
 ## 在模組中使用 i18n
 
-您可以為自己的模組註冊翻譯文字，讓您的模組也支援多語言。
+您可以為自己的模組註冊翻譯文本，讓您的模組也支援多語言。
 
-### 註冊自訂翻譯
+### 推薦寫法：透過 I18nClass 聲明翻譯鍵（v2.7.0+）
+
+從 v2.7.0 起，模組/適配器可以像宣告 `ConfigClass` 一樣，透過嵌套類 `I18nClass` 聲明翻譯鍵。框架會在載入時**自動註冊**所有宣告的翻譯鍵，無需手動呼叫 `i18n.register()`。
+
+```python
+from dataclasses import dataclass, field
+
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey
+
+
+class MyModule(BaseModule):
+    # 配置類（可選）
+    @dataclass
+    class ConfigClass(BaseConfig):
+        welcome_msg: str = field(
+            default="歡迎",
+            metadata={
+                # 這裡引用了 i18n 鍵 mymodule.welcome_msg
+                "description": {"i18n": "mymodule.welcome_msg", "default": "歡迎訊息"},
+            },
+        )
+
+    # 翻譯鍵集合類（可選）
+    # 聲明的鍵會被框架自動註冊，優先級早於 ConfigClass 生成預設配置
+    class I18nClass(BaseI18n):
+        # 屬性名自動拼接為完整鍵路徑：<模組名>.<屬性名>
+        welcome_msg: I18nKey = I18nKey(
+            default="Welcome Message",   # 語言無關的兜底，不註冊到任何語言
+            zh_CN="歡迎訊息",
+            en="Welcome Message",
+            ja="ウェルカムメッセージ",
+            ru="Приветственное сообщение",
+            zh_TW="歡迎訊息",
+        )
+        # 業務用到的其他翻譯鍵
+        hello: I18nKey = I18nKey(
+            default="Hello, {name}!",
+            zh_CN="你好，{name}！",
+            zh_TW="你好，{name}！",
+            en="Hello, {name}!",
+            ja="こんにちは、{name}！",
+            ru="Привет, {name}!",
+        )
+
+        # 也可以顯式指定完整鍵路徑（不使用屬性名拼接）
+        custom: I18nKey = I18nKey(
+            key="mymodule.deep.nested.key",
+            default="Default text",
+            zh_CN="預設文本",
+            zh_TW="預設文本",
+            en="Default text",
+            ja="デフォルトテキスト",
+            ru="Текст по умолчанию",
+        )
+```
+
+#### 為什麼推薦 I18nClass？
+
+| 场景 | 手動 i18n.register() | I18nClass 聲明式 |
+|------|-----------------------|------------------|
+| 配置描述引用的 i18n 鍵 | 需手動註冊，且要趕在配置生成前 | 框架自動在配置生成前註冊 |
+| 多語言翻譯宣告 | 散落在各個 on_load() 中 | 集中在類裡，一目了然 |
+| 鍵名命名一致性 | 容易拼寫錯誤 | 屬性名作為鍵名後綴，IDE 可補全 |
+| 卸載時清理 | 需手動 unregister_domain() | 框架使用統一 domain 註冊 |
+
+#### I18nClass 的鍵路徑規則
+
+- **預設**：使用 ``<模組註冊名>.<屬性名>`` 作為完整鍵路徑
+  - 範例：模組名為 ``MyModule``，屬性 ``welcome`` → 鍵路徑 ``MyModule.welcome``
+- **顯式**：透過 ``I18nKey(key="...")`` 參數指定任意點分路徑
+  - 適合深層嵌套的鍵名（如 ``mymodule.config.basic.token``）
+
+#### 在適配器中使用
+
+適配器同樣支援 `I18nClass`，使用方式完全一致：
+
+```python
+from ErisPulse.Core import BaseAdapter
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
+
+
+class MyAdapter(BaseAdapter):
+    @dataclass
+    class ConfigClass(BaseConfig):
+        endpoint: str = field(
+            default="",
+            metadata={
+                # 配置描述引用了 adapter.MyAdapter.endpoint 鍵
+                "description": {"i18n": "MyAdapter.endpoint", "default": "API 位址"},
+            },
+        )
+
+    class I18nClass(BaseI18n):
+        # 集中宣告配置描述引用的鍵與其他業務鍵的多語言譯文
+        endpoint: I18nKey = I18nKey(
+            default="API Endpoint",
+            zh_CN="API 位址",
+            zh_TW="API 位址",
+            en="API Endpoint",
+            ja="APIアドレス",
+            ru="API адрес",
+        )
+```
+
+適配器的 `I18nClass` 會在 `__init__` 階段（即配置模板生成之前）自動註冊，確保配置描述引用的 i18n 鍵已可用。
+
+### 手動註冊自定義翻譯（舊寫法）
+
+如果不使用 `I18nClass`，也可以直接呼叫 `i18n.register()` 註冊翻譯文本。
 
 ```python
 from ErisPulse import i18n
@@ -7655,16 +7837,15 @@ i18n.t("my_module.welcome")  # 自動使用當前語言
 i18n.t("my_module.hello", name="Alice")
 
 # 指定預設值（翻譯鍵不存在時返回）
-i18n.t("my_module.unknown_key", default="預設文字")
+i18n.t("my_module.unknown_key", default="預設文本")
 ```
 
-### 在模組類別中使用
+### 在模組類中使用
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse import i18n
-from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig, BaseModule
 
 @dataclass
 class MyModuleConfig(BaseConfig):
@@ -7680,7 +7861,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # 即時讀取配置（每次訪問都反映最新值）
+        # 實時讀取配置（每次訪問都反映最新值）
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -7693,10 +7874,10 @@ class MyModule(BaseModule):
         pass
 ```
 
-### 解除註冊翻譯
+### 卸載翻譯
 
 ```python
-# 解除註冊整個域的翻譯
+# 卸載整個域的翻譯
 i18n.unregister_domain("my_module")
 ```
 
@@ -7704,26 +7885,26 @@ i18n.unregister_domain("my_module")
 
 ## 配置欄位多語言
 
-從 v2.5.2 起，配置 Schema 全面支援 i18n。所有使用者可見的文字欄位均可引用 i18n 鍵，WebUI 和其他消費者會自動根據當前語言解析為對應文字。
+從 v2.5.2 起，配置 Schema 全面支援 i18n。所有使用者可見的文本欄位均可引用 i18n 鍵，WebUI 和其他消費者會自動根據當前語言解析為對應文本。
 
 ### 支援的 i18n 欄位
 
 | 欄位 | 位置 | 說明 |
 |------|------|------|
 | `description` | field metadata | 欄位描述 |
-| `options[].label` | `ui.options` | select 控制項選項標籤 |
-| `placeholder` | `ui.placeholder` | 輸入框佔位符 |
-| `group_labels` | `_schema_meta` | 分組顯示名（Dashboard 區域標題） |
+| `options[].label` | `ui.options` | select 控件選項標籤 |
+| `placeholder` | `ui.placeholder` | 輸入框占位符 |
+| `group_labels` | `_schema_meta` | 分組顯示名（Dashboard 分區標題） |
 
 統一採用 `{"i18n": "key", "default": "文本"}` 格式，純字串則原樣透傳（向後相容）。
 
 ### 宣告 i18n 欄位
 
-所有使用者可見文字欄位都支援 i18n：
+所有使用者可見文本欄位都支援 i18n：
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
@@ -7763,12 +7944,12 @@ class MyAdapterConfig(BaseConfig):
     # group_labels i18n（分組顯示名）
     _schema_meta = {
         "group_labels": {
-            "basic": {"i18n": "my_adapter.group.basic", "default": "基本設置"},
+            "basic": {"i18n": "my_adapter.group.basic", "default": "基本設定"},
         }
     }
 ```
 
-`default` 是兜底文字——當翻譯未註冊或查詢失敗時顯示。
+`default` 是兜底文本——當翻譯未註冊或查找失敗時顯示。
 
 ### 註冊配置翻譯
 
@@ -7787,8 +7968,10 @@ i18n.register("en", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 ```
+> **推薦寫法**：使用 `I18nClass` 聲明翻譯鍵，框架會自動註冊（詳見上文「推薦寫法」章節），
+> 無需手動呼叫 `i18n.register()` 或 `register_config_i18n()`。
 
-也提供了便捷函式 `register_config_i18n()`，可自動從配置類別提取鍵並註冊：
+也提供了便捷函數 `register_config_i18n()`，可自動從配置類提取鍵並註冊：
 
 ```python
 from ErisPulse.runtime.config_schema import register_config_i18n
@@ -7806,7 +7989,7 @@ register_config_i18n(MyAdapterConfig, "en", {
 
 `get_config_schema()` 返回的 schema 中，i18n 字典會原樣透傳。WebUI 前端可以根據當前語言呼叫 `i18n.t()` 解析。
 
-如果需要伺服器端直接解析為字串（如返回給不支援 i18n 的前端），使用 `resolve_config_schema()`，它會將 `description`、`options[].label`、`placeholder`、`group_labels` 全部解析為當前語言的文字：
+如果需要服務端直接解析為字串（如返回給不支援 i18n 的前端），使用 `resolve_config_schema()`，它會將 `description`、`options[].label`、`placeholder`、`group_labels` 全部解析為當前語言的字串：
 
 ```python
 from ErisPulse.runtime.config_schema import resolve_config_schema
@@ -7816,8 +7999,14 @@ schema = resolve_config_schema(MyAdapterConfig)
 print(schema["fields"]["token"]["description"])    # "平台 Token" 或 "Platform Token"
 print(schema["fields"]["token"]["placeholder"])   # "請輸入 Token" 或 "Enter Token"
 print(schema["fields"]["mode"]["options"][0]["label"])  # "模式A" 或 "Mode A"
-print(schema["group_labels"]["basic"])             # "基本設置" 或 "Basic"
+print(schema["group_labels"]["basic"])             # "基本設定" 或 "Basic"
 ```
+
+> `BaseConfig`、`BotAccountConfig`、`register_config_i18n()`、`resolve_config_schema()`
+> 等類型與工具函數的實際定義位於 `ErisPulse.Core.Bases.config_schema`。
+> `ErisPulse.runtime.config_schema` 保留為相容性 shims，
+> **推薦從 `ErisPulse.Core.Bases` 統一匯入**（i18n 翻譯鍵相關類型除外，
+> 它們位於 `ErisPulse.Core.Bases.i18n_schema`）。
 
 ## API 參考
 
@@ -7827,15 +8016,15 @@ print(schema["group_labels"]["basic"])             # "基本設置" 或 "Basic"
 
 | 方法 | 說明 |
 |------|------|
-| `t(key, default=None, **kwargs)` | 取得翻譯文字（`gettext()` 是別名） |
+| `t(key, default=None, **kwargs)` | 取得翻譯文本（`gettext()` 是別名） |
 | `set_language(lang)` | 手動設定語言 |
 | `get_language()` | 取得當前語言 |
-| `reset_language()` | 重設為自動偵測（並重新偵測環境） |
+| `reset_language()` | 重置為自動檢測（並重新檢測環境） |
 | `get_supported_languages()` | 取得所有支援的語言列表 |
 | `has_translation(key, lang=None)` | 檢查翻譯鍵是否存在 |
-| `register(lang, translations, domain)` | 註冊自訂翻譯 |
-| `unregister_domain(domain)` | 解除註冊指定域的所有翻譯 |
-| `reload()` | 重新載入內建翻譯並重新偵測語言 |
+| `register(lang, translations, domain)` | 註冊自定義翻譯 |
+| `unregister_domain(domain)` | 卸載指定域的所有翻譯 |
+| `reload()` | 重新載入內建翻譯並重新檢測語言 |
 
 #### `t()` 方法詳解
 
@@ -7845,7 +8034,7 @@ def t(self, key, /, default=None, **kwargs):
 
 - `key` — 翻譯鍵（僅位置參數，不與 `**kwargs` 中的 `key=` 衝突）
 - `default` — 翻譯不存在時返回的預設值，預設為 `None`（返回鍵名本身）
-- `**kwargs` — 格式化參數，用於填充翻譯值中的 `{placeholder}`
+- `**kwargs` — 格式化參數，用於填補翻譯值中的 `{placeholder}`
 
 範例：
 
@@ -7855,7 +8044,50 @@ i18n.t("greeting", name="Alice", place="ErisPulse")
 # 返回: "你好，Alice！歡迎來到ErisPulse。"
 ```
 
-### 從 SDK 實例訪問
+### BaseI18n / I18nKey（宣告式翻譯鍵）
+
+從 v2.7.0 起，`ErisPulse.Core.Bases` 提供了基於類屬性的翻譯鍵宣告工具（推薦從 `ErisPulse.Core.Bases` 統一匯入）：
+
+> ``I18nKey.default`` 是**語言無關的兜底文本**，不會註冊到任何語言。
+> 要讓翻譯生效，必須顯式傳入至少一個語言參數（``zh_CN=`` / ``en=`` / ``ja=`` 等）。
+> 這樣各國開發者可以自由使用自己母語填寫 ``default``，框架不做任何假設。
+
+| 名稱 | 說明 |
+|------|------|
+| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | 單個翻譯鍵宣告，`default` 為語言無關的兜底 |
+| `BaseI18n` | 翻譯鍵集合基類（命名對齊 `BaseConfig`），子類以類屬性宣告多個 `I18nKey` |
+| `BaseI18n.register(prefix="", domain="app")` | 類方法：註冊所有宣告的鍵到 i18n 系統 |
+| `key` | `I18nKey` 的別名（書寫更簡潔） |
+
+使用範例：
+
+```python
+from ErisPulse.Core.Bases import BaseI18n, key
+
+class MyKeys(BaseI18n):
+    # 簡潔別名寫法
+    hello = key(
+        default="Hello",
+        zh_CN="你好",
+        zh_TW="你好",
+        en="Hello",
+        ja="こんにちは",
+        ru="Привет",
+    )
+    bye = key(
+        default="Bye",
+        zh_CN="再見",
+        zh_TW="再見",
+        en="Bye",
+        ja="さようなら",
+        ru="До свидания",
+    )
+
+# 獨立使用（手動註冊）
+MyKeys.register(prefix="myapp.", domain="myapp")
+```
+
+### 從 SDK 實例存取
 
 ```python
 from ErisPulse import sdk
@@ -7867,17 +8099,18 @@ print(sdk.i18n.t("core.sdk.init.starting"))
 
 ---
 
-## 執行時配置
+## 運行時配置
 
 ### 透過配置 API 讀取 i18n 配置
 
 ```python
-from ErisPulse.runtime import get_i18n_config, I18nConfig
+from ErisPulse.Core.Bases import I18nConfig
+from ErisPulse.runtime import get_i18n_config
 
 config = get_i18n_config()
 print(config["language"])  # "auto" 或具體語言代碼
 
-# I18nConfig 是 dataclass，可用於生成配置範本
+# I18nConfig 是 dataclass，可用於產生配置模板
 schema = I18nConfig.__dataclass_fields__
 ```
 
@@ -7888,7 +8121,7 @@ schema = I18nConfig.__dataclass_fields__
 ```toml
 [ErisPulse.i18n]
 # 顯示語言，可選值:
-# - "auto"      — 自動偵測系統語言（預設）
+# - "auto"      — 自動檢測系統語言（預設）
 # - "zh-CN"     — 簡體中文
 # - "zh-TW"     — 繁體中文
 # - "en"        — 英文
@@ -7913,15 +8146,15 @@ language = "auto"
 
 ### 多語言覆蓋
 
-不必一次提供所有語言的翻譯，遺失的語言會自動回退到英文，如果英文也沒有則顯示鍵名本身。
+不必一次提供所有語言的翻譯，缺失的語言會自動回退到英文，如果英文也沒有則顯示鍵名本身。
 
 ### 動態內容
 
-對於動態生成的內容（如使用者名稱、數量等），使用 `{placeholder}` 格式化：
+對於動態產生的內容（如使用者名、數量等），使用 `{placeholder}` 格式化：
 
 ```python
 # 翻譯定義
-"user_count": "當前線上使用者：{count} 人"
+"user_count": "當前在線使用者：{count} 人"
 
 # 使用
 i18n.t("user_count", count=len(users))
@@ -7945,6 +8178,8 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 - **CLI i18n** — 命令列介面內部使用，不與 Core 共享翻譯資料
 
 這種設計確保 CLI 的翻譯變更不會影響框架核心的穩定性。
+
+[**返回上一頁**](docs/zh-TW/README.zh-CN.md)
 
 
 ### Dashboard 视窗注册

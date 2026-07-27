@@ -4090,6 +4090,47 @@ class MyModule(BaseModule):
 
 `BaseConfig` 是通用配置基类，适用于适配器、模块、外部项目等任何场景。配置字段支持 i18n 多语言描述（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
 
+### 声明式翻译键（v2.7.0+）
+
+从 v2.7.0 起，模块还可以像声明 `ConfigClass` 一样，通过嵌套类 `I18nClass` 集中声明翻译键。框架会在加载时**自动注册**所有声明的翻译键，无需手动调用 `i18n.register()`，且注册时机早于配置模板生成，确保配置描述中引用的 i18n 键已可用。
+
+```python
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
+
+class MyModule(BaseModule):
+    # 配置类（可选）
+    @dataclass
+    class ConfigClass(BaseConfig):
+        welcome_msg: str = field(
+            default="欢迎",
+            metadata={
+                "description": {"i18n": "mymodule.welcome_msg", "default": "欢迎消息"},
+            },
+        )
+
+    # 翻译键集合类（可选）
+    class I18nClass(BaseI18n):
+        # 属性名自动拼接为完整键路径：<模块名>.<属性名>
+        welcome_msg: I18nKey = I18nKey(
+            default="Welcome Message",   # 语言无关的兜底
+            zh_CN="欢迎消息",
+            zh_TW="歡迎訊息",
+            en="Welcome Message",
+            ja="ウェルカムメッセージ",
+            ru="Приветственное сообщение",
+        )
+        hello: I18nKey = I18nKey(
+            default="Hello, {name}!",
+            zh_CN="你好，{name}！",
+            zh_TW="你好，{name}！",
+            en="Hello, {name}!",
+            ja="こんにちは、{name}！",
+            ru="Привет, {name}!",
+        )
+```
+
+详情见 [i18n 推荐写法](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
+
 ### 手动读取配置（兼容方式）
 
 如果不使用声明式配置，也可以直接读写配置存储：
@@ -4705,7 +4746,38 @@ class MyModule(BaseModule):
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-也可以继续使用手动方式读写配置存储（见[模块核心概念](core-concepts.md#配置管理)）。
+也可以在继续使用手动方式读写配置存储（见[模块核心概念](core-concepts.md#配置管理)）。
+
+### 声明式翻译键（v2.7.0+）
+
+模块可以通过 `I18nClass` 集中声明翻译键，框架自动注册到 i18n 系统，无需手动调用 `i18n.register()`。
+
+```python
+from ErisPulse.Core.Bases import BaseI18n, I18nKey
+
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        # 带占位符的业务翻译键
+        welcome: I18nKey = I18nKey(
+            default="Welcome, {name}!",
+            zh_CN="欢迎你，{name}！",
+            zh_TW="歡迎你，{name}！",
+            en="Welcome, {name}!",
+            ja="ようこそ、{name}！",
+            ru="Добро пожаловать, {name}!",
+        )
+        # 配置字段描述的翻译
+        api_url: I18nKey = I18nKey(
+            default="API URL",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
+            en="API URL",
+            ja="API URL",
+            ru="API URL",
+        )
+```
+
+详细用法见 [i18n 文档](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
 
 ## 异步编程
 
@@ -6090,6 +6162,72 @@ MyConfig._schema_meta = {
 框架的 `resolve_config_schema()` 会根据当前语言自动解析上述所有字段的 i18n 键；
 `get_config_schema()` 则原样透传 i18n 字典，由前端自行解析。
 
+### 声明式翻译键（v2.7.0+）
+
+适配器可以像声明 `ConfigClass` 一样，通过嵌套类 `I18nClass` 集中声明翻译键。
+框架会在 `__init__` 阶段（配置模板生成之前）自动注册所有声明的翻译键，
+确保配置描述中引用的 i18n 键在生成模板时已可用。
+
+```python
+from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
+
+class MyAdapter(BaseAdapter):
+    class I18nClass(BaseI18n):
+        endpoint: I18nKey = I18nKey(
+            default="API Endpoint",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
+            en="API Endpoint",
+            ja="APIアドレス",
+            ru="API адрес",
+        )
+        token: I18nKey = I18nKey(
+            default="Platform Token",
+            zh_CN="平台 Token",
+            zh_TW="平台權杖",
+            en="Platform Token",
+            ja="プラットフォームトークン",
+            ru="Токен платформы",
+        )
+```
+
+> ``I18nKey.default`` 是**语言无关的兜底文本**，不会注册到任何语言。
+> 要让翻译生效，必须显式传入至少一个语言参数。
+
+详细用法（键路径规则、显式 key 参数等）见 [i18n 文档](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
+
+### 声明式事件扩展方法（v2.7.0+）
+
+适配器可以通过 `EventMixin` 集中声明平台特有的事件扩展方法，框架自动注册到当前平台。
+
+```python
+from ErisPulse.Core import BaseAdapter
+
+class MyAdapter(BaseAdapter):
+    class EventMixin:
+        def get_chat_name(self):
+            """获取聊天名称"""
+            return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+
+        def is_official_message(self):
+            """判断是否为官方消息"""
+            raw = self.get("myplatform_raw", {})
+            return raw.get("sender", {}).get("is_official", False)
+```
+
+注册后，事件对象直接调用这些方法：
+
+```python
+@message.on_group_message()
+async def handler(event):
+    if event.is_official_message():
+        chat_name = event.get_chat_name()
+        await event.reply(f"[{chat_name}] 官方消息已收到")
+```
+
+> 适配器的事件扩展方法注册到自身平台（``self._platform``）。
+> 模块如需跨平台事件扩展，请使用原有的 ``register_event_mixin()`` API。
+
 #### 账户解析
 
 多账户适配器可使用 `_resolve_account()` 自动解析目标账户：
@@ -6124,6 +6262,7 @@ class MyAdapter(BaseAdapter):
 2. **Send/Request 工厂**：创建 `self.Send` 和 `self.Request`
 3. **配置模板**：如果声明了 `ConfigClass`，自动生成默认配置模板（首次）
 4. **账户模板**：如果声明了 `AccountConfigClass`，自动生成默认账户模板（首次）
+5. **EventMixin 注册**：如果声明了 `EventMixin`，在 `AdapterManager` 注入平台名后自动注册
 
 配置通过 `self.cfg` / `self.accounts` 实时读取（每次访问都从配置存储读取最新值）。`self.config` 作为 `self.cfg` 的兼容别名仍可使用。
 
@@ -14423,7 +14562,115 @@ i18n.reset_language()
 
 您可以为自己的模块注册翻译文本，让您的模块也支持多语言。
 
-### 注册自定义翻译
+### 推荐写法：通过 I18nClass 声明翻译键（v2.7.0+）
+
+从 v2.7.0 起，模块/适配器可以像声明 `ConfigClass` 一样，通过嵌套类 `I18nClass` 声明翻译键。框架会在加载时**自动注册**所有声明的翻译键，无需手动调用 `i18n.register()`。
+
+```python
+from dataclasses import dataclass, field
+
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey
+
+
+class MyModule(BaseModule):
+    # 配置类（可选）
+    @dataclass
+    class ConfigClass(BaseConfig):
+        welcome_msg: str = field(
+            default="欢迎",
+            metadata={
+                # 这里引用了 i18n 键 mymodule.welcome_msg
+                "description": {"i18n": "mymodule.welcome_msg", "default": "欢迎消息"},
+            },
+        )
+
+    # 翻译键集合类（可选）
+    # 声明的键会被框架自动注册，优先级早于 ConfigClass 生成默认配置
+    class I18nClass(BaseI18n):
+        # 属性名自动拼接为完整键路径：<模块名>.<属性名>
+        welcome_msg: I18nKey = I18nKey(
+            default="Welcome Message",   # 语言无关的兜底，不注册到任何语言
+            zh_CN="欢迎消息",
+            en="Welcome Message",
+            ja="ウェルカムメッセージ",
+            ru="Приветственное сообщение",
+            zh_TW="歡迎訊息",
+        )
+        # 业务用到的其他翻译键
+        hello: I18nKey = I18nKey(
+            default="Hello, {name}!",
+            zh_CN="你好，{name}！",
+            zh_TW="你好，{name}！",
+            en="Hello, {name}!",
+            ja="こんにちは、{name}！",
+            ru="Привет, {name}!",
+        )
+
+        # 也可以显式指定完整键路径（不使用属性名拼接）
+        custom: I18nKey = I18nKey(
+            key="mymodule.deep.nested.key",
+            default="Default text",
+            zh_CN="默认文本",
+            zh_TW="預設文本",
+            en="Default text",
+            ja="デフォルトテキスト",
+            ru="Текст по умолчанию",
+        )
+```
+
+#### 为什么推荐 I18nClass？
+
+| 场景 | 手动 i18n.register() | I18nClass 声明式 |
+|------|-----------------------|------------------|
+| 配置描述引用的 i18n 键 | 需手动注册，且要赶在配置生成前 | 框架自动在配置生成前注册 |
+| 多语言翻译声明 | 散落在各个 on_load() 中 | 集中在类里，一目了然 |
+| 键名命名一致性 | 容易拼写错误 | 属性名作为键名后缀，IDE 可补全 |
+| 卸载时清理 | 需手动 unregister_domain() | 框架使用统一 domain 注册 |
+
+#### I18nClass 的键路径规则
+
+- **默认**：使用 ``<模块注册名>.<属性名>`` 作为完整键路径
+  - 示例：模块名为 ``MyModule``，属性 ``welcome`` → 键路径 ``MyModule.welcome``
+- **显式**：通过 ``I18nKey(key="...")`` 参数指定任意点分路径
+  - 适合深层嵌套的键名（如 ``mymodule.config.basic.token``）
+
+#### 在适配器中使用
+
+适配器同样支持 `I18nClass`，使用方式完全一致：
+
+```python
+from ErisPulse.Core import BaseAdapter
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
+
+
+class MyAdapter(BaseAdapter):
+    @dataclass
+    class ConfigClass(BaseConfig):
+        endpoint: str = field(
+            default="",
+            metadata={
+                # 配置描述引用了 adapter.MyAdapter.endpoint 键
+                "description": {"i18n": "MyAdapter.endpoint", "default": "API 地址"},
+            },
+        )
+
+    class I18nClass(BaseI18n):
+        # 集中声明配置描述引用的键与其他业务键的多语言译文
+        endpoint: I18nKey = I18nKey(
+            default="API Endpoint",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
+            en="API Endpoint",
+            ja="APIアドレス",
+            ru="API адрес",
+        )
+```
+
+适配器的 `I18nClass` 会在 `__init__` 阶段（即配置模板生成之前）自动注册，确保配置描述引用的 i18n 键已可用。
+
+### 手动注册自定义翻译（旧写法）
+
+如果不使用 `I18nClass`，也可以直接调用 `i18n.register()` 注册翻译文本。
 
 ```python
 from ErisPulse import i18n
@@ -14463,8 +14710,7 @@ i18n.t("my_module.unknown_key", default="默认文本")
 ```python
 from dataclasses import dataclass, field
 from ErisPulse import i18n
-from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig, BaseModule
 
 @dataclass
 class MyModuleConfig(BaseConfig):
@@ -14523,7 +14769,7 @@ i18n.unregister_domain("my_module")
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
@@ -14587,6 +14833,8 @@ i18n.register("en", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 ```
+> **推荐写法**：使用 `I18nClass` 声明翻译键，框架会自动注册（详见上文「推荐写法」章节），
+> 无需手动调用 `i18n.register()` 或 `register_config_i18n()`。
 
 也提供了便捷函数 `register_config_i18n()`，可自动从配置类提取键并注册：
 
@@ -14618,6 +14866,12 @@ print(schema["fields"]["token"]["placeholder"])   # "请输入 Token" 或 "Enter
 print(schema["fields"]["mode"]["options"][0]["label"])  # "模式A" 或 "Mode A"
 print(schema["group_labels"]["basic"])             # "基本设置" 或 "Basic"
 ```
+
+> `BaseConfig`、`BotAccountConfig`、`register_config_i18n()`、`resolve_config_schema()`
+> 等类型与工具函数的实际定义位于 `ErisPulse.Core.Bases.config_schema`。
+> `ErisPulse.runtime.config_schema` 保留为兼容性 shim，
+> **推荐从 `ErisPulse.Core.Bases` 统一导入**（i18n 翻译键相关类型除外，
+> 它们位于 `ErisPulse.Core.Bases.i18n_schema`）。
 
 ## API 参考
 
@@ -14655,6 +14909,49 @@ i18n.t("greeting", name="Alice", place="ErisPulse")
 # 返回: "你好，Alice！欢迎来到ErisPulse。"
 ```
 
+### BaseI18n / I18nKey（声明式翻译键）
+
+从 v2.7.0 起，`ErisPulse.Core.Bases` 提供了基于类属性的翻译键声明工具（推荐从 `ErisPulse.Core.Bases` 统一导入）：
+
+> ``I18nKey.default`` 是**语言无关的兜底文本**，不会注册到任何语言。
+> 要让翻译生效，必须显式传入至少一个语言参数（``zh_CN=`` / ``en=`` / ``ja=`` 等）。
+> 这样各国开发者可以自由使用自己母语填写 ``default``，框架不做任何假设。
+
+| 名称 | 说明 |
+|------|------|
+| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | 单个翻译键声明，`default` 为语言无关的兜底 |
+| `BaseI18n` | 翻译键集合基类（命名对齐 `BaseConfig`），子类以类属性声明多个 `I18nKey` |
+| `BaseI18n.register(prefix="", domain="app")` | 类方法：注册所有声明的键到 i18n系统 |
+| `key` | `I18nKey` 的别名（书写更简洁） |
+
+使用示例：
+
+```python
+from ErisPulse.Core.Bases import BaseI18n, key
+
+class MyKeys(BaseI18n):
+    # 简洁别名写法
+    hello = key(
+        default="Hello",
+        zh_CN="你好",
+        zh_TW="你好",
+        en="Hello",
+        ja="こんにちは",
+        ru="Привет",
+    )
+    bye = key(
+        default="Bye",
+        zh_CN="再见",
+        zh_TW="再見",
+        en="Bye",
+        ja="さようなら",
+        ru="До свидания",
+    )
+
+# 独立使用（手动注册）
+MyKeys.register(prefix="myapp.", domain="myapp")
+```
+
 ### 从 SDK 实例访问
 
 ```python
@@ -14672,7 +14969,8 @@ print(sdk.i18n.t("core.sdk.init.starting"))
 ### 通过配置 API 读取 i18n 配置
 
 ```python
-from ErisPulse.runtime import get_i18n_config, I18nConfig
+from ErisPulse.Core.Bases import I18nConfig
+from ErisPulse.runtime import get_i18n_config
 
 config = get_i18n_config()
 print(config["language"])  # "auto" 或具体语言代码
