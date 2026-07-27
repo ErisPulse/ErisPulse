@@ -394,6 +394,17 @@ class ModuleManager(ManagerBase):
                 # 注入模块注册名，用于配置键解析等
                 instance._module_name = module_name
 
+                # 预注册模块声明的 i18n 键（在用户代码可能访问配置/翻译之前）
+                # 幂等：即使后续 _ensure_config_exists() 再次调用也不会产生副作用
+                if hasattr(instance, "_ensure_i18n_registered"):
+                    try:
+                        instance._ensure_i18n_registered()
+                    except Exception:
+                        logger.debug(
+                            f"模块 {module_name} i18n 注册阶段异常",
+                            exc_info=True,
+                        )
+
                 if hasattr(instance, "on_load"):
                     try:
                         if inspect.iscoroutinefunction(instance.on_load):

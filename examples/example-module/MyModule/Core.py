@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
 
-from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.Bases import BaseConfig, BaseModule, BaseI18n, I18nKey
 from ErisPulse.Core.Event import command, message, notice
-from ErisPulse.runtime.config_schema import BaseConfig
 
 
 class Main(BaseModule):
@@ -11,6 +10,7 @@ class Main(BaseModule):
 
     这是一个自定义模块示例，继承自BaseModule基类
     使用声明式配置管理（ConfigClass），通过 self.cfg 实时读取配置
+    同时演示了通过 I18nClass 声明翻译键的推荐写法
     """
 
     # 配置类以嵌套类形式声明（需 @dataclass 装饰），框架自动识别 ConfigClass
@@ -38,6 +38,36 @@ class Main(BaseModule):
                 "description": "调试模式（输出详细日志）",
                 "ui": {"widget": "switch", "group": "advanced", "order": 3},
             },
+        )
+
+    # 翻译键集合以嵌套类形式声明，框架自动识别 I18nClass 并注册到 i18n 系统
+    # 属性名会与模块名拼接为完整键路径（如 MyModule.greeting）
+    class I18nClass(BaseI18n):
+        """MyModule 翻译键声明"""
+
+        greeting_prompt: I18nKey = I18nKey(
+            default="Please enter your name:",
+            zh_CN="请输入你的名字:",
+            en="Please enter your name:",
+            ja="あなたの名前を入力してください:",
+            ru="Пожалуйста, введите ваше имя:",
+            zh_TW="請輸入你的名字:",
+        )
+        greeting: I18nKey = I18nKey(
+            default="Hello, {name}! Nice to meet you.",
+            zh_CN="你好，{name}！很高兴认识你。",
+            en="Hello, {name}! Nice to meet you.",
+            ja="こんにちは，{name}さん！はじめまして。",
+            ru="Привет, {name}! Рад знакомству.",
+            zh_TW="你好，{name}！很高興認識你。",
+        )
+        timeout_hint: I18nKey = I18nKey(
+            default="Timeout, please try again.",
+            zh_CN="等待超时，请重试。",
+            en="Timeout, please try again.",
+            ja="タイムアウトしました。もう一度試してください。",
+            ru="Время ожидания истекло, попробуйте снова.",
+            zh_TW="等待逾時，請重試。",
         )
 
     def __init__(self, sdk):
@@ -119,15 +149,16 @@ class Main(BaseModule):
 
         @command("interactive", help="交互式命令示例", usage="/interactive")
         async def interactive_command(event):
-            await event.reply("请输入你的名字:")
+            from ErisPulse import i18n
+            await event.reply(i18n.t("MyModule.greeting_prompt"))
 
             reply = await event.wait_reply(timeout=30)
 
             if reply:
                 name = reply.get_text()
-                await event.reply(f"你好，{name}！很高兴认识你。")
+                await event.reply(i18n.t("MyModule.greeting", name=name))
             else:
-                await event.reply("等待超时，请重试。")
+                await event.reply(i18n.t("MyModule.timeout_hint"))
 
     async def _register_message_handlers(self):
         """注册消息和通知处理器"""

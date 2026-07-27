@@ -23,21 +23,41 @@ from .websocket import WebSocketConnectionBase, WSMessage
 from .router import HttpRequest, WebSocketConnection, SseEmitter
 from .client import BaseHttpClient, BaseHttpResponse, BaseClientWebSocket
 
+# 配置 / i18n Schema 类型
+from .config_schema import (
+    AdapterConfig,
+    BaseConfig,
+    BotAccountConfig,
+)
+from .i18n_schema import (
+    BaseI18n,
+    I18nKey,
+    key,
+)
+
 __all__ = [
+    # 配置 Schema 别名（= BaseConfig）
+    "AdapterConfig",
     "BaseAdapter",
     "BaseClientWebSocket",
+    "BaseConfig",
     "BaseHttpClient",
     "BaseHttpResponse",
+    # i18n 键声明 Schema 基类（命名对齐 BaseConfig）
+    "BaseI18n",
     "BaseModule",
     "BaseQueryBuilder",
     "BaseStorage",
     "BatchContext",
+    "BotAccountConfig",
     "ClientConnectionError",
     "ClientError",
     "ClientTimeoutError",
     "ErisPulseError",
     "HTTPStatusError",
     "HttpRequest",
+    # i18n 单键声明
+    "I18nKey",
     "KVQueryBuilder",
     "RequestDSL",
     "SendBuilder",

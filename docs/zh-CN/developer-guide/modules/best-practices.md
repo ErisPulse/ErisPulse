@@ -59,7 +59,38 @@ class MyModule(BaseModule):
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-也可以继续使用手动方式读写配置存储（见[模块核心概念](core-concepts.md#配置管理)）。
+也可以在继续使用手动方式读写配置存储（见[模块核心概念](core-concepts.md#配置管理)）。
+
+### 声明式翻译键（v2.7.0+）
+
+模块可以通过 `I18nClass` 集中声明翻译键，框架自动注册到 i18n 系统，无需手动调用 `i18n.register()`。
+
+```python
+from ErisPulse.Core.Bases import BaseI18n, I18nKey
+
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        # 带占位符的业务翻译键
+        welcome: I18nKey = I18nKey(
+            default="Welcome, {name}!",
+            zh_CN="欢迎你，{name}！",
+            zh_TW="歡迎你，{name}！",
+            en="Welcome, {name}!",
+            ja="ようこそ、{name}！",
+            ru="Добро пожаловать, {name}!",
+        )
+        # 配置字段描述的翻译
+        api_url: I18nKey = I18nKey(
+            default="API URL",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
+            en="API URL",
+            ja="API URL",
+            ru="API URL",
+        )
+```
+
+详细用法见 [i18n 文档](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
 
 ## 异步编程
 
