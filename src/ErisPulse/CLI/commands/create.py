@@ -63,9 +63,8 @@ _MODULE_INIT = """from .Core import Main
 """
 
 _MODULE_CORE = """from dataclasses import dataclass, field
-from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey
 from ErisPulse.Core.Event import command, message, notice
-from ErisPulse.runtime.config_schema import BaseConfig
 
 
 @dataclass
@@ -79,6 +78,20 @@ class {name}Config(BaseConfig):
     )
 
 
+class {name}I18n(BaseI18n):
+    \"\"\"{name} 模块翻译键声明
+
+    声明的翻译键会被框架自动注册到 i18n 系统。
+    键路径自动生成为: <模块名>.<属性名>
+    \"\"\"
+    # 示例：取消注释并修改以启用
+    # welcome: I18nKey = I18nKey(
+    #     default="Welcome to {name}!",
+    #     zh_CN="欢迎使用 {name}！",
+    #     en="Welcome to {name}!",
+    # )
+
+
 class Main(BaseModule):
     \"\"\"
     {name}模块
@@ -87,6 +100,7 @@ class Main(BaseModule):
     \"\"\"
 
     ConfigClass = {name}Config
+    I18nClass = {name}I18n
 
     def __init__(self, sdk=None):
         from ErisPulse import sdk as _sdk
@@ -179,7 +193,7 @@ _ADAPTER_CORE = """import asyncio
 import json
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig, I18nKey, I18nKeys
 from ErisPulse.Core import router
 
 
@@ -205,6 +219,31 @@ class {name}Config(BaseConfig):
     )
 
 
+class {name}I18n(BaseI18n):
+    \"\"\"{name} 适配器翻译键声明
+
+    声明的翻译键会被框架自动注册到 i18n 系统。
+    这里集中管理适配器用到的所有翻译键（含配置描述引用的键）。
+    \"\"\"
+    # 注册配置描述中引用的 i18n 键的多语言译文
+    endpoint: I18nKey = I18nKey(
+        default="Platform API Endpoint",
+        zh_CN="平台 API 地址",
+        en="Platform API Endpoint",
+        ja="APIアドレス",
+        ru="API адрес",
+        zh_TW="API 位址",
+    )
+    token: I18nKey = I18nKey(
+        default="Platform Token",
+        zh_CN="平台 Token",
+        en="Platform Token",
+        ja="トークン",
+        ru="Токен",
+        zh_TW="權杖",
+    )
+
+
 class {name}(BaseAdapter):
     \"\"\"
     {name} 适配器
@@ -214,6 +253,7 @@ class {name}(BaseAdapter):
     \"\"\"
 
     ConfigClass = {name}Config
+    I18nClass = {name}I18n
 
     def __init__(self, sdk=None):
         super().__init__()

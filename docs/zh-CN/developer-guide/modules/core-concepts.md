@@ -147,6 +147,47 @@ class MyModule(BaseModule):
 
 `BaseConfig` 是通用配置基类，适用于适配器、模块、外部项目等任何场景。配置字段支持 i18n 多语言描述（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
 
+### 声明式翻译键（v2.7.0+）
+
+从 v2.7.0 起，模块还可以像声明 `ConfigClass` 一样，通过嵌套类 `I18nClass` 集中声明翻译键。框架会在加载时**自动注册**所有声明的翻译键，无需手动调用 `i18n.register()`，且注册时机早于配置模板生成，确保配置描述中引用的 i18n 键已可用。
+
+```python
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
+
+class MyModule(BaseModule):
+    # 配置类（可选）
+    @dataclass
+    class ConfigClass(BaseConfig):
+        welcome_msg: str = field(
+            default="欢迎",
+            metadata={
+                "description": {"i18n": "mymodule.welcome_msg", "default": "欢迎消息"},
+            },
+        )
+
+    # 翻译键集合类（可选）
+    class I18nClass(BaseI18n):
+        # 属性名自动拼接为完整键路径：<模块名>.<属性名>
+        welcome_msg: I18nKey = I18nKey(
+            default="Welcome Message",   # 语言无关的兜底
+            zh_CN="欢迎消息",
+            zh_TW="歡迎訊息",
+            en="Welcome Message",
+            ja="ウェルカムメッセージ",
+            ru="Приветственное сообщение",
+        )
+        hello: I18nKey = I18nKey(
+            default="Hello, {name}!",
+            zh_CN="你好，{name}！",
+            zh_TW="你好，{name}！",
+            en="Hello, {name}!",
+            ja="こんにちは、{name}！",
+            ru="Привет, {name}!",
+        )
+```
+
+详情见 [i18n 推荐写法](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
+
 ### 手动读取配置（兼容方式）
 
 如果不使用声明式配置，也可以直接读写配置存储：

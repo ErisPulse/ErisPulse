@@ -1,47 +1,46 @@
 # Core Concepts of Adapters
 
-Understanding the core concepts of ErisPulse adapters is fundamental to developing adapters.
+Understanding the core concepts of ErisPulse adapters is fundamental to adapter development.
 
 ## Adapter Architecture
 
 ### Component Relationships
 
 ```
-Forward Conversion (Receive Direction)                           Reverse Conversion (Send Direction)
+Forward Conversion (Receive Direction)                          Reverse Conversion (Send Direction)
 ─────────────────                           ─────────────────
                                              
 ┌──────────────────┐                        ┌──────────────────┐
-│ Platform-native Events     │                        │ Module-built Messages     │
+│ Platform Native Event │                        │ Module Constructed Message │
 └────────┬─────────┘                        └────────┬─────────┘
          │                                           │
          ↓                                           ↓
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│                  │   │  Adapter (MyAdapter) │   │                  │
-│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
-│  (Event Converter)    │──→│ │              │ │   │ (Reverse Conversion Entry)   │
-│                  │   │ │              │ │   │                  │
+│                  │   │ Adapter (MyAdapter) │   │ Send.Raw_ob12()  │
+│  Converter       │──→│ │              │ │   │ (Reverse Conversion Entry)   │
+│  (Event Converter)    │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
                                 │                      ↓
                                 ↓              ┌──────────────────┐
-                       ┌──────────────────┐    │ Platform API Call    │
-                       │ OneBot12 Standard Events │    └────────┬─────────┘
+                       ┌──────────────────┐    │ Platform API Call │
+                       │ OneBot12 Standard Event │    └────────┬─────────┘
                        └────────┬─────────┘             │
                                 │                      ↓
                                 ↓              ┌──────────────────┐
-                       ┌──────────────────┐    │ Standard Response Format     │
-                       │ Event System         │    └──────────────────┘
+                       ┌──────────────────┐    │ Standard Response Format │
+                       │ Event System     │    └──────────────────┘
                        └────────┬─────────┘
                                 │
                                 ↓
                        ┌──────────────────┐
-                       │ Module (Event Handling)  │
+                       │ Module (Event Handler)  │
                        └──────────────────┘
 ```
 
 **Core Symmetry**:
-- **Forward Conversion** (Converter): Platform-native events → OneBot12 standard events, original data preserved in `{platform}_raw`
-- **Reverse Conversion** (Raw_ob12): OneBot12 message segments → Platform API call, returns standard response format
+- **Forward Conversion** (Converter): Platform native event → OneBot12 standard event, original data preserved in `{platform}_raw`
+- **Reverse Conversion** (Raw_ob12): OneBot12 message segment → Platform API call, returns standard response format
 
 ## AdapterManager Adapter Manager
 
@@ -51,7 +50,7 @@ Forward Conversion (Receive Direction)                           Reverse Convers
 
 - **Adapter Registration**: Register and manage multiple platform adapters
 - **Lifecycle Management**: Control adapter startup and shutdown
-- **Event Distribution**: Distribute OneBot12 standard events and platform-native events
+- **Event Distribution**: Distribute OneBot12 standard events and platform native events
 - **Configuration Management**: Manage adapter enable/disable status
 - **Middleware Support**: Support OneBot12 event middleware
 
@@ -66,7 +65,7 @@ sdk.adapter.register("myplatform", MyPlatformAdapter)
 # Start all adapters
 await sdk.adapter.startup()
 
-# Start specific adapter
+# Start specified adapter
 await sdk.adapter.startup(["myplatform"])
 # Start all adapters
 await sdk.adapter.startup()
@@ -76,7 +75,7 @@ my_adapter = sdk.adapter.get("myplatform")
 # Or access via attribute
 my_adapter = sdk.adapter.myplatform
 
-# Shut down all adapters
+# Shutdown all adapters
 await sdk.adapter.shutdown()
 ```
 
@@ -88,7 +87,7 @@ await sdk.adapter.shutdown()
 # Start all registered adapters
 await sdk.adapter.startup()
 
-# Start specific platform
+# Start specified platform
 await sdk.adapter.startup(["platform1", "platform2"])
 ```
 
@@ -96,27 +95,27 @@ await sdk.adapter.startup(["platform1", "platform2"])
 
 1. Submit `adapter.start` lifecycle event
 2. Submit `adapter.status.change` event (starting)
-3. Start adapters in parallel
+3. Parallel start each adapter
 4. If startup fails, automatically retry (exponential backoff strategy)
 5. After successful startup, submit `adapter.status.change` event (started)
 
 **Retry Mechanism**:
 
 - First 4 retries: 60 seconds, 10 minutes, 30 minutes, 60 minutes
-- 5th and subsequent retries: Fixed interval of 3 hours
+- 5th and subsequent: Fixed 3-hour interval
 
 #### Shutdown Adapter
 
 ```python
-# Shut down all adapters
+# Shutdown all adapters
 await sdk.adapter.shutdown()
 ```
 
 **Shutdown Process**:
 
 1. Submit `adapter.stop` lifecycle event
-2. Call `shutdown()` method of all adapters
-3. Shut down router server
+2. Call `shutdown()` method for all adapters
+3. Shutdown router server
 4. Clear event handlers
 5. Submit `adapter.stopped` lifecycle event
 
@@ -131,7 +130,7 @@ exists = sdk.adapter.exists("myplatform")
 # Check if platform is enabled
 enabled = sdk.adapter.is_enabled("myplatform")
 
-# Use 'in' operator
+# Use in operator
 if "myplatform" in sdk.adapter:
     print("Platform exists and is enabled")
 ```
@@ -165,7 +164,7 @@ async def handle_message(data):
 # Listen to standard message events from specific platform
 @sdk.adapter.on("message", platform="myplatform")
 async def handle_platform_message(data):
-    print(f"Received message from myplatform: {data}")
+    print(f"Received myplatform message: {data}")
 
 # Listen to all events
 @sdk.adapter.on("*")
@@ -173,7 +172,7 @@ async def handle_any_event(data):
     print(f"Received event: {data.get('type')}")
 ```
 
-#### Platform-native Events
+#### Platform Native Events
 
 ```python
 # Listen to native events from specific platform
@@ -199,7 +198,7 @@ When calling `adapter.emit(event_data)`:
 
 - Exact match: `@sdk.adapter.on("message")` only matches `message` events
 - Wildcard: `@sdk.adapter.on("*")` matches all events
-- Platform filter: `platform="myplatform"` only distributes events from the specified platform
+- Platform filtering: `platform="myplatform"` only distributes events from specified platform
 
 ### Middleware
 
@@ -215,9 +214,9 @@ async def logging_middleware(data):
 @sdk.adapter.middleware
 async def filter_middleware(data):
     """Event filtering middleware"""
-    # Filter unwanted events
+    # Filter out unwanted events
     if data.get("type") == "notice":
-        return None  # When returning None, the middleware chain ignores the return value, preserving original data and continuing propagation
+        return None  # When returning None, middleware chain ignores this return value, preserving original data and continuing propagation
     return data  # Must return data to continue propagation
 ```
 
@@ -225,7 +224,7 @@ async def filter_middleware(data):
 
 Middlewares execute in registration order, with later registered middlewares executed first.
 
-> **Note**: If a middleware returns `None` (e.g., forgetting to `return data`), the framework will ignore the return value and preserve the original data for continued propagation, while outputting a warning-level log. This ensures that a single middleware failure does not interrupt the entire event chain.
+> **Note**: If a middleware returns `None` (e.g., forgetting to `return data`), the framework will ignore this return value and preserve the original data for continued propagation, while outputting a warning-level log. This ensures that a single middleware mistake does not cause the entire event chain to fail.
 
 ```python
 # Registration order
@@ -281,16 +280,16 @@ class MyAdapter(BaseAdapter):
     
     # No need to override __init__, framework automatically handles:
     # - self.sdk, self.logger
-    # - self.cfg (type-safe configuration instance, real-time reading)
+    # - self.cfg (type-safe configuration instance, real-time read)
     # - self.Send, self.Request
     
     async def start(self):
         """Start adapter (must implement)"""
-        cfg = self.cfg  # Automatically loaded, type-safe configuration
+        cfg = self.cfg  # Automatically loaded type-safe configuration
         pass
     
     async def shutdown(self):
-        """Shut down adapter (must implement)"""
+        """Shutdown adapter (must implement)"""
         pass
     
     async def call_api(self, endpoint: str, **params):
@@ -300,7 +299,7 @@ class MyAdapter(BaseAdapter):
 
 ### Configuration Management
 
-The framework provides declarative configuration management, defining the configuration structure through dataclass, and the framework automatically handles loading, validation, and template generation.
+The framework provides declarative configuration management. Configuration structures are defined using dataclass, and the framework automatically handles loading, validation, and template generation.
 
 #### Single Account Configuration
 
@@ -325,15 +324,15 @@ class TelegramAdapter(BaseAdapter):
     ConfigClass = TelegramConfig
     
     async def start(self):
-        cfg = self.cfg  # Type-safe, real-time reading
+        cfg = self.cfg  # Type-safe, real-time read
         if not cfg.token:
             raise ValueError("Token not configured")
         await self._connect(cfg.token, proxy=cfg.proxy)
 ```
 
-#### Multi-account Configuration
+#### Multi-Account Configuration
 
-The `BotAccountConfig` base class provides `enabled` and `name` fields. Most adapters can automatically obtain `bot_id` from the platform protocol or login response, injecting it into the account configuration during event conversion.
+The `BotAccountConfig` base class provides `enabled` and `name` fields. Most adapters can automatically obtain `bot_id` from the platform protocol or login response and inject it into the account configuration during event conversion:
 
 ```python
 from dataclasses import dataclass, field
@@ -347,7 +346,7 @@ class MyBotConfig(BotAccountConfig):
         "required": True,
     })
 
-# If bot_id cannot be obtained at login, allow users to fill it in the configuration
+# If bot_id cannot be obtained during login, allow users to fill it in the configuration
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
     bot_id: str = field(default="", metadata={
@@ -375,31 +374,32 @@ Field metadata serves both TOML comment generation and WebUI form rendering:
 ```python
 metadata = {
     "description": str | dict,  # Field description (supports i18n)
-    "required": bool,         # Whether required (validation + WebUI required marker)
-    "secret": bool,           # Whether sensitive (WebUI displays as ***, data masked in logs)
-    "ui": {                   # WebUI control configuration (old name "webui" still compatible)
+    "required": bool,         # Whether required (validation + WebUI required mark)
+    "secret": bool,           # Whether sensitive (WebUI displays as ***, logs are masked)
+    "ui": {                   # WebUI control configuration (old name "webui" is still compatible)
         "widget": str,        # Control type: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # Group: "basic" | "advanced" | "connection" etc.
-        "order": int,         # Sorting weight (smaller values appear first)
+        "order": int,         # Sort weight (smaller values appear earlier)
         "options": list,      # Select control options [{label, value}], label supports i18n
         "placeholder": str | dict,  # Input placeholder (supports i18n)
     },
-    "extra": dict,            # Additional extension fields (passed through to schema)
+    "extra": dict,            # Additional extended fields (passed through to schema)
 }
 ```
 
-All user-visible text fields support i18n, uniformly using the `{"i18n": "key", "default": "text"}` format. Pure strings are passed through as-is (backward compatibility). Supported i18n fields:
+All user-visible text fields support i18n, uniformly using the format `{"i18n": "key", "default": "text"}`,
+pure strings are passed through as-is (backward compatibility). Supported i18n fields:
 
 | Field | Location | Description |
 |------|------|------|
-| `description` | Field metadata | Field description |
+| `description` | field metadata | Field description |
 | `options[].label` | `ui.options` | Select control option label |
 | `placeholder` | `ui.placeholder` | Input placeholder |
 | `group_labels` | `_schema_meta` | Group display name (Dashboard section title) |
 
-When using i18n, you need to register the translation keys in the i18n system in advance (see [i18n documentation](../../advanced/i18n.md#ConfigurationFieldMultilingual)).
+When using i18n, you must register the translation keys into the i18n system in advance (see [i18n documentation](../../advanced/i18n.md#Configuration Field Multilingual)).
 
-**Examples for `description` / `placeholder` / `options label`**:
+**Example for description / placeholder / options label**:
 
 ```python
 token: str = field(
@@ -420,14 +420,14 @@ mode: str = field(
             "widget": "select",
             "options": [
                 {"label": {"i18n": "my_adapter.mode.a", "default": "Option A"}, "value": "a"},
-                {"label": "Pure string label", "value": "b"},  # Pure string passed through as-is
+                {"label": "Pure string label", "value": "b"},  # Pure string is passed through as-is
             ],
         },
     },
 )
 ```
 
-**Example for `group_labels`** (declare after defining the configuration class):
+**Example for group_labels** (declare after configuration class definition):
 
 ```python
 MyConfig._schema_meta = {
@@ -438,9 +438,74 @@ MyConfig._schema_meta = {
 }
 ```
 
-The framework's `resolve_config_schema()` automatically resolves all i18n keys in the above fields according to the current language; `get_config_schema()` passes through the i18n dictionary as-is, allowing the frontend to parse it independently.
+The framework's `resolve_config_schema()` automatically resolves all i18n keys in the above fields based on the current language;
+`get_config_schema()` passes through the i18n dictionary as-is, allowing the frontend to parse it.
 
-**Account Resolution**
+### Declarative Translation Keys (v2.7.0+)
+
+Adapters can declare translation keys centrally, similar to declaring `ConfigClass`, by using the nested class `I18nClass`. The framework automatically registers all declared translation keys during the `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available when generating templates.
+
+```python
+from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
+
+class MyAdapter(BaseAdapter):
+    class I18nClass(BaseI18n):
+        endpoint: I18nKey = I18nKey(
+            default="API Endpoint",
+            zh_CN="API Address",
+            zh_TW="API Address",
+            en="API Endpoint",
+            ja="API Address",
+            ru="API Address",
+        )
+        token: I18nKey = I18nKey(
+            default="Platform Token",
+            zh_CN="Platform Token",
+            zh_TW="Platform Token",
+            en="Platform Token",
+            ja="Platform Token",
+            ru="Platform Token",
+        )
+```
+
+> ``I18nKey.default`` is a language-agnostic fallback text and is not registered to any language.
+> To make the translation effective, at least one language parameter must be explicitly passed.
+
+For detailed usage (key path rules, explicit key parameters, etc.), see [i18n documentation](../../advanced/i18n.md#Recommended Method: Declaring Translation Keys via I18nClass v2.7.0).
+
+### Declarative Event Extension Methods (v2.7.0+)
+
+Adapters can centrally declare platform-specific event extension methods through `EventMixin`, and the framework automatically registers them to the current platform.
+
+```python
+from ErisPulse.Core import BaseAdapter
+
+class MyAdapter(BaseAdapter):
+    class EventMixin:
+        def get_chat_name(self):
+            """Get chat name"""
+            return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+
+        def is_official_message(self):
+            """Check if it is an official message"""
+            raw = self.get("myplatform_raw", {})
+            return raw.get("sender", {}).get("is_official", False)
+```
+
+After registration, event objects can directly call these methods:
+
+```python
+@message.on_group_message()
+async def handler(event):
+    if event.is_official_message():
+        chat_name = event.get_chat_name()
+        await event.reply(f"[{chat_name}] Official message received")
+```
+
+> Event extension methods of the adapter are registered to its own platform (``self._platform``).
+> If modules need cross-platform event extensions, please use the original ``register_event_mixin()`` API.
+
+#### Account Resolution
 
 Multi-account adapters can use `_resolve_account()` to automatically resolve the target account:
 
@@ -453,7 +518,7 @@ async def call_api(self, endpoint: str, **params):
 
 Resolution strategy: account name match → `bot_id` field match → other str field match → first enabled account.
 
-**Configuration Hot Update**
+#### Configuration Hot Update
 
 Subclasses can override `on_config_update()` to respond to configuration changes:
 
@@ -463,7 +528,7 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Token has been updated, reconnecting")
+            self.logger.info("Token updated, reconnecting")
 ```
 
 ### Initialization Process
@@ -474,8 +539,9 @@ The framework automatically performs the following tasks in `BaseAdapter.__init_
 2. **Send/Request Factory**: Create `self.Send` and `self.Request`
 3. **Configuration Template**: If `ConfigClass` is declared, automatically generate default configuration template (first time)
 4. **Account Template**: If `AccountConfigClass` is declared, automatically generate default account template (first time)
+5. **EventMixin Registration**: If `EventMixin` is declared, automatically register after `AdapterManager` injects platform name
 
-Configuration is read in real-time through `self.cfg` / `self.accounts` (each access reads the latest value from the configuration storage). `self.config` as a compatibility alias for `self.cfg` is still usable.
+Configuration is read in real-time through `self.cfg` / `self.accounts` (each access reads the latest value from the configuration store). `self.config` as a compatibility alias for `self.cfg` is still available.
 
 Most adapters do not need to override `__init__`. If custom initialization is required:
 
@@ -489,7 +555,7 @@ class MyAdapter(BaseAdapter):
         self.convert = self.converter.convert
 ```
 
-## Send Message Sending DSL
+## Send Message DSL
 
 ### Inheritance Relationship
 
@@ -511,9 +577,9 @@ The `Send` class automatically sets the following properties when called:
 | `_target_to` | Simplified Target ID | `To(id)` |
 | `_account_id` | Sending Account ID | `Using(account_id)` |
 | `_adapter` | Adapter Instance | Automatically set |
-| `_at_user_ids` | List of @ users | `At(user_id)` |
-| `_reply_message_id` | ID of the replied message | `Reply(message_id)` |
-| `_at_all` | Whether to @ all | `AtAll()` |
+| `_at_user_ids` | @ User List | `At(user_id)` |
+| `_reply_message_id` | Reply Message ID | `Reply(message_id)` |
+| `_at_all` | Whether to @ All | `AtAll()` |
 
 > **Recommendation**: Use the `self.send_context` property to get `target_type`, `target_id`, `account_id` in one go, which is clearer than directly accessing instance variables.
 
@@ -521,7 +587,7 @@ The `Send` class automatically sets the following properties when called:
 
 | Method/Property | Description |
 |-----------|------|
-| `self._apply_modifiers(message)` | Merge At/AtAll/Reply modifier states into the message segment list |
+| `self._apply_modifiers(message)` | Merge At/AtAll/Reply modifier states into message segment list |
 | `self.send_context` | Return a dictionary of `{target_type, target_id, account_id}` |
 
 ### Basic Methods
@@ -531,7 +597,7 @@ The adapter only needs to implement `Raw_ob12`, standard methods (Text/Image/Voi
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """Must implement: OneBot12 message segments → Platform API"""
+        """Must implement: OneBot12 message segment → platform API"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -542,7 +608,7 @@ class Send(BaseAdapter.Send):
             )
         return asyncio.create_task(_do_send())
 
-    # Text/Image/Voice/Video/File are inherited from the base class and automatically delegate to Raw_ob12, no need to implement repeatedly
+    # Text/Image/Voice/Video/File are inherited from the base class and automatically delegate to Raw_ob12, no need to repeat implementation
     # If platform-specific logic is needed, override individual methods:
     # def Text(self, text: str):
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
@@ -567,7 +633,7 @@ class Send(BaseAdapter.Send):
 ### Conversion Process
 
 ```
-Platform-native Event
+Platform Raw Event
     ↓
 Converter.convert()
     ↓
@@ -599,7 +665,7 @@ All converted events must include:
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """Convert platform-native event to OneBot12 standard format"""
+        """Convert platform raw event to OneBot12 standard format"""
         if not isinstance(raw_event, dict):
             return None
         
@@ -693,7 +759,7 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> **Route Information Query**: The routes registered by the adapter (HTTP, WebSocket, SSE) can be queried using `sdk.adapter.get_connection_info(platform)` and `sdk.router.get_module_urls(module_name)` to obtain complete connection addresses (including `base_url` + path). See [Getting Started with Adapter Development - Connection Information and Route Discovery](getting-started.md#9-ConnectionInformationAndRouteDiscovery) and [SSE Support](getting-started.md#10-SSE-Server-Sent-Events-Support).
+> **Route Information Query**: Adapter registered routes (HTTP, WebSocket, SSE) can query complete connection addresses (including `base_url` + path) through `sdk.adapter.get_connection_info(platform)` and `sdk.router.get_module_urls(module_name)`. See [Getting Started - Adapter Development - Connection Information and Route Discovery](getting-started.md#9-Connection Information and Route Discovery) and [SSE Support](getting-started.md#10-sse-server-sent-events-support).
 
 ## API Response Standard
 
@@ -715,7 +781,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e), raw=None)
 ```
 
-### Manual Response Construction (Old method still compatible)
+### Manual Response Construction (Old Method Still Compatible)
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -729,7 +795,7 @@ async def call_api(self, endpoint: str, **params):
     }
 ```
 
-## Multi-account Support
+## Multi-Account Support
 
 ### Declarative Configuration (Recommended)
 
@@ -778,7 +844,7 @@ enabled = true
 # Use Using method to specify account
 my_adapter = adapter.get("myplatform")
 
-# Through self.user_id in event (recommended, most universal)
+# Through event's self.user_id (recommended, most universal)
 await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
 
 # Through account name
@@ -787,7 +853,7 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
 ### Relationship Between self.user_id and Using
 
-The framework's event reply mechanism automatically extracts `account_id` (优先) or `user_id` from the event's `self` field as the `Using` parameter. Adapter developers need to ensure that the `self.user_id` value set by Converter correctly matches `_resolve_account`.
+The framework's event reply mechanism automatically extracts `account_id` (priority) or `user_id` from the event's `self` field as the `Using` parameter. Adapter developers need to ensure that the `self.user_id` value in the Converter correctly matches `_resolve_account()`.
 
 **Framework Internal Behavior** (`Event._get_adapter_and_target`):
 
@@ -800,7 +866,7 @@ if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **Key Point**: Even if the adapter uses only one Bot configuration, as long as Converter correctly sets `self.user_id`, the framework will pass it as the `Using` parameter. The adapter must ensure that `self.user_id` matches the identifier field (such as `bot_id`) in `AccountConfigClass`, so that `_resolve_account()` can match the correct account. If `self.user_id` is empty, the framework will not call `Using`, and `call_api` will receive `account_id` as `None`, with `_resolve_account(None)` returning the first enabled account.
+> **Key Point**: Even if the adapter only uses a single Bot configuration, as long as the Converter correctly sets `self.user_id`, the framework will pass it as the `Using` parameter. The adapter must ensure that `self.user_id` matches the identifier field (e.g., `bot_id`) in `AccountConfigClass`, so that `_resolve_account()` can match the correct account. If `self.user_id` is empty, the framework will not call `Using`, at which point `call_api` receives `account_id` as `None`, and `_resolve_account(None)` returns the first enabled account.
 
 ## Error Handling
 
@@ -854,7 +920,7 @@ async def call_api(self, endpoint: str, **params):
         return self._error_response(str(e), 34000)
 ```
 
-> **Backward Compatibility**: Old adapter code using `aiohttp.ClientSession` is unaffected and can still catch `aiohttp.ClientError`. Both methods can coexist. New code is recommended to use `sdk.client` with ErisPulse's exception system.
+> **Backward Compatibility**: Adapters using `aiohttp.ClientSession` directly are unaffected and can still catch `aiohttp.ClientError`. Both methods can coexist. New code is recommended to use `sdk.client` + ErisPulse exception system.
 
 ## Bot Status Management
 
@@ -862,9 +928,9 @@ AdapterManager includes a built-in Bot status tracking system that automatically
 
 ### Automatic Discovery Mechanism
 
-When an adapter sends an event via `adapter.emit()`, the framework automatically checks the `self` field in the event:
+When an adapter sends an event through `adapter.emit()`, the framework automatically checks the `self` field in the event:
 
-- **Meta Events**: Execute corresponding operations based on `detail_type` (register on connect, mark as offline on disconnect, update active time on heartbeat)
+- **Meta Events**: Execute corresponding operations based on `detail_type` (register on connect, mark offline on disconnect, update active time on heartbeat)
 - **Regular Events** (message/notice/request): Automatically discover Bots and update active time
 
 ```python
@@ -913,7 +979,7 @@ await self.adapter.emit({
 
 ### Extended Information in `self` Field
 
-Besides the required `platform` and `user_id`, the `self` field supports the following optional fields:
+In addition to the required `platform` and `user_id` fields, the `self` field supports the following optional fields:
 
 | Field | Description |
 |---|---|
@@ -937,7 +1003,7 @@ all_bots = sdk.adapter.list_bots()
 # List Bots for a specific platform
 platform_bots = sdk.adapter.list_bots("myplatform")
 
-# Check if Bot is online
+# Check if a Bot is online
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
 # Get complete status summary (suitable for WebUI display)
@@ -966,5 +1032,5 @@ async def on_bot_offline(data):
 ## Related Documentation
 
 - [Getting Started with Adapter Development](getting-started.md) - Create your first adapter
-- [Detailed SendDSL Guide](send-dsl.md) - Learn message sending
+- [SendDSL Detailed Explanation](send-dsl.md) - Learn message sending
 - [Adapter Best Practices](best-practices.md) - Develop high-quality adapters

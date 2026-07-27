@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1341,
+  "total_keywords": 1348,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -45,7 +45,7 @@
     "1. 使用 Event 包装类": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 127,
+        "line": 158,
         "level": 3,
         "title": "1. 使用 Event 包装类"
       }
@@ -61,7 +61,7 @@
     "1. 使用事务": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 223,
+        "line": 254,
         "level": 3,
         "title": "1. 使用事务"
       }
@@ -69,7 +69,7 @@
     "1. 使用异步库": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 66,
+        "line": 97,
         "level": 3,
         "title": "1. 使用异步库"
       }
@@ -77,7 +77,7 @@
     "1. 使用缓存": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 290,
+        "line": 321,
         "level": 3,
         "title": "1. 使用缓存"
       }
@@ -99,7 +99,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 183,
+        "line": 214,
         "level": 3,
         "title": "1. 分类异常处理"
       }
@@ -137,7 +137,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 364,
+        "line": 395,
         "level": 3,
         "title": "1. 单元测试"
       }
@@ -161,7 +161,7 @@
     "1. 合理使用日志级别": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 256,
+        "line": 287,
         "level": 3,
         "title": "1. 合理使用日志级别"
       }
@@ -217,7 +217,7 @@
     "1. 敏感数据保护": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 327,
+        "line": 358,
         "level": 3,
         "title": "1. 敏感数据保护"
       }
@@ -273,7 +273,7 @@
     "1. 版本管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 395,
+        "line": 426,
         "level": 3,
         "title": "1. 版本管理"
       }
@@ -537,7 +537,7 @@
     "2. 合理使用懒加载": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 143,
+        "line": 174,
         "level": 3,
         "title": "2. 合理使用懒加载"
       }
@@ -569,7 +569,7 @@
     "2. 批量操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 239,
+        "line": 270,
         "level": 3,
         "title": "2. 批量操作"
       }
@@ -593,7 +593,7 @@
     "2. 文档完善": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 409,
+        "line": 440,
         "level": 3,
         "title": "2. 文档完善"
       }
@@ -663,7 +663,7 @@
     "2. 正确的异步操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 102,
+        "line": 133,
         "level": 3,
         "title": "2. 正确的异步操作"
       }
@@ -671,7 +671,7 @@
     "2. 结构化日志": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 278,
+        "line": 309,
         "level": 3,
         "title": "2. 结构化日志"
       }
@@ -703,7 +703,7 @@
     "2. 超时处理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 205,
+        "line": 236,
         "level": 3,
         "title": "2. 超时处理"
       }
@@ -711,7 +711,7 @@
     "2. 输入验证": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 344,
+        "line": 375,
         "level": 3,
         "title": "2. 输入验证"
       }
@@ -727,7 +727,7 @@
     "2. 避免阻塞操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 311,
+        "line": 342,
         "level": 3,
         "title": "2. 避免阻塞操作"
       }
@@ -757,7 +757,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 379,
+        "line": 410,
         "level": 3,
         "title": "2. 集成测试"
       }
@@ -917,7 +917,7 @@
     "3. 事件处理器注册": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 165,
+        "line": 196,
         "level": 3,
         "title": "3. 事件处理器注册"
       }
@@ -1069,7 +1069,7 @@
     "3. 资源管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 113,
+        "line": 144,
         "level": 3,
         "title": "3. 资源管理"
       }
@@ -1919,7 +1919,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 277,
+        "line": 392,
         "level": 2,
         "title": "API 参考"
       },
@@ -1953,7 +1953,7 @@
     "API 响应标准": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 700,
+        "line": 767,
         "level": 2,
         "title": "API 响应标准"
       }
@@ -2001,7 +2001,7 @@
     "API 错误处理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 833,
+        "line": 900,
         "level": 3,
         "title": "API 错误处理"
       }
@@ -2086,6 +2086,14 @@
         "title": "BaseAdapter 方法"
       }
     ],
+    "BaseI18n / I18nKey（声明式翻译键）": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 428,
+        "level": 3,
+        "title": "BaseI18n / I18nKey（声明式翻译键）"
+      }
+    ],
     "BaseModule 基类": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -2117,7 +2125,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 927,
+        "line": 994,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -2137,7 +2145,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 861,
+        "line": 928,
         "level": 2,
         "title": "Bot 状态管理"
       }
@@ -2510,10 +2518,18 @@
         "title": "HttpResponse"
       }
     ],
+    "I18nClass 的键路径规则": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 146,
+        "level": 4,
+        "title": "I18nClass 的键路径规则"
+      }
+    ],
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
-        "line": 279,
+        "line": 394,
         "level": 3,
         "title": "I18nManager"
       }
@@ -2609,7 +2625,7 @@
     "Meta 事件类型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 883,
+        "line": 950,
         "level": 3,
         "title": "Meta 事件类型"
       }
@@ -2963,7 +2979,7 @@
     "Send 消息发送 DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 494,
+        "line": 561,
         "level": 2,
         "title": "Send 消息发送 DSL"
       }
@@ -3099,7 +3115,7 @@
     "WebHook 连接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 676,
+        "line": 743,
         "level": 3,
         "title": "WebHook 连接"
       }
@@ -3153,7 +3169,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 642,
+        "line": 709,
         "level": 3,
         "title": "WebSocket 连接"
       }
@@ -3183,7 +3199,7 @@
     "WebUI 如何消费": [
       {
         "document": "advanced/i18n.md",
-        "line": 260,
+        "line": 369,
         "level": 3,
         "title": "WebUI 如何消费"
       }
@@ -3447,7 +3463,7 @@
     "`self` 字段扩展信息": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 916,
+        "line": 983,
         "level": 3,
         "title": "`self` 字段扩展信息"
       }
@@ -3455,7 +3471,7 @@
     "`t()` 方法详解": [
       {
         "document": "advanced/i18n.md",
-        "line": 295,
+        "line": 410,
         "level": 4,
         "title": "`t()` 方法详解"
       }
@@ -3799,7 +3815,7 @@
     "self.user_id 与 Using 的关系": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 790,
+        "line": 857,
         "level": 3,
         "title": "self.user_id 与 Using 的关系"
       }
@@ -4013,7 +4029,7 @@
     "与 CLI i18n 的关系": [
       {
         "document": "advanced/i18n.md",
-        "line": 395,
+        "line": 554,
         "level": 2,
         "title": "与 CLI i18n 的关系"
       }
@@ -4078,6 +4094,14 @@
         "line": 224,
         "level": 4,
         "title": "中间件执行顺序"
+      }
+    ],
+    "为什么推荐 I18nClass？": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 137,
+        "level": 4,
+        "title": "为什么推荐 I18nClass？"
       }
     ],
     "为什么需要标准？": [
@@ -4161,13 +4185,13 @@
     "事件处理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 125,
+        "line": 156,
         "level": 2,
         "title": "事件处理"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 194,
+        "line": 235,
         "level": 2,
         "title": "事件处理"
       }
@@ -4199,7 +4223,7 @@
     "事件处理器注册": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 196,
+        "line": 237,
         "level": 3,
         "title": "事件处理器注册"
       }
@@ -4207,7 +4231,7 @@
     "事件处理器生命周期": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 212,
+        "line": 253,
         "level": 3,
         "title": "事件处理器生命周期"
       }
@@ -4421,7 +4445,7 @@
     "事件转换器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 567,
+        "line": 634,
         "level": 2,
         "title": "事件转换器"
       }
@@ -4467,7 +4491,7 @@
     "事务使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 184,
+        "line": 225,
         "level": 3,
         "title": "事务使用"
       }
@@ -4581,7 +4605,7 @@
     "从 SDK 实例访问": [
       {
         "document": "advanced/i18n.md",
-        "line": 313,
+        "line": 471,
         "level": 3,
         "title": "从 SDK 实例访问"
       }
@@ -4833,7 +4857,7 @@
     "使用翻译": [
       {
         "document": "advanced/i18n.md",
-        "line": 101,
+        "line": 209,
         "level": 3,
         "title": "使用翻译"
       }
@@ -5201,7 +5225,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 471,
+        "line": 537,
         "level": 3,
         "title": "初始化过程"
       }
@@ -5293,7 +5317,7 @@
     "动态内容": [
       {
         "document": "advanced/i18n.md",
-        "line": 373,
+        "line": 532,
         "level": 3,
         "title": "动态内容"
       }
@@ -5365,7 +5389,7 @@
     "卸载翻译": [
       {
         "document": "advanced/i18n.md",
-        "line": 151,
+        "line": 258,
         "level": 3,
         "title": "卸载翻译"
       }
@@ -5743,7 +5767,7 @@
     "可用属性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 505,
+        "line": 572,
         "level": 3,
         "title": "可用属性"
       }
@@ -6135,9 +6159,17 @@
     "在模块类中使用": [
       {
         "document": "advanced/i18n.md",
-        "line": 116,
+        "line": 224,
         "level": 3,
         "title": "在模块类中使用"
+      }
+    ],
+    "在适配器中使用": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 153,
+        "level": 4,
+        "title": "在适配器中使用"
       }
     ],
     "基本使用": [
@@ -6167,7 +6199,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 171,
+        "line": 212,
         "level": 3,
         "title": "基本使用"
       }
@@ -6281,7 +6313,7 @@
     "基本方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 529,
+        "line": 596,
         "level": 3,
         "title": "基本方法"
       }
@@ -6411,15 +6443,43 @@
     "声明 i18n 字段": [
       {
         "document": "advanced/i18n.md",
-        "line": 175,
+        "line": 282,
         "level": 3,
         "title": "声明 i18n 字段"
+      }
+    ],
+    "声明式事件扩展方法（v2.7.0+）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 479,
+        "level": 3,
+        "title": "声明式事件扩展方法（v2.7.0+）"
+      }
+    ],
+    "声明式翻译键（v2.7.0+）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 445,
+        "level": 3,
+        "title": "声明式翻译键（v2.7.0+）"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 64,
+        "level": 3,
+        "title": "声明式翻译键（v2.7.0+）"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 150,
+        "level": 3,
+        "title": "声明式翻译键（v2.7.0+）"
       }
     ],
     "声明式配置（推荐）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 736,
+        "line": 803,
         "level": 3,
         "title": "声明式配置（推荐）"
       },
@@ -6573,7 +6633,7 @@
     "多语言覆盖": [
       {
         "document": "advanced/i18n.md",
-        "line": 369,
+        "line": 528,
         "level": 3,
         "title": "多语言覆盖"
       }
@@ -6601,7 +6661,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 734,
+        "line": 801,
         "level": 2,
         "title": "多账户支持"
       }
@@ -6819,13 +6879,13 @@
     "存储系统": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 221,
+        "line": 252,
         "level": 2,
         "title": "存储系统"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 169,
+        "line": 210,
         "level": 2,
         "title": "存储系统"
       }
@@ -6865,7 +6925,7 @@
     "安全性": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 325,
+        "line": 356,
         "level": 2,
         "title": "安全性"
       }
@@ -7119,7 +7179,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 218,
+        "line": 259,
         "level": 3,
         "title": "工作原理"
       },
@@ -7565,7 +7625,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 241,
+        "line": 282,
         "level": 3,
         "title": "异常捕获"
       }
@@ -7619,7 +7679,7 @@
     "异步编程": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 64,
+        "line": 95,
         "level": 2,
         "title": "异步编程"
       },
@@ -7695,7 +7755,7 @@
     "必需字段": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 579,
+        "line": 646,
         "level": 3,
         "title": "必需字段"
       }
@@ -7795,7 +7855,7 @@
     "性能优化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 288,
+        "line": 319,
         "level": 2,
         "title": "性能优化"
       }
@@ -7827,7 +7887,7 @@
     "懒加载机制": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 216,
+        "line": 257,
         "level": 2,
         "title": "懒加载机制"
       }
@@ -7851,7 +7911,7 @@
     "成功响应": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 704,
+        "line": 771,
         "level": 3,
         "title": "成功响应"
       }
@@ -7883,15 +7943,23 @@
     "手动构造响应（旧版方式仍然兼容）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 720,
+        "line": 787,
         "level": 3,
         "title": "手动构造响应（旧版方式仍然兼容）"
+      }
+    ],
+    "手动注册自定义翻译（旧写法）": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 187,
+        "level": 3,
+        "title": "手动注册自定义翻译（旧写法）"
       }
     ],
     "手动读取配置（兼容方式）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 150,
+        "line": 191,
         "level": 3,
         "title": "手动读取配置（兼容方式）"
       }
@@ -8055,7 +8123,7 @@
     "指定账户发送": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 777,
+        "line": 844,
         "level": 3,
         "title": "指定账户发送"
       }
@@ -8130,6 +8198,14 @@
         "title": "推荐使用懒加载的场景（lazy_load=True）"
       }
     ],
+    "推荐写法：通过 I18nClass 声明翻译键（v2.7.0+）": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 81,
+        "level": 3,
+        "title": "推荐写法：通过 I18nClass 声明翻译键（v2.7.0+）"
+      }
+    ],
     "推荐禁用懒加载的场景（lazy_load=False）": [
       {
         "document": "advanced/lazy-loading.md",
@@ -8165,7 +8241,7 @@
     "支持的 i18n 字段": [
       {
         "document": "advanced/i18n.md",
-        "line": 164,
+        "line": 271,
         "level": 3,
         "title": "支持的 i18n 字段"
       }
@@ -8593,7 +8669,7 @@
     "日志消息": [
       {
         "document": "advanced/i18n.md",
-        "line": 385,
+        "line": 544,
         "level": 3,
         "title": "日志消息"
       }
@@ -8617,13 +8693,13 @@
     "日志记录": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 254,
+        "line": 285,
         "level": 2,
         "title": "日志记录"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 256,
+        "line": 297,
         "level": 3,
         "title": "日志记录"
       }
@@ -8701,7 +8777,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 357,
+        "line": 516,
         "level": 2,
         "title": "最佳实践"
       },
@@ -9087,7 +9163,7 @@
     "核心方法": [
       {
         "document": "advanced/i18n.md",
-        "line": 281,
+        "line": 396,
         "level": 4,
         "title": "核心方法"
       },
@@ -9183,7 +9259,7 @@
     "框架辅助方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 522,
+        "line": 589,
         "level": 3,
         "title": "框架辅助方法"
       }
@@ -9480,14 +9556,6 @@
         "title": "注册处理器"
       }
     ],
-    "注册自定义翻译": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 81,
-        "level": 3,
-        "title": "注册自定义翻译"
-      }
-    ],
     "注册跨平台方法": [
       {
         "document": "api-reference/event-system.md",
@@ -9499,7 +9567,7 @@
     "注册配置翻译": [
       {
         "document": "advanced/i18n.md",
-        "line": 228,
+        "line": 335,
         "level": 3,
         "title": "注册配置翻译"
       }
@@ -9577,7 +9645,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 362,
+        "line": 393,
         "level": 2,
         "title": "测试"
       }
@@ -10207,7 +10275,7 @@
     "监听 Bot 生命周期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 950,
+        "line": 1017,
         "level": 3,
         "title": "监听 Bot 生命周期"
       }
@@ -10383,7 +10451,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 968,
+        "line": 1035,
         "level": 2,
         "title": "相关文档"
       },
@@ -10395,13 +10463,13 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 422,
+        "line": 453,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 267,
+        "line": 308,
         "level": 2,
         "title": "相关文档"
       },
@@ -10477,7 +10545,7 @@
     "立即加载": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 226,
+        "line": 267,
         "level": 3,
         "title": "立即加载"
       }
@@ -10743,7 +10811,7 @@
     "继承关系": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 496,
+        "line": 563,
         "level": 3,
         "title": "继承关系"
       }
@@ -10831,7 +10899,7 @@
     "翻译键命名": [
       {
         "document": "advanced/i18n.md",
-        "line": 359,
+        "line": 518,
         "level": 3,
         "title": "翻译键命名"
       }
@@ -10839,7 +10907,7 @@
     "自动发现机制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 865,
+        "line": 932,
         "level": 3,
         "title": "自动发现机制"
       }
@@ -11225,7 +11293,7 @@
     "账户解析": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 445,
+        "line": 511,
         "level": 4,
         "title": "账户解析"
       }
@@ -11257,7 +11325,7 @@
     "账户配置文件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 763,
+        "line": 830,
         "level": 3,
         "title": "账户配置文件"
       }
@@ -11399,7 +11467,7 @@
     "转换器示例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 599,
+        "line": 666,
         "level": 3,
         "title": "转换器示例"
       }
@@ -11407,7 +11475,7 @@
     "转换流程": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 569,
+        "line": 636,
         "level": 3,
         "title": "转换流程"
       }
@@ -11439,7 +11507,7 @@
     "运行时配置": [
       {
         "document": "advanced/i18n.md",
-        "line": 325,
+        "line": 483,
         "level": 2,
         "title": "运行时配置"
       }
@@ -11567,7 +11635,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 640,
+        "line": 707,
         "level": 2,
         "title": "连接管理"
       }
@@ -11575,7 +11643,7 @@
     "连接重试": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 809,
+        "line": 876,
         "level": 3,
         "title": "连接重试"
       }
@@ -11635,7 +11703,7 @@
     "适配器发送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 891,
+        "line": 958,
         "level": 3,
         "title": "适配器发送 Meta 事件"
       }
@@ -11909,7 +11977,7 @@
     "通过配置 API 读取 i18n 配置": [
       {
         "document": "advanced/i18n.md",
-        "line": 327,
+        "line": 485,
         "level": 3,
         "title": "通过配置 API 读取 i18n 配置"
       }
@@ -11965,7 +12033,7 @@
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 393,
+        "line": 424,
         "level": 2,
         "title": "部署"
       }
@@ -12019,7 +12087,7 @@
     "配置字段多语言": [
       {
         "document": "advanced/i18n.md",
-        "line": 160,
+        "line": 267,
         "level": 2,
         "title": "配置字段多语言"
       }
@@ -12067,7 +12135,7 @@
     "配置热更新": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 458,
+        "line": 524,
         "level": 4,
         "title": "配置热更新"
       }
@@ -12205,7 +12273,7 @@
     "配置项说明": [
       {
         "document": "advanced/i18n.md",
-        "line": 339,
+        "line": 498,
         "level": 3,
         "title": "配置项说明"
       }
@@ -12259,7 +12327,7 @@
     "链式修饰方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 553,
+        "line": 620,
         "level": 3,
         "title": "链式修饰方法"
       },
@@ -12425,19 +12493,19 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 807,
+        "line": 874,
         "level": 2,
         "title": "错误处理"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 181,
+        "line": 212,
         "level": 2,
         "title": "错误处理"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 239,
+        "line": 280,
         "level": 2,
         "title": "错误处理"
       },

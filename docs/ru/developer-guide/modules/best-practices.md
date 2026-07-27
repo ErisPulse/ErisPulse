@@ -1,39 +1,39 @@
-# Рекомендации по разработке модулей
+# Best Practices for Module Development
 
-В этом документе содержатся рекомендации по разработке модулей ErisPulse.
+This document provides best practice recommendations for developing ErisPulse modules.
 
-## Разработка модулей
+## Module Design
 
-### 1. Принцип единственной ответственности
+### 1. Single Responsibility Principle
 
-Каждый модуль должен отвечать только за одну основную функцию:
+Each module should be responsible for only one core function:
 
 ```python
-# Хорошее проектирование: каждый модуль отвечает только за одну функцию
+# Хорошее проектирование: каждый модуль отвечает за одну функцию
 class WeatherModule(BaseModule):
-    """Модуль запроса погоды"""
+    """Модуль получения погоды"""
     pass
 
 class NewsModule(BaseModule):
-    """Модуль запроса новостей"""
+    """Модуль получения новостей"""
     pass
 
-# Плохое проектирование: модуль отвечает за несколько несвязанных функций
+# Плохое проектирование: один модуль отвечает за несколько несвязанных функций
 class UtilityModule(BaseModule):
-    """Содержит погоду, новости, шутки и другие функции"""
+    """Включает погоду, новости, шутки и другие функции"""
     pass
 ```
 
-### 2. Нейминг модулей
+### 2. Module Naming Conventions
 
 ```toml
 [project]
-name = "ErisPulse-ModuleName"  # Использовать префикс ErisPulse-
+name = "ErisPulse-ModuleName"  # Использование префикса ErisPulse-
 ```
 
 ### 3. Четкое управление конфигурацией
 
-Рекомендуется использовать декларативную конфигурацию (`ConfigClass` + `BaseConfig`), что обеспечивает типобезопасность, автоматическое создание шаблонов, поддержку форм WebUI и другие возможности:
+Рекомендуется использовать декларативную конфигурацию (`ConfigClass` + `BaseConfig`) для получения возможности безопасного типизации, автоматической генерации шаблонов и поддержки форм WebUI:
 
 ```python
 from dataclasses import dataclass, field
@@ -55,18 +55,49 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def do_something(self):
-        cfg = self.cfg  # Типобезопасность, чтение в реальном времени
+        cfg = self.cfg  # Безопасность типов, чтение в реальном времени
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-Также можно продолжить использовать ручной способ чтения и записи конфигурации (см. [Основные концепции модулей](core-concepts.md#управление-конфигурацией)).
+Дополнительно можно продолжить использовать ручное управление чтением и записью настроек хранилища (см. [Основные концепции модулей](docs/ru/core-concepts.md#управление-конфигурацией)).
+
+### Декларативные ключи перевода (v2.7.0+)
+
+Модули могут централизованно объявлять ключи перевода через `I18nClass`, фреймворк автоматически регистрирует их в системе i18n, без необходимости вручную вызывать `i18n.register()`.
+
+```python
+from ErisPulse.Core.Bases import BaseI18n, I18nKey
+
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        # Бизнес-ключи перевода с плейсхолдерами
+        welcome: I18nKey = I18nKey(
+            default="Welcome, {name}!",
+            zh_CN="欢迎你，{name}！",
+            zh_TW="歡迎你，{name}！",
+            en="Welcome, {name}!",
+            ja="ようこそ、{name}！",
+            ru="Добро пожаловать, {name}!",
+        )
+        # Перевод описаний полей конфигурации
+        api_url: I18nKey = I18nKey(
+            default="API URL",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
+            en="API URL",
+            ja="API URL",
+            ru="API URL",
+        )
+```
+
+Подробное использование см. в [документации i18n](docs/ru/advanced/i18n.md#Рекомендуемый подход-Объявление-ключей-через-I18nClass-v270).
 
 ## Асинхронное программирование
 
 ### 1. Использование асинхронных библиотек
 
 ```python
-# Рекомендуется использовать встроенный HTTP-клиент SDK (асинхронный, автоматическое логирование и статистика)
+# Рекомендуется использовать встроенный HTTP-клиент SDK (асинхронный, с автоматическим логированием и статистикой)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -74,7 +105,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# Также можно использовать sdk.client (эффект аналогичный)
+# Также можно использовать sdk.client (эффект аналогичен)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -82,7 +113,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Не импортируйте aiohttp напрямую (неудобно для унифицированного управления фреймворком)
+# Не рекомендуется использовать aiohttp напрямую (неудобно для централизованного управления фреймворком)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -91,7 +122,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Не используйте requests (синхронный, блокирует цикл событий)
+# Не рекомендуется использовать requests (синхронный, блокирует цикл событий)
 import requests
 
 class MyModule(BaseModule):
@@ -99,14 +130,14 @@ class MyModule(BaseModule):
         return requests.get(url).json()  # Блокирует цикл событий
 ```
 
-### 2. Корректная асинхронная операция
+### 2. Правильные асинхронные операции
 
 ```python
 async def handle_command(self, event):
-    # Используйте create_task для выполнения трудоемких операций в фоновом режиме
+    # Используйте create_task для выполнения длительных операций в фоновом режиме
     task = asyncio.create_task(self._long_operation())
     
-    # Если необходимо получить результат
+    # Если нужно дождаться результата
     result = await task
 ```
 
@@ -114,42 +145,42 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # Клиент SDK автоматически управляет пулом соединений, создание сессии вручную не требуется
+    # Клиент SDK автоматически управляет пулом соединений, не нужно создавать сессию вручную
     pass
     
 async def on_unload(self, event):
-    # Если требуется настройка клиента, не забудьте освободить ресурсы
+    # Если нужно настроить клиент, не забудьте очистить ресурсы
     pass
 ```
 
 ## Обработка событий
 
-### 1. Использование обертки для событий
+### 1. Использование класса-обертки для Event
 
 ```python
-# Удобные методы с использованием обертки события
+# Удобный метод с использованием класса-обертки для Event
 @command("info")
 async def info_command(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"Привет, {nickname}!")
 
-# В отличие от прямого доступа к словарю
+# А не прямой доступ к словарю
 @command("info")
 async def info_command(event):
-    user_id = event["user_id"]  # Менее явно,容易出现 ошибок
+    user_id = event["user_id"]  # Менее четко, легко совершить ошибку
 ```
 
 ### 2. Рациональное использование ленивой загрузки
 
 ```python
-# Модули обработки команд должны загружаться немедленно
+# Модули обработки команд должны загружаться сразу
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# Модули прослушивателей должны загружаться немедленно
+# Модули-слушатели должны загружаться сразу
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -166,16 +197,16 @@ class UtilityModule(BaseModule):
 
 ```python
 async def on_load(self, event):
-    # Регистрируем обработчики событий в on_load
+    # Регистрация обработчиков событий в on_load
     @command("hello")
     async def hello_handler(event):
         await event.reply("Привет!")
     
     @message.on_group_message()
     async def group_handler(event):
-        self.logger.info("Получено сообщение из группы")
+        self.logger.info("Получено сообщение в группе")
     
-    # Регистрация вручную не требуется, фреймворк обрабатывает это автоматически
+    # Не нужно вручную отменять регистрацию, фреймворк обрабатывает это автоматически
 ```
 
 ## Обработка ошибок
@@ -187,25 +218,25 @@ async def handle_event(self, event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # Предполагаемые ошибки бизнес-логики
-        self.logger.warning(f"Предупреждение бизнес-логики: {e}")
-        await event.reply(f"Ошибка параметра: {e}")
+        # Ожидаемые бизнес-ошибки
+        self.logger.warning(f"Бизнес-предупреждение: {e}")
+        await event.reply(f"Ошибка параметров: {e}")
     except aiohttp.ClientError as e:
-        # Сетевая ошибка (рекомендуется использовать sdk.client + ClientError)
-        # Старый код, использующий aiohttp напрямую, все еще может работать, но в новом коде рекомендуется использовать систему исключений ErisPulse
+        # Сетевая ошибка (рекомендуется использовать sdk.client + ClientError вместо этого)
+        # Старый код, использующий aiohttp напрямую, все еще будет работать, но новый код рекомендует использовать систему исключений ErisPulse
         self.logger.error(f"Сетевая ошибка: {e}")
-        await event.reply("Сетевой запрос не удался, попробуйте позже")
+        await event.reply("Ошибка сетевого запроса, повторите попытку позже")
     except Exception as e:
-        # Непредвиденные ошибки
+        # Неожиданные ошибки
         self.logger.error(f"Неизвестная ошибка: {e}", exc_info=True)
-        await event.reply("Обработка не удалась, обратитесь к администратору")
+        await event.reply("Ошибка обработки, обратитесь к администратору")
         raise
 ```
 
-### 2. Обработка тайм-аутов
+### 2. Обработка таймаута
 
 ```python
-# Рекомендуется использовать встроенный клиент SDK (встроенный тайм-аут и повторные попытки)
+# Рекомендуется использовать встроенный клиент SDK (с таймаутом и повторными попытками)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -214,7 +245,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"Превышение времени ожидания запроса: {url}")
+        self.logger.warning(f"Превышен таймаут запроса: {url}")
         raise
 ```
 
@@ -229,17 +260,17 @@ async def update_user(self, user_id, data):
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ Отсутствие транзакций может привести к несогласованности данных
+# ❌ Не использование транзакций может привести к непоследовательности данных
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # Если здесь произойдет ошибка, предыдущее изменение не будет откачено
+    # Если здесь произойдет ошибка, настройка выше не будет откачена
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
-### 2. Массовые операции
+### 2. Пакетные операции
 
 ```python
-# Использование массовых операций для повышения производительности
+# Использование пакетных операций для повышения производительности
 def cache_multiple_items(self, items):
     self.sdk.storage.set_multi({
         f"item:{k}": v for k, v in items.items()
@@ -253,36 +284,36 @@ def cache_multiple_items(self, items):
 
 ## Логирование
 
-### 1. Рациональное использование уровней логирования
+### 1. Рациональное использование уровней логов
 
 ```python
-# DEBUG: Подробная информация отладки (только для разработки)
+# DEBUG: Подробная информация для отладки (только во время разработки)
 self.logger.debug(f"Входные параметры: {params}")
 
 # INFO: Информация о нормальной работе
 self.logger.info("Модуль загружен")
 self.logger.info(f"Обработка запроса: {request_id}")
 
-# WARNING: Предупреждающая информация, не влияющая на основную функциональность
-self.logger.warning(f"Параметр конфигурации {key} не установлен, используется значение по умолчанию")
-self.logger.warning("API-ответ медленный, возможно, требуется оптимизация")
+# WARNING: Предупреждения, не влияющие на основные функции
+self.logger.warning(f"Настройка {key} не задана, используется значение по умолчанию")
+self.logger.warning("API отвечает медленно, возможно, требуется оптимизация")
 
-# ERROR: Информация об ошибках
-self.logger.error(f"Не удалось выполнить запрос API: {e}")
-self.logger.error(f"Не удалось обработать событие: {e}", exc_info=True)
+# ERROR: Сообщения об ошибках
+self.logger.error(f"Ошибка API-запроса: {e}")
+self.logger.error(f"Ошибка обработки события: {e}", exc_info=True)
 
 # CRITICAL: Критические ошибки, требующие немедленного вмешательства
-self.logger.critical("Не удалось подключиться к базе данных, робот не может работать нормально")
+self.logger.critical("Не удалось подключиться к базе данных, бот не может работать нормально")
 ```
 
-### 2. Структурированное логирование
+### 2. Структурное логирование
 
 ```python
-# Использование структурированного логирования для облегчения анализа
+# Использование структурированного логирования для удобства анализа
 self.logger.info(f"Обработка запроса: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
 # ❌ Использование неструктурированного логирования
-self.logger.info(f"Запрос обработан, от пользователя {user_id}, затрачено {duration} миллисекунд")
+self.logger.info(f"Обработка запроса от пользователя {user_id} заняла {duration} миллисекунд")
 ```
 
 ## Оптимизация производительности
@@ -318,7 +349,7 @@ async def process_message(self, event):
 
 # ❌ Блокирующие операции
 async def process_message(self, event):
-    # Синхронная операция, блокирующая цикл событий
+    # Синхронная операция, блокирует цикл событий
     result = self._sync_process(event)
 ```
 
@@ -334,11 +365,11 @@ class MyModule(BaseModule):
         self.api_key = config.get("api_key")
         
         if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("Укажите действительный API-ключ в config.toml")
+            raise ValueError("Пожалуйста, настройте действительный API-ключ в config.toml")
 
-# ❌ Жестко заданный API-ключ
+# ❌ Жестко заданный код чувствительных данных
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # Не делайте так!
+    API_KEY = "sk-1234567890"  # Так делать не стоит!
 ```
 
 ### 2. Валидация входных данных
@@ -350,7 +381,7 @@ async def process_command(self, event):
     
     # Проверка длины ввода
     if len(user_input) > 1000:
-        await event.reply("Слишком длинный ввод, пожалуйста, введите заново")
+        await event.reply("Слишком длинный ввод, пожалуйста, введите снова")
         return
     
     # Проверка формата ввода
@@ -361,7 +392,7 @@ async def process_command(self, event):
 
 ## Тестирование
 
-### 1. Модульное тестирование
+### 1. Unit-тесты
 
 ```python
 import pytest
@@ -376,7 +407,7 @@ class TestMyModule:
         assert "api_url" in config
 ```
 
-### 2. Интеграционное тестирование
+### 2. Интеграционные тесты
 
 ```python
 @pytest.mark.asyncio
@@ -385,7 +416,7 @@ async def test_command_handling():
     module = MyModule()
     await module.on_load({})
     
-    # Моделирование события команды
+    # Симуляция события команды
     event = create_test_command_event("hello")
     await module.handle_command(event)
 ```
@@ -402,25 +433,25 @@ version = "1.0.0"
 
 Соблюдение семантического версионирования:
 - MAJOR.MINOR.PATCH
-- Основная версия: несовместимые изменения API
-- Младшая версия: новые функции, обратная совместимость
-- Редакция: исправление ошибок, обратная совместимость
+- MAJOR: несовместимые изменения API
+- MINOR: добавление функций, обратная совместимость
+- PATCH: исправление проблем, обратная совместимость
 
-### 2. Улучшение документации
+### 2. Полноценная документация
 
 ```markdown
 # README.md
 
-- Введение в модуль
+- Краткое описание модуля
 - Инструкция по установке
-- Инструкция по конфигурации
+- Инструкция по настройке
 - Примеры использования
-- Документация по API
-- Руководство по вкладу
+- Документация API
+- Руководство поContributing
 ```
 
-## Смежные документы
+## Связанные документы
 
-- [Введение в разработку модулей](getting-started.md) - Создание первого модуля
-- [Основные концепции модулей](core-concepts.md) - Понимание архитектуры модулей
-- [Класс обертки событий](event-wrapper.md) - Подробности обработки событий
+- [Введение в разработку модулей](docs/ru/getting-started.md) - Создание первого модуля
+- [Основные концепции модулей](docs/ru/core-concepts.md) - Понимание архитектуры модулей
+- [Класс-обертка Event](docs/ru/event-wrapper.md) - Подробное описание обработки событий
