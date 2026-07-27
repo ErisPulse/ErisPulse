@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1393,
+  "total_keywords": 1400,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -37,7 +37,7 @@
     "1. 使用 Event 包裝類別": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 127,
+        "line": 158,
         "level": 3,
         "title": "1. 使用 Event 包裝類別"
       }
@@ -50,28 +50,28 @@
         "title": "1. 使用 Mixin 類批量註冊（推薦）"
       }
     ],
-    "1. 使用交易": [
+    "1. 使用事務": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 223,
+        "line": 254,
         "level": 3,
-        "title": "1. 使用交易"
+        "title": "1. 使用事務"
       }
     ],
     "1. 使用快取": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 290,
+        "line": 321,
         "level": 3,
         "title": "1. 使用快取"
       }
     ],
-    "1. 使用非同步程式庫": [
+    "1. 使用非同步函式庫": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 66,
+        "line": 97,
         "level": 3,
-        "title": "1. 使用非同步程式庫"
+        "title": "1. 使用非同步函式庫"
       }
     ],
     "1. 健康檢查（GET）": [
@@ -91,7 +91,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 183,
+        "line": 214,
         "level": 3,
         "title": "1. 分類異常處理"
       }
@@ -99,7 +99,7 @@
     "1. 合理使用日誌層級": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 256,
+        "line": 287,
         "level": 3,
         "title": "1. 合理使用日誌層級"
       }
@@ -121,7 +121,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 364,
+        "line": 395,
         "level": 3,
         "title": "1. 單元測試"
       }
@@ -185,7 +185,7 @@
     "1. 敏感資料保護": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 327,
+        "line": 358,
         "level": 3,
         "title": "1. 敏感資料保護"
       }
@@ -241,7 +241,7 @@
     "1. 版本管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 395,
+        "line": 426,
         "level": 3,
         "title": "1. 版本管理"
       }
@@ -497,7 +497,7 @@
     "2. 合理使用懶載入": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 143,
+        "line": 174,
         "level": 3,
         "title": "2. 合理使用懶載入"
       }
@@ -553,7 +553,7 @@
     "2. 批次操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 239,
+        "line": 270,
         "level": 3,
         "title": "2. 批次操作"
       }
@@ -577,17 +577,17 @@
     "2. 整合測試": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 379,
+        "line": 410,
         "level": 3,
         "title": "2. 整合測試"
       }
     ],
-    "2. 文件完善": [
+    "2. 文檔完善": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 409,
+        "line": 440,
         "level": 3,
-        "title": "2. 文件完善"
+        "title": "2. 文檔完善"
       }
     ],
     "2. 日誌記錄": [
@@ -655,7 +655,7 @@
     "2. 正確的非同步操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 102,
+        "line": 133,
         "level": 3,
         "title": "2. 正確的非同步操作"
       }
@@ -679,7 +679,7 @@
     "2. 結構化日誌": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 278,
+        "line": 309,
         "level": 3,
         "title": "2. 結構化日誌"
       }
@@ -700,14 +700,6 @@
         "title": "2. 請求事件字段要求"
       }
     ],
-    "2. 超時處理": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 205,
-        "level": 3,
-        "title": "2. 超時處理"
-      }
-    ],
     "2. 載入層：Loader": [
       {
         "document": "advanced/startup.md",
@@ -719,7 +711,7 @@
     "2. 輸入驗證": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 344,
+        "line": 375,
         "level": 3,
         "title": "2. 輸入驗證"
       }
@@ -732,12 +724,20 @@
         "title": "2. 連線狀態管理"
       }
     ],
-    "2. 避免阻斷操作": [
+    "2. 逾時處理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 311,
+        "line": 236,
         "level": 3,
-        "title": "2. 避免阻斷操作"
+        "title": "2. 逾時處理"
+      }
+    ],
+    "2. 避免阻塞性操作": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 342,
+        "level": 3,
+        "title": "2. 避免阻塞性操作"
       }
     ],
     "2. 錯誤碼規範": [
@@ -927,7 +927,7 @@
     "3. 事件處理器註冊": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 165,
+        "line": 196,
         "level": 3,
         "title": "3. 事件處理器註冊"
       }
@@ -1071,7 +1071,7 @@
     "3. 資源管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 113,
+        "line": 144,
         "level": 3,
         "title": "3. 資源管理"
       }
@@ -1867,7 +1867,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 277,
+        "line": 392,
         "level": 2,
         "title": "API 參考"
       },
@@ -1909,7 +1909,7 @@
     "API 回應標準": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 700,
+        "line": 734,
         "level": 2,
         "title": "API 回應標準"
       },
@@ -1965,7 +1965,7 @@
     "API 錯誤處理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 833,
+        "line": 867,
         "level": 3,
         "title": "API 錯誤處理"
       }
@@ -2034,6 +2034,14 @@
         "title": "BaseAdapter 方法"
       }
     ],
+    "BaseI18n / I18nKey（宣告式翻譯鍵）": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 428,
+        "level": 3,
+        "title": "BaseI18n / I18nKey（宣告式翻譯鍵）"
+      }
+    ],
     "BaseModule 基礎類別": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -2065,7 +2073,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 927,
+        "line": 961,
         "level": 3,
         "title": "Bot 狀態查詢"
       },
@@ -2085,7 +2093,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 861,
+        "line": 895,
         "level": 2,
         "title": "Bot 狀態管理"
       }
@@ -2458,10 +2466,18 @@
         "title": "HttpResponse"
       }
     ],
+    "I18nClass 的鍵路徑規則": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 146,
+        "level": 4,
+        "title": "I18nClass 的鍵路徑規則"
+      }
+    ],
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
-        "line": 279,
+        "line": 394,
         "level": 3,
         "title": "I18nManager"
       }
@@ -2557,7 +2573,7 @@
     "Meta 事件類型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 883,
+        "line": 917,
         "level": 3,
         "title": "Meta 事件類型"
       }
@@ -2832,14 +2848,6 @@
         "title": "SDK"
       }
     ],
-    "SDK 對象": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 54,
-        "level": 2,
-        "title": "SDK 對象"
-      }
-    ],
     "SDK 核心架構": [
       {
         "document": "architecture.md",
@@ -2849,6 +2857,12 @@
       }
     ],
     "SDK 物件": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 54,
+        "level": 2,
+        "title": "SDK 物件"
+      },
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 128,
@@ -2904,12 +2918,12 @@
         "title": "Send 方法"
       }
     ],
-    "Send 消息發送 DSL": [
+    "Send 消息傳送 DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 494,
+        "line": 528,
         "level": 2,
-        "title": "Send 消息發送 DSL"
+        "title": "Send 消息傳送 DSL"
       }
     ],
     "Send 訊息發送": [
@@ -3059,7 +3073,7 @@
     "WebHook 連接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 676,
+        "line": 710,
         "level": 3,
         "title": "WebHook 連接"
       }
@@ -3113,7 +3127,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 642,
+        "line": 676,
         "level": 3,
         "title": "WebSocket 連接"
       }
@@ -3145,7 +3159,7 @@
     "WebUI 如何消費": [
       {
         "document": "advanced/i18n.md",
-        "line": 260,
+        "line": 369,
         "level": 3,
         "title": "WebUI 如何消費"
       }
@@ -3406,18 +3420,18 @@
         "title": "`keep_running` 參數"
       }
     ],
-    "`self` 欄位擴展資訊": [
+    "`self` 字段擴展資訊": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 916,
+        "line": 950,
         "level": 3,
-        "title": "`self` 欄位擴展資訊"
+        "title": "`self` 字段擴展資訊"
       }
     ],
     "`t()` 方法詳解": [
       {
         "document": "advanced/i18n.md",
-        "line": 295,
+        "line": 410,
         "level": 4,
         "title": "`t()` 方法詳解"
       }
@@ -3761,7 +3775,7 @@
     "self.user_id 與 Using 的關係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 790,
+        "line": 824,
         "level": 3,
         "title": "self.user_id 與 Using 的關係"
       }
@@ -4185,13 +4199,13 @@
     "事件處理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 125,
+        "line": 156,
         "level": 2,
         "title": "事件處理"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 194,
+        "line": 235,
         "level": 2,
         "title": "事件處理"
       }
@@ -4215,7 +4229,7 @@
     "事件處理器生命週期": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 212,
+        "line": 253,
         "level": 3,
         "title": "事件處理器生命週期"
       }
@@ -4223,7 +4237,7 @@
     "事件處理器註冊": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 196,
+        "line": 237,
         "level": 3,
         "title": "事件處理器註冊"
       }
@@ -4321,7 +4335,7 @@
     "事件轉換器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 567,
+        "line": 601,
         "level": 2,
         "title": "事件轉換器"
       }
@@ -4403,7 +4417,7 @@
     "事務使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 184,
+        "line": 225,
         "level": 3,
         "title": "事務使用"
       }
@@ -4711,7 +4725,7 @@
     "使用翻譯": [
       {
         "document": "advanced/i18n.md",
-        "line": 101,
+        "line": 209,
         "level": 3,
         "title": "使用翻譯"
       }
@@ -4931,13 +4945,13 @@
     "儲存系統": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 221,
+        "line": 252,
         "level": 2,
         "title": "儲存系統"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 169,
+        "line": 210,
         "level": 2,
         "title": "儲存系統"
       }
@@ -5163,7 +5177,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 471,
+        "line": 505,
         "level": 3,
         "title": "初始化過程"
       }
@@ -5240,18 +5254,10 @@
         "title": "加密模式說明"
       }
     ],
-    "加載策略": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 7,
-        "level": 3,
-        "title": "加載策略"
-      }
-    ],
     "動態內容": [
       {
         "document": "advanced/i18n.md",
-        "line": 373,
+        "line": 532,
         "level": 3,
         "title": "動態內容"
       }
@@ -5294,6 +5300,14 @@
         "line": 468,
         "level": 3,
         "title": "卸載組件"
+      }
+    ],
+    "卸載翻譯": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 258,
+        "level": 3,
+        "title": "卸載翻譯"
       }
     ],
     "原始訊息傳送": [
@@ -5404,10 +5418,18 @@
         "title": "取得介面卡"
       }
     ],
+    "取得方法詳細資訊": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 87,
+        "level": 3,
+        "title": "取得方法詳細資訊"
+      }
+    ],
     "可用屬性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 505,
+        "line": 539,
         "level": 3,
         "title": "可用屬性"
       }
@@ -5616,12 +5638,12 @@
         "title": "單一方法註冊"
       }
     ],
-    "單帳戶配置": [
+    "單帳號配置": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 305,
         "level": 4,
-        "title": "單帳戶配置"
+        "title": "單帳號配置"
       }
     ],
     "嚴格模式": [
@@ -5788,12 +5810,12 @@
         "title": "在模組中使用 i18n"
       }
     ],
-    "在模組類別中使用": [
+    "在模組類中使用": [
       {
         "document": "advanced/i18n.md",
-        "line": 116,
+        "line": 224,
         "level": 3,
-        "title": "在模組類別中使用"
+        "title": "在模組類中使用"
       }
     ],
     "在程式碼中使用": [
@@ -5812,6 +5834,14 @@
         "title": "在程式碼中手動切換"
       }
     ],
+    "在適配器中使用": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 153,
+        "level": 4,
+        "title": "在適配器中使用"
+      }
+    ],
     "型別註解": [
       {
         "document": "terminology.md",
@@ -5826,14 +5856,6 @@
         "line": 222,
         "level": 2,
         "title": "執行時細粒度控制"
-      }
-    ],
-    "執行時配置": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 325,
-        "level": 2,
-        "title": "執行時配置"
       }
     ],
     "執行模式": [
@@ -5871,7 +5893,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 171,
+        "line": 212,
         "level": 3,
         "title": "基本使用"
       }
@@ -5919,7 +5941,7 @@
     "基本方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 529,
+        "line": 563,
         "level": 3,
         "title": "基本方法"
       }
@@ -6151,7 +6173,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 734,
+        "line": 768,
         "level": 2,
         "title": "多帳戶支援"
       }
@@ -6165,12 +6187,6 @@
       }
     ],
     "多帳戶配置": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 334,
-        "level": 4,
-        "title": "多帳戶配置"
-      },
       {
         "document": "platform-guide/ideaura.md",
         "line": 324,
@@ -6200,6 +6216,14 @@
         "title": "多帳號設定"
       }
     ],
+    "多帳號配置": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 334,
+        "level": 4,
+        "title": "多帳號配置"
+      }
+    ],
     "多平台適配": [
       {
         "document": "getting-started/common-tasks.md",
@@ -6219,7 +6243,7 @@
     "多語言覆蓋": [
       {
         "document": "advanced/i18n.md",
-        "line": 369,
+        "line": 528,
         "level": 3,
         "title": "多語言覆蓋"
       }
@@ -6408,6 +6432,14 @@
         "title": "存儲配置"
       }
     ],
+    "存取核心模組": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 56,
+        "level": 3,
+        "title": "存取核心模組"
+      }
+    ],
     "學習路徑": [
       {
         "document": "getting-started/README.md",
@@ -6427,7 +6459,7 @@
     "安全性": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 325,
+        "line": 356,
         "level": 2,
         "title": "安全性"
       }
@@ -6589,9 +6621,43 @@
     "宣告 i18n 欄位": [
       {
         "document": "advanced/i18n.md",
-        "line": 175,
+        "line": 282,
         "level": 3,
         "title": "宣告 i18n 欄位"
+      }
+    ],
+    "宣告式翻譯鍵（v2.7.0+）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 445,
+        "level": 3,
+        "title": "宣告式翻譯鍵（v2.7.0+）"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 64,
+        "level": 3,
+        "title": "宣告式翻譯鍵（v2.7.0+）"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 150,
+        "level": 3,
+        "title": "宣告式翻譯鍵（v2.7.0+）"
+      }
+    ],
+    "宣告式配置（推薦）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 770,
+        "level": 3,
+        "title": "宣告式配置（推薦）"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 105,
+        "level": 3,
+        "title": "宣告式配置（推薦）"
       }
     ],
     "富媒體訊息轉換示例": [
@@ -6702,12 +6768,6 @@
         "title": "工作原理"
       },
       {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 218,
-        "level": 3,
-        "title": "工作原理"
-      },
-      {
         "document": "getting-started/ide-completion.md",
         "line": 38,
         "level": 2,
@@ -6761,7 +6821,7 @@
     "帳戶解析": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 445,
+        "line": 479,
         "level": 4,
         "title": "帳戶解析"
       }
@@ -6777,7 +6837,7 @@
     "帳戶配置檔案": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 763,
+        "line": 797,
         "level": 3,
         "title": "帳戶配置檔案"
       }
@@ -7130,12 +7190,12 @@
         "title": "引導式註冊"
       }
     ],
-    "從 SDK 實例訪問": [
+    "從 SDK 實例存取": [
       {
         "document": "advanced/i18n.md",
-        "line": 313,
+        "line": 471,
         "level": 3,
-        "title": "從 SDK 實例訪問"
+        "title": "從 SDK 實例存取"
       }
     ],
     "從本機安裝": [
@@ -7208,12 +7268,12 @@
         "title": "必填欄位映射"
       }
     ],
-    "必需欄位": [
+    "必需字段": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 579,
+        "line": 613,
         "level": 3,
-        "title": "必需欄位"
+        "title": "必需字段"
       }
     ],
     "快速入門": [
@@ -7310,20 +7370,20 @@
         "title": "快速體驗"
       }
     ],
-    "慢加載機制": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 216,
-        "level": 2,
-        "title": "慢加載機制"
-      }
-    ],
     "慢載模組系統": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 1,
         "level": 1,
         "title": "慢載模組系統"
+      }
+    ],
+    "懶載入機制": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 257,
+        "level": 2,
+        "title": "懶載入機制"
       }
     ],
     "懶載入系統": [
@@ -7337,7 +7397,7 @@
     "成功回應": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 704,
+        "line": 738,
         "level": 3,
         "title": "成功回應"
       }
@@ -7377,15 +7437,23 @@
     "手動建構回應（舊版方式仍然相容）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 720,
+        "line": 754,
         "level": 3,
         "title": "手動建構回應（舊版方式仍然相容）"
+      }
+    ],
+    "手動註冊自定義翻譯（舊寫法）": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 187,
+        "level": 3,
+        "title": "手動註冊自定義翻譯（舊寫法）"
       }
     ],
     "手動讀取配置（相容方式）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 150,
+        "line": 191,
         "level": 3,
         "title": "手動讀取配置（相容方式）"
       }
@@ -7501,7 +7569,7 @@
     "指定帳戶發送": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 777,
+        "line": 811,
         "level": 3,
         "title": "指定帳戶發送"
       }
@@ -7590,6 +7658,14 @@
         "line": 121,
         "level": 3,
         "title": "推薦停用慢載的場景（lazy_load=False）"
+      }
+    ],
+    "推薦寫法：透過 I18nClass 聲明翻譯鍵（v2.7.0+）": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 81,
+        "level": 3,
+        "title": "推薦寫法：透過 I18nClass 聲明翻譯鍵（v2.7.0+）"
       }
     ],
     "提供的工具": [
@@ -7693,7 +7769,7 @@
     "支援的 i18n 欄位": [
       {
         "document": "advanced/i18n.md",
-        "line": 164,
+        "line": 271,
         "level": 3,
         "title": "支援的 i18n 欄位"
       }
@@ -7818,12 +7894,12 @@
         "title": "收集表單 (collect)"
       }
     ],
-    "效能最佳化": [
+    "效能優化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 288,
+        "line": 319,
         "level": 2,
-        "title": "效能最佳化"
+        "title": "效能優化"
       }
     ],
     "整批規則與回調": [
@@ -8133,7 +8209,7 @@
     "日誌訊息": [
       {
         "document": "advanced/i18n.md",
-        "line": 385,
+        "line": 544,
         "level": 3,
         "title": "日誌訊息"
       }
@@ -8141,13 +8217,13 @@
     "日誌記錄": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 254,
+        "line": 285,
         "level": 2,
         "title": "日誌記錄"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 256,
+        "line": 297,
         "level": 3,
         "title": "日誌記錄"
       }
@@ -8209,7 +8285,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 357,
+        "line": 516,
         "level": 2,
         "title": "最佳實踐"
       },
@@ -8475,7 +8551,7 @@
     "核心方法": [
       {
         "document": "advanced/i18n.md",
-        "line": 281,
+        "line": 396,
         "level": 4,
         "title": "核心方法"
       },
@@ -8571,7 +8647,7 @@
     "框架輔助方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 522,
+        "line": 556,
         "level": 3,
         "title": "框架輔助方法"
       }
@@ -8900,12 +8976,12 @@
         "title": "模組開發最佳實踐"
       }
     ],
-    "模組間通信": [
+    "模組間通訊": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 67,
         "level": 3,
-        "title": "模組間通信"
+        "title": "模組間通訊"
       }
     ],
     "機器人公告看板事件示例": [
@@ -9143,7 +9219,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 362,
+        "line": 393,
         "level": 2,
         "title": "測試"
       }
@@ -9170,6 +9246,14 @@
         "line": 9,
         "level": 3,
         "title": "瀏覽與發現"
+      }
+    ],
+    "為什麼推薦 I18nClass？": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 137,
+        "level": 4,
+        "title": "為什麼推薦 I18nClass？"
       }
     ],
     "為什麼需要標準？": [
@@ -9342,14 +9426,6 @@
         "title": "獲取幫助"
       }
     ],
-    "獲取方法詳細資訊": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 87,
-        "level": 3,
-        "title": "獲取方法詳細資訊"
-      }
-    ],
     "獲取目標 ID": [
       {
         "document": "advanced/session-types.md",
@@ -9478,12 +9554,14 @@
         "line": 384,
         "level": 3,
         "title": "異常捕獲"
-      },
+      }
+    ],
+    "異常擷取": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 241,
+        "line": 282,
         "level": 3,
-        "title": "異常捕獲"
+        "title": "異常擷取"
       }
     ],
     "異常體系": [
@@ -9731,7 +9809,7 @@
     "監聽 Bot 生命週期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 950,
+        "line": 984,
         "level": 3,
         "title": "監聽 Bot 生命週期"
       }
@@ -9897,7 +9975,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 968,
+        "line": 1002,
         "level": 2,
         "title": "相關文件"
       },
@@ -9908,14 +9986,8 @@
         "title": "相關文件"
       },
       {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 422,
-        "level": 2,
-        "title": "相關文件"
-      },
-      {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 267,
+        "line": 308,
         "level": 2,
         "title": "相關文件"
       },
@@ -9968,6 +10040,12 @@
         "line": 327,
         "level": 2,
         "title": "相關文檔"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 453,
+        "level": 2,
+        "title": "相關文檔"
       }
     ],
     "相關連結": [
@@ -10010,12 +10088,12 @@
         "title": "程式碼說明"
       }
     ],
-    "立即加載": [
+    "立即載入": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 226,
+        "line": 267,
         "level": 3,
-        "title": "立即加載"
+        "title": "立即載入"
       }
     ],
     "第一步：建立專案": [
@@ -10261,7 +10339,7 @@
     "繼承關係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 496,
+        "line": 530,
         "level": 3,
         "title": "繼承關係"
       }
@@ -10341,23 +10419,9 @@
     "翻譯鍵命名": [
       {
         "document": "advanced/i18n.md",
-        "line": 359,
+        "line": 518,
         "level": 3,
         "title": "翻譯鍵命名"
-      }
-    ],
-    "聲明式配置（推薦）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 736,
-        "level": 3,
-        "title": "聲明式配置（推薦）"
-      },
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 105,
-        "level": 3,
-        "title": "聲明式配置（推薦）"
       }
     ],
     "背景執行": [
@@ -10387,7 +10451,7 @@
     "自動發現機制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 865,
+        "line": 899,
         "level": 3,
         "title": "自動發現機制"
       }
@@ -10427,7 +10491,7 @@
     "與 CLI i18n 的關係": [
       {
         "document": "advanced/i18n.md",
-        "line": 395,
+        "line": 554,
         "level": 2,
         "title": "與 CLI i18n 的關係"
       }
@@ -10638,14 +10702,6 @@
         "title": "規則組合與背景執行"
       }
     ],
-    "解除註冊翻譯": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 151,
-        "level": 3,
-        "title": "解除註冊翻譯"
-      }
-    ],
     "觸發": [
       {
         "document": "advanced/lifecycle.md",
@@ -10852,14 +10908,6 @@
         "title": "訊息過濾"
       }
     ],
-    "訪問核心模組": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 56,
-        "level": 3,
-        "title": "訪問核心模組"
-      }
-    ],
     "設定": [
       {
         "document": "terminology.md",
@@ -10958,14 +11006,6 @@
         "title": "註冊命令"
       }
     ],
-    "註冊自訂翻譯": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 81,
-        "level": 3,
-        "title": "註冊自訂翻譯"
-      }
-    ],
     "註冊與取消": [
       {
         "document": "advanced/lifecycle.md",
@@ -10993,7 +11033,7 @@
     "註冊配置翻譯": [
       {
         "document": "advanced/i18n.md",
-        "line": 228,
+        "line": 335,
         "level": 3,
         "title": "註冊配置翻譯"
       }
@@ -11030,20 +11070,20 @@
         "title": "認證與 API 呼叫"
       }
     ],
-    "語言偵測機制": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 54,
-        "level": 2,
-        "title": "語言偵測機制"
-      }
-    ],
     "語言命令": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 335,
         "level": 2,
         "title": "語言命令"
+      }
+    ],
+    "語言檢測機制": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 54,
+        "level": 2,
+        "title": "語言檢測機制"
       }
     ],
     "調試技巧": [
@@ -11322,6 +11362,12 @@
     ],
     "載入策略": [
       {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 7,
+        "level": 3,
+        "title": "載入策略"
+      },
+      {
         "document": "getting-started/basic-concepts.md",
         "line": 141,
         "level": 4,
@@ -11336,18 +11382,18 @@
         "title": "輸出控制"
       }
     ],
-    "轉換器範例": [
+    "轉換器示例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 599,
+        "line": 633,
         "level": 3,
-        "title": "轉換器範例"
+        "title": "轉換器示例"
       }
     ],
     "轉換流程": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 569,
+        "line": 603,
         "level": 3,
         "title": "轉換流程"
       }
@@ -11427,17 +11473,17 @@
     "透過配置 API 讀取 i18n 配置": [
       {
         "document": "advanced/i18n.md",
-        "line": 327,
+        "line": 485,
         "level": 3,
         "title": "透過配置 API 讀取 i18n 配置"
       }
     ],
-    "透過配置檔案切換": [
+    "透過配置文件切換": [
       {
         "document": "advanced/i18n.md",
         "line": 28,
         "level": 3,
-        "title": "透過配置檔案切換"
+        "title": "透過配置文件切換"
       }
     ],
     "通用 request": [
@@ -11599,7 +11645,7 @@
     "連接管理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 640,
+        "line": 674,
         "level": 2,
         "title": "連接管理"
       }
@@ -11607,7 +11653,7 @@
     "連接重試": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 809,
+        "line": 843,
         "level": 3,
         "title": "連接重試"
       }
@@ -11664,6 +11710,12 @@
         "line": 14,
         "level": 2,
         "title": "運作原理"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 259,
+        "level": 3,
+        "title": "運作原理"
       }
     ],
     "運行專案": [
@@ -11680,6 +11732,14 @@
         "line": 220,
         "level": 2,
         "title": "運行控制命令"
+      }
+    ],
+    "運行時配置": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 483,
+        "level": 2,
+        "title": "運行時配置"
       }
     ],
     "運行測試": [
@@ -11799,17 +11859,9 @@
     "適配器發送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 891,
+        "line": 925,
         "level": 3,
         "title": "適配器發送 Meta 事件"
-      }
-    ],
-    "適配器發送方法查詢": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 75,
-        "level": 2,
-        "title": "適配器發送方法查詢"
       }
     ],
     "適配器簡介": [
@@ -11885,7 +11937,7 @@
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 393,
+        "line": 424,
         "level": 2,
         "title": "部署"
       }
@@ -11965,7 +12017,7 @@
     "配置欄位多語言": [
       {
         "document": "advanced/i18n.md",
-        "line": 160,
+        "line": 267,
         "level": 2,
         "title": "配置欄位多語言"
       }
@@ -11973,7 +12025,7 @@
     "配置熱更新": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 458,
+        "line": 492,
         "level": 4,
         "title": "配置熱更新"
       }
@@ -12075,9 +12127,17 @@
     "配置項說明": [
       {
         "document": "advanced/i18n.md",
-        "line": 339,
+        "line": 498,
         "level": 3,
         "title": "配置項說明"
+      }
+    ],
+    "配適器發送方法查詢": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 75,
+        "level": 2,
+        "title": "配適器發送方法查詢"
       }
     ],
     "重啟": [
@@ -12155,19 +12215,19 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 807,
+        "line": 841,
         "level": 2,
         "title": "錯誤處理"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 181,
+        "line": 212,
         "level": 2,
         "title": "錯誤處理"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 239,
+        "line": 280,
         "level": 2,
         "title": "錯誤處理"
       },
@@ -12201,7 +12261,7 @@
     "鏈式修飾方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 553,
+        "line": 587,
         "level": 3,
         "title": "鏈式修飾方法"
       },
@@ -12498,16 +12558,18 @@
     ],
     "非同步程式設計": [
       {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 64,
-        "level": 2,
-        "title": "非同步程式設計"
-      },
-      {
         "document": "terminology.md",
         "line": 49,
         "level": 3,
         "title": "非同步程式設計"
+      }
+    ],
+    "非同步編程": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 95,
+        "level": 2,
+        "title": "非同步編程"
       }
     ],
     "非同步處理機制": [
