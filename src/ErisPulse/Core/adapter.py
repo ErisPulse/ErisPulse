@@ -206,7 +206,9 @@ class AdapterManager(ManagerBase):
         get_key = getattr(instance, "_get_config_key", None)
         if callable(get_key):
             try:
-                return get_key()
+                result = get_key()
+                if isinstance(result, str):
+                    return result
             except Exception:
                 pass
         return instance.__class__.__name__
@@ -337,6 +339,17 @@ class AdapterManager(ManagerBase):
                     instance = adapter_class()
 
                 instance._platform = platform
+
+                # 注册适配器声明的 EventMixin（需先注入 _platform）
+                if hasattr(instance, "_ensure_event_mixin_registered"):
+                    try:
+                        instance._ensure_event_mixin_registered()
+                    except Exception:
+                        logger.debug(
+                            f"适配器 {platform} EventMixin 注册异常",
+                            exc_info=True,
+                        )
+
                 self._adapters[platform] = instance
             except SystemExit as e:
                 logger.error(

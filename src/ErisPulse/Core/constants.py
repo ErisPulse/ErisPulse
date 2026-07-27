@@ -485,6 +485,19 @@ CONFIRM_HINT_WORDS: Final[dict[str, tuple[str, str]]] = {
 }
 
 # ==============================================================================
+# 适配器 EventMixin 注册规则
+#
+# 适配器声明 EventMixin 时，框架自动注册到自身平台（_platform）。
+# 模块不使用 EventMixin，模块如需跨平台事件扩展请使用旧有的 register_event_mixin() API。
+# 使用位置: Core/Bases/adapter.py -> _ensure_event_mixin_registered()
+# ==============================================================================
+
+# 适配器声明 EventMixin 时默认注册到的平台标识。
+# "_self" 是特殊值，表示使用适配器自身的 _platform 属性。
+# 修改影响: 适配器的 EventMixin 默认注册到哪个平台。
+ADAPTER_EVENT_MIXIN_PLATFORM: Final[str] = "_self"
+
+# ==============================================================================
 # 框架管理默认值
 #
 # 控制模块/适配器的注册和加载行为。
@@ -622,6 +635,7 @@ DEFAULT_PROACTIVE_GC_INTERVAL_SECS: Final[int] = 300
 DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS: Final[float] = 5.0
 
 __all__ = [
+    "ADAPTER_EVENT_MIXIN_PLATFORM",
     "ADAPTER_RETRY_BACKOFF_INTERVALS",
     "ADAPTER_RETRY_FIXED_DELAY_SECS",
     "CONFIG_CACHE_TIMEOUT_SECS",

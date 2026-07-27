@@ -67,7 +67,7 @@
 > 开发版本
 
 **版本摘要**
-i18n 键声明式注册 + Schema 定义源迁移版本：(1) 新增 `I18nClass` 嵌套类机制，让模块/适配器能像声明 `ConfigClass` 一样集中声明翻译键，框架在初始化阶段（早于配置模板生成）自动注册；(2) **Schema 定义从 `runtime/` 迁移到 `Core/Bases/`**，确立 ``Bases`` 为「供应方」的架构层级——`BaseConfig` / `BaseI18n` 等基类定义在 Bases，`runtime/` 仅保留工具函数与向后兼容 shim。
+i18n 键声明式注册 + Schema 定义源迁移 + 适配器 EventMixin 自动注册版本：(1) 新增 `I18nClass` 嵌套类机制，让模块/适配器能像声明 `ConfigClass` 一样集中声明翻译键，框架在初始化阶段（早于配置模板生成）自动注册；(2) **Schema 定义从 `runtime/` 迁移到 `Core/Bases/`**，确立 ``Bases`` 为「供应方」的架构层级——`BaseConfig` / `BaseI18n` 等基类定义在 Bases，`runtime/` 仅保留工具函数与向后兼容 shim；(3) 新增 `BaseAdapter.EventMixin` 嵌套类机制，适配器声明后框架自动注册到自身平台。
 
 **升级建议**
 - **建议升级**
@@ -90,6 +90,10 @@ i18n 键声明式注册 + Schema 定义源迁移版本：(1) 新增 `I18nClass` 
 - 示例项目 `example-module` / `example-adapter` 改为从 `Core.Bases` 统一导入，并补充 `I18nClass` 推荐写法演示
 - CLI 脚手架模板 `_MODULE_CORE` / `_ADAPTER_CORE` 同步从 `Core.Bases` 导入并生成 `I18nClass` 示例代码
 - 单元测试 `tests/unit/test_unit_i18n_schema.py`（26 个用例）：覆盖 I18nKey 构造、BaseI18n 集合行为、register() 语义、BaseModule/BaseAdapter 集成、i18n 优先于配置生成、Bases/runtime 导出一致性等场景
+- `BaseAdapter.EventMixin`：新增可选嵌套类属性，适配器声明后框架在 `AdapterManager` 注入 `_platform` 后自动注册到适配器自身平台
+  - `BaseAdapter._ensure_event_mixin_registered()`：内部方法，将 `EventMixin` 注册到 `self._platform`（或 `*` 通配符当平台未就绪时）
+  - `AdapterManager.register_adapter()` 中新增 EventMixin 注册步骤（在 `instance._platform` 注入后立即执行）
+- `Core/constants.py` 新增 `ADAPTER_EVENT_MIXIN_PLATFORM` 常量，标识适配器 EventMixin 默认注册到自身平台 (`"_self"`)
 
 ### 变更
 
@@ -101,6 +105,7 @@ i18n 键声明式注册 + Schema 定义源迁移版本：(1) 新增 `I18nClass` 
 ### 优化
 
 - `docs/zh-CN/advanced/i18n.md` 新增「推荐写法：通过 I18nClass 声明翻译键」章节与 `BaseI18n`/`I18nKey` API 参考
+- `docs/zh-CN/developer-guide/adapters/core-concepts.md` 新增 EventMixin 章节，说明适配器事件扩展方法的注册机制
 
 ---
 
