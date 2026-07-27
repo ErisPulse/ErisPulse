@@ -933,6 +933,19 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
+##### `_ensure_event_mixin_registered()`
+
+注册 EventMixin 中声明的事件扩展方法
+
+适配器声明 ``EventMixin`` 时，框架自动将其注册到适配器的平台
+（即 ``self._platform``），而不是通配符。
+
+> **内部方法**
+由 __init__() 隐式调用。
+
+---
+
+
 ##### `_ensure_accounts_exist()`
 
 确保多账户配置模板存在，不存在则生成默认账户配置
