@@ -8,19 +8,9 @@ ErisPulse 运行时配置和管理模块
 {!--< /tips >!--}
 """
 
-from .config_schema import (
-    AdapterConfig,
-    BaseConfig,
-    BotAccountConfig,
-    I18nConfig,
-    dataclass_to_defaults_dict,
-    dataclass_to_toml_with_comments,
-    dict_to_dataclass,
-    get_config_schema,
-    register_config_i18n,
-    resolve_config_schema,
-    validate_config,
-)
+# config_schema 的符号通过 __getattr__ 懒加载
+# （避免在 runtime 初始化阶段触发 Core.Bases 完整加载链，导致循环引用）
+# 注意：i18n_schema 的 BaseI18n / I18nKey 已不再从 runtime 导出，请从 Core.Bases 导入
 from .exceptions import (
     ExceptionHandler,
     async_exception_handler,
@@ -57,7 +47,6 @@ __all__ = [
     "BotAccountConfig",
     # 异常处理
     "ExceptionHandler",
-    "I18nConfig",
     "async_exception_handler",
     "best_match",
     "best_match_with_prefix",
@@ -85,3 +74,32 @@ __all__ = [
     "update_erispulse_config",
     "validate_config",
 ]
+
+
+# config_schema 中定义的符号采用懒加载
+# 这些类型/函数的实际定义在 Core.Bases 包中，立即导入会触发
+# Core.Bases.__init__ → module → loaders → lifecycle → runtime 的循环引用
+# （i18n_schema 的 BaseI18n / I18nKey 不再从 runtime 导出，请从 Core.Bases 导入）
+_LAZY_FROM_CONFIG_SCHEMA = {
+    "AdapterConfig",
+    "BaseConfig",
+    "BotAccountConfig",
+    "dataclass_to_defaults_dict",
+    "dataclass_to_toml_with_comments",
+    "dict_to_dataclass",
+    "get_config_schema",
+    "register_config_i18n",
+    "resolve_config_schema",
+    "validate_config",
+}
+
+
+def __getattr__(name: str):
+    """首次访问时从 Core.Bases.config_schema 懒加载 Schema 类型与工具函数"""
+    if name in _LAZY_FROM_CONFIG_SCHEMA:
+        from ..Core.Bases.config_schema import __dict__ as _src
+
+        if name in _src:
+            globals()[name] = _src[name]
+            return _src[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

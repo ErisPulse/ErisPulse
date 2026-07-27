@@ -965,11 +965,13 @@ class BaseAdapter(ABC):
     7. 通过 self.cfg / self.accounts 访问类型安全的配置对象（实时读取）
     8. 通过 self.emit_meta() 发送 meta 事件
     9. 通过 self.make_response() / self.make_error() 构造标准化响应
+    10. 通过 I18nClass 声明翻译键集合，框架自动注册到 i18n 系统
     {!--< /tips >!--}
     """
 
     ConfigClass: type | None = None
     AccountConfigClass: type | None = None
+    I18nClass: type | None = None
 
     _platform: str = ""
     _sdk: Any = None
@@ -1105,6 +1107,9 @@ class BaseAdapter(ABC):
         self._config_instance = None
         self._accounts_data = None
 
+        # 注册 I18nClass 中声明的翻译键（在生成配置之前）
+        self._ensure_i18n_registered()
+
         # 初始化时确保配置模板存在
         if self.ConfigClass is not None:
             self._ensure_config_exists()
@@ -1196,8 +1201,8 @@ class BaseAdapter(ABC):
                 "未声明 ConfigClass，请设置 MyAdapter.ConfigClass = MyConfig"
             )
 
-        from ...runtime.config_schema import dict_to_dataclass
         from ..config import config as config_mgr
+        from .config_schema import dict_to_dataclass
 
         data = config_mgr.getConfig(self._get_config_key())
         if data is None:
@@ -1248,8 +1253,8 @@ class BaseAdapter(ABC):
                 "未声明 AccountConfigClass，请设置 MyAdapter.AccountConfigClass = MyBotConfig"
             )
 
-        from ...runtime.config_schema import dict_to_dataclass, validate_config
         from ..config import config as config_mgr
+        from .config_schema import dict_to_dataclass, validate_config
 
         key = f"{self._get_config_key()}.accounts"
         data = config_mgr.getConfig(key)
@@ -1334,15 +1339,20 @@ class BaseAdapter(ABC):
         确保全局配置模板存在，不存在则生成默认配置
 
         {!--< internal-use >!--}
+        会先行调用 _ensure_i18n_registered() 注册声明的翻译键，
+        确保配置描述引用的 i18n 键在生成模板时已可用。
         {!--< /internal-use >!--}
         """
+        # 先行注册 i18n 键（在生成配置之前），保证配置描述中的 i18n 键可用
+        self._ensure_i18n_registered()
+
         if self.ConfigClass is None:
             return
-        from ...runtime.config_schema import (
+        from ..config import config as config_mgr
+        from .config_schema import (
             dataclass_to_defaults_dict,
             dataclass_to_toml_with_comments,
         )
-        from ..config import config as config_mgr
 
         key = self._get_config_key()
         data = config_mgr.getConfig(key)
@@ -1353,6 +1363,36 @@ class BaseAdapter(ABC):
             config_mgr.setConfig(key, data, immediate=True)
             self._get_logger().info(f"已生成 {key} 默认配置模板:\n{toml_str}")
 
+    def _ensure_i18n_registered(self):
+        """
+        注册 I18nClass 中声明的翻译键到 i18n 系统
+
+        使用适配器配置键名（默认为类名）作为键名前缀和 domain，便于统一卸载。
+        方法是幂等的，多次调用不会产生副作用（重复注册会覆盖旧值）。
+
+        {!--< internal-use >!--}
+        由 __init__() 在生成配置之前隐式调用。
+        {!--< /internal-use >!--}
+        """
+        if self.I18nClass is None:
+            return
+        from .i18n_schema import BaseI18n
+
+        if not isinstance(self.I18nClass, type) or not issubclass(self.I18nClass, BaseI18n):
+            # 非法声明静默跳过（避免影响适配器初始化流程）
+            return
+
+        prefix = f"{self._get_config_key()}."
+        domain = self._get_config_key()
+        try:
+            self.I18nClass.register(prefix=prefix, domain=domain)
+        except Exception:
+            # i18n 注册失败不应中断适配器初始化
+            self._get_logger().debug(
+                f"{self.__class__.__name__}.I18nClass.register() 失败",
+                exc_info=True,
+            )
+
     def _ensure_accounts_exist(self):
         """
         确保多账户配置模板存在，不存在则生成默认账户配置
@@ -1362,8 +1402,8 @@ class BaseAdapter(ABC):
         """
         if self.AccountConfigClass is None:
             return
-        from ...runtime.config_schema import dataclass_to_defaults_dict
         from ..config import config as config_mgr
+        from .config_schema import dataclass_to_defaults_dict
 
         key = f"{self._get_config_key()}.accounts"
         data = config_mgr.getConfig(key)

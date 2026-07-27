@@ -31,10 +31,12 @@ class BaseModule(ABC):
     2. 可通过 ConfigClass 声明配置类，框架自动管理配置
     3. 通过 self.cfg 访问类型安全的配置对象（实时读取）
     4. 可覆写 on_config_update() 响应配置热更新
+    5. 可通过 I18nClass 声明翻译键集合，框架自动注册到 i18n 系统
     {!--< /tips >!--}
     """
 
     ConfigClass: type | None = None
+    I18nClass: type | None = None
 
     @staticmethod
     def get_load_strategy() -> ModuleLoadStrategy | dict[str, Any]:
@@ -143,14 +145,19 @@ class BaseModule(ABC):
         确保配置模板存在，不存在则生成默认配置
 
         {!--< internal-use >!--}
+        会先行调用 _ensure_i18n_registered() 注册声明的翻译键，
+        确保配置描述引用的 i18n 键在生成模板时已可用。
         {!--< /internal-use >!--}
         """
+        # 先行注册 i18n 键（在生成配置之前），保证配置描述中的 i18n 键可用
+        self._ensure_i18n_registered()
+
         if self.ConfigClass is None:
             return
-        from ...runtime.config_schema import (
+        from ..config import config as config_mgr
+        from .config_schema import (
             dataclass_to_defaults_dict,
         )
-        from ..config import config as config_mgr
 
         key = self._get_config_key()
         data = config_mgr.getConfig(key)
@@ -164,6 +171,33 @@ class BaseModule(ABC):
                 logger.info(f"已生成 {key} 默认配置模板")
             except ImportError:
                 pass
+
+    def _ensure_i18n_registered(self):
+        """
+        注册 I18nClass 中声明的翻译键到 i18n 系统
+
+        使用模块注册名作为键名前缀和 domain，便于统一卸载。
+        方法是幂等的，多次调用不会产生副作用（重复注册会覆盖旧值）。
+
+        {!--< internal-use >!--}
+        由 ModuleManager.load() 或首次访问 self.cfg 时隐式调用。
+        {!--< /internal-use >!--}
+        """
+        if self.I18nClass is None:
+            return
+        from .i18n_schema import BaseI18n
+
+        if not isinstance(self.I18nClass, type) or not issubclass(self.I18nClass, BaseI18n):
+            # 非法声明静默跳过（避免影响模块加载流程）
+            return
+
+        prefix = f"{self._get_config_key()}."
+        domain = self._get_config_key()
+        try:
+            self.I18nClass.register(prefix=prefix, domain=domain)
+        except Exception:
+            # i18n 注册失败不应中断模块初始化
+            pass
 
     @property
     def cfg(self):
@@ -180,8 +214,8 @@ class BaseModule(ABC):
             raise AttributeError(
                 "未声明 ConfigClass，请设置 MyModule.ConfigClass = MyConfig"
             )
-        from ...runtime.config_schema import dict_to_dataclass
         from ..config import config as config_mgr
+        from .config_schema import dict_to_dataclass
 
         data = config_mgr.getConfig(self._get_config_key())
         if data is None:

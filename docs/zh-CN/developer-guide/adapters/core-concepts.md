@@ -442,6 +442,40 @@ MyConfig._schema_meta = {
 框架的 `resolve_config_schema()` 会根据当前语言自动解析上述所有字段的 i18n 键；
 `get_config_schema()` 则原样透传 i18n 字典，由前端自行解析。
 
+### 声明式翻译键（v2.7.0+）
+
+适配器可以像声明 `ConfigClass` 一样，通过嵌套类 `I18nClass` 集中声明翻译键。
+框架会在 `__init__` 阶段（配置模板生成之前）自动注册所有声明的翻译键，
+确保配置描述中引用的 i18n 键在生成模板时已可用。
+
+```python
+from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
+
+class MyAdapter(BaseAdapter):
+    class I18nClass(BaseI18n):
+        endpoint: I18nKey = I18nKey(
+            default="API Endpoint",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
+            en="API Endpoint",
+            ja="APIアドレス",
+            ru="API адрес",
+        )
+        token: I18nKey = I18nKey(
+            default="Platform Token",
+            zh_CN="平台 Token",
+            zh_TW="平台權杖",
+            en="Platform Token",
+            ja="プラットフォームトークン",
+            ru="Токен платформы",
+        )
+```
+
+> ``I18nKey.default`` 是**语言无关的兜底文本**，不会注册到任何语言。
+> 要让翻译生效，必须显式传入至少一个语言参数。
+
+详细用法（键路径规则、显式 key 参数等）见 [i18n 文档](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
+
 #### 账户解析
 
 多账户适配器可使用 `_resolve_account()` 自动解析目标账户：
