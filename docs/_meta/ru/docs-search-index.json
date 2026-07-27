@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1411,
+  "total_keywords": 1413,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -1945,7 +1945,7 @@
     "AdapterManager (менеджер адаптеров)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 45,
+        "line": 46,
         "level": 2,
         "title": "AdapterManager (менеджер адаптеров)"
       }
@@ -1953,7 +1953,7 @@
     "BaseAdapter (базовый класс)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 256,
+        "line": 257,
         "level": 2,
         "title": "BaseAdapter (базовый класс)"
       }
@@ -2009,7 +2009,7 @@
     "DSL для отправки сообщений Send": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 526,
+        "line": 560,
         "level": 2,
         "title": "DSL для отправки сообщений Send"
       }
@@ -2305,7 +2305,7 @@
     "WebHook подключение": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 708,
+        "line": 742,
         "level": 3,
         "title": "WebHook подключение"
       }
@@ -2321,7 +2321,7 @@
     "WebSocket подключение": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 674,
+        "line": 708,
         "level": 3,
         "title": "WebSocket подключение"
       }
@@ -2885,7 +2885,7 @@
     "Автоматическая обнаружение": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 897,
+        "line": 931,
         "level": 3,
         "title": "Автоматическая обнаружение"
       }
@@ -3471,7 +3471,7 @@
     "Вспомогательные методы фреймворка": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 554,
+        "line": 588,
         "level": 3,
         "title": "Вспомогательные методы фреймворка"
       }
@@ -3636,14 +3636,6 @@
         "title": "Глобальные параметры"
       }
     ],
-    "Горячая замена конфигурации": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 490,
-        "level": 4,
-        "title": "Горячая замена конфигурации"
-      }
-    ],
     "Горячая остановка и запуск адаптеров": [
       {
         "document": "advanced/startup.md",
@@ -3658,6 +3650,14 @@
         "line": 54,
         "level": 3,
         "title": "Горячая перезагрузка (Hot Reload)"
+      }
+    ],
+    "Горячая перезагрузка конфигурации": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 523,
+        "level": 4,
+        "title": "Горячая перезагрузка конфигурации"
       }
     ],
     "Группировка в боковой панели": [
@@ -3763,7 +3763,7 @@
     "Декларативная конфигурация (рекомендуется)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 768,
+        "line": 802,
         "level": 3,
         "title": "Декларативная конфигурация (рекомендуется)"
       },
@@ -3774,10 +3774,18 @@
         "title": "Декларативная конфигурация (рекомендуется)"
       }
     ],
+    "Декларативное расширение событий (v2.7.0+)": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 478,
+        "level": 3,
+        "title": "Декларативное расширение событий (v2.7.0+)"
+      }
+    ],
     "Декларативные ключи перевода (v2.7.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 444,
+        "line": 445,
         "level": 3,
         "title": "Декларативные ключи перевода (v2.7.0+)"
       },
@@ -3866,12 +3874,12 @@
         "title": "Добавление друга"
       }
     ],
-    "Добавление промежуточного ПО": [
+    "Добавление промежуточного обработчика": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 205,
+        "line": 206,
         "level": 4,
-        "title": "Добавление промежуточного ПО"
+        "title": "Добавление промежуточного обработчика"
       }
     ],
     "Документация": [
@@ -4065,7 +4073,7 @@
     "Доступ по свойству": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 248,
+        "line": 249,
         "level": 4,
         "title": "Доступ по свойству"
       }
@@ -4081,7 +4089,7 @@
     "Доступные свойства": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 537,
+        "line": 571,
         "level": 3,
         "title": "Доступные свойства"
       }
@@ -4260,12 +4268,6 @@
         "title": "Запрос состояния бота"
       },
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 959,
-        "level": 3,
-        "title": "Запрос состояния бота"
-      },
-      {
         "document": "getting-started/event-handling.md",
         "line": 278,
         "level": 3,
@@ -4299,7 +4301,7 @@
     "Запуск адаптера": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 84,
+        "line": 85,
         "level": 4,
         "title": "Запуск адаптера"
       }
@@ -4307,7 +4309,7 @@
     "Запуск и остановка": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 82,
+        "line": 83,
         "level": 3,
         "title": "Запуск и остановка"
       }
@@ -5162,14 +5164,6 @@
         "title": "Конвертация событий"
       }
     ],
-    "Конвертер событий": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 599,
-        "level": 2,
-        "title": "Конвертер событий"
-      }
-    ],
     "Контекст и сохранение состояния": [
       {
         "document": "advanced/conversation.md",
@@ -5236,22 +5230,6 @@
         "line": 480,
         "level": 2,
         "title": "Конфигурация во время выполнения"
-      }
-    ],
-    "Конфигурация для нескольких аккаунтов": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 333,
-        "level": 4,
-        "title": "Конфигурация для нескольких аккаунтов"
-      }
-    ],
-    "Конфигурация для одного аккаунта": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 304,
-        "level": 4,
-        "title": "Конфигурация для одного аккаунта"
       }
     ],
     "Конфигурация для продакшна": [
@@ -5352,6 +5330,22 @@
         "line": 396,
         "level": 3,
         "title": "Конфигурация прокси"
+      }
+    ],
+    "Конфигурация с несколькими аккаунтами": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 334,
+        "level": 4,
+        "title": "Конфигурация с несколькими аккаунтами"
+      }
+    ],
+    "Конфигурация с одним аккаунтом": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 305,
+        "level": 4,
+        "title": "Конфигурация с одним аккаунтом"
       }
     ],
     "Конфигурация сервера": [
@@ -5633,7 +5627,7 @@
     "Метод get()": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 240,
+        "line": 241,
         "level": 4,
         "title": "Метод get()"
       }
@@ -5900,14 +5894,6 @@
         "title": "Методы цепочки (можно комбинировать)"
       }
     ],
-    "Методы цепочки модификаторов": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 585,
-        "level": 3,
-        "title": "Методы цепочки модификаторов"
-      }
-    ],
     "Механизм heartbeat": [
       {
         "document": "platform-guide/discord.md",
@@ -5967,7 +5953,7 @@
     "Механизм распределения событий": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 189,
+        "line": 190,
         "level": 4,
         "title": "Механизм распределения событий"
       }
@@ -6205,7 +6191,7 @@
     "Наследование": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 528,
+        "line": 562,
         "level": 3,
         "title": "Наследование"
       }
@@ -6577,7 +6563,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 839,
+        "line": 873,
         "level": 2,
         "title": "Обработка ошибок"
       },
@@ -6609,7 +6595,7 @@
     "Обработка ошибок API": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 865,
+        "line": 899,
         "level": 3,
         "title": "Обработка ошибок API"
       }
@@ -6873,7 +6859,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 611,
+        "line": 645,
         "level": 3,
         "title": "Обязательные поля"
       }
@@ -7266,6 +7252,14 @@
         "title": "Опции команды"
       }
     ],
+    "Оригинальные события платформы": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 176,
+        "level": 4,
+        "title": "Оригинальные события платформы"
+      }
+    ],
     "Основа команды": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -7383,7 +7377,7 @@
     "Основная структура": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 258,
+        "line": 259,
         "level": 3,
         "title": "Основная структура"
       }
@@ -7403,7 +7397,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 57,
+        "line": 58,
         "level": 3,
         "title": "Основное использование"
       },
@@ -7493,7 +7487,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 561,
+        "line": 595,
         "level": 3,
         "title": "Основные методы"
       },
@@ -7649,7 +7643,7 @@
     "Основные функции": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 49,
+        "line": 50,
         "level": 3,
         "title": "Основные функции"
       }
@@ -7673,7 +7667,7 @@
     "Остановка адаптера": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 107,
+        "line": 108,
         "level": 4,
         "title": "Остановка адаптера"
       }
@@ -7749,7 +7743,7 @@
     "Отношение между self.user_id и Using": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 822,
+        "line": 856,
         "level": 3,
         "title": "Отношение между self.user_id и Using"
       }
@@ -7808,14 +7802,6 @@
         "title": "Отправка KMarkdown и карточных сообщений"
       }
     ],
-    "Отправка meta событий адаптером": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 923,
-        "level": 3,
-        "title": "Отправка meta событий адаптером"
-      }
-    ],
     "Отправка без ожидания результата": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -7870,6 +7856,14 @@
         "title": "Отправка медиа-сообщений"
       }
     ],
+    "Отправка мета-событий адаптером": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 957,
+        "level": 3,
+        "title": "Отправка мета-событий адаптером"
+      }
+    ],
     "Отправка ответа": [
       {
         "document": "getting-started/first-bot.md",
@@ -7881,7 +7875,7 @@
     "Отправка с указанием аккаунта": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 809,
+        "line": 843,
         "level": 3,
         "title": "Отправка с указанием аккаунта"
       }
@@ -8296,14 +8290,6 @@
         "title": "Платформо-специфичные ответы"
       }
     ],
-    "Платформо-специфичные события": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 175,
-        "level": 4,
-        "title": "Платформо-специфичные события"
-      }
-    ],
     "Повтор при ошибке + Отмена по тайм-ауту": [
       {
         "document": "getting-started/common-tasks.md",
@@ -8323,7 +8309,7 @@
     "Повторное подключение": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 841,
+        "line": 875,
         "level": 3,
         "title": "Повторное подключение"
       }
@@ -8511,7 +8497,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 766,
+        "line": 800,
         "level": 2,
         "title": "Поддержка нескольких аккаунтов"
       }
@@ -8579,7 +8565,7 @@
     "Подписка на жизненный цикл бота": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 982,
+        "line": 1016,
         "level": 3,
         "title": "Подписка на жизненный цикл бота"
       }
@@ -8595,7 +8581,7 @@
     "Подписка на события": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 152,
+        "line": 153,
         "level": 3,
         "title": "Подписка на события"
       }
@@ -8845,7 +8831,7 @@
     "Получение экземпляра адаптера": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 238,
+        "line": 239,
         "level": 3,
         "title": "Получение экземпляра адаптера"
       }
@@ -8882,12 +8868,12 @@
         "title": "Поля конфигурации аккаунта"
       }
     ],
-    "Порядок выполнения промежуточного ПО": [
+    "Порядок выполнения промежуточных обработчиков": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 223,
+        "line": 224,
         "level": 4,
-        "title": "Порядок выполнения промежуточного ПО"
+        "title": "Порядок выполнения промежуточных обработчиков"
       }
     ],
     "Поток событий": [
@@ -9026,6 +9012,14 @@
         "title": "Преобразование типов"
       }
     ],
+    "Преобразователь событий": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 633,
+        "level": 2,
+        "title": "Преобразователь событий"
+      }
+    ],
     "Приглашения в комнату": [
       {
         "document": "platform-guide/matrix.md",
@@ -9048,14 +9042,6 @@
         "line": 251,
         "level": 2,
         "title": "Пример использования в модуле"
-      }
-    ],
-    "Пример конвертера": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 631,
-        "level": 3,
-        "title": "Пример конвертера"
       }
     ],
     "Пример конфигурации": [
@@ -9114,6 +9100,14 @@
         "line": 226,
         "level": 2,
         "title": "Пример преобразования мультимедийных сообщений"
+      }
+    ],
+    "Пример преобразователя": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 665,
+        "level": 3,
+        "title": "Пример преобразователя"
       }
     ],
     "Пример распознавания изображений": [
@@ -9530,12 +9524,20 @@
         "title": "Проверка состояния бота"
       }
     ],
-    "Проверка статуса платформы": [
+    "Проверка состояния платформы": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 124,
+        "line": 125,
         "level": 4,
-        "title": "Проверка статуса платформы"
+        "title": "Проверка состояния платформы"
+      }
+    ],
+    "Проверка статуса бота": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 993,
+        "level": 3,
+        "title": "Проверка статуса бота"
       }
     ],
     "Проверка существования таблицы": [
@@ -9576,14 +9578,6 @@
         "title": "Продолжение при неудаче и повторная отправка"
       }
     ],
-    "Промежуточное ПО": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 203,
-        "level": 3,
-        "title": "Промежуточное ПО"
-      }
-    ],
     "Промежуточное ПО маршрутизации": [
       {
         "document": "advanced/router.md",
@@ -9597,6 +9591,12 @@
         "document": "api-reference/adapter-system.md",
         "line": 66,
         "level": 2,
+        "title": "Промежуточные обработчики"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 204,
+        "level": 3,
         "title": "Промежуточные обработчики"
       }
     ],
@@ -9671,7 +9671,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 503,
+        "line": 536,
         "level": 3,
         "title": "Процесс инициализации"
       }
@@ -9715,7 +9715,7 @@
     "Процесс преобразования": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 601,
+        "line": 635,
         "level": 3,
         "title": "Процесс преобразования"
       }
@@ -9829,7 +9829,7 @@
     "Разрешение аккаунта": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 477,
+        "line": 510,
         "level": 4,
         "title": "Разрешение аккаунта"
       }
@@ -9915,7 +9915,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 948,
+        "line": 982,
         "level": 3,
         "title": "Расширение поля self"
       }
@@ -10361,7 +10361,7 @@
     "Ручное построение ответа (старый способ по-прежнему совместим)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 752,
+        "line": 786,
         "level": 3,
         "title": "Ручное построение ответа (старый способ по-прежнему совместим)"
       }
@@ -10529,7 +10529,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1000,
+        "line": 1034,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -11116,12 +11116,12 @@
         "title": "Совместимость со старой конфигурацией"
       }
     ],
-    "Соглашения по metadata": [
+    "Соглашение о metadata": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 370,
+        "line": 371,
         "level": 4,
-        "title": "Соглашения по metadata"
+        "title": "Соглашение о metadata"
       }
     ],
     "Содержание": [
@@ -11355,7 +11355,7 @@
     "Список платформ": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 138,
+        "line": 139,
         "level": 4,
         "title": "Список платформ"
       }
@@ -11559,7 +11559,7 @@
     "Стандартные ответы API": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 732,
+        "line": 766,
         "level": 2,
         "title": "Стандартные ответы API"
       }
@@ -11567,7 +11567,7 @@
     "Стандартные события OneBot12": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 154,
+        "line": 155,
         "level": 4,
         "title": "Стандартные события OneBot12"
       }
@@ -11890,12 +11890,12 @@
         "title": "Типы (Type Annotation)"
       }
     ],
-    "Типы meta событий": [
+    "Типы мета-событий": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 915,
+        "line": 949,
         "level": 3,
-        "title": "Типы meta событий"
+        "title": "Типы мета-событий"
       }
     ],
     "Типы отправки (SendType)": [
@@ -12199,13 +12199,13 @@
     "Управление конфигурацией": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 122,
+        "line": 123,
         "level": 3,
         "title": "Управление конфигурацией"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 300,
+        "line": 301,
         "level": 3,
         "title": "Управление конфигурацией"
       },
@@ -12233,7 +12233,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 672,
+        "line": 706,
         "level": 2,
         "title": "Управление подключениями"
       }
@@ -12244,12 +12244,6 @@
         "line": 236,
         "level": 2,
         "title": "Управление состоянием бота"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 893,
-        "level": 2,
-        "title": "Управление состоянием бота"
       }
     ],
     "Управление состоянием бота и мета-события": [
@@ -12258,6 +12252,14 @@
         "line": 5,
         "level": 2,
         "title": "Управление состоянием бота и мета-события"
+      }
+    ],
+    "Управление статусом бота": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 927,
+        "level": 2,
+        "title": "Управление статусом бота"
       }
     ],
     "Управление таблицами": [
@@ -12335,7 +12337,7 @@
     "Успешный ответ": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 736,
+        "line": 770,
         "level": 3,
         "title": "Успешный ответ"
       }
@@ -12459,7 +12461,7 @@
     "Файл конфигурации аккаунта": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 795,
+        "line": 829,
         "level": 3,
         "title": "Файл конфигурации аккаунта"
       }
@@ -12642,6 +12644,14 @@
         "line": 42,
         "level": 3,
         "title": "Цепочечные методы модификаторов (можно комбинировать)"
+      }
+    ],
+    "Цепочечные методы модификации": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 619,
+        "level": 3,
+        "title": "Цепочечные методы модификации"
       }
     ],
     "Цепочечные методы модификации (можно комбинировать)": [
