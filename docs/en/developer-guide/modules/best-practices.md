@@ -9,7 +9,7 @@ This document provides best practice recommendations for ErisPulse module develo
 Each module should be responsible for only one core function:
 
 ```python
-# Good design: Each module is responsible for only one function
+# Good design: each module only responsible for one function
 class WeatherModule(BaseModule):
     """Weather query module"""
     pass
@@ -18,7 +18,7 @@ class NewsModule(BaseModule):
     """News query module"""
     pass
 
-# Bad design: A module responsible for multiple unrelated functions
+# Bad design: a module responsible for multiple unrelated functions
 class UtilityModule(BaseModule):
     """Contains weather, news, jokes, and other functions"""
     pass
@@ -28,12 +28,12 @@ class UtilityModule(BaseModule):
 
 ```toml
 [project]
-name = "ErisPulse-ModuleName"  # Use the ErisPulse- prefix
+name = "ErisPulse-ModuleName"  # Use ErisPulse- prefix
 ```
 
 ### 3. Clear Configuration Management
 
-It is recommended to use declarative configuration (`ConfigClass` + `BaseConfig`) to gain capabilities such as type safety, automatic template generation, and WebUI form support:
+It is recommended to use declarative configuration (`ConfigClass` + `BaseConfig`) to gain capabilities such as type safety, automatic template generation, WebUI form support, etc.:
 
 ```python
 from dataclasses import dataclass, field
@@ -42,7 +42,7 @@ from ErisPulse.runtime.config_schema import BaseConfig
 @dataclass
 class MyModuleConfig(BaseConfig):
     api_url: str = field(default="https://api.example.com", metadata={
-        "description": {"i18n": "my_module.api_url", "default": "API address"},
+        "description": {"i18n": "my_module.api_url", "default": "API Address"},
     })
     timeout: int = field(default=30, metadata={
         "description": {"i18n": "my_module.timeout", "default": "Timeout (seconds)"},
@@ -55,18 +55,49 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def do_something(self):
-        cfg = self.cfg  # Type safe, real-time reading
+        cfg = self.cfg  # Type safe, reads in real time
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-You can also continue to use the manual method to read and write configuration storage (see [Module Core Concepts](docs/en/core-concepts.md#configuration-management)).
+You can also continue to use manual methods to read/write configuration storage (see [Module Core Concepts](core-concepts.md#configuration-management)).
 
-## Asynchronous Programming
+### Declarative Translation Keys (v2.7.0+)
 
-### 1. Use Asynchronous Libraries
+Modules can declare translation keys centrally via `I18nClass`, and the framework automatically registers them to the i18n system without needing to manually call `i18n.register()`.
 
 ```python
-# Recommended to use SDK built-in HTTP client (asynchronous, automatic logging and statistics)
+from ErisPulse.Core.Bases import BaseI18n, I18nKey
+
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        # Business translation keys with placeholders
+        welcome: I18nKey = I18nKey(
+            default="Welcome, {name}!",
+            zh_CN="欢迎你，{name}！",
+            zh_TW="歡迎你，{name}！",
+            en="Welcome, {name}!",
+            ja="ようこそ、{name}！",
+            ru="Добро пожаловать, {name}!",
+        )
+        # Translation for config field descriptions
+        api_url: I18nKey = I18nKey(
+            default="API URL",
+            zh_CN="API 地址",
+            zh_TW="API 位址",
+            en="API URL",
+            ja="API URL",
+            ru="API URL",
+        )
+```
+
+See [i18n Documentation](../../advanced/i18n.md#recommended-approach-declaring-translation-keys-via-i18nclass-v270) for detailed usage.
+
+## Async Programming
+
+### 1. Using Async Libraries
+
+```python
+# It is recommended to use the SDK's built-in HTTP client (async, auto-logs and statistics)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -74,7 +105,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# Can also use sdk.client (same effect)
+# You can also use sdk.client (same effect)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -82,7 +113,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Do not import aiohttp directly (not convenient for unified framework management)
+# Do not import aiohttp directly (inconvenient for unified framework management)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -91,22 +122,22 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Do not use requests (synchronous, will block event loop)
+# Do not use requests (synchronous, will block the event loop)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # Will block event loop
+        return requests.get(url).json()  # Will block the event loop
 ```
 
-### 2. Correct Asynchronous Operations
+### 2. Correct Async Operations
 
 ```python
 async def handle_command(self, event):
-    # Use create_task to let time-consuming operations execute in background
+    # Use create_task to let time-consuming operations run in the background
     task = asyncio.create_task(self._long_operation())
     
-    # If you need to wait for result
+    # If you need to wait for the result
     result = await task
 ```
 
@@ -114,30 +145,30 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # SDK client automatically manages connection pool, no need to manually create session
+    # SDK client connection pool is automatically managed, no need to manually create session
     pass
     
 async def on_unload(self, event):
-    # If custom client is needed, remember to clean up resources
+    # If you need a custom client, remember to clean up resources
     pass
 ```
 
 ## Event Handling
 
-### 1. Use Event Wrapper Class
+### 1. Using Event Wrapper Classes
 
 ```python
-# Convenient methods using Event wrapper class
+# Convenient methods using Event wrapper classes
 @command("info")
 async def info_command(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"Hello, {nickname}!")
 
-# Instead of directly accessing dictionary
+# Instead of directly accessing the dictionary
 @command("info")
 async def info_command(event):
-    user_id = event["user_id"]  # Not clear enough, easy to make mistakes
+    user_id = event["user_id"]  # Not clear enough, prone to errors
 ```
 
 ### 2. Reasonable Use of Lazy Loading
@@ -175,7 +206,7 @@ async def on_load(self, event):
     async def group_handler(event):
         self.logger.info("Received group message")
     
-    # No need to manually unregister, framework handles it automatically
+    # No need to manually unregister, the framework handles it automatically
 ```
 
 ## Error Handling
@@ -187,16 +218,16 @@ async def handle_event(self, event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # Expected business errors
+        # Expected business error
         self.logger.warning(f"Business warning: {e}")
         await event.reply(f"Parameter error: {e}")
     except aiohttp.ClientError as e:
         # Network error (recommend using sdk.client + ClientError instead)
-        # Old code using aiohttp directly still works, but new code recommends using ErisPulse exception system
+        # Old code using aiohttp directly still works, but new code recommends the ErisPulse exception hierarchy
         self.logger.error(f"Network error: {e}")
         await event.reply("Network request failed, please try again later")
     except Exception as e:
-        # Unexpected errors
+        # Unexpected error
         self.logger.error(f"Unknown error: {e}", exc_info=True)
         await event.reply("Processing failed, please contact administrator")
         raise
@@ -205,7 +236,7 @@ async def handle_event(self, event):
 ### 2. Timeout Handling
 
 ```python
-# Recommended to use SDK built-in client (with built-in timeout and retry)
+# It is recommended to use the SDK's built-in client (with timeout and retry)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -220,7 +251,7 @@ async def fetch_with_timeout(self, url, timeout=30):
 
 ## Storage System
 
-### 1. Use Transactions
+### 1. Using Transactions
 
 ```python
 # Use transactions to ensure data consistency
@@ -232,7 +263,7 @@ async def update_user(self, user_id, data):
 # ❌ Not using transactions may lead to data inconsistency
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # If an error occurs here, the above setting cannot be rolled back
+    # If an error occurs here, the above set cannot be rolled back
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
@@ -245,7 +276,7 @@ def cache_multiple_items(self, items):
         f"item:{k}": v for k, v in items.items()
     })
 
-# ❌ Multiple calls are inefficient
+# ❌ Low efficiency due to multiple calls
 def cache_multiple_items(self, items):
     for k, v in items.items():
         self.sdk.storage.set(f"item:{k}", v)
@@ -253,26 +284,26 @@ def cache_multiple_items(self, items):
 
 ## Logging
 
-### 1. Use Log Levels Reasonably
+### 1. Reasonable Use of Log Levels
 
 ```python
-# DEBUG: Detailed debug information (only for development)
+# DEBUG: Detailed debugging information (only during development)
 self.logger.debug(f"Input parameters: {params}")
 
-# INFO: Normal running information
+# INFO: Normal operation information
 self.logger.info("Module loaded")
 self.logger.info(f"Processing request: {request_id}")
 
-# WARNING: Warning messages, do not affect main functionality
-self.logger.warning(f"Config item {key} not set, using default value")
-self.logger.warning("API response slow, optimization may be needed")
+# WARNING: Warning messages, does not affect main functionality
+self.logger.warning(f"Configuration item {key} not set, using default value")
+self.logger.warning("API response is slow, may need optimization")
 
 # ERROR: Error messages
 self.logger.error(f"API request failed: {e}")
-self.logger.error(f"Event processing failed: {e}", exc_info=True)
+self.logger.error(f"Failed to process event: {e}", exc_info=True)
 
-# CRITICAL: Critical errors requiring immediate handling
-self.logger.critical("Database connection failed, bot cannot run properly")
+# CRITICAL: Fatal errors, need immediate handling
+self.logger.critical("Database connection failed, bot cannot run normally")
 ```
 
 ### 2. Structured Logging
@@ -282,12 +313,12 @@ self.logger.critical("Database connection failed, bot cannot run properly")
 self.logger.info(f"Processing request: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
 # ❌ Using unstructured logging
-self.logger.info(f"Processed request, from user {user_id}, took {duration} milliseconds")
+self.logger.info(f"Processed request from user {user_id} in {duration} milliseconds")
 ```
 
 ## Performance Optimization
 
-### 1. Use Caching
+### 1. Using Caching
 
 ```python
 class MyModule(BaseModule):
@@ -308,17 +339,17 @@ class MyModule(BaseModule):
             return data
 ```
 
-### 2. Avoid Blocking Operations
+### 2. Avoiding Blocking Operations
 
 ```python
-# Use asynchronous operations
+# Use async operations
 async def process_message(self, event):
-    # Asynchronous processing
+    # Async processing
     await self._async_process(event)
 
 # ❌ Blocking operation
 async def process_message(self, event):
-    # Synchronous operation, blocks event loop
+    # Synchronous operation, blocks the event loop
     result = self._sync_process(event)
 ```
 
@@ -336,7 +367,7 @@ class MyModule(BaseModule):
         if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
             raise ValueError("Please configure a valid API key in config.toml")
 
-# ❌ Hardcoding sensitive data
+# ❌ Hardcoded sensitive data
 class MyModule(BaseModule):
     API_KEY = "sk-1234567890"  # Do not do this!
 ```
@@ -350,7 +381,7 @@ async def process_command(self, event):
     
     # Validate input length
     if len(user_input) > 1000:
-        await event.reply("Input too long, please re-enter")
+        await event.reply("Input is too long, please re-enter")
         return
     
     # Validate input format
@@ -400,11 +431,11 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-Follow Semantic Versioning:
+Follow semantic versioning:
 - MAJOR.MINOR.PATCH
 - Major version: Incompatible API changes
-- Minor version: Backward-compatible new features
-- Patch version: Backward-compatible bug fixes
+- Minor version: New features with downward compatibility
+- Patch version: Bug fixes with downward compatibility
 
 ### 2. Documentation Completeness
 
@@ -416,11 +447,13 @@ Follow Semantic Versioning:
 - Configuration instructions
 - Usage examples
 - API documentation
-- Contribution guide
+- Contribution guidelines
 ```
 
 ## Related Documentation
 
-- [Getting Started with Module Development](docs/en/getting-started.md) - Create your first module
-- [Module Core Concepts](docs/en/core-concepts.md) - Understand module architecture
-- [Event Wrapper Class](docs/en/event-wrapper.md) - Detailed explanation of event handling
+- [Getting Started with Module Development](getting-started.md) - Creating your first module
+- [Module Core Concepts](core-concepts.md) - Understanding module architecture
+- [Event Wrapper Class](event-wrapper.md) - Detailed explanation of event handling
+
+Please return the translated complete Markdown content directly without any other text.

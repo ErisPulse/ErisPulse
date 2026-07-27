@@ -11,14 +11,14 @@
 ─────────────────                           ─────────────────
                                              
 ┌──────────────────┐                        ┌──────────────────┐
-│ 平台原生事件     │                        │ 模組構建訊息     │
+│ 平台原生事件     │                        │ 模組建構訊息     │
 └────────┬─────────┘                        └────────┬─────────┘
          │                                           │
          ↓                                           ↓
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│                  │   │ 適配器 (MyAdapter) │   │                  │
-│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
-│  (事件轉換器)    │──→│ │              │ │   │ (反向轉換入口)   │
+│                  │   │ 適配器 (MyAdapter) │   │ Send.Raw_ob12()  │
+│  Converter       │   │ ┌──────────────┐ │   │ (反向轉換入口)   │
+│  (事件轉換器)    │──→│ │              │ │   │                  │
 │                  │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
@@ -115,7 +115,7 @@ await sdk.adapter.shutdown()
 **關閉流程：**
 
 1. 提交 `adapter.stop` 生命週期事件
-2. 調用所有適配器的 `shutdown()` 方法
+2. 呼叫所有適配器的 `shutdown()` 方法
 3. 關閉路由伺服器
 4. 清空事件處理器
 5. 提交 `adapter.stopped` 生命週期事件
@@ -302,7 +302,7 @@ class MyAdapter(BaseAdapter):
 
 框架提供了宣告式配置管理，透過 dataclass 定義配置結構，框架自動處理加載、驗證和範本生成。
 
-#### 單帳戶配置
+#### 單帳號配置
 
 ```python
 from dataclasses import dataclass, field
@@ -331,9 +331,9 @@ class TelegramAdapter(BaseAdapter):
         await self._connect(cfg.token, proxy=cfg.proxy)
 ```
 
-#### 多帳戶配置
+#### 多帳號配置
 
-`BotAccountConfig` 基類提供 `enabled` 和 `name` 欄位。絕大多數適配器能從平台協定或登入回應中自動獲取 bot_id，在事件轉換時注入到帳戶配置中。：
+`BotAccountConfig` 基類提供 `enabled` 和 `name` 字段。絕大多數適配器能從平台協議或登入回應中自動獲取 bot_id，在事件轉換時注入到帳號配置中。：
 
 ```python
 from dataclasses import dataclass, field
@@ -347,7 +347,7 @@ class MyBotConfig(BotAccountConfig):
         "required": True,
     })
 
-# 如果登入時無法獲取 bot_id，可以讓使用者在配置中填寫
+# 如果登入時無法獲取 bot_id，可讓使用者在配置中填寫
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
     bot_id: str = field(default="", metadata={
@@ -370,37 +370,37 @@ class MyAdapter(BaseAdapter):
 
 #### metadata 約定
 
-欄位 metadata 同時服務於 TOML 注釋生成和 WebUI 表單渲染：
+字段 metadata 同時服務於 TOML 注釋生成和 WebUI 表單渲染：
 
 ```python
 metadata = {
-    "description": str | dict,  # 欄位描述（支援 i18n）
+    "description": str | dict,  # 字段描述（支援 i18n）
     "required": bool,         # 是否必填（驗證 + WebUI 必填標記）
     "secret": bool,           # 是否敏感（WebUI 顯示為 ***，日誌中脫敏）
-    "ui": {                   # WebUI 控件配置（舊名 "webui" 仍相容）
+    "ui": {                   # WebUI 控件配置（舊名 "webui" 仍兼容）
         "widget": str,        # 控件類型: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # 分組: "basic" | "advanced" | "connection" 等
         "order": int,         # 排序權重（越小越靠前）
         "options": list,      # select 控件的可選項 [{label, value}]，label 支援 i18n
-        "placeholder": str | dict,  # 輸入框占位符（支援 i18n）
+        "placeholder": str | dict,  # 輸入框佔位符（支援 i18n）
     },
-    "extra": dict,            # 額外擴展欄位（透傳到 schema）
+    "extra": dict,            # 額外擴展字段（透傳到 schema）
 }
 ```
 
-所有使用者可見的字串欄位均支援 i18n，統一採用 `{"i18n": "key", "default": "文本"}` 格式，
-純字串則原樣透傳（向後相容）。支援的 i18n 欄位：
+所有使用者可見的文本字段均支援 i18n，統一採用 `{"i18n": "key", "default": "文本"}` 格式，
+純字串則原樣透傳（向後相容）。支援的 i18n 字段：
 
-| 欄位 | 位置 | 說明 |
+| 字段 | 位置 | 說明 |
 |------|------|------|
-| `description` | field metadata | 欄位描述 |
+| `description` | field metadata | 字段描述 |
 | `options[].label` | `ui.options` | select 控件選項標籤 |
-| `placeholder` | `ui.placeholder` | 輸入框占位符 |
+| `placeholder` | `ui.placeholder` | 輸入框佔位符 |
 | `group_labels` | `_schema_meta` | 分組顯示名（Dashboard 分區標題） |
 
-使用 i18n 時，需提前將翻譯鍵註冊到 i18n 系統（詳見 [i18n 文檔](../../advanced/i18n.md#配置欄位多語言)）。
+使用 i18n 時，需提前將翻譯鍵註冊到 i18n 系統（詳見 [i18n 文檔](../../advanced/i18n.md#配置字段多語言)）。
 
-**description / placeholder / options label** 範例：
+**description / placeholder / options label** 示例：
 
 ```python
 token: str = field(
@@ -428,19 +428,53 @@ mode: str = field(
 )
 ```
 
-**group_labels** 範例（在配置類定義後宣告）：
+**group_labels** 示例（在配置類定義後宣告）：
 
 ```python
 MyConfig._schema_meta = {
     "group_labels": {
         "basic": {"i18n": "my_adapter.group.basic", "default": "基本設定"},
-        "advanced": {"i18n": "my_adapter.group.advanced", "default": "進階設定"},
+        "advanced": {"i18n": "my_adapter.group.advanced", "default": "高階設定"},
     }
 }
 ```
 
-框架的 `resolve_config_schema()` 會根據當前語言自動解析上述所有欄位的 i18n 鍵；
+框架的 `resolve_config_schema()` 會根據當前語言自動解析上述所有字段的 i18n 鍵；
 `get_config_schema()` 則原樣透傳 i18n 字典，由前端自行解析。
+
+### 宣告式翻譯鍵（v2.7.0+）
+
+適配器可以像宣告 `ConfigClass` 一樣，透過巢狀類 `I18nClass` 集中宣告翻譯鍵。
+框架會在 `__init__` 階段（配置範本生成之前）自動註冊所有宣告的翻譯鍵，
+確保配置描述中引用的 i18n 鍵在生成範本時已可用。
+
+```python
+from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
+
+class MyAdapter(BaseAdapter):
+    class I18nClass(BaseI18n):
+        endpoint: I18nKey = I18nKey(
+            default="API Endpoint",
+            zh_CN="API 位址",
+            zh_TW="API 位址",
+            en="API Endpoint",
+            ja="APIアドレス",
+            ru="API 地址",
+        )
+        token: I18nKey = I18nKey(
+            default="Platform Token",
+            zh_CN="平台權杖",
+            zh_TW="平台權杖",
+            en="Platform Token",
+            ja="プラットフォームトークン",
+            ru="平台權杖",
+        )
+```
+
+> ``I18nKey.default`` 是**語言無關的兜底文本**，不會註冊到任何語言。
+> 要讓翻譯生效，必須顯式傳入至少一個語言參數。
+
+詳細用法（鍵路徑規則、顯式 key 參數等）見 [i18n 文檔](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
 
 #### 帳戶解析
 
@@ -453,11 +487,11 @@ async def call_api(self, endpoint: str, **params):
     # name: 帳戶名, account: 配置實例
 ```
 
-解析策略：帳戶名匹配 → `bot_id` 欄位匹配 → 其他 str 欄位匹配 → 第一個啟用帳戶。
+解析策略：帳戶名匹配 → `bot_id` 字段匹配 → 其他 str 字段匹配 → 第一個啟用帳戶。
 
 #### 配置熱更新
 
-子類可覆寫 `on_config_update()` 响應配置變更：
+子類可覆寫 `on_config_update()` 回應配置變更：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -491,7 +525,7 @@ class MyAdapter(BaseAdapter):
         self.convert = self.converter.convert
 ```
 
-## Send 消息發送 DSL
+## Send 消息傳送 DSL
 
 ### 繼承關係
 
@@ -517,7 +551,7 @@ class MyAdapter(BaseAdapter):
 | `_reply_message_id` | 回覆的消息ID | `Reply(message_id)` |
 | `_at_all` | 是否@全體 | `AtAll()` |
 
-> **推薦**：使用 `self.send_context` 屬性一次獲取 `target_type`、`target_id`、`account_id`，比直接存取實例變數更清晰。
+> **推薦**：使用 `self.send_context` 屬性一次取得 `target_type`、`target_id`、`account_id`，比直接存取實例變數更清晰。
 
 ### 框架輔助方法
 
@@ -576,7 +610,7 @@ Converter.convert()
 OneBot12 標準事件
 ```
 
-### 必需欄位
+### 必需字段
 
 所有轉換後的事件必須包含：
 
@@ -596,7 +630,7 @@ OneBot12 標準事件
 }
 ```
 
-### 轉換器範例
+### 轉換器示例
 
 ```python
 class MyPlatformConverter:
@@ -619,7 +653,7 @@ class MyPlatformConverter:
         event_type = self._convert_type(raw_event.get("type"))
         detail_type = self._convert_detail_type(raw_event)
         
-        # 建構標準事件
+        # 構建標準事件
         onebot_event = {
             "id": str(event_id),
             "time": timestamp,
@@ -733,9 +767,9 @@ async def call_api(self, endpoint: str, **params):
 
 ## 多帳戶支援
 
-### 聲明式配置（推薦）
+### 宣告式配置（推薦）
 
-使用 `AccountConfigClass` 聲明配置類後，框架自動管理多帳戶加載、驗證和範本生成：
+使用 `AccountConfigClass` 宣告配置類後，框架自動管理多帳戶加載、驗證和範本生成：
 
 ```python
 from dataclasses import dataclass, field
@@ -757,7 +791,7 @@ class MyAdapter(BaseAdapter):
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
         name, account = self._resolve_account(account_id)
-        # 使用 account.token, account.bot_id 等欄位
+        # 使用 account.token, account.bot_id 等字段
 ```
 
 ### 帳戶配置檔案
@@ -789,7 +823,7 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
 ### self.user_id 與 Using 的關係
 
-框架的事件回覆機制會自動從事件的 `self` 欄位中提取 `account_id`（優先）或 `user_id`，作為 `Using` 參數傳入。適配器開發者需要確保 Converter 中 `self.user_id` 的值與 `_resolve_account()` 能夠正確匹配。
+框架的事件回覆機制會自動從事件的 `self` 字段中提取 `account_id`（優先）或 `user_id`，作為 `Using` 參數傳入。適配器開發者需要確保 Converter 中 `self.user_id` 的值與 `_resolve_account()` 能夠正確匹配。
 
 **框架內部行為**（`Event._get_adapter_and_target`）：
 
@@ -797,12 +831,12 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 # 框架提取 bot_id 的邏輯
 bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
 
-# 僅在 bot_id 非空時調用 Using
+# 僅在 bot_id 非空時呼叫 Using
 if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **關鍵點**：即使適配器只使用一個 Bot 配置，只要 Converter 正確設定了 `self.user_id`，框架就會將其作為 `Using` 參數傳入。適配器需確保 `self.user_id` 與 `AccountConfigClass` 中的標識欄位（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正確帳戶。如果 `self.user_id` 為空，框架不會調用 `Using`，此時 `call_api` 收到的 `account_id` 為 `None`，`_resolve_account(None)` 回傳第一個啟用的帳戶。
+> **關鍵點**：即使適配器只使用一個 Bot 配置，只要 Converter 正確設定了 `self.user_id`，框架就會將其作為 `Using` 參數傳入。適配器需確保 `self.user_id` 與 `AccountConfigClass` 中的標識字段（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正確帳戶。如果 `self.user_id` 為空，框架不會呼叫 `Using`，此時 `call_api` 收到的 `account_id` 為 `None`，`_resolve_account(None)` 回傳第一個啟用的帳戶。
 
 ## 錯誤處理
 
@@ -864,13 +898,13 @@ AdapterManager 內建了 Bot 狀態追蹤系統，自動維護所有已註冊 Bo
 
 ### 自動發現機制
 
-當適配器透過 `adapter.emit()` 發送事件時，框架會自動檢查事件中的 `self` 欄位：
+當適配器透過 `adapter.emit()` 發送事件時，框架會自動檢查事件中的 `self` 字段：
 
 - **meta 事件**：根據 `detail_type` 執行對應操作（connect 註冊/斷開標記離線/heartbeat 更新活躍時間）
 - **普通事件**（message/notice/request）：自動發現 Bot 並更新活躍時間
 
 ```python
-# 所有包含 self 欄位的事件都會觸發自動發現
+# 所有包含 self 字段的事件都會觸發自動發現
 await self.adapter.emit({
     "type": "message",
     "platform": "myplatform",
@@ -902,7 +936,7 @@ class MyAdapter(BaseAdapter):
         await self.emit_meta("disconnect", bot_id)
 ```
 
-也支援手動建構（舊版方式仍然相容）：
+也支援手動構造（舊版方式仍然相容）：
 
 ```python
 await self.adapter.emit({
@@ -913,13 +947,13 @@ await self.adapter.emit({
 })
 ```
 
-### `self` 欄位擴展資訊
+### `self` 字段擴展資訊
 
-`self` 欄位除必需的 `platform` 和 `user_id` 外，還支援以下可選欄位：
+`self` 字段除必需的 `platform` 和 `user_id` 外，還支援以下可選字段：
 
-| 欄位 | 說明 |
+| 字段 | 說明 |
 |---|---|
-| `user_name` | Bot 使用者名 |
+| `user_name` | Bot 用戶名 |
 | `nickname` | Bot 昵稱 |
 | `avatar` | Bot 头像 URL |
 | `account_id` | 多帳戶標識 |
@@ -967,6 +1001,6 @@ async def on_bot_offline(data):
 
 ## 相關文件
 
-- [適配器開發入門](getting-started.md) - 創建第一個適配器
-- [SendDSL 詳解](send-dsl.md) - 學習訊息發送
+- [適配器開發入門](getting-started.md) - 建立第一個適配器
+- [SendDSL 詳解](send-dsl.md) - 學習訊息傳送
 - [適配器最佳實踐](best-practices.md) - 開發高品質適配器

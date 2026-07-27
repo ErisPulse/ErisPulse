@@ -13,3 +13,13 @@ ErisPulse 运行时配置和管理模块
 > 内部使用模块，框架启动时自动加载
 
 ---
+
+## 函数列表
+
+
+### `__getattr__(name: str)`
+
+首次访问时从 Core.Bases.config_schema 懒加载 Schema 类型与工具函数
+
+---
+
