@@ -1929,7 +1929,7 @@
     "API Error Handling": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 862,
+        "line": 897,
         "level": 3,
         "title": "API Error Handling"
       }
@@ -2003,7 +2003,7 @@
     "API Response Standard": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 729,
+        "line": 764,
         "level": 2,
         "title": "API Response Standard"
       },
@@ -2073,7 +2073,7 @@
     "Account Configuration File": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 792,
+        "line": 827,
         "level": 3,
         "title": "Account Configuration File"
       }
@@ -2111,7 +2111,7 @@
     "Account Resolution": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 474,
+        "line": 508,
         "level": 4,
         "title": "Account Resolution"
       }
@@ -2273,7 +2273,7 @@
     "Adapter Sending Meta Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 920,
+        "line": 955,
         "level": 3,
         "title": "Adapter Sending Meta Events"
       }
@@ -2305,7 +2305,7 @@
     "AdapterManager Adapter Manager": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 46,
+        "line": 45,
         "level": 2,
         "title": "AdapterManager Adapter Manager"
       }
@@ -2313,7 +2313,7 @@
     "Add Middleware": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 206,
+        "line": 205,
         "level": 4,
         "title": "Add Middleware"
       }
@@ -2527,7 +2527,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 249,
+        "line": 248,
         "level": 4,
         "title": "Attribute Access"
       }
@@ -2559,7 +2559,7 @@
     "Automatic Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 894,
+        "line": 929,
         "level": 3,
         "title": "Automatic Discovery Mechanism"
       }
@@ -2591,7 +2591,7 @@
     "Available Properties": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 534,
+        "line": 569,
         "level": 3,
         "title": "Available Properties"
       }
@@ -2623,7 +2623,7 @@
     "BaseAdapter Base Class": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 257,
+        "line": 256,
         "level": 2,
         "title": "BaseAdapter Base Class"
       }
@@ -2769,7 +2769,7 @@
     "Basic Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 558,
+        "line": 593,
         "level": 3,
         "title": "Basic Methods"
       }
@@ -2843,7 +2843,7 @@
     "Basic Structure": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 259,
+        "line": 258,
         "level": 3,
         "title": "Basic Structure"
       }
@@ -2869,7 +2869,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 58,
+        "line": 57,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -3067,7 +3067,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 890,
+        "line": 925,
         "level": 2,
         "title": "Bot Status Management"
       }
@@ -3087,7 +3087,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 956,
+        "line": 991,
         "level": 3,
         "title": "Bot Status Query"
       }
@@ -3269,7 +3269,7 @@
     "Chainable Modifier Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 582,
+        "line": 617,
         "level": 3,
         "title": "Chainable Modifier Methods"
       }
@@ -3433,7 +3433,7 @@
     "Check Platform Status": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 125,
+        "line": 124,
         "level": 4,
         "title": "Check Platform Status"
       }
@@ -3971,7 +3971,7 @@
     "Configuration Hot Update": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 487,
+        "line": 521,
         "level": 4,
         "title": "Configuration Hot Update"
       }
@@ -4013,13 +4013,13 @@
     "Configuration Management": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 123,
+        "line": 122,
         "level": 3,
         "title": "Configuration Management"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 301,
+        "line": 300,
         "level": 3,
         "title": "Configuration Management"
       },
@@ -4103,7 +4103,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 669,
+        "line": 704,
         "level": 2,
         "title": "Connection Management"
       }
@@ -4119,7 +4119,7 @@
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 838,
+        "line": 873,
         "level": 3,
         "title": "Connection Retry"
       }
@@ -4199,7 +4199,7 @@
     "Conversion Process": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 598,
+        "line": 633,
         "level": 3,
         "title": "Conversion Process"
       }
@@ -4215,7 +4215,7 @@
     "Converter Example": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 628,
+        "line": 663,
         "level": 3,
         "title": "Converter Example"
       }
@@ -4332,6 +4332,12 @@
     ],
     "Core Features": [
       {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 49,
+        "level": 3,
+        "title": "Core Features"
+      },
+      {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 5,
         "level": 2,
@@ -4344,14 +4350,6 @@
         "line": 12,
         "level": 2,
         "title": "Core Field Methods"
-      }
-    ],
-    "Core Functions": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 50,
-        "level": 3,
-        "title": "Core Functions"
       }
     ],
     "Core Initialization": [
@@ -4589,7 +4587,7 @@
     "Declarative Configuration (Recommended)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 765,
+        "line": 800,
         "level": 3,
         "title": "Declarative Configuration (Recommended)"
       },
@@ -4600,10 +4598,18 @@
         "title": "Declarative Configuration (Recommended)"
       }
     ],
+    "Declarative Event Extension Methods (v2.7.0+)": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 476,
+        "level": 3,
+        "title": "Declarative Event Extension Methods (v2.7.0+)"
+      }
+    ],
     "Declarative Translation Keys (v2.7.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 443,
+        "line": 444,
         "level": 3,
         "title": "Declarative Translation Keys (v2.7.0+)"
       },
@@ -5205,7 +5211,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 836,
+        "line": 871,
         "level": 2,
         "title": "Error Handling"
       },
@@ -5283,7 +5289,7 @@
     "Event Converter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 596,
+        "line": 631,
         "level": 2,
         "title": "Event Converter"
       }
@@ -5307,7 +5313,7 @@
     "Event Distribution Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 190,
+        "line": 189,
         "level": 4,
         "title": "Event Distribution Mechanism"
       }
@@ -5433,7 +5439,7 @@
     "Event Listening": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 153,
+        "line": 152,
         "level": 3,
         "title": "Event Listening"
       },
@@ -5707,7 +5713,7 @@
     "Extended Information in `self` Field": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 945,
+        "line": 980,
         "level": 3,
         "title": "Extended Information in `self` Field"
       }
@@ -5865,7 +5871,7 @@
     "Framework Helper Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 551,
+        "line": 586,
         "level": 3,
         "title": "Framework Helper Methods"
       }
@@ -6015,7 +6021,7 @@
     "Get Adapter Instance": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 239,
+        "line": 238,
         "level": 3,
         "title": "Get Adapter Instance"
       }
@@ -6599,7 +6605,7 @@
     "Inheritance Relationship": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 525,
+        "line": 560,
         "level": 3,
         "title": "Inheritance Relationship"
       }
@@ -6627,7 +6633,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 500,
+        "line": 534,
         "level": 3,
         "title": "Initialization Process"
       }
@@ -7047,7 +7053,7 @@
     "List Platforms": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 139,
+        "line": 138,
         "level": 4,
         "title": "List Platforms"
       }
@@ -7063,7 +7069,7 @@
     "Listen to Bot Lifecycle": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 979,
+        "line": 1014,
         "level": 3,
         "title": "Listen to Bot Lifecycle"
       }
@@ -7347,7 +7353,7 @@
     "Manual Response Construction (Old Method Still Compatible)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 749,
+        "line": 784,
         "level": 3,
         "title": "Manual Response Construction (Old Method Still Compatible)"
       }
@@ -7656,14 +7662,6 @@
         "title": "Message Sending"
       }
     ],
-    "Message Sending DSL with Send": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 523,
-        "level": 2,
-        "title": "Message Sending DSL with Send"
-      }
-    ],
     "Message Sending Methods": [
       {
         "document": "platform-guide/onebot12.md",
@@ -7745,7 +7743,7 @@
     "Meta Event Types": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 912,
+        "line": 947,
         "level": 3,
         "title": "Meta Event Types"
       }
@@ -7855,7 +7853,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 204,
+        "line": 203,
         "level": 3,
         "title": "Middleware"
       }
@@ -7871,7 +7869,7 @@
     "Middleware Execution Order": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 224,
+        "line": 223,
         "level": 4,
         "title": "Middleware Execution Order"
       }
@@ -8071,7 +8069,7 @@
     "Multi-Account Configuration": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 334,
+        "line": 333,
         "level": 4,
         "title": "Multi-Account Configuration"
       },
@@ -8113,7 +8111,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 763,
+        "line": 798,
         "level": 2,
         "title": "Multi-Account Support"
       }
@@ -8507,7 +8505,7 @@
     "OneBot12 Standard Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 155,
+        "line": 154,
         "level": 4,
         "title": "OneBot12 Standard Events"
       },
@@ -8829,7 +8827,7 @@
     "Platform Native Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 176,
+        "line": 175,
         "level": 4,
         "title": "Platform Native Events"
       }
@@ -9519,7 +9517,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 997,
+        "line": 1032,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9588,12 +9586,12 @@
         "title": "Related Links"
       }
     ],
-    "Relationship between self.user_id and Using": [
+    "Relationship Between self.user_id and Using": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 819,
+        "line": 854,
         "level": 3,
-        "title": "Relationship between self.user_id and Using"
+        "title": "Relationship Between self.user_id and Using"
       }
     ],
     "Relationship with CLI i18n": [
@@ -9807,7 +9805,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 608,
+        "line": 643,
         "level": 3,
         "title": "Required Fields"
       }
@@ -10206,6 +10204,14 @@
         "title": "Send A2UI message"
       }
     ],
+    "Send Message DSL": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 558,
+        "level": 2,
+        "title": "Send Message DSL"
+      }
+    ],
     "Send Message Sending": [
       {
         "document": "api-reference/adapter-system.md",
@@ -10470,12 +10476,12 @@
         "title": "Severity Classification"
       }
     ],
-    "Shutdown Adapters": [
+    "Shutdown Adapter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 108,
+        "line": 107,
         "level": 4,
-        "title": "Shutdown Adapters"
+        "title": "Shutdown Adapter"
       }
     ],
     "Sidebar Groups": [
@@ -10521,7 +10527,7 @@
     "Single Account Configuration": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 305,
+        "line": 304,
         "level": 4,
         "title": "Single Account Configuration"
       }
@@ -10635,7 +10641,7 @@
     "Specifying Account for Sending": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 806,
+        "line": 841,
         "level": 3,
         "title": "Specifying Account for Sending"
       }
@@ -10736,12 +10742,12 @@
         "title": "Standardized Response"
       }
     ],
-    "Start Adapters": [
+    "Start Adapter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 85,
+        "line": 84,
         "level": 4,
-        "title": "Start Adapters"
+        "title": "Start Adapter"
       }
     ],
     "Start Learning": [
@@ -10771,7 +10777,7 @@
     "Startup and Shutdown": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 83,
+        "line": 82,
         "level": 3,
         "title": "Startup and Shutdown"
       }
@@ -10919,7 +10925,7 @@
     "Success Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 733,
+        "line": 768,
         "level": 3,
         "title": "Success Response"
       }
@@ -11921,7 +11927,7 @@
     "WebHook Connection": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 705,
+        "line": 740,
         "level": 3,
         "title": "WebHook Connection"
       }
@@ -11951,7 +11957,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 671,
+        "line": 706,
         "level": 3,
         "title": "WebSocket Connection"
       },
@@ -12483,7 +12489,7 @@
     "get() Method": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 241,
+        "line": 240,
         "level": 4,
         "title": "get() Method"
       }
@@ -12595,7 +12601,7 @@
     "metadata Convention": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 371,
+        "line": 370,
         "level": 4,
         "title": "metadata Convention"
       }

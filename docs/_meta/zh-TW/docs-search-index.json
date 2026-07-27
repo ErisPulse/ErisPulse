@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1400,
+  "total_keywords": 1401,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1909,7 +1909,7 @@
     "API 回應標準": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 734,
+        "line": 767,
         "level": 2,
         "title": "API 回應標準"
       },
@@ -1965,7 +1965,7 @@
     "API 錯誤處理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 867,
+        "line": 900,
         "level": 3,
         "title": "API 錯誤處理"
       }
@@ -2073,7 +2073,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 961,
+        "line": 994,
         "level": 3,
         "title": "Bot 狀態查詢"
       },
@@ -2093,7 +2093,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 895,
+        "line": 928,
         "level": 2,
         "title": "Bot 狀態管理"
       }
@@ -2573,7 +2573,7 @@
     "Meta 事件類型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 917,
+        "line": 950,
         "level": 3,
         "title": "Meta 事件類型"
       }
@@ -2918,12 +2918,12 @@
         "title": "Send 方法"
       }
     ],
-    "Send 消息傳送 DSL": [
+    "Send 消息發送 DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 528,
+        "line": 561,
         "level": 2,
-        "title": "Send 消息傳送 DSL"
+        "title": "Send 消息發送 DSL"
       }
     ],
     "Send 訊息發送": [
@@ -3073,7 +3073,7 @@
     "WebHook 連接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 710,
+        "line": 743,
         "level": 3,
         "title": "WebHook 連接"
       }
@@ -3127,7 +3127,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 676,
+        "line": 709,
         "level": 3,
         "title": "WebSocket 連接"
       }
@@ -3420,12 +3420,12 @@
         "title": "`keep_running` 參數"
       }
     ],
-    "`self` 字段擴展資訊": [
+    "`self` 欄位擴展資訊": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 950,
+        "line": 983,
         "level": 3,
-        "title": "`self` 字段擴展資訊"
+        "title": "`self` 欄位擴展資訊"
       }
     ],
     "`t()` 方法詳解": [
@@ -3775,7 +3775,7 @@
     "self.user_id 與 Using 的關係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 824,
+        "line": 857,
         "level": 3,
         "title": "self.user_id 與 Using 的關係"
       }
@@ -4335,7 +4335,7 @@
     "事件轉換器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 601,
+        "line": 634,
         "level": 2,
         "title": "事件轉換器"
       }
@@ -5177,7 +5177,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 505,
+        "line": 537,
         "level": 3,
         "title": "初始化過程"
       }
@@ -5429,7 +5429,7 @@
     "可用屬性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 539,
+        "line": 572,
         "level": 3,
         "title": "可用屬性"
       }
@@ -5941,7 +5941,7 @@
     "基本方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 563,
+        "line": 596,
         "level": 3,
         "title": "基本方法"
       }
@@ -6173,7 +6173,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 768,
+        "line": 801,
         "level": 2,
         "title": "多帳戶支援"
       }
@@ -6626,6 +6626,14 @@
         "title": "宣告 i18n 欄位"
       }
     ],
+    "宣告式事件擴展方法（v2.7.0+）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 479,
+        "level": 3,
+        "title": "宣告式事件擴展方法（v2.7.0+）"
+      }
+    ],
     "宣告式翻譯鍵（v2.7.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -6649,7 +6657,7 @@
     "宣告式配置（推薦）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 770,
+        "line": 803,
         "level": 3,
         "title": "宣告式配置（推薦）"
       },
@@ -6821,7 +6829,7 @@
     "帳戶解析": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 479,
+        "line": 511,
         "level": 4,
         "title": "帳戶解析"
       }
@@ -6837,7 +6845,7 @@
     "帳戶配置檔案": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 797,
+        "line": 830,
         "level": 3,
         "title": "帳戶配置檔案"
       }
@@ -7268,12 +7276,12 @@
         "title": "必填欄位映射"
       }
     ],
-    "必需字段": [
+    "必需欄位": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 613,
+        "line": 646,
         "level": 3,
-        "title": "必需字段"
+        "title": "必需欄位"
       }
     ],
     "快速入門": [
@@ -7397,7 +7405,7 @@
     "成功回應": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 738,
+        "line": 771,
         "level": 3,
         "title": "成功回應"
       }
@@ -7437,7 +7445,7 @@
     "手動建構回應（舊版方式仍然相容）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 754,
+        "line": 787,
         "level": 3,
         "title": "手動建構回應（舊版方式仍然相容）"
       }
@@ -7569,7 +7577,7 @@
     "指定帳戶發送": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 811,
+        "line": 844,
         "level": 3,
         "title": "指定帳戶發送"
       }
@@ -8647,7 +8655,7 @@
     "框架輔助方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 556,
+        "line": 589,
         "level": 3,
         "title": "框架輔助方法"
       }
@@ -9809,7 +9817,7 @@
     "監聽 Bot 生命週期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 984,
+        "line": 1017,
         "level": 3,
         "title": "監聽 Bot 生命週期"
       }
@@ -9975,7 +9983,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1002,
+        "line": 1035,
         "level": 2,
         "title": "相關文件"
       },
@@ -10339,7 +10347,7 @@
     "繼承關係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 530,
+        "line": 563,
         "level": 3,
         "title": "繼承關係"
       }
@@ -10451,7 +10459,7 @@
     "自動發現機制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 899,
+        "line": 932,
         "level": 3,
         "title": "自動發現機制"
       }
@@ -11382,18 +11390,18 @@
         "title": "輸出控制"
       }
     ],
-    "轉換器示例": [
+    "轉換器範例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 633,
+        "line": 666,
         "level": 3,
-        "title": "轉換器示例"
+        "title": "轉換器範例"
       }
     ],
     "轉換流程": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 603,
+        "line": 636,
         "level": 3,
         "title": "轉換流程"
       }
@@ -11645,7 +11653,7 @@
     "連接管理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 674,
+        "line": 707,
         "level": 2,
         "title": "連接管理"
       }
@@ -11653,7 +11661,7 @@
     "連接重試": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 843,
+        "line": 876,
         "level": 3,
         "title": "連接重試"
       }
@@ -11859,7 +11867,7 @@
     "適配器發送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 925,
+        "line": 958,
         "level": 3,
         "title": "適配器發送 Meta 事件"
       }
@@ -12025,7 +12033,7 @@
     "配置熱更新": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 492,
+        "line": 524,
         "level": 4,
         "title": "配置熱更新"
       }
@@ -12215,7 +12223,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 841,
+        "line": 874,
         "level": 2,
         "title": "錯誤處理"
       },
@@ -12261,7 +12269,7 @@
     "鏈式修飾方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 587,
+        "line": 620,
         "level": 3,
         "title": "鏈式修飾方法"
       },
