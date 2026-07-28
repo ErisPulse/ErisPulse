@@ -526,6 +526,31 @@ async def _builtin_collect(
     return result
 
 
+def _normalize_modifier(mod) -> tuple[str, tuple, dict]:
+    """
+    {!--< internal-use >!--}
+    归一化修饰方法定义为 (name, args, kwargs)
+
+    支持以下形式：
+    - ``"Name"``                            → ``("Name", (), {})``
+    - ``("Name",)``                         → ``("Name", (), {})``
+    - ``("Name", arg1, arg2, ...)``         → ``("Name", (arg1, arg2, ...), {})``
+    - ``("Name", (arg1, arg2), kwargs_dict)`` → 显式位置参数 + 关键字参数
+
+    :param mod: str|tuple - 修饰方法定义（字符串或元组）
+    :return: tuple - ``(方法名, 位置参数元组, 关键字参数字典)``
+    """
+    if isinstance(mod, str):
+        return mod, (), {}
+    name = mod[0]
+    if len(mod) == 1:
+        return name, (), {}
+    if len(mod) == 3 and isinstance(mod[2], dict):
+        args = mod[1] if isinstance(mod[1], (list, tuple)) else (mod[1],)
+        return name, tuple(args), mod[2]
+    return name, tuple(mod[1:]), {}
+
+
 class Event(dict):
     """
     事件包装类
@@ -1099,6 +1124,7 @@ class Event(dict):
         at_users: list[str] | None = None,
         reply_to: str | None = None,
         at_all: bool = False,
+        via: list | None = None,
         **kwargs,
     ) -> Any:
         """
@@ -1114,8 +1140,19 @@ class Event(dict):
         :param at_users: @用户列表（可选），如 ["user1", "user2"]
         :param reply_to: 回复消息ID（可选，手动指定）
         :param at_all: 是否@全体成员（可选），默认为 False
+        :param via: list - 经由的平台修饰方法链（可选，默认: None），按顺序在发送方法前应用。
+                    每个元素可为：
+                    - ``"Name"``（无参）
+                    - ``("Name", arg1, arg2, ...)``（位置参数）
+                    - ``("Name", (arg1, ...), {kw: val})``（位置+关键字参数）
+                    例如 ``[("Expire", 3600), ("ForMember", "uid")]`` 等价于
+                    ``.Expire(3600).ForMember("uid")``。
+                    当需要连续多个修饰方法、或 method 强依赖修饰方法时使用；
+                    更复杂的场景建议用 :meth:`send_chain`
         :param kwargs: 额外参数，例如Mention方法的user_id
-        :return: 适配器发送方法的返回值
+        :return: Any - 适配器发送方法的返回值
+
+        :raises ValueError: 当适配器不支持指定的发送方法/修饰方法时
 
         :example:
         >>> # 简单回复
@@ -1135,6 +1172,10 @@ class Event(dict):
         >>>
         >>> # @全体成员
         >>> await event.reply("公告", at_all=True)
+        >>>
+        >>> # 平台专有修饰方法链 + 看板发送
+        >>> await event.reply("看板内容", method="Board",
+        ...                   via=[("Expire", 3600), ("ForMember", "uid")])
         """
         adapter_instance, detail_type, target_id, bot_id = (
             self._get_adapter_and_target()
@@ -1179,6 +1220,17 @@ class Event(dict):
                 user_id = self.get_user_id()
             send_chain = send_chain.At(user_id)
             method = DEFAULT_SEND_METHOD
+
+        # 应用用户自定义修饰方法（平台专有，如 Expire / ForMember）
+        if via:
+            for mod in via:
+                name, m_args, m_kwargs = _normalize_modifier(mod)
+                mod_attr = getattr(send_chain, name, None)
+                if not mod_attr or not callable(mod_attr):
+                    raise ValueError(f"适配器不支持修饰方法: {name}")
+                send_chain = mod_attr(*m_args, **m_kwargs)
+                if send_chain is None:
+                    raise ValueError(f"修饰方法 '{name}' 必须返回发送链实例")
 
         # 调用指定方法
         send_method = getattr(send_chain, method, None)
@@ -1233,6 +1285,48 @@ class Event(dict):
         if bot_id:
             send_chain = send_chain.Using(bot_id)
         return await send_chain.Raw_ob12(message)
+
+    # ==================== 发送链获取 ====================
+
+    def send_chain(self):
+        """
+        获取已配置好目标和发送账号的发送链
+
+        返回已设置 ``To``（目标）和 ``Using``（发送账号）的 SendDSL 实例，
+        可自由追加修饰方法（At/Reply/平台专有修饰）和发送方法。
+
+        适用于 :meth:`reply` 无法覆盖的场景：
+        - 平台专有修饰方法（如云虎的 Expire/ExpireAt/ForMember）
+        - 需要连续多个修饰方法
+        - 无内容参数的动作型发送方法（如 DismissBoard）
+
+        :return: SendDSL - 已设置目标和发送账号的发送链实例
+
+        :raises ValueError: 当事件缺少 platform 字段或找不到对应适配器时
+
+        :example:
+        >>> # 平台专有修饰方法 + 看板发送
+        >>> await event.send_chain().Expire(3600).Board("一小时后过期")
+        >>>
+        >>> # 连续多个修饰方法
+        >>> await (event.send_chain()
+        ...        .Expire(3600)
+        ...        .ForMember("114514")
+        ...        .Board("看板内容", content_type="markdown"))
+        >>>
+        >>> # 内置修饰方法同样可用
+        >>> await event.send_chain().At("123").Reply("msg_id").Text("hi")
+        >>>
+        >>> # 无内容参数的动作型方法
+        >>> await event.send_chain().DismissBoard()
+        """
+        adapter_instance, detail_type, target_id, bot_id = (
+            self._get_adapter_and_target()
+        )
+        send_chain = adapter_instance.Send.To(detail_type, target_id)
+        if bot_id:
+            send_chain = send_chain.Using(bot_id)
+        return send_chain
 
     # ==================== 平台能力查询 ====================
 

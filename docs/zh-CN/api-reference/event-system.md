@@ -327,6 +327,14 @@ await event.reply("你好", at_users=["user1"], reply_to="msg_id")
 # @全体成员
 await event.reply("公告", at_all=True)
 
+# 使用平台专有修饰方法（via 参数）
+await event.reply("看板内容", method="Board",
+                  via=[("Expire", 3600), ("ForMember", "114514")])
+
+# 获取发送链，自由追加修饰方法和发送方法（适合连续多个修饰 / 动作型方法）
+await event.send_chain().Expire(3600).Board("看板内容")
+await event.send_chain().DismissBoard()
+
 # 使用 OneBot12 消息段回复
 from ErisPulse.Core.Event import MessageBuilder
 msg = MessageBuilder().text("Hello").image("url").build()
