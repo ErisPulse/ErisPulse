@@ -368,6 +368,7 @@ TRANSLATIONS = {
     "core.event.handlers_cleaned": "[Event] Cleaned {count} handlers of {owner} for {event_type}",
     "core.event.trace_chain": "[Event-trace] {event_type} | platform={platform} type={detail_type} | chain: {chain} | total={total}ms",
     "core.event.confirm_hint": "{prompt}（{yes}/{no}）",
+    "core.event.reply_via_without_method": "reply() 使用 via 但未指定 method，将使用默认发送方法 '{default_method}'。若修饰方法需配合特定发送方法，请显式传入 method={{方法名}}。",
     "core.event.same_priority_conflict": "[Event-冲突] priority={priority} 字段 '{field}' 被 '{handler_a}'（模块={owner_a}）和 '{handler_b}'（模块={owner_b}）同时修改 — 可能存在模块冲突。如果出现异常行为，请向 https://github.com/ErisPulse/ErisPulse/issues 报告兼容性问题",
     # ==================== Command System ====================
     "core.command.skip_processed": "[Command] skip: already processed, platform={platform} user={user_id}",

@@ -368,6 +368,7 @@ TRANSLATIONS = {
     "core.event.handlers_cleaned": "[Event] Cleaned {count} handlers of {owner} for {event_type}",
     "core.event.trace_chain": "[Event-trace] {event_type} | platform={platform} type={detail_type} | chain: {chain} | total={total}ms",
     "core.event.confirm_hint": "{prompt} ({yes}/{no})",
+    "core.event.reply_via_without_method": "reply() uses via without specifying method, will use default send method '{default_method}'. If modifiers require a specific send method, please pass method={{method_name}} explicitly.",
     "core.event.same_priority_conflict": "[Event-Conflict] priority={priority} field='{field}' was modified by both '{handler_a}' (module={owner_a}) and '{handler_b}' (module={owner_b}) — possible module conflict. If this causes unexpected behavior, please report compatibility at https://github.com/ErisPulse/ErisPulse/issues",
     # ==================== Command System ====================
     "core.command.skip_processed": "[Command] skip: already processed, platform={platform} user={user_id}",
