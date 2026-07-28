@@ -3485,17 +3485,17 @@ async def on_bot_offline(data):
 
 # SendDSL 詳解
 
-SendDSL 是 ErisPulse 适配器提供的鏈式呼叫風格的消息發送介面。
+SendDSL 是 ErisPulse 适配器提供的鏈式呼叫風格的訊息發送介面。
 
 ## 基本呼叫方式
 
-### 1. 指定類型和ID
+### 1. 指定類型和 ID
 
 ```python
 await adapter.Send.To("group", "123").Text("Hello")
 ```
 
-### 2. 僅指定ID
+### 2. 僅指定 ID
 
 ```python
 await adapter.Send.To("123").Text("Hello")
@@ -3521,18 +3521,18 @@ Using/Account() → To() → [修飾方法] → [發送方法]
 
 ## 發送方法
 
-所有發送方法返回 `asyncio.Task` 對象。
+所有發送方法返回 `asyncio.Task` 物件。
 
 ### 基本方法（基類內建）
 
-以下標準方法已由 `SendDSL` 基類內建實現，**預設委派給 `Raw_ob12`**，適配器子類無需重複實現即可直接使用，且 IDE 能補全：
+以下標準方法已由 `SendDSL` 基類內建實現，**預設委託給 `Raw_ob12`**，適配器子類無需重複實現即可直接使用，且 IDE 能補全：
 
 | 方法名 | 說明 | 返回值 |
 |--------|------|---------|
-| `Text(text: str)` | 發送文本消息 | `asyncio.Task` |
+| `Text(text: str)` | 發送文字訊息 | `asyncio.Task` |
 | `Image(file: bytes \| str)` | 發送圖片 | `asyncio.Task` |
 | `Voice(file: bytes \| str)` | 發送語音（OneBot12 `audio` 段） | `asyncio.Task` |
-| `Video(file: bytes \| str)` | 發送影片 | `asyncio.Task` |
+| `Video(file: bytes \| str)` | 發送視訊 | `asyncio.Task` |
 | `File(file: bytes \| str, filename: str = None)` | 發送檔案 | `asyncio.Task` |
 
 適配器可覆蓋單個標準方法以提供平台特定邏輯：
@@ -3552,9 +3552,9 @@ class Send(SendDSL):
 
 | 方法名 | 說明 | 返回值 | 是否必須 |
 |--------|------|---------|---------|
-| `Raw_ob12(message)` | 發送 OneBot12 格式消息 | `asyncio.Task` | **必須實現** |
+| `Raw_ob12(message)` | 發送 OneBot12 格式訊息 | `asyncio.Task` | **必須實現** |
 
-> **重要**：`Raw_ob12` 是適配器的核心方法，**必須實現**。它是反向轉換（OneBot12 → 平台）的統一入口。未實現時基類會記錄 error 日誌並返回標準錯誤回應（`status: "failed"`, `retcode: 10002`）。標準方法（`Text`、`Image` 等）預設委派給 `Raw_ob12`。
+> **重要**：`Raw_ob12` 是適配器的核心方法，**必須實現**。它是反向轉換（OneBot12 → 平台）的統一入口。未實現時基類會記錄 error 日誌並返回標準錯誤響應（`status: "failed"`, `retcode: 10002`）。標準方法（`Text`、`Image` 等）預設委託給 `Raw_ob12`。
 
 ### 平台特有方法
 
@@ -3593,25 +3593,99 @@ await adapter.Send.To("group", "123").AtAll().Text("大家好")
 ### Reply 方法
 
 ```python
-# 回覆消息
+# 回覆訊息
 await adapter.Send.To("group", "123").Reply("msg_id").Text("回覆內容")
 ```
 
 ### 組合修飾
 
 ```python
-await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回覆@的消息")
+await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回覆@的訊息")
+```
+
+### 平台專有修飾方法
+
+除了內建的 `At`/`AtAll`/`Reply`，適配器可以定義**平台專有的修飾方法**。這類方法**只需返回 `self`**，無需任何裝飾器——框架會自動識別：
+
+- 返回 `self`（SendDSL 實例）→ 修飾方法，不觸發發送包裝/生命週期事件，鏈式繼續
+- 返回 `Task`/`Awaitable` → 發送方法
+
+```python
+class Send(SendDSL):
+    def Raw_ob12(self, message, **kwargs): ...
+
+    # 修飾方法：返回 self，不發送
+    def Expire(self, seconds: int):
+        self._expire = seconds
+        return self
+
+    def ForMember(self, user_id: str):
+        self._member = user_id
+        return self
+
+    # 發送方法：返回 Task，依賴修飾方法設置的狀態
+    def Board(self, content: str, **kwargs):
+        return self.Raw_ob12([{"type": "board", "data": {"text": content}}])
+```
+
+使用：
+
+```python
+# 修飾方法可連續鏈式疊加
+await adapter.Send.To("group", "big").Expire(3600).ForMember("114").Board("看板內容")
+```
+
+## 在 Event 包裝類中使用修飾方法
+
+`event.reply()` 預設只暴露 `at_sender`/`at_users`/`at_all`/`quote` 等內建修飾參數。要使用平台專有修飾方法，有兩種方式：
+
+### 方式一：reply() 的 via 參數
+
+適合少量、已知的修飾方法：
+
+```python
+await event.reply("看板內容", method="Board",
+                  via=[("Expire", 3600), ("ForMember", "114514")])
+```
+
+`via` 是一個列表，每個元素可為：
+
+| 形式 | 等價鏈式呼叫 |
+|------|-------------|
+| `"Name"` | `.Name()` |
+| `("Name", arg1, arg2)` | `.Name(arg1, arg2)` |
+| `("Name", (arg1,), {kw: val})` | `.Name(arg1, kw=val)` |
+
+### 方式二：event.send_chain()
+
+適合**連續多個修飾方法**或**無內容參數的動作型方法**（如撤回、刪除）。`send_chain()` 返回已配置好 `To`/`Using` 的發送鏈，可自由追加任意修飾方法和發送方法：
+
+```python
+# 平台專有修飾方法 + 看板發送
+await event.send_chain().Expire(3600).Board("一小時後過期")
+
+# 連續多個修飾方法
+await (event.send_chain()
+       .Expire(3600)
+       .ForMember("114514")
+       .Board("看板內容", content_type="markdown"))
+
+# 內建修飾方法同樣可用
+await event.send_chain().At("123").Reply("msg_id").Text("hi")
+
+# 無內容參數的動作型方法
+await event.send_chain().DismissBoard()
 ```
 
 ## 帳戶管理
 
 ### Using 方法
 
-`Using()` 用於指定發送消息的帳戶。傳入的標識符會透過 `_resolve_account()` 按以下優先級匹配：
+`Using()` 用於指定發送訊息的帳戶。傳入的識別符會透過 `_resolve_account()` 按以下優先級匹配：
 
 1. **帳戶名** — 配置中的鍵名（如 `"default"`、`"bot1"`）
-2. **執行時注入的 bot_id** — 從事件轉換時自動注入的標識符
-3. **任意 str 字段** — 配置中其他字串字段
+2. **執行時注入的 bot_id** — 從事件轉換時自動注入的識別符
+3. **任意 str 欄位** — 配置中其他字串欄位
 4. **兜底** — 第一個啟用的帳戶
 
 ```python
@@ -3630,12 +3704,12 @@ await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 await adapter.Send.Account("account1").To("user", "123").Text("Hello")
 ```
 
-## 異步處理
+## 非同步處理
 
 ### 不等待結果
 
 ```python
-# 消息在背景發送
+# 訊息在後台發送
 task = adapter.Send.To("user", "123").Text("Hello")
 
 # 繼續執行其他操作
@@ -3659,7 +3733,7 @@ result = await task
 
 SendDSL 內建了一套發送規則裝飾器，透過鏈式方法附加規則，在最終發送時統一應用。規則覆蓋常見的生產場景：超時控制、失敗重試、成功回調、延遲發送、優先級丟棄、進度監控。
 
-規則方法**返回 self**（與 At/AtAll/Reply 一樣），必須放在發送方法（Text/Image 等）之前呼叫。規則會隨 `To`/`Using`/`Account` 創建的新實例傳播。
+規則方法**返回 self**（與 At/AtAll/Reply 一樣），必須放在發送方法（Text/Image 等）之前呼叫。規則會隨 `To`/`Using`/`Account` 建立的新實例傳播。
 
 ### 規則方法一覽
 
@@ -3667,9 +3741,9 @@ SendDSL 內建了一套發送規則裝飾器，透過鏈式方法附加規則，
 |--------|------|
 | `.Hook(callback)` | 發送成功後執行的回調（可多次呼叫，按順序執行） |
 | `.Retry(times=1)` | 失敗自動重試 N 次（含首次共 N+1 次） |
-| `.Timeout(seconds)` | 單次發送超時，超時取消當前嘗試（可與 Retry 叠加） |
+| `.Timeout(seconds)` | 單次發送逾時，逾時取消當前嘗試（可與 Retry 疊加） |
 | `.Defer(seconds=1.0)` | 延遲發送（進程內定時，不持久化） |
-| `.Priority(level, drop_if_busy=False)` | 設定優先級；積壓時可丟棄 |
+| `.Priority(level, drop_if_busy=False)` | 設置優先級；積壓時可丟棄 |
 | `.OnProgress(callback)` | 各階段進度回調（傳入 `SendContext`） |
 | `.OnError(callback)` | 最終失敗時的錯誤回調（僅觸發一次） |
 
@@ -3678,17 +3752,17 @@ SendDSL 內建了一套發送規則裝飾器，透過鏈式方法附加規則，
 ```python
 # 同步回調
 await (adapter.Send.To("user", "123")
-       .Hook(lambda r: print(f"發送成功，消息ID: {r['message_id']}"))
+       .Hook(lambda r: print(f"發送成功，訊息ID: {r['message_id']}"))
        .Text("你好"))
 
-# 異步回調
+# 非同步回調
 async def deduct_points(result):
     await db.update(user_id="123", points=-1)
 
 await adapter.Send.To("user", "123").Hook(deduct_points).Text("扣積分")
 ```
 
-Hook 僅在發送最終成功（含重試成功）時執行；失敗、超時、取消不觸發。
+Hook 僅在發送最終成功（含重試成功）時執行；失敗、逾時、取消不觸發。
 
 ### 失敗自動重試（Retry）
 
@@ -3697,16 +3771,16 @@ Hook 僅在發送最終成功（含重試成功）時執行；失敗、超時、
 result = await adapter.Send.To("user", "123").Retry(2).Text("帶重試")
 ```
 
-重試觸發條件：發送拋出異常、發送超時、發送返回 `status == "failed"` 的回應。
+重試觸發條件：發送拋出異常、發送逾時、發送返回 `status == "failed"` 的響應。
 
 ### 超時自動取消（Timeout）
 
 ```python
 # 單次發送超過 10 秒則取消
-await adapter.Send.To("user", "123").Timeout(10).Text("帶超時")
+await adapter.Send.To("user", "123").Timeout(10).Text("帶逾時")
 
-# 超時 + 重試：每次嘗試 10 秒，最多 3 次
-await adapter.Send.To("user", "123").Timeout(10).Retry(2).Text("超時重試")
+# 逾時 + 重試：每次嘗試 10 秒，最多 3 次
+await adapter.Send.To("user", "123").Timeout(10).Retry(2).Text("逾時重試")
 ```
 
 ### 進度監控（OnProgress / OnError）
@@ -3727,7 +3801,7 @@ await (adapter.Send.To("user", "123")
        .Text("監控"))
 ```
 
-`SendContext` 包含的字段：`task_id`、`platform`、`method`、`target_type`、`target_id`、`bot_id`、`stage`、`attempt`、`max_attempts`、`started_at`、`finished_at`、`elapsed`、`error`、`result`、`extra`。
+`SendContext` 包含的欄位：`task_id`、`platform`、`method`、`target_type`、`target_id`、`bot_id`、`stage`、`attempt`、`max_attempts`、`started_at`、`finished_at`、`elapsed`、`error`、`result`、`extra`。
 
 `stage` 可能的值：`pending`、`sending`、`retrying`、`success`、`failed`、`timeout`、`cancelled`、`dropped`。
 
@@ -3735,27 +3809,27 @@ await (adapter.Send.To("user", "123")
 
 ```python
 # 5 秒後發送
-await adapter.Send.To("user", "123").Defer(5).Text("遲到消息")
+await adapter.Send.To("user", "123").Defer(5).Text("遲到訊息")
 ```
 
-> 注意：延遲為進程內定時，進程重啟會丟失，不提供持久化。
+> 注意：延遲為進程內定時，進程重啟會遺失，不提供持久化。
 
 ### 優先級與積壓丟棄（Priority）
 
 ```python
-# 低優先級消息，隊列積壓時自動丟棄
+# 低優先級訊息，佇列積壓時自動丟棄
 result = await (adapter.Send.To("user", "123")
                .Priority(-1, drop_if_busy=True)
                .Text("可放棄的通知"))
 # 若被丟棄，result["status"] == "failed"
 ```
 
-`drop_if_busy` 啟用後，當在途發送任務數超過閾值（預設 64）時直接放棄本次發送。可透過 `.PriorityThreshold(n)` 調整全局閾值。
+`drop_if_busy` 啟用後，當在途發送任務數超過閾值（預設 64）時直接放棄本次發送。可透過 `.PriorityThreshold(n)` 調整全域閾值。
 
-### 規則組合與背景執行
+### 規則組合與後台執行
 
 ```python
-# 不阻塞主流程，規則照样生效
+# 不阻塞主流程，規則照樣生效
 task = (adapter.Send.To("user", "123")
         .Hook(lambda r: print("發送成功！"))
         .Retry(3)
@@ -3769,10 +3843,10 @@ await handle_next_action()
 
 ### 規則傳播
 
-規則隨 `To`/`Using`/`Account` 創建的新實例傳播，避免鏈式呼叫中規則丟失：
+規則隨 `To`/`Using`/`Account` 建立的新實例傳播，避免鏈式呼叫中規則遺失：
 
 ```python
-# 規則在 To 之前設定，也會傳播到 To 創建的實例
+# 規則在 To 之前設置，也會傳播到 To 建立的實例
 builder = adapter.Send.Retry(3).Timeout(10)
 send = builder.To("user", "123")  # send 仍攜帶 Retry(3) 和 Timeout(10)
 await send.Text("hi")
@@ -3782,7 +3856,7 @@ await send.Text("hi")
 
 ## 批量建構模式（Build）
 
-除單發模式外，SendDSL 還支援批量建構模式：一條鏈路中寫多個發送方法，最後統一執行。適用於“一口氣發多條消息”的場景。
+除單發模式外，SendDSL 還支援批量建構模式：一條鏈路中寫多個發送方法，最後統一執行。適用於「一口氣發多條訊息」的場景。
 
 ### 進入建構模式
 
@@ -3802,7 +3876,7 @@ results = await (adapter.Send.To("user", "123")
 
 ### 並行與串行
 
-預設**並行**執行（併發發送，總耗時約等於最慢的一條）。需要保證消息到達順序時呼叫 `.Sequential()`：
+預設**並行**執行（並發發送，總耗時約等於最慢的一條）。需要保證訊息到達順序時呼叫 `.Sequential()`：
 
 ```python
 # 串行：按順序依次發送
@@ -3816,13 +3890,13 @@ await (adapter.Send.To("group", "456")
 await (adapter.Send.To("group", "456")
        .Build()
        .Parallel()
-       .Text("併發1").Text("併發2")
+       .Text("並發1").Text("並發2")
        .send_all())
 ```
 
 ### 失敗繼續與重試
 
-批量執行採用**失敗繼續**策略：某條失敗不會中斷其他條的發送。配合 `.Retry()` 時，失敗的條目會自動重試（重試作用於單條，不是重試整批）：
+批量執行採用**失敗繼續**策略：某條失敗不會中斷其他條的發送。配合 `.Retry()` 時，失敗的項目會自動重試（重試作用於單條，不是重試整批）：
 
 ```python
 await (adapter.Send.To("user", "123")
@@ -3838,7 +3912,7 @@ await (adapter.Send.To("user", "123")
 
 | 方法 | 說明 |
 |--------|------|
-| `.Timeout(seconds)` | 每條發送的單次超時 |
+| `.Timeout(seconds)` | 每條發送的單次逾時 |
 | `.Retry(times)` | 每條發送各自重試（失敗繼續） |
 | `.Defer(seconds)` | 延遲整批發送 |
 | `.Hook(callback)` | 整批全部成功後觸發，接收 `results` 列表 |
@@ -3868,11 +3942,11 @@ results = await (adapter.Send.To("user", "123")
 
 ### 修飾器與規則的繼承
 
-`.Build()` 之前的 At/AtAll/Reply 修飾器和規則會繼承到整批，作用於每條消息：
+`.Build()` 之前的 At/AtAll/Reply 修飾器和規則會繼承到整批，作用於每條訊息：
 
 ```python
 await (adapter.Send.To("group", "456")
-       .At("789")                        # 繼承：每條消息都 @789
+       .At("789")                        # 繼承：每條訊息都 @789
        .Build()
        .Retry(2)                         # 繼承 + 追加：每條各自重試
        .Text("@你的通知")
@@ -3890,9 +3964,9 @@ await (adapter.Send.To("group", "456")
        .send_all())
 ```
 
-### 背景執行
+### 後台執行
 
-與單發一樣，`.send_all()` 返回 Task，可不 await 讓其在背景執行：
+與單發一樣，`.send_all()` 返回 Task，可不 await 讓其在後台執行：
 
 ```python
 task = (adapter.Send.To("user", "123")
@@ -3952,11 +4026,11 @@ def TelegramSticker(self, ...):
     pass
 ```
 
-## 回傳值
+## 返回值
 
-### Task 對象
+### Task 物件
 
-所有發送方法返回 `asyncio.Task`。適配器只需實現 `Raw_ob12`，標準方法（Text/Image 等）預設委派給它：
+所有發送方法返回 `asyncio.Task`。適配器只需實現 `Raw_ob12`，標準方法（Text/Image 等）預設委託給它：
 
 ```python
 import asyncio
@@ -3972,15 +4046,15 @@ def Raw_ob12(self, message, **kwargs):
         )
     return asyncio.create_task(_do_send())
 
-# Text/Image/Voice/Video/File 已從基類繼承，自動委派給 Raw_ob12
+# Text/Image/Voice/Video/File 已從基類繼承，自動委託給 Raw_ob12
 # 如需覆蓋標準方法，返回 asyncio.Task 即可：
 # def Text(self, text: str):
 #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### 標準化回應
+### 標準化響應
 
-`call_api` 應返回標準化回應。推薦使用 `make_response()` / `make_error()` 方法：
+`call_api` 應返回標準化響應。推薦使用 `make_response()` / `make_error()` 方法：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -4018,7 +4092,7 @@ from ErisPulse.Core import adapter
 
 my_adapter = adapter.get("myplatform")
 
-# 發送文本
+# 發送文字
 await my_adapter.Send.To("user", "123").Text("Hello World!")
 
 # 發送圖片
@@ -4041,7 +4115,7 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告訊�
 
 ### 原始訊息與訊息建構
 
-`Raw_ob12` 是反向轉換的核心入口（接收 OB12 訊息段 → 平台 API 調用），`MessageBuilder` 是配合其使用的鏈式訊息段建構工具。
+`Raw_ob12` 是反向轉換的核心入口（接收 OB12 訊息段 → 平台 API 呼叫），`MessageBuilder` 是配合其使用的鏈式訊息段建構工具。
 
 > 完整的 `Raw_ob12` 實現規範、`MessageBuilder` 用法及程式碼範例請參閱：
 > - [發送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
@@ -4050,7 +4124,7 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告訊�
 ## 相關文件
 
 - [適配器開發入門](getting-started.md) - 建立適配器
-- [適配器核心概念](core-concepts.md) - 瞭解適配器架構
+- [適配器核心概念](core-concepts.md) - 了解適配器架構
 - [適配器最佳實踐](best-practices.md) - 開發高品質適配器
 - [發送方法規範](../../standards/send-method-spec.md) - 發送方法完整規範
 

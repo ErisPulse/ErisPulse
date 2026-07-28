@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1378,
+  "total_keywords": 1383,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -1186,12 +1186,12 @@
         "title": "4. Automatic Discovery of `self` Field"
       }
     ],
-    "4. Combine Usage": [
+    "4. Combined Usage": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 25,
         "level": 3,
-        "title": "4. Combine Usage"
+        "title": "4. Combined Usage"
       }
     ],
     "4. Connection Information Exposure": [
@@ -2095,7 +2095,7 @@
     "Account Management": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 121,
+        "line": 195,
         "level": 2,
         "title": "Account Management"
       }
@@ -2103,7 +2103,7 @@
     "Account Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 140,
+        "line": 214,
         "level": 3,
         "title": "Account Method"
       }
@@ -2297,8 +2297,8 @@
     "Adapter: Registering Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 502,
-        "level": 4,
+        "line": 510,
+        "level": 3,
         "title": "Adapter: Registering Platform Extension Methods"
       }
     ],
@@ -2424,6 +2424,14 @@
         "title": "Article Message Segment (yunhu_user_post)"
       }
     ],
+    "Async Processing": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 222,
+        "level": 2,
+        "title": "Async Processing"
+      }
+    ],
     "Async Processing Mechanism": [
       {
         "document": "platform-guide/onebot11.md",
@@ -2438,14 +2446,6 @@
         "line": 95,
         "level": 2,
         "title": "Async Programming"
-      }
-    ],
-    "Asynchronous Handling": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 148,
-        "level": 2,
-        "title": "Asynchronous Handling"
       }
     ],
     "Asynchronous Initialization": [
@@ -2548,14 +2548,6 @@
         "title": "Auto Documentation"
       }
     ],
-    "Automatic Cancellation on Timeout (Timeout)": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 217,
-        "level": 3,
-        "title": "Automatic Cancellation on Timeout (Timeout)"
-      }
-    ],
     "Automatic Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -2580,14 +2572,6 @@
         "title": "Automatic Inference"
       }
     ],
-    "Automatic Retry on Failure (Retry)": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 208,
-        "level": 3,
-        "title": "Automatic Retry on Failure (Retry)"
-      }
-    ],
     "Available Properties": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -2599,7 +2583,7 @@
     "Background Execution": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 408,
+        "line": 482,
         "level": 3,
         "title": "Background Execution"
       }
@@ -2774,12 +2758,12 @@
         "title": "Basic Methods"
       }
     ],
-    "Basic Methods (Built-in by Base Class)": [
+    "Basic Methods (Built-in in Base Class)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 41,
         "level": 3,
-        "title": "Basic Methods (Built-in by Base Class)"
+        "title": "Basic Methods (Built-in in Base Class)"
       }
     ],
     "Basic Operations": [
@@ -2887,7 +2871,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 529,
+        "line": 603,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -2907,7 +2891,7 @@
     "Batch Build Mode (Build)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 298,
+        "line": 372,
         "level": 2,
         "title": "Batch Build Mode (Build)"
       },
@@ -2929,15 +2913,15 @@
     "Batch Registration (Mixin Class)": [
       {
         "document": "api-reference/event-system.md",
-        "line": 522,
-        "level": 5,
+        "line": 530,
+        "level": 4,
         "title": "Batch Registration (Mixin Class)"
       }
     ],
     "Batch Rules and Callbacks": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 350,
+        "line": 424,
         "level": 3,
         "title": "Batch Rules and Callbacks"
       }
@@ -3354,6 +3338,14 @@
         "title": "Chained Modifying Methods"
       }
     ],
+    "Chaining": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 621,
+        "level": 3,
+        "title": "Chaining"
+      }
+    ],
     "Chaining Call Examples": [
       {
         "document": "platform-guide/matrix.md",
@@ -3566,6 +3558,14 @@
         "title": "Command Basics"
       }
     ],
+    "Command Command Module": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 5,
+        "level": 2,
+        "title": "Command Command Module"
+      }
+    ],
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
@@ -3590,19 +3590,21 @@
         "title": "Command Groups"
       }
     ],
-    "Command Information": [
+    "Command Info": [
       {
         "document": "api-reference/event-system.md",
         "line": 41,
         "level": 3,
-        "title": "Command Information"
+        "title": "Command Info"
       },
       {
         "document": "api-reference/event-system.md",
         "line": 303,
         "level": 3,
-        "title": "Command Information"
-      },
+        "title": "Command Info"
+      }
+    ],
+    "Command Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 350,
@@ -3616,14 +3618,6 @@
         "line": 65,
         "level": 2,
         "title": "Command Information Retrieval"
-      }
-    ],
-    "Command Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 5,
-        "level": 2,
-        "title": "Command Module"
       }
     ],
     "Command Options": [
@@ -3777,7 +3771,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 527,
+        "line": 601,
         "level": 2,
         "title": "Complete Example"
       },
@@ -3828,12 +3822,12 @@
         "title": "Conditional Filtering"
       }
     ],
-    "Conditional Listening": [
+    "Conditional Listeners": [
       {
         "document": "api-reference/event-system.md",
         "line": 143,
         "level": 3,
-        "title": "Conditional Listening"
+        "title": "Conditional Listeners"
       }
     ],
     "Config (Configuration)": [
@@ -4164,14 +4158,6 @@
         "title": "Context and Persistence"
       }
     ],
-    "Continue on Failure and Retry": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 338,
-        "level": 3,
-        "title": "Continue on Failure and Retry"
-      }
-    ],
     "Contributing": [
       {
         "document": "platform-guide/README.md",
@@ -4490,12 +4476,12 @@
         "title": "Creating a Conversation"
       }
     ],
-    "Cross-Platform Extension (Wildcard)": [
+    "Cross-Platform Extensions (Wildcard)": [
       {
         "document": "api-reference/event-system.md",
-        "line": 601,
+        "line": 609,
         "level": 2,
-        "title": "Cross-Platform Extension (Wildcard)"
+        "title": "Cross-Platform Extensions (Wildcard)"
       }
     ],
     "Cross-platform Extension (Wildcard)": [
@@ -4656,12 +4642,12 @@
         "title": "Default Configuration"
       }
     ],
-    "Delayed Send (Defer)": [
+    "Delayed Sending (Defer)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 249,
+        "line": 323,
         "level": 3,
-        "title": "Delayed Send (Defer)"
+        "title": "Delayed Sending (Defer)"
       }
     ],
     "Delete Data": [
@@ -4828,14 +4814,6 @@
         "line": 192,
         "level": 2,
         "title": "Distributing Applications via Docker Images"
-      }
-    ],
-    "Do Not Wait for Result": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 150,
-        "level": 3,
-        "title": "Do Not Wait for Result"
       }
     ],
     "Docker Deployment (Recommended)": [
@@ -5008,6 +4986,14 @@
         "title": "Domestic Mirror Acceleration"
       }
     ],
+    "Don't Wait for Result": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 224,
+        "level": 3,
+        "title": "Don't Wait for Result"
+      }
+    ],
     "Dot Notation Events": [
       {
         "document": "advanced/lifecycle.md",
@@ -5080,12 +5066,12 @@
         "title": "Encryption Mode Description"
       }
     ],
-    "Enter Build Mode": [
+    "Entering Build Mode": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 302,
+        "line": 376,
         "level": 3,
-        "title": "Enter Build Mode"
+        "title": "Entering Build Mode"
       }
     ],
     "Entry Template": [
@@ -5630,14 +5616,6 @@
         "title": "Exception System"
       }
     ],
-    "Execute Logic After Successful Send (Hook)": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 191,
-        "level": 3,
-        "title": "Execute Logic After Successful Send (Hook)"
-      }
-    ],
     "Exemption List": [
       {
         "document": "user-guide/configuration.md",
@@ -5740,6 +5718,22 @@
         "title": "Extension: Adding More Features"
       }
     ],
+    "Failure Auto-Retry (Retry)": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 282,
+        "level": 3,
+        "title": "Failure Auto-Retry (Retry)"
+      }
+    ],
+    "Failure Continue and Retry": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 412,
+        "level": 3,
+        "title": "Failure Continue and Retry"
+      }
+    ],
     "Failure Response Example": [
       {
         "document": "standards/api-response.md",
@@ -5794,14 +5788,6 @@
         "line": 115,
         "level": 2,
         "title": "Fixed Bugs"
-      }
-    ],
-    "Fluent Chaining": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 547,
-        "level": 3,
-        "title": "Fluent Chaining"
       }
     ],
     "Fluent Modifier Methods (return self, can be combined)": [
@@ -6613,7 +6599,7 @@
     "Inheritance of Modifiers and Rules": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 384,
+        "line": 458,
         "level": 3,
         "title": "Inheritance of Modifiers and Rules"
       }
@@ -6807,7 +6793,7 @@
     "Interaction Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 387,
+        "line": 395,
         "level": 3,
         "title": "Interaction Methods"
       },
@@ -7056,14 +7042,6 @@
         "line": 138,
         "level": 4,
         "title": "List Platforms"
-      }
-    ],
-    "List of Rule Methods": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 179,
-        "level": 3,
-        "title": "List of Rule Methods"
       }
     ],
     "Listen to Bot Lifecycle": [
@@ -7548,20 +7526,20 @@
         "title": "Message Management Methods"
       }
     ],
+    "Message Message Module": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 112,
+        "level": 2,
+        "title": "Message Message Module"
+      }
+    ],
     "Message Methods": [
       {
         "document": "api-reference/event-system.md",
         "line": 276,
         "level": 3,
         "title": "Message Methods"
-      }
-    ],
-    "Message Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 112,
-        "level": 2,
-        "title": "Message Module"
       }
     ],
     "Message Operations": [
@@ -7764,12 +7742,12 @@
         "title": "Meta Events (Meta Events)"
       }
     ],
-    "Meta Module": [
+    "Meta Meta Event Module": [
       {
         "document": "api-reference/event-system.md",
         "line": 214,
         "level": 2,
-        "title": "Meta Module"
+        "title": "Meta Meta Event Module"
       }
     ],
     "Method 1: Install via pip": [
@@ -7780,6 +7758,14 @@
         "title": "Method 1: Install via pip"
       }
     ],
+    "Method 1: `reply()` via parameter": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 157,
+        "level": 3,
+        "title": "Method 1: `reply()` via parameter"
+      }
+    ],
     "Method 2: Install via uv (Recommended)": [
       {
         "document": "user-guide/installation.md",
@@ -7788,12 +7774,20 @@
         "title": "Method 2: Install via uv (Recommended)"
       }
     ],
-    "Method Chain": [
+    "Method 2: `event.send_chain()`": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 174,
+        "level": 3,
+        "title": "Method 2: `event.send_chain()`"
+      }
+    ],
+    "Method Chaining": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 31,
         "level": 2,
-        "title": "Method Chain"
+        "title": "Method Chaining"
       }
     ],
     "Method Comments": [
@@ -7823,7 +7817,7 @@
     "Method Resolution Priority": [
       {
         "document": "api-reference/event-system.md",
-        "line": 626,
+        "line": 634,
         "level": 3,
         "title": "Method Resolution Priority"
       }
@@ -8199,7 +8193,7 @@
     "Naming Conventions": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 423,
+        "line": 497,
         "level": 2,
         "title": "Naming Conventions"
       }
@@ -8348,12 +8342,12 @@
         "title": "Notice Events (Notice Events)"
       }
     ],
-    "Notice Module": [
+    "Notice Notice Module": [
       {
         "document": "api-reference/event-system.md",
         "line": 160,
         "level": 2,
-        "title": "Notice Module"
+        "title": "Notice Notice Module"
       }
     ],
     "Notification Event (notice)": [
@@ -8591,8 +8585,8 @@
     "Overriding Built-in Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 580,
-        "level": 5,
+        "line": 588,
+        "level": 4,
         "title": "Overriding Built-in Methods"
       }
     ],
@@ -8630,6 +8624,14 @@
         "title": "Overview of Event Types"
       }
     ],
+    "Overview of Rule Methods": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 253,
+        "level": 3,
+        "title": "Overview of Rule Methods"
+      }
+    ],
     "POST": [
       {
         "document": "advanced/http-client.md",
@@ -8662,12 +8664,12 @@
         "title": "Parallel Event Handling"
       }
     ],
-    "Parallel vs Serial": [
+    "Parallel and Sequential": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 318,
+        "line": 392,
         "level": 3,
-        "title": "Parallel vs Serial"
+        "title": "Parallel and Sequential"
       }
     ],
     "Parameter Description": [
@@ -8697,7 +8699,7 @@
     "PascalCase Naming": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 425,
+        "line": 499,
         "level": 3,
         "title": "PascalCase Naming"
       }
@@ -8737,7 +8739,7 @@
     "Platform Capability Query": [
       {
         "document": "api-reference/event-system.md",
-        "line": 339,
+        "line": 347,
         "level": 3,
         "title": "Platform Capability Query"
       },
@@ -8781,7 +8783,7 @@
     "Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 443,
+        "line": 451,
         "level": 3,
         "title": "Platform Extension Methods"
       },
@@ -8819,7 +8821,7 @@
     "Platform Method Isolation": [
       {
         "document": "api-reference/event-system.md",
-        "line": 479,
+        "line": 487,
         "level": 4,
         "title": "Platform Method Isolation"
       }
@@ -8873,7 +8875,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 445,
+        "line": 519,
         "level": 3,
         "title": "Platform-Specific Methods"
       },
@@ -8882,6 +8884,14 @@
         "line": 571,
         "level": 3,
         "title": "Platform-Specific Methods"
+      }
+    ],
+    "Platform-Specific Modifier Methods": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 121,
+        "level": 3,
+        "title": "Platform-Specific Modifier Methods"
       }
     ],
     "Platform-specific Response": [
@@ -8919,7 +8929,7 @@
     "Priority System": [
       {
         "document": "api-reference/event-system.md",
-        "line": 637,
+        "line": 645,
         "level": 2,
         "title": "Priority System"
       }
@@ -8927,7 +8937,7 @@
     "Priority and Backlog Dropping (Priority)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 258,
+        "line": 332,
         "level": 3,
         "title": "Priority and Backlog Dropping (Priority)"
       }
@@ -8943,7 +8953,7 @@
     "Progress Monitoring (OnProgress / OnError)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 227,
+        "line": 301,
         "level": 3,
         "title": "Progress Monitoring (OnProgress / OnError)"
       }
@@ -9144,6 +9154,14 @@
         "title": "Query Methods"
       }
     ],
+    "Query Platform Registered Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 472,
+        "level": 4,
+        "title": "Query Platform Registered Methods"
+      }
+    ],
     "Query Registered Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -9158,14 +9176,6 @@
         "line": 128,
         "level": 3,
         "title": "Query Supported Sending Methods"
-      }
-    ],
-    "Querying Registered Platform Methods": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 464,
-        "level": 4,
-        "title": "Querying Registered Platform Methods"
       }
     ],
     "Quick Build Mode (Static)": [
@@ -9288,12 +9298,12 @@
         "title": "Raw Message Sending"
       }
     ],
-    "Raw Message and Message Building": [
+    "Raw Messages and Message Building": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 557,
+        "line": 631,
         "level": 3,
-        "title": "Raw Message and Message Building"
+        "title": "Raw Messages and Message Building"
       }
     ],
     "Reading i18n Configuration via Configuration API": [
@@ -9360,6 +9370,22 @@
         "title": "References"
       }
     ],
+    "Register Commands": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 7,
+        "level": 3,
+        "title": "Register Commands"
+      }
+    ],
+    "Register Cross-Platform Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 613,
+        "level": 3,
+        "title": "Register Cross-Platform Methods"
+      }
+    ],
     "Register Entry": [
       {
         "document": "advanced/router.md",
@@ -9376,28 +9402,12 @@
         "title": "Register Middleware"
       }
     ],
-    "Registering Commands": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 7,
-        "level": 3,
-        "title": "Registering Commands"
-      }
-    ],
     "Registering Configuration Translations": [
       {
         "document": "advanced/i18n.md",
         "line": 335,
         "level": 3,
         "title": "Registering Configuration Translations"
-      }
-    ],
-    "Registering Cross-Platform Methods": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 605,
-        "level": 3,
-        "title": "Registering Cross-Platform Methods"
       }
     ],
     "Registering Handlers": [
@@ -9493,7 +9503,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 653,
+        "line": 661,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9518,12 +9528,6 @@
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 1032,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 565,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9574,6 +9578,12 @@
       {
         "document": "advanced/sql-builder.md",
         "line": 376,
+        "level": 2,
+        "title": "Related Documents"
+      },
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 639,
         "level": 2,
         "title": "Related Documents"
       }
@@ -9628,12 +9638,6 @@
     ],
     "Reply Functionality": [
       {
-        "document": "api-reference/event-system.md",
-        "line": 315,
-        "level": 3,
-        "title": "Reply Functionality"
-      },
-      {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 51,
         "level": 2,
@@ -9654,10 +9658,18 @@
         "title": "Reply Method"
       }
     ],
+    "Reply Method Details": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 359,
+        "level": 3,
+        "title": "Reply Method Details"
+      }
+    ],
     "Reply Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 351,
+        "line": 315,
         "level": 3,
         "title": "Reply Methods"
       }
@@ -9740,14 +9752,6 @@
         "title": "Request Methods"
       }
     ],
-    "Request Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 192,
-        "level": 2,
-        "title": "Request Module"
-      }
-    ],
     "Request Operation Return Values": [
       {
         "document": "platform-guide/onebot11.md",
@@ -9770,6 +9774,14 @@
         "line": 138,
         "level": 2,
         "title": "Request Operations (Request DSL)"
+      }
+    ],
+    "Request Request Module": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 192,
+        "level": 2,
+        "title": "Request Request Module"
       }
     ],
     "Request Statistics": [
@@ -9869,8 +9881,8 @@
     "Return Value Specification": [
       {
         "document": "api-reference/event-system.md",
-        "line": 543,
-        "level": 5,
+        "line": 551,
+        "level": 4,
         "title": "Return Value Specification"
       }
     ],
@@ -9885,7 +9897,7 @@
     "Return Values": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 470,
+        "line": 544,
         "level": 2,
         "title": "Return Values"
       }
@@ -10033,7 +10045,7 @@
     "Rule Combination and Background Execution": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 270,
+        "line": 344,
         "level": 3,
         "title": "Rule Combination and Background Execution"
       }
@@ -10041,7 +10053,7 @@
     "Rule Propagation": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 285,
+        "line": 359,
         "level": 3,
         "title": "Rule Propagation"
       }
@@ -10258,14 +10270,6 @@
         "title": "Send Rule Decorators"
       }
     ],
-    "Send Rule System": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 173,
-        "level": 2,
-        "title": "Send Rule System"
-      }
-    ],
     "Send Type": [
       {
         "document": "advanced/session-types.md",
@@ -10298,12 +10302,12 @@
         "title": "SendDSL"
       }
     ],
-    "SendDSL Detailed Explanation": [
+    "SendDSL Deep Dive": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 1,
         "level": 1,
-        "title": "SendDSL Detailed Explanation"
+        "title": "SendDSL Deep Dive"
       }
     ],
     "SendDSL Implementation": [
@@ -10420,6 +10424,22 @@
         "title": "Sending Methods"
       }
     ],
+    "Sending Rules System": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 247,
+        "level": 2,
+        "title": "Sending Rules System"
+      }
+    ],
+    "Sending Success Logic (Hook)": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 265,
+        "level": 3,
+        "title": "Sending Success Logic (Hook)"
+      }
+    ],
     "Sending a Reply": [
       {
         "document": "getting-started/first-bot.md",
@@ -10444,15 +10464,13 @@
         "title": "Server Configuration"
       }
     ],
-    "Session Identifier": [
+    "Session Identifiers": [
       {
         "document": "api-reference/event-system.md",
         "line": 263,
         "level": 3,
-        "title": "Session Identifier"
-      }
-    ],
-    "Session Identifiers": [
+        "title": "Session Identifiers"
+      },
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 104,
@@ -10535,8 +10553,8 @@
     "Single Method Registration": [
       {
         "document": "api-reference/event-system.md",
-        "line": 506,
-        "level": 5,
+        "line": 514,
+        "level": 4,
         "title": "Single Method Registration"
       }
     ],
@@ -10737,7 +10755,7 @@
     "Standardized Response": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 496,
+        "line": 570,
         "level": 3,
         "title": "Standardized Response"
       }
@@ -11192,12 +11210,12 @@
         "title": "Target Audience"
       }
     ],
-    "Task Object": [
+    "Task Objects": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 472,
+        "line": 546,
         "level": 3,
-        "title": "Task Object"
+        "title": "Task Objects"
       }
     ],
     "Technical Standards": [
@@ -11274,6 +11292,14 @@
         "line": 148,
         "level": 3,
         "title": "The command is not responding?"
+      }
+    ],
+    "Timeout Auto-Cancel (Timeout)": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 291,
+        "level": 3,
+        "title": "Timeout Auto-Cancel (Timeout)"
       }
     ],
     "Timeout and Retry": [
@@ -11462,12 +11488,12 @@
         "title": "Unique Event Types"
       }
     ],
-    "Unregistering Methods": [
+    "Unregister Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 568,
-        "level": 5,
-        "title": "Unregistering Methods"
+        "line": 576,
+        "level": 4,
+        "title": "Unregister Methods"
       }
     ],
     "Unregistering Translations": [
@@ -11653,7 +11679,7 @@
     "User: Using Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 447,
+        "line": 455,
         "level": 4,
         "title": "User: Using Platform Extension Methods"
       }
@@ -11693,9 +11719,17 @@
     "Using Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 123,
+        "line": 197,
         "level": 3,
         "title": "Using Method"
+      }
+    ],
+    "Using Modifier Methods in Event Wrapper Classes": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 153,
+        "level": 2,
+        "title": "Using Modifier Methods in Event Wrapper Classes"
       }
     ],
     "Using Request Parameters": [
@@ -11823,7 +11857,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 428,
+        "line": 436,
         "level": 3,
         "title": "Utility Methods"
       }
@@ -11876,10 +11910,18 @@
         "title": "Wait Reply Functionality"
       }
     ],
+    "Wait for Reply": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 57,
+        "level": 3,
+        "title": "Wait for Reply"
+      }
+    ],
     "Wait for Result": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 160,
+        "line": 234,
         "level": 3,
         "title": "Wait for Result"
       }
@@ -11890,14 +11932,6 @@
         "line": 468,
         "level": 3,
         "title": "Waiting for Any Event (wait_for)"
-      }
-    ],
-    "Waiting for Reply": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 57,
-        "level": 3,
-        "title": "Waiting for Reply"
       }
     ],
     "Waiting for Reply with Callback": [
@@ -12329,7 +12363,7 @@
     "`hasattr` / `dir` Support": [
       {
         "document": "api-reference/event-system.md",
-        "line": 495,
+        "line": 503,
         "level": 4,
         "title": "`hasattr` / `dir` Support"
       }

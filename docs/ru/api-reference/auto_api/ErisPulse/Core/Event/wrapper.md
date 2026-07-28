@@ -184,6 +184,23 @@ ErisPulse 事件包装类
 ---
 
 
+### `_normalize_modifier(mod)`
+
+> **内部方法**
+归一化修饰方法定义为 (name, args, kwargs)
+
+支持以下形式：
+- ``"Name"``                            → ``("Name", (), {})``
+- ``("Name",)``                         → ``("Name", (), {})``
+- ``("Name", arg1, arg2, ...)``         → ``("Name", (arg1, arg2, ...), {})``
+- ``("Name", (arg1, arg2), kwargs_dict)`` → 显式位置参数 + 关键字参数
+
+- **mod** (`str|tuple`): - 修饰方法定义（字符串或元组）
+**返回值** (`tuple`): - ``(方法名, 位置参数元组, 关键字参数字典)``
+
+---
+
+
 ## 类列表
 
 
@@ -698,19 +715,32 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async reply(content: str, method: str = DEFAULT_SEND_METHOD, at_sender: bool = False, quote: bool = False, at_users: list[str] | None = None, reply_to: str | None = None, at_all: bool = False)`
+##### `async reply(content: str, method: str | None = None, at_sender: bool = False, quote: bool = False, at_users: list[str] | None = None, reply_to: str | None = None, at_all: bool = False, via: list | None = None)`
 
 通用回复方法
 
 基于适配器的Text方法，但可以通过method参数指定其他发送方法
 
-- **content** (`发送内容（文本、URL等，取决于method参数）`): - **method**: 适配器发送方法，默认为"Text"
-               可选值: "Text", "Image", "Voice", "Video", "File" 等
+- **content** (`发送内容（文本、URL等，取决于method参数）`): - **method**: str - 适配器发送方法（默认: "Text"）
+               可选值: "Text", "Image", "Voice", "Video", "File" 等；
+               使用 via 时必须显式指定
 - **at_sender** (`是否@发送者（自动从事件中提取`): user_id）
 - **quote** (`是否引用回复当前消息（自动从事件中提取`): message_id）
 - **at_users** (`@用户列表（可选），如`): ["user1", "user2"]
 - **reply_to** (`回复消息ID（可选，手动指定）`): - **at_all**: 是否@全体成员（可选），默认为 False
-- **kwargs** (`额外参数，例如Mention方法的user_id`): **返回值** (`适配器发送方法的返回值`): 
+- **via** (`list`): - 经由的平台修饰方法链（可选，默认: None），按顺序在发送方法前应用。
+            每个元素可为：
+            - ``"Name"``（无参）
+            - ``("Name", arg1, arg2, ...)``（位置参数）
+            - ``("Name", (arg1, ...), {kw: val})``（位置+关键字参数）
+            例如 ``[("Expire", 3600), ("ForMember", "uid")]`` 等价于
+            ``.Expire(3600).ForMember("uid")``。
+            当需要连续多个修饰方法、或 method 强依赖修饰方法时使用；
+            更复杂的场景建议用 :meth:`send_chain`
+- **kwargs** (`额外参数，例如Mention方法的user_id`): **返回值** (`Any`): - 适配器发送方法的返回值
+
+**异常**: `ValueError` - 当适配器不支持指定的发送方法/修饰方法时
+
 **示例**:
 ```python
 >>> # 简单回复
@@ -730,6 +760,10 @@ OneBot12 标准事件数据结构
 >>>
 >>> # @全体成员
 >>> await event.reply("公告", at_all=True)
+>>>
+>>> # 平台专有修饰方法链 + 看板发送
+>>> await event.reply("看板内容", method="Board",
+...                   via=[("Expire", 3600), ("ForMember", "uid")])
 ```
 
 ---
@@ -771,6 +805,43 @@ OneBot12 标准事件数据结构
 >>>         .image("https://example.com/img.jpg")
 >>>         .build()
 >>> )
+```
+
+---
+
+
+##### `send_chain()`
+
+获取已配置好目标和发送账号的发送链
+
+返回已设置 ``To``（目标）和 ``Using``（发送账号）的 SendDSL 实例，
+可自由追加修饰方法（At/Reply/平台专有修饰）和发送方法。
+
+适用于 :meth:`reply` 无法覆盖的场景：
+- 平台专有修饰方法（如云虎的 Expire/ExpireAt/ForMember）
+- 需要连续多个修饰方法
+- 无内容参数的动作型发送方法（如 DismissBoard）
+
+**返回值** (`SendDSL`): - 已设置目标和发送账号的发送链实例
+
+**异常**: `ValueError` - 当事件缺少 platform 字段或找不到对应适配器时
+
+**示例**:
+```python
+>>> # 平台专有修饰方法 + 看板发送
+>>> await event.send_chain().Expire(3600).Board("一小时后过期")
+>>>
+>>> # 连续多个修饰方法
+>>> await (event.send_chain()
+...        .Expire(3600)
+...        .ForMember("114514")
+...        .Board("看板内容", content_type="markdown"))
+>>>
+>>> # 内置修饰方法同样可用
+>>> await event.send_chain().At("123").Reply("msg_id").Text("hi")
+>>>
+>>> # 无内容参数的动作型方法
+>>> await event.send_chain().DismissBoard()
 ```
 
 ---

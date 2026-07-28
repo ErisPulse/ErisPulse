@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1348,
+  "total_keywords": 1352,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2025,7 +2025,7 @@
     "Account 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 140,
+        "line": 214,
         "level": 3,
         "title": "Account 方法"
       }
@@ -2805,7 +2805,7 @@
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 425,
+        "line": 499,
         "level": 3,
         "title": "PascalCase 命名"
       }
@@ -3075,7 +3075,7 @@
     "Task 对象": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 472,
+        "line": 546,
         "level": 3,
         "title": "Task 对象"
       }
@@ -3099,7 +3099,7 @@
     "Using 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 123,
+        "line": 197,
         "level": 3,
         "title": "Using 方法"
       }
@@ -3439,7 +3439,7 @@
     "`hasattr` / `dir` 支持": [
       {
         "document": "api-reference/event-system.md",
-        "line": 495,
+        "line": 503,
         "level": 4,
         "title": "`hasattr` / `dir` 支持"
       }
@@ -4021,7 +4021,7 @@
     "不等待结果": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 150,
+        "line": 224,
         "level": 3,
         "title": "不等待结果"
       }
@@ -4567,7 +4567,7 @@
     "交互方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 387,
+        "line": 395,
         "level": 3,
         "title": "交互方法"
       },
@@ -4669,7 +4669,7 @@
     "优先级与积压丢弃（Priority）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 258,
+        "line": 332,
         "level": 3,
         "title": "优先级与积压丢弃（Priority）"
       }
@@ -4677,7 +4677,7 @@
     "优先级系统": [
       {
         "document": "api-reference/event-system.md",
-        "line": 637,
+        "line": 645,
         "level": 2,
         "title": "优先级系统"
       }
@@ -4921,7 +4921,7 @@
     "修饰器与规则的继承": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 384,
+        "line": 458,
         "level": 3,
         "title": "修饰器与规则的继承"
       }
@@ -5357,7 +5357,7 @@
     "单个方法注册": [
       {
         "document": "api-reference/event-system.md",
-        "line": 506,
+        "line": 514,
         "level": 4,
         "title": "单个方法注册"
       }
@@ -5405,7 +5405,7 @@
     "原始消息与消息构建": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 557,
+        "line": 631,
         "level": 3,
         "title": "原始消息与消息构建"
       }
@@ -5635,7 +5635,7 @@
     "发送成功后执行逻辑（Hook）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 191,
+        "line": 265,
         "level": 3,
         "title": "发送成功后执行逻辑（Hook）"
       }
@@ -5751,7 +5751,7 @@
     "发送规则系统": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 173,
+        "line": 247,
         "level": 2,
         "title": "发送规则系统"
       }
@@ -5815,7 +5815,7 @@
     "后台执行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 408,
+        "line": 482,
         "level": 3,
         "title": "后台执行"
       }
@@ -5995,7 +5995,7 @@
     "命名规范": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 423,
+        "line": 497,
         "level": 2,
         "title": "命名规范"
       }
@@ -6039,7 +6039,7 @@
     "回复方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 351,
+        "line": 359,
         "level": 3,
         "title": "回复方法"
       }
@@ -6124,6 +6124,14 @@
         "title": "图片识别示例"
       }
     ],
+    "在 Event 包装类中使用修饰方法": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 153,
+        "level": 2,
+        "title": "在 Event 包装类中使用修饰方法"
+      }
+    ],
     "在 RouteGroup 中使用": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -6193,7 +6201,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 529,
+        "line": 603,
         "level": 3,
         "title": "基本使用"
       },
@@ -6727,7 +6735,7 @@
     "失败继续与重试": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 338,
+        "line": 412,
         "level": 3,
         "title": "失败继续与重试"
       }
@@ -6735,7 +6743,7 @@
     "失败自动重试（Retry）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 208,
+        "line": 282,
         "level": 3,
         "title": "失败自动重试（Retry）"
       }
@@ -7037,7 +7045,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 527,
+        "line": 601,
         "level": 2,
         "title": "完整示例"
       },
@@ -7213,7 +7221,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 428,
+        "line": 436,
         "level": 3,
         "title": "工具方法"
       }
@@ -7340,6 +7348,14 @@
         "title": "平台"
       }
     ],
+    "平台专有修饰方法": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 121,
+        "level": 3,
+        "title": "平台专有修饰方法"
+      }
+    ],
     "平台事件方法扩展": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -7373,7 +7389,7 @@
     "平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 443,
+        "line": 451,
         "level": 3,
         "title": "平台扩展方法"
       },
@@ -7401,7 +7417,7 @@
     "平台方法隔离": [
       {
         "document": "api-reference/event-system.md",
-        "line": 479,
+        "line": 487,
         "level": 4,
         "title": "平台方法隔离"
       }
@@ -7463,7 +7479,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 445,
+        "line": 519,
         "level": 3,
         "title": "平台特有方法"
       }
@@ -7479,7 +7495,7 @@
     "平台能力查询": [
       {
         "document": "api-reference/event-system.md",
-        "line": 339,
+        "line": 347,
         "level": 3,
         "title": "平台能力查询"
       },
@@ -7493,7 +7509,7 @@
     "并行与串行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 318,
+        "line": 392,
         "level": 3,
         "title": "并行与串行"
       }
@@ -7509,7 +7525,7 @@
     "延迟发送（Defer）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 249,
+        "line": 323,
         "level": 3,
         "title": "延迟发送（Defer）"
       }
@@ -7649,7 +7665,7 @@
     "异步处理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 148,
+        "line": 222,
         "level": 2,
         "title": "异步处理"
       }
@@ -8071,7 +8087,7 @@
     "批量构建模式（Build）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 298,
+        "line": 372,
         "level": 2,
         "title": "批量构建模式（Build）"
       },
@@ -8085,7 +8101,7 @@
     "批量注册（Mixin 类）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 522,
+        "line": 530,
         "level": 4,
         "title": "批量注册（Mixin 类）"
       }
@@ -8377,7 +8393,7 @@
     "整批规则与回调": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 350,
+        "line": 424,
         "level": 3,
         "title": "整批规则与回调"
       }
@@ -8580,12 +8596,28 @@
         "title": "新邮件事件（email_new）"
       }
     ],
+    "方式一：reply() 的 via 参数": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 157,
+        "level": 3,
+        "title": "方式一：reply() 的 via 参数"
+      }
+    ],
     "方式一：使用 pip 安装": [
       {
         "document": "user-guide/installation.md",
         "line": 13,
         "level": 3,
         "title": "方式一：使用 pip 安装"
+      }
+    ],
+    "方式二：event.send_chain()": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 174,
+        "level": 3,
+        "title": "方式二：event.send_chain()"
       }
     ],
     "方式二：使用 uv 安装（推荐）": [
@@ -8623,7 +8655,7 @@
     "方法解析优先级": [
       {
         "document": "api-reference/event-system.md",
-        "line": 626,
+        "line": 634,
         "level": 3,
         "title": "方法解析优先级"
       }
@@ -8941,7 +8973,7 @@
     "查询平台已注册方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 464,
+        "line": 472,
         "level": 4,
         "title": "查询平台已注册方法"
       }
@@ -9005,7 +9037,7 @@
     "标准化响应": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 496,
+        "line": 570,
         "level": 3,
         "title": "标准化响应"
       }
@@ -9559,7 +9591,7 @@
     "注册跨平台方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 605,
+        "line": 613,
         "level": 3,
         "title": "注册跨平台方法"
       }
@@ -9615,7 +9647,7 @@
     "注销方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 568,
+        "line": 576,
         "level": 4,
         "title": "注销方法"
       }
@@ -10267,7 +10299,7 @@
     "用户：使用平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 447,
+        "line": 455,
         "level": 4,
         "title": "用户：使用平台扩展方法"
       }
@@ -10427,7 +10459,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 653,
+        "line": 661,
         "level": 2,
         "title": "相关文档"
       },
@@ -10457,7 +10489,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 565,
+        "line": 639,
         "level": 2,
         "title": "相关文档"
       },
@@ -10625,7 +10657,7 @@
     "等待结果": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 160,
+        "line": 234,
         "level": 3,
         "title": "等待结果"
       }
@@ -11065,7 +11097,7 @@
     "覆写内置方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 580,
+        "line": 588,
         "level": 4,
         "title": "覆写内置方法"
       }
@@ -11073,7 +11105,7 @@
     "规则传播": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 285,
+        "line": 359,
         "level": 3,
         "title": "规则传播"
       }
@@ -11081,7 +11113,7 @@
     "规则方法一览": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 179,
+        "line": 253,
         "level": 3,
         "title": "规则方法一览"
       }
@@ -11089,7 +11121,7 @@
     "规则组合与后台执行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 270,
+        "line": 344,
         "level": 3,
         "title": "规则组合与后台执行"
       }
@@ -11285,7 +11317,7 @@
     "账户管理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 121,
+        "line": 195,
         "level": 2,
         "title": "账户管理"
       }
@@ -11365,7 +11397,7 @@
     "超时自动取消（Timeout）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 217,
+        "line": 291,
         "level": 3,
         "title": "超时自动取消（Timeout）"
       }
@@ -11381,7 +11413,7 @@
     "跨平台扩展（通配符）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 601,
+        "line": 609,
         "level": 2,
         "title": "跨平台扩展（通配符）"
       },
@@ -11545,7 +11577,7 @@
     "返回值": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 470,
+        "line": 544,
         "level": 2,
         "title": "返回值"
       }
@@ -11569,7 +11601,7 @@
     "返回值规范": [
       {
         "document": "api-reference/event-system.md",
-        "line": 543,
+        "line": 551,
         "level": 4,
         "title": "返回值规范"
       }
@@ -11585,7 +11617,7 @@
     "进入构建模式": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 302,
+        "line": 376,
         "level": 3,
         "title": "进入构建模式"
       }
@@ -11593,7 +11625,7 @@
     "进度监控（OnProgress / OnError）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 227,
+        "line": 301,
         "level": 3,
         "title": "进度监控（OnProgress / OnError）"
       }
@@ -11835,7 +11867,7 @@
     "适配器：注册平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 502,
+        "line": 510,
         "level": 3,
         "title": "适配器：注册平台扩展方法"
       }
@@ -12421,7 +12453,7 @@
     "链式调用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 547,
+        "line": 621,
         "level": 3,
         "title": "链式调用"
       }
