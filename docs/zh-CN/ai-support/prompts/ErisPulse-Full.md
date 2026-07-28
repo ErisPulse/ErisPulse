@@ -6955,6 +6955,25 @@ await event.send_chain().At("123").Reply("msg_id").Text("hi")
 await event.send_chain().DismissBoard()
 ```
 
+> `send_chain()` 返回的是完整的 SendDSL 实例，因此**所有链式特性都可用**——不仅是修饰方法，还包括发送规则和批量构建：
+
+```python
+# 发送规则：重试 + 超时 + 成功回调
+await (event.send_chain()
+       .Retry(3).Timeout(10)
+       .Hook(lambda r: print("发送成功"))
+       .Text("可靠发送"))
+
+# 延迟发送 + 平台修饰 + 看板
+await event.send_chain().Defer(5).Expire(3600).Board("延迟看板")
+
+# 批量构建模式
+results = await (event.send_chain()
+                 .Build()
+                 .Text("第一句").Image("pic.jpg").Text("第二句")
+                 .send_all())
+```
+
 ## 账户管理
 
 ### Using 方法
