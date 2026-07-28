@@ -1179,10 +1179,13 @@ class Event(dict):
         ...                   via=[("Expire", 3600), ("ForMember", "uid")])
         """
         if via and method is None:
+            from ..i18n import i18n
+
             logger.warning(
-                "reply() 使用 via 但未指定 method，将使用默认发送方法 "
-                f"'{DEFAULT_SEND_METHOD}'。若修饰方法需配合特定发送方法"
-                "，请显式传入 method={方法名}。"
+                i18n.t(
+                    "core.event.reply_via_without_method",
+                    default_method=DEFAULT_SEND_METHOD,
+                )
             )
         if method is None:
             method = DEFAULT_SEND_METHOD
