@@ -2030,3 +2030,106 @@ class TestListSends:
         for chain_method in ("At", "AtAll", "Reply", "To", "Using", "Account",
                              "Hook", "Retry", "Timeout", "Defer", "Build"):
             assert chain_method not in methods, f"链式方法 {chain_method} 不应被列为发送方法"
+
+
+# ==================== 返回 self 的平台修饰方法测试 ====================
+# 平台无需任何装饰器：只要方法返回 self（SendDSL 实例），
+# _wrap_send_method 会自动识别并不对其触发发送包装/生命周期事件。
+
+
+class TestSendDSLReturnSelfModifier:
+    """返回 self 的平台修饰方法（无需装饰器）链式调用测试"""
+
+    @pytest.fixture
+    def adapter_with_self_modifier(self):
+        """创建带返回-self 修饰方法与依赖修饰的发送方法的适配器"""
+
+        class _Send(BaseAdapter.Send):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self._expire = None
+                self._member = None
+
+            def Raw_ob12(self, message, **kwargs):
+                async def _do():
+                    segments = self._apply_modifiers(message)
+                    return await self._adapter.call_api(
+                        endpoint="/send_message",
+                        message=segments,
+                        expire=self._expire,
+                        member=self._member,
+                        **self.send_context,
+                        **kwargs,
+                    )
+                return asyncio.ensure_future(_do())
+
+            # 平台修饰方法：仅返回 self，无需任何装饰器
+            def Expire(self, seconds: int):
+                self._expire = seconds
+                return self
+
+            def ForMember(self, user_id: str):
+                self._member = user_id
+                return self
+
+            def Board(self, content: str, **kwargs):
+                return self.Raw_ob12([{"type": "board", "data": {"text": content}}])
+
+        class _Adapter(BaseAdapter):
+            Send = _Send
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {
+                    "status": "ok",
+                    "retcode": 0,
+                    "data": {"endpoint": endpoint, "params": params},
+                    "message_id": "mid_test",
+                    "message": "",
+                }
+
+        return _Adapter()
+
+    @pytest.mark.asyncio
+    async def test_return_self_modifier_preserves_chain(self, adapter_with_self_modifier):
+        """返回 self 的方法应保持链式（同一实例），不触发发送副作用"""
+        chain = adapter_with_self_modifier.Send.To("group", "g1")
+        result = chain.Expire(3600)
+        assert result is chain
+        assert chain._expire == 3600
+
+        result2 = chain.ForMember("u123")
+        assert result2 is chain
+        assert chain._member == "u123"
+
+    @pytest.mark.asyncio
+    async def test_send_method_reads_modifier_state(self, adapter_with_self_modifier):
+        """发送方法（Board）应能读取返回-self 修饰方法设置的状态"""
+        result = await (adapter_with_self_modifier.Send
+                        .To("group", "g1")
+                        .Expire(3600)
+                        .ForMember("u9")
+                        .Board("看板内容"))
+        assert result["status"] == "ok"
+        params = result["data"]["params"]
+        assert params["expire"] == 3600
+        assert params["member"] == "u9"
+        assert any(seg["type"] == "board" for seg in params["message"])
+
+    @pytest.mark.asyncio
+    async def test_multiple_return_self_modifiers_chain(self, adapter_with_self_modifier):
+        """多个返回-self 的修饰方法应可连续链式调用"""
+        chain = (adapter_with_self_modifier.Send
+                 .To("group", "g1")
+                 .Expire(100)
+                 .ForMember("abc"))
+        result = await chain.Board("hi")
+        assert result["status"] == "ok"
+        params = result["data"]["params"]
+        assert params["expire"] == 100
+        assert params["member"] == "abc"
