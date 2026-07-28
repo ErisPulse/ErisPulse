@@ -1,9 +1,7 @@
-from .Core import MyAdapter, MyAdapterConfig, MyBotConfig
+from .Core import MyAdapter
 from .Converter import MyPlatformConverter
 
 __all__ = [
     "MyAdapter",
-    "MyAdapterConfig",
-    "MyBotConfig",
     "MyPlatformConverter",
 ]
