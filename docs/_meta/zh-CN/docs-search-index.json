@@ -2025,7 +2025,7 @@
     "Account 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 214,
+        "line": 233,
         "level": 3,
         "title": "Account 方法"
       }
@@ -2805,7 +2805,7 @@
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 499,
+        "line": 518,
         "level": 3,
         "title": "PascalCase 命名"
       }
@@ -3075,7 +3075,7 @@
     "Task 对象": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 546,
+        "line": 565,
         "level": 3,
         "title": "Task 对象"
       }
@@ -3099,7 +3099,7 @@
     "Using 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 197,
+        "line": 216,
         "level": 3,
         "title": "Using 方法"
       }
@@ -4021,7 +4021,7 @@
     "不等待结果": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 224,
+        "line": 243,
         "level": 3,
         "title": "不等待结果"
       }
@@ -4669,7 +4669,7 @@
     "优先级与积压丢弃（Priority）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 332,
+        "line": 351,
         "level": 3,
         "title": "优先级与积压丢弃（Priority）"
       }
@@ -4921,7 +4921,7 @@
     "修饰器与规则的继承": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 458,
+        "line": 477,
         "level": 3,
         "title": "修饰器与规则的继承"
       }
@@ -5405,7 +5405,7 @@
     "原始消息与消息构建": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 631,
+        "line": 650,
         "level": 3,
         "title": "原始消息与消息构建"
       }
@@ -5635,7 +5635,7 @@
     "发送成功后执行逻辑（Hook）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 265,
+        "line": 284,
         "level": 3,
         "title": "发送成功后执行逻辑（Hook）"
       }
@@ -5751,7 +5751,7 @@
     "发送规则系统": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 247,
+        "line": 266,
         "level": 2,
         "title": "发送规则系统"
       }
@@ -5815,7 +5815,7 @@
     "后台执行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 482,
+        "line": 501,
         "level": 3,
         "title": "后台执行"
       }
@@ -5995,7 +5995,7 @@
     "命名规范": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 497,
+        "line": 516,
         "level": 2,
         "title": "命名规范"
       }
@@ -6201,7 +6201,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 603,
+        "line": 622,
         "level": 3,
         "title": "基本使用"
       },
@@ -6735,7 +6735,7 @@
     "失败继续与重试": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 412,
+        "line": 431,
         "level": 3,
         "title": "失败继续与重试"
       }
@@ -6743,7 +6743,7 @@
     "失败自动重试（Retry）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 282,
+        "line": 301,
         "level": 3,
         "title": "失败自动重试（Retry）"
       }
@@ -7045,7 +7045,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 601,
+        "line": 620,
         "level": 2,
         "title": "完整示例"
       },
@@ -7479,7 +7479,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 519,
+        "line": 538,
         "level": 3,
         "title": "平台特有方法"
       }
@@ -7509,7 +7509,7 @@
     "并行与串行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 392,
+        "line": 411,
         "level": 3,
         "title": "并行与串行"
       }
@@ -7525,7 +7525,7 @@
     "延迟发送（Defer）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 323,
+        "line": 342,
         "level": 3,
         "title": "延迟发送（Defer）"
       }
@@ -7665,7 +7665,7 @@
     "异步处理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 222,
+        "line": 241,
         "level": 2,
         "title": "异步处理"
       }
@@ -8087,7 +8087,7 @@
     "批量构建模式（Build）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 372,
+        "line": 391,
         "level": 2,
         "title": "批量构建模式（Build）"
       },
@@ -8393,7 +8393,7 @@
     "整批规则与回调": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 424,
+        "line": 443,
         "level": 3,
         "title": "整批规则与回调"
       }
@@ -9037,7 +9037,7 @@
     "标准化响应": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 570,
+        "line": 589,
         "level": 3,
         "title": "标准化响应"
       }
@@ -10489,7 +10489,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 639,
+        "line": 658,
         "level": 2,
         "title": "相关文档"
       },
@@ -10657,7 +10657,7 @@
     "等待结果": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 234,
+        "line": 253,
         "level": 3,
         "title": "等待结果"
       }
@@ -11105,7 +11105,7 @@
     "规则传播": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 359,
+        "line": 378,
         "level": 3,
         "title": "规则传播"
       }
@@ -11113,7 +11113,7 @@
     "规则方法一览": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 253,
+        "line": 272,
         "level": 3,
         "title": "规则方法一览"
       }
@@ -11121,7 +11121,7 @@
     "规则组合与后台执行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 344,
+        "line": 363,
         "level": 3,
         "title": "规则组合与后台执行"
       }
@@ -11317,7 +11317,7 @@
     "账户管理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 195,
+        "line": 214,
         "level": 2,
         "title": "账户管理"
       }
@@ -11397,7 +11397,7 @@
     "超时自动取消（Timeout）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 291,
+        "line": 310,
         "level": 3,
         "title": "超时自动取消（Timeout）"
       }
@@ -11577,7 +11577,7 @@
     "返回值": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 544,
+        "line": 563,
         "level": 2,
         "title": "返回值"
       }
@@ -11617,7 +11617,7 @@
     "进入构建模式": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 376,
+        "line": 395,
         "level": 3,
         "title": "进入构建模式"
       }
@@ -11625,7 +11625,7 @@
     "进度监控（OnProgress / OnError）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 301,
+        "line": 320,
         "level": 3,
         "title": "进度监控（OnProgress / OnError）"
       }
@@ -12453,7 +12453,7 @@
     "链式调用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 621,
+        "line": 640,
         "level": 3,
         "title": "链式调用"
       }
