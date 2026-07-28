@@ -4549,9 +4549,9 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 
 # API системы событий
 
-Документ подробно описывает API системы событий ErisPulse.
+В этой документации подробно описан API системы событий ErisPulse.
 
-## Модуль Command (Команды)
+## Модуль команд Command
 
 ### Регистрация команд
 
@@ -4561,10 +4561,10 @@ from ErisPulse.Core.Event import command
 # Базовая команда
 @command("hello", help="Отправить приветствие")
 async def hello_handler(event):
-    await event.reply("Привет!")
+    await event.reply("Здравствуйте!")
 
 # Команда с псевдонимами
-@command(["help", "h"], aliases=["помощь"], help="Показать помощь")
+@command(["help", "h"], aliases=["помощь"], help="Показать справку")
 async def help_handler(event):
     pass
 
@@ -4582,7 +4582,7 @@ async def secret_handler(event):
     pass
 
 # Группа команд
-@command("admin.reload", group="admin", help="Перезагрузить модуль")
+@command("admin.reload", group="admin", help="Перезагрузить модули")
 async def reload_handler(event):
     pass
 ```
@@ -4590,16 +4590,16 @@ async def reload_handler(event):
 ### Информация о командах
 
 ```python
-# Получение справки по команде
+# Получить справку по команде
 help_text = command.help()
 
-# Получение конкретной команды
+# Получить информацию о конкретной команде
 cmd_info = command.get_command("admin")
 
-# Получение всех команд из группы
+# Получить все команды группы
 admin_commands = command.get_group_commands("admin")
 
-# Получение всех видимых команд
+# Получить все видимые команды
 visible_commands = command.get_visible_commands()
 ```
 
@@ -4607,11 +4607,11 @@ visible_commands = command.get_visible_commands()
 
 ```python
 # Ожидание ответа от пользователя
-@command("ask", help="Запросить информацию у пользователя")
+@command("ask", help="Запросить информацию о пользователе")
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
-        prompt="Пожалуйста, введите ваше имя:",  # уже отправлено выше
+        prompt="Введите ваше имя:",  # уже отправлено выше
         timeout=30.0
     )
     
@@ -4629,7 +4629,7 @@ def validate_age(event_data):
 
 @command("age", help="Запросить возраст пользователя")
 async def age_command(event):
-    await event.reply("Пожалуйста, введите ваш возраст:")
+    await event.reply("Введите ваш возраст:")
     
     reply = await command.wait_reply(
         event,
@@ -4639,9 +4639,9 @@ async def age_command(event):
     
     if reply:
         age = int(reply.get_text())
-        await event.reply(f"Ваш возраст {age} лет")
+        await event.reply(f"Ваш возраст: {age} лет")
 
-# Ожидание ответа с обратным вызовом
+# Ожидание ответа с колбэком
 async def handle_confirmation(reply_event):
     text = reply_event.get_text().lower()
     if text in ["да", "yes", "y"]:
@@ -4653,104 +4653,104 @@ async def handle_confirmation(reply_event):
 async def confirm_command(event):
     await command.wait_reply(
         event,
-        prompt="Пожалуйста, введите 'да' или 'нет':",
+        prompt="Введите 'да' или 'нет':",
         callback=handle_confirmation
     )
 ```
 
-## Модуль Message (Сообщения)
+## Модуль сообщений Message
 
 ### События сообщений
 
 ```python
 from ErisPulse.Core.Event import message
 
-# Отслеживание всех сообщений
+# Слушать все сообщения
 @message.on_message()
 async def message_handler(event):
     sdk.logger.info(f"Получено сообщение: {event.get_text()}")
 
-# Отслеживание личных сообщений
+# Слушать личные сообщения
 @message.on_private_message()
 async def private_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"Личное сообщение от: {user_id}")
 
-# Отслеживание групповых сообщений
+# Слушать групповые сообщения
 @message.on_group_message()
 async def group_handler(event):
     group_id = event.get_group_id()
     sdk.logger.info(f"Групповое сообщение от: {group_id}")
 
-# Отслеживание сообщений с упоминанием
+# Слушать сообщения с упоминанием @
 @message.on_at_message()
 async def at_handler(event):
     mentions = event.get_mentions()
-    sdk.logger.info(f"Упомянутые пользователи: {mentions}")
+    sdk.logger.info(f"Упомянутый пользователь: {mentions}")
 ```
 
-### Условное отслеживание
+### Условное прослушивание
 
 ```python
-# Использование приоритета для управления последовательностью выполнения
-@message.on_message(priority=10)  # Чем больше значение, тем выше приоритет
+# Использование приоритета для управления порядком выполнения
+@message.on_message(priority=10)  # Чем больше число, тем выше приоритет
 async def high_priority_handler(event):
     pass
 
-# Условная фильтрация внутри обработчика
+# Реализация условной фильтрации внутри обработчика
 @message.on_message()
 async def filtered_handler(event):
-    if "ключевое слово" not in event.get_text():
+    if "ключевое_слово" not in event.get_text():
         return
     # Обработка сообщений, содержащих ключевое слово
     pass
 ```
 
-## Модуль Notice (Уведомления)
+## Модуль уведомлений Notice
 
 ### События уведомлений
 
 ```python
 from ErisPulse.Core.Event import notice
 
-# Добавление друга
+# Добавление в друзья
 @notice.on_friend_add()
 async def friend_add_handler(event):
     user_id = event.get_user_id()
-    await event.reply("Спасибо за добавление меня в друзья!")
+    await event.reply("Добро пожаловать в друзья!")
 
-# Удаление друга
+# Удаление из друзей
 @notice.on_friend_remove()
 async def friend_remove_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"Друг удален: {user_id}")
+    sdk.logger.info(f"Удаление друга: {user_id}")
 
-# Увеличение числа участников группы
+# Приглашение в группу
 @notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
-    await event.reply(f"Добро пожаловать, новый участник!")
+    await event.reply(f"Добро пожаловать новому участнику!")
 
-# Уменьшение числа участников группы
+# Выход из группы
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"Участник покинул группу: {user_id}")
 ```
 
-## Модуль Request (Запросы)
+## Модуль запросов Request
 
 ### События запросов
 
 ```python
 from ErisPulse.Core.Event import request
 
-# Запрос на добавление друга
+# Запрос на добавление в друзья
 @request.on_friend_request()
 async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
-    sdk.logger.info(f"Запрос на добавление друга: {user_id}, комментарий: {comment}")
+    sdk.logger.info(f"Запрос на добавление в друзья: {user_id}, заметка: {comment}")
 
 # Запрос на приглашение в группу
 @request.on_group_request()
@@ -4760,7 +4760,7 @@ async def group_request_handler(event):
     sdk.logger.info(f"Приглашение в группу: {group_id}, от: {user_id}")
 ```
 
-## Модуль Meta (Мета-события)
+## Модуль мета-событий Meta
 
 ### Мета-события
 
@@ -4771,27 +4771,27 @@ from ErisPulse.Core.Event import meta
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"Подключение к платформе {platform} успешно")
+    sdk.logger.info(f"Платформа {platform} подключена успешно")
 
 # Событие отключения
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"Отключение от платформы {platform}")
+    sdk.logger.info(f"Платформа {platform} отключена")
 
-# Событиеheartbeat
+# Событие сердечного удара
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
-    sdk.logger.debug("Получено heartbeat")
+    sdk.logger.debug("Получен сердечный удар")
 ```
 
-### Запрос состояния Bot
+### Запрос состояния бота
 
-После отправки мета-события адаптером, фреймворк автоматически отслеживает состояние Bot. API для запроса и прослушивания событий жизненного цикла см. в [API системы адаптеров - управление состоянием Bot](adapter-system.md#bot-状态管理).
+После того как адаптер отправляет мета-событие, платформа автоматически отслеживает состояние бота. Справку по API запросов состояния и событиям жизненного цикла см. в разделе [API системы адаптеров - Управление состоянием бота](adapter-system.md#bot-状态管理).
 
-## Оберточный класс Event
+## Класс-обертка события Event
 
-Обработчики событий модуля Event получают экземпляр оберточного класса Event, который наследуется от dict и предоставляет удобные методы.
+Обработчики событий модуля Event принимают экземпляр класса-обертки Event, который наследуется от dict и предоставляет удобные методы.
 
 ### Основные методы
 
@@ -4812,15 +4812,15 @@ self_info = event.get_self_info()
 ### Идентификатор сессии
 
 ```python
-# Единый идентификатор цели: возвращает group_id для групповых сообщений, user_id для личных и т.д.
+# Унифицированный целевой ID: возвращает group_id для групп, user_id для личных сообщений и т.д.
 target_id = event.get_target_id()
 
 # Уникальный идентификатор сессии, формат: {platform}:{detail_type}:{target_id}
 session_id = event.get_session_id()
-# Примеры: "telegram:private:12345", "qq:group:67890"
+# Пример: "telegram:private:12345", "qq:group:67890"
 ```
 
-`get_target_id()` возвращает первое непустое значение в следующем порядке: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`. Подходит для управления контекстом, хранения состояний и других сценариев, требующих единообразной идентификации сессии.
+`get_target_id()` возвращает первое непустое значение в следующем порядке: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`. Подходит для сценариев, требующих унифицированной идентификации сессии, таких как управление контекстом и хранение состояния.
 
 ### Методы сообщений
 
@@ -4843,13 +4843,13 @@ is_msg = event.is_message()
 is_private = event.is_private_message()
 is_group = event.is_group_message()
 
-# Связанные с упоминаниями методы
+# Сообщения с упоминанием @
 is_at = event.is_at_message()
 has_mention = event.has_mention()
 mentions = event.get_mentions()
 ```
 
-### Информация о командах
+### Информация о команде
 
 ```python
 # Получение информации о команде
@@ -4857,7 +4857,7 @@ cmd_name = event.get_command_name()
 cmd_args = event.get_command_args()
 cmd_raw = event.get_command_raw()
 
-# Определение, является ли событие командой
+# Проверка, является ли событие командой
 is_cmd = event.is_command()
 ```
 
@@ -4870,13 +4870,21 @@ await event.reply("Это сообщение")
 # Указание метода отправки
 await event.reply("http://example.com/image.jpg", method="Image")
 
-# Ответ с упоминанием и цитированием
+# Ответ с @пользователем и цитированием сообщения
 await event.reply("Привет", at_users=["user1"], reply_to="msg_id")
 
-# Упоминание всех участников
-await event.reply("Анонс", at_all=True)
+# @all (всем участникам)
+await event.reply("Объявление", at_all=True)
 
-# Ответ с использованием OneBot12 сообщений
+# Использование платформенных методов модификаторов (параметр via)
+await event.reply("Контент дашборда", method="Board",
+                  via=[("Expire", 3600), ("ForMember", "114514")])
+
+# Получение цепочки отправки, свободное добавление методов модификаторов и методов отправки (подходит для последовательного множества модификаторов / действий)
+await event.send_chain().Expire(3600).Board("Контент дашборда")
+await event.send_chain().DismissBoard()
+
+# Ответ с использованием сегментов сообщений OneBot12
 from ErisPulse.Core.Event import MessageBuilder
 msg = MessageBuilder().text("Hello").image("url").build()
 await event.reply_ob12(msg)
@@ -4888,33 +4896,33 @@ reply = await event.wait_reply(timeout=30)
 ### Запрос возможностей платформы
 
 ```python
-# Проверка поддержки текущей платформой метода отправки
+# Проверка, поддерживает ли текущая платформа определенный метод отправки
 if event.supports("Image"):
     await event.reply(url, method="Image")
 
-# Получение списка доступных методов отправки
+# Перечисление всех доступных методов отправки для текущей платформы
 methods = event.available_methods()
-# ["Text", "Image", "Voice", "Video", ...]
+# ["Text", "Image", "Voice", ...]
 ```
 
 ### Методы ответа
 
-Метод `reply()` поддерживает указание типа отправки через параметр `method`, а также два удобных булевых параметра:
+Метод `reply()` поддерживает указание типа отправки через параметр `method`, а также два удобных логических параметра:
 
 ```python
-# Простой текстовый ответ
+# Простая текстовая реакция
 await event.reply("Привет")
 
-# Ответ с упоминанием отправителя (автоматически извлекает user_id)
+# Ответ и @отправителя
 await event.reply("Привет", at_sender=True)
 
-# Ответ с цитированием текущего сообщения (автоматически извлекает message_id)
+# Ответ с цитированием текущего сообщения
 await event.reply("Получено", reply_to_message=True)
 
-# Комбинированный ответ
+# Комбинированное использование
 await event.reply("Получено", at_sender=True, reply_to_message=True)
 
-# Отправка изображения (используя параметр method)
+# Отправка изображения (с использованием параметра method)
 if event.supports("Image"):
     await event.reply("http://example.com/img.jpg", method="Image")
 else:
@@ -4924,33 +4932,33 @@ else:
 **Описание параметров**:
 
 | Параметр | Тип | Описание |
-|----------|-----|----------|
-| `content` | str | Содержимое отправки |
+|------|------|------|
+| `content` | str | Содержимое для отправки |
 | `method` | str | Метод отправки, по умолчанию "Text", доступны "Image"/"Voice"/"Video"/"File" и др. |
-| `at_sender` | bool | Упоминать ли отправителя (автоматически извлекает user_id) |
-| `quote` | bool | Цитировать ли текущее сообщение (автоматически извлекает message_id) |
-| `at_users` | list[str] | Список упоминаемых пользователей |
-| `reply_to` | str | Ручное указание ID сообщения для ответа |
-| `at_all` | bool | Упоминать ли всех участников |
+| `at_sender` | bool | Отправить с упоминанием отправителя (автоматически извлекает user_id) |
+| `quote` | bool | Цитировать и ответить на текущее сообщение (автоматически извлекает message_id) |
+| `at_users` | list[str] | Список пользователей для упоминания |
+| `reply_to` | str | Явно указать ID сообщения для ответа |
+| `at_all` | bool | Отправить с упоминанием всех участников |
 
-### Интерактивные методы
+### Методы взаимодействия
 
 ```python
 # confirm — подтверждение диалога (возвращает True/False/None)
-if await event.confirm("Вы уверены, что хотите выполнить это действие?"):
+if await event.confirm("Вы уверены, что хотите выполнить эту операцию?"):
     await event.reply("Подтверждено")
 
-# Использование не-Text метода для отправки подтверждения
+# Отправка подтверждения с использованием не Text метода
 if await event.confirm("http://example.com/image.jpg", method="Image"):
-    await event.reply("Подтверждение подтверждено для изображения")
+    await event.reply("Изображение подтверждено")
 
-# choose — выбор меню (возвращает индекс опции или None)
-choice = await event.choose("Выберите цвет:", ["красный", "зеленый", "синий"])
+# choose — меню выбора (возвращает индекс опции или None)
+choice = await event.choose("Выберите цвет:", ["Красный", "Зеленый", "Синий"])
 
-# options_format="auto" (по умолчанию) автоматически выбирает стиль в зависимости от метода:
-# Markdown→непорядковый список (- 1.опция), Html→упорядоченный список (<ol>), иначе→простой текстовый список
-# Методы текста (Markdown/Html и др.) по умолчанию объединяют опции в конец
-# merge_prompt=True может принудительно объединять для любого метода; placeholder позволяет настроить заглушку
+# options_format="auto" (по умолчанию) автоматически выбирает стиль в зависимости от method:
+# Markdown→неупорядоченный список (- 1.вариант), Html→упорядоченный список (<ol>), иначе→простой текстовый список
+# Методы для текста (Markdown, Html и т.д.) по умолчанию объединяют опции в конец
+# merge_prompt=True может принудительно объединять для любого method; placeholder позволяет задать свой плейсхолдер
 choice = await event.choose(
     "## Выберите\n{options}", ["A", "B"],
     method="Markdown", merge_prompt=True,
@@ -4964,17 +4972,17 @@ data = await event.collect([
     {"key": "avatar", "prompt": "Отправьте аватар:", "method": "Image"},
 ])
 
-# wait_for — ожидание события, удовлетворяющего условию
+# wait_for — ожидание произвольного события, удовлетворяющего условию
 evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
-# conversation — контекст многошагового диалога
+# conversation — контекст многоуровневого диалога
 conv = event.conversation(timeout=60)
 await conv.say("Добро пожаловать!")
 ```
 
-> Полное описание параметров интерактивных методов и больше примеров см. в [Подробное описание оберточного класса Event](../developer-guide/modules/event-wrapper.md) и [Многошаговый диалог Conversation](../advanced/conversation.md).
+> Подробное описание параметров методов взаимодействия и дополнительные примеры см. в разделе [Подробное описание класса-обертки события](../developer-guide/modules/event-wrapper.md) и [Многоуровневый диалог Conversation](../advanced/conversation.md).
 
-### Вспомогательные методы
+### Утилитарные методы
 
 ```python
 # Преобразование в словарь
@@ -4989,13 +4997,13 @@ raw = event.get_raw()
 raw_type = event.get_raw_type()
 ```
 
-### Платформенные расширения
+### Расширенные методы платформы
 
-Адаптеры могут зарегистрировать платформенно-специфичные методы для Event, доступные только на экземплярах соответствующей платформы.
+Адаптеры могут регистрировать платформенные методы для события, которые доступны только на экземплярах соответствующей платформы.
 
-#### Пользователь: использование платформенно-специфичных методов
+#### Пользователь: использование расширенных методов платформы
 
-После регистрации адаптером платформенно-специфичных методов, вы можете напрямую вызывать их в обработчиках событий. Методы различаются для каждой платформы, см. соответствующую [документацию платформы](../platform-guide/).
+После того как адаптер зарегистрировал платформенные методы, вы можете вызывать их непосредственно в обработчике событий. Методы для разных платформ различаются, пожалуйста, обратитесь к соответствующей [документации платформы](../platform-guide/).
 
 ```python
 from ErisPulse.Core.Event import message
@@ -5004,10 +5012,10 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     platform = event.get_platform()
 
-    # Вызов специфичных методов в зависимости от платформы
+    # Вызов платформенных методов в зависимости от платформы
     if platform == "email":
-        subject = event.get_subject()           # специфичный для почты
-        attachments = event.get_attachments()   # специфичный для почты
+        subject = event.get_subject()           # уникально для почты
+        attachments = event.get_attachments()   # уникально для почты
 ```
 
 #### Запрос зарегистрированных методов платформы
@@ -5015,27 +5023,27 @@ async def handle_message(event):
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
 
-# Получение списка зарегистрированных методов для платформы
+# Просмотр методов, зарегистрированных для конкретной платформы
 methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", "get_attachments", ...]
 
-# Динамическая проверка и вызов метода
+# Динамическое определение и вызов
 for method_name in get_platform_event_methods(event.get_platform()):
     method = getattr(event, method_name)
     print(f"{method_name}: {method()}")
 ```
 
-#### Изоляция методов платформы
+#### Изоляция платформенных методов
 
-Методы, зарегистрированные для разных платформ, не влияют друг на друга:
+Методы, зарегистрированные для разных платформ, не мешают друг другу:
 
 ```python
-# Почтовое событие - только почтовые методы
+# Событие почты — только почтовые методы
 event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
 event.get_subject()      # ✅ "Hello"
 event.get_chat_type()    # ❌ AttributeError
 
-# Telegram событие - только Telegram методы
+# Событие Telegram — только методы Telegram
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
 event.get_chat_type()    # ✅ "private"
 event.get_subject()      # ❌ AttributeError
@@ -5044,13 +5052,13 @@ event.get_subject()      # ❌ AttributeError
 #### Поддержка hasattr / dir
 
 ```python
-hasattr(event, "get_subject")   # возвращает True только если platform="email"
-"get_subject" in dir(event)     # аналогично
+hasattr(event, "get_subject")   # Возвращает True только при platform="email"
+"get_subject" in dir(event)     # То же самое
 ```
 
-### Адаптер: регистрация платформенно-специфичных методов
+### Адаптер: регистрация расширенных методов платформы
 
-Адаптеры могут регистрировать платформенно-специфичные методы для Event с помощью декоратора. Методы получают в качестве первого параметра `self` (экземпляр Event), что позволяет свободно обращаться к данным события.
+Адаптеры могут регистрировать платформенные методы для Event с помощью декораторов, где первый параметр метода — `self` (экземпляр Event), что позволяет свободно обращаться к данным события.
 
 #### Регистрация отдельного метода
 
@@ -5059,18 +5067,18 @@ from ErisPulse.Core.Event import register_event_method
 
 @register_event_method("email")
 def get_subject(self):
-    """Получение темы письма"""
+    """Получить тему письма"""
     return self.get("email_raw", {}).get("subject", "")
 
 @register_event_method("email")
 def get_from(self):
-    """Получение отправителя"""
+    """Получить отправителя"""
     return self.get("email_raw", {}).get("from", {})
 ```
 
-#### Массовая регистрация (через Mixin)
+#### Банковая регистрация (Mixin класс)
 
-При большом количестве методов рекомендуется использовать Mixin для массовой регистрации:
+При наличии множества методов рекомендуется использовать Mixin класс для групповой регистрации:
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin
@@ -5089,28 +5097,28 @@ class EmailEventMixin:
 register_event_mixin("email", EmailEventMixin)
 ```
 
-#### Правила возврата значений
+#### Спецификация возвращаемых значений
 
 | Сценарий | Возвращаемое значение | Способ использования пользователем |
-|----------|------------------------|-------------------------------------|
+|------|--------|------------|
 | Возврат данных (текст, словарь и т.д.) | Прямое возвращаемое значение | `subject = event.get_subject()` |
-| Выполнение операции (отправка сообщения и т.д.) | Возвращается `asyncio.Task` | `task = event.do_something()` (необязательно await) |
+| Выполнение операций (отправка сообщений и т.д.) | Возвращает `asyncio.Task` | `task = event.do_something()` `await` необязательно |
 
-> **Рекомендация**: методы, не возвращающие данные, должны возвращать `asyncio.Task`, чтобы пользователь мог самостоятельно решить, следует ли `await`, даже если не `await`, операция будет выполнена.
+> **Совет**. Методы, не возвращающие данные, должны возвращать `asyncio.Task`, чтобы пользователь мог самостоятельно решать, выполнять `await` или нет; даже при отсутствии `await` операция будет завершена.
 
 ```python
 @register_event_method("email")
 def forward_email(self, to_address: str):
-    """Пересылка письма — возвращает Task, пользователь может решить, следует ли await"""
+    """Пересылка письма — возвращает Task, пользователь сам решает, ждать ли"""
     import asyncio
     return asyncio.create_task(
         self._do_forward(to_address)
     )
 
-# Пользователь может await для ожидания результата
+# Пользователь может ждать результата
 await event.forward_email("user@example.com")
 
-# Или не await, операция будет выполнена в фоне
+# Можно не ждать, операция будет выполняться в фоне
 event.forward_email("user@example.com")
 ```
 
@@ -5122,15 +5130,15 @@ from ErisPulse.Core.Event import unregister_event_method, unregister_platform_ev
 # Отмена регистрации отдельного метода
 unregister_event_method("email", "get_subject")
 
-# Отмена регистрации всех методов платформы (вызывается при завершении адаптера)
+# Отмена регистрации всех методов платформы (вызывается при shutdown адаптера)
 unregister_platform_event_methods("email")
 ```
 
 #### Переопределение встроенных методов
 
-`register_event_mixin` / `register_event_method` поддерживают переопределение встроенных методов Event (например `confirm`, `choose`, `collect`, `wait_reply`, `reply` и т.д.). Регистрируемые платформенные методы через `Event.__getattribute__` имеют приоритет над встроенными методами, поэтому адаптеры могут предоставлять платформенно-специфичные реализации интерактивных функций.
+`register_event_mixin` / `register_event_method` поддерживают переопределение встроенных методов Event (таких как `confirm`, `choose`, `collect`, `wait_reply`, `reply` и т.д.). Регистрируемые платформенные методы вступают в силу через `Event.__getattribute__` с приоритетом над встроенными, поэтому адаптеры могут предоставлять платформенные реализации взаимодействия.
 
-Встроенные реализации экспортируются как `_builtin_*` функции, и переопределяющие методы могут вызывать их как резервный вариант:
+Встроенная реализация экспортируется как функции `_builtin_*`, переопределяющая сторона может вызывать их как запасной вариант:
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
@@ -5140,29 +5148,29 @@ class YunhuEventMixin:
         # Платформа Yunhu использует компоненты кнопок
         buttons = [[{"text": opt} for opt in options]]
         await self.reply(prompt)
-        # ...ожидание обратного вызова кнопки или текстового ответа...
-        # Резервная логика по умолчанию
+        # ...ожидание колбэков кнопок или текстового ответа...
+        # Возврат к встроенной логике
         return await _builtin_choose(self, None, options, timeout, "Text")
 
 register_event_mixin("yunhu", YunhuEventMixin)
 ```
 
-## Кросс-платформенные расширения (шаблоны)
+## Кроссплатформенное расширение (шаблоны)
 
-`register_event_method` и `register_event_mixin` поддерживают использование `"*"` в качестве имени платформы, что делает методы доступными на **всех** платформах. Подходит для модулей функций, требующих кросс-платформенного повторного использования, таких как диалог с ИИ, управление контекстом и т.д.
+`register_event_method` и `register_event_mixin` поддерживают передачу `"*"` как имени платформы, методы, зарегистрированные таким образом, доступны на экземплярах Event **для всех платформ**. Подходит для функциональных модулей, требующих переиспользования на разных платформах, таких как диалоги ИИ и управление контекстом.
 
-### Регистрация кросс-платформенных методов
+### Регистрация кроссплатформенных методов
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    """self — экземпляр Event, можно свободно обращаться к данным события и встроенным методам"""
-    await self.reply(f"AI: {prompt}")
+    """self — экземпляр Event, позволяет свободно обращаться к данным события и встроенным методам"""
+    await self.reply(f"ИИ: {prompt}")
 ```
 
-После регистрации, все обработчики событий на всех платформах могут вызывать:
+После регистрации обработчики событий всех платформ могут вызывать его:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -5172,20 +5180,20 @@ async def handler(event):
     await event.ai_chat(event.get_text())
 ```
 
-### Приоритет методов
+### Приоритет разрешения методов
 
-При доступе к методам Event через атрибуты, порядок разрешения следующий:
+При доступе к методам Event через атрибут, порядок разрешения следующий:
 
-1. **Платформенно-специфичные методы** (переопределения текущей платформы)
-2. **Методы шаблона** (`"*"` — кросс-платформенные методы)
-3. **Встроенные методы** (`reply`, `confirm` и др.)
-4. **Доступ по ключу словаря**
+1. **Платформенные методы** (переопределения для текущей платформы)
+2. **Методы с шаблоном** (методы, зарегистрированные для `"*"`)
+3. **Встроенные методы** (`reply`, `confirm` и т.д.)
+4. **Доступ по ключам словаря**
 
-> Таким образом, методы шаблона могут переопределять встроенные методы (например `reply`), но будут переопределены платформенно-специфичными методами с тем же именем.
+> Таким образом, методы с шаблоном могут переопределять встроенные методы (например, `reply`), но могут быть переопределены далее платформенными методами с тем же именем.
 
 ## Система приоритетов
 
-Обработчики событий поддерживают приоритет, чем больше значение, тем выше приоритет:
+Обработчики событий поддерживают приоритеты, чем больше число, тем выше приоритет:
 
 ```python
 # Обработчик с высоким приоритетом выполняется первым
@@ -5201,7 +5209,7 @@ async def low_priority_handler(event):
 
 ## Связанные документы
 
-- [API основных модулей](core-modules.md) - API основных модулей
+- [API модулей ядра](core-modules.md) - API модулей ядра
 - [API системы адаптеров](adapter-system.md) - API управления адаптерами
 - [Руководство по разработке модулей](../developer-guide/modules/) - Разработка пользовательских модулей
 

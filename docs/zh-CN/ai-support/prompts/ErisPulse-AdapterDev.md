@@ -3602,6 +3602,80 @@ await adapter.Send.To("group", "123").Reply("msg_id").Text("回复内容")
 await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回复@的消息")
 ```
 
+### 平台专有修饰方法
+
+除了内置的 `At`/`AtAll`/`Reply`，适配器可以定义**平台专有的修饰方法**。这类方法**只需返回 `self`**，无需任何装饰器——框架会自动识别：
+
+- 返回 `self`（SendDSL 实例）→ 修饰方法，不触发发送包装/生命周期事件，链式继续
+- 返回 `Task`/`Awaitable` → 发送方法
+
+```python
+class Send(SendDSL):
+    def Raw_ob12(self, message, **kwargs): ...
+
+    # 修饰方法：返回 self，不发送
+    def Expire(self, seconds: int):
+        self._expire = seconds
+        return self
+
+    def ForMember(self, user_id: str):
+        self._member = user_id
+        return self
+
+    # 发送方法：返回 Task，依赖修饰方法设置的状态
+    def Board(self, content: str, **kwargs):
+        return self.Raw_ob12([{"type": "board", "data": {"text": content}}])
+```
+
+使用：
+
+```python
+# 修饰方法可连续链式叠加
+await adapter.Send.To("group", "big").Expire(3600).ForMember("114").Board("看板内容")
+```
+
+## 在 Event 包装类中使用修饰方法
+
+`event.reply()` 默认只暴露 `at_sender`/`at_users`/`at_all`/`quote` 等内置修饰参数。要使用平台专有修饰方法，有两种方式：
+
+### 方式一：reply() 的 via 参数
+
+适合少量、已知的修饰方法：
+
+```python
+await event.reply("看板内容", method="Board",
+                  via=[("Expire", 3600), ("ForMember", "114514")])
+```
+
+`via` 是一个列表，每个元素可为：
+
+| 形式 | 等价链式调用 |
+|------|-------------|
+| `"Name"` | `.Name()` |
+| `("Name", arg1, arg2)` | `.Name(arg1, arg2)` |
+| `("Name", (arg1,), {kw: val})` | `.Name(arg1, kw=val)` |
+
+### 方式二：event.send_chain()
+
+适合**连续多个修饰方法**或**无内容参数的动作型方法**（如撤回、删除）。`send_chain()` 返回已配置好 `To`/`Using` 的发送链，可自由追加任意修饰方法和发送方法：
+
+```python
+# 平台专有修饰方法 + 看板发送
+await event.send_chain().Expire(3600).Board("一小时后过期")
+
+# 连续多个修饰方法
+await (event.send_chain()
+       .Expire(3600)
+       .ForMember("114514")
+       .Board("看板内容", content_type="markdown"))
+
+# 内置修饰方法同样可用
+await event.send_chain().At("123").Reply("msg_id").Text("hi")
+
+# 无内容参数的动作型方法
+await event.send_chain().DismissBoard()
+```
+
 ## 账户管理
 
 ### Using 方法

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1429,
+  "total_keywords": 1435,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -122,12 +122,12 @@
         "title": "1. コア原則"
       }
     ],
-    "1. タイプとIDを指定": [
+    "1. タイプとIDを指定する": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 7,
         "level": 3,
-        "title": "1. タイプとIDを指定"
+        "title": "1. タイプとIDを指定する"
       }
     ],
     "1. トランザクションの使用": [
@@ -496,12 +496,12 @@
         "title": "2. GitHub Actions ワークフローの作成"
       }
     ],
-    "2. IDのみを指定": [
+    "2. IDのみを指定する": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 13,
         "level": 3,
-        "title": "2. IDのみを指定"
+        "title": "2. IDのみを指定する"
       }
     ],
     "2. PyPI への公開": [
@@ -1110,12 +1110,12 @@
         "title": "3. 登録層：register_to_manager"
       }
     ],
-    "3. 送信アカウントを指定": [
+    "3. 送信アカウントを指定する": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 19,
         "level": 3,
-        "title": "3. 送信アカウントを指定"
+        "title": "3. 送信アカウントを指定する"
       }
     ],
     "3.1 チェーンメソッド (Chain calls)": [
@@ -1318,12 +1318,12 @@
         "title": "4. 発行済みモジュールの管理"
       }
     ],
-    "4. 組み合わせ": [
+    "4. 組み合わせ使用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 25,
         "level": 3,
-        "title": "4. 組み合わせ"
+        "title": "4. 組み合わせ使用"
       }
     ],
     "4.1 Eventメソッド一覧": [
@@ -2075,7 +2075,7 @@
     "Account メソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 140,
+        "line": 214,
         "level": 3,
         "title": "Account メソッド"
       }
@@ -2144,6 +2144,14 @@
         "title": "BaseModule 基底クラス"
       }
     ],
+    "Bot ステータスの確認": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 239,
+        "level": 3,
+        "title": "Bot ステータスの確認"
+      }
+    ],
     "Bot ライフサイクルの監視": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -2205,12 +2213,6 @@
       }
     ],
     "Botステータス照会": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 239,
-        "level": 3,
-        "title": "Botステータス照会"
-      },
       {
         "document": "getting-started/event-handling.md",
         "line": 278,
@@ -2560,12 +2562,20 @@
         "title": "Event と組み合わせた返信"
       }
     ],
-    "Event ラッパークラス": [
+    "Event ラッパークラスでの修飾メソッドの使用": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 153,
+        "level": 2,
+        "title": "Event ラッパークラスでの修飾メソッドの使用"
+      }
+    ],
+    "Event ラップクラス": [
       {
         "document": "api-reference/event-system.md",
         "line": 243,
         "level": 2,
-        "title": "Event ラッパークラス"
+        "title": "Event ラップクラス"
       }
     ],
     "Event 包装クラスの詳細解説": [
@@ -2990,12 +3000,12 @@
         "title": "PUT / DELETE / PATCH"
       }
     ],
-    "PascalCase 名前": [
+    "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 425,
+        "line": 499,
         "level": 3,
-        "title": "PascalCase 名前"
+        "title": "PascalCase 命名"
       }
     ],
     "Q1: なぜ送信時に private を user に変換する必要があるのですか？": [
@@ -3244,12 +3254,12 @@
         "title": "SendDSL 標準メソッドとの関係"
       }
     ],
-    "SendDSL 详解": [
+    "SendDSL 詳解": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 1,
         "level": 1,
-        "title": "SendDSL 详解"
+        "title": "SendDSL 詳解"
       }
     ],
     "SseEmitter API": [
@@ -3303,7 +3313,7 @@
     "Task オブジェクト": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 472,
+        "line": 546,
         "level": 3,
         "title": "Task オブジェクト"
       }
@@ -3335,7 +3345,7 @@
     "Using メソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 123,
+        "line": 197,
         "level": 3,
         "title": "Using メソッド"
       }
@@ -3696,12 +3706,12 @@
         "title": "`__init__` 注意事項"
       }
     ],
-    "`hasattr` / `dir` サポート": [
+    "`hasattr` / `dir` のサポート": [
       {
         "document": "api-reference/event-system.md",
-        "line": 495,
+        "line": 503,
         "level": 4,
-        "title": "`hasattr` / `dir` サポート"
+        "title": "`hasattr` / `dir` のサポート"
       }
     ],
     "`hasattr` と `dir` のサポート": [
@@ -4353,7 +4363,7 @@
     "アカウント管理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 121,
+        "line": 195,
         "level": 2,
         "title": "アカウント管理"
       }
@@ -4634,14 +4644,6 @@
         "title": "アダプター開発入門"
       }
     ],
-    "アダプター：プラットフォーム拡張メソッドの登録": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 502,
-        "level": 3,
-        "title": "アダプター：プラットフォーム拡張メソッドの登録"
-      }
-    ],
     "アダプタ開発のベストプラクティス": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -4656,6 +4658,14 @@
         "line": 49,
         "level": 3,
         "title": "アダプタ開発者向け"
+      }
+    ],
+    "アダプタ：プラットフォーム拡張メソッドの登録": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 510,
+        "level": 3,
+        "title": "アダプタ：プラットフォーム拡張メソッドの登録"
       }
     ],
     "アノテーション/デコレーター": [
@@ -5115,7 +5125,7 @@
     "インタラクションメソッド": [
       {
         "document": "api-reference/event-system.md",
-        "line": 387,
+        "line": 395,
         "level": 3,
         "title": "インタラクションメソッド"
       }
@@ -5371,7 +5381,7 @@
     "クロスプラットフォームメソッドの登録": [
       {
         "document": "api-reference/event-system.md",
-        "line": 605,
+        "line": 613,
         "level": 3,
         "title": "クロスプラットフォームメソッドの登録"
       }
@@ -5379,7 +5389,7 @@
     "クロスプラットフォーム拡張（ワイルドカード）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 601,
+        "line": 609,
         "level": 2,
         "title": "クロスプラットフォーム拡張（ワイルドカード）"
       }
@@ -6355,7 +6365,7 @@
     "タイムアウトによる自動キャンセル（Timeout）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 217,
+        "line": 291,
         "level": 3,
         "title": "タイムアウトによる自動キャンセル（Timeout）"
       }
@@ -6465,7 +6475,7 @@
     "チェーン呼び出し": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 547,
+        "line": 621,
         "level": 3,
         "title": "チェーン呼び出し"
       }
@@ -6612,6 +6622,14 @@
         "line": 32,
         "level": 2,
         "title": "ディレクトリ構造"
+      }
+    ],
+    "デコレータとルールの継承": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 458,
+        "level": 3,
+        "title": "デコレータとルールの継承"
       }
     ],
     "デコレータールート（推奨）": [
@@ -6957,17 +6975,17 @@
     "バックグラウンド実行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 408,
+        "line": 482,
         "level": 3,
         "title": "バックグラウンド実行"
       }
     ],
-    "バッチ全体のルールとコールバック": [
+    "バッチビルドモード（Build）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 350,
-        "level": 3,
-        "title": "バッチ全体のルールとコールバック"
+        "line": 372,
+        "level": 2,
+        "title": "バッチビルドモード（Build）"
       }
     ],
     "バッチ操作": [
@@ -6978,26 +6996,20 @@
         "title": "バッチ操作"
       }
     ],
-    "バッチ構築モードの開始": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 302,
-        "level": 3,
-        "title": "バッチ構築モードの開始"
-      }
-    ],
     "バッチ構築モード（Build）": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 298,
-        "level": 2,
-        "title": "バッチ構築モード（Build）"
-      },
       {
         "document": "platform-guide/README.md",
         "line": 137,
         "level": 4,
         "title": "バッチ構築モード（Build）"
+      }
+    ],
+    "バッチ登録（Mixin クラス）": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 530,
+        "level": 4,
+        "title": "バッチ登録（Mixin クラス）"
       }
     ],
     "バージョン更新の説明": [
@@ -7078,6 +7090,14 @@
         "line": 236,
         "level": 2,
         "title": "ビルダーのリセット"
+      }
+    ],
+    "ビルドモードに入る": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 376,
+        "level": 3,
+        "title": "ビルドモードに入る"
       }
     ],
     "ファイル処理の特徴": [
@@ -7168,12 +7188,12 @@
         "title": "プラットフォーム"
       }
     ],
-    "プラットフォームで登録されたメソッドを照会": [
+    "プラットフォームで登録されたメソッドの照会": [
       {
         "document": "api-reference/event-system.md",
-        "line": 464,
+        "line": 472,
         "level": 4,
-        "title": "プラットフォームで登録されたメソッドを照会"
+        "title": "プラットフォームで登録されたメソッドの照会"
       }
     ],
     "プラットフォームの一覧表示": [
@@ -7208,12 +7228,20 @@
         "title": "プラットフォームイベントメソッド拡張"
       }
     ],
-    "プラットフォームメソッドの分離": [
+    "プラットフォームメソッドの隔離": [
       {
         "document": "api-reference/event-system.md",
-        "line": 479,
+        "line": 487,
         "level": 4,
-        "title": "プラットフォームメソッドの分離"
+        "title": "プラットフォームメソッドの隔離"
+      }
+    ],
+    "プラットフォーム固有の修飾メソッド": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 121,
+        "level": 3,
+        "title": "プラットフォーム固有の修飾メソッド"
       }
     ],
     "プラットフォーム固有の応答": [
@@ -7249,7 +7277,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 445,
+        "line": 519,
         "level": 3,
         "title": "プラットフォーム固有メソッド"
       }
@@ -7271,7 +7299,7 @@
     "プラットフォーム拡張メソッド": [
       {
         "document": "api-reference/event-system.md",
-        "line": 443,
+        "line": 451,
         "level": 3,
         "title": "プラットフォーム拡張メソッド"
       },
@@ -7304,20 +7332,20 @@
         "title": "プラットフォーム機能の検出"
       }
     ],
+    "プラットフォーム機能の照会": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 347,
+        "level": 3,
+        "title": "プラットフォーム機能の照会"
+      }
+    ],
     "プラットフォーム機能ガイド": [
       {
         "document": "README.md",
         "line": 54,
         "level": 3,
         "title": "プラットフォーム機能ガイド"
-      }
-    ],
-    "プラットフォーム能力照会": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 339,
-        "level": 3,
-        "title": "プラットフォーム能力照会"
       }
     ],
     "プラットフォーム能力確認": [
@@ -7665,9 +7693,17 @@
     "メソッドの登録解除": [
       {
         "document": "api-reference/event-system.md",
-        "line": 568,
+        "line": 576,
         "level": 4,
         "title": "メソッドの登録解除"
+      }
+    ],
+    "メソッドの解決優先度": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 634,
+        "level": 3,
+        "title": "メソッドの解決優先度"
       }
     ],
     "メソッドコメント": [
@@ -7776,14 +7812,6 @@
         "line": 329,
         "level": 3,
         "title": "メソッドリスト"
-      }
-    ],
-    "メソッド解決の優先順位": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 626,
-        "level": 3,
-        "title": "メソッド解決の優先順位"
       }
     ],
     "メソッド詳細の取得": [
@@ -8507,7 +8535,7 @@
     "ユーザー：プラットフォーム拡張メソッドの使用": [
       {
         "document": "api-reference/event-system.md",
-        "line": 447,
+        "line": 455,
         "level": 4,
         "title": "ユーザー：プラットフォーム拡張メソッドの使用"
       }
@@ -8535,7 +8563,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 428,
+        "line": 436,
         "level": 3,
         "title": "ユーティリティメソッド"
       }
@@ -8849,7 +8877,7 @@
     "ルールの伝播": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 285,
+        "line": 359,
         "level": 3,
         "title": "ルールの伝播"
       }
@@ -8857,7 +8885,7 @@
     "ルールの組み合わせとバックグラウンド実行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 270,
+        "line": 344,
         "level": 3,
         "title": "ルールの組み合わせとバックグラウンド実行"
       }
@@ -8865,7 +8893,7 @@
     "ルールメソッド一覧": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 179,
+        "line": 253,
         "level": 3,
         "title": "ルールメソッド一覧"
       }
@@ -8884,14 +8912,6 @@
         "line": 92,
         "level": 4,
         "title": "レスポンス"
-      }
-    ],
-    "レスポンスの標準化": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 496,
-        "level": 3,
-        "title": "レスポンスの標準化"
       }
     ],
     "レート制限": [
@@ -9020,14 +9040,6 @@
         "title": "ワンステップで送信情報を取得"
       }
     ],
-    "一括登録（Mixinクラス）": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 522,
-        "level": 4,
-        "title": "一括登録（Mixinクラス）"
-      }
-    ],
     "一般的なrequest": [
       {
         "document": "advanced/http-client.md",
@@ -9100,12 +9112,12 @@
         "title": "不支持的方法調用"
       }
     ],
-    "並列と直列": [
+    "並列と順列": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 318,
+        "line": 392,
         "level": 3,
-        "title": "並列と直列"
+        "title": "並列と順列"
       }
     ],
     "主な差異点": [
@@ -9302,36 +9314,12 @@
         "title": "修正済みのバグ"
       }
     ],
-    "修飾の組み合わせ": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 115,
-        "level": 3,
-        "title": "修飾の組み合わせ"
-      }
-    ],
     "修飾メソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 87,
         "level": 2,
         "title": "修飾メソッド"
-      }
-    ],
-    "修飾子とルールの継承": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 384,
-        "level": 3,
-        "title": "修飾子とルールの継承"
-      }
-    ],
-    "個別のメソッド登録": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 506,
-        "level": 4,
-        "title": "個別のメソッド登録"
       }
     ],
     "優先度": [
@@ -9342,20 +9330,20 @@
         "title": "優先度"
       }
     ],
-    "優先度と積み重ね時の破棄（Priority）": [
+    "優先度とバックログ廃棄（Priority）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 258,
+        "line": 332,
         "level": 3,
-        "title": "優先度と積み重ね時の破棄（Priority）"
+        "title": "優先度とバックログ廃棄（Priority）"
       }
     ],
-    "優先順位システム": [
+    "優先度システム": [
       {
         "document": "api-reference/event-system.md",
-        "line": 637,
+        "line": 645,
         "level": 2,
-        "title": "優先順位システム"
+        "title": "優先度システム"
       }
     ],
     "元データ": [
@@ -9604,6 +9592,14 @@
         "title": "単一アカウント設定"
       }
     ],
+    "単一メソッドの登録": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 514,
+        "level": 4,
+        "title": "単一メソッドの登録"
+      }
+    ],
     "単一レコードの取得": [
       {
         "document": "advanced/sql-builder.md",
@@ -9618,14 +9614,6 @@
         "line": 267,
         "level": 3,
         "title": "即時ロード"
-      }
-    ],
-    "原始メッセージとメッセージ構築": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 557,
-        "level": 3,
-        "title": "原始メッセージとメッセージ構築"
       }
     ],
     "原生メッセージ送信": [
@@ -9748,12 +9736,12 @@
         "title": "同期初期化"
       }
     ],
-    "名前規則": [
+    "命名規則": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 423,
+        "line": 497,
         "level": 2,
-        "title": "名前規則"
+        "title": "命名規則"
       }
     ],
     "品質チェックリスト": [
@@ -9872,6 +9860,14 @@
         "title": "基底クラス"
       }
     ],
+    "基本の呼び出し方": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 5,
+        "level": 2,
+        "title": "基本の呼び出し方"
+      }
+    ],
     "基本フォーマット": [
       {
         "document": "styleguide/docstring.md",
@@ -9888,12 +9884,12 @@
         "title": "基本メソッド"
       }
     ],
-    "基本メソッド（基底クラスに内蔵）": [
+    "基本メソッド（基底クラスに実装済み）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 41,
         "level": 3,
-        "title": "基本メソッド（基底クラスに内蔵）"
+        "title": "基本メソッド（基底クラスに実装済み）"
       }
     ],
     "基本メッセージタイプ": [
@@ -9910,14 +9906,6 @@
         "line": 133,
         "level": 4,
         "title": "基本判断"
-      }
-    ],
-    "基本呼び出し方法": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 5,
-        "level": 2,
-        "title": "基本呼び出し方法"
       }
     ],
     "基本情報": [
@@ -10055,7 +10043,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 529,
+        "line": 603,
         "level": 3,
         "title": "基本的な使用"
       },
@@ -10182,14 +10170,6 @@
         "title": "大小写不敏感調用"
       }
     ],
-    "失敗しても継続とリトライ": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 338,
-        "level": 3,
-        "title": "失敗しても継続とリトライ"
-      }
-    ],
     "失敗再試行 + タイムアウトキャンセル": [
       {
         "document": "getting-started/common-tasks.md",
@@ -10206,10 +10186,18 @@
         "title": "失敗応答例"
       }
     ],
+    "失敗時の継続とリトライ": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 412,
+        "level": 3,
+        "title": "失敗時の継続とリトライ"
+      }
+    ],
     "失敗時の自動リトライ（Retry）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 208,
+        "line": 282,
         "level": 3,
         "title": "失敗時の自動リトライ（Retry）"
       }
@@ -10269,7 +10257,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 527,
+        "line": 601,
         "level": 2,
         "title": "完全な例"
       }
@@ -10525,7 +10513,7 @@
     "戻り値": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 470,
+        "line": 544,
         "level": 2,
         "title": "戻り値"
       }
@@ -10808,6 +10796,14 @@
         "title": "提供されるツール"
       }
     ],
+    "整体のルールとコールバック": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 424,
+        "level": 3,
+        "title": "整体のルールとコールバック"
+      }
+    ],
     "文書情報": [
       {
         "document": "platform-guide/kook.md",
@@ -10854,6 +10850,22 @@
         "line": 23,
         "level": 3,
         "title": "方法 2: uv を使用したインストール（推奨）"
+      }
+    ],
+    "方法1：reply() の via パラメータ": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 157,
+        "level": 3,
+        "title": "方法1：reply() の via パラメータ"
+      }
+    ],
+    "方法2：event.send_chain()": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 174,
+        "level": 3,
+        "title": "方法2：event.send_chain()"
       }
     ],
     "旧設定のマイグレーション": [
@@ -11176,6 +11188,14 @@
         "title": "標準レスポンスフォーマット"
       }
     ],
+    "標準化された応答": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 570,
+        "level": 3,
+        "title": "標準化された応答"
+      }
+    ],
     "標準的なイベントの例": [
       {
         "document": "platform-guide/email.md",
@@ -11398,6 +11418,14 @@
         "title": "環境変数で言語を切り替える"
       }
     ],
+    "生のメッセージとメッセージビルド": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 631,
+        "level": 3,
+        "title": "生のメッセージとメッセージビルド"
+      }
+    ],
     "生メッセージ送信": [
       {
         "document": "platform-guide/telegram.md",
@@ -11546,10 +11574,18 @@
         "title": "素材ドキュメント"
       }
     ],
+    "組み合わせ修飾": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 115,
+        "level": 3,
+        "title": "組み合わせ修飾"
+      }
+    ],
     "組み込みメソッドの上書き": [
       {
         "document": "api-reference/event-system.md",
-        "line": 580,
+        "line": 588,
         "level": 4,
         "title": "組み込みメソッドの上書き"
       }
@@ -11557,7 +11593,7 @@
     "結果を待たない": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 150,
+        "line": 224,
         "level": 3,
         "title": "結果を待たない"
       }
@@ -11565,7 +11601,7 @@
     "結果を待つ": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 160,
+        "line": 234,
         "level": 3,
         "title": "結果を待つ"
       }
@@ -12108,12 +12144,12 @@
         "title": "近接マッピングの原則"
       }
     ],
-    "返り値規範": [
+    "返り値の仕様": [
       {
         "document": "api-reference/event-system.md",
-        "line": 543,
+        "line": 551,
         "level": 4,
-        "title": "返り値規範"
+        "title": "返り値の仕様"
       }
     ],
     "返信": [
@@ -12122,6 +12158,14 @@
         "line": 71,
         "level": 3,
         "title": "返信"
+      }
+    ],
+    "返信の待機": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 57,
+        "level": 3,
+        "title": "返信の待機"
       }
     ],
     "返信の送信": [
@@ -12135,7 +12179,7 @@
     "返信メソッド": [
       {
         "document": "api-reference/event-system.md",
-        "line": 351,
+        "line": 359,
         "level": 3,
         "title": "返信メソッド"
       }
@@ -12146,14 +12190,6 @@
         "line": 193,
         "level": 3,
         "title": "返信待ち機能"
-      }
-    ],
-    "返信待機": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 57,
-        "level": 3,
-        "title": "返信待機"
       }
     ],
     "返信機能": [
@@ -12289,7 +12325,7 @@
     "送信ルールシステム": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 173,
+        "line": 247,
         "level": 2,
         "title": "送信ルールシステム"
       }
@@ -12321,7 +12357,7 @@
     "送信成功後に実行されるロジック（Hook）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 191,
+        "line": 265,
         "level": 3,
         "title": "送信成功後に実行されるロジック（Hook）"
       }
@@ -12464,12 +12500,12 @@
         "title": "速習リファレンス"
       }
     ],
-    "進行状況の監視（OnProgress / OnError）": [
+    "進捗監視（OnProgress / OnError）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 227,
+        "line": 301,
         "level": 3,
-        "title": "進行状況の監視（OnProgress / OnError）"
+        "title": "進捗監視（OnProgress / OnError）"
       }
     ],
     "遅延ロードメカニズム": [
@@ -12491,7 +12527,7 @@
     "遅延送信（Defer）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 249,
+        "line": 323,
         "level": 3,
         "title": "遅延送信（Defer）"
       }
@@ -12669,7 +12705,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 653,
+        "line": 661,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -12699,7 +12735,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 565,
+        "line": 639,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -12811,7 +12847,7 @@
     "非同期処理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 148,
+        "line": 222,
         "level": 2,
         "title": "非同期処理"
       }
