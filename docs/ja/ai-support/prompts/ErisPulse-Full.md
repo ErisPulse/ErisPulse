@@ -6752,9 +6752,9 @@ async def on_bot_offline(data):
 
 # SendDSL 詳解
 
-SendDSL は、ErisPulse アダプターが提供するチェーンメソッドスタイルのメッセージ送信インターフェースです。
+SendDSL は ErisPulse アダプターが提供するチェーン呼び出しスタイルのメッセージ送信インターフェースです。
 
-## 基本の呼び出し方
+## 基本的な呼び出し方
 
 ### 1. タイプとIDを指定する
 
@@ -6774,7 +6774,7 @@ await adapter.Send.To("123").Text("Hello")
 await adapter.Send.Using("bot1").Text("Hello")
 ```
 
-### 4. 組み合わせ使用
+### 4. 組み合わせて使用する
 
 ```python
 await adapter.Send.Using("bot1").To("group", "123").Text("Hello")
@@ -6790,98 +6790,98 @@ Using/Account() → To() → [修飾メソッド] → [送信メソッド]
 
 すべての送信メソッドは `asyncio.Task` オブジェクトを返します。
 
-### 基本メソッド（基底クラスに実装済み）
+### 基本メソッド（基底クラスに組み込み済み）
 
-以下の標準メソッドは `SendDSL` 基底クラスに実装されています。**デフォルトでは `Raw_ob12` に委譲されます**。アダプターのサブクラスは実装を繰り返す必要がなく、直接使用でき、IDE で補完できます。
+以下の標準メソッドは `SendDSL` 基底クラスに組み込み実装されており、**デフォルトでは `Raw_ob12` に委譲されます**。アダプターのサブクラスで重複して実装しなくても直接使用でき、IDE の補完も効きます：
 
-| メソッド名 | 説明 | 戻り値 |
+| メソッド名 | 説明 | 返り値 |
 |--------|------|---------|
 | `Text(text: str)` | テキストメッセージを送信 | `asyncio.Task` |
 | `Image(file: bytes \| str)` | 画像を送信 | `asyncio.Task` |
 | `Voice(file: bytes \| str)` | 音声を送信（OneBot12 `audio` セグメント） | `asyncio.Task` |
-| `Video(file: bytes \| str)` | 動画を送信 | `asyncio.Task` |
+| `Video(file: bytes \| str)` | ビデオを送信 | `asyncio.Task` |
 | `File(file: bytes \| str, filename: str = None)` | ファイルを送信 | `asyncio.Task` |
 
-アダプターは単一の標準メソッドを上書きして、プラットフォーム固有のロジックを提供できます。
+アダプターは単一の標準メソッドをオーバーライドして、プラットフォーム固有のロジックを提供できます：
 
 ```python
 class Send(SendDSL):
     def Raw_ob12(self, message, **kwargs):
-        # 必須実装
+        # 実装必須
         ...
 
-    # オプション：Text を上書きしてプラットフォーム固有のロジックを提供
+    # オプション: Text をオーバーライドしてプラットフォーム固有のロジックを提供
     # def Text(self, text: str):
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 ### プロトコルメソッド
 
-| メソッド名 | 説明 | 戻り値 | 必須 |
+| メソッド名 | 説明 | 返り値 | 必須 |
 |--------|------|---------|---------|
-| `Raw_ob12(message)` | OneBot12 形式のメッセージを送信 | `asyncio.Task` | **必須実装** |
+| `Raw_ob12(message)` | OneBot12 形式メッセージを送信 | `asyncio.Task` | **実装必須** |
 
-> **重要**：`Raw_ob12` はアダプターの核心的なメソッドであり、**必須実装**です。これは「OneBot12 → プラットフォーム」への逆変換の統一されたエントリポイントです。実装されていない場合、基底クラスは error ログを出力し、標準エラー応答（`status: "failed"`, `retcode: 10002`）を返します。標準メソッド（`Text`、`Image` など）はデフォルトで `Raw_ob12` に委譲されます。
+> **重要**：`Raw_ob12` はアダプターの核心となるメソッドであり、**実装必須**です。これは逆変換（OneBot12 → プラットフォーム）の統一エントリポイントです。未実装の場合、基底クラスはエラーログを記録し、標準エラーレスポンス（`status: "failed"`, `retcode: 10002`）を返します。標準メソッド（`Text`、`Image` など）はデフォルトで `Raw_ob12` に委譲されます。
 
-### プラットフォーム固有メソッド
+### プラットフォーム固有のメソッド
 
-アダプターは `Send` サブクラスでプラットフォーム固有の送信メソッドを追加できます（`event.supports()` / `event.available_methods()` によって認識されます）：
+アダプターは `Send` サブクラスにプラットフォーム固有の送信メソッドを追加できます（`event.supports()` / `event.available_methods()` によって認識されます）：
 
 ```python
 class Send(SendDSL):
     def Raw_ob12(self, message, **kwargs): ...
 
-    # プラットフォーム固有メソッド
+    # プラットフォーム固有のメソッド
     def Sticker(self, sticker_id: str):
         return self.Raw_ob12([{"type": "sticker", "data": {"id": sticker_id}}])
 ```
 
 ## 修飾メソッド
 
-修飾メソッドは `self` を返してチェーンメソッドをサポートします。
+修飾メソッドは `self` を返してチェーン呼び出しをサポートします。
 
 ### At メソッド
 
 ```python
-# @単一のユーザー
-await adapter.Send.To("group", "123").At("456").Text("こんにちは")
+# @単一ユーザー
+await adapter.Send.To("group", "123").At("456").Text("你好")
 
-# @複数のユーザー
-await adapter.Send.To("group", "123").At("456").At("789").Text("皆さんこんにちは")
+# @複数ユーザー
+await adapter.Send.To("group", "123").At("456").At("789").Text("你们好")
 ```
 
 ### AtAll メソッド
 
 ```python
 # @全員
-await adapter.Send.To("group", "123").AtAll().Text("皆さんこんにちは")
+await adapter.Send.To("group", "123").AtAll().Text("大家好")
 ```
 
 ### Reply メソッド
 
 ```python
-# メッセージへの返信
-await adapter.Send.To("group", "123").Reply("msg_id").Text("返信内容")
+# メッセージを返信
+await adapter.Send.To("group", "123").Reply("msg_id").Text("回复内容")
 ```
 
 ### 組み合わせ修飾
 
 ```python
-await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("@への返信")
+await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回复@的消息")
 ```
 
 ### プラットフォーム固有の修飾メソッド
 
-組み込みの `At`/`AtAll`/`Reply` のほかに、アダプターは**プラットフォーム固有の修飾メソッド**を定義できます。この種のメソッドは**`self` を返すだけでよく**、何もデコレータは必要ありません。フレームワークが自動的に認識します。
+組み込みの `At`/`AtAll`/`Reply` に加え、アダプターは**プラットフォーム固有の修飾メソッド**を定義できます。これらのメソッドは**`self` を返すだけでよく**、何も装飾子（デコレータ）は必要ありません——フレームワークが自動的に認識します：
 
-- `self` を返す（SendDSL インスタンス）→ 修飾メソッド。送信ラッパー/ライフサイクルイベントはトリガーされず、チェーンは続行します
+- `self` を返す（SendDSL インスタンス）→ 修飾メソッド。送信ラッパー/ライフサイクルイベントはトリガーせず、チェーン継続
 - `Task`/`Awaitable` を返す → 送信メソッド
 
 ```python
 class Send(SendDSL):
     def Raw_ob12(self, message, **kwargs): ...
 
-    # 修飾メソッド：self を返し、送信しません
+    # 修飾メソッド: self を返し、送信しない
     def Expire(self, seconds: int):
         self._expire = seconds
         return self
@@ -6890,7 +6890,7 @@ class Send(SendDSL):
         self._member = user_id
         return self
 
-    # 送信メソッド：Task を返し、修飾メソッドで設定された状態に依存します
+    # 送信メソッド: Task を返し、修飾メソッドで設定された状態に依存
     def Board(self, content: str, **kwargs):
         return self.Raw_ob12([{"type": "board", "data": {"text": content}}])
 ```
@@ -6898,15 +6898,15 @@ class Send(SendDSL):
 使用例：
 
 ```python
-# 修飾メソッドは連続してチェーンを積み重ねることができます
+# 修飾メソッドは連続してチェーンで積み上げられる
 await adapter.Send.To("group", "big").Expire(3600).ForMember("114").Board("看板内容")
 ```
 
-## Event ラッパークラスでの修飾メソッドの使用
+## イベントラッパークラスでの修飾メソッドの使用
 
-`event.reply()` はデフォルトで `at_sender`/`at_users`/`at_all`/`quote` などの組み込み修飾パラメータのみを公開しています。プラットフォーム固有の修飾メソッドを使用するには、2つの方法があります。
+`event.reply()` はデフォルトで `at_sender`/`at_users`/`at_all`/`quote` 等の組み込み修飾パラメータのみを公開しています。プラットフォーム固有の修飾メソッドを使用するには、2つの方法があります。
 
-### 方法1：reply() の via パラメータ
+### 方法1: reply() の via パラメータ
 
 少量、既知の修飾メソッドに適しています：
 
@@ -6915,7 +6915,7 @@ await event.reply("看板内容", method="Board",
                   via=[("Expire", 3600), ("ForMember", "114514")])
 ```
 
-`via` はリストです。各要素は以下の形式を取ることができます：
+`via` はリスト形式で、各要素は以下の形式を取れます：
 
 | 形式 | 等価なチェーン呼び出し |
 |------|-------------|
@@ -6923,43 +6923,62 @@ await event.reply("看板内容", method="Board",
 | `("Name", arg1, arg2)` | `.Name(arg1, arg2)` |
 | `("Name", (arg1,), {kw: val})` | `.Name(arg1, kw=val)` |
 
-### 方法2：event.send_chain()
+### 方法2: event.send_chain()
 
-**連続した複数の修飾メソッド**や、**内容パラメータを持たないアクション型メソッド**（撤回、削除など）に適しています。`send_chain()` は `To`/`Using` が設定された送信チェーンを返し、任意の修飾メソッドと送信メソッドを自由に追加できます：
+**複数の修飾メソッドを連続して**、または**内容パラメータを持たないアクション型メソッド**（例：撤回、削除）に適しています。`send_chain()` は設定済みの `To`/`Using` を持つ送信チェーンを返し、任意の修飾メソッドや送信メソッドを自由に追加できます：
 
 ```python
 # プラットフォーム固有の修飾メソッド + 看板の送信
-await event.send_chain().Expire(3600).Board("1時間後に期限切れ")
+await event.send_chain().Expire(3600).Board("一小时后过期")
 
-# 連続した複数の修飾メソッド
+# 複数の修飾メソッドを連続して
 await (event.send_chain()
        .Expire(3600)
        .ForMember("114514")
        .Board("看板内容", content_type="markdown"))
 
-# 組み込みの修飾メソッドも利用可能です
+# 組み込みの修飾メソッドも同様に使用可能
 await event.send_chain().At("123").Reply("msg_id").Text("hi")
 
 # 内容パラメータを持たないアクション型メソッド
 await event.send_chain().DismissBoard()
 ```
 
+> `send_chain()` は完全な SendDSL インスタンスを返すため、**すべてのチェーン機能が使用可能**です——修飾メソッドだけでなく、送信ルールやバッチ構築も含まれます：
+
+```python
+# 送信ルール: リトライ + タイムアウト + 成功時コールバック
+await (event.send_chain()
+       .Retry(3).Timeout(10)
+       .Hook(lambda r: print("发送成功"))
+       .Text("可靠发送"))
+
+# 遅延送信 + プラットフォーム修飾 + 看板
+await event.send_chain().Defer(5).Expire(3600).Board("延迟看板")
+
+# バッチ構築モード
+results = await (event.send_chain()
+                 .Build()
+                 .Text("第一句").Image("pic.jpg").Text("第二句")
+                 .send_all())
+```
+
 ## アカウント管理
 
 ### Using メソッド
 
-`Using()` はメッセージを送信するアカウントを指定するために使用します。渡された識別子は `_resolve_account()` を通じて、以下の優先順位で照合されます。
+`Using()` はメッセージを送信するアカウントを指定するために使用します。渡された識別子は以下の優先順位で `_resolve_account()` によって照合されます：
 
 1. **アカウント名** — 設定のキー名（例：`"default"`、`"bot1"`）
-2. **実行時に注入された bot_id** — イベント変換時に自動注入された識別子
-3. **任意の str フィールド** — 設定の他の文字列フィールド
+2. **ランタイムで注入された bot_id** — イベント変換時に自動注入される識別子
+3. **任意の str フィールド** — 設定内のその他の文字列フィールド
 4. **フォールバック** — 最初に有効なアカウント
 
 ```python
 # アカウント名を使用
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# bot_id を使用（イベント内の self.user_id に相当）
+# bot_idを使用（イベント内の self.user_id に相当）
 await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
@@ -6976,7 +6995,7 @@ await adapter.Send.Account("account1").To("user", "123").Text("Hello")
 ### 結果を待たない
 
 ```python
-# メッセージはバックグラウンドで送信されます
+# メッセージはバックグラウンドで送信
 task = adapter.Send.To("user", "123").Text("Hello")
 
 # 他の操作を続行
@@ -6988,9 +7007,9 @@ task = adapter.Send.To("user", "123").Text("Hello")
 ```python
 # 直接 await して結果を取得
 result = await adapter.Send.To("user", "123").Text("Hello")
-print(f"送信結果: {result}")
+print(f"发送结果: {result}")
 
-# 先に Task を保存して、後で待つ
+# 先に Task を保存し、後で待機
 task = adapter.Send.To("user", "123").Text("Hello")
 # ... 他の操作 ...
 result = await task
@@ -6998,111 +7017,111 @@ result = await task
 
 ## 送信ルールシステム
 
-SendDSL には、チェーンメソッドでルールを追加し、最終送信時に一括して適用する送信ルールデコレータが組み込まれています。ルールは一般的なプロダクションシナリオをカバーします：タイムアウト制御、失敗リトライ、成功コールバック、遅延送信、優先度廃棄、進捗監視。
+SendDSL はチェーンメソッドでルールを追加し、最終的な送信時に一括して適用する送信ルールデコレータを内蔵しています。ルールは一般的な運用シナリオをカバーしています：タイムアウト制御、失敗時リトライ、成功時コールバック、遅延送信、優先度による廃棄、進捗監視。
 
-ルールメソッドは**`self` を返します**（At/AtAll/Reply と同様）、送信メソッド（Text/Image など）の前に呼び出す必要があります。ルールは `To`/`Using`/`Account` が作成する新しいインスタンスに伝播します。
+ルールメソッドは**`self` を返します**（At/AtAll/Reply と同様）、送信メソッド（Text/Image など）の前に呼び出す必要があります。ルールは `To`/`Using`/`Account` によって作成された新しいインスタンスに伝播します。
 
 ### ルールメソッド一覧
 
 | メソッド | 説明 |
 |--------|------|
-| `.Hook(callback)` | 送信成功後に実行されるコールバック（複数回呼び出し可能、順序通り実行） |
-| `.Retry(times=1)` | 失敗時に自動的に N 回リトライ（最初の 1 回を含む合計 N+1 回） |
-| `.Timeout(seconds)` | 1回の送信タイムアウト。タイムアウトで現在の試行をキャンセル（Retry と組み合わせ可能） |
-| `.Defer(seconds=1.0)` | 遅延送信（プロセス内タイマー、永続化なし） |
-| `.Priority(level, drop_if_busy=False)` | 優先度を設定。バックログ時は廃棄可能 |
-| `.OnProgress(callback)` | 各段階の進捗コールバック（`SendContext` を渡します） |
-| `.OnError(callback)` | 最終的な失敗時のエラーコールバック（1回のみトリガー） |
+| `.Hook(callback)` | 送信成功後に実行されるコールバック（複数回呼び出せ、順次実行） |
+| `.Retry(times=1)` | 失敗時に自動リトライ N 回（最初の試行を含む合計 N+1 回） |
+| `.Timeout(seconds)` | 送信ごとのタイムアウト、タイムアウトで現在の試行をキャンセル（Retry と組み合わせ可能） |
+| `.Defer(seconds=1.0)` | 遅延送信（プロセス内のタイマー、永続化なし） |
+| `.Priority(level, drop_if_busy=False)` | 優先度を設定；キューが滞った際は廃棄可能 |
+| `.OnProgress(callback)` | 各段階の進捗コールバック（`SendContext` を受け取る） |
+| `.OnError(callback)` | 最終的な失敗時のエラーコールバック（一度のみトリガー） |
 
-### 送信成功後に実行されるロジック（Hook）
+### 送信成功後の実行ロジック（Hook）
 
 ```python
 # 同期コールバック
 await (adapter.Send.To("user", "123")
-       .Hook(lambda r: print(f"送信成功、メッセージID: {r['message_id']}"))
-       .Text("こんにちは"))
+       .Hook(lambda r: print(f"发送成功，消息ID: {r['message_id']}"))
+       .Text("你好"))
 
 # 非同期コールバック
 async def deduct_points(result):
     await db.update(user_id="123", points=-1)
 
-await adapter.Send.To("user", "123").Hook(deduct_points).Text("ポイント減算")
+await adapter.Send.To("user", "123").Hook(deduct_points).Text("扣积分")
 ```
 
-Hook は送信が最終的に成功したとき（リトライ成功を含む）にのみ実行されます。失敗、タイムアウト、キャンセルはトリガーされません。
+Hook は送信が最終的に成功（リトライを含む）した場合にのみ実行されます；失敗、タイムアウト、キャンセルではトリガーされません。
 
 ### 失敗時の自動リトライ（Retry）
 
 ```python
-# 最初の失敗後に 2 回リトライ、合計 3 回の試行
-result = await adapter.Send.To("user", "123").Retry(2).Text("リトライ付き")
+# 最初の失敗後にリトライ 2 回、合計 3 回の試行
+result = await adapter.Send.To("user", "123").Retry(2).Text("带重试")
 ```
 
-リトライのトリガー条件：送信が例外を投げる、送信がタイムアウトする、送信が `status == "failed"` のレスポンスを返す。
+リトライのトリガー条件：送信が例外をスローした場合、送信タイムアウト、送信から `status == "failed"` のレスポンスが返された場合。
 
-### タイムアウトによる自動キャンセル（Timeout）
+### タイムアウト時の自動キャンセル（Timeout）
 
 ```python
-# 1回の送信が 10 秒を超えるとキャンセル
-await adapter.Send.To("user", "123").Timeout(10).Text("タイムアウト付き")
+# 送信ごとに 10 秒を超えるとキャンセル
+await adapter.Send.To("user", "123").Timeout(10).Text("带超时")
 
 # タイムアウト + リトライ：各試行 10 秒、最大 3 回
-await adapter.Send.To("user", "123").Timeout(10).Retry(2).Text("タイムアウトリトライ")
+await adapter.Send.To("user", "123").Timeout(10).Retry(2).Text("超时重试")
 ```
 
 ### 進捗監視（OnProgress / OnError）
 
 ```python
 def on_progress(ctx):
-    print(f"段階: {ctx.stage}, 試行: {ctx.attempt + 1}/{ctx.max_attempts}, 耗時: {ctx.elapsed:.2f}s")
+    print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}, 耗时: {ctx.elapsed:.2f}s")
     if ctx.stage == "failed":
-        print(f"  エラー: {ctx.error!r}")
+        print(f"  错误: {ctx.error!r}")
 
 async def on_error(ctx):
-    await notify_admin(f"{ctx.target_id} への送信に失敗: {ctx.error!r}")
+    await notify_admin(f"发送给 {ctx.target_id} 失败: {ctx.error!r}")
 
 await (adapter.Send.To("user", "123")
        .Retry(3).Timeout(10)
        .OnProgress(on_progress)
        .OnError(on_error)
-       .Text("監視"))
+       .Text("监控"))
 ```
 
 `SendContext` が含むフィールド：`task_id`、`platform`、`method`、`target_type`、`target_id`、`bot_id`、`stage`、`attempt`、`max_attempts`、`started_at`、`finished_at`、`elapsed`、`error`、`result`、`extra`。
 
-`stage` の可能性のある値：`pending`、`sending`、`retrying`、`success`、`failed`、`timeout`、`cancelled`、`dropped`。
+`stage` の可能な値：`pending`、`sending`、`retrying`、`success`、`failed`、`timeout`、`cancelled`、`dropped`。
 
 ### 遅延送信（Defer）
 
 ```python
 # 5 秒後に送信
-await adapter.Send.To("user", "123").Defer(5).Text("遅延メッセージ")
+await adapter.Send.To("user", "123").Defer(5).Text("迟到消息")
 ```
 
-> 注意：遅延はプロセス内タイマーです。プロセスの再起動で失われ、永続化は提供されません。
+> 注意：遅延はプロセス内のタイマーであり、プロセス再起動で失われます。永続化は提供されません。
 
-### 優先度とバックログ廃棄（Priority）
+### 優先度とキューの廃棄（Priority）
 
 ```python
-# 低優先度メッセージ、バックログ時に自動的に廃棄
+# 低優先度メッセージ、キューが滞った際は自動的に廃棄
 result = await (adapter.Send.To("user", "123")
                .Priority(-1, drop_if_busy=True)
-               .Text("廃棄可能な通知"))
+               .Text("可放弃的通知"))
 # 廃棄された場合、result["status"] == "failed"
 ```
 
-`drop_if_busy` を有効にすると、進行中の送信タスク数がしきい値（デフォルト 64）を超えたとき、今回の送信を直接放棄します。`.PriorityThreshold(n)` でグローバルなしきい値を調整できます。
+`drop_if_busy` を有効にすると、送信中のタスク数が閾値を超えたとき（デフォルト 64）に今回の送信を即座に放棄します。グローバルな閾値は `.PriorityThreshold(n)` で調整できます。
 
 ### ルールの組み合わせとバックグラウンド実行
 
 ```python
-# メインフローをブロックせず、ルールは依然として有効です
+# メインプロセスをブロックせず、ルールは正常に適用される
 task = (adapter.Send.To("user", "123")
-        .Hook(lambda r: print("送信成功！"))
+        .Hook(lambda r: print("发送成功！"))
         .Retry(3)
         .Timeout(10)
         .OnProgress(on_progress)
-        .Text("こんにちは"))
+        .Text("你好"))
 
 # 他の操作を続行
 await handle_next_action()
@@ -7110,28 +7129,28 @@ await handle_next_action()
 
 ### ルールの伝播
 
-ルールは `To`/`Using`/`Account` が作成する新しいインスタンスに伝播し、チェーン呼び出し中のルールの紛失を防ぎます：
+ルールは `To`/`Using`/`Account` によって作成された新しいインスタンスに伝播し、チェーン呼び出し中でのルールの紛失を防ぎます：
 
 ```python
-# To の前にルールを設定すると、To が作成するインスタンスにも伝播します
+# ルールは To の前に設定されており、To が作成したインスタンスにも伝播する
 builder = adapter.Send.Retry(3).Timeout(10)
-send = builder.To("user", "123")  # send は依然として Retry(3) と Timeout(10) を保持しています
+send = builder.To("user", "123")  # send はまだ Retry(3) と Timeout(10) を持っている
 await send.Text("hi")
 ```
 
-複数のインスタンスのルールは相互に独立しています（フックリストのディープコピー）。
+複数のインスタンスのルールは相互に独立です（フックリストはディープコピーされます）。
 
-## バッチビルドモード（Build）
+## バッチ構築モード（Build）
 
-単発モードのほかに、SendDSL はバッチビルドモードもサポートしています：1つのチェーン内で複数の送信メソッドを記述し、最後に一括実行します。「まとめて複数のメッセージを一気に送信」するシナリオに適しています。
+単発モッドに加え、SendDSL はバッチ構築モードもサポートしています：一つのチェーン内で複数の送信メソッドを記述し、最後に一括して実行します。「一度に複数のメッセージを送信する」というシナリオに適しています。
 
-### ビルドモードに入る
+### 構築モードへの移行
 
-送信メソッドの前に `.Build()` を呼び出すと、`SendBuilder` を返します。その後、送信メソッド（Text/Image など）は即座に実行されず、送信意図として蓄積されます：
+送信メソッドの前に `.Build()` を呼び出して、`SendBuilder` を返します。以降、送信メソッド（Text/Image など）は即座に実行されず、送信意図として蓄積されます：
 
 ```python
 results = await (adapter.Send.To("user", "123")
-                 .Build()                    # ビルドモードに入る
+                 .Build()                    # 構築モードへ移行
                  .Text("第一句")
                  .Image("pic.jpg")
                  .Text("第二句")
@@ -7139,110 +7158,110 @@ results = await (adapter.Send.To("user", "123")
 # results = [Text結果, Image結果, Text結果]
 ```
 
-`.send_all()` は `asyncio.Task` を返し、await すると結果のリスト（意図の順序）を取得できます。
+`.send_all()` は `asyncio.Task` を返し、await 後に結果リスト（意図の順序）を取得できます。
 
-### 並列と順列
+### 並列と直列
 
-デフォルトでは**並列**実行です（並行送信、合計所要時間は最も遅いものとほぼ等価）。メッセージの到着順序を保証する必要がある場合は、`.Sequential()` を呼び出します：
+デフォルトでは**並列**実行（同時送信、全体の所要時間は最も遅いものに等しくなります）。メッセージの到着順序を保証する必要がある場合は `.Sequential()` を呼び出します：
 
 ```python
-# 順列：順番に送信
+# 直列：順番に送信
 await (adapter.Send.To("group", "456")
        .Build()
        .Sequential()
-       .Text("先にこれ").Text("次にこれ")
+       .Text("先发这个").Text("再发这个")
        .send_all())
 
 # 並列（デフォルト、明示的に呼び出しても可）
 await (adapter.Send.To("group", "456")
        .Build()
        .Parallel()
-       .Text("並列1").Text("並列2")
+       .Text("并发1").Text("并发2")
        .send_all())
 ```
 
 ### 失敗時の継続とリトライ
 
-バッチ実行では**失敗時の継続**戦略を採用しています：1つでも失敗すると他の項目の送信が中断されません。`.Retry()` を組み合わせると、失敗した項目は自動的にリトライされます（リトライは1つの項目に作用し、バッチ全体には作用しません）：
+バッチ実行では**失敗時の継続**戦略を採用しています：1つの失敗が他の送信の中断を引き起こさません。`.Retry()` を組み合わせる場合、失敗したエントリは自動的にリトライされます（リトライは個々のエントリに適用され、バッチ全体には適用されません）：
 
 ```python
 await (adapter.Send.To("user", "123")
        .Build()
-       .Retry(2)                       # 各項目が各自 2 回リトライ
-       .Text("失敗する可能性あり").Image("こちらも失敗する可能性あり")
+       .Retry(2)                       # 各エントリが個別に 2 回リトライ
+       .Text("可能失败的").Image("也可能失败的")
        .send_all())
 ```
 
-### 整体のルールとコールバック
+### バッチ全体のルールとコールバック
 
-ルールは全体に一律に作用します：
+ルールはバッチ全体に統一的に適用されます：
 
 | メソッド | 説明 |
 |--------|------|
-| `.Timeout(seconds)` | 各送信の1回のタイムアウト |
-| `.Retry(times)` | 各送信の各自のリトライ（失敗時の継続） |
-| `.Defer(seconds)` | 整体の遅延送信 |
-| `.Hook(callback)` | 全体が成功した後にトリガー、`results` リストを受け取ります |
-| `.OnError(callback)` | バッチに失敗が存在する場合にトリガー、`BatchContext` を受け取ります |
-| `.OnProgress(callback)` | 各項目の完了時にトリガー、`BatchContext` を受け取ります |
+| `.Timeout(seconds)` | 各送信の単一タイムアウト |
+| `.Retry(times)` | 各送信の個別リトライ（失敗時の継続） |
+| `.Defer(seconds)` | バッチ全体の遅延送信 |
+| `.Hook(callback)` | バッチ全体が成功した後でトリガー、`results` リストを受け取る |
+| `.OnError(callback)` | バッチに失敗がある場合トリガー、`BatchContext` を受け取る |
+| `.OnProgress(callback)` | 各完了時トリガー、`BatchContext` を受け取る |
 
 ```python
 def on_progress(ctx):
-    print(f"進捗: {ctx.completed}/{ctx.total}, 成功 {ctx.succeeded}, 失敗 {ctx.failed}")
+    print(f"进度: {ctx.completed}/{ctx.total}, 成功 {ctx.succeeded}, 失败 {ctx.failed}")
 
 async def on_error(ctx):
-    print(f"バッチに {ctx.failed} 件の失敗があります")
+    print(f"批次有 {ctx.failed} 条失败")
 
 results = await (adapter.Send.To("user", "123")
                .Build()
                .Retry(2).Timeout(10)
                .OnProgress(on_progress)
                .OnError(on_error)
-               .Hook(lambda rs: print("全体完了"))
+               .Hook(lambda rs: print("整批完成"))
                .Text("a").Text("b").Text("c")
                .send_all())
 ```
 
 `BatchContext` が含むもの：`task_id`、`total`、`completed`、`succeeded`、`failed`、`stage`、`results`、`errors`、`elapsed`、`extra`。
 
-`stage` の可能性のある値：`pending`、`sending`、`success`（全成功）、`partial`（一部成功）、`failed`（全失敗）。
+`stage` の可能な値：`pending`、`sending`、`success`（全成功）、`partial`（一部成功）、`failed`（全失敗）。
 
-### デコレータとルールの継承
+### 修飾子とルールの継承
 
-`.Build()` 以前の At/AtAll/Reply デコレータとルールは全体に継承され、各メッセージに作用します：
+`.Build()` 之前の At/AtAll/Reply 修飾子とルールはバッチ全体に継承され、各メッセージに適用されます：
 
 ```python
 await (adapter.Send.To("group", "456")
        .At("789")                        # 継承：すべてのメッセージが @789
        .Build()
-       .Retry(2)                         # 継承 + 追加：各項目がそれぞれリトライ
-       .Text("@あなたへの通知")
-       .Image("告知画像")
+       .Retry(2)                         # 継承 + 追加：各メッセージが個別にリトライ
+       .Text("@你的通知")
+       .Image("公告图")
        .send_all())
 ```
 
-Build に入った後もデコレータを追加できます（全体に作用します）：
+Build へ移行した後でも修飾子を追加できます（バッチ全体に適用）：
 
 ```python
 await (adapter.Send.To("group", "456")
        .Build()
-       .At("111").At("222")             # 追加 @、全体に作用
-       .Text("@複数人")
+       .At("111").At("222")             # 追加 @、バッチ全体に適用
+       .Text("@多人")
        .send_all())
 ```
 
 ### バックグラウンド実行
 
-単発と同様、`.send_all()` は Task を返し、await しなければバックグラウンドで実行できます：
+単発モッドと同様、`.send_all()` は Task を返し、await せずにバックグラウンドで実行させることができます：
 
 ```python
 task = (adapter.Send.To("user", "123")
         .Build()
-        .Hook(lambda rs: print("バッチ送信完了"))
+        .Hook(lambda rs: print("批量发送完成"))
         .Text("a").Text("b")
         .send_all())
 
-# メインフローをブロックしない
+# メインプロセスをブロックしない
 await do_something_else()
 ```
 
@@ -7250,7 +7269,7 @@ await do_something_else()
 
 ### PascalCase 命名
 
-すべての送信メソッドはパスカルケースを使用します：
+すべての送信メソッドは大文字小文字区別のキャメルケース（PascalCase）を使用します：
 
 ```python
 # ✅ 正しい
@@ -7260,7 +7279,7 @@ def Text(self, text: str):
 def Image(self, file: bytes):
     pass
 
-# ❌ 間違っている
+# ❌ 間違った
 def text(self, text: str):
     pass
 
@@ -7268,36 +7287,36 @@ def send_image(self, file: bytes):
     pass
 ```
 
-### プラットフォーム固有メソッド
+### プラットフォーム固有のメソッド
 
-プラットフォームプレフィックスのメソッドの追加は推奨されません：
+プラットフォームプレフィックスを持つメソッドの追加は推奨しません：
 
 ```python
 # ✅ 推奨
 def Sticker(self, sticker_id: str):
     pass
 
-# ❌ 推奨されない
+# ❌ 推奨しない
 def TelegramSticker(self, sticker_id: str):
     pass
 ```
 
-`Raw` メソッドを使用して置き換えます：
+`Raw` メソッドを使用して置換してください：
 
 ```python
 # ✅ 推奨
 await adapter.Send.Raw_ob12([{"type": "sticker", ...}])
 
-# ❌ 推奨されない
+# ❌ 推奨しない
 def TelegramSticker(self, ...):
     pass
 ```
 
-## 戻り値
+## 返り値
 
 ### Task オブジェクト
 
-すべての送信メソッドは `asyncio.Task` を返します。アダプターは `Raw_ob12` のみを実装し、標準メソッド（Text/Image など）はデフォルトでそれに委譲します：
+すべての送信メソッドは `asyncio.Task` を返します。アダプターは `Raw_ob12` のみを実装すればよく、標準メソッド（Text/Image など）はデフォルトで委譲されます：
 
 ```python
 import asyncio
@@ -7313,15 +7332,15 @@ def Raw_ob12(self, message, **kwargs):
         )
     return asyncio.create_task(_do_send())
 
-# Text/Image/Voice/File は基底クラスから継承し、自動的に Raw_ob12 に委譲されます
-# 標準メソッドを上書きする必要がある場合は、asyncio.Task を返すだけです：
+# Text/Image/Voice/File は基底クラスから継承済み、自動的に Raw_ob12 に委譲
+# 標準メソッドをオーバーライドする場合は、asyncio.Task を返せばよい：
 # def Text(self, text: str):
 #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### 標準化された応答
+### 標準化されたレスポンス
 
-`call_api` は標準化された応答を返す必要があります。`make_response()` / `make_error()` メソッドの使用が推奨されます：
+`call_api` は標準化されたレスポンスを返すべきです。`make_response()` / `make_error()` メソッドの使用を推奨します：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -7336,7 +7355,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-手動構築もサポートされています（旧方式も互換性があります）：
+手動構築（古い方式も互換性としてサポート）も可能です：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -7374,17 +7393,17 @@ with open("document.pdf", "rb") as f:
 
 ```python
 # @ユーザー + 返信
-await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("返信@メッセージ")
+await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("回复@的消息")
 
 # @全員 + 複数の修飾
-await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("告知メッセージ")
+await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消息")
 ```
 
-### 生のメッセージとメッセージビルド
+### 原始メッセージとメッセージ構築
 
-`Raw_ob12` は「OneBot12 メッセージセグメント → プラットフォーム API 呼び出し」への逆変換の核心的なエントリポイントであり、`MessageBuilder` はそれと組み合わせて使用されるチェーンメソッドベースのメッセージセグメントビルドツールです。
+`Raw_ob12` は逆変換の核心的なエントリポイント（OB12 メッセージセグメントを受け取り → プラットフォーム API の呼び出し）、`MessageBuilder` はそれを補助するチェーン式メッセージセグメント構築ツールです。
 
-> 完全な `Raw_ob12` 実装仕様、`MessageBuilder` の使用法およびコード例については、以下を参照してください：
+> 完全な `Raw_ob12` 実装仕様、`MessageBuilder` の使い方、コード例については以下を参照してください：
 > - [送信メソッド仕様 §6 逆変換仕様](../../standards/send-method-spec.md#6-逆変換仕様onebot12--プラットフォーム)
 > - [送信メソッド仕様 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
 
