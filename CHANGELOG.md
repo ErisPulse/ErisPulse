@@ -63,6 +63,33 @@
 
 ---
 
+## [2.7.0-dev.1] - 2026/07/28
+> 开发版本
+
+**版本摘要**
+Event 包装类平台修饰方法支持版本：新增 `Event.send_chain()` 方法和 `reply()` 的 `via` 参数，支持在事件包装类中使用平台专有修饰方法（含连续多个修饰），解决"发送方法强依赖修饰方法"的场景。**完全向后兼容，平台适配器无需任何改动**——框架已能依据返回值自动区分修饰方法（返回 `self`）与发送方法（返回 `Task`）。
+
+**升级建议**
+- **建议升级**
+- 升级原因：平台专有修饰方法（如云湖看板的 `Expire`/`ExpireAt`/`ForMember`）现可通过 `event.send_chain()` / `event.reply(via=...)` 在事件处理器中使用；适配器无需改动，旧代码行为完全不变
+
+### 新增
+
+- `Event.send_chain()`：返回已配置 `To`/`Using` 的发送链，可自由追加任意修饰方法（内置 + 平台专有）和发送方法
+  - 适用场景：连续多个修饰方法、平台专有修饰方法、无内容参数的动作型方法（如 `DismissBoard`）
+- `Event.reply()` 新增 `via` 参数：在发送方法前按顺序应用修饰方法链
+  - 每个元素可为 `"Name"` / `("Name", *args)` / `("Name", args_tuple, kwargs_dict)`
+- `Event/wrapper.py` 新增 `_normalize_modifier()` 辅助函数（归一化修饰方法定义）
+- 单元测试：`test_unit_adapter.py` 新增 `TestSendDSLReturnSelfModifier`（3 用例，验证返回-self 修饰方法的链式行为）；`test_unit_event.py` 新增 `TestEventSendChainAndModifiers`（12 用例，覆盖 `_normalize_modifier` / `send_chain` / `reply(via=)` / 向后兼容）
+
+### 优化
+
+- `docs/zh-CN/developer-guide/adapters/send-dsl.md` 新增「平台专有修饰方法」与「在 Event 包装类中使用修饰方法」章节
+- `docs/zh-CN/api-reference/event-system.md` 回复功能示例补充 `via` 与 `send_chain()`
+- 示例项目 `example-adapter` 与 CLI 脚手架 `_ADAPTER_CORE` 补充平台修饰方法（返回 self）的推荐写法演示
+
+---
+
 ## [2.7.0-dev.0] - 2026/07/26
 > 开发版本
 
