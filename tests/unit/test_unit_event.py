@@ -1918,7 +1918,20 @@ class TestEventSendChainAndModifiers:
         """reply() 遇到不存在的修饰方法应抛出 ValueError"""
         event = self._make_event()
         with pytest.raises(ValueError, match="不支持修饰方法"):
-            await event.reply("hi", via=[("NotExist", 1)])
+            await event.reply("hi", method="Board", via=[("NotExist", 1)])
+
+    @pytest.mark.asyncio
+    async def test_reply_via_without_method_warns_and_proceeds(self, modifier_adapter):
+        """reply() 使用 via 但未指定 method 时不报错，警告后用默认 Text 发送"""
+        event = self._make_event()
+        # 不应抛出异常（某些平台默认方法可能支持这些修饰）
+        result = await event.reply("hi", via=[("Expire", 3600)])
+        assert result["status"] == "ok"
+        # 修饰方法状态仍被应用到链上
+        params = result["data"]["params"]
+        assert params["expire"] == 3600
+        # 默认用 Text 发送
+        assert any(seg["type"] == "text" for seg in params["message"])
 
     @pytest.mark.asyncio
     async def test_reply_mention_backward_compat(self, modifier_adapter):

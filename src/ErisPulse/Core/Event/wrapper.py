@@ -1118,7 +1118,7 @@ class Event(dict):
     async def reply(
         self,
         content: str,
-        method: str = DEFAULT_SEND_METHOD,
+        method: str | None = None,
         at_sender: bool = False,
         quote: bool = False,
         at_users: list[str] | None = None,
@@ -1133,8 +1133,9 @@ class Event(dict):
         基于适配器的Text方法，但可以通过method参数指定其他发送方法
 
         :param content: 发送内容（文本、URL等，取决于method参数）
-        :param method: 适配器发送方法，默认为"Text"
-                       可选值: "Text", "Image", "Voice", "Video", "File" 等
+        :param method: str - 适配器发送方法（默认: "Text"）
+                       可选值: "Text", "Image", "Voice", "Video", "File" 等；
+                       使用 via 时必须显式指定
         :param at_sender: 是否@发送者（自动从事件中提取 user_id）
         :param quote: 是否引用回复当前消息（自动从事件中提取 message_id）
         :param at_users: @用户列表（可选），如 ["user1", "user2"]
@@ -1177,6 +1178,15 @@ class Event(dict):
         >>> await event.reply("看板内容", method="Board",
         ...                   via=[("Expire", 3600), ("ForMember", "uid")])
         """
+        if via and method is None:
+            logger.warning(
+                "reply() 使用 via 但未指定 method，将使用默认发送方法 "
+                f"'{DEFAULT_SEND_METHOD}'。若修饰方法需配合特定发送方法"
+                "，请显式传入 method={方法名}。"
+            )
+        if method is None:
+            method = DEFAULT_SEND_METHOD
+
         adapter_instance, detail_type, target_id, bot_id = (
             self._get_adapter_and_target()
         )
