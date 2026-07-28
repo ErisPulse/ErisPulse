@@ -6750,31 +6750,31 @@ async def on_bot_offline(data):
 
 ### SendDSL 详解
 
-# SendDSL 详解
+# SendDSL 詳解
 
-SendDSL は ErisPulse アダプタが提供する、チェーン呼び出しスタイルのメッセージ送信インターフェースです。
+SendDSL は、ErisPulse アダプターが提供するチェーンメソッドスタイルのメッセージ送信インターフェースです。
 
-## 基本呼び出し方法
+## 基本の呼び出し方
 
-### 1. タイプとIDを指定
+### 1. タイプとIDを指定する
 
 ```python
 await adapter.Send.To("group", "123").Text("Hello")
 ```
 
-### 2. IDのみを指定
+### 2. IDのみを指定する
 
 ```python
 await adapter.Send.To("123").Text("Hello")
 ```
 
-### 3. 送信アカウントを指定
+### 3. 送信アカウントを指定する
 
 ```python
 await adapter.Send.Using("bot1").Text("Hello")
 ```
 
-### 4. 組み合わせ
+### 4. 組み合わせ使用
 
 ```python
 await adapter.Send.Using("bot1").To("group", "123").Text("Hello")
@@ -6790,19 +6790,19 @@ Using/Account() → To() → [修飾メソッド] → [送信メソッド]
 
 すべての送信メソッドは `asyncio.Task` オブジェクトを返します。
 
-### 基本メソッド（基底クラスに内蔵）
+### 基本メソッド（基底クラスに実装済み）
 
-以下は `SendDSL` 基底クラスに内蔵された標準メソッドで、**デフォルトでは `Raw_ob12` に委任**され、アダプタのサブクラスでは再実装する必要がなく、IDE による補完も可能です：
+以下の標準メソッドは `SendDSL` 基底クラスに実装されています。**デフォルトでは `Raw_ob12` に委譲されます**。アダプターのサブクラスは実装を繰り返す必要がなく、直接使用でき、IDE で補完できます。
 
 | メソッド名 | 説明 | 戻り値 |
 |--------|------|---------|
 | `Text(text: str)` | テキストメッセージを送信 | `asyncio.Task` |
 | `Image(file: bytes \| str)` | 画像を送信 | `asyncio.Task` |
 | `Voice(file: bytes \| str)` | 音声を送信（OneBot12 `audio` セグメント） | `asyncio.Task` |
-| `Video(file: bytes \| str)` | ビデオを送信 | `asyncio.Task` |
+| `Video(file: bytes \| str)` | 動画を送信 | `asyncio.Task` |
 | `File(file: bytes \| str, filename: str = None)` | ファイルを送信 | `asyncio.Task` |
 
-アダプタは個々の標準メソッドをオーバーライドして、プラットフォーム固有のロジックを提供できます：
+アダプターは単一の標準メソッドを上書きして、プラットフォーム固有のロジックを提供できます。
 
 ```python
 class Send(SendDSL):
@@ -6810,22 +6810,22 @@ class Send(SendDSL):
         # 必須実装
         ...
 
-    # オプション：Text をオーバーライドしてプラットフォーム固有のロジックを提供
+    # オプション：Text を上書きしてプラットフォーム固有のロジックを提供
     # def Text(self, text: str):
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 ### プロトコルメソッド
 
-| メソッド名 | 説明 | 戻り値 | 必須か |
+| メソッド名 | 説明 | 戻り値 | 必須 |
 |--------|------|---------|---------|
 | `Raw_ob12(message)` | OneBot12 形式のメッセージを送信 | `asyncio.Task` | **必須実装** |
 
-> **重要**：`Raw_ob12` はアダプタのコアメソッドであり、**必ず実装**する必要があります。これは OneBot12 → プラットフォームへの逆変換の統一エントリポイントです。実装しない場合、基底クラスは error ログを記録し、標準のエラーレスポンス（`status: "failed"`, `retcode: 10002`）を返します。標準メソッド（`Text`、`Image` など）はデフォルトで `Raw_ob12` に委任されます。
+> **重要**：`Raw_ob12` はアダプターの核心的なメソッドであり、**必須実装**です。これは「OneBot12 → プラットフォーム」への逆変換の統一されたエントリポイントです。実装されていない場合、基底クラスは error ログを出力し、標準エラー応答（`status: "failed"`, `retcode: 10002`）を返します。標準メソッド（`Text`、`Image` など）はデフォルトで `Raw_ob12` に委譲されます。
 
 ### プラットフォーム固有メソッド
 
-アダプタは `Send` サブクラスにプラットフォーム固有の送信メソッドを追加できます（`event.supports()` / `event.available_methods()` で認識されます）：
+アダプターは `Send` サブクラスでプラットフォーム固有の送信メソッドを追加できます（`event.supports()` / `event.available_methods()` によって認識されます）：
 
 ```python
 class Send(SendDSL):
@@ -6838,60 +6838,134 @@ class Send(SendDSL):
 
 ## 修飾メソッド
 
-修飾メソッドは `self` を返すことで、チェーン呼び出しを可能にします。
+修飾メソッドは `self` を返してチェーンメソッドをサポートします。
 
 ### At メソッド
 
 ```python
-# @1人
-await adapter.Send.To("group", "123").At("456").Text("你好")
+# @単一のユーザー
+await adapter.Send.To("group", "123").At("456").Text("こんにちは")
 
-# @複数人
-await adapter.Send.To("group", "123").At("456").At("789").Text("你们好")
+# @複数のユーザー
+await adapter.Send.To("group", "123").At("456").At("789").Text("皆さんこんにちは")
 ```
 
 ### AtAll メソッド
 
 ```python
 # @全員
-await adapter.Send.To("group", "123").AtAll().Text("大家好")
+await adapter.Send.To("group", "123").AtAll().Text("皆さんこんにちは")
 ```
 
 ### Reply メソッド
 
 ```python
-# メッセージに返信
+# メッセージへの返信
 await adapter.Send.To("group", "123").Reply("msg_id").Text("返信内容")
 ```
 
-### 修飾の組み合わせ
+### 組み合わせ修飾
 
 ```python
-await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("返信@メッセージ")
+await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("@への返信")
+```
+
+### プラットフォーム固有の修飾メソッド
+
+組み込みの `At`/`AtAll`/`Reply` のほかに、アダプターは**プラットフォーム固有の修飾メソッド**を定義できます。この種のメソッドは**`self` を返すだけでよく**、何もデコレータは必要ありません。フレームワークが自動的に認識します。
+
+- `self` を返す（SendDSL インスタンス）→ 修飾メソッド。送信ラッパー/ライフサイクルイベントはトリガーされず、チェーンは続行します
+- `Task`/`Awaitable` を返す → 送信メソッド
+
+```python
+class Send(SendDSL):
+    def Raw_ob12(self, message, **kwargs): ...
+
+    # 修飾メソッド：self を返し、送信しません
+    def Expire(self, seconds: int):
+        self._expire = seconds
+        return self
+
+    def ForMember(self, user_id: str):
+        self._member = user_id
+        return self
+
+    # 送信メソッド：Task を返し、修飾メソッドで設定された状態に依存します
+    def Board(self, content: str, **kwargs):
+        return self.Raw_ob12([{"type": "board", "data": {"text": content}}])
+```
+
+使用例：
+
+```python
+# 修飾メソッドは連続してチェーンを積み重ねることができます
+await adapter.Send.To("group", "big").Expire(3600).ForMember("114").Board("看板内容")
+```
+
+## Event ラッパークラスでの修飾メソッドの使用
+
+`event.reply()` はデフォルトで `at_sender`/`at_users`/`at_all`/`quote` などの組み込み修飾パラメータのみを公開しています。プラットフォーム固有の修飾メソッドを使用するには、2つの方法があります。
+
+### 方法1：reply() の via パラメータ
+
+少量、既知の修飾メソッドに適しています：
+
+```python
+await event.reply("看板内容", method="Board",
+                  via=[("Expire", 3600), ("ForMember", "114514")])
+```
+
+`via` はリストです。各要素は以下の形式を取ることができます：
+
+| 形式 | 等価なチェーン呼び出し |
+|------|-------------|
+| `"Name"` | `.Name()` |
+| `("Name", arg1, arg2)` | `.Name(arg1, arg2)` |
+| `("Name", (arg1,), {kw: val})` | `.Name(arg1, kw=val)` |
+
+### 方法2：event.send_chain()
+
+**連続した複数の修飾メソッド**や、**内容パラメータを持たないアクション型メソッド**（撤回、削除など）に適しています。`send_chain()` は `To`/`Using` が設定された送信チェーンを返し、任意の修飾メソッドと送信メソッドを自由に追加できます：
+
+```python
+# プラットフォーム固有の修飾メソッド + 看板の送信
+await event.send_chain().Expire(3600).Board("1時間後に期限切れ")
+
+# 連続した複数の修飾メソッド
+await (event.send_chain()
+       .Expire(3600)
+       .ForMember("114514")
+       .Board("看板内容", content_type="markdown"))
+
+# 組み込みの修飾メソッドも利用可能です
+await event.send_chain().At("123").Reply("msg_id").Text("hi")
+
+# 内容パラメータを持たないアクション型メソッド
+await event.send_chain().DismissBoard()
 ```
 
 ## アカウント管理
 
 ### Using メソッド
 
-`Using()` は送信メッセージのアカウントを指定するために使用します。渡された識別子は `_resolve_account()` によって以下の優先順位で一致します：
+`Using()` はメッセージを送信するアカウントを指定するために使用します。渡された識別子は `_resolve_account()` を通じて、以下の優先順位で照合されます。
 
-1. **アカウント名** — 設定ファイルのキー名（例: `"default"`、`"bot1"`）
-2. **実行時に注入された bot_id** — イベント変換時に自動的に注入される識別子
-3. **任意の str フィールド** — 設定ファイルの他の文字列フィールド
-4. **デフォルト** — 最初に有効化されたアカウント
+1. **アカウント名** — 設定のキー名（例：`"default"`、`"bot1"`）
+2. **実行時に注入された bot_id** — イベント変換時に自動注入された識別子
+3. **任意の str フィールド** — 設定の他の文字列フィールド
+4. **フォールバック** — 最初に有効なアカウント
 
 ```python
 # アカウント名を使用
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# bot_id を使用（イベント内の self.user_id）
+# bot_id を使用（イベント内の self.user_id に相当）
 await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
 ### Account メソッド
 
-`Account` メソッドは `Using` と同等です：
+`Account` メソッドは `Using` と等価です：
 
 ```python
 await adapter.Send.Account("account1").To("user", "123").Text("Hello")
@@ -6902,10 +6976,10 @@ await adapter.Send.Account("account1").To("user", "123").Text("Hello")
 ### 結果を待たない
 
 ```python
-# メッセージはバックグラウンドで送信
+# メッセージはバックグラウンドで送信されます
 task = adapter.Send.To("user", "123").Text("Hello")
 
-# 他の操作を継続
+# 他の操作を続行
 # ...
 ```
 
@@ -6916,7 +6990,7 @@ task = adapter.Send.To("user", "123").Text("Hello")
 result = await adapter.Send.To("user", "123").Text("Hello")
 print(f"送信結果: {result}")
 
-# Task を保存して後で待つ
+# 先に Task を保存して、後で待つ
 task = adapter.Send.To("user", "123").Text("Hello")
 # ... 他の操作 ...
 result = await task
@@ -6924,21 +6998,21 @@ result = await task
 
 ## 送信ルールシステム
 
-SendDSL には、ルールデコレータを用いた送信ルールシステムが内蔵されており、チェーンメソッドでルールを追加し、最終的な送信時に一括適用されます。ルールは一般的な生産環境のシナリオをカバーします：タイムアウト制御、失敗時のリトライ、成功時のコールバック、遅延送信、優先度による破棄、進行状況の監視。
+SendDSL には、チェーンメソッドでルールを追加し、最終送信時に一括して適用する送信ルールデコレータが組み込まれています。ルールは一般的なプロダクションシナリオをカバーします：タイムアウト制御、失敗リトライ、成功コールバック、遅延送信、優先度廃棄、進捗監視。
 
-ルールメソッドは**`self` を返します**（At/AtAll/Reply と同じ）、送信メソッド（Text/Image など）の前に呼び出す必要があります。ルールは `To`/`Using`/`Account` で作成された新しいインスタンスに伝播します。
+ルールメソッドは**`self` を返します**（At/AtAll/Reply と同様）、送信メソッド（Text/Image など）の前に呼び出す必要があります。ルールは `To`/`Using`/`Account` が作成する新しいインスタンスに伝播します。
 
 ### ルールメソッド一覧
 
 | メソッド | 説明 |
 |--------|------|
-| `.Hook(callback)` | 送信成功後に実行されるコールバック（複数回呼び出し可能、順序通りに実行） |
-| `.Retry(times=1)` | 失敗時に自動リトライ N 回（初回含む N+1 回） |
-| `.Timeout(seconds)` | 単一送信のタイムアウト、タイムアウト時に現在の試行をキャンセル（Retry と重ねられる） |
-| `.Defer(seconds=1.0)` | 遅延送信（プロセス内タイマー、永続化されない） |
-| `.Priority(level, drop_if_busy=False)` | 送信優先度を設定；積み重ね時に破棄可能 |
-| `.OnProgress(callback)` | 各段階の進行状況コールバック（`SendContext` を渡す） |
-| `.OnError(callback)` | 最終的に失敗したときのエラーコールバック（1回のみ発動） |
+| `.Hook(callback)` | 送信成功後に実行されるコールバック（複数回呼び出し可能、順序通り実行） |
+| `.Retry(times=1)` | 失敗時に自動的に N 回リトライ（最初の 1 回を含む合計 N+1 回） |
+| `.Timeout(seconds)` | 1回の送信タイムアウト。タイムアウトで現在の試行をキャンセル（Retry と組み合わせ可能） |
+| `.Defer(seconds=1.0)` | 遅延送信（プロセス内タイマー、永続化なし） |
+| `.Priority(level, drop_if_busy=False)` | 優先度を設定。バックログ時は廃棄可能 |
+| `.OnProgress(callback)` | 各段階の進捗コールバック（`SendContext` を渡します） |
+| `.OnError(callback)` | 最終的な失敗時のエラーコールバック（1回のみトリガー） |
 
 ### 送信成功後に実行されるロジック（Hook）
 
@@ -6946,46 +7020,46 @@ SendDSL には、ルールデコレータを用いた送信ルールシステム
 # 同期コールバック
 await (adapter.Send.To("user", "123")
        .Hook(lambda r: print(f"送信成功、メッセージID: {r['message_id']}"))
-       .Text("你好"))
+       .Text("こんにちは"))
 
-# 異常コールバック
+# 非同期コールバック
 async def deduct_points(result):
     await db.update(user_id="123", points=-1)
 
-await adapter.Send.To("user", "123").Hook(deduct_points).Text("扣积分")
+await adapter.Send.To("user", "123").Hook(deduct_points).Text("ポイント減算")
 ```
 
-Hook は送信が最終的に成功した場合（リトライ成功含む）にのみ実行されます。失敗、タイムアウト、キャンセルの場合は発動しません。
+Hook は送信が最終的に成功したとき（リトライ成功を含む）にのみ実行されます。失敗、タイムアウト、キャンセルはトリガーされません。
 
 ### 失敗時の自動リトライ（Retry）
 
 ```python
-# 初回失敗後に2回リトライし、合計3回試行
+# 最初の失敗後に 2 回リトライ、合計 3 回の試行
 result = await adapter.Send.To("user", "123").Retry(2).Text("リトライ付き")
 ```
 
-リトライの条件：送信時に例外が発生、送信がタイムアウト、送信が `status == "failed"` のレスポンスを返す。
+リトライのトリガー条件：送信が例外を投げる、送信がタイムアウトする、送信が `status == "failed"` のレスポンスを返す。
 
 ### タイムアウトによる自動キャンセル（Timeout）
 
 ```python
-# 単一送信が10秒を超えるとキャンセル
+# 1回の送信が 10 秒を超えるとキャンセル
 await adapter.Send.To("user", "123").Timeout(10).Text("タイムアウト付き")
 
-# タイムアウト + リトライ：各試行10秒、最大3回
+# タイムアウト + リトライ：各試行 10 秒、最大 3 回
 await adapter.Send.To("user", "123").Timeout(10).Retry(2).Text("タイムアウトリトライ")
 ```
 
-### 進行状況の監視（OnProgress / OnError）
+### 進捗監視（OnProgress / OnError）
 
 ```python
 def on_progress(ctx):
-    print(f"段階: {ctx.stage}, 試行: {ctx.attempt + 1}/{ctx.max_attempts}, 所要時間: {ctx.elapsed:.2f}s")
+    print(f"段階: {ctx.stage}, 試行: {ctx.attempt + 1}/{ctx.max_attempts}, 耗時: {ctx.elapsed:.2f}s")
     if ctx.stage == "failed":
         print(f"  エラー: {ctx.error!r}")
 
 async def on_error(ctx):
-    await notify_admin(f"送信先 {ctx.target_id} に失敗: {ctx.error!r}")
+    await notify_admin(f"{ctx.target_id} への送信に失敗: {ctx.error!r}")
 
 await (adapter.Send.To("user", "123")
        .Retry(3).Timeout(10)
@@ -7001,63 +7075,63 @@ await (adapter.Send.To("user", "123")
 ### 遅延送信（Defer）
 
 ```python
-# 5秒後に送信
-await adapter.Send.To("user", "123").Defer(5).Text("遅れたメッセージ")
+# 5 秒後に送信
+await adapter.Send.To("user", "123").Defer(5).Text("遅延メッセージ")
 ```
 
-> 注意：遅延はプロセス内タイマーで、プロセスの再起動で失われ、永続化されません。
+> 注意：遅延はプロセス内タイマーです。プロセスの再起動で失われ、永続化は提供されません。
 
-### 優先度と積み重ね時の破棄（Priority）
+### 優先度とバックログ廃棄（Priority）
 
 ```python
-# 低優先度のメッセージ、キューが積み重ねた場合自動的に破棄
+# 低優先度メッセージ、バックログ時に自動的に廃棄
 result = await (adapter.Send.To("user", "123")
                .Priority(-1, drop_if_busy=True)
-               .Text("破棄可能な通知"))
-# 破棄された場合、result["status"] == "failed"
+               .Text("廃棄可能な通知"))
+# 廃棄された場合、result["status"] == "failed"
 ```
 
-`drop_if_busy` を有効にすると、進行中の送信タスク数が閾値（デフォルト 64）を超えた場合、今回の送信を直接放棄します。`.PriorityThreshold(n)` を呼び出してグローバル閾値を調整できます。
+`drop_if_busy` を有効にすると、進行中の送信タスク数がしきい値（デフォルト 64）を超えたとき、今回の送信を直接放棄します。`.PriorityThreshold(n)` でグローバルなしきい値を調整できます。
 
 ### ルールの組み合わせとバックグラウンド実行
 
 ```python
-# メインプロセスをブロックせず、ルールは正常に適用されます
+# メインフローをブロックせず、ルールは依然として有効です
 task = (adapter.Send.To("user", "123")
         .Hook(lambda r: print("送信成功！"))
         .Retry(3)
         .Timeout(10)
         .OnProgress(on_progress)
-        .Text("你好"))
+        .Text("こんにちは"))
 
-# 他の操作を継続
+# 他の操作を続行
 await handle_next_action()
 ```
 
 ### ルールの伝播
 
-ルールは `To`/`Using`/`Account` で作成された新しいインスタンスに伝播し、チェーン呼び出しでルールが失われることを防ぎます：
+ルールは `To`/`Using`/`Account` が作成する新しいインスタンスに伝播し、チェーン呼び出し中のルールの紛失を防ぎます：
 
 ```python
-# To の前にルールを設定しても、To で作成されたインスタンスに伝播します
+# To の前にルールを設定すると、To が作成するインスタンスにも伝播します
 builder = adapter.Send.Retry(3).Timeout(10)
-send = builder.To("user", "123")  # send は Retry(3) と Timeout(10) を引き継ぎます
+send = builder.To("user", "123")  # send は依然として Retry(3) と Timeout(10) を保持しています
 await send.Text("hi")
 ```
 
-複数のインスタンスのルールは独立しています（hooks リストは深くコピーされます）。
+複数のインスタンスのルールは相互に独立しています（フックリストのディープコピー）。
 
-## バッチ構築モード（Build）
+## バッチビルドモード（Build）
 
-SendDSL は単発送信モードに加えて、バッチ構築モードもサポートしています：1つのチェーンで複数の送信メソッドを記述し、最後に一括して実行します。これは「一気に複数のメッセージを送信する」シナリオに適しています。
+単発モードのほかに、SendDSL はバッチビルドモードもサポートしています：1つのチェーン内で複数の送信メソッドを記述し、最後に一括実行します。「まとめて複数のメッセージを一気に送信」するシナリオに適しています。
 
-### バッチ構築モードの開始
+### ビルドモードに入る
 
-送信メソッドの前に `.Build()` を呼び出すと、`SendBuilder` が返されます。以降、送信メソッド（Text/Image など）は即座に実行されず、送信意図として蓄積されます：
+送信メソッドの前に `.Build()` を呼び出すと、`SendBuilder` を返します。その後、送信メソッド（Text/Image など）は即座に実行されず、送信意図として蓄積されます：
 
 ```python
 results = await (adapter.Send.To("user", "123")
-                 .Build()                    # バッチ構築モードに入る
+                 .Build()                    # ビルドモードに入る
                  .Text("第一句")
                  .Image("pic.jpg")
                  .Text("第二句")
@@ -7065,21 +7139,21 @@ results = await (adapter.Send.To("user", "123")
 # results = [Text結果, Image結果, Text結果]
 ```
 
-`.send_all()` は `asyncio.Task` を返し、await 後に結果リスト（意図の順序に従う）が得られます。
+`.send_all()` は `asyncio.Task` を返し、await すると結果のリスト（意図の順序）を取得できます。
 
-### 並列と直列
+### 並列と順列
 
-デフォルトは**並列**実行（並行送信、全所要時間は最遅のものに等しい）。メッセージの到着順序を保証する必要がある場合は `.Sequential()` を呼び出します：
+デフォルトでは**並列**実行です（並行送信、合計所要時間は最も遅いものとほぼ等価）。メッセージの到着順序を保証する必要がある場合は、`.Sequential()` を呼び出します：
 
 ```python
-# 直列：順番に送信
+# 順列：順番に送信
 await (adapter.Send.To("group", "456")
        .Build()
        .Sequential()
-       .Text("先送信").Text("次に送信")
+       .Text("先にこれ").Text("次にこれ")
        .send_all())
 
-# 並列（デフォルト、明示的に呼び出すことも可能）
+# 並列（デフォルト、明示的に呼び出しても可）
 await (adapter.Send.To("group", "456")
        .Build()
        .Parallel()
@@ -7087,34 +7161,34 @@ await (adapter.Send.To("group", "456")
        .send_all())
 ```
 
-### 失敗しても継続とリトライ
+### 失敗時の継続とリトライ
 
-バッチ実行は**失敗しても継続**の戦略を採用しています：1件の失敗でも他の件の送信を中断しません。`.Retry()` を組み合わせると、失敗した件は自動的にリトライされます（リトライは1件ごと、バッチ全体をリトライするのではありません）：
+バッチ実行では**失敗時の継続**戦略を採用しています：1つでも失敗すると他の項目の送信が中断されません。`.Retry()` を組み合わせると、失敗した項目は自動的にリトライされます（リトライは1つの項目に作用し、バッチ全体には作用しません）：
 
 ```python
 await (adapter.Send.To("user", "123")
        .Build()
-       .Retry(2)                       # 各件ごとにリトライ2回
-       .Text("失敗する可能性がある").Image("失敗する可能性がある")
+       .Retry(2)                       # 各項目が各自 2 回リトライ
+       .Text("失敗する可能性あり").Image("こちらも失敗する可能性あり")
        .send_all())
 ```
 
-### バッチ全体のルールとコールバック
+### 整体のルールとコールバック
 
-ルールはバッチ全体に適用されます：
+ルールは全体に一律に作用します：
 
 | メソッド | 説明 |
 |--------|------|
-| `.Timeout(seconds)` | 各件の送信の単一タイムアウト |
-| `.Retry(times)` | 各件の送信ごとにリトライ（失敗しても継続） |
-| `.Defer(seconds)` | バッチ全体の遅延送信 |
-| `.Hook(callback)` | バッチ全体が成功した後に発動、`results` リストを渡す |
-| `.OnError(callback)` | バッチに失敗があった場合に発動、`BatchContext` を渡す |
-| `.OnProgress(callback)` | 各件が完了したときに発動、`BatchContext` を渡す |
+| `.Timeout(seconds)` | 各送信の1回のタイムアウト |
+| `.Retry(times)` | 各送信の各自のリトライ（失敗時の継続） |
+| `.Defer(seconds)` | 整体の遅延送信 |
+| `.Hook(callback)` | 全体が成功した後にトリガー、`results` リストを受け取ります |
+| `.OnError(callback)` | バッチに失敗が存在する場合にトリガー、`BatchContext` を受け取ります |
+| `.OnProgress(callback)` | 各項目の完了時にトリガー、`BatchContext` を受け取ります |
 
 ```python
 def on_progress(ctx):
-    print(f"進行状況: {ctx.completed}/{ctx.total}, 成功 {ctx.succeeded}, 失敗 {ctx.failed}")
+    print(f"進捗: {ctx.completed}/{ctx.total}, 成功 {ctx.succeeded}, 失敗 {ctx.failed}")
 
 async def on_error(ctx):
     print(f"バッチに {ctx.failed} 件の失敗があります")
@@ -7124,42 +7198,42 @@ results = await (adapter.Send.To("user", "123")
                .Retry(2).Timeout(10)
                .OnProgress(on_progress)
                .OnError(on_error)
-               .Hook(lambda rs: print("バッチ完了"))
+               .Hook(lambda rs: print("全体完了"))
                .Text("a").Text("b").Text("c")
                .send_all())
 ```
 
-`BatchContext` が含むフィールド：`task_id`、`total`、`completed`、`succeeded`、`failed`、`stage`、`results`、`errors`、`elapsed`、`extra`。
+`BatchContext` が含むもの：`task_id`、`total`、`completed`、`succeeded`、`failed`、`stage`、`results`、`errors`、`elapsed`、`extra`。
 
-`stage` の可能性のある値：`pending`、`sending`、`success`（すべて成功）、`partial`（一部成功）、`failed`（すべて失敗）。
+`stage` の可能性のある値：`pending`、`sending`、`success`（全成功）、`partial`（一部成功）、`failed`（全失敗）。
 
-### 修飾子とルールの継承
+### デコレータとルールの継承
 
-`.Build()` の前の At/AtAll/Reply 修飾子とルールはバッチ全体に継承され、各件に適用されます：
+`.Build()` 以前の At/AtAll/Reply デコレータとルールは全体に継承され、各メッセージに作用します：
 
 ```python
 await (adapter.Send.To("group", "456")
-       .At("789")                        # 継承：各件に @789 が適用される
+       .At("789")                        # 継承：すべてのメッセージが @789
        .Build()
-       .Retry(2)                         # 継承 + 追加：各件ごとにリトライ
-       .Text("@あなたの通知")
-       .Image("公告図")
+       .Retry(2)                         # 継承 + 追加：各項目がそれぞれリトライ
+       .Text("@あなたへの通知")
+       .Image("告知画像")
        .send_all())
 ```
 
-Build 後でも修飾子を追加できます（バッチ全体に適用されます）：
+Build に入った後もデコレータを追加できます（全体に作用します）：
 
 ```python
 await (adapter.Send.To("group", "456")
        .Build()
-       .At("111").At("222")             # 追加 @、バッチ全体に適用
+       .At("111").At("222")             # 追加 @、全体に作用
        .Text("@複数人")
        .send_all())
 ```
 
 ### バックグラウンド実行
 
-単発送信と同様、`.send_all()` は Task を返し、await せずにバックグラウンドで実行させることができます：
+単発と同様、`.send_all()` は Task を返し、await しなければバックグラウンドで実行できます：
 
 ```python
 task = (adapter.Send.To("user", "123")
@@ -7168,15 +7242,15 @@ task = (adapter.Send.To("user", "123")
         .Text("a").Text("b")
         .send_all())
 
-# メインプロセスをブロックしない
+# メインフローをブロックしない
 await do_something_else()
 ```
 
-## 名前規則
+## 命名規則
 
-### PascalCase 名前
+### PascalCase 命名
 
-すべての送信メソッドは大文字キャメルケースで命名します：
+すべての送信メソッドはパスカルケースを使用します：
 
 ```python
 # ✅ 正しい
@@ -7196,7 +7270,7 @@ def send_image(self, file: bytes):
 
 ### プラットフォーム固有メソッド
 
-プラットフォーム接頭辞付きのメソッドは推奨されません：
+プラットフォームプレフィックスのメソッドの追加は推奨されません：
 
 ```python
 # ✅ 推奨
@@ -7208,7 +7282,7 @@ def TelegramSticker(self, sticker_id: str):
     pass
 ```
 
-`Raw` メソッドを使用して代用します：
+`Raw` メソッドを使用して置き換えます：
 
 ```python
 # ✅ 推奨
@@ -7223,7 +7297,7 @@ def TelegramSticker(self, ...):
 
 ### Task オブジェクト
 
-すべての送信メソッドは `asyncio.Task` を返します。アダプタは `Raw_ob12` を実装するだけでよく、標準メソッド（Text/Image など）はデフォルトで `Raw_ob12` に委任されます：
+すべての送信メソッドは `asyncio.Task` を返します。アダプターは `Raw_ob12` のみを実装し、標準メソッド（Text/Image など）はデフォルトでそれに委譲します：
 
 ```python
 import asyncio
@@ -7239,15 +7313,15 @@ def Raw_ob12(self, message, **kwargs):
         )
     return asyncio.create_task(_do_send())
 
-# Text/Image/Voice/Video/File は基底クラスから継承され、Raw_ob12 に自動的に委任されます
-# 標準メソッドをオーバーライドする場合は、asyncio.Task を返すだけです：
+# Text/Image/Voice/File は基底クラスから継承し、自動的に Raw_ob12 に委譲されます
+# 標準メソッドを上書きする必要がある場合は、asyncio.Task を返すだけです：
 # def Text(self, text: str):
 #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### レスポンスの標準化
+### 標準化された応答
 
-`call_api` は標準化されたレスポンスを返す必要があります。`make_response()` / `make_error()` メソッドの使用が推奨されます：
+`call_api` は標準化された応答を返す必要があります。`make_response()` / `make_error()` メソッドの使用が推奨されます：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -7262,7 +7336,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-また、手動で構築することも可能です（旧バージョンの方式も互換性があります）：
+手動構築もサポートされています（旧方式も互換性があります）：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -7285,13 +7359,13 @@ from ErisPulse.Core import adapter
 
 my_adapter = adapter.get("myplatform")
 
-# テキスト送信
+# テキストを送信
 await my_adapter.Send.To("user", "123").Text("Hello World!")
 
-# 画像送信
+# 画像を送信
 await my_adapter.Send.To("group", "456").Image("https://example.com/image.jpg")
 
-# ファイル送信
+# ファイルを送信
 with open("document.pdf", "rb") as f:
     await my_adapter.Send.To("user", "123").File(f.read())
 ```
@@ -7303,23 +7377,23 @@ with open("document.pdf", "rb") as f:
 await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("返信@メッセージ")
 
 # @全員 + 複数の修飾
-await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告メッセージ")
+await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("告知メッセージ")
 ```
 
-### 原始メッセージとメッセージ構築
+### 生のメッセージとメッセージビルド
 
-`Raw_ob12` は OneBot12 メッセージセグメント → プラットフォーム API 呼び出しへの逆変換のコアエントリポイントです。`MessageBuilder` は `Raw_ob12` と併用するためのチェーンメッセージセグメント構築ツールです。
+`Raw_ob12` は「OneBot12 メッセージセグメント → プラットフォーム API 呼び出し」への逆変換の核心的なエントリポイントであり、`MessageBuilder` はそれと組み合わせて使用されるチェーンメソッドベースのメッセージセグメントビルドツールです。
 
-> 完全な `Raw_ob12` 実装規範、`MessageBuilder` の使用法およびコード例については、以下を参照してください：
-> - [送信メソッド規範 §6 逆変換規範](../../standards/send-method-spec.md#6-逆変換規範onebot12--平台)
-> - [送信メソッド規範 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
+> 完全な `Raw_ob12` 実装仕様、`MessageBuilder` の使用法およびコード例については、以下を参照してください：
+> - [送信メソッド仕様 §6 逆変換仕様](../../standards/send-method-spec.md#6-逆変換仕様onebot12--プラットフォーム)
+> - [送信メソッド仕様 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
 
 ## 関連ドキュメント
 
-- [アダプタ開発入門](getting-started.md) - アダプタの作成
-- [アダプタのコアコンセプト](core-concepts.md) - アダプタアーキテクチャの理解
-- [アダプタのベストプラクティス](best-practices.md) - 高品質なアダプタの開発
-- [送信メソッド規範](../../standards/send-method-spec.md) - 送信メソッドの完全な規格
+- [アダプター開発入門](getting-started.md) - アダプターの作成
+- [アダプターのコア概念](core-concepts.md) - アダプターのアーキテクチャを理解する
+- [アダプターのベストプラクティス](best-practices.md) - 高品質なアダプターの開発
+- [送信メソッド仕様](../../standards/send-method-spec.md) - 送信メソッドの完全な仕様
 
 
 ### 适配器开发最佳实践
@@ -9084,7 +9158,7 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 
 # イベントシステム API
 
-このドキュメントでは、ErisPulse イベントシステムの API を詳しく説明します。
+このドキュメントでは、ErisPulse イベントシステムの API を詳しく紹介します。
 
 ## Command コマンドモジュール
 
@@ -9094,12 +9168,12 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 from ErisPulse.Core.Event import command
 
 # 基本的なコマンド
-@command("hello", help="挨拶を送信します")
+@command("hello", help="挨拶を送信")
 async def hello_handler(event):
     await event.reply("こんにちは！")
 
 # エイリアス付きのコマンド
-@command(["help", "h"], aliases=["ヘルプ"], help="ヘルプを表示します")
+@command(["help", "h"], aliases=["ヘルプ"], help="ヘルプを表示")
 async def help_handler(event):
     pass
 
@@ -9107,17 +9181,17 @@ async def help_handler(event):
 def is_admin(event):
     return event.get("user_id") in admin_ids
 
-@command("admin", permission=is_admin, help="管理者コマンド")
+@command("admin", permission=is_admin, help="管理者用コマンド")
 async def admin_handler(event):
     pass
 
-# 隠しコマンド
+# 非表示コマンド
 @command("secret", hidden=True, help="秘密のコマンド")
 async def secret_handler(event):
     pass
 
 # コマンドグループ
-@command("admin.reload", group="admin", help="モジュールを再読み込みします")
+@command("admin.reload", group="admin", help="モジュールを再読み込み")
 async def reload_handler(event):
     pass
 ```
@@ -9125,28 +9199,28 @@ async def reload_handler(event):
 ### コマンド情報
 
 ```python
-# コマンドヘルプを取得
+# コマンドのヘルプを取得
 help_text = command.help()
 
 # 特定のコマンドを取得
 cmd_info = command.get_command("admin")
 
-# コマンドグループ内のすべてのコマンドを取得
+# コマンドグループ内のコマンドをすべて取得
 admin_commands = command.get_group_commands("admin")
 
-# すべての表示コマンドを取得
+# すべての可視コマンドを取得
 visible_commands = command.get_visible_commands()
 ```
 
-### 返信待機
+### 返信の待機
 
 ```python
-# ユーザーの返信を待機
-@command("ask", help="ユーザー情報を尋ねます")
+# ユーザーからの返信を待機
+@command("ask", help="ユーザー情報を尋ねる")
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
-        prompt="あなたの名前を入力してください:",  # 上記で送信済み
+        prompt="名前を入力してください:",  # 上記で送信済み
         timeout=30.0
     )
     
@@ -9154,7 +9228,7 @@ async def ask_command(event):
         name = reply.get_text()
         await event.reply(f"こんにちは、{name}！")
 
-# 検証付きの返信待機
+# バリデーション付きの返信待機
 def validate_age(event_data):
     try:
         age = int(event_data.get_text())
@@ -9162,9 +9236,9 @@ def validate_age(event_data):
     except ValueError:
         return False
 
-@command("age", help="ユーザーの年齢を尋ねます")
+@command("age", help="ユーザーの年齢を尋ねる")
 async def age_command(event):
-    await event.reply("あなたの年齢を入力してください:")
+    await event.reply("年齢を入力してください:")
     
     reply = await command.wait_reply(
         event,
@@ -9184,11 +9258,11 @@ async def handle_confirmation(reply_event):
     else:
         await event.reply("操作がキャンセルされました。")
 
-@command("confirm", help="操作を確認します")
+@command("confirm", help="操作を確認する")
 async def confirm_command(event):
     await command.wait_reply(
         event,
-        prompt="'はい'か'いいえ'を入力してください:",
+        prompt="'はい'または'いいえ'を入力してください:",
         callback=handle_confirmation
     )
 ```
@@ -9205,19 +9279,19 @@ from ErisPulse.Core.Event import message
 async def message_handler(event):
     sdk.logger.info(f"メッセージを受信: {event.get_text()}")
 
-# プライベートメッセージを監視
+# プライベートチャットメッセージを監視
 @message.on_private_message()
 async def private_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"プライベートチャットからの: {user_id}")
+    sdk.logger.info(f"プライベートチャットの送信元: {user_id}")
 
 # グループメッセージを監視
 @message.on_group_message()
 async def group_handler(event):
     group_id = event.get_group_id()
-    sdk.logger.info(f"グループチャットからの: {group_id}")
+    sdk.logger.info(f"グループメッセージの送信元: {group_id}")
 
-# メンション（@）メッセージを監視
+# メンションメッセージを監視
 @message.on_at_message()
 async def at_handler(event):
     mentions = event.get_mentions()
@@ -9227,12 +9301,12 @@ async def at_handler(event):
 ### 条件付き監視
 
 ```python
-# 優先順位で実行順序を制御
+# 優先度を使用して実行順序を制御
 @message.on_message(priority=10)  # 数値が大きいほど優先度が高い
 async def high_priority_handler(event):
     pass
 
-# ハンドラ内で条件フィルタを実装
+# ハンドラー内で条件フィルタを実装
 @message.on_message()
 async def filtered_handler(event):
     if "キーワード" not in event.get_text():
@@ -9248,29 +9322,29 @@ async def filtered_handler(event):
 ```python
 from ErisPulse.Core.Event import notice
 
-# 友達追加
+# フレンドの追加
 @notice.on_friend_add()
 async def friend_add_handler(event):
     user_id = event.get_user_id()
-    await event.reply("友達追加ありがとうございます！")
+    await event.reply("フレンド追加への歓迎！")
 
-# 友達削除
+# フレンドの削除
 @notice.on_friend_remove()
 async def friend_remove_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"友達削除: {user_id}")
+    sdk.logger.info(f"フレンド削除: {user_id}")
 
-# グループ参加
+# グループメンバーの増加
 @notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
-    await event.reply(f"新メンバーようこそ！")
+    await event.reply(f"新しいメンバーへようこそ！")
 
-# グループ退出
+# グループメンバーの減少
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"グループメンバーが退出しました: {user_id}")
+    sdk.logger.info(f"グループメンバーの退出: {user_id}")
 ```
 
 ## Request リクエストモジュール
@@ -9280,19 +9354,19 @@ async def member_decrease_handler(event):
 ```python
 from ErisPulse.Core.Event import request
 
-# 友達リクエスト
+# フレンドリクエスト
 @request.on_friend_request()
 async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
-    sdk.logger.info(f"友達リクエスト: {user_id}, メモ: {comment}")
+    sdk.logger.info(f"フレンドリクエスト: {user_id}, コメント: {comment}")
 
 # グループ招待リクエスト
 @request.on_group_request()
 async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"グループ招待: {group_id}, 来自: {user_id}")
+    sdk.logger.info(f"グループ招待: {group_id}, 送信元: {user_id}")
 ```
 
 ## Meta メタイベントモジュール
@@ -9306,13 +9380,13 @@ from ErisPulse.Core.Event import meta
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"プラットフォーム {platform} に接続成功しました")
+    sdk.logger.info(f"プラットフォーム {platform} に接続成功")
 
 # 切断イベント
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"プラットフォーム {platform} から切断されました")
+    sdk.logger.info(f"プラットフォーム {platform} から切断")
 
 # ハートビートイベント
 @meta.on_heartbeat()
@@ -9320,13 +9394,13 @@ async def heartbeat_handler(event):
     sdk.logger.debug("ハートビートを受信")
 ```
 
-### Botステータス照会
+### Bot ステータスの確認
 
-アダプターがメタイベントを送信した後、フレームワークは自動的にBotのステータスを追跡します。照会APIとライフサイクルイベント監視については、[アダプターシステム API - Botステータス管理](adapter-system.md#bot-状态管理) を参照してください。
+アダプタがメタイベントを送信すると、フレームワークは自動的に Bot のステータスを追跡します。クエリ API とライフサイクルイベントのリスニングについては、[アダプタシステム API - Bot ステータス管理](adapter-system.md#bot-状態管理) を参照してください。
 
-## Event ラッパークラス
+## Event ラップクラス
 
-Eventモジュールのイベントハンドラーは、dictを継承し、便利なメソッドを提供するEventラッパークラスのインスタンスを受け取ります。
+Event モジュールのイベントハンドラーは、`dict` を継承し便利なメソッドを提供する Event ラップクラスのインスタンスを受け取ります。
 
 ### コアメソッド
 
@@ -9347,15 +9421,15 @@ self_info = event.get_self_info()
 ### セッション識別子
 
 ```python
-# 統一されたターゲットID：グループチャットはgroup_id、プライベートチャットはuser_idなど
+# 統一されたターゲットID：グループチャットの場合は group_id、プライベートチャットの場合は user_id、など
 target_id = event.get_target_id()
 
-# セッション固有の識別子、形式: {platform}:{detail_type}:{target_id}
+# セッションの唯一識別子、形式: {platform}:{detail_type}:{target_id}
 session_id = event.get_session_id()
 # 例: "telegram:private:12345"、"qq:group:67890"
 ```
 
-`get_target_id()` は、以下の順序で最初の空ではない値を返します：`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`。コンテキスト管理、状態保存など、セッションを一意に識別する必要があるシーンに適しています。
+`get_target_id()` は、`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id` の順で、最初に取得できる非空の値を返します。コンテキスト管理、ステータス保存など、統一されたセッション識別子が必要なシナリオに適しています。
 
 ### メッセージメソッド
 
@@ -9373,12 +9447,12 @@ sender = event.get_sender()
 # グループ情報を取得
 group_id = event.get_group_id()
 
-# メッセージタイプを判断
+# メッセージタイプを判定
 is_msg = event.is_message()
 is_private = event.is_private_message()
 is_group = event.is_group_message()
 
-# @メッセージ関連
+# メンション関連
 is_at = event.is_at_message()
 has_mention = event.has_mention()
 mentions = event.get_mentions()
@@ -9392,7 +9466,7 @@ cmd_name = event.get_command_name()
 cmd_args = event.get_command_args()
 cmd_raw = event.get_command_raw()
 
-# コマンドかどうかを判断
+# コマンドかどうかを判定
 is_cmd = event.is_command()
 ```
 
@@ -9405,93 +9479,101 @@ await event.reply("これはメッセージです")
 # 送信方法を指定
 await event.reply("http://example.com/image.jpg", method="Image")
 
-# @ユーザーと返信メッセージ付き
+# ユーザーへのメンションと返信メッセージを含む
 await event.reply("こんにちは", at_users=["user1"], reply_to="msg_id")
 
-# @全体
+# 全体メンション
 await event.reply("お知らせ", at_all=True)
 
-# OneBot12メッセージセグメントを使用した返信
+# プラットフォーム固有の修飾メソッドを使用（via パラメータ）
+await event.reply("看板の内容", method="Board",
+                  via=[("Expire", 3600), ("ForMember", "114514")])
+
+# 送信チェーンを取得し、自由に修飾メソッドと送信方法を追加（複数の修飾/アクションメソッドを連続で使用する場合に適しています）
+await event.send_chain().Expire(3600).Board("看板の内容")
+await event.send_chain().DismissBoard()
+
+# OneBot12 メッセージセグメントを使用して返信
 from ErisPulse.Core.Event import MessageBuilder
 msg = MessageBuilder().text("Hello").image("url").build()
 await event.reply_ob12(msg)
 
-# 返信待機
+# 返信を待機
 reply = await event.wait_reply(timeout=30)
 ```
 
-### プラットフォーム能力照会
+### プラットフォーム機能の照会
 
 ```python
-# 現在のプラットフォームが特定の送信方法をサポートしているかチェック
+# 現在のプラットフォームが特定の送信方法をサポートしているか確認
 if event.supports("Image"):
     await event.reply(url, method="Image")
 
-# 現在のプラットフォームで利用可能なすべての送信方法をリスト
+# 現在のプラットフォームで使用可能なすべての送信方法を一覧表示
 methods = event.available_methods()
 # ["Text", "Image", "Voice", ...]
 ```
 
 ### 返信メソッド
 
-`reply()` メソッドは、`method`パラメータを使用して送信タイプを指定し、2つの便利なブールパラメータをサポートしています：
+`reply()` メソッドは、`method` パラメータを使用して送信タイプを指定し、2つの便利なブール引数をサポートします：
 
 ```python
 # シンプルなテキスト返信
 await event.reply("こんにちは")
 
-# 送信者に@付きで返信
+# 送信者へのメンション付きで返信
 await event.reply("こんにちは", at_sender=True)
 
 # 現在のメッセージを引用して返信
 await event.reply("受信しました", reply_to_message=True)
 
-# 組み合わせ使用
+# 組み合わせて使用
 await event.reply("受信しました", at_sender=True, reply_to_message=True)
 
-# 画像を送信（methodパラメータを使用）
+# 画像を送信（method パラメータを使用）
 if event.supports("Image"):
     await event.reply("http://example.com/img.jpg", method="Image")
 else:
     await event.reply("[画像] http://example.com/img.jpg")
 ```
 
-**パラメータ説明**：
+**パラメータの説明**：
 
 | パラメータ | 型 | 説明 |
 |------|------|------|
 | `content` | str | 送信内容 |
-| `method` | str | 送信方法、デフォルト "Text"、選択肢 "Image"/"Voice"/"Video"/"File" など |
-| `at_sender` | bool | 送信者に@するか（user_idを自動的に抽出） |
-| `quote` | bool | 現在のメッセージを引用して返信するか（message_idを自動的に抽出） |
-| `at_users` | list[str] | 指定されたユーザーリストに@ |
-| `reply_to` | str | 手動で指定された返信メッセージID |
-| `at_all` | bool | 全体に@するか |
+| `method` | str | 送信方法、デフォルトは "Text"、選択肢: "Image"/"Voice"/"Video"/"File" など |
+| `at_sender` | bool | 送信者にメンションするか（自動的に user_id を抽出） |
+| `quote` | bool | 現在のメッセージを引用して返信するか（自動的に message_id を抽出） |
+| `at_users` | list[str] | 指定されたユーザーへのメンションリスト |
+| `reply_to` | str | 手動で返信メッセージの ID を指定 |
+| `at_all` | bool | 全体メンションするか |
 
 ### インタラクションメソッド
 
 ```python
-# confirm — 対話の確認（True/False/Noneを返す）
+# confirm — 会話の確認（True/False/None を返す）
 if await event.confirm("この操作を実行してもよろしいですか？"):
     await event.reply("確認済み")
 
-# Text以外の方法で確認プロンプトを送信
+# テキスト以外の方法で確認プロンプトを送信
 if await event.confirm("http://example.com/image.jpg", method="Image"):
-    await event.reply("画像プロンプトを確認しました")
+    await event.reply("画像プロンプトが確認されました")
 
-# choose — 選択メニュー（選択肢インデックスまたはNoneを返す）
+# choose — 選択メニュー（オプションのインデックスまたは None を返す）
 choice = await event.choose("色を選択してください：", ["赤", "緑", "青"])
 
-# options_format="auto"（デフォルト）methodに基づいてスタイルを自動選択：
-# Markdown→順不同リスト（- 1.オプション）、Html→順序付きリスト（<ol>）、その他→プレーンテキストリスト
-# テキスト系メソッド（Markdown/Htmlなど）はデフォルトでオプションを末尾に結合
-# merge_prompt=True は任意のmethodで強制的に結合を可能にする；placeholderはカスタムプレースホルダーを可能にする
+# options_format="auto"（デフォルト）は method に応じて自動的にスタイルを選択します：
+# Markdown→箇条書きリスト（- 1.オプション）、Html→番号付きリスト（<ol>）、その他→プレーンテキストリスト
+# テキスト系メソッド（Markdown/Html 等）はデフォルトでオプションを末尾にマージします
+# merge_prompt=True を使用すると、任意の method でのマージを強制できます。プレースホルダーはカスタマイズ可能です。
 choice = await event.choose(
     "## 選択してください\n{options}", ["A", "B"],
     method="Markdown", merge_prompt=True,
 )
 
-# collect — フォーム収集（{key: value}辞書またはNoneを返す）
+# collect — フォーム収集（{key: value} の辞書または None を返す）
 data = await event.collect([
     {"key": "name", "prompt": "名前を入力してください："},
     {"key": "age", "prompt": "年齢を入力してください：",
@@ -9502,35 +9584,35 @@ data = await event.collect([
 # wait_for — 条件を満たす任意のイベントを待機
 evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
-# conversation — マルチラウンド会話コンテキスト
+# conversation — マルチターン会話コンテキスト
 conv = event.conversation(timeout=60)
-await conv.say("ようこそ！")
+await conv.say("歓迎！")
 ```
 
-> 完全なインタラクションメソッドのパラメータ説明やさらなる例については、[Event ラッパークラス詳細](../developer-guide/modules/event-wrapper.md) および [Conversation マルチラウンド会話](../advanced/conversation.md) を参照してください。
+> 完全なインタラクションメソッドのパラメータ説明とさらに多くの例については、[Event ラップクラスの詳細](../developer-guide/modules/event-wrapper.md) と [Conversation マルチターン会話](../advanced/conversation.md) を参照してください。
 
 ### ユーティリティメソッド
 
 ```python
-# 辞書に変換
+# ディクショナリに変換
 event_dict = event.to_dict()
 
-# 処理済みかチェック
+# 処理済みかを確認
 if not event.is_processed():
     event.mark_processed()
 
-# 原始データを取得
+# 生のデータを取得
 raw = event.get_raw()
 raw_type = event.get_raw_type()
 ```
 
 ### プラットフォーム拡張メソッド
 
-アダプターはEventにプラットフォーム固有のメソッドを登録できます。これは、対応するプラットフォームのインスタンスでのみ利用可能です。
+アダプタは Event にプラットフォーム固有のメソッドを登録でき、対応するプラットフォームのインスタンスでのみ使用可能です。
 
 #### ユーザー：プラットフォーム拡張メソッドの使用
 
-アダプターがプラットフォーム固有のメソッドを登録した後、イベントハンドラーで直接呼び出すことができます。各プラットフォームのメソッドは異なりますので、対応する[プラットフォームドキュメント](../platform-guide/)を参照してください。
+アダプタがプラットフォーム固有のメソッドを登録すると、イベントハンドラーで直接呼び出すことができます。各プラットフォームのメソッドは異なりますが、対応する [プラットフォームガイド](../platform-guide/) を参照してください。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -9539,62 +9621,62 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     platform = event.get_platform()
 
-    # プラットフォームに応じて固有のメソッドを呼び出し
+    # プラットフォームに応じて固有メソッドを呼び出す
     if platform == "email":
         subject = event.get_subject()           # メール固有
         attachments = event.get_attachments()   # メール固有
 ```
 
-#### プラットフォームで登録されたメソッドを照会
+#### プラットフォームで登録されたメソッドの照会
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
 
-# 特定のプラットフォームにどのメソッドが登録されているかを確認
+# 特定のプラットフォームに登録されているメソッドを表示
 methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", "get_attachments", ...]
 
-# 動的に判断して呼び出し
+# 動的に判断して呼び出す
 for method_name in get_platform_event_methods(event.get_platform()):
     method = getattr(event, method_name)
     print(f"{method_name}: {method()}")
 ```
 
-#### プラットフォームメソッドの分離
+#### プラットフォームメソッドの隔離
 
-異なるプラットフォームに登録されたメソッドは干渉しません：
+異なるプラットフォームで登録されたメソッドは干渉しません：
 
 ```python
-# メールイベント - メール固有のメソッドのみ
+# メールイベント - メール専用のメソッドのみ
 event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
 event.get_subject()      # ✅ "Hello"
 event.get_chat_type()    # ❌ AttributeError
 
-# Telegram イベント - Telegram固有のメソッドのみ
+# Telegram イベント - Telegram 専用のメソッドのみ
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
 event.get_chat_type()    # ✅ "private"
 event.get_subject()      # ❌ AttributeError
 ```
 
-#### `hasattr` / `dir` サポート
+#### `hasattr` / `dir` のサポート
 
 ```python
-hasattr(event, "get_subject")   # platform="email"の場合のみTrueを返す
+hasattr(event, "get_subject")   # platform="email" の場合のみ True を返します
 "get_subject" in dir(event)     # 同上
 ```
 
-### アダプター：プラットフォーム拡張メソッドの登録
+### アダプタ：プラットフォーム拡張メソッドの登録
 
-アダプターはデコレーターを使用してEventにプラットフォーム固有のメソッドを登録できます。メソッドの最初のパラメータは`self`（Eventインスタンス）で、イベントデータに自由にアクセスできます。
+アダプタはデコレータを使用して Event にプラットフォーム固有のメソッドを登録でき、メソッドの最初のパラメータは `self`（Event インスタンス）であり、イベントデータに自由にアクセスできます。
 
-#### 個別のメソッド登録
+#### 単一メソッドの登録
 
 ```python
 from ErisPulse.Core.Event import register_event_method
 
 @register_event_method("email")
 def get_subject(self):
-    """メール件名を取得"""
+    """メールの件名を取得"""
     return self.get("email_raw", {}).get("subject", "")
 
 @register_event_method("email")
@@ -9603,9 +9685,9 @@ def get_from(self):
     return self.get("email_raw", {}).get("from", {})
 ```
 
-#### 一括登録（Mixinクラス）
+#### バッチ登録（Mixin クラス）
 
-メソッドが多い場合は、Mixinクラスを使用して一括登録することをお勧めします：
+メソッドが多い場合は、Mixin クラスを使用して一括登録することを推奨します：
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin
@@ -9624,28 +9706,28 @@ class EmailEventMixin:
 register_event_mixin("email", EmailEventMixin)
 ```
 
-#### 返り値規範
+#### 返り値の仕様
 
-| シーン | 返り値 | ユーザーの使用方法 |
+| シナリオ | 返り値 | ユーザーが使用する方法 |
 |------|--------|------------|
-| データ（テキスト、辞書など）を返す | 直接返り値 | `subject = event.get_subject()` |
-| 操作（メッセージ送信など）を実行 | `asyncio.Task`を返す | `task = event.do_something()` 可選 `await` |
+| データを返す（テキスト、辞書など） | 直接返り値 | `subject = event.get_subject()` |
+| 操作を実行する（メッセージの送信など） | `asyncio.Task` を返す | `task = event.do_something()`（オプションで await） |
 
-> **推奨**：データを返さないメソッドは`asyncio.Task`を返し、ユーザーが`await`するかどうかを自分で決められるようにします。`await`しなくても操作は完了します。
+> **推奨**：データ以外を返すメソッドは `asyncio.Task` を返します。これにより、ユーザーは `await` するかどうかを自分で決定でき、`await` しなくても操作は完了します。
 
 ```python
 @register_event_method("email")
 def forward_email(self, to_address: str):
-    """メールを転送 — Taskを返し、ユーザーはawaitするかどうかを自分で決められる"""
+    """メールを転送 — Task を返すため、ユーザーが await するかどうかを決定できます"""
     import asyncio
     return asyncio.create_task(
         self._do_forward(to_address)
     )
 
-# ユーザーはawaitして結果を待つことができます
+# ユーザーは結果を待機するために await できます
 await event.forward_email("user@example.com")
 
-# また、awaitせず、操作はバックグラウンドで実行されます
+# あるいは await せず、バックグラウンドで操作を実行することもできます
 event.forward_email("user@example.com")
 ```
 
@@ -9654,28 +9736,28 @@ event.forward_email("user@example.com")
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
 
-# 個別のメソッドを登録解除
+# 単一メソッドの登録解除
 unregister_event_method("email", "get_subject")
 
-# 特定のプラットフォームのすべてのメソッドを登録解除（アダプターシャットダウン時に呼び出される）
+# 特定のプラットフォームのすべてのメソッドの登録解除（アダプタのシャットダウン時に呼び出す）
 unregister_platform_event_methods("email")
 ```
 
 #### 組み込みメソッドの上書き
 
-`register_event_mixin` / `register_event_method` は、組み込みEventメソッド（`confirm`、`choose`、`collect`、`wait_reply`、`reply`など）の上書きをサポートします。登録されたプラットフォームメソッドは、`Event.__getattribute__`を通じて組み込みメソッドよりも優先して有効になります。そのため、アダプターはプラットフォーム固有のインタラクション実装を提供できます。
+`register_event_mixin` / `register_event_method` は、`confirm`、`choose`、`collect`、`wait_reply`、`reply` などの Event 組み込みメソッドを上書きできます。登録されたプラットフォームメソッドは、Event 内部の `_builtin_*` 関数を介して優先的に組み込みメソッドに作用するため、アダプタはプラットフォーム固有のインタラクション実装を提供できます。
 
-組み込み実装は`_builtin_*`関数としてエクスポートされ、上書きする側はそれらをフォールバックとして呼び出すことができます：
+組み込み実装は `_builtin_*` 関数としてエクスポートされており、上書きする側はそれらをフォールバックとして呼び出すことができます：
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
 
 class YunhuEventMixin:
     async def choose(self, prompt, options, timeout=60, method="Text"):
-        # 雲湖プラットフォームはボタンコンポーネントを使用
+        # 雲湖プラットフォームはボタンコンポーネントを使用します
         buttons = [[{"text": opt} for opt in options]]
         await self.reply(prompt)
-        # ...ボタンコールバックまたはテキスト返信を待機...
+        # ...ボタンのコールバックかテキストの返信を待機...
         # 組み込みロジックにフォールバック
         return await _builtin_choose(self, None, options, timeout, "Text")
 
@@ -9684,7 +9766,7 @@ register_event_mixin("yunhu", YunhuEventMixin)
 
 ## クロスプラットフォーム拡張（ワイルドカード）
 
-`register_event_method`と`register_event_mixin`は、プラットフォーム名として`"*"`を渡すのをサポートします。登録されたメソッドは**すべてのプラットフォーム**のEventインスタンスで利用可能です。AI対話、コンテキスト管理など、クロスプラットフォームで再利用される必要がある機能モジュールに適しています。
+`register_event_method` と `register_event_mixin` は、プラットフォーム名として `"*"` を受け入れ、登録されたメソッドは**すべてのプラットフォーム**の Event インスタンスで使用可能になります。AI 会話、コンテキスト管理など、複数のプラットフォームで再利用される必要がある機能モジュールに適しています。
 
 ### クロスプラットフォームメソッドの登録
 
@@ -9693,7 +9775,7 @@ from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    """selfはEventインスタンスであり、イベントデータと組み込みメソッドに自由にアクセスできます"""
+    """self は Event インスタンスであり、イベントデータと組み込みメソッドに自由にアクセスできます"""
     await self.reply(f"AI: {prompt}")
 ```
 
@@ -9707,28 +9789,28 @@ async def handler(event):
     await event.ai_chat(event.get_text())
 ```
 
-### メソッド解決の優先順位
+### メソッドの解決優先度
 
-Eventメソッドに属性アクセスする場合、解決順序は以下の通りです：
+Event メソッドに属性アクセスした場合、解決の順序は以下の通りです：
 
 1. **プラットフォーム固有メソッド**（現在のプラットフォームによる上書き）
-2. **ワイルドカードメソッド**（`"*"`で登録されたクロスプラットフォームメソッド）
-3. **組み込みメソッド**（`reply`、`confirm`など）
+2. **ワイルドカードメソッド**（`"*"` によって登録されたクロスプラットフォームメソッド）
+3. **組み込みメソッド**（`reply`、`confirm` など）
 4. **辞書キーアクセス**
 
-> したがって、ワイルドカードメソッドは組み込みメソッド（`reply`など）を上書きできますが、同じ名前のプラットフォーム固有メソッドによってさらに上書きされます。
+> したがって、ワイルドカードメソッドは組み込みメソッド（`reply` など）を上書きできますが、同名のプラットフォーム固有メソッドによってさらに上書きされる可能性があります。
 
-## 優先順位システム
+## 優先度システム
 
-イベントハンドラーは優先順位をサポートしており、数値が大きいほど優先度が高いです：
+イベントハンドラーは優先度をサポートしており、数値が大きいほど優先度が高くなります：
 
 ```python
-# 高優先度ハンドラーが先に実行
+# 高優先度のハンドラーが先に実行
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     pass
 
-# 低優先度ハンドラーが後に実行
+# 低優先度のハンドラーが後で実行
 @message.on_message(priority=0)
 async def low_priority_handler(event):
     pass
@@ -9736,8 +9818,8 @@ async def low_priority_handler(event):
 
 ## 関連ドキュメント
 
-- [コアモジュール API](core-modules.md) - コアモジュールAPI
-- [アダプターシステム API](adapter-system.md) - アダプター管理API
+- [コアモジュール API](core-modules.md) - コアモジュール API
+- [アダプタシステム API](adapter-system.md) - Adapter 管理 API
 - [モジュール開発ガイド](../developer-guide/modules/) - カスタムモジュールの開発
 
 

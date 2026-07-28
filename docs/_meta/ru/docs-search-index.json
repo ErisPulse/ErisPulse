@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1413,
+  "total_keywords": 1420,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -282,12 +282,12 @@
         "title": "1. Строгое следование стандарту OneBot12"
       }
     ],
-    "1. Указание типа и идентификатора": [
+    "1. Указание типа и ID": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 7,
         "level": 3,
-        "title": "1. Указание типа и идентификатора"
+        "title": "1. Указание типа и ID"
       }
     ],
     "1. Управление версиями": [
@@ -744,12 +744,12 @@
         "title": "2. Требования к стандартным полям"
       }
     ],
-    "2. Указание только идентификатора": [
+    "2. Указание только ID": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 13,
         "level": 3,
-        "title": "2. Указание только идентификатора"
+        "title": "2. Указание только ID"
       }
     ],
     "2. Управление состоянием подключения": [
@@ -1056,12 +1056,12 @@
         "title": "3. Сопоставление полей (входящий JSON → событие OneBot12)"
       }
     ],
-    "3. Указание аккаунта отправки": [
+    "3. Указание учетной записи отправки": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 19,
         "level": 3,
-        "title": "3. Указание аккаунта отправки"
+        "title": "3. Указание учетной записи отправки"
       }
     ],
     "3. Управление ресурсами": [
@@ -2262,6 +2262,14 @@
         "title": "SendDSL"
       }
     ],
+    "SendDSL Подробное описание": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 1,
+        "level": 1,
+        "title": "SendDSL Подробное описание"
+      }
+    ],
     "Storage (Хранилище)": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -2890,20 +2898,12 @@
         "title": "Автоматическая обнаружение"
       }
     ],
-    "Автоматическая отмена при таймауте (Timeout)": [
+    "Автоматическая повторная попытка при ошибке (Retry)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 217,
+        "line": 282,
         "level": 3,
-        "title": "Автоматическая отмена при таймауте (Timeout)"
-      }
-    ],
-    "Автоматическая повторная отправка при неудаче (Retry)": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 208,
-        "level": 3,
-        "title": "Автоматическая повторная отправка при неудаче (Retry)"
+        "title": "Автоматическая повторная попытка при ошибке (Retry)"
       }
     ],
     "Автоматическая регистрация Dashboard": [
@@ -2912,6 +2912,14 @@
         "line": 361,
         "level": 3,
         "title": "Автоматическая регистрация Dashboard"
+      }
+    ],
+    "Автоматический таймаут и отмена (Timeout)": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 291,
+        "level": 3,
+        "title": "Автоматический таймаут и отмена (Timeout)"
       }
     ],
     "Автоматическое обнаружение обычных событий": [
@@ -2968,12 +2976,12 @@
         "title": "Адаптер WeChatMp (WeChat Public Account) - Документация по особенностям платформы"
       }
     ],
-    "Адаптер: регистрация платформенно-специфичных методов": [
+    "Адаптер: регистрация расширенных методов платформы": [
       {
         "document": "api-reference/event-system.md",
-        "line": 502,
+        "line": 510,
         "level": 3,
-        "title": "Адаптер: регистрация платформенно-специфичных методов"
+        "title": "Адаптер: регистрация расширенных методов платформы"
       }
     ],
     "Активация виртуального окружения": [
@@ -3049,7 +3057,7 @@
     "Асинхронная обработка": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 148,
+        "line": 222,
         "level": 2,
         "title": "Асинхронная обработка"
       },
@@ -3134,6 +3142,12 @@
         "title": "Базовое использование"
       },
       {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 603,
+        "level": 3,
+        "title": "Базовое использование"
+      },
+      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 212,
         "level": 3,
@@ -3146,6 +3160,14 @@
         "line": 41,
         "level": 3,
         "title": "Базовые классы"
+      }
+    ],
+    "Базовые методы (встроены в базовый класс)": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 41,
+        "level": 3,
+        "title": "Базовые методы (встроены в базовый класс)"
       }
     ],
     "Базовые методы отправки": [
@@ -3188,12 +3210,28 @@
         "title": "Базовый ответ"
       }
     ],
+    "Базовый способ вызова": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 5,
+        "level": 2,
+        "title": "Базовый способ вызова"
+      }
+    ],
     "Базовый формат": [
       {
         "document": "styleguide/docstring.md",
         "line": 21,
         "level": 3,
         "title": "Базовый формат"
+      }
+    ],
+    "Банковая регистрация (Mixin класс)": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 530,
+        "level": 4,
+        "title": "Банковая регистрация (Mixin класс)"
       }
     ],
     "Безопасность": [
@@ -3391,7 +3429,7 @@
     "Возвращаемые значения": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 470,
+        "line": 544,
         "level": 2,
         "title": "Возвращаемые значения"
       }
@@ -3460,12 +3498,6 @@
         "line": 97,
         "level": 2,
         "title": "Вспомогательные методы"
-      },
-      {
-        "document": "api-reference/event-system.md",
-        "line": 428,
-        "level": 3,
-        "title": "Вспомогательные методы"
       }
     ],
     "Вспомогательные методы фреймворка": [
@@ -3503,7 +3535,7 @@
     "Вход в режим построения": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 302,
+        "line": 376,
         "level": 3,
         "title": "Вход в режим построения"
       }
@@ -4207,7 +4239,7 @@
     "Запрос возможностей платформы": [
       {
         "document": "api-reference/event-system.md",
-        "line": 339,
+        "line": 347,
         "level": 3,
         "title": "Запрос возможностей платформы"
       }
@@ -4223,7 +4255,7 @@
     "Запрос зарегистрированных методов платформы": [
       {
         "document": "api-reference/event-system.md",
-        "line": 464,
+        "line": 472,
         "level": 4,
         "title": "Запрос зарегистрированных методов платформы"
       }
@@ -4252,18 +4284,16 @@
         "title": "Запрос полей ID"
       }
     ],
-    "Запрос состояния Bot": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 239,
-        "level": 3,
-        "title": "Запрос состояния Bot"
-      }
-    ],
     "Запрос состояния бота": [
       {
         "document": "api-reference/core-modules.md",
         "line": 219,
+        "level": 3,
+        "title": "Запрос состояния бота"
+      },
+      {
+        "document": "api-reference/event-system.md",
+        "line": 239,
         "level": 3,
         "title": "Запрос состояния бота"
       },
@@ -4438,20 +4468,20 @@
         "title": "Изменение структуры таблицы"
       }
     ],
-    "Изоляция методов платформы": [
+    "Изоляция платформенных методов": [
       {
         "document": "api-reference/event-system.md",
-        "line": 479,
+        "line": 487,
         "level": 4,
-        "title": "Изоляция методов платформы"
+        "title": "Изоляция платформенных методов"
       }
     ],
-    "Именование в стиле PascalCase": [
+    "Именование PascalCase": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 425,
+        "line": 499,
         "level": 3,
-        "title": "Именование в стиле PascalCase"
+        "title": "Именование PascalCase"
       }
     ],
     "Именование методов отправки": [
@@ -4567,12 +4597,6 @@
       }
     ],
     "Интерактивные методы": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 387,
-        "level": 3,
-        "title": "Интерактивные методы"
-      },
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 203,
@@ -4696,15 +4720,15 @@
         "line": 41,
         "level": 3,
         "title": "Информация о командах"
-      },
+      }
+    ],
+    "Информация о команде": [
       {
         "document": "api-reference/event-system.md",
         "line": 303,
         "level": 3,
-        "title": "Информация о командах"
-      }
-    ],
-    "Информация о команде": [
+        "title": "Информация о команде"
+      },
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 350,
@@ -4846,6 +4870,14 @@
         "title": "Использование метода reply для отправки ответа"
       }
     ],
+    "Использование методов-модификаторов в классе Event Wrapper": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 153,
+        "level": 2,
+        "title": "Использование методов-модификаторов в классе Event Wrapper"
+      }
+    ],
     "Использование параметров запроса": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -4910,6 +4942,14 @@
         "title": "Исходные данные"
       }
     ],
+    "Исходные сообщения и построение сообщений": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 631,
+        "level": 3,
+        "title": "Исходные сообщения и построение сообщений"
+      }
+    ],
     "Исходящий протокол": [
       {
         "document": "platform-guide/webhook.md",
@@ -4972,6 +5012,14 @@
         "line": 16,
         "level": 3,
         "title": "Класс LazyModule"
+      }
+    ],
+    "Класс-обертка события Event": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 243,
+        "level": 2,
+        "title": "Класс-обертка события Event"
       }
     ],
     "Классификация серьезности": [
@@ -5132,12 +5180,12 @@
         "title": "Команды языка"
       }
     ],
-    "Комбинация правил и фоновая отправка": [
+    "Комбинация правил и фоновой выполнения": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 270,
+        "line": 344,
         "level": 3,
-        "title": "Комбинация правил и фоновая отправка"
+        "title": "Комбинация правил и фоновой выполнения"
       }
     ],
     "Комбинированные модификаторы": [
@@ -5404,12 +5452,12 @@
         "title": "Кросс-платформенное расширение (шаблон)"
       }
     ],
-    "Кросс-платформенные расширения (шаблоны)": [
+    "Кроссплатформенное расширение (шаблоны)": [
       {
         "document": "api-reference/event-system.md",
-        "line": 601,
+        "line": 609,
         "level": 2,
-        "title": "Кросс-платформенные расширения (шаблоны)"
+        "title": "Кроссплатформенное расширение (шаблоны)"
       }
     ],
     "Ленивая загрузка (Lazy Loading)": [
@@ -5431,7 +5479,7 @@
     "Логика после успешной отправки (Hook)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 191,
+        "line": 265,
         "level": 3,
         "title": "Логика после успешной отправки (Hook)"
       }
@@ -5528,14 +5576,6 @@
         "title": "Массовая отправка нескольких сообщений"
       }
     ],
-    "Массовая регистрация (через Mixin)": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 522,
-        "level": 4,
-        "title": "Массовая регистрация (через Mixin)"
-      }
-    ],
     "Матрица особенностей": [
       {
         "document": "platform-guide/webhook.md",
@@ -5571,7 +5611,7 @@
     "Метод Account": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 140,
+        "line": 214,
         "level": 3,
         "title": "Метод Account"
       }
@@ -5603,7 +5643,7 @@
     "Метод Using": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 123,
+        "line": 197,
         "level": 3,
         "title": "Метод Using"
       }
@@ -5672,6 +5712,14 @@
         "title": "Методы Send"
       }
     ],
+    "Методы взаимодействия": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 395,
+        "level": 3,
+        "title": "Методы взаимодействия"
+      }
+    ],
     "Методы для друзей": [
       {
         "document": "platform-guide/onebot11.md",
@@ -5705,7 +5753,7 @@
     "Методы ответа": [
       {
         "document": "api-reference/event-system.md",
-        "line": 351,
+        "line": 359,
         "level": 3,
         "title": "Методы ответа"
       }
@@ -5894,6 +5942,14 @@
         "title": "Методы цепочки (можно комбинировать)"
       }
     ],
+    "Методы-модификаторы": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 87,
+        "level": 2,
+        "title": "Методы-модификаторы"
+      }
+    ],
     "Механизм heartbeat": [
       {
         "document": "platform-guide/discord.md",
@@ -6014,14 +6070,6 @@
         "title": "Модель многоаккаунтности"
       }
     ],
-    "Модификаторы": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 87,
-        "level": 2,
-        "title": "Модификаторы"
-      }
-    ],
     "Модуль": [
       {
         "document": "developer-guide/publishing.md",
@@ -6042,14 +6090,6 @@
         "line": 190,
         "level": 2,
         "title": "Модуль Adapter"
-      }
-    ],
-    "Модуль Command (Команды)": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 5,
-        "level": 2,
-        "title": "Модуль Command (Команды)"
       }
     ],
     "Модуль Config": [
@@ -6084,44 +6124,12 @@
         "title": "Модуль Logger"
       }
     ],
-    "Модуль Message (Сообщения)": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 112,
-        "level": 2,
-        "title": "Модуль Message (Сообщения)"
-      }
-    ],
-    "Модуль Meta (Мета-события)": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 214,
-        "level": 2,
-        "title": "Модуль Meta (Мета-события)"
-      }
-    ],
     "Модуль Module": [
       {
         "document": "api-reference/core-modules.md",
         "line": 230,
         "level": 2,
         "title": "Модуль Module"
-      }
-    ],
-    "Модуль Notice (Уведомления)": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 160,
-        "level": 2,
-        "title": "Модуль Notice (Уведомления)"
-      }
-    ],
-    "Модуль Request (Запросы)": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 192,
-        "level": 2,
-        "title": "Модуль Request (Запросы)"
       }
     ],
     "Модуль Router": [
@@ -6138,6 +6146,46 @@
         "line": 5,
         "level": 2,
         "title": "Модуль Storage"
+      }
+    ],
+    "Модуль запросов Request": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 192,
+        "level": 2,
+        "title": "Модуль запросов Request"
+      }
+    ],
+    "Модуль команд Command": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 5,
+        "level": 2,
+        "title": "Модуль команд Command"
+      }
+    ],
+    "Модуль мета-событий Meta": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 214,
+        "level": 2,
+        "title": "Модуль мета-событий Meta"
+      }
+    ],
+    "Модуль сообщений Message": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 112,
+        "level": 2,
+        "title": "Модуль сообщений Message"
+      }
+    ],
+    "Модуль уведомлений Notice": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 160,
+        "level": 2,
+        "title": "Модуль уведомлений Notice"
       }
     ],
     "Можно ли зарегистрировать несколько модулей в одном пакете?": [
@@ -6167,7 +6215,7 @@
     "Мониторинг прогресса (OnProgress / OnError)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 227,
+        "line": 301,
         "level": 3,
         "title": "Мониторинг прогресса (OnProgress / OnError)"
       }
@@ -6199,7 +6247,7 @@
     "Наследование модификаторов и правил": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 384,
+        "line": 458,
         "level": 3,
         "title": "Наследование модификаторов и правил"
       }
@@ -6226,6 +6274,14 @@
         "line": 39,
         "level": 2,
         "title": "Начало обучения"
+      }
+    ],
+    "Не ожидание результата": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 224,
+        "level": 3,
+        "title": "Не ожидание результата"
       }
     ],
     "Немедленная загрузка": [
@@ -6274,22 +6330,6 @@
         "line": 17,
         "level": 3,
         "title": "Новичку"
-      }
-    ],
-    "Нормы именования": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 423,
-        "level": 2,
-        "title": "Нормы именования"
-      }
-    ],
-    "Оберточный класс Event": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 243,
-        "level": 2,
-        "title": "Оберточный класс Event"
       }
     ],
     "Обзор": [
@@ -6386,6 +6426,14 @@
         "line": 5,
         "level": 2,
         "title": "Обзор магазина модулей"
+      }
+    ],
+    "Обзор методов правил": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 253,
+        "level": 3,
+        "title": "Обзор методов правил"
       }
     ],
     "Обзор модулей": [
@@ -6821,7 +6869,7 @@
     "Объект Task": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 472,
+        "line": 546,
         "level": 3,
         "title": "Объект Task"
       }
@@ -6931,7 +6979,7 @@
     "Ожидание результата": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 160,
+        "line": 234,
         "level": 3,
         "title": "Ожидание результата"
       }
@@ -7408,12 +7456,6 @@
         "title": "Основное использование"
       },
       {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 529,
-        "level": 3,
-        "title": "Основное использование"
-      },
-      {
         "document": "getting-started/ide-completion.md",
         "line": 14,
         "level": 2,
@@ -7496,14 +7538,6 @@
         "line": 89,
         "level": 3,
         "title": "Основные методы"
-      }
-    ],
-    "Основные методы (встроенные в базовый класс)": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 41,
-        "level": 3,
-        "title": "Основные методы (встроенные в базовый класс)"
       }
     ],
     "Основные методы отправки": [
@@ -7624,14 +7658,6 @@
         "title": "Основные различия"
       }
     ],
-    "Основные способы вызова": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 5,
-        "level": 2,
-        "title": "Основные способы вызова"
-      }
-    ],
     "Основные типы сообщений": [
       {
         "document": "platform-guide/onebot12.md",
@@ -7719,7 +7745,7 @@
     "Отложенная отправка (Defer)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 249,
+        "line": 323,
         "level": 3,
         "title": "Отложенная отправка (Defer)"
       }
@@ -7727,7 +7753,7 @@
     "Отмена регистрации метода": [
       {
         "document": "api-reference/event-system.md",
-        "line": 568,
+        "line": 576,
         "level": 4,
         "title": "Отмена регистрации метода"
       }
@@ -7800,14 +7826,6 @@
         "line": 434,
         "level": 3,
         "title": "Отправка KMarkdown и карточных сообщений"
-      }
-    ],
-    "Отправка без ожидания результата": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 150,
-        "level": 3,
-        "title": "Отправка без ожидания результата"
       }
     ],
     "Отправка в разные цели": [
@@ -8032,20 +8050,20 @@
         "title": "Панель управления Dashboard"
       }
     ],
-    "Параллельная и последовательная отправка": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 318,
-        "level": 3,
-        "title": "Параллельная и последовательная отправка"
-      }
-    ],
     "Параллельная обработка событий": [
       {
         "document": "getting-started/event-handling.md",
         "line": 149,
         "level": 3,
         "title": "Параллельная обработка событий"
+      }
+    ],
+    "Параллельное и последовательное выполнение": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 392,
+        "level": 3,
+        "title": "Параллельное и последовательное выполнение"
       }
     ],
     "Параметр `keep_running`": [
@@ -8157,7 +8175,7 @@
     "Переопределение встроенных методов": [
       {
         "document": "api-reference/event-system.md",
-        "line": 580,
+        "line": 588,
         "level": 4,
         "title": "Переопределение встроенных методов"
       }
@@ -8218,27 +8236,7 @@
         "title": "Платформа"
       }
     ],
-    "Платформенно-специфические методы": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 74,
-        "level": 3,
-        "title": "Платформенно-специфические методы"
-      },
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 445,
-        "level": 3,
-        "title": "Платформенно-специфические методы"
-      }
-    ],
     "Платформенные расширения": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 443,
-        "level": 3,
-        "title": "Платформенные расширения"
-      },
       {
         "document": "developer-guide/adapters/converter.md",
         "line": 121,
@@ -8272,6 +8270,28 @@
         "line": 232,
         "level": 3,
         "title": "Платформенные события (префикс onebot11_)"
+      }
+    ],
+    "Платформенные специфические методы": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 74,
+        "level": 3,
+        "title": "Платформенные специфические методы"
+      },
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 519,
+        "level": 3,
+        "title": "Платформенные специфические методы"
+      }
+    ],
+    "Платформенные специфические методы-модификаторы": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 121,
+        "level": 3,
+        "title": "Платформенные специфические методы-модификаторы"
       }
     ],
     "Платформенные функции": [
@@ -8475,7 +8495,7 @@
     "Поддержка hasattr / dir": [
       {
         "document": "api-reference/event-system.md",
-        "line": 495,
+        "line": 503,
         "level": 4,
         "title": "Поддержка hasattr / dir"
       }
@@ -8634,14 +8654,6 @@
         "title": "Подробное руководство по MessageBuilder"
       }
     ],
-    "Подробное руководство по SendDSL": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 1,
-        "level": 1,
-        "title": "Подробное руководство по SendDSL"
-      }
-    ],
     "Подробности метода `t()`": [
       {
         "document": "advanced/i18n.md",
@@ -8713,7 +8725,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 527,
+        "line": 601,
         "level": 2,
         "title": "Полный пример"
       },
@@ -8836,12 +8848,12 @@
         "title": "Получение экземпляра адаптера"
       }
     ],
-    "Пользователь: использование платформенно-специфичных методов": [
+    "Пользователь: использование расширенных методов платформы": [
       {
         "document": "api-reference/event-system.md",
-        "line": 447,
+        "line": 455,
         "level": 4,
-        "title": "Пользователь: использование платформенно-специфичных методов"
+        "title": "Пользователь: использование расширенных методов платформы"
       }
     ],
     "Пользовательские сообщения": [
@@ -8900,20 +8912,20 @@
         "title": "Права групп"
       }
     ],
-    "Правила возврата значений": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 543,
-        "level": 4,
-        "title": "Правила возврата значений"
-      }
-    ],
-    "Правила и обратные вызовы для всего пакета": [
+    "Правила и обратные вызовы для целой партии": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 350,
+        "line": 424,
         "level": 3,
-        "title": "Правила и обратные вызовы для всего пакета"
+        "title": "Правила и обратные вызовы для целой партии"
+      }
+    ],
+    "Правила именования": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 497,
+        "level": 2,
+        "title": "Правила именования"
       }
     ],
     "Правила написания контента": [
@@ -9444,12 +9456,12 @@
         "title": "Приоритет"
       }
     ],
-    "Приоритет и отбрасывание при накоплении (Priority)": [
+    "Приоритет и сброс при переполнении (Priority)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 258,
+        "line": 332,
         "level": 3,
-        "title": "Приоритет и отбрасывание при накоплении (Priority)"
+        "title": "Приоритет и сброс при переполнении (Priority)"
       }
     ],
     "Приоритет команд": [
@@ -9460,12 +9472,12 @@
         "title": "Приоритет команд"
       }
     ],
-    "Приоритет методов": [
+    "Приоритет разрешения методов": [
       {
         "document": "api-reference/event-system.md",
-        "line": 626,
+        "line": 634,
         "level": 3,
-        "title": "Приоритет методов"
+        "title": "Приоритет разрешения методов"
       }
     ],
     "Приоритеты выбора аккаунта": [
@@ -9570,12 +9582,12 @@
         "title": "Продвинутые темы"
       }
     ],
-    "Продолжение при неудаче и повторная отправка": [
+    "Продолжение при ошибке и повтор": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 338,
+        "line": 412,
         "level": 3,
-        "title": "Продолжение при неудаче и повторная отправка"
+        "title": "Продолжение при ошибке и повтор"
       }
     ],
     "Промежуточное ПО маршрутизации": [
@@ -9853,7 +9865,7 @@
     "Распространение правил": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 285,
+        "line": 359,
         "level": 3,
         "title": "Распространение правил"
       }
@@ -9934,6 +9946,14 @@
         "line": 378,
         "level": 2,
         "title": "Расширенная обработка событий"
+      }
+    ],
+    "Расширенные методы платформы": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 451,
+        "level": 3,
+        "title": "Расширенные методы платформы"
       }
     ],
     "Расширенные методы событий": [
@@ -10032,12 +10052,12 @@
         "title": "Регистрация команд"
       }
     ],
-    "Регистрация кросс-платформенных методов": [
+    "Регистрация кроссплатформенных методов": [
       {
         "document": "api-reference/event-system.md",
-        "line": 605,
+        "line": 613,
         "level": 3,
-        "title": "Регистрация кросс-платформенных методов"
+        "title": "Регистрация кроссплатформенных методов"
       }
     ],
     "Регистрация обработчиков": [
@@ -10067,7 +10087,7 @@
     "Регистрация отдельного метода": [
       {
         "document": "api-reference/event-system.md",
-        "line": 506,
+        "line": 514,
         "level": 4,
         "title": "Регистрация отдельного метода"
       }
@@ -10136,13 +10156,15 @@
         "title": "Режим быстрого построения (статический)"
       }
     ],
-    "Режим построения пакетов (Build)": [
+    "Режим пакетного построения (Build)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 298,
+        "line": 372,
         "level": 2,
-        "title": "Режим построения пакетов (Build)"
-      },
+        "title": "Режим пакетного построения (Build)"
+      }
+    ],
+    "Режим построения пакетов (Build)": [
       {
         "document": "platform-guide/README.md",
         "line": 137,
@@ -10505,7 +10527,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 653,
+        "line": 661,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -10535,7 +10557,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 565,
+        "line": 639,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -10776,18 +10798,18 @@
         "title": "Система международной локализации (i18n)"
       }
     ],
-    "Система отправки правил": [
+    "Система правил отправки": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 173,
+        "line": 247,
         "level": 2,
-        "title": "Система отправки правил"
+        "title": "Система правил отправки"
       }
     ],
     "Система приоритетов": [
       {
         "document": "api-reference/event-system.md",
-        "line": 637,
+        "line": 645,
         "level": 2,
         "title": "Система приоритетов"
       }
@@ -11256,6 +11278,14 @@
         "title": "Специальные теги (для генерации API документации)"
       }
     ],
+    "Спецификация возвращаемых значений": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 551,
+        "level": 4,
+        "title": "Спецификация возвращаемых значений"
+      }
+    ],
     "Спецификация метода отправки ErisPulse": [
       {
         "document": "standards/send-method-spec.md",
@@ -11344,14 +11374,6 @@
         "title": "Список методов"
       }
     ],
-    "Список методов правил": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 179,
-        "level": 3,
-        "title": "Список методов правил"
-      }
-    ],
     "Список платформ": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -11382,6 +11404,22 @@
         "line": 13,
         "level": 3,
         "title": "Способ 1: Установка с помощью pip"
+      }
+    ],
+    "Способ 1: параметр `via` в reply()": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 157,
+        "level": 3,
+        "title": "Способ 1: параметр `via` в reply()"
+      }
+    ],
+    "Способ 2: event.send_chain()": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 174,
+        "level": 3,
+        "title": "Способ 2: event.send_chain()"
       }
     ],
     "Способ 2: Установка с помощью uv (рекомендуется)": [
@@ -11535,7 +11573,7 @@
     "Стандартизированный ответ": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 496,
+        "line": 570,
         "level": 3,
         "title": "Стандартизированный ответ"
       }
@@ -11750,14 +11788,6 @@
         "line": 7,
         "level": 3,
         "title": "Сценарий установки с одним нажатием (рекомендуется)"
-      }
-    ],
-    "Сырые сообщения и построение сообщений": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 557,
-        "level": 3,
-        "title": "Сырые сообщения и построение сообщений"
       }
     ],
     "Таймауты и повторные попытки": [
@@ -12156,14 +12186,6 @@
         "title": "Управление адаптерами"
       }
     ],
-    "Управление аккаунтами": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 121,
-        "level": 2,
-        "title": "Управление аккаунтами"
-      }
-    ],
     "Управление активностью": [
       {
         "document": "advanced/conversation.md",
@@ -12278,6 +12300,14 @@
         "title": "Управление уровнем логирования"
       }
     ],
+    "Управление учетными записями": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 195,
+        "level": 2,
+        "title": "Управление учетными записями"
+      }
+    ],
     "Управление функции": [
       {
         "document": "platform-guide/onebot12.md",
@@ -12318,12 +12348,12 @@
         "title": "Ускорение зеркала в Китае"
       }
     ],
-    "Условное отслеживание": [
+    "Условное прослушивание": [
       {
         "document": "api-reference/event-system.md",
         "line": 143,
         "level": 3,
-        "title": "Условное отслеживание"
+        "title": "Условное прослушивание"
       }
     ],
     "Успешная отправка сообщения": [
@@ -12434,6 +12464,14 @@
         "title": "Установка через CLI"
       }
     ],
+    "Утилитарные методы": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 436,
+        "level": 3,
+        "title": "Утилитарные методы"
+      }
+    ],
     "Утилиты": [
       {
         "document": "advanced/session-types.md",
@@ -12498,12 +12536,12 @@
         "title": "Фильтрация сообщений"
       }
     ],
-    "Фоновая отправка": [
+    "Фоновое выполнение": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 408,
+        "line": 482,
         "level": 3,
-        "title": "Фоновая отправка"
+        "title": "Фоновое выполнение"
       }
     ],
     "Формат события meta": [
@@ -12630,14 +12668,6 @@
         "title": "Цепные методы-модификаторы (можно комбинировать)"
       }
     ],
-    "Цепочечные вызовы": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 547,
-        "level": 3,
-        "title": "Цепочечные вызовы"
-      }
-    ],
     "Цепочечные методы модификаторов (можно комбинировать)": [
       {
         "document": "platform-guide/ideaura.md",
@@ -12704,6 +12734,14 @@
         "line": 31,
         "level": 2,
         "title": "Цепочка методов"
+      }
+    ],
+    "Цепочный вызов": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 621,
+        "level": 3,
+        "title": "Цепочный вызов"
       }
     ],
     "Циклический диалог": [
