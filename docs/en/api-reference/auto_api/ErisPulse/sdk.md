@@ -260,6 +260,7 @@ SDK 初始化入口
 会记录一条警告并直接返回 True。如需强制重新初始化，请先
 调用 ``sdk.uninit()`` 或使用 ``sdk.restart()``。
 
+- **before_init** (`初始化前回调（同步或异步），在环境准备之前执行`): - **after_init**: 初始化成功后回调（同步或异步），在初始化完成后执行
 **返回值** (`bool`): SDK 初始化是否成功（已初始化时返回 True）
 
 **示例**:
@@ -267,6 +268,13 @@ SDK 初始化入口
 >>> success = await sdk.init()
 >>> if success:
 >>>     await sdk.adapter.startup()
+>>>
+>>> # 使用回调
+>>> async def setup():
+...     print("初始化前")
+>>> async def ready():
+...     print("初始化完成")
+>>> await sdk.init(before_init=setup, after_init=ready)
 ```
 
 ---
@@ -290,6 +298,7 @@ SDK 初始化入口（同步版本）
 
 用于命令行直接调用，自动在事件循环中运行异步初始化
 
+- **before_init** (`初始化前回调（同步或异步）`): - **after_init**: 初始化成功后回调（同步或异步）
 **返回值** (`bool`): SDK 初始化是否成功
 
 ---
@@ -299,6 +308,7 @@ SDK 初始化入口（同步版本）
 
 SDK 初始化入口，返回 Task 对象
 
+- **before_init** (`初始化前回调（同步或异步）`): - **after_init**: 初始化成功后回调（同步或异步）
 **返回值** (`asyncio.Task`): 初始化任务
 
 ---
@@ -323,17 +333,41 @@ SDK 初始化入口，返回 Task 对象
 
 无头模式运行 ErisPulse
 
+内部调用 ``init()`` 完成初始化，然后在 ``on_ready`` 回调执行完毕后
+挂起主程序（当 ``keep_running=True`` 时）。
+
 > **提示**
 > 异常处理原则：
 > 1. 模块/适配器的任何错误都会被拦截，不会导致进程退出
 > 2. 只有 KeyboardInterrupt（Ctrl+C）会正常向上传播，触发优雅关闭
 > 3. 其他 BaseException（如 SystemExit）会被拦截并记录，防止意外终止
+> 回调执行顺序::
+> before_init → 初始化 → after_init → on_ready → [挂起]
+> 回调可以是同步或异步函数，框架自动检测并 await。
+> 回调中的异常会被捕获并记录日志，不会中断启动流程。
 
 - **keep_running** (`bool`): 是否保持运行
+- **before_init** (`初始化前回调，转发给`): ``init()``
+- **after_init** (`初始化成功后回调，转发给`): ``init()``
+- **on_ready** (`初始化完成且`): ``after_init`` 执行后、挂起前的回调
 
 **示例**:
 ```python
 >>> await sdk.run(keep_running=True)
+>>>
+>>> # 使用 on_ready 回调
+>>> async def on_startup():
+...     print("SDK 就绪，开始业务逻辑")
+>>> await sdk.run(on_ready=on_startup)
+>>>
+>>> # 分阶段回调
+>>> async def before():
+...     print("即将初始化")
+>>> async def after():
+...     print("初始化完成，适配器已就绪")
+>>> async def ready():
+...     print("一切就绪，开始挂起")
+>>> await sdk.run(before_init=before, after_init=after, on_ready=ready)
 ```
 
 ---

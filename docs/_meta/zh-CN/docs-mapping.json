@@ -81,7 +81,7 @@
           "level": 1
         },
         {
-          "title": "安装和配置",
+          "title": "安装参考",
           "path": "user-guide/installation.md",
           "level": 1
         },
@@ -366,7 +366,7 @@
     },
     "技术标准": {
       "description": "框架的技术规范和标准",
-      "count": 6,
+      "count": 7,
       "documents": [
         {
           "title": "技术标准",
@@ -396,6 +396,11 @@
         {
           "title": "ErisPulse 请求操作规范",
           "path": "standards/request-action-spec.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse API 动作标准",
+          "path": "standards/api-action-spec.md",
           "level": 1
         }
       ],

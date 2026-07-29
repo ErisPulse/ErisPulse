@@ -1,45 +1,46 @@
 # Technical Standards
 
-This document contains ErisPulse technical standards specifications to ensure consistency and compatibility between components.
+This document contains the technical standards specification for ErisPulse, ensuring consistency and compatibility between components.
 
-## Standard Document List
+## Standard Documentation List
 
-1. [Session Types Standard](session-types.md) - ErisPulse session type definition and mapping specification
-2. [Event Conversion Standard](event-conversion.md) - Platform event conversion spec, extension naming conventions, and message segment standards
-3. [API Response Standard](api-response.md) - Standard for adapter API response formats and extension requirements
-4. [Send Method Naming Conventions](send-method-spec.md) - Send class method naming, parameter specifications, and reverse conversion requirements
-5. [Request Action Standard](request-action-spec.md) - Request event field requirements, HandleRequest DSL, and adapter implementation requirements
+1. [Session Type Standard](session-types.md) - Definition and mapping specification for ErisPulse session types
+2. [Event Conversion Standard](event-conversion.md) - Platform event conversion specification, extension naming conventions, and message segment standards
+3. [API Response Standard](api-response.md) - Adapter API response format standard and extension requirements
+4. [Send Method Specification](send-method-spec.md) - Naming, parameter specifications for Send class methods, and reverse conversion requirements
+5. [Request Action Specification](request-action-spec.md) - Request event field requirements, HandleRequest DSL, and adapter implementation requirements
+6. [API Action Standard](api-action-spec.md) - Unified interface for OneBot12 standard API actions (information query/group management/message management/file operations)
 
 ## Standard Overview
 
-ErisPulse adopts OneBot12 as the core event standard, building upon this foundation with extensions and refinements.
+ErisPulse adopts OneBot12 as its core event standard and extends and refines it.
 
 ### Core Principles
 
 1. **Compatibility**: All standards must remain compatible with the OneBot12 standard
-2. **Extensibility**: Platform-specific features are extended via prefixing to avoid conflicts
+2. **Extensibility**: Platform-specific features are extended using prefixes to avoid conflicts
 3. **Consistency**: Key fields such as timestamps and ID formats require unified handling
-4. **Traceability**: Retain original data for debugging and issue troubleshooting
+4. **Traceability**: Original data is retained for debugging and issue troubleshooting
 
-## Why Do We Need Standards?
+## Why Are Standards Needed?
 
 ### 1. Ensure Cross-Platform Compatibility
 
-Event formats differ across various platforms, and standardized conversion ensures:
-- Modular code only needs to be written once to run on all platforms
+Different platforms have varying event formats; standardized conversion ensures:
+- Module code needs to be written only once to run on all platforms
 - Event handling logic remains consistent
-- Reduces development and maintenance costs
+- Development and maintenance costs are reduced
 
 ### 2. Standardize API Interfaces
 
-Unified API response formats ensure:
-- Modules can handle API errors consistently
-- Error messages are unified and easy to understand
-- Returned data structures are consistent
+A unified API response format ensures:
+- Modules can consistently handle API errors
+- Error messages are uniform and easy to understand
+- Return data structures are consistent
 
 ### 3. Improve Code Quality
 
-Standard specifications help:
+Standards help:
 - Maintain consistent code style
 - Reduce naming conflicts
 - Improve code readability
@@ -49,31 +50,31 @@ Standard specifications help:
 ### For Adapter Developers
 
 - Clear conversion rules
-- Unified response formats
-- Easy to debug and test
+- Unified response format
+- Easy debugging and testing
 
 ### For Module Developers
 
-- Consistent event interfaces
+- Consistent event interface
 - Predictable API behavior
 - Simplified cross-platform development
 
 ### For End Users
 
 - Stable system behavior
-- Unified message formats
+- Unified message format
 - Good compatibility
 
 ## Standard Compliance Checklist
 
 ### Event Conversion
 
-- [ ] All standard fields are correctly mapped
+- [ ] All standard fields have been correctly mapped
 - [ ] Platform-specific fields have been prefixed
-- [ ] Timestamps have been converted to 10-digit second-level precision
-- [ ] Raw data is saved in {platform}_raw
+- [ ] Timestamps have been converted to 10-digit second-level
+- [ ] Original data is saved in {platform}_raw
 - [ ] Original event type is saved in {platform}_raw_type
-- [ ] The alt_message for message segments has been generated
+- [ ] alt_message for message segments has been generated
 - [ ] Request events include the request_id field
 
 ### API Response
@@ -83,22 +84,22 @@ Standard specifications help:
 - [ ] Includes the data field
 - [ ] Includes the message_id field
 - [ ] Includes the message field
-- [ ] Return codes follow OneBot12 specifications
+- [ ] Return codes follow the OneBot12 specification
 
 ### Send Method Naming
 
-- [ ] Uses PascalCase
+- [ ] Uses PascalCase naming convention
 - [ ] Returns a Task object
-- [ ] Decorated methods return self
-- [ ] Parameter naming complies with specifications
+- [ ] Modifier methods return self
+- [ ] Parameter naming follows the specification
 
-### Request Action
+### Request Operations
 
-- [ ] HandleRequest class has implemented _do_accept / _do_reject
-- [ ] Operations return standard API response format
+- [ ] The HandleRequest class has implemented _do_accept / _do_reject
+- [ ] Operations return the standard API response format
 - [ ] Unsupported operations return retcode=10002
 
-## Related Documentation
+## Related Documents
 
-- [Platform Features Guide](../platform-guide/) - Understand the feature differences of each platform
+- [Platform Features Guide](../platform-guide/) - Understand the feature differences between platforms
 - [Developer Guide](../developer-guide/) - Develop custom modules and adapters

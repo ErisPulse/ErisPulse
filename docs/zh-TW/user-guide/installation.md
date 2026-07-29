@@ -1,8 +1,9 @@
-# 安裝與設定
+# 安裝參考
 
-本指南將介紹如何安裝 ErisPulse 並設定你的專案。
+> 本文是安裝方式的**完整參考**（pip / uv / Docker / 故障排除）。
+> 如果你只想快速跑起來，[5 分鐘快速開始](../quick-start.md) 已經涵蓋了最簡流程。
 
-## 系統需求
+## 系統要求
 
 - Python 3.10 或更高版本
 - pip 或 uv（推薦）
@@ -37,7 +38,7 @@ uv --version
 #### 建立虛擬環境
 
 ```bash
-# 建立專案目錄 && cd my_bot
+# 建立專案資料夾
 mkdir my_bot && cd my_bot
 
 # 安裝 Python 3.12
@@ -47,7 +48,7 @@ uv python install 3.12
 uv venv
 ```
 
-#### 啟用虛擬環境
+#### 激活虛擬環境
 
 ```bash
 # Windows
@@ -64,70 +65,9 @@ source .venv/bin/activate
 uv pip install ErisPulse --upgrade
 ```
 
-## 專案初始化
+## 項目初始化與模組安裝
 
-### 互動式初始化
-
-```bash
-epsdk init
-```
-
-按照提示完成：
-1. 輸入專案名稱
-2. 選擇日誌級別
-3. 設定伺服器參數
-4. 選擇適配器
-5. 設定適配器參數
-
-### 快速初始化
-
-```bash
-# 快速模式，跳過互動式設定
-epsdk init -q -n my_bot
-```
-
-### 設定說明
-
-初始化後會生成 `config/config.toml` 檔案：
-
-```toml
-[ErisPulse.server]
-host = "0.0.0.0"
-port = 8000
-
-[ErisPulse.logger]
-level = "INFO"
-
-[ErisPulse.framework]
-enable_lazy_loading = true
-
-```
-
-## 模組安裝
-
-### 從遠端倉庫安裝
-
-```bash
-# 安裝指定模組
-epsdk install Yunhu
-
-# 安裝多個模組
-epsdk install Yunhu Weather
-```
-
-### 從本機安裝
-
-```bash
-# 安裝本機模組
-epsdk install ./my-module
-```
-
-### 互動式安裝
-
-```bash
-# 不指定套件名進入互動式安裝
-epsdk install
-```
+安裝完成後，項目初始化、模組安裝、執行的完整流程見 [5 分鐘快速開始](../quick-start.md)。
 
 ## 驗證安裝
 
@@ -138,7 +78,7 @@ epsdk install
 epsdk --version
 ```
 
-### 運行測試
+### 執行測試
 
 ```bash
 # 執行專案
@@ -159,34 +99,34 @@ epsdk run main.py
 ### 安裝失敗
 
 1. 檢查 Python 版本是否 >= 3.10（推薦 3.10 - 3.13）
-2. 尝试使用 `uv pip install ErisPulse` 替代 `pip install`
-3. 如果提示权限错误，尝试 `pip install --user ErisPulse` 或使用虚拟环境
-4. 如果在企业代理环境下遇到 SSL 证书错误，尝试 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
-5. 确保网络连接正常，pip 源可访问
+2. 嘗試使用 `uv pip install ErisPulse` 替代 `pip install`
+3. 如果提示權限錯誤，嘗試 `pip install --user ErisPulse` 或使用虛擬環境
+4. 如果在企業代理環境下遇到 SSL 證書錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. 確保網路連線正常，pip 源可訪問
 
-### 配置错误
+### 配置錯誤
 
-1. 检查 `config.toml` 语法是否正确（TOML 格式对缩进和引号敏感）
-2. 确认所有必需的配置项都已填写
-3. 查看终端日志获取详细错误信息
-4. 使用 `epsdk init` 重新生成配置文件
+1. 檢查 `config.toml` 語法是否正確（TOML 格式對縮進和引號敏感）
+2. 確認所有必需的配置項都已填寫
+3. 查看終端日誌獲取詳細錯誤資訊
+4. 使用 `epsdk init` 重新生成配置檔案
 
-### 模块安装失败
+### 模組安裝失敗
 
-1. 确认模块名称拼写正确（大小写敏感）
-2. 检查网络连接
-3. 使用 `epsdk list-remote` 查看可用模块列表
-4. 确认模块与你当前 SDK 版本兼容
+1. 確認模組名稱拼寫正確（大小寫敏感）
+2. 檢查網路連線
+3. 使用 `epsdk list-remote` 查看可用模組列表
+4. 確認模組與你目前 SDK 版本相容
 
-### Windows PowerShell 执行策略
+### Windows PowerShell 執行策略
 
-如果 PowerShell 提示"无法加载文件...因为在此系统上禁止运行脚本"：
+如果 PowerShell 提示「無法加載檔案...因為在此系統上禁止運行腳本」：
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-## 下一個步驟
+## 下一步
 
-- [CLI 命令參考](cli-reference.md) - 了解所有命令行命令
-- [設定檔說明](configuration.md) - 詳細了解設定選項
+- [CLI 命令參考](cli-reference.md) - 了解所有命令列命令
+- [配置檔案說明](configuration.md) - 详细了解配置選項

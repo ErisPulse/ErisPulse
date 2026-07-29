@@ -1,134 +1,82 @@
 # ErisPulse ドキュメント
 
-ErisPulse は、アダプターを介してさまざまなプラットフォームと相互作用し、拡張可能な多プラットフォームのメッセージ処理フレームワークです。機能拡張に柔軟なモジュールシステムを提供します。
+ErisPulse は、アダプタを通じて異なるプラットフォームと対話できる拡張可能なマルチプラットフォームメッセージ処理フレームワークであり、機能拡張のために柔軟なモジュールシステムを提供します。
 
-> 用語が理解できない場合は、[用語集](terminology.md)を参照して分かりやすい説明をご覧ください。
+> **初めて使う？** [5分で始める](docs/ja/quick-start.md)を直接見てください —— インストールから最初のロボットの実行まで、一連の流れを完結します。
+>
+> 理解できない用語がある場合、[用語集](terminology.md)を参照してください。
 
-## ドキュメントナビゲーション
+---
 
-### クイックスタート
+## お好みの学習経路を選択
 
-- [クイックスタートガイド](quick-start.md) - ErisPulse のインストールと実行の入門ガイド
+目的に応じて、対応する学習経路を選択してください。各経路は、浅い内容から深い内容へと並べられています。
 
-### アーキテクチャ概要
+### 一、ロボットを使いたい
 
-- [アーキテクチャ概要](architecture.md) - サンプル画像を用いた SDK のコアアーキテクチャ、初期化プロセス、イベント処理、およびライフサイクルの理解
+ロボットを動かし、モジュールをインストールし、設定を行います。
 
-### 初心者向け
+| 進捗 | ドキュメント | 説明 |
+|------|------|------|
+| **① 上手** | [5分で始める](docs/ja/quick-start.md) | インストール、初期化、実行 —— 唯一の出発点 |
+| ② 深入 | [最初のロボットを作成する](getting-started/first-bot.md) | 最初のコマンドハンドラの作成 |
+| ③ 概念 | [基本概念](getting-started/basic-concepts.md) | アダプタ/モジュール/イベントの設計を理解する |
+| ④ 実践 | [一般的なタスクの例](getting-started/common-tasks.md) | ストレージ、タイマー、権限制御 |
+| 参考 | [設定ファイルの説明](user-guide/configuration.md) · [CLIコマンド](user-guide/cli-reference.md) · [デプロイガイド](user-guide/deployment.md) | 必要に応じて参照 |
+| 参考 | [プラットフォーム特性ガイド](platform-guide/README.md) | 各プラットフォーム（雲湖/QQ/Telegram…）の違い |
 
-ErisPulse を初めて使用する場合は、以下の順序で読むことをお勧めします：
+### 二、モジュール/アダプタを開発したい
 
-1. [入門ガイド概要](getting-started/README.md)
-2. [最初のロボットの作成](getting-started/first-bot.md)
-3. [基本概念](getting-started/basic-concepts.md)
-4. [イベント処理の入門](getting-started/event-handling.md)
-5. [一般的なタスクの例](getting-started/common-tasks.md)
+ErisPulse 用に配布可能な拡張を書きます。
 
-### ユーザー使用ガイド
+| タイプ | 入門 | 進階 |
+|------|------|------|
+| **モジュール開発**（推奨） | [モジュール開発の入門](developer-guide/modules/getting-started.md) | [基本概念](developer-guide/modules/core-concepts.md) · [Eventラッパークラス](developer-guide/modules/event-wrapper.md) · [ベストプラクティス](developer-guide/modules/best-practices.md) |
+| **アダプタ開発** | [アダプタ開発の入門](developer-guide/adapters/getting-started.md) | [基本概念](developer-guide/adapters/core-concepts.md) · [SendDSLの詳細](developer-guide/adapters/send-dsl.md) · [イベント変換器](developer-guide/adapters/converter.md) · [ベストプラクティス](developer-guide/adapters/best-practices.md) |
+| **技術標準** | [標準規格の概要](standards/README.md) | アダプタ開発で遵守すべき [セッションタイプ](standards/session-types.md) · [イベント変換](standards/event-conversion.md) · [送信メソッド](standards/send-method-spec.md) · [APIレスポンス](standards/api-response.md) · [リクエスト操作](standards/request-action-spec.md) 規格 |
+| **公開** | [公開とモジュールストア](developer-guide/publishing.md) |作品を PyPI とモジュールストアに公開する |
 
-- [インストールと設定](user-guide/installation.md)
-- [CLI コマンドリファレンス](user-guide/cli-reference.md)
-- [設定ファイルの説明](user-guide/configuration.md)
-- [デプロイガイド](user-guide/deployment.md)
+### 三、フレームワークの内部原理を深く理解したい
 
-### デベロッパー向けガイド
+フレームワークの内部がどのように動作するかを理解します。
 
-#### モジュール開発
+| ドキュメント | 説明 |
+|------|------|
+| [アーキテクチャの概要](architecture.md) | 可視化された図表：コアアーキテクチャ、初期化プロセス、イベント処理、ライフサイクル |
+| [起動プロセスと手動制御](advanced/startup.md) | 起動プロセスの分解、各段階の手動駆動、ロード失敗の診断 |
+| [イベントシステム](api-reference/event-system.md) | 5つのイベントタイプの完全なAPI |
+| [アダプタシステム](api-reference/adapter-system.md) | アダプタの登録、起動/停止、API呼び出し |
+| [コアモジュール](api-reference/core-modules.md) | ストレージ / 設定 / ロガー / ルーターなどの基本機能 |
+| [ライフサイクル管理](advanced/lifecycle.md) · [遅延ロード](advanced/lazy-loading.md) · [ルーティングシステム](advanced/router.md) | 内部サブシステム |
+| [Conversationマルチホップ対話](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQLビルダー](advanced/sql-builder.md) · [HTTPクライアント](advanced/http-client.md) · [国際化](advanced/i18n.md) | 高度なツール |
+| [Dashboard管理パネル](advanced/dashboard-view.md) | Web管理画面の接続 |
 
-- [モジュール開発の入門](developer-guide/modules/getting-started.md)
-- [モジュールのコアコンセプト](developer-guide/modules/core-concepts.md)
-- [Event 包装クラスの詳細](developer-guide/modules/event-wrapper.md)
-- [モジュール開発のベストプラクティス](developer-guide/modules/best-practices.md)
-
-#### アダプター開発
-
-- [アダプター開発の入門](developer-guide/adapters/getting-started.md)
-- [アダプターのコアコンセプト](developer-guide/adapters/core-concepts.md)
-- [SendDSL の詳細](developer-guide/adapters/send-dsl.md)
-- [アダプター開発のベストプラクティス](developer-guide/adapters/best-practices.md)
-
-#### リリース
-
-- [リリースとモジュールストアガイド](developer-guide/publishing.md) - モジュールやアダプターを ErisPulse モジュールストアに公開する方法
-
-### プラットフォーム機能ガイド
-
-- [プラットフォーム機能説明](platform-guide/README.md)
-- [雲湖プラットフォーム機能](platform-guide/yunhu.md)
-- [Telegram プラットフォーム機能](platform-guide/telegram.md)
-- [OneBot11 プラットフォーム機能](platform-guide/onebot11.md)
-- [OneBot12 プラットフォーム機能](platform-guide/onebot12.md)
-- [メールプラットフォーム機能](platform-guide/email.md)
-
-### API リファレンス
-
-- [コアモジュール API](api-reference/core-modules.md)
-- [イベントシステム API](api-reference/event-system.md)
-- [アダプターシステム API](api-reference/adapter-system.md)
-
-### 技術標準
-
-- [イベント変換標準](standards/event-conversion.md)
-- [API レスポンス標準](standards/api-response.md)
-- [送信メソッド規格](standards/send-method-spec.md)
-
-### 高度なトピック
-
-- [起動プロセスと手動制御](advanced/startup.md) - 起動プロセスの分解と完全な手動起動
-- [遅延ロードシステム](advanced/lazy-loading.md)
-- [ライフサイクル管理](advanced/lifecycle.md)
-- [ルーティングシステム](advanced/router.md)
-- [MessageBuilder の詳細](advanced/message-builder.md)
-- [セッション型システム](advanced/session-types.md)
-- [Conversation 多段対話](advanced/conversation.md)
-
-### AI支援開発
-
-- [AI支援開発](ai-support/README.md)
-
-### スタイルガイド
-
-- [ドキュメントスタイルガイド](styleguide/docstring.md)
+---
 
 ## 開発方法
 
-ErisPulse は、2 つの開発方法をサポートしています：
+ErisPulse は2種類の開発方法をサポートしています：
 
-### 1. モジュール開発（推奨）
+- **モジュール開発（推奨）**：独立したモジュールパッケージを作成し、パッケージマネージャーでインストールすることで、配布や管理が容易になります。
+- **埋め込み開発**：プロジェクト内で直接ハンドラを書く方法で、迅速なプロトタイプに適しています。詳しくは [5分で始める](docs/ja/quick-start.md) を参照してください。
 
-独立したモジュールパッケージを作成し、パッケージマネージャーを使ってインストールして使用します。この方法は、公開される機能の配布と管理に便利です。
+## その他
 
-### 2. インライン開発
+- [ドキュメントスタイルガイド](styleguide/docstring.md) — ドキュメントを寄稿する際の書き方の規範
+- [AI支援開発](ai-support/README.md) — AIプログラミングアシスタントが使えるプロジェクトのプロンプト
 
-ErisPulse のコードをプロジェクトに直接埋め込み、独立したモジュールを作成する必要はありません。この方法は、迅速なプロトタイピングやプロジェクト内専用機能に適しています。
+## ヘルプを得る
 
-例：
-
-```python
-# 直接埋め込み使用
-import asyncio
-from ErisPulse import sdk
-from ErisPulse.Core.Event import command
-
-# コマンドハンドラの登録
-@command("hello")
-async def hello_handler(event):
-    await event.reply("こんにちは！")
-
-# SDK を実行し、維持 | 異スレッド環境で実行する必要があります
-asyncio.run(sdk.run(keep_running=True))
-```
-
-## ヘルプの取得
-
-- GitHub リポジトリ: [https://github.com/ErisPulse/ErisPulse](https://github.com/ErisPulse/ErisPulse)
-- 問題報告: Issue を送信
-- 技術的な議論: Discussions をご覧ください
+- GitHubリポジトリ: [https://github.com/ErisPulse/ErisPulse](https://github.com/ErisPulse/ErisPulse)
+- 問題報告: Issueを送信
+- 技術的な議論: Discussionsを参照
 
 ## 関連リンク
 
-- [OneBot12 標準](https://12.onebot.dev/)
+- [OneBot12標準](https://12.onebot.dev/)
 - [雲湖公式ドキュメント](https://www.yhchat.com/document/)
 - [Telegram Bot API](https://core.telegram.org/bots/api)
+
+---
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | **日本語** | [Русский](README.ru.md)

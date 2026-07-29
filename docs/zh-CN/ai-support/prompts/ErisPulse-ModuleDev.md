@@ -384,7 +384,9 @@ flowchart TD
 
 # 快速开始
 
-> 遇到不理解的术语？查看 [术语表](terminology.md) 获取通俗易懂的解释。
+> **这是你的第一步。** 用 5 分钟从零跑起一个 ErisPulse 机器人。
+>
+> 遇到不理解的术语?查看 [术语表](terminology.md)。
 
 ## 安装 ErisPulse
 
@@ -557,10 +559,22 @@ level = "INFO"
 
 ## 下一步
 
-- [入门指南总览](getting-started/README.md) - 了解 ErisPulse 的基本概念
-- [创建第一个机器人](getting-started/first-bot.md) - 创建一个简单的机器人
-- [用户使用指南](user-guide/) - 深入了解配置和模块管理
-- [开发者指南](developer-guide/) - 开发自定义模块和适配器
+机器人跑起来后，你可以按需继续：
+
+**想了解框架怎么运作?**
+- [基础概念](getting-started/basic-concepts.md) — 适配器 / 模块 / 事件 的设计
+- [架构概览](architecture.md) — 可视化架构图
+
+**想实现更多功能?**
+- [常见任务示例](getting-started/common-tasks.md) — 存储、定时任务、权限控制
+- [事件处理入门](getting-started/event-handling.md) — 消息、通知、请求处理
+
+**想开发自己的模块 / 适配器?**
+- [模块开发入门](developer-guide/modules/getting-started.md)
+- [适配器开发入门](developer-guide/adapters/getting-started.md)
+
+**按需查阅:**
+- [配置文件说明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md)
 
 
 
@@ -568,39 +582,11 @@ level = "INFO"
 
 # 创建第一个机器人
 
-本指南将带你从零开始创建一个简单的 ErisPulse 机器人。
+本指南在 [5 分钟快速开始](../quick-start.md) 的基础上，带你编写第一个命令处理器并理解运行机制。
 
-## 第一步：创建项目
+> 如果你还没装好 ErisPulse、初始化项目，请先完成 [快速开始](../quick-start.md) 的「安装」「初始化项目」「运行项目」三步。
 
-使用 CLI 工具初始化项目：
-
-```bash
-# 交互式初始化
-epsdk init
-
-# 或者快速初始化
-epsdk init -q -n my_first_bot
-```
-
-按照提示完成配置，建议选择：
-- 项目名称：my_first_bot
-- 日志级别：INFO
-- 服务器：默认配置
-- 适配器：选择你需要的平台（如 Yunhu）
-
-## 第二步：查看项目结构
-
-初始化后的项目结构：
-
-```
-my_first_bot/
-├── config/
-│   └── config.toml
-├── main.py
-└── requirements.txt
-```
-
-## 第三步：编写第一个命令
+## 第一步：编写第一个命令
 
 打开 `main.py`，编写一个简单的命令处理器：
 
@@ -649,7 +635,7 @@ async def main():
 
 > 除了 `run()` 的两种模式，还有 `init()`/`uninit()` 手动控制生命周期、单独启停适配器/路由等更精细的方式，见 [启动流程与手动控制](../advanced/startup.md)。
 
-## 第四步：运行机器人
+## 第二步：运行机器人
 
 ```bash
 # 普通运行
@@ -659,7 +645,7 @@ epsdk run main.py
 epsdk run main.py --reload
 ```
 
-## 第五步：测试机器人
+## 第三步：测试机器人
 
 在你的聊天平台中发送命令：
 
@@ -8662,6 +8648,31 @@ module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.mo
 | `objs` (`dict`) | 名称 → 对象（适配器类 / 模块包装对象） |
 | `enabled` (`list[str]`) | 被启用的名称（配置中未禁用） |
 | `disabled` (`list[str]`) | 被禁用的名称 |
+
+#### 加载失败时的诊断信息
+
+当某个模块/适配器在加载或初始化阶段抛出异常时，框架会跳过该组件并继续加载其他组件，同时输出**用户代码帧摘要**，让你在默认 INFO 级别下即可定位出错位置，无需手动重开 DEBUG：
+
+```
+[ERROR] [ModuleLoader] 从 entry-point 加载模块 MyModule 失败，已跳过: 'NoneType' object has no attribute 'platform'
+  → MyModule/Core.py:42 in on_load
+      adapter = sdk.platform
+  → AttributeError: 'NoneType' object has no attribute 'platform'
+  → 提示: 将日志级别提高到 DEBUG 可查看完整堆栈；检查模块 MyModule 的实现代码
+```
+
+诊断信息通过 `ErisPulse.runtime.diagnostics` 模块生成，会自动过滤掉框架内部帧，只保留你的代码帧。如需在自定义加载逻辑中复用：
+
+```python
+from ErisPulse.runtime import log_diagnostic
+
+try:
+    risky_init()
+except Exception as e:
+    log_diagnostic(e)  # 自动提取用户代码帧并写入 ERROR 日志
+```
+
+该模块还提供 `extract_user_frame()`（返回结构化帧信息）和 `format_diagnostic_block()`（返回多行文本）两个底层函数。
 
 ### 3. 注册层：register_to_manager
 
