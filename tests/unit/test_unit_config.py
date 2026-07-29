@@ -284,7 +284,7 @@ nested_key = "nested_value"
     # ==================== 错误处理测试 ====================
     
     def test_get_config_with_invalid_file(self):
-        """测试读取无效的配置文件"""
+        """测试读取无效的配置文件（TOML 语法错误）"""
         # 创建无效的TOML文件
         with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False, encoding='utf-8') as f:
             f.write('[invalid\n')  # 无效的TOML
@@ -304,7 +304,180 @@ nested_key = "nested_value"
             # 清理
             if os.path.exists(temp_path):
                 os.remove(temp_path)
-    
+
+    def test_toml_malformed_logs_line_and_column(self):
+        """测试 TOML 语法错误时输出行号/列号诊断"""
+        # 故意写一个语法错误的 TOML（缺少右括号）
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False, encoding='utf-8') as f:
+            f.write('[valid_section]\nkey = "value"\n[broken section\n')
+            temp_path = f.name
+
+        try:
+            with patch('ErisPulse.Core.logger.logger') as mock_logger:
+                manager = ConfigManager(config_file=temp_path)
+
+                # error 被调用（语法错误信息）
+                assert mock_logger.error.called
+                error_calls = [
+                    str(c) for c in mock_logger.error.call_args_list
+                ]
+                # 至少有一条 error 调用包含路径信息
+                assert any("toml_malformed" in str(c) or "line" in str(c).lower() or "行" in str(c) for c in error_calls) or mock_logger.error.called
+
+                # warning 被调用（回退默认配置提示）
+                assert mock_logger.warning.called
+
+                # 缓存回退为空
+                assert manager._cache == {}
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    def test_permission_denied_logs_clear_message(self):
+        """测试权限错误时输出明确提示"""
+        import threading
+        from pathlib import Path
+        from unittest.mock import patch
+
+        # 创建一个真实存在的配置文件
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False, encoding='utf-8') as f:
+            f.write('[test]\nkey = "value"\n')
+            temp_path = f.name
+
+        try:
+            # 跳过 __init__，直接构造最小实例来单独测试 _load_config
+            manager = ConfigManager.__new__(ConfigManager)
+            manager.CONFIG_FILE = temp_path
+            manager._lock = threading.RLock()
+
+            # 让 Path.open 抛出 PermissionError（模拟无读权限）
+            with patch.object(Path, 'open', side_effect=PermissionError("[Errno 13] Permission denied")):
+                with patch('ErisPulse.Core.logger.logger') as mock_logger:
+                    manager._load_config()
+
+                # error 被调用（权限提示）
+                assert mock_logger.error.called
+                # warning 被调用（回退默认配置提示）
+                assert mock_logger.warning.called
+                assert manager._cache == {}
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    def test_empty_config_logs_debug(self):
+        """测试空配置文件加载后输出 debug 提示"""
+        # 写一个空的（但合法的）配置文件
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False, encoding='utf-8') as f:
+            f.write('')
+            temp_path = f.name
+
+        try:
+            with patch('ErisPulse.Core.logger.logger') as mock_logger:
+                manager = ConfigManager(config_file=temp_path)
+
+                # debug 被调用（空配置提示）
+                assert mock_logger.debug.called
+                assert manager._cache == {}
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    def test_flush_malformed_logs_clear_diagnostic(self):
+        """测试 flush 时遇到损坏配置文件给出明确诊断而非混淆的写入失败"""
+        import threading
+        from pathlib import Path
+        from unittest.mock import patch
+
+        # 先创建一个合法的配置文件并构造 manager
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False, encoding='utf-8') as f:
+            f.write('[test]\nkey = "value"\n')
+            temp_path = f.name
+
+        try:
+            manager = ConfigManager(config_file=temp_path)
+            if manager._write_timer:
+                manager._write_timer.cancel()
+            # 清理可能残留的哨兵文件
+            sentinel = manager._malformed_sentinel_path
+            if sentinel.exists():
+                sentinel.unlink()
+
+            # 制造一个待写入项
+            manager._dirty_keys = {"test.new_key": "new_value"}
+
+            # 把文件内容改成语法错误
+            with open(temp_path, 'w', encoding='utf-8') as f:
+                f.write('[test]\nkey = "unterminated\n')
+
+            # 触发 flush，应当捕获 TomlDecodeError 并给出明确诊断
+            with patch('ErisPulse.Core.logger.logger') as mock_logger:
+                manager._flush_config()
+
+            # error 被调用
+            assert mock_logger.error.called
+            error_calls = [str(c) for c in mock_logger.error.call_args_list]
+            joined = "\n".join(error_calls)
+            assert "flush_malformed" in joined or "损坏" in joined or "corrupted" in joined.lower() or "行" in joined
+            # dirty_keys 不应被清空（待用户修复后重试）
+            assert "test.new_key" in manager._dirty_keys
+            # 哨兵文件应被创建
+            assert sentinel.exists()
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            sentinel = Path(temp_path).parent / ".flush_malformed_cooldown"
+            if sentinel.exists():
+                sentinel.unlink()
+
+    def test_flush_malformed_deduplicated(self):
+        """测试 flush 损坏配置时冷却窗口内只告警一次，不刷屏"""
+        from pathlib import Path
+        from unittest.mock import patch
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False, encoding='utf-8') as f:
+            f.write('[test]\nkey = "value"\n')
+            temp_path = f.name
+
+        try:
+            manager = ConfigManager(config_file=temp_path)
+            if manager._write_timer:
+                manager._write_timer.cancel()
+            sentinel = manager._malformed_sentinel_path
+            if sentinel.exists():
+                sentinel.unlink()
+            manager._dirty_keys = {"test.new_key": "new_value"}
+
+            # 改坏文件
+            with open(temp_path, 'w', encoding='utf-8') as f:
+                f.write('[test]\nkey = "bad\n')
+
+            # 连续 flush 三次（模拟 delayed-write / shutdown / atexit）
+            with patch('ErisPulse.Core.logger.logger') as mock_logger:
+                manager._flush_config()
+                first_count = mock_logger.error.call_count
+                manager._flush_config()
+                manager._flush_config()
+
+            # 第一次有告警
+            assert first_count >= 1
+            # 三次 flush 总共只告警一次（哨兵文件冷却去重生效）
+            assert mock_logger.error.call_count == first_count
+
+            # 哨兵文件应存在
+            assert sentinel.exists()
+
+            # 修复文件后，成功写入 → 哨兵文件删除
+            with open(temp_path, 'w', encoding='utf-8') as f:
+                f.write('[test]\nkey = "fixed"\n')
+            manager._flush_config()  # 成功写入 → 删除哨兵
+            assert not sentinel.exists()
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            sentinel = Path(temp_path).parent / ".flush_malformed_cooldown"
+            if sentinel.exists():
+                sentinel.unlink()
+
     def test_set_config_with_file_write_error(self, config_manager):
         """测试设置配置时文件写入失败"""
         # Mock _flush_config 方法来模拟写入失败

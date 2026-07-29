@@ -19,6 +19,7 @@ class MyAdapter(BaseAdapter):
     - emit_meta() 一行发送 meta 事件
     - make_response() / make_error() 构造标准化响应
     - _resolve_account() 自动解析多账户
+    - Api 内部类提供跨平台标准动作（get_user_info / get_group_list 等）
     """
 
     # 全局配置类以嵌套类形式声明（需 @dataclass 装饰），框架自动识别 ConfigClass
@@ -147,6 +148,29 @@ class MyAdapter(BaseAdapter):
                 )
 
             return self._create_task(_do())
+
+    class Api(BaseAdapter.Api):
+        """
+        标准 API 动作 DSL
+
+        提供跨平台的 OneBot12 标准动作（get_user_info / get_group_info 等）。
+        默认实现委托给 call_api，适配器可覆盖单个方法映射到平台原生 API。
+        平台扩展动作通过 call("prefix.action", **params) 调用。
+        """
+
+        async def get_user_info(self, user_id: str) -> dict:
+            """
+            获取用户信息（覆盖示例）
+
+            将平台原生用户信息格式映射到 OneBot12 标准字段。
+            如不覆盖，默认实现会调用 call_api("get_user_info", user_id=user_id)。
+            """
+            result = await self._adapter.call_api(
+                "get_user_info",
+                user_id=user_id,
+                account_id=self._account_id,
+            )
+            return result
 
     class Send(SendDSL):
         """

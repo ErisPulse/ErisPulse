@@ -949,6 +949,326 @@ class RequestDSL:
         }
 
 
+class ApiDSL:
+    """
+    标准 API 动作 DSL 基类
+
+    提供 OneBot12 标准动作（get_user_info / get_group_info 等）的强类型方法，
+    模块开发者只需面向标准接口编程，由适配器负责映射到平台原生 API。
+
+    与 SendDSL（消息发送）、RequestDSL（请求操作）并行，覆盖 OneBot12
+    标准动作中的「信息查询 / 状态变更 / 消息管理 / 文件操作」四类操作。
+
+    {!--< tips >!--}
+    1. 标准方法默认委托给 ``adapter.call_api(action_name, ...)``，适配器可按需覆盖
+    2. 使用 ``adapter.Api.Using("bot1").get_user_info("123")`` 指定 Bot 账号
+    3. 平台扩展动作通过 ``call("prefix.action", **params)`` 调用
+    4. 所有方法返回标准 API 响应格式（status / retcode / data / message_id / message）
+    5. 适配器可覆盖单个标准方法以映射到平台 API，无需全部实现
+    {!--< /tips >!--}
+    """
+
+    def __init__(
+        self,
+        adapter: "BaseAdapter",
+        account_id: str | None = None,
+    ):
+        """
+        初始化标准 API 动作 DSL
+
+        :param adapter: 所属适配器实例
+        :param account_id: 执行操作的 Bot 账号（可选）
+        """
+        self._adapter = adapter
+        self._account_id = account_id
+
+    def Using(self, account_id: str | int) -> "Self":
+        """
+        指定执行操作的 Bot 账号
+
+        :param account_id: 账号标识
+        :return: 新的 ApiDSL 实例
+
+        :example:
+        >>> info = await adapter.myplatform.Api.Using("bot1").get_user_info("123")
+        """
+        return self.__class__(self._adapter, str(account_id))
+
+    @property
+    def api_context(self) -> dict:
+        """
+        获取当前 API 操作上下文
+
+        :return: 包含 account_id 的字典
+        """
+        return {
+            "account_id": self._account_id,
+        }
+
+    def _merge_context(self, params: dict) -> dict:
+        """
+        将 api_context 合并到参数字典
+
+        :param params: 业务参数
+        :return: 合并后的参数字典
+        """
+        merged = dict(params)
+        merged.update(self.api_context)
+        return merged
+
+    # ==================== 用户相关动作 ====================
+
+    async def get_self_info(self) -> dict[str, Any]:
+        """
+        获取机器人自身信息
+
+        :return: 标准响应，data 包含 user_id / user_name / user_displayname
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_self_info()
+        >>> my_name = result["data"]["user_name"]
+        """
+        return await self._adapter.call_api(
+            "get_self_info", **self._merge_context({})
+        )
+
+    async def get_user_info(self, user_id: str) -> dict[str, Any]:
+        """
+        获取用户信息
+
+        :param user_id: 用户 ID（可以是好友，也可以是陌生人）
+        :return: 标准响应，data 包含 user_id / user_name / user_displayname / user_remark
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_user_info("123456")
+        >>> user_name = result["data"]["user_name"]
+        """
+        return await self._adapter.call_api(
+            "get_user_info", **self._merge_context({"user_id": str(user_id)})
+        )
+
+    async def get_friend_list(self) -> dict[str, Any]:
+        """
+        获取好友列表
+
+        :return: 标准响应，data 为好友信息列表
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_friend_list()
+        >>> friends = result["data"]
+        """
+        return await self._adapter.call_api(
+            "get_friend_list", **self._merge_context({})
+        )
+
+    # ==================== 群组相关动作 ====================
+
+    async def get_group_info(self, group_id: str) -> dict[str, Any]:
+        """
+        获取群信息
+
+        :param group_id: 群 ID
+        :return: 标准响应，data 包含 group_id / group_name
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_group_info("123456")
+        >>> group_name = result["data"]["group_name"]
+        """
+        return await self._adapter.call_api(
+            "get_group_info", **self._merge_context({"group_id": str(group_id)})
+        )
+
+    async def get_group_list(self) -> dict[str, Any]:
+        """
+        获取群列表
+
+        :return: 标准响应，data 为群信息列表
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_group_list()
+        >>> groups = result["data"]
+        """
+        return await self._adapter.call_api(
+            "get_group_list", **self._merge_context({})
+        )
+
+    async def get_group_member_info(
+        self, group_id: str, user_id: str
+    ) -> dict[str, Any]:
+        """
+        获取群成员信息
+
+        :param group_id: 群 ID
+        :param user_id: 用户 ID
+        :return: 标准响应，data 包含 user_id / user_name / user_displayname
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_group_member_info("123", "456")
+        >>> member = result["data"]
+        """
+        return await self._adapter.call_api(
+            "get_group_member_info",
+            **self._merge_context({"group_id": str(group_id), "user_id": str(user_id)})
+        )
+
+    async def get_group_member_list(self, group_id: str) -> dict[str, Any]:
+        """
+        获取群成员列表
+
+        :param group_id: 群 ID
+        :return: 标准响应，data 为群成员信息列表
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_group_member_list("123456")
+        >>> members = result["data"]
+        """
+        return await self._adapter.call_api(
+            "get_group_member_list",
+            **self._merge_context({"group_id": str(group_id)})
+        )
+
+    async def set_group_name(self, group_id: str, group_name: str) -> dict[str, Any]:
+        """
+        设置群名称
+
+        :param group_id: 群 ID
+        :param group_name: 新群名称
+        :return: 标准响应
+
+        :example:
+        >>> await adapter.myplatform.Api.set_group_name("123456", "新群名")
+        """
+        return await self._adapter.call_api(
+            "set_group_name",
+            **self._merge_context({"group_id": str(group_id), "group_name": group_name})
+        )
+
+    async def leave_group(self, group_id: str) -> dict[str, Any]:
+        """
+        退出群
+
+        :param group_id: 群 ID
+        :return: 标准响应
+
+        :example:
+        >>> await adapter.myplatform.Api.leave_group("123456")
+        """
+        return await self._adapter.call_api(
+            "leave_group", **self._merge_context({"group_id": str(group_id)})
+        )
+
+    # ==================== 消息管理动作 ====================
+
+    async def delete_message(self, message_id: str) -> dict[str, Any]:
+        """
+        撤回 / 删除消息
+
+        :param message_id: 消息 ID
+        :return: 标准响应
+
+        :example:
+        >>> await adapter.myplatform.Api.delete_message("msg_123456")
+        """
+        return await self._adapter.call_api(
+            "delete_message",
+            **self._merge_context({"message_id": str(message_id)})
+        )
+
+    # ==================== 文件相关动作 ====================
+
+    async def upload_file(
+        self,
+        *,
+        type: str,
+        name: str,
+        url: str | None = None,
+        path: str | None = None,
+        data: bytes | None = None,
+        headers: dict[str, str] | None = None,
+        sha256: str | None = None,
+    ) -> dict[str, Any]:
+        """
+        上传文件
+
+        :param type: 上传方式（``url`` / ``path`` / ``data``）
+        :param name: 文件名（如 ``foo.jpg``）
+        :param url: 文件 URL（``type="url"`` 时必须传入）
+        :param path: 文件路径（``type="path"`` 时必须传入）
+        :param data: 文件数据（``type="data"`` 时必须传入）
+        :param headers: 下载 URL 时附加的 HTTP 请求头（可选）
+        :param sha256: 文件数据的 SHA256 校验和（可选）
+        :return: 标准响应，data 包含 file_id
+
+        :example:
+        >>> result = await adapter.Api.upload_file(
+        ...     type="url", name="logo.jpg", url="https://example.com/logo.jpg"
+        ... )
+        >>> file_id = result["data"]["file_id"]
+        """
+        params: dict[str, Any] = {"type": type, "name": name}
+        if url is not None:
+            params["url"] = url
+        if path is not None:
+            params["path"] = path
+        if data is not None:
+            params["data"] = data
+        if headers is not None:
+            params["headers"] = headers
+        if sha256 is not None:
+            params["sha256"] = sha256
+        return await self._adapter.call_api(
+            "upload_file", **self._merge_context(params)
+        )
+
+    async def get_file(
+        self, file_id: str, type: str = "url"
+    ) -> dict[str, Any]:
+        """
+        获取文件
+
+        :param file_id: 文件 ID
+        :param type: 获取方式（``url`` / ``path`` / ``data``），默认 ``url``
+        :return: 标准响应，data 包含 name / url 或 path 或 data
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_file("file_abc", "url")
+        >>> download_url = result["data"]["url"]
+        """
+        return await self._adapter.call_api(
+            "get_file",
+            **self._merge_context({"file_id": str(file_id), "type": type})
+        )
+
+    # ==================== 通用扩展动作 ====================
+
+    async def call(self, action: str, **params: Any) -> dict[str, Any]:
+        """
+        调用平台扩展动作（逃生舱）
+
+        用于调用 OneBot12 标准之外的平台扩展动作。
+        建议使用 ``{prefix}.{action}`` 命名（如 ``telegram.send_sticker``），
+        遵循 OneBot12 扩展规则。
+
+        :param action: 动作名称（标准动作名或 ``{prefix}.{action}`` 扩展动作名）
+        :param params: 动作参数
+        :return: 标准响应格式
+
+        :example:
+        >>> # 调用平台扩展动作
+        >>> result = await adapter.myplatform.Api.call(
+        ...     "telegram.send_sticker", sticker_id="CAACAgIAAxkBAA..."
+        ... )
+        >>>
+        >>> # 也可用于调用标准动作（等价于直接调用对应方法）
+        >>> result = await adapter.myplatform.Api.call(
+        ...     "get_user_info", user_id="123"
+        ... )
+        """
+        return await self._adapter.call_api(
+            action, **self._merge_context(params)
+        )
+
+
 class BaseAdapter(ABC):
     """
     适配器基类
@@ -989,6 +1309,22 @@ class BaseAdapter(ABC):
         3. 通过 ``self._adapter.call_api()`` 调用平台 API
         4. 通过 ``self._request_id`` 获取请求标识
         5. 通过 ``self._account_id`` 获取 Bot 账号
+        {!--< /tips >!--}
+        """
+
+        ...
+
+    class Api(ApiDSL):
+        """
+        标准 API 动作 DSL 实现
+
+        提供跨平台的 OneBot12 标准动作接口（信息查询、群管理、消息撤回、文件操作等）。
+
+        {!--< tips >!--}
+        1. 默认实现委托给 ``adapter.call_api(action_name, ...)``，零配置可用
+        2. 适配器可覆盖单个标准方法以映射到平台原生 API
+        3. 平台扩展动作通过 ``call("prefix.action", **params)`` 调用
+        4. 使用 ``adapter.Api.Using("bot1")`` 指定 Bot 账号
         {!--< /tips >!--}
         """
 
@@ -1101,9 +1437,11 @@ class BaseAdapter(ABC):
             self.sdk = sdk
             self.logger = sdk.logger.get_child(self.__class__.__name__, relative=False)
 
-        # Send/Request 在类上是 type[SendDSL]，实例化后替换为实例。pyright 无法识别这种“实例属性覆盖嵌套类属性”的模式，故显式 cast。
+        # Send/Request/Api 在类上是嵌套类，实例化后替换为实例。
+        # pyright 无法识别这种"实例属性覆盖嵌套类属性"的模式，故显式 cast。
         self.Send = cast("SendDSL", self.__class__.Send(self))  # pyright: ignore[reportAttributeAccessIssue]
         self.Request = cast("RequestDSL", self.__class__.Request(self))  # pyright: ignore[reportAttributeAccessIssue]
+        self.Api = cast("ApiDSL", self.__class__.Api(self))  # pyright: ignore[reportAttributeAccessIssue]
 
         self._config_instance = None
         self._accounts_data = None
@@ -1625,6 +1963,7 @@ class BaseAdapter(ABC):
 
 
 __all__ = [
+    "ApiDSL",
     "BaseAdapter",
     "RequestDSL",
     "SendDSL",

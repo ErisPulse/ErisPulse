@@ -4,7 +4,7 @@ ErisPulse 基础模块
 提供平台适配器、模块、存储后端、路由和客户端的基类与抽象接口
 """
 
-from .adapter import SendDSL, RequestDSL, BaseAdapter
+from .adapter import ApiDSL, SendDSL, RequestDSL, BaseAdapter
 from .send_rules import SendContext
 from .send_builder import SendBuilder, BatchContext
 from .module import BaseModule
@@ -38,6 +38,7 @@ from .i18n_schema import (
 __all__ = [
     # 配置 Schema 别名（= BaseConfig）
     "AdapterConfig",
+    "ApiDSL",
     "BaseAdapter",
     "BaseClientWebSocket",
     "BaseConfig",

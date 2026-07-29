@@ -10,6 +10,8 @@ import warnings
 from unittest.mock import Mock, AsyncMock, patch
 from typing import Dict, Any
 
+from ErisPulse.Core.Bases import BaseAdapter
+from ErisPulse.Core.Event.wrapper import Event, _normalize_modifier
 from ErisPulse.Core.Event import (
     command, message, notice, request, meta,
     register_event_method, register_event_mixin,
@@ -1734,3 +1736,210 @@ class TestConversationConditionalCollect:
 
         assert len(filtered) == 1
         assert filtered[0]["key"] == "name"
+
+
+# ==================== send_chain / reply(via=) 测试 ====================
+
+
+class TestEventSendChainAndModifiers:
+    """send_chain() 方法与 reply(via=) 参数测试"""
+
+    @pytest.fixture
+    def modifier_adapter(self):
+        """注册一个带返回-self 修饰方法与 Board 发送方法的测试适配器"""
+
+        class _Send(BaseAdapter.Send):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self._expire = None
+                self._member = None
+
+            def Raw_ob12(self, message, **kwargs):
+                async def _do():
+                    return await self._adapter.call_api(
+                        endpoint="/send_message",
+                        message=self._apply_modifiers(message),
+                        expire=self._expire,
+                        member=self._member,
+                        **self.send_context,
+                        **kwargs,
+                    )
+                return asyncio.ensure_future(_do())
+
+            # 平台修饰方法：仅返回 self，无需任何装饰器
+            def Expire(self, seconds: int):
+                self._expire = seconds
+                return self
+
+            def ForMember(self, user_id: str):
+                self._member = user_id
+                return self
+
+            def Board(self, content: str, **kwargs):
+                return self.Raw_ob12([{"type": "board", "data": {"text": content}}], **kwargs)
+
+        class _Adapter(BaseAdapter):
+            _platform = "modifierplat"
+
+            class Send(_Send):
+                pass
+
+            def __init__(self):
+                super().__init__()
+                self.calls = []
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                record = {"endpoint": endpoint, "params": params}
+                self.calls.append(record)
+                return {
+                    "status": "ok",
+                    "retcode": 0,
+                    "data": record,
+                    "message_id": "mid_mod",
+                    "message": "",
+                }
+
+        inst = _Adapter()
+        saved = adapter._adapters.get("modifierplat")
+        adapter._adapters["modifierplat"] = inst
+        try:
+            yield inst
+        finally:
+            if saved is not None:
+                adapter._adapters["modifierplat"] = saved
+            else:
+                adapter._adapters.pop("modifierplat", None)
+
+    def _make_event(self, **kwargs):
+        data = {
+            "id": "evt_mod",
+            "type": "message",
+            "detail_type": "private",
+            "platform": "modifierplat",
+            "self": {"platform": "modifierplat", "user_id": "bot1", "account_id": "bot1"},
+            "message_id": "msg_mod",
+            "user_id": "u_sender",
+            "alt_message": "hi",
+        }
+        data.update(kwargs)
+        return Event(data)
+
+    # ---------- _normalize_modifier ----------
+
+    def test_normalize_modifier_string(self):
+        assert _normalize_modifier("Expire") == ("Expire", (), {})
+
+    def test_normalize_modifier_single_tuple(self):
+        assert _normalize_modifier(("AtAll",)) == ("AtAll", (), {})
+
+    def test_normalize_modifier_positional_args(self):
+        assert _normalize_modifier(("Expire", 3600)) == ("Expire", (3600,), {})
+        assert _normalize_modifier(("At", "a", "b")) == ("At", ("a", "b"), {})
+
+    def test_normalize_modifier_args_and_kwargs(self):
+        name, args, kwargs = _normalize_modifier(("Board", ("hi",), {"content_type": "md"}))
+        assert name == "Board"
+        assert args == ("hi",)
+        assert kwargs == {"content_type": "md"}
+
+    # ---------- send_chain ----------
+
+    def test_send_chain_returns_configured_chain(self, modifier_adapter):
+        """send_chain() 返回已设置 To/Using 的发送链"""
+        event = self._make_event()
+        chain = event.send_chain()
+        assert chain._target_id == "u_sender"
+        # account_id 来自 self.account_id
+        assert chain._account_id == "bot1"
+
+    @pytest.mark.asyncio
+    async def test_send_chain_with_platform_modifiers(self, modifier_adapter):
+        """send_chain() 支持平台专有修饰方法链式调用"""
+        event = self._make_event()
+        result = await event.send_chain().Expire(3600).Board("看板")
+        assert result["status"] == "ok"
+        assert result["data"]["params"]["expire"] == 3600
+        assert any(seg["type"] == "board" for seg in result["data"]["params"]["message"])
+
+    @pytest.mark.asyncio
+    async def test_send_chain_multiple_modifiers(self, modifier_adapter):
+        """send_chain() 支持连续多个修饰方法"""
+        event = self._make_event()
+        result = await (event.send_chain()
+                        .Expire(100)
+                        .ForMember("u_member")
+                        .Board("内容", content_type="markdown"))
+        params = result["data"]["params"]
+        assert params["expire"] == 100
+        assert params["member"] == "u_member"
+
+    @pytest.mark.asyncio
+    async def test_send_chain_builtin_modifiers(self, modifier_adapter):
+        """send_chain() 内置修饰方法（At/Reply）同样可用"""
+        event = self._make_event()
+        result = await event.send_chain().At("789").Reply("msg_x").Text("hi")
+        params = result["data"]["params"]
+        types = [seg["type"] for seg in params["message"]]
+        assert "mention" in types
+        assert "reply" in types
+
+    # ---------- reply(via=) ----------
+
+    @pytest.mark.asyncio
+    async def test_reply_with_modifiers(self, modifier_adapter):
+        """reply() 通过 via 参数应用平台修饰方法"""
+        event = self._make_event()
+        result = await event.reply("看板内容", method="Board",
+                                   via=[("Expire", 3600), ("ForMember", "u9")])
+        params = result["data"]["params"]
+        assert params["expire"] == 3600
+        assert params["member"] == "u9"
+        assert any(seg["type"] == "board" for seg in params["message"])
+
+    @pytest.mark.asyncio
+    async def test_reply_without_modifiers_backward_compat(self, modifier_adapter):
+        """无 via 时 reply() 行为不变（向后兼容）"""
+        event = self._make_event()
+        result = await event.reply("普通文本")
+        assert result["status"] == "ok"
+        params = result["data"]["params"]
+        # expire/member 未设置
+        assert params["expire"] is None
+        assert any(seg["type"] == "text" for seg in params["message"])
+
+    @pytest.mark.asyncio
+    async def test_reply_invalid_modifier_raises(self, modifier_adapter):
+        """reply() 遇到不存在的修饰方法应抛出 ValueError"""
+        event = self._make_event()
+        with pytest.raises(ValueError, match="不支持修饰方法"):
+            await event.reply("hi", method="Board", via=[("NotExist", 1)])
+
+    @pytest.mark.asyncio
+    async def test_reply_via_without_method_warns_and_proceeds(self, modifier_adapter):
+        """reply() 使用 via 但未指定 method 时不报错，警告后用默认 Text 发送"""
+        event = self._make_event()
+        # 不应抛出异常（某些平台默认方法可能支持这些修饰）
+        result = await event.reply("hi", via=[("Expire", 3600)])
+        assert result["status"] == "ok"
+        # 修饰方法状态仍被应用到链上
+        params = result["data"]["params"]
+        assert params["expire"] == 3600
+        # 默认用 Text 发送
+        assert any(seg["type"] == "text" for seg in params["message"])
+
+    @pytest.mark.asyncio
+    async def test_reply_mention_backward_compat(self, modifier_adapter):
+        """reply(method='Mention') 旧用法仍可用（向后兼容）"""
+        event = self._make_event()
+        result = await event.reply("hi", method="Mention")
+        # Mention → At(sender) + Text
+        params = result["data"]["params"]
+        types = [seg["type"] for seg in params["message"]]
+        assert "mention" in types
+        assert "text" in types

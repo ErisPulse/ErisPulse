@@ -382,15 +382,17 @@ If you find other terms in the documentation that you do not understand, feel fr
 
 ### 快速开始
 
-# Quick Start
+# Getting Started
 
-> Confused by unfamiliar terms? Check out the [Glossary](terminology.md) for clear explanations.
+> **This is your first step.** Get an ErisPulse bot up and running from scratch in 5 minutes.
+>
+> Confused about terms? Check the [Glossary](terminology.md).
 
-## Install ErisPulse
+## Installing ErisPulse
 
-### One-Click Installation Script (Recommended)
+### One-Click Install Script (Recommended)
 
-The installation script automatically detects your environment (Docker, Python, uv) and guides you to choose the most suitable installation method.
+The installation script automatically detects your environment (Docker, Python, uv) and guides you to select the best installation method for you.
 
 Windows (PowerShell):
 ```powershell
@@ -404,12 +406,12 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 The script will guide you through:
 
-- **Docker Installation** (recommended if Docker is detected): Choose image source (Docker Hub / GHCR), version channel (stable / pre-release), Dashboard management panel configuration, and port settings
-- **Traditional Installation**: Automatically create a virtual environment, select ErisPulse version, optionally install Dashboard management panel module
+- **Docker Installation** (Recommended when Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Prerelease), Dashboard configuration, port settings
+- **Traditional Installation**: Automatically create virtual environment, select ErisPulse version, optional Dashboard installation
 
 ### Using Docker
 
-The Docker image comes with the ErisPulse framework and Dashboard management panel pre-installed.
+The Docker image comes with the ErisPulse framework and Dashboard pre-installed.
 
 ```bash
 # Download docker-compose.yml
@@ -420,9 +422,9 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
-<summary>Unable to access Docker Hub?</summary>
+<summary>Docker Hub not available?</summary>
 
-Use the GitHub Container Registry image by modifying `docker-compose.yml` to use:
+Use the GitHub Container Registry image and modify the `image` in `docker-compose.yml`:
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -430,7 +432,7 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-After startup, access `http://<host>:8000/Dashboard` and log in using the set token.
+After starting, access `http://<host>:8000/Dashboard` and log in with the set token.
 
 ### Using pip
 
@@ -442,7 +444,7 @@ pip install ErisPulse
 
 If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse` for faster installation.
 
-## Initialize Project
+## Initializing Project
 
 ### Interactive Initialization (Recommended)
 
@@ -450,7 +452,7 @@ If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `u
 epsdk init
 ```
 
-This starts an interactive wizard guiding you through:
+This launches an interactive wizard to guide you through:
 - Project name setup
 - Log level configuration
 - Server configuration (host and port)
@@ -460,23 +462,23 @@ This starts an interactive wizard guiding you through:
 ### Quick Initialization
 
 ```bash
-# Quick mode with specified project name
+# Quick mode specifying project name
 epsdk init -q -n my_bot
 
-# Or just specify the project name
+# Or just specify project name
 epsdk init -n my_bot
 ```
 
 ### Manual Project Creation
 
-If you prefer to manually create a project:
+If you prefer to create the project manually:
 
 ```bash
 mkdir my_bot && cd my_bot
 epsdk init
 ```
 
-## Install Modules
+## Installing Modules
 
 ### Install via CLI
 
@@ -484,7 +486,7 @@ epsdk init
 epsdk install Yunhu AIChat
 ```
 
-### View Available Modules
+### List Available Modules
 
 ```bash
 epsdk list-remote
@@ -492,43 +494,44 @@ epsdk list-remote
 
 ### Interactive Installation
 
-Without specifying a package name, enter the interactive installation interface:
+Entering the interactive installation interface when package names are not specified:
 
 ```bash
 epsdk install
 ```
 
-## Run Project
+## Running Project
 
 ```bash
-# Normal execution
+# Normal run
 epsdk run main.py
 
-# Hot-reload mode (recommended for development)
+# Hot reload mode (recommended for development)
 epsdk run main.py --reload
 ```
 
-## Enable IDE Completion (Optional)
+## Enabling IDE Completion (Optional)
 
-ErisPulse dynamically discovers modules/adapters, and IDEs cannot auto-complete platform-specific methods by default. Run the following command to generate type stubs:
+ErisPulse dynamically discovers modules/adapters, so IDEs cannot autocomplete platform-specific methods by default.
+Run the following command to generate type stubs:
 
 ```bash
 epsdk types
 ```
 
-After generation, use the imported types as variable annotations to get precise completion (see [IDE Completion Guide](./getting-started/ide-completion.md)):
+After generation, use the imported types as type annotations to get accurate completion (see [IDE Completion Guide](getting-started/ide-completion.md)):
 
 ```python
 from _ep_types import Yunhu
 from ErisPulse import sdk
 
 adapter: Yunhu = sdk.adapter.get("yunhu")
-await adapter.Send.To("group", "123").Board(...)  # Auto-complete platform-specific methods
+await adapter.Send.To("group", "123").Board(...)  # Autocomplete platform-specific methods
 ```
 
 ## Project Structure
 
-The initialized project structure:
+The project structure after initialization:
 
 ```
 my_bot/
@@ -556,49 +559,33 @@ level = "INFO"
 
 ## Next Steps
 
-- [Getting Started Overview](getting-started/README.md) - Understand the basic concepts of ErisPulse
-- [Create Your First Bot](getting-started/first-bot.md) - Create a simple bot
-- [User Guide](user-guide/) - Learn more about configuration and module management
-- [Developer Guide](developer-guide/) - Develop custom modules and adapters
+After the bot is running, you can continue as needed:
+
+**Want to understand how the framework works?**
+- [Basic Concepts](getting-started/basic-concepts.md) — Design of adapters / modules / events
+- [Architecture Overview](architecture.md) — Visual architecture diagrams
+
+**Want to implement more features?**
+- [Common Task Examples](getting-started/common-tasks.md) — Storage, scheduled tasks, permission control
+- [Introduction to Event Handling](getting-started/event-handling.md) — Messages, notifications, request handling
+
+**Want to develop your own module / adapter?**
+- [Introduction to Module Development](developer-guide/modules/getting-started.md)
+- [Introduction to Adapter Development](developer-guide/adapters/getting-started.md)
+
+**For reference as needed:**
+- [Configuration File Guide](user-guide/configuration.md) · [CLI Reference](user-guide/cli-reference.md) · [Deployment Guide](user-guide/deployment.md)
 
 
 ### 创建第一个机器人
 
 # Creating Your First Bot
 
-This guide will walk you through creating a simple ErisPulse bot from scratch.
+This guide builds upon the [5-Minute Quick Start](../quick-start.md), walking you through writing your first command handler and understanding the execution mechanism.
 
-## Step 1: Create the Project
+> If you haven't installed ErisPulse or initialized your project yet, please complete the "Install", "Initialize Project", and "Run Project" steps in the [Quick Start](../quick-start.md) first.
 
-Initialize the project using the CLI tool:
-
-```bash
-# Interactive initialization
-epsdk init
-
-# Or quick initialization
-epsdk init -q -n my_first_bot
-```
-
-Follow the prompts to complete the configuration. It is recommended to select:
-- Project name: my_first_bot
-- Log level: INFO
-- Server: Default configuration
-- Adapter: Choose the platform you need (e.g., Yunhu)
-
-## Step 2: View Project Structure
-
-The structure of the initialized project:
-
-```
-my_first_bot/
-├── config/
-│   └── config.toml
-├── main.py
-└── requirements.txt
-```
-
-## Step 3: Write Your First Command
+## Step 1: Writing Your First Command
 
 Open `main.py` and write a simple command handler:
 
@@ -608,20 +595,20 @@ from ErisPulse.Core.Event import command
 
 @command("hello", help="Send a greeting message")
 async def hello_handler(event):
-    """Handle hello command"""
-    user_name = event.get_user_nickname() or "Friend"
+    """Handle the hello command"""
+    user_name = event.get_user_nickname() or "friend"
     await event.reply(f"Hello, {user_name}! I am the ErisPulse bot.")
 
 @command("ping", help="Test if the bot is online")
 async def ping_handler(event):
-    """Handle ping command"""
+    """Handle the ping command"""
     await event.reply("Pong! The bot is running normally.")
 
 async def main():
-    """Main entry point"""
+    """Main entry function"""
     print("Starting ErisPulse...")
     
-    # keep_running=True (default): The framework blocks and maintains execution until a close signal is received (e.g., Ctrl+C)
+    # keep_running=True (default): The framework blocks and maintains execution until a shutdown signal is received (such as Ctrl+C)
     await sdk.run(keep_running=True)
 
 if __name__ == "__main__":
@@ -629,43 +616,43 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### The `keep_running` Parameter
+### `keep_running` Parameter
 
-`sdk.run(keep_running)` controls whether the framework blocks to maintain execution:
+`sdk.run(keep_running)` controls whether the framework blocks and maintains execution:
 
-- **`keep_running=True` (default)**: `run()` will block indefinitely until a close signal is received (e.g., Ctrl+C), suitable for pure bot applications.
-- **`keep_running=False`**: `run()` returns immediately after initialization; **the framework does not unload**—started adapters/modules continue to process message events as background tasks. You can continue executing your own logic until the event loop ends and the framework closes. For example:
+- **`keep_running=True` (default)**: `run()` will block indefinitely until a shutdown signal is received (such as Ctrl+C), suitable for pure bot applications.
+- **`keep_running=False`**: `run()` returns immediately after initialization; **the framework is not unloaded**—the started adapters/modules continue processing message events as background tasks, allowing you to proceed with your own logic until the event loop ends and the framework closes. For example:
 
 ```python
 async def main():
-    await sdk.run(keep_running=False)   # Returns immediately after initialization
+    await sdk.run(keep_running=False)   # Return immediately after initialization
     # The framework is running in the background, here you can continue doing other things
     while True:
         await asyncio.sleep(3600)
         print("Check every hour")
 ```
 
-> In addition to the two modes of `run()`, there are manual control methods for the lifecycle, starting and stopping adapters/routes individually, etc. See [Startup Process and Manual Control](../advanced/startup.md).
+> In addition to the two modes of `run()`, there are also more granular ways to manually control the lifecycle using `init()`/`uninit()`, and to start/stop adapters/routers independently; see [Startup Process and Manual Control](../advanced/startup.md).
 
-## Step 4: Run the Bot
+## Step 2: Running the Bot
 
 ```bash
-# Normal run
+# Normal execution
 epsdk run main.py
 
 # Development mode (supports hot reload)
 epsdk run main.py --reload
 ```
 
-## Step 5: Test the Bot
+## Step 3: Testing the Bot
 
-Send the command in your chat platform:
+Send commands in your chat platform:
 
 ```
 /hello
 ```
 
-You should receive a response from the bot.
+You should receive a reply from the bot.
 
 ## Code Explanation
 
@@ -675,10 +662,10 @@ You should receive a response from the bot.
 @command("hello", help="Send a greeting message")
 ```
 
-- `hello`: Command name, called by users via `/hello`
-- `help`: Command help text, displayed in the `/help` command
+- `hello`: Command name, users invoke it via `/hello`
+- `help`: Command help description, displayed in the `/help` command
 
-### Event Arguments
+### Event Parameters
 
 ```python
 async def hello_handler(event):
@@ -691,12 +678,12 @@ The `event` parameter is an Event object, containing:
 - Group information: `event.get_group_id()`
 - Raw data: `event.get_raw()`
 
-> For a complete list of Event object methods, please refer to [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md).
+> For a complete list of Event object methods, refer to [Event Wrapper Class Detailed Explanation](../developer-guide/modules/event-wrapper.md).
 
 ### Sending a Reply
 
 ```python
-await event.reply("Response content")
+await event.reply("Reply content")
 ```
 
 `event.reply()` is a convenient method for sending messages to the sender.
@@ -705,22 +692,22 @@ await event.reply("Response content")
 
 ErisPulse provides rich event handling and data processing capabilities:
 
-- **Message Listening**: Use `@message.on_message()` to listen for various messages → [Event Handling Basics](event-handling.md)
-- **Notification Listening**: Use `@notice.on_friend_add()` to listen for system notifications → [Event Handling Basics](event-handling.md)
-- **Data Storage**: Use `sdk.storage.get/set` to persist data → [Common Task Examples](common-tasks.md)
+- **Message Listening**: Use `@message.on_message()` to listen to various types of messages → [Introduction to Event Handling](event-handling.md)
+- **Notification Listening**: Use `@notice.on_friend_add()` and others to listen to system notifications → [Introduction to Event Handling](event-handling.md)
+- **Data Storage**: Use `sdk.storage.get/set` to persist data → [Common Tasks Examples](common-tasks.md)
 
-## Common Issues
+## Frequently Asked Questions
 
-### The command is not responding?
+### Command Not Responding?
 
-1. Check if the adapter is configured correctly, confirm that the `status` of the adapter in `config/config.toml` is `true`
-2. Check the terminal log output to see if there are error messages (especially `ERROR` level logs)
-3. Confirm that the command prefix is correct (default is `/`), which can be viewed in the `[ErisPulse.event.command]` section of the configuration file
-4. Confirm that the command name is spelled correctly, pay attention to case sensitivity settings
+1. Check if the adapter is correctly configured; confirm that the adapter's `status` in `config/config.toml` is set to `true`
+2. Check the terminal log output to ensure there are no error messages (especially `ERROR` level logs)
+3. Confirm the command prefix is correct (default is `/`), check the `[ErisPulse.event.command]` section in the configuration file
+4. Ensure the command name is spelled correctly, and pay attention to case sensitivity settings
 
-### How to change the command prefix?
+### How to Modify the Command Prefix?
 
-Add the following in `config.toml`:
+Add the following to `config.toml`:
 
 ```toml
 [ErisPulse.event.command]
@@ -728,9 +715,9 @@ prefix = "!"
 case_sensitive = false
 ```
 
-### How to support multiple platforms?
+### How to Support Multiple Platforms?
 
-ErisPulse uses the OneBot12 standard to unify the event formats of different platforms. Handlers registered with `@command` and `@message` will automatically receive events from all platforms. You can distinguish the source platform using `event.get_platform()`:
+ErisPulse uses the OneBot12 standard to unify event formats across different platforms. Handlers registered with `@command` and `@message` automatically receive events from all platforms. You can distinguish the source platform using `event.get_platform()`:
 
 ```python
 @command("hello")
@@ -745,13 +732,13 @@ async def hello_handler(event):
         await event.reply("Hello!")
 ```
 
-> For more multi-platform adaptation tips, please refer to [Common Task Examples](common-tasks.md#multi-platform-adaptation).
+> For more multi-platform adaptation techniques, see [Common Tasks Examples](common-tasks.md#multi-platform-adaptation).
 
 ## Next Steps
 
-- [Basic Concepts](basic-concepts.md) - Understand the core concepts of ErisPulse in depth
-- [Event Handling Basics](event-handling.md) - Learn how to handle various events
-- [Common Task Examples](common-tasks.md) - Master more practical features
+- [Basic Concepts](basic-concepts.md) - Deepen your understanding of ErisPulse's core concepts
+- [Introduction to Event Handling](event-handling.md) - Learn how to handle various types of events
+- [Common Tasks Examples](common-tasks.md) - Master more practical features
 
 
 ### 基础概念
@@ -4556,26 +4543,26 @@ The returned structure contains the status of the following subsystems:
 
 # Event System API
 
-This document provides a detailed introduction to the ErisPulse event system API.
+This document details the Event System API of ErisPulse.
 
-## Command Module
+## Command Command Module
 
-### Registering Commands
+### Register Commands
 
 ```python
 from ErisPulse.Core.Event import command
 
 # Basic command
-@command("hello", help="Send a greeting")
+@command("hello", help="Send greeting")
 async def hello_handler(event):
     await event.reply("Hello!")
 
 # Command with aliases
-@command(["help", "h"], aliases=["help"], help="Show help")
+@command(["help", "h"], aliases=["Help"], help="Display help")
 async def help_handler(event):
     pass
 
-# Command with permission
+# Command with permissions
 def is_admin(event):
     return event.get("user_id") in admin_ids
 
@@ -4594,7 +4581,7 @@ async def reload_handler(event):
     pass
 ```
 
-### Command Information
+### Command Info
 
 ```python
 # Get command help
@@ -4603,22 +4590,22 @@ help_text = command.help()
 # Get specific command
 cmd_info = command.get_command("admin")
 
-# Get all commands in a group
+# Get all commands in a command group
 admin_commands = command.get_group_commands("admin")
 
 # Get all visible commands
 visible_commands = command.get_visible_commands()
 ```
 
-### Waiting for Reply
+### Wait for Reply
 
 ```python
 # Wait for user reply
-@command("ask", help="Ask user information")
+@command("ask", help="Ask for user info")
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
-        prompt="Please enter your name:",  # Already sent above
+        prompt="Please enter your name:",  # Sent above
         timeout=30.0
     )
     
@@ -4626,7 +4613,7 @@ async def ask_command(event):
         name = reply.get_text()
         await event.reply(f"Hello, {name}!")
 
-# Waiting reply with validation
+# Wait for reply with validation
 def validate_age(event_data):
     try:
         age = int(event_data.get_text())
@@ -4634,7 +4621,7 @@ def validate_age(event_data):
     except ValueError:
         return False
 
-@command("age", help="Ask user age")
+@command("age", help="Ask for user age")
 async def age_command(event):
     await event.reply("Please enter your age:")
     
@@ -4648,59 +4635,59 @@ async def age_command(event):
         age = int(reply.get_text())
         await event.reply(f"Your age is {age} years old")
 
-# Waiting reply with callback
+# Wait for reply with callback
 async def handle_confirmation(reply_event):
     text = reply_event.get_text().lower()
-    if text in ["yes", "是", "y"]:
+    if text in ["Yes", "yes", "y"]:
         await event.reply("Operation confirmed!")
     else:
-        await event.reply("Operation canceled.")
+        await event.reply("Operation cancelled.")
 
 @command("confirm", help="Confirm operation")
 async def confirm_command(event):
     await command.wait_reply(
         event,
-        prompt="Please enter 'yes' or 'no':",
+        prompt="Please enter 'Yes' or 'No':",
         callback=handle_confirmation
     )
 ```
 
-## Message Module
+## Message Message Module
 
 ### Message Events
 
 ```python
 from ErisPulse.Core.Event import message
 
-# Listen to all messages
+# Listen for all messages
 @message.on_message()
 async def message_handler(event):
     sdk.logger.info(f"Received message: {event.get_text()}")
 
-# Listen to private messages
+# Listen for private messages
 @message.on_private_message()
 async def private_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"Private message from: {user_id}")
+    sdk.logger.info(f"Private chat from: {user_id}")
 
-# Listen to group messages
+# Listen for group messages
 @message.on_group_message()
 async def group_handler(event):
     group_id = event.get_group_id()
-    sdk.logger.info(f"Group message from: {group_id}")
+    sdk.logger.info(f"Group chat from: {group_id}")
 
-# Listen to @ messages
+# Listen for @ mentions
 @message.on_at_message()
 async def at_handler(event):
     mentions = event.get_mentions()
-    sdk.logger.info(f"Mentioned users: {mentions}")
+    sdk.logger.info(f"User mentioned: {mentions}")
 ```
 
-### Conditional Listening
+### Conditional Listeners
 
 ```python
 # Use priority to control execution order
-@message.on_message(priority=10)  # Higher value means higher priority
+@message.on_message(priority=10)  # Higher numbers mean higher priority
 async def high_priority_handler(event):
     pass
 
@@ -4709,11 +4696,11 @@ async def high_priority_handler(event):
 async def filtered_handler(event):
     if "keyword" not in event.get_text():
         return
-    # Process messages containing the keyword
+    # Process messages containing keyword
     pass
 ```
 
-## Notice Module
+## Notice Notice Module
 
 ### Notice Events
 
@@ -4732,20 +4719,20 @@ async def friend_remove_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"Friend removed: {user_id}")
 
-# Group member increased
+# Group member increase
 @notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
-    await event.reply("Welcome new member!")
+    await event.reply(f"Welcome new member!")
 
-# Group member decreased
+# Group member decrease
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"Group member left: {user_id}")
 ```
 
-## Request Module
+## Request Request Module
 
 ### Request Events
 
@@ -4757,30 +4744,30 @@ from ErisPulse.Core.Event import request
 async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
-    sdk.logger.info(f"Friend request: {user_id}, comment: {comment}")
+    sdk.logger.info(f"Friend request: {user_id}, Comment: {comment}")
 
-# Group invitation request
+# Group invite request
 @request.on_group_request()
 async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"Group invitation: {group_id}, from: {user_id}")
+    sdk.logger.info(f"Group invite: {group_id}, From: {user_id}")
 ```
 
-## Meta Module
+## Meta Meta Event Module
 
 ### Meta Events
 
 ```python
 from ErisPulse.Core.Event import meta
 
-# Connection event
+# Connect event
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
     sdk.logger.info(f"Platform {platform} connected successfully")
 
-# Disconnection event
+# Disconnect event
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
@@ -4789,37 +4776,37 @@ async def disconnect_handler(event):
 # Heartbeat event
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
-    sdk.logger.debug("Received heartbeat")
+    sdk.logger.debug("Heartbeat received")
 ```
 
 ### Bot Status Query
 
-When the adapter sends a meta event, the framework automatically tracks the Bot status. For query APIs and lifecycle event listeners, refer to [Adapter System API - Bot Status Management](adapter-system.md#bot-status-management).
+After the adapter sends a meta event, the framework automatically tracks the Bot status. For querying API and lifecycle event listening, please refer to [Adapter System API - Bot Status Management](adapter-system.md#bot-status-management).
 
 ## Event Wrapper Class
 
-Event module event handlers receive an Event wrapper class instance, which inherits from dict and provides convenient methods.
+Event handlers in the Event module receive an instance of an Event wrapper class, which inherits from `dict` and provides convenient methods.
 
 ### Core Methods
 
 ```python
-# Get event information
+# Get event info
 event_id = event.get_id()
 event_time = event.get_time()
 event_type = event.get_type()
 detail_type = event.get_detail_type()
 platform = event.get_platform()
 
-# Get bot information
+# Get bot info
 self_platform = event.get_self_platform()
 self_user_id = event.get_self_user_id()
 self_info = event.get_self_info()
 ```
 
-### Session Identifier
+### Session Identifiers
 
 ```python
-# Unified target ID: returns group_id for group messages, user_id for private messages, etc.
+# Unified target ID: returns group_id for groups, user_id for private chats, etc.
 target_id = event.get_target_id()
 
 # Unique session identifier, format: {platform}:{detail_type}:{target_id}
@@ -4827,7 +4814,7 @@ session_id = event.get_session_id()
 # Example: "telegram:private:12345", "qq:group:67890"
 ```
 
-`get_target_id()` returns the first non-empty value in the following order: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`. This is suitable for scenarios requiring a unified session identifier, such as context management and state storage.
+`get_target_id()` returns the first non-empty value in the following order: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`. Suitable for scenarios requiring a unified session identifier, such as context management, state storage, etc.
 
 ### Message Methods
 
@@ -4837,53 +4824,61 @@ message_segments = event.get_message()
 alt_message = event.get_alt_message()
 text = event.get_text()
 
-# Get sender information
+# Get sender info
 user_id = event.get_user_id()
 nickname = event.get_user_nickname()
 sender = event.get_sender()
 
-# Get group information
+# Get group info
 group_id = event.get_group_id()
 
-# Determine message type
+# Check message type
 is_msg = event.is_message()
 is_private = event.is_private_message()
 is_group = event.is_group_message()
 
-# @ message related
+# @ mention related
 is_at = event.is_at_message()
 has_mention = event.has_mention()
 mentions = event.get_mentions()
 ```
 
-### Command Information
+### Command Info
 
 ```python
-# Get command information
+# Get command info
 cmd_name = event.get_command_name()
 cmd_args = event.get_command_args()
 cmd_raw = event.get_command_raw()
 
-# Determine if it's a command
+# Check if it is a command
 is_cmd = event.is_command()
 ```
 
-### Reply Functionality
+### Reply Methods
 
 ```python
 # Basic reply
 await event.reply("This is a message")
 
-# Specify sending method
+# Specify send method
 await event.reply("http://example.com/image.jpg", method="Image")
 
-# Reply with @ user and reply to message
+# Reply with @user and reply to message
 await event.reply("Hello", at_users=["user1"], reply_to="msg_id")
 
 # @ all members
 await event.reply("Announcement", at_all=True)
 
-# Reply using OneBot12 message segments
+# Use platform-specific modifiers (via parameter)
+await event.reply("Dashboard content", method="Board",
+                  via=[("Expire", 3600), ("ForMember", "114514")])
+
+# Get send chain for free appending of modifiers and send methods (suitable for multiple modifiers / action methods)
+await event.send_chain().Expire(3600).Board("Dashboard content")
+await event.send_chain().DismissBoard()
+
+# Use OneBot12 message segment reply
 from ErisPulse.Core.Event import MessageBuilder
 msg = MessageBuilder().text("Hello").image("url").build()
 await event.reply_ob12(msg)
@@ -4895,30 +4890,30 @@ reply = await event.wait_reply(timeout=30)
 ### Platform Capability Query
 
 ```python
-# Check if current platform supports a certain sending method
+# Check if current platform supports a certain send method
 if event.supports("Image"):
     await event.reply(url, method="Image")
 
-# List all available sending methods for current platform
+# List all available send methods for current platform
 methods = event.available_methods()
 # ["Text", "Image", "Voice", ...]
 ```
 
-### Reply Methods
+### Reply Method Details
 
-The `reply()` method supports specifying the sending type via the `method` parameter, as well as two convenient boolean parameters:
+The `reply()` method supports specifying the send type via the `method` parameter, as well as two convenient boolean parameters:
 
 ```python
 # Simple text reply
 await event.reply("Hello")
 
-# Reply and @ sender (automatically extracts user_id)
+# Reply and @ sender
 await event.reply("Hello", at_sender=True)
 
-# Reply and quote current message (automatically extracts message_id)
+# Reply and quote the current message
 await event.reply("Received", reply_to_message=True)
 
-# Combine usage
+# Combined usage
 await event.reply("Received", at_sender=True, reply_to_message=True)
 
 # Send image (using method parameter)
@@ -4931,33 +4926,33 @@ else:
 **Parameter Description**:
 
 | Parameter | Type | Description |
-|-----------|------|-------------|
+|------|------|------|
 | `content` | str | Content to send |
-| `method` | str | Sending method, default "Text", optional "Image"/"Voice"/"Video"/"File" etc. |
-| `at_sender` | bool | Whether to @ sender (automatically extract user_id) |
-| `quote` | bool | Whether to quote reply to current message (automatically extract message_id) |
+| `method` | str | Send method, default "Text", optional "Image"/"Voice"/"Video"/"File" etc. |
+| `at_sender` | bool | Whether to @ the sender (automatically extracts user_id) |
+| `quote` | bool | Whether to quote and reply to the current message (automatically extracts message_id) |
 | `at_users` | list[str] | List of users to @ |
 | `reply_to` | str | Manually specify the message ID to reply to |
-| `at_all` | bool | Whether to @ all members |
+| `at_all` | bool | Whether to @ everyone |
 
 ### Interaction Methods
 
 ```python
-# confirm — Confirmation dialog (returns True/False/None)
-if await event.confirm("Are you sure to execute this operation?"):
+# confirm — Confirm conversation (returns True/False/None)
+if await event.confirm("Are you sure you want to perform this action?"):
     await event.reply("Confirmed")
 
-# Use non-Text method to send confirmation prompt
+# Send confirmation prompt using non-Text method
 if await event.confirm("http://example.com/image.jpg", method="Image"):
-    await event.reply("Confirmed image prompt")
+    await event.reply("Image prompt confirmed")
 
-# choose — Selection menu (returns option index or None)
-choice = await event.choose("Please select color:", ["Red", "Green", "Blue"])
+# choose — Select menu (returns option index or None)
+choice = await event.choose("Please select a color:", ["Red", "Green", "Blue"])
 
 # options_format="auto" (default) automatically selects style based on method:
-# Markdown→unordered list (- 1. Option), Html→ordered list (<ol>), others→plain text list
-# Text-based methods (Markdown/Html etc.) default merge options to the end
-# merge_prompt=True forces any method to merge; placeholder can customize placeholder
+# Markdown → Unordered list (- Option), Html → Ordered list (<ol>), Others → Plain text list
+# Text-based methods (Markdown/Html, etc.) merge options by default
+# merge_prompt=True can force any method to merge; placeholder can customize placeholder
 choice = await event.choose(
     "## Please select\n{options}", ["A", "B"],
     method="Markdown", merge_prompt=True,
@@ -4968,10 +4963,10 @@ data = await event.collect([
     {"key": "name", "prompt": "Please enter your name:"},
     {"key": "age", "prompt": "Please enter your age:",
      "validator": lambda e: e.get_text().isdigit()},
-    {"key": "avatar", "prompt": "Please send your avatar:", "method": "Image"},
+    {"key": "avatar", "prompt": "Please send avatar:", "method": "Image"},
 ])
 
-# wait_for — Wait for any event that meets the condition
+# wait_for — Wait for any event that meets conditions
 evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
 # conversation — Multi-turn conversation context
@@ -4979,12 +4974,12 @@ conv = event.conversation(timeout=60)
 await conv.say("Welcome!")
 ```
 
-> For complete parameter descriptions and more examples of interaction methods, refer to [Event Wrapper Class Detailed Explanation](../developer-guide/modules/event-wrapper.md) and [Conversation Multi-turn Dialogue](../advanced/conversation.md).
+> For complete parameter descriptions and more examples for interaction methods, please refer to [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) and [Conversation Multi-turn Dialogue](../advanced/conversation.md).
 
 ### Utility Methods
 
 ```python
-# Convert to dictionary
+# Convert to dict
 event_dict = event.to_dict()
 
 # Check if already processed
@@ -4998,11 +4993,11 @@ raw_type = event.get_raw_type()
 
 ### Platform Extension Methods
 
-Adapters can register platform-specific methods for Event, which are only available on instances of the corresponding platform.
+Adapters can register platform-specific methods for Events, which are only available on instances of the corresponding platform.
 
 #### User: Using Platform Extension Methods
 
-After adapters register platform-specific methods, you can directly call them in event handlers. Each platform's methods differ; please refer to the corresponding [Platform Documentation](../platform-guide/).
+After an adapter registers platform-specific methods, you can call them directly in event handlers. Methods vary by platform; please refer to the corresponding [Platform Documentation](../platform-guide/).
 
 ```python
 from ErisPulse.Core.Event import message
@@ -5013,11 +5008,11 @@ async def handle_message(event):
 
     # Call platform-specific methods based on platform
     if platform == "email":
-        subject = event.get_subject()           # Email-specific
-        attachments = event.get_attachments()   # Email-specific
+        subject = event.get_subject()           # Email specific
+        attachments = event.get_attachments()   # Email specific
 ```
 
-#### Querying Registered Platform Methods
+#### Query Platform Registered Methods
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -5026,7 +5021,7 @@ from ErisPulse.Core.Event import get_platform_event_methods
 methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", "get_attachments", ...]
 
-# Dynamically check and call
+# Dynamically determine and call
 for method_name in get_platform_event_methods(event.get_platform()):
     method = getattr(event, method_name)
     print(f"{method_name}: {method()}")
@@ -5034,7 +5029,7 @@ for method_name in get_platform_event_methods(event.get_platform()):
 
 #### Platform Method Isolation
 
-Methods registered for different platforms do not interfere with each other:
+Methods registered by different platforms do not interfere:
 
 ```python
 # Email event - only email methods
@@ -5055,11 +5050,11 @@ hasattr(event, "get_subject")   # Returns True only when platform="email"
 "get_subject" in dir(event)     # Same as above
 ```
 
-#### Adapter: Registering Platform Extension Methods
+### Adapter: Registering Platform Extension Methods
 
-Adapters can register platform-specific methods for Event using decorators. The first parameter of the method is `self` (Event instance), allowing free access to event data.
+Adapters can register platform-specific methods for Events via decorators. The first parameter of the method is `self` (the Event instance), allowing free access to event data.
 
-##### Single Method Registration
+#### Single Method Registration
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -5075,7 +5070,7 @@ def get_from(self):
     return self.get("email_raw", {}).get("from", {})
 ```
 
-##### Batch Registration (Mixin Class)
+#### Batch Registration (Mixin Class)
 
 When there are many methods, it is recommended to use a Mixin class for batch registration:
 
@@ -5096,48 +5091,48 @@ class EmailEventMixin:
 register_event_mixin("email", EmailEventMixin)
 ```
 
-##### Return Value Specification
+#### Return Value Specification
 
 | Scenario | Return Value | User Usage |
-|----------|--------------|------------|
+|------|--------|------------|
 | Return data (text, dict, etc.) | Direct return value | `subject = event.get_subject()` |
-| Execute operation (send message, etc.) | Return `asyncio.Task` | `task = event.do_something()` Optional `await` |
+| Execute operations (send messages, etc.) | Return `asyncio.Task` | `task = event.do_something()` Optional `await` |
 
-> **Recommendation**: Non-data returning methods return `asyncio.Task`, so users can decide whether to `await`. Even if not `awaited`, the operation will complete in the background.
+> **Recommendation**: Methods that return non-data should return `asyncio.Task`, allowing users to decide whether to `await`; the operation will complete even if not `await`ed.
 
 ```python
 @register_event_method("email")
 def forward_email(self, to_address: str):
-    """Forward email — returns Task, user can decide whether to await"""
+    """Forward email — returns Task, user can decide to await"""
     import asyncio
     return asyncio.create_task(
         self._do_forward(to_address)
     )
 
-# User can await and wait for the result
+# User can await to wait for result
 await event.forward_email("user@example.com")
 
-# Or not await, operation runs in the background
+# Or don't await, operation runs in background
 event.forward_email("user@example.com")
 ```
 
-##### Unregistering Methods
+#### Unregister Methods
 
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
 
-# Unregister a single method
+# Unregister single method
 unregister_event_method("email", "get_subject")
 
-# Unregister all methods for a platform (called during adapter shutdown)
+# Unregister all methods for a platform (call during adapter shutdown)
 unregister_platform_event_methods("email")
 ```
 
-##### Overriding Built-in Methods
+#### Overriding Built-in Methods
 
-`register_event_mixin` / `register_event_method` supports overriding Event built-in methods (such as `confirm`, `choose`, `collect`, `wait_reply`, `reply`, etc.). Registered platform methods take precedence over built-in methods through `Event.__getattribute__`, so adapters can provide platform-specific interactive implementations.
+`register_event_mixin` / `register_event_method` support overriding Event built-in methods (such as `confirm`, `choose`, `collect`, `wait_reply`, `reply`, etc.). Registered platform methods take precedence over built-in methods via `Event.__getattribute__`, allowing adapters to provide platform-specific interaction implementations.
 
-Built-in implementations are exported as `_builtin_*` functions, and overriding methods can call them as fallback:
+The built-in implementation is exported as `_builtin_*` functions; override implementations can call them as a fallback:
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
@@ -5148,28 +5143,28 @@ class YunhuEventMixin:
         buttons = [[{"text": opt} for opt in options]]
         await self.reply(prompt)
         # ...wait for button callback or text reply...
-        # Fall back to built-in logic
+        # Fallback to built-in logic
         return await _builtin_choose(self, None, options, timeout, "Text")
 
 register_event_mixin("yunhu", YunhuEventMixin)
 ```
 
-## Cross-Platform Extension (Wildcard)
+## Cross-Platform Extensions (Wildcard)
 
-`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods available on Event instances for **all platforms**. Suitable for cross-platform reusable features such as AI chat and context management.
+`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name; methods registered are available on **all platform** Event instances. Suitable for AI dialogue and context management modules requiring cross-platform reuse.
 
-### Registering Cross-Platform Methods
+### Register Cross-Platform Methods
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    """self is an Event instance, can freely access event data and built-in methods"""
+    """self is Event instance, can freely access event data and built-in methods"""
     await self.reply(f"AI: {prompt}")
 ```
 
-After registration, all platform event handlers can call:
+After registration, event handlers on all platforms can call it:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -5183,24 +5178,24 @@ async def handler(event):
 
 When accessing Event methods via attributes, the resolution order is:
 
-1. **Platform-specific methods** (overrides for current platform)
-2. **Wildcard methods** (cross-platform methods registered with `"*"` )
-3. **Built-in methods** (`reply`, `confirm`, `choose`, `collect`, `wait_reply`, etc.)
-4. **Dictionary key access**
+1. **Platform-Specific Methods** (overridden for the current platform)
+2. **Wildcard Methods** (cross-platform methods registered with `"*"`)
+3. **Built-in Methods** (like `reply`, `confirm`, etc.)
+4. **Dictionary Key Access**
 
-> Therefore, wildcard methods can override built-in methods (such as `reply`), but will be further overridden by same-named platform-specific methods.
+> Therefore, wildcard methods can override built-in methods (like `reply`), but can be further overridden by platform-specific methods with the same name.
 
 ## Priority System
 
-Event handlers support priority, with higher values meaning higher priority:
+Event handlers support priorities; higher numbers mean higher priority:
 
 ```python
-# High-priority handler executes first
+# High priority handler runs first
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     pass
 
-# Low-priority handler executes later
+# Low priority handler runs last
 @message.on_message(priority=0)
 async def low_priority_handler(event):
     pass
@@ -5210,7 +5205,9 @@ async def low_priority_handler(event):
 
 - [Core Modules API](core-modules.md) - Core Modules API
 - [Adapter System API](adapter-system.md) - Adapter Management API
-- [Module Development Guide](../developer-guide/modules/) - Guide for Developing Custom Modules
+- [Module Development Guide](../developer-guide/modules/) - Developing Custom Modules
+
+Please return the translated Markdown content directly without including any other text.
 
 
 ====
@@ -8573,61 +8570,61 @@ After unregistering, the Dashboard frontend will remove the sidebar navigation i
 
 ### 启动流程与手动控制
 
-# Startup Process and Manual Control
+# Startup Flow and Manual Control
 
-ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into "one line of code." However, when you need to completely customize the startup process (e.g., partial loading, dynamic registration, hot plugging, injecting custom loading strategies), you need to understand what is happening inside this chain and how to manually drive each step.
+ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a single line of code. However, when you need to fully customize the startup process (e.g., partial loading, dynamic registration, hot-plugging, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
 
-This document breaks down the startup chain into independent stages, explaining their respective responsibilities, calling order, and provides an example of a complete manual startup.
+This article breaks down the startup chain into independent components, explains their respective responsibilities and call order, and provides an example of manually initiating the complete startup process.
 
-> This article assumes you have already run through [First Bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal chain breakdown of `init()` and the more low-level entry points such as `init()`/`init_task()`/`init_sync()`.
+> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the `init()` chain and lower-level entry points such as `init()`/`init_task()`/`init_sync()`.
 
-## SDK Top-Level Entry Overview
+## Overview of SDK Top-Level Entry Points
 
-In addition to the two `keep_running` modes of `run()`, the SDK provides several more low-level initialization entry points, distinguished by **asynchronous nature, return values, and whether exceptions are wrapped**:
+In addition to the two `keep_running` modes of `run()`, the SDK also provides several lower-level initialization entry points, which differ in **asynchrony, return value, and whether exceptions are wrapped**:
 
-| Entry | Asynchronous | Return Value | Exception Handling | Use Case |
-|------|--------|--------|----------|----------|
-| `await sdk.run(True)` | async, blocking to maintain | `None` (auto `uninit` when closed) | Module/Adapter errors are intercepted, preventing process collapse | Pure bot applications |
-| `await sdk.run(False)` | async, non-blocking | `None` (no auto-unload) | Same as above | Execute custom logic after initialization |
-| `await sdk.init()` | async, requires await | `bool` | **No wrapper**, exceptions propagate upward | Manual control of lifecycle (paired with `uninit()`) |
-| `sdk.init_task()` | async, returns Task non-blocking | `asyncio.Task` | Same as `init()` | Executing other initializations concurrently or when the event loop is not running yet |
-| `sdk.init_sync()` | **Synchronous**, blocking current thread | `bool` | Same as `init()` | Command line scripts, synchronous entry points without an event loop |
+| Entry Point | Asynchrony | Return Value | Exception Handling | Use Case |
+|-------------|------------|--------------|--------------------|----------|
+| `await sdk.run(True)` | async, blocks to maintain | `None` (automatically `uninit` on shutdown) | Module/adapter errors are intercepted, not crashing the process | Pure bot application |
+| `await sdk.run(False)` | async, non-blocking | `None` (does not automatically unload) | Same as above | Execute custom logic after initialization |
+| `await sdk.init()` | async, requires `await` | `bool` | **Does not wrap**, exceptions are thrown upwards | Manual lifecycle control (paired with `uninit()`) |
+| `sdk.init_task()` | async, returns `Task` without blocking | `asyncio.Task` | Same as `init()` | Concurrent initialization or event loop not yet running |
+| `sdk.init_sync()` | **Synchronous**, blocks the current thread | `bool` | Same as `init()` | Command-line script, synchronous entry without event loop |
 
-> **Common Misconception**: `await sdk.init()` is **not equivalent** to `await sdk.run(keep_running=False)`. Two differences: ① `init()` returns `bool`, `run()` returns `None`; ② `run()` wraps the initialization and running process with try/except (intercepting Module/Adapter exceptions to prevent crash), while `init()` does not wrap, exceptions are thrown directly upward. Use `init()` + `uninit()` when you need paired unloading or custom exception handling.
+> **Common Misconception**: `await sdk.init()` **is not equivalent to** `await sdk.run(keep_running=False)`. There are two differences: ① `init()` returns `bool`, `run()` returns `None`; ② `run()` wraps the initialization and running process with try/except (intercepts module/adapter exceptions to prevent crashes), while `init()` does not wrap, and exceptions are thrown directly upwards. Use `init()` + `uninit()` when you need paired unloading or custom exception handling.
 
-## Startup Chain Overview
+## Overview of the Startup Chain
 
-`sdk.init()` (more precisely its internal `Initializer.init()`) lifts the entire framework in the following order:
+`sdk.init()` (specifically its internal `Initializer.init()`) initiates the entire framework in the following order:
 
 ```mermaid
 flowchart TD
-    A[0. Prepare Environment<br/>Config Load / Exception Handling] --> B
-    B[1. Parallel Discovery and Load<br/>AdapterLoader.load / ModuleLoader.load<br/>Internal call to Finder.find_all] --> C
-    C[2. Register Adapters<br/>AdapterLoader.register_to_manager] --> D
-    D[3. Start Adapters<br/>adapter.startup] --> E
-    E[4. Register Modules<br/>ModuleLoader.register_to_manager] --> F
-    F[5. Initialize Modules<br/>ModuleLoader.initialize_modules<br/>Instantiate and mount to sdk] --> G
-    G[6. Start Router Server<br/>router.start]
+    A[0. Prepare environment<br/>Configuration loading / Exception handling] --> B
+    B[1. Parallel discovery and loading<br/>AdapterLoader.load / ModuleLoader.load<br/>Internally calls Finder.find_all] --> C
+    C[2. Register adapters<br/>AdapterLoader.register_to_manager] --> D
+    D[3. Start adapters<br/>adapter.startup] --> E
+    E[4. Register modules<br/>ModuleLoader.register_to_manager] --> F
+    F[5. Initialize modules<br/>ModuleLoader.initialize_modules<br/>Instantiate and mount to sdk] --> G
+    G[6. Start routing server<br/>router.start]
 ```
 
 Corresponding core components:
 
 | Layer | Component | Responsibility |
-|----|------|------|
+|-------|-----------|----------------|
 | Discovery | `AdapterFinder` / `ModuleFinder` | **Discover** adapters/modules from entry-points of installed packages |
-| Loading | `AdapterLoader` / `ModuleLoader` | Discovery + Import + Read Metadata + Determine Enable/Disable, returning list of objects |
+| Loading | `AdapterLoader` / `ModuleLoader` | Discover + import + read metadata + determine enable/disable, return object list |
 | Registration | `*Loader.register_to_manager` | Register objects to corresponding managers |
 | Management | `sdk.adapter` / `sdk.module` | Maintain adapter/module instances, provide start/stop interfaces |
-| Initialization | `ModuleLoader.initialize_modules` | Create module instances and mount to `sdk` (handle dependency topological sort) |
-| Routing | `sdk.router` | HTTP / WebSocket Server |
+| Initialization | `ModuleLoader.initialize_modules` | Create module instances and mount to `sdk` (handle dependency topological sorting) |
+| Routing | `sdk.router` | HTTP / WebSocket server |
 
-> **Important**: `Finder` and `Loader` are two layers. `Loader` internally **already holds** a `Finder` (AdapterLoader comes with AdapterFinder, ModuleLoader comes with ModuleFinder). In most scenarios you only need to use `Loader`; you only use `Finder` separately when you need to "list only without importing."
+> **Important**: `Finder` and `Loader` are two layers. The `Loader` internally **already holds** a `Finder` (e.g., `AdapterLoader` comes with `AdapterFinder`, `ModuleLoader` comes with `ModuleFinder`). In most scenarios, you only need to use `Loader`; `Finder` is only used when you need "list without importing".
 
-## Detailed Breakdown of Each Stage
+## Detailed Explanation of Each Component
 
 ### 1. Discovery Layer: Finder
 
-Finder is only responsible for "finding which packages provide adapters/modules," does not import, does not instantiate.
+The Finder is only responsible for "finding which packages provide adapters/modules," without importing or instantiating.
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -8635,19 +8632,19 @@ from ErisPulse.finders import AdapterFinder, ModuleFinder
 adapter_finder = AdapterFinder()
 module_finder = ModuleFinder()
 
-# Find all installed adapter/module entry-points
+# Find all installed adapters/modules entry-points
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
-# Find single by name
+# Find a single by name
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-Each `EntryPoint` can `.load()` to get the corresponding class, but typically you won't manually call it—Loader does it.
+Each `EntryPoint` can be `.load()` to get the corresponding class, but usually you don't need to manually call it—Loader will handle it.
 
 ### 2. Loading Layer: Loader
 
-Loader adds "Import + Read Metadata + Determine Enable/Disable" on top of Finder.
+The Loader, on top of Finder, does "import + read metadata + determine enable/disable."
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -8656,34 +8653,59 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# Inside load(): calls finder.find_all() → process entry-points one by one → returns tuple
+# load() internally: calls finder.find_all() → processes each entry-point → returns a triple
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
 
-The tuple returned by `load()`:
+The three-tuple returned by `load()`:
 
 | Return Value | Meaning |
-|--------|------|
-| `objs` (`dict`) | Name → Object (Adapter class / Module wrapper object) |
-| `enabled` (`list[str]`) | Names that are enabled (not disabled in config) |
-| `disabled` (`list[str]`) | Names that are disabled |
+|--------------|---------|
+| `objs` (`dict`) | Name → Object (adapter class / module wrapper object) |
+| `enabled` (`list[str]`) | Enabled names (not disabled in configuration) |
+| `disabled` (`list[str]`) | Disabled names |
+
+#### Diagnostic Information on Loading Failures
+
+When a module/adapter throws an exception during loading or initialization, the framework skips that component and continues loading other components, while outputting a **user code frame summary**, allowing you to locate the error position at the default INFO level without manually re-enabling DEBUG:
+
+```
+[ERROR] [ModuleLoader] Failed to load module MyModule from entry-point, skipped: 'NoneType' object has no attribute 'platform'
+  → MyModule/Core.py:42 in on_load
+      adapter = sdk.platform
+  → AttributeError: 'NoneType' object has no attribute 'platform'
+  → Hint: Increase log level to DEBUG to view full stack trace; check implementation code of module MyModule
+```
+
+The diagnostic information is generated by the `ErisPulse.runtime.diagnostics` module, which automatically filters out internal framework frames and retains only your code frames. If you need to reuse it in custom loading logic:
+
+```python
+from ErisPulse.runtime import log_diagnostic
+
+try:
+    risky_init()
+except Exception as e:
+    log_diagnostic(e)  # Automatically extract user code frames and write to ERROR log
+```
+
+This module also provides two low-level functions: `extract_user_frame()` (returns structured frame information) and `format_diagnostic_block()` (returns multi-line text).
 
 ### 3. Registration Layer: register_to_manager
 
-Registers objects produced by Loader to the manager, allowing `sdk.adapter` / `sdk.module` to recognize them.
+Register the objects produced by the Loader to the manager so that `sdk.adapter` / `sdk.module` can recognize them.
 
 ```python
-# Register adapters (returns bool indicating if all succeeded)
+# Register adapters (returns bool, indicating whether all succeeded)
 await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.adapter)
 
 # Register modules
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-After registration, adapters enter `sdk.adapter._adapters`, module classes enter `sdk.module`, but **neither have started / been instantiated yet**.
+After registration, adapters enter `sdk.adapter._adapters`, and module classes enter `sdk.module`, but **they are not yet started/initialized**.
 
-### 4. Starting Adapters
+### 4. Start Adapters
 
 ```python
 # Start all registered adapters
@@ -8693,11 +8715,11 @@ await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> Registration ≠ Startup. `register_to_manager` is just registration; `startup` actually calls the adapter's `start()`, establishing a connection with the platform.
+> Registration ≠ Startup. `register_to_manager` only registers; `startup` calls the adapter's `start()` to establish a connection with the platform.
 
-### 5. Initializing Modules
+### 5. Initialize Modules
 
-Modules have one more step than adapters—they need to be **instantiated** and mounted to `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module inter-dependency declarations and topological sorting.
+Modules have an additional step—**instantiation** and mounting to `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module dependencies and topological sorting.
 
 ```python
 success = await module_loader.initialize_modules(
@@ -8705,9 +8727,9 @@ success = await module_loader.initialize_modules(
 )
 ```
 
-After successful instantiation, modules will appear on `sdk.<ModuleName>`.
+After successful instantiation, the module appears on `sdk.<ModuleName>`.
 
-### 6. Starting Router Server
+### 6. Start Routing Server
 
 ```python
 await sdk.router.start(
@@ -8718,11 +8740,11 @@ await sdk.router.start(
 )
 ```
 
-The router server is responsible for receiving adapters' Webhook / WebSocket callbacks. Without starting it, server-mode adapters cannot receive messages.
+The routing server is responsible for receiving webhooks/ WebSocket callbacks from adapters. Without starting it, server-mode adapters cannot receive messages.
 
 ## Complete Manual Startup Example
 
-The following code is **equivalent** to the core process of `await sdk.init()`, but every step is exposed to you, allowing you to insert custom logic at any stage:
+The following code **equivalent to** the core flow of `await sdk.init()`, but each step is exposed to you, allowing you to insert custom logic at any stage:
 
 ```python
 import asyncio
@@ -8730,18 +8752,18 @@ from ErisPulse import sdk
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
 async def manual_startup():
-    # 0. Prepare environment (load config, register global exception handling)
-    #    _prepare_environment is the prerequisite step inside init(); manual process also needs to call it first,
-    #    otherwise Loader won't see the config and will misjudge all adapters/modules as disabled.
+    # 0. Prepare environment (load configuration, register global exception handler)
+    #    _prepare_environment is a pre-step inside init(); manual flow must call it first,
+    #    otherwise Loader cannot read configuration and will misjudge all adapters/modules as disabled.
     if not await sdk._prepare_environment():
         print("Environment preparation failed")
         return False
 
-    # 1. Create loaders (each internally holds its own Finder)
+    # 1. Create loaders (each internally holds a Finder)
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. Parallel discovery and loading (using gather internally, same as init())
+    # 2. Parallel discovery and loading (consistent with init() internals using gather)
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
@@ -8762,13 +8784,13 @@ async def manual_startup():
         enabled_modules, module_objs, sdk.module
     )
 
-    # 6. Initialize modules (instantiate + mount to sdk)
+    # 6. Initialize modules (instantiation + mount to sdk)
     if enabled_modules:
         await module_loader.initialize_modules(
             enabled_modules, module_objs, sdk.module, sdk
         )
 
-    # 7. Start router server
+    # 7. Start routing server
     await sdk.router.start(host="0.0.0.0", port=8000)
 
     print("Manual startup complete")
@@ -8777,68 +8799,68 @@ async def manual_startup():
 async def main():
     ok = await manual_startup()
     if ok:
-        # Block to maintain running (manual process doesn't auto-block)
+        # Block to maintain running (manual flow does not automatically block)
         await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### When should you manually start?
+### When to Use Manual Startup?
 
-In the vast majority of cases **you do not need** to manually start; `await sdk.run()` already handles all of the above above. Manual startup only has value in these scenarios:
+In most cases, manual startup is **not needed**—`await sdk.run()` already handles all of the above. Manual startup is only valuable in the following scenarios:
 
 - **Partial Loading**: Load only specified adapters/modules, skipping others
 - **Dynamic Registration**: Register new adapters/modules at runtime based on conditions
-- **Custom Order**: Need to shuffle the default loading order (e.g., start a module before starting adapters)
-- **Injection Strategy**: Inject custom strict mode managers, loading strategies, etc., into the Loader
-- **Debugging / Diagnosis**: Manually drive the process when a stage fails to locate the problem
+- **Custom Order**: Need to disrupt the default loading order (e.g., start a module before an adapter)
+- **Inject Strategies**: Inject custom strict mode managers, loading strategies, etc. into Loader
+- **Debugging/Diagnosis**: Manually drive at a specific step to locate issues when something fails
 
-## Runtime Granular Control
+## Fine-Grained Runtime Control
 
-Even if you have used `sdk.run()` to complete the startup, you can still control subsystems individually at runtime without restarting the entire SDK:
+Even after using `sdk.run()` to complete startup, you can still individually control subsystems at runtime without restarting the entire SDK:
 
-### Adapter Hot Start/Stop
+### Hot Restart of Adapters
 
 ```python
-# Hot restart an adapter (fix connection, doesn't affect other platforms)
+# Hot restart a specific adapter (repair connection, does not affect other platforms)
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
-# Bring up a new platform while running
+# Bring up a new platform at runtime
 await sdk.adapter.startup("telegram")
 
 # Temporarily take down a platform
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` requires the adapter to be **already registered** to the manager. Registration happens inside `init()`/`run()`, so this is fine-grained control **after** startup.
+> `adapter.startup()` requires the adapter to have been **registered** to the manager. Registration occurs within `init()`/`run()`, so this is fine-grained control **after** startup.
 
-### Router Server
+### Routing Server
 
 ```python
 # Temporarily take down webhook server
 await sdk.router.stop()
 
-# Restart (e.g., changed port)
+# Restart (e.g., after changing port)
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
 ### Module On-Demand Loading
 
 ```python
-# Manually load a module (could be lazy-loaded)
+# Manually load a (possibly lazy-loaded) module
 await sdk.load_module("MyModule")
 ```
 
-## Uninstall Process
+## Unload Process
 
-The reverse operation of startup is `await sdk.uninit()`, which cleans up in reverse order:
+The reverse operation of startup is `await sdk.uninit()`, which cleans up in the opposite order:
 
 1. Shut down all adapters (`adapter.shutdown()`)
 2. Unload all modules
-3. Clear all event handlers
-4. Clear manager and module attributes on SDK
+3. Clean up all event handlers
+4. Clean up managers and module attributes on SDK
 
 In manual startup scenarios, remember to call `uninit()` before exiting to ensure graceful shutdown:
 
@@ -8851,40 +8873,40 @@ finally:
 
 ## Restart
 
-The SDK provides two restart methods, neither requires you to manually unload first—the framework handles it itself:
+The SDK provides two restart methods, neither of which requires you to manually unload first—the framework handles it automatically:
 
 | Method | Call | Behavior | Use Case |
-|------|------|------|----------|
-| Hot Restart | `await sdk.restart()` | `uninit()` then `init()` again within the same process, re-loading adapters/modules | Reload configuration, hot-update modules |
-| Hard Restart | `await sdk.hard_restart()` | Exit the entire process after `uninit()`, parent process (`epsdk run`) spawns a brand new process | Suspect memory/resource leaks, need a clean slate restart |
+|--------|------|----------|----------|
+| Hot Restart | `await sdk.restart()` | Re-initialize within the same process after `uninit()`, reloading adapters/modules | Reload configuration, hot update modules |
+| Hard Restart | `await sdk.hard_restart()` | Exit the entire process after `uninit()`, then restart a new process via parent process (`epsdk run`) | Suspected memory/resource leaks, need a completely clean restart |
 
 ```python
-# Hot restart: reload within same process (most common)
+# Hot restart: re-initialize within the same process (most commonly used)
 await sdk.restart()
 
-# Hard restart: exit process, only effective when started via epsdk run
+# Hard restart: exit process, must be started via `epsdk run main.py` to take effect
 await sdk.hard_restart()
 ```
 
-> **Two Notes**:
-> 1. Both methods execute restart in a background task, **immediately returning `True` to indicate 'restart task is scheduled'**, not 'restart is complete'. Actual restart happens in the background to avoid interrupting the current event chain.
-> 2. `hard_restart()` **must be started via `epsdk run main.py` to take effect**. Its principle is: exit the process with **exit code 42** after unloading; the parent process of `epsdk run` detects code 42 and spawns a brand new process; if started directly via `python main.py`, the process exits with code 42 and ends directly, without auto-restarting.
+> **Two Points to Note**:
+> 1. Both methods execute the restart in a background task, **immediately returning `True` to indicate "restart task has been scheduled"**, not "restart has completed." The actual restart happens in the background to avoid interrupting the current event chain.
+> 2. `hard_restart()` **must be started via `epsdk run main.py` to take effect**. Its principle is: after unloading, the process exits with exit code 42, and the parent process of `epsdk run` detects the code 42 to restart a new process; if started directly via `python main.py`, the process exits with code 42 and ends directly without automatic restart.
 
-### When should you use hard restart?
+### When to Use Hard Restart?
 
-Hard restart is not just "a more thorough restart"; it is more suitable and even more efficient than hot restart in the following scenarios:
+Hard restart is not just a "more thorough restart," it is more suitable and even more efficient in the following scenarios than hot restart:
 
-- **Binary library (C extension) side effects**: Hot restart happens within the same process, unable to release C extensions, open file descriptors, threads, and other process-level resources; hard restart uses a brand new process, so these side effects are completely zeroed out.
-- **Resource leak troubleshooting**: When you suspect memory or handle leaks, hard restart allows you to get a clean environment.
-- **Frequent restarts sensitive to performance**: Hard restart saves the overhead of unload → reload within the same process, actually being more efficient than hot restart.
+- **Binary Library (C Extension) Side Effects**: Hot restart occurs within the same process and cannot release C extensions, opened file descriptors, threads, and other process-level resources; hard restart switches to a brand new process, thoroughly clearing these side effects.
+- **Resource Leak Diagnosis**: When suspected memory or handle leaks exist, hard restart provides a clean environment.
+- **Performance-Sensitive Frequent Restarts**: Hard restart avoids the overhead of unloading and reloading within the same process, making it more efficient than hot restart in practice.
 
-> The "Framework Restart" function in the Dashboard management panel calls `hard_restart()` internally.
-> Also, a hard restart requires! You must use epsdk's run command to start, otherwise the program will just exit with exit code 42, because the run command checks for exit code 42 to restart the process. This must be noted!!!
+> The "Framework Restart" feature in the Dashboard management panel internally calls `hard_restart()`.
+> Additionally, hard restart requires that `epsdk run` is used for startup; otherwise, the program will just throw exit code 42 and exit, since `epsdk run` checks for the 42 exit code to restart the process. This must be noted carefully!!!
 
 ## Related Documentation
 
-- [First Bot](../getting-started/first-bot.md) - Introduction to `keep_running` two basic modes
-- [Lifecycle Management](lifecycle.md) - Listening to startup events like `core.init.start` / `core.init.complete`
+- [Create the First Bot](../getting-started/first-bot.md) - Introduction to the two basic modes of `keep_running`
+- [Lifecycle Management](lifecycle.md) - Listen to startup events such as `core.init.start` / `core.init.complete`
 - [Lazy Loading System](lazy-loading.md) - Module lazy loading mechanism and `load_module`
 
 
