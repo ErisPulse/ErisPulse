@@ -63,6 +63,51 @@
 
 ---
 
+## [2.7.0-dev.3] - 2026/07/29
+> 开发版本
+
+**版本摘要**
+OneBot12 标准化增强版本：(1) 新增 `ApiDSL` 基类，与 `SendDSL`（消息发送）、`RequestDSL`（请求操作）并行，覆盖 OneBot12 标准动作中的信息查询/群管理/消息管理/文件操作；(2) **修复 notice/request 事件的会话类型推断 bug**——此前 `event.reply()` 在群通知事件（如加群）上会错误地发送到用户私聊而非群内；(3) `sdk.init()` / `sdk.run()` 新增 `before_init` / `after_init` / `on_ready` 回调钩子，支持在启动流程各阶段插入自定义逻辑。**完全向后兼容**，所有新增参数均为可选关键字参数。
+
+**升级建议**
+- **建议升级**
+- 升级原因：群通知事件的 `event.reply()` 现在正确发送到群内；新增的 `ApiDSL` 让信息查询类调用跨平台统一
+
+**注意事项**
+- `infer_receive_type` 行为变更：notice/request 事件的 `detail_type` 不再被当作会话类型直接返回，而是从 ID 字段（group_id/user_id）推断。message 事件不受影响
+- 适配器开发者可通过覆盖 `Api` 内部类的标准方法（`get_user_info` / `get_group_info` 等）映射到平台原生 API
+
+### 新增
+
+- `Core/Bases/adapter.py` 新增 `ApiDSL` 基类：OneBot12 标准 API 动作 DSL
+  - 用户：`get_self_info` / `get_user_info` / `get_friend_list`
+  - 群组：`get_group_info` / `get_group_list` / `get_group_member_info` / `get_group_member_list` / `set_group_name` / `leave_group`
+  - 消息：`delete_message`（撤回/删除消息）
+  - 文件：`upload_file` / `get_file`
+  - 通用：`call(action, **params)`（平台扩展动作逃生舱）
+  - `Using(account_id)` 指定 Bot 账号（多账户模式）
+  - 默认实现委托给 `adapter.call_api(action_name, ...)`，零配置可用
+- `BaseAdapter.Api` 内部类：在 `__init__` 中自动实例化（与 `Send` / `Request` 并列）
+- `docs/zh-CN/standards/api-action-spec.md`：API 动作标准文档
+- 单元测试：`test_unit_adapter.py` 新增 `TestApiDSL`（20 用例）；`test_unit_session_type.py` 新增 `TestNoticeRequestTypeInference`（10 用例）
+- `sdk.init()` 新增 `before_init` / `after_init` 回调钩子（可选关键字参数，同步或异步均可）
+- `sdk.run()` 新增 `on_ready` 回调钩子（初始化完成后、挂起前执行），并转发 `before_init` / `after_init` 给 `init()`
+- `sdk.init_sync()` / `sdk.init_task()` 同步支持回调参数
+- 单元测试：`test_unit_sdk_callbacks.py` 新增（12 用例，覆盖回调顺序/同步异步/错误隔离）
+
+### 修复
+
+- `Core/Event/session_type.py` `infer_receive_type` 修复 notice/request 事件的会话类型推断
+
+### 优化
+
+- `docs/zh-CN/standards/event-conversion.md` 新增「notice / request 事件的会话类型推断」章节
+- `docs/zh-CN/standards/README.md` 新增 API 动作标准条目
+- 示例项目 `example-adapter` 与 CLI 脚手架 `_ADAPTER_CORE` 补充 `Api` 内部类
+- 导出更新：`Core/__init__.py`、`Core/Bases/__init__.py` 新增 `ApiDSL` 导出
+
+---
+
 ## [2.7.0-dev.2] - 2026/07/29
 > 开发版本
 

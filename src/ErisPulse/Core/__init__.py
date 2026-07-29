@@ -9,6 +9,7 @@ from .adapter import adapter, AdapterManager
 from .Bases import (
     BaseAdapter,
     BaseModule,
+    ApiDSL,
     SendDSL,
     SendContext,
     SendBuilder,
@@ -47,6 +48,7 @@ client = HttpClient()
 
 __all__ = [
     "AdapterManager",  # 适配器管理器类
+    "ApiDSL",  # 标准 API 动作 DSL 类
     "BaseAdapter",  # 适配器基类
     "BaseClientWebSocket",  # WebSocket 客户端基类
     "BaseHttpClient",  # HTTP 客户端基类
