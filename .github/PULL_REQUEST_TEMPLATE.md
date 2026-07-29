@@ -6,7 +6,7 @@ Thank you for submitting a Pull Request to ErisPulse! If this is your first cont
 Before filling out the template below, please make sure you have / 在填写以下模板之前，请确保您已经：
 - Forked this project to your GitHub account / Fork 了本项目到您的 GitHub 账户
 - Created a feature branch from the official `Develop/v2` branch / 基于官方的 `Develop/v2` 分支创建了功能分支
-- Carefully read the [Contribution Guide](../../CONTRIBUTING.md) / 仔细阅读了 [贡献指南](../../CONTRIBUTING.md)
+- Carefully read the [Contribution Guide](https://github.com/ErisPulse/ErisPulse?tab=contributing-ov-file) / 仔细阅读了 [贡献指南](https://github.com/ErisPulse/ErisPulse?tab=contributing-ov-file#%E9%A1%B9%E7%9B%AE%E8%B4%A1%E7%8C%AE%E6%8C%87%E5%8D%97)
 
 ---
 
