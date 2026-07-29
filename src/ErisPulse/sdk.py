@@ -16,9 +16,11 @@ from __future__ import annotations
 import asyncio
 import importlib
 import importlib.metadata
+import inspect
 import os
 import sys
-from typing import TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from .Core.constants import (
     DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
@@ -947,7 +949,12 @@ class SDK:
 
         return state
 
-    async def init(self) -> bool:
+    async def init(
+        self,
+        *,
+        before_init: Callable[[], Any] | None = None,
+        after_init: Callable[[], Any] | None = None,
+    ) -> bool:
         """
         SDK 初始化入口
 
@@ -955,12 +962,21 @@ class SDK:
         会记录一条警告并直接返回 True。如需强制重新初始化，请先
         调用 ``sdk.uninit()`` 或使用 ``sdk.restart()``。
 
+        :param before_init: 初始化前回调（同步或异步），在环境准备之前执行
+        :param after_init: 初始化成功后回调（同步或异步），在初始化完成后执行
         :return: bool SDK 初始化是否成功（已初始化时返回 True）
 
         :example:
         >>> success = await sdk.init()
         >>> if success:
         >>>     await sdk.adapter.startup()
+        >>>
+        >>> # 使用回调
+        >>> async def setup():
+        ...     print("初始化前")
+        >>> async def ready():
+        ...     print("初始化完成")
+        >>> await sdk.init(before_init=setup, after_init=ready)
         """
         if self._initialized:
             # 已初始化时仅警告并直接返回成功，避免重复初始化破坏内部状态
@@ -970,6 +986,15 @@ class SDK:
                 pass
             return True
 
+        # before_init 回调：在环境准备之前执行
+        if before_init is not None:
+            try:
+                result = before_init()
+                if inspect.isawaitable(result):
+                    await result
+            except Exception as e:
+                self.logger.error(f"before_init 回调执行失败: {e}")
+
         if not await self._prepare_environment():
             return False
 
@@ -978,6 +1003,16 @@ class SDK:
 
         # 执行初始化
         self._initialized = await self._initializer.init()
+
+        # after_init 回调：初始化成功后执行
+        if self._initialized and after_init is not None:
+            try:
+                result = after_init()
+                if inspect.isawaitable(result):
+                    await result
+            except Exception as e:
+                self.logger.error(f"after_init 回调执行失败: {e}")
+
         return self._initialized
 
     async def _prepare_environment(self) -> bool:
@@ -1021,29 +1056,62 @@ class SDK:
             _logger.error(i18n.t("core.sdk.prepare.failed", error=e))
             return False
 
-    def init_sync(self) -> bool:
+    def init_sync(
+        self,
+        *,
+        before_init: Callable[[], Any] | None = None,
+        after_init: Callable[[], Any] | None = None,
+    ) -> bool:
         """
         SDK 初始化入口（同步版本）
 
         用于命令行直接调用，自动在事件循环中运行异步初始化
 
+        :param before_init: 初始化前回调（同步或异步）
+        :param after_init: 初始化成功后回调（同步或异步）
         :return: bool SDK 初始化是否成功
         """
-        return asyncio.run(self.init())
+        return asyncio.run(
+            self.init(before_init=before_init, after_init=after_init)
+        )
 
-    def init_task(self) -> asyncio.Task:
+    def init_task(
+        self,
+        *,
+        before_init: Callable[[], Any] | None = None,
+        after_init: Callable[[], Any] | None = None,
+    ) -> asyncio.Task:
         """
         SDK 初始化入口，返回 Task 对象
 
+        :param before_init: 初始化前回调（同步或异步）
+        :param after_init: 初始化成功后回调（同步或异步）
         :return: asyncio.Task 初始化任务
         """
 
         async def _async_init():
+            if before_init is not None:
+                try:
+                    result = before_init()
+                    if inspect.isawaitable(result):
+                        await result
+                except Exception as e:
+                    self.logger.error(f"before_init 回调执行失败: {e}")
+
             if not await self._prepare_environment():
                 return False
 
             self._initializer = self.Initializer(self)
             self._initialized = await self._initializer.init()
+
+            if self._initialized and after_init is not None:
+                try:
+                    result = after_init()
+                    if inspect.isawaitable(result):
+                        await result
+                except Exception as e:
+                    self.logger.error(f"after_init 回调执行失败: {e}")
+
             return self._initialized
 
         try:
@@ -1101,28 +1169,73 @@ class SDK:
             )
             return False
 
-    async def run(self, keep_running: bool = True) -> None:
+    async def run(
+        self,
+        keep_running: bool = True,
+        *,
+        before_init: Callable[[], Any] | None = None,
+        after_init: Callable[[], Any] | None = None,
+        on_ready: Callable[[], Any] | None = None,
+    ) -> None:
         """
         无头模式运行 ErisPulse
+
+        内部调用 ``init()`` 完成初始化，然后在 ``on_ready`` 回调执行完毕后
+        挂起主程序（当 ``keep_running=True`` 时）。
 
         {!--< tips >!--}
         异常处理原则：
         1. 模块/适配器的任何错误都会被拦截，不会导致进程退出
         2. 只有 KeyboardInterrupt（Ctrl+C）会正常向上传播，触发优雅关闭
         3. 其他 BaseException（如 SystemExit）会被拦截并记录，防止意外终止
+
+        回调执行顺序::
+
+            before_init → 初始化 → after_init → on_ready → [挂起]
+
+        回调可以是同步或异步函数，框架自动检测并 await。
+        回调中的异常会被捕获并记录日志，不会中断启动流程。
         {!--< /tips >!--}
 
         :param keep_running: bool 是否保持运行
+        :param before_init: 初始化前回调，转发给 ``init()``
+        :param after_init: 初始化成功后回调，转发给 ``init()``
+        :param on_ready: 初始化完成且 ``after_init`` 执行后、挂起前的回调
 
         :example:
         >>> await sdk.run(keep_running=True)
+        >>>
+        >>> # 使用 on_ready 回调
+        >>> async def on_startup():
+        ...     print("SDK 就绪，开始业务逻辑")
+        >>> await sdk.run(on_ready=on_startup)
+        >>>
+        >>> # 分阶段回调
+        >>> async def before():
+        ...     print("即将初始化")
+        >>> async def after():
+        ...     print("初始化完成，适配器已就绪")
+        >>> async def ready():
+        ...     print("一切就绪，开始挂起")
+        >>> await sdk.run(before_init=before, after_init=after, on_ready=ready)
         """
         try:
-            isInit = await self.init()
+            isInit = await self.init(
+                before_init=before_init, after_init=after_init
+            )
 
             if not isInit:
                 self.logger.error(i18n.t("core.sdk.run.init_failed"))
                 return
+
+            # on_ready 回调：初始化完成后、挂起前执行
+            if on_ready is not None:
+                try:
+                    result = on_ready()
+                    if inspect.isawaitable(result):
+                        await result
+                except Exception as e:
+                    self.logger.error(f"on_ready 回调执行失败: {e}")
 
             if keep_running:
                 shutdown_event = asyncio.Event()

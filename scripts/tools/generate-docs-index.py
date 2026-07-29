@@ -339,6 +339,7 @@ class DocsIndexGenerator:
         "standards/event-conversion.md": 4,
         "standards/send-method-spec.md": 5,
         "standards/request-action-spec.md": 6,
+        "standards/api-action-spec.md": 7,
         # 风格指南
         "styleguide/README.md": 1,
         "styleguide/docstring.md": 2,

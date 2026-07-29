@@ -2133,3 +2133,199 @@ class TestSendDSLReturnSelfModifier:
         params = result["data"]["params"]
         assert params["expire"] == 100
         assert params["member"] == "abc"
+
+
+# ==================== ApiDSL 测试 ====================
+
+
+class TestApiDSL:
+    """ApiDSL 标准 API 动作测试"""
+
+    @pytest.fixture
+    def api_adapter(self):
+        """创建带 call_api 记录的测试适配器"""
+        call_log = []
+
+        class _ApiAdapter(BaseAdapter):
+            def __init__(self):
+                super().__init__()
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                call_log.append((endpoint, params))
+                return {
+                    "status": "ok",
+                    "retcode": 0,
+                    "data": {"endpoint": endpoint, "params": params},
+                    "message_id": "",
+                    "message": "",
+                }
+
+        adapter = _ApiAdapter()
+        return adapter, call_log
+
+    @pytest.mark.asyncio
+    async def test_get_self_info(self, api_adapter):
+        """get_self_info 委托给 call_api('get_self_info')"""
+        adapter, call_log = api_adapter
+        result = await adapter.Api.get_self_info()
+        assert result["status"] == "ok"
+        assert call_log[0][0] == "get_self_info"
+
+    @pytest.mark.asyncio
+    async def test_get_user_info(self, api_adapter):
+        """get_user_info 传递 user_id"""
+        adapter, call_log = api_adapter
+        await adapter.Api.get_user_info("123")
+        assert call_log[0][0] == "get_user_info"
+        assert call_log[0][1]["user_id"] == "123"
+
+    @pytest.mark.asyncio
+    async def test_get_friend_list(self, api_adapter):
+        """get_friend_list 无额外参数"""
+        adapter, call_log = api_adapter
+        await adapter.Api.get_friend_list()
+        assert call_log[0][0] == "get_friend_list"
+
+    @pytest.mark.asyncio
+    async def test_get_group_info(self, api_adapter):
+        """get_group_info 传递 group_id"""
+        adapter, call_log = api_adapter
+        await adapter.Api.get_group_info("g1")
+        assert call_log[0][1]["group_id"] == "g1"
+
+    @pytest.mark.asyncio
+    async def test_get_group_list(self, api_adapter):
+        """get_group_list 无额外参数"""
+        adapter, call_log = api_adapter
+        await adapter.Api.get_group_list()
+        assert call_log[0][0] == "get_group_list"
+
+    @pytest.mark.asyncio
+    async def test_get_group_member_info(self, api_adapter):
+        """get_group_member_info 传递 group_id + user_id"""
+        adapter, call_log = api_adapter
+        await adapter.Api.get_group_member_info("g1", "u1")
+        assert call_log[0][1]["group_id"] == "g1"
+        assert call_log[0][1]["user_id"] == "u1"
+
+    @pytest.mark.asyncio
+    async def test_get_group_member_list(self, api_adapter):
+        """get_group_member_list 传递 group_id"""
+        adapter, call_log = api_adapter
+        await adapter.Api.get_group_member_list("g1")
+        assert call_log[0][1]["group_id"] == "g1"
+
+    @pytest.mark.asyncio
+    async def test_set_group_name(self, api_adapter):
+        """set_group_name 传递 group_id + group_name"""
+        adapter, call_log = api_adapter
+        await adapter.Api.set_group_name("g1", "新群名")
+        assert call_log[0][1]["group_name"] == "新群名"
+
+    @pytest.mark.asyncio
+    async def test_leave_group(self, api_adapter):
+        """leave_group 传递 group_id"""
+        adapter, call_log = api_adapter
+        await adapter.Api.leave_group("g1")
+        assert call_log[0][1]["group_id"] == "g1"
+
+    @pytest.mark.asyncio
+    async def test_delete_message(self, api_adapter):
+        """delete_message 传递 message_id"""
+        adapter, call_log = api_adapter
+        await adapter.Api.delete_message("msg_123")
+        assert call_log[0][1]["message_id"] == "msg_123"
+
+    @pytest.mark.asyncio
+    async def test_upload_file_by_url(self, api_adapter):
+        """upload_file 通过 URL 上传"""
+        adapter, call_log = api_adapter
+        await adapter.Api.upload_file(type="url", name="logo.jpg", url="https://example.com/logo.jpg")
+        params = call_log[0][1]
+        assert params["type"] == "url"
+        assert params["name"] == "logo.jpg"
+        assert params["url"] == "https://example.com/logo.jpg"
+
+    @pytest.mark.asyncio
+    async def test_get_file(self, api_adapter):
+        """get_file 传递 file_id + type"""
+        adapter, call_log = api_adapter
+        await adapter.Api.get_file("file_abc", "url")
+        assert call_log[0][1]["file_id"] == "file_abc"
+        assert call_log[0][1]["type"] == "url"
+
+    @pytest.mark.asyncio
+    async def test_call_extension_action(self, api_adapter):
+        """call() 调用平台扩展动作"""
+        adapter, call_log = api_adapter
+        await adapter.Api.call("telegram.send_sticker", sticker_id="CAACAgIA")
+        assert call_log[0][0] == "telegram.send_sticker"
+        assert call_log[0][1]["sticker_id"] == "CAACAgIA"
+
+    def test_using_creates_new_instance(self, api_adapter):
+        """Using() 返回新实例，不修改原实例"""
+        adapter, _ = api_adapter
+        original = adapter.Api
+        new = original.Using("bot1")
+        assert new is not original
+        assert new._account_id == "bot1"
+        assert original._account_id is None
+
+    @pytest.mark.asyncio
+    async def test_using_passes_account_id(self, api_adapter):
+        """Using() 设置的 account_id 传递给 call_api"""
+        adapter, call_log = api_adapter
+        await adapter.Api.Using("bot1").get_user_info("123")
+        assert call_log[0][1]["account_id"] == "bot1"
+
+    @pytest.mark.asyncio
+    async def test_override_method(self):
+        """适配器覆盖标准方法"""
+        class _OverrideAdapter(BaseAdapter):
+            def __init__(self):
+                super().__init__()
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "", "message": ""}
+
+            class Api(BaseAdapter.Api):
+                async def get_user_info(self, user_id: str) -> dict:
+                    return {
+                        "status": "ok",
+                        "retcode": 0,
+                        "data": {"user_id": user_id, "user_name": "override"},
+                        "message_id": "",
+                        "message": "",
+                    }
+
+        adapter = _OverrideAdapter()
+        result = await adapter.Api.get_user_info("999")
+        assert result["data"]["user_name"] == "override"
+
+    def test_api_instantiated_in_init(self):
+        """BaseAdapter.__init__ 应实例化 Api"""
+        class _TestAdapter(BaseAdapter):
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {}
+
+        adapter = _TestAdapter()
+        assert hasattr(adapter, "Api")
+        assert adapter.Api._adapter is adapter

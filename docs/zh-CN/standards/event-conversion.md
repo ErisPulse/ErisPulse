@@ -440,9 +440,77 @@ await adapter.myplatform.Request("req_abc123").accept(comment="欢迎")
 
 ---
 
-## 9. 相关文档
+## 9. notice / request 事件的会话类型推断
+
+### 9.1 问题背景
+
+notice 事件和 request 事件的 `detail_type` 是**语义子类型**（如 `group_member_increase`、`friend_increase`），不是会话类型（如 `group`、`private`）。
+
+```
+type        detail_type                  含义            会话类型
+────        ───────────                  ────            ────────
+message     group                        群聊消息         group（detail_type 即会话类型）
+message     private                      私聊消息         private（detail_type 即会话类型）
+notice      group_member_increase        群成员增加       group（需从 group_id 推断）
+notice      friend_increase              好友增加         private（需从 user_id 推断）
+request     friend                       好友请求         private（需从 user_id 推断）
+request     group                        群请求           group（detail_type 即会话类型）
+```
+
+### 9.2 推断规则
+
+`infer_receive_type()` 的推断顺序：
+
+1. 如果 `detail_type` 是已知会话类型（`private`/`group`/`channel`/`guild`/`thread`/`user`），直接使用
+2. 如果 `detail_type` 是自定义会话类型，直接使用
+3. 否则（notice/request 的语义子类型），根据 ID 字段推断：
+   - 有 `group_id` → `"group"`
+   - 有 `channel_id` → `"channel"`
+   - 有 `guild_id` → `"guild"`
+   - 有 `thread_id` → `"thread"`
+   - 有 `user_id` → `"private"`
+
+### 9.3 `event.reply()` 目标推断
+
+notice/request 事件中 `event.reply()` 的发送目标由会话类型推断决定：
+
+- 群通知事件（含 `group_id`）→ 回复到**群**
+- 好友通知事件（仅含 `user_id`）→ 回复到**用户私聊**
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_group_increase()
+async def handle_welcome(event):
+    group_id = event.get("group_id")    # "group_789"
+    user_id = event.get("user_id")      # "user_456"
+
+    # event.reply() 发送到群（group/group_789）
+    await event.reply("欢迎入群！")
+
+    # 如需通知管理员（私聊），显式指定目标：
+    await adapter.Send.To("user", "admin_id").Text(f"新成员 {user_id} 加入了 {group_id}")
+```
+
+### 9.4 适配器开发建议
+
+确保 notice/request 事件中包含正确的 ID 字段：
+
+| detail_type | 必须包含的 ID 字段 | 推断的会话类型 |
+|-------------|-------------------|---------------|
+| `group_member_increase` | `group_id` + `user_id` | `group` |
+| `group_member_decrease` | `group_id` + `user_id` | `group` |
+| `friend_increase` | `user_id` | `private` |
+| `friend_decrease` | `user_id` | `private` |
+| `friend`（请求） | `user_id` | `private` |
+| `group`（请求） | `group_id` | `group` |
+
+---
+
+## 10. 相关文档
 
 - [各平台特性文档](../platform-guide/README.md) - 你可以访问此文档来了解各个平台特性以及已知的扩展事件和消息段等。
 - [会话类型标准](session-types.md) - 会话类型定义和映射关系
 - [发送方法规范](send-method-spec.md) - Send 类的方法命名、参数规范及反向转换要求
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
+- [API 动作标准](api-action-spec.md) - OneBot12 标准 API 动作的统一接口

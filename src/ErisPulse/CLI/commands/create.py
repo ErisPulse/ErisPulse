@@ -339,6 +339,21 @@ class {name}(BaseAdapter):
                 "message": result.get("message", ""),
             }}
 
+    class Api(BaseAdapter.Api):
+        \"\"\"
+        标准 API 动作 DSL
+
+        提供跨平台的 OneBot12 标准动作（信息查询/群管理/消息管理/文件操作）。
+        默认实现委托给 call_api，适配器可覆盖单个方法映射到平台原生 API。
+        平台扩展动作通过 call("prefix.action", **params) 调用。
+        \"\"\"
+
+        # 标准方法（get_user_info / get_group_info / delete_message 等）已从基类继承，
+        # 默认委托给 call_api。如需平台特定逻辑，可覆盖单个方法：
+        # async def get_user_info(self, user_id: str) -> dict:
+        #     raw = await self._adapter._request("GET", f"/users/{{user_id}}")
+        #     return self._adapter.make_response(data={{...}}, raw=raw)
+
     async def start(self):
         \"\"\"启动适配器\"\"\"
         cfg = self.cfg
