@@ -270,23 +270,45 @@ def infer_receive_type(event: dict, platform: str | None = None) -> str:
     根据事件数据自动推断接收类型
 
     检查顺序：
-    1. 如果存在 detail_type，直接使用
-    2. 检查各种 ID 字段，按优先级返回
+    1. 如果 ``detail_type`` 是已知的会话类型（标准或自定义），直接使用
+    2. notice/request 事件的 ``detail_type`` 是语义子类型（如 ``group_member_increase``），
+       不是会话类型，此时根据 ID 字段推断
+    3. 最后根据存在的 ID 字段，按优先级返回
 
     :param event: 事件数据字典
     :param platform: 平台名称（可选）
     :return: 推断的接收类型
 
     :example:
-    >>> event = {"group_id": "123"}
+    >>> # 消息事件：detail_type 就是会话类型
+    >>> event = {"type": "message", "detail_type": "group", "group_id": "123"}
     >>> infer_receive_type(event)  # 返回 "group"
+    >>>
+    >>> # 通知事件：detail_type 是语义子类型，从 ID 字段推断
+    >>> event = {"type": "notice", "detail_type": "group_member_increase", "group_id": "123"}
+    >>> infer_receive_type(event)  # 返回 "group"（而非 "group_member_increase"）
+    >>>
+    >>> event = {"type": "notice", "detail_type": "friend_increase", "user_id": "456"}
+    >>> infer_receive_type(event)  # 返回 "private"
     """
-    # 如果已有 detail_type，直接返回
     detail_type = event.get("detail_type")
-    if detail_type:
-        return detail_type
 
-    # 根据存在的 ID 字段推断
+    if detail_type:
+        # 只有当 detail_type 是已知会话类型（标准或自定义）时才直接返回。
+        # notice/request 事件的 detail_type（如 group_member_increase / friend）
+        # 是语义子类型，不是会话类型，需从 ID 字段推断正确的会话类型。
+        if detail_type in RECEIVE_TYPES:
+            return detail_type
+
+        # 检查自定义会话类型
+        if platform:
+            custom_key = f"{platform}_{detail_type}"
+            if custom_key in _custom_type_to_id_field:
+                return detail_type
+        if detail_type in _custom_type_to_id_field:
+            return detail_type
+
+    # 从 ID 字段推断会话类型
     # 优先级：group > channel > guild > thread > user
     if event.get("group_id"):
         return "group"

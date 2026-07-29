@@ -93,13 +93,13 @@
 |--------|------|
 | 🔴 严重 | 13 |
 | 🟡 中等 | 11 |
-| 🟢 轻微 | 1 |
-| **合计** | **25** |
+| 🟢 轻微 | 2 |
+| **合计** | **26** |
 
 | 类型 | 数量 |
 |------|------|
 | 适配器 | 6 |
-| 事件系统 | 4 |
+| 事件系统 | 5 |
 | 存储 | 3 |
 | 加载系统 | 3 |
 | CLI | 3 |
@@ -699,3 +699,34 @@ await sdk.storage.aset("groups.871684833.name", "某群")
 **严重性**: 🟡 中等
 
 **类型**: 配置系统
+
+---
+
+### [BUG-026] notice/request 事件 reply 目标推断错误
+
+**问题**: 在群通知事件（如成员加群 `group_member_increase`）中调用 `event.reply()`，消息被发送到触发事件的用户私聊，而非事件所在的群。好友通知事件同理，回复目标可能错乱。
+
+**原因**: `infer_receive_type()` 将事件的 `detail_type` 直接当作会话类型返回。对于 message 事件这是正确的（`detail_type` 值 `private`/`group` 即会话类型），但 notice/request 事件的 `detail_type` 是语义子类型（如 `group_member_increase`、`friend_increase`），不是会话类型。后续的 `convert_to_send_type()` 和 `get_id_field()` 在映射表中找不到该值，回退到默认的 `"user"` / `"user_id"`，导致回复目标错乱。
+
+**根因链路**:
+```
+notice 事件 detail_type="group_member_increase"
+  → infer_receive_type() 直接返回 "group_member_increase"
+    → convert_to_send_type("group_member_increase") 不在映射表 → 回退 "user"
+    → get_id_field("group_member_increase") 不在映射表 → 回退 "user_id"
+      → target_id = event["user_id"]  ← 新成员私聊（而非群）
+```
+
+**影响版本**: 全版本
+
+**修复版本**: 2.7.0-dev.3
+
+**修复内容**: `infer_receive_type()` 增加判断——`detail_type` 只有在是已知会话类型（标准类型或自定义类型）时才直接返回；否则根据 ID 字段（`group_id` / `channel_id` / `user_id` 等）推断正确的会话类型。
+
+**回归测试**: `tests/unit/test_unit_session_type.py` → `TestNoticeRequestTypeInference`（10 用例）
+
+**修复日期**: 2026/07/29
+
+**严重性**: 🟢 轻微
+
+**类型**: 事件系统

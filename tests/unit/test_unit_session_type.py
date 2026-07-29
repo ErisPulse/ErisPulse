@@ -137,6 +137,109 @@ class TestTypeInference:
         assert infer_receive_type(event) == "private"
 
 
+class TestNoticeRequestTypeInference:
+    """测试 notice/request 事件的会话类型推断
+
+    notice 和 request 事件的 detail_type 是语义子类型（如 group_member_increase），
+    不是会话类型。应从 ID 字段推断正确的会话类型。
+    """
+
+    def test_notice_group_member_increase(self):
+        """notice 群成员增加 → 从 group_id 推断为 group"""
+        event = {
+            "type": "notice",
+            "detail_type": "group_member_increase",
+            "group_id": "789",
+            "user_id": "456",
+        }
+        assert infer_receive_type(event) == "group"
+
+    def test_notice_group_member_decrease(self):
+        """notice 群成员减少 → 从 group_id 推断为 group"""
+        event = {
+            "type": "notice",
+            "detail_type": "group_member_decrease",
+            "group_id": "789",
+            "user_id": "456",
+        }
+        assert infer_receive_type(event) == "group"
+
+    def test_notice_friend_increase(self):
+        """notice 好友增加 → 从 user_id 推断为 private"""
+        event = {
+            "type": "notice",
+            "detail_type": "friend_increase",
+            "user_id": "456",
+        }
+        assert infer_receive_type(event) == "private"
+
+    def test_notice_friend_decrease(self):
+        """notice 好友减少 → 从 user_id 推断为 private"""
+        event = {
+            "type": "notice",
+            "detail_type": "friend_decrease",
+            "user_id": "456",
+        }
+        assert infer_receive_type(event) == "private"
+
+    def test_request_friend(self):
+        """request 好友请求 → friend 不是会话类型，从 user_id 推断为 private"""
+        event = {
+            "type": "request",
+            "detail_type": "friend",
+            "user_id": "456",
+        }
+        assert infer_receive_type(event) == "private"
+
+    def test_request_group(self):
+        """request 群请求 → group 是会话类型，直接返回"""
+        event = {
+            "type": "request",
+            "detail_type": "group",
+            "group_id": "789",
+        }
+        assert infer_receive_type(event) == "group"
+
+    def test_notice_send_type_and_target_group(self):
+        """notice 群事件 → send_type=group, target_id=group_id（非 user_id）"""
+        event = {
+            "type": "notice",
+            "detail_type": "group_member_increase",
+            "group_id": "789",
+            "user_id": "456",
+        }
+        send_type, target_id = get_send_type_and_target_id(event, "test_platform")
+        assert send_type == "group"
+        assert target_id == "789"
+
+    def test_notice_send_type_and_target_private(self):
+        """notice 好友事件 → send_type=user, target_id=user_id"""
+        event = {
+            "type": "notice",
+            "detail_type": "friend_increase",
+            "user_id": "456",
+        }
+        send_type, target_id = get_send_type_and_target_id(event, "test_platform")
+        assert send_type == "user"
+        assert target_id == "456"
+
+    def test_message_detail_type_still_works(self):
+        """message 事件的 detail_type 仍是会话类型，直接使用"""
+        event = {
+            "type": "message",
+            "detail_type": "private",
+            "user_id": "456",
+        }
+        assert infer_receive_type(event) == "private"
+
+        event2 = {
+            "type": "message",
+            "detail_type": "group",
+            "group_id": "789",
+        }
+        assert infer_receive_type(event2) == "group"
+
+
 class TestTargetId:
     """测试目标ID获取"""
     
