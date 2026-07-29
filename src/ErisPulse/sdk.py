@@ -1563,6 +1563,6 @@ class SDK:
 
 
 # 创建全局 SDK 实例
-sdk = SDK()
+sdk: SDK = SDK()
 
 __all__ = ["SDK", "sdk"]
