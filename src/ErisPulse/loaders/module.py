@@ -290,6 +290,9 @@ class ModuleLoader(BaseLoader):
             logger.error(
                 i18n.t("loader.module.load_single_failed", name=meta_name, error=e)
             )
+            from ..runtime.diagnostics import log_diagnostic
+
+            log_diagnostic(e, hint_key="loader.module.diag_hint")
 
         return objs, enabled_list, disabled_list, is_new
 
@@ -677,6 +680,9 @@ class ModuleLoader(BaseLoader):
                 logger.warning(
                     i18n.t("loader.module.init_failed", name=meta_name, error=e)
                 )
+                from ..runtime.diagnostics import log_diagnostic
+
+                log_diagnostic(e, hint_key="loader.module.diag_hint")
 
         return True
 
@@ -858,6 +864,9 @@ class LazyModule:
             logger.error(
                 f"懒加载模块 {object.__getattribute__(self, '_module_name')} 初始化失败: {e}"
             )
+            from ..runtime.diagnostics import log_diagnostic
+
+            log_diagnostic(e, hint_key="loader.module.diag_hint")
             object.__setattr__(self, "_initialized", False)
             object.__setattr__(self, "_init_failed", True)
 
@@ -1031,6 +1040,9 @@ class LazyModule:
             logger.error(
                 f"懒加载模块 {object.__getattribute__(self, '_module_name')} 异步初始化部分失败: {e}"
             )
+            from ..runtime.diagnostics import log_diagnostic
+
+            log_diagnostic(e, hint_key="loader.module.diag_hint")
 
     def __getattr__(self, name: str) -> Any:
         """

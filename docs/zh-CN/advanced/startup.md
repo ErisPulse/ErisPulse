@@ -94,6 +94,31 @@ module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.mo
 | `enabled` (`list[str]`) | 被启用的名称（配置中未禁用） |
 | `disabled` (`list[str]`) | 被禁用的名称 |
 
+#### 加载失败时的诊断信息
+
+当某个模块/适配器在加载或初始化阶段抛出异常时，框架会跳过该组件并继续加载其他组件，同时输出**用户代码帧摘要**，让你在默认 INFO 级别下即可定位出错位置，无需手动重开 DEBUG：
+
+```
+[ERROR] [ModuleLoader] 从 entry-point 加载模块 MyModule 失败，已跳过: 'NoneType' object has no attribute 'platform'
+  → MyModule/Core.py:42 in on_load
+      adapter = sdk.platform
+  → AttributeError: 'NoneType' object has no attribute 'platform'
+  → 提示: 将日志级别提高到 DEBUG 可查看完整堆栈；检查模块 MyModule 的实现代码
+```
+
+诊断信息通过 `ErisPulse.runtime.diagnostics` 模块生成，会自动过滤掉框架内部帧，只保留你的代码帧。如需在自定义加载逻辑中复用：
+
+```python
+from ErisPulse.runtime import log_diagnostic
+
+try:
+    risky_init()
+except Exception as e:
+    log_diagnostic(e)  # 自动提取用户代码帧并写入 ERROR 日志
+```
+
+该模块还提供 `extract_user_frame()`（返回结构化帧信息）和 `format_diagnostic_block()`（返回多行文本）两个底层函数。
+
 ### 3. 注册层：register_to_manager
 
 把 Loader 产出的对象登记到管理器，让 `sdk.adapter` / `sdk.module` 能识别它们。
