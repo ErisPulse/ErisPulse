@@ -57,6 +57,7 @@ class ConfigManager:
         self._register_atexit()
 
     _CONFIG_WATCH_INTERVAL: float = 5.0  # 配置文件监听轮询间隔（秒）
+    _MALFORMED_WARN_COOLDOWN: float = 30.0  # flush 阶段语法错误告警冷却（秒）
 
     def _start_config_watcher(self) -> None:
         """
@@ -175,33 +176,93 @@ class ConfigManager:
         """
         从文件加载配置到缓存
 
+        对加载失败按三种状态分别给出可操作的诊断信息：
+
+        - 文件缺失：正常首次启动，静默使用空配置
+        - TOML 语法错误：输出出错行号/列号与原因，并提示已回退默认配置
+        - 权限/其他错误：输出明确原因，并提示已回退默认配置
+
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
         with self._lock:
-            try:
-                if not Path(self.CONFIG_FILE).exists():
-                    self._cache = {}
-                    self._cache_timestamp = time.time()
-                    return
-
-                with Path(self.CONFIG_FILE).open(encoding="utf-8") as f:
-                    config = toml.load(f)
-                    self._cache = config
-                    self._cache_timestamp = time.time()
-            except Exception as e:
-                try:
-                    from .logger import logger
-
-                    logger.error(
-                        i18n.t(
-                            "core.config.load_failed", path=self.CONFIG_FILE, error=e
-                        )
-                    )
-                except (ImportError, AttributeError):
-                    pass
+            path = Path(self.CONFIG_FILE)
+            if not path.exists():
                 self._cache = {}
                 self._cache_timestamp = time.time()
+                return
+
+            try:
+                with path.open(encoding="utf-8") as f:
+                    config = toml.load(f)
+            except toml.TomlDecodeError as e:
+                # 态1：TOML 语法错误——给出行号/列号与原因，便于用户精确定位
+                self._cache = {}
+                self._cache_timestamp = time.time()
+                self._log_config_error(
+                    i18n.t(
+                        "core.config.toml_malformed",
+                        path=self.CONFIG_FILE,
+                        line=getattr(e, "lineno", "?"),
+                        col=getattr(e, "colno", "?"),
+                        reason=getattr(e, "msg", str(e)),
+                    )
+                )
+                self._log_config_error(
+                    i18n.t("core.config.using_defaults_warning"),
+                    level="warning",
+                )
+            except PermissionError:
+                # 态2：权限问题——明确告知，避免误以为是配置内容问题
+                self._cache = {}
+                self._cache_timestamp = time.time()
+                self._log_config_error(
+                    i18n.t("core.config.permission_denied", path=self.CONFIG_FILE),
+                )
+                self._log_config_error(
+                    i18n.t("core.config.using_defaults_warning"),
+                    level="warning",
+                )
+            except Exception as e:
+                # 态3：其他未知错误——保留原有通用提示
+                self._cache = {}
+                self._cache_timestamp = time.time()
+                self._log_config_error(
+                    i18n.t(
+                        "core.config.load_failed", path=self.CONFIG_FILE, error=e
+                    )
+                )
+                self._log_config_error(
+                    i18n.t("core.config.using_defaults_warning"),
+                    level="warning",
+                )
+            else:
+                self._cache = config
+                self._cache_timestamp = time.time()
+                if not self._cache:
+                    self._log_config_error(
+                        i18n.t("core.config.loaded_empty", path=self.CONFIG_FILE),
+                        level="debug",
+                    )
+
+    @staticmethod
+    def _log_config_error(message: str, level: str = "error") -> None:
+        """
+        将配置加载诊断信息写入日志
+
+        {!--< internal-use >!--}
+        统一处理 logger 尚未就绪的早期场景，失败时静默忽略。
+        {!--< /internal-use >!--}
+
+        :param message: str 日志消息
+        :param level: str 日志级别（``error``/``warning``/``debug``）
+        """
+        try:
+            from .logger import logger
+
+            getattr(logger, level, logger.error)(message)
+        except (ImportError, AttributeError):
+            pass
 
     @staticmethod
     def _sort_config_dict(config_dict: dict[str, Any]) -> dict[str, Any]:
@@ -218,6 +279,20 @@ class ConfigManager:
             k: ConfigManager._sort_config_dict(v) if isinstance(v, dict) else v
             for k, v in sorted(config_dict.items())
         }
+
+    @property
+    def _malformed_sentinel_path(self) -> Path:
+        """
+        跨进程告警冷却哨兵文件路径
+
+        位于配置文件同级目录下的隐藏文件，通过其 mtime 实现跨进程去重：
+        无论 ``epsdk run`` 子进程、``python main.py`` 直跑、还是多实例场景，
+        所有进程共享同一文件系统，自然协调告警频率。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        return Path(self.CONFIG_FILE).parent / ".flush_malformed_cooldown"
 
     def _flush_config(self) -> None:
         """
@@ -271,6 +346,13 @@ class ConfigManager:
                     self._cache = sorted_config
                     self._cache_timestamp = time.time()
                     self._dirty_keys.clear()
+                    # 写入成功 → 清除告警冷却标记，下次再损坏可立即告警
+                    sentinel = self._malformed_sentinel_path
+                    try:
+                        if sentinel.exists():
+                            sentinel.unlink()
+                    except Exception:
+                        pass
 
                     # 同步记录的 mtime，避免文件监听任务把框架自身的写入误判为外部修改，
                     # 从而重复触发 config.updated（与 config.set 路由重复调用 on_config_update）
@@ -279,6 +361,47 @@ class ConfigManager:
                     except OSError:
                         pass
 
+                except toml.TomlDecodeError as e:
+                    # 配置文件已损坏（语法错误）→ 无法安全地读取-合并-写入。
+                    # 不清空 _dirty_keys，待用户修复文件后下次 flush 再写入。
+                    # 去重：使用配置目录下的哨兵文件 mtime 做冷却。
+                    # 这是跨进程的——无论 epsdk run 子进程、python main.py 直跑、
+                    # 还是多实例场景，所有进程共享同一文件系统，自然协调。
+                    should_warn = True
+                    sentinel = self._malformed_sentinel_path
+                    try:
+                        if sentinel.exists():
+                            if time.time() - sentinel.stat().st_mtime <= self._MALFORMED_WARN_COOLDOWN:
+                                should_warn = False
+                    except Exception:
+                        pass
+
+                    if should_warn:
+                        try:
+                            sentinel.touch()
+                        except Exception:
+                            pass
+                        try:
+                            from .logger import logger
+
+                            logger.error(
+                                i18n.t(
+                                    "core.config.flush_malformed",
+                                    path=self.CONFIG_FILE,
+                                    line=getattr(e, "lineno", "?"),
+                                    col=getattr(e, "colno", "?"),
+                                    reason=getattr(e, "msg", str(e)),
+                                )
+                            )
+                        except (ImportError, AttributeError):
+                            pass
+                    # 清理临时文件
+                    temp_file = self.CONFIG_FILE + ".tmp"
+                    if Path(temp_file).exists():
+                        try:
+                            Path(temp_file).unlink()
+                        except Exception:
+                            pass
                 except Exception as e:
                     try:
                         from .logger import logger
@@ -313,15 +436,23 @@ class ConfigManager:
 
     def _flush_on_exit(self) -> None:
         """
-        atexit 回调：进程退出时强制刷新所有脏配置
+        atexit 回调：进程退出时强制刷新所有脏配置，并清理哨兵文件
 
         {!--< internal-use >!--}
+        哨兵文件（``.flush_malformed_cooldown``）是运行时跨进程去重的临时标记，
         {!--< /internal-use >!--}
         """
         try:
             if self._write_timer:
                 self._write_timer.cancel()
             self._flush_config()
+        except Exception:
+            pass
+        # 清理哨兵文件（无论 flush 成功与否）
+        try:
+            sentinel = self._malformed_sentinel_path
+            if sentinel.exists():
+                sentinel.unlink()
         except Exception:
             pass
 

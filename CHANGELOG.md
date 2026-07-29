@@ -63,6 +63,51 @@
 
 ---
 
+## [2.7.0-dev.2] - 2026/07/29
+> 开发版本
+
+**版本摘要**
+开发者可观测性增强版本：聚焦「让每一次失败都能被快速定位」。新增异常诊断模块 `runtime.diagnostics`，模块/适配器在加载或初始化失败时自动输出**用户代码帧摘要**（过滤框架内部帧、保留出错位置的文件名/行号/源码），开发者无需手动重开 DEBUG 即可定位根因。同时将配置加载的错误处理从「静默回退空配置」升级为**三态可操作诊断**——TOML 语法错误给出行号/列号、权限错误给出明确原因，避免「改了配置却没生效」的困惑。**完全向后兼容**，所有导出均为新增，不影响现有 API。
+
+**升级建议**
+- **建议升级**
+- 升级原因：模块/适配器加载失败时，默认 INFO 级别即可看到用户代码出错位置；配置文件写错时会输出精确行号而非静默使用默认值
+
+### 新增
+
+- `runtime/diagnostics.py` 模块：异常诊断引擎，从异常 traceback 提取「用户代码帧」摘要
+  - `extract_user_frame(exc, depth=3)`：过滤 ErisPulse 框架内部帧，返回结构化诊断信息（帧列表 / 异常类型 / 异常消息）
+  - `format_diagnostic_block(exc, hint_key=, candidates=, depth=3)`：生成带 `→` 引导符的多行诊断文本（含帧位置、源码、异常类型、查看完整堆栈的提示）
+  - `log_diagnostic(exc, ...)`：最常用入口，自动提取用户代码帧并以 ERROR 级别写入日志
+  - 自动路径缩短：相对 cwd / 相对包父目录 / 退化为文件名三级回退
+  - 内置 i18n 英文兜底（`_t`），i18n 未就绪时仍可输出诊断信息
+- 模块/适配器加载与初始化失败路径集成诊断输出
+  - `loaders/module.py`：entry-point 加载失败、立即初始化失败、懒加载初始化失败、异步初始化失败（共 4 处）
+  - `loaders/adapter.py`：entry-point 加载失败、注册失败（共 2 处）
+  - 输出形如 `→ MyModule/Core.py:42 in on_load` + 源码行 + 异常类型，末尾附加查看完整堆栈的提示
+- 配置加载三态错误诊断（`Core/config.py` `_load_config` 重构）
+  - TOML 语法错误：输出出错行号/列号与原因（`core.config.toml_malformed`）
+  - 权限错误：明确告知无读权限（`core.config.permission_denied`）
+  - 其他错误：保留原有通用提示（`core.config.load_failed`）
+  - 三种错误均附加「已回退默认配置」警告（`core.config.using_defaults_warning`）
+  - 空配置文件加载成功时输出 debug 提示（`core.config.loaded_empty`）
+- 配置写入（flush）阶段语法错误诊断（`Core/config.py` `_flush_config`）
+  - 此前：运行中文件被改坏时，flush 的读取-合并步骤触发 `TomlDecodeError`，被通用 `except` 捕获后输出令人困惑的「写入配置文件失败」
+  - 现在：单独捕获 `TomlDecodeError`，输出「配置文件已损坏（语法错误，第 X 行），无法合并写入」（`core.config.flush_malformed`），并保留 `_dirty_keys` 待用户修复后重试
+  - 跨进程去重：使用配置目录下的哨兵文件（`.flush_malformed_cooldown`）的 mtime 做冷却窗口（默认 30s），确保无论 `epsdk run` 子进程、`python main.py` 直跑、还是多实例场景，同一错误只告警一次；进程退出时（atexit）自动清理哨兵文件
+- i18n 同步（5 语言：zh-CN / zh-TW / en / ja / ru）：
+  - `core.diag.*`（6 keys）：诊断文本帧/源码/异常行/提示/兜底/相似建议
+  - `loader.module.diag_hint` / `loader.adapter.diag_hint`：加载器专属提示
+  - `core.config.toml_malformed` / `permission_denied` / `using_defaults_warning` / `loaded_empty`：配置三态诊断
+- `runtime/__init__.py` 聚合导出：`extract_user_frame` / `format_diagnostic_block` / `log_diagnostic`
+
+### 优化
+
+- `docs/zh-CN/user-guide/configuration.md` 新增「配置加载错误处理」章节，说明三态诊断行为
+- `docs/zh-CN/advanced/startup.md` Loader 章节新增「加载失败时的诊断信息」小节，含诊断输出示例与 `log_diagnostic` 复用方法
+
+---
+
 ## [2.7.0-dev.1] - 2026/07/28
 > 开发版本
 

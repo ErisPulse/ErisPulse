@@ -1,6 +1,8 @@
 # 快速开始
 
-> 遇到不理解的术语？查看 [术语表](terminology.md) 获取通俗易懂的解释。
+> **这是你的第一步。** 用 5 分钟从零跑起一个 ErisPulse 机器人。
+>
+> 遇到不理解的术语?查看 [术语表](terminology.md)。
 
 ## 安装 ErisPulse
 
@@ -173,7 +175,19 @@ level = "INFO"
 
 ## 下一步
 
-- [入门指南总览](getting-started/README.md) - 了解 ErisPulse 的基本概念
-- [创建第一个机器人](getting-started/first-bot.md) - 创建一个简单的机器人
-- [用户使用指南](user-guide/) - 深入了解配置和模块管理
-- [开发者指南](developer-guide/) - 开发自定义模块和适配器
+机器人跑起来后，你可以按需继续：
+
+**想了解框架怎么运作?**
+- [基础概念](getting-started/basic-concepts.md) — 适配器 / 模块 / 事件 的设计
+- [架构概览](architecture.md) — 可视化架构图
+
+**想实现更多功能?**
+- [常见任务示例](getting-started/common-tasks.md) — 存储、定时任务、权限控制
+- [事件处理入门](getting-started/event-handling.md) — 消息、通知、请求处理
+
+**想开发自己的模块 / 适配器?**
+- [模块开发入门](developer-guide/modules/getting-started.md)
+- [适配器开发入门](developer-guide/adapters/getting-started.md)
+
+**按需查阅:**
+- [配置文件说明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md)
