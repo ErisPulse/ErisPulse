@@ -12,7 +12,7 @@
           "level": 1
         },
         {
-          "title": "速習",
+          "title": "クイックスタート",
           "path": "quick-start.md",
           "level": 1
         },
@@ -39,7 +39,7 @@
       "count": 6,
       "documents": [
         {
-          "title": "最初のボットを作成する",
+          "title": "最初のロボットを作成する",
           "path": "getting-started/first-bot.md",
           "level": 1
         },
@@ -81,7 +81,7 @@
           "level": 1
         },
         {
-          "title": "インストールと設定",
+          "title": "インストールの参考",
           "path": "user-guide/installation.md",
           "level": 1
         },
@@ -158,7 +158,7 @@
               "level": 1
             },
             {
-              "title": "SendDSL 详解",
+              "title": "SendDSL 詳解",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1
             },
@@ -366,7 +366,7 @@
     },
     "技術標準": {
       "description": "フレームワークの技術仕様と標準",
-      "count": 6,
+      "count": 7,
       "documents": [
         {
           "title": "技術標準",
@@ -396,6 +396,11 @@
         {
           "title": "ErisPulse リクエスト操作仕様書",
           "path": "standards/request-action-spec.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse API アクション仕様",
+          "path": "standards/api-action-spec.md",
           "level": 1
         }
       ],

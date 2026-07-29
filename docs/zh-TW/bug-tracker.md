@@ -3,7 +3,7 @@
 本文檔記錄 ErisPulse SDK 的已知 Bug 及其修復情況，按修復版本時間順序排列。
 
 > **寫給讀者**
-> 沒有任何軟體天生完美，再細心的開發者也會留下小錯誤。本追蹤收錄的都是對運行有實際影響的問題——那些過於細微、連「輕微」等級都達不到的瑕疵並不會出現在這裡。清單中「嚴重」項看起來不少，但公開記錄這些 Bug 的初衷是讓排查與回溯更順暢，而非製造焦慮：能被看見、被記錄、被修復的問題，本身就是項目不斷變好的證明。看到這份清單不必緊張，它是一份排查工具，而不是恐懼的來源。
+> 沒有任何軟體天生完美，再細心的開發者也會留下小錯誤。本追蹤收錄的都是對運行有實際影響的問題——那些過於細微、連「輕微」等級都達不到的瑕疵並不會出現在這裡。清單中「嚴重」項看起來不少，但公開記錄這些 Bug 的初衷是讓排查與回溯更順暢，而非製造焦慮：能被看見、被記錄、被修復的問題，本身就是專案不斷變好的證明。看到這份清單不必緊張，它是一份排查工具，而不是恐懼的來源。
 
 > **如何閱讀 & 維護約定**
 > - 每條 Bug 記錄包含問題描述、根因分析、影響版本範圍、修復方案等結構化字段，建議升級前先檢索「影響版本」是否覆蓋當前使用的版本。
@@ -32,83 +32,83 @@
 |------|------|---------|
 | **復現步驟** | 觸發該 Bug 的最小可復現路徑 | 複雜 Bug、偶發性 Bug 建議補充 |
 | **關聯** | 相關 Issue / PR / Commit 鏈接 | 有外部討論記錄時補充 |
-| **迴歸測試** | 驗證修復、防止再次迴歸的測試用例位置 | 已編寫對應 pytest 用例時補充 |
+| **回歸測試** | 驗證修復、防止再次回歸的測試用例位置 | 已編寫對應 pytest 用例時補充 |
 
 ---
 
-## 嚴重性分級
+## 严重性分级
 
-| 標識 | 級別 | 判定標準 | 典型表現 |
+| 标识 | 级别 | 判定标准 | 典型表现 |
 |------|------|---------|---------|
-| 🔴 | 嚴重 | 導致進程崩潰、資料丟失/損壞、核心功能完全不可用、安全漏洞 | OOM Kill、訊息無法發送、模組無法載入、熱重載失敗 |
-| 🟡 | 中等 | 功能異常但有避開路徑、非核心功能失效、偶發問題 | 狀態判斷錯誤、重複觸發、快取過期、錯誤提示不准 |
-| 🟢 | 輕微 | 不影響核心功能、僅程式碼品質或體驗問題、潛在風險未爆發 | 棄用 API、死程式碼、缺失 warning 日誌 |
+| 🔴 | 严重 | 导致进程崩溃、数据丢失/损坏、核心功能完全不可用、安全漏洞 | OOM Kill、消息无法发送、模块无法加载、热重载失败 |
+| 🟡 | 中等 | 功能异常但有规避路径、非核心功能失效、偶发问题 | 状态判断错误、重复触发、缓存过期、错误提示不准 |
+| 🟢 | 轻微 | 不影响核心功能、仅代码质量或体验问题、潜在风险未爆发 | 弃用 API、死代码、缺失 warning 日志 |
 
 ---
 
-## 類型分類
+## 类型分类
 
-| 類型 | 覆蓋範圍 |
+| 类型 | 覆盖范围 |
 |------|---------|
-| 配置系統 | `ConfigManager`、配置讀寫、配置 Schema、熱更新 |
-| 事件系統 | `Event` 模組（command/message/notice/request/meta）、事件分發、處理器註冊 |
-| 適配器 | `AdapterManager`、`BaseAdapter`、帳戶解析、Bot 狀態、中間件 |
+| 配置系统 | `ConfigManager`、配置读写、配置 Schema、热更新 |
+| 事件系统 | `Event` 模块（command/message/notice/request/meta）、事件分发、处理器注册 |
+| 适配器 | `AdapterManager`、`BaseAdapter`、账户解析、Bot 状态、中间件 |
 | 路由 | `RouterManager`、HTTP/WebSocket/SSE 路由、限流、CORS |
-| 客戶端 | `HttpClient`、`ClientWebSocket`、aiohttp 封裝 |
-| 存儲 | `StorageManager`、SQLite、SQL 構建器、嵌套鍵 |
-| 加載系統 | `Loader`、`LazyModule`、`ModuleInitializer`、嚴格模式、模組發現 |
-| CLI | `epsdk` 命令、`init`/`run`/`install`、參數解析、訊號處理 |
-| 運行時 | `sdk.run`/`restart`/`uninit`、生命週期、訊號、子進程 |
+| 客户端 | `HttpClient`、`ClientWebSocket`、aiohttp 封装 |
+| 存储 | `StorageManager`、SQLite、SQL 构建器、嵌套键 |
+| 加载系统 | `Loader`、`LazyModule`、`ModuleInitializer`、严格模式、模块发现 |
+| CLI | `epsdk` 命令、`init`/`run`/`install`、参数解析、信号处理 |
+| 运行时 | `sdk.run`/`restart`/`uninit`、生命周期、信号、子进程 |
 
 ---
 
-## 條目範本
+## 条目模板
 
-新增 Bug 條目請遵循以下格式：
+新增 Bug 条目请遵循以下格式：
 
 ```markdown
-### [BUG-XXX] 標題
+### [BUG-XXX] 标题
 
-**問題**: 問題描述（報錯資訊或典型現象）
+**问题**: 问题描述（报错信息或典型现象）
 **原因**: 根因分析
-**影響版本**: 引入版本 - 修復版本
-**修復版本**: x.x.x
-**修復內容**: 修復方案
-**修復日期**: YYYY/MM/DD
+**影响版本**: 引入版本 - 修复版本
+**修复版本**: x.x.x
+**修复内容**: 修复方案
+**修复日期**: YYYY/MM/DD
 
-<!-- 可選字段 -->
-**復現步驟**: （複雜 Bug 建議補充）
-**關聯**: （Issue/PR 鏈接）
-**迴歸測試**: （驗證用例路徑）
+<!-- 可选字段 -->
+**复现步骤**: （复杂 Bug 建议补充）
+**关联**: （Issue/PR 链接）
+**回归测试**: （验证用例路径）
 
-**嚴重性**: 🔴 嚴重 | 🟡 中等 | 🟢 輕微
-**類型**: 配置系統 / 事件系統 / 適配器 / 路由 / 客戶端 / 存儲 / 加載系統 / CLI / 運行時
+**严重性**: 🔴 严重 | 🟡 中等 | 🟢 轻微
+**类型**: 配置系统 / 事件系统 / 适配器 / 路由 / 客户端 / 存储 / 加载系统 / CLI / 运行时
 ```
 
 ---
 
-## 統計概覽
+## 统计概览
 
-| 嚴重性 | 數量 |
+| 严重性 | 数量 |
 |--------|------|
-| 🔴 嚴重 | 13 |
+| 🔴 严重 | 13 |
 | 🟡 中等 | 11 |
-| 🟢 輕微 | 1 |
-| **合計** | **25** |
+| 🟢 轻微 | 2 |
+| **合计** | **26** |
 
-| 類型 | 數量 |
+| 类型 | 数量 |
 |------|------|
-| 適配器 | 6 |
-| 事件系統 | 4 |
-| 存儲 | 3 |
-| 加載系統 | 3 |
+| 适配器 | 6 |
+| 事件系统 | 5 |
+| 存储 | 3 |
+| 加载系统 | 3 |
 | CLI | 3 |
-| 配置系統 | 3 |
+| 配置系统 | 3 |
 | 路由 | 1 |
-| 客戶端 | 1 |
-| 運行時 | 1 |
+| 客户端 | 1 |
+| 运行时 | 1 |
 
-> 注：單條 Bug 可歸屬多個類型，上表按主類型統計。
+> 注：单条 Bug 可归属多个类型，上表按主类型统计。
 
 ---
 
@@ -128,7 +128,7 @@
 
 **修復日期**: 2025/08/18
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
 **類型**: 事件系統
 
@@ -136,13 +136,13 @@
 
 ### [BUG-002] Init 命令適配器配置路徑類型錯誤
 
-**問題**: 使用 `ep init` 命令進行交互式初始化時，選擇配置適配器會出現類型錯誤：
+**問題**: 使用 `ep init` 命令進行互動式初始化時，選擇配置適配器會出現類型錯誤：
 
 ```
-交互式初始化失敗: unsupported operand type(s) for /: 'str' and 'str'
+互動式初始化失敗: unsupported operand type(s) for /: 'str' and 'str'
 ```
 
-**原因**: 2.3.7 版本調整配置檔案路徑時，方法參數類型不一致。`_configure_adapters_interactive_sync` 接收 `str` 類型參數，但內部使用 `Path` 的 `/` 操作符拼接路徑。
+**原因**: 2.3.7 版本調整配置文件路徑時，方法參數類型不一致。`_configure_adapters_interactive_sync` 接收 `str` 類型參數，但內部使用 `Path` 的 `/` 操作符拼接路徑。
 
 **影響版本**: 2.3.7 - 2.3.9-dev.1
 
@@ -160,7 +160,7 @@
 
 ### [BUG-003] 重啟後命令事件失效
 
-**問題**: 呼叫 `sdk.restart()` 後，通過 `@command` 註冊的命令無法被觸發，表現為發送命令後機器人無回應。
+**問題**: 呼叫 `sdk.restart()` 後，透過 `@command` 註冊的命令無法被觸發，表現為發送命令後機器人無回應。
 
 **原因**: `adapter.shutdown()` 清空事件總線後，`BaseEventHandler` 的 `_linked_to_adapter_bus` 狀態未重置為 `False`，導致 `_process_event` 方法認為已經掛載到適配器總線，跳過重新掛載操作。
 
@@ -172,7 +172,7 @@
 
 **修復日期**: 2026/04/09
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
 **類型**: 事件系統
 
@@ -200,7 +200,7 @@
 
 ### [BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致
 
-**問題**: `Event.is_friend_add()` 檢查 `detail_type == "friend_add"`，`Event.is_friend_delete()` 檢查 `detail_type == "friend_delete"`，但 OneBot12 標準定義的 `detail_type` 值為 `"friend_increase"` 和 `"friend_decrease"`。與 `notice.py` 中 `on_friend_add`/`on_friend_remove` 裝飾器使用的值不一致，導致通過裝飾器註冊的處理器觸發時，對應的 `is_friend_add()`/`is_friend_delete()` 判斷方法返回 `False`。
+**問題**: `Event.is_friend_add()` 檢查 `detail_type == "friend_add"`，`Event.is_friend_delete()` 檢查 `detail_type == "friend_delete"`，但 OneBot12 標準定義的 `detail_type` 值為 `"friend_increase"` 和 `"friend_decrease"`。與 `notice.py` 中 `on_friend_add`/`on_friend_remove` 裝飾器使用的值不一致，導致透過裝飾器註冊的處理器觸發時，對應的 `is_friend_add()`/`is_friend_delete()` 判斷方法返回 `False`。
 
 **原因**: `wrapper.py` 中使用了非標準的命名，而 `notice.py` 使用了正確的 OB12 標準命名。
 
@@ -234,7 +234,7 @@
 
 **嚴重性**: 🟡 中等
 
-**類型**: 適配器
+**類型**: 适配器
 
 ---
 
@@ -242,7 +242,7 @@
 
 **問題**: `CommandHandler.wait_reply()` 方法使用 `asyncio.get_event_loop()` 創建 future 和獲取時間戳，該方法在 Python 3.10+ 中已棄用，在異步上下文中應使用 `asyncio.get_running_loop()`。與同文件中 `wrapper.py` 的 `wait_for()` 方法使用的 `get_running_loop()` 不一致。
 
-**原因**: 開發時使用了舊版 API，後續新增的 `wait_for()` 使用了正確的 API 但未回溯修復舊程式碼。
+**原因**: 開發時使用了舊版 API，後續新增的 `wait_for()` 使用了正確的 API 但未回溯修復舊代碼。
 
 **影響版本**: 2.3.0-dev.0
 
@@ -262,7 +262,7 @@
 
 **問題**: 呼叫 `adapter.shutdown()` 關閉所有適配器時，`_update_bot_status()` 會在關閉流程中反覆提交 Bot 離線事件，導致同一批 Bot 被多次標記離線並觸發多次 `adapter.bot.offline` 生命週期事件。
 
-**原因**: 2.4.0-dev.1 引入的 Bot 狀態追蹤系統未在 `shutdown()` 期間設定"正在關閉"標誌，`_update_bot_status()` 無法區分正常離線與關閉流程中的級聯離線。
+**原因**: 2.4.0-dev.1 引入的 Bot 狀態追蹤系統未在 `shutdown()` 期間設置"正在關閉"標誌，`_update_bot_status()` 無法區分正常離線與關閉流程中的級聯離線。
 
 **影響版本**: 2.4.0-dev.1 - 2.4.2-dev.1
 
@@ -274,13 +274,13 @@
 
 **嚴重性**: 🟡 中等
 
-**類型**: 適配器
+**類型**: 适配器
 
 ---
 
 ### [BUG-009] LazyModule 同步存取 BaseModule 導致未初始化完成
 
-**問題**: 用戶在同步上下文中存取懶加載的 BaseModule 屬性時，模組使用 `loop.create_task()` 異步初始化但不等待，導致屬性存取時可能未初始化完成，引發競爭條件。
+**問題**: 用戶在同步上下文中存取懶加載的 BaseModule 屬性時，模組使用 `loop.create_task()` 異步初始化但不等待，導致屬性存取時可能未初始化完成，引發競態條件。
 
 **原因**: `_ensure_initialized()` 對 BaseModule 使用 `loop.create_task(self._initialize())` 後立即返回，未確保初始化完成。
 
@@ -315,7 +315,7 @@
 
 **修復日期**: 2026/04/21
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
 **類型**: 配置系統
 
@@ -325,7 +325,7 @@
 
 **問題**: 在 Windows 上直接運行 `python main.py` 時，按下 CTRL+C 無法終止程式。程式正常啟動並輸出路由伺服器資訊後，CTRL+C 完全無回應，只能透過任務管理器強殺進程。而透過 `epsdk run` 啟動時可以正常停止——但 `epsdk run` 是透過子進程模型運行的。
 
-**原因**: Hypercorn ASGI 伺服器的 `serve()` 函數內部透過 `signal.signal(SIGINT, handler)` 註冊了自己的 SIGINT 處理器，覆蓋了 Python 預設的 `KeyboardInterrupt` 處理機制。當透過 `asyncio.create_task()` 啟動 Hypercorn 作為背景任務時，Hypercorn 的內部 shutdown 流程無法正常觸發（因為它期望的是 `worker_serve` 模式），導致 CTRL+C 訊號被 Hypercorn 吞掉但不會引發任何清理動作。
+**原因**: Hypercorn ASGI 伺服器的 `serve()` 函數內部透過 `signal.signal(SIGINT, handler)` 註冊了自己的 SIGINT 處理器，覆蓋了 Python 預設的 `KeyboardInterrupt` 處理機制。當透過 `asyncio.create_task()` 啟動 Hypercorn 作為背景任務時，Hypercorn 的內部 shutdown 流程無法正常觸發（因為它期望的是 `worker_serve` 模式），導致 CTRL+C 信號被 Hypercorn 吞掉但不會引發任何清理動作。
 
 **影響版本**: 2.3.6 - 2.4.2
 
@@ -333,13 +333,13 @@
 
 **修復內容**:
 1. 將 ASGI 伺服器從 Hypercorn 切換為 Uvicorn（`pyproject.toml` 依賴變更）
-2. 使用 `uvicorn.Server._serve()` 直接啟動伺服器，**繞過** `capture_signals()` 訊號處理上下文管理器
+2. 使用 `uvicorn.Server._serve()` 直接啟動伺服器，**繞過** `capture_signals()` 信號處理上下文管理器
 3. 透過 `server.should_exit = True` 實現優雅停止，超時則取消背景任務
 4. 同步移除子進程運行模型和 `runtime/cleanup.py` 清理模組（子進程清理機制不再需要）
 
 **修復日期**: 2026/04/28
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
 **類型**: CLI / 運行時
 
@@ -349,17 +349,17 @@
 
 **問題**: 執行 `sdk.restart()` 軟重啟後，已透過 `epsdk install` 升級的模組/適配器的新程式碼（如新增 API 路由）不生效，仍運行舊版本邏輯。必須完全重啟進程才能加載最新程式碼。
 
-**原因**: `_do_restart()` 在重新初始化時呼叫 `entry_point.load()`，但該函數從 `sys.modules` 返回了快取的舊版本模組物件，而非從磁盤重新加載。
+**原因**: `_do_restart()` 在重新初始化時呼叫 `entry_point.load()`，但該函數從 `sys.modules` 返回了快取的舊版本模組物件，而非從磁碟重新加載。
 
 **影響版本**: 早期版本 - 2.4.3-dev.1
 
 **修復版本**: 2.4.3-dev.1
 
-**修復內容**: 在 `uninit()` 後、`init()` 前清理 `sys.modules` 中已加載模組/適配器包的快取，使 `entry_point.load()` 從磁盤加載最新程式碼。新增 `_collect_top_level_modules()` 與 `_invalidate_module_cache()` 輔助方法，透過 `top_level.txt` 或 entry-point value 推導頂層模組名。
+**修復內容**: 在 `uninit()` 後、`init()` 前清理 `sys.modules` 中已加載模組/適配器包的快取，使 `entry_point.load()` 從磁碟加載最新程式碼。新增 `_collect_top_level_modules()` 與 `_invalidate_module_cache()` 輔助方法，透過 `top_level.txt` 或 entry-point value 推導頂層模組名。
 
 **修復日期**: 2026/05/03
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
 **類型**: 加載系統 / 運行時
 
@@ -399,9 +399,9 @@
 
 **修復日期**: 2026/05/15
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
-**類型**: 適配器 / 事件系統
+**類型**: 适配器 / 事件系统
 
 ---
 
@@ -421,7 +421,7 @@
 
 **嚴重性**: 🟡 中等
 
-**類型**: 配置系統
+**類型**: 配置系统
 
 ---
 
@@ -441,7 +441,7 @@
 
 **嚴重性**: 🟡 中等
 
-**類型**: 存儲
+**類型**: 存储
 
 ---
 
@@ -459,7 +459,7 @@
 
 **修復日期**: 2026/06/07
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
 **類型**: 路由
 
@@ -483,13 +483,13 @@
 1. 新增 `_recv_lock` 序列化所有 `receive()` / `receive_text()` / `receive_bytes()` 調用
 2. 新增 `_session_lock` 保護 session 創建；`_drain_sessions()` 改為異步方法並真正關閉舊 session
 3. 重構 `request()` 異常捕獲順序：`asyncio.TimeoutError` → `aiohttp.ClientConnectionError`（觸發 session 重建）→ `aiohttp.ClientError` → `ClientError`（透傳）→ `Exception`
-4. 修復 `send_json()` 的 mode 處理、`_get_ws_session()` 預設請求頭透傳、`close()` 的併發競爭、`HttpResponse.__aexit__` 重複 `release()`
+4. 修復 `send_json()` 的 mode 處理、`_get_ws_session()` 預設請求頭透傳、`close()` 的併發競態、`HttpResponse.__aexit__` 重複 `release()`
 
 **修復日期**: 2026/06/12
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
-**類型**: 客戶端
+**類型**: 客户端
 
 ---
 
@@ -511,15 +511,15 @@
 
 **修復日期**: 2026/06/12
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
-**類型**: 適配器 / 路由
+**類型**: 适配器 / 路由
 
 ---
 
 ### [BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包
 
-**問題**: 使用 `ep r .\main.py` 非熱重載模式運行腳本時，如果腳本有相對匯入（如 `from qg import ...`），會報 `No module named 'qg'` 錯誤。而 `--reload` 模式可以正常運行。
+**問題**: 使用 `ep r .\main.py` 非熱重載模式運行腳本時，如果腳本有相對導入（如 `from qg import ...`），會報 `No module named 'qg'` 錯誤。而 `--reload` 模式可以正常運行。
 
 **原因**: 非熱重載模式直接呼叫 `runpy.run_path()` 執行腳本，該函數不會自動將腳本所在目錄加入 `sys.path`。而 `--reload` 模式透過 `subprocess.Popen` 子進程運行，子進程自動繼承當前工作目錄，`sys.path[0]` 即為腳本所在目錄，所以能正常工作。
 
@@ -561,22 +561,22 @@
 
 **修復日期**: 2026/06/29
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
-**類型**: 存儲
+**類型**: 存储
 
 ---
 
-### [BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填補）
+### [BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）
 
-**問題**: 2.5.2 配置系統重構後，聲明了 `AccountConfigClass` 的多賬戶適配器在呼叫 `wait_reply`、`reply` 等需要發送訊息的方法時，報錯 `ValueError("未聲明 AccountConfigClass，無法解析賬戶")`。即使適配器正確配置了多賬戶資訊，賬戶解析仍然失敗。
+**問題**: 2.5.2 配置系統重構後，宣告了 `AccountConfigClass` 的多賬戶適配器在呼叫 `wait_reply`、`reply` 等需要發送消息的方法時，報錯 `ValueError("未宣告 AccountConfigClass，無法解析賬戶")`。即使適配器正確配置了多賬戶資訊，賬戶解析仍然失敗。
 
-**原因**: 2.5.2-dev.5 將 `_load_accounts()`（負責讀取配置 + 校驗 + 填補 `_accounts_data`）重構為 `_ensure_accounts_exist()`（僅生成配置範本），但 `_resolve_account()` 仍檢查 `self._accounts_data is None`。由於 `_ensure_accounts_exist()` 不再填補 `_accounts_data`，該屬性始終為 `None`，導致 `_resolve_account()` 提前返回 `(None, None)`，賬戶解析完全失效。
+**原因**: 2.5.2-dev.5 將 `_load_accounts()`（負責讀取配置 + 校驗 + 填充 `_accounts_data`）重構為 `_ensure_accounts_exist()`（僅生成配置範本），但 `_resolve_account()` 仍檢查 `self._accounts_data is None`。由於 `_ensure_accounts_exist()` 不再填充 `_accounts_data`，該屬性始終為 `None`，導致 `_resolve_account()` 提前返回 `(None, None)`，賬戶解析完全失效。
 
 **根因鏈路**:
 ```
 _load_accounts() 被刪除
-  → __init__ 不再填補 _accounts_data
+  → __init__ 不再填充 _accounts_data
     → _accounts_data 恆為 None
       → _resolve_account() 檢查 _accounts_data is None → return (None, None)
         → 下游呼叫 _resolve_account 的地方（如 call_api）拿到 None
@@ -587,28 +587,28 @@ _load_accounts() 被刪除
 
 **修復版本**: 2.5.3
 
-**修復內容**: 在 `BaseAdapter.__init__` 中，`_ensure_accounts_exist()` 之後恢復 `_accounts_data` 的填補：
+**修復內容**: 在 `BaseAdapter.__init__` 中，`_ensure_accounts_exist()` 之後恢復 `_accounts_data` 的填充：
 ```python
 if self.AccountConfigClass is not None:
     self._ensure_accounts_exist()
-    self._accounts_data = self.accounts  # 恢復填補，資料源為實時讀取的 accounts 屬性
+    self._accounts_data = self.accounts  # 恢復填充，數據源為實時讀取的 accounts 屬性
 ```
 `_resolve_account()` 逻辑保持不变，完全向后兼容：
-- 不声明 `AccountConfigClass` 的适配器：`_accounts_data` 保持 `None` → 返回 `(None, None)`
-- 声明了 `AccountConfigClass` 的适配器：`_accounts_data` 被填補 → 正常解析
-- 覆写 `_load_accounts` 或手动设置 `_accounts_data` 的适配器：在 `super().__init__()` 后覆盖，优先级最高
+- 不宣告 `AccountConfigClass` 的适配器：`_accounts_data` 保持 `None` → 返回 `(None, None)`
+- 宣告了 `AccountConfigClass` 的适配器：`_accounts_data` 被填充 → 正常解析
+- 覆写 `_load_accounts` 或手動設定 `_accounts_data` 的适配器：在 `super().__init__()` 後覆蓋，优先级最高
 
 **修復日期**: 2026/07/07
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
-**類型**: 適配器 / 配置系統
+**類型**: 适配器 / 配置系统
 
 ---
 
 ### [BUG-023] 修改賬戶配置後適配器快取未刷新導致賬戶解析失敗
 
-**問題**: 用戶透過 Dashboard 修改多賬戶適配器的賬戶配置（如填寫 token）後，適配器仍使用舊快取，呼叫發送訊息相關方法時報 `未找到可用賬戶 (account_id=default)`。必須重啟進程才能讓新配置生效。
+**問題**: 使用者透過 Dashboard 修改多賬戶適配器的賬戶配置（如填寫 token）後，適配器仍使用舊快取，呼叫發送消息相關方法時報 `未找到可用賬戶 (account_id=default)`。必須重啟進程才能讓新配置生效。
 
 **原因**: `_accounts_data` 僅在 `BaseAdapter.__init__` 時從配置儲存讀取一次，之後不再刷新。`AdapterManager._run_adapter()` 與 `restart()` 在呼叫 `adapter.start()` 前未重新讀取賬戶配置，導致快取與實際配置脫節。
 
@@ -620,9 +620,9 @@ if self.AccountConfigClass is not None:
 
 **修復日期**: 2026/07/09
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
-**類型**: 適配器 / 配置系統
+**類型**: 适配器 / 配置系统
 
 ---
 
@@ -635,10 +635,10 @@ if self.AccountConfigClass is not None:
 **根因鏈路**:
 ```
 鍵路徑包含純數字段（如群號 871684833）
-  → isdigit() 误判为数组索引
+  → isdigit() 誤判為數組索引
     → extend([None] * (871684833 - len(current) + 1))
-      → 尝试分配数亿元素
-        → 内存耗尽 → 容器 OOM Kill（退出码 -9）
+      → 試圖分配數億元素
+        → 記憶體耗盡 → 容器 OOM Kill（退出碼 -9）
 ```
 
 **影響版本**: 2.5.1 - 2.5.5
@@ -648,7 +648,7 @@ if self.AccountConfigClass is not None:
 **修復內容**:
 1. 預創建中間層時始終使用字典，不再根據下一段是否為數字猜測容器類型
 2. 設定最終值時，僅當容器本身已是列表且索引小於 `STORAGE_MAX_LIST_INDEX`（10000）時才按索引處理，超大索引安全跳過
-3. 將遞迴實現改為迭代實現，消除原程式碼中潛在的無限遞迴風險
+3. 將遞迴實現改為迭代實現，消除原代碼中潛在的無限遞迴風險
 4. 新增 `STORAGE_MAX_LIST_INDEX` 常量到 `Core/constants.py`，集中管理索引安全上限
 
 **修復日期**: 2026/07/10
@@ -660,15 +660,15 @@ await sdk.storage.aset("groups.871684833.name", "某群")
 # → 進程記憶體瞬間飆升，被 OOM Kill
 ```
 
-**迴歸測試**: `tests/unit/test_unit_storage.py` 新增 4 個迴歸用例
+**回歸測試**: `tests/unit/test_unit_storage.py` 新增 4 個回歸用例
 - `test_nested_key_numeric_segment_as_dict_key` — 精確復現 OOM 場景
 - `test_nested_key_numeric_segment_multiple` — 多個連續數字段均作為字典鍵
 - `test_nested_key_existing_list_index_set_within_limit` — 已有列表合理索引寫入
 - `test_nested_key_list_index_safety_limit` — 超大索引安全限制驗證
 
-**嚴重性**: 🔴 嚴重
+**嚴重性**: 🔴 严重
 
-**類型**: 存儲
+**類型**: 存储
 
 ---
 
@@ -698,4 +698,35 @@ await sdk.storage.aset("groups.871684833.name", "某群")
 
 **嚴重性**: 🟡 中等
 
-**類型**: 配置系統
+**類型**: 配置系统
+
+---
+
+### [BUG-026] notice/request 事件 reply 目標推斷錯誤
+
+**問題**: 在群通知事件（如成員加群 `group_member_increase`）中呼叫 `event.reply()`，訊息被發送到觸發事件的使用者私聊，而非事件所在的群。好友通知事件同理，回覆目標可能錯亂。
+
+**原因**: `infer_receive_type()` 將事件的 `detail_type` 直接當作會話類型返回。對於 message 事件這是正確的（`detail_type` 值 `private`/`group` 即會話類型），但 notice/request 事件的 `detail_type` 是語義子類型（如 `group_member_increase`、`friend_increase`），不是會話類型。後續的 `convert_to_send_type()` 和 `get_id_field()` 在映射表中找不到該值，回退到預設的 `"user"` / `"user_id"`，導致回覆目標錯亂。
+
+**根因鏈路**:
+```
+notice 事件 detail_type="group_member_increase"
+  → infer_receive_type() 直接返回 "group_member_increase"
+    → convert_to_send_type("group_member_increase") 不在映射表 → 回退 "user"
+    → get_id_field("group_member_increase") 不在映射表 → 回退 "user_id"
+      → target_id = event["user_id"]  ← 新成員私聊（而非群）
+```
+
+**影響版本**: 全版本
+
+**修復版本**: 2.7.0-dev.3
+
+**修復內容**: `infer_receive_type()` 增加判斷——`detail_type` 只有在是已知會話類型（標準類型或自定義類型）時才直接返回；否則根據 ID 字段（`group_id` / `channel_id` / `user_id` 等）推斷正確的會話類型。
+
+**回歸測試**: `tests/unit/test_unit_session_type.py` → `TestNoticeRequestTypeInference`（10 用例）
+
+**修復日期**: 2026/07/29
+
+**嚴重性**: 🟢 輕微
+
+**類型**: 事件系统

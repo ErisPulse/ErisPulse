@@ -382,15 +382,17 @@ flowchart TD
 
 ### 快速开始
 
-# 速習
+# クイックスタート
 
-> 理解できない用語に出会いましたか？ [用語集](terminology.md) を参照してわかりやすい説明を入手してください。
+> **これが最初の一歩です。** ErisPulse ボットを 5 分でゼロから起動させましょう。
+>
+> 理解できない用語がありますか？[用語集](docs/ja/terminology.md) を参照してください。
 
 ## ErisPulse のインストール
 
-### 1 クリックインストールスクリプト（推奨）
+### クイックインストールスクリプト（推奨）
 
-インストールスクリプトは、環境（Docker、Python、uv）を自動的に検出し、最適なインストール方法を選択します。
+インストールスクリプトは、Docker、Python、uv などの環境を自動検出し、最適なインストール方法を案内します。
 
 Windows (PowerShell):
 ```powershell
@@ -402,27 +404,27 @@ macOS / Linux:
 curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 ```
 
-スクリプトは以下の手順をガイドします：
+スクリプトは以下のステップをガイドします：
 
-- **Docker インストール**（Docker が検出された場合推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プリリリース版）、Dashboard 管理パネルの設定、ポート設定
-- **従来のインストール**：仮想環境の自動作成、ErisPulse バージョンの選択、オプションで Dashboard 管理パネルモジュールのインストール
+- **Docker のインストール**（Docker を検出した場合に推奨）：イメージリポジトリ（Docker Hub / GHCR）、バージョンチャンネル（安定版 / 須公開版）、Dashboard 管理パネルの設定、ポート設定
+- **従来型のインストール**：仮想環境の自動作成、ErisPulse バージョンの選択、Dashboard 管理パネルモジュールのオプションインストール
 
 ### Docker を使用する
 
-Docker イメージには、ErisPulse フレームワークと Dashboard 管理パネルが既に含まれています。
+Docker イメージには ErisPulse フレームワークと Dashboard 管理パネルが内蔵されています。
 
 ```bash
-# docker-compose.yml をダウンロード
+# docker-compose.yml のダウンロード
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# Dashboard トークンを設定して起動
+# Dashboard トークンの設定と起動
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
-<summary>Docker Hub が利用できない場合？</summary>
+<summary>Docker Hub が利用できませんか？</summary>
 
-GitHub Container Registry イメージを使用する場合は、`docker-compose.yml` の image を次のように変更します：
+GitHub Container Registry のイメージを使用するには、`docker-compose.yml` 内の image を次のように変更します：
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -432,44 +434,44 @@ image: ghcr.io/erispulse/erispulse:latest
 
 起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインします。
 
-### pip を使用したインストール
+### pip を使用してインストールする
 
-Python のバージョンが 3.10 以上であることを確認し、pip を使用してインストールします：
+Python のバージョンが >= 3.10 であることを確認し、pip を使用してインストールします：
 
 ```bash
 pip install ErisPulse
 ```
 
-既に [uv](https://github.com/astral-sh/uv) をインストールしている場合は、`uv pip install ErisPulse` を使用することもでき、インストール速度が速くなります。
+[uv](https://github.com/astral-sh/uv) を既にインストールしている場合は、`uv pip install ErisPulse` を使用することもでき、インストールが高速になります。
 
 ## プロジェクトの初期化
 
-### インタラクティブ初期化（推奨）
+### インタラクティブな初期化（推奨）
 
 ```bash
 epsdk init
 ```
 
-これにより、インタラクティブなガイドが開始され、以下の手順がガイドされます：
+これにより、インタラクティブなウィザードが起動し、以下の設定をガイドします：
 - プロジェクト名の設定
 - ログレベルの設定
-- サーバーの設定（ホストとポート）
-- アダプタの選択と設定
+- サーバー設定（ホストとポート）
+- アダプターの選択と設定
 - プロジェクト構造の作成
 
-### 速攻初期化
+### クイック初期化
 
 ```bash
-# プロジェクト名を指定した速攻モード
+# プロジェクト名を指定したクイックモード
 epsdk init -q -n my_bot
 
-# または、プロジェクト名のみを指定
+# またはプロジェクト名のみを指定
 epsdk init -n my_bot
 ```
 
 ### 手動でプロジェクトを作成する
 
-手動でプロジェクトを作成したい場合は：
+手動でプロジェクトを作成する場合は：
 
 ```bash
 mkdir my_bot && cd my_bot
@@ -478,21 +480,21 @@ epsdk init
 
 ## モジュールのインストール
 
-### CLI でインストールする
+### CLI からインストール
 
 ```bash
 epsdk install Yunhu AIChat
 ```
 
-### 利用可能なモジュールを表示する
+### 利用可能なモジュールを表示
 
 ```bash
 epsdk list-remote
 ```
 
-### インタラクティブインストール
+### インタラクティブなインストール
 
-パッケージ名を指定しない場合は、インタラクティブインストール画面になります：
+パッケージ名を指定しない場合、インタラクティブなインストール画面が開きます：
 
 ```bash
 epsdk install
@@ -501,22 +503,23 @@ epsdk install
 ## プロジェクトの実行
 
 ```bash
-# 通常実行
+# 通常の実行
 epsdk run main.py
 
-# ホットリロードモード（開発時に推奨）
+# ホットリロードモード（開発時推奨）
 epsdk run main.py --reload
 ```
 
-## IDE の補完を有効にする（オプション）
+## IDE 自動補完の有効化（オプション）
 
-ErisPulse はモジュール/アダプタを動的に発見しますが、IDE はデフォルトではプラットフォーム固有のメソッドを補完できません。以下のコマンドを実行して型のスタブを生成します：
+ErisPulse は動的にモジュール/アダプターを検出するため、IDE はデフォルトではプラットフォーム固有のメソッドを補完できません。
+以下のコマンドを実行して型スタブを生成します：
 
 ```bash
 epsdk types
 ```
 
-生成後、インポートした型を変数の型として指定することで、正確な補完が得られます（[IDE 補完ガイド](./getting-started/ide-completion.md)を参照してください）：
+生成後、インポートした型を変数の型として指定すると、正確な補完が利用可能になります（詳細は [IDE 自動補完ガイド](docs/ja/getting-started/ide-completion.md) を参照してください）：
 
 ```python
 from _ep_types import Yunhu
@@ -534,7 +537,7 @@ await adapter.Send.To("group", "123").Board(...)  # プラットフォーム固�
 my_bot/
 ├── config/
 │   └── config.toml          # 設定ファイル
-└── main.py                  # エントリーポイント
+└── main.py                  # エントリーファイル
 
 ```
 
@@ -551,56 +554,40 @@ port = 8000
 level = "INFO"
 
 [Yunhu_Adapter]
-# アダプタの設定
+# アダプターの設定
 ```
 
 ## 次のステップ
 
-- [入門ガイド](getting-started/README.md) - ErisPulse の基本概念を理解する
-- [最初のボットを作成する](getting-started/first-bot.md) - 簡単なボットを作成する
-- [ユーザー使用ガイド](user-guide/) - 設定やモジュール管理について詳しく学ぶ
-- [開発者ガイド](developer-guide/) - 自作モジュールやアダプタの開発について学ぶ
+ボットを動かしたら、必要に応じて続けることができます。
+
+**フレームワークの仕組みについて知りたい？**
+- [基礎概念](docs/ja/getting-started/basic-concepts.md) — アダプター / モジュール / イベント の設計
+- [アーキテクチャ概要](docs/ja/architecture.md) — アーキテクチャ図の可視化
+
+**より多くの機能を実装したい？**
+- [一般的なタスクの例](docs/ja/getting-started/common-tasks.md) — ストレージ、定期タスク、権限管理
+- [イベント処理入門](docs/ja/getting-started/event-handling.md) — メッセージ、通知、リクエスト処理
+
+**独自のモジュール / アダプターを開発したい？**
+- [モジュール開発入門](docs/ja/developer-guide/modules/getting-started.md)
+- [アダプター開発入門](docs/ja/developer-guide/adapters/getting-started.md)
+
+**必要に応じて参照：**
+- [設定ファイルの説明](docs/ja/user-guide/configuration.md) · [CLI コマンド](docs/ja/user-guide/cli-reference.md) · [デプロイガイド](docs/ja/user-guide/deployment.md)
 
 
 ### 创建第一个机器人
 
-# 最初のボットを作成する
+# 最初のロボットを作成する
 
-このガイドでは、単純な ErisPulse ボットをゼロから作成する方法を説明します。
+このガイドでは、[5 分で始める](../quick-start.md)をもとに、最初のコマンドハンドラを記述し、実行メカニズムを理解します。
 
-## ステップ1：プロジェクトの作成
+> ErisPulse をまだインストールしていない、またはプロジェクトを初期化していない場合は、まず [5 分で始める](../quick-start.md) の「インストール」「プロジェクトの初期化」「プロジェクトの実行」の 3 つの手順を完了してください。
 
-CLI ツールを使用してプロジェクトを初期化します：
+## ステップ 1: 最初のコマンドを記述する
 
-```bash
-# 対話形式で初期化
-epsdk init
-
-# またはクイック初期化
-epsdk init -q -n my_first_bot
-```
-
-プロンプトに従って設定を完了してください。以下を推奨します：
-- プロジェクト名：my_first_bot
-- ログレベル：INFO
-- サーバー：デフォルト設定
-- アダプター：必要なプラットフォームを選択（例: Yunhu）
-
-## ステップ2：プロジェクト構造の確認
-
-初期化後のプロジェクト構造：
-
-```
-my_first_bot/
-├── config/
-│   └── config.toml
-├── main.py
-└── requirements.txt
-```
-
-## ステップ3：最初のコマンドを作成する
-
-`main.py` を開き、簡単なコマンドハンドラーを作成します：
+`main.py` を開き、シンプルなコマンドハンドラを記述します：
 
 ```python
 from ErisPulse import sdk
@@ -610,18 +597,18 @@ from ErisPulse.Core.Event import command
 async def hello_handler(event):
     """hello コマンドを処理"""
     user_name = event.get_user_nickname() or "友達"
-    await event.reply(f"こんにちは、{user_name}！私はErisPulseボットです。")
+    await event.reply(f"こんにちは、{user_name}！私は ErisPulse ロボットです。")
 
-@command("ping", help="ボットがオンラインかテスト")
+@command("ping", help="ロボットがオンラインかテスト")
 async def ping_handler(event):
     """ping コマンドを処理"""
-    await event.reply("Pong！ボットは正常に動作しています。")
+    await event.reply("Pong！ロボットは正常に動作しています。")
 
 async def main():
-    """メインエントリ関数"""
-    print("ErisPulseを起動中...")
+    """メインエントリポイント"""
+    print("ErisPulse を起動しています...")
     
-    # keep_running=True（デフォルト）：フレームワークは実行中のブロックを維持し、終了シグナル（例: Ctrl+C）が受信されるまで待機します
+    # keep_running=True（デフォルト）：フレームワークはブロックして実行を維持し、終了信号（例：Ctrl+C）を受信するまで停止しません
     await sdk.run(keep_running=True)
 
 if __name__ == "__main__":
@@ -631,33 +618,33 @@ if __name__ == "__main__":
 
 ### `keep_running` パラメータ
 
-`sdk.run(keep_running)` は、フレームワークが実行中のブロックを維持するかどうかを制御します：
+`sdk.run(keep_running)` は、フレームワークが実行をブロックして維持するかどうかを制御します：
 
-- **`keep_running=True`（デフォルト）**：`run()` は常にブロックされ、終了シグナル（例: Ctrl+C）が受信されるまで待機します。純粋な bot アプリケーションに適しています。
-- **`keep_running=False`**：`run()` は初期化が完了するとすぐに返されます。**フレームワークはアンインストールされません** – 既に起動したアダプタ/モジュールはバックグラウンドタスクとして引き続きメッセージイベントを処理し、独自のロジックを続行できます。イベントループが終了し、フレームワークが閉じられるまでです。例えば：
+- **`keep_running=True`（デフォルト）**：`run()` は終了信号（例：Ctrl+C）を受信するまでブロックし続けます。これは純粋な bot アプリケーションに適しています。
+- **`keep_running=False`**：`run()` は初期化後に即座に返り、**フレームワークはアンロードされません**。起動したアダプタ/モジュールはバックグラウンドタスクとしてメッセージイベントを処理し続け、イベントループが終了するまで独自のロジックを実行できます。例：
 
 ```python
 async def main():
-    await sdk.run(keep_running=False)   # 初期化後にすぐに返る
-    # フレームワークはバックグラウンドで実行中なので、ここで他の作業ができます
+    await sdk.run(keep_running=False)   # 初期化後に即座に返る
+    # フレームワークはバックグラウンドで実行中、ここでは他の処理を続行できる
     while True:
         await asyncio.sleep(3600)
-        print("毎時チェック")
+        print("1 時間ごとにチェック")
 ```
 
-> `run()` の2つのモッドの他に、`init()`/`uninit()` によるライフサイクルのマニュアル制御や、アダプタ/ルーター単体の起動停止など、より細かい制御方法があります。詳しくは [起動プロセスとマニュアル制御](../advanced/startup.md) をご覧ください。
+> `run()` の 2 つのモードに加え、`init()`/`uninit()` を用いたライフサイクルの手動制御、個別のアダプタ/ルーティングの起動・停止など、より細かい制御方法もあります。[起動フローと手動制御](../advanced/startup.md)を参照してください。
 
-## ステップ4：ボットを実行する
+## ステップ 2: ロボットを実行する
 
 ```bash
 # 通常実行
 epsdk run main.py
 
-# 開発モード（ホットリロード対応）
+# 開発モード（ホットリロードをサポート）
 epsdk run main.py --reload
 ```
 
-## ステップ5：ボットをテストする
+## ステップ 3: ロボットをテストする
 
 チャットプラットフォームでコマンドを送信します：
 
@@ -665,18 +652,18 @@ epsdk run main.py --reload
 /hello
 ```
 
-ボットの返信が表示されます。
+ロボットからの返信が届くはずです。
 
 ## コードの説明
 
-### コマンドデコレーター
+### コマンドデコレータ
 
 ```python
 @command("hello", help="挨拶メッセージを送信")
 ```
 
-- `hello`：コマンド名。ユーザーは `/hello` で呼び出します。
-- `help`：コマンドヘルプ説明。`/help` コマンドに表示されます。
+- `hello`：コマンド名、ユーザーは `/hello` で呼び出します
+- `help`：コマンドのヘルプ説明、`/help` コマンドで表示されます
 
 ### イベントパラメータ
 
@@ -689,38 +676,38 @@ async def hello_handler(event):
 - 送信者情報：`event.get_user_id()`、`event.get_user_nickname()`
 - プラットフォーム情報：`event.get_platform()`
 - グループ情報：`event.get_group_id()`
-- 原始データ：`event.get_raw()`
+- 元データ：`event.get_raw()`
 
-> Event オブジェクトのメソッドの詳細については、[Eventラッパークラス詳細](../developer-guide/modules/event-wrapper.md) を参照してください。
+> 完全な Event オブジェクトのメソッドは [Event 包装クラスの詳細](../developer-guide/modules/event-wrapper.md) を参照してください。
 
-### 返信の送信
+### レスポンスの送信
 
 ```python
-await event.reply("返信内容")
+await event.reply("レスポンス内容")
 ```
 
-`event.reply()` は、送信者にメッセージを送信する便利なメソッドです。
+`event.reply()` は、送信者にメッセージを送信するための便利なメソッドです。
 
-## 拡張：追加機能の追加
+## 拡張：より多くの機能を追加する
 
 ErisPulse は豊富なイベント処理とデータ処理機能を提供します：
 
-- **メッセージ監視**：`@message.on_message()` を使用して各種メッセージを監視 → [イベント処理の入門](event-handling.md)
-- **通知監視**：`@notice.on_friend_add()` などを使用してシステム通知を監視 → [イベント処理の入門](event-handling.md)
-- **データ保存**：`sdk.storage.get/set` を使用してデータを永続化 → [共通タスク例](common-tasks.md)
+- **メッセージ監視**：`@message.on_message()` を使用して、さまざまなメッセージを監視 → [イベント処理の入門](event-handling.md)
+- **通知監視**：`@notice.on_friend_add()` などを使用して、システム通知を監視 → [イベント処理の入門](event-handling.md)
+- **データ保存**：`sdk.storage.get/set` を使用して、永続化データを保存 → [一般的なタスクの例](common-tasks.md)
 
-## よくある質問
+## 一般的な問題
 
-### コマンドが応答しない？
+### コマンドが反応しない？
 
-1. アダプターが正しく設定されているか確認し、`config/config.toml` のアダプターの `status` が `true` であることを確認してください。
-2. 端末のログ出力を確認し、エラーメッセージがないか（特に `ERROR` レベルのログ）確認してください。
-3. コマンドプレフィックスが正しいか確認してください（デフォルトは `/`）。設定ファイルの `[ErisPulse.event.command]` セクションで確認できます。
-4. コマンド名のスペルが正しいか、大文字と小文字の感度設定を確認してください。
+1. アダプタが正しく設定されているか確認し、`config/config.toml` でアダプタの `status` が `true` であることを確認します。
+2. ターミナルのログ出力を確認し、エラー情報（特に `ERROR` レベルのログ）がないか確認します。
+3. コマンドのプレフィックスが正しいか確認します（デフォルトは `/` です）。設定ファイルの `[ErisPulse.event.command]` 部分を確認してください。
+4. コマンド名のスペルが正しいか確認し、大文字小文字の区別が有効かどうかを確認します。
 
 ### コマンドプレフィックスを変更するには？
 
-`config.toml` に以下を追加します：
+`config.toml` に追加します：
 
 ```toml
 [ErisPulse.event.command]
@@ -728,9 +715,9 @@ prefix = "!"
 case_sensitive = false
 ```
 
-### マルチプラットフォームをサポートするには？
+### 複数のプラットフォームをサポートするには？
 
-ErisPulse は OneBot12 標準を使用して、異なるプラットフォームのイベント形式を統一しています。`@command` および `@message` に登録されたハンドラーは、自動的にすべてのプラットフォームのイベントを受け取ります。`event.get_platform()` を使用して送信元プラットフォームを区別できます：
+ErisPulse は OneBot12 標準を使用して、異なるプラットフォームのイベント形式を統一しています。`@command` および `@message` で登録されたハンドラは、すべてのプラットフォームのイベントを自動的に受け取ります。`event.get_platform()` を使用して、送信元のプラットフォームを区別できます：
 
 ```python
 @command("hello")
@@ -738,20 +725,20 @@ async def hello_handler(event):
     platform = event.get_platform()
     
     if platform == "yunhu":
-        await event.reply("こんにちは！雲湖からです")
+        await event.reply("こんにちは！雲湖から")
     elif platform == "telegram":
         await event.reply("Hello! From Telegram")
     else:
         await event.reply("こんにちは！")
 ```
 
-> マルチプラットフォームアダプションのヒントについては、[共通タスク例](common-tasks.md#マルチプラットフォームアダプティブ) を参照してください。
+> 複数のプラットフォームへの対応テクニックについては、[一般的なタスクの例](common-tasks.md#多プラットフォーム対応)を参照してください。
 
 ## 次のステップ
 
-- [基本概念](basic-concepts.md) - ErisPulseのコア概念について深く理解する
-- [イベント処理の入門](event-handling.md) - 各種イベントの処理を学ぶ
-- [共通タスク例](common-tasks.md) - 実用的な機能をマスターする
+- [基本概念](basic-concepts.md) - ErisPulse のコアコンセプトを深く理解する
+- [イベント処理の入門](event-handling.md) - さまざまなイベントの処理方法を学ぶ
+- [一般的なタスクの例](common-tasks.md) - より実用的な機能を習得する
 
 
 ### 基础概念
@@ -4557,7 +4544,7 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 
 # イベントシステム API
 
-このドキュメントでは、ErisPulse イベントシステムの API を詳しく説明します。
+このドキュメントでは、ErisPulse イベントシステムの API を詳しく紹介します。
 
 ## Command コマンドモジュール
 
@@ -4567,12 +4554,12 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 from ErisPulse.Core.Event import command
 
 # 基本的なコマンド
-@command("hello", help="挨拶を送信します")
+@command("hello", help="挨拶を送信")
 async def hello_handler(event):
     await event.reply("こんにちは！")
 
 # エイリアス付きのコマンド
-@command(["help", "h"], aliases=["ヘルプ"], help="ヘルプを表示します")
+@command(["help", "h"], aliases=["ヘルプ"], help="ヘルプを表示")
 async def help_handler(event):
     pass
 
@@ -4580,17 +4567,17 @@ async def help_handler(event):
 def is_admin(event):
     return event.get("user_id") in admin_ids
 
-@command("admin", permission=is_admin, help="管理者コマンド")
+@command("admin", permission=is_admin, help="管理者用コマンド")
 async def admin_handler(event):
     pass
 
-# 隠しコマンド
+# 非表示コマンド
 @command("secret", hidden=True, help="秘密のコマンド")
 async def secret_handler(event):
     pass
 
 # コマンドグループ
-@command("admin.reload", group="admin", help="モジュールを再読み込みします")
+@command("admin.reload", group="admin", help="モジュールを再読み込み")
 async def reload_handler(event):
     pass
 ```
@@ -4598,28 +4585,28 @@ async def reload_handler(event):
 ### コマンド情報
 
 ```python
-# コマンドヘルプを取得
+# コマンドのヘルプを取得
 help_text = command.help()
 
 # 特定のコマンドを取得
 cmd_info = command.get_command("admin")
 
-# コマンドグループ内のすべてのコマンドを取得
+# コマンドグループ内のコマンドをすべて取得
 admin_commands = command.get_group_commands("admin")
 
-# すべての表示コマンドを取得
+# すべての可視コマンドを取得
 visible_commands = command.get_visible_commands()
 ```
 
-### 返信待機
+### 返信の待機
 
 ```python
-# ユーザーの返信を待機
-@command("ask", help="ユーザー情報を尋ねます")
+# ユーザーからの返信を待機
+@command("ask", help="ユーザー情報を尋ねる")
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
-        prompt="あなたの名前を入力してください:",  # 上記で送信済み
+        prompt="名前を入力してください:",  # 上記で送信済み
         timeout=30.0
     )
     
@@ -4627,7 +4614,7 @@ async def ask_command(event):
         name = reply.get_text()
         await event.reply(f"こんにちは、{name}！")
 
-# 検証付きの返信待機
+# バリデーション付きの返信待機
 def validate_age(event_data):
     try:
         age = int(event_data.get_text())
@@ -4635,9 +4622,9 @@ def validate_age(event_data):
     except ValueError:
         return False
 
-@command("age", help="ユーザーの年齢を尋ねます")
+@command("age", help="ユーザーの年齢を尋ねる")
 async def age_command(event):
-    await event.reply("あなたの年齢を入力してください:")
+    await event.reply("年齢を入力してください:")
     
     reply = await command.wait_reply(
         event,
@@ -4657,11 +4644,11 @@ async def handle_confirmation(reply_event):
     else:
         await event.reply("操作がキャンセルされました。")
 
-@command("confirm", help="操作を確認します")
+@command("confirm", help="操作を確認する")
 async def confirm_command(event):
     await command.wait_reply(
         event,
-        prompt="'はい'か'いいえ'を入力してください:",
+        prompt="'はい'または'いいえ'を入力してください:",
         callback=handle_confirmation
     )
 ```
@@ -4678,19 +4665,19 @@ from ErisPulse.Core.Event import message
 async def message_handler(event):
     sdk.logger.info(f"メッセージを受信: {event.get_text()}")
 
-# プライベートメッセージを監視
+# プライベートチャットメッセージを監視
 @message.on_private_message()
 async def private_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"プライベートチャットからの: {user_id}")
+    sdk.logger.info(f"プライベートチャットの送信元: {user_id}")
 
 # グループメッセージを監視
 @message.on_group_message()
 async def group_handler(event):
     group_id = event.get_group_id()
-    sdk.logger.info(f"グループチャットからの: {group_id}")
+    sdk.logger.info(f"グループメッセージの送信元: {group_id}")
 
-# メンション（@）メッセージを監視
+# メンションメッセージを監視
 @message.on_at_message()
 async def at_handler(event):
     mentions = event.get_mentions()
@@ -4700,12 +4687,12 @@ async def at_handler(event):
 ### 条件付き監視
 
 ```python
-# 優先順位で実行順序を制御
+# 優先度を使用して実行順序を制御
 @message.on_message(priority=10)  # 数値が大きいほど優先度が高い
 async def high_priority_handler(event):
     pass
 
-# ハンドラ内で条件フィルタを実装
+# ハンドラー内で条件フィルタを実装
 @message.on_message()
 async def filtered_handler(event):
     if "キーワード" not in event.get_text():
@@ -4721,29 +4708,29 @@ async def filtered_handler(event):
 ```python
 from ErisPulse.Core.Event import notice
 
-# 友達追加
+# フレンドの追加
 @notice.on_friend_add()
 async def friend_add_handler(event):
     user_id = event.get_user_id()
-    await event.reply("友達追加ありがとうございます！")
+    await event.reply("フレンド追加への歓迎！")
 
-# 友達削除
+# フレンドの削除
 @notice.on_friend_remove()
 async def friend_remove_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"友達削除: {user_id}")
+    sdk.logger.info(f"フレンド削除: {user_id}")
 
-# グループ参加
+# グループメンバーの増加
 @notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
-    await event.reply(f"新メンバーようこそ！")
+    await event.reply(f"新しいメンバーへようこそ！")
 
-# グループ退出
+# グループメンバーの減少
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"グループメンバーが退出しました: {user_id}")
+    sdk.logger.info(f"グループメンバーの退出: {user_id}")
 ```
 
 ## Request リクエストモジュール
@@ -4753,19 +4740,19 @@ async def member_decrease_handler(event):
 ```python
 from ErisPulse.Core.Event import request
 
-# 友達リクエスト
+# フレンドリクエスト
 @request.on_friend_request()
 async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
-    sdk.logger.info(f"友達リクエスト: {user_id}, メモ: {comment}")
+    sdk.logger.info(f"フレンドリクエスト: {user_id}, コメント: {comment}")
 
 # グループ招待リクエスト
 @request.on_group_request()
 async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"グループ招待: {group_id}, 来自: {user_id}")
+    sdk.logger.info(f"グループ招待: {group_id}, 送信元: {user_id}")
 ```
 
 ## Meta メタイベントモジュール
@@ -4779,13 +4766,13 @@ from ErisPulse.Core.Event import meta
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"プラットフォーム {platform} に接続成功しました")
+    sdk.logger.info(f"プラットフォーム {platform} に接続成功")
 
 # 切断イベント
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"プラットフォーム {platform} から切断されました")
+    sdk.logger.info(f"プラットフォーム {platform} から切断")
 
 # ハートビートイベント
 @meta.on_heartbeat()
@@ -4793,13 +4780,13 @@ async def heartbeat_handler(event):
     sdk.logger.debug("ハートビートを受信")
 ```
 
-### Botステータス照会
+### Bot ステータスの確認
 
-アダプターがメタイベントを送信した後、フレームワークは自動的にBotのステータスを追跡します。照会APIとライフサイクルイベント監視については、[アダプターシステム API - Botステータス管理](adapter-system.md#bot-状态管理) を参照してください。
+アダプタがメタイベントを送信すると、フレームワークは自動的に Bot のステータスを追跡します。クエリ API とライフサイクルイベントのリスニングについては、[アダプタシステム API - Bot ステータス管理](adapter-system.md#bot-状態管理) を参照してください。
 
-## Event ラッパークラス
+## Event ラップクラス
 
-Eventモジュールのイベントハンドラーは、dictを継承し、便利なメソッドを提供するEventラッパークラスのインスタンスを受け取ります。
+Event モジュールのイベントハンドラーは、`dict` を継承し便利なメソッドを提供する Event ラップクラスのインスタンスを受け取ります。
 
 ### コアメソッド
 
@@ -4820,15 +4807,15 @@ self_info = event.get_self_info()
 ### セッション識別子
 
 ```python
-# 統一されたターゲットID：グループチャットはgroup_id、プライベートチャットはuser_idなど
+# 統一されたターゲットID：グループチャットの場合は group_id、プライベートチャットの場合は user_id、など
 target_id = event.get_target_id()
 
-# セッション固有の識別子、形式: {platform}:{detail_type}:{target_id}
+# セッションの唯一識別子、形式: {platform}:{detail_type}:{target_id}
 session_id = event.get_session_id()
 # 例: "telegram:private:12345"、"qq:group:67890"
 ```
 
-`get_target_id()` は、以下の順序で最初の空ではない値を返します：`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`。コンテキスト管理、状態保存など、セッションを一意に識別する必要があるシーンに適しています。
+`get_target_id()` は、`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id` の順で、最初に取得できる非空の値を返します。コンテキスト管理、ステータス保存など、統一されたセッション識別子が必要なシナリオに適しています。
 
 ### メッセージメソッド
 
@@ -4846,12 +4833,12 @@ sender = event.get_sender()
 # グループ情報を取得
 group_id = event.get_group_id()
 
-# メッセージタイプを判断
+# メッセージタイプを判定
 is_msg = event.is_message()
 is_private = event.is_private_message()
 is_group = event.is_group_message()
 
-# @メッセージ関連
+# メンション関連
 is_at = event.is_at_message()
 has_mention = event.has_mention()
 mentions = event.get_mentions()
@@ -4865,7 +4852,7 @@ cmd_name = event.get_command_name()
 cmd_args = event.get_command_args()
 cmd_raw = event.get_command_raw()
 
-# コマンドかどうかを判断
+# コマンドかどうかを判定
 is_cmd = event.is_command()
 ```
 
@@ -4878,93 +4865,101 @@ await event.reply("これはメッセージです")
 # 送信方法を指定
 await event.reply("http://example.com/image.jpg", method="Image")
 
-# @ユーザーと返信メッセージ付き
+# ユーザーへのメンションと返信メッセージを含む
 await event.reply("こんにちは", at_users=["user1"], reply_to="msg_id")
 
-# @全体
+# 全体メンション
 await event.reply("お知らせ", at_all=True)
 
-# OneBot12メッセージセグメントを使用した返信
+# プラットフォーム固有の修飾メソッドを使用（via パラメータ）
+await event.reply("看板の内容", method="Board",
+                  via=[("Expire", 3600), ("ForMember", "114514")])
+
+# 送信チェーンを取得し、自由に修飾メソッドと送信方法を追加（複数の修飾/アクションメソッドを連続で使用する場合に適しています）
+await event.send_chain().Expire(3600).Board("看板の内容")
+await event.send_chain().DismissBoard()
+
+# OneBot12 メッセージセグメントを使用して返信
 from ErisPulse.Core.Event import MessageBuilder
 msg = MessageBuilder().text("Hello").image("url").build()
 await event.reply_ob12(msg)
 
-# 返信待機
+# 返信を待機
 reply = await event.wait_reply(timeout=30)
 ```
 
-### プラットフォーム能力照会
+### プラットフォーム機能の照会
 
 ```python
-# 現在のプラットフォームが特定の送信方法をサポートしているかチェック
+# 現在のプラットフォームが特定の送信方法をサポートしているか確認
 if event.supports("Image"):
     await event.reply(url, method="Image")
 
-# 現在のプラットフォームで利用可能なすべての送信方法をリスト
+# 現在のプラットフォームで使用可能なすべての送信方法を一覧表示
 methods = event.available_methods()
 # ["Text", "Image", "Voice", ...]
 ```
 
 ### 返信メソッド
 
-`reply()` メソッドは、`method`パラメータを使用して送信タイプを指定し、2つの便利なブールパラメータをサポートしています：
+`reply()` メソッドは、`method` パラメータを使用して送信タイプを指定し、2つの便利なブール引数をサポートします：
 
 ```python
 # シンプルなテキスト返信
 await event.reply("こんにちは")
 
-# 送信者に@付きで返信
+# 送信者へのメンション付きで返信
 await event.reply("こんにちは", at_sender=True)
 
 # 現在のメッセージを引用して返信
 await event.reply("受信しました", reply_to_message=True)
 
-# 組み合わせ使用
+# 組み合わせて使用
 await event.reply("受信しました", at_sender=True, reply_to_message=True)
 
-# 画像を送信（methodパラメータを使用）
+# 画像を送信（method パラメータを使用）
 if event.supports("Image"):
     await event.reply("http://example.com/img.jpg", method="Image")
 else:
     await event.reply("[画像] http://example.com/img.jpg")
 ```
 
-**パラメータ説明**：
+**パラメータの説明**：
 
 | パラメータ | 型 | 説明 |
 |------|------|------|
 | `content` | str | 送信内容 |
-| `method` | str | 送信方法、デフォルト "Text"、選択肢 "Image"/"Voice"/"Video"/"File" など |
-| `at_sender` | bool | 送信者に@するか（user_idを自動的に抽出） |
-| `quote` | bool | 現在のメッセージを引用して返信するか（message_idを自動的に抽出） |
-| `at_users` | list[str] | 指定されたユーザーリストに@ |
-| `reply_to` | str | 手動で指定された返信メッセージID |
-| `at_all` | bool | 全体に@するか |
+| `method` | str | 送信方法、デフォルトは "Text"、選択肢: "Image"/"Voice"/"Video"/"File" など |
+| `at_sender` | bool | 送信者にメンションするか（自動的に user_id を抽出） |
+| `quote` | bool | 現在のメッセージを引用して返信するか（自動的に message_id を抽出） |
+| `at_users` | list[str] | 指定されたユーザーへのメンションリスト |
+| `reply_to` | str | 手動で返信メッセージの ID を指定 |
+| `at_all` | bool | 全体メンションするか |
 
 ### インタラクションメソッド
 
 ```python
-# confirm — 対話の確認（True/False/Noneを返す）
+# confirm — 会話の確認（True/False/None を返す）
 if await event.confirm("この操作を実行してもよろしいですか？"):
     await event.reply("確認済み")
 
-# Text以外の方法で確認プロンプトを送信
+# テキスト以外の方法で確認プロンプトを送信
 if await event.confirm("http://example.com/image.jpg", method="Image"):
-    await event.reply("画像プロンプトを確認しました")
+    await event.reply("画像プロンプトが確認されました")
 
-# choose — 選択メニュー（選択肢インデックスまたはNoneを返す）
+# choose — 選択メニュー（オプションのインデックスまたは None を返す）
 choice = await event.choose("色を選択してください：", ["赤", "緑", "青"])
 
-# options_format="auto"（デフォルト）methodに基づいてスタイルを自動選択：
-# Markdown→順不同リスト（- 1.オプション）、Html→順序付きリスト（<ol>）、その他→プレーンテキストリスト
-# テキスト系メソッド（Markdown/Htmlなど）はデフォルトでオプションを末尾に結合
-# merge_prompt=True は任意のmethodで強制的に結合を可能にする；placeholderはカスタムプレースホルダーを可能にする
+# options_format="auto"（デフォルト）は method に応じて自動的にスタイルを選択します：
+# Markdown→箇条書きリスト（- 1.オプション）、Html→番号付きリスト（<ol>）、その他→プレーンテキストリスト
+# テキスト系メソッド（Markdown/Html 等）はデフォルトでオプションを末尾にマージします
+# merge_prompt=True を使用すると、任意の method でのマージを強制できます。プレースホルダーはカスタマイズ可能です。
 choice = await event.choose(
     "## 選択してください\n{options}", ["A", "B"],
     method="Markdown", merge_prompt=True,
 )
 
-# collect — フォーム収集（{key: value}辞書またはNoneを返す）
+# collect — フォーム収集（{key: value} の辞書または None を返す）
 data = await event.collect([
     {"key": "name", "prompt": "名前を入力してください："},
     {"key": "age", "prompt": "年齢を入力してください：",
@@ -4975,35 +4970,35 @@ data = await event.collect([
 # wait_for — 条件を満たす任意のイベントを待機
 evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
-# conversation — マルチラウンド会話コンテキスト
+# conversation — マルチターン会話コンテキスト
 conv = event.conversation(timeout=60)
-await conv.say("ようこそ！")
+await conv.say("歓迎！")
 ```
 
-> 完全なインタラクションメソッドのパラメータ説明やさらなる例については、[Event ラッパークラス詳細](../developer-guide/modules/event-wrapper.md) および [Conversation マルチラウンド会話](../advanced/conversation.md) を参照してください。
+> 完全なインタラクションメソッドのパラメータ説明とさらに多くの例については、[Event ラップクラスの詳細](../developer-guide/modules/event-wrapper.md) と [Conversation マルチターン会話](../advanced/conversation.md) を参照してください。
 
 ### ユーティリティメソッド
 
 ```python
-# 辞書に変換
+# ディクショナリに変換
 event_dict = event.to_dict()
 
-# 処理済みかチェック
+# 処理済みかを確認
 if not event.is_processed():
     event.mark_processed()
 
-# 原始データを取得
+# 生のデータを取得
 raw = event.get_raw()
 raw_type = event.get_raw_type()
 ```
 
 ### プラットフォーム拡張メソッド
 
-アダプターはEventにプラットフォーム固有のメソッドを登録できます。これは、対応するプラットフォームのインスタンスでのみ利用可能です。
+アダプタは Event にプラットフォーム固有のメソッドを登録でき、対応するプラットフォームのインスタンスでのみ使用可能です。
 
 #### ユーザー：プラットフォーム拡張メソッドの使用
 
-アダプターがプラットフォーム固有のメソッドを登録した後、イベントハンドラーで直接呼び出すことができます。各プラットフォームのメソッドは異なりますので、対応する[プラットフォームドキュメント](../platform-guide/)を参照してください。
+アダプタがプラットフォーム固有のメソッドを登録すると、イベントハンドラーで直接呼び出すことができます。各プラットフォームのメソッドは異なりますが、対応する [プラットフォームガイド](../platform-guide/) を参照してください。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -5012,62 +5007,62 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     platform = event.get_platform()
 
-    # プラットフォームに応じて固有のメソッドを呼び出し
+    # プラットフォームに応じて固有メソッドを呼び出す
     if platform == "email":
         subject = event.get_subject()           # メール固有
         attachments = event.get_attachments()   # メール固有
 ```
 
-#### プラットフォームで登録されたメソッドを照会
+#### プラットフォームで登録されたメソッドの照会
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
 
-# 特定のプラットフォームにどのメソッドが登録されているかを確認
+# 特定のプラットフォームに登録されているメソッドを表示
 methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", "get_attachments", ...]
 
-# 動的に判断して呼び出し
+# 動的に判断して呼び出す
 for method_name in get_platform_event_methods(event.get_platform()):
     method = getattr(event, method_name)
     print(f"{method_name}: {method()}")
 ```
 
-#### プラットフォームメソッドの分離
+#### プラットフォームメソッドの隔離
 
-異なるプラットフォームに登録されたメソッドは干渉しません：
+異なるプラットフォームで登録されたメソッドは干渉しません：
 
 ```python
-# メールイベント - メール固有のメソッドのみ
+# メールイベント - メール専用のメソッドのみ
 event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
 event.get_subject()      # ✅ "Hello"
 event.get_chat_type()    # ❌ AttributeError
 
-# Telegram イベント - Telegram固有のメソッドのみ
+# Telegram イベント - Telegram 専用のメソッドのみ
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
 event.get_chat_type()    # ✅ "private"
 event.get_subject()      # ❌ AttributeError
 ```
 
-#### `hasattr` / `dir` サポート
+#### `hasattr` / `dir` のサポート
 
 ```python
-hasattr(event, "get_subject")   # platform="email"の場合のみTrueを返す
+hasattr(event, "get_subject")   # platform="email" の場合のみ True を返します
 "get_subject" in dir(event)     # 同上
 ```
 
-### アダプター：プラットフォーム拡張メソッドの登録
+### アダプタ：プラットフォーム拡張メソッドの登録
 
-アダプターはデコレーターを使用してEventにプラットフォーム固有のメソッドを登録できます。メソッドの最初のパラメータは`self`（Eventインスタンス）で、イベントデータに自由にアクセスできます。
+アダプタはデコレータを使用して Event にプラットフォーム固有のメソッドを登録でき、メソッドの最初のパラメータは `self`（Event インスタンス）であり、イベントデータに自由にアクセスできます。
 
-#### 個別のメソッド登録
+#### 単一メソッドの登録
 
 ```python
 from ErisPulse.Core.Event import register_event_method
 
 @register_event_method("email")
 def get_subject(self):
-    """メール件名を取得"""
+    """メールの件名を取得"""
     return self.get("email_raw", {}).get("subject", "")
 
 @register_event_method("email")
@@ -5076,9 +5071,9 @@ def get_from(self):
     return self.get("email_raw", {}).get("from", {})
 ```
 
-#### 一括登録（Mixinクラス）
+#### バッチ登録（Mixin クラス）
 
-メソッドが多い場合は、Mixinクラスを使用して一括登録することをお勧めします：
+メソッドが多い場合は、Mixin クラスを使用して一括登録することを推奨します：
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin
@@ -5097,28 +5092,28 @@ class EmailEventMixin:
 register_event_mixin("email", EmailEventMixin)
 ```
 
-#### 返り値規範
+#### 返り値の仕様
 
-| シーン | 返り値 | ユーザーの使用方法 |
+| シナリオ | 返り値 | ユーザーが使用する方法 |
 |------|--------|------------|
-| データ（テキスト、辞書など）を返す | 直接返り値 | `subject = event.get_subject()` |
-| 操作（メッセージ送信など）を実行 | `asyncio.Task`を返す | `task = event.do_something()` 可選 `await` |
+| データを返す（テキスト、辞書など） | 直接返り値 | `subject = event.get_subject()` |
+| 操作を実行する（メッセージの送信など） | `asyncio.Task` を返す | `task = event.do_something()`（オプションで await） |
 
-> **推奨**：データを返さないメソッドは`asyncio.Task`を返し、ユーザーが`await`するかどうかを自分で決められるようにします。`await`しなくても操作は完了します。
+> **推奨**：データ以外を返すメソッドは `asyncio.Task` を返します。これにより、ユーザーは `await` するかどうかを自分で決定でき、`await` しなくても操作は完了します。
 
 ```python
 @register_event_method("email")
 def forward_email(self, to_address: str):
-    """メールを転送 — Taskを返し、ユーザーはawaitするかどうかを自分で決められる"""
+    """メールを転送 — Task を返すため、ユーザーが await するかどうかを決定できます"""
     import asyncio
     return asyncio.create_task(
         self._do_forward(to_address)
     )
 
-# ユーザーはawaitして結果を待つことができます
+# ユーザーは結果を待機するために await できます
 await event.forward_email("user@example.com")
 
-# また、awaitせず、操作はバックグラウンドで実行されます
+# あるいは await せず、バックグラウンドで操作を実行することもできます
 event.forward_email("user@example.com")
 ```
 
@@ -5127,28 +5122,28 @@ event.forward_email("user@example.com")
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
 
-# 個別のメソッドを登録解除
+# 単一メソッドの登録解除
 unregister_event_method("email", "get_subject")
 
-# 特定のプラットフォームのすべてのメソッドを登録解除（アダプターシャットダウン時に呼び出される）
+# 特定のプラットフォームのすべてのメソッドの登録解除（アダプタのシャットダウン時に呼び出す）
 unregister_platform_event_methods("email")
 ```
 
 #### 組み込みメソッドの上書き
 
-`register_event_mixin` / `register_event_method` は、組み込みEventメソッド（`confirm`、`choose`、`collect`、`wait_reply`、`reply`など）の上書きをサポートします。登録されたプラットフォームメソッドは、`Event.__getattribute__`を通じて組み込みメソッドよりも優先して有効になります。そのため、アダプターはプラットフォーム固有のインタラクション実装を提供できます。
+`register_event_mixin` / `register_event_method` は、`confirm`、`choose`、`collect`、`wait_reply`、`reply` などの Event 組み込みメソッドを上書きできます。登録されたプラットフォームメソッドは、Event 内部の `_builtin_*` 関数を介して優先的に組み込みメソッドに作用するため、アダプタはプラットフォーム固有のインタラクション実装を提供できます。
 
-組み込み実装は`_builtin_*`関数としてエクスポートされ、上書きする側はそれらをフォールバックとして呼び出すことができます：
+組み込み実装は `_builtin_*` 関数としてエクスポートされており、上書きする側はそれらをフォールバックとして呼び出すことができます：
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
 
 class YunhuEventMixin:
     async def choose(self, prompt, options, timeout=60, method="Text"):
-        # 雲湖プラットフォームはボタンコンポーネントを使用
+        # 雲湖プラットフォームはボタンコンポーネントを使用します
         buttons = [[{"text": opt} for opt in options]]
         await self.reply(prompt)
-        # ...ボタンコールバックまたはテキスト返信を待機...
+        # ...ボタンのコールバックかテキストの返信を待機...
         # 組み込みロジックにフォールバック
         return await _builtin_choose(self, None, options, timeout, "Text")
 
@@ -5157,7 +5152,7 @@ register_event_mixin("yunhu", YunhuEventMixin)
 
 ## クロスプラットフォーム拡張（ワイルドカード）
 
-`register_event_method`と`register_event_mixin`は、プラットフォーム名として`"*"`を渡すのをサポートします。登録されたメソッドは**すべてのプラットフォーム**のEventインスタンスで利用可能です。AI対話、コンテキスト管理など、クロスプラットフォームで再利用される必要がある機能モジュールに適しています。
+`register_event_method` と `register_event_mixin` は、プラットフォーム名として `"*"` を受け入れ、登録されたメソッドは**すべてのプラットフォーム**の Event インスタンスで使用可能になります。AI 会話、コンテキスト管理など、複数のプラットフォームで再利用される必要がある機能モジュールに適しています。
 
 ### クロスプラットフォームメソッドの登録
 
@@ -5166,7 +5161,7 @@ from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    """selfはEventインスタンスであり、イベントデータと組み込みメソッドに自由にアクセスできます"""
+    """self は Event インスタンスであり、イベントデータと組み込みメソッドに自由にアクセスできます"""
     await self.reply(f"AI: {prompt}")
 ```
 
@@ -5180,28 +5175,28 @@ async def handler(event):
     await event.ai_chat(event.get_text())
 ```
 
-### メソッド解決の優先順位
+### メソッドの解決優先度
 
-Eventメソッドに属性アクセスする場合、解決順序は以下の通りです：
+Event メソッドに属性アクセスした場合、解決の順序は以下の通りです：
 
 1. **プラットフォーム固有メソッド**（現在のプラットフォームによる上書き）
-2. **ワイルドカードメソッド**（`"*"`で登録されたクロスプラットフォームメソッド）
-3. **組み込みメソッド**（`reply`、`confirm`など）
+2. **ワイルドカードメソッド**（`"*"` によって登録されたクロスプラットフォームメソッド）
+3. **組み込みメソッド**（`reply`、`confirm` など）
 4. **辞書キーアクセス**
 
-> したがって、ワイルドカードメソッドは組み込みメソッド（`reply`など）を上書きできますが、同じ名前のプラットフォーム固有メソッドによってさらに上書きされます。
+> したがって、ワイルドカードメソッドは組み込みメソッド（`reply` など）を上書きできますが、同名のプラットフォーム固有メソッドによってさらに上書きされる可能性があります。
 
-## 優先順位システム
+## 優先度システム
 
-イベントハンドラーは優先順位をサポートしており、数値が大きいほど優先度が高いです：
+イベントハンドラーは優先度をサポートしており、数値が大きいほど優先度が高くなります：
 
 ```python
-# 高優先度ハンドラーが先に実行
+# 高優先度のハンドラーが先に実行
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     pass
 
-# 低優先度ハンドラーが後に実行
+# 低優先度のハンドラーが後で実行
 @message.on_message(priority=0)
 async def low_priority_handler(event):
     pass
@@ -5209,8 +5204,8 @@ async def low_priority_handler(event):
 
 ## 関連ドキュメント
 
-- [コアモジュール API](core-modules.md) - コアモジュールAPI
-- [アダプターシステム API](adapter-system.md) - アダプター管理API
+- [コアモジュール API](core-modules.md) - コアモジュール API
+- [アダプタシステム API](adapter-system.md) - Adapter 管理 API
 - [モジュール開発ガイド](../developer-guide/modules/) - カスタムモジュールの開発
 
 
@@ -8546,59 +8541,59 @@ async def on_unload(self, event):
 
 # 起動フローと手動制御
 
-ErisPulse の `await sdk.run()` / `await sdk.init()` は、一連の起動プロセスを「1行のコード」にまとめました。しかし、部分読み込みや動的登録、ホットスワップ、独自の読み込み戦略の注入など、起動プロセスを完全にカスタマイズする必要がある場合、このプロセス内部で何が行われているか、および各ステップをどのように手動で駆動するかを理解する必要があります。
+ErisPulse の `await sdk.run()` / `await sdk.init()` は、一連の起動フローを「一行のコード」に抽象化しています。しかし、部分的なロード、動的登録、ホットプラグ、カスタムロード戦略の挿入など、完全にカスタマイズした起動フローが必要な場合は、このフローの内部で何が起こっているのか、そして各ステップをどのように手動で駆動するのかを理解する必要があります。
 
-本記事では、起動プロセスを独立したステップに分解し、それぞれの役割と呼び出し順序を説明します。また、手動で完全に起動する例も示します。
+本文では、起動フローを個別のステップに分解し、それぞれの役割と呼び出し順序を説明し、完全な手動起動の例を示します。
 
-> 本記事では、すでに [最初のボット](../getting-started/first-bot.md) を動かしたことがあり、`sdk.run(keep_running=True/False)` の2つのモードを理解していることを前提としています。本記事は `init()` **内部**のプロセス分解に焦点を当て、`init()`/`init_task()`/`init_sync()` などのより低レベルなエントリポイントについて説明します。
+> 本文では、[最初のロボット](../getting-started/first-bot.md)を実行済みと仮定し、`sdk.run(keep_running=True/False)` の2つのモードを理解していることを前提としています。本文では、`init()` **内部**のフローの分解と、`init()`/`init_task()`/`init_sync()` などのより低レベルなエントリーポイントに焦点を当てます。
 
-## SDK 上位エントリポイントの概要
+## SDKのトップレベルエントリーポイント一覧
 
-`run()` の2つの `keep_running` モードに加え、SDK はさらに低レベルの初期化エントリポイントをいくつか提供しています。それらの違いは**非同期性、戻り値、および例外をラップするかどうか**です：
+`run()` の2つの `keep_running` モードに加えて、SDK はいくつかのより低レベルな初期化エントリーポイントを提供します。違いは**非同期性、返り値、および例外のラッピング**です：
 
-| エントリポイント | 非同期性 | 戻り値 | 例外処理 | 適用シーン |
+| エントリーポイント | 非同期性 | 返り値 | 例外処理 | 適用場面 |
 |------|--------|--------|----------|----------|
-| `await sdk.run(True)` | async、ブロックして維持 | `None`（終了時に自動 `uninit`） | モジュール/アダプタエラーをキャッチ、プロセス全体に影響させない | 純粋な bot アプリケーション |
-| `await sdk.run(False)` | async、ブロックしない | `None`（自動アンインストールなし） | 同上 | 初期化後にカスタムロジックを実行する場合 |
-| `await sdk.init()` | async、await 必要 | `bool` | **ラップしない**、例外を上位に投げる | 手動でライフサイクルを制御する場合（`uninit()` と組み合わせる） |
-| `sdk.init_task()` | async、Task を返してブロックしない | `asyncio.Task` | `init()` と同じ | 他の初期化を並列実行する場合、またはイベントループがまだ動いていない場合 |
-| `sdk.init_sync()` | **同期**、現在のスレッドをブロック | `bool` | `init()` と同じ | コマンドラインスクリプト、イベントループを持たない同期エントリポイント |
+| `await sdk.run(True)` | async、ブロッキングして維持 | `None`（終了時に自動 `uninit`） | モジュール/アダプタのエラーは捕捉され、プロセスをクラッシュさせない | ロボットアプリケーション |
+| `await sdk.run(False)` | async、ブロッキングしない | `None`（自動アンロードしない） | 同上 | 初期化後にカスタムロジックを実行 |
+| `await sdk.init()` | async、awaitが必要 | `bool` | **ラッピングしない**、例外は上に投げられる | ライフサイクルを手動で制御する（`uninit()` と併用） |
+| `sdk.init_task()` | async、Taskを返す、ブロッキングしない | `asyncio.Task` | `init()` と同じ | 並列で他の初期化を実行する、またはイベントループがまだ実行されていない |
+| `sdk.init_sync()` | **同期**、現在のスレッドをブロッキング | `bool` | `init()` と同じ | コマンドラインスクリプト、イベントループのない同期エントリーポイント |
 
-> **よくある誤解**：`await sdk.init()` は `await sdk.run(keep_running=False)` と**等価ではありません**。2つの違い：① `init()` は `bool` を返し、`run()` は `None` を返す；② `run()` は初期化と実行プロセスを try/except でラップする（モジュール/アダプタエラーをキャッチしてクラッシュを防ぐ）、一方で `init()` はラップせず、例外は直接投げられます。アンインストールのペアリングやカスタム例外処理が必要な場合は、`init()` + `uninit()` を使用してください。
+> **よくある誤解**：`await sdk.init()` は `await sdk.run(keep_running=False)` に等価ではありません。2点の違いがあります：① `init()` は `bool` を返し、`run()` は `None` を返す；② `run()` は初期化と実行のプロセスを try/except でラップしている（モジュール/アダプタのエラーを捕捉してクラッシュを防ぐ）、一方 `init()` はラップせず、例外は直接上に投げられます。アンロードやカスタム例外処理が必要な場合は、`init()` + `uninit()` を使用します。
 
-## 起動プロセスの概要
+## 起動フローの概要
 
-`sdk.init()`（正確にはその内部にある `Initializer.init()`）は、以下の順序でフレームワーク全体を起動します：
+`sdk.init()`（正確にはその内部の `Initializer.init()`）は、以下の順序でフレームワーク全体を起動します：
 
 ```mermaid
 flowchart TD
-    A[0. 環境準備<br/>設定の読み込み / 例外処理] --> B
-    B[1. 並列発見と読み込み<br/>AdapterLoader.load / ModuleLoader.load<br/>内部で Finder.find_all を呼び出す] --> C
+    A[0. 環境準備<br/>設定のロード / 例外処理] --> B
+    B[1. 並行的な発見とロード<br/>AdapterLoader.load / ModuleLoader.load<br/>内部で Finder.find_all を呼び出す] --> C
     C[2. アダプタの登録<br/>AdapterLoader.register_to_manager] --> D
     D[3. アダプタの起動<br/>adapter.startup] --> E
     E[4. モジュールの登録<br/>ModuleLoader.register_to_manager] --> F
     F[5. モジュールの初期化<br/>ModuleLoader.initialize_modules<br/>インスタンス化して sdk にマウント] --> G
-    G[6. ルータサーバーの起動<br/>router.start]
+    G[6. ルーティングサーバーの起動<br/>router.start]
 ```
 
 対応するコアコンポーネント：
 
-| レイヤー | コンポーネント | 役割 |
+| 層 | コンポーネント | 役割 |
 |----|------|------|
-| 発見 | `AdapterFinder` / `ModuleFinder` | インストール済みパッケージの entry-points から**発見**する |
-| 読み込み | `AdapterLoader` / `ModuleLoader` | 発見 + インポート + メタデータの読み込み + 有効/無効の判定、オブジェクトの一覧を返す |
+| 発見 | `AdapterFinder` / `ModuleFinder` | 既にインストールされたパッケージの entry-points から**発見**する |
+| ロード | `AdapterLoader` / `ModuleLoader` | 発見 + インポート + メタデータの読み込み + 有効/無効の判断、オブジェクトリストを返す |
 | 登録 | `*Loader.register_to_manager` | オブジェクトを対応するマネージャーに登録する |
-| 管理 | `sdk.adapter` / `sdk.module` | アダプタ/モジュールインスタンスを維持し、起動/停止インターフェースを提供する |
-| 初期化 | `ModuleLoader.initialize_modules` | モジュールインスタンスを作成して `sdk` にマウントする（依存関係のトポロジカルソートを処理） |
+| 管理 | `sdk.adapter` / `sdk.module` | アダプタ/モジュールのインスタンスを維持し、起動/停止のインターフェースを提供する |
+| 初期化 | `ModuleLoader.initialize_modules` | モジュールのインスタンスを作成して `sdk` にマウントする（依存関係のトポロジカルソートを処理する） |
 | ルーティング | `sdk.router` | HTTP / WebSocket サーバー |
 
-> **重要**：`Finder` と `Loader` は2層構造です。`Loader` 内部では**すでに `Finder` を保持**しています（`AdapterLoader` は `AdapterFinder` を持ち、`ModuleLoader` は `ModuleFinder` を持ちます）。ほとんどの場合は `Loader` のみを使用すればよく、`Finder` は「一覧は取得するがインポートしない」という状況でのみ個別に使用します。
+> **重要**：`Finder` と `Loader` は2つの層です。`Loader` は内部で**すでに** `Finder` を保持しています（`AdapterLoader` は `AdapterFinder` を持つ、`ModuleLoader` は `ModuleFinder` を持つ）。ほとんどの場合、`Loader` を使用するだけで十分です。"リストアップだけ"が必要な場合にのみ、`Finder` を個別に使用します。
 
-## 各ステップの詳細解説
+## 各ステップの詳細
 
 ### 1. 発見層：Finder
 
-Finder は「どのパッケージがアダプタ/モジュールを提供しているか」を見つけるだけの責任を持ちます。インポートもインスタンス化もしません。
+Finder は、どのパッケージがアダプタ/モジュールを提供しているかを**見つけ**るだけです。インポートやインスタンス化はしません。
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -8606,19 +8601,19 @@ from ErisPulse.finders import AdapterFinder, ModuleFinder
 adapter_finder = AdapterFinder()
 module_finder = ModuleFinder()
 
-# すべてのインストール済みアダプタ/モジュールの entry-points を検索
+# すべてのインストール済みのアダプタ/モジュールの entry-points を検索
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
-# 名前で単一のものを検索
+# 名前で個別に検索
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-各 `EntryPoint` は `.load()` で対応するクラスを取得できますが、通常は手動で呼び出す必要はありません（Loader が行います）。
+各 `EntryPoint` は `.load()` で対応するクラスを得られますが、通常は手動で呼び出す必要はありません。`Loader` が処理します。
 
-### 2. 読み込み層：Loader
+### 2. ロード層：Loader
 
-Loader は Finder の上に「インポート + メタデータ読み込み + 有効/無効の判定」を行っています。
+Loader は、Finder の上に「インポート + メタデータの読み込み + 有効/無効の判断」を行います。
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -8627,48 +8622,73 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() 内部：finder.find_all() を呼び出す → entry-point を順に処理 → 3つの値を返す
+# load() 内部：finder.find_all() を呼び出す → 各 entry-point を処理する → 3タプルを返す
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
 
-`load()` が返す3つの値：
+`load()` が返す3タプル：
 
-| 戻り値 | 意味 |
+| 返り値 | 含意 |
 |--------|------|
-| `objs` (`dict`) | 名前 → オブジェクト（アダプタクラス / モジュールラッパーオブジェクト） |
-| `enabled` (`list[str]`) | 有効化された名前（設定で無効化されていないもの） |
+| `objs` (`dict`) | 名前 → オブジェクト（アダプタクラス / モジュールラッパー） |
+| `enabled` (`list[str]`) | 有効化された名前（設定で無効化されていない） |
 | `disabled` (`list[str]`) | 無効化された名前 |
+
+#### ロード失敗時の診断情報
+
+モジュール/アダプタがロードまたは初期化段階で例外を送出した場合、フレームワークはそのコンポーネントをスキップして他のコンポーネントのロードを続け、**ユーザーのコードフレームの要約**を出力します。これにより、デフォルトの INFO レベルでエラー箇所を特定でき、手動で DEBUG に変更する必要はありません。
+
+```
+[ERROR] [ModuleLoader] entry-point からモジュール MyModule のロードに失敗しました。スキップしました: 'NoneType' object has no attribute 'platform'
+  → MyModule/Core.py:42 in on_load
+      adapter = sdk.platform
+  → AttributeError: 'NoneType' object has no attribute 'platform'
+  → ヒント: ログレベルを DEBUG に上げて完全なスタックを確認する。モジュール MyModule の実装コードを確認する
+```
+
+診断情報は `ErisPulse.runtime.diagnostics` モジュールによって生成され、フレームワーク内部のフレームは自動的にフィルタリングされ、ユーザーのコードフレームのみが残ります。カスタムロードロジックで再利用する必要がある場合は：
+
+```python
+from ErisPulse.runtime import log_diagnostic
+
+try:
+    risky_init()
+except Exception as e:
+    log_diagnostic(e)  # 自動的にユーザーのコードフレームを抽出して ERROR ログに書き込む
+```
+
+このモジュールには `extract_user_frame()`（構造化されたフレーム情報を返す）と `format_diagnostic_block()`（複数行のテキストを返す）という2つの低レベル関数もあります。
 
 ### 3. 登録層：register_to_manager
 
-Loader が出力したオブジェクトをマネージャーに登録し、`sdk.adapter` / `sdk.module` がそれらを認識できるようにします。
+`Loader` が出力したオブジェクトをマネージャーに登録し、`sdk.adapter` / `sdk.module` がそれらを認識できるようにします。
 
 ```python
-# アダプタを登録（すべて成功したかどうかを表す bool を返す）
+# アダプタの登録（すべて成功した場合は True を返す）
 await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.adapter)
 
-# モジュールを登録
+# モジュールの登録
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-登録後、アダプタは `sdk.adapter._adapters` に入り、モジュールクラスは `sdk.module` に入りますが、**まだ起動/インスタンス化されていません**。
+登録後、アダプタは `sdk.adapter._adapters` に、モジュールクラスは `sdk.module` に登録されますが、**まだ起動/インスタンス化されていません**。
 
 ### 4. アダプタの起動
 
 ```python
-# 登録されたすべてのアダプタを起動
+# すべての登録済みアダプタを起動
 await sdk.adapter.startup()
 # または特定のプラットフォームを指定
 await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> 登録 ≠ 起動。`register_to_manager` は単なる登録であり、`startup` で初めてアダプタの `start()` が呼び出され、プラットフォームへの接続が確立されます。
+> 登録 ≠ 起動。`register_to_manager` は単に登録するだけで、`startup` でアダプタの `start()` を呼び出し、プラットフォームとの接続を確立します。
 
 ### 5. モジュールの初期化
 
-モジュールはアダプタよりも1ステップ多く、**インスタンス化**して `sdk` にマウントする必要があります（そうすることで `sdk.MyModule.xxx` を呼び出せるようになります）。このステップでは、モジュール間の依存関係の宣言とトポロジカルソートも処理されます。
+モジュールはアダプタよりも1ステップ多く、**インスタンス化**して `sdk` にマウントする必要があります（そうすることで `sdk.MyModule.xxx` と呼び出せるようになります）。このステップでは、モジュール間の依存関係の宣言とトポロジカルソートも処理されます。
 
 ```python
 success = await module_loader.initialize_modules(
@@ -8676,9 +8696,9 @@ success = await module_loader.initialize_modules(
 )
 ```
 
-インスタンス化に成功すると、モジュールは `sdk.<ModuleName>` 上に現れます。
+インスタンス化が成功すると、モジュールは `sdk.<ModuleName>` に表示されます。
 
-### 6. ルータサーバーの起動
+### 6. ルーティングサーバーの起動
 
 ```python
 await sdk.router.start(
@@ -8689,11 +8709,11 @@ await sdk.router.start(
 )
 ```
 
-ルータサーバーは、アダプタの Webhook / WebSocket コールバックを受信する責任があります。これを起動しないと、サーバーモードのアダプタでメッセージを受け取ることができません。
+ルーティングサーバーは、アダプタの Webhook / WebSocket コールバックを受信します。これを起動しないと、サーバーモードのアダプタはメッセージを受け取れません。
 
 ## 完全な手動起動の例
 
-以下のコードは `await sdk.init()` のコアプロセスと**等価**ですが、各ステップがあなたの手のひらに乗ります。カスタムロジックを挿入できるのは任意の段階です：
+以下のコードは、`await sdk.init()` のコアフローと**等価**ですが、各ステップが明示的に公開されており、任意の段階でカスタムロジックを挿入できます：
 
 ```python
 import asyncio
@@ -8701,18 +8721,18 @@ from ErisPulse import sdk
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
 async def manual_startup():
-    # 0. 環境の準備（設定の読み込み、グローバルな例外処理の登録）
-    #    _prepare_environment は init() 内部の事前ステップです；手動プロセスでも最初に呼び出す必要があります。
-    #    そうしないと、Loader が設定を読み取れず、すべてのアダプタ/モジュールを無効と誤判定します。
+    # 0. 環境準備（設定のロード、グローバル例外処理の登録）
+    #    _prepare_environment は init() 内部の前処理段階です。手動フローでも事前に呼び出す必要があります。
+    #    そうでなければ Loader は設定を読み取れず、すべてのアダプタ/モジュールを誤って無効と判断します。
     if not await sdk._prepare_environment():
         print("環境準備に失敗しました")
         return False
 
-    # 1. ローダーを作成（内部でそれぞれ Finder を保持しています）
+    # 1. ローダーの作成（内部でそれぞれ Finder を保持）
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. 並列発見と読み込み（init() 内部と同じく gather を使用）
+    # 2. 並行的な発見とロード（init() 内部と同じ gather を使用）
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
@@ -8733,130 +8753,130 @@ async def manual_startup():
         enabled_modules, module_objs, sdk.module
     )
 
-    # 6. モジュールの初期化（インスタンス化 + sdk へのマウント）
+    # 6. モジュールの初期化（インスタンス化 + sdk にマウント）
     if enabled_modules:
         await module_loader.initialize_modules(
             enabled_modules, module_objs, sdk.module, sdk
         )
 
-    # 7. ルータサーバーの起動
+    # 7. ルーティングサーバーの起動
     await sdk.router.start(host="0.0.0.0", port=8000)
 
-    print("手動起動が完了しました")
+    print("手動起動完了")
     return True
 
 async def main():
     ok = await manual_startup()
     if ok:
-        # ブロックして実行維持（手動プロセスは自動ブロックされません）
+        # ブロッキングして実行を維持（手動フローでは自動的にブロッキングしない）
         await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### いつ手動起動すべきか？
+### いつ手動起動が必要か？
 
-ほとんどの場合**手動起動は必要ありません**、`await sdk.run()` ですべての上記処理が完了しています。手動起動が価値を持ち得るのは以下のシナリオのみです：
+ほとんどの場合、**手動起動は必要ありません**。`await sdk.run()` は上記すべてをすでに処理しています。手動起動は、以下の場面でのみ価値があります：
 
-- **部分読み込み**：指定されたアダプタ/モジュールのみを読み込み、その他はスキップする
-- **動的登録**：実行時に条件に基づいて新しいアダプタ/モジュールを登録する
-- **カスタム順序**：デフォルトの読み込み順序を変更する必要がある（例：あるモジュールを先に起動してからアダプタを起動する）
-- **注入戦略**：Loader にカスタムの厳格モードマネージャー、読み込み戦略などを注入する
-- **デバッグ/診断**：特定の段階で失敗した場合、手動で駆動して問題を特定する
+- **部分的ロード**：指定されたアダプタ/モジュールのみをロードし、他のものをスキップ
+- **動的登録**：実行時に条件に応じて新しいアダプタ/モジュールを登録
+- **順序のカスタマイズ**：デフォルトのロード順序を変更したい（例えば、アダプタの起動前に特定のモジュールを起動したい）
+- **戦略の注入**：Loader にカスタムの厳格モードマネージャー、ロード戦略などを注入
+- **デバッグ/診断**：特定の段階で失敗した場合、手動で駆動して問題を特定
 
-## 実行時の細かい制御
+## 実行時での細かい制御
 
-`sdk.run()` で起動を完了させた後でも、実行時に各サブシステムを個別に制御することができます。そのために、SDK 全体を再起動する必要はありません：
+`sdk.run()` で起動が完了しても、SDK 全体の再起動は不要で、実行時に個々のサブシステムを個別に制御できます。
 
-### アダプタのホットスタート/ストップ
+### アダプタのホット起動/停止
 
 ```python
-# アダプタのホットリスタート（接続を修復し、他のプラットフォームに影響を与えない）
+# アダプタのホットリスタート（接続を再構築し、他のプラットフォームには影響しない）
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
-# 実行中に新しいプラットフォームを立ち上げる
+# 実行中に新しいプラットフォームを起動
 await sdk.adapter.startup("telegram")
 
 # 一時的にプラットフォームをオフラインにする
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` はアダプタがマネージャーに**登録されている**必要があります。登録は `init()`/`run()` 内部で行われるため、これは起動**後**の細かい制御となります。
+> `adapter.startup()` はアダプタが**マネージャーに登録されている**ことを要求します。登録は `init()`/`run()` 内部で行われるため、これは起動**後の**細かい制御です。
 
-### ルータサーバー
+### ルーティングサーバー
 
 ```python
-# 一時的に webhook サーバーを停止する
+# ワークフローのサーバーを一時的にオフラインにする
 await sdk.router.stop()
 
-# 再起動する（例えばポートを変更した場合）
+# 再起動（たとえばポートを変更した場合）
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
-### モジュールのオンデマンド読み込み
+### モジュールのオンデマンドロード
 
 ```python
-# 手動でモジュールを読み込む（遅延読み込みである可能性があります）
+# 手動でモジュールをロードする（おそらく遅延ロードのモジュール）
 await sdk.load_module("MyModule")
 ```
 
-## アンインストール（クリーンアップ）プロセス
+## アンロードフロー
 
-起動の逆操作は `await sdk.uninit()` で、これは逆順にクリーンアップを行います：
+起動の逆の操作は `await sdk.uninit()` で、反対の順序でクリーンアップします：
 
 1. すべてのアダプタを閉じる（`adapter.shutdown()`）
-2. すべてのモジュールをアンインストールする
-3. すべてのイベントハンドラをクリアする
-4. マネージャーと SDK 上のモジュール属性をクリアする
+2. すべてのモジュールをアンロードする
+3. すべてのイベントハンドラをクリーンアップする
+4. マネージャーと SDK 上のモジュール属性をクリーンアップする
 
-手動起動シナリオの場合、正常なシャットダウンを保証するために、終了前に `uninit()` を呼び出すことを忘れないでください：
+手動起動の場面では、終了前に `uninit()` を呼び出して優雅な終了を保証してください：
 
 ```python
 try:
-    await asyncio.Event().wait()   # 実行維持
+    await asyncio.Event().wait()   # 実行を維持
 finally:
     await sdk.uninit()
 ```
 
-## 再起動
+## リスタート
 
-SDK は2つの再起動方法を提供しており、いずれも事前にアンインストールする必要はありません。フレームワークが独自に処理します：
+SDK には2つのリスタート方法があります。自分ではアンロードする必要はありません。フレームワークが自動的に処理します：
 
-| 方法 | 呼び出し | 動作 | 適用シーン |
+| 方法 | 呼び出し | 行動 | 適用場面 |
 |------|------|------|----------|
-| ホットリスタート | `await sdk.restart()` | 同一プロセス内で `uninit()` してから再び `init()`、アダプタ/モジュールを再読み込み | 設定を再読み込み、モジュールのホットアップデート |
-| ハード再起動 | `await sdk.hard_restart()` | `uninit()` してプロセス全体を終了し、親プロセス（`epsdk run`）がクリーンなプロセスを起動する | メモリ/リソースリークを疑う場合、完全にクリーンな再起動が必要な場合 |
+| ホットリスタート | `await sdk.restart()` | 同一プロセス内で `uninit()` 後に再度 `init()`、アダプタ/モジュールを再ロード | 設定の再ロード、モジュールのホットアップデート |
+| ハードリスタート | `await sdk.hard_restart()` | `uninit()` 後にプロセスを終了し、親プロセス（`epsdk run`）が新しいプロセスを起動 | メモリ/リソースリークが疑われる、完全にクリーンなリスタートが必要な場合 |
 
 ```python
-# ホットリスタート：同一プロセス内で再読み込み（最も一般的）
+# ホットリスタート：同一プロセス内で再ロード（最も一般的）
 await sdk.restart()
 
-# ハード再起動：プロセスを終了し、epsdk run で起動した場合のみ有効
+# ハードリスタート：プロセスを終了し、`epsdk run` で起動された場合にのみ有効
 await sdk.hard_restart()
 ```
 
-> **2点の注意**：
-> 1. これらのメソッドはどちらもバックグラウンドタスクで再起動を実行し、**即座に `True` を返して「再起動タスクがスケジュールされました」を示します**。「再起動が完了しました」ではありません。実際の再起動はバックグラウンドで行われるため、現在のイベントチェーンを中断しません。
-> 2. `hard_restart()` は**`epsdk run main.py` で起動した場合にのみ有効です**。その原理は：アンインストール後に**終了コード 42** でプロセスを終了し、`epsdk run` の親プロセスが 42 を検知してだけ、新しいプロセスを再起動します。直接 `python main.py` で起動した場合、プロセスは 42 で終了してそのまま終了し、自動的に再起動されません。
+> **2点注意**：
+> 1. これらのメソッドはバックグラウンドタスクで実行され、**リスタートタスクがスケジュールされたことを示す `True` を即座に返す**。リスタートが完了したことを示すものではありません。実際のリスタートはバックグラウンドで行われ、現在のイベントチェーンを中断しません。
+> 2. `hard_restart()` は **`epsdk run main.py` で起動された場合にのみ有効**です。その原理は、アンロード後に**終了コード 42** でプロセスを終了し、`epsdk run` の親プロセスが 42 を検知して新しいプロセスを再起動することです。`python main.py` で直接起動した場合は、終了コード 42 でプロセスが終了した後、自動的に再起動されません。
 
-### ハード再起動を使うべきタイミングは？
+### ハードリスタートはいつ使うか？
 
-ハード再起動は「より徹底的な再起動」以上の意味を持ちます。以下のシナリオではホットリスタートよりも適切で、場合によってはより効率的です：
+ハードリスタートは単に「より完全なリスタート」ではなく、以下の場面でホットリスタートよりも適している、あるいはより効率的な場合があります：
 
-- **バイナリライブラリ（C 拡張）の副作用**：ホットリスタートは同一プロセス内で行われるため、C 拡張、オープンされたファイルディスクリプタ、スレッドなどのプロセスレベルリソースを解放できません。ハード再起動は全く新しいプロセスになるため、これらの副作用が完全にゼロになります。
-- **リソースリークの調査**：メモリまたはハンドルリークがある疑いがある場合、ハード再起動はクリーンな環境を提供します。
-- **頻繁な再起動がパフォーマンスに敏感な場合**：ハード再起動は、同一プロセス内でのアンインストール→再読み込みのコストを省き、実際にはホットリスタントよりも効率的です。
+- **バイナリライブラリ（C拡張）の副作用**：ホットリスタートは同一プロセス内で行われるため、C拡張、開かれたファイルディスクリプタ、スレッドなどのプロセスレベルのリソースを解放できません。ハードリスタートは新しいプロセスを起動するため、これらの副作用は完全にクリアされます。
+- **リソースリークの診断**：メモリやハンドルのリークが疑われる場合、ハードリスタートはクリーンな環境を得られます。
+- **頻繁なリスタートに性能が敏感な場合**：ハードリスタートは同一プロセス内のアンロード→再ロードのオーバーヘッドを省き、実際にはホットリスタートよりも効率的です。
 
-> ダッシュボード管理パネルの「フレームワーク再起動」機能は、底層で `hard_restart()` を呼び出しています。
-> あと、ハード再起動には1つの重要な要件があります！epsdk の run コマンドを使用して起動しなければなりません。さもないと、プログラムは単に 42 の終了コードで終了するだけです。run コマンドは 42 の終了コードをチェックしてプロセスを再起動するため、これが非常に重要です！！！
+> ダッシュボード管理パネルの「フレームワークリスタート」機能は、下層で `hard_restart()` を呼び出しています。
+> さらに、ハードリスタートは **`epsdk` の `run` コマンドを使用して起動する必要がある**点に注意してください。そうでなければ、プログラムは単に 42 の終了コードを投げて終了し、`run` コマンドが 42 の終了コードを検出してプロセスを再起動するのを待つため、再起動は自動的に行われません。この点は必ず注意してください！！
 
-## 関連ドキュメント
+## 関連文書
 
-- [最初のボットを作成する](../getting-started/first-bot.md) - `keep_running` の2つの基本モードへの入門
-- [ライフサイクル管理](lifecycle.md) - `core.init.start` / `core.init.complete` などの起動イベントの監視
-- [遅延読み込みシステム](lazy-loading.md) - モジュールの遅延読み込みメカニズムと `load_module`
+- [最初のロボットを作成する](../getting-started/first-bot.md) - `keep_running` の2つの基本モードの入門
+- [ライフサイクル管理](lifecycle.md) - `core.init.start` / `core.init.complete` などの起動イベントを監視
+- [遅延ロードシステム](lazy-loading.md) - モジュールの遅延ロードメカニズムと `load_module`
 
 
 ====

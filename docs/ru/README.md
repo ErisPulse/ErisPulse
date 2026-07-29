@@ -1,129 +1,75 @@
 # Документация ErisPulse
 
-ErisPulse — это масштабируемая, многофункциональная платформа для обработки сообщений, поддерживающая взаимодействие с различными платформами через адаптеры и предоставляющая гибкую систему модулей для расширения функциональности.
+ErisPulse — это масштабируемая многофункциональная платформа для обработки сообщений, поддерживающая взаимодействие с различными платформами через адаптеры и предоставляющая гибкую систему модулей для расширения функциональности.
 
-> Не понимаете термин? Посмотрите [Глоссарий](docs/ru/terminology.md) для простого объяснения.
+> **Первый раз?** Просто посмотрите на [Быстрый старт за 5 минут](docs/ru/quick-start.md) — от установки до запуска первого бота, шаг за шагом.
+>
+> Столкнулись с непонятными терминами? Посмотрите на [Глоссарий](docs/ru/terminology.md).
 
-## Навигация по документации
+---
 
-### Быстрый старт
+## Выберите свой путь
 
-- [Руководство по быстрому старту](docs/ru/quick-start.md) — руководство по установке и запуску ErisPulse
+Выберите соответствующий путь обучения в зависимости от ваших целей. Каждый путь организован от простого к сложному.
 
-### Обзор архитектуры
+### 1. Я хочу использовать бота
 
-- [Обзор архитектуры](docs/ru/architecture.md) — понимание основной архитектуры SDK, процесса инициализации, обработки событий и жизненного цикла с помощью визуальных диаграмм
+Запустите бота, установите модули, настройте параметры.
 
-### Новичку
+| Этап | Документ | Описание |
+|------|----------|----------|
+| **① Начало** | [Быстрый старт за 5 минут](docs/ru/quick-start.md) | Установка, инициализация, запуск — единственный входной путь |
+| ② Глубже | [Создание первого бота](docs/ru/getting-started/first-bot.md) | Написание первого обработчика команд |
+| ③ Понятия | [Основные понятия](docs/ru/getting-started/basic-concepts.md) | Понимание концепции адаптеров/модулей/событий |
+| ④ Практика | [Примеры распространённых задач](docs/ru/getting-started/common-tasks.md) | Хранение, планирование задач, управление правами |
+| Справка | [Описание файла конфигурации](docs/ru/user-guide/configuration.md) · [Справочник CLI](docs/ru/user-guide/cli-reference.md) · [Руководство по развертыванию](docs/ru/user-guide/deployment.md) | Просмотр по мере необходимости |
+| Справка | [Руководство по функциям платформ](docs/ru/platform-guide/README.md) | Различия между платформами (Yunhu/QQ/Telegram и т.д.) |
 
-Если вы впервые используете ErisPulse, рекомендуем прочитать в следующем порядке:
+### 2. Я хочу разрабатывать модули / адаптеры
 
-1. [Обзор руководства для новичков](getting-started/README.md)
-2. [Создание первого бота](getting-started/first-bot.md)
-3. [Основные понятия](getting-started/basic-concepts.md)
-4. [Введение в обработку событий](getting-started/event-handling.md)
-5. [Примеры распространённых задач](getting-started/common-tasks.md)
+Разработка расширений для ErisPulse, которые можно распространять.
 
-### Руководство пользователя
+| Тип | Начало | Продвинутый |
+|------|--------|------------|
+| **Разработка модулей** (рекомендуется) | [Введение в разработку модулей](docs/ru/developer-guide/modules/getting-started.md) | [Основные понятия](docs/ru/developer-guide/modules/core-concepts.md) · [Обёртка событий](docs/ru/developer-guide/modules/event-wrapper.md) · [Лучшие практики](docs/ru/developer-guide/modules/best-practices.md) |
+| **Разработка адаптеров** | [Введение в разработку адаптеров](docs/ru/developer-guide/adapters/getting-started.md) | [Основные понятия](docs/ru/developer-guide/adapters/core-concepts.md) · [Подробное объяснение SendDSL](docs/ru/developer-guide/adapters/send-dsl.md) · [Конвертер событий](docs/ru/developer-guide/adapters/converter.md) · [Лучшие практики](docs/ru/developer-guide/adapters/best-practices.md) |
+| **Технические стандарты** | [Обзор стандартов](docs/ru/standards/README.md) | Стандарты, которые необходимо соблюдать при разработке адаптеров: [Типы сессий](docs/ru/standards/session-types.md) · [Преобразование событий](docs/ru/standards/event-conversion.md) · [Методы отправки](docs/ru/standards/send-method-spec.md) · [Ответы API](docs/ru/standards/api-response.md) · [Операции запроса](docs/ru/standards/request-action-spec.md) |
+| **Публикация** | [Публикация и магазин модулей](docs/ru/developer-guide/publishing.md) | Публикация в PyPI и магазин модулей |
 
-- [Установка и настройка](user-guide/installation.md)
-- [Справочник по командам CLI](user-guide/cli-reference.md)
-- [Описание конфигурационного файла](user-guide/configuration.md)
-- [Руководство по развертыванию](user-guide/deployment.md)
+### 3. Я хочу глубже понять принципы работы
 
-### Руководство для разработчиков
+Понимание того, как работает внутренняя архитектура.
 
-#### Разработка модулей
+| Документ | Описание |
+|----------|----------|
+| [Обзор архитектуры](docs/ru/architecture.md) | Визуальная диаграмма: основная архитектура, процесс инициализации, обработка событий, жизненный цикл |
+| [Процесс запуска и ручное управление](docs/ru/advanced/startup.md) | Разбор цепочки запуска, ручное управление этапами, диагностика ошибок загрузки |
+| [Система событий](docs/ru/api-reference/event-system.md) | Полный API для пяти основных типов событий |
+| [Система адаптеров](docs/ru/api-reference/adapter-system.md) | Регистрация, запуск и остановка адаптеров, вызов API |
+| [Основные модули](docs/ru/api-reference/core-modules.md) | Основные возможности: Storage / Config / Logger / Router и т.д. |
+| [Управление жизненным циклом](docs/ru/advanced/lifecycle.md) · [Ленивая загрузка](docs/ru/advanced/lazy-loading.md) · [Система маршрутизации](docs/ru/advanced/router.md) | Внутренние подсистемы |
+| [Многошаговый диалог Conversation](docs/ru/advanced/conversation.md) · [MessageBuilder](docs/ru/advanced/message-builder.md) · [SQL Builder](docs/ru/advanced/sql-builder.md) · [HTTP-клиент](docs/ru/advanced/http-client.md) · [Международная локализация](docs/ru/advanced/i18n.md) | Расширенные инструменты |
+| [Панель управления Dashboard](docs/ru/advanced/dashboard-view.md) | Веб-интерфейс управления |
 
-- [Введение в разработку модулей](developer-guide/modules/getting-started.md)
-- [Основные концепции модулей](developer-guide/modules/core-concepts.md)
-- [Подробное объяснение класса обёртки событий](developer-guide/modules/event-wrapper.md)
-- [Лучшие практики разработки модулей](developer-guide/modules/best-practices.md)
-
-#### Разработка адаптеров
-
-- [Введение в разработку адаптеров](developer-guide/adapters/getting-started.md)
-- [Основные концепции адаптеров](developer-guide/adapters/core-concepts.md)
-- [Подробное объяснение SendDSL](developer-guide/adapters/send-dsl.md)
-- [Лучшие практики разработки адаптеров](developer-guide/adapters/best-practices.md)
-
-#### Публикация
-
-- [Руководство по публикации и магазину модулей](developer-guide/publishing.md) — публикация модулей и адаптеров в магазине ErisPulse
-
-### Руководство по функциональным возможностям платформ
-
-- [Описание функциональных возможностей платформ](platform-guide/README.md)
-- [Функциональные возможности платформы Yunhu](platform-guide/yunhu.md)
-- [Функциональные возможности платформы Telegram](platform-guide/telegram.md)
-- [Функциональные возможности платформы OneBot11](platform-guide/onebot11.md)
-- [Функциональные возможности платформы OneBot12](platform-guide/onebot12.md)
-- [Функциональные возможности платформы Email](platform-guide/email.md)
-
-### Справочник API
-
-- [API основных модулей](api-reference/core-modules.md)
-- [API системы событий](api-reference/event-system.md)
-- [API системы адаптеров](api-reference/adapter-system.md)
-
-### Технические стандарты
-
-- [Стандарт преобразования событий](standards/event-conversion.md)
-- [Стандарт ответа API](standards/api-response.md)
-- [Спецификация методов отправки](standards/send-method-spec.md)
-
-### Продвинутые темы
-
-- [Процесс запуска и ручное управление](advanced/startup.md) — разбор цепочки запуска и ручной полный запуск
-- [Система ленивой загрузки](advanced/lazy-loading.md)
-- [Управление жизненным циклом](advanced/lifecycle.md)
-- [Система маршрутизации](advanced/router.md)
-- [Подробное объяснение MessageBuilder](advanced/message-builder.md)
-- [Система типов сессий](advanced/session-types.md)
-- [Многошаговые диалоги Conversation](advanced/conversation.md)
-
-### Разработка с помощью ИИ
-
-- [Разработка с помощью ИИ](ai-support/README.md)
-
-### Стиль руководства
-
-- [Стиль руководства по документации](styleguide/docstring.md)
+---
 
 ## Способы разработки
 
 ErisPulse поддерживает два способа разработки:
 
-### 1. Разработка модулей (рекомендуется)
+- **Разработка модулей (рекомендуется):** Создание отдельных пакетов модулей, устанавливаемых через менеджер пакетов, что упрощает распространение и управление.
+- **Встраиваемая разработка:** Прямое написание обработчиков в проекте, подходит для быстрой разработки прототипов. Подробности см. в [Быстром старте](docs/ru/quick-start.md).
 
-Создание независимого пакета модуля, который устанавливается и используется через менеджер пакетов. Такой подход удобен для распространения и управления, подходит для публично доступных функций.
+## Другое
 
-### 2. Встраиваемая разработка
+- [Стиль документации](docs/ru/styleguide/docstring.md) — правила написания документации при внесении изменений
+- [Поддержка разработки с помощью ИИ](docs/ru/ai-support/README.md) — получение подсказок для помощников по программированию на основе ИИ
 
-Непосредственное внедрение кода ErisPulse в проект, без создания отдельного модуля. Такой подход подходит для быстрой разработки прототипов или специальных функций для внутреннего использования.
-
-Пример:
-
-```python
-# Прямое внедрение и использование
-import asyncio
-from ErisPulse import sdk
-from ErisPulse.Core.Event import command
-
-# Регистрация обработчика команды
-@command("hello")
-async def hello_handler(event):
-    await event.reply("Привет!")
-
-# Запуск SDK и поддержание работы | Требуется запуск в асинхронной среде
-asyncio.run(sdk.run(keep_running=True))
-```
-
-## Получение помощи
+## Получите помощь
 
 - Репозиторий на GitHub: [https://github.com/ErisPulse/ErisPulse](https://github.com/ErisPulse/ErisPulse)
-- Сообщение об ошибках: отправка Issue
-- Технические обсуждения: просмотр Discussions
+- Сообщение об ошибках: создание Issue
+- Технические обсуждения: просмотра Discussions
 
 ## Связанные ссылки
 

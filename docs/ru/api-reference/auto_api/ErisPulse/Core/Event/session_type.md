@@ -97,15 +97,25 @@ ErisPulse 会话类型管理模块
 根据事件数据自动推断接收类型
 
 检查顺序：
-1. 如果存在 detail_type，直接使用
-2. 检查各种 ID 字段，按优先级返回
+1. 如果 ``detail_type`` 是已知的会话类型（标准或自定义），直接使用
+2. notice/request 事件的 ``detail_type`` 是语义子类型（如 ``group_member_increase``），
+   不是会话类型，此时根据 ID 字段推断
+3. 最后根据存在的 ID 字段，按优先级返回
 
 - **event** (`事件数据字典`): - **platform**: 平台名称（可选）
 **返回值** (`推断的接收类型`): 
 **示例**:
 ```python
->>> event = {"group_id": "123"}
+>>> # 消息事件：detail_type 就是会话类型
+>>> event = {"type": "message", "detail_type": "group", "group_id": "123"}
 >>> infer_receive_type(event)  # 返回 "group"
+>>>
+>>> # 通知事件：detail_type 是语义子类型，从 ID 字段推断
+>>> event = {"type": "notice", "detail_type": "group_member_increase", "group_id": "123"}
+>>> infer_receive_type(event)  # 返回 "group"（而非 "group_member_increase"）
+>>>
+>>> event = {"type": "notice", "detail_type": "friend_increase", "user_id": "456"}
+>>> infer_receive_type(event)  # 返回 "private"
 ```
 
 ---

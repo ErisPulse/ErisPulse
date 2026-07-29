@@ -27,7 +27,7 @@
           "level": 1
         },
         {
-          "title": "Отслеживание ошибок",
+          "title": "Трекер ошибок",
           "path": "bug-tracker.md",
           "level": 1
         }
@@ -81,7 +81,7 @@
           "level": 1
         },
         {
-          "title": "Установка и настройка",
+          "title": "Справочник по установке",
           "path": "user-guide/installation.md",
           "level": 1
         },
@@ -158,7 +158,7 @@
               "level": 1
             },
             {
-              "title": "Подробное руководство по SendDSL",
+              "title": "SendDSL: подробное описание",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1
             },
@@ -345,7 +345,7 @@
           "level": 1
         },
         {
-          "title": "Процесс запуска и ручное управление",
+          "title": "Запуск и ручное управление",
           "path": "advanced/startup.md",
           "level": 1
         }
@@ -366,7 +366,7 @@
     },
     "Технические стандарты": {
       "description": "Технические спецификации и стандарты фреймворка",
-      "count": 6,
+      "count": 7,
       "documents": [
         {
           "title": "Технические стандарты",
@@ -384,7 +384,7 @@
           "level": 1
         },
         {
-          "title": "Спецификация стандартизации преобразования адаптеров",
+          "title": "Спецификация стандартизации адаптера",
           "path": "standards/event-conversion.md",
           "level": 1
         },
@@ -396,6 +396,11 @@
         {
           "title": "ErisPulse Спецификация операций запросов",
           "path": "standards/request-action-spec.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse API Стандарт действий",
+          "path": "standards/api-action-spec.md",
           "level": 1
         }
       ],

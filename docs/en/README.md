@@ -1,123 +1,69 @@
 # ErisPulse Documentation
 
-ErisPulse is a scalable, multi-platform message processing framework that supports interaction with various platforms through adapters, providing a flexible module system for feature extension.
+ErisPulse is a scalable, multi-platform message processing framework that supports interaction with different platforms through adapters, providing a flexible module system for feature extension.
 
-> Encounter unfamiliar terms? Check the [Glossary](terminology.md) for clear explanations.
+> **First time here?** Go straight to [Quick Start in 5 Minutes](docs/en/quick-start.md) —— From installation to running your first bot, everything in one go.
+>
+> Encounter unfamiliar terms? Check out the [Glossary](docs/en/terminology.md).
 
-## Document Navigation
+---
 
-### Quick Start
+## Choose Your Path
 
-- [Quick Start Guide](docs/en/quick-start.md) - A beginner's guide to installing and running ErisPulse
+Based on your goals, choose the corresponding learning path. Each path is arranged from beginner to advanced.
 
-### Architecture Overview
+### I. I Want to Use a Bot
 
-- [Architecture Overview](docs/en/architecture.md) - Understand the SDK's core architecture, initialization process, event handling, and lifecycle through visual diagrams
+Get a bot running, install modules, and configure settings.
 
-### Getting Started
+| Progress | Document | Description |
+|----------|----------|-------------|
+| **① Getting Started** | [Quick Start in 5 Minutes](docs/en/quick-start.md) | Installation, initialization, and running — the only starting point |
+| ② In-depth | [Create Your First Bot](docs/en/getting-started/first-bot.md) | Writing your first command handler |
+| ③ Concepts | [Basic Concepts](docs/en/getting-started/basic-concepts.md) | Understanding the design of adapters/modules/events |
+| ④ Practical Examples | [Common Task Examples](docs/en/getting-started/common-tasks.md) | Storage, scheduled tasks, permission control |
+| Reference | [Configuration File Guide](docs/en/user-guide/configuration.md) · [CLI Commands](docs/en/user-guide/cli-reference.md) · [Deployment Guide](docs/en/user-guide/deployment.md) | Consult as needed |
+| Reference | [Platform Features Guide](docs/en/platform-guide/README.md) | Differences across platforms (Yunhu/QQ/Telegram…) |
 
-If you're new to ErisPulse, we recommend reading the following in order:
+### II. I Want to Develop Modules / Adapters
 
-1. [Getting Started Overview](getting-started/README.md)
-2. [Create Your First Bot](getting-started/first-bot.md)
-3. [Basic Concepts](getting-started/basic-concepts.md)
-4. [Event Handling Introduction](getting-started/event-handling.md)
-5. [Common Task Examples](getting-started/common-tasks.md)
+Develop distributable extensions for ErisPulse.
 
-### User Guide
+| Type | Beginner | Advanced |
+|------|----------|----------|
+| **Module Development** (Recommended) | [Module Development Getting Started](docs/en/developer-guide/modules/getting-started.md) | [Core Concepts](docs/en/developer-guide/modules/core-concepts.md) · [Event Wrapper](docs/en/developer-guide/modules/event-wrapper.md) · [Best Practices](docs/en/developer-guide/modules/best-practices.md) |
+| **Adapter Development** | [Adapter Development Getting Started](docs/en/developer-guide/adapters/getting-started.md) | [Core Concepts](docs/en/developer-guide/adapters/core-concepts.md) · [SendDSL Detailed Explanation](docs/en/developer-guide/adapters/send-dsl.md) · [Event Converters](docs/en/developer-guide/adapters/converter.md) · [Best Practices](docs/en/developer-guide/adapters/best-practices.md) |
+| **Technical Standards** | [Standards Overview](docs/en/standards/README.md) | Standards that adapter development must follow: [Session Types](docs/en/standards/session-types.md) · [Event Conversion](docs/en/standards/event-conversion.md) · [Send Method](docs/en/standards/send-method-spec.md) · [API Response](docs/en/standards/api-response.md) · [Request Action](docs/en/standards/request-action-spec.md) |
+| **Publishing** | [Publishing and Module Store](docs/en/developer-guide/publishing.md) | Publish your work to PyPI and the module store |
 
-- [Installation and Configuration](user-guide/installation.md)
-- [CLI Command Reference](user-guide/cli-reference.md)
-- [Configuration File Guide](user-guide/configuration.md)
-- [Deployment Guide](user-guide/deployment.md)
+### III. I Want to Deeply Understand the Principles
 
-### Developer Guide
+Understand how the framework works internally.
 
-#### Module Development
+| Document | Description |
+|----------|-------------|
+| [Architecture Overview](docs/en/architecture.md) | Visual diagrams: core architecture, initialization flow, event handling, lifecycle |
+| [Startup Process and Manual Control](docs/en/advanced/startup.md) | Breakdown of startup chain, manual control of each step, failure diagnosis |
+| [Event System](docs/en/api-reference/event-system.md) | Complete API for five major event types |
+| [Adapter System](docs/en/api-reference/adapter-system.md) | Adapter registration, start/stop, API calls |
+| [Core Modules](docs/en/api-reference/core-modules.md) | Basic capabilities such as Storage / Config / Logger / Router |
+| [Lifecycle Management](docs/en/advanced/lifecycle.md) · [Lazy Loading](docs/en/advanced/lazy-loading.md) · [Routing System](docs/en/advanced/router.md) | Internal subsystems |
+| [Conversation Multi-turn Dialogue](docs/en/advanced/conversation.md) · [MessageBuilder](docs/en/advanced/message-builder.md) · [SQL Builder](docs/en/advanced/sql-builder.md) · [HTTP Client](docs/en/advanced/http-client.md) · [Internationalization](docs/en/advanced/i18n.md) | Advanced tools |
+| [Dashboard Management Panel](docs/en/advanced/dashboard-view.md) | Web management interface integration |
 
-- [Module Development Introduction](developer-guide/modules/getting-started.md)
-- [Core Module Concepts](developer-guide/modules/core-concepts.md)
-- [Event Wrapper Class Guide](developer-guide/modules/event-wrapper.md)
-- [Module Development Best Practices](developer-guide/modules/best-practices.md)
+---
 
-#### Adapter Development
-
-- [Adapter Development Introduction](developer-guide/adapters/getting-started.md)
-- [Core Adapter Concepts](developer-guide/adapters/core-concepts.md)
-- [SendDSL Guide](developer-guide/adapters/send-dsl.md)
-- [Adapter Development Best Practices](developer-guide/adapters/best-practices.md)
-
-#### Publishing
-
-- [Publishing and Module Store Guide](developer-guide/publishing.md) - Publish modules and adapters to the ErisPulse Module Store
-
-### Platform Feature Guides
-
-- [Platform Feature Guide](platform-guide/README.md)
-- [Yunhu Platform Features](platform-guide/yunhu.md)
-- [Telegram Platform Features](platform-guide/telegram.md)
-- [OneBot11 Platform Features](platform-guide/onebot11.md)
-- [OneBot12 Platform Features](platform-guide/onebot12.md)
-- [Email Platform Features](platform-guide/email.md)
-
-### API Reference
-
-- [Core Module API](api-reference/core-modules.md)
-- [Event System API](api-reference/event-system.md)
-- [Adapter System API](api-reference/adapter-system.md)
-
-### Technical Standards
-
-- [Event Conversion Standard](standards/event-conversion.md)
-- [API Response Standard](standards/api-response.md)
-- [Send Method Specification](standards/send-method-spec.md)
-
-### Advanced Topics
-
-- [Startup Process and Manual Control](advanced/startup.md) - Breakdown of startup chain and manual full startup
-- [Lazy Loading System](advanced/lazy-loading.md)
-- [Lifecycle Management](advanced/lifecycle.md)
-- [Routing System](advanced/router.md)
-- [MessageBuilder Guide](advanced/message-builder.md)
-- [Session Type System](advanced/session-types.md)
-- [Conversation Multi-turn Dialogue](advanced/conversation.md)
-
-### AI-Assisted Development
-
-- [AI-Assisted Development](ai-support/README.md)
-
-### Style Guide
-
-- [Documentation Style Guide](styleguide/docstring.md)
-
-## Development Methods
+## Development Approaches
 
 ErisPulse supports two development approaches:
 
-### 1. Module Development (Recommended)
+- **Module Development (Recommended)**: Create independent module packages, install them via package managers, making distribution and management easier.
+- **Embedded Development**: Write handlers directly in your project, suitable for rapid prototyping. See [Quick Start](docs/en/quick-start.md).
 
-Create a standalone module package and install it using a package manager. This approach is suitable for distributing and managing features, especially for publicly released functionalities.
+## Other
 
-### 2. Embedded Development
-
-Directly embed ErisPulse code into your project without creating a separate module. This approach is suitable for rapid prototyping or internal project-specific features.
-
-Example:
-
-```python
-# Direct embedding usage
-import asyncio
-from ErisPulse import sdk
-from ErisPulse.Core.Event import command
-
-# Register command handler
-@command("hello")
-async def hello_handler(event):
-    await event.reply("Hello!")
-
-# Run SDK and keep it running | Must be executed in an asynchronous environment
-asyncio.run(sdk.run(keep_running=True))
-```
+- [Documentation Style Guide](docs/en/styleguide/docstring.md) — Writing guidelines for contributing documentation
+- [AI-Assisted Development](docs/en/ai-support/README.md) — Get project prompts for use with AI programming assistants
 
 ## Get Help
 

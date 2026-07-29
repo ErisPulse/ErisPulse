@@ -1,6 +1,7 @@
-# 安装和配置
+# 安装参考
 
-本指南介绍如何安装 ErisPulse 和配置你的项目。
+> 本文是安装方式的**完整参考**（pip / uv / Docker / 故障排查）。
+> 如果你只想快速跑起来，[5 分钟快速开始](../quick-start.md) 已经覆盖了最简流程。
 
 ## 系统要求
 
@@ -64,70 +65,9 @@ source .venv/bin/activate
 uv pip install ErisPulse --upgrade
 ```
 
-## 项目初始化
+## 项目初始化与模块安装
 
-### 交互式初始化
-
-```bash
-epsdk init
-```
-
-按照提示完成：
-1. 输入项目名称
-2. 选择日志级别
-3. 配置服务器参数
-4. 选择适配器
-5. 配置适配器参数
-
-### 快速初始化
-
-```bash
-# 快速模式，跳过交互配置
-epsdk init -q -n my_bot
-```
-
-### 配置说明
-
-初始化后会生成 `config/config.toml` 文件：
-
-```toml
-[ErisPulse.server]
-host = "0.0.0.0"
-port = 8000
-
-[ErisPulse.logger]
-level = "INFO"
-
-[ErisPulse.framework]
-enable_lazy_loading = true
-
-```
-
-## 模块安装
-
-### 从远程仓库安装
-
-```bash
-# 安装指定模块
-epsdk install Yunhu
-
-# 安装多个模块
-epsdk install Yunhu Weather
-```
-
-### 从本地安装
-
-```bash
-# 安装本地模块
-epsdk install ./my-module
-```
-
-### 交互式安装
-
-```bash
-# 不指定包名进入交互式安装
-epsdk install
-```
+安装完成后，项目初始化、模块安装、运行的完整流程见 [5 分钟快速开始](../quick-start.md)。
 
 ## 验证安装
 

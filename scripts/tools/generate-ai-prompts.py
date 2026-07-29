@@ -307,6 +307,7 @@ SECTION_STANDARDS_ADAPTER = Section(
         DocEntry("API 响应标准", "standards/api-response.md"),
         DocEntry("发送方法规范", "standards/send-method-spec.md"),
         DocEntry("请求操作规范", "standards/request-action-spec.md"),
+        DocEntry("API 动作标准", "standards/api-action-spec.md"),
     ],
 )
 
@@ -318,6 +319,7 @@ SECTION_STANDARDS_FULL = Section(
         DocEntry("API 响应标准", "standards/api-response.md"),
         DocEntry("发送方法规范", "standards/send-method-spec.md"),
         DocEntry("请求操作规范", "standards/request-action-spec.md"),
+        DocEntry("API 动作标准", "standards/api-action-spec.md"),
     ],
 )
 

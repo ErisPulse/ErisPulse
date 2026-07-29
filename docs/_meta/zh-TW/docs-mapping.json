@@ -39,7 +39,7 @@
       "count": 6,
       "documents": [
         {
-          "title": "建立第一個機器人",
+          "title": "創建第一個機器人",
           "path": "getting-started/first-bot.md",
           "level": 1
         },
@@ -81,12 +81,12 @@
           "level": 1
         },
         {
-          "title": "安裝與設定",
+          "title": "安裝參考",
           "path": "user-guide/installation.md",
           "level": 1
         },
         {
-          "title": "配置檔案說明",
+          "title": "配置文件說明",
           "path": "user-guide/configuration.md",
           "level": 1
         },
@@ -366,7 +366,7 @@
     },
     "技術標準": {
       "description": "框架的技術規範和標準",
-      "count": 6,
+      "count": 7,
       "documents": [
         {
           "title": "技術標準",
@@ -384,7 +384,7 @@
           "level": 1
         },
         {
-          "title": "適配器標準化轉換規範",
+          "title": "适配器標準化轉換規範",
           "path": "standards/event-conversion.md",
           "level": 1
         },
@@ -396,6 +396,11 @@
         {
           "title": "ErisPulse 請求操作規範",
           "path": "standards/request-action-spec.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse API 動作標準",
+          "path": "standards/api-action-spec.md",
           "level": 1
         }
       ],

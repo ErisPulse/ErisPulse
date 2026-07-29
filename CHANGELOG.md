@@ -63,6 +63,123 @@
 
 ---
 
+## [2.7.0-dev.3] - 2026/07/29
+> 开发版本
+
+**版本摘要**
+OneBot12 标准化增强版本：(1) 新增 `ApiDSL` 基类，与 `SendDSL`（消息发送）、`RequestDSL`（请求操作）并行，覆盖 OneBot12 标准动作中的信息查询/群管理/消息管理/文件操作；(2) **修复 notice/request 事件的会话类型推断 bug**——此前 `event.reply()` 在群通知事件（如加群）上会错误地发送到用户私聊而非群内；(3) `sdk.init()` / `sdk.run()` 新增 `before_init` / `after_init` / `on_ready` 回调钩子，支持在启动流程各阶段插入自定义逻辑。**完全向后兼容**，所有新增参数均为可选关键字参数。
+
+**升级建议**
+- **建议升级**
+- 升级原因：群通知事件的 `event.reply()` 现在正确发送到群内；新增的 `ApiDSL` 让信息查询类调用跨平台统一
+
+**注意事项**
+- `infer_receive_type` 行为变更：notice/request 事件的 `detail_type` 不再被当作会话类型直接返回，而是从 ID 字段（group_id/user_id）推断。message 事件不受影响
+- 适配器开发者可通过覆盖 `Api` 内部类的标准方法（`get_user_info` / `get_group_info` 等）映射到平台原生 API
+
+### 新增
+
+- `Core/Bases/adapter.py` 新增 `ApiDSL` 基类：OneBot12 标准 API 动作 DSL
+  - 用户：`get_self_info` / `get_user_info` / `get_friend_list`
+  - 群组：`get_group_info` / `get_group_list` / `get_group_member_info` / `get_group_member_list` / `set_group_name` / `leave_group`
+  - 消息：`delete_message`（撤回/删除消息）
+  - 文件：`upload_file` / `get_file`
+  - 通用：`call(action, **params)`（平台扩展动作逃生舱）
+  - `Using(account_id)` 指定 Bot 账号（多账户模式）
+  - 默认实现委托给 `adapter.call_api(action_name, ...)`，零配置可用
+- `BaseAdapter.Api` 内部类：在 `__init__` 中自动实例化（与 `Send` / `Request` 并列）
+- `docs/zh-CN/standards/api-action-spec.md`：API 动作标准文档
+- 单元测试：`test_unit_adapter.py` 新增 `TestApiDSL`（20 用例）；`test_unit_session_type.py` 新增 `TestNoticeRequestTypeInference`（10 用例）
+- `sdk.init()` 新增 `before_init` / `after_init` 回调钩子（可选关键字参数，同步或异步均可）
+- `sdk.run()` 新增 `on_ready` 回调钩子（初始化完成后、挂起前执行），并转发 `before_init` / `after_init` 给 `init()`
+- `sdk.init_sync()` / `sdk.init_task()` 同步支持回调参数
+- 单元测试：`test_unit_sdk_callbacks.py` 新增（12 用例，覆盖回调顺序/同步异步/错误隔离）
+
+### 修复
+
+- `Core/Event/session_type.py` `infer_receive_type` 修复 notice/request 事件的会话类型推断
+
+### 优化
+
+- `docs/zh-CN/standards/event-conversion.md` 新增「notice / request 事件的会话类型推断」章节
+- `docs/zh-CN/standards/README.md` 新增 API 动作标准条目
+- 示例项目 `example-adapter` 与 CLI 脚手架 `_ADAPTER_CORE` 补充 `Api` 内部类
+- 导出更新：`Core/__init__.py`、`Core/Bases/__init__.py` 新增 `ApiDSL` 导出
+
+---
+
+## [2.7.0-dev.2] - 2026/07/29
+> 开发版本
+
+**版本摘要**
+开发者可观测性增强版本：聚焦「让每一次失败都能被快速定位」。新增异常诊断模块 `runtime.diagnostics`，模块/适配器在加载或初始化失败时自动输出**用户代码帧摘要**（过滤框架内部帧、保留出错位置的文件名/行号/源码），开发者无需手动重开 DEBUG 即可定位根因。同时将配置加载的错误处理从「静默回退空配置」升级为**三态可操作诊断**——TOML 语法错误给出行号/列号、权限错误给出明确原因，避免「改了配置却没生效」的困惑。**完全向后兼容**，所有导出均为新增，不影响现有 API。
+
+**升级建议**
+- **建议升级**
+- 升级原因：模块/适配器加载失败时，默认 INFO 级别即可看到用户代码出错位置；配置文件写错时会输出精确行号而非静默使用默认值
+
+### 新增
+
+- `runtime/diagnostics.py` 模块：异常诊断引擎，从异常 traceback 提取「用户代码帧」摘要
+  - `extract_user_frame(exc, depth=3)`：过滤 ErisPulse 框架内部帧，返回结构化诊断信息（帧列表 / 异常类型 / 异常消息）
+  - `format_diagnostic_block(exc, hint_key=, candidates=, depth=3)`：生成带 `→` 引导符的多行诊断文本（含帧位置、源码、异常类型、查看完整堆栈的提示）
+  - `log_diagnostic(exc, ...)`：最常用入口，自动提取用户代码帧并以 ERROR 级别写入日志
+  - 自动路径缩短：相对 cwd / 相对包父目录 / 退化为文件名三级回退
+  - 内置 i18n 英文兜底（`_t`），i18n 未就绪时仍可输出诊断信息
+- 模块/适配器加载与初始化失败路径集成诊断输出
+  - `loaders/module.py`：entry-point 加载失败、立即初始化失败、懒加载初始化失败、异步初始化失败（共 4 处）
+  - `loaders/adapter.py`：entry-point 加载失败、注册失败（共 2 处）
+  - 输出形如 `→ MyModule/Core.py:42 in on_load` + 源码行 + 异常类型，末尾附加查看完整堆栈的提示
+- 配置加载三态错误诊断（`Core/config.py` `_load_config` 重构）
+  - TOML 语法错误：输出出错行号/列号与原因（`core.config.toml_malformed`）
+  - 权限错误：明确告知无读权限（`core.config.permission_denied`）
+  - 其他错误：保留原有通用提示（`core.config.load_failed`）
+  - 三种错误均附加「已回退默认配置」警告（`core.config.using_defaults_warning`）
+  - 空配置文件加载成功时输出 debug 提示（`core.config.loaded_empty`）
+- 配置写入（flush）阶段语法错误诊断（`Core/config.py` `_flush_config`）
+  - 此前：运行中文件被改坏时，flush 的读取-合并步骤触发 `TomlDecodeError`，被通用 `except` 捕获后输出令人困惑的「写入配置文件失败」
+  - 现在：单独捕获 `TomlDecodeError`，输出「配置文件已损坏（语法错误，第 X 行），无法合并写入」（`core.config.flush_malformed`），并保留 `_dirty_keys` 待用户修复后重试
+  - 跨进程去重：使用配置目录下的哨兵文件（`.flush_malformed_cooldown`）的 mtime 做冷却窗口（默认 30s），确保无论 `epsdk run` 子进程、`python main.py` 直跑、还是多实例场景，同一错误只告警一次；进程退出时（atexit）自动清理哨兵文件
+- i18n 同步（5 语言：zh-CN / zh-TW / en / ja / ru）：
+  - `core.diag.*`（6 keys）：诊断文本帧/源码/异常行/提示/兜底/相似建议
+  - `loader.module.diag_hint` / `loader.adapter.diag_hint`：加载器专属提示
+  - `core.config.toml_malformed` / `permission_denied` / `using_defaults_warning` / `loaded_empty`：配置三态诊断
+- `runtime/__init__.py` 聚合导出：`extract_user_frame` / `format_diagnostic_block` / `log_diagnostic`
+
+### 优化
+
+- `docs/zh-CN/user-guide/configuration.md` 新增「配置加载错误处理」章节，说明三态诊断行为
+- `docs/zh-CN/advanced/startup.md` Loader 章节新增「加载失败时的诊断信息」小节，含诊断输出示例与 `log_diagnostic` 复用方法
+
+---
+
+## [2.7.0-dev.1] - 2026/07/28
+> 开发版本
+
+**版本摘要**
+Event 包装类平台修饰方法支持版本：新增 `Event.send_chain()` 方法和 `reply()` 的 `via` 参数，支持在事件包装类中使用平台专有修饰方法（含连续多个修饰），解决"发送方法强依赖修饰方法"的场景。**完全向后兼容，平台适配器无需任何改动**——框架已能依据返回值自动区分修饰方法（返回 `self`）与发送方法（返回 `Task`）。
+
+**升级建议**
+- **建议升级**
+- 升级原因：平台专有修饰方法（如云湖看板的 `Expire`/`ExpireAt`/`ForMember`）现可通过 `event.send_chain()` / `event.reply(via=...)` 在事件处理器中使用；适配器无需改动，旧代码行为完全不变
+
+### 新增
+
+- `Event.send_chain()`：返回已配置 `To`/`Using` 的发送链，可自由追加任意修饰方法（内置 + 平台专有）和发送方法
+  - 适用场景：连续多个修饰方法、平台专有修饰方法、无内容参数的动作型方法（如 `DismissBoard`）
+- `Event.reply()` 新增 `via` 参数：在发送方法前按顺序应用修饰方法链
+  - 每个元素可为 `"Name"` / `("Name", *args)` / `("Name", args_tuple, kwargs_dict)`
+- `Event/wrapper.py` 新增 `_normalize_modifier()` 辅助函数（归一化修饰方法定义）
+- 单元测试：`test_unit_adapter.py` 新增 `TestSendDSLReturnSelfModifier`（3 用例，验证返回-self 修饰方法的链式行为）；`test_unit_event.py` 新增 `TestEventSendChainAndModifiers`（12 用例，覆盖 `_normalize_modifier` / `send_chain` / `reply(via=)` / 向后兼容）
+
+### 优化
+
+- `docs/zh-CN/developer-guide/adapters/send-dsl.md` 新增「平台专有修饰方法」与「在 Event 包装类中使用修饰方法」章节
+- `docs/zh-CN/api-reference/event-system.md` 回复功能示例补充 `via` 与 `send_chain()`
+- 示例项目 `example-adapter` 与 CLI 脚手架 `_ADAPTER_CORE` 补充平台修饰方法（返回 self）的推荐写法演示
+
+---
+
 ## [2.7.0-dev.0] - 2026/07/26
 > 开发版本
 

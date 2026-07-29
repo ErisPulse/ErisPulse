@@ -1,16 +1,17 @@
-# Installation and Configuration
+# Installation Reference
 
-This guide introduces how to install ErisPulse and configure your project.
+> This document is a **complete reference** for installation methods (pip / uv / Docker / troubleshooting).
+> If you just want to get started quickly, [5-Minute Quick Start](../quick-start.md) covers the minimal process.
 
 ## System Requirements
 
-- Python 3.10 or higher version (recommended 3.10 - 3.13)
+- Python 3.10 or higher
 - pip or uv (recommended)
-- sufficient disk space (at least 100MB)
+- Sufficient disk space (at least 100MB)
 
 ## Installation Methods
 
-### Method 1: Install via pip
+### Method 1: Install with pip
 
 ```bash
 # Install ErisPulse
@@ -20,7 +21,7 @@ pip install ErisPulse
 pip install ErisPulse --upgrade
 ```
 
-### Method 2: Install via uv (Recommended)
+### Method 2: Install with uv (Recommended)
 
 uv is a faster Python toolchain, recommended for development environments.
 
@@ -34,7 +35,7 @@ pip install uv
 uv --version
 ```
 
-#### Create Virtual Environment
+#### Create a Virtual Environment
 
 ```bash
 # Create project directory
@@ -47,7 +48,7 @@ uv python install 3.12
 uv venv
 ```
 
-#### Activate Virtual Environment
+#### Activate the Virtual Environment
 
 ```bash
 # Windows
@@ -64,70 +65,9 @@ source .venv/bin/activate
 uv pip install ErisPulse --upgrade
 ```
 
-## Project Initialization
+## Project Initialization and Module Installation
 
-### Interactive Initialization
-
-```bash
-epsdk init
-```
-
-Follow the prompts to complete:
-1. Enter project name
-2. Select log level
-3. Configure server parameters
-4. Select adapter
-5. Configure adapter parameters
-
-### Quick Initialization
-
-```bash
-# Quick mode, skip interactive configuration
-epsdk init -q -n my_bot
-```
-
-### Configuration Description
-
-A `config/config.toml` file will be generated after initialization:
-
-```toml
-[ErisPulse.server]
-host = "0.0.0.0"
-port = 8000
-
-[ErisPulse.logger]
-level = "INFO"
-
-[ErisPulse.framework]
-enable_lazy_loading = true
-
-```
-
-## Module Installation
-
-### Install from Remote Repository
-
-```bash
-# Install a specific module
-epsdk install Yunhu
-
-# Install multiple modules
-epsdk install Yunhu Weather
-```
-
-### Install from Local
-
-```bash
-# Install local module
-epsdk install ./my-module
-```
-
-### Interactive Installation
-
-```bash
-# Enter interactive installation without specifying a package name
-epsdk install
-```
+After installation, the complete workflow for project initialization, module installation, and running is covered in [5-Minute Quick Start](../quick-start.md).
 
 ## Verify Installation
 
@@ -138,14 +78,14 @@ epsdk install
 epsdk --version
 ```
 
-### Run Tests
+### Run a Test
 
 ```bash
-# Run project
+# Run the project
 epsdk run main.py
 ```
 
-If you see similar output, the installation is successful:
+If you see output similar to the following, the installation was successful:
 
 ```
 [INFO] Initializing ErisPulse...
@@ -156,27 +96,27 @@ If you see similar output, the installation is successful:
 
 ## Common Issues
 
-### Installation Failed
+### Installation Failure
 
-1. Check if Python version is >= 3.10 (recommended 3.10 - 3.13)
+1. Check that Python version is >= 3.10 (recommended 3.10 - 3.13)
 2. Try using `uv pip install ErisPulse` instead of `pip install`
-3. If you encounter permission errors, try `pip install --user ErisPulse` or use a virtual environment
-4. If you encounter SSL certificate errors in an enterprise proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
-5. Ensure network connection is normal and pip sources are accessible
+3. If permission errors occur, try `pip install --user ErisPulse` or use a virtual environment
+4. If SSL certificate errors occur in a corporate proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. Ensure network connectivity is normal and the pip source is accessible
 
 ### Configuration Errors
 
-1. Check if `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)
+1. Check that the `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)
 2. Confirm all required configuration items are filled in
-3. Check terminal logs for detailed error information
+3. Check terminal logs for detailed error messages
 4. Use `epsdk init` to regenerate the configuration file
 
-### Module Installation Failed
+### Module Installation Failure
 
-1. Confirm if the module name spelling is correct (case sensitive)
-2. Check network connection
-3. Use `epsdk list-remote` to view the list of available modules
-4. Confirm if the module is compatible with your current SDK version
+1. Confirm the module name is spelled correctly (case-sensitive)
+2. Check network connectivity
+3. Use `epsdk list-remote` to view available module lists
+4. Confirm the module is compatible with your current SDK version
 
 ### Windows PowerShell Execution Policy
 
@@ -188,5 +128,5 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ## Next Steps
 
-- [CLI Command Reference](cli-reference.md) - Learn all CLI commands
-- [Configuration File Explanation](configuration.md) - Learn detailed configuration options
+- [CLI Command Reference](cli-reference.md) - Learn about all command-line commands
+- [Configuration File Guide](configuration.md) - Learn about configuration options in detail
