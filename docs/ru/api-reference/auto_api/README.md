@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 93
-- **类总数**: 104（包括 5 个嵌套类）
-- **函数总数**: 135
-- **方法总数**: 966
+- **模块总数**: 94
+- **类总数**: 105（包括 6 个嵌套类）
+- **函数总数**: 142
+- **方法总数**: 985
 
 ---
 
@@ -181,7 +181,7 @@
 
 ### [ErisPulse.Core.Bases.adapter](ErisPulse/Core/Bases/adapter.md)
 
-3 个类 | 59 个方法 | 4 个函数
+4 个类 | 76 个方法 | 4 个函数
 
 
 ### [ErisPulse.Core.Bases.client](ErisPulse/Core/Bases/client.md)
@@ -316,7 +316,7 @@
 
 ### [ErisPulse.Core.config](ErisPulse/Core/config.md)
 
-1 个类 | 21 个方法 | 1 个函数
+1 个类 | 23 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.constants](ErisPulse/Core/constants.md)
@@ -467,6 +467,11 @@
 ### [ErisPulse.runtime.context](ErisPulse/runtime/context.md)
 
 模块文档
+
+
+### [ErisPulse.runtime.diagnostics](ErisPulse/runtime/diagnostics.md)
+
+7 个函数
 
 
 ### [ErisPulse.runtime.exceptions](ErisPulse/runtime/exceptions.md)
