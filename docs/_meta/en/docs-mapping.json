@@ -12,7 +12,7 @@
           "level": 1
         },
         {
-          "title": "Quick Start",
+          "title": "Getting Started",
           "path": "quick-start.md",
           "level": 1
         },
@@ -44,7 +44,7 @@
           "level": 1
         },
         {
-          "title": "Getting Started",
+          "title": "Getting Started Guide",
           "path": "getting-started/README.md",
           "level": 1
         },
@@ -81,12 +81,12 @@
           "level": 1
         },
         {
-          "title": "Installation and Configuration",
+          "title": "Installation Reference",
           "path": "user-guide/installation.md",
           "level": 1
         },
         {
-          "title": "Configuration File Guide",
+          "title": "Configuration File Reference",
           "path": "user-guide/configuration.md",
           "level": 1
         },
@@ -345,7 +345,7 @@
           "level": 1
         },
         {
-          "title": "Startup Process and Manual Control",
+          "title": "Startup Flow and Manual Control",
           "path": "advanced/startup.md",
           "level": 1
         }
@@ -366,7 +366,7 @@
     },
     "Technical Standards": {
       "description": "Framework technical specifications and standards",
-      "count": 6,
+      "count": 7,
       "documents": [
         {
           "title": "Technical Standards",
@@ -396,6 +396,11 @@
         {
           "title": "ErisPulse Request Operation Specification",
           "path": "standards/request-action-spec.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse API Action Standards",
+          "path": "standards/api-action-spec.md",
           "level": 1
         }
       ],

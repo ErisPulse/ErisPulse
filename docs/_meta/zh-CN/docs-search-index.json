@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1352,
+  "total_keywords": 1378,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -262,14 +262,6 @@
         "title": "1. 概述"
       }
     ],
-    "1. 模块开发（推荐）": [
-      {
-        "document": "README.md",
-        "line": 98,
-        "level": 3,
-        "title": "1. 模块开发（推荐）"
-      }
-    ],
     "1. 版本管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -281,7 +273,7 @@
     "1. 确保跨平台兼容": [
       {
         "document": "standards/README.md",
-        "line": 26,
+        "line": 27,
         "level": 3,
         "title": "1. 确保跨平台兼容"
       }
@@ -300,6 +292,14 @@
         "line": 277,
         "level": 3,
         "title": "1. 缺少 `{platform}_raw` 字段"
+      }
+    ],
+    "1. 设计背景": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 5,
+        "level": 2,
+        "title": "1. 设计背景"
       }
     ],
     "1. 说明": [
@@ -380,6 +380,14 @@
         "line": 474,
         "level": 2,
         "title": "10. 消息构建器（MessageBuilder）"
+      }
+    ],
+    "10. 相关文档": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 510,
+        "level": 2,
+        "title": "10. 相关文档"
       }
     ],
     "10. 适配器实现检查清单": [
@@ -470,6 +478,14 @@
         "title": "2. Send 内部类（大多数情况不需要重写）"
       }
     ],
+    "2. 三层 DSL 并行结构": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 19,
+        "level": 2,
+        "title": "2. 三层 DSL 并行结构"
+      }
+    ],
     "2. 仅指定ID": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -556,14 +572,6 @@
         "line": 12,
         "level": 2,
         "title": "2. 基础返回结构"
-      }
-    ],
-    "2. 嵌入式开发": [
-      {
-        "document": "README.md",
-        "line": 102,
-        "level": 3,
-        "title": "2. 嵌入式开发"
       }
     ],
     "2. 批量操作": [
@@ -679,7 +687,7 @@
     "2. 规范 API 接口": [
       {
         "document": "standards/README.md",
-        "line": 33,
+        "line": 34,
         "level": 3,
         "title": "2. 规范 API 接口"
       }
@@ -1005,7 +1013,7 @@
     "3. 提高代码质量": [
       {
         "document": "standards/README.md",
-        "line": 40,
+        "line": 41,
         "level": 3,
         "title": "3. 提高代码质量"
       }
@@ -1026,10 +1034,18 @@
         "title": "3. 条件处理"
       }
     ],
+    "3. 标准动作列表": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 36,
+        "level": 2,
+        "title": "3. 标准动作列表"
+      }
+    ],
     "3. 注册层：register_to_manager": [
       {
         "document": "advanced/startup.md",
-        "line": 97,
+        "line": 122,
         "level": 3,
         "title": "3. 注册层：register_to_manager"
       }
@@ -1106,6 +1122,14 @@
         "title": "3.1 消息事件 (message)"
       }
     ],
+    "3.1 用户相关": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 38,
+        "level": 3,
+        "title": "3.1 用户相关"
+      }
+    ],
     "3.1 通用字段": [
       {
         "document": "standards/api-response.md",
@@ -1138,6 +1162,14 @@
         "title": "3.2 方法列表"
       }
     ],
+    "3.2 群组相关": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 46,
+        "level": 3,
+        "title": "3.2 群组相关"
+      }
+    ],
     "3.2 返回码规范": [
       {
         "document": "standards/api-response.md",
@@ -1154,6 +1186,14 @@
         "title": "3.2 通知事件 (notice)"
       }
     ],
+    "3.3 消息管理": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 57,
+        "level": 3,
+        "title": "3.3 消息管理"
+      }
+    ],
     "3.3 请求事件 (request)": [
       {
         "document": "standards/event-conversion.md",
@@ -1168,6 +1208,22 @@
         "line": 116,
         "level": 3,
         "title": "3.3 返回值格式"
+      }
+    ],
+    "3.4 文件操作": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 65,
+        "level": 3,
+        "title": "3.4 文件操作"
+      }
+    ],
+    "3.5 通用扩展动作": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 77,
+        "level": 3,
+        "title": "3.5 通用扩展动作"
       }
     ],
     "3xxxx 动作执行错误（Execution Error）": [
@@ -1202,6 +1258,14 @@
         "title": "4. detail_type 使用了非标准值"
       }
     ],
+    "4. 使用方式": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 83,
+        "level": 2,
+        "title": "4. 使用方式"
+      }
+    ],
     "4. 参数命名规范": [
       {
         "document": "standards/send-method-spec.md",
@@ -1213,7 +1277,7 @@
     "4. 启动适配器": [
       {
         "document": "advanced/startup.md",
-        "line": 111,
+        "line": 136,
         "level": 3,
         "title": "4. 启动适配器"
       }
@@ -1306,6 +1370,14 @@
         "title": "4.1 Event 方法列表"
       }
     ],
+    "4.1 基本调用": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 85,
+        "level": 3,
+        "title": "4.1 基本调用"
+      }
+    ],
     "4.1 标准消息段": [
       {
         "document": "standards/event-conversion.md",
@@ -1338,12 +1410,36 @@
         "title": "4.2 平台扩展消息段"
       }
     ],
+    "4.2 指定 Bot 账号（多账户模式）": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 104,
+        "level": 3,
+        "title": "4.2 指定 Bot 账号（多账户模式）"
+      }
+    ],
+    "4.3 平台扩展动作": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 111,
+        "level": 3,
+        "title": "4.3 平台扩展动作"
+      }
+    ],
     "4.3 注销自定义类型": [
       {
         "document": "standards/session-types.md",
         "line": 157,
         "level": 3,
         "title": "4.3 注销自定义类型"
+      }
+    ],
+    "4.4 在事件处理器中使用": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 121,
+        "level": 3,
+        "title": "4.4 在事件处理器中使用"
       }
     ],
     "5. Bot 状态查询": [
@@ -1357,7 +1453,7 @@
     "5. 初始化模块": [
       {
         "document": "advanced/startup.md",
-        "line": 123,
+        "line": 148,
         "level": 3,
         "title": "5. 初始化模块"
       }
@@ -1418,6 +1514,14 @@
         "title": "5. 返回值规范"
       }
     ],
+    "5. 适配器实现": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 138,
+        "level": 2,
+        "title": "5. 适配器实现"
+      }
+    ],
     "5. 适配器实现要求": [
       {
         "document": "standards/request-action-spec.md",
@@ -1458,6 +1562,14 @@
         "title": "5.1 转换器要求"
       }
     ],
+    "5.1 默认行为（零配置）": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 140,
+        "level": 3,
+        "title": "5.1 默认行为（零配置）"
+      }
+    ],
     "5.2 Request 内部类实现": [
       {
         "document": "standards/request-action-spec.md",
@@ -1482,12 +1594,28 @@
         "title": "5.2 使用示例"
       }
     ],
+    "5.2 覆盖标准方法（映射到平台原生 API）": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 152,
+        "level": 3,
+        "title": "5.2 覆盖标准方法（映射到平台原生 API）"
+      }
+    ],
     "5.3 平台不支持请求操作": [
       {
         "document": "standards/request-action-spec.md",
         "line": 308,
         "level": 3,
         "title": "5.3 平台不支持请求操作"
+      }
+    ],
+    "5.3 未支持的动作": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 193,
+        "level": 3,
+        "title": "5.3 未支持的动作"
       }
     ],
     "5.3 适配器实现检查清单": [
@@ -1533,9 +1661,17 @@
     "6. 启动路由服务器": [
       {
         "document": "advanced/startup.md",
-        "line": 135,
+        "line": 160,
         "level": 3,
         "title": "6. 启动路由服务器"
+      }
+    ],
+    "6. 响应格式": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 212,
+        "level": 2,
+        "title": "6. 响应格式"
       }
     ],
     "6. 实现转换器": [
@@ -1706,6 +1842,14 @@
         "title": "6.6 `self` 字段扩展"
       }
     ],
+    "7. 与 SendDSL / RequestDSL 的关系": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 229,
+        "level": 2,
+        "title": "7. 与 SendDSL / RequestDSL 的关系"
+      }
+    ],
     "7. 会话类型扩展": [
       {
         "document": "standards/event-conversion.md",
@@ -1810,6 +1954,14 @@
         "title": "8. 相关文档"
       }
     ],
+    "8. 适配器实现检查清单": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 239,
+        "level": 2,
+        "title": "8. 适配器实现检查清单"
+      }
+    ],
     "8.1 访问扩展字段": [
       {
         "document": "standards/event-conversion.md",
@@ -1842,10 +1994,18 @@
         "title": "8.4 请求事件处理"
       }
     ],
-    "9. 相关文档": [
+    "9. notice / request 事件的会话类型推断": [
       {
         "document": "standards/event-conversion.md",
         "line": 443,
+        "level": 2,
+        "title": "9. notice / request 事件的会话类型推断"
+      }
+    ],
+    "9. 相关文档": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 251,
         "level": 2,
         "title": "9. 相关文档"
       },
@@ -1870,6 +2030,38 @@
         "line": 447,
         "level": 2,
         "title": "9. 适配器开发注意事项"
+      }
+    ],
+    "9.1 问题背景": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 445,
+        "level": 3,
+        "title": "9.1 问题背景"
+      }
+    ],
+    "9.2 推断规则": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 460,
+        "level": 3,
+        "title": "9.2 推断规则"
+      }
+    ],
+    "9.3 `event.reply()` 目标推断": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 473,
+        "level": 3,
+        "title": "9.3 `event.reply()` 目标推断"
+      }
+    ],
+    "9.4 适配器开发建议": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 495,
+        "level": 3,
+        "title": "9.4 适配器开发建议"
       }
     ],
     "@conv.branch(name) 装饰器": [
@@ -1898,12 +2090,6 @@
     ],
     "AI 辅助开发": [
       {
-        "document": "README.md",
-        "line": 86,
-        "level": 3,
-        "title": "AI 辅助开发"
-      },
-      {
         "document": "ai-support/README.md",
         "line": 1,
         "level": 1,
@@ -1911,12 +2097,6 @@
       }
     ],
     "API 参考": [
-      {
-        "document": "README.md",
-        "line": 64,
-        "level": 3,
-        "title": "API 参考"
-      },
       {
         "document": "advanced/i18n.md",
         "line": 392,
@@ -1945,7 +2125,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 79,
+        "line": 80,
         "level": 3,
         "title": "API 响应"
       }
@@ -2308,6 +2488,14 @@
         "line": 376,
         "level": 3,
         "title": "Docker 镜像 vs PyPI 发布"
+      }
+    ],
+    "ErisPulse API 动作标准": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse API 动作标准"
       }
     ],
     "ErisPulse PlatformFeatures 文档": [
@@ -3215,7 +3403,7 @@
     "Windows PowerShell 执行策略": [
       {
         "document": "user-guide/installation.md",
-        "line": 181,
+        "line": 121,
         "level": 3,
         "title": "Windows PowerShell 执行策略"
       }
@@ -3420,6 +3608,14 @@
         "title": "[BUG-025] on_config_update 回调未被核心路由"
       }
     ],
+    "[BUG-026] notice/request 事件 reply 目标推断错误": [
+      {
+        "document": "bug-tracker.md",
+        "line": 705,
+        "level": 3,
+        "title": "[BUG-026] notice/request 事件 reply 目标推断错误"
+      }
+    ],
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -3455,7 +3651,7 @@
     "`keep_running` 参数": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 66,
+        "line": 38,
         "level": 3,
         "title": "`keep_running` 参数"
       }
@@ -3900,6 +4096,14 @@
         "title": "ws_connect 参数"
       }
     ],
+    "一、我要使用机器人": [
+      {
+        "document": "README.md",
+        "line": 15,
+        "level": 3,
+        "title": "一、我要使用机器人"
+      }
+    ],
     "一个包可以注册多个模块吗？": [
       {
         "document": "developer-guide/publishing.md",
@@ -3919,9 +4123,17 @@
     "一键安装脚本（推荐）": [
       {
         "document": "quick-start.md",
-        "line": 7,
+        "line": 9,
         "level": 3,
         "title": "一键安装脚本（推荐）"
+      }
+    ],
+    "三、我要深入理解原理": [
+      {
+        "document": "README.md",
+        "line": 39,
+        "level": 3,
+        "title": "三、我要深入理解原理"
       }
     ],
     "上下文与持久化": [
@@ -3979,25 +4191,25 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 184,
+        "line": 156,
         "level": 2,
         "title": "下一步"
       },
       {
         "document": "quick-start.md",
-        "line": 174,
+        "line": 176,
         "level": 2,
         "title": "下一步"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 218,
+        "line": 239,
         "level": 2,
         "title": "下一步"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 189,
+        "line": 129,
         "level": 2,
         "title": "下一步"
       }
@@ -4053,7 +4265,7 @@
     "严格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 109,
+        "line": 130,
         "level": 3,
         "title": "严格模式"
       }
@@ -4107,7 +4319,7 @@
     "为什么需要标准？": [
       {
         "document": "standards/README.md",
-        "line": 24,
+        "line": 25,
         "level": 2,
         "title": "为什么需要标准？"
       }
@@ -4169,7 +4381,7 @@
     "事件参数": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 115,
+        "line": 87,
         "level": 3,
         "title": "事件参数"
       }
@@ -4437,7 +4649,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 69,
+        "line": 70,
         "level": 3,
         "title": "事件转换"
       }
@@ -4461,7 +4673,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 149,
+        "line": 170,
         "level": 2,
         "title": "事件配置"
       }
@@ -4504,6 +4716,14 @@
         "title": "事务操作"
       }
     ],
+    "二、我要开发模块 / 适配器": [
+      {
+        "document": "README.md",
+        "line": 28,
+        "level": 3,
+        "title": "二、我要开发模块 / 适配器"
+      }
+    ],
     "云湖平台特性文档": [
       {
         "document": "platform-guide/yunhu.md",
@@ -4520,18 +4740,10 @@
         "title": "云湖用户平台特性文档"
       }
     ],
-    "交互式初始化": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 69,
-        "level": 3,
-        "title": "交互式初始化"
-      }
-    ],
     "交互式初始化（推荐）": [
       {
         "document": "quick-start.md",
-        "line": 63,
+        "line": 65,
         "level": 3,
         "title": "交互式初始化（推荐）"
       }
@@ -4547,7 +4759,7 @@
     "交互式安装": [
       {
         "document": "quick-start.md",
-        "line": 109,
+        "line": 111,
         "level": 3,
         "title": "交互式安装"
       },
@@ -4555,12 +4767,6 @@
         "document": "user-guide/cli-reference.md",
         "line": 424,
         "level": 2,
-        "title": "交互式安装"
-      },
-      {
-        "document": "user-guide/installation.md",
-        "line": 125,
-        "level": 3,
         "title": "交互式安装"
       }
     ],
@@ -4589,7 +4795,7 @@
     "什么时候该用硬重启？": [
       {
         "document": "advanced/startup.md",
-        "line": 298,
+        "line": 323,
         "level": 3,
         "title": "什么时候该用硬重启？"
       }
@@ -4608,22 +4814,6 @@
         "line": 471,
         "level": 3,
         "title": "从 SDK 实例访问"
-      }
-    ],
-    "从本地安装": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 118,
-        "level": 3,
-        "title": "从本地安装"
-      }
-    ],
-    "从远程仓库安装": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 108,
-        "level": 3,
-        "title": "从远程仓库安装"
       }
     ],
     "代理配置": [
@@ -4645,7 +4835,7 @@
     "代码说明": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 104,
+        "line": 76,
         "level": 2,
         "title": "代码说明"
       }
@@ -4723,7 +4913,7 @@
     "何时该手动启动？": [
       {
         "document": "advanced/startup.md",
-        "line": 212,
+        "line": 237,
         "level": 3,
         "title": "何时该手动启动？"
       }
@@ -4747,7 +4937,7 @@
     "使用 Docker": [
       {
         "document": "quick-start.md",
-        "line": 26,
+        "line": 28,
         "level": 3,
         "title": "使用 Docker"
       }
@@ -4763,7 +4953,7 @@
     "使用 pip 安装": [
       {
         "document": "quick-start.md",
-        "line": 51,
+        "line": 53,
         "level": 3,
         "title": "使用 pip 安装"
       }
@@ -5036,6 +5226,14 @@
         "title": "关闭适配器"
       }
     ],
+    "其他": [
+      {
+        "document": "README.md",
+        "line": 63,
+        "level": 2,
+        "title": "其他"
+      }
+    ],
     "其他术语": [
       {
         "document": "terminology.md",
@@ -5195,7 +5393,7 @@
     "创建虚拟环境": [
       {
         "document": "user-guide/installation.md",
-        "line": 37,
+        "line": 38,
         "level": 4,
         "title": "创建虚拟环境"
       }
@@ -5241,7 +5439,7 @@
     "初始化项目": [
       {
         "document": "quick-start.md",
-        "line": 61,
+        "line": 63,
         "level": 2,
         "title": "初始化项目"
       },
@@ -5298,6 +5496,14 @@
         "line": 126,
         "level": 2,
         "title": "加密模式说明"
+      }
+    ],
+    "加载失败时的诊断信息": [
+      {
+        "document": "advanced/startup.md",
+        "line": 97,
+        "level": 4,
+        "title": "加载失败时的诊断信息"
       }
     ],
     "加载策略": [
@@ -5373,7 +5579,7 @@
     "卸载流程": [
       {
         "document": "advanced/startup.md",
-        "line": 259,
+        "line": 284,
         "level": 2,
         "title": "卸载流程"
       }
@@ -5504,12 +5710,6 @@
     ],
     "发布": [
       {
-        "document": "README.md",
-        "line": 51,
-        "level": 4,
-        "title": "发布"
-      },
-      {
         "document": "developer-guide/publishing.md",
         "line": 155,
         "level": 3,
@@ -5583,7 +5783,7 @@
     "发送回复": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 130,
+        "line": 102,
         "level": 3,
         "title": "发送回复"
       }
@@ -5657,7 +5857,7 @@
     "发送方法命名": [
       {
         "document": "standards/README.md",
-        "line": 88,
+        "line": 89,
         "level": 3,
         "title": "发送方法命名"
       }
@@ -5855,7 +6055,7 @@
     "启用 IDE 补全（可选）": [
       {
         "document": "quick-start.md",
-        "line": 127,
+        "line": 129,
         "level": 2,
         "title": "启用 IDE 补全（可选）"
       }
@@ -5947,7 +6147,7 @@
     "命令没有响应？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 148,
+        "line": 120,
         "level": 3,
         "title": "命令没有响应？"
       }
@@ -5971,7 +6171,7 @@
     "命令装饰器": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 106,
+        "line": 78,
         "level": 3,
         "title": "命令装饰器"
       }
@@ -5987,7 +6187,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 151,
+        "line": 172,
         "level": 3,
         "title": "命令配置"
       }
@@ -6095,7 +6295,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 178,
+        "line": 199,
         "level": 2,
         "title": "国际化配置"
       }
@@ -6815,7 +7015,7 @@
     "如何修改命令前缀？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 155,
+        "line": 127,
         "level": 3,
         "title": "如何修改命令前缀？"
       }
@@ -6823,7 +7023,7 @@
     "如何支持多平台？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 165,
+        "line": 137,
         "level": 3,
         "title": "如何支持多平台？"
       }
@@ -6901,7 +7101,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 138,
+        "line": 159,
         "level": 2,
         "title": "存储配置"
       }
@@ -6909,7 +7109,7 @@
     "学习路径": [
       {
         "document": "getting-started/README.md",
-        "line": 5,
+        "line": 7,
         "level": 2,
         "title": "学习路径"
       }
@@ -6941,13 +7141,13 @@
     "安装 ErisPulse": [
       {
         "document": "quick-start.md",
-        "line": 5,
+        "line": 7,
         "level": 2,
         "title": "安装 ErisPulse"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 60,
+        "line": 61,
         "level": 4,
         "title": "安装 ErisPulse"
       }
@@ -6955,23 +7155,23 @@
     "安装 uv": [
       {
         "document": "user-guide/installation.md",
-        "line": 27,
+        "line": 28,
         "level": 4,
         "title": "安装 uv"
       }
     ],
-    "安装和配置": [
+    "安装参考": [
       {
         "document": "user-guide/installation.md",
         "line": 1,
         "level": 1,
-        "title": "安装和配置"
+        "title": "安装参考"
       }
     ],
     "安装失败": [
       {
         "document": "user-guide/installation.md",
-        "line": 159,
+        "line": 99,
         "level": 3,
         "title": "安装失败"
       }
@@ -6979,7 +7179,7 @@
     "安装方式": [
       {
         "document": "user-guide/installation.md",
-        "line": 11,
+        "line": 12,
         "level": 2,
         "title": "安装方式"
       }
@@ -6987,7 +7187,7 @@
     "安装模块": [
       {
         "document": "quick-start.md",
-        "line": 95,
+        "line": 97,
         "level": 2,
         "title": "安装模块"
       },
@@ -7009,7 +7209,7 @@
     "完整手动启动示例": [
       {
         "document": "advanced/startup.md",
-        "line": 148,
+        "line": 173,
         "level": 2,
         "title": "完整手动启动示例"
       }
@@ -7067,7 +7267,7 @@
     "完整配置示例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 17,
+        "line": 38,
         "level": 2,
         "title": "完整配置示例"
       }
@@ -7099,7 +7299,7 @@
     "对最终用户": [
       {
         "document": "standards/README.md",
-        "line": 61,
+        "line": 62,
         "level": 3,
         "title": "对最终用户"
       }
@@ -7107,7 +7307,7 @@
     "对模块开发者": [
       {
         "document": "standards/README.md",
-        "line": 55,
+        "line": 56,
         "level": 3,
         "title": "对模块开发者"
       }
@@ -7115,7 +7315,7 @@
     "对适配器开发者": [
       {
         "document": "standards/README.md",
-        "line": 49,
+        "line": 50,
         "level": 3,
         "title": "对适配器开发者"
       }
@@ -7321,13 +7521,13 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 146,
+        "line": 118,
         "level": 2,
         "title": "常见问题"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 157,
+        "line": 97,
         "level": 2,
         "title": "常见问题"
       }
@@ -7438,14 +7638,6 @@
         "title": "平台特定响应"
       }
     ],
-    "平台特性指南": [
-      {
-        "document": "README.md",
-        "line": 55,
-        "level": 3,
-        "title": "平台特性指南"
-      }
-    ],
     "平台特性检测": [
       {
         "document": "getting-started/common-tasks.md",
@@ -7549,7 +7741,7 @@
     "开发方式": [
       {
         "document": "README.md",
-        "line": 94,
+        "line": 56,
         "level": 2,
         "title": "开发方式"
       }
@@ -7557,7 +7749,7 @@
     "开发方式选择": [
       {
         "document": "getting-started/README.md",
-        "line": 17,
+        "line": 19,
         "level": 2,
         "title": "开发方式选择"
       }
@@ -7596,12 +7788,6 @@
     ],
     "开发者指南": [
       {
-        "document": "README.md",
-        "line": 34,
-        "level": 3,
-        "title": "开发者指南"
-      },
-      {
         "document": "developer-guide/README.md",
         "line": 1,
         "level": 1,
@@ -7611,7 +7797,7 @@
     "开始学习": [
       {
         "document": "getting-started/README.md",
-        "line": 39,
+        "line": 41,
         "level": 2,
         "title": "开始学习"
       }
@@ -7787,13 +7973,7 @@
     "快速初始化": [
       {
         "document": "quick-start.md",
-        "line": 76,
-        "level": 3,
-        "title": "快速初始化"
-      },
-      {
-        "document": "user-guide/installation.md",
-        "line": 82,
+        "line": 78,
         "level": 3,
         "title": "快速初始化"
       }
@@ -7835,12 +8015,6 @@
       }
     ],
     "快速开始": [
-      {
-        "document": "README.md",
-        "line": 9,
-        "level": 3,
-        "title": "快速开始"
-      },
       {
         "document": "advanced/http-client.md",
         "line": 18,
@@ -7951,7 +8125,7 @@
     "手动创建项目": [
       {
         "document": "quick-start.md",
-        "line": 86,
+        "line": 88,
         "level": 3,
         "title": "手动创建项目"
       }
@@ -7994,6 +8168,14 @@
         "line": 153,
         "level": 2,
         "title": "手动部署（pip）"
+      }
+    ],
+    "扩展动作": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 247,
+        "level": 3,
+        "title": "扩展动作"
       }
     ],
     "扩展字段": [
@@ -8063,7 +8245,7 @@
     "扩展：添加更多功能": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 138,
+        "line": 110,
         "level": 2,
         "title": "扩展：添加更多功能"
       }
@@ -8107,12 +8289,6 @@
       }
     ],
     "技术标准": [
-      {
-        "document": "README.md",
-        "line": 70,
-        "level": 3,
-        "title": "技术标准"
-      },
       {
         "document": "standards/README.md",
         "line": 1,
@@ -8502,14 +8678,6 @@
         "title": "文档列表"
       }
     ],
-    "文档导航": [
-      {
-        "document": "README.md",
-        "line": 7,
-        "level": 2,
-        "title": "文档导航"
-      }
-    ],
     "文档格式规范": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -8580,14 +8748,6 @@
         "title": "新增特性：原始事件类型字段"
       }
     ],
-    "新手入门": [
-      {
-        "document": "README.md",
-        "line": 17,
-        "level": 3,
-        "title": "新手入门"
-      }
-    ],
     "新邮件事件（email_new）": [
       {
         "document": "platform-guide/email.md",
@@ -8607,7 +8767,7 @@
     "方式一：使用 pip 安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 13,
+        "line": 14,
         "level": 3,
         "title": "方式一：使用 pip 安装"
       }
@@ -8623,7 +8783,7 @@
     "方式二：使用 uv 安装（推荐）": [
       {
         "document": "user-guide/installation.md",
-        "line": 23,
+        "line": 24,
         "level": 3,
         "title": "方式二：使用 uv 安装（推荐）"
       }
@@ -8739,7 +8899,7 @@
     "日志配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 74,
+        "line": 95,
         "level": 2,
         "title": "日志配置"
       }
@@ -8857,7 +9017,7 @@
     "服务器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 57,
+        "line": 78,
         "level": 2,
         "title": "服务器配置"
       }
@@ -8920,12 +9080,6 @@
     ],
     "架构概览": [
       {
-        "document": "README.md",
-        "line": 13,
-        "level": 3,
-        "title": "架构概览"
-      },
-      {
         "document": "architecture.md",
         "line": 1,
         "level": 1,
@@ -8933,7 +9087,7 @@
       },
       {
         "document": "getting-started/README.md",
-        "line": 28,
+        "line": 30,
         "level": 2,
         "title": "架构概览"
       }
@@ -8949,7 +9103,7 @@
     "查看可用模块": [
       {
         "document": "quick-start.md",
-        "line": 103,
+        "line": 105,
         "level": 3,
         "title": "查看可用模块"
       }
@@ -9034,6 +9188,14 @@
         "title": "标准事件示例"
       }
     ],
+    "标准动作": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 241,
+        "level": 3,
+        "title": "标准动作"
+      }
+    ],
     "标准化响应": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -9069,7 +9231,7 @@
     "标准概述": [
       {
         "document": "standards/README.md",
-        "line": 13,
+        "line": 14,
         "level": 2,
         "title": "标准概述"
       }
@@ -9085,7 +9247,7 @@
     "标准遵循检查清单": [
       {
         "document": "standards/README.md",
-        "line": 67,
+        "line": 68,
         "level": 2,
         "title": "标准遵循检查清单"
       }
@@ -9129,7 +9291,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 17,
+        "line": 18,
         "level": 3,
         "title": "核心原则"
       }
@@ -9299,7 +9461,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 90,
+        "line": 111,
         "level": 2,
         "title": "框架配置"
       }
@@ -9307,7 +9469,7 @@
     "检查安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 134,
+        "line": 74,
         "level": 3,
         "title": "检查安装"
       }
@@ -9394,29 +9556,15 @@
         "title": "模块商店概述"
       }
     ],
-    "模块安装": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 106,
-        "level": 2,
-        "title": "模块安装"
-      }
-    ],
     "模块安装失败": [
       {
         "document": "user-guide/installation.md",
-        "line": 174,
+        "line": 114,
         "level": 3,
         "title": "模块安装失败"
       }
     ],
     "模块开发": [
-      {
-        "document": "README.md",
-        "line": 36,
-        "level": 4,
-        "title": "模块开发"
-      },
       {
         "document": "developer-guide/README.md",
         "line": 7,
@@ -9443,7 +9591,7 @@
     "模块按需加载": [
       {
         "document": "advanced/startup.md",
-        "line": 252,
+        "line": 277,
         "level": 3,
         "title": "模块按需加载"
       }
@@ -9511,7 +9659,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 189,
+        "line": 210,
         "level": 2,
         "title": "模块配置"
       }
@@ -10019,7 +10167,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 167,
+        "line": 188,
         "level": 3,
         "title": "消息配置"
       }
@@ -10035,7 +10183,7 @@
     "激活虚拟环境": [
       {
         "document": "user-guide/installation.md",
-        "line": 50,
+        "line": 51,
         "level": 4,
         "title": "激活虚拟环境"
       }
@@ -10268,12 +10416,6 @@
     ],
     "用户使用指南": [
       {
-        "document": "README.md",
-        "line": 27,
-        "level": 3,
-        "title": "用户使用指南"
-      },
-      {
         "document": "user-guide/README.md",
         "line": 1,
         "level": 1,
@@ -10435,7 +10577,7 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 309,
+        "line": 334,
         "level": 2,
         "title": "相关文档"
       },
@@ -10519,7 +10661,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 101,
+        "line": 102,
         "level": 2,
         "title": "相关文档"
       },
@@ -10539,7 +10681,7 @@
     "相关链接": [
       {
         "document": "README.md",
-        "line": 129,
+        "line": 74,
         "level": 2,
         "title": "相关链接"
       }
@@ -10582,44 +10724,28 @@
         "title": "立即加载"
       }
     ],
-    "第一步：创建项目": [
+    "第一步：编写第一个命令": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 5,
+        "line": 7,
         "level": 2,
-        "title": "第一步：创建项目"
+        "title": "第一步：编写第一个命令"
       }
     ],
-    "第三步：编写第一个命令": [
+    "第三步：测试机器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 35,
+        "line": 66,
         "level": 2,
-        "title": "第三步：编写第一个命令"
+        "title": "第三步：测试机器人"
       }
     ],
-    "第二步：查看项目结构": [
+    "第二步：运行机器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 23,
+        "line": 56,
         "level": 2,
-        "title": "第二步：查看项目结构"
-      }
-    ],
-    "第五步：测试机器人": [
-      {
-        "document": "getting-started/first-bot.md",
-        "line": 94,
-        "level": 2,
-        "title": "第五步：测试机器人"
-      }
-    ],
-    "第四步：运行机器人": [
-      {
-        "document": "getting-started/first-bot.md",
-        "line": 84,
-        "level": 2,
-        "title": "第四步：运行机器人"
+        "title": "第二步：运行机器人"
       }
     ],
     "等待任意事件 (wait_for)": [
@@ -10787,7 +10913,7 @@
     "系统要求": [
       {
         "document": "user-guide/installation.md",
-        "line": 5,
+        "line": 6,
         "level": 2,
         "title": "系统要求"
       }
@@ -11011,7 +11137,7 @@
     "获取帮助": [
       {
         "document": "README.md",
-        "line": 123,
+        "line": 68,
         "level": 2,
         "title": "获取帮助"
       },
@@ -11239,7 +11365,7 @@
     "请求操作": [
       {
         "document": "standards/README.md",
-        "line": 95,
+        "line": 96,
         "level": 3,
         "title": "请求操作"
       },
@@ -11301,7 +11427,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 126,
+        "line": 147,
         "level": 4,
         "title": "豁免清单"
       }
@@ -11467,7 +11593,7 @@
     "路由服务器": [
       {
         "document": "advanced/startup.md",
-        "line": 242,
+        "line": 267,
         "level": 3,
         "title": "路由服务器"
       }
@@ -11531,7 +11657,7 @@
     "运行时细粒度控制": [
       {
         "document": "advanced/startup.md",
-        "line": 222,
+        "line": 247,
         "level": 2,
         "title": "运行时细粒度控制"
       }
@@ -11555,7 +11681,7 @@
     "运行测试": [
       {
         "document": "user-guide/installation.md",
-        "line": 141,
+        "line": 81,
         "level": 3,
         "title": "运行测试"
       }
@@ -11563,7 +11689,7 @@
     "运行项目": [
       {
         "document": "quick-start.md",
-        "line": 117,
+        "line": 119,
         "level": 2,
         "title": "运行项目"
       },
@@ -11758,12 +11884,6 @@
     ],
     "适配器开发": [
       {
-        "document": "README.md",
-        "line": 43,
-        "level": 4,
-        "title": "适配器开发"
-      },
-      {
         "document": "developer-guide/README.md",
         "line": 14,
         "level": 3,
@@ -11827,7 +11947,7 @@
     "适配器热启停": [
       {
         "document": "advanced/startup.md",
-        "line": 226,
+        "line": 251,
         "level": 3,
         "title": "适配器热启停"
       }
@@ -11870,6 +11990,14 @@
         "line": 510,
         "level": 3,
         "title": "适配器：注册平台扩展方法"
+      }
+    ],
+    "选择你的路径": [
+      {
+        "document": "README.md",
+        "line": 11,
+        "level": 2,
+        "title": "选择你的路径"
       }
     ],
     "选择菜单 (choose)": [
@@ -11977,7 +12105,7 @@
     "通过 CLI 安装": [
       {
         "document": "quick-start.md",
-        "line": 97,
+        "line": 99,
         "level": 3,
         "title": "通过 CLI 安装"
       }
@@ -12041,7 +12169,7 @@
     "遵循标准的好处": [
       {
         "document": "standards/README.md",
-        "line": 47,
+        "line": 48,
         "level": 2,
         "title": "遵循标准的好处"
       }
@@ -12108,6 +12236,14 @@
         "title": "配置"
       }
     ],
+    "配置加载错误处理": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 17,
+        "level": 2,
+        "title": "配置加载错误处理"
+      }
+    ],
     "配置变更": [
       {
         "document": "advanced/lifecycle.md",
@@ -12143,7 +12279,7 @@
     "配置文件": [
       {
         "document": "quick-start.md",
-        "line": 158,
+        "line": 160,
         "level": 2,
         "title": "配置文件"
       }
@@ -12260,12 +12396,6 @@
         "line": 444,
         "level": 3,
         "title": "配置说明"
-      },
-      {
-        "document": "user-guide/installation.md",
-        "line": 89,
-        "level": 3,
-        "title": "配置说明"
       }
     ],
     "配置选项": [
@@ -12297,7 +12427,7 @@
     "配置错误": [
       {
         "document": "user-guide/installation.md",
-        "line": 167,
+        "line": 107,
         "level": 3,
         "title": "配置错误"
       }
@@ -12313,7 +12443,7 @@
     "重启": [
       {
         "document": "advanced/startup.md",
-        "line": 277,
+        "line": 302,
         "level": 2,
         "title": "重启"
       }
@@ -12612,12 +12742,12 @@
         "title": "静态工厂 + 链式混合"
       }
     ],
-    "项目初始化": [
+    "项目初始化与模块安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 67,
+        "line": 68,
         "level": 2,
-        "title": "项目初始化"
+        "title": "项目初始化与模块安装"
       }
     ],
     "项目模板": [
@@ -12645,7 +12775,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 146,
+        "line": 148,
         "level": 2,
         "title": "项目结构"
       }
@@ -12668,12 +12798,6 @@
     ],
     "风格指南": [
       {
-        "document": "README.md",
-        "line": 90,
-        "level": 3,
-        "title": "风格指南"
-      },
-      {
         "document": "styleguide/README.md",
         "line": 1,
         "level": 1,
@@ -12683,18 +12807,12 @@
     "验证安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 132,
+        "line": 72,
         "level": 2,
         "title": "验证安装"
       }
     ],
     "高级主题": [
-      {
-        "document": "README.md",
-        "line": 76,
-        "level": 3,
-        "title": "高级主题"
-      },
       {
         "document": "advanced/README.md",
         "line": 1,
