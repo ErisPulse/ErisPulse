@@ -211,6 +211,9 @@ class AdapterLoader(BaseLoader):
             logger.error(
                 i18n.t("loader.adapter.load_single_failed", name=meta_name, error=e)
             )
+            from ..runtime.diagnostics import log_diagnostic
+
+            log_diagnostic(e, hint_key="loader.adapter.diag_hint")
 
         return objs, enabled_list, disabled_list, is_new
 
@@ -288,6 +291,9 @@ class AdapterLoader(BaseLoader):
                     logger.error(
                         i18n.t("loader.adapter.register_failed", name=name, error=e)
                     )
+                    from ..runtime.diagnostics import log_diagnostic
+
+                    log_diagnostic(e, hint_key="loader.adapter.diag_hint")
                     # 提交适配器加载失败事件
                     await lifecycle.submit_event(
                         "adapter.load",
