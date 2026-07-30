@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1410,
+  "total_keywords": 1428,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -128,12 +128,28 @@
         "title": "1. Exception Handling"
       }
     ],
+    "1. Fork and Clone the Repository": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 15,
+        "level": 2,
+        "title": "1. Fork and Clone the Repository"
+      }
+    ],
     "1. Health Check (GET)": [
       {
         "document": "platform-guide/webhook.md",
         "line": 50,
         "level": 3,
         "title": "1. Health Check (GET)"
+      }
+    ],
+    "1. I Want to Use a Bot": [
+      {
+        "document": "README.md",
+        "line": 15,
+        "level": 3,
+        "title": "1. I Want to Use a Bot"
       }
     ],
     "1. Implement Connection Retry": [
@@ -566,12 +582,28 @@
         "title": "2. Event Object"
       }
     ],
+    "2. I Want to Develop Modules / Adapters": [
+      {
+        "document": "README.md",
+        "line": 28,
+        "level": 3,
+        "title": "2. I Want to Develop Modules / Adapters"
+      }
+    ],
     "2. Input Validation": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 375,
         "level": 3,
         "title": "2. Input Validation"
+      }
+    ],
+    "2. Install the Development Environment": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 30,
+        "level": 2,
+        "title": "2. Install the Development Environment"
       }
     ],
     "2. Integration Tests": [
@@ -946,6 +978,14 @@
         "title": "3. Create Adapter Main Class"
       }
     ],
+    "3. Create a Feature Branch": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 42,
+        "level": 2,
+        "title": "3. Create a Feature Branch"
+      }
+    ],
     "3. Event Format Examples": [
       {
         "document": "standards/event-conversion.md",
@@ -992,6 +1032,14 @@
         "line": 160,
         "level": 3,
         "title": "3. Heartbeat Keepalive and Meta Heartbeat"
+      }
+    ],
+    "3. I Want to Deeply Understand the Principles": [
+      {
+        "document": "README.md",
+        "line": 39,
+        "level": 3,
+        "title": "3. I Want to Deeply Understand the Principles"
       }
     ],
     "3. Improve Code Quality": [
@@ -1282,6 +1330,14 @@
         "title": "4. Extended Field Description"
       }
     ],
+    "4. I Want to Contribute to ErisPulse": [
+      {
+        "document": "README.md",
+        "line": 54,
+        "level": 3,
+        "title": "4. I Want to Contribute to ErisPulse"
+      }
+    ],
     "4. Implement Required Methods": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -1296,6 +1352,14 @@
         "line": 100,
         "level": 2,
         "title": "4. Implementation Requirements"
+      }
+    ],
+    "4. Make Changes": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 54,
+        "level": 2,
+        "title": "4. Make Changes"
       }
     ],
     "4. Manage Published Modules": [
@@ -1506,6 +1570,14 @@
         "title": "5. Initialize Modules"
       }
     ],
+    "5. Local Verification": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 77,
+        "level": 2,
+        "title": "5. Local Verification"
+      }
+    ],
     "5. Return Value Specification": [
       {
         "document": "standards/send-method-spec.md",
@@ -1706,6 +1778,14 @@
         "title": "6. Start Routing Server"
       }
     ],
+    "6. Update CHANGELOG": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 89,
+        "level": 2,
+        "title": "6. Update CHANGELOG"
+      }
+    ],
     "6.1 Conversion Model": [
       {
         "document": "standards/send-method-spec.md",
@@ -1850,6 +1930,14 @@
         "title": "7. Best Practices"
       }
     ],
+    "7. Commit and Push": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 99,
+        "level": 2,
+        "title": "7. Commit and Push"
+      }
+    ],
     "7. Error Code Extensions": [
       {
         "document": "standards/request-action-spec.md",
@@ -1960,6 +2048,14 @@
         "line": 366,
         "level": 2,
         "title": "8. Related Documentation"
+      }
+    ],
+    "8. Submit a Pull Request": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 107,
+        "level": 2,
+        "title": "8. Submit a Pull Request"
       }
     ],
     "8.1 Accessing Extension Fields": [
@@ -3896,6 +3992,14 @@
         "title": "Common Pitfalls"
       }
     ],
+    "Common Questions": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 139,
+        "level": 2,
+        "title": "Common Questions"
+      }
+    ],
     "Common Task Examples": [
       {
         "document": "getting-started/common-tasks.md",
@@ -4348,6 +4452,30 @@
         "line": 290,
         "level": 2,
         "title": "Contributing"
+      }
+    ],
+    "Contributing Modules or Adapters": [
+      {
+        "document": "contributing/README.md",
+        "line": 45,
+        "level": 2,
+        "title": "Contributing Modules or Adapters"
+      }
+    ],
+    "Contributing a Module or Adapter": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 119,
+        "level": 2,
+        "title": "Contributing a Module or Adapter"
+      }
+    ],
+    "Contributing to ErisPulse": [
+      {
+        "document": "contributing/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Contributing to ErisPulse"
       }
     ],
     "Contribution Flow": [
@@ -4885,9 +5013,17 @@
     "Development Approaches": [
       {
         "document": "README.md",
-        "line": 56,
+        "line": 65,
         "level": 2,
         "title": "Development Approaches"
+      }
+    ],
+    "Development Environment": [
+      {
+        "document": "contributing/README.md",
+        "line": 22,
+        "level": 2,
+        "title": "Development Environment"
       }
     ],
     "Development Mode": [
@@ -5976,6 +6112,22 @@
         "title": "Fine-Grained Runtime Control"
       }
     ],
+    "First Contribution Walkthrough": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 1,
+        "level": 1,
+        "title": "First Contribution Walkthrough"
+      }
+    ],
+    "First PR Submission": [
+      {
+        "document": "contributing/README.md",
+        "line": 18,
+        "level": 2,
+        "title": "First PR Submission"
+      }
+    ],
     "Fixed Bugs": [
       {
         "document": "bug-tracker.md",
@@ -6215,7 +6367,13 @@
     "Get Help": [
       {
         "document": "README.md",
-        "line": 68,
+        "line": 78,
+        "level": 2,
+        "title": "Get Help"
+      },
+      {
+        "document": "contributing/README.md",
+        "line": 59,
         "level": 2,
         "title": "Get Help"
       }
@@ -6702,14 +6860,6 @@
         "title": "HttpResponse"
       }
     ],
-    "I. I Want to Use a Bot": [
-      {
-        "document": "README.md",
-        "line": 15,
-        "level": 3,
-        "title": "I. I Want to Use a Bot"
-      }
-    ],
     "I18nClass Key Path Rules": [
       {
         "document": "advanced/i18n.md",
@@ -6732,22 +6882,6 @@
         "line": 86,
         "level": 3,
         "title": "ID Field Query"
-      }
-    ],
-    "II. I Want to Develop Modules / Adapters": [
-      {
-        "document": "README.md",
-        "line": 28,
-        "level": 3,
-        "title": "II. I Want to Develop Modules / Adapters"
-      }
-    ],
-    "III. I Want to Deeply Understand the Principles": [
-      {
-        "document": "README.md",
-        "line": 39,
-        "level": 3,
-        "title": "III. I Want to Deeply Understand the Principles"
       }
     ],
     "Ideaura Cafe Platform Features Documentation": [
@@ -8746,14 +8880,6 @@
         "title": "Optional Fields"
       }
     ],
-    "Other": [
-      {
-        "document": "README.md",
-        "line": 63,
-        "level": 2,
-        "title": "Other"
-      }
-    ],
     "Other Message Types": [
       {
         "document": "platform-guide/onebot12.md",
@@ -8768,6 +8894,14 @@
         "line": 113,
         "level": 2,
         "title": "Other Terms"
+      }
+    ],
+    "Others": [
+      {
+        "document": "README.md",
+        "line": 72,
+        "level": 2,
+        "title": "Others"
       }
     ],
     "Outbound Protocol": [
@@ -9130,6 +9264,12 @@
         "line": 27,
         "level": 2,
         "title": "Prerequisites"
+      },
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 7,
+        "level": 2,
+        "title": "Prerequisites"
       }
     ],
     "Priority": [
@@ -9272,6 +9412,14 @@
         "line": 1,
         "level": 1,
         "title": "Publishing and Module Store Guide"
+      }
+    ],
+    "Pull Request Process": [
+      {
+        "document": "contributing/README.md",
+        "line": 34,
+        "level": 2,
+        "title": "Pull Request Process"
       }
     ],
     "Purpose": [
@@ -9781,7 +9929,7 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 74,
+        "line": 84,
         "level": 2,
         "title": "Related Links"
       }
@@ -12060,6 +12208,14 @@
         "line": 330,
         "level": 3,
         "title": "Waiting for User Reply"
+      }
+    ],
+    "Ways You Can Contribute": [
+      {
+        "document": "contributing/README.md",
+        "line": 6,
+        "level": 2,
+        "title": "Ways You Can Contribute"
       }
     ],
     "WebHook Connection": [

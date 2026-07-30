@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1445,
+  "total_keywords": 1464,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -8,6 +8,14 @@
         "line": 64,
         "level": 4,
         "title": "0 Успех (OK)"
+      }
+    ],
+    "1. Fork и клонирование репозитория": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 15,
+        "level": 2,
+        "title": "1. Fork и клонирование репозитория"
       }
     ],
     "1. Single Responsibility Principle": [
@@ -320,14 +328,6 @@
         "line": 508,
         "level": 3,
         "title": "1. Юнит-тесты"
-      }
-    ],
-    "1. Я хочу использовать бота": [
-      {
-        "document": "README.md",
-        "line": 15,
-        "level": 3,
-        "title": "1. Я хочу использовать бота"
       }
     ],
     "1.1 Стандартные методы отправки": [
@@ -784,12 +784,12 @@
         "title": "2. Уровень загрузки: Loader"
       }
     ],
-    "2. Я хочу разрабатывать модули / адаптеры": [
+    "2. Установка среды разработки": [
       {
-        "document": "README.md",
-        "line": 28,
-        "level": 3,
-        "title": "2. Я хочу разрабатывать модули / адаптеры"
+        "document": "contributing/first-contribution.md",
+        "line": 30,
+        "level": 2,
+        "title": "2. Установка среды разработки"
       }
     ],
     "2.1 Обязательные поля": [
@@ -1064,6 +1064,14 @@
         "title": "3. События heartbeat"
       }
     ],
+    "3. Создание ветки функций": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 42,
+        "level": 2,
+        "title": "3. Создание ветки функций"
+      }
+    ],
     "3. Создание основного класса адаптера": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -1126,14 +1134,6 @@
         "line": 34,
         "level": 3,
         "title": "3. Четкое управление конфигурацией"
-      }
-    ],
-    "3. Я хочу глубже понять принципы работы": [
-      {
-        "document": "README.md",
-        "line": 39,
-        "level": 3,
-        "title": "3. Я хочу глубже понять принципы работы"
       }
     ],
     "3.1 Общие поля": [
@@ -1270,6 +1270,14 @@
         "line": 55,
         "level": 3,
         "title": "4. Автоматическое обнаружение поля `self`"
+      }
+    ],
+    "4. Внесение изменений": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 54,
+        "level": 2,
+        "title": "4. Внесение изменений"
       }
     ],
     "4. Запуск адаптера": [
@@ -1504,6 +1512,14 @@
         "title": "5. Использование пользователем"
       }
     ],
+    "5. Локальная проверка": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 77,
+        "level": 2,
+        "title": "5. Локальная проверка"
+      }
+    ],
     "5. Несоответствие направлений": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -1686,6 +1702,14 @@
         "line": 160,
         "level": 3,
         "title": "6. Запуск сервера маршрутизации"
+      }
+    ],
+    "6. Обновление CHANGELOG": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 89,
+        "level": 2,
+        "title": "6. Обновление CHANGELOG"
       }
     ],
     "6. Примеры использования API": [
@@ -1872,6 +1896,14 @@
         "title": "6.6 Расширение поля `self`"
       }
     ],
+    "7. Коммит и отправка изменений": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 99,
+        "level": 2,
+        "title": "7. Коммит и отправка изменений"
+      }
+    ],
     "7. Обнаружение методов": [
       {
         "document": "standards/send-method-spec.md",
@@ -1966,6 +1998,14 @@
         "line": 367,
         "level": 2,
         "title": "8. Связанные документы"
+      }
+    ],
+    "8. Создание Pull Request": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 107,
+        "level": 2,
+        "title": "8. Создание Pull Request"
       }
     ],
     "8. Создание точки входа пакета": [
@@ -2320,12 +2360,44 @@
         "title": "HttpResponse"
       }
     ],
+    "I. Я хочу использовать бота": [
+      {
+        "document": "README.md",
+        "line": 15,
+        "level": 3,
+        "title": "I. Я хочу использовать бота"
+      }
+    ],
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
         "line": 391,
         "level": 3,
         "title": "I18nManager"
+      }
+    ],
+    "II. Я хочу разрабатывать модули / адаптеры": [
+      {
+        "document": "README.md",
+        "line": 28,
+        "level": 3,
+        "title": "II. Я хочу разрабатывать модули / адаптеры"
+      }
+    ],
+    "III. Я хочу глубже понять принципы работы": [
+      {
+        "document": "README.md",
+        "line": 39,
+        "level": 3,
+        "title": "III. Я хочу глубже понять принципы работы"
+      }
+    ],
+    "IV. Я хочу внести вклад в ErisPulse": [
+      {
+        "document": "README.md",
+        "line": 54,
+        "level": 3,
+        "title": "IV. Я хочу внести вклад в ErisPulse"
       }
     ],
     "Logger (Логирование)": [
@@ -3610,6 +3682,20 @@
         "title": "Виртуальное окружение"
       }
     ],
+    "Вклад в модули или адаптеры": [
+      {
+        "document": "contributing/README.md",
+        "line": 45,
+        "level": 2,
+        "title": "Вклад в модули или адаптеры"
+      },
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 119,
+        "level": 2,
+        "title": "Вклад в модули или адаптеры"
+      }
+    ],
     "Включение автодополнения в IDE (необязательно)": [
       {
         "document": "quick-start.md",
@@ -3624,6 +3710,14 @@
         "line": 218,
         "level": 3,
         "title": "Вложенный класс Send"
+      }
+    ],
+    "Внести вклад в ErisPulse": [
+      {
+        "document": "contributing/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Внести вклад в ErisPulse"
       }
     ],
     "Возвращаемое значение методов отправки": [
@@ -3704,6 +3798,14 @@
         "line": 130,
         "level": 2,
         "title": "Возвращаемые значения методов отправки"
+      }
+    ],
+    "Возможные проблемы": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 139,
+        "level": 2,
+        "title": "Возможные проблемы"
       }
     ],
     "Вспомогательные методы": [
@@ -4381,7 +4483,7 @@
     "Другое": [
       {
         "document": "README.md",
-        "line": 63,
+        "line": 72,
         "level": 2,
         "title": "Другое"
       }
@@ -5196,6 +5298,14 @@
         "line": 368,
         "level": 3,
         "title": "Как WebUI потребляет"
+      }
+    ],
+    "Как вы можете участвовать": [
+      {
+        "document": "contributing/README.md",
+        "line": 6,
+        "level": 2,
+        "title": "Как вы можете участвовать"
       }
     ],
     "Как изменить префикс команды?": [
@@ -8354,6 +8464,14 @@
         "title": "Параметры события"
       }
     ],
+    "Первое отправление PR": [
+      {
+        "document": "contributing/README.md",
+        "line": 18,
+        "level": 2,
+        "title": "Первое отправление PR"
+      }
+    ],
     "Перезапуск": [
       {
         "document": "advanced/startup.md",
@@ -8554,6 +8672,14 @@
         "line": 134,
         "level": 3,
         "title": "Под-логгеры"
+      }
+    ],
+    "Подготовка": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 7,
+        "level": 2,
+        "title": "Подготовка"
       }
     ],
     "Подготовка к разработке": [
@@ -9057,9 +9183,17 @@
     "Получите помощь": [
       {
         "document": "README.md",
-        "line": 68,
+        "line": 78,
         "level": 2,
         "title": "Получите помощь"
+      }
+    ],
+    "Получить помощь": [
+      {
+        "document": "contributing/README.md",
+        "line": 59,
+        "level": 2,
+        "title": "Получить помощь"
       }
     ],
     "Пользователь: использование расширенных методов платформы": [
@@ -9156,6 +9290,14 @@
         "line": 146,
         "level": 4,
         "title": "Правила формирования путей ключей в I18nClass"
+      }
+    ],
+    "Практическое руководство по первому вкладу": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 1,
+        "level": 1,
+        "title": "Практическое руководство по первому вкладу"
       }
     ],
     "Предварительные требования": [
@@ -9916,6 +10058,14 @@
         "title": "Процесс отключения"
       }
     ],
+    "Процесс отправки": [
+      {
+        "document": "contributing/README.md",
+        "line": 34,
+        "level": 2,
+        "title": "Процесс отправки"
+      }
+    ],
     "Процесс подключения": [
       {
         "document": "platform-guide/discord.md",
@@ -10022,6 +10172,14 @@
         "line": 7,
         "level": 3,
         "title": "Разработка модулей"
+      }
+    ],
+    "Разработка среда": [
+      {
+        "document": "contributing/README.md",
+        "line": 22,
+        "level": 2,
+        "title": "Разработка среда"
       }
     ],
     "Разрешение аккаунта": [
@@ -10793,7 +10951,7 @@
     "Связанные ссылки": [
       {
         "document": "README.md",
-        "line": 74,
+        "line": 84,
         "level": 2,
         "title": "Связанные ссылки"
       }
@@ -11641,7 +11799,7 @@
     "Способы разработки": [
       {
         "document": "README.md",
-        "line": 56,
+        "line": 65,
         "level": 2,
         "title": "Способы разработки"
       }

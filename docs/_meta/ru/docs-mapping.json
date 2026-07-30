@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "total_categories": 10,
+  "total_categories": 11,
   "categories": {
     "Быстрый старт": {
       "description": "Краткое руководство по ErisPulse",
@@ -418,6 +418,23 @@
         {
           "title": "Руководство по стилю комментариев ErisPulse",
           "path": "styleguide/docstring.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Вклад": {
+      "description": "Вклад в проект ErisPulse",
+      "count": 2,
+      "documents": [
+        {
+          "title": "Внести вклад в ErisPulse",
+          "path": "contributing/README.md",
+          "level": 1
+        },
+        {
+          "title": "Практическое руководство по первому вкладу",
+          "path": "contributing/first-contribution.md",
           "level": 1
         }
       ],
