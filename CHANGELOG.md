@@ -63,6 +63,43 @@
 
 ---
 
+## [2.7.0-dev.4] - 2026/07/30
+> 开发版本
+
+**版本摘要**
+内存占用优化版本：(1) **Web 栈懒加载**——`FastAPI`/`Uvicorn`/`Starlette` 不再在 `import ErisPulse` 时加载，而是推迟到路由首次实际服务时，导入期基线内存显著降低；(2) 新增 `server.auto_start` 配置，纯 WebSocket/轮询适配器可设为 `false` 跳过 HTTP 服务器启动，完全不加载 web 栈；(3) 新增 `runtime/memory.py` 内存追踪工具，在初始化完成与主动 GC 等关键点以 TRACE 级日志记录 RSS 与增量，便于排查内存增长。**完全向后兼容**（`auto_start` 默认 `true`）。
+
+**升级建议**
+- **建议升级**
+- 升级原因：所有进程的导入期内存显著下降；无需 HTTP 服务的 bot 可进一步省去 web 栈占用
+
+**注意事项**
+- 默认行为不变（`server.auto_start` 默认 `true`，仍会启动 HTTP 服务器）
+- 仅当显式设置 `[ErisPulse.server] auto_start = false` 时才跳过服务器启动（此时 Dashboard 等 HTTP 功能不可用）
+- 内存追踪日志为 TRACE 级，默认不输出；开启 TRACE 日志即可观察
+
+### 新增
+
+- `runtime/memory.py`：进程内存追踪工具
+  - `get_rss_mb()`：获取进程 RSS（优先 psutil，回退 Linux `/proc`）
+  - `get_traced_mb()`：获取 tracemalloc 追踪内存
+  - `snapshot(label)` / `log_snapshot(label)`：采集并按标签计算增量的内存快照
+  - 在 `sdk.init()` 完成后与主动 GC 循环中以 TRACE 级记录
+- `server.auto_start` 配置项（默认 `true`）：控制初始化时是否自动启动 HTTP 路由服务器
+- 单元测试：`test_unit_router_lazy.py`（Web 栈懒加载，5 用例）、`test_unit_memory.py`（内存工具，6 用例）、`server.auto_start` 默认值校验
+
+### 优化
+
+- `Core/router.py` Web 栈懒加载：`FastAPI` / `Uvicorn` / `Starlette` 依赖从导入期推迟到路由首次实际服务时才加载
+  - 导入期基线内存由 ~112MB 降至 ~58MB（实测，web 栈占 ~54MB）
+  - `_load_web_stack()` 幂等加载；`RouterManager.app` 改为惰性属性
+  - `_web_stack_required` 装饰器守护所有使用 web 符号的方法
+  - `WebSocketHandler` 类型别名改为字符串前向引用以避免导入期解析
+- 导出更新：`runtime/__init__.py` 新增 `get_rss_mb` / `get_traced_mb` / `log_snapshot` / `snapshot`
+- 贡献者体验优化：新增 `docs/zh-CN/contributing/`（贡献总览 + 首次贡献）ErisPulse 贡献路径；`generate-docs-index.py` 新增「贡献指南」分类
+
+---
+
 ## [2.7.0-dev.3] - 2026/07/29
 > 开发版本
 

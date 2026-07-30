@@ -12,6 +12,8 @@ ErisPulse 路由系统
 {!--< /tips >!--}
 """
 
+from __future__ import annotations
+
 import asyncio
 import functools
 import importlib.metadata
@@ -22,13 +24,15 @@ import time
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
-from typing import Any, TypeAlias, cast
+from typing import TYPE_CHECKING, Any, TypeAlias, cast
 
-import uvicorn
-from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
-from fastapi.routing import APIRoute
-from starlette.routing import WebSocketRoute
+if TYPE_CHECKING:
+    # 仅用于类型检查；运行时由 _load_web_stack() 懒加载注入到模块全局。
+    import uvicorn
+    from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect
+    from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+    from fastapi.routing import APIRoute
+    from starlette.routing import WebSocketRoute
 
 from ..runtime.context import current_owner
 from .Bases.errors import WebSocketDisconnect as _EPWebSocketDisconnect
@@ -62,13 +66,100 @@ from .logger import logger
 
 ERISPULSE_VERSION = "UnknownVersion"
 
+# Web 栈是否已懒加载完成
+_WEB_STACK_LOADED: bool = False
+
+
+def _load_web_stack() -> None:
+    """懒加载 FastAPI / Uvicorn / Starlette
+
+    {!--< internal-use >!--}
+    将 web 栈依赖推迟到路由实际服务时才导入。幂等：重复调用仅做一次实际导入。
+    {!--< /internal-use >!--}
+    """
+    global _WEB_STACK_LOADED
+    if _WEB_STACK_LOADED:
+        return
+
+    import uvicorn as _uvicorn
+    from fastapi import (
+        FastAPI as _FastAPI,
+    )
+    from fastapi import (
+        Request as _Request,
+    )
+    from fastapi import (
+        Response as _Response,
+    )
+    from fastapi import (
+        WebSocket as _WebSocket,
+    )
+    from fastapi import (
+        WebSocketDisconnect as _WebSocketDisconnect,
+    )
+    from fastapi.responses import (
+        HTMLResponse as _HTMLResponse,
+    )
+    from fastapi.responses import (
+        JSONResponse as _JSONResponse,
+    )
+    from fastapi.responses import (
+        StreamingResponse as _StreamingResponse,
+    )
+    from fastapi.routing import APIRoute as _APIRoute
+    from starlette.routing import WebSocketRoute as _WebSocketRoute
+
+    _g = globals()
+    _g["uvicorn"] = _uvicorn
+    _g["FastAPI"] = _FastAPI
+    _g["Request"] = _Request
+    _g["Response"] = _Response
+    _g["WebSocket"] = _WebSocket
+    _g["WebSocketDisconnect"] = _WebSocketDisconnect
+    _g["HTMLResponse"] = _HTMLResponse
+    _g["JSONResponse"] = _JSONResponse
+    _g["StreamingResponse"] = _StreamingResponse
+    _g["APIRoute"] = _APIRoute
+    _g["WebSocketRoute"] = _WebSocketRoute
+    _WEB_STACK_LOADED = True
+    logger.trace(i18n.t("core.router.web_stack_loaded"))
+
+
+def _web_stack_required(fn: Callable[..., Any]) -> Callable[..., Any]:
+    """装饰器：在被装饰方法执行前确保 web 栈已加载
+
+    {!--< internal-use >!--}
+    自动适配同步与异步方法。
+    {!--< /internal-use >!--}
+
+    :param fn: [Callable] 被装饰的方法
+    :return: [Callable] 包装后的方法
+    """
+
+    if inspect.iscoroutinefunction(fn):
+
+        @functools.wraps(fn)
+        async def _async_wrapper(self, *args: Any, **kwargs: Any) -> Any:
+            _load_web_stack()
+            return await fn(self, *args, **kwargs)
+
+        return _async_wrapper
+
+    @functools.wraps(fn)
+    def _sync_wrapper(self, *args: Any, **kwargs: Any) -> Any:
+        _load_web_stack()
+        return fn(self, *args, **kwargs)
+
+    return _sync_wrapper
+
 try:
     ERISPULSE_VERSION = importlib.metadata.version("ErisPulse")
 except importlib.metadata.PackageNotFoundError:
     pass
 
 HTTPHandler: TypeAlias = Callable
-WebSocketHandler: TypeAlias = Callable[[WebSocket], Awaitable[Any]]
+# WebSocket 尚未加载（懒加载），使用字符串前向引用避免在导入期解析。
+WebSocketHandler: TypeAlias = "Callable[[WebSocket], Awaitable[Any]]"
 RoutePath: TypeAlias = str
 
 # 用于自动注入的请求参数名集合
@@ -110,7 +201,7 @@ class RouteGroup:
         version: str | None = None,
         tags: list[str] | None = None,
         middlewares: list | None = None,
-        router: "RouterManager | None" = None,
+        router: RouterManager | None = None,
     ):
         """
         初始化路由分组
@@ -223,7 +314,7 @@ class RouteGroup:
         assert self._router is not None
         return self._router._sse_decorate(resolved, self._module_name, **kwargs)
 
-    def group(self, prefix: str, **kwargs) -> "RouteGroup":
+    def group(self, prefix: str, **kwargs) -> RouteGroup:
         """
         创建嵌套分组
 
@@ -268,14 +359,10 @@ class RouterManager:
         初始化路由管理器
 
         {!--< tips >!--}
-        会自动创建 FastAPI 实例并设置核心路由
+        首次访问 ``app`` 属性时才创建 FastAPI 实例并注册核心路由。
         {!--< /tips >!--}
         """
-        self.app = FastAPI(
-            title="ErisPulse Router",
-            description="统一路由管理入口点",
-            version=ERISPULSE_VERSION,
-        )
+        self._app: FastAPI | None = None
         # HTTP路由：{module_name: {path: {method: handler}}}
         self._http_routes: dict[str, dict[str, dict[str, Callable]]] = defaultdict(dict)
         self._websocket_routes: dict[
@@ -296,8 +383,20 @@ class RouterManager:
         self._rate_limit_cleanup_task: asyncio.Task | None = None
         self._middleware_installed = False
         self._home_entries: list[dict] = []
-        self._setup_core_routes()
-        self._setup_error_pages()
+
+    @property
+    def app(self) -> FastAPI:
+        """FastAPI 应用实例（惰性创建，首次访问时加载 web 栈并注册核心路由）"""
+        if self._app is None:
+            _load_web_stack()
+            self._app = FastAPI(
+                title="ErisPulse Router",
+                description="统一路由管理入口点",
+                version=ERISPULSE_VERSION,
+            )
+            self._setup_core_routes()
+            self._setup_error_pages()
+        return self._app
 
     def _normalize_path(self, prefix: str, path: str) -> str:
         """
@@ -331,6 +430,7 @@ class RouterManager:
 
     # 自动注入
 
+    @_web_stack_required
     def _make_http_endpoint(self, handler: Callable) -> Callable:
         """
         根据处理器签名创建 FastAPI 兼容的 HTTP 端点
@@ -397,6 +497,7 @@ class RouterManager:
         )
         return wrapper
 
+    @_web_stack_required
     def _make_ws_handler(self, handler: Callable) -> Callable:
         """
         根据处理器签名创建 WebSocket 处理器包装
@@ -446,6 +547,7 @@ class RouterManager:
 
         return _wrapper
 
+    @_web_stack_required
     def _make_ws_auth_handler(self, auth_handler: Callable) -> Callable:
         """
         根据签名创建 WebSocket 认证处理器包装
@@ -495,6 +597,7 @@ class RouterManager:
 
         return _wrapper
 
+    @_web_stack_required
     def _make_sse_endpoint(self, handler: Callable) -> Callable:
         """
         根据处理器签名创建 SSE 端点包装器
@@ -563,6 +666,7 @@ class RouterManager:
 
         return wrapper
 
+    @_web_stack_required
     def _register_sse_endpoint(
         self,
         full_path: str,
@@ -888,6 +992,7 @@ class RouterManager:
                 },
             )
 
+    @_web_stack_required
     def _restore_routes_from_records(self) -> None:
         """
         将内部记录中已有的路由重新注册到当前 FastAPI 实例
@@ -1017,6 +1122,7 @@ class RouterManager:
 
     # 路由中间件
 
+    @_web_stack_required
     def _ensure_middleware_installed(self):
         """
         确保 FastAPI 级中间件已安装
@@ -1238,6 +1344,7 @@ class RouterManager:
 
     # 装饰器路由
 
+    @_web_stack_required
     def _http_decorate(
         self, full_path: str, module_name: str, methods: list[str] | None = None, **kwargs
     ):
@@ -1429,6 +1536,7 @@ class RouterManager:
 
     # 传统注册 API
 
+    @_web_stack_required
     def register_http_route(
         self,
         module_name: str,
@@ -1528,6 +1636,7 @@ class RouterManager:
         """
         return self.register_http_route(*args, **kwargs)
 
+    @_web_stack_required
     def unregister_http_route(self, module_name: str, path: str) -> bool:
         """
         取消注册HTTP路由
@@ -1567,6 +1676,7 @@ class RouterManager:
             logger.error(i18n.t("core.router.unregister_http_failed", error=e))
             return False
 
+    @_web_stack_required
     def _register_ws_endpoint(
         self,
         full_path: str,
@@ -1689,6 +1799,7 @@ class RouterManager:
             )
         )
 
+    @_web_stack_required
     def register_websocket(
         self,
         module_name: str,
@@ -1719,6 +1830,7 @@ class RouterManager:
             full_path, module_name, handler, auth_handler, auto_accept
         )
 
+    @_web_stack_required
     def unregister_websocket(self, module_name: str, path: str) -> bool:
         """
         取消注册WebSocket路由
@@ -1785,6 +1897,7 @@ class RouterManager:
         full_path = self._normalize_path(module_name, path)
         self._register_sse_endpoint(full_path, module_name, handler, **kwargs)
 
+    @_web_stack_required
     def unregister_sse(self, module_name: str, path: str) -> bool:
         """
         取消注册 SSE 路由
@@ -1821,6 +1934,7 @@ class RouterManager:
             logger.error(i18n.t("core.router.unregister_sse_failed", error=e))
             return False
 
+    @_web_stack_required
     def unregister_all_by_namespace(self, namespace: str) -> dict[str, int]:
         """
         清理指定命名空间下的所有路由
@@ -2174,6 +2288,7 @@ class RouterManager:
 
     # 路由限流
 
+    @_web_stack_required
     def _apply_rate_limit(self, full_path: str, limit: str | dict):
         """
         为路由应用限流
@@ -2294,6 +2409,7 @@ class RouterManager:
         )
         logger.info(i18n.t("core.router.cors_configured"))
 
+    @_web_stack_required
     def setup_security_headers(self, headers: dict[str, str] | None = None):
         """
         配置安全响应头
@@ -2413,6 +2529,7 @@ class RouterManager:
         except Exception as e:
             logger.trace(i18n.t("core.router.get_local_ip_failed", error=e))
 
+    @_web_stack_required
     async def start(
         self,
         host: str = DEFAULT_SERVER_HOST,

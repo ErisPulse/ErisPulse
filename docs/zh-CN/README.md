@@ -51,6 +51,15 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 | [Conversation 多轮对话](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL 构建](advanced/sql-builder.md) · [HTTP 客户端](advanced/http-client.md) · [国际化](advanced/i18n.md) | 进阶工具 |
 | [Dashboard 管理面板](advanced/dashboard-view.md) | Web 管理界面接入 |
 
+### 四、我要为 ErisPulse 贡献
+
+让框架更好
+
+| 文档 | 说明 |
+|------|------|
+| [为 ErisPulse 贡献](contributing/README.md) | 贡献方式总览：文档 / i18n / Bug / 模块 / 适配器 |
+| [首次贡献](contributing/first-contribution.md) | 从 fork 到提交 PR |
+
 ---
 
 ## 开发方式
@@ -63,6 +72,7 @@ ErisPulse 支持两种开发方式：
 ## 其他
 
 - [文档风格指南](styleguide/docstring.md) — 贡献文档时的写作规范
+- [为 ErisPulse 贡献](contributing/README.md) — 参与项目共建的入口
 - [AI 辅助开发](ai-support/README.md) — 获取供 AI 编程助手使用的项目提示词
 
 ## 获取帮助
