@@ -45,6 +45,10 @@ DEFAULT_SERVER_HOST: Final[str] = "0.0.0.0"
 # 修改影响: 客户端（如 SandboxAdapter WebUI）需要对应修改连接端口。
 DEFAULT_SERVER_PORT: Final[int] = 8000
 
+# 是否在初始化时自动启动 HTTP 路由服务器。
+# 修改影响: 设为 False 时跳过 router.start()，适用于纯 WebSocket/轮询适配器。
+DEFAULT_SERVER_AUTO_START: Final[bool] = True
+
 # 路由服务器关闭时的超时时间（秒）。
 # 修改影响: Ctrl+C 后等待 uvicorn 关闭的耐心时间。超时后强制终止。
 SERVER_SHUTDOWN_TIMEOUT_SECS: Final[float] = 5.0
@@ -691,6 +695,7 @@ __all__ = [
     "DEFAULT_SEND_TARGET_TYPE",
     "DEFAULT_SERVER_HOST",
     "DEFAULT_SERVER_PORT",
+    "DEFAULT_SERVER_AUTO_START",
     "DEFAULT_STRICT_MODE",
     "DEFAULT_UNINIT_TIMEOUT_SECS",
     "DEFAULT_USE_GLOBAL_DB",

@@ -21,6 +21,7 @@ from ..Core.constants import (
     DEFAULT_MESSAGE_IGNORE_SELF,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
     DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
+    DEFAULT_SERVER_AUTO_START,
     DEFAULT_SERVER_HOST,
     DEFAULT_SERVER_PORT,
     DEFAULT_STRICT_MODE,
@@ -33,6 +34,7 @@ DEFAULT_ERISPULSE_CONFIG = {
     "server": {
         "host": DEFAULT_SERVER_HOST,
         "port": DEFAULT_SERVER_PORT,
+        "auto_start": DEFAULT_SERVER_AUTO_START,
         "ssl_certfile": None,
         "ssl_keyfile": None,
     },

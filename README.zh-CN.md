@@ -616,7 +616,7 @@ ErisPulse 不仅仅是框架。装上就能开始，不需要从零造轮子。
 
 ## 支持的平台
 
-欢迎您贡献适配器！
+欢迎您贡献适配器！不知道从哪入手？看 [贡献指南](docs/zh-CN/contributing/README.md)。
 
 | 适配器 | 说明 |
 |--------|------|
@@ -657,6 +657,8 @@ ErisPulse 项目的健全性还需要您的一份力！我们欢迎各种形式�
 2. **功能请求** — 通过 [社区讨论](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
 3. **代码贡献** — 提交 PR 前请阅读 [代码风格](docs/zh-CN/styleguide/) 及 [贡献指南](CONTRIBUTING.md)
 4. **文档改进** — 帮助完善文档和示例代码
+
+**第一次贡献？** 从这里开始 👉 [首次贡献实战](docs/zh-CN/contributing/first-contribution.md)
 
 [加入社区讨论](https://github.com/ErisPulse/ErisPulse/discussions)
 

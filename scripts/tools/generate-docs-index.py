@@ -84,6 +84,7 @@ class DocsIndexGenerator:
                 "ai-support": "AI 辅助开发",
                 "standards": "技术标准",
                 "styleguide": "风格指南",
+                "contributing": "贡献指南",
             },
             "descriptions": {
                 "快速开始": "ErisPulse 快速入门指南",
@@ -96,6 +97,7 @@ class DocsIndexGenerator:
                 "AI 辅助开发": "使用 AI 辅助开发 ErisPulse",
                 "技术标准": "框架的技术规范和标准",
                 "风格指南": "代码和文档风格规范",
+                "贡献指南": "参与 ErisPulse 项目共建",
             },
             "priority": {
                 "快速开始": 1,
@@ -108,6 +110,7 @@ class DocsIndexGenerator:
                 "AI 辅助开发": 8,
                 "技术标准": 9,
                 "风格指南": 10,
+                "贡献指南": 11,
             },
         },
         # 英文 (en)
@@ -122,6 +125,7 @@ class DocsIndexGenerator:
                 "ai-support": "AI-Assisted Development",
                 "standards": "Technical Standards",
                 "styleguide": "Style Guide",
+                "contributing": "Contributing",
             },
             "descriptions": {
                 "Quick Start": "ErisPulse Quick Start Guide",
@@ -134,6 +138,7 @@ class DocsIndexGenerator:
                 "AI-Assisted Development": "Using AI to assist ErisPulse development",
                 "Technical Standards": "Framework technical specifications and standards",
                 "Style Guide": "Code and documentation style guidelines",
+                "Contributing": "Contribute to ErisPulse",
             },
             "priority": {
                 "Quick Start": 1,
@@ -146,6 +151,7 @@ class DocsIndexGenerator:
                 "AI-Assisted Development": 8,
                 "Technical Standards": 9,
                 "Style Guide": 10,
+                "Contributing": 11,
             },
         },
         # 繁体中文 (zh-TW)
@@ -160,6 +166,7 @@ class DocsIndexGenerator:
                 "ai-support": "AI 輔助開發",
                 "standards": "技術標準",
                 "styleguide": "風格指南",
+                "contributing": "貢獻指南",
             },
             "descriptions": {
                 "快速開始": "ErisPulse 快速入門指南",
@@ -172,6 +179,7 @@ class DocsIndexGenerator:
                 "AI 輔助開發": "使用 AI 輔助開發 ErisPulse",
                 "技術標準": "框架的技術規範和標準",
                 "風格指南": "代碼和文檔風格規範",
+                "貢獻指南": "參與 ErisPulse 專案共建",
             },
             "priority": {
                 "快速開始": 1,
@@ -184,6 +192,7 @@ class DocsIndexGenerator:
                 "AI 輔助開發": 8,
                 "技術標準": 9,
                 "風格指南": 10,
+                "貢獻指南": 11,
             },
         },
         # 日语 (ja)
@@ -198,6 +207,7 @@ class DocsIndexGenerator:
                 "ai-support": "AI 支援開発",
                 "standards": "技術標準",
                 "styleguide": "スタイルガイド",
+                "contributing": "コントリビュート",
             },
             "descriptions": {
                 "クイックスタート": "ErisPulse クイックスタートガイド",
@@ -210,6 +220,7 @@ class DocsIndexGenerator:
                 "AI 支援開発": "AI を活用した ErisPulse 開発",
                 "技術標準": "フレームワークの技術仕様と標準",
                 "スタイルガイド": "コードとドキュメントのスタイルガイドライン",
+                "コントリビュート": "ErisPulse への貢献",
             },
             "priority": {
                 "クイックスタート": 1,
@@ -222,6 +233,7 @@ class DocsIndexGenerator:
                 "AI 支援開発": 8,
                 "技術標準": 9,
                 "スタイルガイド": 10,
+                "コントリビュート": 11,
             },
         },
         # 俄语 (ru)
@@ -236,6 +248,7 @@ class DocsIndexGenerator:
                 "ai-support": "Разработка с ИИ",
                 "standards": "Технические стандарты",
                 "styleguide": "Руководство по стилю",
+                "contributing": "Вклад",
             },
             "descriptions": {
                 "Быстрый старт": "Краткое руководство по ErisPulse",
@@ -248,6 +261,7 @@ class DocsIndexGenerator:
                 "Разработка с ИИ": "Использование ИИ для разработки ErisPulse",
                 "Технические стандарты": "Технические спецификации и стандарты фреймворка",
                 "Руководство по стилю": "Руководство по стилю кода и документации",
+                "Вклад": "Вклад в проект ErisPulse",
             },
             "priority": {
                 "Быстрый старт": 1,
@@ -260,6 +274,7 @@ class DocsIndexGenerator:
                 "Разработка с ИИ": 8,
                 "Технические стандарты": 9,
                 "Руководство по стилю": 10,
+                "Вклад": 11,
             },
         },
     }
@@ -343,6 +358,9 @@ class DocsIndexGenerator:
         # 风格指南
         "styleguide/README.md": 1,
         "styleguide/docstring.md": 2,
+        # 贡献指南
+        "contributing/README.md": 1,
+        "contributing/first-contribution.md": 2,
     }
 
     # 需要忽略的目录

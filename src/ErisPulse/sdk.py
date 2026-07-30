@@ -422,17 +422,21 @@ class SDK:
                 from ErisPulse.runtime import get_server_config
 
                 _server_config = get_server_config()
-                try:
-                    await self.router.start(
-                        host=_server_config["host"],
-                        port=_server_config["port"],
-                        ssl_certfile=_server_config.get("ssl_certfile"),
-                        ssl_keyfile=_server_config.get("ssl_keyfile"),
-                    )
-                except Exception as e:
-                    self.logger.warning(
-                        i18n.t("core.sdk.init.router_start_failed", error=e)
-                    )
+                if not _server_config.get("auto_start", True):
+                    # 跳过 HTTP 服务器启动（适用于纯 WebSocket/轮询适配器）
+                    self.logger.info(i18n.t("core.sdk.init.router_start_skipped"))
+                else:
+                    try:
+                        await self.router.start(
+                            host=_server_config["host"],
+                            port=_server_config["port"],
+                            ssl_certfile=_server_config.get("ssl_certfile"),
+                            ssl_keyfile=_server_config.get("ssl_keyfile"),
+                        )
+                    except Exception as e:
+                        self.logger.warning(
+                            i18n.t("core.sdk.init.router_start_failed", error=e)
+                        )
 
                 # 获取加载耗时
                 load_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_INIT)
@@ -449,6 +453,14 @@ class SDK:
                 self.logger.print_info(
                     i18n.t("core.sdk.init.duration", duration=duration_str), level=1
                 )
+
+                # 初始化完成后的内存快照（TRACE）
+                try:
+                    from .runtime.memory import log_snapshot
+
+                    log_snapshot("after_init")
+                except Exception:
+                    pass
 
                 if enabled_adapters:
                     self.logger.print_info(
@@ -853,6 +865,13 @@ class SDK:
                             self.logger.trace(
                                 i18n.t("core.sdk.gc.collected", collected=collected, evicted=evicted)
                             )
+                    except Exception:
+                        pass
+                    # 3. 内存快照（TRACE），便于长期观察内存变化趋势
+                    try:
+                        from .runtime.memory import log_snapshot
+
+                        log_snapshot("gc")
                     except Exception:
                         pass
                 except asyncio.CancelledError:
