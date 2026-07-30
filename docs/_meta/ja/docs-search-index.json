@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1451,
+  "total_keywords": 1471,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -184,6 +184,14 @@
         "line": 128,
         "level": 3,
         "title": "1. メッセージ送信"
+      }
+    ],
+    "1. リポジトリをフォークしてクローンする": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 15,
+        "level": 2,
+        "title": "1. リポジトリをフォークしてクローンする"
       }
     ],
     "1. 例外処理": [
@@ -782,6 +790,14 @@
         "title": "2. 適切な遅延読み込み（Lazy Loading）の使用"
       }
     ],
+    "2. 開発環境をインストールする": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 30,
+        "level": 2,
+        "title": "2. 開発環境をインストールする"
+      }
+    ],
     "2.1 OneBot12 標準型": [
       {
         "document": "standards/session-types.md",
@@ -1028,6 +1044,14 @@
         "line": 107,
         "level": 3,
         "title": "3. フィールドマッピング（入力JSON → OneBot12 イベント）"
+      }
+    ],
+    "3. ブランチを作成する": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 42,
+        "level": 2,
+        "title": "3. ブランチを作成する"
       }
     ],
     "3. プラットフォーム固有のイベントタイプ": [
@@ -1334,6 +1358,14 @@
         "title": "4. 使用方法"
       }
     ],
+    "4. 修正を行う": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 54,
+        "level": 2,
+        "title": "4. 修正を行う"
+      }
+    ],
     "4. 実装要件": [
       {
         "document": "standards/api-response.md",
@@ -1510,6 +1542,14 @@
         "title": "5. ユーザーが使用する方法"
       }
     ],
+    "5. ローカルでの検証": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 77,
+        "level": 2,
+        "title": "5. ローカルでの検証"
+      }
+    ],
     "5. 不明イベントの処理": [
       {
         "document": "standards/event-conversion.md",
@@ -1668,6 +1708,14 @@
         "line": 194,
         "level": 2,
         "title": "6. API 使用例"
+      }
+    ],
+    "6. CHANGELOG を更新する": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 89,
+        "level": 2,
+        "title": "6. CHANGELOG を更新する"
       }
     ],
     "6. アダプター実装チェックリスト": [
@@ -1886,6 +1934,14 @@
         "title": "7. エラーコードの拡張"
       }
     ],
+    "7. コミットしてプッシュする": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 99,
+        "level": 2,
+        "title": "7. コミットしてプッシュする"
+      }
+    ],
     "7. セッションタイプの拡張": [
       {
         "document": "standards/event-conversion.md",
@@ -1932,6 +1988,14 @@
         "line": 250,
         "level": 3,
         "title": "7.3 型推論"
+      }
+    ],
+    "8. Pull Request を送信する": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 107,
+        "level": 2,
+        "title": "8. Pull Request を送信する"
       }
     ],
     "8. よくある質問（FAQ）": [
@@ -2656,6 +2720,14 @@
         "line": 61,
         "level": 4,
         "title": "ErisPulse のインストール"
+      }
+    ],
+    "ErisPulse への貢献": [
+      {
+        "document": "contributing/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse への貢献"
       }
     ],
     "ErisPulse アダプター標準化戻り値仕様書": [
@@ -4418,20 +4490,20 @@
         "title": "あなたのモジュールをリリースする"
       }
     ],
+    "あなたの進む道を選択": [
+      {
+        "document": "README.md",
+        "line": 11,
+        "level": 2,
+        "title": "あなたの進む道を選択"
+      }
+    ],
     "いつ手動起動が必要か？": [
       {
         "document": "advanced/startup.md",
         "line": 237,
         "level": 3,
         "title": "いつ手動起動が必要か？"
-      }
-    ],
-    "お好みの学習経路を選択": [
-      {
-        "document": "README.md",
-        "line": 11,
-        "level": 2,
-        "title": "お好みの学習経路を選択"
       }
     ],
     "すべてのメッセージを監聴する": [
@@ -4445,7 +4517,7 @@
     "その他": [
       {
         "document": "README.md",
-        "line": 63,
+        "line": 72,
         "level": 2,
         "title": "その他"
       }
@@ -7608,10 +7680,18 @@
         "title": "ヘルスチェック"
       }
     ],
+    "ヘルプの取得": [
+      {
+        "document": "contributing/README.md",
+        "line": 59,
+        "level": 2,
+        "title": "ヘルプの取得"
+      }
+    ],
     "ヘルプを得る": [
       {
         "document": "README.md",
-        "line": 68,
+        "line": 78,
         "level": 2,
         "title": "ヘルプを得る"
       },
@@ -8454,6 +8534,22 @@
         "title": "モジュールの核心概念"
       }
     ],
+    "モジュールまたはアダプターの貢献": [
+      {
+        "document": "contributing/README.md",
+        "line": 45,
+        "level": 2,
+        "title": "モジュールまたはアダプターの貢献"
+      }
+    ],
+    "モジュールやアダプターを貢献する": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 119,
+        "level": 2,
+        "title": "モジュールやアダプターを貢献する"
+      }
+    ],
     "モジュールクラスで使用する": [
       {
         "document": "advanced/i18n.md",
@@ -9222,12 +9318,12 @@
         "title": "一貫したモジュール取得エントリ"
       }
     ],
-    "三、フレームワークの内部原理を深く理解したい": [
+    "三、原理を深く理解したい": [
       {
         "document": "README.md",
         "line": 39,
         "level": 3,
-        "title": "三、フレームワークの内部原理を深く理解したい"
+        "title": "三、原理を深く理解したい"
       }
     ],
     "不支持的方法調用": [
@@ -9632,6 +9728,14 @@
         "title": "切断再接続と RESUME"
       }
     ],
+    "初めての PR 提出": [
+      {
+        "document": "contributing/README.md",
+        "line": 18,
+        "level": 2,
+        "title": "初めての PR 提出"
+      }
+    ],
     "初期化プロセス": [
       {
         "document": "advanced/lazy-loading.md",
@@ -9756,6 +9860,14 @@
         "line": 77,
         "level": 3,
         "title": "原生メッセージ送信"
+      }
+    ],
+    "参加できる方法": [
+      {
+        "document": "contributing/README.md",
+        "line": 6,
+        "level": 2,
+        "title": "参加できる方法"
       }
     ],
     "参考ドキュメント": [
@@ -9884,6 +9996,14 @@
         "line": 130,
         "level": 3,
         "title": "嚴格モード"
+      }
+    ],
+    "四、ErisPulseに貢献したい": [
+      {
+        "document": "README.md",
+        "line": 54,
+        "level": 3,
+        "title": "四、ErisPulseに貢献したい"
       }
     ],
     "回答メールイベント (email_reply)": [
@@ -10908,6 +11028,14 @@
         "title": "提供されるツール"
       }
     ],
+    "提出プロセス": [
+      {
+        "document": "contributing/README.md",
+        "line": 34,
+        "level": 2,
+        "title": "提出プロセス"
+      }
+    ],
     "文書情報": [
       {
         "document": "platform-guide/kook.md",
@@ -11026,6 +11154,14 @@
         "line": 1,
         "level": 1,
         "title": "最初のロボットを作成する"
+      }
+    ],
+    "最初の貢献実践": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 1,
+        "level": 1,
+        "title": "最初の貢献実践"
       }
     ],
     "最小限の使用可能モジュール": [
@@ -11456,6 +11592,14 @@
         "line": 229,
         "level": 3,
         "title": "添付ファイルメッセージセグメント"
+      }
+    ],
+    "準備": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 7,
+        "level": 2,
+        "title": "準備"
       }
     ],
     "特性マトリクス": [
@@ -12703,7 +12847,7 @@
     "開発方法": [
       {
         "document": "README.md",
-        "line": 56,
+        "line": 65,
         "level": 2,
         "title": "開発方法"
       }
@@ -12722,6 +12866,14 @@
         "line": 26,
         "level": 2,
         "title": "開発準備"
+      }
+    ],
+    "開発環境": [
+      {
+        "document": "contributing/README.md",
+        "line": 22,
+        "level": 2,
+        "title": "開発環境"
       }
     ],
     "開発者ガイド": [
@@ -12883,7 +13035,7 @@
     "関連リンク": [
       {
         "document": "README.md",
-        "line": 74,
+        "line": 84,
         "level": 2,
         "title": "関連リンク"
       }
@@ -12984,6 +13136,14 @@
         "line": 87,
         "level": 4,
         "title": "非同期送信と結果処理"
+      }
+    ],
+    "頻繁に遭遇する可能性のある問題": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 139,
+        "level": 2,
+        "title": "頻繁に遭遇する可能性のある問題"
       }
     ],
     "高レベルメソッド (推奨)": [

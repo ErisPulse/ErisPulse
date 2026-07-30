@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "total_categories": 10,
+  "total_categories": 11,
   "categories": {
     "快速开始": {
       "description": "ErisPulse 快速入门指南",
@@ -418,6 +418,23 @@
         {
           "title": "ErisPulse 注释风格规范",
           "path": "styleguide/docstring.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "贡献指南": {
+      "description": "参与 ErisPulse 项目共建",
+      "count": 2,
+      "documents": [
+        {
+          "title": "为 ErisPulse 贡献",
+          "path": "contributing/README.md",
+          "level": 1
+        },
+        {
+          "title": "首次贡献实战",
+          "path": "contributing/first-contribution.md",
           "level": 1
         }
       ],

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1434,
+  "total_keywords": 1452,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -16,6 +16,14 @@
         "line": 359,
         "level": 3,
         "title": "1. BaseAdapter 層（大多數情況不需要重寫）"
+      }
+    ],
+    "1. Fork 並克隆倉庫": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 15,
+        "level": 2,
+        "title": "1. Fork 並克隆倉庫"
       }
     ],
     "1. SDK 物件": [
@@ -542,6 +550,14 @@
         "title": "2. 基礎回傳結構"
       }
     ],
+    "2. 安裝開發環境": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 30,
+        "level": 2,
+        "title": "2. 安裝開發環境"
+      }
+    ],
     "2. 帳戶選擇機制": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -938,6 +954,14 @@
         "line": 196,
         "level": 3,
         "title": "3. 事件處理器註冊"
+      }
+    ],
+    "3. 創建功能分支": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 42,
+        "level": 2,
+        "title": "3. 創建功能分支"
       }
     ],
     "3. 完整欄位規範": [
@@ -1364,6 +1388,14 @@
         "title": "4. 連線資訊揭露"
       }
     ],
+    "4. 進行修改": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 54,
+        "level": 2,
+        "title": "4. 進行修改"
+      }
+    ],
     "4.1 Event 方法列表": [
       {
         "document": "standards/request-action-spec.md",
@@ -1498,6 +1530,14 @@
         "line": 179,
         "level": 2,
         "title": "5. 未知事件處理"
+      }
+    ],
+    "5. 本地驗證": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 77,
+        "level": 2,
+        "title": "5. 本地驗證"
       }
     ],
     "5. 自動類型推斷": [
@@ -1684,6 +1724,14 @@
         "title": "6. 擴展命名規範"
       }
     ],
+    "6. 更新 CHANGELOG": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 89,
+        "level": 2,
+        "title": "6. 更新 CHANGELOG"
+      }
+    ],
     "6. 注意事項": [
       {
         "document": "standards/api-response.md",
@@ -1852,6 +1900,14 @@
         "title": "7. 實現 Request 類（請求操作）"
       }
     ],
+    "7. 提交並推送": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 99,
+        "level": 2,
+        "title": "7. 提交並推送"
+      }
+    ],
     "7. 方法發現": [
       {
         "document": "standards/send-method-spec.md",
@@ -1938,6 +1994,14 @@
         "line": 348,
         "level": 3,
         "title": "8. 建立包入口"
+      }
+    ],
+    "8. 提交 Pull Request": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 107,
+        "level": 2,
+        "title": "8. 提交 Pull Request"
       }
     ],
     "8. 模組開發者指南": [
@@ -4152,12 +4216,12 @@
         "title": "一鍵安裝腳本（推薦）"
       }
     ],
-    "三、我要深入了解原理": [
+    "三、我要深入理解原理": [
       {
         "document": "README.md",
         "line": 39,
         "level": 3,
-        "title": "三、我要深入了解原理"
+        "title": "三、我要深入理解原理"
       }
     ],
     "上下文管理": [
@@ -4862,6 +4926,14 @@
         "title": "何時重新產生"
       }
     ],
+    "你可以參與的方式": [
+      {
+        "document": "contributing/README.md",
+        "line": 6,
+        "level": 2,
+        "title": "你可以參與的方式"
+      }
+    ],
     "使用 Discord 特有方法": [
       {
         "document": "platform-guide/discord.md",
@@ -5343,7 +5415,7 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 63,
+        "line": 72,
         "level": 2,
         "title": "其他"
       }
@@ -5716,6 +5788,14 @@
         "title": "可用屬性"
       }
     ],
+    "可能會遇到的問題": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 139,
+        "level": 2,
+        "title": "可能會遇到的問題"
+      }
+    ],
     "可選字段": [
       {
         "document": "bug-tracker.md",
@@ -5942,6 +6022,14 @@
         "line": 130,
         "level": 3,
         "title": "嚴格模式"
+      }
+    ],
+    "四、我要為 ErisPulse 貢獻": [
+      {
+        "document": "README.md",
+        "line": 54,
+        "level": 3,
+        "title": "四、我要為 ErisPulse 貢獻"
       }
     ],
     "回應": [
@@ -7912,6 +8000,14 @@
         "title": "推薦寫法：透過 I18nClass 聲明翻譯鍵（v2.7.0+）"
       }
     ],
+    "提交流程": [
+      {
+        "document": "contributing/README.md",
+        "line": 34,
+        "level": 2,
+        "title": "提交流程"
+      }
+    ],
     "提供的工具": [
       {
         "document": "ai-support/README.md",
@@ -9480,6 +9576,14 @@
         "title": "測試模組"
       }
     ],
+    "準備工作": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 7,
+        "level": 2,
+        "title": "準備工作"
+      }
+    ],
     "激活虛擬環境": [
       {
         "document": "user-guide/installation.md",
@@ -9494,6 +9598,14 @@
         "line": 9,
         "level": 3,
         "title": "瀏覽與發現"
+      }
+    ],
+    "為 ErisPulse 貢獻": [
+      {
+        "document": "contributing/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "為 ErisPulse 貢獻"
       }
     ],
     "為什麼推薦 I18nClass？": [
@@ -9669,7 +9781,13 @@
     "獲取幫助": [
       {
         "document": "README.md",
-        "line": 68,
+        "line": 78,
+        "level": 2,
+        "title": "獲取幫助"
+      },
+      {
+        "document": "contributing/README.md",
+        "line": 59,
         "level": 2,
         "title": "獲取幫助"
       }
@@ -10295,7 +10413,7 @@
     "相關連結": [
       {
         "document": "README.md",
-        "line": 74,
+        "line": 84,
         "level": 2,
         "title": "相關連結"
       }
@@ -10338,6 +10456,14 @@
         "line": 267,
         "level": 3,
         "title": "立即載入"
+      }
+    ],
+    "第一次提交 PR": [
+      {
+        "document": "contributing/README.md",
+        "line": 18,
+        "level": 2,
+        "title": "第一次提交 PR"
       }
     ],
     "第一步：編寫第一個命令": [
@@ -11438,6 +11564,20 @@
         "line": 147,
         "level": 4,
         "title": "豁免清單"
+      }
+    ],
+    "貢獻模組或適配器": [
+      {
+        "document": "contributing/README.md",
+        "line": 45,
+        "level": 2,
+        "title": "貢獻模組或適配器"
+      },
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 119,
+        "level": 2,
+        "title": "貢獻模組或適配器"
       }
     ],
     "貢獻流程": [
@@ -12649,7 +12789,7 @@
     "開發方式": [
       {
         "document": "README.md",
-        "line": 56,
+        "line": 65,
         "level": 2,
         "title": "開發方式"
       }
@@ -12684,6 +12824,14 @@
         "line": 26,
         "level": 2,
         "title": "開發準備"
+      }
+    ],
+    "開發環境": [
+      {
+        "document": "contributing/README.md",
+        "line": 22,
+        "level": 2,
+        "title": "開發環境"
       }
     ],
     "開發相關術語": [
@@ -12906,6 +13054,14 @@
         "line": 1,
         "level": 1,
         "title": "風格指南"
+      }
+    ],
+    "首次貢獻實戰": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 1,
+        "level": 1,
+        "title": "首次貢獻實戰"
       }
     ],
     "首頁入口": [
