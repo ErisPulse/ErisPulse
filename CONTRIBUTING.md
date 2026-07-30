@@ -2,6 +2,20 @@
 
 ---
 
+## TL;DR — Quick Start
+
+> New here? This is the fast path. Details follow below.
+
+| Want to... | Start here |
+|------------|------------|
+| Fix a typo / docs | Edit files, PR directly |
+| Add a translation | [i18n guide (zh-CN)](docs/zh-CN/contributing/README.md#国际化-i18n) |
+| Report a bug | [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) |
+| Build a module / adapter | `epsdk create` → [Dev Guide](docs/zh-CN/developer-guide/) |
+| First PR walkthrough | [First Contribution (zh-CN)](docs/zh-CN/contributing/first-contribution.md) |
+
+---
+
 # Contribution Guide
 
 Thank you for your interest in ErisPulse! ErisPulse aims to build an easy-to-use, efficient, and extensible multi-platform bot development framework. Every contribution — whether code, documentation, issue reports, or ideas — helps make this project better.
