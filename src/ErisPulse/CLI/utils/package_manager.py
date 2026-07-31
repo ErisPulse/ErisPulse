@@ -1344,32 +1344,102 @@ class PackageManager:
             package_spec += f"=={target_version}"
 
         if sys.platform == "win32":
+            uv_cmd = self._get_uv_command()
+            if uv_cmd:
+                if uv_cmd[0] == "uv":
+                    base_cmd = ["uv", "pip", "install", "--python", self._get_target_python(), "--upgrade", package_spec]
+                else:
+                    base_cmd = [*uv_cmd, "pip", "install", "--python", self._get_target_python(), "--upgrade", package_spec]
+                backend_name = "uv"
+            else:
+                target_python = self._get_target_python()
+                base_cmd = [target_python, "-m", "pip", "install", "--upgrade", package_spec]
+                backend_name = "pip"
+
+            messages = {
+                "bootstrap_pip": i18n.t("cli.update.bootstrap_pip"),
+                "using_command": i18n.t("cli.update.using_command"),
+                "update_failed": i18n.t("cli.update.update_failed"),
+                "fallback_to_pip": i18n.t("cli.update.fallback_to_pip"),
+                "pip_missing": i18n.t("cli.update.pip_missing"),
+                "all_failed": i18n.t("cli.update.all_failed"),
+                "manual_hint": i18n.t("cli.update.manual_hint"),
+                "timeout": i18n.t("cli.update.timeout"),
+                "error": i18n.t("cli.update.error"),
+                "done": i18n.t("cli.update.done"),
+                "press_key": i18n.t("cli.update.press_key"),
+            }
+
             update_script = f"""
 import time
 import subprocess
 import sys
 import os
+import traceback
 
 time.sleep(2)
 
-try:
-    result = subprocess.run([
-        sys.executable, "-m", "pip", "install", "--upgrade", "{package_spec}"
-    ], capture_output=True, text=True, timeout=300)
+base_cmd = {base_cmd!r}
+backend_name = {backend_name!r}
+target_python = {self._get_target_python()!r}
+package_spec = {package_spec!r}
+T = {messages!r}
 
-    if result.returncode == 0:
-        print("更新成功!")
-        print(result.stdout)
+def ensure_pip():
+    r = subprocess.run([target_python, "-m", "pip", "--version"], capture_output=True)
+    if r.returncode == 0:
+        return True
+    print(T["bootstrap_pip"])
+    r = subprocess.run([target_python, "-m", "ensurepip", "--upgrade"], capture_output=True, text=True)
+    return r.returncode == 0
+
+def run(cmd):
+    print(T["using_command"].format(command=" ".join(cmd)))
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    if r.returncode == 0:
+        if r.stdout:
+            print(r.stdout)
+        return True
+    print(T["update_failed"].format(code=r.returncode))
+    if r.stdout:
+        print(r.stdout)
+    if r.stderr:
+        print(r.stderr)
+    return False
+
+try:
+    ok = False
+    if backend_name == "uv":
+        ok = run(base_cmd)
+        if not ok:
+            print(T["fallback_to_pip"])
+            if ensure_pip():
+                ok = run([target_python, "-m", "pip", "install", "--upgrade", package_spec])
     else:
-        print("更新失败:")
-        print(result.stderr)
+        if ensure_pip():
+            ok = run(base_cmd)
+        else:
+            print(T["pip_missing"])
+
+    if not ok:
+        print(T["all_failed"])
+        print(T["manual_hint"].format(python=target_python, spec=package_spec))
+        sys.exit(1)
+except subprocess.TimeoutExpired:
+    print(T["timeout"])
+    sys.exit(1)
 except Exception as e:
-    print(f"更新过程中出错: {{e}}")
+    print(T["error"].format(error=e))
+    traceback.print_exc()
+    sys.exit(1)
 
 try:
     os.remove(__file__)
-except:
+except OSError:
     pass
+
+print(T["done"])
+input(T["press_key"])
 """
             import tempfile
 
@@ -1379,6 +1449,7 @@ except:
 
             console.print(f"[info]{i18n.t('cli.package.starting_update')}[/]")
             console.print(f"[info]{i18n.t('cli.package.rerun_cli_later')}[/]")
+            console.print(f"[dim]{i18n.t('cli.package.using_backend', backend=backend_name)}[/]")
 
             subprocess.Popen(
                 [sys.executable, script_path],
@@ -1386,6 +1457,8 @@ except:
             )
 
             return True
+
+        target_python = self._get_target_python()
         if target_version:
             update_desc = i18n.t(
                 "cli.package.update_desc_with_version", version=target_version

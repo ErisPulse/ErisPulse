@@ -97,6 +97,9 @@
   - `WebSocketHandler` 类型别名改为字符串前向引用以避免导入期解析
 - 导出更新：`runtime/__init__.py` 新增 `get_rss_mb` / `get_traced_mb` / `log_snapshot` / `snapshot`
 - 贡献者体验优化：新增 `docs/zh-CN/contributing/`（贡献总览 + 首次贡献）ErisPulse 贡献路径；`generate-docs-index.py` 新增「贡献指南」分类
+- `CLI/utils/package_manager.py` Windows 自更新脚本重构：
+  - 移除硬编码中文：独立更新进程无法导入 i18n 模块，改为在父进程预解析翻译文本，以消息字典注入子脚本，随用户语言自适应
+  - 新增 i18n 键：`cli.update.*` / `cli.package.using_backend`（zh-CN / zh-TW / en / ja / ru 同步）
 
 ---
 
