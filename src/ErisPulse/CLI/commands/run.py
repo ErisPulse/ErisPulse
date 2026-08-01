@@ -17,6 +17,7 @@ from rich.panel import Panel
 
 from ..base import Command
 from ..console import console
+from ..constants import HARD_RESTART_EXIT_CODE
 from ..i18n import i18n
 from ..utils.file_watcher import FileSystemEventHandler, PollingObserver
 
@@ -133,7 +134,7 @@ class RunCommand(Command):
         else:
             self._run_internal(reload_mode)
 
-    _RESTART_EXIT_CODE = 42
+    _RESTART_EXIT_CODE = HARD_RESTART_EXIT_CODE
     _MAX_CRASH_BACKOFF = 60.0
 
     def _run_internal(self, reload_mode: bool):

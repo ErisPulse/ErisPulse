@@ -60,6 +60,19 @@ class CLI:
             default=0,
             help=i18n.t("cli.parser.verbose_help"),
         )
+        parser.add_argument(
+            "--no-color",
+            action="store_true",
+            default=False,
+            help=i18n.t("cli.parser.no_color_help"),
+        )
+        parser.add_argument(
+            "--yes",
+            "-y",
+            action="store_true",
+            default=False,
+            help=i18n.t("cli.parser.yes_help"),
+        )
 
         # 子命令
         subparsers = parser.add_subparsers(
@@ -285,6 +298,10 @@ class CLI:
 
         args, unknown = self.parser.parse_known_args()
         args._unknown_args = unknown
+
+        # --no-color：禁用 Rich 控制台着色（CI / 日志采集场景）
+        if getattr(args, "no_color", False):
+            console.no_color = True
 
         print_banner()
 

@@ -16,6 +16,7 @@ from ..base import Command
 from ..console import console
 from ..i18n import i18n
 from ..utils.display import prompt_validated, section_header
+from ..utils.scaffold_text import ScaffoldText
 
 _LICENSE_TEMPLATE = """MIT License
 
@@ -65,42 +66,57 @@ _MODULE_INIT = """from .Core import Main
 _MODULE_CORE = """from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey
 from ErisPulse.Core.Event import command, message, notice
-
-
-@dataclass
-class {name}Config(BaseConfig):
-    \"\"\"{name} 模块配置\"\"\"
-    enabled: bool = field(
-        default=True,
-        metadata={{
-            \"description\": \"是否启用模块\",
-        }},
-    )
-
-
-class {name}I18n(BaseI18n):
-    \"\"\"{name} 模块翻译键声明
-
-    声明的翻译键会被框架自动注册到 i18n 系统。
-    键路径自动生成为: <模块名>.<属性名>
-    \"\"\"
-    # 示例：取消注释并修改以启用
-    # welcome: I18nKey = I18nKey(
-    #     default="Welcome to {name}!",
-    #     zh_CN="欢迎使用 {name}！",
-    #     en="Welcome to {name}!",
-    # )
+from ErisPulse.Core.i18n import i18n
 
 
 class Main(BaseModule):
     \"\"\"
-    {name}模块
-
-    继承自BaseModule基类，实现了标准化的模块生命周期管理和事件处理
+    {text[module.doc]}
     \"\"\"
 
-    ConfigClass = {name}Config
-    I18nClass = {name}I18n
+    # {text[module.config_hint]}
+    @dataclass
+    class ConfigClass(BaseConfig):
+        \"\"\"{text[module.config_doc]}\"\"\"
+
+        enabled: bool = field(
+            default=True,
+            metadata={{
+                \"description\": {{\"i18n\": \"module.{name}.enabled\", \"default\": \"Enable module\"}},
+            }},
+        )
+
+    # {text[module.i18n_hint]}
+    class I18nClass(BaseI18n):
+        \"\"\"{name} translation keys\"\"\"
+
+        enabled: I18nKey = I18nKey(
+            key=\"module.{name}.enabled\",
+            default=\"Enable module\",
+            zh_CN=\"是否启用模块\",
+            en=\"Enable module\",
+            ja=\"モジュールを有効にする\",
+            ru=\"Включить модуль\",
+            zh_TW=\"啟用模組\",
+        )
+        hello_help: I18nKey = I18nKey(
+            key=\"module.{name}.command.hello.help\",
+            default=\"Send a greeting message\",
+            zh_CN=\"发送问候消息\",
+            en=\"Send a greeting message\",
+            ja=\"挨拶メッセージを送信\",
+            ru=\"Отправить приветствие\",
+            zh_TW=\"發送問候訊息\",
+        )
+        hello_reply: I18nKey = I18nKey(
+            key=\"module.{name}.command.hello.reply\",
+            default=\"Hello from {name}!\",
+            zh_CN=\"来自 {name} 的问候！\",
+            en=\"Hello from {name}!\",
+            ja=\"{name} からの挨拶です！\",
+            ru=\"Привет от {name}!\",
+            zh_TW=\"來自 {name} 的問候！\",
+        )
 
     def __init__(self, sdk=None):
         from ErisPulse import sdk as _sdk
@@ -110,7 +126,7 @@ class Main(BaseModule):
         self.adapter = self.sdk.adapter
         self.client = self.sdk.client
 
-        self.logger.info(\"{name} 初始化完成\")
+        self.logger.info((\"{text[module.log.init_done]}\").format(name=\"{name}\"))
 
     @staticmethod
     def get_load_strategy():
@@ -122,35 +138,39 @@ class Main(BaseModule):
 
     async def on_load(self, event: dict) -> bool:
         \"\"\"
-        模块被加载时调用
+        {text[module.on_load_doc]}
 
-        :param event: 事件内容
-        :return: 处理结果
+        :param event: event data
+        :return: processing result
         \"\"\"
         await self._register_commands()
         await self._register_message_handlers()
-        self.logger.info(f\"模块已加载: {{event}}\")
+        self.logger.info((\"{text[module.log.loaded]}\").format(event=event))
         return True
 
     async def on_unload(self, event: dict) -> bool:
         \"\"\"
-        模块被卸载时调用
+        {text[module.on_unload_doc]}
 
-        :param event: 事件内容
-        :return: 处理结果
+        :param event: event data
+        :return: processing result
         \"\"\"
-        self.logger.info(f\"模块已卸载: {{event}}\")
+        self.logger.info((\"{text[module.log.unloaded]}\").format(event=event))
         return True
 
+    def on_config_update(self, old_config, new_config):
+        \"\"\"{text[module.config_updated_doc]}\"\"\"
+        self.logger.info(\"{text[module.log.config_updated]}\")
+
     async def _register_commands(self):
-        @command(\"hello\", help=\"发送问候消息\")
+        @command(\"hello\", help=i18n.t(\"module.{name}.command.hello.help\"))
         async def hello_command(event):
-            await event.reply(\"Hello from {name}!\")
+            await event.reply(i18n.t(\"module.{name}.command.hello.reply\"))
 
     async def _register_message_handlers(self):
         @message.on_private_message()
         async def private_message_handler(event):
-            self.logger.info(f\"收到私聊消息: {{event.get_text()}}\")
+            self.logger.info((\"{text[module.log.private_message]}\").format(content=event.get_text()))
 
         @message.on_group_message()
         async def group_message_handler(event):
@@ -158,7 +178,7 @@ class Main(BaseModule):
 
         @notice.on_friend_add()
         async def friend_add_handler(event):
-            self.logger.info(f\"新好友添加: {{event.get_user_nickname()}}\")
+            self.logger.info((\"{text[module.log.friend_add]}\").format(nickname=event.get_user_nickname()))
 """
 
 _ADAPTER_PYPROJECT = """[project]
@@ -193,72 +213,71 @@ _ADAPTER_CORE = """import asyncio
 import json
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core.Bases import BaseConfig, I18nKey, I18nKeys
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
 from ErisPulse.Core import router
-
-
-@dataclass
-class {name}Config(BaseConfig):
-    \"\"\"{name} 适配器配置\"\"\"
-    endpoint: str = field(
-        default="https://api.example.com",
-        metadata={{
-            "description": {{"i18n": "adapter.{name}.endpoint", "default": "平台 API 地址"}},
-            "required": False,
-            "ui": {{"widget": "text", "group": "connection", "order": 1}},
-        }},
-    )
-    token: str = field(
-        default="",
-        metadata={{
-            "description": {{"i18n": "adapter.{name}.token", "default": "平台 Token"}},
-            "required": True,
-            "secret": True,
-            "ui": {{"widget": "password", "group": "basic", "order": 2}},
-        }},
-    )
-
-
-class {name}I18n(BaseI18n):
-    \"\"\"{name} 适配器翻译键声明
-
-    声明的翻译键会被框架自动注册到 i18n 系统。
-    这里集中管理适配器用到的所有翻译键（含配置描述引用的键）。
-    \"\"\"
-    # 注册配置描述中引用的 i18n 键的多语言译文
-    endpoint: I18nKey = I18nKey(
-        default="Platform API Endpoint",
-        zh_CN="平台 API 地址",
-        en="Platform API Endpoint",
-        ja="APIアドレス",
-        ru="API адрес",
-        zh_TW="API 位址",
-    )
-    token: I18nKey = I18nKey(
-        default="Platform Token",
-        zh_CN="平台 Token",
-        en="Platform Token",
-        ja="トークン",
-        ru="Токен",
-        zh_TW="權杖",
-    )
+from ErisPulse.Core.i18n import i18n
 
 
 class {name}(BaseAdapter):
     \"\"\"
-    {name} 适配器
-
-    继承自 BaseAdapter 基类，使用声明式配置管理（ConfigClass），
-    实现了 SendDSL 风格的链式调用接口和 Bot 状态追踪。
+    {text[adapter.doc]}
     \"\"\"
 
-    ConfigClass = {name}Config
-    I18nClass = {name}I18n
+    # {text[adapter.config_hint]}
+    @dataclass
+    class ConfigClass(BaseConfig):
+        \"\"\"{text[adapter.config_doc]}\"\"\"
+
+        endpoint: str = field(
+            default="https://api.example.com",
+            metadata={{
+                "description": {{"i18n": "adapter.{name}.endpoint", "default": "Platform API Endpoint"}},
+                "required": False,
+                "ui": {{"widget": "text", "group": "connection", "order": 1}},
+            }},
+        )
+        token: str = field(
+            default="",
+            metadata={{
+                "description": {{"i18n": "adapter.{name}.token", "default": "Platform Token"}},
+                "required": True,
+                "secret": True,
+                "ui": {{"widget": "password", "group": "basic", "order": 2}},
+            }},
+        )
+
+    # {text[adapter.i18n_hint]}
+    class I18nClass(BaseI18n):
+        \"\"\"{name} translation keys\"\"\"
+
+        endpoint: I18nKey = I18nKey(
+            key="adapter.{name}.endpoint",
+            default="Platform API Endpoint",
+            zh_CN="平台 API 地址",
+            en="Platform API Endpoint",
+            ja="APIアドレス",
+            ru="API адрес",
+            zh_TW="API 位址",
+        )
+        token: I18nKey = I18nKey(
+            key="adapter.{name}.token",
+            default="Platform Token",
+            zh_CN="平台 Token",
+            en="Platform Token",
+            ja="トークン",
+            ru="Токен",
+            zh_TW="權杖",
+        )
 
     def __init__(self, sdk=None):
-        super().__init__()
+        super().__init__(sdk=sdk)
+        self.logger = self._get_logger()
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
+
+    def on_config_update(self, old_config, new_config):
+        \"\"\"Called when adapter config hot-reloads\"\"\"
+        self.logger.info("{text[adapter.log.config_updated]}")
 
     def _setup_converter(self):
         from .Converter import {converter_name}
@@ -266,16 +285,7 @@ class {name}(BaseAdapter):
 
     class Send(BaseAdapter.Send):
         \"\"\"
-        Send 消息发送 DSL
-
-        At / AtAll / Reply / Using / To 由框架基类内置处理。
-        标准发送方法（Text/Image/Voice/Video/File）已从 SendDSL 基类继承，
-        默认委托给 Raw_ob12，无需重复实现。
-        使用 self._apply_modifiers(message) 合并修饰器到消息段。
-        使用 self.send_context 获取发送上下文 (target_type, target_id, account_id)。
-
-        支持链式调用:
-        Send.To("group", "123").At("456").Reply("789").Text("hi")
+        {text[adapter.dsl.send_doc]}
         \"\"\"
 
         def Raw_ob12(self, message, **kwargs):
@@ -289,22 +299,18 @@ class {name}(BaseAdapter):
                 )
             return asyncio.create_task(_do_send())
 
-        # 标准方法 Text/Image/Voice/Video/File 已从基类继承，默认委托 Raw_ob12。
-        # 如需平台特定逻辑，可覆盖单个方法：
+        # {text[adapter.dsl.send_std_methods_hint]}
+        # {text[adapter.dsl.send_override_hint]}
         # def Text(self, text: str):
         #     return self.Raw_ob12([{{"type": "text", "data": {{"text": text}}}}])
 
-        # 可添加平台特有的发送方法（会被 event.supports() 识别）：
+        # {text[adapter.dsl.send_extra_methods_hint]}
         # def Sticker(self, sticker_id: str):
         #     return self.Raw_ob12([{{"type": "sticker", "data": {{"id": sticker_id}}}}])
 
     class Request(BaseAdapter.Request):
         \"\"\"
-        Request 请求操作 DSL
-
-        适配器应重写 accept / reject 实现平台特定的请求处理逻辑。
-        如果平台不支持请求操作，可不实现此内部类。
-        基类默认返回 retcode=10002（不支持的操作）。
+        {text[adapter.dsl.request_doc]}
         \"\"\"
 
         async def _do_accept(self, **kwargs):
@@ -341,36 +347,32 @@ class {name}(BaseAdapter):
 
     class Api(BaseAdapter.Api):
         \"\"\"
-        标准 API 动作 DSL
-
-        提供跨平台的 OneBot12 标准动作（信息查询/群管理/消息管理/文件操作）。
-        默认实现委托给 call_api，适配器可覆盖单个方法映射到平台原生 API。
-        平台扩展动作通过 call("prefix.action", **params) 调用。
+        {text[adapter.dsl.api_doc]}
         \"\"\"
 
-        # 标准方法（get_user_info / get_group_info / delete_message 等）已从基类继承，
-        # 默认委托给 call_api。如需平台特定逻辑，可覆盖单个方法：
+        # {text[adapter.dsl.api_std_methods_hint]}
+        # {text[adapter.dsl.api_override_hint]}
         # async def get_user_info(self, user_id: str) -> dict:
         #     raw = await self._adapter._request("GET", f"/users/{{user_id}}")
         #     return self._adapter.make_response(data={{...}}, raw=raw)
 
     async def start(self):
-        \"\"\"启动适配器\"\"\"
+        \"\"\"Start the adapter\"\"\"
         cfg = self.cfg
-        self.logger.info(f"启动 {{cfg.endpoint}} 适配器")
+        self.logger.info("{text[adapter.log.starting]}")
 
         router.register_websocket(
             module_name="{entry_key}",
             path="/ws",
             handler=self._ws_handler,
         )
-        self.logger.info("WebSocket 路由已注册: /ws")
+        self.logger.info("{text[adapter.log.ws_registered]}")
 
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
         await self.emit_meta("connect", bot_id, user_name="{name}")
-        self.logger.info(f"Bot {{bot_id}} 已连接")
+        self.logger.info("{text[adapter.log.bot_connected]}")
 
         try:
             while True:
@@ -380,18 +382,18 @@ class {name}(BaseAdapter):
                 if event:
                     await self.adapter.emit(event)
         except Exception as e:
-            self.logger.warning(f"连接断开: {{e}}")
+            self.logger.warning("{text[adapter.log.connection_lost]}")
         finally:
             await self.emit_meta("disconnect", bot_id)
-            self.logger.info(f"Bot {{bot_id}} 已断开")
+            self.logger.info("{text[adapter.log.bot_disconnected]}")
 
     async def shutdown(self):
-        \"\"\"关闭适配器\"\"\"
+        \"\"\"Shut down the adapter\"\"\"
         router.unregister_websocket("{entry_key}", "/ws")
-        self.logger.info("适配器已关闭")
+        self.logger.info("{text[adapter.log.shutdown]}")
 
     async def call_api(self, endpoint: str, **params):
-        \"\"\"调用平台 API\"\"\"
+        \"\"\"Call platform API\"\"\"
         from ErisPulse.Core import client
 
         cfg = self.cfg
@@ -413,77 +415,51 @@ class {name}(BaseAdapter):
                 raw=result,
             )
         except Exception as e:
-            self.logger.error(f"API 调用失败: {{e}}")
+            self.logger.error(("{text[adapter.log.api_call_failed]}").format(error=e))
             return self.make_error(message=str(e))
 """
 
 _ADAPTER_CONVERTER = """\"\"\"
-{name} 事件转换器
-
-将平台原生事件转换为 OneBot12 标准格式（正向转换）。
-反向转换（发送方向）由适配器的 Send.Raw_ob12() 处理。
+{text[adapter.converter_doc]}
 \"\"\"
 
-import time
-import uuid
+from ErisPulse.Core.Bases import BaseConverter
 
 
-class {converter_name}:
+class {converter_name}(BaseConverter):
     \"\"\"
-    {name} 转换器类
+    {converter_name} converter class
 
-    负责将平台特定的事件格式转换为 ErisPulse 标准 OneBot12 格式。
-    所有转换后的事件必须包含 platform_raw 字段以保留原始数据。
+    Converts platform-specific event formats to the ErisPulse standard OneBot12 format.
+    Inherits BaseConverter to reuse common field construction (build_base_event)
+    and message-segment helpers (text/at/image).
     \"\"\"
 
-    def convert(self, raw_event: dict) -> dict:
+    def __init__(self):
+        super().__init__(platform="{entry_key}")
+
+    def convert(self, raw_event: dict) -> dict | None:
         \"\"\"
-        将平台原生事件转换为 OneBot12 标准格式
+        Convert a platform-native event to the OneBot12 standard format
 
-        :param raw_event: 平台原始事件数据
-        :return: OneBot12 标准格式的事件字典，无法识别时返回 None
+        :param raw_event: raw platform event data
+        :return: OneBot12 event dict, or None if unrecognized
         \"\"\"
         if not isinstance(raw_event, dict):
             return None
 
-        event_id = raw_event.get("event_id") or str(uuid.uuid4())
-        timestamp = raw_event.get("timestamp") or int(time.time())
-
-        event = {{
-            "id": str(event_id),
-            "time": int(timestamp),
-            "type": self._convert_type(raw_event),
-            "detail_type": self._convert_detail_type(raw_event),
-            "platform": "{entry_key}",
-            "self": {{
-                "platform": "{entry_key}",
-                "user_id": str(raw_event.get("self_id", "")),
-            }},
-            "{entry_key}_raw": raw_event,
-            "{entry_key}_raw_type": raw_event.get("type", ""),
-        }}
-
-        if event["type"] == "message":
-            event["user_id"] = str(raw_event.get("sender_id", ""))
-            event["message"] = self._convert_message_segments(raw_event.get("content", ""))
-            event["alt_message"] = raw_event.get("content", "")
-
-        return event
-
-    def _convert_type(self, raw_event: dict) -> str:
         event_type = raw_event.get("type", "")
-        type_map = {{
-            "chat": "message",
-        }}
-        return type_map.get(event_type, "unknown")
+        base = self.build_base_event(raw_event, event_type)
 
-    def _convert_detail_type(self, raw_event: dict) -> str:
-        return "private" if raw_event.get("is_private") else "group"
+        if event_type == "message":
+            base["type"] = "message"
+            base["detail_type"] = "private" if raw_event.get("is_private") else "group"
+            base["user_id"] = str(raw_event.get("sender_id", ""))
+            base["message"] = [self.text(raw_event.get("content", ""))]
+            base["alt_message"] = raw_event.get("content", "")
+            return base
 
-    def _convert_message_segments(self, content) -> list:
-        if isinstance(content, str) and content:
-            return [{{"type": "text", "data": {{"text": content}}}}]
-        return []
+        return None
 """
 
 _README_MODULE = """# {name}
@@ -493,7 +469,7 @@ _README_MODULE = """# {name}
 ## 安装
 
 ```bash
-epsdk install {name}
+epsdk install ErisPulse-{name}
 ```
 
 ## 使用
@@ -517,7 +493,7 @@ _README_ADAPTER = """# {name}
 ## 安装
 
 ```bash
-epsdk install {name}
+epsdk install ErisPulse-{name}
 ```
 
 ## 使用
@@ -583,6 +559,20 @@ def _validate_name(name: str) -> bool:
     if not name[0].isalpha():
         return False
     return all(c.isalnum() or c == "_" for c in name)
+
+
+def _scaffold_text(name: str) -> dict:
+    """
+    构建当前语言的脚手架文案映射，并预填充 {name} 占位符
+
+    :param name: [str] 模块/适配器名称
+    :return: [dict] ScaffoldText.all() 的文案字典（含占位符替换）
+    """
+    st = ScaffoldText()
+    return {
+        key: (value.replace("{name}", name) if value else value)
+        for key, value in st.all().items()
+    }
 
 
 class CreateCommand(Command):
@@ -724,7 +714,8 @@ class CreateCommand(Command):
 
             (pkg_dir / "__init__.py").write_text(_MODULE_INIT, encoding="utf-8")
             (pkg_dir / "Core.py").write_text(
-                _MODULE_CORE.format(name=name), encoding="utf-8"
+                _MODULE_CORE.format(name=name, text=_scaffold_text(name)),
+                encoding="utf-8",
             )
             (project_dir / "pyproject.toml").write_text(
                 _MODULE_PYPROJECT.format(
@@ -822,13 +813,19 @@ class CreateCommand(Command):
             )
             (pkg_dir / "Core.py").write_text(
                 _ADAPTER_CORE.format(
-                    name=name, converter_name=converter_name, entry_key=entry_key
+                    name=name,
+                    converter_name=converter_name,
+                    entry_key=entry_key,
+                    text=_scaffold_text(name),
                 ),
                 encoding="utf-8",
             )
             (pkg_dir / "Converter.py").write_text(
                 _ADAPTER_CONVERTER.format(
-                    name=name, converter_name=converter_name, entry_key=entry_key
+                    name=name,
+                    converter_name=converter_name,
+                    entry_key=entry_key,
+                    text=_scaffold_text(name),
                 ),
                 encoding="utf-8",
             )

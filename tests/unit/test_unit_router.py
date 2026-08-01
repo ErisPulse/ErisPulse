@@ -761,6 +761,33 @@ class TestRateLimit:
 
         assert len(router_manager._route_middlewares) > 0
 
+    def test_cleanup_respects_per_route_window(self, router_manager):
+        """回归测试：限流清理应按各路由实际窗口清理，而非固定默认窗口
+
+        见 BUG-027：此前清理任务用固定 60s 窗口，导致 100/hour 限流规则
+        的时间戳被提前清除，限流实际退化为 ~100/minute。
+        """
+        import time as _time
+
+        now = _time.monotonic()
+        # hour 级限流路由（窗口 3600s）：90 秒前的请求仍在窗口内
+        hour_key = "route:/api/h:1.2.3.4"
+        router_manager._rate_limit_store[hour_key] = [now - 90]
+        router_manager._rate_limit_windows[hour_key] = 3600
+        # minute 级限流路由（窗口 60s）：90 秒前的请求已超出窗口
+        min_key = "route:/api/m:1.2.3.4"
+        router_manager._rate_limit_store[min_key] = [now - 90]
+        router_manager._rate_limit_windows[min_key] = 60
+
+        removed = router_manager._cleanup_expired_rate_limits()
+
+        # hour 路由时间戳在 3600s 窗口内，必须保留
+        assert hour_key in router_manager._rate_limit_store
+        # minute 路由时间戳已超出 60s 窗口，应被清除
+        assert min_key not in router_manager._rate_limit_store
+        assert min_key not in router_manager._rate_limit_windows
+        assert removed == 1
+
 
 # ==================== CORS / 安全头测试 ====================
 

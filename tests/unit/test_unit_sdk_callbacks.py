@@ -223,3 +223,32 @@ class TestRunOnReady:
                 )
 
         assert order == ["before", "after", "ready"]
+
+
+class TestShutdown:
+    """测试 sdk.shutdown() 优雅关闭机制"""
+
+    def test_shutdown_before_run_is_noop(self):
+        """run() 之前调用 shutdown() 不应报错（关闭事件尚未创建）"""
+        old = sdk._shutdown_event
+        try:
+            sdk._shutdown_event = None
+            sdk.shutdown()  # 无事件 → 静默无操作
+        finally:
+            sdk._shutdown_event = old
+
+    def test_shutdown_sets_event(self):
+        """shutdown() 设置关闭事件，使 run() 的挂起返回"""
+        import asyncio as _asyncio
+
+        old = sdk._shutdown_event
+        try:
+            sdk._shutdown_event = _asyncio.Event()
+            assert not sdk._shutdown_event.is_set()
+            sdk.shutdown()
+            assert sdk._shutdown_event.is_set()
+            # 重复调用安全
+            sdk.shutdown()
+            assert sdk._shutdown_event.is_set()
+        finally:
+            sdk._shutdown_event = old

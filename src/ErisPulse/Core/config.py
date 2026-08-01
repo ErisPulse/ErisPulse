@@ -86,10 +86,16 @@ class ConfigManager:
                         self._dirty_keys.clear()
                         with self._lock:
                             old_cache = self._cache.copy() if self._cache else {}
-                        self._load_config()
-                        self._emit_config_updated(old_cache)
-                except Exception:
-                    pass
+                        # 仅在成功加载时广播变更，半成品/语法错误的 TOML
+                        # 不再以空配置形式触发 config.updated
+                        if self._load_config():
+                            self._emit_config_updated(old_cache)
+                except Exception as e:
+                    # 监听异常不再静默吞掉，便于排查 watcher 故障
+                    self._log_config_error(
+                        i18n.t("core.config.watcher_error", error=e),
+                        level="warning",
+                    )
 
         watcher = threading.Thread(target=_watch_loop, daemon=True, name="config-watcher")
         watcher.start()
@@ -172,15 +178,17 @@ class ConfigManager:
             except (ImportError, AttributeError):
                 pass
 
-    def _load_config(self) -> None:
+    def _load_config(self) -> bool:
         """
         从文件加载配置到缓存
 
         对加载失败按三种状态分别给出可操作的诊断信息：
 
         - 文件缺失：正常首次启动，静默使用空配置
-        - TOML 语法错误：输出出错行号/列号与原因，并提示已回退默认配置
-        - 权限/其他错误：输出明确原因，并提示已回退默认配置
+        - TOML 语法错误：输出出错行号/列号与原因，保留上次有效缓存（不擦除）
+        - 权限/其他错误：输出明确原因，保留上次有效缓存（不擦除）
+
+        :return: bool 加载成功（含文件缺失）返回 True；解析/权限等错误返回 False
 
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
@@ -190,15 +198,14 @@ class ConfigManager:
             if not path.exists():
                 self._cache = {}
                 self._cache_timestamp = time.time()
-                return
+                return True
 
             try:
                 with path.open(encoding="utf-8") as f:
                     config = toml.load(f)
             except toml.TomlDecodeError as e:
                 # 态1：TOML 语法错误——给出行号/列号与原因，便于用户精确定位
-                self._cache = {}
-                self._cache_timestamp = time.time()
+                # 保留上次有效缓存，避免半成品 TOML 干扰运行中的进程
                 self._log_config_error(
                     i18n.t(
                         "core.config.toml_malformed",
@@ -212,10 +219,9 @@ class ConfigManager:
                     i18n.t("core.config.using_defaults_warning"),
                     level="warning",
                 )
+                return False
             except PermissionError:
                 # 态2：权限问题——明确告知，避免误以为是配置内容问题
-                self._cache = {}
-                self._cache_timestamp = time.time()
                 self._log_config_error(
                     i18n.t("core.config.permission_denied", path=self.CONFIG_FILE),
                 )
@@ -223,10 +229,9 @@ class ConfigManager:
                     i18n.t("core.config.using_defaults_warning"),
                     level="warning",
                 )
+                return False
             except Exception as e:
                 # 态3：其他未知错误——保留原有通用提示
-                self._cache = {}
-                self._cache_timestamp = time.time()
                 self._log_config_error(
                     i18n.t(
                         "core.config.load_failed", path=self.CONFIG_FILE, error=e
@@ -236,6 +241,7 @@ class ConfigManager:
                     i18n.t("core.config.using_defaults_warning"),
                     level="warning",
                 )
+                return False
             else:
                 self._cache = config
                 self._cache_timestamp = time.time()
@@ -244,6 +250,7 @@ class ConfigManager:
                         i18n.t("core.config.loaded_empty", path=self.CONFIG_FILE),
                         level="debug",
                     )
+                return True
 
     @staticmethod
     def _log_config_error(message: str, level: str = "error") -> None:
@@ -487,8 +494,8 @@ class ConfigManager:
             if self._check_file_change():
                 # 文件被外部修改，重载配置
                 old_cache = self._cache.copy() if self._cache else {}
-                self._load_config()
-                self._emit_config_updated(old_cache)
+                if self._load_config():
+                    self._emit_config_updated(old_cache)
             else:
                 self._load_config()
 

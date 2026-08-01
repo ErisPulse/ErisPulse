@@ -63,6 +63,84 @@
 
 ---
 
+## [2.7.0-dev.5] - 2026/07/31
+> 开发版本
+
+**版本摘要**
+功能增强 + 配置热更新系统化 + 技术债清理的综合性开发版本，覆盖六大部分：
+1. **Bug 修复**：路由限流清理固定窗口 bug（`100/hour` 退化为约 `100/minute`）、`epsdk create adapter` 模板坏 import、配置监听广播半成品 TOML、硬重启丢未刷盘配置、命令配置不热更新、`list --outdated` 逐包拉取索引
+2. **配置热更新系统化**：logger（级别/文件/内存/格式）、适配器并发上限、命令参数、主动 GC 间隔支持运行时热更新；CORS/安全头、存储 DB 路径变更时明确告警需重启
+3. **新功能**：`sdk.shutdown()` + SIGTERM/SIGHUP、`lifecycle.once()`/`has_handlers()`、配置环境变量覆盖（Docker/12-factor）、路由 `X-Request-ID`、`secret` 字段脱敏、`validate_config` 强化（类型/枚举/范围）、`BaseConverter` 基类、CLI `doctor` 命令、CLI `--no-color`/`--yes`
+4. **性能优化**：日志环形缓冲 `deque`、日志 `_get_caller` 快速路径、发送热路径短路（无监听者跳过 Task 创建）、模块拓扑排序反向邻接表
+5. **常量提取 + CLI/主库隔离**：`HARD_RESTART_EXIT_CODE`/入口点组名等跨进程契约统一；CLI 独立 `constants.py` 镜像，不再依赖 `Core.constants`
+6. **技术债清理**：Core/CLI 硬编码中文清扫、CLI i18n Windows 检测补强、create 模板现代化（嵌套 ConfigClass + i18n description）、版本比较增强（纯标准库支持 post/local/epoch）、`update_self` Windows 分支去重
+
+### 修复
+
+- `Core/router.py` 限流清理窗口 BUG（BUG-027）：新增 `_rate_limit_windows` 按路由记录实际窗口，`_cleanup_expired_rate_limits` 改为按各 key 自身窗口清理，长窗口（hour 级）限流规则不再失效
+- `Core/config.py` 配置监听广播半成品 TOML（BUG-029）：`_load_config` 改为返回 `bool` 且错误时保留上次有效缓存；watcher 与缓存超时路径仅在加载成功时发射 `config.updated`；watcher 异常改为 warning 级日志（新增 `core.config.watcher_error`，五语言同步）
+
+### 新增
+
+- `Core/lifecycle.py` 生命周期管理器新增两个公开 API：
+  - `once(event, *, priority)`：注册一次性处理器，触发一次后自动注销（用于"首次就绪"等一次性钩子）
+  - `has_handlers(event)`：查询事件是否有监听者（含通配符 `*` 与父级事件），用于热路径短路
+- **配置热更新系统化**（框架级特性）：所有消费配置并缓存派生状态的组件统一接入 `config.set`/`config.updated` 事件：
+  - `Core/logger.py`：日志级别 / 输出文件 / 内存上限 / 格式变更后自动重新应用（带变更检测，未变化不重复应用）
+  - `Core/adapter.py`：`framework.handler_max_concurrency` 变更后失效缓存的信号量，下次按新值重建
+  - `Core/Event/command.py`：补订阅 `config.set`，程序化 `setConfig` 修改命令前缀等也即时生效
+  - `sdk.py`：主动 GC 循环每轮重新读取 `proactive_gc_interval`，支持运行时调整/禁用
+  - `Core/router.py`：CORS / 安全头变更时告警"需重启生效"（中间件无法运行时安全热切换）
+  - `Core/storage.py`：`use_global_db` 变更时告警"需重启生效"（SQLite 句柄无法运行时安全切换）
+  - 新增 i18n 键 `core.config.restart_required`（五语言同步），供上述"需重启"告警复用
+- `sdk.py` 新增 `sdk.shutdown()` 优雅关闭 API 与 SIGTERM/SIGHUP 信号处理：设置关闭事件使 `run()` 挂起返回、触发 `uninit()`；Windows 不支持 `add_signal_handler` 时安全回退（仍可用 `sdk.shutdown()`/Ctrl+C）
+- `sdk.py` 硬重启健壮性：`_do_hard_restart` 在 `os._exit` 前显式 `force_save()` 兜底刷盘，`uninit` 中途异常时也不丢未持久化的 `setConfig` 写入
+- **配置环境变量覆盖**（Docker / 12-factor）：`runtime/frame_config.py` 在返回 ErisPulse 配置前应用 `ERISPULSE_<SECTION>_<KEY>` 环境变量覆盖（按原值类型自动 coerce：bool/int/float/list/str），不持久化到缓存，每调用每生效
+- **路由请求关联 ID**：`Core/router.py` 中间件为每个 HTTP 请求生成 `X-Request-ID`（优先沿用客户端传入），注入 `server.request`/`server.response` 事件并回写响应头，便于日志/链路追踪
+- **secret 字段脱敏**：`Core/Bases/config_schema.py` 新增 `redact_secret()` / `SECRET_REDACTED`；`dataclass_to_toml_with_comments` 生成配置模板时自动脱敏 `secret: True` 字段的真实值
+- **validate_config 强化**：除既有的 required 非空检查外，新增类型校验（int/float/str/bool）、`options` 枚举约束、`min`/`max` 数值范围约束
+- **CLI 全局选项**：新增 `--no-color`（禁用 Rich 着色，适合 CI/日志采集）与 `--yes`/`-y`（自动确认交互提示）
+- **`BaseConverter` 事件转换器基类**（`Core/Bases/converter.py`）：提供 OneBot12 `base_event` 公共字段构建（id/time/platform/self/raw）与常用消息段辅助（text/at/image），适配器只实现 `convert()` 类型映射
+- **CLI `doctor` 命令**：诊断 Python 版本、安装后端（uv/pip）、目标解释器、配置文件、PyPI 连通性与系统代理，输出健康报告（别名 `diag`）
+
+### 重构
+
+- 提取跨模块契约/重复字面量为常量（`Core/constants.py`），消除"常量已定义但调用点用裸字面量"的不一致：
+  - 新增 `HARD_RESTART_EXIT_CODE`（42）：`sdk.py` 与 `CLI/commands/run.py` 此前各写一个 `42`，硬重启靠裸数字耦合，现统一引用同一常量
+  - 新增 `LOG_MESSAGE_TRUNCATE_CHARS`（50）：收/发日志的消息截断长度此前在 `Core/adapter.py` 与 `Core/Bases/adapter.py` 各写一个 `50`
+  - 新增 `UNKNOWN_VERSION`：版本回退串此前在 3 处各自硬编码
+  - 复用既有 `RETCODE_NOT_IMPLEMENTED`/`STATUS_FAILED`：`Bases/adapter.py`（2 处）与 `Bases/send_rules.py` 此前用裸 `10002`/`"failed"`
+  - 复用既有 `DEFAULT_COMMAND_PREFIX`/`DEFAULT_COMMAND_CASE_SENSITIVE`：`Core/Event/command.py` 此前用裸 `"/"`/`True`
+  - 顺手清除 `CONFIRM_YES_WORDS` 中重复的 `"同意"`（B033）
+- **CLI / 主库常量隔离**：CLI 不再从 `Core.constants` 导入（避免触发主库 `__init__` 的单例初始化）。新增 `CLI/constants.py` 镜像跨进程契约（`HARD_RESTART_EXIT_CODE`、模块/适配器入口点组名）与 CLI 专有常量（`PYPI_PACKAGE_JSON_URL_TEMPLATE`），由 `TestCrossProcessContracts` 钉死两侧一致。回退 `run.py`/`types.py`/`package_manager.py` 中误加的 `Core.constants` 导入。
+
+### 国际化（i18n）与模板
+
+- **硬编码中文清扫**：`sdk.py` 回调错误日志（before_init/after_init/on_ready）、`Core/Event/command.py` 命令系统提示（权限/用法/帮助/未找到命令等 15 键）改为 i18n 键（Core 五语言同步）；`CLI/utils/display.py` 交互选择器提示改为 i18n 键（CLI 五语言同步）
+- **CLI i18n Windows 检测补强**：`CLI/i18n/__init__.py` 新增 `_resolve_windows_locale_name()` 全称映射 + `GetLocaleInfoW` 完整回退链（与 Core 侧对齐），修复中文系统下 CLI 语言检测弱于主库的问题（不跨包导入 Core）
+- **create 模板现代化 + 语言化**：
+  - `_MODULE_CORE` / `_ADAPTER_CORE` 由模块级 `{name}Config`/`{name}I18n` 改为嵌套 `ConfigClass`/`I18nClass`（对齐示例与 AGENTS.md 第 21 条）；`enabled` 字段 description 改为 i18n 字典并声明 `I18nKey`（第 14 条）；README 安装命令更正为 `epsdk install ErisPulse-{name}`
+  - **模板文案多语言化**：新增 `CLI/utils/scaffold_text.py` 的 `ScaffoldText` 类，集中维护脚手架模板的注释/docstring/日志文案（zh-CN/zh-TW/en/ja/ru，回退 en）；生成的代码注释与日志**跟随脚手架用户语言**，不再硬编码中文
+  - **i18n 收敛到用户可见**：模板 i18n 只保留配置字段 description、命令 help、命令 reply；日志改为按语言的纯文本，不再为每条日志声明 I18nKey
+
+### 重构
+
+- `CLI/utils/package_manager.py`：
+  - **版本比较增强**（纯标准库，不依赖 `packaging`）：`_VERSION_RE`/`_version_key` 支持 post（`1.0.post1`）、本地版本（`1.0+local`）、epoch（`1!1.0`）；新增 `_parse_version()` 统一解析入口，`_is_pre_release` 与 `_version_key` 口径一致（`1.0c2` 现被一致判为预发布）
+  - **`update_self` Windows 分支去重**：抽取 `_build_install_command(package_spec, upgrade)` 共享 uv 检测 + `--python` 注入，`_run_pip_command_with_output` 与 Windows `update_self` 分支复用，行为不变
+
+### 优化
+
+- `Core/logger.py` 日志热路径：
+  - 内存环形缓冲由 `list.pop(0)`（O(n)）改为 `deque(maxlen=)`（O(1) 自动淘汰），高频日志下消除每条的列表位移开销
+  - `_log` 新增快速路径：消息低于全局阈值且无模块覆盖时直接跳过 `_get_caller` 的帧遍历（`inspect.getmodule` 调用），trace/debug 高频路径收益显著
+- `Core/Bases/adapter.py` 发送热路径：借助 `lifecycle.has_handlers` 预判，无 `message.sending`/`message.sent` 监听者时跳过对应后台 Task 的创建与 emit 调度（每条发送消息省去 2 个 Task 分配）
+- `loaders/module.py` 模块拓扑排序：构建反向邻接表 `reverse_graph`，将"查找依赖当前模块的节点"从 O(V) 全表扫描降为 O(E)，注册大量模块时初始化更快
+- `CLI/commands/list.py`：`list --outdated` 改为在 `execute()` 中一次性拉取远程索引并透传，不再逐包重复 `asyncio.run` / 网络请求
+- 新增回归测试：`test_unit_router.py::TestRateLimit::test_cleanup_respects_per_route_window`、`test_unit_cli.py::TestCreateTemplatesCompile`（create 模板渲染 + `compile()` + 导入符号解析）、`test_unit_cli.py::TestCrossProcessContracts`（硬重启退出码 / 入口点组名契约）、`test_unit_config.py`（malformed 保留缓存 / secret 脱敏 / validate_config 强化）、`test_unit_frame_config.py`（环境变量覆盖 9 用例）、`test_unit_lifecycle.py` 新增 `once`/`has_handlers`、`test_unit_logger.py` 配置热更新、`test_unit_sdk_callbacks.py::TestShutdown`、`test_unit_adapter.py::TestBaseConverter`
+
+---
+
 ## [2.7.0-dev.4] - 2026/07/30
 > 开发版本
 

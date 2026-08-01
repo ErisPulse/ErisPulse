@@ -11,6 +11,7 @@ ErisPulse 通用配置 Schema 模块（向后兼容 shim）
 """
 
 __all__ = [
+    "SECRET_REDACTED",  # noqa: F822
     "AdapterConfig",  # noqa: F822  ← BaseConfig 的别名
     "BaseConfig",  # noqa: F822
     "BotAccountConfig",  # noqa: F822
@@ -19,6 +20,7 @@ __all__ = [
     "dataclass_to_toml_with_comments",  # noqa: F822
     "dict_to_dataclass",  # noqa: F822
     "get_config_schema",  # noqa: F822
+    "redact_secret",  # noqa: F822
     "register_config_i18n",  # noqa: F822
     "resolve_config_schema",  # noqa: F822
     "validate_config",  # noqa: F822

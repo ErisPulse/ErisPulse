@@ -62,6 +62,10 @@ TRANSLATIONS = {
     "core.sdk.run.init_failed": "Ошибка инициализации ErisPulse, проверьте журналы",
     "core.sdk.run.shutdown_signal": "Получен сигнал завершения, выполняется очистка...",
     "core.sdk.run.unexpected_error": "Перехвачен неожиданный сигнал завершения: {error}, процесс продолжает работу",
+    # ==================== Обратные вызовы SDK ====================
+    "core.sdk.callback.before_init_failed": "Ошибка выполнения обратного вызова before_init: {error}",
+    "core.sdk.callback.after_init_failed": "Ошибка выполнения обратного вызова after_init: {error}",
+    "core.sdk.callback.on_ready_failed": "Ошибка выполнения обратного вызова on_ready: {error}",
     # ==================== Перезагрузка SDK ====================
     "core.sdk.reload.starting": "[Reload] Начинается перезагрузка SDK...",
     "core.sdk.reload.collected_top_modules": "[Reload] Собраны модули верхнего уровня внешних пакетов: {modules}",
@@ -301,6 +305,8 @@ TRANSLATIONS = {
     "core.config.permission_denied": "Нет прав на чтение файла конфигурации {path} (возможно, недостаточно прав доступа)",
     "core.config.using_defaults_warning": "Выполнен откат к конфигурации по умолчанию — ваши пользовательские настройки НЕ применены. Исправьте проблему и перезапустите.",
     "core.config.loaded_empty": "Файл конфигурации {path} загружен, но пуст",
+    "core.config.watcher_error": "Ошибка задачи наблюдения за конфигурацией: {error}",
+    "core.config.restart_required": "Параметр конфигурации '{key}' изменён; для применения требуется перезапуск процесса",
     # ==================== Диагностика исключений ====================
     "core.diag.frame": "  → {file}:{lineno} in {func}",
     "core.diag.source": "      {source}",
@@ -400,6 +406,18 @@ TRANSLATIONS = {
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
+    "core.event.command.permission_denied": "Недостаточно прав для выполнения этой команды",
+    "core.event.command.send_permission_denied_failed": "Не удалось отправить сообщение об отказе в доступе: {error}",
+    "core.event.command.execution_failed": "Ошибка выполнения команды: {error}",
+    "core.event.command.send_error_failed": "Не удалось отправить сообщение об ошибке команды: {error}",
+    "core.event.command.send_prompt_failed": "Не удалось отправить сообщение с подсказкой: {error}",
+    "core.event.command.no_help": "Нет справочной информации",
+    "core.event.command.no_help_item": "Нет описания",
+    "core.event.command.not_found": "Команда не найдена: {command_name}",
+    "core.event.command.help_command": "Команда: {command_name}\nИспользование: {usage}\nОписание: {help_text}",
+    "core.event.command.no_commands": "Нет доступных команд",
+    "core.event.command.available_commands": "Доступные команды:",
+    "core.event.command.list_item": "  {prefix}{cmd_name} - {help_text}",
     # ==================== Lifecycle ====================
     "core.lifecycle.emit_enter": "[Lifecycle] emit {event}, matched {count} handlers",
     "core.lifecycle.emit_wildcard": "[Lifecycle] wildcard handlers for {event}: {count}",
