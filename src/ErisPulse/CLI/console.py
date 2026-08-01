@@ -73,7 +73,7 @@ class CommandHighlighter(RegexHighlighter):
 
 
 # 主题配置
-theme = Theme(
+theme: Theme = Theme(
     {
         "info": "#A0B0C0",
         "success": "#A5D6A7",
@@ -94,7 +94,7 @@ theme = Theme(
 )
 
 # 全局控制台实例
-console = Console(theme=theme, color_system="auto", highlighter=CommandHighlighter())
+console: Console = Console(theme=theme, color_system="auto", highlighter=CommandHighlighter())
 
 
 def print_suggestion(title: str, suggestions: list[str], hint: str | None = None) -> None:

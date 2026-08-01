@@ -5,6 +5,7 @@ ErisPulse 框架配置管理模块
 """
 
 import copy
+import os
 from typing import Any
 
 from ..Core.constants import (
@@ -21,6 +22,7 @@ from ..Core.constants import (
     DEFAULT_MESSAGE_IGNORE_SELF,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
     DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
+    DEFAULT_SERVER_AUTO_START,
     DEFAULT_SERVER_HOST,
     DEFAULT_SERVER_PORT,
     DEFAULT_STRICT_MODE,
@@ -33,6 +35,7 @@ DEFAULT_ERISPULSE_CONFIG = {
     "server": {
         "host": DEFAULT_SERVER_HOST,
         "port": DEFAULT_SERVER_PORT,
+        "auto_start": DEFAULT_SERVER_AUTO_START,
         "ssl_certfile": None,
         "ssl_keyfile": None,
     },
@@ -163,7 +166,54 @@ def get_erispulse_config() -> dict[str, Any]:
     if original_snapshot != complete_config:
         config_service.setConfig(CONFIG_ROOT_KEY, complete_config)
 
-    return complete_config
+    # 环境变量覆盖（Docker / 12-factor）：ERISPULSE_SERVER_PORT 等
+    # 仅对返回副本应用，不持久化到缓存；每调用每生效
+    result = copy.deepcopy(complete_config)
+    _apply_env_overrides(result, CONFIG_ROOT_KEY)
+    return result
+
+
+def _apply_env_overrides(config: dict[str, Any], root: str = CONFIG_ROOT_KEY) -> None:
+    """
+    {!--< internal-use >!--}
+    递归对配置字典应用环境变量覆盖
+
+    命名规则：``ErisPulse.server.port`` → ``ERISPULSE_SERVER_PORT``
+    （将点路径大写、``.`` 替换为 ``_``）。仅覆盖叶子值，按原值类型做 coerce。
+    """
+    _apply_env_to_subtree(config, root)
+
+
+def _apply_env_to_subtree(d: dict[str, Any], path: str) -> None:
+    for key, val in list(d.items()):
+        full_path = f"{path}.{key}"
+        if isinstance(val, dict):
+            _apply_env_to_subtree(val, full_path)
+        else:
+            env_name = full_path.upper().replace(".", "_")
+            env_val = os.environ.get(env_name)
+            if env_val is not None:
+                d[key] = _coerce_env_value(val, env_val)
+
+
+def _coerce_env_value(original: Any, env_str: str) -> Any:
+    """按原值类型把环境变量字符串转换为对应 Python 类型"""
+    s = env_str.strip()
+    if isinstance(original, bool):
+        return s.lower() in ("1", "true", "yes", "on")
+    if isinstance(original, int) and not isinstance(original, bool):
+        try:
+            return int(s)
+        except ValueError:
+            return env_str
+    if isinstance(original, float):
+        try:
+            return float(s)
+        except ValueError:
+            return env_str
+    if isinstance(original, list):
+        return [x.strip() for x in s.split(",")] if s else []
+    return env_str
 
 
 def get_config(section: str | None = None) -> dict[str, Any] | Any:

@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "total_categories": 10,
+  "total_categories": 11,
   "categories": {
     "Quick Start": {
       "description": "ErisPulse Quick Start Guide",
@@ -86,7 +86,7 @@
           "level": 1
         },
         {
-          "title": "Configuration File Reference",
+          "title": "Configuration File Documentation",
           "path": "user-guide/configuration.md",
           "level": 1
         },
@@ -418,6 +418,23 @@
         {
           "title": "ErisPulse Comment Style Guide",
           "path": "styleguide/docstring.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Contributing": {
+      "description": "Contribute to ErisPulse",
+      "count": 2,
+      "documents": [
+        {
+          "title": "Contributing to ErisPulse",
+          "path": "contributing/README.md",
+          "level": 1
+        },
+        {
+          "title": "First Contribution Walkthrough",
+          "path": "contributing/first-contribution.md",
           "level": 1
         }
       ],

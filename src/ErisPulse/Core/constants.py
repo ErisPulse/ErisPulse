@@ -45,6 +45,10 @@ DEFAULT_SERVER_HOST: Final[str] = "0.0.0.0"
 # 修改影响: 客户端（如 SandboxAdapter WebUI）需要对应修改连接端口。
 DEFAULT_SERVER_PORT: Final[int] = 8000
 
+# 是否在初始化时自动启动 HTTP 路由服务器。
+# 修改影响: 设为 False 时跳过 router.start()，适用于纯 WebSocket/轮询适配器。
+DEFAULT_SERVER_AUTO_START: Final[bool] = True
+
 # 路由服务器关闭时的超时时间（秒）。
 # 修改影响: Ctrl+C 后等待 uvicorn 关闭的耐心时间。超时后强制终止。
 SERVER_SHUTDOWN_TIMEOUT_SECS: Final[float] = 5.0
@@ -450,7 +454,7 @@ CONFIRM_YES_WORDS: Final[frozenset] = frozenset(
         "yes", "y", "ok", "okay", "true", "sure", "yeah", "yep",
         "confirm", "confirmed", "agree", "correct",
         # 日文
-        "はい", "いいよ", "了解", "確定", "同意", "可能", "可能です",
+        "はい", "いいよ", "了解", "確定", "可能", "可能です",
         "もちろんです", "そう", "そうです",
         # 俄文
         "да", "конечно", "хорошо", "ок", "согласен", "верно",
@@ -634,6 +638,63 @@ DEFAULT_PROACTIVE_GC_INTERVAL_SECS: Final[int] = 300
 # 修改影响: 设大确保处理器完整结束，设小加速关闭流程。
 DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS: Final[float] = 5.0
 
+# ==============================================================================
+# 进程 / 版本 / 日志展示常量
+#
+# 跨模块共享的进程级契约与展示阈值。
+# ==============================================================================
+
+# 硬重启退出码（跨进程契约）。
+# 子进程 hard_restart 后以此码退出，父进程（CLI run 命令）据此判断"需重启"而非"崩溃"。
+# 修改影响: 必须同步 sdk.py 与 CLI/commands/run.py，否则硬重启会被误判为崩溃。
+HARD_RESTART_EXIT_CODE: Final[int] = 42
+
+# 版本元数据缺失时的回退字符串。
+# 使用位置: sdk.py / ErisPulse/__init__.py / Core/router.py 的版本探测兜底。
+UNKNOWN_VERSION: Final[str] = "UnknownVersion"
+
+# 日志中消息内容截断阈值（字符数）。
+# 使用位置: Core/adapter.py（接收日志）与 Core/Bases/adapter.py（发送日志）。
+# 修改影响: 改一处不改另一处会使收发日志截断长度不一致。
+LOG_MESSAGE_TRUNCATE_CHARS: Final[int] = 50
+
+# ==============================================================================
+# 入口点 / 网络 / 协议常量
+#
+# 跨模块共享的入口点组名与网络协议字面量。
+# ==============================================================================
+
+# 模块入口点组名（跨模块契约）。
+# 使用位置: loaders/module.py / finders/module.py / CLI/commands/create.py / CLI/commands/types.py
+MODULE_ENTRY_POINT_GROUP: Final[str] = "erispulse.module"
+
+# 适配器入口点组名（跨模块契约）。
+# 使用位置: loaders/adapter.py / finders/adapter.py / CLI/commands/create.py / CLI/commands/types.py
+ADAPTER_ENTRY_POINT_GROUP: Final[str] = "erispulse.adapter"
+
+# WebSocket 正常关闭码（RFC 6455）。
+WS_CLOSE_NORMAL: Final[int] = 1000
+
+# PyPI JSON API URL 模板。
+# 使用位置: CLI/utils/package_manager.py（单包查询与 SDK 自更新检查）。
+PYPI_PACKAGE_JSON_URL_TEMPLATE: Final[str] = "https://pypi.org/pypi/{package}/json"
+
+# 常用 HTTP 状态码（router 错误页与限流响应统一引用，避免字面量散落）。
+HTTP_STATUS_FORBIDDEN: Final[int] = 403
+HTTP_STATUS_NOT_FOUND: Final[int] = 404
+HTTP_STATUS_TOO_MANY_REQUESTS: Final[int] = 429
+HTTP_STATUS_INTERNAL_ERROR: Final[int] = 500
+HTTP_STATUS_BAD_GATEWAY: Final[int] = 502
+HTTP_STATUS_SERVICE_UNAVAILABLE: Final[int] = 503
+
+# SSE 响应媒体类型与必需头。
+DEFAULT_SSE_MEDIA_TYPE: Final[str] = "text/event-stream"
+DEFAULT_SSE_HEADERS: Final[dict[str, str]] = {
+    "Cache-Control": "no-cache",
+    "Connection": "keep-alive",
+    "X-Accel-Buffering": "no",
+}
+
 __all__ = [
     "ADAPTER_EVENT_MIXIN_PLATFORM",
     "ADAPTER_RETRY_BACKOFF_INTERVALS",
@@ -689,6 +750,7 @@ __all__ = [
     "DEFAULT_SECURITY_HEADERS",
     "DEFAULT_SEND_METHOD",
     "DEFAULT_SEND_TARGET_TYPE",
+    "DEFAULT_SERVER_AUTO_START",
     "DEFAULT_SERVER_HOST",
     "DEFAULT_SERVER_PORT",
     "DEFAULT_STRICT_MODE",
@@ -716,9 +778,11 @@ __all__ = [
     "FALLBACK_IPV4",
     "FALLBACK_IPV6_HOST",
     "HANDLER_SLOW_THRESHOLD_SECS",
+    "HARD_RESTART_EXIT_CODE",
     "LIFECYCLE_TIMER_CORE_INIT",
     "LIFECYCLE_TIMER_CORE_UNINIT",
     "LOGGER_NAME",
+    "LOG_MESSAGE_TRUNCATE_CHARS",
     "LOG_RICH_THEME",
     "LOG_TIME_FORMAT",
     "RETCODE_NOT_IMPLEMENTED",
@@ -732,6 +796,7 @@ __all__ = [
     "TEXT_METHOD_INDICATORS",
     "UNINIT_SETTLE_DELAY_SECS",
     "UNKNOWN_PLATFORM",
+    "UNKNOWN_VERSION",
     "WILDCARD_IPV4",
     "WILDCARD_IPV6",
     "WS_CLOSE_INTERNAL_ERROR",

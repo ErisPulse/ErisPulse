@@ -12,6 +12,7 @@ ErisPulse 适配器发现器
 
 from typing import Any
 
+from ..Core.constants import ADAPTER_ENTRY_POINT_GROUP
 from .bases.finder import BaseFinder
 
 
@@ -40,9 +41,9 @@ class AdapterFinder(BaseFinder):
         """
         获取 entry-point 组名
 
-        :return: "erispulse.adapter"
+        :return: 入口点组名字符串
         """
-        return "erispulse.adapter"
+        return ADAPTER_ENTRY_POINT_GROUP
 
     def get_all_names(self) -> list[str]:
         """

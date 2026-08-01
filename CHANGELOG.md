@@ -63,6 +63,126 @@
 
 ---
 
+## [2.7.0-dev.5] - 2026/07/31
+> 开发版本
+
+**版本摘要**
+功能增强 + 配置热更新系统化 + 技术债清理的综合性开发版本，覆盖六大部分：
+1. **Bug 修复**：路由限流清理固定窗口 bug（`100/hour` 退化为约 `100/minute`）、`epsdk create adapter` 模板坏 import、配置监听广播半成品 TOML、硬重启丢未刷盘配置、命令配置不热更新、`list --outdated` 逐包拉取索引
+2. **配置热更新系统化**：logger（级别/文件/内存/格式）、适配器并发上限、命令参数、主动 GC 间隔支持运行时热更新；CORS/安全头、存储 DB 路径变更时明确告警需重启
+3. **新功能**：`sdk.shutdown()` + SIGTERM/SIGHUP、`lifecycle.once()`/`has_handlers()`、配置环境变量覆盖（Docker/12-factor）、路由 `X-Request-ID`、`secret` 字段脱敏、`validate_config` 强化（类型/枚举/范围）、`BaseConverter` 基类、CLI `doctor` 命令、CLI `--no-color`/`--yes`
+4. **性能优化**：日志环形缓冲 `deque`、日志 `_get_caller` 快速路径、发送热路径短路（无监听者跳过 Task 创建）、模块拓扑排序反向邻接表
+5. **常量提取 + CLI/主库隔离**：`HARD_RESTART_EXIT_CODE`/入口点组名等跨进程契约统一；CLI 独立 `constants.py` 镜像，不再依赖 `Core.constants`
+6. **技术债清理**：Core/CLI 硬编码中文清扫、CLI i18n Windows 检测补强、create 模板现代化（嵌套 ConfigClass + i18n description）、版本比较增强（纯标准库支持 post/local/epoch）、`update_self` Windows 分支去重
+
+### 修复
+
+- @wsu2059q
+  - `Core/router.py` 限流清理窗口 BUG（BUG-027）：新增 `_rate_limit_windows` 按路由记录实际窗口，`_cleanup_expired_rate_limits` 改为按各 key 自身窗口清理，长窗口（hour 级）限流规则不再失效
+  - `Core/config.py` 配置监听广播半成品 TOML（BUG-029）：`_load_config` 改为返回 `bool` 且错误时保留上次有效缓存；watcher 与缓存超时路径仅在加载成功时发射 `config.updated`；watcher 异常改为 warning 级日志（新增 `core.config.watcher_error`，五语言同步）
+
+### 新增
+
+- @wsu2059q
+  - `Core/lifecycle.py` 生命周期管理器新增两个公开 API：
+    - `once(event, *, priority)`：注册一次性处理器，触发一次后自动注销（用于"首次就绪"等一次性钩子）
+    - `has_handlers(event)`：查询事件是否有监听者（含通配符 `*` 与父级事件），用于热路径短路
+  - **配置热更新系统化**（框架级特性）：所有消费配置并缓存派生状态的组件统一接入 `config.set`/`config.updated` 事件：
+    - `Core/logger.py`：日志级别 / 输出文件 / 内存上限 / 格式变更后自动重新应用（带变更检测，未变化不重复应用）
+    - `Core/adapter.py`：`framework.handler_max_concurrency` 变更后失效缓存的信号量，下次按新值重建
+    - `Core/Event/command.py`：补订阅 `config.set`，程序化 `setConfig` 修改命令前缀等也即时生效
+    - `sdk.py`：主动 GC 循环每轮重新读取 `proactive_gc_interval`，支持运行时调整/禁用
+    - `Core/router.py`：CORS / 安全头变更时告警"需重启生效"（中间件无法运行时安全热切换）
+    - `Core/storage.py`：`use_global_db` 变更时告警"需重启生效"（SQLite 句柄无法运行时安全切换）
+    - 新增 i18n 键 `core.config.restart_required`（五语言同步），供上述"需重启"告警复用
+  - `sdk.py` 新增 `sdk.shutdown()` 优雅关闭 API 与 SIGTERM/SIGHUP 信号处理：设置关闭事件使 `run()` 挂起返回、触发 `uninit()`；Windows 不支持 `add_signal_handler` 时安全回退（仍可用 `sdk.shutdown()`/Ctrl+C）
+  - `sdk.py` 硬重启健壮性：`_do_hard_restart` 在 `os._exit` 前显式 `force_save()` 兜底刷盘，`uninit` 中途异常时也不丢未持久化的 `setConfig` 写入
+  - **配置环境变量覆盖**（Docker / 12-factor）：`runtime/frame_config.py` 在返回 ErisPulse 配置前应用 `ERISPULSE_<SECTION>_<KEY>` 环境变量覆盖（按原值类型自动 coerce：bool/int/float/list/str），不持久化到缓存，每调用每生效
+  - **路由请求关联 ID**：`Core/router.py` 中间件为每个 HTTP 请求生成 `X-Request-ID`（优先沿用客户端传入），注入 `server.request`/`server.response` 事件并回写响应头，便于日志/链路追踪
+  - **secret 字段脱敏**：`Core/Bases/config_schema.py` 新增 `redact_secret()` / `SECRET_REDACTED`；`dataclass_to_toml_with_comments` 生成配置模板时自动脱敏 `secret: True` 字段的真实值
+  - **validate_config 强化**：除既有的 required 非空检查外，新增类型校验（int/float/str/bool）、`options` 枚举约束、`min`/`max` 数值范围约束
+  - **CLI 全局选项**：新增 `--no-color`（禁用 Rich 着色，适合 CI/日志采集）与 `--yes`/`-y`（自动确认交互提示）
+  - **`BaseConverter` 事件转换器基类**（`Core/Bases/converter.py`）：提供 OneBot12 `base_event` 公共字段构建（id/time/platform/self/raw）与常用消息段辅助（text/at/image），适配器只实现 `convert()` 类型映射
+  - **CLI `doctor` 命令**：诊断 Python 版本、安装后端（uv/pip）、目标解释器、配置文件、PyPI 连通性与系统代理，输出健康报告（别名 `diag`）
+
+### 重构
+
+- @wsu2059q
+  - 提取跨模块契约/重复字面量为常量（`Core/constants.py`），消除"常量已定义但调用点用裸字面量"的不一致：
+    - 新增 `HARD_RESTART_EXIT_CODE`（42）：`sdk.py` 与 `CLI/commands/run.py` 此前各写一个 `42`，硬重启靠裸数字耦合，现统一引用同一常量
+    - 新增 `LOG_MESSAGE_TRUNCATE_CHARS`（50）：收/发日志的消息截断长度此前在 `Core/adapter.py` 与 `Core/Bases/adapter.py` 各写一个 `50`
+    - 新增 `UNKNOWN_VERSION`：版本回退串此前在 3 处各自硬编码
+    - 复用既有 `RETCODE_NOT_IMPLEMENTED`/`STATUS_FAILED`：`Bases/adapter.py`（2 处）与 `Bases/send_rules.py` 此前用裸 `10002`/`"failed"`
+    - 复用既有 `DEFAULT_COMMAND_PREFIX`/`DEFAULT_COMMAND_CASE_SENSITIVE`：`Core/Event/command.py` 此前用裸 `"/"`/`True`
+    - 顺手清除 `CONFIRM_YES_WORDS` 中重复的 `"同意"`（B033）
+  - **CLI / 主库常量隔离**：CLI 不再从 `Core.constants` 导入（避免触发主库 `__init__` 的单例初始化）。新增 `CLI/constants.py` 镜像跨进程契约（`HARD_RESTART_EXIT_CODE`、模块/适配器入口点组名）与 CLI 专有常量（`PYPI_PACKAGE_JSON_URL_TEMPLATE`），由 `TestCrossProcessContracts` 钉死两侧一致。回退 `run.py`/`types.py`/`package_manager.py` 中误加的 `Core.constants` 导入。
+
+  - **硬编码中文清扫**：`sdk.py` 回调错误日志（before_init/after_init/on_ready）、`Core/Event/command.py` 命令系统提示（权限/用法/帮助/未找到命令等 15 键）改为 i18n 键（Core 五语言同步）；`CLI/utils/display.py` 交互选择器提示改为 i18n 键（CLI 五语言同步）
+  - **CLI i18n Windows 检测补强**：`CLI/i18n/__init__.py` 新增 `_resolve_windows_locale_name()` 全称映射 + `GetLocaleInfoW` 完整回退链（与 Core 侧对齐），修复中文系统下 CLI 语言检测弱于主库的问题（不跨包导入 Core）
+  - **create 模板现代化 + 语言化**：
+    - `_MODULE_CORE` / `_ADAPTER_CORE` 由模块级 `{name}Config`/`{name}I18n` 改为嵌套 `ConfigClass`/`I18nClass`（对齐示例与 AGENTS.md 第 21 条）；`enabled` 字段 description 改为 i18n 字典并声明 `I18nKey`（第 14 条）；README 安装命令更正为 `epsdk install ErisPulse-{name}`
+    - **模板文案多语言化**：新增 `CLI/utils/scaffold_text.py` 的 `ScaffoldText` 类，集中维护脚手架模板的注释/docstring/日志文案（zh-CN/zh-TW/en/ja/ru，回退 en）；生成的代码注释与日志**跟随脚手架用户语言**，不再硬编码中文
+    - **i18n 收敛到用户可见**：模板 i18n 只保留配置字段 description、命令 help、命令 reply；日志改为按语言的纯文本，不再为每条日志声明 I18nKey
+
+  - `CLI/utils/package_manager.py`：
+    - **版本比较增强**（纯标准库，不依赖 `packaging`）：`_VERSION_RE`/`_version_key` 支持 post（`1.0.post1`）、本地版本（`1.0+local`）、epoch（`1!1.0`）；新增 `_parse_version()` 统一解析入口，`_is_pre_release` 与 `_version_key` 口径一致（`1.0c2` 现被一致判为预发布）
+    - **`update_self` Windows 分支去重**：抽取 `_build_install_command(package_spec, upgrade)` 共享 uv 检测 + `--python` 注入，`_run_pip_command_with_output` 与 Windows `update_self` 分支复用，行为不变
+
+### 优化
+
+- @wsu2059q
+  - `Core/logger.py` 日志热路径：
+    - 内存环形缓冲由 `list.pop(0)`（O(n)）改为 `deque(maxlen=)`（O(1) 自动淘汰），高频日志下消除每条的列表位移开销
+    - `_log` 新增快速路径：消息低于全局阈值且无模块覆盖时直接跳过 `_get_caller` 的帧遍历（`inspect.getmodule` 调用），trace/debug 高频路径收益显著
+  - `Core/Bases/adapter.py` 发送热路径：借助 `lifecycle.has_handlers` 预判，无 `message.sending`/`message.sent` 监听者时跳过对应后台 Task 的创建与 emit 调度（每条发送消息省去 2 个 Task 分配）
+  - `loaders/module.py` 模块拓扑排序：构建反向邻接表 `reverse_graph`，将"查找依赖当前模块的节点"从 O(V) 全表扫描降为 O(E)，注册大量模块时初始化更快
+  - `CLI/commands/list.py`：`list --outdated` 改为在 `execute()` 中一次性拉取远程索引并透传，不再逐包重复 `asyncio.run` / 网络请求
+  - 新增回归测试：`test_unit_router.py::TestRateLimit::test_cleanup_respects_per_route_window`、`test_unit_cli.py::TestCreateTemplatesCompile`（create 模板渲染 + `compile()` + 导入符号解析）、`test_unit_cli.py::TestCrossProcessContracts`（硬重启退出码 / 入口点组名契约）、`test_unit_config.py`（malformed 保留缓存 / secret 脱敏 / validate_config 强化）、`test_unit_frame_config.py`（环境变量覆盖 9 用例）、`test_unit_lifecycle.py` 新增 `once`/`has_handlers`、`test_unit_logger.py` 配置热更新、`test_unit_sdk_callbacks.py::TestShutdown`、`test_unit_adapter.py::TestBaseConverter`
+
+---
+
+## [2.7.0-dev.4] - 2026/07/30
+> 开发版本
+
+**版本摘要**
+内存占用优化版本：(1) **Web 栈懒加载**——`FastAPI`/`Uvicorn`/`Starlette` 不再在 `import ErisPulse` 时加载，而是推迟到路由首次实际服务时，导入期基线内存显著降低；(2) 新增 `server.auto_start` 配置，纯 WebSocket/轮询适配器可设为 `false` 跳过 HTTP 服务器启动，完全不加载 web 栈；(3) 新增 `runtime/memory.py` 内存追踪工具，在初始化完成与主动 GC 等关键点以 TRACE 级日志记录 RSS 与增量，便于排查内存增长。**完全向后兼容**（`auto_start` 默认 `true`）。
+
+**升级建议**
+- **建议升级**
+- 升级原因：所有进程的导入期内存显著下降；无需 HTTP 服务的 bot 可进一步省去 web 栈占用
+
+**注意事项**
+- 默认行为不变（`server.auto_start` 默认 `true`，仍会启动 HTTP 服务器）
+- 仅当显式设置 `[ErisPulse.server] auto_start = false` 时才跳过服务器启动（此时 Dashboard 等 HTTP 功能不可用）
+- 内存追踪日志为 TRACE 级，默认不输出；开启 TRACE 日志即可观察
+
+### 新增
+
+- @wsu2059q
+  - `runtime/memory.py`：进程内存追踪工具
+    - `get_rss_mb()`：获取进程 RSS（优先 psutil，回退 Linux `/proc`）
+    - `get_traced_mb()`：获取 tracemalloc 追踪内存
+    - `snapshot(label)` / `log_snapshot(label)`：采集并按标签计算增量的内存快照
+    - 在 `sdk.init()` 完成后与主动 GC 循环中以 TRACE 级记录
+  - `server.auto_start` 配置项（默认 `true`）：控制初始化时是否自动启动 HTTP 路由服务器
+  - 单元测试：`test_unit_router_lazy.py`（Web 栈懒加载，5 用例）、`test_unit_memory.py`（内存工具，6 用例）、`server.auto_start` 默认值校验
+
+### 优化
+
+- @wsu2059q
+  - `Core/router.py` Web 栈懒加载：`FastAPI` / `Uvicorn` / `Starlette` 依赖从导入期推迟到路由首次实际服务时才加载
+    - 导入期基线内存由 ~112MB 降至 ~58MB（实测，web 栈占 ~54MB）
+    - `_load_web_stack()` 幂等加载；`RouterManager.app` 改为惰性属性
+    - `_web_stack_required` 装饰器守护所有使用 web 符号的方法
+    - `WebSocketHandler` 类型别名改为字符串前向引用以避免导入期解析
+  - 导出更新：`runtime/__init__.py` 新增 `get_rss_mb` / `get_traced_mb` / `log_snapshot` / `snapshot`
+  - 贡献者体验优化：新增 `docs/zh-CN/contributing/`（贡献总览 + 首次贡献）ErisPulse 贡献路径；`generate-docs-index.py` 新增「贡献指南」分类
+  - `CLI/utils/package_manager.py` Windows 自更新脚本重构：
+    - 移除硬编码中文：独立更新进程无法导入 i18n 模块，改为在父进程预解析翻译文本，以消息字典注入子脚本，随用户语言自适应
+    - 新增 i18n 键：`cli.update.*` / `cli.package.using_backend`（zh-CN / zh-TW / en / ja / ru 同步）
+
+---
+
 ## [2.7.0-dev.3] - 2026/07/29
 > 开发版本
 
@@ -79,32 +199,35 @@ OneBot12 标准化增强版本：(1) 新增 `ApiDSL` 基类，与 `SendDSL`（�
 
 ### 新增
 
-- `Core/Bases/adapter.py` 新增 `ApiDSL` 基类：OneBot12 标准 API 动作 DSL
-  - 用户：`get_self_info` / `get_user_info` / `get_friend_list`
-  - 群组：`get_group_info` / `get_group_list` / `get_group_member_info` / `get_group_member_list` / `set_group_name` / `leave_group`
-  - 消息：`delete_message`（撤回/删除消息）
-  - 文件：`upload_file` / `get_file`
-  - 通用：`call(action, **params)`（平台扩展动作逃生舱）
-  - `Using(account_id)` 指定 Bot 账号（多账户模式）
-  - 默认实现委托给 `adapter.call_api(action_name, ...)`，零配置可用
-- `BaseAdapter.Api` 内部类：在 `__init__` 中自动实例化（与 `Send` / `Request` 并列）
-- `docs/zh-CN/standards/api-action-spec.md`：API 动作标准文档
-- 单元测试：`test_unit_adapter.py` 新增 `TestApiDSL`（20 用例）；`test_unit_session_type.py` 新增 `TestNoticeRequestTypeInference`（10 用例）
-- `sdk.init()` 新增 `before_init` / `after_init` 回调钩子（可选关键字参数，同步或异步均可）
-- `sdk.run()` 新增 `on_ready` 回调钩子（初始化完成后、挂起前执行），并转发 `before_init` / `after_init` 给 `init()`
-- `sdk.init_sync()` / `sdk.init_task()` 同步支持回调参数
-- 单元测试：`test_unit_sdk_callbacks.py` 新增（12 用例，覆盖回调顺序/同步异步/错误隔离）
+- @wsu2059q
+  - `Core/Bases/adapter.py` 新增 `ApiDSL` 基类：OneBot12 标准 API 动作 DSL
+    - 用户：`get_self_info` / `get_user_info` / `get_friend_list`
+    - 群组：`get_group_info` / `get_group_list` / `get_group_member_info` / `get_group_member_list` / `set_group_name` / `leave_group`
+    - 消息：`delete_message`（撤回/删除消息）
+    - 文件：`upload_file` / `get_file`
+    - 通用：`call(action, **params)`（平台扩展动作逃生舱）
+    - `Using(account_id)` 指定 Bot 账号（多账户模式）
+    - 默认实现委托给 `adapter.call_api(action_name, ...)`，零配置可用
+  - `BaseAdapter.Api` 内部类：在 `__init__` 中自动实例化（与 `Send` / `Request` 并列）
+  - `docs/zh-CN/standards/api-action-spec.md`：API 动作标准文档
+  - 单元测试：`test_unit_adapter.py` 新增 `TestApiDSL`（20 用例）；`test_unit_session_type.py` 新增 `TestNoticeRequestTypeInference`（10 用例）
+  - `sdk.init()` 新增 `before_init` / `after_init` 回调钩子（可选关键字参数，同步或异步均可）
+  - `sdk.run()` 新增 `on_ready` 回调钩子（初始化完成后、挂起前执行），并转发 `before_init` / `after_init` 给 `init()`
+  - `sdk.init_sync()` / `sdk.init_task()` 同步支持回调参数
+  - 单元测试：`test_unit_sdk_callbacks.py` 新增（12 用例，覆盖回调顺序/同步异步/错误隔离）
 
 ### 修复
 
-- `Core/Event/session_type.py` `infer_receive_type` 修复 notice/request 事件的会话类型推断
+- @wsu2059q
+  - `Core/Event/session_type.py` `infer_receive_type` 修复 notice/request 事件的会话类型推断
 
 ### 优化
 
-- `docs/zh-CN/standards/event-conversion.md` 新增「notice / request 事件的会话类型推断」章节
-- `docs/zh-CN/standards/README.md` 新增 API 动作标准条目
-- 示例项目 `example-adapter` 与 CLI 脚手架 `_ADAPTER_CORE` 补充 `Api` 内部类
-- 导出更新：`Core/__init__.py`、`Core/Bases/__init__.py` 新增 `ApiDSL` 导出
+- @wsu2059q
+  - `docs/zh-CN/standards/event-conversion.md` 新增「notice / request 事件的会话类型推断」章节
+  - `docs/zh-CN/standards/README.md` 新增 API 动作标准条目
+  - 示例项目 `example-adapter` 与 CLI 脚手架 `_ADAPTER_CORE` 补充 `Api` 内部类
+  - 导出更新：`Core/__init__.py`、`Core/Bases/__init__.py` 新增 `ApiDSL` 导出
 
 ---
 
@@ -120,36 +243,38 @@ OneBot12 标准化增强版本：(1) 新增 `ApiDSL` 基类，与 `SendDSL`（�
 
 ### 新增
 
-- `runtime/diagnostics.py` 模块：异常诊断引擎，从异常 traceback 提取「用户代码帧」摘要
-  - `extract_user_frame(exc, depth=3)`：过滤 ErisPulse 框架内部帧，返回结构化诊断信息（帧列表 / 异常类型 / 异常消息）
-  - `format_diagnostic_block(exc, hint_key=, candidates=, depth=3)`：生成带 `→` 引导符的多行诊断文本（含帧位置、源码、异常类型、查看完整堆栈的提示）
-  - `log_diagnostic(exc, ...)`：最常用入口，自动提取用户代码帧并以 ERROR 级别写入日志
-  - 自动路径缩短：相对 cwd / 相对包父目录 / 退化为文件名三级回退
-  - 内置 i18n 英文兜底（`_t`），i18n 未就绪时仍可输出诊断信息
-- 模块/适配器加载与初始化失败路径集成诊断输出
-  - `loaders/module.py`：entry-point 加载失败、立即初始化失败、懒加载初始化失败、异步初始化失败（共 4 处）
-  - `loaders/adapter.py`：entry-point 加载失败、注册失败（共 2 处）
-  - 输出形如 `→ MyModule/Core.py:42 in on_load` + 源码行 + 异常类型，末尾附加查看完整堆栈的提示
-- 配置加载三态错误诊断（`Core/config.py` `_load_config` 重构）
-  - TOML 语法错误：输出出错行号/列号与原因（`core.config.toml_malformed`）
-  - 权限错误：明确告知无读权限（`core.config.permission_denied`）
-  - 其他错误：保留原有通用提示（`core.config.load_failed`）
-  - 三种错误均附加「已回退默认配置」警告（`core.config.using_defaults_warning`）
-  - 空配置文件加载成功时输出 debug 提示（`core.config.loaded_empty`）
-- 配置写入（flush）阶段语法错误诊断（`Core/config.py` `_flush_config`）
-  - 此前：运行中文件被改坏时，flush 的读取-合并步骤触发 `TomlDecodeError`，被通用 `except` 捕获后输出令人困惑的「写入配置文件失败」
-  - 现在：单独捕获 `TomlDecodeError`，输出「配置文件已损坏（语法错误，第 X 行），无法合并写入」（`core.config.flush_malformed`），并保留 `_dirty_keys` 待用户修复后重试
-  - 跨进程去重：使用配置目录下的哨兵文件（`.flush_malformed_cooldown`）的 mtime 做冷却窗口（默认 30s），确保无论 `epsdk run` 子进程、`python main.py` 直跑、还是多实例场景，同一错误只告警一次；进程退出时（atexit）自动清理哨兵文件
-- i18n 同步（5 语言：zh-CN / zh-TW / en / ja / ru）：
-  - `core.diag.*`（6 keys）：诊断文本帧/源码/异常行/提示/兜底/相似建议
-  - `loader.module.diag_hint` / `loader.adapter.diag_hint`：加载器专属提示
-  - `core.config.toml_malformed` / `permission_denied` / `using_defaults_warning` / `loaded_empty`：配置三态诊断
-- `runtime/__init__.py` 聚合导出：`extract_user_frame` / `format_diagnostic_block` / `log_diagnostic`
+- @wsu2059q
+  - `runtime/diagnostics.py` 模块：异常诊断引擎，从异常 traceback 提取「用户代码帧」摘要
+    - `extract_user_frame(exc, depth=3)`：过滤 ErisPulse 框架内部帧，返回结构化诊断信息（帧列表 / 异常类型 / 异常消息）
+    - `format_diagnostic_block(exc, hint_key=, candidates=, depth=3)`：生成带 `→` 引导符的多行诊断文本（含帧位置、源码、异常类型、查看完整堆栈的提示）
+    - `log_diagnostic(exc, ...)`：最常用入口，自动提取用户代码帧并以 ERROR 级别写入日志
+    - 自动路径缩短：相对 cwd / 相对包父目录 / 退化为文件名三级回退
+    - 内置 i18n 英文兜底（`_t`），i18n 未就绪时仍可输出诊断信息
+  - 模块/适配器加载与初始化失败路径集成诊断输出
+    - `loaders/module.py`：entry-point 加载失败、立即初始化失败、懒加载初始化失败、异步初始化失败（共 4 处）
+    - `loaders/adapter.py`：entry-point 加载失败、注册失败（共 2 处）
+    - 输出形如 `→ MyModule/Core.py:42 in on_load` + 源码行 + 异常类型，末尾附加查看完整堆栈的提示
+  - 配置加载三态错误诊断（`Core/config.py` `_load_config` 重构）
+    - TOML 语法错误：输出出错行号/列号与原因（`core.config.toml_malformed`）
+    - 权限错误：明确告知无读权限（`core.config.permission_denied`）
+    - 其他错误：保留原有通用提示（`core.config.load_failed`）
+    - 三种错误均附加「已回退默认配置」警告（`core.config.using_defaults_warning`）
+    - 空配置文件加载成功时输出 debug 提示（`core.config.loaded_empty`）
+  - 配置写入（flush）阶段语法错误诊断（`Core/config.py` `_flush_config`）
+    - 此前：运行中文件被改坏时，flush 的读取-合并步骤触发 `TomlDecodeError`，被通用 `except` 捕获后输出令人困惑的「写入配置文件失败」
+    - 现在：单独捕获 `TomlDecodeError`，输出「配置文件已损坏（语法错误，第 X 行），无法合并写入」（`core.config.flush_malformed`），并保留 `_dirty_keys` 待用户修复后重试
+    - 跨进程去重：使用配置目录下的哨兵文件（`.flush_malformed_cooldown`）的 mtime 做冷却窗口（默认 30s），确保无论 `epsdk run` 子进程、`python main.py` 直跑、还是多实例场景，同一错误只告警一次；进程退出时（atexit）自动清理哨兵文件
+  - i18n 同步（5 语言：zh-CN / zh-TW / en / ja / ru）：
+    - `core.diag.*`（6 keys）：诊断文本帧/源码/异常行/提示/兜底/相似建议
+    - `loader.module.diag_hint` / `loader.adapter.diag_hint`：加载器专属提示
+    - `core.config.toml_malformed` / `permission_denied` / `using_defaults_warning` / `loaded_empty`：配置三态诊断
+  - `runtime/__init__.py` 聚合导出：`extract_user_frame` / `format_diagnostic_block` / `log_diagnostic`
 
 ### 优化
 
-- `docs/zh-CN/user-guide/configuration.md` 新增「配置加载错误处理」章节，说明三态诊断行为
-- `docs/zh-CN/advanced/startup.md` Loader 章节新增「加载失败时的诊断信息」小节，含诊断输出示例与 `log_diagnostic` 复用方法
+- @wsu2059q
+  - `docs/zh-CN/user-guide/configuration.md` 新增「配置加载错误处理」章节，说明三态诊断行为
+  - `docs/zh-CN/advanced/startup.md` Loader 章节新增「加载失败时的诊断信息」小节，含诊断输出示例与 `log_diagnostic` 复用方法
 
 ---
 
@@ -165,18 +290,20 @@ Event 包装类平台修饰方法支持版本：新增 `Event.send_chain()` 方�
 
 ### 新增
 
-- `Event.send_chain()`：返回已配置 `To`/`Using` 的发送链，可自由追加任意修饰方法（内置 + 平台专有）和发送方法
-  - 适用场景：连续多个修饰方法、平台专有修饰方法、无内容参数的动作型方法（如 `DismissBoard`）
-- `Event.reply()` 新增 `via` 参数：在发送方法前按顺序应用修饰方法链
-  - 每个元素可为 `"Name"` / `("Name", *args)` / `("Name", args_tuple, kwargs_dict)`
-- `Event/wrapper.py` 新增 `_normalize_modifier()` 辅助函数（归一化修饰方法定义）
-- 单元测试：`test_unit_adapter.py` 新增 `TestSendDSLReturnSelfModifier`（3 用例，验证返回-self 修饰方法的链式行为）；`test_unit_event.py` 新增 `TestEventSendChainAndModifiers`（12 用例，覆盖 `_normalize_modifier` / `send_chain` / `reply(via=)` / 向后兼容）
+- @wsu2059q
+  - `Event.send_chain()`：返回已配置 `To`/`Using` 的发送链，可自由追加任意修饰方法（内置 + 平台专有）和发送方法
+    - 适用场景：连续多个修饰方法、平台专有修饰方法、无内容参数的动作型方法（如 `DismissBoard`）
+  - `Event.reply()` 新增 `via` 参数：在发送方法前按顺序应用修饰方法链
+    - 每个元素可为 `"Name"` / `("Name", *args)` / `("Name", args_tuple, kwargs_dict)`
+  - `Event/wrapper.py` 新增 `_normalize_modifier()` 辅助函数（归一化修饰方法定义）
+  - 单元测试：`test_unit_adapter.py` 新增 `TestSendDSLReturnSelfModifier`（3 用例，验证返回-self 修饰方法的链式行为）；`test_unit_event.py` 新增 `TestEventSendChainAndModifiers`（12 用例，覆盖 `_normalize_modifier` / `send_chain` / `reply(via=)` / 向后兼容）
 
 ### 优化
 
-- `docs/zh-CN/developer-guide/adapters/send-dsl.md` 新增「平台专有修饰方法」与「在 Event 包装类中使用修饰方法」章节
-- `docs/zh-CN/api-reference/event-system.md` 回复功能示例补充 `via` 与 `send_chain()`
-- 示例项目 `example-adapter` 与 CLI 脚手架 `_ADAPTER_CORE` 补充平台修饰方法（返回 self）的推荐写法演示
+- @wsu2059q
+  - `docs/zh-CN/developer-guide/adapters/send-dsl.md` 新增「平台专有修饰方法」与「在 Event 包装类中使用修饰方法」章节
+  - `docs/zh-CN/api-reference/event-system.md` 回复功能示例补充 `via` 与 `send_chain()`
+  - 示例项目 `example-adapter` 与 CLI 脚手架 `_ADAPTER_CORE` 补充平台修饰方法（返回 self）的推荐写法演示
 
 ---
 
@@ -192,37 +319,40 @@ i18n 键声明式注册 + Schema 定义源迁移 + 适配器 EventMixin 自动�
 
 ### 新增
 
-- `Core/Bases/i18n_schema.py` 模块：基于类属性的 i18n 键声明 Schema（Bases 为供应方）
-  - `BaseI18n`：翻译键集合基类（命名对齐 `BaseConfig`），子类以类属性声明多个 `I18nKey`；支持 MRO 继承与子类同名覆盖
-  - `BaseI18n.register(prefix, domain)`：类方法，将所有声明的键注册到 i18n 系统（幂等）
-  - `I18nKey`：单个翻译键声明，`default` 为语言无关的兜底文本（不注册到任何语言），可显式提供 `zh_CN` / `en` / `ja` / `ru` / `zh_TW`
-  - `key`：`I18nKey` 的简洁别名
-- `BaseModule.I18nClass` / `BaseAdapter.I18nClass`：新增可选嵌套类属性
-  - 框架在 `ModuleManager.load()`（注入 `_module_name` 后）与 `BaseAdapter.__init__` 阶段预注册翻译键
-  - `_ensure_config_exists()` 会先调用 `_ensure_i18n_registered()`，保证配置描述引用的 i18n 键在生成模板时已可用
-  - 键路径默认为 `<配置键名>.<属性名>`（模块用注册名，适配器用类名），或通过 `I18nKey(key=...)` 显式指定
-  - domain 使用配置键名，便于按域统一卸载
-- `Core/Bases/__init__.py` 导出 Schema 类型：`BaseConfig` / `BotAccountConfig` / `AdapterConfig` / `BaseI18n` / `I18nKey`
-  - 推荐从 `ErisPulse.Core.Bases` 统一导入基类与 Schema 类型
-- 示例项目 `example-module` / `example-adapter` 改为从 `Core.Bases` 统一导入，并补充 `I18nClass` 推荐写法演示
-- CLI 脚手架模板 `_MODULE_CORE` / `_ADAPTER_CORE` 同步从 `Core.Bases` 导入并生成 `I18nClass` 示例代码
-- 单元测试 `tests/unit/test_unit_i18n_schema.py`（26 个用例）：覆盖 I18nKey 构造、BaseI18n 集合行为、register() 语义、BaseModule/BaseAdapter 集成、i18n 优先于配置生成、Bases/runtime 导出一致性等场景
-- `BaseAdapter.EventMixin`：新增可选嵌套类属性，适配器声明后框架在 `AdapterManager` 注入 `_platform` 后自动注册到适配器自身平台
-  - `BaseAdapter._ensure_event_mixin_registered()`：内部方法，将 `EventMixin` 注册到 `self._platform`（或 `*` 通配符当平台未就绪时）
-  - `AdapterManager.register_adapter()` 中新增 EventMixin 注册步骤（在 `instance._platform` 注入后立即执行）
-- `Core/constants.py` 新增 `ADAPTER_EVENT_MIXIN_PLATFORM` 常量，标识适配器 EventMixin 默认注册到自身平台 (`"_self"`)
+- @wsu2059q
+  - `Core/Bases/i18n_schema.py` 模块：基于类属性的 i18n 键声明 Schema（Bases 为供应方）
+    - `BaseI18n`：翻译键集合基类（命名对齐 `BaseConfig`），子类以类属性声明多个 `I18nKey`；支持 MRO 继承与子类同名覆盖
+    - `BaseI18n.register(prefix, domain)`：类方法，将所有声明的键注册到 i18n 系统（幂等）
+    - `I18nKey`：单个翻译键声明，`default` 为语言无关的兜底文本（不注册到任何语言），可显式提供 `zh_CN` / `en` / `ja` / `ru` / `zh_TW`
+    - `key`：`I18nKey` 的简洁别名
+  - `BaseModule.I18nClass` / `BaseAdapter.I18nClass`：新增可选嵌套类属性
+    - 框架在 `ModuleManager.load()`（注入 `_module_name` 后）与 `BaseAdapter.__init__` 阶段预注册翻译键
+    - `_ensure_config_exists()` 会先调用 `_ensure_i18n_registered()`，保证配置描述引用的 i18n 键在生成模板时已可用
+    - 键路径默认为 `<配置键名>.<属性名>`（模块用注册名，适配器用类名），或通过 `I18nKey(key=...)` 显式指定
+    - domain 使用配置键名，便于按域统一卸载
+  - `Core/Bases/__init__.py` 导出 Schema 类型：`BaseConfig` / `BotAccountConfig` / `AdapterConfig` / `BaseI18n` / `I18nKey`
+    - 推荐从 `ErisPulse.Core.Bases` 统一导入基类与 Schema 类型
+  - 示例项目 `example-module` / `example-adapter` 改为从 `Core.Bases` 统一导入，并补充 `I18nClass` 推荐写法演示
+  - CLI 脚手架模板 `_MODULE_CORE` / `_ADAPTER_CORE` 同步从 `Core.Bases` 导入并生成 `I18nClass` 示例代码
+  - 单元测试 `tests/unit/test_unit_i18n_schema.py`（26 个用例）：覆盖 I18nKey 构造、BaseI18n 集合行为、register() 语义、BaseModule/BaseAdapter 集成、i18n 优先于配置生成、Bases/runtime 导出一致性等场景
+  - `BaseAdapter.EventMixin`：新增可选嵌套类属性，适配器声明后框架在 `AdapterManager` 注入 `_platform` 后自动注册到适配器自身平台
+    - `BaseAdapter._ensure_event_mixin_registered()`：内部方法，将 `EventMixin` 注册到 `self._platform`（或 `*` 通配符当平台未就绪时）
+    - `AdapterManager.register_adapter()` 中新增 EventMixin 注册步骤（在 `instance._platform` 注入后立即执行）
+  - `Core/constants.py` 新增 `ADAPTER_EVENT_MIXIN_PLATFORM` 常量，标识适配器 EventMixin 默认注册到自身平台 (`"_self"`)
 
 ### 变更
 
-- **Schema 定义源迁移**：`config_schema.py` 与 `i18n_schema.py` 的实际定义从 `runtime/` 移至 `Core/Bases/`
-  - `runtime/config_schema.py` 变为 shim（通过 `__getattr__` 懒加载），保留 `from ErisPulse.runtime.config_schema import ...` 的旧代码可用（避免循环引用）
-  - `runtime/__init__.py` 中 `config_schema` 相关符号改为懒加载，`i18n_schema` 相关符号不再导出
-  - `Core/Bases/__init__.py` 中 Schema 类型导入顺序提前，避免在 `module.py` 触发 loaders → lifecycle → runtime 循环引用时未就绪
+- @wsu2059q
+  - **Schema 定义源迁移**：`config_schema.py` 与 `i18n_schema.py` 的实际定义从 `runtime/` 移至 `Core/Bases/`
+    - `runtime/config_schema.py` 变为 shim（通过 `__getattr__` 懒加载），保留 `from ErisPulse.runtime.config_schema import ...` 的旧代码可用（避免循环引用）
+    - `runtime/__init__.py` 中 `config_schema` 相关符号改为懒加载，`i18n_schema` 相关符号不再导出
+    - `Core/Bases/__init__.py` 中 Schema 类型导入顺序提前，避免在 `module.py` 触发 loaders → lifecycle → runtime 循环引用时未就绪
 
 ### 优化
 
-- `docs/zh-CN/advanced/i18n.md` 新增「推荐写法：通过 I18nClass 声明翻译键」章节与 `BaseI18n`/`I18nKey` API 参考
-- `docs/zh-CN/developer-guide/adapters/core-concepts.md` 新增 EventMixin 章节，说明适配器事件扩展方法的注册机制
+- @wsu2059q
+  - `docs/zh-CN/advanced/i18n.md` 新增「推荐写法：通过 I18nClass 声明翻译键」章节与 `BaseI18n`/`I18nKey` API 参考
+  - `docs/zh-CN/developer-guide/adapters/core-concepts.md` 新增 EventMixin 章节，说明适配器事件扩展方法的注册机制
 
 ---
 

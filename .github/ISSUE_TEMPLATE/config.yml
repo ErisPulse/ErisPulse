@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📖 How to Contribute / 如何贡献
+    url: https://github.com/ErisPulse/ErisPulse/blob/main/docs/zh-CN/contributing/README.md
+    about: Read this before your first PR / 第一次提交 PR 前先看这里
+  - name: 💬 Discussions / 讨论与提问
+    url: https://github.com/ErisPulse/ErisPulse/discussions
+    about: Ask questions and discuss ideas here / 在这里提问、讨论想法

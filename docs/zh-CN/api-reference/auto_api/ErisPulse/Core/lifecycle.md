@@ -100,6 +100,42 @@ ErisPulse 生命周期管理模块
 ---
 
 
+##### `once(event: str)`
+
+注册一次性事件处理器（触发一次后自动注销）
+
+- **event** (`str`): 事件名称
+- **priority** (`int`): 优先级 (默认: 0)
+**返回值** (`Callable`): 装饰器
+
+**示例**:
+```python
+>>> @lifecycle.once("core.init.complete")
+... async def on_first_ready(data):
+...     print("首次就绪")
+```
+
+---
+
+
+##### `has_handlers(event: str)`
+
+检查指定事件是否已有注册的处理器（含通配符 ``*`` 与父级事件）
+
+可用于热路径短路：发射事件前先判断有无监听者，避免无谓的字典遍历与任务调度。
+
+- **event** (`str`): 事件名称
+**返回值** (`bool`): 存在任意匹配处理器时返回 True
+
+**示例**:
+```python
+>>> if lifecycle.has_handlers("message.sending"):
+...     await lifecycle.emit("message.sending", data)
+```
+
+---
+
+
 ##### `unregister(event: str, handler: Callable | None = None)`
 
 取消注册事件处理器

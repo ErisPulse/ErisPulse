@@ -26,9 +26,26 @@ ErisPulse CLI 国际化模块
 ---
 
 
+### `_resolve_windows_locale_name(locale_name: str)`
+
+将 Windows locale 名称（如 'Chinese (Simplified)_China'）映射到支持语言
+
+locale.getlocale() 在 Windows 上可能返回语言全称而非代码
+
+- **locale_name** (`Windows`): locale 名称
+**返回值** (`支持的语言代码或`): None
+
+---
+
+
 ### `_detect_windows_locale()`
 
-通过 Windows API 检测用户 locale
+通过 Windows API 检测用户默认 locale
+
+使用 GetUserDefaultLocaleName / GetLocaleInfoW 获取
+BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
+
+**返回值** (`locale`): 字符串或 None
 
 ---
 

@@ -22,6 +22,7 @@
 | `epsdk run main.py` | 运行项目（`--reload` 热重载模式） |
 | `epsdk list` | 列出已安装的模块/适配器 |
 | `epsdk upgrade <包名>` | 升级模块/适配器 |
+| `epsdk doctor` | 诊断环境（Python/后端/配置/PyPI 连通性） |
 
 > 完整的命令列表和参数说明请参考 [CLI 命令参考](cli-reference.md)。
 

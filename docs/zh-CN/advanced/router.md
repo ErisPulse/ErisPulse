@@ -226,6 +226,31 @@ async def admin_middleware(request, call_next):
     return await call_next(request)
 ```
 
+## 请求关联 ID（X-Request-ID）
+
+从 2.7.0 起，每个 HTTP 请求都会携带一个 `X-Request-ID` 关联 ID，用于日志 / 链路追踪串联：
+
+- **生成规则**：优先沿用客户端传入的 `X-Request-ID` 请求头（分布式追踪场景）；否则自动生成 UUID
+- **响应头**：响应会回写 `X-Request-ID`，方便客户端把请求与日志对应
+- **生命周期事件**：`server.request` 与 `server.response` 事件数据中新增 `request_id` 字段
+
+```python
+# 在模块中监听请求事件，按 request_id 串联请求-响应
+@sdk.lifecycle.on("server.request")
+async def on_request(data):
+    print(f"[{data['request_id']}] {data['method']} {data['path']}")
+
+@sdk.lifecycle.on("server.response")
+async def on_response(data):
+    print(f"[{data['request_id']}] -> {data['status_code']}")
+```
+
+客户端可自定义 ID 以便跨服务追踪：
+
+```bash
+curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
+```
+
 ## 速率限制
 
 使用滑动窗口算法对路由进行限流：

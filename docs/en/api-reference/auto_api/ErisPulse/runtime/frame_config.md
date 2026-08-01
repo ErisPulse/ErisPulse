@@ -42,6 +42,24 @@ ErisPulse 框架配置管理模块
 ---
 
 
+### `_apply_env_overrides(config: dict[str, Any], root: str = CONFIG_ROOT_KEY)`
+
+> **内部方法**
+递归对配置字典应用环境变量覆盖
+
+命名规则：``ErisPulse.server.port`` → ``ERISPULSE_SERVER_PORT``
+（将点路径大写、``.`` 替换为 ``_``）。仅覆盖叶子值，按原值类型做 coerce。
+
+---
+
+
+### `_coerce_env_value(original: Any, env_str: str)`
+
+按原值类型把环境变量字符串转换为对应 Python 类型
+
+---
+
+
 ### `get_config(section: str | None = None)`
 
 获取 ErisPulse 配置

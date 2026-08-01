@@ -59,7 +59,7 @@ ErisPulse 模块加载器
 
 获取 entry-point 组名
 
-**返回值**: "erispulse.module"
+**返回值**: 入口点组名字符串
 
 ---
 

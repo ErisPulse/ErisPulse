@@ -373,6 +373,33 @@ SDK 初始化入口，返回 Task 对象
 ---
 
 
+##### `shutdown()`
+
+请求优雅关闭
+
+设置关闭事件，使正在 ``await sdk.run()`` 挂起的主循环返回，
+进而触发 ``uninit()`` 完成资源清理。可由模块/适配器在运行时调用，
+也用作 SIGTERM 等信号的处理入口。
+
+**示例**:
+```python
+>>> sdk.shutdown()  # 任意协程中调用，触发优雅退出
+```
+
+---
+
+
+##### `_register_signal_handlers()`
+
+> **内部方法**
+注册进程信号处理器，将 SIGTERM / SIGHUP 等信号转为优雅关闭
+
+Windows 不支持 ``loop.add_signal_handler``，捕获异常后跳过
+（Windows 下仍可通过 ``sdk.shutdown()`` 或 Ctrl+C 触发关闭）。
+
+---
+
+
 ##### `async _do_restart()`
 
 > **内部方法**

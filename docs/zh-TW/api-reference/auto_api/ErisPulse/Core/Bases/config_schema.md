@@ -179,9 +179,13 @@ description 若为 i18n 字典，则使用其 default/fallback 文本。
 
 校验 dataclass 实例
 
-- 检查 required 字段是否非空
-- 返回错误信息列表（空列表表示通过）
-- description 若为 i18n 字典，错误信息使用其 fallback/default 文本
+- 检查 ``required`` 字段是否非空
+- 检查字段值类型是否与声明一致（int/float/str/bool）
+- 检查 ``options`` 枚举约束（值是否在允许选项内）
+- 检查 ``min``/``max`` 数值范围约束
+
+返回错误信息列表（空列表表示通过）。description 若为 i18n 字典，
+错误信息使用其 fallback/default 文本。
 
 - **instance** (`dataclass`): 实例
 **返回值**: 错误信息列表
@@ -270,6 +274,25 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
 - **config_class** (`dataclass`): 配置类
 - **resolve_i18n** (`是否将`): i18n 文本解析为当前语言
 **返回值** (`schema`): 字典
+
+---
+
+
+### `redact_secret(value: Any)`
+
+脱敏标记为 ``secret`` 的配置值
+
+非空值统一替换为固定掩码 ``***``；空值（空串 / None / 空集合）原样返回，
+便于日志、模板生成等场景避免泄露敏感信息。
+
+- **value** (`原始值`): **返回值** (`脱敏后的值`): 
+**示例**:
+```python
+>>> redact_secret("sk-xxxxxxxx")
+'***'
+>>> redact_secret("")
+''
+```
 
 ---
 

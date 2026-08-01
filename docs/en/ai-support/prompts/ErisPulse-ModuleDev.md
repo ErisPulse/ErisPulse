@@ -3612,92 +3612,98 @@ These two methods are not contradictory—you can simultaneously publish modules
 
 # CLI Command Reference
 
-The ErisPulse command-line tool (`epsdk`) provides project management and package management features.
+The ErisPulse command-line tool (`epsdk`) provides project management and package management functionality.
 
-> **Tip:** You can view detailed parameter descriptions for any command using `epsdk <command> --help`.
+> **Tip**: You can view detailed parameter descriptions for all commands using `epsdk <command> --help`.
 
 ---
 
 ## Package Management Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
 | `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | Install modules/adapters |
 | `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | Uninstall modules/adapters |
 | `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | Upgrade specified modules or all |
-| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | Update SDK itself |
+| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | Update the SDK itself |
+
+## Diagnostic Commands
+
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
+| `doctor` | `diag` | `[--verbose]` | Diagnose the environment and output a health report |
 
 ### install
 
-Installs ErisPulse module or adapter packages. If no package name is specified, enters interactive installation mode.
+Install an ErisPulse module or adapter package. If no package name is specified, an interactive installation interface is entered.
 
 **Aliases:** `i`, `add`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
-| `[package]...` | | Package names to install, multiple can be specified |
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
+| `[package]...` | | Package names to install, can specify multiple |
 | `--upgrade` | `-U` | Upgrade to the latest version during installation |
-| `--pre` | | Allow installation of pre-release versions |
-| `--editable` | `-e` | Install in editable mode (requires path) |
+| `--pre` | | Allow installing pre-release versions |
+| `--editable` | `-e` | Install in editable mode (path required) |
 | `--user` | | Install to user site-packages directory |
 | `--no-deps` | | Do not install dependencies |
 | `--target` | `-t` | Install to specified directory |
-| `--index-url` | | Specify PyPI mirror source URL |
-| `--extra-index-url` | | Additional PyPI mirror source URL (can be specified multiple times) |
+| `--index-url` | | Specify PyPI mirror source address |
+| `--extra-index-url` | | Additional PyPI mirror source address (can be specified multiple times) |
 | `--no-cache-dir` | | Disable cache |
 | `--requirement` | `-r` | Install from requirements file |
 | `--constraint` | `-c` | Install from constraint file |
-| `--force-reinstall` | | Force reinstallation |
+| `--force-reinstall` | | Force reinstall |
 | `--ignore-installed` | | Ignore already installed packages |
 | `--compile` | | Compile .pyc files after installation |
 | `--no-compile` | | Do not compile .pyc files after installation |
 | `--prefix` | | Install to specified prefix directory |
-| `--src` | | Source code directory used for editable installation |
-| `--config-settings` | | Pass configuration to build backend (can be specified multiple times) |
-| `--no-binary` | | Restrict not to use binary packages (format like `:all:`) |
-| `--only-binary` | | Restrict to use only binary packages (format like `:all:`) |
+| `--src` | | Source directory for editable installs |
+| `--config-settings` | | Configuration to pass to build backend (can be specified multiple times) |
+| `--no-binary` | | Restrict binary packages (format like `:all:`) |
+| `--only-binary` | | Restrict to binary packages only (format like `:all:`) |
 | `--prefer-binary` | | Prefer binary packages |
 | `--build-isolation` | | Enable build isolation |
 | `--no-build-isolation` | | Disable build isolation |
 | `--upgrade-strategy` | | Upgrade strategy: `eager`, `only-if-needed`, `to-satisfy-only` |
-| `--break-system-packages` | | Allow modification of system-managed Python packages |
+| `--break-system-packages` | | Allow modifying Python packages managed by the system package manager |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
 
 ```bash
-# Install single module
+# Install a single module
 epsdk install Weather
 
 # Install multiple modules
 epsdk install Yunhu Weather
 
-# Install from mirror source and upgrade
+# Install from a mirror source and upgrade
 epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
-# Editable mode installation (development mode)
+# Install in editable mode (development mode)
 epsdk install -e ./my-adapter
 ```
 
 ### uninstall
 
-Uninstalls installed ErisPulse module or adapter packages. If no package name is specified, enters interactive uninstall mode.
+Uninstall an installed ErisPulse module or adapter package. If no package name is specified, an interactive uninstallation interface is entered.
 
 **Aliases:** `rm`, `remove`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Description |
-|-----------|-------------|
-| `<package>...` | Package names to uninstall, multiple can be specified |
+| Argument | Description |
+|----------|-------------|
+| `<package>...` | Package names to uninstall, can specify multiple |
 | `--no-uv` | Use pip instead of uv |
 
 **Examples:**
 
 ```bash
-# Uninstall single module
+# Uninstall a single module
 epsdk uninstall Weather
 
 # Uninstall multiple modules
@@ -3706,17 +3712,17 @@ epsdk uninstall Yunhu Weather
 
 ### upgrade
 
-Upgrades installed ErisPulse components. If no package name is specified, upgrades interactively.
+Upgrade installed ErisPulse components. If no package name is specified, interactive upgrade for all is performed.
 
 **Aliases:** `up`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
-| `[package]...` | | Package names to upgrade, multiple can be specified |
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
+| `[package]...` | | Package names to upgrade, can specify multiple |
 | `--force` | `-f` | Force upgrade, skip confirmation |
-| `--pre` | | Allow upgrade to pre-release versions |
+| `--pre` | | Allow upgrading to pre-release versions |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
@@ -3734,29 +3740,29 @@ epsdk upgrade -f
 
 ### self-update
 
-Updates the ErisPulse SDK itself to the latest version.
+Update the ErisPulse SDK itself to the latest version.
 
 **Aliases:** `su`, `update`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
-| `[version]` | | Specify target version number to update to |
-| `--pre` | | Allow update to pre-release versions |
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
+| `[version]` | | Specify the target version number to update to |
+| `--pre` | | Allow updating to pre-release versions |
 | `--force` | `-f` | Force update, skip confirmation |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
 
 ```bash
-# Update to latest stable version
+# Update to the latest stable version
 epsdk self-update
 
-# Update to specified version
+# Update to a specific version
 epsdk self-update 1.2.3
 
-# Allow pre-release version
+# Allow pre-release versions
 epsdk self-update --pre
 
 # Force update
@@ -3767,23 +3773,23 @@ epsdk self-update -f
 
 ## Information Query Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
 | `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | List installed components |
-| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | List remote available components |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | List remotely available components |
 
 ### list
 
-Lists installed ErisPulse modules and adapters.
+List installed ErisPulse modules and adapters.
 
 **Aliases:** `l`, `ls`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--outdated` | `-o` | Only show upgradable packages |
+| `--outdated` | `-o` | Only show packages that can be upgraded |
 
 **Examples:**
 
@@ -3797,33 +3803,33 @@ epsdk list -t modules
 # List only adapters
 epsdk list -t adapters
 
-# Show only upgradable packages
+# Only show packages that can be upgraded
 epsdk list -o
 ```
 
 ### list-remote
 
-Lists available ErisPulse modules and adapters in the remote repository.
+List ErisPulse modules and adapters available in the remote repository.
 
 **Aliases:** `lsr`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--refresh` | `-r` | Force refresh remote package list cache |
+| `--refresh` | `-r` | Force refresh of the remote package list cache |
 
 **Examples:**
 
 ```bash
-# List all remote available components
+# List all remotely available components
 epsdk list-remote
 
 # List only remote modules
 epsdk list-remote -t modules
 
-# Force refresh cache and list
+# List after forcing cache refresh
 epsdk list-remote -r
 ```
 
@@ -3831,22 +3837,22 @@ epsdk list-remote -r
 
 ## Runtime Control Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
 | `run` | `r` | `[script] [--reload]` | Run specified script or SDK |
 
 ### run
 
-Runs ErisPulse project script or directly starts the SDK. Supports hot reload mode.
+Run ErisPulse project scripts or start the SDK directly. Supports hot reload mode.
 
 **Aliases:** `r`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Description |
-|-----------|-------------|
-| `[script]` | Script file to run, if not specified, runs the SDK |
-| `--reload` | Enable hot reload mode, automatically restarts on file changes |
+| Argument | Description |
+|----------|-------------|
+| `[script]` | Script file to run, if not specified, SDK runs |
+| `--reload` | Enable hot reload mode, automatically restart on file changes |
 
 **Examples:**
 
@@ -3860,7 +3866,7 @@ epsdk run main.py
 # Run in hot reload mode (auto restart on file change)
 epsdk run main.py --reload
 
-# SDK hot reload mode
+# SDK in hot reload mode
 epsdk run --reload
 ```
 
@@ -3868,23 +3874,23 @@ epsdk run --reload
 
 ## Project Management Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
 | `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | Initialize ErisPulse project |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | Create module/adapter scaffold |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | Create module/adapter scaffolding |
 
 ### init
 
-Initializes a new ErisPulse project. Supports interactive and quick mode.
+Initialize a new ErisPulse project. Supports interactive and quick modes.
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
 | `--project-name` | `-n` | Project name |
 | `--quick` | `-q` | Quick mode, skip interactive wizard |
-| `--force` | `-f` | Force overwrite existing configuration file |
-| `--here` | | Initialize in current directory, do not create subdirectory |
+| `--force` | `-f` | Force overwrite existing configuration files |
+| `--here` | | Initialize in current directory, no subdirectory creation |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
@@ -3896,7 +3902,7 @@ epsdk init
 # Quick initialization
 epsdk init -q -n my_bot
 
-# Force overwrite existing configuration
+# Force overwrite existing config
 epsdk init -f
 
 # Initialize in current directory
@@ -3905,25 +3911,25 @@ epsdk init --here -n my_bot
 
 ### create
 
-Creates a scaffold project for ErisPulse module or adapter.
+Create scaffolding for an ErisPulse module or adapter.
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
 | `{module,adapter}` | | Type to create: `module` or `adapter` |
 | `--name` | `-n` | Project name (PascalCase) |
 | `--description` | `-d` | Project description |
 | `--author` | `-a` | Author name |
 | `--email` | `-e` | Author email |
 | `--homepage` | | Project homepage URL |
-| `--output` | `-o` | Output directory (default is current directory) |
+| `--output` | `-o` | Output directory (default current directory) |
 | `--force` | `-f` | Force overwrite existing directory |
 
 **Examples:**
 
 ```bash
-# Interactive creation (guided selection of type and filling information)
+# Interactive creation (guided selection of type and input)
 epsdk create
 
 # Directly create Module project
@@ -3932,8 +3938,8 @@ epsdk create module -n MyModule
 # Directly create Adapter project
 epsdk create adapter -n MyAdapter
 
-# Complete parameters
-epsdk create module -n MyModule -d "module description" -a "author" -e "mail@example.com"
+# Full arguments
+epsdk create module -n MyModule -d "Module Description" -a "Author" -e "mail@example.com"
 
 # Specify output directory
 epsdk create module -n MyModule -o ./projects
@@ -3944,22 +3950,22 @@ epsdk create module -n MyModule -f
 
 ---
 
-## Language Commands
+## Language Command
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
 | `i18n` | `language`, `lang` | `[lang] [--list/-l]` | View or switch CLI display language |
 
 ### i18n
 
-View current CLI language, list supported languages, or switch display language. If no parameter is specified, enters interactive selection interface.
+View current CLI language, list supported languages, and switch display language. If no argument is specified, an interactive selection interface is entered.
 
 **Aliases:** `language`, `lang`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
 | `[lang]` | | Language code to switch to (e.g., `zh-CN`, `en`, `ja`, `ru`) |
 | `--list` | `-l` | List all supported languages |
 
@@ -3983,26 +3989,26 @@ epsdk i18n --list
 
 ## Type Stub Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
 | `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | Generate type stub files to enable IDE completion |
 
 ### types
 
-Scans installed ErisPulse modules and adapters, generates `.pyi` type stub files for them, thus enabling accurate code completion and type checking support in IDE.
+Scan installed ErisPulse modules and adapters, generate `.pyi` type stub files for them, thereby obtaining accurate code completion and type checking support in IDEs.
 
 **Aliases:** `t`, `stub`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
-| `--output` | `-o` | Output path (default is `ep-stubs/` under current directory) |
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
+| `--output` | `-o` | Output path (default `ep-stubs/` in current directory) |
 | `--force` | | Force overwrite existing stub files |
 | `--adapters-only` | | Generate type stubs only for adapters |
 | `--modules-only` | | Generate type stubs only for modules |
 
-> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive; if both are specified, the latter takes effect.
+> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive. The latter takes effect if specified simultaneously.
 
 **Examples:**
 
@@ -4010,10 +4016,10 @@ Scans installed ErisPulse modules and adapters, generates `.pyi` type stub files
 # Generate type stubs for all installed modules and adapters
 epsdk types
 
-# Generate only adapter stubs
+# Generate adapter stubs only
 epsdk types --adapters-only
 
-# Output to specified directory
+# Output to a specific directory
 epsdk types -o ./typings
 
 # Force overwrite existing files
@@ -4022,14 +4028,45 @@ epsdk types --force
 
 ---
 
-## Global Parameters
+## Global Arguments
 
-The following parameters apply to all commands:
+The following arguments apply to all commands:
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
 | `--help` | `-h` | Display help information |
-| `--verbose` | `-v` | Display detailed output |
+| `--version` | `-V` | Display version information |
+| `--verbose` | `-v` | Display verbose output (can stack `-vv`/`-vvv`) |
+| `--no-color` | | Disable colored output (suitable for CI / log collection) |
+| `--yes` | `-y` | Auto-confirm all interactive prompts (non-interactive run) |
+
+---
+
+## Environment Diagnosis
+
+### doctor
+
+Diagnose the current CLI runtime environment and output a health report. Used to troubleshoot "why can't I install / connect" type issues.
+
+| Argument | Description |
+|----------|-------------|
+| `--verbose` | Display detailed diagnostic information |
+
+**Checks**:
+- **Python**: Interpreter version and path
+- **Install Backend**: Using `uv` or `pip`
+- **Target Interpreter**: The target Python environment packages are actually installed to
+- **Config File**: Whether `config/config.toml` exists
+- **PyPI Connectivity**: Whether PyPI can be accessed (and displays number of components found)
+- **System Proxy**: Whether a proxy is detected
+
+```bash
+# Run environment diagnosis
+epsdk doctor
+
+# Using alias
+epsdk diag
+```
 
 ---
 
@@ -4048,10 +4085,10 @@ The interactive interface provides:
 
 ## Common Usage
 
-### Installing Modules
+### Install Modules
 
 ```bash
-# Install single module
+# Install a single module
 epsdk install Weather
 
 # Install multiple modules
@@ -4061,7 +4098,7 @@ epsdk install Yunhu Weather
 epsdk install Weather -U
 ```
 
-### Listing Components
+### List Components
 
 ```bash
 # List all components
@@ -4073,21 +4110,21 @@ epsdk list -t adapters
 # List only upgradable components
 epsdk list -o
 
-# View remote available components
+# View remotely available components
 epsdk list-remote
 ```
 
-### Uninstalling Components
+### Uninstall Components
 
 ```bash
-# Uninstall single component
+# Uninstall a single component
 epsdk uninstall Weather
 
 # Uninstall multiple components
 epsdk uninstall Yunhu Weather
 ```
 
-### Upgrading Components
+### Upgrade Components
 
 ```bash
 # Upgrade all components
@@ -4100,7 +4137,7 @@ epsdk upgrade Weather
 epsdk upgrade -f
 ```
 
-### Running Project
+### Run Project
 
 ```bash
 # Normal run
@@ -4110,30 +4147,30 @@ epsdk run main.py
 epsdk run main.py --reload
 ```
 
-### Switching Language
+### Switch Language
 
 ```bash
 # Interactive language selection
 epsdk i18n
 
-# Directly switch to English
+# Switch directly to English
 epsdk i18n en
 
 # List supported languages
 epsdk i18n --list
 ```
 
-### Generating Type Stubs
+### Generate Type Stubs
 
 ```bash
 # Generate all type stubs
 epsdk types
 
-# Generate only module type stubs
+# Generate module type stubs only
 epsdk types --modules-only
 ```
 
-### Initializing Project
+### Initialize Project
 
 ```bash
 # Interactive initialization
@@ -4143,10 +4180,10 @@ epsdk init
 epsdk init -q -n my_bot
 ```
 
-### Creating Scaffold
+### Create Scaffolding
 
 ```bash
-# Interactive creation (guided selection of type and filling information)
+# Interactive creation (guided selection of type and input)
 epsdk create
 
 # Directly create Module project
@@ -4155,8 +4192,8 @@ epsdk create module -n MyModule
 # Directly create Adapter project
 epsdk create adapter -n MyAdapter
 
-# Complete parameters
-epsdk create module -n MyModule -d "module description" -a "author" -e "mail@example.com"
+# Full arguments
+epsdk create module -n MyModule -d "Module Description" -a "Author" -e "mail@example.com"
 
 # Force overwrite existing directory
 epsdk create module -n MyModule -f
@@ -6628,38 +6665,38 @@ class MyStorage(BaseStorage):
 
 # Router Manager
 
-The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. Under the hood, it is wrapped by an abstraction layer (currently FastAPI + Uvicorn)
+The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. The underlying implementation uses an abstraction layer (currently FastAPI + Uvicorn).
 
 ## Overview
 
-Key features of the Router Manager:
+The main features of the Router Manager are:
 
-- **Decorator Routes**: Support `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration
-- **Auto Injection**: Route handlers do not need to import FastAPI types; the framework automatically injects abstract objects
-- **Route Groups**: Support for `RouteGroup` with prefix and version
-- **Route Middleware**: Request interception supporting glob pattern matching
+- **Decorator Routes**: Supports `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration
+- **Automatic Injection**: Route handlers do not require importing FastAPI types; the framework automatically injects abstract objects
+- **Route Grouping**: Supports `RouteGroup` with prefixes and version numbers
+- **Route Middleware**: Supports request interception with glob pattern matching
 - **Rate Limiting**: Built-in sliding window rate limiting
-- **CORS Support**: One-click enable Cross-Origin Resource Sharing
+- **CORS Support**: One-click enablement of cross-origin resource sharing
 - **Security Headers**: Automatic addition of security response headers
-- **Auto Docs**: Interactive documentation based on OpenAPI
+- **Automatic Documentation**: Interactive documentation based on OpenAPI
 - **WebSocket Support**: Complete WebSocket connection management, custom authentication, and lifecycle hooks
-- **Lifecycle Integration**: Deep integration with the ErisPulse lifecycle system
+- **Lifecycle Integration**: Deep integration with ErisPulse lifecycle system
 - **SSL/TLS Support**: Support for HTTPS and WSS secure connections
-- **Home Page Entry**: Support for module shortcuts on the root route `/`, with internationalization support
+- **Homepage Entry**: Support for modules to register quick entry buttons on the root route `/`, with internationalization support
 
 ## Abstract Types
 
-ErisPulse provides server-side abstract types to allow modules to avoid direct dependencies on FastAPI:
+ErisPulse provides server-side abstraction types, allowing modules to avoid direct dependencies on FastAPI:
 
-| Abstract Type | FastAPI Equivalent | Description |
-|--------------|-------------------|-------------|
-| `HttpRequest` | `fastapi.Request` | HTTP request wrapper, fully compatible interface |
-| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection wrapper, additionally provides lifecycle hooks |
+| Abstract Type | FastAPI Correspondence | Description |
+|---------------|------------------------|-------------|
+| `HttpRequest` | `fastapi.Request` | HTTP request encapsulation, fully compatible interface |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection encapsulation, additional lifecycle hooks |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket disconnect exception |
 
-> `WebSocketConnection` inherits from `WebSocketConnectionBase` and shares the same send/receive/iter/close interface as client WebSockets (`ClientWebSocket`). Client and server WebSockets can use the same business logic code.
+> `WebSocketConnection` inherits from `WebSocketConnectionBase`, sharing the same send/receive/iter/close interface with the client-side WebSocket (`ClientWebSocket`). The same business logic code can be used for both client and server WebSocket.
 >
-> Access the underlying FastAPI native object via the `.raw` attribute. Code directly using FastAPI types is also fully compatible.
+> The underlying FastAPI native object is accessible via the `.raw` property. Code using FastAPI types directly is also fully compatible.
 
 ## Decorator Routes (Recommended)
 
@@ -6671,7 +6708,7 @@ from ErisPulse.Core import router
 async def get_info(request):
     return {"method": request.method, "path": str(request.url)}
 
-# Can also explicitly annotate abstract types
+# Also explicitly annotate with abstract types
 from ErisPulse.Core import HttpRequest
 
 @router.post("my_module", "/data")
@@ -6688,7 +6725,7 @@ async def delete_data(request):
     return {"deleted": True}
 ```
 
-> **Auto Injection Rule**: When the first parameter name of the handler is `request` or `req` and there are no FastAPI type annotations, the framework automatically injects `HttpRequest`. Handlers with no parameters or parameters that are not named request are unaffected.
+> **Automatic Injection Rule**: When the first parameter of a handler is named `request` or `req` and has no FastAPI type annotation, the framework automatically injects `HttpRequest`. Handlers without parameters or with non-request parameter names are unaffected.
 
 ### WebSocket Decorators
 
@@ -6727,9 +6764,9 @@ async def secure_ws_handler(ws):
         await ws.send_text(f"Echo: {data}")
 ```
 
-> **Note**: WebSocket handlers and authentication handlers also support auto injection. You can get `WebSocketConnection` without parameter annotations. Annotating `fastapi.WebSocket` also passes the native object, but using abstract types is recommended.
+> **Note**: WebSocket handlers and authentication handlers also support automatic injection. You can obtain `WebSocketConnection` without parameter annotations. Using `fastapi.WebSocket` also allows passing native objects, but abstract types are recommended.
 
-## Traditional Registration Method
+## Traditional Registration Methods
 
 ```python
 async def hello_handler(request):
@@ -6743,14 +6780,14 @@ router.register_http_route(
     methods=["GET"],
 )
 
-# With rate limiting and doc info
+# With rate limiting and documentation information
 router.register_http_route(
     module_name="my_module",
     path="/api/data",
     handler=data_handler,
     methods=["POST"],
     rate_limit="10/minute",
-    summary="Data API",
+    summary="Data endpoint",
     tags=["API"],
 )
 ```
@@ -6771,7 +6808,7 @@ router.register_websocket(
     handler=websocket_handler,
 )
 
-# Registration with authentication (Recommended)
+# Registration with authentication (recommended)
 async def auth_handler(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
@@ -6786,29 +6823,29 @@ router.register_websocket(
 
 **Parameter Description:**
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `module_name` | Module name (Required) | - |
+| Parameter | Description | Default Value |
+|-----------|-------------|---------------|
+| `module_name` | Module name (required) | - |
 | `path` | WebSocket path | - |
 | `handler` | Handler function | - |
-| `auth_handler` | Authentication function, connection closes automatically if returns `False` | `None` |
+| `auth_handler` | Authentication function, returning `False` will automatically close the connection | `None` |
 | `auto_accept` | Whether to automatically `accept()` | `True` |
 
-> **Recommendation**: Use `auth_handler` for connection confirmation instead of disabling `auto_accept`. Only set `auto_accept=False` when you need full control over the connection flow.
+> **Recommendation**: Use `auth_handler` for connection confirmation, rather than setting `auto_accept=False`. Only set `auto_accept=False` if you need to fully control the connection process.
 
 ## WebSocket Lifecycle Hooks
 
-`WebSocketConnection` provides registration for disconnection and error callbacks, eliminating the need for manual try/catch:
+`WebSocketConnection` provides callback registration for disconnection and errors, eliminating the need for manual try/catch:
 
 ```python
 from ErisPulse.Core import WebSocketConnection
 
 @router.ws("my_module", "/ws")
 async def my_ws(ws: WebSocketConnection):
-    # Register via decorator
+    # Decorator way to register
     @ws.on_disconnect
     async def on_close(ws, reason="unknown"):
-        print(f"Reason for disconnect: {reason}")
+        print(f"Disconnect reason: {reason}")
 
     # Can also call directly
     async def on_err(ws, error=""):
@@ -6820,10 +6857,10 @@ async def my_ws(ws: WebSocketConnection):
         await ws.send_text(f"Echo: {msg}")
 ```
 
-## Route Groups
+## Route Grouping
 
 ```python
-# Create a route group with prefix
+# Create a route group with a prefix
 group = router.group("my_module", prefix="/v1")
 
 @group.get("/users")
@@ -6854,9 +6891,34 @@ async def admin_middleware(request, call_next):
     return await call_next(request)
 ```
 
+## Request Correlation ID (X-Request-ID)
+
+Starting from version 2.7.0, each HTTP request carries an `X-Request-ID` correlation ID for logging and trace linking:
+
+- **Generation Rule**: Prioritize using the `X-Request-ID` header provided by the client (for distributed tracing scenarios); otherwise, generate a UUID automatically
+- **Response Header**: The response will write back the `X-Request-ID`, making it easy for the client to match requests with logs
+- **Lifecycle Events**: The `server.request` and `server.response` event data will include a new `request_id` field
+
+```python
+# Listen for request events in modules, linking requests and responses by request_id
+@sdk.lifecycle.on("server.request")
+async def on_request(data):
+    print(f"[{data['request_id']}] {data['method']} {data['path']}")
+
+@sdk.lifecycle.on("server.response")
+async def on_response(data):
+    print(f"[{data['request_id']}] -> {data['status_code']}")
+```
+
+Clients can customize the ID for cross-service tracing:
+
+```bash
+curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
+```
+
 ## Rate Limiting
 
-Rate limit routes using the sliding window algorithm:
+Sliding window algorithm is used for route rate limiting:
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
@@ -6868,7 +6930,7 @@ async def submit_data(request):
     return {"submitted": True}
 ```
 
-Rate limit format: `{count}/{time_window}`, e.g., `10/minute`, `100/hour`.
+Rate limiting format: `{count}/{time window}`, such as `10/minute`, `100/hour`.
 
 ## CORS Configuration
 
@@ -6880,7 +6942,7 @@ router.setup_cors(
 )
 ```
 
-Can also be configured via `config.toml`:
+CORS can also be configured via `config.toml`:
 
 ```toml
 [router.cors]
@@ -6895,34 +6957,34 @@ allow_headers = ["*"]
 router.setup_security_headers()
 ```
 
-Automatically adds security headers such as `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`.
+Automatically adds security headers such as `X-Content-Type-Options`, `X-Frame-Options`, and `X-XSS-Protection`.
 
-Can also be configured via `config.toml`:
+CORS can also be configured via `config.toml`:
 
 ```toml
 [router.security]
 enabled = true
 ```
 
-## Auto Documentation
+## Automatic Documentation
 
 The Router enables OpenAPI interactive documentation by default:
 
 ```python
-# Disable docs
+# Disable documentation
 router.disable_docs()
 
-# Custom doc info
+# Customize documentation information
 router.set_docs_info(
     title="My API",
-    description="API Documentation",
+    description="API documentation",
     version="1.0.0"
 )
 ```
 
 ## Path Handling
 
-Route paths are automatically prefixed with the module name to avoid conflicts:
+Route paths automatically add the module name as a prefix to avoid conflicts:
 
 ```python
 # Register path "/api" to module "my_module"
@@ -6932,7 +6994,7 @@ router.register_http_route("my_module", "/api", handler)
 
 ## System Routes
 
-The Router Manager automatically provides the following system routes:
+The routing manager automatically provides the following system routes:
 
 ### Health Check
 
@@ -6946,14 +7008,14 @@ GET /health
 
 ```
 GET /
-# Returns ErisPulse brand page
+# Returns ErisPulse branded page
 ```
 
-The root route `/` displays the ErisPulse brand page, automatically detects Dashboard availability and adds entry buttons.
+The root route `/` displays the ErisPulse branded page and automatically detects Dashboard availability, adding an entry button.
 
-## Home Page Entry
+## Homepage Entry
 
-The Router Manager allows external modules to register shortcut entry buttons on the root route `/`, making it easy for users to quickly access management pages for various modules.
+The routing manager allows external modules to register quick entry buttons on the root route `/`, making it easier for users to access the management pages of various modules.
 
 ### Register Entry
 
@@ -6971,9 +7033,9 @@ router.register_home_entry(
     icon_svg='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>',
 )
 
-# Registration with internationalization (Project i18n dictionary format)
+# Internationalization support (project i18n dictionary format)
 router.register_home_entry(
-    name={"i18n": "mymodule.home.entry", "default": "我的面板"},
+    name={"i18n": "mymodule.home.entry", "default": "My Dashboard"},
     url="/mymodule/admin",
 )
 ```
@@ -6982,13 +7044,13 @@ router.register_home_entry(
 
 | Parameter | Type | Description | Required |
 |-----------|------|-------------|----------|
-| `name` | `str` / `dict` | Button display text; uses internationalization when passed as `{"i18n": "key", "default": "text"}` dict | Yes |
+| `name` | `str` / `dict` | Button display text; use internationalization when passing a dictionary `{"i18n": "key", "default": "text"}` | Yes |
 | `url` | `str` | Button link address | Yes |
 | `icon_svg` | `str` | Optional SVG icon markup | No |
 
-### Dashboard Auto Registration
+### Dashboard Auto-Registration
 
-When `sdk.Dashboard` is detected as available, the Router Manager automatically adds a Dashboard button to the top of the entry list without manual registration.
+When `sdk.Dashboard` is detected as available, the routing manager automatically adds a Dashboard button at the beginning of the entry list, without manual registration.
 
 ## Lifecycle Integration
 
@@ -7007,30 +7069,30 @@ async def on_server_stop(event):
 ## Best Practices
 
 1. **Prefer Abstract Types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies
-2. **Leverage Auto Injection**: Name the first parameter of the handler `request` or `req` to get `HttpRequest` without any type annotations
-3. **Explicitly Pass module_name**: The first argument of the decorator must be the module name and cannot be omitted
-4. **Use Route Groups**: Use `group()` to organize multiple routes for the same module
+2. **Leverage Automatic Injection**: Name the first parameter of a handler `request` or `req`, and obtain `HttpRequest` without any type annotation
+3. **Explicitly Pass module_name**: The first parameter of a decorator must be the module name; it cannot be omitted
+4. **Use Route Grouping**: Use `group()` to organize multiple routes for the same module
 5. **Security Considerations**: Implement authentication mechanisms and security headers for sensitive operations
-6. **Reasonable Rate Limiting**: Set rate limits for high-frequency APIs
+6. **Reasonable Rate Limiting**: Set rate limits for high-frequency endpoints
 7. **Use Lifecycle Hooks**: Handle WebSocket exceptions via `@ws.on_disconnect` / `@ws.on_error` to avoid manual try/catch
 
 ## Related Documentation
 
-- [HTTP Client](http-client.md) - Sending requests using the built-in HTTP client
-- [Module Development Guide](../developer-guide/modules/getting-started.md) - Understanding module route registration
-- [Best Practices](../developer-guide/modules/best-practices.md) - Recommendations for using routes
+- [HTTP Client](docs/en/http-client.md) - Using the built-in HTTP client to send requests
+- [Module Development Guide](docs/en/developer-guide/modules/getting-started.md) - Learn about module route registration
+- [Best Practices](docs/en/developer-guide/modules/best-practices.md) - Routing usage recommendations
 
 
 ### 生命周期管理
 
 # Lifecycle Management
 
-ErisPulse provides a unified hooks/lifecycle system for monitoring the running status of various system components, and implementing extended functionalities such as audit, statistics, and custom logic.
+ErisPulse provides a unified hook/lifecycle system for monitoring the runtime status of various system components, and implementing extension features such as auditing, statistics, and custom logic.
 
 The system supports three trigger methods:
 - `await lifecycle.emit("event", data)` — Simplified version, passing arbitrary data
 - `lifecycle.emit_sync("event", data)` — Synchronous version (for non-async contexts)
-- `await lifecycle.submit_event("event", ...)` — Backward compatible, automatically builds standard event format
+- `await lifecycle.submit_event("event", ...)` — Compatible with old versions, automatically builds standard event format
 
 ## Event Handling Mechanism
 
@@ -7047,17 +7109,17 @@ async def on_module_load(data):
 # Programmatic registration
 sdk.lifecycle.register("module.load", on_module_load, priority=10)
 
-# Unregistering
+# Unregister
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# Batch unregister by owner (called by framework automatically when module/adapter unloads)
+# Batch unregister by owner (automatically called by framework when module/adapter is unloaded)
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
 print(f"Cleaned up {removed} lifecycle hooks")
 ```
 
 ### Priority
 
-Handlers support the `priority` parameter; higher numbers execute earlier (consistent with module loaders):
+Handlers support the `priority` parameter; larger values execute first (consistent with module loaders):
 
 ```python
 @sdk.lifecycle.on("adapter.event.receive", priority=10)  # Executes first
@@ -7069,7 +7131,7 @@ async def second_handler(data):
     pass
 ```
 
-### Dot Notation Events
+### Dot-Named Events
 
 Triggering a specific event also triggers its parent events:
 - Triggering `module.load` also triggers `module`
@@ -7085,23 +7147,49 @@ async def on_anything(data):
     print(f"Received event: {data}")
 ```
 
+### One-time Registration (once)
+
+Since 2.7.0, handlers registered via `lifecycle.once()` are **automatically unregistered after triggering once**, suitable for "first ready" type one-time hooks:
+
+```python
+@sdk.lifecycle.once("core.init.complete")
+async def on_first_ready(data):
+    print("First ready, will not trigger again")
+```
+
+- Same priority parameter semantics as `on()` (larger priority values execute first)
+- Automatic unregistration, no need to manually `unregister`
+- Supports both sync and async handlers
+
+### Listener Query (has_handlers)
+
+In hot path short-circuit scenarios, you can use `has_handlers()` to check if there are listeners first, avoiding unnecessary event traversal and task scheduling:
+
+```python
+if sdk.lifecycle.has_handlers("message.sending"):
+    await sdk.lifecycle.emit("message.sending", send_ctx)
+```
+
+- Covers **exact event name, wildcard `*`, and parent events** matching
+- Returns `False` when there are no listeners, allowing safe skip of `emit`
+
 ## Hook Breakpoints Overview
 
-The framework includes the following built-in hook breakpoints; users can listen to any breakpoint via `@sdk.lifecycle.on()` to implement custom logic.
+The framework has built-in the following hook breakpoints, and users can implement custom logic by monitoring any breakpoint via `@sdk.lifecycle.on()`.
 
 ### Core Initialization
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
+|---------|-------------|------|
 | `core.init.start` | SDK initialization starts | `{}` |
-| `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(only if failed)}` |
-| `core.uninit.complete` | SDK deinitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(only if failed)}` |
+| `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(only on failure)}` |
+| `core.uninit.complete` | SDK uninitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(only on failure)}` |
 
 ### Configuration Changes
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
-| `config.set` | Configuration item modified | `{"key": str, "old_value": Any, "new_value": Any}` |
+|---------|-------------|------|
+| `config.set` | A configuration item is modified | `{"key": str, "old_value": Any, "new_value": Any}` |
 
 **Example: Configuration Audit**
 
@@ -7114,30 +7202,30 @@ def audit_config(data):
 ### Module Lifecycle
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
+|---------|-------------|------|
 | `module.register` | Module class registered to manager | `{"module_name": str, "success": bool}` |
-| `module.load` | Module loaded (instantiation successful) | `{"module_name": str, "success": bool}` |
-| `module.init` | Module initialized (including lazy loading) | `{"module_name": str, "success": bool}` |
+| `module.load` | Module loading completed (instantiation successful) | `{"module_name": str, "success": bool}` |
+| `module.init` | Module initialization completed (including lazy loading) | `{"module_name": str, "success": bool}` |
 | `module.unload` | Module unloaded | `{"module_name": str, "success": bool}` |
 
 ### Adapter Lifecycle
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
-| `adapter.load` | Adapter registration complete | `{"platform": str, "success": bool}` |
+|---------|-------------|------|
+| `adapter.load` | Adapter registration completed | `{"platform": str, "success": bool}` |
 | `adapter.start` | Adapter started | `{"platforms": [str]}` |
-| `adapter.status.change` | Adapter status changed | `{"platform": str, "status": str, "retry_count": int, "error": str(only if failed)}` |
+| `adapter.status.change` | Adapter status changed | `{"platform": str, "status": str, "retry_count": int, "error": str(only on failure)}` |
 | `adapter.stop` | Adapter stopped | `{"platforms": [str]}` |
-| `adapter.stopped` | Adapter stopped complete | `{"platforms": [str]}` |
+| `adapter.stopped` | Adapter stopped completed | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot went online | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot went offline | `{"platform": str, "bot_id": str, "status": str}` |
 
 ### Event Reception and Processing
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
-| `adapter.event.receive` | Received external platform event (earliest) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.dispatched` | Event dispatched | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+|---------|-------------|------|
+| `adapter.event.receive` | External platform event received (earliest stage) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.dispatched` | Event dispatch completed | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
 | `event.pre_process` | Before event handler starts executing | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **Example: Event Statistics**
@@ -7159,9 +7247,9 @@ def log_unhandled(data):
 ### Message Sending
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
+|---------|-------------|------|
 | `message.sending` | Message about to be sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | Message sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | Message sent completed | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **Example: Message Sending Audit**
 
@@ -7174,9 +7262,9 @@ def log_sending(data):
 ### Command System
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
+|---------|-------------|------|
 | `command.matched` | Command matched and about to execute | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | Command execution completed | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(only if failed)}` |
+| `command.executed` | Command execution completed | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(only on failure)}` |
 
 **Example: Command Statistics**
 
@@ -7186,10 +7274,10 @@ def count_commands(data):
     print(f"[Command] /{data['command']} from {data['user_id']}@{data['platform']}")
 ```
 
-### HTTP Routing
+### HTTP Routes
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
+|---------|-------------|------|
 | `server.request` | HTTP request received | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | HTTP response sent | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
@@ -7204,11 +7292,11 @@ def log_http(data):
 ### WebSocket
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
+|---------|-------------|------|
 | `server.start` | Routing server started | `{"base_url": str, "host": str, "port": int}` |
 | `server.stop` | Routing server stopped | `{}` |
 | `server.websocket.connect` | WebSocket connection established | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket connection disconnected | `{"path": str, "module_name": str, "reason": str, "error": str(only if exception)}` |
+| `server.websocket.disconnect` | WebSocket connection disconnected | `{"path": str, "module_name": str, "reason": str, "error": str(only on exception)}` |
 
 **Example: WebSocket Connection Monitoring**
 
@@ -7219,7 +7307,7 @@ def on_ws_connect(data):
 
 @sdk.lifecycle.on("server.websocket.disconnect")
 def on_ws_disconnect(data):
-    print(f"[WS] Disconnected: {data['path']} ({data['reason']})")
+    print(f"[WS] Disconnection: {data['path']} ({data['reason']})")
 ```
 
 ## Standard Event Definition
@@ -7251,29 +7339,29 @@ STANDARD_EVENTS = {
 
 | Method | Description |
 |------|------|
-| `@lifecycle.on(event, *, priority=0)` | Decorator registration of handlers |
+| `@lifecycle.on(event, *, priority=0)` | Decorator to register a handler |
 | `lifecycle.register(event, handler, *, priority=0)` | Programmatic registration |
-| `lifecycle.unregister(event, handler=None)` | Unregister (cancel) handler; when handler=None, all handlers for that event are cancelled |
+| `lifecycle.unregister(event, handler=None)` | Unregister (when handler=None, unregisters all handlers for that event) |
 
 ### Triggering
 
 | Method | Description |
 |------|------|
-| `await lifecycle.emit(event, data=None)` | Asynchronous trigger; if handler returns non-None, data is modified |
-| `lifecycle.emit_sync(event, data=None)` | Synchronous trigger; async handlers are scheduled via create_task |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | Backward compatible, automatically builds standard event format |
+| `await lifecycle.emit(event, data=None)` | Async trigger; if handler returns non-None, it modifies data passed to subsequent handlers |
+| `lifecycle.emit_sync(event, data=None)` | Sync trigger; async handlers are scheduled via create_task |
+| `await lifecycle.submit_event(event_type, *, source, msg, data)` | Compatible with old versions, automatically builds standard event format |
 
 ### Utilities
 
 | Method | Description |
 |------|------|
-| `lifecycle.start_timer(timer_id)` | Start timer |
-| `lifecycle.get_duration(timer_id)` | Get elapsed time (seconds) |
-| `lifecycle.stop_timer(timer_id)` | Stop timer and return elapsed duration |
-| `lifecycle.list_hooks()` | List all registered hooks and handler count |
+| `lifecycle.start_timer(timer_id)` | Start a timer |
+| `lifecycle.get_duration(timer_id)` | Get elapsed duration (seconds) |
+| `lifecycle.stop_timer(timer_id)` | Stop timer and return duration |
+| `lifecycle.list_hooks()` | List all registered hooks and number of handlers |
 | `lifecycle.clear()` | Clear all handlers and timers |
 
-## Usage Example in Modules
+## Example Usage in Module
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -7281,7 +7369,7 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # Implement simple message statistics
+        # Implement simple message counting
         self.msg_count = 0
         
         @sdk.lifecycle.on("adapter.event.receive")
@@ -7300,20 +7388,20 @@ class Main(BaseModule):
             sdk.logger.info(f"Config changed: {data['key']} = {data['new_value']}")
 ```
 
-## Notes
+## Important Notes
 
-1. **Handlers can be sync or async**: The system automatically detects and invokes them correctly
-2. **Data passing**: In `emit()` mode, if a handler returns a non-None value, it modifies the data passed to subsequent handlers
-3. **Event naming convention**: It is recommended to use dot notation for event names for easier parent-level listening
-4. **Error isolation**: Exceptions in a single handler do not affect other handlers
-5. **Sync trigger limitations**: Async handlers in `emit_sync()` are fired-and-forget; return values cannot be propagated back
-6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered handlers and timers are cleared
-7. **Loading priority**: If you need to listen to events during the framework initialization phase, it is recommended to set a high priority and disable lazy loading
+1. **Handlers can be sync or async**: The system automatically detects and calls them correctly
+2. **Data Passing**: In `emit()` mode, if a handler returns a non-None value, it modifies the data passed to subsequent handlers
+3. **Event Naming Convention**: It is recommended to use dot-named events for easier parent event listening
+4. **Error Isolation**: Exceptions in a single handler do not affect other handlers
+5. **Sync Trigger Limitations**: In `emit_sync()`, async handlers are fired-and-forget, return values cannot be propagated back
+6. **Lifecycle Cleanup**: When `sdk.uninit()` is called, all registered handlers and timers are cleaned up
+7. **Loading Priority**: If you need to listen to events during framework initialization, it is recommended to set a high priority and disable lazy loading
 
 ## Related Documentation
 
-- [Module Development Guide](../developer-guide/modules/getting-started.md) - Understand module lifecycle methods
-- [Best Practices](../developer-guide/modules/best-practices.md) - Recommendations for using lifecycle events
+- [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn about module lifecycle methods
+- [Best Practices](../developer-guide/modules/best-practices.md) - Suggestions for using lifecycle events
 
 
 ### 懒加载系统
@@ -7646,21 +7734,21 @@ clear_custom_types(platform="discord")  # Clear only specified platform
 
 # Internationalization (i18n) System
 
-ErisPulse v2.5.0 onwards includes full internationalization support. Both the framework core and CLI interface can automatically switch display text based on your system language, and external modules can also register their own translations.
+Since ErisPulse v2.5.0, a complete internationalization support has been built-in. The framework core and CLI interface can automatically switch display text based on your system language, and support for external modules to register their own translations is also available.
 
 ## Supported Languages
 
 | Language | Code | Description |
-|----------|------|-------------|
-| Simplified Chinese | `zh-CN` | Default language (native framework language) |
-| Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong/Macau/Taiwan) |
-| English | `en` | English (fallback language) |
-| Japanese | `ja` | Japanese |
-| Russian | `ru` | Russian |
+|------|------|------|
+| Simplified Chinese | `zh-CN` | Default language (native language of the framework) |
+| Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong / Macao / Taiwan) |
+| English | `en` | English (general fallback language) |
+| 日本語 | `ja` | Japanese |
+| Русский | `ru` | Russian |
 
 ## Quick Experience
 
-### Switch via Environment Variable
+### Switch via Environment Variables
 
 ```bash
 # Windows PowerShell
@@ -7673,16 +7761,16 @@ ERISPULSE_LANG=ja epsdk run
 
 ### Switch via Configuration File
 
-Add to `config/config.toml`:
+Add the following to `config/config.toml`:
 
 ```toml
 [ErisPulse.i18n]
 language = "zh-TW"
 ```
 
-Set to `"auto"` (default) to automatically detect system language.
+Setting it to `"auto"` (default) will automatically detect the system language.
 
-### Switch Manually in Code
+### Manually Switch in Code
 
 ```python
 from ErisPulse import i18n
@@ -7691,7 +7779,7 @@ from ErisPulse import i18n
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
-# Reset to automatic detection
+# Reset to auto detection
 i18n.reset_language()
 ```
 
@@ -7699,21 +7787,21 @@ i18n.reset_language()
 
 ## Language Detection Mechanism
 
-The framework detects user language in the following priority order:
+The framework detects the user language with the following priority:
 
-1. **Environment Variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching
-2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, unaffected by tools like Git Bash that override `LANG`)
-3. **Environment Variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (standard Unix/macOS)
+1. **Environment variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching
+2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, not affected by tools like Git Bash overriding `LANG`)
+3. **Environment variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standard)
 4. **System Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
 5. **Fallback** — en (English)
 
-### Nearest Mapping Principle
+### Principle of Proximity Mapping
 
-When detected language is not an exact match, map to supported languages based on proximity:
+When the detected language is not an exact match, map it to a supported language according to the principle of proximity:
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **Traditional Chinese**
 - All other `zh-*` (e.g., `zh-CN`, `zh-SG`) → **Simplified Chinese**
-- `en-US`, `en-GB`, `en-AU` etc. → **English**
+- `en-US`, `en-GB`, `en-AU`, etc. → **English**
 - `ja-JP` → **Japanese**
 - `ru-RU` → **Russian**
 - Other unrecognized languages → **Simplified Chinese (fallback)**
@@ -7722,11 +7810,11 @@ When detected language is not an exact match, map to supported languages based o
 
 ## Using i18n in Modules
 
-You can register translation text for your own module, enabling multi-language support for your module.
+You can register translation text for your own module, enabling your module to support multiple languages as well.
 
 ### Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)
 
-Starting from v2.7.0, modules/adapters can declare translation keys using a nested `I18nClass`, similar to declaring `ConfigClass`. The framework will **automatically register** all declared translation keys upon loading, eliminating the need to manually call `i18n.register()`.
+Starting from v2.7.0, modules/adapters can declare translation keys via the nested class `I18nClass`, just like declaring `ConfigClass`. The framework will **automatically register** all declared translation keys during loading, without the need to manually call `i18n.register()`.
 
 ```python
 from dataclasses import dataclass, field
@@ -7735,21 +7823,21 @@ from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey
 
 
 class MyModule(BaseModule):
-    # Configuration class (optional)
+    # Config class (optional)
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
-            default="Welcome",
+            default="欢迎",
             metadata={
-                # Reference to i18n key mymodule.welcome_msg
-                "description": {"i18n": "mymodule.welcome_msg", "default": "Welcome message"},
+                # References i18n key mymodule.welcome_msg here
+                "description": {"i18n": "mymodule.welcome_msg", "default": "Welcome Message"},
             },
         )
 
-    # Translation key collection class (optional)
-    # Declared keys will be automatically registered by the framework, with higher priority than ConfigClass-generated defaults
+    # Translation keys collection class (optional)
+    # Keys declared will be automatically registered by the framework, with higher priority than ConfigClass generating default config
     class I18nClass(BaseI18n):
-        # Attribute names are automatically concatenated into full key paths: <module_name>.<attribute_name>
+        # Property names are automatically concatenated into the full key path: <ModuleName>.<PropertyName>
         welcome_msg: I18nKey = I18nKey(
             default="Welcome Message",   # Language-agnostic fallback, not registered to any language
             zh_CN="欢迎消息",
@@ -7758,7 +7846,7 @@ class MyModule(BaseModule):
             ru="Приветственное сообщение",
             zh_TW="歡迎訊息",
         )
-        # Other business-related translation keys
+        # Other translation keys used by business logic
         hello: I18nKey = I18nKey(
             default="Hello, {name}!",
             zh_CN="你好，{name}！",
@@ -7768,7 +7856,7 @@ class MyModule(BaseModule):
             ru="Привет, {name}!",
         )
 
-        # Explicitly specify full key path (not using attribute name concatenation)
+        # Can also explicitly specify the full key path (not using property name concatenation)
         custom: I18nKey = I18nKey(
             key="mymodule.deep.nested.key",
             default="Default text",
@@ -7780,25 +7868,25 @@ class MyModule(BaseModule):
         )
 ```
 
-#### Why I18nClass is Recommended?
+#### Why Recommend I18nClass?
 
 | Scenario | Manual i18n.register() | I18nClass Declarative |
-|----------|-----------------------|------------------|
-| i18n keys referenced in config descriptions | Must be manually registered, and must be done before config generation | Framework automatically registers before config generation |
-| Multi-language translation declarations | Scattered across various on_load() methods | Centralized in class, clear at a glance |
-| Key naming consistency | Prone to spelling errors | Attribute name as key suffix, IDE can autocomplete |
-| Cleanup on unload | Must manually unregister_domain() | Framework uses unified domain registration |
+|------|-----------------------|------------------|
+| i18n keys referenced in config descriptions | Needs manual registration, and must be done before config generation | Framework automatically registers before config generation |
+| Multi-language translation declarations | Scattered across various on_load() | Centralized in a class, clear at a glance |
+| Naming consistency of keys | Prone to typos | Property name serves as suffix for key name, IDE can autocomplete |
+| Cleanup on unload | Needs manual unregister_domain() | Framework uses unified domain registration |
 
 #### I18nClass Key Path Rules
 
-- **Default**: Use ``<module registration name>.<attribute name>`` as the full key path
-  - Example: Module name is ``MyModule``, attribute ``welcome`` → key path ``MyModule.welcome``
-- **Explicit**: Specify any dot-separated path using the ``I18nKey(key="...")`` parameter
+- **Default**: Use ``<ModuleName>.<PropertyName>`` as the full key path
+  - Example: Module name is ``MyModule``, property ``welcome`` → key path ``MyModule.welcome``
+- **Explicit**: Specify any dotted path via the ``I18nKey(key="...")`` parameter
   - Suitable for deeply nested key names (e.g., ``mymodule.config.basic.token``)
 
-#### Using in Adapters
+#### Usage in Adapters
 
-Adapters also support `I18nClass`, with the same usage:
+Adapters also support `I18nClass`, with exactly the same usage:
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -7811,13 +7899,13 @@ class MyAdapter(BaseAdapter):
         endpoint: str = field(
             default="",
             metadata={
-                # Configuration description references adapter.MyAdapter.endpoint key
+                # Configuration description references the adapter.MyAdapter.endpoint key
                 "description": {"i18n": "MyAdapter.endpoint", "default": "API Address"},
             },
         )
 
     class I18nClass(BaseI18n):
-        # Central declaration of i18n keys referenced in configuration descriptions and other business keys
+        # Centralize declarations of keys referenced by config descriptions and other business keys
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
             zh_CN="API 地址",
@@ -7828,11 +7916,11 @@ class MyAdapter(BaseAdapter):
         )
 ```
 
-The `I18nClass` of an adapter is automatically registered during the `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available.
+The adapter's `I18nClass` will be automatically registered during the `__init__` phase (i.e., before configuration template generation), ensuring i18n keys referenced by configuration descriptions are available.
 
-### Manually Register Custom Translations (Old Approach)
+### Manually Register Custom Translations (Legacy Approach)
 
-If you don't use `I18nClass`, you can directly call `i18n.register()` to register translation text.
+If you do not use `I18nClass`, you can also directly call `i18n.register()` to register translation text.
 
 ```python
 from ErisPulse import i18n
@@ -7860,14 +7948,14 @@ from ErisPulse import i18n
 # Simple translation
 i18n.t("my_module.welcome")  # Automatically uses current language
 
-# With formatting parameters
+# With formatted parameters
 i18n.t("my_module.hello", name="Alice")
 
-# Specify default value (returned if translation key does not exist)
-i18n.t("my_module.unknown_key", default="Default text")
+# Specify default value (returned when translation key does not exist)
+i18n.t("my_module.unknown_key", default="默认文本")
 ```
 
-### Using in Module Classes
+### Using in Module Class
 
 ```python
 from dataclasses import dataclass, field
@@ -7877,9 +7965,9 @@ from ErisPulse.Core.Bases import BaseConfig, BaseModule
 @dataclass
 class MyModuleConfig(BaseConfig):
     welcome_msg: str = field(
-        default="Welcome",
+        default="欢迎",
         metadata={
-            "description": {"i18n": "my_module.welcome_msg", "default": "Welcome message"},
+            "description": {"i18n": "my_module.welcome_msg", "default": "欢迎消息"},
             "ui": {"widget": "text", "group": "basic", "order": 1},
         },
     )
@@ -7888,7 +7976,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # Real-time configuration access (reflects latest value on each access)
+        # Read config in real-time (reflects the latest value on every access)
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -7901,29 +7989,29 @@ class MyModule(BaseModule):
         pass
 ```
 
-### Unregistering Translations
+### Unloading Translations
 
 ```python
-# Unregister all translations for a domain
+# Unload all translations for a specific domain
 i18n.unregister_domain("my_module")
 ```
 
 ---
 
-## Multi-language Configuration Fields
+## Multi-language Support for Config Fields
 
-Starting from v2.5.2, configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically resolve them to corresponding text based on the current language.
+Starting from v2.5.2, the config Schema fully supports i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically parse them into corresponding text based on the current language.
 
 ### Supported i18n Fields
 
 | Field | Location | Description |
-|-------|----------|-------------|
+|------|------|------|
 | `description` | field metadata | Field description |
 | `options[].label` | `ui.options` | Select control option labels |
 | `placeholder` | `ui.placeholder` | Input field placeholder |
 | `group_labels` | `_schema_meta` | Group display names (Dashboard section titles) |
 
-All fields use the format `{"i18n": "key", "default": "text"}`. Pure strings are passed through as-is (for backward compatibility).
+The unified format is `{"i18n": "key", "default": "text"}`, pure strings are passed through as-is (backward compatible).
 
 ### Declaring i18n Fields
 
@@ -7976,18 +8064,51 @@ class MyAdapterConfig(BaseConfig):
     }
 ```
 
-`default` is the fallback text—used when translation is not registered or lookup fails.
+`default` is the fallback text—it will be displayed when a translation is not registered or lookup fails.
 
-### Registering Configuration Translations
+### Secret Masking and Config Validation
 
-Configuration field i18n keys are registered the same way as regular translation keys using `i18n.register()`:
+Fields marked with `"secret": True` automatically gain **masked protection** (since v2.7.0):
+
+- **Template generation masking**: When `dataclass_to_toml_with_comments()` generates a configuration template, the actual value of secret fields will not be written to the file (displayed as empty placeholders), preventing sensitive information from being persisted
+- **General masking utility**: `redact_secret(value)` replaces non-empty values with `***`, returns empty values as-is, and can be used for scenarios like log output
+
+```python
+from ErisPulse.Core.Bases.config_schema import redact_secret
+
+redact_secret("sk-xxxxxx")  # '***'
+redact_secret("")           # ''
+```
+
+**Config Validation** (`validate_config()`) supports (in addition to the `required` non-empty check since v2.7.0):
+
+| Validation Item | Metadata | Example |
+|--------|--------|------|
+| Type matching | Field declared type | Passing a string to an `int` field throws an error |
+| Enum constraint | `ui.options` or top-level `options` | Value must belong to allowed options |
+| Numeric range | Top-level `min` / `max` | `metadata={"min": 1, "max": 65535}` |
+
+```python
+from ErisPulse.Core.Bases.config_schema import validate_config
+
+@dataclass
+class C(BaseConfig):
+    mode: str = field(default="a", metadata={"ui": {"widget": "select", "options": ["a", "b"]}})
+    port: int = field(default=80, metadata={"min": 1, "max": 65535})
+
+errors = validate_config(C(mode="x", port=70000))  # Two errors: enum + range
+```
+
+### Registering Config Translations
+
+i18n keys for config fields are registered using `i18n.register()` just like regular translation keys:
 
 ```python
 from ErisPulse import i18n
 
-# Register Chinese (can be the same as default, or different)
+# Register Chinese (consistent with default, can also be different)
 i18n.register("zh-CN", {
-    "my_adapter.token": "Platform Token",
+    "my_adapter.token": "平台 Token",
 }, domain="my_adapter")
 
 # Register English
@@ -7995,14 +8116,15 @@ i18n.register("en", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 ```
-> **Recommended Approach**: Use `I18nClass` to declare translation keys, and the framework will automatically register them (see the "Recommended Approach" section above), eliminating the need to manually call `i18n.register()` or `register_config_i18n()`.
+> **Recommended Approach**: Use `I18nClass` to declare translation keys. The framework will automatically register them (see the "Recommended Approach" section above for details),
+> eliminating the need to manually call `i18n.register()` or `register_config_i18n()`.
 
-A convenient function `register_config_i18n()` is also provided, which can automatically extract keys from the configuration class and register them:
+The convenience function `register_config_i18n()` is also provided to automatically extract keys from the config class and register them:
 
 ```python
 from ErisPulse.runtime.config_schema import register_config_i18n
 
-# Automatically extract description.default as zh-CN translation
+# Automatically extracts description.default as zh-CN translation
 register_config_i18n(MyAdapterConfig, "zh-CN")
 
 # Manually provide English translation
@@ -8013,22 +8135,26 @@ register_config_i18n(MyAdapterConfig, "en", {
 
 ### How WebUI Consumes
 
-The schema returned by `get_config_schema()` passes through the i18n dictionary as-is. The WebUI frontend can use `i18n.t()` to resolve it based on the current language.
+The i18n dictionary in the schema returned by `get_config_schema()` is passed through as-is. The WebUI frontend can call `i18n.t()` to resolve based on the current language.
 
-If you need the server to directly resolve to a string (e.g., for a frontend that does not support i18n), use `resolve_config_schema()`, which resolves `description`, `options[].label`, `placeholder`, and `group_labels` to the current language's text:
+If you need the server to directly resolve to a string (e.g., returning to a frontend that does not support i18n), use `resolve_config_schema()`, which will resolve `description`, `options[].label`, `placeholder`, and `group_labels` all into the text of the current language:
 
 ```python
 from ErisPulse.runtime.config_schema import resolve_config_schema
 
-# All i18n fields are resolved to the current language's string
+# All i18n fields are resolved into strings of the current language
 schema = resolve_config_schema(MyAdapterConfig)
-print(schema["fields"]["token"]["description"])    # "Platform Token" or "Platform Token"
-print(schema["fields"]["token"]["placeholder"])   # "Please enter Token" or "Enter Token"
-print(schema["fields"]["mode"]["options"][0]["label"])  # "Mode A" or "Mode A"
-print(schema["group_labels"]["basic"])             # "Basic Settings" or "Basic"
+print(schema["fields"]["token"]["description"])    # "平台 Token" or "Platform Token"
+print(schema["fields"]["token"]["placeholder"])   # "请输入 Token" or "Enter Token"
+print(schema["fields"]["mode"]["options"][0]["label"])  # "模式A" or "Mode A"
+print(schema["group_labels"]["basic"])             # "基本设置" or "Basic"
 ```
 
-> `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()` and other types and utility functions are actually defined in `ErisPulse.Core.Bases.config_schema`. `ErisPulse.runtime.config_schema` is kept as a compatibility shim. **It is recommended to import uniformly from `ErisPulse.Core.Bases`** (except for i18n translation key-related types, which are located in `ErisPulse.Core.Bases.i18n_schema`).
+> The actual definitions of types and utility functions like `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, and `resolve_config_schema()`
+> are located in `ErisPulse.Core.Bases.config_schema`.
+> `ErisPulse.runtime.config_schema` is kept as a compatibility shim,
+> **it is recommended to import from `ErisPulse.Core.Bases` uniformly** (with the exception of i18n translation key related types,
+> which are located in `ErisPulse.Core.Bases.i18n_schema`).
 
 ## API Reference
 
@@ -8037,15 +8163,15 @@ print(schema["group_labels"]["basic"])             # "Basic Settings" or "Basic"
 #### Core Methods
 
 | Method | Description |
-|--------|-------------|
-| `t(key, default=None, **kwargs)` | Get translated text (`gettext()` is an alias) |
+|------|------|
+| `t(key, default=None, **kwargs)` | Get translation text (`gettext()` is an alias) |
 | `set_language(lang)` | Manually set language |
 | `get_language()` | Get current language |
-| `reset_language()` | Reset to automatic detection (and re-detect environment) |
+| `reset_language()` | Reset to auto detection (and re-detect environment) |
 | `get_supported_languages()` | Get list of all supported languages |
 | `has_translation(key, lang=None)` | Check if translation key exists |
 | `register(lang, translations, domain)` | Register custom translations |
-| `unregister_domain(domain)` | Unload all translations for a domain |
+| `unregister_domain(domain)` | Unload all translations for a specific domain |
 | `reload()` | Reload built-in translations and re-detect language |
 
 #### `t()` Method Details
@@ -8054,9 +8180,9 @@ print(schema["group_labels"]["basic"])             # "Basic Settings" or "Basic"
 def t(self, key, /, default=None, **kwargs):
 ```
 
-- `key` — Translation key (positional argument only, does not conflict with `**kwargs`'s `key=`)
-- `default` — Default value returned if translation does not exist, default is `None` (returns the key name itself)
-- `**kwargs` — Formatting parameters, used to fill placeholders in the translation value
+- `key` — Translation key (positional argument only, does not conflict with `key=` in `**kwargs`)
+- `default` — Default value returned when translation does not exist; defaults to `None` (returns the key name itself)
+- `**kwargs` — Formatting parameters, used to fill in `{placeholder}` in the translation value
 
 Example:
 
@@ -8068,16 +8194,18 @@ i18n.t("greeting", name="Alice", place="ErisPulse")
 
 ### BaseI18n / I18nKey (Declarative Translation Keys)
 
-Starting from v2.7.0, `ErisPulse.Core.Bases` provides a translation key declaration tool based on class attributes (recommended to import uniformly from `ErisPulse.Core.Bases`):
+Starting from v2.7.0, `ErisPulse.Core.Bases` provides a tool for declaring translation keys based on class properties (it is recommended to import uniformly from `ErisPulse.Core.Bases`):
 
-> ``I18nKey.default`` is a **language-agnostic fallback text**, not registered to any language. To make translations effective, at least one language parameter must be explicitly passed (e.g., ``zh_CN=`` / ``en=`` / ``ja=`` etc.). This allows developers from various countries to freely fill in ``default`` in their native language, and the framework makes no assumptions.
+> ``I18nKey.default`` is **language-agnostic fallback text** and will not be registered to any language.
+> For translations to take effect, you must explicitly pass at least one language parameter (``zh_CN=`` / ``en=`` / ``ja=`` etc).
+> This allows developers from different countries to freely use their native language to fill in ``default`` without the framework making any assumptions.
 
 | Name | Description |
-|------|-------------|
-| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Declare a single translation key, `default` is language-agnostic fallback |
-| `BaseI18n` | Translation key collection base class (naming aligned with `BaseConfig`), sub-classes declare multiple `I18nKey` as class attributes |
-| `BaseI18n.register(prefix="", domain="app")` | Class method: register all declared keys into the i18n system |
-| `key` | Alias for `I18nKey` (more concise writing) |
+|------|------|
+| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Declaration of a single translation key; `default` is language-agnostic fallback |
+| `BaseI18n` | Base class for a collection of translation keys (naming aligned with `BaseConfig`); subclasses declare multiple `I18nKey` as class attributes |
+| `BaseI18n.register(prefix="", domain="app")` | Class method: registers all declared keys to the i18n system |
+| `key` | Alias of `I18nKey` (more concise to write) |
 
 Usage Example:
 
@@ -8085,7 +8213,7 @@ Usage Example:
 from ErisPulse.Core.Bases import BaseI18n, key
 
 class MyKeys(BaseI18n):
-    # Concise alias writing
+    # Concise alias syntax
     hello = key(
         default="Hello",
         zh_CN="你好",
@@ -8103,7 +8231,7 @@ class MyKeys(BaseI18n):
         ru="До свидания",
     )
 
-# Independent usage (manual registration)
+# Standalone usage (manual registration)
 MyKeys.register(prefix="myapp.", domain="myapp")
 ```
 
@@ -8112,7 +8240,7 @@ MyKeys.register(prefix="myapp.", domain="myapp")
 ```python
 from ErisPulse import sdk
 
-# sdk.i18n is the same object as directly imported i18n
+# sdk.i18n is the same object as the directly imported i18n
 sdk.i18n.set_language("en")
 print(sdk.i18n.t("core.sdk.init.starting"))
 ```
@@ -8121,16 +8249,16 @@ print(sdk.i18n.t("core.sdk.init.starting"))
 
 ## Runtime Configuration
 
-### Reading i18n Configuration via Configuration API
+### Reading i18n Config via Config API
 
 ```python
 from ErisPulse.Core.Bases import I18nConfig
 from ErisPulse.runtime import get_i18n_config
 
 config = get_i18n_config()
-print(config["language"])  # "auto" or specific language code
+print(config["language"])  # "auto" or a specific language code
 
-# I18nConfig is a dataclass, can be used to generate configuration templates
+# I18nConfig is a dataclass, usable for generating config templates
 schema = I18nConfig.__dataclass_fields__
 ```
 
@@ -8156,21 +8284,21 @@ language = "auto"
 
 ### Translation Key Naming
 
-It is recommended to use a dot-separated namespace format:
+It is recommended to use a namespaced format separated by dots:
 
 ```
-<module_name>.<category>.<description>
+<ModuleName>.<Category>.<Description>
 ```
 
-For example: `my_module.command.hello_desc`, `core.adapter.start_failed`
+Examples: `my_module.command.hello_desc`, `core.adapter.start_failed`
 
 ### Multi-language Coverage
 
-You do not need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
+You do not need to provide translations for all languages at once. Missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
 
 ### Dynamic Content
 
-For dynamically generated content (such as usernames, quantities, etc.), use `{placeholder}` formatting:
+For dynamically generated content (such as usernames, counts, etc.), use the `{placeholder}` format:
 
 ```python
 # Translation definition
@@ -8192,10 +8320,10 @@ self.logger.info(i18n.t("my_module.startup"))
 
 ## Relationship with CLI i18n
 
-CLI has a **separate** internationalization module (`ErisPulse.CLI.i18n`), which is completely decoupled from the framework core's internationalization module.
+The CLI has an **independent** internationalization module (`ErisPulse.CLI.i18n`), completely decoupled from the i18n module of the framework core.
 
-- **Core i18n** — Used by framework core modules, external modules can register translations
-- **CLI i18n** — Used internally by the command-line interface, does not share translation data with Core
+- **Core i18n** — Used by the framework core module; external modules can register translations
+- **CLI i18n** — Used internally by the command-line interface; does not share translation data with Core
 
 This design ensures that changes to CLI translations do not affect the stability of the framework core.
 
@@ -8572,39 +8700,39 @@ After unregistering, the Dashboard frontend will remove the sidebar navigation i
 
 # Startup Flow and Manual Control
 
-ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a single line of code. However, when you need to fully customize the startup process (e.g., partial loading, dynamic registration, hot-plugging, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
+The `await sdk.run()` / `await sdk.init()` of ErisPulse encapsulates the entire startup chain into a single line of code. However, when you need full customization of the startup process (e.g., partial loading, dynamic registration, hot-plugging, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
 
-This article breaks down the startup chain into independent components, explains their respective responsibilities and call order, and provides an example of manually initiating the complete startup process.
+This article breaks down the startup chain into independent components, explains their respective responsibilities and call order, and provides an example of manual full startup.
 
-> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the `init()` chain and lower-level entry points such as `init()`/`init_task()`/`init_sync()`.
+> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the chain within `init()`, as well as lower-level entry points such as `init()`/`init_task()`/`init_sync()`.
 
 ## Overview of SDK Top-Level Entry Points
 
-In addition to the two `keep_running` modes of `run()`, the SDK also provides several lower-level initialization entry points, which differ in **asynchrony, return value, and whether exceptions are wrapped**:
+In addition to the two `keep_running` modes of `run()`, the SDK also provides several lower-level initialization entry points, which differ in **asynchronicity, return value, and whether exceptions are wrapped**:
 
-| Entry Point | Asynchrony | Return Value | Exception Handling | Use Case |
-|-------------|------------|--------------|--------------------|----------|
+| Entry Point | Asynchronous | Return Value | Exception Handling | Applicable Scenarios |
+|-------------|--------------|--------------|--------------------|----------------------|
 | `await sdk.run(True)` | async, blocks to maintain | `None` (automatically `uninit` on shutdown) | Module/adapter errors are intercepted, not crashing the process | Pure bot application |
-| `await sdk.run(False)` | async, non-blocking | `None` (does not automatically unload) | Same as above | Execute custom logic after initialization |
+| `await sdk.run(False)` | async, non-blocking | `None` (no automatic unloading) | Same as above | Execute custom logic after initialization |
 | `await sdk.init()` | async, requires `await` | `bool` | **Does not wrap**, exceptions are thrown upwards | Manual lifecycle control (paired with `uninit()`) |
-| `sdk.init_task()` | async, returns `Task` without blocking | `asyncio.Task` | Same as `init()` | Concurrent initialization or event loop not yet running |
-| `sdk.init_sync()` | **Synchronous**, blocks the current thread | `bool` | Same as `init()` | Command-line script, synchronous entry without event loop |
+| `sdk.init_task()` | async, returns `Task` without blocking | `asyncio.Task` | Same as `init()` | Concurrently execute other initializations or when event loop is not running |
+| `sdk.init_sync()` | **Synchronous**, blocks current thread | `bool` | Same as `init()` | Command-line scripts, synchronous entry without event loop |
 
-> **Common Misconception**: `await sdk.init()` **is not equivalent to** `await sdk.run(keep_running=False)`. There are two differences: ① `init()` returns `bool`, `run()` returns `None`; ② `run()` wraps the initialization and running process with try/except (intercepts module/adapter exceptions to prevent crashes), while `init()` does not wrap, and exceptions are thrown directly upwards. Use `init()` + `uninit()` when you need paired unloading or custom exception handling.
+> **Common misconception**: `await sdk.init()` **is not equivalent to** `await sdk.run(keep_running=False)`. Two differences: ① `init()` returns `bool`, `run()` returns `None`; ② `run()` wraps the initialization and running process with try/except (intercepts module/adapter exceptions to prevent crashes), while `init()` does not wrap, and exceptions are thrown directly upwards. Use `init()` + `uninit()` when you need paired unloading or custom exception handling.
 
 ## Overview of the Startup Chain
 
-`sdk.init()` (specifically its internal `Initializer.init()`) initiates the entire framework in the following order:
+`sdk.init()` (specifically its internal `Initializer.init()`) launches the entire framework in the following order:
 
 ```mermaid
 flowchart TD
-    A[0. Prepare environment<br/>Configuration loading / Exception handling] --> B
-    B[1. Parallel discovery and loading<br/>AdapterLoader.load / ModuleLoader.load<br/>Internally calls Finder.find_all] --> C
-    C[2. Register adapters<br/>AdapterLoader.register_to_manager] --> D
-    D[3. Start adapters<br/>adapter.startup] --> E
-    E[4. Register modules<br/>ModuleLoader.register_to_manager] --> F
-    F[5. Initialize modules<br/>ModuleLoader.initialize_modules<br/>Instantiate and mount to sdk] --> G
-    G[6. Start routing server<br/>router.start]
+    A[0. Prepare Environment<br/>Configuration loading / Exception handling] --> B
+    B[1. Parallel Discovery and Loading<br/>AdapterLoader.load / ModuleLoader.load<br/>Internal call to Finder.find_all] --> C
+    C[2. Register Adapters<br/>AdapterLoader.register_to_manager] --> D
+    D[3. Start Adapters<br/>adapter.startup] --> E
+    E[4. Register Modules<br/>ModuleLoader.register_to_manager] --> F
+    F[5. Initialize Modules<br/>ModuleLoader.initialize_modules<br/>Instantiate and mount to sdk] --> G
+    G[6. Start Router Server<br/>router.start]
 ```
 
 Corresponding core components:
@@ -8612,19 +8740,19 @@ Corresponding core components:
 | Layer | Component | Responsibility |
 |-------|-----------|----------------|
 | Discovery | `AdapterFinder` / `ModuleFinder` | **Discover** adapters/modules from entry-points of installed packages |
-| Loading | `AdapterLoader` / `ModuleLoader` | Discover + import + read metadata + determine enable/disable, return object list |
+| Loading | `AdapterLoader` / `ModuleLoader` | Discovery + import + read metadata + determine enable/disable, return object list |
 | Registration | `*Loader.register_to_manager` | Register objects to corresponding managers |
 | Management | `sdk.adapter` / `sdk.module` | Maintain adapter/module instances, provide start/stop interfaces |
 | Initialization | `ModuleLoader.initialize_modules` | Create module instances and mount to `sdk` (handle dependency topological sorting) |
 | Routing | `sdk.router` | HTTP / WebSocket server |
 
-> **Important**: `Finder` and `Loader` are two layers. The `Loader` internally **already holds** a `Finder` (e.g., `AdapterLoader` comes with `AdapterFinder`, `ModuleLoader` comes with `ModuleFinder`). In most scenarios, you only need to use `Loader`; `Finder` is only used when you need "list without importing".
+> **Important**: `Finder` and `Loader` are two layers. The `Loader` internally **already holds** a `Finder` (`AdapterLoader` comes with `AdapterFinder`, `ModuleLoader` comes with `ModuleFinder`). In most scenarios, you only need to use `Loader`; only when you need "list without importing" will you use `Finder` alone.
 
 ## Detailed Explanation of Each Component
 
 ### 1. Discovery Layer: Finder
 
-The Finder is only responsible for "finding which packages provide adapters/modules," without importing or instantiating.
+The Finder is responsible only for "finding which packages provide adapters/modules," without importing or instantiating.
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -8636,15 +8764,15 @@ module_finder = ModuleFinder()
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
-# Find a single by name
+# Find a single one by name
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-Each `EntryPoint` can be `.load()` to get the corresponding class, but usually you don't need to manually call it—Loader will handle it.
+Each `EntryPoint` can be loaded using `.load()` to get the corresponding class, but usually, you don't need to call it manually—the Loader will handle it.
 
 ### 2. Loading Layer: Loader
 
-The Loader, on top of Finder, does "import + read metadata + determine enable/disable."
+The Loader does "import + read metadata + determine enable/disable" on top of the Finder.
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -8658,27 +8786,27 @@ adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sd
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
 
-The three-tuple returned by `load()`:
+The triple returned by `load()`:
 
 | Return Value | Meaning |
 |--------------|---------|
-| `objs` (`dict`) | Name → Object (adapter class / module wrapper object) |
-| `enabled` (`list[str]`) | Enabled names (not disabled in configuration) |
-| `disabled` (`list[str]`) | Disabled names |
+| `objs` (`dict`) | Name → object (adapter class / module wrapper object) |
+| `enabled` (`list[str]`) | Names that are enabled (not disabled in configuration) |
+| `disabled` (`list[str]`) | Names that are disabled |
 
-#### Diagnostic Information on Loading Failures
+#### Diagnostic Information When Loading Fails
 
-When a module/adapter throws an exception during loading or initialization, the framework skips that component and continues loading other components, while outputting a **user code frame summary**, allowing you to locate the error position at the default INFO level without manually re-enabling DEBUG:
+When a module/adapter throws an exception during loading or initialization, the framework skips that component and continues loading other components, while outputting a **summary of user code frames** so you can locate the error position at the default INFO level without manually enabling DEBUG:
 
 ```
 [ERROR] [ModuleLoader] Failed to load module MyModule from entry-point, skipped: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → Hint: Increase log level to DEBUG to view full stack trace; check implementation code of module MyModule
+  → Hint: Increase log level to DEBUG to view full stack; check implementation code of module MyModule
 ```
 
-The diagnostic information is generated by the `ErisPulse.runtime.diagnostics` module, which automatically filters out internal framework frames and retains only your code frames. If you need to reuse it in custom loading logic:
+The diagnostic information is generated by the `ErisPulse.runtime.diagnostics` module and automatically filters out internal framework frames, retaining only your code frames. If you need to reuse it in custom loading logic:
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -8693,7 +8821,7 @@ This module also provides two low-level functions: `extract_user_frame()` (retur
 
 ### 3. Registration Layer: register_to_manager
 
-Register the objects produced by the Loader to the manager so that `sdk.adapter` / `sdk.module` can recognize them.
+Registers the objects produced by the Loader to the managers so that `sdk.adapter` / `sdk.module` can recognize them.
 
 ```python
 # Register adapters (returns bool, indicating whether all succeeded)
@@ -8715,11 +8843,11 @@ await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> Registration ≠ Startup. `register_to_manager` only registers; `startup` calls the adapter's `start()` to establish a connection with the platform.
+> Registration ≠ Startup. `register_to_manager` only registers; `startup` calls the adapter's `start()`, establishing a connection with the platform.
 
 ### 5. Initialize Modules
 
-Modules have an additional step—**instantiation** and mounting to `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module dependencies and topological sorting.
+Modules have one extra step compared to adapters—they need to be **instantiated** and mounted to `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module dependencies and topological sorting.
 
 ```python
 success = await module_loader.initialize_modules(
@@ -8729,7 +8857,7 @@ success = await module_loader.initialize_modules(
 
 After successful instantiation, the module appears on `sdk.<ModuleName>`.
 
-### 6. Start Routing Server
+### 6. Start Router Server
 
 ```python
 await sdk.router.start(
@@ -8740,11 +8868,11 @@ await sdk.router.start(
 )
 ```
 
-The routing server is responsible for receiving webhooks/ WebSocket callbacks from adapters. Without starting it, server-mode adapters cannot receive messages.
+The router server is responsible for receiving webhook/WebSocket callbacks from adapters. Without starting it, server-mode adapters cannot receive messages.
 
-## Complete Manual Startup Example
+## Full Manual Startup Example
 
-The following code **equivalent to** the core flow of `await sdk.init()`, but each step is exposed to you, allowing you to insert custom logic at any stage:
+The following code is **equivalent to** the core process of `await sdk.init()`, but each step is exposed to you, allowing you to insert custom logic at any step:
 
 ```python
 import asyncio
@@ -8752,8 +8880,8 @@ from ErisPulse import sdk
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
 async def manual_startup():
-    # 0. Prepare environment (load configuration, register global exception handler)
-    #    _prepare_environment is a pre-step inside init(); manual flow must call it first,
+    # 0. Prepare Environment (load configuration, register global exception handler)
+    #    _prepare_environment is a pre-step inside init(); manual flow also needs to call it first,
     #    otherwise Loader cannot read configuration and will misjudge all adapters/modules as disabled.
     if not await sdk._prepare_environment():
         print("Environment preparation failed")
@@ -8763,7 +8891,7 @@ async def manual_startup():
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. Parallel discovery and loading (consistent with init() internals using gather)
+    # 2. Parallel discovery and loading (consistent with init() using gather)
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
@@ -8790,7 +8918,7 @@ async def manual_startup():
             enabled_modules, module_objs, sdk.module, sdk
         )
 
-    # 7. Start routing server
+    # 7. Start router server
     await sdk.router.start(host="0.0.0.0", port=8000)
 
     print("Manual startup complete")
@@ -8808,54 +8936,76 @@ if __name__ == "__main__":
 
 ### When to Use Manual Startup?
 
-In most cases, manual startup is **not needed**—`await sdk.run()` already handles all of the above. Manual startup is only valuable in the following scenarios:
+In most cases, manual startup is **not needed**—`await sdk.run()` has already done all of the above. Manual startup is only valuable in these scenarios:
 
-- **Partial Loading**: Load only specified adapters/modules, skipping others
-- **Dynamic Registration**: Register new adapters/modules at runtime based on conditions
-- **Custom Order**: Need to disrupt the default loading order (e.g., start a module before an adapter)
-- **Inject Strategies**: Inject custom strict mode managers, loading strategies, etc. into Loader
-- **Debugging/Diagnosis**: Manually drive at a specific step to locate issues when something fails
+- **Partial loading**: Load only specified adapters/modules, skipping others
+- **Dynamic registration**: Register new adapters/modules at runtime based on conditions
+- **Custom order**: Need to disrupt the default loading order (e.g., start a module before an adapter)
+- **Inject strategies**: Inject custom strict mode managers, loading strategies, etc., into the Loader
+- **Debugging/diagnosis**: Manually drive to locate issues when a step fails
 
 ## Fine-Grained Runtime Control
 
-Even after using `sdk.run()` to complete startup, you can still individually control subsystems at runtime without restarting the entire SDK:
+Even after using `sdk.run()` to complete the startup, you can still individually control each subsystem at runtime without restarting the entire SDK:
 
-### Hot Restart of Adapters
+### Hot Restart/Stop Adapters
 
 ```python
-# Hot restart a specific adapter (repair connection, does not affect other platforms)
+# Hot restart an adapter (fix connection, does not affect other platforms)
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
 # Bring up a new platform at runtime
 await sdk.adapter.startup("telegram")
 
-# Temporarily take down a platform
+# Temporarily take a platform offline
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` requires the adapter to have been **registered** to the manager. Registration occurs within `init()`/`run()`, so this is fine-grained control **after** startup.
+> `adapter.startup()` requires the adapter to be **registered** to the manager. Registration happens inside `init()`/`run()`, so this is fine-grained control **after** startup.
 
-### Routing Server
+### Router Server
 
 ```python
-# Temporarily take down webhook server
+# Temporarily take the webhook server offline
 await sdk.router.stop()
 
-# Restart (e.g., after changing port)
+# Restart (e.g., after changing the port)
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
-### Module On-Demand Loading
+### Lazy Module Loading
 
 ```python
-# Manually load a (possibly lazy-loaded) module
+# Manually load a (possibly lazily loaded) module
 await sdk.load_module("MyModule")
 ```
 
+## Graceful Shutdown
+
+Since version 2.7.0, `sdk.shutdown()` provides **programmatic graceful shutdown**: set a shutdown event to allow the main loop, which is suspended by `await sdk.run(keep_running=True)`, to return, thus triggering `uninit()` to complete resource cleanup.
+
+```python
+# Call from any coroutine to trigger graceful exit (run() suspends and returns, automatically uninit)
+sdk.shutdown()
+```
+
+Typical use cases:
+
+```python
+async def shutdown_after_idle():
+    await asyncio.sleep(3600)
+    sdk.shutdown()  # Gracefully exit after 1 hour of idle
+```
+
+**Signal Handling**: `run()` internally registers `SIGTERM` / `SIGHUP` handlers, converting system signals into graceful shutdown—when container orchestration (Docker `docker stop`) or `systemd` stops the service, the process will go through `uninit()` cleanup instead of being forcibly killed.
+
+- Windows does not support `loop.add_signal_handler`, so the signal handler is automatically skipped (still use `sdk.shutdown()` or Ctrl+C to trigger shutdown)
+- Repeatedly calling `sdk.shutdown()` is safe (no operation after the event is set)
+
 ## Unload Process
 
-The reverse operation of startup is `await sdk.uninit()`, which cleans up in the opposite order:
+The reverse operation of startup is `await sdk.uninit()`, which cleans up in reverse order:
 
 1. Shut down all adapters (`adapter.shutdown()`)
 2. Unload all modules
@@ -8873,35 +9023,35 @@ finally:
 
 ## Restart
 
-The SDK provides two restart methods, neither of which requires you to manually unload first—the framework handles it automatically:
+The SDK provides two restart methods, neither of which requires you to unload first—the framework handles it automatically:
 
-| Method | Call | Behavior | Use Case |
-|--------|------|----------|----------|
-| Hot Restart | `await sdk.restart()` | Re-initialize within the same process after `uninit()`, reloading adapters/modules | Reload configuration, hot update modules |
-| Hard Restart | `await sdk.hard_restart()` | Exit the entire process after `uninit()`, then restart a new process via parent process (`epsdk run`) | Suspected memory/resource leaks, need a completely clean restart |
+| Method | Call | Behavior | Applicable Scenarios |
+|--------|------|----------|----------------------|
+| Hot Restart | `await sdk.restart()` | Same process `uninit()` then re-`init()`, reload adapters/modules | Reload configuration, hot-update modules |
+| Hard Restart | `await sdk.hard_restart()` | `uninit()` then exit the entire process, pulled up by parent process (`epsdk run`) | Suspected memory/resource leaks, need a completely clean restart |
 
 ```python
-# Hot restart: re-initialize within the same process (most commonly used)
+# Hot Restart: Reload within the same process (most commonly used)
 await sdk.restart()
 
-# Hard restart: exit process, must be started via `epsdk run main.py` to take effect
+# Hard Restart: Exit process, must be started via `epsdk run main.py` to take effect
 await sdk.hard_restart()
 ```
 
-> **Two Points to Note**:
-> 1. Both methods execute the restart in a background task, **immediately returning `True` to indicate "restart task has been scheduled"**, not "restart has completed." The actual restart happens in the background to avoid interrupting the current event chain.
-> 2. `hard_restart()` **must be started via `epsdk run main.py` to take effect**. Its principle is: after unloading, the process exits with exit code 42, and the parent process of `epsdk run` detects the code 42 to restart a new process; if started directly via `python main.py`, the process exits with code 42 and ends directly without automatic restart.
+> **Two points to note**:
+> 1. These methods execute restarts in the background task and **immediately return `True` indicating "restart task scheduled"**, not "restart completed." Actual restart happens in the background to avoid interrupting the current event chain.
+> 2. `hard_restart()` **must be started via `epsdk run main.py` to take effect**. Its principle is: after uninit, exit the process with exit code 42; the parent process of `epsdk run` detects code 42 and pulls up a new process; if started directly via `python main.py`, the process exits with code 42 and ends directly, without automatic restart.
 
 ### When to Use Hard Restart?
 
-Hard restart is not just a "more thorough restart," it is more suitable and even more efficient in the following scenarios than hot restart:
+Hard restart is not just a "more thorough restart," it is more suitable, and even more efficient, in the following scenarios:
 
-- **Binary Library (C Extension) Side Effects**: Hot restart occurs within the same process and cannot release C extensions, opened file descriptors, threads, and other process-level resources; hard restart switches to a brand new process, thoroughly clearing these side effects.
-- **Resource Leak Diagnosis**: When suspected memory or handle leaks exist, hard restart provides a clean environment.
-- **Performance-Sensitive Frequent Restarts**: Hard restart avoids the overhead of unloading and reloading within the same process, making it more efficient than hot restart in practice.
+- **Binary library (C extension) side effects**: Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart switches to a new process, thoroughly clearing these side effects.
+- **Resource leak diagnosis**: When suspected memory or handle leaks exist, hard restart provides a clean environment.
+- **Performance-sensitive frequent restarts**: Hard restart avoids the overhead of unloading and reloading within the same process, making it more efficient than hot restart in practice.
 
-> The "Framework Restart" feature in the Dashboard management panel internally calls `hard_restart()`.
-> Additionally, hard restart requires that `epsdk run` is used for startup; otherwise, the program will just throw exit code 42 and exit, since `epsdk run` checks for the 42 exit code to restart the process. This must be noted carefully!!!
+> The "Framework Restart" function in the Dashboard management panel internally calls `hard_restart()`.
+> Additionally, hard restart requires the use of the `epsdk` `run` command for startup; otherwise, the program will only throw exit code 42 and exit, because the `run` command checks for exit code 42 to restart the process. This must be noted carefully!!!
 
 ## Related Documentation
 
