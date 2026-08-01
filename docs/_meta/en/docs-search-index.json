@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1410,
+  "total_keywords": 1445,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -128,12 +128,28 @@
         "title": "1. Exception Handling"
       }
     ],
+    "1. Fork and Clone the Repository": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 15,
+        "level": 2,
+        "title": "1. Fork and Clone the Repository"
+      }
+    ],
     "1. Health Check (GET)": [
       {
         "document": "platform-guide/webhook.md",
         "line": 50,
         "level": 3,
         "title": "1. Health Check (GET)"
+      }
+    ],
+    "1. I Want to Use a Bot": [
+      {
+        "document": "README.md",
+        "line": 15,
+        "level": 3,
+        "title": "1. I Want to Use a Bot"
       }
     ],
     "1. Implement Connection Retry": [
@@ -155,7 +171,7 @@
     "1. Missing `{platform}_raw` Field": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 277,
+        "line": 325,
         "level": 3,
         "title": "1. Missing `{platform}_raw` Field"
       }
@@ -566,12 +582,36 @@
         "title": "2. Event Object"
       }
     ],
+    "2. I Want to Develop Modules / Adapters": [
+      {
+        "document": "README.md",
+        "line": 28,
+        "level": 3,
+        "title": "2. I Want to Develop Modules / Adapters"
+      }
+    ],
+    "2. Incorrect Timestamp Format": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 334,
+        "level": 3,
+        "title": "2. Incorrect Timestamp Format"
+      }
+    ],
     "2. Input Validation": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 375,
         "level": 3,
         "title": "2. Input Validation"
+      }
+    ],
+    "2. Install the Development Environment": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 30,
+        "level": 2,
+        "title": "2. Install the Development Environment"
       }
     ],
     "2. Integration Tests": [
@@ -744,14 +784,6 @@
         "line": 236,
         "level": 3,
         "title": "2. Timeout Handling"
-      }
-    ],
-    "2. Timestamp Format Error": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 286,
-        "level": 3,
-        "title": "2. Timestamp Format Error"
       }
     ],
     "2. Update Version Information": [
@@ -946,6 +978,14 @@
         "title": "3. Create Adapter Main Class"
       }
     ],
+    "3. Create a Feature Branch": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 42,
+        "level": 2,
+        "title": "3. Create a Feature Branch"
+      }
+    ],
     "3. Event Format Examples": [
       {
         "document": "standards/event-conversion.md",
@@ -994,6 +1034,14 @@
         "title": "3. Heartbeat Keepalive and Meta Heartbeat"
       }
     ],
+    "3. I Want to Deeply Understand the Principles": [
+      {
+        "document": "README.md",
+        "line": 39,
+        "level": 3,
+        "title": "3. I Want to Deeply Understand the Principles"
+      }
+    ],
     "3. Improve Code Quality": [
       {
         "document": "standards/README.md",
@@ -1005,7 +1053,7 @@
     "3. Missing `self` Field": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 300,
+        "line": 348,
         "level": 3,
         "title": "3. Missing `self` Field"
       }
@@ -1282,6 +1330,14 @@
         "title": "4. Extended Field Description"
       }
     ],
+    "4. I Want to Contribute to ErisPulse": [
+      {
+        "document": "README.md",
+        "line": 54,
+        "level": 3,
+        "title": "4. I Want to Contribute to ErisPulse"
+      }
+    ],
     "4. Implement Required Methods": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -1296,6 +1352,14 @@
         "line": 100,
         "level": 2,
         "title": "4. Implementation Requirements"
+      }
+    ],
+    "4. Make Changes": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 54,
+        "level": 2,
+        "title": "4. Make Changes"
       }
     ],
     "4. Manage Published Modules": [
@@ -1354,12 +1418,12 @@
         "title": "4. Usage"
       }
     ],
-    "4. Using Non-standard Values for detail_type": [
+    "4. Using Non-standard `detail_type` Values": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 311,
+        "line": 359,
         "level": 3,
-        "title": "4. Using Non-standard Values for detail_type"
+        "title": "4. Using Non-standard `detail_type` Values"
       }
     ],
     "4.1 Basic Call": [
@@ -1506,6 +1570,14 @@
         "title": "5. Initialize Modules"
       }
     ],
+    "5. Local Verification": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 77,
+        "level": 2,
+        "title": "5. Local Verification"
+      }
+    ],
     "5. Return Value Specification": [
       {
         "document": "standards/send-method-spec.md",
@@ -1517,7 +1589,7 @@
     "5. Round-trip Consistency": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 315,
+        "line": 363,
         "level": 3,
         "title": "5. Round-trip Consistency"
       }
@@ -1698,12 +1770,20 @@
         "title": "6. Reverse Conversion Specification (OneBot12 → Platform)"
       }
     ],
-    "6. Start Routing Server": [
+    "6. Start Router Server": [
       {
         "document": "advanced/startup.md",
         "line": 160,
         "level": 3,
-        "title": "6. Start Routing Server"
+        "title": "6. Start Router Server"
+      }
+    ],
+    "6. Update CHANGELOG": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 89,
+        "level": 2,
+        "title": "6. Update CHANGELOG"
       }
     ],
     "6.1 Conversion Model": [
@@ -1850,6 +1930,14 @@
         "title": "7. Best Practices"
       }
     ],
+    "7. Commit and Push": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 99,
+        "level": 2,
+        "title": "7. Commit and Push"
+      }
+    ],
     "7. Error Code Extensions": [
       {
         "document": "standards/request-action-spec.md",
@@ -1960,6 +2048,14 @@
         "line": 366,
         "level": 2,
         "title": "8. Related Documentation"
+      }
+    ],
+    "8. Submit a Pull Request": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 107,
+        "level": 2,
+        "title": "8. Submit a Pull Request"
       }
     ],
     "8.1 Accessing Extension Fields": [
@@ -2149,7 +2245,7 @@
     "API Reference": [
       {
         "document": "advanced/i18n.md",
-        "line": 387,
+        "line": 425,
         "level": 2,
         "title": "API Reference"
       },
@@ -2221,7 +2317,7 @@
     "Accessing from SDK Instance": [
       {
         "document": "advanced/i18n.md",
-        "line": 464,
+        "line": 504,
         "level": 3,
         "title": "Accessing from SDK Instance"
       }
@@ -2399,7 +2495,7 @@
     "Adapter Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 98,
+        "line": 124,
         "level": 3,
         "title": "Adapter Lifecycle"
       }
@@ -2482,6 +2578,22 @@
         "line": 205,
         "level": 4,
         "title": "Add Middleware"
+      }
+    ],
+    "Additional Fields for Message Events": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 122,
+        "level": 3,
+        "title": "Additional Fields for Message Events"
+      }
+    ],
+    "Additional Fields for Notification Events": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 130,
+        "level": 3,
+        "title": "Additional Fields for Notification Events"
       }
     ],
     "Additional Operation Methods": [
@@ -2694,14 +2806,6 @@
         "title": "Authentication and API Calls"
       }
     ],
-    "Auto Documentation": [
-      {
-        "document": "advanced/router.md",
-        "line": 279,
-        "level": 2,
-        "title": "Auto Documentation"
-      }
-    ],
     "Automatic Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -2716,6 +2820,14 @@
         "line": 322,
         "level": 3,
         "title": "Automatic Discovery of Normal Events"
+      }
+    ],
+    "Automatic Documentation": [
+      {
+        "document": "advanced/router.md",
+        "line": 304,
+        "level": 2,
+        "title": "Automatic Documentation"
       }
     ],
     "Automatic Failure Retry (Retry)": [
@@ -2790,10 +2902,18 @@
         "title": "BaseAdapter Methods"
       }
     ],
+    "BaseConverter Base Class (Recommended)": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 19,
+        "level": 2,
+        "title": "BaseConverter Base Class (Recommended)"
+      }
+    ],
     "BaseI18n / I18nKey (Declarative Translation Keys)": [
       {
         "document": "advanced/i18n.md",
-        "line": 423,
+        "line": 461,
         "level": 3,
         "title": "BaseI18n / I18nKey (Declarative Translation Keys)"
       }
@@ -3115,7 +3235,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 509,
+        "line": 549,
         "level": 2,
         "title": "Best Practices"
       },
@@ -3127,13 +3247,13 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 379,
+        "line": 404,
         "level": 2,
         "title": "Best Practices"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 319,
+        "line": 367,
         "level": 2,
         "title": "Best Practices"
       },
@@ -3337,7 +3457,7 @@
     "CORS Configuration": [
       {
         "document": "advanced/router.md",
-        "line": 245,
+        "line": 270,
         "level": 2,
         "title": "CORS Configuration"
       }
@@ -3749,7 +3869,7 @@
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 172,
+        "line": 218,
         "level": 3,
         "title": "Command Configuration"
       }
@@ -3835,7 +3955,7 @@
     "Command System": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 149,
+        "line": 175,
         "level": 3,
         "title": "Command System"
       }
@@ -3859,7 +3979,7 @@
     "Common Configuration Locations": [
       {
         "document": "user-guide/README.md",
-        "line": 28,
+        "line": 29,
         "level": 3,
         "title": "Common Configuration Locations"
       }
@@ -3875,7 +3995,7 @@
     "Common Fields (All Event Types)": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 63,
+        "line": 111,
         "level": 3,
         "title": "Common Fields (All Event Types)"
       }
@@ -3891,9 +4011,17 @@
     "Common Pitfalls": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 275,
+        "line": 323,
         "level": 2,
         "title": "Common Pitfalls"
+      }
+    ],
+    "Common Questions": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 139,
+        "level": 2,
+        "title": "Common Questions"
       }
     ],
     "Common Task Examples": [
@@ -3907,7 +4035,7 @@
     "Common Usage": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 437,
+        "line": 474,
         "level": 2,
         "title": "Common Usage"
       }
@@ -3923,7 +4051,7 @@
     "Complete API Reference": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 223,
+        "line": 249,
         "level": 2,
         "title": "Complete API Reference"
       }
@@ -3931,7 +4059,7 @@
     "Complete Configuration Example": [
       {
         "document": "user-guide/configuration.md",
-        "line": 38,
+        "line": 84,
         "level": 2,
         "title": "Complete Configuration Example"
       }
@@ -3947,7 +4075,7 @@
     "Complete Example": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 144,
+        "line": 192,
         "level": 2,
         "title": "Complete Example"
       },
@@ -3970,14 +4098,6 @@
         "line": 151,
         "level": 2,
         "title": "Complete Examples"
-      }
-    ],
-    "Complete Manual Startup Example": [
-      {
-        "document": "advanced/startup.md",
-        "line": 173,
-        "level": 2,
-        "title": "Complete Manual Startup Example"
       }
     ],
     "Complete Module Example": [
@@ -4051,7 +4171,7 @@
     "Configuration Changes": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 75,
+        "line": 101,
         "level": 3,
         "title": "Configuration Changes"
       }
@@ -4122,6 +4242,14 @@
         "title": "Configuration File"
       }
     ],
+    "Configuration File Documentation": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 1,
+        "level": 1,
+        "title": "Configuration File Documentation"
+      }
+    ],
     "Configuration File Location": [
       {
         "document": "user-guide/configuration.md",
@@ -4130,19 +4258,17 @@
         "title": "Configuration File Location"
       }
     ],
-    "Configuration File Reference": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 1,
-        "level": 1,
-        "title": "Configuration File Reference"
-      }
-    ],
     "Configuration Hot Update": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 521,
         "level": 4,
+        "title": "Configuration Hot Update"
+      },
+      {
+        "document": "user-guide/configuration.md",
+        "line": 63,
+        "level": 2,
         "title": "Configuration Hot Update"
       }
     ],
@@ -4175,7 +4301,7 @@
     "Configuration Item Description": [
       {
         "document": "advanced/i18n.md",
-        "line": 491,
+        "line": 531,
         "level": 3,
         "title": "Configuration Item Description"
       }
@@ -4348,6 +4474,30 @@
         "line": 290,
         "level": 2,
         "title": "Contributing"
+      }
+    ],
+    "Contributing Modules or Adapters": [
+      {
+        "document": "contributing/README.md",
+        "line": 45,
+        "level": 2,
+        "title": "Contributing Modules or Adapters"
+      }
+    ],
+    "Contributing a Module or Adapter": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 119,
+        "level": 2,
+        "title": "Contributing a Module or Adapter"
+      }
+    ],
+    "Contributing to ErisPulse": [
+      {
+        "document": "contributing/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Contributing to ErisPulse"
       }
     ],
     "Contribution Flow": [
@@ -4525,7 +4675,7 @@
     "Core Initialization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 67,
+        "line": 93,
         "level": 3,
         "title": "Core Initialization"
       }
@@ -4533,7 +4683,7 @@
     "Core Methods": [
       {
         "document": "advanced/i18n.md",
-        "line": 391,
+        "line": 429,
         "level": 4,
         "title": "Core Methods"
       },
@@ -4620,6 +4770,14 @@
         "title": "Count and Existence Check"
       }
     ],
+    "Create Scaffolding": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 571,
+        "level": 3,
+        "title": "Create Scaffolding"
+      }
+    ],
     "Create Table": [
       {
         "document": "advanced/sql-builder.md",
@@ -4634,14 +4792,6 @@
         "line": 38,
         "level": 4,
         "title": "Create a Virtual Environment"
-      }
-    ],
-    "Creating Scaffold": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 534,
-        "level": 3,
-        "title": "Creating Scaffold"
       }
     ],
     "Creating Your First Bot": [
@@ -4708,12 +4858,12 @@
         "title": "Custom Type Registration"
       }
     ],
-    "Dashboard Auto Registration": [
+    "Dashboard Auto-Registration": [
       {
         "document": "advanced/router.md",
-        "line": 361,
+        "line": 386,
         "level": 3,
-        "title": "Dashboard Auto Registration"
+        "title": "Dashboard Auto-Registration"
       }
     ],
     "Dashboard Management Panel": [
@@ -4885,9 +5035,17 @@
     "Development Approaches": [
       {
         "document": "README.md",
-        "line": 56,
+        "line": 65,
         "level": 2,
         "title": "Development Approaches"
+      }
+    ],
+    "Development Environment": [
+      {
+        "document": "contributing/README.md",
+        "line": 22,
+        "level": 2,
+        "title": "Development Environment"
       }
     ],
     "Development Mode": [
@@ -4930,12 +5088,20 @@
         "title": "Development Tools"
       }
     ],
-    "Diagnostic Information on Loading Failures": [
+    "Diagnostic Commands": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 18,
+        "level": 2,
+        "title": "Diagnostic Commands"
+      }
+    ],
+    "Diagnostic Information When Loading Fails": [
       {
         "document": "advanced/startup.md",
         "line": 97,
         "level": 4,
-        "title": "Diagnostic Information on Loading Failures"
+        "title": "Diagnostic Information When Loading Fails"
       }
     ],
     "Direct Message Sending": [
@@ -5172,12 +5338,12 @@
         "title": "Don't Wait for Result"
       }
     ],
-    "Dot Notation Events": [
+    "Dot-Named Events": [
       {
         "document": "advanced/lifecycle.md",
         "line": 47,
         "level": 3,
-        "title": "Dot Notation Events"
+        "title": "Dot-Named Events"
       }
     ],
     "Double Mode Mechanism": [
@@ -5199,7 +5365,7 @@
     "Dynamic Content": [
       {
         "document": "advanced/i18n.md",
-        "line": 525,
+        "line": 565,
         "level": 3,
         "title": "Dynamic Content"
       }
@@ -5258,6 +5424,22 @@
         "line": 65,
         "level": 2,
         "title": "Entry Template"
+      }
+    ],
+    "Environment Diagnosis": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 433,
+        "level": 2,
+        "title": "Environment Diagnosis"
+      }
+    ],
+    "Environment Variable Override": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 38,
+        "level": 2,
+        "title": "Environment Variable Override"
       }
     ],
     "Environment Variables": [
@@ -5431,7 +5613,7 @@
     "Event Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 170,
+        "line": 216,
         "level": 2,
         "title": "Event Configuration"
       }
@@ -5655,7 +5837,7 @@
     "Event Reception and Processing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 110,
+        "line": 136,
         "level": 3,
         "title": "Event Reception and Processing"
       }
@@ -5772,6 +5954,14 @@
         "title": "Example"
       }
     ],
+    "Example Usage in Module": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 277,
+        "level": 2,
+        "title": "Example Usage in Module"
+      }
+    ],
     "Exception Handling": [
       {
         "document": "advanced/http-client.md",
@@ -5794,20 +5984,20 @@
         "title": "Exception Hierarchy"
       }
     ],
-    "Exception List": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 147,
-        "level": 4,
-        "title": "Exception List"
-      }
-    ],
     "Exception System": [
       {
         "document": "advanced/http-client.md",
         "line": 366,
         "level": 2,
         "title": "Exception System"
+      }
+    ],
+    "Exemption List": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 193,
+        "level": 4,
+        "title": "Exemption List"
       }
     ],
     "Expression/Sticker Message Segment (yunhu_expression)": [
@@ -5976,6 +6166,22 @@
         "title": "Fine-Grained Runtime Control"
       }
     ],
+    "First Contribution Walkthrough": [
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 1,
+        "level": 1,
+        "title": "First Contribution Walkthrough"
+      }
+    ],
+    "First PR Submission": [
+      {
+        "document": "contributing/README.md",
+        "line": 18,
+        "level": 2,
+        "title": "First PR Submission"
+      }
+    ],
     "Fixed Bugs": [
       {
         "document": "bug-tracker.md",
@@ -6043,7 +6249,7 @@
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 111,
+        "line": 157,
         "level": 2,
         "title": "Framework Configuration"
       }
@@ -6140,6 +6346,14 @@
         "title": "Full Format (For complex methods)"
       }
     ],
+    "Full Manual Startup Example": [
+      {
+        "document": "advanced/startup.md",
+        "line": 173,
+        "level": 2,
+        "title": "Full Manual Startup Example"
+      }
+    ],
     "Function Related Terms": [
       {
         "document": "terminology.md",
@@ -6180,12 +6394,12 @@
         "title": "General Interfaces"
       }
     ],
-    "Generating Type Stubs": [
+    "Generate Type Stubs": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 514,
+        "line": 551,
         "level": 3,
-        "title": "Generating Type Stubs"
+        "title": "Generate Type Stubs"
       }
     ],
     "Generic request": [
@@ -6215,7 +6429,13 @@
     "Get Help": [
       {
         "document": "README.md",
-        "line": 68,
+        "line": 78,
+        "level": 2,
+        "title": "Get Help"
+      },
+      {
+        "document": "contributing/README.md",
+        "line": 59,
         "level": 2,
         "title": "Get Help"
       }
@@ -6284,6 +6504,14 @@
         "title": "Getting Started with Event Handling"
       }
     ],
+    "Global Arguments": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 419,
+        "level": 2,
+        "title": "Global Arguments"
+      }
+    ],
     "Global Configuration": [
       {
         "document": "advanced/lazy-loading.md",
@@ -6300,12 +6528,12 @@
         "title": "Global Configuration (EmailAdapter)"
       }
     ],
-    "Global Parameters": [
+    "Graceful Shutdown": [
       {
-        "document": "user-guide/cli-reference.md",
-        "line": 413,
+        "document": "advanced/startup.md",
+        "line": 284,
         "level": 2,
-        "title": "Global Parameters"
+        "title": "Graceful Shutdown"
       }
     ],
     "Group Chat Message (with @mention)": [
@@ -6428,12 +6656,12 @@
         "title": "HTTP Requests"
       }
     ],
-    "HTTP Routing": [
+    "HTTP Routes": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 164,
+        "line": 190,
         "level": 3,
-        "title": "HTTP Routing"
+        "title": "HTTP Routes"
       }
     ],
     "HTTPStatusError": [
@@ -6577,7 +6805,7 @@
     "Health Check": [
       {
         "document": "advanced/router.md",
-        "line": 309,
+        "line": 334,
         "level": 3,
         "title": "Health Check"
       },
@@ -6610,18 +6838,18 @@
         "title": "Heartbeat Mechanism"
       }
     ],
-    "Home Page Entry": [
+    "Homepage Entry": [
       {
         "document": "advanced/router.md",
-        "line": 326,
+        "line": 351,
         "level": 2,
-        "title": "Home Page Entry"
+        "title": "Homepage Entry"
       }
     ],
     "Hook Breakpoints Overview": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 63,
+        "line": 89,
         "level": 2,
         "title": "Hook Breakpoints Overview"
       }
@@ -6634,12 +6862,12 @@
         "title": "Hot Reload"
       }
     ],
-    "Hot Restart of Adapters": [
+    "Hot Restart/Stop Adapters": [
       {
         "document": "advanced/startup.md",
         "line": 251,
         "level": 3,
-        "title": "Hot Restart of Adapters"
+        "title": "Hot Restart/Stop Adapters"
       }
     ],
     "How It Works": [
@@ -6665,7 +6893,7 @@
     "How WebUI Consumes": [
       {
         "document": "advanced/i18n.md",
-        "line": 368,
+        "line": 402,
         "level": 3,
         "title": "How WebUI Consumes"
       }
@@ -6702,14 +6930,6 @@
         "title": "HttpResponse"
       }
     ],
-    "I. I Want to Use a Bot": [
-      {
-        "document": "README.md",
-        "line": 15,
-        "level": 3,
-        "title": "I. I Want to Use a Bot"
-      }
-    ],
     "I18nClass Key Path Rules": [
       {
         "document": "advanced/i18n.md",
@@ -6721,7 +6941,7 @@
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
-        "line": 389,
+        "line": 427,
         "level": 3,
         "title": "I18nManager"
       }
@@ -6732,22 +6952,6 @@
         "line": 86,
         "level": 3,
         "title": "ID Field Query"
-      }
-    ],
-    "II. I Want to Develop Modules / Adapters": [
-      {
-        "document": "README.md",
-        "line": 28,
-        "level": 3,
-        "title": "II. I Want to Develop Modules / Adapters"
-      }
-    ],
-    "III. I Want to Deeply Understand the Principles": [
-      {
-        "document": "README.md",
-        "line": 39,
-        "level": 3,
-        "title": "III. I Want to Deeply Understand the Principles"
       }
     ],
     "Ideaura Cafe Platform Features Documentation": [
@@ -6798,6 +7002,14 @@
         "title": "Import Methods"
       }
     ],
+    "Important Notes": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 304,
+        "level": 2,
+        "title": "Important Notes"
+      }
+    ],
     "Important Restrictions": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -6817,7 +7029,7 @@
     "Information Query Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 156,
+        "line": 162,
         "level": 2,
         "title": "Information Query Commands"
       }
@@ -6866,17 +7078,19 @@
         "title": "Initialization Stage Breakdown"
       }
     ],
+    "Initialize Project": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 561,
+        "level": 3,
+        "title": "Initialize Project"
+      }
+    ],
     "Initializing Project": [
       {
         "document": "quick-start.md",
         "line": 63,
         "level": 2,
-        "title": "Initializing Project"
-      },
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 524,
-        "level": 3,
         "title": "Initializing Project"
       }
     ],
@@ -6902,6 +7116,14 @@
         "line": 61,
         "level": 4,
         "title": "Install ErisPulse"
+      }
+    ],
+    "Install Modules": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 476,
+        "level": 3,
+        "title": "Install Modules"
       }
     ],
     "Install uv": [
@@ -6957,12 +7179,6 @@
         "document": "quick-start.md",
         "line": 97,
         "level": 2,
-        "title": "Installing Modules"
-      },
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 439,
-        "level": 3,
         "title": "Installing Modules"
       }
     ],
@@ -7045,7 +7261,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 424,
+        "line": 461,
         "level": 2,
         "title": "Interactive Installation"
       }
@@ -7061,7 +7277,7 @@
     "Internationalization Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 199,
+        "line": 245,
         "level": 2,
         "title": "Internationalization Configuration"
       }
@@ -7106,12 +7322,12 @@
         "title": "Kook Platform Features Documentation"
       }
     ],
-    "Language Commands": [
+    "Language Command": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 335,
+        "line": 341,
         "level": 2,
-        "title": "Language Commands"
+        "title": "Language Command"
       }
     ],
     "Language Detection Mechanism": [
@@ -7144,6 +7360,14 @@
         "line": 328,
         "level": 2,
         "title": "Lazy Loading System"
+      }
+    ],
+    "Lazy Module Loading": [
+      {
+        "document": "advanced/startup.md",
+        "line": 277,
+        "level": 3,
+        "title": "Lazy Module Loading"
       }
     ],
     "Lazy-Loaded Module System": [
@@ -7217,7 +7441,7 @@
     "Lifecycle Integration": [
       {
         "document": "advanced/router.md",
-        "line": 365,
+        "line": 390,
         "level": 2,
         "title": "Lifecycle Integration"
       }
@@ -7246,6 +7470,14 @@
         "title": "List Available Modules"
       }
     ],
+    "List Components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 489,
+        "level": 3,
+        "title": "List Components"
+      }
+    ],
     "List Platforms": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -7260,6 +7492,14 @@
         "line": 1014,
         "level": 3,
         "title": "Listen to Bot Lifecycle"
+      }
+    ],
+    "Listener Query (has_handlers)": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 77,
+        "level": 3,
+        "title": "Listener Query (has_handlers)"
       }
     ],
     "Listening to @ Messages": [
@@ -7316,14 +7556,6 @@
         "line": 37,
         "level": 3,
         "title": "Listening to Private Messages"
-      }
-    ],
-    "Listing Components": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 452,
-        "level": 3,
-        "title": "Listing Components"
       }
     ],
     "Listing Supported Send Methods": [
@@ -7389,7 +7621,7 @@
     "Log Messages": [
       {
         "document": "advanced/i18n.md",
-        "line": 537,
+        "line": 577,
         "level": 3,
         "title": "Log Messages"
       }
@@ -7435,7 +7667,7 @@
     "Logging Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 95,
+        "line": 141,
         "level": 2,
         "title": "Logging Configuration"
       }
@@ -7546,12 +7778,20 @@
         "title": "Manual Response Construction (Old Method Still Compatible)"
       }
     ],
-    "Manually Register Custom Translations (Old Approach)": [
+    "Manually Register Custom Translations (Legacy Approach)": [
       {
         "document": "advanced/i18n.md",
         "line": 187,
         "level": 3,
-        "title": "Manually Register Custom Translations (Old Approach)"
+        "title": "Manually Register Custom Translations (Legacy Approach)"
+      }
+    ],
+    "Manually Switch in Code": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 39,
+        "level": 3,
+        "title": "Manually Switch in Code"
       }
     ],
     "Material Documentation": [
@@ -7605,7 +7845,7 @@
     "Message Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 188,
+        "line": 234,
         "level": 3,
         "title": "Message Configuration"
       }
@@ -7656,14 +7896,6 @@
         "line": 38,
         "level": 3,
         "title": "Message Event (message)"
-      }
-    ],
-    "Message Event Additional Fields": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 74,
-        "level": 3,
-        "title": "Message Event Additional Fields"
       }
     ],
     "Message Event Example": [
@@ -7795,7 +8027,7 @@
     "Message Segment Conversion": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 89,
+        "line": 137,
         "level": 2,
         "title": "Message Segment Conversion"
       }
@@ -7845,7 +8077,7 @@
     "Message Sending": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 134,
+        "line": 160,
         "level": 3,
         "title": "Message Sending"
       }
@@ -8043,7 +8275,7 @@
     "Method Signature": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 21,
+        "line": 69,
         "level": 3,
         "title": "Method Signature"
       }
@@ -8135,7 +8367,7 @@
     "Module Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 210,
+        "line": 256,
         "level": 2,
         "title": "Module Configuration"
       }
@@ -8183,7 +8415,7 @@
     "Module Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 89,
+        "line": 115,
         "level": 3,
         "title": "Module Lifecycle"
       },
@@ -8214,14 +8446,6 @@
         "line": 230,
         "level": 2,
         "title": "Module Module"
-      }
-    ],
-    "Module On-Demand Loading": [
-      {
-        "document": "advanced/startup.md",
-        "line": 277,
-        "level": 3,
-        "title": "Module On-Demand Loading"
       }
     ],
     "Module Overview": [
@@ -8346,20 +8570,20 @@
         "title": "Multi-instance Deployment"
       }
     ],
-    "Multi-language Configuration Fields": [
+    "Multi-language Coverage": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 561,
+        "level": 3,
+        "title": "Multi-language Coverage"
+      }
+    ],
+    "Multi-language Support for Config Fields": [
       {
         "document": "advanced/i18n.md",
         "line": 267,
         "level": 2,
-        "title": "Multi-language Configuration Fields"
-      }
-    ],
-    "Multi-language Coverage": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 521,
-        "level": 3,
-        "title": "Multi-language Coverage"
+        "title": "Multi-language Support for Config Fields"
       }
     ],
     "Multi-platform Adaptation": [
@@ -8392,14 +8616,6 @@
         "line": 516,
         "level": 2,
         "title": "Naming Conventions"
-      }
-    ],
-    "Nearest Mapping Principle": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 64,
-        "level": 3,
-        "title": "Nearest Mapping Principle"
       }
     ],
     "Network Client": [
@@ -8477,7 +8693,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 239,
+        "line": 285,
         "level": 2,
         "title": "Next Steps"
       },
@@ -8496,12 +8712,6 @@
         "title": "Notes"
       },
       {
-        "document": "advanced/lifecycle.md",
-        "line": 278,
-        "level": 2,
-        "title": "Notes"
-      },
-      {
         "document": "platform-guide/ideaura.md",
         "line": 428,
         "level": 2,
@@ -8512,14 +8722,6 @@
         "line": 210,
         "level": 2,
         "title": "Notes"
-      }
-    ],
-    "Notice Event Additional Fields": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 82,
-        "level": 3,
-        "title": "Notice Event Additional Fields"
       }
     ],
     "Notice Events": [
@@ -8606,6 +8808,14 @@
         "line": 100,
         "level": 3,
         "title": "One-Step Send Information Retrieval"
+      }
+    ],
+    "One-time Registration (once)": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 63,
+        "level": 3,
+        "title": "One-time Registration (once)"
       }
     ],
     "OneBot11": [
@@ -8746,14 +8956,6 @@
         "title": "Optional Fields"
       }
     ],
-    "Other": [
-      {
-        "document": "README.md",
-        "line": 63,
-        "level": 2,
-        "title": "Other"
-      }
-    ],
     "Other Message Types": [
       {
         "document": "platform-guide/onebot12.md",
@@ -8768,6 +8970,14 @@
         "line": 113,
         "level": 2,
         "title": "Other Terms"
+      }
+    ],
+    "Others": [
+      {
+        "document": "README.md",
+        "line": 72,
+        "level": 2,
+        "title": "Others"
       }
     ],
     "Outbound Protocol": [
@@ -8927,7 +9137,7 @@
     "Path Handling": [
       {
         "document": "advanced/router.md",
-        "line": 295,
+        "line": 320,
         "level": 2,
         "title": "Path Handling"
       }
@@ -8981,7 +9191,7 @@
     "Platform Extension Fields": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 121,
+        "line": 169,
         "level": 2,
         "title": "Platform Extension Fields"
       },
@@ -9130,6 +9340,20 @@
         "line": 27,
         "level": 2,
         "title": "Prerequisites"
+      },
+      {
+        "document": "contributing/first-contribution.md",
+        "line": 7,
+        "level": 2,
+        "title": "Prerequisites"
+      }
+    ],
+    "Principle of Proximity Mapping": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 64,
+        "level": 3,
+        "title": "Principle of Proximity Mapping"
       }
     ],
     "Priority": [
@@ -9183,7 +9407,7 @@
     "Project Management Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 257,
+        "line": 263,
         "level": 2,
         "title": "Project Management Commands"
       }
@@ -9272,6 +9496,14 @@
         "line": 1,
         "level": 1,
         "title": "Publishing and Module Store Guide"
+      }
+    ],
+    "Pull Request Process": [
+      {
+        "document": "contributing/README.md",
+        "line": 34,
+        "level": 2,
+        "title": "Pull Request Process"
       }
     ],
     "Purpose": [
@@ -9461,7 +9693,7 @@
     "Rate Limiting": [
       {
         "document": "advanced/router.md",
-        "line": 229,
+        "line": 254,
         "level": 2,
         "title": "Rate Limiting"
       }
@@ -9496,12 +9728,12 @@
         "title": "Raw Messages and Message Building"
       }
     ],
-    "Reading i18n Configuration via Configuration API": [
+    "Reading i18n Config via Config API": [
       {
         "document": "advanced/i18n.md",
-        "line": 478,
+        "line": 518,
         "level": 3,
-        "title": "Reading i18n Configuration via Configuration API"
+        "title": "Reading i18n Config via Config API"
       }
     ],
     "Receive Type": [
@@ -9579,7 +9811,7 @@
     "Register Entry": [
       {
         "document": "advanced/router.md",
-        "line": 330,
+        "line": 355,
         "level": 3,
         "title": "Register Entry"
       }
@@ -9592,12 +9824,12 @@
         "title": "Register Middleware"
       }
     ],
-    "Registering Configuration Translations": [
+    "Registering Config Translations": [
       {
         "document": "advanced/i18n.md",
-        "line": 335,
+        "line": 368,
         "level": 3,
-        "title": "Registering Configuration Translations"
+        "title": "Registering Config Translations"
       }
     ],
     "Registering Handlers": [
@@ -9619,7 +9851,7 @@
     "Registration and Unregistration": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 225,
+        "line": 251,
         "level": 3,
         "title": "Registration and Unregistration"
       }
@@ -9645,7 +9877,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 288,
+        "line": 314,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9657,7 +9889,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 389,
+        "line": 414,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9669,7 +9901,7 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 334,
+        "line": 356,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9711,7 +9943,7 @@
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 327,
+        "line": 375,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9753,7 +9985,7 @@
       },
       {
         "document": "user-guide/README.md",
-        "line": 38,
+        "line": 39,
         "level": 2,
         "title": "Related Documentation"
       }
@@ -9781,7 +10013,7 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 74,
+        "line": 84,
         "level": 2,
         "title": "Related Links"
       }
@@ -9797,7 +10029,7 @@
     "Relationship with CLI i18n": [
       {
         "document": "advanced/i18n.md",
-        "line": 547,
+        "line": 587,
         "level": 2,
         "title": "Relationship with CLI i18n"
       }
@@ -9884,6 +10116,14 @@
         "line": 136,
         "level": 4,
         "title": "Request Body"
+      }
+    ],
+    "Request Correlation ID (X-Request-ID)": [
+      {
+        "document": "advanced/router.md",
+        "line": 229,
+        "level": 2,
+        "title": "Request Correlation ID (X-Request-ID)"
       }
     ],
     "Request Event Conversion": [
@@ -9991,7 +10231,7 @@
     "Required Field Mapping": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 61,
+        "line": 109,
         "level": 2,
         "title": "Required Field Mapping"
       }
@@ -10045,7 +10285,7 @@
     "Restart": [
       {
         "document": "advanced/startup.md",
-        "line": 302,
+        "line": 324,
         "level": 2,
         "title": "Restart"
       }
@@ -10077,7 +10317,7 @@
     "Return Value Structure": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 34,
+        "line": 82,
         "level": 3,
         "title": "Return Value Structure"
       }
@@ -10145,7 +10385,7 @@
     "Rich Media Message Conversion Example": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 226,
+        "line": 274,
         "level": 2,
         "title": "Rich Media Message Conversion Example"
       }
@@ -10161,7 +10401,7 @@
     "Root Page": [
       {
         "document": "advanced/router.md",
-        "line": 317,
+        "line": 342,
         "level": 3,
         "title": "Root Page"
       }
@@ -10174,12 +10414,12 @@
         "title": "Route Discovery"
       }
     ],
-    "Route Groups": [
+    "Route Grouping": [
       {
         "document": "advanced/router.md",
         "line": 195,
         "level": 2,
-        "title": "Route Groups"
+        "title": "Route Grouping"
       }
     ],
     "Route Middleware": [
@@ -10222,12 +10462,12 @@
         "title": "Router Module"
       }
     ],
-    "Routing Server": [
+    "Router Server": [
       {
         "document": "advanced/startup.md",
         "line": 267,
         "level": 3,
-        "title": "Routing Server"
+        "title": "Router Server"
       }
     ],
     "Rule Combination and Background Execution": [
@@ -10246,6 +10486,14 @@
         "title": "Rule Propagation"
       }
     ],
+    "Run Project": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 528,
+        "level": 3,
+        "title": "Run Project"
+      }
+    ],
     "Run a Test": [
       {
         "document": "user-guide/installation.md",
@@ -10260,18 +10508,12 @@
         "line": 119,
         "level": 2,
         "title": "Running Project"
-      },
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 491,
-        "level": 3,
-        "title": "Running Project"
       }
     ],
     "Runtime Configuration": [
       {
         "document": "advanced/i18n.md",
-        "line": 476,
+        "line": 516,
         "level": 2,
         "title": "Runtime Configuration"
       }
@@ -10279,7 +10521,7 @@
     "Runtime Control Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 220,
+        "line": 226,
         "level": 2,
         "title": "Runtime Control Commands"
       }
@@ -10354,6 +10596,14 @@
         "title": "Search Functionality"
       }
     ],
+    "Secret Masking and Config Validation": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 335,
+        "level": 3,
+        "title": "Secret Masking and Config Validation"
+      }
+    ],
     "Security": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -10365,7 +10615,7 @@
     "Security Headers": [
       {
         "document": "advanced/router.md",
-        "line": 264,
+        "line": 289,
         "level": 2,
         "title": "Security Headers"
       }
@@ -10629,7 +10879,7 @@
     "Server Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 78,
+        "line": 124,
         "level": 2,
         "title": "Server Configuration"
       }
@@ -10656,12 +10906,12 @@
         "title": "Session Type System"
       }
     ],
-    "Severity Grading": [
+    "Severity Classification": [
       {
         "document": "bug-tracker.md",
         "line": 39,
         "level": 2,
-        "title": "Severity Grading"
+        "title": "Severity Classification"
       }
     ],
     "Shutdown Adapter": [
@@ -10869,7 +11119,7 @@
     "Standard Event Definition": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 200,
+        "line": 226,
         "level": 2,
         "title": "Standard Event Definition"
       }
@@ -10978,12 +11228,12 @@
         "title": "Static Factory + Chaining Mix"
       }
     ],
-    "Statistics Overview": [
+    "Statistical Overview": [
       {
         "document": "bug-tracker.md",
         "line": 90,
         "level": 2,
-        "title": "Statistics Overview"
+        "title": "Statistical Overview"
       }
     ],
     "Step 1: Writing Your First Command": [
@@ -11045,7 +11295,7 @@
     "Storage Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 159,
+        "line": 205,
         "level": 2,
         "title": "Storage Configuration"
       }
@@ -11075,7 +11325,7 @@
     "Strict Mode": [
       {
         "document": "user-guide/configuration.md",
-        "line": 130,
+        "line": 176,
         "level": 3,
         "title": "Strict Mode"
       }
@@ -11242,12 +11492,12 @@
         "title": "Supported i18n Fields"
       }
     ],
-    "Switch Manually in Code": [
+    "Switch Language": [
       {
-        "document": "advanced/i18n.md",
-        "line": 39,
+        "document": "user-guide/cli-reference.md",
+        "line": 538,
         "level": 3,
-        "title": "Switch Manually in Code"
+        "title": "Switch Language"
       }
     ],
     "Switch via Configuration File": [
@@ -11258,20 +11508,12 @@
         "title": "Switch via Configuration File"
       }
     ],
-    "Switch via Environment Variable": [
+    "Switch via Environment Variables": [
       {
         "document": "advanced/i18n.md",
         "line": 17,
         "level": 3,
-        "title": "Switch via Environment Variable"
-      }
-    ],
-    "Switching Language": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 501,
-        "level": 3,
-        "title": "Switching Language"
+        "title": "Switch via Environment Variables"
       }
     ],
     "Sync API Connection": [
@@ -11309,7 +11551,7 @@
     "System Routes": [
       {
         "document": "advanced/router.md",
-        "line": 305,
+        "line": 330,
         "level": 2,
         "title": "System Routes"
       }
@@ -11436,12 +11678,12 @@
         "title": "Token Refresh"
       }
     ],
-    "Traditional Registration Method": [
+    "Traditional Registration Methods": [
       {
         "document": "advanced/router.md",
         "line": 104,
         "level": 2,
-        "title": "Traditional Registration Method"
+        "title": "Traditional Registration Methods"
       }
     ],
     "Transaction Operations": [
@@ -11463,7 +11705,7 @@
     "Translation Key Naming": [
       {
         "document": "advanced/i18n.md",
-        "line": 511,
+        "line": 551,
         "level": 3,
         "title": "Translation Key Naming"
       }
@@ -11471,7 +11713,7 @@
     "Triggering": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 233,
+        "line": 259,
         "level": 3,
         "title": "Triggering"
       }
@@ -11527,7 +11769,7 @@
     "Type Stub Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 372,
+        "line": 378,
         "level": 2,
         "title": "Type Stub Commands"
       }
@@ -11564,12 +11806,12 @@
         "title": "Unified Module Access Entry"
       }
     ],
-    "Uninstalling Components": [
+    "Uninstall Components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 468,
+        "line": 505,
         "level": 3,
-        "title": "Uninstalling Components"
+        "title": "Uninstall Components"
       }
     ],
     "Unique Event Types": [
@@ -11601,9 +11843,17 @@
     "Unload Process": [
       {
         "document": "advanced/startup.md",
-        "line": 284,
+        "line": 306,
         "level": 2,
         "title": "Unload Process"
+      }
+    ],
+    "Unloading Translations": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 258,
+        "level": 3,
+        "title": "Unloading Translations"
       }
     ],
     "Unregister Methods": [
@@ -11612,14 +11862,6 @@
         "line": 576,
         "level": 4,
         "title": "Unregister Methods"
-      }
-    ],
-    "Unregistering Translations": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 258,
-        "level": 3,
-        "title": "Unregistering Translations"
       }
     ],
     "Unregistering Views": [
@@ -11678,12 +11920,12 @@
         "title": "Updates and Maintenance"
       }
     ],
-    "Upgrading Components": [
+    "Upgrade Components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 478,
+        "line": 515,
         "level": 3,
-        "title": "Upgrading Components"
+        "title": "Upgrade Components"
       }
     ],
     "Usage": [
@@ -11692,14 +11934,6 @@
         "line": 30,
         "level": 3,
         "title": "Usage"
-      }
-    ],
-    "Usage Example in Modules": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 251,
-        "level": 2,
-        "title": "Usage Example in Modules"
       }
     ],
     "Usage Examples": [
@@ -11738,6 +11972,14 @@
         "line": 287,
         "level": 3,
         "title": "Usage Examples"
+      }
+    ],
+    "Usage in Adapters": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 153,
+        "level": 4,
+        "title": "Usage in Adapters"
       }
     ],
     "Use Adapter Event Listeners": [
@@ -11882,12 +12124,6 @@
         "line": 444,
         "level": 2,
         "title": "Using in Adapters"
-      },
-      {
-        "document": "advanced/i18n.md",
-        "line": 153,
-        "level": 4,
-        "title": "Using in Adapters"
       }
     ],
     "Using in Code": [
@@ -11898,12 +12134,12 @@
         "title": "Using in Code"
       }
     ],
-    "Using in Module Classes": [
+    "Using in Module Class": [
       {
         "document": "advanced/i18n.md",
         "line": 224,
         "level": 3,
-        "title": "Using in Module Classes"
+        "title": "Using in Module Class"
       }
     ],
     "Using in RouteGroup": [
@@ -11949,7 +12185,7 @@
     "Utilities": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 241,
+        "line": 267,
         "level": 3,
         "title": "Utilities"
       }
@@ -12062,6 +12298,14 @@
         "title": "Waiting for User Reply"
       }
     ],
+    "Ways You Can Contribute": [
+      {
+        "document": "contributing/README.md",
+        "line": 6,
+        "level": 2,
+        "title": "Ways You Can Contribute"
+      }
+    ],
     "WebHook Connection": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -12073,7 +12317,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 179,
+        "line": 205,
         "level": 3,
         "title": "WebSocket"
       }
@@ -12171,7 +12415,7 @@
     "When to Use Hard Restart?": [
       {
         "document": "advanced/startup.md",
-        "line": 323,
+        "line": 345,
         "level": 3,
         "title": "When to Use Hard Restart?"
       }
@@ -12200,12 +12444,12 @@
         "title": "Why Are Standards Needed?"
       }
     ],
-    "Why I18nClass is Recommended?": [
+    "Why Recommend I18nClass?": [
       {
         "document": "advanced/i18n.md",
         "line": 137,
         "level": 4,
-        "title": "Why I18nClass is Recommended?"
+        "title": "Why Recommend I18nClass?"
       }
     ],
     "Wildcard": [
@@ -12280,20 +12524,20 @@
         "title": "[BUG-004] Lifecycle event handlers not cleaned up"
       }
     ],
-    "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
+    "[BUG-005] Event.is_friend_add/is_friend_delete's detail_type inconsistent with OB12 standard": [
       {
         "document": "bug-tracker.md",
         "line": 201,
         "level": 3,
-        "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
+        "title": "[BUG-005] Event.is_friend_add/is_friend_delete's detail_type inconsistent with OB12 standard"
       }
     ],
-    "[BUG-006] adapter.clear() does not clean _started_instances, causing incorrect status after restart": [
+    "[BUG-006] adapter.clear() does not clean up _started_instances, causing incorrect status after restart": [
       {
         "document": "bug-tracker.md",
         "line": 221,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() does not clean _started_instances, causing incorrect status after restart"
+        "title": "[BUG-006] adapter.clear() does not clean up _started_instances, causing incorrect status after restart"
       }
     ],
     "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
@@ -12304,28 +12548,28 @@
         "title": "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] Bot offline event repeatedly submitted during shutdown": [
+    "[BUG-008] Bot offline event is repeatedly submitted during shutdown": [
       {
         "document": "bug-tracker.md",
         "line": 261,
         "level": 3,
-        "title": "[BUG-008] Bot offline event repeatedly submitted during shutdown"
+        "title": "[BUG-008] Bot offline event is repeatedly submitted during shutdown"
       }
     ],
-    "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization": [
+    "[BUG-009] LazyModule synchronous access to BaseModule leads to incomplete initialization": [
       {
         "document": "bug-tracker.md",
         "line": 281,
         "level": 3,
-        "title": "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization"
+        "title": "[BUG-009] LazyModule synchronous access to BaseModule leads to incomplete initialization"
       }
     ],
-    "[BUG-010] Multi-threaded configuration system write causes data loss": [
+    "[BUG-010] Multi-threaded configuration system write leads to data loss": [
       {
         "document": "bug-tracker.md",
         "line": 301,
         "level": 3,
-        "title": "[BUG-010] Multi-threaded configuration system write causes data loss"
+        "title": "[BUG-010] Multi-threaded configuration system write leads to data loss"
       }
     ],
     "[BUG-011] Ctrl+C cannot stop program on Windows": [
@@ -12384,20 +12628,20 @@
         "title": "[BUG-017] WebSocket route auto_accept flag lost after service restart"
       }
     ],
-    "[BUG-018] HTTP/WS client concurrent calls lead to crash and connection leak": [
+    "[BUG-018] HTTP/WS client concurrent calls cause crash and connection leak": [
       {
         "document": "bug-tracker.md",
         "line": 468,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS client concurrent calls lead to crash and connection leak"
+        "title": "[BUG-018] HTTP/WS client concurrent calls cause crash and connection leak"
       }
     ],
-    "[BUG-019] Adapter hot reload causes route conflict and reload failure": [
+    "[BUG-019] Adapter hot reload causes route conflicts and reload failure": [
       {
         "document": "bug-tracker.md",
         "line": 496,
         "level": 3,
-        "title": "[BUG-019] Adapter hot reload causes route conflict and reload failure"
+        "title": "[BUG-019] Adapter hot reload causes route conflicts and reload failure"
       }
     ],
     "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in script directory": [
@@ -12416,36 +12660,36 @@
         "title": "[BUG-021] SQL query builder rejects valid wildcard and list expressions"
       }
     ],
-    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)": [
+    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)": [
       {
         "document": "bug-tracker.md",
         "line": 570,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)"
+        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)"
       }
     ],
-    "[BUG-023] Adapter cache not refreshed after account configuration modification causes account resolution failure": [
+    "[BUG-023] Adapter cache not refreshed after account configuration change causing account resolution failure": [
       {
         "document": "bug-tracker.md",
         "line": 609,
         "level": 3,
-        "title": "[BUG-023] Adapter cache not refreshed after account configuration modification causes account resolution failure"
+        "title": "[BUG-023] Adapter cache not refreshed after account configuration change causing account resolution failure"
       }
     ],
-    "[BUG-024] storage.set() triggers OOM Kill when writing large numeric ID keys": [
+    "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill": [
       {
         "document": "bug-tracker.md",
         "line": 629,
         "level": 3,
-        "title": "[BUG-024] storage.set() triggers OOM Kill when writing large numeric ID keys"
+        "title": "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill"
       }
     ],
-    "[BUG-025] on_config_update callback not routed by core": [
+    "[BUG-025] on_config_update callback not called by core router": [
       {
         "document": "bug-tracker.md",
         "line": 675,
         "level": 3,
-        "title": "[BUG-025] on_config_update callback not routed by core"
+        "title": "[BUG-025] on_config_update callback not called by core router"
       }
     ],
     "[BUG-026] notice/request event reply target inferred incorrectly": [
@@ -12454,6 +12698,22 @@
         "line": 705,
         "level": 3,
         "title": "[BUG-026] notice/request event reply target inferred incorrectly"
+      }
+    ],
+    "[BUG-027] Routing rate limit cleanup task uses fixed window causing long window rate limit rules to fail": [
+      {
+        "document": "bug-tracker.md",
+        "line": 736,
+        "level": 3,
+        "title": "[BUG-027] Routing rate limit cleanup task uses fixed window causing long window rate limit rules to fail"
+      }
+    ],
+    "[BUG-029] Configuration monitoring task broadcasts incomplete TOML and silently swallows exceptions": [
+      {
+        "document": "bug-tracker.md",
+        "line": 768,
+        "level": 3,
+        "title": "[BUG-029] Configuration monitoring task broadcasts incomplete TOML and silently swallows exceptions"
       }
     ],
     "__init__.py": [
@@ -12499,7 +12759,7 @@
     "`t()` Method Details": [
       {
         "document": "advanced/i18n.md",
-        "line": 405,
+        "line": 443,
         "level": 4,
         "title": "`t()` Method Details"
       }
@@ -12579,7 +12839,7 @@
     "convert() Method": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 19,
+        "line": 67,
         "level": 2,
         "title": "convert() Method"
       }
@@ -12595,7 +12855,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 294,
+        "line": 300,
         "level": 3,
         "title": "create"
       }
@@ -12630,6 +12890,14 @@
         "line": 40,
         "level": 3,
         "title": "docker-compose.yml"
+      }
+    ],
+    "doctor": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 435,
+        "level": 3,
+        "title": "doctor"
       }
     ],
     "dump_state()": [
@@ -12675,7 +12943,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 341,
+        "line": 347,
         "level": 3,
         "title": "i18n"
       }
@@ -12683,7 +12951,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 264,
+        "line": 270,
         "level": 3,
         "title": "init"
       }
@@ -12691,7 +12959,7 @@
     "install": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 18,
+        "line": 24,
         "level": 3,
         "title": "install"
       }
@@ -12715,7 +12983,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 163,
+        "line": 169,
         "level": 3,
         "title": "list"
       }
@@ -12723,7 +12991,7 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 192,
+        "line": 198,
         "level": 3,
         "title": "list-remote"
       }
@@ -12803,7 +13071,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 226,
+        "line": 232,
         "level": 3,
         "title": "run"
       }
@@ -12835,7 +13103,7 @@
     "self-update": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 123,
+        "line": 129,
         "level": 3,
         "title": "self-update"
       }
@@ -12875,7 +13143,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 378,
+        "line": 384,
         "level": 3,
         "title": "types"
       }
@@ -12883,7 +13151,7 @@
     "uninstall": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 72,
+        "line": 78,
         "level": 3,
         "title": "uninstall"
       }
@@ -12891,7 +13159,7 @@
     "upgrade": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 95,
+        "line": 101,
         "level": 3,
         "title": "upgrade"
       }

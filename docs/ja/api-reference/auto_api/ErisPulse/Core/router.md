@@ -18,6 +18,32 @@ ErisPulse 路由系统
 
 ---
 
+## 函数列表
+
+
+### `_load_web_stack()`
+
+懒加载 FastAPI / Uvicorn / Starlette
+
+> **内部方法**
+将 web 栈依赖推迟到路由实际服务时才导入。幂等：重复调用仅做一次实际导入。
+
+---
+
+
+### `_web_stack_required(fn: Callable[..., Any])`
+
+装饰器：在被装饰方法执行前确保 web 栈已加载
+
+> **内部方法**
+自动适配同步与异步方法。
+
+- **fn** (`Callable`): 被装饰的方法
+**返回值** (`Callable`): 包装后的方法
+
+---
+
+
 ## 类列表
 
 
@@ -47,7 +73,7 @@ ErisPulse 路由系统
 #### 方法列表
 
 
-##### `__init__(module_name: str, prefix: str, version: str | None = None, tags: list[str] | None = None, middlewares: list | None = None, router: 'RouterManager | None' = None)`
+##### `__init__(module_name: str, prefix: str, version: str | None = None, tags: list[str] | None = None, middlewares: list | None = None, router: RouterManager | None = None)`
 
 初始化路由分组
 
@@ -182,7 +208,14 @@ SSE (Server-Sent Events) 路由装饰器
 初始化路由管理器
 
 > **提示**
-> 会自动创建 FastAPI 实例并设置核心路由
+> 首次访问 ``app`` 属性时才创建 FastAPI 实例并注册核心路由。
+
+---
+
+
+##### `app()`
+
+FastAPI 应用实例（惰性创建，首次访问时加载 web 栈并注册核心路由）
 
 ---
 
@@ -911,6 +944,13 @@ SSE 路由使用 base_url 前缀（HTTP）。
 从配置文件自动应用 CORS 和安全头
 
 > **内部方法**
+
+---
+
+
+##### `_on_router_config_changed(_data: dict)`
+
+router 中间件配置变更回调：CORS/安全头需重启进程才能生效
 
 ---
 

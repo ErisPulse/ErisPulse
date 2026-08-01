@@ -281,6 +281,28 @@ await sdk.router.start(host="0.0.0.0", port=9000)
 await sdk.load_module("MyModule")
 ```
 
+## 优雅关闭
+
+从 2.7.0 起，`sdk.shutdown()` 提供**程序化优雅关闭**：设置关闭事件，让正在 `await sdk.run(keep_running=True)` 挂起的主循环返回，进而触发 `uninit()` 完成资源清理。
+
+```python
+# 在任意协程中调用，触发优雅退出（run() 挂起返回并自动 uninit）
+sdk.shutdown()
+```
+
+典型用途：
+
+```python
+async def shutdown_after_idle():
+    await asyncio.sleep(3600)
+    sdk.shutdown()  # 空闲 1 小时后优雅退出
+```
+
+**信号处理**：`run()` 内部会注册 `SIGTERM` / `SIGHUP` 处理器，将系统信号转为优雅关闭——容器编排（Docker `docker stop`）或 `systemd` 停止服务时，进程会走完 `uninit()` 清理而非被强杀。
+
+- Windows 不支持 `loop.add_signal_handler`，信号处理器会自动跳过（仍可用 `sdk.shutdown()` 或 Ctrl+C 触发关闭）
+- 反复调用 `sdk.shutdown()` 是安全的（事件已设置后再次调用为无操作）
+
 ## 卸载流程
 
 启动的反向操作是 `await sdk.uninit()`，它按相反顺序清理：

@@ -34,6 +34,7 @@ EXPECTED_COMMANDS = {
     "run": ["r"],
     "i18n": ["language", "lang"],
     "types": ["t", "stub"],
+    "doctor": ["diag"],
 }
 
 
@@ -350,6 +351,9 @@ class TestAliasScheme:
             list         -> l, ls
             list-remote  -> lsr
             run          -> r
+            i18n         -> language, lang
+            types        -> t, stub
+            doctor       -> diag
         """
         actual = {
             cmd.name: sorted(getattr(cmd, "aliases", []) or [])
@@ -360,3 +364,106 @@ class TestAliasScheme:
             for canonical, aliases in EXPECTED_COMMANDS.items()
         }
         assert actual == expected
+
+
+# ==================== create 模板编译验证 ====================
+
+
+class TestCreateTemplatesCompile:
+    """验证 create 命令的代码模板渲染后可编译（回归 BUG-028）。
+
+    AGENTS.md 第 8 条要求修改 create.py 模板后须运行 .format() + compile()
+    验证。此处以测试形式常驻，防止模板再次产出无法 import 的代码。
+    """
+
+    @staticmethod
+    def _text():
+        from ErisPulse.CLI.utils.scaffold_text import ScaffoldText
+
+        return ScaffoldText("en").all()
+
+    def test_adapter_core_renders_and_compiles(self):
+        from ErisPulse.CLI.commands import create as c
+
+        code = c._ADAPTER_CORE.format(
+            name="MyAdapter",
+            converter_name="MyConverter",
+            entry_key="myadapter",
+            text=self._text(),
+        )
+        compile(code, "<adapter_core>", "exec")
+
+    def test_module_core_renders_and_compiles(self):
+        from ErisPulse.CLI.commands import create as c
+
+        code = c._MODULE_CORE.format(name="MyModule", text=self._text())
+        compile(code, "<module_core>", "exec")
+
+    def test_adapter_converter_renders_and_compiles(self):
+        from ErisPulse.CLI.commands import create as c
+
+        code = c._ADAPTER_CONVERTER.format(
+            name="MyAdapter",
+            converter_name="MyConverter",
+            entry_key="myadapter",
+            text=self._text(),
+        )
+        compile(code, "<adapter_converter>", "exec")
+
+    def test_adapter_core_imports_resolve(self):
+        """适配器模板引用的 Core.Bases 符号必须真实存在。"""
+        import ast
+
+        from ErisPulse.CLI.commands import create as c
+        from ErisPulse.Core import Bases
+
+        code = c._ADAPTER_CORE.format(
+            name="MyAdapter",
+            converter_name="MyConverter",
+            entry_key="myadapter",
+            text=self._text(),
+        )
+        tree = ast.parse(code)
+        imported = {
+            alias.name
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom)
+            and node.module == "ErisPulse.Core.Bases"
+            for alias in node.names
+        }
+        for sym in imported:
+            assert hasattr(Bases, sym), f"create 模板导入了不存在的符号: {sym}"
+        # I18nKeys（复数）不存在于 Core.Bases，绝不能再次出现
+        assert "I18nKeys" not in imported
+
+
+# ==================== 跨进程契约常量 ====================
+
+
+class TestCrossProcessContracts:
+    """钉住跨模块/跨进程共享的契约常量，防止两侧各自漂移。"""
+
+    def test_hard_restart_exit_code_is_shared(self):
+        """硬重启退出码：sdk.py 与 CLI run.py 必须引用同一常量（BUG 历史 H1）"""
+        from ErisPulse.CLI.commands.run import RunCommand
+        from ErisPulse.Core.constants import HARD_RESTART_EXIT_CODE
+        from ErisPulse.sdk import sdk
+
+        assert HARD_RESTART_EXIT_CODE == 42
+        # 两侧必须与同一个常量值相等，避免硬重启被误判为崩溃
+        assert sdk.RESTART_EXIT_CODE == HARD_RESTART_EXIT_CODE
+        assert RunCommand._RESTART_EXIT_CODE == HARD_RESTART_EXIT_CODE
+
+    def test_entry_point_groups_are_shared(self):
+        """入口点组名：CLI 与主库镜像必须一致（loader/finder/create/types 共用）"""
+        from ErisPulse.CLI.constants import (
+            ADAPTER_ENTRY_POINT_GROUP as CLI_ADAPTER,
+            MODULE_ENTRY_POINT_GROUP as CLI_MODULE,
+        )
+        from ErisPulse.Core.constants import (
+            ADAPTER_ENTRY_POINT_GROUP as CORE_ADAPTER,
+            MODULE_ENTRY_POINT_GROUP as CORE_MODULE,
+        )
+
+        assert CLI_MODULE == CORE_MODULE == "erispulse.module"
+        assert CLI_ADAPTER == CORE_ADAPTER == "erispulse.adapter"

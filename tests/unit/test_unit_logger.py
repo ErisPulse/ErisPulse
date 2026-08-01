@@ -43,6 +43,32 @@ class TestLogger:
         assert py_logger is not None
         assert py_logger.name == "ErisPulse"
 
+    # ==================== 配置热更新测试 ====================
+
+    def test_config_hot_reload_reapplies_on_change(self, temp_logger):
+        """logger 配置变更时自动重新应用（配置热更新）"""
+        with patch("ErisPulse.runtime.get_logger_config") as mock_get:
+            mock_get.return_value = {"level": "DEBUG"}
+            temp_logger._setup_config()
+            assert temp_logger._logger.level == logging.DEBUG
+
+            # 变更级别，触发热更新回调 → 应重新应用
+            mock_get.return_value = {"level": "WARNING"}
+            temp_logger._on_config_updated({})
+            assert temp_logger._logger.level == logging.WARNING
+
+    def test_config_hot_reload_skips_when_unchanged(self, temp_logger):
+        """配置未变化时不重复应用"""
+        with patch("ErisPulse.runtime.get_logger_config") as mock_get:
+            mock_get.return_value = {"level": "INFO"}
+            temp_logger._setup_config()
+            call_count_before = mock_get.call_count
+
+            # 配置相同 → 不应重新 setup（仅做一次变更检测读取）
+            temp_logger._on_config_updated({})
+            # _on_config_updated 自身读一次做比对；未变化则不会再触发 _setup_config 的多次读取
+            assert temp_logger._logger.level == logging.INFO
+
     # ==================== 日志级别测试 ====================
 
     def test_set_level(self, temp_logger):

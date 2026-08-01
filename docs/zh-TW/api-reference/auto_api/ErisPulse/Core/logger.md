@@ -214,6 +214,13 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 ---
 
 
+##### `_on_config_updated(_data: dict)`
+
+配置变更回调：仅在 logger 段实际变化时重新应用配置
+
+---
+
+
 ##### `_log(level_name: str, level_const: int, msg)`
 
 内部日志方法，统一处理日志记录流程

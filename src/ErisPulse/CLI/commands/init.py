@@ -200,6 +200,7 @@ class InitCommand(Command):
             "[ErisPulse.server]",
             'host = "0.0.0.0"              # 监听地址',
             "port = 8000                   # 监听端口",
+            "auto_start = true             # 是否自动启动 HTTP 服务器 (纯 WS/轮询适配器可设 false)",
             "ssl_certfile = null           # SSL 证书路径",
             "ssl_keyfile = null            # SSL 密钥路径",
             "",

@@ -23,7 +23,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..constants import STATUS_OK
+from ..constants import RETCODE_NOT_IMPLEMENTED, STATUS_FAILED, STATUS_OK
 
 
 @dataclass
@@ -193,8 +193,8 @@ def apply_send_rules(
             ctx.finished_at = time.monotonic()
             await _invoke_callback(on_progress, ctx)
             return {
-                "status": "failed",
-                "retcode": 10002,
+                "status": STATUS_FAILED,
+                "retcode": RETCODE_NOT_IMPLEMENTED,
                 "data": None,
                 "message_id": "",
                 "message": "发送因队列积压被丢弃（低优先级）",

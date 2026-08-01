@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 from ..constants import (
     DEFAULT_SEND_METHOD,
     DEFAULT_SEND_TARGET_TYPE,
+    LOG_MESSAGE_TRUNCATE_CHARS,
     RETCODE_NOT_IMPLEMENTED,
     RETCODE_OK,
     STATUS_FAILED,
@@ -147,28 +148,32 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
         )
         if method_name in ("Text", "Markdown", "Html") and args:
             content = str(args[0])
-            if len(content) > 50:
-                content = content[:50] + "..."
+            if len(content) > LOG_MESSAGE_TRUNCATE_CHARS:
+                content = content[:LOG_MESSAGE_TRUNCATE_CHARS] + "..."
             _msg_logger.event(
                 f"[Send] {platform}/{method_name} -> {log_target}: {content}"
             )
         else:
             _msg_logger.event(f"[Send] {platform}/{method_name} -> {log_target}")
 
-        async def _emit_hooks():
-            from ..lifecycle import lifecycle
+        # 预判是否有生命周期监听者：无监听时跳过 Task 创建与 emit 调度，
+        # 避免每条发送消息都无条件 spawn 两个后台任务
+        from ..lifecycle import lifecycle
 
+        _has_sending_hooks = lifecycle.has_handlers("message.sending")
+        _has_sent_hooks = lifecycle.has_handlers("message.sent")
+
+        async def _emit_hooks():
             await lifecycle.emit("message.sending", send_ctx)
 
         async def _emit_hooks_done(_):
-            from ..lifecycle import lifecycle
-
             await lifecycle.emit("message.sent", send_ctx)
 
         # fire-and-forget：交给事件循环调度，无需保留引用
-        from ...runtime.tasks import spawn_background
+        if _has_sending_hooks:
+            from ...runtime.tasks import spawn_background
 
-        spawn_background(_emit_hooks())
+            spawn_background(_emit_hooks())
 
         # 若附加了发送规则，用规则执行器统一包装 Task
         if _has_rules(send_dsl):
@@ -201,11 +206,15 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
             )
             # message.sent 绑定到包装任务完成（覆盖整体重试流程），
             # 不绑定到首次内部 result（避免失败重试时提前触发）
-            wrapped.add_done_callback(lambda t: asyncio.ensure_future(_emit_hooks_done(t)))
+            if _has_sent_hooks:
+                wrapped.add_done_callback(
+                    lambda t: asyncio.ensure_future(_emit_hooks_done(t))
+                )
             return wrapped
 
         # 无规则：保持原有行为，message.sent 在单次发送完成后触发
-        result.add_done_callback(lambda t: asyncio.ensure_future(_emit_hooks_done(t)))
+        if _has_sent_hooks:
+            result.add_done_callback(lambda t: asyncio.ensure_future(_emit_hooks_done(t)))
         return result
 
     return hooked
@@ -922,8 +931,8 @@ class RequestDSL:
             f"请求 {self._request_id} 未被处理。"
         )
         return {
-            "status": "failed",
-            "retcode": 10002,
+            "status": STATUS_FAILED,
+            "retcode": RETCODE_NOT_IMPLEMENTED,
             "data": None,
             "message_id": "",
             "message": f"平台 {platform_name} 未实现请求操作 ({action})",
@@ -1418,8 +1427,8 @@ class BaseAdapter(ABC):
                     f"消息未被发送。适配器必须实现此方法以支持 OneBot12 消息段发送。"
                 )
                 return {
-                    "status": "failed",
-                    "retcode": 10002,
+                    "status": STATUS_FAILED,
+                    "retcode": RETCODE_NOT_IMPLEMENTED,
                     "data": None,
                     "message_id": "",
                     "message": f"适配器 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法",

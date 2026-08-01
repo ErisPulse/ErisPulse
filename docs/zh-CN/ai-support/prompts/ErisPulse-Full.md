@@ -2582,6 +2582,12 @@ ErisPulse 命令行工具（`epsdk`）提供项目管理和包管理功能。
 | `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 升级指定模块或全部 |
 | `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | 更新 SDK 本身 |
 
+## 诊断命令
+
+| 命令 | 别名 | 参数 | 说明 |
+|------|------|------|------|
+| `doctor` | `diag` | `[--verbose]` | 诊断环境并输出健康报告 |
+
 ### install
 
 安装 ErisPulse 模块或适配器包。若不指定包名则进入交互式安装界面。
@@ -2984,7 +2990,38 @@ epsdk types --force
 | 参数 | 短参数 | 说明 |
 |------|--------|------|
 | `--help` | `-h` | 显示帮助信息 |
-| `--verbose` | `-v` | 显示详细输出 |
+| `--version` | `-V` | 显示版本信息 |
+| `--verbose` | `-v` | 显示详细输出（可叠加 `-vv`/`-vvv`） |
+| `--no-color` | | 禁用彩色输出（适合 CI / 日志采集） |
+| `--yes` | `-y` | 自动确认所有交互提示（非交互式运行） |
+
+---
+
+## 环境诊断
+
+### doctor
+
+诊断当前 CLI 运行环境，输出健康报告。用于排查"为什么装不上 / 连不上"类问题。
+
+| 参数 | 说明 |
+|------|------|
+| `--verbose` | 显示详细诊断信息 |
+
+**检查项**：
+- **Python**：解释器版本与路径
+- **安装后端**：使用 `uv` 还是 `pip`
+- **目标解释器**：包实际安装到的目标 Python 环境
+- **配置文件**：`config/config.toml` 是否存在
+- **PyPI 连通性**：能否访问 PyPI（并显示发现的组件数）
+- **系统代理**：是否检测到代理
+
+```bash
+# 运行环境诊断
+epsdk doctor
+
+# 使用别名
+epsdk diag
+```
 
 ---
 
@@ -3157,6 +3194,52 @@ project/
 这样你可以在**默认 INFO 级别**下立刻定位问题，而不会困惑"为什么我改的配置没生效"。
 
 > **运行中改坏配置文件？** 如果你在机器人运行期间手动编辑 `config.toml` 引入了语法错误，框架在下次写入（合并配置）时会输出「配置文件已损坏（语法错误，第 X 行），无法合并写入——请先修复配置文件后重启」，而不是令人困惑的「写入失败」。待写入的配置项会被保留，不会丢失。
+
+## 环境变量覆盖
+
+框架支持用环境变量**覆盖** `ErisPulse.*` 配置项（适合 Docker / 容器化 / CI 部署，无需修改 `config.toml`）。
+
+命名规则：把点分路径 `ErisPulse.<section>.<key>` 改为全大写、`.` 替换为 `_`，并加上 `ERISPULSE_` 前缀：
+
+| 配置项 | 环境变量 | 示例值 |
+|--------|---------|--------|
+| `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
+| `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
+| `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |
+| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
+
+行为说明：
+- **优先级最高**：环境变量覆盖「配置文件」与「默认值」，按原值类型自动转换（`bool` / `int` / `float` / 逗号分隔的 `list` / 字符串）
+- **不持久化**：覆盖只在运行期生效，不会写回 `config.toml`
+- **支持热更新**：运行中修改环境变量后，配合配置监听的重载即可生效
+
+```bash
+# Docker 部署示例：不修改 config.toml，直接覆盖端口
+ERISPULSE_SERVER_PORT=9000 docker compose up -d
+```
+
+> 注：`ErisPulse.server.port` 这类框架配置走 `get_server_config()` 等 API 读取，均受环境变量覆盖影响。
+
+## 配置热更新
+
+从 2.7.0 起，框架对配置热更新做了**系统化支持**。外部修改 `config.toml` 后（后台 watcher 每 5 秒检测一次），或代码调用 `setConfig()` 后，各组件自动响应：
+
+| 组件 | 支持热更新的配置 | 行为 |
+|------|----------------|------|
+| **日志 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | 自动重新应用（带变更检测） |
+| **命令系统 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一条消息即生效 |
+| **适配器并发** | `framework.handler_max_concurrency` | 失效缓存信号量，按新值重建 |
+| **主动 GC** | `framework.proactive_gc_interval` | 每轮重读，支持运行时调整/禁用 |
+| **模块/适配器配置** | 各自的配置项 | 触发 `on_config_update(old, new)` 回调 |
+
+**需重启的配置**（无法安全热切换，变更时会输出告警"需重启进程后生效"）：
+
+| 配置 | 原因 |
+|------|------|
+| `router.cors.*` / `router.security.*` | 中间件在服务启动时写入 FastAPI，运行时无法安全热切换 |
+| `storage.use_global_db` | SQLite 文件句柄已在运行时打开，切换路径不安全 |
+
+> **中途编辑保存出错？** 若编辑 `config.toml` 时出现瞬时语法错误，框架会**保留上次有效配置**并输出诊断日志，不会把空配置广播给各组件（避免 `on_config_update` 收到空值误回退默认）。
 
 ## 完整配置示例
 
@@ -8050,6 +8133,54 @@ Converter 只负责**正向转换**（接收方向），即将平台的原生事
 1. **无损转换**：原始数据必须完整保留在 `{platform}_raw` 字段中
 2. **标准兼容**：转换后的事件必须符合 OneBot12 标准格式
 3. **平台扩展**：平台特有数据使用 `{platform}_` 前缀字段存储
+
+## BaseConverter 基类（推荐）
+
+从 2.7.0 起，框架提供 `BaseConverter` 基类（`ErisPulse.Core.Bases`），封装 OneBot12 事件的**公共字段构建**与**常用消息段辅助**，让转换器只需聚焦类型映射：
+
+```python
+from ErisPulse.Core.Bases import BaseConverter
+
+
+class MyConverter(BaseConverter):
+    def __init__(self):
+        super().__init__(platform="myplatform")
+
+    def convert(self, raw_event: dict) -> dict | None:
+        if not isinstance(raw_event, dict):
+            return None
+        event_type = raw_event.get("type", "")
+        base = self.build_base_event(raw_event, event_type)  # id/time/platform/self/raw
+        if event_type == "message":
+            base["type"] = "message"
+            base["detail_type"] = "group" if raw_event.get("group_id") else "private"
+            base["user_id"] = str(raw_event.get("sender_id", ""))
+            base["message"] = [self.text(raw_event.get("content", ""))]
+            base["alt_message"] = raw_event.get("content", "")
+            return base
+        return None
+```
+
+`build_base_event()` 已填充的公共字段：
+
+| 字段 | 来源 |
+|------|------|
+| `id` | `raw_event["event_id"]`，缺省自动生成 UUID |
+| `time` | `raw_event["timestamp"]`，缺省当前时间 |
+| `platform` | 构造时传入的 `platform` |
+| `self` | `{"platform": ..., "user_id": raw_event["bot_id"]}` |
+| `{platform}_raw` | 原始事件（满足"无损转换"原则） |
+| `{platform}_raw_type` | 原始事件类型 |
+
+常用消息段辅助方法（均为静态方法，直接复用）：
+
+```python
+converter.text("hi")          # {"type": "text", "data": {"text": "hi"}}
+converter.at("123456")        # {"type": "at", "data": {"user_id": "123456"}}
+converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
+```
+
+> 手动实现时 `build_base_event` 的公共字段构造是必须重复写的样板代码，使用 `BaseConverter` 可省去这部分，且天然满足"无损转换"（原始事件始终进 `{platform}_raw`）。
 
 ## convert() 方法
 
@@ -13505,6 +13636,32 @@ async def on_anything(data):
     print(f"收到事件: {data}")
 ```
 
+### 一次性注册（once）
+
+从 2.7.0 起，`lifecycle.once()` 注册的处理器在**触发一次后自动注销**，适合"首次就绪"这类一次性钩子：
+
+```python
+@sdk.lifecycle.once("core.init.complete")
+async def on_first_ready(data):
+    print("首次就绪，后续不再触发")
+```
+
+- 与 `on()` 同优先级参数语义（`priority` 数值越大越先执行）
+- 自动注销，无需手动 `unregister`
+- 同步/异步处理器均支持
+
+### 监听者查询（has_handlers）
+
+热路径短路场景可先用 `has_handlers()` 判断是否有监听者，避免无谓的事件遍历与任务调度：
+
+```python
+if sdk.lifecycle.has_handlers("message.sending"):
+    await sdk.lifecycle.emit("message.sending", send_ctx)
+```
+
+- 覆盖**精确事件名、通配符 `*`、父级事件**三种匹配
+- 无任何监听者时返回 `False`，可安全跳过 `emit`
+
 ## 钩子断点一览
 
 框架内置了以下钩子断点，用户可以通过 `@sdk.lifecycle.on()` 监听任意断点实现自定义逻辑。
@@ -13965,6 +14122,31 @@ async def auth_middleware(request, call_next):
 @router.middleware("/my_module/admin/*")
 async def admin_middleware(request, call_next):
     return await call_next(request)
+```
+
+## 请求关联 ID（X-Request-ID）
+
+从 2.7.0 起，每个 HTTP 请求都会携带一个 `X-Request-ID` 关联 ID，用于日志 / 链路追踪串联：
+
+- **生成规则**：优先沿用客户端传入的 `X-Request-ID` 请求头（分布式追踪场景）；否则自动生成 UUID
+- **响应头**：响应会回写 `X-Request-ID`，方便客户端把请求与日志对应
+- **生命周期事件**：`server.request` 与 `server.response` 事件数据中新增 `request_id` 字段
+
+```python
+# 在模块中监听请求事件，按 request_id 串联请求-响应
+@sdk.lifecycle.on("server.request")
+async def on_request(data):
+    print(f"[{data['request_id']}] {data['method']} {data['path']}")
+
+@sdk.lifecycle.on("server.response")
+async def on_response(data):
+    print(f"[{data['request_id']}] -> {data['status_code']}")
+```
+
+客户端可自定义 ID 以便跨服务追踪：
+
+```bash
+curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
 ```
 
 ## 速率限制
@@ -15195,6 +15377,39 @@ class MyAdapterConfig(BaseConfig):
 
 `default` 是兜底文本——当翻译未注册或查找失败时显示。
 
+### secret 脱敏与配置校验
+
+标记为 `"secret": True` 的字段会自动获得**脱敏保护**（2.7.0 起）：
+
+- **模板生成脱敏**：`dataclass_to_toml_with_comments()` 生成配置模板时，secret 字段的真实值不会写入文件（显示为空占位），避免敏感信息落盘
+- **通用脱敏工具**：`redact_secret(value)` 将非空值替换为 `***`，空值原样返回，可用于日志输出等场景
+
+```python
+from ErisPulse.Core.Bases.config_schema import redact_secret
+
+redact_secret("sk-xxxxxx")  # '***'
+redact_secret("")           # ''
+```
+
+**配置校验**（`validate_config()`）除 `required` 非空检查外，2.7.0 起支持：
+
+| 校验项 | 元数据 | 示例 |
+|--------|--------|------|
+| 类型匹配 | 字段声明类型 | `int` 字段传入字符串报错 |
+| 枚举约束 | `ui.options` 或顶层 `options` | 值必须属于允许选项 |
+| 数值范围 | 顶层 `min` / `max` | `metadata={"min": 1, "max": 65535}` |
+
+```python
+from ErisPulse.Core.Bases.config_schema import validate_config
+
+@dataclass
+class C(BaseConfig):
+    mode: str = field(default="a", metadata={"ui": {"widget": "select", "options": ["a", "b"]}})
+    port: int = field(default=80, metadata={"min": 1, "max": 65535})
+
+errors = validate_config(C(mode="x", port=70000))  # 两条错误：枚举 + 范围
+```
+
 ### 注册配置翻译
 
 配置字段的 i18n 键和普通翻译键一样，使用 `i18n.register()` 注册：
@@ -16040,6 +16255,28 @@ await sdk.router.start(host="0.0.0.0", port=9000)
 # 手动加载一个（可能是懒加载的）模块
 await sdk.load_module("MyModule")
 ```
+
+## 优雅关闭
+
+从 2.7.0 起，`sdk.shutdown()` 提供**程序化优雅关闭**：设置关闭事件，让正在 `await sdk.run(keep_running=True)` 挂起的主循环返回，进而触发 `uninit()` 完成资源清理。
+
+```python
+# 在任意协程中调用，触发优雅退出（run() 挂起返回并自动 uninit）
+sdk.shutdown()
+```
+
+典型用途：
+
+```python
+async def shutdown_after_idle():
+    await asyncio.sleep(3600)
+    sdk.shutdown()  # 空闲 1 小时后优雅退出
+```
+
+**信号处理**：`run()` 内部会注册 `SIGTERM` / `SIGHUP` 处理器，将系统信号转为优雅关闭——容器编排（Docker `docker stop`）或 `systemd` 停止服务时，进程会走完 `uninit()` 清理而非被强杀。
+
+- Windows 不支持 `loop.add_signal_handler`，信号处理器会自动跳过（仍可用 `sdk.shutdown()` 或 Ctrl+C 触发关闭）
+- 反复调用 `sdk.shutdown()` 是安全的（事件已设置后再次调用为无操作）
 
 ## 卸载流程
 

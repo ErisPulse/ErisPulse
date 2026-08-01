@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "total_categories": 10,
+  "total_categories": 11,
   "categories": {
     "クイックスタート": {
       "description": "ErisPulse クイックスタートガイド",
@@ -76,7 +76,7 @@
       "count": 5,
       "documents": [
         {
-          "title": "ユーザー使用ガイド",
+          "title": "ユーザーガイド",
           "path": "user-guide/README.md",
           "level": 1
         },
@@ -295,7 +295,7 @@
           "level": 1
         },
         {
-          "title": "生命周期管理",
+          "title": "ライフサイクル管理",
           "path": "advanced/lifecycle.md",
           "level": 1
         },
@@ -305,7 +305,7 @@
           "level": 1
         },
         {
-          "title": "ルーター管理",
+          "title": "ルーティングマネージャー",
           "path": "advanced/router.md",
           "level": 1
         },
@@ -345,7 +345,7 @@
           "level": 1
         },
         {
-          "title": "起動フローと手動制御",
+          "title": "起動プロセスと手動制御",
           "path": "advanced/startup.md",
           "level": 1
         }
@@ -418,6 +418,23 @@
         {
           "title": "ErisPulse コメントスタイルガイドライン",
           "path": "styleguide/docstring.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "コントリビュート": {
+      "description": "ErisPulse への貢献",
+      "count": 2,
+      "documents": [
+        {
+          "title": "ErisPulse への貢献",
+          "path": "contributing/README.md",
+          "level": 1
+        },
+        {
+          "title": "最初の貢献実践",
+          "path": "contributing/first-contribution.md",
           "level": 1
         }
       ],

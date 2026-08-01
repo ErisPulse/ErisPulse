@@ -2,9 +2,9 @@
 
 ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配器與不同平台互動，提供靈活的模組系統用於功能擴展。
 
-> **第一次使用？** 直接看 [5 分鐘快速開始](docs/zh-TW/quick-start.md) —— 從安裝到運行第一個機器人，一氣呵成。
+> **第一次使用?** 直接看 [5 分鐘快速開始](docs/zh-TW/quick-start.md) —— 從安裝到運行第一個機器人，一氣呵成。
 >
-> 遇到不理解的術語？查看 [術語表](docs/zh-TW/terminology.md)。
+> 遇到不理解的術語? 查看 [術語表](docs/zh-TW/terminology.md)。
 
 ---
 
@@ -19,11 +19,11 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 | 進度 | 文件 | 說明 |
 |------|------|------|
 | **① 上手** | [5 分鐘快速開始](docs/zh-TW/quick-start.md) | 安裝、初始化、運行 —— 唯一的起步入口 |
-| ② 深入 | [建立第一個機器人](getting-started/first-bot.md) | 編寫第一個命令處理器 |
-| ③ 概念 | [基礎概念](getting-started/basic-concepts.md) | 理解適配器/模組/事件的設計 |
-| ④ 實戰 | [常見任務範例](getting-started/common-tasks.md) | 存儲、定時任務、權限控制 |
-| 參考 | [設定檔說明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md) | 按需查閱 |
-| 參考 | [平台特性指南](platform-guide/README.md) | 各平台（雲湖/QQ/Telegram…）的差異 |
+| ② 深入 | [建立第一個機器人](docs/zh-TW/getting-started/first-bot.md) | 編寫第一個命令處理器 |
+| ③ 概念 | [基礎概念](docs/zh-TW/getting-started/basic-concepts.md) | 理解適配器/模組/事件的設計 |
+| ④ 實戰 | [常見任務範例](docs/zh-TW/getting-started/common-tasks.md) | 存儲、定時任務、權限控制 |
+| 參考 | [設定檔說明](docs/zh-TW/user-guide/configuration.md) · [CLI 命令](docs/zh-TW/user-guide/cli-reference.md) · [部署指南](docs/zh-TW/user-guide/deployment.md) | 按需查閱 |
+| 參考 | [平台特性指南](docs/zh-TW/platform-guide/README.md) | 各平台（雲湖/QQ/Telegram…）的差異 |
 
 ### 二、我要開發模組 / 適配器
 
@@ -31,25 +31,34 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 
 | 類型 | 入門 | 進階 |
 |------|------|------|
-| **模組開發**（推薦） | [模組開發入門](developer-guide/modules/getting-started.md) | [核心概念](developer-guide/modules/core-concepts.md) · [Event 包裝類](developer-guide/modules/event-wrapper.md) · [最佳實踐](developer-guide/modules/best-practices.md) |
-| **適配器開發** | [適配器開發入門](developer-guide/adapters/getting-started.md) | [核心概念](developer-guide/adapters/core-concepts.md) · [SendDSL 詳解](developer-guide/adapters/send-dsl.md) · [事件轉換器](developer-guide/adapters/converter.md) · [最佳實踐](developer-guide/adapters/best-practices.md) |
-| **技術標準** | [標準規範總覽](standards/README.md) | 適配器開發必須遵循的 [會話類型](standards/session-types.md) · [事件轉換](standards/event-conversion.md) · [發送方法](standards/send-method-spec.md) · [API 回應](standards/api-response.md) · [請求操作](standards/request-action-spec.md) 規範 |
-| **發布** | [發布與模組商店](developer-guide/publishing.md) | 將作品發布到 PyPI 和模組商店 |
+| **模組開發**（推薦） | [模組開發入門](docs/zh-TW/developer-guide/modules/getting-started.md) | [核心概念](docs/zh-TW/developer-guide/modules/core-concepts.md) · [Event 包裝類](docs/zh-TW/developer-guide/modules/event-wrapper.md) · [最佳實踐](docs/zh-TW/developer-guide/modules/best-practices.md) |
+| **適配器開發** | [適配器開發入門](docs/zh-TW/developer-guide/adapters/getting-started.md) | [核心概念](docs/zh-TW/developer-guide/adapters/core-concepts.md) · [SendDSL 詳解](docs/zh-TW/developer-guide/adapters/send-dsl.md) · [事件轉換器](docs/zh-TW/developer-guide/adapters/converter.md) · [最佳實踐](docs/zh-TW/developer-guide/adapters/best-practices.md) |
+| **技術標準** | [標準規範總覽](docs/zh-TW/standards/README.md) | 適配器開發必須遵循的 [會話類型](docs/zh-TW/standards/session-types.md) · [事件轉換](docs/zh-TW/standards/event-conversion.md) · [發送方法](docs/zh-TW/standards/send-method-spec.md) · [API 回應](docs/zh-TW/standards/api-response.md) · [請求操作](docs/zh-TW/standards/request-action-spec.md) 規範 |
+| **發布** | [發布與模組商店](docs/zh-TW/developer-guide/publishing.md) | 將作品發布到 PyPI 和模組商店 |
 
-### 三、我要深入了解原理
+### 三、我要深入理解原理
 
 了解框架內部如何運作。
 
 | 文件 | 說明 |
 |------|------|
-| [架構概覽](architecture.md) | 可視化圖表：核心架構、初始化流程、事件處理、生命週期 |
-| [啟動流程與手動控制](advanced/startup.md) | 啟動鏈路拆解、手動驅動各環節、加載失敗診斷 |
-| [事件系統](api-reference/event-system.md) | 五大類事件的完整 API |
-| [適配器系統](api-reference/adapter-system.md) | 適配器註冊、啟停、API 調用 |
-| [核心模組](api-reference/core-modules.md) | Storage / Config / Logger / Router 等基礎能力 |
-| [生命週期管理](advanced/lifecycle.md) · [懶加載](advanced/lazy-loading.md) · [路由系統](advanced/router.md) | 內部子系統 |
-| [Conversation 多輪對話](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL 構建](advanced/sql-builder.md) · [HTTP 客戶端](advanced/http-client.md) · [國際化](advanced/i18n.md) | 進階工具 |
-| [Dashboard 管理介面](advanced/dashboard-view.md) | Web 管理界面接入 |
+| [架構概覽](docs/zh-TW/architecture.md) | 可視化圖表：核心架構、初始化流程、事件處理、生命週期 |
+| [啟動流程與手動控制](docs/zh-TW/advanced/startup.md) | 啟動鏈路拆解、手動驅動各環節、加載失敗診斷 |
+| [事件系統](docs/zh-TW/api-reference/event-system.md) | 五大類事件的完整 API |
+| [適配器系統](docs/zh-TW/api-reference/adapter-system.md) | 適配器註冊、啟停、API 調用 |
+| [核心模組](docs/zh-TW/api-reference/core-modules.md) | Storage / Config / Logger / Router 等基礎能力 |
+| [生命週期管理](docs/zh-TW/advanced/lifecycle.md) · [懶加載](docs/zh-TW/advanced/lazy-loading.md) · [路由系統](docs/zh-TW/advanced/router.md) | 內部子系統 |
+| [Conversation 多輪對話](docs/zh-TW/advanced/conversation.md) · [MessageBuilder](docs/zh-TW/advanced/message-builder.md) · [SQL 構建](docs/zh-TW/advanced/sql-builder.md) · [HTTP 客戶端](docs/zh-TW/advanced/http-client.md) · [國際化](docs/zh-TW/advanced/i18n.md) | 進階工具 |
+| [Dashboard 管理面板](docs/zh-TW/advanced/dashboard-view.md) | Web 管理介面接入 |
+
+### 四、我要為 ErisPulse 貢獻
+
+讓框架更好
+
+| 文件 | 說明 |
+|------|------|------|
+| [為 ErisPulse 貢獻](docs/zh-TW/contributing/README.md) | 貢獻方式總覽：文件 / i18n / Bug / 模組 / 適配器 |
+| [首次貢獻](docs/zh-TW/contributing/first-contribution.md) | 從 fork 到提交 PR |
 
 ---
 
@@ -57,13 +66,14 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 
 ErisPulse 支援兩種開發方式：
 
-- **模組開發（推薦）**：建立獨立的模組包，透過包管理器安裝，便於分發和管理。
+- **模組開發（推薦）**：建立獨立的模組包，透過套件管理器安裝，便於分發和管理。
 - **嵌入式開發**：直接在專案中編寫處理器，適合快速原型。詳見 [快速開始](docs/zh-TW/quick-start.md)。
 
 ## 其他
 
-- [文件風格指南](styleguide/docstring.md) — 貢獻文件時的寫作規範
-- [AI 輔助開發](ai-support/README.md) — 獲取供 AI 編程助手使用的專案提示詞
+- [文件風格指南](docs/zh-TW/styleguide/docstring.md) —— 貢獻文件時的寫作規範
+- [為 ErisPulse 貢獻](docs/zh-TW/contributing/README.md) —— 參與專案共建的入口
+- [AI 輔助開發](docs/zh-TW/ai-support/README.md) —— 獲取供 AI 編程助手使用的專案提示詞
 
 ## 獲取幫助
 

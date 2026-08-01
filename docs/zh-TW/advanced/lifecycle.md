@@ -1,11 +1,11 @@
 # 生命週期管理
 
-ErisPulse 提供統一的鉤子/生命週期系統，用於監控系統各元件的運行狀態，以及實現審計、統計、自定義邏輯等擴充功能。
+ErisPulse 提供統一的鉤子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自定義邏輯等擴展功能。
 
 系統支援三種觸發方式：
 - `await lifecycle.emit("event", data)` — 精簡版，傳遞任意資料
 - `lifecycle.emit_sync("event", data)` — 同步版（用於非異步上下文）
-- `await lifecycle.submit_event("event", ...)` — 相容舊版，自動建構標準事件格式
+- `await lifecycle.submit_event("event", ...)` — 兼容舊版，自動建構標準事件格式
 
 ## 事件處理機制
 
@@ -50,7 +50,7 @@ async def second_handler(data):
 - 觸發 `module.load` 時，也會觸發 `module`
 - 觸發 `adapter.event.receive` 時，也會觸發 `adapter.event` 和 `adapter`
 
-### 通配符
+### 萬用字元
 
 註冊 `*` 捕獲所有事件：
 
@@ -59,6 +59,32 @@ async def second_handler(data):
 async def on_anything(data):
     print(f"收到事件: {data}")
 ```
+
+### 一次性註冊（once）
+
+從 2.7.0 起，`lifecycle.once()` 註冊的處理器在**觸發一次後自動註銷**，適合「首次就緒」這類一次性鉤子：
+
+```python
+@sdk.lifecycle.once("core.init.complete")
+async def on_first_ready(data):
+    print("首次就緒，後續不再觸發")
+```
+
+- 與 `on()` 同優先級參數語義（`priority` 數值越大越先執行）
+- 自動註銷，無需手動 `unregister`
+- 同步/異步處理器均支援
+
+### 監聽者查詢（has_handlers）
+
+熱路徑短路場景可先用 `has_handlers()` 判斷是否有監聽者，避免無謂的事件遍歷與任務調度：
+
+```python
+if sdk.lifecycle.has_handlers("message.sending"):
+    await sdk.lifecycle.emit("message.sending", send_ctx)
+```
+
+- 覆蓋**精確事件名、萬用字元 `*`、父級事件**三種匹配
+- 無任何監聽者時返回 `False`，可安全跳過 `emit`
 
 ## 鉤子斷點一覽
 
@@ -131,19 +157,19 @@ def log_unhandled(data):
         print(f"[未處理] {data['platform']}/{data['event_type']}")
 ```
 
-### 訊息傳送
+### 訊息發送
 
 | 鉤子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `message.sending` | 訊息即將傳送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | 訊息傳送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | 訊息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | 訊息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
-**範例：訊息傳送審計**
+**範例：訊息發送審計**
 
 ```python
 @sdk.lifecycle.on("message.sending")
 def log_sending(data):
-    print(f"[傳送] -> {data['platform']}/{data['detail_type']}/{data['target_id']} via {data['method']}")
+    print(f"[發送] -> {data['platform']}/{data['detail_type']}/{data['target_id']} via {data['method']}")
 ```
 
 ### 指令系統
@@ -166,7 +192,7 @@ def count_commands(data):
 | 鉤子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTP 回應傳送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.response` | HTTP 響應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
 **範例：請求日誌**
 
@@ -236,7 +262,7 @@ STANDARD_EVENTS = {
 |------|------|
 | `await lifecycle.emit(event, data=None)` | 異步觸發，處理器返回非 None 可修改 data |
 | `lifecycle.emit_sync(event, data=None)` | 同步觸發，異步處理器以 create_task 調度 |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 相容舊版，自動建構標準事件格式 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 兼容舊版，自動建構標準事件格式 |
 
 ### 工具
 

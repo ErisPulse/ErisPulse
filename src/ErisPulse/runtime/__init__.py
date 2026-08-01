@@ -41,6 +41,7 @@ from .hints import (
     suggest_for_attribute_error,
     suggest_similar,
 )
+from .memory import get_rss_mb, get_traced_mb, log_snapshot, snapshot
 from .tasks import spawn_background
 
 __all__ = [
@@ -69,14 +70,18 @@ __all__ = [
     "get_i18n_config",
     "get_logger_config",
     "get_master_config",
+    "get_rss_mb",
     "get_server_config",
     "get_storage_config",
+    "get_traced_mb",
     "global_exception_handler",
     # 异常诊断
     "log_diagnostic",
+    "log_snapshot",
     "register_config_i18n",
     "resolve_config_schema",
     "setup_exception_handling",
+    "snapshot",
     "spawn_background",
     "suggest_for_attribute_error",
     # 友好提示

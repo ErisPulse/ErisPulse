@@ -14,6 +14,7 @@ import datetime
 import inspect
 import json as _json
 import logging
+from collections import deque
 from collections.abc import Callable
 from pathlib import Path
 
@@ -97,6 +98,14 @@ class Logger:
             )
             self._logger.addHandler(console_handler)
         self._setup_config()
+        # 订阅配置热更新：logger 配置变更时自动重新应用
+        try:
+            from .lifecycle import lifecycle
+
+            lifecycle.register("config.updated", self._on_config_updated)
+            lifecycle.register("config.set", self._on_config_updated)
+        except Exception:
+            pass
 
     # ==================== 日志订阅 ====================
 
@@ -181,10 +190,11 @@ class Logger:
         """
         if limit > 0:
             self._max_logs = limit
-            # 更新所有已存在的日志列表大小
+            # 用新上限重建各模块的 deque，超出部分自动丢弃
             for module_name in self._logs:
-                while len(self._logs[module_name]) > self._max_logs:
-                    self._logs[module_name].pop(0)
+                self._logs[module_name] = deque(
+                    self._logs[module_name], maxlen=self._max_logs
+                )
             return True
         self._logger.warning(i18n.t("core.logger.memory_limit_invalid"))
         return False
@@ -429,10 +439,7 @@ class Logger:
         将日志保存到内存
         """
         if module_name not in self._logs:
-            self._logs[module_name] = []
-
-        if len(self._logs[module_name]) >= self._max_logs:
-            self._logs[module_name].pop(0)
+            self._logs[module_name] = deque(maxlen=self._max_logs)
 
         self._logs[module_name].append(
             {
@@ -456,6 +463,16 @@ class Logger:
             self.set_memory_limit(logger_config["memory_limit"])
         if logger_config.get("format") == "json":
             self.set_json_format(True)
+        # 记录本次应用的配置快照，供热更新时做变更检测
+        self._last_logger_config = logger_config
+
+    def _on_config_updated(self, _data: dict) -> None:
+        """配置变更回调：仅在 logger 段实际变化时重新应用配置"""
+        from ..runtime import get_logger_config
+
+        new_cfg = get_logger_config()
+        if new_cfg != self._last_logger_config:
+            self._setup_config()
 
     def _get_effective_level(self, module_name):
         return self._module_levels.get(module_name, self._logger.level)
@@ -470,6 +487,13 @@ class Logger:
         :param args: 额外的格式化参数
         :param kwargs: 额外的关键字参数
         """
+        # 快速路径：消息低于全局阈值，且没有任何模块覆盖到该级别时
+        # 直接跳过昂贵的 _get_caller 帧遍历（trace/debug 高频路径收益显著）
+        if (
+            level_const < self._logger.level
+            and not any(v <= level_const for v in self._module_levels.values())
+        ):
+            return
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= level_const:
             self._save_in_memory(caller_module, level_name, level_const, msg)

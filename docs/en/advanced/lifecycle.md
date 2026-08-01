@@ -1,11 +1,11 @@
 # Lifecycle Management
 
-ErisPulse provides a unified hooks/lifecycle system for monitoring the running status of various system components, and implementing extended functionalities such as audit, statistics, and custom logic.
+ErisPulse provides a unified hook/lifecycle system for monitoring the runtime status of various system components, and implementing extension features such as auditing, statistics, and custom logic.
 
 The system supports three trigger methods:
 - `await lifecycle.emit("event", data)` — Simplified version, passing arbitrary data
 - `lifecycle.emit_sync("event", data)` — Synchronous version (for non-async contexts)
-- `await lifecycle.submit_event("event", ...)` — Backward compatible, automatically builds standard event format
+- `await lifecycle.submit_event("event", ...)` — Compatible with old versions, automatically builds standard event format
 
 ## Event Handling Mechanism
 
@@ -22,17 +22,17 @@ async def on_module_load(data):
 # Programmatic registration
 sdk.lifecycle.register("module.load", on_module_load, priority=10)
 
-# Unregistering
+# Unregister
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# Batch unregister by owner (called by framework automatically when module/adapter unloads)
+# Batch unregister by owner (automatically called by framework when module/adapter is unloaded)
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
 print(f"Cleaned up {removed} lifecycle hooks")
 ```
 
 ### Priority
 
-Handlers support the `priority` parameter; higher numbers execute earlier (consistent with module loaders):
+Handlers support the `priority` parameter; larger values execute first (consistent with module loaders):
 
 ```python
 @sdk.lifecycle.on("adapter.event.receive", priority=10)  # Executes first
@@ -44,7 +44,7 @@ async def second_handler(data):
     pass
 ```
 
-### Dot Notation Events
+### Dot-Named Events
 
 Triggering a specific event also triggers its parent events:
 - Triggering `module.load` also triggers `module`
@@ -60,23 +60,49 @@ async def on_anything(data):
     print(f"Received event: {data}")
 ```
 
+### One-time Registration (once)
+
+Since 2.7.0, handlers registered via `lifecycle.once()` are **automatically unregistered after triggering once**, suitable for "first ready" type one-time hooks:
+
+```python
+@sdk.lifecycle.once("core.init.complete")
+async def on_first_ready(data):
+    print("First ready, will not trigger again")
+```
+
+- Same priority parameter semantics as `on()` (larger priority values execute first)
+- Automatic unregistration, no need to manually `unregister`
+- Supports both sync and async handlers
+
+### Listener Query (has_handlers)
+
+In hot path short-circuit scenarios, you can use `has_handlers()` to check if there are listeners first, avoiding unnecessary event traversal and task scheduling:
+
+```python
+if sdk.lifecycle.has_handlers("message.sending"):
+    await sdk.lifecycle.emit("message.sending", send_ctx)
+```
+
+- Covers **exact event name, wildcard `*`, and parent events** matching
+- Returns `False` when there are no listeners, allowing safe skip of `emit`
+
 ## Hook Breakpoints Overview
 
-The framework includes the following built-in hook breakpoints; users can listen to any breakpoint via `@sdk.lifecycle.on()` to implement custom logic.
+The framework has built-in the following hook breakpoints, and users can implement custom logic by monitoring any breakpoint via `@sdk.lifecycle.on()`.
 
 ### Core Initialization
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
+|---------|-------------|------|
 | `core.init.start` | SDK initialization starts | `{}` |
-| `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(only if failed)}` |
-| `core.uninit.complete` | SDK deinitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(only if failed)}` |
+| `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(only on failure)}` |
+| `core.uninit.complete` | SDK uninitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(only on failure)}` |
 
 ### Configuration Changes
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
-| `config.set` | Configuration item modified | `{"key": str, "old_value": Any, "new_value": Any}` |
+|---------|-------------|------|
+| `config.set` | A configuration item is modified | `{"key": str, "old_value": Any, "new_value": Any}` |
 
 **Example: Configuration Audit**
 
@@ -89,30 +115,30 @@ def audit_config(data):
 ### Module Lifecycle
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
+|---------|-------------|------|
 | `module.register` | Module class registered to manager | `{"module_name": str, "success": bool}` |
-| `module.load` | Module loaded (instantiation successful) | `{"module_name": str, "success": bool}` |
-| `module.init` | Module initialized (including lazy loading) | `{"module_name": str, "success": bool}` |
+| `module.load` | Module loading completed (instantiation successful) | `{"module_name": str, "success": bool}` |
+| `module.init` | Module initialization completed (including lazy loading) | `{"module_name": str, "success": bool}` |
 | `module.unload` | Module unloaded | `{"module_name": str, "success": bool}` |
 
 ### Adapter Lifecycle
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
-| `adapter.load` | Adapter registration complete | `{"platform": str, "success": bool}` |
+|---------|-------------|------|
+| `adapter.load` | Adapter registration completed | `{"platform": str, "success": bool}` |
 | `adapter.start` | Adapter started | `{"platforms": [str]}` |
-| `adapter.status.change` | Adapter status changed | `{"platform": str, "status": str, "retry_count": int, "error": str(only if failed)}` |
+| `adapter.status.change` | Adapter status changed | `{"platform": str, "status": str, "retry_count": int, "error": str(only on failure)}` |
 | `adapter.stop` | Adapter stopped | `{"platforms": [str]}` |
-| `adapter.stopped` | Adapter stopped complete | `{"platforms": [str]}` |
+| `adapter.stopped` | Adapter stopped completed | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot went online | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot went offline | `{"platform": str, "bot_id": str, "status": str}` |
 
 ### Event Reception and Processing
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
-| `adapter.event.receive` | Received external platform event (earliest) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.dispatched` | Event dispatched | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+|---------|-------------|------|
+| `adapter.event.receive` | External platform event received (earliest stage) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.dispatched` | Event dispatch completed | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
 | `event.pre_process` | Before event handler starts executing | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **Example: Event Statistics**
@@ -134,9 +160,9 @@ def log_unhandled(data):
 ### Message Sending
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
+|---------|-------------|------|
 | `message.sending` | Message about to be sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | Message sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | Message sent completed | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **Example: Message Sending Audit**
 
@@ -149,9 +175,9 @@ def log_sending(data):
 ### Command System
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
+|---------|-------------|------|
 | `command.matched` | Command matched and about to execute | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | Command execution completed | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(only if failed)}` |
+| `command.executed` | Command execution completed | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(only on failure)}` |
 
 **Example: Command Statistics**
 
@@ -161,10 +187,10 @@ def count_commands(data):
     print(f"[Command] /{data['command']} from {data['user_id']}@{data['platform']}")
 ```
 
-### HTTP Routing
+### HTTP Routes
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
+|---------|-------------|------|
 | `server.request` | HTTP request received | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | HTTP response sent | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
@@ -179,11 +205,11 @@ def log_http(data):
 ### WebSocket
 
 | Hook Name | Trigger Time | Data |
-|---------|---------|------|
+|---------|-------------|------|
 | `server.start` | Routing server started | `{"base_url": str, "host": str, "port": int}` |
 | `server.stop` | Routing server stopped | `{}` |
 | `server.websocket.connect` | WebSocket connection established | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket connection disconnected | `{"path": str, "module_name": str, "reason": str, "error": str(only if exception)}` |
+| `server.websocket.disconnect` | WebSocket connection disconnected | `{"path": str, "module_name": str, "reason": str, "error": str(only on exception)}` |
 
 **Example: WebSocket Connection Monitoring**
 
@@ -194,7 +220,7 @@ def on_ws_connect(data):
 
 @sdk.lifecycle.on("server.websocket.disconnect")
 def on_ws_disconnect(data):
-    print(f"[WS] Disconnected: {data['path']} ({data['reason']})")
+    print(f"[WS] Disconnection: {data['path']} ({data['reason']})")
 ```
 
 ## Standard Event Definition
@@ -226,29 +252,29 @@ STANDARD_EVENTS = {
 
 | Method | Description |
 |------|------|
-| `@lifecycle.on(event, *, priority=0)` | Decorator registration of handlers |
+| `@lifecycle.on(event, *, priority=0)` | Decorator to register a handler |
 | `lifecycle.register(event, handler, *, priority=0)` | Programmatic registration |
-| `lifecycle.unregister(event, handler=None)` | Unregister (cancel) handler; when handler=None, all handlers for that event are cancelled |
+| `lifecycle.unregister(event, handler=None)` | Unregister (when handler=None, unregisters all handlers for that event) |
 
 ### Triggering
 
 | Method | Description |
 |------|------|
-| `await lifecycle.emit(event, data=None)` | Asynchronous trigger; if handler returns non-None, data is modified |
-| `lifecycle.emit_sync(event, data=None)` | Synchronous trigger; async handlers are scheduled via create_task |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | Backward compatible, automatically builds standard event format |
+| `await lifecycle.emit(event, data=None)` | Async trigger; if handler returns non-None, it modifies data passed to subsequent handlers |
+| `lifecycle.emit_sync(event, data=None)` | Sync trigger; async handlers are scheduled via create_task |
+| `await lifecycle.submit_event(event_type, *, source, msg, data)` | Compatible with old versions, automatically builds standard event format |
 
 ### Utilities
 
 | Method | Description |
 |------|------|
-| `lifecycle.start_timer(timer_id)` | Start timer |
-| `lifecycle.get_duration(timer_id)` | Get elapsed time (seconds) |
-| `lifecycle.stop_timer(timer_id)` | Stop timer and return elapsed duration |
-| `lifecycle.list_hooks()` | List all registered hooks and handler count |
+| `lifecycle.start_timer(timer_id)` | Start a timer |
+| `lifecycle.get_duration(timer_id)` | Get elapsed duration (seconds) |
+| `lifecycle.stop_timer(timer_id)` | Stop timer and return duration |
+| `lifecycle.list_hooks()` | List all registered hooks and number of handlers |
 | `lifecycle.clear()` | Clear all handlers and timers |
 
-## Usage Example in Modules
+## Example Usage in Module
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -256,7 +282,7 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # Implement simple message statistics
+        # Implement simple message counting
         self.msg_count = 0
         
         @sdk.lifecycle.on("adapter.event.receive")
@@ -275,17 +301,17 @@ class Main(BaseModule):
             sdk.logger.info(f"Config changed: {data['key']} = {data['new_value']}")
 ```
 
-## Notes
+## Important Notes
 
-1. **Handlers can be sync or async**: The system automatically detects and invokes them correctly
-2. **Data passing**: In `emit()` mode, if a handler returns a non-None value, it modifies the data passed to subsequent handlers
-3. **Event naming convention**: It is recommended to use dot notation for event names for easier parent-level listening
-4. **Error isolation**: Exceptions in a single handler do not affect other handlers
-5. **Sync trigger limitations**: Async handlers in `emit_sync()` are fired-and-forget; return values cannot be propagated back
-6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered handlers and timers are cleared
-7. **Loading priority**: If you need to listen to events during the framework initialization phase, it is recommended to set a high priority and disable lazy loading
+1. **Handlers can be sync or async**: The system automatically detects and calls them correctly
+2. **Data Passing**: In `emit()` mode, if a handler returns a non-None value, it modifies the data passed to subsequent handlers
+3. **Event Naming Convention**: It is recommended to use dot-named events for easier parent event listening
+4. **Error Isolation**: Exceptions in a single handler do not affect other handlers
+5. **Sync Trigger Limitations**: In `emit_sync()`, async handlers are fired-and-forget, return values cannot be propagated back
+6. **Lifecycle Cleanup**: When `sdk.uninit()` is called, all registered handlers and timers are cleaned up
+7. **Loading Priority**: If you need to listen to events during framework initialization, it is recommended to set a high priority and disable lazy loading
 
 ## Related Documentation
 
-- [Module Development Guide](../developer-guide/modules/getting-started.md) - Understand module lifecycle methods
-- [Best Practices](../developer-guide/modules/best-practices.md) - Recommendations for using lifecycle events
+- [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn about module lifecycle methods
+- [Best Practices](../developer-guide/modules/best-practices.md) - Suggestions for using lifecycle events
