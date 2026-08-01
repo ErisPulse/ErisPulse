@@ -16,6 +16,7 @@ import inspect
 import sys
 from typing import Any, cast
 
+from ..Core.constants import ADAPTER_ENTRY_POINT_GROUP
 from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
 from ..Core.logger import logger
@@ -45,9 +46,9 @@ class AdapterLoader(BaseLoader):
         """
         获取 entry-point 组名
 
-        :return: "erispulse.adapter"
+        :return: 入口点组名字符串
         """
-        return "erispulse.adapter"
+        return ADAPTER_ENTRY_POINT_GROUP
 
     async def load(
         self, manager_instance: Any

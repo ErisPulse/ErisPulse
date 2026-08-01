@@ -21,8 +21,10 @@ from ...runtime.context import current_owner, handler_waits
 from .. import adapter, logger
 from ..constants import (
     DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
+    DEFAULT_COMMAND_CASE_SENSITIVE,
     DEFAULT_COMMAND_DISPATCHER_PRIORITY,
     DEFAULT_COMMAND_MUST_AT_BOT,
+    DEFAULT_COMMAND_PREFIX,
     DEFAULT_SEND_METHOD,
     DEFAULT_WAIT_TIMEOUT_SECS,
     DETAIL_TYPE_PRIVATE,
@@ -47,22 +49,15 @@ class CommandHandler:
         self.groups: dict[str, list[str]] = {}  # 命令组
         self.permissions: dict[str, Callable] = {}  # 权限检查函数
 
-        # 从 _bootstrap 获取配置
-        event_config = get_event_config()
-        command_config = event_config.get("command", {})
-        # prefix 支持字符串（单个）或列表（多个），保持原始类型以向后兼容
-        self.prefix = command_config.get("prefix", "/")
-        # 归一化为列表，用于内部统一处理
-        self._prefixes = (
-            list(self.prefix) if isinstance(self.prefix, list) else [self.prefix]
-        )
-        self.case_sensitive = command_config.get("case_sensitive", True)
-        self.allow_space_prefix = command_config.get(
-            "allow_space_prefix", DEFAULT_COMMAND_ALLOW_SPACE_PREFIX
-        )
-        self.must_at_bot = command_config.get(
-            "must_at_bot", DEFAULT_COMMAND_MUST_AT_BOT
-        )
+        # 从配置读取命令解析参数（并订阅热更新）
+        self._refresh_command_config()
+        try:
+            from ..lifecycle import lifecycle
+
+            lifecycle.register("config.updated", self._on_config_updated)
+            lifecycle.register("config.set", self._on_config_updated)
+        except Exception:
+            pass
 
         # 等待回复相关
         self._waiting_replies = {}  # 存储等待回复的用户信息
@@ -72,6 +67,34 @@ class CommandHandler:
         # 确保命令 /xxx 始终优先于 on_message / on_group_message 触发
         self._bound_handler: BaseEventHandler | None = None
         self._dispatcher_registered: bool = False
+
+    def _refresh_command_config(self) -> None:
+        """
+        从配置读取命令解析相关参数
+
+        支持配置热更新：``config.updated`` 事件触发后再次调用即可刷新
+        前缀 / 大小写 / 空格前缀 / 是否须 @机器人 等解析参数。
+        """
+        command_config = get_event_config().get("command", {})
+        # prefix 支持字符串（单个）或列表（多个），保持原始类型以向后兼容
+        self.prefix = command_config.get("prefix", DEFAULT_COMMAND_PREFIX)
+        # 归一化为列表，用于内部统一处理
+        self._prefixes = (
+            list(self.prefix) if isinstance(self.prefix, list) else [self.prefix]
+        )
+        self.case_sensitive = command_config.get(
+            "case_sensitive", DEFAULT_COMMAND_CASE_SENSITIVE
+        )
+        self.allow_space_prefix = command_config.get(
+            "allow_space_prefix", DEFAULT_COMMAND_ALLOW_SPACE_PREFIX
+        )
+        self.must_at_bot = command_config.get(
+            "must_at_bot", DEFAULT_COMMAND_MUST_AT_BOT
+        )
+
+    def _on_config_updated(self, _data: dict) -> None:
+        """配置变更回调：刷新命令解析参数，实现热更新"""
+        self._refresh_command_config()
 
     def __call__(
         self,
@@ -286,7 +309,7 @@ class CommandHandler:
                     if inspect.isawaitable(result):
                         await result
             except Exception as e:
-                logger.warning(f"发送提示消息失败: {e}")
+                logger.warning(i18n.t("core.event.command.send_prompt_failed", error=e))
 
         # 创建等待 future
         loop = asyncio.get_running_loop()
@@ -748,9 +771,9 @@ class CommandHandler:
                 send_dsl = adapter_instance.Send.To(send_type, target_id)
                 if bot_id:
                     send_dsl = send_dsl.Using(bot_id)
-                await send_dsl.Text("权限不足，无法执行该命令")
+                await send_dsl.Text(i18n.t("core.event.command.permission_denied"))
         except Exception as e:
-            logger.error(f"发送权限拒绝消息失败: {e}")
+            logger.error(i18n.t("core.event.command.send_permission_denied_failed", error=e))
 
     async def _send_command_error(self, event: dict[str, Any], error: str):
         """
@@ -776,9 +799,9 @@ class CommandHandler:
                 send_dsl = adapter_instance.Send.To(send_type, target_id)
                 if bot_id:
                     send_dsl = send_dsl.Using(bot_id)
-                await send_dsl.Text(f"命令执行出错: {error}")
+                await send_dsl.Text(i18n.t("core.event.command.execution_failed", error=error))
         except Exception as e:
-            logger.error(f"发送命令错误消息失败: {e}")
+            logger.error(i18n.t("core.event.command.send_error_failed", error=e))
 
     def bind_message_handler(self, handler: BaseEventHandler) -> None:
         """
@@ -879,10 +902,15 @@ class CommandHandler:
         if command_name:
             cmd_info = self.get_command(command_name)
             if cmd_info:
-                help_text = cmd_info.get("help", "无帮助信息")
+                help_text = cmd_info.get("help", i18n.t("core.event.command.no_help"))
                 usage = cmd_info.get("usage", f"{display_prefix}{command_name}")
-                return f"命令: {command_name}\n用法: {usage}\n说明: {help_text}"
-            return f"未找到命令: {command_name}"
+                return i18n.t(
+                    "core.event.command.help_command",
+                    command_name=command_name,
+                    usage=usage,
+                    help_text=help_text,
+                )
+            return i18n.t("core.event.command.not_found", command_name=command_name)
         # 生成所有命令的帮助
         commands_to_show = (
             self.get_visible_commands()
@@ -895,12 +923,19 @@ class CommandHandler:
         )
 
         if not commands_to_show:
-            return "暂无可用命令"
+            return i18n.t("core.event.command.no_commands")
 
-        help_lines = ["可用命令:"]
+        help_lines = [i18n.t("core.event.command.available_commands")]
         for cmd_name, cmd_info in commands_to_show.items():
-            help_text = cmd_info.get("help", "无说明")
-            help_lines.append(f"  {display_prefix}{cmd_name} - {help_text}")
+            help_text = cmd_info.get("help", i18n.t("core.event.command.no_help_item"))
+            help_lines.append(
+                i18n.t(
+                    "core.event.command.list_item",
+                    prefix=display_prefix,
+                    cmd_name=cmd_name,
+                    help_text=help_text,
+                )
+            )
         return "\n".join(help_lines)
 
 

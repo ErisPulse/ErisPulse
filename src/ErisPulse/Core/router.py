@@ -21,6 +21,7 @@ import inspect
 import ipaddress
 import socket
 import time
+import uuid
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
@@ -380,9 +381,20 @@ class RouterManager:
         self._route_middlewares: dict[str, list] = defaultdict(list)
         self._global_middlewares: list = []
         self._rate_limit_store: dict[str, list[float]] = {}
+        self._rate_limit_windows: dict[str, int] = {}
         self._rate_limit_cleanup_task: asyncio.Task | None = None
         self._middleware_installed = False
         self._home_entries: list[dict] = []
+        # CORS / 安全头在服务启动时写入 FastAPI 中间件，运行时无法安全热切换；
+        # 订阅配置变更，变化时告警提示需重启
+        self._last_router_middleware_config: dict | None = None
+        try:
+            from .lifecycle import lifecycle
+
+            lifecycle.register("config.updated", self._on_router_config_changed)
+            lifecycle.register("config.set", self._on_router_config_changed)
+        except Exception:
+            pass
 
     @property
     def app(self) -> FastAPI:
@@ -1141,6 +1153,8 @@ class RouterManager:
             @self.app.middleware("http")
             async def route_middleware_pipeline(request: Request, call_next):
                 path = request.url.path
+                # 请求关联 ID：优先沿用客户端 X-Request-ID（分布式追踪），否则生成
+                request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
 
                 logger.trace(
                     i18n.t(
@@ -1157,6 +1171,7 @@ class RouterManager:
                         "method": request.method,
                         "path": path,
                         "client_ip": request.client.host if request.client else None,
+                        "request_id": request_id,
                     },
                 )
 
@@ -1205,6 +1220,7 @@ class RouterManager:
                         "path": path,
                         "status_code": response.status_code,
                         "client_ip": request.client.host if request.client else None,
+                        "request_id": request_id,
                     },
                 )
 
@@ -1230,6 +1246,8 @@ class RouterManager:
                         if resp is not None:
                             response = resp
 
+                # 回写关联 ID 到响应头，便于客户端/日志串联追踪
+                response.headers["X-Request-ID"] = request_id
                 return response
         except RuntimeError:
             logger.trace(i18n.t("core.router.middleware_skip"))
@@ -2307,6 +2325,7 @@ class RouterManager:
 
             if key not in self._rate_limit_store:
                 self._rate_limit_store[key] = []
+                self._rate_limit_windows[key] = window
 
             self._rate_limit_store[key] = [
                 t for t in self._rate_limit_store[key] if now - t < window
@@ -2481,6 +2500,31 @@ class RouterManager:
                 self.setup_security_headers(security.get("headers"))
         except Exception as e:
             logger.trace(i18n.t("core.router.apply_config_failed", error=e))
+
+    def _on_router_config_changed(self, _data: dict) -> None:
+        """router 中间件配置变更回调：CORS/安全头需重启进程才能生效"""
+        try:
+            from .config import config
+
+            cors = config.getConfig(CONFIG_KEY_ROUTER_CORS) or {}
+            security = config.getConfig(CONFIG_KEY_ROUTER_SECURITY) or {}
+        except Exception:
+            return
+        new_snapshot = {"cors": cors, "security": security}
+        if (
+            self._last_router_middleware_config is not None
+            and new_snapshot != self._last_router_middleware_config
+        ):
+            try:
+                logger.warning(
+                    i18n.t(
+                        "core.config.restart_required",
+                        key="router.cors / router.security",
+                    )
+                )
+            except Exception:
+                pass
+        self._last_router_middleware_config = new_snapshot
 
     # ==================== 服务器管理 ====================
 
@@ -2674,17 +2718,18 @@ class RouterManager:
         if not self._rate_limit_store:
             return 0
         now = time.monotonic()
-        # 使用最大限流窗口作为清理阈值
-        max_window = DEFAULT_RATE_LIMIT_WINDOW_SECS
         removed = 0
         for key in list(self._rate_limit_store.keys()):
             timestamps = self._rate_limit_store[key]
+            # 按该 key 所属路由的实际限流窗口清理，而非固定默认值
+            window = self._rate_limit_windows.get(key, DEFAULT_RATE_LIMIT_WINDOW_SECS)
             # 仅保留窗口内的时间戳
-            fresh = [t for t in timestamps if now - t < max_window]
+            fresh = [t for t in timestamps if now - t < window]
             if fresh:
                 self._rate_limit_store[key] = fresh
             else:
                 del self._rate_limit_store[key]
+                self._rate_limit_windows.pop(key, None)
                 removed += 1
         return removed
 
@@ -2730,6 +2775,7 @@ class RouterManager:
         self._websocket_routes.clear()
         self._owner_namespaces.clear()
         self._rate_limit_store.clear()
+        self._rate_limit_windows.clear()
         self._route_middlewares.clear()
         self._global_middlewares.clear()
         self._middleware_installed = False

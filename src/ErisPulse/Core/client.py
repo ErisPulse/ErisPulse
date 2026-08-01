@@ -39,6 +39,7 @@ from .constants import (
     DEFAULT_HTTP_CLIENT_USER_AGENT,
     DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS,
     DEFAULT_WS_CLIENT_HEARTBEAT_SECS,
+    WS_CLOSE_NORMAL,
 )
 from .i18n import i18n
 from .lifecycle import lifecycle
@@ -317,7 +318,7 @@ class ClientWebSocket(BaseClientWebSocket):
             aiohttp.WSMsgType.CLOSING,
             aiohttp.WSMsgType.CLOSED,
         ):
-            code = msg.data if isinstance(msg.data, int) else 1000
+            code = msg.data if isinstance(msg.data, int) else WS_CLOSE_NORMAL
             raise WebSocketDisconnect(code=code)
         if msg.type == aiohttp.WSMsgType.ERROR:
             raise WebSocketError(str(self._ws.exception()))
@@ -342,7 +343,7 @@ class ClientWebSocket(BaseClientWebSocket):
             aiohttp.WSMsgType.CLOSING,
             aiohttp.WSMsgType.CLOSED,
         ):
-            code = msg.data if isinstance(msg.data, int) else 1000
+            code = msg.data if isinstance(msg.data, int) else WS_CLOSE_NORMAL
             raise WebSocketDisconnect(code=code)
         if msg.type == aiohttp.WSMsgType.ERROR:
             raise WebSocketError(str(self._ws.exception()))
@@ -364,7 +365,7 @@ class ClientWebSocket(BaseClientWebSocket):
 
     # ---- Close ----
 
-    async def close(self, code: int = 1000, reason: str | None = None) -> None:
+    async def close(self, code: int = WS_CLOSE_NORMAL, reason: str | None = None) -> None:
         """
         关闭 WebSocket 连接
 

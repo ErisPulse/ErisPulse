@@ -35,6 +35,52 @@ project/
 
 > **运行中改坏配置文件？** 如果你在机器人运行期间手动编辑 `config.toml` 引入了语法错误，框架在下次写入（合并配置）时会输出「配置文件已损坏（语法错误，第 X 行），无法合并写入——请先修复配置文件后重启」，而不是令人困惑的「写入失败」。待写入的配置项会被保留，不会丢失。
 
+## 环境变量覆盖
+
+框架支持用环境变量**覆盖** `ErisPulse.*` 配置项（适合 Docker / 容器化 / CI 部署，无需修改 `config.toml`）。
+
+命名规则：把点分路径 `ErisPulse.<section>.<key>` 改为全大写、`.` 替换为 `_`，并加上 `ERISPULSE_` 前缀：
+
+| 配置项 | 环境变量 | 示例值 |
+|--------|---------|--------|
+| `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
+| `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
+| `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |
+| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
+
+行为说明：
+- **优先级最高**：环境变量覆盖「配置文件」与「默认值」，按原值类型自动转换（`bool` / `int` / `float` / 逗号分隔的 `list` / 字符串）
+- **不持久化**：覆盖只在运行期生效，不会写回 `config.toml`
+- **支持热更新**：运行中修改环境变量后，配合配置监听的重载即可生效
+
+```bash
+# Docker 部署示例：不修改 config.toml，直接覆盖端口
+ERISPULSE_SERVER_PORT=9000 docker compose up -d
+```
+
+> 注：`ErisPulse.server.port` 这类框架配置走 `get_server_config()` 等 API 读取，均受环境变量覆盖影响。
+
+## 配置热更新
+
+从 2.7.0 起，框架对配置热更新做了**系统化支持**。外部修改 `config.toml` 后（后台 watcher 每 5 秒检测一次），或代码调用 `setConfig()` 后，各组件自动响应：
+
+| 组件 | 支持热更新的配置 | 行为 |
+|------|----------------|------|
+| **日志 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | 自动重新应用（带变更检测） |
+| **命令系统 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一条消息即生效 |
+| **适配器并发** | `framework.handler_max_concurrency` | 失效缓存信号量，按新值重建 |
+| **主动 GC** | `framework.proactive_gc_interval` | 每轮重读，支持运行时调整/禁用 |
+| **模块/适配器配置** | 各自的配置项 | 触发 `on_config_update(old, new)` 回调 |
+
+**需重启的配置**（无法安全热切换，变更时会输出告警"需重启进程后生效"）：
+
+| 配置 | 原因 |
+|------|------|
+| `router.cors.*` / `router.security.*` | 中间件在服务启动时写入 FastAPI，运行时无法安全热切换 |
+| `storage.use_global_db` | SQLite 文件句柄已在运行时打开，切换路径不安全 |
+
+> **中途编辑保存出错？** 若编辑 `config.toml` 时出现瞬时语法错误，框架会**保留上次有效配置**并输出诊断日志，不会把空配置广播给各组件（避免 `on_config_update` 收到空值误回退默认）。
+
 ## 完整配置示例
 
 ```toml

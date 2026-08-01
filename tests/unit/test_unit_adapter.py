@@ -2329,3 +2329,36 @@ class TestApiDSL:
         adapter = _TestAdapter()
         assert hasattr(adapter, "Api")
         assert adapter.Api._adapter is adapter
+
+
+class TestBaseConverter:
+    """BaseConverter 事件转换器基类测试"""
+
+    def test_build_base_event_common_fields(self):
+        from ErisPulse.Core.Bases import BaseConverter
+
+        c = BaseConverter("testplatform")
+        e = c.build_base_event(
+            {"event_id": "e1", "timestamp": 100, "bot_id": "bot1"}, "raw_msg"
+        )
+        assert e["id"] == "e1"
+        assert e["time"] == 100
+        assert e["platform"] == "testplatform"
+        assert e["self"] == {"platform": "testplatform", "user_id": "bot1"}
+        assert e["testplatform_raw"] == {"event_id": "e1", "timestamp": 100, "bot_id": "bot1"}
+        assert e["testplatform_raw_type"] == "raw_msg"
+
+    def test_message_segment_helpers(self):
+        from ErisPulse.Core.Bases import BaseConverter
+
+        c = BaseConverter("t")
+        assert c.text("hi") == {"type": "text", "data": {"text": "hi"}}
+        assert c.at("123") == {"type": "at", "data": {"user_id": "123"}}
+        assert c.image("file.png") == {"type": "image", "data": {"file": "file.png"}}
+
+    def test_convert_not_implemented(self):
+        from ErisPulse.Core.Bases import BaseConverter
+
+        c = BaseConverter("t")
+        with pytest.raises(NotImplementedError):
+            c.convert({})

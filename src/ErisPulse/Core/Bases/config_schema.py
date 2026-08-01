@@ -19,7 +19,7 @@ ErisPulse 通用配置 Schema 模块
 
 from collections.abc import Mapping
 from dataclasses import MISSING, dataclass, field, fields
-from typing import ClassVar
+from typing import Any, ClassVar
 
 # ---------------------------------------------------------------------------
 # 内部辅助函数
@@ -368,6 +368,7 @@ def dataclass_to_toml_with_comments(
                 value = _type_default(f.type)
 
         meta = f.metadata
+        is_secret = meta.get("secret", False) if meta else False
         description = _resolve_description_text(meta)
         required = meta.get("required", False) if meta else False
 
@@ -375,9 +376,13 @@ def dataclass_to_toml_with_comments(
             suffix = "（必填）" if required else ""
             lines.append(f"# {description}{suffix}")
 
-        toml_value = _format_toml_value(value)
+        # secret 字段不把真实值写入模板文件，避免配置文件泄露敏感信息
+        effective_value = (
+            "" if (is_secret and value not in ("", None, [], {})) else value
+        )
+        toml_value = _format_toml_value(effective_value)
 
-        if required and value in ("", 0, 0.0, False, None, [], {}):
+        if required and effective_value in ("", 0, 0.0, False, None, [], {}):
             lines.append(f"# {f.name} = {toml_value}")
         else:
             lines.append(f"{f.name} = {toml_value}")
@@ -423,28 +428,69 @@ def validate_config(instance) -> list[str]:
     """
     校验 dataclass 实例
 
-    - 检查 required 字段是否非空
-    - 返回错误信息列表（空列表表示通过）
-    - description 若为 i18n 字典，错误信息使用其 fallback/default 文本
+    - 检查 ``required`` 字段是否非空
+    - 检查字段值类型是否与声明一致（int/float/str/bool）
+    - 检查 ``options`` 枚举约束（值是否在允许选项内）
+    - 检查 ``min``/``max`` 数值范围约束
+
+    返回错误信息列表（空列表表示通过）。description 若为 i18n 字典，
+    错误信息使用其 fallback/default 文本。
 
     :param instance: dataclass 实例
     :return: 错误信息列表
     """
     errors = []
 
+    # 字段声明类型名 → Python 类型 的简易映射（仅校验基本类型）
+    _type_map = {"int": int, "float": float, "str": str, "bool": bool}
+
     for f in fields(instance):
-        meta = f.metadata
-        if not meta:
-            continue
-
-        required = meta.get("required", False)
-        if not required:
-            continue
-
+        meta = f.metadata or {}
         value = getattr(instance, f.name)
-        if _is_empty(value):
+        ui_meta = _get_ui_meta(meta) if meta else {}
+
+        # 1. required 非空（需要 metadata 声明）
+        if meta.get("required", False) and _is_empty(value):
             desc_text = _resolve_description_text(meta) or f.name
             errors.append(f"{f.name}（{desc_text}）不能为空")
+            continue  # 已为空，类型/范围检查无意义
+
+        # 跳过空值后续检查
+        if value in (None, "", [], {}):
+            continue
+
+        # 2. 类型检查
+        type_name = (
+            f.type if isinstance(f.type, str) else getattr(f.type, "__name__", "")
+        )
+        expected = _type_map.get(type_name)
+        if expected is not None and not isinstance(value, expected):
+            # bool 是 int 的子类：声明 int 但实际为 bool 视为类型不符
+            errors.append(
+                f"{f.name} 类型应为 {type_name}，实际为 {type(value).__name__}"
+            )
+
+        # 3. 枚举选项（options 可在 ui 子表或 metadata 顶层）
+        options = ui_meta.get("options") or meta.get("options")
+        if options:
+            plain_opts = [
+                o.get("value") if isinstance(o, dict) else o for o in options
+            ]
+            if value not in plain_opts:
+                errors.append(f"{f.name} 的值 '{value}' 不在允许的选项中")
+
+        # 4. 数值范围
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            min_val = ui_meta.get("min") if ui_meta else None
+            max_val = ui_meta.get("max") if ui_meta else None
+            if min_val is None:
+                min_val = meta.get("min")
+            if max_val is None:
+                max_val = meta.get("max")
+            if min_val is not None and value < min_val:
+                errors.append(f"{f.name} 的值 {value} 小于最小值 {min_val}")
+            if max_val is not None and value > max_val:
+                errors.append(f"{f.name} 的值 {value} 大于最大值 {max_val}")
 
     return errors
 
@@ -648,20 +694,49 @@ def resolve_config_schema(config_class: type, resolve_i18n: bool = True) -> dict
 
 
 # ---------------------------------------------------------------------------
+# Secret 脱敏
+# ---------------------------------------------------------------------------
+
+# secret 字段脱敏后的固定掩码
+SECRET_REDACTED: str = "***"
+
+
+def redact_secret(value: Any) -> Any:
+    """
+    脱敏标记为 ``secret`` 的配置值
+
+    非空值统一替换为固定掩码 ``***``；空值（空串 / None / 空集合）原样返回，
+    便于日志、模板生成等场景避免泄露敏感信息。
+
+    :param value: 原始值
+    :return: 脱敏后的值
+
+    :example:
+    >>> redact_secret("sk-xxxxxxxx")
+    '***'
+    >>> redact_secret("")
+    ''
+    """
+    if value is None or value == "" or (isinstance(value, (list, dict)) and not value):
+        return value
+    return SECRET_REDACTED
+
+
+# ---------------------------------------------------------------------------
 # 导出
 # ---------------------------------------------------------------------------
 
 __all__ = [
-    "AdapterConfig",  # ← BaseConfig 的别名
-    # 基类
+    "SECRET_REDACTED",
+    "AdapterConfig",
     "BaseConfig",
     "BotAccountConfig",
     "I18nConfig",
     "dataclass_to_defaults_dict",
-    # 工具函数
     "dataclass_to_toml_with_comments",
     "dict_to_dataclass",
     "get_config_schema",
+    "redact_secret",
     "register_config_i18n",
     "resolve_config_schema",
     "validate_config",

@@ -62,6 +62,10 @@ TRANSLATIONS = {
     "core.sdk.run.init_failed": "ErisPulse initialization failed, please check the logs",
     "core.sdk.run.shutdown_signal": "Shutdown signal received, cleaning up...",
     "core.sdk.run.unexpected_error": "Unexpected termination signal intercepted: {error}, process kept alive",
+    # ==================== SDK Callbacks ====================
+    "core.sdk.callback.before_init_failed": "before_init callback execution failed: {error}",
+    "core.sdk.callback.after_init_failed": "after_init callback execution failed: {error}",
+    "core.sdk.callback.on_ready_failed": "on_ready callback execution failed: {error}",
     # ==================== SDK Reload ====================
     "core.sdk.reload.starting": "[Reload] Starting SDK reload...",
     "core.sdk.reload.collected_top_modules": "[Reload] Collected external package top-level modules: {modules}",
@@ -301,6 +305,8 @@ TRANSLATIONS = {
     "core.config.permission_denied": "Permission denied when reading configuration file {path} (file may lack read access)",
     "core.config.using_defaults_warning": "Fell back to default configuration — your custom settings were NOT applied. Please fix the issue and restart.",
     "core.config.loaded_empty": "Configuration file {path} was loaded but is empty",
+    "core.config.watcher_error": "Config watcher task error: {error}",
+    "core.config.restart_required": "Configuration '{key}' changed; a process restart is required to take effect",
     # ==================== Exception Diagnostics ====================
     "core.diag.frame": "  → {file}:{lineno} in {func}",
     "core.diag.source": "      {source}",
@@ -400,6 +406,18 @@ TRANSLATIONS = {
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
+    "core.event.command.permission_denied": "Insufficient permissions to execute this command",
+    "core.event.command.send_permission_denied_failed": "Failed to send permission denied message: {error}",
+    "core.event.command.execution_failed": "Command execution error: {error}",
+    "core.event.command.send_error_failed": "Failed to send command error message: {error}",
+    "core.event.command.send_prompt_failed": "Failed to send prompt message: {error}",
+    "core.event.command.no_help": "No help information",
+    "core.event.command.no_help_item": "No description",
+    "core.event.command.not_found": "Command not found: {command_name}",
+    "core.event.command.help_command": "Command: {command_name}\nUsage: {usage}\nDescription: {help_text}",
+    "core.event.command.no_commands": "No commands available",
+    "core.event.command.available_commands": "Available commands:",
+    "core.event.command.list_item": "  {prefix}{cmd_name} - {help_text}",
     # ==================== Lifecycle ====================
     "core.lifecycle.emit_enter": "[Lifecycle] emit {event}, matched {count} handlers",
     "core.lifecycle.emit_wildcard": "[Lifecycle] wildcard handlers for {event}: {count}",

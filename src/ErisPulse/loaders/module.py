@@ -19,6 +19,7 @@ import threading
 import weakref
 from typing import TYPE_CHECKING, Any, cast
 
+from ..Core.constants import MODULE_ENTRY_POINT_GROUP
 from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
 from ..Core.logger import logger
@@ -124,9 +125,9 @@ class ModuleLoader(BaseLoader):
         """
         获取 entry-point 组名
 
-        :return: "erispulse.module"
+        :return: 入口点组名字符串
         """
-        return "erispulse.module"
+        return MODULE_ENTRY_POINT_GROUP
 
     async def load(
         self, manager_instance: Any
@@ -545,9 +546,12 @@ class ModuleLoader(BaseLoader):
 
         all_names = set(meta_map.keys())
         graph = {}
+        reverse_graph: dict[str, list[str]] = {name: [] for name in all_names}
         for name, meta in meta_map.items():
             deps = meta.get("depends", [])
             graph[name] = {d for d in deps if d in all_names}
+            for dep in graph[name]:
+                reverse_graph[dep].append(name)
 
         in_degree = {name: len(deps) for name, deps in graph.items()}
         queue = [name for name, deg in in_degree.items() if deg == 0]
@@ -561,11 +565,10 @@ class ModuleLoader(BaseLoader):
             current = queue.pop(0)
             sorted_list.append(current)
 
-            for name in all_names:
-                if current in graph[name]:
-                    in_degree[name] -= 1
-                    if in_degree[name] == 0:
-                        queue.append(name)
+            for name in reverse_graph[current]:
+                in_degree[name] -= 1
+                if in_degree[name] == 0:
+                    queue.append(name)
 
         if len(sorted_list) != len(all_names):
             remaining = all_names - set(sorted_list)

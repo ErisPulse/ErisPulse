@@ -325,6 +325,59 @@ class TestLifecycleManager:
             # 正常处理器仍然被调用
             assert len(normal_handler_called) == 1
 
+    # ==================== 一次性注册 & 监听者查询测试 ====================
+
+    @pytest.mark.asyncio
+    async def test_once_auto_unregisters_after_single_fire(self, manager):
+        """once 注册的处理器只触发一次，之后自动注销"""
+        called = []
+
+        @manager.once("oneshot.event")
+        async def handler(data):
+            called.append(data)
+
+        # 之前 has_handlers 应为 True
+        assert manager.has_handlers("oneshot.event")
+        await manager.emit("oneshot.event", {"n": 1})
+        await manager.emit("oneshot.event", {"n": 2})
+
+        assert [c["n"] for c in called] == [1]
+        # 触发一次后自动注销
+        assert not manager.has_handlers("oneshot.event")
+
+    @pytest.mark.asyncio
+    async def test_once_sync_handler(self, manager):
+        """once 同样支持同步处理器"""
+        called = []
+
+        @manager.once("oneshot.sync")
+        def handler(data):
+            called.append(data)
+
+        manager.emit_sync("oneshot.sync", "first")
+        manager.emit_sync("oneshot.sync", "second")
+
+        assert called == ["first"]
+
+    def test_has_handlers_wildcard_parent_and_empty(self, manager):
+        """has_handlers 覆盖通配符、父级事件与无监听者三种情形"""
+        assert not manager.has_handlers("no.such.event")
+
+        manager.register("config", lambda d: None)
+        # 父级事件命中
+        assert manager.has_handlers("config.set")
+        # 精确命中
+        assert manager.has_handlers("config")
+
+        manager.register("*", lambda d: None)
+        # 通配符命中任意事件
+        assert manager.has_handlers("anything.at.all")
+
+    def test_has_handlers_invalid_event(self, manager):
+        """非法事件名返回 False 而非抛异常"""
+        assert not manager.has_handlers("")
+        assert not manager.has_handlers(None)  # type: ignore[arg-type]
+
 
 # ==================== 全局生命周期实例测试 ====================
 

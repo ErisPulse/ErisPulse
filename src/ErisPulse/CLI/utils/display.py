@@ -298,8 +298,10 @@ def interactive_select_table(
                 if 0 <= idx < total:
                     selected_indices.add(idx)
                 else:
-                    console.print(f"[warning]  序号 {idx + 1} 无效[/]")
+                    console.print(
+                        f"[warning]  {i18n.t('cli.display.invalid_choice', idx=idx + 1)}[/]"
+                    )
         except ValueError:
-            console.print("[warning]  请输入数字序号[/]")
+            console.print(f"[warning]  {i18n.t('cli.display.enter_number')}[/]")
 
     return [items[i] for i in sorted(selected_indices)]

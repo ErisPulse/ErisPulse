@@ -60,6 +60,32 @@ async def on_anything(data):
     print(f"收到事件: {data}")
 ```
 
+### 一次性注册（once）
+
+从 2.7.0 起，`lifecycle.once()` 注册的处理器在**触发一次后自动注销**，适合"首次就绪"这类一次性钩子：
+
+```python
+@sdk.lifecycle.once("core.init.complete")
+async def on_first_ready(data):
+    print("首次就绪，后续不再触发")
+```
+
+- 与 `on()` 同优先级参数语义（`priority` 数值越大越先执行）
+- 自动注销，无需手动 `unregister`
+- 同步/异步处理器均支持
+
+### 监听者查询（has_handlers）
+
+热路径短路场景可先用 `has_handlers()` 判断是否有监听者，避免无谓的事件遍历与任务调度：
+
+```python
+if sdk.lifecycle.has_handlers("message.sending"):
+    await sdk.lifecycle.emit("message.sending", send_ctx)
+```
+
+- 覆盖**精确事件名、通配符 `*`、父级事件**三种匹配
+- 无任何监听者时返回 `False`，可安全跳过 `emit`
+
 ## 钩子断点一览
 
 框架内置了以下钩子断点，用户可以通过 `@sdk.lifecycle.on()` 监听任意断点实现自定义逻辑。
