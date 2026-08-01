@@ -62,6 +62,10 @@ TRANSLATIONS = {
     "core.sdk.run.init_failed": "ErisPulse の初期化に失敗しました、ログを確認してください",
     "core.sdk.run.shutdown_signal": "シャットダウンシグナルを受信しました、クリーンアップ中...",
     "core.sdk.run.unexpected_error": "予期しない終了シグナルを遮断しました: {error}、プロセスは維持されます",
+    # ==================== SDK コールバック ====================
+    "core.sdk.callback.before_init_failed": "before_init コールバックの実行に失敗しました: {error}",
+    "core.sdk.callback.after_init_failed": "after_init コールバックの実行に失敗しました: {error}",
+    "core.sdk.callback.on_ready_failed": "on_ready コールバックの実行に失敗しました: {error}",
     # ==================== SDK リロード ====================
     "core.sdk.reload.starting": "[Reload] SDK の再読み込みを開始しています...",
     "core.sdk.reload.collected_top_modules": "[Reload] 外部パッケージのトップレベルモジュールを収集しました: {modules}",
@@ -301,6 +305,8 @@ TRANSLATIONS = {
     "core.config.permission_denied": "設定ファイル {path} の読み取り権限がありません（ファイル権限不足の可能性）",
     "core.config.using_defaults_warning": "デフォルト設定にフォールバックしました。カスタム設定は適用されていません——修正後に再起動してください",
     "core.config.loaded_empty": "設定ファイル {path} を読み込みましたが、内容が空です",
+    "core.config.watcher_error": "設定ファイル監視タスク例外: {error}",
+    "core.config.restart_required": "設定項目 {key} が変更されました。反映にはプロセスの再起動が必要です",
     # ==================== 例外診断 ====================
     "core.diag.frame": "  → {file}:{lineno} in {func}",
     "core.diag.source": "      {source}",
@@ -400,6 +406,18 @@ TRANSLATIONS = {
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
+    "core.event.command.permission_denied": "このコマンドを実行する権限がありません",
+    "core.event.command.send_permission_denied_failed": "権限不足メッセージの送信に失敗しました: {error}",
+    "core.event.command.execution_failed": "コマンド実行エラー: {error}",
+    "core.event.command.send_error_failed": "コマンドエラーメッセージの送信に失敗しました: {error}",
+    "core.event.command.send_prompt_failed": "プロンプトメッセージの送信に失敗しました: {error}",
+    "core.event.command.no_help": "ヘルプ情報がありません",
+    "core.event.command.no_help_item": "説明なし",
+    "core.event.command.not_found": "コマンドが見つかりません: {command_name}",
+    "core.event.command.help_command": "コマンド: {command_name}\n使い方: {usage}\n説明: {help_text}",
+    "core.event.command.no_commands": "利用可能なコマンドがありません",
+    "core.event.command.available_commands": "利用可能なコマンド:",
+    "core.event.command.list_item": "  {prefix}{cmd_name} - {help_text}",
     # ==================== Lifecycle ====================
     "core.lifecycle.emit_enter": "[Lifecycle] emit {event}, matched {count} handlers",
     "core.lifecycle.emit_wildcard": "[Lifecycle] wildcard handlers for {event}: {count}",

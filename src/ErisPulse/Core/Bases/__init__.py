@@ -5,6 +5,7 @@ ErisPulse 基础模块
 """
 
 from .adapter import ApiDSL, SendDSL, RequestDSL, BaseAdapter
+from .converter import BaseConverter
 from .send_rules import SendContext
 from .send_builder import SendBuilder, BatchContext
 from .module import BaseModule
@@ -42,6 +43,7 @@ __all__ = [
     "BaseAdapter",
     "BaseClientWebSocket",
     "BaseConfig",
+    "BaseConverter",
     "BaseHttpClient",
     "BaseHttpResponse",
     # i18n 键声明 Schema 基类（命名对齐 BaseConfig）

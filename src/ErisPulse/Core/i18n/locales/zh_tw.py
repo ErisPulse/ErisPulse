@@ -62,6 +62,10 @@ TRANSLATIONS = {
     "core.sdk.run.init_failed": "ErisPulse 初始化失敗，請檢查日誌",
     "core.sdk.run.shutdown_signal": "收到關閉訊號，正在清理...",
     "core.sdk.run.unexpected_error": "攔截到意外終止訊號: {error}，已阻止程序退出",
+    # ==================== SDK 回呼 ====================
+    "core.sdk.callback.before_init_failed": "before_init 回呼執行失敗: {error}",
+    "core.sdk.callback.after_init_failed": "after_init 回呼執行失敗: {error}",
+    "core.sdk.callback.on_ready_failed": "on_ready 回呼執行失敗: {error}",
     # ==================== SDK 重新載入 ====================
     "core.sdk.reload.starting": "[Reload] 開始重新載入SDK...",
     "core.sdk.reload.collected_top_modules": "[Reload] 收集到外部套件頂層模組: {modules}",
@@ -301,6 +305,8 @@ TRANSLATIONS = {
     "core.config.permission_denied": "無權限讀取設定檔 {path}（可能是檔案權限不足）",
     "core.config.using_defaults_warning": "已回退到預設設定，您的自訂設定未生效——請修復後重啟",
     "core.config.loaded_empty": "設定檔 {path} 已載入，但內容為空",
+    "core.config.watcher_error": "設定檔監聽工作例外: {error}",
+    "core.config.restart_required": "設定項 {key} 已變更，需重啟程序後生效",
     # ==================== 異常診斷 ====================
     "core.diag.frame": "  → {file}:{lineno} in {func}",
     "core.diag.source": "      {source}",
@@ -400,6 +406,18 @@ TRANSLATIONS = {
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
+    "core.event.command.permission_denied": "權限不足，無法執行該命令",
+    "core.event.command.send_permission_denied_failed": "傳送權限拒絕訊息失敗: {error}",
+    "core.event.command.execution_failed": "命令執行出錯: {error}",
+    "core.event.command.send_error_failed": "傳送命令錯誤訊息失敗: {error}",
+    "core.event.command.send_prompt_failed": "傳送提示訊息失敗: {error}",
+    "core.event.command.no_help": "無說明資訊",
+    "core.event.command.no_help_item": "無說明",
+    "core.event.command.not_found": "未找到命令: {command_name}",
+    "core.event.command.help_command": "命令: {command_name}\n用法: {usage}\n說明: {help_text}",
+    "core.event.command.no_commands": "暫無可用命令",
+    "core.event.command.available_commands": "可用命令:",
+    "core.event.command.list_item": "  {prefix}{cmd_name} - {help_text}",
     # ==================== Lifecycle ====================
     "core.lifecycle.emit_enter": "[Lifecycle] emit {event}, matched {count} handlers",
     "core.lifecycle.emit_wildcard": "[Lifecycle] wildcard handlers for {event}: {count}",

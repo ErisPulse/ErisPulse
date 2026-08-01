@@ -517,6 +517,36 @@ class StorageManager(BaseStorage):
 
         self._init_db()
         self._initialized = True
+        # use_global_db 决定 SQLite 文件路径，已打开的句柄无法运行时安全切换；
+        # 订阅配置变更，变化时明确告警需重启
+        self._last_use_global_db = use_global_db
+        try:
+            from .lifecycle import lifecycle
+
+            lifecycle.register("config.updated", self._on_storage_config_changed)
+            lifecycle.register("config.set", self._on_storage_config_changed)
+        except Exception:
+            pass
+
+    def _on_storage_config_changed(self, _data: dict) -> None:
+        """{!--< internal-use >!--} storage 配置变更回调：use_global_db 需重启生效"""
+        try:
+            from ..runtime import get_storage_config
+
+            new_use_global = get_storage_config().get("use_global_db", False)
+        except Exception:
+            return
+        if new_use_global != self._last_use_global_db:
+            self._last_use_global_db = new_use_global
+            try:
+                from .i18n import i18n
+                from .logger import logger
+
+                logger.warning(
+                    i18n.t("core.config.restart_required", key="storage.use_global_db")
+                )
+            except Exception:
+                pass
 
     def _is_ready(self) -> bool:
         """

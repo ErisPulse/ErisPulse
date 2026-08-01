@@ -91,20 +91,20 @@
 
 | 严重性 | 数量 |
 |--------|------|
-| 🔴 严重 | 13 |
-| 🟡 中等 | 11 |
+| 🔴 严重 | 14 |
+| 🟡 中等 | 12 |
 | 🟢 轻微 | 2 |
-| **合计** | **26** |
+| **合计** | **28** |
 
 | 类型 | 数量 |
 |------|------|
 | 适配器 | 6 |
+| 配置系统 | 5 |
 | 事件系统 | 5 |
+| CLI | 3 |
 | 存储 | 3 |
 | 加载系统 | 3 |
-| CLI | 3 |
-| 配置系统 | 3 |
-| 路由 | 1 |
+| 路由 | 2 |
 | 客户端 | 1 |
 | 运行时 | 1 |
 
@@ -730,3 +730,71 @@ notice 事件 detail_type="group_member_increase"
 **严重性**: 🟢 轻微
 
 **类型**: 事件系统
+
+---
+
+### [BUG-027] 路由限流清理任务使用固定窗口导致长窗口限流规则失效
+
+**问题**: 将路由限流配置为长窗口规则（如 `100/hour`、`{"requests": 100, "window": 3600}`）时，限流形同虚设——实际表现近似 `100/minute`（每小时可放过至约 6000 次请求），完全无法起到预期的小时级防护作用。
+
+**原因**: `_apply_rate_limit` 解析得到每路由的实际 `window`（最高 3600 秒），per-request 检查也确实使用该窗口；但后台清理任务 `_cleanup_expired_rate_limits` 却用固定常量 `DEFAULT_RATE_LIMIT_WINDOW_SECS`（60 秒）作为**所有**路由的统一清理阈值。于是 `100/hour` 路由中早于 60 秒的时间戳被清理任务提前清除，小时窗口内永远累积不到接近 100 条记录，限流被严重削弱。
+
+**根因链路**:
+```
+_apply_rate_limit 解析 window=3600（100/hour）
+  → per-request 检查按 3600s 保留时间戳（正确）
+  → 但 _cleanup_expired_rate_limits 用固定 max_window=60s 清理
+    → 60s 前的时间戳被全部清除
+      → 小时窗口永远只余最近 1 分钟的记录
+        → 100/hour 实际退化为 ~100/minute（放宽约 60 倍）
+```
+
+**影响版本**: 2.6.0-dev.0 - 2.7.0-dev.4
+
+**修复版本**: 2.7.0-dev.5
+
+**修复内容**: 新增 `_rate_limit_windows: dict[str, int]` 按 store key 记录每路由实际窗口；`_apply_rate_limit` 首次创建条目时写入窗口；`_cleanup_expired_rate_limits` 改为按各 key 自身窗口清理（缺失时回退默认值）；清理删除条目与 `stop()` 时同步维护两个字典。
+
+**修复日期**: 2026/07/31
+
+**回归测试**: `tests/unit/test_unit_router.py` → `TestRateLimit::test_cleanup_respects_per_route_window`
+
+**严重性**: 🔴 严重
+
+**类型**: 路由
+
+---
+
+### [BUG-029] 配置监听任务广播半成品 TOML 并静默吞掉异常
+
+**问题**: 用户手动编辑 `config.toml` 保存到一半（产生瞬时的语法错误）时，配置监听后台线程会检测到 mtime 变化、重载配置，但加载失败后仍以空配置 `{}` 发射 `config.updated` 事件，导致适配器/模块的 `on_config_update` 收到空配置、误以为所有配置项被清空而回退默认值。此外监听循环用 `except Exception: pass` 静默吞掉所有异常，watcher 故障无从排查。
+
+**原因**: 两个缺陷叠加：
+1. `_load_config` 在 TOML 语法错误/权限错误时把 `self._cache` 擦写为 `{}`，但后台监听线程 `_watch_loop` 与缓存超时路径 `_check_cache_validity` 都在调用 `_load_config()` 后**无条件**执行 `_emit_config_updated()`，把"加载失败产生的空缓存"当作真实变更广播。
+2. `_watch_loop` 的 `except Exception: pass` 不记录任何日志。
+
+**根因链路**:
+```
+用户保存到一半 → TOML 语法错误
+  → _load_config() 擦写 _cache = {}
+    → _watch_loop 无条件 _emit_config_updated(new_config={})
+      → 适配器/模块 on_config_update 收到空配置
+        → 误判配置被清空，回退默认值
+```
+
+**影响版本**: 2.6.2-dev.1 - 2.7.0-dev.4
+
+**修复版本**: 2.7.0-dev.5
+
+**修复内容**:
+1. `_load_config` 改为返回 `bool`；TOML 语法错误/权限/其他错误时**保留上次有效缓存**（不再擦写为 `{}`），仅记录诊断日志并返回 `False`
+2. `_watch_loop` 与 `_check_cache_validity` 仅在 `_load_config()` 返回 `True` 时才发射 `config.updated`
+3. `_watch_loop` 的 `except Exception` 改为以 warning 级别记录（新增 i18n 键 `core.config.watcher_error`，五语言同步）
+
+**修复日期**: 2026/07/31
+
+**回归测试**: `tests/unit/test_unit_config.py` → `test_malformed_toml_preserves_last_valid_cache`、`test_permission_denied_logs_clear_message`（更新为验证保留缓存 + 返回 False）
+
+**严重性**: 🟡 中等
+
+**类型**: 配置系统

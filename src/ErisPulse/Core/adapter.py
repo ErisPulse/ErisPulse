@@ -27,6 +27,7 @@ from .constants import (
     DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
     HANDLER_SLOW_THRESHOLD_SECS,
+    LOG_MESSAGE_TRUNCATE_CHARS,
 )
 from .i18n import i18n
 from .lifecycle import lifecycle
@@ -140,6 +141,16 @@ class AdapterManager(ManagerBase):
 
         # 注册配置变更路由：将 config.set / config.updated 事件转发到各适配器的 on_config_update
         self._register_config_change_routing()
+        # framework 配置（如 handler_max_concurrency）不在任何适配器配置键下，
+        # 需 manager 级别单独订阅以支持热更新
+        try:
+            self._last_handler_max_concurrency = None
+            from .lifecycle import lifecycle
+
+            lifecycle.register("config.updated", self._on_framework_config_changed)
+            lifecycle.register("config.set", self._on_framework_config_changed)
+        except Exception:
+            pass
 
     def set_sdk_ref(self, sdk) -> bool:
         """
@@ -1254,8 +1265,8 @@ class AdapterManager(ManagerBase):
         if event_type == "message":
             user_id = data.get("user_id", "")
             alt_msg = data.get("alt_message", "")
-            if len(alt_msg) > 50:
-                alt_msg = alt_msg[:50] + "..."
+            if len(alt_msg) > LOG_MESSAGE_TRUNCATE_CHARS:
+                alt_msg = alt_msg[:LOG_MESSAGE_TRUNCATE_CHARS] + "..."
             _msg_logger.event(f"[Recv] {platform}/{detail_type}({user_id}): {alt_msg}")
         else:
             _logger = _event_loggers.get(event_type, _meta_logger)
@@ -1430,6 +1441,26 @@ class AdapterManager(ManagerBase):
             self._handler_max_concurrency = max_concurrency
             self._handler_semaphore = asyncio.Semaphore(max_concurrency)
         return self._handler_semaphore
+
+    def _on_framework_config_changed(self, _data: dict) -> None:
+        """
+        {!--< internal-use >!--}
+        framework 配置变更回调：``handler_max_concurrency`` 变化时失效缓存的信号量，
+        下次 ``_get_handler_semaphore`` 将按新值重建。
+        """
+        try:
+            from ..runtime import get_framework_config
+
+            new_max = get_framework_config().get(
+                "handler_max_concurrency", DEFAULT_HANDLER_MAX_CONCURRENCY
+            )
+        except Exception:
+            return
+        if not isinstance(new_max, int) or new_max <= 0:
+            new_max = DEFAULT_HANDLER_MAX_CONCURRENCY
+        if new_max != self._handler_max_concurrency:
+            self._handler_max_concurrency = 0
+            self._handler_semaphore = None
 
     def _dispatch_handler_task(
         self,

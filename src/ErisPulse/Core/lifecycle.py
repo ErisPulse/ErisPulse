@@ -161,6 +161,67 @@ class LifecycleManager:
         self._hooks.setdefault(event, []).append((priority, handler, owner))
         self._hooks[event].sort(key=lambda x: x[0], reverse=True)
 
+    def once(self, event: str, *, priority: int = 0) -> Callable:
+        """
+        注册一次性事件处理器（触发一次后自动注销）
+
+        :param event: str 事件名称
+        :param priority: int 优先级 (默认: 0)
+        :return: Callable 装饰器
+
+        :example:
+        >>> @lifecycle.once("core.init.complete")
+        ... async def on_first_ready(data):
+        ...     print("首次就绪")
+        """
+        if not isinstance(event, str) or not event:
+            raise ValueError(i18n.t("core.lifecycle.event_name_required"))
+
+        def decorator(func: Callable) -> Callable:
+            if inspect.iscoroutinefunction(func):
+                async def wrapper(data):
+                    try:
+                        return await func(data)
+                    finally:
+                        self.unregister(event, wrapper)
+            else:
+                def wrapper(data):
+                    try:
+                        return func(data)
+                    finally:
+                        self.unregister(event, wrapper)
+
+            self.register(event, wrapper, priority=priority)
+            return func
+
+        return decorator
+
+    def has_handlers(self, event: str) -> bool:
+        """
+        检查指定事件是否已有注册的处理器（含通配符 ``*`` 与父级事件）
+
+        可用于热路径短路：发射事件前先判断有无监听者，避免无谓的字典遍历与任务调度。
+
+        :param event: str 事件名称
+        :return: bool 存在任意匹配处理器时返回 True
+
+        :example:
+        >>> if lifecycle.has_handlers("message.sending"):
+        ...     await lifecycle.emit("message.sending", data)
+        """
+        if not isinstance(event, str) or not event:
+            return False
+        if self._hooks.get("*"):
+            return True
+        if self._hooks.get(event):
+            return True
+        parts = event.split(".")
+        for i in range(len(parts) - 1, 0, -1):
+            parent = ".".join(parts[:i])
+            if self._hooks.get(parent):
+                return True
+        return False
+
     def unregister(self, event: str, handler: Callable | None = None):
         """
         取消注册事件处理器

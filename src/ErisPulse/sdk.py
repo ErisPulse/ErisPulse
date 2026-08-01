@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, Any
 from .Core.constants import (
     DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
     DEFAULT_UNINIT_TIMEOUT_SECS,
+    HARD_RESTART_EXIT_CODE,
     LIFECYCLE_TIMER_CORE_INIT,
     LIFECYCLE_TIMER_CORE_UNINIT,
     UNINIT_SETTLE_DELAY_SECS,
@@ -190,6 +191,7 @@ class SDK:
         self._initializer: SDK.Initializer | None = None
         self._initialized: bool = False
         self._gc_task: asyncio.Task | None = None  # 主动 GC 后台任务
+        self._shutdown_event: asyncio.Event | None = None  # 优雅关闭事件
 
     @property
     def version(self) -> str:
@@ -837,16 +839,19 @@ class SDK:
         # 停止已有的 GC 任务
         self._stop_proactive_gc()
 
-        gc_interval = DEFAULT_PROACTIVE_GC_INTERVAL_SECS
-        try:
-            from .runtime import get_framework_config
+        def _read_gc_interval() -> int:
+            interval = DEFAULT_PROACTIVE_GC_INTERVAL_SECS
+            try:
+                from .runtime import get_framework_config
 
-            framework_config = get_framework_config()
-            gc_interval = framework_config.get("proactive_gc_interval", gc_interval)
-        except Exception:
-            pass
+                interval = get_framework_config().get(
+                    "proactive_gc_interval", interval
+                )
+            except Exception:
+                pass
+            return interval
 
-        if gc_interval <= 0:
+        if _read_gc_interval() <= 0:
             return  # 配置禁用
 
         async def _gc_loop():
@@ -854,7 +859,12 @@ class SDK:
 
             while True:
                 try:
-                    await asyncio.sleep(gc_interval)
+                    # 每轮重新读取间隔，支持 proactive_gc_interval 热更新
+                    interval = _read_gc_interval()
+                    if interval <= 0:
+                        # 配置运行时禁用了 GC，停止循环
+                        break
+                    await asyncio.sleep(interval)
                     # 1. Python GC
                     collected = gc.collect()
                     # 2. 内部资源回收
@@ -1012,7 +1022,7 @@ class SDK:
                 if inspect.isawaitable(result):
                     await result
             except Exception as e:
-                self.logger.error(f"before_init 回调执行失败: {e}")
+                self.logger.error(i18n.t("core.sdk.callback.before_init_failed", error=e))
 
         if not await self._prepare_environment():
             return False
@@ -1030,7 +1040,7 @@ class SDK:
                 if inspect.isawaitable(result):
                     await result
             except Exception as e:
-                self.logger.error(f"after_init 回调执行失败: {e}")
+                self.logger.error(i18n.t("core.sdk.callback.after_init_failed", error=e))
 
         return self._initialized
 
@@ -1115,7 +1125,7 @@ class SDK:
                     if inspect.isawaitable(result):
                         await result
                 except Exception as e:
-                    self.logger.error(f"before_init 回调执行失败: {e}")
+                    self.logger.error(i18n.t("core.sdk.callback.before_init_failed", error=e))
 
             if not await self._prepare_environment():
                 return False
@@ -1129,7 +1139,7 @@ class SDK:
                     if inspect.isawaitable(result):
                         await result
                 except Exception as e:
-                    self.logger.error(f"after_init 回调执行失败: {e}")
+                    self.logger.error(i18n.t("core.sdk.callback.after_init_failed", error=e))
 
             return self._initialized
 
@@ -1254,11 +1264,12 @@ class SDK:
                     if inspect.isawaitable(result):
                         await result
                 except Exception as e:
-                    self.logger.error(f"on_ready 回调执行失败: {e}")
+                    self.logger.error(i18n.t("core.sdk.callback.on_ready_failed", error=e))
 
             if keep_running:
-                shutdown_event = asyncio.Event()
-                await shutdown_event.wait()
+                self._shutdown_event = asyncio.Event()
+                self._register_signal_handlers()
+                await self._shutdown_event.wait()
         except asyncio.CancelledError:
             self.logger.info(i18n.t("core.sdk.run.shutdown_signal"))
         except KeyboardInterrupt:
@@ -1278,6 +1289,46 @@ class SDK:
                     await self.uninit()
                 except Exception:
                     pass
+
+    def shutdown(self) -> None:
+        """
+        请求优雅关闭
+
+        设置关闭事件，使正在 ``await sdk.run()`` 挂起的主循环返回，
+        进而触发 ``uninit()`` 完成资源清理。可由模块/适配器在运行时调用，
+        也用作 SIGTERM 等信号的处理入口。
+
+        :example:
+        >>> sdk.shutdown()  # 任意协程中调用，触发优雅退出
+        """
+        if self._shutdown_event is not None and not self._shutdown_event.is_set():
+            self._shutdown_event.set()
+
+    def _register_signal_handlers(self) -> None:
+        """
+        {!--< internal-use >!--}
+        注册进程信号处理器，将 SIGTERM / SIGHUP 等信号转为优雅关闭
+
+        Windows 不支持 ``loop.add_signal_handler``，捕获异常后跳过
+        （Windows 下仍可通过 ``sdk.shutdown()`` 或 Ctrl+C 触发关闭）。
+        """
+        import signal
+
+        loop = asyncio.get_running_loop()
+
+        def _on_signal():
+            self.logger.info(i18n.t("core.sdk.run.shutdown_signal"))
+            self.shutdown()
+
+        for sig_name in ("SIGTERM", "SIGHUP"):
+            sig = getattr(signal, sig_name, None)
+            if sig is None:
+                continue
+            try:
+                loop.add_signal_handler(sig, _on_signal)
+            except (NotImplementedError, RuntimeError, ValueError):
+                # Windows / 某些事件循环不支持 add_signal_handler
+                pass
 
     async def _do_restart(self) -> bool:
         """
@@ -1523,7 +1574,7 @@ class SDK:
 
         return True
 
-    RESTART_EXIT_CODE = 42
+    RESTART_EXIT_CODE = HARD_RESTART_EXIT_CODE
 
     async def hard_restart(self) -> bool:
         """
@@ -1551,6 +1602,13 @@ class SDK:
                 self.logger.info(i18n.t("core.sdk.hardrestart.uninit_done"))
             except Exception as e:
                 self.logger.error(i18n.t("core.sdk.hardrestart.uninit_error", error=e))
+            # os._exit 会跳过 atexit 钩子；uninit 中途异常可能错过 force_save，
+            # 此处显式兜底刷盘脏配置，避免丢失未持久化的 setConfig 写入
+            try:
+                from .Core.config import config as _config_manager
+                _config_manager.force_save()
+            except Exception:
+                pass
             os._exit(self.RESTART_EXIT_CODE)
 
         from .runtime.tasks import spawn_background

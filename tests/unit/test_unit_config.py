@@ -349,17 +349,48 @@ nested_key = "nested_value"
             manager = ConfigManager.__new__(ConfigManager)
             manager.CONFIG_FILE = temp_path
             manager._lock = threading.RLock()
+            # 预置已有缓存：权限错误时应保留上次有效配置而非清空（BUG-029）
+            manager._cache = {"existing": "value"}
+            manager._cache_timestamp = 0.0
 
             # 让 Path.open 抛出 PermissionError（模拟无读权限）
             with patch.object(Path, 'open', side_effect=PermissionError("[Errno 13] Permission denied")):
                 with patch('ErisPulse.Core.logger.logger') as mock_logger:
-                    manager._load_config()
+                    result = manager._load_config()
 
                 # error 被调用（权限提示）
                 assert mock_logger.error.called
                 # warning 被调用（回退默认配置提示）
                 assert mock_logger.warning.called
-                assert manager._cache == {}
+                # 加载失败返回 False，且保留上次有效缓存
+                assert result is False
+                assert manager._cache == {"existing": "value"}
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    def test_malformed_toml_preserves_last_valid_cache(self):
+        """TOML 语法错误时保留上次有效缓存并返回 False，避免半成品配置污染运行进程（BUG-029）"""
+        # 先用合法文件初始化，建立有效缓存
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False, encoding='utf-8') as f:
+            f.write('[a]\nk = "v"\n')
+            temp_path = f.name
+
+        try:
+            with patch('ErisPulse.Core.logger.logger'):
+                manager = ConfigManager(config_file=temp_path)
+                assert manager._cache == {"a": {"k": "v"}}
+
+            # 改写为语法错误的 TOML（模拟用户编辑保存到一半）
+            with open(temp_path, 'w', encoding='utf-8') as f:
+                f.write('[broken section\n')
+
+            with patch('ErisPulse.Core.logger.logger'):
+                result = manager._load_config()
+
+            # 加载失败：返回 False，且保留上次有效缓存（不清空为 {}）
+            assert result is False
+            assert manager._cache == {"a": {"k": "v"}}
         finally:
             if os.path.exists(temp_path):
                 os.remove(temp_path)
@@ -566,6 +597,107 @@ class TestGlobalConfig:
 
 
 # ==================== Config Schema i18n 测试 ====================
+
+class TestValidateConfig:
+    """validate_config 强化测试：类型 / 枚举 / 范围"""
+
+    def _make_instance(self, cls, **overrides):
+        from ErisPulse.Core.Bases.config_schema import dict_to_dataclass
+
+        return dict_to_dataclass(cls, overrides)
+
+    def test_required_empty_reported(self):
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, validate_config
+
+        @dataclass
+        class C(BaseConfig):
+            token: str = field(default="", metadata={"required": True})
+
+        errors = validate_config(C())
+        assert any("token" in e for e in errors)
+
+    def test_type_mismatch_reported(self):
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, validate_config
+
+        @dataclass
+        class C(BaseConfig):
+            port: int = field(default=8080)
+
+        # 直接构造错误类型实例
+        c = C(port="not-a-number")  # type: ignore[arg-type]
+        errors = validate_config(c)
+        assert any("类型" in e and "port" in e for e in errors)
+
+    def test_options_enum_violation(self):
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, validate_config
+
+        @dataclass
+        class C(BaseConfig):
+            mode: str = field(
+                default="a",
+                metadata={"ui": {"widget": "select", "options": ["a", "b", "c"]}},
+            )
+
+        errors = validate_config(C(mode="d"))
+        assert any("选项" in e and "mode" in e for e in errors)
+        # 合法值无错误
+        assert validate_config(C(mode="a")) == []
+
+    def test_range_min_max(self):
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, validate_config
+
+        @dataclass
+        class C(BaseConfig):
+            port: int = field(default=80, metadata={"min": 1, "max": 65535})
+
+        assert validate_config(C(port=80)) == []
+        assert any("最小值" in e for e in validate_config(C(port=0)))
+        assert any("最大值" in e for e in validate_config(C(port=70000)))
+
+
+class TestSecretRedaction:
+    """secret 字段脱敏测试"""
+
+    def test_redact_secret_masks_non_empty(self):
+        from ErisPulse.Core.Bases.config_schema import redact_secret
+
+        assert redact_secret("sk-xxxxxxxx") == "***"
+        assert redact_secret(12345) == "***"
+
+    def test_redact_secret_preserves_empty(self):
+        from ErisPulse.Core.Bases.config_schema import redact_secret
+
+        assert redact_secret("") == ""
+        assert redact_secret(None) is None
+        assert redact_secret([]) == []
+
+    def test_toml_template_redacts_secret_value(self):
+        """dataclass_to_toml_with_comments 不把 secret 字段的真实值写入模板"""
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import (
+            BaseConfig,
+            dataclass_to_toml_with_comments,
+        )
+
+        @dataclass
+        class C(BaseConfig):
+            token: str = field(
+                default="real-secret-value", metadata={"secret": True}
+            )
+
+        toml_text = dataclass_to_toml_with_comments(C)
+        assert "real-secret-value" not in toml_text
+        assert 'token = ""' in toml_text
+
 
 class TestConfigSchemaI18n:
     """配置 Schema i18n 解析测试（含 select options label i18n）"""

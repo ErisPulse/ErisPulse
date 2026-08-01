@@ -52,18 +52,31 @@ class ListCommand(Command):
         pkg_type = args.type
         outdated_only = args.outdated
 
-        if pkg_type == "all":
-            self._print_installed_packages("modules", outdated_only)
-            self._print_installed_packages("adapters", outdated_only)
-        else:
-            self._print_installed_packages(pkg_type, outdated_only)
+        # 仅在需要时一次性拉取远程索引，避免逐包重复 asyncio.run / 网络请求
+        remote_packages = None
+        if outdated_only:
+            try:
+                remote_packages = asyncio.run(
+                    self.package_manager.get_remote_packages()
+                )
+            except Exception:
+                remote_packages = None
 
-    def _print_installed_packages(self, pkg_type: str, outdated_only: bool = False):
+        if pkg_type == "all":
+            self._print_installed_packages("modules", outdated_only, remote_packages)
+            self._print_installed_packages("adapters", outdated_only, remote_packages)
+        else:
+            self._print_installed_packages(pkg_type, outdated_only, remote_packages)
+
+    def _print_installed_packages(
+        self, pkg_type: str, outdated_only: bool = False, remote_packages: dict | None = None
+    ):
         """
         以表格形式打印已安装的模块或适配器
 
         :param pkg_type: [str] 组件类型 (modules 或 adapters)
         :param outdated_only: [bool] 是否仅显示可升级的包 (默认: False)
+        :param remote_packages: [Optional[dict]] 预取的远程索引，避免逐包重复拉取 (默认: None)
         """
         installed = self.package_manager.get_installed_packages()
 
@@ -82,7 +95,7 @@ class ListCommand(Command):
             count = 0
             for name, info in installed["modules"].items():
                 if outdated_only and not self._is_package_outdated(
-                    info["package"], info["version"]
+                    info["package"], info["version"], remote_packages
                 ):
                     continue
                 status = (
@@ -123,7 +136,7 @@ class ListCommand(Command):
             count = 0
             for name, info in installed["adapters"].items():
                 if outdated_only and not self._is_package_outdated(
-                    info["package"], info["version"]
+                    info["package"], info["version"], remote_packages
                 ):
                     continue
                 table.add_row(
@@ -147,16 +160,23 @@ class ListCommand(Command):
                 f"[dim]  {i18n.t('cli.list.no_packages', pkg_type=pkg_type)}[/]"
             )
 
-    def _is_package_outdated(self, package_name: str, current_version: str) -> bool:
+    def _is_package_outdated(
+        self,
+        package_name: str,
+        current_version: str,
+        remote_packages: dict | None = None,
+    ) -> bool:
         """
         判断指定包是否存在较新的远程版本
 
         :param package_name: [str] 包名
         :param current_version: [str] 当前已安装的版本号
+        :param remote_packages: [Optional[dict]] 预取的远程索引，传入时跳过再次拉取 (默认: None)
 
-        :return: [bool] 存在更新版本返回 True，否则返回 False
+        :return: [bool] 存在更新版本返回 True，否则 False
         """
-        remote_packages = asyncio.run(self.package_manager.get_remote_packages())
+        if remote_packages is None:
+            remote_packages = asyncio.run(self.package_manager.get_remote_packages())
         for module_info in remote_packages["modules"].values():
             if module_info["package"] == package_name:
                 return module_info["version"] != current_version

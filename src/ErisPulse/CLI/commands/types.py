@@ -20,6 +20,7 @@ from rich.panel import Panel
 
 from ..base import Command
 from ..console import console
+from ..constants import ADAPTER_ENTRY_POINT_GROUP, MODULE_ENTRY_POINT_GROUP
 from ..i18n import i18n
 
 # 生成文件名（带前导下划线，避免与用户业务模块冲突）
@@ -300,7 +301,7 @@ class TypesCommand(Command):
 
         target_python = PackageManager()._get_target_python()
         raw_entries = self._introspect_remote(
-            target_python, "erispulse.adapter", kind="adapter"
+            target_python, ADAPTER_ENTRY_POINT_GROUP, kind="adapter"
         )
         results = [
             {
@@ -325,7 +326,7 @@ class TypesCommand(Command):
 
         target_python = PackageManager()._get_target_python()
         raw_entries = self._introspect_remote(
-            target_python, "erispulse.module", kind="module"
+            target_python, MODULE_ENTRY_POINT_GROUP, kind="module"
         )
         results = [
             {

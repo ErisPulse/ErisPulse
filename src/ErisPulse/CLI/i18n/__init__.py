@@ -88,16 +88,91 @@ def _resolve_nearest(locale_str: str) -> str:
     return DEFAULT_LANGUAGE
 
 
+def _resolve_windows_locale_name(locale_name: str) -> str | None:
+    """
+    将 Windows locale 名称（如 'Chinese (Simplified)_China'）映射到支持语言
+
+    locale.getlocale() 在 Windows 上可能返回语言全称而非代码
+
+    :param locale_name: Windows locale 名称
+    :return: 支持的语言代码或 None
+    """
+    name_lower = locale_name.lower()
+
+    # 中文
+    if "chinese" in name_lower or "中文" in locale_name:
+        if "simplified" in name_lower or "简体" in locale_name:
+            return "zh-CN"
+        if (
+            "traditional" in name_lower
+            or "繁體" in locale_name
+            or "繁体" in locale_name
+            or "taiwan" in name_lower
+            or "hong kong" in name_lower
+            or "macau" in name_lower
+            or "台灣" in locale_name
+            or "台湾" in locale_name
+        ):
+            return "zh-TW"
+        # 默认简体
+        return "zh-CN"
+
+    # 英文
+    if "english" in name_lower:
+        return "en"
+
+    # 日文
+    if "japanese" in name_lower or "日本語" in locale_name:
+        return "ja"
+
+    # 俄文
+    if "russian" in name_lower or "Русский" in locale_name:
+        return "ru"
+
+    return None
+
+
 def _detect_windows_locale() -> str | None:
-    """通过 Windows API 检测用户 locale"""
+    """
+    通过 Windows API 检测用户默认 locale
+
+    使用 GetUserDefaultLocaleName / GetLocaleInfoW 获取
+    BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
+
+    :return: locale 字符串或 None
+    """
     try:
         import ctypes
 
+        # GetUserDefaultLocaleName 返回 BCP 47 格式
         buf = ctypes.create_unicode_buffer(85)
-        if ctypes.windll.kernel32.GetUserDefaultLocaleName(buf, 85) > 0 and buf.value:
+        res = ctypes.windll.kernel32.GetUserDefaultLocaleName(buf, 85)
+        if res > 0 and buf.value:
             return buf.value
     except Exception:
         pass
+
+    # 备选: 通过 GetLocaleInfoW 获取语言 ID 再转换
+    try:
+        import ctypes
+
+        # LOCALE_USER_DEFAULT = 0x0400
+        # LOCALE_SISO639LANGNAME = 0x0059, LOCALE_SISO3166CTRYNAME = 0x005A
+        lang_buf = ctypes.create_unicode_buffer(9)
+        ctry_buf = ctypes.create_unicode_buffer(9)
+
+        if ctypes.windll.kernel32.GetLocaleInfoW(
+            0x0400, 0x0059, lang_buf, 9
+        ) and ctypes.windll.kernel32.GetLocaleInfoW(0x0400, 0x005A, ctry_buf, 9):
+            lang = lang_buf.value.strip()
+            ctry = ctry_buf.value.strip()
+            if lang:
+                if ctry:
+                    return f"{lang}-{ctry}"
+                return lang
+    except Exception:
+        pass
+
     return None
 
 
@@ -126,6 +201,11 @@ def _detect_language() -> str:
     try:
         loc = _locale_module.getlocale()
         if loc and loc[0] and loc[0] != "C":
+            # Windows 上 getlocale() 可能返回 'Chinese (Simplified)_China' 这类全称
+            if is_windows:
+                resolved = _resolve_windows_locale_name(loc[0])
+                if resolved:
+                    return resolved
             return _resolve_nearest(loc[0])
     except Exception:
         pass

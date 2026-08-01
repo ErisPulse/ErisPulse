@@ -23,13 +23,19 @@ from rich.prompt import Confirm
 
 from ...finders import AdapterFinder, ModuleFinder
 from ..console import console
+from ..constants import PYPI_PACKAGE_JSON_URL_TEMPLATE
 from ..i18n import i18n
 
-# 版本号解析正则：支持 release 段 + 可选预发布后缀 (dev/a/alpha/b/beta/rc)
-# 例如 2.5.0-dev.1 / 2.5.0a1 / 2.4.5 均可解析
+# 版本号解析正则（PEP 440 子集，纯标准库，不依赖 packaging）：
+# 支持 epoch (1!)、release 段、预发布后缀 (dev/a/alpha/b/beta/rc/c/pre)、
+# post 版本 (1.0.postN) 与本地版本 (1.0+local)。
+# 例如 2.5.0-dev.1 / 2.5.0a1 / 1.0rc1 / 1.0.post1 / 1.0+local / 1!1.0 均可解析。
+# 不支持的格式（如 1.0.post1.dev1 这类 post 后跟 dev）由 _parse_version 返回 None 退化处理。
 _VERSION_RE = re.compile(
-    r"^\s*v?(?P<release>\d+(?:\.\d+)*)"
-    r"(?:[-._]?(?P<pre>dev|alpha|beta|rc|a|b|c|pre)[-._]?(?P<num>\d+))?",
+    r"^\s*v?(?P<epoch>\d+!)?(?P<release>\d+(?:\.\d+)*)"
+    r"(?:[-._]?(?P<pre>dev|alpha|beta|rc|a|b|c|pre)[-._]?(?P<num>\d*))?"
+    r"(?:[-._]?post[-._]?(?P<post>\d+))?"
+    r"(?:\+(?P<local>[a-zA-Z0-9]+(?:[.-][a-zA-Z0-9]+)*))?",
     re.IGNORECASE,
 )
 # 预发布类型排序权重：正式版 > rc > beta > alpha > dev
@@ -43,6 +49,31 @@ _PRE_RELEASE_RANK = {
     "c": 3,
     "pre": 3,
 }
+
+
+def _parse_version(version: str) -> dict | None:
+    """
+    将版本号解析为结构化组件（PEP 440 子集，纯标准库）。
+
+    与 :meth:`PackageManager._version_key` / :meth:`PackageManager._is_pre_release`
+    共用同一解析口径，避免不同正则导致判定分歧（如 ``1.0c2`` 此前在
+    ``_is_pre_release`` 与 ``_version_key`` 间判定口径不一致）。
+
+    :param version: [str] 版本号字符串
+    :return: [Optional[dict]] 含 epoch/release/pre_type/pre_num/post/local 的字典，
+             无法解析时返回 None
+    """
+    match = _VERSION_RE.match(str(version).strip().lstrip("vV"))
+    if not match:
+        return None
+    return {
+        "epoch": int((match.group("epoch") or "0").rstrip("!") or 0),
+        "release": match.group("release"),
+        "pre_type": match.group("pre"),
+        "pre_num": match.group("num"),
+        "post": match.group("post"),
+        "local": match.group("local"),
+    }
 
 
 class PackageManager:
@@ -480,7 +511,7 @@ class PackageManager:
         :param package_name: [str] 包名
         :return: [Optional[str]] 最新版本号，失败时返回 None
         """
-        url = f"https://pypi.org/pypi/{package_name}/json"
+        url = PYPI_PACKAGE_JSON_URL_TEMPLATE.format(package=package_name)
         text = self._http_get(url)
         if text:
             try:
@@ -669,6 +700,46 @@ class PackageManager:
 
         return process.returncode == 0
 
+    def _build_install_command(
+        self, package_spec: str, upgrade: bool = True
+    ) -> tuple[list[str], str]:
+        """
+        构建安装命令（uv 优先，回退 pip），供各安装场景复用。
+
+        策略：
+        1. 优先使用 uv（自动识别独立二进制或 python -m uv），
+           并通过 ``--python`` 显式指定目标解释器，确保安装到用户期望的环境
+           （特别是 epsdk 经 pipx 全局安装、用户包需装到项目 venv 的场景）；
+        2. uv 不可用时回退到 pip，目标 Python 解析为当前虚拟环境的解释器，
+           避免安装到全局环境。
+
+        :param package_spec: [str] 包描述，如 "ErisPulse==1.0.0"
+        :param upgrade: [bool] 是否添加 --upgrade 参数 (默认: True)
+        :return: [Tuple[List[str], str]] (完整安装命令列表, 后端名称 uv/pip)
+        """
+        target_python = self._get_target_python()
+        uv_cmd = self._get_uv_command()
+        upgrade_flag = ["--upgrade"] if upgrade else []
+        if uv_cmd:
+            # 注意：uv 的 --python 是子命令（install）的 flag，必须出现在子命令之后，
+            # 不能写成 "uv pip --python X install"，必须是 "uv pip install --python X"
+            return (
+                [
+                    *uv_cmd,
+                    "pip",
+                    "install",
+                    "--python",
+                    target_python,
+                    *upgrade_flag,
+                    package_spec,
+                ],
+                "uv",
+            )
+        return (
+            [target_python, "-m", "pip", "install", *upgrade_flag, package_spec],
+            "pip",
+        )
+
     def _run_pip_command_with_output(self, args: list[str], description: str) -> bool:
         """
         执行 pip 类操作 (install/uninstall)。
@@ -677,6 +748,7 @@ class PackageManager:
         1. 优先使用 uv（自动识别独立二进制或 python -m uv）；
            通过 ``--python`` 显式指定目标解释器，确保安装到用户期望的环境
            （特别是 epsdk 经 pipx 全局安装、用户包需装到项目 venv 的场景）。
+           install 子命令复用 :meth:`_build_install_command` 构建完整命令。
         2. uv 不可用或执行失败时，回退到 pip，
            并将目标 Python 解析为当前虚拟环境的解释器，
            避免安装到全局环境。
@@ -687,19 +759,50 @@ class PackageManager:
         """
         target_python = self._get_target_python()
         uv_cmd = self._get_uv_command()
+
+        is_install = bool(args) and args[0] == "install"
+        if is_install:
+            # 复用共享构建逻辑：得到首选后端 (uv/pip) 的完整 install 命令
+            base_cmd, backend_name = self._build_install_command(
+                args[-1], upgrade="--upgrade" in args
+            )
+            # base_cmd 形如 [<uv>, pip, install, --python, <py>, (--upgrade), spec]
+            # 或 [<py>, -m, pip, install, (--upgrade), spec]；
+            # 把 --upgrade 之外的其他参数（--pre / extra_pip_args）插到 spec 之前
+            install_cmd = base_cmd[:]
+            install_cmd[-1:-1] = [a for a in args[1:-1] if a != "--upgrade"]
+
         if uv_cmd:
-            # 为 uv pip 显式指定目标 Python，避免 uv 自动检测到错误的环境
-            # （例如误装到 epsdk 自身的 pipx 环境）
-            # 注意：uv 的 --python 是子命令（install/uninstall）的 flag，必须出现在子命令之后
-            # 不能写成 "uv pip --python X install"，必须是 "uv pip install --python X"
-            if args and args[0] in ("install", "uninstall"):
-                uv_args = [args[0], "--python", target_python, *args[1:]]
+            if is_install:
+                if self._execute_backend(install_cmd, [], description, "uv"):
+                    return True
+                console.print(
+                    f"[warning]{i18n.t('cli.package.uv_fallback_to_pip')}[/]"
+                )
+            elif args and args[0] in ("install", "uninstall"):
+                # 为 uv pip 显式指定目标 Python，避免 uv 自动检测到错误的环境
+                # （例如误装到 epsdk 自身的 pipx 环境）
+                # 注意：uv 的 --python 是子命令（install/uninstall）的 flag，必须出现在子命令之后
+                # 不能写成 "uv pip --python X install"，必须是 "uv pip install --python X"
+                if self._execute_backend(
+                    [*uv_cmd, "pip"],
+                    [args[0], "--python", target_python, *args[1:]],
+                    description,
+                    "uv",
+                ):
+                    return True
+                console.print(
+                    f"[warning]{i18n.t('cli.package.uv_fallback_to_pip')}[/]"
+                )
             else:
                 # 其他子命令（如 list）不强制指定 python
-                uv_args = list(args)
-            if self._execute_backend([*uv_cmd, "pip"], uv_args, description, "uv"):
-                return True
-            console.print(f"[warning]{i18n.t('cli.package.uv_fallback_to_pip')}[/]")
+                if self._execute_backend(
+                    [*uv_cmd, "pip"], list(args), description, "uv"
+                ):
+                    return True
+                console.print(
+                    f"[warning]{i18n.t('cli.package.uv_fallback_to_pip')}[/]"
+                )
 
         # pip 兑底前先确保目标环境可用（uv 创建的 venv 默认不含 pip）
         if not self._ensure_pip_available(target_python):
@@ -707,6 +810,10 @@ class PackageManager:
                 f"[error]{i18n.t('cli.package.pip_unavailable')}[/]"
             )
             return False
+
+        if is_install and uv_cmd is None:
+            # uv 完全不可用：直接用共享构建的 pip 完整命令
+            return self._execute_backend(install_cmd, [], description, backend_name)
 
         pip_cmd = [target_python, "-m", "pip"]
         return self._execute_backend(pip_cmd, args, description, "pip")
@@ -746,31 +853,47 @@ class PackageManager:
         """
         将版本号解析为可比较的元组键
 
-        遵循项目命名规则排序：正式版 > rc > beta > alpha > dev。
-        例如 2.4.5-dev.1 先于 2.4.5 正式版。
+        遵循项目命名规则排序：正式版 > post > rc > beta > alpha > dev；
+        epoch 优先于一切 release 段；本地版本 (+local) 不影响主排序，
+        但同一版本号带 local 段者 > 不带 local 段者。
+        例如 2.4.5-dev.1 先于 2.4.5 正式版，1.0 < 1.0.post1 < 1.1。
 
         :param version: [str] 版本号字符串
         :return: [tuple] 可直接用于排序/比较的元组键
         """
-        match = _VERSION_RE.match(str(version).strip().lstrip("vV"))
-        if not match:
+        parsed = _parse_version(version)
+        if parsed is None:
             # 无法解析时退化为基础键，保证不抛异常
-            return ((0, 0, 0, 0), (1,), str(version))
+            return (0, (0, 0, 0, 0), (1,), (0,), ((1, str(version).lower()),))
 
-        release = tuple(int(x) for x in match.group("release").split("."))
+        release = tuple(int(x) for x in parsed["release"].split("."))
         # release 段对齐到固定长度，确保 (2.5) 与 (2.5.0) 可正确比较
         padded = release + (0,) * max(0, 4 - len(release))
 
-        pre_type = match.group("pre")
+        pre_type = parsed["pre_type"]
         if pre_type is None:
             # 正式版：预发布键高于任何预发布版本
             pre_key = (1,)
         else:
             rank = _PRE_RELEASE_RANK.get(pre_type.lower(), 1)
-            pre_num = int(match.group("num") or 0)
+            pre_num = int(parsed["pre_num"] or 0)
             pre_key = (0, rank, pre_num)
 
-        return (padded, pre_key, "")
+        # post 段：无 post 视为 post0，保证 1.0 == 1.0.post0 < 1.0.post1
+        post_num = int(parsed["post"] or 0)
+        post_key = (post_num,)
+
+        local = parsed["local"]
+        if local:
+            # 本地段按 "数值段 < 字母段" 拆分，避免 int/str 直接比较抛异常
+            local_key = tuple(
+                (0, int(part)) if part.isdigit() else (1, part.lower())
+                for part in local.split(".")
+            )
+        else:
+            local_key = ()
+
+        return (parsed["epoch"], padded, pre_key, post_key, local_key)
 
     def _compare_versions(self, version1: str, version2: str) -> int:
         """
@@ -1275,7 +1398,7 @@ class PackageManager:
 
         :return: [List[Dict[str, Any]]] 版本信息列表，失败时返回空列表
         """
-        url = "https://pypi.org/pypi/ErisPulse/json"
+        url = PYPI_PACKAGE_JSON_URL_TEMPLATE.format(package="ErisPulse")
         text = self._http_get(url)
         if not text:
             return []
@@ -1312,11 +1435,15 @@ class PackageManager:
         """
         判断版本号是否为预发布版本
 
+        与 :meth:`_version_key` 复用同一解析口径（:func:`_parse_version`）：
+        仅当版本含预发布段 (dev/alpha/beta/rc/c/pre) 时返回 True；
+        post 版本 (1.0.post1) 与本地版本 (1.0+local) 不计为预发布。
+
         :param version: [str] 版本号字符串
         :return: [bool] 是预发布版本返回 True
         """
-        pre_release_pattern = re.compile(r"(a|b|rc|dev|alpha|beta)\d*", re.IGNORECASE)
-        return bool(pre_release_pattern.search(version))
+        parsed = _parse_version(version)
+        return parsed is not None and parsed["pre_type"] is not None
 
     def update_self(self, target_version: str | None = None, force: bool = False) -> bool:
         """
@@ -1344,17 +1471,9 @@ class PackageManager:
             package_spec += f"=={target_version}"
 
         if sys.platform == "win32":
-            uv_cmd = self._get_uv_command()
-            if uv_cmd:
-                if uv_cmd[0] == "uv":
-                    base_cmd = ["uv", "pip", "install", "--python", self._get_target_python(), "--upgrade", package_spec]
-                else:
-                    base_cmd = [*uv_cmd, "pip", "install", "--python", self._get_target_python(), "--upgrade", package_spec]
-                backend_name = "uv"
-            else:
-                target_python = self._get_target_python()
-                base_cmd = [target_python, "-m", "pip", "install", "--upgrade", package_spec]
-                backend_name = "pip"
+            base_cmd, backend_name = self._build_install_command(
+                package_spec, upgrade=True
+            )
 
             messages = {
                 "bootstrap_pip": i18n.t("cli.update.bootstrap_pip"),
@@ -1458,7 +1577,6 @@ input(T["press_key"])
 
             return True
 
-        target_python = self._get_target_python()
         if target_version:
             update_desc = i18n.t(
                 "cli.package.update_desc_with_version", version=target_version

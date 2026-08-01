@@ -16,6 +16,54 @@ Converter 只负责**正向转换**（接收方向），即将平台的原生事
 2. **标准兼容**：转换后的事件必须符合 OneBot12 标准格式
 3. **平台扩展**：平台特有数据使用 `{platform}_` 前缀字段存储
 
+## BaseConverter 基类（推荐）
+
+从 2.7.0 起，框架提供 `BaseConverter` 基类（`ErisPulse.Core.Bases`），封装 OneBot12 事件的**公共字段构建**与**常用消息段辅助**，让转换器只需聚焦类型映射：
+
+```python
+from ErisPulse.Core.Bases import BaseConverter
+
+
+class MyConverter(BaseConverter):
+    def __init__(self):
+        super().__init__(platform="myplatform")
+
+    def convert(self, raw_event: dict) -> dict | None:
+        if not isinstance(raw_event, dict):
+            return None
+        event_type = raw_event.get("type", "")
+        base = self.build_base_event(raw_event, event_type)  # id/time/platform/self/raw
+        if event_type == "message":
+            base["type"] = "message"
+            base["detail_type"] = "group" if raw_event.get("group_id") else "private"
+            base["user_id"] = str(raw_event.get("sender_id", ""))
+            base["message"] = [self.text(raw_event.get("content", ""))]
+            base["alt_message"] = raw_event.get("content", "")
+            return base
+        return None
+```
+
+`build_base_event()` 已填充的公共字段：
+
+| 字段 | 来源 |
+|------|------|
+| `id` | `raw_event["event_id"]`，缺省自动生成 UUID |
+| `time` | `raw_event["timestamp"]`，缺省当前时间 |
+| `platform` | 构造时传入的 `platform` |
+| `self` | `{"platform": ..., "user_id": raw_event["bot_id"]}` |
+| `{platform}_raw` | 原始事件（满足"无损转换"原则） |
+| `{platform}_raw_type` | 原始事件类型 |
+
+常用消息段辅助方法（均为静态方法，直接复用）：
+
+```python
+converter.text("hi")          # {"type": "text", "data": {"text": "hi"}}
+converter.at("123456")        # {"type": "at", "data": {"user_id": "123456"}}
+converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
+```
+
+> 手动实现时 `build_base_event` 的公共字段构造是必须重复写的样板代码，使用 `BaseConverter` 可省去这部分，且天然满足"无损转换"（原始事件始终进 `{platform}_raw`）。
+
 ## convert() 方法
 
 ### 方法签名
