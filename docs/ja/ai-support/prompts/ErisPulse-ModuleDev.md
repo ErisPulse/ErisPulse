@@ -3615,110 +3615,116 @@ services:
 
 ErisPulse コマンドラインツール（`epsdk`）は、プロジェクト管理およびパッケージ管理機能を提供します。
 
-> **ヒント**：すべてのコマンドは `epsdk <コマンド> --help` で詳細なパラメータ説明を確認できます。
+> **ヒント**: すべてのコマンドは `epsdk <command> --help` で詳細なパラメータ説明を確認できます。
 
 ---
 
 ## パッケージ管理コマンド
 
-| コマンド | 別名 | パラメータ | 説明 |
+| コマンド | エイリアス | 引数 | 説明 |
 |------|------|------|------|
-| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | モジュール/アダプタのインストール |
-| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | モジュール/アダプタのアンインストール |
-| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 指定されたモジュールまたはすべてのモジュールをアップグレード |
-| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | SDK自体を更新 |
+| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | モジュール/アダプタをインストール |
+| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | モジュール/アダプタをアンインストール |
+| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 指定したモジュールをアップグレード、またはすべてをアップグレード |
+| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | SDK 自体を更新 |
+
+## 診断コマンド
+
+| コマンド | エイリアス | 引数 | 説明 |
+|------|------|------|------|
+| `doctor` | `diag` | `[--verbose]` | 環境を診断し、ヘルスレポートを出力 |
 
 ### install
 
-ErisPulse モジュールまたはアダプタパッケージをインストールします。パッケージ名を指定しない場合は、対話形式のインストール画面に移行します。
+ErisPulse モジュールまたはアダプタパッケージをインストールします。パッケージ名を指定しない場合、対話型インストール画面になります。
 
-**別名:** `i`, `add`
+**エイリアス:** `i`, `add`
 
-**パラメータ:**
+**引数:**
 
-| パラメータ | 短パラメータ | 説明 |
+| 引数 | 短引数 | 説明 |
 |------|--------|------|
 | `[package]...` | | インストールするパッケージ名。複数指定可能 |
-| `--upgrade` | `-U` | 最新バージョンにアップグレードしてインストール |
-| `--pre` | | プリリリースバージョンを許可 |
-| `--editable` | `-e` | 編集可能なモードでインストール（パスを指定する必要あり） |
-| `--user` | | ユーザーの site-packages ディレクトリにインストール |
-| `--no-deps` | | 依存パッケージをインストールしない |
-| `--target` | `-t` | 指定したディレクトリにインストール |
-| `--index-url` | | PyPI ミラーサーバーのアドレスを指定 |
-| `--extra-index-url` | | 追加の PyPI ミラーサーバーのアドレス（複数指定可） |
+| `--upgrade` | `-U` | インストール時に最新バージョンへアップグレード |
+| `--pre` | | プリリリース版のインストールを許可 |
+| `--editable` | `-e` | 編集可能モードでインストール（パスを指定必要） |
+| `--user` | | ユーザーの site-packages ディレクトリへインストール |
+| `--no-deps` | | 依存関係をインストールしない |
+| `--target` | `-t` | 指定のディレクトリへインストール |
+| `--index-url` | | PyPI ミラーソースアドレスを指定 |
+| `--extra-index-url` | | 追加の PyPI ミラーソースアドレス（複数指定可能） |
 | `--no-cache-dir` | | キャッシュを無効化 |
 | `--requirement` | `-r` | requirements ファイルからインストール |
 | `--constraint` | `-c` | constraint ファイルからインストール |
 | `--force-reinstall` | | 強制的に再インストール |
 | `--ignore-installed` | | 既にインストール済みのパッケージを無視 |
-| `--compile` | | インストール後に .pyc ファイルをコンパイル |
-| `--no-compile` | | インストール後に .pyc ファイルをコンパイルしない |
-| `--prefix` | | 指定したプレフィックスディレクトリにインストール |
-| `--src` | | 編集可能なインストール時に使用するソースコードディレクトリ |
-| `--config-settings` | | ビルドバックエンドに渡す設定（複数指定可） |
-| `--no-binary` | | 二進パッケージの使用を制限（形式: `:all:`） |
-| `--only-binary` | | 二進パッケージのみを使用する（形式: `:all:`） |
-| `--prefer-binary` | | 二進パッケージを優先 |
-| `--build-isolation` | | ビルドの隔離を有効化 |
-| `--no-build-isolation` | | ビルドの隔離を無効化 |
-| `--upgrade-strategy` | | アップグレード戦略: `eager`、`only-if-needed`、`to-satisfy-only` |
-| `--break-system-packages` | | システムパッケージマネージャーが管理する Python パッケージを変更を許可 |
-| `--no-uv` | | uv に代わる pip を使用 |
+| `--compile` | | インストール後、.pyc ファイルをコンパイル |
+| `--no-compile` | | インストール後、.pyc ファイルをコンパイルしない |
+| `--prefix` | | 指定のプレフィックスディレクトリへインストール |
+| `--src` | | 編集可能インストール時のソースディレクトリ |
+| `--config-settings` | | ビルドバックエンドへ渡す設定（複数指定可能） |
+| `--no-binary` | | バイナリパッケージを使用しないように制限（`:all:` のような形式） |
+| `--only-binary` | | バイナリパッケージのみ使用するように制限（`:all:` のような形式） |
+| `--prefer-binary` | | バイナリパッケージを優先 |
+| `--build-isolation` | | ビルド隔離を有効化 |
+| `--no-build-isolation` | | ビルド隔離を無効化 |
+| `--upgrade-strategy` | | アップグレード戦略：`eager`、`only-if-needed`、`to-satisfy-only` |
+| `--break-system-packages` | | システムパッケージマネージャーが管理する Python パッケージの変更を許可 |
+| `--no-uv` | | uv の代わりに pip を使用 |
 
 **例:**
 
 ```bash
-# 単一モジュールのインストール
+# 単一のモジュールをインストール
 epsdk install Weather
 
-# 複数モジュールのインストール
+# 複数のモジュールをインストール
 epsdk install Yunhu Weather
 
-# ミラーサーバーからインストールしてアップグレード
+# ミラーソースからインストールしてアップグレード
 epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
-# 編集可能なモードでインストール（開発モード）
+# 編集可能モードでインストール（開発モード）
 epsdk install -e ./my-adapter
 ```
 
 ### uninstall
 
-インストール済みの ErisPulse モジュールまたはアダプタパッケージをアンインストールします。パッケージ名を指定しない場合は、対話形式のアンインストール画面に移行します。
+既にインストールされた ErisPulse モジュールまたはアダプタパッケージをアンインストールします。パッケージ名を指定しない場合、対話型アンインストール画面になります。
 
-**別名:** `rm`, `remove`
+**エイリアス:** `rm`, `remove`
 
-**パラメータ:**
+**引数:**
 
-| パラメータ | 説明 |
+| 引数 | 説明 |
 |------|------|
 | `<package>...` | アンインストールするパッケージ名。複数指定可能 |
-| `--no-uv` | uv に代わる pip を使用 |
+| `--no-uv` | uv の代わりに pip を使用 |
 
 **例:**
 
 ```bash
-# 単一モジュールのアンインストール
+# 単一のモジュールをアンインストール
 epsdk uninstall Weather
 
-# 複数モジュールのアンインストール
+# 複数のモジュールをアンインストール
 epsdk uninstall Yunhu Weather
 ```
 
 ### upgrade
 
-インストール済みの ErisPulse コンポーネントをアップグレードします。パッケージ名を指定しない場合は、対話形式ですべてをアップグレードします。
+既にインストールされた ErisPulse コンポーネントをアップグレードします。パッケージ名を指定しないと、対話型で全件をアップグレードします。
 
-**別名:** `up`
+**エイリアス:** `up`
 
-**パラメータ:**
+**引数:**
 
-| パラメータ | 短パラメータ | 説明 |
+| 引数 | 短引数 | 説明 |
 |------|--------|------|
 | `[package]...` | | アップグレードするパッケージ名。複数指定可能 |
-| `--force` | `-f` | 確認をスキップして強制的にアップグレード |
-| `--pre` | | プリリリースバージョンへのアップグレードを許可 |
-| `--no-uv` | | uv に代わる pip を使用 |
+| `--force` | `-f` | 強制的にアップグレード、確認をスキップ |
+| `--pre` | | プリリリース版へのアップグレードを許可 |
+| `--no-uv` | | uv の代わりに pip を使用 |
 
 **例:**
 
@@ -3726,7 +3732,7 @@ epsdk uninstall Yunhu Weather
 # すべてのパッケージをアップグレード
 epsdk upgrade
 
-# 指定されたパッケージをアップグレード
+# 指定したパッケージをアップグレード
 epsdk upgrade Weather
 
 # 強制アップグレード（確認をスキップ）
@@ -3735,29 +3741,29 @@ epsdk upgrade -f
 
 ### self-update
 
-ErisPulse SDK 自体を最新バージョンに更新します。
+ErisPulse SDK 自体を最新バージョンへ更新します。
 
-**別名:** `su`, `update`
+**エイリアス:** `su`, `update`
 
-**パラメータ:**
+**引数:**
 
-| パラメータ | 短パラメータ | 説明 |
+| 引数 | 短引数 | 説明 |
 |------|--------|------|
-| `[version]` | | 更新するターゲットバージョン番号を指定 |
-| `--pre` | | プリリリースバージョンへの更新を許可 |
-| `--force` | `-f` | 確認をスキップして強制的に更新 |
-| `--no-uv` | | uv に代わる pip を使用 |
+| `[version]` | | 更新対象のバージョン番号を指定 |
+| `--pre` | | プリリリース版への更新を許可 |
+| `--force` | `-f` | 強制的に更新、確認をスキップ |
+| `--no-uv` | | uv の代わりに pip を使用 |
 
 **例:**
 
 ```bash
-# 最新の安定版に更新
+# 最新の安定版へ更新
 epsdk self-update
 
-# 指定されたバージョンに更新
+# 指定バージョンへ更新
 epsdk self-update 1.2.3
 
-# プリリリースバージョンを許可
+# プリリリース版を許可
 epsdk self-update --pre
 
 # 強制更新
@@ -3768,28 +3774,28 @@ epsdk self-update -f
 
 ## 情報照会コマンド
 
-| コマンド | 別名 | パラメータ | 説明 |
+| コマンド | エイリアス | 引数 | 説明 |
 |------|------|------|------|
-| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | インストール済みのコンポーネントを一覧表示 |
-| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | リモートリポジトリで利用可能なコンポーネントを一覧表示 |
+| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | インストール済みコンポーネントを一覧表示 |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | リモートで利用可能なコンポーネントを一覧表示 |
 
 ### list
 
 インストール済みの ErisPulse モジュールとアダプタを一覧表示します。
 
-**別名:** `l`, `ls`
+**エイリアス:** `l`, `ls`
 
-**パラメータ:**
+**引数:**
 
-| パラメータ | 短パラメータ | 説明 |
+| 引数 | 短引数 | 説明 |
 |------|--------|------|
-| `--type` | `-t` | 指定するタイプ: `modules`、`adapters`、`all`（デフォルト） |
+| `--type` | `-t` | タイプを指定：`modules`、`adapters`、`all`（デフォルト） |
 | `--outdated` | `-o` | アップグレード可能なパッケージのみ表示 |
 
 **例:**
 
 ```bash
-# すべてのインストール済みコンポーネントを一覧表示
+# インストール済みのすべてのコンポーネントを一覧表示
 epsdk list
 
 # モジュールのみを一覧表示
@@ -3798,7 +3804,7 @@ epsdk list -t modules
 # アダプタのみを一覧表示
 epsdk list -t adapters
 
-# アップグレード可能なパッケージのみを表示
+# アップグレード可能なパッケージのみ表示
 epsdk list -o
 ```
 
@@ -3806,25 +3812,25 @@ epsdk list -o
 
 リモートリポジトリで利用可能な ErisPulse モジュールとアダプタを一覧表示します。
 
-**別名:** `lsr`
+**エイリアス:** `lsr`
 
-**パラメータ:**
+**引数:**
 
-| パラメータ | 短パラメータ | 説明 |
+| 引数 | 短引数 | 説明 |
 |------|--------|------|
-| `--type` | `-t` | 指定するタイプ: `modules`、`adapters`、`all`（デフォルト） |
-| `--refresh` | `-r` | リモートパッケージリストのキャッシュを強制的に更新 |
+| `--type` | `-t` | タイプを指定：`modules`、`adapters`、`all`（デフォルト） |
+| `--refresh` | `-r` | リモートパッケージリストキャッシュを強制的に更新 |
 
 **例:**
 
 ```bash
-# すべてのリモートで利用可能なコンポーネントを一覧表示
+# すべてのリモート利用可能コンポーネントを一覧表示
 epsdk list-remote
 
 # リモートモジュールのみを一覧表示
 epsdk list-remote -t modules
 
-# キャッシュを強制的に更新した後の一覧表示
+# キャッシュを強制的に更新して一覧表示
 epsdk list-remote -r
 ```
 
@@ -3832,22 +3838,22 @@ epsdk list-remote -r
 
 ## 実行制御コマンド
 
-| コマンド | 別名 | パラメータ | 説明 |
+| コマンド | エイリアス | 引数 | 説明 |
 |------|------|------|------|
-| `run` | `r` | `[script] [--reload]` | 指定されたスクリプトまたは SDK を実行 |
+| `run` | `r` | `[script] [--reload]` | 指定したスクリプトまたは SDK を実行 |
 
 ### run
 
-ErisPulse プロジェクトスクリプトまたは SDK を実行します。ホットリロードモードをサポートします。
+ErisPulse プロジェクトスクリプトを実行、または SDK を直接起動します。ホットリロードモードに対応しています。
 
-**別名:** `r`
+**エイリアス:** `r`
 
-**パラメータ:**
+**引数:**
 
-| パラメータ | 説明 |
+| 引数 | 説明 |
 |------|------|
 | `[script]` | 実行するスクリプトファイル。指定しない場合は SDK を実行 |
-| `--reload` | ホットリロードモードを有効化。ファイルの変更を監視して自動的に再起動 |
+| `--reload` | ホットリロードモードを有効化。ファイルの変更を監視し、自動的に再起動 |
 
 **例:**
 
@@ -3855,13 +3861,13 @@ ErisPulse プロジェクトスクリプトまたは SDK を実行します。�
 # SDK を直接実行
 epsdk run
 
-# 指定されたスクリプトファイルを実行
+# 指定したスクリプトファイルを実行
 epsdk run main.py
 
-# ホットリロードモードで実行（ファイル変更で自動再起動）
+# ホットリロードモードで実行（ファイル変更時に自動再起動）
 epsdk run main.py --reload
 
-# SDK のホットリロードモード
+# SDK ホットリロードモード
 epsdk run --reload
 ```
 
@@ -3869,35 +3875,35 @@ epsdk run --reload
 
 ## プロジェクト管理コマンド
 
-| コマンド | 別名 | パラメータ | 説明 |
+| コマンド | エイリアス | 引数 | 説明 |
 |------|------|------|------|
-| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | ErisPulse プロジェクトの初期化 |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | モジュール/アダプタのスクリプト作成 |
+| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | ErisPulse プロジェクトを初期化 |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | モジュール/アダプタのスキャフォールドを作成 |
 
 ### init
 
-新しい ErisPulse プロジェクトを初期化します。対話形式とクイックモードをサポートします。
+新しい ErisPulse プロジェクトを初期化します。対話モードとクイックモードをサポートしています。
 
-**パラメータ:**
+**引数:**
 
-| パラメータ | 短パラメータ | 説明 |
+| 引数 | 短引数 | 説明 |
 |------|--------|------|
 | `--project-name` | `-n` | プロジェクト名 |
-| `--quick` | `-q` | クイックモード。対話形式のガイドをスキップ |
-| `--force` | `-f` | 既存の設定ファイルを上書き |
+| `--quick` | `-q` | クイックモード。対話ウィザードをスキップ |
+| `--force` | `-f` | 既存の設定ファイルを強制的に上書き |
 | `--here` | | 現在のディレクトリで初期化。サブディレクトリを作成しない |
-| `--no-uv` | | uv に代わる pip を使用 |
+| `--no-uv` | | uv の代わりに pip を使用 |
 
 **例:**
 
 ```bash
-# 対話形式で初期化
+# 対話型で初期化
 epsdk init
 
-# クイックモードで初期化
+# クイック初期化
 epsdk init -q -n my_bot
 
-# 既存の設定ファイルを上書き
+# 既存の設定を強制的に上書き
 epsdk init -f
 
 # 現在のディレクトリで初期化
@@ -3906,25 +3912,25 @@ epsdk init --here -n my_bot
 
 ### create
 
-ErisPulse モジュールまたはアダプタのスクリプト作成プロジェクトを作成します。
+ErisPulse モジュールまたはアダプタのスキャフォールドプロジェクトを作成します。
 
-**パラメータ:**
+**引数:**
 
-| パラメータ | 短パラメータ | 説明 |
+| 引数 | 短引数 | 説明 |
 |------|--------|------|
-| `{module,adapter}` | | 作成するタイプ: `module` または `adapter` |
+| `{module,adapter}` | | 作成するタイプ：`module` または `adapter` |
 | `--name` | `-n` | プロジェクト名（PascalCase） |
 | `--description` | `-d` | プロジェクトの説明 |
 | `--author` | `-a` | 作者名 |
 | `--email` | `-e` | 作者のメールアドレス |
 | `--homepage` | | プロジェクトのホームページ URL |
 | `--output` | `-o` | 出力ディレクトリ（デフォルトは現在のディレクトリ） |
-| `--force` | `-f` | 既存のディレクトリを上書き |
+| `--force` | `-f` | 既存のディレクトリを強制的に上書き |
 
 **例:**
 
 ```bash
-# 対話形式で作成（タイプの選択と情報入力のガイド）
+# 対話型で作成（タイプと情報入力の誘導）
 epsdk create
 
 # Module プロジェクトを直接作成
@@ -3933,13 +3939,13 @@ epsdk create module -n MyModule
 # Adapter プロジェクトを直接作成
 epsdk create adapter -n MyAdapter
 
-# 完全なパラメータ
+# 完全な引数
 epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "mail@example.com"
 
 # 出力ディレクトリを指定
 epsdk create module -n MyModule -o ./projects
 
-# 既存のディレクトリを上書き
+# 既存のディレクトリを強制的に上書き
 epsdk create module -n MyModule -f
 ```
 
@@ -3947,33 +3953,33 @@ epsdk create module -n MyModule -f
 
 ## 言語コマンド
 
-| コマンド | 別名 | パラメータ | 説明 |
+| コマンド | エイリアス | 引数 | 説明 |
 |------|------|------|------|
 | `i18n` | `language`, `lang` | `[lang] [--list/-l]` | CLI 表示言語の確認または切り替え |
 
 ### i18n
 
-現在の CLI 言語の確認、サポートされている言語の一覧表示、表示言語の切り替え。パラメータを指定しない場合は、対話形式で選択画面に移行します。
+現在の CLI 言語を確認、サポートされている言語を一覧表示、表示言語を切り替えます。パラメータを指定しない場合、対話型の選択画面になります。
 
-**別名:** `language`, `lang`
+**エイリアス:** `language`, `lang`
 
-**パラメータ:**
+**引数:**
 
-| パラメータ | 短パラメータ | 説明 |
+| 引数 | 短引数 | 説明 |
 |------|--------|------|
 | `[lang]` | | 切り替える言語コード（例: `zh-CN`、`en`、`ja`、`ru`） |
-| `--list` | `-l` | すべてのサポートされている言語を一覧表示 |
+| `--list` | `-l` | サポートされているすべての言語を一覧表示 |
 
 **例:**
 
 ```bash
-# 対話形式で言語を選択
+# 対話型で言語を選択
 epsdk i18n
 
-# 英語に切り替え
+# 英語へ切り替え
 epsdk i18n en
 
-# 日本語に切り替え
+# 日本語へ切り替え
 epsdk i18n ja
 
 # サポートされている言語を一覧表示
@@ -3982,87 +3988,118 @@ epsdk i18n --list
 
 ---
 
-## タイプスタブコマンド
+## 型スタブコマンド
 
-| コマンド | 別名 | パラメータ | 説明 |
+| コマンド | エイリアス | 引数 | 説明 |
 |------|------|------|------|
-| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | IDE の補完を有効化するためのタイプスタブファイルを生成 |
+| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | IDE 自補のための型スタブファイルを生成 |
 
 ### types
 
-インストール済みの ErisPulse モジュールとアダプタをスキャンし、`.pyi` タイプスタブファイルを生成します。これにより、IDE で正確なコード補完と型チェックがサポートされます。
+インストール済みの ErisPulse モジュールとアダプタをスキャンし、`.pyi` 型スタブファイルを生成して、IDE で正確なコード補完と型チェックのサポートを得ます。
 
-**別名:** `t`, `stub`
+**エイリアス:** `t`, `stub`
 
-**パラメータ:**
+**引数:**
 
-| パラメータ | 短パラメータ | 説明 |
+| 引数 | 短引数 | 説明 |
 |------|--------|------|
-| `--output` | `-o` | 出力パス（デフォルトは現在のディレクトリの `ep-stubs/`） |
-| `--force` | | 既存のスタブファイルを上書き |
-| `--adapters-only` | | アダプタのタイプスタブのみを生成 |
-| `--modules-only` | | モジュールのタイプスタブのみを生成 |
+| `--output` | `-o` | 出力先パス（デフォルトは現在のディレクトリ下の `ep-stubs/`） |
+| `--force` | | 既存のスタブファイルを強制的に上書き |
+| `--adapters-only` | | アダプタの型スタブのみ生成 |
+| `--modules-only` | | モジュールの型スタブのみ生成 |
 
-> **注意:** `--adapters-only` と `--modules-only` は排他的です。両方指定した場合、後者の `--modules-only` が優先されます。
+> **注意:** `--adapters-only` と `--modules-only` は排他的です。両方を同時に指定した場合、後者が有効になります。
 
 **例:**
 
 ```bash
-# インストール済みのすべてのモジュールとアダプタにタイプスタブを生成
+# すべてのインストール済みモジュールとアダプタに対して型スタブを生成
 epsdk types
 
-# アダプタのタイプスタブのみを生成
+# アダプタのスタブのみ生成
 epsdk types --adapters-only
 
-# 指定されたディレクトリに出力
+# 指定したディレクトリへ出力
 epsdk types -o ./typings
 
-# 既存のファイルを上書き
+# 既存のファイルを強制的に上書き
 epsdk types --force
 ```
 
 ---
 
-## グローバルパラメータ
+## 全体パラメータ
 
 以下のパラメータはすべてのコマンドに適用されます：
 
-| パラメータ | 短パラメータ | 説明 |
+| パラメータ | 短引数 | 説明 |
 |------|--------|------|
 | `--help` | `-h` | ヘルプ情報を表示 |
-| `--verbose` | `-v` | 詳細な出力を表示 |
+| `--version` | `-V` | バージョン情報を表示 |
+| `--verbose` | `-v` | 詳細な出力を表示（`-vv`/`-vvv` で累積） |
+| `--no-color` | | 色の出力を無効化（CI / ログ収集向け） |
+| `--yes` | `-y` | すべての対話プロンプトを自動確認（非対話実行時） |
 
 ---
 
-## 対話形式でのインストール
+## 環境診断
 
-`epsdk install` をパッケージ名を指定せずに実行すると、対話形式のインストールに移行します：
+### doctor
+
+現在の CLI 実行環境を診断し、ヘルスレポートを出力します。「なぜインストールできない / 接続できないのか」といった問題の原因特定に使用します。
+
+| パラメータ | 説明 |
+|------|------|
+| `--verbose` | 詳細な診断情報を表示 |
+
+**確認項目**:
+- **Python**: インタプリタのバージョンとパス
+- **インストールバックエンド**: `uv` または `pip` を使用
+- **ターゲットインタプリタ**: パッケージが実際にインストールされる Python 環境
+- **設定ファイル**: `config/config.toml` が存在するか
+- **PyPI 接続性**: PyPI へのアクセス可否（見つかったコンポーネント数を表示）
+- **システムプロキシ**: プロキシの検出有無
+
+```bash
+# 実行環境診断
+epsdk doctor
+
+# エイリアスを使用
+epsdk diag
+```
+
+---
+
+## 対話型インストール
+
+`epsdk install` でパッケージ名を指定せずに実行すると対話型インストールになります：
 
 ```bash
 epsdk install
 ```
 
-対話インターフェースでは以下の機能が提供されます：
-1. アダプタの選択
-2. モジュールの選択
-3. 自由なインストール設定
+対話画面では以下が提供されます：
+1. アダプタ選択
+2. モジュール選択
+3. カスタムインストール
 
-## 一般的な使い方
+## よく使われる使用例
 
-### モジュールのインストール
+### モジュールをインストール
 
 ```bash
-# 単一モジュールのインストール
+# 単一のモジュールをインストール
 epsdk install Weather
 
-# 複数モジュールのインストール
+# 複数のモジュールをインストール
 epsdk install Yunhu Weather
 
-# モジュールのアップグレード
+# モジュールをアップグレード
 epsdk install Weather -U
 ```
 
-### コンポーネントの一覧表示
+### コンポーネントを一覧表示
 
 ```bash
 # すべてのコンポーネントを一覧表示
@@ -4071,37 +4108,37 @@ epsdk list
 # アダプタのみを一覧表示
 epsdk list -t adapters
 
-# アップグレード可能なコンポーネントのみを表示
+# アップグレード可能なコンポーネントのみを一覧表示
 epsdk list -o
 
 # リモートで利用可能なコンポーネントを確認
 epsdk list-remote
 ```
 
-### コンポーネントのアンインストール
+### コンポーネントをアンインストール
 
 ```bash
-# 単一コンポーネントのアンインストール
+# 単一のコンポーネントをアンインストール
 epsdk uninstall Weather
 
-# 複数コンポーネントのアンインストール
+# 複数のコンポーネントをアンインストール
 epsdk uninstall Yunhu Weather
 ```
 
-### コンポーネントのアップグレード
+### コンポーネントをアップグレード
 
 ```bash
 # すべてのコンポーネントをアップグレード
 epsdk upgrade
 
-# 指定されたコンポーネントをアップグレード
+# 指定したコンポーネントをアップグレード
 epsdk upgrade Weather
 
-# 強制的にアップグレード
+# 強制アップグレード
 epsdk upgrade -f
 ```
 
-### プロジェクトの実行
+### プロジェクトを実行
 
 ```bash
 # 通常の実行
@@ -4111,43 +4148,43 @@ epsdk run main.py
 epsdk run main.py --reload
 ```
 
-### 言語の切り替え
+### 言語を切り替え
 
 ```bash
-# 対話形式で言語を選択
+# 対話型で言語を選択
 epsdk i18n
 
-# 英語に直接切り替え
+# 英語へ直接切り替え
 epsdk i18n en
 
 # サポートされている言語を一覧表示
 epsdk i18n --list
 ```
 
-### タイプスタブの生成
+### 型スタブを生成
 
 ```bash
-# すべてのタイプスタブを生成
+# すべての型スタブを生成
 epsdk types
 
-# モジュールのタイプスタブのみを生成
+# モジュールの型スタブのみ生成
 epsdk types --modules-only
 ```
 
-### プロジェクトの初期化
+### プロジェクトを初期化
 
 ```bash
-# 対話形式で初期化
+# 対話型で初期化
 epsdk init
 
-# クイックモードで初期化
+# クイック初期化
 epsdk init -q -n my_bot
 ```
 
-### スクリプト作成
+### スキャフォールドを作成
 
 ```bash
-# 対話形式で作成（タイプの選択と情報入力のガイド）
+# 対話型で作成（タイプと情報入力の誘導）
 epsdk create
 
 # Module プロジェクトを直接作成
@@ -4156,10 +4193,10 @@ epsdk create module -n MyModule
 # Adapter プロジェクトを直接作成
 epsdk create adapter -n MyAdapter
 
-# 完全なパラメータ
+# 完全な引数
 epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "mail@example.com"
 
-# 既存のディレクトリを上書き
+# 既存のディレクトリを強制的に上書き
 epsdk create module -n MyModule -f
 
 
@@ -6625,44 +6662,44 @@ class MyStorage(BaseStorage):
 
 ### 路由系统
 
-# ルーター管理
+# ルーティングマネージャー
 
-ErisPulse ルーター管理は統一的な HTTP および WebSocket ルーティングを提供し、マルチアダプタ対応のルート登録とライフサイクル管理をサポートしています。基盤には抽象化層（現在は FastAPI + Uvicorn）を介して実装されています。
+ErisPulse ルーティングマネージャーは、HTTP および WebSocket のルーティングを統一的に管理し、複数アダプタのルーティング登録とライフサイクル管理をサポートします。内部では抽象層を封印しています（現在は FastAPI + Uvicorn）
 
 ## 概要
 
-ルーター管理の主な機能：
+ルーティングマネージャーの主な機能：
 
-- **デコレータールート**：`@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` デコレータによるクイック登録をサポート
-- **自動注入**：ルートハンドラーは FastAPI 型のインポート不要、フレームワークが抽象オブジェクトを自動的に注入
-- **ルートグループ化**：プレフィックスとバージョン番号付きの `RouteGroup` をサポート
-- **ルートミドルウェア**：glob パターンマッチによるリクエスト遮断をサポート
-- **レート制限**：スライディングウィンドウアルゴリズムによるレート制限を内蔵
-- **CORS サポート**：ワンクリックでクロスオリジンリソースシェアリングを有効化
-- **セキュリティヘッダー**：自動的にセキュリティ対応レスポンスヘッダーを追加
-- **自動ドキュメント**：OpenAPI ベースの対話型ドキュメント
-- **WebSocket サポート**：完全な WebSocket 接続管理、カスタム認証、ライフサイクルフック
-- **ライフサイクル連携**：ErisPulse のライフサイクルシステムと深く連携
-- **SSL/TLS サポート**：HTTPS および WSS のセキュア接続をサポート
-- **ホームエントリ**：モジュールをルートルート `/` に登録してクイックアクセスボタンを提供、多言語対応
+- **デコレータルーティング**：`@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` デコレータによる高速登録
+- **自動インジェクション**：ルーティングハンドラは FastAPI クラスをインポートする必要がなく、フレームワークが抽象オブジェクトを自動的に注入します
+- **ルーティンググループ**：プレフィックスとバージョン番号付きの `RouteGroup` をサポート
+- **ルーティングミドルウェア**：glob モードマッチングによるリクエストのインターセプト
+- **レート制限**：スライディングウィンドウ方式のリクエスト制限
+- **CORSサポート**：ワンクリックで CORS を有効化
+- **セキュリティヘッダー**：自動的にセキュリティレスポンスヘッダーを追加
+- **自動ドキュメント**：OpenAPI に基づくインタラクティブなドキュメント
+- **WebSocketサポート**：WebSocket接続の完全な管理、カスタム認証、ライフサイクルフック
+- **ライフサイクル統合**：ErisPulse ライフサイクルシステムと深く統合
+- **SSL/TLSサポート**：HTTPS および WSS セキュア接続をサポート
+- **ホームエントリ**：モジュールがルートルート `/` に登録されたクイックエントリボタンをサポート、国際化に対応
 
 ## 抽象型
 
-ErisPulse はサーバーサイドの抽象型を提供し、モジュールが FastAPI に直接依存しないようにしています。
+ErisPulse はサーバー側の抽象型を提供し、モジュールが FastAPI に直接依存しないようにします：
 
-| 抽象型 | FastAPI 対応 | 説明 |
+| 抽象型 | FastAPI対応 | 説明 |
 |---------|-------------|------|
-| `HttpRequest` | `fastapi.Request` | HTTP リクエストラッパー、インターフェースは完全互換 |
-| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 接続ラッパー、追加でライフサイクルフックを提供 |
-| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 切断例外 |
+| `HttpRequest` | `fastapi.Request` | HTTPリクエストのラッパー、インターフェースは完全に互換性があります |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket接続のラッパー、ライフサイクルフックを追加 |
+| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket切断例外 |
 
-> `WebSocketConnection` は `WebSocketConnectionBase` を継承しており、クライアント WebSocket (`ClientWebSocket`) と同じ `send/receive/iter/close` インターフェースを共有します。クライアントとサーバーの WebSocket は同じビジネスロジックコードを使用できます。
+> `WebSocketConnection` は `WebSocketConnectionBase` を継承しており、クライアント側の WebSocket (`ClientWebSocket`) と同じ send/receive/iter/close インターフェースを共有します。クライアントとサーバー側の WebSocket は同じビジネスロジックコードを使用できます。
 >
-> `.raw` プロパティから基盤の FastAPI ネイティブオブジェクトにアクセスできます。FastAPI 型を直接使用するコードも完全に互換性があります。
+> `.raw` 属性を介して、下層の FastAPI ネイティブオブジェクトにアクセスできます。直接 FastAPI クラスを使用するコードも完全に互換性があります。
 
-## デコレータールート（推奨）
+## デコレータルーティング（推奨）
 
-### HTTP デコレータ
+### HTTPデコレータ
 
 ```python
 from ErisPulse.Core import router
@@ -6670,7 +6707,7 @@ from ErisPulse.Core import router
 async def get_info(request):
     return {"method": request.method, "path": str(request.url)}
 
-# 抽象型を明示的に注釈することも可能
+# 明示的に抽象型を指定することもできます
 from ErisPulse.Core import HttpRequest
 
 @router.post("my_module", "/data")
@@ -6687,20 +6724,20 @@ async def delete_data(request):
     return {"deleted": True}
 ```
 
-> **自動注入ルール**：ハンドラーの最初の引数名が `request` または `req` で、かつ FastAPI 型アノテーションがない場合、フレームワークは `HttpRequest` を自動的に注入します。引数がない、またはリクエスト以外の引数名を持つハンドラーは影響を受けません。
+> **自動インジェクションルール**：ハンドラの最初の引数が `request` または `req` で、FastAPI型の注釈がない場合、フレームワークは自動的に `HttpRequest` を注入します。引数がなく、またはリクエスト引数名でないハンドラは影響を受けません。
 
-### WebSocket デコレータ
+### WebSocketデコレータ
 
 ```python
 from ErisPulse.Core import WebSocketConnection, WebSocketDisconnect
 
-# 基本な WebSocket
+# 基本的なWebSocket
 @router.ws("my_module", "/ws")
 async def websocket_handler(ws):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
-# ライフサイクルフック付きの WebSocket
+# ライフサイクルフック付きのWebSocket
 @router.ws("my_module", "/ws/chat")
 async def chat(ws: WebSocketConnection):
     @ws.on_disconnect
@@ -6714,7 +6751,7 @@ async def chat(ws: WebSocketConnection):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
-# 認証付きの WebSocket
+# 認証付きのWebSocket
 async def ws_auth(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
@@ -6726,15 +6763,15 @@ async def secure_ws_handler(ws):
         await ws.send_text(f"Echo: {data}")
 ```
 
-> **注意**：WebSocket ハンドラーと認証ハンドラーも自動注入をサポートします。パラメータアノテーションなしで `WebSocketConnection` を取得できます。`fastapi.WebSocket` をアノテートするとネイティブオブジェクトが渡されますが、抽象型の使用を推奨します。
+> **注意**：WebSocketハンドラと認証ハンドラも自動インジェクションをサポートします。引数の注釈がなくても `WebSocketConnection` を取得できます。`fastapi.WebSocket` を注釈してもネイティブオブジェクトを渡すことができますが、抽象型の使用を推奨します。
 
-## 伝統的な登録方式
+## 伝統的な登録方法
 
 ```python
 async def hello_handler(request):
     return {"message": "Hello World"}
 
-# 基本登録
+# 基本的な登録
 router.register_http_route(
     module_name="my_module",
     path="/hello",
@@ -6754,7 +6791,7 @@ router.register_http_route(
 )
 ```
 
-### WebSocket 登録
+### WebSocket登録
 
 ```python
 from ErisPulse.Core import WebSocketConnection
@@ -6763,14 +6800,14 @@ async def websocket_handler(ws: WebSocketConnection):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
-# 基本登録
+# 基本的な登録
 router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
 )
 
-# 認証付き登録（推奨）
+# 認証付きの登録（推奨）
 async def auth_handler(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
@@ -6788,16 +6825,16 @@ router.register_websocket(
 | パラメータ | 説明 | デフォルト値 |
 |------|------|--------|
 | `module_name` | モジュール名（必須） | - |
-| `path` | WebSocket パス | - |
+| `path` | WebSocketパス | - |
 | `handler` | ハンドラ関数 | - |
-| `auth_handler` | 認証関数、`False` を返すと接続が自動的に閉じられます | `None` |
-| `auto_accept` | `accept()` を自動的に行うかどうか | `True` |
+| `auth_handler` | 認証関数、`False`を返すと接続が自動的に切断されます | `None` |
+| `auto_accept` | 自動的に `accept()` を行うかどうか | `True` |
 
-> **推奨**：`auto_accept` を閉じるのではなく、`auth_handler` を使用して接続確認を行ってください。接続プロセスを完全に制御する必要がある場合のみ `auto_accept=False` を設定してください。
+> **推奨**：接続確認には `auth_handler` を使用してください。`auto_accept` を `False` に設定するのは、接続フローを完全に制御したい場合に限り、`auth_handler` を使用することを推奨します。
 
-## WebSocket ライフサイクルフック
+## WebSocketライフサイクルフック
 
-`WebSocketConnection` は接続切断およびエラーのコールバック登録を提供し、手動の try/catch は不要です：
+`WebSocketConnection` は切断とエラーのコールバックを登録する機能を提供し、手動の try/catch が不要です：
 
 ```python
 from ErisPulse.Core import WebSocketConnection
@@ -6807,9 +6844,9 @@ async def my_ws(ws: WebSocketConnection):
     # デコレータ方式で登録
     @ws.on_disconnect
     async def on_close(ws, reason="unknown"):
-        print(f"切断理由: {reason}")
+        print(f"切断原因: {reason}")
 
-    # 直接呼び出すことも可能
+    # 直接呼び出すこともできます
     async def on_err(ws, error=""):
         print(f"エラー: {error}")
     ws.on_error(on_err)
@@ -6819,10 +6856,10 @@ async def my_ws(ws: WebSocketConnection):
         await ws.send_text(f"Echo: {msg}")
 ```
 
-## ルートグループ化
+## ルーティンググループ
 
 ```python
-# プレフィックス付きのルートグループ作成
+# プレフィックス付きのルーティンググループを作成
 group = router.group("my_module", prefix="/v1")
 
 @group.get("/users")
@@ -6836,9 +6873,9 @@ async def create_user(request):
 # 実際のパス: /my_module/v1/users
 ```
 
-## ルートミドルウェア
+## ルーティングミドルウェア
 
-ミドルウェアは glob パターンマッチでパスを照合します：
+ミドルウェアは glob モードでパスをマッチングします：
 
 ```python
 @router.middleware("/my_module/*")
@@ -6853,9 +6890,34 @@ async def admin_middleware(request, call_next):
     return await call_next(request)
 ```
 
+## リクエスト関連ID（X-Request-ID）
+
+2.7.0以降、各HTTPリクエストには `X-Request-ID` 関連IDが付与され、ログ / リンクトレースの連携に使用されます：
+
+- **生成ルール**：クライアントが送信した `X-Request-ID` リクエストヘッダーを優先して使用（分散トレースの場面）；なければUUIDを自動生成
+- **レスポンスヘッダー**：レスポンスに `X-Request-ID` を返し、クライアントがリクエストとログを対応させるのに便利です
+- **ライフサイクルイベント**：`server.request` と `server.response` イベントデータに `request_id` フィールドが追加されました
+
+```python
+# モジュール内でリクエストイベントを監視し、request_id でリクエスト-レスポンスを連携
+@sdk.lifecycle.on("server.request")
+async def on_request(data):
+    print(f"[{data['request_id']}] {data['method']} {data['path']}")
+
+@sdk.lifecycle.on("server.response")
+async def on_response(data):
+    print(f"[{data['request_id']}] -> {data['status_code']}")
+```
+
+クライアントは、サービス間トレースのために独自のIDを設定できます：
+
+```bash
+curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
+```
+
 ## レート制限
 
-ルートに対してスライディングウィンドウアルゴリズムを使用してレート制限を行います：
+スライディングウィンドウアルゴリズムを使用してルートのリクエスト制限を行います：
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
@@ -6867,9 +6929,9 @@ async def submit_data(request):
     return {"submitted": True}
 ```
 
-レート制限フォーマット：`{回数}/{時間枠}`、例：`10/minute`、`100/hour`。
+レート制限の形式：`{回数}/{時間ウィンドウ}`、例えば `10/minute`、`100/hour`。
 
-## CORS 設定
+## CORS設定
 
 ```python
 router.setup_cors(
@@ -6879,7 +6941,7 @@ router.setup_cors(
 )
 ```
 
-`config.toml` から設定することも可能です：
+`config.toml` で設定することもできます：
 
 ```toml
 [router.cors]
@@ -6896,7 +6958,7 @@ router.setup_security_headers()
 
 `X-Content-Type-Options`、`X-Frame-Options`、`X-XSS-Protection` などのセキュリティヘッダーを自動的に追加します。
 
-`config.toml` から設定することも可能です：
+`config.toml` で設定することもできます：
 
 ```toml
 [router.security]
@@ -6905,7 +6967,7 @@ enabled = true
 
 ## 自動ドキュメント
 
-Router はデフォルトで OpenAPI 対話型ドキュメントを有効化します：
+Router はデフォルトで OpenAPI インタラクティブドキュメントを有効にしています：
 
 ```python
 # ドキュメントを無効化
@@ -6914,30 +6976,30 @@ router.disable_docs()
 # ドキュメント情報をカスタマイズ
 router.set_docs_info(
     title="My API",
-    description="API ドキュメント",
+    description="APIドキュメント",
     version="1.0.0"
 )
 ```
 
 ## パス処理
 
-ルートパスはモジュール名をプレフィックスとして自動的に追加され、競合を回避します：
+ルーティングパスは自動的にモジュール名をプレフィックスとして追加し、衝突を回避します：
 
 ```python
-# モジュール "my_module" へのパス "/api" を登録
+# モジュール "my_module" にパス "/api" を登録
 # 実際のアクセスパスは "/my_module/api"
 router.register_http_route("my_module", "/api", handler)
 ```
 
 ## システムルート
 
-ルーター管理は以下のシステムルートを自動的に提供します。
+ルーティングマネージャーは以下のシステムルートを自動的に提供します：
 
 ### ヘルスチェック
 
 ```
 GET /health
-# 返り値:
+# 戻り値:
 {"status": "ok", "service": "ErisPulse Router"}
 ```
 
@@ -6945,34 +7007,34 @@ GET /health
 
 ```
 GET /
-# ErisPulse ブランドページを返す
+# 戻り値: ErisPulseブランドページ
 ```
 
-ルートルート `/` には ErisPulse のブランドページが表示され、Dashboard の可用性を自動検出してエントリーボタンが追加されます。
+ルートルート `/` は ErisPulse ブランドページを表示し、ダッシュボードの可用性を自動検出し、エントリーボタンを追加します。
 
 ## ホームエントリ
 
-ルーター管理により、外部モジュールはルートルート `/` 上でクイックアクセスボタンを登録でき、ユーザーは各モジュールの管理ページに素早くアクセスできます。
+ルーティングマネージャーは外部モジュールがルートルート `/` にクイックエントリーボタンを登録できるようにし、ユーザーが各モジュールの管理ページに素早くアクセスできるようにします。
 
-### エントリ登録
+### エントリの登録
 
 ```python
 # 簡単な登録
 router.register_home_entry(
-    name="マイパネル",
+    name="私のパネル",
     url="/mymodule/admin",
 )
 
-# アイコン付き登録（SVG）
+# イコン付きの登録（SVG）
 router.register_home_entry(
     name="コンソール",
     url="/console",
     icon_svg='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>',
 )
 
-# 国際化対応の登録（プロジェクト i18n 辞書形式）
+# 国際化に対応した登録（i18n辞書形式）
 router.register_home_entry(
-    name={"i18n": "mymodule.home.entry", "default": "マイパネル"},
+    name={"i18n": "mymodule.home.entry", "default": "私のパネル"},
     url="/mymodule/admin",
 )
 ```
@@ -6981,55 +7043,55 @@ router.register_home_entry(
 
 | パラメータ | 型 | 説明 | 必須 |
 |------|------|------|------|
-| `name` | `str` / `dict` | ボタン表示テキスト；`{"i18n": "key", "default": "テキスト"}` 辞書を渡した場合は国際化を使用 | はい |
-| `url` | `str` | ボタンリンク先アドレス | はい |
-| `icon_svg` | `str` | オプション SVG アイコンマーク | いいえ |
+| `name` | `str` / `dict` | ボタン表示テキスト；`{"i18n": "key", "default": "テキスト"}`辞書を渡すと国際化を使用します | はい |
+| `url` | `str` | ボタンリンクアドレス | はい |
+| `icon_svg` | `str` | オプションのSVGアイコンマーク | いいえ |
 
-### Dashboard 自動登録
+### ダッシュボードの自動登録
 
-`sdk.Dashboard` が利用可能な場合、ルーター管理は自動的にエントリリストの先頭に Dashboard ボタンを追加し、手動登録は不要です。
+`sdk.Dashboard` が利用可能であることが検出された場合、ルーティングマネージャーはダッシュボードボタンを自動的にエントリーリストの先頭に追加し、手動の登録は不要です。
 
-## ライフサイクル連携
+## ライフサイクル統合
 
 ```python
 from ErisPulse.Core import lifecycle
 
 @lifecycle.on("server.start")
 async def on_server_start(event):
-    print(f"サーバー起動: {event['data']['base_url']}")
+    print(f"サーバーが起動しました: {event['data']['base_url']}")
 
 @lifecycle.on("server.stop")
 async def on_server_stop(event):
-    print("サーバー停止中...")
+    print("サーバーが停止中です...")
 ```
 
-## ベストプラクティス
+## 最適実践
 
-1. **抽象型を優先使用**：`HttpRequest` / `WebSocketConnection` を使用して `fastapi.Request` / `fastapi.WebSocket` を置き換え、ハード依存を避ける
-2. **自動注入を活用**：ハンドラーの最初の引数名を `request` または `req` とし、型アノテーションなしで `HttpRequest` を取得
-3. `module_name` を明示的に渡す：デコレータの最初の引数はモジュール名である必要があり、省略できません
-4. **ルートグループ化を使用**：同じモジュールの複数のルートを `group()` で整理する
-5. **セキュリティの考慮**：機密な操作には認証機能とセキュリティヘッダーを実装する
-6. **適切なレート制限**：高頻度のインターフェースにはレート制限を設定する
-7. **ライフサイクルフックを使用**：`@ws.on_disconnect` / `@ws.on_error` を使用して WebSocket 例外を処理し、手動の try/catch を避ける
+1. **抽象型を優先する**：`HttpRequest` / `WebSocketConnection` を `fastapi.Request` / `fastapi.WebSocket` に代えて使用し、ハード依存を避ける
+2. **自動インジェクションを利用する**：ハンドラの最初の引数を `request` または `req` とし、型注釈なしで `HttpRequest` を取得できる
+3. **module_nameを明示的に渡す**：デコレータの最初の引数はモジュール名でなければならず、省略できない
+4. **ルーティンググループを使用する**：同一モジュールの複数のルーティングは `group()` で整理する
+5. **セキュリティを考慮する**：機密操作には認証メカニズムとセキュリティヘッダーを実装する
+6. **適切なレート制限を設定する**：高頻度インターフェースにはレート制限を設定する
+7. **ライフサイクルフックを使用する**：`@ws.on_disconnect` / `@ws.on_error` を使って WebSocket の例外を処理し、手動の try/catch を避ける
 
 ## 関連ドキュメント
 
-- [HTTP クライアント](http-client.md) - 組み込み HTTP クライアントを使用してリクエストを送信
-- [モジュール開発ガイド](../developer-guide/modules/getting-started.md) - モジュールのルート登録について理解する
-- [ベストプラクティス](../developer-guide/modules/best-practices.md) - ルート使用に関するアドバイス
+- [HTTPクライアント](http-client.md) - 内部HTTPクライアントを使用してリクエストを送信する
+- [モジュール開発ガイド](../developer-guide/modules/getting-started.md) - モジュールルーティング登録について学ぶ
+- [最適実践](../developer-guide/modules/best-practices.md) - ルーティングの使用に関する推奨事項
 
 
 ### 生命周期管理
 
-# 生命周期管理
+# ライフサイクル管理
 
-ErisPulse は、システムの各コンポーネントの稼働状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実装するために、統一されたフック/ライフサイクルシステムを提供します。
+ErisPulse は、システムの各コンポーネントの実行状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実現するために、統一されたフック/ライフサイクルシステムを提供します。
 
-システムは3つのトリガーメソッドをサポートしています：
-- `await lifecycle.emit("event", data)` — シンプル版、任意のデータを渡すことができます
-- `lifecycle.emit_sync("event", data)` — 同期版（非同期コンテキストでの使用）
-- `await lifecycle.submit_event("event", ...)` — 旧版との互換性を確保、標準イベント形式を自動構築します
+システムは3つのトリガー方法をサポートしています。
+- `await lifecycle.emit("event", data)` — 簡易版、任意のデータを渡す
+- `lifecycle.emit_sync("event", data)` — 同期版（非同期コンテキストで使用）
+- `await lifecycle.submit_event("event", ...)` — 旧版との互換性、標準イベント形式を自動構築
 
 ## イベント処理メカニズム
 
@@ -7041,7 +7103,7 @@ from ErisPulse import sdk
 # デコレータモード
 @sdk.lifecycle.on("module.load")
 async def on_module_load(data):
-    print(f"モジュール読み込み: {data}")
+    print(f"モジュールの読み込み: {data}")
 
 # プログラムによる登録
 sdk.lifecycle.register("module.load", on_module_load, priority=10)
@@ -7049,56 +7111,82 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 # 登録解除
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# オーナー別に一括登録解除（モジュール/アダプターのアンインストール時にフレームワークが自動的に呼び出されます）
+# 所有者ごとの一括登録解除（モジュール/アダプタのアンインストール時にフレームワークが自動的に呼び出す）
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
-print(f"クリーンアップしたハンドラ数: {removed}")
+print(f"ライフサイクルフックを {removed} 個クリアしました")
 ```
 
 ### 優先度
 
-ハンドラは `priority` パラメータをサポートしており、数値が大きいほど先に実行されます（モジュールローダーと整合性があります）：
+ハンドラは `priority` パラメータをサポートし、数値が大きいほど先に実行されます（モジュールローダーと一致）：
 
 ```python
 @sdk.lifecycle.on("adapter.event.receive", priority=10)  # 最優先で実行
 async def first_handler(data):
     pass
 
-@sdk.lifecycle.on("adapter.event.receive", priority=0)  # 最後に実行
+@sdk.lifecycle.on("adapter.event.receive", priority=0)  # あとで実行
 async def second_handler(data):
     pass
 ```
 
-### ドット構造イベント
+### ドット表記構造のイベント
 
-具体的なイベントがトリガーされると、その親イベントもトリガーされます：
-- `module.load` がトリガーされると、`module` もトリガーされます
-- `adapter.event.receive` がトリガーされると、`adapter.event` と `adapter` もトリガーされます
+具体的なイベントをトリガーすると、その親イベントもトリガーされます。
+- `module.load` をトリガーすると、`module` もトリガーされます
+- `adapter.event.receive` をトリガーすると、`adapter.event` と `adapter` もトリガーされます
 
 ### ワイルドカード
 
-`*` を登録してすべてのイベントをキャッチします：
+`*` を登録するとすべてのイベントをキャッチします：
 
 ```python
 @sdk.lifecycle.on("*")
 async def on_anything(data):
-    print(f"イベント受信: {data}")
+    print(f"イベントを受信しました: {data}")
 ```
 
-## フックポイント一覧
+### 一回限りの登録（once）
 
-フレームワークは以下のフックポイントを内蔵しており、ユーザーは `@sdk.lifecycle.on()` を使用して任意のフックポイントを監視し、カスタムロジックを実装できます。
+2.7.0 以降、`lifecycle.once()` で登録されたハンドラは**一度トリガーされたら自動的に登録解除**されます。「初回準備完了」のような一回限りのフックに適しています：
+
+```python
+@sdk.lifecycle.once("core.init.complete")
+async def on_first_ready(data):
+    print("初回準備完了、その後はトリガーされません")
+```
+
+- `on()` と同じ優先度パラメータの意味（数値が大きいほど先に実行）
+- 自動的に登録解除されるため、手動で `unregister` する必要がない
+- 同期/非同期ハンドラの両方をサポート
+
+### リスナーの確認（has_handlers）
+
+熱路径（パフォーマンスが重要なパス）でのショートサーキットのため、無駄なイベントの遍歴やタスクのスケジューリングを避けるために `has_handlers()` ですでにリスナーが存在するかを先に判断できます：
+
+```python
+if sdk.lifecycle.has_handlers("message.sending"):
+    await sdk.lifecycle.emit("message.sending", send_ctx)
+```
+
+- 精確なイベント名、ワイルドカード `*`、親イベントの3種類のマッチングをカバー
+- リスナーが一切ない場合は `False` を返し、安全に `emit` をスキップできる
+
+## フックブレークポイント一覧
+
+フレームワークには以下のフックブレークポイントが組み込まれており、ユーザーは `@sdk.lifecycle.on()` を使用して任意のブレークポイントを監視し、カスタムロジックを実装できます。
 
 ### コア初期化
 
-| フック名 | トリガー時期 | データ |
+| フック名 | トリガー時機 | データ |
 |---------|---------|------|
-| `core.init.start` | SDK 初期化開始 | `{}` |
-| `core.init.complete` | SDK 初期化完了 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
-| `core.uninit.complete` | SDK 反初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
+| `core.init.start` | SDK の初期化開始 | `{}` |
+| `core.init.complete` | SDK の初期化完了 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
+| `core.uninit.complete` | SDK の逆初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
 
 ### 設定変更
 
-| フック名 | トリガー時期 | データ |
+| フック名 | トリガー時機 | データ |
 |---------|---------|------|
 | `config.set` | 設定項目が変更された | `{"key": str, "old_value": Any, "new_value": Any}` |
 
@@ -7112,32 +7200,32 @@ def audit_config(data):
 
 ### モジュールライフサイクル
 
-| フック名 | トリガー時期 | データ |
+| フック名 | トリガー時機 | データ |
 |---------|---------|------|
 | `module.register` | モジュールクラスがマネージャーに登録された | `{"module_name": str, "success": bool}` |
-| `module.load` | モジュール読み込み完了（インスタンス化成功） | `{"module_name": str, "success": bool}` |
-| `module.init` | モジュール初期化完了（遅延ロード含む） | `{"module_name": str, "success": bool}` |
-| `module.unload` | モジュールアンロード | `{"module_name": str, "success": bool}` |
+| `module.load` | モジュールの読み込み完了（インスタンス化成功） | `{"module_name": str, "success": bool}` |
+| `module.init` | モジュールの初期化完了（遅延読み込みを含む） | `{"module_name": str, "success": bool}` |
+| `module.unload` | モジュールのアンロード | `{"module_name": str, "success": bool}` |
 
-### アダプターライフサイクル
+### アダプタライフサイクル
 
-| フック名 | トリガー時期 | データ |
+| フック名 | トリガー時機 | データ |
 |---------|---------|------|
-| `adapter.load` | アダプター登録完了 | `{"platform": str, "success": bool}` |
-| `adapter.start` | アダプター起動 | `{"platforms": [str]}` |
-| `adapter.status.change` | アダプター状態変更 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
-| `adapter.stop` | アダプター停止 | `{"platforms": [str]}` |
-| `adapter.stopped` | アダプター停止完了 | `{"platforms": [str]}` |
+| `adapter.load` | アダプタの登録完了 | `{"platform": str, "success": bool}` |
+| `adapter.start` | アダプタの開始 | `{"platforms": [str]}` |
+| `adapter.status.change` | アダプタの状態変更 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
+| `adapter.stop` | アダプタの停止 | `{"platforms": [str]}` |
+| `adapter.stopped` | アダプタの停止完了 | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot オンライン | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot オフライン | `{"platform": str, "bot_id": str, "status": str}` |
 
 ### イベント受信と処理
 
-| フック名 | トリガー時期 | データ |
+| フック名 | トリガー時機 | データ |
 |---------|---------|------|
-| `adapter.event.receive` | 外部プラットフォームイベントを受信（最優先） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.receive` | 外部プラットフォームからのイベント受信（最早期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
 | `adapter.event.dispatched` | イベント配信完了 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | イベントハンドラ実行開始前 | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `event.pre_process` | イベントハンドラの実行開始前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **例：イベント統計**
 
@@ -7157,10 +7245,10 @@ def log_unhandled(data):
 
 ### メッセージ送信
 
-| フック名 | トリガー時期 | データ |
+| フック名 | トリガー時機 | データ |
 |---------|---------|------|
-| `message.sending` | メッセージ送信直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | メッセージ送信完了 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | メッセージの送信直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | メッセージの送信完了 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **例：メッセージ送信監査**
 
@@ -7172,10 +7260,10 @@ def log_sending(data):
 
 ### コマンドシステム
 
-| フック名 | トリガー時期 | データ |
+| フック名 | トリガー時機 | データ |
 |---------|---------|------|
-| `command.matched` | コマンドがマッチングされ実行直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | コマンド実行完了 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
+| `command.matched` | コマンドがマッチし、実行直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.executed` | コマンドの実行完了 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
 
 **例：コマンド統計**
 
@@ -7187,7 +7275,7 @@ def count_commands(data):
 
 ### HTTP ルーティング
 
-| フック名 | トリガー時期 | データ |
+| フック名 | トリガー時機 | データ |
 |---------|---------|------|
 | `server.request` | HTTP リクエスト受信 | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | HTTP レスポンス送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
@@ -7202,10 +7290,10 @@ def log_http(data):
 
 ### WebSocket
 
-| フック名 | トリガー時期 | データ |
+| フック名 | トリガー時機 | データ |
 |---------|---------|------|
-| `server.start` | ルーティングサーバー起動 | `{"base_url": str, "host": str, "port": int}` |
-| `server.stop` | ルーティングサーバー停止 | `{}` |
+| `server.start` | ルーター サーバーの開始 | `{"base_url": str, "host": str, "port": int}` |
+| `server.stop` | ルーター サーバーの停止 | `{}` |
 | `server.websocket.connect` | WebSocket 接続確立 | `{"path": str, "module_name": str, "client_ip": str}` |
 | `server.websocket.disconnect` | WebSocket 接続切断 | `{"path": str, "module_name": str, "reason": str, "error": str(例外時のみ)}` |
 
@@ -7218,7 +7306,7 @@ def on_ws_connect(data):
 
 @sdk.lifecycle.on("server.websocket.disconnect")
 def on_ws_disconnect(data):
-    print(f"[WS] 断開: {data['path']} ({data['reason']})")
+    print(f"[WS] 切断: {data['path']} ({data['reason']})")
 ```
 
 ## 標準イベント定義
@@ -7246,19 +7334,19 @@ STANDARD_EVENTS = {
 
 ## 完全な API リファレンス
 
-### 登録と解除
+### 登録とキャンセル
 
 | メソッド | 説明 |
 |------|------|
 | `@lifecycle.on(event, *, priority=0)` | デコレータでハンドラを登録 |
 | `lifecycle.register(event, handler, *, priority=0)` | プログラムによる登録 |
-| `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None でそのイベントのすべてのハンドラを解除） |
+| `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None の場合、そのイベントのすべてのハンドラをキャンセル） |
 
 ### トリガー
 
 | メソッド | 説明 |
 |------|------|
-| `await lifecycle.emit(event, data=None)` | 非同期トリガー、ハンドラが非 None を返すと data を変更可能 |
+| `await lifecycle.emit(event, data=None)` | 非同期トリガー、ハンドラが非 None を返すと data を変更 |
 | `lifecycle.emit_sync(event, data=None)` | 同期トリガー、非同期ハンドラは create_task でスケジュール |
 | `await lifecycle.submit_event(event_type, *, source, msg, data)` | 旧版との互換性、標準イベント形式を自動構築 |
 
@@ -7267,9 +7355,9 @@ STANDARD_EVENTS = {
 | メソッド | 説明 |
 |------|------|
 | `lifecycle.start_timer(timer_id)` | タイマー開始 |
-| `lifecycle.get_duration(timer_id)` | 経過時間取得（秒） |
+| `lifecycle.get_duration(timer_id)` | 経過時間の取得（秒） |
 | `lifecycle.stop_timer(timer_id)` | タイマー停止と経過時間の返却 |
-| `lifecycle.list_hooks()` | 登録済みフックとハンドラ数のリスト表示 |
+| `lifecycle.list_hooks()` | 登録されたすべてのフックとハンドラ数のリスト |
 | `lifecycle.clear()` | すべてのハンドラとタイマーをクリア |
 
 ## モジュールでの使用例
@@ -7280,7 +7368,7 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # シンプルなメッセージカウンターを実装
+        # 簡易メッセージ統計を実装
         self.msg_count = 0
         
         @sdk.lifecycle.on("adapter.event.receive")
@@ -7301,17 +7389,17 @@ class Main(BaseModule):
 
 ## 注意事項
 
-1. **ハンドラは同期または非同期で可**：システムは自動的に識別し、正しく呼び出します
-2. **データ受け渡し**：`emit()` モードでは、ハンドラが非 None を返すと、その値で data が変更され、後続のハンドラに渡されます
-3. **イベント命名規約**：親イベントの監視を容易にするために、ドット構造でイベント名を付けることを推奨します
-4. **エラー隔離**：単一のハンドラでの例外は、他のハンドラの実行に影響しません
-5. **同期トリガーの制限**：`emit_sync()` では非同期ハンドラは fire-and-forget 方式でスケジュールされ、戻り値は伝播しません
-6. **ライフサイクルクリア**：`sdk.uninit()` を呼び出すと、すべての登録済みハンドラとタイマーがクリアされます
-7. **読み込み優先順位**：フレームワーク初期化段階でイベントを監視する場合は、高い優先度を設定し遅延ロードを無効にすることを推奨します
+1. **ハンドラは同期または非同期にできる**：システムは自動的に識別し、正しく呼び出します
+2. **データの受け渡し**：`emit()` モードでは、ハンドラが非 None 値を返すと、その値が後続のハンドラに渡される data に適用されます
+3. **イベント命名規則**：親イベントの監視を容易にするために、ドット表記構造でイベント名を付けることを推奨します
+4. **エラー隔離**：単一のハンドラの例外は、他のハンドラの実行に影響しません
+5. **同期トリガーの制限**：`emit_sync()` では非同期ハンドラは fire-and-forget 方式でスケジュールされ、返却値は伝播されません
+6. **ライフサイクルのクリア**：`sdk.uninit()` を呼び出すと、すべての登録済みハンドラとタイマーがクリアされます
+7. **読み込みの優先性**：フレームワークの初期化段階でイベントを監視する必要がある場合は、高い優先度を設定し遅延読み込みを無効にすることを推奨します
 
 ## 関連ドキュメント
 
-- [モジュール開発ガイド](../developer-guide/modules/getting-started.md) - モジュールライフサイクルメソッドについて
+- [モジュール開発ガイド](../developer-guide/modules/getting-started.md) - モジュールライフサイクルメソッドを理解する
 - [ベストプラクティス](../developer-guide/modules/best-practices.md) - ライフサイクルイベントの使用に関する推奨事項
 
 
@@ -7647,21 +7735,21 @@ clear_custom_types(platform="discord")  # 指定したプラットフォーム�
 
 # 国際化 (i18n) システム
 
-ErisPulse v2.5.0 から、フレームワークは完全な国際化 (i18n) 機能を内蔵しています。フレームワークのコアと CLI インターフェースは、システム言語に応じて自動的に表示テキストを切り替えることができ、外部モジュールも独自の翻訳を登録することができます。
+ErisPulse v2.5.0 から、完全な国際化サポートが組み込まれています。フレームワークのコアおよび CLI インターフェースは、お使いのシステム言語に従って表示テキストを自動的に切り替えることができます。また、外部モジュールが独自の翻訳を登録することもサポートしています。
 
-## 対応言語
+## サポートされている言語
 
 | 言語 | コード | 説明 |
 |------|------|------|
-| 簡体中国語 | `zh-CN` | デフォルト言語（フレームワークの原生言語） |
-| 繁体中国語 | `zh-TW` | 繁体中国語（香港/マカオ/台湾） |
-| 英語 | `en` | 英語（一般的なフォールバック言語） |
+| 簡体字中国語 | `zh-CN` | デフォルト言語（フレームワークのネイティブ言語） |
+| 繁体字中国語 | `zh-TW` | 繁体字中国語（香港/マカオ/台湾） |
+| English | `en` | 英語（汎用的なフォールバック言語） |
 | 日本語 | `ja` | 日本語 |
-| ロシア語 | `ru` | ロシア語 |
+| Русский | `ru` | ロシア語 |
 
-## 早速体験
+## クイックスタート
 
-### 環境変数で言語を切り替える
+### 環境変数での切り替え
 
 ```bash
 # Windows PowerShell
@@ -7672,18 +7760,18 @@ epsdk run
 ERISPULSE_LANG=ja epsdk run
 ```
 
-### 設定ファイルで切り替える
+### 設定ファイルでの切り替え
 
-`config/config.toml` に追加：
+`config/config.toml` に以下を追加します：
 
 ```toml
 [ErisPulse.i18n]
 language = "zh-TW"
 ```
 
-`"auto"`（デフォルト値）に設定すると、システム言語を自動検出します。
+`"auto"`（デフォルト値）に設定すると、システム言語が自動検出されます。
 
-### コードで手動で切り替える
+### コードでの手動切り替え
 
 ```python
 from ErisPulse import i18n
@@ -7692,7 +7780,7 @@ from ErisPulse import i18n
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
-# 自動検出に戻す
+# 自動検出にリセット
 i18n.reset_language()
 ```
 
@@ -7700,34 +7788,34 @@ i18n.reset_language()
 
 ## 言語検出メカニズム
 
-フレームワークは以下の優先順位でユーザーの言語を検出します：
+フレームワークは以下の優先順位でユーザー言語を検出します：
 
-1. **環境変数 `ERISPULSE_LANG`** — 最も優先度が高く、テストや一時的な切り替えに使用
-2. **Windows API** — `GetUserDefaultLocaleName`（Windows限定、Git Bash などのツールが `LANG` を上書きする影響を受けない）
-3. **環境変数** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG`（Unix/macOSの標準）
+1. **環境変数 `ERISPULSE_LANG`** — 最優先順位。テストや一時的な切り替えに使用
+2. **Windows API** — `GetUserDefaultLocaleName`（Windows のみ。Git Bash などのツールによる `LANG` の上書きは影響を受けません）
+3. **環境変数** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG`（Unix/macOS 標準）
 4. **システムロケール** — `locale.getlocale()` / `locale.getdefaultlocale()`
 5. **フォールバック** — en（英語）
 
-### 近接マッピングの原則
+### 最も近いマッピングの原則
 
-検出された言語が正確に一致しない場合、最も近い対応言語にマッピングされます：
+検出された言語が正確な一致ではない場合、サポートされている言語へ最も近い原則に従ってマッピングします。
 
-- `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **繁体中国語**
-- その他のすべての `zh-*`（例: `zh-CN`, `zh-SG`） → **簡体中国語**
+- `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **繁体字中国語**
+- その他すべての `zh-*`（例: `zh-CN`, `zh-SG`）→ **簡体字中国語**
 - `en-US`, `en-GB`, `en-AU` など → **英語**
 - `ja-JP` → **日本語**
 - `ru-RU` → **ロシア語**
-- その他の未認識の言語 → **簡体中国語（フォールバック）**
+- その他認識されない言語 → **簡体字中国語（フォールバック）**
 
 ---
 
-## モジュールで i18n を使用する
+## モジュールでの i18n の使用
 
-独自のモジュールに翻訳テキストを登録することで、多言語対応を実現できます。
+独自のモジュールに対して翻訳テキストを登録し、モジュールも多言語対応にすることができます。
 
-### 推奨の書き方：I18nClass で翻訳キーを宣言する (v2.7.0以降)
+### 推奨される記法：I18nClass による翻訳キーの宣言（v2.7.0+）
 
-v2.7.0 以降では、モジュール/アダプターは `ConfigClass` を宣言するように、`I18nClass` というネストされたクラスを使って翻訳キーを宣言できます。フレームワークは読み込み時に**自動的に**宣言された翻訳キーを登録し、`i18n.register()` を手動で呼び出す必要はありません。
+v2.7.0 から、モジュール/アダプターは `ConfigClass` を宣言するように、ネストされたクラス `I18nClass` を使用して翻訳キーを宣言できます。フレームワークは読み込み時に宣言されたすべての翻訳キーを**自動的に登録**するため、手動で `i18n.register()` を呼び出す必要はありません。
 
 ```python
 from dataclasses import dataclass, field
@@ -7742,15 +7830,15 @@ class MyModule(BaseModule):
         welcome_msg: str = field(
             default="欢迎",
             metadata={
-                # ここでは i18n キー mymodule.welcome_msg を参照
-                "description": {"i18n": "mymodule.welcome_msg", "default": "欢迎消息"},
+                # i18n キー mymodule.welcome_msg を参照
+                "description": {"i18n": "mymodule.welcome_msg", "default": "歓迎メッセージ"},
             },
         )
 
-    # 翻訳キー集合クラス（オプション）
-    # 宣言されたキーはフレームワークによって自動的に登録され、ConfigClass がデフォルト設定を生成するよりも優先されます
+    # 翻訳キーコレクションクラス（オプション）
+    # 宣言されたキーはフレームワークによって自動的に登録されます。ConfigClass のデフォルト設定生成より優先順位が高くなります。
     class I18nClass(BaseI18n):
-        # プロパティ名が自動的に完全なキー経路に結合されます：<モジュール名>.<プロパティ名>
+        # プロパティ名が自動的に完全なキーパスとして結合されます：<モジュール名>.<プロパティ名>
         welcome_msg: I18nKey = I18nKey(
             default="Welcome Message",   # 言語に依存しないフォールバック、どの言語にも登録されません
             zh_CN="欢迎消息",
@@ -7759,7 +7847,7 @@ class MyModule(BaseModule):
             ru="Приветственное сообщение",
             zh_TW="歡迎訊息",
         )
-        # 他のビジネス用の翻訳キー
+        # 業務で使用する他の翻訳キー
         hello: I18nKey = I18nKey(
             default="Hello, {name}!",
             zh_CN="你好，{name}！",
@@ -7769,7 +7857,7 @@ class MyModule(BaseModule):
             ru="Привет, {name}!",
         )
 
-        # 完全なキー経路を明示的に指定することもできます（プロパティ名の結合を使用しない）
+        # 完全なキーパスを明示的に指定することもできます（プロパティ名による結合を使用しません）
         custom: I18nKey = I18nKey(
             key="mymodule.deep.nested.key",
             default="Default text",
@@ -7783,21 +7871,21 @@ class MyModule(BaseModule):
 
 #### なぜ I18nClass を推奨するのか？
 
-| ステージ | 手動 i18n.register() | I18nClass の宣言的書き方 |
+| 場面 | 手動 i18n.register() | I18nClass 宣言的 |
 |------|-----------------------|------------------|
-| 設定説明が参照する i18n キー | 手動で登録する必要があり、設定生成前に実行する必要がある | フレームワークが設定生成前に自動的に登録する |
-| 多言語翻訳の宣言 | on_load() で分散して記述される | クラス内で一括して記述され、一目瞭然 |
-| キー名の命名の一貫性 | 拼写ミスしやすい | プロパティ名がキー名の接尾辞として使用され、IDE による補完が可能 |
-| アンロード時のクリーンアップ | 手動で unregister_domain() を呼び出す必要がある | フレームワークが統一されたドメインで登録する |
+| 設定説明で参照される i18n キー | 手動で登録する必要があり、設定生成前に完了させる必要があります | フレームワークが設定生成前に自動的に登録します |
+| 多言語翻訳の宣言 | 各 `on_load()` に散らばっています | クラス内に集中しており、一目瞭然です |
+| キー名の命名の一貫性 | 入力ミスが発生しやすい | プロパティ名がキー名のサフィックスとして機能し、IDE による補完が可能です |
+| アンインストール時のクリーンアップ | 手動で `unregister_domain()` を呼び出す必要があります | フレームワークは統一された domain で登録するため |
 
-#### I18nClass のキー経路のルール
+#### I18nClass のキーパスルール
 
-- **デフォルト**：``<モジュール登録名>.<プロパティ名>`` を完全なキー経路として使用
-  - 例：モジュール名が ``MyModule``、プロパティ ``welcome`` → キー経路 ``MyModule.welcome``
-- **明示的**：``I18nKey(key="...")`` パラメータで任意の点分経路を指定
-  - 深いネストされたキー名（例：``mymodule.config.basic.token``）に適している
+- **デフォルト**: ``<モジュール登録名>.<プロパティ名>`` を完全なキーパスとして使用します
+  - 例: モジュール名が ``MyModule``、プロパティ ``welcome`` → キーパス ``MyModule.welcome``
+- **明示的**: ``I18nKey(key="...")`` パラメータを使用して任意のドット区切りパスを指定します
+  - 深いネストされたキー名（例: ``mymodule.config.basic.token``）に適しています
 
-#### アダプターで使用する
+#### アダプターでの使用
 
 アダプターも `I18nClass` をサポートしており、使用方法は完全に同じです：
 
@@ -7812,40 +7900,40 @@ class MyAdapter(BaseAdapter):
         endpoint: str = field(
             default="",
             metadata={
-                # 設定説明が adapter.MyAdapter.endpoint キーを参照
+                # 設定説明で adapter.MyAdapter.endpoint キーを参照
                 "description": {"i18n": "MyAdapter.endpoint", "default": "API アドレス"},
             },
         )
 
     class I18nClass(BaseI18n):
-        # 設定説明で参照されるキーと他のビジネス用キーの多言語訳を一括で宣言
+        # 設定説明で参照されるキーと他のビジネスキーの多言語訳を一元宣言します
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
-            zh_CN="API アドレス",
+            zh_CN="API 地址",
             zh_TW="API 位址",
             en="API Endpoint",
             ja="APIアドレス",
-            ru="API アドレス",
+            ru="API адрес",
         )
 ```
 
-アダプターの `I18nClass` は `__init__` 階段（つまり設定テンプレート生成の前）に自動的に登録され、設定説明で参照される i18n キーが利用可能になることを保証します。
+アダプターの `I18nClass` は `__init__` 段階（設定テンプレートの生成前）で自動的に登録されるため、設定説明で参照される i18n キーが使用可能であることが保証されます。
 
-### 手動でカスタム翻訳を登録する（旧方式）
+### 手動登録によるカスタム翻訳（旧記法）
 
 `I18nClass` を使用しない場合、`i18n.register()` を直接呼び出して翻訳テキストを登録することもできます。
 
 ```python
 from ErisPulse import i18n
 
-# 中国語の翻訳を登録
+# 中国語翻訳の登録
 i18n.register("zh-CN", {
     "my_module.welcome": "欢迎使用我的模块！",
     "my_module.goodbye": "再见！",
     "my_module.hello": "你好，{name}！",
 }, domain="my_module")
 
-# 英語の翻訳を登録
+# 英語翻訳の登録
 i18n.register("en", {
     "my_module.welcome": "Welcome to my module!",
     "my_module.goodbye": "Goodbye!",
@@ -7853,22 +7941,22 @@ i18n.register("en", {
 }, domain="my_module")
 ```
 
-### 翻訳を使用する
+### 翻訳の使用
 
 ```python
 from ErisPulse import i18n
 
 # 簡単な翻訳
-i18n.t("my_module.welcome")  # 自動的に現在の言語を使用
+i18n.t("my_module.welcome")  # 現在の言語を自動的に使用
 
 # フォーマットパラメータ付き
 i18n.t("my_module.hello", name="Alice")
 
-# デフォルト値を指定（翻訳キーが存在しない場合に返す）
+# デフォルト値の指定（翻訳キーが存在しない場合に返される）
 i18n.t("my_module.unknown_key", default="デフォルトテキスト")
 ```
 
-### モジュールクラスで使用する
+### モジュールクラスでの使用
 
 ```python
 from dataclasses import dataclass, field
@@ -7880,7 +7968,7 @@ class MyModuleConfig(BaseConfig):
     welcome_msg: str = field(
         default="欢迎",
         metadata={
-            "description": {"i18n": "my_module.welcome_msg", "default": "欢迎消息"},
+            "description": {"i18n": "my_module.welcome_msg", "default": "歓迎メッセージ"},
             "ui": {"widget": "text", "group": "basic", "order": 1},
         },
     )
@@ -7889,7 +7977,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # 実時で設定を読み込む（アクセスするたびに最新の値が反映される）
+        # 設定をリアルタイムで読み取り（アクセスするたびに最新値が反映されます）
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -7902,10 +7990,10 @@ class MyModule(BaseModule):
         pass
 ```
 
-### 翻訳をアンロードする
+### 翻訳のアンインストール
 
 ```python
-# ドメイン全体の翻訳をアンロードする
+# ドメイン全体の翻訳をアンインストール
 i18n.unregister_domain("my_module")
 ```
 
@@ -7913,22 +8001,22 @@ i18n.unregister_domain("my_module")
 
 ## 設定フィールドの多言語対応
 
-v2.5.2 以降、設定の Schema は全面的に i18n をサポートしています。すべてのユーザーが見えるテキストフィールドは、i18n キーを参照でき、WebUI などの消費者は自動的に現在の言語に応じて対応するテキストに解析されます。
+v2.5.2 から、設定 Schema は完全に i18n をサポートしています。すべてのユーザーに表示されるテキストフィールドは i18n キーを参照でき、WebUI や他のコンシューマーは現在の言語に基づいて対応するテキストに自動的に解釈されます。
 
-### i18n サポートのフィールド
+### サポートされる i18n フィールド
 
 | フィールド | 位置 | 説明 |
 |------|------|------|
-| `description` | field metadata | フィールドの説明 |
+| `description` | フィールドメタデータ | フィールド説明 |
 | `options[].label` | `ui.options` | select コントロールのオプションラベル |
-| `placeholder` | `ui.placeholder` | 入力欄のプレースホルダ |
-| `group_labels` | `_schema_meta` | グループ表示名（ダッシュボードのセクションタイトル） |
+| `placeholder` | `ui.placeholder` | 入力ボックスのプレースホルダー |
+| `group_labels` | `_schema_meta` | グループ表示名（Dashboard パーティションタイトル） |
 
-すべての i18n フィールドは `{"i18n": "key", "default": "テキスト"}` の形式を使用し、純粋な文字列はそのまま透過的に渡されます（後方互換性）。
+統一して `{"i18n": "key", "default": "テキスト"}` の形式を使用し、純粋な文字列はそのまま透過渡されます（後方互換性のため）。
 
 ### i18n フィールドの宣言
 
-すべてのユーザーが見えるテキストフィールドは i18n をサポートしています：
+すべてのユーザーに表示されるテキストフィールドは i18n をサポートしています：
 
 ```python
 from dataclasses import dataclass, field
@@ -7977,16 +8065,49 @@ class MyAdapterConfig(BaseConfig):
     }
 ```
 
-`default` はフォールバックテキストです—翻訳が登録されていない場合や検索に失敗した場合に表示されます。
+`default` はフォールバックテキストです。翻訳が登録されていない場合や検索に失敗した場合に表示されます。
+
+### secret マスキングと設定検証
+
+`"secret": True` とマークされたフィールドは自動的に**マスキング保護**を取得します（2.7.0 から）：
+
+- **テンプレート生成時のマスキング**: `dataclass_to_toml_with_comments()` で設定テンプレートを生成する際、secret フィールドの実際の値はファイルに書き込まれません（空のプレースホルダーとして表示されます）。機密情報が永続化されるのを防ぎます
+- **汎用的なマスキングツール**: `redact_secret(value)` は非空値を `***` に置き換え、空値はそのまま返すため、ログ出力などのシーンで使用できます
+
+```python
+from ErisPulse.Core.Bases.config_schema import redact_secret
+
+redact_secret("sk-xxxxxx")  # '***'
+redact_secret("")           # ''
+```
+
+**設定検証**（`validate_config()`）は `required` の非空チェックに加え、2.7.0 から以下をサポートしています：
+
+| 検証項目 | メタデータ | 例 |
+|--------|--------|------|
+| 型の一致 | フィールド宣言型 | `int` フィールドに文字列を渡すとエラー |
+| 列挙制約 | `ui.options` またはトップレベルの `options` | 値は許可されたオプションのいずれかである必要があります |
+| 数値範囲 | トップレベルの `min` / `max` | `metadata={"min": 1, "max": 65535}` |
+
+```python
+from ErisPulse.Core.Bases.config_schema import validate_config
+
+@dataclass
+class C(BaseConfig):
+    mode: str = field(default="a", metadata={"ui": {"widget": "select", "options": ["a", "b"]}})
+    port: int = field(default=80, metadata={"min": 1, "max": 65535})
+
+errors = validate_config(C(mode="x", port=70000))  # 2つのエラー：列挙 + 範囲
+```
 
 ### 設定翻訳の登録
 
-設定フィールドの i18n キーは通常の翻訳キーと同じように `i18n.register()` を使って登録します：
+設定フィールドの i18n キーは通常の翻訳キーと同様、`i18n.register()` を使用して登録します：
 
 ```python
 from ErisPulse import i18n
 
-# 登録（default と一致する場合も、異なる場合も可能です）
+# 中国語の登録（default と一致させることも、異なるテキストにすることもできます）
 i18n.register("zh-CN", {
     "my_adapter.token": "プラットフォーム Token",
 }, domain="my_adapter")
@@ -7996,33 +8117,32 @@ i18n.register("en", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 ```
-> **推奨の書き方**：`I18nClass` で翻訳キーを宣言し、フレームワークが自動的に登録する（上記「推奨の書き方」を参照）。
-> 手動で `i18n.register()` や `register_config_i18n()` を呼び出す必要はありません。
+> **推奨される記法**: `I18nClass` を使用して翻訳キーを宣言します。フレームワークが自動的に登録するため（詳細は上記「推奨される記法」セクション参照）、手動で `i18n.register()` または `register_config_i18n()` を呼び出す必要はありません。
 
-便利な関数 `register_config_i18n()` も提供されており、設定クラスからキーを自動的に抽出して登録できます：
+`register_config_i18n()` という便利な関数も提供されており、設定クラスからキーを自動的に抽出して登録できます：
 
 ```python
 from ErisPulse.runtime.config_schema import register_config_i18n
 
-# description.default から zh-CN 翻訳を自動的に抽出
+# description.default を自動的に抽出して zh-CN 翻訳にします
 register_config_i18n(MyAdapterConfig, "zh-CN")
 
-# 手動で英語の翻訳を提供
+# 英語翻訳を手動で提供します
 register_config_i18n(MyAdapterConfig, "en", {
     "my_adapter.token": "Platform Token",
 })
 ```
 
-### WebUI がどのように消費するか
+### WebUI での消費方法
 
-`get_config_schema()` が返す schema は、i18n ディクショナリをそのまま透過的に渡します。WebUI のフロントエンドは現在の言語に基づいて `i18n.t()` を呼び出して解析します。
+`get_config_schema()` が返すスキーマにおいて、i18n ディクショナリはそのまま透過されます。WebUI フロントエンドは現在の言語に基づいて `i18n.t()` を呼び出して解釈できます。
 
-i18n をサポートしないフロントエンドに直接文字列を返す必要がある場合（例：サービス側で文字列に解析する）、`resolve_config_schema()` を使用します。この関数は `description`、`options[].label`、`placeholder`、`group_labels` をすべて現在の言語の文字列に解析します：
+サーバー側で直接文字列に解釈する必要がある場合（i18n をサポートしていないフロントエンドに返す場合など）、`resolve_config_schema()` を使用します。これは `description`、`options[].label`、`placeholder`、`group_labels` をすべて現在の言語のテキストに解釈します：
 
 ```python
 from ErisPulse.runtime.config_schema import resolve_config_schema
 
-# すべての i18n フィールドが現在の言語の文字列に解析されます
+# すべての i18n フィールドが現在の言語の文字列として解釈されています
 schema = resolve_config_schema(MyAdapterConfig)
 print(schema["fields"]["token"]["description"])    # "プラットフォーム Token" または "Platform Token"
 print(schema["fields"]["token"]["placeholder"])   # "Token を入力してください" または "Enter Token"
@@ -8030,8 +8150,10 @@ print(schema["fields"]["mode"]["options"][0]["label"])  # "モードA" または
 print(schema["group_labels"]["basic"])             # "基本設定" または "Basic"
 ```
 
-> `BaseConfig`、`BotAccountConfig`、`register_config_i18n()`、`resolve_config_schema()` などの型やツール関数は `ErisPulse.Core.Bases.config_schema` に実際の定義があります。`ErisPulse.runtime.config_schema` は互換性のための shims として残されています。
-> **推奨は `ErisPulse.Core.Bases` から一括でインポートすること**（i18n 翻訳キー関連の型は `ErisPulse.Core.Bases.i18n_schema` にあります）。
+> `BaseConfig`、`BotAccountConfig`、`register_config_i18n()`、`resolve_config_schema()`
+> のような型とユーティリティ関数の実際の定義は `ErisPulse.Core.Bases.config_schema` にあります。
+> `ErisPulse.runtime.config_schema` は互換性のための shim として残されていますが、
+> **`ErisPulse.Core.Bases` から統一してインポートすることを推奨します**（i18n 翻訳キー関連の型を除き、それらは `ErisPulse.Core.Bases.i18n_schema` にあります）。
 
 ## API リファレンス
 
@@ -8041,15 +8163,15 @@ print(schema["group_labels"]["basic"])             # "基本設定" または "B
 
 | メソッド | 説明 |
 |------|------|
-| `t(key, default=None, **kwargs)` | 翻訳テキストを取得する（`gettext()` は別名） |
-| `set_language(lang)` | 手動で言語を設定する |
-| `get_language()` | 現在の言語を取得する |
-| `reset_language()` | 自動検出に戻す（そして環境を再検出する） |
-| `get_supported_languages()` | すべてのサポートされている言語のリストを取得する |
-| `has_translation(key, lang=None)` | 翻訳キーが存在するかをチェックする |
-| `register(lang, translations, domain)` | カスタム翻訳を登録する |
-| `unregister_domain(domain)` | 指定されたドメインのすべての翻訳をアンロードする |
-| `reload()` | 内部翻訳を再読み込みし、言語を再検出する |
+| `t(key, default=None, **kwargs)` | 翻訳テキストを取得（`gettext()` のエイリアス） |
+| `set_language(lang)` | 手動で言語を設定 |
+| `get_language()` | 現在の言語を取得 |
+| `reset_language()` | 自動検出にリセット（環境を再検出します） |
+| `get_supported_languages()` | サポートされているすべての言語リストを取得 |
+| `has_translation(key, lang=None)` | 翻訳キーが存在するかチェック |
+| `register(lang, translations, domain)` | カスタム翻訳を登録 |
+| `unregister_domain(domain)` | 指定されたドメインのすべての翻訳をアンインストール |
+| `reload()` | 組み込み翻訳を再読み込みし、言語を再検出 |
 
 #### `t()` メソッドの詳細
 
@@ -8057,32 +8179,32 @@ print(schema["group_labels"]["basic"])             # "基本設定" または "B
 def t(self, key, /, default=None, **kwargs):
 ```
 
-- `key` — 翻訳キー（位置引数のみ、`**kwargs` の `key=` と衝突しない）
-- `default` — 翻訳が存在しない場合に返すデフォルト値、デフォルトは `None`（キー名そのものを返す）
-- `**kwargs` — 翻訳値の `{placeholder}` に埋め込むフォーマットパラメータ
+- `key` — 翻訳キー（位置引数のみ。`**kwargs` 中的の `key=` と競合しません）
+- `default` — 翻訳が存在しない場合に返されるデフォルト値。デフォルトは `None`（キー名自体が返されます）
+- `**kwargs` — フォーマットパラメータ。翻訳値内の `{placeholder}` を埋めます
 
 例：
 
 ```python
 # 翻訳定義: "greeting": "你好，{name}！欢迎来到{place}。"
 i18n.t("greeting", name="Alice", place="ErisPulse")
-# 戻り値: "你好，Alice！欢迎来到ErisPulse。"
+# 返回: "你好，Alice！欢迎来到ErisPulse。"
 ```
 
 ### BaseI18n / I18nKey（宣言的翻訳キー）
 
-v2.7.0 以降、`ErisPulse.Core.Bases` はクラス属性に基づく翻訳キー宣言ツールを提供しています（`ErisPulse.Core.Bases` から一括でインポートすることを推奨）：
+v2.7.0 から、`ErisPulse.Core.Bases` はクラスプロパティに基づいた翻訳キー宣言ツール（`ErisPulse.Core.Bases` から統一してインポートすることを推奨します）を提供しています：
 
 > ``I18nKey.default`` は**言語に依存しないフォールバックテキスト**であり、どの言語にも登録されません。
-> 翻訳を有効にするには、`zh_CN=`` / `en=`` / `ja=`` などの少なくとも1つの言語パラメータを明示的に渡す必要があります。
-> これにより、各国の開発者は自分の母語で `default` を自由に記入でき、フレームワークは一切の仮定を行いません。
+> 翻訳を有効にするには、少なくとも 1 つの言語パラメータ（``zh_CN=`` / ``en=`` / ``ja=`` など）を明示的に渡す必要があります。
+> これにより、各国の開発者が母国語で ``default`` を入力できるようになります。フレームワークは何も前提としません。
 
-| 名称 | 説明 |
+| 名前 | 説明 |
 |------|------|
-| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | 単一の翻訳キーを宣言する、`default` は言語に依存しないフォールバック |
-| `BaseI18n` | 翻訳キー集合の基底クラス（`BaseConfig` に名前を合わせる）、サブクラスは `I18nKey` をクラス属性で宣言する |
-| `BaseI18n.register(prefix="", domain="app")` | クラスメソッド：i18nシステムに宣言されたすべてのキーを登録する |
-| `key` | `I18nKey` の別名（より簡潔な書式） |
+| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | 単一の翻訳キー宣言。`default` は言語に依存しないフォールバック |
+| `BaseI18n` | 翻訳キーコレクションのベースクラス（`BaseConfig` に名前を合わせています）。サブクラスはクラスプロパティとして複数の `I18nKey` を宣言します |
+| `BaseI18n.register(prefix="", domain="app")` | クラスメソッド。宣言されたすべてのキーを i18n システムに登録します |
+| `key` | `I18nKey` のエイリアス（記述を簡潔にするため） |
 
 使用例：
 
@@ -8090,7 +8212,7 @@ v2.7.0 以降、`ErisPulse.Core.Bases` はクラス属性に基づく翻訳キ�
 from ErisPulse.Core.Bases import BaseI18n, key
 
 class MyKeys(BaseI18n):
-    # 簡潔な別名の書き方
+    # 簡潔なエイリアス記法
     hello = key(
         default="Hello",
         zh_CN="你好",
@@ -8108,25 +8230,25 @@ class MyKeys(BaseI18n):
         ru="До свидания",
     )
 
-# 独立して使用（手動で登録）
+# 独立して使用（手動登録）
 MyKeys.register(prefix="myapp.", domain="myapp")
 ```
 
-### SDK インスタンスからアクセスする
+### SDK インスタンスからのアクセス
 
 ```python
 from ErisPulse import sdk
 
-# sdk.i18n は直接インポートした i18n と同じオブジェクト
+# sdk.i18n は直接インポートした i18n と同じオブジェクトです
 sdk.i18n.set_language("en")
 print(sdk.i18n.t("core.sdk.init.starting"))
 ```
 
 ---
 
-## 実行時設定
+## ランタイム設定
 
-### i18n 設定を API で読み取る
+### i18n 設定の取得
 
 ```python
 from ErisPulse.Core.Bases import I18nConfig
@@ -8135,20 +8257,20 @@ from ErisPulse.runtime import get_i18n_config
 config = get_i18n_config()
 print(config["language"])  # "auto" または具体的な言語コード
 
-# I18nConfig は dataclass であり、設定テンプレートの生成に使用できる
+# I18nConfig は dataclass なので、設定テンプレートを生成するために使用できます
 schema = I18nConfig.__dataclass_fields__
 ```
 
 ### 設定項目の説明
 
-`config/config.toml` の `[ErisPulse.i18n]` 部分で：
+`config/config.toml` の `[ErisPulse.i18n]` セクションで：
 
 ```toml
 [ErisPulse.i18n]
-# 表示言語、選択肢:
+# 表示言語。オプション値:
 # - "auto"      — システム言語を自動検出（デフォルト）
-# - "zh-CN"     — 簡体中国語
-# - "zh-TW"     — 繁体中国語
+# - "zh-CN"     — 簡体字中国語
+# - "zh-TW"     — 繁体字中国語
 # - "en"        — 英語
 # - "ja"        — 日本語
 # - "ru"        — ロシア語
@@ -8157,29 +8279,29 @@ language = "auto"
 
 ---
 
-## 最適な実践方法
+## ベストプラクティス
 
 ### 翻訳キーの命名
 
-ドットで区切られた名前空間形式を推奨します：
+ドット区切りの名前空間形式を使用することを推奨します：
 
 ```
 <モジュール名>.<カテゴリ>.<説明>
 ```
 
-例：`my_module.command.hello_desc`、`core.adapter.start_failed`
+例: `my_module.command.hello_desc`、`core.adapter.start_failed`
 
-### 多言語のカバー
+### 多言語の上書き
 
-すべての言語の翻訳を一度に提供する必要はありません。欠落している言語は英語に自動的にフォールバックし、英語もなければキー名そのものを表示します。
+すべての言語の翻訳を一度に提供する必要はありません。不足している言語は自動的に英語にフォールバックし、英語もない場合はキー名自体が表示されます。
 
-### ダイナミックコンテンツ
+### 動的なコンテンツ
 
-動的に生成されるコンテンツ（例：ユーザー名、数など）については、`{placeholder}` の形式でフォーマットします：
+動的に生成されるコンテンツ（ユーザー名、数値など）の場合、`{placeholder}` 形式のフォーマットを使用します：
 
 ```python
 # 翻訳定義
-"user_count": "現在オンラインユーザー：{count} 人"
+"user_count": "現在オンラインのユーザー：{count} 人"
 
 # 使用
 i18n.t("user_count", count=len(users))
@@ -8187,7 +8309,7 @@ i18n.t("user_count", count=len(users))
 
 ### ログメッセージ
 
-フレームワークの Logger を使用している場合、これらのメッセージも自動的に現在の言語で表示されます：
+モジュールでフレームワークの Logger を使用している場合、これらのメッセージも自動的に現在の言語が使用されます：
 
 ```python
 self.logger.info(i18n.t("my_module.startup"))
@@ -8197,12 +8319,12 @@ self.logger.info(i18n.t("my_module.startup"))
 
 ## CLI i18n との関係
 
-CLI には**独立**した国際化モジュール（`ErisPulse.CLI.i18n`）があり、フレームワークコアの国際化モジュールとは完全に分離されています。
+CLI は**独立**した国際化モジュール（`ErisPulse.CLI.i18n`）を持ち、フレームワークコアの国際化モジュールとは完全に非依存です。
 
-- **Core i18n** — フレームワークコアモジュールで使用、外部モジュールも翻訳を登録できる
-- **CLI i18n** — コマンドラインインターフェース内部で使用、Core と翻訳データを共有しない
+- **Core i18n** — フレームワークコアモジュールで使用。外部モジュールは翻訳を登録できます
+- **CLI i18n** — コマンドラインインターフェース内部で使用。Core と翻訳データを共有しません
 
-この設計により、CLI の翻訳変更がフレームワークコアの安定性に影響を与えることを防ぎます。
+この設計により、CLI の翻訳変更がフレームワークコアの安定性に影響しないことが保証されます。
 
 
 ### Dashboard 视窗注册
@@ -8539,36 +8661,36 @@ async def on_unload(self, event):
 
 ### 启动流程与手动控制
 
-# 起動フローと手動制御
+# 起動プロセスと手動制御
 
-ErisPulse の `await sdk.run()` / `await sdk.init()` は、一連の起動フローを「一行のコード」に抽象化しています。しかし、部分的なロード、動的登録、ホットプラグ、カスタムロード戦略の挿入など、完全にカスタマイズした起動フローが必要な場合は、このフローの内部で何が起こっているのか、そして各ステップをどのように手動で駆動するのかを理解する必要があります。
+ErisPulse の `await sdk.run()` / `await sdk.init()` は、一連の起動プロセスを「一行のコード」にラップしています。しかし、部分的なロード、動的登録、ホットプラグ、カスタムロード戦略の注入など、完全にカスタム起動プロセスが必要な場合、このプロセスの内部で何が起こっているのか、および各ステップを手動で駆動する方法を理解する必要があります。
 
-本文では、起動フローを個別のステップに分解し、それぞれの役割と呼び出し順序を説明し、完全な手動起動の例を示します。
+本文では、起動プロセスを独立したステップに分解し、それぞれの役割と呼び出し順序を説明し、手動で完全な起動を行うための例を示します。
 
-> 本文では、[最初のロボット](../getting-started/first-bot.md)を実行済みと仮定し、`sdk.run(keep_running=True/False)` の2つのモードを理解していることを前提としています。本文では、`init()` **内部**のフローの分解と、`init()`/`init_task()`/`init_sync()` などのより低レベルなエントリーポイントに焦点を当てます。
+> 本文では、[最初のロボット](../getting-started/first-bot.md)を実行し、`sdk.run(keep_running=True/False)` の2つのモードを理解していることを前提としています。本文では、`init()` **内部**のプロセス分解と、`init()` / `init_task()` / `init_sync()` などのより低レベルなエントリポイントに焦点を当てます。
 
-## SDKのトップレベルエントリーポイント一覧
+## SDK トップレベルエントリ一覧
 
-`run()` の2つの `keep_running` モードに加えて、SDK はいくつかのより低レベルな初期化エントリーポイントを提供します。違いは**非同期性、返り値、および例外のラッピング**です：
+`run()` の2つの `keep_running` モードに加えて、SDK には異なった**非同期性、戻り値、および例外のラッピング**を持ついくつかの低レベルな初期化エントリが提供されています。
 
-| エントリーポイント | 非同期性 | 返り値 | 例外処理 | 適用場面 |
+| エントリ | 非同期性 | 戻り値 | 例外処理 | 適用シーン |
 |------|--------|--------|----------|----------|
-| `await sdk.run(True)` | async、ブロッキングして維持 | `None`（終了時に自動 `uninit`） | モジュール/アダプタのエラーは捕捉され、プロセスをクラッシュさせない | ロボットアプリケーション |
-| `await sdk.run(False)` | async、ブロッキングしない | `None`（自動アンロードしない） | 同上 | 初期化後にカスタムロジックを実行 |
-| `await sdk.init()` | async、awaitが必要 | `bool` | **ラッピングしない**、例外は上に投げられる | ライフサイクルを手動で制御する（`uninit()` と併用） |
-| `sdk.init_task()` | async、Taskを返す、ブロッキングしない | `asyncio.Task` | `init()` と同じ | 並列で他の初期化を実行する、またはイベントループがまだ実行されていない |
-| `sdk.init_sync()` | **同期**、現在のスレッドをブロッキング | `bool` | `init()` と同じ | コマンドラインスクリプト、イベントループのない同期エントリーポイント |
+| `await sdk.run(True)` | async、ブロックして維持 | `None`（終了時に自動 `uninit`） | モジュール/アダプタエラーが捕捉され、プロセスをクラッシュさせない | ロボットアプリケーションのみ |
+| `await sdk.run(False)` | async、ブロックしない | `None`（自動アンロードしない） | 同上 | 初期化後にカスタムロジックを実行 |
+| `await sdk.init()` | async、`await` 必須 | `bool` | **ラップしない**、例外は上に投げられる | ライフサイクルを手動で制御（`uninit()` と併用） |
+| `sdk.init_task()` | async、`Task` を返してブロックしない | `asyncio.Task` | `init()` と同じ | 並列で他の初期化を実行する、またはイベントループがまだ実行されていない |
+| `sdk.init_sync()` | **同期**、現在のスレッドをブロック | `bool` | `init()` と同じ | コマンドラインスクリプト、イベントループのない同期エントリ |
 
-> **よくある誤解**：`await sdk.init()` は `await sdk.run(keep_running=False)` に等価ではありません。2点の違いがあります：① `init()` は `bool` を返し、`run()` は `None` を返す；② `run()` は初期化と実行のプロセスを try/except でラップしている（モジュール/アダプタのエラーを捕捉してクラッシュを防ぐ）、一方 `init()` はラップせず、例外は直接上に投げられます。アンロードやカスタム例外処理が必要な場合は、`init()` + `uninit()` を使用します。
+> **よくある誤解**：`await sdk.init()` **は** `await sdk.run(keep_running=False)` **と等価ではありません**。2点の違いがあります：① `init()` は `bool` を返し、`run()` は `None` を返す；② `run()` は初期化と実行プロセスを `try/except` でラップし（モジュール/アダプタエラーを捕捉してクラッシュを防ぐ）、`init()` はラップせず、例外は直接上に投げられます。アンロードやカスタム例外処理が必要な場合は、`init()` + `uninit()` を使用してください。
 
-## 起動フローの概要
+## 起動プロセスの概要
 
 `sdk.init()`（正確にはその内部の `Initializer.init()`）は、以下の順序でフレームワーク全体を起動します：
 
 ```mermaid
 flowchart TD
     A[0. 環境準備<br/>設定のロード / 例外処理] --> B
-    B[1. 並行的な発見とロード<br/>AdapterLoader.load / ModuleLoader.load<br/>内部で Finder.find_all を呼び出す] --> C
+    B[1. 並列発見とロード<br/>AdapterLoader.load / ModuleLoader.load<br/>内部で Finder.find_all を呼び出す] --> C
     C[2. アダプタの登録<br/>AdapterLoader.register_to_manager] --> D
     D[3. アダプタの起動<br/>adapter.startup] --> E
     E[4. モジュールの登録<br/>ModuleLoader.register_to_manager] --> F
@@ -8581,19 +8703,19 @@ flowchart TD
 | 層 | コンポーネント | 役割 |
 |----|------|------|
 | 発見 | `AdapterFinder` / `ModuleFinder` | 既にインストールされたパッケージの entry-points から**発見**する |
-| ロード | `AdapterLoader` / `ModuleLoader` | 発見 + インポート + メタデータの読み込み + 有効/無効の判断、オブジェクトリストを返す |
+| ロード | `AdapterLoader` / `ModuleLoader` | 発見 + インポート + メタデータの読み取り + 有効/無効の判断、オブジェクトリストを返す |
 | 登録 | `*Loader.register_to_manager` | オブジェクトを対応するマネージャーに登録する |
 | 管理 | `sdk.adapter` / `sdk.module` | アダプタ/モジュールのインスタンスを維持し、起動/停止のインターフェースを提供する |
-| 初期化 | `ModuleLoader.initialize_modules` | モジュールのインスタンスを作成して `sdk` にマウントする（依存関係のトポロジカルソートを処理する） |
+| 初期化 | `ModuleLoader.initialize_modules` | モジュールのインスタンスを作成し、`sdk` にマウントする（依存関係のトポロジカルソートを処理） |
 | ルーティング | `sdk.router` | HTTP / WebSocket サーバー |
 
-> **重要**：`Finder` と `Loader` は2つの層です。`Loader` は内部で**すでに** `Finder` を保持しています（`AdapterLoader` は `AdapterFinder` を持つ、`ModuleLoader` は `ModuleFinder` を持つ）。ほとんどの場合、`Loader` を使用するだけで十分です。"リストアップだけ"が必要な場合にのみ、`Finder` を個別に使用します。
+> **重要**：`Finder` と `Loader` は2つの層です。`Loader` は内部で**すでに** `Finder` を保持しています（`AdapterLoader` は `AdapterFinder` を、`ModuleLoader` は `ModuleFinder` を持っています）。ほとんどのシーンでは `Loader` を使用するだけで十分です。"インポートせずにリストする"必要がある場合にのみ `Finder` を個別に使用します。
 
 ## 各ステップの詳細
 
 ### 1. 発見層：Finder
 
-Finder は、どのパッケージがアダプタ/モジュールを提供しているかを**見つけ**るだけです。インポートやインスタンス化はしません。
+Finder は「どのパッケージがアダプタ/モジュールを提供しているか」を発見するだけです。インポートやインスタンス化はしません。
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -8601,19 +8723,19 @@ from ErisPulse.finders import AdapterFinder, ModuleFinder
 adapter_finder = AdapterFinder()
 module_finder = ModuleFinder()
 
-# すべてのインストール済みのアダプタ/モジュールの entry-points を検索
+# すべてのインストール済みアダプタ/モジュールの entry-points を検索
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
-# 名前で個別に検索
+# 名前で単一の検索
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-各 `EntryPoint` は `.load()` で対応するクラスを得られますが、通常は手動で呼び出す必要はありません。`Loader` が処理します。
+各 `EntryPoint` は `.load()` で対応するクラスを得られますが、通常は手動で呼び出す必要はありません。`Loader` が行います。
 
 ### 2. ロード層：Loader
 
-Loader は、Finder の上に「インポート + メタデータの読み込み + 有効/無効の判断」を行います。
+Loader は Finder の上に「インポート + メタデータの読み取り + 有効/無効の判断」を行っています。
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -8622,32 +8744,32 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() 内部：finder.find_all() を呼び出す → 各 entry-point を処理する → 3タプルを返す
+# load() 内部：finder.find_all() を呼び出す → 各 entry-point を処理 → 3タプルを返す
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
 
 `load()` が返す3タプル：
 
-| 返り値 | 含意 |
+| 戻り値 | 含意 |
 |--------|------|
-| `objs` (`dict`) | 名前 → オブジェクト（アダプタクラス / モジュールラッパー） |
-| `enabled` (`list[str]`) | 有効化された名前（設定で無効化されていない） |
-| `disabled` (`list[str]`) | 無効化された名前 |
+| `objs` (`dict`) | 名称 → オブジェクト（アダプタクラス / モジュールラッパー） |
+| `enabled` (`list[str]`) | 有効化された名称（設定で無効化されていない） |
+| `disabled` (`list[str]`) | 無効化された名称 |
 
 #### ロード失敗時の診断情報
 
-モジュール/アダプタがロードまたは初期化段階で例外を送出した場合、フレームワークはそのコンポーネントをスキップして他のコンポーネントのロードを続け、**ユーザーのコードフレームの要約**を出力します。これにより、デフォルトの INFO レベルでエラー箇所を特定でき、手動で DEBUG に変更する必要はありません。
+モジュール/アダプタがロードまたは初期化段階で例外を送出した場合、フレームワークはそのコンポーネントをスキップして他のコンポーネントのロードを続け、**ユーザーのコードフレームの要約**を出力します。これにより、通常の INFO レベルでもエラー箇所を特定でき、手動で DEBUG モードを再開する必要がありません。
 
 ```
 [ERROR] [ModuleLoader] entry-point からモジュール MyModule のロードに失敗しました。スキップしました: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → ヒント: ログレベルを DEBUG に上げて完全なスタックを確認する。モジュール MyModule の実装コードを確認する
+  → ヒント: ログレベルを DEBUG に上げると完全なスタックトレースを表示できます。モジュール MyModule の実装コードを確認してください。
 ```
 
-診断情報は `ErisPulse.runtime.diagnostics` モジュールによって生成され、フレームワーク内部のフレームは自動的にフィルタリングされ、ユーザーのコードフレームのみが残ります。カスタムロードロジックで再利用する必要がある場合は：
+診断情報は `ErisPulse.runtime.diagnostics` モジュールによって生成され、フレームワーク内部のフレームは自動的にフィルタリングされ、ユーザーのコードフレームのみが残ります。カスタムロードロジックで再利用する場合は：
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -8655,17 +8777,17 @@ from ErisPulse.runtime import log_diagnostic
 try:
     risky_init()
 except Exception as e:
-    log_diagnostic(e)  # 自動的にユーザーのコードフレームを抽出して ERROR ログに書き込む
+    log_diagnostic(e)  # 自動的にユーザーのコードフレームを抽出して ERROR ログに記録
 ```
 
-このモジュールには `extract_user_frame()`（構造化されたフレーム情報を返す）と `format_diagnostic_block()`（複数行のテキストを返す）という2つの低レベル関数もあります。
+このモジュールには、`extract_user_frame()`（構造化されたフレーム情報を返す）と `format_diagnostic_block()`（複数行のテキストを返す）という2つの低レベル関数もあります。
 
 ### 3. 登録層：register_to_manager
 
-`Loader` が出力したオブジェクトをマネージャーに登録し、`sdk.adapter` / `sdk.module` がそれらを認識できるようにします。
+Loader が出力したオブジェクトをマネージャーに登録し、`sdk.adapter` / `sdk.module` がそれらを認識できるようにします。
 
 ```python
-# アダプタの登録（すべて成功した場合は True を返す）
+# アダプタの登録（すべて成功した場合は bool を返す）
 await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.adapter)
 
 # モジュールの登録
@@ -8684,11 +8806,11 @@ await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> 登録 ≠ 起動。`register_to_manager` は単に登録するだけで、`startup` でアダプタの `start()` を呼び出し、プラットフォームとの接続を確立します。
+> 登録 ≠ 起動。`register_to_manager` は単に登録するだけです。`startup` でアダプタの `start()` を呼び出し、プラットフォームとの接続を確立します。
 
 ### 5. モジュールの初期化
 
-モジュールはアダプタよりも1ステップ多く、**インスタンス化**して `sdk` にマウントする必要があります（そうすることで `sdk.MyModule.xxx` と呼び出せるようになります）。このステップでは、モジュール間の依存関係の宣言とトポロジカルソートも処理されます。
+モジュールはアダプタよりも1ステップ多く、**インスタンス化**して `sdk` にマウントする必要があります（これにより `sdk.MyModule.xxx` で呼び出すことができます）。このステップでは、モジュール間の依存宣言とトポロジカルソートも処理されます。
 
 ```python
 success = await module_loader.initialize_modules(
@@ -8696,7 +8818,7 @@ success = await module_loader.initialize_modules(
 )
 ```
 
-インスタンス化が成功すると、モジュールは `sdk.<ModuleName>` に表示されます。
+インスタンス化に成功すると、モジュールは `sdk.<ModuleName>` に表示されます。
 
 ### 6. ルーティングサーバーの起動
 
@@ -8709,11 +8831,11 @@ await sdk.router.start(
 )
 ```
 
-ルーティングサーバーは、アダプタの Webhook / WebSocket コールバックを受信します。これを起動しないと、サーバーモードのアダプタはメッセージを受け取れません。
+ルーティングサーバーは、アダプタの Webhook / WebSocket コールバックを受け取ります。起動しないと、サーバーモードのアダプタはメッセージを受け取れません。
 
 ## 完全な手動起動の例
 
-以下のコードは、`await sdk.init()` のコアフローと**等価**ですが、各ステップが明示的に公開されており、任意の段階でカスタムロジックを挿入できます：
+以下のコードは `await sdk.init()` のコアプロセスと**等価**ですが、各ステップが明示的に表示されており、任意の段階でカスタムロジックを挿入できます。
 
 ```python
 import asyncio
@@ -8722,8 +8844,8 @@ from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
 async def manual_startup():
     # 0. 環境準備（設定のロード、グローバル例外処理の登録）
-    #    _prepare_environment は init() 内部の前処理段階です。手動フローでも事前に呼び出す必要があります。
-    #    そうでなければ Loader は設定を読み取れず、すべてのアダプタ/モジュールを誤って無効と判断します。
+    #    _prepare_environment は init() 内部の前置ステップです。手動プロセスでも先に呼び出す必要があります。
+    #    そうしないと、Loader は設定を読み取れず、すべてのアダプタ/モジュールを誤って無効化と判断します。
     if not await sdk._prepare_environment():
         print("環境準備に失敗しました")
         return False
@@ -8732,7 +8854,7 @@ async def manual_startup():
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. 並行的な発見とロード（init() 内部と同じ gather を使用）
+    # 2. 並列発見とロード（init() 内部と同じ gather を使用）
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
@@ -8768,7 +8890,7 @@ async def manual_startup():
 async def main():
     ok = await manual_startup()
     if ok:
-        # ブロッキングして実行を維持（手動フローでは自動的にブロッキングしない）
+        # プログラムを維持する（手動プロセスでは自動的にブロックされない）
         await asyncio.Event().wait()
 
 if __name__ == "__main__":
@@ -8777,22 +8899,22 @@ if __name__ == "__main__":
 
 ### いつ手動起動が必要か？
 
-ほとんどの場合、**手動起動は必要ありません**。`await sdk.run()` は上記すべてをすでに処理しています。手動起動は、以下の場面でのみ価値があります：
+ほとんどの場合、手動起動は必要ありません。`await sdk.run()` で上記のすべてが行われています。手動起動は以下のシナリオでのみ価値があります：
 
-- **部分的ロード**：指定されたアダプタ/モジュールのみをロードし、他のものをスキップ
+- **部分的なロード**：指定されたアダプタ/モジュールのみをロードし、他のものをスキップ
 - **動的登録**：実行時に条件に応じて新しいアダプタ/モジュールを登録
-- **順序のカスタマイズ**：デフォルトのロード順序を変更したい（例えば、アダプタの起動前に特定のモジュールを起動したい）
-- **戦略の注入**：Loader にカスタムの厳格モードマネージャー、ロード戦略などを注入
+- **カスタム順序**：デフォルトのロード順序を乱す（例：特定のモジュールを起動してからアダプタを起動）
+- **戦略の注入**：Loader にカスタムの厳密モードマネージャー、ロード戦略などを注入
 - **デバッグ/診断**：特定の段階で失敗した場合、手動で駆動して問題を特定
 
-## 実行時での細かい制御
+## 実行時細粒度制御
 
-`sdk.run()` で起動が完了しても、SDK 全体の再起動は不要で、実行時に個々のサブシステムを個別に制御できます。
+`sdk.run()` で起動した後でも、SDK 全体を再起動することなく、各サブシステムを個別に制御できます。
 
 ### アダプタのホット起動/停止
 
 ```python
-# アダプタのホットリスタート（接続を再構築し、他のプラットフォームには影響しない）
+# アダプタのホットリスタート（接続を修復し、他のプラットフォームに影響しない）
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
@@ -8803,78 +8925,100 @@ await sdk.adapter.startup("telegram")
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` はアダプタが**マネージャーに登録されている**ことを要求します。登録は `init()`/`run()` 内部で行われるため、これは起動**後の**細かい制御です。
+> `adapter.startup()` はアダプタが**マネージャーに登録されている**ことを要求します。登録は `init()` / `run()` 内部で行われるため、これは起動**後の**細粒度制御です。
 
 ### ルーティングサーバー
 
 ```python
-# ワークフローのサーバーを一時的にオフラインにする
+# 一時的に webhook サーバーをオフラインにする
 await sdk.router.stop()
 
-# 再起動（たとえばポートを変更した場合）
+# 再起動（例：ポートを変更した場合）
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
 ### モジュールのオンデマンドロード
 
 ```python
-# 手動でモジュールをロードする（おそらく遅延ロードのモジュール）
+# モジュールを手動でロードする（おそらく遅延ロードのモジュール）
 await sdk.load_module("MyModule")
 ```
 
-## アンロードフロー
+## エレガントなシャットダウン
 
-起動の逆の操作は `await sdk.uninit()` で、反対の順序でクリーンアップします：
+2.7.0 以降、`sdk.shutdown()` は**プログラムによるエレガントなシャットダウン**を提供します：シャットダウンイベントを設定し、`await sdk.run(keep_running=True)` で待機中のメインループが返り、`uninit()` がリソースのクリーンアップをトリガーします。
+
+```python
+# 任意のコルーチンで呼び出し、エレガントな終了をトリガー（run() は待機を返し、自動 uninit）
+sdk.shutdown()
+```
+
+典型的な用途：
+
+```python
+async def shutdown_after_idle():
+    await asyncio.sleep(3600)
+    sdk.shutdown()  # 空き1時間後にエレガントに終了
+```
+
+**シグナル処理**：`run()` 内部では `SIGTERM` / `SIGHUP` ハンドラが登録され、システムシグナルをエレガントなシャットダウンに変換します——コンテナ編成（Docker `docker stop`）や `systemd` でサービスを停止する場合、プロセスは `uninit()` のクリーンアップを完了してから強制終了されます。
+
+- Windows は `loop.add_signal_handler` をサポートしていません。シグナルハンドラは自動的にスキップされます（`sdk.shutdown()` または Ctrl+C でシャットダウンをトリガーできます）
+- `sdk.shutdown()` を繰り返し呼び出すことは安全です（イベントが設定された後は無操作になります）
+
+## アンロードプロセス
+
+起動の逆操作は `await sdk.uninit()` で、逆順でリソースを解放します：
 
 1. すべてのアダプタを閉じる（`adapter.shutdown()`）
 2. すべてのモジュールをアンロードする
 3. すべてのイベントハンドラをクリーンアップする
 4. マネージャーと SDK 上のモジュール属性をクリーンアップする
 
-手動起動の場面では、終了前に `uninit()` を呼び出して優雅な終了を保証してください：
+手動起動の場合は、終了前に `uninit()` を呼び出してエレガントなシャットダウンを保証してください：
 
 ```python
 try:
-    await asyncio.Event().wait()   # 実行を維持
+    await asyncio.Event().wait()   # プログラムを維持
 finally:
     await sdk.uninit()
 ```
 
 ## リスタート
 
-SDK には2つのリスタート方法があります。自分ではアンロードする必要はありません。フレームワークが自動的に処理します：
+SDK には2種類のリスタート方法があります。どちらも事前にアンロードする必要はありません——フレームワークが自動的に処理します：
 
-| 方法 | 呼び出し | 行動 | 適用場面 |
+| 方法 | 呼び出し | 行動 | 適用シーン |
 |------|------|------|----------|
-| ホットリスタート | `await sdk.restart()` | 同一プロセス内で `uninit()` 後に再度 `init()`、アダプタ/モジュールを再ロード | 設定の再ロード、モジュールのホットアップデート |
-| ハードリスタート | `await sdk.hard_restart()` | `uninit()` 後にプロセスを終了し、親プロセス（`epsdk run`）が新しいプロセスを起動 | メモリ/リソースリークが疑われる、完全にクリーンなリスタートが必要な場合 |
+| ホットリスタート | `await sdk.restart()` | 同一プロセス内で `uninit()` の後に再 `init()`、アダプタ/モジュールを再ロード | 設定の再ロード、モジュールのホットアップデート |
+| ハードリスタート | `await sdk.hard_restart()` | `uninit()` の後にプロセスを終了し、親プロセス（`epsdk run`）が新しいプロセスを起動 | メモリ/リソースリークが疑われる、完全にクリーンなリスタートが必要な場合 |
 
 ```python
 # ホットリスタート：同一プロセス内で再ロード（最も一般的）
 await sdk.restart()
 
-# ハードリスタート：プロセスを終了し、`epsdk run` で起動された場合にのみ有効
+# ハードリスタート：プロセスを終了し、`epsdk run` で起動した場合にのみ有効
 await sdk.hard_restart()
 ```
 
 > **2点注意**：
-> 1. これらのメソッドはバックグラウンドタスクで実行され、**リスタートタスクがスケジュールされたことを示す `True` を即座に返す**。リスタートが完了したことを示すものではありません。実際のリスタートはバックグラウンドで行われ、現在のイベントチェーンを中断しません。
-> 2. `hard_restart()` は **`epsdk run main.py` で起動された場合にのみ有効**です。その原理は、アンロード後に**終了コード 42** でプロセスを終了し、`epsdk run` の親プロセスが 42 を検知して新しいプロセスを再起動することです。`python main.py` で直接起動した場合は、終了コード 42 でプロセスが終了した後、自動的に再起動されません。
+> 1. これらのメソッドはバックグラウンドタスクで実行され、**即座に `True` を返す**ことで「リスタートタスクがスケジュールされた」ことを示します。リスタートが完了したわけではありません。実際のリスタートはバックグラウンドで行われ、現在のイベントフローを中断しません。
+> 2. `hard_restart()` **は `epsdk run main.py` で起動した場合にのみ有効です**。その原理は、アンロード後に**終了コード 42** でプロセスを終了し、`epsdk run` の親プロセスが 42 を検出して新しいプロセスを再起動することです。`python main.py` で直接起動した場合は、42 で終了した後プロセスが終了し、自動的に再起動されません。
 
 ### ハードリスタートはいつ使うか？
 
-ハードリスタートは単に「より完全なリスタート」ではなく、以下の場面でホットリスタートよりも適している、あるいはより効率的な場合があります：
+ハードリスタートは「より徹底的なリスタート」だけでなく、以下のシナリオでより適切で、場合によってはより効率的です：
 
-- **バイナリライブラリ（C拡張）の副作用**：ホットリスタートは同一プロセス内で行われるため、C拡張、開かれたファイルディスクリプタ、スレッドなどのプロセスレベルのリソースを解放できません。ハードリスタートは新しいプロセスを起動するため、これらの副作用は完全にクリアされます。
-- **リソースリークの診断**：メモリやハンドルのリークが疑われる場合、ハードリスタートはクリーンな環境を得られます。
-- **頻繁なリスタートに性能が敏感な場合**：ハードリスタートは同一プロセス内のアンロード→再ロードのオーバーヘッドを省き、実際にはホットリスタートよりも効率的です。
+- **バイナリライブラリ（C拡張）の副作用**：ホットリスタートは同じプロセス内で行われるため、C拡張、開いたファイルディスクリプタ、スレッドなどのプロセスレベルのリソースを解放できません。ハードリスタートでは新しいプロセスが起動され、これらの副作用は完全にクリアされます。
+- **リソースリークの調査**：メモリやハンドルのリークが疑われる場合、ハードリスタートはクリーンな環境を得ることができます。
+- **頻繁なリスタートに性能が敏感な場合**：ハードリスタートは同じプロセス内でアンロード→再ロードのオーバーヘッドを省くため、実際にはホットリスタートよりも効率的です。
 
 > ダッシュボード管理パネルの「フレームワークリスタート」機能は、下層で `hard_restart()` を呼び出しています。
-> さらに、ハードリスタートは **`epsdk` の `run` コマンドを使用して起動する必要がある**点に注意してください。そうでなければ、プログラムは単に 42 の終了コードを投げて終了し、`run` コマンドが 42 の終了コードを検出してプロセスを再起動するのを待つため、再起動は自動的に行われません。この点は必ず注意してください！！
+> また、ハードリスタートは **`epsdk` の `run` コマンドを使用して起動しなければ効果がありません**。`run` コマンドは 42 退出コードを検出してプロセスを再起動するため、`python main.py` で起動した場合は 42 でプロセスが終了し、自動的に再起動されません。この点は注意してください！！
 
-## 関連文書
+## 関連ドキュメント
 
-- [最初のロボットを作成する](../getting-started/first-bot.md) - `keep_running` の2つの基本モードの入門
+- [最初のロボットを作成する](../getting-started/first-bot.md) - `keep_running` 2つの基本モードの入門
 - [ライフサイクル管理](lifecycle.md) - `core.init.start` / `core.init.complete` などの起動イベントを監視
 - [遅延ロードシステム](lazy-loading.md) - モジュールの遅延ロードメカニズムと `load_module`
 

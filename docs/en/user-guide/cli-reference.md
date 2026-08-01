@@ -1,91 +1,97 @@
 # CLI Command Reference
 
-The ErisPulse command-line tool (`epsdk`) provides project management and package management features.
+The ErisPulse command-line tool (`epsdk`) provides project management and package management functionality.
 
-> **Tip:** You can view detailed parameter descriptions for any command using `epsdk <command> --help`.
+> **Tip**: You can view detailed parameter descriptions for all commands using `epsdk <command> --help`.
 
 ---
 
 ## Package Management Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
 | `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | Install modules/adapters |
 | `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | Uninstall modules/adapters |
 | `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | Upgrade specified modules or all |
-| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | Update SDK itself |
+| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | Update the SDK itself |
+
+## Diagnostic Commands
+
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
+| `doctor` | `diag` | `[--verbose]` | Diagnose the environment and output a health report |
 
 ### install
 
-Installs ErisPulse module or adapter packages. If no package name is specified, enters interactive installation mode.
+Install an ErisPulse module or adapter package. If no package name is specified, an interactive installation interface is entered.
 
 **Aliases:** `i`, `add`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
-| `[package]...` | | Package names to install, multiple can be specified |
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
+| `[package]...` | | Package names to install, can specify multiple |
 | `--upgrade` | `-U` | Upgrade to the latest version during installation |
-| `--pre` | | Allow installation of pre-release versions |
-| `--editable` | `-e` | Install in editable mode (requires path) |
+| `--pre` | | Allow installing pre-release versions |
+| `--editable` | `-e` | Install in editable mode (path required) |
 | `--user` | | Install to user site-packages directory |
 | `--no-deps` | | Do not install dependencies |
 | `--target` | `-t` | Install to specified directory |
-| `--index-url` | | Specify PyPI mirror source URL |
-| `--extra-index-url` | | Additional PyPI mirror source URL (can be specified multiple times) |
+| `--index-url` | | Specify PyPI mirror source address |
+| `--extra-index-url` | | Additional PyPI mirror source address (can be specified multiple times) |
 | `--no-cache-dir` | | Disable cache |
 | `--requirement` | `-r` | Install from requirements file |
 | `--constraint` | `-c` | Install from constraint file |
-| `--force-reinstall` | | Force reinstallation |
+| `--force-reinstall` | | Force reinstall |
 | `--ignore-installed` | | Ignore already installed packages |
 | `--compile` | | Compile .pyc files after installation |
 | `--no-compile` | | Do not compile .pyc files after installation |
 | `--prefix` | | Install to specified prefix directory |
-| `--src` | | Source code directory used for editable installation |
-| `--config-settings` | | Pass configuration to build backend (can be specified multiple times) |
-| `--no-binary` | | Restrict not to use binary packages (format like `:all:`) |
-| `--only-binary` | | Restrict to use only binary packages (format like `:all:`) |
+| `--src` | | Source directory for editable installs |
+| `--config-settings` | | Configuration to pass to build backend (can be specified multiple times) |
+| `--no-binary` | | Restrict binary packages (format like `:all:`) |
+| `--only-binary` | | Restrict to binary packages only (format like `:all:`) |
 | `--prefer-binary` | | Prefer binary packages |
 | `--build-isolation` | | Enable build isolation |
 | `--no-build-isolation` | | Disable build isolation |
 | `--upgrade-strategy` | | Upgrade strategy: `eager`, `only-if-needed`, `to-satisfy-only` |
-| `--break-system-packages` | | Allow modification of system-managed Python packages |
+| `--break-system-packages` | | Allow modifying Python packages managed by the system package manager |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
 
 ```bash
-# Install single module
+# Install a single module
 epsdk install Weather
 
 # Install multiple modules
 epsdk install Yunhu Weather
 
-# Install from mirror source and upgrade
+# Install from a mirror source and upgrade
 epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
-# Editable mode installation (development mode)
+# Install in editable mode (development mode)
 epsdk install -e ./my-adapter
 ```
 
 ### uninstall
 
-Uninstalls installed ErisPulse module or adapter packages. If no package name is specified, enters interactive uninstall mode.
+Uninstall an installed ErisPulse module or adapter package. If no package name is specified, an interactive uninstallation interface is entered.
 
 **Aliases:** `rm`, `remove`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Description |
-|-----------|-------------|
-| `<package>...` | Package names to uninstall, multiple can be specified |
+| Argument | Description |
+|----------|-------------|
+| `<package>...` | Package names to uninstall, can specify multiple |
 | `--no-uv` | Use pip instead of uv |
 
 **Examples:**
 
 ```bash
-# Uninstall single module
+# Uninstall a single module
 epsdk uninstall Weather
 
 # Uninstall multiple modules
@@ -94,17 +100,17 @@ epsdk uninstall Yunhu Weather
 
 ### upgrade
 
-Upgrades installed ErisPulse components. If no package name is specified, upgrades interactively.
+Upgrade installed ErisPulse components. If no package name is specified, interactive upgrade for all is performed.
 
 **Aliases:** `up`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
-| `[package]...` | | Package names to upgrade, multiple can be specified |
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
+| `[package]...` | | Package names to upgrade, can specify multiple |
 | `--force` | `-f` | Force upgrade, skip confirmation |
-| `--pre` | | Allow upgrade to pre-release versions |
+| `--pre` | | Allow upgrading to pre-release versions |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
@@ -122,29 +128,29 @@ epsdk upgrade -f
 
 ### self-update
 
-Updates the ErisPulse SDK itself to the latest version.
+Update the ErisPulse SDK itself to the latest version.
 
 **Aliases:** `su`, `update`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
-| `[version]` | | Specify target version number to update to |
-| `--pre` | | Allow update to pre-release versions |
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
+| `[version]` | | Specify the target version number to update to |
+| `--pre` | | Allow updating to pre-release versions |
 | `--force` | `-f` | Force update, skip confirmation |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
 
 ```bash
-# Update to latest stable version
+# Update to the latest stable version
 epsdk self-update
 
-# Update to specified version
+# Update to a specific version
 epsdk self-update 1.2.3
 
-# Allow pre-release version
+# Allow pre-release versions
 epsdk self-update --pre
 
 # Force update
@@ -155,23 +161,23 @@ epsdk self-update -f
 
 ## Information Query Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
 | `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | List installed components |
-| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | List remote available components |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | List remotely available components |
 
 ### list
 
-Lists installed ErisPulse modules and adapters.
+List installed ErisPulse modules and adapters.
 
 **Aliases:** `l`, `ls`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--outdated` | `-o` | Only show upgradable packages |
+| `--outdated` | `-o` | Only show packages that can be upgraded |
 
 **Examples:**
 
@@ -185,33 +191,33 @@ epsdk list -t modules
 # List only adapters
 epsdk list -t adapters
 
-# Show only upgradable packages
+# Only show packages that can be upgraded
 epsdk list -o
 ```
 
 ### list-remote
 
-Lists available ErisPulse modules and adapters in the remote repository.
+List ErisPulse modules and adapters available in the remote repository.
 
 **Aliases:** `lsr`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--refresh` | `-r` | Force refresh remote package list cache |
+| `--refresh` | `-r` | Force refresh of the remote package list cache |
 
 **Examples:**
 
 ```bash
-# List all remote available components
+# List all remotely available components
 epsdk list-remote
 
 # List only remote modules
 epsdk list-remote -t modules
 
-# Force refresh cache and list
+# List after forcing cache refresh
 epsdk list-remote -r
 ```
 
@@ -219,22 +225,22 @@ epsdk list-remote -r
 
 ## Runtime Control Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
 | `run` | `r` | `[script] [--reload]` | Run specified script or SDK |
 
 ### run
 
-Runs ErisPulse project script or directly starts the SDK. Supports hot reload mode.
+Run ErisPulse project scripts or start the SDK directly. Supports hot reload mode.
 
 **Aliases:** `r`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Description |
-|-----------|-------------|
-| `[script]` | Script file to run, if not specified, runs the SDK |
-| `--reload` | Enable hot reload mode, automatically restarts on file changes |
+| Argument | Description |
+|----------|-------------|
+| `[script]` | Script file to run, if not specified, SDK runs |
+| `--reload` | Enable hot reload mode, automatically restart on file changes |
 
 **Examples:**
 
@@ -248,7 +254,7 @@ epsdk run main.py
 # Run in hot reload mode (auto restart on file change)
 epsdk run main.py --reload
 
-# SDK hot reload mode
+# SDK in hot reload mode
 epsdk run --reload
 ```
 
@@ -256,23 +262,23 @@ epsdk run --reload
 
 ## Project Management Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
 | `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | Initialize ErisPulse project |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | Create module/adapter scaffold |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | Create module/adapter scaffolding |
 
 ### init
 
-Initializes a new ErisPulse project. Supports interactive and quick mode.
+Initialize a new ErisPulse project. Supports interactive and quick modes.
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
 | `--project-name` | `-n` | Project name |
 | `--quick` | `-q` | Quick mode, skip interactive wizard |
-| `--force` | `-f` | Force overwrite existing configuration file |
-| `--here` | | Initialize in current directory, do not create subdirectory |
+| `--force` | `-f` | Force overwrite existing configuration files |
+| `--here` | | Initialize in current directory, no subdirectory creation |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
@@ -284,7 +290,7 @@ epsdk init
 # Quick initialization
 epsdk init -q -n my_bot
 
-# Force overwrite existing configuration
+# Force overwrite existing config
 epsdk init -f
 
 # Initialize in current directory
@@ -293,25 +299,25 @@ epsdk init --here -n my_bot
 
 ### create
 
-Creates a scaffold project for ErisPulse module or adapter.
+Create scaffolding for an ErisPulse module or adapter.
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
 | `{module,adapter}` | | Type to create: `module` or `adapter` |
 | `--name` | `-n` | Project name (PascalCase) |
 | `--description` | `-d` | Project description |
 | `--author` | `-a` | Author name |
 | `--email` | `-e` | Author email |
 | `--homepage` | | Project homepage URL |
-| `--output` | `-o` | Output directory (default is current directory) |
+| `--output` | `-o` | Output directory (default current directory) |
 | `--force` | `-f` | Force overwrite existing directory |
 
 **Examples:**
 
 ```bash
-# Interactive creation (guided selection of type and filling information)
+# Interactive creation (guided selection of type and input)
 epsdk create
 
 # Directly create Module project
@@ -320,8 +326,8 @@ epsdk create module -n MyModule
 # Directly create Adapter project
 epsdk create adapter -n MyAdapter
 
-# Complete parameters
-epsdk create module -n MyModule -d "module description" -a "author" -e "mail@example.com"
+# Full arguments
+epsdk create module -n MyModule -d "Module Description" -a "Author" -e "mail@example.com"
 
 # Specify output directory
 epsdk create module -n MyModule -o ./projects
@@ -332,22 +338,22 @@ epsdk create module -n MyModule -f
 
 ---
 
-## Language Commands
+## Language Command
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
 | `i18n` | `language`, `lang` | `[lang] [--list/-l]` | View or switch CLI display language |
 
 ### i18n
 
-View current CLI language, list supported languages, or switch display language. If no parameter is specified, enters interactive selection interface.
+View current CLI language, list supported languages, and switch display language. If no argument is specified, an interactive selection interface is entered.
 
 **Aliases:** `language`, `lang`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
 | `[lang]` | | Language code to switch to (e.g., `zh-CN`, `en`, `ja`, `ru`) |
 | `--list` | `-l` | List all supported languages |
 
@@ -371,26 +377,26 @@ epsdk i18n --list
 
 ## Type Stub Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Arguments | Description |
+|---------|---------|-----------|-------------|
 | `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | Generate type stub files to enable IDE completion |
 
 ### types
 
-Scans installed ErisPulse modules and adapters, generates `.pyi` type stub files for them, thus enabling accurate code completion and type checking support in IDE.
+Scan installed ErisPulse modules and adapters, generate `.pyi` type stub files for them, thereby obtaining accurate code completion and type checking support in IDEs.
 
 **Aliases:** `t`, `stub`
 
-**Parameters:**
+**Arguments:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
-| `--output` | `-o` | Output path (default is `ep-stubs/` under current directory) |
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
+| `--output` | `-o` | Output path (default `ep-stubs/` in current directory) |
 | `--force` | | Force overwrite existing stub files |
 | `--adapters-only` | | Generate type stubs only for adapters |
 | `--modules-only` | | Generate type stubs only for modules |
 
-> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive; if both are specified, the latter takes effect.
+> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive. The latter takes effect if specified simultaneously.
 
 **Examples:**
 
@@ -398,10 +404,10 @@ Scans installed ErisPulse modules and adapters, generates `.pyi` type stub files
 # Generate type stubs for all installed modules and adapters
 epsdk types
 
-# Generate only adapter stubs
+# Generate adapter stubs only
 epsdk types --adapters-only
 
-# Output to specified directory
+# Output to a specific directory
 epsdk types -o ./typings
 
 # Force overwrite existing files
@@ -410,14 +416,45 @@ epsdk types --force
 
 ---
 
-## Global Parameters
+## Global Arguments
 
-The following parameters apply to all commands:
+The following arguments apply to all commands:
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Argument | Short Flag | Description |
+|----------|------------|-------------|
 | `--help` | `-h` | Display help information |
-| `--verbose` | `-v` | Display detailed output |
+| `--version` | `-V` | Display version information |
+| `--verbose` | `-v` | Display verbose output (can stack `-vv`/`-vvv`) |
+| `--no-color` | | Disable colored output (suitable for CI / log collection) |
+| `--yes` | `-y` | Auto-confirm all interactive prompts (non-interactive run) |
+
+---
+
+## Environment Diagnosis
+
+### doctor
+
+Diagnose the current CLI runtime environment and output a health report. Used to troubleshoot "why can't I install / connect" type issues.
+
+| Argument | Description |
+|----------|-------------|
+| `--verbose` | Display detailed diagnostic information |
+
+**Checks**:
+- **Python**: Interpreter version and path
+- **Install Backend**: Using `uv` or `pip`
+- **Target Interpreter**: The target Python environment packages are actually installed to
+- **Config File**: Whether `config/config.toml` exists
+- **PyPI Connectivity**: Whether PyPI can be accessed (and displays number of components found)
+- **System Proxy**: Whether a proxy is detected
+
+```bash
+# Run environment diagnosis
+epsdk doctor
+
+# Using alias
+epsdk diag
+```
 
 ---
 
@@ -436,10 +473,10 @@ The interactive interface provides:
 
 ## Common Usage
 
-### Installing Modules
+### Install Modules
 
 ```bash
-# Install single module
+# Install a single module
 epsdk install Weather
 
 # Install multiple modules
@@ -449,7 +486,7 @@ epsdk install Yunhu Weather
 epsdk install Weather -U
 ```
 
-### Listing Components
+### List Components
 
 ```bash
 # List all components
@@ -461,21 +498,21 @@ epsdk list -t adapters
 # List only upgradable components
 epsdk list -o
 
-# View remote available components
+# View remotely available components
 epsdk list-remote
 ```
 
-### Uninstalling Components
+### Uninstall Components
 
 ```bash
-# Uninstall single component
+# Uninstall a single component
 epsdk uninstall Weather
 
 # Uninstall multiple components
 epsdk uninstall Yunhu Weather
 ```
 
-### Upgrading Components
+### Upgrade Components
 
 ```bash
 # Upgrade all components
@@ -488,7 +525,7 @@ epsdk upgrade Weather
 epsdk upgrade -f
 ```
 
-### Running Project
+### Run Project
 
 ```bash
 # Normal run
@@ -498,30 +535,30 @@ epsdk run main.py
 epsdk run main.py --reload
 ```
 
-### Switching Language
+### Switch Language
 
 ```bash
 # Interactive language selection
 epsdk i18n
 
-# Directly switch to English
+# Switch directly to English
 epsdk i18n en
 
 # List supported languages
 epsdk i18n --list
 ```
 
-### Generating Type Stubs
+### Generate Type Stubs
 
 ```bash
 # Generate all type stubs
 epsdk types
 
-# Generate only module type stubs
+# Generate module type stubs only
 epsdk types --modules-only
 ```
 
-### Initializing Project
+### Initialize Project
 
 ```bash
 # Interactive initialization
@@ -531,10 +568,10 @@ epsdk init
 epsdk init -q -n my_bot
 ```
 
-### Creating Scaffold
+### Create Scaffolding
 
 ```bash
-# Interactive creation (guided selection of type and filling information)
+# Interactive creation (guided selection of type and input)
 epsdk create
 
 # Directly create Module project
@@ -543,8 +580,8 @@ epsdk create module -n MyModule
 # Directly create Adapter project
 epsdk create adapter -n MyAdapter
 
-# Complete parameters
-epsdk create module -n MyModule -d "module description" -a "author" -e "mail@example.com"
+# Full arguments
+epsdk create module -n MyModule -d "Module Description" -a "Author" -e "mail@example.com"
 
 # Force overwrite existing directory
 epsdk create module -n MyModule -f

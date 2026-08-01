@@ -76,7 +76,7 @@
       "count": 5,
       "documents": [
         {
-          "title": "Руководство пользователя",
+          "title": "Руководство по использованию",
           "path": "user-guide/README.md",
           "level": 1
         },
@@ -86,12 +86,12 @@
           "level": 1
         },
         {
-          "title": "Описание конфигурационного файла",
+          "title": "Описание файла конфигурации",
           "path": "user-guide/configuration.md",
           "level": 1
         },
         {
-          "title": "Справочник команд CLI",
+          "title": "Справка по командной строке",
           "path": "user-guide/cli-reference.md",
           "level": 1
         },
@@ -340,12 +340,12 @@
           "level": 1
         },
         {
-          "title": "Система международной локализации (i18n)",
+          "title": "Система интернационализации (i18n)",
           "path": "advanced/i18n.md",
           "level": 1
         },
         {
-          "title": "Запуск и ручное управление",
+          "title": "Процесс запуска и ручное управление",
           "path": "advanced/startup.md",
           "level": 1
         }

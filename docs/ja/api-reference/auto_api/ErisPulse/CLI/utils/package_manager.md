@@ -11,6 +11,24 @@ ErisPulse SDK 包管理器
 
 ---
 
+## 函数列表
+
+
+### `_parse_version(version: str)`
+
+将版本号解析为结构化组件（PEP 440 子集，纯标准库）。
+
+与 :meth:`PackageManager._version_key` / :meth:`PackageManager._is_pre_release`
+共用同一解析口径，避免不同正则导致判定分歧（如 ``1.0c2`` 此前在
+``_is_pre_release`` 与 ``_version_key`` 间判定口径不一致）。
+
+- **version** (`str`): 版本号字符串
+**返回值** (`Optional[dict`): ] 含 epoch/release/pre_type/pre_num/post/local 的字典，
+         无法解析时返回 None
+
+---
+
+
 ## 类列表
 
 
@@ -269,6 +287,24 @@ ErisPulse包管理器
 ---
 
 
+##### `_build_install_command(package_spec: str, upgrade: bool = True)`
+
+构建安装命令（uv 优先，回退 pip），供各安装场景复用。
+
+策略：
+1. 优先使用 uv（自动识别独立二进制或 python -m uv），
+   并通过 ``--python`` 显式指定目标解释器，确保安装到用户期望的环境
+   （特别是 epsdk 经 pipx 全局安装、用户包需装到项目 venv 的场景）；
+2. uv 不可用时回退到 pip，目标 Python 解析为当前虚拟环境的解释器，
+   避免安装到全局环境。
+
+- **package_spec** (`str`): 包描述，如 "ErisPulse==1.0.0"
+- **upgrade** (`bool`): 是否添加 --upgrade 参数 (默认: True)
+**返回值** (`Tuple[List[str`): , str]] (完整安装命令列表, 后端名称 uv/pip)
+
+---
+
+
 ##### `_run_pip_command_with_output(args: list[str], description: str)`
 
 执行 pip 类操作 (install/uninstall)。
@@ -277,6 +313,7 @@ ErisPulse包管理器
 1. 优先使用 uv（自动识别独立二进制或 python -m uv）；
    通过 ``--python`` 显式指定目标解释器，确保安装到用户期望的环境
    （特别是 epsdk 经 pipx 全局安装、用户包需装到项目 venv 的场景）。
+   install 子命令复用 :meth:`_build_install_command` 构建完整命令。
 2. uv 不可用或执行失败时，回退到 pip，
    并将目标 Python 解析为当前虚拟环境的解释器，
    避免安装到全局环境。
@@ -306,8 +343,10 @@ uv 创建的 venv 默认不含 pip（uv 自身可装包）。当 uv 不可用或
 
 将版本号解析为可比较的元组键
 
-遵循项目命名规则排序：正式版 > rc > beta > alpha > dev。
-例如 2.4.5-dev.1 先于 2.4.5 正式版。
+遵循项目命名规则排序：正式版 > post > rc > beta > alpha > dev；
+epoch 优先于一切 release 段；本地版本 (+local) 不影响主排序，
+但同一版本号带 local 段者 > 不带 local 段者。
+例如 2.4.5-dev.1 先于 2.4.5 正式版，1.0 < 1.0.post1 < 1.1。
 
 - **version** (`str`): 版本号字符串
 **返回值** (`tuple`): 可直接用于排序/比较的元组键
@@ -441,6 +480,10 @@ uv 创建的 venv 默认不含 pip（uv 自身可装包）。当 uv 不可用或
 ##### `_is_pre_release(version: str)`
 
 判断版本号是否为预发布版本
+
+与 :meth:`_version_key` 复用同一解析口径（:func:`_parse_version`）：
+仅当版本含预发布段 (dev/alpha/beta/rc/c/pre) 时返回 True；
+post 版本 (1.0.post1) 与本地版本 (1.0+local) 不计为预发布。
 
 - **version** (`str`): 版本号字符串
 **返回值** (`bool`): 是预发布版本返回 True

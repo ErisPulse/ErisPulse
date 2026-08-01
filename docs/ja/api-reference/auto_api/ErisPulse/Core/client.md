@@ -242,7 +242,7 @@ Content-Type 值
 ---
 
 
-##### `async close(code: int = 1000, reason: str | None = None)`
+##### `async close(code: int = WS_CLOSE_NORMAL, reason: str | None = None)`
 
 关闭 WebSocket 连接
 

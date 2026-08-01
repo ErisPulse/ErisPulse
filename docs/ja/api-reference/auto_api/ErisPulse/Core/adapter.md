@@ -412,6 +412,15 @@ OneBot12协议事件监听装饰器
 ---
 
 
+##### `_on_framework_config_changed(_data: dict)`
+
+> **内部方法**
+framework 配置变更回调：``handler_max_concurrency`` 变化时失效缓存的信号量，
+下次 ``_get_handler_semaphore`` 将按新值重建。
+
+---
+
+
 ##### `_dispatch_handler_task(func: Callable, data: Any)`
 
 > **内部方法**

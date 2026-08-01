@@ -3616,7 +3616,7 @@ services:
 
 # CLI 命令參考
 
-ErisPulse 命令列工具（`epsdk`）提供專案管理和套件管理功能。
+ErisPulse 命令列工具 (`epsdk`) 提供專案管理和套件管理功能。
 
 > **提示**：所有命令均可透過 `epsdk <命令> --help` 查看詳細的參數說明。
 
@@ -3626,14 +3626,20 @@ ErisPulse 命令列工具（`epsdk`）提供專案管理和套件管理功能。
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `install` | `i`, `add` | `[套件]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | 安裝模組/適配器 |
-| `uninstall` | `rm`, `remove` | `<套件>... [--no-uv]` | 卸載模組/適配器 |
-| `upgrade` | `up` | `[套件]... [--force/-f] [--pre] [--no-uv]` | 升級指定模組或全部 |
-| `self-update` | `su`, `update` | `[版本] [--pre] [--force/-f] [--no-uv]` | 更新 SDK 本身 |
+| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | 安裝模組/配接器 |
+| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | 解除安裝模組/配接器 |
+| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 升級指定模組或全部 |
+| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | 更新 SDK 本身 |
+
+## 診斷命令
+
+| 命令 | 別名 | 參數 | 說明 |
+|------|------|------|------|
+| `doctor` | `diag` | `[--verbose]` | 診斷環境並輸出健康報告 |
 
 ### install
 
-安裝 ErisPulse 模組或適配器套件。若不指定套件名則進入互動式安裝介面。
+安裝 ErisPulse 模組或配接器套件。若不指定套件名稱則進入互動式安裝介面。
 
 **別名：** `i`, `add`
 
@@ -3641,30 +3647,30 @@ ErisPulse 命令列工具（`epsdk`）提供專案管理和套件管理功能。
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `[套件]...` | | 要安裝的套件名稱，可指定多個 |
+| `[package]...` | | 要安裝的套件名稱，可指定多個 |
 | `--upgrade` | `-U` | 安裝時升級到最新版本 |
 | `--pre` | | 允許安裝預發布版本 |
 | `--editable` | `-e` | 以可編輯模式安裝（需指定路徑） |
 | `--user` | | 安裝到使用者 site-packages 目錄 |
-| `--no-deps` | | 不安裝相依性 |
+| `--no-deps` | | 不安裝依賴 |
 | `--target` | `-t` | 安裝到指定目錄 |
-| `--index-url` | | 指定 PyPI 鏡像來源地址 |
-| `--extra-index-url` | | 額外 PyPI 鏡像來源地址（可多次指定） |
+| `--index-url` | | 指定 PyPI 鏡像源位址 |
+| `--extra-index-url` | | 額外 PyPI 鏡像源位址（可多次指定） |
 | `--no-cache-dir` | | 禁用快取 |
 | `--requirement` | `-r` | 從 requirements 檔案安裝 |
 | `--constraint` | `-c` | 從約束檔案安裝 |
 | `--force-reinstall` | | 強制重新安裝 |
 | `--ignore-installed` | | 忽略已安裝的套件 |
-| `--compile` | | 安裝後編譯 .pyc 檔 |
-| `--no-compile` | | 安裝後不編譯 .pyc 檔 |
+| `--compile` | | 安裝後編譯 .pyc 檔案 |
+| `--no-compile` | | 安裝後不編譯 .pyc 檔案 |
 | `--prefix` | | 安裝到指定前綴目錄 |
 | `--src` | | 可編輯安裝時使用的原始碼目錄 |
-| `--config-settings` | | 傳遞給建構後端的設定（可多次指定） |
+| `--config-settings` | | 傳遞給建置後端的設定（可多次指定） |
 | `--no-binary` | | 限制不使用二進位套件（格式如 `:all:`） |
 | `--only-binary` | | 限制僅使用二進位套件（格式如 `:all:`） |
 | `--prefer-binary` | | 優先選擇二進位套件 |
-| `--build-isolation` | | 啟用建構隔離 |
-| `--no-build-isolation` | | 禁用建構隔離 |
+| `--build-isolation` | | 啟用建置隔離 |
+| `--no-build-isolation` | | 禁用建置隔離 |
 | `--upgrade-strategy` | | 升級策略：`eager`、`only-if-needed`、`to-satisfy-only` |
 | `--break-system-packages` | | 允許修改系統套件管理器管理的 Python 套件 |
 | `--no-uv` | | 使用 pip 代替 uv |
@@ -3678,7 +3684,7 @@ epsdk install Weather
 # 安裝多個模組
 epsdk install Yunhu Weather
 
-# 從鏡像來源安裝並升級
+# 從鏡像源安裝並升級
 epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 可編輯模式安裝（開發模式）
@@ -3687,7 +3693,7 @@ epsdk install -e ./my-adapter
 
 ### uninstall
 
-卸載已安裝的 ErisPulse 模組或適配器套件。若不指定套件名則進入互動式卸載介面。
+解除安裝已安裝的 ErisPulse 模組或配接器套件。若不指定套件名稱則進入互動式解除安裝介面。
 
 **別名：** `rm`, `remove`
 
@@ -3695,22 +3701,22 @@ epsdk install -e ./my-adapter
 
 | 參數 | 說明 |
 |------|------|
-| `<套件>...` | 要卸載的套件名稱，可指定多個 |
+| `<package>...` | 要解除安裝的套件名稱，可指定多個 |
 | `--no-uv` | 使用 pip 代替 uv |
 
 **範例：**
 
 ```bash
-# 卸載單個模組
+# 解除安裝單個模組
 epsdk uninstall Weather
 
-# 卸載多個模組
+# 解除安裝多個模組
 epsdk uninstall Yunhu Weather
 ```
 
 ### upgrade
 
-升級已安裝的 ErisPulse 組件。不指定套件名則互動式升級全部。
+升級已安裝的 ErisPulse 元件。不指定套件名稱則互動式升級全部。
 
 **別名：** `up`
 
@@ -3718,7 +3724,7 @@ epsdk uninstall Yunhu Weather
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `[套件]...` | | 要升級的套件名稱，可指定多個 |
+| `[package]...` | | 要升級的套件名稱，可指定多個 |
 | `--force` | `-f` | 強制升級，跳過確認 |
 | `--pre` | | 允許升級到預發布版本 |
 | `--no-uv` | | 使用 pip 代替 uv |
@@ -3746,7 +3752,7 @@ epsdk upgrade -f
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `[版本]` | | 指定要更新的目標版本號 |
+| `[version]` | | 指定要更新的目標版本號 |
 | `--pre` | | 允許更新到預發布版本 |
 | `--force` | `-f` | 強制更新，跳過確認 |
 | `--no-uv` | | 使用 pip 代替 uv |
@@ -3773,12 +3779,12 @@ epsdk self-update -f
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | 列出已安裝的組件 |
-| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | 列出遠端可用的組件 |
+| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | 列出已安裝的元件 |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | 列出遠端可用的元件 |
 
 ### list
 
-列出已安裝的 ErisPulse 模組和適配器。
+列出已安裝的 ErisPulse 模組和配接器。
 
 **別名：** `l`, `ls`
 
@@ -3792,13 +3798,13 @@ epsdk self-update -f
 **範例：**
 
 ```bash
-# 列出所有已安裝的組件
+# 列出所有已安裝的元件
 epsdk list
 
 # 只列出模組
 epsdk list -t modules
 
-# 只列出適配器
+# 只列出配接器
 epsdk list -t adapters
 
 # 只顯示可升級的套件
@@ -3807,7 +3813,7 @@ epsdk list -o
 
 ### list-remote
 
-列出遠端倉庫中可用的 ErisPulse 模組和適配器。
+列出遠端倉庫中可用的 ErisPulse 模組和配接器。
 
 **別名：** `lsr`
 
@@ -3816,32 +3822,32 @@ epsdk list -o
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
 | `--type` | `-t` | 指定類型：`modules`、`adapters`、`all`（預設） |
-| `--refresh` | `-r` | 強制刷新遠端套件列表快取 |
+| `--refresh` | `-r` | 強制重新整理遠端套件列表快取 |
 
 **範例：**
 
 ```bash
-# 列出所有遠端可用組件
+# 列出所有遠端可用元件
 epsdk list-remote
 
 # 只列出遠端模組
 epsdk list-remote -t modules
 
-# 強制刷新快取後列出
+# 強制重新整理快取後列出
 epsdk list-remote -r
 ```
 
 ---
 
-## 運行控制命令
+## 執行控制命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `run` | `r` | `[script] [--reload]` | 運行指定腳本或 SDK |
+| `run` | `r` | `[script] [--reload]` | 執行指定腳本或 SDK |
 
 ### run
 
-運行 ErisPulse 專案腳本或直接啟動 SDK。支援熱重載模式。
+執行 ErisPulse 專案腳本或直接啟動 SDK。支援熱重載模式。
 
 **別名：** `r`
 
@@ -3849,19 +3855,19 @@ epsdk list-remote -r
 
 | 參數 | 說明 |
 |------|------|
-| `[script]` | 要運行的腳本檔案，不指定則運行 SDK |
-| `--reload` | 啟用熱重載模式，監控檔案變更自動重啟 |
+| `[script]` | 要執行的腳本檔案，不指定則執行 SDK |
+| `--reload` | 啟用熱重載模式，監控檔案變化自動重啟 |
 
 **範例：**
 
 ```bash
-# 直接運行 SDK
+# 直接執行 SDK
 epsdk run
 
-# 運行指定腳本檔案
+# 執行指定腳本檔案
 epsdk run main.py
 
-# 熱重載模式運行（檔案變更自動重啟）
+# 熱重載模式執行（檔案變更自動重啟）
 epsdk run main.py --reload
 
 # SDK 熱重載模式
@@ -3875,7 +3881,7 @@ epsdk run --reload
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
 | `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | 初始化 ErisPulse 專案 |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 建立模組/適配器腳手架 |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 建立模組/配接器腳手架 |
 
 ### init
 
@@ -3887,8 +3893,8 @@ epsdk run --reload
 |------|--------|------|
 | `--project-name` | `-n` | 專案名稱 |
 | `--quick` | `-q` | 快速模式，跳過互動式嚮導 |
-| `--force` | `-f` | 強制覆蓋現有設定檔案 |
-| `--here` | | 在目前目錄初始化，不建立子目錄 |
+| `--force` | `-f` | 強制覆蓋現有設定檔 |
+| `--here` | | 在當前目錄初始化，不建立子目錄 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
 **範例：**
@@ -3903,13 +3909,13 @@ epsdk init -q -n my_bot
 # 強制覆蓋已有設定
 epsdk init -f
 
-# 在目前目錄初始化
+# 在當前目錄初始化
 epsdk init --here -n my_bot
 ```
 
 ### create
 
-建立 ErisPulse 模組或適配器的腳手架專案。
+建立 ErisPulse 模組或配接器的腳手架專案。
 
 **參數：**
 
@@ -3919,9 +3925,9 @@ epsdk init --here -n my_bot
 | `--name` | `-n` | 專案名稱（PascalCase） |
 | `--description` | `-d` | 專案描述 |
 | `--author` | `-a` | 作者名稱 |
-| `--email` | `-e` | 作者電子信箱 |
+| `--email` | `-e` | 作者電子郵件 |
 | `--homepage` | | 專案首頁 URL |
-| `--output` | `-o` | 輸出目錄（預設目前目錄） |
+| `--output` | `-o` | 輸出目錄（預設當前目錄） |
 | `--force` | `-f` | 強制覆蓋已存在的目錄 |
 
 **範例：**
@@ -3952,11 +3958,11 @@ epsdk create module -n MyModule -f
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `i18n` | `language`, `lang` | `[語言] [--list/-l]` | 查看或切換 CLI 顯示語言 |
+| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | 查看或切換 CLI 顯示語言 |
 
 ### i18n
 
-查看目前 CLI 語言、列出支援的語言、切換顯示語言。若不指定參數則進入互動式選擇介面。
+查看當前 CLI 語言、列出支援的語言、切換顯示語言。若不指定參數則進入互動式選擇介面。
 
 **別名：** `language`, `lang`
 
@@ -3964,7 +3970,7 @@ epsdk create module -n MyModule -f
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `[語言]` | | 要切換的語言代碼（如 `zh-CN`、`en`、`ja`、`ru`） |
+| `[lang]` | | 要切換的語言代碼（如 `zh-CN`、`en`、`ja`、`ru`） |
 | `--list` | `-l` | 列出所有支援的語言 |
 
 **範例：**
@@ -3989,11 +3995,11 @@ epsdk i18n --list
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `types` | `t`, `stub` | `[--output/-o <路徑>] [--force] [--adapters-only] [--modules-only]` | 生成類型存根檔案以啟用 IDE 自動完成 |
+| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | 產生類型存根檔案以啟用 IDE 自動補全 |
 
 ### types
 
-掃描已安裝的 ErisPulse 模組和適配器，為它們生成 `.pyi` 類型存根檔案，從而在 IDE 中獲得準確的程式碼自動完成與類型檢查支援。
+掃描已安裝的 ErisPulse 模組和配接器，為它們產生 `.pyi` 類型存根檔案，從而在 IDE 中獲得準確的程式碼自動補全與類型檢查支援。
 
 **別名：** `t`, `stub`
 
@@ -4001,20 +4007,20 @@ epsdk i18n --list
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `--output` | `-o` | 輸出路徑（預設目前目錄下的 `ep-stubs/`） |
+| `--output` | `-o` | 輸出路徑（預設當前目錄下的 `ep-stubs/`） |
 | `--force` | | 強制覆蓋已存在的存根檔案 |
-| `--adapters-only` | | 僅生成適配器的類型存根 |
-| `--modules-only` | | 僅生成模組的類型存根 |
+| `--adapters-only` | | 僅產生配接器的類型存根 |
+| `--modules-only` | | 僅產生模組的類型存根 |
 
 > **注意：** `--adapters-only` 與 `--modules-only` 互斥，同時指定時後者生效。
 
 **範例：**
 
 ```bash
-# 為所有已安裝的模組和適配器生成類型存根
+# 為所有已安裝的模組和配接器產生類型存根
 epsdk types
 
-# 僅生成適配器存根
+# 僅產生配接器存根
 epsdk types --adapters-only
 
 # 輸出到指定目錄
@@ -4032,21 +4038,52 @@ epsdk types --force
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `--help` | `-h` | 顯示幫助資訊 |
-| `--verbose` | `-v` | 顯示詳細輸出 |
+| `--help` | `-h` | 顯示說明資訊 |
+| `--version` | `-V` | 顯示版本資訊 |
+| `--verbose` | `-v` | 顯示詳細輸出（可疊加 `-vv`/`-vvv`） |
+| `--no-color` | | 禁用彩色輸出（適合 CI / 日誌採集） |
+| `--yes` | `-y` | 自動確認所有互動提示（非互動式執行） |
+
+---
+
+## 環境診斷
+
+### doctor
+
+診斷當前 CLI 執行環境，輸出健康報告。用於排查"為什麼裝不上 / 連不上"類問題。
+
+| 參數 | 說明 |
+|------|------|
+| `--verbose` | 顯示詳細診斷資訊 |
+
+**檢查項**：
+- **Python**：直譯器版本與路徑
+- **安裝後端**：使用 `uv` 還是 `pip`
+- **目標直譯器**：套件實際安裝到的目標 Python 環境
+- **設定檔**：`config/config.toml` 是否存在
+- **PyPI 連通性**：能否存取 PyPI（並顯示發現的元件數）
+- **系統代理**：是否偵測到代理
+
+```bash
+# 執行環境診斷
+epsdk doctor
+
+# 使用別名
+epsdk diag
+```
 
 ---
 
 ## 互動式安裝
 
-執行 `epsdk install` 不指定套件名時進入互動式安裝：
+執行 `epsdk install` 不指定套件名稱時進入互動式安裝：
 
 ```bash
 epsdk install
 ```
 
 互動介面提供：
-1. 適配器選擇
+1. 配接器選擇
 2. 模組選擇
 3. 自訂安裝
 
@@ -4065,49 +4102,49 @@ epsdk install Yunhu Weather
 epsdk install Weather -U
 ```
 
-### 列出組件
+### 列出元件
 
 ```bash
-# 列出所有組件
+# 列出所有元件
 epsdk list
 
-# 只列出適配器
+# 只列出配接器
 epsdk list -t adapters
 
-# 只列出可升級的組件
+# 只列出可升級的元件
 epsdk list -o
 
-# 查看遠端可用組件
+# 查看遠端可用元件
 epsdk list-remote
 ```
 
-### 卸載組件
+### 解除安裝元件
 
 ```bash
-# 卸載單個組件
+# 解除安裝單個元件
 epsdk uninstall Weather
 
-# 卸載多個組件
+# 解除安裝多個元件
 epsdk uninstall Yunhu Weather
 ```
 
-### 升級組件
+### 升級元件
 
 ```bash
-# 升級所有組件
+# 升級所有元件
 epsdk upgrade
 
-# 升級指定組件
+# 升級指定元件
 epsdk upgrade Weather
 
 # 強制升級
 epsdk upgrade -f
 ```
 
-### 運行專案
+### 執行專案
 
 ```bash
-# 普通運行
+# 普通執行
 epsdk run main.py
 
 # 熱重載模式
@@ -4127,13 +4164,13 @@ epsdk i18n en
 epsdk i18n --list
 ```
 
-### 生成類型存根
+### 產生類型存根
 
 ```bash
-# 生成所有類型存根
+# 產生所有類型存根
 epsdk types
 
-# 僅生成模組類型存根
+# 僅產生模組類型存根
 epsdk types --modules-only
 ```
 
@@ -6601,15 +6638,15 @@ ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支�
 - **裝飾器路由**：支援 `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` 裝飾器快捷註冊
 - **自動注入**：路由處理器無需匯入 FastAPI 類型，框架自動注入抽象物件
 - **路由分組**：支援帶前綴和版本號的 `RouteGroup`
-- **路由中介軟體**：支援 glob 模式匹配的請求攔截
+- **路由中間件**：支援 glob 模式匹配的請求攔截
 - **速率限制**：內建滑動視窗限流
 - **CORS 支援**：一鍵開啟跨域資源共享
-- **安全頭**：自動新增安全回應頭
+- **安全頭**：自動添加安全回應頭
 - **自動文件**：基於 OpenAPI 的互動式文件
 - **WebSocket 支援**：完整的 WebSocket 連線管理、自訂認證和生命週期鉤子
 - **生命週期整合**：與 ErisPulse 生命週期系統深度整合
 - **SSL/TLS 支援**：支援 HTTPS 和 WSS 安全連線
-- **首頁入口**：支援模組在根路由 `/` 註冊快捷入口按鈕，支援國際化
+- **主頁入口**：支援模組在根路由 `/` 註冊快捷入口按鈕，支援國際化
 
 ## 抽象類型
 
@@ -6621,9 +6658,9 @@ ErisPulse 提供了服務端抽象類型，使模組無需直接依賴 FastAPI�
 | `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 連線封裝，額外提供生命週期鉤子 |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 斷開異常 |
 
-> `WebSocketConnection` 繼承自 `WebSocketConnectionBase`，與用戶端 WebSocket (`ClientWebSocket`) 共享相同的 send/receive/iter/close 介面。用戶端和服務端 WebSocket 可以使用相同的業務邏輯代碼。
+> `WebSocketConnection` 繼承自 `WebSocketConnectionBase`，與客戶端 WebSocket (`ClientWebSocket`) 共享相同的 send/receive/iter/close 介面。客戶端和服務端 WebSocket 可以使用相同的業務邏輯程式碼。
 >
-> 透過 `.raw` 屬性可存取底層 FastAPI 原生物件。直接使用 FastAPI 類型的代碼也完全相容。
+> 透過 `.raw` 屬性可存取底層 FastAPI 原生物件。直接使用 FastAPI 類型的程式碼也完全相容。
 
 ## 裝飾器路由（推薦）
 
@@ -6670,7 +6707,7 @@ async def websocket_handler(ws):
 async def chat(ws: WebSocketConnection):
     @ws.on_disconnect
     async def on_disconnect(ws, reason="unknown"):
-        print(f"用戶端斷開: {reason}")
+        print(f"用戶斷開: {reason}")
 
     @ws.on_error
     async def on_error(ws, error=""):
@@ -6714,7 +6751,7 @@ router.register_http_route(
     handler=data_handler,
     methods=["POST"],
     rate_limit="10/minute",
-    summary="數據接口",
+    summary="數據介面",
     tags=["API"],
 )
 ```
@@ -6755,14 +6792,14 @@ router.register_websocket(
 | `module_name` | 模組名稱（必須） | - |
 | `path` | WebSocket 路徑 | - |
 | `handler` | 處理函數 | - |
-| `auth_handler` | 認證函數，傳回 `False` 會自動關閉連線 | `None` |
+| `auth_handler` | 認證函數，回傳 `False` 會自動關閉連線 | `None` |
 | `auto_accept` | 是否自動 `accept()` | `True` |
 
 > **推薦**：使用 `auth_handler` 進行連線確認，而非關閉 `auto_accept`。僅在你需要完全控制連線流程時才設定 `auto_accept=False`。
 
 ## WebSocket 生命週期鉤子
 
-`WebSocketConnection` 提供了斷開連線和錯誤的回呼註冊，無需手動 try/catch：
+`WebSocketConnection` 提供了斷開連線和錯誤的回調註冊，無需手動 try/catch：
 
 ```python
 from ErisPulse.Core import WebSocketConnection
@@ -6801,9 +6838,9 @@ async def create_user(request):
 # 實際路徑: /my_module/v1/users
 ```
 
-## 路由中介軟體
+## 路由中間件
 
-中介軟體支援 glob 模式匹配路徑：
+中間件支援 glob 模式匹配路徑：
 
 ```python
 @router.middleware("/my_module/*")
@@ -6816,6 +6853,31 @@ async def auth_middleware(request, call_next):
 @router.middleware("/my_module/admin/*")
 async def admin_middleware(request, call_next):
     return await call_next(request)
+```
+
+## 請求關聯 ID（X-Request-ID）
+
+從 2.7.0 起，每個 HTTP 請求都會攜帶一個 `X-Request-ID` 關聯 ID，用於日誌 / 鏈路追蹤串聯：
+
+- **生成規則**：優先沿用客戶端傳入的 `X-Request-ID` 請求頭（分散式追蹤場景）；否則自產生 UUID
+- **回應頭**：回應會回寫 `X-Request-ID`，方便客戶端把請求與日誌對應
+- **生命週期事件**：`server.request` 與 `server.response` 事件資料中新增 `request_id` 欄位
+
+```python
+# 在模組中監聽請求事件，按 request_id 串聯請求-回應
+@sdk.lifecycle.on("server.request")
+async def on_request(data):
+    print(f"[{data['request_id']}] {data['method']} {data['path']}")
+
+@sdk.lifecycle.on("server.response")
+async def on_response(data):
+    print(f"[{data['request_id']}] -> {data['status_code']}")
+```
+
+客戶端可自訂 ID 以便跨服務追蹤：
+
+```bash
+curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
 ```
 
 ## 速率限制
@@ -6834,7 +6896,7 @@ async def submit_data(request):
 
 速率限制格式：`{次數}/{時間視窗}`，如 `10/minute`、`100/hour`。
 
-## CORS 設定
+## CORS 配置
 
 ```python
 router.setup_cors(
@@ -6844,7 +6906,7 @@ router.setup_cors(
 )
 ```
 
-也可透過 `config.toml` 設定：
+也可透過 `config.toml` 配置：
 
 ```toml
 [router.cors]
@@ -6859,9 +6921,9 @@ allow_headers = ["*"]
 router.setup_security_headers()
 ```
 
-自動新增 `X-Content-Type-Options`、`X-Frame-Options`、`X-XSS-Protection` 等安全頭。
+自動添加 `X-Content-Type-Options`、`X-Frame-Options`、`X-XSS-Protection` 等安全頭。
 
-也可透過 `config.toml` 設定：
+也可透過 `config.toml` 配置：
 
 ```toml
 [router.security]
@@ -6886,11 +6948,11 @@ router.set_docs_info(
 
 ## 路徑處理
 
-路由路徑會自動新增模組名稱作為前綴，避免衝突：
+路由路徑會自動添加模組名稱作為前綴，避免衝突：
 
 ```python
 # 註冊路徑 "/api" 到模組 "my_module"
-# 實際訪問路徑為 "/my_module/api"
+# 實際存取路徑為 "/my_module/api"
 router.register_http_route("my_module", "/api", handler)
 ```
 
@@ -6902,7 +6964,7 @@ router.register_http_route("my_module", "/api", handler)
 
 ```
 GET /health
-# 返回:
+# 回傳:
 {"status": "ok", "service": "ErisPulse Router"}
 ```
 
@@ -6910,14 +6972,14 @@ GET /health
 
 ```
 GET /
-# 返回 ErisPulse 品牌頁
+# 回傳 ErisPulse 品牌頁
 ```
 
-根路由 `/` 顯示 ErisPulse 品牌頁面，自動偵測 Dashboard 可用性並新增入口按鈕。
+根路由 `/` 顯示 ErisPulse 品牌頁面，自動檢測 Dashboard 可用性並添加入口按鈕。
 
-## 首頁入口
+## 主頁入口
 
-路由管理器允許外部模組在根路由 `/` 上註冊快捷入口按鈕，方便用戶快速存取各模組的管理頁面。
+路由管理器允許外部模組在根路由 `/` 上註冊快捷入口按鈕，方便使用者快速存取各模組的管理頁面。
 
 ### 註冊入口
 
@@ -6935,7 +6997,7 @@ router.register_home_entry(
     icon_svg='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>',
 )
 
-# 支援國際化的註冊（專案 i18n 字典格式）
+# 支援國際化的註冊（項目 i18n 字典格式）
 router.register_home_entry(
     name={"i18n": "mymodule.home.entry", "default": "我的面板"},
     url="/mymodule/admin",
@@ -6947,12 +7009,12 @@ router.register_home_entry(
 | 參數 | 類型 | 說明 | 必填 |
 |------|------|------|------|
 | `name` | `str` / `dict` | 按鈕顯示文字；傳入 `{"i18n": "key", "default": "文字"}` 字典時使用國際化 | 是 |
-| `url` | `str` | 按鈕連結地址 | 是 |
+| `url` | `str` | 按鈕連結位址 | 是 |
 | `icon_svg` | `str` | 可選 SVG 圖示標記 | 否 |
 
 ### Dashboard 自動註冊
 
-當偵測到 `sdk.Dashboard` 可用時，路由管理器自動在入口列表首位新增 Dashboard 按鈕，無需手動註冊。
+當檢測到 `sdk.Dashboard` 可用時，路由管理器自動在入口列表首位添加 Dashboard 按鈕，無需手動註冊。
 
 ## 生命週期整合
 
@@ -6980,21 +7042,21 @@ async def on_server_stop(event):
 
 ## 相關文件
 
-- [HTTP 客戶端](http-client.md) - 使用內建 HTTP 客戶端發送請求
-- [模組開發指南](../developer-guide/modules/getting-started.md) - 了解模組路由註冊
-- [最佳實踐](../developer-guide/modules/best-practices.md) - 路由使用建議
+- [HTTP 客戶端](docs/zh-TW/http-client.md) - 使用內建 HTTP 客戶端發送請求
+- [模組開發指南](docs/zh-TW/developer-guide/modules/getting-started.md) - 了解模組路由註冊
+- [最佳實踐](docs/zh-TW/developer-guide/modules/best-practices.md) - 路由使用建議
 
 
 ### 生命周期管理
 
 # 生命週期管理
 
-ErisPulse 提供統一的鉤子/生命週期系統，用於監控系統各元件的運行狀態，以及實現審計、統計、自定義邏輯等擴充功能。
+ErisPulse 提供統一的鉤子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自定義邏輯等擴展功能。
 
 系統支援三種觸發方式：
 - `await lifecycle.emit("event", data)` — 精簡版，傳遞任意資料
 - `lifecycle.emit_sync("event", data)` — 同步版（用於非異步上下文）
-- `await lifecycle.submit_event("event", ...)` — 相容舊版，自動建構標準事件格式
+- `await lifecycle.submit_event("event", ...)` — 兼容舊版，自動建構標準事件格式
 
 ## 事件處理機制
 
@@ -7039,7 +7101,7 @@ async def second_handler(data):
 - 觸發 `module.load` 時，也會觸發 `module`
 - 觸發 `adapter.event.receive` 時，也會觸發 `adapter.event` 和 `adapter`
 
-### 通配符
+### 萬用字元
 
 註冊 `*` 捕獲所有事件：
 
@@ -7048,6 +7110,32 @@ async def second_handler(data):
 async def on_anything(data):
     print(f"收到事件: {data}")
 ```
+
+### 一次性註冊（once）
+
+從 2.7.0 起，`lifecycle.once()` 註冊的處理器在**觸發一次後自動註銷**，適合「首次就緒」這類一次性鉤子：
+
+```python
+@sdk.lifecycle.once("core.init.complete")
+async def on_first_ready(data):
+    print("首次就緒，後續不再觸發")
+```
+
+- 與 `on()` 同優先級參數語義（`priority` 數值越大越先執行）
+- 自動註銷，無需手動 `unregister`
+- 同步/異步處理器均支援
+
+### 監聽者查詢（has_handlers）
+
+熱路徑短路場景可先用 `has_handlers()` 判斷是否有監聽者，避免無謂的事件遍歷與任務調度：
+
+```python
+if sdk.lifecycle.has_handlers("message.sending"):
+    await sdk.lifecycle.emit("message.sending", send_ctx)
+```
+
+- 覆蓋**精確事件名、萬用字元 `*`、父級事件**三種匹配
+- 無任何監聽者時返回 `False`，可安全跳過 `emit`
 
 ## 鉤子斷點一覽
 
@@ -7120,19 +7208,19 @@ def log_unhandled(data):
         print(f"[未處理] {data['platform']}/{data['event_type']}")
 ```
 
-### 訊息傳送
+### 訊息發送
 
 | 鉤子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `message.sending` | 訊息即將傳送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | 訊息傳送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | 訊息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | 訊息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
-**範例：訊息傳送審計**
+**範例：訊息發送審計**
 
 ```python
 @sdk.lifecycle.on("message.sending")
 def log_sending(data):
-    print(f"[傳送] -> {data['platform']}/{data['detail_type']}/{data['target_id']} via {data['method']}")
+    print(f"[發送] -> {data['platform']}/{data['detail_type']}/{data['target_id']} via {data['method']}")
 ```
 
 ### 指令系統
@@ -7155,7 +7243,7 @@ def count_commands(data):
 | 鉤子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTP 回應傳送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.response` | HTTP 響應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
 **範例：請求日誌**
 
@@ -7225,7 +7313,7 @@ STANDARD_EVENTS = {
 |------|------|
 | `await lifecycle.emit(event, data=None)` | 異步觸發，處理器返回非 None 可修改 data |
 | `lifecycle.emit_sync(event, data=None)` | 同步觸發，異步處理器以 create_task 調度 |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 相容舊版，自動建構標準事件格式 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 兼容舊版，自動建構標準事件格式 |
 
 ### 工具
 
@@ -7610,14 +7698,14 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 
 # 國際化 (i18n) 系統
 
-ErisPulse v2.5.0 起內置了完整的國際化支援。框架核心及 CLI 界面均可根據您的系統語言自動切換顯示文本，也支援外部模組註冊自己的翻譯。
+ErisPulse v2.5.0 起內建了完整的國際化支援。框架核心及 CLI 界面均可根據您的系統語言自動切換顯示文字，也支援外部模組註冊自己的翻譯。
 
 ## 支援的語言
 
 | 語言 | 代碼 | 說明 |
 |------|------|------|
 | 簡體中文 | `zh-CN` | 預設語言（框架原生語言） |
-| 繁體中文 | `zh-TW` | 繁體中文（香港/澳門/台灣） |
+| 繁體中文 | `zh-TW` | 繁體中文（香港/澳門/臺灣） |
 | English | `en` | 英文（通用回退語言） |
 | 日本語 | `ja` | 日文 |
 | Русский | `ru` | 俄文 |
@@ -7635,7 +7723,7 @@ epsdk run
 ERISPULSE_LANG=ja epsdk run
 ```
 
-### 透過配置文件切換
+### 透過設定檔案切換
 
 在 `config/config.toml` 中新增：
 
@@ -7644,7 +7732,7 @@ ERISPULSE_LANG=ja epsdk run
 language = "zh-TW"
 ```
 
-設為 `"auto"`（預設值）則自動檢測系統語言。
+設為 `"auto"`（預設值）則自動偵測系統語言。
 
 ### 在程式碼中手動切換
 
@@ -7655,25 +7743,25 @@ from ErisPulse import i18n
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
-# 重置為自動檢測
+# 重置為自動偵測
 i18n.reset_language()
 ```
 
 ---
 
-## 語言檢測機制
+## 語言偵測機制
 
-框架按以下優先順序檢測使用者語言：
+框架按以下優先級偵測使用者語言：
 
-1. **環境變數 `ERISPULSE_LANG`** — 最高優先順序，用於測試和臨時切換
+1. **環境變數 `ERISPULSE_LANG`** — 最高優先級，用於測試和暫時切換
 2. **Windows API** — `GetUserDefaultLocaleName`（僅 Windows，不受 Git Bash 等工具覆蓋 `LANG` 的影響）
 3. **環境變數** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG`（Unix/macOS 標準）
 4. **系統 Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
 5. **兜底** — en（英文）
 
-### 就近映射原則
+### 就近對應原則
 
-當檢測到的語言不是精確匹配時，按就近原則映射到支援的語言：
+當偵測到的語言不是精確匹配時，按就近原則對應到支援的語言：
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **繁體中文**
 - 其他所有 `zh-*`（如 `zh-CN`, `zh-SG`）→ **簡體中文**
@@ -7686,11 +7774,11 @@ i18n.reset_language()
 
 ## 在模組中使用 i18n
 
-您可以為自己的模組註冊翻譯文本，讓您的模組也支援多語言。
+您可以為自己的模組註冊翻譯文字，讓您的模組也支援多語言。
 
-### 推薦寫法：透過 I18nClass 聲明翻譯鍵（v2.7.0+）
+### 推薦寫法：透過 I18nClass 宣告翻譯鍵（v2.7.0+）
 
-從 v2.7.0 起，模組/適配器可以像宣告 `ConfigClass` 一樣，透過嵌套類 `I18nClass` 聲明翻譯鍵。框架會在載入時**自動註冊**所有宣告的翻譯鍵，無需手動呼叫 `i18n.register()`。
+從 v2.7.0 起，模組/適配器可以像宣告 `ConfigClass` 一樣，透過巢狀類 `I18nClass` 宣告翻譯鍵。框架會在載入時**自動註冊**所有宣告的翻譯鍵，無需手動呼叫 `i18n.register()`。
 
 ```python
 from dataclasses import dataclass, field
@@ -7699,7 +7787,7 @@ from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey
 
 
 class MyModule(BaseModule):
-    # 配置類（可選）
+    # 設定類別（可選）
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
@@ -7710,8 +7798,8 @@ class MyModule(BaseModule):
             },
         )
 
-    # 翻譯鍵集合類（可選）
-    # 聲明的鍵會被框架自動註冊，優先級早於 ConfigClass 生成預設配置
+    # 翻譯鍵集合類別（可選）
+    # 宣告的鍵會被框架自動註冊，優先級早於 ConfigClass 產生預設設定
     class I18nClass(BaseI18n):
         # 屬性名自動拼接為完整鍵路徑：<模組名>.<屬性名>
         welcome_msg: I18nKey = I18nKey(
@@ -7736,7 +7824,7 @@ class MyModule(BaseModule):
         custom: I18nKey = I18nKey(
             key="mymodule.deep.nested.key",
             default="Default text",
-            zh_CN="預設文本",
+            zh_CN="預設文字",
             zh_TW="預設文本",
             en="Default text",
             ja="デフォルトテキスト",
@@ -7746,19 +7834,19 @@ class MyModule(BaseModule):
 
 #### 為什麼推薦 I18nClass？
 
-| 场景 | 手動 i18n.register() | I18nClass 聲明式 |
+| 場景 | 手動 i18n.register() | I18nClass 宣告式 |
 |------|-----------------------|------------------|
-| 配置描述引用的 i18n 鍵 | 需手動註冊，且要趕在配置生成前 | 框架自動在配置生成前註冊 |
+| 設定描述引用的 i18n 鍵 | 需手動註冊，且要趕在設定產生前 | 框架自動在設定產生前註冊 |
 | 多語言翻譯宣告 | 散落在各個 on_load() 中 | 集中在類裡，一目了然 |
 | 鍵名命名一致性 | 容易拼寫錯誤 | 屬性名作為鍵名後綴，IDE 可補全 |
-| 卸載時清理 | 需手動 unregister_domain() | 框架使用統一 domain 註冊 |
+| 解載時清理 | 需手動 unregister_domain() | 框架使用統一 domain 註冊 |
 
 #### I18nClass 的鍵路徑規則
 
 - **預設**：使用 ``<模組註冊名>.<屬性名>`` 作為完整鍵路徑
   - 範例：模組名為 ``MyModule``，屬性 ``welcome`` → 鍵路徑 ``MyModule.welcome``
 - **顯式**：透過 ``I18nKey(key="...")`` 參數指定任意點分路徑
-  - 適合深層嵌套的鍵名（如 ``mymodule.config.basic.token``）
+  - 適合深層巢狀的鍵名（如 ``mymodule.config.basic.token``）
 
 #### 在適配器中使用
 
@@ -7775,13 +7863,13 @@ class MyAdapter(BaseAdapter):
         endpoint: str = field(
             default="",
             metadata={
-                # 配置描述引用了 adapter.MyAdapter.endpoint 鍵
+                # 設定描述引用了 adapter.MyAdapter.endpoint 鍵
                 "description": {"i18n": "MyAdapter.endpoint", "default": "API 位址"},
             },
         )
 
     class I18nClass(BaseI18n):
-        # 集中宣告配置描述引用的鍵與其他業務鍵的多語言譯文
+        # 集中宣告設定描述引用的鍵與其他業務鍵的多語言譯文
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
             zh_CN="API 位址",
@@ -7792,11 +7880,11 @@ class MyAdapter(BaseAdapter):
         )
 ```
 
-適配器的 `I18nClass` 會在 `__init__` 階段（即配置模板生成之前）自動註冊，確保配置描述引用的 i18n 鍵已可用。
+適配器的 `I18nClass` 會在 `__init__` 階段（即設定範本產生前）自動註冊，確保設定描述引用的 i18n 鍵已可用。
 
-### 手動註冊自定義翻譯（舊寫法）
+### 手動註冊自訂翻譯（舊寫法）
 
-如果不使用 `I18nClass`，也可以直接呼叫 `i18n.register()` 註冊翻譯文本。
+如果不使用 `I18nClass`，也可以直接呼叫 `i18n.register()` 註冊翻譯文字。
 
 ```python
 from ErisPulse import i18n
@@ -7822,16 +7910,16 @@ i18n.register("en", {
 from ErisPulse import i18n
 
 # 簡單翻譯
-i18n.t("my_module.welcome")  # 自動使用當前語言
+i18n.t("my_module.welcome")  # 自動使用目前語言
 
 # 帶格式化參數
 i18n.t("my_module.hello", name="Alice")
 
-# 指定預設值（翻譯鍵不存在時返回）
-i18n.t("my_module.unknown_key", default="預設文本")
+# 指定預設值（翻譯鍵不存在時傳回）
+i18n.t("my_module.unknown_key", default="預設文字")
 ```
 
-### 在模組類中使用
+### 在模組類別中使用
 
 ```python
 from dataclasses import dataclass, field
@@ -7852,7 +7940,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # 實時讀取配置（每次訪問都反映最新值）
+        # 即時讀取設定（每次存取都反映最新值）
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -7865,33 +7953,33 @@ class MyModule(BaseModule):
         pass
 ```
 
-### 卸載翻譯
+### 解載翻譯
 
 ```python
-# 卸載整個域的翻譯
+# 解載整個域的翻譯
 i18n.unregister_domain("my_module")
 ```
 
 ---
 
-## 配置欄位多語言
+## 設定欄位多語言
 
-從 v2.5.2 起，配置 Schema 全面支援 i18n。所有使用者可見的文本欄位均可引用 i18n 鍵，WebUI 和其他消費者會自動根據當前語言解析為對應文本。
+從 v2.5.2 起，設定 Schema 全面支援 i18n。所有使用者可見的文字欄位均可引用 i18n 鍵，WebUI 和其他消費者會自動根據目前語言解析為對應文字。
 
 ### 支援的 i18n 欄位
 
 | 欄位 | 位置 | 說明 |
 |------|------|------|
 | `description` | field metadata | 欄位描述 |
-| `options[].label` | `ui.options` | select 控件選項標籤 |
-| `placeholder` | `ui.placeholder` | 輸入框占位符 |
+| `options[].label` | `ui.options` | select 控制項選項標籤 |
+| `placeholder` | `ui.placeholder` | 輸入框佔位符 |
 | `group_labels` | `_schema_meta` | 分組顯示名（Dashboard 分區標題） |
 
-統一採用 `{"i18n": "key", "default": "文本"}` 格式，純字串則原樣透傳（向後相容）。
+統一採用 `{"i18n": "key", "default": "文字"}` 格式，純字串則原樣透傳（向後相容）。
 
 ### 宣告 i18n 欄位
 
-所有使用者可見文本欄位都支援 i18n：
+所有使用者可見文字欄位都支援 i18n：
 
 ```python
 from dataclasses import dataclass, field
@@ -7919,7 +8007,7 @@ class MyAdapterConfig(BaseConfig):
     mode: str = field(
         default="a",
         metadata={
-            "description": {"i18n": "my_adapter.mode", "default": "運行模式"},
+            "description": {"i18n": "my_adapter.mode", "default": "執行模式"},
             "ui": {
                 "widget": "select",
                 "group": "basic",
@@ -7940,11 +8028,44 @@ class MyAdapterConfig(BaseConfig):
     }
 ```
 
-`default` 是兜底文本——當翻譯未註冊或查找失敗時顯示。
+`default` 是兜底文字——當翻譯未註冊或查詢失敗時顯示。
 
-### 註冊配置翻譯
+### secret 脫敏與設定校驗
 
-配置欄位的 i18n 鍵和普通翻譯鍵一樣，使用 `i18n.register()` 註冊：
+標記為 `"secret": True` 的欄位會自動獲得**脫敏保護**（2.7.0 起）：
+
+- **範本產生脫敏**：`dataclass_to_toml_with_comments()` 產生設定範本時，secret 欄位的真實值不會寫入檔案（顯示為空佔位），避免敏感資訊落盤
+- **通用脫敏工具**：`redact_secret(value)` 將非空值取代為 `***`，空值原樣回傳，可用於日誌輸出等場景
+
+```python
+from ErisPulse.Core.Bases.config_schema import redact_secret
+
+redact_secret("sk-xxxxxx")  # '***'
+redact_secret("")           # ''
+```
+
+**設定校驗**（`validate_config()`）除 `required` 非空檢查外，2.7.0 起支援：
+
+| 校驗項 | 元資料 | 範例 |
+|--------|--------|------|
+| 類型匹配 | 欄位宣告類型 | `int` 欄位傳入字串報錯 |
+| 列舉約束 | `ui.options` 或頂層 `options` | 值必須屬於允許選項 |
+| 數值範圍 | 頂層 `min` / `max` | `metadata={"min": 1, "max": 65535}` |
+
+```python
+from ErisPulse.Core.Bases.config_schema import validate_config
+
+@dataclass
+class C(BaseConfig):
+    mode: str = field(default="a", metadata={"ui": {"widget": "select", "options": ["a", "b"]}})
+    port: int = field(default=80, metadata={"min": 1, "max": 65535})
+
+errors = validate_config(C(mode="x", port=70000))  # 兩條錯誤：列舉 + 範圍
+```
+
+### 註冊設定翻譯
+
+設定欄位的 i18n 鍵和普通翻譯鍵一樣，使用 `i18n.register()` 註冊：
 
 ```python
 from ErisPulse import i18n
@@ -7959,10 +8080,10 @@ i18n.register("en", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 ```
-> **推薦寫法**：使用 `I18nClass` 聲明翻譯鍵，框架會自動註冊（詳見上文「推薦寫法」章節），
+> **推薦寫法**：使用 `I18nClass` 宣告翻譯鍵，框架會自動註冊（詳見上文「推薦寫法」章節），
 > 無需手動呼叫 `i18n.register()` 或 `register_config_i18n()`。
 
-也提供了便捷函數 `register_config_i18n()`，可自動從配置類提取鍵並註冊：
+也提供了便捷函數 `register_config_i18n()`，可自動從設定類別提取鍵並註冊：
 
 ```python
 from ErisPulse.runtime.config_schema import register_config_i18n
@@ -7978,14 +8099,14 @@ register_config_i18n(MyAdapterConfig, "en", {
 
 ### WebUI 如何消費
 
-`get_config_schema()` 返回的 schema 中，i18n 字典會原樣透傳。WebUI 前端可以根據當前語言呼叫 `i18n.t()` 解析。
+`get_config_schema()` 回傳的 schema 中，i18n 字典會原樣透傳。WebUI 前端可以根據目前語言呼叫 `i18n.t()` 解析。
 
-如果需要服務端直接解析為字串（如返回給不支援 i18n 的前端），使用 `resolve_config_schema()`，它會將 `description`、`options[].label`、`placeholder`、`group_labels` 全部解析為當前語言的字串：
+如果需要伺服器直接解析為字串（如回傳給不支援 i18n 的前端），使用 `resolve_config_schema()`，它會將 `description`、`options[].label`、`placeholder`、`group_labels` 全部解析為目前語言的文字：
 
 ```python
 from ErisPulse.runtime.config_schema import resolve_config_schema
 
-# 所有 i18n 欄位已解析為當前語言的字串
+# 所有 i18n 欄位已解析為目前語言的字串
 schema = resolve_config_schema(MyAdapterConfig)
 print(schema["fields"]["token"]["description"])    # "平台 Token" 或 "Platform Token"
 print(schema["fields"]["token"]["placeholder"])   # "請輸入 Token" 或 "Enter Token"
@@ -7995,7 +8116,7 @@ print(schema["group_labels"]["basic"])             # "基本設定" 或 "Basic"
 
 > `BaseConfig`、`BotAccountConfig`、`register_config_i18n()`、`resolve_config_schema()`
 > 等類型與工具函數的實際定義位於 `ErisPulse.Core.Bases.config_schema`。
-> `ErisPulse.runtime.config_schema` 保留為相容性 shims，
+> `ErisPulse.runtime.config_schema` 保留為相容性 shim，
 > **推薦從 `ErisPulse.Core.Bases` 統一匯入**（i18n 翻譯鍵相關類型除外，
 > 它們位於 `ErisPulse.Core.Bases.i18n_schema`）。
 
@@ -8007,15 +8128,15 @@ print(schema["group_labels"]["basic"])             # "基本設定" 或 "Basic"
 
 | 方法 | 說明 |
 |------|------|
-| `t(key, default=None, **kwargs)` | 取得翻譯文本（`gettext()` 是別名） |
+| `t(key, default=None, **kwargs)` | 取得翻譯文字（`gettext()` 是別名） |
 | `set_language(lang)` | 手動設定語言 |
-| `get_language()` | 取得當前語言 |
-| `reset_language()` | 重置為自動檢測（並重新檢測環境） |
-| `get_supported_languages()` | 取得所有支援的語言列表 |
+| `get_language()` | 取得目前語言 |
+| `reset_language()` | 重置為自動偵測（並重新偵測環境） |
+| `get_supported_languages()` | 取得所有支援的語言清單 |
 | `has_translation(key, lang=None)` | 檢查翻譯鍵是否存在 |
-| `register(lang, translations, domain)` | 註冊自定義翻譯 |
-| `unregister_domain(domain)` | 卸載指定域的所有翻譯 |
-| `reload()` | 重新載入內建翻譯並重新檢測語言 |
+| `register(lang, translations, domain)` | 註冊自訂翻譯 |
+| `unregister_domain(domain)` | 解載指定域的所有翻譯 |
+| `reload()` | 重新載入內建翻譯並重新偵測語言 |
 
 #### `t()` 方法詳解
 
@@ -8024,7 +8145,7 @@ def t(self, key, /, default=None, **kwargs):
 ```
 
 - `key` — 翻譯鍵（僅位置參數，不與 `**kwargs` 中的 `key=` 衝突）
-- `default` — 翻譯不存在時返回的預設值，預設為 `None`（返回鍵名本身）
+- `default` — 翻譯不存在時傳回的預設值，預設為 `None`（傳回鍵名本身）
 - `**kwargs` — 格式化參數，用於填補翻譯值中的 `{placeholder}`
 
 範例：
@@ -8032,22 +8153,22 @@ def t(self, key, /, default=None, **kwargs):
 ```python
 # 翻譯定義: "greeting": "你好，{name}！歡迎來到{place}。"
 i18n.t("greeting", name="Alice", place="ErisPulse")
-# 返回: "你好，Alice！歡迎來到ErisPulse。"
+# 傳回: "你好，Alice！歡迎來到ErisPulse。"
 ```
 
 ### BaseI18n / I18nKey（宣告式翻譯鍵）
 
-從 v2.7.0 起，`ErisPulse.Core.Bases` 提供了基於類屬性的翻譯鍵宣告工具（推薦從 `ErisPulse.Core.Bases` 統一匯入）：
+從 v2.7.0 起，`ErisPulse.Core.Bases` 提供了基於類別屬性的翻譯鍵宣告工具（推薦從 `ErisPulse.Core.Bases` 統一匯入）：
 
-> ``I18nKey.default`` 是**語言無關的兜底文本**，不會註冊到任何語言。
+> ``I18nKey.default`` 是**語言無關的兜底文字**，不會註冊到任何語言。
 > 要讓翻譯生效，必須顯式傳入至少一個語言參數（``zh_CN=`` / ``en=`` / ``ja=`` 等）。
 > 這樣各國開發者可以自由使用自己母語填寫 ``default``，框架不做任何假設。
 
 | 名稱 | 說明 |
 |------|------|
 | `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | 單個翻譯鍵宣告，`default` 為語言無關的兜底 |
-| `BaseI18n` | 翻譯鍵集合基類（命名對齊 `BaseConfig`），子類以類屬性宣告多個 `I18nKey` |
-| `BaseI18n.register(prefix="", domain="app")` | 類方法：註冊所有宣告的鍵到 i18n 系統 |
+| `BaseI18n` | 翻譯鍵集合基類（命名對齊 `BaseConfig`），子類以類別屬性宣告多個 `I18nKey` |
+| `BaseI18n.register(prefix="", domain="app")` | 類方法：註冊所有宣告的鍵到 i18n系統 |
 | `key` | `I18nKey` 的別名（書寫更簡潔） |
 
 使用範例：
@@ -8090,9 +8211,9 @@ print(sdk.i18n.t("core.sdk.init.starting"))
 
 ---
 
-## 運行時配置
+## 執行階段設定
 
-### 透過配置 API 讀取 i18n 配置
+### 透過設定 API 讀取 i18n 設定
 
 ```python
 from ErisPulse.Core.Bases import I18nConfig
@@ -8101,18 +8222,18 @@ from ErisPulse.runtime import get_i18n_config
 config = get_i18n_config()
 print(config["language"])  # "auto" 或具體語言代碼
 
-# I18nConfig 是 dataclass，可用於產生配置模板
+# I18nConfig 是 dataclass，可用於產生設定範本
 schema = I18nConfig.__dataclass_fields__
 ```
 
-### 配置項說明
+### 設定項說明
 
 在 `config/config.toml` 的 `[ErisPulse.i18n]` 部分：
 
 ```toml
 [ErisPulse.i18n]
 # 顯示語言，可選值:
-# - "auto"      — 自動檢測系統語言（預設）
+# - "auto"      — 自動偵測系統語言（預設）
 # - "zh-CN"     — 簡體中文
 # - "zh-TW"     — 繁體中文
 # - "en"        — 英文
@@ -8137,15 +8258,15 @@ language = "auto"
 
 ### 多語言覆蓋
 
-不必一次提供所有語言的翻譯，缺失的語言會自動回退到英文，如果英文也沒有則顯示鍵名本身。
+不必一次性提供所有語言的翻譯，遺失的語言會自動回退到英文，如果英文也沒有則顯示鍵名本身。
 
 ### 動態內容
 
-對於動態產生的內容（如使用者名、數量等），使用 `{placeholder}` 格式化：
+對於動態產生的內容（如使用者名稱、數量等），使用 `{placeholder}` 格式化：
 
 ```python
 # 翻譯定義
-"user_count": "當前在線使用者：{count} 人"
+"user_count": "目前線上使用者：{count} 人"
 
 # 使用
 i18n.t("user_count", count=len(users))
@@ -8153,7 +8274,7 @@ i18n.t("user_count", count=len(users))
 
 ### 日誌訊息
 
-如果您的模組使用了框架的 Logger，這些訊息也會自動使用當前語言：
+如果您的模組使用了框架的 Logger，這些訊息也會自動使用目前語言：
 
 ```python
 self.logger.info(i18n.t("my_module.startup"))
@@ -8169,8 +8290,6 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 - **CLI i18n** — 命令列介面內部使用，不與 Core 共享翻譯資料
 
 這種設計確保 CLI 的翻譯變更不會影響框架核心的穩定性。
-
-[**返回上一頁**](docs/zh-TW/README.zh-CN.md)
 
 
 ### Dashboard 视窗注册
@@ -8511,7 +8630,7 @@ ErisPulse 的 `await sdk.run()` / `await sdk.init()` 把一整條啟動鏈路封
 
 本文把啟動鏈路拆解成獨立的環節，說明各自的職責、呼叫順序，並給出手動完整啟動的示例。
 
-> 本文假設你已經跑通過 [第一個機器人](../getting-started/first-bot.md)，了解 `sdk.run(keep_running=True/False)` 兩種模式。本文聚焦於 `init()` **內部**的鏈路拆解，以及 `init()`/`init_task()`/`init_sync()` 等更底層的入口。
+> 本文假設你已經跑過 [第一個機器人](../getting-started/first-bot.md)，了解 `sdk.run(keep_running=True/False)` 兩種模式。本文聚焦於 `init()` **內部**的鏈路拆解，以及 `init()`/`init_task()`/`init_sync()` 等更底層的入口。
 
 ## SDK 頂層入口一覽
 
@@ -8519,7 +8638,7 @@ ErisPulse 的 `await sdk.run()` / `await sdk.init()` 把一整條啟動鏈路封
 
 | 入口 | 非同步性 | 回傳值 | 例外處理 | 適用場景 |
 |------|--------|--------|----------|----------|
-| `await sdk.run(True)` | async，阻塞維持 | `None`（關閉時自動 `uninit`） | 模組/適配器錯誤被攔截，不拖垮進程 | 純 bot 應用 |
+| `await sdk.run(True)` | async，阻塞維持 | `None`（關閉時自動 `uninit`） | 模組/適配器錯誤被攔截，不拖垮程序 | 純 bot 應用 |
 | `await sdk.run(False)` | async，不阻塞 | `None`（不自動卸載） | 同上 | 初始化後執行自訂邏輯 |
 | `await sdk.init()` | async，需 await | `bool` | **不包裝**，例外向上拋 | 手動控制生命週期（配 `uninit()`） |
 | `sdk.init_task()` | async，返回 Task 不阻塞 | `asyncio.Task` | 同 `init()` | 並發執行別的初始化、或事件迴圈尚未運行 |
@@ -8529,7 +8648,7 @@ ErisPulse 的 `await sdk.run()` / `await sdk.init()` 把一整條啟動鏈路封
 
 ## 啟動鏈路總覽
 
-`sdk.init()`（確切說是其內部的 `Initializer.init()`）按以下順序拉起整個框架：
+`sdk.init()`（準確說是其內部的 `Initializer.init()`）按以下順序拉起整個框架：
 
 ```mermaid
 flowchart TD
@@ -8547,13 +8666,13 @@ flowchart TD
 | 層 | 元件 | 職責 |
 |----|------|------|
 | 發現 | `AdapterFinder` / `ModuleFinder` | 從已安裝套件的 entry-points 中**發現**適配器/模組 |
-| 載入 | `AdapterLoader` / `ModuleLoader` | 發現 + 導入 + 讀取元資料 + 判斷啟用/停用，回傳物件清單 |
+| 載入 | `AdapterLoader` / `ModuleLoader` | 發現 + 導入 + 讀取元資料 + 判斷啟用/禁用，回傳物件清單 |
 | 註冊 | `*Loader.register_to_manager` | 把物件登記到對應管理器 |
 | 管理 | `sdk.adapter` / `sdk.module` | 維護適配器/模組實例，提供啟停介面 |
 | 初始化 | `ModuleLoader.initialize_modules` | 建立模組實例並掛載到 `sdk`（處理依賴拓撲排序） |
 | 路由 | `sdk.router` | HTTP / WebSocket 伺服器 |
 
-> **重要**：`Finder` 和 `Loader` 是兩層。`Loader` 內部**已經持有**一個 `Finder`（`AdapterLoader` 自帶 `AdapterFinder`，`ModuleLoader` 自帶 `ModuleFinder`）。絕大多數場景你只需要用 `Loader`，只有需要「只列出不導入」時才會單獨用 `Finder`。
+> **重要**：`Finder` 和 `Loader` 是兩層。`Loader` 內部**已經持有**一個 `Finder`（`AdapterLoader` 自帶 `AdapterFinder`，`ModuleLoader` 自帶 `ModuleFinder`）。大多數場景你只需要用 `Loader`，只有需要「只列出不導入」時才會單獨用 `Finder`。
 
 ## 各環節詳解
 
@@ -8577,9 +8696,9 @@ entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 
 每個 `EntryPoint` 可以 `.load()` 得到對應的類，但通常不用你手動調——Loader 會做。
 
-### 2. 加載層：Loader
+### 2. 載入層：Loader
 
-Loader 在 Finder 之上做了「導入 + 讀元資料 + 判斷啟用/停用」。
+Loader 在 Finder 之上做了「導入 + 讀元資料 + 判斷啟用/禁用」。
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -8597,23 +8716,23 @@ module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.mo
 
 | 回傳值 | 含義 |
 |--------|------|
-| `objs` (`dict`) | 名稱 → 物件（適配器類 / 模組包裝物件） |
-| `enabled` (`list[str]`) | 被啟用的名稱（設定中未停用） |
-| `disabled` (`list[str]`) | 被停用的名稱 |
+| `objs` (`dict`) | 名稱 → 對象（適配器類 / 模組包裝物件） |
+| `enabled` (`list[str]`) | 被啟用的名稱（設定中未禁用） |
+| `disabled` (`list[str]`) | 被禁用的名稱 |
 
-#### 加載失敗時的診斷資訊
+#### 載入失敗時的診斷資訊
 
-當某個模組/適配器在加載或初始化階段拋出例外時，框架會跳過該元件並繼續加載其他元件，同時輸出**使用者程式碼框架摘要**，讓你在預設 INFO 級別下即可定位出錯位置，無需手動重開 DEBUG：
+當某個模組/適配器在載入或初始化階段拋出例外時，框架會跳過該元件並繼續載入其他元件，同時輸出**使用者程式碼框架摘要**，讓你在預設 INFO 級別下即可定位出錯位置，無需手動重開 DEBUG：
 
 ```
-[ERROR] [ModuleLoader] 從 entry-point 加載模組 MyModule 失敗，已跳過: 'NoneType' object has no attribute 'platform'
+[ERROR] [ModuleLoader] 從 entry-point 載入模組 MyModule 失敗，已跳過: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → 提示: 將日誌級別提高到 DEBUG 可查看完整堆疊；檢查模組 MyModule 的實作程式碼
+  → 提示: 將日誌等級提高到 DEBUG 可查看完整堆疊；檢查模組 MyModule 的實作程式碼
 ```
 
-診斷資訊透過 `ErisPulse.runtime.diagnostics` 模組產生，會自動過濾掉框架內部框架，只保留你的程式碼框架。如需在自訂加載邏輯中重用：
+診斷資訊透過 `ErisPulse.runtime.diagnostics` 模組產生，會自動過濾掉框架內部框架，只保留你的程式碼框架。如需在自訂載入邏輯中重用：
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -8650,11 +8769,11 @@ await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> 註冊 ≠ 啟動。`register_to_manager` 只是登記；`startup` 才會呼叫適配器的 `start()`，建立與平台的連線。
+> 註冊 ≠ 啟動。`register_to_manager` 只是登記；`startup` 才會呼叫適配器的 `start()`，建立與平台的連接。
 
 ### 5. 初始化模組
 
-模組比適配器多一步——需要**實例化**並掛載到 `sdk` 上（這樣你才能 `sdk.MyModule.xxx` 呼叫）。這一步還處理模組間的依賴宣告與拓撲排序。
+模組比適配器多一步——需要**實例化**並掛載到 `sdk` 上（這樣你才能 `sdk.MyModule.xxx` 調用）。這一步還處理模組間的依賴宣告與拓撲排序。
 
 ```python
 success = await module_loader.initialize_modules(
@@ -8677,9 +8796,9 @@ await sdk.router.start(
 
 路由伺服器負責接收適配器的 Webhook / WebSocket 回呼。不啟動它，server 模式的適配器無法收訊息。
 
-## 完整手動啟動範例
+## 完整手動啟動示例
 
-下面這段程式碼**等於** `await sdk.init()` 的核心流程，但每一步都暴露在你手上，可以在任意環節插入自訂邏輯：
+下面這段程式碼**等於** `await sdk.init()` 的核心流程，但每一步都暴露在你手裡，可以在任意環節插入自訂邏輯：
 
 ```python
 import asyncio
@@ -8689,7 +8808,7 @@ from ErisPulse.loaders import AdapterLoader, ModuleLoader
 async def manual_startup():
     # 0. 準備環境（載入設定、註冊全域例外處理）
     #    _prepare_environment 是 init() 內部的前置步驟；手動流程也需先呼叫，
-    #    否則 Loader 讀不到設定，會把所有適配器/模組誤判為停用。
+    #    否則 Loader 讀不到設定，會把所有適配器/模組誤判為禁用。
     if not await sdk._prepare_environment():
         print("環境準備失敗")
         return False
@@ -8698,7 +8817,7 @@ async def manual_startup():
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. 並行發現與加載（與 init() 內部一致用 gather）
+    # 2. 並行發現與載入（與 init() 內部一致用 gather）
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
@@ -8719,7 +8838,7 @@ async def manual_startup():
         enabled_modules, module_objs, sdk.module
     )
 
-    # 6. 初始化模組（實例化 + 挂載到 sdk）
+    # 6. 初始化模組（實例化 + 掛載到 sdk）
     if enabled_modules:
         await module_loader.initialize_modules(
             enabled_modules, module_objs, sdk.module, sdk
@@ -8745,10 +8864,10 @@ if __name__ == "__main__":
 
 絕大多數情況下**不需要**手動啟動，`await sdk.run()` 已經把上面這些都做好了。手動啟動僅在這些場景才有價值：
 
-- **部分加載**：只加載指定的適配器/模組，跳過其他
+- **部分載入**：只載入指定的適配器/模組，跳過其他
 - **動態註冊**：執行時根據條件註冊新的適配器/模組
-- **自訂順序**：需要打亂預設的加載順序（如先啟動某模組再啟動適配器）
-- **注入策略**：對 Loader 注入自訂的嚴格模式管理器、加載策略等
+- **自訂順序**：需要打亂預設的載入順序（如先啟動某模組再啟動適配器）
+- **注入策略**：對 Loader 注入自訂的嚴格模式管理器、載入策略等
 - **除錯/診斷**：在某個環節失敗時，手動驅動以定位問題
 
 ## 運行時細粒度控制
@@ -8758,7 +8877,7 @@ if __name__ == "__main__":
 ### 適配器熱啟停
 
 ```python
-# 熱重啟某個適配器（修復連線，不受其他平台影響）
+# 熱重啟某個適配器（修復連接，不受其他平台影響）
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
@@ -8781,12 +8900,34 @@ await sdk.router.stop()
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
-### 模組按需加載
+### 模組按需載入
 
 ```python
-# 手動加載一個（可能是懶加載的）模組
+# 手動載入一個（可能是懶載入的）模組
 await sdk.load_module("MyModule")
 ```
+
+## 優雅關閉
+
+從 2.7.0 起，`sdk.shutdown()` 提供**程式化優雅關閉**：設定關閉事件，讓正在 `await sdk.run(keep_running=True)` 掛起的主迴圈返回，進而觸發 `uninit()` 完成資源清理。
+
+```python
+# 在任意協程中呼叫，觸發優雅退出（run() 掛起返回並自動 uninit）
+sdk.shutdown()
+```
+
+典型用途：
+
+```python
+async def shutdown_after_idle():
+    await asyncio.sleep(3600)
+    sdk.shutdown()  # 空閒 1 小時後優雅退出
+```
+
+**信號處理**：`run()` 內部會註冊 `SIGTERM` / `SIGHUP` 處理器，將系統信號轉為優雅關閉——容器編排（Docker `docker stop`）或 `systemd` 停止服務時，進程會走完 `uninit()` 清理而非被強殺。
+
+- Windows 不支援 `loop.add_signal_handler`，信號處理器會自動跳過（仍可用 `sdk.shutdown()` 或 Ctrl+C 觸發關閉）
+- 反覆呼叫 `sdk.shutdown()` 是安全的（事件已設定後再次呼叫為無操作）
 
 ## 卸載流程
 
@@ -8812,11 +8953,11 @@ SDK 提供兩種重啟方式，都不需要你自己先卸載——框架會自�
 
 | 方式 | 呼叫 | 行為 | 適用場景 |
 |------|------|------|----------|
-| 熱重啟 | `await sdk.restart()` | 同一進程內 `uninit()` 後重新 `init()`，重新加載適配器/模組 | 重新加載設定、熱更新模組 |
-| 硬重啟 | `await sdk.hard_restart()` | `uninit()` 後退出整個進程，由父進程（`epsdk run`）拉起全新進程 | 懷疑有記憶體/資源洩漏、需要徹底乾淨重啟 |
+| 熱重啟 | `await sdk.restart()` | 同一進程內 `uninit()` 後重新 `init()`，重新載入適配器/模組 | 重新載入設定、熱更新模組 |
+| 硬重啟 | `await sdk.hard_restart()` | `uninit()` 後退出整個進程，由父進程（`epsdk run`）拉起全新進程 | 怀疑有記憶體/資源泄漏、需要徹底乾淨重啟 |
 
 ```python
-# 熱重啟：同進程內重新加載（最常用）
+# 熱重啟：同進程內重新載入（最常用）
 await sdk.restart()
 
 # 硬重啟：退出進程，需透過 `epsdk run main.py` 啟動才生效
@@ -8825,24 +8966,24 @@ await sdk.hard_restart()
 
 > **兩點注意**：
 > 1. 這兩個方法都用背景任務執行重啟，**立即回傳 `True` 表示「重啟任務已排程」**，而非「重啟已完成」。實際重啟在背景進行，避免中斷目前事件鏈路。
-> 2. `hard_restart()` **必須透過 `epsdk run main.py` 啟動才能生效**。它的原理是：卸載後以**退出碼 42** 退出進程，`epsdk run` 的父進程檢測到 42 才會重新拉起一個全新進程；如果是直接 `python main.py` 啟動，進程以碼 42 退出後就直接結束了，不會自動重啟。
+> 2. `hard_restart()` **必須透過 `epsdk run main.py` 啟動才能生效**。它的原理是：卸載後以**退出碼 42** 退出進程，`epsdk run` 的父進程偵測到 42 才會重新拉起一個全新進程；如果是直接 `python main.py` 啟動，進程以碼 42 退出後就直接結束了，不會自動重啟。
 
 ### 什麼時候該用硬重啟？
 
-硬重啟不只是「更徹底的重啟」，它在以下場景比熱重啟更適合、甚至更高效：
+硬重啟不只是「更徹底的重啟」，它在以下場景比熱重啟更合適、甚至更高效：
 
-- **二進位庫（C 擴展）副作用**：熱重啟在同一進程內進行，無法釋放 C 擴展、開啟的檔案描述元、執行緒等進程級資源；硬重啟換一個全新進程，這些副作用隨之徹底清零。
-- **資源洩漏排查**：懷疑存在記憶體或句柄洩漏時，硬重啟能拿到一個乾淨的環境。
-- **對效能敏感的頻繁重啟**：硬重啟省去了同進程內卸載→重新加載的開銷，實際比熱重啟更高效。
+- **二進位庫（C 擴展）副作用**：熱重啟在同一進程內進行，無法釋放 C 擴展、打開的檔案描述符、執行緒等進程級資源；硬重啟換一個全新進程，這些副作用隨之徹底清零。
+- **資源泄漏排查**：懷疑存在記憶體或句柄泄漏時，硬重啟能拿到一個乾淨的環境。
+- **對效能敏感的頻繁重啟**：硬重啟省去了同進程內卸載→重新載入的開銷，實際比熱重啟更高效。
 
 > Dashboard 管理介面裡的「框架重啟」功能，底層呼叫的就是 `hard_restart()`。
-> 另外就是硬重啟一個要求！必須使用epsdk的run命令進行啟動，否則程序只是會拋出42退出碼進行退出，因為run命令的拉起檢查了42退出碼進行重新拉起進程，這點必須要注意！！！
+> 另外就是硬重啟一個要求！必須使用 epsdk 的 run 命令進行啟動，否則程式只是會拋出 42 退出碼進行退出，因為 run 命令的拉起檢查了 42 退出碼進行重新拉起進程，這點必須要注意！！！
 
 ## 相關文件
 
 - [建立第一個機器人](../getting-started/first-bot.md) - `keep_running` 兩種基礎模式入門
 - [生命週期管理](lifecycle.md) - 監聽 `core.init.start` / `core.init.complete` 等啟動事件
-- [懶加載系統](lazy-loading.md) - 模組懶加載機制與 `load_module`
+- [懶載入系統](lazy-loading.md) - 模組懶載入機制與 `load_module`
 
 
 ====
