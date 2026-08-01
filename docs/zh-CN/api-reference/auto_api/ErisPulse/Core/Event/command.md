@@ -30,6 +30,23 @@ ErisPulse 命令处理模块
 #### 方法列表
 
 
+##### `_refresh_command_config()`
+
+从配置读取命令解析相关参数
+
+支持配置热更新：``config.updated`` 事件触发后再次调用即可刷新
+前缀 / 大小写 / 空格前缀 / 是否须 @机器人 等解析参数。
+
+---
+
+
+##### `_on_config_updated(_data: dict)`
+
+配置变更回调：刷新命令解析参数，实现热更新
+
+---
+
+
 ##### `__call__(name: str | list[str] | None = None, aliases: list[str] | None = None, group: str | None = None, priority: int = 0, permission: Callable | None = None, help: str | None = None, usage: str | None = None, hidden: bool = False, master: bool = False)`
 
 命令装饰器

@@ -948,6 +948,13 @@ SSE 路由使用 base_url 前缀（HTTP）。
 ---
 
 
+##### `_on_router_config_changed(_data: dict)`
+
+router 中间件配置变更回调：CORS/安全头需重启进程才能生效
+
+---
+
+
 ##### `get_app()`
 
 获取FastAPI应用实例

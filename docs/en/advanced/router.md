@@ -1,37 +1,37 @@
 # Router Manager
 
-The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. Under the hood, it is wrapped by an abstraction layer (currently FastAPI + Uvicorn)
+The ErisPulse Router Manager provides unified HTTP and WebSocket routing management, supporting multi-adapter route registration and lifecycle management. The underlying implementation uses an abstraction layer (currently FastAPI + Uvicorn).
 
 ## Overview
 
-Key features of the Router Manager:
+The main features of the Router Manager are:
 
-- **Decorator Routes**: Support `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration
-- **Auto Injection**: Route handlers do not need to import FastAPI types; the framework automatically injects abstract objects
-- **Route Groups**: Support for `RouteGroup` with prefix and version
-- **Route Middleware**: Request interception supporting glob pattern matching
+- **Decorator Routes**: Supports `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration
+- **Automatic Injection**: Route handlers do not require importing FastAPI types; the framework automatically injects abstract objects
+- **Route Grouping**: Supports `RouteGroup` with prefixes and version numbers
+- **Route Middleware**: Supports request interception with glob pattern matching
 - **Rate Limiting**: Built-in sliding window rate limiting
-- **CORS Support**: One-click enable Cross-Origin Resource Sharing
+- **CORS Support**: One-click enablement of cross-origin resource sharing
 - **Security Headers**: Automatic addition of security response headers
-- **Auto Docs**: Interactive documentation based on OpenAPI
+- **Automatic Documentation**: Interactive documentation based on OpenAPI
 - **WebSocket Support**: Complete WebSocket connection management, custom authentication, and lifecycle hooks
-- **Lifecycle Integration**: Deep integration with the ErisPulse lifecycle system
+- **Lifecycle Integration**: Deep integration with ErisPulse lifecycle system
 - **SSL/TLS Support**: Support for HTTPS and WSS secure connections
-- **Home Page Entry**: Support for module shortcuts on the root route `/`, with internationalization support
+- **Homepage Entry**: Support for modules to register quick entry buttons on the root route `/`, with internationalization support
 
 ## Abstract Types
 
-ErisPulse provides server-side abstract types to allow modules to avoid direct dependencies on FastAPI:
+ErisPulse provides server-side abstraction types, allowing modules to avoid direct dependencies on FastAPI:
 
-| Abstract Type | FastAPI Equivalent | Description |
-|--------------|-------------------|-------------|
-| `HttpRequest` | `fastapi.Request` | HTTP request wrapper, fully compatible interface |
-| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection wrapper, additionally provides lifecycle hooks |
+| Abstract Type | FastAPI Correspondence | Description |
+|---------------|------------------------|-------------|
+| `HttpRequest` | `fastapi.Request` | HTTP request encapsulation, fully compatible interface |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection encapsulation, additional lifecycle hooks |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket disconnect exception |
 
-> `WebSocketConnection` inherits from `WebSocketConnectionBase` and shares the same send/receive/iter/close interface as client WebSockets (`ClientWebSocket`). Client and server WebSockets can use the same business logic code.
+> `WebSocketConnection` inherits from `WebSocketConnectionBase`, sharing the same send/receive/iter/close interface with the client-side WebSocket (`ClientWebSocket`). The same business logic code can be used for both client and server WebSocket.
 >
-> Access the underlying FastAPI native object via the `.raw` attribute. Code directly using FastAPI types is also fully compatible.
+> The underlying FastAPI native object is accessible via the `.raw` property. Code using FastAPI types directly is also fully compatible.
 
 ## Decorator Routes (Recommended)
 
@@ -43,7 +43,7 @@ from ErisPulse.Core import router
 async def get_info(request):
     return {"method": request.method, "path": str(request.url)}
 
-# Can also explicitly annotate abstract types
+# Also explicitly annotate with abstract types
 from ErisPulse.Core import HttpRequest
 
 @router.post("my_module", "/data")
@@ -60,7 +60,7 @@ async def delete_data(request):
     return {"deleted": True}
 ```
 
-> **Auto Injection Rule**: When the first parameter name of the handler is `request` or `req` and there are no FastAPI type annotations, the framework automatically injects `HttpRequest`. Handlers with no parameters or parameters that are not named request are unaffected.
+> **Automatic Injection Rule**: When the first parameter of a handler is named `request` or `req` and has no FastAPI type annotation, the framework automatically injects `HttpRequest`. Handlers without parameters or with non-request parameter names are unaffected.
 
 ### WebSocket Decorators
 
@@ -99,9 +99,9 @@ async def secure_ws_handler(ws):
         await ws.send_text(f"Echo: {data}")
 ```
 
-> **Note**: WebSocket handlers and authentication handlers also support auto injection. You can get `WebSocketConnection` without parameter annotations. Annotating `fastapi.WebSocket` also passes the native object, but using abstract types is recommended.
+> **Note**: WebSocket handlers and authentication handlers also support automatic injection. You can obtain `WebSocketConnection` without parameter annotations. Using `fastapi.WebSocket` also allows passing native objects, but abstract types are recommended.
 
-## Traditional Registration Method
+## Traditional Registration Methods
 
 ```python
 async def hello_handler(request):
@@ -115,14 +115,14 @@ router.register_http_route(
     methods=["GET"],
 )
 
-# With rate limiting and doc info
+# With rate limiting and documentation information
 router.register_http_route(
     module_name="my_module",
     path="/api/data",
     handler=data_handler,
     methods=["POST"],
     rate_limit="10/minute",
-    summary="Data API",
+    summary="Data endpoint",
     tags=["API"],
 )
 ```
@@ -143,7 +143,7 @@ router.register_websocket(
     handler=websocket_handler,
 )
 
-# Registration with authentication (Recommended)
+# Registration with authentication (recommended)
 async def auth_handler(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
@@ -158,29 +158,29 @@ router.register_websocket(
 
 **Parameter Description:**
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `module_name` | Module name (Required) | - |
+| Parameter | Description | Default Value |
+|-----------|-------------|---------------|
+| `module_name` | Module name (required) | - |
 | `path` | WebSocket path | - |
 | `handler` | Handler function | - |
-| `auth_handler` | Authentication function, connection closes automatically if returns `False` | `None` |
+| `auth_handler` | Authentication function, returning `False` will automatically close the connection | `None` |
 | `auto_accept` | Whether to automatically `accept()` | `True` |
 
-> **Recommendation**: Use `auth_handler` for connection confirmation instead of disabling `auto_accept`. Only set `auto_accept=False` when you need full control over the connection flow.
+> **Recommendation**: Use `auth_handler` for connection confirmation, rather than setting `auto_accept=False`. Only set `auto_accept=False` if you need to fully control the connection process.
 
 ## WebSocket Lifecycle Hooks
 
-`WebSocketConnection` provides registration for disconnection and error callbacks, eliminating the need for manual try/catch:
+`WebSocketConnection` provides callback registration for disconnection and errors, eliminating the need for manual try/catch:
 
 ```python
 from ErisPulse.Core import WebSocketConnection
 
 @router.ws("my_module", "/ws")
 async def my_ws(ws: WebSocketConnection):
-    # Register via decorator
+    # Decorator way to register
     @ws.on_disconnect
     async def on_close(ws, reason="unknown"):
-        print(f"Reason for disconnect: {reason}")
+        print(f"Disconnect reason: {reason}")
 
     # Can also call directly
     async def on_err(ws, error=""):
@@ -192,10 +192,10 @@ async def my_ws(ws: WebSocketConnection):
         await ws.send_text(f"Echo: {msg}")
 ```
 
-## Route Groups
+## Route Grouping
 
 ```python
-# Create a route group with prefix
+# Create a route group with a prefix
 group = router.group("my_module", prefix="/v1")
 
 @group.get("/users")
@@ -226,9 +226,34 @@ async def admin_middleware(request, call_next):
     return await call_next(request)
 ```
 
+## Request Correlation ID (X-Request-ID)
+
+Starting from version 2.7.0, each HTTP request carries an `X-Request-ID` correlation ID for logging and trace linking:
+
+- **Generation Rule**: Prioritize using the `X-Request-ID` header provided by the client (for distributed tracing scenarios); otherwise, generate a UUID automatically
+- **Response Header**: The response will write back the `X-Request-ID`, making it easy for the client to match requests with logs
+- **Lifecycle Events**: The `server.request` and `server.response` event data will include a new `request_id` field
+
+```python
+# Listen for request events in modules, linking requests and responses by request_id
+@sdk.lifecycle.on("server.request")
+async def on_request(data):
+    print(f"[{data['request_id']}] {data['method']} {data['path']}")
+
+@sdk.lifecycle.on("server.response")
+async def on_response(data):
+    print(f"[{data['request_id']}] -> {data['status_code']}")
+```
+
+Clients can customize the ID for cross-service tracing:
+
+```bash
+curl -H "X-Request-ID: my-trace-id" http://localhost:8080/my_module/health
+```
+
 ## Rate Limiting
 
-Rate limit routes using the sliding window algorithm:
+Sliding window algorithm is used for route rate limiting:
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
@@ -240,7 +265,7 @@ async def submit_data(request):
     return {"submitted": True}
 ```
 
-Rate limit format: `{count}/{time_window}`, e.g., `10/minute`, `100/hour`.
+Rate limiting format: `{count}/{time window}`, such as `10/minute`, `100/hour`.
 
 ## CORS Configuration
 
@@ -252,7 +277,7 @@ router.setup_cors(
 )
 ```
 
-Can also be configured via `config.toml`:
+CORS can also be configured via `config.toml`:
 
 ```toml
 [router.cors]
@@ -267,34 +292,34 @@ allow_headers = ["*"]
 router.setup_security_headers()
 ```
 
-Automatically adds security headers such as `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`.
+Automatically adds security headers such as `X-Content-Type-Options`, `X-Frame-Options`, and `X-XSS-Protection`.
 
-Can also be configured via `config.toml`:
+CORS can also be configured via `config.toml`:
 
 ```toml
 [router.security]
 enabled = true
 ```
 
-## Auto Documentation
+## Automatic Documentation
 
 The Router enables OpenAPI interactive documentation by default:
 
 ```python
-# Disable docs
+# Disable documentation
 router.disable_docs()
 
-# Custom doc info
+# Customize documentation information
 router.set_docs_info(
     title="My API",
-    description="API Documentation",
+    description="API documentation",
     version="1.0.0"
 )
 ```
 
 ## Path Handling
 
-Route paths are automatically prefixed with the module name to avoid conflicts:
+Route paths automatically add the module name as a prefix to avoid conflicts:
 
 ```python
 # Register path "/api" to module "my_module"
@@ -304,7 +329,7 @@ router.register_http_route("my_module", "/api", handler)
 
 ## System Routes
 
-The Router Manager automatically provides the following system routes:
+The routing manager automatically provides the following system routes:
 
 ### Health Check
 
@@ -318,14 +343,14 @@ GET /health
 
 ```
 GET /
-# Returns ErisPulse brand page
+# Returns ErisPulse branded page
 ```
 
-The root route `/` displays the ErisPulse brand page, automatically detects Dashboard availability and adds entry buttons.
+The root route `/` displays the ErisPulse branded page and automatically detects Dashboard availability, adding an entry button.
 
-## Home Page Entry
+## Homepage Entry
 
-The Router Manager allows external modules to register shortcut entry buttons on the root route `/`, making it easy for users to quickly access management pages for various modules.
+The routing manager allows external modules to register quick entry buttons on the root route `/`, making it easier for users to access the management pages of various modules.
 
 ### Register Entry
 
@@ -343,9 +368,9 @@ router.register_home_entry(
     icon_svg='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>',
 )
 
-# Registration with internationalization (Project i18n dictionary format)
+# Internationalization support (project i18n dictionary format)
 router.register_home_entry(
-    name={"i18n": "mymodule.home.entry", "default": "我的面板"},
+    name={"i18n": "mymodule.home.entry", "default": "My Dashboard"},
     url="/mymodule/admin",
 )
 ```
@@ -354,13 +379,13 @@ router.register_home_entry(
 
 | Parameter | Type | Description | Required |
 |-----------|------|-------------|----------|
-| `name` | `str` / `dict` | Button display text; uses internationalization when passed as `{"i18n": "key", "default": "text"}` dict | Yes |
+| `name` | `str` / `dict` | Button display text; use internationalization when passing a dictionary `{"i18n": "key", "default": "text"}` | Yes |
 | `url` | `str` | Button link address | Yes |
 | `icon_svg` | `str` | Optional SVG icon markup | No |
 
-### Dashboard Auto Registration
+### Dashboard Auto-Registration
 
-When `sdk.Dashboard` is detected as available, the Router Manager automatically adds a Dashboard button to the top of the entry list without manual registration.
+When `sdk.Dashboard` is detected as available, the routing manager automatically adds a Dashboard button at the beginning of the entry list, without manual registration.
 
 ## Lifecycle Integration
 
@@ -379,15 +404,15 @@ async def on_server_stop(event):
 ## Best Practices
 
 1. **Prefer Abstract Types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies
-2. **Leverage Auto Injection**: Name the first parameter of the handler `request` or `req` to get `HttpRequest` without any type annotations
-3. **Explicitly Pass module_name**: The first argument of the decorator must be the module name and cannot be omitted
-4. **Use Route Groups**: Use `group()` to organize multiple routes for the same module
+2. **Leverage Automatic Injection**: Name the first parameter of a handler `request` or `req`, and obtain `HttpRequest` without any type annotation
+3. **Explicitly Pass module_name**: The first parameter of a decorator must be the module name; it cannot be omitted
+4. **Use Route Grouping**: Use `group()` to organize multiple routes for the same module
 5. **Security Considerations**: Implement authentication mechanisms and security headers for sensitive operations
-6. **Reasonable Rate Limiting**: Set rate limits for high-frequency APIs
+6. **Reasonable Rate Limiting**: Set rate limits for high-frequency endpoints
 7. **Use Lifecycle Hooks**: Handle WebSocket exceptions via `@ws.on_disconnect` / `@ws.on_error` to avoid manual try/catch
 
 ## Related Documentation
 
-- [HTTP Client](http-client.md) - Sending requests using the built-in HTTP client
-- [Module Development Guide](../developer-guide/modules/getting-started.md) - Understanding module route registration
-- [Best Practices](../developer-guide/modules/best-practices.md) - Recommendations for using routes
+- [HTTP Client](docs/en/http-client.md) - Using the built-in HTTP client to send requests
+- [Module Development Guide](docs/en/developer-guide/modules/getting-started.md) - Learn about module route registration
+- [Best Practices](docs/en/developer-guide/modules/best-practices.md) - Routing usage recommendations

@@ -45,7 +45,7 @@ ErisPulse 适配器加载器
 
 获取 entry-point 组名
 
-**返回值**: "erispulse.adapter"
+**返回值**: 入口点组名字符串
 
 ---
 
