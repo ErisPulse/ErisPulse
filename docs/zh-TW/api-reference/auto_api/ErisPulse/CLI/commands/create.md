@@ -46,6 +46,16 @@ Create 命令实现
 ---
 
 
+### `_scaffold_text(name: str)`
+
+构建当前语言的脚手架文案映射，并预填充 {name} 占位符
+
+- **name** (`str`): 模块/适配器名称
+**返回值** (`dict`): ScaffoldText.all() 的文案字典（含占位符替换）
+
+---
+
+
 ## 类列表
 
 

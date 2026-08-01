@@ -76,7 +76,7 @@
       "count": 5,
       "documents": [
         {
-          "title": "ユーザー使用ガイド",
+          "title": "ユーザーガイド",
           "path": "user-guide/README.md",
           "level": 1
         },
@@ -295,7 +295,7 @@
           "level": 1
         },
         {
-          "title": "生命周期管理",
+          "title": "ライフサイクル管理",
           "path": "advanced/lifecycle.md",
           "level": 1
         },
@@ -305,7 +305,7 @@
           "level": 1
         },
         {
-          "title": "ルーター管理",
+          "title": "ルーティングマネージャー",
           "path": "advanced/router.md",
           "level": 1
         },
@@ -345,7 +345,7 @@
           "level": 1
         },
         {
-          "title": "起動フローと手動制御",
+          "title": "起動プロセスと手動制御",
           "path": "advanced/startup.md",
           "level": 1
         }

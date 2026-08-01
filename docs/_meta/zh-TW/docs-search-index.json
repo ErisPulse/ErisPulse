@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1452,
+  "total_keywords": 1465,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -286,12 +286,12 @@
         "title": "1. 維護平台特性文件"
       }
     ],
-    "1. 缺少 `{platform}_raw` 欄位": [
+    "1. 缺少 `{platform}_raw` 字段": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 277,
+        "line": 325,
         "level": 3,
-        "title": "1. 缺少 `{platform}_raw` 欄位"
+        "title": "1. 缺少 `{platform}_raw` 字段"
       }
     ],
     "1. 聲明式配置（推薦）": [
@@ -510,14 +510,6 @@
         "title": "2. 僅指定 ID"
       }
     ],
-    "2. 加載層：Loader": [
-      {
-        "document": "advanced/startup.md",
-        "line": 73,
-        "level": 3,
-        "title": "2. 加載層：Loader"
-      }
-    ],
     "2. 參數規範詳解": [
       {
         "document": "standards/send-method-spec.md",
@@ -639,7 +631,7 @@
     "2. 時間戳格式錯誤": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 286,
+        "line": 334,
         "level": 3,
         "title": "2. 時間戳格式錯誤"
       }
@@ -730,6 +722,14 @@
         "line": 40,
         "level": 2,
         "title": "2. 請求事件字段要求"
+      }
+    ],
+    "2. 載入層：Loader": [
+      {
+        "document": "advanced/startup.md",
+        "line": 73,
+        "level": 3,
+        "title": "2. 載入層：Loader"
       }
     ],
     "2. 輸入驗證": [
@@ -1084,12 +1084,12 @@
         "title": "3. 特有事件類型"
       }
     ],
-    "3. 缺少 `self` 欄位": [
+    "3. 缺少 `self` 字段": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 300,
+        "line": 348,
         "level": 3,
-        "title": "3. 缺少 `self` 欄位"
+        "title": "3. 缺少 `self` 字段"
       }
     ],
     "3. 觸發建構": [
@@ -1279,7 +1279,7 @@
     "4. detail_type 使用了非標準值": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 311,
+        "line": 359,
         "level": 3,
         "title": "4. detail_type 使用了非標準值"
       }
@@ -1511,7 +1511,7 @@
     "5. 往返一致性": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 315,
+        "line": 363,
         "level": 3,
         "title": "5. 往返一致性"
       }
@@ -2167,7 +2167,7 @@
     "API 參考": [
       {
         "document": "advanced/i18n.md",
-        "line": 392,
+        "line": 425,
         "level": 2,
         "title": "API 參考"
       },
@@ -2334,10 +2334,18 @@
         "title": "BaseAdapter 方法"
       }
     ],
+    "BaseConverter 基類（推薦）": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 19,
+        "level": 2,
+        "title": "BaseConverter 基類（推薦）"
+      }
+    ],
     "BaseI18n / I18nKey（宣告式翻譯鍵）": [
       {
         "document": "advanced/i18n.md",
-        "line": 428,
+        "line": 461,
         "level": 3,
         "title": "BaseI18n / I18nKey（宣告式翻譯鍵）"
       }
@@ -2422,12 +2430,12 @@
         "title": "CLI 命令參考"
       }
     ],
-    "CORS 設定": [
+    "CORS 配置": [
       {
         "document": "advanced/router.md",
-        "line": 245,
+        "line": 270,
         "level": 2,
-        "title": "CORS 設定"
+        "title": "CORS 配置"
       }
     ],
     "ClientWebSocket 屬性": [
@@ -2505,7 +2513,7 @@
     "Dashboard 自動註冊": [
       {
         "document": "advanced/router.md",
-        "line": 361,
+        "line": 386,
         "level": 3,
         "title": "Dashboard 自動註冊"
       }
@@ -2753,7 +2761,7 @@
     "HTTP 路由": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 164,
+        "line": 190,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -2785,7 +2793,7 @@
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
-        "line": 394,
+        "line": 427,
         "level": 3,
         "title": "I18nManager"
       }
@@ -3389,7 +3397,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 179,
+        "line": 205,
         "level": 3,
         "title": "WebSocket"
       }
@@ -3467,7 +3475,7 @@
     "WebUI 如何消費": [
       {
         "document": "advanced/i18n.md",
-        "line": 369,
+        "line": 402,
         "level": 3,
         "title": "WebUI 如何消費"
       }
@@ -3560,12 +3568,12 @@
         "title": "[BUG-009] LazyModule 同步存取 BaseModule 導致未初始化完成"
       }
     ],
-    "[BUG-010] 配置系統多執行緒寫入導致資料丟失": [
+    "[BUG-010] 配置系統多線程寫入導致數據丟失": [
       {
         "document": "bug-tracker.md",
         "line": 301,
         "level": 3,
-        "title": "[BUG-010] 配置系統多執行緒寫入導致資料丟失"
+        "title": "[BUG-010] 配置系統多線程寫入導致數據丟失"
       }
     ],
     "[BUG-011] Windows 下 CTRL+C 無法停止程式": [
@@ -3592,12 +3600,12 @@
         "title": "[BUG-013] 模組加載策略排序邏輯錯誤"
       }
     ],
-    "[BUG-014] 適配器中間件返回 None 導致事件資料丟失": [
+    "[BUG-014] 适配器中間件返回 None 導致事件資料丟失": [
       {
         "document": "bug-tracker.md",
         "line": 388,
         "level": 3,
-        "title": "[BUG-014] 適配器中間件返回 None 導致事件資料丟失"
+        "title": "[BUG-014] 适配器中間件返回 None 導致事件資料丟失"
       }
     ],
     "[BUG-015] 配置檔案路徑依賴工作目錄": [
@@ -3632,12 +3640,12 @@
         "title": "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接泄漏"
       }
     ],
-    "[BUG-019] 適配器熱重載時路由衝突導致重載失敗": [
+    "[BUG-019] 适配器熱重載時路由衝突導致重載失敗": [
       {
         "document": "bug-tracker.md",
         "line": 496,
         "level": 3,
-        "title": "[BUG-019] 適配器熱重載時路由衝突導致重載失敗"
+        "title": "[BUG-019] 适配器熱重載時路由衝突導致重載失敗"
       }
     ],
     "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包": [
@@ -3656,20 +3664,20 @@
         "title": "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式"
       }
     ],
-    "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）": [
+    "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）": [
       {
         "document": "bug-tracker.md",
         "line": 570,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）"
+        "title": "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）"
       }
     ],
-    "[BUG-023] 修改賬戶配置後適配器快取未刷新導致賬戶解析失敗": [
+    "[BUG-023] 修改賬戶配置後适配器快取未刷新導致賬戶解析失敗": [
       {
         "document": "bug-tracker.md",
         "line": 609,
         "level": 3,
-        "title": "[BUG-023] 修改賬戶配置後適配器快取未刷新導致賬戶解析失敗"
+        "title": "[BUG-023] 修改賬戶配置後适配器快取未刷新導致賬戶解析失敗"
       }
     ],
     "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill": [
@@ -3694,6 +3702,22 @@
         "line": 705,
         "level": 3,
         "title": "[BUG-026] notice/request 事件 reply 目標推斷錯誤"
+      }
+    ],
+    "[BUG-027] 路由限流清理任務使用固定窗口導致長窗口限流規則失效": [
+      {
+        "document": "bug-tracker.md",
+        "line": 736,
+        "level": 3,
+        "title": "[BUG-027] 路由限流清理任務使用固定窗口導致長窗口限流規則失效"
+      }
+    ],
+    "[BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常": [
+      {
+        "document": "bug-tracker.md",
+        "line": 768,
+        "level": 3,
+        "title": "[BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常"
       }
     ],
     "__init__.py": [
@@ -3747,7 +3771,7 @@
     "`t()` 方法詳解": [
       {
         "document": "advanced/i18n.md",
-        "line": 410,
+        "line": 443,
         "level": 4,
         "title": "`t()` 方法詳解"
       }
@@ -3827,7 +3851,7 @@
     "convert() 方法": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 19,
+        "line": 67,
         "level": 2,
         "title": "convert() 方法"
       }
@@ -3843,7 +3867,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 294,
+        "line": 300,
         "level": 3,
         "title": "create"
       }
@@ -3878,6 +3902,14 @@
         "line": 40,
         "level": 3,
         "title": "docker-compose.yml"
+      }
+    ],
+    "doctor": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 435,
+        "level": 3,
+        "title": "doctor"
       }
     ],
     "dump_state()": [
@@ -3923,7 +3955,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 341,
+        "line": 347,
         "level": 3,
         "title": "i18n"
       }
@@ -3931,7 +3963,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 264,
+        "line": 270,
         "level": 3,
         "title": "init"
       }
@@ -3939,7 +3971,7 @@
     "install": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 18,
+        "line": 24,
         "level": 3,
         "title": "install"
       }
@@ -3963,7 +3995,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 163,
+        "line": 169,
         "level": 3,
         "title": "list"
       }
@@ -3971,7 +4003,7 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 192,
+        "line": 198,
         "level": 3,
         "title": "list-remote"
       }
@@ -4051,7 +4083,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 226,
+        "line": 232,
         "level": 3,
         "title": "run"
       }
@@ -4072,6 +4104,14 @@
         "title": "say(content, **kwargs)"
       }
     ],
+    "secret 脫敏與設定校驗": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 335,
+        "level": 3,
+        "title": "secret 脫敏與設定校驗"
+      }
+    ],
     "self 欄位擴展": [
       {
         "document": "api-reference/adapter-system.md",
@@ -4083,7 +4123,7 @@
     "self-update": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 123,
+        "line": 129,
         "level": 3,
         "title": "self-update"
       }
@@ -4131,7 +4171,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 378,
+        "line": 384,
         "level": 3,
         "title": "types"
       }
@@ -4139,7 +4179,7 @@
     "uninstall": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 72,
+        "line": 78,
         "level": 3,
         "title": "uninstall"
       }
@@ -4147,7 +4187,7 @@
     "upgrade": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 95,
+        "line": 101,
         "level": 3,
         "title": "upgrade"
       }
@@ -4190,6 +4230,14 @@
         "line": 178,
         "level": 3,
         "title": "一個套件可以註冊多個模組嗎？"
+      }
+    ],
+    "一次性註冊（once）": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 63,
+        "level": 3,
+        "title": "一次性註冊（once）"
       }
     ],
     "一步獲取發送資訊": [
@@ -4293,7 +4341,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 239,
+        "line": 285,
         "level": 2,
         "title": "下一步"
       },
@@ -4390,6 +4438,14 @@
         "title": "主動發送 Meta 事件"
       }
     ],
+    "主頁入口": [
+      {
+        "document": "advanced/router.md",
+        "line": 351,
+        "level": 2,
+        "title": "主頁入口"
+      }
+    ],
     "事件": [
       {
         "document": "terminology.md",
@@ -4447,7 +4503,7 @@
     "事件接收與處理": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 110,
+        "line": 136,
         "level": 3,
         "title": "事件接收與處理"
       }
@@ -4658,6 +4714,14 @@
         "title": "事件訂閱（Intents）"
       }
     ],
+    "事件設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 216,
+        "level": 2,
+        "title": "事件設定"
+      }
+    ],
     "事件轉換": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -4686,14 +4750,6 @@
         "line": 1,
         "level": 1,
         "title": "事件轉換器實現指南"
-      }
-    ],
-    "事件配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 170,
-        "level": 2,
-        "title": "事件配置"
       }
     ],
     "事件類型": [
@@ -4795,7 +4851,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 424,
+        "line": 461,
         "level": 2,
         "title": "互動式安裝"
       }
@@ -4841,7 +4897,7 @@
     "什麼時候該用硬重啟？": [
       {
         "document": "advanced/startup.md",
-        "line": 323,
+        "line": 345,
         "level": 3,
         "title": "什麼時候該用硬重啟？"
       }
@@ -4894,12 +4950,12 @@
         "title": "代碼品質"
       }
     ],
-    "伺服器配置": [
+    "伺服器設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 78,
+        "line": 124,
         "level": 2,
-        "title": "伺服器配置"
+        "title": "伺服器設定"
       }
     ],
     "低級方法": [
@@ -5070,6 +5126,14 @@
         "title": "使用翻譯"
       }
     ],
+    "使用者使用指南": [
+      {
+        "document": "user-guide/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "使用者使用指南"
+      }
+    ],
     "使用者資料儲存": [
       {
         "document": "getting-started/common-tasks.md",
@@ -5129,7 +5193,7 @@
     "健康檢查": [
       {
         "document": "advanced/router.md",
-        "line": 309,
+        "line": 334,
         "level": 3,
         "title": "健康檢查"
       },
@@ -5258,6 +5322,14 @@
         "title": "優先級與積壓丟棄（Priority）"
       }
     ],
+    "優雅關閉": [
+      {
+        "document": "advanced/startup.md",
+        "line": 284,
+        "level": 2,
+        "title": "優雅關閉"
+      }
+    ],
     "儲存": [
       {
         "document": "terminology.md",
@@ -5286,6 +5358,14 @@
         "line": 210,
         "level": 2,
         "title": "儲存系統"
+      }
+    ],
+    "儲存設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 205,
+        "level": 2,
+        "title": "儲存設定"
       }
     ],
     "元事件": [
@@ -5340,12 +5420,14 @@
         "line": 5,
         "level": 2,
         "title": "內容列表"
-      },
+      }
+    ],
+    "內容清單": [
       {
         "document": "user-guide/README.md",
         "line": 5,
         "level": 2,
-        "title": "內容列表"
+        "title": "內容清單"
       }
     ],
     "內容編寫規範": [
@@ -5383,7 +5465,7 @@
     "全域參數": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 413,
+        "line": 419,
         "level": 2,
         "title": "全域參數"
       }
@@ -5463,9 +5545,17 @@
     "切換語言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 501,
+        "line": 538,
         "level": 3,
         "title": "切換語言"
+      }
+    ],
+    "列出元件": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 489,
+        "level": 3,
+        "title": "列出元件"
       }
     ],
     "列出平台": [
@@ -5484,14 +5574,6 @@
         "title": "列出支援的發送方法"
       }
     ],
-    "列出組件": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 452,
-        "level": 3,
-        "title": "列出組件"
-      }
-    ],
     "初始化專案": [
       {
         "document": "quick-start.md",
@@ -5501,7 +5583,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 524,
+        "line": 561,
         "level": 3,
         "title": "初始化專案"
       }
@@ -5600,18 +5682,10 @@
         "title": "加密模式說明"
       }
     ],
-    "加載失敗時的診斷資訊": [
-      {
-        "document": "advanced/startup.md",
-        "line": 97,
-        "level": 4,
-        "title": "加載失敗時的診斷資訊"
-      }
-    ],
     "動態內容": [
       {
         "document": "advanced/i18n.md",
-        "line": 532,
+        "line": 565,
         "level": 3,
         "title": "動態內容"
       }
@@ -5624,12 +5698,12 @@
         "title": "匯入"
       }
     ],
-    "升級組件": [
+    "升級元件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 478,
+        "line": 515,
         "level": 3,
-        "title": "升級組件"
+        "title": "升級元件"
       }
     ],
     "協議方法": [
@@ -5643,25 +5717,9 @@
     "卸載流程": [
       {
         "document": "advanced/startup.md",
-        "line": 284,
+        "line": 306,
         "level": 2,
         "title": "卸載流程"
-      }
-    ],
-    "卸載組件": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 468,
-        "level": 3,
-        "title": "卸載組件"
-      }
-    ],
-    "卸載翻譯": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 258,
-        "level": 3,
-        "title": "卸載翻譯"
       }
     ],
     "原始訊息傳送": [
@@ -5908,6 +5966,14 @@
         "title": "命令裝飾器"
       }
     ],
+    "命令設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 218,
+        "level": 3,
+        "title": "命令設定"
+      }
+    ],
     "命令資訊": [
       {
         "document": "api-reference/event-system.md",
@@ -5942,14 +6008,6 @@
         "line": 64,
         "level": 2,
         "title": "命令選項"
-      }
-    ],
-    "命令配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 172,
-        "level": 3,
-        "title": "命令配置"
       }
     ],
     "命名規範": [
@@ -6019,7 +6077,7 @@
     "嚴格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 130,
+        "line": 176,
         "level": 3,
         "title": "嚴格模式"
       }
@@ -6124,12 +6182,12 @@
         "title": "國際化 (i18n) 系統"
       }
     ],
-    "國際化配置": [
+    "國際化設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 199,
+        "line": 245,
         "level": 2,
-        "title": "國際化配置"
+        "title": "國際化設定"
       }
     ],
     "圖片下載和儲存": [
@@ -6180,12 +6238,12 @@
         "title": "在模組中使用 i18n"
       }
     ],
-    "在模組類中使用": [
+    "在模組類別中使用": [
       {
         "document": "advanced/i18n.md",
         "line": 224,
         "level": 3,
-        "title": "在模組類中使用"
+        "title": "在模組類別中使用"
       }
     ],
     "在程式碼中使用": [
@@ -6226,6 +6284,20 @@
         "line": 119,
         "level": 2,
         "title": "執行專案"
+      },
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 528,
+        "level": 3,
+        "title": "執行專案"
+      }
+    ],
+    "執行控制命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 226,
+        "level": 2,
+        "title": "執行控制命令"
       }
     ],
     "執行模式": [
@@ -6242,6 +6314,14 @@
         "line": 81,
         "level": 3,
         "title": "執行測試"
+      }
+    ],
+    "執行階段設定": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 516,
+        "level": 2,
+        "title": "執行階段設定"
       }
     ],
     "基本使用": [
@@ -6621,7 +6701,7 @@
     "多語言覆蓋": [
       {
         "document": "advanced/i18n.md",
-        "line": 528,
+        "line": 561,
         "level": 3,
         "title": "多語言覆蓋"
       }
@@ -6802,14 +6882,6 @@
         "title": "字段說明"
       }
     ],
-    "存儲配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 159,
-        "level": 2,
-        "title": "存儲配置"
-      }
-    ],
     "存取核心模組": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -6845,7 +6917,7 @@
     "安全頭": [
       {
         "document": "advanced/router.md",
-        "line": 264,
+        "line": 289,
         "level": 2,
         "title": "安全頭"
       }
@@ -6905,7 +6977,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 439,
+        "line": 476,
         "level": 3,
         "title": "安裝模組"
       }
@@ -6913,17 +6985,17 @@
     "完整 API 參考": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 223,
+        "line": 249,
         "level": 2,
         "title": "完整 API 參考"
       }
     ],
-    "完整手動啟動範例": [
+    "完整手動啟動示例": [
       {
         "document": "advanced/startup.md",
         "line": 173,
         "level": 2,
-        "title": "完整手動啟動範例"
+        "title": "完整手動啟動示例"
       }
     ],
     "完整格式（適用於複雜方法）": [
@@ -6951,7 +7023,7 @@
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 144,
+        "line": 192,
         "level": 2,
         "title": "完整示例"
       },
@@ -6970,20 +7042,20 @@
         "title": "完整範例"
       }
     ],
+    "完整設定示例": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 84,
+        "level": 2,
+        "title": "完整設定示例"
+      }
+    ],
     "完整郵件事件": [
       {
         "document": "platform-guide/email.md",
         "line": 203,
         "level": 3,
         "title": "完整郵件事件"
-      }
-    ],
-    "完整配置示例": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 38,
-        "level": 2,
-        "title": "完整配置示例"
       }
     ],
     "定時任務": [
@@ -7044,12 +7116,12 @@
         "title": "宣告式配置（推薦）"
       }
     ],
-    "富媒體訊息轉換示例": [
+    "富媒體消息轉換示例": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 226,
+        "line": 274,
         "level": 2,
-        "title": "富媒體訊息轉換示例"
+        "title": "富媒體消息轉換示例"
       }
     ],
     "審核需要多久時間？": [
@@ -7063,7 +7135,7 @@
     "專案管理命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 257,
+        "line": 263,
         "level": 2,
         "title": "專案管理命令"
       }
@@ -7114,12 +7186,12 @@
         "title": "導入方式"
       }
     ],
-    "就近映射原則": [
+    "就近對應原則": [
       {
         "document": "advanced/i18n.md",
         "line": 64,
         "level": 3,
-        "title": "就近映射原則"
+        "title": "就近對應原則"
       }
     ],
     "屬性存取": [
@@ -7159,7 +7231,7 @@
     "工具": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 241,
+        "line": 267,
         "level": 3,
         "title": "工具"
       }
@@ -7333,23 +7405,23 @@
     "常見用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 437,
+        "line": 474,
         "level": 2,
         "title": "常見用法"
       }
     ],
-    "常見配置位置": [
+    "常見設定位置": [
       {
         "document": "user-guide/README.md",
-        "line": 28,
+        "line": 29,
         "level": 3,
-        "title": "常見配置位置"
+        "title": "常見設定位置"
       }
     ],
     "常見陷阱": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 275,
+        "line": 323,
         "level": 2,
         "title": "常見陷阱"
       }
@@ -7408,20 +7480,20 @@
         "title": "平台擴充欄位"
       }
     ],
+    "平台擴展字段": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 169,
+        "level": 2,
+        "title": "平台擴展字段"
+      }
+    ],
     "平台擴展方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 364,
         "level": 3,
         "title": "平台擴展方法"
-      }
-    ],
-    "平台擴展欄位": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 121,
-        "level": 2,
-        "title": "平台擴展欄位"
       }
     ],
     "平台擴展訊息段": [
@@ -7535,7 +7607,7 @@
     "建立腳手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 534,
+        "line": 571,
         "level": 3,
         "title": "建立腳手架"
       }
@@ -7575,7 +7647,7 @@
     "從 SDK 實例存取": [
       {
         "document": "advanced/i18n.md",
-        "line": 471,
+        "line": 504,
         "level": 3,
         "title": "從 SDK 實例存取"
       }
@@ -7626,12 +7698,12 @@
         "title": "必填字段"
       }
     ],
-    "必填欄位映射": [
+    "必填字段映射": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 61,
+        "line": 109,
         "level": 2,
-        "title": "必填欄位映射"
+        "title": "必填字段映射"
       }
     ],
     "必需欄位": [
@@ -7794,12 +7866,12 @@
         "title": "手動建立專案"
       }
     ],
-    "手動註冊自定義翻譯（舊寫法）": [
+    "手動註冊自訂翻譯（舊寫法）": [
       {
         "document": "advanced/i18n.md",
         "line": 187,
         "level": 3,
-        "title": "手動註冊自定義翻譯（舊寫法）"
+        "title": "手動註冊自訂翻譯（舊寫法）"
       }
     ],
     "手動讀取配置（相容方式）": [
@@ -7893,7 +7965,7 @@
     "指令系統": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 149,
+        "line": 175,
         "level": 3,
         "title": "指令系統"
       }
@@ -7992,12 +8064,12 @@
         "title": "推薦停用慢載的場景（lazy_load=False）"
       }
     ],
-    "推薦寫法：透過 I18nClass 聲明翻譯鍵（v2.7.0+）": [
+    "推薦寫法：透過 I18nClass 宣告翻譯鍵（v2.7.0+）": [
       {
         "document": "advanced/i18n.md",
         "line": 81,
         "level": 3,
-        "title": "推薦寫法：透過 I18nClass 聲明翻譯鍵（v2.7.0+）"
+        "title": "推薦寫法：透過 I18nClass 宣告翻譯鍵（v2.7.0+）"
       }
     ],
     "提交流程": [
@@ -8485,7 +8557,7 @@
     "方法簽名": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 21,
+        "line": 69,
         "level": 3,
         "title": "方法簽名"
       }
@@ -8557,7 +8629,7 @@
     "日誌訊息": [
       {
         "document": "advanced/i18n.md",
-        "line": 544,
+        "line": 577,
         "level": 3,
         "title": "日誌訊息"
       }
@@ -8576,20 +8648,20 @@
         "title": "日誌記錄"
       }
     ],
+    "日誌設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 141,
+        "level": 2,
+        "title": "日誌設定"
+      }
+    ],
     "日誌資訊": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 537,
         "level": 3,
         "title": "日誌資訊"
-      }
-    ],
-    "日誌配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 95,
-        "level": 2,
-        "title": "日誌配置"
       }
     ],
     "更新已發布模組": [
@@ -8633,7 +8705,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 516,
+        "line": 549,
         "level": 2,
         "title": "最佳實踐"
       },
@@ -8645,13 +8717,13 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 379,
+        "line": 404,
         "level": 2,
         "title": "最佳實踐"
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 319,
+        "line": 367,
         "level": 2,
         "title": "最佳實踐"
       },
@@ -8821,7 +8893,7 @@
     "核心初始化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 67,
+        "line": 93,
         "level": 3,
         "title": "核心初始化"
       }
@@ -8901,7 +8973,7 @@
     "核心方法": [
       {
         "document": "advanced/i18n.md",
-        "line": 396,
+        "line": 429,
         "level": 4,
         "title": "核心方法"
       },
@@ -8989,9 +9061,17 @@
     "根頁面": [
       {
         "document": "advanced/router.md",
-        "line": 317,
+        "line": 342,
         "level": 3,
         "title": "根頁面"
+      }
+    ],
+    "框架設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 157,
+        "level": 2,
+        "title": "框架設定"
       }
     ],
     "框架輔助方法": [
@@ -9000,14 +9080,6 @@
         "line": 589,
         "level": 3,
         "title": "框架輔助方法"
-      }
-    ],
-    "框架配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 111,
-        "level": 2,
-        "title": "框架配置"
       }
     ],
     "條件監聽": [
@@ -9057,7 +9129,7 @@
     "標準事件定義": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 200,
+        "line": 226,
         "level": 2,
         "title": "標準事件定義"
       }
@@ -9175,7 +9247,7 @@
     "模組中使用範例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 251,
+        "line": 277,
         "level": 2,
         "title": "模組中使用範例"
       }
@@ -9212,12 +9284,12 @@
         "title": "模組層級文件註解"
       }
     ],
-    "模組按需加載": [
+    "模組按需載入": [
       {
         "document": "advanced/startup.md",
         "line": 277,
         "level": 3,
-        "title": "模組按需加載"
+        "title": "模組按需載入"
       }
     ],
     "模組核心概念": [
@@ -9239,7 +9311,7 @@
     "模組生命週期": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 89,
+        "line": 115,
         "level": 3,
         "title": "模組生命週期"
       },
@@ -9264,6 +9336,14 @@
         "title": "模組發現機制"
       }
     ],
+    "模組設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 256,
+        "level": 2,
+        "title": "模組設定"
+      }
+    ],
     "模組設計": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -9278,14 +9358,6 @@
         "line": 175,
         "level": 2,
         "title": "模組載入策略"
-      }
-    ],
-    "模組配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 210,
-        "level": 2,
-        "title": "模組配置"
       }
     ],
     "模組開發": [
@@ -9383,7 +9455,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 278,
+        "line": 304,
         "level": 2,
         "title": "注意事項"
       },
@@ -9438,6 +9510,14 @@
         "title": "消息事件處理"
       }
     ],
+    "消息事件額外字段": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 122,
+        "level": 3,
+        "title": "消息事件額外字段"
+      }
+    ],
     "消息內容": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -9468,6 +9548,14 @@
         "line": 153,
         "level": 3,
         "title": "消息撤回事件"
+      }
+    ],
+    "消息段轉換": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 137,
+        "level": 2,
+        "title": "消息段轉換"
       }
     ],
     "消息段類型": [
@@ -9508,20 +9596,20 @@
         "title": "消息編輯通知示例"
       }
     ],
+    "消息設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 234,
+        "level": 3,
+        "title": "消息設定"
+      }
+    ],
     "消息轉發事件": [
       {
         "document": "platform-guide/ideaura.md",
         "line": 169,
         "level": 3,
         "title": "消息轉發事件"
-      }
-    ],
-    "消息配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 188,
-        "level": 3,
-        "title": "消息配置"
       }
     ],
     "消息類型判斷": [
@@ -9808,12 +9896,28 @@
         "title": "獲取適配器實例"
       }
     ],
+    "環境診斷": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 433,
+        "level": 2,
+        "title": "環境診斷"
+      }
+    ],
     "環境變數": [
       {
         "document": "user-guide/deployment.md",
         "line": 57,
         "level": 3,
         "title": "環境變數"
+      }
+    ],
+    "環境變數覆蓋": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 38,
+        "level": 2,
+        "title": "環境變數覆蓋"
       }
     ],
     "生命週期": [
@@ -9847,7 +9951,7 @@
     "生命週期整合": [
       {
         "document": "advanced/router.md",
-        "line": 365,
+        "line": 390,
         "level": 2,
         "title": "生命週期整合"
       }
@@ -9868,14 +9972,6 @@
         "title": "生命週期鈎子"
       }
     ],
-    "生成類型存根": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 514,
-        "level": 3,
-        "title": "生成類型存根"
-      }
-    ],
     "生產環境配置": [
       {
         "document": "user-guide/deployment.md",
@@ -9884,12 +9980,12 @@
         "title": "生產環境配置"
       }
     ],
-    "用戶使用指南": [
+    "產生類型存根": [
       {
-        "document": "user-guide/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "用戶使用指南"
+        "document": "user-guide/cli-reference.md",
+        "line": 551,
+        "level": 3,
+        "title": "產生類型存根"
       }
     ],
     "用戶狀態變更事件": [
@@ -10232,6 +10328,14 @@
         "title": "監聽群聊訊息"
       }
     ],
+    "監聽者查詢（has_handlers）": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 77,
+        "level": 3,
+        "title": "監聽者查詢（has_handlers）"
+      }
+    ],
     "目的": [
       {
         "document": "styleguide/README.md",
@@ -10271,13 +10375,13 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 288,
+        "line": 314,
         "level": 2,
         "title": "相關文件"
       },
       {
         "document": "advanced/router.md",
-        "line": 389,
+        "line": 414,
         "level": 2,
         "title": "相關文件"
       },
@@ -10295,7 +10399,7 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 334,
+        "line": 356,
         "level": 2,
         "title": "相關文件"
       },
@@ -10332,6 +10436,12 @@
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 648,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 375,
         "level": 2,
         "title": "相關文件"
       },
@@ -10379,7 +10489,7 @@
       },
       {
         "document": "user-guide/README.md",
-        "line": 38,
+        "line": 39,
         "level": 2,
         "title": "相關文件"
       }
@@ -10394,12 +10504,6 @@
       {
         "document": "advanced/message-builder.md",
         "line": 185,
-        "level": 2,
-        "title": "相關文檔"
-      },
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 327,
         "level": 2,
         "title": "相關文檔"
       },
@@ -10629,7 +10733,7 @@
     "系統路由": [
       {
         "document": "advanced/router.md",
-        "line": 305,
+        "line": 330,
         "level": 2,
         "title": "系統路由"
       }
@@ -10666,6 +10770,14 @@
         "title": "統一的模組取得入口"
       }
     ],
+    "統計概覽": [
+      {
+        "document": "bug-tracker.md",
+        "line": 90,
+        "level": 2,
+        "title": "統計概覽"
+      }
+    ],
     "網絡客戶端": [
       {
         "document": "advanced/http-client.md",
@@ -10696,14 +10808,6 @@
         "line": 563,
         "level": 3,
         "title": "繼承關係"
-      }
-    ],
-    "统计概览": [
-      {
-        "document": "bug-tracker.md",
-        "line": 90,
-        "level": 2,
-        "title": "统计概览"
       }
     ],
     "群成員增加": [
@@ -10781,7 +10885,7 @@
     "翻譯鍵命名": [
       {
         "document": "advanced/i18n.md",
-        "line": 518,
+        "line": 551,
         "level": 3,
         "title": "翻譯鍵命名"
       }
@@ -10797,7 +10901,7 @@
     "自動文件": [
       {
         "document": "advanced/router.md",
-        "line": 279,
+        "line": 304,
         "level": 2,
         "title": "自動文件"
       }
@@ -10845,7 +10949,7 @@
     "與 CLI i18n 的關係": [
       {
         "document": "advanced/i18n.md",
-        "line": 554,
+        "line": 587,
         "level": 2,
         "title": "與 CLI i18n 的關係"
       }
@@ -10880,6 +10984,14 @@
         "line": 1,
         "level": 1,
         "title": "花楓咖啡館（Ideaura）平台特性文件"
+      }
+    ],
+    "萬用字元": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 53,
+        "level": 3,
+        "title": "萬用字元"
       }
     ],
     "處理交互事件": [
@@ -11064,10 +11176,26 @@
         "title": "規則組合與後台執行"
       }
     ],
+    "解載翻譯": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 258,
+        "level": 3,
+        "title": "解載翻譯"
+      }
+    ],
+    "解除安裝元件": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 505,
+        "level": 3,
+        "title": "解除安裝元件"
+      }
+    ],
     "觸發": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 233,
+        "line": 259,
         "level": 3,
         "title": "觸發"
       }
@@ -11110,22 +11238,6 @@
         "line": 131,
         "level": 3,
         "title": "訊息事件 detail_type 映射"
-      }
-    ],
-    "訊息事件額外欄位": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 74,
-        "level": 3,
-        "title": "訊息事件額外欄位"
-      }
-    ],
-    "訊息傳送": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 134,
-        "level": 3,
-        "title": "訊息傳送"
       }
     ],
     "訊息傳送方法": [
@@ -11192,14 +11304,6 @@
         "title": "訊息段資料提取"
       }
     ],
-    "訊息段轉換": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 89,
-        "level": 2,
-        "title": "訊息段轉換"
-      }
-    ],
     "訊息段類型": [
       {
         "document": "platform-guide/discord.md",
@@ -11212,6 +11316,14 @@
         "line": 229,
         "level": 3,
         "title": "訊息段類型"
+      }
+    ],
+    "訊息發送": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 160,
+        "level": 3,
+        "title": "訊息發送"
       }
     ],
     "訊息發送失敗": [
@@ -11278,12 +11390,28 @@
         "title": "設定"
       }
     ],
+    "設定欄位多語言": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 267,
+        "level": 2,
+        "title": "設定欄位多語言"
+      }
+    ],
     "設定欄位說明": [
       {
         "document": "platform-guide/wechatmp.md",
         "line": 115,
         "level": 3,
         "title": "設定欄位說明"
+      }
+    ],
+    "設定熱更新": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 63,
+        "level": 2,
+        "title": "設定熱更新"
       }
     ],
     "設定範例": [
@@ -11311,7 +11439,7 @@
     "設定變更": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 75,
+        "line": 101,
         "level": 3,
         "title": "設定變更"
       }
@@ -11328,6 +11456,22 @@
         "line": 92,
         "level": 2,
         "title": "設定選項"
+      }
+    ],
+    "設定項說明": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 531,
+        "level": 3,
+        "title": "設定項說明"
+      }
+    ],
+    "診斷命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 18,
+        "level": 2,
+        "title": "診斷命令"
       }
     ],
     "註冊 API": [
@@ -11349,7 +11493,7 @@
     "註冊入口": [
       {
         "document": "advanced/router.md",
-        "line": 330,
+        "line": 355,
         "level": 3,
         "title": "註冊入口"
       }
@@ -11365,7 +11509,7 @@
     "註冊與取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 225,
+        "line": 251,
         "level": 3,
         "title": "註冊與取消"
       }
@@ -11378,20 +11522,20 @@
         "title": "註冊處理器"
       }
     ],
+    "註冊設定翻譯": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 368,
+        "level": 3,
+        "title": "註冊設定翻譯"
+      }
+    ],
     "註冊跨平台方法": [
       {
         "document": "api-reference/event-system.md",
         "line": 613,
         "level": 3,
         "title": "註冊跨平台方法"
-      }
-    ],
-    "註冊配置翻譯": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 335,
-        "level": 3,
-        "title": "註冊配置翻譯"
       }
     ],
     "註解/裝飾器": [
@@ -11418,20 +11562,20 @@
         "title": "認證與 API 呼叫"
       }
     ],
-    "語言命令": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 335,
-        "level": 2,
-        "title": "語言命令"
-      }
-    ],
-    "語言檢測機制": [
+    "語言偵測機制": [
       {
         "document": "advanced/i18n.md",
         "line": 54,
         "level": 2,
-        "title": "語言檢測機制"
+        "title": "語言偵測機制"
+      }
+    ],
+    "語言命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 341,
+        "level": 2,
+        "title": "語言命令"
       }
     ],
     "調試技巧": [
@@ -11550,6 +11694,14 @@
         "title": "請求資訊"
       }
     ],
+    "請求關聯 ID（X-Request-ID）": [
+      {
+        "document": "advanced/router.md",
+        "line": 229,
+        "level": 2,
+        "title": "請求關聯 ID（X-Request-ID）"
+      }
+    ],
     "請求類型判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -11561,7 +11713,7 @@
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
-        "line": 147,
+        "line": 193,
         "level": 4,
         "title": "豁免清單"
       }
@@ -11613,7 +11765,7 @@
     "資訊查詢命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 156,
+        "line": 162,
         "level": 2,
         "title": "資訊查詢命令"
       }
@@ -11669,7 +11821,7 @@
     "路徑處理": [
       {
         "document": "advanced/router.md",
-        "line": 295,
+        "line": 320,
         "level": 2,
         "title": "路徑處理"
       }
@@ -11682,12 +11834,12 @@
         "title": "路由"
       }
     ],
-    "路由中介軟體": [
+    "路由中間件": [
       {
         "document": "advanced/router.md",
         "line": 212,
         "level": 2,
-        "title": "路由中介軟體"
+        "title": "路由中間件"
       }
     ],
     "路由伺服器": [
@@ -11720,6 +11872,14 @@
         "line": 1,
         "level": 1,
         "title": "路由管理器"
+      }
+    ],
+    "載入失敗時的診斷資訊": [
+      {
+        "document": "advanced/startup.md",
+        "line": 97,
+        "level": 4,
+        "title": "載入失敗時的診斷資訊"
       }
     ],
     "載入策略": [
@@ -11787,7 +11947,7 @@
     "返回值結構": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 34,
+        "line": 82,
         "level": 3,
         "title": "返回值結構"
       }
@@ -11848,20 +12008,20 @@
         "title": "透過環境變數切換"
       }
     ],
-    "透過配置 API 讀取 i18n 配置": [
+    "透過設定 API 讀取 i18n 設定": [
       {
         "document": "advanced/i18n.md",
-        "line": 485,
+        "line": 518,
         "level": 3,
-        "title": "透過配置 API 讀取 i18n 配置"
+        "title": "透過設定 API 讀取 i18n 設定"
       }
     ],
-    "透過配置文件切換": [
+    "透過設定檔案切換": [
       {
         "document": "advanced/i18n.md",
         "line": 28,
         "level": 3,
-        "title": "透過配置文件切換"
+        "title": "透過設定檔案切換"
       }
     ],
     "通用 request": [
@@ -11880,12 +12040,12 @@
         "title": "通用介面"
       }
     ],
-    "通用欄位（所有事件類型）": [
+    "通用字段（所有事件類型）": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 63,
+        "line": 111,
         "level": 3,
-        "title": "通用欄位（所有事件類型）"
+        "title": "通用字段（所有事件類型）"
       }
     ],
     "通知事件": [
@@ -11934,12 +12094,12 @@
         "title": "通知事件處理"
       }
     ],
-    "通知事件額外欄位": [
+    "通知事件額外字段": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 82,
+        "line": 130,
         "level": 3,
-        "title": "通知事件額外欄位"
+        "title": "通知事件額外字段"
       }
     ],
     "通知操作者": [
@@ -11966,18 +12126,10 @@
         "title": "通過 CLI 安裝"
       }
     ],
-    "通配符": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 53,
-        "level": 3,
-        "title": "通配符"
-      }
-    ],
     "速率限制": [
       {
         "document": "advanced/router.md",
-        "line": 229,
+        "line": 254,
         "level": 2,
         "title": "速率限制"
       }
@@ -12096,36 +12248,12 @@
         "title": "運作原理"
       }
     ],
-    "運行專案": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 491,
-        "level": 3,
-        "title": "運行專案"
-      }
-    ],
-    "運行控制命令": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 220,
-        "level": 2,
-        "title": "運行控制命令"
-      }
-    ],
     "運行時細粒度控制": [
       {
         "document": "advanced/startup.md",
         "line": 247,
         "level": 2,
         "title": "運行時細粒度控制"
-      }
-    ],
-    "運行時配置": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 483,
-        "level": 2,
-        "title": "運行時配置"
       }
     ],
     "適用場景": [
@@ -12213,7 +12341,7 @@
     "適配器生命週期": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 98,
+        "line": 124,
         "level": 3,
         "title": "適配器生命週期"
       }
@@ -12354,22 +12482,6 @@
         "title": "配置慢載"
       }
     ],
-    "配置文件位置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 6,
-        "level": 2,
-        "title": "配置文件位置"
-      }
-    ],
-    "配置文件說明": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 1,
-        "level": 1,
-        "title": "配置文件說明"
-      }
-    ],
     "配置檔": [
       {
         "document": "quick-start.md",
@@ -12378,12 +12490,20 @@
         "title": "配置檔"
       }
     ],
-    "配置欄位多語言": [
+    "配置檔位置": [
       {
-        "document": "advanced/i18n.md",
-        "line": 267,
+        "document": "user-guide/configuration.md",
+        "line": 6,
         "level": 2,
-        "title": "配置欄位多語言"
+        "title": "配置檔位置"
+      }
+    ],
+    "配置檔說明": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 1,
+        "level": 1,
+        "title": "配置檔說明"
       }
     ],
     "配置熱更新": [
@@ -12496,14 +12616,6 @@
         "title": "配置錯誤"
       }
     ],
-    "配置項說明": [
-      {
-        "document": "advanced/i18n.md",
-        "line": 498,
-        "level": 3,
-        "title": "配置項說明"
-      }
-    ],
     "配適器發送方法查詢": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -12515,7 +12627,7 @@
     "重啟": [
       {
         "document": "advanced/startup.md",
-        "line": 302,
+        "line": 324,
         "level": 2,
         "title": "重啟"
       }
@@ -12539,7 +12651,7 @@
     "鉤子斷點一覽": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 63,
+        "line": 89,
         "level": 2,
         "title": "鉤子斷點一覽"
       }
@@ -13011,7 +13123,7 @@
     "類型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 372,
+        "line": 378,
         "level": 2,
         "title": "類型存根命令"
       }
@@ -13062,14 +13174,6 @@
         "line": 1,
         "level": 1,
         "title": "首次貢獻實戰"
-      }
-    ],
-    "首頁入口": [
-      {
-        "document": "advanced/router.md",
-        "line": 326,
-        "level": 2,
-        "title": "首頁入口"
       }
     ],
     "驗證安裝": [
