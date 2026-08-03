@@ -8163,7 +8163,7 @@ class Main(BaseModule):
 - [Best Practices](../developer-guide/modules/best-practices.md) - Suggestions for using lifecycle events
 
 
-### 懒加载系统
+### 懶加载系统
 
 # Lazy-Loaded Module System
 
@@ -8902,374 +8902,6 @@ The CLI has an **independent** internationalization module (`ErisPulse.CLI.i18n`
 - **CLI i18n** — Used internally by the command-line interface; does not share translation data with Core
 
 This design ensures that changes to CLI translations do not affect the stability of the framework core.
-
-
-### Dashboard 视窗注册
-
-# Dashboard View Registration
-
-Dashboard supports other ErisPulse modules to register custom management pages into the Dashboard sidebar. After registration, users can directly switch to the module's exclusive view page within Dashboard without needing to develop a separate frontend interface.
-
-> **Prerequisites**
->
-> Dashboard view registration is an **optional feature** that requires the installation and loading of the [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) module.
->
-> - If the Dashboard module is **not installed** or **not loaded**, calling `sdk.Dashboard.register_view()` will throw an exception
-> - Be sure to wrap the registration code with `try/except` to ensure other functionality of the module itself is not affected
-> - It is recommended to check if Dashboard is available before registration: `hasattr(sdk, 'Dashboard') and sdk.Dashboard`
-
----
-
-## How It Works
-
-```
-Module on_load()
-  → Call sdk.Dashboard.register_view(...)
-  → Dashboard backend stores view information
-  → WebSocket notifies frontend
-  → Frontend dynamically creates sidebar navigation item + page container
-  → User clicks to view module window
-```
-
----
-
-## Registration API
-
-```python
-sdk.Dashboard.register_view(
-    id="MyModule",                    # Required, unique identifier
-    title="My Module",                # Chinese display name
-    title_en="My Module",             # English display name
-    icon_svg='<svg>...</svg>',        # Sidebar icon SVG
-    html_content='<div>...</div>',     # Page HTML content
-    js_content='function xxx() {}',    # Page JavaScript logic
-    css_content='.my-style {}',        # Optional custom CSS
-    iframe_url='',                     # iframe mode URL (exclusive with html_content)
-    loader="loadMyModuleView",         # JS function name to call when switching to this page
-    group="group_extensions",          # Sidebar group
-    group_title="",                    # Custom group Chinese name
-    group_title_en="",                 # Custom group English name
-)
-```
-
-### Parameter Description
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | `str` | Yes | Unique identifier for the view, module name recommended |
-| `title` | `str` | No | Chinese display name, defaults to `id` |
-| `title_en` | `str` | No | English display name, defaults to `title` |
-| `icon_svg` | `str` | No | Complete SVG string for the sidebar icon |
-| `html_content` | `str` | No* | Page HTML content for injection mode |
-| `js_content` | `str` | No | Page JavaScript code |
-| `css_content` | `str` | No | Page custom CSS styles |
-| `iframe_url` | `str` | No* | URL for iframe mode, `html_content` will be ignored when set |
-| `loader` | `str` | No | JavaScript function name that is automatically called when the page is activated |
-| `group` | `str` | No | Sidebar group identifier, defaults to `group_extensions` |
-| `group_title` | `str` | No | Custom group Chinese title |
-| `group_title_en` | `str` | No | Custom group English title |
-
-> *At least one of `html_content` or `iframe_url` must be provided, otherwise the page will be blank.
-
----
-
-## Two Injection Modes
-
-### Mode 1: HTML/JS Injection (Recommended)
-
-Directly provide HTML, JS, and CSS strings, and Dashboard will inject the content into the page. This mode is fully consistent with Dashboard styles, and it is recommended to use the CSS class names provided by Dashboard.
-
-```python
-sdk.Dashboard.register_view(
-    id="Weather",
-    title="Weather", title_en="Weather",
-    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
-    html_content='''
-        <h1 class="page-title">Weather Query</h1>
-        <p style="color:var(--tx-s);margin-bottom:16px">View current weather information</p>
-        <div class="grid-2">
-            <div class="card">
-                <div class="card-header">Current Weather</div>
-                <div class="card-body">
-                    <div id="weather-info" style="font-size:14px;color:var(--tx-s)">Click to refresh and load</div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-header">Operations</div>
-                <div class="card-body">
-                    <button class="btn btn-primary" onclick="refreshWeather()">Refresh</button>
-                </div>
-            </div>
-        </div>
-    ''',
-    js_content='''
-        async function loadWeatherView() { await refreshWeather(); }
-        async function refreshWeather() {
-            var el = document.getElementById('weather-info');
-            if (!el) return;
-            el.textContent = 'Loading...';
-            try {
-                var resp = await fetch('/Weather/api/current', {
-                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
-                });
-                var data = await resp.json();
-                el.innerHTML = '<p>City: ' + (data.city || '--') + '</p>' +
-                               '<p>Temperature: ' + (data.temp || '--') + '°C</p>' +
-                               '<p>Humidity: ' + (data.humidity || '--') + '%</p>';
-            } catch (e) {
-                el.textContent = 'Failed to load: ' + e.message;
-            }
-        }
-    ''',
-    loader="loadWeatherView",
-    group="group_tools",
-)
-```
-
-### Mode 2: iframe Embedding
-
-The module provides its own HTML page URL (which needs to register its own route), and Dashboard embeds it via iframe. Suitable for scenarios requiring completely independent UI or complex interactions.
-
-```python
-sdk.Dashboard.register_view(
-    id="MyVisualizer",
-    title="Data Visualizer", title_en="Data Visualizer",
-    iframe_url="/MyVisualizer/view",
-    group="group_tools",
-)
-```
-
-> iframe mode will automatically append a `token` parameter to the URL for authentication.
-
----
-
-## Sidebar Groups
-
-Modules can specify the sidebar group where their view should be placed. Dashboard has the following built-in groups:
-
-| Group ID | Chinese Name | Position |
-|----------|--------------|----------|
-| `group_overview` | Overview | Group 1 |
-| `group_events` | Events | Group 2 |
-| `group_extensions` | Extensions | Group 3 (Default) |
-| `group_system` | System | Group 4 |
-| `group_tools` | Tools | Group 5 |
-
-Specifying a built-in group name will append the module view to the end of that group:
-
-```python
-group="group_tools"  # Appended to "Tools" group
-```
-
-Custom group names (not starting with `group_`) can also be used, and Dashboard will automatically create a new group:
-
-```python
-group="my_group",
-group_title="My Group",
-group_title_en="My Group",
-```
-
----
-
-## Common CSS Class Names
-
-When module views use HTML injection mode, Dashboard's existing CSS class names can be used directly to maintain visual consistency:
-
-| Class Name | Purpose |
-|------------|---------|
-| `page-title` | Page title, e.g., `<h1 class="page-title">Title</h1>` |
-| `card` | Card container |
-| `card-header` | Card title bar |
-| `card-body` | Card content area |
-| `grid-2` | Two-column grid layout |
-| `grid-3` | Three-column grid layout |
-| `btn` | Basic button |
-| `btn-primary` | Primary button (blue) |
-| `btn-secondary` | Secondary button |
-| `btn-icon` | Icon button |
-| `btn-danger` | Danger operation button |
-
-Dashboard uses CSS variables to control theme colors, which can be directly referenced in module views:
-
-| CSS Variable | Purpose |
-|--------------|---------|
-| `var(--bg-p)` | Primary background color |
-| `var(--bg-s)` | Secondary background color |
-| `var(--bg-t)` | Tertiary background color (cards, etc.) |
-| `var(--tx-p)` | Primary text color |
-| `var(--tx-s)` | Secondary text color |
-| `var(--tx-t)` | Auxiliary text color |
-| `var(--bd)` | Border color |
-| `var(--accent)` | Accent color |
-| `var(--ok-c)` | Success color |
-| `var(--er-c)` | Error color |
-
-These variables will automatically switch based on Dashboard's light/dark theme, and no additional processing is needed from the module.
-
----
-
-## Authentication and API Calls
-
-When calling the module's own API from JavaScript in a module view, you need to carry Dashboard's Token for authentication:
-
-```javascript
-var token = localStorage.getItem('__ep_tk__');
-var resp = await fetch('/YourModule/api/data', {
-    headers: { 'Authorization': 'Bearer ' + token }
-});
-var data = await resp.json();
-```
-
-The module's API endpoints can decide whether to validate the token. If validation is needed, it can be extracted from the request header:
-
-```python
-from fastapi.responses import JSONResponse
-
-async def _api_data(self, request):
-    token = request.headers.get("Authorization", "").replace("Bearer ", "")
-    if not token:
-        return JSONResponse({"error": "Unauthorized"}, status_code=401)
-    return JSONResponse({"data": "hello"})
-```
-
----
-
-## Complete Module Example
-
-Here is a complete weather module example showing how to register a view, provide API data, and clean up resources when unloading:
-
-```python
-from ErisPulse import sdk
-from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.Core.Event import command
-
-
-class Main(BaseModule):
-    def __init__(self):
-        self.sdk = sdk
-        self.logger = sdk.logger.get_child("Weather")
-        self.config = self._load_config()
-
-    @staticmethod
-    def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
-        return ModuleLoadStrategy(lazy_load=False, priority=50)
-
-    async def on_load(self, event):
-        self._register_routes()
-        self._register_dashboard_view()
-        self.logger.info("Weather module loaded")
-
-    async def on_unload(self, event):
-        self._unregister_routes()
-        if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
-            self.sdk.Dashboard.unregister_view("Weather")
-        self.logger.info("Weather module unloaded")
-
-    def _load_config(self):
-        config = self.sdk.config.getConfig("Weather")
-        if not config:
-            default = {"city": "Beijing", "api_key": ""}
-            self.sdk.config.setConfig("Weather", default)
-            return default
-        return config
-
-    def _register_routes(self):
-        r = self.sdk.router
-        r.register_http_route("Weather", "/api/current",
-                              handler=self._api_current, methods=["GET"])
-
-    def _unregister_routes(self):
-        r = self.sdk.router
-        try:
-            r.unregister_http_route("Weather", "/api/current")
-        except Exception:
-            pass
-
-    async def _api_current(self, request):
-        from fastapi.responses import JSONResponse
-        return JSONResponse({
-            "city": self.config.get("city", "Beijing"),
-            "temp": 25,
-            "humidity": 60,
-        })
-
-    def _register_dashboard_view(self):
-        try:
-            dashboard = self.sdk.Dashboard
-            dashboard.register_view(
-                id="Weather",
-                title="Weather", title_en="Weather",
-                icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
-                html_content='''
-                    <h1 class="page-title">Weather Query</h1>
-                    <p style="color:var(--tx-s);margin-bottom:16px">View current weather information</p>
-                    <div class="grid-2">
-                        <div class="card">
-                            <div class="card-header">Current Weather</div>
-                            <div class="card-body">
-                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">Click to refresh and load</div>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">Operations</div>
-                            <div class="card-body">
-                                <button class="btn btn-primary" onclick="refreshWeather()">Refresh</button>
-                            </div>
-                        </div>
-                    </div>
-                ''',
-                js_content='''
-                    async function loadWeatherView() { await refreshWeather(); }
-                    async function refreshWeather() {
-                        var el = document.getElementById('weather-info');
-                        if (!el) return;
-                        el.textContent = 'Loading...';
-                        try {
-                            var resp = await fetch('/Weather/api/current', {
-                                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
-                            });
-                            var data = await resp.json();
-                            el.innerHTML = '<p>City: ' + (data.city || '--') + '</p>' +
-                                           '<p>Temperature: ' + (data.temp || '--') + '°C</p>' +
-                                           '<p>Humidity: ' + (data.humidity || '--') + '%</p>';
-                        } catch (e) {
-                            el.textContent = 'Failed to load: ' + e.message;
-                        }
-                    }
-                ''',
-                loader="loadWeatherView",
-                group="group_tools",
-            )
-        except Exception as e:
-            self.logger.warning(f"Failed to register Dashboard view: {e}")
-```
-
----
-
-## Unregistering Views
-
-When a module is unloaded, `unregister_view()` should be called to clean up registered views:
-
-```python
-async def on_unload(self, event):
-    if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
-        self.sdk.Dashboard.unregister_view("Weather")
-```
-
-After unregistering, the Dashboard frontend will remove the sidebar navigation items and page content through WebSocket in real time, no page refresh needed.
-
----
-
-## Considerations
-
-1. **Loading Order** — Dashboard has a loading priority of `99999` (high priority). Your module's priority should be lower than this value (e.g., `50`) to ensure Dashboard loads first
-2. **Defensive Programming** — Use `try/except` when registering views because the Dashboard module may not be installed or loaded
-3. **Resource Cleanup** — Call `unregister_view()` in `on_unload` to remove registered views
-4. **ID Uniqueness** — The `id` parameter must be unique throughout Dashboard. It is recommended to use the module name directly
-5. **SVG Icons** — `icon_svg` should be a complete `<svg>` tag. It is recommended to use `viewBox="0 0 24 24"` and `stroke="currentColor"` to inherit Dashboard theme colors
-6. **JS Function Naming** — Function names in `js_content` should be unique (e.g., `loadWeatherView`) to avoid conflicts with other modules
-7. **Dynamic Updates** — After registering/unregistering module views, the Dashboard frontend will update the sidebar through WebSocket in real time, no page refresh needed
 
 
 ### 启动流程与手动控制
@@ -11801,6 +11433,530 @@ All `ApiDSL` methods return the standard API response format (see [API Response 
 - [Sending Method Specification](docs/en/send-method-spec.md) - Send class method naming and parameter specification
 - [Request Operation Specification](docs/en/request-action-spec.md) - Usage of Request DSL
 - [Event Conversion Standard](docs/en/event-conversion.md) - Event format and message segment standards
+
+
+====
+生态模块
+====
+
+
+### Dashboard 使用与视窗注册
+
+# ErisPulse-Dashboard
+
+[ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) is a **Web Management Panel Module** directly maintained by ErisDev, providing ErisPulse with a visual runtime management interface: module control, configuration editing, log viewing, event stream monitoring, etc.
+
+> [!IMPORTANT]
+> Dashboard is **not** a built-in feature of the ErisPulse framework and requires separate installation:
+>
+> ```bash
+> epsdk install Dashboard
+> ```
+
+Dashboard also supports other ErisPulse modules to register custom management pages to the sidebar. Once registered, users can directly switch to the module's dedicated view page in the Dashboard without the need for additional development of independent frontend interfaces.
+
+> [!NOTE]
+> View registration is an **optional feature**.
+>
+> - If the Dashboard module is **not installed** or **not loaded**, calling `sdk.Dashboard.register_view()` will throw an exception
+> - Please be sure to wrap registration code with `try/except` to ensure other functionality of the module itself is not affected
+> - It is recommended to check if the Dashboard is available before registering: `hasattr(sdk, 'Dashboard') and sdk.Dashboard`
+
+---
+
+## How it works
+
+```
+Module on_load()
+  → Calls sdk.Dashboard.register_view(...)
+  → Dashboard backend stores view info
+  → WebSocket notifies frontend
+  → Frontend dynamically creates sidebar nav item + page container
+  → User clicks to view module view
+```
+
+---
+
+## Register API
+
+```python
+sdk.Dashboard.register_view(
+    id="MyModule",                    # Required, unique identifier
+    title="My Module",                # Chinese display name
+    title_en="My Module",             # English display name
+    icon_svg='<svg>...</svg>',        # Sidebar icon SVG
+    html_content='<div>...</div>',     # Page HTML content
+    js_content='function xxx() {}',    # Page JavaScript logic
+    css_content='.my-style {}',        # Optional custom CSS
+    iframe_url='',                     # iframe mode URL (choose one between html_content and iframe_url)
+    loader="loadMyModuleView",         # JS function name to call when switching to this page
+    group="group_extensions",          # Sidebar group
+    group_title="",                    # Custom group Chinese name
+    group_title_en="",                 # Custom group English name
+)
+```
+
+### Parameter Description
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | `str` | Yes | Unique identifier for the view, recommended to use module name |
+| `title` | `str` | No | Chinese display name, defaults to `id` |
+| `title_en` | `str` | No | English display name, defaults to `title` |
+| `icon_svg` | `str` | No | Full SVG string for the sidebar icon |
+| `html_content` | `str` | No* | Page HTML content for injection mode |
+| `js_content` | `str` | No | Page JavaScript code |
+| `css_content` | `str` | No | Page custom CSS styles |
+| `iframe_url` | `str` | No* | URL for iframe mode, will be ignored if `html_content` is set |
+| `loader` | `str` | No | JS function name to automatically call when page is activated |
+| `group` | `str` | No | Sidebar group identifier, default is `group_extensions` |
+| `group_title` | `str` | No | Custom group Chinese title |
+| `group_title_en` | `str` | No | Custom group English title |
+
+> *At least one of `html_content` and `iframe_url` must be provided, otherwise the page will be blank.
+
+---
+
+## Two Injection Modes
+
+### Mode 1: HTML/JS Injection (Recommended)
+
+Provide HTML, JS, CSS strings directly, and Dashboard will inject the content into the page. This mode is fully consistent with Dashboard styles; it is recommended to use the CSS class names provided by Dashboard.
+
+```python
+sdk.Dashboard.register_view(
+    id="HelloPage",
+    title="Hello Page", title_en="Hello",
+    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
+    html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">This is an example page</div></div>',
+    group="group_tools",
+)
+```
+
+> For a complete weather module example (including API routes, JS interaction, etc.), see [Complete Module Example](#complete-module-example) below.
+
+### Mode 2: iframe Embedding
+
+Module provides its own HTML page URL (must register routes by itself), and Dashboard embeds it via iframe. Suitable for scenarios requiring completely independent UI or complex interactions.
+
+```python
+sdk.Dashboard.register_view(
+    id="MyVisualizer",
+    title="Data Visualizer", title_en="Data Visualizer",
+    iframe_url="/MyVisualizer/view",
+    group="group_tools",
+)
+```
+
+> The iframe mode will automatically append a `token` parameter to the URL for authentication.
+
+---
+
+## Sidebar Groups
+
+Modules can specify which sidebar group the view belongs to. Dashboard includes the following built-in groups:
+
+| Group ID | Chinese Name | Position |
+|----------|--------------|----------|
+| `group_overview` | Overview | Group 1 |
+| `group_events` | Events | Group 2 |
+| `group_extensions` | Extensions | Group 3 (Default) |
+| `group_system` | System | Group 4 |
+| `group_tools` | Tools | Group 5 |
+
+Specify a built-in group name, and the module view will be appended to the end of that group:
+
+```python
+group="group_tools"  # Appends to the "Tools" group
+```
+
+You can also use a custom group name (not starting with `group_`), and Dashboard will automatically create a new group:
+
+```python
+group="my_group",
+group_title="My Group",
+group_title_en="My Group",
+```
+
+---
+
+## Common CSS Class Names
+
+When using the HTML injection mode for module views, you can directly use the existing CSS class names provided by Dashboard to maintain visual consistency:
+
+| Class Name | Usage |
+|------------|-------|
+| `page-title` | Page title, e.g., `<h1 class="page-title">Title</h1>` |
+| `card` | Card container |
+| `card-header` | Card title bar |
+| `card-body` | Card content area |
+| `grid-2` | Two-column grid layout |
+| `grid-3` | Three-column grid layout |
+| `btn` | Base button |
+| `btn-primary` | Primary button (blue) |
+| `btn-secondary` | Secondary button |
+| `btn-icon` | Icon button |
+| `btn-danger` | Dangerous action button |
+
+Dashboard uses CSS variables to control theme colors, which you can reference directly in your module view:
+
+| CSS Variable | Usage |
+|--------------|-------|
+| `var(--bg-p)` | Primary background color |
+| `var(--bg-s)` | Secondary background color |
+| `var(--bg-t)` | Tertiary background color (cards, etc.) |
+| `var(--tx-p)` | Primary text color |
+| `var(--tx-s)` | Secondary text color |
+| `var(--tx-t)` | Tertiary text color |
+| `var(--bd)` | Border color |
+| `var(--accent)` | Accent color |
+| `var(--ok-c)` | Success color |
+| `var(--er-c)` | Error color |
+
+These variables automatically switch according to Dashboard's light/dark theme; no extra processing is needed by the module.
+
+---
+
+## Authentication & API Calls
+
+When calling a module's own API in the JS of a module view, you need to carry the Dashboard's Token for authentication:
+
+```javascript
+var token = localStorage.getItem('__ep_tk__');
+var resp = await fetch('/YourModule/api/data', {
+    headers: { 'Authorization': 'Bearer ' + token }
+});
+var data = await resp.json();
+```
+
+Module API endpoints can decide whether to verify the Token themselves. If verification is required, extract it from the request headers:
+
+```python
+async def _api_data(self, request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not token:
+        return {"error": "Unauthorized"}, 401
+    return {"data": "hello"}
+```
+
+---
+
+## Complete Module Example
+
+The following is a complete weather module example demonstrating how to register a view, provide API data, and clean up resources on unload:
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.Event import command
+
+
+class Main(BaseModule):
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("Weather")
+        self.config = self._load_config()
+
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(lazy_load=False, priority=50)
+
+    async def on_load(self, event):
+        self._register_routes()
+        self._register_dashboard_view()
+        self.logger.info("Weather module loaded")
+
+    async def on_unload(self, event):
+        self._unregister_routes()
+        if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
+            self.sdk.Dashboard.unregister_view("Weather")
+        self.logger.info("Weather module unloaded")
+
+    def _load_config(self):
+        config = self.sdk.config.getConfig("Weather")
+        if not config:
+            default = {"city": "Beijing", "api_key": ""}
+            self.sdk.config.setConfig("Weather", default)
+            return default
+        return config
+
+    def _register_routes(self):
+        r = self.sdk.router
+        r.register_http_route("Weather", "/api/current",
+                              handler=self._api_current, methods=["GET"])
+
+    def _unregister_routes(self):
+        r = self.sdk.router
+        try:
+            r.unregister_http_route("Weather", "/api/current")
+        except Exception:
+            pass
+
+    async def _api_current(self, request):
+        return {
+            "city": self.config.get("city", "Beijing"),
+            "temp": 25,
+            "humidity": 60,
+        }
+
+    def _register_dashboard_view(self):
+        try:
+            dashboard = self.sdk.Dashboard
+            dashboard.register_view(
+                id="Weather",
+                title="Weather", title_en="Weather",
+                icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+                html_content='''
+                    <h1 class="page-title">Weather Query</h1>
+                    <p style="color:var(--tx-s);margin-bottom:16px">View current weather information</p>
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header">Current Weather</div>
+                            <div class="card-body">
+                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">Click refresh to load</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">Actions</div>
+                            <div class="card-body">
+                                <button class="btn btn-primary" onclick="refreshWeather()">Refresh</button>
+                            </div>
+                        </div>
+                    </div>
+                ''',
+                js_content='''
+                    async function loadWeatherView() { await refreshWeather(); }
+                    async function refreshWeather() {
+                        var el = document.getElementById('weather-info');
+                        if (!el) return;
+                        el.textContent = 'Loading...';
+                        try {
+                            var resp = await fetch('/Weather/api/current', {
+                                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
+                            });
+                            var data = await resp.json();
+                            el.innerHTML = '<p>City: ' + (data.city || '--') + '</p>' +
+                                           '<p>Temp: ' + (data.temp || '--') + '°C</p>' +
+                                           '<p>Humidity: ' + (data.humidity || '--') + '%</p>';
+                        } catch (e) {
+                            el.textContent = 'Load failed: ' + e.message;
+                        }
+                    }
+                ''',
+                loader="loadWeatherView",
+                group="group_tools",
+            )
+        except Exception as e:
+            self.logger.warning(f"Failed to register Dashboard view: {e}")
+```
+
+---
+
+## Unregister View
+
+When a module is unloaded, call `unregister_view()` to clean up the registered view:
+
+```python
+async def on_unload(self, event):
+    if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
+        self.sdk.Dashboard.unregister_view("Weather")
+```
+
+After unregistration, the Dashboard frontend will remove sidebar navigation items and page content in real-time via WebSocket, without requiring a page refresh.
+
+---
+
+## Considerations
+
+1. **Loading Order** — The loading priority of Dashboard is `99999` (high priority). Your module's priority should be lower than this value (e.g., `50`) to ensure Dashboard loads first
+2. **Defensive Programming** — Wrap view registration with `try/except`, as the Dashboard module might not be installed or loaded
+3. **Resource Cleanup** — Call `unregister_view()` in `on_unload` to remove registered views
+4. **ID Uniqueness** — The `id` parameter must be unique across the entire Dashboard; it is recommended to use the module name directly
+5. **SVG Icon** — `icon_svg` should be a complete `<svg>` tag; recommended size is `viewBox="0 0 24 24"` using `stroke="currentColor"` to inherit the Dashboard theme color
+6. **JS Function Naming** — Function names in `js_content` should be unique (e.g., `loadWeatherView`) to avoid conflicts with other modules
+7. **Dynamic Updates** — After a module registers/unregisters views, the Dashboard frontend will update the sidebar in real-time via WebSocket, without page refresh
+
+
+### Takumi 图片渲染
+
+# ErisPulse-Takumi
+
+[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) is a **third-party image rendering module** maintained by ccd2s, based on [takumi-py](https://github.com/BalconyJH/takumi-py), allowing you to render images in your Bot: HTML, node trees, Jinja templates, SVG, and animations are all supported, and it comes with **built-in Chinese and English fonts** (Noto Sans SC / Roboto / Source Code Pro), eliminating the need for additional font configuration.
+
+> [!IMPORTANT]  
+> Takumi is **not** a built-in feature of the ErisPulse framework and must be installed separately:  
+>  
+> ```bash
+> epsdk install Takumi
+> ```
+
+It is especially suitable for the following scenarios:
+
+- Rendering data/statistics into beautiful card images for sending
+- Converting Markdown / long text into stable-formatted images to avoid platform style differences
+- Generating SVG / animations for dynamic visual effects
+- Mixed Chinese and English text output (built-in fonts work out of the box)
+
+---
+
+## Installation and Activation
+
+```bash
+epsdk install Takumi
+```
+
+After installation, the module will load automatically. Just confirm it is enabled in the configuration file:
+
+```toml
+[Takumi]
+enabled = true
+```
+
+---
+
+## Quick Start
+
+After the module loads automatically, you can obtain it through the module manager or use the `sdk` shortcut:
+
+```python
+from ErisPulse import sdk
+
+takumi = sdk.module.get("Takumi")
+# Equivalent notation: takumi = sdk.Takumi
+```
+
+### Rendering HTML
+
+The most commonly used method — rendering a string of HTML + CSS into a PNG:
+
+```python
+png = takumi.render_html(
+    """
+    <div class="card">
+      <h1>Hello, ErisPulse</h1>
+      <p>Rendered by Takumi</p>
+    </div>
+    """,
+    stylesheets=["""
+    .card {
+      width: 800px;
+      height: 400px;
+      padding: 48px;
+      color: white;
+      background: #111827;
+      font-family: "Noto Sans SC";
+    }
+    """],
+    width=800,
+    height=400,
+    lang="zh-CN",
+)
+```
+
+`png` is of type `bytes`, and can be sent using `event.reply(png, method="Image")` (see [Sending Rendered Results](#sending-rendered-results)).
+
+### Rendering Node Tree
+
+No need to write HTML manually; you can describe the structure with a dictionary, suitable for programmatic assembly:
+
+```python
+png = takumi.render_node(
+    {
+        "type": "text",
+        "text": "Both Chinese and English can be rendered directly",
+        "style": {"fontSize": 48, "color": "#111827"},
+    },
+    width=800,
+    height=200,
+    lang="zh-CN",
+)
+```
+
+---
+
+## Fonts and Renderers
+
+### Built-in Fonts
+
+Takumi has already bundled commonly used fonts, so no additional installation is required:
+
+| Resource | Description |
+|----------|-------------|
+| `takumi.fonts` | List of built-in font file names |
+| `takumi.families` | List of registered font families |
+
+Convenient methods (`render_html` / `render_node`) automatically inject this font fallback stack; if you call the underlying renderer directly, you must pass `font_families` yourself.
+
+### Native Renderer
+
+`takumi.renderer` is the original `takumi_py.Renderer` instance. The convenient methods have automatically injected the built-in font fallback stack; **when calling the renderer directly, you must pass families yourself**:
+
+```python
+png = takumi.renderer.render_html(
+    "<div>Hello</div>",
+    font_families=takumi.families,
+    lang="zh-CN",
+)
+```
+
+### Independent Renderer
+
+When you need to isolate font / image / resource caching (e.g., long-lived processes, multi-tenant scenarios), you can create a new `Renderer`, and the built-in fonts will be automatically registered:
+
+```python
+renderer = takumi.create_renderer(cache_max_bytes=64 * 1024 * 1024)
+
+png = renderer.render_html(
+    "<div>Independent Renderer</div>",
+    font_families=takumi.families,
+    width=800,
+    height=200,
+    lang="zh-CN",
+)
+```
+
+`create_renderer()` accepts the constructor parameters of `takumi_py.Renderer`:
+
+- `load_default_fonts=False` (default): Only load built-in fonts
+- `load_default_fonts=True`: Load both Takumi's built-in fonts and default fonts
+- `fonts=[...]`: Register custom fonts on top of the default ones
+
+> Independent instances do not go through the module proxy, so to retain a unified built-in font fallback stack, you must explicitly pass `font_families=takumi.families`.
+
+If `font_families` is explicitly passed, the module will respect the caller's settings and no longer inject the default fallback stack. `RenderOptions(font_families=...)` is also valid.
+
+---
+
+## Sending Rendered Results
+
+After rendering an image, you can reply directly via the event:
+
+```python
+from ErisPulse import sdk
+
+takumi = sdk.Takumi
+png = takumi.render_html("<div>Hello</div>", lang="zh-CN")
+
+# Method 1: Reply directly using the Image method
+await event.reply(png, method="Image")
+
+# Method 2: Reply using OneBot12 message segments
+from ErisPulse.Core.Event import MessageBuilder
+await event.reply_ob12(
+    MessageBuilder().image(png).build()
+)
+```
+
+> Different platforms handle image encapsulation uniformly through adapters, so there is no need to worry about underlying differences. See [MessageBuilder Detailed Explanation](../advanced/message-builder.md) and [Send Method Specification](../standards/send-method-spec.md).
+
+---
+
+## Related Links
+
+- PyPI: <https://pypi.org/project/ErisPulse-Takumi/>
+- Repository: <https://github.com/ccd2s/ErispulseTakumi> (author [@ccd2s](https://github.com/ccd2s))
+- Underlying Engine: <https://github.com/BalconyJH/takumi-py>
 
 
 ======

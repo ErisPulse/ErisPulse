@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1465,
+  "total_keywords": 1485,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2638,6 +2638,22 @@
         "title": "ErisPulse 適配器標準化回傳規範"
       }
     ],
+    "ErisPulse-Dashboard": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Dashboard"
+      }
+    ],
+    "ErisPulse-Takumi": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Takumi"
+      }
+    ],
     "Event Mixin 擴展方法": [
       {
         "document": "platform-guide/telegram.md",
@@ -4886,6 +4902,14 @@
         "title": "互動方法示例"
       }
     ],
+    "五、我要為 ErisPulse 貢獻": [
+      {
+        "document": "README.md",
+        "line": 63,
+        "level": 3,
+        "title": "五、我要為 ErisPulse 貢獻"
+      }
+    ],
     "什麼是適配器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -5210,6 +5234,12 @@
         "line": 103,
         "level": 2,
         "title": "側邊欄分組"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 111,
+        "level": 2,
+        "title": "側邊欄分組"
       }
     ],
     "備份": [
@@ -5438,6 +5468,14 @@
         "title": "內容編寫規範"
       }
     ],
+    "內建字型": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 98,
+        "level": 3,
+        "title": "內建字型"
+      }
+    ],
     "內建確認詞": [
       {
         "document": "getting-started/event-handling.md",
@@ -5494,10 +5532,18 @@
         "title": "兩種注入模式"
       }
     ],
+    "兩種註入模式": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 76,
+        "level": 2,
+        "title": "兩種註入模式"
+      }
+    ],
     "其他": [
       {
         "document": "README.md",
-        "line": 72,
+        "line": 81,
         "level": 2,
         "title": "其他"
       }
@@ -5637,7 +5683,7 @@
     "前置知識": [
       {
         "document": "advanced/README.md",
-        "line": 27,
+        "line": 29,
         "level": 2,
         "title": "前置知識"
       }
@@ -5752,6 +5798,14 @@
         "title": "原始資料"
       }
     ],
+    "原生 Renderer": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 109,
+        "level": 3,
+        "title": "原生 Renderer"
+      }
+    ],
     "參數化查詢": [
       {
         "document": "advanced/sql-builder.md",
@@ -5771,6 +5825,12 @@
         "document": "advanced/http-client.md",
         "line": 157,
         "level": 2,
+        "title": "參數說明"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 55,
+        "level": 3,
         "title": "參數說明"
       }
     ],
@@ -6082,12 +6142,12 @@
         "title": "嚴格模式"
       }
     ],
-    "四、我要為 ErisPulse 貢獻": [
+    "四、推薦生態模組": [
       {
         "document": "README.md",
-        "line": 54,
+        "line": 53,
         "level": 3,
-        "title": "四、我要為 ErisPulse 貢獻"
+        "title": "四、推薦生態模組"
       }
     ],
     "回應": [
@@ -6874,6 +6934,14 @@
         "title": "子日誌器"
       }
     ],
+    "字型與渲染器": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 96,
+        "level": 2,
+        "title": "字型與渲染器"
+      }
+    ],
     "字段說明": [
       {
         "document": "bug-tracker.md",
@@ -6982,6 +7050,14 @@
         "title": "安裝模組"
       }
     ],
+    "安裝與啟用": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 21,
+        "level": 2,
+        "title": "安裝與啟用"
+      }
+    ],
     "完整 API 參考": [
       {
         "document": "advanced/lifecycle.md",
@@ -7012,6 +7088,14 @@
         "line": 192,
         "level": 2,
         "title": "完整模組示例"
+      }
+    ],
+    "完整模組範例": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 200,
+        "level": 2,
+        "title": "完整模組範例"
       }
     ],
     "完整示例": [
@@ -7350,6 +7434,14 @@
         "line": 347,
         "level": 3,
         "title": "帶驗證的等待回覆"
+      }
+    ],
+    "常用 CSS 類別名稱": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 139,
+        "level": 2,
+        "title": "常用 CSS 類別名稱"
       }
     ],
     "常用 CSS 類名": [
@@ -7714,6 +7806,14 @@
         "title": "必需欄位"
       }
     ],
+    "快速入門": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 36,
+        "level": 2,
+        "title": "快速入門"
+      }
+    ],
     "快速初始化": [
       {
         "document": "quick-start.md",
@@ -7832,6 +7932,14 @@
         "line": 33,
         "level": 4,
         "title": "成功回應範例"
+      }
+    ],
+    "我也想把自己的模組列在這裡？": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 23,
+        "level": 2,
+        "title": "我也想把自己的模組列在這裡？"
       }
     ],
     "房間邀請": [
@@ -8070,6 +8178,14 @@
         "line": 81,
         "level": 3,
         "title": "推薦寫法：透過 I18nClass 宣告翻譯鍵（v2.7.0+）"
+      }
+    ],
+    "推薦模組": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 14,
+        "level": 2,
+        "title": "推薦模組"
       }
     ],
     "提交流程": [
@@ -9222,10 +9338,24 @@
         "title": "模式一：HTML/JS 注入（推薦）"
       }
     ],
+    "模式一：HTML/JS 註入（推薦）": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 78,
+        "level": 3,
+        "title": "模式一：HTML/JS 註入（推薦）"
+      }
+    ],
     "模式二：iframe 嵌入": [
       {
         "document": "advanced/dashboard-view.md",
         "line": 86,
+        "level": 3,
+        "title": "模式二：iframe 嵌入"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 94,
         "level": 3,
         "title": "模式二：iframe 嵌入"
       }
@@ -9460,6 +9590,12 @@
         "title": "注意事項"
       },
       {
+        "document": "ecosystem/dashboard.md",
+        "line": 326,
+        "level": 2,
+        "title": "注意事項"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 430,
         "level": 2,
@@ -9664,6 +9800,22 @@
         "title": "測試模組"
       }
     ],
+    "渲染 HTML": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 47,
+        "level": 3,
+        "title": "渲染 HTML"
+      }
+    ],
+    "渲染節點樹": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 77,
+        "level": 3,
+        "title": "渲染節點樹"
+      }
+    ],
     "準備工作": [
       {
         "document": "contributing/first-contribution.md",
@@ -9858,6 +10010,14 @@
         "title": "特殊欄位範例"
       }
     ],
+    "獨立 Renderer": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 121,
+        "level": 3,
+        "title": "獨立 Renderer"
+      }
+    ],
     "獲取協助": [
       {
         "document": "terminology.md",
@@ -9869,7 +10029,7 @@
     "獲取幫助": [
       {
         "document": "README.md",
-        "line": 78,
+        "line": 87,
         "level": 2,
         "title": "獲取幫助"
       },
@@ -9972,6 +10132,14 @@
         "title": "生命週期鈎子"
       }
     ],
+    "生態模組": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "生態模組"
+      }
+    ],
     "生產環境配置": [
       {
         "document": "user-guide/deployment.md",
@@ -10066,6 +10234,14 @@
         "line": 576,
         "level": 4,
         "title": "登出方法"
+      }
+    ],
+    "登出視窗": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 312,
+        "level": 2,
+        "title": "登出視窗"
       }
     ],
     "發布": [
@@ -10230,6 +10406,14 @@
         "line": 130,
         "level": 2,
         "title": "發送方法返回值"
+      }
+    ],
+    "發送渲染結果": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 149,
+        "level": 2,
+        "title": "發送渲染結果"
       }
     ],
     "發送者資訊": [
@@ -10517,7 +10701,13 @@
     "相關連結": [
       {
         "document": "README.md",
-        "line": 84,
+        "line": 93,
+        "level": 2,
+        "title": "相關連結"
+      },
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 173,
         "level": 2,
         "title": "相關連結"
       }
@@ -11480,6 +11670,12 @@
         "line": 28,
         "level": 2,
         "title": "註冊 API"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 36,
+        "level": 2,
+        "title": "註冊 API"
       }
     ],
     "註冊中間件": [
@@ -11558,6 +11754,12 @@
       {
         "document": "advanced/dashboard-view.md",
         "line": 168,
+        "level": 2,
+        "title": "認證與 API 呼叫"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 176,
         "level": 2,
         "title": "認證與 API 呼叫"
       }
@@ -12246,6 +12448,12 @@
         "line": 259,
         "level": 3,
         "title": "運作原理"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 23,
+        "level": 2,
+        "title": "運作原理"
       }
     ],
     "運行時細粒度控制": [
@@ -12267,7 +12475,7 @@
     "適用對象": [
       {
         "document": "advanced/README.md",
-        "line": 19,
+        "line": 21,
         "level": 2,
         "title": "適用對象"
       },
@@ -12901,7 +13109,7 @@
     "開發方式": [
       {
         "document": "README.md",
-        "line": 65,
+        "line": 74,
         "level": 2,
         "title": "開發方式"
       }

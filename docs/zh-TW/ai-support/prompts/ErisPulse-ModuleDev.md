@@ -7368,7 +7368,7 @@ class Main(BaseModule):
 - [最佳實踐](../developer-guide/modules/best-practices.md) - 生命週期事件使用建議
 
 
-### 懒加载系统
+### 懶加载系统
 
 # 慢載模組系統
 
@@ -8292,336 +8292,6 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 這種設計確保 CLI 的翻譯變更不會影響框架核心的穩定性。
 
 
-### Dashboard 视窗注册
-
-# Dashboard 視窗註冊
-
-Dashboard 支援其他 ErisPulse 模組將自訂的管理頁面註冊到 Dashboard 的側邊欄中。註冊後，使用者可以直接在 Dashboard 中切換到該模組的專屬視窗頁面，無需額外開發獨立的前端介面。
-
-> **前提條件**
->
-> Dashboard 視窗註冊是**可選功能**，需要安裝並載入 [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) 模組。
->
-> - 如果 Dashboard 模組**未安裝**或**未載入**，呼叫 `sdk.Dashboard.register_view()` 會拋出異常
-> - 請務必使用 `try/except` 包裹註冊程式碼，確保模組本身的其他功能不受影響
-> - 建議在註冊前檢查 Dashboard 是否可用：`hasattr(sdk, 'Dashboard') and sdk.Dashboard`
-
----
-
-## 工作原理
-
-```
-模組 on_load()
-  → 呼叫 sdk.Dashboard.register_view(...)
-  → Dashboard 後端儲存視窗資訊
-  → WebSocket 通知前端
-  → 前端動態建立側邊欄導航項 + 頁面容器
-  → 使用者點擊即可查看模組視窗
-```
-
----
-
-## 註冊 API
-
-```python
-sdk.Dashboard.register_view(
-    id="MyModule",                    # 必填，唯一標識
-    title="我的模組",                  # 中文名稱
-    title_en="My Module",             # 英文名稱
-    icon_svg='<svg>...</svg>',        # 側邊欄圖標 SVG
-    html_content='<div>...</div>',     # 頁面 HTML 內容
-    js_content='function xxx() {}',    # 頁面 JavaScript 邏輯
-    css_content='.my-style {}',        # 可選自訂 CSS
-    iframe_url='',                     # iframe 模式 URL（與 html_content 二選一）
-    loader="loadMyModuleView",         # 切換到該頁面時呼叫的 JS 函數名
-    group="group_extensions",          # 側邊欄分組
-    group_title="",                    # 自訂分組中文名
-    group_title_en="",                 # 自訂分組英文名
-)
-```
-
-### 參數說明
-
-| 參數 | 類型 | 必填 | 說明 |
-|------|------|------|------|
-| `id` | `str` | 是 | 視窗唯一標識，建議使用模組名稱 |
-| `title` | `str` | 否 | 中文顯示名稱，預設使用 `id` |
-| `title_en` | `str` | 否 | 英文顯示名稱，預設使用 `title` |
-| `icon_svg` | `str` | 否 | 側邊欄圖標的完整 SVG 字符串 |
-| `html_content` | `str` | 否* | 注入模式的頁面 HTML 內容 |
-| `js_content` | `str` | 否 | 頁面 JavaScript 程式碼 |
-| `css_content` | `str` | 否 | 頁面自訂 CSS 樣式 |
-| `iframe_url` | `str` | 否* | iframe 模式的 URL，設定後忽略 `html_content` |
-| `loader` | `str` | 否 | 頁面激活時自動呼叫的 JS 函數名 |
-| `group` | `str` | 否 | 側邊欄分組標識，預設 `group_extensions` |
-| `group_title` | `str` | 否 | 自訂分組的中文標題 |
-| `group_title_en` | `str` | 否 | 自訂分組的英文標題 |
-
-> *`html_content` 和 `iframe_url` 至少提供一個，否則頁面為空白。
-
----
-
-## 兩種注入模式
-
-### 模式一：HTML/JS 注入（推薦）
-
-直接提供 HTML、JS、CSS 字符串，Dashboard 會將內容注入到頁面中。該模式與 Dashboard 樣式完全一致，推薦使用 Dashboard 提供的 CSS 類名。
-
-```python
-sdk.Dashboard.register_view(
-    id="HelloPage",
-    title="你好頁面", title_en="Hello",
-    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
-    html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">這是一個示例頁面</div></div>',
-    group="group_tools",
-)
-```
-
-> 完整的天氣模組示例（包含 API 路由、JS 互動等）請見下方 [完整模組示例](#完整模組示例)。
-
-### 模式二：iframe 嵌入
-
-模組提供自己的 HTML 頁面 URL（需自行註冊路由），Dashboard 以 iframe 方式嵌入。適合需要完全獨立 UI 或複雜互動的場景。
-
-```python
-sdk.Dashboard.register_view(
-    id="MyVisualizer",
-    title="數據可視化", title_en="Data Visualizer",
-    iframe_url="/MyVisualizer/view",
-    group="group_tools",
-)
-```
-
-> iframe 模式會自動在 URL 後追加 `token` 參數用於認證。
-
----
-
-## 側邊欄分組
-
-模組可指定視窗所在的側邊欄分組。Dashboard 內建以下分組：
-
-| 分組標識 | 中文名 | 位置 |
-|---------|--------|------|
-| `group_overview` | 概覽 | 第1組 |
-| `group_events` | 事件 | 第2組 |
-| `group_extensions` | 擴展 | 第3組（預設） |
-| `group_system` | 系統 | 第4組 |
-| `group_tools` | 工具 | 第5組 |
-
-指定內建分組名，模組視窗會追加到該分組末尾：
-
-```python
-group="group_tools"  # 追加到"工具"分組
-```
-
-也可以使用自訂分組名（不以 `group_` 開頭），Dashboard 會自動建立新分組：
-
-```python
-group="my_group",
-group_title="我的分組",
-group_title_en="My Group",
-```
-
----
-
-## 常用 CSS 類名
-
-模組視窗使用 HTML 注入模式時，可直接使用 Dashboard 已有的 CSS 類名來保持視覺一致性：
-
-| 類名 | 用途 |
-|------|------|
-| `page-title` | 頁面標題，如 `<h1 class="page-title">標題</h1>` |
-| `card` | 卡片容器 |
-| `card-header` | 卡片標題欄 |
-| `card-body` | 卡片內容區域 |
-| `grid-2` | 兩列網格佈局 |
-| `grid-3` | 三列網格佈局 |
-| `btn` | 基礎按鈕 |
-| `btn-primary` | 主按鈕（藍色） |
-| `btn-secondary` | 次要按鈕 |
-| `btn-icon` | 圖標按鈕 |
-| `btn-danger` | 危險操作按鈕 |
-
-Dashboard 使用 CSS 變量控制主題色，你可以在模組視窗中直接引用：
-
-| CSS 變量 | 用途 |
-|----------|------|
-| `var(--bg-p)` | 主背景色 |
-| `var(--bg-s)` | 次背景色 |
-| `var(--bg-t)` | 三级背景色（卡片等） |
-| `var(--tx-p)` | 主文字色 |
-| `var(--tx-s)` | 次文字色 |
-| `var(--tx-t)` | 輔助文字色 |
-| `var(--bd)` | 邊框色 |
-| `var(--accent)` | 強調色 |
-| `var(--ok-c)` | 成功色 |
-| `var(--er-c)` | 錯誤色 |
-
-這些變量會根據 Dashboard 的亮色/暗色主題自動切換，模組無需額外處理。
-
----
-
-## 認證與 API 呼叫
-
-在模組視窗的 JS 中呼叫模組自己的 API 時，需要攜帶 Dashboard 的 Token 進行認證：
-
-```javascript
-var token = localStorage.getItem('__ep_tk__');
-var resp = await fetch('/YourModule/api/data', {
-    headers: { 'Authorization': 'Bearer ' + token }
-});
-var data = await resp.json();
-```
-
-模組的 API 端點可以自行決定是否驗證 Token。如果需要驗證，可以從請求頭中提取：
-
-```python
-async def _api_data(self, request):
-    token = request.headers.get("Authorization", "").replace("Bearer ", "")
-    if not token:
-        return {"error": "Unauthorized"}, 401
-    return {"data": "hello"}
-```
-
----
-
-## 完整模組示例
-
-以下是一個完整的天氣模組示例，展示如何註冊視窗、提供 API 數據、以及在卸載時清理資源：
-
-```python
-from ErisPulse import sdk
-from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.Core.Event import command
-
-
-class Main(BaseModule):
-    def __init__(self):
-        self.sdk = sdk
-        self.logger = sdk.logger.get_child("Weather")
-        self.config = self._load_config()
-
-    @staticmethod
-    def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
-        return ModuleLoadStrategy(lazy_load=False, priority=50)
-
-    async def on_load(self, event):
-        self._register_routes()
-        self._register_dashboard_view()
-        self.logger.info("天氣模組已載入")
-
-    async def on_unload(self, event):
-        self._unregister_routes()
-        if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
-            self.sdk.Dashboard.unregister_view("Weather")
-        self.logger.info("天氣模組已卸載")
-
-    def _load_config(self):
-        config = self.sdk.config.getConfig("Weather")
-        if not config:
-            default = {"city": "北京", "api_key": ""}
-            self.sdk.config.setConfig("Weather", default)
-            return default
-        return config
-
-    def _register_routes(self):
-        r = self.sdk.router
-        r.register_http_route("Weather", "/api/current",
-                              handler=self._api_current, methods=["GET"])
-
-    def _unregister_routes(self):
-        r = self.sdk.router
-        try:
-            r.unregister_http_route("Weather", "/api/current")
-        except Exception:
-            pass
-
-    async def _api_current(self, request):
-        return {
-            "city": self.config.get("city", "北京"),
-            "temp": 25,
-            "humidity": 60,
-        }
-
-    def _register_dashboard_view(self):
-        try:
-            dashboard = self.sdk.Dashboard
-            dashboard.register_view(
-                id="Weather",
-                title="天氣", title_en="Weather",
-                icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
-                html_content='''
-                    <h1 class="page-title">天氣查詢</h1>
-                    <p style="color:var(--tx-s);margin-bottom:16px">查看當前天氣資訊</p>
-                    <div class="grid-2">
-                        <div class="card">
-                            <div class="card-header">當前天氣</div>
-                            <div class="card-body">
-                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">點擊刷新載入</div>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">操作</div>
-                            <div class="card-body">
-                                <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
-                            </div>
-                        </div>
-                    </div>
-                ''',
-                js_content='''
-                    async function loadWeatherView() { await refreshWeather(); }
-                    async function refreshWeather() {
-                        var el = document.getElementById('weather-info');
-                        if (!el) return;
-                        el.textContent = '載入中...';
-                        try {
-                            var resp = await fetch('/Weather/api/current', {
-                                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
-                            });
-                            var data = await resp.json();
-                            el.innerHTML = '<p>城市: ' + (data.city || '--') + '</p>' +
-                                           '<p>溫度: ' + (data.temp || '--') + '°C</p>' +
-                                           '<p>濕度: ' + (data.humidity || '--') + '%</p>';
-                        } catch (e) {
-                            el.textContent = '載入失敗: ' + e.message;
-                        }
-                    }
-                ''',
-                loader="loadWeatherView",
-                group="group_tools",
-            )
-        except Exception as e:
-            self.logger.warning(f"註冊 Dashboard 視窗失敗: {e}")
-```
-
----
-
-## 註銷視窗
-
-模組卸載時應呼叫 `unregister_view()` 清理已註冊的視窗：
-
-```python
-async def on_unload(self, event):
-    if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
-        self.sdk.Dashboard.unregister_view("Weather")
-```
-
-註銷後 Dashboard 前端會透過 WebSocket 即時移除側邊欄導航項和頁面內容，無需使用者刷新。
-
----
-
-## 注意事項
-
-1. **載入順序** — Dashboard 的載入優先級為 `99999`（高優先級），你的模組優先級應低於此值（如 `50`），確保 Dashboard 先載入完成
-2. **防禦性編程** — 註冊視窗時使用 `try/except` 包裹，因為 Dashboard 模組可能未安裝或未載入
-3. **資源清理** — 在 `on_unload` 中呼叫 `unregister_view()` 移除已註冊的視窗
-4. **ID 唯一性** — `id` 參數在整个 Dashboard 中必須唯一，建議直接使用模組名稱
-5. **SVG 圖標** — `icon_svg` 應為完整的 `<svg>` 標籤，建議尺寸使用 `viewBox="0 0 24 24"`，使用 `stroke="currentColor"` 繼承 Dashboard 主題色
-6. **JS 函數命名** — `js_content` 中的函數名應具有唯一性（如 `loadWeatherView`），避免與其他模組衝突
-7. **動態更新** — 模組註冊/註銷視窗後，Dashboard 前端會透過 WebSocket 實時更新側邊欄，無需刷新頁面
-
-
 ### 启动流程与手动控制
 
 # 啟動流程與手動控制
@@ -9276,6 +8946,530 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 - [介面卡開發指南](../developer-guide/adapters/) - 介面卡開發完整指南
 
 請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+
+====
+生态模块
+====
+
+
+### Dashboard 使用与视窗注册
+
+# ErisPulse-Dashboard
+
+[ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) 是 ErisDev 直接維護的 **Web 管理面板模組**，為 ErisPulse 提供視覺化的執行階段管理介面：模組啟停、設定編輯、日誌查看、事件流監控等。
+
+> [!IMPORTANT]
+> Dashboard **不是** ErisPulse 框架的內建功能，需要單獨安裝：
+>
+> ```bash
+> epsdk install Dashboard
+> ```
+
+Dashboard 還支援其他 ErisPulse 模組將自訂的管理頁面註冊到側邊欄。註冊後，使用者可以直接在 Dashboard 中切換到該模組的專屬視窗頁面，無需額外開發獨立的前端介面。
+
+> [!NOTE]
+> 視窗註冊是**選用功能**。
+>
+> - 如果 Dashboard 模組**未安裝**或**未載入**，呼叫 `sdk.Dashboard.register_view()` 會拋出異常
+> - 請務必使用 `try/except` 包裹註冊程式碼，確保模組本身的其他功能不受影響
+> - 建議在註冊前檢查 Dashboard 是否可用：`hasattr(sdk, 'Dashboard') and sdk.Dashboard`
+
+---
+
+## 運作原理
+
+```
+模組 on_load()
+  → 呼叫 sdk.Dashboard.register_view(...)
+  → Dashboard 後端儲存視窗資訊
+  → WebSocket 通知前端
+  → 前端動態建立側邊欄導覽項目 + 頁面容器
+  → 使用者點擊即可查看模組視窗
+```
+
+---
+
+## 註冊 API
+
+```python
+sdk.Dashboard.register_view(
+    id="MyModule",                    # 必填，唯一識別
+    title="我的模組",                  # 中文名稱
+    title_en="My Module",             # 英文名稱
+    icon_svg='<svg>...</svg>',        # 側邊欄圖示 SVG
+    html_content='<div>...</div>',     # 頁面 HTML 內容
+    js_content='function xxx() {}',    # 頁面 JavaScript 邏輯
+    css_content='.my-style {}',        # 選用自訂 CSS
+    iframe_url='',                     # iframe 模式 URL（與 html_content 二選一）
+    loader="loadMyModuleView",         # 切換到該頁面時呼叫的 JS 函數名
+    group="group_extensions",          # 側邊欄分組
+    group_title="",                    # 自訂分組中文名稱
+    group_title_en="",                 # 自訂分組英文名稱
+)
+```
+
+### 參數說明
+
+| 參數 | 類型 | 必填 | 說明 |
+|------|------|------|------|
+| `id` | `str` | 是 | 視窗唯一識別，建議使用模組名稱 |
+| `title` | `str` | 否 | 中文顯示名稱，預設使用 `id` |
+| `title_en` | `str` | 否 | 英文顯示名稱，預設使用 `title` |
+| `icon_svg` | `str` | 否 | 側邊欄圖示的完整 SVG 字串 |
+| `html_content` | `str` | 否* | 註入模式的頁面 HTML 內容 |
+| `js_content` | `str` | 否 | 頁面 JavaScript 程式碼 |
+| `css_content` | `str` | 否 | 頁面自訂 CSS 樣式 |
+| `iframe_url` | `str` | 否* | iframe 模式的 URL，設定後忽略 `html_content` |
+| `loader` | `str` | 否 | 頁面啟動時自動呼叫的 JS 函數名 |
+| `group` | `str` | 否 | 側邊欄分組識別，預設 `group_extensions` |
+| `group_title` | `str` | 否 | 自訂分組的中文標題 |
+| `group_title_en` | `str` | 否 | 自訂分組的英文標題 |
+
+> *`html_content` 和 `iframe_url` 至少提供一個，否則頁面為空白。
+
+---
+
+## 兩種註入模式
+
+### 模式一：HTML/JS 註入（推薦）
+
+直接提供 HTML、JS、CSS 字串，Dashboard 會將內容註入到頁面中。該模式與 Dashboard 樣式完全一致，推薦使用 Dashboard 提供的 CSS 類別名稱。
+
+```python
+sdk.Dashboard.register_view(
+    id="HelloPage",
+    title="你好頁面", title_en="Hello",
+    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
+    html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">這是一個範例頁面</div></div>',
+    group="group_tools",
+)
+```
+
+> 完整的氣象模組範例（包含 API 路由、JS 互動等）請見下方 [完整模組範例](#完整模組範例)。
+
+### 模式二：iframe 嵌入
+
+模組提供自己的 HTML 頁面 URL（需自行註冊路由），Dashboard 以 iframe 方式嵌入。適合需要完全獨立 UI 或複雜互動的場景。
+
+```python
+sdk.Dashboard.register_view(
+    id="MyVisualizer",
+    title="資料視覺化", title_en="Data Visualizer",
+    iframe_url="/MyVisualizer/view",
+    group="group_tools",
+)
+```
+
+> iframe 模式會自動在 URL 後附加 `token` 參數用於認證。
+
+---
+
+## 側邊欄分組
+
+模組可指定視窗所在的側邊欄分組。Dashboard 內建以下分組：
+
+| 分組識別 | 中文名 | 位置 |
+|---------|--------|------|
+| `group_overview` | 概覽 | 第1組 |
+| `group_events` | 事件 | 第2組 |
+| `group_extensions` | 擴充 | 第3組（預設） |
+| `group_system` | 系統 | 第4組 |
+| `group_tools` | 工具 | 第5組 |
+
+指定內建分組名稱，模組視窗會附加到該分組末尾：
+
+```python
+group="group_tools"  # 附加到"工具"分組
+```
+
+也可以使用自訂分組名稱（不以 `group_` 開頭），Dashboard 會自動建立新分組：
+
+```python
+group="my_group",
+group_title="我的分組",
+group_title_en="My Group",
+```
+
+---
+
+## 常用 CSS 類別名稱
+
+模組視窗使用 HTML 註入模式時，可直接使用 Dashboard 已有的 CSS 類別名稱來保持視覺一致性：
+
+| 類別名 | 用途 |
+|------|------|
+| `page-title` | 頁面標題，如 `<h1 class="page-title">標題</h1>` |
+| `card` | 卡片容器 |
+| `card-header` | 卡片標題列 |
+| `card-body` | 卡片內容區域 |
+| `grid-2` | 雙欄網格佈局 |
+| `grid-3` | 三欄網格佈局 |
+| `btn` | 基礎按鈕 |
+| `btn-primary` | 主按鈕（藍色） |
+| `btn-secondary` | 次要按鈕 |
+| `btn-icon` | 圖示按鈕 |
+| `btn-danger` | 危險操作按鈕 |
+
+Dashboard 使用 CSS 變數控制主題色，您可以在模組視窗中直接引用：
+
+| CSS 變數 | 用途 |
+|----------|------|
+| `var(--bg-p)` | 主背景色 |
+| `var(--bg-s)` | 次背景色 |
+| `var(--bg-t)` | 三級背景色（卡片等） |
+| `var(--tx-p)` | 主文字色 |
+| `var(--tx-s)` | 次文字色 |
+| `var(--tx-t)` | 輔助文字色 |
+| `var(--bd)` | 邊框色 |
+| `var(--accent)` | 強調色 |
+| `var(--ok-c)` | 成功色 |
+| `var(--er-c)` | 錯誤色 |
+
+這些變數會根據 Dashboard 的亮色/暗色主題自動切換，模組無需額外處理。
+
+---
+
+## 認證與 API 呼叫
+
+在模組視窗的 JS 中呼叫模組自己的 API 時，需要攜帶 Dashboard 的 Token 進行認證：
+
+```javascript
+var token = localStorage.getItem('__ep_tk__');
+var resp = await fetch('/YourModule/api/data', {
+    headers: { 'Authorization': 'Bearer ' + token }
+});
+var data = await resp.json();
+```
+
+模組的 API 端點可以自行決定是否驗證 Token。如果需要驗證，可以從請求標頭中提取：
+
+```python
+async def _api_data(self, request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not token:
+        return {"error": "Unauthorized"}, 401
+    return {"data": "hello"}
+```
+
+---
+
+## 完整模組範例
+
+以下是一個完整的氣象模組範例，展示如何註冊視窗、提供 API 資料、以及在卸載時清理資源：
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.Event import command
+
+
+class Main(BaseModule):
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("Weather")
+        self.config = self._load_config()
+
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(lazy_load=False, priority=50)
+
+    async def on_load(self, event):
+        self._register_routes()
+        self._register_dashboard_view()
+        self.logger.info("氣象模組已載入")
+
+    async def on_unload(self, event):
+        self._unregister_routes()
+        if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
+            self.sdk.Dashboard.unregister_view("Weather")
+        self.logger.info("氣象模組已卸載")
+
+    def _load_config(self):
+        config = self.sdk.config.getConfig("Weather")
+        if not config:
+            default = {"city": "北京", "api_key": ""}
+            self.sdk.config.setConfig("Weather", default)
+            return default
+        return config
+
+    def _register_routes(self):
+        r = self.sdk.router
+        r.register_http_route("Weather", "/api/current",
+                              handler=self._api_current, methods=["GET"])
+
+    def _unregister_routes(self):
+        r = self.sdk.router
+        try:
+            r.unregister_http_route("Weather", "/api/current")
+        except Exception:
+            pass
+
+    async def _api_current(self, request):
+        return {
+            "city": self.config.get("city", "北京"),
+            "temp": 25,
+            "humidity": 60,
+        }
+
+    def _register_dashboard_view(self):
+        try:
+            dashboard = self.sdk.Dashboard
+            dashboard.register_view(
+                id="Weather",
+                title="天氣", title_en="Weather",
+                icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+                html_content='''
+                    <h1 class="page-title">天氣查詢</h1>
+                    <p style="color:var(--tx-s);margin-bottom:16px">查看目前天氣資訊</p>
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header">目前天氣</div>
+                            <div class="card-body">
+                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">點擊重新整理載入</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">操作</div>
+                            <div class="card-body">
+                                <button class="btn btn-primary" onclick="refreshWeather()">重新整理</button>
+                            </div>
+                        </div>
+                    </div>
+                ''',
+                js_content='''
+                    async function loadWeatherView() { await refreshWeather(); }
+                    async function refreshWeather() {
+                        var el = document.getElementById('weather-info');
+                        if (!el) return;
+                        el.textContent = '載入中...';
+                        try {
+                            var resp = await fetch('/Weather/api/current', {
+                                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
+                            });
+                            var data = await resp.json();
+                            el.innerHTML = '<p>城市: ' + (data.city || '--') + '</p>' +
+                                           '<p>溫度: ' + (data.temp || '--') + '°C</p>' +
+                                           '<p>濕度: ' + (data.humidity || '--') + '%</p>';
+                        } catch (e) {
+                            el.textContent = '載入失敗: ' + e.message;
+                        }
+                    }
+                ''',
+                loader="loadWeatherView",
+                group="group_tools",
+            )
+        except Exception as e:
+            self.logger.warning(f"註冊 Dashboard 視窗失敗: {e}")
+```
+
+---
+
+## 登出視窗
+
+模組卸載時應呼叫 `unregister_view()` 清理已註冊的視窗：
+
+```python
+async def on_unload(self, event):
+    if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
+        self.sdk.Dashboard.unregister_view("Weather")
+```
+
+登出後 Dashboard 前端會透過 WebSocket 即時移除側邊欄導覽項目和頁面內容，無需使用者重新整理。
+
+---
+
+## 注意事項
+
+1. **載入順序** — Dashboard 的載入優先級為 `99999`（高優先級），您的模組優先級應低於此值（如 `50`），確保 Dashboard 先載入完成
+2. **防禦性程式設計** — 註冊視窗時使用 `try/except` 包裹，因為 Dashboard 模組可能未安裝或未載入
+3. **資源清理** — 在 `on_unload` 中呼叫 `unregister_view()` 移除已註冊的視窗
+4. **ID 唯一性** — `id` 參數在整個 Dashboard 中必須唯一，建議直接使用模組名稱
+5. **SVG 圖示** — `icon_svg` 應為完整的 `<svg>` 標籤，建議尺寸使用 `viewBox="0 0 24 24"`，使用 `stroke="currentColor"` 繼承 Dashboard 主題色
+6. **JS 函數命名** — `js_content` 中的函數名應具有唯一性（如 `loadWeatherView`），避免與其他模組衝突
+7. **動態更新** — 模組註冊/登出視窗後，Dashboard 前端會透過 WebSocket 即時更新側邊欄，無需重新整理頁面
+
+
+### Takumi 图片渲染
+
+# ErisPulse-Takumi
+
+[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) 是由 ccd2s 維護的 **第三方圖片渲染模組**，基於 [takumi-py](https://github.com/BalconyJH/takumi-py)，讓您在 Bot 中渲染出圖片：HTML、節點樹、Jinja 模板、SVG、動畫都不在話下，並且 **內建中英文字型**（Noto Sans SC / Roboto / Source Code Pro），無需額外配置字型。
+
+> [!IMPORTANT]  
+> Takumi **不是** ErisPulse 框架的內置功能，需要單獨安裝：  
+>  
+> ```bash
+> epsdk install Takumi
+> ```
+
+非常適合以下場景：
+
+- 將資料/統計渲染成精美的卡片圖片發送
+- 將 Markdown / 長文本渲染成排版穩定的圖片，避免平台樣式差異
+- 生成 SVG / 動畫，用於動態視覺效果
+- 中英混排的圖文輸出（內建字型開箱即用）
+
+---
+
+## 安裝與啟用
+
+```bash
+epsdk install Takumi
+```
+
+安裝後模組會自動加載，在配置文件中確認啟用即可：
+
+```toml
+[Takumi]
+enabled = true
+```
+
+---
+
+## 快速入門
+
+模組自動加載後，透過模組管理器獲取，也可以用 `sdk` 快捷方式：
+
+```python
+from ErisPulse import sdk
+
+takumi = sdk.module.get("Takumi")
+# 等價寫法：takumi = sdk.Takumi
+```
+
+### 渲染 HTML
+
+最常用的方式 —— 把一段 HTML + CSS 字串渲染成 PNG：
+
+```python
+png = takumi.render_html(
+    """
+    <div class="card">
+      <h1>你好，ErisPulse</h1>
+      <p>由 Takumi 渲染</p>
+    </div>
+    """,
+    stylesheets=["""
+    .card {
+      width: 800px;
+      height: 400px;
+      padding: 48px;
+      color: white;
+      background: #111827;
+      font-family: "Noto Sans SC";
+    }
+    """],
+    width=800,
+    height=400,
+    lang="zh-CN",
+)
+```
+
+`png` 是 `bytes`，可透過 `event.reply(png, method="Image")` 發送（詳見 [發送渲染結果](#發送渲染結果)）。
+
+### 渲染節點樹
+
+無需手寫 HTML，用字典描述結構即可，適合程式化拼裝：
+
+```python
+png = takumi.render_node(
+    {
+        "type": "text",
+        "text": "中文和 English 都可直接渲染",
+        "style": {"fontSize": 48, "color": "#111827"},
+    },
+    width=800,
+    height=200,
+    lang="zh-CN",
+)
+```
+
+---
+
+## 字型與渲染器
+
+### 內建字型
+
+Takumi 已經打包了常用字型，無需額外安裝：
+
+| 資源 | 說明 |
+|------|------|
+| `takumi.fonts` | 內建字型檔案名列表 |
+| `takumi.families` | 已註冊的字型 family 列表 |
+
+便捷方法（`render_html` / `render_node`）會自動注入這套字型回退堆疊；如果你直接調用底層 renderer，則需要自行傳入 `font_families`。
+
+### 原生 Renderer
+
+`takumi.renderer` 是原始的 `takumi_py.Renderer` 實例。便捷方法已自動注入內建字型回退堆疊；**直接調用 renderer 時需自行傳入 families**：
+
+```python
+png = takumi.renderer.render_html(
+    "<div>你好</div>",
+    font_families=takumi.families,
+    lang="zh-CN",
+)
+```
+
+### 獨立 Renderer
+
+需要隔離字型 / 圖片 / 資源快取時（例如長生命週期進程、多租戶場景），可以創建一個新的 `Renderer`，內建字型會自動註冊：
+
+```python
+renderer = takumi.create_renderer(cache_max_bytes=64 * 1024 * 1024)
+
+png = renderer.render_html(
+    "<div>獨立 Renderer</div>",
+    font_families=takumi.families,
+    width=800,
+    height=200,
+    lang="zh-CN",
+)
+```
+
+`create_renderer()` 接受 `takumi_py.Renderer` 的建構參數：
+
+- `load_default_fonts=False`（預設）：僅加載內建字型
+- `load_default_fonts=True`：同時加載 Takumi 自帶字型
+- `fonts=[...]`：在預設基礎上註冊自訂字型
+
+> 獨立實例不經過模組代理，因此若要保留統一的內建字型回退堆疊，需顯式傳入 `font_families=takumi.families`。
+
+若顯式傳入 `font_families`，模組會尊重呼叫方設定，不再注入預設回退堆疊。`RenderOptions(font_families=...)` 同樣有效。
+
+---
+
+## 發送渲染結果
+
+渲染得到圖片後，可以透過事件回覆直接發送：
+
+```python
+from ErisPulse import sdk
+
+takumi = sdk.Takumi
+png = takumi.render_html("<div>hello</div>", lang="zh-CN")
+
+# 方式一：直接以 Image 方法回覆
+await event.reply(png, method="Image")
+
+# 方式二：透過 OneBot12 消息段回覆
+from ErisPulse.Core.Event import MessageBuilder
+await event.reply_ob12(
+    MessageBuilder().image(png).build()
+)
+```
+
+> 不同平台對圖片的封裝由適配器統一處理，無需關心底層差異。詳見 [MessageBuilder 詳解](../advanced/message-builder.md) 與 [發送方法規範](../standards/send-method-spec.md)。
+
+---
+
+## 相關連結
+
+- PyPI：<https://pypi.org/project/ErisPulse-Takumi/>
+- 倉庫：<https://github.com/ccd2s/ErispulseTakumi>（作者 [@ccd2s](https://github.com/ccd2s)）
+- 底層引擎：<https://github.com/BalconyJH/takumi-py>
 
 
 ====
