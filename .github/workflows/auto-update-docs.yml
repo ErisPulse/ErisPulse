@@ -11,6 +11,12 @@ concurrency:
 on:
   push:
     branches: [Develop/v2]
+    paths-ignore:
+      # 防递归：避免 workflow 自己 push 的 docs 变更重新触发自己
+      - 'docs/**'
+      - '.github/.translate_cache/**'
+      - 'README.md'
+      - 'README.*.md'
   workflow_dispatch:
     inputs:
       force_translate:
@@ -263,7 +269,8 @@ jobs:
           git add docs/ .github/.translate_cache/ README.md README.*.md
           
           # Commit changes
-          git commit -m "chore(docs): auto-update docs [skip ci]" || echo "No changes to commit"
+
+          git commit -m "chore(docs): auto-update docs" || echo "No changes to commit"
           # Pull latest remote changes before pushing to avoid push rejection due to concurrent pushes during translation
           git pull --rebase --autostash || echo "Failed to pull remote updates, attempting direct push"
           git push || echo "No new commits to push"
