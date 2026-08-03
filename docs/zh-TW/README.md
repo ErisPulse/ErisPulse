@@ -2,7 +2,7 @@
 
 ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配器與不同平台互動，提供靈活的模組系統用於功能擴展。
 
-> **第一次使用?** 直接看 [5 分鐘快速開始](docs/zh-TW/quick-start.md) —— 從安裝到運行第一個機器人，一氣呵成。
+> **第一次使用?** 直接看 [5 分鐘快速開始](docs/zh-TW/quick-start.md) —— 從安裝到執行第一個機器人，一氣呵成。
 >
 > 遇到不理解的術語? 查看 [術語表](docs/zh-TW/terminology.md)。
 
@@ -18,10 +18,10 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 
 | 進度 | 文件 | 說明 |
 |------|------|------|
-| **① 上手** | [5 分鐘快速開始](docs/zh-TW/quick-start.md) | 安裝、初始化、運行 —— 唯一的起步入口 |
+| **① 上手** | [5 分鐘快速開始](docs/zh-TW/quick-start.md) | 安裝、初始化、執行 —— 唯一的起步入口 |
 | ② 深入 | [建立第一個機器人](docs/zh-TW/getting-started/first-bot.md) | 編寫第一個命令處理器 |
 | ③ 概念 | [基礎概念](docs/zh-TW/getting-started/basic-concepts.md) | 理解適配器/模組/事件的設計 |
-| ④ 實戰 | [常見任務範例](docs/zh-TW/getting-started/common-tasks.md) | 存儲、定時任務、權限控制 |
+| ④ 實戰 | [常見任務示例](docs/zh-TW/getting-started/common-tasks.md) | 儲存、定時任務、權限控制 |
 | 參考 | [設定檔說明](docs/zh-TW/user-guide/configuration.md) · [CLI 命令](docs/zh-TW/user-guide/cli-reference.md) · [部署指南](docs/zh-TW/user-guide/deployment.md) | 按需查閱 |
 | 參考 | [平台特性指南](docs/zh-TW/platform-guide/README.md) | 各平台（雲湖/QQ/Telegram…）的差異 |
 
@@ -49,9 +49,18 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 | [核心模組](docs/zh-TW/api-reference/core-modules.md) | Storage / Config / Logger / Router 等基礎能力 |
 | [生命週期管理](docs/zh-TW/advanced/lifecycle.md) · [懶加載](docs/zh-TW/advanced/lazy-loading.md) · [路由系統](docs/zh-TW/advanced/router.md) | 內部子系統 |
 | [Conversation 多輪對話](docs/zh-TW/advanced/conversation.md) · [MessageBuilder](docs/zh-TW/advanced/message-builder.md) · [SQL 構建](docs/zh-TW/advanced/sql-builder.md) · [HTTP 客戶端](docs/zh-TW/advanced/http-client.md) · [國際化](docs/zh-TW/advanced/i18n.md) | 進階工具 |
-| [Dashboard 管理面板](docs/zh-TW/advanced/dashboard-view.md) | Web 管理介面接入 |
 
-### 四、我要為 ErisPulse 貢獻
+### 四、推薦生態模組
+
+按需安裝、即裝即用的 **第三方社群模組**（不是框架內建功能）。
+
+| 文件 | 說明 |
+|------|------|
+| [生態模組總覽](docs/zh-TW/ecosystem/README.md) | 了解如何安裝生態模組、為什麼這些不是內建功能 |
+| [ErisPulse-Dashboard](docs/zh-TW/ecosystem/dashboard.md) | Web 管理面板 + 窗口註冊 API（模組可向側邊欄註冊自定義頁面） |
+| [ErisPulse-Takumi](docs/zh-TW/ecosystem/takumi.md) | 圖片渲染（HTML / 節點樹 / SVG / 動畫，內建中英文字型） |
+
+### 五、我要為 ErisPulse 貢獻
 
 讓框架更好
 
@@ -71,9 +80,9 @@ ErisPulse 支援兩種開發方式：
 
 ## 其他
 
-- [文件風格指南](docs/zh-TW/styleguide/docstring.md) —— 貢獻文件時的寫作規範
-- [為 ErisPulse 貢獻](docs/zh-TW/contributing/README.md) —— 參與專案共建的入口
-- [AI 輔助開發](docs/zh-TW/ai-support/README.md) —— 獲取供 AI 編程助手使用的專案提示詞
+- [文件風格指南](docs/zh-TW/styleguide/docstring.md) — 貢獻文件時的寫作規範
+- [為 ErisPulse 貢獻](docs/zh-TW/contributing/README.md) — 參與專案共建的入口
+- [AI 輔助開發](docs/zh-TW/ai-support/README.md) — 獲取供 AI 編程助手使用的專案提示詞
 
 ## 獲取幫助
 

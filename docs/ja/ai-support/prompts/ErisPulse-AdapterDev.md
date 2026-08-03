@@ -8163,7 +8163,7 @@ class Main(BaseModule):
 - [ベストプラクティス](../developer-guide/modules/best-practices.md) - ライフサイクルイベントの使用に関する推奨事項
 
 
-### 懒加载系统
+### 懶加载系统
 
 # ラグロードモジュールシステム
 
@@ -8902,338 +8902,6 @@ CLI は**独立**した国際化モジュール（`ErisPulse.CLI.i18n`）を持�
 - **CLI i18n** — コマンドラインインターフェース内部で使用。Core と翻訳データを共有しません
 
 この設計により、CLI の翻訳変更がフレームワークコアの安定性に影響しないことが保証されます。
-
-
-### Dashboard 视窗注册
-
-# Dashboard View の登録
-
-Dashboard は、他の ErisPulse モジュールがカスタム管理ページを Dashboard のサイドバーに登録することをサポートしています。登録後、ユーザーは Dashboard 内でそのモジュール専用の View ページに切り替えることができ、別途独立したフロントエンド インターフェースの開発は不要になります。
-
-> **前提条件**
->
-> Dashboard View の登録は**オプション機能**であり、[ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) モジュールをインストールして読み込む必要があります。
->
-> - Dashboard モジュールが**インストールされていない**または**読み込まれていない**場合、`sdk.Dashboard.register_view()` を呼び出すと例外が発生します
-> - 登録コードを `try/except` で囲むことを強くお勧めします。これは、Dashboard モジュール自体の他の機能に影響を与えないようにするためです
-> - 登録前に Dashboard が使用可能かを確認することを推奨します：`hasattr(sdk, 'Dashboard') and sdk.Dashboard`
-
----
-
-## 動作原理
-
-```
-モジュール on_load()
-  → sdk.Dashboard.register_view(...) の呼び出し
-  → Dashboard バックエンドで View 情報を保存
-  → WebSocket でフロントエンドへ通知
-  → フロントエンドでサイドバーのナビゲーション項目とページコンテナを動的に作成
-  → ユーザーがクリックしてモジュール View を表示
-```
-
----
-
-## 登録 API
-
-```python
-sdk.Dashboard.register_view(
-    id="MyModule",                    # 必須、一意の識別子
-    title="我的模块",                  # 中国語名
-    title_en="My Module",             # 英語名
-    icon_svg='<svg>...</svg>',        # サイドバーのアイコン SVG
-    html_content='<div>...</div>',     # ページ HTML コンテンツ
-    js_content='function xxx() {}',    # ページ JavaScript ロジック
-    css_content='.my-style {}',        # オプションのカスタム CSS
-    iframe_url='',                     # iframe モード URL（html_content とのどちらか一方）
-    loader="loadMyModuleView",         # そのページに切り替える際に呼び出される JS 関数名
-    group="group_extensions",          # サイドバーのグループ
-    group_title="",                    # カスタムグループの中国語タイトル
-    group_title_en="",                 # カスタムグループの英語タイトル
-)
-```
-
-### パラメータ説明
-
-| パラメータ | 型 | 必須 | 説明 |
-|------|------|------|------|
-| `id` | `str` | Yes | View の一意の識別子。モジュール名を使用することを推奨します |
-| `title` | `str` | No | 中国語表示名。デフォルトは `id` |
-| `title_en` | `str` | No | 英語表示名。デフォルトは `title` |
-| `icon_svg` | `str` | No | サイドバーのアイコンの完全な SVG 文字列 |
-| `html_content` | `str` | No* | 注入モードのページ HTML コンテンツ |
-| `js_content` | `str` | No | ページ JavaScript コード |
-| `css_content` | `str` | No | ページのカスタム CSS スタイル |
-| `iframe_url` | `str` | No* | iframe モードの URL。設定すると `html_content` は無視されます |
-| `loader` | `str` | No | ページがアクティブ化されたときに自動的に呼び出される JS 関数名 |
-| `group` | `str` | No | サイドバーのグループ識別子。デフォルトは `group_extensions` |
-| `group_title` | `str` | No | カスタムグループの中国語タイトル |
-| `group_title_en` | `str` | No | カスタムグループの英語タイトル |
-
-> *`html_content` と `iframe_url` の少なくとも一方を指定する必要があります。そうしないと、ページは空になります。
-
----
-
-## 2つの注入モード
-
-### モード1：HTML/JS 注入（推奨）
-
-HTML、JS、CSS の文字列を直接提供すると、Dashboard はコンテンツをページ内に注入します。このモードは Dashboard のスタイルと完全に一致しており、Dashboard が提供する CSS クラス名を使用することを推奨します。
-
-```python
-sdk.Dashboard.register_view(
-    id="HelloPage",
-    title="你好页面", title_en="Hello",
-    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
-    html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">这是一个示例页面</div></div>',
-    group="group_tools",
-)
-```
-
-> 完全な天気モジュールの例（API ルート、JS 交互など）は、下記の [完全なモジュールの例](#完全なモジュールの例) を参照してください。
-
-### モード2：iframe 埋め込み
-
-モジュールが独自の HTML ページの URL（ルートの登録が必要）を提供し、Dashboard はそれを iframe で埋め込みます。完全に独立した UI や複雑なインタラクションが必要なシナリオに適しています。
-
-```python
-sdk.Dashboard.register_view(
-    id="MyVisualizer",
-    title="数据可视化", title_en="Data Visualizer",
-    iframe_url="/MyVisualizer/view",
-    group="group_tools",
-)
-```
-
-> iframe モードでは、認証のために URL の後に `token` パラメータが自動的に追加されます。
-
----
-
-## サイドバーのグループ
-
-モジュールは View が属するサイドバーのグループを指定できます。Dashboard には以下の組み込みグループがあります：
-
-| グループ識別子 | 中国語名 | 場所 |
-|---------|--------|------|
-| `group_overview` | 概览 | 第1グループ |
-| `group_events` | 事件 | 第2グループ |
-| `group_extensions` | 扩展 | 第3グループ（デフォルト） |
-| `group_system` | 系统 | 第4グループ |
-| `group_tools` | 工具 | 第5グループ |
-
-組み込みグループ名を指定すると、モジュールの View はそのグループの末尾に追加されます：
-
-```python
-group="group_tools"  # "工具" グループに追加
-```
-
-カスタムグループ名（`group_` で始まらないもの）を使用することもでき、Dashboard は自動的に新しいグループを作成します：
-
-```python
-group="my_group",
-group_title="我的分组",
-group_title_en="My Group",
-```
-
----
-
-## よく使用される CSS クラス名
-
-モジュール View で HTML 注入モードを使用する場合、視覚的な一貫性を保つために Dashboard で既に定義されている CSS クラス名を直接使用できます：
-
-| クラス名 | 用途 |
-|------|------|
-| `page-title` | ページタイトル（例：`<h1 class="page-title">タイトル</h1>`） |
-| `card` | カードコンテナ |
-| `card-header` | カードタイトルバー |
-| `card-body` | カードコンテンツエリア |
-| `grid-2` | 2列のグリッドレイアウト |
-| `grid-3` | 3列のグリッドレイアウト |
-| `btn` | 基本ボタン |
-| `btn-primary` | メインボタン（青色） |
-| `btn-secondary` | 準拠ボタン |
-| `btn-icon` | アイコンボタン |
-| `btn-danger` | 危険操作ボタン |
-
-Dashboard は CSS 変数を使用してテーマカラーを制御するため、モジュール View で直接それらを参照できます：
-
-| CSS 変数 | 用途 |
-|----------|------|
-| `var(--bg-p)` | メイン背景色 |
-| `var(--bg-s)` | 準拠背景色 |
-| `var(--bg-t)` | 3次背景色（カードなど） |
-| `var(--tx-p)` | メインテキスト色 |
-| `var(--tx-s)` | 準拠テキスト色 |
-| `var(--tx-t)` | 補助テキスト色 |
-| `var(--bd)` | ボーダー色 |
-| `var(--accent)` | アクセント色 |
-| `var(--ok-c)` | 成功色 |
-| `var(--er-c)` | エラー色 |
-
-これらの変数は、Dashboard のライト/ダークテーマに基づいて自動的に切り替わるため、モジュール側で追加の処理は不要です。
-
----
-
-## 認証と API 呼び出し
-
-モジュール View の JS でモジュール自身の API を呼び出す場合、認証のために Dashboard の Token を保持する必要があります：
-
-```javascript
-var token = localStorage.getItem('__ep_tk__');
-var resp = await fetch('/YourModule/api/data', {
-    headers: { 'Authorization': 'Bearer ' + token }
-});
-var data = await resp.json();
-```
-
-モジュールの API エンドポイントは、Token の検証を行うかどうかを独自に決定できます。検証が必要な場合は、リクエストヘッダーから抽出できます：
-
-```python
-from fastapi.responses import JSONResponse
-
-async def _api_data(self, request):
-    token = request.headers.get("Authorization", "").replace("Bearer ", "")
-    if not token:
-        return JSONResponse({"error": "Unauthorized"}, status_code=401)
-    return JSONResponse({"data": "hello"})
-```
-
----
-
-## 完全なモジュールの例
-
-以下は、View の登録、API データの提供、アンインストール時のリソースクリーンアップ方法を示す完全な天気モジュールの例です：
-
-```python
-from ErisPulse import sdk
-from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.Core.Event import command
-
-
-class Main(BaseModule):
-    def __init__(self):
-        self.sdk = sdk
-        self.logger = sdk.logger.get_child("Weather")
-        self.config = self._load_config()
-
-    @staticmethod
-    def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
-        return ModuleLoadStrategy(lazy_load=False, priority=50)
-
-    async def on_load(self, event):
-        self._register_routes()
-        self._register_dashboard_view()
-        self.logger.info("天气模块已加载")
-
-    async def on_unload(self, event):
-        self._unregister_routes()
-        if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
-            self.sdk.Dashboard.unregister_view("Weather")
-        self.logger.info("天气模块已卸载")
-
-    def _load_config(self):
-        config = self.sdk.config.getConfig("Weather")
-        if not config:
-            default = {"city": "北京", "api_key": ""}
-            self.sdk.config.setConfig("Weather", default)
-            return default
-        return config
-
-    def _register_routes(self):
-        r = self.sdk.router
-        r.register_http_route("Weather", "/api/current",
-                              handler=self._api_current, methods=["GET"])
-
-    def _unregister_routes(self):
-        r = self.sdk.router
-        try:
-            r.unregister_http_route("Weather", "/api/current")
-        except Exception:
-            pass
-
-    async def _api_current(self, request):
-        return {
-            "city": self.config.get("city", "北京"),
-            "temp": 25,
-            "humidity": 60,
-        }
-
-    def _register_dashboard_view(self):
-        try:
-            dashboard = self.sdk.Dashboard
-            dashboard.register_view(
-                id="Weather",
-                title="天气", title_en="Weather",
-                icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
-                html_content='''
-                    <h1 class="page-title">天气查询</h1>
-                    <p style="color:var(--tx-s);margin-bottom:16px">查看当前天气信息</p>
-                    <div class="grid-2">
-                        <div class="card">
-                            <div class="card-header">当前天气</div>
-                            <div class="card-body">
-                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">点击刷新加载</div>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">操作</div>
-                            <div class="card-body">
-                                <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
-                            </div>
-                        </div>
-                    </div>
-                ''',
-                js_content='''
-                    async function loadWeatherView() { await refreshWeather(); }
-                    async function refreshWeather() {
-                        var el = document.getElementById('weather-info');
-                        if (!el) return;
-                        el.textContent = '加载中...';
-                        try {
-                            var resp = await fetch('/Weather/api/current', {
-                                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
-                            });
-                            var data = await resp.json();
-                            el.innerHTML = '<p>城市: ' + (data.city || '--') + '</p>' +
-                                           '<p>温度: ' + (data.temp || '--') + '°C</p>' +
-                                           '<p>湿度: ' + (data.humidity || '--') + '%</p>';
-                        } catch (e) {
-                            el.textContent = '加载失败: ' + e.message;
-                        }
-                    }
-                ''',
-                loader="loadWeatherView",
-                group="group_tools",
-            )
-        except Exception as e:
-            self.logger.warning(f"注册 Dashboard 视窗失败: {e}")
-```
-
----
-
-## View の登録解除
-
-モジュールをアンインストールする際は、`unregister_view()` を呼び出して登録済みの View をクリーンアップする必要があります：
-
-```python
-async def on_unload(self, event):
-    if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
-        self.sdk.Dashboard.unregister_view("Weather")
-```
-
-登録解除後、Dashboard フロントエンドは WebSocket を介してサイドバーのナビゲーション項目とページコンテンツをリアルタイムで削除するため、ユーザーがページをリフレッシュする必要はありません。
-
----
-
-## 注意事項
-
-1. **読み込み順序** — Dashboard の読み込み優先度は `99999`（高優先度）です。モジュールの優先度はこれより低い値（例：`50`）である必要があり、Dashboard が先に読み込まれるようにします
-2. **防御的プログラミング** — `try/except` で登録を囲むことを行う必要があります。これは、Dashboard モジュールが未インストールや未読み込みである可能性があるためです
-3. **リソースクリーンアップ** — `on_unload` で `unregister_view()` を呼び出して登録済みの View を削除してください
-4. **ID の一意性** — `id` パラメータは Dashboard 全体で一意である必要があり、モジュール名を直接使用することを推奨します
-5. **SVG アイコン** — `icon_svg` は完全な `<svg>` タグである必要があります。サイズには `viewBox="0 0 24 24"` を使用し、Dashboard のテーマカラーを継承するために `stroke="currentColor"` を使用することを推奨します
-6. **JS 関数名** — `js_content` 内の関数名は一意である必要があります（例：`loadWeatherView`）。他のモジュールとの競合を避けるためです
-7. **動的更新** — モジュールで View を登録/解除した後、Dashboard フロントエンドは WebSocket を介してサイドバーをリアルタイムで更新するため、ページのリフレッシュは不要です
 
 
 ### 启动流程与手动控制
@@ -11770,6 +11438,530 @@ if result["retcode"] == 10002:
 - [送信メソッド仕様](docs/ja/send-method-spec.md) - Send クラスのメソッド命名およびパラメータ仕様
 - [リクエスト操作仕様](docs/ja/request-action-spec.md) - Request DSL の使用方法
 - [イベント変換標準](docs/ja/event-conversion.md) - イベント形式およびメッセージセグメント標準
+
+
+====
+生态模块
+====
+
+
+### Dashboard 使用与视窗注册
+
+# ErisPulse-Dashboard
+
+[ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) は、ErisDev が直接メンテナンスしている **Web 管理パネルモジュール** であり、ErisPulse に視覚的なランタイム管理インターフェースを提供します：モジュールの起動停止、設定の編集、ログの閲覧、イベントストリームの監視など。
+
+> [!IMPORTANT]
+> Dashboard は **ErisPulse フレームワークの組み込み機能ではありません**。別途インストールが必要です：
+>
+> ```bash
+> epsdk install Dashboard
+> ```
+
+Dashboard では、他の ErisPulse モジュールがカスタムの管理ページをサイドバーに登録することもサポートしています。登録すると、ユーザーは Dashboard で該当モジュールの専用ウィンドウページに切り替えるだけでよく、追加の独立したフロントエンドインターフェースの開発は不要です。
+
+> [!NOTE]
+> ウィンドウ登録は**オプション機能**です。
+>
+> - Dashboard モジュールが**インストールされていない**または**読み込まれていない**場合、`sdk.Dashboard.register_view()` を呼び出すと例外がスローされます
+> - モジュール自体の他の機能に影響を与えないように、登録コードは必ず `try/except` で囲んでください
+> - 登録前に Dashboard が使用可能かどうかを確認することをお勧めします：`hasattr(sdk, 'Dashboard') and sdk.Dashboard`
+
+---
+
+## 動作原理
+
+```
+モジュール on_load()
+  → sdk.Dashboard.register_view(...) の呼び出し
+  → Dashboard バックエンドでウィンドウ情報を保存
+  → WebSocket でフロントエンドに通知
+  → フロントエンドがサイドバーのナビゲーション項目 + ページコンテナを動的に作成
+  → ユーザーがクリックすればモジュールのウィンドウを閲覧可能
+```
+
+---
+
+## 登録 API
+
+```python
+sdk.Dashboard.register_view(
+    id="MyModule",                    # 必須、一意の識別子
+    title="マイモジュール",            # 中国語表示名
+    title_en="My Module",             # 英語表示名
+    icon_svg='<svg>...</svg>',        # サイドバーのアイコン SVG
+    html_content='<div>...</div>',     # ページ HTML コンテンツ
+    js_content='function xxx() {}',    # ページ JavaScript ロジック
+    css_content='.my-style {}',        # オプションのカスタム CSS
+    iframe_url='',                     # iframe モード URL（html_content との二択）
+    loader="loadMyModuleView",         # このページに切り替えたときに呼び出される JS 関数名
+    group="group_extensions",          # サイドバーのグループ
+    group_title="",                    # カスタムグループの中国語タイトル
+    group_title_en="",                 # カスタムグループの英語タイトル
+)
+```
+
+### パラメータ説明
+
+| パラメータ | 型 | 必須 | 説明 |
+|------|------|------|------|
+| `id` | `str` | Yes | ウィンドウの一意の識別子。モジュール名を使用することをお勧めします |
+| `title` | `str` | No | 中国語表示名。デフォルトは `id` を使用 |
+| `title_en` | `str` | No | 英語表示名。デフォルトは `title` を使用 |
+| `icon_svg` | `str` | No | サイドバーのアイコンの完全な SVG 文字列 |
+| `html_content` | `str` | No* | インジェクションモードのページ HTML コンテンツ |
+| `js_content` | `str` | No | ページ JavaScript コード |
+| `css_content` | `str` | No | ページのカスタム CSS スタイル |
+| `iframe_url` | `str` | No* | iframe モードの URL。設定すると `html_content` は無視されます |
+| `loader` | `str` | No | ページがアクティブになったときに自動的に呼び出される JS 関数名 |
+| `group` | `str` | No | サイドバーのグループ識別子。デフォルトは `group_extensions` |
+| `group_title` | `str` | No | カスタムグループの中国語タイトル |
+| `group_title_en` | `str` | No | カスタムグループの英語タイトル |
+
+> *`html_content` と `iframe_url` の少なくとも一方を提供してください。そうしないと、ページは空になります。
+
+---
+
+## 2つのインジェクションモード
+
+### モード1：HTML/JS インジェクション（推奨）
+
+HTML、JS、CSS の文字列を直接提供し、Dashboard はコンテンツをページにインジェクトします。このモードは Dashboard のスタイルと完全に一致しており、Dashboard が提供する CSS クラス名を使用することを推奨します。
+
+```python
+sdk.Dashboard.register_view(
+    id="HelloPage",
+    title="こんにちはページ", title_en="Hello",
+    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
+    html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">これはサンプルページです</div></div>',
+    group="group_tools",
+)
+```
+
+> 完全な天気モジュールの例（API ルート、JS インタラクションなどを含む）は、下記の[完全なモジュールの例](#完全なモジュールの例)を参照してください。
+
+### モード2：iframe 埋め込み
+
+モジュールが独自の HTML ページ URL（ルートの登録が必要）を提供し、Dashboard は iframe 方式で埋め込みます。完全に独立した UI または複雑なインタラクションが必要なシーンに適しています。
+
+```python
+sdk.Dashboard.register_view(
+    id="MyVisualizer",
+    title="データビジュアライザー", title_en="Data Visualizer",
+    iframe_url="/MyVisualizer/view",
+    group="group_tools",
+)
+```
+
+> iframe モードでは、認証用の `token` パラメータが URL の後に自動的に追加されます。
+
+---
+
+## サイドバーのグループ
+
+モジュールはウィンドウが配置されるサイドバーのグループを指定できます。Dashboard には以下のグループが組み込まれています：
+
+| グループ識別子 | 中国語名 | 位置 |
+|---------|--------|------|
+| `group_overview` | 概要 | 第1グループ |
+| `group_events` | イベント | 第2グループ |
+| `group_extensions` | 拡張 | 第3グループ（デフォルト） |
+| `group_system` | システム | 第4グループ |
+| `group_tools` | ツール | 第5グループ |
+
+組み込みのグループ名を指定すると、モジュールのウィンドウはそのグループの末尾に追加されます：
+
+```python
+group="group_tools"  # "ツール" グループに追加
+```
+
+カスタムグループ名（`group_` で始まらないもの）も使用できます。Dashboard は自動的に新しいグループを作成します：
+
+```python
+group="my_group",
+group_title="マイグループ",
+group_title_en="My Group",
+```
+
+---
+
+## 一般的な CSS クラス名
+
+モジュールのウィンドウが HTML インジェクションモードを使用する場合、視覚的な一貫性を維持するために Dashboard の既存の CSS クラス名を直接使用できます：
+
+| クラス名 | 用途 |
+|------|------|
+| `page-title` | ページタイトル。例: `<h1 class="page-title">タイトル</h1>` |
+| `card` | カードコンテナ |
+| `card-header` | カードのタイトルバー |
+| `card-body` | カードのコンテンツエリア |
+| `grid-2` | 2列のグリッドレイアウト |
+| `grid-3` | 3列のグリッドレイアウト |
+| `btn` | 基本ボタン |
+| `btn-primary` | プライマリボタン（青） |
+| `btn-secondary` | セカンダリボタン |
+| `btn-icon` | アイコンボタン |
+| `btn-danger` | 危険操作ボタン |
+
+Dashboard は CSS 変数を使用してテーマカラーを制御するため、モジュールのウィンドウで直接参照できます：
+
+| CSS 変数 | 用途 |
+|----------|------|
+| `var(--bg-p)` | メイン背景色 |
+| `var(--bg-s)` | サブ背景色 |
+| `var(--bg-t)` | 3段階背景色（カードなど） |
+| `var(--tx-p)` | メインテキスト色 |
+| `var(--tx-s)` | サブテキスト色 |
+| `var(--tx-t)` | 補助テキスト色 |
+| `var(--bd)` | ボーダーカラー |
+| `var(--accent)` | アクセントカラー |
+| `var(--ok-c)` | 成功色 |
+| `var(--er-c)` | エラーカラー |
+
+これらの変数は Dashboard のライト/ダークモードのテーマに応じて自動的に切り替わるため、モジュールに追加の処理は不要です。
+
+---
+
+## 認証と API 呼び出し
+
+モジュールのウィンドウの JS でモジュール自身の API を呼び出す際は、認証のため Dashboard のトークンを含める必要があります：
+
+```javascript
+var token = localStorage.getItem('__ep_tk__');
+var resp = await fetch('/YourModule/api/data', {
+    headers: { 'Authorization': 'Bearer ' + token }
+});
+var data = await resp.json();
+```
+
+モジュールの API エンドポイントは、トークンを検証するかどうかを独自に決定できます。検証が必要な場合は、リクエストヘッダーから抽出できます：
+
+```python
+async def _api_data(self, request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not token:
+        return {"error": "Unauthorized"}, 401
+    return {"data": "hello"}
+```
+
+---
+
+## 完全なモジュールの例
+
+以下は、ウィンドウの登録方法、API データの提供、およびアンインストール時のリソースクリーンアップ方法を示す、完全な天気モジュールの例です。
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.Event import command
+
+
+class Main(BaseModule):
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("Weather")
+        self.config = self._load_config()
+
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(lazy_load=False, priority=50)
+
+    async def on_load(self, event):
+        self._register_routes()
+        self._register_dashboard_view()
+        self.logger.info("天気モジュールが読み込まれました")
+
+    async def on_unload(self, event):
+        self._unregister_routes()
+        if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
+            self.sdk.Dashboard.unregister_view("Weather")
+        self.logger.info("天気モジュールがアンインストールされました")
+
+    def _load_config(self):
+        config = self.sdk.config.getConfig("Weather")
+        if not config:
+            default = {"city": "北京", "api_key": ""}
+            self.sdk.config.setConfig("Weather", default)
+            return default
+        return config
+
+    def _register_routes(self):
+        r = self.sdk.router
+        r.register_http_route("Weather", "/api/current",
+                              handler=self._api_current, methods=["GET"])
+
+    def _unregister_routes(self):
+        r = self.sdk.router
+        try:
+            r.unregister_http_route("Weather", "/api/current")
+        except Exception:
+            pass
+
+    async def _api_current(self, request):
+        return {
+            "city": self.config.get("city", "北京"),
+            "temp": 25,
+            "humidity": 60,
+        }
+
+    def _register_dashboard_view(self):
+        try:
+            dashboard = self.sdk.Dashboard
+            dashboard.register_view(
+                id="Weather",
+                title="天気", title_en="Weather",
+                icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+                html_content='''
+                    <h1 class="page-title">天気照会</h1>
+                    <p style="color:var(--tx-s);margin-bottom:16px">現在の天気情報を表示</p>
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header">現在の天気</div>
+                            <div class="card-body">
+                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">クリックして更新</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">操作</div>
+                            <div class="card-body">
+                                <button class="btn btn-primary" onclick="refreshWeather()">更新</button>
+                            </div>
+                        </div>
+                    </div>
+                ''',
+                js_content='''
+                    async function loadWeatherView() { await refreshWeather(); }
+                    async function refreshWeather() {
+                        var el = document.getElementById('weather-info');
+                        if (!el) return;
+                        el.textContent = '読み込み中...';
+                        try {
+                            var resp = await fetch('/Weather/api/current', {
+                                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
+                            });
+                            var data = await resp.json();
+                            el.innerHTML = '<p>都市: ' + (data.city || '--') + '</p>' +
+                                           '<p>気温: ' + (data.temp || '--') + '°C</p>' +
+                                           '<p>湿度: ' + (data.humidity || '--') + '%</p>';
+                        } catch (e) {
+                            el.textContent = '読み込みに失敗: ' + e.message;
+                        }
+                    }
+                ''',
+                loader="loadWeatherView",
+                group="group_tools",
+            )
+        except Exception as e:
+            self.logger.warning(f"Dashboard ウィンドウの登録に失敗しました: {e}")
+```
+
+---
+
+## ウィンドウの登録解除
+
+モジュールのアンインストール時に、登録済みのウィンドウをクリーンアップするために `unregister_view()` を呼び出す必要があります：
+
+```python
+async def on_unload(self, event):
+    if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
+        self.sdk.Dashboard.unregister_view("Weather")
+```
+
+登録解除後、Dashboard フロントエンドは WebSocket を通じてサイドバーのナビゲーション項目とページのコンテンツをリアルタイムで削除するため、ユーザーがページをリフレッシュする必要はありません。
+
+---
+
+## 注意事項
+
+1. **読み込み順序** — Dashboard の読み込み優先度は `99999`（高優先度）です。Dashboard が先に読み込み完了するように、あなたのモジュールの優先度はこの値より低く設定してください（例: `50`）
+2. **防御的なプログラミング** — ウィンドウの登録時に `try/except` で囲む必要があります。Dashboard モジュールがインストールされていないか、読み込まれていない可能性があるため
+3. **リソースのクリーンアップ** — `on_unload` で `unregister_view()` を呼び出して、登録済みのウィンドウを削除してください
+4. **ID の一意性** — `id` パラメータは全体の Dashboard 内で一意である必要があります。モジュール名を直接使用することをお勧めします
+5. **SVG アイコン** — `icon_svg` は完全な `<svg>` タグである必要があります。サイズには `viewBox="0 0 24 24"` を使用することを推奨します。Dashboard のテーマカラーを継承するために `stroke="currentColor"` を使用してください
+6. **JS 関数名の命名** — `js_content` 内の関数名は一意である必要があります（例: `loadWeatherView` ）。他のモジュールと衝突しないようにしてください
+7. **動的更新** — モジュールがウィンドウを登録/解除した後、Dashboard フロントエンドは WebSocket を通じてサイドバーをリアルタイムで更新するため、ページのリフレッシュは不要です
+
+
+### Takumi 图片渲染
+
+# ErisPulse-Takumi
+
+[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) は ccd2s が維持する **サードパーティの画像レンダリングモジュール** で、[takumi-py](https://github.com/BalconyJH/takumi-py) をベースとしています。Bot で画像をレンダリングできます：HTML、ノードツリー、Jinja テンプレート、SVG、アニメーションなども問題なく対応し、**中英両方のフォントが内蔵**されています（Noto Sans SC / Roboto / Source Code Pro）。フォントの追加設定は不要です。
+
+> [!IMPORTANT]  
+> Takumi は ErisPulse フレームワークの内蔵機能ではなく、個別にインストールする必要があります：
+>
+> ```bash
+> epsdk install Takumi
+> ```
+
+以下の用途に非常に適しています：
+
+- データや統計情報を美しいカード画像として送信する
+- Markdown / 長文をレイアウトが安定した画像にレンダリングし、プラットフォームのスタイル差異を回避する
+- SVG / アニメーションを生成し、動的な視覚効果を実現する
+- 中英混在のテキストを画像として出力する（内蔵フォントで即座に使用可能）
+
+---
+
+## インストールと有効化
+
+```bash
+epsdk install Takumi
+```
+
+インストール後、モジュールは自動的にロードされ、設定ファイルで有効化を確認してください：
+
+```toml
+[Takumi]
+enabled = true
+```
+
+---
+
+## すぐに始める
+
+モジュールが自動ロードされた後、モジュールマネージャーから取得するか、`sdk` というショートカットを使用できます：
+
+```python
+from ErisPulse import sdk
+
+takumi = sdk.module.get("Takumi")
+# 同義の書き方: takumi = sdk.Takumi
+```
+
+### HTML のレンダリング
+
+最も一般的な方法 —— HTML + CSS の文字列を PNG にレンダリングします：
+
+```python
+png = takumi.render_html(
+    """
+    <div class="card">
+      <h1>こんにちは、ErisPulse</h1>
+      <p>Takumi でレンダリングされた</p>
+    </div>
+    """,
+    stylesheets=["""
+    .card {
+      width: 800px;
+      height: 400px;
+      padding: 48px;
+      color: white;
+      background: #111827;
+      font-family: "Noto Sans SC";
+    }
+    """],
+    width=800,
+    height=400,
+    lang="zh-CN",
+)
+```
+
+`png` は `bytes` であり、`event.reply(png, method="Image")` を使用して送信できます（詳細は [レンダリング結果の送信](#レンダリング結果の送信) を参照）。
+
+### ノードツリーのレンダリング
+
+手動で HTML を書く必要がなく、辞書で構造を記述できます。プログラムで構築する場合に適しています：
+
+```python
+png = takumi.render_node(
+    {
+        "type": "text",
+        "text": "中英両方のテキストを直接レンダリング可能",
+        "style": {"fontSize": 48, "color": "#111827"},
+    },
+    width=800,
+    height=200,
+    lang="zh-CN",
+)
+```
+
+---
+
+## フォントとレンダラー
+
+### 内蔵フォント
+
+Takumi には一般的なフォントがパッケージ化されており、追加インストールは不要です：
+
+| 資源 | 説明 |
+|------|------|
+| `takumi.fonts` | 内蔵フォントのファイル名リスト |
+| `takumi.families` | 登録済みのフォントファミリリスト |
+
+便利なメソッド（`render_html` / `render_node`）は自動的にこのフォントフォールバックスタックを注入します。直接低レベルのレンダラーを呼び出す場合は、`font_families` を手動で渡す必要があります。
+
+### ネイティブレンダラー
+
+`takumi.renderer` は元の `takumi_py.Renderer` インスタンスです。便利なメソッドは自動的に内蔵フォントフォールバックスタックを注入しますが、**レンダラーを直接呼び出す場合は `families` を手動で渡す必要があります**：
+
+```python
+png = takumi.renderer.render_html(
+    "<div>こんにちは</div>",
+    font_families=takumi.families,
+    lang="zh-CN",
+)
+```
+
+### 独立レンダラー
+
+フォント / 画像 / リソースのキャッシュを分離する必要がある場合（例：長寿命プロセス、マルチテナント環境）は、新しい `Renderer` を作成できます。内蔵フォントは自動的に登録されます：
+
+```python
+renderer = takumi.create_renderer(cache_max_bytes=64 * 1024 * 1024)
+
+png = renderer.render_html(
+    "<div>独立したレンダラー</div>",
+    font_families=takumi.families,
+    width=800,
+    height=200,
+    lang="zh-CN",
+)
+```
+
+`create_renderer()` は `takumi_py.Renderer` のコンストラクタパラメータを受け取ります：
+
+- `load_default_fonts=False`（デフォルト）：内蔵フォントのみをロード
+- `load_default_fonts=True`：Takumi が提供するフォントも同時にロード
+- `fonts=[...]`：デフォルトに加えて独自のフォントを登録
+
+> 独立インスタンスはモジュールプロキシを経由しないため、統一された内蔵フォントフォールバックスタックを保持するには、明示的に `font_families=takumi.families` を渡す必要があります。
+
+`font_families` を明示的に渡した場合、モジュールは呼び出し元の設定を尊重し、デフォルトのフォールバックスタックを注入しません。`RenderOptions(font_families=...)` も同様に有効です。
+
+---
+
+## レンダリング結果の送信
+
+画像をレンダリングした後、イベントの返信を使って直接送信できます：
+
+```python
+from ErisPulse import sdk
+
+takumi = sdk.Takumi
+png = takumi.render_html("<div>hello</div>", lang="zh-CN")
+
+# 方法1: Image メソッドで直接返信
+await event.reply(png, method="Image")
+
+# 方法2: OneBot12 メッセージセグメントで返信
+from ErisPulse.Core.Event import MessageBuilder
+await event.reply_ob12(
+    MessageBuilder().image(png).build()
+)
+```
+
+> 画像のラッピングはアダプターによって統一的に処理されるため、下層の差異を気にする必要はありません。詳細は [MessageBuilder 詳解](../advanced/message-builder.md) と [送信メソッド仕様](../standards/send-method-spec.md) を参照してください。
+
+---
+
+## 関連リンク
+
+- PyPI: <https://pypi.org/project/ErisPulse-Takumi/>
+- リポジトリ: <https://github.com/ccd2s/ErispulseTakumi>（作者 [@ccd2s](https://github.com/ccd2s)）
+- ベースエンジン: <https://github.com/BalconyJH/takumi-py>
 
 
 ======

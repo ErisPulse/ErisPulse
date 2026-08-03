@@ -14,7 +14,9 @@
 - [SQL 查询构建器](sql-builder.md) - 通用 SQL 链式查询构建器及存储后端抽象
 - [会话类型系统](session-types.md) - 会话类型定义、映射与自定义类型注册
 - [Conversation 多轮对话](conversation.md) - 多轮对话上下文的交互方法
-- [Dashboard 视窗注册](dashboard-view.md) - 将模块管理页面注册到 Dashboard 侧边栏
+
+> [!NOTE]
+> Dashboard 视窗注册、Takumi 图片渲染等 **第三方生态模块** 的文档已迁移至 [生态模块](../ecosystem/README.md) 目录。
 
 ## 适用对象
 

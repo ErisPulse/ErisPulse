@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1445,
+  "total_keywords": 1459,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -142,14 +142,6 @@
         "line": 50,
         "level": 3,
         "title": "1. Health Check (GET)"
-      }
-    ],
-    "1. I Want to Use a Bot": [
-      {
-        "document": "README.md",
-        "line": 15,
-        "level": 3,
-        "title": "1. I Want to Use a Bot"
       }
     ],
     "1. Implement Connection Retry": [
@@ -580,14 +572,6 @@
         "line": 65,
         "level": 3,
         "title": "2. Event Object"
-      }
-    ],
-    "2. I Want to Develop Modules / Adapters": [
-      {
-        "document": "README.md",
-        "line": 28,
-        "level": 3,
-        "title": "2. I Want to Develop Modules / Adapters"
       }
     ],
     "2. Incorrect Timestamp Format": [
@@ -1034,14 +1018,6 @@
         "title": "3. Heartbeat Keepalive and Meta Heartbeat"
       }
     ],
-    "3. I Want to Deeply Understand the Principles": [
-      {
-        "document": "README.md",
-        "line": 39,
-        "level": 3,
-        "title": "3. I Want to Deeply Understand the Principles"
-      }
-    ],
     "3. Improve Code Quality": [
       {
         "document": "standards/README.md",
@@ -1328,14 +1304,6 @@
         "line": 65,
         "level": 3,
         "title": "4. Extended Field Description"
-      }
-    ],
-    "4. I Want to Contribute to ErisPulse": [
-      {
-        "document": "README.md",
-        "line": 54,
-        "level": 3,
-        "title": "4. I Want to Contribute to ErisPulse"
       }
     ],
     "4. Implement Required Methods": [
@@ -2798,12 +2766,12 @@
         "title": "Attribute Access"
       }
     ],
-    "Authentication and API Calls": [
+    "Authentication & API Calls": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 203,
+        "document": "ecosystem/dashboard.md",
+        "line": 176,
         "level": 2,
-        "title": "Authentication and API Calls"
+        "title": "Authentication & API Calls"
       }
     ],
     "Automatic Discovery Mechanism": [
@@ -3408,6 +3376,14 @@
         "title": "Built-in Defaults"
       }
     ],
+    "Built-in Fonts": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 98,
+        "level": 3,
+        "title": "Built-in Fonts"
+      }
+    ],
     "Bulk Build Mode (Build)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3962,8 +3938,8 @@
     ],
     "Common CSS Class Names": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 166,
+        "document": "ecosystem/dashboard.md",
+        "line": 139,
         "level": 2,
         "title": "Common CSS Class Names"
       }
@@ -4102,8 +4078,8 @@
     ],
     "Complete Module Example": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 229,
+        "document": "ecosystem/dashboard.md",
+        "line": 200,
         "level": 2,
         "title": "Complete Module Example"
       }
@@ -4430,8 +4406,8 @@
     ],
     "Considerations": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 356,
+        "document": "ecosystem/dashboard.md",
+        "line": 326,
         "level": 2,
         "title": "Considerations"
       }
@@ -4874,14 +4850,6 @@
         "title": "Dashboard Management Panel"
       }
     ],
-    "Dashboard View Registration": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 1,
-        "level": 1,
-        "title": "Dashboard View Registration"
-      }
-    ],
     "Data Persistence": [
       {
         "document": "getting-started/common-tasks.md",
@@ -5035,7 +5003,7 @@
     "Development Approaches": [
       {
         "document": "README.md",
-        "line": 65,
+        "line": 74,
         "level": 2,
         "title": "Development Approaches"
       }
@@ -5378,6 +5346,14 @@
         "title": "Eager Loading"
       }
     ],
+    "Ecosystem Modules": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Ecosystem Modules"
+      }
+    ],
     "Email Platform Feature Documentation": [
       {
         "document": "platform-guide/email.md",
@@ -5520,6 +5496,22 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse Session Type Standards"
+      }
+    ],
+    "ErisPulse-Dashboard": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Dashboard"
+      }
+    ],
+    "ErisPulse-Takumi": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Takumi"
       }
     ],
     "Error Code Description": [
@@ -6198,6 +6190,14 @@
         "title": "Fluent Modifier Methods (return self, can be combined)"
       }
     ],
+    "Fonts and Renderers": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 96,
+        "level": 2,
+        "title": "Fonts and Renderers"
+      }
+    ],
     "For Adapter Developers": [
       {
         "document": "standards/README.md",
@@ -6429,7 +6429,7 @@
     "Get Help": [
       {
         "document": "README.md",
-        "line": 78,
+        "line": 87,
         "level": 2,
         "title": "Get Help"
       },
@@ -6872,12 +6872,6 @@
     ],
     "How It Works": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 15,
-        "level": 2,
-        "title": "How It Works"
-      },
-      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 259,
         "level": 3,
@@ -6896,6 +6890,14 @@
         "line": 402,
         "level": 3,
         "title": "How WebUI Consumes"
+      }
+    ],
+    "How it works": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 23,
+        "level": 2,
+        "title": "How it works"
       }
     ],
     "How long does the review take?": [
@@ -6930,6 +6932,22 @@
         "title": "HttpResponse"
       }
     ],
+    "I want to list my module here too?": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 24,
+        "level": 2,
+        "title": "I want to list my module here too?"
+      }
+    ],
+    "I. I Want to Use a Bot": [
+      {
+        "document": "README.md",
+        "line": 15,
+        "level": 3,
+        "title": "I. I Want to Use a Bot"
+      }
+    ],
     "I18nClass Key Path Rules": [
       {
         "document": "advanced/i18n.md",
@@ -6952,6 +6970,30 @@
         "line": 86,
         "level": 3,
         "title": "ID Field Query"
+      }
+    ],
+    "II. I Want to Develop Modules / Adapters": [
+      {
+        "document": "README.md",
+        "line": 28,
+        "level": 3,
+        "title": "II. I Want to Develop Modules / Adapters"
+      }
+    ],
+    "III. I Want to Deeply Understand the Principles": [
+      {
+        "document": "README.md",
+        "line": 39,
+        "level": 3,
+        "title": "III. I Want to Deeply Understand the Principles"
+      }
+    ],
+    "IV. Recommended Ecosystem Modules": [
+      {
+        "document": "README.md",
+        "line": 53,
+        "level": 3,
+        "title": "IV. Recommended Ecosystem Modules"
       }
     ],
     "Ideaura Cafe Platform Features Documentation": [
@@ -7024,6 +7066,14 @@
         "line": 48,
         "level": 2,
         "title": "Inbound Protocol"
+      }
+    ],
+    "Independent Renderer": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 121,
+        "level": 3,
+        "title": "Independent Renderer"
       }
     ],
     "Information Query Commands": [
@@ -7164,6 +7214,14 @@
         "line": 1,
         "level": 1,
         "title": "Installation Reference"
+      }
+    ],
+    "Installation and Activation": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 21,
+        "level": 2,
+        "title": "Installation and Activation"
       }
     ],
     "Installing ErisPulse": [
@@ -8328,16 +8386,16 @@
     ],
     "Mode 1: HTML/JS Injection (Recommended)": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 70,
+        "document": "ecosystem/dashboard.md",
+        "line": 78,
         "level": 3,
         "title": "Mode 1: HTML/JS Injection (Recommended)"
       }
     ],
     "Mode 2: iframe Embedding": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 121,
+        "document": "ecosystem/dashboard.md",
+        "line": 94,
         "level": 3,
         "title": "Mode 2: iframe Embedding"
       }
@@ -8616,6 +8674,14 @@
         "line": 516,
         "level": 2,
         "title": "Naming Conventions"
+      }
+    ],
+    "Native Renderer": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 109,
+        "level": 3,
+        "title": "Native Renderer"
       }
     ],
     "Network Client": [
@@ -8975,7 +9041,7 @@
     "Others": [
       {
         "document": "README.md",
-        "line": 72,
+        "line": 81,
         "level": 2,
         "title": "Others"
       }
@@ -9104,8 +9170,8 @@
     ],
     "Parameter Description": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 47,
+        "document": "ecosystem/dashboard.md",
+        "line": 55,
         "level": 3,
         "title": "Parameter Description"
       }
@@ -9337,7 +9403,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 27,
+        "line": 29,
         "level": 2,
         "title": "Prerequisites"
       },
@@ -9684,6 +9750,12 @@
         "title": "Quick Start"
       },
       {
+        "document": "ecosystem/takumi.md",
+        "line": 36,
+        "level": 2,
+        "title": "Quick Start"
+      },
+      {
         "document": "user-guide/deployment.md",
         "line": 9,
         "level": 3,
@@ -9760,6 +9832,14 @@
         "title": "Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)"
       }
     ],
+    "Recommended Modules": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 15,
+        "level": 2,
+        "title": "Recommended Modules"
+      }
+    ],
     "Recommended Scenarios for Disabling Lazy Loading (lazy_load=False)": [
       {
         "document": "advanced/lazy-loading.md",
@@ -9790,6 +9870,14 @@
         "line": 278,
         "level": 2,
         "title": "References"
+      }
+    ],
+    "Register API": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 36,
+        "level": 2,
+        "title": "Register API"
       }
     ],
     "Register Commands": [
@@ -9838,14 +9926,6 @@
         "line": 12,
         "level": 3,
         "title": "Registering Handlers"
-      }
-    ],
-    "Registration API": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 28,
-        "level": 2,
-        "title": "Registration API"
       }
     ],
     "Registration and Unregistration": [
@@ -10013,7 +10093,13 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 84,
+        "line": 93,
+        "level": 2,
+        "title": "Related Links"
+      },
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 173,
         "level": 2,
         "title": "Related Links"
       }
@@ -10040,6 +10126,22 @@
         "line": 78,
         "level": 2,
         "title": "Relationship with SendDSL Standard Methods"
+      }
+    ],
+    "Rendering HTML": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 47,
+        "level": 3,
+        "title": "Rendering HTML"
+      }
+    ],
+    "Rendering Node Tree": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 77,
+        "level": 3,
+        "title": "Rendering Node Tree"
       }
     ],
     "Reply": [
@@ -10844,6 +10946,14 @@
         "title": "Sending Methods"
       }
     ],
+    "Sending Rendered Results": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 149,
+        "level": 2,
+        "title": "Sending Rendered Results"
+      }
+    ],
     "Sending Rules System": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -10924,8 +11034,8 @@
     ],
     "Sidebar Groups": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 138,
+        "document": "ecosystem/dashboard.md",
+        "line": 111,
         "level": 2,
         "title": "Sidebar Groups"
       }
@@ -11589,7 +11699,7 @@
     "Target Audience": [
       {
         "document": "advanced/README.md",
-        "line": 19,
+        "line": 21,
         "level": 2,
         "title": "Target Audience"
       },
@@ -11720,8 +11830,8 @@
     ],
     "Two Injection Modes": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 68,
+        "document": "ecosystem/dashboard.md",
+        "line": 76,
         "level": 2,
         "title": "Two Injection Modes"
       }
@@ -11864,12 +11974,12 @@
         "title": "Unregister Methods"
       }
     ],
-    "Unregistering Views": [
+    "Unregister View": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 342,
+        "document": "ecosystem/dashboard.md",
+        "line": 312,
         "level": 2,
-        "title": "Unregistering Views"
+        "title": "Unregister View"
       }
     ],
     "Unsupported Method Calls": [
@@ -12208,6 +12318,14 @@
         "line": 436,
         "level": 3,
         "title": "Utility Methods"
+      }
+    ],
+    "V. I Want to Contribute to ErisPulse": [
+      {
+        "document": "README.md",
+        "line": 63,
+        "level": 3,
+        "title": "V. I Want to Contribute to ErisPulse"
       }
     ],
     "Verify Installation": [

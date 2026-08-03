@@ -1,10 +1,18 @@
-# Dashboard 视窗注册
+# ErisPulse-Dashboard
 
-Dashboard 支持其他 ErisPulse 模块将自定义的管理页面注册到 Dashboard 的侧边栏中。注册后，用户可以直接在 Dashboard 中切换到该模块的专属视窗页面，无需额外开发独立的前端界面。
+[ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) 是ErisDev直接维护的 **Web 管理面板模块**，为 ErisPulse 提供可视化的运行时管理界面：模块启停、配置编辑、日志查看、事件流监控等。
 
-> **前提条件**
+> [!IMPORTANT]
+> Dashboard **不是** ErisPulse 框架的内置功能，需要单独安装：
 >
-> Dashboard 视窗注册是**可选功能**，需要安装并加载 [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) 模块。
+> ```bash
+> epsdk install Dashboard
+> ```
+
+Dashboard 还支持其他 ErisPulse 模块将自定义的管理页面注册到侧边栏。注册后，用户可以直接在 Dashboard 中切换到该模块的专属视窗页面，无需额外开发独立的前端界面。
+
+> [!NOTE]
+> 视窗注册是**可选功能**。
 >
 > - 如果 Dashboard 模块**未安装**或**未加载**，调用 `sdk.Dashboard.register_view()` 会抛出异常
 > - 请务必使用 `try/except` 包裹注册代码，确保模块本身的其他功能不受影响
