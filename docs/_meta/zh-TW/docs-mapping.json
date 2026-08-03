@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "total_categories": 11,
+  "total_categories": 12,
   "categories": {
     "快速開始": {
       "description": "ErisPulse 快速入門指南",
@@ -287,7 +287,7 @@
     },
     "進階主題": {
       "description": "深入理解框架的進階特性",
-      "count": 12,
+      "count": 11,
       "documents": [
         {
           "title": "高級主題",
@@ -325,11 +325,6 @@
           "level": 1
         },
         {
-          "title": "Dashboard 視窗註冊",
-          "path": "advanced/dashboard-view.md",
-          "level": 1
-        },
-        {
           "title": "網絡客戶端",
           "path": "advanced/http-client.md",
           "level": 1
@@ -347,6 +342,28 @@
         {
           "title": "啟動流程與手動控制",
           "path": "advanced/startup.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "生態模組": {
+      "description": "社群維護的第三方擴展模組",
+      "count": 3,
+      "documents": [
+        {
+          "title": "生態模組",
+          "path": "ecosystem/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse-Dashboard",
+          "path": "ecosystem/dashboard.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse-Takumi",
+          "path": "ecosystem/takumi.md",
           "level": 1
         }
       ],

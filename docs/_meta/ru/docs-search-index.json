@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1473,
+  "total_keywords": 1487,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -328,6 +328,14 @@
         "line": 508,
         "level": 3,
         "title": "1. Юнит-тесты"
+      }
+    ],
+    "1. Я хочу использовать бота": [
+      {
+        "document": "README.md",
+        "line": 15,
+        "level": 3,
+        "title": "1. Я хочу использовать бота"
       }
     ],
     "1.1 Стандартные методы отправки": [
@@ -792,6 +800,14 @@
         "title": "2. Установка среды разработки"
       }
     ],
+    "2. Я хочу разрабатывать модули / адаптеры": [
+      {
+        "document": "README.md",
+        "line": 28,
+        "level": 3,
+        "title": "2. Я хочу разрабатывать модули / адаптеры"
+      }
+    ],
     "2.1 Обязательные поля": [
       {
         "document": "standards/event-conversion.md",
@@ -1136,6 +1152,14 @@
         "title": "3. Четкое управление конфигурацией"
       }
     ],
+    "3. Я хочу глубже понять принципы работы": [
+      {
+        "document": "README.md",
+        "line": 39,
+        "level": 3,
+        "title": "3. Я хочу глубже понять принципы работы"
+      }
+    ],
     "3.1 Общие поля": [
       {
         "document": "standards/api-response.md",
@@ -1350,6 +1374,14 @@
         "line": 126,
         "level": 3,
         "title": "4. Реализация обязательных методов"
+      }
+    ],
+    "4. Рекомендуемые модули экосистемы": [
+      {
+        "document": "README.md",
+        "line": 53,
+        "level": 3,
+        "title": "4. Рекомендуемые модули экосистемы"
       }
     ],
     "4. Спецификация именования параметров": [
@@ -1582,6 +1614,14 @@
         "line": 189,
         "level": 2,
         "title": "5. Требования к реализации адаптера"
+      }
+    ],
+    "5. Я хочу внести вклад в ErisPulse": [
+      {
+        "document": "README.md",
+        "line": 63,
+        "level": 3,
+        "title": "5. Я хочу внести вклад в ErisPulse"
       }
     ],
     "5.1 Обязательное поле `message_id`": [
@@ -2170,8 +2210,8 @@
     ],
     "API регистрации": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 28,
+        "document": "ecosystem/dashboard.md",
+        "line": 36,
         "level": 2,
         "title": "API регистрации"
       }
@@ -2304,6 +2344,22 @@
         "title": "ErisPulse Спецификация операций запросов"
       }
     ],
+    "ErisPulse-Dashboard": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Dashboard"
+      }
+    ],
+    "ErisPulse-Takumi": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Takumi"
+      }
+    ],
     "GET": [
       {
         "document": "advanced/http-client.md",
@@ -2360,44 +2416,12 @@
         "title": "HttpResponse"
       }
     ],
-    "I. Я хочу использовать бота": [
-      {
-        "document": "README.md",
-        "line": 15,
-        "level": 3,
-        "title": "I. Я хочу использовать бота"
-      }
-    ],
     "I18nManager": [
       {
         "document": "advanced/i18n.md",
         "line": 427,
         "level": 3,
         "title": "I18nManager"
-      }
-    ],
-    "II. Я хочу разрабатывать модули / адаптеры": [
-      {
-        "document": "README.md",
-        "line": 28,
-        "level": 3,
-        "title": "II. Я хочу разрабатывать модули / адаптеры"
-      }
-    ],
-    "III. Я хочу глубже понять принципы работы": [
-      {
-        "document": "README.md",
-        "line": 39,
-        "level": 3,
-        "title": "III. Я хочу глубже понять принципы работы"
-      }
-    ],
-    "IV. Я хочу внести вклад в ErisPulse": [
-      {
-        "document": "README.md",
-        "line": 54,
-        "level": 3,
-        "title": "IV. Я хочу внести вклад в ErisPulse"
       }
     ],
     "Logger (Логирование)": [
@@ -3450,12 +3474,12 @@
         "title": "Асинхронные интерфейсы"
       }
     ],
-    "Аутентификация и вызов API": [
+    "Аутентификация и вызовы API": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 168,
+        "document": "ecosystem/dashboard.md",
+        "line": 176,
         "level": 2,
-        "title": "Аутентификация и вызов API"
+        "title": "Аутентификация и вызовы API"
       }
     ],
     "Базовая команда": [
@@ -3646,6 +3670,12 @@
         "title": "Быстрый старт"
       },
       {
+        "document": "ecosystem/takumi.md",
+        "line": 36,
+        "level": 2,
+        "title": "Быстрый старт"
+      },
+      {
         "document": "quick-start.md",
         "line": 1,
         "level": 1,
@@ -3656,6 +3686,14 @@
         "line": 9,
         "level": 3,
         "title": "Быстрый старт"
+      }
+    ],
+    "Важные замечания": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 326,
+        "level": 2,
+        "title": "Важные замечания"
       }
     ],
     "Важные ограничения": [
@@ -3888,6 +3926,14 @@
         "title": "Встроенные слова подтверждения"
       }
     ],
+    "Встроенные шрифты": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 98,
+        "level": 3,
+        "title": "Встроенные шрифты"
+      }
+    ],
     "Вход в режим построения": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -4070,20 +4116,20 @@
         "title": "Горячая перезагрузка конфигурации"
       }
     ],
-    "Группировка в боковой панели": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 103,
-        "level": 2,
-        "title": "Группировка в боковой панели"
-      }
-    ],
     "Группировка маршрутов": [
       {
         "document": "advanced/router.md",
         "line": 195,
         "level": 2,
         "title": "Группировка маршрутов"
+      }
+    ],
+    "Группы боковой панели": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 111,
+        "level": 2,
+        "title": "Группы боковой панели"
       }
     ],
     "Группы команд": [
@@ -4160,12 +4206,12 @@
         "title": "Дальнейшие шаги"
       }
     ],
-    "Два режима встраивания": [
+    "Два режима внедрения": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 68,
+        "document": "ecosystem/dashboard.md",
+        "line": 76,
         "level": 2,
-        "title": "Два режима встраивания"
+        "title": "Два режима внедрения"
       }
     ],
     "Двухрежимная система": [
@@ -4280,6 +4326,14 @@
         "line": 565,
         "level": 3,
         "title": "Динамический контент"
+      }
+    ],
+    "Для кого подходит": [
+      {
+        "document": "advanced/README.md",
+        "line": 21,
+        "level": 2,
+        "title": "Для кого подходит"
       }
     ],
     "Для конечных пользователей": [
@@ -4448,6 +4502,14 @@
         "title": "Дополнительная функция: поле типа исходного события"
       }
     ],
+    "Дополнительно": [
+      {
+        "document": "README.md",
+        "line": 81,
+        "level": 2,
+        "title": "Дополнительно"
+      }
+    ],
     "Дополнительные методы операций": [
       {
         "document": "platform-guide/kook.md",
@@ -4548,14 +4610,6 @@
         "line": 81,
         "level": 3,
         "title": "Другие типы сообщений"
-      }
-    ],
-    "Другое": [
-      {
-        "document": "README.md",
-        "line": 72,
-        "level": 2,
-        "title": "Другое"
       }
     ],
     "Единое перехватывание": [
@@ -6704,6 +6758,14 @@
         "title": "Не ожидать результата"
       }
     ],
+    "Независимый рендерер": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 121,
+        "level": 3,
+        "title": "Независимый рендерер"
+      }
+    ],
     "Немедленная загрузка": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -7554,8 +7616,8 @@
     ],
     "Описание параметров": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 47,
+        "document": "ecosystem/dashboard.md",
+        "line": 55,
         "level": 3,
         "title": "Описание параметров"
       }
@@ -7722,6 +7784,14 @@
         "line": 176,
         "level": 4,
         "title": "Оригинальные события платформы"
+      }
+    ],
+    "Оригинальный рендерер": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 109,
+        "level": 3,
+        "title": "Оригинальный рендерер"
       }
     ],
     "Основа команды": [
@@ -8174,6 +8244,14 @@
         "title": "Отмена регистрации метода"
       }
     ],
+    "Отмена регистрации окна": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 312,
+        "level": 2,
+        "title": "Отмена регистрации окна"
+      }
+    ],
     "Отношение между self.user_id и Using": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8296,6 +8374,14 @@
         "line": 102,
         "level": 3,
         "title": "Отправка ответа"
+      }
+    ],
+    "Отправка рендеринга": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 149,
+        "level": 2,
+        "title": "Отправка рендеринга"
       }
     ],
     "Отправка с указанием аккаунта": [
@@ -9186,8 +9272,8 @@
     ],
     "Полный пример модуля": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 192,
+        "document": "ecosystem/dashboard.md",
+        "line": 200,
         "level": 2,
         "title": "Полный пример модуля"
       }
@@ -9264,6 +9350,14 @@
         "title": "Получение подробной информации о методе"
       }
     ],
+    "Получение помощи": [
+      {
+        "document": "README.md",
+        "line": 87,
+        "level": 2,
+        "title": "Получение помощи"
+      }
+    ],
     "Получение целевого ID": [
       {
         "document": "advanced/session-types.md",
@@ -9278,14 +9372,6 @@
         "line": 239,
         "level": 3,
         "title": "Получение экземпляра адаптера"
-      }
-    ],
-    "Получите помощь": [
-      {
-        "document": "README.md",
-        "line": 78,
-        "level": 2,
-        "title": "Получите помощь"
       }
     ],
     "Получить помощь": [
@@ -9403,7 +9489,7 @@
     "Предварительные требования": [
       {
         "document": "advanced/README.md",
-        "line": 27,
+        "line": 29,
         "level": 2,
         "title": "Предварительные требования"
       }
@@ -9848,12 +9934,6 @@
     ],
     "Примечания": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 318,
-        "level": 2,
-        "title": "Примечания"
-      },
-      {
         "document": "advanced/lazy-loading.md",
         "line": 130,
         "level": 2,
@@ -9890,14 +9970,14 @@
     ],
     "Принцип работы": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 15,
+        "document": "advanced/lazy-loading.md",
+        "line": 14,
         "level": 2,
         "title": "Принцип работы"
       },
       {
-        "document": "advanced/lazy-loading.md",
-        "line": 14,
+        "document": "ecosystem/dashboard.md",
+        "line": 23,
         "level": 2,
         "title": "Принцип работы"
       }
@@ -10032,6 +10112,14 @@
         "line": 68,
         "level": 2,
         "title": "Проверочный список соблюдения стандартов"
+      }
+    ],
+    "Продвинутые темы": [
+      {
+        "document": "advanced/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Продвинутые темы"
       }
     ],
     "Продолжение после ошибки и перезапись": [
@@ -10336,14 +10424,6 @@
         "title": "Распространенные команды"
       }
     ],
-    "Распространённые CSS-классы": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 131,
-        "level": 2,
-        "title": "Распространённые CSS-классы"
-      }
-    ],
     "Распространённые ошибки": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -10462,14 +10542,6 @@
         "title": "Расширенные поля платформы"
       }
     ],
-    "Расширенные темы": [
-      {
-        "document": "advanced/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "Расширенные темы"
-      }
-    ],
     "Реализация SendDSL": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -10526,14 +10598,6 @@
         "title": "Регистрация обработчиков событий"
       }
     ],
-    "Регистрация окон Dashboard": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 1,
-        "level": 1,
-        "title": "Регистрация окон Dashboard"
-      }
-    ],
     "Регистрация отдельного метода": [
       {
         "document": "api-reference/event-system.md",
@@ -10582,20 +10646,20 @@
         "title": "Редактирование и отмена отправки сообщений"
       }
     ],
-    "Режим 1: Встраивание HTML/JS (рекомендуется)": [
+    "Режим 1: HTML/JS внедрение (рекомендуется)": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 70,
+        "document": "ecosystem/dashboard.md",
+        "line": 78,
         "level": 3,
-        "title": "Режим 1: Встраивание HTML/JS (рекомендуется)"
+        "title": "Режим 1: HTML/JS внедрение (рекомендуется)"
       }
     ],
-    "Режим 2: Встраивание iframe": [
+    "Режим 2: Внедрение iframe": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 86,
+        "document": "ecosystem/dashboard.md",
+        "line": 94,
         "level": 3,
-        "title": "Режим 2: Встраивание iframe"
+        "title": "Режим 2: Внедрение iframe"
       }
     ],
     "Режим быстрого построения (статический)": [
@@ -10684,6 +10748,14 @@
         "title": "Рекомендуемые методы (уровень выше)"
       }
     ],
+    "Рекомендуемые модули": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 15,
+        "level": 2,
+        "title": "Рекомендуемые модули"
+      }
+    ],
     "Рекомендуемые практики": [
       {
         "document": "advanced/lazy-loading.md",
@@ -10720,6 +10792,22 @@
         "line": 81,
         "level": 3,
         "title": "Рекомендуемый подход: объявление ключей перевода через I18nClass (v2.7.0+)"
+      }
+    ],
+    "Рендеринг HTML": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 47,
+        "level": 3,
+        "title": "Рендеринг HTML"
+      }
+    ],
+    "Рендеринг дерева узлов": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 77,
+        "level": 3,
+        "title": "Рендеринг дерева узлов"
       }
     ],
     "Руководство для разработчиков": [
@@ -11049,7 +11137,13 @@
     "Связанные ссылки": [
       {
         "document": "README.md",
-        "line": 84,
+        "line": 93,
+        "level": 2,
+        "title": "Связанные ссылки"
+      },
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 173,
         "level": 2,
         "title": "Связанные ссылки"
       }
@@ -11792,18 +11886,16 @@
     ],
     "Список документации": [
       {
+        "document": "advanced/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Список документации"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 5,
         "level": 2,
         "title": "Список документации"
-      }
-    ],
-    "Список документов": [
-      {
-        "document": "advanced/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "Список документов"
       }
     ],
     "Список исключений": [
@@ -11913,7 +12005,7 @@
     "Способы разработки": [
       {
         "document": "README.md",
-        "line": 65,
+        "line": 74,
         "level": 2,
         "title": "Способы разработки"
       }
@@ -12524,14 +12616,6 @@
         "title": "Удаление компонентов"
       }
     ],
-    "Удаление окна": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 304,
-        "level": 2,
-        "title": "Удаление окна"
-      }
-    ],
     "Удаление таблицы": [
       {
         "document": "advanced/sql-builder.md",
@@ -12828,6 +12912,14 @@
         "title": "Установка uv"
       }
     ],
+    "Установка и активация": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 21,
+        "level": 2,
+        "title": "Установка и активация"
+      }
+    ],
     "Установка модулей": [
       {
         "document": "quick-start.md",
@@ -13042,12 +13134,6 @@
     ],
     "Целевая аудитория": [
       {
-        "document": "advanced/README.md",
-        "line": 19,
-        "level": 2,
-        "title": "Целевая аудитория"
-      },
-      {
         "document": "styleguide/README.md",
         "line": 9,
         "level": 2,
@@ -13166,6 +13252,14 @@
         "title": "Часто задаваемые вопросы"
       }
     ],
+    "Часто используемые CSS-классы": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 139,
+        "level": 2,
+        "title": "Часто используемые CSS-классы"
+      }
+    ],
     "Часто используемые методы объекта Event": [
       {
         "document": "getting-started/event-handling.md",
@@ -13260,6 +13354,30 @@
         "line": 39,
         "level": 2,
         "title": "Шкала серьезности"
+      }
+    ],
+    "Шрифты и рендереры": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 96,
+        "level": 2,
+        "title": "Шрифты и рендереры"
+      }
+    ],
+    "Экосистема модулей": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Экосистема модулей"
+      }
+    ],
+    "Я тоже хочу, чтобы мой модуль был здесь?": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 24,
+        "level": 2,
+        "title": "Я тоже хочу, чтобы мой модуль был здесь?"
       }
     ]
   }

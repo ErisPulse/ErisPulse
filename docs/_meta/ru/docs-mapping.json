@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "total_categories": 11,
+  "total_categories": 12,
   "categories": {
     "Быстрый старт": {
       "description": "Краткое руководство по ErisPulse",
@@ -287,10 +287,10 @@
     },
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
-      "count": 12,
+      "count": 11,
       "documents": [
         {
-          "title": "Расширенные темы",
+          "title": "Продвинутые темы",
           "path": "advanced/README.md",
           "level": 1
         },
@@ -325,11 +325,6 @@
           "level": 1
         },
         {
-          "title": "Регистрация окон Dashboard",
-          "path": "advanced/dashboard-view.md",
-          "level": 1
-        },
-        {
           "title": "Сетевой клиент",
           "path": "advanced/http-client.md",
           "level": 1
@@ -347,6 +342,28 @@
         {
           "title": "Процесс запуска и ручное управление",
           "path": "advanced/startup.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Модули экосистемы": {
+      "description": "Сторонние модули, поддерживаемые сообществом",
+      "count": 3,
+      "documents": [
+        {
+          "title": "Экосистема модулей",
+          "path": "ecosystem/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse-Dashboard",
+          "path": "ecosystem/dashboard.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse-Takumi",
+          "path": "ecosystem/takumi.md",
           "level": 1
         }
       ],

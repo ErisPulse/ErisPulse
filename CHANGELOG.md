@@ -63,6 +63,35 @@
 
 ---
 
+## [2.7.0] - 2026/08/04
+> 正式发布
+
+**版本摘要**
+2.7.0 是 ErisPulse 面向生产部署与开发者体验的综合性版本，覆盖六大方向：(1) **OneBot12 标准化增强**——新增 `ApiDSL` 标准 API 动作基类（信息查询/群管理/消息管理/文件操作）与 `BaseConverter` 事件转换器基类，修复 notice/request 事件会话类型推断 bug（群通知事件的 `event.reply()` 现在正确发送到群内），`Event.send_chain()`/`reply(via=)` 支持平台专有修饰方法；(2) **配置热更新系统化**——logger（级别/文件/内存/格式）、适配器并发上限、命令参数、主动 GC 间隔支持运行时热更新，CORS/安全头与存储 DB 路径变更时明确告警需重启；(3) **开发者可观测性**——新增 `runtime.diagnostics` 异常诊断模块（加载/初始化失败自动输出用户代码帧摘要）、配置加载三态错误诊断（TOML 行号/权限原因/通用失败）、路由 `X-Request-ID` 请求关联 ID、CLI `doctor` 命令；(4) **生产部署能力**——`sdk.shutdown()` 优雅关闭与 SIGTERM/SIGHUP 信号处理、`before_init`/`after_init`/`on_ready` 生命周期回调钩子、配置环境变量覆盖（Docker/12-factor）、Web 栈懒加载（导入期内存 ~112MB → ~58MB）、`server.auto_start` 可跳过 HTTP 服务器；(5) **性能优化**——日志环形缓冲 `deque`、日志 `_get_caller` 快速路径、发送热路径短路（无监听者跳过 Task 创建）、模块拓扑排序反向邻接表、`list --outdated` 单次拉取索引；(6) **架构与技术债清理**——i18n 键声明式注册（`I18nClass` 嵌套类）、Schema 定义源迁移至 `Core/Bases`、适配器 `EventMixin` 自动注册、跨模块常量提取与 CLI/主库常量隔离、CLI i18n Windows 检测补强、create 脚手架模板现代化（嵌套 `ConfigClass` + 多语言文案）、版本比较增强（post/local/epoch）。
+
+**升级建议**
+- **强烈建议升级**
+- 升级原因：
+  - OneBot12 标准化：群通知事件的 `event.reply()` 修复为正确发送到群内；信息查询/群管理/消息管理/文件操作等标准动作可通过 `ApiDSL` 跨平台统一调用，适配器只需实现类型映射（`BaseConverter`）
+  - 配置热更新：日志级别/文件、适配器并发上限、命令参数、主动 GC 间隔运行时调整即时生效，减少重启次数
+  - 排障效率：模块/适配器加载失败时默认日志即可看到用户代码出错位置；配置文件写错时输出精确行号/列号而非静默回退默认值
+  - 资源占用：Web 栈懒加载使所有进程导入期内存显著下降（实测 ~112MB → ~58MB）；纯 WebSocket/轮询适配器可设 `server.auto_start = false` 完全跳过 HTTP 服务器
+  - 生产部署：`sdk.shutdown()` 优雅关闭、SIGTERM/SIGHUP 信号处理、生命周期回调钩子、环境变量配置覆盖（`ERISPULSE_<SECTION>_<KEY>`）满足容器化/编排场景
+  - 开发者体验：`lifecycle.once()`/`has_handlers()`、`Event.send_chain()`/`reply(via=)` 平台修饰方法、secret 字段脱敏、`validate_config` 强化（类型/枚举/范围）、CLI `doctor`/`--no-color`/`--yes`
+  - 修复多个关键问题：路由限流清理固定窗口 bug（`100/hour` 退化为约 `100/minute`）、配置监听广播半成品 TOML、硬重启丢未刷盘配置、命令配置不热更新、`list --outdated` 逐包拉取索引、`epsdk create adapter` 模板坏 import
+
+**注意事项**
+- ⚠️ **Schema 定义源迁移**：`config_schema.py` 与 `i18n_schema.py` 实际定义从 `runtime/` 移至 `Core/Bases/`；`runtime/` 保留向后兼容 shim（`from ErisPulse.runtime.config_schema import ...` 旧代码仍可用），推荐新代码从 `ErisPulse.Core.Bases` 统一导入
+- ⚠️ **`infer_receive_type` 行为变更**：notice/request 事件的 `detail_type` 不再被直接当作会话类型返回，改为从 ID 字段（group_id/user_id）推断；message 事件不受影响
+- ⚠️ **配置加载三态诊断**：配置文件 TOML 语法错误/权限错误时不再静默回退，而是输出精确行号/列号或权限原因，并附加「已回退默认配置」警告；运行中配置文件被改坏时 flush 输出「配置文件已损坏」提示并保留待写入键
+- ⚠️ **热更新与重启边界**：日志、适配器并发上限、命令参数、主动 GC 间隔支持运行时热更新；CORS/安全头与存储 `use_global_db` 变更需重启生效（会输出 `core.config.restart_required` 告警）
+- 默认行为不变：`server.auto_start` 默认 `true` 仍会启动 HTTP 服务器；仅显式设置 `false` 时跳过（此时 Dashboard 等 HTTP 功能不可用）
+- 跨进程契约收口：硬重启退出码（42）等统一引用 `Core/constants.py`；CLI 不再导入 `Core.constants`，改用 `CLI/constants.py` 镜像，两侧一致性由回归测试钉死
+- `epsdk create` 脚手架模板：新生成项目的配置类改用嵌套 `ConfigClass`/`I18nClass` 声明，注释/日志文案跟随脚手架用户语言（不再硬编码中文）；模板 i18n 收敛到配置描述/命令 help/回复
+- 新增导出符号：`ApiDSL`、`BaseConverter`、`BaseI18n`/`I18nKey`/`key`、`extract_user_frame`/`format_diagnostic_block`/`log_diagnostic`、`get_rss_mb`/`get_traced_mb`/`snapshot`/`log_snapshot`
+
+---
+
 ## [2.7.0-dev.5] - 2026/07/31
 > 开发版本
 

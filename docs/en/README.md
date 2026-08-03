@@ -1,10 +1,10 @@
 # ErisPulse Documentation
 
-ErisPulse is a scalable, multi-platform message processing framework that supports interaction with different platforms through adapters, providing a flexible module system for feature extension.
+ErisPulse is a scalable, multi-platform message processing framework that supports interaction with different platforms through adapters and provides a flexible module system for feature extension.
 
-> **First time using?** Go straight to [5-minute Quick Start](docs/en/quick-start.md) —— from installation to running your first bot, all in one go.
+> **First time using?** Go straight to [5-minute quick start](docs/en/quick-start.md) —— from installation to running your first bot, one-stop guide.
 >
-> Encountered unfamiliar terms? Check the [Glossary](terminology.md).
+> Encounter unfamiliar terms? Check the [Glossary](terminology.md).
 
 ---
 
@@ -12,52 +12,61 @@ ErisPulse is a scalable, multi-platform message processing framework that suppor
 
 Based on your goals, select the corresponding learning path. Each path is arranged from basic to advanced.
 
-### 1. I Want to Use a Bot
+### I. I Want to Use a Bot
 
-Get a bot up and running, install modules, and configure it.
+Get the bot running, install modules, and configure settings.
 
 | Progress | Document | Description |
-|----------|----------|-------------|
-| **① Getting Started** | [5-minute Quick Start](docs/en/quick-start.md) | Installation, initialization, and running — the only starting point |
+|------|------|------|
+| **① Getting Started** | [5-minute quick start](docs/en/quick-start.md) | Installation, initialization, and running — the only starting point |
 | ② In-depth | [Create Your First Bot](getting-started/first-bot.md) | Writing your first command handler |
-| ③ Concepts | [Basic Concepts](getting-started/basic-concepts.md) | Understanding adapter/module/event design |
+| ③ Concepts | [Basic Concepts](getting-started/basic-concepts.md) | Understanding the design of adapters/modules/events |
 | ④ Practical | [Common Task Examples](getting-started/common-tasks.md) | Storage, scheduled tasks, permission control |
 | Reference | [Configuration File Guide](user-guide/configuration.md) · [CLI Commands](user-guide/cli-reference.md) · [Deployment Guide](user-guide/deployment.md) | Consult as needed |
-| Reference | [Platform Features Guide](platform-guide/README.md) | Differences between platforms (Yunhu/QQ/Telegram…) |
+| Reference | [Platform Features Guide](platform-guide/README.md) | Differences among platforms (Yunhu/Telegram/…)|
 
-### 2. I Want to Develop Modules / Adapters
+### II. I Want to Develop Modules / Adapters
 
 Develop distributable extensions for ErisPulse.
 
-| Type | Getting Started | Advanced |
-|------|-----------------|----------|
-| **Module Development** (Recommended) | [Module Development Getting Started](developer-guide/modules/getting-started.md) | [Core Concepts](developer-guide/modules/core-concepts.md) · [Event Wrapper](developer-guide/modules/event-wrapper.md) · [Best Practices](developer-guide/modules/best-practices.md) |
-| **Adapter Development** | [Adapter Development Getting Started](developer-guide/adapters/getting-started.md) | [Core Concepts](developer-guide/adapters/core-concepts.md) · [SendDSL Explained](developer-guide/adapters/send-dsl.md) · [Event Converters](developer-guide/adapters/converter.md) · [Best Practices](developer-guide/adapters/best-practices.md) |
-| **Technical Standards** | [Standards Overview](standards/README.md) | Adapters must follow the [Session Types](standards/session-types.md) · [Event Conversion](standards/event-conversion.md) · [Send Methods](standards/send-method-spec.md) · [API Responses](standards/api-response.md) · [Request Actions](standards/request-action-spec.md) specifications |
-| **Publishing** | [Publishing and Module Store](developer-guide/publishing.md) | Publish your work to PyPI and the module store |
+| Type | Beginner | Advanced |
+|------|------|------|
+| **Module Development** (Recommended) | [Module Development Guide](developer-guide/modules/getting-started.md) | [Core Concepts](developer-guide/modules/core-concepts.md) · [Event Wrapper](developer-guide/modules/event-wrapper.md) · [Best Practices](developer-guide/modules/best-practices.md) |
+| **Adapter Development** | [Adapter Development Guide](developer-guide/adapters/getting-started.md) | [Core Concepts](developer-guide/adapters/core-concepts.md) · [SendDSL Detailed Explanation](developer-guide/adapters/send-dsl.md) · [Event Converters](developer-guide/adapters/converter.md) · [Best Practices](developer-guide/adapters/best-practices.md) |
+| **Technical Standards** | [Standards Overview](standards/README.md) | Standards that adapter development must follow: [Session Types](standards/session-types.md) · [Event Conversion](standards/event-conversion.md) · [Send Methods](standards/send-method-spec.md) · [API Response](standards/api-response.md) · [Request Actions](standards/request-action-spec.md) |
+| **Publishing** | [Publishing and Module Store](developer-guide/publishing.md) | Publishing your work to PyPI and the module store |
 
-### 3. I Want to Deeply Understand the Principles
+### III. I Want to Deeply Understand the Principles
 
 Understand how the framework works internally.
 
 | Document | Description |
-|----------|-------------|
-| [Architecture Overview](architecture.md) | Visual diagrams: core architecture, initialization flow, event handling, lifecycle |
+|------|------|
+| [Architecture Overview](architecture.md) | Visual chart: core architecture, initialization flow, event handling, lifecycle |
 | [Startup Process and Manual Control](advanced/startup.md) | Breakdown of the startup chain, manual control of each step, diagnosis of loading failures |
 | [Event System](api-reference/event-system.md) | Complete API for five major event types |
-| [Adapter System](api-reference/adapter-system.md) | Adapter registration, start/stop, API calls |
+| [Adapter System](api-reference/adapter-system.md) | Adapter registration, startup/shutdown, API calls |
 | [Core Modules](api-reference/core-modules.md) | Basic capabilities such as Storage / Config / Logger / Router |
 | [Lifecycle Management](advanced/lifecycle.md) · [Lazy Loading](advanced/lazy-loading.md) · [Routing System](advanced/router.md) | Internal subsystems |
 | [Conversation Multi-turn Dialogue](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL Builder](advanced/sql-builder.md) · [HTTP Client](advanced/http-client.md) · [Internationalization](advanced/i18n.md) | Advanced tools |
-| [Dashboard Management Panel](advanced/dashboard-view.md) | Web management interface integration |
 
-### 4. I Want to Contribute to ErisPulse
+### IV. Recommended Ecosystem Modules
 
-Make the framework better
+Third-party community modules (not built-in features of the framework) that can be installed on demand.
 
 | Document | Description |
-|----------|-------------|
-| [Contribute to ErisPulse](contributing/README.md) | Overview of contribution methods: documentation / i18n / Bug / module / adapter |
+|------|------|
+| [Ecosystem Modules Overview](ecosystem/README.md) | Learn how to install ecosystem modules and why these are not built-in features |
+| [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web management panel + window registration API (modules can register custom pages to the sidebar) |
+| [ErisPulse-Takumi](ecosystem/takumi.md) | Image rendering (HTML / node tree / SVG / animation, built-in Chinese and English fonts) |
+
+### V. I Want to Contribute to ErisPulse
+
+Make the framework better.
+
+| Document | Description |
+|------|------|
+| [Contribute to ErisPulse](contributing/README.md) | Overview of contribution methods: documentation / i18n / bug / module / adapter |
 | [First Contribution](contributing/first-contribution.md) | From fork to submitting a PR |
 
 ---
@@ -66,14 +75,14 @@ Make the framework better
 
 ErisPulse supports two development approaches:
 
-- **Module Development (Recommended)**: Create independent module packages, installable via package managers, suitable for distribution and management.
-- **Embedded Development**: Write handlers directly in the project, suitable for rapid prototyping. See [Quick Start](docs/en/quick-start.md).
+- **Module Development (Recommended)**: Create independent module packages, install via package managers, and manage them easily.
+- **Embedded Development**: Write handlers directly within your project, suitable for rapid prototyping. See [Quick Start](docs/en/quick-start.md).
 
 ## Others
 
-- [Documentation Style Guide](styleguide/docstring.md) — Writing guidelines when contributing documentation
+- [Documentation Style Guide](styleguide/docstring.md) — Writing guidelines for contributing documentation
 - [Contribute to ErisPulse](contributing/README.md) — Entry point for participating in project development
-- [AI-Assisted Development](ai-support/README.md) — Get project prompts for AI programming assistants
+- [AI-Assisted Development](ai-support/README.md) — Access project prompts for AI programming assistants
 
 ## Get Help
 

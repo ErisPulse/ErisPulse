@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "total_categories": 11,
+  "total_categories": 12,
   "categories": {
     "クイックスタート": {
       "description": "ErisPulse クイックスタートガイド",
@@ -287,7 +287,7 @@
     },
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
-      "count": 12,
+      "count": 11,
       "documents": [
         {
           "title": "高度なトピック",
@@ -325,11 +325,6 @@
           "level": 1
         },
         {
-          "title": "Dashboard View の登録",
-          "path": "advanced/dashboard-view.md",
-          "level": 1
-        },
-        {
           "title": "ネットワーククライアント",
           "path": "advanced/http-client.md",
           "level": 1
@@ -347,6 +342,28 @@
         {
           "title": "起動プロセスと手動制御",
           "path": "advanced/startup.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "エコシステムモジュール": {
+      "description": "コミュニティが保守するサードパーティモジュール",
+      "count": 3,
+      "documents": [
+        {
+          "title": "エコシステムモジュール",
+          "path": "ecosystem/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse-Dashboard",
+          "path": "ecosystem/dashboard.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse-Takumi",
+          "path": "ecosystem/takumi.md",
           "level": 1
         }
       ],
