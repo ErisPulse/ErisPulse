@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1485,
+  "total_keywords": 1479,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2516,14 +2516,6 @@
         "line": 386,
         "level": 3,
         "title": "Dashboard 自動註冊"
-      }
-    ],
-    "Dashboard 視窗註冊": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 1,
-        "level": 1,
-        "title": "Dashboard 視窗註冊"
       }
     ],
     "Discord": [
@@ -5230,12 +5222,6 @@
     ],
     "側邊欄分組": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 103,
-        "level": 2,
-        "title": "側邊欄分組"
-      },
-      {
         "document": "ecosystem/dashboard.md",
         "line": 111,
         "level": 2,
@@ -5524,14 +5510,6 @@
         "title": "全域配置（EmailAdapter）"
       }
     ],
-    "兩種注入模式": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 68,
-        "level": 2,
-        "title": "兩種注入模式"
-      }
-    ],
     "兩種註入模式": [
       {
         "document": "ecosystem/dashboard.md",
@@ -5815,12 +5793,6 @@
       }
     ],
     "參數說明": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 47,
-        "level": 3,
-        "title": "參數說明"
-      },
       {
         "document": "advanced/http-client.md",
         "line": 157,
@@ -7082,14 +7054,6 @@
         "title": "完整格式（適用於複雜方法）"
       }
     ],
-    "完整模組示例": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 192,
-        "level": 2,
-        "title": "完整模組示例"
-      }
-    ],
     "完整模組範例": [
       {
         "document": "ecosystem/dashboard.md",
@@ -7300,12 +7264,6 @@
     ],
     "工作原理": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 15,
-        "level": 2,
-        "title": "工作原理"
-      },
-      {
         "document": "getting-started/ide-completion.md",
         "line": 38,
         "level": 2,
@@ -7442,14 +7400,6 @@
         "line": 139,
         "level": 2,
         "title": "常用 CSS 類別名稱"
-      }
-    ],
-    "常用 CSS 類名": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 131,
-        "level": 2,
-        "title": "常用 CSS 類名"
       }
     ],
     "常用命令": [
@@ -9330,14 +9280,6 @@
         "title": "標準遵循檢查清單"
       }
     ],
-    "模式一：HTML/JS 注入（推薦）": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 70,
-        "level": 3,
-        "title": "模式一：HTML/JS 注入（推薦）"
-      }
-    ],
     "模式一：HTML/JS 註入（推薦）": [
       {
         "document": "ecosystem/dashboard.md",
@@ -9347,12 +9289,6 @@
       }
     ],
     "模式二：iframe 嵌入": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 86,
-        "level": 3,
-        "title": "模式二：iframe 嵌入"
-      },
       {
         "document": "ecosystem/dashboard.md",
         "line": 94,
@@ -9571,12 +9507,6 @@
       }
     ],
     "注意事項": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 318,
-        "level": 2,
-        "title": "注意事項"
-      },
       {
         "document": "advanced/lazy-loading.md",
         "line": 130,
@@ -11666,12 +11596,6 @@
     ],
     "註冊 API": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 28,
-        "level": 2,
-        "title": "註冊 API"
-      },
-      {
         "document": "ecosystem/dashboard.md",
         "line": 36,
         "level": 2,
@@ -11742,21 +11666,7 @@
         "title": "註解/裝飾器"
       }
     ],
-    "註銷視窗": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 304,
-        "level": 2,
-        "title": "註銷視窗"
-      }
-    ],
     "認證與 API 呼叫": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 168,
-        "level": 2,
-        "title": "認證與 API 呼叫"
-      },
       {
         "document": "ecosystem/dashboard.md",
         "line": 176,
