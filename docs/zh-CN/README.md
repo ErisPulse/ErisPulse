@@ -47,11 +47,20 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 | [事件系统](api-reference/event-system.md) | 五大类事件的完整 API |
 | [适配器系统](api-reference/adapter-system.md) | 适配器注册、启停、API 调用 |
 | [核心模块](api-reference/core-modules.md) | Storage / Config / Logger / Router 等基础能力 |
-| [生命周期管理](advanced/lifecycle.md) · [懒加载](advanced/lazy-loading.md) · [路由系统](advanced/router.md) | 内部子系统 |
+| [生命周期管理](advanced/lifecycle.md) · [懶加载](advanced/lazy-loading.md) · [路由系统](advanced/router.md) | 内部子系统 |
 | [Conversation 多轮对话](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL 构建](advanced/sql-builder.md) · [HTTP 客户端](advanced/http-client.md) · [国际化](advanced/i18n.md) | 进阶工具 |
-| [Dashboard 管理面板](advanced/dashboard-view.md) | Web 管理界面接入 |
 
-### 四、我要为 ErisPulse 贡献
+### 四、推荐生态模块
+
+按需安装、即装即用的 **第三方社区模块**（不是框架内置功能）。
+
+| 文档 | 说明 |
+|------|------|
+| [生态模块总览](ecosystem/README.md) | 了解如何安装生态模块、为什么这些不是内置功能 |
+| [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web 管理面板 + 视窗注册 API（模块可向侧边栏注册自定义页面） |
+| [ErisPulse-Takumi](ecosystem/takumi.md) | 图片渲染（HTML / 节点树 / SVG / 动画，内置中英文字体） |
+
+### 五、我要为 ErisPulse 贡献
 
 让框架更好
 
