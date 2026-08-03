@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1507,
+  "total_keywords": 1502,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -932,14 +932,6 @@
         "line": 76,
         "level": 2,
         "title": "2つのインジェクションモード"
-      }
-    ],
-    "2つの注入モード": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 68,
-        "level": 2,
-        "title": "2つの注入モード"
       }
     ],
     "3. Request DSL": [
@@ -2596,14 +2588,6 @@
         "title": "DM（Direct Message）送信"
       }
     ],
-    "Dashboard View の登録": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 1,
-        "level": 1,
-        "title": "Dashboard View の登録"
-      }
-    ],
     "Dashboard からのモジュールインストール": [
       {
         "document": "user-guide/deployment.md",
@@ -3620,14 +3604,6 @@
         "line": 216,
         "level": 3,
         "title": "Using メソッド"
-      }
-    ],
-    "View の登録解除": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 306,
-        "level": 2,
-        "title": "View の登録解除"
       }
     ],
     "WSMessage": [
@@ -4656,14 +4632,6 @@
         "line": 474,
         "level": 2,
         "title": "よく使われる使用例"
-      }
-    ],
-    "よく使用される CSS クラス名": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 131,
-        "level": 2,
-        "title": "よく使用される CSS クラス名"
       }
     ],
     "アカウントが有効か確認": [
@@ -6274,12 +6242,6 @@
     ],
     "サイドバーのグループ": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 103,
-        "level": 2,
-        "title": "サイドバーのグループ"
-      },
-      {
         "document": "ecosystem/dashboard.md",
         "line": 111,
         "level": 2,
@@ -7399,12 +7361,6 @@
       }
     ],
     "パラメータ説明": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 47,
-        "level": 3,
-        "title": "パラメータ説明"
-      },
       {
         "document": "ecosystem/dashboard.md",
         "line": 55,
@@ -8824,21 +8780,7 @@
         "title": "モード1：HTML/JS インジェクション（推奨）"
       }
     ],
-    "モード1：HTML/JS 注入（推奨）": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 70,
-        "level": 3,
-        "title": "モード1：HTML/JS 注入（推奨）"
-      }
-    ],
     "モード2：iframe 埋め込み": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 86,
-        "level": 3,
-        "title": "モード2：iframe 埋め込み"
-      },
       {
         "document": "ecosystem/dashboard.md",
         "line": 94,
@@ -10008,12 +9950,6 @@
     ],
     "動作原理": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 15,
-        "level": 2,
-        "title": "動作原理"
-      },
-      {
         "document": "advanced/lazy-loading.md",
         "line": 14,
         "level": 2,
@@ -10737,12 +10673,6 @@
       }
     ],
     "完全なモジュールの例": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 194,
-        "level": 2,
-        "title": "完全なモジュールの例"
-      },
       {
         "document": "ecosystem/dashboard.md",
         "line": 200,
@@ -11790,12 +11720,6 @@
     ],
     "注意事項": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 320,
-        "level": 2,
-        "title": "注意事項"
-      },
-      {
         "document": "advanced/lazy-loading.md",
         "line": 132,
         "level": 2,
@@ -12009,12 +11933,6 @@
       }
     ],
     "登録 API": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 28,
-        "level": 2,
-        "title": "登録 API"
-      },
       {
         "document": "ecosystem/dashboard.md",
         "line": 36,
@@ -12617,12 +12535,6 @@
       }
     ],
     "認証と API 呼び出し": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 168,
-        "level": 2,
-        "title": "認証と API 呼び出し"
-      },
       {
         "document": "ecosystem/dashboard.md",
         "line": 176,
