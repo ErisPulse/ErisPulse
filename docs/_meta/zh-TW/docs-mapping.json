@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "total_categories": 11,
+  "total_categories": 12,
   "categories": {
     "快速開始": {
       "description": "ErisPulse 快速入門指南",
@@ -347,6 +347,28 @@
         {
           "title": "啟動流程與手動控制",
           "path": "advanced/startup.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "生態模組": {
+      "description": "社群維護的第三方擴展模組",
+      "count": 3,
+      "documents": [
+        {
+          "title": "生態模組",
+          "path": "ecosystem/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse-Dashboard",
+          "path": "ecosystem/dashboard.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse-Takumi",
+          "path": "ecosystem/takumi.md",
           "level": 1
         }
       ],

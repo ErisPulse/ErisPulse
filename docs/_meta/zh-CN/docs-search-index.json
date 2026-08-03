@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1408,
+  "total_keywords": 1422,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2514,14 +2514,6 @@
         "title": "Dashboard 自动注册"
       }
     ],
-    "Dashboard 视窗注册": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 1,
-        "level": 1,
-        "title": "Dashboard 视窗注册"
-      }
-    ],
     "Discord": [
       {
         "document": "standards/session-types.md",
@@ -2632,6 +2624,22 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse 适配器标准化返回规范"
+      }
+    ],
+    "ErisPulse-Dashboard": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Dashboard"
+      }
+    ],
+    "ErisPulse-Takumi": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Takumi"
       }
     ],
     "Event Mixin 扩展方法": [
@@ -4368,8 +4376,8 @@
     ],
     "两种注入模式": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 68,
+        "document": "ecosystem/dashboard.md",
+        "line": 76,
         "level": 2,
         "title": "两种注入模式"
       }
@@ -4860,6 +4868,14 @@
         "title": "云湖用户平台特性文档"
       }
     ],
+    "五、我要为 ErisPulse 贡献": [
+      {
+        "document": "README.md",
+        "line": 63,
+        "level": 3,
+        "title": "五、我要为 ErisPulse 贡献"
+      }
+    ],
     "交互式初始化（推荐）": [
       {
         "document": "quick-start.md",
@@ -5206,8 +5222,8 @@
     ],
     "侧边栏分组": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 103,
+        "document": "ecosystem/dashboard.md",
+        "line": 111,
         "level": 2,
         "title": "侧边栏分组"
       }
@@ -5365,7 +5381,7 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 72,
+        "line": 81,
         "level": 2,
         "title": "其他"
       }
@@ -5428,6 +5444,14 @@
         "line": 88,
         "level": 2,
         "title": "内容编写规范"
+      }
+    ],
+    "内置字体": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 98,
+        "level": 3,
+        "title": "内置字体"
       }
     ],
     "内置确认词": [
@@ -5613,7 +5637,7 @@
     "前置知识": [
       {
         "document": "advanced/README.md",
-        "line": 27,
+        "line": 29,
         "level": 2,
         "title": "前置知识"
       }
@@ -5774,6 +5798,14 @@
         "title": "原始消息发送"
       }
     ],
+    "原生 Renderer": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 109,
+        "level": 3,
+        "title": "原生 Renderer"
+      }
+    ],
     "参与贡献": [
       {
         "document": "platform-guide/README.md",
@@ -5792,15 +5824,15 @@
     ],
     "参数说明": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 47,
-        "level": 3,
-        "title": "参数说明"
-      },
-      {
         "document": "advanced/http-client.md",
         "line": 157,
         "level": 2,
+        "title": "参数说明"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 55,
+        "level": 3,
         "title": "参数说明"
       }
     ],
@@ -6066,6 +6098,14 @@
         "line": 130,
         "level": 2,
         "title": "发送方法返回值"
+      }
+    ],
+    "发送渲染结果": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 149,
+        "level": 2,
+        "title": "发送渲染结果"
       }
     ],
     "发送示例": [
@@ -6360,12 +6400,12 @@
         "title": "响应"
       }
     ],
-    "四、我要为 ErisPulse 贡献": [
+    "四、推荐生态模块": [
       {
         "document": "README.md",
-        "line": 54,
+        "line": 53,
         "level": 3,
-        "title": "四、我要为 ErisPulse 贡献"
+        "title": "四、推荐生态模块"
       }
     ],
     "回复": [
@@ -7220,6 +7260,14 @@
         "title": "子日志器"
       }
     ],
+    "字体与渲染器": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 96,
+        "level": 2,
+        "title": "字体与渲染器"
+      }
+    ],
     "字段说明": [
       {
         "document": "bug-tracker.md",
@@ -7320,6 +7368,14 @@
         "title": "安装 uv"
       }
     ],
+    "安装与启用": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 21,
+        "level": 2,
+        "title": "安装与启用"
+      }
+    ],
     "安装参考": [
       {
         "document": "user-guide/installation.md",
@@ -7384,8 +7440,8 @@
     ],
     "完整模块示例": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 192,
+        "document": "ecosystem/dashboard.md",
+        "line": 200,
         "level": 2,
         "title": "完整模块示例"
       }
@@ -7534,12 +7590,6 @@
     ],
     "工作原理": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 15,
-        "level": 2,
-        "title": "工作原理"
-      },
-      {
         "document": "advanced/lazy-loading.md",
         "line": 14,
         "level": 2,
@@ -7549,6 +7599,12 @@
         "document": "developer-guide/modules/core-concepts.md",
         "line": 259,
         "level": 3,
+        "title": "工作原理"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 23,
+        "level": 2,
         "title": "工作原理"
       },
       {
@@ -7628,8 +7684,8 @@
     ],
     "常用 CSS 类名": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 131,
+        "document": "ecosystem/dashboard.md",
+        "line": 139,
         "level": 2,
         "title": "常用 CSS 类名"
       }
@@ -7901,7 +7957,7 @@
     "开发方式": [
       {
         "document": "README.md",
-        "line": 65,
+        "line": 74,
         "level": 2,
         "title": "开发方式"
       }
@@ -8130,6 +8186,14 @@
         "title": "必需字段"
       }
     ],
+    "快速上手": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 36,
+        "level": 2,
+        "title": "快速上手"
+      }
+    ],
     "快速体验": [
       {
         "document": "advanced/i18n.md",
@@ -8280,6 +8344,14 @@
         "line": 33,
         "level": 4,
         "title": "成功响应示例"
+      }
+    ],
+    "我也想把自己的模块列在这里？": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 24,
+        "level": 2,
+        "title": "我也想把自己的模块列在这里？"
       }
     ],
     "房间邀请": [
@@ -8564,6 +8636,14 @@
         "line": 81,
         "level": 3,
         "title": "推荐写法：通过 I18nClass 声明翻译键（v2.7.0+）"
+      }
+    ],
+    "推荐模块": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 15,
+        "level": 2,
+        "title": "推荐模块"
       }
     ],
     "推荐禁用懒加载的场景（lazy_load=False）": [
@@ -9850,24 +9930,24 @@
     ],
     "模式一：HTML/JS 注入（推荐）": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 70,
+        "document": "ecosystem/dashboard.md",
+        "line": 78,
         "level": 3,
         "title": "模式一：HTML/JS 注入（推荐）"
       }
     ],
     "模式二：iframe 嵌入": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 86,
+        "document": "ecosystem/dashboard.md",
+        "line": 94,
         "level": 3,
         "title": "模式二：iframe 嵌入"
       }
     ],
     "注册 API": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 28,
+        "document": "ecosystem/dashboard.md",
+        "line": 36,
         "level": 2,
         "title": "注册 API"
       }
@@ -9930,12 +10010,6 @@
     ],
     "注意事项": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 318,
-        "level": 2,
-        "title": "注意事项"
-      },
-      {
         "document": "advanced/lazy-loading.md",
         "line": 131,
         "level": 2,
@@ -9944,6 +10018,12 @@
       {
         "document": "advanced/lifecycle.md",
         "line": 304,
+        "level": 2,
+        "title": "注意事项"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 326,
         "level": 2,
         "title": "注意事项"
       },
@@ -9978,8 +10058,8 @@
     ],
     "注销视窗": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 304,
+        "document": "ecosystem/dashboard.md",
+        "line": 312,
         "level": 2,
         "title": "注销视窗"
       }
@@ -10356,6 +10436,22 @@
         "title": "添加中间件"
       }
     ],
+    "渲染 HTML": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 47,
+        "level": 3,
+        "title": "渲染 HTML"
+      }
+    ],
+    "渲染节点树": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 77,
+        "level": 3,
+        "title": "渲染节点树"
+      }
+    ],
     "激活虚拟环境": [
       {
         "document": "user-guide/installation.md",
@@ -10514,6 +10610,14 @@
         "title": "特殊标签（用于API文档生成）"
       }
     ],
+    "独立 Renderer": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 121,
+        "level": 3,
+        "title": "独立 Renderer"
+      }
+    ],
     "环境变量": [
       {
         "document": "user-guide/deployment.md",
@@ -10596,6 +10700,14 @@
         "line": 390,
         "level": 2,
         "title": "生命周期集成"
+      }
+    ],
+    "生态模块": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "生态模块"
       }
     ],
     "生成类型存根": [
@@ -10881,7 +10993,13 @@
     "相关链接": [
       {
         "document": "README.md",
-        "line": 84,
+        "line": 93,
+        "level": 2,
+        "title": "相关链接"
+      },
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 173,
         "level": 2,
         "title": "相关链接"
       }
@@ -11345,7 +11463,7 @@
     "获取帮助": [
       {
         "document": "README.md",
-        "line": 78,
+        "line": 87,
         "level": 2,
         "title": "获取帮助"
       },
@@ -11484,8 +11602,8 @@
     ],
     "认证与 API 调用": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 168,
+        "document": "ecosystem/dashboard.md",
+        "line": 176,
         "level": 2,
         "title": "认证与 API 调用"
       }
@@ -12061,7 +12179,7 @@
     "适用对象": [
       {
         "document": "advanced/README.md",
-        "line": 19,
+        "line": 21,
         "level": 2,
         "title": "适用对象"
       },
