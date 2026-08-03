@@ -8,7 +8,7 @@
 
 An event-driven multi-platform chatbot development framework.
 
-Based on the OneBot12 standard interface, write once and deploy to multiple platforms; flexible plugin system, hot reload support, and a complete developer toolchain, suitable for various scenarios from simple chatbots to complex automation systems.
+Based on the OneBot12 standard interface, write once and deploy to multiple platforms; flexible plugin system, hot reload support, and a complete developer toolchain suitable for scenarios ranging from simple chatbots to complex automation systems.
 
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -19,10 +19,10 @@ Based on the OneBot12 standard interface, write once and deploy to multiple plat
   <a href="https://pepy.tech/project/ErisPulse"><img src="https://img.shields.io/pepy/dt/ErisPulse?style=for-the-badge&color=blue" alt="Downloads"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=for-the-badge" alt="Ruff"></a>
   <a href="https://socket.dev/pypi/package/erispulse"><img src="https://img.shields.io/badge/Socket-Secure-2ea043?style=for-the-badge&logo=socket&logoColor=white" alt="Socket"></a>
-  <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/文档-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="Documentation"></a>
+  <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/文档-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="文档"></a>
   <a href="https://deepwiki.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/DeepWiki-ErisPulse-8A2BE2?style=for-the-badge&logo=readthedocs&logoColor=white" alt="DeepWiki"></a>
-  <a href="https://www.erisdev.com/#market"><img src="https://img.shields.io/badge/模块市场-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white" alt="Module Market"></a>
-  <a href="https://github.com/ErisPulse/ErisPulse/discussions"><img src="https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github" alt="Discussions"></a>
+  <a href="https://www.erisdev.com/#market"><img src="https://img.shields.io/badge/模块市场-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white" alt="模块市场"></a>
+  <a href="https://github.com/ErisPulse/ErisPulse/discussions"><img src="https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github" alt="讨论"></a>
 </p>
 
 <br clear="both">
@@ -40,19 +40,19 @@ Based on the OneBot12 standard interface, write once and deploy to multiple plat
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_event_driven.png.png" width="50" alt="Event-Driven Architecture" />
+<img src=".github/assets/icon/icon_event_driven.png.png" width="50" alt="Event-driven Architecture" />
 
-### Event-Driven Architecture
+### Event-driven Architecture
 
-A unified event model based on the OneBot12 standard—no more writing if/elif statements for each platform to determine message types, a single handler automatically adapts to all adapters
+A unified event model based on the OneBot12 standard—no more writing if/elif statements for each platform to check message types; a single handler automatically adapts to all adapters
 
 </td>
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_cross_platform.png.png" width="50" alt="Cross-Platform Compatibility" />
+<img src=".github/assets/icon/icon_cross_platform.png.png" width="50" alt="Cross-platform Compatibility" />
 
-### Cross-Platform Compatibility
+### Cross-platform Compatibility
 
 The same business code runs on all platforms—write once to serve QQ / Telegram / Kook / Yunhu / WeChat Official Account and over 15 other platforms, no need for repeated development
 
@@ -64,7 +64,7 @@ The same business code runs on all platforms—write once to serve QQ / Telegram
 
 ### Modular Design
 
-A flexible plugin system supports hot-plugging at runtime—install/uninstall/enable/disable modules without restarting the process, assembling robot capabilities like building blocks
+A flexible plugin system supports hot plugging at runtime—install/uninstall/enable/disable modules without restarting the process, assembling robot capabilities like building blocks
 
 </td>
 </tr>
@@ -76,7 +76,7 @@ A flexible plugin system supports hot-plugging at runtime—install/uninstall/en
 
 ### Hot Reload
 
-The development cycle is shortened from 10 seconds to 0.5 seconds—save and the changes take effect immediately, providing a development and debugging experience close to that of an interpreted scripting language
+Development cycles shortened from 10 seconds to 0.5 seconds—save and apply changes immediately, development and debugging experience close to that of interpreted scripting languages
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -86,17 +86,17 @@ The development cycle is shortened from 10 seconds to 0.5 seconds—save and the
 
 ### AI Assistance
 
-Natural language descriptions of requirements directly generate usable modules—don’t know how to write an adapter? Tell the AI which platform you want to integrate, and it will help you write it
+Natural language descriptions of requirements directly generate usable modules—don't know how to write an adapter? Tell the AI which platform you want to integrate, and it will help you write it
 
 </td>
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_lightweight.png" width="50" alt="Lightweight and Elegant" />
+<img src=".github/assets/icon/icon_lightweight.png" width="50" alt="Concise and Elegant" />
 
-### Lightweight and Elegant
+### Concise and Elegant
 
-Intuitive chain-based API design—complex logic such as @user, reply, retry, and batch sending is completed in a single line of code, making the code as light and readable as a feather
+Intuitive chainable API design—complex logic such as @user, reply, retry, batch sending, etc., is completed in a single line of code, making the code as light and readable as a feather
 
 </td>
 </tr>
@@ -154,19 +154,19 @@ graph LR
     Event -.->|"Send"| A1
 ```
 
-- **Adapter Layer** converts native protocols from each platform into OneBot12 standard events, so business modules don’t see platform differences
-- **Event Bus** executes the middleware chain first, then distributes events to five types of handlers based on event type
-- **Your Code** subscribes to events using decorators, and replies using `event.reply()` or SendDSL—replies follow the same path back to the platform
+- **Adapter Layer** converts native protocols from each platform into OneBot12 standard events, so business modules are unaware of platform differences
+- **Event Bus** first executes the middleware chain, then distributes events to five types of handlers based on event type
+- **Your Code** subscribes to events via decorators and replies using `event.reply()` or SendDSL—replies follow the same path back to the platform
 
-For detailed design information on the complete module composition, initialization process, and lifecycle events, see [Architecture Overview](docs/en/architecture.md).
+For detailed information on the complete module composition, initialization process, and lifecycle events, see [Architecture Overview](docs/en/architecture.md).
 
 ---
 
 ## Quick Start
 
-### One-Click Installation Script (Recommended)
+### One-click Installation Script (Recommended)
 
-The installation script automatically detects your environment (Docker, Python, uv), guides you to select the most suitable installation method, and supports multiple languages (Chinese/English/Japanese/Russian/Traditional Chinese).
+The installation script automatically detects your environment (Docker, Python, uv), guides you to choose the most suitable installation method, and supports multiple languages (Chinese/English/Japanese/Russian/Traditional Chinese).
 
 Windows (PowerShell):
 ```powershell
@@ -204,7 +204,7 @@ docker pull erispulse/erispulse:latest
 ```
 
 <details>
-<summary>Docker Hub Unavailable?</summary>
+<summary>Is Docker Hub unavailable?</summary>
 
 If Docker Hub is inaccessible, you can use GitHub Container Registry:
 
@@ -212,7 +212,7 @@ If Docker Hub is inaccessible, you can use GitHub Container Registry:
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-When using the ghcr.io image, you need to modify the `docker-compose.yml` file's image:
+When using the ghcr.io image, you need to modify the image in `docker-compose.yml`:
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
 ```
@@ -230,11 +230,11 @@ curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compos
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-After starting, access `http://<host>:8000/Dashboard` and log in to the Dashboard management panel using the set token.
+After starting, access `http://<host>:8000/Dashboard` and log in using the set token in the Dashboard management panel.
 
 > The image includes the ErisPulse framework and Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
 >
-> **Persistence**: Configuration files and installed modules/adapters are persisted to the host machine via volume mounting, so they won't be lost after container restarts. Framework updates are completed via Dashboard hot updates.
+> **Persistence**: Configuration files and installed modules/adapters are persisted to the host machine via volume mounting, so they are not lost after container restarts. Framework updates are completed via Dashboard hot updates.
 
 </details>
 
@@ -253,20 +253,20 @@ After starting, access `http://<host>:8000/Dashboard` and log in to the Dashboar
 | `ERISPULSE_BUILD_TARGET` | `production` | Build target: `production` (stable version) or `dev` (pre-release version) |
 | `CONTAINER_NAME` | `erispulse` | Container name |
 | `TZ` | `Asia/Shanghai` | Container timezone |
-| `LANG` | `en_US.UTF-8` | System language, automatically detects startup interface language |
-| `ERISPULSE_LANG` | Empty | Force startup interface language: `zh` / `zh_TW` / `en` / `ja` / `ru` (overrides `LANG`) |
+| `LANG` | `en_US.UTF-8` | System language, automatically detects the language of the startup interface |
+| `ERISPULSE_LANG` | Empty | Force the startup interface language: `zh` / `zh_TW` / `en` / `ja` / `ru` (overrides `LANG`) |
 
 </details>
 
 ### 1Panel App Store
 
-Install ErisPulse via the [1Panel](https://1panel.cn) app store, see [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel).
+Install ErisPulse one-click via the [1Panel](https://1panel.cn) app store, see [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel).
 
 ```bash
 bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 ```
 
-ErisPulse is available in the 1Panel third-party app store, and can be installed using the [okxlin/appstore](https://github.com/okxlin/appstore) third-party repository.
+ErisPulse is listed in the 1Panel third-party app store, and can be installed using the [okxlin/appstore](https://github.com/okxlin/appstore) third-party repository.
 
 ### Using pip to Install
 
@@ -300,7 +300,7 @@ Create a `main.py` file:
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
-@command("hello", help="Send a greeting message")
+@command("hello", help="Send greeting message")
 async def hello_handler(event):
     user_name = event.get_user_nickname() or "friend"
     await event.reply(f"Hello, {user_name}!")
@@ -321,13 +321,13 @@ if __name__ == "__main__":
 
 Send `/hello`
 
-Bot replies: `Hello, {username}!`
+Bot reply: `Hello, {username}!`
 
 ---
 
 Send `/ping`
 
-Bot replies: `Pong! The bot is running normally.`
+Bot reply: `Pong! The bot is running normally.`
 
 ---
 
@@ -343,15 +343,15 @@ epsdk run main.py --reload
 </tr>
 </table>
 
-For more detailed instructions, please refer to:
+For more detailed instructions, see:
 - [Quick Start Guide](docs/en/quick-start.md)
 - [Getting Started Guide](docs/en/getting-started/)
 
 ---
 
-## The Same Code. Multiple Platforms.
+## Same Code. Multiple Platforms.
 
-*Identical command handlers. Different platforms. No modification of business logic required.*
+*Identical command handlers. Different platforms. No need to modify any business logic.*
 
 <table>
 <tr>
@@ -359,21 +359,21 @@ For more detailed instructions, please refer to:
 
 **Kook**
 
-<img src=".github/assets/demo-kook.png" alt="Kook Demo" />
+<img src=".github/assets/demo-kook.png" alt="Kook demo" />
 
 </td>
 <td align="center" width="33%">
 
 **QQ**
 
-<img src=".github/assets/demo-qq.png" alt="QQ Demo" />
+<img src=".github/assets/demo-qq.png" alt="QQ demo" />
 
 </td>
 <td align="center" width="33%">
 
 **Yunhu**
 
-<img src=".github/assets/demo-yunhu.png" alt="Yunhu Demo" />
+<img src=".github/assets/demo-yunhu.png" alt="Yunhu demo" />
 
 </td>
 </tr>
@@ -383,7 +383,7 @@ For more detailed instructions, please refer to:
 
 ## Chainable Send DSL
 
-A single chain call completes all sending logic including @user, reply, retry, timeout, and callback:
+A single chain call completes all sending logic for @user, reply, retry, timeout, callback, etc.:
 
 ```python
 yunhu = sdk.adapter.get("yunhu")
@@ -395,7 +395,7 @@ await (yunhu.Send.To("group", "123")
        .Hook(lambda r: print("Send successful!"))
        .Text("Hello"))
 
-# Batch send: send multiple messages in one chain
+# Batch send: Chain to send multiple messages at once
 results = await (yunhu.Send.To("user", "123")
                 .Build()
                 .Text("Notification 1")
@@ -404,11 +404,11 @@ results = await (yunhu.Send.To("user", "123")
                 .send_all())
 ```
 
-> Supports Hook (success callback), Retry (failure retry), Timeout (timeout cancellation), OnProgress (progress monitoring), Defer (delayed send), Build (batch construction), and other chainable methods. See [SendDSL Documentation](docs/en/developer-guide/adapters/send-dsl.md).
+> Supports Hook (success callback), Retry (failure retry), Timeout (timeout cancellation), OnProgress (progress monitoring), Defer (delayed sending), Build (batch construction), and other chainable methods. See [SendDSL Documentation](docs/en/developer-guide/adapters/send-dsl.md).
 
 ---
 
-## Multi-Turn Conversation Example
+## Multi-turn Conversation Example
 
 ErisPulse includes a powerful multi-turn conversation engine, making it easy to implement guided operations, information collection, and other interactive scenarios:
 
@@ -436,19 +436,19 @@ async def register_handler(event):
         ).Text(f"Registration successful! Welcome {data['name']}")
         # Or await event.reply("Registration successful!")
 
-# Handle friend requests automatically
+# Automatically handle friend requests
 @request.on_friend_request()
 async def handle_friend_request(event):
     user_name = event.get_user_nickname() or event.get_user_id()
     
-    # Approve the request
+    # Approve request
     result = await event.approve()
     if result.get("status") == "ok":
-        await event.reply(f"Friend request approved automatically, welcome {user_name}")
+        await event.reply(f"Friend request automatically approved, welcome {user_name}")
 ```
 
 <details>
-<summary>See More Conversation API (Branching / Selection / Persistence)</summary>
+<summary>See more Conversation API (branching/jump/selection/persistence)</summary>
 
 ```python
 @command("quiz")
@@ -491,7 +491,7 @@ async def menu_handler(event):
     await conv.start()
 ```
 
-See [Conversation Multi-Turn Dialogue](docs/en/advanced/conversation.md)
+See [Conversation Multi-turn Dialogue](docs/en/advanced/conversation.md)
 
 </details>
 
@@ -499,7 +499,7 @@ See [Conversation Multi-Turn Dialogue](docs/en/advanced/conversation.md)
 
 ## Core Modules
 
-ErisPulse provides a complete multi-platform chatbot development toolchain, with core modules each serving their own purpose:
+ErisPulse provides a complete multi-platform chatbot development toolchain, with each core module serving a specific purpose:
 
 ```mermaid
 graph TB
@@ -520,22 +520,22 @@ graph TB
 |------|------|
 | **Event** | Event system, providing five types of events: command / message / notice / request / meta + Conversation multi-turn dialogue |
 | **Adapter** | Adapter management, BaseAdapter base class unifies event conversion and SendDSL sending, supports over 15 platforms including QQ / Telegram / Kook / Yunhu / WeChat Official Account |
-| **Module** | Module management, BaseModule base class + dependency declaration and topological sorting for loading |
+| **Module** | Module management, BaseModule base class + dependency declaration and topological sorting loading |
 | **SendDSL** | Chainable sending, complex logic such as @/reply/retry/timeout/batch is completed in a single line |
 | **Router** | HTTP/WebSocket routing system (FastAPI + Uvicorn) |
-| **Storage** | Key-value storage based on SQLite + general SQL chainable querying |
+| **Storage** | Key-value storage based on SQLite + generic SQL chainable query |
 | **Config** | TOML configuration management |
 | **Lifecycle** | Lifecycle event hooks (core.init / adapter.* / module.*) |
 | **Logger** | Modular logging system, supports sub-loggers |
 | **HttpClient** | Unified HTTP/WS client (based on aiohttp), built-in retry and ErisPulse exception system |
 
-For more design details (initialization process, lifecycle events, module loading strategy), see [Architecture Overview](docs/en/architecture.md).
+For more design details (initialization process, lifecycle events, module loading strategies), see [Architecture Overview](docs/en/architecture.md).
 
 ---
 
 ## Ecosystem
 
-ErisPulse is not just a framework. Install and start immediately, no need to build from scratch.
+ErisPulse is more than just a framework. Install and start right away, no need to build wheels from scratch.
 
 <table>
 <tr>
@@ -583,7 +583,7 @@ Plug-and-play plugins
 
 **Adapters**
 
-Access to 15+ platforms
+接入 15+ 平台
 
 </td>
 <td align="center" width="25%">
@@ -597,7 +597,7 @@ Access to 15+ platforms
 
 **Docker**
 
-Multi-architecture support
+多架构支持
 
 `erispulse/erispulse`
 
@@ -616,23 +616,24 @@ Multi-architecture support
 
 ## Supported Platforms
 
-We welcome contributions to adapters! Don’t know where to start? See [Contributing Guide](docs/en/contributing/README.md).
+We welcome contributions to adapters! Don't know where to start? See [Contribution Guide](docs/en/contributing/README.md).
 
 | Adapter | Description |
 |--------|------|
-| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook (Kahei La) instant messaging platform |
+| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook (Open Black) instant messaging platform |
 | <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix decentralized communication protocol |
-| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 general robot protocol |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 universal robot protocol |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 standard protocol |
 | <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | Official QQ robot platform |
-| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | Web-based debugging, no need to connect to real platforms |
+| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | Web-based debugging, no need to connect to a real platform |
+| <img src=".github/assets/adapter_logo/terminal.svg" height="20" alt="Terminal" /> [Terminal](https://github.com/ErisPulse/ErisPulse-TerminalAdapter) | Command line as chat, zero-configuration development and debugging |
 | <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | Global instant messaging platform |
 | <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | Email protocol adapter |
-| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | Enterprise-level instant messaging platform (robot access) |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | Enterprise-grade instant messaging platform (robot integration) |
 | <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu User](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | Adapter based on Yunhu user protocol |
-| [Hua Feng Coffee Shop](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
+| [HuaFeng Cafe](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 | <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | Global community communication platform, supports servers, channels, and private messages |
-| <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | General HTTP bridge adapter, connects to any system |
+| <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | Universal HTTP bridge adapter, integrates with any system |
 | <img src=".github/assets/adapter_logo/wechatmp.svg" height="20" alt="WechatMp" /> [WeChat Official Account](https://github.com/ErisPulse/ErisPulse-WechatMpAdapter) | Official WeChat Official Account platform |
 
 See [Adapter Details](docs/en/platform-guide/README.md)
@@ -649,18 +650,18 @@ Connect with us:
 
 ---
 
-### Contributing Guide
+### Contribution Guidelines
 
 The health of the ErisPulse project still needs your contribution! We welcome all forms of contributions:
 
-1. **Report Issues** — Submit bug reports on [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues)
-2. **Feature Requests** — Propose new ideas through [Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
-3. **Code Contributions** — Please read [Code Style](docs/en/styleguide/) and [Contributing Guide](CONTRIBUTING.md) before submitting PRs
+1. **Report Issues** — Submit bug reports in [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues)
+2. **Feature Requests** — Propose new ideas via [Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
+3. **Code Contributions** — Please read [Code Style](docs/en/styleguide/) and [Contribution Guidelines](CONTRIBUTING.md) before submitting PRs
 4. **Documentation Improvements** — Help improve documentation and example code
 
-**First contribution?** Start here 👉 [First Contribution Practice](docs/en/contributing/first-contribution.md)
+**First contribution?** Start here 👉 [First Contribution Practical Guide](docs/en/contributing/first-contribution.md)
 
-[Join Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
+[Join community discussions](https://github.com/ErisPulse/ErisPulse/discussions)
 
 ---
 
@@ -670,13 +671,13 @@ The health of the ErisPulse project still needs your contribution! We welcome al
 
 <img src=".github/assets/thanks.png" width="200" alt="Thanks" />
 
-Some code in this project is based on [sdkFrame](https://github.com/runoneall/sdkFrame).
+This project partially uses code based on [sdkFrame](https://github.com/runoneall/sdkFrame).
 
-The core adapter standardization layer references and benefits from the [OneBot12 specification](https://12.onebot.dev/).
+The core adapter standardization layer refers to and benefits from the [OneBot12 Specification](https://12.onebot.dev/).
 
 Special thanks to the Yunhu ecosystem and community.
 
-The early exploration and growth of ErisPulse would not have been possible without the support of the Yunhu developer community. Many ideas, adapters, and practical experiences originated here.
+The early exploration and growth of ErisPulse would not have been possible without the support of the Yunhu developer community, many ideas, adapters, and practical experiences originated here.
 
 We also thank all developers and project authors who have contributed to ErisPulse, OneBot, and the open-source community.
 
