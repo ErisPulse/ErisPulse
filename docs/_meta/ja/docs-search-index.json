@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1487,
+  "total_keywords": 1507,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -924,6 +924,14 @@
         "line": 80,
         "level": 4,
         "title": "2xxxx アクションハンドラー エラー（Handler Error）"
+      }
+    ],
+    "2つのインジェクションモード": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 76,
+        "level": 2,
+        "title": "2つのインジェクションモード"
       }
     ],
     "2つの注入モード": [
@@ -2786,6 +2794,22 @@
         "title": "ErisPulse 送信メソッド規格"
       }
     ],
+    "ErisPulse-Dashboard": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Dashboard"
+      }
+    ],
+    "ErisPulse-Takumi": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Takumi"
+      }
+    ],
     "Event Mixin メソッド": [
       {
         "document": "platform-guide/matrix.md",
@@ -2872,6 +2896,14 @@
         "line": 318,
         "level": 2,
         "title": "Gateway 接続"
+      }
+    ],
+    "HTML のレンダリング": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 47,
+        "level": 3,
+        "title": "HTML のレンダリング"
       }
     ],
     "HTTP クライアント モジュール": [
@@ -4514,12 +4546,12 @@
         "title": "あなたのモジュールをリリースする"
       }
     ],
-    "あなたの進む道を選択": [
+    "あなたの学習経路を選択してください": [
       {
         "document": "README.md",
         "line": 11,
         "level": 2,
-        "title": "あなたの進む道を選択"
+        "title": "あなたの学習経路を選択してください"
       }
     ],
     "いつ手動起動が必要か？": [
@@ -4528,6 +4560,22 @@
         "line": 237,
         "level": 3,
         "title": "いつ手動起動が必要か？"
+      }
+    ],
+    "おすすめモジュール": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 14,
+        "level": 2,
+        "title": "おすすめモジュール"
+      }
+    ],
+    "すぐに始める": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 36,
+        "level": 2,
+        "title": "すぐに始める"
       }
     ],
     "すべてのメッセージを監聴する": [
@@ -4541,7 +4589,7 @@
     "その他": [
       {
         "document": "README.md",
-        "line": 72,
+        "line": 81,
         "level": 2,
         "title": "その他"
       }
@@ -5344,6 +5392,14 @@
         "title": "イベント駆動型アーキテクチャ"
       }
     ],
+    "インストールと有効化": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 21,
+        "level": 2,
+        "title": "インストールと有効化"
+      }
+    ],
     "インストールの参考": [
       {
         "document": "user-guide/installation.md",
@@ -5466,6 +5522,22 @@
         "line": 221,
         "level": 4,
         "title": "インラインクエリイベント"
+      }
+    ],
+    "ウィンドウの登録解除": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 312,
+        "level": 2,
+        "title": "ウィンドウの登録解除"
+      }
+    ],
+    "エコシステムモジュール": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "エコシステムモジュール"
       }
     ],
     "エラーコードの説明": [
@@ -6204,6 +6276,12 @@
       {
         "document": "advanced/dashboard-view.md",
         "line": 103,
+        "level": 2,
+        "title": "サイドバーのグループ"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 111,
         "level": 2,
         "title": "サイドバーのグループ"
       }
@@ -7040,13 +7118,15 @@
         "title": "ドキュメントメンテナンス手順"
       }
     ],
-    "ドキュメント一覧": [
+    "ドキュメントリスト": [
       {
         "document": "advanced/README.md",
         "line": 5,
         "level": 2,
-        "title": "ドキュメント一覧"
-      },
+        "title": "ドキュメントリスト"
+      }
+    ],
+    "ドキュメント一覧": [
       {
         "document": "api-reference/README.md",
         "line": 5,
@@ -7138,12 +7218,28 @@
         "title": "ドット表記構造のイベント"
       }
     ],
+    "ネイティブレンダラー": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 109,
+        "level": 3,
+        "title": "ネイティブレンダラー"
+      }
+    ],
     "ネットワーククライアント": [
       {
         "document": "advanced/http-client.md",
         "line": 1,
         "level": 1,
         "title": "ネットワーククライアント"
+      }
+    ],
+    "ノードツリーのレンダリング": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 77,
+        "level": 3,
+        "title": "ノードツリーのレンダリング"
       }
     ],
     "ハンドラの登録": [
@@ -7308,6 +7404,12 @@
         "line": 47,
         "level": 3,
         "title": "パラメータ説明"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 55,
+        "level": 3,
+        "title": "パラメータ説明"
       }
     ],
     "パラレルイベント処理": [
@@ -7348,6 +7450,14 @@
         "line": 14,
         "level": 2,
         "title": "フィールドの説明"
+      }
+    ],
+    "フォントとレンダラー": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 96,
+        "level": 2,
+        "title": "フォントとレンダラー"
       }
     ],
     "フォーム収集 (collect)": [
@@ -7725,7 +7835,7 @@
     "ヘルプを得る": [
       {
         "document": "README.md",
-        "line": 78,
+        "line": 87,
         "level": 2,
         "title": "ヘルプを得る"
       },
@@ -8706,6 +8816,14 @@
         "title": "モジュール間通信"
       }
     ],
+    "モード1：HTML/JS インジェクション（推奨）": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 78,
+        "level": 3,
+        "title": "モード1：HTML/JS インジェクション（推奨）"
+      }
+    ],
     "モード1：HTML/JS 注入（推奨）": [
       {
         "document": "advanced/dashboard-view.md",
@@ -8718,6 +8836,12 @@
       {
         "document": "advanced/dashboard-view.md",
         "line": 86,
+        "level": 3,
+        "title": "モード2：iframe 埋め込み"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 94,
         "level": 3,
         "title": "モード2：iframe 埋め込み"
       }
@@ -9160,6 +9284,14 @@
         "title": "レスポンスの送信"
       }
     ],
+    "レンダリング結果の送信": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 149,
+        "level": 2,
+        "title": "レンダリング結果の送信"
+      }
+    ],
     "レート制限": [
       {
         "document": "advanced/router.md",
@@ -9300,6 +9432,14 @@
         "line": 63,
         "level": 3,
         "title": "一回限りの登録（once）"
+      }
+    ],
+    "一般的な CSS クラス名": [
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 139,
+        "level": 2,
+        "title": "一般的な CSS クラス名"
       }
     ],
     "一般的なrequest": [
@@ -9444,12 +9584,12 @@
         "title": "予約済みエラーセグメント"
       }
     ],
-    "二、モジュール/アダプタを開発したい": [
+    "二、モジュール / アダプタを開発したい": [
       {
         "document": "README.md",
         "line": 28,
         "level": 3,
-        "title": "二、モジュール/アダプタを開発したい"
+        "title": "二、モジュール / アダプタを開発したい"
       }
     ],
     "互換性": [
@@ -9458,6 +9598,14 @@
         "line": 134,
         "level": 3,
         "title": "互換性"
+      }
+    ],
+    "五、ErisPulse に貢献したい": [
+      {
+        "document": "README.md",
+        "line": 63,
+        "level": 3,
+        "title": "五、ErisPulse に貢献したい"
       }
     ],
     "仮想環境": [
@@ -9734,6 +9882,14 @@
         "title": "内蔵デフォルト値"
       }
     ],
+    "内蔵フォント": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 98,
+        "level": 3,
+        "title": "内蔵フォント"
+      }
+    ],
     "内蔵確認語": [
       {
         "document": "getting-started/event-handling.md",
@@ -9845,7 +10001,7 @@
     "前提知識": [
       {
         "document": "advanced/README.md",
-        "line": 27,
+        "line": 29,
         "level": 2,
         "title": "前提知識"
       }
@@ -9867,6 +10023,12 @@
         "document": "developer-guide/modules/core-concepts.md",
         "line": 259,
         "level": 3,
+        "title": "動作原理"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 23,
+        "level": 2,
         "title": "動作原理"
       },
       {
@@ -10068,12 +10230,12 @@
         "title": "品質チェックリスト"
       }
     ],
-    "四、ErisPulseに貢献したい": [
+    "四、推奨エコシステムモジュール": [
       {
         "document": "README.md",
-        "line": 54,
+        "line": 53,
         "level": 3,
-        "title": "四、ErisPulseに貢献したい"
+        "title": "四、推奨エコシステムモジュール"
       }
     ],
     "回答メールイベント (email_reply)": [
@@ -10580,6 +10742,12 @@
         "line": 194,
         "level": 2,
         "title": "完全なモジュールの例"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 200,
+        "level": 2,
+        "title": "完全なモジュールの例"
       }
     ],
     "完全な例": [
@@ -10729,7 +10897,7 @@
     "対象読者": [
       {
         "document": "advanced/README.md",
-        "line": 19,
+        "line": 21,
         "level": 2,
         "title": "対象読者"
       }
@@ -11640,6 +11808,12 @@
         "title": "注意事項"
       },
       {
+        "document": "ecosystem/dashboard.md",
+        "line": 326,
+        "level": 2,
+        "title": "注意事項"
+      },
+      {
         "document": "platform-guide/ideaura.md",
         "line": 430,
         "level": 2,
@@ -11746,6 +11920,14 @@
         "title": "特殊フィールドの例"
       }
     ],
+    "独立レンダラー": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 121,
+        "level": 3,
+        "title": "独立レンダラー"
+      }
+    ],
     "環境変数": [
       {
         "document": "user-guide/deployment.md",
@@ -11830,6 +12012,12 @@
       {
         "document": "advanced/dashboard-view.md",
         "line": 28,
+        "level": 2,
+        "title": "登録 API"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 36,
         "level": 2,
         "title": "登録 API"
       }
@@ -12026,6 +12214,14 @@
         "line": 549,
         "level": 3,
         "title": "翻訳キーの命名"
+      }
+    ],
+    "自分のモジュールもここに載せたい？": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 23,
+        "level": 2,
+        "title": "自分のモジュールもここに載せたい？"
       }
     ],
     "自動ドキュメント": [
@@ -12424,6 +12620,12 @@
       {
         "document": "advanced/dashboard-view.md",
         "line": 168,
+        "level": 2,
+        "title": "認証と API 呼び出し"
+      },
+      {
+        "document": "ecosystem/dashboard.md",
+        "line": 176,
         "level": 2,
         "title": "認証と API 呼び出し"
       }
@@ -12957,7 +13159,7 @@
     "開発方法": [
       {
         "document": "README.md",
-        "line": 65,
+        "line": 74,
         "level": 2,
         "title": "開発方法"
       }
@@ -13151,7 +13353,13 @@
     "関連リンク": [
       {
         "document": "README.md",
-        "line": 84,
+        "line": 93,
+        "level": 2,
+        "title": "関連リンク"
+      },
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 173,
         "level": 2,
         "title": "関連リンク"
       }
