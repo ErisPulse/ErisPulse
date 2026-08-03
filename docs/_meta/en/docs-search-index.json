@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1463,
+  "total_keywords": 1459,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2774,14 +2774,6 @@
         "title": "Authentication & API Calls"
       }
     ],
-    "Authentication and API Calls": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 203,
-        "level": 2,
-        "title": "Authentication and API Calls"
-      }
-    ],
     "Automatic Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -3946,12 +3938,6 @@
     ],
     "Common CSS Class Names": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 166,
-        "level": 2,
-        "title": "Common CSS Class Names"
-      },
-      {
         "document": "ecosystem/dashboard.md",
         "line": 139,
         "level": 2,
@@ -4091,12 +4077,6 @@
       }
     ],
     "Complete Module Example": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 229,
-        "level": 2,
-        "title": "Complete Module Example"
-      },
       {
         "document": "ecosystem/dashboard.md",
         "line": 200,
@@ -4425,12 +4405,6 @@
       }
     ],
     "Considerations": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 356,
-        "level": 2,
-        "title": "Considerations"
-      },
       {
         "document": "ecosystem/dashboard.md",
         "line": 326,
@@ -4874,14 +4848,6 @@
         "line": 72,
         "level": 2,
         "title": "Dashboard Management Panel"
-      }
-    ],
-    "Dashboard View Registration": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 1,
-        "level": 1,
-        "title": "Dashboard View Registration"
       }
     ],
     "Data Persistence": [
@@ -6906,12 +6872,6 @@
     ],
     "How It Works": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 15,
-        "level": 2,
-        "title": "How It Works"
-      },
-      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 259,
         "level": 3,
@@ -8426,12 +8386,6 @@
     ],
     "Mode 1: HTML/JS Injection (Recommended)": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 70,
-        "level": 3,
-        "title": "Mode 1: HTML/JS Injection (Recommended)"
-      },
-      {
         "document": "ecosystem/dashboard.md",
         "line": 78,
         "level": 3,
@@ -8439,12 +8393,6 @@
       }
     ],
     "Mode 2: iframe Embedding": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 121,
-        "level": 3,
-        "title": "Mode 2: iframe Embedding"
-      },
       {
         "document": "ecosystem/dashboard.md",
         "line": 94,
@@ -9222,12 +9170,6 @@
     ],
     "Parameter Description": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 47,
-        "level": 3,
-        "title": "Parameter Description"
-      },
-      {
         "document": "ecosystem/dashboard.md",
         "line": 55,
         "level": 3,
@@ -9984,14 +9926,6 @@
         "line": 12,
         "level": 3,
         "title": "Registering Handlers"
-      }
-    ],
-    "Registration API": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 28,
-        "level": 2,
-        "title": "Registration API"
       }
     ],
     "Registration and Unregistration": [
@@ -11100,12 +11034,6 @@
     ],
     "Sidebar Groups": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 138,
-        "level": 2,
-        "title": "Sidebar Groups"
-      },
-      {
         "document": "ecosystem/dashboard.md",
         "line": 111,
         "level": 2,
@@ -11902,12 +11830,6 @@
     ],
     "Two Injection Modes": [
       {
-        "document": "advanced/dashboard-view.md",
-        "line": 68,
-        "level": 2,
-        "title": "Two Injection Modes"
-      },
-      {
         "document": "ecosystem/dashboard.md",
         "line": 76,
         "level": 2,
@@ -12058,14 +11980,6 @@
         "line": 312,
         "level": 2,
         "title": "Unregister View"
-      }
-    ],
-    "Unregistering Views": [
-      {
-        "document": "advanced/dashboard-view.md",
-        "line": 342,
-        "level": 2,
-        "title": "Unregistering Views"
       }
     ],
     "Unsupported Method Calls": [

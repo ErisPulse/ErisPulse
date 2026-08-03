@@ -287,7 +287,7 @@
     },
     "進階主題": {
       "description": "深入理解框架的進階特性",
-      "count": 12,
+      "count": 11,
       "documents": [
         {
           "title": "高級主題",
@@ -322,11 +322,6 @@
         {
           "title": "Conversation 多輪對話",
           "path": "advanced/conversation.md",
-          "level": 1
-        },
-        {
-          "title": "Dashboard 視窗註冊",
-          "path": "advanced/dashboard-view.md",
           "level": 1
         },
         {
