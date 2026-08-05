@@ -83,7 +83,7 @@ dependencies = [
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):

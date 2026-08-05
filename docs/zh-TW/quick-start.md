@@ -1,8 +1,6 @@
 # 快速開始
 
 > **這是你的第一步。** 用 5 分鐘從零跑起一個 ErisPulse 機器人。
->
-> 遇到不理解術語?查看 [術語表](terminology.md)。
 
 ## 安裝 ErisPulse
 

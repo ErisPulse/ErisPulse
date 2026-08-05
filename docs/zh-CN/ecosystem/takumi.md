@@ -170,6 +170,94 @@ await event.reply_ob12(
 
 ---
 
+## 实战避坑（踩出来的血泪）
+
+下面这些文档里没写，是拿 Takumi 做一整个数据可视化模块（声呐图、雷达图那种，节点几十个、还要画连线和标签）时一行行试出来的。挑值钱的记一下，能帮你少走几小时弯路。
+
+### 1. 别用 SVG `<text>`，它不渲染
+
+最大的坑，没有之一。你想在 `<svg>` 里画节点、旁边用 `<text>` 标个名字——**渲染出来文字是空的**。不管给 `<text>` 加 `font-family`，还是在 `<svg>` 根上设继承，都没用，中英文一律不显示，图里只剩裸的形状。
+
+实测结论：`takumi-py` 不绘制内联 SVG 的文本元素。所以正确套路是：
+
+- SVG 只画**形状**（圆、线、多边形）
+- 文字全部走 **HTML**：把 `<svg>` 丢进一个 `position: relative` 的容器，再用绝对定位的 `<div>` 把标签盖到对应坐标上
+
+```python
+W = H = 600
+html = f"""
+<div style='position:relative;width:{W}px;height:{H}px'>
+  <svg width='{W}' height='{H}' viewBox='0 0 {W} {H}'>
+    <!-- 只画圆和线 -->
+  </svg>
+  <div style='position:absolute;left:{x}px;top:{y}px;transform:translate(-50%,-50%)'>名字</div>
+</div>
+"""
+```
+
+坐标对得上的前提：SVG 用**固定**的 `width`/`height`（别图省事写 `width:100%`），这样像素和容器 1:1，div 的 `left`/`top` 直接填 SVG 里的坐标即可。
+
+### 2. CSS 必须走 `stylesheets`，别塞整篇 HTML 文档
+
+`render_html(html, ...)` 的第一个参数是**正文 HTML**，不是完整文档。你要是图省事传一个：
+
+```python
+takumi.render_html("<!DOCTYPE html><html><head><style>...</style></head><body>...</body></html>")
+```
+
+样式会**静默失效**——图照样出，但跟没 CSS 一样，乱七八糟。排错时你还会怀疑自己 CSS 写错了，其实是传法不对，冤。
+
+正确姿势永远是：正文一个参数、CSS 一个参数。
+
+```python
+takumi.render_html(body_html, stylesheets=[css_str], width=..., height=..., lang="zh-CN")
+```
+
+### 3. `height` 是裁切高度，不会自动撑高
+
+`width` 是视口宽，`height` 是画布高——**超出 `height` 的内容直接被切掉**，不会像浏览器那样自动往下长。所以总高度得自己估：每个区块高 + padding + 卡片间距，加起来传进去。
+
+经验是**宁多勿少**。底部多几十像素留白没人盯，顶部内容被切一刀那这张图就废了。遇到动态内容（列表项数不定）就按项数现算：
+
+```python
+height = padding * 2 + header_h + sum(每项高) + 间隙 * (项数 - 1) + 30  # 末尾留点保险
+```
+
+### 4. 字体自动注入只管 HTML 文本
+
+便捷方法（`render_html` / `render_node`）会自动把内置字体回退栈塞进去，但**只对 HTML 文本生效**。所以第 1 条说"文字走 HTML"还有这层好处——顺带白嫖了中文字体，不用自己操心 `font_families`。
+
+要是你直接调底层 renderer（`takumi.renderer.render_html`），就得自己传 `font_families=takumi.families`，别忘。
+
+### 5. 一个不睁眼也能调试的小技巧
+
+改完样式想确认"某段中文到底渲没渲染出来"，又懒得每次开图看？让它吐原始像素来数：
+
+```python
+data = takumi.render_html(body, stylesheets=[css], width=W, height=H,
+                          lang="zh-CN", format="raw")  # raw 是 RGBA 字节流
+dark = sum(1 for i in range(0, len(data), 4)
+           if data[i] < 120 and data[i+1] < 120 and data[i+2] < 120 and data[i+3] > 128)
+```
+
+浅色背景下，"有文字"和"没文字"的墨点数是 4000+ 和 0 的区别——一眼就能看出你那行 `<div>` 到底生效没。比肉眼盯 PNG 快多了，第 1 条那个 SVG 坑我就是这么验出来的。
+
+### 6. 深浅色主题：换套 stylesheet 就行
+
+Takumi 本身不在乎你什么主题，颜色全在你自己的 CSS 里。所以做明暗切换特别轻——备两套颜色，按当前小时或用户设置挑一套塞进 `stylesheets`：
+
+```python
+if 19 <= local_hour or local_hour < 7:
+    t = {"page": "#000000", "card": "#1c1c1e", "ink": "#f5f5f7", "sep": "#38383a"}   # 深色
+else:
+    t = {"page": "#f5f5f7", "card": "#ffffff", "ink": "#1d1d1f", "sep": "#e5e5ea"}   # 浅色
+css = CSS_TEMPLATE.replace("__INK__", t["ink"]).replace("__CARD__", t["card"])  # 以此类推
+```
+
+> 小提醒：CSS 自带的 `var(--xxx)` 变量在 takumi 里**不一定吃**，稳妥起见在 Python 里直接把颜色字符串替换进模板，绕开这个不确定性。
+
+---
+
 ## 相关链接
 
 - PyPI：<https://pypi.org/project/ErisPulse-Takumi/>

@@ -50,6 +50,7 @@ class ConfigManager:
         self._lock = threading.RLock()  # 线程安全锁
         self._file_lock = threading.RLock()  # 文件操作锁
         self._atexit_registered = False  # atexit 钩子注册标记
+        self._last_self_write_mtime: float = 0.0  # 框架自身最后一次刷盘的 mtime
         self._migrate_config()  # 迁移旧配置文件
         self._load_config()  # 初始化时加载配置
         self._watch_config_file()  # 记录配置文件 mtime 以便后续监听
@@ -77,19 +78,21 @@ class ConfigManager:
                 if self._watcher_stop.is_set():
                     break
                 try:
-                    if self._check_file_change():
-                        # 文件被外部修改 → 取消待写入定时器并丢弃脏键，
-                        # 避免 _flush_config 回写旧值覆盖用户编辑。
-                        if self._write_timer:
-                            self._write_timer.cancel()
-                            self._write_timer = None
-                        self._dirty_keys.clear()
-                        with self._lock:
-                            old_cache = self._cache.copy() if self._cache else {}
-                        # 仅在成功加载时广播变更，半成品/语法错误的 TOML
-                        # 不再以空配置形式触发 config.updated
-                        if self._load_config():
-                            self._emit_config_updated(old_cache)
+                    with self._lock:
+                        # _check_file_change 已能区分"框架自身刷盘"与"外部修改"：
+                        # 自身刷盘的 mtime 与 _last_self_write_mtime 一致 → 返回 False
+                        if not self._check_file_change():
+                            continue
+                        # 真正的外部修改：重载文件到缓存。
+                        # 不清空 _dirty_keys、不取消 _write_timer —— 待写键会在
+                        # 下次 _flush_config 时与外部内容合并（脏键优先），
+                        # 避免丢失本进程尚未落盘的写入。
+                        old_cache = self._cache.copy() if self._cache else {}
+                        loaded = self._load_config()
+                    # 仅在成功加载时广播变更，半成品/语法错误的 TOML
+                    # 不再以空配置形式触发 config.updated
+                    if loaded:
+                        self._emit_config_updated(old_cache)
                 except Exception as e:
                     # 监听异常不再静默吞掉，便于排查 watcher 故障
                     self._log_config_error(
@@ -365,6 +368,7 @@ class ConfigManager:
                     # 从而重复触发 config.updated（与 config.set 路由重复调用 on_config_update）
                     try:
                         self._config_mtime = Path(self.CONFIG_FILE).stat().st_mtime
+                        self._last_self_write_mtime = self._config_mtime
                     except OSError:
                         pass
 
@@ -504,8 +508,10 @@ class ConfigManager:
         检测配置文件是否被外部程序或用户手动编辑
 
         对比记录的 mtime 与当前文件 mtime，若不一致说明文件已被外部修改。
+        若变化后的 mtime 与框架自身最后一次刷盘的 mtime（``_last_self_write_mtime``）
+        一致，则判定为框架自身的写入而非外部修改，返回 False。
 
-        :return: bool 文件是否已变化
+        :return: bool 文件是否被外部修改
 
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
@@ -517,6 +523,10 @@ class ConfigManager:
             current_mtime = config_path.stat().st_mtime
             if current_mtime != self._config_mtime:
                 self._config_mtime = current_mtime
+                # 若 mtime 与框架自身最后一次刷盘一致，说明是 _flush_config 的
+                # 写入，不算外部修改（避免 watcher 误触发重载）
+                if current_mtime == self._last_self_write_mtime:
+                    return False
                 return True
         except OSError:
             pass
