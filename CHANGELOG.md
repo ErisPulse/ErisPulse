@@ -63,6 +63,38 @@
 
 ---
 
+## [2.7.1-dev.0] - 2026/08/06
+> 开发版本
+
+**版本摘要**
+2.7.1 是面向稳定性与内部质量的维护版本，不涉及公共 API 变更。核心修复：配置 watcher 竞态导致 `setConfig(immediate=False)` 在特定时序下静默丢数据的问题（用户的模块配置无法生成、其它模块正常的 issue）。同时将声明式配置导入路径统一至 `Core.Bases`、GC 改为可控的分代回收 + `gc.freeze()` 冻结框架对象、翻译脚本分块增量（小改动只重译变化的块）、文档瘦身与写作规范化、模块 README 品牌头部内置。
+
+**升级建议**
+- **建议升级**
+- 升级原因：修复配置写入丢失 bug，使用 `setConfig` 默认延迟写入的模块强烈建议升级
+
+### 修复
+- @wsu2059q
+    - `Core/config` 修复配置 watcher 竞态丢数据（BUG-030）：
+      - watcher 在检测到文件 mtime 变化时无条件 `_dirty_keys.clear()`，框架自身的刷盘也会触发误判，导致运行期 `setConfig(immediate=False)` 的待写键被静默丢弃
+      - 修复：新增 `_last_self_write_mtime` 区分自身写入与外部修改；watcher 持 `_lock`；外部修改时保留脏键（merge 语义），下次 flush 与外部内容合并（脏键优先）
+    - `Core/Event/wrapper.py` 4 处 `except Exception: pass` 静默异常补充 trace 日志（onebot wait handler / conversation condition / resume / clear_saved）
+
+### 优化
+- @wsu2059q
+    - `sdk` GC 可控化：
+      - 初始化末尾调用 `gc.freeze()` 将框架对象移入永久代，后续 GC 不再扫描框架单例/缓存
+      - `gc.collect()` 改为 `gc.collect(generation)`，新增配置项 `proactive_gc_generation`（默认 2）和 `proactive_gc_full_every`（默认 0=禁用周期全量）
+    - 声明式配置导入路径统一至 `Core.Bases`：
+      - 内部源码（`adapter.py`、`module.py`）从 `..runtime.config_schema` 改为 `..Core.Bases.config_schema`
+      - 开发者文档 8 处、测试 7 处同步迁移；`runtime` shim 保留向后兼容
+    - `runtime` shim 三层导出集对齐：补齐 `SECRET_REDACTED`/`I18nConfig`/`redact_secret`
+    - 消除 `ModuleManager`/`AdapterManager` 中重复的 `_notify_config_update`，提取为 `Core.Bases.config_schema._notify_instance_config_update`
+    - 文档瘦身：AI 提示词生成器剥离"相关文档/下一步"导航尾段，降低 prompt token
+    - 翻译脚本分块增量：按 `##` 标题将文档拆分为块、块级哈希缓存，仅翻译哈希变化的块。小改动（如修正一个导入路径）只重译 1-2 块，大幅节省 token；向后兼容旧缓存格式
+
+---
+
 ## [2.7.0] - 2026/08/04
 > 正式发布
 

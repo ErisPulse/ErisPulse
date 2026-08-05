@@ -287,20 +287,109 @@ class DocsTranslator:
         current_hash = self.calculate_file_hash(file_path)
         return cache_data.get("hash") != current_hash
 
-    def save_cache(self, file_path: Path, target_lang: str, hash_value: str):
+    def save_cache(
+        self,
+        file_path: Path,
+        target_lang: str,
+        hash_value: str,
+        chunk_translations: Optional[List[Dict]] = None,
+    ):
+        """
+        保存翻译缓存
+
+        :param file_path: 源文件路径
+        :param target_lang: 目标语言
+        :param hash_value: 文件级哈希
+        :param chunk_translations: 分块翻译列表，每项为 {"hash": ..., "translation": ...}
+        """
         cache_key = self.get_cache_key(file_path, target_lang)
         cache_key.parent.mkdir(parents=True, exist_ok=True)
+        cache_data = {
+            "version": 2,
+            "hash": hash_value,
+            "file_hash": hash_value,
+            "translated_at": datetime.now().isoformat(),
+            "target_lang": target_lang,
+        }
+        if chunk_translations is not None:
+            cache_data["chunks"] = chunk_translations
         with open(cache_key, "w", encoding="utf-8") as f:
-            json.dump(
-                {
-                    "hash": hash_value,
-                    "translated_at": datetime.now().isoformat(),
-                    "target_lang": target_lang,
-                },
-                f,
-                ensure_ascii=False,
-                indent=2,
+            json.dump(cache_data, f, ensure_ascii=False, indent=2)
+
+    # ==================== 分块增量翻译 ====================
+
+    _CHUNK_HEADING_RE = re.compile(r"^#{1,2}\s+")
+
+    def _split_into_chunks(self, content: str) -> List[str]:
+        """
+        将 Markdown 按一级/二级标题分块
+
+        代码块（```` ``` ````围栏）内的内容不会被误判为标题边界。
+        每块从标题行开始，到下一个同级标题或文件末尾结束。
+        文件开头到第一个标题之间的内容为独立的起始块。
+
+        :return: 分块文本列表
+        """
+        lines = content.split("\n")
+        chunks: List[str] = []
+        current: List[str] = []
+        in_code = False
+
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_code = not in_code
+
+            is_boundary = (
+                not in_code
+                and bool(self._CHUNK_HEADING_RE.match(stripped))
             )
+
+            if is_boundary and current:
+                text = "\n".join(current).strip()
+                if text:
+                    chunks.append(text)
+                current = [line]
+            else:
+                current.append(line)
+
+        if current:
+            text = "\n".join(current).strip()
+            if text:
+                chunks.append(text)
+
+        return chunks
+
+    @staticmethod
+    def _chunk_hash(text: str) -> str:
+        """计算分块文本的 MD5 哈希（归一化换行符）"""
+        normalized = text.replace("\r\n", "\n")
+        return hashlib.md5(normalized.encode("utf-8")).hexdigest()
+
+    def _load_cached_chunks(
+        self, file_path: Path, target_lang: str
+    ) -> Dict[str, str]:
+        """
+        从缓存加载分块翻译，返回 {chunk_hash: translation}
+
+        旧格式缓存（无 chunks 字段）返回空字典，触发全量翻译。
+        """
+        cache_key = self.get_cache_key(file_path, target_lang)
+        if not cache_key.exists():
+            return {}
+        try:
+            with open(cache_key, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            chunks = data.get("chunks")
+            if isinstance(chunks, list):
+                return {
+                    c["hash"]: c["translation"]
+                    for c in chunks
+                    if isinstance(c, dict) and "hash" in c and "translation" in c
+                }
+        except Exception:
+            pass
+        return {}
 
     def load_review_notes(self, file_path: Path, target_lang: str) -> List[str]:
         rel_path = self._get_rel_path(file_path)
@@ -770,57 +859,109 @@ class DocsTranslator:
                 file_path, target_lang
             )
 
-            fatal = False
-            translated_content = None
+            # ---- 分块增量翻译 ----
+            # 按 ## 标题将文档拆分为块，仅翻译哈希变化的块，未变化的复用缓存。
+            # 对于小改动（如修正一个导入路径），通常只重译 1-2 块，大幅节省 token。
+            source_chunks = self._split_into_chunks(content)
+            cached_chunks = {} if force else self._load_cached_chunks(
+                file_path, target_lang
+            )
+            total_chunks = len(source_chunks)
+            translated_chunks_list: List[str] = []
+            changed_count = 0
 
-            for attempt in range(1, self.max_retries + 1):
-                try:
-                    translated_content = await self.call_translation_api(
-                        content,
-                        target_lang,
-                        rel_path,
-                        review_notes=review_notes,
-                        reference_translation=reference_translation,
-                        buffer=buf,
-                        provider_index=pidx,
-                    )
-                except RateLimitError:
-                    delay = min(self.retry_base_delay * (2 ** (attempt - 1)), 120)
-                    Logger.progress(
-                        rel_path,
-                        target_lang,
-                        "rate_limit",
-                        f"等待{delay}s (第{attempt}次)",
-                    )
-                    if attempt < self.max_retries:
-                        await asyncio.sleep(delay)
+            for ci, chunk in enumerate(source_chunks):
+                c_hash = self._chunk_hash(chunk)
+
+                # 块未变化 → 复用缓存翻译
+                if c_hash in cached_chunks:
+                    translated_chunks_list.append(cached_chunks[c_hash])
                     continue
-                except FatalApiError as e:
-                    Logger.progress(rel_path, target_lang, "fail", f"不可重试: {e}")
-                    self.stats["failed_files"] += 1
-                    fatal = True
-                    break
 
-                if translated_content:
-                    break
-
-                if attempt < self.max_retries:
-                    delay = min(self.retry_base_delay * (2 ** (attempt - 1)), 60)
+                # 块已变化 → 调用 AI 翻译
+                changed_count += 1
+                if total_chunks > 1:
                     Logger.progress(
                         rel_path,
                         target_lang,
-                        "retry",
-                        f"第{attempt + 1}/{self.max_retries}次, 等待{delay}s",
+                        "trans",
+                        f"块 {ci + 1}/{total_chunks} [{provider_name}]",
                     )
-                    await asyncio.sleep(delay)
 
-            if not translated_content:
-                if not fatal:
+                chunk_result = None
+                for attempt in range(1, self.max_retries + 1):
+                    try:
+                        chunk_result = await self.call_translation_api(
+                            chunk,
+                            target_lang,
+                            "",  # file_name="" → 跳过 README 语言切换行提示
+                            review_notes=review_notes,
+                            reference_translation=None,
+                            buffer=buf,
+                            provider_index=pidx,
+                        )
+                    except RateLimitError:
+                        delay = min(
+                            self.retry_base_delay * (2 ** (attempt - 1)), 120
+                        )
+                        Logger.progress(
+                            rel_path,
+                            target_lang,
+                            "rate_limit",
+                            f"块{ci + 1} 等待{delay}s (第{attempt}次)",
+                        )
+                        if attempt < self.max_retries:
+                            await asyncio.sleep(delay)
+                        continue
+                    except FatalApiError as e:
+                        Logger.progress(
+                            rel_path, target_lang, "fail", f"不可重试: {e}"
+                        )
+                        self.stats["failed_files"] += 1
+                        return False
+
+                    if chunk_result:
+                        break
+
+                    if attempt < self.max_retries:
+                        delay = min(
+                            self.retry_base_delay * (2 ** (attempt - 1)), 60
+                        )
+                        await asyncio.sleep(delay)
+
+                if not chunk_result:
                     Logger.progress(
-                        rel_path, target_lang, "fail", f"重试{self.max_retries}次"
+                        rel_path,
+                        target_lang,
+                        "fail",
+                        f"块{ci + 1} 重试{self.max_retries}次",
                     )
                     self.stats["failed_files"] += 1
-                return False
+                    return False
+
+                translated_chunks_list.append(chunk_result)
+
+                # 块间延迟（仅对实际翻译的块，避免限速）
+                if (
+                    self.request_delay > 0
+                    and ci < total_chunks - 1
+                ):
+                    await asyncio.sleep(self.request_delay)
+
+            # 合并翻译后的块
+            translated_content = "\n\n".join(translated_chunks_list)
+
+            if changed_count == 0:
+                Logger.progress(
+                    rel_path, target_lang, "skip", "所有块未变化（复用缓存）"
+                )
+            elif total_chunks > 1:
+                Logger.progress(
+                    rel_path,
+                    target_lang,
+                    "trans",
+                    f"已翻译 {changed_count}/{total_chunks} 块",
+                )
 
             if self.enable_self_check and not no_check:
                 Logger.progress(
@@ -896,7 +1037,14 @@ class DocsTranslator:
                 f.write(translated_content)
 
             file_hash = self.calculate_file_hash(file_path)
-            self.save_cache(file_path, target_lang, file_hash)
+            # 构建分块缓存（包含所有块——复用的和新翻译的）
+            chunk_cache = [
+                {"hash": self._chunk_hash(src), "translation": tr}
+                for src, tr in zip(source_chunks, translated_chunks_list)
+            ]
+            self.save_cache(
+                file_path, target_lang, file_hash, chunk_translations=chunk_cache
+            )
 
             Logger.progress(rel_path, target_lang, "done")
             self.stats["translated_files"] += 1

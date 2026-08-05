@@ -232,149 +232,6 @@ flowchart TD
 > 更多详情请参考 [懒加载系统](advanced/lazy-loading.md) 和 [生命周期管理](advanced/lifecycle.md)。
 
 
-### 术语表
-
-# ErisPulse 术语表
-
-本文档解释 ErisPulse 中常用的专业术语，帮助您更好地理解框架概念。
-
-## 核心概念
-
-### 事件驱动架构
-**通俗解释：** 就像餐厅的点菜系统。顾客（用户）点菜（发送消息），服务员（事件系统）将订单（事件）传递给后厨（模块），后厨处理后，服务员再把菜（回复）端给顾客。
-
-**技术解释：** 程序的执行流程由外部事件触发，而不是按固定顺序执行。每当有新事件发生（如收到消息），框架会自动调用相应的处理函数。
-
-### OneBot12 标准
-**通俗解释：** 就像插座和插头的标准。不同平台的"插头"（原生事件格式）各不相同，但通过转换器都变成统一的"插头"（OneBot12格式），这样你的代码就可以像插座一样适配所有平台。
-
-**技术解释：** 一个统一的聊天机器人应用接口标准，定义了事件、消息、API等的统一格式，使代码可以在不同平台间复用。
-
-### 适配器
-**通俗解释：** 就像翻译官。不同平台说不同"语言"（API格式），适配器把这些"语言"翻译成 ErisPulse 能听懂的"普通话"（OneBot12标准），也能把 ErisPulse 的指令翻译回各平台的"语言"。
-
-**技术解释：** 负责与特定平台通信的组件，接收平台原生事件并转换为标准格式，或将标准格式请求发送到平台。
-
-### 模块
-**通俗解释：** 就像手机上的APP。每个模块是一个独立的功能包，可以添加、删除、更新。比如"天气预报模块"、"音乐播放模块"等。
-
-**技术解释：** 功能扩展的基本单位，包含特定的业务逻辑、事件处理器和配置，可以独立安装和卸载。
-
-### 事件
-**通俗解释：** 就像手机上的通知。当有新消息、新好友、新群聊时，平台会发送一个"通知"（事件）给你的机器人。
-
-**技术解释：** 发生在平台上的任何值得注意的事情，如收到消息、用户加入群组、好友请求等，都以结构化数据的形式传递给程序。
-
-### 事件处理器
-**通俗解释：** 就像快递员的派送规则。当收到"包裹"（事件）时，根据包裹类型（消息、通知、请求等）决定由谁来处理这个包裹。
-
-**技术解析：** 用装饰器标记的函数，当特定类型的事件发生时自动执行，例如 `@command`、`@message` 等。
-
-## 开发相关术语
-
-### SDK
-**通俗解释：** 就像工具箱。里面装着各种常用工具（存储、配置、日志等），你写代码时可以直接拿这些工具用，不用自己造轮子。
-
-**技术解释：** Software Development Kit（软件开发工具包），提供了一组预先构建好的组件和工具，简化开发过程。
-
-### 虚拟环境
-**通俗解释：** 就像独立的"工作间"。每个项目有自己的"工作间"，里面安装的软件包互不干扰，避免版本冲突。
-
-**技术解释：** 隔离的 Python 环境，每个环境有独立的包列表和版本，防止不同项目的依赖冲突。
-
-### 异步编程
-**通俗解释：** 就像多任务处理。机器人可以同时做多件事，比如在等待网络响应时，还能处理其他用户的消息，不会卡住。
-
-**技术解释：** 使用 `async`/`await` 关键字的编程方式，允许程序在等待耗时操作（如网络请求、文件读写）时切换到其他任务，提高效率。
-
-### 热重载
-**通俗解释：** 就像网页的自动刷新。你修改代码后，不需要手动重启机器人，它会自动加载新代码，立即生效。
-
-**技术解释：** 开发模式下，程序会自动检测文件变化并重新加载，无需手动重启即可看到代码修改的效果。
-
-### 懒加载
-**通俗解释：** 就像按需打开的抽屉。不用的抽屉（模块）先关着，需要用时再打开，这样启动时不用等所有抽屉都打开。
-
-**技术解释：** 延迟加载策略，模块只在首次被访问时才初始化和加载，减少启动时间和资源占用。
-
-## 功能相关术语
-
-### 命令
-**通俗解释：** 就像游戏里的指令。用户输入 `/hello` 这样的指令，机器人就会执行对应的功能。
-
-**技术解释：** 以特定前缀（如 `/`）开头的消息，被框架识别为命令并路由到对应的处理函数。
-
-### 回复
-**通俗解释：** 就是机器人给用户的"回答"。无论是文本、图片还是语音，都是对用户消息的回复。
-
-**技术解释：** 适配器将处理结果发送回平台，展示给用户的过程。
-
-### 存储
-**通俗解释：** 就像机器人的"记事本"。可以记住用户的信息、设置、聊天记录等，下次还能找到。
-
-**技术解释：** 持久化数据存储系统，基于 SQLite 实现键值对存储，用于保存需要长期保留的数据。
-
-### 配置
-**通俗解释：** 就像机器人的"设置"。你可以通过配置文件修改机器人的行为，比如修改端口号、日志级别等。
-
-**技术解释：** 使用 TOML 格式的配置管理系统，用于设置框架和模块的各种参数。
-
-### 日志
-**通俗解释：** 就像机器人的"日记"。记录机器人做了什么、遇到了什么问题，方便调试和排查问题。
-
-**技术解释：** 系统运行时产生的记录信息，包括信息、警告、错误等不同级别，用于监控和调试。
-
-### 路由
-**通俗解释：** 就像交警指挥交通。决定哪个请求应该去哪个地方处理，比如网页请求、WebSocket 连接等。
-
-**技术解释：** HTTP 和 WebSocket 路由管理器，根据 URL 路径将请求分发到对应的处理函数。
-
-## 平台相关术语
-
-### 平台
-**通俗解释：** 机器人工作的地方，比如云湖、Telegram、QQ等，每个平台有自己的规则和 API。
-
-**技术解释：** 提供聊天机器人服务的应用程序或服务，如云湖企业通讯、Telegram 等。
-
-### OneBot11/12
-**通俗解释：** 就像聊天机器人的"国际标准"。规定了消息、事件等的统一格式，让不同软件之间能互相理解。
-
-**技术解释：** OneBot 是一个通用的聊天机器人应用接口标准，定义了事件、消息、API等的格式。11 和 12 是不同版本的标准。
-
-### SendDSL
-**通俗解释：** 就像发消息的"快捷方式"。用简单的一句话就能发送各种类型的消息（文本、图片、@某人等）。
-
-**技术解释：** 链式调用的消息发送接口，提供简洁的语法来构建和发送复杂消息。
-
-## 其他术语
-
-### 生命周期
-**通俗解释：** 机器人的"一生"：出生（启动）、工作（运行）、休息（停止）。生命周期就是在这些关键时刻会触发的事件。
-
-**技术解释：** 程序运行过程中的关键阶段，如启动、加载模块、卸载模块、关闭等，可以通过监听这些事件来执行相应操作。
-
-### 注解/装饰器
-**通俗解释：** 就是给函数"贴标签"。比如 `@command("hello")` 这个标签告诉框架：这是一个命令处理器，名字叫 "hello"。
-
-**技术解释：** Python 的语法糖，用于修改函数或类的行为。在 ErisPulse 中用于标记事件处理器、路由等。
-
-### 类型注解
-**通俗解释：** 就是告诉函数参数是什么"类型"。比如 `request: Request` 表示这个参数是一个请求对象。
-
-**技术解释：** Python 3.5+ 引入的特性，用于标注变量和参数的类型，提高代码可读性和类型安全性。
-
-### TOML
-**通俗解释：** 一种配置文件格式，比 JSON 更易读，比 YAML 更严格，适合用来写配置。
-
-**技术解释：** Tom's Obvious Minimal Language，一种配置文件格式，语法简洁清晰，广泛用于 Python 项目的配置管理。
-
-## 获取帮助
-
-如果您发现文档中有其他术语不理解，欢迎通过以下方式提问：
-- 提交 GitHub Issue
-- 参与社区讨论
-- 联系维护者
-
 
 ====
 快速上手
@@ -386,8 +243,6 @@ flowchart TD
 # 快速开始
 
 > **这是你的第一步。** 用 5 分钟从零跑起一个 ErisPulse 机器人。
->
-> 遇到不理解的术语?查看 [术语表](terminology.md)。
 
 ## 安装 ErisPulse
 
@@ -558,25 +413,6 @@ level = "INFO"
 # 适配器配置
 ```
 
-## 下一步
-
-机器人跑起来后，你可以按需继续：
-
-**想了解框架怎么运作?**
-- [基础概念](getting-started/basic-concepts.md) — 适配器 / 模块 / 事件 的设计
-- [架构概览](architecture.md) — 可视化架构图
-
-**想实现更多功能?**
-- [常见任务示例](getting-started/common-tasks.md) — 存储、定时任务、权限控制
-- [事件处理入门](getting-started/event-handling.md) — 消息、通知、请求处理
-
-**想开发自己的模块 / 适配器?**
-- [模块开发入门](developer-guide/modules/getting-started.md)
-- [适配器开发入门](developer-guide/adapters/getting-started.md)
-
-**按需查阅:**
-- [配置文件说明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md)
-
 
 
 ### 创建第一个机器人
@@ -736,11 +572,6 @@ async def hello_handler(event):
 
 > 更多多平台适配技巧请参考 [常见任务示例](common-tasks.md#多平台适配)。
 
-## 下一步
-
-- [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
-- [事件处理入门](event-handling.md) - 学习处理各类事件
-- [常见任务示例](common-tasks.md) - 掌握更多实用功能
 
 
 ### 基础概念
@@ -1095,10 +926,6 @@ class Main(BaseModule):
 
 > 详细的懒加载机制和注意事项请参考 [懒加载系统](../advanced/lazy-loading.md)。
 
-## 下一步
-
-- [事件处理入门](event-handling.md) - 学习如何处理各类事件
-- [常见任务示例](common-tasks.md) - 掌握常用功能的实现
 
 
 ### 事件处理入门
@@ -1755,12 +1582,6 @@ async def conditional_handler(event):
     await event.reply("条件满足，处理消息")
 ```
 
-## 下一步
-
-- [常见任务示例](common-tasks.md) - 学习常用功能的实现（含消息发送进阶：重试/超时/批量）
-- [平台特性指南](../platform-guide/README.md) - Send DSL 链式发送、发送规则、批量构建的完整说明
-- [Event 包装类详解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 对象
-- [用户使用指南](../user-guide/) - 了解配置和模块管理
 
 
 ### IDE 补全
@@ -1847,11 +1668,6 @@ if TYPE_CHECKING:
 
 `SendDSL` 基类已内置标准发送方法（Text/Image/Voice/Video/File），任何方式获取的 SendDSL 实例都能补全这些方法。
 `types` 命令主要用于补全**平台特有方法**（如云湖的 `Board`、沙盒的 `Dice`）和**模块特有方法**。
-
-## 相关文档
-
-- [SendDSL 详解](../developer-guide/adapters/send-dsl.md) - 标准发送方法说明
-- [适配器开发入门](../developer-guide/adapters/getting-started.md) - 创建适配器
 
 
 
@@ -1947,7 +1763,7 @@ dependencies = [
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
@@ -2415,12 +2231,6 @@ sdk.router.get_module_urls("MyModule")
 
 > **服务器无关设计**：`SseEmitter` 通过回调与底层 HTTP 框架解耦。框架提供了 `register_sse()` 和 `@sse` 装饰器作为统一的注册入口，适配器无需直接依赖任何底层 HTTP 框架即可实现 SSE 端点。
 
-## 下一步
-
-- [适配器核心概念](core-concepts.md) - 了解适配器架构
-- [SendDSL 详解](send-dsl.md) - 学习消息发送
-- [转换器实现](converter.md) - 了解事件转换
-- [适配器最佳实践](best-practices.md) - 开发高质量适配器
 
 
 ### 适配器核心概念
@@ -2688,7 +2498,7 @@ await adapter.Send.To("user", "123").Text("Hello")
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import BaseConfig, BotAccountConfig
+from ErisPulse.Core.Bases import BaseConfig, BotAccountConfig
 
 @dataclass
 class MyConfig(BaseConfig):
@@ -2733,7 +2543,7 @@ class MyAdapter(BaseAdapter):
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class TelegramConfig(BaseConfig):
@@ -2764,7 +2574,7 @@ class TelegramAdapter(BaseAdapter):
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BotAccountConfig
+from ErisPulse.Core.Bases import BotAccountConfig
 
 # 大多数适配器：bot_id 运行时自动获取，无需配置
 @dataclass
@@ -3233,7 +3043,7 @@ async def call_api(self, endpoint: str, **params):
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BotAccountConfig
+from ErisPulse.Core.Bases import BotAccountConfig
 
 @dataclass
 class MyBotConfig(BotAccountConfig):
@@ -3459,11 +3269,6 @@ async def on_bot_offline(data):
     sdk.logger.info(f"Bot 下线: {platform}/{bot_id}")
 ```
 
-## 相关文档
-
-- [适配器开发入门](getting-started.md) - 创建第一个适配器
-- [SendDSL 详解](send-dsl.md) - 学习消息发送
-- [适配器最佳实践](best-practices.md) - 开发高质量适配器
 
 
 ### SendDSL 详解
@@ -4125,12 +3930,6 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 > - [发送方法规范 §6 反向转换规范](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
 > - [发送方法规范 §11 消息构建器](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
 
-## 相关文档
-
-- [适配器开发入门](getting-started.md) - 创建适配器
-- [适配器核心概念](core-concepts.md) - 了解适配器架构
-- [适配器最佳实践](best-practices.md) - 开发高质量适配器
-- [发送方法规范](../../standards/send-method-spec.md) - 发送方法完整规范
 
 
 ### 适配器开发最佳实践
@@ -4532,7 +4331,7 @@ async def call_api(self, endpoint: str, **params):
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BotAccountConfig
+from ErisPulse.Core.Bases import BotAccountConfig
 
 @dataclass
 class MyBotConfig(BotAccountConfig):
@@ -4782,11 +4581,6 @@ class MyAdapter(BaseAdapter):
 version = "2.0.0"  # 更新版本号
 ```
 
-## 相关文档
-
-- [适配器开发入门](getting-started.md) - 创建第一个适配器
-- [适配器核心概念](core-concepts.md) - 了解适配器架构
-- [SendDSL 详解](send-dsl.md) - 学习消息发送
 
 
 ### 事件转换器
@@ -5164,13 +4958,6 @@ import time
 3. **合理设置 detail_type**：使用标准类型（`private`/`group`/`channel` 等），不要自定义
 4. **处理边界情况**：原始事件可能缺少某些字段，使用 `.get()` 并提供合理默认值
 5. **性能考虑**：`convert()` 在每个事件上调用，避免在其中执行耗时操作
-
-## 相关文档
-
-- [适配器核心概念](core-concepts.md) - 适配器整体架构
-- [SendDSL 详解](send-dsl.md) - 反向转换（发送方向）
-- [事件转换标准](../../standards/event-conversion.md) - 正式的事件转换规范
-- [会话类型系统](../../advanced/session-types.md) - 会话类型映射规则
 
 
 
@@ -6598,12 +6385,6 @@ def on_status_change(event):
 
 > 系统关闭时（`shutdown`），所有 Bot 会自动被标记为 `offline`。
 
-## 相关文档
-
-- [核心模块 API](core-modules.md) - 核心模块 API
-- [事件系统 API](event-system.md) - Event 模块 API
-- [适配器开发指南](../developer-guide/adapters/) - 开发平台适配器
-
 
 
 ### 核心模块 API
@@ -6967,15 +6748,6 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 | `router` | 服务器运行状态、HTTP/WebSocket 路由数量 |
 
 > 新增于 2.5.2
-
-## 相关文档
-
-- [事件系统 API](event-system.md) - Event 模块 API
-- [适配器系统 API](adapter-system.md) - Adapter 管理 API
-- [SQL 查询构建器](../advanced/sql-builder.md) - SQL 链式查询完整文档
-- [路由管理器](../advanced/router.md) - 路由管理器完整文档
-- [网络客户端](../advanced/http-client.md) - 网络客户端完整文档
-- [生命周期管理](../advanced/lifecycle.md) - 生命周期完整文档
 
 
 
@@ -7464,12 +7236,6 @@ class MyAdapter(BaseAdapter):
 6. **监控请求统计**：通过 `sdk.client.stats` 或 `client.request` 生命周期事件监控请求情况
 7. **WebSocket 使用高级方法**：优先使用 `iter_text` / `iter_json` 等高级方法，仅在需要区分消息类型时使用 `iter_messages`
 
-## 相关文档
-
-- [路由管理器](router.md) - HTTP/WebSocket 服务端路由（服务端 WebSocketConnection 与客户端共享同一基类）
-- [适配器开发指南](../developer-guide/adapters/getting-started.md) - 适配器中使用 HTTP 客户端
-- [生命周期管理](lifecycle.md) - 监听请求事件
-
 
 
 ### SQL 查询构建器
@@ -7849,12 +7615,6 @@ class MyStorage(BaseStorage):
         return MyQueryBuilder(self, table_name)
 ```
 
-## 相关文档
-
-- [核心模块 API](../api-reference/core-modules.md) - Storage 模块完整 API
-- [存储基类 API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - BaseStorage/BaseQueryBuilder 抽象接口
-- [消息构建器](message-builder.md) - MessageBuilder 链式调用风格参考
-
 
 
 ### 生命周期管理
@@ -8172,11 +7932,6 @@ class Main(BaseModule):
 6. **生命周期清理**：调用 `sdk.uninit()` 时，所有已注册的处理器和计时器会被清理
 7. **加载优先性**：如需在框架初始化阶段就监听事件，建议设置高优先级并禁用懒加载
 
-## 相关文档
-
-- [模块开发指南](../developer-guide/modules/getting-started.md) - 了解模块生命周期方法
-- [最佳实践](../developer-guide/modules/best-practices.md) - 生命周期事件使用建议
-
 
 
 ### 懶加载系统
@@ -8317,10 +8072,6 @@ result = sdk.my_module.some_sync_method()
 2. 如果您的模块中包含了诸如监听Event的模块，或其它主动监听类似模块，请务必声明需要立即被加载，否则会影响您模块的正常业务。
 3. 我们不建议您禁用懒加载，除非有特殊需求，否则它可能为您带来诸如依赖管理和生命周期事件等的问题。
 
-## 相关文档
-
-- [模块开发指南](../developer-guide/modules/getting-started.md) - 学习开发模块
-- [最佳实践](../developer-guide/modules/best-practices.md) - 了解更多最佳实践
 
 
 ### 国际化（i18n）系统
@@ -8715,7 +8466,7 @@ i18n.register("en", {
 也提供了便捷函数 `register_config_i18n()`，可自动从配置类提取键并注册：
 
 ```python
-from ErisPulse.runtime.config_schema import register_config_i18n
+from ErisPulse.Core.Bases.config_schema import register_config_i18n
 
 # 自动提取 description.default 作为 zh-CN 翻译
 register_config_i18n(MyAdapterConfig, "zh-CN")
@@ -8733,7 +8484,7 @@ register_config_i18n(MyAdapterConfig, "en", {
 如果需要服务端直接解析为字符串（如返回给不支持 i18n 的前端），使用 `resolve_config_schema()`，它会将 `description`、`options[].label`、`placeholder`、`group_labels` 全部解析为当前语言的文本：
 
 ```python
-from ErisPulse.runtime.config_schema import resolve_config_schema
+from ErisPulse.Core.Bases.config_schema import resolve_config_schema
 
 # 所有 i18n 字段已解析为当前语言的字符串
 schema = resolve_config_schema(MyAdapterConfig)
@@ -9279,12 +9030,6 @@ await sdk.hard_restart()
 > Dashboard 管理面板里的「框架重启」功能，底层调用的就是 `hard_restart()`。
 > 另外就是硬重启一个要求！必须使用epsdk的run命令进行启动，否则程序只是会抛出42退出码进行退出，因为run命令的拉起检查了42退出码进行重新拉起进程，这点必须要注意！！！
 
-## 相关文档
-
-- [创建第一个机器人](../getting-started/first-bot.md) - `keep_running` 两种基础模式入门
-- [生命周期管理](lifecycle.md) - 监听 `core.init.start` / `core.init.complete` 等启动事件
-- [懒加载系统](lazy-loading.md) - 模块懒加载机制与 `load_module`
-
 
 
 ====
@@ -9576,6 +9321,7 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范
 - [发送方法规范](send-method-spec.md) - Send 类的方法命名和参数规范
 - [适配器开发指南](../developer-guide/adapters/) - 适配器开发完整指南
+
 
 
 ### 事件转换标准
@@ -10096,6 +9842,7 @@ async def handle_welcome(event):
 - [发送方法规范](send-method-spec.md) - Send 类的方法命名、参数规范及反向转换要求
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
 - [API 动作标准](api-action-spec.md) - OneBot12 标准 API 动作的统一接口
+
 
 
 ### API 响应标准
@@ -10823,6 +10570,7 @@ if builder:
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
 - [会话类型标准](session-types.md) - 会话类型定义和映射关系
 - [请求操作规范](request-action-spec.md) - 请求事件字段要求、HandleRequest DSL 及适配器实现要求
+
 
 
 ### 请求操作规范
@@ -11980,11 +11728,93 @@ await event.reply_ob12(
 
 ---
 
-## 相关链接
+## 实战避坑（踩出来的血泪）
 
-- PyPI：<https://pypi.org/project/ErisPulse-Takumi/>
-- 仓库：<https://github.com/ccd2s/ErispulseTakumi>（作者 [@ccd2s](https://github.com/ccd2s)）
-- 底层引擎：<https://github.com/BalconyJH/takumi-py>
+下面这些文档里没写，是拿 Takumi 做一整个数据可视化模块（声呐图、雷达图那种，节点几十个、还要画连线和标签）时一行行试出来的。挑值钱的记一下，能帮你少走几小时弯路。
+
+### 1. 别用 SVG `<text>`，它不渲染
+
+最大的坑，没有之一。你想在 `<svg>` 里画节点、旁边用 `<text>` 标个名字——**渲染出来文字是空的**。不管给 `<text>` 加 `font-family`，还是在 `<svg>` 根上设继承，都没用，中英文一律不显示，图里只剩裸的形状。
+
+实测结论：`takumi-py` 不绘制内联 SVG 的文本元素。所以正确套路是：
+
+- SVG 只画**形状**（圆、线、多边形）
+- 文字全部走 **HTML**：把 `<svg>` 丢进一个 `position: relative` 的容器，再用绝对定位的 `<div>` 把标签盖到对应坐标上
+
+```python
+W = H = 600
+html = f"""
+<div style='position:relative;width:{W}px;height:{H}px'>
+  <svg width='{W}' height='{H}' viewBox='0 0 {W} {H}'>
+    <!-- 只画圆和线 -->
+  </svg>
+  <div style='position:absolute;left:{x}px;top:{y}px;transform:translate(-50%,-50%)'>名字</div>
+</div>
+"""
+```
+
+坐标对得上的前提：SVG 用**固定**的 `width`/`height`（别图省事写 `width:100%`），这样像素和容器 1:1，div 的 `left`/`top` 直接填 SVG 里的坐标即可。
+
+### 2. CSS 必须走 `stylesheets`，别塞整篇 HTML 文档
+
+`render_html(html, ...)` 的第一个参数是**正文 HTML**，不是完整文档。你要是图省事传一个：
+
+```python
+takumi.render_html("<!DOCTYPE html><html><head><style>...</style></head><body>...</body></html>")
+```
+
+样式会**静默失效**——图照样出，但跟没 CSS 一样，乱七八糟。排错时你还会怀疑自己 CSS 写错了，其实是传法不对，冤。
+
+正确姿势永远是：正文一个参数、CSS 一个参数。
+
+```python
+takumi.render_html(body_html, stylesheets=[css_str], width=..., height=..., lang="zh-CN")
+```
+
+### 3. `height` 是裁切高度，不会自动撑高
+
+`width` 是视口宽，`height` 是画布高——**超出 `height` 的内容直接被切掉**，不会像浏览器那样自动往下长。所以总高度得自己估：每个区块高 + padding + 卡片间距，加起来传进去。
+
+经验是**宁多勿少**。底部多几十像素留白没人盯，顶部内容被切一刀那这张图就废了。遇到动态内容（列表项数不定）就按项数现算：
+
+```python
+height = padding * 2 + header_h + sum(每项高) + 间隙 * (项数 - 1) + 30  # 末尾留点保险
+```
+
+### 4. 字体自动注入只管 HTML 文本
+
+便捷方法（`render_html` / `render_node`）会自动把内置字体回退栈塞进去，但**只对 HTML 文本生效**。所以第 1 条说"文字走 HTML"还有这层好处——顺带白嫖了中文字体，不用自己操心 `font_families`。
+
+要是你直接调底层 renderer（`takumi.renderer.render_html`），就得自己传 `font_families=takumi.families`，别忘。
+
+### 5. 一个不睁眼也能调试的小技巧
+
+改完样式想确认"某段中文到底渲没渲染出来"，又懒得每次开图看？让它吐原始像素来数：
+
+```python
+data = takumi.render_html(body, stylesheets=[css], width=W, height=H,
+                          lang="zh-CN", format="raw")  # raw 是 RGBA 字节流
+dark = sum(1 for i in range(0, len(data), 4)
+           if data[i] < 120 and data[i+1] < 120 and data[i+2] < 120 and data[i+3] > 128)
+```
+
+浅色背景下，"有文字"和"没文字"的墨点数是 4000+ 和 0 的区别——一眼就能看出你那行 `<div>` 到底生效没。比肉眼盯 PNG 快多了，第 1 条那个 SVG 坑我就是这么验出来的。
+
+### 6. 深浅色主题：换套 stylesheet 就行
+
+Takumi 本身不在乎你什么主题，颜色全在你自己的 CSS 里。所以做明暗切换特别轻——备两套颜色，按当前小时或用户设置挑一套塞进 `stylesheets`：
+
+```python
+if 19 <= local_hour or local_hour < 7:
+    t = {"page": "#000000", "card": "#1c1c1e", "ink": "#f5f5f7", "sep": "#38383a"}   # 深色
+else:
+    t = {"page": "#f5f5f7", "card": "#ffffff", "ink": "#1d1d1f", "sep": "#e5e5ea"}   # 浅色
+css = CSS_TEMPLATE.replace("__INK__", t["ink"]).replace("__CARD__", t["card"])  # 以此类推
+```
+
+> 小提醒：CSS 自带的 `var(--xxx)` 变量在 takumi 里**不一定吃**，稳妥起见在 Python 里直接把颜色字符串替换进模板，绕开这个不确定性。
+
+---
 
 
 
@@ -13661,6 +13491,7 @@ enabled = true
 ```
 
 
+
 ### 云湖适配
 
 # 云湖平台特性文档
@@ -14227,6 +14058,7 @@ yunhu.bots["bot1"].enabled = False
 ### 旧配置兼容
 
 系统会自动兼容旧格式的配置，但建议迁移到新配置格式以获得更好的多bot支持。
+
 
 
 ### 邮件适配
@@ -15473,6 +15305,7 @@ async def handle_member_change(event):
         user_id = event.get("user_id")
         operator_id = event.get("operator_id")
         print(f"用户 {user_id} 被移除，操作者: {operator_id}")
+
 
 
 ### QQBot 适配
@@ -18011,3 +17844,4 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
    ```python
    {!--< deprecated >!--} 请使用new_method()代替 | 2025-07-09
    ```
+

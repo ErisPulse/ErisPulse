@@ -1576,8 +1576,8 @@ class Event(dict):
                         future.set_result(raw)
                     except asyncio.InvalidStateError:
                         pass
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.trace(f"[Event] onebot wait handler 异常: {_e}")
 
         handler_wrapper = {"func": _temp_handler, "platform": None}
         adapter._onebot_handlers[event_type].append(handler_wrapper)
@@ -1919,7 +1919,8 @@ class Conversation:
                 try:
                     if not cond(self.context):
                         continue
-                except Exception:
+                except Exception as _e:
+                    logger.trace(f"[Conversation] 字段 condition 执行异常，跳过: {_e}")
                     continue
             filtered_fields.append(f)
 
@@ -2115,8 +2116,8 @@ class Conversation:
                 if event:
                     self._event = event
                 return True
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.trace(f"[Conversation] resume 失败: {_e}")
         return False
 
     async def clear_saved(self):
@@ -2133,8 +2134,8 @@ class Conversation:
             platform = self._event.get_platform()
             key = f"{CONVERSATION_KEY_PREFIX}:{platform}:{user_id}"
             storage.delete(key)
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.trace(f"[Conversation] clear_saved 失败: {_e}")
 
 
 __all__ = [

@@ -37,7 +37,7 @@ name = "ErisPulse-ModuleName"  # 使用 ErisPulse- 前缀
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyModuleConfig(BaseConfig):
@@ -437,18 +437,46 @@ version = "1.0.0"
 - 次版本：向下兼容的功能新增
 - 修订号：向下兼容的问题修正
 
-### 2. 文档完善
+### 2. README 头部
+
+`epsdk create` 生成的 README 已内置 ErisPulse 品牌头部（Logo + 徽章行）。两种推荐模式：
+
+**模式 A — 仅 ErisPulse Logo（默认）：**
 
 ```markdown
-# README.md
+<div align="center">
 
-- 模块简介
-- 安装说明
-- 配置说明
-- 使用示例
-- API 文档
-- 贡献指南
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
+
+# MyModule
+
+**一句话描述**
+
+<p>
+  <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
+  <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
+  <a href="https://github.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/Powered_by-ErisPulse-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="ErisPulse"></a>
+</p>
+
+</div>
 ```
+
+**模式 B — 模块图标 × ErisPulse Logo（有自定义图标时）：**
+
+```markdown
+<div align="center">
+
+<img src=".github/assets/MyModuleIcon.svg" width="120" alt="MyModule" />
+<span style="font-size:44px;color:#c8c8c8;margin:0 18px;vertical-align:middle;">×</span>
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
+
+# MyModule
+（徽章行同上）
+</div>
+```
+
+可按需追加 GitHub Stars、Downloads 等徽章。Logo 也可下载到项目本地（`.github/assets/ErisPulseLogo.png`）改为相对路径引用。
 
 ## 相关文档
 

@@ -462,33 +462,50 @@ class {converter_name}(BaseConverter):
         return None
 """
 
-_README_MODULE = """# {name}
+_README_MODULE = """<div align="center">
 
-{description}
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" width="180" alt="{name}" />
+
+# {name}
+
+**{description}**
+
+<p>
+  <a href="https://pypi.org/project/ErisPulse-{name}/"><img src="https://img.shields.io/pypi/v/ErisPulse-{name}?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
+  <a href="https://pypi.org/project/ErisPulse-{name}/"><img src="https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
+  <a href="https://github.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/Powered_by-ErisPulse-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="ErisPulse"></a>
+</p>
+
+</div>
+
+---
 
 ## 安装
 
 ```bash
 epsdk install ErisPulse-{name}
 ```
-
-## 使用
-
-模块会自动加载，你也可以通过 `sdk.{name}` 访问模块实例。
-
-## 配置
-
-在 `config.toml` 中添加:
-
-```toml
-[{name}]
-enabled = true
-```
 """
 
-_README_ADAPTER = """# {name}
+_README_ADAPTER = """<div align="center">
 
-{description}
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" width="180" alt="{name}" />
+
+# {name}
+
+**{description}**
+
+<p>
+  <a href="https://pypi.org/project/ErisPulse-{name}/"><img src="https://img.shields.io/pypi/v/ErisPulse-{name}?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
+  <a href="https://pypi.org/project/ErisPulse-{name}/"><img src="https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
+  <a href="https://github.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/Powered_by-ErisPulse-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="ErisPulse"></a>
+</p>
+
+</div>
+
+---
 
 ## 安装
 
@@ -559,6 +576,22 @@ def _validate_name(name: str) -> bool:
     if not name[0].isalpha():
         return False
     return all(c.isalnum() or c == "_" for c in name)
+
+
+def _copy_erispulse_logo(project_dir: Path) -> None:
+    """
+    将 ErisPulseLogo.png 拷贝到项目的 .github/assets/ 目录
+
+    :param project_dir: [Path] 项目根目录
+    """
+    import shutil
+
+    logo_src = Path(__file__).parent.parent / "assets" / "ErisPulseLogo.png"
+    if not logo_src.exists():
+        return
+    dest = project_dir / ".github" / "assets" / "ErisPulseLogo.png"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(logo_src, dest)
 
 
 def _scaffold_text(name: str) -> dict:

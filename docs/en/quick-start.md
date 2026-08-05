@@ -1,8 +1,6 @@
 # Getting Started
 
 > **This is your first step.** Get an ErisPulse bot up and running from scratch in 5 minutes.
->
-> Confused about terms? Check the [Glossary](terminology.md).
 
 ## Installing ErisPulse
 

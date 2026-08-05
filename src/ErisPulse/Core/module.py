@@ -184,27 +184,15 @@ class ModuleManager(ManagerBase):
         :param old_dict: 变更前的配置字典（可能为 None）
         :param new_dict: 变更后的配置字典（可能为 None）
         """
-        config_class = getattr(instance, "ConfigClass", None)
-        try:
-            if config_class is not None:
-                from ..runtime.config_schema import dict_to_dataclass
+        from ..Core.Bases.config_schema import _notify_instance_config_update
 
-                old_config = (
-                    dict_to_dataclass(config_class, old_dict) if old_dict else None
-                )
-                new_config = (
-                    dict_to_dataclass(config_class, new_dict) if new_dict else None
-                )
-            else:
-                old_config = old_dict
-                new_config = new_dict
-            instance.on_config_update(old_config, new_config)
-        except Exception as e:
-            logger.error(
-                i18n.t(
-                    "core.module.config_update_failed", name=module_name, error=e
-                )
-            )
+        _notify_instance_config_update(
+            instance,
+            old_dict,
+            new_dict,
+            i18n_key="core.module.config_update_failed",
+            log_params={"name": module_name},
+        )
 
     # ==================== 模块注册与管理 ====================
 

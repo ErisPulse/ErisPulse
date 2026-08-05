@@ -633,6 +633,17 @@ DEFAULT_OFFLINE_BOT_EXPIRY_SECS: Final[int] = 3600
 # 修改影响: 设大减少 CPU 中断但内存峰值更高，设小更频繁回收但增加开销。0 表示禁用。
 DEFAULT_PROACTIVE_GC_INTERVAL_SECS: Final[int] = 300
 
+# 主动 GC 分代（generation）。
+# 运行时行为。gc.collect(generation) 只回收指定代及更年轻的对象：0=最年轻代（最轻量），
+# 1=中年代，2=最老代（覆盖最全）。默认 2 兼顾覆盖面与频率可控。
+# 修改影响: 设低减少单次扫描开销但回收不彻底，设高（2）覆盖更全但单次更重。
+DEFAULT_PROACTIVE_GC_GENERATION: Final[int] = 2
+
+# 主动 GC 全量收集周期（每 N 轮做一次全量 gc.collect()）。
+# 运行时行为。0 表示禁用（仅按 generation 回收），N>0 表示每 N 轮额外触发一次全量回收。
+# 修改影响: 设低（如 5）确保周期性深度回收，设高或 0 减少长尾暂停。
+DEFAULT_PROACTIVE_GC_FULL_EVERY: Final[int] = 0
+
 # shutdown 时等待在途事件处理器完成的最长时间（秒）。
 # 运行时行为。适配器关闭时取消所有 pending handler tasks 后等待它们退出的耐心时间。
 # 修改影响: 设大确保处理器完整结束，设小加速关闭流程。
@@ -743,6 +754,8 @@ __all__ = [
     "DEFAULT_MODULE_ENABLED",
     "DEFAULT_MODULE_PRIORITY",
     "DEFAULT_OFFLINE_BOT_EXPIRY_SECS",
+    "DEFAULT_PROACTIVE_GC_FULL_EVERY",
+    "DEFAULT_PROACTIVE_GC_GENERATION",
     "DEFAULT_PROACTIVE_GC_INTERVAL_SECS",
     "DEFAULT_RATE_LIMIT_CLEANUP_INTERVAL_SECS",
     "DEFAULT_RATE_LIMIT_MAX_REQUESTS",
