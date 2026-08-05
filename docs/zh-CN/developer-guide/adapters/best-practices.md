@@ -395,7 +395,7 @@ async def call_api(self, endpoint: str, **params):
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BotAccountConfig
+from ErisPulse.Core.Bases import BotAccountConfig
 
 @dataclass
 class MyBotConfig(BotAccountConfig):

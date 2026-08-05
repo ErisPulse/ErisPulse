@@ -91,15 +91,15 @@
 
 | 严重性 | 数量 |
 |--------|------|
-| 🔴 严重 | 14 |
+| 🔴 严重 | 15 |
 | 🟡 中等 | 12 |
 | 🟢 轻微 | 2 |
-| **合计** | **28** |
+| **合计** | **29** |
 
 | 类型 | 数量 |
 |------|------|
 | 适配器 | 6 |
-| 配置系统 | 5 |
+| 配置系统 | 6 |
 | 事件系统 | 5 |
 | CLI | 3 |
 | 存储 | 3 |
@@ -796,5 +796,41 @@ _apply_rate_limit 解析 window=3600（100/hour）
 **回归测试**: `tests/unit/test_unit_config.py` → `test_malformed_toml_preserves_last_valid_cache`、`test_permission_denied_logs_clear_message`（更新为验证保留缓存 + 返回 False）
 
 **严重性**: 🟡 中等
+
+**类型**: 配置系统
+
+---
+
+### [BUG-030] 配置 watcher 竞态导致 setConfig 延迟写入静默丢数据
+
+**问题**: 多个用户报告使用 `config.setConfig(key, value)`（默认 `immediate=False`）后，自己的模块配置未写入 `config.toml`，而其它模块的配置正常。设置 `immediate=True`（强制刷盘）可规避。表现为：运行期写入的配置在下次重启后丢失，启动期模板生成的配置保留。
+
+**原因**: 两个叠加缺陷：
+1. **逻辑缺陷**：`_watch_loop` 在 `_check_file_change()` 返回 `True` 时无条件 `_dirty_keys.clear()` 丢弃所有待写键。但 `_check_file_change()` 仅用 `!=` 对比 mtime，框架自身的 `_flush_config` 写盘也会改变 mtime——虽然 `_flush_config` 在写盘后更新 `_config_mtime`，但 watcher 线程在文件写入与 mtime 赋值之间（以及粗粒度文件系统上）仍可能观测到 mtime 差值，误判为"外部修改"并清空全部待写键。
+2. **线程缺陷**：`_watch_loop` 操作 `_write_timer`/`_dirty_keys` 时未持有 `_lock`，与 `setConfig`（持锁写 `_dirty_keys`）、`_schedule_write`（持锁写 `_write_timer`）存在数据竞争。
+
+**根因链路**:
+```
+模块A setConfig(immediate=True) → flush 写盘，mtime 变化
+  → 用户模块 setConfig(immediate=False) → 进入 _dirty_keys，5s 后刷盘
+    → watcher 轮询，_check_file_change 观测到先前自身写入的 mtime 差值
+      → _dirty_keys.clear() → 用户模块的待写键被静默丢弃
+        → 重启后配置缺失
+```
+
+**影响版本**: 2.6.0 - 2.7.0
+
+**修复版本**: 2.7.1
+
+**修复内容**:
+1. 新增 `_last_self_write_mtime` 字段，`_flush_config` 写盘后同步记录；`_check_file_change` 在 mtime 变化时先对比该值，匹配则判定为自身写入返回 `False`
+2. `_watch_loop` 整段持 `_lock`；真正外部修改时保留 `_dirty_keys`（merge 语义），下次 flush 与外部内容合并（脏键优先），不再 `clear()`
+3. `getConfig`/`_check_cache_validity` 路径不受影响（其 reload 本就不清脏键）
+
+**修复日期**: 2026/08/06
+
+**回归测试**: `tests/unit/test_unit_config.py` → `test_self_write_not_detected_as_external`、`test_external_change_preserves_dirty_keys`、`test_flush_merges_dirty_with_external`
+
+**严重性**: 🔴 严重
 
 **类型**: 配置系统

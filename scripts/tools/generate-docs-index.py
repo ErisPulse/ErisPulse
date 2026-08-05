@@ -300,7 +300,6 @@ class DocsIndexGenerator:
         "README.md": 1,
         "quick-start.md": 2,
         "architecture.md": 3,
-        "terminology.md": 4,
         "bug-tracker.md": 99,
         # 入门指南
         "getting-started/first-bot.md": 1,

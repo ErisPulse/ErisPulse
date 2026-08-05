@@ -3,8 +3,6 @@
 ErisPulse is a scalable, multi-platform message processing framework that supports interaction with different platforms through adapters and provides a flexible module system for feature extension.
 
 > **First time using?** Go straight to [5-minute quick start](docs/en/quick-start.md) —— from installation to running your first bot, one-stop guide.
->
-> Encounter unfamiliar terms? Check the [Glossary](terminology.md).
 
 ---
 

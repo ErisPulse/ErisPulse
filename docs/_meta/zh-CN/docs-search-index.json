@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1422,
+  "total_keywords": 1407,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -126,6 +126,14 @@
         "line": 49,
         "level": 3,
         "title": "1. 创建项目"
+      }
+    ],
+    "1. 别用 SVG `<text>`，它不渲染": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 177,
+        "level": 3,
+        "title": "1. 别用 SVG `<text>`，它不渲染"
       }
     ],
     "1. 单一职责原则": [
@@ -470,12 +478,28 @@
         "title": "1xxxx 动作请求错误（Request Error）"
       }
     ],
+    "2. CSS 必须走 `stylesheets`，别塞整篇 HTML 文档": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 200,
+        "level": 3,
+        "title": "2. CSS 必须走 `stylesheets`，别塞整篇 HTML 文档"
+      }
+    ],
     "2. Event 对象": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 65,
         "level": 3,
         "title": "2. Event 对象"
+      }
+    ],
+    "2. README 头部": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 440,
+        "level": 3,
+        "title": "2. README 头部"
       }
     ],
     "2. Send 内部类（大多数情况不需要重写）": [
@@ -612,14 +636,6 @@
         "line": 28,
         "level": 3,
         "title": "2. 支持的消息发送类型"
-      }
-    ],
-    "2. 文档完善": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 440,
-        "level": 3,
-        "title": "2. 文档完善"
       }
     ],
     "2. 日志记录": [
@@ -928,6 +944,14 @@
         "line": 414,
         "level": 3,
         "title": "3. Request 内部类（大多数情况不需要重写）"
+      }
+    ],
+    "3. `height` 是裁切高度，不会自动撑高": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 216,
+        "level": 3,
+        "title": "3. `height` 是裁切高度，不会自动撑高"
       }
     ],
     "3. 事件 ID 生成": [
@@ -1306,6 +1330,14 @@
         "title": "4. 启动适配器"
       }
     ],
+    "4. 字体自动注入只管 HTML 文本": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 226,
+        "level": 3,
+        "title": "4. 字体自动注入只管 HTML 文本"
+      }
+    ],
     "4. 实现必需方法": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -1480,6 +1512,14 @@
         "line": 80,
         "level": 3,
         "title": "5. Bot 状态查询"
+      }
+    ],
+    "5. 一个不睁眼也能调试的小技巧": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 232,
+        "level": 3,
+        "title": "5. 一个不睁眼也能调试的小技巧"
       }
     ],
     "5. 初始化模块": [
@@ -1744,6 +1784,14 @@
         "line": 147,
         "level": 2,
         "title": "6. 注意事项"
+      }
+    ],
+    "6. 深浅色主题：换套 stylesheet 就行": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 245,
+        "level": 3,
+        "title": "6. 深浅色主题：换套 stylesheet 就行"
       }
     ],
     "6. 适配器实现检查清单": [
@@ -2594,14 +2642,6 @@
         "title": "ErisPulse 文档"
       }
     ],
-    "ErisPulse 术语表": [
-      {
-        "document": "terminology.md",
-        "line": 1,
-        "level": 1,
-        "title": "ErisPulse 术语表"
-      }
-    ],
     "ErisPulse 注释风格规范": [
       {
         "document": "styleguide/docstring.md",
@@ -2938,14 +2978,6 @@
         "title": "OneBot11"
       }
     ],
-    "OneBot11/12": [
-      {
-        "document": "terminology.md",
-        "line": 103,
-        "level": 3,
-        "title": "OneBot11/12"
-      }
-    ],
     "OneBot11平台特性文档": [
       {
         "document": "platform-guide/onebot11.md",
@@ -2966,12 +2998,6 @@
       {
         "document": "getting-started/basic-concepts.md",
         "line": 39,
-        "level": 3,
-        "title": "OneBot12 标准"
-      },
-      {
-        "document": "terminology.md",
-        "line": 12,
         "level": 3,
         "title": "OneBot12 标准"
       }
@@ -3158,14 +3184,6 @@
         "title": "Router（路由）"
       }
     ],
-    "SDK": [
-      {
-        "document": "terminology.md",
-        "line": 39,
-        "level": 3,
-        "title": "SDK"
-      }
-    ],
     "SDK 对象": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -3260,14 +3278,6 @@
         "title": "Send 链式调用"
       }
     ],
-    "SendDSL": [
-      {
-        "document": "terminology.md",
-        "line": 108,
-        "level": 3,
-        "title": "SendDSL"
-      }
-    ],
     "SendDSL 实现": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -3330,14 +3340,6 @@
         "line": 310,
         "level": 2,
         "title": "Sync API 连接"
-      }
-    ],
-    "TOML": [
-      {
-        "document": "terminology.md",
-        "line": 130,
-        "level": 3,
-        "title": "TOML"
       }
     ],
     "Task 对象": [
@@ -3710,6 +3712,14 @@
         "line": 768,
         "level": 3,
         "title": "[BUG-029] 配置监听任务广播半成品 TOML 并静默吞掉异常"
+      }
+    ],
+    "[BUG-030] 配置 watcher 竞态导致 setConfig 延迟写入静默丢数据": [
+      {
+        "document": "bug-tracker.md",
+        "line": 804,
+        "level": 3,
+        "title": "[BUG-030] 配置 watcher 竞态导致 setConfig 延迟写入静默丢数据"
       }
     ],
     "__init__.py": [
@@ -4211,7 +4221,7 @@
     "一、我要使用机器人": [
       {
         "document": "README.md",
-        "line": 15,
+        "line": 13,
         "level": 3,
         "title": "一、我要使用机器人"
       }
@@ -4243,7 +4253,7 @@
     "一键安装脚本（推荐）": [
       {
         "document": "quick-start.md",
-        "line": 9,
+        "line": 7,
         "level": 3,
         "title": "一键安装脚本（推荐）"
       }
@@ -4251,7 +4261,7 @@
     "三、我要深入理解原理": [
       {
         "document": "README.md",
-        "line": 39,
+        "line": 37,
         "level": 3,
         "title": "三、我要深入理解原理"
       }
@@ -4317,7 +4327,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 176,
+        "line": 174,
         "level": 2,
         "title": "下一步"
       },
@@ -4468,14 +4478,6 @@
         "title": "主页入口"
       }
     ],
-    "事件": [
-      {
-        "document": "terminology.md",
-        "line": 27,
-        "level": 3,
-        "title": "事件"
-      }
-    ],
     "事件中的Bot标识": [
       {
         "document": "platform-guide/yunhu.md",
@@ -4550,14 +4552,6 @@
         "line": 113,
         "level": 3,
         "title": "事件处理关键步骤"
-      }
-    ],
-    "事件处理器": [
-      {
-        "document": "terminology.md",
-        "line": 32,
-        "level": 3,
-        "title": "事件处理器"
       }
     ],
     "事件处理器注册": [
@@ -4812,12 +4806,6 @@
         "line": 5,
         "level": 2,
         "title": "事件驱动架构"
-      },
-      {
-        "document": "terminology.md",
-        "line": 7,
-        "level": 3,
-        "title": "事件驱动架构"
       }
     ],
     "事务中使用": [
@@ -4847,7 +4835,7 @@
     "二、我要开发模块 / 适配器": [
       {
         "document": "README.md",
-        "line": 28,
+        "line": 26,
         "level": 3,
         "title": "二、我要开发模块 / 适配器"
       }
@@ -4871,7 +4859,7 @@
     "五、我要为 ErisPulse 贡献": [
       {
         "document": "README.md",
-        "line": 63,
+        "line": 61,
         "level": 3,
         "title": "五、我要为 ErisPulse 贡献"
       }
@@ -4879,7 +4867,7 @@
     "交互式初始化（推荐）": [
       {
         "document": "quick-start.md",
-        "line": 65,
+        "line": 63,
         "level": 3,
         "title": "交互式初始化（推荐）"
       }
@@ -4895,7 +4883,7 @@
     "交互式安装": [
       {
         "document": "quick-start.md",
-        "line": 111,
+        "line": 109,
         "level": 3,
         "title": "交互式安装"
       },
@@ -5089,7 +5077,7 @@
     "使用 Docker": [
       {
         "document": "quick-start.md",
-        "line": 28,
+        "line": 26,
         "level": 3,
         "title": "使用 Docker"
       }
@@ -5105,7 +5093,7 @@
     "使用 pip 安装": [
       {
         "document": "quick-start.md",
-        "line": 53,
+        "line": 51,
         "level": 3,
         "title": "使用 pip 安装"
       }
@@ -5381,17 +5369,9 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 81,
+        "line": 79,
         "level": 2,
         "title": "其他"
-      }
-    ],
-    "其他术语": [
-      {
-        "document": "terminology.md",
-        "line": 113,
-        "level": 2,
-        "title": "其他术语"
       }
     ],
     "其他消息类型": [
@@ -5607,7 +5587,7 @@
     "初始化项目": [
       {
         "document": "quick-start.md",
-        "line": 63,
+        "line": 61,
         "level": 2,
         "title": "初始化项目"
       },
@@ -5648,14 +5628,6 @@
         "line": 76,
         "level": 3,
         "title": "功能概览"
-      }
-    ],
-    "功能相关术语": [
-      {
-        "document": "terminology.md",
-        "line": 64,
-        "level": 2,
-        "title": "功能相关术语"
       }
     ],
     "加密模式说明": [
@@ -6247,17 +6219,9 @@
     "启用 IDE 补全（可选）": [
       {
         "document": "quick-start.md",
-        "line": 129,
+        "line": 127,
         "level": 2,
         "title": "启用 IDE 补全（可选）"
-      }
-    ],
-    "命令": [
-      {
-        "document": "terminology.md",
-        "line": 66,
-        "level": 3,
-        "title": "命令"
       }
     ],
     "命令事件处理": [
@@ -6403,17 +6367,9 @@
     "四、推荐生态模块": [
       {
         "document": "README.md",
-        "line": 53,
+        "line": 51,
         "level": 3,
         "title": "四、推荐生态模块"
-      }
-    ],
-    "回复": [
-      {
-        "document": "terminology.md",
-        "line": 71,
-        "level": 3,
-        "title": "回复"
       }
     ],
     "回复功能": [
@@ -7276,14 +7232,6 @@
         "title": "字段说明"
       }
     ],
-    "存储": [
-      {
-        "document": "terminology.md",
-        "line": 76,
-        "level": 3,
-        "title": "存储"
-      }
-    ],
     "存储后端抽象": [
       {
         "document": "api-reference/core-modules.md",
@@ -7349,7 +7297,7 @@
     "安装 ErisPulse": [
       {
         "document": "quick-start.md",
-        "line": 7,
+        "line": 5,
         "level": 2,
         "title": "安装 ErisPulse"
       },
@@ -7403,7 +7351,7 @@
     "安装模块": [
       {
         "document": "quick-start.md",
-        "line": 97,
+        "line": 95,
         "level": 2,
         "title": "安装模块"
       },
@@ -7494,6 +7442,14 @@
         "line": 76,
         "level": 2,
         "title": "定时任务"
+      }
+    ],
+    "实战避坑（踩出来的血泪）": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 173,
+        "level": 2,
+        "title": "实战避坑（踩出来的血泪）"
       }
     ],
     "审核需要多长时间？": [
@@ -7756,14 +7712,6 @@
         "title": "常见陷阱"
       }
     ],
-    "平台": [
-      {
-        "document": "terminology.md",
-        "line": 98,
-        "level": 3,
-        "title": "平台"
-      }
-    ],
     "平台专有修饰方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -7892,14 +7840,6 @@
         "title": "平台特有方法"
       }
     ],
-    "平台相关术语": [
-      {
-        "document": "terminology.md",
-        "line": 96,
-        "level": 2,
-        "title": "平台相关术语"
-      }
-    ],
     "平台能力查询": [
       {
         "document": "api-reference/event-system.md",
@@ -7957,7 +7897,7 @@
     "开发方式": [
       {
         "document": "README.md",
-        "line": 74,
+        "line": 72,
         "level": 2,
         "title": "开发方式"
       }
@@ -7992,14 +7932,6 @@
         "line": 22,
         "level": 2,
         "title": "开发环境"
-      }
-    ],
-    "开发相关术语": [
-      {
-        "document": "terminology.md",
-        "line": 37,
-        "level": 2,
-        "title": "开发相关术语"
       }
     ],
     "开发类型选择": [
@@ -8108,12 +8040,6 @@
         "line": 95,
         "level": 2,
         "title": "异步编程"
-      },
-      {
-        "document": "terminology.md",
-        "line": 49,
-        "level": 3,
-        "title": "异步编程"
       }
     ],
     "引导式注册": [
@@ -8205,7 +8131,7 @@
     "快速初始化": [
       {
         "document": "quick-start.md",
-        "line": 78,
+        "line": 76,
         "level": 3,
         "title": "快速初始化"
       }
@@ -8298,14 +8224,6 @@
         "title": "总览"
       }
     ],
-    "懒加载": [
-      {
-        "document": "terminology.md",
-        "line": 59,
-        "level": 3,
-        "title": "懒加载"
-      }
-    ],
     "懒加载机制": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -8365,7 +8283,7 @@
     "手动创建项目": [
       {
         "document": "quick-start.md",
-        "line": 88,
+        "line": 86,
         "level": 3,
         "title": "手动创建项目"
       }
@@ -9092,14 +9010,6 @@
         "title": "方法链"
       }
     ],
-    "日志": [
-      {
-        "document": "terminology.md",
-        "line": 86,
-        "level": 3,
-        "title": "日志"
-      }
-    ],
     "日志信息": [
       {
         "document": "platform-guide/yunhu.md",
@@ -9359,7 +9269,7 @@
     "查看可用模块": [
       {
         "document": "quick-start.md",
-        "line": 105,
+        "line": 103,
         "level": 3,
         "title": "查看可用模块"
       }
@@ -9636,12 +9546,6 @@
         "line": 115,
         "level": 2,
         "title": "核心概念"
-      },
-      {
-        "document": "terminology.md",
-        "line": 5,
-        "level": 2,
-        "title": "核心概念"
       }
     ],
     "核心模块": [
@@ -9771,12 +9675,6 @@
         "document": "developer-guide/publishing.md",
         "line": 42,
         "level": 4,
-        "title": "模块"
-      },
-      {
-        "document": "terminology.md",
-        "line": 22,
-        "level": 3,
         "title": "模块"
       }
     ],
@@ -10038,14 +9936,6 @@
         "line": 210,
         "level": 2,
         "title": "注意事项"
-      }
-    ],
-    "注解/装饰器": [
-      {
-        "document": "terminology.md",
-        "line": 120,
-        "level": 3,
-        "title": "注解/装饰器"
       }
     ],
     "注销方法": [
@@ -10468,14 +10358,6 @@
         "title": "点式结构事件"
       }
     ],
-    "热重载": [
-      {
-        "document": "terminology.md",
-        "line": 54,
-        "level": 3,
-        "title": "热重载"
-      }
-    ],
     "版本更新说明": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -10648,14 +10530,6 @@
         "line": 157,
         "level": 3,
         "title": "生产环境配置"
-      }
-    ],
-    "生命周期": [
-      {
-        "document": "terminology.md",
-        "line": 115,
-        "level": 3,
-        "title": "生命周期"
       }
     ],
     "生命周期事件": [
@@ -10949,7 +10823,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 453,
+        "line": 481,
         "level": 2,
         "title": "相关文档"
       },
@@ -10993,13 +10867,13 @@
     "相关链接": [
       {
         "document": "README.md",
-        "line": 93,
+        "line": 91,
         "level": 2,
         "title": "相关链接"
       },
       {
         "document": "ecosystem/takumi.md",
-        "line": 173,
+        "line": 261,
         "level": 2,
         "title": "相关链接"
       }
@@ -11218,14 +11092,6 @@
         "line": 32,
         "level": 2,
         "title": "类型映射"
-      }
-    ],
-    "类型注解": [
-      {
-        "document": "terminology.md",
-        "line": 125,
-        "level": 3,
-        "title": "类型注解"
       }
     ],
     "类型转换": [
@@ -11463,19 +11329,13 @@
     "获取帮助": [
       {
         "document": "README.md",
-        "line": 87,
+        "line": 85,
         "level": 2,
         "title": "获取帮助"
       },
       {
         "document": "contributing/README.md",
         "line": 59,
-        "level": 2,
-        "title": "获取帮助"
-      },
-      {
-        "document": "terminology.md",
-        "line": 135,
         "level": 2,
         "title": "获取帮助"
       }
@@ -11510,14 +11370,6 @@
         "line": 239,
         "level": 3,
         "title": "获取适配器实例"
-      }
-    ],
-    "虚拟环境": [
-      {
-        "document": "terminology.md",
-        "line": 44,
-        "level": 3,
-        "title": "虚拟环境"
       }
     ],
     "表单消息段 (yunhu_user_form)": [
@@ -11920,14 +11772,6 @@
         "title": "路径处理"
       }
     ],
-    "路由": [
-      {
-        "document": "terminology.md",
-        "line": 91,
-        "level": 3,
-        "title": "路由"
-      }
-    ],
     "路由中间件": [
       {
         "document": "advanced/router.md",
@@ -12051,7 +11895,7 @@
     "运行项目": [
       {
         "document": "quick-start.md",
-        "line": 119,
+        "line": 117,
         "level": 2,
         "title": "运行项目"
       },
@@ -12195,12 +12039,6 @@
         "document": "developer-guide/publishing.md",
         "line": 60,
         "level": 4,
-        "title": "适配器"
-      },
-      {
-        "document": "terminology.md",
-        "line": 17,
-        "level": 3,
         "title": "适配器"
       }
     ],
@@ -12357,7 +12195,7 @@
     "选择你的路径": [
       {
         "document": "README.md",
-        "line": 11,
+        "line": 9,
         "level": 2,
         "title": "选择你的路径"
       }
@@ -12467,7 +12305,7 @@
     "通过 CLI 安装": [
       {
         "document": "quick-start.md",
-        "line": 99,
+        "line": 97,
         "level": 3,
         "title": "通过 CLI 安装"
       }
@@ -12590,12 +12428,6 @@
         "line": 142,
         "level": 3,
         "title": "配置"
-      },
-      {
-        "document": "terminology.md",
-        "line": 81,
-        "level": 3,
-        "title": "配置"
       }
     ],
     "配置加载错误处理": [
@@ -12641,7 +12473,7 @@
     "配置文件": [
       {
         "document": "quick-start.md",
-        "line": 160,
+        "line": 158,
         "level": 2,
         "title": "配置文件"
       }
@@ -13143,7 +12975,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 148,
+        "line": 146,
         "level": 2,
         "title": "项目结构"
       }

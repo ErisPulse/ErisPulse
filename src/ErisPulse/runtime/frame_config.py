@@ -21,6 +21,8 @@ from ..Core.constants import (
     DEFAULT_LOG_MEMORY_LIMIT,
     DEFAULT_MESSAGE_IGNORE_SELF,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
+    DEFAULT_PROACTIVE_GC_FULL_EVERY,
+    DEFAULT_PROACTIVE_GC_GENERATION,
     DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
     DEFAULT_SERVER_AUTO_START,
     DEFAULT_SERVER_HOST,
@@ -79,6 +81,8 @@ DEFAULT_ERISPULSE_CONFIG = {
         # 性能优化与主动 GC 配置
         "handler_max_concurrency": DEFAULT_HANDLER_MAX_CONCURRENCY,
         "proactive_gc_interval": DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
+        "proactive_gc_generation": DEFAULT_PROACTIVE_GC_GENERATION,
+        "proactive_gc_full_every": DEFAULT_PROACTIVE_GC_FULL_EVERY,
         "offline_bot_expiry": DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
     },
     "i18n": {

@@ -40,6 +40,7 @@ class TestConfigManager:
         # 清理
         if manager._write_timer:
             manager._write_timer.cancel()
+        manager._watcher_stop.set()
     
     # ==================== 配置读取测试 ====================
     
@@ -534,6 +535,64 @@ nested_key = "nested_value"
         # 验证返回默认值
         assert value == "default"
 
+    # ==================== watcher 竞态修复测试 ====================
+
+    def test_self_write_not_detected_as_external(self, config_manager):
+        """框架自身刷盘后，_check_file_change 不应误判为外部修改"""
+        config_manager.setConfig("self.write", "value", immediate=True)
+
+        # 自身写入的 mtime 应已记录
+        assert config_manager._last_self_write_mtime > 0
+
+        # _check_file_change 不应报告变化（因为是自身写入）
+        assert config_manager._check_file_change() is False
+
+    def test_external_change_preserves_dirty_keys(self, config_manager):
+        """外部修改配置文件时，待写键不应被丢弃（merge 语义）"""
+        # 1. 先设置一个延迟写入的键
+        config_manager.setConfig("my.pending", "pending_value")
+        assert "my.pending" in config_manager._dirty_keys
+
+        # 2. 模拟外部修改：直接写文件并更新 mtime
+        config_path = config_manager.CONFIG_FILE
+        with open(config_path, "r", encoding="utf-8") as f:
+            existing = toml.load(f)
+        existing.setdefault("external", {})["key"] = "external_value"
+        # 确保 mtime 变化（等待文件系统时间粒度）
+        time.sleep(0.1)
+        with open(config_path, "w", encoding="utf-8") as f:
+            toml.dump(existing, f)
+
+        # 3. _check_file_change 应检测到外部修改
+        assert config_manager._check_file_change() is True
+
+        # 4. 关键断言：脏键仍然存在（不再被 clear）
+        assert "my.pending" in config_manager._dirty_keys
+
+    def test_flush_merges_dirty_with_external(self, config_manager):
+        """flush 时脏键与外部修改合并（脏键优先）"""
+        # 1. 写入初始值
+        config_manager.setConfig("base.key", "base", immediate=True)
+
+        # 2. 设置延迟写入键
+        config_manager.setConfig("dirty.key", "dirty_value")
+
+        # 3. 模拟外部修改（修改 base.key 的值）
+        config_path = config_manager.CONFIG_FILE
+        time.sleep(0.1)
+        with open(config_path, "r", encoding="utf-8") as f:
+            existing = toml.load(f)
+        existing["base"]["key"] = "external_override"
+        with open(config_path, "w", encoding="utf-8") as f:
+            toml.dump(existing, f)
+
+        # 4. flush（应读取外部内容 + 应用脏键）
+        config_manager.force_save()
+
+        # 5. 验证：脏键写入，外部修改的键也保留
+        assert config_manager.getConfig("dirty.key") == "dirty_value"
+        assert config_manager.getConfig("base.key") == "external_override"
+
 
 # ==================== 全局配置实例测试 ====================
 
@@ -706,7 +765,7 @@ class TestConfigSchemaI18n:
     def config_class(self):
         """构造带 i18n 文本的配置类（description / placeholder / options label / group_labels）"""
         from dataclasses import dataclass, field
-        from ErisPulse.runtime.config_schema import BaseConfig
+        from ErisPulse.Core.Bases import BaseConfig
 
         @dataclass
         class TestConfig(BaseConfig):
@@ -763,7 +822,7 @@ class TestConfigSchemaI18n:
 
     def test_get_config_schema_preserves_i18n_dict(self, config_class):
         """get_config_schema 应原样透传 i18n 字典（不解析）"""
-        from ErisPulse.runtime.config_schema import get_config_schema
+        from ErisPulse.Core.Bases.config_schema import get_config_schema
 
         schema = get_config_schema(config_class)
         options = schema["fields"]["mode"]["options"]
@@ -778,7 +837,7 @@ class TestConfigSchemaI18n:
 
     def test_resolve_config_schema_resolves_option_labels(self, config_class):
         """resolve_config_schema(resolve_i18n=True) 应解析所有 i18n 文本字段"""
-        from ErisPulse.runtime.config_schema import resolve_config_schema
+        from ErisPulse.Core.Bases.config_schema import resolve_config_schema
         from ErisPulse.Core.i18n import i18n
 
         # 注册翻译
@@ -820,7 +879,7 @@ class TestConfigSchemaI18n:
 
     def test_resolve_config_schema_no_i18n_preserves_dict(self, config_class):
         """resolve_config_schema(resolve_i18n=False) 应等同于 get_config_schema"""
-        from ErisPulse.runtime.config_schema import resolve_config_schema
+        from ErisPulse.Core.Bases.config_schema import resolve_config_schema
 
         schema = resolve_config_schema(config_class, resolve_i18n=False)
 
@@ -833,7 +892,7 @@ class TestConfigSchemaI18n:
 
     def test_resolve_config_schema_fallback_to_default(self, config_class):
         """未注册翻译时，所有 i18n 文本字段应回退到 default"""
-        from ErisPulse.runtime.config_schema import resolve_config_schema
+        from ErisPulse.Core.Bases.config_schema import resolve_config_schema
         from ErisPulse.Core.i18n import i18n
 
         # 确保没有注册该 key
