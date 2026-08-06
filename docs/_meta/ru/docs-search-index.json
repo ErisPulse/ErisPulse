@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1459,
+  "total_keywords": 1450,
   "keywords": {
     "\"base_url\": \"http://localhost:8080\",": [
       {
@@ -2314,6 +2314,14 @@
         "title": "HTTPStatusError"
       }
     ],
+    "Hot reload of configuration": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 71,
+        "level": 2,
+        "title": "Hot reload of configuration"
+      }
+    ],
     "HttpResponse": [
       {
         "document": "advanced/http-client.md",
@@ -4040,14 +4048,6 @@
         "title": "Горячая перезагрузка адаптеров"
       }
     ],
-    "Горячая перезагрузка конфигурации": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 63,
-        "level": 2,
-        "title": "Горячая перезагрузка конфигурации"
-      }
-    ],
     "Группировка маршрутов": [
       {
         "document": "advanced/router.md",
@@ -4088,12 +4088,6 @@
       {
         "document": "quick-start.md",
         "line": 172,
-        "level": 2,
-        "title": "Далее"
-      },
-      {
-        "document": "user-guide/configuration.md",
-        "line": 285,
         "level": 2,
         "title": "Далее"
       }
@@ -4586,6 +4580,14 @@
         "line": 360,
         "level": 3,
         "title": "Закрытие соединения"
+      }
+    ],
+    "Запись конфигурации во время выполнения (отложенное сохранение)": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 301,
+        "level": 1,
+        "title": "Запись конфигурации во время выполнения (отложенное сохранение)"
       }
     ],
     "Запланированные задачи": [
@@ -5672,44 +5674,12 @@
         "title": "Конфигурация для продакшна"
       }
     ],
-    "Конфигурация команд": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 218,
-        "level": 3,
-        "title": "Конфигурация команд"
-      }
-    ],
     "Конфигурация ленивой загрузки": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 30,
         "level": 2,
         "title": "Конфигурация ленивой загрузки"
-      }
-    ],
-    "Конфигурация логирования": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 141,
-        "level": 2,
-        "title": "Конфигурация логирования"
-      }
-    ],
-    "Конфигурация международизации": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 245,
-        "level": 2,
-        "title": "Конфигурация международизации"
-      }
-    ],
-    "Конфигурация модулей": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 256,
-        "level": 2,
-        "title": "Конфигурация модулей"
       }
     ],
     "Конфигурация нескольких аккаунтов": [
@@ -5764,52 +5734,12 @@
         "title": "Конфигурация прокси"
       }
     ],
-    "Конфигурация сервера": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 124,
-        "level": 2,
-        "title": "Конфигурация сервера"
-      }
-    ],
-    "Конфигурация событий": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 216,
-        "level": 2,
-        "title": "Конфигурация событий"
-      }
-    ],
-    "Конфигурация сообщений": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 234,
-        "level": 3,
-        "title": "Конфигурация сообщений"
-      }
-    ],
     "Конфигурация учётной записи (EmailAdapter.accounts)": [
       {
         "document": "platform-guide/email.md",
         "line": 36,
         "level": 3,
         "title": "Конфигурация учётной записи (EmailAdapter.accounts)"
-      }
-    ],
-    "Конфигурация фреймворка": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 157,
-        "level": 2,
-        "title": "Конфигурация фреймворка"
-      }
-    ],
-    "Конфигурация хранения": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 205,
-        "level": 2,
-        "title": "Конфигурация хранения"
       }
     ],
     "Краткая справка": [
@@ -6676,6 +6606,14 @@
         "title": "Нейминг ключей перевода"
       }
     ],
+    "Немедленное сохранение в файл": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 304,
+        "level": 1,
+        "title": "Немедленное сохранение в файл"
+      }
+    ],
     "Необязательные поля": [
       {
         "document": "bug-tracker.md",
@@ -7006,12 +6944,12 @@
         "title": "Обработка ошибок API"
       }
     ],
-    "Обработка ошибок при загрузке конфигурации": [
+    "Обработка ошибок загрузки конфигурации": [
       {
         "document": "user-guide/configuration.md",
-        "line": 17,
+        "line": 21,
         "level": 2,
-        "title": "Обработка ошибок при загрузке конфигурации"
+        "title": "Обработка ошибок загрузки конфигурации"
       }
     ],
     "Обработка путей": [
@@ -7444,6 +7382,14 @@
         "title": "Описание конфигурации"
       }
     ],
+    "Описание конфигурационного файла": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 1,
+        "level": 1,
+        "title": "Описание конфигурационного файла"
+      }
+    ],
     "Описание медиафайлов": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -7558,14 +7504,6 @@
         "line": 126,
         "level": 2,
         "title": "Описание режима шифрования"
-      }
-    ],
-    "Описание файла конфигурации": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 1,
-        "level": 1,
-        "title": "Описание файла конфигурации"
       }
     ],
     "Описание функций платформы — универсальный адаптер Webhook": [
@@ -8472,15 +8410,13 @@
         "title": "Переключение языка"
       }
     ],
-    "Перекрытие с помощью переменных окружения": [
+    "Переменные окружения": [
       {
         "document": "user-guide/configuration.md",
-        "line": 38,
+        "line": 44,
         "level": 2,
-        "title": "Перекрытие с помощью переменных окружения"
-      }
-    ],
-    "Переменные окружения": [
+        "title": "Переменные окружения"
+      },
       {
         "document": "user-guide/deployment.md",
         "line": 57,
@@ -9055,7 +8991,7 @@
     "Полный пример конфигурации": [
       {
         "document": "user-guide/configuration.md",
-        "line": 84,
+        "line": 95,
         "level": 2,
         "title": "Полный пример конфигурации"
       }
@@ -10160,20 +10096,20 @@
         "title": "Разработка среда"
       }
     ],
+    "Расположение конфигурационного файла": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 8,
+        "level": 2,
+        "title": "Расположение конфигурационного файла"
+      }
+    ],
     "Расположение распространенных настроек": [
       {
         "document": "user-guide/README.md",
         "line": 29,
         "level": 3,
         "title": "Расположение распространенных настроек"
-      }
-    ],
-    "Расположение файла конфигурации": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 6,
-        "level": 2,
-        "title": "Расположение файла конфигурации"
       }
     ],
     "Распространение правил": [
@@ -11592,14 +11528,6 @@
         "title": "Список документации"
       }
     ],
-    "Список исключений": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 193,
-        "level": 4,
-        "title": "Список исключений"
-      }
-    ],
     "Список методов": [
       {
         "document": "platform-guide/onebot11.md",
@@ -11930,14 +11858,6 @@
         "line": 175,
         "level": 2,
         "title": "Стратегия загрузки модулей"
-      }
-    ],
-    "Строгий режим": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 176,
-        "level": 3,
-        "title": "Строгий режим"
       }
     ],
     "Структура возвращаемого значения": [
@@ -12848,6 +12768,14 @@
         "line": 114,
         "level": 2,
         "title": "Чек-лист качества"
+      }
+    ],
+    "Чтение конфигурации": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 297,
+        "level": 1,
+        "title": "Чтение конфигурации"
       }
     ],
     "Чтение конфигурации i18n через API конфигурации": [

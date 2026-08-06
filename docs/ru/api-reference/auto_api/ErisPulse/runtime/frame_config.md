@@ -24,6 +24,22 @@ ErisPulse 框架配置管理模块
 ---
 
 
+### `_iter_leaf_diff(old: dict[str, Any], new: dict[str, Any], prefix: str = '')`
+
+递归比较两棵配置字典，返回新增或值变化的叶子键（点分路径）
+
+仅收集 new 中相对 old 发生变化的叶子，用于把整棵配置的持久化
+拆分为细粒度叶子写入，避免整棵覆盖导致用户热更新丢失。
+
+> **内部方法**
+语义：只增改、不处理删除（本模块的合并语义仅新增/覆盖叶子值）。
+
+- **old** (`变更前的配置字典`): - **new**: 变更后的配置字典
+- **prefix** (`递归时的路径前缀`): **返回值** (`(点分路径, 叶子值), ...`):
+
+---
+
+
 ### `_ensure_erispulse_config_structure(config_dict: dict[str, Any])`
 
 确保 ErisPulse 配置结构完整，补全缺失的配置项

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1432,
+  "total_keywords": 1423,
   "keywords": {
     "- \"auto\"      — システム言語を自動検出 (デフォルト)": [
       {
@@ -4950,14 +4950,6 @@
         "title": "イベント拡張メソッド（WebhookEventMixin）"
       }
     ],
-    "イベント設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 216,
-        "level": 2,
-        "title": "イベント設定"
-      }
-    ],
     "イベント購読": [
       {
         "document": "platform-guide/qqbot.md",
@@ -5690,14 +5682,6 @@
         "title": "コマンド権限"
       }
     ],
-    "コマンド設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 218,
-        "level": 3,
-        "title": "コマンド設定"
-      }
-    ],
     "コンテキストと永続化": [
       {
         "document": "advanced/conversation.md",
@@ -5994,14 +5978,6 @@
         "title": "サポートする生のイベントタイプ"
       }
     ],
-    "サーバー設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 124,
-        "level": 2,
-        "title": "サーバー設定"
-      }
-    ],
     "シグナルタイプ": [
       {
         "document": "platform-guide/kook.md",
@@ -6120,14 +6096,6 @@
         "line": 59,
         "level": 3,
         "title": "ストレージバックエンド抽象化"
-      }
-    ],
-    "ストレージ設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 205,
-        "level": 2,
-        "title": "ストレージ設定"
       }
     ],
     "セキュリティ": [
@@ -6964,6 +6932,14 @@
         "title": "ファイブメディアメッセージの変換例"
       }
     ],
+    "ファイルへの即時保存": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 295,
+        "level": 1,
+        "title": "ファイルへの即時保存"
+      }
+    ],
     "ファイル処理の特徴": [
       {
         "document": "platform-guide/ideaura.md",
@@ -6994,14 +6970,6 @@
         "line": 89,
         "level": 2,
         "title": "フックブレークポイント一覧"
-      }
-    ],
-    "フレームワーク設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 157,
-        "level": 2,
-        "title": "フレームワーク設定"
       }
     ],
     "ブラックリストフィルタリング": [
@@ -7938,14 +7906,6 @@
         "title": "メッセージ編集イベント"
       }
     ],
-    "メッセージ設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 234,
-        "level": 3,
-        "title": "メッセージ設定"
-      }
-    ],
     "メッセージ転送イベント": [
       {
         "document": "platform-guide/ideaura.md",
@@ -8224,14 +8184,6 @@
         "line": 16,
         "level": 2,
         "title": "モジュール概要"
-      }
-    ],
-    "モジュール設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 256,
-        "level": 2,
-        "title": "モジュール設定"
       }
     ],
     "モジュール設計": [
@@ -8782,14 +8734,6 @@
         "line": 530,
         "level": 3,
         "title": "ログ情報"
-      }
-    ],
-    "ログ設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 141,
-        "level": 2,
-        "title": "ログ設定"
       }
     ],
     "ロボット情報": [
@@ -9488,14 +9432,6 @@
         "title": "原生メッセージ送信"
       }
     ],
-    "厳格モード": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 176,
-        "level": 3,
-        "title": "厳格モード"
-      }
-    ],
     "参加できる方法": [
       {
         "document": "contributing/README.md",
@@ -9720,14 +9656,6 @@
         "line": 10,
         "level": 1,
         "title": "国際化 (i18n) システム"
-      }
-    ],
-    "国際化設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 245,
-        "level": 2,
-        "title": "国際化設定"
       }
     ],
     "型スタブを生成": [
@@ -10131,7 +10059,7 @@
     "完全な設定例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 84,
+        "line": 91,
         "level": 2,
         "title": "完全な設定例"
       }
@@ -10166,6 +10094,14 @@
         "line": 226,
         "level": 2,
         "title": "実行制御コマンド"
+      }
+    ],
+    "実行時での設定の書き込み（遅延保存）": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 292,
+        "level": 1,
+        "title": "実行時での設定の書き込み（遅延保存）"
       }
     ],
     "実行時細粒度制御": [
@@ -10998,14 +10934,6 @@
         "title": "機能の概要"
       }
     ],
-    "次に進む": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 285,
-        "level": 2,
-        "title": "次に進む"
-      }
-    ],
     "次のステップ": [
       {
         "document": "ai-support/README.md",
@@ -11199,7 +11127,7 @@
     "環境変数による上書き": [
       {
         "document": "user-guide/configuration.md",
-        "line": 38,
+        "line": 42,
         "level": 2,
         "title": "環境変数による上書き"
       }
@@ -11649,9 +11577,25 @@
     "設定のホットアップデート": [
       {
         "document": "user-guide/configuration.md",
-        "line": 63,
+        "line": 67,
         "level": 2,
         "title": "設定のホットアップデート"
+      }
+    ],
+    "設定の読み込み": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 288,
+        "level": 1,
+        "title": "設定の読み込み"
+      }
+    ],
+    "設定の読み込みエラー処理": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 21,
+        "level": 2,
+        "title": "設定の読み込みエラー処理"
       }
     ],
     "設定エラー": [
@@ -11707,7 +11651,7 @@
     "設定ファイルの位置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 6,
+        "line": 8,
         "level": 2,
         "title": "設定ファイルの位置"
       }
@@ -11718,14 +11662,6 @@
         "line": 1,
         "level": 1,
         "title": "設定ファイルの説明"
-      }
-    ],
-    "設定ファイルの読み込みエラー処理": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 17,
-        "level": 2,
-        "title": "設定ファイルの読み込みエラー処理"
       }
     ],
     "設定フィールドの説明": [
@@ -11830,14 +11766,6 @@
         "line": 176,
         "level": 2,
         "title": "認証と API 呼び出し"
-      }
-    ],
-    "豁免リスト": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 193,
-        "level": 4,
-        "title": "豁免リスト"
       }
     ],
     "貢献について": [

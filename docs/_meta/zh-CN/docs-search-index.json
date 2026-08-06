@@ -4333,7 +4333,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 285,
+        "line": 286,
         "level": 2,
         "title": "下一步"
       },
@@ -4395,7 +4395,7 @@
     "严格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 176,
+        "line": 177,
         "level": 3,
         "title": "严格模式"
       }
@@ -4795,7 +4795,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 216,
+        "line": 217,
         "level": 2,
         "title": "事件配置"
       }
@@ -6343,7 +6343,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 218,
+        "line": 219,
         "level": 3,
         "title": "命令配置"
       }
@@ -6451,7 +6451,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 245,
+        "line": 246,
         "level": 2,
         "title": "国际化配置"
       }
@@ -7257,7 +7257,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 205,
+        "line": 206,
         "level": 2,
         "title": "存储配置"
       }
@@ -7431,7 +7431,7 @@
     "完整配置示例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 84,
+        "line": 85,
         "level": 2,
         "title": "完整配置示例"
       }
@@ -9065,7 +9065,7 @@
     "日志配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 141,
+        "line": 142,
         "level": 2,
         "title": "日志配置"
       }
@@ -9183,7 +9183,7 @@
     "服务器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 124,
+        "line": 125,
         "level": 2,
         "title": "服务器配置"
       }
@@ -9621,7 +9621,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 157,
+        "line": 158,
         "level": 2,
         "title": "框架配置"
       }
@@ -9813,7 +9813,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 256,
+        "line": 257,
         "level": 2,
         "title": "模块配置"
       }
@@ -10313,7 +10313,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 234,
+        "line": 235,
         "level": 3,
         "title": "消息配置"
       }
@@ -11627,7 +11627,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 193,
+        "line": 194,
         "level": 4,
         "title": "豁免清单"
       }
