@@ -78,9 +78,14 @@ class AdapterLoader(BaseLoader):
                 logger.print_info(
                     i18n.t("loader.adapter.discovered", count=len(entries)), level=1
                 )
-                for i, entry in enumerate(entries):
-                    is_last = i == len(entries) - 1
-                    logger.print_tree_item(entry.name, level=1, is_last=is_last)
+            elif self._finder.last_error:
+                logger.print_info(
+                    i18n.t(
+                        "loader.adapter.discovery_failed",
+                        error=self._finder.last_error,
+                    ),
+                    level=1,
+                )
             else:
                 logger.print_info(i18n.t("loader.adapter.none"), level=1)
 

@@ -8,11 +8,12 @@
 - 未实现 on_config_update 的组件不报错
 """
 
+import asyncio
 from dataclasses import dataclass, field
 
+from ErisPulse.Core.Bases import BaseConfig
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.lifecycle import lifecycle
-from ErisPulse.Core.Bases import BaseConfig
 
 
 @dataclass

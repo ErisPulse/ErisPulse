@@ -155,9 +155,14 @@ class ModuleLoader(BaseLoader):
                 logger.print_info(
                     i18n.t("loader.module.discovered", count=len(entries)), level=1
                 )
-                for i, entry in enumerate(entries):
-                    is_last = i == len(entries) - 1
-                    logger.print_tree_item(entry.name, level=1, is_last=is_last)
+            elif self._finder.last_error:
+                logger.print_info(
+                    i18n.t(
+                        "loader.module.discovery_failed",
+                        error=self._finder.last_error,
+                    ),
+                    level=1,
+                )
             else:
                 logger.print_info(i18n.t("loader.module.none"), level=1)
 
@@ -176,8 +181,11 @@ class ModuleLoader(BaseLoader):
 
         except SystemExit as e:
             logger.error(
-                f"加载 {group_name} 时触发 SystemExit({e.code})，已阻止进程退出。"
-                f"请不要使用 sys.exit() 或 raise SystemExit"
+                i18n.t(
+                    "loader.module.systemexit_group",
+                    group=group_name,
+                    code=e.code,
+                )
             )
         except Exception as e:
             logger.error(i18n.t("loader.module.load_failed", group=group_name, error=e))
@@ -281,8 +289,11 @@ class ModuleLoader(BaseLoader):
                 meta_name, "module", "systemexit", detail=f"SystemExit({e.code})"
             )
             logger.error(
-                f"加载模块 {meta_name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
-                f"请不要使用 sys.exit() 或 raise SystemExit"
+                i18n.t(
+                    "loader.module.systemexit_single",
+                    name=meta_name,
+                    code=e.code,
+                )
             )
         except Exception as e:
             self._strict().record_failure(
@@ -355,7 +366,12 @@ class ModuleLoader(BaseLoader):
                 return {"lazy_load": not eager_load, "priority": 0}
             except Exception as e:
                 logger.warning(
-                    f"调用模块 {module_class.__name__} 的 should_eager_load() 失败: {e}"
+                    i18n.t(
+                        "loader.module.strategy_failed",
+                        method="should_eager_load",
+                        name=module_class.__name__,
+                        error=e,
+                    )
                 )
 
         # 检查新方法 get_load_strategy()
@@ -364,7 +380,12 @@ class ModuleLoader(BaseLoader):
                 return module_class.get_load_strategy()
             except Exception as e:
                 logger.warning(
-                    f"调用模块 {module_class.__name__} 的 get_load_strategy() 失败: {e}"
+                    i18n.t(
+                        "loader.module.strategy_failed",
+                        method="get_load_strategy",
+                        name=module_class.__name__,
+                        error=e,
+                    )
                 )
 
         return None
@@ -464,8 +485,11 @@ class ModuleLoader(BaseLoader):
                         detail=f"SystemExit({e.code})",
                     )
                     logger.error(
-                        f"注册模块 {name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
-                        f"请不要使用 sys.exit() 或 raise SystemExit"
+                        i18n.t(
+                            "loader.module.systemexit_single",
+                            name=name,
+                            code=e.code,
+                        )
                     )
                     return False
                 except Exception as e:
@@ -673,8 +697,11 @@ class ModuleLoader(BaseLoader):
                     detail=f"SystemExit({e.code})",
                 )
                 logger.warning(
-                    f"初始化模块 {meta_name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
-                    f"请不要使用 sys.exit() 或 raise SystemExit"
+                    i18n.t(
+                        "loader.module.systemexit_single",
+                        name=meta_name,
+                        code=e.code,
+                    )
                 )
             except Exception as e:
                 self._strict().record_failure(
@@ -839,7 +866,10 @@ class LazyModule:
                 },
             )
             logger.debug(
-                f"懒加载模块 {object.__getattribute__(self, '_module_name')} 初始化完成"
+                i18n.t(
+                    "loader.module.lazy_init_done",
+                    name=object.__getattribute__(self, "_module_name"),
+                )
             )
 
         except SystemExit as e:
@@ -850,8 +880,11 @@ class LazyModule:
                 data={"module_name": module_name, "success": False},
             )
             logger.error(
-                f"懒加载模块 {module_name} 尝试退出进程 (SystemExit({e.code}))，已跳过。"
-                f"请不要使用 sys.exit() 或 raise SystemExit"
+                i18n.t(
+                    "loader.module.systemexit_single",
+                    name=module_name,
+                    code=e.code,
+                )
             )
             object.__setattr__(self, "_initialized", False)
             object.__setattr__(self, "_init_failed", True)
@@ -865,7 +898,11 @@ class LazyModule:
                 },
             )
             logger.error(
-                f"懒加载模块 {object.__getattribute__(self, '_module_name')} 初始化失败: {e}"
+                i18n.t(
+                    "loader.module.lazy_init_failed",
+                    name=object.__getattribute__(self, "_module_name"),
+                    error=e,
+                )
             )
             from ..runtime.diagnostics import log_diagnostic
 
@@ -911,7 +948,10 @@ class LazyModule:
             if inspect.iscoroutinefunction(init_method):
                 object.__setattr__(self, "_needs_async_init", True)
                 logger.warning(
-                    f"模块 {object.__getattribute__(self, '_module_name')} 需要异步初始化，请在异步上下文中调用"
+                    i18n.t(
+                        "loader.module.async_init_hint",
+                        name=object.__getattribute__(self, "_module_name"),
+                    )
                 )
                 return
             self._initialize_sync()
@@ -951,7 +991,11 @@ class LazyModule:
 
         if init_error[0] is not None:
             logger.warning(
-                f"懒加载模块 {object.__getattribute__(self, '_module_name')} 后台初始化失败: {init_error[0]}"
+                i18n.t(
+                    "loader.module.background_init_failed",
+                    name=object.__getattribute__(self, "_module_name"),
+                    error=init_error[0],
+                )
             )
 
     def _initialize_sync(self) -> None:
@@ -968,7 +1012,10 @@ class LazyModule:
             return
 
         logger.debug(
-            f"正在同步初始化懒加载模块 {object.__getattribute__(self, '_module_name')}..."
+            i18n.t(
+                "loader.module.sync_init_start",
+                name=object.__getattribute__(self, "_module_name"),
+            )
         )
 
         try:
@@ -986,19 +1033,29 @@ class LazyModule:
             object.__setattr__(self, "_needs_async_init", False)
 
             logger.debug(
-                f"懒加载模块 {object.__getattribute__(self, '_module_name')} 同步初始化完成"
+                i18n.t(
+                    "loader.module.sync_init_done",
+                    name=object.__getattribute__(self, "_module_name"),
+                )
             )
 
         except SystemExit as e:
             logger.error(
-                f"懒加载模块 {object.__getattribute__(self, '_module_name')} 尝试退出进程 "
-                f"(SystemExit({e.code}))，已跳过。请不要使用 sys.exit() 或 raise SystemExit"
+                i18n.t(
+                    "loader.module.systemexit_single",
+                    name=object.__getattribute__(self, "_module_name"),
+                    code=e.code,
+                )
             )
             object.__setattr__(self, "_initialized", False)
             object.__setattr__(self, "_init_failed", True)
         except Exception as e:
             logger.error(
-                f"懒加载模块 {object.__getattribute__(self, '_module_name')} 同步初始化失败: {e}"
+                i18n.t(
+                    "loader.module.sync_init_failed",
+                    name=object.__getattribute__(self, "_module_name"),
+                    error=e,
+                )
             )
             object.__setattr__(self, "_initialized", False)
             object.__setattr__(self, "_init_failed", True)
@@ -1058,9 +1115,9 @@ class LazyModule:
         # __getattr__ / __getattribute__ 会在每次属性访问时触发，
         # 额外的字符串格式化与日志调用会带来明显的 CPU 与 GC 开销。
         if object.__getattribute__(self, "_needs_async_init"):
+            _module_name = object.__getattribute__(self, "_module_name")
             raise RuntimeError(
-                f"模块 {object.__getattribute__(self, '_module_name')} 需要异步初始化，"
-                f"请使用 'await sdk.load_module(\"{object.__getattribute__(self, '_module_name')}\")' 来初始化模块"
+                i18n.t("loader.module.needs_async_load", name=_module_name)
             )
 
         self._ensure_initialized()
@@ -1081,7 +1138,11 @@ class LazyModule:
             # 未初始化时不要在这里隐式吞掉值落到包装器上，避免产生意外状态
             if object.__getattribute__(self, "_init_failed"):
                 raise RuntimeError(
-                    f"模块 {object.__getattribute__(self, '_module_name')} 初始化失败，无法设置属性 '{name}'"
+                    i18n.t(
+                        "loader.module.init_failed_attr_set",
+                        name=object.__getattribute__(self, "_module_name"),
+                        attr=name,
+                    )
                 )
             self._ensure_initialized()
 
@@ -1118,14 +1179,22 @@ class LazyModule:
         if not object.__getattribute__(self, "_initialized"):
             if object.__getattribute__(self, "_init_failed"):
                 raise RuntimeError(
-                    f"模块 {object.__getattribute__(self, '_module_name')} 初始化失败，无法访问属性 '{name}'"
+                    i18n.t(
+                        "loader.module.init_failed_attr_get",
+                        name=object.__getattribute__(self, "_module_name"),
+                        attr=name,
+                    )
                 )
             self._ensure_initialized()
             # 初始化可能刚刚失败（同步路径会在 _initialize_sync 中标记），
             # 此时给出明确的 RuntimeError，避免后续回落到 AttributeError 造成困惑
             if object.__getattribute__(self, "_init_failed"):
                 raise RuntimeError(
-                    f"模块 {object.__getattribute__(self, '_module_name')} 初始化失败，无法访问属性 '{name}'"
+                    i18n.t(
+                        "loader.module.init_failed_attr_get",
+                        name=object.__getattribute__(self, "_module_name"),
+                        attr=name,
+                    )
                 )
 
         instance = object.__getattribute__(self, "_instance")
