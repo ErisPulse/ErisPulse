@@ -4942,7 +4942,7 @@ version = "1.0.0"
 
 ### 2. README 头部
 
-`epsdk create` 生成的 README 已内置 ErisPulse 品牌头部（Logo + 徽章行）。两种推荐模式：
+`epsdk create` 生成的 README 已内置 ErisPulse 头部标识（Logo + 徽章行）。两种推荐模式：
 
 **模式 A — 仅 ErisPulse Logo（默认）：**
 
