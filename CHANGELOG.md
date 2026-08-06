@@ -69,6 +69,10 @@
 **版本摘要**
 面向 UX/DX 与配置健壮性的维护版本。修复配置整棵覆盖导致的热更新被陈旧快照冲掉、后台线程执行 on_unload 触发 "attached to a different loop"、日志列表显示原始 `%s` 等问题；多处硬编码中文文案 i18n 化（全 5 语言）；`epsdk doctor`/`list` 输出优化。
 
+### 新增
+- @wsu2059q
+  - `Core/logger` 日志订阅器支持显式订阅低于全局级别的日志：订阅器 `min_level` 可低于全局日志级别（如全局为 INFO，仍可订阅 DEBUG/TRACE），此时低级别日志仅推送给匹配的订阅器，不输出到控制台、不写入内存，避免污染主日志流；`LoggerChild` 同步支持
+
 ### 修复
 - @wsu2059q
   - `Core/config` 配置整棵覆盖 bug：`update_erispulse_config`/`get_erispulse_config` 原以整棵 `ErisPulse` 作为单个脏键写入，陈旧的整棵快照会在下次 flush 时覆盖用户对其它子键的热更新。改为按叶子键写入，并在重载后丢弃与文件一致的冗余脏键
