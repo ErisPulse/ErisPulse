@@ -1,5 +1,45 @@
 {
-  "hash": "0d28de8f0b6680a49a8afd49f29c677f",
-  "translated_at": "2026-07-29T12:00:35.401810",
-  "target_lang": "ru"
+  "version": 2,
+  "hash": "2421db50d9e9f4a9b427ad8f413bb58c",
+  "file_hash": "2421db50d9e9f4a9b427ad8f413bb58c",
+  "translated_at": "2026-08-05T23:29:46.528767",
+  "target_lang": "ru",
+  "chunks": [
+    {
+      "hash": "4afb6aa3427bfc693cb05b020feca75c",
+      "translation": "# Быстрый старт\n\n> **Это ваш первый шаг.** Запустите бота ErisPulse с нуля всего за 5 минут."
+    },
+    {
+      "hash": "89b0ad750e3c1ae469f9c09815104a99",
+      "translation": "## Установка ErisPulse\n\n### Скрипт для одного клика (рекомендуется)\n\nСкрипт автоматически определит ваше окружение (Docker, Python, uv) и предложит выбрать наиболее подходящий способ установки.\n\nWindows (PowerShell):\n```powershell\nirm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1\n```\n\nmacOS / Linux:\n```bash\ncurl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh\n```\n\nСкрипт проведет вас через следующие шаги:\n\n- **Docker** (рекомендуется, если Docker обнаружен): выбор зеркала (Docker Hub / GHCR), канал версий (стабильная / pre-release), настройка панели управления Dashboard, настройка портов\n- **Классическая установка**: автоматическое создание виртуального окружения, выбор версии ErisPulse, опциональная установка модуля панели управления Dashboard\n\n### Использование Docker\n\nDocker-образ уже включает в себя фреймворк ErisPulse и панель управления Dashboard.\n\n```bash\n# Загрузка docker-compose.yml\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# Настройка токена Dashboard и запуск\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n<details>\n<summary>Docker Hub недоступен?</summary>\n\nИспользуйте зеркало GitHub Container Registry, измените `image` в `docker-compose.yml`:\n\n```yaml\nimage: ghcr.io/erispulse/erispulse:latest\n```\n\n</details>\n\nПосле запуска перейдите по адресу `http://<host>:8000/Dashboard` и войдите, используя заданный токен.\n\n### Установка с помощью pip\n\nУбедитесь, что ваша версия Python >= 3.10, и установите через pip:\n\n```bash\npip install ErisPulse\n```\n\nЕсли вы уже установили [uv](https://github.com/astral-sh/uv), вы также можете использовать `uv pip install ErisPulse` — это будет быстрее.\n\n请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。\n\n再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。"
+    },
+    {
+      "hash": "7e317def5cef55f71b87c93ecb0233fd",
+      "translation": "## Инициализация проекта\n\n### Интерактивная инициализация (рекомендуется)\n\n```bash\nepsdk init\n```\n\nЭто запустит интерактивного мастера, который поможет вам выполнить:\n- Настройку имени проекта\n- Конфигурацию уровня логирования\n- Настройку сервера (хост и порт)\n- Выбор и конфигурацию адаптера\n- Создание структуры проекта\n\n### Быстрая инициализация\n\n```bash\n# Быстрая инициализация с указанием имени проекта\nepsdk init -q -n my_bot\n\n# Или только указание имени проекта\nepsdk init -n my_bot\n```\n\n### Создание проекта вручную\n\nЕсли вы предпочитаете создать проект вручную:\n\n```bash\nmkdir my_bot && cd my_bot\nepsdk init"
+    },
+    {
+      "hash": "12f6ccda4a8ab17a18437b62cbe756e3",
+      "translation": "## Установка модулей\n\n### Установка через CLI\n\n```bash\nepsdk install Yunhu AIChat\n```\n\n### Просмотр доступных модулей\n\n```bash\nepsdk list-remote\n```\n\n### Интерактивная установка\n\nПри отсутствии указания имени пакета запускается интерфейс интерактивной установки:\n\n```bash\nepsdk install"
+    },
+    {
+      "hash": "214490c59b97ac6c15713e660c339134",
+      "translation": "## Запуск проекта\n\n```bash\n# Запуск в обычном режиме\nepsdk run main.py\n\n# Режим перезагрузки (рекомендуется во время разработки)\nepsdk run main.py --reload"
+    },
+    {
+      "hash": "d893daa5f2e853db61247bd4839d6689",
+      "translation": "## Включение автодополнения в IDE (необязательно)\n\nМодуль/адаптер динамического обнаружения ErisPulse не может предоставлять автодополнение методов, зависящих от платформы, по умолчанию в IDE.\n\nВыполните следующую команду для генерации типов stub:\n\n```bash\nepsdk types\n```\n\nПосле генерации используйте импортированные типы для аннотации переменных, чтобы получить точное автодополнение (см. [Руководство по автодополнению в IDE](docs/ru/getting-started/ide-completion.md)):\n\n```python\nfrom _ep_types import Yunhu\nfrom ErisPulse import sdk\n\nadapter: Yunhu = sdk.adapter.get(\"yunhu\")\nawait adapter.Send.To(\"group\", \"123\").Board(...)  # автодополнение методов, зависящих от платформы"
+    },
+    {
+      "hash": "0940afb4931f21d421c4cbb14d715d8b",
+      "translation": "## Структура проекта\n\nСтруктура проекта после инициализации:\n\n```\nmy_bot/\n├── config/\n│   └── config.toml          # Файл конфигурации\n└── main.py                  # Файл входа"
+    },
+    {
+      "hash": "bf299e0439b780fd582fae25060b35b7",
+      "translation": "## Файл конфигурации\n\nБазовая конфигурация `config.toml`:\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\n\n[ErisPulse.logger]\nlevel = \"INFO\"\n\n[Yunhu_Adapter]\n# Настройки адаптера"
+    },
+    {
+      "hash": "5a9ac1241d385afd519d196a946694da",
+      "translation": "## Далее\n\nПосле того как бот запущен, вы можете продолжить работу в зависимости от необходимости:\n\n**Хотите узнать, как работает фреймворк?**\n- [Основные концепции](getting-started/basic-concepts.md) — дизайн адаптеров / модулей / событий\n- [Обзор архитектуры](architecture.md) — визуальная диаграмма архитектуры\n\n**Хотите реализовать больше функций?**\n- [Примеры распространенных задач](getting-started/common-tasks.md) — хранение, запланированные задачи, контроль прав доступа\n- [Введение в обработку событий](getting-started/event-handling.md) — сообщения, уведомления, обработка запросов\n\n**Хотите разработать свой модуль / адаптер?**\n- [Введение в разработку модулей](developer-guide/modules/getting-started.md)\n- [Введение в разработку адаптеров](developer-guide/adapters/getting-started.md)\n\n**По мере необходимости:**\n- [Описание конфигурационных файлов](user-guide/configuration.md) · [Команды CLI](user-guide/cli-reference.md) · [Руководство по развертыванию](user-guide/deployment.md)"
+    }
+  ]
 }

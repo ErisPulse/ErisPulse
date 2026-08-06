@@ -2,6 +2,10 @@
 
 了解 ErisPulse 適配器的核心概念是開發適配器的基礎。
 
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
 ## 適配器架構
 
 ### 組件關係
@@ -11,14 +15,14 @@
 ─────────────────                           ─────────────────
                                              
 ┌──────────────────┐                        ┌──────────────────┐
-│ 平台原生事件     │                        │ 模組建構訊息     │
-└────────┬─────────┘                        └────────┬─────────┘
+│ 平台原生事件     │                        │ 模組構建訊息     │
+└────────┬─────────┘                        ┌────────┬─────────┘
          │                                           │
          ↓                                           ↓
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│                  │   │ 適配器 (MyAdapter) │   │ Send.Raw_ob12()  │
-│  Converter       │   │ ┌──────────────┐ │   │ (反向轉換入口)   │
-│  (事件轉換器)    │──→│ │              │ │   │                  │
+│                  │   │ 適配器 (MyAdapter) │   │                  │
+│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
+│  (事件轉換器)    │──→│ │              │ │   │ (反向轉換入口)   │
 │                  │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
@@ -41,11 +45,11 @@
 
 **核心對稱性**：
 - **正向轉換**（Converter）：平台原生事件 → OneBot12 標準事件，原始資料保留在 `{platform}_raw`
-- **反向轉換**（Raw_ob12）：OneBot12 消息段 → 平台 API 調用，回傳標準回應格式
+- **反向轉換**（Raw_ob12）：OneBot12 訊息段 → 平台 API 調用，回傳標準回應格式
 
-## AdapterManager 適配器管理器
+## AdapterManager 适配器管理器
 
-`AdapterManager` 是 ErisPulse 適配器系統的核心元件，負責管理所有平台適配器的註冊、啟動、關閉和事件分發。
+`AdapterManager` 是 ErisPulse 适配器系統的核心組件，負責管理所有平台適配器的註冊、啟動、關閉和事件分發。
 
 ### 核心功能
 
@@ -60,35 +64,35 @@
 ```python
 from ErisPulse import sdk
 
-# 注冊適配器（通常由 Loader 自動完成）
+# 注册适配器（通常由 Loader 自动完成）
 sdk.adapter.register("myplatform", MyPlatformAdapter)
 
-# 啟動所有適配器
+# 启动所有适配器
 await sdk.adapter.startup()
 
-# 啟動指定適配器
+# 启动指定适配器
 await sdk.adapter.startup(["myplatform"])
-# 啟動全部適配器
+# 启动全部适配器
 await sdk.adapter.startup()
 
-# 獲取適配器實例
+# 获取适配器实例
 my_adapter = sdk.adapter.get("myplatform")
-# 或透過屬性存取
+# 或通过属性访问
 my_adapter = sdk.adapter.myplatform
 
-# 關閉所有適配器
+# 关闭所有适配器
 await sdk.adapter.shutdown()
 ```
 
-### 啟動和關閉
+### 启动和关闭
 
-#### 啟動適配器
+#### 启动适配器
 
 ```python
-# 啟動所有已註冊的適配器
+# 启动所有已注册的适配器
 await sdk.adapter.startup()
 
-# 啟動指定平台
+# 启动指定平台
 await sdk.adapter.startup(["platform1", "platform2"])
 ```
 
@@ -115,7 +119,7 @@ await sdk.adapter.shutdown()
 **關閉流程：**
 
 1. 提交 `adapter.stop` 生命週期事件
-2. 呼叫所有適配器的 `shutdown()` 方法
+2. 調用所有適配器的 `shutdown()` 方法
 3. 關閉路由伺服器
 4. 清空事件處理器
 5. 提交 `adapter.stopped` 生命週期事件
@@ -144,7 +148,7 @@ platforms = sdk.adapter.list_registered()
 
 # 列出所有平台及其狀態
 status_dict = sdk.adapter.list_items()
-# 回傳: {"platform1": true, "platform2": false, ...}
+# 返回: {"platform1": true, "platform2": false, ...}
 
 # 獲取已啟用的平台列表
 enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
@@ -160,7 +164,7 @@ from ErisPulse import sdk
 # 監聽所有平台的標準訊息事件
 @sdk.adapter.on("message")
 async def handle_message(data):
-    print(f"收到OneBot12訊息: {data}")
+    print(f"收到 OneBot12 訊息: {data}")
 
 # 監聽特定平台的標準訊息事件
 @sdk.adapter.on("message", platform="myplatform")
@@ -210,22 +214,22 @@ async def handle_all_raw_events(data):
 async def logging_middleware(data):
     """日誌記錄中間件"""
     print(f"處理事件: {data.get('type')}")
-    return data  # 必須回傳資料
+    return data  # 必須返回資料
 
 @sdk.adapter.middleware
 async def filter_middleware(data):
     """事件過濾中間件"""
     # 過濾不需要的事件
     if data.get("type") == "notice":
-        return None  # 回傳 None 時中間件鏈會忽略該回傳值，保留原資料繼續傳遞
-    return data  # 必須回傳資料以繼續傳遞
+        return None  # 返回 None 時中間件鏈會忽略該返回值，保留原資料繼續傳遞
+    return data  # 必須返回資料以繼續傳遞
 ```
 
 #### 中間件執行順序
 
 中間件按照註冊順序執行，後註冊的中間件先執行。
 
-> **注意**：如果中間件回傳 `None`（例如忘記 `return data`），框架會忽略該回傳值並保留原資料繼續傳遞，同時輸出 warning 級別日誌。這確保了單個中間件的失誤不會導致整個事件鏈中斷。
+> **注意**：如果中間件返回 `None`（例如忘記 `return data`），框架會忽略該返回值並保留原資料繼續傳遞，同時輸出 warning 級別日誌。這確保了單個中間件的失誤不會導致整個事件鏈中斷。
 
 ```python
 # 註冊順序
@@ -252,7 +256,6 @@ if adapter:
 # 透過屬性名存取（不區分大小寫）
 adapter = sdk.adapter.myplatform
 await adapter.Send.To("user", "123").Text("Hello")
-```
 
 ## BaseAdapter 基類
 
@@ -261,11 +264,11 @@ await adapter.Send.To("user", "123").Text("Hello")
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import BaseConfig, BotAccountConfig
+from ErisPulse.Core.Bases import BaseConfig, BotAccountConfig
 
 @dataclass
 class MyConfig(BaseConfig):
-    """適配器配置（宣告後框架自動管理）"""
+    """適配器配置（聲明後框架自動管理）"""
     token: str = field(
         default="",
         metadata={
@@ -277,7 +280,7 @@ class MyConfig(BaseConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyConfig  # 宣告配置類
+    ConfigClass = MyConfig  # 聲明配置類
     
     # 無需覆寫 __init__，框架自動處理：
     # - self.sdk, self.logger
@@ -286,7 +289,7 @@ class MyAdapter(BaseAdapter):
     
     async def start(self):
         """啟動適配器（必須實現）"""
-        cfg = self.cfg  # 自動載入的類型安全配置
+        cfg = self.cfg  # 自動加載的類型安全配置
         pass
     
     async def shutdown(self):
@@ -294,19 +297,19 @@ class MyAdapter(BaseAdapter):
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """呼叫平台 API（必須實現）"""
+        """調用平台 API（必須實現）"""
         pass
 ```
 
 ### 配置管理
 
-框架提供了宣告式配置管理，透過 dataclass 定義配置結構，框架自動處理載入、驗證和範本生成。
+框架提供了宣告式配置管理，透過 dataclass 定義配置結構，框架自動處理加載、驗證和模板生成。
 
 #### 單帳號配置
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class TelegramConfig(BaseConfig):
@@ -333,11 +336,11 @@ class TelegramAdapter(BaseAdapter):
 
 #### 多帳號配置
 
-`BotAccountConfig` 基類提供 `enabled` 和 `name` 欄位。絕大多數適配器能從平台協定或登入回應中自動獲取 bot_id，在事件轉換時注入到帳號配置中。：
+`BotAccountConfig` 基類提供 `enabled` 和 `name` 欄位。絕大多數適配器能從平台協議或登入回應中自動獲取 bot_id，在事件轉換時注入到帳號配置中。：
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BotAccountConfig
+from ErisPulse.Core.Bases import BotAccountConfig
 
 # 大多數適配器：bot_id 運行時自動獲取，無需配置
 @dataclass
@@ -377,7 +380,7 @@ metadata = {
     "description": str | dict,  # 欄位描述（支援 i18n）
     "required": bool,         # 是否必填（驗證 + WebUI 必填標記）
     "secret": bool,           # 是否敏感（WebUI 顯示為 ***，日誌中脫敏）
-    "ui": {                   # WebUI 控件配置（舊名 "webui" 仍兼容）
+    "ui": {                   # WebUI 控件配置（舊名 "webui" 仍相容）
         "widget": str,        # 控件類型: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # 分組: "basic" | "advanced" | "connection" 等
         "order": int,         # 排序權重（越小越靠前）
@@ -400,7 +403,7 @@ metadata = {
 
 使用 i18n 時，需提前將翻譯鍵註冊到 i18n 系統（詳見 [i18n 文檔](../../advanced/i18n.md#配置欄位多語言)）。
 
-**description / placeholder / options label** 範例：
+**description / placeholder / options label** 示例：
 
 ```python
 token: str = field(
@@ -428,7 +431,7 @@ mode: str = field(
 )
 ```
 
-**group_labels** 範例（在配置類定義後宣告）：
+**group_labels** 示例（在配置類定義後聲明）：
 
 ```python
 MyConfig._schema_meta = {
@@ -445,8 +448,8 @@ MyConfig._schema_meta = {
 ### 宣告式翻譯鍵（v2.7.0+）
 
 適配器可以像宣告 `ConfigClass` 一樣，透過嵌套類 `I18nClass` 集中宣告翻譯鍵。
-框架會在 `__init__` 階段（配置範本生成之前）自動註冊所有宣告的翻譯鍵，
-確保配置描述中引用的 i18n 鍵在生成範本時已可用。
+框架會在 `__init__` 階段（配置模板生成之前）自動註冊所有宣告的翻譯鍵，
+確保配置描述中引用的 i18n 鍵在生成模板時已可用。
 
 ```python
 from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
@@ -474,7 +477,7 @@ class MyAdapter(BaseAdapter):
 > ``I18nKey.default`` 是**語言無關的兜底文本**，不會註冊到任何語言。
 > 要讓翻譯生效，必須顯式傳入至少一個語言參數。
 
-詳細用法（鍵路徑規則、顯式 key 參數等）見 [i18n 文檔](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
+詳細用法（鍵路徑規則、顯式 key 參數等）見 [i18n 文檔](../../advanced/i18n.md#推薦寫法通過-i18nclass-宣告翻譯鍵-v270)。
 
 ### 宣告式事件擴展方法（v2.7.0+）
 
@@ -490,7 +493,7 @@ class MyAdapter(BaseAdapter):
             return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 
         def is_official_message(self):
-            """判斷是否為官方訊息"""
+            """判斷是否為官方消息"""
             raw = self.get("myplatform_raw", {})
             return raw.get("sender", {}).get("is_official", False)
 ```
@@ -502,7 +505,7 @@ class MyAdapter(BaseAdapter):
 async def handler(event):
     if event.is_official_message():
         chat_name = event.get_chat_name()
-        await event.reply(f"[{chat_name}] 官方訊息已收到")
+        await event.reply(f"[{chat_name}] 官方消息已收到")
 ```
 
 > 適配器的事件擴展方法註冊到自身平台（``self._platform``）。
@@ -510,7 +513,7 @@ async def handler(event):
 
 #### 帳戶解析
 
-多帳戶適配器可使用 `_resolve_account()` 自動解析目標帳戶：
+多帳號適配器可使用 `_resolve_account()` 自動解析目標帳戶：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -538,15 +541,15 @@ class MyAdapter(BaseAdapter):
 
 框架在 `BaseAdapter.__init__(self, sdk=None)` 中自動完成以下工作：
 
-1. **SDK 引用**：設定 `self.sdk`、`self.logger`
+1. **SDK 引用**：設置 `self.sdk`、`self.logger`
 2. **Send/Request 工廠**：建立 `self.Send` 和 `self.Request`
-3. **配置範本**：如果宣告了 `ConfigClass`，自动生成預設配置範本（首次）
-4. **帳戶範本**：如果宣告了 `AccountConfigClass`，自动生成預設帳戶範本（首次）
+3. **配置模板**：如果宣告了 `ConfigClass`，自动生成預設配置模板（首次）
+4. **帳戶模板**：如果宣告了 `AccountConfigClass`，自动生成預設帳戶模板（首次）
 5. **EventMixin 註冊**：如果宣告了 `EventMixin`，在 `AdapterManager` 注入平台名後自動註冊
 
 配置透過 `self.cfg` / `self.accounts` 即時讀取（每次存取都從配置儲存讀取最新值）。`self.config` 作為 `self.cfg` 的相容別名仍可使用。
 
-大多數適配器無需覆寫 `__init__`。如需自定義初始化：
+大多數適配器無需覆寫 `__init__`。如需自訂初始化：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -557,6 +560,8 @@ class MyAdapter(BaseAdapter):
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
+
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
 ## Send 消息發送 DSL
 
@@ -575,14 +580,14 @@ class MyAdapter(BaseAdapter):
 
 | 屬性 | 說明 | 設定方式 |
 |-----|------|---------|
-| `_target_id` | 目標ID | `To(id)` 或 `To(type, id)` |
+| `_target_id` | 目標 ID | `To(id)` 或 `To(type, id)` |
 | `_target_type` | 目標類型 | `To(type, id)` |
-| `_target_to` | 簡化目標ID | `To(id)` |
-| `_account_id` | 發送帳戶ID | `Using(account_id)` |
+| `_target_to` | 簡化目標 ID | `To(id)` |
+| `_account_id` | 發送帳號 ID | `Using(account_id)` |
 | `_adapter` | 適配器實例 | 自動設定 |
-| `_at_user_ids` | @使用者列表 | `At(user_id)` |
-| `_reply_message_id` | 回覆的訊息ID | `Reply(message_id)` |
-| `_at_all` | 是否@全體 | `AtAll()` |
+| `_at_user_ids` | @用戶列表 | `At(user_id)` |
+| `_reply_message_id` | 回覆的消息 ID | `Reply(message_id)` |
+| `_at_all` | 是否 @全體 | `AtAll()` |
 
 > **推薦**：使用 `self.send_context` 屬性一次性的獲取 `target_type`、`target_id`、`account_id`，比直接存取實例變數更清晰。
 
@@ -590,8 +595,8 @@ class MyAdapter(BaseAdapter):
 
 | 方法/屬性 | 說明 |
 |-----------|------|
-| `self._apply_modifiers(message)` | 將 At/AtAll/Reply 修飾器狀態合併到訊息段列表 |
-| `self.send_context` | 回傳 `{target_type, target_id, account_id}` 字典 |
+| `self._apply_modifiers(message)` | 將 At/AtAll/Reply 修飾器狀態合併到消息段列表 |
+| `self.send_context` | 返回 `{target_type, target_id, account_id}` 字典 |
 
 ### 基本方法
 
@@ -629,7 +634,6 @@ class Send(BaseAdapter.Send):
     def Button(self, content: list) -> 'Send':
         self.buttons.append(content)
         return self
-```
 
 ## 事件轉換器
 
@@ -658,12 +662,12 @@ OneBot12 標準事件
         "platform": "平台名稱",
         "user_id": "機器人ID"     # 必須與 bot_id 一致
     },
-    "{platform}_raw": {...},       # 原始資料（必須）
+    "{platform}_raw": {...},       # 原始數據（必須）
     "{platform}_raw_type": "..."    # 原始類型（必須）
 }
 ```
 
-### 轉換器範例
+### 轉換器示例
 
 ```python
 class MyPlatformConverter:
@@ -702,7 +706,6 @@ class MyPlatformConverter:
         }
         
         return onebot_event
-```
 
 ## 連接管理
 
@@ -762,13 +765,13 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> **路由資訊查詢**：適配器註冊的路由（HTTP、WebSocket、SSE）可以透過 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查詢完整連接位址（包含 `base_url` + 路徑）。詳見 [適配器開發入門 - 連接資訊與路由發現](getting-started.md#9-連接資訊與路由發現) 和 [SSE 支援](getting-started.md#10-sse-server-sent-events-支援)。
+> **路由資訊查詢**：適配器註冊的路由（HTTP、WebSocket、SSE）可以透過 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查詢完整連線位址（包含 `base_url` + 路徑）。詳見 [適配器開發入門 - 連線資訊與路由發現](docs/zh-TW/getting-started.md#9-連線資訊與路由發現) 和 [SSE 支援](docs/zh-TW/getting-started.md#10-sse-server-sent-events-支援)。
 
-## API 回應標準
+## API 響應標準
 
-框架提供 `make_response()` 和 `make_error()` 方法建構標準化回應，無需手動建構回應字典。
+框架提供 `make_response()` 和 `make_error()` 方法來構造標準化響應，無需手動構建響應字典。
 
-### 成功回應
+### 成功響應
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -784,7 +787,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e), raw=None)
 ```
 
-### 手動建構回應（舊版方式仍然相容）
+### 手動構造響應（舊版方式仍然相容）
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -796,17 +799,16 @@ async def call_api(self, endpoint: str, **params):
         "message": "",
         "myplatform_raw": raw_response
     }
-```
 
 ## 多帳戶支援
 
 ### 宣告式配置（推薦）
 
-使用 `AccountConfigClass` 宣告配置類後，框架自動管理多帳戶載入、驗證和範本生成：
+使用 `AccountConfigClass` 宣告配置類後，框架會自動管理多帳戶載入、驗證和模板產生：
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BotAccountConfig
+from ErisPulse.Core.Bases import BotAccountConfig
 
 @dataclass
 class MyBotConfig(BotAccountConfig):
@@ -856,7 +858,7 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
 ### self.user_id 與 Using 的關係
 
-框架的事件回覆機制會自動從事件的 `self` 欄位中提取 `account_id`（優先）或 `user_id`，作為 `Using` 參數傳入。適配器開發者需要確保 Converter 中 `self.user_id` 的值與 `_resolve_account()` 能夠正確匹配。
+框架的事件回應機制會自動從事件的 `self` 欄位中提取 `account_id`（優先）或 `user_id`，作為 `Using` 參數傳入。適配器開發者需要確保 Converter 中 `self.user_id` 的值與 `_resolve_account()` 能夠正確匹配。
 
 **框架內部行為**（`Event._get_adapter_and_target`）：
 
@@ -869,7 +871,7 @@ if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **關鍵點**：即使適配器只使用一個 Bot 配置，只要 Converter 正確設定了 `self.user_id`，框架就會將其作為 `Using` 參數傳入。適配器需確保 `self.user_id` 與 `AccountConfigClass` 中的標識欄位（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正確帳戶。如果 `self.user_id` 為空，框架不會呼叫 `Using`，此時 `call_api` 收到的 `account_id` 為 `None`，`_resolve_account(None)` 回傳第一個啟用的帳戶。
+> **關鍵點**：即使適配器只使用一個 Bot 配置，只要 Converter 正確設定了 `self.user_id`，框架就會將其作為 `Using` 參數傳入。適配器需確保 `self.user_id` 與 `AccountConfigClass` 中的標識欄位（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正確帳戶。如果 `self.user_id` 為空，框架不會呼叫 `Using`，此時 `call_api` 收到的 `account_id` 為 `None`，`_resolve_account(None)` 返回第一個啟用的帳戶。
 
 ## 錯誤處理
 
@@ -923,7 +925,7 @@ async def call_api(self, endpoint: str, **params):
         return self._error_response(str(e), 34000)
 ```
 
-> **向後相容**：直接使用 `aiohttp.ClientSession` 的舊適配器程式碼不受影響，仍然可以捕獲 `aiohttp.ClientError`。兩種方式可以共存。推薦新程式碼使用 `sdk.client` + ErisPulse 異常體系。
+> **向後相容**：直接使用 `aiohttp.ClientSession` 的舊適配器程式碼不受影響，仍然可以捕獲 `aiohttp.ClientError`。兩種方式可以共存。建議新程式碼使用 `sdk.client` + ErisPulse 異常體系。
 
 ## Bot 狀態管理
 
@@ -933,8 +935,8 @@ AdapterManager 內建了 Bot 狀態追蹤系統，自動維護所有已註冊 Bo
 
 當適配器透過 `adapter.emit()` 發送事件時，框架會自動檢查事件中的 `self` 欄位：
 
-- **meta 事件**：根據 `detail_type` 執行對應操作（connect 註冊/斷開標記離線/heartbeat 更新活躍時間）
-- **普通事件**（message/notice/request）：自動發現 Bot 並更新活躍時間
+- **meta 事件**：根據 `detail_type` 執行對應操作（connect 註冊 / 斷開標記離線 / heartbeat 更新活躍時間）
+- **一般事件**（message/notice/request）：自動發現 Bot 並更新活躍時間
 
 ```python
 # 所有包含 self 欄位的事件都會觸發自動發現
@@ -951,7 +953,7 @@ await self.adapter.emit({
 
 | `detail_type` | 說明 | 框架行為 |
 |---|---|---|
-| `connect` | Bot 連接 | 註冊 Bot 並觸發 `adapter.bot.online` 生命週期事件 |
+| `connect` | Bot 連線 | 註冊 Bot 並觸發 `adapter.bot.online` 生命週期事件 |
 | `disconnect` | Bot 斷開 | 標記 Bot 離線並觸發 `adapter.bot.offline` 生命週期事件 |
 | `heartbeat` | Bot 心跳 | 更新 Bot 活躍時間和元資訊 |
 
@@ -969,7 +971,7 @@ class MyAdapter(BaseAdapter):
         await self.emit_meta("disconnect", bot_id)
 ```
 
-也支援手動建構（舊版方式仍然相容）：
+也支援手動構造（舊版方式仍然相容）：
 
 ```python
 await self.adapter.emit({
@@ -986,9 +988,9 @@ await self.adapter.emit({
 
 | 欄位 | 說明 |
 |---|---|
-| `user_name` | Bot 使用者名 |
+| `user_name` | Bot 使用者名稱 |
 | `nickname` | Bot 昵稱 |
-| `avatar` | Bot 圖示 URL |
+| `avatar` | Bot 大頭貼 URL |
 | `account_id` | 多帳戶標識 |
 
 ### Bot 狀態查詢
@@ -996,7 +998,7 @@ await self.adapter.emit({
 ```python
 from ErisPulse import sdk
 
-# 獲取單個 Bot 資訊
+# 取得單一 Bot 資訊
 info = sdk.adapter.get_bot_info("myplatform", "bot123")
 # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
 
@@ -1009,7 +1011,7 @@ platform_bots = sdk.adapter.list_bots("myplatform")
 # 檢查 Bot 是否線上
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# 獲取完整狀態摘要（適合 WebUI 展示）
+# 取得完整狀態摘要（適合 WebUI 展示）
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
 ```
@@ -1030,10 +1032,9 @@ async def on_bot_offline(data):
     platform = data.get("platform")
     bot_id = data.get("bot_id")
     sdk.logger.info(f"Bot 下線: {platform}/{bot_id}")
-```
 
 ## 相關文件
 
 - [適配器開發入門](getting-started.md) - 建立第一個適配器
-- [SendDSL 詳解](send-dsl.md) - 學習訊息發送
+- [SendDSL 詳解](send-dsl.md) - 學習訊息傳送
 - [適配器最佳實踐](best-practices.md) - 開發高品質適配器

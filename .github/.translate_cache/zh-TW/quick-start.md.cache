@@ -1,5 +1,45 @@
 {
-  "hash": "0d28de8f0b6680a49a8afd49f29c677f",
-  "translated_at": "2026-07-29T11:22:57.421317",
-  "target_lang": "zh-TW"
+  "version": 2,
+  "hash": "2421db50d9e9f4a9b427ad8f413bb58c",
+  "file_hash": "2421db50d9e9f4a9b427ad8f413bb58c",
+  "translated_at": "2026-08-05T22:01:37.340324",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "4afb6aa3427bfc693cb05b020feca75c",
+      "translation": "# 快速開始\n\n> **這是你的第一步。** 用 5 分鐘從零跑起一個 ErisPulse 機器人。"
+    },
+    {
+      "hash": "89b0ad750e3c1ae469f9c09815104a99",
+      "translation": "## 安裝 ErisPulse\n\n### 一鍵安裝腳本（推薦）\n\n安裝腳本會自動偵測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。\n\nWindows (PowerShell):\n```powershell\nirm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1\n```\n\nmacOS / Linux:\n```bash\ncurl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh\n```\n\n腳本會引導您完成：\n\n- **Docker 安裝**（偵測到 Docker 時推薦）：選擇映像來源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板設定、埠號設定\n- **傳統安裝**：自動建立虛擬環境、選擇 ErisPulse 版本、選用安裝 Dashboard 管理面板模組\n\n### 使用 Docker\n\nDocker 映像已內建 ErisPulse 框架和 Dashboard 管理面板。\n\n```bash\n# 下載 docker-compose.yml\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# 設定 Dashboard 令牌並啟動\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n<details>\n<summary>Docker Hub 不可用？</summary>\n\n使用 GitHub Container Registry 映像，修改 `docker-compose.yml` 中的 image：\n\n```yaml\nimage: ghcr.io/erispulse/erispulse:latest\n```\n\n</details>\n\n啟動後存取 `http://<host>:8000/Dashboard`，使用設定的令牌登入。\n\n### 使用 pip 安裝\n\n確保您的 Python 版本 >= 3.10，然後使用 pip 安裝：\n\n```bash\npip install ErisPulse\n```\n\n如果您已安裝 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安裝速度更快。"
+    },
+    {
+      "hash": "7e317def5cef55f71b87c93ecb0233fd",
+      "translation": "## 初始化專案\n\n### 互動式初始化（推薦）\n\n```bash\nepsdk init\n```\n\n這將會啟動一個互動式嚮導，引導您完成：\n- 專案名稱設定\n- 日誌層級配置\n- 伺服器配置（主機和埠口）\n- 適配器選擇和配置\n- 專案結構建立\n\n### 快速初始化\n\n```bash\n# 指定專案名稱的快速模式\nepsdk init -q -n my_bot\n\n# 或者只指定專案名稱\nepsdk init -n my_bot\n```\n\n### 手動建立專案\n\n如果比較偏好手動建立專案：\n\n```bash\nmkdir my_bot && cd my_bot\nepsdk init"
+    },
+    {
+      "hash": "12f6ccda4a8ab17a18437b62cbe756e3",
+      "translation": "## 安裝模組\n\n### 透過 CLI 安裝\n\n```bash\nepsdk install Yunhu AIChat\n```\n\n### 查看可用模組\n\n```bash\nepsdk list-remote\n```\n\n### 互動式安裝\n\n不指定套件名稱時會進入互動式安裝介面：\n\n```bash\nepsdk install"
+    },
+    {
+      "hash": "214490c59b97ac6c15713e660c339134",
+      "translation": "## 執行專案\n\n```bash\n# 一般執行\nepsdk run main.py\n\n# 熱重載模式（開發時推薦）\nepsdk run main.py --reload"
+    },
+    {
+      "hash": "d893daa5f2e853db61247bd4839d6689",
+      "translation": "## 啟用 IDE 補全（選用）\n\nErisPulse 動態發現模組/適配器，IDE 預設無法補全平台特有方法。\n執行以下命令產生型別存根：\n\n```bash\nepsdk types\n```\n\n產生後用導入的型別作為變數標註即可獲得精確補全（詳見 [IDE 補全指南](./getting-started/ide-completion.md)）：\n\n```python\nfrom _ep_types import Yunhu\nfrom ErisPulse import sdk\n\nadapter: Yunhu = sdk.adapter.get(\"yunhu\")\nawait adapter.Send.To(\"group\", \"123\").Board(...)  # 補全平台特有方法"
+    },
+    {
+      "hash": "0940afb4931f21d421c4cbb14d715d8b",
+      "translation": "## 專案結構\n\n初始化後的專案結構：\n\n```\nmy_bot/\n├── config/\n│   └── config.toml          # 設定檔\n└── main.py                  # 入口檔案"
+    },
+    {
+      "hash": "bf299e0439b780fd582fae25060b35b7",
+      "translation": "## 設定檔\n\n基本的 `config.toml` 設定：\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\n\n[ErisPulse.logger]\nlevel = \"INFO\"\n\n[Yunhu_Adapter]\n# 适配器設定"
+    },
+    {
+      "hash": "5a9ac1241d385afd519d196a946694da",
+      "translation": "## 下一步\n\n機器人啟動後，您可以視需求繼續：\n\n**想了解框架如何運作?**\n- [基礎概念](getting-started/basic-concepts.md) — 适配器 / 模組 / 事件 的設計\n- [架構概覽](architecture.md) — 可視化架構圖\n\n**想實現更多功能?**\n- [常見任務範例](getting-started/common-tasks.md) — 儲存、定時任務、權限控制\n- [事件處理入門](getting-started/event-handling.md) — 訊息、通知、請求處理\n\n**想開發自己的模組 / 适配器?**\n- [模組開發入門](developer-guide/modules/getting-started.md)\n- [适配器開發入門](developer-guide/adapters/getting-started.md)\n\n**按需查閱:**\n- [配置檔說明](user-guide/configuration.md) · [CLI 指令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md)"
+    }
+  ]
 }

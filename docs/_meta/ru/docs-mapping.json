@@ -4,7 +4,7 @@
   "categories": {
     "Быстрый старт": {
       "description": "Краткое руководство по ErisPulse",
-      "count": 5,
+      "count": 4,
       "documents": [
         {
           "title": "Документация ErisPulse",
@@ -22,12 +22,7 @@
           "level": 1
         },
         {
-          "title": "Термины ErisPulse",
-          "path": "terminology.md",
-          "level": 1
-        },
-        {
-          "title": "Трекер ошибок",
+          "title": "Отслеживание ошибок",
           "path": "bug-tracker.md",
           "level": 1
         }
@@ -138,7 +133,7 @@
               "level": 1
             },
             {
-              "title": "Best Practices for Module Development",
+              "title": "Лучшие практики разработки модулей",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1
             }
@@ -148,7 +143,7 @@
           "name": "Разработка адаптеров",
           "documents": [
             {
-              "title": "Введение в разработку адаптеров",
+              "title": "Начало разработки адаптера",
               "path": "developer-guide/adapters/getting-started.md",
               "level": 1
             },
@@ -163,7 +158,7 @@
               "level": 1
             },
             {
-              "title": "Рекомендации по лучшим практикам разработки адаптеров",
+              "title": "Рекомендации по разработке адаптеров ErisPulse",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1
             },

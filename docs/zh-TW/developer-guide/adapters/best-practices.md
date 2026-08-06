@@ -2,16 +2,20 @@
 
 本文檔提供了 ErisPulse 適配器開發的最佳實踐建議。
 
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+
+再次提醒：如果文檔包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
 ## Bot 狀態管理與 Meta 事件
 
-適配器應主動透過 `adapter.emit()` 發送 meta 事件，讓框架自動追蹤 Bot 的連線狀態、上下線和心跳資訊。
+適配器應主動透過 `adapter.emit()` 發送 meta 事件，讓框架自動追蹤 Bot 的連接狀態、上下線和心跳資訊。
 
 ### 1. 何時發送 Meta 事件
 
 | 事件 | `detail_type` | 觸發時機 | 框架行為 |
 |------|--------------|---------|---------|
-| 連線 | `"connect"` | Bot 與平台建立連線時 | 註冊 Bot，觸發 `adapter.bot.online` 生命週期事件 |
-| 斷開 | `"disconnect"` | Bot 與平台斷開連線時 | 標記 Bot 離線，觸發 `adapter.bot.offline` 生命週期事件 |
+| 連接 | `"connect"` | Bot 與平台建立連接時 | 註冊 Bot，觸發 `adapter.bot.online` 生命週期事件 |
+| 斷開 | `"disconnect"` | Bot 與平台斷開連接時 | 標記 Bot 離線，觸發 `adapter.bot.offline` 生命週期事件 |
 | 心跳 | `"heartbeat"` | 定期發送（建議 30-60 秒） | 更新 Bot 活躍時間和元資訊 |
 
 ### 2. 發送 Meta 事件
@@ -41,7 +45,7 @@ class MyAdapter(BaseAdapter):
 
 ### 3. 心跳事件
 
-適配器應在連線存活期間定期發送心跳事件，更新 Bot 的活躍時間：
+適配器應在連接存活期間定期發送心跳事件，更新 Bot 的活躍時間：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -84,7 +88,7 @@ await self.adapter.emit(onebot_event)
 ```python
 from ErisPulse import sdk
 
-# 取得 Bot 詳細資訊
+# 獲取 Bot 詳細資訊
 info = sdk.adapter.get_bot_info("myplatform", "bot123")
 # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
 
@@ -94,17 +98,16 @@ all_bots = sdk.adapter.list_bots()
 # 列出指定平台的 Bot
 platform_bots = sdk.adapter.list_bots("myplatform")
 
-# 檢查 Bot 是否線上
+# 檢查 Bot 是否在線
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# 取得完整狀態摘要（適合 WebUI 顯示）
+# 獲取完整狀態摘要（適合 WebUI 展示）
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
-```
 
-## 連線管理
+## 連接管理
 
-### 1. 實現連線重試
+### 1. 實現連接重試
 
 ```python
 import asyncio
@@ -117,7 +120,7 @@ class MyAdapter(BaseAdapter):
         while retry_count < max_retries:
             try:
                 await self._connect_to_platform()
-                self.logger.info("連線成功")
+                self.logger.info("連接成功")
                 break
             except Exception as e:
                 retry_count += 1
@@ -125,15 +128,15 @@ class MyAdapter(BaseAdapter):
                     # 指數退避策略
                     wait_time = min(60 * (2 ** retry_count), 600)
                     self.logger.warning(
-                        f"連線失敗，{wait_time}秒後重試 ({retry_count}/{max_retries}): {e}"
+                        f"連接失敗，{wait_time}秒後重試 ({retry_count}/{max_retries}): {e}"
                     )
                     await asyncio.sleep(wait_time)
                 else:
-                    self.logger.error("連線失敗，已達到最大重試次數")
+                    self.logger.error("連接失敗，已達到最大重試次數")
                     raise
 ```
 
-### 2. 連線狀態管理
+### 2. 連接狀態管理
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -144,14 +147,14 @@ class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket: WebSocket):
         self.connection = websocket
         self._connected = True
-        self.logger.info("連線已建立")
+        self.logger.info("連接已建立")
         
         try:
             while True:
                 data = await websocket.receive_text()
                 await self._process_event(data)
         except WebSocketDisconnect:
-            self.logger.info("連線已斷開")
+            self.logger.info("連接已斷開")
         finally:
             self.connection = None
             self._connected = False
@@ -182,9 +185,9 @@ class MyAdapter(BaseAdapter):
                 break
 ```
 
-### 4. 連線資訊揭露
+### 4. 連接資訊暴露
 
-適配器註冊的路由應對使用者可見，便於使用者設定平台端的回呼位址。建議在 `start()` 中主動輸出連線資訊：
+適配器註冊的路由應對使用者可見，便於使用者配置平台側的回呼位址。推薦在 `start()` 中主動輸出連接資訊：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -198,23 +201,23 @@ class MyAdapter(BaseAdapter):
         if self.sdk:
             info = self.sdk.adapter.get_connection_info(self.platform)
             if info:
-                self.logger.info(f"WebSocket 位址: "
+                self.logger.info(f"WebSocket 地址: "
                     f"{info.get('connection', {}).get('base_url', '')}"
                     f"{info.get('connection', {}).get('websocket_routes', [])}")
 ```
 
-使用者可透過以下 API 查看適配器的所有路由和連線位址：
+使用者可以透過以下 API 查看適配器的所有路由和連接位址：
 
 ```python
 from ErisPulse import sdk
 
-# 適配器層級的連線資訊（推薦）
+# 適配器層級的連接資訊（推薦）
 info = sdk.adapter.get_connection_info("myplatform")
 
 # 路由管理器層級的查詢
 sdk.router.list_namespaces()              # 列出所有命名空間
 sdk.router.get_module_routes("myplatform")  # 詳細路由資訊
-sdk.router.get_module_urls("myplatform")    # 完整連線 URL
+sdk.router.get_module_urls("myplatform")    # 完整連接 URL
 ```
 
 > **注意**：路由註冊時的 `module_name` 必須與適配器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則 `get_connection_info()` 將無法關聯路由。多帳戶適配器應為每個帳戶註冊子路徑（如 `/account1/webhook`、`/account2/webhook`），而非使用不同的 `module_name`。
@@ -237,7 +240,7 @@ class MyPlatformConverter:
                 "platform": "myplatform",
                 "user_id": str(raw_event.get("bot_id", ""))
             },
-            "myplatform_raw": raw_event,  # 保留原始資料（必須）
+            "myplatform_raw": raw_event,  # 保留原始數據（必須）
             "myplatform_raw_type": raw_event.get("type", "")  # 原始類型（必須）
         }
         return onebot_event
@@ -271,13 +274,12 @@ def _generate_event_id(self, raw_event):
         return str(event_id)
     # 如果平台沒有提供 ID，生成 UUID
     return str(uuid.uuid4())
-```
 
 ## SendDSL 實現
 
 `At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建，適配器只需實現 `Raw_ob12` 和具體發送方法。使用 `self._apply_modifiers(message)` 和 `self.send_context` 簡化開發。
 
-### 1. 必須返回 Task 物件
+### 1. 必須返回 Task 對象
 
 ```python
 class Send(BaseAdapter.Send):
@@ -311,12 +313,12 @@ class Send(BaseAdapter.Send):
         return self # 返回 self
 ```
 
-### 3. 支援平台特有方法
+### 3. 支持平台特有方法
 
 ```python
 class Send(BaseAdapter.Send):
     def Sticker(self, sticker_id: str):
-        """發送貼圖"""
+        """發送表情包"""
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_sticker",
@@ -326,7 +328,7 @@ class Send(BaseAdapter.Send):
         )
     
     def Card(self, card_data: dict):
-        """發送卡片訊息"""
+        """發送卡片消息"""
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_card",
@@ -334,13 +336,12 @@ class Send(BaseAdapter.Send):
                 **self.send_context
             )
         )
-```
 
 ## API 回應
 
 ### 1. 標準化回應格式
 
-框架提供 `make_response()` 和 `make_error()` 方法建構標準化回應：
+框架提供 `make_response()` 和 `make_error()` 方法來構造標準化的回應：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -363,7 +364,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-`make_response()` 會自動產生包含 `{platform}_raw` 鍵的回應字典。`make_error()` 預設使用 `retcode=34000`（Platform Error）。
+`make_response()` 會自動生成包含 `{platform}_raw` 鍵的回應字典。`make_error()` 預設使用 `retcode=34000`（Platform Error）。
 
 ### 2. 錯誤碼規範
 
@@ -387,15 +388,19 @@ async def call_api(self, endpoint: str, **params):
 35000: Logic Error
 ```
 
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
 ## 多帳戶支援
 
 ### 1. 聲明式配置（推薦）
 
-使用 `AccountConfigClass` 聲明配置類後，框架自動管理多帳戶載入、驗證和範本生成。`BotAccountConfig` 基類提供 `enabled` 和 `name` 欄位，適配器無需聲明：
+使用 `AccountConfigClass` 聲明配置類後，框架會自動管理多帳戶的載入、驗證和模板生成。`BotAccountConfig` 基類提供 `enabled` 和 `name` 欄位，適配器無需聲明：
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BotAccountConfig
+from ErisPulse.Core.Bases import BotAccountConfig
 
 @dataclass
 class MyBotConfig(BotAccountConfig):
@@ -412,7 +417,7 @@ class MyAdapter(BaseAdapter):
         for name, account in self.enabled_accounts.items():
             self.logger.info(f"啟動帳戶 {name}")
             await self._connect(name, account.token)
-            # bot_id 由框架自動從平台協議/登入回應中取得並回填
+            # bot_id 由框架自動從平台協議/登入回應中獲取並回填
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
@@ -420,7 +425,7 @@ class MyAdapter(BaseAdapter):
         # name: 帳戶名, account: MyBotConfig 實例
 ```
 
-配置檔案自动生成為：
+配置文件會自動生成為：
 
 ```toml
 [MyAdapter.accounts.default]
@@ -431,10 +436,10 @@ name = ""
 
 ### 2. 帳戶選擇機制
 
-框架內建 `_resolve_account()` 方法，匹配優先順序：
+框架內建 `_resolve_account()` 方法，匹配優先順序如下：
 
 1. **帳戶名** — 配置鍵名精確匹配
-2. **`bot_id` 欄位** — 自動取得的 bot_id（即 `event["self"]["user_id"]`）
+2. **`bot_id` 欄位** — 自動獲取的 bot_id（即 `event["self"]["user_id"]`）
 3. **任意 str 欄位** — 配置中其他字串欄位
 4. **兜底** — 第一個啟用的帳戶
 
@@ -445,15 +450,14 @@ name, account = self._resolve_account("account1")
 # 按 bot_id 匹配（最常用的方式，來自事件）
 name, account = self._resolve_account("bot_123")
 
-# 取得第一個啟用的帳戶（傳入 None）
+# 獲取第一個啟用的帳戶（傳入 None）
 name, account = self._resolve_account(None)
-```
 
 ## 錯誤處理
 
 ### 1. 分類異常處理
 
-使用 `make_error()` 建構標準化錯誤回應。透過 `sdk.client` 請求時捕獲 ErisPulse 異常：
+使用 `make_error()` 建構標準化的錯誤回應。透過 `sdk.client` 發出請求時捕獲 ErisPulse 異常：
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
@@ -482,11 +486,11 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-> **向後相容**：直接使用 `aiohttp` 的舊適配器程式碼不受影響，仍可捕獲 `aiohttp.ClientError`。異常轉換僅在透過 `sdk.client` 發起請求時生效。
+> **向後相容**：直接使用 `aiohttp` 的舊適配器程式碼不受影響，仍可捕獲 `aiohttp.ClientError`。異常轉換僅在透過 `sdk.client` 發出請求時生效。
 
 ### 2. 日誌記錄
 
-框架自動為適配器建立子 logger（`sdk.logger.get_child("MyAdapter")`），無需手動初始化：
+框架會自動為適配器建立子 logger（`sdk.logger.get_child("MyAdapter")`），無需手動初始化：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -501,7 +505,6 @@ class MyAdapter(BaseAdapter):
         self.logger.info("適配器關閉中...")
         # ...
         self.logger.info("適配器關閉完成")
-```
 
 ## 測試
 
@@ -541,31 +544,30 @@ async def test_adapter_start():
 
 @pytest.mark.asyncio
 async def test_send_message():
-    """測試發送訊息"""
+    """測試傳送訊息"""
     adapter = MyAdapter()
     await adapter.start()
     
     result = await adapter.Send.To("user", "123").Text("Hello")
     assert result is not None
-```
 
 ## 反向轉換與訊息建構
 
-`Raw_ob12` 是適配器**必須實現**的方法，是反向轉換（OneBot12 → 平台）的統一入口。標準方法（`Text`、`Image` 等）應委託給 `Raw_ob12`，修飾器狀態（`At`/`Reply`/`AtAll`）需在 `Raw_ob12` 內合併為訊息段。
+`Raw_ob12` 是適配器**必須實現**的方法，是反向轉換（OneBot12 → 平台）的統一入口。標準方法（`Text`、`Image` 等）應委派給 `Raw_ob12`，修飾器狀態（`At`/`Reply`/`AtAll`）需在 `Raw_ob12` 內合併為訊息段。
 
 `MessageBuilder` 是配合 `Raw_ob12` 使用的訊息段建構工具，支援鏈式呼叫和快速建構。
 
 > 完整的實現規範、程式碼範例和使用方法請參閱：
-> - [發送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
-> - [發送方法規範 §11 訊息建構器](../../standards/send-method-spec.md#11-訊息建構器-messagebuilder)
+> - [傳送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
+> - [傳送方法規範 §11 訊息建構器](../../standards/send-method-spec.md#11-訊息建構器-messagebuilder)
 
 ## 平台事件方法擴展
 
-適配器可以為 Event 包裝類註冊平台專有方法，讓模組開發者能更方便地存取平台特有資料。
+適配器可以為 Event 包裝類註冊平台專有方法，讓模組開發者能更方便地存取平台特有的資料。
 
 ### 1. 使用 Mixin 類批量註冊（推薦）
 
-當平台有多個專有方法時，推薦使用 Mixin 類：
+當平台有許多專有方法時，推薦使用 Mixin 類：
 
 ```python
 # 在適配器的 start() 或模組層級註冊
@@ -589,7 +591,7 @@ class MyPlatformEventMixin:
 register_event_mixin("myplatform", MyPlatformEventMixin)
 ```
 
-### 2. 使用裝飾器註冊單個方法
+### 2. 使用裝飾器註冊單一方法
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -611,13 +613,13 @@ class MyAdapter(BaseAdapter):
         # ... 其他清理
 ```
 
-> 更詳細的註冊和註銷說明請參閱 [事件系統 API - 註冊平台擴展方法](../../api-reference/event-system.md#適配器註冊平台擴展方法)。
+> 更詳細的註冊和註銷說明請參閱 [事件系統 API - 適配器註冊平台擴展方法](../../api-reference/event-system.md#適配器註冊平台擴展方法)。
 
 ## 文件維護
 
 ### 1. 維護平台特性文件
 
-在 `docs/zh-TW/platform-guide/` 下建立 `{platform}.md` 文件(其它語言版本會自動產生)：
+在 `docs/zh-TW/platform-guide/` 下建立 `{platform}.md` 文件（其他語言版本會自動產生）：
 
 ```markdown
 # 平台名稱適配器文件
@@ -626,7 +628,7 @@ class MyAdapter(BaseAdapter):
 - 對應模組版本: 1.0.0
 - 維護者: Your Name
 
-## 支援的訊息發送類型
+## 支援的訊息傳送類型
 ...
 
 ## 特有事件類型
@@ -638,15 +640,17 @@ class MyAdapter(BaseAdapter):
 
 ### 2. 更新版本資訊
 
-發布新版本時，更新文件中的版本資訊：
+發佈新版本時，更新文件中的版本資訊：
 
 ```toml
 [project]
 version = "2.0.0"  # 更新版本號
 ```
 
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
 ## 相關文件
 
-- [適配器開發入門](getting-started.md) - 創建第一個適配器
-- [適配器核心概念](core-concepts.md) - 瞭解適配器架構
-- [SendDSL 詳解](send-dsl.md) - 學習訊息發送
+- [適配器開發入門](docs/zh-TW/getting-started.md) - 建立第一個適配器  
+- [適配器核心概念](docs/zh-TW/core-concepts.md) - 了解適配器架構  
+- [SendDSL 詳解](docs/zh-TW/send-dsl.md) - 學習訊息傳送

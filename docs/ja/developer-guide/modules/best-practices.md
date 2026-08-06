@@ -1,15 +1,32 @@
-# モジュール開発ベストプラクティス
+# モジュール開発におけるベストプラクティス
 
-このドキュメントでは、ErisPulse モジュール開発におけるベストプラクティスに関するアドバイスを提供します。
+このドキュメントでは、ErisPulse モジュール開発に関するベストプラクティスを提供します。
+
+以下のルールに従って変換してください。
+
+1.  Markdown形式を維持する（見出し、リスト、コードブロック、リンク、画像など）
+2.  用語を正確に翻訳し、専門性を保つ
+3.  コードブロック内のコードロジックは翻訳しないが、コード内の中国語コメント、文字列は日本語に翻訳する
+4.  原文の構造とトーンを維持する
+5.  用語について、日本語の対応用語が不明な場合は英語の原語を保持する
+6.  その他の説明や注釈は追加せず、翻訳後のコンテンツのみを返す
+7.  翻訳後のドキュメントに中国語（固有名詞を除く）が残らないようにする。これにはコードブロック内のコメントと文字列も含まれる
+8.  翻訳後のMarkdownコンテンツを直接出力する。```markdown```などのコードブロックで囲まない
+
+**重要：パス置換ルール**
+-   ドキュメントリンク内の `docs/ja/` を `docs/ja/` に置換する
+-   例：`docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更する
+-   現在の言語バージョンではないファイルを指し示すリンク（`README.xx.md` 形式のリンクなど）については、変更せずそのまま保持する
+-   これにより、正しい言語バージョンのドキュメントを指すようにする
 
 ## モジュール設計
 
-### 1. 単一責任原則
+### 1. 単一責任の原則
 
-各モジュールは、1つの核心機能のみを担当すべきです：
+各モジュールは1つのコア機能のみを担当する必要があります。
 
 ```python
-# 良い設計：各モジュールは1つの機能のみを担当
+# 良い設計：各モジュールは1つの機能のみを担当する
 class WeatherModule(BaseModule):
     """天気照会モジュール"""
     pass
@@ -18,7 +35,7 @@ class NewsModule(BaseModule):
     """ニュース照会モジュール"""
     pass
 
-# 悪い設計：1つのモジュールが複数の無関係な機能を担当
+# 悪い設計：1つのモジュールが複数の非関連な機能を担当する
 class UtilityModule(BaseModule):
     """天気、ニュース、ジョークなど複数の機能を含む"""
     pass
@@ -28,16 +45,16 @@ class UtilityModule(BaseModule):
 
 ```toml
 [project]
-name = "ErisPulse-ModuleName"  # ErisPulse- プリフィックスを使用
+name = "ErisPulse-ModuleName"  # ErisPulse- プレフィックスを使用
 ```
 
 ### 3. 明確な設定管理
 
-宣言的設定（`ConfigClass` + `BaseConfig`）の使用を推奨します。これにより、型安全性、自動テンプレート生成、WebUI フォームサポートなどの機能が提供されます：
+宣言的設定（`ConfigClass` + `BaseConfig`）を使用することを推奨します。これにより、型安全性、自動テンプレート生成、WebUI フォームサポートなどの機能が得られます。
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyModuleConfig(BaseConfig):
@@ -45,7 +62,7 @@ class MyModuleConfig(BaseConfig):
         "description": {"i18n": "my_module.api_url", "default": "API アドレス"},
     })
     timeout: int = field(default=30, metadata={
-        "description": {"i18n": "my_module.timeout", "default": "タイムアウト（秒）"},
+        "description": {"i18n": "my_module.timeout", "default": "タイムアウト時間（秒）"},
     })
     cache_ttl: int = field(default=3600, metadata={
         "description": {"i18n": "my_module.cache_ttl", "default": "キャッシュ有効期間（秒）"},
@@ -55,15 +72,15 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def do_something(self):
-        cfg = self.cfg  # 型安全性を確保、リアルタイムで読み取り
+        cfg = self.cfg  # 型安全性があり、即時読み込み
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-宣言的設定を使用する以外にも、引き続き手動での設定ストレージの読み書きを使用できます（[モジュールの核心的概念](core-concepts.md#設定管理)を参照）。
+また、手動での設定ストレージの読み書きを引き続き使用することも可能です（[モジュールの核心的な概念](core-concepts.md#設定管理)を参照）。
 
 ### 宣言的翻訳キー（v2.7.0+）
 
-モジュールは `I18nClass` を使用して翻訳キーを集中的に宣言できます。フレームワークが自動的に i18n システムに登録されるため、手動で `i18n.register()` を呼び出す必要はありません。
+モジュールは `I18nClass` を使用して翻訳キーを集中して宣言できます。フレームワークは i18n システムに自動的に登録されるため、手動で `i18n.register()` を呼び出す必要はありません。
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, I18nKey
@@ -79,7 +96,7 @@ class MyModule(BaseModule):
             ja="ようこそ、{name}！",
             ru="Добро пожаловать, {name}!",
         )
-        # 設定フィールドの説明を翻訳
+        # 設定フィールドの説明の翻訳
         api_url: I18nKey = I18nKey(
             default="API URL",
             zh_CN="API 地址",
@@ -90,14 +107,14 @@ class MyModule(BaseModule):
         )
 ```
 
-詳細な使用方法については、[i18n ドキュメント](../../advanced/i18n.md#推奨記述方法による-i18nclass-による翻訳キーの宣言-v270)を参照してください。
+詳細な使用方法については、[i18n ドキュメント](../../advanced/i18n.md#推奨される書き方 -i18nclass-で翻訳キーを宣言する-v270)を参照してください。
 
 ## 非同期プログラミング
 
 ### 1. 非同期ライブラリの使用
 
 ```python
-# SDK 内蔵 HTTP クライアント（非同期、自動ログおよび統計）の使用を推奨
+# SDK 内蔵の HTTP クライアント（非同期、自動ログと統計）を推奨します
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -105,7 +122,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# sdk.client を通じて使用することも可能（効果は同じ）
+# sdk.client を使用することもできます（同じ効果です）
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -113,7 +130,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# aiohttp を直接インポートしないでください（フレームワークの一元管理が困難になります）
+# aiohttp を直接インポートしないでください（フレームワークの統一管理が不便です）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -122,7 +139,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# requests を使用しないでください（同期処理、イベントループをブロックします）
+# requests を使用しないでください（同期で、イベントループをブロックします）
 import requests
 
 class MyModule(BaseModule):
@@ -130,14 +147,14 @@ class MyModule(BaseModule):
         return requests.get(url).json()  # イベントループをブロックします
 ```
 
-### 2. 正しい非同期操作
+### 2. 適切な非同期操作
 
 ```python
 async def handle_command(self, event):
-    # 長時間かかる処理をバックグラウンドで実行するために create_task を使用
+    # 長時間実行される操作をバックグラウンドで実行するために create_task を使用します
     task = asyncio.create_task(self._long_operation())
     
-    # 結果が必要な場合
+    # 結果を待つ必要がある場合
     result = await task
 ```
 
@@ -145,33 +162,32 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # SDK クライアントは自動的に接続プールを管理するため、手動でセッションを作成する必要はありません
+    # SDK クライアントは自動的に接続プールを管理しているため、手動でセッションを作成する必要はありません
     pass
     
 async def on_unload(self, event):
     # カスタムクライアントが必要な場合は、リソースのクリーンアップを忘れないでください
     pass
-```
 
 ## イベント処理
 
-### 1. Event ラッパークラスの使用
+### 1. Event クラスの使用
 
 ```python
-# Event ラッパークラスの簡便なメソッドを使用
+# Event クラスを利用する便利なメソッド
 @command("info")
 async def info_command(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"こんにちは、{nickname}！")
 
-# 辞書を直接アクセスしないこと
+# 辞書を直接アクセスする代わりに
 @command("info")
 async def info_command(event):
-    user_id = event["user_id"]  # 不十分で、間違いが発生しやすい
+    user_id = event["user_id"]  # 不明確で、エラーが発生しやすい
 ```
 
-### 2. 適切な遅延読み込み（Lazy Loading）の使用
+### 2. 適切な Lazy Load（遅延読み込み）の使用
 
 ```python
 # コマンド処理モジュールは即時読み込みが必要
@@ -193,42 +209,41 @@ class UtilityModule(BaseModule):
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-### 3. イベントハンドラの登録
+### 3. イベントハンドラーの登録
 
 ```python
 async def on_load(self, event):
-    # on_load 中にイベントハンドラを登録
+    # on_load でイベントハンドラーを登録
     @command("hello")
     async def hello_handler(event):
         await event.reply("こんにちは！")
     
     @message.on_group_message()
     async def group_handler(event):
-        self.logger.info("グループメッセージを受信")
+        self.logger.info("グループメッセージを受信しました")
     
-    # 手動でアン登録する必要はなく、フレームワークが自動的に処理します
-```
+    # 手動で登録解除する必要はありません。フレームワークが自動的に処理します
 
 ## エラー処理
 
-### 1. カテゴリ別の例外処理
+### 1. 例外処理の分類
 
 ```python
 async def handle_event(self, event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # 期待されるビジネスエラー
+        # 予期されるビジネスエラー
         self.logger.warning(f"ビジネス警告: {e}")
         await event.reply(f"パラメータエラー: {e}")
     except aiohttp.ClientError as e:
         # ネットワークエラー（sdk.client + ClientError の使用を推奨）
-        # 旧コードで直接 aiohttp を使用しても正常に動作しますが、新コードでは ErisPulse の例外体系を使用することを推奨します
+        # 旧コードは aiohttp を直接使用しても動作しますが、新コードでは ErisPulse 例外体系を使用することを推奨します
         self.logger.error(f"ネットワークエラー: {e}")
-        await event.reply("ネットワークリクエストが失敗しました。しばらくしてから再試行してください")
+        await event.reply("ネットワークリクエストに失敗しました。しばらく待ってから再試行してください")
     except Exception as e:
         # 予期しないエラー
-        self.logger.error(f"未知のエラー: {e}", exc_info=True)
+        self.logger.error(f"不明なエラー: {e}", exc_info=True)
         await event.reply("処理に失敗しました。管理者にお問い合わせください")
         raise
 ```
@@ -236,7 +251,7 @@ async def handle_event(self, event):
 ### 2. タイムアウト処理
 
 ```python
-# SDK 内蔵クライアント（タイムアウトとリトライを搭載）の使用を推奨
+# SDK 内蔵クライアント（タイムアウトとリトライ機能付き）の使用を推奨
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -247,11 +262,10 @@ async def fetch_with_timeout(self, url, timeout=30):
     except ClientTimeoutError:
         self.logger.warning(f"リクエストタイムアウト: {url}")
         raise
-```
 
 ## ストレージシステム
 
-### 1. トランザクションの使用
+### 1. トランザクションを使用する
 
 ```python
 # トランザクションを使用してデータの一貫性を確保
@@ -260,10 +274,10 @@ async def update_user(self, user_id, data):
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ トランザクションを使用しない場合、データの一貫性が損なわれる可能性があります
+# ❌ トランザクションを使用しないと、データの一貫性が損なわれる可能性があります
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # ここでエラーが発生した場合、上記の設定をロールバックできません
+    # ここでエラーが発生すると、上記の設定はロールバックされません
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
@@ -280,43 +294,41 @@ def cache_multiple_items(self, items):
 def cache_multiple_items(self, items):
     for k, v in items.items():
         self.sdk.storage.set(f"item:{k}", v)
-```
 
 ## ロギング
 
-### 1. 適切なログレベルの使用
+### 1. ログレベルを適切に使用する
 
 ```python
 # DEBUG: 詳細なデバッグ情報（開発時のみ）
 self.logger.debug(f"入力パラメータ: {params}")
 
-# INFO: 正常な実行情報
+# INFO: 正常な実行時の情報
 self.logger.info("モジュールが読み込まれました")
 self.logger.info(f"リクエストを処理中: {request_id}")
 
-# WARNING: 警告情報、主な機能には影響しません
-self.logger.warning(f"設定項目 {key} が設定されていません。デフォルト値を使用します")
-self.logger.warning("API レスポンスが遅いです。最適化が必要かもしれません")
+# WARNING: 警告メッセージ。主要な機能には影響しない
+self.logger.warning(f"設定項目 {key} が設定されていません、デフォルト値を使用します")
+self.logger.warning("API レスポンスが遅い、最適化の必要がある可能性があります")
 
-# ERROR: エラー情報
-self.logger.error(f"API リクエストが失敗しました: {e}")
-self.logger.error(f"イベント処理に失敗しました: {e}", exc_info=True)
+# ERROR: エラーメッセージ
+self.logger.error(f"API リクエストに失敗しました: {e}")
+self.logger.error(f"イベントの処理に失敗しました: {e}", exc_info=True)
 
-# CRITICAL: 致命的なエラー、即座に処理が必要
-self.logger.critical("データベース接続に失敗しました。ボットが正常に動作しません")
+# CRITICAL: 致命的なエラー、即座に対処が必要
+self.logger.critical("データベース接続に失敗しました、ボットを正常に実行できません")
 ```
 
-### 2. 構造化ログ
+### 2. 構造化されたロギング
 
 ```python
-# 構造化ログを使用すると、解析しやすくなります
+# 構造化されたログを使用すると解析が容易になります
 self.logger.info(f"リクエストを処理中: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
-# ❌ 非構造化ログを使用しないこと
-self.logger.info(f"リクエストを処理しました。ユーザー {user_id} から、所要時間 {duration} ミリ秒")
-```
+# ❌ 非構造化ログを使用
+self.logger.info(f"リクエストを処理しました。ユーザー {user_id} からのもの、所要時間 {duration} ミリ秒")
 
-## パフォーマンス最適化
+## パフォーマンスの最適化
 
 ### 1. キャッシュの使用
 
@@ -342,53 +354,51 @@ class MyModule(BaseModule):
 ### 2. ブロッキング操作の回避
 
 ```python
-# 非同期操作を使用
+# 非同期操作の使用
 async def process_message(self, event):
     # 非同期処理
     await self._async_process(event)
 
 # ❌ ブロッキング操作
 async def process_message(self, event):
-    # 同期処理、イベントループをブロック
+    # 同期操作、イベントループをブロック
     result = self._sync_process(event)
-```
 
 ## セキュリティ
 
-### 1. 機密データの保護
+### 1. 敏感データの保護
 
 ```python
-# 機密データは設定に保存
+# 設定に敏感データを保存
 class MyModule(BaseModule):
     def _load_config(self):
         config = self.sdk.config.getConfig("MyModule")
         self.api_key = config.get("api_key")
         
         if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("有効な API キーを config.toml に設定してください")
+            raise ValueError("config.toml で有効な API キーを設定してください")
 
-# ❌ 機密データをハードコードしないこと
+# ❌ 機密情報をハードコーディングするのは避けてください
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # このようなことをしないでください！
+    API_KEY = "sk-1234567890"  # このようなことはしないでください！
 ```
 
-### 2. 入力検証
+### 2. 入力値の検証
 
 ```python
 # ユーザー入力を検証
 async def process_command(self, event):
     user_input = event.get_text()
     
-    # 入力長を検証
+    # 入力の長さを検証
     if len(user_input) > 1000:
-        await event.reply("入力が長すぎます。再度入力してください")
+        await event.reply("入力が長すぎます。もう一度入力してください")
         return
     
-    # 入力形式を検証
+    # 入力の形式を検証
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("入力形式が正しくありません")
         return
-```
 
 ## テスト
 
@@ -412,16 +422,15 @@ class TestMyModule:
 ```python
 @pytest.mark.asyncio
 async def test_command_handling():
-    """コマンド処理をテスト"""
+    """コマンドの処理をテスト"""
     module = MyModule()
     await module.on_load({})
     
-    # コマンドイベントをシミュレート
+    # コマンドイベントのシミュレーション
     event = create_test_command_event("hello")
     await module.handle_command(event)
-```
 
-## デプロイ
+## 部署
 
 ### 1. バージョン管理
 
@@ -431,27 +440,55 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-セマンティックバージョンに従います：
+セマンティックバージョン（Semantic Versioning）に従います：
 - MAJOR.MINOR.PATCH
-- メジャーバージョン：非互換な API の変更
-- マイナーバージョン：下位互換の新機能追加
-- パッチ番号：下位互換のバグ修正
+- メジャーバージョン：互換性のない API 変更
+- マイナーバージョン：下位互換な機能の追加
+- パッチバージョン：下位互換な問題修正
 
-### 2. ドキュメントの充実
+### 2. README ヘッダー
+
+`epsdk create` が生成する README には、ErisPulse ブランドのヘッダー（ロゴ + バッジ行）が組み込まれています。2つの推奨モードがあります。
+
+**モード A — ErisPulse ロゴのみ（デフォルト）：**
 
 ```markdown
-# README.md
+<div align="center">
 
-- モジュールの概要
-- インストール手順
-- 設定手順
-- 使用例
-- API ドキュメント
-- 貢献ガイド
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
+
+# MyModule
+
+**一言で説明**
+
+<p>
+  <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
+  <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
+  <a href="https://github.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/Powered_by-ErisPulse-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="ErisPulse"></a>
+</p>
+
+</div>
 ```
+
+**モード B — モジュールのアイコン × ErisPulse ロゴ（カスタムアイコンがある場合）：**
+
+```markdown
+<div align="center">
+
+<img src=".github/assets/MyModuleIcon.svg" width="120" alt="MyModule" />
+<span style="font-size:44px;color:#c8c8c8;margin:0 18px;vertical-align:middle;">×</span>
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
+
+# MyModule
+（バッジ行は上記と同じ）
+</div>
+```
+
+GitHub Stars や Downloads などのバッジを必要に応じて追加できます。ロゴもプロジェクトのローカルにダウンロードして（`.github/assets/ErisPulseLogo.png`）、相対パスで参照することも可能です。
 
 ## 関連ドキュメント
 
-- [モジュール開発入門](getting-started.md) - 最初のモジュールの作成
-- [モジュールの核心的概念](core-concepts.md) - モジュールアーキテクチャの理解
+- [モジュール開発入門](getting-started.md) - 初めてのモジュールを作成する
+- [モジュールのコア概念](core-concepts.md) - モジュールアーキテクチャを理解する
 - [Event ラッパークラス](event-wrapper.md) - イベント処理の詳細

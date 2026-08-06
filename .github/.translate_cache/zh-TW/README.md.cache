@@ -1,5 +1,33 @@
 {
-  "hash": "54cedc0a731af1b001dfa238f20b9dd0",
-  "translated_at": "2026-08-03T16:57:59.088507",
-  "target_lang": "zh-TW"
+  "version": 2,
+  "hash": "840f33b70073c8305c60f407f15ddf14",
+  "file_hash": "840f33b70073c8305c60f407f15ddf14",
+  "translated_at": "2026-08-05T22:15:43.503922",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "254235fd6bc9a91a587e42bb57e101cf",
+      "translation": "# ErisPulse 文件\n\nErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配器與不同平台互動，提供靈活的模組系統用於功能擴展。\n\n> **第一次使用？** 直接看 [5 分鐘快速入門](docs/zh-TW/quick-start.md) —— 從安裝到執行第一個機器人，一氣呵成。\n\n---\n\n請直接返回翻譯後的完整 Markdown 文件，不要包含任何其他文字。\n\n再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。"
+    },
+    {
+      "hash": "daa6a64f9d018fa76d807fb23937e0ba",
+      "translation": "## 選擇你的路徑\n\n根據你的目標，選擇對應的學習路徑。每條路徑內部按由淺入深排列。\n\n### 一、我要使用機器人\n\n讓機器人跑起來、安裝模組、進行設定。\n\n| 進度 | 文件 | 說明 |\n|------|------|------|\n| **① 開始** | [5 分鐘快速入門](quick-start.md) | 安裝、初始化、運行 —— 唯一的起步入口 |\n| ② 深入 | [建立第一個機器人](getting-started/first-bot.md) | 編寫第一個指令處理器 |\n| ③ 概念 | [基礎概念](getting-started/basic-concepts.md) | 理解適配器/模組/事件的設計 |\n| ④ 實戰 | [常見任務範例](getting-started/common-tasks.md) | 存儲、定時任務、權限控制 |\n| 參考 | [設定檔說明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md) | 按需查閱 |\n| 參考 | [平台特性指南](platform-guide/README.md) | 各平台（雲湖/QQ/Telegram…）的差異 |\n\n### 二、我要開發模組 / 適配器\n\n為 ErisPulse 編寫可分發的擴充。\n\n| 類型 | 入門 | 進階 |\n|------|------|------|\n| **模組開發**（推薦） | [模組開發入門](developer-guide/modules/getting-started.md) | [核心概念](developer-guide/modules/core-concepts.md) · [Event 包裝類](developer-guide/modules/event-wrapper.md) · [最佳實踐](developer-guide/modules/best-practices.md) |\n| **適配器開發** | [適配器開發入門](developer-guide/adapters/getting-started.md) | [核心概念](developer-guide/adapters/core-concepts.md) · [SendDSL 詳解](developer-guide/adapters/send-dsl.md) · [事件轉換器](developer-guide/adapters/converter.md) · [最佳實踐](developer-guide/adapters/best-practices.md) |\n| **技術標準** | [標準規範總覽](standards/README.md) | 適配器開發必須遵循的 [會話類型](standards/session-types.md) · [事件轉換](standards/event-conversion.md) · [發送方法](standards/send-method-spec.md) · [API 回應](standards/api-response.md) · [請求操作](standards/request-action-spec.md) 規範 |\n| **發布** | [發布與模組商店](developer-guide/publishing.md) | 將作品發布到 PyPI 和模組商店 |\n\n### 三、我要深入了解原理\n\n了解框架內部如何運作。\n\n| 文件 | 說明 |\n|------|------|\n| [架構概覽](architecture.md) | 可視化圖表：核心架構、初始化流程、事件處理、生命週期 |\n| [啟動流程與手動控制](advanced/startup.md) | 啟動鏈路拆解、手動驅動各環節、載入失敗診斷 |\n| [事件系統](api-reference/event-system.md) | 五大類事件的完整 API |\n| [適配器系統](api-reference/adapter-system.md) | 適配器註冊、啟停、API 調用 |\n| [核心模組](api-reference/core-modules.md) | Storage / Config / Logger / Router 等基礎能力 |\n| [生命週期管理](advanced/lifecycle.md) · [懶加載](advanced/lazy-loading.md) · [路由系統](advanced/router.md) | 內部子系統 |\n| [Conversation 多輪對話](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL 建構](advanced/sql-builder.md) · [HTTP 客戶端](advanced/http-client.md) · [國際化](advanced/i18n.md) | 進階工具 |\n\n### 四、推薦生態模組\n\n按需安裝、即裝即用的 **第三方社群模組**（不是框架內建功能）。\n\n| 文件 | 說明 |\n|------|------|\n| [生態模組總覽](ecosystem/README.md) | 了解如何安裝生態模組、為什麼這些不是內建功能 |\n| [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web 管理面板 + 視窗註冊 API（模組可向側邊欄註冊自訂頁面） |\n| [ErisPulse-Takumi](ecosystem/takumi.md) | 圖片渲染（HTML / 節點樹 / SVG / 動畫，內建中英文字型） |\n\n### 五、我要為 ErisPulse 貢獻\n\n讓框架變得更好\n\n| 文件 | 說明 |\n|------|------|\n| [為 ErisPulse 貢獻](contributing/README.md) | 貢獻方式總覽：文件 / i18n / Bug / 模組 / 適配器 |\n| [首次貢獻](contributing/first-contribution.md) | 從 fork 到提交 PR |"
+    },
+    {
+      "hash": "2bad658d27e429c59a7083fcfd507c0d",
+      "translation": "## 開發方式\n\nErisPulse 支援兩種開發方式：\n\n- **模組開發（推薦）**：建立獨立的模組套件，透過套件管理工具安裝，便於分發與管理。\n- **嵌入式開發**：直接在專案中編寫處理器，適合快速原型。詳見 [快速開始](docs/zh-TW/quick-start.md)。\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。"
+    },
+    {
+      "hash": "34f8a4487c3bf3a567d4dc3c0adadc8d",
+      "translation": "## 其他\n\n- [文件風格指南](styleguide/docstring.md) — 貢獻文件時的寫作規範  \n- [為 ErisPulse 貢獻](contributing/README.md) — 參與項目共建的入口  \n- [AI 輔助開發](ai-support/README.md) — 獲取供 AI 編程助手使用的項目提示詞"
+    },
+    {
+      "hash": "7a2e105f3a88deac58b8116579cf47af",
+      "translation": "## 獲取幫助\n\n- GitHub 倉庫：[https://github.com/ErisPulse/ErisPulse](https://github.com/ErisPulse/ErisPulse)\n- 問題回報：提交 Issue\n- 技術討論：查看 Discussions\n\ndocs/zh-TW/quick-start.md"
+    },
+    {
+      "hash": "2426932a5a75aac5cad90550954fa4a2",
+      "translation": "## 相關連結\n\n- [OneBot12 標準](https://12.onebot.dev/)\n- [雲湖官方文件](https://www.yhchat.com/document/)\n- [Telegram Bot API](https://core.telegram.org/bots/api)"
+    }
+  ]
 }
