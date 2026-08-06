@@ -227,7 +227,7 @@ class TestAdapterManager:
             # 验证
             assert result is True
             mock_set.assert_called_once_with(
-                "ErisPulse.adapters.status.test_platform", True
+                "ErisPulse.adapters.status.test_platform", True, immediate=True
             )
 
     def test_adapter_disable(self, manager, test_adapter_class):
@@ -242,7 +242,7 @@ class TestAdapterManager:
             # 验证
             assert result is True
             mock_set.assert_called_once_with(
-                "ErisPulse.adapters.status.test_platform", False
+                "ErisPulse.adapters.status.test_platform", False, immediate=True
             )
 
     def test_unregister_adapter(self, manager, test_adapter_class):
@@ -2362,3 +2362,4 @@ class TestBaseConverter:
         c = BaseConverter("t")
         with pytest.raises(NotImplementedError):
             c.convert({})
+

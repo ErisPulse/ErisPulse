@@ -607,3 +607,158 @@ class TestGlobalLogger:
 
         # 验证
         assert logger1 is logger2
+
+
+# ==================== % 参数格式化测试 ====================
+
+
+class TestPercentFormatting:
+    """内存副本 / 日志订阅器应正确应用 % 格式化（修复日志列表显示原始 %s 的问题）"""
+
+    @pytest.fixture
+    def temp_logger(self):
+        test_logger = Logger()
+        yield test_logger
+
+    def test_memory_message_formatted(self, temp_logger):
+        """带 %s 参数的日志，内存副本应显示格式化后的文本"""
+        temp_logger.info("box: %s", "ABC")
+        messages = []
+        for logs in temp_logger._logs.values():
+            messages.extend(entry["message"] for entry in logs)
+        assert any(m == "box: ABC" for m in messages)
+
+    def test_handler_receives_formatted(self, temp_logger):
+        """带 %s 参数的日志，订阅器应收到格式化后的文本"""
+        received = []
+
+        @temp_logger.handler("fmt-test", min_level="TRACE")
+        def on_log(d):
+            received.append(d)
+
+        temp_logger.info("value=%s and=%s", 1, 2)
+        assert any("value=1 and=2" in d["message"] for d in received)
+
+    def test_no_args_keeps_percent_literal(self, temp_logger):
+        """无参数时 %s 应保持字面量（与 logging 语义一致，不受影响）"""
+        received = []
+
+        @temp_logger.handler("fmt-literal", min_level="TRACE")
+        def on_log(d):
+            received.append(d)
+
+        temp_logger.info("literal %s stays")
+        assert any("literal %s stays" in d["message"] for d in received)
+
+    def test_mapping_style_formatted(self, temp_logger):
+        """%(key)s 映射风格参数也应被格式化"""
+        received = []
+
+        @temp_logger.handler("fmt-map", min_level="TRACE")
+        def on_log(d):
+            received.append(d)
+
+        temp_logger.info("%(k)s", {"k": "mapped-value"})
+        assert any("mapped-value" in d["message"] for d in received)
+
+
+# ==================== 输出格式（rich / plain / json）测试 ====================
+
+
+class TestOutputFormat:
+    """set_format 支持 rich / plain / json 三种控制台格式"""
+
+    @pytest.fixture
+    def temp_logger(self, capsys):
+        test_logger = Logger()
+        yield test_logger
+
+    def test_plain_format_output(self, temp_logger, capsys):
+        """plain 格式输出纯文本：时间 + 级别 + 消息，无颜色标记"""
+        assert temp_logger.set_format("plain") is True
+        temp_logger.info("plain message")
+        captured = capsys.readouterr()
+        assert "plain message" in (captured.out + captured.err)
+        assert "[INFO]" in (captured.out + captured.err)
+
+    def test_json_format_output(self, temp_logger, capsys):
+        """json 格式输出 JSON 结构化文本"""
+        assert temp_logger.set_format("json") is True
+        temp_logger.info("json message")
+        captured = capsys.readouterr()
+        text = (captured.out + captured.err).strip()
+        assert text.startswith("{")
+        assert "json message" in text
+
+    def test_rich_format_restore(self, temp_logger):
+        """切换回 rich 后，json 模式标志应复位"""
+        assert temp_logger.set_format("json") is True
+        assert temp_logger._json_mode is True
+        assert temp_logger.set_format("rich") is True
+        assert temp_logger._json_mode is False
+
+    def test_invalid_format_rejected(self, temp_logger):
+        """非法格式名应返回 False 且不改变当前格式"""
+        assert temp_logger.set_format("plain") is True
+        assert temp_logger.set_format("nope") is False
+        assert temp_logger._json_mode is False
+
+    def test_set_json_format_backward_compat(self, temp_logger):
+        """set_json_format(True/False) 兼容旧调用"""
+        assert temp_logger.set_json_format(True) is True
+        assert temp_logger._json_mode is True
+        assert temp_logger.set_json_format(False) is True
+        assert temp_logger._json_mode is False
+
+
+# ==================== print_* 视觉输出进入日志管道 ====================
+
+
+class TestUIPrintPipeline:
+    """print_section_header / print_info / print_tree_item 应进入内存与订阅器（含补发）"""
+
+    @pytest.fixture
+    def temp_logger(self):
+        test_logger = Logger()
+        yield test_logger
+
+    def test_ui_lines_reach_subscriber(self, temp_logger):
+        """print_* 输出应实时推送给日志订阅器"""
+        received = []
+
+        @temp_logger.handler("ui-live", min_level="INFO")
+        def on_log(d):
+            received.append(d)
+
+        temp_logger.print_section_header("入口发现阶段")
+        temp_logger.print_info("发现 3 个适配器")
+        temp_logger.print_tree_item("Dashboard", level=1, is_last=True, tag="[立即加载]")
+
+        messages = [d["message"] for d in received]
+        assert any("入口发现阶段" in m for m in messages)
+        assert any("发现 3 个适配器" in m for m in messages)
+        assert any("Dashboard" in m and "立即加载" in m for m in messages)
+
+    def test_ui_lines_replayed_to_late_subscriber(self, temp_logger):
+        """晚注册的订阅器应补发历史 print_* 输出"""
+        temp_logger.print_section_header("适配器注册阶段")
+        temp_logger.print_info("发现 2 个适配器")
+
+        received = []
+
+        @temp_logger.handler("ui-replay", min_level="INFO")
+        def on_log(d):
+            received.append(d)
+
+        messages = [d["message"] for d in received]
+        assert any("适配器注册阶段" in m for m in messages)
+        assert any("发现 2 个适配器" in m for m in messages)
+
+    def test_ui_lines_stored_in_memory(self, temp_logger):
+        """print_* 输出应写入内存日志（get_logs 可见）"""
+        temp_logger.print_tree_item("MyModule", level=0, is_last=False)
+        all_logs = temp_logger.get_logs()
+        flat = []
+        for logs in all_logs.values():
+            flat.extend(logs)
+        assert any("MyModule" in entry for entry in flat)

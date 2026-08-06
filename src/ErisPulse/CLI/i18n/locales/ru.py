@@ -205,6 +205,7 @@ TRANSLATIONS = {
     "cli.list.count_adapters": "{count} адаптера(ов)",
     "cli.list.no_adapters": "Нет подходящих адаптеров",
     "cli.list.no_packages": "Нет {pkg_type}",
+    "cli.list.empty_hint": "Выполните 'epsdk install' для просмотра и установки компонентов, или 'epsdk init' для создания проекта",
     # ==================== команда list-remote ====================
     "cli.list_remote.description": "Список удаленно доступных компонентов",
     "cli.list_remote.type_help": "Тип списка (по умолчанию: all)",
@@ -416,6 +417,8 @@ TRANSLATIONS = {
     "cli.doctor.proxy_none": "не обнаружен",
     "cli.doctor.failed": "[готово] Есть проблемы, см. вывод выше",
     "cli.doctor.all_ok": "[готово] Окружение в порядке",
+    "cli.doctor.status_ok": "OK",
+    "cli.doctor.status_fail": "FAIL",
     # ==================== команда types ====================
     "cli.types.description": "Сгенерировать файл заглушек типов для автодополнения IDE",
     "cli.types.output_help": "Путь вывода (по умолчанию: ./_ep_types.py)",

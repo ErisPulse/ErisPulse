@@ -914,4 +914,102 @@ class TestConfigSchemaI18n:
             i18n._current_lang = saved_lang
 
 
+# ==================== 整棵写入 vs 叶子写入 / 热更新防覆盖 ====================
+
+
+class TestConfigHotUpdateProtection:
+    """update_erispulse_config 等整棵写入不应覆盖用户热更新（禁用=卸载 场景）"""
+
+    @pytest.fixture
+    def manager(self, tmp_path):
+        """独立的 ConfigManager 实例指向临时配置文件"""
+        from ErisPulse.Core.config import ConfigManager
+
+        cfg_file = tmp_path / "config.toml"
+        cfg_file.write_text(
+            """[ErisPulse.modules.status]
+HotMod = true
+
+[ErisPulse.logger]
+level = "INFO"
+""",
+            encoding="utf-8",
+        )
+        mgr = ConfigManager(str(cfg_file))
+        mgr._dirty_keys.clear()
+        return mgr
+
+    def test_update_writes_leaf_not_whole_tree(self, manager):
+        """update_erispulse_config 应写入叶子键，而非整棵 ErisPulse"""
+        from ErisPulse.runtime.frame_config import update_erispulse_config
+
+        with patch("ErisPulse.runtime.frame_config._get_config_service", return_value=manager):
+            result = update_erispulse_config({"master": {"users": ["123"]}})
+
+        assert result is True
+        # 不应出现整棵 ErisPulse 脏键
+        assert "ErisPulse" not in manager._dirty_keys
+        # 应只写入变化的叶子
+        assert manager._dirty_keys.get("ErisPulse.master.users") == ["123"]
+        # 用户已有的 status 不应被整棵覆盖（不会出现在脏键中）
+        assert "ErisPulse.modules.status" not in manager._dirty_keys
+
+    def test_leaf_dirty_keys_do_not_flip_user_edit(self, manager, tmp_path):
+        """框架只写叶子脏键后，用户编辑 status 不会被叶子脏键覆盖"""
+        cfg_file = tmp_path / "config.toml"
+        # 模拟 update_erispulse_config 产生的叶子脏键
+        manager._dirty_keys["ErisPulse.master.users"] = ["123"]
+        manager._dirty_keys["ErisPulse.logger.level"] = "DEBUG"
+
+        # 用户外部编辑文件：HotMod = false
+        cfg_file.write_text(
+            """[ErisPulse.modules.status]
+HotMod = false
+
+[ErisPulse.logger]
+level = "INFO"
+""",
+            encoding="utf-8",
+        )
+        # 重载（模拟 watcher），并触发 flush
+        manager._load_config()
+        manager.setConfig("other.key", "v", immediate=True)
+
+        import toml
+
+        final = toml.loads(cfg_file.read_text(encoding="utf-8"))
+        assert final["ErisPulse"]["modules"]["status"]["HotMod"] is False
+        # 叶子脏键仍然生效（进程待写）
+        assert final["ErisPulse"]["master"]["users"] == ["123"]
+
+    def test_redundant_dirty_key_dropped_after_reload(self, manager, tmp_path):
+        """与重载后文件一致的待写键应被丢弃，避免无谓覆盖"""
+        cfg_file = tmp_path / "config.toml"
+        manager._dirty_keys["ErisPulse.modules.status.HotMod"] = True
+        cfg_file.write_text(
+            """[ErisPulse.modules.status]
+HotMod = true
+
+[ErisPulse.logger]
+level = "INFO"
+""",
+            encoding="utf-8",
+        )
+        manager._load_config()
+        assert "ErisPulse.modules.status.HotMod" not in manager._dirty_keys
+
+    def test_get_erispulse_config_writes_only_missing_leaves(self, manager):
+        """get_erispulse_config 补全默认时只写缺失叶子，不写整棵"""
+        from ErisPulse.runtime.frame_config import get_erispulse_config
+
+        with patch("ErisPulse.runtime.frame_config._get_config_service", return_value=manager):
+            get_erispulse_config()
+
+        # 不应出现整棵 ErisPulse 脏键
+        assert "ErisPulse" not in manager._dirty_keys
+        # 应写入缺失的默认叶子（如 server.host），但保留用户 status
+        assert "ErisPulse.server.host" in manager._dirty_keys
+        assert "ErisPulse.modules.status" not in manager._dirty_keys
+
+
 

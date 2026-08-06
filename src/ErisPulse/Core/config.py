@@ -248,12 +248,41 @@ class ConfigManager:
             else:
                 self._cache = config
                 self._cache_timestamp = time.time()
+                # 外部修改重载后，丢弃与新文件一致的待写键，
+                # 避免陈旧的整棵/叶子脏键在下次 flush 时覆盖用户热更新
+                self._drop_redundant_dirty_keys()
                 if not self._cache:
                     self._log_config_error(
                         i18n.t("core.config.loaded_empty", path=self.CONFIG_FILE),
                         level="debug",
                     )
                 return True
+
+    def _drop_redundant_dirty_keys(self) -> None:
+        """
+        丢弃与新配置文件内容一致的待写键
+
+        配置重载（外部修改）后，部分待写键的值可能已与文件一致，
+        继续保留会在下次 flush 时用陈旧快照覆盖用户热更新。
+        仅当待写值已反映在缓存（即文件）中时才丢弃；真正未落盘的写入仍保留。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        if not self._dirty_keys:
+            return
+        for key in list(self._dirty_keys):
+            value = self._dirty_keys[key]
+            current = self._cache
+            found = True
+            for k in key.split("."):
+                if isinstance(current, dict) and k in current:
+                    current = current[k]
+                else:
+                    found = False
+                    break
+            if found and current == value:
+                del self._dirty_keys[key]
 
     @staticmethod
     def _log_config_error(message: str, level: str = "error") -> None:

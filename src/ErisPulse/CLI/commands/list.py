@@ -121,6 +121,7 @@ class ListCommand(Command):
                 self._print_package_scripts(installed["modules"])
             else:
                 console.print(f"[dim]  {i18n.t('cli.list.no_modules')}[/]")
+                console.print(f"[dim]  {i18n.t('cli.list.empty_hint')}[/]")
 
         elif pkg_type == "adapters" and installed["adapters"]:
             table = Table(
@@ -154,11 +155,13 @@ class ListCommand(Command):
                 )
             else:
                 console.print(f"[dim]  {i18n.t('cli.list.no_adapters')}[/]")
+                console.print(f"[dim]  {i18n.t('cli.list.empty_hint')}[/]")
 
         elif not installed.get(pkg_type, {}):
             console.print(
                 f"[dim]  {i18n.t('cli.list.no_packages', pkg_type=pkg_type)}[/]"
             )
+            console.print(f"[dim]  {i18n.t('cli.list.empty_hint')}[/]")
 
     def _is_package_outdated(
         self,

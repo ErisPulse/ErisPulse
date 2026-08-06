@@ -63,6 +63,33 @@
 
 ---
 
+## [2.7.1-dev.1] - 2026/08/06
+> 开发版本
+
+**版本摘要**
+面向 UX/DX 与配置健壮性的维护版本。修复配置整棵覆盖导致的热更新被陈旧快照冲掉、后台线程执行 on_unload 触发 "attached to a different loop"、日志列表显示原始 `%s` 等问题；多处硬编码中文文案 i18n 化（全 5 语言）；`epsdk doctor`/`list` 输出优化。
+
+### 修复
+- @wsu2059q
+  - `Core/config` 配置整棵覆盖 bug：`update_erispulse_config`/`get_erispulse_config` 原以整棵 `ErisPulse` 作为单个脏键写入，陈旧的整棵快照会在下次 flush 时覆盖用户对其它子键的热更新。改为按叶子键写入，并在重载后丢弃与文件一致的冗余脏键
+  - `Core/logger` 内存副本/日志订阅器未应用 `%` 格式化，日志列表（如 Dashboard）显示原始 `%s`；现与控制台输出一致
+  - `Core/logger` `print_section_header`/`print_info`/`print_tree_item` 等视觉输出绕过日志管道，Dashboard 日志列表看不到启动阶段标题/数量/组件树，也无法在订阅器注册时补发；现统一写入内存、订阅器与日志文件（INFO 级别）
+  - `Core/module` `disable()`/`unload()` 未清理未实例化的懒加载代理；`enable()`/`disable()` 改为 `immediate=True` 立即持久化（修复"禁用后重启仍启用"）
+  - `runtime/tasks` `spawn_background` 在无事件循环的后台线程中改为主循环调度（`register_main_loop` + `run_coroutine_threadsafe`），修复热卸载时 "Future attached to a different loop"
+  - `CLI/utils/display` `_input` 未转义 Rich 标记，配置值含 `[`/`[/]` 时崩溃；统一转义提示文本
+
+### 优化
+- @wsu2059q
+  - 严格模式：非法 `strict_mode` 配置值大声告警并回退默认；启动末尾新增"宽松模式下被容忍组件"汇总面板与可操作提示
+  - 启动 Discovery 阶段组件名去重（只显示一行数量，完整树保留在 Init Complete 摘要）
+  - Finder 发现失败与"确实未安装"区分；Event handler 错误日志补充 handler/type/owner 上下文
+  - 硬编码中文 i18n 化：模块加载器 SystemExit/初始化失败、finder 报错、base loader、适配器慢处理器日志（全 5 语言）
+  - `epsdk doctor` 增加 OK/FAIL 状态列定位问题项；`epsdk list` 空状态给出 `install`/`init` 提示
+  - `Core/config` 配置文件读取失败文案改为"继续使用上次有效配置"（与保留缓存的实际行为一致）
+  - `Core/logger` 新增 `plain` 日志格式（`set_format("plain")` / 配置 `format = "plain"`）：纯文本无颜色输出，适合日志采集与管道重定向；`set_json_format` 保留向后兼容
+
+---
+
 ## [2.7.1-dev.0] - 2026/08/06
 > 开发版本
 

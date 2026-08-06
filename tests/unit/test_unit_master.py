@@ -197,3 +197,22 @@ class TestMasterList:
             assert "123" in result["yunhu"]
             assert "789" in result["telegram"]
             assert "999" in result["global"]
+
+    def test_config_master_live_reload(self):
+        """主人配置无需重启即可生效：每次 is_master 检查都实时读取配置"""
+        mgr = MasterManager()
+        with patch(
+            "ErisPulse.Core.master.get_master_config",
+            side_effect=[
+                {"users": ["10001"]},
+                {"users": ["10001"]},
+                {"users": ["20002"]},
+                {"users": ["20002"]},
+            ],
+        ):
+            # 第一次读取：旧配置
+            assert mgr.is_master("yunhu", "10001") is True
+            assert mgr.is_master("yunhu", "20002") is False
+            # 配置变更后（模拟编辑 config.toml），无需重启即感知新主人
+            assert mgr.is_master("yunhu", "10001") is False
+            assert mgr.is_master("yunhu", "20002") is True

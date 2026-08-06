@@ -195,3 +195,87 @@ class TestViolationDataclass:
     def test_violation_default_detail(self):
         v = Violation("Foo", "adapter", "not_base_class")
         assert v.detail == ""
+
+
+# ==================== tolerated：宽松模式容忍记录 ====================
+
+
+class TestStrictModeTolerated:
+    """宽松级别下被容忍加载的组件应记录到 tolerated，供启动摘要展示"""
+
+    def test_lenient_tolerated_tracked(self):
+        mgr = StrictModeManager(level=0)
+        mgr.decide("Foo", "module", "not_base_class")
+        assert len(mgr.tolerated) == 1
+        assert mgr.tolerated[0].name == "Foo"
+        assert mgr.tolerated[0].reason == "not_base_class"
+
+    def test_tolerated_empty_at_skip_level(self):
+        mgr = StrictModeManager(level=1)
+        mgr.decide("Foo", "module", "not_base_class")
+        assert len(mgr.tolerated) == 0
+
+    def test_exempted_not_in_tolerated(self):
+        mgr = StrictModeManager(
+            level=0, exceptions={"modules": ["Legacy"], "adapters": []}
+        )
+        mgr.decide("Legacy", "module", "not_base_class")
+        assert len(mgr.tolerated) == 0
+
+    def test_tolerated_is_readonly_copy(self):
+        mgr = StrictModeManager(level=0)
+        mgr.decide("Foo", "module", "not_base_class")
+        view = mgr.tolerated
+        view.clear()
+        assert len(mgr.tolerated) == 1
+
+
+# ==================== from_config：strict_mode 值校验 ====================
+
+
+class TestStrictModeFromConfig:
+    """from_config 应对非法 strict_mode 值告警并回退默认，而非静默生效"""
+
+    def test_valid_int_level(self, monkeypatch):
+        monkeypatch.setattr(
+            "ErisPulse.runtime.get_framework_config",
+            lambda: {"strict_mode": 2},
+        )
+        mgr = StrictModeManager.from_config()
+        assert mgr.level == 2
+
+    def test_valid_numeric_string_level(self, monkeypatch):
+        monkeypatch.setattr(
+            "ErisPulse.runtime.get_framework_config",
+            lambda: {"strict_mode": "1"},
+        )
+        mgr = StrictModeManager.from_config()
+        assert mgr.level == 1
+
+    def test_invalid_string_falls_back_to_default(self, monkeypatch):
+        monkeypatch.setattr(
+            "ErisPulse.runtime.get_framework_config",
+            lambda: {"strict_mode": "fatal"},
+        )
+        mgr = StrictModeManager.from_config()
+        assert mgr.level == 0
+
+    def test_out_of_range_number_falls_back(self, monkeypatch):
+        monkeypatch.setattr(
+            "ErisPulse.runtime.get_framework_config",
+            lambda: {"strict_mode": 9},
+        )
+        mgr = StrictModeManager.from_config()
+        assert mgr.level == 0
+
+    def test_invalid_value_preserves_exceptions(self, monkeypatch):
+        monkeypatch.setattr(
+            "ErisPulse.runtime.get_framework_config",
+            lambda: {
+                "strict_mode": "abc",
+                "strict_mode_exceptions": {"modules": ["Legacy"]},
+            },
+        )
+        mgr = StrictModeManager.from_config()
+        assert mgr.level == 0
+        assert mgr.is_exempt("Legacy", "module")

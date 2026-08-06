@@ -1052,7 +1052,9 @@ class AdapterManager(ManagerBase):
             logger.error(i18n.t("core.adapter.platform_not_exist", platform=platform))
             return False
 
-        config.setConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform), True)
+        config.setConfig(
+            CONFIG_KEY_ADAPTER_STATUS_OF.format(platform), True, immediate=True
+        )
         logger.info(i18n.t("core.adapter.platform_enabled", platform=platform))
         return True
 
@@ -1075,7 +1077,9 @@ class AdapterManager(ManagerBase):
             logger.error(i18n.t("core.adapter.platform_not_exist", platform=platform))
             return False
 
-        config.setConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform), False)
+        config.setConfig(
+            CONFIG_KEY_ADAPTER_STATUS_OF.format(platform), False, immediate=True
+        )
         logger.info(i18n.t("core.adapter.platform_disabled", platform=platform))
         return True
 
@@ -1514,18 +1518,28 @@ class AdapterManager(ManagerBase):
                     # 调用过 wait_reply：纯等待属于交互白名单
                     if _pure > HANDLER_SLOW_THRESHOLD_SECS:
                         logger.warning(
-                            f"事件处理器执行缓慢 [{_func_name}] "
-                            f"耗时 {elapsed:.2f}s "
-                            f"(wait_reply={_wait_total:.2f}s, pure={_pure:.2f}s)"
-                            f" > {HANDLER_SLOW_THRESHOLD_SECS}s "
-                            f"type={event_type} platform={platform}{_owner_tag}"
+                            i18n.t(
+                                "core.adapter.handler_slow",
+                                handler=_func_name,
+                                elapsed=f"{elapsed:.2f}",
+                                threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                type=event_type,
+                                platform=platform,
+                                tag=_owner_tag,
+                            )
                         )
                     else:
                         logger.trace(
-                            f"事件处理器 [{_func_name}] 耗时 {elapsed:.2f}s "
-                            f"(wait_reply={_wait_total:.2f}s, pure={_pure:.2f}s) "
-                            f"interactive-wait, suppressed slow-warning "
-                            f"type={event_type} platform={platform}{_owner_tag}"
+                            i18n.t(
+                                "core.adapter.handler_slow_trace",
+                                handler=_func_name,
+                                elapsed=f"{elapsed:.2f}",
+                                wait=f"{_wait_total:.2f}",
+                                pure=f"{_pure:.2f}",
+                                type=event_type,
+                                platform=platform,
+                                tag=_owner_tag,
+                            )
                         )
                 elif elapsed > HANDLER_SLOW_THRESHOLD_SECS:
                     logger.warning(

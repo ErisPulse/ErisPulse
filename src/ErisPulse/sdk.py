@@ -547,6 +547,31 @@ class SDK:
                             ),
                             tag_style="yellow",
                         )
+                    self.logger.print_info(
+                        i18n.t("core.sdk.init.strict_action_hint"), level=1
+                    )
+
+                # 严格模式被容忍的组件（宽松模式下仍在运行，单独列出便于排查）
+                tolerated = self._strict_manager.tolerated
+                if tolerated:
+                    self.logger.print_info(
+                        i18n.t(
+                            "core.sdk.init.strict_tolerated", count=len(tolerated)
+                        ),
+                        level=1,
+                    )
+                    for i, violation in enumerate(tolerated):
+                        is_last = i == len(tolerated) - 1
+                        self.logger.print_tree_item(
+                            violation.name,
+                            level=1,
+                            is_last=is_last,
+                            tag=i18n.t(
+                                "core.sdk.init.strict_rejected_reason",
+                                reason=violation.reason,
+                            ),
+                            tag_style="yellow",
+                        )
 
                 self.logger.print_section_footer()
 
@@ -1279,6 +1304,15 @@ class SDK:
         >>> await sdk.run(before_init=before, after_init=after, on_ready=ready)
         """
         try:
+            # 注册主事件循环，供后台线程（config watcher 等）把协程调度回主循环，
+            # 避免热更新在临时事件循环中执行业务代码导致 "attached to a different loop"
+            try:
+                from .runtime.tasks import register_main_loop
+
+                register_main_loop(asyncio.get_running_loop())
+            except Exception:
+                pass
+
             isInit = await self.init(
                 before_init=before_init, after_init=after_init
             )

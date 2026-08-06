@@ -20,6 +20,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+from ...Core.i18n import i18n
 from ...Core.logger import logger
 
 
@@ -76,9 +77,10 @@ class _RemoteEntryPoint:
         :raises RuntimeError: 跨环境查询时不支持在当前进程加载目标环境的对象
         """
         raise RuntimeError(
-            "_RemoteEntryPoint.load() 不可用：跨环境查询无法在当前进程加载"
-            "目标环境的 entry-point 对象，请通过 .value 自行解析或使用"
-            "目标环境直接调用。"
+            i18n.t(
+                "finder.remote_load_unavailable",
+                python=self.dist.name if self.dist else "?",
+            )
         )
 
     def __repr__(self) -> str:
@@ -115,6 +117,18 @@ class BaseFinder(ABC):
         self._cache_time: float | None = None
         self._cache_expiry: int = 60  # 缓存有效期60秒
         self._python_executable = python_executable or sys.executable
+        # 最近一次发现操作的错误信息（None 表示成功/无错误），
+        # 供上层区分"发现失败"与"确实没有安装任何组件"
+        self._last_error: str | None = None
+
+    @property
+    def last_error(self) -> str | None:
+        """
+        最近一次 entry-point 发现操作的错误信息
+
+        :return: [str | None] 发现失败时的错误描述，成功或从未失败时返回 None
+        """
+        return self._last_error
 
     @abstractmethod
     def _get_entry_point_group(self) -> str:
@@ -191,15 +205,27 @@ class BaseFinder(ABC):
                 check=False,
             )
             if result.returncode != 0:
+                self._last_error = result.stderr.strip()
                 logger.error(
-                    f"查询目标环境 {self._python_executable} 的 entry-points 失败: "
-                    f"{result.stderr.strip()}"
+                    i18n.t(
+                        "finder.remote_query_failed",
+                        group=group_name,
+                        python=self._python_executable,
+                        stderr=result.stderr.strip(),
+                    )
                 )
                 return []
             data = json.loads(result.stdout)
             return [_RemoteEntryPoint(d) for d in data]
         except Exception as e:
-            logger.error(f"查询目标环境 {self._python_executable} 失败: {e}")
+            self._last_error = str(e)
+            logger.error(
+                i18n.t(
+                    "finder.remote_query_exception",
+                    python=self._python_executable,
+                    error=e,
+                )
+            )
             return []
 
     def _get_entry_points(self) -> list[Any]:
@@ -220,12 +246,18 @@ class BaseFinder(ABC):
             if time.time() - self._cache_time < self._cache_expiry:
                 return list(self._cache.values())
 
-        logger.trace(f"正在从 entry-points 查找 {group_name}...")
+        # 新一轮发现开始，清除上次错误标记（缓存命中时不改动，保留错误信息）
+        self._last_error = None
+
+        logger.trace(i18n.t("finder.query_started", group=group_name))
 
         try:
             if self._is_remote_target():
                 # 查询目标 Python 环境（跨环境场景）
                 entries = self._fetch_remote_entry_points(group_name)
+                # 远程查询失败时 _fetch_remote_entry_points 已记录错误并返回 []
+                if self._last_error is not None:
+                    return []
             else:
                 # 加载 entry-points（当前环境）
                 entry_points = importlib.metadata.entry_points()
@@ -239,12 +271,17 @@ class BaseFinder(ABC):
             self._cache = {entry.name: entry for entry in entries}
             self._cache_time = time.time()
 
-            logger.trace(f"找到 {len(entries)} 个 {group_name} entry-points")
+            logger.trace(
+                i18n.t("finder.found_count", count=len(entries), group=group_name)
+            )
 
             return entries
 
         except Exception as e:
-            logger.error(f"查找 {group_name} entry-points 失败: {e}")
+            self._last_error = str(e)
+            logger.error(
+                i18n.t("finder.entry_points_query_failed", group=group_name, error=e)
+            )
             return []
 
     def find_all(self) -> list[Any]:

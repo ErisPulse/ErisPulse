@@ -9,6 +9,7 @@ from collections.abc import Callable
 from typing import Any
 
 from rich.box import SIMPLE
+from rich.markup import escape
 from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
@@ -45,7 +46,9 @@ def _input(prompt_label: str = ">") -> str:
     :param prompt_label: [str] 提示标签 (默认: ">")
     :return: [str] 用户输入内容（已去除首尾空白）
     """
-    console.print(f"  [dim]{prompt_label}[/] ", end="")
+    # 转义富文本标记
+    escaped = escape(prompt_label)
+    console.print(f"  [dim]{escaped}[/] ", end="")
     try:
         return input().strip()
     except (EOFError, KeyboardInterrupt):
