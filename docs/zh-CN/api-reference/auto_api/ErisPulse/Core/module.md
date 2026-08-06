@@ -80,6 +80,16 @@ ErisPulse 模块系统
 ---
 
 
+##### `_cleanup_lazy(module_name: str)`
+
+> **内部方法**
+清理模块的懒加载代理与 SDK 属性（模块未实例化时也有效）
+
+- **module_name**: 模块名称
+
+---
+
+
 ##### `_resolve_config_key(instance: Any)`
 
 > **内部方法**
