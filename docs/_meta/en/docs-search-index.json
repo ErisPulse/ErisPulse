@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1401,
+  "total_keywords": 1393,
   "keywords": {
     "- \"auto\"      — Automatically detect system language (default)": [
       {
@@ -3532,14 +3532,6 @@
         "title": "Command Command Module"
       }
     ],
-    "Command Configuration": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 218,
-        "level": 3,
-        "title": "Command Configuration"
-      }
-    ],
     "Command Decorator": [
       {
         "document": "getting-started/first-bot.md",
@@ -3733,7 +3725,7 @@
     "Complete Configuration Example": [
       {
         "document": "user-guide/configuration.md",
-        "line": 84,
+        "line": 105,
         "level": 2,
         "title": "Complete Configuration Example"
       }
@@ -3913,17 +3905,17 @@
     "Configuration File Location": [
       {
         "document": "user-guide/configuration.md",
-        "line": 6,
+        "line": 10,
         "level": 2,
         "title": "Configuration File Location"
       }
     ],
-    "Configuration Hot Update": [
+    "Configuration Hot Reload": [
       {
         "document": "user-guide/configuration.md",
-        "line": 63,
+        "line": 77,
         "level": 2,
-        "title": "Configuration Hot Update"
+        "title": "Configuration Hot Reload"
       }
     ],
     "Configuration Instructions": [
@@ -3955,7 +3947,7 @@
     "Configuration Loading Error Handling": [
       {
         "document": "user-guide/configuration.md",
-        "line": 17,
+        "line": 25,
         "level": 2,
         "title": "Configuration Loading Error Handling"
       }
@@ -4977,7 +4969,7 @@
     "Environment Variable Override": [
       {
         "document": "user-guide/configuration.md",
-        "line": 38,
+        "line": 48,
         "level": 2,
         "title": "Environment Variable Override"
       }
@@ -5144,14 +5136,6 @@
         "line": 91,
         "level": 4,
         "title": "Event Basic Information"
-      }
-    ],
-    "Event Configuration": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 216,
-        "level": 2,
-        "title": "Event Configuration"
       }
     ],
     "Event Conversion": [
@@ -5496,14 +5480,6 @@
         "title": "Exception System"
       }
     ],
-    "Exemption List": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 193,
-        "level": 4,
-        "title": "Exemption List"
-      }
-    ],
     "Expression/Sticker Message Segment (yunhu_expression)": [
       {
         "document": "platform-guide/yunhu.md",
@@ -5740,14 +5716,6 @@
         "line": 263,
         "level": 3,
         "title": "Forwarded Message Segment (ideaura_forwarded)"
-      }
-    ],
-    "Framework Configuration": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 157,
-        "level": 2,
-        "title": "Framework Configuration"
       }
     ],
     "Framework logic for extracting bot_id": [
@@ -6774,14 +6742,6 @@
         "title": "Internationalization (i18n) System"
       }
     ],
-    "Internationalization Configuration": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 245,
-        "level": 2,
-        "title": "Internationalization Configuration"
-      }
-    ],
     "Introduction to Module Development": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -7142,14 +7102,6 @@
         "title": "Logging"
       }
     ],
-    "Logging Configuration": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 141,
-        "level": 2,
-        "title": "Logging Configuration"
-      }
-    ],
     "Logic Execution After Sending Success": [
       {
         "document": "getting-started/common-tasks.md",
@@ -7326,14 +7278,6 @@
         "line": 293,
         "level": 3,
         "title": "Mention Message Segment"
-      }
-    ],
-    "Message Configuration": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 234,
-        "level": 3,
-        "title": "Message Configuration"
       }
     ],
     "Message Content": [
@@ -7852,14 +7796,6 @@
         "title": "Module"
       }
     ],
-    "Module Configuration": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 256,
-        "level": 2,
-        "title": "Module Configuration"
-      }
-    ],
     "Module Design": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -8172,12 +8108,6 @@
       {
         "document": "quick-start.md",
         "line": 167,
-        "level": 2,
-        "title": "Next Steps"
-      },
-      {
-        "document": "user-guide/configuration.md",
-        "line": 285,
         "level": 2,
         "title": "Next Steps"
       },
@@ -9172,6 +9102,14 @@
         "title": "Raw Messages and Message Building"
       }
     ],
+    "Reading configuration": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 306,
+        "level": 1,
+        "title": "Reading configuration"
+      }
+    ],
     "Receive Type": [
       {
         "document": "advanced/session-types.md",
@@ -10004,6 +9942,14 @@
         "title": "SQL Query Builder"
       }
     ],
+    "Saving immediately to file": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 313,
+        "level": 1,
+        "title": "Saving immediately to file"
+      }
+    ],
     "Scheduled Tasks": [
       {
         "document": "getting-started/common-tasks.md",
@@ -10266,14 +10212,6 @@
         "line": 68,
         "level": 3,
         "title": "Sending to Different Targets"
-      }
-    ],
-    "Server Configuration": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 124,
-        "level": 2,
-        "title": "Server Configuration"
       }
     ],
     "Session Identifiers": [
@@ -10660,14 +10598,6 @@
         "title": "Storage Backend Abstraction"
       }
     ],
-    "Storage Configuration": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 205,
-        "level": 2,
-        "title": "Storage Configuration"
-      }
-    ],
     "Storage Module": [
       {
         "document": "api-reference/core-modules.md",
@@ -10682,14 +10612,6 @@
         "line": 212,
         "level": 1,
         "title": "Store data"
-      }
-    ],
-    "Strict Mode": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 176,
-        "level": 3,
-        "title": "Strict Mode"
       }
     ],
     "Style Guide": [
@@ -11890,6 +11812,14 @@
         "line": 14,
         "level": 2,
         "title": "Working Principle"
+      }
+    ],
+    "Writing configuration at runtime (delayed save)": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 310,
+        "level": 1,
+        "title": "Writing configuration at runtime (delayed save)"
       }
     ],
     "Yunhu Platform Feature Documentation": [

@@ -2995,7 +2995,7 @@ project/
 
 ```
 [ERROR] [Config] 配置文件 config/config.toml 语法错误（第 3 行 第 1 列）: ...
-[WARNING] [Config] 已回退到默认配置，您的自定义设置未生效——请修复后重启
+[WARNING] [Config] 配置文件读取失败。继续使用上次有效配置运行，本次文件修改未生效——请修复后重新加载或重启
 ```
 
 这样你可以在**默认 INFO 级别**下立刻定位问题，而不会困惑"为什么我改的配置没生效"。
@@ -3037,6 +3037,7 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 | **命令系统 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一条消息即生效 |
 | **适配器并发** | `framework.handler_max_concurrency` | 失效缓存信号量，按新值重建 |
 | **主动 GC** | `framework.proactive_gc_interval` | 每轮重读，支持运行时调整/禁用 |
+| **主人系统 Master** | `master.users` | 每次 `is_master()` 检查实时读取，无需重启 |
 | **模块/适配器配置** | 各自的配置项 | 触发 `on_config_update(old, new)` 回调 |
 
 **需重启的配置**（无法安全热切换，变更时会输出告警"需重启进程后生效"）：
@@ -3117,7 +3118,7 @@ memory_limit = 1000
 | 配置项 | 类型 | 默认值 | 说明 |
 |---------|------|---------|------|
 | level | string | INFO | 日志级别：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 为最低级别，输出框架内部详细调试信息） |
-| format | string | rich | 日志输出格式，默认使用 rich 彩色输出 |
+| format | string | rich | 日志输出格式：`rich`（彩色，默认）、`plain`（纯文本无颜色，适合日志采集/管道重定向）、`json`（JSON 结构化，适合 ELK 等） |
 | log_files | array | 空 | 日志输出文件列表 |
 | memory_limit | integer | 1000 | 内存中保存的日志条数 |
 

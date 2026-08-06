@@ -91,6 +91,15 @@ ErisPulse 基础发现器
 ---
 
 
+##### `last_error()`
+
+最近一次 entry-point 发现操作的错误信息
+
+**返回值** (`str | None`): 发现失败时的错误描述，成功或从未失败时返回 None
+
+---
+
+
 ##### `_get_entry_point_group()`
 
 获取 entry-point 组名

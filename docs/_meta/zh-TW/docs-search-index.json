@@ -4305,7 +4305,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 285,
+        "line": 312,
         "level": 2,
         "title": "下一步"
       },
@@ -4640,14 +4640,6 @@
         "title": "事件訂閱（Intents）"
       }
     ],
-    "事件設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 216,
-        "level": 2,
-        "title": "事件設定"
-      }
-    ],
     "事件轉換": [
       {
         "document": "standards/README.md",
@@ -4670,6 +4662,14 @@
         "line": 1,
         "level": 1,
         "title": "事件轉換器實現指南"
+      }
+    ],
+    "事件配置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 239,
+        "level": 2,
+        "title": "事件配置"
       }
     ],
     "事件類型": [
@@ -4885,7 +4885,7 @@
     "伺服器設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 124,
+        "line": 139,
         "level": 2,
         "title": "伺服器設定"
       }
@@ -5313,7 +5313,7 @@
     "儲存設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 205,
+        "line": 226,
         "level": 2,
         "title": "儲存設定"
       }
@@ -5964,14 +5964,6 @@
         "title": "命令裝飾器"
       }
     ],
-    "命令設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 218,
-        "level": 3,
-        "title": "命令設定"
-      }
-    ],
     "命令資訊": [
       {
         "document": "api-reference/event-system.md",
@@ -6006,6 +5998,14 @@
         "line": 64,
         "level": 2,
         "title": "命令選項"
+      }
+    ],
+    "命令配置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 241,
+        "level": 3,
+        "title": "命令配置"
       }
     ],
     "命名規範": [
@@ -6043,7 +6043,7 @@
     "嚴格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 176,
+        "line": 197,
         "level": 3,
         "title": "嚴格模式"
       }
@@ -6148,12 +6148,12 @@
         "title": "國際化 (i18n) 系統"
       }
     ],
-    "國際化設定": [
+    "國際化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 245,
+        "line": 268,
         "level": 2,
-        "title": "國際化設定"
+        "title": "國際化配置"
       }
     ],
     "圖片下載和儲存": [
@@ -6960,20 +6960,20 @@
         "title": "完整範例"
       }
     ],
-    "完整設定示例": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 84,
-        "level": 2,
-        "title": "完整設定示例"
-      }
-    ],
     "完整郵件事件": [
       {
         "document": "platform-guide/email.md",
         "line": 203,
         "level": 3,
         "title": "完整郵件事件"
+      }
+    ],
+    "完整配置示例": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 97,
+        "level": 2,
+        "title": "完整配置示例"
       }
     ],
     "定時任務": [
@@ -8514,20 +8514,20 @@
         "title": "日誌訊息"
       }
     ],
-    "日誌設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 141,
-        "level": 2,
-        "title": "日誌設定"
-      }
-    ],
     "日誌資訊": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 537,
         "level": 3,
         "title": "日誌資訊"
+      }
+    ],
+    "日誌配置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 160,
+        "level": 2,
+        "title": "日誌配置"
       }
     ],
     "更新已發布模組": [
@@ -8918,12 +8918,12 @@
         "title": "根頁面"
       }
     ],
-    "框架設定": [
+    "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 157,
+        "line": 178,
         "level": 2,
-        "title": "框架設定"
+        "title": "框架配置"
       }
     ],
     "條件監聽": [
@@ -9174,14 +9174,6 @@
         "title": "模組發現機制"
       }
     ],
-    "模組設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 256,
-        "level": 2,
-        "title": "模組設定"
-      }
-    ],
     "模組設計": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -9196,6 +9188,14 @@
         "line": 175,
         "level": 2,
         "title": "模組載入策略"
+      }
+    ],
+    "模組配置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 281,
+        "level": 2,
+        "title": "模組配置"
       }
     ],
     "模組開發": [
@@ -9434,20 +9434,20 @@
         "title": "消息編輯通知示例"
       }
     ],
-    "消息設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 234,
-        "level": 3,
-        "title": "消息設定"
-      }
-    ],
     "消息轉發事件": [
       {
         "document": "platform-guide/ideaura.md",
         "line": 169,
         "level": 3,
         "title": "消息轉發事件"
+      }
+    ],
+    "消息配置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 257,
+        "level": 3,
+        "title": "消息配置"
       }
     ],
     "消息類型判斷": [
@@ -9787,7 +9787,7 @@
     "環境變數覆蓋": [
       {
         "document": "user-guide/configuration.md",
-        "line": 38,
+        "line": 48,
         "level": 2,
         "title": "環境變數覆蓋"
       }
@@ -11232,14 +11232,6 @@
         "title": "設定欄位說明"
       }
     ],
-    "設定熱更新": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 63,
-        "level": 2,
-        "title": "設定熱更新"
-      }
-    ],
     "設定範例": [
       {
         "document": "platform-guide/onebot11.md",
@@ -11523,7 +11515,7 @@
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
-        "line": 193,
+        "line": 214,
         "level": 4,
         "title": "豁免清單"
       }
@@ -12246,20 +12238,20 @@
         "title": "配置慢載"
       }
     ],
-    "配置檔位置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 6,
-        "level": 2,
-        "title": "配置檔位置"
-      }
-    ],
-    "配置檔說明": [
+    "配置文件說明": [
       {
         "document": "user-guide/configuration.md",
         "line": 1,
         "level": 1,
-        "title": "配置檔說明"
+        "title": "配置文件說明"
+      }
+    ],
+    "配置檔位置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 10,
+        "level": 2,
+        "title": "配置檔位置"
       }
     ],
     "配置欄位多語言": [
@@ -12268,6 +12260,14 @@
         "line": 279,
         "level": 2,
         "title": "配置欄位多語言"
+      }
+    ],
+    "配置熱更新": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 73,
+        "level": 2,
+        "title": "配置熱更新"
       }
     ],
     "配置管理": [
@@ -12333,7 +12333,7 @@
     "配置載入錯誤處理": [
       {
         "document": "user-guide/configuration.md",
-        "line": 17,
+        "line": 27,
         "level": 2,
         "title": "配置載入錯誤處理"
       }
