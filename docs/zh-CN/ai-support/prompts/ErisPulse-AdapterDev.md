@@ -6547,6 +6547,14 @@ sdk.logger.set_level("TRACE")                          # 开启全部日志
 
 供 Dashboard 等模块实时接收结构化日志，支持等级筛选和历史补发。
 
+> **显式订阅低级别日志**：订阅器的 `min_level` 可低于全局日志级别。此时低级别日志**仅推送给匹配的订阅器**，不会输出到控制台，也不会写入内存，从而避免污染主日志流。
+>
+> ```python
+> # 全局为 INFO，仍可单独订阅 DEBUG 日志
+> @sdk.logger.handler("debug-tracer", min_level="DEBUG")
+> def on_debug(log_data: dict): ...
+> ```
+
 ```python
 # 装饰器方式
 @sdk.logger.handler("my-handler", min_level="INFO")
@@ -6566,7 +6574,7 @@ sdk.logger.remove_handler("my-handler")
 
 | 方法 | 说明 |
 |------|------|
-| `handler(id, *, min_level)(func)` | 装饰器/直接调用两用。`id` 为空时取函数名。注册时自动补发历史日志 |
+| `handler(id, *, min_level)(func)` | 装饰器/直接调用两用。`id` 为空时取函数名。`min_level` 可低于全局级别（低级别日志仅推送订阅器，不进控制台/内存）。注册时自动补发历史日志 |
 | `remove_handler(id)` | 移除订阅器 |
 
 ### 输出控制

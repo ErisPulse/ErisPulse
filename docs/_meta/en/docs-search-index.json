@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1393,
+  "total_keywords": 1396,
   "keywords": {
     "- \"auto\"      — Automatically detect system language (default)": [
       {
@@ -1967,25 +1967,13 @@
     "API Overview": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 95,
+        "line": 314,
         "level": 3,
         "title": "API Overview"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 194,
-        "level": 3,
-        "title": "API Overview"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 234,
-        "level": 3,
-        "title": "API Overview"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 261,
+        "line": 354,
         "level": 3,
         "title": "API Overview"
       }
@@ -2026,6 +2014,14 @@
         "line": 429,
         "level": 3,
         "title": "API Standard"
+      }
+    ],
+    "API Summary": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 109,
+        "level": 3,
+        "title": "API Summary"
       }
     ],
     "Abstract Types": [
@@ -2187,7 +2183,7 @@
     "Adapter Events": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 207,
+        "line": 327,
         "level": 3,
         "title": "Adapter Events"
       }
@@ -2227,7 +2223,7 @@
     "Adapter Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 190,
+        "line": 310,
         "level": 2,
         "title": "Adapter Module"
       }
@@ -2414,6 +2410,14 @@
         "title": "Article Message Segment (yunhu_user_post)"
       }
     ],
+    "Async Interfaces": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 181,
+        "level": 3,
+        "title": "Async Interfaces"
+      }
+    ],
     "Async Processing Mechanism": [
       {
         "document": "platform-guide/onebot11.md",
@@ -2444,14 +2448,6 @@
         "line": 94,
         "level": 3,
         "title": "Asynchronous Initialization"
-      }
-    ],
-    "Asynchronous Interfaces": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 67,
-        "level": 3,
-        "title": "Asynchronous Interfaces"
       }
     ],
     "Asynchronous Processing Mechanism": [
@@ -2497,13 +2493,7 @@
     "Attribute Access": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 36,
-        "level": 3,
-        "title": "Attribute Access"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 249,
+        "line": 150,
         "level": 3,
         "title": "Attribute Access"
       },
@@ -2749,7 +2739,7 @@
     "Basic Operations": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 9,
+        "line": 123,
         "level": 3,
         "title": "Basic Operations"
       }
@@ -2818,12 +2808,6 @@
         "title": "Basic Usage"
       },
       {
-        "document": "api-reference/core-modules.md",
-        "line": 124,
-        "level": 3,
-        "title": "Basic Usage"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 62,
         "level": 3,
@@ -2865,7 +2849,7 @@
     "Batch Operations": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 20,
+        "line": 134,
         "level": 3,
         "title": "Batch Operations"
       }
@@ -3023,7 +3007,7 @@
     "Bot Status Query": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 219,
+        "line": 339,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -3402,14 +3386,6 @@
         "line": 1010,
         "level": 1,
         "title": "Check if a Bot is online"
-      }
-    ],
-    "Child Loggers": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 134,
-        "level": 3,
-        "title": "Child Loggers"
       }
     ],
     "Choice Menu (choose)": [
@@ -3804,14 +3780,6 @@
         "line": 202,
         "level": 3,
         "title": "Config (Configuration)"
-      }
-    ],
-    "Config Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 91,
-        "level": 2,
-        "title": "Config Module"
       }
     ],
     "Configuration": [
@@ -4314,14 +4282,6 @@
         "title": "Core Methods"
       }
     ],
-    "Core Module API": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 1,
-        "level": 1,
-        "title": "Core Module API"
-      }
-    ],
     "Core Module Description": [
       {
         "document": "architecture.md",
@@ -4344,6 +4304,14 @@
         "line": 18,
         "level": 3,
         "title": "Core Modules"
+      }
+    ],
+    "Core Modules API": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 1,
+        "level": 1,
+        "title": "Core Modules API"
       }
     ],
     "Core Principles": [
@@ -4518,6 +4486,14 @@
         "title": "Decorator Routes (Recommended)"
       }
     ],
+    "Decorator style": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 281,
+        "level": 1,
+        "title": "Decorator style"
+      }
+    ],
     "Default Configuration": [
       {
         "document": "platform-guide/onebot11.md",
@@ -4666,6 +4642,14 @@
         "line": 133,
         "level": 3,
         "title": "Direct Message Sending"
+      }
+    ],
+    "Direct call style": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 292,
+        "level": 1,
+        "title": "Direct call style"
       }
     ],
     "Directory Structure": [
@@ -5434,26 +5418,32 @@
         "title": "Event-Driven Architecture"
       }
     ],
-    "Example": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 108,
-        "level": 3,
-        "title": "Example"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 273,
-        "level": 3,
-        "title": "Example"
-      }
-    ],
     "Example Usage in Module": [
       {
         "document": "advanced/lifecycle.md",
         "line": 277,
         "level": 2,
         "title": "Example Usage in Module"
+      }
+    ],
+    "Examples": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 22,
+        "level": 4,
+        "title": "Examples"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 53,
+        "level": 4,
+        "title": "Examples"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 85,
+        "level": 4,
+        "title": "Examples"
       }
     ],
     "Exception Handling": [
@@ -6085,7 +6075,7 @@
     "HTTP Client Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 316,
+        "line": 434,
         "level": 2,
         "title": "HTTP Client Module"
       }
@@ -6128,6 +6118,14 @@
         "line": 190,
         "level": 3,
         "title": "HTTP Routes"
+      }
+    ],
+    "HTTP route": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 417,
+        "level": 1,
+        "title": "HTTP route"
       }
     ],
     "HTTPStatusError": [
@@ -6906,14 +6904,6 @@
         "title": "Lifecycle Management"
       }
     ],
-    "Lifecycle Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 257,
-        "level": 2,
-        "title": "Lifecycle Module"
-      }
-    ],
     "List Bots of a specific platform": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -7062,36 +7052,12 @@
         "title": "Log Information"
       }
     ],
-    "Log Level Control": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 143,
-        "level": 3,
-        "title": "Log Level Control"
-      }
-    ],
-    "Log Subscription (Push Mode)": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 155,
-        "level": 3,
-        "title": "Log Subscription (Push Mode)"
-      }
-    ],
     "Logger (Logging)": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 217,
         "level": 3,
         "title": "Logger (Logging)"
-      }
-    ],
-    "Logger Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 120,
-        "level": 2,
-        "title": "Logger Module"
       }
     ],
     "Logging": [
@@ -7790,6 +7756,12 @@
     ],
     "Module": [
       {
+        "document": "api-reference/core-modules.md",
+        "line": 350,
+        "level": 2,
+        "title": "Module"
+      },
+      {
         "document": "developer-guide/publishing.md",
         "line": 42,
         "level": 4,
@@ -7862,14 +7834,6 @@
         "line": 175,
         "level": 2,
         "title": "Module Loading Strategy"
-      }
-    ],
-    "Module Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 230,
-        "level": 2,
-        "title": "Module Module"
       }
     ],
     "Module Overview": [
@@ -7996,6 +7960,14 @@
         "line": 489,
         "level": 3,
         "title": "Multi-turn Dialogue (conversation)"
+      }
+    ],
+    "MurmurHash": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 10,
+        "level": 3,
+        "title": "MurmurHash"
       }
     ],
     "Must package names start with `ErisPulse-`?": [
@@ -8380,14 +8352,6 @@
         "title": "Outbound Protocol"
       }
     ],
-    "Output Control": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 181,
-        "level": 3,
-        "title": "Output Control"
-      }
-    ],
     "Overriding Built-in Methods": [
       {
         "document": "api-reference/event-system.md",
@@ -8413,6 +8377,12 @@
         "document": "advanced/router.md",
         "line": 5,
         "level": 2,
+        "title": "Overview"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 5,
+        "level": 3,
         "title": "Overview"
       },
       {
@@ -8540,6 +8510,14 @@
         "line": 285,
         "level": 2,
         "title": "Permission Control"
+      }
+    ],
+    "Pkg": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 41,
+        "level": 3,
+        "title": "Pkg"
       }
     ],
     "Platform Capability Query": [
@@ -8794,6 +8772,14 @@
         "title": "Project Templates"
       }
     ],
+    "Property Access": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 369,
+        "level": 3,
+        "title": "Property Access"
+      }
+    ],
     "Protocol Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -8824,6 +8810,26 @@
         "line": 367,
         "level": 3,
         "title": "Proxy Configuration"
+      }
+    ],
+    "Public API": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 13,
+        "level": 4,
+        "title": "Public API"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 44,
+        "level": 4,
+        "title": "Public API"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 74,
+        "level": 4,
+        "title": "Public API"
       }
     ],
     "Publish to Docker Hub Simultaneously": [
@@ -8880,6 +8886,14 @@
         "line": 17,
         "level": 2,
         "title": "Purpose"
+      }
+    ],
+    "Pz": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 71,
+        "level": 3,
+        "title": "Pz"
       }
     ],
     "Q1: Why does private convert to user during sending?": [
@@ -9013,13 +9027,7 @@
     "Quick Reference": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 295,
-        "level": 3,
-        "title": "Quick Reference"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 322,
+        "line": 440,
         "level": 3,
         "title": "Quick Reference"
       },
@@ -9312,12 +9320,6 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 429,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 361,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9814,6 +9816,14 @@
         "title": "Route Middleware"
       }
     ],
+    "Route grouping": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 428,
+        "level": 1,
+        "title": "Route grouping"
+      }
+    ],
     "Router (Routing)": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -9828,14 +9838,6 @@
         "line": 1,
         "level": 1,
         "title": "Router Manager"
-      }
-    ],
-    "Router Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 289,
-        "level": 2,
-        "title": "Router Module"
       }
     ],
     "Router Server": [
@@ -9910,14 +9912,6 @@
         "title": "SDK Core Architecture"
       }
     ],
-    "SDK Debugging": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 337,
-        "level": 2,
-        "title": "SDK Debugging"
-      }
-    ],
     "SDK Objects": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -9926,12 +9920,12 @@
         "title": "SDK Objects"
       }
     ],
-    "SQL Chainable Queries": [
+    "SQL Chained Queries": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 43,
+        "line": 157,
         "level": 3,
-        "title": "SQL Chainable Queries"
+        "title": "SQL Chained Queries"
       }
     ],
     "SQL Query Builder": [
@@ -10593,7 +10587,7 @@
     "Storage Backend Abstraction": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 59,
+        "line": 173,
         "level": 3,
         "title": "Storage Backend Abstraction"
       }
@@ -10601,7 +10595,7 @@
     "Storage Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 5,
+        "line": 119,
         "level": 2,
         "title": "Storage Module"
       }
@@ -10766,6 +10760,14 @@
         "title": "Supported Submission Types"
       }
     ],
+    "Supported levels (from lowest to highest):": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 262,
+        "level": 1,
+        "title": "Supported levels (from lowest to highest):"
+      }
+    ],
     "Switch Language": [
       {
         "document": "user-guide/cli-reference.md",
@@ -10828,6 +10830,22 @@
         "line": 330,
         "level": 2,
         "title": "System Routes"
+      }
+    ],
+    "TRACE is the lowest level; it outputs framework-internal detailed debugging information (event dispatching, routing registration, etc.)": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 264,
+        "level": 1,
+        "title": "TRACE is the lowest level; it outputs framework-internal detailed debugging information (event dispatching, routing registration, etc.)"
+      }
+    ],
+    "TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 263,
+        "level": 1,
+        "title": "TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL"
       }
     ],
     "Table Management": [
@@ -10965,7 +10983,7 @@
     "Transaction Operations": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 28,
+        "line": 142,
         "level": 3,
         "title": "Transaction Operations"
       }
@@ -11726,6 +11744,14 @@
         "title": "WebSocket Registration"
       }
     ],
+    "WebSocket route": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 422,
+        "level": 1,
+        "title": "WebSocket route"
+      }
+    ],
     "WechatMp Adapter - Platform Features Document": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -12244,14 +12270,6 @@
         "line": 435,
         "level": 3,
         "title": "doctor"
-      }
-    ],
-    "dump_state()": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 339,
-        "level": 3,
-        "title": "dump_state()"
       }
     ],
     "get() Method": [
