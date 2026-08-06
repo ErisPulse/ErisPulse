@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1450,
+  "total_keywords": 1442,
   "keywords": {
     "\"base_url\": \"http://localhost:8080\",": [
       {
@@ -2122,6 +2122,14 @@
         "title": "API Справочник"
       }
     ],
+    "API Ядерного модуля": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 1,
+        "level": 1,
+        "title": "API Ядерного модуля"
+      }
+    ],
     "API ответ": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -2152,14 +2160,6 @@
         "line": 1,
         "level": 1,
         "title": "API системы событий"
-      }
-    ],
-    "API ядра модуля": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 1,
-        "level": 1,
-        "title": "API ядра модуля"
       }
     ],
     "AdapterManager адаптер-менеджер": [
@@ -2296,6 +2296,14 @@
         "line": 38,
         "level": 3,
         "title": "HTTP-декораторы"
+      }
+    ],
+    "HTTP-запрос": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 438,
+        "level": 1,
+        "title": "HTTP-запрос"
       }
     ],
     "HTTP-запросы": [
@@ -2450,28 +2458,12 @@
         "title": "Router (Маршрутизация)"
       }
     ],
-    "SDK: Отладка": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 337,
-        "level": 2,
-        "title": "SDK: Отладка"
-      }
-    ],
     "SQL Query Builder": [
       {
         "document": "advanced/sql-builder.md",
         "line": 1,
         "level": 1,
         "title": "SQL Query Builder"
-      }
-    ],
-    "SQL-цепочные запросы": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 43,
-        "level": 3,
-        "title": "SQL-цепочные запросы"
       }
     ],
     "SendDSL: подробное описание": [
@@ -2519,6 +2511,12 @@
         "document": "advanced/lifecycle.md",
         "line": 205,
         "level": 3,
+        "title": "WebSocket"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 442,
+        "level": 1,
         "title": "WebSocket"
       }
     ],
@@ -2929,7 +2927,7 @@
     "dump_state()": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 339,
+        "line": 449,
         "level": 3,
         "title": "dump_state()"
       }
@@ -3236,14 +3234,6 @@
         "title": "Абстрактные типы"
       }
     ],
-    "Абстракция хранилища": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 59,
-        "level": 3,
-        "title": "Абстракция хранилища"
-      }
-    ],
     "Автоматическая документация": [
       {
         "document": "advanced/router.md",
@@ -3402,6 +3392,14 @@
         "title": "Асинхронная инициализация"
       }
     ],
+    "Асинхронная конфигурация": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 191,
+        "level": 1,
+        "title": "Асинхронная конфигурация"
+      }
+    ],
     "Асинхронная обработка": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3438,12 +3436,20 @@
         "title": "Асинхронное программирование"
       }
     ],
-    "Асинхронные интерфейсы": [
+    "Асинхронное хранилище": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 67,
-        "level": 3,
-        "title": "Асинхронные интерфейсы"
+        "line": 179,
+        "level": 1,
+        "title": "Асинхронное хранилище"
+      }
+    ],
+    "Асинхронные массовые операции": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 186,
+        "level": 1,
+        "title": "Асинхронные массовые операции"
       }
     ],
     "Аутентификация и вызовы API": [
@@ -3480,6 +3486,12 @@
       {
         "document": "advanced/lazy-loading.md",
         "line": 61,
+        "level": 3,
+        "title": "Базовое использование"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 230,
         "level": 3,
         "title": "Базовое использование"
       },
@@ -3616,20 +3628,6 @@
         "line": 19,
         "level": 2,
         "title": "Быстрое знакомство"
-      }
-    ],
-    "Быстрый справочник": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 295,
-        "level": 3,
-        "title": "Быстрый справочник"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 322,
-        "level": 3,
-        "title": "Быстрый справочник"
       }
     ],
     "Быстрый старт": [
@@ -4264,6 +4262,12 @@
     ],
     "Документация": [
       {
+        "document": "api-reference/core-modules.md",
+        "line": 471,
+        "level": 2,
+        "title": "Документация"
+      },
+      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 302,
         "level": 2,
@@ -4458,20 +4462,6 @@
         "title": "Доступ к другим модулям"
       }
     ],
-    "Доступ к свойствам": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 36,
-        "level": 3,
-        "title": "Доступ к свойствам"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 249,
-        "level": 3,
-        "title": "Доступ к свойствам"
-      }
-    ],
     "Доступ ко всем основным модулям через объект sdk": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -4486,6 +4476,14 @@
         "line": 251,
         "level": 4,
         "title": "Доступ через свойства"
+      }
+    ],
+    "Дочерние логгеры": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 240,
+        "level": 3,
+        "title": "Дочерние логгеры"
       }
     ],
     "Другие типы сообщений": [
@@ -4671,12 +4669,6 @@
       }
     ],
     "Запрос состояния бота": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 219,
-        "level": 3,
-        "title": "Запрос состояния бота"
-      },
       {
         "document": "api-reference/event-system.md",
         "line": 239,
@@ -5750,6 +5742,14 @@
         "title": "Краткая справка"
       }
     ],
+    "Краткий обзор": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 407,
+        "level": 3,
+        "title": "Краткий обзор"
+      }
+    ],
     "Кросс-платформенное расширение (шаблон)": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -6390,68 +6390,28 @@
         "title": "Модуль"
       }
     ],
-    "Модуль Adapter": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 190,
-        "level": 2,
-        "title": "Модуль Adapter"
-      }
-    ],
     "Модуль Config": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 91,
+        "line": 197,
         "level": 2,
         "title": "Модуль Config"
-      }
-    ],
-    "Модуль HTTP-клиента": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 316,
-        "level": 2,
-        "title": "Модуль HTTP-клиента"
       }
     ],
     "Модуль Lifecycle": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 257,
+        "line": 369,
         "level": 2,
         "title": "Модуль Lifecycle"
-      }
-    ],
-    "Модуль Logger": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 120,
-        "level": 2,
-        "title": "Модуль Logger"
-      }
-    ],
-    "Модуль Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 230,
-        "level": 2,
-        "title": "Модуль Module"
       }
     ],
     "Модуль Router": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 289,
+        "line": 401,
         "level": 2,
         "title": "Модуль Router"
-      }
-    ],
-    "Модуль Storage": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 5,
-        "level": 2,
-        "title": "Модуль Storage"
       }
     ],
     "Модуль запросов Request": [
@@ -6468,6 +6428,14 @@
         "line": 5,
         "level": 2,
         "title": "Модуль команд Command"
+      }
+    ],
+    "Модуль логирования": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 226,
+        "level": 2,
+        "title": "Модуль логирования"
       }
     ],
     "Модуль мета-событий Meta": [
@@ -6675,25 +6643,13 @@
     "Обзор API": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 95,
+        "line": 201,
         "level": 3,
         "title": "Обзор API"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 194,
-        "level": 3,
-        "title": "Обзор API"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 234,
-        "level": 3,
-        "title": "Обзор API"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 261,
+        "line": 373,
         "level": 3,
         "title": "Обзор API"
       }
@@ -7682,12 +7638,6 @@
         "title": "Основное использование"
       },
       {
-        "document": "api-reference/core-modules.md",
-        "line": 124,
-        "level": 3,
-        "title": "Основное использование"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 60,
         "level": 3,
@@ -7802,14 +7752,6 @@
         "line": 18,
         "level": 3,
         "title": "Основные модули"
-      }
-    ],
-    "Основные операции": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 9,
-        "level": 3,
-        "title": "Основные операции"
       }
     ],
     "Основные особенности": [
@@ -7962,6 +7904,14 @@
         "line": 80,
         "level": 3,
         "title": "Ответы API"
+      }
+    ],
+    "Отладка SDK": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 447,
+        "level": 2,
+        "title": "Отладка SDK"
       }
     ],
     "Отложенная отправка (Defer)": [
@@ -8262,14 +8212,6 @@
         "line": 114,
         "level": 3,
         "title": "Ошибка установки модуля"
-      }
-    ],
-    "Пакетные операции": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 20,
-        "level": 3,
-        "title": "Пакетные операции"
       }
     ],
     "Панель управления Dashboard": [
@@ -8578,14 +8520,6 @@
         "title": "Повторное подключение"
       }
     ],
-    "Под-логгеры": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 134,
-        "level": 3,
-        "title": "Под-логгеры"
-      }
-    ],
     "Подготовка": [
       {
         "document": "contributing/first-contribution.md",
@@ -8826,12 +8760,12 @@
         "title": "Подключение к Cursor"
       }
     ],
-    "Подписка на логи (режим push)": [
+    "Подписка на логи (Push-режим)": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 155,
+        "line": 261,
         "level": 3,
-        "title": "Подписка на логи (режим push)"
+        "title": "Подписка на логи (Push-режим)"
       }
     ],
     "Подписка на события (Intents)": [
@@ -9330,6 +9264,20 @@
         "title": "Прием сообщений"
       }
     ],
+    "Пример": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 214,
+        "level": 3,
+        "title": "Пример"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 385,
+        "level": 3,
+        "title": "Пример"
+      }
+    ],
     "Пример использования в модуле": [
       {
         "document": "advanced/lifecycle.md",
@@ -9442,20 +9390,6 @@
         "line": 33,
         "level": 4,
         "title": "Пример успешного ответа"
-      }
-    ],
-    "Примеры": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 108,
-        "level": 3,
-        "title": "Примеры"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 273,
-        "level": 3,
-        "title": "Примеры"
       }
     ],
     "Примеры запроса сообщений": [
@@ -10628,12 +10562,6 @@
         "title": "Связанная документация"
       },
       {
-        "document": "api-reference/core-modules.md",
-        "line": 361,
-        "level": 2,
-        "title": "Связанная документация"
-      },
-      {
         "document": "styleguide/README.md",
         "line": 32,
         "level": 2,
@@ -11176,14 +11104,6 @@
         "line": 269,
         "level": 3,
         "title": "События heartbeat"
-      }
-    ],
-    "События адаптеров": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 207,
-        "level": 3,
-        "title": "События адаптеров"
       }
     ],
     "События жизненного цикла": [
@@ -12098,14 +12018,6 @@
         "title": "Традиционный способ регистрации"
       }
     ],
-    "Транзакционные операции": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 28,
-        "level": 3,
-        "title": "Транзакционные операции"
-      }
-    ],
     "Требования к обновлению": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -12275,7 +12187,7 @@
     "Управление выводом": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 181,
+        "line": 295,
         "level": 3,
         "title": "Управление выводом"
       }
@@ -12345,7 +12257,7 @@
     "Управление уровнем логирования": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 143,
+        "line": 249,
         "level": 3,
         "title": "Управление уровнем логирования"
       }

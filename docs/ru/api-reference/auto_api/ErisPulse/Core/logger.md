@@ -64,8 +64,16 @@ JSON 日志格式化器
 
 日志订阅装饰器
 
+订阅器的 ``min_level`` 可低于全局日志级别，从而显式订阅 DEBUG / TRACE
+等低级别日志。此时低级别日志仅推送给匹配的订阅器，不会输出到控制台，
+也不会写入内存（历史补发仍受全局 ``memory_limit`` 限制）。
+
 >>> @sdk.logger.handler("dashboard", min_level="INFO")
 ... def on_log(log_data: dict): ...
+
+>>> # 显式订阅低于全局级别的日志（如全局为 INFO，仍可收到 DEBUG）
+>>> @sdk.logger.handler("debug-tracer", min_level="DEBUG")
+... def on_debug(log_data: dict): ...
 
 >>> sdk.logger.handler("dashboard", min_level="INFO")(on_log)
 
@@ -95,6 +103,20 @@ JSON 日志格式化器
 
 > **内部方法**
 向所有符合条件的订阅器推送结构化日志
+
+---
+
+
+##### `_has_handler_for(level_const: int)`
+
+判断是否存在订阅器愿意接收给定级别的日志
+
+订阅器的 ``min_level`` 可低于全局日志级别，从而显式订阅 DEBUG / TRACE
+等低级别日志。命中时仅推送给订阅器，不输出控制台、不写入内存。
+
+> **内部方法**
+
+- **level_const** (`日志级别数值`): **返回值** (`存在`): ``min_level <= level_const`` 的订阅器时返回 True
 
 ---
 
