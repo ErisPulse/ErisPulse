@@ -93,6 +93,7 @@ class StrictModeManager:
     exceptions: dict[str, Any] = field(default_factory=dict)
     _violations: list[Violation] = field(default_factory=list)
     _rejections: list[Violation] = field(default_factory=list)
+    _tolerated: list[Violation] = field(default_factory=list)
     _exemption_sets: dict[str, set] = field(default_factory=dict, repr=False)
 
     def __post_init__(self) -> None:
@@ -112,14 +113,37 @@ class StrictModeManager:
         :return: 配置好的管理器实例；读取配置失败时回退到默认值
 
         {!--< internal-use >!--}
-        由初始化协调器调用，读取 ErisPulse.framework.strict_mode 及豁免清单
+        由初始化协调器调用，读取 ErisPulse.framework.strict_mode 及豁免清单。
+        strict_mode 配置值会被严格校验：非法值（非 0/1/2）会明确告警并回退到
+        默认级别，避免用户以为开了严格模式实际却在宽松模式下运行。
         {!--< /internal-use >!--}
         """
         try:
             from ..runtime import get_framework_config
 
             fw = get_framework_config() or {}
-            level = int(fw.get("strict_mode", DEFAULT_STRICT_MODE))
+            raw = fw.get("strict_mode", DEFAULT_STRICT_MODE)
+            if isinstance(raw, bool):
+                level = None
+            elif isinstance(raw, int):
+                level = raw
+            elif isinstance(raw, str) and raw.strip().lstrip("+-").isdigit():
+                level = int(raw)
+            else:
+                level = None
+            if level is None or level not in (
+                StrictModeLevel.LENIENT,
+                StrictModeLevel.SKIP,
+                StrictModeLevel.FATAL,
+            ):
+                logger.warning(
+                    i18n.t(
+                        "loader.strict.invalid_level",
+                        value=raw,
+                        level=DEFAULT_STRICT_MODE,
+                    )
+                )
+                level = DEFAULT_STRICT_MODE
             exceptions = fw.get("strict_mode_exceptions") or {}
             return cls(level=level, exceptions=exceptions)
         except Exception as e:
@@ -195,6 +219,7 @@ class StrictModeManager:
             return True
 
         # 宽松级别：容忍该违规，仅警告
+        self._tolerated.append(Violation(name, component_type, reason))
         logger.warning(
             i18n.t(
                 "loader.strict.tolerated",
@@ -252,6 +277,11 @@ class StrictModeManager:
     def rejections(self) -> list[Violation]:
         """被拒绝/跳过的组件列表（只读视图，与级别无关，用于摘要展示）"""
         return list(self._rejections)
+
+    @property
+    def tolerated(self) -> list[Violation]:
+        """宽松模式下被容忍加载的组件列表"""
+        return list(self._tolerated)
 
     def raise_if_fatal(self) -> None:
         """

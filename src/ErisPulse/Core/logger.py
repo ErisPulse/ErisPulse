@@ -43,6 +43,32 @@ _CUSTOM_LEVELS: dict[str, int] = {"TRACE": TRACE, "EVENT": EVENT}
 _LOG_THEME = Theme(LOG_RICH_THEME)
 
 
+def _format_message(msg: object, args: tuple) -> str:
+    """
+    将日志消息与位置参数按 ``%`` 风格格式化
+
+    有 args 时应用 ``str(msg) % args``，无 args 时保持原文不变（``%s`` 字面量保留），
+    格式化失败时回退到原始字符串。控制台路径仍由 Python logging 自行格式化，
+    此处仅为内存副本 / 订阅器提供与之一致的文本。
+
+    {!--< internal-use >!--}
+    {!--< /internal-use >!--}
+
+    :param msg: 原始日志消息
+    :param args: 位置参数元组
+    :return: 格式化后的日志文本
+    """
+    if not args:
+        return str(msg)
+    try:
+        # 与 logging.makeRecord 一致：单个 Mapping 参数先扁平化再格式化
+        if len(args) == 1 and isinstance(args[0], dict):
+            args = args[0]
+        return str(msg) % args
+    except Exception:
+        return str(msg)
+
+
 class _JsonFormatter(logging.Formatter):
     """
     JSON 日志格式化器
@@ -296,6 +322,79 @@ class Logger:
 
         return success
 
+    def set_format(self, fmt: str = "rich") -> bool:
+        """
+        设置日志输出格式
+
+        支持三种格式：
+        - ``rich``（默认）：彩色带时间的 Rich 输出
+        - ``plain``：纯文本无颜色（适合日志采集 / 管道重定向）
+        - ``json``：JSON 结构化输出（适合 ELK / Grafana Loki / Datadog 等）
+
+        :param fmt: 日志格式名称：``rich`` / ``plain`` / ``json`` (默认: "rich")
+        :return: bool 设置是否成功
+
+        :example:
+        >>> # 在 config.toml 中配置
+        >>> [ErisPulse.logger]
+        >>> format = "plain"
+        >>>
+        >>> # 或代码中动态切换
+        >>> logger.set_format("plain")
+        """
+        fmt = (fmt or "rich").lower()
+        if fmt not in ("rich", "plain", "json"):
+            self._logger.error(i18n.t("core.logger.invalid_format", fmt=fmt))
+            return False
+        self._json_mode = fmt == "json"
+
+        # 移除现有控制台处理器（避免重复添加）
+        for handler in list(self._logger.handlers):
+            if isinstance(handler, RichHandler) or handler.get_name() in (
+                "json_console",
+                "plain_console",
+            ):
+                self._logger.removeHandler(handler)
+
+        if fmt == "json":
+            # JSON 控制台处理器
+            stream_handler = logging.StreamHandler()
+            stream_handler.setFormatter(_JsonFormatter())
+            stream_handler.set_name("json_console")
+            self._logger.addHandler(stream_handler)
+        elif fmt == "plain":
+            # 纯文本控制台处理器（无颜色）
+            plain_handler = logging.StreamHandler()
+            plain_handler.setFormatter(
+                logging.Formatter(
+                    fmt="%(asctime)s [%(levelname)s] %(message)s",
+                    datefmt=LOG_TIME_FORMAT,
+                )
+            )
+            plain_handler.set_name("plain_console")
+            self._logger.addHandler(plain_handler)
+        else:
+            # Rich 彩色控制台处理器
+            console_handler = RichHandler(
+                console=self._console,
+                show_time=True,
+                show_level=True,
+                show_path=False,
+                markup=False,
+                highlighter=NullHighlighter(),
+                log_time_format=LOG_TIME_FORMAT,
+            )
+            self._logger.addHandler(console_handler)
+
+        # 更新文件处理器格式
+        for handler in self._file_handlers:
+            if self._json_mode:
+                handler.setFormatter(_JsonFormatter())
+            else:
+                handler.setFormatter(logging.Formatter("%(message)s"))
+
+        return True
+
     def set_json_format(self, enabled: bool = True) -> bool:
         """
         启用或禁用 JSON 结构化日志输出
@@ -314,43 +413,7 @@ class Logger:
         >>> # 或代码中动态切换
         >>> logger.set_json_format(True)
         """
-        self._json_mode = enabled
-
-        # 移除现有控制台处理器
-        new_handlers = []
-        for handler in self._logger.handlers:
-            if isinstance(handler, RichHandler):
-                self._logger.removeHandler(handler)
-            else:
-                new_handlers.append(handler)
-
-        if enabled:
-            # 添加 JSON 控制台处理器
-            stream_handler = logging.StreamHandler()
-            stream_handler.setFormatter(_JsonFormatter())
-            stream_handler.set_name("json_console")
-            self._logger.addHandler(stream_handler)
-        else:
-            # 恢复 Rich 控制台处理器
-            console_handler = RichHandler(
-                console=self._console,
-                show_time=True,
-                show_level=True,
-                show_path=False,
-                markup=False,
-                highlighter=NullHighlighter(),
-                log_time_format=LOG_TIME_FORMAT,
-            )
-            self._logger.addHandler(console_handler)
-
-        # 更新文件处理器格式
-        for handler in self._file_handlers:
-            if enabled:
-                handler.setFormatter(_JsonFormatter())
-            else:
-                handler.setFormatter(logging.Formatter("%(message)s"))
-
-        return True
+        return self.set_format("json" if enabled else "rich")
 
     def save_logs(self, path) -> bool:
         """
@@ -461,8 +524,10 @@ class Logger:
             self.set_output_file(logger_config["log_files"])
         if "memory_limit" in logger_config:
             self.set_memory_limit(logger_config["memory_limit"])
-        if logger_config.get("format") == "json":
-            self.set_json_format(True)
+        # 应用输出格式（rich / plain / json），未配置时保持默认 rich
+        fmt = logger_config.get("format")
+        if fmt:
+            self.set_format(fmt)
         # 记录本次应用的配置快照，供热更新时做变更检测
         self._last_logger_config = logger_config
 
@@ -496,8 +561,10 @@ class Logger:
             return
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= level_const:
-            self._save_in_memory(caller_module, level_name, level_const, msg)
-            self._notify_handlers(level_name, level_const, caller_module, msg)
+            # 内存副本/订阅器须应用格式化
+            formatted = _format_message(msg, args)
+            self._save_in_memory(caller_module, level_name, level_const, formatted)
+            self._notify_handlers(level_name, level_const, caller_module, formatted)
             self._logger.log(level_const, f"[{caller_module}] {msg}", *args, **kwargs)
 
     def _get_caller(self):
@@ -605,6 +672,42 @@ class Logger:
 
     # ==================== 视觉输出方法 ====================
 
+    def _store_ui_line(self, text: str) -> None:
+        """
+        将 UI 输出行写入内存、订阅器与日志文件
+
+        视觉输出方法（``print_*``）原本直接打印到控制台、绕过日志管道，
+        导致 Dashboard 等日志订阅器收不到启动阶段的阶段标题/数量/组件树，
+        也无法在订阅器注册时补发历史。此方法将文本按 INFO 级别写入内存
+        （``_save_in_memory``）、推送给订阅器（``_notify_handlers``）并写入
+        日志文件，同时不重复输出控制台。
+
+        {!--< internal-use >!--}
+        仅由 ``print_section_header`` / ``print_info`` / ``print_tree_item`` 调用。
+        {!--< /internal-use >!--}
+
+        :param text: str 需要写入日志管道的 UI 文本
+        """
+        caller = self._get_caller()
+        self._save_in_memory(caller, "info", logging.INFO, text)
+        self._notify_handlers("info", logging.INFO, caller, text)
+        if self._file_handlers:
+            record = logging.LogRecord(
+                LOGGER_NAME,
+                logging.INFO,
+                "",
+                0,
+                f"[{caller}] {text}",
+                None,
+                None,
+                "print",
+            )
+            for handler in self._file_handlers:
+                try:
+                    handler.emit(record)
+                except Exception:
+                    pass
+
     def print_section_header(self, title: str):
         """
         打印日志分组标题
@@ -616,6 +719,7 @@ class Logger:
         line.append("  ── ", style="dim")
         line.append(title, style="bold")
         self._console.print(line)
+        self._store_ui_line(f"── {title}")
 
     def print_section_footer(self):
         """
@@ -649,6 +753,7 @@ class Logger:
         if tag:
             line.append(f"  {tag}", style=tag_style)
         self._console.print(line)
+        self._store_ui_line(f"{indent}{connector}{text}" + (f"  {tag}" if tag else ""))
 
     def print_info(self, text: str, level: int = 1):
         """
@@ -663,6 +768,7 @@ class Logger:
         line.append("· ", style="dim")
         line.append(text)
         self._console.print(line)
+        self._store_ui_line(f"{indent}· {text}")
 
     def print_section_separator(self):
         """
@@ -725,8 +831,10 @@ class LoggerChild:
         display_name = ".".join(deduped)
 
         if self._parent._get_effective_level(display_name.split(".")[0]) <= level_const:
-            self._parent._save_in_memory(display_name, level_name, level_const, msg)
-            self._parent._notify_handlers(level_name, level_const, display_name, msg)
+            # 内存副本/订阅器应用格式化
+            formatted = _format_message(msg, args)
+            self._parent._save_in_memory(display_name, level_name, level_const, formatted)
+            self._parent._notify_handlers(level_name, level_const, display_name, formatted)
             self._parent._logger.log(
                 level_const, f"[{display_name}] {msg}", *args, **kwargs
             )

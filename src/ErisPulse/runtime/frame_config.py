@@ -114,6 +114,39 @@ def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
     return result
 
 
+def _iter_leaf_diff(
+    old: dict[str, Any], new: dict[str, Any], prefix: str = ""
+) -> list[tuple[str, Any]]:
+    """
+    递归比较两棵配置字典，返回新增或值变化的叶子键（点分路径）
+
+    仅收集 new 中相对 old 发生变化的叶子，用于把整棵配置的持久化
+    拆分为细粒度叶子写入，避免整棵覆盖导致用户热更新丢失。
+
+    {!--< internal-use >!--}
+    语义：只增改、不处理删除（本模块的合并语义仅新增/覆盖叶子值）。
+    {!--< /internal-use >!--}
+
+    :param old: 变更前的配置字典
+    :param new: 变更后的配置字典
+    :param prefix: 递归时的路径前缀
+    :return: [(点分路径, 叶子值), ...]
+    """
+    diffs: list[tuple[str, Any]] = []
+    for key, value in new.items():
+        path = f"{prefix}.{key}" if prefix else key
+        old_value = old.get(key) if isinstance(old, dict) else None
+        if isinstance(value, dict):
+            if isinstance(old_value, dict):
+                diffs.extend(_iter_leaf_diff(old_value, value, path))
+            else:
+                # 旧值不存在或非 dict：递归收集新子树的全部叶子
+                diffs.extend(_iter_leaf_diff({}, value, path))
+        elif old_value != value:
+            diffs.append((path, value))
+    return diffs
+
+
 def _ensure_erispulse_config_structure(config_dict: dict[str, Any]) -> dict[str, Any]:
     """
     确保 ErisPulse 配置结构完整，补全缺失的配置项
@@ -166,9 +199,11 @@ def get_erispulse_config() -> dict[str, Any]:
     # 检查并补全缺失的配置项
     complete_config = _ensure_erispulse_config_structure(current_config)
 
-    # 如果配置有变化，更新到存储
+    # 如果配置有变化，按叶子键写入缺失的默认项，
+    # 避免整棵 ErisPulse 覆盖导致用户对其它子键的热更新被陈旧快照冲掉
     if original_snapshot != complete_config:
-        config_service.setConfig(CONFIG_ROOT_KEY, complete_config)
+        for path, value in _iter_leaf_diff(original_snapshot, complete_config):
+            config_service.setConfig(f"{CONFIG_ROOT_KEY}.{path}", value)
 
     # 环境变量覆盖（Docker / 12-factor）：ERISPULSE_SERVER_PORT 等
     # 仅对返回副本应用，不持久化到缓存；每调用每生效
@@ -243,14 +278,22 @@ def update_erispulse_config(new_config: dict[str, Any]) -> bool:
     """
     config_service = _get_config_service()
 
+    # 基线使用缓存中的原始配置（不含环境变量覆盖），避免把环境覆盖持久化到文件
+    current_raw = config_service.getConfig(CONFIG_ROOT_KEY)
+    if not isinstance(current_raw, dict):
+        current_raw = {}
+    baseline = _ensure_erispulse_config_structure(copy.deepcopy(current_raw))
+
     # 获取当前配置并深合并新配置
-    current = get_erispulse_config()
-    merged = _deep_merge(current, new_config)
+    merged = _deep_merge(baseline, new_config)
 
     # 确保合并后的配置结构完整
     complete_config = _ensure_erispulse_config_structure(merged)
 
-    return config_service.setConfig(CONFIG_ROOT_KEY, complete_config)
+    # 仅按叶子键写入变化，避免整棵覆盖冲掉用户对其它子键的热更新
+    for path, value in _iter_leaf_diff(baseline, complete_config):
+        config_service.setConfig(f"{CONFIG_ROOT_KEY}.{path}", value)
+    return True
 
 
 def get_server_config() -> dict[str, Any]:

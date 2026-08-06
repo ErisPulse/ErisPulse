@@ -15,6 +15,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from ...Core.config import config
+from ...Core.i18n import i18n
 from ...Core.logger import logger
 
 
@@ -130,7 +131,7 @@ class BaseLoader(ABC):
         disabled_list: list[str] = []
 
         group_name = self._get_entry_point_group()
-        logger.info(f"正在加载 {group_name} entry-points...")
+        logger.info(i18n.t("loader.base.load_start", group=group_name))
 
         try:
             # 加载 entry-points
@@ -146,11 +147,11 @@ class BaseLoader(ABC):
                     entry_point, objs, enabled_list, disabled_list, manager_instance
                 )
 
-            logger.info(f"{group_name} 加载完成")
+            logger.info(i18n.t("loader.base.load_done", group=group_name))
 
         except Exception as e:
-            logger.error(f"加载 {group_name} entry-points 失败: {e}")
-            raise ImportError(f"无法加载 {group_name}: {e}") from e
+            logger.error(i18n.t("loader.base.load_failed", group=group_name, error=e))
+            raise ImportError(i18n.t("loader.base.import_failed", group=group_name, error=e)) from e
 
         return objs, enabled_list, disabled_list
 
@@ -168,8 +169,19 @@ class BaseLoader(ABC):
         """
         config_key = f"{self._config_prefix}.status.{name}"
         config.setConfig(config_key, enabled)
-        status = "启用" if enabled else "禁用"
-        logger.info(f"{self._config_prefix} {name} 已注册并{status}")
+        status = (
+            i18n.t("loader.base.status_enabled")
+            if enabled
+            else i18n.t("loader.base.status_disabled")
+        )
+        logger.info(
+            i18n.t(
+                "loader.base.registered",
+                prefix=self._config_prefix,
+                name=name,
+                status=status,
+            )
+        )
         return True
 
     def _get_config_status(self, name: str) -> bool:

@@ -205,6 +205,7 @@ TRANSLATIONS = {
     "cli.list.count_adapters": "{count} adapter(s)",
     "cli.list.no_adapters": "No matching adapters",
     "cli.list.no_packages": "No {pkg_type}",
+    "cli.list.empty_hint": "Run 'epsdk install' to browse and install components, or 'epsdk init' to create a project",
     # ==================== list-remote command ====================
     "cli.list_remote.description": "List remote available components",
     "cli.list_remote.type_help": "List type (default: all)",
@@ -416,6 +417,8 @@ TRANSLATIONS = {
     "cli.doctor.proxy_none": "none detected",
     "cli.doctor.failed": "[done] Issues found, see output above",
     "cli.doctor.all_ok": "[done] Environment is healthy",
+    "cli.doctor.status_ok": "OK",
+    "cli.doctor.status_fail": "FAIL",
     # ==================== types command ====================
     "cli.types.description": "Generate type stub file to enable IDE completion",
     "cli.types.output_help": "Output file path (default: ./_ep_types.py)",
