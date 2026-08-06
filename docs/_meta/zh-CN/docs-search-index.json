@@ -2259,19 +2259,19 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 194,
+        "line": 202,
         "level": 3,
         "title": "API 概览"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 234,
+        "line": 242,
         "level": 3,
         "title": "API 概览"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 261,
+        "line": 269,
         "level": 3,
         "title": "API 概览"
       }
@@ -2325,7 +2325,7 @@
     "Adapter 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 190,
+        "line": 198,
         "level": 2,
         "title": "Adapter 模块"
       }
@@ -2413,7 +2413,7 @@
     "Bot 状态查询": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 219,
+        "line": 227,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -2765,7 +2765,7 @@
     "HTTP Client 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 316,
+        "line": 324,
         "level": 2,
         "title": "HTTP Client 模块"
       }
@@ -2869,7 +2869,7 @@
     "Lifecycle 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 257,
+        "line": 265,
         "level": 2,
         "title": "Lifecycle 模块"
       }
@@ -2949,7 +2949,7 @@
     "Module 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 230,
+        "line": 238,
         "level": 2,
         "title": "Module 模块"
       }
@@ -3171,7 +3171,7 @@
     "Router 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 289,
+        "line": 297,
         "level": 2,
         "title": "Router 模块"
       }
@@ -3209,7 +3209,7 @@
     "SDK 调试": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 337,
+        "line": 345,
         "level": 2,
         "title": "SDK 调试"
       }
@@ -3917,7 +3917,7 @@
     "dump_state()": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 339,
+        "line": 347,
         "level": 3,
         "title": "dump_state()"
       }
@@ -7533,7 +7533,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 249,
+        "line": 257,
         "level": 3,
         "title": "属性访问"
       },
@@ -8139,13 +8139,13 @@
     "快速参考": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 295,
+        "line": 303,
         "level": 3,
         "title": "快速参考"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 322,
+        "line": 330,
         "level": 3,
         "title": "快速参考"
       },
@@ -10781,7 +10781,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 361,
+        "line": 369,
         "level": 2,
         "title": "相关文档"
       },
@@ -10895,7 +10895,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 273,
+        "line": 281,
         "level": 3,
         "title": "示例"
       }
@@ -11847,7 +11847,7 @@
     "输出控制": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 181,
+        "line": 189,
         "level": 3,
         "title": "输出控制"
       }
@@ -12053,7 +12053,7 @@
     "适配器事件": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 207,
+        "line": 215,
         "level": 3,
         "title": "适配器事件"
       }
