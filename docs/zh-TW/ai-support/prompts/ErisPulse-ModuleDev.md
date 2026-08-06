@@ -2995,15 +2995,15 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-遵循語意化版本：
+遵循語義化版本：
 - MAJOR.MINOR.PATCH
-- 主版本：不兼容的 API 變更
-- 次版本：向下兼容的功能新增
-- 修訂號：向下兼容的問題修正
+- 主版本：不相容的 API 變更
+- 次版本：向下相容的功能新增
+- 修訂號：向下相容的問題修正
 
 ### 2. README 頭部
 
-`epsdk create` 生成的 README 已內建 ErisPulse 品牌頭部（Logo + 徽章行）。兩種推薦模式：
+`epsdk create` 生成的 README 已內建 ErisPulse 頭部識別標識（Logo + 徽章行）。兩種推薦模式：
 
 **模式 A — 僅 ErisPulse Logo（預設）：**
 
@@ -3040,7 +3040,7 @@ version = "1.0.0"
 </div>
 ```
 
-可按需追加 GitHub Stars、Downloads 等徽章。Logo 也可下載到專案本地（`.github/assets/ErisPulseLogo.png`）改為相對路徑引用。
+可按需求追加 GitHub Stars、Downloads 等徽章。Logo 也可下載到專案本地（`.github/assets/ErisPulseLogo.png`）改為相對路徑引用。
 
 ## 相關文件
 

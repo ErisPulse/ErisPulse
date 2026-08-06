@@ -4995,15 +4995,15 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-セマンティックバージョン（Semantic Versioning）に従います：
+セマンティックバージョニング（Semantic Versioning）に従います：
 - MAJOR.MINOR.PATCH
-- メジャーバージョン：互換性のない API 変更
-- マイナーバージョン：下位互換な機能の追加
-- パッチバージョン：下位互換な問題修正
+- メジャーバージョン：互換性のない API の変更
+- マイナーバージョン：下位互換のある機能の追加
+- パッチバージョン：下位互換のある問題の修正
 
 ### 2. README ヘッダー
 
-`epsdk create` が生成する README には、ErisPulse ブランドのヘッダー（ロゴ + バッジ行）が組み込まれています。2つの推奨モードがあります。
+`epsdk create` で生成された README には、ErisPulse のヘッダー識別子（ロゴ + バッジ行）が既に組み込まれています。2つの推奨モードがあります。
 
 **モード A — ErisPulse ロゴのみ（デフォルト）：**
 
@@ -5014,7 +5014,7 @@ version = "1.0.0"
 
 # MyModule
 
-**一言で説明**
+**一文で説明**
 
 <p>
   <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -5026,7 +5026,7 @@ version = "1.0.0"
 </div>
 ```
 
-**モード B — モジュールのアイコン × ErisPulse ロゴ（カスタムアイコンがある場合）：**
+**モード B — モジュールアイコン × ErisPulse ロゴ（カスタムアイコンがある場合）：**
 
 ```markdown
 <div align="center">
@@ -5040,7 +5040,7 @@ version = "1.0.0"
 </div>
 ```
 
-GitHub Stars や Downloads などのバッジを必要に応じて追加できます。ロゴもプロジェクトのローカルにダウンロードして（`.github/assets/ErisPulseLogo.png`）、相対パスで参照することも可能です。
+GitHub Stars、Downloads などのバッジを必要に応じて追加できます。ロゴもプロジェクトローカルにダウンロード可能です（`.github/assets/ErisPulseLogo.png`）し、相対パスで参照してください。
 
 
 
