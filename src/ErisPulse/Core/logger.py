@@ -139,8 +139,16 @@ class Logger:
         """
         日志订阅装饰器
 
+        订阅器的 ``min_level`` 可低于全局日志级别，从而显式订阅 DEBUG / TRACE
+        等低级别日志。此时低级别日志仅推送给匹配的订阅器，不会输出到控制台，
+        也不会写入内存（历史补发仍受全局 ``memory_limit`` 限制）。
+
         >>> @sdk.logger.handler("dashboard", min_level="INFO")
         ... def on_log(log_data: dict): ...
+
+        >>> # 显式订阅低于全局级别的日志（如全局为 INFO，仍可收到 DEBUG）
+        >>> @sdk.logger.handler("debug-tracer", min_level="DEBUG")
+        ... def on_debug(log_data: dict): ...
 
         >>> sdk.logger.handler("dashboard", min_level="INFO")(on_log)
 
@@ -206,6 +214,23 @@ class Logger:
                     callback(log_data)
                 except Exception:
                     pass  # 订阅器异常不应影响日志流程
+
+    def _has_handler_for(self, level_const: int) -> bool:
+        """
+        判断是否存在订阅器愿意接收给定级别的日志
+
+        订阅器的 ``min_level`` 可低于全局日志级别，从而显式订阅 DEBUG / TRACE
+        等低级别日志。命中时仅推送给订阅器，不输出控制台、不写入内存。
+
+        {!--< internal-use >!--}
+
+        :param level_const: 日志级别数值
+        :return: 存在 ``min_level <= level_const`` 的订阅器时返回 True
+        """
+        return any(
+            min_level <= level_const
+            for _, min_level in self._log_handlers.values()
+        )
 
     def set_memory_limit(self, limit: int) -> bool:
         """
@@ -552,20 +577,30 @@ class Logger:
         :param args: 额外的格式化参数
         :param kwargs: 额外的关键字参数
         """
-        # 快速路径：消息低于全局阈值，且没有任何模块覆盖到该级别时
-        # 直接跳过昂贵的 _get_caller 帧遍历（trace/debug 高频路径收益显著）
+        # 是否存在订阅器愿意接收该级别（订阅器 min_level 可低于全局级别）
+        has_subscriber = self._has_handler_for(level_const)
+        # 快速路径：消息低于全局阈值，且没有任何模块覆盖到该级别，
+        # 且没有订阅器需要该级别时，直接跳过昂贵的 _get_caller 帧遍历
+        # （trace/debug 高频路径收益显著）
         if (
             level_const < self._logger.level
             and not any(v <= level_const for v in self._module_levels.values())
+            and not has_subscriber
         ):
             return
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= level_const:
+            # 达到模块有效级别：完整走 内存 / 订阅器 / 控制台
             # 内存副本/订阅器须应用格式化
             formatted = _format_message(msg, args)
             self._save_in_memory(caller_module, level_name, level_const, formatted)
             self._notify_handlers(level_name, level_const, caller_module, formatted)
             self._logger.log(level_const, f"[{caller_module}] {msg}", *args, **kwargs)
+        elif has_subscriber:
+            # 低于全局/模块级别，但有订阅器显式订阅：仅推送订阅器，
+            # 不写内存、不输出控制台，避免污染主日志流
+            formatted = _format_message(msg, args)
+            self._notify_handlers(level_name, level_const, caller_module, formatted)
 
     def _get_caller(self):
         try:
@@ -829,15 +864,23 @@ class LoggerChild:
             if p != deduped[-1]:
                 deduped.append(p)
         display_name = ".".join(deduped)
+        parent = self._parent
 
-        if self._parent._get_effective_level(display_name.split(".")[0]) <= level_const:
+        has_subscriber = parent._has_handler_for(level_const)
+        if parent._get_effective_level(display_name.split(".")[0]) <= level_const:
+            # 达到模块有效级别：完整走 内存 / 订阅器 / 控制台
             # 内存副本/订阅器应用格式化
             formatted = _format_message(msg, args)
-            self._parent._save_in_memory(display_name, level_name, level_const, formatted)
-            self._parent._notify_handlers(level_name, level_const, display_name, formatted)
-            self._parent._logger.log(
+            parent._save_in_memory(display_name, level_name, level_const, formatted)
+            parent._notify_handlers(level_name, level_const, display_name, formatted)
+            parent._logger.log(
                 level_const, f"[{display_name}] {msg}", *args, **kwargs
             )
+        elif has_subscriber:
+            # 低于全局/模块级别，但有订阅器显式订阅：仅推送订阅器，
+            # 不写内存、不输出控制台
+            formatted = _format_message(msg, args)
+            parent._notify_handlers(level_name, level_const, display_name, formatted)
 
     def trace(self, msg, *args, **kwargs):
         """记录 TRACE 级别日志（比 DEBUG 更细粒度）"""
