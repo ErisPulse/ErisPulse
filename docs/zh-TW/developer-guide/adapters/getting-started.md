@@ -1,19 +1,23 @@
-# 適配器開發入門
+# 介面卡開發入門
 
-本指南幫助你開始開發 ErisPulse 適配器，連接新的訊息平台。
+本指南將協助你開始開發 ErisPulse 介面卡，連線至新的訊息平台。
 
-## 適配器簡介
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-### 什麼是適配器
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第 8 條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
-適配器是 ErisPulse 與各個訊息平台之間的橋樑，負責：
+## 介面卡簡介
+
+### 什麼是介面卡
+
+介面卡是 ErisPulse 與各個訊息平台之間的橋樑，負責：
 
 1. **正向轉換**：接收平台事件並轉換為 OneBot12 標準格式（Converter）
-2. **反向轉換**：將 OneBot12 訊息段轉換為平台 API 調用（`Raw_ob12`）
-3. 管理與平台的連接（WebSocket/WebHook）
+2. **反向轉換**：將 OneBot12 訊息段轉換為平台 API 呼叫（`Raw_ob12`）
+3. 管理與平台的連線（WebSocket/WebHook）
 4. 提供統一的 SendDSL 訊息發送介面
 
-### 適配器架構
+### 介面卡架構
 
 ```
 正向轉換（接收）                        反向轉換（發送）
@@ -22,27 +26,30 @@
     ↓                                    ↓
 Converter.convert()               Send.Raw_ob12()
     ↓                                    ↓
-OneBot12 標準事件                   平台原生 API 調用
+OneBot12 標準事件                   平台原生 API 呼叫
     ↓                                    ↓
 事件系統                             標準回應格式
     ↓
 模組處理
-```
 
 ## 目錄結構
 
-標準的適配器包結構：
+標準的適配器套件結構：
 
 ```
 MyAdapter/
-├── pyproject.toml          # 項目配置
-├── README.md               # 項目說明
-├── LICENSE                 # 許可證
+├── pyproject.toml          # 專案設定
+├── README.md               # 專案說明
+├── LICENSE                 # 授權條款
 └── MyAdapter/
-    ├── __init__.py          # 包入口
-    ├── Core.py               # 適配器主類
+    ├── __init__.py          # 套件進入點
+    ├── Core.py               # 適配器主類別
     └── Converter.py          # 事件轉換器
 ```
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第 8 條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 快速開始
 
@@ -58,7 +65,7 @@ mkdir MyAdapter && cd MyAdapter
 [project]
 name = "ErisPulse-MyAdapter"
 version = "1.0.0"
-description = "MyAdapter平台適配器"
+description = "MyAdapter 平台適配器"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -75,15 +82,15 @@ dependencies = [
 "MyAdapter" = "MyAdapter:MyAdapter"
 ```
 
-### 3. 建立適配器主類
+### 3. 建立適配器主類別
 
-框架提供了 `ConfigClass` / `AccountConfigClass` 宣告式配置管理，適配器只需宣告配置類即可自動載入、驗證和產生配置範本。
+框架提供了 `ConfigClass` / `AccountConfigClass` 宣告式配置管理，適配器只需宣告配置類別即可自動載入、校驗和產生配置範本。
 
 ```python
 # MyAdapter/Core.py
 from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
@@ -91,7 +98,7 @@ class MyAdapterConfig(BaseConfig):
     api_endpoint: str = field(
         default="https://api.example.com",
         metadata={
-            "description": {"i18n": "my_adapter.api_endpoint", "default": "API 地址"},
+            "description": {"i18n": "my_adapter.api_endpoint", "default": "API 位址"},
             "required": False,
             "ui": {"widget": "text", "group": "connection", "order": 1},
         },
@@ -107,11 +114,11 @@ class MyAdapterConfig(BaseConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # 宣告配置類，框架自動管理
+    ConfigClass = MyAdapterConfig  # 宣告配置類別，框架自動管理
     
     # 不需要覆寫 __init__！框架自動處理：
     # - self.sdk / self.logger 自動設定
-    # - self.cfg 實時讀取配置
+    # - self.cfg 即時讀取配置
     # - self.Send / self.Request 自動初始化
     
     def _setup_converter(self):
@@ -119,11 +126,11 @@ class MyAdapter(BaseAdapter):
         return MyPlatformConverter()
 ```
 
-> ⚠️ **關於 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 會自動處理 SDK 引用、日誌初始化和配置載入。大多數適配器**不再需要覆寫 `__init__`**。詳見 [`__init__ 注意事項`](#init-注意事項)。
+> ⚠️ **關於 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 會自動處理 SDK 參考、日誌初始化和配置載入。大多數適配器**不再需要覆寫 `__init__`**。詳見 [__init__ 注意事項](#init-注意事項)。
 
-> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息發送和請求操作都會報 `AttributeError`。詳見 [`__init__ 注意事項`](#init-注意事項)。
+> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息發送和請求操作都會報 `AttributeError`。詳見 [__init__ 注意事項](#init-注意事項)。
 
-### 4. 實現必需方法
+### 4. 實作必要方法
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -145,7 +152,7 @@ class MyAdapter(BaseAdapter):
             module_name="myplatform",
             path="/ws"
         )
-        # 清理連接和資源
+        # 清理連線和資源
         self.logger.info("適配器已關閉")
     
     async def call_api(self, endpoint: str, **params):
@@ -178,14 +185,14 @@ class MyAdapter(BaseAdapter):
             await self.emit_meta("disconnect", bot_id)
 ```
 
-> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理](best-practices.md#bot-狀態管理與-meta-事件)。
+> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理](docs/zh-TW/best-practices.md#bot-狀態管理與-meta-事件)。
 
-### 5. 實現 Send 類
+### 5. 實作 Send 類別
 
-`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建實作，適配器只需實作 `Raw_ob12` 和具體的發送方法即可。
+`At`/`AtAll`/`Reply` 修飾詞已由框架 SendDSL 基類別內建實作，適配器只需實作 `Raw_ob12` 和具體的發送方法即可。
 
 框架提供兩個關鍵輔助方法：
-- `self._apply_modifiers(message)` — 自動合併 At/AtAll/Reply 修飾器到訊息段
+- `self._apply_modifiers(message)` — 自動合併 At/AtAll/Reply 修飾詞到訊息段
 - `self.send_context` — 取得發送上下文字典（`target_type`、`target_id`、`account_id`）
 
 ```python
@@ -200,7 +207,7 @@ class MyAdapter(BaseAdapter):
             """
             發送 OneBot12 格式訊息（必須實作）
 
-            使用 _apply_modifiers 自動合併修飾器狀態，
+            使用 _apply_modifiers 自動合併修飾詞狀態，
             使用 send_context 取得發送上下文。
             """
             async def _do_send():
@@ -213,32 +220,32 @@ class MyAdapter(BaseAdapter):
                 )
             return asyncio.create_task(_do_send())
 
-        # Text/Image/Voice/Video/File 已從 SendDSL 基類繼承，
+        # Text/Image/Voice/Video/File 已從 SendDSL 基類別繼承，
         # 預設委託給 Raw_ob12，無需重複實作。
-        # 如需平台特定邏輯，可覆蓋單個方法：
+        # 如需平台特定邏輯，可覆寫單個方法：
         # def Text(self, text: str):
         #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 **媒體類發送方法（Image/Video/File）實作要點：**
 
-- 基類的預設實作會將 `file` 參數封裝為 OneBot12 訊息段傳給 `Raw_ob12`，適配器需在 `Raw_ob12` 中處理下載/上傳
+- 基類別的預設實作會將 `file` 參數封裝為 OneBot12 訊息段傳給 `Raw_ob12`，適配器需在 `Raw_ob12` 中處理下載/上傳
 - `file` 參數應同時支援 `bytes` 二進位資料和 `str` URL 兩種類型
 - 當傳入 URL 時，需先下載檔案再上傳到平台
-- 平台通常需要先呼叫上傳介面獲取檔案標識，再呼叫發送介面
+- 平台通常需要先呼叫上傳介面取得檔案識別，再呼叫發送介面
 
 **`__getattr__` 魔術方法：**
 
-- 實現方法名大小寫不敏感（`Text`、`text`、`TEXT` 都能呼叫）
+- 實作方法名大小寫不敏感（`Text`、`text`、`TEXT` 都能呼叫）
 - 未定義的方法應返回提示資訊而非報錯
 
 **`Raw_ob12` 方法：**
 
 - 將 OneBot12 標準訊息格式轉換為平台格式發送
-- 使用 `self._apply_modifiers(message)` 自動處理 At/AtAll/Reply 修飾器
+- 使用 `self._apply_modifiers(message)` 自動處理 At/AtAll/Reply 修飾詞
 - 使用 `**self.send_context` 傳遞發送目標資訊和帳號資訊
 
-### 6. 實現轉換器
+### 6. 實作轉換器
 
 ```python
 # MyAdapter/Converter.py
@@ -280,9 +287,9 @@ class MyPlatformConverter:
         return "private"  # 簡化範例
 ```
 
-### 7. 實現 Request 類（請求操作）
+### 7. 實作 Request 類別（請求操作）
 
-如果你的平台支援好友請求、群邀請等需要 Bot 做出決策的請求，可以實作 `Request` 內部類：
+如果你的平台支援好友請求、群組邀請等需要 Bot 做出決策的請求，可以實作 `Request` 內部類別：
 
 ```python
 from ErisPulse.Core import BaseAdapter, RequestDSL
@@ -291,7 +298,7 @@ class MyAdapter(BaseAdapter):
     # ... Send 和其他代碼 ...
 
     class Request(RequestDSL):
-        """請求操作實作（好友請求、群邀請等）"""
+        """請求操作實作（好友請求、群組邀請等）"""
 
         def accept(self, **kwargs):
             """同意請求"""
@@ -337,20 +344,22 @@ from ErisPulse.Core.Event import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # 透過 Event 便捷方法
+    # 通過 Event 便捷方法
     await event.approve()
-    # 或透過適配器直接操作
+    # 或通過適配器直接操作
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> 如果平台不支援請求操作，可以不實作 `Request` 內部類。基類預設返回 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
+> 如果平台不支援請求操作，可以不實作 `Request` 內部類別。基類別預設返回 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
 
-### 8. 建立包入口
+### 8. 建立套件入口
 
 ```python
 # MyAdapter/__init__.py
 from .Core import MyAdapter
 ```
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## `__init__` 注意事項
 
@@ -358,24 +367,24 @@ from .Core import MyAdapter
 
 ### 1. BaseAdapter 層（大多數情況不需要重寫）
 
-`BaseAdapter.__init__(self, sdk=None)` 負責建立 `Send` / `Request` 工廠實例，並自動完成以下工作：
+`BaseAdapter.__init__(self, sdk=None)` 負責創建 `Send` / `Request` 工廠實例，並自動完成以下工作：
 
-- 接受 `sdk` 參數並設定 `self.sdk`、`self.logger`
-- 如果宣告了 `ConfigClass`，可透過 `self.cfg` 實時讀取全域配置
-- 如果宣告了 `AccountConfigClass`，可透過 `self.accounts` 實時讀取多帳號配置
+- 接受 `sdk` 參數並設置 `self.sdk`、`self.logger`
+- 如果聲明了 `ConfigClass`，可通過 `self.cfg` 實時讀取全局配置
+- 如果聲明了 `AccountConfigClass`，可通過 `self.accounts` 實時讀取多帳戶配置
 
-**大多數情況下不需要覆寫 `__init__`**，只需宣告 `ConfigClass` 即可：
+**大多數情況不需要覆寫 `__init__`**，只需聲明 `ConfigClass` 即可：
 
 ```python
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyAdapterConfig  # 宣告後框架自動管理配置
+    ConfigClass = MyAdapterConfig  # 聲明後框架自動管理配置
     
     async def start(self):
         cfg = self.cfg  # 類型安全，實時讀取
         ...
 ```
 
-如果確實需要自定義初始化，呼叫 `super().__init__(sdk)` 即可：
+如果確實需要自定義初始化，調用 `super().__init__(sdk)` 即可：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -389,7 +398,7 @@ class MyAdapter(BaseAdapter):
 
 ### 2. Send 內部類（大多數情況不需要重寫）
 
-`SendDSL.__init__` 負責鏈式呼叫的狀態傳遞（目標類型、目標ID、帳號等）。**大多數情況下，你只需要重寫方法**（`Raw_ob12`、`Text` 等），不需要重寫 `__init__`。
+`SendDSL.__init__` 負責鏈式調用的狀態傳遞（目標類型、目標ID、帳號等）。**大多數情況下，你只需要重寫方法**（`Raw_ob12`、`Text` 等），不需要重寫 `__init__`。
 
 如果確實需要（比如初始化平台特有的狀態），**必須透傳所有參數**：
 
@@ -402,14 +411,14 @@ class MyAdapter(BaseAdapter):
             self._my_state = None  # 平台特有初始化
 ```
 
-**為什麼必須透傳？** 鏈式呼叫的每一步都透過 `self.__class__(...)` 建立新實例：
+**為什麼必須透傳？** 鏈式調用的每一步都通過 `self.__class__(...)` 創建新實例：
 
 ```python
 adapter.Send.To("user", "123")               # → Send(adapter, "user", "123", None)
 adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123", "bot1")
 ```
 
-如果 `__init__` 簽名不匹配或沒呼叫 `super()`，鏈式呼叫就會中斷。
+如果 `__init__` 簽名不匹配或沒調 `super()`，鏈式調用就會中斷。
 
 ### 3. Request 內部類（大多數情況不需要重寫）
 
@@ -431,16 +440,16 @@ class MyAdapter(BaseAdapter):
 | **BaseAdapter** | 需要自定義初始化邏輯時 | `super().__init__(sdk)` （傳入 sdk 參數） |
 | **Send 內部類** | 需要初始化發送相關狀態時 | `super().__init__(adapter, target_type, target_id, account_id)` |
 | **Request 內部類** | 需要初始化請求相關狀態時 | `super().__init__(adapter, request_id, account_id)` |
-| 三個層面 | 大多數情況 | **宣告 ConfigClass 即可，不碰 `__init__`** |
+| 三個層面 | 大多數情況 | **聲明 ConfigClass 即可，不碰 `__init__`** |
 
-### 9. 連接資訊與路由發現
+### 9. 連接信息與路由發現
 
-適配器註冊路由後，框架會記錄所有路由資訊。使用者可以透過以下 API 查看適配器的連接地址：
+適配器註冊路由後，框架會記錄所有路由信息。用戶可以通過以下 API 查看適配器的連接地址：
 
 ```python
 from ErisPulse import sdk
 
-# 取得適配器完整連接資訊
+# 獲取適配器完整連接信息
 info = sdk.adapter.get_connection_info("myplatform")
 # {
 #   "platform": "myplatform",
@@ -462,21 +471,21 @@ info = sdk.adapter.get_connection_info("myplatform")
 namespaces = sdk.router.list_namespaces()
 # {"myplatform": {"http": ["/myplatform/webhook"], "websocket": ["/myplatform/ws"]}}
 
-# 取得命名空間的完整連接 URL
+# 獲取命名空間的完整連接 URL
 urls = sdk.router.get_module_urls("myplatform")
 # {"base_url": "http://localhost:8080", "http": [...], "websocket": [...]}
 
-# 取得命名空間的詳細路由資訊
+# 獲取命名空間的詳細路由信息
 routes = sdk.router.get_module_routes("myplatform")
 # {"http": [{"path": "/myplatform/webhook", "methods": ["POST"]}],
 #  "websocket": [{"path": "/myplatform/ws", "auth": false}]}
 ```
 
-> **提示**：`get_connection_info()` 返回的資訊適合展示給使用者（如 WebUI），幫助使用者設定平台側的回呼地址或 WebSocket 連接地址。路由註冊時的 `module_name` 必須與適配器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則路由發現將無法正確關聯。
+> **提示**：`get_connection_info()` 返回的信息適合展示給用戶（如 WebUI），幫助用戶配置平台側的回調地址或 WebSocket 連接地址。路由註冊時的 `module_name` 必須與適配器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則路由發現將無法正確關聯。
 
 ### 10. SSE (Server-Sent Events) 支援
 
-ErisPulse 內建了伺服器無關的 SSE 支援，模組和適配器可以透過 `@sdk.router.sse()` 註冊 SSE 端點。
+ErisPulse 內置了服務器無關的 SSE 支援，模組和適配器可以通過 `@sdk.router.sse()` 註冊 SSE 端點。
 
 #### 基本使用
 
@@ -496,7 +505,7 @@ async def event_stream(sse):
 
 #### 使用請求參數
 
-處理器可以宣告 `request` 參數來存取客戶端請求資訊：
+處理器可以聲明 `request` 參數來訪問客戶端請求信息：
 
 ```python
 @sdk.router.sse("MyModule", "/events")
@@ -517,9 +526,9 @@ async def event_stream(request, sse):
 | 方法 | 說明 |
 |------|------|
 | `sse.send(data, event=None, id=None, retry=None)` | 發送 SSE 事件。非 str 的 data 自動 JSON 序列化 |
-| `sse.close()` | 優雅關閉 SSE 連接（安全呼叫，可多次） |
+| `sse.close()` | 優雅關閉 SSE 連接（安全調用，可多次） |
 | `sse.closed` | 連接是否已關閉 |
-| `sse.request` | 底層請求物件（可用於讀取 query params、headers） |
+| `sse.request` | 底層請求對象（可用於讀取 query params、headers） |
 
 #### 在 RouteGroup 中使用
 
@@ -544,16 +553,16 @@ sdk.router.list_namespaces()
 sdk.router.get_module_routes("MyModule")
 # {"http": [...], "websocket": [...], "sse": [{"path": "/MyModule/events", "streaming": true}]}
 
-# get_module_urls 會產生完整 URL
+# get_module_urls 會生成完整 URL
 sdk.router.get_module_urls("MyModule")
 # {"sse": [{"path": "/MyModule/events", "url": "http://localhost:8080/MyModule/events"}]}
 ```
 
-> **伺服器無關設計**：`SseEmitter` 透過回呼與底層 HTTP 框架解耦。框架提供了 `register_sse()` 和 `@sse` 裝飾器作為統一的註冊入口，適配器無需直接依賴任何底層 HTTP 框架即可實作 SSE 端點。
+> **服務器無關設計**：`SseEmitter` 通過回調與底層 HTTP 框架解耦。框架提供了 `register_sse()` 和 `@sse` 裝飾器作為統一的註冊入口，適配器無需直接依賴任何底層 HTTP 框架即可實現 SSE 端點。
 
 ## 下一步
 
 - [適配器核心概念](core-concepts.md) - 了解適配器架構
-- [SendDSL 詳解](send-dsl.md) - 學習訊息發送
+- [SendDSL 詳解](send-dsl.md) - 學習訊息傳送
 - [轉換器實作](converter.md) - 了解事件轉換
 - [適配器最佳實踐](best-practices.md) - 開發高品質適配器

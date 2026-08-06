@@ -202,7 +202,6 @@ SECTION_FRAMEWORK = Section(
     title="框架理解",
     entries=[
         DocEntry("架构概览", "architecture.md"),
-        DocEntry("术语表", "terminology.md"),
     ],
 )
 
@@ -669,9 +668,28 @@ class PromptGenerator:
 
     # ---- 文件读取 ----
 
+    # 纯导航尾段标题（多语言）—— 在 prompt 拼接时剥离以减少噪音
+    _NAV_SECTION_TITLES = frozenset({
+        # zh-CN / zh-TW
+        "相关文档", "相关链接", "下一步", "接下来",
+        "相關文檔", "相關連結",
+        # en
+        "Related Documentation", "Related Documents", "Related Links",
+        "Next Steps", "See Also", "Further Reading",
+        # ja
+        "関連ドキュメント", "関連文書", "関連リンク", "参考リンク", "参考ドキュメント",
+        # ru
+        "Связанные документы", "Связанная документация",
+        "Связанные ссылки", "Далее",
+    })
+
     def _read_file(self, rel_path: str) -> str:
         """
         读取文档文件，缺失时返回空字符串并可选输出警告
+
+        读取后剥离纯导航尾段（"相关文档"/"下一步" 等多语言变体），
+        这些段落在拼接 prompt 时是纯链接噪音，剥离可降低 token、提升生成质量。
+        手写文档不受影响，仅作用于 prompt 生成。
 
         :param rel_path: 相对于文档根目录的路径
         :return: 文件文本内容，文件不存在时返回空字符串
@@ -681,7 +699,33 @@ class PromptGenerator:
             if self.verbose:
                 Logger.progress(rel_path, "miss", "文件不存在")
             return ""
-        return full_path.read_text(encoding="utf-8")
+        content = full_path.read_text(encoding="utf-8")
+        return self._strip_nav_sections(content)
+
+    @staticmethod
+    def _strip_nav_sections(content: str) -> str:
+        """
+        剥离纯导航尾段（``## 相关文档`` / ``## 下一步`` 等多语言变体）
+
+        从匹配的 ``##`` 标题行开始、到下一个 ``##`` 标题或文件结尾为止的全部内容，
+        均从结果中移除。
+
+        :param content: 原始 Markdown 文本
+        :return: 剥离导航段后的文本
+        """
+        titles = PromptGenerator._NAV_SECTION_TITLES
+        lines = content.split("\n")
+        result: list[str] = []
+        in_nav = False
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("## ") and not stripped.startswith("### "):
+                title = stripped[3:].strip()
+                in_nav = title in titles
+            if not in_nav:
+                result.append(line)
+        # 移除末尾多余空行
+        return "\n".join(result).rstrip() + "\n" if result else ""
 
     # ---- 格式化辅助 ----
 

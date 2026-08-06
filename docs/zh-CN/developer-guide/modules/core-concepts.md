@@ -109,7 +109,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyModuleConfig(BaseConfig):

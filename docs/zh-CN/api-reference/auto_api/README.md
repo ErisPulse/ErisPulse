@@ -21,7 +21,7 @@
 
 - **模块总数**: 99
 - **类总数**: 108（包括 6 个嵌套类）
-- **函数总数**: 154
+- **函数总数**: 156
 - **方法总数**: 1007
 
 ---
@@ -51,7 +51,7 @@
 
 ### [ErisPulse.CLI.commands.create](ErisPulse/CLI/commands/create.md)
 
-1 个类 | 4 个方法 | 4 个函数
+1 个类 | 4 个方法 | 5 个函数
 
 
 ### [ErisPulse.CLI.commands.doctor](ErisPulse/CLI/commands/doctor.md)
@@ -206,7 +206,7 @@
 
 ### [ErisPulse.Core.Bases.config_schema](ErisPulse/Core/Bases/config_schema.md)
 
-3 个类 | 18 个函数
+3 个类 | 19 个函数
 
 
 ### [ErisPulse.Core.Bases.converter](ErisPulse/Core/Bases/converter.md)
