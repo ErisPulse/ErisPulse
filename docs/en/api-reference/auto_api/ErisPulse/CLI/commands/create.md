@@ -46,6 +46,15 @@ Create 命令实现
 ---
 
 
+### `_copy_erispulse_logo(project_dir: Path)`
+
+将 ErisPulseLogo.png 拷贝到项目的 .github/assets/ 目录
+
+- **project_dir** (`Path`): 项目根目录
+
+---
+
+
 ### `_scaffold_text(name: str)`
 
 构建当前语言的脚手架文案映射，并预填充 {name} 占位符

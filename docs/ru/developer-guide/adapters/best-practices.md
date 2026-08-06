@@ -1,29 +1,33 @@
-# Рекомендации по лучшим практикам разработки адаптеров
+# Рекомендации по разработке адаптеров ErisPulse
 
-Данный документ предоставляет рекомендации по лучшим практикам разработки адаптеров ErisPulse.
+Данный документ предоставляет рекомендации по разработке адаптеров ErisPulse.
 
-## Управление состоянием бота и мета-события
+Пожалуйста, верните только переведённый полный Markdown-контент, не добавляя никаких других текстов.
 
-Адаптер должен активно отправлять мета-события через `adapter.emit()`, чтобы фреймворк автоматически отслеживал состояние подключения бота, его онлайн/оффлайн статус и информацию оheartbeat.
+Ещё раз напоминаем: если документ содержит строки переключения языка (строки с названиями языков, разделёнными `` | ``), строго соблюдайте вышеуказанные правила форматирования в пункте 8, не пишите ошибочного формата ``[**Label**](file)``.
 
-### 1. Когда отправлять мета-события
+## Управление состоянием бота и метасобытия
 
-| Событие | `detail_type` | Время срабатывания | Поведение фреймворка |
+Адаптер должен активно отправлять метасобытия с помощью `adapter.emit()`, чтобы фреймворк автоматически отслеживал состояние подключения бота, его онлайн/оффлайн статус и информацию о心跳.
+
+### 1. Когда отправлять метасобытия
+
+| Событие | `detail_type` | Точка срабатывания | Поведение фреймворка |
 |------|--------------|---------|---------|
-| Подключение | `"connect"` | Когда бот устанавливает соединение с платформой | Регистрация бота, запуск жизненного цикла `adapter.bot.online` |
-| Отключение | `"disconnect"` | Когда бот отключается от платформы | Отметка бота как оффлайн, запуск жизненного цикла `adapter.bot.offline` |
-| Heartbeat | `"heartbeat"` | Регулярно отправляется (рекомендуется каждые 30-60 секунд) | Обновление времени активности и метаинформации бота |
+| Подключение | `"connect"` | Когда бот устанавливает соединение с платформой | Регистрирует бота, запускает событие жизненного цикла `adapter.bot.online` |
+| Отключение | `"disconnect"` | Когда бот отключается от платформы | Отмечает бота как оффлайн, запускает событие жизненного цикла `adapter.bot.offline` |
+| Heartbeat | `"heartbeat"` | Регулярно (рекомендуется каждые 30-60 секунд) | Обновляет время активности и метаинформацию бота |
 
-### 2. Отправка мета-событий
+### 2. Отправка метасобытий
 
-Фреймворк предоставляет метод `emit_meta()`, который позволяет отправить мета-событие одной строкой:
+Фреймворк предоставляет метод `emit_meta()`, с помощью которого можно отправить метасобытие всего одной строкой:
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Бот онлайн: отправка события connect одной строкой
+        # Бот в сети: отправка события connect одной строкой
         await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="Мой робот")
 
         try:
@@ -35,7 +39,7 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Бот оффлайн
+            # Бот вышел из сети
             await self.emit_meta("disconnect", bot_id)
 ```
 
@@ -47,20 +51,20 @@ class MyAdapter(BaseAdapter):
 class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self, bot_id: str):
         while self._connected:
-            # Отправка мета-события heartbeat фреймворку (одной строкой)
+            # Отправка метасобытия heartbeat фреймворку (одна строка)
             await self.emit_meta("heartbeat", bot_id)
             await asyncio.sleep(30)
 ```
 
 ### 4. Автоматическое обнаружение поля `self`
 
-Метод `adapter.emit()` фреймворка автоматически обрабатывает все события (не только мета-события) с полем `self`:
+Метод `adapter.emit()` фреймворка автоматически обрабатывает все события (не только метасобытия), включая поле `self`:
 
-- **Обычные события** (message/notice/request) с полем `self` будут автоматически зарегистрированы
-- **Дополнительные поля `self`**: поддерживаются опциональные поля `user_name`, `nickname`, `avatar`, `account_id`
+- В обычных событиях (message/notice/request) поле `self` автоматически обнаруживается и бот регистрируется
+- **Дополнительная информация в поле `self`**: поддерживает необязательные поля `user_name`, `nickname`, `avatar`, `account_id`
 
 ```python
-# Преобразователь с полем self автоматически регистрирует бота
+# В конвертере достаточно указать поле self для автоматической регистрации бота
 onebot_event = {
     "type": "message",
     "detail_type": "private",
@@ -94,13 +98,12 @@ all_bots = sdk.adapter.list_bots()
 # Получение списка ботов для указанной платформы
 platform_bots = sdk.adapter.list_bots("myplatform")
 
-# Проверка онлайн-статуса бота
+# Проверка, находится ли бот в сети
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# Получение сводной информации о состоянии (подходит для WebUI)
+# Получение полного сводного состояния (подходит для отображения в WebUI)
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
-```
 
 ## Управление подключениями
 
@@ -117,7 +120,7 @@ class MyAdapter(BaseAdapter):
         while retry_count < max_retries:
             try:
                 await self._connect_to_platform()
-                self.logger.info("Подключение успешно")
+                self.logger.info("Подключение успешно установлено")
                 break
             except Exception as e:
                 retry_count += 1
@@ -125,11 +128,11 @@ class MyAdapter(BaseAdapter):
                     # Стратегия экспоненциальной задержки
                     wait_time = min(60 * (2 ** retry_count), 600)
                     self.logger.warning(
-                        f"Подключение не удалось, повтор через {wait_time} секунд ({retry_count}/{max_retries}): {e}"
+                        f"Не удалось подключиться, повтор через {wait_time} секунд ({retry_count}/{max_retries}): {e}"
                     )
                     await asyncio.sleep(wait_time)
                 else:
-                    self.logger.error("Подключение не удалось, достигнуто максимальное количество попыток")
+                    self.logger.error("Не удалось подключиться, достигнуто максимальное количество попыток")
                     raise
 ```
 
@@ -157,9 +160,9 @@ class MyAdapter(BaseAdapter):
             self._connected = False
 ```
 
-### 3. Поддержание соединения и мета-heartbeat
+### 3. Пинг и мета-пинг
 
-Адаптер должен выполнять две задачи с помощью heartbeat: отправлять heartbeat платформе и отправлять мета-событие heartbeat фреймворку.
+Пинг адаптера должен выполнять две задачи: отправлять пинг платформе и отправлять мета-событие пинга фреймворку.
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -170,21 +173,21 @@ class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self):
         while self.connection:
             try:
-                # 1. Отправка heartbeat платформе
+                # 1. Отправка пинга платформе
                 await self.connection.send_json({"type": "ping"})
 
-                # 2. Отправка мета-события heartbeat фреймворку (одной строкой)
+                # 2. Отправка мета-события пинга (одной строкой с emit_meta)
                 await self.emit_meta("heartbeat", self._bot_id)
 
                 await asyncio.sleep(30)
             except Exception as e:
-                self.logger.error(f"Ошибка heartbeat: {e}")
+                self.logger.error(f"Ошибка пинга: {e}")
                 break
 ```
 
-### 4. Публикация информации о подключении
+### 4. Обеспечение видимости информации о подключении
 
-Роуты адаптера должны быть доступны пользователям, чтобы они могли настроить обратный вызов на стороне платформы. Рекомендуется активно выводить информацию о подключении в методе `start()`:
+Регистрируемые адаптером маршруты должны быть доступны пользователям для настройки обратного вызова на стороне платформы. Рекомендуется активно выводить информацию о подключении в методе `start()`:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -198,12 +201,12 @@ class MyAdapter(BaseAdapter):
         if self.sdk:
             info = self.sdk.adapter.get_connection_info(self.platform)
             if info:
-                self.logger.info(f"WebSocket URL: "
+                self.logger.info(f"Адрес WebSocket: "
                     f"{info.get('connection', {}).get('base_url', '')}"
                     f"{info.get('connection', {}).get('websocket_routes', [])}")
 ```
 
-Пользователи могут использовать следующие API для просмотра всех роутов и адресов подключения адаптера:
+Пользователь может использовать следующий API для просмотра всех маршрутов и адресов подключения адаптера:
 
 ```python
 from ErisPulse import sdk
@@ -211,22 +214,24 @@ from ErisPulse import sdk
 # Информация о подключении на уровне адаптера (рекомендуется)
 info = sdk.adapter.get_connection_info("myplatform")
 
-# Запрос на уровне менеджера роутов
-sdk.router.list_namespaces()              # Список всех пространств имён
-sdk.router.get_module_routes("myplatform")  # Подробная информация о роутах
-sdk.router.get_module_urls("myplatform")    # Полные URL подключения
+# Запрос на уровне маршрутизатора
+sdk.router.list_namespaces()              # Список всех пространств имен
+sdk.router.get_module_routes("myplatform")  # Детальная информация о маршрутах
+sdk.router.get_module_urls("myplatform")    # Полные адреса подключения
 ```
 
-> **Важно**: `module_name`, используемый при регистрации роута, должен полностью совпадать с именем платформы, зарегистрированной в ErisPulse, иначе `get_connection_info()` не сможет сопоставить роут. Для адаптеров с несколькими аккаунтами следует регистрировать подпути (например, `/account1/webhook`, `/account2/webhook`), а не использовать разные `module_name`.
+> **Важно**: `module_name`, используемый при регистрации маршрута, должен полностью совпадать с именем `platform`, зарегистрированным в ErisPulse, иначе `get_connection_info()` не сможет сопоставить маршруты. Адаптеры для нескольких аккаунтов должны регистрировать подпути для каждого аккаунта (например, `/account1/webhook`, `/account2/webhook`), а не использовать разные `module_name`.
+
+[**English**](docs/ru/quick-start.md)
 
 ## Преобразование событий
 
-### 1. Строгое следование стандарту OneBot12
+### 1. Строгое соблюдение стандарта OneBot12
 
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """Преобразование событий"""
+        """Преобразование события"""
         onebot_event = {
             "id": str(raw_event.get("event_id", uuid.uuid4())),
             "time": int(time.time()),
@@ -238,28 +243,28 @@ class MyPlatformConverter:
                 "user_id": str(raw_event.get("bot_id", ""))
             },
             "myplatform_raw": raw_event,  # Сохранение исходных данных (обязательно)
-            "myplatform_raw_type": raw_event.get("type", "")  # Тип исходных данных (обязательно)
+            "myplatform_raw_type": raw_event.get("type", "")  # Исходный тип (обязательно)
         }
         return onebot_event
 ```
 
-### 2. Стандартизация временных меток
+### 2. Стандартизация метки времени
 
 ```python
 def _convert_timestamp(self, timestamp):
-    """Преобразование в 10-значную временную метку в секундах"""
+    """Преобразование в 10-значную метку времени в секундах"""
     if not timestamp:
         return int(time.time())
     
-    # Если временная метка в миллисекундах
+    # Если метка времени в миллисекундах
     if timestamp > 10**12:
         return int(timestamp / 1000)
     
-    # Если временная метка в секундах
+    # Если метка времени в секундах
     return int(timestamp)
 ```
 
-### 3. Генерация идентификаторов событий
+### 3. Генерация идентификатора события
 
 ```python
 import uuid
@@ -273,16 +278,18 @@ def _generate_event_id(self, raw_event):
     return str(uuid.uuid4())
 ```
 
+[**中文**](docs/ru/quick-start.md)
+
 ## Реализация SendDSL
 
-Модификаторы `At`/`AtAll`/`Reply` уже встроены в базовый класс SendDSL фреймворка, адаптеру нужно только реализовать `Raw_ob12` и конкретные методы отправки. Использование `self._apply_modifiers(message)` и `self.send_context` упрощает разработку.
+Модификаторы `At`/`AtAll`/`Reply` встроены в базовый класс SendDSL фреймворка, адаптеру нужно только реализовать `Raw_ob12` и конкретные методы отправки. Использование `self._apply_modifiers(message)` и `self.send_context` упрощает разработку.
 
 ### 1. Обязательно возвращать объект Task
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """Рекомендуемая реализация: использование вспомогательных методов фреймворка"""
+        """Рекомендуемая реализация: использование вспомогательного метода фреймворка"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -297,7 +304,7 @@ class Send(BaseAdapter.Send):
         return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### 2. Методы цепочечного вызова возвращают self
+### 2. Методы цепочки модификаторов должны возвращать self
 
 ```python
 class Send(BaseAdapter.Send):
@@ -308,10 +315,10 @@ class Send(BaseAdapter.Send):
 
     def Button(self, content: list) -> 'Send':
         self.buttons.append(content)
-        return self # Возвращаем self
+        return self # возвращаем self
 ```
 
-### 3. Поддержка платформенно-специфичных методов
+### 3. Поддержка методов, специфичных для платформы
 
 ```python
 class Send(BaseAdapter.Send):
@@ -326,21 +333,20 @@ class Send(BaseAdapter.Send):
         )
     
     def Card(self, card_data: dict):
-        """Отправка карточек"""
+        """Отправка карточного сообщения"""
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_card",
-                message=[{"type": "card", "data": {"card_data": card_data}}],
+                message=[{"type": "card", "data": card_data}],
                 **self.send_context
             )
         )
-```
 
-## Ответы API
+## API ответ
 
 ### 1. Стандартизированный формат ответа
 
-Фреймворк предоставляет методы `make_response()` и `make_error()` для создания стандартизированных ответов:
+Фреймворк предоставляет методы `make_response()` и `make_error()` для построения стандартизированного ответа:
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -363,23 +369,23 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-Метод `make_response()` автоматически генерирует словарь ответа с ключом `{platform}_raw`. Метод `make_error()` по умолчанию использует `retcode=34000` (Platform Error).
+`make_response()` автоматически сгенерирует словарь ответа, содержащий ключ `{platform}_raw`. `make_error()` по умолчанию использует `retcode=34000` (Platform Error).
 
-### 2. Стандартные коды ошибок
+### 2. Стандарт кодов ошибок
 
-Следование стандартным кодам ошибок OneBot12:
+Следуйте стандартным кодам ошибок OneBot12:
 
 ```python
-# 1xxxx - Ошибки запроса действия
+# 1xxxx - Ошибка запроса действия
 10001: Bad Request
 10002: Unsupported Action
 10003: Bad Param
 
-# 2xxxx - Ошибки обработчика действия
+# 2xxxx - Ошибка обработчика действия
 20001: Bad Handler
 20002: Internal Handler Error
 
-# 3xxxx - Ошибки выполнения действия
+# 3xxxx - Ошибка выполнения действия
 31000: Database Error
 32000: Filesystem Error
 33000: Network Error
@@ -387,20 +393,22 @@ async def call_api(self, endpoint: str, **params):
 35000: Logic Error
 ```
 
+[**中文**](docs/ru/quick-start.md) | [**English**](docs/ru/quick-start.md)
+
 ## Поддержка нескольких аккаунтов
 
 ### 1. Декларативная конфигурация (рекомендуется)
 
-После объявления класса конфигурации с помощью `AccountConfigClass`, фреймворк автоматически управляет загрузкой, проверкой и генерацией шаблонов для нескольких аккаунтов. Базовый класс `BotAccountConfig` предоставляет поля `enabled` и `name`, которые адаптеру не нужно объявлять:
+После использования `AccountConfigClass` для декларативной конфигурации, фреймворк автоматически управляет загрузкой, проверкой и генерацией шаблонов для нескольких аккаунтов. Базовый класс `BotAccountConfig` предоставляет поля `enabled` и `name`, адаптеру не нужно их объявлять:
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BotAccountConfig
+from ErisPulse.Core.Bases import BotAccountConfig
 
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
-        "description": {"i18n": "my_adapter.bot_token", "default": "Bot Token"},
+        "description": {"i18n": "my_adapter.bot_token", "default": "Токен бота"},
         "required": True,
         "secret": True,
     })
@@ -420,7 +428,7 @@ class MyAdapter(BaseAdapter):
         # name: имя аккаунта, account: экземпляр MyBotConfig
 ```
 
-Файл конфигурации автоматически генерируется в формате:
+Конфигурационный файл будет автоматически сгенерирован следующим образом:
 
 ```toml
 [MyAdapter.accounts.default]
@@ -431,29 +439,28 @@ name = ""
 
 ### 2. Механизм выбора аккаунта
 
-Фреймворк предоставляет встроенный метод `_resolve_account()` с приоритетом сопоставления:
+Фреймворк включает метод `_resolve_account()`, который использует следующий приоритет сопоставления:
 
 1. **Имя аккаунта** — точное совпадение с ключом конфигурации
-2. **Поле `bot_id`** — автоматически полученный bot_id (т.е. `event["self"]["user_id"]`)
+2. **Поле `bot_id`** — автоматически получаемый bot_id (то есть `event["self"]["user_id"]`)
 3. **Любое строковое поле** — другие строковые поля в конфигурации
-4. **Резервный вариант** — первый включенный аккаунт
+4. **Резервный вариант** — первый включённый аккаунт
 
 ```python
 # Сопоставление по имени аккаунта
 name, account = self._resolve_account("account1")
 
-# Сопоставление по bot_id (самый часто используемый способ, берётся из события)
+# Сопоставление по bot_id (наиболее часто используемый способ, из события)
 name, account = self._resolve_account("bot_123")
 
-# Получение первого включенного аккаунта (передаём None)
+# Получение первого включённого аккаунта (передача None)
 name, account = self._resolve_account(None)
-```
 
 ## Обработка ошибок
 
-### 1. Классификация и обработка исключений
+### 1. Классификация обработки исключений
 
-Использование `make_error()` для создания стандартизированных ответов. При запросах через `sdk.client` перехват ErisPulse исключений:
+Используйте `make_error()` для построения стандартизированного ответа об ошибке. При запросе через `sdk.client` перехватывайте исключения ErisPulse:
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
@@ -469,39 +476,38 @@ async def call_api(self, endpoint: str, **params):
         response = await resp.json()
         return self.make_response(data=response, raw=response)
     except ClientTimeoutError:
-        self.logger.error(f"Время ожидания истекло: {endpoint}")
-        return self.make_error(retcode=32000, message="Время ожидания истекло")
+        self.logger.error(f"Запрос превысил лимит времени: {endpoint}")
+        return self.make_error(retcode=32000, message="Запрос превысил лимит времени")
     except ClientError as e:
-        self.logger.error(f"Ошибка сети: {e}")
-        return self.make_error(retcode=33000, message="Ошибка сети")
+        self.logger.error(f"Сетевая ошибка: {e}")
+        return self.make_error(retcode=33000, message="Ошибка сетевого запроса")
     except json.JSONDecodeError:
-        self.logger.error("Ошибка декодирования JSON")
+        self.logger.error("Не удалось распарсить JSON")
         return self.make_error(retcode=10006, message="Неверный формат ответа")
     except Exception as e:
         self.logger.error(f"Неизвестная ошибка: {e}", exc_info=True)
         return self.make_error(message=str(e))
 ```
 
-> **Обратная совместимость**: старый код адаптеров, использующий `aiohttp`, не затрагивается и по-прежнему может перехватывать `aiohttp.ClientError`. Преобразование исключений происходит только при использовании `sdk.client`.
+> **Обратная совместимость**: Код старых адаптеров, использующих напрямую `aiohttp`, не затрагивается и по-прежнему может перехватывать `aiohttp.ClientError`. Преобразование исключений действует только при запросах, инициированных через `sdk.client`.
 
-### 2. Логирование
+### 2. Запись логов
 
-Фреймворк автоматически создает под-logger для адаптера (`sdk.logger.get_child("MyAdapter")`), без необходимости ручной инициализации:
+Фреймворк автоматически создает дочерний логгер для адаптера (`sdk.logger.get_child("MyAdapter")`), без необходимости ручной инициализации:
 
 ```python
 class MyAdapter(BaseAdapter):
-    # ConfigClass = ...  # После объявления класса конфигурации self.logger доступен автоматически
+    # ConfigClass = ...  # После объявления класса конфигурации self.logger будет доступен автоматически
     
     async def start(self):
-        self.logger.info("Запуск адаптера...")
+        self.logger.info("Адаптер запускается...")
         # ...
-        self.logger.info("Запуск адаптера завершен")
+        self.logger.info("Адаптер успешно запущен")
     
     async def shutdown(self):
-        self.logger.info("Остановка адаптера...")
+        self.logger.info("Адаптер останавливается...")
         # ...
-        self.logger.info("Остановка адаптера завершена")
-```
+        self.logger.info("Адаптер успешно остановлен")
 
 ## Тестирование
 
@@ -513,7 +519,7 @@ from ErisPulse.Core.Bases import BaseAdapter
 
 class TestMyAdapter:
     def test_converter(self):
-        """Тест преобразователя"""
+        """Тестирование конвертера"""
         converter = MyPlatformConverter()
         raw_event = {"type": "message", "content": "Hello"}
         result = converter.convert(raw_event)
@@ -522,7 +528,7 @@ class TestMyAdapter:
         assert "myplatform_raw" in result
     
     def test_api_response(self):
-        """Тест формата ответа API"""
+        """Тестирование формата API-ответа"""
         adapter = MyAdapter()
         response = adapter.call_api("/test", param="value")
         assert "status" in response
@@ -534,14 +540,14 @@ class TestMyAdapter:
 ```python
 @pytest.mark.asyncio
 async def test_adapter_start():
-    """Тест запуска адаптера"""
+    """Тестирование запуска адаптера"""
     adapter = MyAdapter()
     await adapter.start()
     assert adapter._connected is True
 
 @pytest.mark.asyncio
 async def test_send_message():
-    """Тест отправки сообщения"""
+    """Тестирование отправки сообщения"""
     adapter = MyAdapter()
     await adapter.start()
     
@@ -549,47 +555,49 @@ async def test_send_message():
     assert result is not None
 ```
 
+[**English**](docs/ru/quick-start.md)
+
 ## Обратное преобразование и построение сообщений
 
-`Raw_ob12` является обязательным методом для адаптера, это единый вход для обратного преобразования (OneBot12 → платформа). Стандартные методы (`Text`, `Image` и т.д.) должны делегировать вызовы `Raw_ob12`, а состояние модификаторов (`At`/`Reply`/`AtAll`) должно объединяться в `Raw_ob12` в виде сегментов сообщения.
+`Raw_ob12` — это метод, который адаптер **должен реализовать**, он является единым входом для обратного преобразования (OneBot12 → платформа). Стандартные методы (`Text`, `Image` и т. д.) должны делегировать вызовы методу `Raw_ob12`, а состояние модификаторов (`At`/`Reply`/`AtAll`) должно объединяться внутри `Raw_ob12` в сегменты сообщения.
 
-`MessageBuilder` — это инструмент для построения сегментов сообщения, используемый в сочетании с `Raw_ob12`, поддерживает цепочечные вызовы и быстрое построение.
+`MessageBuilder` — это инструмент для построения сегментов сообщений, совместимый с использованием `Raw_ob12`, поддерживающий цепочечные вызовы и быстрое построение.
 
-> Полные спецификации реализации, примеры кода и методы использования см. в:
-> - [Спецификация методов отправки §6 Спецификация обратного преобразования](../../standards/send-method-spec.md#6-спецификация-обратного-преобразованияonebot12--платформа)
-> - [Спецификация методов отправки §11 Строитель сообщений](../../standards/send-method-spec.md#11-строитель-сообщений-messagebuilder)
+> Полная спецификация реализации, примеры кода и методы использования см. в:
+> - [Спецификация методов отправки §6 Спецификация обратного преобразования](../../standards/send-method-spec.md#6-обратное-преобразование-одинбот12--платформа)
+> - [Спецификация методов отправки §11 Построитель сообщений](../../standards/send-method-spec.md#11-построитель-сообщений-messagebuilder)
 
 ## Расширение методов платформенных событий
 
-Адаптер может регистрировать платформенно-специфичные методы для класса обёртки Event, чтобы разработчикам модулей было удобнее получать доступ к платформенно-специфичным данным.
+Адаптер может зарегистрировать платформенно-специфические методы для класса Event-обертки, что позволяет разработчикам модулей более удобно получать доступ к платформенно-специфическим данным.
 
-### 1. Использование класса Mixin для массовой регистрации (рекомендуется)
+### 1. Массовая регистрация с использованием класса Mixin (рекомендуется)
 
-Когда платформа имеет несколько специфичных методов, рекомендуется использовать класс Mixin:
+Когда платформа имеет несколько специфических методов, рекомендуется использовать класс Mixin:
 
 ```python
-# Регистрация на уровне start() адаптера или модуля
+# Регистрация в start() адаптера или на уровне модуля
 from ErisPulse.Core.Event import register_event_mixin
 
 class MyPlatformEventMixin:
     def get_chat_name(self):
-        """Получение названия чата"""
+        """Получить название чата"""
         return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 
     def is_official_message(self):
-        """Определение, является ли сообщение официальным"""
+        """Определить, является ли сообщение официальным"""
         raw = self.get("myplatform_raw", {})
         return raw.get("sender", {}).get("is_official", False)
 
     def get_message_type(self):
-        """Получение типа сообщения платформы"""
+        """Получить тип сообщения платформы"""
         return self.get("myplatform_raw", {}).get("msg_type", "text")
 
 # Массовая регистрация
 register_event_mixin("myplatform", MyPlatformEventMixin)
 ```
 
-### 2. Регистрация отдельных методов с помощью декоратора
+### 2. Регистрация отдельного метода с использованием декоратора
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -599,37 +607,37 @@ def get_chat_name(self):
     return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 ```
 
-### 3. Очистка при завершении работы адаптера
+### 3. Очистка при выключении адаптера
 
 ```python
 from ErisPulse.Core.Event import unregister_platform_event_methods
 
 class MyAdapter(BaseAdapter):
     async def shutdown(self):
-        # Очистка зарегистрированных методов событий платформы
+        # Очистка регистраций платформенно-специфических методов событий
         unregister_platform_event_methods("myplatform")
-        # ... другие очистки
+        # ... другие действия по очистке
 ```
 
-> Более подробные инструкции по регистрации и удалению см. в [API системы событий - Регистрация платформенных расширений](../../api-reference/event-system.md#адаптер-регистрация-платформенных-расширений-методов).
+> Подробное описание регистрации и отмены регистрации см. в [API системы событий - Регистрация платформенно-специфических методов](../../api-reference/event-system.md#Регистрация платформенно-специфических методов адаптером).
 
-## Поддержание документации
+## Документация по обслуживанию
 
-### 1. Поддержание документации платформенных особенностей
+### 1. Обслуживание документации платформы
 
-Создайте документ `{platform}.md` в каталоге `docs/ru/platform-guide/` (другие языковые версии будут автоматически генерироваться):
+Создайте документ `{platform}.md` в каталоге `docs/ru/platform-guide/` (другие языковые версии будут созданы автоматически):
 
 ```markdown
-# Документация адаптера для платформы
+# Документация адаптера платформы
 
 ## Основная информация
-- Версия модуля: 1.0.0
-- Автор поддержки: Your Name
+- Версия соответствующего модуля: 1.0.0
+- Ответственный: Your Name
 
 ## Поддерживаемые типы отправки сообщений
 ...
 
-## Специфичные типы событий
+## Уникальные типы событий
 ...
 
 ## Параметры конфигурации
@@ -645,8 +653,12 @@ class MyAdapter(BaseAdapter):
 version = "2.0.0"  # Обновите номер версии
 ```
 
+Важно: если документ содержит строки переключения языка (имена языков разделены символом `` | ``), строго соблюдайте вышеуказанные правила форматирования в пункте 8. Не используйте ошибочный формат вида ``[**Label**](file)``.
+
 ## Связанные документы
 
 - [Введение в разработку адаптеров](getting-started.md) - Создание первого адаптера
 - [Основные концепции адаптеров](core-concepts.md) - Понимание архитектуры адаптеров
-- [Подробности SendDSL](send-dsl.md) - Изучение отправки сообщений
+- [Подробное руководство по SendDSL](send-dsl.md) - Изучение отправки сообщений
+
+[**Переключить язык**](README.ru.md)

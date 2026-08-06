@@ -230,7 +230,16 @@ ErisPulse SDK 主类
 启动主动 GC 后台任务
 
 定期执行 Python GC 和内部资源回收（离线 Bot 清理等），
-防止长期运行时的内存增长。间隔由框架配置 proactive_gc_interval 控制。
+防止长期运行时的内存增长。
+
+GC 行为由三项框架配置控制（均支持热更新）：
+
+- ``proactive_gc_interval``: 回收间隔秒数（0 禁用）
+- ``proactive_gc_generation``: 回收分代（0/1/2，默认 2=最老代）
+- ``proactive_gc_full_every``: 每 N 轮额外做一次全量回收（0 禁用）
+
+初始化阶段已调用 ``gc.freeze()`` 将框架对象移入永久代，
+此处 ``gc.collect()`` 仅扫描运行期新建对象。
 
 ---
 

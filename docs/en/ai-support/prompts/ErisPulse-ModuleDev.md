@@ -231,149 +231,6 @@ flowchart TD
 > For more details, please refer to [Lazy Loading System](advanced/lazy-loading.md) and [Lifecycle Management](advanced/lifecycle.md).
 
 
-### 术语表
-
-# ErisPulse Glossary
-
-This document explains common technical terms used in ErisPulse to help you better understand the framework's concepts.
-
-## Core Concepts
-
-### Event-Driven Architecture
-**Simple Explanation:** Like a restaurant ordering system. Customers (users) order dishes (send messages), waiters (event system) pass the order (event) to the kitchen (modules), and after the kitchen processes it, the waiter serves the food (reply) to the customer.
-
-**Technical Explanation:** The program's execution flow is triggered by external events rather than executing in a fixed sequence. Whenever a new event occurs (such as receiving a message), the framework automatically calls the corresponding handler function.
-
-### OneBot12 Standard
-**Simple Explanation:** Like the standard for sockets and plugs. The "plugs" (native event formats) of different platforms vary, but through converters, they all become a unified "plug" (OneBot12 format), so your code can act like a socket to adapt to all platforms.
-
-**Technical Explanation:** A unified chatbot application interface standard that defines unified formats for events, messages, APIs, etc., allowing code to be reused across different platforms.
-
-### Adapter
-**Simple Explanation:** Like a translator. Different platforms speak different "languages" (API formats). The adapter translates these "languages" into "Mandarin" (OneBot12 standard) that ErisPulse can understand, and also translates ErisPulse's instructions back into the "languages" of each platform.
-
-**Technical Explanation:** A component responsible for communicating with a specific platform. It receives native events from the platform and converts them into a standard format, or sends standard format requests to the platform.
-
-### Module
-**Simple Explanation:** Like an APP on a phone. Each module is an independent feature pack that can be added, deleted, or updated. Examples include "Weather Forecast Module", "Music Player Module", etc.
-
-**Technical Explanation:** The basic unit of feature extension, containing specific business logic, event handlers, and configuration, which can be installed and uninstalled independently.
-
-### Event
-**Simple Explanation:** Like a notification on a phone. When there is a new message, new friend, or new group chat, the platform sends a "notification" (event) to your bot.
-
-**Technical Explanation:** Anything notable happening on the platform, such as receiving a message, a user joining a group, a friend request, etc., is passed to the program in the form of structured data.
-
-### Event Handler
-**Simple Explanation:** Like a courier's delivery rules. When a "package" (event) is received, it decides who handles this package based on the package type (message, notice, request, etc.).
-
-**Technical Explanation:** Functions marked with decorators that are automatically executed when a specific type of event occurs, such as `@command`, `@message`, etc.
-
-## Development Related Terms
-
-### SDK
-**Simple Explanation:** Like a toolbox. It contains various common tools (storage, configuration, logs, etc.) that you can use directly when writing code, without reinventing the wheel.
-
-**Technical Explanation:** Software Development Kit, which provides a set of pre-built components and tools to simplify the development process.
-
-### Virtual Environment
-**Simple Explanation:** Like an independent "workshop". Each project has its own "workshop", and the software packages installed inside do not interfere with each other, avoiding version conflicts.
-
-**Technical Explanation:** An isolated Python environment where each environment has an independent package list and versions, preventing dependency conflicts between different projects.
-
-### Asynchronous Programming
-**Simple Explanation:** Like multitasking. The bot can do multiple things at once. For example, while waiting for a network response, it can still process messages from other users without freezing.
-
-**Technical Explanation:** A programming style using `async`/`await` keywords that allows the program to switch to other tasks while waiting for time-consuming operations (such as network requests, file reading/writing), improving efficiency.
-
-### Hot Reload
-**Simple Explanation:** Like auto-refresh on a webpage. After you modify the code, you don't need to manually restart the bot; it automatically loads the new code, taking effect immediately.
-
-**Technical Explanation:** In development mode, the program automatically detects file changes and reloads, allowing code modifications to take effect without a manual restart.
-
-### Lazy Loading
-**Simple Explanation:** Like drawers opened on demand. Unused drawers (modules) stay closed first and are only opened when needed, so you don't have to wait for all drawers to open during startup.
-
-**Technical Explanation:** A delayed loading strategy where modules are initialized and loaded only when first accessed, reducing startup time and resource usage.
-
-## Function Related Terms
-
-### Command
-**Simple Explanation:** Like a command in a game. When a user types a command like `/hello`, the bot executes the corresponding function.
-
-**Technical Explanation:** A message starting with a specific prefix (such as `/`) that is recognized by the framework as a command and routed to the corresponding handler function.
-
-### Reply
-**Simple Explanation:** It is the "answer" the bot gives to the user. Whether it is text, image, or voice, it is a reply to the user's message.
-
-**Technical Explanation:** The process where the adapter sends processing results back to the platform to be displayed to the user.
-
-### Storage
-**Simple Explanation:** Like the bot's "notepad". It can remember user information, settings, chat history, etc., so they can be found next time.
-
-**Technical Explanation:** A persistent data storage system based on SQLite that implements key-value pair storage, used to save data that needs to be retained for a long time.
-
-### Configuration
-**Simple Explanation:** Like the bot's "settings". You can modify the bot's behavior through configuration files, such as changing port numbers, log levels, etc.
-
-**Technical Explanation:** A configuration management system using TOML format, used to set various parameters for the framework and modules.
-
-### Log
-**Simple Explanation:** Like the bot's "diary". It records what the bot did and what problems it encountered, facilitating debugging and troubleshooting.
-
-**Technical Explanation:** Recorded information generated during system runtime, including different levels such as info, warning, error, etc., used for monitoring and debugging.
-
-### Router
-**Simple Explanation:** Like traffic police directing traffic. Decides which request should go to which place to be processed, such as web requests, WebSocket connections, etc.
-
-**Technical Explanation:** HTTP and WebSocket router manager that distributes requests to corresponding handler functions based on URL paths.
-
-## Platform Related Terms
-
-### Platform
-**Simple Explanation:** The place where the bot works, such as Yunhu, Telegram, QQ, etc. Each platform has its own rules and API.
-
-**Technical Explanation:** An application or service that provides chatbot services, such as Yunhu Enterprise Communication, Telegram, etc.
-
-### OneBot11/12
-**Simple Explanation:** Like the "International Standard" for chatbots. It defines unified formats for messages, events, etc., so that different software can understand each other.
-
-**Technical Explanation:** OneBot is a universal chatbot application interface standard that defines formats for events, messages, APIs, etc. 11 and 12 are different versions of the standard.
-
-### SendDSL
-**Simple Explanation:** Like a "shortcut" for sending messages. You can send various types of messages (text, images, @someone, etc.) with a simple one-line statement.
-
-**Technical Explanation:** A chained message sending interface that provides concise syntax to build and send complex messages.
-
-## Other Terms
-
-### Lifecycle
-**Simple Explanation:** The bot's "life": Birth (startup), Work (running), Rest (stop). The lifecycle refers to events triggered at these key moments.
-
-**Technical Explanation:** Key stages during the program's runtime, such as startup, loading modules, unloading modules, shutdown, etc. Operations can be executed by listening to these events.
-
-### Annotation/Decorator
-**Simple Explanation:** It is putting a "label" on a function. For example, the `@command("hello")` label tells the framework: This is a command handler named "hello".
-
-**Technical Explanation:** Python syntactic sugar used to modify the behavior of functions or classes. In ErisPulse, it is used to mark event handlers, routes, etc.
-
-### Type Annotation
-**Simple Explanation:** It is telling the function what "type" the parameters are. For example, `request: Request` indicates that this parameter is a Request object.
-
-**Technical Explanation:** A feature introduced in Python 3.5+ used to annotate the types of variables and parameters, improving code readability and type safety.
-
-### TOML
-**Simple Explanation:** A configuration file format that is more readable than JSON and stricter than YAML, suitable for writing configurations.
-
-**Technical Explanation:** Tom's Obvious Minimal Language, a configuration file format with concise and clear syntax, widely used in Python project configuration management.
-
-## Getting Help
-
-If you find other terms in the documentation that you do not understand, feel free to ask via the following methods:
-- Submit a GitHub Issue
-- Participate in community discussions
-- Contact the maintainers
-
 
 ====
 快速上手
@@ -382,17 +239,15 @@ If you find other terms in the documentation that you do not understand, feel fr
 
 ### 快速开始
 
-# Getting Started
+# Quick Start
 
 > **This is your first step.** Get an ErisPulse bot up and running from scratch in 5 minutes.
->
-> Confused about terms? Check the [Glossary](terminology.md).
 
-## Installing ErisPulse
+## Install ErisPulse
 
-### One-Click Install Script (Recommended)
+### One-Click Installation Script (Recommended)
 
-The installation script automatically detects your environment (Docker, Python, uv) and guides you to select the best installation method for you.
+The installation script will automatically detect your environment (Docker, Python, uv) and guide you to choose the most suitable installation method.
 
 Windows (PowerShell):
 ```powershell
@@ -406,12 +261,12 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 The script will guide you through:
 
-- **Docker Installation** (Recommended when Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Prerelease), Dashboard configuration, port settings
-- **Traditional Installation**: Automatically create virtual environment, select ErisPulse version, optional Dashboard installation
+- **Docker Installation** (Recommended when Docker is detected): Select the image source (Docker Hub / GHCR), version channel (Stable / Preview), Dashboard management panel configuration, and port settings.
+- **Traditional Installation**: Automatically create virtual environment, select ErisPulse version, and optionally install the Dashboard management panel module.
 
 ### Using Docker
 
-The Docker image comes with the ErisPulse framework and Dashboard pre-installed.
+The Docker image comes with the ErisPulse framework and Dashboard management panel built-in.
 
 ```bash
 # Download docker-compose.yml
@@ -422,7 +277,7 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
-<summary>Docker Hub not available?</summary>
+<summary>Docker Hub unavailable?</summary>
 
 Use the GitHub Container Registry image and modify the `image` in `docker-compose.yml`:
 
@@ -432,19 +287,19 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-After starting, access `http://<host>:8000/Dashboard` and log in with the set token.
+After starting, access `http://<host>:8000/Dashboard` and login with the set token.
 
 ### Using pip
 
-Ensure your Python version is >= 3.10, then install using pip:
+Make sure your Python version is >= 3.10, then install with pip:
 
 ```bash
 pip install ErisPulse
 ```
 
-If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse` for faster installation.
+If you have already installed [uv](https://github.com/astral-sh/uv), you can also use `uv pip install ErisPulse`, which is faster.
 
-## Initializing Project
+## Initialize Project
 
 ### Interactive Initialization (Recommended)
 
@@ -452,7 +307,7 @@ If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `u
 epsdk init
 ```
 
-This launches an interactive wizard to guide you through:
+This will launch an interactive wizard to guide you through:
 - Project name setup
 - Log level configuration
 - Server configuration (host and port)
@@ -465,28 +320,27 @@ This launches an interactive wizard to guide you through:
 # Quick mode specifying project name
 epsdk init -q -n my_bot
 
-# Or just specify project name
+# Or only specifying project name
 epsdk init -n my_bot
 ```
 
 ### Manual Project Creation
 
-If you prefer to create the project manually:
+If you prefer to manually create the project:
 
 ```bash
 mkdir my_bot && cd my_bot
 epsdk init
-```
 
 ## Installing Modules
 
-### Install via CLI
+### Installing via CLI
 
 ```bash
 epsdk install Yunhu AIChat
 ```
 
-### List Available Modules
+### Viewing Available Modules
 
 ```bash
 epsdk list-remote
@@ -494,13 +348,12 @@ epsdk list-remote
 
 ### Interactive Installation
 
-Entering the interactive installation interface when package names are not specified:
+Enter the interactive installation interface when package name is not specified:
 
 ```bash
 epsdk install
-```
 
-## Running Project
+## Running the Project
 
 ```bash
 # Normal run
@@ -508,38 +361,34 @@ epsdk run main.py
 
 # Hot reload mode (recommended for development)
 epsdk run main.py --reload
-```
 
-## Enabling IDE Completion (Optional)
+## Enable IDE Completion (Optional)
 
-ErisPulse dynamically discovers modules/adapters, so IDEs cannot autocomplete platform-specific methods by default.
+ErisPulse dynamic discovery modules/adapters cannot be auto-completed by IDEs by default for platform-specific methods.
 Run the following command to generate type stubs:
 
 ```bash
 epsdk types
 ```
 
-After generation, use the imported types as type annotations to get accurate completion (see [IDE Completion Guide](getting-started/ide-completion.md)):
+After generation, use the imported types as variable annotations to get precise completion (see [IDE Completion Guide](./getting-started/ide-completion.md)):
 
 ```python
 from _ep_types import Yunhu
 from ErisPulse import sdk
 
 adapter: Yunhu = sdk.adapter.get("yunhu")
-await adapter.Send.To("group", "123").Board(...)  # Autocomplete platform-specific methods
-```
+await adapter.Send.To("group", "123").Board(...)  # Complete platform-specific methods
 
 ## Project Structure
 
-The project structure after initialization:
+The structure of the initialized project:
 
 ```
 my_bot/
 ├── config/
 │   └── config.toml          # Configuration file
 └── main.py                  # Entry file
-
-```
 
 ## Configuration File
 
@@ -554,27 +403,8 @@ port = 8000
 level = "INFO"
 
 [Yunhu_Adapter]
-# Adapter configuration
-```
+# Adapter Configuration
 
-## Next Steps
-
-After the bot is running, you can continue as needed:
-
-**Want to understand how the framework works?**
-- [Basic Concepts](getting-started/basic-concepts.md) — Design of adapters / modules / events
-- [Architecture Overview](architecture.md) — Visual architecture diagrams
-
-**Want to implement more features?**
-- [Common Task Examples](getting-started/common-tasks.md) — Storage, scheduled tasks, permission control
-- [Introduction to Event Handling](getting-started/event-handling.md) — Messages, notifications, request handling
-
-**Want to develop your own module / adapter?**
-- [Introduction to Module Development](developer-guide/modules/getting-started.md)
-- [Introduction to Adapter Development](developer-guide/adapters/getting-started.md)
-
-**For reference as needed:**
-- [Configuration File Guide](user-guide/configuration.md) · [CLI Reference](user-guide/cli-reference.md) · [Deployment Guide](user-guide/deployment.md)
 
 
 ### 创建第一个机器人
@@ -734,11 +564,6 @@ async def hello_handler(event):
 
 > For more multi-platform adaptation techniques, see [Common Tasks Examples](common-tasks.md#multi-platform-adaptation).
 
-## Next Steps
-
-- [Basic Concepts](basic-concepts.md) - Deepen your understanding of ErisPulse's core concepts
-- [Introduction to Event Handling](event-handling.md) - Learn how to handle various types of events
-- [Common Tasks Examples](common-tasks.md) - Master more practical features
 
 
 ### 基础概念
@@ -1093,10 +918,6 @@ class Main(BaseModule):
 
 > For a detailed description of the lazy loading mechanism and precautions, please refer to [Lazy Loading System](../advanced/lazy-loading.md).
 
-## Next Steps
-
-- [Getting Started with Event Handling](event-handling.md) - Learn how to handle various events
-- [Common Task Examples](common-tasks.md) - Master the implementation of common features
 
 
 ### 事件处理入门
@@ -1753,12 +1574,6 @@ async def conditional_handler(event):
     await event.reply("Condition met, processing message")
 ```
 
-## Next Steps
-
-- [Common Task Examples](common-tasks.md) - Learn how to implement common features (including advanced message sending: retry/timeout/batch)
-- [Platform Features Guide](../platform-guide/README.md) - Complete explanation of Send DSL chain sending, sending rules, and batch construction
-- [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) - In-depth understanding of the Event object
-- [User Guide](../user-guide/) - Learn about configuration and module management
 
 
 ### IDE 补全
@@ -1844,10 +1659,6 @@ if TYPE_CHECKING:
 
 The `SendDSL` base class already includes standard send methods (Text/Image/Voice/Video/File), so any way of obtaining a `SendDSL` instance can complete these methods. The `types` command is mainly used to complete **platform-specific methods** (e.g., Yunhu's `Board`, Sandbox's `Dice`) and **module-specific methods**.
 
-## Related Documentation
-
-- [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md) - Description of standard send methods
-- [Getting Started with Adapter Development](../developer-guide/adapters/getting-started.md) - Creating adapters
 
 
 ====
@@ -1999,16 +1810,11 @@ sdk.router     # Routing system
 sdk.lifecycle  # Lifecycle system
 ```
 
-## Next Steps
-
-- [Core Concepts of Modules](core-concepts.md) - Deep dive into module architecture
-- [Detailed Guide to Event Wrapper Classes](event-wrapper.md) - Learn about Event objects
-- [Best Practices for Modules](best-practices.md) - Develop high-quality modules
 
 
 ### 模块核心概念
 
-# Core Module Concepts
+# Core Concepts of Modules
 
 Understanding the core concepts of the ErisPulse module is the foundation for developing high-quality modules.
 
@@ -2023,43 +1829,42 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """Returns the module load strategy"""
+        """Return module load strategy"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # lazy load or eager load
-            priority=0,       # load priority (higher value loads first)
-            depends=["OtherModule"]  # optional: declare dependencies
+            lazy_load=True,   # Lazy load or immediate load
+            priority=0,       # Load priority (higher values are loaded first)
+            depends=["OtherModule"]  # Optional: Declare other modules to depend on
         )
 ```
 
-> If a module declared in `depends` is not registered, the current module will be skipped and a warning will be logged. The loading order is determined by topological sorting; within the same level, it is sorted by `priority` in descending order.
+> Modules declared in `depends` that are not registered will cause the current module to be skipped with a warning. The load order is determined by topological sorting, with same-level modules sorted by `priority` in descending order.
 
 ### on_load Method
 
-Called when the module is loaded, used to initialize resources and register event handlers:
+Called when a module loads, used to initialize resources and register event handlers:
 
 ```python
 async def on_load(self, event):
-    # Register event handlers
-    @command("hello", help="Greeting command")
+    # Register event handler
+    @command("hello", help="greeting command")
     async def hello_handler(event):
         await event.reply("Hello!")
     
     # Use SDK built-in HTTP client (automatically manages connection pool, no need to manually create session)
-    # You can send requests via sdk.client
+    # Requests can be sent via sdk.client
 ```
 
 ### on_unload Method
 
-Called when the module is unloaded, used to clean up resources:
+Called when a module unloads, used to clean up resources:
 
 ```python
 async def on_unload(self, event):
     # Clean up custom resources
-    # sdk.client is managed by the framework, no need to manually close
+    # sdk.client is managed by the framework, no need to manually close it
     
-    # Unregister event handlers (framework handles this automatically)
+    # Cancel event handler (the framework handles this automatically)
     self.logger.info("Module unloaded")
-```
 
 ## SDK Objects
 
@@ -2068,25 +1873,24 @@ async def on_unload(self, event):
 ```python
 from ErisPulse import sdk
 
-# Access all core modules via the sdk object
+# Access all core modules through the sdk object
 sdk.logger.info("Log")
 sdk.storage.set("key", "value")
 config = sdk.config.getConfig("MyModule")
 ```
 
-### Inter-Module Communication
+### Inter-module Communication
 
 ```python
 # Access other modules
 other_module = sdk.OtherModule
 result = await other_module.some_method()
-```
 
 ## Adapter Send Method Query
 
-Due to the new standard requiring the implementation of a fallback sending mechanism by overriding the `__getattr__` method, it is no longer possible to use the `hasattr` method to check if a method exists. Starting from `2.3.5`, a functionality to query send methods has been added.
+Due to the new standard specifications requiring the use of the `__getattr__` method rewrite to implement the fallback send mechanism, it is no longer possible to use the `hasattr` method to check for the existence of methods. Starting from `2.3.5`, a function to query send methods has been added.
 
-### Listing Supported Send Methods
+### List Supported Send Methods
 
 ```python
 # List all send methods supported by the platform
@@ -2094,7 +1898,7 @@ methods = sdk.adapter.list_sends("onebot11")
 # Returns: ["Text", "Image", "Voice", "Markdown", ...]
 ```
 
-### Getting Method Details
+### Get Method Details
 
 ```python
 # Get detailed information about a specific method
@@ -2108,18 +1912,17 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #     "return_type": "Awaitable[Any]",
 #     "docstring": "Send text message..."
 # }
-```
 
 ## Configuration Management
 
 ### Declarative Configuration (Recommended)
 
-Starting from v2.5.2, modules can declare a `ConfigClass` to decouple configuration schema definition. Modules and adapters use the same configuration schema system. Configuration is read in real-time via `self.cfg` and takes effect immediately after modification:
+Starting from v2.5.2, modules can declare configuration classes via `ConfigClass`, using the same configuration Schema system as the adapter. Configuration is read in real-time via `self.cfg` and takes effect immediately after modification:
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyModuleConfig(BaseConfig):
@@ -2150,16 +1953,16 @@ class MyModule(BaseModule):
         pass
 
     async def do_something(self):
-        cfg = self.cfg  # Real-time read, type safe
+        cfg = self.cfg  # Real-time reading, type safe
         api_key = cfg.api_key
         timeout = cfg.timeout
 ```
 
-`BaseConfig` is a generic configuration base class suitable for adapters, modules, external projects, and any scenario. Configuration fields support i18n multilingual descriptions (see [i18n docs](../../advanced/i18n.md#configuration-fields-i18n) for details).
+`BaseConfig` is the general configuration base class, suitable for any scenario including adapters, modules, and external projects. Configuration fields support i18n multi-language descriptions (see [i18n docs](../en/advanced/i18n.md#config-field-multi-language) for details).
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Starting from v2.7.0, modules can also declare translation keys in a centralized way using the nested class `I18nClass`, similar to declaring `ConfigClass`. The framework will **automatically register** all declared translation keys at load time, eliminating the need to manually call `i18n.register()`. Additionally, registration occurs prior to configuration template generation, ensuring that i18n keys referenced in configuration descriptions are available.
+Starting from v2.7.0, modules can also declaratively declare translation keys through a nested class `I18nClass`, just like declaring `ConfigClass`. The framework will **automatically register** all declared translation keys upon loading, without the need to manually call `i18n.register()`, and the registration happens before configuration template generation, ensuring that the i18n keys referenced in the configuration description are available.
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
@@ -2177,9 +1980,9 @@ class MyModule(BaseModule):
 
     # Translation key collection class (optional)
     class I18nClass(BaseI18n):
-        # Property names are automatically concatenated into full key paths: <module_name>.<property_name>
+        # Attribute names are automatically concatenated into full key paths: <module_name>.<attribute_name>
         welcome_msg: I18nKey = I18nKey(
-            default="Welcome Message",   # Language independent fallback
+            default="Welcome Message",   # Language-agnostic fallback
             zh_CN="欢迎消息",
             zh_TW="歡迎訊息",
             en="Welcome Message",
@@ -2196,11 +1999,11 @@ class MyModule(BaseModule):
         )
 ```
 
-For details, see [i18n Recommended Practices](../../advanced/i18n.md#recommended-practices-declaring-translation-keys-via-i18nclass-v270).
+See [i18n recommended usage](../en/advanced/i18n.md#recommended-usage-declarating-translation-keys-through-i18nclass-v270) for details.
 
 ### Manual Configuration Reading (Compatibility Mode)
 
-If you do not use declarative configuration, you can directly read and write the configuration store:
+If you do not use declarative configuration, you can also directly read and write the configuration storage:
 
 ```python
 def _load_config(self):
@@ -2215,7 +2018,7 @@ def _load_config(self):
     return config
 ```
 
-> **Note**: When using the manual method, avoid using `self.config` as the attribute name. It is recommended to use `self.cfg` or a custom name to avoid conflicts with future framework attributes.
+> **Note**: When using the manual method, please avoid using `self.config` as an attribute name. It is recommended to use `self.cfg` or a custom name to avoid conflicts with future framework attributes.
 
 ## Storage System
 
@@ -2225,7 +2028,7 @@ def _load_config(self):
 # Store data
 sdk.storage.set("user:123", {"name": "Zhang San"})
 
-# Get data
+# Retrieve data
 user = sdk.storage.get("user:123", {})
 
 # Delete data
@@ -2235,12 +2038,11 @@ sdk.storage.delete("user:123")
 ### Transaction Usage
 
 ```python
-# Use a transaction to ensure data consistency
+# Use transaction to ensure data consistency
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
     # If any operation fails, all changes will be rolled back
-```
 
 ## Event Handling
 
@@ -2269,23 +2071,22 @@ The framework automatically manages the registration and unregistration of event
 ### How It Works
 
 ```python
-# Module is only initialized when first accessed
+# Module is initialized only when first accessed
 result = await sdk.my_module.some_method()
 # ↑ This triggers module initialization
 ```
 
-### Eager Loading
+### Immediate Load
 
-For modules that require immediate initialization (e.g., listeners, timers):
+For modules that need to be initialized immediately (e.g., listeners, timers):
 
 ```python
 @staticmethod
 def get_load_strategy():
     return ModuleLoadStrategy(
-        lazy_load=False,  # eager load
+        lazy_load=False,  # Load immediately
         priority=100
     )
-```
 
 ## Error Handling
 
@@ -2308,18 +2109,12 @@ async def handle_event(self, event):
 
 ```python
 # Use different log levels
-self.logger.debug("Debug info")      # Detailed debug info
-self.logger.info("Runtime status")   # Normal runtime info
-self.logger.warning("Warning info")  # Warning info
-self.logger.error("Error info")      # Error info
-self.logger.critical("Fatal error")  # Fatal error
-```
+self.logger.debug("Debug info")    # Detailed debug information
+self.logger.info("Running status")      # Normal running information
+self.logger.warning("Warning info")  # Warning information
+self.logger.error("Error info")    # Error information
+self.logger.critical("Fatal error") # Fatal error
 
-## Related Documentation
-
-- [Getting Started with Module Development](getting-started.md) - Create your first module
-- [Event Wrapper Class](event-wrapper.md) - Detailed event handling
-- [Best Practices](best-practices.md) - Developing high-quality modules
 
 
 ### Event 包装类详解
@@ -2744,10 +2539,6 @@ Method resolution priority (from high to low): platform-specific methods → wil
 
 > Adapter developers register extension methods as described in [Event System API - Cross-platform Extension Wildcard](../../api-reference/event-system.md#跨平台扩展通配符).
 
-## Related Documentation
-
-- [Module Development Introduction](getting-started.md) - Create your first module
-- [Best Practices](best-practices.md) - Develop high-quality modules
 
 
 ### 模块开发最佳实践
@@ -2760,10 +2551,10 @@ This document provides best practice recommendations for ErisPulse module develo
 
 ### 1. Single Responsibility Principle
 
-Each module should be responsible for only one core function:
+Each module should only be responsible for one core function:
 
 ```python
-# Good design: each module only responsible for one function
+# Good design: Each module is responsible for only one feature
 class WeatherModule(BaseModule):
     """Weather query module"""
     pass
@@ -2772,13 +2563,13 @@ class NewsModule(BaseModule):
     """News query module"""
     pass
 
-# Bad design: a module responsible for multiple unrelated functions
+# Bad design: One module responsible for multiple unrelated functions
 class UtilityModule(BaseModule):
-    """Contains weather, news, jokes, and other functions"""
+    """Contains multiple features like weather, news, jokes, etc."""
     pass
 ```
 
-### 2. Module Naming Conventions
+### 2. Module Naming Convention
 
 ```toml
 [project]
@@ -2787,11 +2578,11 @@ name = "ErisPulse-ModuleName"  # Use ErisPulse- prefix
 
 ### 3. Clear Configuration Management
 
-It is recommended to use declarative configuration (`ConfigClass` + `BaseConfig`) to gain capabilities such as type safety, automatic template generation, WebUI form support, etc.:
+Declarative configuration (`ConfigClass` + `BaseConfig`) is recommended to obtain capabilities such as type safety, automatic template generation, WebUI form support, etc.:
 
 ```python
 from dataclasses import dataclass, field
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyModuleConfig(BaseConfig):
@@ -2809,15 +2600,15 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def do_something(self):
-        cfg = self.cfg  # Type safe, reads in real time
+        cfg = self.cfg  # Type-safe, reads in real-time
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-You can also continue to use manual methods to read/write configuration storage (see [Module Core Concepts](core-concepts.md#configuration-management)).
+You can also continue to use manual ways to read and write configuration storage (see [Module Core Concepts](core-concepts.md#Configuration Management)).
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Modules can declare translation keys centrally via `I18nClass`, and the framework automatically registers them to the i18n system without needing to manually call `i18n.register()`.
+Modules can declare translation keys centrally through `I18nClass`, and the framework automatically registers them to the i18n system without manually calling `i18n.register()`.
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, I18nKey
@@ -2833,7 +2624,7 @@ class MyModule(BaseModule):
             ja="ようこそ、{name}！",
             ru="Добро пожаловать, {name}!",
         )
-        # Translation for config field descriptions
+        # Translation for configuration field descriptions
         api_url: I18nKey = I18nKey(
             default="API URL",
             zh_CN="API 地址",
@@ -2844,14 +2635,14 @@ class MyModule(BaseModule):
         )
 ```
 
-See [i18n Documentation](../../advanced/i18n.md#recommended-approach-declaring-translation-keys-via-i18nclass-v270) for detailed usage.
+For detailed usage, please see [i18n documentation](../../advanced/i18n.md#Recommended Approach Declare Translation Keys via I18nClass v270).
 
 ## Async Programming
 
-### 1. Using Async Libraries
+### 1. Using Asynchronous Libraries
 
 ```python
-# It is recommended to use the SDK's built-in HTTP client (async, auto-logs and statistics)
+# It is recommended to use the SDK's built-in HTTP client (async, automatic logging and metrics)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -2876,7 +2667,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Do not use requests (synchronous, will block the event loop)
+# Do not use requests (sync, will block the event loop)
 import requests
 
 class MyModule(BaseModule):
@@ -2884,14 +2675,14 @@ class MyModule(BaseModule):
         return requests.get(url).json()  # Will block the event loop
 ```
 
-### 2. Correct Async Operations
+### 2. Correct Asynchronous Operations
 
 ```python
 async def handle_command(self, event):
-    # Use create_task to let time-consuming operations run in the background
+    # Use create_task to run time-consuming operations in the background
     task = asyncio.create_task(self._long_operation())
     
-    # If you need to wait for the result
+    # If waiting for the result is required
     result = await task
 ```
 
@@ -2899,55 +2690,54 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # SDK client connection pool is automatically managed, no need to manually create session
+    # The SDK client automatically manages the connection pool, no need to manually create a session
     pass
     
 async def on_unload(self, event):
-    # If you need a custom client, remember to clean up resources
+    # If customizing the client is required, remember to clean up resources
     pass
-```
 
 ## Event Handling
 
-### 1. Using Event Wrapper Classes
+### 1. Using Event wrapper classes
 
 ```python
-# Convenient methods using Event wrapper classes
+# Convenient method using Event wrapper class
 @command("info")
 async def info_command(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"Hello, {nickname}!")
 
-# Instead of directly accessing the dictionary
+# Rather than directly accessing the dict
 @command("info")
 async def info_command(event):
     user_id = event["user_id"]  # Not clear enough, prone to errors
 ```
 
-### 2. Reasonable Use of Lazy Loading
+### 2. Reasonable use of lazy loading
 
 ```python
-# Command processing modules need to load immediately
+# Command handling modules require immediate loading
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# Listener modules need to load immediately
+# Listener modules require immediate loading
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# Utility modules are suitable for lazy loading
+# Utility modules suit lazy loading
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-### 3. Event Handler Registration
+### 3. Event handler registration
 
 ```python
 async def on_load(self, event):
@@ -2960,8 +2750,7 @@ async def on_load(self, event):
     async def group_handler(event):
         self.logger.info("Received group message")
     
-    # No need to manually unregister, the framework handles it automatically
-```
+    # No need to manually unregister, the framework handles this automatically
 
 ## Error Handling
 
@@ -2972,25 +2761,25 @@ async def handle_event(self, event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # Expected business error
+        # Expected business errors
         self.logger.warning(f"Business warning: {e}")
         await event.reply(f"Parameter error: {e}")
     except aiohttp.ClientError as e:
-        # Network error (recommend using sdk.client + ClientError instead)
-        # Old code using aiohttp directly still works, but new code recommends the ErisPulse exception hierarchy
+        # Network errors (It is recommended to use sdk.client + ClientError instead)
+        # Old code using aiohttp directly still works, but new code recommends using the ErisPulse exception system
         self.logger.error(f"Network error: {e}")
         await event.reply("Network request failed, please try again later")
     except Exception as e:
-        # Unexpected error
+        # Unexpected errors
         self.logger.error(f"Unknown error: {e}", exc_info=True)
-        await event.reply("Processing failed, please contact administrator")
+        await event.reply("Processing failed, please contact the administrator")
         raise
 ```
 
 ### 2. Timeout Handling
 
 ```python
-# It is recommended to use the SDK's built-in client (with timeout and retry)
+# It is recommended to use the SDK built-in client (which comes with timeout and retry logic)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -3001,7 +2790,6 @@ async def fetch_with_timeout(self, url, timeout=30):
     except ClientTimeoutError:
         self.logger.warning(f"Request timeout: {url}")
         raise
-```
 
 ## Storage System
 
@@ -3017,7 +2805,7 @@ async def update_user(self, user_id, data):
 # ❌ Not using transactions may lead to data inconsistency
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # If an error occurs here, the above set cannot be rolled back
+    # If an error occurs here, the previous setting cannot be rolled back
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
@@ -3030,33 +2818,32 @@ def cache_multiple_items(self, items):
         f"item:{k}": v for k, v in items.items()
     })
 
-# ❌ Low efficiency due to multiple calls
+# ❌ Multiple calls are inefficient
 def cache_multiple_items(self, items):
     for k, v in items.items():
         self.sdk.storage.set(f"item:{k}", v)
-```
 
 ## Logging
 
-### 1. Reasonable Use of Log Levels
+### 1. Use Log Levels Appropriately
 
 ```python
-# DEBUG: Detailed debugging information (only during development)
+# DEBUG: Detailed debug information (only for development)
 self.logger.debug(f"Input parameters: {params}")
 
 # INFO: Normal operation information
 self.logger.info("Module loaded")
 self.logger.info(f"Processing request: {request_id}")
 
-# WARNING: Warning messages, does not affect main functionality
+# WARNING: Warning messages, do not affect main functionality
 self.logger.warning(f"Configuration item {key} not set, using default value")
-self.logger.warning("API response is slow, may need optimization")
+self.logger.warning("API response slow, may need optimization")
 
 # ERROR: Error messages
 self.logger.error(f"API request failed: {e}")
-self.logger.error(f"Failed to process event: {e}", exc_info=True)
+self.logger.error(f"Event processing failed: {e}", exc_info=True)
 
-# CRITICAL: Fatal errors, need immediate handling
+# CRITICAL: Fatal error, requires immediate handling
 self.logger.critical("Database connection failed, bot cannot run normally")
 ```
 
@@ -3066,13 +2853,12 @@ self.logger.critical("Database connection failed, bot cannot run normally")
 # Use structured logging for easier parsing
 self.logger.info(f"Processing request: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
-# ❌ Using unstructured logging
-self.logger.info(f"Processed request from user {user_id} in {duration} milliseconds")
-```
+# ❌ Using non-structured logging
+self.logger.info(f"Processed request, from user {user_id}, took {duration} ms")
 
 ## Performance Optimization
 
-### 1. Using Caching
+### 1. Use Caching
 
 ```python
 class MyModule(BaseModule):
@@ -3093,7 +2879,7 @@ class MyModule(BaseModule):
             return data
 ```
 
-### 2. Avoiding Blocking Operations
+### 2. Avoid Blocking Operations
 
 ```python
 # Use async operations
@@ -3103,16 +2889,15 @@ async def process_message(self, event):
 
 # ❌ Blocking operation
 async def process_message(self, event):
-    # Synchronous operation, blocks the event loop
+    # Synchronous operation, blocks event loop
     result = self._sync_process(event)
-```
 
 ## Security
 
 ### 1. Sensitive Data Protection
 
 ```python
-# Sensitive data stored in configuration
+# Sensitive data is stored in the configuration
 class MyModule(BaseModule):
     def _load_config(self):
         config = self.sdk.config.getConfig("MyModule")
@@ -3121,7 +2906,7 @@ class MyModule(BaseModule):
         if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
             raise ValueError("Please configure a valid API key in config.toml")
 
-# ❌ Hardcoded sensitive data
+# ❌ Sensitive data hardcoded
 class MyModule(BaseModule):
     API_KEY = "sk-1234567890"  # Do not do this!
 ```
@@ -3142,7 +2927,6 @@ async def process_command(self, event):
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("Invalid input format")
         return
-```
 
 ## Testing
 
@@ -3154,7 +2938,7 @@ from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
     def test_load_config(self):
-        """Test configuration loading"""
+        """Test config loading"""
         module = MyModule()
         config = module._load_config()
         assert config is not None
@@ -3170,10 +2954,9 @@ async def test_command_handling():
     module = MyModule()
     await module.on_load({})
     
-    # Simulate command event
+    # Mock command event
     event = create_test_command_event("hello")
     await module.handle_command(event)
-```
 
 ## Deployment
 
@@ -3187,30 +2970,51 @@ version = "1.0.0"
 
 Follow semantic versioning:
 - MAJOR.MINOR.PATCH
-- Major version: Incompatible API changes
-- Minor version: New features with downward compatibility
-- Patch version: Bug fixes with downward compatibility
+- Major version: incompatible API changes
+- Minor version: downward compatible feature additions
+- Patch version: downward compatible bug fixes
 
-### 2. Documentation Completeness
+### 2. README Header
+
+The README generated by `epsdk create` includes an integrated ErisPulse brand header (Logo + badges row). Two recommended modes:
+
+**Mode A — ErisPulse Logo Only (Default):**
 
 ```markdown
-# README.md
+<div align="center">
 
-- Module introduction
-- Installation instructions
-- Configuration instructions
-- Usage examples
-- API documentation
-- Contribution guidelines
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
+
+# MyModule
+
+**One-line description**
+
+<p>
+  <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
+  <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
+  <a href="https://github.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/Powered_by-ErisPulse-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="ErisPulse"></a>
+</p>
+
+</div>
 ```
 
-## Related Documentation
+**Mode B — Module Icon × ErisPulse Logo (When a custom icon is available):**
 
-- [Getting Started with Module Development](getting-started.md) - Creating your first module
-- [Module Core Concepts](core-concepts.md) - Understanding module architecture
-- [Event Wrapper Class](event-wrapper.md) - Detailed explanation of event handling
+```markdown
+<div align="center">
 
-Please return the translated complete Markdown content directly without any other text.
+<img src=".github/assets/MyModuleIcon.svg" width="120" alt="MyModule" />
+<span style="font-size:44px;color:#c8c8c8;margin:0 18px;vertical-align:middle;">×</span>
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
+
+# MyModule
+(Badges row as above)
+</div>
+```
+
+Additional badges such as GitHub Stars and Downloads can be appended as needed. The Logo can also be downloaded to the project locally (`.github/assets/ErisPulseLogo.png`) and referenced using a relative path.
+
 
 
 =====
@@ -3606,6 +3410,7 @@ Extend the workflow, add Docker Hub login before the login step, and add the Doc
 | Multi-architecture | Supports amd64/arm64 | Architecture-agnostic |
 
 These two methods are not contradictory—you can simultaneously publish modules to the module store via PyPI and provide ready-to-use Docker images via GHCR.
+
 
 
 ### CLI 命令参考
@@ -4199,6 +4004,7 @@ epsdk create module -n MyModule -d "Module Description" -a "Author" -e "mail@exa
 epsdk create module -n MyModule -f
 
 
+
 ======
 API 参考
 ======
@@ -4566,14 +4372,6 @@ The returned structure contains the status of the following subsystems:
 
 > Added in 2.5.2
 
-## Related Documentation
-
-- [Event System API](event-system.md) - Event module API
-- [Adapter System API](adapter-system.md) - Adapter management API
-- [SQL Query Builder](../advanced/sql-builder.md) - Complete documentation for SQL chainable queries
-- [Router Manager](../advanced/router.md) - Complete documentation for router manager
-- [Network Client](../advanced/http-client.md) - Complete documentation for network client
-- [Lifecycle Management](../advanced/lifecycle.md) - Complete documentation for lifecycle management
 
 
 ### 事件系统 API
@@ -5238,13 +5036,6 @@ async def low_priority_handler(event):
     pass
 ```
 
-## Related Documentation
-
-- [Core Modules API](core-modules.md) - Core Modules API
-- [Adapter System API](adapter-system.md) - Adapter Management API
-- [Module Development Guide](../developer-guide/modules/) - Developing Custom Modules
-
-Please return the translated Markdown content directly without including any other text.
 
 
 ====
@@ -5591,10 +5382,6 @@ async def chat_handler(event):
             await conv.say(f"You said: {text}")
 ```
 
-## Related Documentation
-
-- [Event Wrapper](../developer-guide/modules/event-wrapper.md) - All methods of the Event object
-- [Getting Started with Event Handling](../getting-started/event-handling.md) - Basics of event handling
 
 
 ### MessageBuilder 详解
@@ -5783,11 +5570,6 @@ complex_msg = (
 )
 ```
 
-## Related Documentation
-
-- [Adapter SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md) - Send chaining send interface
-- [Event Conversion Standard](../standards/event-conversion.md) - Message segment conversion specification
-- [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() method
 
 
 ### HTTP 客户端
@@ -6270,11 +6052,6 @@ class MyAdapter(BaseAdapter):
 6. **Monitor request statistics**: Use `sdk.client.stats` or the `client.request` lifecycle event to monitor request status.
 7. **Use advanced WebSocket methods**: Prefer advanced methods like `iter_text` / `iter_json`, and only use `iter_messages` when distinguishing message types is necessary.
 
-## Related Documentation
-
-- [Router Manager](docs/en/router.md) - HTTP/WebSocket server-side routing (server-side WebSocketConnection shares the same base class with the client)
-- [Adapter Development Guide](docs/en/developer-guide/adapters/getting-started.md) - Using the HTTP client in adapters
-- [Lifecycle Management](docs/en/lifecycle.md) - Listening to request events
 
 
 ### SQL 查询构建器
@@ -6654,11 +6431,6 @@ class MyStorage(BaseStorage):
         return MyQueryBuilder(self, table_name)
 ```
 
-## Related Documents
-
-- [Core Module API](../api-reference/core-modules.md) - Complete API for Storage module
-- [Storage Base Class API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - BaseStorage/BaseQueryBuilder abstract interfaces
-- [Message Builder](message-builder.md) - MessageBuilder chain-style reference
 
 
 ### 路由系统
@@ -7076,11 +6848,6 @@ async def on_server_stop(event):
 6. **Reasonable Rate Limiting**: Set rate limits for high-frequency endpoints
 7. **Use Lifecycle Hooks**: Handle WebSocket exceptions via `@ws.on_disconnect` / `@ws.on_error` to avoid manual try/catch
 
-## Related Documentation
-
-- [HTTP Client](docs/en/http-client.md) - Using the built-in HTTP client to send requests
-- [Module Development Guide](docs/en/developer-guide/modules/getting-started.md) - Learn about module route registration
-- [Best Practices](docs/en/developer-guide/modules/best-practices.md) - Routing usage recommendations
 
 
 ### 生命周期管理
@@ -7398,10 +7165,6 @@ class Main(BaseModule):
 6. **Lifecycle Cleanup**: When `sdk.uninit()` is called, all registered handlers and timers are cleaned up
 7. **Loading Priority**: If you need to listen to events during framework initialization, it is recommended to set a high priority and disable lazy loading
 
-## Related Documentation
-
-- [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn about module lifecycle methods
-- [Best Practices](../developer-guide/modules/best-practices.md) - Suggestions for using lifecycle events
 
 
 ### 懶加载系统
@@ -7541,10 +7304,6 @@ result = sdk.my_module.some_sync_method()
 2. If your module contains modules that listen to Events or other similar actively listening modules, be sure to declare that it needs to be loaded immediately, otherwise it may affect the normal operation of your module.
 3. We do not recommend disabling lazy loading unless there is a special requirement, otherwise it may cause issues such as dependency management and lifecycle events.
 
-## Related Documentation
-
-- [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn how to develop modules
-- [Best Practices](../developer-guide/modules/best-practices.md) - Learn more about best practices
 
 
 ### 会话类型系统
@@ -7723,30 +7482,25 @@ clear_custom_types()                # Clear all
 clear_custom_types(platform="discord")  # Clear only specified platform
 ```
 
-## Related Documentation
-
-- [Event Conversion Standard](../standards/event-conversion.md) - Event conversion specification
-- [Session Type Standard](../standards/session-types.md) - Formal definition of session types
-- [Event Converter Implementation](../../developer-guide/adapters/converter.md) - Converter development guide
 
 
 ### 国际化（i18n）系统
 
 # Internationalization (i18n) System
 
-Since ErisPulse v2.5.0, a complete internationalization support has been built-in. The framework core and CLI interface can automatically switch display text based on your system language, and support for external modules to register their own translations is also available.
+ErisPulse v2.5.0 integrates a complete internationalization support system. The framework core and the CLI interface can automatically switch display text based on your system language, and it also supports external modules registering their own translations.
 
 ## Supported Languages
 
 | Language | Code | Description |
 |------|------|------|
-| Simplified Chinese | `zh-CN` | Default language (native language of the framework) |
-| Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong / Macao / Taiwan) |
-| English | `en` | English (general fallback language) |
+| Simplified Chinese | `zh-CN` | Default language (Framework's native language) |
+| Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong/Macau/Taiwan) |
+| English | `en` | English (General fallback language) |
 | 日本語 | `ja` | Japanese |
 | Русский | `ru` | Russian |
 
-## Quick Experience
+## Quick Start
 
 ### Switch via Environment Variables
 
@@ -7768,7 +7522,7 @@ Add the following to `config/config.toml`:
 language = "zh-TW"
 ```
 
-Setting it to `"auto"` (default) will automatically detect the system language.
+Set to `"auto"` (default) to automatically detect the system language.
 
 ### Manually Switch in Code
 
@@ -7779,7 +7533,7 @@ from ErisPulse import i18n
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
-# Reset to auto detection
+# Reset to auto-detection
 i18n.reset_language()
 ```
 
@@ -7787,34 +7541,32 @@ i18n.reset_language()
 
 ## Language Detection Mechanism
 
-The framework detects the user language with the following priority:
+The framework detects the user's language in the following order of priority:
 
-1. **Environment variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching
-2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, not affected by tools like Git Bash overriding `LANG`)
-3. **Environment variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standard)
-4. **System Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
-5. **Fallback** — en (English)
+1. **Environment Variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching.
+2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, not affected by the `LANG` variable overridden by tools like Git Bash).
+3. **Environment Variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standards).
+4. **System Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`.
+5. **Fallback** — en (English).
 
-### Principle of Proximity Mapping
+### Proximity Mapping Principle
 
-When the detected language is not an exact match, map it to a supported language according to the principle of proximity:
+When the detected language is not an exact match, map it to a supported language based on proximity:
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **Traditional Chinese**
 - All other `zh-*` (e.g., `zh-CN`, `zh-SG`) → **Simplified Chinese**
 - `en-US`, `en-GB`, `en-AU`, etc. → **English**
 - `ja-JP` → **Japanese**
 - `ru-RU` → **Russian**
-- Other unrecognized languages → **Simplified Chinese (fallback)**
-
----
+- Other unrecognized languages → **Simplified Chinese (Fallback)**
 
 ## Using i18n in Modules
 
-You can register translation text for your own module, enabling your module to support multiple languages as well.
+You can register translation texts for your own module to enable multi-language support for your module.
 
 ### Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)
 
-Starting from v2.7.0, modules/adapters can declare translation keys via the nested class `I18nClass`, just like declaring `ConfigClass`. The framework will **automatically register** all declared translation keys during loading, without the need to manually call `i18n.register()`.
+Starting from v2.7.0, modules/adapters can declare translation keys via the nested class `I18nClass`, similar to declaring `ConfigClass`. The framework will **automatically register** all declared translation keys upon loading, without the need to manually call `i18n.register()`.
 
 ```python
 from dataclasses import dataclass, field
@@ -7823,19 +7575,19 @@ from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey
 
 
 class MyModule(BaseModule):
-    # Config class (optional)
+    # Configuration class (optional)
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
             default="欢迎",
             metadata={
-                # References i18n key mymodule.welcome_msg here
+                # This references the i18n key mymodule.welcome_msg
                 "description": {"i18n": "mymodule.welcome_msg", "default": "Welcome Message"},
             },
         )
 
-    # Translation keys collection class (optional)
-    # Keys declared will be automatically registered by the framework, with higher priority than ConfigClass generating default config
+    # Translation key collection class (optional)
+    # Declared keys will be automatically registered by the framework, with priority over ConfigClass default configuration generation
     class I18nClass(BaseI18n):
         # Property names are automatically concatenated into the full key path: <ModuleName>.<PropertyName>
         welcome_msg: I18nKey = I18nKey(
@@ -7846,7 +7598,7 @@ class MyModule(BaseModule):
             ru="Приветственное сообщение",
             zh_TW="歡迎訊息",
         )
-        # Other translation keys used by business logic
+        # Other translation keys used by the business logic
         hello: I18nKey = I18nKey(
             default="Hello, {name}!",
             zh_CN="你好，{name}！",
@@ -7868,25 +7620,25 @@ class MyModule(BaseModule):
         )
 ```
 
-#### Why Recommend I18nClass?
+#### Why recommend I18nClass?
 
 | Scenario | Manual i18n.register() | I18nClass Declarative |
-|------|-----------------------|------------------|
-| i18n keys referenced in config descriptions | Needs manual registration, and must be done before config generation | Framework automatically registers before config generation |
-| Multi-language translation declarations | Scattered across various on_load() | Centralized in a class, clear at a glance |
-| Naming consistency of keys | Prone to typos | Property name serves as suffix for key name, IDE can autocomplete |
-| Cleanup on unload | Needs manual unregister_domain() | Framework uses unified domain registration |
+|----------|------------------------|------------------------|
+| i18n keys referenced in config descriptions | Manual registration required, must be done before config generation | Framework automatically registers before config generation |
+| Multi-language translation declarations | Scattered across various on_load() calls | Centralized in a class, easy to read at a glance |
+| Naming consistency of keys | Prone to typos | Property names used as key suffixes, IDE completion available |
+| Cleanup on unload | Manual unregister_domain() required | Framework uses unified domain registration |
 
 #### I18nClass Key Path Rules
 
-- **Default**: Use ``<ModuleName>.<PropertyName>`` as the full key path
+- **Default**: Uses ``<ModuleRegistrationName>.<PropertyName>`` as the full key path
   - Example: Module name is ``MyModule``, property ``welcome`` → key path ``MyModule.welcome``
-- **Explicit**: Specify any dotted path via the ``I18nKey(key="...")`` parameter
+- **Explicit**: Specify arbitrary dotted path via ``I18nKey(key="...")`` parameter
   - Suitable for deeply nested key names (e.g., ``mymodule.config.basic.token``)
 
 #### Usage in Adapters
 
-Adapters also support `I18nClass`, with exactly the same usage:
+Adapters also support `I18nClass`, and the usage is exactly the same:
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -7899,13 +7651,13 @@ class MyAdapter(BaseAdapter):
         endpoint: str = field(
             default="",
             metadata={
-                # Configuration description references the adapter.MyAdapter.endpoint key
-                "description": {"i18n": "MyAdapter.endpoint", "default": "API Address"},
+                # The config description references the adapter.MyAdapter.endpoint key
+                "description": {"i18n": "MyAdapter.endpoint", "default": "API Endpoint"},
             },
         )
 
     class I18nClass(BaseI18n):
-        # Centralize declarations of keys referenced by config descriptions and other business keys
+        # Centralized declaration of i18n keys referenced by config descriptions and other business keys
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
             zh_CN="API 地址",
@@ -7916,11 +7668,11 @@ class MyAdapter(BaseAdapter):
         )
 ```
 
-The adapter's `I18nClass` will be automatically registered during the `__init__` phase (i.e., before configuration template generation), ensuring i18n keys referenced by configuration descriptions are available.
+The adapter's `I18nClass` will be automatically registered during the `__init__` stage (i.e., before configuration template generation), ensuring i18n keys referenced by config descriptions are available.
 
-### Manually Register Custom Translations (Legacy Approach)
+### Manually Registering Custom Translations (Legacy Approach)
 
-If you do not use `I18nClass`, you can also directly call `i18n.register()` to register translation text.
+If you do not use `I18nClass`, you can also directly call `i18n.register()` to register translation texts.
 
 ```python
 from ErisPulse import i18n
@@ -7946,13 +7698,13 @@ i18n.register("en", {
 from ErisPulse import i18n
 
 # Simple translation
-i18n.t("my_module.welcome")  # Automatically uses current language
+i18n.t("my_module.welcome")  # Automatically uses the current language
 
-# With formatted parameters
+# With formatting parameters
 i18n.t("my_module.hello", name="Alice")
 
-# Specify default value (returned when translation key does not exist)
-i18n.t("my_module.unknown_key", default="默认文本")
+# Specify a default value (returned when the translation key does not exist)
+i18n.t("my_module.unknown_key", default="Default text")
 ```
 
 ### Using in Module Class
@@ -7967,7 +7719,7 @@ class MyModuleConfig(BaseConfig):
     welcome_msg: str = field(
         default="欢迎",
         metadata={
-            "description": {"i18n": "my_module.welcome_msg", "default": "欢迎消息"},
+            "description": {"i18n": "my_module.welcome_msg", "default": "Welcome Message"},
             "ui": {"widget": "text", "group": "basic", "order": 1},
         },
     )
@@ -7976,7 +7728,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # Read config in real-time (reflects the latest value on every access)
+        # Real-time reading of configuration (reflects latest value on every access)
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -7992,26 +7744,23 @@ class MyModule(BaseModule):
 ### Unloading Translations
 
 ```python
-# Unload all translations for a specific domain
+# Unload the entire domain translations
 i18n.unregister_domain("my_module")
-```
 
----
+## Multi-language Configuration Fields
 
-## Multi-language Support for Config Fields
-
-Starting from v2.5.2, the config Schema fully supports i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically parse them into corresponding text based on the current language.
+Since v2.5.2, the configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and the WebUI and other consumers will automatically resolve them to the corresponding text based on the current language.
 
 ### Supported i18n Fields
 
 | Field | Location | Description |
 |------|------|------|
 | `description` | field metadata | Field description |
-| `options[].label` | `ui.options` | Select control option labels |
-| `placeholder` | `ui.placeholder` | Input field placeholder |
-| `group_labels` | `_schema_meta` | Group display names (Dashboard section titles) |
+| `options[].label` | `ui.options` | select control option label |
+| `placeholder` | `ui.placeholder` | Input placeholder |
+| `group_labels` | `_schema_meta` | Group display name (Dashboard partition title) |
 
-The unified format is `{"i18n": "key", "default": "text"}`, pure strings are passed through as-is (backward compatible).
+Adopts the unified `{"i18n": "key", "default": "text"}` format; pure strings are passed through as-is (backward compatible).
 
 ### Declaring i18n Fields
 
@@ -8043,7 +7792,7 @@ class MyAdapterConfig(BaseConfig):
     mode: str = field(
         default="a",
         metadata={
-            "description": {"i18n": "my_adapter.mode", "default": "Operation Mode"},
+            "description": {"i18n": "my_adapter.mode", "default": "Runtime Mode"},
             "ui": {
                 "widget": "select",
                 "group": "basic",
@@ -8056,7 +7805,7 @@ class MyAdapterConfig(BaseConfig):
         },
     )
 
-    # group_labels i18n (group display names)
+    # group_labels i18n (Group display name)
     _schema_meta = {
         "group_labels": {
             "basic": {"i18n": "my_adapter.group.basic", "default": "Basic Settings"},
@@ -8064,14 +7813,14 @@ class MyAdapterConfig(BaseConfig):
     }
 ```
 
-`default` is the fallback text—it will be displayed when a translation is not registered or lookup fails.
+`default` is the fallback text — displayed when the translation is not registered or lookup fails.
 
-### Secret Masking and Config Validation
+### secret Masking and Configuration Validation
 
-Fields marked with `"secret": True` automatically gain **masked protection** (since v2.7.0):
+Fields marked with `"secret": True` automatically gain **masking protection** (since 2.7.0):
 
-- **Template generation masking**: When `dataclass_to_toml_with_comments()` generates a configuration template, the actual value of secret fields will not be written to the file (displayed as empty placeholders), preventing sensitive information from being persisted
-- **General masking utility**: `redact_secret(value)` replaces non-empty values with `***`, returns empty values as-is, and can be used for scenarios like log output
+- **Template Generation Masking**: When `dataclass_to_toml_with_comments()` generates the configuration template, the real values of secret fields are not written to the file (displayed as empty placeholders), preventing sensitive information from being written to disk
+- **Universal Masking Utility**: `redact_secret(value)` replaces non-empty values with `***`; empty values are returned as-is. Can be used in scenarios like log output
 
 ```python
 from ErisPulse.Core.Bases.config_schema import redact_secret
@@ -8080,13 +7829,13 @@ redact_secret("sk-xxxxxx")  # '***'
 redact_secret("")           # ''
 ```
 
-**Config Validation** (`validate_config()`) supports (in addition to the `required` non-empty check since v2.7.0):
+**Configuration Validation** (`validate_config()`) supports (in addition to `required` non-empty checks since 2.7.0):
 
 | Validation Item | Metadata | Example |
 |--------|--------|------|
-| Type matching | Field declared type | Passing a string to an `int` field throws an error |
-| Enum constraint | `ui.options` or top-level `options` | Value must belong to allowed options |
-| Numeric range | Top-level `min` / `max` | `metadata={"min": 1, "max": 65535}` |
+| Type Matching | Field declared type | Passing a string to an `int` field raises an error |
+| Enum Constraint | `ui.options` or top-level `options` | Value must belong to allowed options |
+| Numeric Range | Top-level `min` / `max` | `metadata={"min": 1, "max": 65535}` |
 
 ```python
 from ErisPulse.Core.Bases.config_schema import validate_config
@@ -8099,14 +7848,14 @@ class C(BaseConfig):
 errors = validate_config(C(mode="x", port=70000))  # Two errors: enum + range
 ```
 
-### Registering Config Translations
+### Registering Configuration Translations
 
-i18n keys for config fields are registered using `i18n.register()` just like regular translation keys:
+The i18n keys for configuration fields work like normal translation keys; register them using `i18n.register()`:
 
 ```python
 from ErisPulse import i18n
 
-# Register Chinese (consistent with default, can also be different)
+# Register Chinese (consistent with default, or different)
 i18n.register("zh-CN", {
     "my_adapter.token": "平台 Token",
 }, domain="my_adapter")
@@ -8116,13 +7865,13 @@ i18n.register("en", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 ```
-> **Recommended Approach**: Use `I18nClass` to declare translation keys. The framework will automatically register them (see the "Recommended Approach" section above for details),
+> **Recommended Approach**: Use `I18nClass` to declare translation keys; the framework will register them automatically (see the "Recommended Approach" section above),
 > eliminating the need to manually call `i18n.register()` or `register_config_i18n()`.
 
-The convenience function `register_config_i18n()` is also provided to automatically extract keys from the config class and register them:
+A convenience function `register_config_i18n()` is also provided, which can automatically extract keys from the configuration class and register them:
 
 ```python
-from ErisPulse.runtime.config_schema import register_config_i18n
+from ErisPulse.Core.Bases.config_schema import register_config_i18n
 
 # Automatically extracts description.default as zh-CN translation
 register_config_i18n(MyAdapterConfig, "zh-CN")
@@ -8133,16 +7882,16 @@ register_config_i18n(MyAdapterConfig, "en", {
 })
 ```
 
-### How WebUI Consumes
+### How WebUI Consumes It
 
-The i18n dictionary in the schema returned by `get_config_schema()` is passed through as-is. The WebUI frontend can call `i18n.t()` to resolve based on the current language.
+In the schema returned by `get_config_schema()`, i18n dictionaries are passed through as-is. The WebUI frontend can call `i18n.t()` to resolve based on the current language.
 
-If you need the server to directly resolve to a string (e.g., returning to a frontend that does not support i18n), use `resolve_config_schema()`, which will resolve `description`, `options[].label`, `placeholder`, and `group_labels` all into the text of the current language:
+If you need the server to resolve it to a string directly (e.g., for a frontend that does not support i18n), use `resolve_config_schema()`, which resolves `description`, `options[].label`, `placeholder`, and `group_labels` all to the current language's text:
 
 ```python
-from ErisPulse.runtime.config_schema import resolve_config_schema
+from ErisPulse.Core.Bases.config_schema import resolve_config_schema
 
-# All i18n fields are resolved into strings of the current language
+# All i18n fields are resolved to current language strings
 schema = resolve_config_schema(MyAdapterConfig)
 print(schema["fields"]["token"]["description"])    # "平台 Token" or "Platform Token"
 print(schema["fields"]["token"]["placeholder"])   # "请输入 Token" or "Enter Token"
@@ -8150,10 +7899,9 @@ print(schema["fields"]["mode"]["options"][0]["label"])  # "模式A" or "Mode A"
 print(schema["group_labels"]["basic"])             # "基本设置" or "Basic"
 ```
 
-> The actual definitions of types and utility functions like `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, and `resolve_config_schema()`
-> are located in `ErisPulse.Core.Bases.config_schema`.
+> The actual definitions of types and utility functions like `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()` etc. are located in `ErisPulse.Core.Bases.config_schema`.
 > `ErisPulse.runtime.config_schema` is kept as a compatibility shim,
-> **it is recommended to import from `ErisPulse.Core.Bases` uniformly** (with the exception of i18n translation key related types,
+> **it is recommended to import uniformly from `ErisPulse.Core.Bases`** (with the exception of i18n translation key related types,
 > which are located in `ErisPulse.Core.Bases.i18n_schema`).
 
 ## API Reference
@@ -8163,15 +7911,15 @@ print(schema["group_labels"]["basic"])             # "基本设置" or "Basic"
 #### Core Methods
 
 | Method | Description |
-|------|------|
-| `t(key, default=None, **kwargs)` | Get translation text (`gettext()` is an alias) |
-| `set_language(lang)` | Manually set language |
-| `get_language()` | Get current language |
-| `reset_language()` | Reset to auto detection (and re-detect environment) |
-| `get_supported_languages()` | Get list of all supported languages |
-| `has_translation(key, lang=None)` | Check if translation key exists |
+|--------|-------------|
+| `t(key, default=None, **kwargs)` | Get the translation text (`gettext()` is an alias) |
+| `set_language(lang)` | Manually set the language |
+| `get_language()` | Get the current language |
+| `reset_language()` | Reset to auto-detect (and re-detect environment) |
+| `get_supported_languages()` | Get a list of all supported languages |
+| `has_translation(key, lang=None)` | Check if a translation key exists |
 | `register(lang, translations, domain)` | Register custom translations |
-| `unregister_domain(domain)` | Unload all translations for a specific domain |
+| `unregister_domain(domain)` | Unload all translations for a specified domain |
 | `reload()` | Reload built-in translations and re-detect language |
 
 #### `t()` Method Details
@@ -8181,8 +7929,8 @@ def t(self, key, /, default=None, **kwargs):
 ```
 
 - `key` — Translation key (positional argument only, does not conflict with `key=` in `**kwargs`)
-- `default` — Default value returned when translation does not exist; defaults to `None` (returns the key name itself)
-- `**kwargs` — Formatting parameters, used to fill in `{placeholder}` in the translation value
+- `default` — Default value to return if translation does not exist, defaults to `None` (returns the key name itself)
+- `**kwargs` — Formatting parameters, used to fill `{placeholder}` in the translation value
 
 Example:
 
@@ -8194,18 +7942,18 @@ i18n.t("greeting", name="Alice", place="ErisPulse")
 
 ### BaseI18n / I18nKey (Declarative Translation Keys)
 
-Starting from v2.7.0, `ErisPulse.Core.Bases` provides a tool for declaring translation keys based on class properties (it is recommended to import uniformly from `ErisPulse.Core.Bases`):
+Starting from v2.7.0, `ErisPulse.Core.Bases` provides translation key declaration tools based on class attributes (recommended to import uniformly from `ErisPulse.Core.Bases`):
 
-> ``I18nKey.default`` is **language-agnostic fallback text** and will not be registered to any language.
-> For translations to take effect, you must explicitly pass at least one language parameter (``zh_CN=`` / ``en=`` / ``ja=`` etc).
-> This allows developers from different countries to freely use their native language to fill in ``default`` without the framework making any assumptions.
+> ``I18nKey.default`` is the **language-agnostic fallback text** and is not registered to any language.
+> For translations to take effect, you must explicitly pass at least one language argument (``zh_CN=`` / ``en=`` / ``ja=`` etc.).
+> This allows developers from different countries to freely use their native language to fill ``default``, without the framework making any assumptions.
 
 | Name | Description |
-|------|------|
-| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Declaration of a single translation key; `default` is language-agnostic fallback |
-| `BaseI18n` | Base class for a collection of translation keys (naming aligned with `BaseConfig`); subclasses declare multiple `I18nKey` as class attributes |
+|------|-------------|
+| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Single translation key declaration, `default` is language-agnostic fallback |
+| `BaseI18n` | Translation key collection base class (naming aligned with `BaseConfig`), subclasses declare multiple `I18nKey` as class attributes |
 | `BaseI18n.register(prefix="", domain="app")` | Class method: registers all declared keys to the i18n system |
-| `key` | Alias of `I18nKey` (more concise to write) |
+| `key` | Alias for `I18nKey` (more concise to write) |
 
 Usage Example:
 
@@ -8231,7 +7979,7 @@ class MyKeys(BaseI18n):
         ru="До свидания",
     )
 
-# Standalone usage (manual registration)
+# Usage independent of class (manual registration)
 MyKeys.register(prefix="myapp.", domain="myapp")
 ```
 
@@ -8249,20 +7997,20 @@ print(sdk.i18n.t("core.sdk.init.starting"))
 
 ## Runtime Configuration
 
-### Reading i18n Config via Config API
+### Reading i18n Configuration via API
 
 ```python
 from ErisPulse.Core.Bases import I18nConfig
 from ErisPulse.runtime import get_i18n_config
 
 config = get_i18n_config()
-print(config["language"])  # "auto" or a specific language code
+print(config["language"])  # "auto" or specific language code
 
-# I18nConfig is a dataclass, usable for generating config templates
+# I18nConfig is a dataclass, can be used to generate config template
 schema = I18nConfig.__dataclass_fields__
 ```
 
-### Configuration Item Description
+### Configuration Item Explanation
 
 In the `[ErisPulse.i18n]` section of `config/config.toml`:
 
@@ -8282,23 +8030,23 @@ language = "auto"
 
 ## Best Practices
 
-### Translation Key Naming
+### Translating Key Naming
 
-It is recommended to use a namespaced format separated by dots:
+It is recommended to use dot-separated namespace format:
 
 ```
-<ModuleName>.<Category>.<Description>
+<Module Name>.<Category>.<Description>
 ```
 
-Examples: `my_module.command.hello_desc`, `core.adapter.start_failed`
+For example: `my_module.command.hello_desc`, `core.adapter.start_failed`
 
-### Multi-language Coverage
+### Multilingual Coverage
 
-You do not need to provide translations for all languages at once. Missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
+It is not necessary to provide translations for all languages at once. Missing languages will automatically fall back to English, and if English is also unavailable, the key name itself will be displayed.
 
 ### Dynamic Content
 
-For dynamically generated content (such as usernames, counts, etc.), use the `{placeholder}` format:
+For dynamically generated content (such as usernames, counts, etc.), use `{placeholder}` formatting:
 
 ```python
 # Translation definition
@@ -8314,18 +8062,16 @@ If your module uses the framework's Logger, these messages will also automatical
 
 ```python
 self.logger.info(i18n.t("my_module.startup"))
-```
-
----
 
 ## Relationship with CLI i18n
 
-The CLI has an **independent** internationalization module (`ErisPulse.CLI.i18n`), completely decoupled from the i18n module of the framework core.
+The CLI has a **standalone** internationalization module (`ErisPulse.CLI.i18n`), which is completely decoupled from the internationalization module of the framework core.
 
-- **Core i18n** — Used by the framework core module; external modules can register translations
-- **CLI i18n** — Used internally by the command-line interface; does not share translation data with Core
+- **Core i18n** — Used by the framework core module, external modules can register translations
+- **CLI i18n** — Used internally by the command line interface, does not share translation data with Core
 
-This design ensures that changes to CLI translations do not affect the stability of the framework core.
+This design ensures that translation changes in the CLI will not affect the stability of the framework core.
+
 
 
 ### 启动流程与手动控制
@@ -8685,11 +8431,6 @@ Hard restart is not just a "more thorough restart," it is more suitable, and eve
 > The "Framework Restart" function in the Dashboard management panel internally calls `hard_restart()`.
 > Additionally, hard restart requires the use of the `epsdk` `run` command for startup; otherwise, the program will only throw exit code 42 and exit, because the `run` command checks for exit code 42 to restart the process. This must be noted carefully!!!
 
-## Related Documentation
-
-- [Create the First Bot](../getting-started/first-bot.md) - Introduction to the two basic modes of `keep_running`
-- [Lifecycle Management](lifecycle.md) - Listen to startup events such as `core.init.start` / `core.init.complete`
-- [Lazy Loading System](lazy-loading.md) - Module lazy loading mechanism and `load_module`
 
 
 ====
@@ -8976,6 +8717,7 @@ A: For non-generic or platform-specific types, use `{platform}_raw` and `{platfo
 - [Event Conversion Standard](event-conversion.md) - Complete event conversion specification
 - [Send Method Specification](send-method-spec.md) - Naming and parameter specification for Send class methods
 - [Adapter Development Guide](../developer-guide/adapters/) - Complete guide for adapter development
+
 
 
 ====
@@ -9321,25 +9063,26 @@ After unregistration, the Dashboard frontend will remove sidebar navigation item
 7. **Dynamic Updates** — After a module registers/unregisters views, the Dashboard frontend will update the sidebar in real-time via WebSocket, without page refresh
 
 
+
 ### Takumi 图片渲染
 
 # ErisPulse-Takumi
 
-[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) is a **third-party image rendering module** maintained by ccd2s, based on [takumi-py](https://github.com/BalconyJH/takumi-py), allowing you to render images in your Bot: HTML, node trees, Jinja templates, SVG, and animations are all supported, and it comes with **built-in Chinese and English fonts** (Noto Sans SC / Roboto / Source Code Pro), eliminating the need for additional font configuration.
+[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) is a **third-party image rendering module** maintained by ccd2s. Based on [takumi-py](https://github.com/BalconyJH/takumi-py), it allows you to render images in your Bot: HTML, node trees, Jinja templates, SVG, and animations are all no problem. Moreover, it **includes built-in fonts** (Noto Sans SC / Roboto / Source Code Pro), so no additional font configuration is needed.
 
-> [!IMPORTANT]  
-> Takumi is **not** a built-in feature of the ErisPulse framework and must be installed separately:  
->  
+> [!IMPORTANT]
+> Takumi is **not** a built-in feature of the ErisPulse framework and requires separate installation:
+>
 > ```bash
 > epsdk install Takumi
 > ```
 
-It is especially suitable for the following scenarios:
+It is suitable for the following scenarios:
 
-- Rendering data/statistics into beautiful card images for sending
-- Converting Markdown / long text into stable-formatted images to avoid platform style differences
+- Rendering data/statistics into exquisite card images for sending
+- Rendering Markdown / long texts into images with stable layout, avoiding platform style differences
 - Generating SVG / animations for dynamic visual effects
-- Mixed Chinese and English text output (built-in fonts work out of the box)
+- Bilingual text and image output (built-in fonts work out of the box)
 
 ---
 
@@ -9349,29 +9092,26 @@ It is especially suitable for the following scenarios:
 epsdk install Takumi
 ```
 
-After installation, the module will load automatically. Just confirm it is enabled in the configuration file:
+After installation, the module loads automatically. Simply enable it in the configuration file:
 
 ```toml
 [Takumi]
 enabled = true
-```
-
----
 
 ## Quick Start
 
-After the module loads automatically, you can obtain it through the module manager or use the `sdk` shortcut:
+Once modules are automatically loaded, obtain them via the Module Manager, or use the `sdk` shortcut:
 
 ```python
 from ErisPulse import sdk
 
 takumi = sdk.module.get("Takumi")
-# Equivalent notation: takumi = sdk.Takumi
+# Equivalent writing: takumi = sdk.Takumi
 ```
 
-### Rendering HTML
+### Render HTML
 
-The most commonly used method — rendering a string of HTML + CSS into a PNG:
+The most common method — rendering a segment of HTML + CSS string into PNG:
 
 ```python
 png = takumi.render_html(
@@ -9397,17 +9137,17 @@ png = takumi.render_html(
 )
 ```
 
-`png` is of type `bytes`, and can be sent using `event.reply(png, method="Image")` (see [Sending Rendered Results](#sending-rendered-results)).
+`png` is `bytes`, which can be sent via `event.reply(png, method="Image")` (see [Sending Rendered Results](#sending-rendered-results) for details).
 
-### Rendering Node Tree
+### Render Node Tree
 
-No need to write HTML manually; you can describe the structure with a dictionary, suitable for programmatic assembly:
+No need to write HTML manually; describe the structure using a dictionary. It is suitable for procedural assembly:
 
 ```python
 png = takumi.render_node(
     {
         "type": "text",
-        "text": "Both Chinese and English can be rendered directly",
+        "text": "中文和 English 都可直接渲染",
         "style": {"fontSize": 48, "color": "#111827"},
     },
     width=800,
@@ -9418,40 +9158,42 @@ png = takumi.render_node(
 
 ---
 
-## Fonts and Renderers
+Please return the complete translated Markdown content directly without any other text.
+
+## Fonts and Renderer
 
 ### Built-in Fonts
 
-Takumi has already bundled commonly used fonts, so no additional installation is required:
+Takumi has bundled common fonts, no additional installation required:
 
 | Resource | Description |
-|----------|-------------|
+|------|------|
 | `takumi.fonts` | List of built-in font file names |
 | `takumi.families` | List of registered font families |
 
-Convenient methods (`render_html` / `render_node`) automatically inject this font fallback stack; if you call the underlying renderer directly, you must pass `font_families` yourself.
+Convenience methods (`render_html` / `render_node`) automatically inject this font fallback stack; if you call the underlying renderer directly, you need to pass in `font_families` yourself.
 
 ### Native Renderer
 
-`takumi.renderer` is the original `takumi_py.Renderer` instance. The convenient methods have automatically injected the built-in font fallback stack; **when calling the renderer directly, you must pass families yourself**:
+`takumi.renderer` is the raw `takumi_py.Renderer` instance. Convenience methods automatically inject the built-in font fallback stack; **when calling the renderer directly, you must pass in `families`**:
 
 ```python
 png = takumi.renderer.render_html(
-    "<div>Hello</div>",
+    "<div>Hello World</div>",
     font_families=takumi.families,
     lang="zh-CN",
 )
 ```
 
-### Independent Renderer
+### Standalone Renderer
 
-When you need to isolate font / image / resource caching (e.g., long-lived processes, multi-tenant scenarios), you can create a new `Renderer`, and the built-in fonts will be automatically registered:
+If isolation of fonts / images / resource caches is required (e.g., long-lived processes, multi-tenant scenarios), you can create a new `Renderer`; built-in fonts are registered automatically:
 
 ```python
 renderer = takumi.create_renderer(cache_max_bytes=64 * 1024 * 1024)
 
 png = renderer.render_html(
-    "<div>Independent Renderer</div>",
+    "<div>Standalone Renderer</div>",
     font_families=takumi.families,
     width=800,
     height=200,
@@ -9459,47 +9201,132 @@ png = renderer.render_html(
 )
 ```
 
-`create_renderer()` accepts the constructor parameters of `takumi_py.Renderer`:
+`create_renderer()` accepts the constructor arguments of `takumi_py.Renderer`:
 
 - `load_default_fonts=False` (default): Only load built-in fonts
-- `load_default_fonts=True`: Load both Takumi's built-in fonts and default fonts
-- `fonts=[...]`: Register custom fonts on top of the default ones
+- `load_default_fonts=True`: Load both built-in and Takumi bundled fonts
+- `fonts=[...]`: Register custom fonts on top of defaults
 
-> Independent instances do not go through the module proxy, so to retain a unified built-in font fallback stack, you must explicitly pass `font_families=takumi.families`.
+> Standalone instances do not go through the module proxy, so to preserve a unified built-in font fallback stack, you must explicitly pass `font_families=takumi.families`.
 
-If `font_families` is explicitly passed, the module will respect the caller's settings and no longer inject the default fallback stack. `RenderOptions(font_families=...)` is also valid.
+If you explicitly pass `font_families`, the module will respect the caller's settings and will no longer inject the default fallback stack. `RenderOptions(font_families=...)` is also valid.
 
 ---
 
 ## Sending Rendered Results
 
-After rendering an image, you can reply directly via the event:
+After the image is rendered, you can send it directly via an event reply:
 
 ```python
 from ErisPulse import sdk
 
 takumi = sdk.Takumi
-png = takumi.render_html("<div>Hello</div>", lang="zh-CN")
+png = takumi.render_html("<div>hello</div>", lang="zh-CN")
 
 # Method 1: Reply directly using the Image method
 await event.reply(png, method="Image")
 
-# Method 2: Reply using OneBot12 message segments
+# Method 2: Reply via OneBot12 message segments
 from ErisPulse.Core.Event import MessageBuilder
 await event.reply_ob12(
     MessageBuilder().image(png).build()
 )
 ```
 
-> Different platforms handle image encapsulation uniformly through adapters, so there is no need to worry about underlying differences. See [MessageBuilder Detailed Explanation](../advanced/message-builder.md) and [Send Method Specification](../standards/send-method-spec.md).
+> Different platforms encapsulate images uniformly via adapters; no need to worry about underlying differences. See [MessageBuilder Details](../advanced/message-builder.md) and [Send Method Specifications](../standards/send-method-spec.md).
 
 ---
 
-## Related Links
+Please return the complete translated Markdown content directly without any other text.
 
-- PyPI: <https://pypi.org/project/ErisPulse-Takumi/>
-- Repository: <https://github.com/ccd2s/ErispulseTakumi> (author [@ccd2s](https://github.com/ccd2s))
-- Underlying Engine: <https://github.com/BalconyJH/takumi-py>
+## Practical Pitfalls (Hard-earned Lessons)
+
+The following content is not found in the documentation. It was tested line by line while using Takumi to build an entire data visualization module (sonar charts, radar charts, etc., with dozens of nodes and the need to draw connections and labels). I've noted the valuable findings here to help you save a few hours of detours.
+
+### 1. Don't Use SVG `<text>`, It Doesn't Render
+
+The biggest pitfall, bar none. You want to draw nodes in an `<svg>` and annotate them with a `<text>` tag next to them—**the rendered text is empty**. Whether you add `font-family` to the `<text>` tag or set inheritance on the `<svg>` root, it doesn't work. Chinese and English text do not display at all; the chart is left with only the naked shapes.
+
+Tested conclusion: `takumi-py` does not render inline SVG text elements. So the correct approach is:
+
+- SVG only draws **shapes** (circles, lines, polygons)
+- All text goes through **HTML**: put the `<svg>` inside a `position: relative` container, and use absolutely positioned `<div>` tags to cover the corresponding coordinates with labels
+
+```python
+W = H = 600
+html = f"""
+<div style='position:relative;width:{W}px;height:{H}px'>
+  <svg width='{W}' height='{H}' viewBox='0 0 {W} {H}'>
+    <!-- Only draw circles and lines -->
+  </svg>
+  <div style='position:absolute;left:{x}px;top:{y}px;transform:translate(-50%,-50%)'>Name</div>
+</div>
+"""
+```
+
+The prerequisite for correct coordinate matching: SVG must use **fixed** `width`/`height` (don't be lazy and write `width:100%`). This ensures 1:1 pixel mapping with the container, so the div's `left`/`top` can simply be filled with the coordinates inside the SVG.
+
+### 2. CSS Must Go Through `stylesheets`, Don't Stuff the Entire HTML Document
+
+The first parameter of `render_html(html, ...)` is the **body HTML**, not the complete document. If you are lazy and pass one:
+
+```python
+takumi.render_html("<!DOCTYPE html><html><head><style>...</style></head><body>...</body></html>")
+```
+
+Styles will **silently fail**—the chart will be generated, but it will look messy, just like it has no CSS. When debugging, you will suspect you wrote the CSS wrong, but actually, the passing method is incorrect. Unjustly.
+
+The correct way is always: one parameter for body, one parameter for CSS.
+
+```python
+takumi.render_html(body_html, stylesheets=[css_str], width=..., height=..., lang="zh-CN")
+```
+
+### 3. `height` Is the Clipping Height, It Won't Auto-Expand
+
+`width` is the viewport width, `height` is the canvas height—**content exceeding `height` is directly clipped**, just like in an image format, it won't automatically grow downward like a browser. Therefore, the total height must be estimated by yourself: sum of the height of each block + padding + card spacing, and pass that in.
+
+The rule of thumb is **prefer more over less**. Leaving extra white space at the bottom is fine, but if the top content is clipped, the chart is useless. For dynamic content (variable number of list items), calculate it on the fly:
+
+```python
+height = padding * 2 + header_h + sum(每项高) + 间隙 * (项数 - 1) + 30  # Leave some buffer at the end
+```
+
+### 4. Font Auto-Injection Only Handles HTML Text
+
+Convenient methods (`render_html` / `render_node`) will automatically inject the built-in font fallback stack, but it **only applies to HTML text**. That's why "text goes through HTML" in point #1 is beneficial—you also get the Chinese fonts for free without having to worry about `font_families`.
+
+If you directly call the low-level renderer (`takumi.renderer.render_html`), you must pass `font_families=takumi.families` yourself. Don't forget.
+
+### 5. A Debugging Trick That Works With Eyes Closed
+
+After changing styles, you want to verify "whether a specific chunk of Chinese was actually rendered", but you are too lazy to open the image every time? Let it spit out the raw pixels to count:
+
+```python
+data = takumi.render_html(body, stylesheets=[css], width=W, height=H,
+                          lang="zh-CN", format="raw")  # raw is RGBA byte stream
+dark = sum(1 for i in range(0, len(data), 4)
+           if data[i] < 120 and data[i+1] < 120 and data[i+2] < 120 and data[i+3] > 128)
+```
+
+In a light background, the difference in ink dot counts between "has text" and "no text" is 4000+ and 0 respectively—you can tell at a glance whether that line of `<div>` is taking effect or not. This is much faster than staring at a PNG with your eyes, which is how I verified the SVG pitfall in point #1.
+
+### 6. Dark/Light Theme: Just Swap the Stylesheet
+
+Takumi itself doesn't care what theme you use; all colors are in your own CSS. So making light/dark switching is very lightweight—prepare two sets of colors, and based on the current hour or user settings, choose one set to stuff into `stylesheets`:
+
+```python
+if 19 <= local_hour or local_hour < 7:
+    t = {"page": "#000000", "card": "#1c1c1e", "ink": "#f5f5f7", "sep": "#38383a"}   # dark
+else:
+    t = {"page": "#f5f5f7", "card": "#ffffff", "ink": "#1d1d1f", "sep": "#e5e5ea"}   # light
+css = CSS_TEMPLATE.replace("__INK__", t["ink"]).replace("__CARD__", t["card"])  # and so on
+```
+
+> Note: CSS built-in `var(--xxx)` variables may not necessarily work in Takumi. For safety, directly replace the color strings into the template in Python to bypass this uncertainty.
+
+---
+
 
 
 ====
@@ -9807,3 +9634,4 @@ We welcome more developers to contribute to writing and maintaining adapter docu
 4. Submit a Pull Request.  
 
 Thank you for your support!
+
