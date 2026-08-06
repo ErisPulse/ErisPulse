@@ -1,5 +1,65 @@
 {
-  "hash": "adc224ee35688d9606462784d92c397d",
-  "translated_at": "2026-08-01T18:14:38.735301",
-  "target_lang": "zh-TW"
+  "version": 2,
+  "hash": "216c6bd0d8b398d9307b6d0981203b48",
+  "file_hash": "216c6bd0d8b398d9307b6d0981203b48",
+  "translated_at": "2026-08-06T16:36:40.932571",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "3e912d500049e0e58ec0fab1207b13a8",
+      "translation": "# 配置文件說明  \n> 本文件將介紹框架的配置文件。若有第三方模組需要設定，請參考模組的文件。\n\nErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 來管理專案設定。\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。\n\n再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。"
+    },
+    {
+      "hash": "f8e8f27e6f7b5ed0d3858050fa443378",
+      "translation": "## 配置檔位置\n\n配置檔位於專案根目錄的 `config/` 資料夾中：\n\n```\nproject/\n├── config/\n│   └── config.toml\n├── main.py\n```\n\n7. **重要：路徑替換規則**\n   - 將文件連結中的 `docs/zh-CN/` 替換為 `docs/zh-TW/`\n   - 例如：`docs/zh-CN/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`\n   - 對於指向非目前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改\n   - 這確保連結指向正確語言的文件版本"
+    },
+    {
+      "hash": "e572693b30658e94967b5faec4248aee",
+      "translation": "## 配置載入錯誤處理\n\n框架在載入 `config.toml` 時會區分三種錯誤狀態，並提供**可操作的診斷資訊**，而不是靜默回退到預設配置：\n\n| 錯誤狀態 | 觸發條件 | 框架行為 |\n|---------|---------|---------|\n| 檔案缺失 | `config.toml` 不存在 | 正常首次啟動，靜默使用空配置（不發出警告） |\n| TOML 語法錯誤 | 檔案存在但格式非法（如少了引號、括號未閉合） | 輸出**出錯行號/列號與原因**，並提示已回退預設配置 |\n| 權限/其他錯誤 | 無讀取權限、IO 錯誤等 | 輸出**明確原因**，並提示已回退預設配置 |\n\n例如，當你不慎把配置寫成了 `port = 8000`（缺少引號的字串）時，日誌會輸出類似：\n\n```\n[ERROR] [Config] 配置檔案 config/config.toml 語法錯誤（第 3 行 第 1 列）: ...\n[WARNING] [Config] 配置檔案讀取失敗。繼續使用上次有效配置執行，本次檔案修改未生效——請修復後重新載入或重啟\n```\n\n這樣你可以在**預設 INFO 級別**下立刻定位問題，而不會困惑「為什麼我修改的配置沒生效」。\n\n> **執行中改壞配置檔案？** 如果你在機器人執行期間手動編輯 `config.toml` 引入了語法錯誤，框架在下次寫入（合併配置）時會輸出「配置檔案已損壞（語法錯誤，第 X 行），無法合併寫入——請先修復配置檔案後重啟」，而不是令人困惑的「寫入失敗」。待寫入的配置項目會被保留，不會遺失。"
+    },
+    {
+      "hash": "53be5e2fcd6467c1f4785e4646b4da59",
+      "translation": "## 環境變數覆蓋\n\n框架支援使用環境變數**覆蓋** `ErisPulse.*` 配置項目（適合 Docker / 容器化 / CI 部署，無需修改 `config.toml`）。\n\n命名規則：將點分路徑 `ErisPulse.<section>.<key>` 改為全大寫、`.` 替換為 `_`，並加上 `ERISPULSE_` 前綴：\n\n| 配置項 | 環境變數 | 示例值 |\n|--------|---------|--------|\n| `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |\n| `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |\n| `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |\n| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |\n\n行為說明：\n- **優先級最高**：環境變數覆蓋「配置檔案」與「預設值」，並按原值類型自動轉換（`bool` / `int` / `float` / 逗號分隔的 `list` / 字串）\n- **不持久化**：覆蓋只在執行期生效，不會寫回 `config.toml`\n- **支援熱更新**：執行中修改環境變數後，配合配置監聽的重載即可生效\n\n```bash\n# Docker 部署示例：不修改 config.toml，直接覆蓋端口\nERISPULSE_SERVER_PORT=9000 docker compose up -d\n```\n\n> 註：`ErisPulse.server.port` 這類框架配置走 `get_server_config()` 等 API 讀取，均受環境變數覆蓋影響。"
+    },
+    {
+      "hash": "8a12c08297c31a0fd10ac87789e5becb",
+      "translation": "## 配置熱更新\n\n從 2.7.0 開始，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（後台 watcher 每 5 秒偵測一次），或程式碼呼叫 `setConfig()` 後，各元件自動回應：\n\n| 元件 | 支援熱更新的設定 | 行為 |\n|------|----------------|------|\n| **日誌 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | 自動重新套用（帶變更偵測） |\n| **命令系統 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一條訊息即生效 |\n| **適配器併發** | `framework.handler_max_concurrency` | 失效快取信號量，按新值重建 |\n| **主動 GC** | `framework.proactive_gc_interval` | 每輪重讀，支援執行時調整/停用 |\n| **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查即時讀取，無需重新啟動 |\n| **模組/適配器設定** | 各自的設定項目 | 觸發 `on_config_update(old, new)` 回呼 |\n\n**需重新啟動的設定**（無法安全熱切換，變更時會輸出告警「需重新啟動程序後生效」）：\n\n| 設定 | 原因 |\n|------|------|\n| `router.cors.*` / `router.security.*` | 中間件在服務啟動時寫入 FastAPI，執行時無法安全熱切換 |\n| `storage.use_global_db` | SQLite 檔案句柄已在執行時開啟，切換路徑不安全 |\n\n> **中途編輯儲存出錯？** 若編輯 `config.toml` 時出現瞬間語法錯誤，框架會**保留上次有效設定**並輸出診斷日誌，不會把空設定廣播給各元件（避免 `on_config_update` 收到空值誤回退預設）。\n\n[**English**](docs/zh-TW/quick-start.md)"
+    },
+    {
+      "hash": "896bc69f5e5eabb6dd388ca4bcfa09a4",
+      "translation": "## 完整配置示例\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\nssl_certfile = \"\"\nssl_keyfile = \"\"\n\n[ErisPulse.logger]\nlevel = \"INFO\"\nformat = \"rich\"\nlog_files = []\nmemory_limit = 1000\n\n[ErisPulse.framework]\nenable_lazy_loading = true\nuninit_timeout = 30\nstrict_mode = 0\n\n[ErisPulse.framework.strict_mode_exceptions]\nmodules = []\nadapters = []\n\n[ErisPulse.storage]\nuse_global_db = false\n\n[ErisPulse.event.command]\nprefix = \"/\"\ncase_sensitive = true\nallow_space_prefix = false\nmust_at_bot = false\n\n[ErisPulse.event.message]\nignore_self = true\n\n[ErisPulse.i18n]\nlanguage = \"auto\"\n```\n\n[**English**](docs/zh-TW/quick-start.md) | [**简体中文**](docs/zh-CN/quick-start.md)"
+    },
+    {
+      "hash": "5aa8534ab16203438703b88cc710c1b7",
+      "translation": "## 伺服器設定\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\nssl_certfile = \"/path/to/cert.pem\"\nssl_keyfile = \"/path/to/key.pem\"\n```\n\n| 設定項 | 類型 | 預設值 | 說明 |\n|---------|------|---------|------|\n| host | string | 0.0.0.0 | 監聽位址，0.0.0.0 表示所有介面 |\n| port | integer | 8000 | 監聽埠號 |\n| ssl_certfile | string | 空 | SSL 證書檔案路徑 |\n| ssl_keyfile | string | 空 | SSL 私鑰檔案路徑 |\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。\n\n再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。"
+    },
+    {
+      "hash": "10157b0d53ce0ccbbdf793186be12f62",
+      "translation": "## 日誌配置\n\n```toml\n[ErisPulse.logger]\nlevel = \"INFO\"\nlog_files = [\"app.log\", \"debug.log\"]\nmemory_limit = 1000\n```\n\n| 配置項 | 類型 | 預設值 | 說明 |\n|---------|------|---------|------|\n| level | string | INFO | 日誌等級：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低等級，輸出框架內部詳細除錯資訊） |\n| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文本無顏色，適合日誌採集/管道重定向）、`json`（JSON 結構化，適合 ELK 等） |\n| log_files | array | 空 | 日誌輸出檔案清單 |\n| memory_limit | integer | 1000 | 在記憶體中保存的日誌條數 |\n\n請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。"
+    },
+    {
+      "hash": "8c41cf368d952ed3c5ef2b166e950758",
+      "translation": "## 框架配置\n\n```toml\n[ErisPulse.framework]\nenable_lazy_loading = true\nuninit_timeout = 30\nstrict_mode = 0\n\n[ErisPulse.framework.strict_mode_exceptions]\nmodules = []\nadapters = []\n```\n\n| 配置項 | 類型 | 默認值 | 說明 |\n|---------|------|---------|------|\n| enable_lazy_loading | boolean | true | 是否啟用模組懶加載 |\n| uninit_timeout | integer | 30 | 優雅關閉的總超時時間（秒），超過後強制終止。0 表示不設超時 |\n| strict_mode | integer | 0 | 嚴格模式級別，見下方「嚴格模式」說明 |\n\n### 嚴格模式\n\n嚴格模式控制模組/適配器在加載階段不合規或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的組件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。\n\n> **2.5.2 變更**：默認級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新用戶初次使用時遇到的加載問題。未繼承基類的組件將以 WARNING 提示並嘗試加載，而非直接拒絕。如需恢復旧行為，請顯式設定 `strict_mode = 1`。\n\n| 級別 | 名稱 | 行為 |\n|------|------|------|\n| 0 | 寬鬆（默認） | 違規僅警告，未繼承基類的組件仍會嘗試加載（相容舊組件） |\n| 1 | 嚴格-跳過 | 拒絕未繼承基類的組件並跳過，其餘正常啟動 |\n| 2 | 嚴格-致命 | 收集所有違規後統一報告並中止整個啟動 |\n\n各級別下，「加載/註冊/初始化階段報錯」這類組件自身崩潰始終會被跳過；區別在於：\n\n- **0 → 1**：唯一行為變化是「未繼承基類」從「仍加載」變為「跳過」。\n- **1 → 2**：所有違規（未繼承基類、加載失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。\n\n#### 豁免清單\n\n如果某些組件確實暫時無法遷移（例如依賴的舊模組），可以將其加入豁免清單，被列名的組件即使不合規也會按寬鬆模式對待，繼續加載：\n\n```toml\n[ErisPulse.framework.strict_mode_exceptions]\nmodules = [\"SeTu\", \"SomeLegacyModule\"]\nadapters = [\"OldAdapter\"]\n```\n\n> 當某個組件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低級別）。"
+    },
+    {
+      "hash": "fdee6d880d324c9936a5e968dec8099c",
+      "translation": "## 儲存設定\n\n```toml\n[ErisPulse.storage]\nuse_global_db = false\n```\n\n| 配置項 | 類型 | 默認值 | 說明 |\n|---------|------|---------|------|\n| use_global_db | boolean | false | 是否使用全域資料庫（包內）而非專案資料庫。`true` 時所有專案共用 ErisPulse 包內的 SQLite 資料庫；`false`（預設）時每個專案使用 `config/` 目錄下獨立的資料庫 |\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。"
+    },
+    {
+      "hash": "2378807b349e0f3873fbbca4dea4af38",
+      "translation": "## 事件配置\n\n### 命令配置\n\n```toml\n[ErisPulse.event.command]\nprefix = \"/\"\ncase_sensitive = false\nallow_space_prefix = false\n```\n\n| 配置項 | 類型 | 默認值 | 說明 |\n|---------|------|---------|------|\n| prefix | string | / | 命令前綴 |\n| case_sensitive | boolean | true | 是否區分大小寫（`/Help` 與 `/help` 是否為不同命令） |\n| allow_space_prefix | boolean | false | 是否允許空格作為前綴 |\n| must_at_bot | boolean | false | 是否必須@機器人才能觸發命令（私聊不受限制） |\n\n### 消息配置\n\n```toml\n[ErisPulse.event.message]\nignore_self = true\n```\n\n| 配置項 | 類型 | 默認值 | 說明 |\n|---------|------|---------|------|\n| ignore_self | boolean | true | 是否忽略機器人自己的消息 |"
+    },
+    {
+      "hash": "bfd104cca147654e607d55bd10b6788e",
+      "translation": "## 國際化配置\n\n```toml\n[ErisPulse.i18n]\nlanguage = \"auto\"\n```\n\n| 配置項 | 類型 | 默認值 | 說明 |\n|---------|------|---------|------|\n| language | string | auto | 框架內置文本的顯示語言。設為 `auto` 自動檢測系統語言，也可設為具體代碼：`zh-CN`、`zh-TW`、`en`、`ja`、`ru` |\n\n請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。"
+    },
+    {
+      "hash": "da10c00f6613accd125d76769c6194b5",
+      "translation": "## 模組配置\n\n每個模組可以在配置檔中定義自己的設定：\n\n```toml\n[MyModule]\napi_url = \"https://api.example.com\"\ntimeout = 30\nenabled = true\n```\n\n在模組中讀取和寫入設定：\n\n```python\nfrom ErisPulse import sdk\n\n# 讀取設定\nconfig = sdk.config.getConfig(\"MyModule\", {})\napi_url = config.get(\"api_url\", \"https://default.api.com\")\n\n# 運行時寫入設定（延遲儲存）\nsdk.config.setConfig(\"MyModule.timeout\", 60)\n\n# 立即儲存到檔案\nsdk.config.setConfig(\"MyModule.timeout\", 60, immediate=True)\n```\n\n> `setConfig` 預設採用延遲寫入（約每 5 秒批量儲存到檔案），設定 `immediate=True` 可立即持久化。設定變更會觸發 `config.set` 生命週期事件。\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。"
+    },
+    {
+      "hash": "d2dcbae56f1416aaf7447764914e07af",
+      "translation": "## 下一步\n\n- [CLI 命令參考](cli-reference.md) - 了解所有命令行命令\n- [開發者指南](../developer-guide/) - 學習開發自訂模組"
+    }
+  ]
 }

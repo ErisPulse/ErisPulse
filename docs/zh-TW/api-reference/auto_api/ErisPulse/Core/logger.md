@@ -16,6 +16,25 @@ ErisPulse 日志系统
 
 ---
 
+## 函数列表
+
+
+### `_format_message(msg: object, args: tuple)`
+
+将日志消息与位置参数按 ``%`` 风格格式化
+
+有 args 时应用 ``str(msg) % args``，无 args 时保持原文不变（``%s`` 字面量保留），
+格式化失败时回退到原始字符串。控制台路径仍由 Python logging 自行格式化，
+此处仅为内存副本 / 订阅器提供与之一致的文本。
+
+> **内部方法**
+
+- **msg** (`原始日志消息`): - **args**: 位置参数元组
+**返回值**: 格式化后的日志文本
+
+---
+
+
 ## 类列表
 
 
@@ -131,6 +150,31 @@ JSON 日志格式化器
 
 - **path** (`日志文件路径`): Str/List
 **返回值** (`bool`): 设置是否成功
+
+---
+
+
+##### `set_format(fmt: str = 'rich')`
+
+设置日志输出格式
+
+支持三种格式：
+- ``rich``（默认）：彩色带时间的 Rich 输出
+- ``plain``：纯文本无颜色（适合日志采集 / 管道重定向）
+- ``json``：JSON 结构化输出（适合 ELK / Grafana Loki / Datadog 等）
+
+- **fmt** (`日志格式名称：``rich```): / ``plain`` / ``json`` (默认: "rich")
+**返回值** (`bool`): 设置是否成功
+
+**示例**:
+```python
+>>> # 在 config.toml 中配置
+>>> [ErisPulse.logger]
+>>> format = "plain"
+>>>
+>>> # 或代码中动态切换
+>>> logger.set_format("plain")
+```
 
 ---
 
@@ -309,6 +353,24 @@ JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表�
 > **提示**
 > 1. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
 > 2. 会在日志文件中添加 CRITICAL 标记便于后续分析
+
+---
+
+
+##### `_store_ui_line(text: str)`
+
+将 UI 输出行写入内存、订阅器与日志文件
+
+视觉输出方法（``print_*``）原本直接打印到控制台、绕过日志管道，
+导致 Dashboard 等日志订阅器收不到启动阶段的阶段标题/数量/组件树，
+也无法在订阅器注册时补发历史。此方法将文本按 INFO 级别写入内存
+（``_save_in_memory``）、推送给订阅器（``_notify_handlers``）并写入
+日志文件，同时不重复输出控制台。
+
+> **内部方法**
+仅由 ``print_section_header`` / ``print_info`` / ``print_tree_item`` 调用。
+
+- **text** (`str`): 需要写入日志管道的 UI 文本
 
 ---
 
