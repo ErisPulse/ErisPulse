@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1423,
+  "total_keywords": 1420,
   "keywords": {
     "- \"auto\"      — システム言語を自動検出 (デフォルト)": [
       {
@@ -2024,6 +2024,14 @@
         "title": "API エラー処理"
       }
     ],
+    "API サマリー": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 242,
+        "level": 3,
+        "title": "API サマリー"
+      }
+    ],
     "API リファレンス": [
       {
         "document": "api-reference/README.md",
@@ -2066,38 +2074,20 @@
         "title": "API 呼び出し"
       }
     ],
+    "API 概要": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 202,
+        "level": 3,
+        "title": "API 概要"
+      }
+    ],
     "APIレスポンス標準": [
       {
         "document": "platform-guide/onebot12.md",
         "line": 306,
         "level": 2,
         "title": "APIレスポンス標準"
-      }
-    ],
-    "API概要": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 95,
-        "level": 3,
-        "title": "API概要"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 194,
-        "level": 3,
-        "title": "API概要"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 234,
-        "level": 3,
-        "title": "API概要"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 261,
-        "level": 3,
-        "title": "API概要"
       }
     ],
     "API標準": [
@@ -2114,14 +2104,6 @@
         "line": 233,
         "level": 3,
         "title": "Account メソッド"
-      }
-    ],
-    "Adapter モジュール": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 190,
-        "level": 2,
-        "title": "Adapter モジュール"
       }
     ],
     "AdapterManager 适配器管理器": [
@@ -2180,6 +2162,14 @@
         "title": "Bot ステータスの確認"
       }
     ],
+    "Bot ステータス確認": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 227,
+        "level": 3,
+        "title": "Bot ステータス確認"
+      }
+    ],
     "Bot ライフサイクルの監視": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -2208,14 +2198,6 @@
         "line": 400,
         "level": 3,
         "title": "Bot 状態値"
-      }
-    ],
-    "Bot 状態照会": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 219,
-        "level": 3,
-        "title": "Bot 状態照会"
       }
     ],
     "Bot 状態管理": [
@@ -2294,14 +2276,6 @@
         "line": 5,
         "level": 2,
         "title": "Command コマンドモジュール"
-      }
-    ],
-    "Config モジュール": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 91,
-        "level": 2,
-        "title": "Config モジュール"
       }
     ],
     "Config（設定）": [
@@ -2662,12 +2636,20 @@
         "title": "HTML をレンダリングする"
       }
     ],
-    "HTTP クライアント モジュール": [
+    "HTTP Client モジュール": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 316,
+        "line": 322,
         "level": 2,
-        "title": "HTTP クライアント モジュール"
+        "title": "HTTP Client モジュール"
+      }
+    ],
+    "HTTP ルーター": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 305,
+        "level": 1,
+        "title": "HTTP ルーター"
       }
     ],
     "HTTP ルーティング": [
@@ -2774,22 +2756,6 @@
         "title": "LazyModule クラス"
       }
     ],
-    "Lifecycle モジュール": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 257,
-        "level": 2,
-        "title": "Lifecycle モジュール"
-      }
-    ],
-    "Logger モジュール": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 120,
-        "level": 2,
-        "title": "Logger モジュール"
-      }
-    ],
     "Logger（ログ）": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -2849,7 +2815,7 @@
     "Module モジュール": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 230,
+        "line": 238,
         "level": 2,
         "title": "Module モジュール"
       }
@@ -3102,14 +3068,6 @@
         "title": "RouteGroup での使用"
       }
     ],
-    "Router モジュール": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 289,
-        "level": 2,
-        "title": "Router モジュール"
-      }
-    ],
     "Router（ルーティング）": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -3134,14 +3092,6 @@
         "title": "SDK コア・アーキテクチャ"
       }
     ],
-    "SDK デバッグ": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 337,
-        "level": 2,
-        "title": "SDK デバッグ"
-      }
-    ],
     "SDK トップレベルエントリ一覧": [
       {
         "document": "advanced/startup.md",
@@ -3153,7 +3103,7 @@
     "SQL チェーンクエリ": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 43,
+        "line": 45,
         "level": 3,
         "title": "SQL チェーンクエリ"
       }
@@ -3249,7 +3199,7 @@
     "Storage モジュール": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 5,
+        "line": 7,
         "level": 2,
         "title": "Storage モジュール"
       }
@@ -3276,6 +3226,22 @@
         "line": 310,
         "level": 2,
         "title": "Sync API 接続"
+      }
+    ],
+    "TRACE は最低レベルで、フレームワーク内部の詳細なデバッグ情報（イベント配信、ルート登録など）を出力します": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 152,
+        "level": 1,
+        "title": "TRACE は最低レベルで、フレームワーク内部の詳細なデバッグ情報（イベント配信、ルート登録など）を出力します"
+      }
+    ],
+    "TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 151,
+        "level": 1,
+        "title": "TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL"
       }
     ],
     "Task オブジェクト": [
@@ -3340,6 +3306,14 @@
         "line": 205,
         "level": 3,
         "title": "WebSocket"
+      }
+    ],
+    "WebSocket ルーター": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 310,
+        "level": 1,
+        "title": "WebSocket ルーター"
       }
     ],
     "WebSocketクライアント": [
@@ -3856,14 +3830,6 @@
         "line": 435,
         "level": 3,
         "title": "doctor"
-      }
-    ],
-    "dump_state()": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 339,
-        "level": 3,
-        "title": "dump_state()"
       }
     ],
     "get() メソッド": [
@@ -4458,14 +4424,6 @@
         "title": "アダプタアーキテクチャ"
       }
     ],
-    "アダプタイベント": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 207,
-        "level": 3,
-        "title": "アダプタイベント"
-      }
-    ],
     "アダプタライフサイクル": [
       {
         "document": "advanced/lifecycle.md",
@@ -4536,12 +4494,28 @@
         "title": "アダプターの管理"
       }
     ],
+    "アダプターイベント": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 215,
+        "level": 3,
+        "title": "アダプターイベント"
+      }
+    ],
     "アダプターシステム API": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 1,
         "level": 1,
         "title": "アダプターシステム API"
+      }
+    ],
+    "アダプターモジュール": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 198,
+        "level": 2,
+        "title": "アダプターモジュール"
       }
     ],
     "アダプター基底クラス": [
@@ -5276,6 +5250,12 @@
     ],
     "クイックリファレンス": [
       {
+        "document": "api-reference/core-modules.md",
+        "line": 328,
+        "level": 3,
+        "title": "クイックリファレンス"
+      },
+      {
         "document": "user-guide/README.md",
         "line": 14,
         "level": 2,
@@ -5842,14 +5822,6 @@
         "title": "サイドバーのグループ"
       }
     ],
-    "サブロガー": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 134,
-        "level": 3,
-        "title": "サブロガー"
-      }
-    ],
     "サポートされていないタイプの処理": [
       {
         "document": "platform-guide/onebot11.md",
@@ -5936,6 +5908,14 @@
         "line": 20,
         "level": 2,
         "title": "サポートされるメッセージ送信タイプ"
+      }
+    ],
+    "サポートされるレベル（低い順）：": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 150,
+        "level": 1,
+        "title": "サポートされるレベル（低い順）："
       }
     ],
     "サポートするメッセージ送信タイプ": [
@@ -6093,7 +6073,7 @@
     "ストレージバックエンド抽象化": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 59,
+        "line": 61,
         "level": 3,
         "title": "ストレージバックエンド抽象化"
       }
@@ -6450,6 +6430,14 @@
         "title": "デコレータルーティング（推奨）"
       }
     ],
+    "デコレータ方式": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 169,
+        "level": 1,
+        "title": "デコレータ方式"
+      }
+    ],
     "デバッグのヒント": [
       {
         "document": "developer-guide/README.md",
@@ -6583,7 +6571,7 @@
     "トランザクション操作": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 28,
+        "line": 30,
         "level": 3,
         "title": "トランザクション操作"
       }
@@ -6817,7 +6805,7 @@
     "バッチ操作": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 20,
+        "line": 22,
         "level": 3,
         "title": "バッチ操作"
       }
@@ -7260,16 +7248,18 @@
         "title": "プロトコルメソッド"
       }
     ],
+    "プロパティへのアクセス": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 257,
+        "level": 3,
+        "title": "プロパティへのアクセス"
+      }
+    ],
     "プロパティアクセス": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 36,
-        "level": 3,
-        "title": "プロパティアクセス"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 249,
+        "line": 38,
         "level": 3,
         "title": "プロパティアクセス"
       },
@@ -8552,6 +8542,14 @@
         "title": "リリースガイド"
       }
     ],
+    "ルーターグループ": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 316,
+        "level": 1,
+        "title": "ルーターグループ"
+      }
+    ],
     "ルーティンググループ": [
       {
         "document": "advanced/router.md",
@@ -8704,28 +8702,12 @@
         "title": "ログイン時に bot_id を取得できない場合、ユーザーに設定で入力させる"
       }
     ],
-    "ログサブスクリプション（プッシュモード）": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 155,
-        "level": 3,
-        "title": "ログサブスクリプション（プッシュモード）"
-      }
-    ],
     "ログレベルの使い分け": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 299,
         "level": 1,
         "title": "ログレベルの使い分け"
-      }
-    ],
-    "ログレベル制御": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 143,
-        "level": 3,
-        "title": "ログレベル制御"
       }
     ],
     "ログ情報": [
@@ -9106,20 +9088,6 @@
         "title": "使用方法"
       }
     ],
-    "例": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 108,
-        "level": 3,
-        "title": "例"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 273,
-        "level": 3,
-        "title": "例"
-      }
-    ],
     "例外のキャッチ": [
       {
         "document": "advanced/http-client.md",
@@ -9302,14 +9270,6 @@
         "line": 126,
         "level": 2,
         "title": "出力プロトコル"
-      }
-    ],
-    "出力制御": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 181,
-        "level": 3,
-        "title": "出力制御"
       }
     ],
     "分岐とジャンプ": [
@@ -9799,7 +9759,7 @@
     "基本操作": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 9,
+        "line": 11,
         "level": 3,
         "title": "基本操作"
       }
@@ -9824,12 +9784,6 @@
       {
         "document": "advanced/http-client.md",
         "line": 261,
-        "level": 3,
-        "title": "基本的な使い方"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 124,
         "level": 3,
         "title": "基本的な使い方"
       },
@@ -11242,6 +11196,14 @@
         "title": "目的"
       }
     ],
+    "直接呼び出し方式": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 180,
+        "level": 1,
+        "title": "直接呼び出し方式"
+      }
+    ],
     "省略可能なフィールド": [
       {
         "document": "bug-tracker.md",
@@ -12216,20 +12178,6 @@
         "title": "通知操作者"
       }
     ],
-    "速習リファレンス": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 295,
-        "level": 3,
-        "title": "速習リファレンス"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 322,
-        "level": 3,
-        "title": "速習リファレンス"
-      }
-    ],
     "進捗監視（OnProgress / OnError）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -12498,14 +12446,6 @@
         "title": "関連リンク"
       }
     ],
-    "関連文書": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 361,
-        "level": 2,
-        "title": "関連文書"
-      }
-    ],
     "閲覧と検索": [
       {
         "document": "developer-guide/publishing.md",
@@ -12533,7 +12473,7 @@
     "非同期インターフェース": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 67,
+        "line": 69,
         "level": 3,
         "title": "非同期インターフェース"
       }

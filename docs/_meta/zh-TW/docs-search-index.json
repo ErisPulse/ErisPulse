@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1454,
+  "total_keywords": 1455,
   "keywords": {
     "\"base_url\": \"http://localhost:8080\",": [
       {
@@ -2063,25 +2063,13 @@
     "API 概覽": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 95,
+        "line": 349,
         "level": 3,
         "title": "API 概覽"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 194,
-        "level": 3,
-        "title": "API 概覽"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 234,
-        "level": 3,
-        "title": "API 概覽"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 261,
+        "line": 389,
         "level": 3,
         "title": "API 概覽"
       }
@@ -2118,10 +2106,18 @@
         "title": "Account 方法"
       }
     ],
+    "Adapter 事件": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 362,
+        "level": 3,
+        "title": "Adapter 事件"
+      }
+    ],
     "Adapter 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 190,
+        "line": 345,
         "level": 2,
         "title": "Adapter 模組"
       }
@@ -2201,7 +2197,7 @@
     "Bot 狀態查詢": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 219,
+        "line": 374,
         "level": 3,
         "title": "Bot 狀態查詢"
       },
@@ -2300,14 +2296,6 @@
         "line": 5,
         "level": 2,
         "title": "Command 命令模組"
-      }
-    ],
-    "Config 模組": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 91,
-        "level": 2,
-        "title": "Config 模組"
       }
     ],
     "Config（配置）": [
@@ -2412,6 +2400,14 @@
         "line": 306,
         "level": 1,
         "title": "ERROR: 錯誤訊息"
+      }
+    ],
+    "ErisCore": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 32,
+        "level": 3,
+        "title": "ErisCore"
       }
     ],
     "ErisPulse API 動作標準": [
@@ -2550,6 +2546,14 @@
         "title": "Event 物件常用方法"
       }
     ],
+    "Events": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 62,
+        "level": 3,
+        "title": "Events"
+      }
+    ],
     "GET": [
       {
         "document": "advanced/http-client.md",
@@ -2577,7 +2581,7 @@
     "HTTP Client 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 316,
+        "line": 469,
         "level": 2,
         "title": "HTTP Client 模組"
       }
@@ -2619,6 +2623,12 @@
         "document": "advanced/lifecycle.md",
         "line": 190,
         "level": 3,
+        "title": "HTTP 路由"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 452,
+        "level": 1,
         "title": "HTTP 路由"
       }
     ],
@@ -2684,22 +2694,6 @@
         "line": 16,
         "level": 3,
         "title": "LazyModule 類別"
-      }
-    ],
-    "Lifecycle 模組": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 257,
-        "level": 2,
-        "title": "Lifecycle 模組"
-      }
-    ],
-    "Logger 模組": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 120,
-        "level": 2,
-        "title": "Logger 模組"
       }
     ],
     "Logger（日誌）": [
@@ -2769,7 +2763,7 @@
     "Module 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 230,
+        "line": 385,
         "level": 2,
         "title": "Module 模組"
       }
@@ -3028,14 +3022,6 @@
         "title": "Request 請求模組"
       }
     ],
-    "Router 模組": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 289,
-        "level": 2,
-        "title": "Router 模組"
-      }
-    ],
     "Router（路由）": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -3060,14 +3046,6 @@
         "title": "SDK 物件"
       }
     ],
-    "SDK 調試": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 337,
-        "level": 2,
-        "title": "SDK 調試"
-      }
-    ],
     "SDK 頂層入口一覽": [
       {
         "document": "advanced/startup.md",
@@ -3076,20 +3054,28 @@
         "title": "SDK 頂層入口一覽"
       }
     ],
-    "SQL 串接查詢": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 43,
-        "level": 3,
-        "title": "SQL 串接查詢"
-      }
-    ],
     "SQL 查詢建構器": [
       {
         "document": "advanced/sql-builder.md",
         "line": 1,
         "level": 1,
         "title": "SQL 查詢建構器"
+      }
+    ],
+    "SQL 鏈式查詢": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 192,
+        "level": 3,
+        "title": "SQL 鏈式查詢"
+      }
+    ],
+    "Schema": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 111,
+        "level": 3,
+        "title": "Schema"
       }
     ],
     "Send 嵌套類": [
@@ -3151,7 +3137,7 @@
     "Storage 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 5,
+        "line": 154,
         "level": 2,
         "title": "Storage 模組"
       }
@@ -3178,6 +3164,22 @@
         "line": 310,
         "level": 2,
         "title": "Sync API 連接"
+      }
+    ],
+    "TRACE 為最低層級，輸出框架內部詳細偵錯資訊（事件分發、路由註冊等）": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 299,
+        "level": 1,
+        "title": "TRACE 為最低層級，輸出框架內部詳細偵錯資訊（事件分發、路由註冊等）"
+      }
+    ],
+    "TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 298,
+        "level": 1,
+        "title": "TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL"
       }
     ],
     "Task 物件": [
@@ -3218,6 +3220,14 @@
         "line": 216,
         "level": 3,
         "title": "Using 方法"
+      }
+    ],
+    "Utils": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 83,
+        "level": 3,
+        "title": "Utils"
       }
     ],
     "WARNING: 警告訊息，不影響主要功能": [
@@ -3274,6 +3284,14 @@
         "line": 130,
         "level": 3,
         "title": "WebSocket 註冊"
+      }
+    ],
+    "WebSocket 路由": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 457,
+        "level": 1,
+        "title": "WebSocket 路由"
       }
     ],
     "WebSocket 連接": [
@@ -3762,14 +3780,6 @@
         "line": 435,
         "level": 3,
         "title": "doctor"
-      }
-    ],
-    "dump_state()": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 339,
-        "level": 3,
-        "title": "dump_state()"
       }
     ],
     "get() 方法": [
@@ -4727,7 +4737,7 @@
     "事務操作": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 28,
+        "line": 177,
         "level": 3,
         "title": "事務操作"
       }
@@ -5297,7 +5307,7 @@
     "儲存後端抽象": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 59,
+        "line": 208,
         "level": 3,
         "title": "儲存後端抽象"
       }
@@ -6329,7 +6339,7 @@
     "基本操作": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 9,
+        "line": 158,
         "level": 3,
         "title": "基本操作"
       }
@@ -6354,12 +6364,6 @@
       {
         "document": "advanced/http-client.md",
         "line": 261,
-        "level": 3,
-        "title": "基本用法"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 124,
         "level": 3,
         "title": "基本用法"
       },
@@ -6790,14 +6794,6 @@
         "title": "媒體檔案說明"
       }
     ],
-    "子日誌器": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 134,
-        "level": 3,
-        "title": "子日誌器"
-      }
-    ],
     "字體與渲染器": [
       {
         "document": "ecosystem/takumi.md",
@@ -7097,13 +7093,13 @@
     "屬性存取": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 36,
+        "line": 185,
         "level": 3,
         "title": "屬性存取"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 249,
+        "line": 404,
         "level": 3,
         "title": "屬性存取"
       },
@@ -7603,13 +7599,7 @@
     "快速參考": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 295,
-        "level": 3,
-        "title": "快速參考"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 322,
+        "line": 475,
         "level": 3,
         "title": "快速參考"
       },
@@ -7781,7 +7771,7 @@
     "批量操作": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 20,
+        "line": 169,
         "level": 3,
         "title": "批量操作"
       }
@@ -8088,6 +8078,14 @@
         "line": 168,
         "level": 3,
         "title": "支援的原始事件類型"
+      }
+    ],
+    "支援的層級（由低到高）：": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 297,
+        "level": 1,
+        "title": "支援的層級（由低到高）："
       }
     ],
     "支援的提交類型": [
@@ -8434,6 +8432,32 @@
         "title": "方式二：使用 uv 安裝（推薦）"
       }
     ],
+    "方法": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 39,
+        "level": 4,
+        "title": "方法"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 69,
+        "level": 4,
+        "title": "方法"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 90,
+        "level": 4,
+        "title": "方法"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 118,
+        "level": 4,
+        "title": "方法"
+      }
+    ],
     "方法列表": [
       {
         "document": "platform-guide/onebot11.md",
@@ -8488,22 +8512,6 @@
         "line": 530,
         "level": 3,
         "title": "日誌信息"
-      }
-    ],
-    "日誌級別控制": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 143,
-        "level": 3,
-        "title": "日誌級別控制"
-      }
-    ],
-    "日誌訂閱（推模式）": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 155,
-        "level": 3,
-        "title": "日誌訂閱（推模式）"
       }
     ],
     "日誌訊息": [
@@ -8870,6 +8878,12 @@
         "line": 1,
         "level": 1,
         "title": "核心模組 API"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 30,
+        "level": 2,
+        "title": "核心模組 API"
       }
     ],
     "核心模組說明": [
@@ -9180,6 +9194,14 @@
         "line": 9,
         "level": 2,
         "title": "模組設計"
+      }
+    ],
+    "模組詳情": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 13,
+        "level": 2,
+        "title": "模組詳情"
       }
     ],
     "模組載入策略": [
@@ -9892,14 +9914,6 @@
         "title": "異常體系"
       }
     ],
-    "異步介面": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 67,
-        "level": 3,
-        "title": "異步介面"
-      }
-    ],
     "異步初始化": [
       {
         "document": "advanced/lazy-loading.md",
@@ -10232,6 +10246,14 @@
         "title": "目的"
       }
     ],
+    "直接呼叫方式": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 327,
+        "level": 1,
+        "title": "直接呼叫方式"
+      }
+    ],
     "相容性": [
       {
         "document": "developer-guide/publishing.md",
@@ -10292,12 +10314,6 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 429,
-        "level": 2,
-        "title": "相關文件"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 361,
         "level": 2,
         "title": "相關文件"
       },
@@ -10548,20 +10564,6 @@
         "line": 287,
         "level": 3,
         "title": "管理員檢查"
-      }
-    ],
-    "範例": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 108,
-        "level": 3,
-        "title": "範例"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 273,
-        "level": 3,
-        "title": "範例"
       }
     ],
     "簡單搜尋": [
@@ -10968,6 +10970,14 @@
         "line": 32,
         "level": 2,
         "title": "表管理"
+      }
+    ],
+    "裝飾器方式": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 316,
+        "level": 1,
+        "title": "裝飾器方式"
       }
     ],
     "裝飾器與規則的繼承": [
@@ -11650,6 +11660,12 @@
         "line": 195,
         "level": 2,
         "title": "路由分組"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 463,
+        "level": 1,
+        "title": "路由分組"
       }
     ],
     "路由管理器": [
@@ -11688,14 +11704,6 @@
         "line": 141,
         "level": 4,
         "title": "載入策略"
-      }
-    ],
-    "輸出控制": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 181,
-        "level": 3,
-        "title": "輸出控制"
       }
     ],
     "轉換器示例": [
@@ -12076,14 +12084,6 @@
         "line": 444,
         "level": 2,
         "title": "適配器中使用"
-      }
-    ],
-    "適配器事件": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 207,
-        "level": 3,
-        "title": "適配器事件"
       }
     ],
     "適配器層級的連接資訊（推薦）": [
@@ -12750,6 +12750,14 @@
         "line": 169,
         "level": 3,
         "title": "靜態工廠 + 鏈式混合"
+      }
+    ],
+    "非同步介面": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 216,
+        "level": 3,
+        "title": "非同步介面"
       }
     ],
     "非同步程式設計": [
