@@ -290,7 +290,7 @@ class TestModuleManager:
                 # 验证
                 assert result is True
                 mock_set.assert_called_once_with(
-                    "ErisPulse.modules.status.test_module", True
+                    "ErisPulse.modules.status.test_module", True, immediate=True
                 )
 
     def test_module_enable_nonexistent(self, manager):
@@ -314,7 +314,7 @@ class TestModuleManager:
                 # 验证
                 assert result is True
                 mock_set.assert_called_once_with(
-                    "ErisPulse.modules.status.test_module", False
+                    "ErisPulse.modules.status.test_module", False, immediate=True
                 )
                 assert "test_module" not in manager._loaded_modules
                 assert "test_module" not in manager._modules
@@ -771,3 +771,67 @@ class TestModuleDependencies:
         assert result.index("A") < result.index("C")
         assert result.index("B") < result.index("D")
         assert result.index("C") < result.index("D")
+
+
+# ==================== 模块启停热更新（设置关闭 = 卸载） ====================
+
+
+class TestModuleStatusHotReload:
+    """配置启停状态变更时应自动加载/卸载模块"""
+
+    @pytest.fixture
+    def manager(self):
+        """创建模块管理器实例"""
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._module_classes.clear()
+        manager._loaded_modules.clear()
+        manager._module_info.clear()
+        manager._lazy_modules.clear()
+        return manager
+
+    @pytest.fixture
+    def test_module_class(self):
+        """创建测试模块类"""
+
+        class TestModule(BaseModule):
+            def __init__(self, sdk=None):
+                self.sdk = sdk
+                self.loaded = False
+                self.unloaded = False
+
+            async def on_load(self, event):
+                self.loaded = True
+                return True
+
+            async def on_unload(self, event):
+                self.unloaded = True
+                return True
+
+        return TestModule
+
+    def test_disable_cleans_lazy_proxy(self, manager, test_module_class):
+        """禁用未实例化的懒加载模块，应清理其代理而非早退"""
+        manager.register("lazy_mod", test_module_class)
+        manager.register_lazy("lazy_mod", Mock())
+        with patch.object(config, "setConfig"):
+            with patch("ErisPulse.Core.module.logger"):
+                result = manager.disable("lazy_mod")
+        assert result is True
+        assert "lazy_mod" not in manager._lazy_modules
+
+    def test_unload_cleans_lazy_proxy(self, manager, test_module_class):
+        """卸载未实例化的懒加载模块，应清理其代理而非早退"""
+        manager.register("lazy_mod", test_module_class)
+        manager.register_lazy("lazy_mod", Mock())
+        with patch("ErisPulse.Core.module.logger"):
+            asyncio.run(manager.unload("lazy_mod"))
+        assert "lazy_mod" not in manager._lazy_modules
+
+    def test_unload_all_cleans_lazy_proxies(self, manager, test_module_class):
+        """卸载全部模块应一并清理未初始化的懒加载代理"""
+        manager.register("lazy_mod", test_module_class)
+        manager.register_lazy("lazy_mod", Mock())
+        with patch("ErisPulse.Core.module.logger"):
+            asyncio.run(manager.unload())
+        assert "lazy_mod" not in manager._lazy_modules

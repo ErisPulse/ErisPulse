@@ -205,6 +205,7 @@ TRANSLATIONS = {
     "cli.list.count_adapters": "{count} 个适配器",
     "cli.list.no_adapters": "没有符合条件的适配器",
     "cli.list.no_packages": "没有{pkg_type}",
+    "cli.list.empty_hint": "可运行 'epsdk install' 浏览并安装组件，或运行 'epsdk init' 创建项目",
     # ==================== list-remote 命令 ====================
     "cli.list_remote.description": "列出远程可用的组件",
     "cli.list_remote.type_help": "列出类型 (默认: all)",
@@ -416,6 +417,8 @@ TRANSLATIONS = {
     "cli.doctor.proxy_none": "未检测到",
     "cli.doctor.failed": "[诊断完成] 存在需要处理的问题，请参考上方输出",
     "cli.doctor.all_ok": "[诊断完成] 环境正常",
+    "cli.doctor.status_ok": "正常",
+    "cli.doctor.status_fail": "异常",
     # ==================== types 命令 ====================
     "cli.types.description": "生成类型存根文件，启用 IDE 补全",
     "cli.types.output_help": "输出文件路径（默认: ./_ep_types.py）",
