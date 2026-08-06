@@ -160,6 +160,22 @@ class ModuleManager(ManagerBase):
             if old_dict != new_dict:
                 self._notify_config_update(instance, module_name, old_dict, new_dict)
 
+    def _cleanup_lazy(self, module_name: str) -> None:
+        """
+        {!--< internal-use >!--}
+        清理模块的懒加载代理与 SDK 属性（模块未实例化时也有效）
+
+        :param module_name: 模块名称
+        """
+        self.unregister_lazy(module_name)
+        if self._sdk is not None:
+            sdk_dict = getattr(self._sdk, "__dict__", {})
+            if module_name in sdk_dict:
+                try:
+                    del sdk_dict[module_name]
+                except Exception:
+                    pass
+
     @staticmethod
     def _resolve_config_key(instance: Any) -> str:
         """
@@ -491,6 +507,9 @@ class ModuleManager(ManagerBase):
             for loaded_name in list(self._loaded_modules):
                 if not await self._unload_single_module(loaded_name):
                     success = False
+            # 一并清理未初始化的懒加载代理，避免卸载后仍可通过代理访问
+            for lazy_name in list(self._lazy_modules):
+                self._cleanup_lazy(lazy_name)
             module_name = "All"
         else:
             success = await self._unload_single_module(module_name)
@@ -515,9 +534,13 @@ class ModuleManager(ManagerBase):
         :param module_name: 模块名称
         :return: 是否卸载成功
         """
-        # 模块未加载，返回 True（表示没有需要卸载的模块，这不是错误）
+        # 模块未加载，返回 True（表示没有需要卸载的模块，这不是错误）。
+        # 但仍需清理懒加载代理与 SDK 属性，确保禁用/卸载对懒加载模块同样生效
         if module_name not in self._loaded_modules:
-            logger.warning(i18n.t("core.module.unload_not_loaded", name=module_name))
+            if module_name in self._lazy_modules:
+                self._cleanup_lazy(module_name)
+            else:
+                logger.warning(i18n.t("core.module.unload_not_loaded", name=module_name))
             return True
 
         try:
@@ -812,7 +835,9 @@ class ModuleManager(ManagerBase):
             logger.error(i18n.t("core.module.module_not_exist", name=module_name))
             return False
 
-        config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), True)
+        config.setConfig(
+            CONFIG_KEY_MODULE_STATUS_OF.format(module_name), True, immediate=True
+        )
         logger.info(i18n.t("core.module.module_enabled", name=module_name))
         return True
 
@@ -832,10 +857,14 @@ class ModuleManager(ManagerBase):
         if name is None:
             return False
         module_name = name
-        config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), False)
+        config.setConfig(
+            CONFIG_KEY_MODULE_STATUS_OF.format(module_name), False, immediate=True
+        )
         logger.info(i18n.t("core.module.module_disabled", name=module_name))
 
         if module_name not in self._loaded_modules:
+            # 即使模块尚未实例化（懒加载代理），也要清理代理与 SDK 属性
+            self._cleanup_lazy(module_name)
             return True
 
         instance = self._modules.get(module_name)

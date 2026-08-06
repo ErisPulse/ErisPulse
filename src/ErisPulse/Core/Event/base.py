@@ -59,7 +59,15 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
         else:
             handler(event)
     except Exception as e:
-        logger.error(i18n.t("core.event.handler_error", error=e))
+        logger.error(
+            i18n.t(
+                "core.event.handler_error",
+                handler=_hname,
+                type=event.get("type", "") if isinstance(event, dict) else "",
+                owner=_owner or "<unknown>",
+                error=e,
+            )
+        )
         return
     finally:
         _elapsed = _time.monotonic() - _t

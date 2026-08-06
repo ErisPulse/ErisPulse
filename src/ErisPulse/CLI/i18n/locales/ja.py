@@ -205,6 +205,7 @@ TRANSLATIONS = {
     "cli.list.count_adapters": "{count} 個のアダプター",
     "cli.list.no_adapters": "該当するアダプターはありません",
     "cli.list.no_packages": "{pkg_type} はありません",
+    "cli.list.empty_hint": "'epsdk install' でコンポーネントを閲覧・インストールするか、'epsdk init' でプロジェクトを作成できます",
     # ==================== list-remote コマンド ====================
     "cli.list_remote.description": "リモートで利用可能なコンポーネントを一覧表示",
     "cli.list_remote.type_help": "一覧タイプ (デフォルト: all)",
@@ -416,6 +417,8 @@ TRANSLATIONS = {
     "cli.doctor.proxy_none": "検出されません",
     "cli.doctor.failed": "[完了] 対応が必要な問題があります。上記を確認してください",
     "cli.doctor.all_ok": "[完了] 環境は正常です",
+    "cli.doctor.status_ok": "OK",
+    "cli.doctor.status_fail": "NG",
     # ==================== types コマンド ====================
     "cli.types.description": "型スタブファイルを生成して IDE 補完を有効化",
     "cli.types.output_help": "出力ファイルパス（デフォルト: ./_ep_types.py）",
