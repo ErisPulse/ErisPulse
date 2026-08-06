@@ -108,7 +108,6 @@ packages = ["src/ErisPulse"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "src/ErisPulse/py.typed" = "ErisPulse/py.typed"
-"src/ErisPulse/CLI/assets/ErisPulseLogo.png" = "ErisPulse/CLI/assets/ErisPulseLogo.png"
 
 [tool.hatch.build.targets.sdist]
 include = [
