@@ -13,7 +13,7 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """傳回模組載入策略"""
+        """返回模組載入策略"""
         return ModuleLoadStrategy(
             lazy_load=True,   # 懶載入還是立即載入
             priority=0,       # 載入優先級（數值越大越先載入）
@@ -21,7 +21,7 @@ class MyModule(BaseModule):
         )
 ```
 
-> `depends` 宣告的模組如果未註冊，當前模組將會被跳過並記錄警告。載入順序由拓樸排序決定，同層級按 `priority` 降序。
+> 如果宣告的 `depends` 模組尚未註冊，當前模組將被跳過並記錄警告。載入順序由拓樸排序決定，同層級按 `priority` 遞減排序。
 
 ### on_load 方法
 
@@ -34,8 +34,8 @@ async def on_load(self, event):
     async def hello_handler(event):
         await event.reply("你好！")
     
-    # 使用 SDK 內建 HTTP 客戶端（自動管理連接池，無需手動建立 session）
-    # 通過 sdk.client 即可發送請求
+    # 使用 SDK 內建 HTTP 客戶端（自動管理連線集區，無需手動建立 session）
+    # 透過 sdk.client 即可發送請求
 ```
 
 ### on_unload 方法
@@ -49,7 +49,6 @@ async def on_unload(self, event):
     
     # 取消事件處理器（框架會自動處理）
     self.logger.info("模組已卸載")
-```
 
 ## SDK 物件
 
@@ -58,7 +57,7 @@ async def on_unload(self, event):
 ```python
 from ErisPulse import sdk
 
-# 通過 sdk 物件存取所有核心模組
+# 透過 sdk 物件存取所有核心模組
 sdk.logger.info("日誌")
 sdk.storage.set("key", "value")
 config = sdk.config.getConfig("MyModule")
@@ -70,9 +69,8 @@ config = sdk.config.getConfig("MyModule")
 # 存取其他模組
 other_module = sdk.OtherModule
 result = await other_module.some_method()
-```
 
-## 配適器發送方法查詢
+## 查詢 Adapter 發送方法
 
 由於新的標準規範要求使用重寫 `__getattr__` 方法來實現兜底發送機制，導致無法使用 `hasattr` 方法來檢查方法是否存在。從 `2.3.5` 開始，新增了查詢發送方法的功能。
 
@@ -96,27 +94,26 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "傳送文字訊息..."
+#     "docstring": "發送文字訊息..."
 # }
-```
 
 ## 配置管理
 
 ### 宣告式配置（推薦）
 
-從 v2.5.2 起，模組可透過 `ConfigClass` 宣告配置類，與配適器使用同一套配置 Schema 系統。配置透過 `self.cfg` 實時讀取，修改後立即生效：
+從 v2.5.2 起，模組可透過 `ConfigClass` 宣告設定類別，與適配器使用同一套設定 Schema 系統。設定可透過 `self.cfg` 即時讀取，修改後立即生效：
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyModuleConfig(BaseConfig):
     api_key: str = field(
         default="",
         metadata={
-            "description": {"i18n": "my_module.api_key", "default": "API 金鑰"},
+            "description": {"i18n": "my_module.api_key", "default": "API 密鑰"},
             "required": True,
             "secret": True,
             "ui": {"widget": "password", "group": "basic", "order": 1},
@@ -140,22 +137,22 @@ class MyModule(BaseModule):
         pass
 
     async def do_something(self):
-        cfg = self.cfg  # 實時讀取，類型安全
+        cfg = self.cfg  # 即時讀取，類型安全
         api_key = cfg.api_key
         timeout = cfg.timeout
 ```
 
-`BaseConfig` 是通用配置基類，適用於配適器、模組、外部專案等任何場景。配置欄位支援 i18n 多語言描述（詳見 [i18n 文件](../../advanced/i18n.md#配置字段多語言)）。
+`BaseConfig` 是通用設定基類，適用於適配器、模組、外部專案等任何場景。設定欄位支援 i18n 多語言描述（詳見 [i18n 文檔](../../advanced/i18n.md#配置字段多语言)）。
 
 ### 宣告式翻譯鍵（v2.7.0+）
 
-從 v2.7.0 起，模組還可以像宣告 `ConfigClass` 一樣，透過巢狀類 `I18nClass` 集中宣告翻譯鍵。框架會在載入時**自動註冊**所有宣告的翻譯鍵，無需手動呼叫 `i18n.register()`，且註冊時機早於配置範本生成，確保配置描述中引用的 i18n 鍵已可用。
+從 v2.7.0 起，模組還可以像宣告 `ConfigClass` 一樣，透過巢狀類別 `I18nClass` 集中宣告翻譯鍵。框架會在載入時**自動註冊**所有宣告的翻譯鍵，無需手動呼叫 `i18n.register()`，且註冊時機早於設定範本生成，確保設定描述中引用的 i18n 鍵已可用。
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
 
 class MyModule(BaseModule):
-    # 配置類（可選）
+    # 設定類別（可選）
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
@@ -165,12 +162,12 @@ class MyModule(BaseModule):
             },
         )
 
-    # 翻譯鍵集合類（可選）
+    # 翻譯鍵集合類別（可選）
     class I18nClass(BaseI18n):
         # 屬性名自動拼接為完整鍵路徑：<模組名>.<屬性名>
         welcome_msg: I18nKey = I18nKey(
             default="Welcome Message",   # 語言無關的兜底
-            zh_CN="歡迎訊息",
+            zh_CN="欢迎消息",
             zh_TW="歡迎訊息",
             en="Welcome Message",
             ja="ウェルカムメッセージ",
@@ -186,11 +183,11 @@ class MyModule(BaseModule):
         )
 ```
 
-詳情見 [i18n 推薦寫法](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
+詳情見 [i18n 推薦寫法](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
 
-### 手動讀取配置（相容方式）
+### 手動讀取設定（相容方式）
 
-如果不使用宣告式配置，也可以直接讀寫配置儲存：
+如果不使用宣告式設定，也可以直接讀寫設定儲存：
 
 ```python
 def _load_config(self):
@@ -222,15 +219,14 @@ user = sdk.storage.get("user:123", {})
 sdk.storage.delete("user:123")
 ```
 
-### 事務使用
+### 交易使用
 
 ```python
-# 使用事務確保資料一致性
+# 使用交易確保資料一致性
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
     # 如果任何操作失敗，所有變更都會回滾
-```
 
 ## 事件處理
 
@@ -239,7 +235,7 @@ with sdk.storage.transaction():
 ```python
 from ErisPulse.Core.Event import command, message
 
-# 註冊指令
+# 註冊命令
 @command("info", help="取得資訊")
 async def info_handler(event):
     await event.reply("這是資訊")
@@ -247,12 +243,12 @@ async def info_handler(event):
 # 註冊訊息處理器
 @message.on_group_message()
 async def group_handler(event):
-    sdk.logger.info(f"收到群訊息: {event.get_text()}")
+    sdk.logger.info(f"收到群組訊息: {event.get_text()}")
 ```
 
 ### 事件處理器生命週期
 
-框架會自動管理事件處理器的註冊和註銷，你只需要在 `on_load` 中註冊即可。
+框架會自動管理事件處理器的註冊與註銷，你只需要在 `on_load` 中註冊即可。
 
 ## 懶載入機制
 
@@ -266,7 +262,7 @@ result = await sdk.my_module.some_method()
 
 ### 立即載入
 
-對於需要立即初始化的模組（如監聽器、定時器）：
+對於需要立即初始化的模組（如監聽器、計時器）：
 
 ```python
 @staticmethod
@@ -275,11 +271,10 @@ def get_load_strategy():
         lazy_load=False,  # 立即載入
         priority=100
     )
-```
 
 ## 錯誤處理
 
-### 異常擷取
+### 例外擷取
 
 ```python
 async def handle_event(self, event):
@@ -297,16 +292,15 @@ async def handle_event(self, event):
 ### 日誌記錄
 
 ```python
-# 使用不同的日誌級別
-self.logger.debug("偵錯資訊")    # 詳細偵錯資訊
+# 使用不同的日誌層級
+self.logger.debug("除錯資訊")    # 詳細除錯資訊
 self.logger.info("執行狀態")      # 正常執行資訊
 self.logger.warning("警告資訊")  # 警告資訊
 self.logger.error("錯誤資訊")    # 錯誤資訊
 self.logger.critical("致命錯誤") # 致命錯誤
-```
 
 ## 相關文件
 
 - [模組開發入門](getting-started.md) - 建立第一個模組
-- [Event 包裝類](event-wrapper.md) - 事件處理詳解
+- [Event 包裝類別](event-wrapper.md) - 事件處理詳解
 - [最佳實踐](best-practices.md) - 開發高品質模組

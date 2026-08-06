@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.lifecycle import lifecycle
-from ErisPulse.runtime.config_schema import BaseConfig
+from ErisPulse.Core.Bases import BaseConfig
 
 
 @dataclass

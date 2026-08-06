@@ -424,6 +424,58 @@ def dict_to_dataclass(config_class: type, data: dict):
     return config_class(**kwargs)
 
 
+def _notify_instance_config_update(
+    instance: Any,
+    old_dict: dict | None,
+    new_dict: dict | None,
+    *,
+    i18n_key: str,
+    log_params: dict,
+) -> None:
+    """
+    调用实例的 ``on_config_update`` 回调，传入类型安全的配置对象
+
+    若实例声明了 ``ConfigClass``，则将字典通过 :func:`dict_to_dataclass`
+    转换为 dataclass 实例；否则原样传入字典。回调中抛出的异常会被捕获
+    并按指定的 i18n 键记录日志，不会向上传播。
+
+    供 ``ModuleManager`` 与 ``AdapterManager`` 的配置热更新路由共用，
+    避免在两处重复实现字典→dataclass 转换 + 异常兜底逻辑。
+
+    {!--< internal-use >!--}
+    {!--< /internal-use >!--}
+
+    :param instance: 模块/适配器实例（需实现 ``on_config_update``）
+    :param old_dict: 变更前的配置字典（可能为 None）
+    :param new_dict: 变更后的配置字典（可能为 None）
+    :param i18n_key: 回调异常日志的 i18n 键（如 ``core.module.config_update_failed``）
+    :param log_params: 异常日志的额外格式化参数（如 ``{"name": "MyModule"}``）
+    """
+    config_class = getattr(instance, "ConfigClass", None)
+    try:
+        if config_class is not None:
+            old_config = (
+                dict_to_dataclass(config_class, old_dict) if old_dict else None
+            )
+            new_config = (
+                dict_to_dataclass(config_class, new_dict) if new_dict else None
+            )
+        else:
+            old_config = old_dict
+            new_config = new_dict
+        instance.on_config_update(old_config, new_config)
+    except Exception as e:
+        try:
+            from ErisPulse.Core.i18n import i18n
+            from ErisPulse.Core.logger import logger
+
+            params = dict(log_params)
+            params["error"] = e
+            logger.error(i18n.t(i18n_key, **params))
+        except Exception:
+            pass
+
+
 def validate_config(instance) -> list[str]:
     """
     校验 dataclass 实例

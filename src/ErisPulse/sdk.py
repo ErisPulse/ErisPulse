@@ -23,6 +23,8 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 from .Core.constants import (
+    DEFAULT_PROACTIVE_GC_FULL_EVERY,
+    DEFAULT_PROACTIVE_GC_GENERATION,
     DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
     DEFAULT_UNINIT_TIMEOUT_SECS,
     HARD_RESTART_EXIT_CODE,
@@ -569,6 +571,16 @@ class SDK:
                     },
                 )
 
+                # 冻结框架对象：将当前所有已跟踪对象移入永久代，
+                # 后续 gc.collect() 不再扫描框架单例/缓存/模块/适配器实例，
+                # 仅回收运行期新建的临时对象，降低 GC 暂停与误回收风险。
+                import gc as _gc
+
+                try:
+                    _gc.freeze()
+                except Exception:
+                    pass
+
                 # 启动主动 GC 后台任务
                 self._sdk._start_proactive_gc()
 
@@ -834,39 +846,57 @@ class SDK:
         启动主动 GC 后台任务
 
         定期执行 Python GC 和内部资源回收（离线 Bot 清理等），
-        防止长期运行时的内存增长。间隔由框架配置 proactive_gc_interval 控制。
+        防止长期运行时的内存增长。
+
+        GC 行为由三项框架配置控制（均支持热更新）：
+
+        - ``proactive_gc_interval``: 回收间隔秒数（0 禁用）
+        - ``proactive_gc_generation``: 回收分代（0/1/2，默认 2=最老代）
+        - ``proactive_gc_full_every``: 每 N 轮额外做一次全量回收（0 禁用）
+
+        初始化阶段已调用 ``gc.freeze()`` 将框架对象移入永久代，
+        此处 ``gc.collect()`` 仅扫描运行期新建对象。
         """
         # 停止已有的 GC 任务
         self._stop_proactive_gc()
 
-        def _read_gc_interval() -> int:
+        def _read_gc_config() -> tuple[int, int, int]:
             interval = DEFAULT_PROACTIVE_GC_INTERVAL_SECS
+            generation = DEFAULT_PROACTIVE_GC_GENERATION
+            full_every = DEFAULT_PROACTIVE_GC_FULL_EVERY
             try:
                 from .runtime import get_framework_config
 
-                interval = get_framework_config().get(
-                    "proactive_gc_interval", interval
-                )
+                fw = get_framework_config()
+                interval = fw.get("proactive_gc_interval", interval)
+                generation = fw.get("proactive_gc_generation", generation)
+                full_every = fw.get("proactive_gc_full_every", full_every)
             except Exception:
                 pass
-            return interval
+            return interval, generation, full_every
 
-        if _read_gc_interval() <= 0:
+        if _read_gc_config()[0] <= 0:
             return  # 配置禁用
 
         async def _gc_loop():
             import gc
 
+            round_count = 0
             while True:
                 try:
-                    # 每轮重新读取间隔，支持 proactive_gc_interval 热更新
-                    interval = _read_gc_interval()
+                    # 每轮重新读取配置，支持热更新
+                    interval, generation, full_every = _read_gc_config()
                     if interval <= 0:
                         # 配置运行时禁用了 GC，停止循环
                         break
                     await asyncio.sleep(interval)
-                    # 1. Python GC
-                    collected = gc.collect()
+                    round_count += 1
+                    # 1. Python GC —— 按分代回收，可选周期性全量
+                    do_full = full_every > 0 and round_count % full_every == 0
+                    if do_full:
+                        collected = gc.collect()
+                    else:
+                        collected = gc.collect(generation)
                     # 2. 内部资源回收
                     try:
                         adapter_mgr = self.adapter

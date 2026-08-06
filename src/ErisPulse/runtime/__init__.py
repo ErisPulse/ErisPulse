@@ -51,6 +51,8 @@ __all__ = [
     # 通用配置 Schema（适配器/模块/外部项目均可使用）
     "BaseConfig",
     "BotAccountConfig",
+    "I18nConfig",
+    "SECRET_REDACTED",
     # 异常处理
     "ExceptionHandler",
     "async_exception_handler",
@@ -78,6 +80,7 @@ __all__ = [
     # 异常诊断
     "log_diagnostic",
     "log_snapshot",
+    "redact_secret",
     "register_config_i18n",
     "resolve_config_schema",
     "setup_exception_handling",
@@ -99,10 +102,13 @@ _LAZY_FROM_CONFIG_SCHEMA = {
     "AdapterConfig",
     "BaseConfig",
     "BotAccountConfig",
+    "I18nConfig",
+    "SECRET_REDACTED",
     "dataclass_to_defaults_dict",
     "dataclass_to_toml_with_comments",
     "dict_to_dataclass",
     "get_config_schema",
+    "redact_secret",
     "register_config_i18n",
     "resolve_config_schema",
     "validate_config",

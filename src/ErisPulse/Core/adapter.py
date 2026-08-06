@@ -235,29 +235,15 @@ class AdapterManager(ManagerBase):
         {!--< internal-use >!--}
         调用适配器的 on_config_update 回调，传入类型安全的配置对象
         """
-        config_class = getattr(instance, "ConfigClass", None)
-        try:
-            if config_class is not None:
-                from ..runtime.config_schema import dict_to_dataclass
+        from ..Core.Bases.config_schema import _notify_instance_config_update
 
-                old_config = (
-                    dict_to_dataclass(config_class, old_dict) if old_dict else None
-                )
-                new_config = (
-                    dict_to_dataclass(config_class, new_dict) if new_dict else None
-                )
-            else:
-                old_config = old_dict
-                new_config = new_dict
-            instance.on_config_update(old_config, new_config)
-        except Exception as e:
-            logger.error(
-                i18n.t(
-                    "core.adapter.config_update_failed",
-                    platform=platform or instance.__class__.__name__,
-                    error=e,
-                )
-            )
+        _notify_instance_config_update(
+            instance,
+            old_dict,
+            new_dict,
+            i18n_key="core.adapter.config_update_failed",
+            log_params={"platform": platform or instance.__class__.__name__},
+        )
 
     # ==================== 适配器注册与管理 ====================
 
