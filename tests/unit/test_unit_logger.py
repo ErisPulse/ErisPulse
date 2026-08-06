@@ -762,3 +762,108 @@ class TestUIPrintPipeline:
         for logs in all_logs.values():
             flat.extend(logs)
         assert any("MyModule" in entry for entry in flat)
+
+
+# ==================== 订阅器低级别显式订阅测试 ====================
+
+
+class TestSubscriberBelowGlobalLevel:
+    """订阅器 min_level 低于全局级别时，低级别日志应仅推送给订阅器"""
+
+    @pytest.fixture
+    def temp_logger(self):
+        test_logger = Logger()
+        yield test_logger
+
+    def test_debug_reached_when_global_info(self, temp_logger):
+        """全局为 INFO 时，min_level=DEBUG 的订阅器仍能收到 DEBUG 日志"""
+        temp_logger.set_level("INFO")
+        received = []
+
+        @temp_logger.handler("dbg", min_level="DEBUG")
+        def on_log(d):
+            received.append(d)
+
+        temp_logger.debug("low level debug")
+        assert any("low level debug" in d["message"] for d in received)
+        assert received[0]["level_num"] == logging.DEBUG
+
+    def test_low_level_not_to_console(self, temp_logger, capsys):
+        """低级别日志仅推送订阅器，不输出到控制台"""
+        temp_logger.set_level("INFO")
+
+        @temp_logger.handler("dbg2", min_level="DEBUG")
+        def on_log(d):
+            pass
+
+        temp_logger.debug("hidden from console")
+        captured = capsys.readouterr()
+        assert "hidden from console" not in (captured.out + captured.err)
+
+    def test_low_level_not_in_memory(self, temp_logger):
+        """低级别日志不写入内存（get_logs 不可见）"""
+        temp_logger.set_level("INFO")
+
+        @temp_logger.handler("dbg3", min_level="DEBUG")
+        def on_log(d):
+            pass
+
+        temp_logger.debug("hidden from memory")
+        all_logs = temp_logger.get_logs()
+        flat = []
+        for logs in all_logs.values():
+            flat.extend(logs)
+        assert not any("hidden from memory" in entry for entry in flat)
+
+    def test_info_still_works_with_low_subscriber(self, temp_logger, capsys):
+        """订阅了低级别时，达标的高级日志仍走完整流程（含控制台输出）"""
+        temp_logger.set_level("INFO")
+        received = []
+
+        @temp_logger.handler("dbg4", min_level="DEBUG")
+        def on_log(d):
+            received.append(d)
+
+        temp_logger.info("normal info")
+        captured = capsys.readouterr()
+        assert "normal info" in (captured.out + captured.err)
+        assert any("normal info" in d["message"] for d in received)
+
+    def test_min_level_filters_within_subscriber(self, temp_logger):
+        """订阅器自身 min_level 仍生效：min_level=INFO 不应收到 DEBUG"""
+        temp_logger.set_level("DEBUG")
+        received = []
+
+        @temp_logger.handler("info-only", min_level="INFO")
+        def on_log(d):
+            received.append(d)
+
+        temp_logger.debug("should be skipped")
+        temp_logger.info("should be received")
+        levels = [d["level_num"] for d in received]
+        assert logging.DEBUG not in levels
+        assert any(d["message"] == "should be received" for d in received)
+
+    def test_child_logger_low_level_subscriber(self, parent_logger=None):
+        """LoggerChild 也支持低级别订阅：全局 INFO 时子记录器 DEBUG 可被订阅"""
+        test_logger = Logger()
+        test_logger.set_level("INFO")
+        child = LoggerChild(test_logger, "Mod.Sub")
+        received = []
+
+        @test_logger.handler("child-dbg", min_level="DEBUG")
+        def on_log(d):
+            received.append(d)
+
+        child.debug("child low level debug")
+        assert any(
+            "child low level debug" in d["message"] and d["module"] == "Mod.Sub"
+            for d in received
+        )
+
+    def test_no_subscriber_no_leak(self, temp_logger, capsys):
+        """无订阅器时，低级别日志维持原有过滤行为（不输出、不泄漏）"""
+        temp_logger.set_level("INFO")
+        temp_logger.debug("fully filtered")
+        captured = capsys.readouterr()
+        assert "fully filtered" not in (captured.out + captured.err)
