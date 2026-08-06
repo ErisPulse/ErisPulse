@@ -175,6 +175,28 @@ description 若为 i18n 字典，则使用其 default/fallback 文本。
 ---
 
 
+### `_notify_instance_config_update(instance: Any, old_dict: dict | None, new_dict: dict | None)`
+
+调用实例的 ``on_config_update`` 回调，传入类型安全的配置对象
+
+若实例声明了 ``ConfigClass``，则将字典通过 :func:`dict_to_dataclass`
+转换为 dataclass 实例；否则原样传入字典。回调中抛出的异常会被捕获
+并按指定的 i18n 键记录日志，不会向上传播。
+
+供 ``ModuleManager`` 与 ``AdapterManager`` 的配置热更新路由共用，
+避免在两处重复实现字典→dataclass 转换 + 异常兜底逻辑。
+
+> **内部方法**
+
+- **instance** (`模块/适配器实例（需实现`): ``on_config_update``）
+- **old_dict** (`变更前的配置字典（可能为`): None）
+- **new_dict** (`变更后的配置字典（可能为`): None）
+- **i18n_key** (`回调异常日志的`): i18n 键（如 ``core.module.config_update_failed``）
+- **log_params** (`异常日志的额外格式化参数（如`): ``{"name": "MyModule"}``）
+
+---
+
+
 ### `validate_config(instance)`
 
 校验 dataclass 实例

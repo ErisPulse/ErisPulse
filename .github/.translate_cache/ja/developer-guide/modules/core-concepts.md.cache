@@ -1,5 +1,49 @@
 {
-  "hash": "7019cb3223e24e4294d86b162d7ea9a0",
-  "translated_at": "2026-07-27T15:45:08.408279",
-  "target_lang": "ja"
+  "version": 2,
+  "hash": "14b64ce4755880ccec7566a59194baf8",
+  "file_hash": "14b64ce4755880ccec7566a59194baf8",
+  "translated_at": "2026-08-05T23:19:11.466135",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "9322c52c1629acad58f4593781523923",
+      "translation": "# モジュールの基本概念\n\nErisPulse モジュールの基本概念を理解することは、高品質なモジュールを作成するための基盤となります。"
+    },
+    {
+      "hash": "f46141278d305054ee71a8e4149591c8",
+      "translation": "## モジュールのライフサイクル\n\n### ロード戦略\n\n```python\nfrom ErisPulse.Core.Bases import BaseModule\nfrom ErisPulse.loaders import ModuleLoadStrategy\n\nclass MyModule(BaseModule):\n    @staticmethod\n    def get_load_strategy():\n        \"\"\"モジュールのロード戦略を返します\"\"\"\n        return ModuleLoadStrategy(\n            lazy_load=True,   # 延遅ロードか即時ロードか\n            priority=0,       # ロード優先度（数値が大きいほど先にロードされます）\n            depends=[\"OtherModule\"]  # オプション：依存する他のモジュールを宣言\n        )\n```\n\n> `depends` で宣言されたモジュールが未登録の場合、現在のモジュールはスキップされ、警告が記録されます。ロード順序はトポロジカルソートによって決定され、同じ階層では `priority` 降順になります。\n\n### on_load メソッド\n\nモジュールのロード時に呼び出され、リソースの初期化やイベントハンドラーの登録に使用されます：\n\n```python\nasync def on_load(self, event):\n    # イベントハンドラーを登録\n    @command(\"hello\", help=\"挨拶コマンド\")\n    async def hello_handler(event):\n        await event.reply(\"こんにちは！\")\n    \n    # SDKの組み込みHTTPクライアントを使用（接続プールを自動管理するため、手動でセッションを作成する必要はありません）\n    # sdk.client からリクエストを送信できます\n```\n\n### on_unload メソッド\n\nモジュールのアンロード時に呼び出され、リソースのクリーンアップに使用されます：\n\n```python\nasync def on_unload(self, event):\n    # カスタムリソースのクリーンアップ\n    # sdk.client はフレームワークが管理するため、手動で閉じる必要はありません\n    \n    # イベントハンドラーのキャンセル（フレームワークが自動的に処理します）\n    self.logger.info(\"モジュールがアンロードされました\")"
+    },
+    {
+      "hash": "2ac9706220007101c6b9b10a8e08b62f",
+      "translation": "## SDK オブジェクト\n\n### コアモジュールへのアクセス\n\n```python\nfrom ErisPulse import sdk\n\n# sdk オブジェクトを通じてすべてのコアモジュールにアクセスする\nsdk.logger.info(\"ログ\")\nsdk.storage.set(\"キー\", \"値\")\nconfig = sdk.config.getConfig(\"MyModule\")\n```\n\n### モジュール間通信\n\n```python\n# 他のモジュールにアクセスする\nother_module = sdk.OtherModule\nresult = await other_module.some_method()"
+    },
+    {
+      "hash": "1af181dd2909307a69c593b4cdc07e05",
+      "translation": "## アダプタ送信方法の照会\n\n新しい標準仕様では、フォールバック送信機構を実装するために `__getattr__` メソッドを上書きすることが求められるため、`hasattr` メソッドを使用してメソッドの存在を確認することができなくなりました。バージョン `2.3.5` 以降、送信方法を照会する機能が追加されました。\n\n### サポートされている送信方法のリスト\n\n```python\n# プラットフォームがサポートするすべての送信方法を一覧表示する\nmethods = sdk.adapter.list_sends(\"onebot11\")\n# 返回: [\"Text\", \"Image\", \"Voice\", \"Markdown\", ...]\n```\n\n### メソッドの詳細情報の取得\n\n```python\n# 特定のメソッドの詳細情報を取得する\ninfo = sdk.adapter.send_info(\"onebot11\", \"Text\")\n# 返回:\n# {\n#     \"name\": \"Text\",\n#     \"parameters\": [\n#         {\"name\": \"text\", \"type\": \"str\", \"default\": null, \"annotation\": \"str\"}\n#     ],\n#     \"return_type\": \"Awaitable[Any]\",\n#     \"docstring\": \"テキストメッセージを送信...\"\n# }"
+    },
+    {
+      "hash": "9d29f083721a753ebb585c63543be221",
+      "translation": "## 設定管理\n\n### 宣言的設定（推奨）\n\nv2.5.2 以降、モジュールは `ConfigClass` を使用して設定クラスを宣言できるようになりました。アダプターと同じ設定 Schema システムを使用します。設定は `self.cfg` でリアルタイムに読み出され、変更後はすぐに有効になります：\n\n```python\nfrom dataclasses import dataclass, field\nfrom ErisPulse.Core.Bases import BaseModule\nfrom ErisPulse.Core.Bases import BaseConfig\n\n@dataclass\nclass MyModuleConfig(BaseConfig):\n    api_key: str = field(\n        default=\"\",\n        metadata={\n            \"description\": {\"i18n\": \"my_module.api_key\", \"default\": \"API キー\"},\n            \"required\": True,\n            \"secret\": True,\n            \"ui\": {\"widget\": \"password\", \"group\": \"basic\", \"order\": 1},\n        },\n    )\n    timeout: int = field(\n        default=30,\n        metadata={\n            \"description\": {\"i18n\": \"my_module.timeout\", \"default\": \"タイムアウト（秒）\"},\n            \"ui\": {\"widget\": \"number\", \"group\": \"advanced\", \"order\": 2},\n        },\n    )\n\nclass MyModule(BaseModule):\n    ConfigClass = MyModuleConfig\n\n    async def on_load(self, event):\n        self.logger.info(\"モジュールがロードされました\")\n\n    async def on_unload(self, event):\n        pass\n\n    async def do_something(self):\n        cfg = self.cfg  # リアルタイム読み出し、型安全\n        api_key = cfg.api_key\n        timeout = cfg.timeout\n```\n\n`BaseConfig` は汎用的な設定基底クラスで、アダプター、モジュール、外部プロジェクトなどあらゆるシーンに適用できます。設定フィールドは i18n 多言語記述をサポートしています（詳細は [i18n ドキュメント](../../advanced/i18n.md#設定フィールド多言語)をご参照ください）。\n\n### 宣言的翻訳キー（v2.7.0+）\n\nv2.7.0 以降、モジュールは `ConfigClass` を宣言するのと同様に、ネストされた `I18nClass` クラスを使って翻訳キーを一括で宣言することもできます。フレームワークはロード時に宣言されたすべての翻訳キーを**自動的に登録**するため、手動で `i18n.register()` を呼び出す必要はありません。また、設定テンプレートの生成より早いタイミングで登録されるため、設定記述で参照する i18n キーが利用可能であることが保証されます。\n\n```python\nfrom ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey\n\nclass MyModule(BaseModule):\n    # 設定クラス（任意）\n    @dataclass\n    class ConfigClass(BaseConfig):\n        welcome_msg: str = field(\n            default=\"欢迎\",\n            metadata={\n                \"description\": {\"i18n\": \"mymodule.welcome_msg\", \"default\": \"ウェルカムメッセージ\"},\n            },\n        )\n\n    # 翻訳キーセットクラス（任意）\n    class I18nClass(BaseI18n):\n        # プロパティ名が自動的に完全なキーパスに連結されます：<モジュール名>.<プロパティ名>\n        welcome_msg: I18nKey = I18nKey(\n            default=\"Welcome Message\",   # 言語に依存しないフォールバック\n            zh_CN=\"欢迎消息\",\n            zh_TW=\"歡迎訊息\",\n            en=\"Welcome Message\",\n            ja=\"ウェルカムメッセージ\",\n            ru=\"Приветственное сообщение\",\n        )\n        hello: I18nKey = I18nKey(\n            default=\"Hello, {name}!\",\n            zh_CN=\"你好，{name}！\",\n            zh_TW=\"你好，{name}！\",\n            en=\"Hello, {name}!\",\n            ja=\"こんにちは、{name}！\",\n            ru=\"Привет, {name}!\",\n        )\n```\n\n詳細は [i18n 推奨の記述方法](../../advanced/i18n.md#推奨の記述方法I18nClassで翻訳キーを宣言するv270) を参照してください。\n\n### 手動による設定の読み込み（互換方式）\n\n宣言的設定を使用しない場合、直接設定ストレージに対して読み書きすることも可能です。\n\n```python\ndef _load_config(self):\n    config = self.sdk.config.getConfig(\"MyModule\")\n    if not config:\n        default_config = {\n            \"api_key\": \"\",\n            \"timeout\": 30\n        }\n        self.sdk.config.setConfig(\"MyModule\", default_config)\n        return default_config\n    return config\n```\n\n> **注意**：手動方式の場合は `self.config` をプロパティ名として使用しないでください。`self.cfg` または独自の名前を使用することをお勧めします。そうしないと、将来的なフレームワークのプロパティとの競合を避けることができません。\n\n请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。\n\n再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。"
+    },
+    {
+      "hash": "652d284343ae2e70b0b518dc299942d4",
+      "translation": "## ストレージシステム\n\n### 基本的な使用方法\n\n```python\n# データを保存\nsdk.storage.set(\"user:123\", {\"name\": \"張三\"})\n\n# データを取得\nuser = sdk.storage.get(\"user:123\", {})\n\n# データを削除\nsdk.storage.delete(\"user:123\")\n```\n\n### トランザクションの使用\n\n```python\n# トランザクションを使用してデータの一貫性を確保\nwith sdk.storage.transaction():\n    sdk.storage.set(\"key1\", \"value1\")\n    sdk.storage.set(\"key2\", \"value2\")\n    # どの操作か失敗した場合、すべての変更はロールバックされます"
+    },
+    {
+      "hash": "87399ebbb17d9998d7fdb513d31056f3",
+      "translation": "## イベント処理\n\n### イベントハンドラの登録\n\n```python\nfrom ErisPulse.Core.Event import command, message\n\n# コマンドを登録\n@command(\"info\", help=\"情報を取得\")\nasync def info_handler(event):\n    await event.reply(\"これは情報です\")\n\n# メッセージハンドラを登録\n@message.on_group_message()\nasync def group_handler(event):\n    sdk.logger.info(f\"グループメッセージを受信しました: {event.get_text()}\")\n```\n\n### イベントハンドラのライフサイクル\n\nフレームワークは自動的にイベントハンドラの登録と登録解除を管理します。`on_load` で登録するだけでよいです。"
+    },
+    {
+      "hash": "99e77989be6c5c4ea1c90436ce551075",
+      "translation": "## レイジー ローディング機構\n\n### 動作原理\n\n```python\n# モジュールが初めてアクセスされたときにのみ初期化される\nresult = await sdk.my_module.some_method()\n# ↑ ここでモジュール初期化がトリガーされる\n```\n\n### すぐにロード\n\nすぐに初期化する必要があるモジュール（リスナー、タイマーなど）の場合：\n\n```python\n@staticmethod\ndef get_load_strategy():\n    return ModuleLoadStrategy(\n        lazy_load=False,  # すぐにロード\n        priority=100\n    )"
+    },
+    {
+      "hash": "b3323e4ae11afa51fbab1d11f8796e4e",
+      "translation": "## エラー処理\n\n### 例外の捕捉\n\n```python\nasync def handle_event(self, event):\n    try:\n        # 業務ロジック\n        await self.process_event(event)\n    except ValueError as e:\n        self.logger.warning(f\"パラメータエラー: {e}\")\n        await event.reply(f\"パラメータエラー: {e}\")\n    except Exception as e:\n        self.logger.error(f\"処理失敗: {e}\")\n        raise\n```\n\n### ログ記録\n\n```python\n# ログレベルの使い分け\nself.logger.debug(\"デバッグ情報\")    # 詳細なデバッグ情報\nself.logger.info(\"実行状態\")        # 正常実行の情報\nself.logger.warning(\"警告情報\")    # 警告情報\nself.logger.error(\"エラー情報\")    # エラー情報\nself.logger.critical(\"致命的なエラー\") # 致命的なエラー"
+    },
+    {
+      "hash": "72c73e04458506afa97ab44c59dd77a3",
+      "translation": "## 関連ドキュメント\n\n- [モジュール開発入門](getting-started.md) - 初めてのモジュールの作成\n- [Event ラッパークラス](event-wrapper.md) - イベント処理の詳細\n- [ベストプラクティス](best-practices.md) - 高品質モジュールの開発"
+    }
+  ]
 }

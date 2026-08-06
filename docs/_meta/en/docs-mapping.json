@@ -4,7 +4,7 @@
   "categories": {
     "Quick Start": {
       "description": "ErisPulse Quick Start Guide",
-      "count": 5,
+      "count": 4,
       "documents": [
         {
           "title": "ErisPulse Documentation",
@@ -12,18 +12,13 @@
           "level": 1
         },
         {
-          "title": "Getting Started",
+          "title": "Quick Start",
           "path": "quick-start.md",
           "level": 1
         },
         {
           "title": "Architecture Overview",
           "path": "architecture.md",
-          "level": 1
-        },
-        {
-          "title": "ErisPulse Glossary",
-          "path": "terminology.md",
           "level": 1
         },
         {
@@ -128,7 +123,7 @@
               "level": 1
             },
             {
-              "title": "Core Module Concepts",
+              "title": "Core Concepts of Modules",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1
             },

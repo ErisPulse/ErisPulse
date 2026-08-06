@@ -1,12 +1,12 @@
-# Getting Started
+# Quick Start
 
 > **This is your first step.** Get an ErisPulse bot up and running from scratch in 5 minutes.
 
-## Installing ErisPulse
+## Install ErisPulse
 
-### One-Click Install Script (Recommended)
+### One-Click Installation Script (Recommended)
 
-The installation script automatically detects your environment (Docker, Python, uv) and guides you to select the best installation method for you.
+The installation script will automatically detect your environment (Docker, Python, uv) and guide you to choose the most suitable installation method.
 
 Windows (PowerShell):
 ```powershell
@@ -20,12 +20,12 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 The script will guide you through:
 
-- **Docker Installation** (Recommended when Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Prerelease), Dashboard configuration, port settings
-- **Traditional Installation**: Automatically create virtual environment, select ErisPulse version, optional Dashboard installation
+- **Docker Installation** (Recommended when Docker is detected): Select the image source (Docker Hub / GHCR), version channel (Stable / Preview), Dashboard management panel configuration, and port settings.
+- **Traditional Installation**: Automatically create virtual environment, select ErisPulse version, and optionally install the Dashboard management panel module.
 
 ### Using Docker
 
-The Docker image comes with the ErisPulse framework and Dashboard pre-installed.
+The Docker image comes with the ErisPulse framework and Dashboard management panel built-in.
 
 ```bash
 # Download docker-compose.yml
@@ -36,7 +36,7 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
-<summary>Docker Hub not available?</summary>
+<summary>Docker Hub unavailable?</summary>
 
 Use the GitHub Container Registry image and modify the `image` in `docker-compose.yml`:
 
@@ -46,19 +46,19 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-After starting, access `http://<host>:8000/Dashboard` and log in with the set token.
+After starting, access `http://<host>:8000/Dashboard` and login with the set token.
 
 ### Using pip
 
-Ensure your Python version is >= 3.10, then install using pip:
+Make sure your Python version is >= 3.10, then install with pip:
 
 ```bash
 pip install ErisPulse
 ```
 
-If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse` for faster installation.
+If you have already installed [uv](https://github.com/astral-sh/uv), you can also use `uv pip install ErisPulse`, which is faster.
 
-## Initializing Project
+## Initialize Project
 
 ### Interactive Initialization (Recommended)
 
@@ -66,7 +66,7 @@ If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `u
 epsdk init
 ```
 
-This launches an interactive wizard to guide you through:
+This will launch an interactive wizard to guide you through:
 - Project name setup
 - Log level configuration
 - Server configuration (host and port)
@@ -79,28 +79,27 @@ This launches an interactive wizard to guide you through:
 # Quick mode specifying project name
 epsdk init -q -n my_bot
 
-# Or just specify project name
+# Or only specifying project name
 epsdk init -n my_bot
 ```
 
 ### Manual Project Creation
 
-If you prefer to create the project manually:
+If you prefer to manually create the project:
 
 ```bash
 mkdir my_bot && cd my_bot
 epsdk init
-```
 
 ## Installing Modules
 
-### Install via CLI
+### Installing via CLI
 
 ```bash
 epsdk install Yunhu AIChat
 ```
 
-### List Available Modules
+### Viewing Available Modules
 
 ```bash
 epsdk list-remote
@@ -108,13 +107,12 @@ epsdk list-remote
 
 ### Interactive Installation
 
-Entering the interactive installation interface when package names are not specified:
+Enter the interactive installation interface when package name is not specified:
 
 ```bash
 epsdk install
-```
 
-## Running Project
+## Running the Project
 
 ```bash
 # Normal run
@@ -122,38 +120,34 @@ epsdk run main.py
 
 # Hot reload mode (recommended for development)
 epsdk run main.py --reload
-```
 
-## Enabling IDE Completion (Optional)
+## Enable IDE Completion (Optional)
 
-ErisPulse dynamically discovers modules/adapters, so IDEs cannot autocomplete platform-specific methods by default.
+ErisPulse dynamic discovery modules/adapters cannot be auto-completed by IDEs by default for platform-specific methods.
 Run the following command to generate type stubs:
 
 ```bash
 epsdk types
 ```
 
-After generation, use the imported types as type annotations to get accurate completion (see [IDE Completion Guide](getting-started/ide-completion.md)):
+After generation, use the imported types as variable annotations to get precise completion (see [IDE Completion Guide](./getting-started/ide-completion.md)):
 
 ```python
 from _ep_types import Yunhu
 from ErisPulse import sdk
 
 adapter: Yunhu = sdk.adapter.get("yunhu")
-await adapter.Send.To("group", "123").Board(...)  # Autocomplete platform-specific methods
-```
+await adapter.Send.To("group", "123").Board(...)  # Complete platform-specific methods
 
 ## Project Structure
 
-The project structure after initialization:
+The structure of the initialized project:
 
 ```
 my_bot/
 ├── config/
 │   └── config.toml          # Configuration file
 └── main.py                  # Entry file
-
-```
 
 ## Configuration File
 
@@ -168,24 +162,25 @@ port = 8000
 level = "INFO"
 
 [Yunhu_Adapter]
-# Adapter configuration
-```
+# Adapter Configuration
 
 ## Next Steps
 
-After the bot is running, you can continue as needed:
+Once the bot is up and running, you can continue as needed:
 
 **Want to understand how the framework works?**
-- [Basic Concepts](getting-started/basic-concepts.md) — Design of adapters / modules / events
-- [Architecture Overview](architecture.md) — Visual architecture diagrams
+- [Basic Concepts](getting-started/basic-concepts.md) — Adapter / Module / Event design
+- [Architecture Overview](architecture.md) — Visualized architecture diagrams
 
 **Want to implement more features?**
 - [Common Task Examples](getting-started/common-tasks.md) — Storage, scheduled tasks, permission control
-- [Introduction to Event Handling](getting-started/event-handling.md) — Messages, notifications, request handling
+- [Event Handling Introduction](getting-started/event-handling.md) — Messages, notifications, request handling
 
-**Want to develop your own module / adapter?**
-- [Introduction to Module Development](developer-guide/modules/getting-started.md)
-- [Introduction to Adapter Development](developer-guide/adapters/getting-started.md)
+**Want to develop your own modules / adapters?**
+- [Module Development Introduction](developer-guide/modules/getting-started.md)
+- [Adapter Development Introduction](developer-guide/adapters/getting-started.md)
 
-**For reference as needed:**
-- [Configuration File Guide](user-guide/configuration.md) · [CLI Reference](user-guide/cli-reference.md) · [Deployment Guide](user-guide/deployment.md)
+**For reference:**
+- [Configuration File Guide](user-guide/configuration.md) · [CLI Commands](user-guide/cli-reference.md) · [Deployment Guide](user-guide/deployment.md)
+
+Please directly return the complete translated Markdown content without including any other text.

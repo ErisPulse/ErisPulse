@@ -1,5 +1,33 @@
 {
-  "hash": "54cedc0a731af1b001dfa238f20b9dd0",
-  "translated_at": "2026-08-03T17:05:14.234881",
-  "target_lang": "ja"
+  "version": 2,
+  "hash": "840f33b70073c8305c60f407f15ddf14",
+  "file_hash": "840f33b70073c8305c60f407f15ddf14",
+  "translated_at": "2026-08-05T23:04:00.676183",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "254235fd6bc9a91a587e42bb57e101cf",
+      "translation": "# ErisPulse ドキュメント\n\nErisPulse は、アダプターを使用してさまざまなプラットフォームと相互作用できる、拡張可能なマルチプラットフォームメッセージ処理フレームワークであり、機能拡張のために柔軟なモジュールシステムを提供します。\n\n> **初めてご利用ですか？** [5分で始める](docs/ja/quick-start.md) を直接参照してください —— インストールから最初のロボットの実行まで、一連の流れでご案内します。\n\n---\n\n各言語のドキュメントへのリンク:\n\n- [English](README.en.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)"
+    },
+    {
+      "hash": "daa6a64f9d018fa76d807fb23937e0ba",
+      "translation": "## あなたの学習経路を選択\n\nあなたの目標に応じて、対応する学習経路を選択してください。各経路は、基本から応用へと順序付けられています。\n\n### 一、ロボットを使いたい\n\nロボットを起動し、モジュールを装着し、設定を行います。\n\n| 進捗 | ドキュメント | 説明 |\n|------|------|------|\n| **① 初心者向け** | [5分で始める](docs/ja/quick-start.md) | インストール、初期化、実行 —— 唯一のスタート地点 |\n| ② 深入 | [最初のロボットを作成する](getting-started/first-bot.md) | 最初のコマンドハンドラの作成 |\n| ③ 概念 | [基本概念](getting-started/basic-concepts.md) | アダプタ/モジュール/イベントの設計を理解する |\n| ④ 実践 | [一般的なタスクの例](getting-started/common-tasks.md) | ストレージ、定期タスク、権限制御 |\n| 参考 | [設定ファイルの説明](user-guide/configuration.md) · [CLIコマンド](user-guide/cli-reference.md) · [デプロイガイド](user-guide/deployment.md) | 必要に応じて参照 |\n| 参考 | [プラットフォームの特徴ガイド](platform-guide/README.md) | 各プラットフォーム（雲湖/QQ/Telegram…）の違い |\n\n### 二、モジュール/アダプタを開発したい\n\nErisPulse用に配布可能な拡張機能を開発する。\n\n| タイプ | 入門 | 応用 |\n|------|------|------|\n| **モジュール開発**（推奨） | [モジュール開発の入門](developer-guide/modules/getting-started.md) | [コアコンセプト](developer-guide/modules/core-concepts.md) · [Eventラッパー](developer-guide/modules/event-wrapper.md) · [ベストプラクティス](developer-guide/modules/best-practices.md) |\n| **アダプタ開発** | [アダプタ開発の入門](developer-guide/adapters/getting-started.md) | [コアコンセプト](developer-guide/adapters/core-concepts.md) · [SendDSLの詳細](developer-guide/adapters/send-dsl.md) · [イベントコンバーター](developer-guide/adapters/converter.md) · [ベストプラクティス](developer-guide/adapters/best-practices.md) |\n| **技術基準** | [標準規格の概要](standards/README.md) | アダプタ開発で遵守すべき [セッションタイプ](standards/session-types.md) · [イベント変換](standards/event-conversion.md) · [送信メソッド](standards/send-method-spec.md) · [APIレスポンス](standards/api-response.md) · [リクエスト操作](standards/request-action-spec.md) |\n| **公開** | [公開とモジュールストア](developer-guide/publishing.md) | 作品をPyPIとモジュールストアに公開する |\n\n### 三、内部原理を深く理解したい\n\nフレームワークの内部がどのように動作するかを理解する。\n\n| ドキュメント | 説明 |\n|------|------|\n| [アーキテクチャの概要](architecture.md) | 可視化図：コアアーキテクチャ、初期化フロー、イベント処理、ライフサイクル |\n| [起動フローと手動制御](advanced/startup.md) | 起動フローの分解、各段階の手動駆動、ロード失敗の診断 |\n| [イベントシステム](api-reference/event-system.md) | 5つのイベントカテゴリの完全なAPI |\n| [アダプタシステム](api-reference/adapter-system.md) | アダプタの登録、起動・停止、API呼び出し |\n| [コアモジュール](api-reference/core-modules.md) | Storage / Config / Logger / Routerなどの基本機能 |\n| [ライフサイクル管理](advanced/lifecycle.md) · [遅延ロード](advanced/lazy-loading.md) · [ルーターシステム](advanced/router.md) | 内部サブシステム |\n| [Conversation多段対話](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQLビルダー](advanced/sql-builder.md) · [HTTPクライアント](advanced/http-client.md) · [国際化](advanced/i18n.md) | 応用ツール |\n\n### 四、推奨エコシステムモジュール\n\n必要に応じてインストールし、すぐに使える **サードパーティコミュニティモジュール**（フレームワークの内蔵機能ではありません）。\n\n| ドキュメント | 説明 |\n|------|------|\n| [エコシステムモジュールの概要](ecosystem/README.md) | エコシステムモジュールのインストール方法、なぜこれが内蔵機能ではないかを理解する |\n| [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web管理パネル + ウィンドウ登録API（モジュールはサイドバーにカスタムページを登録可能） |\n| [ErisPulse-Takumi](ecosystem/takumi.md) | 画像レンダリング（HTML / ノードツリー / SVG / アニメーション、内蔵中英文字体） |\n\n### 五、ErisPulseに貢献したい\n\nフレームワークをより良くする\n\n| ドキュメント | 説明 |\n|------|------|\n| [ErisPulseへの貢献](contributing/README.md) | 貢献方法の概要：ドキュメント / i18n / Bug / モジュール / アダプタ |\n| [初めての貢献](contributing/first-contribution.md) | forkからPR提出まで |"
+    },
+    {
+      "hash": "2bad658d27e429c59a7083fcfd507c0d",
+      "translation": "## 開発方法\n\nErisPulse は以下の 2 つの開発方法をサポートしています：\n\n- **モジュール開発（推奨）**：独立したモジュールパッケージを作成し、パッケージマネージャーでインストールすることで、配布と管理が容易になります。\n- **埋め込み開発**：プロトタイプ作成に適した、プロジェクト内で直接プロセッサを記述します。詳しくは [クイックスタート](docs/ja/quick-start.md) を参照してください。\n\n言語切り替え行がある場合、各言語名は `` | `` で区切られ、[**Label**](file) のような形式は使用しないようにしてください。"
+    },
+    {
+      "hash": "34f8a4487c3bf3a567d4dc3c0adadc8d",
+      "translation": "## その他\n\n- [ドキュメントスタイルガイド](styleguide/docstring.md) — ドキュメントを貢献する際の作成規約\n- [ErisPulse への貢献](contributing/README.md) — プロジェクトの共同構築に参加するための入り口\n- [AI支援開発](ai-support/README.md) — AIプログラミングアシスタントで使用するプロジェクトのプロンプトを入手する"
+    },
+    {
+      "hash": "7a2e105f3a88deac58b8116579cf47af",
+      "translation": "## ヘルプの取得\n\n- GitHub リポジトリ: [https://github.com/ErisPulse/ErisPulse](https://github.com/ErisPulse/ErisPulse)\n- 問題報告: Issue を送信\n- 技術的な議論: Discussions を確認\n\ndocs/ja/getting-help.md"
+    },
+    {
+      "hash": "2426932a5a75aac5cad90550954fa4a2",
+      "translation": "## 関連リンク\n\n- [OneBot12 標準](https://12.onebot.dev/)\n- [云湖公式ドキュメント](https://www.yhchat.com/document/)\n- [Telegram Bot API](https://core.telegram.org/bots/api)"
+    }
+  ]
 }

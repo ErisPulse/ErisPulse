@@ -4,7 +4,7 @@
   "categories": {
     "快速開始": {
       "description": "ErisPulse 快速入門指南",
-      "count": 5,
+      "count": 4,
       "documents": [
         {
           "title": "ErisPulse 文件",
@@ -19,11 +19,6 @@
         {
           "title": "架構概覽",
           "path": "architecture.md",
-          "level": 1
-        },
-        {
-          "title": "ErisPulse 術語表",
-          "path": "terminology.md",
           "level": 1
         },
         {
@@ -148,7 +143,7 @@
           "name": "適配器開發",
           "documents": [
             {
-              "title": "適配器開發入門",
+              "title": "介面卡開發入門",
               "path": "developer-guide/adapters/getting-started.md",
               "level": 1
             },
