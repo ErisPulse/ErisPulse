@@ -81,6 +81,8 @@
   - `Core/module` `disable()`/`unload()` 未清理未实例化的懒加载代理；`enable()`/`disable()` 改为 `immediate=True` 立即持久化（修复"禁用后重启仍启用"）
   - `runtime/tasks` `spawn_background` 在无事件循环的后台线程中改为主循环调度（`register_main_loop` + `run_coroutine_threadsafe`），修复热卸载时 "Future attached to a different loop"
   - `CLI/utils/display` `_input` 未转义 Rich 标记，配置值含 `[`/`[/]` 时崩溃；统一转义提示文本
+  - `Core/router` 端口被占用时进程级联崩溃刷屏（BUG-031）：uvicorn 绑定失败会 `sys.exit(3)`，其 `SystemExit` 被事件循环重新抛出并取消所有任务，导致进程以退出码 3 异常终止并刷屏 "Task was destroyed but it is pending"。改为启动前同步预检端口并自动顺延（8000→8001），顺延范围全被占用时给出清晰错误提示；实际端口经 `router.base_url` 暴露。新增 `DEFAULT_SERVER_PORT_RETRY_LIMIT`（默认 50，设 1 即不顺延）
+  - `runtime/exceptions` 异步异常处理器对退出/关停噪音降级：`SystemExit`/`KeyboardInterrupt` 等控制流信号与 "Task was destroyed but it is pending!" 清理噪音不再按 ERROR 刷屏，改为 TRACE 记录并折叠窗口内重复消息（任意 `sys.exit` 路径的异常退出都受益，而非仅端口占用）
 
 ### 优化
 - @wsu2059q
