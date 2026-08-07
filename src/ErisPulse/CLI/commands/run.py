@@ -183,6 +183,7 @@ class RunCommand(Command):
         ]
 
         crash_count = 0
+        process = None
         try:
             while True:
                 process = subprocess.Popen(cmd)
@@ -208,6 +209,17 @@ class RunCommand(Command):
                 # 继续循环，重新启动子进程
         except KeyboardInterrupt:
             pass
+        finally:
+            # 运行器退出（Ctrl+C 等）前必须终止子进程，否则孤儿进程会继续持有
+            # 端口等资源，导致下次启动时端口被占用（如监听 8000 的残留进程）。
+            if process is not None and process.poll() is None:
+                console.print(f"[info]{i18n.t('cli.run.terminating_child')}[/]")
+                process.terminate()
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
 
     def _run_script(self, script_path: str, reload_mode: bool):
         """

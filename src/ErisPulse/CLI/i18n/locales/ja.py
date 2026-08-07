@@ -277,6 +277,7 @@ TRANSLATIONS = {
     "cli.run.process_exited": "プロセスが正常に終了しました。ファイルの変更を待機して再起動",
     "cli.run.process_crashed": "プロセスが異常終了しました（終了コード {code}）。修正して保存すると自動再起動",
     "cli.run.subprocess_crashed_retry": "サブプロセスが異常終了しました。{seconds} 秒後に自動再試行します...",
+    "cli.run.terminating_child": "ポートなどのリソースを解放するため、ボットの子プロセスを終了しています...",
     # ==================== uninstall コマンド ====================
     "cli.uninstall.description": "モジュール/アダプターパッケージをアンインストール",
     "cli.uninstall.package_help": "アンインストールするパッケージ名（複数指定可）",
