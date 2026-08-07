@@ -7,6 +7,7 @@ ErisPulse 全局异常处理系统
 
 import asyncio
 import sys
+import time
 import traceback
 from pathlib import Path
 from typing import Any
@@ -247,6 +248,52 @@ def _get_error_logger():
         return sys.stderr.write
 
 
+# 事件循环关闭/异常退出时，asyncio 通过异常处理器上报的"清理噪音"消息。
+# 这些源于强制关停时残留任务的销毁过程，不代表运行期错误，若按 ERROR 输出会在
+# 退出时刷屏大量重复行（如 uvicorn 端口绑定失败 sys.exit(3) 后的级联关停）。
+_ASYNC_SHUTDOWN_NOISE_MESSAGES: tuple[str, ...] = (
+    "Task was destroyed but it is pending!",
+)
+
+# 折叠相同关停噪音的窗口（秒）。窗口内重复消息静默折叠，仅记录一次并附带累计次数。
+_ASYNC_NOISE_FOLD_WINDOW_SECS: float = 2.0
+
+# 噪音折叠状态: {消息 -> (累计次数, 首次时间戳)}
+_async_noise_state: dict[str, tuple[int, float]] = {}
+
+
+def _log_async_noise(message: str) -> None:
+    """
+    {!--< internal-use >!--}
+    记录异步关停场景的低级别噪音日志（TRACE），无框架 logger 时静默丢弃
+
+    这类消息仅在退出/关停时产生，降级为 TRACE 既避免刷屏，也保留排查线索
+    （日志订阅器可显式订阅 TRACE 级别查看）。
+    """
+    try:
+        from ..Core import logger
+
+        logger.trace(message)
+    except (ImportError, AttributeError):
+        pass
+
+
+def _fold_async_noise(message: str) -> None:
+    """
+    {!--< internal-use >!--}
+    折叠相同噪音消息：窗口内重复只输出一次，并附带被折叠的累计次数
+    """
+    key = message.strip()
+    now = time.monotonic()
+    count, first_seen = _async_noise_state.get(key, (0, now))
+    if count > 0 and now - first_seen < _ASYNC_NOISE_FOLD_WINDOW_SECS:
+        _async_noise_state[key] = (count + 1, first_seen)
+        return
+    _async_noise_state[key] = (1, now)
+    suffix = f"（另有 {count} 次同类消息被折叠）" if count else ""
+    _log_async_noise(f"Async - {key}{suffix}")
+
+
 def global_exception_handler(
     exc_type: type[Exception], exc_value: Exception, exc_traceback: Any
 ) -> None:
@@ -278,6 +325,13 @@ def async_exception_handler(
 
     exception = context.get("exception")
     if exception:
+        # SystemExit / KeyboardInterrupt 是主动退出/关停的控制流信号（如 uvicorn
+        # 端口绑定失败时 sys.exit(3)），不是异步错误，按 TRACE 记录避免退出时刷屏。
+        if isinstance(exception, (SystemExit, KeyboardInterrupt)):
+            _log_async_noise(
+                f"Async - control-flow {type(exception).__name__}: {exception!r}"
+            )
+            return
         try:
             base = ExceptionHandler.format_async_exception(exception)
             hint_lines = ExceptionHandler.generate_hints(
@@ -291,6 +345,10 @@ def async_exception_handler(
             err_logger(f"ERROR Raw:\n\n{exception}\n\n" + traceback.format_exc())
     else:
         msg = context.get("message", "Async - Unknown Error")
+        # 事件循环关闭时残留任务被销毁是正常清理噪音，折叠降级为 TRACE，避免刷屏
+        if any(marker in msg for marker in _ASYNC_SHUTDOWN_NOISE_MESSAGES):
+            _fold_async_noise(msg)
+            return
         err_logger(f"Async - Error: {msg}\n")
 
 
