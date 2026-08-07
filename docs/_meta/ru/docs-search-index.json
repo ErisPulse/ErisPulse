@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1442,
+  "total_keywords": 1432,
   "keywords": {
     "\"base_url\": \"http://localhost:8080\",": [
       {
@@ -144,14 +144,6 @@
         "line": 38,
         "level": 3,
         "title": "1. Настройка pyproject.toml"
-      }
-    ],
-    "1. Не используйте SVG `<text>`, он не отрисовывается": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 173,
-        "level": 3,
-        "title": "1. Не используйте SVG `<text>`, он не отрисовывается"
       }
     ],
     "1. Обеспечение совместимости между платформами": [
@@ -480,14 +472,6 @@
         "line": 67,
         "level": 4,
         "title": "1xxxx Ошибка запроса действия (Request Error)"
-      }
-    ],
-    "2. CSS должен идти через `stylesheets`, не вставляйте целый документ HTML": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 196,
-        "level": 3,
-        "title": "2. CSS должен идти через `stylesheets`, не вставляйте целый документ HTML"
       }
     ],
     "2. Базовая структура возврата": [
@@ -882,14 +866,6 @@
         "title": "3. Request DSL"
       }
     ],
-    "3. `height` — это высота обрезки, она не растягивается автоматически": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 212,
-        "level": 3,
-        "title": "3. `height` — это высота обрезки, она не растягивается автоматически"
-      }
-    ],
     "3. Адаптер": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -1194,14 +1170,6 @@
         "title": "3xxxx Ошибка выполнения действия (Execution Error)"
       }
     ],
-    "4. Автоинъекция шрифтов работает только для HTML текста": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 222,
-        "level": 3,
-        "title": "4. Автоинъекция шрифтов работает только для HTML текста"
-      }
-    ],
     "4. Автоматическое обнаружение поля `self`": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -1458,14 +1426,6 @@
         "title": "5. Локальная проверка"
       }
     ],
-    "5. Маленький трюк для отладки без глаз": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 228,
-        "level": 3,
-        "title": "5. Маленький трюк для отладки без глаз"
-      }
-    ],
     "5. Несоответствие направлений": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -1696,14 +1656,6 @@
         "line": 225,
         "level": 2,
         "title": "6. Спецификация обратного преобразования (OneBot12 → платформа)"
-      }
-    ],
-    "6. Темы (светлая/темная): просто смените набор stylesheet": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 241,
-        "level": 3,
-        "title": "6. Темы (светлая/темная): просто смените набор stylesheet"
       }
     ],
     "6. Формат ответа": [
@@ -3680,14 +3632,6 @@
         "title": "Важные примечания"
       }
     ],
-    "Важные советы и подводные камни (извлеченные на собственной шкуре)": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 169,
-        "level": 2,
-        "title": "Важные советы и подводные камни (извлеченные на собственной шкуре)"
-      }
-    ],
     "Введение": [
       {
         "document": "getting-started/README.md",
@@ -3868,14 +3812,6 @@
         "line": 516,
         "level": 3,
         "title": "Встроенные слова подтверждения"
-      }
-    ],
-    "Встроенные шрифты": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 92,
-        "level": 3,
-        "title": "Встроенные шрифты"
       }
     ],
     "Вход в режим построения": [
@@ -4842,14 +4778,6 @@
         "line": 101,
         "level": 3,
         "title": "Изменения конфигурации"
-      }
-    ],
-    "Изолированный Renderer": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 115,
-        "level": 3,
-        "title": "Изолированный Renderer"
       }
     ],
     "Изоляция платформенных методов": [
@@ -6534,14 +6462,6 @@
         "title": "Настройки адаптера"
       }
     ],
-    "Нативный Renderer": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 103,
-        "level": 3,
-        "title": "Нативный Renderer"
-      }
-    ],
     "Начало обучения": [
       {
         "document": "getting-started/README.md",
@@ -8060,14 +7980,6 @@
         "line": 102,
         "level": 3,
         "title": "Отправка ответа"
-      }
-    ],
-    "Отправка результатов рендеринга": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 143,
-        "level": 2,
-        "title": "Отправка результатов рендеринга"
       }
     ],
     "Отправка с указанием аккаунта": [
@@ -10714,12 +10626,6 @@
         "line": 104,
         "level": 2,
         "title": "Связанные ссылки"
-      },
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 257,
-        "level": 2,
-        "title": "Связанные ссылки"
       }
     ],
     "Связь с методами SendDSL": [
@@ -11488,6 +11394,14 @@
         "title": "Способ 1: Установка с помощью pip"
       }
     ],
+    "Способ 1: ответ через метод Image": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 339,
+        "level": 1,
+        "title": "Способ 1: ответ через метод Image"
+      }
+    ],
     "Способ 1: параметр `via` у reply()": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -11510,6 +11424,14 @@
         "line": 24,
         "level": 3,
         "title": "Способ 2: Установка с помощью uv (рекомендуется)"
+      }
+    ],
+    "Способ 2: ответ через сегмент сообщения OneBot12": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 342,
+        "level": 1,
+        "title": "Способ 2: ответ через сегмент сообщения OneBot12"
       }
     ],
     "Способ с Docker": [
@@ -12348,12 +12270,12 @@
         "title": "Установка uv"
       }
     ],
-    "Установка и включение": [
+    "Установка и активация": [
       {
         "document": "ecosystem/takumi.md",
         "line": 21,
         "level": 2,
-        "title": "Установка и включение"
+        "title": "Установка и активация"
       }
     ],
     "Установка модулей": [
@@ -12752,14 +12674,6 @@
         "line": 66,
         "level": 2,
         "title": "Шаг третий: Тестирование бота"
-      }
-    ],
-    "Шрифты и Рендереры": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 90,
-        "level": 2,
-        "title": "Шрифты и Рендереры"
       }
     ],
     "Эквивалентная запись: takumi = sdk.Takumi": [

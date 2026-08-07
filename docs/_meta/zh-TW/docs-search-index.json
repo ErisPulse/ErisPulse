@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1455,
+  "total_keywords": 1462,
   "keywords": {
     "\"base_url\": \"http://localhost:8080\",": [
       {
@@ -152,14 +152,6 @@
         "line": 458,
         "level": 3,
         "title": "1. 分類異常處理"
-      }
-    ],
-    "1. 別用 SVG `<text>`，它不渲染": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 179,
-        "level": 3,
-        "title": "1. 別用 SVG `<text>`，它不渲染"
       }
     ],
     "1. 單一職責原則": [
@@ -456,14 +448,6 @@
         "line": 67,
         "level": 4,
         "title": "1xxxx 動作請求錯誤（Request Error）"
-      }
-    ],
-    "2. CSS 必須走 `stylesheets`，別塞整篇 HTML 文檔": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 202,
-        "level": 3,
-        "title": "2. CSS 必須走 `stylesheets`，別塞整篇 HTML 文檔"
       }
     ],
     "2. Event 物件": [
@@ -832,14 +816,6 @@
         "title": "3. Request DSL"
       }
     ],
-    "3. `height` 是裁切高度，不會自動撐高": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 218,
-        "level": 3,
-        "title": "3. `height` 是裁切高度，不會自動撐高"
-      }
-    ],
     "3. 事件格式範例": [
       {
         "document": "standards/event-conversion.md",
@@ -1192,14 +1168,6 @@
         "title": "4. 啟動適配器"
       }
     ],
-    "4. 字體自動注入只管 HTML 文本": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 228,
-        "level": 3,
-        "title": "4. 字體自動注入只管 HTML 文本"
-      }
-    ],
     "4. 實作要求": [
       {
         "document": "standards/api-response.md",
@@ -1358,14 +1326,6 @@
         "line": 84,
         "level": 3,
         "title": "5. Bot 狀態查詢"
-      }
-    ],
-    "5. 一個不睜眼也能調試的小技巧": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 234,
-        "level": 3,
-        "title": "5. 一個不睜眼也能調試的小技巧"
       }
     ],
     "5. 使用者使用": [
@@ -1606,14 +1566,6 @@
         "line": 147,
         "level": 2,
         "title": "6. 注意事項"
-      }
-    ],
-    "6. 深淺色主題：換套 stylesheet 就行": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 247,
-        "level": 3,
-        "title": "6. 深淺色主題：換套 stylesheet 就行"
       }
     ],
     "6. 配接器實現檢查清單": [
@@ -2680,6 +2632,14 @@
         "title": "INFO: 正常執行資訊"
       }
     ],
+    "Jinja 模板範例": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 160,
+        "level": 3,
+        "title": "Jinja 模板範例"
+      }
+    ],
     "Kook平台特性文件": [
       {
         "document": "platform-guide/kook.md",
@@ -3068,6 +3028,14 @@
         "line": 192,
         "level": 3,
         "title": "SQL 鏈式查詢"
+      }
+    ],
+    "SVG 輸出範例": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 182,
+        "level": 3,
+        "title": "SVG 輸出範例"
       }
     ],
     "Schema": [
@@ -5264,6 +5232,14 @@
         "title": "傳送方法返回值"
       }
     ],
+    "傳送渲染結果": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 332,
+        "level": 2,
+        "title": "傳送渲染結果"
+      }
+    ],
     "傳送範例": [
       {
         "document": "platform-guide/telegram.md",
@@ -5409,7 +5385,7 @@
     "內建字體": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 100,
+        "line": 248,
         "level": 3,
         "title": "內建字體"
       }
@@ -5658,6 +5634,14 @@
         "title": "動態內容"
       }
     ],
+    "動畫範例": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 193,
+        "level": 3,
+        "title": "動畫範例"
+      }
+    ],
     "匯入": [
       {
         "document": "advanced/sql-builder.md",
@@ -5731,7 +5715,7 @@
     "原生 Renderer": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 111,
+        "line": 291,
         "level": 3,
         "title": "原生 Renderer"
       }
@@ -6794,12 +6778,12 @@
         "title": "媒體檔案說明"
       }
     ],
-    "字體與渲染器": [
+    "字體": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 98,
+        "line": 246,
         "level": 2,
-        "title": "字體與渲染器"
+        "title": "字體"
       }
     ],
     "存取其他模組": [
@@ -6891,7 +6875,7 @@
     "安裝與啟用": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 23,
+        "line": 21,
         "level": 2,
         "title": "安裝與啟用"
       }
@@ -7010,14 +6994,6 @@
         "line": 274,
         "level": 2,
         "title": "富媒體消息轉換示例"
-      }
-    ],
-    "實戰避坑（踩出來的慘痛教訓）": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 175,
-        "level": 2,
-        "title": "實戰避坑（踩出來的慘痛教訓）"
       }
     ],
     "審核需要多久時間？": [
@@ -7583,7 +7559,7 @@
     "快速上手": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 38,
+        "line": 36,
         "level": 2,
         "title": "快速上手"
       }
@@ -8472,6 +8448,14 @@
         "line": 69,
         "level": 3,
         "title": "方法簽名"
+      }
+    ],
+    "方法總覽": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 95,
+        "level": 3,
+        "title": "方法總覽"
       }
     ],
     "方法解析優先級": [
@@ -9518,18 +9502,34 @@
         "title": "測試模組"
       }
     ],
+    "渲染 API": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 91,
+        "level": 2,
+        "title": "渲染 API"
+      }
+    ],
     "渲染 HTML": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 49,
+        "line": 47,
         "level": 3,
         "title": "渲染 HTML"
+      }
+    ],
+    "渲染器執行個體": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 289,
+        "level": 2,
+        "title": "渲染器執行個體"
       }
     ],
     "渲染節點樹": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 79,
+        "line": 72,
         "level": 3,
         "title": "渲染節點樹"
       }
@@ -9723,7 +9723,7 @@
     "獨立 Renderer": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 123,
+        "line": 303,
         "level": 3,
         "title": "獨立 Renderer"
       }
@@ -10118,14 +10118,6 @@
         "title": "發送方法返回值"
       }
     ],
-    "發送渲染結果": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 151,
-        "level": 2,
-        "title": "發送渲染結果"
-      }
-    ],
     "發送者資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -10407,7 +10399,7 @@
       },
       {
         "document": "ecosystem/takumi.md",
-        "line": 261,
+        "line": 363,
         "level": 2,
         "title": "相關連結"
       }
@@ -10564,6 +10556,14 @@
         "line": 287,
         "level": 3,
         "title": "管理員檢查"
+      }
+    ],
+    "節點樹範例": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 142,
+        "level": 3,
+        "title": "節點樹範例"
       }
     ],
     "簡單搜尋": [
@@ -10766,6 +10766,14 @@
         "title": "自動文件"
       }
     ],
+    "自動注入": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 265,
+        "level": 3,
+        "title": "自動注入"
+      }
+    ],
     "自動發現機制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -10796,6 +10804,14 @@
         "line": 304,
         "level": 2,
         "title": "自訂儲存後端"
+      }
+    ],
+    "自訂字體": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 269,
+        "level": 3,
+        "title": "自訂字體"
       }
     ],
     "自訂類型註冊": [
@@ -11036,6 +11052,14 @@
         "title": "規則組合與後台執行"
       }
     ],
+    "視埠與輸出格式": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 220,
+        "level": 2,
+        "title": "視埠與輸出格式"
+      }
+    ],
     "解除安裝元件": [
       {
         "document": "user-guide/cli-reference.md",
@@ -11232,6 +11256,14 @@
         "line": 146,
         "level": 2,
         "title": "訊息過濾"
+      }
+    ],
+    "設定": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 354,
+        "level": 2,
+        "title": "設定"
       }
     ],
     "設定欄位說明": [
@@ -11706,6 +11738,14 @@
         "title": "載入策略"
       }
     ],
+    "輸出格式": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 222,
+        "level": 3,
+        "title": "輸出格式"
+      }
+    ],
     "轉換器示例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -11848,6 +11888,14 @@
         "line": 40,
         "level": 2,
         "title": "通用介面"
+      }
+    ],
+    "通用參數": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 119,
+        "level": 3,
+        "title": "通用參數"
       }
     ],
     "通用字段（所有事件類型）": [
@@ -12678,6 +12726,14 @@
         "line": 35,
         "level": 2,
         "title": "開發類型選擇"
+      }
+    ],
+    "關於 width 與 height": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 231,
+        "level": 3,
+        "title": "關於 width 與 height"
       }
     ],
     "關鍵字過濾": [

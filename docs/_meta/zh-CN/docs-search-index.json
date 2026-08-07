@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1407,
+  "total_keywords": 1413,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -126,14 +126,6 @@
         "line": 49,
         "level": 3,
         "title": "1. 创建项目"
-      }
-    ],
-    "1. 别用 SVG `<text>`，它不渲染": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 177,
-        "level": 3,
-        "title": "1. 别用 SVG `<text>`，它不渲染"
       }
     ],
     "1. 单一职责原则": [
@@ -476,14 +468,6 @@
         "line": 67,
         "level": 4,
         "title": "1xxxx 动作请求错误（Request Error）"
-      }
-    ],
-    "2. CSS 必须走 `stylesheets`，别塞整篇 HTML 文档": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 200,
-        "level": 3,
-        "title": "2. CSS 必须走 `stylesheets`，别塞整篇 HTML 文档"
       }
     ],
     "2. Event 对象": [
@@ -946,14 +930,6 @@
         "title": "3. Request 内部类（大多数情况不需要重写）"
       }
     ],
-    "3. `height` 是裁切高度，不会自动撑高": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 216,
-        "level": 3,
-        "title": "3. `height` 是裁切高度，不会自动撑高"
-      }
-    ],
     "3. 事件 ID 生成": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -1330,14 +1306,6 @@
         "title": "4. 启动适配器"
       }
     ],
-    "4. 字体自动注入只管 HTML 文本": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 226,
-        "level": 3,
-        "title": "4. 字体自动注入只管 HTML 文本"
-      }
-    ],
     "4. 实现必需方法": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -1512,14 +1480,6 @@
         "line": 80,
         "level": 3,
         "title": "5. Bot 状态查询"
-      }
-    ],
-    "5. 一个不睁眼也能调试的小技巧": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 232,
-        "level": 3,
-        "title": "5. 一个不睁眼也能调试的小技巧"
       }
     ],
     "5. 初始化模块": [
@@ -1784,14 +1744,6 @@
         "line": 147,
         "level": 2,
         "title": "6. 注意事项"
-      }
-    ],
-    "6. 深浅色主题：换套 stylesheet 就行": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 245,
-        "level": 3,
-        "title": "6. 深浅色主题：换套 stylesheet 就行"
       }
     ],
     "6. 适配器实现检查清单": [
@@ -2850,6 +2802,14 @@
         "title": "ID 字段查询"
       }
     ],
+    "Jinja 模板示例": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 160,
+        "level": 3,
+        "title": "Jinja 模板示例"
+      }
+    ],
     "Kook平台特性文档": [
       {
         "document": "platform-guide/kook.md",
@@ -3236,6 +3196,14 @@
         "line": 43,
         "level": 3,
         "title": "SQL 链式查询"
+      }
+    ],
+    "SVG 输出示例": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 182,
+        "level": 3,
+        "title": "SVG 输出示例"
       }
     ],
     "Send 嵌套类": [
@@ -5342,6 +5310,14 @@
         "title": "全局配置（EmailAdapter）"
       }
     ],
+    "关于 width 与 height": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 231,
+        "level": 3,
+        "title": "关于 width 与 height"
+      }
+    ],
     "关键词过滤": [
       {
         "document": "getting-started/common-tasks.md",
@@ -5429,7 +5405,7 @@
     "内置字体": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 98,
+        "line": 248,
         "level": 3,
         "title": "内置字体"
       }
@@ -5668,6 +5644,14 @@
         "title": "动态内容"
       }
     ],
+    "动画示例": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 193,
+        "level": 3,
+        "title": "动画示例"
+      }
+    ],
     "包名必须以 `ErisPulse-` 开头吗？": [
       {
         "document": "developer-guide/publishing.md",
@@ -5773,7 +5757,7 @@
     "原生 Renderer": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 109,
+        "line": 291,
         "level": 3,
         "title": "原生 Renderer"
       }
@@ -6075,7 +6059,7 @@
     "发送渲染结果": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 149,
+        "line": 332,
         "level": 2,
         "title": "发送渲染结果"
       }
@@ -7216,12 +7200,12 @@
         "title": "子日志器"
       }
     ],
-    "字体与渲染器": [
+    "字体": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 96,
+        "line": 246,
         "level": 2,
-        "title": "字体与渲染器"
+        "title": "字体"
       }
     ],
     "字段说明": [
@@ -7442,14 +7426,6 @@
         "line": 76,
         "level": 2,
         "title": "定时任务"
-      }
-    ],
-    "实战避坑（踩出来的血泪）": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 173,
-        "level": 2,
-        "title": "实战避坑（踩出来的血泪）"
       }
     ],
     "审核需要多长时间？": [
@@ -8970,6 +8946,14 @@
         "title": "方法列表"
       }
     ],
+    "方法总览": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 95,
+        "level": 3,
+        "title": "方法总览"
+      }
+    ],
     "方法注释": [
       {
         "document": "styleguide/docstring.md",
@@ -10326,6 +10310,14 @@
         "title": "添加中间件"
       }
     ],
+    "渲染 API": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 91,
+        "level": 2,
+        "title": "渲染 API"
+      }
+    ],
     "渲染 HTML": [
       {
         "document": "ecosystem/takumi.md",
@@ -10334,10 +10326,18 @@
         "title": "渲染 HTML"
       }
     ],
+    "渲染器实例": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 289,
+        "level": 2,
+        "title": "渲染器实例"
+      }
+    ],
     "渲染节点树": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 77,
+        "line": 72,
         "level": 3,
         "title": "渲染节点树"
       }
@@ -10495,7 +10495,7 @@
     "独立 Renderer": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 121,
+        "line": 303,
         "level": 3,
         "title": "独立 Renderer"
       }
@@ -10873,7 +10873,7 @@
       },
       {
         "document": "ecosystem/takumi.md",
-        "line": 261,
+        "line": 365,
         "level": 2,
         "title": "相关链接"
       }
@@ -11278,6 +11278,22 @@
         "title": "自动文档"
       }
     ],
+    "自动注入": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 265,
+        "level": 3,
+        "title": "自动注入"
+      }
+    ],
+    "自定义字体": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 269,
+        "level": 3,
+        "title": "自定义字体"
+      }
+    ],
     "自定义存储后端": [
       {
         "document": "advanced/sql-builder.md",
@@ -11308,6 +11324,14 @@
         "line": 197,
         "level": 2,
         "title": "自定义默认头"
+      }
+    ],
+    "节点树示例": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 142,
+        "level": 3,
+        "title": "节点树示例"
       }
     ],
     "花枫咖啡馆（Ideaura）平台特性文档": [
@@ -11434,6 +11458,14 @@
         "line": 363,
         "level": 3,
         "title": "规则组合与后台执行"
+      }
+    ],
+    "视口与输出格式": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 220,
+        "level": 2,
+        "title": "视口与输出格式"
       }
     ],
     "触发": [
@@ -11852,6 +11884,14 @@
         "title": "输出控制"
       }
     ],
+    "输出格式": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 222,
+        "level": 3,
+        "title": "输出格式"
+      }
+    ],
     "运行控制命令": [
       {
         "document": "user-guide/cli-reference.md",
@@ -12216,6 +12256,14 @@
         "title": "通用 request"
       }
     ],
+    "通用参数": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 119,
+        "level": 3,
+        "title": "通用参数"
+      }
+    ],
     "通用字段（所有事件类型）": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -12427,6 +12475,12 @@
         "document": "developer-guide/publishing.md",
         "line": 142,
         "level": 3,
+        "title": "配置"
+      },
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 356,
+        "level": 2,
         "title": "配置"
       }
     ],

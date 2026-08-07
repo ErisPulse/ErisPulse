@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1396,
+  "total_keywords": 1413,
   "keywords": {
     "- \"auto\"      — Automatically detect system language (default)": [
       {
@@ -2024,6 +2024,14 @@
         "title": "API Summary"
       }
     ],
+    "About width and height": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 233,
+        "level": 3,
+        "title": "About width and height"
+      }
+    ],
     "Abstract Types": [
       {
         "document": "advanced/router.md",
@@ -2372,6 +2380,14 @@
         "title": "Alter Table Structure"
       }
     ],
+    "Animation Example": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 197,
+        "level": 3,
+        "title": "Animation Example"
+      }
+    ],
     "Applicable Scenarios": [
       {
         "document": "developer-guide/publishing.md",
@@ -2542,6 +2558,14 @@
         "line": 49,
         "level": 2,
         "title": "Automatic Inference"
+      }
+    ],
+    "Automatic Injection": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 265,
+        "level": 3,
+        "title": "Automatic Injection"
       }
     ],
     "Automatic Timeout Cancellation (Timeout)": [
@@ -3064,6 +3088,14 @@
         "line": 379,
         "level": 3,
         "title": "Built-in Defaults"
+      }
+    ],
+    "Built-in Fonts": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 248,
+        "level": 3,
+        "title": "Built-in Fonts"
       }
     ],
     "Bulk Build Mode (Build)": [
@@ -3650,6 +3682,14 @@
         "title": "Common Issues"
       }
     ],
+    "Common Parameters": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 123,
+        "level": 3,
+        "title": "Common Parameters"
+      }
+    ],
     "Common Pitfalls": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -3787,6 +3827,12 @@
         "document": "developer-guide/publishing.md",
         "line": 142,
         "level": 3,
+        "title": "Configuration"
+      },
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 352,
+        "level": 2,
         "title": "Configuration"
       },
       {
@@ -4408,6 +4454,14 @@
         "title": "Custom Default Headers"
       }
     ],
+    "Custom Fonts": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 269,
+        "level": 3,
+        "title": "Custom Fonts"
+      }
+    ],
     "Custom Message Segments": [
       {
         "document": "advanced/message-builder.md",
@@ -4964,14 +5018,6 @@
         "line": 57,
         "level": 3,
         "title": "Environment Variables"
-      }
-    ],
-    "Equivalent writing: takumi = sdk.Takumi": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 41,
-        "level": 1,
-        "title": "Equivalent writing: takumi = sdk.Takumi"
       }
     ],
     "ErisPulse API Action Standards": [
@@ -5658,6 +5704,14 @@
         "line": 96,
         "level": 3,
         "title": "Fluent Modifier Methods (return self, can be combined)"
+      }
+    ],
+    "Fonts": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 246,
+        "level": 2,
+        "title": "Fonts"
       }
     ],
     "For Adapter Developers": [
@@ -6654,12 +6708,12 @@
         "title": "Installation Reference"
       }
     ],
-    "Installation and Activation": [
+    "Installation and Enablement": [
       {
         "document": "ecosystem/takumi.md",
         "line": 21,
         "level": 2,
-        "title": "Installation and Activation"
+        "title": "Installation and Enablement"
       }
     ],
     "Installing Modules via Dashboard": [
@@ -6754,6 +6808,14 @@
         "line": 71,
         "level": 2,
         "title": "Item Template"
+      }
+    ],
+    "Jinja Template Example": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 164,
+        "level": 3,
+        "title": "Jinja Template Example"
       }
     ],
     "Key Steps in Event Handling": [
@@ -7588,14 +7650,6 @@
         "title": "Method 1: Install with pip"
       }
     ],
-    "Method 1: Reply directly using the Image method": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 158,
-        "level": 1,
-        "title": "Method 1: Reply directly using the Image method"
-      }
-    ],
     "Method 1: reply() via parameter": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -7610,14 +7664,6 @@
         "line": 24,
         "level": 3,
         "title": "Method 2: Install with uv (Recommended)"
-      }
-    ],
-    "Method 2: Reply via OneBot12 message segments": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 161,
-        "level": 1,
-        "title": "Method 2: Reply via OneBot12 message segments"
       }
     ],
     "Method 2: event.send_chain()": [
@@ -7650,6 +7696,14 @@
         "line": 329,
         "level": 3,
         "title": "Method List"
+      }
+    ],
+    "Method Overview": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 99,
+        "level": 3,
+        "title": "Method Overview"
       }
     ],
     "Method Quick Reference Table": [
@@ -8010,6 +8064,14 @@
         "title": "Naming Conventions"
       }
     ],
+    "Native Renderer": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 289,
+        "level": 3,
+        "title": "Native Renderer"
+      }
+    ],
     "Network Client": [
       {
         "document": "advanced/http-client.md",
@@ -8088,6 +8150,14 @@
         "line": 129,
         "level": 2,
         "title": "Next Steps"
+      }
+    ],
+    "Node Tree Example": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 146,
+        "level": 3,
+        "title": "Node Tree Example"
       }
     ],
     "Notes": [
@@ -8350,6 +8420,14 @@
         "line": 126,
         "level": 2,
         "title": "Outbound Protocol"
+      }
+    ],
+    "Output Format": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 224,
+        "level": 3,
+        "title": "Output Format"
       }
     ],
     "Overriding Built-in Methods": [
@@ -9052,6 +9130,12 @@
         "title": "Quick Start"
       },
       {
+        "document": "ecosystem/takumi.md",
+        "line": 40,
+        "level": 2,
+        "title": "Quick Start"
+      },
+      {
         "document": "quick-start.md",
         "line": 1,
         "level": 1,
@@ -9410,6 +9494,12 @@
         "line": 103,
         "level": 2,
         "title": "Related Links"
+      },
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 361,
+        "level": 2,
+        "title": "Related Links"
       }
     ],
     "Relationship with CLI i18n": [
@@ -9426,6 +9516,38 @@
         "line": 78,
         "level": 2,
         "title": "Relationship with SendDSL Standard Methods"
+      }
+    ],
+    "Render HTML": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 51,
+        "level": 3,
+        "title": "Render HTML"
+      }
+    ],
+    "Render Node Tree": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 76,
+        "level": 3,
+        "title": "Render Node Tree"
+      }
+    ],
+    "Renderer Instance": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 287,
+        "level": 2,
+        "title": "Renderer Instance"
+      }
+    ],
+    "Rendering API": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 95,
+        "level": 2,
+        "title": "Rendering API"
       }
     ],
     "Reply Email Event (email_reply)": [
@@ -9936,6 +10058,14 @@
         "title": "SQL Query Builder"
       }
     ],
+    "SVG Output Example": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 186,
+        "level": 3,
+        "title": "SVG Output Example"
+      }
+    ],
     "Saving immediately to file": [
       {
         "document": "user-guide/configuration.md",
@@ -10176,6 +10306,14 @@
         "title": "Sending Methods"
       }
     ],
+    "Sending Rendered Results": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 328,
+        "level": 2,
+        "title": "Sending Rendered Results"
+      }
+    ],
     "Sending Rules System": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -10398,6 +10536,14 @@
         "line": 517,
         "level": 4,
         "title": "SseEmitter API"
+      }
+    ],
+    "Standalone Renderer": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 301,
+        "level": 3,
+        "title": "Standalone Renderer"
       }
     ],
     "Standard Actions": [
@@ -11602,6 +11748,14 @@
         "line": 105,
         "level": 3,
         "title": "Version Update Notes"
+      }
+    ],
+    "Viewport and Output Formats": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 222,
+        "level": 2,
+        "title": "Viewport and Output Formats"
       }
     ],
     "WSMessage": [
