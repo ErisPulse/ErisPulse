@@ -257,8 +257,6 @@ TRANSLATIONS = {
     "core.router.start_failed_msg": "路由伺服器啟動失敗",
     "core.router.start_failed": "啟動伺服器失敗: {error}",
     "core.router.port_in_use": "連接埠 {host}:{port} 已被占用，路由伺服器無法啟動。請檢查是否有另一個 ErisPulse 實例或其他程式正在使用該連接埠（可執行 `netstat -ano` 查看占用程序）",
-    "core.router.port_advance": "連接埠 {host}:{requested} 已被占用，已自動順延至 {host}:{port}",
-    "core.router.port_range_in_use": "連接埠 {host}:{port} 及其後 {count} 個連接埠均已被占用，無法啟動路由伺服器。請檢查是否有多個 ErisPulse 實例或其他程式占用了這些連接埠",
     "core.router.stopping": "正在停止路由伺服器...",
     "core.router.stopped_normal": "路由伺服器已正常停止",
     "core.router.stopped_cancelled": "路由伺服器已被取消",

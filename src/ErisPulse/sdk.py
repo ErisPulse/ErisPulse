@@ -430,17 +430,15 @@ class SDK:
                     # 跳过 HTTP 服务器启动（适用于纯 WebSocket/轮询适配器）
                     self.logger.info(i18n.t("core.sdk.init.router_start_skipped"))
                 else:
-                    try:
-                        await self.router.start(
-                            host=_server_config["host"],
-                            port=_server_config["port"],
-                            ssl_certfile=_server_config.get("ssl_certfile"),
-                            ssl_keyfile=_server_config.get("ssl_keyfile"),
-                        )
-                    except Exception as e:
-                        self.logger.warning(
-                            i18n.t("core.sdk.init.router_start_failed", error=e)
-                        )
+                    # 路由服务器是适配器/模块对外服务的核心基础设施，绑定失败
+                    # （如端口被占用）属于致命初始化错误：不自动顺延端口（生产环境
+                    # 暴露的端口变化会导致外部访问失败），直接抛出使 init() 失败退出。
+                    await self.router.start(
+                        host=_server_config["host"],
+                        port=_server_config["port"],
+                        ssl_certfile=_server_config.get("ssl_certfile"),
+                        ssl_keyfile=_server_config.get("ssl_keyfile"),
+                    )
 
                 # 获取加载耗时
                 load_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_INIT)
