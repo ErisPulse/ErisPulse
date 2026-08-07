@@ -16340,7 +16340,7 @@ async def on_unload(self, event):
 
 # ErisPulse-Takumi
 
-[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) 是由 ccd2s 維護的 **第三方圖片渲染模組**，基於 [takumi-py](https://github.com/BalconyJH/takumi-py)，讓你在 Bot 中渲染出圖片：HTML、節點樹、Jinja 模板、SVG、動畫都不在話下，並且 **內建中英文字體**（Noto Sans SC / Roboto / Source Code Pro），無需額外配置字體。
+[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) 是由 ccd2s 維護的 **第三方圖片渲染模組**，基於 [takumi-py](https://github.com/BalconyJH/takumi-py)，讓 Bot 能夠將 HTML、節點樹、Jinja 模板、SVG、動畫渲染為圖片。模組 **內建中英文字體**（Noto Sans SC / Roboto / Source Code Pro），無需額外配置。
 
 > [!IMPORTANT]
 > Takumi **不是** ErisPulse 框架的內建功能，需要單獨安裝：
@@ -16349,16 +16349,14 @@ async def on_unload(self, event):
 > epsdk install Takumi
 > ```
 
-非常適合以下場景：
+適用場景：
 
-- 把資料/統計渲染成精緻的卡片圖片發送
-- 把 Markdown / 長文字渲染成排版穩定的圖片，避免平台樣式差異
-- 產生 SVG / 動畫，用於動態視覺效果
-- 中英混排的圖文輸出（內建字體開箱即用）
+- 將資料/統計渲染為卡片圖片
+- 將 Markdown / 長文字渲染為排版穩定的圖片，規避平台樣式差異
+- 產生 SVG / 動畫，實現動態視覺效果
+- 中英混排圖文（內建字體開箱即用）
 
 ---
-
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 安裝與啟用
 
@@ -16366,7 +16364,7 @@ async def on_unload(self, event):
 epsdk install Takumi
 ```
 
-安裝後模組會自動載入，在設定檔中確認啟用即可：
+安裝後模組會自動載入，在設定中確認啟用：
 
 ```toml
 [Takumi]
@@ -16377,7 +16375,7 @@ enabled = true
 
 ## 快速上手
 
-模組自動載入後，透過模組管理器獲取，也可以用 `sdk` 快捷方式：
+模組自動載入後，透過模組管理器取得，或使用 `sdk` 快捷方式：
 
 ```python
 from ErisPulse import sdk
@@ -16387,8 +16385,6 @@ takumi = sdk.module.get("Takumi")
 ```
 
 ### 渲染 HTML
-
-最常用的方式 —— 把一段 HTML + CSS 字串渲染成 PNG：
 
 ```python
 png = takumi.render_html(
@@ -16401,7 +16397,6 @@ png = takumi.render_html(
     stylesheets=["""
     .card {
       width: 800px;
-      height: 400px;
       padding: 48px;
       color: white;
       background: #111827;
@@ -16409,16 +16404,12 @@ png = takumi.render_html(
     }
     """],
     width=800,
-    height=400,
-    lang="zh-TW",
+    height=None,   # 按內容自動撐高
+    lang="zh-CN",
 )
 ```
 
-`png` 是 `bytes`，可透過 `event.reply(png, method="Image")` 發送（詳見 [發送渲染結果](#發送渲染結果)）。
-
 ### 渲染節點樹
-
-無需手寫 HTML，用字典描述結構即可，適合程序化拼裝：
 
 ```python
 png = takumi.render_node(
@@ -16428,29 +16419,218 @@ png = takumi.render_node(
         "style": {"fontSize": 48, "color": "#111827"},
     },
     width=800,
-    height=200,
-    lang="zh-TW",
+    height=None,
+    lang="zh-CN",
 )
 ```
 
+`png` 是 `bytes`，可透過 `event.reply(png, method="Image")` 傳送（詳見 [發送渲染結果](zh-TW/send-render-result)）。
+
 ---
 
-## 字體與渲染器
+## 渲染 API
+
+`sdk.Takumi` 代理了底層 `takumi_py.Renderer` 的所有能力：所有渲染、測量、SVG、動畫、模板方法都可直接在 `sdk.Takumi` 上呼叫。對於這些方法，模組會在呼叫時**自動注入內建字體回退堆疊**（`takumi.families`），無需手動傳遞 `font_families`；若顯式傳入則尊重呼叫方設定。
+
+### 方法總覽
+
+| 類別 | 方法 | 返回 | 說明 |
+|------|------|------|------|
+| 靜態渲染 | `render_html(html, ...)` | `bytes` | 渲染 HTML 字串 |
+| | `render_node(node, ...)` | `bytes` | 渲染節點樹（dict） |
+| | `render_template(name, ctx, ...)` | `bytes` | 渲染 Jinja 模板 |
+| | `render_compiled(node, ...)` | `bytes` | 渲染預編譯節點 |
+| SVG 輸出 | `render_svg_html(html, ...)` | `str` | 輸出 SVG（HTML 輸入） |
+| | `render_svg_node(node, ...)` | `str` | 輸出 SVG（節點樹輸入） |
+| | `render_svg_template(name, ctx, ...)` | `str` | 輸出 SVG（模板輸入） |
+| | `render_svg_compiled(node, ...)` | `str` | 輸出 SVG（預編譯輸入） |
+| 動畫 | `render_animation(scenes, ...)` | `bytes` | 編碼多幀動畫 |
+| | `render_sequence_at_time(scenes, time_ms, ...)` | `bytes` | 取序列某一時刻幀 |
+| 測量 | `measure_node(node, ...)` | `dict` | 測量節點樹佈局 |
+| | `measure_html(html, ...)` | `dict` | 測量 HTML 佈局 |
+| | `measure_compiled(node, ...)` | `dict` | 測量預編譯節點 |
+| 編譯 | `compile_node(node)` | `CompiledNode` | 編譯節點樹 |
+| | `compile_html(html, ...)` | `CompiledNode` | 編譯 HTML |
+| 字體 | `register_font(font)` | `list[str]` | 註冊自訂字體，返回 family 列表 |
+| | `register_fonts(fonts)` | `list[str]` | 批量註冊 |
+
+> `CompiledNode` 暴露 `resource_urls()` 方法，可預先發現待載入的 HTTP(S) 圖片參考，便於提前準備資源。
+
+### 通用參數
+
+以下參數適用於靜態渲染與 SVG 方法（動畫方法另有 `fps` 等，見對應範例）：
+
+| 參數 | 類型 | 預設值 | 說明 |
+|------|------|--------|------|
+| `stylesheets` | `list[str]` | `None` | 文件級 CSS 字串列表；內聯 `style` 仍隨 HTML 一起解析 |
+| `width` | `int \| None` | `1200` | 視口寬度（像素）；`None` 按佈局推斷 |
+| `height` | `int \| None` | `630` | 畫布高度（像素）；`None` 按內容自動撐高（見 [視口與輸出格式](#視口與輸出格式)） |
+| `lang` | `str \| None` | `None` | BCP-47 語言標籤（如 `zh-CN`），影響文字整形與換行 |
+| `font_families` | `list[str]` | 自動注入 | 字體回退堆疊；便捷方法預設注入內建字體 |
+| `format` | `str` | `"png"` | 輸出格式（見 [視口與輸出格式](#視口與輸出格式)） |
+| `device_pixel_ratio` | `float` | `1.0` | 設備像素比，控制輸出解析度 |
+| `time_ms` | `int` | `0` | 動畫取樣時刻（毫秒） |
+| `dithering` | `str` | `"none"` | 抖動演算法：`none` / `ordered-bayer` / `floyd-steinberg` |
+| `quality` | `int \| None` | `None` | 有損編碼品質 |
+| `lossless` | `bool \| None` | `None` | 是否無損編碼 |
+| `images` | `list` | `None` | 本次渲染的圖片資源（`ImageResource` 或 `(src, bytes)` 元組） |
+| `keyframes` | `Mapping` | `None` | 結構化關鍵幀，無需寫入 `@keyframes` |
+| `options` | `RenderOptions` | — | 以 `RenderOptions(...)` 聚合傳參，欄位與上表一致 |
+
+完整欄位定義見 `takumi_py.RenderOptions`。
+
+### 節點樹範例
+
+```python
+png = takumi.render_node(
+    {
+        "type": "container",
+        "style": {"padding": "32px", "backgroundColor": "#111827"},
+        "children": [
+            {"type": "text", "text": "標題", "style": {"fontSize": 32, "color": "white"}},
+            {"type": "text", "text": "正文", "style": {"fontSize": 18, "color": "#9ca3af"}},
+        ],
+    },
+    width=800,
+    height=None,
+    lang="zh-CN",
+)
+```
+
+### Jinja 模板範例
+
+```python
+png = takumi.render_template(
+    "card.html.jinja",
+    {"title": "Takumi", "subtitle": "Jinja to image"},
+    stylesheets=["""
+    .card {
+      width: 800px;
+      padding: 48px;
+      color: white;
+      background: #111827;
+    }
+    """],
+    width=800,
+    height=None,
+    lang="zh-CN",
+)
+```
+
+> 可透過 `filters={...}` 注入自訂 Jinja 過濾器，或 `environment=...` 傳入完整 `jinja2.Environment`。模板目錄與環境設定詳見 [takumi-py 模板文件](https://github.com/BalconyJH/takumi-py/blob/main/docs/zh-TW/guides/templates.md)。
+
+### SVG 輸出範例
+
+```python
+svg = takumi.render_svg_html(
+    '<div class="card">Hello</div>',
+    stylesheets=[".card { width: 800px; color: black; }"],
+    width=800,
+    height=None,
+)
+```
+
+### 動畫範例
+
+```python
+from takumi_py import AnimationScene
+
+webp = takumi.render_animation(
+    [
+        AnimationScene(
+            {"type": "container", "style": {"width": "100%", "height": "100%", "backgroundColor": "black"}},
+            duration_ms=100,
+        ),
+        AnimationScene(
+            {"type": "container", "style": {"width": "100%", "height": "100%", "backgroundColor": "white"}},
+            duration_ms=100,
+        ),
+    ],
+    width=64,
+    height=64,
+    fps=20,
+    format="webp",
+)
+```
+
+> 每幀由 `AnimationScene(node, duration_ms=...)` 構成，`duration_ms` 必須為正數。
+
+---
+
+## 視埠與輸出格式
+
+### 輸出格式
+
+| 場景 | `format` 取值 |
+|------|---------------|
+| 靜態圖片 | `png`（預設） / `jpeg` / `jpg` / `webp` / `ico` / `raw` |
+| 動畫 | `webp`（預設） / `apng` / `gif` |
+
+`format="raw"` 返回行主序 RGBA 位元組串流，用於自訂像素級處理。
+
+### 關於 width 與 height
+
+`width` 與 `height` 的角色不對稱：
+
+- `width` 是**視埠寬度**，文字與佈局按它換行、回流。**應固定**為具體數值（如 `800`），否則畫布會按內容自然寬度拉伸、文字不換行，尺寸不可控。
+- `height` 是**畫布高度**，隨內容增長。`height` 預設值為 `630`；傳入 `height=None` 時，Takumi 會**根據內容自動撐高畫布**（auto viewport）。
+
+> [!TIP]
+> **推薦組合：固定 `width` + `height=None`。** 僅當需要固定尺寸畫布或裁切效果時，才傳入具體的 `height`。
+
+> [!NOTE]
+> `width` / `height` 任一在技術上都可傳 `None` 讓其按佈局推斷（如節點自身已宣告尺寸時）；兩者都給定時，輸出尺寸為確定值。
+
+---
+
+## 字體
 
 ### 內建字體
 
-Takumi 已打包常用字體，無需額外安裝：
+| 字體 | family | 類別 |
+|------|--------|------|
+| Noto Sans SC | `Noto Sans SC` | sans-serif |
+| Roboto | `Roboto` | sans-serif |
+| Roboto Italic | `Roboto` | sans-serif（italic） |
+| Source Code Pro | `Source Code Pro` | monospace |
+| Source Code Pro Italic | `Source Code Pro` | monospace（italic） |
 
-| 資源 | 說明 |
+模組屬性：
+
+| 屬性 | 說明 |
 |------|------|
-| `takumi.fonts` | 內建字體檔案名稱列表 |
-| `takumi.families` | 已註冊的字體 family 列表 |
+| `takumi.fonts` | 內建字型檔案名稱清單 |
+| `takumi.families` | 已註冊的字型 family 清單 |
 
-便捷方法（`render_html` / `render_node`）會自動注入這套字體回退堆疊；如果你直接呼叫底層 renderer，則需要自行傳入 `font_families`。
+### 自動注入
+
+`sdk.Takumi` 上的全部渲染、測量、SVG、動畫、模板方法會自動注入 `takumi.families` 作為字型回退堆疊。若直接呼叫 `takumi.renderer`（原生實例）或透過 `create_renderer()` 建立的獨立實例，則需手動傳 `font_families=takumi.families`。
+
+### 自訂字體
+
+```python
+from takumi_py import FontResource
+
+families = takumi.renderer.register_font(
+    FontResource(
+        font_bytes,
+        name="MyFont",
+        weight=400,
+        style="normal",
+        generic_family="sans-serif",
+    )
+)
+```
+
+`register_font` 回傳已註冊的 family 名稱清單，可在後續渲染時作為 `font_families` 傳入。
+
+---
+
+## 渲染器執行個體
 
 ### 原生 Renderer
 
-`takumi.renderer` 是原始的 `takumi_py.Renderer` 實例。便捷方法已自動注入內建字體回退堆疊；**直接呼叫 renderer 時需自行傳入 families**：
+`takumi.renderer` 是原始的 `takumi_py.Renderer` 執行個體。直接呼叫時需手動傳 `font_families`：
 
 ```python
 png = takumi.renderer.render_html(
@@ -16462,7 +16642,7 @@ png = takumi.renderer.render_html(
 
 ### 獨立 Renderer
 
-需要隔離字體 / 圖片 / 資源快取時（例如長生命週期程序、多租戶場景），可以建立一個新的 `Renderer`，內建字體會自動註冊：
+需要隔離字型 / 圖片 / 資源快取時（長生命週期程式、多租戶情境），可建立獨立的 `Renderer`，內建字型會自動註冊：
 
 ```python
 renderer = takumi.create_renderer(cache_max_bytes=64 * 1024 * 1024)
@@ -16471,34 +16651,35 @@ png = renderer.render_html(
     "<div>獨立 Renderer</div>",
     font_families=takumi.families,
     width=800,
-    height=200,
+    height=None,
     lang="zh-CN",
 )
 ```
 
 `create_renderer()` 接受 `takumi_py.Renderer` 的建構參數：
 
-- `load_default_fonts=False`（預設）：僅載入內建字體
-- `load_default_fonts=True`：同時載入 Takumi 自帶字體
-- `fonts=[...]`：在預設基礎上註冊自訂字體
+| 參數 | 類型 | 預設值 | 說明 |
+|------|------|--------|------|
+| `load_default_fonts` | `bool` | `False` | 是否載入 takumi-py 自帶字型（內建字型始終載入） |
+| `fonts` | `list[FontResource]` | `None` | 額外註冊的自訂字型 |
+| `cache_max_bytes` | `int \| None` | `None` | 資源快取上限（位元組）；`0` 禁用 |
+| `persistent_images` | `list` | `None` | 持久化圖片資源 |
 
-> 獨立實例不經過模組代理，因此若要保留統一的內建字體回退堆疊，需顯式傳入 `font_families=takumi.families`。
-
-若顯式傳入 `font_families`，模組會尊重呼叫方設定，不再注入預設回退堆疊。`RenderOptions(font_families=...)` 同樣有效。
+> 獨立執行個體不經過模組代理，因此若要保留統一的內建字型回退堆疊，需顯式傳入 `font_families=takumi.families`。若顯式傳入 `font_families`，模組會尊重呼叫方設定，不再注入預設回退堆疊；`RenderOptions(font_families=...)` 同樣有效。
 
 ---
 
-## 發送渲染結果
+## 傳送渲染結果
 
-渲染得到圖片後，可以透過事件回覆直接發送：
+渲染得到的圖片為 `bytes`，可透過事件回覆直接傳送：
 
 ```python
 from ErisPulse import sdk
 
 takumi = sdk.Takumi
-png = takumi.render_html("<div>hello</div>", lang="zh-CN")
+png = takumi.render_html("<div>hello</div>", lang="zh-TW")
 
-# 方式一：直接以 Image 方法回覆
+# 方式一：以 Image 方法回覆
 await event.reply(png, method="Image")
 
 # 方式二：透過 OneBot12 訊息段回覆
@@ -16508,95 +16689,16 @@ await event.reply_ob12(
 )
 ```
 
-> 不同平台對圖片的封裝由適配器統一處理，無需關心底層差異。詳見 [MessageBuilder 詳解](../advanced/message-builder.md) 與 [發送方法規範](../standards/send-method-spec.md)。
+> 不同平台對圖片的封裝由適配器統一處理。詳見 [MessageBuilder 詳解](../advanced/message-builder.md) 與 [傳送方法規範](../standards/send-method-spec.md)。
+
+## 設定
+
+```toml
+[Takumi]
+enabled = true
+```
 
 ---
-
-## 實戰避坑（踩出來的慘痛教訓）
-
-下面這些文件裡沒寫，是拿 Takumi 做一整個數據可視化模組（聲呐圖、雷達圖那種，節點幾十個、還要畫連線和標籤）時一行行試出來的。挑值錢的記一下，能幫你少走幾小時彎路。
-
-### 1. 別用 SVG `<text>`，它不渲染
-
-最大的坑，沒有之一。你想在 `<svg>` 裡畫節點、旁邊用 `<text>` 標個名字——**渲染出來文字是空的**。不管給 `<text>` 加 `font-family`，還是在 `<svg>` 根上設繼承，都沒用，中英文一律不顯示，圖裡只剩裸的形狀。
-
-實測結論：`takumi-py` 不繪製內聯 SVG 的文本元素。所以正確套路是：
-
-- SVG 只畫**形狀**（圓、線、多邊形）
-- 文字全部走 **HTML**：把 `<svg>` 丟進一個 `position: relative` 的容器，再用絕對定位的 `<div>` 把標籤蓋到對應座標上
-
-```python
-W = H = 600
-html = f"""
-<div style='position:relative;width:{W}px;height:{H}px'>
-  <svg width='{W}' height='{H}' viewBox='0 0 {W} {H}'>
-    <!-- 只畫圓和線 -->
-  </svg>
-  <div style='position:absolute;left:{x}px;top:{y}px;transform:translate(-50%,-50%)'>名字</div>
-</div>
-"""
-```
-
-座標對得上的前提：SVG 用**固定**的 `width`/`height`（別圖省事寫 `width:100%`），這樣像素和容器 1:1，div 的 `left`/`top` 直接填 SVG 裡的座標即可。
-
-### 2. CSS 必須走 `stylesheets`，別塞整篇 HTML 文檔
-
-`render_html(html, ...)` 的第一個參數是**正文 HTML**，不是完整文檔。你要是圖省事傳一個：
-
-```python
-takumi.render_html("<!DOCTYPE html><html><head><style>...</style></head><body>...</body></html>")
-```
-
-樣式會**靜默失效**——圖照樣出，但跟沒 CSS 一樣，亂七八糟。排錯時你還會懷疑自己 CSS 寫錯了，其實是傳法不對，冤。
-
-正確姿勢永遠是：正文一個參數、CSS 一個參數。
-
-```python
-takumi.render_html(body_html, stylesheets=[css_str], width=..., height=..., lang="zh-TW")
-```
-
-### 3. `height` 是裁切高度，不會自動撐高
-
-`width` 是視口寬，`height` 是畫布高——**超出 `height` 的內容直接被切掉**，不會像瀏覽器那樣自動往下長。所以總高度得自己估：每個區塊高 + padding + 卡片間距，加起來傳進去。
-
-經驗是**寧多勿少**。底部多幾十像素留白沒人盯，頂部內容被切一刀那這張圖就廢了。遇到動態內容（列表項數不定）就按項數現算：
-
-```python
-height = padding * 2 + header_h + sum(每項高) + 間隙 * (項數 - 1) + 30  # 末尾留點保險
-```
-
-### 4. 字體自動注入只管 HTML 文本
-
-便捷方法（`render_html` / `render_node`）會自動把內置字體回退堆塞進去，但**只對 HTML 文本生效**。所以第 1 條說"文字走 HTML"還有這層好處——順帶白嫖了中文字體，不用自己操心 `font_families`。
-
-要是你直接調底層 renderer（`takumi.renderer.render_html`），就得自己傳 `font_families=takumi.families`，別忘。
-
-### 5. 一個不睜眼也能調試的小技巧
-
-改完樣式想確認"某段中文到底渲沒渲染出來"，又懶得每次開圖看？讓它吐原始像素來數：
-
-```python
-data = takumi.render_html(body, stylesheets=[css], width=W, height=H,
-                          lang="zh-TW", format="raw")  # raw 是 RGBA 字節流
-dark = sum(1 for i in range(0, len(data), 4)
-           if data[i] < 120 and data[i+1] < 120 and data[i+2] < 120 and data[i+3] > 128)
-```
-
-淺色背景下，"有文字"和"沒文字"的墨點數是 4000+ 和 0 的區別——一眼就能看出你那行 `<div>` 到底生效沒。比肉眼看 PNG 快多了，第 1 條那個 SVG 坑我就是這麼驗出來的。
-
-### 6. 深淺色主題：換套 stylesheet 就行
-
-Takumi 本身不在乎你什麼主題，顏色全在你自己的 CSS 裡。所以做明暗切換特別輕——備兩套顏色，按當前小時或用戶設置挑一套塞進 `stylesheets`：
-
-```python
-if 19 <= local_hour or local_hour < 7:
-    t = {"page": "#000000", "card": "#1c1c1e", "ink": "#f5f5f7", "sep": "#38383a"}   # 深色
-else:
-    t = {"page": "#f5f5f7", "card": "#ffffff", "ink": "#1d1d1f", "sep": "#e5e5ea"}   # 淺色
-css = CSS_TEMPLATE.replace("__INK__", t["ink"]).replace("__CARD__", t["card"])  # 以此類推
-```
-
-> 小提醒：CSS 自帶的 `var(--xxx)` 變量在 takumi 裡**不一定吃**，穩妥起見在 Python 裡直接把顏色字串替換進模板，繞開這個不確定性。
 
 
 
