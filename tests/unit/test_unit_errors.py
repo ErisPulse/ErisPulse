@@ -154,3 +154,83 @@ class TestHintsRecognition:
         # 正常关闭（1000）不应给出提示
         hint = suggest_for_websocket_disconnect(WebSocketDisconnect(1000))
         assert hint == "websocket_normal_close"
+
+
+class TestAsyncExceptionHandlerNoiseFiltering:
+    """异步异常处理器对退出/关停噪音的降级处理（避免刷屏）"""
+
+    def test_system_exit_is_not_logged_as_error(self):
+        from unittest.mock import Mock, patch
+
+        from ErisPulse.runtime.exceptions import async_exception_handler
+
+        with patch("ErisPulse.runtime.exceptions._log_async_noise") as mock_noise, patch(
+            "ErisPulse.runtime.exceptions._get_error_logger"
+        ) as mock_get_logger:
+            err_logger = Mock()
+            mock_get_logger.return_value = err_logger
+
+            # uvicorn 端口绑定失败等场景：任务抛出 SystemExit，应降级处理而非 ERROR 刷屏
+            async_exception_handler(None, {"exception": SystemExit(3)})
+
+            err_logger.assert_not_called()
+            mock_noise.assert_called_once()
+
+    def test_keyboard_interrupt_is_not_logged_as_error(self):
+        from unittest.mock import Mock, patch
+
+        from ErisPulse.runtime.exceptions import async_exception_handler
+
+        with patch("ErisPulse.runtime.exceptions._log_async_noise") as mock_noise, patch(
+            "ErisPulse.runtime.exceptions._get_error_logger"
+        ) as mock_get_logger:
+            err_logger = Mock()
+            mock_get_logger.return_value = err_logger
+
+            async_exception_handler(None, {"exception": KeyboardInterrupt()})
+
+            err_logger.assert_not_called()
+            mock_noise.assert_called_once()
+
+    def test_task_destroyed_noise_is_folded(self):
+        from unittest.mock import Mock, patch
+
+        from ErisPulse.runtime.exceptions import (
+            _async_noise_state,
+            async_exception_handler,
+        )
+
+        _async_noise_state.clear()
+        try:
+            with patch("ErisPulse.runtime.exceptions._log_async_noise") as mock_noise, patch(
+                "ErisPulse.runtime.exceptions._get_error_logger"
+            ) as mock_get_logger:
+                err_logger = Mock()
+                mock_get_logger.return_value = err_logger
+
+                ctx = {"message": "Task was destroyed but it is pending!"}
+                async_exception_handler(None, ctx)
+                async_exception_handler(None, ctx)  # 窗口内重复，应被折叠
+
+                err_logger.assert_not_called()
+                # 首次输出 + 折叠（不重复调用），故只调用一次
+                assert mock_noise.call_count == 1
+        finally:
+            _async_noise_state.clear()
+
+    def test_real_async_error_still_logged_as_error(self):
+        from unittest.mock import Mock, patch
+
+        from ErisPulse.runtime.exceptions import async_exception_handler
+
+        with patch("ErisPulse.runtime.exceptions._log_async_noise") as mock_noise, patch(
+            "ErisPulse.runtime.exceptions._get_error_logger"
+        ) as mock_get_logger:
+            err_logger = Mock()
+            mock_get_logger.return_value = err_logger
+
+            async_exception_handler(None, {"exception": ValueError("boom")})
+
+            # 真实异步错误仍走 ERROR 输出
+            err_logger.assert_called_once()
+            mock_noise.assert_not_called()
