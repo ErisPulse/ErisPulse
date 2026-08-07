@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1420,
+  "total_keywords": 1436,
   "keywords": {
     "- \"auto\"      — システム言語を自動検出 (デフォルト)": [
       {
@@ -2628,12 +2628,12 @@
         "title": "Gateway 接続"
       }
     ],
-    "HTML をレンダリングする": [
+    "HTML をレンダリング": [
       {
         "document": "ecosystem/takumi.md",
         "line": 49,
         "level": 3,
-        "title": "HTML をレンダリングする"
+        "title": "HTML をレンダリング"
       }
     ],
     "HTTP Client モジュール": [
@@ -2730,6 +2730,14 @@
         "line": 86,
         "level": 3,
         "title": "ID フィールドのクエリ"
+      }
+    ],
+    "Jinja テンプレートの例": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 160,
+        "level": 3,
+        "title": "Jinja テンプレートの例"
       }
     ],
     "KMarkdownとカードメッセージの送信": [
@@ -3114,6 +3122,14 @@
         "line": 1,
         "level": 1,
         "title": "SQLクエリビルダー"
+      }
+    ],
+    "SVG 出力の例": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 182,
+        "level": 3,
+        "title": "SVG 出力の例"
       }
     ],
     "Send DSL を使用したアカウント指定": [
@@ -4598,6 +4614,14 @@
         "title": "アダプタ：プラットフォーム拡張メソッドの登録"
       }
     ],
+    "アニメーションの例": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 193,
+        "level": 3,
+        "title": "アニメーションの例"
+      }
+    ],
     "アンロードプロセス": [
       {
         "document": "advanced/startup.md",
@@ -5194,6 +5218,14 @@
         "line": 122,
         "level": 2,
         "title": "カスタムタイプの登録"
+      }
+    ],
+    "カスタムフォント": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 269,
+        "level": 3,
+        "title": "カスタムフォント"
       }
     ],
     "カスタムメッセージセグメント": [
@@ -6724,12 +6756,20 @@
         "title": "ネットワーククライアント"
       }
     ],
-    "ノードツリーをレンダリングする": [
+    "ノードツリーの例": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 79,
+        "line": 142,
         "level": 3,
-        "title": "ノードツリーをレンダリングする"
+        "title": "ノードツリーの例"
+      }
+    ],
+    "ノードツリーをレンダリング": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 74,
+        "level": 3,
+        "title": "ノードツリーをレンダリング"
       }
     ],
     "ハンドラの登録": [
@@ -6904,6 +6944,14 @@
         "title": "パラレルイベント処理"
       }
     ],
+    "ビューポートと出力形式": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 220,
+        "level": 2,
+        "title": "ビューポートと出力形式"
+      }
+    ],
     "ビルダーのリセット": [
       {
         "document": "advanced/sql-builder.md",
@@ -6942,6 +6990,14 @@
         "line": 16,
         "level": 2,
         "title": "フィールド説明"
+      }
+    ],
+    "フォント": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 246,
+        "level": 2,
+        "title": "フォント"
       }
     ],
     "フォーム収集 (collect)": [
@@ -7582,6 +7638,14 @@
         "line": 329,
         "level": 3,
         "title": "メソッドリスト"
+      }
+    ],
+    "メソッド概要": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 95,
+        "level": 3,
+        "title": "メソッド概要"
       }
     ],
     "メソッド署名": [
@@ -8678,6 +8742,30 @@
         "title": "レスポンスの送信"
       }
     ],
+    "レンダラー インスタンス": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 289,
+        "level": 2,
+        "title": "レンダラー インスタンス"
+      }
+    ],
+    "レンダリング API": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 91,
+        "level": 2,
+        "title": "レンダリング API"
+      }
+    ],
+    "レンダリング結果を送信": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 334,
+        "level": 2,
+        "title": "レンダリング結果を送信"
+      }
+    ],
     "レート制限": [
       {
         "document": "advanced/router.md",
@@ -8818,6 +8906,14 @@
         "line": 16,
         "level": 3,
         "title": "一般的なコマンド"
+      }
+    ],
+    "一般的なパラメータ": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 119,
+        "level": 3,
+        "title": "一般的なパラメータ"
       }
     ],
     "一般的なフィールド（すべてのイベント型に共通）": [
@@ -9272,6 +9368,14 @@
         "title": "出力プロトコル"
       }
     ],
+    "出力形式": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 222,
+        "level": 3,
+        "title": "出力形式"
+      }
+    ],
     "分岐とジャンプ": [
       {
         "document": "advanced/conversation.md",
@@ -9382,6 +9486,14 @@
         "line": 650,
         "level": 3,
         "title": "原始メッセージとメッセージ構築"
+      }
+    ],
+    "原生 Renderer": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 291,
+        "level": 3,
+        "title": "原生 Renderer"
       }
     ],
     "原生メッセージ送信": [
@@ -10122,6 +10234,14 @@
         "title": "導入方法"
       }
     ],
+    "幅 (`width`) と高さ (`height`) について": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 231,
+        "level": 3,
+        "title": "幅 (`width`) と高さ (`height`) について"
+      }
+    ],
     "平台特有イベント（onebot11_ 前綴）": [
       {
         "document": "platform-guide/onebot11.md",
@@ -10474,14 +10594,6 @@
         "title": "新機能：元のイベントタイプフィールド"
       }
     ],
-    "方法1: Imageメソッドで直接返信": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 158,
-        "level": 1,
-        "title": "方法1: Imageメソッドで直接返信"
-      }
-    ],
     "方法1: pip を使用したインストール": [
       {
         "document": "user-guide/installation.md",
@@ -10496,14 +10608,6 @@
         "line": 157,
         "level": 3,
         "title": "方法1: reply() の via パラメータ"
-      }
-    ],
-    "方法2: OneBot12のメッセージセグメントを通じて返信": [
-      {
-        "document": "ecosystem/takumi.md",
-        "line": 161,
-        "level": 1,
-        "title": "方法2: OneBot12のメッセージセグメントを通じて返信"
       }
     ],
     "方法2: event.send_chain()": [
@@ -10864,6 +10968,14 @@
         "title": "標準的なイベントの例"
       }
     ],
+    "標準装備のフォント": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 248,
+        "level": 3,
+        "title": "標準装備のフォント"
+      }
+    ],
     "標準遵守のメリット": [
       {
         "document": "standards/README.md",
@@ -11068,6 +11180,14 @@
         "line": 251,
         "level": 3,
         "title": "特殊フィールドの例"
+      }
+    ],
+    "独立 Renderer": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 303,
+        "level": 3,
+        "title": "独立 Renderer"
       }
     ],
     "環境変数": [
@@ -11384,6 +11504,14 @@
         "title": "自動推論"
       }
     ],
+    "自動注入": [
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 265,
+        "level": 3,
+        "title": "自動注入"
+      }
+    ],
     "自動発見メカニズム": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -11533,6 +11661,12 @@
         "document": "developer-guide/publishing.md",
         "line": 141,
         "level": 3,
+        "title": "設定"
+      },
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 358,
+        "level": 2,
         "title": "設定"
       }
     ],
@@ -12442,6 +12576,12 @@
       {
         "document": "README.md",
         "line": 97,
+        "level": 2,
+        "title": "関連リンク"
+      },
+      {
+        "document": "ecosystem/takumi.md",
+        "line": 367,
         "level": 2,
         "title": "関連リンク"
       }
