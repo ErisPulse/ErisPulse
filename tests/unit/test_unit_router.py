@@ -312,53 +312,22 @@ class TestRouterManager:
             assert call_kwargs["ssl_keyfile"] == "key.pem"
 
     @pytest.mark.asyncio
-    async def test_server_start_port_advance(self, router_manager):
-        """测试端口被占用时自动顺延到下一个可用端口）"""
+    async def test_server_start_port_in_use(self, router_manager):
+        """测试端口被占用时同步抛出清晰错误，不自动顺延端口"""
         import socket as _socket
 
-        mock_server = MagicMock()
-        mock_server._serve = AsyncMock(return_value=None)
+        # 真实占用一个端口，验证 pre-bind 探测生效
         blocker = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
         blocker.bind(("127.0.0.1", 18999))
         blocker.listen(1)
         try:
-            with (
-                patch("ErisPulse.Core.router.uvicorn.Server", return_value=mock_server),
-                patch("ErisPulse.Core.router.uvicorn.Config", return_value=MagicMock()),
-            ):
+            with pytest.raises(RuntimeError, match="已被占用"):
                 await router_manager.start(host="127.0.0.1", port=18999)
-                # 18999 被占用，应顺延至 19000，base_url 反映实际监听端口
-                assert router_manager.base_url == "http://127.0.0.1:19000"
-                assert router_manager._server_task is not None
+            # 探测失败发生在 uvicorn 启动前，不产生服务器任务
+            assert router_manager._server_task is None
+            assert router_manager._uvicorn_server is None
         finally:
             blocker.close()
-            # 清理服务器任务引用，避免残留
-            if router_manager._server_task is not None:
-                router_manager._server_task = None
-            router_manager._uvicorn_server = None
-
-    @pytest.mark.asyncio
-    async def test_server_start_port_range_exhausted(self, router_manager):
-        """测试端口及顺延范围内全部被占用时抛出清晰错误"""
-        import socket as _socket
-
-        blockers = []
-        try:
-            # 占用 18999 与 19000 两个端口，将顺延上限设为 2 使其全部耗尽
-            for p in (18999, 19000):
-                s = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
-                s.bind(("127.0.0.1", p))
-                s.listen(1)
-                blockers.append(s)
-            with patch(
-                "ErisPulse.Core.router.DEFAULT_SERVER_PORT_RETRY_LIMIT", 2
-            ):
-                with pytest.raises(RuntimeError, match="均已被占用"):
-                    await router_manager.start(host="127.0.0.1", port=18999)
-            assert router_manager._server_task is None
-        finally:
-            for s in blockers:
-                s.close()
 
     @pytest.mark.asyncio
     async def test_server_start_already_running(self, router_manager):

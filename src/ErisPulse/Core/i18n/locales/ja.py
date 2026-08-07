@@ -257,8 +257,6 @@ TRANSLATIONS = {
     "core.router.start_failed_msg": "ルーターサーバーの起動に失敗しました",
     "core.router.start_failed": "サーバーの起動に失敗しました: {error}",
     "core.router.port_in_use": "ポート {host}:{port} は既に使用されています。ルーターサーバーを起動できません。別の ErisPulse インスタンスや他のプログラムがこのポートを使用していないか確認してください（`netstat -ano` で使用中のプロセスを確認できます）",
-    "core.router.port_advance": "ポート {host}:{requested} は既に使用されています。{host}:{port} に自動で切り替えました",
-    "core.router.port_range_in_use": "ポート {host}:{port} とその後の {count} 個のポートがすべて使用中です。ルーターサーバーを起動できません。複数の ErisPulse インスタンスや他のプログラムがこれらのポートを占有していないか確認してください",
     "core.router.stopping": "ルーターサーバーを停止しています...",
     "core.router.stopped_normal": "ルーターサーバーは正常に停止しました",
     "core.router.stopped_cancelled": "ルーターサーバーはキャンセルされました",

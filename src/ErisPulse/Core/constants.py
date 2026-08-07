@@ -53,12 +53,6 @@ DEFAULT_SERVER_AUTO_START: Final[bool] = True
 # 修改影响: Ctrl+C 后等待 uvicorn 关闭的耐心时间。超时后强制终止。
 SERVER_SHUTDOWN_TIMEOUT_SECS: Final[float] = 5.0
 
-# 路由服务器启动时端口被占用后的自动顺延尝试次数（含起始端口）。
-# 运行时行为。启动时若端口被占用，自动依次尝试后续端口，
-# 直至找到可用端口或达到该上限。实际监听端口通过 router.base_url 暴露。
-# 修改影响: 设大允许更多顺延，设小更快放弃；设为 1 表示不顺延，占用即报错。
-DEFAULT_SERVER_PORT_RETRY_LIMIT: Final[int] = 50
-
 # ==============================================================================
 # 配置键模板
 #
@@ -772,7 +766,6 @@ __all__ = [
     "DEFAULT_SERVER_AUTO_START",
     "DEFAULT_SERVER_HOST",
     "DEFAULT_SERVER_PORT",
-    "DEFAULT_SERVER_PORT_RETRY_LIMIT",
     "DEFAULT_STRICT_MODE",
     "DEFAULT_UNINIT_TIMEOUT_SECS",
     "DEFAULT_USE_GLOBAL_DB",

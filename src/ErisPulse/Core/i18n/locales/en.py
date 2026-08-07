@@ -257,8 +257,6 @@ TRANSLATIONS = {
     "core.router.start_failed_msg": "Router server startup failed",
     "core.router.start_failed": "Failed to start server: {error}",
     "core.router.port_in_use": "Port {host}:{port} is already in use; the router server could not start. Check whether another ErisPulse instance or another program is using this port (run `netstat -ano` to find the process holding it)",
-    "core.router.port_advance": "Port {host}:{requested} is already in use; automatically advanced to {host}:{port}",
-    "core.router.port_range_in_use": "Port {host}:{port} and the next {count} ports are all in use; the router server could not start. Check whether multiple ErisPulse instances or other programs are occupying these ports",
     "core.router.stopping": "Stopping router server...",
     "core.router.stopped_normal": "Router server stopped normally",
     "core.router.stopped_cancelled": "Router server was cancelled",
