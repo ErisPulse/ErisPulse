@@ -31,6 +31,25 @@ ErisPulse 全局异常处理系统
 ---
 
 
+### `_log_async_noise(message: str)`
+
+> **内部方法**
+记录异步关停场景的低级别噪音日志（TRACE），无框架 logger 时静默丢弃
+
+这类消息仅在退出/关停时产生，降级为 TRACE 既避免刷屏，也保留排查线索
+（日志订阅器可显式订阅 TRACE 级别查看）。
+
+---
+
+
+### `_fold_async_noise(message: str)`
+
+> **内部方法**
+折叠相同噪音消息：窗口内重复只输出一次，并附带被折叠的累计次数
+
+---
+
+
 ### `global_exception_handler(exc_type: type[Exception], exc_value: Exception, exc_traceback: Any)`
 
 全局异常处理器
