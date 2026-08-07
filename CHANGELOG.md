@@ -63,6 +63,22 @@
 
 ---
 
+## [2.7.1-dev.2] - 2026/08/07
+> 开发版本
+
+**版本摘要**
+回退 dev.1 引入的路由端口自动顺延策略：该机制对生产环境有害——Docker 等场景对外固定暴露配置端口（如 8000），端口被占用时自动顺延到 8001 会导致外部访问直接 502。现改为：端口被占用即视为致命初始化错误，启动前同步预检端口并给出清晰 i18n 错误，`sdk.init()` 返回 False、进程报错退出后由运行器/Docker 重启；端口顺延相关配置与翻译键一并移除。
+
+### 移除
+- @wsu2059q
+  - 路由端口自动顺延机制（dev.1 引入）：`RouterManager.start()` 不再在端口被占用时依次尝试后续端口；移除 `DEFAULT_SERVER_PORT_RETRY_LIMIT` 常量及 `core.router.port_advance` / `core.router.port_range_in_use` 翻译键
+
+### 变更
+- @wsu2059q
+  - `Core/router` 端口被占用时改为致命错误：启动前同步 bind 预检（避免 uvicorn `sys.exit(3)` 级联崩溃刷屏），被占用时抛出清晰的 `core.router.port_in_use` 错误；`sdk.init()` 将路由绑定失败视为致命初始化失败返回 False，进程报错退出，交由运行器/Docker 重启，不再静默降级运行在错误端口上
+
+---
+
 ## [2.7.1-dev.1] - 2026/08/06
 > 开发版本
 

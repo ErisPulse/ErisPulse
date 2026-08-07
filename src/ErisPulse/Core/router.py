@@ -53,7 +53,6 @@ from .constants import (
     DEFAULT_SECURITY_HEADERS,
     DEFAULT_SERVER_HOST,
     DEFAULT_SERVER_PORT,
-    DEFAULT_SERVER_PORT_RETRY_LIMIT,
     DEFAULT_WS_AUTO_ACCEPT,
     FALLBACK_IPV4,
     FALLBACK_IPV6_HOST,
@@ -2601,26 +2600,23 @@ class RouterManager:
             self._get_local_ips()
             self._apply_config()
 
-            # 端口自动顺延：若端口被占用则依次尝试后续端口（类似 VNC 的 5099→5100）。
-            # uvicorn 在端口被占用时会执行 sys.exit(3)，其 SystemExit 会被事件循环
-            # 重新抛出并取消所有任务，导致进程异常退出并刷屏大量 "Task was destroyed
-            # but it is pending"。此处先同步 bind 探测并顺延，实际监听端口通过
-            # bind_port 暴露，uvicorn 启动时不会再次遇到占用错误。
-            bind_port = self._find_available_port(
-                host, port, DEFAULT_SERVER_PORT_RETRY_LIMIT
-            )
+            # 同步探测端口是否可绑定。uvicorn 在端口被占用时会执行 sys.exit(3)，
+            # 其 SystemExit 会被事件循环重新抛出并取消所有任务，导致进程异常退出并
+            # 刷屏大量 "Task was destroyed but it is pending"。此处先同步 bind 探测，
+            # 端口被占用时在启动前抛出清晰、可操作的错误，由上层按致命错误处理。
+            self._check_port_available(host, port)
 
             config = uvicorn.Config(
                 self.app,
                 host=host,
-                port=bind_port,
+                port=port,
                 log_level="warning",
                 ssl_certfile=ssl_certfile,
                 ssl_keyfile=ssl_keyfile,
             )
             self._uvicorn_server = uvicorn.Server(config)
 
-            self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{bind_port}"
+            self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
             display_url = self._format_display_url(self.base_url)
             http_count = sum(len(paths) for paths in self._http_routes.values())
             ws_count = sum(len(paths) for paths in self._websocket_routes.values())
@@ -2662,7 +2658,7 @@ class RouterManager:
                 data={
                     "base_url": self.base_url,
                     "host": host,
-                    "port": bind_port,
+                    "port": port,
                 },
             )
         except Exception as e:
@@ -2684,18 +2680,21 @@ class RouterManager:
             logger.error(i18n.t("core.router.start_failed", error=e))
             raise e
 
-    def _is_port_bindable(self, host: str, port: int) -> bool:
+    def _check_port_available(self, host: str, port: int) -> None:
         """
-        同步探测端口当前是否可绑定
+        同步探测端口是否可绑定，避免 uvicorn 异步启动失败后引发级联错误
 
         uvicorn 在端口被占用时会执行 ``sys.exit(STARTUP_FAILURE)``，其 SystemExit
         会被事件循环重新抛出并取消所有任务，导致进程异常退出并刷屏大量
-        "Task was destroyed but it is pending"。此处先同步 bind 探测端口是否空闲，
-        供启动前自动顺延使用。
+        "Task was destroyed but it is pending"。此处先同步 bind 探测端口，若被占用
+        则在启动前抛出清晰的 i18n 提示，由上层按致命错误处理（不自动顺延端口，
+        避免生产环境暴露的端口变化导致外部访问失败）。
 
         :param host: str 监听地址
         :param port: int 监听端口
-        :return: bool 端口当前可绑定返回 True，否则返回 False
+
+        :raises RuntimeError: 当端口被占用时抛出，携带友好的错误提示
+        :raises OSError: 其他绑定错误（如无权限绑定特权端口）
         """
         try:
             family = socket.AF_INET6 if ":" in host else socket.AF_INET
@@ -2704,46 +2703,12 @@ class RouterManager:
                 probe.bind((host, port))
             finally:
                 probe.close()
-            return True
-        except OSError:
-            return False
-
-    def _find_available_port(
-        self, host: str, port: int, retry_limit: int
-    ) -> int:
-        """
-        在 [port, port + retry_limit) 范围内寻找第一个可绑定的端口
-
-        端口被占用时自动顺延，实际监听端口通过
-        router.base_url 暴露给下游。若范围内全部被占用，抛出清晰的错误提示。
-
-        :param host: str 监听地址
-        :param port: int 期望端口（顺延起点）
-        :param retry_limit: int 尝试的端口个数（含起点），最小为 1
-        :return: int 实际可绑定的端口
-
-        :raises RuntimeError: 当范围内端口全部被占用时抛出
-        """
-        for candidate in range(port, port + max(1, retry_limit)):
-            if self._is_port_bindable(host, candidate):
-                if candidate != port:
-                    logger.warning(
-                        i18n.t(
-                            "core.router.port_advance",
-                            host=host,
-                            requested=port,
-                            port=candidate,
-                        )
-                    )
-                return candidate
-        raise RuntimeError(
-            i18n.t(
-                "core.router.port_range_in_use",
-                host=host,
-                port=port,
-                count=retry_limit,
-            )
-        )
+        except OSError as e:
+            if e.errno == errno.EADDRINUSE:
+                raise RuntimeError(
+                    i18n.t("core.router.port_in_use", host=host, port=port)
+                ) from e
+            raise
 
     def _start_rate_limit_cleanup(self) -> None:
         """
