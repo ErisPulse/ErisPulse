@@ -277,6 +277,7 @@ TRANSLATIONS = {
     "cli.run.process_exited": "进程已正常退出，等待文件变更后重启",
     "cli.run.process_crashed": "进程异常退出（退出码 {code}），修复后保存文件将自动重启",
     "cli.run.subprocess_crashed_retry": "子进程异常终止，将在 {seconds} 秒后自动重试...",
+    "cli.run.terminating_child": "正在终止机器人子进程，释放端口等资源...",
     # ==================== uninstall 命令 ====================
     "cli.uninstall.description": "卸载模块/适配器包",
     "cli.uninstall.package_help": "要卸载的包名（可指定多个）",
