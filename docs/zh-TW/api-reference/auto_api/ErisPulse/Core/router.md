@@ -987,6 +987,39 @@ router 中间件配置变更回调：CORS/安全头需重启进程才能生效
 ---
 
 
+##### `_is_port_bindable(host: str, port: int)`
+
+同步探测端口当前是否可绑定
+
+uvicorn 在端口被占用时会执行 ``sys.exit(STARTUP_FAILURE)``，其 SystemExit
+会被事件循环重新抛出并取消所有任务，导致进程异常退出并刷屏大量
+"Task was destroyed but it is pending"。此处先同步 bind 探测端口是否空闲，
+供启动前自动顺延使用。
+
+- **host** (`str`): 监听地址
+- **port** (`int`): 监听端口
+**返回值** (`bool`): 端口当前可绑定返回 True，否则返回 False
+
+---
+
+
+##### `_find_available_port(host: str, port: int, retry_limit: int)`
+
+在 [port, port + retry_limit) 范围内寻找第一个可绑定的端口
+
+端口被占用时自动顺延，实际监听端口通过
+router.base_url 暴露给下游。若范围内全部被占用，抛出清晰的错误提示。
+
+- **host** (`str`): 监听地址
+- **port** (`int`): 期望端口（顺延起点）
+- **retry_limit** (`int`): 尝试的端口个数（含起点），最小为 1
+**返回值** (`int`): 实际可绑定的端口
+
+**异常**: `RuntimeError` - 当范围内端口全部被占用时抛出
+
+---
+
+
 ##### `_start_rate_limit_cleanup()`
 
 > **内部方法**
