@@ -467,3 +467,48 @@ class TestCrossProcessContracts:
 
         assert CLI_MODULE == CORE_MODULE == "erispulse.module"
         assert CLI_ADAPTER == CORE_ADAPTER == "erispulse.adapter"
+
+
+# ==================== 运行器子进程清理 ====================
+
+
+class TestRunInternalChildCleanup:
+    """`ep run` 运行器退出时必须终止子进程，避免孤儿进程残留并占用端口等资源"""
+
+    def _fake_process(self, *, running: bool = True):
+        from unittest.mock import Mock
+
+        fake = Mock()
+        # 第一次 wait 抛 KeyboardInterrupt（模拟 Ctrl+C 中断 process.wait()），
+        # 第二次 wait 正常返回（finally 清理路径中的 process.wait(timeout=5)）
+        fake.wait = Mock(side_effect=[KeyboardInterrupt(), None])
+        fake.poll = Mock(return_value=None if running else 0)
+        fake.terminate = Mock()
+        fake.kill = Mock()
+        return fake
+
+    def test_child_terminated_on_keyboard_interrupt(self):
+        from unittest.mock import patch
+
+        from ErisPulse.CLI.commands.run import RunCommand
+
+        fake = self._fake_process(running=True)
+        with patch("subprocess.Popen", return_value=fake):
+            RunCommand()._run_internal(False)
+
+        # 运行器退出时必须终止仍在运行的子进程（防孤儿占用端口）
+        fake.terminate.assert_called_once()
+        # 正常 terminate 成功，不应走到强杀
+        fake.kill.assert_not_called()
+
+    def test_exited_child_not_terminated(self):
+        from unittest.mock import patch
+
+        from ErisPulse.CLI.commands.run import RunCommand
+
+        fake = self._fake_process(running=False)
+        with patch("subprocess.Popen", return_value=fake):
+            RunCommand()._run_internal(False)
+
+        # 子进程已退出，无需 terminate
+        fake.terminate.assert_not_called()
