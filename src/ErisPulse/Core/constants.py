@@ -635,14 +635,34 @@ DEFAULT_PROACTIVE_GC_INTERVAL_SECS: Final[int] = 300
 
 # 主动 GC 分代（generation）。
 # 运行时行为。gc.collect(generation) 只回收指定代及更年轻的对象：0=最年轻代（最轻量），
-# 1=中年代，2=最老代（覆盖最全）。默认 2 兼顾覆盖面与频率可控。
+# 1=中年代，2=最老代（覆盖最全，等价于全量 gc.collect()）。默认 0 使常规轮次保持轻量；
+# 深度回收由 proactive_gc_full_every 周期性触发。
 # 修改影响: 设低减少单次扫描开销但回收不彻底，设高（2）覆盖更全但单次更重。
-DEFAULT_PROACTIVE_GC_GENERATION: Final[int] = 2
+DEFAULT_PROACTIVE_GC_GENERATION: Final[int] = 0
 
 # 主动 GC 全量收集周期（每 N 轮做一次全量 gc.collect()）。
 # 运行时行为。0 表示禁用（仅按 generation 回收），N>0 表示每 N 轮额外触发一次全量回收。
+# 全量回收受 proactive_gc_memory_growth_mb 内存增长门限约束，无增长时跳过。
 # 修改影响: 设低（如 5）确保周期性深度回收，设高或 0 减少长尾暂停。
-DEFAULT_PROACTIVE_GC_FULL_EVERY: Final[int] = 0
+DEFAULT_PROACTIVE_GC_FULL_EVERY: Final[int] = 20
+
+# 主动 GC 全量回收的内存增长门限（MB）。
+# 运行时行为。周期性全量回收前，对比上次全量后的内存基线（优先 tracemalloc，其次 RSS），
+# 仅当增长超过此值才真正触发 gc.collect()，避免内存稳定时空转。0 表示不设门限（每轮都回收）。
+# 修改影响: 设小更频繁深度回收（更多暂停），设大更保守（内存峰值略高但 CPU 开销更低）。
+DEFAULT_PROACTIVE_GC_MEMORY_GROWTH_MB: Final[int] = 32
+
+# 主动 GC 空闲门控（仅在事件处理器空闲时执行 Python GC）。
+# 运行时行为。开启后，若 adapter 存在未完成的 pending handler task（事件洪峰），
+# 本轮跳过 Python GC，避免 GC 停顿与消息处理竞争。内部资源回收不受影响。
+# 修改影响: 开启降低洪峰期延迟，但可能推迟内存回收。
+DEFAULT_PROACTIVE_GC_IDLE_ONLY: Final[bool] = False
+
+# 主动 GC 常规轮次的 gen0 垃圾量下限。
+# 运行时行为。gc.get_count()[0] 低于此值时跳过 Python GC（无意义空转），
+# 高于此值才按 generation 回收。0 表示始终回收。
+# 修改影响: 设高（如 700=跟随 Python 自动回收节奏）更多轮次被跳过，设低更积极回收。
+DEFAULT_PROACTIVE_GC_GEN0_MIN: Final[int] = 500
 
 # shutdown 时等待在途事件处理器完成的最长时间（秒）。
 # 运行时行为。适配器关闭时取消所有 pending handler tasks 后等待它们退出的耐心时间。
@@ -755,8 +775,11 @@ __all__ = [
     "DEFAULT_MODULE_PRIORITY",
     "DEFAULT_OFFLINE_BOT_EXPIRY_SECS",
     "DEFAULT_PROACTIVE_GC_FULL_EVERY",
+    "DEFAULT_PROACTIVE_GC_GEN0_MIN",
     "DEFAULT_PROACTIVE_GC_GENERATION",
+    "DEFAULT_PROACTIVE_GC_IDLE_ONLY",
     "DEFAULT_PROACTIVE_GC_INTERVAL_SECS",
+    "DEFAULT_PROACTIVE_GC_MEMORY_GROWTH_MB",
     "DEFAULT_RATE_LIMIT_CLEANUP_INTERVAL_SECS",
     "DEFAULT_RATE_LIMIT_MAX_REQUESTS",
     "DEFAULT_RATE_LIMIT_WINDOW_SECS",

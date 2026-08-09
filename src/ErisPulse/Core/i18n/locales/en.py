@@ -51,6 +51,8 @@ TRANSLATIONS = {
     "core.sdk.uninit.critical_error": "SDK uninitialization critical error: {error}",
     "core.sdk.uninit.client_close_failed": "Failed to close HTTP client connection pool: {error}",
     "core.sdk.gc.collected": "[GC] Python collected {collected} object(s), evicted {evicted} offline bot(s)",
+    "core.sdk.gc.skipped": "[GC] Round skipped (reason: {reason})",
+    "core.sdk.gc.config_changed": "[GC] Proactive GC config changed, restarting task",
     # ==================== SDK Environment Preparation ====================
     "core.sdk.prepare.start": "Starting initialization",
     "core.sdk.prepare.starting": "Preparing initialization environment...",

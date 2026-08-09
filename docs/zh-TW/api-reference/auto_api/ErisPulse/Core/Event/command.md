@@ -104,7 +104,7 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async _try_execute_command(event: dict[str, Any], original_text: str, check_text: str, prefix: str)`
+##### `async _try_execute_command(event: 'Event', original_text: str, check_text: str, prefix: str)`
 
 尝试执行命令
 
@@ -118,7 +118,7 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async _check_pending_reply(event: dict[str, Any])`
+##### `async _check_pending_reply(event: 'Event')`
 
 检查是否是等待回复的消息
 
