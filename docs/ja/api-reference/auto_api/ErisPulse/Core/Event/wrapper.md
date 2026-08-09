@@ -1120,7 +1120,10 @@ OneBot12 标准事件数据结构
 
 ##### `to_dict()`
 
-转换为字典
+转换为字典（过滤内部键）
+
+过滤以 ``_`` 开头的内部键（如 ``_processed``/``_propagation_stopped``），
+只返回事件数据。
 
 **返回值**: 事件数据字典
 
@@ -1136,9 +1139,72 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `mark_processed()`
+##### `mark_processed(claim: bool = True, stop: bool = True)`
 
-标记为已处理
+标记事件为已处理
+
+认领与阻断是两个**正交**的语义，可独立控制：
+
+- **认领（claim）**：标记事件已被本处理器处理（写入 ``_processed``）。
+  命令分发器看到已认领的事件会跳过去重，避免同一消息被多个命令处理器
+  重复处理。典型场景：命令匹配成功后认领，阻止命令分发器再介入。
+- **阻断（stop）**：阻止事件向更低优先级处理器传播（写入
+  ``_propagation_stopped``）。低优先级处理器（如 ``on_message``）将不再
+  看到该事件。典型场景：高优先级处理器已完整处理事件，不希望低优先级再执行。
+
+参数组合：
+- ``mark_processed()``：认领 + 阻断（默认）
+- ``mark_processed(stop=False)``：仅认领，不阻断 —— 事件继续流向低优先级观察者
+- ``mark_processed(claim=False)``：仅阻断，不认领 —— 低优先级不执行，但不做去重
+
+- **claim** (`是否认领事件（标记已处理，命令分发去重）（默认`): True）
+- **stop** (`是否阻断向低优先级处理器传播（默认`): True）
+
+**示例**:
+```python
+>>> event.mark_processed()            # 认领 + 阻断（默认）
+>>> event.mark_processed(stop=False)  # 仅认领，低优先级仍能看到
+>>> event.mark_processed(claim=False) # 仅阻断，不标记已处理
+```
+
+---
+
+
+##### `done(claim: bool = True, stop: bool = True)`
+
+标记事件完成（:meth:`mark_processed` 的别名）
+
+与 :meth:`mark_processed` 完全等价，提供更简洁的写法。
+
+- **claim** (`是否认领事件（标记已处理，命令分发去重）（默认`): True）
+- **stop** (`是否阻断向低优先级处理器传播（默认`): True）
+
+**示例**:
+```python
+>>> @command("help")
+... async def help_cmd(event):
+...     event.done()            # 认领 + 阻断（命令处理完的标准做法）
+>>>
+>>> @message.on_message(priority=50)
+... async def observer(event):
+...     event.done(stop=False)  # 仅认领，低优先级仍能看到（日志/统计）
+>>>
+>>> @message.on_message(priority=100)
+... async def firewall(event):
+...     if denied(event):
+...         event.done(claim=False)  # 仅阻断，不标记已处理
+```
+
+---
+
+
+##### `is_stopped()`
+
+事件传播是否已被阻断（是否已停止向低优先级处理器传播）
+
+对应 ``done(stop=True)`` / ``mark_processed(stop=True)`` 的阻断效果。
+
+**返回值**: 是否已阻断传播
 
 ---
 

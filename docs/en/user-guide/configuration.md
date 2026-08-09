@@ -80,27 +80,23 @@ Starting from version 2.7.0, the framework provides **systematic support** for c
 
 | Component | Configurations Supporting Hot Reload | Behavior |
 |-----------|--------------------------------------|----------|
-| **Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | Automatically re-applied (with change detection) |
+| **Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | Automatically reapplied (with change detection) |
 | **Command System CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
-| **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore, rebuilds with new value |
-| **Proactive GC** | `framework.proactive_gc_interval` | Re-reads each round, supports runtime adjustment/disable |
-| **Master System Master** | `master.users` | Each `is_master()` check reads real-time, no restart required |
-| **Module/Adapter Configurations** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
+| **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore and rebuilds with new value |
+| **Proactive GC** | `framework.proactive_gc_*` | Configuration changes immediately restart GC task, supports runtime adjustment/disable/re-enable |
+| **Master System Master** | `master.users` | Each `is_master()` check reads in real-time, no restart needed |
+| **Module/Adapter Configuration** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
 
-**Configurations Requiring Restart** (cannot be safely hot-swapped; warning "Process needs to be restarted for changes to take effect" is output when changed):
+**Configurations Requiring Restart** (cannot be safely hot-swapped; warning "Process needs restart to take effect" is output on change):
 
 | Configuration | Reason |
 |---------------|--------|
 | `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-swapped at runtime |
-| `storage.use_global_db` | SQLite file handle is already open at runtime, switching path is unsafe |
+| `storage.use_global_db` | SQLite file handle is already open at runtime, switching paths is unsafe |
 
-> **Error occurred during editing and saving?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, and will not broadcast an empty configuration to components (to avoid `on_config_update` receiving empty values and mistakenly reverting to default).
+> **Error editing and saving midway?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, not broadcasting an empty configuration to components (to avoid `on_config_update` receiving null values and mistakenly reverting to default).
 
-7. **Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - Example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md`), keep them unchanged
-   - This ensures links point to the correct language version of the document
+docs/en/configuration-hot-reload.md
 
 ## Complete Configuration Example
 
@@ -198,29 +194,46 @@ adapters = []
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | Whether to enable lazy loading of modules |
-| uninit_timeout | integer | 30 | Total timeout (in seconds) for graceful shutdown, after which the process is forcibly terminated. 0 means no timeout is set |
+| uninit_timeout | integer | 30 | Total timeout (seconds) for graceful shutdown, after which the process is forcibly terminated. 0 means no timeout is set |
 | strict_mode | integer | 0 | Strict mode level, see the "Strict Mode" section below |
+| handler_max_concurrency | integer | 64 | Maximum number of concurrent Tasks for event handlers. Setting this higher increases throughput but also memory usage |
+| offline_bot_expiry | integer | 3600 | Automatic expiration time (seconds) for offline Bot records. 0 means no expiration |
+
+### Proactive GC Configuration
+
+After SDK initialization, a background task for proactive garbage collection (GC) is started, periodically executing Python GC and internal resource cleanup (such as offline Bot cleanup). All parameters support hot updates, and the task is restarted immediately upon change.
+
+| Configuration Item | Type | Default Value | Description |
+|---------|------|---------|------|
+| proactive_gc_interval | number | 300 | Recycling interval (seconds), supports decimals. 0 means disable proactive GC |
+| proactive_gc_generation | integer | 0 | Regular round recycling generation (0/1/2, clamped to 0..2). Note that `gc.collect(2)` is equivalent to full recycling, and the default of 0 keeps it lightweight; deep recycling is triggered periodically by `proactive_gc_full_every` |
+| proactive_gc_full_every | integer | 20 | Perform a full recycling every N rounds, 0 means disable periodic full recycling. Full recycling is constrained by the `proactive_gc_memory_growth_mb` threshold |
+| proactive_gc_memory_growth_mb | integer | 32 | Memory growth threshold (MB) for full recycling: compared against the memory baseline (prefer tracemalloc, then RSS) after the last full recycling, only if the growth reaches this value will a full recycling be executed. 0 means no threshold is set |
+| proactive_gc_idle_only | boolean | false | When enabled, skip Python GC during event peaks (when there are pending handlers), to avoid pauses and message processing contention; internal resource recycling is unaffected |
+| proactive_gc_gen0_min | integer | 500 | Lower bound of garbage in gen0 to trigger regular round recycling: if `gc.get_count()[0]` is below this value, skip directly (idle rounds have nearly zero overhead). 0 means always recycle |
+
+> **Change in 2.7.1**: The default `proactive_gc_generation` was adjusted from `2` to `0`, and the default `proactive_gc_full_every` was adjusted from `0` to `20`. Previously, `generation=2` meant that the heaviest full recycling was performed every round; the new default maintains recycling coverage while significantly reducing idle overhead. Explicitly configured old values still take effect as their literal meaning.
 
 ### Strict Mode
 
-The strict mode controls the handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit their corresponding base classes (`BaseModule`/`BaseAdapter`). Components that do not inherit from the base class may affect the framework's context system and fallback cleanup, potentially leading to resource leaks.
+Strict mode controls the handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit the corresponding base class (`BaseModule`/`BaseAdapter`). Components that do not inherit the base class affect the framework's context system and fallback cleanup, potentially causing resource leaks.
 
-> **2.5.2 Change**: The default level has been adjusted from `1` (skip) to `0` (lenient) to reduce loading issues for new users during their first use. Components that do not inherit from the base class will be warned and attempted to load, rather than being directly rejected. If you wish to restore the previous behavior, explicitly set `strict_mode = 1`.
+> **Change in 2.5.2**: The default level was adjusted from `1` (skip) to `0` (lenient), to reduce loading issues encountered by new users. Components that do not inherit the base class will be warned and attempted to load, rather than being directly rejected. To restore the old behavior, explicitly set `strict_mode = 1`.
 
 | Level | Name | Behavior |
 |------|------|------|
-| 0 | Lenient (default) | Non-compliant components are only warned, and components that do not inherit from the base class will still be attempted to load (compatible with old components) |
-| 1 | Strict-Skip | Reject components that do not inherit from the base class and skip them, while starting the rest normally |
-| 2 | Strict-Fatal | Collect all non-compliant components and report them together, then terminate the entire startup process |
+| 0 | Lenient (Default) | Non-compliance only issues a warning; components that do not inherit the base class will still be attempted to load (compatibility with old components) |
+| 1 | Strict-Skip | Reject components that do not inherit the base class and skip them, while other components start normally |
+| 2 | Strict-Fatal | Collect all non-compliant components and report them together before terminating the entire startup process |
 
-Under each level, component crashes such as errors during "loading/registration/initialization" will always be skipped; the difference lies in:
+Under each level, errors reported during the "loading/registration/initialization phase" (such as component crashes) are always skipped; the difference lies in:
 
-- **0 → 1**: The only behavioral change is that "not inheriting from the base class" changes from "still loading" to "skipping".
-- **1 → 2**: All violations (not inheriting from the base class, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, and after collecting them at the startup checkpoint, the violation list is output once and the process is terminated.
+- **0 → 1**: The only behavioral change is that "not inheriting the base class" changes from "still loading" to "skipping".
+- **1 → 2**: All non-compliance (not inheriting the base class, loading failure, registration failure, initialization failure, etc.) is upgraded to fatal, and a list of non-compliant components is output at the startup checkpoint before terminating.
 
-#### Exemption List
+#### Exception List
 
-If certain components cannot be migrated temporarily (for example, due to dependencies on old modules), they can be added to the exemption list. Components listed in the exemption list will be treated as lenient mode even if they are non-compliant, and will continue to be loaded:
+If certain components cannot be migrated temporarily (for example, due to dependencies on old modules), they can be added to the exception list. Components listed will be treated as lenient mode even if they are non-compliant, and will continue to be loaded:
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -228,9 +241,7 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to the exemption list or lower the level).
-
-Please directly return the complete translated Markdown content, without including any other text.
+> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to the exception list or lower the level).
 
 ## Storage Configuration
 

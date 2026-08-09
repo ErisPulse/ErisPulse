@@ -72,27 +72,25 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 ## 配置熱更新
 
-從 2.7.0 開始，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（後台 watcher 每 5 秒偵測一次），或程式碼呼叫 `setConfig()` 後，各元件自動回應：
+從 2.7.0 開始，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（背景 watcher 每 5 秒偵測一次），或程式碼呼叫 `setConfig()` 後，各組件會自動回應：
 
-| 元件 | 支援熱更新的設定 | 行為 |
+| 組件 | 支援熱更新的配置 | 行為 |
 |------|----------------|------|
 | **日誌 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | 自動重新套用（帶變更偵測） |
 | **命令系統 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一條訊息即生效 |
 | **適配器併發** | `framework.handler_max_concurrency` | 失效快取信號量，按新值重建 |
-| **主動 GC** | `framework.proactive_gc_interval` | 每輪重讀，支援執行時調整/停用 |
-| **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查即時讀取，無需重新啟動 |
-| **模組/適配器設定** | 各自的設定項目 | 觸發 `on_config_update(old, new)` 回呼 |
+| **主動 GC** | `framework.proactive_gc_*` | 配置變更即時重新啟動 GC 任務，支援執行時調整/停用/重新啟用 |
+| **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查實時讀取，無需重啟 |
+| **模組/適配器配置** | 各自的配置項 | 觸發 `on_config_update(old, new)` 回呼 |
 
-**需重新啟動的設定**（無法安全熱切換，變更時會輸出告警「需重新啟動程序後生效」）：
+**需重啟的配置**（無法安全熱切換，變更時會輸出告警「需重啟程序後生效」）：
 
-| 設定 | 原因 |
+| 配置 | 原因 |
 |------|------|
 | `router.cors.*` / `router.security.*` | 中間件在服務啟動時寫入 FastAPI，執行時無法安全熱切換 |
 | `storage.use_global_db` | SQLite 檔案句柄已在執行時開啟，切換路徑不安全 |
 
-> **中途編輯儲存出錯？** 若編輯 `config.toml` 時出現瞬間語法錯誤，框架會**保留上次有效設定**並輸出診斷日誌，不會把空設定廣播給各元件（避免 `on_config_update` 收到空值誤回退預設）。
-
-[**English**](docs/zh-TW/quick-start.md)
+> **中途編輯儲存出錯？** 若編輯 `config.toml` 時出現瞬時語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各組件（避免 `on_config_update` 收到空值誤回退預設值）。
 
 ## 完整配置示例
 
@@ -192,21 +190,38 @@ adapters = []
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | 是否啟用模組懶加載 |
 | uninit_timeout | integer | 30 | 優雅關閉的總超時時間（秒），超過後強制終止。0 表示不設超時 |
-| strict_mode | integer | 0 | 嚴格模式級別，見下方「嚴格模式」說明 |
+| strict_mode | integer | 0 | 嚴格模式等級，見下方「嚴格模式」說明 |
+| handler_max_concurrency | integer | 64 | 事件處理器最大併發 Task 數，設大提高吞吐但增加記憶體佔用 |
+| offline_bot_expiry | integer | 3600 | 離線 Bot 記錄自動過期時間（秒），0 表示不過期 |
+
+### 主動 GC 配置
+
+SDK 初始化完成後啟動主動 GC 後台任務，周期性執行 Python GC 與內部資源回收（離線 Bot 清理等）。全部參數均支援熱更新，變更時即時重啟任務。
+
+| 配置項 | 類型 | 默認值 | 說明 |
+|---------|------|---------|------|
+| proactive_gc_interval | number | 300 | 回收間隔（秒），支援小數。0 表示禁用主動 GC |
+| proactive_gc_generation | integer | 0 | 常規輪次回收分代（0/1/2，钳制到 0..2）。注意 `gc.collect(2)` 等價於全量回收，默認 0 保持輕量；深度回收由 `proactive_gc_full_every` 周期性觸發 |
+| proactive_gc_full_every | integer | 20 | 每 N 輪做一次全量回收，0 表示禁用周期性全量。全量回收受 `proactive_gc_memory_growth_mb` 門限約束 |
+| proactive_gc_memory_growth_mb | integer | 32 | 全量回收的記憶體增長門限（MB）：對比上次全量後的記憶體基線（優先 tracemalloc，其次 RSS），僅當增長達到此值才執行全量回收。0 表示不設門限 |
+| proactive_gc_idle_only | boolean | false | 開啟後，事件洪峰（存在未完成的 pending handler）時本轮跳過 Python GC，避免停頓與消息處理競爭；內部資源回收不受影響 |
+| proactive_gc_gen0_min | integer | 500 | 常規輪次觸發回收的 gen0 垃圾量下限：`gc.get_count()[0]` 低於此值直接跳過（空轉輪次近乎零開銷）。0 表示始終回收 |
+
+> **2.7.1 變更**：默認 `proactive_gc_generation` 由 `2` 調整為 `0`，默認 `proactive_gc_full_every` 由 `0` 調整為 `20`。此前 `generation=2` 意味著每輪都做最重的全量回收；新默認在保持回收覆蓋的同時顯著降低空轉開銷。顯式配置的舊值仍按字面語義生效。
 
 ### 嚴格模式
 
 嚴格模式控制模組/適配器在加載階段不合規或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的組件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
 
-> **2.5.2 變更**：默認級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新用戶初次使用時遇到的加載問題。未繼承基類的組件將以 WARNING 提示並嘗試加載，而非直接拒絕。如需恢復旧行為，請顯式設定 `strict_mode = 1`。
+> **2.5.2 變更**：默認等級從 `1`（跳過）調整為 `0`（寬鬆），以減少新用戶初次使用時遇到的加載問題。未繼承基類的組件將以 WARNING 提示並嘗試加載，而非直接拒絕。如需恢復旧行為，請顯式設置 `strict_mode = 1`。
 
-| 級別 | 名稱 | 行為 |
+| 等級 | 名稱 | 行為 |
 |------|------|------|
-| 0 | 寬鬆（默認） | 違規僅警告，未繼承基類的組件仍會嘗試加載（相容舊組件） |
+| 0 | 寬鬆（默認） | 違規僅警告，未繼承基類的組件仍會嘗試加載（兼容舊組件） |
 | 1 | 嚴格-跳過 | 拒絕未繼承基類的組件並跳過，其餘正常啟動 |
 | 2 | 嚴格-致命 | 收集所有違規後統一報告並中止整個啟動 |
 
-各級別下，「加載/註冊/初始化階段報錯」這類組件自身崩潰始終會被跳過；區別在於：
+各等級下，「加載/註冊/初始化階段報錯」這類組件自身崩潰始終會被跳過；區別在於：
 
 - **0 → 1**：唯一行為變化是「未繼承基類」從「仍加載」變為「跳過」。
 - **1 → 2**：所有違規（未繼承基類、加載失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。
@@ -221,7 +236,7 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> 當某個組件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低級別）。
+> 當某個組件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低等級）。
 
 ## 儲存設定
 
