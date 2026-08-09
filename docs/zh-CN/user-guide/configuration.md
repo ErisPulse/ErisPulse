@@ -69,7 +69,7 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 | **日志 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | 自动重新应用（带变更检测） |
 | **命令系统 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一条消息即生效 |
 | **适配器并发** | `framework.handler_max_concurrency` | 失效缓存信号量，按新值重建 |
-| **主动 GC** | `framework.proactive_gc_interval` | 每轮重读，支持运行时调整/禁用 |
+| **主动 GC** | `framework.proactive_gc_*` | 配置变更即时重启 GC 任务，支持运行时调整/禁用/重新启用 |
 | **主人系统 Master** | `master.users` | 每次 `is_master()` 检查实时读取，无需重启 |
 | **模块/适配器配置** | 各自的配置项 | 触发 `on_config_update(old, new)` 回调 |
 
@@ -173,6 +173,23 @@ adapters = []
 | enable_lazy_loading | boolean | true | 是否启用模块懒加载 |
 | uninit_timeout | integer | 30 | 优雅关闭的总超时时间（秒），超过后强制终止。0 表示不设超时 |
 | strict_mode | integer | 0 | 严格模式级别，见下方「严格模式」说明 |
+| handler_max_concurrency | integer | 64 | 事件处理器最大并发 Task 数，设大提高吞吐但增加内存占用 |
+| offline_bot_expiry | integer | 3600 | 离线 Bot 记录自动过期时间（秒），0 表示不过期 |
+
+### 主动 GC 配置
+
+SDK 初始化完成后启动主动 GC 后台任务，周期性执行 Python GC 与内部资源回收（离线 Bot 清理等）。全部参数均支持热更新，变更时即时重启任务。
+
+| 配置项 | 类型 | 默认值 | 说明 |
+|---------|------|---------|------|
+| proactive_gc_interval | number | 300 | 回收间隔（秒），支持小数。0 表示禁用主动 GC |
+| proactive_gc_generation | integer | 0 | 常规轮次回收分代（0/1/2，钳制到 0..2）。注意 `gc.collect(2)` 等价于全量回收，默认 0 保持轻量；深度回收由 `proactive_gc_full_every` 周期性触发 |
+| proactive_gc_full_every | integer | 20 | 每 N 轮做一次全量回收，0 表示禁用周期性全量。全量回收受 `proactive_gc_memory_growth_mb` 门限约束 |
+| proactive_gc_memory_growth_mb | integer | 32 | 全量回收的内存增长门限（MB）：对比上次全量后的内存基线（优先 tracemalloc，其次 RSS），仅当增长达到此值才执行全量回收。0 表示不设门限 |
+| proactive_gc_idle_only | boolean | false | 开启后，事件洪峰（存在未完成的 pending handler）时本轮跳过 Python GC，避免停顿与消息处理竞争；内部资源回收不受影响 |
+| proactive_gc_gen0_min | integer | 500 | 常规轮次触发回收的 gen0 垃圾量下限：`gc.get_count()[0]` 低于此值直接跳过（空转轮次近乎零开销）。0 表示始终回收 |
+
+> **2.7.1 变更**：默认 `proactive_gc_generation` 由 `2` 调整为 `0`，默认 `proactive_gc_full_every` 由 `0` 调整为 `20`。此前 `generation=2` 意味着每轮都做最重的全量回收；新默认在保持回收覆盖的同时显著降低空转开销。显式配置的旧值仍按字面语义生效。
 
 ### 严格模式
 
