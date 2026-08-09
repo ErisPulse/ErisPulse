@@ -63,6 +63,27 @@
 
 ---
 
+## [2.7.1-dev.3] - 2026/08/09
+> 开发版本
+
+**版本摘要**
+事件链路解耦。解耦「认领」与「阻断」正交语义，`mark_processed(claim=, stop=)` 新增正交参数，`done` 为其别名。所有改动默认行为向后兼容。
+
+### 新增
+- @wsu2059q
+  - `Core/Event` 事件链路解耦与状态管理：
+    - `event.mark_processed(claim=True, stop=True)` 新增「认领」与「阻断」正交参数：支持 `mark_processed()`（认领+阻断，默认）、`mark_processed(stop=False)`（仅认领）、`mark_processed(claim=False)`（仅阻断）
+    - 新增 `event.done(claim=, stop=)` 作为 `mark_processed` 的别名，提供更简洁的写法
+    - 新增 `event.is_stopped()` 查询阻断状态（内部链路判定基于 `_propagation_stopped`）
+
+### 变更
+- @wsu2059q
+  - `Core/Event/base.py` 中断判定从 `_processed` 改为 `_propagation_stopped`（`mark_processed()` 默认同时设置两者，行为完全向后兼容）
+  - `Core/Event/command.py` `_handle_message` 入口防御性归一化 event 为 `Event` 实例，使 `mark_processed` 等方法在直接调用时也可用
+  - `Event.to_dict()` 过滤以 `_` 开头的内部键（`_processed` / `_propagation_stopped`），只返回事件数据
+
+---
+
 ## [2.7.1-dev.2] - 2026/08/07
 > 开发版本
 

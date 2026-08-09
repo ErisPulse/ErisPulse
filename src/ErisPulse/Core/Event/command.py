@@ -14,7 +14,10 @@ ErisPulse 命令处理模块
 import asyncio
 import inspect
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .wrapper import Event
 
 from ...runtime import get_event_config
 from ...runtime.context import current_owner, handler_waits
@@ -375,6 +378,11 @@ class CommandHandler:
 
         :param event: 消息事件数据
         """
+        # 防御性归一化：确保 event 为 Event 实例，使 mark_processed 等方法可用
+        from .wrapper import Event as _Event
+
+        if not isinstance(event, _Event):
+            event = _Event(event)
 
         # 检查是否已经被其他处理器标记为已处理
         if event.get("_processed"):
@@ -399,7 +407,7 @@ class CommandHandler:
             )
             return
 
-        async def _process_text_for_command(event: dict[str, Any], text: str) -> bool:
+        async def _process_text_for_command(event: "Event", text: str) -> bool:
             """
             处理文本内容，尝试匹配并执行命令
 
@@ -501,7 +509,7 @@ class CommandHandler:
         return
 
     async def _try_execute_command(
-        self, event: dict[str, Any], original_text: str, check_text: str, prefix: str
+        self, event: "Event", original_text: str, check_text: str, prefix: str
     ) -> bool:
         """
         尝试执行命令
@@ -611,8 +619,8 @@ class CommandHandler:
 
             event["command"] = command_info
 
-            # 标记事件已被处理
-            event["_processed"] = True
+            # 标记事件已被处理（认领 + 阻断，阻止低优先级处理器再介入）
+            event.mark_processed()
 
             # 钩子: 命令匹配
             from ..lifecycle import lifecycle
@@ -694,7 +702,7 @@ class CommandHandler:
         )
         return False
 
-    async def _check_pending_reply(self, event: dict[str, Any]):
+    async def _check_pending_reply(self, event: "Event"):
         """
         检查是否是等待回复的消息
 
@@ -745,8 +753,8 @@ class CommandHandler:
             # 清理等待信息
             del self._waiting_replies[wait_key]
 
-            # 标记事件已被处理
-            event["_processed"] = True
+            # 标记事件已被处理（认领 + 阻断，阻止低优先级处理器再介入）
+            event.mark_processed()
 
     async def _send_permission_denied(self, event: dict[str, Any]):
         """

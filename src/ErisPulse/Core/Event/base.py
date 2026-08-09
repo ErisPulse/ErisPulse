@@ -288,7 +288,7 @@ class BaseEventHandler:
                     "elapsed_ms": round(_elapsed_0 * 1000, 2),
                     "processed": event.is_processed(),
                 })
-                if event.is_processed():
+                if event.is_stopped():
                     break
                 continue
 
@@ -325,8 +325,8 @@ class BaseEventHandler:
                             "handler": _h_name,
                             "owner": _h_owner,
                         })
-                if copy.is_processed():
-                    event.mark_processed()
+                # _processed / _propagation_stopped 已由上方字段合并循环传播，
+                # 此处不再调用 mark_processed()（其默认会触发 _propagation_stopped 副作用）
 
             # 冲突告警：同一 field 被多个同优先级 handler 修改
             for field, mods in _modified_tracker.items():
@@ -345,7 +345,7 @@ class BaseEventHandler:
                             )
                         )
 
-            if event.is_processed():
+            if event.is_stopped():
                 break
 
         # 输出事件链路追踪日志
