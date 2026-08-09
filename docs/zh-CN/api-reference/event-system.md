@@ -436,16 +436,38 @@ await conv.say("欢迎！")
 ### 工具方法
 
 ```python
-# 转换为字典
+# 转换为字典（过滤以 _ 开头的内部键）
 event_dict = event.to_dict()
-
-# 检查是否已处理
-if not event.is_processed():
-    event.mark_processed()
 
 # 获取原始数据
 raw = event.get_raw()
 raw_type = event.get_raw_type()
+```
+
+### 链路控制
+
+`event.done(claim=, stop=)` 统一控制「认领」与「阻断」两个正交语义：
+
+- **认领（claim）**：标记事件已被处理（`_processed`），命令分发器据此跳过去重
+- **阻断（stop）**：阻止向低优先级处理器传播（`_propagation_stopped`）
+
+```python
+# 认领 + 阻断（默认）
+event.done()
+
+# 仅认领，不阻断（低优先级观察者仍能看到）
+event.done(stop=False)
+
+# 仅阻断，不认领（如防火墙 / 限流）
+event.done(claim=False)
+
+# mark_processed 是主方法，done 是其别名
+event.mark_processed()             # 等价 event.done()
+event.mark_processed(stop=False)   # 等价 event.done(stop=False)
+
+# 查询状态
+event.is_processed()  # 是否已认领
+event.is_stopped()    # 是否已阻断传播
 ```
 
 ### 平台扩展方法
