@@ -51,6 +51,8 @@ TRANSLATIONS = {
     "core.sdk.uninit.critical_error": "Критическая ошибка деинициализации SDK: {error}",
     "core.sdk.uninit.client_close_failed": "Не удалось закрыть пул соединений HTTP-клиента: {error}",
     "core.sdk.gc.collected": "[GC] Python собрал {collected} объект(ов), удалено {evicted} автономных бот(ов)",
+    "core.sdk.gc.skipped": "[GC] Цикл пропущен (причина: {reason})",
+    "core.sdk.gc.config_changed": "[GC] Конфигурация активного GC изменена, перезапуск задачи",
     # ==================== Подготовка окружения SDK ====================
     "core.sdk.prepare.start": "Начало инициализации",
     "core.sdk.prepare.starting": "Подготовка окружения инициализации...",

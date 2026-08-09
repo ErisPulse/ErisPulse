@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+from collections import OrderedDict
 from typing import Any
 
 __all__ = [
@@ -21,8 +22,12 @@ __all__ = [
     "snapshot",
 ]
 
-# 各 label 上一次快照的 RSS（MB），用于计算增量
-_prev_rss: dict[str, float] = {}
+# 快照标签的最大缓存数。防止使用动态 label 调用 snapshot() 时
+# _prev_rss 无限增长，超出部分按最早写入顺序淘汰。
+_MAX_SNAPSHOT_LABELS = 128
+
+# 各 label 上一次快照的 RSS（MB），用于计算增量。按写入顺序淘汰。
+_prev_rss: OrderedDict[str, float] = OrderedDict()
 
 
 def get_rss_mb() -> float | None:
@@ -81,10 +86,14 @@ def snapshot(label: str = "") -> dict[str, Any]:
 
     delta: float | None = None
     key = label or "__default__"
-    if rss is not None and key in _prev_rss:
-        delta = rss - _prev_rss[key]
     if rss is not None:
+        if key in _prev_rss:
+            delta = rss - _prev_rss[key]
+        # 记录并限制缓存上限，避免动态标签导致无界增长
         _prev_rss[key] = rss
+        _prev_rss.move_to_end(key)
+        while len(_prev_rss) > _MAX_SNAPSHOT_LABELS:
+            _prev_rss.popitem(last=False)
 
     return {
         "label": label,

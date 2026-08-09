@@ -63,6 +63,39 @@
 
 ---
 
+## [2.7.1-dev.3] - 2026/08/09
+> 开发版本
+
+**版本摘要**
+事件链路解耦 + 主动 GC 与内存占用优化。解耦「认领」与「阻断」正交语义，`mark_processed(claim=, stop=)` 新增正交参数，`done` 为其别名；修复 `gc.collect(2)` 等价于全量回收导致的"每轮最重全量回收"问题，主动 GC 新增分阶段门控（垃圾量/空闲/内存增长）、配置变更事件驱动重启、uninit 即时回收等，降低空转开销与运行期内存驻留。所有改动默认行为向后兼容。
+
+### 新增
+- @wsu2059q
+  - `Core/Event` 事件链路解耦与状态管理：
+    - `event.mark_processed(claim=True, stop=True)` 新增「认领」与「阻断」正交参数：支持 `mark_processed()`（认领+阻断，默认）、`mark_processed(stop=False)`（仅认领）、`mark_processed(claim=False)`（仅阻断）
+    - 新增 `event.done(claim=, stop=)` 作为 `mark_processed` 的别名，提供更简洁的写法
+    - 新增 `event.is_stopped()` 查询阻断状态（内部链路判定基于 `_propagation_stopped`）
+  - `Core/constants` 新增主动 GC 配置常量：`DEFAULT_PROACTIVE_GC_MEMORY_GROWTH_MB`（全量回收内存增长门限，默认 32MB）、`DEFAULT_PROACTIVE_GC_IDLE_ONLY`（事件洪峰时跳过 Python GC）、`DEFAULT_PROACTIVE_GC_GEN0_MIN`（常规轮次 gen0 垃圾量下限，默认 500）
+  - `sdk` 主动 GC 新增分阶段判定：内部资源回收 → 空闲门控（`idle_only`）→ 垃圾量门控（`gen0_min`）→ 常规分代回收 → 周期性全量（受 `memory_growth_mb` 门限约束，优先 tracemalloc 其次 RSS）
+  - `sdk` 主动 GC 与框架联动：在 `config.set` / `config.updated` 注册配置钩子，`framework.proactive_gc_*` 变化时即时重启 GC 任务，支持 0→N 重新启用
+  - `sdk` `uninit()` 在管理器清理后追加一次即时 `gc.collect()`，加速模块/适配器实例释放，降低硬重启周期内存驻留
+  - `runtime/memory` 快照标签缓存 `_prev_rss` 改用 `OrderedDict` 并限长（128），防止动态标签导致无界增长
+
+### 变更
+- @wsu2059q
+  - `Core/Event/base.py` 中断判定从 `_processed` 改为 `_propagation_stopped`（`mark_processed()` 默认同时设置两者，行为完全向后兼容）
+  - `Core/Event/command.py` `_handle_message` 入口防御性归一化 event 为 `Event` 实例，使 `mark_processed` 等方法在直接调用时也可用
+  - `Event.to_dict()` 过滤以 `_` 开头的内部键（`_processed` / `_propagation_stopped`），只返回事件数据
+  - `Core/constants` 默认 `DEFAULT_PROACTIVE_GC_GENERATION` 由 `2` 调整为 `0`（常规轮次轻量回收），默认 `DEFAULT_PROACTIVE_GC_FULL_EVERY` 由 `0` 调整为 `20`（周期性深度回收）。`gc.collect(2)` 在 CPython 中等价于全量回收，旧默认意味着每轮都是最重回收；显式配置的旧值仍按字面语义生效
+
+### 优化
+- @wsu2059q
+  - `sdk` 主动 GC 空转轮次近乎零开销：gen0 垃圾量低于阈值或内存增长未达门限时跳过 Python GC
+  - `sdk` 主动 GC 分代钳制与配置校验：`generation` 钳制到 0..2，负值归零，间隔支持小数
+  - 新增 i18n 翻译键 `core.sdk.gc.skipped` / `core.sdk.gc.config_changed`（全 5 语言）
+
+---
+
 ## [2.7.1-dev.2] - 2026/08/07
 > 开发版本
 

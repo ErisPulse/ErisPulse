@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1413,
+  "total_keywords": 1417,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -201,7 +201,7 @@
     "1. 异常处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 602,
+        "line": 646,
         "level": 3,
         "title": "1. 异常处理"
       }
@@ -631,7 +631,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 620,
+        "line": 664,
         "level": 3,
         "title": "2. 日志记录"
       }
@@ -1053,7 +1053,7 @@
     "3. 条件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 636,
+        "line": 680,
         "level": 3,
         "title": "3. 条件处理"
       }
@@ -2383,7 +2383,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 278,
+        "line": 322,
         "level": 3,
         "title": "Bot 状态查询"
       }
@@ -2677,7 +2677,7 @@
     "Event 对象常用方法": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 525,
+        "line": 569,
         "level": 3,
         "title": "Event 对象常用方法"
       }
@@ -3709,7 +3709,7 @@
     "`hasattr` / `dir` 支持": [
       {
         "document": "api-reference/event-system.md",
-        "line": 503,
+        "line": 525,
         "level": 4,
         "title": "`hasattr` / `dir` 支持"
       }
@@ -4283,7 +4283,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 653,
+        "line": 697,
         "level": 2,
         "title": "下一步"
       },
@@ -4301,7 +4301,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 286,
+        "line": 303,
         "level": 2,
         "title": "下一步"
       },
@@ -4363,7 +4363,7 @@
     "严格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 177,
+        "line": 194,
         "level": 3,
         "title": "严格模式"
       }
@@ -4428,6 +4428,14 @@
         "line": 25,
         "level": 2,
         "title": "为什么需要标准？"
+      }
+    ],
+    "主动 GC 配置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 179,
+        "level": 3,
+        "title": "主动 GC 配置"
       }
     ],
     "主动发送 Meta 事件": [
@@ -4555,7 +4563,7 @@
     "事件处理最佳实践": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 600,
+        "line": 644,
         "level": 2,
         "title": "事件处理最佳实践"
       }
@@ -4629,7 +4637,7 @@
     "事件数据访问": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 523,
+        "line": 567,
         "level": 2,
         "title": "事件数据访问"
       }
@@ -4763,7 +4771,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 217,
+        "line": 234,
         "level": 2,
         "title": "事件配置"
       }
@@ -4843,7 +4851,7 @@
     "交互式处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 300,
+        "line": 344,
         "level": 2,
         "title": "交互式处理"
       }
@@ -4959,7 +4967,7 @@
     "优先级系统": [
       {
         "document": "api-reference/event-system.md",
-        "line": 645,
+        "line": 667,
         "level": 2,
         "title": "优先级系统"
       }
@@ -5069,7 +5077,7 @@
     "使用 reply 方法发送回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 302,
+        "line": 346,
         "level": 3,
         "title": "使用 reply 方法发送回复"
       }
@@ -5265,7 +5273,7 @@
     "元事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 251,
+        "line": 295,
         "level": 2,
         "title": "元事件处理"
       }
@@ -5413,7 +5421,7 @@
     "内置确认词": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 516,
+        "line": 560,
         "level": 3,
         "title": "内置确认词"
       }
@@ -5687,7 +5695,7 @@
     "单个方法注册": [
       {
         "document": "api-reference/event-system.md",
-        "line": 514,
+        "line": 536,
         "level": 4,
         "title": "单个方法注册"
       }
@@ -6208,6 +6216,14 @@
         "title": "启用 IDE 补全（可选）"
       }
     ],
+    "命令与回复的 block 配置": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 220,
+        "level": 3,
+        "title": "命令与回复的 block 配置"
+      }
+    ],
     "命令事件处理": [
       {
         "document": "getting-started/event-handling.md",
@@ -6327,7 +6343,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 219,
+        "line": 236,
         "level": 3,
         "title": "命令配置"
       }
@@ -6435,7 +6451,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 246,
+        "line": 263,
         "level": 2,
         "title": "国际化配置"
       }
@@ -7051,7 +7067,7 @@
     "多轮对话 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 489,
+        "line": 533,
         "level": 3,
         "title": "多轮对话 (conversation)"
       }
@@ -7123,7 +7139,7 @@
     "好友添加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 190,
+        "line": 234,
         "level": 3,
         "title": "好友添加"
       }
@@ -7139,7 +7155,7 @@
     "好友请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 224,
+        "line": 268,
         "level": 3,
         "title": "好友请求"
       }
@@ -7241,7 +7257,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 206,
+        "line": 223,
         "level": 2,
         "title": "存储配置"
       }
@@ -7593,7 +7609,7 @@
     "带回调的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 374,
+        "line": 418,
         "level": 3,
         "title": "带回调的等待回复"
       }
@@ -7609,7 +7625,7 @@
     "带验证的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 347,
+        "line": 391,
         "level": 3,
         "title": "带验证的等待回复"
       }
@@ -7729,7 +7745,7 @@
     "平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 451,
+        "line": 473,
         "level": 3,
         "title": "平台扩展方法"
       },
@@ -7741,7 +7757,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 571,
+        "line": 615,
         "level": 3,
         "title": "平台扩展方法"
       }
@@ -7757,7 +7773,7 @@
     "平台方法隔离": [
       {
         "document": "api-reference/event-system.md",
-        "line": 487,
+        "line": 509,
         "level": 4,
         "title": "平台方法隔离"
       }
@@ -8045,7 +8061,7 @@
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 269,
+        "line": 313,
         "level": 3,
         "title": "心跳事件"
       }
@@ -8417,7 +8433,7 @@
     "批量注册（Mixin 类）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 530,
+        "line": 552,
         "level": 4,
         "title": "批量注册（Mixin 类）"
       }
@@ -8697,7 +8713,7 @@
     "收集表单 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 448,
+        "line": 492,
         "level": 3,
         "title": "收集表单 (collect)"
       }
@@ -8973,7 +8989,7 @@
     "方法解析优先级": [
       {
         "document": "api-reference/event-system.md",
-        "line": 634,
+        "line": 656,
         "level": 3,
         "title": "方法解析优先级"
       }
@@ -9277,7 +9293,7 @@
     "查询平台已注册方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 472,
+        "line": 494,
         "level": 4,
         "title": "查询平台已注册方法"
       }
@@ -9797,7 +9813,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 257,
+        "line": 274,
         "level": 2,
         "title": "模块配置"
       }
@@ -9877,7 +9893,7 @@
     "注册跨平台方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 613,
+        "line": 635,
         "level": 3,
         "title": "注册跨平台方法"
       }
@@ -9925,7 +9941,7 @@
     "注销方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 576,
+        "line": 598,
         "level": 4,
         "title": "注销方法"
       }
@@ -10297,7 +10313,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 235,
+        "line": 252,
         "level": 3,
         "title": "消息配置"
       }
@@ -10619,7 +10635,7 @@
     "用户：使用平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 455,
+        "line": 477,
         "level": 4,
         "title": "用户：使用平台扩展方法"
       }
@@ -10787,7 +10803,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 661,
+        "line": 683,
         "level": 2,
         "title": "相关文档"
       },
@@ -10881,7 +10897,7 @@
     "确认对话 (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 395,
+        "line": 439,
         "level": 3,
         "title": "确认对话 (confirm)"
       }
@@ -10951,7 +10967,7 @@
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 468,
+        "line": 512,
         "level": 3,
         "title": "等待任意事件 (wait_for)"
       }
@@ -10975,7 +10991,7 @@
     "等待用户回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 330,
+        "line": 374,
         "level": 3,
         "title": "等待用户回复"
       }
@@ -11177,7 +11193,7 @@
     "群成员减少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 212,
+        "line": 256,
         "level": 3,
         "title": "群成员减少"
       }
@@ -11185,7 +11201,7 @@
     "群成员增加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 202,
+        "line": 246,
         "level": 3,
         "title": "群成员增加"
       }
@@ -11241,7 +11257,7 @@
     "群邀请请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 240,
+        "line": 284,
         "level": 3,
         "title": "群邀请请求"
       }
@@ -11431,7 +11447,7 @@
     "覆写内置方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 588,
+        "line": 610,
         "level": 4,
         "title": "覆写内置方法"
       }
@@ -11557,7 +11573,7 @@
     "请求事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 222,
+        "line": 266,
         "level": 2,
         "title": "请求事件处理"
       }
@@ -11659,7 +11675,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 194,
+        "line": 211,
         "level": 4,
         "title": "豁免清单"
       }
@@ -11785,7 +11801,7 @@
     "跨平台扩展（通配符）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 609,
+        "line": 631,
         "level": 2,
         "title": "跨平台扩展（通配符）"
       },
@@ -11973,7 +11989,7 @@
     "返回值规范": [
       {
         "document": "api-reference/event-system.md",
-        "line": 551,
+        "line": 573,
         "level": 4,
         "title": "返回值规范"
       }
@@ -12005,7 +12021,7 @@
     "连接事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 253,
+        "line": 297,
         "level": 3,
         "title": "连接事件"
       }
@@ -12227,7 +12243,7 @@
     "适配器：注册平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 510,
+        "line": 532,
         "level": 3,
         "title": "适配器：注册平台扩展方法"
       }
@@ -12243,7 +12259,7 @@
     "选择菜单 (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 412,
+        "line": 456,
         "level": 3,
         "title": "选择菜单 (choose)"
       }
@@ -12307,7 +12323,7 @@
     "通知事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 188,
+        "line": 232,
         "level": 2,
         "title": "通知事件处理"
       }
@@ -12898,6 +12914,22 @@
         "line": 93,
         "level": 3,
         "title": "链式调用示例"
+      }
+    ],
+    "链路控制": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 447,
+        "level": 3,
+        "title": "链路控制"
+      }
+    ],
+    "链路控制：认领与阻断": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 188,
+        "level": 2,
+        "title": "链路控制：认领与阻断"
       }
     ],
     "错误处理": [

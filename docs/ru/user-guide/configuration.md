@@ -68,29 +68,29 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 [**English**](docs/ru/quick-start.md)
 
-## Hot reload of configuration
+## Hot Configuration Reload
 
-Starting from version 2.7.0, the framework provides **systematic support** for hot reloading of configurations. After an external modification of `config.toml` (the background watcher checks every 5 seconds) or after the code calls `setConfig()`, the components automatically respond:
+Starting from version 2.7.0, the framework provides **systematic support** for hot reloading of configurations. After an external modification of `config.toml` (the background watcher checks every 5 seconds) or after a code call to `setConfig()`, components automatically respond:
 
-| Component | Configurations supporting hot reload | Behavior |
-|------|----------------|------|
+| Component | Configurations Supporting Hot Reload | Behavior |
+|-----------|--------------------------------------|----------|
 | **Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | Automatically reapplied (with change detection) |
-| **Command system CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
-| **Adapters concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore, rebuilds with new value |
-| **Active GC** | `framework.proactive_gc_interval` | Re-reads each round, supports runtime adjustments/disabling |
-| **Master system Master** | `master.users` | Each `is_master()` check reads in real-time, no restart needed |
-| **Modules/Adapters configuration** | Their own configuration items | Triggers `on_config_update(old, new)` callback |
+| **Command System CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
+| **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore and rebuilds with the new value |
+| **Proactive GC** | `framework.proactive_gc_*` | Configuration changes immediately restart the GC task, supporting runtime adjustments, disabling, and re-enabling |
+| **Master System Master** | `master.users` | Each `is_master()` check reads in real time, no restart required |
+| **Module/Adapter Configuration** | Individual configuration items | Triggers the `on_config_update(old, new)` callback |
 
-**Configurations requiring restart** (cannot be safely hot-switched, warning "Process restart required for effect" is output when changed):
+**Configurations Requiring Restart** (cannot be safely hot-swapped; a warning "Process needs to be restarted for changes to take effect" is output when changed):
 
 | Configuration | Reason |
-|------|------|
-| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-switched at runtime |
+|---------------|--------|
+| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-swapped at runtime |
 | `storage.use_global_db` | SQLite file handle is already open at runtime, switching paths is unsafe |
 
-> **Error saving while editing midway?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, and will not broadcast an empty configuration to the components (to avoid `on_config_update` receiving null values and mistakenly reverting to defaults).
+> **Error in Mid-Edit Save?** If a temporary syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, avoiding the broadcast of an empty configuration to components (to prevent `on_config_update` receiving empty values and mistakenly reverting to defaults).
 
-[**English**](docs/ru/quick-start.md)
+docs/ru/configuration-hot-reload.md
 
 ## Полный пример конфигурации
 
@@ -186,30 +186,47 @@ adapters = []
 
 | Параметр | Тип | Значение по умолчанию | Описание |
 |---------|------|---------|------|
-| enable_lazy_loading | boolean | true | Включает ли ленивую загрузку модулей |
-| uninit_timeout | integer | 30 | Общее время ожидания при корректном завершении (секунды), после которого происходит принудительное завершение. Значение 0 означает отсутствие таймаута |
-| strict_mode | integer | 0 | Уровень строгого режима, см. описание «Строгий режим» ниже |
+| enable_lazy_loading | boolean | true | Включать ли ленивую загрузку модулей |
+| uninit_timeout | integer | 30 | Общее время ожидания при корректном завершении (секунды), после которого происходит принудительное завершение. 0 означает отсутствие таймаута |
+| strict_mode | integer | 0 | Уровень строгого режима, см. раздел «Строгий режим» |
+| handler_max_concurrency | integer | 64 | Максимальное количество одновременных задач обработчиков событий, увеличение значения повышает пропускную способность, но увеличивает потребление памяти |
+| offline_bot_expiry | integer | 3600 | Автоматическое время истечения срока действия записи о неактивном боте (секунды), 0 означает отсутствие истечения срока |
+
+### Конфигурация активного сборщика мусора
+
+После инициализации SDK запускается фоновая задача активного сборщика мусора, которая периодически выполняет сборку мусора Python и внутреннее освобождение ресурсов (очистка неактивных ботов и т.д.). Все параметры поддерживают горячую перезагрузку, изменение параметров немедленно перезапускает задачу.
+
+| Параметр | Тип | Значение по умолчанию | Описание |
+|---------|------|---------|------|
+| proactive_gc_interval | number | 300 | Интервал сборки (секунды), поддерживает дробные значения. 0 означает отключение активного сборщика мусора |
+| proactive_gc_generation | integer | 0 | Поколение для обычных циклов сборки мусора (0/1/2, ограничено 0..2). Обратите внимание, что `gc.collect(2)` эквивалентен полной сборке мусора, по умолчанию 0 сохраняет легкость; глубокая сборка мусора запускается периодически с помощью `proactive_gc_full_every` |
+| proactive_gc_full_every | integer | 20 | Полная сборка мусора выполняется каждые N циклов, 0 означает отключение периодической полной сборки. Полная сборка мусора ограничена порогом `proactive_gc_memory_growth_mb` |
+| proactive_gc_memory_growth_mb | integer | 32 | Порог роста памяти для полной сборки мусора (МБ): сравнивается с базовой памятью после последней полной сборки мусора (в первую очередь tracemalloc, затем RSS), полная сборка мусора выполняется только при достижении этого значения. 0 означает отсутствие порога |
+| proactive_gc_idle_only | boolean | false | При включении сборка мусора Python пропускается в цикле, когда происходит пик событий (присутствуют незавершенные обработчики pending), чтобы избежать пауз и конкуренции с обработкой сообщений; внутреннее освобождение ресурсов не затрагивается |
+| proactive_gc_gen0_min | integer | 500 | Минимальное количество мусора в поколении gen0 для запуска обычной сборки мусора: если `gc.get_count()[0]` ниже этого значения, сборка мусора пропускается (цикл с нулевой нагрузкой почти не требует ресурсов). 0 означает, что сборка мусора всегда выполняется |
+
+> **Изменение 2.7.1**: значение по умолчанию `proactive_gc_generation` изменено с `2` на `0`, значение по умолчанию `proactive_gc_full_every` изменено с `0` на `20`. Ранее `generation=2` означало, что каждый цикл выполняется наиболее тяжелая полная сборка мусора; новое значение по умолчанию сохраняет охват сборки, но значительно снижает нагрузку на пустые циклы. Явно заданные старые значения по-прежнему действуют в соответствии с их смыслом.
 
 ### Строгий режим
 
-Строгий режим определяет стратегию обработки компонентов модулей/адаптеров, которые нарушают правила или не могут быть загружены на этапе инициализации. Современные модули/адаптеры должны наследовать соответствующие базовые классы (`BaseModule`/`BaseAdapter`), иначе компоненты, не наследующие базовые классы, могут повлиять на контекстную систему фреймворка и на очистку ресурсов, что может привести к утечке ресурсов.
+Строгий режим управляет стратегией обработки компонентов/адаптеров, которые не соответствуют требованиям или не могут быть загружены на этапе загрузки. Современные модули/адаптеры должны наследовать соответствующие базовые классы (`BaseModule`/`BaseAdapter`), компоненты, не наследующие базовые классы, влияют на контекстную систему фреймворка и на резервное очищение, что может привести к утечке ресурсов.
 
-> **Изменение в 2.5.2**: уровень по умолчанию был изменен с `1` (пропуск) на `0` (допускающий), чтобы уменьшить количество проблем с загрузкой при первом использовании новыми пользователями. Компоненты, не наследующие базовые классы, будут получать предупреждение и попытка загрузки будет продолжена, а не отклонена. Чтобы восстановить старое поведение, явно установите `strict_mode = 1`.
+> **Изменение 2.5.2**: уровень по умолчанию изменен с `1` (пропуск) на `0` (снисходительный), чтобы уменьшить проблемы с загрузкой при первом использовании новыми пользователями. Компоненты, не наследующие базовые классы, будут предупреждаться и попытка загрузки будет предпринята, а не отклонена напрямую. Чтобы восстановить прежнее поведение, явно установите `strict_mode = 1`.
 
 | Уровень | Название | Поведение |
 |------|------|------|
-| 0 | Допускающий (по умолчанию) | Нарушения только предупреждаются, компоненты, не наследующие базовые классы, все равно будут загружены (для совместимости со старыми компонентами) |
-| 1 | Строгий-пропуск | Компоненты, не наследующие базовые классы, отклоняются и пропускаются, остальные запускаются нормально |
-| 2 | Строгий-критический | Все нарушения собираются и сообщаются единым списком, после чего запуск прерывается |
+| 0 | Снисходительный (по умолчанию) | Нарушения только предупреждаются, компоненты, не наследующие базовые классы, все равно будут загружаться (для совместимости со старыми компонентами) |
+| 1 | Строгий-пропуск | Компоненты, не наследующие базовые классы, будут отклонены и пропущены, остальные будут запускаться нормально |
+| 2 | Строгий-фатальный | Все нарушения (не наследование базовых классов, сбой загрузки, сбой регистрации, сбой инициализации и т.д.) будут считаться фатальными, и все нарушения будут собраны и выведены в одном списке после точки проверки запуска, после чего запуск будет прерван |
 
-На всех уровнях ошибки, возникающие на этапах загрузки/регистрации/инициализации, всегда будут пропущены; различие заключается в следующем:
+На всех уровнях, ошибки, возникающие на этапах загрузки/регистрации/инициализации, которые приводят к сбою компонентов, всегда будут пропущены; различие заключается в следующем:
 
-- **0 → 1**: единственное изменение поведения — компоненты, не наследующие базовые классы, из «все еще загружаются» переходят в «пропускаются».
-- **1 → 2**: все нарушения (не наследование базовых классов, сбой загрузки, сбой регистрации, сбой инициализации и т.д.) повышаются до критического уровня, и после сбора на этапе проверки запуска выводится единый список нарушений и запуск прерывается.
+- **0 → 1**: единственное изменение поведения заключается в том, что «не наследование базового класса» из «все еще загрузка» изменяется на «пропуск».
+- **1 → 2**: все нарушения (не наследование базового класса, сбой загрузки, сбой регистрации, сбой инициализации и т.д.) повышаются до фатальных, и после сбора на точке проверки запуска будет выведен список нарушений и запуск будет прерван.
 
 #### Список исключений
 
-Если некоторые компоненты действительно временно не могут быть обновлены (например, из-за зависимости от старых модулей), их можно добавить в список исключений. Компоненты, включенные в этот список, будут обрабатываться в соответствии с допускающим режимом, даже если они нарушают правила, и загрузка будет продолжена:
+Если некоторые компоненты действительно временно не могут быть обновлены (например, из-за зависимости от старых модулей), их можно добавить в список исключений, и компоненты, перечисленные в этом списке, будут обрабатываться в соответствии с снисходительным режимом, даже если они не соответствуют требованиям, и будут продолжать загружаться:
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -217,7 +234,7 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> Когда какой-либо компонент отклоняется в строгом режиме, в логе будет четко указано, как восстановить загрузку (добавление в список исключений или понижение уровня).
+> Когда компонент отклоняется строгим режимом, в журнале будет четко указано, как восстановить загрузку (добавление в список исключений или снижение уровня).
 
 [**English**](docs/ru/quick-start.md)
 
