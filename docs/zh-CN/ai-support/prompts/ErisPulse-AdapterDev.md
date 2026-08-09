@@ -1096,7 +1096,7 @@ priority=0 组: [处理器A || 处理器B] 并行 → 合并结果
 - **跨级串行**：不同优先级的组按顺序执行（数值越大越先执行），确保高优先级处理器先运行
 - **Copy-On-Write**：处理器无修改时不创建副本，确保零开销
 - **冲突处理**：同优先级多处理器修改同一字段时，使用最后修改值并记录警告日志
-- **中断机制**：任意处理器调用 `event.mark_processed()` 后，跳过后续低优先级组
+- **中断机制**：任意处理器调用 `event.done()`（默认）或 `event.done(claim=False)` 后，跳过后续低优先级组。认领与阻断的区别见下文[「链路控制：认领与阻断」](#链路控制认领与阻断)
 
 ```python
 # 示例：同优先级处理器并行执行
@@ -1115,6 +1115,50 @@ async def handler_b(event):
 async def handler_c(event):
     # 优先级最高，最先执行
     pass
+```
+
+## 链路控制：认领与阻断
+
+ErisPulse 将「认领」与「阻断」两个正交语义解耦，通过 `event.done()` 统一控制，便于在命令处理周围叠加日志、审计、权限等观察层。
+
+**两个概念的准确定义：**
+
+- **认领（claim）**：标记事件已被本处理器处理（写入 `_processed`）。命令分发器看到已认领的事件会**跳过去重**——避免同一消息被多个命令处理器重复处理。典型场景：命令匹配成功后认领，阻止命令分发器再介入。
+- **阻断（stop）**：阻止事件向**更低优先级**处理器传播（写入 `_propagation_stopped`）。低优先级处理器（如 `on_message`）将不再看到该事件。典型场景：高优先级处理器已完整处理事件，不希望低优先级再执行。
+
+| `event.done(...)` | 认领 | 阻断 | 场景 |
+|-------------------|------|------|------|
+| `event.done()` | ✔ | ✔ | 命令 / 处理器处理完的标准做法 |
+| `event.done(stop=False)` | ✔ | ✘ | 仅认领，让低优先级观察者（日志 / 统计）继续看到 |
+| `event.done(claim=False)` | ✘ | ✔ | 仅阻断（如防火墙 / 限流），但不做命令去重 |
+
+`event.done(claim=, stop=)` 是 `event.mark_processed(claim=, stop=)` 的别名，二者参数与行为完全等价。
+
+```python
+@command("help")
+async def help_cmd(event):
+    event.done()            # 认领 + 阻断（命令处理完的标准做法）
+
+@message.on_message(priority=50)
+async def observer(event):
+    event.done(stop=False)  # 仅认领：低优先级仍会执行（日志 / 统计）
+
+@message.on_message(priority=100)
+async def firewall(event):
+    if denied(event):
+        event.done(claim=False)  # 仅阻断：低优先级不执行，但不做去重
+```
+
+### 命令与回复的 block 配置
+
+命令匹配成功 / `wait_reply` 匹配到回复后，默认会阻断传播（向后兼容）。可通过配置放行，让低优先级处理器（日志 / 审计 / 权限）也能观测这些消息：
+
+```toml
+[ErisPulse.event.command]
+block = false   # 命令消息继续流向低优先级处理器
+
+[ErisPulse.event.wait_reply]
+block = false   # 被 wait_reply 消费的回复继续流向低优先级处理器
 ```
 
 ## 通知事件处理
