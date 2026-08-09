@@ -51,6 +51,8 @@ TRANSLATIONS = {
     "core.sdk.uninit.critical_error": "SDK反初始化嚴重錯誤: {error}",
     "core.sdk.uninit.client_close_failed": "關閉 HTTP 客戶端連線池失敗: {error}",
     "core.sdk.gc.collected": "[GC] Python 回收了 {collected} 個物件，清理了 {evicted} 個離線 Bot",
+    "core.sdk.gc.skipped": "[GC] 本輪略過回收（原因: {reason}）",
+    "core.sdk.gc.config_changed": "[GC] 主動 GC 配置已變更，重新啟動回收任務",
     # ==================== SDK 環境準備 ====================
     "core.sdk.prepare.start": "開始初始化",
     "core.sdk.prepare.starting": "準備初始化環境...",

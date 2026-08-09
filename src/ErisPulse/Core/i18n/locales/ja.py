@@ -51,6 +51,8 @@ TRANSLATIONS = {
     "core.sdk.uninit.critical_error": "SDK 非初期化の重大なエラー: {error}",
     "core.sdk.uninit.client_close_failed": "HTTP クライアント接続プールのクローズに失敗しました: {error}",
     "core.sdk.gc.collected": "[GC] Python が {collected} 個のオブジェクトを回収し、{evicted} 個のオフライン Bot を削除しました",
+    "core.sdk.gc.skipped": "[GC] このラウンドはスキップされました（理由: {reason}）",
+    "core.sdk.gc.config_changed": "[GC] アクティブ GC 設定が変更されたため、タスクを再起動します",
     # ==================== SDK 環境準備 ====================
     "core.sdk.prepare.start": "初期化を開始します",
     "core.sdk.prepare.starting": "初期化環境を準備しています...",

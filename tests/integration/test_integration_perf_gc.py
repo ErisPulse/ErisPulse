@@ -14,16 +14,14 @@
 
 import asyncio
 import time
-
-import pytest
 from unittest.mock import patch
 
-from ErisPulse.Core.adapter import adapter
-from ErisPulse.Core.lifecycle import lifecycle
-from ErisPulse.Core.Event import message
-from ErisPulse.Core.Event import _clear_all_handlers
-from ErisPulse.runtime.context import current_owner
+import pytest
 
+from ErisPulse.Core.adapter import adapter
+from ErisPulse.Core.Event import _clear_all_handlers, message
+from ErisPulse.Core.lifecycle import lifecycle
+from ErisPulse.runtime.context import current_owner
 
 # ==================== 辅助函数 ====================
 
@@ -533,6 +531,120 @@ class TestProactiveGCIntegration:
         assert "gc_test" not in adapter._bots
 
         adapter._bots.clear()
+
+    # ==================== 主动 GC 自适应策略 ====================
+
+    def _make_gc_framework_config(self, **overrides) -> dict:
+        """构造最小 framework 配置，供 _read_gc_config 读取"""
+        cfg = {
+            "proactive_gc_interval": 0.01,
+            "proactive_gc_generation": 0,
+            "proactive_gc_full_every": 0,
+            "proactive_gc_memory_growth_mb": 32,
+            "proactive_gc_idle_only": False,
+            "proactive_gc_gen0_min": 500,
+        }
+        cfg.update(overrides)
+        return cfg
+
+    @pytest.mark.asyncio
+    async def test_gc_loop_skips_collection_when_gen0_low(self):
+        """gen0 垃圾量低于阈值时跳过 Python GC"""
+        from ErisPulse.sdk import SDK
+
+        sdk = SDK()
+        fw = self._make_gc_framework_config()
+        with patch("ErisPulse.runtime.get_framework_config", return_value=fw), patch(
+            "gc.get_count", return_value=(0, 0, 0)
+        ) as mock_count, patch("gc.collect", return_value=0) as mock_collect:
+            sdk._start_proactive_gc()
+            await asyncio.sleep(0.05)
+            sdk._stop_proactive_gc()
+
+            # 多次轮询 gen0 均极低，不应触发任何 Python GC 回收
+            assert mock_count.call_count > 0
+            mock_collect.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_gc_loop_runs_collection_when_gen0_high(self):
+        """gen0 垃圾量达到阈值时执行常规回收"""
+        from ErisPulse.sdk import SDK
+
+        sdk = SDK()
+        fw = self._make_gc_framework_config(proactive_gc_gen0_min=500)
+        with patch("ErisPulse.runtime.get_framework_config", return_value=fw), patch(
+            "gc.get_count", return_value=(1000, 0, 0)
+        ), patch("gc.collect", return_value=5) as mock_collect:
+            sdk._start_proactive_gc()
+            await asyncio.sleep(0.05)
+            sdk._stop_proactive_gc()
+
+            assert mock_collect.call_count > 0
+
+    @pytest.mark.asyncio
+    async def test_gc_loop_full_collection_skipped_when_memory_stable(self):
+        """周期性全量回收受内存增长门限约束：内存稳定时跳过"""
+        from ErisPulse.sdk import SDK
+
+        sdk = SDK()
+        fw = self._make_gc_framework_config(
+            proactive_gc_full_every=1, proactive_gc_memory_growth_mb=32
+        )
+        traced_values = iter([100.0] * 20)
+        with patch("ErisPulse.runtime.get_framework_config", return_value=fw), patch(
+            "gc.get_count", return_value=(1000, 1000, 1000)
+        ), patch("ErisPulse.runtime.memory.get_traced_mb", side_effect=lambda: next(traced_values)), patch(
+            "ErisPulse.runtime.memory.get_rss_mb", return_value=None
+        ), patch("gc.collect", return_value=0) as mock_collect:
+            sdk._start_proactive_gc()
+            await asyncio.sleep(0.06)
+            sdk._stop_proactive_gc()
+
+            # 仅首次全量建立基线时回收一次，后续均因内存无增长而跳过
+            assert mock_collect.call_count == 1
+
+    @pytest.mark.asyncio
+    async def test_gc_loop_full_collection_runs_when_memory_grew(self):
+        """周期性全量回收：内存增长达到门限时执行"""
+        from ErisPulse.sdk import SDK
+
+        sdk = SDK()
+        fw = self._make_gc_framework_config(
+            proactive_gc_full_every=1, proactive_gc_memory_growth_mb=32
+        )
+        traced_values = iter([100.0, 200.0] + [200.0] * 20)
+        with patch("ErisPulse.runtime.get_framework_config", return_value=fw), patch(
+            "gc.get_count", return_value=(1000, 1000, 1000)
+        ), patch("ErisPulse.runtime.memory.get_traced_mb", side_effect=lambda: next(traced_values)), patch(
+            "ErisPulse.runtime.memory.get_rss_mb", return_value=None
+        ), patch("gc.collect", return_value=0) as mock_collect:
+            sdk._start_proactive_gc()
+            await asyncio.sleep(0.06)
+            sdk._stop_proactive_gc()
+
+            # 首轮建立基线 + 后续内存增长触发，回收至少两次
+            assert mock_collect.call_count >= 2
+
+    @pytest.mark.asyncio
+    async def test_gc_loop_skips_python_gc_when_busy(self):
+        """idle_only 开启且存在 pending handler 时跳过 Python GC"""
+        from ErisPulse.sdk import SDK
+
+        sdk = SDK()
+        fw = self._make_gc_framework_config(proactive_gc_idle_only=True)
+        try:
+            with patch("ErisPulse.runtime.get_framework_config", return_value=fw), patch(
+                "gc.get_count", return_value=(1000, 1000, 1000)
+            ), patch("gc.collect", return_value=0) as mock_collect:
+                # 模拟事件洪峰：存在未完成的 handler task
+                adapter._pending_handler_tasks.add(object())
+                sdk._start_proactive_gc()
+                await asyncio.sleep(0.05)
+                sdk._stop_proactive_gc()
+
+                mock_collect.assert_not_called()
+        finally:
+            adapter._pending_handler_tasks.clear()
 
 
 # ==================== 端到端：事件洪流 + shutdown 安全清理 ====================
