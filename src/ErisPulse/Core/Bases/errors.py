@@ -21,7 +21,6 @@ class ErisPulseError(Exception):
     所有 ErisPulse 自定义异常的基类。
     """
 
-    ...
 
 
 class ClientError(ErisPulseError):
@@ -39,7 +38,6 @@ class ClientError(ErisPulseError):
     ...     print(f"请求失败: {e}")
     """
 
-    ...
 
 
 
@@ -56,7 +54,6 @@ class ClientConnectionError(ClientError):
     ...     print("无法连接到服务器")
     """
 
-    ...
 
 
 class ClientTimeoutError(ClientError):
@@ -72,7 +69,6 @@ class ClientTimeoutError(ClientError):
     ...     print("请求超时")
     """
 
-    ...
 
 
 class HTTPStatusError(ClientError):
@@ -104,7 +100,6 @@ class WebSocketError(ErisPulseError):
     WebSocket 连接、通信相关的异常。
     """
 
-    ...
 
 
 class WebSocketDisconnect(WebSocketError):

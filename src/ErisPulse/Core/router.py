@@ -394,8 +394,10 @@ class RouterManager:
 
             lifecycle.register("config.updated", self._on_router_config_changed)
             lifecycle.register("config.set", self._on_router_config_changed)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.router.config_hook_register_failed", error=e)
+            )
 
     @property
     def app(self) -> FastAPI:
@@ -404,7 +406,7 @@ class RouterManager:
             _load_web_stack()
             self._app = FastAPI(
                 title="ErisPulse Router",
-                description="统一路由管理入口点",
+                description=i18n.t("core.router.app_description"),
                 version=ERISPULSE_VERSION,
             )
             self._setup_core_routes()
@@ -680,7 +682,7 @@ class RouterManager:
         return wrapper
 
     @_web_stack_required
-    def _register_sse_endpoint(
+    def _create_sse_route(
         self,
         full_path: str,
         module_name: str,
@@ -688,20 +690,13 @@ class RouterManager:
         **kwargs,
     ) -> None:
         """
-        SSE 路由注册内部实现
-
         {!--< internal-use >!--}
+        在当前 app 实例上创建 SSE 路由（纯路由创建，不做重复检查、不写记录）
+
+        供 ``_register_sse_endpoint``（新注册）与 ``_restore_routes_from_records``（恢复）
+        共用，确保两条路径的路由创建逻辑完全一致。
         {!--< /internal-use >!--}
         """
-        if full_path in self._sse_routes.get(module_name, {}):
-            raise ValueError(
-                i18n.t(
-                    "core.router.sse_path_exists", path=full_path, module=module_name
-                )
-            )
-
-        self._track_owner_namespace(module_name)
-
         endpoint = self._make_sse_endpoint(handler)
         route = APIRoute(
             path=full_path,
@@ -716,6 +711,30 @@ class RouterManager:
             },
         )
         self.app.router.routes.append(route)
+
+    def _register_sse_endpoint(
+        self,
+        full_path: str,
+        module_name: str,
+        handler: Callable,
+        **kwargs,
+    ) -> None:
+        """
+        SSE 路由注册内部实现
+
+        {!--< internal-use >!--}
+        包含重复检查、owner 追踪、记录写入；路由创建委托 :meth:`_create_sse_route`。
+        {!--< /internal-use >!--}
+        """
+        if full_path in self._sse_routes.get(module_name, {}):
+            raise ValueError(
+                i18n.t(
+                    "core.router.sse_path_exists", path=full_path, module=module_name
+                )
+            )
+
+        self._track_owner_namespace(module_name)
+        self._create_sse_route(full_path, module_name, handler, **kwargs)
         self._sse_routes[module_name][full_path] = handler
 
         logger.trace(
@@ -871,8 +890,12 @@ class RouterManager:
         {!--< internal-use >!--}
         为 GET 请求添加 ErisPulse 主题化错误页面。
         POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
+        所有错误码共用同一套 HTML 模板（``render_error_page``），仅注入不同的标题/描述。
         {!--< /internal-use >!--}
         """
+        from http import HTTPStatus
+        from typing import NamedTuple
+
         from .assets import render_error_page
 
         def _html(code: int, title: str, desc: str = "") -> str:
@@ -883,127 +906,45 @@ class RouterManager:
                 desc=desc or None,
             )
 
-        @self.app.exception_handler(404)
-        async def _h404(request: Request, exc):
-            if request.method == "GET" and "text/html" in request.headers.get(
-                "accept", ""
-            ):
-                return HTMLResponse(
-                    content=_html(
-                        404,
-                        i18n.t("core.router.error_404_title"),
-                        i18n.t("core.router.error_404_desc"),
-                    ),
-                    status_code=404,
-                )
-            return JSONResponse(
-                status_code=404,
-                content={"status": "error", "code": 404, "message": "Not Found"},
-            )
+        class _Spec(NamedTuple):
+            code: int | type[Exception]
+            title_key: str
+            desc_key: str
+            log_error: bool = False
 
-        @self.app.exception_handler(403)
-        async def _h403(request: Request, exc):
-            if request.method == "GET" and "text/html" in request.headers.get(
-                "accept", ""
-            ):
-                return HTMLResponse(
-                    content=_html(
-                        403,
-                        i18n.t("core.router.error_403_title"),
-                        i18n.t("core.router.error_403_desc"),
-                    ),
-                    status_code=403,
-                )
-            return JSONResponse(
-                status_code=403,
-                content={"status": "error", "code": 403, "message": "Forbidden"},
-            )
+        # 一张声明式表：code → 标题/描述 i18n key；JSON message 从 HTTPStatus 标准短语派生
+        specs = [
+            _Spec(404, "core.router.error_404_title", "core.router.error_404_desc"),
+            _Spec(403, "core.router.error_403_title", "core.router.error_403_desc"),
+            _Spec(500, "core.router.error_500_title", "core.router.error_500_desc", log_error=True),
+            _Spec(502, "core.router.error_500_title", "core.router.error_502_desc"),
+            _Spec(503, "core.router.error_500_title", "core.router.error_503_desc"),
+            _Spec(Exception, "core.router.error_generic_title", "core.router.error_generic_desc", log_error=True),
+        ]
 
-        @self.app.exception_handler(500)
-        async def _h500(request: Request, exc):
-            logger.error(i18n.t("core.router.unhandled_exception", error=exc))
-            if request.method == "GET" and "text/html" in request.headers.get(
-                "accept", ""
-            ):
-                return HTMLResponse(
-                    content=_html(
-                        500,
-                        i18n.t("core.router.error_500_title"),
-                        i18n.t("core.router.error_500_desc"),
-                    ),
-                    status_code=500,
-                )
-            return JSONResponse(
-                status_code=500,
-                content={
-                    "status": "error",
-                    "code": 500,
-                    "message": "Internal Server Error",
-                },
-            )
+        def _make_error_handler(spec: _Spec):
+            code = spec.code if isinstance(spec.code, int) else 500
+            phrase = HTTPStatus(code).phrase
 
-        @self.app.exception_handler(502)
-        async def _h502(request: Request, exc):
-            if request.method == "GET" and "text/html" in request.headers.get(
-                "accept", ""
-            ):
-                return HTMLResponse(
-                    content=_html(
-                        502,
-                        i18n.t("core.router.error_500_title"),
-                        i18n.t("core.router.error_502_desc"),
-                    ),
-                    status_code=502,
+            async def _handler(request: Request, exc):
+                if spec.log_error:
+                    logger.error(i18n.t("core.router.unhandled_exception", error=exc))
+                if request.method == "GET" and "text/html" in request.headers.get(
+                    "accept", ""
+                ):
+                    return HTMLResponse(
+                        content=_html(code, i18n.t(spec.title_key), i18n.t(spec.desc_key)),
+                        status_code=code,
+                    )
+                return JSONResponse(
+                    status_code=code,
+                    content={"status": "error", "code": code, "message": phrase},
                 )
-            return JSONResponse(
-                status_code=502,
-                content={"status": "error", "code": 502, "message": "Bad Gateway"},
-            )
 
-        @self.app.exception_handler(503)
-        async def _h503(request: Request, exc):
-            if request.method == "GET" and "text/html" in request.headers.get(
-                "accept", ""
-            ):
-                return HTMLResponse(
-                    content=_html(
-                        503,
-                        i18n.t("core.router.error_500_title"),
-                        i18n.t("core.router.error_503_desc"),
-                    ),
-                    status_code=503,
-                )
-            return JSONResponse(
-                status_code=503,
-                content={
-                    "status": "error",
-                    "code": 503,
-                    "message": "Service Unavailable",
-                },
-            )
+            return _handler
 
-        @self.app.exception_handler(Exception)
-        async def _h_generic(request: Request, exc: Exception):
-            logger.error(i18n.t("core.router.unhandled_exception", error=exc))
-            if request.method == "GET" and "text/html" in request.headers.get(
-                "accept", ""
-            ):
-                return HTMLResponse(
-                    content=_html(
-                        500,
-                        i18n.t("core.router.error_generic_title"),
-                        i18n.t("core.router.error_generic_desc"),
-                    ),
-                    status_code=500,
-                )
-            return JSONResponse(
-                status_code=500,
-                content={
-                    "status": "error",
-                    "code": 500,
-                    "message": "Internal Server Error",
-                },
-            )
+        for spec in specs:
+            self.app.exception_handler(spec.code)(_make_error_handler(spec))
 
     @_web_stack_required
     def _restore_routes_from_records(self) -> None:
@@ -1039,76 +980,13 @@ class RouterManager:
                     self._make_ws_auth_handler(auth_handler) if auth_handler else None
                 )
 
-                async def _ws_endpoint(
-                    websocket: WebSocket,
-                    *,
-                    _wh=wrapped_handler,
-                    _wa=wrapped_auth,
-                    _path=full_path,
-                    _mod=module_name,
-                    _accept=auto_accept,
-                ):
-                    ws_conn = WebSocketConnection(websocket)
-                    if _accept:
-                        await websocket.accept()
-                    try:
-                        if _wa:
-                            if not await _wa(ws_conn):
-                                await websocket.close(code=WS_CLOSE_POLICY_VIOLATION)
-                                return
-                        await lifecycle.emit(
-                            "server.websocket.connect",
-                            {
-                                "path": _path,
-                                "module_name": _mod,
-                                "client_ip": websocket.client.host
-                                if websocket.client
-                                else None,
-                            },
-                        )
-                        await _wh(ws_conn)
-                    except (WebSocketDisconnect, _EPWebSocketDisconnect):
-                        await self._run_ws_hooks(
-                            ws_conn, "disconnect", reason="client_disconnect"
-                        )
-                        await lifecycle.emit(
-                            "server.websocket.disconnect",
-                            {
-                                "path": _path,
-                                "module_name": _mod,
-                                "reason": "client_disconnect",
-                            },
-                        )
-                    except asyncio.CancelledError:
-                        await self._run_ws_hooks(
-                            ws_conn, "disconnect", reason="cancelled"
-                        )
-                        await lifecycle.emit(
-                            "server.websocket.disconnect",
-                            {
-                                "path": _path,
-                                "module_name": _mod,
-                                "reason": "cancelled",
-                            },
-                        )
-                        raise
-                    except Exception as e:
-                        await self._run_ws_hooks(ws_conn, "error", error=str(e))
-                        await self._run_ws_hooks(ws_conn, "disconnect", reason="error")
-                        await lifecycle.emit(
-                            "server.websocket.disconnect",
-                            {
-                                "path": _path,
-                                "module_name": _mod,
-                                "reason": "error",
-                                "error": str(e),
-                            },
-                        )
-                        logger.error(i18n.t("core.router.ws_error", error=e))
-                        try:
-                            await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
-                        except Exception:
-                            pass
+                _ws_endpoint = self._make_ws_endpoint_fn(
+                    full_path,
+                    module_name,
+                    wrapped_handler,
+                    wrapped_auth,
+                    auto_accept,
+                )
 
                 self.app.add_api_websocket_route(
                     path=full_path,
@@ -1120,7 +998,7 @@ class RouterManager:
         restored_sse = 0
         for module_name, paths in self._sse_routes.items():
             for full_path, handler in paths.items():
-                self._register_sse_endpoint(full_path, module_name, handler)
+                self._create_sse_route(full_path, module_name, handler)
                 restored_sse += 1
 
         if restored_http or restored_ws or restored_sse:
@@ -1696,37 +1574,28 @@ class RouterManager:
             return False
 
     @_web_stack_required
-    def _register_ws_endpoint(
+    def _make_ws_endpoint_fn(
         self,
         full_path: str,
         module_name: str,
-        handler: Callable[[WebSocket], Awaitable[Any]],
-        auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None,
-        auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT,
-    ) -> None:
+        wrapped_handler: Callable,
+        wrapped_auth: Callable | None,
+        auto_accept: bool,
+    ) -> Callable[[WebSocket], Awaitable[None]]:
         """
-        WebSocket 路由注册内部实现
-
         {!--< internal-use >!--}
+        构建 WebSocket 端点处理函数（注册与恢复路由共用同一实现）
+
+        :param full_path: 完整路由路径
+        :param module_name: 模块名
+        :param wrapped_handler: 已包装的 WebSocket 处理器
+        :param wrapped_auth: 已包装的鉴权处理器（可为 None）
+        :param auto_accept: 是否自动 accept 连接
+        :return: WebSocket 端点协程函数
         {!--< /internal-use >!--}
         """
-        if full_path in self._websocket_routes[module_name]:
-            raise ValueError(i18n.t("core.router.ws_path_exists", path=full_path))
 
-        self._track_owner_namespace(module_name)
-
-        wrapped_handler = self._make_ws_handler(handler)
-        wrapped_auth = (
-            self._make_ws_auth_handler(auth_handler) if auth_handler else None
-        )
-
-        async def websocket_endpoint(websocket: WebSocket) -> None:
-            """
-            WebSocket端点包装器
-
-            {!--< internal-use >!--}
-            {!--< /internal-use >!--}
-            """
+        async def _endpoint(websocket: WebSocket) -> None:
             if auto_accept:
                 await websocket.accept()
 
@@ -1798,6 +1667,36 @@ class RouterManager:
                 except Exception:
                     pass
 
+        return _endpoint
+
+    def _register_ws_endpoint(
+        self,
+        full_path: str,
+        module_name: str,
+        handler: Callable[[WebSocket], Awaitable[Any]],
+        auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None,
+        auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT,
+    ) -> None:
+        """
+        WebSocket 路由注册内部实现
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        if full_path in self._websocket_routes[module_name]:
+            raise ValueError(i18n.t("core.router.ws_path_exists", path=full_path))
+
+        self._track_owner_namespace(module_name)
+
+        wrapped_handler = self._make_ws_handler(handler)
+        wrapped_auth = (
+            self._make_ws_auth_handler(auth_handler) if auth_handler else None
+        )
+
+        websocket_endpoint = self._make_ws_endpoint_fn(
+            full_path, module_name, wrapped_handler, wrapped_auth, auto_accept
+        )
+
         self.app.add_api_websocket_route(
             path=full_path,
             endpoint=websocket_endpoint,
@@ -1814,7 +1713,7 @@ class RouterManager:
                 "core.router.register_ws",
                 module=module_name,
                 path=full_path,
-                auth="(需认证)" if auth_handler else "",
+                auth=i18n.t("core.router.auth_required_tag") if auth_handler else "",
             )
         )
 
@@ -2509,7 +2408,8 @@ class RouterManager:
 
             cors = config.getConfig(CONFIG_KEY_ROUTER_CORS) or {}
             security = config.getConfig(CONFIG_KEY_ROUTER_SECURITY) or {}
-        except Exception:
+        except Exception as e:
+            logger.trace(i18n.t("core.router.apply_config_failed", error=e))
             return
         new_snapshot = {"cors": cors, "security": security}
         if (
@@ -2591,6 +2491,9 @@ class RouterManager:
         :param ssl_keyfile: str | None SSL密钥路径
 
         :raises RuntimeError: 当服务器已在运行时抛出
+
+        .. note::
+            端口被占用时不视为致命错误：服务器不启动，但机器人继续运行。
         """
         try:
             if self._server_task and not self._server_task.done():
@@ -2600,11 +2503,17 @@ class RouterManager:
             self._get_local_ips()
             self._apply_config()
 
-            # 同步探测端口是否可绑定。uvicorn 在端口被占用时会执行 sys.exit(3)，
+            # 同步探测端口是否可用。uvicorn 在端口被占用时会执行 sys.exit(3)，
             # 其 SystemExit 会被事件循环重新抛出并取消所有任务，导致进程异常退出并
-            # 刷屏大量 "Task was destroyed but it is pending"。此处先同步 bind 探测，
-            # 端口被占用时在启动前抛出清晰、可操作的错误，由上层按致命错误处理。
-            self._check_port_available(host, port)
+            # 刷屏大量 "Task was destroyed but it is pending"。此处先同步探测，
+            # 端口被占用时跳过服务器启动。
+            try:
+                self._check_port_available(host, port)
+            except RuntimeError:
+                # 端口被占用：记录后跳过服务器启动，不中断初始化
+                logger.error(i18n.t("core.router.port_in_use", host=host, port=port))
+                logger.warning(i18n.t("core.router.start_skipped_port_in_use"))
+                return
 
             config = uvicorn.Config(
                 self.app,
@@ -2662,7 +2571,6 @@ class RouterManager:
                 },
             )
         except Exception as e:
-            display_url = self._format_display_url(self.base_url)
             await lifecycle.submit_event(
                 "server.start",
                 msg=i18n.t("core.router.start_failed_msg"),
@@ -2672,43 +2580,43 @@ class RouterManager:
                     "port": port,
                 },
             )
-            # 端口被占用：转换为明确、可操作的错误信息，避免只暴露原始系统错误码
+            # 端口被占用：非致命
             if isinstance(e, OSError) and e.errno == errno.EADDRINUSE:
-                friendly = i18n.t("core.router.port_in_use", host=host, port=port)
-                logger.error(friendly)
-                raise RuntimeError(friendly) from e
+                logger.error(i18n.t("core.router.port_in_use", host=host, port=port))
+                logger.warning(i18n.t("core.router.start_skipped_port_in_use"))
+                return
             logger.error(i18n.t("core.router.start_failed", error=e))
-            raise e
+            raise
 
     def _check_port_available(self, host: str, port: int) -> None:
         """
-        同步探测端口是否可绑定，避免 uvicorn 异步启动失败后引发级联错误
+        检测端口是否被占用（有进程正在监听）
 
-        uvicorn 在端口被占用时会执行 ``sys.exit(STARTUP_FAILURE)``，其 SystemExit
-        会被事件循环重新抛出并取消所有任务，导致进程异常退出并刷屏大量
-        "Task was destroyed but it is pending"。此处先同步 bind 探测端口，若被占用
-        则在启动前抛出清晰的 i18n 提示，由上层按致命错误处理（不自动顺延端口，
-        避免生产环境暴露的端口变化导致外部访问失败）。
+        使用 ``connect`` 而非 ``bind`` 探测：``bind`` 会因上次进程退出后的
+        ``TIME_WAIT`` 残留而误判端口被占用，导致重启死循环；``connect`` 只在
+        端口有活跃监听者时才成功，能准确区分"真正占用"与"TIME_WAIT 残留"。
 
         :param host: str 监听地址
         :param port: int 监听端口
 
         :raises RuntimeError: 当端口被占用时抛出，携带友好的错误提示
-        :raises OSError: 其他绑定错误（如无权限绑定特权端口）
         """
+        # 0.0.0.0 / :: 表示监听所有接口，用回环地址探测
+        probe_host = "127.0.0.1" if host in ("0.0.0.0", "") else host
+        if ":" in probe_host and probe_host != "127.0.0.1":
+            family = socket.AF_INET6
+        else:
+            family = socket.AF_INET
+        probe = socket.socket(family, socket.SOCK_STREAM)
+        probe.settimeout(0.5)
         try:
-            family = socket.AF_INET6 if ":" in host else socket.AF_INET
-            probe = socket.socket(family, socket.SOCK_STREAM)
-            try:
-                probe.bind((host, port))
-            finally:
-                probe.close()
-        except OSError as e:
-            if e.errno == errno.EADDRINUSE:
-                raise RuntimeError(
-                    i18n.t("core.router.port_in_use", host=host, port=port)
-                ) from e
-            raise
+            result = probe.connect_ex((probe_host, port))
+        finally:
+            probe.close()
+        if result == 0:
+            raise RuntimeError(
+                i18n.t("core.router.port_in_use", host=host, port=port)
+            )
 
     def _start_rate_limit_cleanup(self) -> None:
         """
@@ -2728,7 +2636,10 @@ class RouterManager:
                     self._cleanup_expired_rate_limits()
                 except asyncio.CancelledError:
                     break
-                except Exception:
+                except Exception as e:
+                    logger.trace(
+                        i18n.t("core.router.rate_limit_cleanup_failed", error=e)
+                    )
                     continue
 
         try:

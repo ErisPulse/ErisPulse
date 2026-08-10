@@ -72,8 +72,10 @@ class BaseConverter:
         :param raw_event: 平台原始事件数据
         :return: OneBot12 标准格式事件字典；无法识别时返回 None
         """
+        from ..i18n import i18n
+
         raise NotImplementedError(
-            f"{self.__class__.__name__} 必须实现 convert() 方法"
+            i18n.t("core.converter.must_implement_convert", name=self.__class__.__name__)
         )
 
 

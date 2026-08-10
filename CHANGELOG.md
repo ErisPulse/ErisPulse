@@ -63,6 +63,42 @@
 
 ---
 
+## [2.7.1-dev.4] - 2026/08/10
+> 开发版本
+
+**版本摘要**
+静默异常治理 + 内部去重 + i18n 收尾 + 测试补强。消除 storage/adapter/router 中 10+ 处 `except: pass` 静默吞异常；router 提取 WS 端点 / 错误页 / SSE 路由创建的工厂方法，消除 ~150 行重复；源码剩余硬编码中文文案全量 i18n（~90 key × 5 语言）；新增 28 个核心测试用例。修复 SSE 路由软重启后无法恢复的 bug。
+
+### 新增
+- @wsu2059q
+  - `tests/unit/test_unit_tasks.py`：`spawn_background` 三级回退链与引用生命周期（9 用例，覆盖率 38% → 94%）
+  - `tests/unit/test_unit_router.py` 新增 SSE 路由 / owner 清理 / 路由恢复 / 限流清理任务生命周期（14 用例）
+  - `tests/unit/test_unit_storage.py` 新增 `TestStorageErrorLogging`：写操作失败时产出 `logger.error`（5 用例）
+
+### 修复
+- @wsu2059q
+  - `Core/router` SSE 路由软重启后丢失：`_register_sse_endpoint` 的重复检查在恢复场景误判（`_sse_routes` 记录已存在）抛 `ValueError`。提取 `_create_sse_route`（纯路由创建），注册与恢复各取所需，与 HTTP/WS 恢复模式对齐
+  - `Core/router` 端口占用处理：`_check_port_available` 由 `bind` 探测改为 `connect` 探测——`bind` 会因上次进程退出后的 `TIME_WAIT` 残留误判端口占用，导致重启死循环；`connect` 只在有活跃监听者时才判定占用。同时端口被占用不再视为致命错误：服务器跳过启动（HTTP 功能不可用），适配器与模块继续运行，避免整个进程退出后无限重启
+
+### 变更
+- @wsu2059q
+  - `Core/Event/base.py` `_validate_identifier` / `_validate_select_column` 的 `context` 参数统一使用固定英文（`"table"` / `"column"` 等），作为语言无关的诊断标签
+  - `Core/Bases/{adapter,module,send_builder,send_rules,i18n_schema}.py` 将 28 处函数内导入（logger / i18n / config / lifecycle）提升到模块顶层（经依赖图确认无循环依赖），仅保留 2 处真正的循环依赖（`Bases/adapter.py` ↔ `Core/adapter.py`）为函数内导入并加注释
+  - `Core/storage.py` 消除 21 处函数内重复 `from .logger import logger`，提升到模块顶层
+
+### 优化
+- @wsu2059q
+  - **静默异常治理**：`storage`（`set_multi`/`delete`/`delete_multi`/`clear`/`HasTable`）、`adapter`（账户缓存刷新 / 配置回调注册 / lifecycle 钩子清理）、`router`（限流清理循环 / 配置回调）的 `except: pass` 补诊断日志
+  - **router 去重**：提取 `_make_ws_endpoint_fn`（WS 端点工厂）、`_Spec(NamedTuple)` 声明式错误页表（`HTTPStatus` 派生 message）、`_create_sse_route`（SSE 路由创建），消除 ~150 行重复
+  - `Core/adapter.py` 提取 `_refresh_accounts_cache`，消除 `_run_adapter` 与 `restart` 中重复的账户缓存刷新逻辑；删除 `platform_label` 死代码
+  - **i18n 全量收尾**：`Event/{wrapper,command,session_type}`、`Bases/{adapter,config_schema,module,converter,kv_builder,send_builder,send_rules,storage,i18n_schema}`、`Core/{adapter,client,master,module,router}`、`runtime/exceptions`、`finders`、`loaders/module` 中剩余的硬编码中文 raise / logger / 校验错误改为 i18n（全 5 语言同步）
+
+### 重构
+- @wsu2059q
+  - `Core/Event/wrapper.py` 移除与顶层 i18n 导入冲突的 2 处函数内 `from ..i18n import i18n`（修复 `UnboundLocalError`）；`Bases/adapter.py` 移除 `_get_logger` 中因导入提升而失效的死 try/except
+
+---
+
 ## [2.7.1-dev.3] - 2026/08/09
 > 开发版本
 

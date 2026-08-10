@@ -13,6 +13,8 @@ ErisPulse 存储基类
 from abc import ABC, abstractmethod
 from typing import Any
 
+from ..i18n import i18n
+
 # 哨兵值，用于区分"键不存在"和"值为 None"
 _SENTINEL = object()
 
@@ -516,7 +518,7 @@ class BaseStorage(ABC):
             )
         value = self.get(key, _SENTINEL)
         if value is _SENTINEL:
-            raise AttributeError(f"存储项 {key} 不存在")
+            raise AttributeError(i18n.t("core.storage.item_not_exist", key=key))
         return value
 
     def __setattr__(self, key: str, value: Any) -> None:

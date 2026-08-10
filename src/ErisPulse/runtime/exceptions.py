@@ -12,6 +12,7 @@ import traceback
 from pathlib import Path
 from typing import Any
 
+from ..Core.i18n import i18n
 from .hints import (
     suggest_for_attribute_error,
     suggest_for_connection_error,
@@ -290,7 +291,7 @@ def _fold_async_noise(message: str) -> None:
         _async_noise_state[key] = (count + 1, first_seen)
         return
     _async_noise_state[key] = (1, now)
-    suffix = f"（另有 {count} 次同类消息被折叠）" if count else ""
+    suffix = i18n.t("core.exceptions.folded_suffix", count=count) if count else ""
     _log_async_noise(f"Async - {key}{suffix}")
 
 

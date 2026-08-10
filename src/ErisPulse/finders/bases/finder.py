@@ -352,7 +352,7 @@ class BaseFinder(ABC):
                     if name.strip()
                 ]
         except Exception as e:
-            logger.trace(f"读取 {package_name} 的 top_level.txt 失败: {e}")
+            logger.trace(i18n.t("core.finder.read_top_level_failed", package=package_name, error=e))
 
         top_level_set = set()
         for entry in self.find_all():
@@ -382,7 +382,7 @@ class BaseFinder(ABC):
         """
         self._cache = None
         self._cache_time = None
-        logger.trace("发现器缓存已清除")
+        logger.trace(i18n.t("core.finder.cache_cleared"))
 
     def set_cache_expiry(self, expiry: int) -> None:
         """
