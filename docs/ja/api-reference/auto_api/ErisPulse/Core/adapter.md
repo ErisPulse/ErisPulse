@@ -131,6 +131,16 @@ ErisPulse 适配器系统
 ---
 
 
+##### `_refresh_accounts_cache(adapter: BaseAdapter, platform: str | None = None)`
+
+> **内部方法**
+刷新适配器账户缓存，确保配置变更后 _accounts_data 不过期
+
+- **adapter** (`适配器实例`): - **platform**: 平台名称（用于日志上下文）
+
+---
+
+
 ##### `async _run_adapter(adapter: BaseAdapter, platform: str)`
 
 > **内部方法**
