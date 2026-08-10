@@ -372,7 +372,7 @@ class ModuleManager(ManagerBase):
             logger.info(i18n.t("core.module.already_loaded", name=module_name))
             return True
 
-        logger.trace(f"开始加载模块: {module_name}")
+        logger.trace(i18n.t("core.module.start_loading", name=module_name))
 
         try:
             module_class = self._module_classes[module_name]
@@ -405,7 +405,7 @@ class ModuleManager(ManagerBase):
                         instance._ensure_i18n_registered()
                     except Exception:
                         logger.debug(
-                            f"模块 {module_name} i18n 注册阶段异常",
+                            i18n.t("core.module.i18n_register_exception", name=module_name),
                             exc_info=True,
                         )
 

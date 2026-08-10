@@ -17,13 +17,13 @@ from enum import Enum
 from typing import TypeAlias
 
 from .. import logger
+from ..i18n import i18n
 
 
 # Python 3.11+ 提供了 enum.StrEnum，3.10 需手动实现
 # 项目要求 >=3.10，这里统一用本地实现，避免 pyright 识别不了两种不同的 StrEnum
 class StrEnum(str, Enum):
     """字符串枚举：成员值同时是 str，可直接用于字符串上下文。"""
-    ...
 
 
 ReceiveTypeStr: TypeAlias = str
@@ -134,11 +134,11 @@ def register_custom_type(
         _custom_send_to_receive[send_type] = receive_type_key
 
         logger.trace(
-            f"已注册自定义会话类型: {receive_type_key} → {send_type} (ID字段: {id_field})"
+            i18n.t("core.session.custom_type_registered", type=receive_type_key, send_type=send_type, id_field=id_field)
         )
         return True
     except Exception as e:
-        logger.error(f"注册自定义会话类型失败: {e}")
+        logger.error(i18n.t("core.session.register_custom_failed", error=e))
         return False
 
 
@@ -165,11 +165,11 @@ def unregister_custom_type(receive_type: str, platform: str | None = None) -> bo
             del _custom_receive_to_send[receive_type_key]
             del _custom_send_to_receive[send_type]
 
-            logger.trace(f"已注销自定义会话类型: {receive_type_key}")
+            logger.trace(i18n.t("core.session.custom_type_unregistered", type=receive_type_key))
             return True
         return False
     except Exception as e:
-        logger.error(f"注销自定义会话类型失败: {e}")
+        logger.error(i18n.t("core.session.unregister_custom_failed", error=e))
         return False
 
 
@@ -322,7 +322,7 @@ def infer_receive_type(event: dict, platform: str | None = None) -> str:
         return "private"
 
     # 都没有，默认返回 private
-    logger.warning("无法从事件数据推断会话类型，使用默认值 'private'")
+    logger.warning(i18n.t("core.session.infer_failed_default"))
     return "private"
 
 

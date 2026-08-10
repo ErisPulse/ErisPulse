@@ -597,7 +597,7 @@ class ModuleLoader(BaseLoader):
         if len(sorted_list) != len(all_names):
             remaining = all_names - set(sorted_list)
             remaining_deps = {n: graph[n] & remaining for n in remaining}
-            raise RuntimeError(f"检测到循环依赖: {remaining_deps}")
+            raise RuntimeError(i18n.t("core.module.circular_dependency", deps=remaining_deps))
 
         return sorted_list
 
@@ -820,14 +820,14 @@ class LazyModule:
 
                 if not success:
                     raise RuntimeError(
-                        f"模块 {module_name} 通过 manager.load() 加载失败"
+                        i18n.t("core.module.manager_load_failed", name=module_name)
                     )
 
                 # 使用 manager 中创建的实例（唯一的真实实例）
                 instance = manager_instance.get(module_name)
                 if instance is None:
                     raise RuntimeError(
-                        f"模块 {module_name} manager.load() 成功但 get() 返回 None"
+                        i18n.t("core.module.manager_get_none", name=module_name)
                     )
 
                 # 确保 moduleInfo 已设置
@@ -1086,7 +1086,10 @@ class LazyModule:
                 },
             )
             logger.debug(
-                f"懒加载模块 {object.__getattribute__(self, '_module_name')} 异步初始化部分完成"
+                i18n.t(
+                    "core.loader.lazy_async_init_done",
+                    name=object.__getattribute__(self, "_module_name"),
+                )
             )
         except Exception as e:
             await lifecycle.submit_event(
@@ -1098,7 +1101,11 @@ class LazyModule:
                 },
             )
             logger.error(
-                f"懒加载模块 {object.__getattribute__(self, '_module_name')} 异步初始化部分失败: {e}"
+                i18n.t(
+                    "core.loader.lazy_async_init_failed",
+                    name=object.__getattribute__(self, "_module_name"),
+                    error=e,
+                )
             )
             from ..runtime.diagnostics import log_diagnostic
 

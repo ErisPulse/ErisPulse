@@ -21,6 +21,8 @@ from collections.abc import Mapping
 from dataclasses import MISSING, dataclass, field, fields
 from typing import Any, ClassVar
 
+from ..i18n import i18n
+
 # ---------------------------------------------------------------------------
 # 内部辅助函数
 # ---------------------------------------------------------------------------
@@ -303,7 +305,7 @@ class I18nConfig:
     language: str = field(
         default="auto",
         metadata={
-            "description": "显示语言 (auto=自动检测, zh-CN, zh-TW, en, ja, ru)",
+            "description": {"i18n": "core.config.i18n_language_description", "default": "显示语言 (auto=自动检测, zh-CN, zh-TW, en, ja, ru)"},
             "required": False,
             "ui": {
                 "widget": "select",
@@ -373,7 +375,7 @@ def dataclass_to_toml_with_comments(
         required = meta.get("required", False) if meta else False
 
         if description:
-            suffix = "（必填）" if required else ""
+            suffix = i18n.t("core.config.required_suffix") if required else ""
             lines.append(f"# {description}{suffix}")
 
         # secret 字段不把真实值写入模板文件，避免配置文件泄露敏感信息
@@ -466,7 +468,6 @@ def _notify_instance_config_update(
         instance.on_config_update(old_config, new_config)
     except Exception as e:
         try:
-            from ErisPulse.Core.i18n import i18n
             from ErisPulse.Core.logger import logger
 
             params = dict(log_params)
@@ -504,7 +505,7 @@ def validate_config(instance) -> list[str]:
         # 1. required 非空（需要 metadata 声明）
         if meta.get("required", False) and _is_empty(value):
             desc_text = _resolve_description_text(meta) or f.name
-            errors.append(f"{f.name}（{desc_text}）不能为空")
+            errors.append(i18n.t("core.config.field_required_empty", field=f.name, desc=desc_text))
             continue  # 已为空，类型/范围检查无意义
 
         # 跳过空值后续检查
@@ -519,7 +520,7 @@ def validate_config(instance) -> list[str]:
         if expected is not None and not isinstance(value, expected):
             # bool 是 int 的子类：声明 int 但实际为 bool 视为类型不符
             errors.append(
-                f"{f.name} 类型应为 {type_name}，实际为 {type(value).__name__}"
+                i18n.t("core.config.field_type_mismatch", field=f.name, expected=type_name, actual=type(value).__name__)
             )
 
         # 3. 枚举选项（options 可在 ui 子表或 metadata 顶层）
@@ -529,7 +530,7 @@ def validate_config(instance) -> list[str]:
                 o.get("value") if isinstance(o, dict) else o for o in options
             ]
             if value not in plain_opts:
-                errors.append(f"{f.name} 的值 '{value}' 不在允许的选项中")
+                errors.append(i18n.t("core.config.field_option_invalid", field=f.name, value=value))
 
         # 4. 数值范围
         if isinstance(value, (int, float)) and not isinstance(value, bool):
@@ -540,9 +541,9 @@ def validate_config(instance) -> list[str]:
             if max_val is None:
                 max_val = meta.get("max")
             if min_val is not None and value < min_val:
-                errors.append(f"{f.name} 的值 {value} 小于最小值 {min_val}")
+                errors.append(i18n.t("core.config.field_below_min", field=f.name, value=value, min=min_val))
             if max_val is not None and value > max_val:
-                errors.append(f"{f.name} 的值 {value} 大于最大值 {max_val}")
+                errors.append(i18n.t("core.config.field_above_max", field=f.name, value=value, max=max_val))
 
     return errors
 
@@ -636,7 +637,6 @@ def register_config_i18n(
     :param domain: i18n 域标识，默认 "config"
     :return: 注册的翻译条目数
     """
-    from ErisPulse.Core.i18n import i18n
 
     count = 0
     for f in fields(config_class):
@@ -706,7 +706,6 @@ def resolve_config_schema(config_class: type, resolve_i18n: bool = True) -> dict
     if not resolve_i18n:
         return schema
 
-    from ErisPulse.Core.i18n import i18n
 
     for field_schema in schema["fields"].values():
         # description
