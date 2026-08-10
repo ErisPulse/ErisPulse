@@ -342,5 +342,6 @@ class TestInputValidation:
     def test_unknown_operation_raises(self, storage):
         qb = storage.Table("users")
         qb._operation = "totally_unknown"
-        with pytest.raises(ValueError, match="Unknown operation"):
+        # i18n 化后消息跟随语言；匹配操作值（语言无关）
+        with pytest.raises(ValueError, match="totally_unknown"):
             qb.Execute()

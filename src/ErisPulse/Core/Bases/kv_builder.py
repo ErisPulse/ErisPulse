@@ -24,6 +24,7 @@ ErisPulse KV 查询构建器
 import json
 from typing import Any
 
+from ..i18n import i18n
 from .storage import BaseQueryBuilder
 
 _TABLE_PREFIX = "__erispulse_sql__"
@@ -197,18 +198,18 @@ class KVQueryBuilder(BaseQueryBuilder):
             return self._exec_update()
         if self._operation == "delete":
             return self._exec_delete()
-        raise ValueError(f"Unknown operation: {self._operation}")
+        raise ValueError(i18n.t("core.kvbuilder.unknown_operation", op=self._operation))
 
     def _exec_insert(self) -> int:
         if not isinstance(self._data, dict):
-            raise ValueError("Insert 操作需要字典数据")
+            raise ValueError(i18n.t("core.kvbuilder.insert_needs_dict"))
         row_id = self._get_next_id()
         self._storage.set(self._row_key(row_id), json.dumps(self._data, ensure_ascii=False))
         return 1
 
     def _exec_insert_multi(self) -> int:
         if not isinstance(self._data, list):
-            raise ValueError("InsertMulti 操作需要列表数据")
+            raise ValueError(i18n.t("core.kvbuilder.insert_multi_needs_list"))
         count = 0
         for row in self._data:
             row_id = self._get_next_id()
@@ -241,7 +242,7 @@ class KVQueryBuilder(BaseQueryBuilder):
 
     def _exec_update(self) -> int:
         if not isinstance(self._data, dict):
-            raise ValueError("Update 操作需要字典数据")
+            raise ValueError(i18n.t("core.kvbuilder.update_needs_dict"))
         count = 0
         for row_id, row in self._scan_rows():
             if self._match_row(row):
@@ -304,13 +305,13 @@ class KVQueryBuilder(BaseQueryBuilder):
         """异步执行查询"""
         if self._operation == "insert":
             if not isinstance(self._data, dict):
-                raise ValueError("Insert 操作需要字典数据")
+                raise ValueError(i18n.t("core.kvbuilder.insert_needs_dict"))
             row_id = self._get_next_id()
             await self._storage.aset(self._row_key(row_id), json.dumps(self._data, ensure_ascii=False))
             return 1
         if self._operation == "insert_multi":
             if not isinstance(self._data, list):
-                raise ValueError("InsertMulti 操作需要列表数据")
+                raise ValueError(i18n.t("core.kvbuilder.insert_multi_needs_list"))
             count = 0
             for row in self._data:
                 row_id = self._get_next_id()
@@ -321,7 +322,7 @@ class KVQueryBuilder(BaseQueryBuilder):
             return await self._aexec_select()
         if self._operation == "update":
             if not isinstance(self._data, dict):
-                raise ValueError("Update 操作需要字典数据")
+                raise ValueError(i18n.t("core.kvbuilder.update_needs_dict"))
             count = 0
             for row_id, row in await self._ascan_rows():
                 if self._match_row(row):
@@ -336,7 +337,7 @@ class KVQueryBuilder(BaseQueryBuilder):
                     await self._storage.adelete(self._row_key(row_id))
                     count += 1
             return count
-        raise ValueError(f"Unknown operation: {self._operation}")
+        raise ValueError(i18n.t("core.kvbuilder.unknown_operation", op=self._operation))
 
     async def _aexec_select(self) -> list[tuple]:
         rows = await self._ascan_rows()

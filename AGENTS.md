@@ -11,15 +11,16 @@
   - 同步更新 `src/ErisPulse/runtime/__init__.py` 等聚合导出文件
   - 同步更新示例项目（`examples/example-adapter/`、`examples/example-module/`）
 - 5. 修改公共行为（配置热更新、事件路由、生命周期等）后，检查是否影响已发布的下游组件（适配器/模块/配置面板），必要时同步更新或记录兼容性说明
+- 6. 遇到问题必须定位根因、从架构层面修复，而非不断叠加补丁绕过。优先根本解决，禁止补丁式更新。
 
 ## 测试与检查
-- 6. 修改完毕后必须进行 pytest 测试，必须进行 python check 检查
-- 7. 涉及核心模块（Bases、runtime、config、loaders）的修改，必须补充或更新对应的 pytest 用例
-- 8. 修改 `src/ErisPulse/CLI/commands/create.py` 中的模板后，须运行 `.format()` 并 `compile()` 验证生成代码合法
+- 7. 修改完毕后必须进行 pytest 测试，必须进行 python check 检查
+- 8. 涉及核心模块（Bases、runtime、config、loaders）的修改，必须补充或更新对应的 pytest 用例
+- 9. 修改 `src/ErisPulse/CLI/commands/create.py` 中的模板后，须运行 `.format()` 并 `compile()` 验证生成代码合法
 
 ## CI/CD
-- 9. 新增功能时检查是否需要修改 `.github/workflows` 配置
-- 10. 新增 Python `import` 依赖时确认无循环依赖风险
+- 10. 新增功能时检查是否需要修改 `.github/workflows` 配置
+- 11. 新增 Python `import` 依赖时确认无循环依赖风险
 
 ## 国际化（i18n）
 - 12. 新增翻译键时，必须同步更新所有语言文件（zh-CN / zh-TW / en / ja / ru）

@@ -24,6 +24,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from ..constants import RETCODE_NOT_IMPLEMENTED, STATUS_FAILED, STATUS_OK
+from ..i18n import i18n
+from ..logger import logger
 
 
 @dataclass
@@ -133,9 +135,8 @@ async def _invoke_callback(callback: Any, ctx: Any) -> None:
         if asyncio.iscoroutine(ret):
             await ret
     except Exception as exc:
-        from ..logger import logger
 
-        logger.warning(f"SendDSL 规则回调执行异常: {exc!r}")
+        logger.warning(i18n.t("core.sendrules.callback_error", error=repr(exc)))
 
 
 def apply_send_rules(
@@ -197,7 +198,7 @@ def apply_send_rules(
                 "retcode": RETCODE_NOT_IMPLEMENTED,
                 "data": None,
                 "message_id": "",
-                "message": "发送因队列积压被丢弃（低优先级）",
+                "message": i18n.t("core.sendrules.dropped_low_priority"),
             }
 
         # 延迟发送
@@ -277,9 +278,8 @@ def apply_send_rules(
                         if asyncio.iscoroutine(ret):
                             await ret
                     except Exception as exc:
-                        from ..logger import logger
 
-                        logger.warning(f"SendDSL Hook 执行异常: {exc!r}")
+                        logger.warning(i18n.t("core.sendrules.hook_error", error=repr(exc)))
 
                 return result
 

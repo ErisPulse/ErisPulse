@@ -22,6 +22,9 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from ..i18n import i18n
+from ..lifecycle import lifecycle
+from ..logger import logger
 from .send_rules import _invoke_callback, _is_success
 
 if TYPE_CHECKING:
@@ -315,7 +318,11 @@ class SendBuilder:
             method = self._resolve_method(send_inst, method_name)
             if method is None:
                 err = AttributeError(
-                    f"平台 {self._adapter.__class__.__name__} 未实现 {method_name} 发送方法"
+                    i18n.t(
+                        "core.adapter.send_method_not_implemented",
+                        platform=self._adapter.__class__.__name__,
+                        method=method_name,
+                    )
                 )
                 ctx.errors[idx] = err
                 ctx.results[idx] = None
@@ -394,9 +401,8 @@ class SendBuilder:
                     if asyncio.iscoroutine(ret):
                         await ret
                 except Exception as exc:
-                    from ..logger import logger
 
-                    logger.warning(f"SendBuilder Hook 执行异常: {exc!r}")
+                    logger.warning(i18n.t("core.sendbuilder.hook_error", error=repr(exc)))
 
         # OnError（存在失败）
         if ctx.failed > 0 and on_error is not None:
@@ -450,7 +456,6 @@ class SendBuilder:
     async def _emit_lifecycle(self, event: str) -> None:
         """触发整批的生命周期事件"""
         try:
-            from ..lifecycle import lifecycle
 
             await lifecycle.emit(
                 event,

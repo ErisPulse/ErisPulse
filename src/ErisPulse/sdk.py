@@ -434,9 +434,8 @@ class SDK:
                     # 跳过 HTTP 服务器启动（适用于纯 WebSocket/轮询适配器）
                     self.logger.info(i18n.t("core.sdk.init.router_start_skipped"))
                 else:
-                    # 路由服务器是适配器/模块对外服务的核心基础设施，绑定失败
-                    # （如端口被占用）属于致命初始化错误：不自动顺延端口（生产环境
-                    # 暴露的端口变化会导致外部访问失败），直接抛出使 init() 失败退出。
+                    # 路由服务器启动失败（如端口被占用）不视为致命错误：
+                    # 服务器不启动，但适配器与模块继续运行。
                     await self.router.start(
                         host=_server_config["host"],
                         port=_server_config["port"],
@@ -1497,7 +1496,9 @@ class SDK:
 
             if not isInit:
                 self.logger.error(i18n.t("core.sdk.run.init_failed"))
-                return
+                # 致命初始化失败（非端口占用——端口失败已降级为跳过服务器启动）：
+                # 以非 0 退出码退出，让 Docker / ep run 运行器能正确识别为异常退出。
+                sys.exit(1)
 
             # on_ready 回调：初始化完成后、挂起前执行
             if on_ready is not None:
