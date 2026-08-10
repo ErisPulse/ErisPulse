@@ -8,7 +8,10 @@ from abc import ABC, abstractmethod
 from typing import Any, TypedDict
 
 from ...loaders.strategy import ModuleLoadStrategy
+from ..config import config as config_mgr
 from ..constants import DEFAULT_LAZY_LOADING_ENABLED, DEFAULT_MODULE_PRIORITY
+from ..i18n import i18n
+from ..logger import logger
 
 
 class ModuleEvent(TypedDict):
@@ -154,7 +157,6 @@ class BaseModule(ABC):
 
         if self.ConfigClass is None:
             return
-        from ..config import config as config_mgr
         from .config_schema import (
             dataclass_to_defaults_dict,
         )
@@ -167,8 +169,7 @@ class BaseModule(ABC):
             config_mgr.setConfig(key, data, immediate=True)
             # 懒加载 logger（模块可能未注入 sdk）
             try:
-                from ..logger import logger
-                logger.info(f"已生成 {key} 默认配置模板")
+                logger.info(i18n.t("core.module.config_template_generated", key=key))
             except ImportError:
                 pass
 
@@ -212,9 +213,8 @@ class BaseModule(ABC):
         """
         if self.ConfigClass is None:
             raise AttributeError(
-                "未声明 ConfigClass，请设置 MyModule.ConfigClass = MyConfig"
+                i18n.t("core.module.config_class_not_declared")
             )
-        from ..config import config as config_mgr
         from .config_schema import dict_to_dataclass
 
         data = config_mgr.getConfig(self._get_config_key())
@@ -230,7 +230,6 @@ class BaseModule(ABC):
         if value is not None:
             from dataclasses import asdict
 
-            from ..config import config as config_mgr
 
             try:
                 config_mgr.setConfig(self._get_config_key(), asdict(value))

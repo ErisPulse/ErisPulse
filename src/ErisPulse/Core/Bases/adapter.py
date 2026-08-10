@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     # typing.Self 仅在 3.11+ 提供，3.10 需 typing_extensions 兜底
     from typing_extensions import Self
 
+from ..config import config as config_mgr
 from ..constants import (
     DEFAULT_SEND_METHOD,
     DEFAULT_SEND_TARGET_TYPE,
@@ -28,6 +29,9 @@ from ..constants import (
     STATUS_FAILED,
     STATUS_OK,
 )
+from ..i18n import i18n
+from ..lifecycle import lifecycle
+from ..logger import logger
 
 _CHAIN_MODIFIER_NAMES = frozenset({
     "At", "AtAll", "Reply", "To", "Using", "Account",
@@ -137,6 +141,7 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
             "bot_id": send_dsl._account_id or "",
         }
 
+        # 循环依赖：Core/adapter.py 顶层导入本模块（BaseAdapter）
         from ..adapter import _msg_logger
 
         target_type = send_dsl._target_type or ""
@@ -158,7 +163,6 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
 
         # 预判是否有生命周期监听者：无监听时跳过 Task 创建与 emit 调度，
         # 避免每条发送消息都无条件 spawn 两个后台任务
-        from ..lifecycle import lifecycle
 
         _has_sending_hooks = lifecycle.has_handlers("message.sending")
         _has_sent_hooks = lifecycle.has_handlers("message.sent")
@@ -309,10 +313,13 @@ class SendDSL:
                     return resolved
                 return attr
 
-        from ..logger import logger
 
         logger.warning(
-            f"平台 {self._adapter.__class__.__name__} 未实现 {name} 发送方法"
+            i18n.t(
+                "core.adapter.send_method_not_implemented",
+                platform=self._adapter.__class__.__name__,
+                name=name,
+            )
         )
 
         raise AttributeError(
@@ -428,11 +435,12 @@ class SendDSL:
         :param kwargs: 其他参数
         :return: asyncio.Task
         """
-        from ..logger import logger
 
         logger.error(
-            f"平台 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法，"
-            f"消息未被发送。适配器必须实现此方法以支持 OneBot12 消息段发送。"
+            i18n.t(
+                "core.adapter.raw_ob12_not_implemented",
+                platform=self._adapter.__class__.__name__,
+            )
         )
 
         async def _not_impl():
@@ -441,7 +449,10 @@ class SendDSL:
                 "retcode": RETCODE_NOT_IMPLEMENTED,
                 "data": None,
                 "message_id": "",
-                "message": f"平台 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法",
+                "message": i18n.t(
+                    "core.adapter.raw_ob12_not_implemented_short",
+                    platform=self._adapter.__class__.__name__,
+                ),
             }
 
         try:
@@ -923,19 +934,26 @@ class RequestDSL:
         :param action: 操作名称（accept/reject）
         :return: 标准错误响应字典
         """
-        from ..logger import logger
 
         platform_name = self._adapter.__class__.__name__
         logger.warning(
-            f"平台 {platform_name} 未实现 Request.{action}() 方法，"
-            f"请求 {self._request_id} 未被处理。"
+            i18n.t(
+                "core.adapter.request_not_implemented",
+                platform=platform_name,
+                action=action,
+                request_id=self._request_id,
+            )
         )
         return {
             "status": STATUS_FAILED,
             "retcode": RETCODE_NOT_IMPLEMENTED,
             "data": None,
             "message_id": "",
-            "message": f"平台 {platform_name} 未实现请求操作 ({action})",
+            "message": i18n.t(
+                "core.adapter.request_op_not_implemented",
+                platform=platform_name,
+                action=action,
+            ),
         }
 
     def _create_task(self, coro) -> Awaitable[Any]:
@@ -1321,7 +1339,6 @@ class BaseAdapter(ABC):
         {!--< /tips >!--}
         """
 
-        ...
 
     class Api(ApiDSL):
         """
@@ -1337,7 +1354,6 @@ class BaseAdapter(ABC):
         {!--< /tips >!--}
         """
 
-        ...
 
     class Send(SendDSL):
         """
@@ -1373,9 +1389,8 @@ class BaseAdapter(ABC):
             }
 
             async def _send_example():
-                from ..logger import logger
 
-                logger.info(f"发送示例消息: {text}")
+                logger.info(i18n.t("core.adapter.send_example", text=text))
                 return mock_response
 
             return asyncio.create_task(_send_example())
@@ -1420,18 +1435,22 @@ class BaseAdapter(ABC):
             """
 
             async def _send_raw():
-                from ..logger import logger
 
                 logger.error(
-                    f"适配器 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法，"
-                    f"消息未被发送。适配器必须实现此方法以支持 OneBot12 消息段发送。"
+                    i18n.t(
+                        "core.adapter.raw_ob12_not_implemented",
+                        platform=self._adapter.__class__.__name__,
+                    )
                 )
                 return {
                     "status": STATUS_FAILED,
                     "retcode": RETCODE_NOT_IMPLEMENTED,
                     "data": None,
                     "message_id": "",
-                    "message": f"适配器 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法",
+                    "message": i18n.t(
+                        "core.adapter.raw_ob12_not_implemented_short",
+                        platform=self._adapter.__class__.__name__,
+                    ),
                 }
 
             try:
@@ -1509,7 +1528,8 @@ class BaseAdapter(ABC):
         :return: API调用结果
         :raises NotImplementedError: 必须由子类实现
         """
-        raise NotImplementedError("适配器必须实现call_api方法")
+
+        raise NotImplementedError(i18n.t("core.adapter.must_implement_call_api"))
 
     @abstractmethod
     async def start(self) -> None:
@@ -1518,7 +1538,8 @@ class BaseAdapter(ABC):
 
         :raises NotImplementedError: 必须由子类实现
         """
-        raise NotImplementedError("适配器必须实现start方法")
+
+        raise NotImplementedError(i18n.t("core.adapter.must_implement_start"))
 
     @abstractmethod
     async def shutdown(self) -> None:
@@ -1527,7 +1548,8 @@ class BaseAdapter(ABC):
 
         :raises NotImplementedError: 必须由子类实现
         """
-        raise NotImplementedError("适配器必须实现shutdown方法")
+
+        raise NotImplementedError(i18n.t("core.adapter.must_implement_shutdown"))
 
     @property
     def cfg(self):
@@ -1546,11 +1568,9 @@ class BaseAdapter(ABC):
         {!--< /tips >!--}
         """
         if self.ConfigClass is None:
-            raise AttributeError(
-                "未声明 ConfigClass，请设置 MyAdapter.ConfigClass = MyConfig"
-            )
 
-        from ..config import config as config_mgr
+            raise AttributeError(i18n.t("core.adapter.config_class_not_declared"))
+
         from .config_schema import dict_to_dataclass
 
         # 适配器的 EventMixin 在 AdapterManager.register() 注入 _platform 后注册
@@ -1570,7 +1590,6 @@ class BaseAdapter(ABC):
         if value is not None:
             from dataclasses import asdict
 
-            from ..config import config as config_mgr
 
             try:
                 config_mgr.setConfig(self._get_config_key(), asdict(value))
@@ -1601,11 +1620,9 @@ class BaseAdapter(ABC):
         :raises AttributeError: 未声明 AccountConfigClass 时抛出
         """
         if self.AccountConfigClass is None:
-            raise AttributeError(
-                "未声明 AccountConfigClass，请设置 MyAdapter.AccountConfigClass = MyBotConfig"
-            )
 
-        from ..config import config as config_mgr
+            raise AttributeError(i18n.t("core.adapter.account_config_not_declared"))
+
         from .config_schema import dict_to_dataclass, validate_config
 
         key = f"{self._get_config_key()}.accounts"
@@ -1623,7 +1640,7 @@ class BaseAdapter(ABC):
             errors = validate_config(instance)
             if errors:
                 self._get_logger().error(
-                    f"账户 {name} 配置校验失败: {', '.join(errors)}"
+                    i18n.t("core.adapter.account_config_invalid", name=name, error=", ".join(errors))
                 )
                 continue
             accounts[name] = instance
@@ -1637,7 +1654,6 @@ class BaseAdapter(ABC):
         if value is not None:
             from dataclasses import asdict
 
-            from ..config import config as config_mgr
 
             key = f"{self._get_config_key()}.accounts"
             try:
@@ -1674,17 +1690,18 @@ class BaseAdapter(ABC):
         return self.__class__.__name__
 
     def _get_logger(self):
-        """获取 logger，兼容 sdk 未注入的场景"""
+        """
+        {!--< internal-use >!--}
+        获取 logger，兼容 sdk 未注入的场景
+
+        此处刻意使用函数内导入：模块顶层已有 ``logger``，但函数内动态导入可让测试
+        通过 ``patch("ErisPulse.Core.logger.logger")`` 拦截日志输出。
+        """
         if hasattr(self, "logger"):
             return self.logger
-        try:
-            from ..logger import logger
+        from ..logger import logger
 
-            return logger
-        except ImportError:
-            import logging
-
-            return logging.getLogger(self.__class__.__name__)
+        return logger
 
     def _ensure_config_exists(self):
         """
@@ -1700,7 +1717,6 @@ class BaseAdapter(ABC):
 
         if self.ConfigClass is None:
             return
-        from ..config import config as config_mgr
         from .config_schema import (
             dataclass_to_defaults_dict,
             dataclass_to_toml_with_comments,
@@ -1713,7 +1729,7 @@ class BaseAdapter(ABC):
             data = dataclass_to_defaults_dict(self.ConfigClass)
             toml_str = dataclass_to_toml_with_comments(self.ConfigClass)
             config_mgr.setConfig(key, data, immediate=True)
-            self._get_logger().info(f"已生成 {key} 默认配置模板:\n{toml_str}")
+            self._get_logger().info(i18n.t("core.adapter.config_template_generated", key=key, toml=toml_str))
 
     def _ensure_i18n_registered(self):
         """
@@ -1741,7 +1757,7 @@ class BaseAdapter(ABC):
         except Exception:
             # i18n 注册失败不应中断适配器初始化
             self._get_logger().debug(
-                f"{self.__class__.__name__}.I18nClass.register() 失败",
+                i18n.t("core.adapter.i18n_register_failed", adapter=self.__class__.__name__),
                 exc_info=True,
             )
 
@@ -1768,7 +1784,7 @@ class BaseAdapter(ABC):
             register_event_mixin(platform, self.EventMixin)
         except Exception:
             self._get_logger().debug(
-                f"{self.__class__.__name__}.EventMixin 注册失败",
+                i18n.t("core.adapter.eventmixin_register_failed", adapter=self.__class__.__name__),
                 exc_info=True,
             )
 
@@ -1781,7 +1797,6 @@ class BaseAdapter(ABC):
         """
         if self.AccountConfigClass is None:
             return
-        from ..config import config as config_mgr
         from .config_schema import dataclass_to_defaults_dict
 
         key = f"{self._get_config_key()}.accounts"
@@ -1791,7 +1806,7 @@ class BaseAdapter(ABC):
             default_account = dataclass_to_defaults_dict(self.AccountConfigClass)
             data = {"default": default_account}
             config_mgr.setConfig(key, data, immediate=True)
-            self._get_logger().info(f"已生成 {key} 默认账户配置")
+            self._get_logger().info(i18n.t("core.adapter.account_config_generated", key=key))
 
     def _resolve_account(self, account_id: str | None = None) -> tuple:
         """
@@ -1836,7 +1851,10 @@ class BaseAdapter(ABC):
             if cfg.enabled:
                 return name, cfg
 
-        raise ValueError(f"未找到可用账户 (account_id={account_id})")
+
+        raise ValueError(
+            i18n.t("core.adapter.account_not_found", account_id=account_id)
+        )
 
     async def emit_meta(self, detail_type: str, bot_id: str, **extra_info):
         """
@@ -1847,8 +1865,9 @@ class BaseAdapter(ABC):
         :param extra_info: 扩展字段（user_name, nickname, avatar 等）
         """
         if not self._platform:
-            raise RuntimeError("平台名未注入，请确保适配器已注册后再使用 emit_meta")
+            raise RuntimeError(i18n.t("core.adapter.platform_not_injected"))
 
+        # 循环依赖：Core/adapter.py 顶层导入本模块（BaseAdapter）
         from ..adapter import adapter
 
         await adapter.emit(
@@ -1926,13 +1945,9 @@ class BaseAdapter(ABC):
         :param old_config: 变更前的配置实例
         :param new_config: 变更后的配置实例
         """
-        ...
 
     async def emit(self, *args, **kwargs):
-        raise NotImplementedError(
-            "适配器的 emit 方法已被弃用。请使用 adapter.emit() 通过 AdapterManager 提交事件。"
-            "如果你是适配器开发者，请查看 ErisPulse 文档进行更新。"
-        )
+        raise NotImplementedError(i18n.t("core.adapter.emit_deprecated"))
 
     def send(
         self, target_type: str, target_id: str, message: Any, **kwargs: Any
@@ -1961,7 +1976,7 @@ class BaseAdapter(ABC):
             method = getattr(self.Send.To(target_type, target_id), method_name, None)  # pyright: ignore[reportArgumentType]
             if not method:
                 raise AttributeError(
-                    f"未找到 {method_name} 方法，请确保已在 Send 类中定义"
+                    i18n.t("core.adapter.send_method_missing", name=method_name)
                 )
             return await method(message, **kwargs)
 

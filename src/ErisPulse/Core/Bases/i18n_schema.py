@@ -15,6 +15,7 @@ ErisPulse i18n 键声明 Schema 模块
 {!--< /tips >!--}
 """
 
+from ..i18n import i18n
 
 class I18nKey:
     """
@@ -73,7 +74,7 @@ class I18nKey:
         ru: str | None = None,
     ):
         if not default:
-            raise ValueError("default 是必填项（语言无关的兜底文本）")
+            raise ValueError(i18n.t("core.i18n_schema.default_required"))
 
         self._key = key
         self.default = default
@@ -214,7 +215,6 @@ class BaseI18n:
         >>> MyKeys.register(prefix="myapp.", domain="myapp")
         2  # zh-CN + en
         """
-        from ..i18n import i18n
 
         count = 0
         for attr_name, i18n_key in cls._collect_keys().items():

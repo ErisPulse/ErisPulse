@@ -18,6 +18,7 @@
 from typing import Any
 
 from ..runtime.frame_config import get_master_config, update_erispulse_config
+from .i18n import i18n
 
 # Event 对象的类型提示（避免循环导入）
 _EventLike = Any  # 具有 get_platform() / get_user_id() 方法的对象
@@ -175,7 +176,7 @@ class MasterManager:
             if platform is None:
                 # 全局主人 → 转为混合格式: 保留现有 platform dict，添加 global key
                 raise ValueError(
-                    "全局主人不支持持久化到 dict 格式配置。请将 ErisPulse.master.users 改为 list 格式。"
+                    i18n.t("core.master.global_persist_not_supported")
                 )
             platform_key = str(platform)
             ids = set(users.get(platform_key, []))

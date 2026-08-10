@@ -149,8 +149,8 @@ class AdapterManager(ManagerBase):
 
             lifecycle.register("config.updated", self._on_framework_config_changed)
             lifecycle.register("config.set", self._on_framework_config_changed)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.trace(i18n.t("core.adapter.config_hook_register_failed", error=e))
 
     def set_sdk_ref(self, sdk) -> bool:
         """
@@ -343,7 +343,7 @@ class AdapterManager(ManagerBase):
                         instance._ensure_event_mixin_registered()
                     except Exception:
                         logger.debug(
-                            f"适配器 {platform} EventMixin 注册异常",
+                            i18n.t("core.adapter.event_mixin_register_exception", platform=platform),
                             exc_info=True,
                         )
 
@@ -413,6 +413,37 @@ class AdapterManager(ManagerBase):
             task = asyncio.create_task(self._run_adapter(adapter, platform))
             self._adapter_tasks[platform] = task
 
+    def _refresh_accounts_cache(
+        self, adapter: BaseAdapter, platform: str | None = None
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        刷新适配器账户缓存，确保配置变更后 _accounts_data 不过期
+
+        :param adapter: 适配器实例
+        :param platform: 平台名称（用于日志上下文）
+        """
+        if not (
+            hasattr(adapter, "AccountConfigClass")
+            and adapter.AccountConfigClass is not None
+        ):
+            return
+        try:
+            # 向后兼容：先尝试子类覆写的 _load_accounts()
+            custom = adapter._load_accounts()
+            if custom is not None:
+                adapter._accounts_data = custom
+            else:
+                adapter._accounts_data = adapter.accounts
+        except Exception as e:
+            logger.trace(
+                i18n.t(
+                    "core.adapter.account_refresh_failed",
+                    platform=platform,
+                    error=e,
+                )
+            )
+
     async def _run_adapter(self, adapter: BaseAdapter, platform: str) -> None:
         """
         {!--< internal-use >!--}
@@ -455,19 +486,7 @@ class AdapterManager(ManagerBase):
             while True:
                 try:
                     # 刷新账户缓存，确保 Dashboard 配置变更后 _accounts_data 不过期
-                    if (
-                        hasattr(adapter, "AccountConfigClass")
-                        and adapter.AccountConfigClass is not None
-                    ):
-                        try:
-                            # 向后兼容：先尝试子类覆写的 _load_accounts()
-                            custom = adapter._load_accounts()
-                            if custom is not None:
-                                adapter._accounts_data = custom
-                            else:
-                                adapter._accounts_data = adapter.accounts
-                        except Exception:
-                            pass
+                    self._refresh_accounts_cache(adapter, platform)
                     # 注入 owner，使适配器 start() 期间注册的资源（路由/事件处理器/命令）
                     # 自动归属到该平台，从而支持后续按 owner 兜底清理（与模块卸载对齐颗粒度）
                     token = current_owner.set(platform)
@@ -603,13 +622,6 @@ class AdapterManager(ManagerBase):
                     instance_platforms = [
                         p for p, a in self._adapters.items() if a is adapter_instance
                     ]
-
-                    # platform_label
-                    (
-                        instance_platforms[0]
-                        if instance_platforms
-                        else str(id(adapter_instance))
-                    )
 
                     # 提交适配器状态变化事件（stopping）
                     for p in instance_platforms:
@@ -828,8 +840,10 @@ class AdapterManager(ManagerBase):
                         count=lifecycle_removed,
                     )
                 )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.lifecycle_cleanup_failed", platform=platform, error=e)
+            )
 
     async def restart(self, platform: str) -> bool:
         """
@@ -870,19 +884,7 @@ class AdapterManager(ManagerBase):
         token = current_owner.set(platform)
         try:
             # 刷新账户缓存，确保 Dashboard 配置变更后 _accounts_data 不过期
-            if (
-                hasattr(adapter_instance, "AccountConfigClass")
-                and adapter_instance.AccountConfigClass is not None
-            ):
-                try:
-                    # 向后兼容：先尝试子类覆写的 _load_accounts()
-                    custom = adapter_instance._load_accounts()
-                    if custom is not None:
-                        adapter_instance._accounts_data = custom
-                    else:
-                        adapter_instance._accounts_data = adapter_instance.accounts
-                except Exception:
-                    pass
+            self._refresh_accounts_cache(adapter_instance, platform)
             await adapter_instance.start()
         except Exception as e:
             logger.error(
@@ -1358,7 +1360,13 @@ class AdapterManager(ManagerBase):
         handlers_to_call.extend(self._onebot_handlers.get("*", []))
 
         logger.trace(
-            f"分发事件: type={event_type} platform={platform} detail={detail_type} handlers={len(handlers_to_call)}"
+            i18n.t(
+                "core.adapter.dispatch_event",
+                type=event_type,
+                platform=platform,
+                detail=detail_type,
+                count=len(handlers_to_call),
+            )
         )
 
         # 将符合条件的处理器分发到独立 Task

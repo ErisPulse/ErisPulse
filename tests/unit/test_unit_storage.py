@@ -696,3 +696,82 @@ class TestGlobalStorage:
 
         # 验证
         assert storage1 is storage2
+
+
+# ==================== 错误日志验证测试 ====================
+
+
+class TestStorageErrorLogging:
+    """验证原先静默吞异常的写操作失败时现在会产出 logger.error/trace 日志"""
+
+    @pytest.fixture
+    def storage_manager(self, tmp_path):
+        """创建一个可用的存储管理器实例"""
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = str(tmp_path / "test.db")
+        manager._init_db()
+        manager._initialized = True
+        yield manager
+        StorageManager._instance = None
+
+    def _force_conn_failure(self, manager):
+        """返回一个总是抛异常的 _get_connection patch 上下文"""
+        return patch.object(
+            type(manager),
+            "_get_connection",
+            side_effect=sqlite3.OperationalError("forced failure"),
+        )
+
+    def test_set_multi_failure_logs_error(self, storage_manager):
+        """set_multi 失败时应记录 logger.error"""
+        with (
+            self._force_conn_failure(storage_manager),
+            patch("ErisPulse.Core.storage.logger") as mock_logger,
+        ):
+            result = storage_manager.set_multi({"a": 1})
+        assert result is False
+        mock_logger.error.assert_called_once()
+
+    def test_delete_failure_logs_error(self, storage_manager):
+        """delete 失败时应记录 logger.error"""
+        storage_manager.set("temp.key", 1)
+        with (
+            self._force_conn_failure(storage_manager),
+            patch("ErisPulse.Core.storage.logger") as mock_logger,
+        ):
+            result = storage_manager.delete("temp.key")
+        assert result is False
+        mock_logger.error.assert_called_once()
+
+    def test_delete_multi_failure_logs_error(self, storage_manager):
+        """delete_multi 失败时应记录 logger.error"""
+        storage_manager.set("temp.k1", 1)
+        with (
+            self._force_conn_failure(storage_manager),
+            patch("ErisPulse.Core.storage.logger") as mock_logger,
+        ):
+            result = storage_manager.delete_multi(["temp.k1"])
+        assert result is False
+        mock_logger.error.assert_called_once()
+
+    def test_clear_failure_logs_error(self, storage_manager):
+        """clear 失败时应记录 logger.error"""
+        storage_manager.set("temp.key", 1)
+        with (
+            self._force_conn_failure(storage_manager),
+            patch("ErisPulse.Core.storage.logger") as mock_logger,
+        ):
+            result = storage_manager.clear()
+        assert result is False
+        mock_logger.error.assert_called_once()
+
+    def test_has_table_failure_logs_error(self, storage_manager):
+        """HasTable 失败时应记录 logger.error"""
+        with (
+            self._force_conn_failure(storage_manager),
+            patch("ErisPulse.Core.storage.logger") as mock_logger,
+        ):
+            result = storage_manager.HasTable("nope")
+        assert result is False
+        mock_logger.error.assert_called_once()

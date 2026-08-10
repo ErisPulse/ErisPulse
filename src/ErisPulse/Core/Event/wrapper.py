@@ -37,6 +37,7 @@ from ..constants import (
     EVENT_TYPE_REQUEST,
     TEXT_METHOD_INDICATORS,
 )
+from ..i18n import i18n
 from .session_type import (
     get_send_type_and_target_id,
 )
@@ -133,7 +134,7 @@ def register_event_mixin(platform: str, mixin_cls: type) -> int:
         _platform_event_methods[platform][name] = func
         registered += 1
 
-    logger.trace(f"[Event] 平台 '{platform}' 注册了 {registered} 个扩展方法")
+    logger.trace(i18n.t("core.event.registered_extensions", platform=platform, count=registered))
     return registered
 
 
@@ -169,7 +170,7 @@ def register_event_method(platform: str):
             return func
 
         _platform_event_methods[platform][name] = func
-        logger.trace(f"[Event] 平台 '{platform}' 注册了扩展方法 '{name}'")
+        logger.trace(i18n.t("core.event.registered_extension", platform=platform, name=name))
         return func
 
     return decorator
@@ -204,7 +205,7 @@ def unregister_platform_event_methods(platform: str) -> int:
     if platform in _platform_event_methods:
         count = len(_platform_event_methods[platform])
         del _platform_event_methods[platform]
-        logger.trace(f"[Event] 平台 '{platform}' 注销了 {count} 个扩展方法")
+        logger.trace(i18n.t("core.event.unregistered_extensions", platform=platform, count=count))
         return count
     return 0
 
@@ -278,7 +279,6 @@ async def _builtin_confirm(
     actual_prompt = prompt
     if hint and prompt:
         from ..constants import CONFIRM_HINT_WORDS
-        from ..i18n import i18n
 
         lang = i18n.get_language() or "zh-CN"
         yes_word, no_word = CONFIRM_HINT_WORDS.get(lang, CONFIRM_HINT_WORDS["en"])
@@ -401,7 +401,7 @@ async def _builtin_choose(
     - options_format="auto" 时根据 method 自动选择内置样式（Markdown→无序列表，Html→有序列表）
     """
     if not options:
-        raise ValueError("选项列表不能为空")
+        raise ValueError(i18n.t("core.event.option_list_empty"))
 
     options_text = _format_options(options, options_format, method)
 
@@ -467,12 +467,12 @@ async def _builtin_collect(
         if not key:
             from ..logger import logger as _logger
 
-            _logger.warning(f"collect: 字段缺少 'key', 已跳过: {field}")
+            _logger.warning(i18n.t("core.event.collect_field_missing_key", field=field))
             continue
 
-        prompt = field.get("prompt", f"请输入 {key}")
+        prompt = field.get("prompt", i18n.t("core.event.collect_default_prompt", key=key))
         validator = field.get("validator")
-        retry_prompt = field.get("retry_prompt", "输入无效，请重新输入")
+        retry_prompt = field.get("retry_prompt", i18n.t("core.event.collect_invalid_retry"))
         max_retries = field.get("max_retries", DEFAULT_MAX_RETRIES)
         method = field.get("method", DEFAULT_SEND_METHOD)
         options = field.get("options")
@@ -1013,12 +1013,16 @@ class Event(dict):
         """
         if not self.is_request():
             raise ValueError(
-                f"当前事件不是请求类型 (type={self.get_type()})，无法执行 {action} 操作"
+                i18n.t(
+                    "core.event.not_request_type",
+                    type=self.get_type(),
+                    action=action,
+                )
             )
 
         platform = self.get_platform()
         if not platform:
-            raise ValueError("事件缺少 'platform' 字段")
+            raise ValueError(i18n.t("core.event.missing_platform"))
 
         adapter_instance = getattr(adapter, platform, None)
         if not adapter_instance:
@@ -1026,14 +1030,17 @@ class Event(dict):
                 list(adapter._adapters.keys()) if hasattr(adapter, "_adapters") else []
             )
             raise ValueError(
-                f"找不到平台 '{platform}' 的适配器 (可用平台: {available})"
+                i18n.t(
+                    "core.event.adapter_not_found",
+                    platform=platform,
+                    available=available,
+                )
             )
 
         request_id = self.get_request_id()
         if not request_id:
             raise ValueError(
-                f"请求事件缺少 'request_id' 字段，无法执行 {action} 操作。"
-                f"请确保适配器在转换请求事件时正确设置了 request_id 字段。"
+                i18n.t("core.event.request_missing_id", action=action)
             )
 
         bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get(
@@ -1089,14 +1096,20 @@ class Event(dict):
         """
         platform = self.get_platform()
         if not platform:
-            raise ValueError(f"事件缺少 'platform' 字段 (event_id={self.get_id()})")
+            raise ValueError(
+                i18n.t("core.event.missing_platform_with_id", event_id=self.get_id())
+            )
 
         if not (adapter_instance := getattr(adapter, platform, None)):
             available = (
                 list(adapter._adapters.keys()) if hasattr(adapter, "_adapters") else []
             )
             raise ValueError(
-                f"找不到平台 '{platform}' 的适配器 (可用平台: {available})"
+                i18n.t(
+                    "core.event.adapter_not_found",
+                    platform=platform,
+                    available=available,
+                )
             )
 
         # 使用会话类型管理模块获取发送类型和目标ID
@@ -1104,9 +1117,13 @@ class Event(dict):
 
         if not target_id:
             raise ValueError(
-                f"无法获取目标 ID: platform={platform}, "
-                f"detail_type={self.get_detail_type()}, "
-                f"user_id={self.get_user_id()}, group_id={self.get_group_id()}"
+                i18n.t(
+                    "core.event.target_id_not_found",
+                    platform=platform,
+                    detail_type=self.get_detail_type(),
+                    user_id=self.get_user_id(),
+                    group_id=self.get_group_id(),
+                )
             )
 
         bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get(
@@ -1179,8 +1196,6 @@ class Event(dict):
         ...                   via=[("Expire", 3600), ("ForMember", "uid")])
         """
         if via and method is None:
-            from ..i18n import i18n
-
             logger.warning(
                 i18n.t(
                     "core.event.reply_via_without_method",
@@ -1240,15 +1255,21 @@ class Event(dict):
                 name, m_args, m_kwargs = _normalize_modifier(mod)
                 mod_attr = getattr(send_chain, name, None)
                 if not mod_attr or not callable(mod_attr):
-                    raise ValueError(f"适配器不支持修饰方法: {name}")
+                    raise ValueError(
+                        i18n.t("core.event.modifier_not_supported", name=name)
+                    )
                 send_chain = mod_attr(*m_args, **m_kwargs)
                 if send_chain is None:
-                    raise ValueError(f"修饰方法 '{name}' 必须返回发送链实例")
+                    raise ValueError(
+                        i18n.t("core.event.modifier_must_return_chain", name=name)
+                    )
 
         # 调用指定方法
         send_method = getattr(send_chain, method, None)
         if not send_method or not callable(send_method):
-            raise ValueError(f"适配器不支持方法: {method}")
+            raise ValueError(
+                i18n.t("core.event.method_not_supported", method=method)
+            )
 
         result = send_method(content)
         return await result if inspect.isawaitable(result) else result
@@ -1577,7 +1598,7 @@ class Event(dict):
                     except asyncio.InvalidStateError:
                         pass
             except Exception as _e:
-                logger.trace(f"[Event] onebot wait handler 异常: {_e}")
+                logger.trace(i18n.t("core.event.wait_handler_error", error=_e))
 
         handler_wrapper = {"func": _temp_handler, "platform": None}
         adapter._onebot_handlers[event_type].append(handler_wrapper)
@@ -1983,7 +2004,7 @@ class Conversation:
                     if not cond(self.context):
                         continue
                 except Exception as _e:
-                    logger.trace(f"[Conversation] 字段 condition 执行异常，跳过: {_e}")
+                    logger.trace(i18n.t("core.event.conversation_condition_error", error=_e))
                     continue
             filtered_fields.append(f)
 
@@ -2054,7 +2075,9 @@ class Conversation:
         >>> conv.goto("drink")
         """
         if branch_name not in self._branches:
-            raise ValueError(f"分支 '{branch_name}' 未定义")
+            raise ValueError(
+                i18n.t("core.event.branch_not_defined", name=branch_name)
+            )
         self._current_branch = branch_name
 
         evt = event or self._event
@@ -2074,7 +2097,7 @@ class Conversation:
             except Exception as e:
                 from ..logger import logger as _logger
 
-                _logger.warning(f"分支 '{branch_name}' 执行异常: {e}")
+                _logger.warning(i18n.t("core.event.branch_exec_error", name=branch_name, error=e))
                 self._alive = False
 
         try:
@@ -2180,7 +2203,7 @@ class Conversation:
                     self._event = event
                 return True
         except Exception as _e:
-            logger.trace(f"[Conversation] resume 失败: {_e}")
+            logger.trace(i18n.t("core.event.conversation_resume_failed", error=_e))
         return False
 
     async def clear_saved(self):
@@ -2198,7 +2221,7 @@ class Conversation:
             key = f"{CONVERSATION_KEY_PREFIX}:{platform}:{user_id}"
             storage.delete(key)
         except Exception as _e:
-            logger.trace(f"[Conversation] clear_saved 失败: {_e}")
+            logger.trace(i18n.t("core.event.conversation_clear_failed", error=_e))
 
 
 __all__ = [
