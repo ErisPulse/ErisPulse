@@ -1198,7 +1198,11 @@ OnError 仅在最终失败时触发一次。
 
 ##### `_get_logger()`
 
+> **内部方法**
 获取 logger，兼容 sdk 未注入的场景
+
+此处刻意使用函数内导入：模块顶层已有 ``logger``，但函数内动态导入可让测试
+通过 ``patch("ErisPulse.Core.logger.logger")`` 拦截日志输出。
 
 ---
 

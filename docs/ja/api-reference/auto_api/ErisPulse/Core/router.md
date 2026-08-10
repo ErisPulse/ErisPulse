@@ -293,11 +293,23 @@ FastAPI 应用实例（惰性创建，首次访问时加载 web 栈并注册核�
 ---
 
 
+##### `_create_sse_route(full_path: str, module_name: str, handler: Callable)`
+
+> **内部方法**
+在当前 app 实例上创建 SSE 路由（纯路由创建，不做重复检查、不写记录）
+
+供 ``_register_sse_endpoint``（新注册）与 ``_restore_routes_from_records``（恢复）
+共用，确保两条路径的路由创建逻辑完全一致。
+
+---
+
+
 ##### `_register_sse_endpoint(full_path: str, module_name: str, handler: Callable)`
 
 SSE 路由注册内部实现
 
 > **内部方法**
+包含重复检查、owner 追踪、记录写入；路由创建委托 :meth:`_create_sse_route`。
 
 ---
 
@@ -327,6 +339,7 @@ SSE 路由注册内部实现
 > **内部方法**
 为 GET 请求添加 ErisPulse 主题化错误页面。
 POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
+所有错误码共用同一套 HTML 模板（``render_error_page``），仅注入不同的标题/描述。
 
 ---
 
@@ -612,6 +625,20 @@ SSE 路由装饰器内部实现
 
 - **module_name** (`模块名称`): - **path**: 路由路径
 **返回值** (`bool`): 是否成功取消注册
+
+---
+
+
+##### `_make_ws_endpoint_fn(full_path: str, module_name: str, wrapped_handler: Callable, wrapped_auth: Callable | None, auto_accept: bool)`
+
+> **内部方法**
+构建 WebSocket 端点处理函数（注册与恢复路由共用同一实现）
+
+- **full_path** (`完整路由路径`): - **module_name**: 模块名
+- **wrapped_handler** (`已包装的`): WebSocket 处理器
+- **wrapped_auth** (`已包装的鉴权处理器（可为`): None）
+- **auto_accept** (`是否自动`): accept 连接
+**返回值** (`WebSocket`): 端点协程函数
 
 ---
 
@@ -984,24 +1011,24 @@ router 中间件配置变更回调：CORS/安全头需重启进程才能生效
 
 **异常**: `RuntimeError` - 当服务器已在运行时抛出
 
+.. note::
+    端口被占用时不视为致命错误：服务器不启动，但机器人继续运行。
+
 ---
 
 
 ##### `_check_port_available(host: str, port: int)`
 
-同步探测端口是否可绑定，避免 uvicorn 异步启动失败后引发级联错误
+检测端口是否被占用（有进程正在监听）
 
-uvicorn 在端口被占用时会执行 ``sys.exit(STARTUP_FAILURE)``，其 SystemExit
-会被事件循环重新抛出并取消所有任务，导致进程异常退出并刷屏大量
-"Task was destroyed but it is pending"。此处先同步 bind 探测端口，若被占用
-则在启动前抛出清晰的 i18n 提示，由上层按致命错误处理（不自动顺延端口，
-避免生产环境暴露的端口变化导致外部访问失败）。
+使用 ``connect`` 而非 ``bind`` 探测：``bind`` 会因上次进程退出后的
+``TIME_WAIT`` 残留而误判端口被占用，导致重启死循环；``connect`` 只在
+端口有活跃监听者时才成功，能准确区分"真正占用"与"TIME_WAIT 残留"。
 
 - **host** (`str`): 监听地址
 - **port** (`int`): 监听端口
 
 **异常**: `RuntimeError` - 当端口被占用时抛出，携带友好的错误提示
-**异常**: `OSError` - 其他绑定错误（如无权限绑定特权端口）
 
 ---
 
