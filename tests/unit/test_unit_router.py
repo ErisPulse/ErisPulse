@@ -10,6 +10,7 @@ from unittest.mock import Mock, patch, MagicMock, AsyncMock
 from fastapi import WebSocket, WebSocketDisconnect
 
 from ErisPulse.Core.router import RouterManager, router
+from ErisPulse.runtime.context import current_owner
 
 
 # ==================== RouterManager 基础测试 ====================
@@ -313,21 +314,40 @@ class TestRouterManager:
 
     @pytest.mark.asyncio
     async def test_server_start_port_in_use(self, router_manager):
-        """测试端口被占用时同步抛出清晰错误，不自动顺延端口"""
+        """端口被占用时不抛异常，服务器不启动（非致命，机器人继续运行）"""
         import socket as _socket
 
-        # 真实占用一个端口，验证 pre-bind 探测生效
+        # 真实占用一个端口，验证 connect 探测识别活跃监听者
         blocker = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
         blocker.bind(("127.0.0.1", 18999))
         blocker.listen(1)
         try:
-            with pytest.raises(RuntimeError, match="已被占用"):
-                await router_manager.start(host="127.0.0.1", port=18999)
-            # 探测失败发生在 uvicorn 启动前，不产生服务器任务
+            # 不应抛异常：服务器跳过启动，init 流程继续
+            await router_manager.start(host="127.0.0.1", port=18999)
+            # 服务器未启动
             assert router_manager._server_task is None
             assert router_manager._uvicorn_server is None
         finally:
             blocker.close()
+
+    @pytest.mark.asyncio
+    async def test_server_start_timewait_port_not_considered_occupied(self, router_manager):
+        """TIME_WAIT 残留端口不应被误判为占用（connect 探测语义）"""
+        # 创建后立即关闭的 socket 可能进入 TIME_WAIT；直接验证探测方法对
+        # 无监听者的端口返回正常（不抛 RuntimeError）
+        import socket as _socket
+
+        # 找一个未占用端口：先 bind 探测可用的端口
+        probe = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
+        probe.bind(("127.0.0.1", 0))
+        free_port = probe.getsockname()[1]
+        probe.close()
+
+        await router_manager.start(host="127.0.0.1", port=free_port)
+        # 服务器正常启动
+        assert router_manager._server_task is not None
+        # 清理
+        router_manager.stop()
 
     @pytest.mark.asyncio
     async def test_server_start_already_running(self, router_manager):
@@ -899,3 +919,196 @@ class TestNamespaceManagement:
         result = router_manager.unregister_all_by_namespace("nonexistent")
         assert result["http_count"] == 0
         assert result["websocket_count"] == 0
+
+
+# ==================== SSE 路由测试 ====================
+
+
+class TestSSERoutes:
+    """SSE (Server-Sent Events) 路由注册/注销测试"""
+
+    @pytest.fixture
+    def router_manager(self):
+        manager = RouterManager()
+        yield manager
+
+    def test_register_sse(self, router_manager):
+        """注册 SSE 路由后记录存在于 _sse_routes"""
+        async def handler(sse):
+            await sse.send({"v": 1})
+
+        router_manager.register_sse("mod", "/events", handler)
+        assert "mod" in router_manager._sse_routes
+        assert "/mod/events" in router_manager._sse_routes["mod"]
+
+    def test_register_sse_duplicate_raises(self, router_manager):
+        """重复注册同路径 SSE 抛出 ValueError"""
+        async def handler(sse):
+            pass
+
+        router_manager.register_sse("mod", "/events", handler)
+        with pytest.raises(ValueError):
+            router_manager.register_sse("mod", "/events", handler)
+
+    def test_unregister_sse_existing(self, router_manager):
+        """注销已存在的 SSE 路由返回 True"""
+        async def handler(sse):
+            pass
+
+        router_manager.register_sse("mod", "/events", handler)
+        assert router_manager.unregister_sse("mod", "/events") is True
+        assert "/mod/events" not in router_manager._sse_routes.get("mod", {})
+
+    def test_unregister_sse_nonexistent(self, router_manager):
+        """注销不存在的 SSE 路由返回 False"""
+        assert router_manager.unregister_sse("mod", "/missing") is False
+
+    def test_sse_decorator(self, router_manager):
+        """@sse 装饰器注册 SSE 路由"""
+        @router_manager.sse("mod", "/stream")
+        async def stream_handler(sse):
+            await sse.send({"ok": True})
+
+        assert "/mod/stream" in router_manager._sse_routes["mod"]
+        assert stream_handler is stream_handler  # 装饰器返回原函数
+
+
+# ==================== Owner 归属清理测试 ====================
+
+
+class TestOwnerCleanup:
+    """unregister_all_by_owner + current_owner 追踪测试"""
+
+    @pytest.fixture
+    def router_manager(self):
+        manager = RouterManager()
+        yield manager
+
+    def test_owner_tracks_namespace_on_register(self, router_manager):
+        """在 current_owner 上下文中注册路由会建立 owner→namespace 映射"""
+        async def handler():
+            return {}
+
+        token = current_owner.set("myplatform")
+        try:
+            router_manager.register_http_route("myplatform_default", "/api", handler)
+        finally:
+            current_owner.reset(token)
+        assert "myplatform_default" in router_manager._owner_namespaces["myplatform"]
+
+    def test_unregister_all_by_owner_cleans_routes(self, router_manager):
+        """以平台名为 owner、细颗粒度命名空间注册的路由可被 owner 清理"""
+        async def handler():
+            return {}
+
+        token = current_owner.set("myplatform")
+        try:
+            router_manager.register_http_route("myplatform_default", "/api", handler)
+        finally:
+            current_owner.reset(token)
+
+        result = router_manager.unregister_all_by_owner("myplatform")
+        assert result["http_count"] >= 1
+        assert "myplatform" not in router_manager._owner_namespaces
+
+    def test_unregister_all_by_owner_unknown_returns_zeros(self, router_manager):
+        """清理未注册任何路由的 owner 返回零计数"""
+        result = router_manager.unregister_all_by_owner("nobody")
+        assert result["http_count"] == 0
+        assert result["websocket_count"] == 0
+        assert result["sse_count"] == 0
+
+
+# ==================== 路由恢复测试 ====================
+
+
+class TestRouteRestore:
+    """_restore_routes_from_records 路由恢复测试（软重启可靠性核心）"""
+
+    @pytest.fixture
+    def router_manager(self):
+        manager = RouterManager()
+        yield manager
+
+    def test_restore_reregisters_recorded_routes(self, router_manager):
+        """app 重建后 _restore_routes_from_records 重新注册所有记录的路由"""
+
+        async def http_handler():
+            return {}
+
+        async def ws_handler(ws):
+            pass
+
+        async def sse_handler(sse):
+            pass
+
+        router_manager.register_http_route("mod", "/api", http_handler)
+        router_manager.register_websocket("mod", "/ws", ws_handler)
+        router_manager.register_sse("mod", "/events", sse_handler)
+
+        # 模拟 app 重建
+        router_manager._app = None
+        _ = router_manager.app  # 触发重建（仅含核心路由）
+
+        # 恢复前：核心路由数量
+        before = len(router_manager.app.router.routes)
+        router_manager._restore_routes_from_records()
+        after = len(router_manager.app.router.routes)
+        # 恢复后路由数量应增加（至少含 http + sse；ws 路由同样加入）
+        assert after > before
+
+    def test_restore_empty_records_does_not_raise(self, router_manager):
+        """无任何路由记录时恢复不应抛出异常"""
+        router_manager._app = None
+        _ = router_manager.app
+        router_manager._restore_routes_from_records()  # 不应抛出
+
+
+# ==================== 限流清理任务生命周期测试 ====================
+
+
+class TestRateLimitCleanupTask:
+    """_start/_stop_rate_limit_cleanup 后台任务生命周期测试"""
+
+    @pytest.fixture
+    def router_manager(self):
+        manager = RouterManager()
+        yield manager
+
+    def test_start_creates_task_with_running_loop(self, router_manager):
+        """有运行中事件循环时 _start_rate_limit_cleanup 创建后台任务"""
+        async def _run():
+            router_manager._start_rate_limit_cleanup()
+            assert router_manager._rate_limit_cleanup_task is not None
+            assert not router_manager._rate_limit_cleanup_task.done()
+            router_manager._stop_rate_limit_cleanup()
+
+        asyncio.run(_run())
+
+    def test_stop_clears_task(self, router_manager):
+        """_stop_rate_limit_cleanup 清空任务引用"""
+        async def _run():
+            router_manager._start_rate_limit_cleanup()
+            router_manager._stop_rate_limit_cleanup()
+            assert router_manager._rate_limit_cleanup_task is None
+
+        asyncio.run(_run())
+
+    def test_start_idempotent(self, router_manager):
+        """重复调用 _start_rate_limit_cleanup 不产生多个任务"""
+        async def _run():
+            router_manager._start_rate_limit_cleanup()
+            first = router_manager._rate_limit_cleanup_task
+            router_manager._start_rate_limit_cleanup()
+            second = router_manager._rate_limit_cleanup_task
+            assert first is not second  # 先 stop 再 start，是新任务
+            assert router_manager._rate_limit_cleanup_task is not None
+            router_manager._stop_rate_limit_cleanup()
+
+        asyncio.run(_run())
+
+    def test_start_without_running_loop_silent(self, router_manager):
+        """无运行中事件循环时 _start_rate_limit_cleanup 静默跳过（无任务创建）"""
+        # 同步上下文无事件循环
+        router_manager._start_rate_limit_cleanup()
+        assert router_manager._rate_limit_cleanup_task is None

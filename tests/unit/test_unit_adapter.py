@@ -915,7 +915,8 @@ class TestSendDSLRawMethods:
     @pytest.mark.asyncio
     async def test_raw_ob12_default_logs_error(self, base_adapter):
         """测试未重写 Raw_ob12 时记录错误日志"""
-        with patch("ErisPulse.Core.logger.logger") as mock_logger:
+        # hoist 后 logger 在 Bases.adapter 命名空间顶层查找；patch 其查找点
+        with patch("ErisPulse.Core.Bases.adapter.logger") as mock_logger:
             send = SendDSL(base_adapter, "user", "123", None)
             await send.Raw_ob12([{"type": "text", "data": {"text": "hi"}}])
             mock_logger.error.assert_called_once()

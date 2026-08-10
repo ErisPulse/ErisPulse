@@ -534,7 +534,7 @@ class HttpClient(BaseHttpClient):
             for key, value in data.items():
                 form.add_field(key, value)
         elif data is not None:
-            raise ValueError("files 不能与非 dict 类型的 data 同时使用")
+            raise ValueError(i18n.t("core.client.files_with_non_dict_data"))
 
         for field_name, file_spec in files.items():
             if isinstance(file_spec, (tuple, list)):

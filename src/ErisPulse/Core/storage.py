@@ -28,6 +28,7 @@ from .constants import (
     STORAGE_MAX_LIST_INDEX,
 )
 from .i18n import i18n
+from .logger import logger
 
 StorageKey: TypeAlias = str
 StorageValue: TypeAlias = Any
@@ -74,7 +75,7 @@ _VALID_COLUMN_TYPES = {
 }
 
 
-def _validate_identifier(name: str, context: str = "标识符") -> None:
+def _validate_identifier(name: str, context: str = "identifier") -> None:
     """
     {!--< internal-use >!--}
     验证 SQL 标识符（表名/列名）是否安全
@@ -109,7 +110,7 @@ class _NestedTransaction:
         pass
 
 
-def _validate_select_column(name: str, context: str = "列名") -> None:
+def _validate_select_column(name: str, context: str = "column") -> None:
     """
     {!--< internal-use >!--}
     验证 SELECT/ORDER BY 列表达式是否安全
@@ -172,7 +173,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
     """
 
     def __init__(self, storage: "StorageManager", table_name: str):
-        _validate_identifier(table_name, "表名")
+        _validate_identifier(table_name, "table")
         super().__init__(storage, table_name)
 
     def Execute(self) -> list[tuple] | int:
@@ -214,7 +215,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
 
         columns = list(self._data[0].keys())
         for col in columns:
-            _validate_identifier(col, "列名")
+            _validate_identifier(col, "column")
         cols = ", ".join(columns)
         placeholders = ", ".join(["?"] * len(columns))
         sql = f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})"
@@ -307,7 +308,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
             raise ValueError(i18n.t("core.storage.insert_needs_dict"))
         columns = list(data.keys())
         for col in columns:
-            _validate_identifier(col, "列名")
+            _validate_identifier(col, "column")
         placeholders = ", ".join(["?"] * len(columns))
         cols = ", ".join(columns)
         sql = f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})"
@@ -320,7 +321,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
             raise ValueError(i18n.t("core.storage.update_needs_dict"))
 
         for k in data:
-            _validate_identifier(k, "列名")
+            _validate_identifier(k, "column")
         set_clause = ", ".join(f"{k} = ?" for k in data)
         sql = f"UPDATE {self._table} SET {set_clause}"
         params = list(data.values())
@@ -354,7 +355,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
         if self._order_by:
             order_parts = []
             for col, desc in self._order_by:
-                _validate_select_column(col, context="排序列名")
+                _validate_select_column(col, context="sort column")
                 order_parts.append(f"{col} DESC" if desc else f"{col} ASC")
             sql += f" ORDER BY {', '.join(order_parts)}"
         return sql
@@ -398,7 +399,7 @@ class AlterTableBuilder:
         :example:
         >>> storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
         """
-        _validate_identifier(column_name, "列名")
+        _validate_identifier(column_name, "column")
         _validate_column_type(column_type)
         self._operations.append(("add_column", (column_name, column_type)))
         return self
@@ -413,7 +414,7 @@ class AlterTableBuilder:
         :example:
         >>> storage.AlterTable("users").RenameTo("members").Execute()
         """
-        _validate_identifier(new_name, "新表名")
+        _validate_identifier(new_name, "new table")
         self._operations.append(("rename", (new_name,)))
         return self
 
@@ -443,8 +444,6 @@ class AlterTableBuilder:
                 self._storage._auto_commit(conn)
             return True
         except Exception as e:
-            from .logger import logger
-
             logger.error(
                 i18n.t(
                     "core.storage.alter_table_failed", table=self._table_name, error=e
@@ -539,9 +538,6 @@ class StorageManager(BaseStorage):
         if new_use_global != self._last_use_global_db:
             self._last_use_global_db = new_use_global
             try:
-                from .i18n import i18n
-                from .logger import logger
-
                 logger.warning(
                     i18n.t("core.config.restart_required", key="storage.use_global_db")
                 )
@@ -625,8 +621,8 @@ class StorageManager(BaseStorage):
             Path(self._get_default_project_db_path()).parent.mkdir(
                 parents=True, exist_ok=True
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.trace(i18n.t("core.storage.ensure_dir_failed", error=e))
 
     def _init_db(self) -> None:
         """
@@ -635,14 +631,12 @@ class StorageManager(BaseStorage):
 
         创建默认 config 键值表
         """
-        from .logger import logger
-
         logger.debug(i18n.t("core.storage.init_db", path=self.db_path))
 
         try:
             Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
-        except Exception:
-            pass  # 如果无法创建目录，则继续尝试连接数据库
+        except Exception as e:
+            logger.trace(i18n.t("core.storage.ensure_dir_failed", error=e))
 
         try:
             # 连接创建统一走 _open_connection，确保 WAL/synchronous PRAGMA 一致应用
@@ -731,8 +725,6 @@ class StorageManager(BaseStorage):
         if not self._is_ready():
             return default
 
-        from .logger import logger
-
         logger.trace(i18n.t("core.storage.kv_get", key=key))
 
         try:
@@ -770,13 +762,9 @@ class StorageManager(BaseStorage):
             if "no such table" in str(e):
                 self._init_db()
                 return self.get(key, default)
-            from .logger import logger
-
             logger.error(i18n.t("core.storage.db_op_error", error=e))
             return default
         except Exception as e:
-            from .logger import logger
-
             logger.error(i18n.t("core.storage.get_error", key=key, error=e))
             return default
 
@@ -799,8 +787,6 @@ class StorageManager(BaseStorage):
                 cursor.execute(f"SELECT key FROM {self.KV_TABLE_NAME}")
                 return [row[0] for row in cursor.fetchall()]
         except Exception as e:
-            from .logger import logger
-
             logger.error(i18n.t("core.storage.get_keys_error", error=e))
             return []
 
@@ -1016,13 +1002,9 @@ class StorageManager(BaseStorage):
                 )
                 self._auto_commit(conn)
 
-            from .logger import logger
-
             logger.trace(f"storage.set: key={key}")
             return True
         except Exception as e:
-            from .logger import logger
-
             logger.error(i18n.t("core.storage.set_failed", key=key, error=e))
             return False
 
@@ -1055,7 +1037,8 @@ class StorageManager(BaseStorage):
                 self._auto_commit(conn)
 
             return True
-        except Exception:
+        except Exception as e:
+            logger.error(i18n.t("core.storage.set_multi_failed", error=e))
             return False
 
     def getConfig(self, key: str, default: Any = None) -> Any:
@@ -1072,7 +1055,8 @@ class StorageManager(BaseStorage):
             from .config import config
 
             return config.getConfig(key, default)
-        except Exception:
+        except Exception as e:
+            logger.trace(i18n.t("core.storage.get_config_failed", key=key, error=e))
             return default
 
     def setConfig(self, key: str, value: Any) -> bool:
@@ -1089,7 +1073,8 @@ class StorageManager(BaseStorage):
             from .config import config
 
             return config.setConfig(key, value)
-        except Exception:
+        except Exception as e:
+            logger.trace(i18n.t("core.storage.set_config_failed", key=key, error=e))
             return False
 
     def delete(self, key: str) -> bool:
@@ -1107,8 +1092,6 @@ class StorageManager(BaseStorage):
         """
         if not self._is_ready():
             return False
-
-        from .logger import logger
 
         logger.trace(i18n.t("core.storage.kv_delete", key=key))
 
@@ -1161,7 +1144,8 @@ class StorageManager(BaseStorage):
                 self._auto_commit(conn)
 
             return True
-        except Exception:
+        except Exception as e:
+            logger.error(i18n.t("core.storage.delete_failed", key=key, error=e))
             return False
 
     def delete_multi(self, keys: list[str]) -> bool:
@@ -1186,7 +1170,8 @@ class StorageManager(BaseStorage):
                 self._auto_commit(conn)
 
             return True
-        except Exception:
+        except Exception as e:
+            logger.error(i18n.t("core.storage.delete_multi_failed", error=e))
             return False
 
     def get_multi(self, keys: list[str]) -> dict[str, Any]:
@@ -1217,8 +1202,6 @@ class StorageManager(BaseStorage):
                         results[row[0]] = row[1]
                 return results
         except Exception as e:
-            from .logger import logger
-
             logger.error(i18n.t("core.storage.get_multi_failed", error=e))
             return {}
 
@@ -1242,8 +1225,6 @@ class StorageManager(BaseStorage):
             hasattr(self._local, "transaction_conn")
             and self._local.transaction_conn is not None
         ):
-            from .logger import logger
-
             logger.trace(i18n.t("core.storage.transaction_nested"))
 
             return _NestedTransaction()
@@ -1269,8 +1250,6 @@ class StorageManager(BaseStorage):
 
             :return: 事务对象
             """
-            from .logger import logger
-
             logger.trace(i18n.t("core.storage.transaction_begin"))
             self.conn = self.storage_manager._open_connection()
             self.cursor = self.conn.cursor()
@@ -1299,20 +1278,14 @@ class StorageManager(BaseStorage):
                 try:
                     if exc_type is None:
                         if hasattr(self.conn, "commit"):
-                            from .logger import logger
-
                             logger.trace(i18n.t("core.storage.transaction_commit"))
                             self.conn.commit()
                     else:
                         if hasattr(self.conn, "rollback"):
-                            from .logger import logger
-
                             logger.trace(
                                 i18n.t("core.storage.transaction_rollback", error=exc_val)
                             )
                             self.conn.rollback()
-                        from .logger import logger
-
                         logger.error(
                             i18n.t("core.storage.transaction_failed", error=exc_val)
                         )
@@ -1339,7 +1312,8 @@ class StorageManager(BaseStorage):
                 self._auto_commit(conn)
 
             return True
-        except Exception:
+        except Exception as e:
+            logger.error(i18n.t("core.storage.clear_failed", error=e))
             return False
 
     def Table(self, table_name: str) -> SQLiteQueryBuilder:
@@ -1353,7 +1327,7 @@ class StorageManager(BaseStorage):
         >>> rows = storage.Table("users").Select("name", "age").Where("age > ?", 18).Execute()
         >>> storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
         """
-        _validate_identifier(table_name, "表名")
+        _validate_identifier(table_name, "table")
         return SQLiteQueryBuilder(self, table_name)
 
     def CreateTable(self, table_name: str, columns: dict[str, str]) -> bool:
@@ -1376,13 +1350,11 @@ class StorageManager(BaseStorage):
 
         # 验证表名和列名/类型
         try:
-            _validate_identifier(table_name, "表名")
+            _validate_identifier(table_name, "table")
             for col_name, col_type in columns.items():
-                _validate_identifier(col_name, "列名")
+                _validate_identifier(col_name, "column")
                 _validate_column_type(col_type)
         except ValueError as e:
-            from .logger import logger
-
             logger.error(
                 i18n.t("core.storage.create_table_failed", table=table_name, error=e)
             )
@@ -1398,8 +1370,6 @@ class StorageManager(BaseStorage):
                 self._auto_commit(conn)
             return True
         except Exception as e:
-            from .logger import logger
-
             logger.error(
                 i18n.t("core.storage.create_table_failed", table=table_name, error=e)
             )
@@ -1419,10 +1389,8 @@ class StorageManager(BaseStorage):
             return False
 
         try:
-            _validate_identifier(table_name, "表名")
+            _validate_identifier(table_name, "table")
         except ValueError as e:
-            from .logger import logger
-
             logger.error(i18n.t("core.storage.drop_table_failed", error=e))
             return False
 
@@ -1433,8 +1401,6 @@ class StorageManager(BaseStorage):
                 self._auto_commit(conn)
             return True
         except Exception as e:
-            from .logger import logger
-
             logger.error(
                 i18n.t("core.storage.drop_table_name_failed", table=table_name, error=e)
             )
@@ -1462,7 +1428,8 @@ class StorageManager(BaseStorage):
                     (table_name,),
                 )
                 return cursor.fetchone() is not None
-        except Exception:
+        except Exception as e:
+            logger.error(i18n.t("core.storage.has_table_failed", table=table_name, error=e))
             return False
 
     def AlterTable(self, table_name: str) -> AlterTableBuilder:
@@ -1476,7 +1443,7 @@ class StorageManager(BaseStorage):
         >>> storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
         >>> storage.AlterTable("users").RenameTo("members").Execute()
         """
-        _validate_identifier(table_name, "表名")
+        _validate_identifier(table_name, "table")
         return AlterTableBuilder(self, table_name)
 
     def __getattr__(self, key: str) -> Any:
@@ -1545,8 +1512,6 @@ class StorageManager(BaseStorage):
         try:
             self.set(key, value)
         except Exception as e:
-            from .logger import logger
-
             logger.error(i18n.t("core.storage.set_failed", key=key, error=e))
 
 

@@ -262,7 +262,7 @@ class CommandHandler:
             from ..logger import logger as _logger
 
             _logger.trace(
-                f"[Command] 已清理 {owner} 的 {len(to_remove)} 个命令: {to_remove}"
+                i18n.t("core.command.cleaned", owner=owner, count=len(to_remove), commands=to_remove)
             )
         return len(to_remove)
 
@@ -360,10 +360,10 @@ class CommandHandler:
 
             return result
         except asyncio.TimeoutError:
-            logger.trace(f"wait_reply 超时: key={wait_key}, timeout={timeout}s")
+            logger.trace(i18n.t("core.command.wait_reply_timeout", key=wait_key, timeout=timeout))
             return None
         except Exception as e:
-            logger.error(f"等待回复时发生错误: {e}")
+            logger.error(i18n.t("core.command.wait_reply_error", error=e))
             return None
         finally:
             # 无论成功、超时、异常还是 CancelledError，都确保清理等待条目
@@ -602,7 +602,7 @@ class CommandHandler:
                         await self._send_permission_denied(event)
                         return False
                 except Exception as e:
-                    logger.error(f"权限检查错误: {e}")
+                    logger.error(i18n.t("core.command.permission_check_error", error=e))
                     await self._send_permission_denied(event)
                     return False
 
@@ -672,7 +672,7 @@ class CommandHandler:
                     },
                 )
             except Exception as e:
-                logger.error(f"命令执行错误: {e}")
+                logger.error(i18n.t("core.command.exec_error", error=e))
                 await self._send_command_error(event, str(e))
 
                 # 钩子: 命令执行失败
