@@ -1,171 +1,203 @@
 {
-  "version": "1.1",
-  "total_categories": 12,
+  "version": "1.2",
+  "total_categories": 10,
   "categories": {
     "Quick Start": {
       "description": "ErisPulse Quick Start Guide",
+      "icon": "fa-rocket",
       "count": 4,
       "documents": [
         {
           "title": "ErisPulse Documentation",
           "path": "README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-flag"
         },
         {
           "title": "Quick Start",
           "path": "quick-start.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-bolt"
         },
         {
           "title": "Architecture Overview",
           "path": "architecture.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-sitemap"
         },
         {
           "title": "Bug Tracker",
           "path": "bug-tracker.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-bug"
         }
       ],
       "subgroups": {}
     },
     "Getting Started": {
       "description": "ErisPulse basic concepts and tutorials",
+      "icon": "fa-rocket",
       "count": 6,
       "documents": [
         {
           "title": "Creating Your First Bot",
           "path": "getting-started/first-bot.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-robot"
         },
         {
           "title": "Getting Started Guide",
           "path": "getting-started/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-door-open"
         },
         {
           "title": "Basic Concepts",
           "path": "getting-started/basic-concepts.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-lightbulb"
         },
         {
           "title": "Common Task Examples",
           "path": "getting-started/common-tasks.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-list-check"
         },
         {
           "title": "Getting Started with Event Handling",
           "path": "getting-started/event-handling.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-bolt-lightning"
         },
         {
           "title": "Type Stub Generation (IDE Completion)",
           "path": "getting-started/ide-completion.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-keyboard"
         }
       ],
       "subgroups": {}
     },
     "User Guide": {
       "description": "ErisPulse configuration and command reference",
+      "icon": "fa-book-open",
       "count": 5,
       "documents": [
         {
           "title": "User Guide",
           "path": "user-guide/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-book-open"
         },
         {
           "title": "Installation Reference",
           "path": "user-guide/installation.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-download"
         },
         {
           "title": "Configuration File Documentation",
           "path": "user-guide/configuration.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-sliders"
         },
         {
           "title": "CLI Command Reference",
           "path": "user-guide/cli-reference.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-terminal"
         },
         {
           "title": "Deployment Guide",
           "path": "user-guide/deployment.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-cloud-arrow-up"
         }
       ],
       "subgroups": {}
     },
     "Developer Guide": {
       "description": "Module and adapter development guides",
+      "icon": "fa-code",
       "count": 11,
       "documents": [
         {
           "title": "Developer Guide",
           "path": "developer-guide/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-code"
         },
         {
           "title": "Publishing and Module Store Guide",
           "path": "developer-guide/publishing.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-upload"
         }
       ],
       "subgroups": {
         "modules": {
           "name": "Modules",
+          "icon": "fa-puzzle-piece",
           "documents": [
             {
               "title": "Introduction to Module Development",
               "path": "developer-guide/modules/getting-started.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-puzzle-piece"
             },
             {
               "title": "Core Concepts of Modules",
               "path": "developer-guide/modules/core-concepts.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-cubes-stacked"
             },
             {
               "title": "Event Wrapper Class Detailed Explanation",
               "path": "developer-guide/modules/event-wrapper.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-bolt-lightning"
             },
             {
               "title": "Module Development Best Practices",
               "path": "developer-guide/modules/best-practices.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-award"
             }
           ]
         },
         "adapters": {
           "name": "Adapters",
+          "icon": "fa-network-wired",
           "documents": [
             {
               "title": "Getting Started with Adapter Development",
               "path": "developer-guide/adapters/getting-started.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-network-wired"
             },
             {
               "title": "Core Concepts of Adapters",
               "path": "developer-guide/adapters/core-concepts.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-microchip"
             },
             {
               "title": "SendDSL Explained",
               "path": "developer-guide/adapters/send-dsl.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-code-branch"
             },
             {
               "title": "Adapter Development Best Practices",
               "path": "developer-guide/adapters/best-practices.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-medal"
             },
             {
               "title": "Event Converter Implementation Guide",
               "path": "developer-guide/adapters/converter.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-exchange-alt"
             }
           ]
         }
@@ -173,281 +205,294 @@
     },
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
+      "icon": "fa-plug",
       "count": 15,
       "documents": [
         {
           "title": "ErisPulse Platform Features Documentation",
           "path": "platform-guide/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-server"
         },
         {
           "title": "OneBot11 Platform Features Documentation",
           "path": "platform-guide/onebot11.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-comments"
         },
         {
           "title": "OneBot12 Platform Features Documentation",
           "path": "platform-guide/onebot12.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-comments"
         },
         {
           "title": "Telegram Platform Features Documentation",
           "path": "platform-guide/telegram.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-paper-plane"
         },
         {
           "title": "Email Platform Feature Documentation",
           "path": "platform-guide/email.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-envelope"
         },
         {
           "title": "Yunhu Platform Feature Documentation",
           "path": "platform-guide/yunhu.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-cloud"
         },
         {
           "title": "Yunhu User Platform Features Documentation",
           "path": "platform-guide/yunhu_user.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-user"
         },
         {
           "title": "QQBot Platform Features Documentation",
           "path": "platform-guide/qqbot.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-comment-dots"
         },
         {
           "title": "Kook Platform Features Documentation",
           "path": "platform-guide/kook.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-headset"
         },
         {
           "title": "Matrix Platform Features Document",
           "path": "platform-guide/matrix.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-th-large"
         },
         {
           "title": "Discord Platform Feature Documentation",
           "path": "platform-guide/discord.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-gamepad"
         },
         {
           "title": "WechatMp Adapter - Platform Features Document",
           "path": "platform-guide/wechatmp.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-mobile-screen"
         },
         {
           "title": "Platform Feature Description — Webhook Generic Bridge Adapter",
           "path": "platform-guide/webhook.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-link"
         },
         {
           "title": "Ideaura Cafe Platform Features Documentation",
           "path": "platform-guide/ideaura.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-wand-magic-sparkles"
         },
         {
           "title": "Documentation Maintenance Guidelines",
           "path": "platform-guide/maintain-notes.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-wrench"
         }
       ],
       "subgroups": {}
     },
     "API Reference": {
       "description": "Core API and interface documentation",
+      "icon": "fa-book",
       "count": 4,
       "documents": [
         {
           "title": "API Reference",
           "path": "api-reference/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-book"
         },
         {
           "title": "Adapter System API",
           "path": "api-reference/adapter-system.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-network-wired"
         },
         {
           "title": "Core Modules API",
           "path": "api-reference/core-modules.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-cubes-stacked"
         },
         {
           "title": "Event System API",
           "path": "api-reference/event-system.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-bolt-lightning"
         }
       ],
       "subgroups": {}
     },
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
+      "icon": "fa-fire",
       "count": 11,
       "documents": [
         {
           "title": "Advanced Topics",
           "path": "advanced/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-fire"
         },
         {
           "title": "Lifecycle Management",
           "path": "advanced/lifecycle.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-clock-rotate-left"
         },
         {
           "title": "Lazy-Loaded Module System",
           "path": "advanced/lazy-loading.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-hourglass-half"
         },
         {
           "title": "Router Manager",
           "path": "advanced/router.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-route"
         },
         {
           "title": "MessageBuilder Detailed Explanation",
           "path": "advanced/message-builder.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-comment-dots"
         },
         {
           "title": "Session Type System",
           "path": "advanced/session-types.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-layer-group"
         },
         {
           "title": "Conversation Multi-turn Conversations",
           "path": "advanced/conversation.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-comments"
         },
         {
           "title": "Network Client",
           "path": "advanced/http-client.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-globe"
         },
         {
           "title": "SQL Query Builder",
           "path": "advanced/sql-builder.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-database"
         },
         {
           "title": "Internationalization (i18n) System",
           "path": "advanced/i18n.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-language"
         },
         {
           "title": "Startup Flow and Manual Control",
           "path": "advanced/startup.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-fire"
         }
       ],
       "subgroups": {}
     },
     "Ecosystem Modules": {
       "description": "Community-maintained third-party modules",
+      "icon": "fa-cubes",
       "count": 3,
       "documents": [
         {
           "title": "Ecosystem Modules",
           "path": "ecosystem/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-cubes"
         },
         {
           "title": "ErisPulse-Dashboard",
           "path": "ecosystem/dashboard.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-cubes"
         },
         {
           "title": "ErisPulse-Takumi",
           "path": "ecosystem/takumi.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-cubes"
         }
       ],
       "subgroups": {}
     },
     "AI-Assisted Development": {
       "description": "Using AI to assist ErisPulse development",
+      "icon": "fa-robot",
       "count": 1,
       "documents": [
         {
           "title": "AI-Assisted Development",
           "path": "ai-support/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-robot"
         }
       ],
       "subgroups": {}
     },
     "Technical Standards": {
       "description": "Framework technical specifications and standards",
+      "icon": "fa-gavel",
       "count": 7,
       "documents": [
         {
           "title": "Technical Standards",
           "path": "standards/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-gavel"
         },
         {
           "title": "ErisPulse Session Type Standards",
           "path": "standards/session-types.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-layer-group"
         },
         {
           "title": "ErisPulse Adapter Standardized Return Specification",
           "path": "standards/api-response.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-arrow-right-arrow-left"
         },
         {
           "title": "Adapter Standardization Conversion Specification",
           "path": "standards/event-conversion.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-shuffle"
         },
         {
           "title": "ErisPulse Send Method Specification",
           "path": "standards/send-method-spec.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-paper-plane"
         },
         {
           "title": "ErisPulse Request Operation Specification",
           "path": "standards/request-action-spec.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-hand-paper"
         },
         {
           "title": "ErisPulse API Action Standards",
           "path": "standards/api-action-spec.md",
-          "level": 1
-        }
-      ],
-      "subgroups": {}
-    },
-    "Style Guide": {
-      "description": "Code and documentation style guidelines",
-      "count": 2,
-      "documents": [
-        {
-          "title": "Style Guide",
-          "path": "styleguide/README.md",
-          "level": 1
-        },
-        {
-          "title": "ErisPulse Comment Style Guide",
-          "path": "styleguide/docstring.md",
-          "level": 1
-        }
-      ],
-      "subgroups": {}
-    },
-    "Contributing": {
-      "description": "Contribute to ErisPulse",
-      "count": 2,
-      "documents": [
-        {
-          "title": "Contributing to ErisPulse",
-          "path": "contributing/README.md",
-          "level": 1
-        },
-        {
-          "title": "First Contribution Walkthrough",
-          "path": "contributing/first-contribution.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-bolt"
         }
       ],
       "subgroups": {}

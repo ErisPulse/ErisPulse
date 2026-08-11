@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1394,
+  "total_keywords": 1367,
   "keywords": {
     "- \"auto\"      — Automatically detect system language (default)": [
       {
@@ -150,14 +150,6 @@
         "line": 27,
         "level": 3,
         "title": "1. Ensure Cross-Platform Compatibility"
-      }
-    ],
-    "1. Fork and Clone the Repository": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 15,
-        "level": 2,
-        "title": "1. Fork and Clone the Repository"
       }
     ],
     "1. Health Check (GET)": [
@@ -480,14 +472,6 @@
         "title": "2. Input Validation"
       }
     ],
-    "2. Install the Development Environment": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 30,
-        "level": 2,
-        "title": "2. Install the Development Environment"
-      }
-    ],
     "2. Integration Tests": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -798,14 +782,6 @@
         "line": 29,
         "level": 2,
         "title": "3. Complete Field Specification"
-      }
-    ],
-    "3. Create a Feature Branch": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 42,
-        "level": 2,
-        "title": "3. Create a Feature Branch"
       }
     ],
     "3. Event Format Examples": [
@@ -1120,14 +1096,6 @@
         "title": "4. Implementation Requirements"
       }
     ],
-    "4. Make Changes": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 54,
-        "level": 2,
-        "title": "4. Make Changes"
-      }
-    ],
     "4. Manage Published Modules": [
       {
         "document": "developer-guide/publishing.md",
@@ -1328,14 +1296,6 @@
         "title": "5. Initialize Modules"
       }
     ],
-    "5. Local Verification": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 77,
-        "level": 2,
-        "title": "5. Local Verification"
-      }
-    ],
     "5. Return Value Specification": [
       {
         "document": "standards/send-method-spec.md",
@@ -1528,14 +1488,6 @@
         "title": "6. Start Router Server"
       }
     ],
-    "6. Update CHANGELOG": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 89,
-        "level": 2,
-        "title": "6. Update CHANGELOG"
-      }
-    ],
     "6.1 Conversion Model": [
       {
         "document": "standards/send-method-spec.md",
@@ -1680,14 +1632,6 @@
         "title": "7. Best Practices"
       }
     ],
-    "7. Commit and Push": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 99,
-        "level": 2,
-        "title": "7. Commit and Push"
-      }
-    ],
     "7. Error Code Extensions": [
       {
         "document": "standards/request-action-spec.md",
@@ -1782,14 +1726,6 @@
         "line": 366,
         "level": 2,
         "title": "8. Related Documentation"
-      }
-    ],
-    "8. Submit a Pull Request": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 107,
-        "level": 2,
-        "title": "8. Submit a Pull Request"
       }
     ],
     "8.1 Accessing Extension Fields": [
@@ -2650,14 +2586,6 @@
         "title": "Basic Detection"
       }
     ],
-    "Basic Format": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 22,
-        "level": 3,
-        "title": "Basic Format"
-      }
-    ],
     "Basic Information": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -2904,14 +2832,6 @@
         "title": "Benefits of Following Standards"
       }
     ],
-    "Benefits of Following the Guidelines": [
-      {
-        "document": "styleguide/README.md",
-        "line": 25,
-        "level": 2,
-        "title": "Benefits of Following the Guidelines"
-      }
-    ],
     "Best Practices": [
       {
         "document": "advanced/http-client.md",
@@ -2940,12 +2860,6 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 441,
-        "level": 2,
-        "title": "Best Practices"
-      },
-      {
-        "document": "styleguide/docstring.md",
-        "line": 67,
         "level": 2,
         "title": "Best Practices"
       }
@@ -3618,14 +3532,6 @@
         "title": "Common Pitfalls"
       }
     ],
-    "Common Questions": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 139,
-        "level": 2,
-        "title": "Common Questions"
-      }
-    ],
     "Common Task Examples": [
       {
         "document": "getting-started/common-tasks.md",
@@ -4002,30 +3908,6 @@
         "line": 290,
         "level": 2,
         "title": "Contributing"
-      }
-    ],
-    "Contributing Modules or Adapters": [
-      {
-        "document": "contributing/README.md",
-        "line": 45,
-        "level": 2,
-        "title": "Contributing Modules or Adapters"
-      }
-    ],
-    "Contributing a Module or Adapter": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 119,
-        "level": 2,
-        "title": "Contributing a Module or Adapter"
-      }
-    ],
-    "Contributing to ErisPulse": [
-      {
-        "document": "contributing/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "Contributing to ErisPulse"
       }
     ],
     "Contribution Flow": [
@@ -4530,14 +4412,6 @@
         "title": "Development Approach Selection"
       }
     ],
-    "Development Environment": [
-      {
-        "document": "contributing/README.md",
-        "line": 22,
-        "level": 2,
-        "title": "Development Environment"
-      }
-    ],
     "Development Methods": [
       {
         "document": "README.md",
@@ -4804,12 +4678,6 @@
         "line": 5,
         "level": 2,
         "title": "Documentation List"
-      },
-      {
-        "document": "styleguide/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "Documentation List"
       }
     ],
     "Documentation Maintenance Guidelines": [
@@ -4938,14 +4806,6 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse Adapter Standardized Return Specification"
-      }
-    ],
-    "ErisPulse Comment Style Guide": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 1,
-        "level": 1,
-        "title": "ErisPulse Comment Style Guide"
       }
     ],
     "ErisPulse Documentation": [
@@ -5586,22 +5446,6 @@
         "title": "Fine-Grained Runtime Control"
       }
     ],
-    "First Contribution Walkthrough": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 1,
-        "level": 1,
-        "title": "First Contribution Walkthrough"
-      }
-    ],
-    "First PR Submission": [
-      {
-        "document": "contributing/README.md",
-        "line": 18,
-        "level": 2,
-        "title": "First PR Submission"
-      }
-    ],
     "Fixed Bugs": [
       {
         "document": "bug-tracker.md",
@@ -5758,14 +5602,6 @@
         "title": "Friend request"
       }
     ],
-    "Full Format (For complex methods)": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 35,
-        "level": 3,
-        "title": "Full Format (For complex methods)"
-      }
-    ],
     "Full Manual Startup Example": [
       {
         "document": "advanced/startup.md",
@@ -5836,14 +5672,6 @@
         "line": 243,
         "level": 3,
         "title": "Get Adapter Instance"
-      }
-    ],
-    "Get Help": [
-      {
-        "document": "contributing/README.md",
-        "line": 59,
-        "level": 2,
-        "title": "Get Help"
       }
     ],
     "Get Method Details": [
@@ -7612,14 +7440,6 @@
         "title": "Method Chain"
       }
     ],
-    "Method Comments": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 20,
-        "level": 2,
-        "title": "Method Comments"
-      }
-    ],
     "Method List": [
       {
         "document": "platform-guide/onebot11.md",
@@ -7834,14 +7654,6 @@
         "line": 41,
         "level": 3,
         "title": "Module-Level Control"
-      }
-    ],
-    "Module-level Documentation Comment": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 5,
-        "level": 2,
-        "title": "Module-level Documentation Comment"
       }
     ],
     "Most adapters: bot_id is automatically obtained at runtime, no need to configure": [
@@ -8662,12 +8474,6 @@
         "line": 29,
         "level": 2,
         "title": "Prerequisites"
-      },
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 7,
-        "level": 2,
-        "title": "Prerequisites"
       }
     ],
     "Priority": [
@@ -8838,22 +8644,6 @@
         "line": 1,
         "level": 1,
         "title": "Publishing and Module Store Guide"
-      }
-    ],
-    "Pull Request Process": [
-      {
-        "document": "contributing/README.md",
-        "line": 34,
-        "level": 2,
-        "title": "Pull Request Process"
-      }
-    ],
-    "Purpose": [
-      {
-        "document": "styleguide/README.md",
-        "line": 17,
-        "level": 2,
-        "title": "Purpose"
       }
     ],
     "Pz": [
@@ -9328,12 +9118,6 @@
       {
         "document": "getting-started/ide-completion.md",
         "line": 82,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
-        "document": "styleguide/README.md",
-        "line": 32,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10402,14 +10186,6 @@
         "title": "Special Message Segment Types"
       }
     ],
-    "Special Tags (For API Documentation Generation)": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 54,
-        "level": 2,
-        "title": "Special Tags (For API Documentation Generation)"
-      }
-    ],
     "Specific Event Types": [
       {
         "document": "platform-guide/telegram.md",
@@ -10654,14 +10430,6 @@
         "line": 212,
         "level": 1,
         "title": "Store data"
-      }
-    ],
-    "Style Guide": [
-      {
-        "document": "styleguide/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "Style Guide"
       }
     ],
     "Success Response Example": [
@@ -10922,12 +10690,6 @@
       {
         "document": "advanced/README.md",
         "line": 21,
-        "level": 2,
-        "title": "Target Audience"
-      },
-      {
-        "document": "styleguide/README.md",
-        "line": 9,
         "level": 2,
         "title": "Target Audience"
       }
@@ -11690,14 +11452,6 @@
         "line": 57,
         "level": 3,
         "title": "Waiting for Replies"
-      }
-    ],
-    "Ways You Can Contribute": [
-      {
-        "document": "contributing/README.md",
-        "line": 6,
-        "level": 2,
-        "title": "Ways You Can Contribute"
       }
     ],
     "WebSocket": [
