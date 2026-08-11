@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1427,
+  "total_keywords": 1399,
   "keywords": {
     "- \"auto\"      — システム言語を自動検出 (デフォルト)": [
       {
@@ -176,14 +176,6 @@
         "line": 128,
         "level": 3,
         "title": "1. メッセージ送信"
-      }
-    ],
-    "1. リポジトリをフォークしてクローンする": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 15,
-        "level": 2,
-        "title": "1. リポジトリをフォークしてクローンする"
       }
     ],
     "1. ログレベルを適切に使用する": [
@@ -696,14 +688,6 @@
         "title": "2. 適切な非同期操作"
       }
     ],
-    "2. 開発環境をインストールする": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 30,
-        "level": 2,
-        "title": "2. 開発環境をインストールする"
-      }
-    ],
     "2.1 OneBot12 標準型": [
       {
         "document": "standards/session-types.md",
@@ -918,14 +902,6 @@
         "line": 107,
         "level": 3,
         "title": "3. フィールドマッピング（入力JSON → OneBot12 イベント）"
-      }
-    ],
-    "3. ブランチを作成する": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 42,
-        "level": 2,
-        "title": "3. ブランチを作成する"
       }
     ],
     "3. プラットフォーム固有のイベントタイプ": [
@@ -1224,14 +1200,6 @@
         "title": "4. 使用方法"
       }
     ],
-    "4. 修正を行う": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 54,
-        "level": 2,
-        "title": "4. 修正を行う"
-      }
-    ],
     "4. 実装要件": [
       {
         "document": "standards/api-response.md",
@@ -1382,14 +1350,6 @@
         "line": 320,
         "level": 3,
         "title": "5. ユーザーが使用する方法"
-      }
-    ],
-    "5. ローカルでの検証": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 77,
-        "level": 2,
-        "title": "5. ローカルでの検証"
       }
     ],
     "5. 不明イベントの処理": [
@@ -1550,14 +1510,6 @@
         "line": 194,
         "level": 2,
         "title": "6. API 使用例"
-      }
-    ],
-    "6. CHANGELOG を更新する": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 89,
-        "level": 2,
-        "title": "6. CHANGELOG を更新する"
       }
     ],
     "6. アダプター実装チェックリスト": [
@@ -1760,14 +1712,6 @@
         "title": "7. エラーコードの拡張"
       }
     ],
-    "7. コミットしてプッシュする": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 99,
-        "level": 2,
-        "title": "7. コミットしてプッシュする"
-      }
-    ],
     "7. セッションタイプの拡張": [
       {
         "document": "standards/event-conversion.md",
@@ -1814,14 +1758,6 @@
         "line": 250,
         "level": 3,
         "title": "7.3 型推論"
-      }
-    ],
-    "8. Pull Request を送信する": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 107,
-        "level": 2,
-        "title": "8. Pull Request を送信する"
       }
     ],
     "8. よくある質問（FAQ）": [
@@ -2458,28 +2394,12 @@
         "title": "ErisPulse のインストール"
       }
     ],
-    "ErisPulse への貢献": [
-      {
-        "document": "contributing/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "ErisPulse への貢献"
-      }
-    ],
     "ErisPulse アダプター標準化戻り値仕様書": [
       {
         "document": "standards/api-response.md",
         "line": 1,
         "level": 1,
         "title": "ErisPulse アダプター標準化戻り値仕様書"
-      }
-    ],
-    "ErisPulse コメントスタイルガイドライン": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 1,
-        "level": 1,
-        "title": "ErisPulse コメントスタイルガイドライン"
       }
     ],
     "ErisPulse セッション型標準": [
@@ -5954,22 +5874,6 @@
         "title": "スキャフォールドを作成"
       }
     ],
-    "スタイルガイド": [
-      {
-        "document": "styleguide/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "スタイルガイド"
-      }
-    ],
-    "スタイルガイド準拠のメリット": [
-      {
-        "document": "styleguide/README.md",
-        "line": 25,
-        "level": 2,
-        "title": "スタイルガイド準拠のメリット"
-      }
-    ],
     "スタティックファクトリ + チェーンの組み合わせ": [
       {
         "document": "advanced/message-builder.md",
@@ -6559,12 +6463,6 @@
     "ドキュメント一覧": [
       {
         "document": "api-reference/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "ドキュメント一覧"
-      },
-      {
-        "document": "styleguide/README.md",
         "line": 5,
         "level": 2,
         "title": "ドキュメント一覧"
@@ -7252,24 +7150,12 @@
         "line": 89,
         "level": 2,
         "title": "ヘルプの取得"
-      },
-      {
-        "document": "contributing/README.md",
-        "line": 59,
-        "level": 2,
-        "title": "ヘルプの取得"
       }
     ],
     "ベストプラクティス": [
       {
         "document": "platform-guide/onebot12.md",
         "line": 441,
-        "level": 2,
-        "title": "ベストプラクティス"
-      },
-      {
-        "document": "styleguide/docstring.md",
-        "line": 66,
         "level": 2,
         "title": "ベストプラクティス"
       }
@@ -7428,14 +7314,6 @@
         "line": 85,
         "level": 3,
         "title": "メソッドの詳細情報の取得"
-      }
-    ],
-    "メソッドコメント": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 19,
-        "level": 2,
-        "title": "メソッドコメント"
       }
     ],
     "メソッドチェーン": [
@@ -8028,22 +7906,6 @@
         "title": "モジュールの基本概念"
       }
     ],
-    "モジュールまたはアダプターの貢献": [
-      {
-        "document": "contributing/README.md",
-        "line": 45,
-        "level": 2,
-        "title": "モジュールまたはアダプターの貢献"
-      }
-    ],
-    "モジュールやアダプターを貢献する": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 119,
-        "level": 2,
-        "title": "モジュールやアダプターを貢献する"
-      }
-    ],
     "モジュールをインストール": [
       {
         "document": "user-guide/cli-reference.md",
@@ -8066,14 +7928,6 @@
         "line": 5,
         "level": 2,
         "title": "モジュールストアの概要"
-      }
-    ],
-    "モジュールドキュメントコメント": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 5,
-        "level": 2,
-        "title": "モジュールドキュメントコメント"
       }
     ],
     "モジュールライフサイクル": [
@@ -9306,14 +9160,6 @@
         "title": "切断再接続と RESUME"
       }
     ],
-    "初めての PR 提出": [
-      {
-        "document": "contributing/README.md",
-        "line": 18,
-        "level": 2,
-        "title": "初めての PR 提出"
-      }
-    ],
     "初期化プロセス": [
       {
         "document": "advanced/lazy-loading.md",
@@ -9416,14 +9262,6 @@
         "line": 77,
         "level": 3,
         "title": "原生メッセージ送信"
-      }
-    ],
-    "参加できる方法": [
-      {
-        "document": "contributing/README.md",
-        "line": 6,
-        "level": 2,
-        "title": "参加できる方法"
       }
     ],
     "参考ドキュメント": [
@@ -9650,14 +9488,6 @@
         "line": 41,
         "level": 3,
         "title": "基底クラス"
-      }
-    ],
-    "基本フォーマット": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 21,
-        "level": 3,
-        "title": "基本フォーマット"
       }
     ],
     "基本メソッド": [
@@ -10044,14 +9874,6 @@
         "title": "完全な設定例"
       }
     ],
-    "完全フォーマット（複雑なメソッドに適用）": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 34,
-        "level": 3,
-        "title": "完全フォーマット（複雑なメソッドに適用）"
-      }
-    ],
     "完整示例": [
       {
         "document": "platform-guide/onebot11.md",
@@ -10122,14 +9944,6 @@
         "line": 461,
         "level": 2,
         "title": "対話型インストール"
-      }
-    ],
-    "対象者": [
-      {
-        "document": "styleguide/README.md",
-        "line": 9,
-        "level": 2,
-        "title": "対象者"
       }
     ],
     "対象読者": [
@@ -10460,14 +10274,6 @@
         "title": "提供されるツール"
       }
     ],
-    "提出プロセス": [
-      {
-        "document": "contributing/README.md",
-        "line": 34,
-        "level": 2,
-        "title": "提出プロセス"
-      }
-    ],
     "文書情報": [
       {
         "document": "platform-guide/kook.md",
@@ -10578,14 +10384,6 @@
         "line": 1,
         "level": 1,
         "title": "最初のロボットを作成する"
-      }
-    ],
-    "最初の貢献実践": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 1,
-        "level": 1,
-        "title": "最初の貢献実践"
       }
     ],
     "最善の実践": [
@@ -11004,14 +10802,6 @@
         "title": "添付ファイルメッセージセグメント"
       }
     ],
-    "準備": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 7,
-        "level": 2,
-        "title": "準備"
-      }
-    ],
     "特定の Bot がオンラインかどうかをチェック": [
       {
         "document": "getting-started/event-handling.md",
@@ -11040,14 +10830,6 @@
         "line": 134,
         "level": 2,
         "title": "特有のイベントタイプ"
-      }
-    ],
-    "特殊タグ（APIドキュメントの生成に使用）": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 53,
-        "level": 2,
-        "title": "特殊タグ（APIドキュメントの生成に使用）"
       }
     ],
     "特殊フィールドの例": [
@@ -11222,14 +11004,6 @@
         "line": 5,
         "level": 2,
         "title": "目次"
-      }
-    ],
-    "目的": [
-      {
-        "document": "styleguide/README.md",
-        "line": 17,
-        "level": 2,
-        "title": "目的"
       }
     ],
     "直接呼び出し方式": [
@@ -12348,14 +12122,6 @@
         "title": "開発準備"
       }
     ],
-    "開発環境": [
-      {
-        "document": "contributing/README.md",
-        "line": 22,
-        "level": 2,
-        "title": "開発環境"
-      }
-    ],
     "開発者ガイド": [
       {
         "document": "developer-guide/README.md",
@@ -12492,12 +12258,6 @@
         "title": "関連ドキュメント"
       },
       {
-        "document": "styleguide/README.md",
-        "line": 32,
-        "level": 2,
-        "title": "関連ドキュメント"
-      },
-      {
         "document": "user-guide/README.md",
         "line": 39,
         "level": 2,
@@ -12602,14 +12362,6 @@
         "line": 87,
         "level": 4,
         "title": "非同期送信と結果処理"
-      }
-    ],
-    "頻繁に遭遇する可能性のある問題": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 139,
-        "level": 2,
-        "title": "頻繁に遭遇する可能性のある問題"
       }
     ],
     "高レベルメソッド (推奨)": [
