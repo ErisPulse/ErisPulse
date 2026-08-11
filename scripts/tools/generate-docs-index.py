@@ -378,7 +378,15 @@ class DocsIndexGenerator:
     }
 
     # 需要忽略的目录
-    IGNORE_DIRS = {"ai-support/prompts", "api-reference/auto_api"}
+    # - ai-support/prompts: 提示词模板，非用户文档
+    # - api-reference/auto_api: 自动生成的 API 文档，单独生成独立索引（generate_auto_api_index）
+    # - styleguide / contributing: 框架自身使用的规范，不进入面向用户的 docs_meta
+    IGNORE_DIRS = {
+        "ai-support/prompts",
+        "api-reference/auto_api",
+        "styleguide",
+        "contributing",
+    }
 
     # 子分组显示名称（按语言映射）
     SUBGROUP_NAMES = {
@@ -403,6 +411,163 @@ class DocsIndexGenerator:
             "ja": "プロンプトテンプレート",
             "ru": "Шаблоны промптов",
         },
+    }
+
+    # 分类图标（按目录名，跨语言统一，使用 Font Awesome 类名）
+    # 未配置的分类回退到 fa-folder
+    CATEGORY_ICONS = {
+        "getting-started": "fa-rocket",
+        "user-guide": "fa-book-open",
+        "developer-guide": "fa-code",
+        "platform-guide": "fa-plug",
+        "api-reference": "fa-book",
+        "advanced": "fa-fire",
+        "ecosystem": "fa-cubes",
+        "ai-support": "fa-robot",
+        "standards": "fa-gavel",
+    }
+
+    # 子分组图标（与 SUBGROUP_NAMES 同 key）
+    SUBGROUP_ICONS = {
+        "modules": "fa-puzzle-piece",
+        "adapters": "fa-network-wired",
+        "prompts": "fa-comment-dots",
+    }
+
+    # 文档项图标（按精确相对路径，未配置则按所在分类目录回退）
+    DOC_ICONS = {
+        # 根目录 / 快速开始
+        "README.md": "fa-flag",
+        "quick-start.md": "fa-bolt",
+        "architecture.md": "fa-sitemap",
+        "bug-tracker.md": "fa-bug",
+        # 入门指南
+        "getting-started/README.md": "fa-door-open",
+        "getting-started/first-bot.md": "fa-robot",
+        "getting-started/basic-concepts.md": "fa-lightbulb",
+        "getting-started/common-tasks.md": "fa-list-check",
+        "getting-started/event-handling.md": "fa-bolt-lightning",
+        "getting-started/ide-completion.md": "fa-keyboard",
+        # 用户使用指南
+        "user-guide/README.md": "fa-book-open",
+        "user-guide/installation.md": "fa-download",
+        "user-guide/configuration.md": "fa-sliders",
+        "user-guide/cli-reference.md": "fa-terminal",
+        "user-guide/deployment.md": "fa-cloud-arrow-up",
+        # 开发者指南
+        "developer-guide/README.md": "fa-code",
+        "developer-guide/modules/getting-started.md": "fa-puzzle-piece",
+        "developer-guide/modules/core-concepts.md": "fa-cubes-stacked",
+        "developer-guide/modules/event-wrapper.md": "fa-bolt-lightning",
+        "developer-guide/modules/best-practices.md": "fa-award",
+        "developer-guide/adapters/getting-started.md": "fa-network-wired",
+        "developer-guide/adapters/core-concepts.md": "fa-microchip",
+        "developer-guide/adapters/send-dsl.md": "fa-code-branch",
+        "developer-guide/adapters/best-practices.md": "fa-medal",
+        "developer-guide/adapters/converter.md": "fa-exchange-alt",
+        "developer-guide/publishing.md": "fa-upload",
+        # 平台特性指南
+        "platform-guide/README.md": "fa-server",
+        "platform-guide/onebot11.md": "fa-comments",
+        "platform-guide/onebot12.md": "fa-comments",
+        "platform-guide/telegram.md": "fa-paper-plane",
+        "platform-guide/email.md": "fa-envelope",
+        "platform-guide/yunhu.md": "fa-cloud",
+        "platform-guide/yunhu_user.md": "fa-user",
+        "platform-guide/qqbot.md": "fa-comment-dots",
+        "platform-guide/kook.md": "fa-headset",
+        "platform-guide/matrix.md": "fa-th-large",
+        "platform-guide/discord.md": "fa-gamepad",
+        "platform-guide/wechatmp.md": "fa-mobile-screen",
+        "platform-guide/webhook.md": "fa-link",
+        "platform-guide/ideaura.md": "fa-wand-magic-sparkles",
+        "platform-guide/maintain-notes.md": "fa-wrench",
+        # API 参考
+        "api-reference/README.md": "fa-book",
+        "api-reference/adapter-system.md": "fa-network-wired",
+        "api-reference/core-modules.md": "fa-cubes-stacked",
+        "api-reference/event-system.md": "fa-bolt-lightning",
+        # 高级主题
+        "advanced/README.md": "fa-fire",
+        "advanced/lifecycle.md": "fa-clock-rotate-left",
+        "advanced/lazy-loading.md": "fa-hourglass-half",
+        "advanced/router.md": "fa-route",
+        "advanced/message-builder.md": "fa-comment-dots",
+        "advanced/session-types.md": "fa-layer-group",
+        "advanced/conversation.md": "fa-comments",
+        "advanced/dashboard-view.md": "fa-table-columns",
+        "advanced/http-client.md": "fa-globe",
+        "advanced/sql-builder.md": "fa-database",
+        "advanced/i18n.md": "fa-language",
+        # AI 辅助开发
+        "ai-support/README.md": "fa-robot",
+        # 技术标准
+        "standards/README.md": "fa-gavel",
+        "standards/session-types.md": "fa-layer-group",
+        "standards/api-response.md": "fa-arrow-right-arrow-left",
+        "standards/event-conversion.md": "fa-shuffle",
+        "standards/send-method-spec.md": "fa-paper-plane",
+        "standards/request-action-spec.md": "fa-hand-paper",
+        "standards/api-action-spec.md": "fa-bolt",
+    }
+
+    # ==================== auto_api 独立索引配置 ====================
+    # auto_api 已在 IGNORE_DIRS 中，不进入主索引；通过 run_auto_api() 单独生成
+    # AUTO_API_CATEGORY_NAMES: 独立索引中的"分类名"（按语言）
+    AUTO_API_CATEGORY_NAMES = {
+        "zh-CN": "自动生成 API",
+        "en": "Auto-generated API",
+        "zh-TW": "自動生成 API",
+        "ja": "自動生成 API",
+        "ru": "Автосгенерированный API",
+    }
+
+    # AUTO_API_SUBGROUP_NAMES: 按 ErisPulse/ 下的第一级子目录分组
+    AUTO_API_SUBGROUP_NAMES = {
+        "CLI": {
+            "zh-CN": "CLI 命令行",
+            "en": "CLI",
+            "zh-TW": "CLI 命令列",
+            "ja": "CLI コマンド",
+            "ru": "CLI",
+        },
+        "Core": {
+            "zh-CN": "核心模块",
+            "en": "Core",
+            "zh-TW": "核心模組",
+            "ja": "コアモジュール",
+            "ru": "Ядро",
+        },
+        "finders": {
+            "zh-CN": "模块查找器",
+            "en": "Finders",
+            "zh-TW": "模組尋找器",
+            "ja": "モジュールファインダー",
+            "ru": "Поисковики",
+        },
+        "loaders": {
+            "zh-CN": "模块加载器",
+            "en": "Loaders",
+            "zh-TW": "模組載入器",
+            "ja": "モジュールローダー",
+            "ru": "Загрузчики",
+        },
+        "runtime": {
+            "zh-CN": "运行时",
+            "en": "Runtime",
+            "zh-TW": "執行時",
+            "ja": "ランタイム",
+            "ru": "Среда выполнения",
+        },
+    }
+
+    # AUTO_API_SUBGROUP_ICONS: 子分组图标
+    AUTO_API_SUBGROUP_ICONS = {
+        "CLI": "fa-terminal",
+        "Core": "fa-microchip",
+        "finders": "fa-search",
+        "loaders": "fa-download",
+        "runtime": "fa-gears",
     }
 
     def __init__(self, docs_dir: str, output_dir: str, lang: Optional[str] = None):
@@ -496,6 +661,62 @@ class DocsIndexGenerator:
 
         # 默认分类
         return "Other"
+
+    def get_category_dir(self, category_name: str) -> str:
+        """
+        根据本地化分类名反查目录名（用于图标查询）
+
+        :param category_name: 本地化分类名（如 "入门指南"）
+        :return: 目录名（如 "getting-started"），未匹配返回空串
+        """
+        reverse_map = {v: k for k, v in self.CATEGORY_MAP.items()}
+        return reverse_map.get(category_name, "")
+
+    def get_category_icon(self, category_name: str) -> str:
+        """
+        根据分类名获取图标类名
+
+        :param category_name: 本地化分类名
+        :return: Font Awesome 图标类名（未配置返回 fa-folder）
+        """
+        category_dir = self.get_category_dir(category_name)
+        # 根目录文档（快速开始类）回退到 rocket
+        if not category_dir:
+            return self.CATEGORY_ICONS.get("getting-started", "fa-folder")
+        return self.CATEGORY_ICONS.get(category_dir, "fa-folder")
+
+    def get_doc_icon(self, doc_path: str, category_name: str, subgroup_key: Optional[str] = None) -> str:
+        """
+        根据文档路径获取图标类名
+
+        解析顺序：精确路径 → 子分组 → 分类 → 默认
+
+        :param doc_path: 文档相对路径
+        :param category_name: 所属本地化分类名
+        :param subgroup_key: 子分组 key（可选）
+        :return: Font Awesome 图标类名
+        """
+        # 1. 精确路径
+        if doc_path in self.DOC_ICONS:
+            return self.DOC_ICONS[doc_path]
+        # 2. 子分组图标
+        if subgroup_key and subgroup_key in self.SUBGROUP_ICONS:
+            return self.SUBGROUP_ICONS[subgroup_key]
+        # 3. 分类图标
+        category_icon = self.get_category_icon(category_name)
+        if category_icon != "fa-folder":
+            return category_icon
+        # 4. 默认
+        return "fa-file-alt"
+
+    def get_subgroup_icon(self, subgroup_key: str) -> str:
+        """
+        根据子分组 key 获取图标类名
+
+        :param subgroup_key: 子分组 key（如 "modules"）
+        :return: Font Awesome 图标类名（未配置返回 fa-folder）
+        """
+        return self.SUBGROUP_ICONS.get(subgroup_key, "fa-folder")
 
     def parse_headings(self, content: str) -> List[Dict]:
         """
@@ -644,20 +865,15 @@ class DocsIndexGenerator:
         for doc in documents:
             category = doc["category"]
 
-            # 初始化分类
+            # 初始化分类（含图标）
             if category not in categories:
                 categories[category] = {
                     "description": self.CATEGORY_DESCRIPTIONS.get(category, ""),
+                    "icon": self.get_category_icon(category),
                     "count": 0,
                     "documents": [],
                     "_subgroups": {},
                 }
-
-            doc_entry = {
-                "title": doc["title"],
-                "path": doc["path"],
-                "level": doc["level"],
-            }
 
             category_dir = reverse_category_map.get(category, "")
             subgroup_key = None
@@ -670,6 +886,13 @@ class DocsIndexGenerator:
                     if len(parts) > 1:
                         subgroup_key = parts[0]
 
+            doc_entry = {
+                "title": doc["title"],
+                "path": doc["path"],
+                "level": doc["level"],
+                "icon": self.get_doc_icon(doc["path"], category, subgroup_key),
+            }
+
             if subgroup_key:
                 if subgroup_key not in categories[category]["_subgroups"]:
                     lang = self.lang or "zh-CN"
@@ -679,6 +902,7 @@ class DocsIndexGenerator:
 
                     categories[category]["_subgroups"][subgroup_key] = {
                         "name": subgroup_name,
+                        "icon": self.get_subgroup_icon(subgroup_key),
                         "documents": [],
                     }
                 categories[category]["_subgroups"][subgroup_key]["documents"].append(
@@ -729,7 +953,7 @@ class DocsIndexGenerator:
             del category_data["_subgroups"]
 
         result = {
-            "version": "1.1",
+            "version": "1.2",
             # "generated_at": datetime.now(timezone.utc).isoformat(),
             "total_categories": len(sorted_categories),
             "categories": sorted_categories,
@@ -853,6 +1077,176 @@ class DocsIndexGenerator:
         Logger.log(f"输出目录: {self.output_dir}")
         Logger.log("=" * 60)
 
+    def run_auto_api(self):
+        """
+        生成 api-reference/auto_api 的独立索引
+
+        主索引（IGNORE_DIRS）会跳过 auto_api 目录，本方法单独扫描它并输出
+        docs-auto-api-mapping.json 与 docs-auto-api-search-index.json。
+        前端按需懒加载这两个文件，以保持主索引不被 auto_api 污染。
+        """
+        Logger.log("-" * 60)
+        Logger.log("生成 auto_api 独立索引")
+        Logger.log("-" * 60)
+
+        auto_api_dir = self.actual_docs_dir / "api-reference" / "auto_api"
+        if not auto_api_dir.exists():
+            Logger.log(f"目录不存在，跳过: {auto_api_dir}")
+            Logger.log("")
+            return
+
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        # 扫描所有 .md 文件
+        files = []
+        for root, _, filenames in os.walk(auto_api_dir):
+            for filename in filenames:
+                if filename.endswith(".md"):
+                    files.append(Path(root) / filename)
+        files.sort()
+
+        Logger.log(f"发现 {len(files)} 个 Markdown 文件")
+
+        # 解析文档
+        parsed = []
+        for file_path in files:
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+            except Exception as e:
+                Logger.progress(
+                    str(file_path.relative_to(self.actual_docs_dir)),
+                    "warn",
+                    f"读取失败: {e}",
+                )
+                continue
+
+            headings = self.parse_headings(content)
+            if not headings:
+                continue
+
+            title = self.get_document_title(headings, file_path)
+            rel_path = str(file_path.relative_to(self.actual_docs_dir)).replace(
+                "\\", "/"
+            )
+            rel_to_auto = str(file_path.relative_to(auto_api_dir)).replace("\\", "/")
+
+            api_category = self.CATEGORY_MAP.get("api-reference", "API Reference")
+            parsed.append(
+                {
+                    "title": title,
+                    "path": rel_path,
+                    "level": 1,
+                    "icon": self.get_doc_icon(rel_path, api_category, None),
+                    "headings": headings,
+                    "rel_to_auto": rel_to_auto,
+                }
+            )
+
+        Logger.log(f"成功解析 {len(parsed)} 个文档")
+
+        # 按 ErisPulse/ 下第一级子目录分组
+        top_docs = []
+        subgroups_temp = {}
+        for doc in parsed:
+            parts = doc["rel_to_auto"].split("/")
+            subgroup_key = None
+            if len(parts) >= 3 and parts[0] == "ErisPulse":
+                subgroup_key = parts[1]
+
+            if subgroup_key:
+                subgroups_temp.setdefault(subgroup_key, []).append(doc)
+            else:
+                top_docs.append(doc)
+
+        # 构建子分组
+        lang = self.lang or "zh-CN"
+        subgroups_out = {}
+        for key, docs in subgroups_temp.items():
+            sg_name = self.AUTO_API_SUBGROUP_NAMES.get(key, {}).get(
+                lang, key.replace("-", " ").replace("_", " ").title()
+            )
+            sg_icon = self.AUTO_API_SUBGROUP_ICONS.get(key, "fa-folder")
+            sorted_docs = sorted(
+                [
+                    {k: v for k, v in d.items() if k not in ("headings", "rel_to_auto")}
+                    for d in docs
+                ],
+                key=lambda x: x["path"],
+            )
+            subgroups_out[key] = {
+                "name": sg_name,
+                "icon": sg_icon,
+                "documents": sorted_docs,
+            }
+
+        # 子分组按文档数从多到少排序（核心在前）
+        subgroups_out = dict(
+            sorted(subgroups_out.items(), key=lambda kv: -len(kv[1]["documents"]))
+        )
+
+        top_entries = sorted(
+            [
+                {k: v for k, v in d.items() if k not in ("headings", "rel_to_auto")}
+                for d in top_docs
+            ],
+            key=lambda x: x["path"],
+        )
+
+        # 本地化分类名
+        category_name = self.AUTO_API_CATEGORY_NAMES.get(lang, "Auto-generated API")
+        api_ref_desc = self.CATEGORY_DESCRIPTIONS.get(
+            self.CATEGORY_MAP.get("api-reference", ""), ""
+        )
+
+        mapping_index = {
+            "version": "1.0",
+            "total_categories": 1,
+            "total_documents": len(parsed),
+            "categories": {
+                category_name: {
+                    "description": api_ref_desc,
+                    "icon": "fa-microchip",
+                    "count": len(parsed),
+                    "documents": top_entries,
+                    "subgroups": subgroups_out,
+                }
+            },
+        }
+
+        # 搜索索引（与主搜索索引格式一致）
+        keywords = {}
+        for doc in parsed:
+            for heading in doc["headings"]:
+                text = heading["text"]
+                if text not in keywords:
+                    keywords[text] = []
+                keywords[text].append(
+                    {
+                        "document": doc["path"],
+                        "line": heading["line"],
+                        "level": heading["level"],
+                        "title": text,
+                    }
+                )
+        sorted_keywords = dict(sorted(keywords.items()))
+        search_index = {
+            "version": "1.0",
+            "total_keywords": len(sorted_keywords),
+            "keywords": sorted_keywords,
+        }
+
+        # 保存
+        self.save_index(mapping_index, "docs-auto-api-mapping.json")
+        self.save_index(search_index, "docs-auto-api-search-index.json")
+
+        Logger.log(
+            f"生成 1 个分类, {len(parsed)} 个文档, {len(sorted_keywords)} 个关键词"
+        )
+        Logger.log(f"输出目录: {self.output_dir}")
+        Logger.log("-" * 60)
+        Logger.log("")
+
 
 def main():
     """命令行入口：解析参数并运行文档索引生成器"""
@@ -889,6 +1283,9 @@ def main():
         lang_output_dir = Path(args.output) / args.lang
         generator = DocsIndexGenerator(str(docs_dir), str(lang_output_dir), args.lang)
         generator.run(deprecated=False)
+        # auto_api 只在 zh-CN 生成（其它语言的 auto_api 是中文副本，不重复生成）
+        if args.lang == "zh-CN":
+            generator.run_auto_api()
     else:
         # 为所有语言生成索引
         langs = DocsIndexGenerator.get_available_languages(docs_dir)
@@ -901,6 +1298,9 @@ def main():
             lang_output_dir = Path(args.output) / lang
             generator = DocsIndexGenerator(str(docs_dir), str(lang_output_dir), lang)
             generator.run(deprecated=False)
+            # auto_api 仅在 zh-CN 生成（其它语言为中文副本）
+            if lang == "zh-CN":
+                generator.run_auto_api()
             Logger.log("")
 
         # 生成语言索引
