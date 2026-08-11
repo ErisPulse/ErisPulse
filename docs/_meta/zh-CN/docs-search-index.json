@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1417,
+  "total_keywords": 1390,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -16,14 +16,6 @@
         "line": 359,
         "level": 3,
         "title": "1. BaseAdapter 层（大多数情况不需要重写）"
-      }
-    ],
-    "1. Fork 并克隆仓库": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 15,
-        "level": 2,
-        "title": "1. Fork 并克隆仓库"
       }
     ],
     "1. SDK 对象": [
@@ -590,14 +582,6 @@
         "title": "2. 基础返回结构"
       }
     ],
-    "2. 安装开发环境": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 30,
-        "level": 2,
-        "title": "2. 安装开发环境"
-      }
-    ],
     "2. 批量操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -952,14 +936,6 @@
         "line": 58,
         "level": 2,
         "title": "3. 事件格式示例"
-      }
-    ],
-    "3. 创建功能分支": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 42,
-        "level": 2,
-        "title": "3. 创建功能分支"
       }
     ],
     "3. 创建适配器主类": [
@@ -1378,14 +1354,6 @@
         "title": "4. 设置镜像为公开"
       }
     ],
-    "4. 进行修改": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 54,
-        "level": 2,
-        "title": "4. 进行修改"
-      }
-    ],
     "4. 连接信息暴露": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -1520,14 +1488,6 @@
         "line": 179,
         "level": 2,
         "title": "5. 未知事件处理"
-      }
-    ],
-    "5. 本地验证": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 77,
-        "level": 2,
-        "title": "5. 本地验证"
       }
     ],
     "5. 用户使用": [
@@ -1730,14 +1690,6 @@
         "title": "6. 扩展命名规范"
       }
     ],
-    "6. 更新 CHANGELOG": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 89,
-        "level": 2,
-        "title": "6. 更新 CHANGELOG"
-      }
-    ],
     "6. 注意事项": [
       {
         "document": "standards/api-response.md",
@@ -1914,14 +1866,6 @@
         "title": "7. 实现 Request 类（请求操作）"
       }
     ],
-    "7. 提交并推送": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 99,
-        "level": 2,
-        "title": "7. 提交并推送"
-      }
-    ],
     "7. 方法发现": [
       {
         "document": "standards/send-method-spec.md",
@@ -1992,14 +1936,6 @@
         "line": 256,
         "level": 2,
         "title": "8. 常见问题"
-      }
-    ],
-    "8. 提交 Pull Request": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 107,
-        "level": 2,
-        "title": "8. 提交 Pull Request"
       }
     ],
     "8. 模块开发者指南": [
@@ -2592,14 +2528,6 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse 文档"
-      }
-    ],
-    "ErisPulse 注释风格规范": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 1,
-        "level": 1,
-        "title": "ErisPulse 注释风格规范"
       }
     ],
     "ErisPulse 请求操作规范": [
@@ -4406,14 +4334,6 @@
         "title": "中间件执行顺序"
       }
     ],
-    "为 ErisPulse 贡献": [
-      {
-        "document": "contributing/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "为 ErisPulse 贡献"
-      }
-    ],
     "为什么推荐 I18nClass？": [
       {
         "document": "advanced/i18n.md",
@@ -5034,14 +4954,6 @@
         "title": "何时重新生成"
       }
     ],
-    "你可以参与的方式": [
-      {
-        "document": "contributing/README.md",
-        "line": 6,
-        "level": 2,
-        "title": "你可以参与的方式"
-      }
-    ],
     "使用 Discord 特有方法": [
       {
         "document": "platform-guide/discord.md",
@@ -5440,14 +5352,6 @@
         "line": 221,
         "level": 4,
         "title": "内联查询事件"
-      }
-    ],
-    "准备工作": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 7,
-        "level": 2,
-        "title": "准备工作"
       }
     ],
     "出站协议": [
@@ -6120,14 +6024,6 @@
         "title": "可用属性"
       }
     ],
-    "可能会遇到的问题": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 139,
-        "level": 2,
-        "title": "可能会遇到的问题"
-      }
-    ],
     "可选字段": [
       {
         "document": "bug-tracker.md",
@@ -6688,14 +6584,6 @@
         "line": 41,
         "level": 3,
         "title": "基本方法（基类内置）"
-      }
-    ],
-    "基本格式": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 21,
-        "level": 3,
-        "title": "基本格式"
       }
     ],
     "基本用法": [
@@ -7378,14 +7266,6 @@
         "title": "完整手动启动示例"
       }
     ],
-    "完整格式（适用于复杂方法）": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 34,
-        "level": 3,
-        "title": "完整格式（适用于复杂方法）"
-      }
-    ],
     "完整模块示例": [
       {
         "document": "ecosystem/dashboard.md",
@@ -7916,14 +7796,6 @@
         "line": 162,
         "level": 2,
         "title": "开发模式测试"
-      }
-    ],
-    "开发环境": [
-      {
-        "document": "contributing/README.md",
-        "line": 22,
-        "level": 2,
-        "title": "开发环境"
       }
     ],
     "开发类型选择": [
@@ -8564,14 +8436,6 @@
         "title": "推荐禁用懒加载的场景（lazy_load=False）"
       }
     ],
-    "提交流程": [
-      {
-        "document": "contributing/README.md",
-        "line": 34,
-        "level": 2,
-        "title": "提交流程"
-      }
-    ],
     "提供的工具": [
       {
         "document": "ai-support/README.md",
@@ -8836,12 +8700,6 @@
         "line": 5,
         "level": 2,
         "title": "文档列表"
-      },
-      {
-        "document": "styleguide/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "文档列表"
       }
     ],
     "文档格式规范": [
@@ -8968,14 +8826,6 @@
         "line": 95,
         "level": 3,
         "title": "方法总览"
-      }
-    ],
-    "方法注释": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 19,
-        "level": 2,
-        "title": "方法注释"
       }
     ],
     "方法签名": [
@@ -9162,14 +9012,6 @@
         "line": 441,
         "level": 2,
         "title": "最佳实践"
-      }
-    ],
-    "最佳建议": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 66,
-        "level": 2,
-        "title": "最佳建议"
       }
     ],
     "最小可用模块": [
@@ -9792,14 +9634,6 @@
         "line": 41,
         "level": 3,
         "title": "模块级别控制"
-      }
-    ],
-    "模块级文档注释": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 5,
-        "level": 2,
-        "title": "模块级文档注释"
       }
     ],
     "模块设计": [
@@ -10500,14 +10334,6 @@
         "title": "特殊字段示例"
       }
     ],
-    "特殊标签（用于API文档生成）": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 53,
-        "level": 2,
-        "title": "特殊标签（用于API文档生成）"
-      }
-    ],
     "独立 Renderer": [
       {
         "document": "ecosystem/takumi.md",
@@ -10720,14 +10546,6 @@
         "title": "目录结构"
       }
     ],
-    "目的": [
-      {
-        "document": "styleguide/README.md",
-        "line": 17,
-        "level": 2,
-        "title": "目的"
-      }
-    ],
     "相关文档": [
       {
         "document": "advanced/conversation.md",
@@ -10868,12 +10686,6 @@
         "title": "相关文档"
       },
       {
-        "document": "styleguide/README.md",
-        "line": 32,
-        "level": 2,
-        "title": "相关文档"
-      },
-      {
         "document": "user-guide/README.md",
         "line": 39,
         "level": 2,
@@ -10930,14 +10742,6 @@
         "line": 267,
         "level": 3,
         "title": "立即加载"
-      }
-    ],
-    "第一次提交 PR": [
-      {
-        "document": "contributing/README.md",
-        "line": 18,
-        "level": 2,
-        "title": "第一次提交 PR"
       }
     ],
     "第一步：编写第一个命令": [
@@ -11372,12 +11176,6 @@
         "line": 85,
         "level": 2,
         "title": "获取帮助"
-      },
-      {
-        "document": "contributing/README.md",
-        "line": 59,
-        "level": 2,
-        "title": "获取帮助"
       }
     ],
     "获取方法详细信息": [
@@ -11678,20 +11476,6 @@
         "line": 211,
         "level": 4,
         "title": "豁免清单"
-      }
-    ],
-    "贡献模块或适配器": [
-      {
-        "document": "contributing/README.md",
-        "line": 45,
-        "level": 2,
-        "title": "贡献模块或适配器"
-      },
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 119,
-        "level": 2,
-        "title": "贡献模块或适配器"
       }
     ],
     "贡献流程": [
@@ -12082,12 +11866,6 @@
         "line": 21,
         "level": 2,
         "title": "适用对象"
-      },
-      {
-        "document": "styleguide/README.md",
-        "line": 9,
-        "level": 2,
-        "title": "适用对象"
       }
     ],
     "适配器": [
@@ -12436,14 +12214,6 @@
         "line": 48,
         "level": 2,
         "title": "遵循标准的好处"
-      }
-    ],
-    "遵循规范的好处": [
-      {
-        "document": "styleguide/README.md",
-        "line": 25,
-        "level": 2,
-        "title": "遵循规范的好处"
       }
     ],
     "邮件平台特性文档": [
@@ -13080,22 +12850,6 @@
         "line": 126,
         "level": 3,
         "title": "额外操作方法"
-      }
-    ],
-    "风格指南": [
-      {
-        "document": "styleguide/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "风格指南"
-      }
-    ],
-    "首次贡献实战": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 1,
-        "level": 1,
-        "title": "首次贡献实战"
       }
     ],
     "验证安装": [
