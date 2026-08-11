@@ -63,6 +63,30 @@
 
 ---
 
+## [2.7.1] - 2026/08/11
+> 正式发布
+
+**版本摘要**
+2.7.1 是面向稳定性与内部质量的维护版本，不涉及破坏性公共 API 变更，聚焦五类改进：(1) **关键 Bug 修复**——配置 watcher 竞态导致 `setConfig(immediate=False)` 特定时序静默丢数据（BUG-030）、配置整棵覆盖导致热更新被陈旧快照冲掉、后台线程执行 `on_unload` 触发 "attached to a different loop"、路由 SSE 软重启后丢失、日志列表显示原始 `%s`、`enable()`/`disable()` 禁用后重启仍启用等；(2) **GC 与内存治理**——`gc.freeze()` 冻结框架对象、主动 GC 分代回收 + 分阶段门控（垃圾量/空闲/内存增长）、uninit 即时回收，降低空转开销与运行期内存驻留；(3) **事件链路解耦**——`event.mark_processed(claim=, stop=)` 正交化「认领」与「阻断」语义，`event.done()` 别名与 `event.is_stopped()` 查询，完全向后兼容；(4) **静默异常治理与代码质量**——消除 storage/adapter/router 中 10+ 处 `except: pass`、router 去重（WS 端点/错误页/SSE 路由工厂）、循环导入卫生（28 处函数内导入提升至模块顶层）、源码剩余硬编码中文全量 i18n（~90 key × 5 语言）；(5) **工程化增强**——端口占用由 bind 探测改为 connect 探测（消除 TIME_WAIT 误判重启死循环）且降级为跳过 HTTP 启动而非致命退出、日志 `plain` 纯文本格式、日志订阅器支持订阅低于全局级别、配置导入路径统一至 `Core.Bases`、测试覆盖补强（tasks 覆盖率 38% → 94%，新增 28 用例）。
+
+**升级建议**
+- **建议升级**
+- 升级原因：
+  - 配置写入可靠性：使用 `setConfig(immediate=False)` 默认延迟写入的模块强烈建议升级，修复 watcher 竞态与整棵覆盖导致的配置静默丢失
+  - 稳定性：修复端口占用误判导致的无限重启、SSE 路由软重启丢失、孤儿子进程占用端口等运行期问题
+  - 内存占用：主动 GC 分代回收 + 分阶段门控 + `gc.freeze()` 显著降低空转开销与运行期内存驻留
+  - 可观测性：静默异常治理后 `except: pass` 均有诊断日志，排障无需再加补丁
+  - 开发者体验：`event.done()`/`mark_processed(claim=, stop=)` 更清晰的事件状态控制，日志 `plain` 格式适合采集管道
+
+**注意事项**
+- ⚠️ **声明式配置导入路径统一**：`config_schema.py` 与 `i18n_schema.py` 从 `runtime/` 导入改为从 `Core.Bases` 导入（开发文档/测试同步迁移）；`runtime` 保留向后兼容 shim，旧代码仍可用
+- ⚠️ **GC 默认行为调整**：`proactive_gc_generation` 默认由 `2` 调整为 `0`（常规轮次轻量回收）、`proactive_gc_full_every` 默认由 `0` 调整为 `20`（周期性深度回收）；显式配置的旧值仍按字面语义生效
+- `event.mark_processed(claim=True, stop=True)` 默认行为与旧 `mark_processed()` 完全一致；新增 `done(claim=, stop=)` 别名与 `is_stopped()` 查询
+- 日志订阅器 `min_level` 可低于全局级别（如全局 INFO 时订阅 DEBUG/TRACE），低级别日志仅推送给匹配订阅器，不污染主日志流
+- 新增 i18n 键约 90 个（Event/Bases/Core/runtime/exceptions/finders/loaders），全 5 语言同步；配置字段 `description` 均遵循 i18n 字典格式
+
+---
+
 ## [2.7.1-dev.4] - 2026/08/10
 > 开发版本
 
