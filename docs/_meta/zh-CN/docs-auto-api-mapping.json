@@ -1,0 +1,646 @@
+{
+  "version": "1.0",
+  "total_categories": 1,
+  "total_documents": 100,
+  "categories": {
+    "自动生成 API": {
+      "description": "核心 API 和接口文档",
+      "icon": "fa-microchip",
+      "count": 100,
+      "documents": [
+        {
+          "title": "`ErisPulse.__init__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/__init__.md",
+          "level": 1,
+          "icon": "fa-book"
+        },
+        {
+          "title": "`ErisPulse.__main__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/__main__.md",
+          "level": 1,
+          "icon": "fa-book"
+        },
+        {
+          "title": "`ErisPulse.sdk` 模块",
+          "path": "api-reference/auto_api/ErisPulse/sdk.md",
+          "level": 1,
+          "icon": "fa-book"
+        },
+        {
+          "title": "ErisPulse API 文档",
+          "path": "api-reference/auto_api/README.md",
+          "level": 1,
+          "icon": "fa-book"
+        }
+      ],
+      "subgroups": {
+        "Core": {
+          "name": "核心模块",
+          "icon": "fa-microchip",
+          "documents": [
+            {
+              "title": "`ErisPulse.Core.Bases.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.adapter` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/adapter.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.client` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/client.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.config_schema` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.converter` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/converter.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.errors` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.i18n_schema` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/i18n_schema.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.kv_builder` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/kv_builder.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.manager` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/manager.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.module` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/module.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.router` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/router.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.send_builder` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/send_builder.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.send_rules` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/send_rules.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.storage` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Bases.websocket` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/websocket.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Event.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Event/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Event.base` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Event/base.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Event.command` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Event.message` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Event/message.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Event.message_builder` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Event/message_builder.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Event.meta` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Event/meta.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Event.notice` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Event/notice.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Event.request` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Event/request.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Event.session_type` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Event/session_type.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Event.wrapper` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.adapter` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/adapter.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.assets.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/assets/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.client` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/client.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.config` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/config.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.constants` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/constants.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.i18n.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.i18n.constants` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/constants.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.i18n.locales.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.i18n.locales.en` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/en.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.i18n.locales.ja` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/ja.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.i18n.locales.ru` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/ru.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.i18n.locales.zh_cn` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/zh_cn.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.i18n.locales.zh_tw` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/zh_tw.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.lifecycle` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.logger` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/logger.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.master` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/master.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.module` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/module.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.router` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/router.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.storage` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/storage.md",
+              "level": 1,
+              "icon": "fa-book"
+            }
+          ]
+        },
+        "CLI": {
+          "name": "CLI 命令行",
+          "icon": "fa-terminal",
+          "documents": [
+            {
+              "title": "`ErisPulse.CLI.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.base` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/base.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.cli` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/cli.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.create` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.doctor` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/doctor.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.init` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.install` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/install.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.language` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/language.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.list` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/list.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.list_remote` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/list_remote.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.run` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/run.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.self_update` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/self_update.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.types` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/types.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.uninstall` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/uninstall.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.upgrade` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/upgrade.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.console` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/console.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.constants` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/constants.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.hints` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/hints.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.i18n.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.i18n.locales.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.i18n.locales.en` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/en.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.i18n.locales.ja` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/ja.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.i18n.locales.ru` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/ru.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.i18n.locales.zh_cn` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/zh_cn.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.i18n.locales.zh_tw` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/zh_tw.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.registry` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/registry.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.utils.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/utils/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.utils.display` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/utils/display.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.utils.file_watcher` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/utils/file_watcher.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.utils.package_manager` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.utils.scaffold_text` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/utils/scaffold_text.md",
+              "level": 1,
+              "icon": "fa-book"
+            }
+          ]
+        },
+        "runtime": {
+          "name": "运行时",
+          "icon": "fa-gears",
+          "documents": [
+            {
+              "title": "`ErisPulse.runtime.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.runtime.config_schema` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/config_schema.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.runtime.context` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/context.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.runtime.diagnostics` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/diagnostics.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.runtime.exceptions` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/exceptions.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.runtime.frame_config` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/frame_config.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.runtime.hints` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/hints.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.runtime.memory` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/memory.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.runtime.tasks` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/tasks.md",
+              "level": 1,
+              "icon": "fa-book"
+            }
+          ]
+        },
+        "loaders": {
+          "name": "模块加载器",
+          "icon": "fa-download",
+          "documents": [
+            {
+              "title": "`ErisPulse.loaders.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/loaders/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.loaders.adapter` 模块",
+              "path": "api-reference/auto_api/ErisPulse/loaders/adapter.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.loaders.bases.loader` 模块",
+              "path": "api-reference/auto_api/ErisPulse/loaders/bases/loader.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.loaders.module` 模块",
+              "path": "api-reference/auto_api/ErisPulse/loaders/module.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.loaders.strategy` 模块",
+              "path": "api-reference/auto_api/ErisPulse/loaders/strategy.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.loaders.strict` 模块",
+              "path": "api-reference/auto_api/ErisPulse/loaders/strict.md",
+              "level": 1,
+              "icon": "fa-book"
+            }
+          ]
+        },
+        "finders": {
+          "name": "模块查找器",
+          "icon": "fa-search",
+          "documents": [
+            {
+              "title": "`ErisPulse.finders.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/finders/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.finders.adapter` 模块",
+              "path": "api-reference/auto_api/ErisPulse/finders/adapter.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.finders.bases.finder` 模块",
+              "path": "api-reference/auto_api/ErisPulse/finders/bases/finder.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.finders.module` 模块",
+              "path": "api-reference/auto_api/ErisPulse/finders/module.md",
+              "level": 1,
+              "icon": "fa-book"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
