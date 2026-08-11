@@ -1,171 +1,203 @@
 {
-  "version": "1.1",
-  "total_categories": 12,
+  "version": "1.2",
+  "total_categories": 10,
   "categories": {
     "クイックスタート": {
       "description": "ErisPulse クイックスタートガイド",
+      "icon": "fa-rocket",
       "count": 4,
       "documents": [
         {
           "title": "ErisPulse ドキュメント",
           "path": "README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-flag"
         },
         {
           "title": "クイックスタート",
           "path": "quick-start.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-bolt"
         },
         {
           "title": "アーキテクチャの概要",
           "path": "architecture.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-sitemap"
         },
         {
           "title": "バグ追跡器",
           "path": "bug-tracker.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-bug"
         }
       ],
       "subgroups": {}
     },
     "入門ガイド": {
       "description": "ErisPulse の基本概念とチュートリアル",
+      "icon": "fa-rocket",
       "count": 6,
       "documents": [
         {
           "title": "最初のロボットを作成する",
           "path": "getting-started/first-bot.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-robot"
         },
         {
           "title": "入門ガイド",
           "path": "getting-started/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-door-open"
         },
         {
           "title": "基本概念",
           "path": "getting-started/basic-concepts.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-lightbulb"
         },
         {
           "title": "よくあるタスクの例",
           "path": "getting-started/common-tasks.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-list-check"
         },
         {
           "title": "イベント処理の基礎",
           "path": "getting-started/event-handling.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-bolt-lightning"
         },
         {
           "title": "タイプのスタブ生成（IDEの補完）",
           "path": "getting-started/ide-completion.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-keyboard"
         }
       ],
       "subgroups": {}
     },
     "ユーザーガイド": {
       "description": "ErisPulse の設定とコマンドリファレンス",
+      "icon": "fa-book-open",
       "count": 5,
       "documents": [
         {
           "title": "ユーザーガイド",
           "path": "user-guide/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-book-open"
         },
         {
           "title": "インストールの参考",
           "path": "user-guide/installation.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-download"
         },
         {
           "title": "設定ファイルの説明",
           "path": "user-guide/configuration.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-sliders"
         },
         {
           "title": "CLI コマンドリファレンス",
           "path": "user-guide/cli-reference.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-terminal"
         },
         {
           "title": "デプロイメントガイド",
           "path": "user-guide/deployment.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-cloud-arrow-up"
         }
       ],
       "subgroups": {}
     },
     "開発者ガイド": {
       "description": "モジュールとアダプターの開発ガイド",
+      "icon": "fa-code",
       "count": 11,
       "documents": [
         {
           "title": "開発者ガイド",
           "path": "developer-guide/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-code"
         },
         {
           "title": "公開とモジュールストアガイド",
           "path": "developer-guide/publishing.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-upload"
         }
       ],
       "subgroups": {
         "modules": {
           "name": "モジュール開発",
+          "icon": "fa-puzzle-piece",
           "documents": [
             {
               "title": "モジュール開発入門",
               "path": "developer-guide/modules/getting-started.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-puzzle-piece"
             },
             {
               "title": "モジュールの基本概念",
               "path": "developer-guide/modules/core-concepts.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-cubes-stacked"
             },
             {
               "title": "Event 包装クラスの詳細解説",
               "path": "developer-guide/modules/event-wrapper.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-bolt-lightning"
             },
             {
               "title": "モジュール開発におけるベストプラクティス",
               "path": "developer-guide/modules/best-practices.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-award"
             }
           ]
         },
         "adapters": {
           "name": "アダプター開発",
+          "icon": "fa-network-wired",
           "documents": [
             {
               "title": "アダプタ開発入門",
               "path": "developer-guide/adapters/getting-started.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-network-wired"
             },
             {
               "title": "アダプタのコアコンセプト",
               "path": "developer-guide/adapters/core-concepts.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-microchip"
             },
             {
               "title": "SendDSL 詳解",
               "path": "developer-guide/adapters/send-dsl.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-code-branch"
             },
             {
               "title": "アダプタ開発のベストプラクティス",
               "path": "developer-guide/adapters/best-practices.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-medal"
             },
             {
               "title": "イベントコンバーター実装ガイド",
               "path": "developer-guide/adapters/converter.md",
-              "level": 1
+              "level": 1,
+              "icon": "fa-exchange-alt"
             }
           ]
         }
@@ -173,281 +205,294 @@
     },
     "プラットフォームガイド": {
       "description": "各プラットフォームの機能とアダプターの説明",
+      "icon": "fa-plug",
       "count": 15,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures ドキュメント",
           "path": "platform-guide/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-server"
         },
         {
           "title": "OneBot11プラットフォーム特性ドキュメント",
           "path": "platform-guide/onebot11.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-comments"
         },
         {
           "title": "OneBot12プラットフォームの特徴",
           "path": "platform-guide/onebot12.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-comments"
         },
         {
           "title": "Telegramプラットフォーム特性ドキュメント",
           "path": "platform-guide/telegram.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-paper-plane"
         },
         {
           "title": "メールプラットフォームの機能ドキュメント",
           "path": "platform-guide/email.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-envelope"
         },
         {
           "title": "雲湖プラットフォーム特性ドキュメント",
           "path": "platform-guide/yunhu.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-cloud"
         },
         {
           "title": "Yunhu ユーザープラットフォーム特性ドキュメント",
           "path": "platform-guide/yunhu_user.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-user"
         },
         {
           "title": "QQBotプラットフォーム特性",
           "path": "platform-guide/qqbot.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-comment-dots"
         },
         {
           "title": "Kookプラットフォーム特性ドキュメント",
           "path": "platform-guide/kook.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-headset"
         },
         {
           "title": "Matrixプラットフォーム特性ドキュメント",
           "path": "platform-guide/matrix.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-th-large"
         },
         {
           "title": "Discord プラットフォーム仕様ドキュメント",
           "path": "platform-guide/discord.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-gamepad"
         },
         {
           "title": "WeChat 公衆アカウント (WechatMp) アダプタ - プラットフォーム特性ドキュメント",
           "path": "platform-guide/wechatmp.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-mobile-screen"
         },
         {
           "title": "プラットフォームの特徴説明 — Webhook 一般ブリッジアダプタ",
           "path": "platform-guide/webhook.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-link"
         },
         {
           "title": "花楓カフェ（Ideaura）プラットフォーム特性ドキュメント",
           "path": "platform-guide/ideaura.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-wand-magic-sparkles"
         },
         {
           "title": "ドキュメントメンテナンス手順",
           "path": "platform-guide/maintain-notes.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-wrench"
         }
       ],
       "subgroups": {}
     },
     "API リファレンス": {
       "description": "コア API とインターフェースドキュメント",
+      "icon": "fa-book",
       "count": 4,
       "documents": [
         {
           "title": "API リファレンス",
           "path": "api-reference/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-book"
         },
         {
           "title": "アダプターシステム API",
           "path": "api-reference/adapter-system.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-network-wired"
         },
         {
           "title": "コアモジュール API",
           "path": "api-reference/core-modules.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-cubes-stacked"
         },
         {
           "title": "イベントシステム API",
           "path": "api-reference/event-system.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-bolt-lightning"
         }
       ],
       "subgroups": {}
     },
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
+      "icon": "fa-fire",
       "count": 11,
       "documents": [
         {
           "title": "高度なトピック",
           "path": "advanced/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-fire"
         },
         {
           "title": "ライフサイクル管理",
           "path": "advanced/lifecycle.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-clock-rotate-left"
         },
         {
           "title": "ラグロードモジュールシステム",
           "path": "advanced/lazy-loading.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-hourglass-half"
         },
         {
           "title": "ルーティングマネージャー",
           "path": "advanced/router.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-route"
         },
         {
           "title": "MessageBuilder 詳細",
           "path": "advanced/message-builder.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-comment-dots"
         },
         {
           "title": "セッションタイプシステム",
           "path": "advanced/session-types.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-layer-group"
         },
         {
           "title": "Conversation 多輪対話",
           "path": "advanced/conversation.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-comments"
         },
         {
           "title": "ネットワーククライアント",
           "path": "advanced/http-client.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-globe"
         },
         {
           "title": "SQLクエリビルダー",
           "path": "advanced/sql-builder.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-database"
         },
         {
           "title": "国際化 (i18n) システム",
           "path": "advanced/i18n.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-language"
         },
         {
           "title": "起動プロセスと手動制御",
           "path": "advanced/startup.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-fire"
         }
       ],
       "subgroups": {}
     },
     "エコシステムモジュール": {
       "description": "コミュニティが保守するサードパーティモジュール",
+      "icon": "fa-cubes",
       "count": 3,
       "documents": [
         {
           "title": "エコシステムモジュール",
           "path": "ecosystem/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-cubes"
         },
         {
           "title": "ErisPulse-Dashboard",
           "path": "ecosystem/dashboard.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-cubes"
         },
         {
           "title": "ErisPulse-Takumi",
           "path": "ecosystem/takumi.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-cubes"
         }
       ],
       "subgroups": {}
     },
     "AI 支援開発": {
       "description": "AI を活用した ErisPulse 開発",
+      "icon": "fa-robot",
       "count": 1,
       "documents": [
         {
           "title": "AI補助開発",
           "path": "ai-support/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-robot"
         }
       ],
       "subgroups": {}
     },
     "技術標準": {
       "description": "フレームワークの技術仕様と標準",
+      "icon": "fa-gavel",
       "count": 7,
       "documents": [
         {
           "title": "技術標準",
           "path": "standards/README.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-gavel"
         },
         {
           "title": "ErisPulse セッション型標準",
           "path": "standards/session-types.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-layer-group"
         },
         {
           "title": "ErisPulse アダプター標準化戻り値仕様書",
           "path": "standards/api-response.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-arrow-right-arrow-left"
         },
         {
           "title": "アダプター標準化変換仕様",
           "path": "standards/event-conversion.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-shuffle"
         },
         {
           "title": "ErisPulse 送信メソッド規格",
           "path": "standards/send-method-spec.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-paper-plane"
         },
         {
           "title": "ErisPulse リクエスト操作仕様書",
           "path": "standards/request-action-spec.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-hand-paper"
         },
         {
           "title": "ErisPulse API アクション仕様",
           "path": "standards/api-action-spec.md",
-          "level": 1
-        }
-      ],
-      "subgroups": {}
-    },
-    "スタイルガイド": {
-      "description": "コードとドキュメントのスタイルガイドライン",
-      "count": 2,
-      "documents": [
-        {
-          "title": "スタイルガイド",
-          "path": "styleguide/README.md",
-          "level": 1
-        },
-        {
-          "title": "ErisPulse コメントスタイルガイドライン",
-          "path": "styleguide/docstring.md",
-          "level": 1
-        }
-      ],
-      "subgroups": {}
-    },
-    "コントリビュート": {
-      "description": "ErisPulse への貢献",
-      "count": 2,
-      "documents": [
-        {
-          "title": "ErisPulse への貢献",
-          "path": "contributing/README.md",
-          "level": 1
-        },
-        {
-          "title": "最初の貢献実践",
-          "path": "contributing/first-contribution.md",
-          "level": 1
+          "level": 1,
+          "icon": "fa-bolt"
         }
       ],
       "subgroups": {}

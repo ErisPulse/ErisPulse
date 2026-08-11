@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1421,
+  "total_keywords": 1394,
   "keywords": {
     "\"base_url\": \"http://localhost:8080\",": [
       {
@@ -80,14 +80,6 @@
         "line": 64,
         "level": 4,
         "title": "0 Успех (OK)"
-      }
-    ],
-    "1. Fork и клонирование репозитория": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 15,
-        "level": 2,
-        "title": "1. Fork и клонирование репозитория"
       }
     ],
     "1. Декларативная конфигурация (рекомендуется)": [
@@ -698,14 +690,6 @@
         "title": "2. Уровень загрузки: Loader"
       }
     ],
-    "2. Установка среды разработки": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 30,
-        "level": 2,
-        "title": "2. Установка среды разработки"
-      }
-    ],
     "2. Я хочу разработать модуль / адаптер": [
       {
         "document": "README.md",
@@ -946,14 +930,6 @@
         "title": "3. События heartbeat"
       }
     ],
-    "3. Создание ветки функций": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 42,
-        "level": 2,
-        "title": "3. Создание ветки функций"
-      }
-    ],
     "3. Создание класса адаптера": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -1152,14 +1128,6 @@
         "line": 59,
         "level": 3,
         "title": "4. Автоматическое обнаружение поля `self`"
-      }
-    ],
-    "4. Внесение изменений": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 54,
-        "level": 2,
-        "title": "4. Внесение изменений"
       }
     ],
     "4. Запуск адаптера": [
@@ -1394,14 +1362,6 @@
         "title": "5. Использование пользователем"
       }
     ],
-    "5. Локальная проверка": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 77,
-        "level": 2,
-        "title": "5. Локальная проверка"
-      }
-    ],
     "5. Несоответствие направлений": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -1594,14 +1554,6 @@
         "title": "6. Запуск сервера маршрутизации"
       }
     ],
-    "6. Обновление CHANGELOG": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 89,
-        "level": 2,
-        "title": "6. Обновление CHANGELOG"
-      }
-    ],
     "6. Примеры использования API": [
       {
         "document": "standards/session-types.md",
@@ -1786,14 +1738,6 @@
         "title": "6.6 Расширение поля `self`"
       }
     ],
-    "7. Коммит и отправка изменений": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 99,
-        "level": 2,
-        "title": "7. Коммит и отправка изменений"
-      }
-    ],
     "7. Обнаружение методов": [
       {
         "document": "standards/send-method-spec.md",
@@ -1888,14 +1832,6 @@
         "line": 367,
         "level": 2,
         "title": "8. Связанные документы"
-      }
-    ],
-    "8. Создание Pull Request": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 107,
-        "level": 2,
-        "title": "8. Создание Pull Request"
       }
     ],
     "8. Создание точки входа пакета": [
@@ -3502,14 +3438,6 @@
         "title": "Базовый ответ"
       }
     ],
-    "Базовый формат": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 21,
-        "level": 3,
-        "title": "Базовый формат"
-      }
-    ],
     "Безопасность": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -3632,20 +3560,6 @@
         "title": "Ветвления и переходы"
       }
     ],
-    "Вклад в модули или адаптеры": [
-      {
-        "document": "contributing/README.md",
-        "line": 45,
-        "level": 2,
-        "title": "Вклад в модули или адаптеры"
-      },
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 119,
-        "level": 2,
-        "title": "Вклад в модули или адаптеры"
-      }
-    ],
     "Вложенный класс Send": [
       {
         "document": "api-reference/adapter-system.md",
@@ -3660,14 +3574,6 @@
         "line": 171,
         "level": 1,
         "title": "Вместо прямого доступа к словарю"
-      }
-    ],
-    "Внести вклад в ErisPulse": [
-      {
-        "document": "contributing/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "Внести вклад в ErisPulse"
       }
     ],
     "Возвращаемое значение методов отправки": [
@@ -3748,14 +3654,6 @@
         "line": 130,
         "level": 2,
         "title": "Возвращаемые значения методов отправки"
-      }
-    ],
-    "Возможные проблемы": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 139,
-        "level": 2,
-        "title": "Возможные проблемы"
       }
     ],
     "Вспомогательные методы": [
@@ -4166,12 +4064,6 @@
         "line": 148,
         "level": 3,
         "title": "Документация"
-      },
-      {
-        "document": "styleguide/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "Документация"
       }
     ],
     "Документация ErisPulse": [
@@ -4180,14 +4072,6 @@
         "line": 1,
         "level": 1,
         "title": "Документация ErisPulse"
-      }
-    ],
-    "Документация модуля": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 5,
-        "level": 2,
-        "title": "Документация модуля"
       }
     ],
     "Документация по материалам": [
@@ -5232,14 +5116,6 @@
         "title": "Как WebUI потребляет i18n"
       }
     ],
-    "Как вы можете участвовать": [
-      {
-        "document": "contributing/README.md",
-        "line": 6,
-        "level": 2,
-        "title": "Как вы можете участвовать"
-      }
-    ],
     "Как изменить префикс команды?": [
       {
         "document": "getting-started/first-bot.md",
@@ -5428,14 +5304,6 @@
         "line": 115,
         "level": 3,
         "title": "Комбинированные модификаторы"
-      }
-    ],
-    "Комментарии к методам": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 19,
-        "level": 2,
-        "title": "Комментарии к методам"
       }
     ],
     "Конвертер событий": [
@@ -5672,12 +5540,6 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 441,
-        "level": 2,
-        "title": "Лучшие практики"
-      },
-      {
-        "document": "styleguide/docstring.md",
-        "line": 66,
         "level": 2,
         "title": "Лучшие практики"
       }
@@ -8104,14 +7966,6 @@
         "title": "Параметры события"
       }
     ],
-    "Первое отправление PR": [
-      {
-        "document": "contributing/README.md",
-        "line": 18,
-        "level": 2,
-        "title": "Первое отправление PR"
-      }
-    ],
     "Перезапуск": [
       {
         "document": "advanced/startup.md",
@@ -8304,14 +8158,6 @@
         "line": 876,
         "level": 3,
         "title": "Повторное подключение"
-      }
-    ],
-    "Подготовка": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 7,
-        "level": 2,
-        "title": "Подготовка"
       }
     ],
     "Подготовка к разработке": [
@@ -8732,14 +8578,6 @@
         "title": "Полный пример ручного запуска"
       }
     ],
-    "Полный формат (для сложных методов)": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 34,
-        "level": 3,
-        "title": "Полный формат (для сложных методов)"
-      }
-    ],
     "Получение адаптера": [
       {
         "document": "api-reference/adapter-system.md",
@@ -8848,12 +8686,6 @@
       {
         "document": "README.md",
         "line": 89,
-        "level": 2,
-        "title": "Получить помощь"
-      },
-      {
-        "document": "contributing/README.md",
-        "line": 59,
         "level": 2,
         "title": "Получить помощь"
       }
@@ -8970,14 +8802,6 @@
         "title": "Правила путей ключей I18nClass"
       }
     ],
-    "Практическое руководство по первому вкладу": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 1,
-        "level": 1,
-        "title": "Практическое руководство по первому вкладу"
-      }
-    ],
     "Предварительные требования": [
       {
         "document": "advanced/README.md",
@@ -8992,14 +8816,6 @@
         "line": 64,
         "level": 3,
         "title": "Предоставляемые инструменты"
-      }
-    ],
-    "Преимущества использования стандарта": [
-      {
-        "document": "styleguide/README.md",
-        "line": 25,
-        "level": 2,
-        "title": "Преимущества использования стандарта"
       }
     ],
     "Преимущества соблюдения стандартов": [
@@ -9716,14 +9532,6 @@
         "title": "Процесс обработки событий"
       }
     ],
-    "Процесс отправки": [
-      {
-        "document": "contributing/README.md",
-        "line": 34,
-        "level": 2,
-        "title": "Процесс отправки"
-      }
-    ],
     "Процесс подключения": [
       {
         "document": "platform-guide/discord.md",
@@ -9822,14 +9630,6 @@
         "line": 7,
         "level": 3,
         "title": "Разработка модулей"
-      }
-    ],
-    "Разработка среда": [
-      {
-        "document": "contributing/README.md",
-        "line": 22,
-        "level": 2,
-        "title": "Разработка среда"
       }
     ],
     "Расположение конфигурационного файла": [
@@ -10284,22 +10084,6 @@
         "title": "Руководство по реализации конвертера событий"
       }
     ],
-    "Руководство по стилю": [
-      {
-        "document": "styleguide/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "Руководство по стилю"
-      }
-    ],
-    "Руководство по стилю комментариев ErisPulse": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 1,
-        "level": 1,
-        "title": "Руководство по стилю комментариев ErisPulse"
-      }
-    ],
     "Ручная регистрация пользовательских переводов (старый способ)": [
       {
         "document": "advanced/i18n.md",
@@ -10352,12 +10136,6 @@
       {
         "document": "advanced/http-client.md",
         "line": 479,
-        "level": 2,
-        "title": "Связанная документация"
-      },
-      {
-        "document": "styleguide/README.md",
-        "line": 32,
         "level": 2,
         "title": "Связанная документация"
       }
@@ -11158,14 +10936,6 @@
         "line": 17,
         "level": 2,
         "title": "Сохранение данных"
-      }
-    ],
-    "Специальные теги (для генерации API документации)": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 53,
-        "level": 2,
-        "title": "Специальные теги (для генерации API документации)"
       }
     ],
     "Спецификации возвращаемого значения": [
@@ -12358,22 +12128,6 @@
         "line": 171,
         "level": 2,
         "title": "Хуки жизненного цикла WebSocket"
-      }
-    ],
-    "Целевая аудитория": [
-      {
-        "document": "styleguide/README.md",
-        "line": 9,
-        "level": 2,
-        "title": "Целевая аудитория"
-      }
-    ],
-    "Цели": [
-      {
-        "document": "styleguide/README.md",
-        "line": 17,
-        "level": 2,
-        "title": "Цели"
       }
     ],
     "Цепные методы-модификаторы (можно комбинировать)": [

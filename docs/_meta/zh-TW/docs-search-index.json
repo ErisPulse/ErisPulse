@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1449,
+  "total_keywords": 1422,
   "keywords": {
     "\"base_url\": \"http://localhost:8080\",": [
       {
@@ -80,14 +80,6 @@
         "line": 64,
         "level": 4,
         "title": "0 成功（OK）"
-      }
-    ],
-    "1. Fork 並克隆倉庫": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 15,
-        "level": 2,
-        "title": "1. Fork 並克隆倉庫"
       }
     ],
     "1. SDK 物件": [
@@ -498,14 +490,6 @@
         "title": "2. 基礎回傳結構"
       }
     ],
-    "2. 安裝開發環境": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 30,
-        "level": 2,
-        "title": "2. 安裝開發環境"
-      }
-    ],
     "2. 建立 GitHub Actions 工作流程": [
       {
         "document": "developer-guide/publishing.md",
@@ -808,14 +792,6 @@
         "line": 58,
         "level": 2,
         "title": "3. 事件格式範例"
-      }
-    ],
-    "3. 創建功能分支": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 42,
-        "level": 2,
-        "title": "3. 創建功能分支"
       }
     ],
     "3. 完整欄位規範": [
@@ -1210,14 +1186,6 @@
         "title": "4. 設置映像為公開"
       }
     ],
-    "4. 進行修改": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 54,
-        "level": 2,
-        "title": "4. 進行修改"
-      }
-    ],
     "4.1 Event 方法列表": [
       {
         "document": "standards/request-action-spec.md",
@@ -1344,14 +1312,6 @@
         "line": 179,
         "level": 2,
         "title": "5. 未知事件處理"
-      }
-    ],
-    "5. 本地驗證": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 77,
-        "level": 2,
-        "title": "5. 本地驗證"
       }
     ],
     "5. 自動類型推斷": [
@@ -1530,14 +1490,6 @@
         "title": "6. 擴展命名規範"
       }
     ],
-    "6. 更新 CHANGELOG": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 89,
-        "level": 2,
-        "title": "6. 更新 CHANGELOG"
-      }
-    ],
     "6. 注意事項": [
       {
         "document": "standards/api-response.md",
@@ -1698,14 +1650,6 @@
         "title": "6.6 `self` 欄位擴展"
       }
     ],
-    "7. 提交並推送": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 99,
-        "level": 2,
-        "title": "7. 提交並推送"
-      }
-    ],
     "7. 方法發現": [
       {
         "document": "standards/send-method-spec.md",
@@ -1784,14 +1728,6 @@
         "line": 255,
         "level": 2,
         "title": "8. 常見問題"
-      }
-    ],
-    "8. 提交 Pull Request": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 107,
-        "level": 2,
-        "title": "8. 提交 Pull Request"
       }
     ],
     "8. 模組開發者指南": [
@@ -2402,14 +2338,6 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse 發送方法規範"
-      }
-    ],
-    "ErisPulse 註解風格規範": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 1,
-        "level": 1,
-        "title": "ErisPulse 註解風格規範"
       }
     ],
     "ErisPulse 請求操作規範": [
@@ -4870,14 +4798,6 @@
         "title": "何時重新產生"
       }
     ],
-    "你可以參與的方式": [
-      {
-        "document": "contributing/README.md",
-        "line": 6,
-        "level": 2,
-        "title": "你可以參與的方式"
-      }
-    ],
     "使用 Discord 特有方法": [
       {
         "document": "platform-guide/discord.md",
@@ -5784,14 +5704,6 @@
         "title": "取得資料"
       }
     ],
-    "可能會遇到的問題": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 139,
-        "level": 2,
-        "title": "可能會遇到的問題"
-      }
-    ],
     "可選欄位": [
       {
         "document": "bug-tracker.md",
@@ -6266,14 +6178,6 @@
         "line": 41,
         "level": 3,
         "title": "基本方法（基類內建）"
-      }
-    ],
-    "基本格式": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 21,
-        "level": 3,
-        "title": "基本格式"
       }
     ],
     "基本用法": [
@@ -6818,14 +6722,6 @@
         "line": 173,
         "level": 2,
         "title": "完整手動啟動示例"
-      }
-    ],
-    "完整格式（適用於複雜方法）": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 34,
-        "level": 3,
-        "title": "完整格式（適用於複雜方法）"
       }
     ],
     "完整模組範例": [
@@ -7834,14 +7730,6 @@
         "title": "推薦模組"
       }
     ],
-    "提交流程": [
-      {
-        "document": "contributing/README.md",
-        "line": 34,
-        "level": 2,
-        "title": "提交流程"
-      }
-    ],
     "提供的工具": [
       {
         "document": "ai-support/README.md",
@@ -8122,12 +8010,6 @@
         "line": 5,
         "level": 2,
         "title": "文件清單"
-      },
-      {
-        "document": "styleguide/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "文件清單"
       }
     ],
     "文件結構規範": [
@@ -8358,14 +8240,6 @@
         "title": "方法總覽"
       }
     ],
-    "方法註解": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 19,
-        "level": 2,
-        "title": "方法註解"
-      }
-    ],
     "方法速查表": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -8482,14 +8356,6 @@
         "line": 441,
         "level": 2,
         "title": "最佳實踐"
-      }
-    ],
-    "最佳建議": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 66,
-        "level": 2,
-        "title": "最佳建議"
       }
     ],
     "最小可用模組": [
@@ -8996,14 +8862,6 @@
         "title": "模組層級控制"
       }
     ],
-    "模組層級文件註解": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 5,
-        "level": 2,
-        "title": "模組層級文件註解"
-      }
-    ],
     "模組按需載入": [
       {
         "document": "advanced/startup.md",
@@ -9410,14 +9268,6 @@
         "title": "渲染節點樹"
       }
     ],
-    "準備工作": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 7,
-        "level": 2,
-        "title": "準備工作"
-      }
-    ],
     "激活虛擬環境": [
       {
         "document": "user-guide/installation.md",
@@ -9432,14 +9282,6 @@
         "line": 9,
         "level": 3,
         "title": "瀏覽與發現"
-      }
-    ],
-    "為 ErisPulse 貢獻": [
-      {
-        "document": "contributing/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "為 ErisPulse 貢獻"
       }
     ],
     "為什麼推薦 I18nClass？": [
@@ -9560,14 +9402,6 @@
         "title": "特殊字段示例"
       }
     ],
-    "特殊標籤（用於 API 文件生成）": [
-      {
-        "document": "styleguide/docstring.md",
-        "line": 53,
-        "level": 2,
-        "title": "特殊標籤（用於 API 文件生成）"
-      }
-    ],
     "特殊欄位示例": [
       {
         "document": "platform-guide/matrix.md",
@@ -9624,12 +9458,6 @@
       {
         "document": "README.md",
         "line": 89,
-        "level": 2,
-        "title": "獲取幫助"
-      },
-      {
-        "document": "contributing/README.md",
-        "line": 59,
         "level": 2,
         "title": "獲取幫助"
       }
@@ -10146,14 +9974,6 @@
         "title": "監聽者查詢（has_handlers）"
       }
     ],
-    "目的": [
-      {
-        "document": "styleguide/README.md",
-        "line": 17,
-        "level": 2,
-        "title": "目的"
-      }
-    ],
     "直接呼叫方式": [
       {
         "document": "api-reference/core-modules.md",
@@ -10280,12 +10100,6 @@
         "title": "相關文件"
       },
       {
-        "document": "styleguide/README.md",
-        "line": 32,
-        "level": 2,
-        "title": "相關文件"
-      },
-      {
         "document": "user-guide/README.md",
         "line": 39,
         "level": 2,
@@ -10350,14 +10164,6 @@
         "line": 263,
         "level": 3,
         "title": "立即載入"
-      }
-    ],
-    "第一次提交 PR": [
-      {
-        "document": "contributing/README.md",
-        "line": 18,
-        "level": 2,
-        "title": "第一次提交 PR"
       }
     ],
     "第一步：編寫第一個命令": [
@@ -11470,20 +11276,6 @@
         "title": "豁免清單"
       }
     ],
-    "貢獻模組或適配器": [
-      {
-        "document": "contributing/README.md",
-        "line": 45,
-        "level": 2,
-        "title": "貢獻模組或適配器"
-      },
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 119,
-        "level": 2,
-        "title": "貢獻模組或適配器"
-      }
-    ],
     "貢獻流程": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -12010,12 +11802,6 @@
         "line": 21,
         "level": 2,
         "title": "適用對象"
-      },
-      {
-        "document": "styleguide/README.md",
-        "line": 9,
-        "level": 2,
-        "title": "適用對象"
       }
     ],
     "適配器": [
@@ -12112,14 +11898,6 @@
         "line": 48,
         "level": 2,
         "title": "遵循標準的好處"
-      }
-    ],
-    "遵循規範的好處": [
-      {
-        "document": "styleguide/README.md",
-        "line": 25,
-        "level": 2,
-        "title": "遵循規範的好處"
       }
     ],
     "選擇你的路徑": [
@@ -12604,14 +12382,6 @@
         "title": "開發準備"
       }
     ],
-    "開發環境": [
-      {
-        "document": "contributing/README.md",
-        "line": 22,
-        "level": 2,
-        "title": "開發環境"
-      }
-    ],
     "開發者指南": [
       {
         "document": "developer-guide/README.md",
@@ -12840,22 +12610,6 @@
         "line": 69,
         "level": 3,
         "title": "類型轉換"
-      }
-    ],
-    "風格指南": [
-      {
-        "document": "styleguide/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "風格指南"
-      }
-    ],
-    "首次貢獻實戰": [
-      {
-        "document": "contributing/first-contribution.md",
-        "line": 1,
-        "level": 1,
-        "title": "首次貢獻實戰"
       }
     ],
     "驗證使用者輸入": [
