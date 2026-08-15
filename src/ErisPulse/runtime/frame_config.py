@@ -49,6 +49,8 @@ DEFAULT_ERISPULSE_CONFIG = {
         "format": "rich",
         "log_files": [],
         "memory_limit": DEFAULT_LOG_MEMORY_LIMIT,
+        # 屏蔽指定日志等级（如 ["EVENT"] 隐藏消息收发内容，用于隐私保护）
+        "exclude_levels": [],
     },
     "storage": {
         "use_global_db": DEFAULT_USE_GLOBAL_DB,
@@ -75,6 +77,8 @@ DEFAULT_ERISPULSE_CONFIG = {
     },
     "framework": {
         "enable_lazy_loading": DEFAULT_LAZY_LOADING_ENABLED,
+        # 本地插件文件夹：相对项目根目录，支持字符串或列表
+        "plugins_dir": "plugins",
         "uninit_timeout": DEFAULT_UNINIT_TIMEOUT_SECS,
         "strict_mode": DEFAULT_STRICT_MODE,
         "strict_mode_exceptions": {
@@ -93,6 +97,20 @@ DEFAULT_ERISPULSE_CONFIG = {
     },
     "i18n": {
         "language": DEFAULT_I18N_LANGUAGE,
+    },
+    # 模块作用域系统：绑定模块与适配器 Bot / 平台 / 会话。
+    # 默认允许全部模块；配置绑定后才开始过滤。
+    # 解析优先级：会话级 > Bot 级 > 平台级。
+    # default_allow = false 时开启"隐式拒绝"严格模式（未匹配白名单即拒绝）。
+    # 平台级: platforms.<platform> = {modules: [...], blocked: [...]}
+    # Bot 级: bots.<platform>.<bot_id> = {modules: [...], blocked: [...]}
+    # 会话级: sessions.<platform>.<session_id> = {modules: [...], blocked: [...]}
+    "scope": {
+        "default_allow": True,
+        "cache_size": 1024,
+        "platforms": {},
+        "bots": {},
+        "sessions": {},
     },
 }
 

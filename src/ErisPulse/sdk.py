@@ -55,6 +55,7 @@ if TYPE_CHECKING:
         MasterManager,
         ModuleManager,
         RouterManager,
+        ScopeManager,
         StorageManager,
     )
     from .Core import (
@@ -99,6 +100,8 @@ def _resolve_core(attr: str):
         "router": ("ErisPulse.Core", "router"),
         "client": ("ErisPulse.Core", "client"),
         "master": ("ErisPulse.Core", "master"),
+        "scope": ("ErisPulse.Core", "scope"),
+        "context": ("ErisPulse.runtime", "context"),
         "BaseAdapter": ("ErisPulse.Core", "BaseAdapter"),
         "SendDSL": ("ErisPulse.Core", "SendDSL"),
         "BaseStorage": ("ErisPulse.Core.Bases.storage", "BaseStorage"),
@@ -127,6 +130,8 @@ _CORE_ATTR_NAMES = {
     "router",
     "client",
     "master",
+    "scope",
+    "context",
     "BaseAdapter",
     "SendDSL",
     "BaseStorage",
@@ -161,6 +166,8 @@ class SDK:
     - router: 路由管理器
     - client: HTTP 客户端
     - master: 框架主人管理器
+    - scope: 模块作用域管理器（模块-Bot/平台/会话绑定）
+    - context: 模块上下文管理（owner_scope / get_current_owner）
     {!--< /tips >!--}
     """
 
@@ -185,6 +192,8 @@ class SDK:
     BaseStorage: type[_BaseStorage]
     BaseQueryBuilder: type[_BaseQueryBuilder]
     master: MasterManager
+    scope: ScopeManager
+    context: ModuleType
 
     def __init__(self):
         """
@@ -1547,6 +1556,72 @@ class SDK:
         if self._shutdown_event is not None and not self._shutdown_event.is_set():
             self._shutdown_event.set()
 
+    def enable_plugin_hot_reload(self, interval: float = 1.0) -> bool:
+        """
+        启用本地插件文件夹热重载
+
+        监控插件文件夹（默认 ``plugins/``，可通过 ``ErisPulse.framework.plugins_dir``
+        配置）下 ``.py`` 文件的变更，自动重新加载对应插件。
+        需在 ``await sdk.run()`` 之前调用。
+
+        :param interval: 轮询间隔（秒，默认 1.0）
+        :return: 是否启动成功（无插件目录或已在运行返回 False）
+
+        :example:
+        >>> await sdk.init()
+        >>> sdk.enable_plugin_hot_reload()
+        >>> await sdk.run()
+        """
+        if getattr(self, "_plugin_watcher", None) is not None:
+            return False
+
+        from .runtime import PluginReloadWatcher
+
+        watcher = PluginReloadWatcher(self._reload_plugin, interval=interval)
+        ok = watcher.start()
+        if ok:
+            self._plugin_watcher = watcher
+            self.logger.info(i18n.t("core.sdk.hot_reload.enabled"))
+        return ok
+
+    async def reload_plugin(self, plugin_name: str) -> bool:
+        """
+        热重载单个本地插件（手动触发）
+
+        卸载旧实例、清理注册、强制重新导入并重新加载。
+
+        :param plugin_name: 插件名
+        :return: 是否重载成功
+
+        :example:
+        >>> await sdk.reload_plugin("dice")
+        """
+        if getattr(self, "_module_loader", None) is None:
+            self.logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
+            return False
+        return await self._module_loader.reload_plugin(
+            plugin_name, self.module, self._sdk
+        )
+
+    async def _reload_plugin(self, plugin_name: str) -> None:
+        """
+        {!--< internal-use >!--}
+        热重载回调（由 PluginReloadWatcher 调度），失败仅记录不抛异常
+        """
+        try:
+            await self.reload_plugin(plugin_name)
+        except Exception as e:
+            self.logger.error(i18n.t("core.sdk.hot_reload.failed", name=plugin_name, error=e))
+
+    def stop_plugin_hot_reload(self) -> None:
+        """
+        停止本地插件热重载监控
+        """
+        watcher = getattr(self, "_plugin_watcher", None)
+        if watcher is not None:
+            watcher.stop()
+            self._plugin_watcher = None
+
     def _register_signal_handlers(self) -> None:
         """
         {!--< internal-use >!--}
@@ -1858,6 +1933,29 @@ class SDK:
 
         spawn_background(_do_hard_restart())
         return True
+
+    def get_topology(self) -> dict[str, Any]:
+        """
+        获取完整的拓扑树数据（便于 Dashboard 等管理界面展示）
+
+        聚合模块、适配器与作用域的归属关系：
+        - ``modules``：每个模块拥有的命令 / 事件处理器 / 路由 / 生命周期钩子
+        - ``adapters``：每个适配器的运行状态、下属 Bot 状态与作用域绑定
+        - ``scope``：全部平台级 / Bot 级作用域绑定
+
+        :return: 拓扑树字典
+            {"modules": {...}, "adapters": {...}, "scope": {...}}
+
+        :example:
+        >>> topology = sdk.get_topology()
+        >>> topology["modules"]["Chat"]["commands"]
+        ["chat"]
+        """
+        return {
+            "modules": self.module.get_topology().get("modules", {}),
+            "adapters": self.adapter.get_topology().get("adapters", {}),
+            "scope": self.scope.get_topology(),
+        }
 
     async def uninit(self) -> bool:
         """

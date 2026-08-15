@@ -867,3 +867,120 @@ class TestSubscriberBelowGlobalLevel:
         temp_logger.debug("fully filtered")
         captured = capsys.readouterr()
         assert "fully filtered" not in (captured.out + captured.err)
+
+
+# ==================== 屏蔽日志等级（隐私）测试 ====================
+
+
+class TestExcludedLevels:
+    """exclude_levels 屏蔽指定日志等级（如 EVENT 隐藏消息内容）"""
+
+    @pytest.fixture
+    def temp_logger(self):
+        test_logger = Logger()
+        yield test_logger
+
+    def test_set_excluded_levels(self, temp_logger):
+        """设置屏蔽等级列表"""
+        assert temp_logger.set_excluded_levels(["EVENT"]) is True
+        assert temp_logger.list_excluded_levels() == ["EVENT"]
+
+    def test_set_excluded_levels_empty(self, temp_logger):
+        """清空屏蔽等级"""
+        temp_logger.set_excluded_levels(["EVENT"])
+        assert temp_logger.set_excluded_levels([]) is True
+        assert temp_logger.list_excluded_levels() == []
+
+    def test_set_excluded_levels_invalid(self, temp_logger):
+        """非法等级应拒绝且不生效"""
+        assert temp_logger.set_excluded_levels(["NOPE"]) is False
+        assert temp_logger.list_excluded_levels() == []
+
+    def test_exclude_and_allow_level(self, temp_logger):
+        """单个等级屏蔽 / 恢复"""
+        assert temp_logger.exclude_level("EVENT") is True
+        assert temp_logger.list_excluded_levels() == ["EVENT"]
+        assert temp_logger.allow_level("EVENT") is True
+        assert temp_logger.list_excluded_levels() == []
+
+    def test_allow_level_not_excluded(self, temp_logger):
+        """恢复未屏蔽等级返回 False"""
+        assert temp_logger.allow_level("EVENT") is False
+
+    def test_excluded_level_not_in_memory(self, temp_logger):
+        """被屏蔽等级不入内存（get_logs 不可见）"""
+        temp_logger.set_excluded_levels(["EVENT"])
+        temp_logger.event("secret message content")
+        all_logs = temp_logger.get_logs()
+        flat = []
+        for logs in all_logs.values():
+            flat.extend(logs)
+        assert not any("secret message content" in entry for entry in flat)
+
+    def test_excluded_level_not_to_console(self, temp_logger, capsys):
+        """被屏蔽等级不输出控制台"""
+        temp_logger.set_excluded_levels(["EVENT"])
+        temp_logger.event("hidden console content")
+        captured = capsys.readouterr()
+        assert "hidden console content" not in (captured.out + captured.err)
+
+    def test_excluded_level_not_to_subscriber(self, temp_logger):
+        """被屏蔽等级不推送给订阅器（即使 min_level 更低）"""
+        temp_logger.set_excluded_levels(["EVENT"])
+        received = []
+
+        @temp_logger.handler("excl-privacy", min_level="TRACE")
+        def on_log(d):
+            received.append(d)
+
+        temp_logger.event("hidden from subscriber")
+        assert not any("hidden from subscriber" in d["message"] for d in received)
+
+    def test_other_levels_unaffected(self, temp_logger, caplog):
+        """屏蔽 EVENT 不影响 INFO / WARNING 等其它等级"""
+        temp_logger.set_excluded_levels(["EVENT"])
+        temp_logger.info("normal info still works")
+        temp_logger.warning("warning still works")
+        with caplog.at_level(logging.INFO):
+            pass
+        all_logs = temp_logger.get_logs()
+        flat = []
+        for logs in all_logs.values():
+            flat.extend(logs)
+        assert any("normal info still works" in entry for entry in flat)
+        assert any("warning still works" in entry for entry in flat)
+
+    def test_child_logger_respects_exclusion(self, temp_logger):
+        """LoggerChild 遵循父 Logger 的屏蔽等级"""
+        temp_logger.set_excluded_levels(["EVENT"])
+        child = LoggerChild(temp_logger, "Message")
+        child.event("child hidden content")
+        all_logs = temp_logger.get_logs()
+        flat = []
+        for logs in all_logs.values():
+            flat.extend(logs)
+        assert not any("child hidden content" in entry for entry in flat)
+
+    def test_config_hot_reload_applies_exclude_levels(self, temp_logger):
+        """配置热更新：exclude_levels 变化时重新应用"""
+        with patch("ErisPulse.runtime.get_logger_config") as mock_get:
+            mock_get.return_value = {"exclude_levels": ["EVENT"]}
+            temp_logger._setup_config()
+            assert temp_logger.list_excluded_levels() == ["EVENT"]
+
+    def test_excluded_level_not_to_file(self, temp_logger):
+        """被屏蔽等级不写入日志文件"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_file = os.path.join(tmpdir, "test.log")
+            temp_logger.set_excluded_levels(["EVENT"])
+            temp_logger.set_output_file(log_file)
+            temp_logger.event("hidden from file")
+            temp_logger.info("visible in file")
+            for handler in temp_logger._file_handlers:
+                temp_logger._logger.removeHandler(handler)
+                handler.close()
+            temp_logger._file_handlers.clear()
+            with open(log_file, encoding="utf-8") as f:
+                content = f.read()
+            assert "hidden from file" not in content
+            assert "visible in file" in content

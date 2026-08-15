@@ -1,4 +1,4 @@
-"""
+﻿"""
 CLI 日本語翻訳 (ja)
 
 Core i18n から独立した CLI 翻訳データ。
@@ -48,6 +48,9 @@ TRANSLATIONS = {
     "cli.create.homepage_help": "プロジェクトのホームページ URL",
     "cli.create.output_help": "出力ディレクトリ (デフォルト: カレントディレクトリ)",
     "cli.create.force_help": "既存のディレクトリを強制的に上書き",
+    "cli.create.local_module_help": "ローカルプラグインを作成（plugins/ 構造、パッケージ不要。module のみ）",
+    "cli.create.local_structure": "ローカルプラグイン構造",
+    "cli.create.local_tip": "プラグインをプロジェクトの plugins/ ディレクトリに配置すると起動時に自動検出され、変更時はホットリロードされます",
     "cli.create.select_type_title": "作成タイプを選択",
     "cli.create.select_type_module": "カスタム機能 Module",
     "cli.create.select_type_adapter": "プラットフォーム Adapter",

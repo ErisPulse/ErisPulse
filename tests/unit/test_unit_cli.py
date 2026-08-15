@@ -512,3 +512,63 @@ class TestRunInternalChildCleanup:
 
         # 子进程已退出，无需 terminate
         fake.terminate.assert_not_called()
+
+
+class TestCreateModuleLocal:
+    """create module --local 生成本地插件结构"""
+
+    def test_local_module_layout(self, tmp_path, monkeypatch, capsys):
+        """--local 生成 plugins/<name>/ 包结构，无 pyproject.toml"""
+        monkeypatch.chdir(tmp_path)
+
+        from ErisPulse.CLI.commands.create import CreateCommand
+
+        class Args:
+            local = True
+            name = "Dice"
+            description = "dice plugin"
+            author = ""
+            email = ""
+            homepage = ""
+            output = "."
+            force = False
+
+        CreateCommand()._create_module(Args(), "Dice")
+
+        plugins = tmp_path / "plugins"
+        assert (plugins / "Dice" / "__init__.py").is_file()
+        assert (plugins / "Dice" / "Core.py").is_file()
+        assert not (plugins / "Dice" / "pyproject.toml").exists()
+
+        core = (plugins / "Dice" / "Core.py").read_text(encoding="utf-8")
+        assert "class Main(BaseModule)" in core
+        assert "get_meta() -> ModuleMeta" in core
+
+    def test_local_module_discoverable(self, tmp_path, monkeypatch):
+        """生成的本地插件可被 PluginFolderLoader 发现"""
+        monkeypatch.chdir(tmp_path)
+        # 包形式插件经 import_module 导入，需将插件父目录加入 sys.path
+        monkeypatch.syspath_prepend(str(tmp_path))
+        sys.modules.pop("Dice", None)
+
+        from ErisPulse.CLI.commands.create import CreateCommand
+
+        class Args:
+            local = True
+            name = "Dice"
+            description = "dice plugin"
+            author = ""
+            email = ""
+            homepage = ""
+            output = "."
+            force = False
+
+        CreateCommand()._create_module(Args(), "Dice")
+
+        from ErisPulse.loaders.plugin_folder import PluginFolderLoader
+
+        results = PluginFolderLoader().discover()
+        assert "Dice" in results
+        meta = results["Dice"].moduleInfo["meta"]
+        assert meta["source"] == "plugin_folder"
+        assert meta["is_base_module"] is True

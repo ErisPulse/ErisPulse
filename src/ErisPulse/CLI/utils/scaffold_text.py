@@ -26,6 +26,8 @@ _EN_FALLBACK: dict[str, str] = {
     "module.doc": "{name} module\n\nInherits from BaseModule with standardized lifecycle "
     "and event handling. Config is managed declaratively via ConfigClass (read live "
     "through self.cfg); translation keys are declared in I18nClass.",
+    "module.meta_doc": "Returns module intro metadata (returns a ModuleMeta config class "
+    "instance, aligned with get_load_strategy returning ModuleLoadStrategy).",
     "module.config_doc": "{name} module config",
     "module.config_hint": "Config class declared as a nested class (needs @dataclass); "
     "the framework auto-detects ConfigClass.",
@@ -90,6 +92,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "module.doc": "{name}模块\n\n继承自 BaseModule 基类，实现了标准化的模块生命周期管理和事件处理。"
         "使用声明式配置管理（ConfigClass），通过 self.cfg 实时读取配置；"
         "通过 I18nClass 声明翻译键。",
+        "module.meta_doc": "返回模块介绍元信息（返回 ModuleMeta 配置类实例，与 get_load_strategy 返回 ModuleLoadStrategy 对齐）。",
         "module.config_doc": "{name} 模块配置",
         "module.config_hint": "配置类以嵌套类形式声明（需 @dataclass 装饰），框架自动识别 ConfigClass。",
         "module.i18n_hint": "I18nClass 声明翻译键，框架自动注册；配置描述/命令帮助引用的键必须在此声明。",
@@ -139,6 +142,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "module.doc": "{name}模組\n\n繼承自 BaseModule 基類，實現標準化的模組生命週期管理和事件處理。"
         "使用宣告式設定管理（ConfigClass），透過 self.cfg 即時讀取設定；"
         "透過 I18nClass 宣告翻譯鍵。",
+        "module.meta_doc": "回傳模組介紹元資訊（回傳 ModuleMeta 設定類實例，與 get_load_strategy 回傳 ModuleLoadStrategy 對齊）。",
         "module.config_doc": "{name} 模組設定",
         "module.config_hint": "設定類以巢狀類別形式宣告（需 @dataclass 裝飾），框架自動識別 ConfigClass。",
         "module.i18n_hint": "I18nClass 宣告翻譯鍵，框架自動註冊；設定描述/命令說明引用的鍵必須在此宣告。",
@@ -187,6 +191,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
     "ja": {
         "module.doc": "{name} モジュール\n\nBaseModule を継承し、標準化されたライフサイクル管理とイベント処理を実装。"
         "設定は ConfigClass で宣言的に管理（self.cfg でリアルタイム参照）、翻訳キーは I18nClass で宣言。",
+        "module.meta_doc": "モジュール紹介メタ情報を返します（get_load_strategy が ModuleLoadStrategy を返すのと同様、ModuleMeta 設定クラスを返します）。",
         "module.config_doc": "{name} モジュール設定",
         "module.config_hint": "設定クラスはネストクラスとして宣言（@dataclass 必須）。フレームワークが ConfigClass を自動認識します。",
         "module.i18n_hint": "I18nClass で翻訳キーを宣言すると自動登録されます。設定説明/コマンドヘルプで参照するキーはここで宣言してください。",
@@ -234,6 +239,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
     "ru": {
         "module.doc": "{name} модуль\n\nНаследует BaseModule: стандартный жизненный цикл и обработка событий. "
         "Конфигурация объявляется через ConfigClass (чтение через self.cfg), ключи переводов — в I18nClass.",
+        "module.meta_doc": "Возвращает мета-информацию модуля (экземпляр класса конфигурации ModuleMeta, аналогично get_load_strategy, возвращающему ModuleLoadStrategy).",
         "module.config_doc": "Конфигурация модуля {name}",
         "module.config_hint": "Класс конфигурации объявляется как вложенный (нужен @dataclass); фреймворк распознаёт ConfigClass.",
         "module.i18n_hint": "Ключи переводов объявляются в I18nClass и регистрируются автоматически; ключи из описания/справки должны быть здесь.",

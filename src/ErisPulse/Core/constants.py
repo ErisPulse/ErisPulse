@@ -329,6 +329,12 @@ DEFAULT_HANDLER_PRIORITY: Final[int] = 0
 # 修改影响: 命令 /xxx 总是优先于 on_message / on_group_message 等处理器触发。
 DEFAULT_COMMAND_DISPATCHER_PRIORITY: Final[int] = 100
 
+# 事件驱动懒激活（activate_on）stub 处理器优先级：极低，确保它在同类事件的所有普通处理器之后运行。
+# 这样外层 _process_event 的分组循环在 stub 之前已按优先级处理完其它处理器，
+# 激活期间注册的真实处理器不会被外层循环二次处理（已验证 groupby 迭代语义）。
+# 修改影响: 使用 activate_on 的模块的激活时机——数值越小，真实处理器越先于 stub 被处理。
+ACTIVATION_STUB_PRIORITY: Final[int] = -1_000_000_000
+
 # 等待用户回复的默认超时时间（秒）。
 # 使用位置: command.wait_reply(), Event.wait_reply(), Event.wait_for() 等 8 处。
 # 修改影响: 所有等待用户交互的默认超时。设大用户有更多反应时间，设小释放资源更快。
@@ -727,6 +733,7 @@ DEFAULT_SSE_HEADERS: Final[dict[str, str]] = {
 }
 
 __all__ = [
+    "ACTIVATION_STUB_PRIORITY",
     "ADAPTER_EVENT_MIXIN_PLATFORM",
     "ADAPTER_RETRY_BACKOFF_INTERVALS",
     "ADAPTER_RETRY_FIXED_DELAY_SECS",

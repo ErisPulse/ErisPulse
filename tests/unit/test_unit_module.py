@@ -4,16 +4,14 @@
 测试模块管理器和基础模块类的功能
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, patch
-from typing import Dict, Any
+from unittest.mock import AsyncMock, Mock, patch
 
-from ErisPulse.Core.module import ModuleManager
+import pytest
+
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.config import config
-from ErisPulse.Core.lifecycle import lifecycle
-
+from ErisPulse.Core.module import ModuleManager
 
 # ==================== 模块管理器测试 ====================
 
@@ -460,7 +458,7 @@ class TestModuleManager:
                 def mock_get_enabled(key, default=None):
                     if key == "ErisPulse.modules.status":
                         return {"enabled": True}
-                    elif key == "ErisPulse.modules.status.enabled":
+                    if key == "ErisPulse.modules.status.enabled":
                         return True
                     return default
 
@@ -473,7 +471,7 @@ class TestModuleManager:
                 def mock_get_disabled(key, default=None):
                     if key == "ErisPulse.modules.status":
                         return {"disabled": False}
-                    elif key == "ErisPulse.modules.status.disabled":
+                    if key == "ErisPulse.modules.status.disabled":
                         return False
                     return default
 
@@ -595,8 +593,10 @@ class TestModuleLifecycleIntegration:
 
             # 验证生命周期事件被提交
             mock_lifecycle.submit_event.assert_called()
-            call_args = mock_lifecycle.submit_event.call_args
-            assert call_args[0][0] == "module.load"
+            # load() 成功路径依次提交 "module.load" 与 "module.init"，
+            # 断言其中确实包含 "module.load" 事件
+            event_names = [c.args[0] for c in mock_lifecycle.submit_event.call_args_list]
+            assert "module.load" in event_names
 
     @pytest.mark.asyncio
     async def test_module_unload_submits_lifecycle_event(self):
@@ -835,3 +835,186 @@ class TestModuleStatusHotReload:
         with patch("ErisPulse.Core.module.logger"):
             asyncio.run(manager.unload())
         assert "lazy_mod" not in manager._lazy_modules
+
+
+class TestModuleMeta:
+    """模块介绍 meta 与命令总览（按模块组织的命令数据）"""
+
+    @pytest.fixture(autouse=True)
+    def clean(self):
+        from ErisPulse.Core.adapter import adapter
+        from ErisPulse.Core.Event import _clear_all_handlers
+
+        _clear_all_handlers()
+        adapter._onebot_handlers.clear()
+        adapter._raw_handlers.clear()
+        adapter._onebot_middlewares.clear()
+        adapter._bots.clear()
+        yield
+        _clear_all_handlers()
+        adapter._onebot_handlers.clear()
+        adapter._raw_handlers.clear()
+        adapter._onebot_middlewares.clear()
+        adapter._bots.clear()
+
+    @staticmethod
+    def _make_mgr():
+        return ModuleManager()
+
+    def _register_with_commands(self, mgr):
+        from ErisPulse.Core.Event import command
+        from ErisPulse.runtime.context import owner_scope
+
+        class Weather(BaseModule):
+            async def on_load(self, event): return True
+            async def on_unload(self, event): return True
+
+            @staticmethod
+            def get_meta():
+                return {"name": "天气", "description": "查询城市天气", "group": "工具"}
+
+        mgr.register("Weather", Weather)
+        with owner_scope("Weather"):
+            @command("weather", help="查询天气", group="工具")
+            async def weather_cmd(event): pass
+            @command("forecast", aliases=["fc"], help="天气预报")
+            async def fc_cmd(event): pass
+
+    def test_get_meta_from_class(self):
+        """get_meta() 从类声明 + 自动补全命令"""
+        mgr = self._make_mgr()
+        self._register_with_commands(mgr)
+        meta = mgr.get_meta("Weather")
+        assert meta["description"] == "查询城市天气"
+        assert meta["group"] == "工具"
+        assert set(meta["commands"]) == {"weather", "forecast"}
+
+    def test_get_meta_none_for_unregistered(self):
+        """未注册模块返回 None"""
+        mgr = self._make_mgr()
+        assert mgr.get_meta("Nope") is None
+
+    def test_get_meta_merges_register_info(self):
+        """注册 info 与类 get_meta 合并（类优先）"""
+        mgr = self._make_mgr()
+
+        class M(BaseModule):
+            async def on_load(self, event): return True
+            async def on_unload(self, event): return True
+
+            @staticmethod
+            def get_meta():
+                return {"description": "类描述"}
+
+        mgr.register("M", M, {"author": "alice", "description": "info描述"})
+        meta = mgr.get_meta("M")
+        assert meta["author"] == "alice"
+        assert meta["description"] == "类描述"  # 类声明优先
+
+    def test_get_commands_overview(self):
+        """命令总览：模块 meta + 命令（别名/分组/帮助）"""
+        mgr = self._make_mgr()
+        self._register_with_commands(mgr)
+        overview = mgr.get_commands_overview()
+        entry = overview["Weather"]
+        assert entry["meta"]["description"] == "查询城市天气"
+        by_name = {c["name"]: c for c in entry["commands"]}
+        assert by_name["weather"]["group"] == "工具"
+        assert by_name["forecast"]["aliases"] == ["fc"]
+        assert by_name["weather"]["hidden"] is False
+
+    def test_get_meta_i18n_resolved(self):
+        """i18n 字典字段解析为当前语言文本（键经 I18nClass 注册）"""
+        from ErisPulse.Core.Bases import BaseI18n, I18nKey
+
+        mgr = self._make_mgr()
+
+        class WeatherI18n(BaseI18n):
+            meta_description: I18nKey = I18nKey(
+                default="Weather lookup", zh_CN="查询城市天气", en="Weather lookup"
+            )
+            meta_group: I18nKey = I18nKey(default="Tools", zh_CN="工具", en="Tools")
+
+        class Weather(BaseModule):
+            async def on_load(self, event): return True
+            async def on_unload(self, event): return True
+
+            @staticmethod
+            def get_meta():
+                return {
+                    "name": "天气",
+                    "description": {"i18n": "Weather.meta_description", "default": "Weather lookup"},
+                    "group": {"i18n": "Weather.meta_group", "default": "Tools"},
+                }
+
+        mgr.register("Weather", Weather)
+        WeatherI18n.register(prefix="Weather.", domain="Weather")
+
+        meta = mgr.get_meta("Weather")
+        assert meta["description"] == "查询城市天气"
+        assert meta["group"] == "工具"
+
+    def test_get_meta_i18n_raw(self):
+        """resolve_i18n=False 透传原始 i18n 字典"""
+        mgr = self._make_mgr()
+
+        class M(BaseModule):
+            async def on_load(self, event): return True
+            async def on_unload(self, event): return True
+
+            @staticmethod
+            def get_meta():
+                return {"description": {"i18n": "M.desc", "default": "Fallback"}}
+
+        mgr.register("M", M)
+        meta = mgr.get_meta("M", resolve_i18n=False)
+        assert meta["description"] == {"i18n": "M.desc", "default": "Fallback"}
+
+    def test_module_meta_class(self):
+        """get_meta() 返回 ModuleMeta 声明类（属性键入）"""
+        from ErisPulse.Core.Bases import ModuleMeta
+
+        meta = ModuleMeta(name="天气", description="查询城市天气", group="工具", tags=["天气"])
+        d = meta.to_dict()
+        assert d == {"name": "天气", "description": "查询城市天气", "group": "工具", "tags": ["天气"]}
+        # None 字段被过滤
+        assert "version" not in d and "author" not in d
+
+    def test_get_meta_with_module_meta(self):
+        """ModuleManager.get_meta() 解析 ModuleMeta 实例（to_dict 链路）"""
+        from ErisPulse.Core.Bases import ModuleMeta
+
+        mgr = self._make_mgr()
+
+        class Weather(BaseModule):
+            async def on_load(self, event): return True
+            async def on_unload(self, event): return True
+
+            @staticmethod
+            def get_meta():
+                return ModuleMeta(name="天气", description="查询城市天气", group="工具")
+
+        mgr.register("Weather", Weather)
+        meta = mgr.get_meta("Weather")
+        assert meta["description"] == "查询城市天气"
+        assert meta["group"] == "工具"
+        assert meta["name"] == "天气"
+
+    def test_get_meta_meta_class_with_register_info(self):
+        """ModuleMeta 声明 > 注册 info（与 dict 语义一致）"""
+        from ErisPulse.Core.Bases import ModuleMeta
+
+        mgr = self._make_mgr()
+
+        class M(BaseModule):
+            async def on_load(self, event): return True
+            async def on_unload(self, event): return True
+
+            @staticmethod
+            def get_meta():
+                return ModuleMeta(description="类声明")
+
+        mgr.register("M", M, {"author": "alice", "description": "info描述"})
+        meta = mgr.get_meta("M")
+        assert meta["author"] == "alice"
+        assert meta["description"] == "类声明"

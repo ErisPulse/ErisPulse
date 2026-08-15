@@ -66,7 +66,7 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 | 组件 | 支持热更新的配置 | 行为 |
 |------|----------------|------|
-| **日志 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | 自动重新应用（带变更检测） |
+| **日志 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` / `exclude_levels` | 自动重新应用（带变更检测） |
 | **命令系统 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一条消息即生效 |
 | **适配器并发** | `framework.handler_max_concurrency` | 失效缓存信号量，按新值重建 |
 | **主动 GC** | `framework.proactive_gc_*` | 配置变更即时重启 GC 任务，支持运行时调整/禁用/重新启用 |
@@ -96,6 +96,7 @@ level = "INFO"
 format = "rich"
 log_files = []
 memory_limit = 1000
+exclude_levels = []
 
 [ErisPulse.framework]
 enable_lazy_loading = true
@@ -146,6 +147,7 @@ ssl_keyfile = "/path/to/key.pem"
 level = "INFO"
 log_files = ["app.log", "debug.log"]
 memory_limit = 1000
+exclude_levels = ["EVENT"]
 ```
 
 | 配置项 | 类型 | 默认值 | 说明 |
@@ -154,6 +156,9 @@ memory_limit = 1000
 | format | string | rich | 日志输出格式：`rich`（彩色，默认）、`plain`（纯文本无颜色，适合日志采集/管道重定向）、`json`（JSON 结构化，适合 ELK 等） |
 | log_files | array | 空 | 日志输出文件列表 |
 | memory_limit | integer | 1000 | 内存中保存的日志条数 |
+| exclude_levels | array | 空 | 屏蔽指定日志等级。被屏蔽等级的日志**完全丢弃**（不写内存、不推送给 Dashboard 等订阅器、不打印、不写文件）。支持热更新 |
+
+> **隐私保护**：消息收发内容以 **EVENT 等级**（数值 21）记录。设置 `exclude_levels = ["EVENT"]` 即可让后台（如 Dashboard 日志面板）无法看到各群/私聊的消息内容，同时不影响其它等级日志。
 
 ## 框架配置
 
@@ -299,6 +304,40 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
 > `setConfig` 默认采用延迟写入（约每 5 秒批量保存到文件），设置 `immediate=True` 可立即持久化。配置变更会触发 `config.set` 生命周期事件。
+
+## 作用域配置
+
+模块作用域系统用于控制"某个 Bot 只能使用哪些模块"。默认情况下所有模块对所有 Bot 开放，仅在配置绑定后才开始过滤，模块与适配器**无需任何改动**即可适配。
+
+```toml
+# 平台级绑定（作用于该平台所有 Bot / 会话）
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Translate"]   # 白名单：该平台 Bot 只能使用这些模块
+blocked = ["Danger"]              # 黑名单：这些模块在该平台禁用
+
+# Bot 级绑定（作用于该 Bot 的所有会话，覆盖平台级）
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Chat"]
+blocked = []
+
+# 会话级绑定（作用于某个群 / 频道 / 私聊，最具体）
+[ErisPulse.scope.sessions.onebot11."789012345"]
+modules = ["Chat"]
+blocked = []
+```
+
+| 配置项 | 类型 | 说明 |
+|---------|------|------|
+| `scope.default_allow` | boolean | 默认允许全部模块（`true`）。`false` = 隐式拒绝严格模式，仅白名单内模块可用 |
+| `scope.cache_size` | integer | `is_allowed` 的 LRU 缓存大小（默认 1024） |
+| `scope.platforms.<platform>.modules` | array | 平台级白名单：仅列出的模块允许使用（空 = 不限制） |
+| `scope.platforms.<platform>.blocked` | array | 平台级黑名单：列出的模块禁用（空 = 不限制） |
+| `scope.bots.<platform>.<bot_id>.modules` | array | Bot 级白名单，覆盖平台级 |
+| `scope.bots.<platform>.<bot_id>.blocked` | array | Bot 级黑名单，覆盖平台级 |
+| `scope.sessions.<platform>.<session_id>.modules` | array | 会话级白名单（群/频道/私聊），优先级最高 |
+| `scope.sessions.<platform>.<session_id>.blocked` | array | 会话级黑名单，优先级最高 |
+
+> 解析优先级：**会话级 > Bot 级 > 平台级**。模块名大小写不敏感；会话标识跨平台隔离。支持运行时通过 `sdk.scope.bind()` / `unbind()` 动态增删（`merge=True` 可合并），详见[作用域系统](../advanced/scope.md)。
 
 ## 下一步
 

@@ -122,8 +122,72 @@ epsdk run main.py --reload
 |------|------|------|
 | `__init__(self)` | 构造函数 | 否 |
 | `get_load_strategy()` | 返回加载策略 | 否 |
+| `get_meta()` | 返回模块介绍元信息（可选） | 否 |
 | `on_load(self, event)` | 模块加载时调用 | 是 |
 | `on_unload(self, event)` | 模块卸载时调用 | 是 |
+
+### 模块介绍 meta
+
+通过 `get_meta()` 声明模块的介绍元信息（这个模块是干什么的、属于哪一类等）。
+元信息是模块的**通用介绍数据**，供 help 模块、Dashboard 模块列表、模块商店等各类界面/生态模块消费。
+
+与 `get_load_strategy()` 返回 `ModuleLoadStrategy` 一致，**推荐返回 `ModuleMeta` 配置类实例**（属性键入、IDE 补全），也兼容直接返回 dict：
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="天气",               # 显示名（默认注册名）
+            description="查询城市天气",  # 模块简介
+            version="1.0.0",
+            author="ErisDev",
+            group="工具",               # 功能分组
+            tags=["天气", "查询"],
+        )
+```
+
+兼容写法（dict）：
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> dict:
+        return {
+            "name": "天气",
+            "description": "查询城市天气",
+            "version": "1.0.0",
+            "author": "ErisDev",
+            "group": "工具",
+            "tags": ["天气", "查询"],
+        }
+```
+
+- `module.get_meta("MyModule")` 读取已解析的元信息（类声明 > 注册 info，自动补全该模块的命令名）。
+- `module.get_commands_overview()` 聚合「模块 meta + 其注册的命令（别名/分组/帮助）」，按模块组织的命令总览。
+- 命令归属模块通过 `cmd_info["owner"]` 获取（注册时由上下文系统自动注入）。
+
+#### meta 字段的 i18n 支持
+
+元信息字段值可用纯字符串，或 i18n 字典 `{"i18n": "key.path", "default": "兜底文本"}`（与配置 `description` 约定一致）。
+翻译键通过 `I18nClass` 声明注册，`module.get_meta()` 读取时自动解析为当前语言文本：
+
+```python
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        meta_description: I18nKey = I18nKey(
+            default="Weather lookup",
+            zh_CN="查询城市天气",
+            en="Weather lookup",
+        )
+
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="天气",
+            description={"i18n": "MyModule.meta_description", "default": "Weather lookup"},
+        )
+```
 
 ### SDK 对象
 

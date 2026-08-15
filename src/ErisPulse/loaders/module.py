@@ -19,7 +19,7 @@ import threading
 import weakref
 from typing import TYPE_CHECKING, Any, cast
 
-from ..Core.constants import MODULE_ENTRY_POINT_GROUP
+from ..Core.constants import ACTIVATION_STUB_PRIORITY, MODULE_ENTRY_POINT_GROUP
 from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
 from ..Core.logger import logger
@@ -59,6 +59,8 @@ _RESERVED_SDK_ATTRS = frozenset(
         "module",
         "router",
         "client",
+        "scope",
+        "context",
         "BaseAdapter",
         "SendDSL",
         "BaseStorage",
@@ -120,6 +122,11 @@ class ModuleLoader(BaseLoader):
         """初始化模块加载器"""
         super().__init__("ErisPulse.modules")
         self._finder = ModuleFinder()
+        # 本地插件文件夹加载器（复用实例便于热重载查询路径）
+        from .plugin_folder import PluginFolderLoader
+
+        self._plugin_loader = PluginFolderLoader()
+        self._last_module_objs: dict[str, Any] = {}
 
     def _get_entry_point_group(self) -> str:
         """
@@ -177,6 +184,9 @@ class ModuleLoader(BaseLoader):
                     entry_point, objs, enabled_list, disabled_list, manager_instance
                 )
 
+            # 本地插件文件夹：发现后并入结果，本地优先（同名覆盖 entry-point）
+            self._merge_plugin_folder(objs, enabled_list, disabled_list, manager_instance)
+
             logger.print_section_separator()
 
         except SystemExit as e:
@@ -190,7 +200,160 @@ class ModuleLoader(BaseLoader):
         except Exception as e:
             logger.error(i18n.t("loader.module.load_failed", group=group_name, error=e))
 
+        # 保留最近一次加载结果快照（插件热重载 / 增量重扫需要）
+        self._last_module_objs = objs
+
         return objs, enabled_list, disabled_list
+
+    def _merge_plugin_folder(
+        self,
+        objs: dict[str, Any],
+        enabled_list: list[str],
+        disabled_list: list[str],
+        manager_instance: Any,
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        发现本地插件文件夹并并入加载结果
+
+        本地插件优先：与 entry-point 模块同名时，本地插件覆盖安装包条目
+        （便于本地覆盖调试）。启用状态沿用 ``ErisPulse.modules.status``。
+
+        :param objs: 模块对象字典（原地修改）
+        :param enabled_list: 启用列表（原地修改）
+        :param disabled_list: 禁用列表（原地修改）
+        :param manager_instance: 模块管理器实例
+        """
+        try:
+            plugin_objs = self._plugin_loader.discover()
+        except Exception as e:
+            logger.error(i18n.t("loader.plugin.discovery_failed", error=e))
+            return
+
+        for plugin_name, plugin_module in plugin_objs.items():
+            # 与 entry-point 一致：新模块写入启用状态配置
+            if not manager_instance.exists(plugin_name):
+                manager_instance._config_register(plugin_name)
+
+            if not manager_instance.is_enabled(plugin_name):
+                # 被禁用的本地插件：若覆盖了 entry-point 同名模块则一并移除
+                if plugin_name in objs:
+                    del objs[plugin_name]
+                    if plugin_name in enabled_list:
+                        enabled_list.remove(plugin_name)
+                if plugin_name not in disabled_list:
+                    disabled_list.append(plugin_name)
+                continue
+
+            # 本地优先：同名覆盖 entry-point
+            if plugin_name in objs:
+                logger.warning(
+                    i18n.t("loader.plugin.override", name=plugin_name)
+                )
+
+            objs[plugin_name] = plugin_module
+            if plugin_name not in enabled_list:
+                enabled_list.append(plugin_name)
+            if plugin_name in disabled_list:
+                disabled_list.remove(plugin_name)
+
+    async def reload_plugin(self, plugin_name: str, manager_instance: Any, sdk_instance: Any) -> bool:
+        """
+        热重载单个本地插件：卸载旧实例 → 清理注册 → 重新导入 → 重新注册并加载
+
+        :param plugin_name: 插件名
+        :param manager_instance: 模块管理器实例
+        :param sdk_instance: SDK 实例
+        :return: 是否重载成功
+
+        {!--< tips >!--}
+        仅适用于插件文件夹来源的插件（moduleInfo meta 的 source 为
+        ``plugin_folder``）。PyPI 安装包模块不支持热重载。
+        {!--< /tips >!--}
+        """
+        old_obj = self._last_module_objs.get(plugin_name)
+        if old_obj is None:
+            logger.warning(
+                i18n.t("loader.plugin.reload_unknown", name=plugin_name)
+            )
+            return False
+
+        meta = old_obj.moduleInfo.get("meta", {})
+        if meta.get("source") != "plugin_folder":
+            logger.warning(
+                i18n.t("loader.plugin.reload_not_plugin", name=plugin_name)
+            )
+            return False
+
+        # 1. 卸载旧实例（触发 on_unload）
+        try:
+            await manager_instance.unload(plugin_name)
+        except Exception as e:
+            logger.error(i18n.t("loader.plugin.reload_unload_failed", name=plugin_name, error=e))
+
+        # 2. 清理注册（类 / info / 懒加载代理）
+        try:
+            manager_instance.unregister(plugin_name)
+        except Exception:
+            pass
+
+        # 移除 SDK 上挂载的属性
+        if hasattr(sdk_instance, plugin_name):
+            try:
+                delattr(sdk_instance, plugin_name)
+            except Exception:
+                pass
+
+        # 3. 清理已导入的插件模块，强制重新导入
+        self._purge_plugin_modules(plugin_name)
+
+        # 4. 重新发现并加载该插件
+        try:
+            plugin_objs = self._plugin_loader.discover()
+        except Exception as e:
+            logger.error(i18n.t("loader.plugin.discovery_failed", error=e))
+            return False
+
+        new_module = plugin_objs.get(plugin_name)
+        if new_module is None:
+            # 插件被删除：确认从快照与配置中移除
+            self._last_module_objs.pop(plugin_name, None)
+            logger.info(i18n.t("loader.plugin.reload_removed", name=plugin_name))
+            return True
+
+        # 5. 重新注册并加载
+        new_meta_name = new_module.moduleInfo["meta"]["name"]
+        try:
+            manager_instance.register(new_meta_name, new_module.moduleInfo["module_class"], new_module.moduleInfo)
+        except Exception as e:
+            logger.error(i18n.t("loader.plugin.register_failed", name=plugin_name, error=e))
+            return False
+
+        loaded = await manager_instance.load(new_meta_name)
+        if not loaded:
+            logger.error(i18n.t("loader.plugin.load_failed", name=plugin_name, error="load returned False"))
+            return False
+
+        setattr(sdk_instance, new_meta_name, manager_instance.get(new_meta_name))
+        self._last_module_objs[plugin_name] = new_module
+        logger.info(i18n.t("loader.plugin.reload_ok", name=plugin_name))
+        return True
+
+    def _purge_plugin_modules(self, plugin_name: str) -> None:
+        """
+        {!--< internal-use >!--}
+        从 sys.modules 移除插件相关模块，强制下次导入重新执行
+
+        :param plugin_name: 插件名
+        """
+        # 单文件插件：sys.modules[plugin_name]
+        sys.modules.pop(plugin_name, None)
+        # 包形式插件：子模块（如 weather.Core）
+        for mod_name in list(sys.modules):
+            if mod_name == plugin_name or mod_name.startswith(f"{plugin_name}."):
+                sys.modules.pop(mod_name, None)
+        # 刷新加载器路径记录，使 discover() 重新导入
+        self._plugin_loader._loaded_paths.pop(plugin_name, None)
 
     async def _process_entry_point(
         self,
@@ -663,17 +826,37 @@ class ModuleLoader(BaseLoader):
                 lazy_load = meta.get("lazy_load", True)
 
                 if lazy_load:
-                    lazy_module = LazyModule(
-                        meta_name,
-                        module_obj.moduleInfo["module_class"],
-                        sdk_instance,
-                        module_obj.moduleInfo,
-                        manager_instance,
+                    strategy = module_obj.moduleInfo.get("strategy")
+                    activate_on = self._extract_strategy_value(
+                        strategy, "activate_on", None
                     )
+                    if activate_on:
+                        lazy_module = ModuleActivator(
+                            meta_name,
+                            module_obj.moduleInfo["module_class"],
+                            sdk_instance,
+                            module_obj.moduleInfo,
+                            manager_instance,
+                            activate_on=activate_on,
+                        )
+                        logger.trace(
+                            i18n.t(
+                                "loader.module.mount_activator",
+                                name=meta_name,
+                            )
+                        )
+                    else:
+                        lazy_module = LazyModule(
+                            meta_name,
+                            module_obj.moduleInfo["module_class"],
+                            sdk_instance,
+                            module_obj.moduleInfo,
+                            manager_instance,
+                        )
+                        logger.trace(i18n.t("loader.module.mount_lazy", name=meta_name))
                     setattr(sdk_instance, meta_name, lazy_module)
                     # 同步注册懒加载代理到管理器，使 module.get() 对未加载模块返回代理（透明懒加载）
                     manager_instance.register_lazy(meta_name, lazy_module)
-                    logger.trace(i18n.t("loader.module.mount_lazy", name=meta_name))
                 else:
                     result = await manager_instance.load(meta_name)
                     if result:
@@ -1240,3 +1423,298 @@ class LazyModule:
         self._ensure_initialized()
         instance = object.__getattribute__(self, "_instance")
         return instance(*args, **kwargs)
+
+
+# ==============================================================================
+# 事件驱动懒激活（activate_on）
+# ==============================================================================
+
+
+def parse_activate_on(activate_on: Any) -> tuple[list[tuple[str, str | None]], list[str]]:
+    """
+    解析 activate_on 触发器声明
+
+    支持 str / list / dict 三种形式的自由混合：
+
+    - ``str``：事件类型级触发，如 ``"message"``、``"notice"``
+    - ``dict``：单键映射，键为事件类型或 ``command``
+      - ``{"message": "private"}``：事件类型 + detail_type（消息的 detail_type 即会话类型）
+      - ``{"notice": "group_member_increase"}``：事件类型 + detail_type
+      - ``{"command": "roll"}``：命令名触发，值为命令名或命令名列表
+    - ``list``：以上各项的混合列表
+
+    :param activate_on: activate_on 声明值（str / dict / list）
+    :return: ``(event_triggers, command_triggers)``
+        - event_triggers: ``[(event_type, detail_type | None), ...]``
+        - command_triggers: ``[命令名, ...]``
+
+    :example:
+    >>> event_triggers, command_triggers = parse_activate_on(
+    ...     ["message", {"notice": "group_member_increase"}, {"command": "roll"}]
+    ... )
+    >>> event_triggers
+    [('message', None), ('notice', 'group_member_increase')]
+    >>> command_triggers
+    ['roll']
+    """
+    event_triggers: list[tuple[str, str | None]] = []
+    command_triggers: list[str] = []
+
+    if activate_on is None:
+        return event_triggers, command_triggers
+
+    items = activate_on if isinstance(activate_on, list) else [activate_on]
+    for item in items:
+        if isinstance(item, str):
+            event_triggers.append((item, None))
+        elif isinstance(item, dict):
+            for key, value in item.items():
+                if key == "command":
+                    names = value if isinstance(value, list) else [value]
+                    command_triggers.extend(str(n) for n in names)
+                else:
+                    details = value if isinstance(value, list) else [value]
+                    event_triggers.extend((key, detail) for detail in details)
+        else:
+            logger.warning(
+                i18n.t(
+                    "loader.activate.unsupported_trigger",
+                    trigger=item,
+                )
+            )
+    return event_triggers, command_triggers
+
+
+class ModuleActivator(LazyModule):
+    """
+    事件驱动懒激活模块包装器
+
+    在 LazyModule 基础上，通过 ``get_load_strategy()`` 中声明的 ``activate_on``
+    触发器，在首个匹配事件/命令到达时自动加载模块，而非等待属性访问。
+
+    事件触发器 stub 以 owner 身份注册到对应事件管理器（message/notice/request/meta），
+    参与模块作用域过滤；命令触发器 stub 以同名占位命令注册到命令管理器。
+
+    {!--< tips >!--}
+    1. stub 带 owner 走作用域过滤：模块未对该 Bot / 会话 / 平台启用时不触发
+    2. 激活成功后自动注销所有 stub，模块按普通模块继续运行
+    3. 激活失败不重试，stub 一并注销，避免每次事件都重复尝试
+    {!--< /tips >!--}
+    """
+
+    # 使用 __slots__ 与基类保持一致，避免引入 __dict__
+    __slots__ = (
+        "_activated",
+        "_activation_failed",
+        "_activation_lock",
+        "_command_stubs",
+        "_command_triggers",
+        "_event_stubs",
+        "_event_triggers",
+    )
+
+    def __init__(
+        self,
+        module_name: str,
+        module_class: type,
+        sdk_ref: Any,
+        module_info: dict[str, Any],
+        manager_instance: Any,
+        *,
+        activate_on: Any,
+    ) -> None:
+        """
+        初始化事件驱动懒激活包装器
+
+        :param module_name: str 模块名称
+        :param module_class: Type 模块类
+        :param sdk_ref: Any SDK 引用
+        :param module_info: dict[str, Any] 模块信息字典
+        :param manager_instance: 模块管理器实例
+        :param activate_on: 触发器声明（str / dict / list）
+        """
+        super().__init__(module_name, module_class, sdk_ref, module_info, manager_instance)
+        object.__setattr__(self, "_activation_lock", asyncio.Lock())
+        object.__setattr__(self, "_activated", False)
+        object.__setattr__(self, "_activation_failed", False)
+        object.__setattr__(self, "_event_stubs", [])
+        object.__setattr__(self, "_command_stubs", [])
+
+        event_triggers, command_triggers = parse_activate_on(activate_on)
+        object.__setattr__(self, "_event_triggers", event_triggers)
+        object.__setattr__(self, "_command_triggers", command_triggers)
+
+        self._register_stubs()
+
+    # ------------------------------------------------------------------
+    # stub 注册
+    # ------------------------------------------------------------------
+
+    def _register_stubs(self) -> None:
+        """注册事件与命令触发器 stub"""
+        from ..Core.Event import message, meta, notice, request
+        from ..runtime.context import owner_scope
+
+        managers = {
+            "message": message,
+            "notice": notice,
+            "request": request,
+            "meta": meta,
+        }
+
+        module_name = object.__getattribute__(self, "_module_name")
+
+        # 事件触发器：注册到对应事件管理器的 BaseEventHandler
+        for event_type, detail_type in object.__getattribute__(self, "_event_triggers"):
+            manager = managers.get(event_type)
+            if manager is None:
+                logger.warning(
+                    i18n.t(
+                        "loader.activate.unsupported_event_type",
+                        event_type=event_type,
+                        module=module_name,
+                    )
+                )
+                continue
+
+            event_handler = manager.handler
+            condition = (
+                (lambda e, dt=detail_type: e.get("detail_type") == dt)
+                if detail_type
+                else None
+            )
+
+            async def _stub_event(event: Any, _handler=event_handler) -> None:
+                await self._activate_and_forward(_handler, event)
+
+            with owner_scope(module_name):
+                event_handler.register(
+                    _stub_event,
+                    priority=ACTIVATION_STUB_PRIORITY,
+                    condition=condition,
+                )
+            self._event_stubs.append((event_handler, _stub_event))
+
+        # 命令触发器：注册同名占位命令（hidden）
+        for cmd_name in object.__getattribute__(self, "_command_triggers"):
+            async def _stub_command(event: Any, _name=cmd_name) -> None:
+                await self._activate_and_forward_command(_name, event)
+
+            from ..Core.Event.command import command
+
+            with owner_scope(module_name):
+                command(cmd_name, hidden=True)(_stub_command)
+            self._command_stubs.append(_stub_command)
+
+    # ------------------------------------------------------------------
+    # 激活流程
+    # ------------------------------------------------------------------
+
+    async def _activate(self) -> bool:
+        """
+        激活模块
+
+        :return: bool 是否激活成功
+        """
+        if object.__getattribute__(self, "_activated"):
+            return True
+        async with object.__getattribute__(self, "_activation_lock"):
+            if object.__getattribute__(self, "_activated"):
+                return True
+            await self._initialize()
+            if object.__getattribute__(self, "_initialized"):
+                object.__setattr__(self, "_activated", True)
+                # 成功：注销所有 stub，避免转发时把 stub 自身当作目标递归
+                self._deregister_stubs()
+                return True
+            # 失败不重试：注销 stub，避免后续事件重复尝试
+            object.__setattr__(self, "_activation_failed", True)
+            self._deregister_stubs()
+            logger.error(
+                i18n.t(
+                    "loader.activate.activation_failed",
+                    name=object.__getattribute__(self, "_module_name"),
+                )
+            )
+            return False
+
+    def _deregister_stubs(self) -> None:
+        """注销所有触发器 stub"""
+        from ..Core.Event.command import command
+
+        for event_handler, stub in object.__getattribute__(self, "_event_stubs"):
+            try:
+                event_handler.unregister(stub)
+            except Exception:
+                pass
+        for stub in object.__getattribute__(self, "_command_stubs"):
+            try:
+                command.unregister(stub)
+            except Exception:
+                pass
+        self._event_stubs.clear()
+        self._command_stubs.clear()
+
+    # ------------------------------------------------------------------
+    # 事件转发
+    # ------------------------------------------------------------------
+
+    async def _activate_and_forward(self, event_handler: Any, event: Any) -> None:
+        """
+        激活模块并把首个匹配事件转发给该模块的真实处理器
+
+        :param event_handler: 事件管理器（BaseEventHandler）
+        :param event: 触发事件
+        """
+        if not await self._activate():
+            return
+        await self._forward_event(event_handler, event)
+
+    async def _forward_event(self, event_handler: Any, event: Any) -> None:
+        """
+        定向转发事件给本模块在事件管理器中注册的真实处理器
+
+        按优先级降序逐个调用（stub 本身已注销，不会重复触发）
+
+        :param event_handler: 事件管理器（BaseEventHandler）
+        :param event: 事件数据
+        """
+        from ..Core.Event.base import _invoke_handler
+
+        module_name = object.__getattribute__(self, "_module_name")
+        targets = [
+            h
+            for h in event_handler.handlers
+            if h.get("owner") == module_name
+            and (not h.get("condition") or h["condition"](event))
+        ]
+        targets.sort(key=lambda h: h["priority"], reverse=True)
+
+        for h in targets:
+            if event.is_stopped():
+                break
+            await _invoke_handler(h, event)
+
+    # ------------------------------------------------------------------
+    # 命令转发
+    # ------------------------------------------------------------------
+
+    async def _activate_and_forward_command(self, cmd_name: str, event: Any) -> None:
+        """
+        激活模块并重跑命令匹配，使真实命令（已注册）接管本次触发
+
+        命令 stub 已被占位匹配并认领事件，需清空认领标记后重新进入命令分发
+
+        :param cmd_name: 命令名
+        :param event: 消息事件
+        """
+        if not await self._activate():
+            return
+
+        # 清空 stub 匹配产生的认领标记，重新走完整命令分发
+        event["_processed"] = False
+        event["_propagation_stopped"] = False
+
+        from ..Core.Event.command import command
+
+        await command._handle_message(event)

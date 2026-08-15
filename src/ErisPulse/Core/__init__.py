@@ -9,6 +9,7 @@ from .adapter import adapter, AdapterManager
 from .Bases import (
     BaseAdapter,
     BaseModule,
+    ModuleMeta,
     ApiDSL,
     SendDSL,
     SendContext,
@@ -38,6 +39,7 @@ from .router import router, RouterManager, RouteGroup
 from .config import config, ConfigManager
 from .i18n import i18n, I18nManager
 from .master import master, MasterManager
+from .scope import scope, ScopeManager
 
 from . import Event
 from .Event.message_builder import MessageBuilder
@@ -54,6 +56,7 @@ __all__ = [
     "BaseHttpClient",  # HTTP 客户端基类
     "BaseHttpResponse",  # HTTP 响应基类
     "BaseModule",  # 模块基类
+    "ModuleMeta",  # 模块介绍元信息声明类
     "BaseQueryBuilder",  # 查询构建器基类
     "BaseStorage",  # 存储基类
     "BatchContext",  # 批量发送上下文类
@@ -79,6 +82,7 @@ __all__ = [
     "RequestDSL",  # 请求消息 DSL 类
     "RouteGroup",  # 路由分组类
     "RouterManager",  # 路由管理器类
+    "ScopeManager",  # 作用域管理器类
     "SendBuilder",  # 批量发送构建器类
     "SendContext",  # 发送任务实时上下文类
     "SendDSL",  # 发送消息 DSL 类
@@ -98,5 +102,6 @@ __all__ = [
     "master",  # 框架主人模块单例
     "module",  # 模块模块单例
     "router",  # 路由模块单例
+    "scope",  # 作用域模块单例
     "storage",  # 存储模块单例
 ]

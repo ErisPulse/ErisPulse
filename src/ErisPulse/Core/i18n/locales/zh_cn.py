@@ -1,4 +1,4 @@
-"""
+﻿"""
 简体中文翻译数据 (zh-CN)
 
 框架内置翻译，请勿直接修改。
@@ -64,6 +64,9 @@ TRANSLATIONS = {
     "core.sdk.module.load_failed": "加载模块 {name} 失败: {error}",
     # ==================== SDK 运行 ====================
     "core.sdk.run.init_failed": "ErisPulse 初始化失败，请检查日志",
+    "core.sdk.hot_reload.enabled": "已启用本地插件热重载",
+    "core.sdk.hot_reload.no_loader": "热重载不可用：SDK 尚未初始化模块加载器",
+    "core.sdk.hot_reload.failed": "热重载插件 {name} 失败: {error}",
     "core.sdk.run.shutdown_signal": "收到关闭信号，正在清理...",
     "core.sdk.run.unexpected_error": "拦截到意外终止信号: {error}，已阻止进程退出",
     # ==================== SDK 回调 ====================
@@ -376,6 +379,25 @@ TRANSLATIONS = {
     "loader.adapter.load_failed_msg": "适配器 {name} 加载失败: {error}",
     "loader.adapter.register_skipped": "适配器 {name} 注册失败，已跳过",
     "loader.module.discovered": "发现 {count} 个模块",
+    "loader.plugin.discovered": "从插件文件夹发现 {count} 个本地插件",
+    "loader.plugin.dir_not_found": "插件目录不存在，跳过: {dir}",
+    "loader.plugin.duplicate": "插件 {name} 重复声明，仅加载首个",
+    "loader.plugin.override": "本地插件 {name} 优先于同名安装包模块",
+    "loader.plugin.no_module_class": "插件 {name} 未定义 Main(BaseModule) 或其子类，已跳过",
+    "loader.plugin.load_failed": "插件 {name} 加载失败: {error}",
+    "loader.plugin.systemexit": "插件 {name} 在导入时调用 SystemExit({code})，已跳过",
+    "loader.plugin.discovery_failed": "插件文件夹发现失败: {error}",
+    "loader.plugin.diag_hint": "  → 提示: 检查插件文件的导入与类定义（需继承 BaseModule）",
+    "loader.plugin.reload_unknown": "热重载插件 {name} 失败：插件未在加载结果中",
+    "loader.plugin.reload_not_plugin": "热重载插件 {name} 失败：仅插件文件夹来源的插件支持热重载",
+    "loader.plugin.reload_unload_failed": "卸载插件 {name} 失败: {error}",
+    "loader.plugin.reload_removed": "插件 {name} 已被删除，已从加载结果移除",
+    "loader.plugin.reload_ok": "插件 {name} 热重载成功",
+
+    "loader.activate.unsupported_trigger": "无效的 activate_on 触发器项: {trigger}",
+    "loader.activate.unsupported_event_type": "activate_on 使用了不受支持的事件类型: {event_type}（模块 {module}）",
+    "loader.activate.activation_failed": "事件驱动懒激活模块 {name} 激活失败",
+    "loader.module.mount_activator": "挂载事件驱动懒激活模块到 sdk: {name}",
     "loader.module.none": "未发现模块",
     "loader.module.discovery_failed": "模块发现失败，可能是环境或依赖问题: {error}",
     "loader.module.load_failed": "加载 {group} entry-points 失败: {error}",
@@ -446,6 +468,7 @@ TRANSLATIONS = {
     "core.logger.invalid_level": "无效的日志等级: {level}",
     "core.logger.invalid_format": "无效的日志格式: {fmt}。有效值为 rich、plain、json。",
     "core.logger.module_level_set": "模块 {module} 日志等级已设置为 {level}",
+    "core.logger.excluded_levels_set": "已屏蔽日志等级: {levels}",
     "core.logger.set_output_failed": "无法设置日志文件 {path}: {error}",
     "core.logger.no_output_set": "未能成功设置任何日志文件。",
     "core.logger.memory_limit_invalid": "日志存储上限必须大于0。",
@@ -469,8 +492,7 @@ TRANSLATIONS = {
     "core.command.parsed": "[Command] parsed: cmd={cmd_name} args={args} platform={platform} user={user_id}",
     "core.command.matched": "[Command] matched: cmd={cmd_name} (alias={alias}) platform={platform} user={user_id}",
     "core.command.permission_denied": "[Command] permission denied: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
+    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
@@ -587,7 +609,10 @@ TRANSLATIONS = {
     "core.loader.lazy_async_init_done": "懒加载模块 {name} 异步初始化部分完成",
     "core.loader.lazy_async_init_failed": "懒加载模块 {name} 异步初始化部分失败: {error}",
     "core.master.global_persist_not_supported": "全局主人不支持持久化到 dict 格式配置。请将 ErisPulse.master.users 设为 list 格式。",
-    "core.module.config_template_generated": "已生成 {key} 默认配置模板",
+    "core.scope.is_allowed": "模块 {module} 在 {platform}/{bot} 上允许使用: {allowed}",
+    "core.scope.bound": "已绑定作用域: {platform}/{bot} → modules={modules} blocked={blocked}",
+    "core.scope.unbound": "已移除作用域绑定: {platform}/{bot}",
+    "core.scope.denied": "模块 {module} 未对该 Bot 启用，已静默忽略",    "core.module.config_template_generated": "已生成 {key} 默认配置模板",
     "core.module.start_loading": "开始加载模块: {name}",
     "core.router.auth_required_tag": "(需认证)",
     "core.sendrules.callback_error": "SendDSL 规则回调执行异常: {error}",

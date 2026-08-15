@@ -7,6 +7,7 @@
 | 文档 | 说明 |
 |------|------|
 | [安装和配置](installation.md) | 系统要求、安装方式（pip/uv/Docker）、验证安装 |
+| [ErisPulse-App 手机/桌面客户端](../ecosystem/app.md) | 官方客户端：手机 / 桌面直接运行，原生界面管理 ErisPulse 实例 |
 | [CLI 命令参考](cli-reference.md) | `epsdk` 命令行工具的完整使用说明 |
 | [配置文件说明](configuration.md) | `config/config.toml` 各配置项的详细说明 |
 | [部署指南](deployment.md) | Docker 部署、systemd 服务、SSL 配置 |

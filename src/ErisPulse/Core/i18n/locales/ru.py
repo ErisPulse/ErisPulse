@@ -1,4 +1,4 @@
-"""
+﻿"""
 Русский перевод (ru)
 
 Встроенные переводы фреймворка, не изменяйте напрямую.
@@ -64,6 +64,9 @@ TRANSLATIONS = {
     "core.sdk.module.load_failed": "Ошибка загрузки модуля {name}: {error}",
     # ==================== Запуск SDK ====================
     "core.sdk.run.init_failed": "Ошибка инициализации ErisPulse, проверьте журналы",
+    "core.sdk.hot_reload.enabled": "Горячая перезагрузка локальных плагинов включена",
+    "core.sdk.hot_reload.no_loader": "Горячая перезагрузка недоступна: загрузчик модулей SDK не инициализирован",
+    "core.sdk.hot_reload.failed": "Не удалось перезагрузить плагин {name}: {error}",
     "core.sdk.run.shutdown_signal": "Получен сигнал завершения, выполняется очистка...",
     "core.sdk.run.unexpected_error": "Перехвачен неожиданный сигнал завершения: {error}, процесс продолжает работу",
     # ==================== Обратные вызовы SDK ====================
@@ -376,6 +379,25 @@ TRANSLATIONS = {
     "loader.adapter.load_failed_msg": "Ошибка загрузки адаптера {name}: {error}",
     "loader.adapter.register_skipped": "Ошибка регистрации адаптера {name}, пропущено",
     "loader.module.discovered": "Обнаружено {count} модулей",
+    "loader.plugin.discovered": "Обнаружено {count} локальных плагинов в папке плагинов",
+    "loader.plugin.dir_not_found": "Папка плагинов не найдена, пропущено: {dir}",
+    "loader.plugin.duplicate": "Плагин {name} объявлен несколько раз, загружен только первый",
+    "loader.plugin.override": "Локальный плагин {name} имеет приоритет над установленным модулем с тем же именем",
+    "loader.plugin.no_module_class": "Плагин {name} не определяет подкласс Main(BaseModule), пропущен",
+    "loader.plugin.load_failed": "Не удалось загрузить плагин {name}: {error}",
+    "loader.plugin.systemexit": "Плагин {name} вызвал SystemExit({code}) при импорте, пропущен",
+    "loader.plugin.discovery_failed": "Не удалось выполнить обнаружение папки плагинов: {error}",
+    "loader.plugin.diag_hint": "  → Подсказка: проверьте импорты и определение класса в файле плагина (должен наследовать BaseModule)",
+    "loader.plugin.reload_unknown": "Горячая перезагрузка плагина {name} не удалась: плагин не найден в результатах загрузки",
+    "loader.plugin.reload_not_plugin": "Горячая перезагрузка плагина {name} не удалась: поддерживаются только плагины из папки plugins",
+    "loader.plugin.reload_unload_failed": "Не удалось выгрузить плагин {name}: {error}",
+    "loader.plugin.reload_removed": "Плагин {name} удалён, исключён из результатов загрузки",
+    "loader.plugin.reload_ok": "Плагин {name} успешно перезагружен",
+
+    "loader.activate.unsupported_trigger": "Недопустимый элемент триггера activate_on: {trigger}",
+    "loader.activate.unsupported_event_type": "activate_on использует неподдерживаемый тип события: {event_type} (модуль {module})",
+    "loader.activate.activation_failed": "Не удалось активировать модуль ленивой активации {name}",
+    "loader.module.mount_activator": "Модуль ленивой активации смонтирован в sdk: {name}",
     "loader.module.none": "Модули не обнаружены",
     "loader.module.discovery_failed": "Не удалось обнаружить модули, возможна проблема с окружением или зависимостями: {error}",
     "loader.module.load_failed": "Ошибка загрузки {group} entry-points: {error}",
@@ -446,6 +468,7 @@ TRANSLATIONS = {
     "core.logger.invalid_level": "Недопустимый уровень лога: {level}",
     "core.logger.invalid_format": "Недопустимый формат лога: {fmt}. Допустимые значения: rich, plain, json.",
     "core.logger.module_level_set": "Уровень лога модуля {module} установлен на {level}",
+    "core.logger.excluded_levels_set": "Исключенные уровни лога: {levels}",
     "core.logger.set_output_failed": "Не удалось установить файл лога {path}: {error}",
     "core.logger.no_output_set": "Не удалось установить ни одного файла лога.",
     "core.logger.memory_limit_invalid": "Лимит памяти логов должен быть больше 0.",
@@ -469,8 +492,7 @@ TRANSLATIONS = {
     "core.command.parsed": "[Command] parsed: cmd={cmd_name} args={args} platform={platform} user={user_id}",
     "core.command.matched": "[Command] matched: cmd={cmd_name} (alias={alias}) platform={platform} user={user_id}",
     "core.command.permission_denied": "[Command] permission denied: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
+    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
@@ -587,7 +609,10 @@ TRANSLATIONS = {
     "core.loader.lazy_async_init_done": "Ленивая загрузка модуля {name}: асинхронная инициализация частично завершена",
     "core.loader.lazy_async_init_failed": "Ленивая загрузка модуля {name}: асинхронная инициализация частично не удалась: {error}",
     "core.master.global_persist_not_supported": "Глобальный мастер не поддерживает сохранение в формате dict. Установите ErisPulse.master.users как list.",
-    "core.module.config_template_generated": "Сгенерирован шаблон конфигурации по умолчанию для {key}",
+    "core.scope.is_allowed": "Модуль {module} разрешен на {platform}/{bot}: {allowed}",
+    "core.scope.bound": "Привязка области: {platform}/{bot} → modules={modules} blocked={blocked}",
+    "core.scope.unbound": "Привязка области удалена: {platform}/{bot}",
+    "core.scope.denied": "Модуль {module} не включен для этого бота, молча проигнорирован",    "core.module.config_template_generated": "Сгенерирован шаблон конфигурации по умолчанию для {key}",
     "core.module.start_loading": "Начало загрузки модуля: {name}",
     "core.router.auth_required_tag": "(требуется аутентификация)",
     "core.sendrules.callback_error": "Ошибка выполнения callback правила SendDSL: {error}",

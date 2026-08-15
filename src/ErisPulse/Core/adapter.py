@@ -1164,6 +1164,7 @@ class AdapterManager(ManagerBase):
         *,
         raw: bool = False,
         platform: str | None = None,
+        scope_exempt: bool = False,
     ) -> Callable[[Callable], Callable]:
         """
         OneBot12协议事件监听装饰器
@@ -1171,6 +1172,8 @@ class AdapterManager(ManagerBase):
         :param event_type: OneBot12事件类型
         :param raw: 是否监听原生事件
         :param platform: 指定平台，None表示监听所有平台
+        :param scope_exempt: 是否豁免模块作用域过滤（框架级总线处理器专用）。
+                             为 True 时不参与作用域判断，始终分发。
         :return: 装饰器函数
 
         :example:
@@ -1200,8 +1203,13 @@ class AdapterManager(ManagerBase):
             async def wrapper(*args, **kwargs):
                 return await func(*args, **kwargs)
 
-            # 创建带元信息的处理器包装器
-            handler_wrapper = {"func": wrapper, "platform": platform}
+            # 创建带元信息的处理器包装器（记录 owner 供模块作用域过滤）
+            handler_wrapper = {
+                "func": wrapper,
+                "platform": platform,
+                "owner": current_owner.get(),
+                "scope_exempt": scope_exempt,
+            }
 
             if raw:
                 self._raw_handlers[event_type].append(handler_wrapper)
@@ -1373,6 +1381,8 @@ class AdapterManager(ManagerBase):
         for handler_wrapper in handlers_to_call:
             handler_platform = handler_wrapper.get("platform")
             if handler_platform is None or handler_platform == platform:
+                if not self._is_handler_scope_allowed(handler_wrapper, data):
+                    continue
                 self._dispatch_handler_task(
                     handler_wrapper["func"],
                     processed_data,
@@ -1395,6 +1405,8 @@ class AdapterManager(ManagerBase):
             for handler_wrapper in raw_handlers_to_call:
                 handler_platform = handler_wrapper.get("platform")
                 if handler_platform is None or handler_platform == platform:
+                    if not self._is_handler_scope_allowed(handler_wrapper, data):
+                        continue
                     self._dispatch_handler_task(
                         handler_wrapper["func"],
                         platform_raw,
@@ -1411,6 +1423,32 @@ class AdapterManager(ManagerBase):
                 "raw_event_type": raw_event_type,
                 "onebot_handlers_count": len(handlers_to_call),
             },
+        )
+
+    def _is_handler_scope_allowed(self, handler_wrapper: dict, data: dict) -> bool:
+        """
+        {!--< internal-use >!--}
+        判断 OneBot12 / 原生事件处理器是否通过模块作用域检查
+
+        框架级总线处理器（``scope_exempt`` 或 owner 为空）始终放行；
+        模块级处理器按 owner 与当前事件所属平台/Bot 判定。
+
+        :param handler_wrapper: 处理器包装器（含 func/platform/owner/scope_exempt）
+        :param data: 原始事件数据
+        :return: 是否允许分发
+        """
+        if handler_wrapper.get("scope_exempt"):
+            return True
+        owner = handler_wrapper.get("owner")
+        if not owner:
+            return True
+        from .scope import scope
+
+        return scope.is_allowed(
+            data.get("platform", ""),
+            scope.bot_id_from_event(data) or None,
+            owner,
+            scope.session_id_from_event(data) or None,
         )
 
     def _get_handler_semaphore(self) -> asyncio.Semaphore:
@@ -1858,6 +1896,66 @@ class AdapterManager(ManagerBase):
                     "status": "disabled",
                     "enabled": parse_bool_config(config_status[platform_name]),
                     "bots": {},
+                }
+
+        return {"adapters": adapters_summary}
+
+    def get_topology(self) -> dict[str, Any]:
+        """
+        获取适配器与 Bot 的拓扑树数据（便于 WebUI 展示）
+
+        聚合每个适配器的运行状态、下属 Bot 状态，以及平台级 / Bot 级
+        模块作用域绑定，展示"适配器 → Bot → 作用域"的归属关系。
+
+        :return: 拓扑树字典
+            {"adapters": {platform: {
+                "status": str, "enabled": bool,
+                "bots": {bot_id: {"status", "last_active", "info", "scope"}},
+                "scope": {"modules": [...], "blocked": [...]},
+            }}}
+
+        :example:
+        >>> topology = adapter.get_topology()
+        >>> print(topology["adapters"]["onebot11"]["bots"])
+        {"123456": {...}}
+        """
+        from .config import parse_bool_config
+        from .scope import scope
+
+        adapters_summary = {}
+        for platform_name in self._adapters:
+            adapter_instance = self._adapters[platform_name]
+            if adapter_instance in self._started_instances:
+                adapter_status = "started"
+            else:
+                adapter_status = "stopped"
+
+            bots_summary = {}
+            for bot_id, bot_info in self._bots.get(platform_name, {}).items():
+                bot_scope = scope.get(platform_name, bot_id)
+                bots_summary[str(bot_id)] = {
+                    "status": bot_info.get("status", "unknown"),
+                    "last_active": bot_info.get("last_active"),
+                    "info": dict(bot_info.get("info", {})),
+                    "scope": bot_scope,
+                }
+
+            adapters_summary[platform_name] = {
+                "status": adapter_status,
+                "enabled": self.is_enabled(platform_name),
+                "bots": bots_summary,
+                "scope": scope.get(platform_name),
+            }
+
+        # 补充配置中存在但未注册的适配器（被禁用的适配器），方便管理界面显示并开启
+        config_status = config.getConfig(CONFIG_KEY_ADAPTER_STATUS, {})
+        for platform_name in config_status:
+            if platform_name not in adapters_summary:
+                adapters_summary[platform_name] = {
+                    "status": "disabled",
+                    "enabled": parse_bool_config(config_status[platform_name]),
+                    "bots": {},
+                    "scope": scope.get(platform_name),
                 }
 
         return {"adapters": adapters_summary}
