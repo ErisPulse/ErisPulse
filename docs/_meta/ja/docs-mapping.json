@@ -20,7 +20,7 @@
           "icon": "fa-bolt"
         },
         {
-          "title": "アーキテクチャの概要",
+          "title": "アーキテクチャ概要",
           "path": "architecture.md",
           "level": 1,
           "icon": "fa-sitemap"
@@ -84,13 +84,13 @@
       "count": 5,
       "documents": [
         {
-          "title": "ユーザーガイド",
+          "title": "ユーザー使用ガイド",
           "path": "user-guide/README.md",
           "level": 1,
           "icon": "fa-book-open"
         },
         {
-          "title": "インストールの参考",
+          "title": "インストールリファレンス",
           "path": "user-guide/installation.md",
           "level": 1,
           "icon": "fa-download"
@@ -102,7 +102,7 @@
           "icon": "fa-sliders"
         },
         {
-          "title": "CLI コマンドリファレンス",
+          "title": "CLIコマンドリファレンス",
           "path": "user-guide/cli-reference.md",
           "level": 1,
           "icon": "fa-terminal"
@@ -336,10 +336,10 @@
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
       "icon": "fa-fire",
-      "count": 11,
+      "count": 12,
       "documents": [
         {
-          "title": "高度なトピック",
+          "title": "詳細トピック",
           "path": "advanced/README.md",
           "level": 1,
           "icon": "fa-fire"
@@ -399,6 +399,12 @@
           "icon": "fa-language"
         },
         {
+          "title": "モジュールスコープシステム",
+          "path": "advanced/scope.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
           "title": "起動プロセスと手動制御",
           "path": "advanced/startup.md",
           "level": 1,
@@ -410,25 +416,31 @@
     "エコシステムモジュール": {
       "description": "コミュニティが保守するサードパーティモジュール",
       "icon": "fa-cubes",
-      "count": 3,
+      "count": 4,
       "documents": [
         {
-          "title": "エコシステムモジュール",
+          "title": "エコモジュール",
           "path": "ecosystem/README.md",
           "level": 1,
           "icon": "fa-cubes"
         },
         {
+          "title": "ErisPulse-App",
+          "path": "ecosystem/app.md",
+          "level": 1,
+          "icon": "fa-mobile-screen"
+        },
+        {
           "title": "ErisPulse-Dashboard",
           "path": "ecosystem/dashboard.md",
           "level": 1,
-          "icon": "fa-cubes"
+          "icon": "fa-table-columns"
         },
         {
           "title": "ErisPulse-Takumi",
           "path": "ecosystem/takumi.md",
           "level": 1,
-          "icon": "fa-cubes"
+          "icon": "fa-image"
         }
       ],
       "subgroups": {}

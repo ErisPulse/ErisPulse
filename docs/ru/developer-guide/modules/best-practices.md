@@ -428,56 +428,52 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-Соблюдение семантического версионирования:
+Следуйте семантическому управлению версиями:
 - MAJOR.MINOR.PATCH
-- MAJOR (основная версия): несовместимые изменения API
-- MINOR (дополнительная версия): новые возможности, совместимые с предыдущими версиями
-- PATCH (исправление версии): исправления ошибок, совместимые с предыдущими версиями
+- Главная версия: несовместимые изменения API
+- Второстепенная версия: добавление функций, совместимых с предыдущими версиями
+- Ревизия: исправления проблем, совместимые с предыдущими версиями
 
 ### 2. Заголовок README
 
-`epsdk create` генерирует README с встроенной идентификацией ErisPulse (Logo + полоса бейджей). Два рекомендуемых режима:
+README, созданный с помощью `epsdk create`, уже содержит встроенный заголовок ErisPulse (логотип + строка значков). Рекомендуется использовать два режима:
 
-**Режим A — только ErisPulse Logo (по умолчанию):**
+**Режим A — только логотип ErisPulse (по умолчанию):**
 
 ```markdown
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
 
 # MyModule
 
-**Краткое описание**
+**Описание в одной строке**
 
 <p>
-  <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
-  <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python"></a>
+  <a href="docs/ru/quick-start.md"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
+  <a href="docs/ru/quick-start.md"><img src="https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
-  <a href="https://github.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/Powered_by-ErisPulse-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="ErisPulse"></a>
+  <a href="docs/ru/quick-start.md"><img src="https://img.shields.io/badge/Powered_by-ErisPulse-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="ErisPulse"></a>
 </p>
 
 </div>
 ```
 
-**Режим B — значок модуля × ErisPulse Logo (при наличии пользовательского значка):**
+**Режим B — значок модуля × логотип ErisPulse (при наличии пользовательского значка):**
 
 ```markdown
 <div align="center">
 
 <img src=".github/assets/MyModuleIcon.svg" width="120" alt="MyModule" />
 <span style="font-size:44px;color:#c8c8c8;margin:0 18px;vertical-align:middle;">×</span>
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
-(полоса бейджей аналогична выше)
+(Строка значков аналогична предыдущей)
 </div>
 ```
 
-При необходимости можно добавить бейджи GitHub Stars, Downloads и т.д. Логотип также можно скачать в локальную папку проекта (`.github/assets/ErisPulseLogo.png`) и ссылаться через относительный путь.
-
-Пожалуйста, верните полный перевод Markdown, не добавляя ничего лишнего.
-
-Напоминаю: если в документе есть строки переключения языков (строки с названиями языков, разделёнными символом `|`), строго следуйте формату, указанному в пункте 8 выше, и не используйте неверный формат `[[**Label**](file)]`.
+Вы можете добавить дополнительные значки, такие как GitHub Stars, Downloads и т.д. Логотип также можно загрузить в локальную папку проекта (`.github/assets/ErisPulseLogo.png`) и изменить ссылку на относительный путь.
 
 ## Related Documentation
 

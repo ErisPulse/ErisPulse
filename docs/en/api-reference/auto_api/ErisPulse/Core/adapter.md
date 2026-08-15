@@ -341,7 +341,9 @@ ErisPulse 适配器系统
 OneBot12协议事件监听装饰器
 
 - **event_type** (`OneBot12事件类型`): - **raw**: 是否监听原生事件
-- **platform** (`指定平台，None表示监听所有平台`): **返回值** (`装饰器函数`): 
+- **platform** (`指定平台，None表示监听所有平台`): - **scope_exempt**: 是否豁免模块作用域过滤（框架级总线处理器专用）。
+                     为 True 时不参与作用域判断，始终分发。
+**返回值** (`装饰器函数`): 
 **示例**:
 ```python
 >>> # 监听OneBot12标准事件（所有平台）
@@ -405,6 +407,20 @@ OneBot12协议事件监听装饰器
 >>>     "myplatform_raw_type": "text_message"
 >>> })
 ```
+
+---
+
+
+##### `_is_handler_scope_allowed(handler_wrapper: dict, data: dict)`
+
+> **内部方法**
+判断 OneBot12 / 原生事件处理器是否通过模块作用域检查
+
+框架级总线处理器（``scope_exempt`` 或 owner 为空）始终放行；
+模块级处理器按 owner 与当前事件所属平台/Bot 判定。
+
+- **handler_wrapper** (`处理器包装器（含`): func/platform/owner/scope_exempt）
+- **data** (`原始事件数据`): **返回值**: 是否允许分发
 
 ---
 
@@ -574,6 +590,29 @@ self字段标准扩展：
 >>> #         }
 >>> #     }
 >>> # }
+```
+
+---
+
+
+##### `get_topology()`
+
+获取适配器与 Bot 的拓扑树数据（便于 WebUI 展示）
+
+聚合每个适配器的运行状态、下属 Bot 状态，以及平台级 / Bot 级
+模块作用域绑定，展示"适配器 → Bot → 作用域"的归属关系。
+
+**返回值** (`拓扑树字典`): {"adapters": {platform: {
+        "status": str, "enabled": bool,
+        "bots": {bot_id: {"status", "last_active", "info", "scope"}},
+        "scope": {"modules": [...], "blocked": [...]},
+    }}}
+
+**示例**:
+```python
+>>> topology = adapter.get_topology()
+>>> print(topology["adapters"]["onebot11"]["bots"])
+{"123456": {...}}
 ```
 
 ---

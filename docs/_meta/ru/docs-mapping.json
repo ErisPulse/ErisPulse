@@ -84,13 +84,13 @@
       "count": 5,
       "documents": [
         {
-          "title": "Руководство по использованию",
+          "title": "Руководство пользователя",
           "path": "user-guide/README.md",
           "level": 1,
           "icon": "fa-book-open"
         },
         {
-          "title": "Справочник по установке",
+          "title": "Справочное руководство по установке",
           "path": "user-guide/installation.md",
           "level": 1,
           "icon": "fa-download"
@@ -102,7 +102,7 @@
           "icon": "fa-sliders"
         },
         {
-          "title": "Справка по командной строке",
+          "title": "Справочник команд CLI",
           "path": "user-guide/cli-reference.md",
           "level": 1,
           "icon": "fa-terminal"
@@ -140,7 +140,7 @@
           "icon": "fa-puzzle-piece",
           "documents": [
             {
-              "title": "Основы разработки модулей",
+              "title": "Начало работы с разработкой модулей",
               "path": "developer-guide/modules/getting-started.md",
               "level": 1,
               "icon": "fa-puzzle-piece"
@@ -336,10 +336,10 @@
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
       "icon": "fa-fire",
-      "count": 11,
+      "count": 12,
       "documents": [
         {
-          "title": "Продвинутые темы",
+          "title": "Расширенные темы",
           "path": "advanced/README.md",
           "level": 1,
           "icon": "fa-fire"
@@ -399,6 +399,12 @@
           "icon": "fa-language"
         },
         {
+          "title": "Система области видимости модулей",
+          "path": "advanced/scope.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
           "title": "Процесс запуска и ручное управление",
           "path": "advanced/startup.md",
           "level": 1,
@@ -410,25 +416,31 @@
     "Модули экосистемы": {
       "description": "Сторонние модули, поддерживаемые сообществом",
       "icon": "fa-cubes",
-      "count": 3,
+      "count": 4,
       "documents": [
         {
-          "title": "Экосистема модулей",
+          "title": "Экосистема",
           "path": "ecosystem/README.md",
           "level": 1,
           "icon": "fa-cubes"
         },
         {
+          "title": "ErisPulse-App",
+          "path": "ecosystem/app.md",
+          "level": 1,
+          "icon": "fa-mobile-screen"
+        },
+        {
           "title": "ErisPulse-Dashboard",
           "path": "ecosystem/dashboard.md",
           "level": 1,
-          "icon": "fa-cubes"
+          "icon": "fa-table-columns"
         },
         {
           "title": "ErisPulse-Takumi",
           "path": "ecosystem/takumi.md",
           "level": 1,
-          "icon": "fa-cubes"
+          "icon": "fa-image"
         }
       ],
       "subgroups": {}

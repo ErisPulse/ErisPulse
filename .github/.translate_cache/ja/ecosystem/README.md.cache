@@ -1,5 +1,21 @@
 {
-  "hash": "36dfe84730e4f448e9ab8bf877cd5dd8",
-  "translated_at": "2026-08-03T17:09:16.801101",
-  "target_lang": "ja"
+  "version": 2,
+  "hash": "53547945b08c993af256a31a9a8ba4e1",
+  "file_hash": "53547945b08c993af256a31a9a8ba4e1",
+  "translated_at": "2026-08-15T19:52:15.331785",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "6bd3cce836b1cccf009b5e840ebb94f5",
+      "translation": "# エコモジュール\n\nErisPulseフレームワーク自体はコア機能（イベントシステム、モジュールシステム、設定、ルーター、ログ等）のみを提供し、**GUI、画像レンダリング、可視化などの「重い」機能は組み込み**ではありません。これらの機能はコミュニティが保守する**サードパーティモジュール**によって提供されており、必要に応じてインストールするだけです。\n\n> [!IMPORTANT]\n> 本ディレクトリ内のドキュメントは、インストール方法が2種類に分かれています。\n>\n> - **モジュール**（例: Dashboard / Takumi）は `epsdk install` を使用してインストールします：\n>\n>   ```bash\n>   epsdk install <モジュール名>\n>   ```\n>\n> - **スタンドアロンアプリケーション**（例: ErisPulse-App クライアント）は対応する GitHub Releases から直接ダウンロードしてインストールし、`epsdk` は必要ありません。\n>\n\n---"
+    },
+    {
+      "hash": "25b31147cd93a4a1ac3cc1786a9b5806",
+      "translation": "## 推奨モジュールと公式クライアント\n\n| プロジェクト | 種類 | 用途 | ドキュメント |\n|------|------|------|------|\n| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | 公式クライアント | 公式クロスプラットフォームクライアント（Android / Windows / Linux / macOS）：ネイティブUIの作成 / 起動 / 複数インスタンスの管理、モジュールストアとイベントビルダーを内蔵；**スマホで直接実行**、デスクトップトレイ常駐 | [ErisPulse-App インストールと使用](docs/ja/app.md) |\n| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | モジュール | Web管理パネル：モジュールの起動・停止、設定編集、ログの確認、イベント監視；他のモジュールがサイドバーにカスタムウィンドウを登録できるようにサポート | [Dashboard の使用とウィンドウ登録](docs/ja/dashboard.md) |\n| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)） | モジュール | 画像レンダリング：HTML / ノードツリー / Jinja / SVG / アニメーション、[takumi-py](https://github.com/BalconyJH/takumi-py) ベース；中国語・英語フォントを内蔵し、すぐに使用可能 | [Takumi 画像レンダリング](docs/ja/takumi.md) |\n\n---"
+    },
+    {
+      "hash": "313e3e4c95c26587b54e456998ea229e",
+      "translation": "## 自分のモジュールもここに掲載されたい？\n\n優良で、広く再利用可能な ErisPulse エコシステムのモジュールをご紹介ください。条件は以下の通りです：\n\n1. [PyPI](https://pypi.org/) に公開済みであり、パッケージ名が `ErisPulse-` で始まっていること\n2. 基本的な README と使用例を提供していること\n3. 積極的にメンテナンスを行い、Issue に対して反応していること\n\n上記の条件を満たすモジュールの作者は、PR を送信してこのディレクトリに `<モジュール名>.md` のドキュメントを追加し、本表の「推奨モジュール」に一行追加することができます。"
+    }
+  ]
 }

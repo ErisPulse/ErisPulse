@@ -140,7 +140,7 @@
           "icon": "fa-puzzle-piece",
           "documents": [
             {
-              "title": "Introduction to Module Development",
+              "title": "Getting Started with Module Development",
               "path": "developer-guide/modules/getting-started.md",
               "level": 1,
               "icon": "fa-puzzle-piece"
@@ -336,7 +336,7 @@
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
       "icon": "fa-fire",
-      "count": 11,
+      "count": 12,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -399,6 +399,12 @@
           "icon": "fa-language"
         },
         {
+          "title": "Module Scope System",
+          "path": "advanced/scope.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
           "title": "Startup Flow and Manual Control",
           "path": "advanced/startup.md",
           "level": 1,
@@ -410,7 +416,7 @@
     "Ecosystem Modules": {
       "description": "Community-maintained third-party modules",
       "icon": "fa-cubes",
-      "count": 3,
+      "count": 4,
       "documents": [
         {
           "title": "Ecosystem Modules",
@@ -419,16 +425,22 @@
           "icon": "fa-cubes"
         },
         {
+          "title": "ErisPulse-App",
+          "path": "ecosystem/app.md",
+          "level": 1,
+          "icon": "fa-mobile-screen"
+        },
+        {
           "title": "ErisPulse-Dashboard",
           "path": "ecosystem/dashboard.md",
           "level": 1,
-          "icon": "fa-cubes"
+          "icon": "fa-table-columns"
         },
         {
           "title": "ErisPulse-Takumi",
           "path": "ecosystem/takumi.md",
           "level": 1,
-          "icon": "fa-cubes"
+          "icon": "fa-image"
         }
       ],
       "subgroups": {}

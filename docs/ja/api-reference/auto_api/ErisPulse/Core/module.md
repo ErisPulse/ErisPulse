@@ -395,6 +395,72 @@ ErisPulse 模块系统
 ---
 
 
+##### `get_meta(name: str | None = None)`
+
+获取模块的介绍元信息（描述这个模块是什么、属于哪一类等）
+
+元信息是模块的**通用介绍数据**，供 help 模块、Dashboard 模块列表、
+模块商店等各类界面 / 生态模块消费。
+
+**i18n 支持**：元信息字段值可为纯字符串，或 i18n 字典
+``{"i18n": "key.path", "default": "兜底文本"}``（与配置 description 约定一致）。
+翻译键通过模块的 ``I18nClass`` 声明注册（键路径 ``<模块名>.<属性名>``）。
+``resolve_i18n=True``（默认）时解析为当前语言文本；``False`` 时透传原始字典。
+
+解析优先级：模块类声明的 ``get_meta()`` > 注册时传入的 ``info``，缺失字段自动补全。
+
+- **name** (`模块名称`): - **resolve_i18n**: 是否解析 i18n 字典为当前语言文本（默认 True）
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`元信息字典，模块未注册时返回`): None
+
+**示例**:
+```python
+>>> meta = module.get_meta("Weather")
+>>> meta["description"]   # 当前语言下的模块简介
+```
+
+---
+
+
+##### `_resolve_meta_value(value: Any)`
+
+> **内部方法**
+解析元信息字段值：i18n 字典 → 当前语言文本；其余原样返回
+
+- **value** (`原始值（str`): 或 {"i18n": ..., "default": ...}）
+**返回值**: 解析后的值
+
+---
+
+
+##### `_commands_of(module_name: str)`
+
+> **内部方法** 列出该模块注册的主命令名
+
+---
+
+
+##### `get_commands_overview()`
+
+获取命令总览（模块 meta + 其注册的命令，按模块聚合）
+
+聚合每个模块的**介绍元信息**与其**注册的命令**（含别名 / 分组 / 帮助文本），
+便于 help 模块、管理界面等按模块展示"这个模块是干什么的 + 有哪些命令"。
+
+**返回值** (`{模块名:`): {"meta": {...}, "commands": [{name, aliases, group, help, hidden}]}}
+
+**示例**:
+```python
+>>> overview = module.get_commands_overview()
+>>> overview["Weather"]["meta"]["description"]
+"查询城市天气"
+>>> overview["Weather"]["commands"][0]["name"]
+"weather"
+```
+
+---
+
+
 ##### `get_status_summary()`
 
 获取模块的完整状态摘要
@@ -420,6 +486,34 @@ ErisPulse 模块系统
 >>> #         }
 >>> #     }
 >>> # }
+```
+
+---
+
+
+##### `get_topology()`
+
+获取模块的拓扑树数据（便于 WebUI 展示）
+
+聚合每个模块拥有的命令、事件处理器、路由与生命周期钩子，
+按 owner（模块名）归并，展示模块与资源的归属关系。
+
+**返回值** (`拓扑树字典`): {"modules": {name: {
+        "loaded": bool, "enabled": bool,
+        "load_strategy": {"lazy": bool|None, "priority": int|None},
+        "info": dict|None,
+        "commands": [str, ...],
+        "handlers": {event_type: count},
+        "routes": {"http": [...], "ws": [...], "sse": [...]},
+        "lifecycle_hooks": int,
+        "scope_applies": bool,
+    }}}
+
+**示例**:
+```python
+>>> topology = module.get_topology()
+>>> print(topology["modules"]["Chat"]["commands"])
+["chat"]
 ```
 
 ---

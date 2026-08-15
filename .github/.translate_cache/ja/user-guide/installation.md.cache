@@ -1,5 +1,37 @@
 {
-  "hash": "5ab47b81f4c78ddb9eafdb184edc7697",
-  "translated_at": "2026-07-29T11:58:44.125058",
-  "target_lang": "ja"
+  "version": 2,
+  "hash": "6b8bb865b4958d566dc1102cce0c5697",
+  "file_hash": "6b8bb865b4958d566dc1102cce0c5697",
+  "translated_at": "2026-08-15T19:44:58.882450",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "1b3f0ec4bfba51e600c605ef706bd0e7",
+      "translation": "# インストールリファレンス\n\n> 本ページはインストール方法の**完全リファレンス**（pip / uv / Docker / トラブルシューティング）です。\n> もし素早く動かしたいだけなら、[5分クイックスタート](../quick-start.md) で最も単純なフローが説明されています。\n\n直接翻訳された完全なMarkdownコンテンツを返してください。その他の文字を含めないでください。\n再度お知らせ：ドキュメントに言語切り替え行（各言語名が `` | `` で区切られた行）が含まれている場合は、上記の第8条のフォーマット要件を厳守してください。 ``[**Label**](file)`` のような間違った形式を作成しないでください。"
+    },
+    {
+      "hash": "0673dda01e551a4430a223406abc48f9",
+      "translation": "## システム要件\n\n- Python 3.10 以降\n- pip または uv（推奨）\n- 十分なディスク容量（少なくとも 100MB）"
+    },
+    {
+      "hash": "d588381833d7a59395c1506d42a2270e",
+      "translation": "## インストール方法\n\n### 方法 1: pip を使用してインストールする\n\n```bash\n# ErisPulse をインストール\npip install ErisPulse\n\n# 最新版にアップグレード\npip install ErisPulse --upgrade\n```\n\n### 方法 2: uv を使用してインストールする（推奨）\n\nuv は、より高速な Python ツールチェーンです。開発環境での使用が推奨されます。\n\n#### uv のインストール\n\n```bash\n# pip を使用して uv をインストール\npip install uv\n\n# インストールを確認\nuv --version\n```\n\n#### 仮想環境の作成\n\n```bash\n# プロジェクトのディレクトリを作成\nmkdir my_bot && cd my_bot\n\n# Python 3.12 をインストール\nuv python install 3.12\n\n# 仮想環境を作成\nuv venv\n```\n\n#### 仮想環境のアクティブ化\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### ErisPulse をインストール\n\n```bash\n# ErisPulse をインストール\nuv pip install ErisPulse --upgrade"
+    },
+    {
+      "hash": "358f974f4ee2f44daa4450252b751cdc",
+      "translation": "## プロジェクト初期化とモジュールのインストール\n\nインストールが完了した後の、プロジェクトの初期化、モジュールのインストール、実行の完全な手順については、[5 分クイックスタート](../quick-start.md) を参照してください。\n\n### 方法 3: ErisPulse-App クライアントを使用する（ターミナル不要）\n\nPython 環境のインストールが面倒ですか？[ErisPulse-App](../ecosystem/app.md) は公式のクロスプラットフォーム クライアントです\n(Android / Windows / Linux / macOS)、**スマホで直接実行**、デスクトップ版はシステムトレイへ常駐して最小化が可能です。内部に Python ランタイムと ErisPulse SDK を搭載しているため、ターミナルと手動設定は不要です。\n\n- [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) からプラットフォームに合わせてダウンロード\n  （Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）\n- App 内でインスタンスを作成して起動し、ネイティブ インターフェースでアダプターとモジュールを管理、モジュールストアを閲覧します\n\n> 詳細な説明は [ErisPulse-App のインストールと使用方法](../ecosystem/app.md) を参照してください。\n\n直接返事してください：翻訳後の完全なMarkdownコンテンツを返してください。その他の文字は一切含めないでください。"
+    },
+    {
+      "hash": "0cba7617f7a40bf89b6ae47d67267c5f",
+      "translation": "## インストールの検証\n\n### インストール状況の確認\n\n```bash\n# ErisPulse のバージョンを確認\nepsdk --version\n```\n\n### テストの実行\n\n```bash\n# プロジェクトを実行\nepsdk run main.py\n```\n\n類似の出力が表示されれば、インストールは成功しています：\n\n```\n[INFO] ErisPulse の初期化中...\n[INFO] アダプターが読み込まれました: Yunhu\n[INFO] モジュールが読み込まれました: MyModule\n[INFO] ErisPulse の初期化が完了しました"
+    },
+    {
+      "hash": "1bb3ef51791ad89cc63f9dbe11dcaf50",
+      "translation": "## よくある質問\n\n### インストールに失敗しました\n\n1. Python バージョンが >= 3.10（推奨 3.10 - 3.13）か確認してください\n2. `pip install` の代わりに `uv pip install ErisPulse` を試してください\n3. 権限エラーが表示される場合は、`pip install --user ErisPulse` を実行するか、仮想環境を使用してください\n4. 企业のプロキシ環境下で SSL 証明書エラーが発生した場合は、`pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse` を試してください\n5. ネットワーク接続が正常で、pip のソースにアクセスできることを確認してください\n\n### 設定エラー\n\n1. `config.toml` の構文が正しいか確認してください（TOML 形式はインデントと引用符に敏感です）\n2. すべての必須設定項目が入力されていることを確認してください\n3. 詳細なエラーメッセージについては、ターミナルのログを確認してください\n4. `epsdk init` を使用して設定ファイルを再生成してください\n\n### モジュールのインストールに失敗しました\n\n1. モジュール名のスペルが正しいか確認してください（大文字と小文字は区別されます）\n2. ネットワーク接続を確認してください\n3. 利用可能なモジュールの一覧を表示するには `epsdk list-remote` を使用してください\n4. モジュールが現在の SDK バージョンと互換であることを確認してください\n\n### Windows PowerShell の実行ポリシー\n\nPowerShell で \"このシステム上でスクリプトの実行が無効になっているため、ファイルを読み込むことができません\" と表示される場合は、以下を実行してください。\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser"
+    },
+    {
+      "hash": "f8f13704538cc520848853879c0ee83f",
+      "translation": "## 次のステップ\n\n- [CLI コマンドリファレンス](cli-reference.md) - すべてのコマンドラインコマンドについて\n- [設定ファイルの説明](configuration.md) - 設定オプションの詳細について\n\n（注：原文不包含语言切换行，因此无需处理）"
+    }
+  ]
 }

@@ -68,29 +68,29 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 [**English**](docs/ru/quick-start.md)
 
-## Hot Configuration Reload
+## Hot-reload of Configuration
 
-Starting from version 2.7.0, the framework provides **systematic support** for hot reloading of configurations. After an external modification of `config.toml` (the background watcher checks every 5 seconds) or after a code call to `setConfig()`, components automatically respond:
+Starting from version 2.7.0, the framework provides **systematic support** for hot reloading of configurations. After external modification of `config.toml` (the background watcher checks every 5 seconds), or after code calls `setConfig()`, all components automatically respond:
 
 | Component | Configurations Supporting Hot Reload | Behavior |
 |-----------|--------------------------------------|----------|
-| **Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | Automatically reapplied (with change detection) |
+| **Logger** | `logger.level` / `log_files` / `memory_limit` / `format` / `exclude_levels` | Automatically re-applied (with change detection) |
 | **Command System CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
-| **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore and rebuilds with the new value |
-| **Proactive GC** | `framework.proactive_gc_*` | Configuration changes immediately restart the GC task, supporting runtime adjustments, disabling, and re-enabling |
+| **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore, rebuilds with new value |
+| **Proactive GC** | `framework.proactive_gc_*` | Configuration changes immediately restart GC tasks, supports runtime adjustment/disable/re-enable |
 | **Master System Master** | `master.users` | Each `is_master()` check reads in real time, no restart required |
-| **Module/Adapter Configuration** | Individual configuration items | Triggers the `on_config_update(old, new)` callback |
+| **Modules/Adapter Configurations** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
 
-**Configurations Requiring Restart** (cannot be safely hot-swapped; a warning "Process needs to be restarted for changes to take effect" is output when changed):
+**Configurations Requiring Restart** (cannot be safely hot-swapped; a warning message "Process needs to be restarted for changes to take effect" is output when changed):
 
 | Configuration | Reason |
 |---------------|--------|
 | `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-swapped at runtime |
 | `storage.use_global_db` | SQLite file handle is already open at runtime, switching paths is unsafe |
 
-> **Error in Mid-Edit Save?** If a temporary syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, avoiding the broadcast of an empty configuration to components (to prevent `on_config_update` receiving empty values and mistakenly reverting to defaults).
+> **Error during mid-edit save?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, and will not broadcast an empty configuration to all components (to avoid `on_config_update` receiving empty values and incorrectly reverting to defaults).
 
-docs/ru/configuration-hot-reload.md
+[**Русский**](docs/ru/quick-start.md)
 
 ## Полный пример конфигурации
 
@@ -106,6 +106,7 @@ level = "INFO"
 format = "rich"
 log_files = []
 memory_limit = 1000
+exclude_levels = []
 
 [ErisPulse.framework]
 enable_lazy_loading = true
@@ -153,23 +154,27 @@ ssl_keyfile = "/path/to/key.pem"
 Для ссылок на файлы не текущего языка (в формате `README.xx.md`) оставьте без изменений.  
 Это гарантирует, что ссылки указывают на правильную версию документации на нужном языке.
 
-## Конфигурация логирования
+## Конфигурация журналирования
 
 ```toml
 [ErisPulse.logger]
 level = "INFO"
 log_files = ["app.log", "debug.log"]
 memory_limit = 1000
+exclude_levels = ["EVENT"]
 ```
 
 | Параметр | Тип | Значение по умолчанию | Описание |
 |---------|------|---------|------|
-| level | string | INFO | Уровень логирования: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE - самый низкий уровень, выводит подробную отладочную информацию внутренней структуры) |
-| format | string | rich | Формат вывода логов: `rich` (цветной, по умолчанию), `plain` (чистый текст без цвета, подходит для сбора логов/перенаправления в поток), `json` (структурированный JSON, подходит для ELK и подобных систем) |
-| log_files | array | пустой | Список файлов для вывода логов |
-| memory_limit | integer | 1000 | Количество записей логов, сохраняемых в памяти |
+| level | string | INFO | Уровень журналирования: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE — самый низкий уровень, выводит подробную отладочную информацию внутреннего фреймворка) |
+| format | string | rich | Формат вывода журнала: `rich` (цветной, по умолчанию), `plain` (чистый текст без цвета, подходит для сбора журналов/перенаправления в трубу), `json` (структурированный JSON, подходит для ELK и т.д.) |
+| log_files | array | пустой | Список файлов вывода журнала |
+| memory_limit | integer | 1000 | Количество записей журнала, сохраняемых в памяти |
+| exclude_levels | array | пустой | Уровни журналирования, которые нужно исключить. Журналы с исключёнными уровнями **полностью отбрасываются** (не сохраняются в памяти, не отправляются на Dashboard и другие подписчики, не выводятся, не записываются в файл). Поддерживается горячая перезагрузка |
 
-Пожалуйста, замените в документе `docs/ru/` на `docs/ru/` для всех ссылок на документацию. Например, `docs/ru/quick-start.md` должно быть заменено на `docs/ru/quick-start.md`. Ссылки на файлы других языков (в формате `README.xx.md`) оставьте без изменений. Это обеспечит корректное указание на документацию нужного языка.
+> **Защита конфиденциальности**: Содержимое сообщений отправки и получения записывается на уровне **EVENT** (значение 21). Установка `exclude_levels = ["EVENT"]` позволяет предотвратить доступ к содержимому сообщений в группах/личных чатах на панели журнала Dashboard, не влияя при этом на другие уровни журналирования.
+
+[**English**](docs/ru/quick-start.md)
 
 ## Конфигурация фреймворка
 
@@ -325,6 +330,42 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > `setConfig` по умолчанию использует отложенную запись (примерно каждые 5 секунд пакетное сохранение в файл), установка `immediate=True` приводит к немедленной постоянной записи. Изменение конфигурации запускает событие жизненного цикла `config.set`.
 
 [**中文**](docs/ru/quick-start.md)
+
+## Scope Configuration
+
+The module scope system is used to control which modules a "certain Bot" can use. By default, all modules are open to all Bots, and filtering only begins after the configuration is bound. Adapters and modules **do not require any changes** to be compatible.
+
+```toml
+# Platform-level binding (applies to all Bots/sessions on this platform)
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Translate"]   # Whitelist: Bots on this platform can only use these modules
+blocked = ["Danger"]              # Blacklist: These modules are disabled on this platform
+
+# Bot-level binding (applies to all sessions of this Bot, overrides platform-level)
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Chat"]
+blocked = []
+
+# Session-level binding (applies to a specific group/channel/private chat, most specific)
+[ErisPulse.scope.sessions.onebot11."789012345"]
+modules = ["Chat"]
+blocked = []
+```
+
+| Configuration Item | Type | Description |
+|---------|------|------|
+| `scope.default_allow` | boolean | Default allows all modules (`true`). `false` = implicit deny strict mode, only modules in the whitelist are available |
+| `scope.cache_size` | integer | LRU cache size for `is_allowed` (default 1024) |
+| `scope.platforms.<platform>.modules` | array | Platform-level whitelist: only listed modules are allowed (empty = no restriction) |
+| `scope.platforms.<platform>.blocked` | array | Platform-level blacklist: listed modules are disabled (empty = no restriction) |
+| `scope.bots.<platform>.<bot_id>.modules` | array | Bot-level whitelist, overrides platform-level |
+| `scope.bots.<platform>.<bot_id>.blocked` | array | Bot-level blacklist, overrides platform-level |
+| `scope.sessions.<platform>.<session_id>.modules` | array | Session-level whitelist (group/channel/private chat), highest priority |
+| `scope.sessions.<platform>.<session_id>.blocked` | array | Session-level blacklist, highest priority |
+
+> Resolution priority: **Session-level > Bot-level > Platform-level**. Module names are case-insensitive; session identifiers are isolated across platforms. Dynamic addition and removal at runtime is supported via `sdk.scope.bind()` / `unbind()` (with `merge=True` for merging), see [Scope System](../advanced/scope.md).
+
+请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。
 
 ## Далее
 

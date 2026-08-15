@@ -168,6 +168,21 @@ ErisPulse 生命周期管理模块
 ---
 
 
+##### `get_owner_counts()`
+
+统计各 owner 注册的生命周期钩子数量（便于拓扑树展示）
+
+**返回值** (`{owner:`): 钩子数量} 字典
+
+**示例**:
+```python
+>>> lifecycle.get_owner_counts()
+{"MyModule": 3, "onebot11": 2}
+```
+
+---
+
+
 ##### `async emit(event: str, data: Any = None)`
 
 触发事件（异步，精简版）

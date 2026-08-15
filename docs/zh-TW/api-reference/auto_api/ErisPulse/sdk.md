@@ -63,6 +63,8 @@ ErisPulse SDK 主类
 > - router: 路由管理器
 > - client: HTTP 客户端
 > - master: 框架主人管理器
+> - scope: 模块作用域管理器（模块-Bot/平台/会话绑定）
+> - context: 模块上下文管理（owner_scope / get_current_owner）
 
 
 #### 嵌套类
@@ -449,6 +451,57 @@ SDK 初始化入口，返回 Task 对象
 ---
 
 
+##### `enable_plugin_hot_reload(interval: float = 1.0)`
+
+启用本地插件文件夹热重载
+
+监控插件文件夹（默认 ``plugins/``，可通过 ``ErisPulse.framework.plugins_dir``
+配置）下 ``.py`` 文件的变更，自动重新加载对应插件。
+需在 ``await sdk.run()`` 之前调用。
+
+- **interval** (`轮询间隔（秒，默认`): 1.0）
+**返回值** (`是否启动成功（无插件目录或已在运行返回`): False）
+
+**示例**:
+```python
+>>> await sdk.init()
+>>> sdk.enable_plugin_hot_reload()
+>>> await sdk.run()
+```
+
+---
+
+
+##### `async reload_plugin(plugin_name: str)`
+
+热重载单个本地插件（手动触发）
+
+卸载旧实例、清理注册、强制重新导入并重新加载。
+
+- **plugin_name** (`插件名`): **返回值** (`是否重载成功`): 
+**示例**:
+```python
+>>> await sdk.reload_plugin("dice")
+```
+
+---
+
+
+##### `async _reload_plugin(plugin_name: str)`
+
+> **内部方法**
+热重载回调（由 PluginReloadWatcher 调度），失败仅记录不抛异常
+
+---
+
+
+##### `stop_plugin_hot_reload()`
+
+停止本地插件热重载监控
+
+---
+
+
 ##### `_register_signal_handlers()`
 
 > **内部方法**
@@ -596,6 +649,27 @@ SDK 重新启动
 **示例**:
 ```python
 >>> await sdk.hard_restart()
+```
+
+---
+
+
+##### `get_topology()`
+
+获取完整的拓扑树数据（便于 Dashboard 等管理界面展示）
+
+聚合模块、适配器与作用域的归属关系：
+- ``modules``：每个模块拥有的命令 / 事件处理器 / 路由 / 生命周期钩子
+- ``adapters``：每个适配器的运行状态、下属 Bot 状态与作用域绑定
+- ``scope``：全部平台级 / Bot 级作用域绑定
+
+**返回值** (`拓扑树字典`): {"modules": {...}, "adapters": {...}, "scope": {...}}
+
+**示例**:
+```python
+>>> topology = sdk.get_topology()
+>>> topology["modules"]["Chat"]["commands"]
+["chat"]
 ```
 
 ---
