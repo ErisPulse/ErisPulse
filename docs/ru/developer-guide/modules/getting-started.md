@@ -1,6 +1,109 @@
-# Основы разработки модулей
+# Начало работы с разработкой модулей
 
-Это руководство проведет вас через процесс создания модуля ErisPulse с нуля.
+В этом руководстве мы расскажем, как создать модуль ErisPulse с нуля.
+
+Документация о модулях ErisPulse
+
+Дополнительные ресурсы
+
+Ресурсы и документация для разработчиков модулей ErisPulse
+
+Документация по API
+
+Как подключить модуль к боту
+
+Документация по API для разработчиков
+
+Документация по API
+
+Справочник по API
+
+Создание нового модуля
+
+Прежде чем писать код, убедитесь, что у вас установлена и настроена переменная среды.
+
+Создайте новую папку для вашего модуля. Выберите любое имя, но обязательно назовите её `MyModule`. Вы можете также назвать её `mysimplemodule`, если предпочитаете.
+
+Теперь перейдите к настройке параметров модуля. Откройте файл конфигурации, который генерируется в папке вашего модуля.
+
+```javascript
+// Документация о модулях ErisPulse
+module.exports = {
+    // Справочник по API
+    config: {
+        // Создание нового модуля
+        name: 'MyModule', // Здесь используйте ваше имя
+    },
+    // Ресурсы и документация для разработчиков модулей ErisPulse
+    run: (context) => {
+        // Документация по API для разработчиков
+        const { message, args } = context;
+        // Документация по API
+        if (args[0] === 'docs') {
+            message.channel.send('https://docs.erispulse.com/api');
+        }
+    }
+};
+```
+
+[Документация по API для разработчиков](docs/ru/api-reference.md)
+
+```javascript
+module.exports = {
+    config: {
+        // Справочник по API
+        name: 'MyModule',
+        // Ресурсы и документация для разработчиков модулей ErisPulse
+        version: '1.0.0',
+        description: 'Пример простого модуля для ErisPulse',
+        // Дополнительные ресурсы
+        usage: '/mymodule [docs]',
+        // Документация по API
+        cooldown: 0
+    },
+    // Документация по API для разработчиков
+    run: (context) => {
+        // Документация по API
+        const { message, args } = context;
+        if (args[0] === 'docs') {
+            // Ресурсы и документация для разработчиков модулей ErisPulse
+            message.channel.send('Документация по API: https://docs.erispulse.com/api');
+        }
+    }
+};
+```
+
+[Справочник по API](docs/ru/api-reference.md)
+
+```javascript
+module.exports = {
+    config: {
+        name: 'MyModule',
+        version: '1.0.0',
+        description: 'Пример простого модуля для ErisPulse',
+        usage: '/mymodule [docs]',
+        cooldown: 0
+    },
+    run: (context) => {
+        const { message, args } = context;
+        if (args[0] === 'docs') {
+            message.channel.send('Документация по API: https://docs.erispulse.com/api');
+        }
+    }
+};
+```
+
+[Ресурсы и документация для разработчиков модулей ErisPulse](docs/ru/contributing.md)
+
+Проверьте настройки в файле конфигурации модуля.
+
+Запустите бота.
+
+Введите команду в Discord.
+
+Вы увидите сообщение, которое мы отправляем в канал.
+
+Теперь вы знаете, как создать модуль для ErisPulse. Вы можете пойти дальше и изучить документацию API, чтобы понять, как использовать контекст и аргументы для создания более сложных команд.
 
 ## Структура проекта
 
@@ -14,15 +117,14 @@ MyModule/
 └── MyModule/
     ├── __init__.py
     └── Core.py
-```
 
-## Конфигурация pyproject.toml
+## pyproject.toml
 
 ```toml
 [project]
 name = "ErisPulse-MyModule"
 version = "1.0.0"
-description = "Описание функций модуля"
+description = "Описание функционала модуля"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -34,15 +136,13 @@ dependencies = []
 
 [project.entry-points."erispulse.module"]
 "MyModule" = "MyModule:Main"
-```
 
 ## __init__.py
 
 ```python
 from .Core import Main
-```
 
-## Core.py - Основной модуль
+## Core.py - Базовый модуль
 
 ```python
 from ErisPulse import sdk
@@ -70,7 +170,7 @@ class Main(BaseModule):
         """Вызывается при загрузке модуля"""
         @command("hello", help="Отправляет приветствие")
         async def hello_command(event):
-            name = event.get_user_nickname() or "друг"
+            name = event.get_user_nickname() or "Дружище"
             await event.reply(f"Привет, {name}!")
         
         self.logger.info("Модуль загружен")
@@ -90,29 +190,27 @@ class Main(BaseModule):
             self.sdk.config.setConfig("MyModule", default_config)
             return default_config
         return config
-```
 
-## Тестирование модуля
+## Модуль тестирования
 
-### Локальное тестирование
+### Локальный тест
 
 ```bash
-# Установить модуль в текущую директорию проекта
+# Установка модуля в каталог проекта
 epsdk install ./MyModule
 
-# Запустить проект
+# Запуск проекта
 epsdk run main.py --reload
 ```
 
-### Тестовая команда
+### Команда тестирования
 
-Отправьте команду для тестирования:
+Отправка команды на тестирование:
 
 ```
 /hello
-```
 
-## Основные понятия
+## Основные концепции
 
 ### Базовый класс BaseModule
 
@@ -122,12 +220,76 @@ epsdk run main.py --reload
 |------|------|------|
 | `__init__(self)` | Конструктор | Нет |
 | `get_load_strategy()` | Возвращает стратегию загрузки | Нет |
+| `get_meta()` | Возвращает метаданные модуля (необязательно) | Нет |
 | `on_load(self, event)` | Вызывается при загрузке модуля | Да |
-| `on_unload(self, event)` | Вызывается при выгрузке модуля | Да |
+| `on_unload(self, event)` | Вызывается при卸ождении модуля | Да |
+
+### Метаданные модуля
+
+Через `get_meta()` объявляются метаданные модуля (что делает этот модуль, какому классу принадлежит и т.д.).
+Метаданные — это **общие данные описания модуля**, потребляемые модулем help, списком модулей в Dashboard, модулем магазина и другими интерфейсными/экосистемными модулями.
+
+Совпадает с возвращаемым значением `get_load_strategy()`, возвращающим `ModuleLoadStrategy`, **рекомендуется возвращать экземпляр конфигурационного класса `ModuleMeta`** (для подсказок типов и автодополнения в IDE), также совместимо с прямым возвратом dict:
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="Weather",               # Отображаемое имя (по умолчанию — имя регистрации)
+            description="Lookup city weather",  # Краткое описание модуля
+            version="1.0.0",
+            author="ErisDev",
+            group="Tools",               # Группа функций
+            tags=["Weather", "Lookup"],
+        )
+```
+
+Совместимая запись (dict):
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> dict:
+        return {
+            "name": "Weather",
+            "description": "Lookup city weather",
+            "version": "1.0.0",
+            "author": "ErisDev",
+            "group": "Tools",
+            "tags": ["Weather", "Lookup"],
+        }
+```
+
+- `module.get_meta("MyModule")` читает проанализированные метаданные (объявление класса > зарегистрированная информация, автоматически дополняет имя команды этого модуля).
+- `module.get_commands_overview()` агрегирует «метаданные модуля + его зарегистрированные команды (алиасы/группы/справка)», общую сводку команд, сгруппированную по модулям.
+- Владельцем команды служит модуль, к которому она принадлежит, через `cmd_info["owner"]` (автоматически внедряется системой контекста при регистрации).
+
+#### Поддержка i18n для полей meta
+
+Значения полей метаданных могут быть строками или словарем i18n `{"i18n": "key.path", "default": "текст-заглушка"}` (в соответствии с соглашением для поля `description`).
+Ключи перевода регистрируются через объявление в `I18nClass`, при чтении `module.get_meta()` автоматически разрешаются в текст на текущем языке:
+
+```python
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        meta_description: I18nKey = I18nKey(
+            default="Weather lookup",
+            zh_CN="查询城市天气",
+            en="Weather lookup",
+        )
+
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="Weather",
+            description={"i18n": "MyModule.meta_description", "default": "Weather lookup"},
+        )
+```
 
 ### Объект SDK
 
-Доступ к основным функциям через объект `sdk`:
+Доступ к ключевым функциям через объект `sdk`:
 
 ```python
 from ErisPulse import sdk
@@ -138,10 +300,9 @@ sdk.logger     # Система логирования
 sdk.adapter    # Система адаптеров
 sdk.router     # Система маршрутизации
 sdk.lifecycle  # Система жизненного цикла
-```
 
-## Дальнейшие действия
+## Следующие шаги
 
-- [Основные концепции модуля](core-concepts.md) - Глубокое погружение в архитектуру модуля
-- [Подробное описание оберток событий](event-wrapper.md) - Изучение объектов Event
-- [Лучшие практики разработки модулей](best-practices.md) - Разработка качественных модулей
+- [Основные концепции модулей](core-concepts.md) — подробное понимание архитектуры модулей
+- [Подробное описание класса Event Wrapper](event-wrapper.md) — изучение объекта Event
+- [Рекомендации по разработке модулей](best-practices.md) — разработка качественных модулей

@@ -72,15 +72,15 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 ## 配置熱更新
 
-從 2.7.0 開始，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（背景 watcher 每 5 秒偵測一次），或程式碼呼叫 `setConfig()` 後，各組件會自動回應：
+從 2.7.0 開始，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（背景 watcher 每 5 秒檢測一次），或程式碼呼叫 `setConfig()` 後，各元件自動回應：
 
-| 組件 | 支援熱更新的配置 | 行為 |
+| 元件 | 支援熱更新的配置 | 行為 |
 |------|----------------|------|
-| **日誌 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | 自動重新套用（帶變更偵測） |
+| **日誌 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` / `exclude_levels` | 自動重新套用（帶變更檢測） |
 | **命令系統 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一條訊息即生效 |
 | **適配器併發** | `framework.handler_max_concurrency` | 失效快取信號量，按新值重建 |
 | **主動 GC** | `framework.proactive_gc_*` | 配置變更即時重新啟動 GC 任務，支援執行時調整/停用/重新啟用 |
-| **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查實時讀取，無需重啟 |
+| **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查即時讀取，無需重啟 |
 | **模組/適配器配置** | 各自的配置項 | 觸發 `on_config_update(old, new)` 回呼 |
 
 **需重啟的配置**（無法安全熱切換，變更時會輸出告警「需重啟程序後生效」）：
@@ -90,9 +90,11 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 | `router.cors.*` / `router.security.*` | 中間件在服務啟動時寫入 FastAPI，執行時無法安全熱切換 |
 | `storage.use_global_db` | SQLite 檔案句柄已在執行時開啟，切換路徑不安全 |
 
-> **中途編輯儲存出錯？** 若編輯 `config.toml` 時出現瞬時語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各組件（避免 `on_config_update` 收到空值誤回退預設值）。
+> **中途編輯儲存出錯？** 若編輯 `config.toml` 時出現瞬間語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各元件（避免 `on_config_update` 收到空值誤回退預設）。
 
-## 完整配置示例
+[**English**](docs/zh-TW/quick-start.md)
+
+## 完整設定範例
 
 ```toml
 [ErisPulse.server]
@@ -106,6 +108,7 @@ level = "INFO"
 format = "rich"
 log_files = []
 memory_limit = 1000
+exclude_levels = []
 
 [ErisPulse.framework]
 enable_lazy_loading = true
@@ -130,9 +133,6 @@ ignore_self = true
 
 [ErisPulse.i18n]
 language = "auto"
-```
-
-[**English**](docs/zh-TW/quick-start.md) | [**简体中文**](docs/zh-TW/quick-start.md)
 
 ## 伺服器設定
 
@@ -162,16 +162,18 @@ ssl_keyfile = "/path/to/key.pem"
 level = "INFO"
 log_files = ["app.log", "debug.log"]
 memory_limit = 1000
+exclude_levels = ["EVENT"]
 ```
 
-| 配置項 | 類型 | 預設值 | 說明 |
+| 配置項目 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | level | string | INFO | 日誌等級：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低等級，輸出框架內部詳細除錯資訊） |
 | format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文本無顏色，適合日誌採集/管道重定向）、`json`（JSON 結構化，適合 ELK 等） |
-| log_files | array | 空 | 日誌輸出檔案清單 |
-| memory_limit | integer | 1000 | 在記憶體中保存的日誌條數 |
+| log_files | array | 空 | 日誌輸出檔案列表 |
+| memory_limit | integer | 1000 | 內存中保存的日誌條數 |
+| exclude_levels | array | 空 | 屏蔽指定日誌等級。被屏蔽等級的日誌**完全丟棄**（不寫入內存、不推送到 Dashboard 等訂閱器、不列印、不寫入檔案）。支援熱更新 |
 
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+> **隱私保護**：訊息收發內容以 **EVENT 等級**（數值 21）記錄。設定 `exclude_levels = ["EVENT"]` 即可讓後台（如 Dashboard 日誌面板）無法看到各群/私聊的訊息內容，同時不影響其它等級日誌。
 
 ## 框架配置
 
@@ -323,6 +325,40 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > `setConfig` 預設採用延遲寫入（約每 5 秒批量儲存到檔案），設定 `immediate=True` 可立即持久化。設定變更會觸發 `config.set` 生命週期事件。
 
 請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+## 作用域配置
+
+模組作用域系統用於控制「某個 Bot 只能使用哪些模組」。預設情況下所有模組對所有 Bot 開放，僅在配置綁定後才開始過濾，模組與適配器**無需任何修改**即可適配。
+
+```toml
+# 平台級綁定（作用於該平台所有 Bot / 會話）
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Translate"]   # 白名單：該平台 Bot 只能使用這些模組
+blocked = ["Danger"]              # 黑名單：這些模組在該平台禁用
+
+# Bot 級綁定（作用於該 Bot 的所有會話，覆蓋平台級）
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Chat"]
+blocked = []
+
+# 會話級綁定（作用於某個群 / 頻道 / 私聊，最具體）
+[ErisPulse.scope.sessions.onebot11."789012345"]
+modules = ["Chat"]
+blocked = []
+```
+
+| 配置項 | 類型 | 說明 |
+|---------|------|------|
+| `scope.default_allow` | boolean | 預設允許全部模組（`true`）。`false` = 隱式拒絕嚴格模式，僅白名單內模組可用 |
+| `scope.cache_size` | integer | `is_allowed` 的 LRU 快取大小（預設 1024） |
+| `scope.platforms.<platform>.modules` | array | 平台級白名單：僅列出的模組允許使用（空 = 不限制） |
+| `scope.platforms.<platform>.blocked` | array | 平台級黑名單：列出的模組禁用（空 = 不限制） |
+| `scope.bots.<platform>.<bot_id>.modules` | array | Bot 級白名單，覆蓋平台級 |
+| `scope.bots.<platform>.<bot_id>.blocked` | array | Bot 級黑名單，覆蓋平台級 |
+| `scope.sessions.<platform>.<session_id>.modules` | array | 會話級白名單（群/頻道/私聊），優先級最高 |
+| `scope.sessions.<platform>.<session_id>.blocked` | array | 會話級黑名單，優先級最高 |
+
+> 解析優先級：**會話級 > Bot 級 > 平台級**。模組名大小寫不敏感；會話標識跨平台隔離。支援執行時透過 `sdk.scope.bind()` / `unbind()` 動態增刪（`merge=True` 可合併），詳見[作用域系統](../advanced/scope.md)。
 
 ## 下一步
 

@@ -1,5 +1,25 @@
 {
-  "hash": "fd56ac61f70ff669c8325c06e34e1ad5",
-  "translated_at": "2026-08-03T17:06:26.011211",
-  "target_lang": "ja"
+  "version": 2,
+  "hash": "f726ac48e056e248affbe341b358e197",
+  "file_hash": "f726ac48e056e248affbe341b358e197",
+  "translated_at": "2026-08-15T19:38:35.753628",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "940fb1a5278ec5d38e1b46188eea4472",
+      "translation": "# 詳細トピック\n\nこのディレクトリには ErisPulse フレームワークの高度な機能と深掘りトピックが含まれています。"
+    },
+    {
+      "hash": "ad8c5fcf2305ac14c1f0e39bf57d364d",
+      "translation": "## ドキュメント一覧\n\n- [起動プロセスと手動制御](docs/ja/startup.md) - 起動フロー分解（Finder/Loader/Manager/Router）と手動による完全起動\n- [遅延読み込みシステム](docs/ja/lazy-loading.md) - 遅延読み込みモジュールシステムの仕組みと設定\n- [モジュールスコープシステム](docs/ja/scope.md) - モジュールとアダプタ Bot/プラットフォームのバインディングと隔離\n- [国際化 (i18n)](docs/ja/i18n.md) - 多言語サポート、翻訳登録、言語検出\n- [ライフサイクル管理](docs/ja/lifecycle.md) - ライフサイクルイベントシステムの使用方法\n- [ルーター管理](docs/ja/router.md) - HTTP および WebSocket ルーティング管理\n- [HTTP クライアント](docs/ja/http-client.md) - 統一 HTTP リクエストクライアント\n- [MessageBuilder 詳解](docs/ja/message-builder.md) - OneBot12 メッセージセグメントビルダーの双モード使い方\n- [SQL クエリビルダー](docs/ja/sql-builder.md) - 汎用的な SQL チェーンクエリビルダーおよびストレージバックエンド抽象\n- [セッションタイプシステム](docs/ja/session-types.md) - セッションタイプの定義、マッピング、カスタムタイプ登録\n- [Conversation 多会話](docs/ja/conversation.md) - 多会話コンテキストのインタラクション方法\n\n> [!NOTE]\n> Dashboard ウィンドウ登録、Takumi 画像レンダリングなど **サードパーティ生態モジュール** のドキュメントは、[生態モジュール](../ecosystem/README.md) ディレクトリへ移動しました。"
+    },
+    {
+      "hash": "81b5854fa95b29d89b547d92b77468de",
+      "translation": "## 対象読者\n\nこれらのドキュメントは、以下の開発者に適しています。\n\n- ErisPulse の基本機能に慣れている開発者\n- フレームワークの内部メカニズムを深く理解したい開発者\n- パフォーマンスの最適化や複雑な機能の実装が必要な開発者\n\n請直接返回翻译后的完整Markdown内容，不要包含任何其他文字。\n\n再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。"
+    },
+    {
+      "hash": "3ed79ef0b3d522c4c10b2d4fa69192f8",
+      "translation": "## 前提知識\n\nこのディレクトリのドキュメントを読む前に、以下の内容について理解しておくことを推奨します。\n\n- [基礎概念](../getting-started/basic-concepts.md)\n- [イベント処理入門](../getting-started/event-handling.md)\n- [モジュール開発ガイド](../developer-guide/modules/)"
+    }
+  ]
 }

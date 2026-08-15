@@ -166,6 +166,60 @@ JSON 日志格式化器
 ---
 
 
+##### `set_excluded_levels(levels: list[str])`
+
+设置被屏蔽的日志等级列表
+
+被屏蔽等级的日志将被完全丢弃：不写入内存、不推送给订阅器、
+不输出控制台、不写入日志文件。常用于隐私保护场景，
+例如 ``exclude_levels = ["EVENT"]`` 可隐藏消息收发内容
+（消息收发日志使用 EVENT 等级记录）。
+
+- **levels** (`日志等级名称列表（如`): ["EVENT", "DEBUG"]），空列表表示不屏蔽
+**返回值** (`bool`): 设置是否成功（含非法等级时返回 False 且不生效）
+
+**示例**:
+```python
+>>> # 屏蔽 EVENT 等级（隐藏消息收发内容）
+>>> logger.set_excluded_levels(["EVENT"])
+>>> # 恢复所有等级
+>>> logger.set_excluded_levels([])
+```
+
+---
+
+
+##### `exclude_level(level: str)`
+
+屏蔽单个日志等级
+
+被屏蔽等级的日志将被完全丢弃（内存 / 订阅器 / 控制台 / 文件）。
+
+- **level** (`日志等级名称（如`): "EVENT"）
+**返回值** (`bool`): 是否设置成功
+
+---
+
+
+##### `allow_level(level: str)`
+
+取消屏蔽单个日志等级
+
+- **level** (`日志等级名称（如`): "EVENT"）
+**返回值** (`bool`): 是否成功（等级原本未被屏蔽时返回 False）
+
+---
+
+
+##### `list_excluded_levels()`
+
+列出当前被屏蔽的日志等级名称
+
+**返回值** (`list[str]`): 被屏蔽的等级名称列表
+
+---
+
+
 ##### `set_output_file(path)`
 
 设置日志输出

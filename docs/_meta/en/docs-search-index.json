@@ -1,7 +1,135 @@
 {
   "version": "1.0",
-  "total_keywords": 1367,
+  "total_keywords": 1415,
   "keywords": {
+    "\"Chat\": {": [
+      {
+        "document": "advanced/scope.md",
+        "line": 192,
+        "level": 1,
+        "title": "\"Chat\": {"
+      }
+    ],
+    "\"adapters\": {                                  # Adapter -> Bot -> Scope": [
+      {
+        "document": "advanced/scope.md",
+        "line": 203,
+        "level": 1,
+        "title": "\"adapters\": {                                  # Adapter -> Bot -> Scope"
+      }
+    ],
+    "\"bots\": {\"123456\": {\"status\": \"online\", \"last_active\": ..., \"info\": {...}, \"scope\": {...}}},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 206,
+        "level": 1,
+        "title": "\"bots\": {\"123456\": {\"status\": \"online\", \"last_active\": ..., \"info\": {...}, \"scope\": {...}}},"
+      }
+    ],
+    "\"commands\": [\"chat\", \"translate\"],": [
+      {
+        "document": "advanced/scope.md",
+        "line": 196,
+        "level": 1,
+        "title": "\"commands\": [\"chat\", \"translate\"],"
+      }
+    ],
+    "\"handlers\": {\"message\": 2, \"notice\": 1},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 197,
+        "level": 1,
+        "title": "\"handlers\": {\"message\": 2, \"notice\": 1},"
+      }
+    ],
+    "\"info\": {...},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 195,
+        "level": 1,
+        "title": "\"info\": {...},"
+      }
+    ],
+    "\"lifecycle_hooks\": 3,": [
+      {
+        "document": "advanced/scope.md",
+        "line": 199,
+        "level": 1,
+        "title": "\"lifecycle_hooks\": 3,"
+      }
+    ],
+    "\"load_strategy\": {\"lazy\": False, \"priority\": 50},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 194,
+        "level": 1,
+        "title": "\"load_strategy\": {\"lazy\": False, \"priority\": 50},"
+      }
+    ],
+    "\"loaded\": True, \"enabled\": True,": [
+      {
+        "document": "advanced/scope.md",
+        "line": 193,
+        "level": 1,
+        "title": "\"loaded\": True, \"enabled\": True,"
+      }
+    ],
+    "\"modules\": {                                   # Module -> Owned Resources": [
+      {
+        "document": "advanced/scope.md",
+        "line": 191,
+        "level": 1,
+        "title": "\"modules\": {                                   # Module -> Owned Resources"
+      }
+    ],
+    "\"onebot11\": {": [
+      {
+        "document": "advanced/scope.md",
+        "line": 204,
+        "level": 1,
+        "title": "\"onebot11\": {"
+      }
+    ],
+    "\"routes\": {\"http\": [\"/Chat/api\"], \"ws\": [], \"sse\": []},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 198,
+        "level": 1,
+        "title": "\"routes\": {\"http\": [\"/Chat/api\"], \"ws\": [], \"sse\": []},"
+      }
+    ],
+    "\"scope\": {\"modules\": [...], \"blocked\": [...]},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 207,
+        "level": 1,
+        "title": "\"scope\": {\"modules\": [...], \"blocked\": [...]},"
+      }
+    ],
+    "\"scope\": {\"platforms\": {...}, \"bots\": {...}, \"sessions\": {...}}   # All scopes bound": [
+      {
+        "document": "advanced/scope.md",
+        "line": 210,
+        "level": 1,
+        "title": "\"scope\": {\"platforms\": {...}, \"bots\": {...}, \"sessions\": {...}}   # All scopes bound"
+      }
+    ],
+    "\"scope_applies\": True,": [
+      {
+        "document": "advanced/scope.md",
+        "line": 200,
+        "level": 1,
+        "title": "\"scope_applies\": True,"
+      }
+    ],
+    "\"status\": \"started\", \"enabled\": True,": [
+      {
+        "document": "advanced/scope.md",
+        "line": 205,
+        "level": 1,
+        "title": "\"status\": \"started\", \"enabled\": True,"
+      }
+    ],
     "- \"auto\"      — Automatically detect system language (default)": [
       {
         "document": "advanced/i18n.md",
@@ -2056,12 +2184,12 @@
         "title": "Account Resolution Priority"
       }
     ],
-    "Activate the Virtual Environment": [
+    "Activate virtual environment": [
       {
         "document": "user-guide/installation.md",
         "line": 51,
         "level": 4,
-        "title": "Activate the Virtual Environment"
+        "title": "Activate virtual environment"
       }
     ],
     "Active State Management": [
@@ -2236,6 +2364,14 @@
         "line": 210,
         "level": 4,
         "title": "Add Middleware"
+      }
+    ],
+    "Add a line in the module code or a temporary script to locate": [
+      {
+        "document": "advanced/scope.md",
+        "line": 165,
+        "level": 1,
+        "title": "Add a line in the module code or a temporary script to locate"
       }
     ],
     "Additional Fields for Message Events": [
@@ -2560,14 +2696,6 @@
         "line": 19,
         "level": 2,
         "title": "BaseConverter Base Class (Recommended)"
-      }
-    ],
-    "BaseModule Base Class": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 117,
-        "level": 3,
-        "title": "BaseModule Base Class"
       }
     ],
     "Basic Concepts": [
@@ -2948,6 +3076,14 @@
         "title": "Bot Status Values"
       }
     ],
+    "Bot-level binding (applies to all sessions of this Bot, overrides platform-level)": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 343,
+        "level": 1,
+        "title": "Bot-level binding (applies to all sessions of this Bot, overrides platform-level)"
+      }
+    ],
     "Branching and Jumping": [
       {
         "document": "advanced/conversation.md",
@@ -3002,6 +3138,14 @@
         "line": 264,
         "level": 3,
         "title": "Bulk Sending Multiple Messages"
+      }
+    ],
+    "But Bot level only allows Music → This bot can ultimately only use Music, cannot use Chat!": [
+      {
+        "document": "advanced/scope.md",
+        "line": 146,
+        "level": 1,
+        "title": "But Bot level only allows Music → This bot can ultimately only use Music, cannot use Chat!"
       }
     ],
     "Button Message Segment (yunhu_user_button)": [
@@ -3278,12 +3422,12 @@
         "title": "Channel Message Segments"
       }
     ],
-    "Check Installation": [
+    "Check ErisPulse version": [
       {
         "document": "user-guide/installation.md",
-        "line": 74,
-        "level": 3,
-        "title": "Check Installation"
+        "line": 90,
+        "level": 1,
+        "title": "Check ErisPulse version"
       }
     ],
     "Check Platform Status": [
@@ -3308,6 +3452,14 @@
         "line": 1010,
         "level": 1,
         "title": "Check if a Bot is online"
+      }
+    ],
+    "Checking if a module is allowed": [
+      {
+        "document": "advanced/scope.md",
+        "line": 70,
+        "level": 3,
+        "title": "Checking if a module is allowed"
       }
     ],
     "Choose Your Path": [
@@ -3487,7 +3639,7 @@
     "Common Commands": [
       {
         "document": "user-guide/README.md",
-        "line": 16,
+        "line": 17,
         "level": 3,
         "title": "Common Commands"
       }
@@ -3495,7 +3647,7 @@
     "Common Configuration Locations": [
       {
         "document": "user-guide/README.md",
-        "line": 29,
+        "line": 30,
         "level": 3,
         "title": "Common Configuration Locations"
       }
@@ -3506,14 +3658,6 @@
         "line": 111,
         "level": 3,
         "title": "Common Fields (All Event Types)"
-      }
-    ],
-    "Common Issues": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 97,
-        "level": 2,
-        "title": "Common Issues"
       }
     ],
     "Common Parameters": [
@@ -3538,14 +3682,6 @@
         "line": 1,
         "level": 1,
         "title": "Common Task Examples"
-      }
-    ],
-    "Common Usage": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 474,
-        "level": 2,
-        "title": "Common Usage"
       }
     ],
     "Compatibility": [
@@ -3682,14 +3818,6 @@
         "title": "Configuration Description"
       }
     ],
-    "Configuration Errors": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 107,
-        "level": 3,
-        "title": "Configuration Errors"
-      }
-    ],
     "Configuration Example": [
       {
         "document": "platform-guide/onebot11.md",
@@ -3724,6 +3852,14 @@
         "line": 115,
         "level": 3,
         "title": "Configuration Field Description"
+      }
+    ],
+    "Configuration File": [
+      {
+        "document": "advanced/scope.md",
+        "line": 32,
+        "level": 2,
+        "title": "Configuration File"
       }
     ],
     "Configuration File Documentation": [
@@ -3988,14 +4124,6 @@
         "title": "Core Components"
       }
     ],
-    "Core Concepts": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 115,
-        "level": 2,
-        "title": "Core Concepts"
-      }
-    ],
     "Core Concepts of Adapters": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4114,12 +4242,12 @@
         "title": "Core Methods"
       }
     ],
-    "Core Module Description": [
+    "Core Module Descriptions": [
       {
         "document": "architecture.md",
-        "line": 41,
+        "line": 45,
         "level": 3,
-        "title": "Core Module Description"
+        "title": "Core Module Descriptions"
       }
     ],
     "Core Module Explanations": [
@@ -4160,28 +4288,12 @@
         "title": "Core Principles"
       }
     ],
-    "Core.py - Basic Module": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 45,
-        "level": 2,
-        "title": "Core.py - Basic Module"
-      }
-    ],
     "Count and Existence Check": [
       {
         "document": "advanced/sql-builder.md",
         "line": 208,
         "level": 3,
         "title": "Count and Existence Check"
-      }
-    ],
-    "Create Scaffolding": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 571,
-        "level": 3,
-        "title": "Create Scaffolding"
       }
     ],
     "Create Table": [
@@ -4192,12 +4304,12 @@
         "title": "Create Table"
       }
     ],
-    "Create a Virtual Environment": [
+    "Create a virtual environment": [
       {
         "document": "user-guide/installation.md",
         "line": 38,
         "level": 4,
-        "title": "Create a Virtual Environment"
+        "title": "Create a virtual environment"
       }
     ],
     "Creating Your First Bot": [
@@ -4396,6 +4508,14 @@
         "title": "Detailed Explanation of Each Component"
       }
     ],
+    "Detailed Initialization Stages": [
+      {
+        "document": "architecture.md",
+        "line": 84,
+        "level": 3,
+        "title": "Detailed Initialization Stages"
+      }
+    ],
     "Developer Guide": [
       {
         "document": "developer-guide/README.md",
@@ -4415,7 +4535,7 @@
     "Development Methods": [
       {
         "document": "README.md",
-        "line": 74,
+        "line": 77,
         "level": 2,
         "title": "Development Methods"
       }
@@ -4455,7 +4575,7 @@
     "Diagnostic Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 18,
+        "line": 20,
         "level": 2,
         "title": "Diagnostic Commands"
       }
@@ -4482,6 +4602,22 @@
         "line": 292,
         "level": 1,
         "title": "Direct call style"
+      }
+    ],
+    "Direct creation of Adapter project": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 587,
+        "level": 1,
+        "title": "Direct creation of Adapter project"
+      }
+    ],
+    "Direct creation of Module project": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 584,
+        "level": 1,
+        "title": "Direct creation of Module project"
       }
     ],
     "Directory Structure": [
@@ -4728,6 +4864,14 @@
         "title": "Drop Table"
       }
     ],
+    "Dynamic Binding / Unbinding": [
+      {
+        "document": "advanced/scope.md",
+        "line": 82,
+        "level": 3,
+        "title": "Dynamic Binding / Unbinding"
+      }
+    ],
     "Ecosystem Modules": [
       {
         "document": "ecosystem/README.md",
@@ -4771,7 +4915,7 @@
     "Environment Diagnosis": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 433,
+        "line": 440,
         "level": 2,
         "title": "Environment Diagnosis"
       }
@@ -4846,6 +4990,14 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse Session Type Standards"
+      }
+    ],
+    "ErisPulse-App": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-App"
       }
     ],
     "ErisPulse-Dashboard": [
@@ -5052,20 +5204,20 @@
         "title": "Event Handling Example"
       }
     ],
+    "Event Handling Flow": [
+      {
+        "document": "architecture.md",
+        "line": 96,
+        "level": 2,
+        "title": "Event Handling Flow"
+      }
+    ],
     "Event Handling Mechanism": [
       {
         "document": "advanced/lifecycle.md",
         "line": 10,
         "level": 2,
         "title": "Event Handling Mechanism"
-      }
-    ],
-    "Event Handling Process": [
-      {
-        "document": "architecture.md",
-        "line": 92,
-        "level": 2,
-        "title": "Event Handling Process"
       }
     ],
     "Event Listening": [
@@ -5416,6 +5568,12 @@
     ],
     "Feature Overview": [
       {
+        "document": "ecosystem/app.md",
+        "line": 11,
+        "level": 2,
+        "title": "Feature Overview"
+      },
+      {
         "document": "user-guide/deployment.md",
         "line": 76,
         "level": 3,
@@ -5436,6 +5594,14 @@
         "line": 407,
         "level": 3,
         "title": "File Handling Features"
+      }
+    ],
+    "Filtering Statistics (Debug)": [
+      {
+        "document": "advanced/scope.md",
+        "line": 119,
+        "level": 3,
+        "title": "Filtering Statistics (Debug)"
       }
     ],
     "Fine-Grained Runtime Control": [
@@ -5492,6 +5658,30 @@
         "line": 56,
         "level": 3,
         "title": "For Module Developers"
+      }
+    ],
+    "Force overwrite existing directory": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 593,
+        "level": 1,
+        "title": "Force overwrite existing directory"
+      }
+    ],
+    "Force overwrite existing files": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 421,
+        "level": 1,
+        "title": "Force overwrite existing files"
+      }
+    ],
+    "Force upgrade": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 531,
+        "level": 1,
+        "title": "Force upgrade"
       }
     ],
     "Form Message Segment (yunhu_user_form)": [
@@ -5610,6 +5800,14 @@
         "title": "Full Manual Startup Example"
       }
     ],
+    "Full parameters": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 590,
+        "level": 1,
+        "title": "Full parameters"
+      }
+    ],
     "GET": [
       {
         "document": "advanced/http-client.md",
@@ -5642,12 +5840,36 @@
         "title": "General Interfaces"
       }
     ],
-    "Generate Type Stubs": [
+    "Generate all type stubs": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 551,
-        "level": 3,
-        "title": "Generate Type Stubs"
+        "line": 561,
+        "level": 1,
+        "title": "Generate all type stubs"
+      }
+    ],
+    "Generate only module type stubs": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 564,
+        "level": 1,
+        "title": "Generate only module type stubs"
+      }
+    ],
+    "Generate stubs only for adapters": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 415,
+        "level": 1,
+        "title": "Generate stubs only for adapters"
+      }
+    ],
+    "Generate type stubs for all installed modules and adapters": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 412,
+        "level": 1,
+        "title": "Generate type stubs for all installed modules and adapters"
       }
     ],
     "Generic request": [
@@ -5725,7 +5947,7 @@
     "Getting Help": [
       {
         "document": "README.md",
-        "line": 95,
+        "line": 98,
         "level": 2,
         "title": "Getting Help"
       }
@@ -5754,12 +5976,12 @@
         "title": "Getting Started with Event Handling"
       }
     ],
-    "Global Arguments": [
+    "Getting Started with Module Development": [
       {
-        "document": "user-guide/cli-reference.md",
-        "line": 419,
-        "level": 2,
-        "title": "Global Arguments"
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 1,
+        "level": 1,
+        "title": "Getting Started with Module Development"
       }
     ],
     "Global Configuration": [
@@ -5776,6 +5998,14 @@
         "line": 23,
         "level": 3,
         "title": "Global Configuration (EmailAdapter)"
+      }
+    ],
+    "Global Parameters": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 424,
+        "level": 2,
+        "title": "Global Parameters"
       }
     ],
     "Graceful Shutdown": [
@@ -6096,11 +6326,31 @@
         "title": "Hot Restart/Stop Adapters"
       }
     ],
+    "Hot reload mode": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 541,
+        "level": 1,
+        "title": "Hot reload mode"
+      }
+    ],
     "How It Works": [
+      {
+        "document": "advanced/scope.md",
+        "line": 16,
+        "level": 2,
+        "title": "How It Works"
+      },
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 255,
         "level": 3,
+        "title": "How It Works"
+      },
+      {
+        "document": "ecosystem/app.md",
+        "line": 70,
+        "level": 2,
         "title": "How It Works"
       },
       {
@@ -6150,20 +6400,20 @@
         "title": "HttpResponse"
       }
     ],
-    "I want to list my module here too?": [
+    "I also want to list my module here?": [
       {
         "document": "ecosystem/README.md",
-        "line": 24,
+        "line": 27,
         "level": 2,
-        "title": "I want to list my module here too?"
+        "title": "I also want to list my module here?"
       }
     ],
-    "I. I Want to Use Robots": [
+    "I. I Want to Use a Bot": [
       {
         "document": "README.md",
         "line": 17,
         "level": 3,
-        "title": "I. I Want to Use Robots"
+        "title": "I. I Want to Use a Bot"
       }
     ],
     "I18nClass Key Path Rules": [
@@ -6193,7 +6443,7 @@
     "II. I Want to Develop Modules / Adapters": [
       {
         "document": "README.md",
-        "line": 30,
+        "line": 31,
         "level": 3,
         "title": "II. I Want to Develop Modules / Adapters"
       }
@@ -6201,17 +6451,17 @@
     "III. I Want to Deeply Understand the Principles": [
       {
         "document": "README.md",
-        "line": 41,
+        "line": 42,
         "level": 3,
         "title": "III. I Want to Deeply Understand the Principles"
       }
     ],
-    "IV. Recommended Ecosystem Modules": [
+    "IV. Ecosystem and Official Clients": [
       {
         "document": "README.md",
-        "line": 55,
+        "line": 57,
         "level": 3,
-        "title": "IV. Recommended Ecosystem Modules"
+        "title": "IV. Ecosystem and Official Clients"
       }
     ],
     "Ideaura Cafe Platform Features Documentation": [
@@ -6310,14 +6560,6 @@
         "title": "Inbound Protocol"
       }
     ],
-    "Information Query Commands": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 162,
-        "level": 2,
-        "title": "Information Query Commands"
-      }
-    ],
     "Inheritance of Modifiers and Rules": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -6335,17 +6577,9 @@
       },
       {
         "document": "architecture.md",
-        "line": 55,
+        "line": 59,
         "level": 2,
         "title": "Initialization Process"
-      }
-    ],
-    "Initialization Stage Breakdown": [
-      {
-        "document": "architecture.md",
-        "line": 80,
-        "level": 3,
-        "title": "Initialization Stage Breakdown"
       }
     ],
     "Initialize Project": [
@@ -6353,12 +6587,6 @@
         "document": "quick-start.md",
         "line": 61,
         "level": 2,
-        "title": "Initialize Project"
-      },
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 561,
-        "level": 3,
         "title": "Initialize Project"
       }
     ],
@@ -6392,12 +6620,20 @@
         "title": "Install ErisPulse"
       }
     ],
-    "Install Modules": [
+    "Install a single module": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 476,
-        "level": 3,
-        "title": "Install Modules"
+        "line": 486,
+        "level": 1,
+        "title": "Install a single module"
+      }
+    ],
+    "Install multiple modules": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 489,
+        "level": 1,
+        "title": "Install multiple modules"
       }
     ],
     "Install uv": [
@@ -6408,12 +6644,20 @@
         "title": "Install uv"
       }
     ],
-    "Installation Failure": [
+    "Installation (Android / Mobile Direct Run)": [
       {
-        "document": "user-guide/installation.md",
-        "line": 99,
+        "document": "ecosystem/app.md",
+        "line": 42,
+        "level": 2,
+        "title": "Installation (Android / Mobile Direct Run)"
+      }
+    ],
+    "Installation (Desktop: Windows / Linux / macOS)": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 60,
         "level": 3,
-        "title": "Installation Failure"
+        "title": "Installation (Desktop: Windows / Linux / macOS)"
       }
     ],
     "Installation Methods": [
@@ -6494,12 +6738,34 @@
         "title": "Interactive Initialization (Recommended)"
       }
     ],
-    "Interactive Installation": [
+    "Interactive creation (guided selection of type and filling in information)": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 461,
-        "level": 2,
-        "title": "Interactive Installation"
+        "line": 581,
+        "level": 1,
+        "title": "Interactive creation (guided selection of type and filling in information)"
+      }
+    ],
+    "Interactive initialization": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 571,
+        "level": 1,
+        "title": "Interactive initialization"
+      }
+    ],
+    "Interactive language selection": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 366,
+        "level": 1,
+        "title": "Interactive language selection"
+      },
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 548,
+        "level": 1,
+        "title": "Interactive language selection"
       }
     ],
     "Internationalization (i18n) System": [
@@ -6508,14 +6774,6 @@
         "line": 1,
         "level": 1,
         "title": "Internationalization (i18n) System"
-      }
-    ],
-    "Introduction to Module Development": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 1,
-        "level": 1,
-        "title": "Introduction to Module Development"
       }
     ],
     "Item Template": [
@@ -6537,7 +6795,7 @@
     "Key Steps in Event Handling": [
       {
         "document": "architecture.md",
-        "line": 113,
+        "line": 117,
         "level": 3,
         "title": "Key Steps in Event Handling"
       }
@@ -6556,14 +6814,6 @@
         "line": 1,
         "level": 1,
         "title": "Kook Platform Features Documentation"
-      }
-    ],
-    "Language Command": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 341,
-        "level": 2,
-        "title": "Language Command"
       }
     ],
     "Language Detection Mechanism": [
@@ -6653,7 +6903,7 @@
       },
       {
         "document": "architecture.md",
-        "line": 121,
+        "line": 125,
         "level": 2,
         "title": "Lifecycle Events"
       }
@@ -6698,14 +6948,6 @@
         "title": "List Bots of a specific platform"
       }
     ],
-    "List Components": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 489,
-        "level": 3,
-        "title": "List Components"
-      }
-    ],
     "List Platforms": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -6722,12 +6964,76 @@
         "title": "List Supported Send Methods"
       }
     ],
+    "List after forcing cache refresh": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 219,
+        "level": 1,
+        "title": "List after forcing cache refresh"
+      }
+    ],
     "List all Bots": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 1004,
         "level": 1,
         "title": "List all Bots"
+      }
+    ],
+    "List all components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 499,
+        "level": 1,
+        "title": "List all components"
+      }
+    ],
+    "List all installed components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 184,
+        "level": 1,
+        "title": "List all installed components"
+      }
+    ],
+    "List all remote available components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 213,
+        "level": 1,
+        "title": "List all remote available components"
+      }
+    ],
+    "List all supported languages": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 375,
+        "level": 1,
+        "title": "List all supported languages"
+      }
+    ],
+    "List only adapters": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 502,
+        "level": 1,
+        "title": "List only adapters"
+      }
+    ],
+    "List only upgradable components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 505,
+        "level": 1,
+        "title": "List only upgradable components"
+      }
+    ],
+    "List supported languages": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 554,
+        "level": 1,
+        "title": "List supported languages"
       }
     ],
     "Listen to @ messages": [
@@ -6807,7 +7113,7 @@
     "Listening to Lifecycle Events": [
       {
         "document": "architecture.md",
-        "line": 152,
+        "line": 156,
         "level": 3,
         "title": "Listening to Lifecycle Events"
       }
@@ -6845,7 +7151,7 @@
     "Local Testing": [
       {
         "document": "developer-guide/modules/getting-started.md",
-        "line": 97,
+        "line": 93,
         "level": 3,
         "title": "Local Testing"
       }
@@ -7400,12 +7706,12 @@
         "title": "Meta Meta-Event Module"
       }
     ],
-    "Method 1: Install with pip": [
+    "Method 1: Install using pip": [
       {
         "document": "user-guide/installation.md",
         "line": 14,
         "level": 3,
-        "title": "Method 1: Install with pip"
+        "title": "Method 1: Install using pip"
       }
     ],
     "Method 1: reply() via parameter": [
@@ -7416,12 +7722,12 @@
         "title": "Method 1: reply() via parameter"
       }
     ],
-    "Method 2: Install with uv (Recommended)": [
+    "Method 2: Install using uv (Recommended)": [
       {
         "document": "user-guide/installation.md",
         "line": 24,
         "level": 3,
-        "title": "Method 2: Install with uv (Recommended)"
+        "title": "Method 2: Install using uv (Recommended)"
       }
     ],
     "Method 2: event.send_chain()": [
@@ -7596,14 +7902,6 @@
         "title": "Module Discovery Mechanism"
       }
     ],
-    "Module Installation Failure": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 114,
-        "level": 3,
-        "title": "Module Installation Failure"
-      }
-    ],
     "Module Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
@@ -7624,20 +7922,20 @@
         "title": "Module Lifecycle"
       }
     ],
-    "Module Loading Strategy": [
-      {
-        "document": "architecture.md",
-        "line": 175,
-        "level": 2,
-        "title": "Module Loading Strategy"
-      }
-    ],
     "Module Overview": [
       {
         "document": "api-reference/README.md",
         "line": 16,
         "level": 2,
         "title": "Module Overview"
+      }
+    ],
+    "Module Scope System": [
+      {
+        "document": "advanced/scope.md",
+        "line": 1,
+        "level": 1,
+        "title": "Module Scope System"
       }
     ],
     "Module Store Overview": [
@@ -7837,7 +8135,7 @@
       },
       {
         "document": "developer-guide/modules/getting-started.md",
-        "line": 143,
+        "line": 201,
         "level": 2,
         "title": "Next Steps"
       },
@@ -7873,7 +8171,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 129,
+        "line": 145,
         "level": 2,
         "title": "Next Steps"
       }
@@ -8108,6 +8406,38 @@
         "title": "OneBot12 Supported detail_type"
       }
     ],
+    "Only display packages that can be upgraded": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 193,
+        "level": 1,
+        "title": "Only display packages that can be upgraded"
+      }
+    ],
+    "Only list adapters": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 190,
+        "level": 1,
+        "title": "Only list adapters"
+      }
+    ],
+    "Only list modules": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 187,
+        "level": 1,
+        "title": "Only list modules"
+      }
+    ],
+    "Only list remote modules": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 216,
+        "level": 1,
+        "title": "Only list remote modules"
+      }
+    ],
     "Opcode Description": [
       {
         "document": "platform-guide/discord.md",
@@ -8143,7 +8473,7 @@
     "Others": [
       {
         "document": "README.md",
-        "line": 85,
+        "line": 88,
         "level": 2,
         "title": "Others"
       }
@@ -8162,6 +8492,14 @@
         "line": 224,
         "level": 3,
         "title": "Output Format"
+      }
+    ],
+    "Output to a specified directory": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 418,
+        "level": 1,
+        "title": "Output to a specified directory"
       }
     ],
     "Overriding Built-in Methods": [
@@ -8247,7 +8585,7 @@
     "Package Management Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 9,
+        "line": 11,
         "level": 2,
         "title": "Package Management Commands"
       }
@@ -8428,6 +8766,14 @@
         "title": "Platform Specific Modifier Methods"
       }
     ],
+    "Platform level only allows Chat": [
+      {
+        "document": "advanced/scope.md",
+        "line": 142,
+        "level": 1,
+        "title": "Platform level only allows Chat"
+      }
+    ],
     "Platform-Specific Event Types": [
       {
         "document": "platform-guide/yunhu.md",
@@ -8452,6 +8798,14 @@
         "title": "Platform-Specific Features"
       }
     ],
+    "Platform-level binding (applies to all Bots/sessions on this platform)": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 338,
+        "level": 1,
+        "title": "Platform-level binding (applies to all Bots/sessions on this platform)"
+      }
+    ],
     "Platform-specific Response": [
       {
         "document": "getting-started/common-tasks.md",
@@ -8471,7 +8825,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 29,
+        "line": 36,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -8508,18 +8862,10 @@
         "title": "Progress Monitoring (OnProgress / OnError)"
       }
     ],
-    "Project Initialization and Module Installation": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 68,
-        "level": 2,
-        "title": "Project Initialization and Module Installation"
-      }
-    ],
     "Project Management Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 263,
+        "line": 265,
         "level": 2,
         "title": "Project Management Commands"
       }
@@ -8710,6 +9056,14 @@
         "title": "Quality Checklist"
       }
     ],
+    "Query Bindings": [
+      {
+        "document": "advanced/scope.md",
+        "line": 107,
+        "level": 3,
+        "title": "Query Bindings"
+      }
+    ],
     "Query Bot Status": [
       {
         "document": "api-reference/adapter-system.md",
@@ -8791,7 +9145,7 @@
       },
       {
         "document": "user-guide/README.md",
-        "line": 14,
+        "line": 15,
         "level": 2,
         "title": "Quick Reference"
       }
@@ -8826,6 +9180,14 @@
         "line": 9,
         "level": 3,
         "title": "Quick Start"
+      }
+    ],
+    "Quick initialization": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 574,
+        "level": 1,
+        "title": "Quick initialization"
       }
     ],
     "Rate Limiting": [
@@ -8877,7 +9239,7 @@
     "Reading configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 317,
+        "line": 318,
         "level": 1,
         "title": "Reading configuration"
       }
@@ -8906,12 +9268,12 @@
         "title": "Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)"
       }
     ],
-    "Recommended Modules": [
+    "Recommended Modules and Official Clients": [
       {
         "document": "ecosystem/README.md",
-        "line": 15,
+        "line": 17,
         "level": 2,
-        "title": "Recommended Modules"
+        "title": "Recommended Modules and Official Clients"
       }
     ],
     "Recommended Scenarios for Disabling Lazy Loading (lazy_load=False)": [
@@ -9105,7 +9467,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 473,
+        "line": 477,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9123,7 +9485,7 @@
       },
       {
         "document": "user-guide/README.md",
-        "line": 39,
+        "line": 40,
         "level": 2,
         "title": "Related Documentation"
       }
@@ -9157,6 +9519,12 @@
     "Related Links": [
       {
         "document": "README.md",
+        "line": 106,
+        "level": 2,
+        "title": "Related Links"
+      },
+      {
+        "document": "ecosystem/app.md",
         "line": 103,
         "level": 2,
         "title": "Related Links"
@@ -9174,6 +9542,14 @@
         "line": 578,
         "level": 2,
         "title": "Relationship with CLI i18n"
+      }
+    ],
+    "Relationship with SDK": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 90,
+        "level": 2,
+        "title": "Relationship with SDK"
       }
     ],
     "Relationship with SendDSL Standard Methods": [
@@ -9648,20 +10024,20 @@
         "title": "Rule Propagation"
       }
     ],
-    "Run Project": [
+    "Run normally": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 528,
-        "level": 3,
-        "title": "Run Project"
+        "line": 538,
+        "level": 1,
+        "title": "Run normally"
       }
     ],
-    "Run a Test": [
+    "Run the project": [
       {
         "document": "user-guide/installation.md",
-        "line": 81,
-        "level": 3,
-        "title": "Run a Test"
+        "line": 97,
+        "level": 1,
+        "title": "Run the project"
       }
     ],
     "Running the Project": [
@@ -9672,10 +10048,18 @@
         "title": "Running the Project"
       }
     ],
+    "Runtime API": [
+      {
+        "document": "advanced/scope.md",
+        "line": 68,
+        "level": 2,
+        "title": "Runtime API"
+      }
+    ],
     "Runtime Control Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 226,
+        "line": 222,
         "level": 2,
         "title": "Runtime Control Commands"
       }
@@ -9683,17 +10067,9 @@
     "SDK Core Architecture": [
       {
         "document": "architecture.md",
-        "line": 5,
+        "line": 9,
         "level": 2,
         "title": "SDK Core Architecture"
-      }
-    ],
-    "SDK Objects": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 128,
-        "level": 3,
-        "title": "SDK Objects"
       }
     ],
     "SQL Chained Queries": [
@@ -9723,7 +10099,7 @@
     "Saving immediately to file": [
       {
         "document": "user-guide/configuration.md",
-        "line": 324,
+        "line": 325,
         "level": 1,
         "title": "Saving immediately to file"
       }
@@ -10044,6 +10420,14 @@
         "line": 1,
         "level": 1,
         "title": "Session Type System"
+      }
+    ],
+    "Session-level binding (applies to a specific group/channel/private chat, most specific)": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 348,
+        "level": 1,
+        "title": "Session-level binding (applies to a specific group/channel/private chat, most specific)"
       }
     ],
     "Severity Levels": [
@@ -10568,6 +10952,14 @@
         "title": "Supported Original Event Types"
       }
     ],
+    "Supported Platforms": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 27,
+        "level": 2,
+        "title": "Supported Platforms"
+      }
+    ],
     "Supported Submission Types": [
       {
         "document": "developer-guide/publishing.md",
@@ -10584,12 +10976,28 @@
         "title": "Supported levels (from lowest to highest):"
       }
     ],
-    "Switch Language": [
+    "Switch directly to English": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 538,
-        "level": 3,
-        "title": "Switch Language"
+        "line": 551,
+        "level": 1,
+        "title": "Switch directly to English"
+      }
+    ],
+    "Switch to English": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 369,
+        "level": 1,
+        "title": "Switch to English"
+      }
+    ],
+    "Switch to Japanese": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 372,
+        "level": 1,
+        "title": "Switch to Japanese"
       }
     ],
     "Switch via Configuration File": [
@@ -10689,7 +11097,7 @@
     "Target Audience": [
       {
         "document": "advanced/README.md",
-        "line": 21,
+        "line": 24,
         "level": 2,
         "title": "Target Audience"
       }
@@ -10726,28 +11134,28 @@
         "title": "Telegram Platform Features Documentation"
       }
     ],
+    "Test Commands": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 103,
+        "level": 3,
+        "title": "Test Commands"
+      }
+    ],
+    "Test Module": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 91,
+        "level": 2,
+        "title": "Test Module"
+      }
+    ],
     "Testing": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 524,
         "level": 2,
         "title": "Testing"
-      }
-    ],
-    "Testing Commands": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 107,
-        "level": 3,
-        "title": "Testing Commands"
-      }
-    ],
-    "Testing the Module": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 95,
-        "level": 2,
-        "title": "Testing the Module"
       }
     ],
     "Through account name": [
@@ -10780,6 +11188,14 @@
         "line": 267,
         "level": 3,
         "title": "Token Refresh"
+      }
+    ],
+    "Topology Tree Data": [
+      {
+        "document": "advanced/scope.md",
+        "line": 129,
+        "level": 3,
+        "title": "Topology Tree Data"
       }
     ],
     "Traditional Registration Methods": [
@@ -10862,14 +11278,6 @@
         "title": "Type Mapping"
       }
     ],
-    "Type Stub Commands": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 378,
-        "level": 2,
-        "title": "Type Stub Commands"
-      }
-    ],
     "Type Stub Generation (IDE Completion)": [
       {
         "document": "getting-started/ide-completion.md",
@@ -10902,12 +11310,20 @@
         "title": "Unified Module Access Entry"
       }
     ],
-    "Uninstall Components": [
+    "Uninstall a single component": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 505,
-        "level": 3,
-        "title": "Uninstall Components"
+        "line": 515,
+        "level": 1,
+        "title": "Uninstall a single component"
+      }
+    ],
+    "Uninstall multiple components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 518,
+        "level": 1,
+        "title": "Uninstall multiple components"
       }
     ],
     "Unique Event Types": [
@@ -11022,12 +11438,28 @@
         "title": "Updates and Maintenance"
       }
     ],
-    "Upgrade Components": [
+    "Upgrade a module": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 515,
-        "level": 3,
-        "title": "Upgrade Components"
+        "line": 492,
+        "level": 1,
+        "title": "Upgrade a module"
+      }
+    ],
+    "Upgrade all components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 525,
+        "level": 1,
+        "title": "Upgrade all components"
+      }
+    ],
+    "Upgrade specified components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 528,
+        "level": 1,
+        "title": "Upgrade specified components"
       }
     ],
     "Usage": [
@@ -11393,17 +11825,9 @@
     "V. I Want to Contribute to ErisPulse": [
       {
         "document": "README.md",
-        "line": 65,
+        "line": 68,
         "level": 3,
         "title": "V. I Want to Contribute to ErisPulse"
-      }
-    ],
-    "Verify Installation": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 72,
-        "level": 2,
-        "title": "Verify Installation"
       }
     ],
     "Version Update Notes": [
@@ -11412,6 +11836,14 @@
         "line": 105,
         "level": 3,
         "title": "Version Update Notes"
+      }
+    ],
+    "View remote available components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 508,
+        "level": 1,
+        "title": "View remote available components"
       }
     ],
     "Viewport and Output Formats": [
@@ -11602,14 +12034,6 @@
         "title": "Wildcard"
       }
     ],
-    "Windows PowerShell Execution Policy": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 121,
-        "level": 3,
-        "title": "Windows PowerShell Execution Policy"
-      }
-    ],
     "Working Principle": [
       {
         "document": "advanced/lazy-loading.md",
@@ -11621,7 +12045,7 @@
     "Writing configuration at runtime (delayed save)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 321,
+        "line": 322,
         "level": 1,
         "title": "Writing configuration at runtime (delayed save)"
       }
@@ -11885,7 +12309,7 @@
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
-        "line": 39,
+        "line": 37,
         "level": 2,
         "title": "__init__.py"
       }
@@ -12013,7 +12437,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 300,
+        "line": 302,
         "level": 3,
         "title": "create"
       }
@@ -12053,7 +12477,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 435,
+        "line": 442,
         "level": 3,
         "title": "doctor"
       }
@@ -12090,18 +12514,10 @@
         "title": "heartbeat — Heartbeat"
       }
     ],
-    "i18n": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 347,
-        "level": 3,
-        "title": "i18n"
-      }
-    ],
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 270,
+        "line": 272,
         "level": 3,
         "title": "init"
       }
@@ -12109,7 +12525,7 @@
     "install": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 24,
+        "line": 26,
         "level": 3,
         "title": "install"
       }
@@ -12128,22 +12544,6 @@
         "line": 124,
         "level": 3,
         "title": "len() / bool()"
-      }
-    ],
-    "list": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 169,
-        "level": 3,
-        "title": "list"
-      }
-    ],
-    "list-remote": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 198,
-        "level": 3,
-        "title": "list-remote"
       }
     ],
     "mention_all Message Segment": [
@@ -12202,18 +12602,10 @@
         "title": "private"
       }
     ],
-    "pyproject.toml Configuration": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 19,
-        "level": 2,
-        "title": "pyproject.toml Configuration"
-      }
-    ],
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 232,
+        "line": 228,
         "level": 3,
         "title": "run"
       }
@@ -12253,7 +12645,7 @@
     "self-update": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 129,
+        "line": 131,
         "level": 3,
         "title": "self-update"
       }
@@ -12290,18 +12682,10 @@
         "title": "thread"
       }
     ],
-    "types": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 384,
-        "level": 3,
-        "title": "types"
-      }
-    ],
     "uninstall": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 78,
+        "line": 80,
         "level": 3,
         "title": "uninstall"
       }
@@ -12309,7 +12693,7 @@
     "upgrade": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 101,
+        "line": 103,
         "level": 3,
         "title": "upgrade"
       }
@@ -12338,6 +12722,14 @@
         "title": "ws_connect Parameters"
       }
     ],
+    "{": [
+      {
+        "document": "advanced/scope.md",
+        "line": 190,
+        "level": 1,
+        "title": "{"
+      }
+    ],
     "{\"adapters\": {\"myplatform\": {\"status\": \"started\", \"bots\": {...}}}}": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -12352,6 +12744,40 @@
         "line": 1002,
         "level": 1,
         "title": "{\"status\": \"online\", \"last_active\": 1712345678.0, \"info\": {\"nickname\": \"MyBot\"}}"
+      }
+    ],
+    "}": [
+      {
+        "document": "advanced/scope.md",
+        "line": 201,
+        "level": 1,
+        "title": "}"
+      },
+      {
+        "document": "advanced/scope.md",
+        "line": 208,
+        "level": 1,
+        "title": "}"
+      },
+      {
+        "document": "advanced/scope.md",
+        "line": 211,
+        "level": 1,
+        "title": "}"
+      }
+    ],
+    "},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 202,
+        "level": 1,
+        "title": "},"
+      },
+      {
+        "document": "advanced/scope.md",
+        "line": 209,
+        "level": 1,
+        "title": "},"
       }
     ],
     "❌ Blocking operation": [

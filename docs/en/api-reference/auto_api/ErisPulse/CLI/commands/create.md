@@ -111,6 +111,17 @@ create 命令
 ---
 
 
+##### `_create_module_local(args, name: str)`
+
+创建本地插件（--local）：生成 plugins/ 目录结构，免打包安装
+
+- **args** (`Any`): 解析后的命令参数对象
+- **name** (`str`): 模块名称
+**返回值** (`None`): 无返回值
+
+---
+
+
 ##### `_create_adapter(args, name: str)`
 
 创建 Adapter 项目脚手架

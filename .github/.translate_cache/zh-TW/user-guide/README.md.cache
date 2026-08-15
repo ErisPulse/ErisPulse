@@ -1,5 +1,25 @@
 {
-  "hash": "42d2318adf675cf172f1d758ce752d8f",
-  "translated_at": "2026-08-01T18:15:11.659447",
-  "target_lang": "zh-TW"
+  "version": 2,
+  "hash": "77038eb74ee19fc0669511f65008a44f",
+  "file_hash": "77038eb74ee19fc0669511f65008a44f",
+  "translated_at": "2026-08-15T19:14:29.522621",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "ba96c76949a16f4365b59641440be885",
+      "translation": "# 使用者指南\n\n本指南將協助您安裝、設定及管理 ErisPulse 專案。"
+    },
+    {
+      "hash": "8c83143bb3b9498306193aacbe172e21",
+      "translation": "## 內容列表\n\n| 文件 | 說明 |\n|------|------|\n| [安裝和設定](installation.md) | 系統需求、安裝方式 (pip/uv/Docker)、驗證安裝 |\n| [ErisPulse-App 手機/桌面客戶端](../ecosystem/app.md) | 官方用戶端：手機 / 桌面直接執行、原生介面管理 ErisPulse 實例 |\n| [CLI 指令參考](cli-reference.md) | `epsdk` 命令列工具的完整使用說明 |\n| [設定檔說明](configuration.md) | `config/config.toml` 各配置項的詳細說明 |\n| [部署指南](deployment.md) | Docker 部署、systemd 服務、SSL 設定 |"
+    },
+    {
+      "hash": "42eceb8ec2a76b0b2d9c256d5ececfdc",
+      "translation": "## 快速參考\n\n### 常用指令\n\n| 指令 | 說明 |\n|------|------|\n| `epsdk init` | 初始化專案（`-q` 快速模式，`-n` 指定名稱） |\n| `epsdk install <套件名>` | 安裝模組/介面卡（無參數進入互動模式） |\n| `epsdk run main.py` | 執行專案（`--reload` 熱重載模式） |\n| `epsdk list` | 列出已安裝的模組/介面卡 |\n| `epsdk upgrade <套件名>` | 升級模組/介面卡 |\n| `epsdk doctor` | 診斷環境（Python/後端/設定/PyPI 連通性） |\n\n> 完整的指令清單和參數說明請參考 [CLI 指令參考](cli-reference.md)。\n\n### 常見設定位置\n\n| 設定項 | 說明 | 詳見 |\n|--------|------|------|\n| `[ErisPulse.server]` | 伺服器設定（主機、連接埠） | [設定檔說明](configuration.md#伺服器設定) |\n| `[ErisPulse.logger]` | 日誌設定（層級、輸出檔案） | [設定檔說明](configuration.md#日誌設定) |\n| `[ErisPulse.framework]` | 框架設定（延遲載入） | [設定檔說明](configuration.md#框架設定) |\n| `[ErisPulse.event.command]` | 指令事件設定（前綴） | [設定檔說明](configuration.md#事件設定) |\n| `[介面卡名稱]` | 各介面卡的特定設定 | [平台特性指南](../platform-guide/) |"
+    },
+    {
+      "hash": "0b20cfa96c53ab9bf5b4401abfe7697b",
+      "translation": "## 相關文件\n\n- [快速開始](../quick-start.md) - 快速入門指南\n- [新手入門](../getting-started/) - 入門教程\n- [開發者指南](../developer-guide/) - 開發自定義模組和適配器\n- [API 參考](../api-reference/) - API 文件\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。\n\n再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第 8 條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。"
+    }
+  ]
 }

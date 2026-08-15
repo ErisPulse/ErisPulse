@@ -76,25 +76,25 @@ Once again, if the document contains language switch lines (with each language n
 
 ## Configuration Hot Reload
 
-Starting from version 2.7.0, the framework provides **systematic support** for configuration hot reload. After external modification of `config.toml` (background watcher checks every 5 seconds), or after code calls `setConfig()`, components automatically respond:
+Starting from version 2.7.0, the framework provides **systematic support** for configuration hot reload. After external modification of `config.toml` (background watcher checks every 5 seconds) or code calls `setConfig()`, components automatically respond:
 
 | Component | Configurations Supporting Hot Reload | Behavior |
 |-----------|--------------------------------------|----------|
-| **Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | Automatically reapplied (with change detection) |
+| **Logger** | `logger.level` / `log_files` / `memory_limit` / `format` / `exclude_levels` | Automatically reapplied (with change detection) |
 | **Command System CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
 | **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore and rebuilds with new value |
-| **Proactive GC** | `framework.proactive_gc_*` | Configuration changes immediately restart GC task, supports runtime adjustment/disable/re-enable |
-| **Master System Master** | `master.users` | Each `is_master()` check reads in real-time, no restart needed |
-| **Module/Adapter Configuration** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
+| **Proactive GC** | `framework.proactive_gc_*` | Configuration change immediately restarts GC task, supports runtime adjustment/disable/re-enable |
+| **Master System Master** | `master.users` | Each `is_master()` check reads in real-time, no restart required |
+| **Module/Adapter Configuration** | Individual configuration items | Triggers `on_config_update(old, new)` callback |
 
-**Configurations Requiring Restart** (cannot be safely hot-swapped; warning "Process needs restart to take effect" is output on change):
+**Configurations Requiring Restart** (cannot be safely hot-swapped; warning "Process needs to be restarted for changes to take effect" is output when changed):
 
 | Configuration | Reason |
 |---------------|--------|
-| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-swapped at runtime |
-| `storage.use_global_db` | SQLite file handle is already open at runtime, switching paths is unsafe |
+| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup; cannot be safely hot-swapped at runtime |
+| `storage.use_global_db` | SQLite file handle is already open at runtime; switching paths is unsafe |
 
-> **Error editing and saving midway?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, not broadcasting an empty configuration to components (to avoid `on_config_update` receiving null values and mistakenly reverting to default).
+> **Error during in-progress editing and saving?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, without broadcasting an empty configuration to components (to avoid `on_config_update` receiving empty values and mistakenly reverting to defaults).
 
 docs/en/configuration-hot-reload.md
 
@@ -112,6 +112,7 @@ level = "INFO"
 format = "rich"
 log_files = []
 memory_limit = 1000
+exclude_levels = []
 
 [ErisPulse.framework]
 enable_lazy_loading = true
@@ -165,18 +166,18 @@ Once again, if the document contains language switching lines (lines with langua
 level = "INFO"
 log_files = ["app.log", "debug.log"]
 memory_limit = 1000
+exclude_levels = ["EVENT"]
 ```
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| level | string | INFO | Logging level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal debugging information) |
-| format | string | rich | Logging output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
+| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal framework debugging information) |
+| format | string | rich | Log output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
 | log_files | array | empty | List of log output files |
-| memory_limit | integer | 1000 | Number of log entries saved in memory |
+| memory_limit | integer | 1000 | Number of log entries to keep in memory |
+| exclude_levels | array | empty | Exclude specified log levels. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to file). Supports hot update |
 
-Please directly return the complete translated Markdown content, without including any other text.
-
-Once again, if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the above rule #8 and do not write incorrect formats such as ``[**Label**](file)``.
+> **Privacy Protection**: Message sending and receiving content is recorded at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (such as the Dashboard log panel) from seeing message content in groups/private chats, while not affecting logs of other levels.
 
 ## Framework Configuration
 
@@ -328,6 +329,40 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > By default, `setConfig` uses delayed writing (approximately batch saving to file every 5 seconds). Setting `immediate=True` will persist immediately. Configuration changes will trigger the `config.set` lifecycle event.
 
 Please replace paths in document links by replacing `docs/en/` with `docs/en/`. For example, `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`. For links pointing to files of non-current language versions (such as `README.xx.md`), keep them unchanged to ensure links point to the correct language version of the document.
+
+## Scope Configuration
+
+The module scope system is used to control "which modules a certain Bot can use." By default, all modules are open to all Bots. Filtering only begins after configuration binding, and adapters require **no changes** to be compatible.
+
+```toml
+# Platform-level binding (applies to all Bots/sessions on this platform)
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Translate"]   # Whitelist: Bots on this platform can only use these modules
+blocked = ["Danger"]              # Blacklist: These modules are disabled on this platform
+
+# Bot-level binding (applies to all sessions of this Bot, overrides platform-level)
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Chat"]
+blocked = []
+
+# Session-level binding (applies to a specific group/channel/private chat, most specific)
+[ErisPulse.scope.sessions.onebot11."789012345"]
+modules = ["Chat"]
+blocked = []
+```
+
+| Configuration Item | Type | Description |
+|---------|------|------|
+| `scope.default_allow` | boolean | Default allows all modules (`true`). `false` = implicit deny strict mode, only modules in the whitelist are available |
+| `scope.cache_size` | integer | LRU cache size for `is_allowed` (default 1024) |
+| `scope.platforms.<platform>.modules` | array | Platform-level whitelist: only listed modules are allowed (empty = no restriction) |
+| `scope.platforms.<platform>.blocked` | array | Platform-level blacklist: listed modules are disabled (empty = no restriction) |
+| `scope.bots.<platform>.<bot_id>.modules` | array | Bot-level whitelist, overrides platform-level |
+| `scope.bots.<platform>.<bot_id>.blocked` | array | Bot-level blacklist, overrides platform-level |
+| `scope.sessions.<platform>.<session_id>.modules` | array | Session-level whitelist (group/channel/private chat), highest priority |
+| `scope.sessions.<platform>.<session_id>.blocked` | array | Session-level blacklist, highest priority |
+
+> Resolution priority: **Session-level > Bot-level > Platform-level**. Module names are case-insensitive; session identifiers are isolated across platforms. Dynamic addition/removal at runtime is supported via `sdk.scope.bind()` / `unbind()` (with `merge=True` to merge), see [Scope System](../advanced/scope.md).
 
 ## Next Steps
 

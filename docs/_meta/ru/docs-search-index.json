@@ -1,13 +1,45 @@
 {
   "version": "1.0",
-  "total_keywords": 1394,
+  "total_keywords": 1442,
   "keywords": {
+    "\"Chat\": {": [
+      {
+        "document": "advanced/scope.md",
+        "line": 192,
+        "level": 1,
+        "title": "\"Chat\": {"
+      }
+    ],
+    "\"adapters\": {                                  # адаптер → Bot → область видимости": [
+      {
+        "document": "advanced/scope.md",
+        "line": 203,
+        "level": 1,
+        "title": "\"adapters\": {                                  # адаптер → Bot → область видимости"
+      }
+    ],
     "\"base_url\": \"http://localhost:8080\",": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 446,
         "level": 1,
         "title": "\"base_url\": \"http://localhost:8080\","
+      }
+    ],
+    "\"bots\": {\"123456\": {\"status\": \"online\", \"last_active\": ..., \"info\": {...}, \"scope\": {...}}},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 206,
+        "level": 1,
+        "title": "\"bots\": {\"123456\": {\"status\": \"online\", \"last_active\": ..., \"info\": {...}, \"scope\": {...}}},"
+      }
+    ],
+    "\"commands\": [\"chat\", \"translate\"],": [
+      {
+        "document": "advanced/scope.md",
+        "line": 196,
+        "level": 1,
+        "title": "\"commands\": [\"chat\", \"translate\"],"
       }
     ],
     "\"connection\": {": [
@@ -18,12 +50,68 @@
         "title": "\"connection\": {"
       }
     ],
+    "\"handlers\": {\"message\": 2, \"notice\": 1},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 197,
+        "level": 1,
+        "title": "\"handlers\": {\"message\": 2, \"notice\": 1},"
+      }
+    ],
     "\"http_routes\": [": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 447,
         "level": 1,
         "title": "\"http_routes\": ["
+      }
+    ],
+    "\"info\": {...},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 195,
+        "level": 1,
+        "title": "\"info\": {...},"
+      }
+    ],
+    "\"lifecycle_hooks\": 3,": [
+      {
+        "document": "advanced/scope.md",
+        "line": 199,
+        "level": 1,
+        "title": "\"lifecycle_hooks\": 3,"
+      }
+    ],
+    "\"load_strategy\": {\"lazy\": False, \"priority\": 50},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 194,
+        "level": 1,
+        "title": "\"load_strategy\": {\"lazy\": False, \"priority\": 50},"
+      }
+    ],
+    "\"loaded\": True, \"enabled\": True,": [
+      {
+        "document": "advanced/scope.md",
+        "line": 193,
+        "level": 1,
+        "title": "\"loaded\": True, \"enabled\": True,"
+      }
+    ],
+    "\"modules\": {                                   # модуль → ресурсы, которыми он владеет": [
+      {
+        "document": "advanced/scope.md",
+        "line": 191,
+        "level": 1,
+        "title": "\"modules\": {                                   # модуль → ресурсы, которыми он владеет"
+      }
+    ],
+    "\"onebot11\": {": [
+      {
+        "document": "advanced/scope.md",
+        "line": 204,
+        "level": 1,
+        "title": "\"onebot11\": {"
       }
     ],
     "\"platform\": \"myplatform\",": [
@@ -34,12 +122,52 @@
         "title": "\"platform\": \"myplatform\","
       }
     ],
+    "\"routes\": {\"http\": [\"/Chat/api\"], \"ws\": [], \"sse\": []},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 198,
+        "level": 1,
+        "title": "\"routes\": {\"http\": [\"/Chat/api\"], \"ws\": [], \"sse\": []},"
+      }
+    ],
+    "\"scope\": {\"modules\": [...], \"blocked\": [...]},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 207,
+        "level": 1,
+        "title": "\"scope\": {\"modules\": [...], \"blocked\": [...]},"
+      }
+    ],
+    "\"scope\": {\"platforms\": {...}, \"bots\": {...}, \"sessions\": {...}}   # все области видимости": [
+      {
+        "document": "advanced/scope.md",
+        "line": 210,
+        "level": 1,
+        "title": "\"scope\": {\"platforms\": {...}, \"bots\": {...}, \"sessions\": {...}}   # все области видимости"
+      }
+    ],
+    "\"scope_applies\": True,": [
+      {
+        "document": "advanced/scope.md",
+        "line": 200,
+        "level": 1,
+        "title": "\"scope_applies\": True,"
+      }
+    ],
     "\"status\": \"started\",": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 444,
         "level": 1,
         "title": "\"status\": \"started\","
+      }
+    ],
+    "\"status\": \"started\", \"enabled\": True,": [
+      {
+        "document": "advanced/scope.md",
+        "line": 205,
+        "level": 1,
+        "title": "\"status\": \"started\", \"enabled\": True,"
       }
     ],
     "\"url\": \"http://localhost:8080/myplatform/webhook\"}": [
@@ -690,12 +818,12 @@
         "title": "2. Уровень загрузки: Loader"
       }
     ],
-    "2. Я хочу разработать модуль / адаптер": [
+    "2. Я хочу разрабатывать модули / адаптеры": [
       {
         "document": "README.md",
-        "line": 28,
+        "line": 29,
         "level": 3,
-        "title": "2. Я хочу разработать модуль / адаптер"
+        "title": "2. Я хочу разрабатывать модули / адаптеры"
       }
     ],
     "2.1 Обязательные поля": [
@@ -986,12 +1114,12 @@
         "title": "3. Четкое управление конфигурацией"
       }
     ],
-    "3. Я хочу глубже понять принципы работы": [
+    "3. Я хочу глубоко понять принципы работы": [
       {
         "document": "README.md",
-        "line": 39,
+        "line": 40,
         "level": 3,
-        "title": "3. Я хочу глубже понять принципы работы"
+        "title": "3. Я хочу глубоко понять принципы работы"
       }
     ],
     "3.1 Общие поля": [
@@ -1194,14 +1322,6 @@
         "title": "4. Реализация обязательных методов"
       }
     ],
-    "4. Рекомендуемые модули экосистемы": [
-      {
-        "document": "README.md",
-        "line": 53,
-        "level": 3,
-        "title": "4. Рекомендуемые модули экосистемы"
-      }
-    ],
     "4. Спецификация именования параметров": [
       {
         "document": "standards/send-method-spec.md",
@@ -1248,6 +1368,14 @@
         "line": 106,
         "level": 3,
         "title": "4. Управление опубликованными модулями"
+      }
+    ],
+    "4. Экосистема и официальный клиент": [
+      {
+        "document": "README.md",
+        "line": 55,
+        "level": 3,
+        "title": "4. Экосистема и официальный клиент"
       }
     ],
     "4.1 Базовый вызов": [
@@ -1429,7 +1557,7 @@
     "5. Я хочу внести вклад в ErisPulse": [
       {
         "document": "README.md",
-        "line": 63,
+        "line": 66,
         "level": 3,
         "title": "5. Я хочу внести вклад в ErisPulse"
       }
@@ -2050,6 +2178,14 @@
         "title": "Best Practices"
       }
     ],
+    "Bot-level binding (applies to all sessions of this Bot, overrides platform-level)": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 344,
+        "level": 1,
+        "title": "Bot-level binding (applies to all sessions of this Bot, overrides platform-level)"
+      }
+    ],
     "Client (Сетевой клиент)": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -2072,14 +2208,6 @@
         "line": 1,
         "level": 1,
         "title": "Conversation Многошаговый диалог"
-      }
-    ],
-    "Core.py - Основной модуль": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 45,
-        "level": 2,
-        "title": "Core.py - Основной модуль"
       }
     ],
     "Discord": [
@@ -2112,6 +2240,14 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse Спецификация операций запросов"
+      }
+    ],
+    "ErisPulse-App": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-App"
       }
     ],
     "ErisPulse-Dashboard": [
@@ -2186,12 +2322,12 @@
         "title": "HTTPStatusError"
       }
     ],
-    "Hot Configuration Reload": [
+    "Hot-reload of Configuration": [
       {
         "document": "user-guide/configuration.md",
         "line": 71,
         "level": 2,
-        "title": "Hot Configuration Reload"
+        "title": "Hot-reload of Configuration"
       }
     ],
     "HttpResponse": [
@@ -2274,6 +2410,14 @@
         "title": "PUT / DELETE / PATCH"
       }
     ],
+    "Platform-level binding (applies to all Bots/sessions on this platform)": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 339,
+        "level": 1,
+        "title": "Platform-level binding (applies to all Bots/sessions on this platform)"
+      }
+    ],
     "Q1: Почему при отправке `private` преобразуется в `user`?": [
       {
         "document": "standards/session-types.md",
@@ -2317,7 +2461,7 @@
     "Related Documentation": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 482,
+        "line": 478,
         "level": 2,
         "title": "Related Documentation"
       }
@@ -2328,6 +2472,14 @@
         "line": 244,
         "level": 3,
         "title": "Router (Маршрутизация)"
+      }
+    ],
+    "Runtime API": [
+      {
+        "document": "advanced/scope.md",
+        "line": 67,
+        "level": 2,
+        "title": "Runtime API"
       }
     ],
     "SQL Query Builder": [
@@ -2344,6 +2496,14 @@
         "line": 1,
         "level": 1,
         "title": "SendDSL: подробное описание"
+      }
+    ],
+    "Session-level binding (applies to a specific group/channel/private chat, most specific)": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 349,
+        "level": 1,
+        "title": "Session-level binding (applies to a specific group/channel/private chat, most specific)"
       }
     ],
     "Storage (Хранилище)": [
@@ -2695,7 +2855,7 @@
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
-        "line": 39,
+        "line": 140,
         "level": 2,
         "title": "__init__.py"
       }
@@ -2775,7 +2935,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 300,
+        "line": 302,
         "level": 3,
         "title": "create"
       }
@@ -2794,14 +2954,6 @@
         "line": 40,
         "level": 3,
         "title": "docker-compose.yml"
-      }
-    ],
-    "doctor": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 435,
-        "level": 3,
-        "title": "doctor"
       }
     ],
     "dump_state()": [
@@ -2852,18 +3004,10 @@
         "title": "heartbeat — Пинг"
       }
     ],
-    "i18n": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 347,
-        "level": 3,
-        "title": "i18n"
-      }
-    ],
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 270,
+        "line": 272,
         "level": 3,
         "title": "init"
       }
@@ -2871,7 +3015,7 @@
     "install": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 24,
+        "line": 30,
         "level": 3,
         "title": "install"
       }
@@ -2895,7 +3039,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 169,
+        "line": 177,
         "level": 3,
         "title": "list"
       }
@@ -2903,7 +3047,7 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 198,
+        "line": 206,
         "level": 3,
         "title": "list-remote"
       }
@@ -2922,14 +3066,6 @@
         "line": 36,
         "level": 4,
         "title": "private"
-      }
-    ],
-    "run": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 232,
-        "level": 3,
-        "title": "run"
       }
     ],
     "save() / resume() / clear_saved()": [
@@ -2951,7 +3087,7 @@
     "self-update": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 129,
+        "line": 135,
         "level": 3,
         "title": "self-update"
       }
@@ -2980,18 +3116,10 @@
         "title": "thread"
       }
     ],
-    "types": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 384,
-        "level": 3,
-        "title": "types"
-      }
-    ],
     "uninstall": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 78,
+        "line": 84,
         "level": 3,
         "title": "uninstall"
       }
@@ -2999,7 +3127,7 @@
     "upgrade": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 101,
+        "line": 107,
         "level": 3,
         "title": "upgrade"
       }
@@ -3021,6 +3149,12 @@
       }
     ],
     "{": [
+      {
+        "document": "advanced/scope.md",
+        "line": 190,
+        "level": 1,
+        "title": "{"
+      },
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 442,
@@ -3094,6 +3228,24 @@
     ],
     "}": [
       {
+        "document": "advanced/scope.md",
+        "line": 201,
+        "level": 1,
+        "title": "}"
+      },
+      {
+        "document": "advanced/scope.md",
+        "line": 208,
+        "level": 1,
+        "title": "}"
+      },
+      {
+        "document": "advanced/scope.md",
+        "line": 211,
+        "level": 1,
+        "title": "}"
+      },
+      {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 455,
         "level": 1,
@@ -3104,6 +3256,20 @@
         "line": 456,
         "level": 1,
         "title": "}"
+      }
+    ],
+    "},": [
+      {
+        "document": "advanced/scope.md",
+        "line": 202,
+        "level": 1,
+        "title": "},"
+      },
+      {
+        "document": "advanced/scope.md",
+        "line": 209,
+        "level": 1,
+        "title": "},"
       }
     ],
     "Абстрактные типы": [
@@ -3218,12 +3384,12 @@
         "title": "Аккуратное завершение"
       }
     ],
-    "Активация виртуальной среды": [
+    "Активация виртуального окружения": [
       {
         "document": "user-guide/installation.md",
-        "line": 51,
+        "line": 57,
         "level": 4,
-        "title": "Активация виртуальной среды"
+        "title": "Активация виртуального окружения"
       }
     ],
     "Активная отправка Meta событий": [
@@ -3414,14 +3580,6 @@
         "title": "Базовый класс BaseConverter (рекомендуется)"
       }
     ],
-    "Базовый класс BaseModule": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 117,
-        "level": 3,
-        "title": "Базовый класс BaseModule"
-      }
-    ],
     "Базовый класс адаптера": [
       {
         "document": "api-reference/adapter-system.md",
@@ -3468,6 +3626,12 @@
         "line": 80,
         "level": 3,
         "title": "Быстрая инициализация"
+      },
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 580,
+        "level": 1,
+        "title": "Быстрая инициализация"
       }
     ],
     "Быстрая публикация": [
@@ -3476,6 +3640,14 @@
         "line": 34,
         "level": 2,
         "title": "Быстрая публикация"
+      }
+    ],
+    "Быстрая справка": [
+      {
+        "document": "user-guide/README.md",
+        "line": 19,
+        "level": 2,
+        "title": "Быстрая справка"
       }
     ],
     "Быстрое знакомство": [
@@ -3720,12 +3892,60 @@
         "title": "Выбор типа разработки"
       }
     ],
+    "Вывести список всех компонентов": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 505,
+        "level": 1,
+        "title": "Вывести список всех компонентов"
+      }
+    ],
     "Вывести список всех пространств имен (адаптер/модуль)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 458,
         "level": 1,
         "title": "Вывести список всех пространств имен (адаптер/модуль)"
+      }
+    ],
+    "Вывести список поддерживаемых языков": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 560,
+        "level": 1,
+        "title": "Вывести список поддерживаемых языков"
+      }
+    ],
+    "Вывести только адаптеры": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 508,
+        "level": 1,
+        "title": "Вывести только адаптеры"
+      }
+    ],
+    "Вывести только обновляемые компоненты": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 511,
+        "level": 1,
+        "title": "Вывести только обновляемые компоненты"
+      }
+    ],
+    "Вывод в указанную директорию": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 415,
+        "level": 1,
+        "title": "Вывод в указанную директорию"
+      }
+    ],
+    "Вывод списка всех поддерживаемых языков": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 375,
+        "level": 1,
+        "title": "Вывод списка всех поддерживаемых языков"
       }
     ],
     "Вызов API": [
@@ -3760,20 +3980,12 @@
         "title": "Выполнение логики после успешной отправки"
       }
     ],
-    "Выполнение политики PowerShell в Windows": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 121,
-        "level": 3,
-        "title": "Выполнение политики PowerShell в Windows"
-      }
-    ],
-    "Генерация типов (Stubs)": [
+    "Генерация всех stub-файлов типов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 551,
-        "level": 3,
-        "title": "Генерация типов (Stubs)"
+        "line": 567,
+        "level": 1,
+        "title": "Генерация всех stub-файлов типов"
       }
     ],
     "Генерация типовых заглушек (автодополнение в IDE)": [
@@ -3782,6 +3994,30 @@
         "line": 1,
         "level": 1,
         "title": "Генерация типовых заглушек (автодополнение в IDE)"
+      }
+    ],
+    "Генерация типовых заглушек для всех установленных модулей и адаптеров": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 409,
+        "level": 1,
+        "title": "Генерация типовых заглушек для всех установленных модулей и адаптеров"
+      }
+    ],
+    "Генерация только stub-файлов модуля": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 570,
+        "level": 1,
+        "title": "Генерация только stub-файлов модуля"
+      }
+    ],
+    "Генерация только заглушек для адаптеров": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 412,
+        "level": 1,
+        "title": "Генерация только заглушек для адаптеров"
       }
     ],
     "Главная кнопка": [
@@ -3824,12 +4060,20 @@
         "title": "Глобальное покрытие переводов"
       }
     ],
-    "Глобальные параметры": [
+    "Горячая перезагрузка (автоматический перезапуск при изменении файлов)": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 419,
-        "level": 2,
-        "title": "Глобальные параметры"
+        "line": 259,
+        "level": 1,
+        "title": "Горячая перезагрузка (автоматический перезапуск при изменении файлов)"
+      }
+    ],
+    "Горячая перезагрузка SDK": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 262,
+        "level": 1,
+        "title": "Горячая перезагрузка SDK"
       }
     ],
     "Горячая перезагрузка адаптеров": [
@@ -3870,20 +4114,6 @@
         "title": "Далее"
       }
     ],
-    "Дальнейшие действия": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 143,
-        "level": 2,
-        "title": "Дальнейшие действия"
-      },
-      {
-        "document": "user-guide/installation.md",
-        "line": 129,
-        "level": 2,
-        "title": "Дальнейшие действия"
-      }
-    ],
     "Дальнейшие шаги": [
       {
         "document": "ai-support/README.md",
@@ -3902,6 +4132,14 @@
         "line": 504,
         "level": 2,
         "title": "Дальнейшие шаги"
+      }
+    ],
+    "Данные топологии дерева": [
+      {
+        "document": "advanced/scope.md",
+        "line": 128,
+        "level": 3,
+        "title": "Данные топологии дерева"
       }
     ],
     "Два режима внедрения": [
@@ -3968,20 +4206,12 @@
         "title": "Декораторы правил отправки"
       }
     ],
-    "Диагностика окружения": [
+    "Диагностика среды выполнения": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 433,
-        "level": 2,
-        "title": "Диагностика окружения"
-      }
-    ],
-    "Диагностические команды": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 18,
-        "level": 2,
-        "title": "Диагностические команды"
+        "line": 461,
+        "level": 1,
+        "title": "Диагностика среды выполнения"
       }
     ],
     "Динамический контент": [
@@ -3992,12 +4222,12 @@
         "title": "Динамический контент"
       }
     ],
-    "Для кого подходит": [
+    "Динамическое привязывание / отвязывание": [
       {
-        "document": "advanced/README.md",
-        "line": 21,
-        "level": 2,
-        "title": "Для кого подходит"
+        "document": "advanced/scope.md",
+        "line": 81,
+        "level": 3,
+        "title": "Динамическое привязывание / отвязывание"
       }
     ],
     "Для конечных пользователей": [
@@ -4038,6 +4268,14 @@
         "line": 208,
         "level": 4,
         "title": "Добавление промежуточного ПО"
+      }
+    ],
+    "Добавьте одну строку в код модуля или во временный скрипт для отладки": [
+      {
+        "document": "advanced/scope.md",
+        "line": 164,
+        "level": 1,
+        "title": "Добавьте одну строку в код модуля или во временный скрипт для отладки"
       }
     ],
     "Документация": [
@@ -4261,7 +4499,7 @@
     "Другое": [
       {
         "document": "README.md",
-        "line": 83,
+        "line": 84,
         "level": 2,
         "title": "Другое"
       }
@@ -4288,6 +4526,14 @@
         "line": 351,
         "level": 1,
         "title": "Если при входе невозможно получить bot_id, можно позволить пользователю заполнить в конфигурации"
+      }
+    ],
+    "Жизненный цикл": [
+      {
+        "document": "architecture.md",
+        "line": 125,
+        "level": 2,
+        "title": "Жизненный цикл"
       }
     ],
     "Жизненный цикл адаптеров": [
@@ -4328,14 +4574,6 @@
         "title": "Жизненный цикл обработчика событий"
       }
     ],
-    "Жизненный цикл событий": [
-      {
-        "document": "architecture.md",
-        "line": 121,
-        "level": 2,
-        "title": "Жизненный цикл событий"
-      }
-    ],
     "Закрытие соединения": [
       {
         "document": "advanced/http-client.md",
@@ -4347,7 +4585,7 @@
     "Запись конфигурации во время выполнения (отложенное сохранение)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 318,
+        "line": 323,
         "level": 1,
         "title": "Запись конфигурации во время выполнения (отложенное сохранение)"
       }
@@ -4432,6 +4670,14 @@
         "title": "Запрос полей ID"
       }
     ],
+    "Запрос привязок": [
+      {
+        "document": "advanced/scope.md",
+        "line": 106,
+        "level": 3,
+        "title": "Запрос привязок"
+      }
+    ],
     "Запрос состояния бота": [
       {
         "document": "api-reference/event-system.md",
@@ -4494,18 +4740,18 @@
         "title": "Запуск проекта"
       },
       {
-        "document": "user-guide/cli-reference.md",
-        "line": 528,
-        "level": 3,
+        "document": "user-guide/installation.md",
+        "line": 104,
+        "level": 1,
         "title": "Запуск проекта"
       }
     ],
-    "Запуск теста": [
+    "Запуск указанного файла скрипта": [
       {
-        "document": "user-guide/installation.md",
-        "line": 81,
-        "level": 3,
-        "title": "Запуск теста"
+        "document": "user-guide/cli-reference.md",
+        "line": 256,
+        "level": 1,
+        "title": "Запуск указанного файла скрипта"
       }
     ],
     "Зарезервированные сегменты ошибок": [
@@ -4642,20 +4888,6 @@
         "line": 65,
         "level": 2,
         "title": "Инициализация проекта"
-      },
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 561,
-        "level": 3,
-        "title": "Инициализация проекта"
-      }
-    ],
-    "Инициализация проекта и установка модулей": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 68,
-        "level": 2,
-        "title": "Инициализация проекта и установка модулей"
       }
     ],
     "Инициализация ядра": [
@@ -4698,6 +4930,14 @@
         "title": "Интеграция жизненного цикла"
       }
     ],
+    "Интерактивная инициализация": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 577,
+        "level": 1,
+        "title": "Интерактивная инициализация"
+      }
+    ],
     "Интерактивная инициализация (рекомендуется)": [
       {
         "document": "quick-start.md",
@@ -4706,12 +4946,12 @@
         "title": "Интерактивная инициализация (рекомендуется)"
       }
     ],
-    "Интерактивная установка": [
+    "Интерактивное создание (пошаговый выбор типа и заполнение информации)": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 461,
-        "level": 2,
-        "title": "Интерактивная установка"
+        "line": 587,
+        "level": 1,
+        "title": "Интерактивное создание (пошаговый выбор типа и заполнение информации)"
       }
     ],
     "Интерактивные методы": [
@@ -4720,6 +4960,20 @@
         "line": 203,
         "level": 4,
         "title": "Интерактивные методы"
+      }
+    ],
+    "Интерактивный выбор языка": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 366,
+        "level": 1,
+        "title": "Интерактивный выбор языка"
+      },
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 554,
+        "level": 1,
+        "title": "Интерактивный выбор языка"
       }
     ],
     "Интерфейс управления": [
@@ -4922,6 +5176,14 @@
         "line": 83,
         "level": 2,
         "title": "Использование i18n в модуле"
+      }
+    ],
+    "Использование алиаса": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 464,
+        "level": 1,
+        "title": "Использование алиаса"
       }
     ],
     "Использование асинхронных операций": [
@@ -5132,6 +5394,14 @@
         "title": "Как поддержать несколько платформ?"
       }
     ],
+    "Как это работает": [
+      {
+        "document": "advanced/scope.md",
+        "line": 17,
+        "level": 2,
+        "title": "Как это работает"
+      }
+    ],
     "Картирование типов": [
       {
         "document": "advanced/session-types.md",
@@ -5189,7 +5459,7 @@
     "Ключевые шаги обработки событий": [
       {
         "document": "architecture.md",
-        "line": 113,
+        "line": 117,
         "level": 3,
         "title": "Ключевые шаги обработки событий"
       }
@@ -5226,6 +5496,14 @@
         "title": "Команда не отвечает?"
       }
     ],
+    "Команда тестирования": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 206,
+        "level": 3,
+        "title": "Команда тестирования"
+      }
+    ],
     "Командная система": [
       {
         "document": "advanced/lifecycle.md",
@@ -5234,52 +5512,36 @@
         "title": "Командная система"
       }
     ],
+    "Команды диагностики": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 24,
+        "level": 2,
+        "title": "Команды диагностики"
+      }
+    ],
     "Команды запроса информации": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 162,
+        "line": 170,
         "level": 2,
         "title": "Команды запроса информации"
-      }
-    ],
-    "Команды типов (Stubs)": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 378,
-        "level": 2,
-        "title": "Команды типов (Stubs)"
-      }
-    ],
-    "Команды управления запуском": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 226,
-        "level": 2,
-        "title": "Команды управления запуском"
       }
     ],
     "Команды управления пакетами": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 9,
+        "line": 13,
         "level": 2,
         "title": "Команды управления пакетами"
       }
     ],
-    "Команды управления проектами": [
+    "Команды управления проектом": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 263,
+        "line": 265,
         "level": 2,
-        "title": "Команды управления проектами"
-      }
-    ],
-    "Команды языка": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 341,
-        "level": 2,
-        "title": "Команды языка"
+        "title": "Команды управления проектом"
       }
     ],
     "Комбинация правил и фоновое выполнение": [
@@ -5358,14 +5620,6 @@
         "line": 270,
         "level": 2,
         "title": "Конфигурация CORS"
-      }
-    ],
-    "Конфигурация pyproject.toml": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 19,
-        "level": 2,
-        "title": "Конфигурация pyproject.toml"
       }
     ],
     "Конфигурация аккаунтов": [
@@ -5460,20 +5714,20 @@
         "title": "Конфигурация учётной записи (EmailAdapter.accounts)"
       }
     ],
-    "Краткая справка": [
-      {
-        "document": "user-guide/README.md",
-        "line": 14,
-        "level": 2,
-        "title": "Краткая справка"
-      }
-    ],
     "Краткий обзор": [
       {
         "document": "api-reference/core-modules.md",
         "line": 407,
         "level": 3,
         "title": "Краткий обзор"
+      }
+    ],
+    "Краткий обзор функций": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 15,
+        "level": 2,
+        "title": "Краткий обзор функций"
       }
     ],
     "Кросс-платформенное расширение (шаблон)": [
@@ -5516,12 +5770,12 @@
         "title": "Логируемые сообщения"
       }
     ],
-    "Локальное тестирование": [
+    "Локальный тест": [
       {
         "document": "developer-guide/modules/getting-started.md",
-        "line": 97,
+        "line": 196,
         "level": 3,
-        "title": "Локальное тестирование"
+        "title": "Локальный тест"
       }
     ],
     "Лучшие практики": [
@@ -6038,6 +6292,14 @@
         "title": "Модификаторы"
       }
     ],
+    "Модули и официальные клиенты": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 19,
+        "level": 2,
+        "title": "Модули и официальные клиенты"
+      }
+    ],
     "Модули обработки команд должны загружаться немедленно": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -6126,6 +6388,14 @@
         "title": "Модуль логирования"
       }
     ],
+    "Модуль тестирования": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 194,
+        "level": 2,
+        "title": "Модуль тестирования"
+      }
+    ],
     "Модуль уведомлений": [
       {
         "document": "api-reference/event-system.md",
@@ -6150,14 +6420,6 @@
         "title": "Можно ли зарегистрировать несколько модулей в одном пакете?"
       }
     ],
-    "Мониторинг жизненных цикл событий": [
-      {
-        "document": "architecture.md",
-        "line": 152,
-        "level": 3,
-        "title": "Мониторинг жизненных цикл событий"
-      }
-    ],
     "Мониторинг изменений участников": [
       {
         "document": "platform-guide/matrix.md",
@@ -6172,6 +6434,14 @@
         "line": 320,
         "level": 3,
         "title": "Мониторинг прогресса (OnProgress / OnError)"
+      }
+    ],
+    "На уровне платформы разрешен только Chat": [
+      {
+        "document": "advanced/scope.md",
+        "line": 141,
+        "level": 1,
+        "title": "На уровне платформы разрешен только Chat"
       }
     ],
     "Назначение методов отправки": [
@@ -6214,6 +6484,14 @@
         "title": "Начало обучения"
       }
     ],
+    "Начало работы с разработкой модулей": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 1,
+        "level": 1,
+        "title": "Начало работы с разработкой модулей"
+      }
+    ],
     "Начало разработки адаптера": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -6241,7 +6519,7 @@
     "Немедленное сохранение в файл": [
       {
         "document": "user-guide/configuration.md",
-        "line": 321,
+        "line": 326,
         "level": 1,
         "title": "Немедленное сохранение в файл"
       }
@@ -6252,6 +6530,14 @@
         "line": 31,
         "level": 3,
         "title": "Необязательные поля"
+      }
+    ],
+    "Непосредственная смена на английский": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 557,
+        "level": 1,
+        "title": "Непосредственная смена на английский"
       }
     ],
     "Нерегистрозависимый вызов": [
@@ -6276,6 +6562,14 @@
         "line": 301,
         "level": 4,
         "title": "Низкоуровневые методы"
+      }
+    ],
+    "Но на уровне бота разрешен только Music → этот Bot в итоге может использовать только Music, а не Chat!": [
+      {
+        "document": "advanced/scope.md",
+        "line": 145,
+        "level": 1,
+        "title": "Но на уровне бота разрешен только Music → этот Bot в итоге может использовать только Music, а не Chat!"
       }
     ],
     "Обзор": [
@@ -6426,6 +6720,22 @@
         "title": "Обнаружение платформенных возможностей"
       }
     ],
+    "Обновить все компоненты": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 531,
+        "level": 1,
+        "title": "Обновить все компоненты"
+      }
+    ],
+    "Обновить указанный компонент": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 534,
+        "level": 1,
+        "title": "Обновить указанный компонент"
+      }
+    ],
     "Обновление данных": [
       {
         "document": "advanced/sql-builder.md",
@@ -6442,12 +6752,12 @@
         "title": "Обновление и обслуживание"
       }
     ],
-    "Обновление компонентов": [
+    "Обновление модуля": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 515,
-        "level": 3,
-        "title": "Обновление компонентов"
+        "line": 498,
+        "level": 1,
+        "title": "Обновление модуля"
       }
     ],
     "Обновление опубликованных модулей": [
@@ -6587,6 +6897,12 @@
       }
     ],
     "Обработка событий": [
+      {
+        "document": "architecture.md",
+        "line": 96,
+        "level": 2,
+        "title": "Обработка событий"
+      },
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 231,
@@ -6774,14 +7090,6 @@
         "title": "Общий обзор цепочки запуска"
       }
     ],
-    "Объект SDK": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 128,
-        "level": 3,
-        "title": "Объект SDK"
-      }
-    ],
     "Объект Task": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -6804,6 +7112,14 @@
         "line": 76,
         "level": 2,
         "title": "Объяснение кода"
+      }
+    ],
+    "Обычный запуск": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 544,
+        "level": 1,
+        "title": "Обычный запуск"
       }
     ],
     "Обязательно ли имя пакета должно начинаться с `ErisPulse-`?": [
@@ -6995,7 +7311,7 @@
     "Описание основных модулей": [
       {
         "document": "architecture.md",
-        "line": 41,
+        "line": 45,
         "level": 3,
         "title": "Описание основных модулей"
       },
@@ -7146,6 +7462,14 @@
         "title": "Определение типов"
       }
     ],
+    "Определение того, разрешен ли модуль": [
+      {
+        "document": "advanced/scope.md",
+        "line": 69,
+        "level": 3,
+        "title": "Определение того, разрешен ли модуль"
+      }
+    ],
     "Определения стандартных событий": [
       {
         "document": "advanced/lifecycle.md",
@@ -7173,7 +7497,7 @@
     "Основная архитектура SDK": [
       {
         "document": "architecture.md",
-        "line": 5,
+        "line": 9,
         "level": 2,
         "title": "Основная архитектура SDK"
       }
@@ -7426,14 +7750,6 @@
         "title": "Основные отличия"
       }
     ],
-    "Основные понятия": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 115,
-        "level": 2,
-        "title": "Основные понятия"
-      }
-    ],
     "Основные принципы": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -7486,14 +7802,6 @@
         "line": 52,
         "level": 3,
         "title": "Основные функции"
-      }
-    ],
-    "Основы разработки модулей": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 1,
-        "level": 1,
-        "title": "Основы разработки модулей"
       }
     ],
     "Особенности обработки файлов": [
@@ -7598,6 +7906,14 @@
         "line": 9,
         "level": 3,
         "title": "Отношения между компонентами"
+      }
+    ],
+    "Отношения с SDK": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 91,
+        "level": 2,
+        "title": "Отношения с SDK"
       }
     ],
     "Отображение detail_type": [
@@ -7847,7 +8163,7 @@
     "Ошибка конфигурации": [
       {
         "document": "user-guide/installation.md",
-        "line": 107,
+        "line": 126,
         "level": 3,
         "title": "Ошибка конфигурации"
       }
@@ -7855,7 +8171,7 @@
     "Ошибка установки": [
       {
         "document": "user-guide/installation.md",
-        "line": 99,
+        "line": 118,
         "level": 3,
         "title": "Ошибка установки"
       }
@@ -7863,7 +8179,7 @@
     "Ошибка установки модуля": [
       {
         "document": "user-guide/installation.md",
-        "line": 114,
+        "line": 133,
         "level": 3,
         "title": "Ошибка установки модуля"
       }
@@ -7974,6 +8290,22 @@
         "title": "Перезапуск"
       }
     ],
+    "Переключение на английский": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 369,
+        "level": 1,
+        "title": "Переключение на английский"
+      }
+    ],
+    "Переключение на японский": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 372,
+        "level": 1,
+        "title": "Переключение на японский"
+      }
+    ],
     "Переключение через переменные окружения": [
       {
         "document": "advanced/i18n.md",
@@ -7988,14 +8320,6 @@
         "line": 32,
         "level": 3,
         "title": "Переключение через файл конфигурации"
-      }
-    ],
-    "Переключение языка": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 538,
-        "level": 3,
-        "title": "Переключение языка"
       }
     ],
     "Переменные окружения": [
@@ -8042,14 +8366,6 @@
         "line": 341,
         "level": 3,
         "title": "Переподключение после разрыва соединения"
-      }
-    ],
-    "Перечисление компонентов": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 489,
-        "level": 3,
-        "title": "Перечисление компонентов"
       }
     ],
     "Перечисление платформ": [
@@ -8182,6 +8498,14 @@
         "line": 168,
         "level": 3,
         "title": "Поддерживаемые исходные типы событий"
+      }
+    ],
+    "Поддерживаемые платформы": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 27,
+        "level": 2,
+        "title": "Поддерживаемые платформы"
       }
     ],
     "Поддерживаемые поля i18n": [
@@ -8408,6 +8732,14 @@
         "title": "Подписка на события (Intents)"
       }
     ],
+    "Подписка на события жизненного цикла": [
+      {
+        "document": "architecture.md",
+        "line": 156,
+        "level": 3,
+        "title": "Подписка на события жизненного цикла"
+      }
+    ],
     "Подписка на события жизненного цикла бота": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8443,7 +8775,7 @@
     "Подробное описание этапов инициализации": [
       {
         "document": "architecture.md",
-        "line": 80,
+        "line": 84,
         "level": 3,
         "title": "Подробное описание этапов инициализации"
       }
@@ -8512,6 +8844,14 @@
         "title": "Полиграфические настройки полей"
       }
     ],
+    "Политика выполнения PowerShell": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 140,
+        "level": 3,
+        "title": "Политика выполнения PowerShell"
+      }
+    ],
     "Полная справка по API": [
       {
         "document": "advanced/lifecycle.md",
@@ -8526,6 +8866,14 @@
         "line": 203,
         "level": 3,
         "title": "Полное событие письма"
+      }
+    ],
+    "Полные параметры": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 596,
+        "level": 1,
+        "title": "Полные параметры"
       }
     ],
     "Полный пример": [
@@ -8685,7 +9033,7 @@
     "Получить помощь": [
       {
         "document": "README.md",
-        "line": 89,
+        "line": 90,
         "level": 2,
         "title": "Получить помощь"
       }
@@ -8805,7 +9153,7 @@
     "Предварительные требования": [
       {
         "document": "advanced/README.md",
-        "line": 29,
+        "line": 34,
         "level": 2,
         "title": "Предварительные требования"
       }
@@ -9262,6 +9610,30 @@
         "title": "Примечания"
       }
     ],
+    "Принудительная перезапись существующих файлов": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 418,
+        "level": 1,
+        "title": "Принудительная перезапись существующих файлов"
+      }
+    ],
+    "Принудительное обновление": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 537,
+        "level": 1,
+        "title": "Принудительное обновление"
+      }
+    ],
+    "Принудительное перезаписывание существующей директории": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 599,
+        "level": 1,
+        "title": "Принудительное перезаписывание существующей директории"
+      }
+    ],
     "Принцип ближайшего соответствия": [
       {
         "document": "advanced/i18n.md",
@@ -9281,6 +9653,12 @@
         "document": "developer-guide/modules/core-concepts.md",
         "line": 255,
         "level": 3,
+        "title": "Принцип работы"
+      },
+      {
+        "document": "ecosystem/app.md",
+        "line": 71,
+        "level": 2,
         "title": "Принцип работы"
       },
       {
@@ -9312,6 +9690,14 @@
         "line": 445,
         "level": 3,
         "title": "Приоритеты выбора аккаунта"
+      }
+    ],
+    "Проверка версии ErisPulse": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 97,
+        "level": 1,
+        "title": "Проверка версии ErisPulse"
       }
     ],
     "Проверка зарегистрированных методов": [
@@ -9376,34 +9762,12 @@
         "title": "Проверка существования таблицы"
       }
     ],
-    "Проверка установки": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 72,
-        "level": 2,
-        "title": "Проверка установки"
-      },
-      {
-        "document": "user-guide/installation.md",
-        "line": 74,
-        "level": 3,
-        "title": "Проверка установки"
-      }
-    ],
     "Проверочный список соблюдения стандартов": [
       {
         "document": "standards/README.md",
         "line": 68,
         "level": 2,
         "title": "Проверочный список соблюдения стандартов"
-      }
-    ],
-    "Продвинутые темы": [
-      {
-        "document": "advanced/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "Продвинутые темы"
       }
     ],
     "Продолжение после ошибки и перезапись": [
@@ -9444,6 +9808,14 @@
         "line": 9,
         "level": 3,
         "title": "Просмотр и обнаружение"
+      }
+    ],
+    "Просмотр удалённых доступных компонентов": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 514,
+        "level": 1,
+        "title": "Просмотр удалённых доступных компонентов"
       }
     ],
     "Простое создание базы данных для поиска": [
@@ -9519,17 +9891,9 @@
       },
       {
         "document": "architecture.md",
-        "line": 55,
+        "line": 59,
         "level": 2,
         "title": "Процесс инициализации"
-      }
-    ],
-    "Процесс обработки событий": [
-      {
-        "document": "architecture.md",
-        "line": 92,
-        "level": 2,
-        "title": "Процесс обработки событий"
       }
     ],
     "Процесс подключения": [
@@ -9566,6 +9930,30 @@
         "line": 312,
         "level": 3,
         "title": "Процесс синхронизации"
+      }
+    ],
+    "Прямое создание проекта адаптера": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 593,
+        "level": 1,
+        "title": "Прямое создание проекта адаптера"
+      }
+    ],
+    "Прямое создание проекта модуля": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 590,
+        "level": 1,
+        "title": "Прямое создание проекта модуля"
+      }
+    ],
+    "Прямой запуск SDK": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 253,
+        "level": 1,
+        "title": "Прямой запуск SDK"
       }
     ],
     "Публикация": [
@@ -9640,12 +10028,12 @@
         "title": "Расположение конфигурационного файла"
       }
     ],
-    "Расположение распространенных настроек": [
+    "Расположение типичных конфигураций": [
       {
         "document": "user-guide/README.md",
-        "line": 29,
+        "line": 34,
         "level": 3,
-        "title": "Расположение распространенных настроек"
+        "title": "Расположение типичных конфигураций"
       }
     ],
     "Распространение правил": [
@@ -9664,12 +10052,12 @@
         "title": "Распространение приложений через Docker-образы"
       }
     ],
-    "Распространенные команды": [
+    "Распространённые команды": [
       {
         "document": "user-guide/README.md",
-        "line": 16,
+        "line": 21,
         "level": 3,
-        "title": "Распространенные команды"
+        "title": "Распространённые команды"
       }
     ],
     "Распространённые ошибки": [
@@ -9678,14 +10066,6 @@
         "line": 323,
         "level": 2,
         "title": "Распространённые ошибки"
-      }
-    ],
-    "Распространённые проблемы": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 97,
-        "level": 2,
-        "title": "Распространённые проблемы"
       }
     ],
     "Расширение методов платформенных событий": [
@@ -9790,6 +10170,14 @@
         "line": 65,
         "level": 2,
         "title": "Расширенные поля платформы"
+      }
+    ],
+    "Расширенные темы": [
+      {
+        "document": "advanced/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Расширенные темы"
       }
     ],
     "Реализуем фильтрацию условий внутри обработчика": [
@@ -9912,6 +10300,14 @@
         "title": "Режим быстрого построения (статический)"
       }
     ],
+    "Режим горячей перезагрузки": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 547,
+        "level": 1,
+        "title": "Режим горячей перезагрузки"
+      }
+    ],
     "Режим пакетного построения (Build)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -9990,14 +10386,6 @@
         "title": "Рекомендуемые методы (уровень выше)"
       }
     ],
-    "Рекомендуемые модули": [
-      {
-        "document": "ecosystem/README.md",
-        "line": 15,
-        "level": 2,
-        "title": "Рекомендуемые модули"
-      }
-    ],
     "Рекомендуемые практики": [
       {
         "document": "advanced/lazy-loading.md",
@@ -10044,14 +10432,6 @@
         "title": "Руководство для разработчиков"
       }
     ],
-    "Руководство по использованию": [
-      {
-        "document": "user-guide/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "Руководство по использованию"
-      }
-    ],
     "Руководство по публикации": [
       {
         "document": "developer-guide/README.md",
@@ -10082,6 +10462,14 @@
         "line": 1,
         "level": 1,
         "title": "Руководство по реализации конвертера событий"
+      }
+    ],
+    "Руководство пользователя": [
+      {
+        "document": "user-guide/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Руководство пользователя"
       }
     ],
     "Ручная регистрация пользовательских переводов (старый способ)": [
@@ -10245,7 +10633,7 @@
       },
       {
         "document": "user-guide/README.md",
-        "line": 39,
+        "line": 44,
         "level": 2,
         "title": "Связанные документы"
       }
@@ -10277,7 +10665,13 @@
     "Связанные ссылки": [
       {
         "document": "README.md",
-        "line": 104,
+        "line": 105,
+        "level": 2,
+        "title": "Связанные ссылки"
+      },
+      {
+        "document": "ecosystem/app.md",
+        "line": 99,
         "level": 2,
         "title": "Связанные ссылки"
       }
@@ -10450,6 +10844,14 @@
         "title": "Система ленивой загрузки модулей"
       }
     ],
+    "Система области видимости модулей": [
+      {
+        "document": "advanced/scope.md",
+        "line": 1,
+        "level": 1,
+        "title": "Система области видимости модулей"
+      }
+    ],
     "Система правил отправки": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -10480,6 +10882,14 @@
         "line": 330,
         "level": 2,
         "title": "Системные маршруты"
+      }
+    ],
+    "Системные требования": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 10,
+        "level": 2,
+        "title": "Системные требования"
       }
     ],
     "Скачивание и сохранение изображений": [
@@ -10515,6 +10925,12 @@
       }
     ],
     "Следующие шаги": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 304,
+        "level": 2,
+        "title": "Следующие шаги"
+      },
       {
         "document": "getting-started/event-handling.md",
         "line": 711,
@@ -10823,7 +11239,7 @@
       },
       {
         "document": "user-guide/README.md",
-        "line": 5,
+        "line": 9,
         "level": 2,
         "title": "Содержание"
       }
@@ -10836,12 +11252,12 @@
         "title": "Содержимое сообщения"
       }
     ],
-    "Создание виртуальной среды": [
+    "Создание виртуального окружения": [
       {
         "document": "user-guide/installation.md",
-        "line": 38,
+        "line": 44,
         "level": 4,
-        "title": "Создание виртуальной среды"
+        "title": "Создание виртуального окружения"
       }
     ],
     "Создание диалога": [
@@ -10850,14 +11266,6 @@
         "line": 5,
         "level": 2,
         "title": "Создание диалога"
-      }
-    ],
-    "Создание каркаса": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 571,
-        "level": 3,
-        "title": "Создание каркаса"
       }
     ],
     "Создание первого бота": [
@@ -11004,16 +11412,18 @@
     ],
     "Список документации": [
       {
-        "document": "advanced/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "Список документации"
-      },
-      {
         "document": "api-reference/README.md",
         "line": 5,
         "level": 2,
         "title": "Список документации"
+      }
+    ],
+    "Список документов": [
+      {
+        "document": "advanced/README.md",
+        "line": 9,
+        "level": 2,
+        "title": "Список документов"
       }
     ],
     "Список методов": [
@@ -11051,7 +11461,7 @@
     "Способ 1: Установка с помощью pip": [
       {
         "document": "user-guide/installation.md",
-        "line": 14,
+        "line": 20,
         "level": 3,
         "title": "Способ 1: Установка с помощью pip"
       }
@@ -11083,7 +11493,7 @@
     "Способ 2: Установка с помощью uv (рекомендуется)": [
       {
         "document": "user-guide/installation.md",
-        "line": 24,
+        "line": 30,
         "level": 3,
         "title": "Способ 2: Установка с помощью uv (рекомендуется)"
       }
@@ -11112,6 +11522,30 @@
         "title": "Способ с pip"
       }
     ],
+    "Способ установки": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 18,
+        "level": 2,
+        "title": "Способ установки"
+      }
+    ],
+    "Способ установки (Android / запустить на телефоне)": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 42,
+        "level": 2,
+        "title": "Способ установки (Android / запустить на телефоне)"
+      }
+    ],
+    "Способ установки (настольная версия: Windows / Linux / macOS)": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 61,
+        "level": 3,
+        "title": "Способ установки (настольная версия: Windows / Linux / macOS)"
+      }
+    ],
     "Способы импорта": [
       {
         "document": "advanced/message-builder.md",
@@ -11131,25 +11565,17 @@
     "Способы разработки": [
       {
         "document": "README.md",
-        "line": 74,
+        "line": 75,
         "level": 2,
         "title": "Способы разработки"
       }
     ],
-    "Способы установки": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 12,
-        "level": 2,
-        "title": "Способы установки"
-      }
-    ],
-    "Справка по командной строке": [
+    "Справочник команд CLI": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 1,
         "level": 1,
-        "title": "Справка по командной строке"
+        "title": "Справочник команд CLI"
       }
     ],
     "Справочник методов": [
@@ -11160,12 +11586,12 @@
         "title": "Справочник методов"
       }
     ],
-    "Справочник по установке": [
+    "Справочное руководство по установке": [
       {
         "document": "user-guide/installation.md",
         "line": 1,
         "level": 1,
-        "title": "Справочник по установке"
+        "title": "Справочное руководство по установке"
       }
     ],
     "Ссылки": [
@@ -11342,6 +11768,14 @@
         "title": "Статистика сообщений"
       }
     ],
+    "Статистика фильтрации (отладка)": [
+      {
+        "document": "advanced/scope.md",
+        "line": 118,
+        "level": 3,
+        "title": "Статистика фильтрации (отладка)"
+      }
+    ],
     "Стратегия загрузки": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -11354,14 +11788,6 @@
         "line": 141,
         "level": 4,
         "title": "Стратегия загрузки"
-      }
-    ],
-    "Стратегия загрузки модулей": [
-      {
-        "document": "architecture.md",
-        "line": 175,
-        "level": 2,
-        "title": "Стратегия загрузки модулей"
       }
     ],
     "Структура возвращаемого значения": [
@@ -11383,7 +11809,7 @@
     "Структура проекта": [
       {
         "document": "developer-guide/modules/getting-started.md",
-        "line": 5,
+        "line": 108,
         "level": 2,
         "title": "Структура проекта"
       },
@@ -11438,22 +11864,6 @@
         "line": 162,
         "level": 2,
         "title": "Тестирование в режиме разработки"
-      }
-    ],
-    "Тестирование модуля": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 95,
-        "level": 2,
-        "title": "Тестирование модуля"
-      }
-    ],
-    "Тестовая команда": [
-      {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 107,
-        "level": 3,
-        "title": "Тестовая команда"
       }
     ],
     "Техники отладки": [
@@ -11610,14 +12020,6 @@
         "title": "Требования к обновлению"
       }
     ],
-    "Требования к системе": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 6,
-        "level": 2,
-        "title": "Требования к системе"
-      }
-    ],
     "Триггеринг": [
       {
         "document": "advanced/lifecycle.md",
@@ -11640,20 +12042,28 @@
         "title": "Удаление данных"
       }
     ],
-    "Удаление компонентов": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 505,
-        "level": 3,
-        "title": "Удаление компонентов"
-      }
-    ],
     "Удаление таблицы": [
       {
         "document": "advanced/sql-builder.md",
         "line": 53,
         "level": 3,
         "title": "Удаление таблицы"
+      }
+    ],
+    "Удалить несколько компонентов": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 524,
+        "level": 1,
+        "title": "Удалить несколько компонентов"
+      }
+    ],
+    "Удалить один компонент": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 521,
+        "level": 1,
+        "title": "Удалить один компонент"
       }
     ],
     "Удобный метод с использованием класса-обёртки Event": [
@@ -11927,7 +12337,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 61,
+        "line": 67,
         "level": 4,
         "title": "Установка ErisPulse"
       }
@@ -11935,7 +12345,7 @@
     "Установка uv": [
       {
         "document": "user-guide/installation.md",
-        "line": 28,
+        "line": 34,
         "level": 4,
         "title": "Установка uv"
       }
@@ -11948,20 +12358,28 @@
         "title": "Установка и активация"
       }
     ],
-    "Установка модулей": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 476,
-        "level": 3,
-        "title": "Установка модулей"
-      }
-    ],
     "Установка модулей через Dashboard": [
       {
         "document": "user-guide/deployment.md",
         "line": 91,
         "level": 3,
         "title": "Установка модулей через Dashboard"
+      }
+    ],
+    "Установка нескольких модулей": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 495,
+        "level": 1,
+        "title": "Установка нескольких модулей"
+      }
+    ],
+    "Установка одного модуля": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 492,
+        "level": 1,
+        "title": "Установка одного модуля"
       }
     ],
     "Установка с помощью pip": [
@@ -11994,6 +12412,14 @@
         "line": 293,
         "level": 2,
         "title": "Участие в разработке"
+      }
+    ],
+    "Файл конфигурации": [
+      {
+        "document": "advanced/scope.md",
+        "line": 31,
+        "level": 2,
+        "title": "Файл конфигурации"
       }
     ],
     "Файл конфигурации аккаунта": [
@@ -12098,6 +12524,14 @@
         "title": "Характеристики платформы OneBot11"
       }
     ],
+    "Хочу добавить свой модуль сюда?": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 29,
+        "level": 2,
+        "title": "Хочу добавить свой модуль сюда?"
+      }
+    ],
     "Хранение данных": [
       {
         "document": "user-guide/deployment.md",
@@ -12128,6 +12562,14 @@
         "line": 171,
         "level": 2,
         "title": "Хуки жизненного цикла WebSocket"
+      }
+    ],
+    "Целевая аудитория": [
+      {
+        "document": "advanced/README.md",
+        "line": 26,
+        "level": 2,
+        "title": "Целевая аудитория"
       }
     ],
     "Цепные методы-модификаторы (можно комбинировать)": [
@@ -12224,6 +12666,12 @@
         "line": 118,
         "level": 2,
         "title": "Часто задаваемые вопросы"
+      },
+      {
+        "document": "user-guide/installation.md",
+        "line": 116,
+        "level": 2,
+        "title": "Часто задаваемые вопросы"
       }
     ],
     "Часто используемые CSS-классы": [
@@ -12232,14 +12680,6 @@
         "line": 139,
         "level": 2,
         "title": "Часто используемые CSS-классы"
-      }
-    ],
-    "Частые сценарии использования": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 474,
-        "level": 2,
-        "title": "Частые сценарии использования"
       }
     ],
     "Чек-лист качества": [
@@ -12261,7 +12701,7 @@
     "Чтение конфигурации": [
       {
         "document": "user-guide/configuration.md",
-        "line": 314,
+        "line": 319,
         "level": 1,
         "title": "Чтение конфигурации"
       }
@@ -12338,20 +12778,12 @@
         "title": "Эквивалентная запись: takumi = sdk.Takumi"
       }
     ],
-    "Экосистема модулей": [
+    "Экосистема": [
       {
         "document": "ecosystem/README.md",
         "line": 1,
         "level": 1,
-        "title": "Экосистема модулей"
-      }
-    ],
-    "Я тоже хочу, чтобы мой модуль был здесь?": [
-      {
-        "document": "ecosystem/README.md",
-        "line": 24,
-        "level": 2,
-        "title": "Я тоже хочу, чтобы мой модуль был здесь?"
+        "title": "Экосистема"
       }
     ],
     "❌ Блокирующая операция": [

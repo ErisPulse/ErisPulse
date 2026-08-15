@@ -39,129 +39,133 @@ ErisPulse 模块开发指南
 
 ### 架构概览
 
-# アーキテクチャの概要
+# アーキテクチャ概要
 
-本文書は、視覚的な図を通じて ErisPulse SDK の技術的なアーキテクチャを紹介し、フレームワークの設計思想とモジュール間の関係を迅速に理解できるようにします。
+このドキュメントでは、ErisPulse SDK の技術的アーキテクチャを視覚的なチャートを用いて紹介し、フレームワークの設計思想とモジュール間の関係をすばやく理解できるようにします。
 
-## SDK コア・アーキテクチャ
+docs/ja/quick-start.md
 
-下の図は、SDK のコア・モジュール構成とその関係を示しています：
+## SDK 核心アーキテクチャ
+
+下図は、SDK のコアモジュールの構成とその関係を示しています：
 
 ```mermaid
 graph TB
-    SDK["sdk<br/>統合エントリーポイント"]
+    SDK["sdk<br/>統一エントリーポイント"]
 
     SDK --> Event["Event<br/>イベントシステム"]
     SDK --> Lifecycle["Lifecycle<br/>ライフサイクル管理"]
     SDK --> Logger["Logger<br/>ログ管理"]
     SDK --> Storage["Storage / env<br/>ストレージ管理"]
     SDK --> Config["Config<br/>設定管理"]
-    SDK --> AdapterMgr["Adapter<br/>アダプターマネージャー"]
+    SDK --> AdapterMgr["Adapter<br/>アダプタ管理"]
     SDK --> ModuleMgr["Module<br/>モジュール管理"]
-    SDK --> Router["Router<br/>ルーターマネージャー"]
-    SDK --> Client["HttpClient<br/>HTTPクライアント"]
+    SDK --> Router["Router<br/>ルーティング管理"]
+    SDK --> Client["HttpClient<br/>HTTP クライアント"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
-    Event --> Conversation["Conversation<br/>チャット（マルチターン会話）"]
+    Event --> Conversation["Conversation<br/>分岐 + 永続化"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["Yunhu"]
+    BaseAdapter --> P1["雲湖"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
 
     ModuleMgr --> BaseModule["BaseModule"]
-    BaseModule --> CM["カスタム・モジュール"]
+    BaseModule --> CM["カスタムモジュール"]
 
     BaseAdapter -.-> SendDSL["SendDSL<br/>メッセージ送信"]
 ```
 
-### コア・モジュールの説明
+### コアモジュールの説明
 
 | モジュール | 説明 |
 |------|------|
-| **Event** | イベントシステム。command / message / notice / request / meta の5種類のイベント処理と、Conversation チャット（マルチターン会話）を提供します。 |
-| **Adapter** | アダプターマネージャー。マルチプラットフォーム・アダプターの登録、起動、および停止管理を行います。 |
-| **Module** | モジュールマネージャー。プラグインの登録、ロード、アンロードを管理し、依存関係の宣言とトポロジカルソートをサポートします。 |
-| **Lifecycle** | ライフサイクルマネージャー。イベント駆動のライフサイクル・フックを提供します。 |
-| **Storage** | SQLite ベースのキー値ストレージシステム。汎用 SQL のチェーン（連鎖）クエリをサポートします。 |
-| **Config** | TOML 形式の設定ファイル管理。 |
-| **Logger** | モジュール化されたログシステム。サブロガーのサポートを行います。 |
-| **Router** | HTTP/WebSocket ルーターマネージャー。抽象レイヤーを通じて基盤となるバックエンド（現在は FastAPI + Uvicorn）をカプセル化し、デコレーターロータ、ミドルウェア、グループ化、レートリミット、CORS をサポートします。 |
-| **HttpClient** | 統一された HTTP クライアント。抽象レイヤーを通じて基盤となるリクエストライブラリ（現在は aiohttp）をカプセル化し、リクエスト統計、リトライ、ログなどの機能を提供します。 |
+| **Event** | イベントシステム。command / message / notice / request / meta の5種類のイベント処理と、Conversation 多段対話機能を提供します。|
+| **Adapter** | アダプタマネージャー。複数プラットフォーム用アダプタの登録、起動、停止を管理します。|
+| **Module** | モジュールマネージャー。プラグインの登録、ロード、アンロードを管理し、依存関係の宣言とトポロジカルソートをサポートします。|
+| **Lifecycle** | ライフサイクルマネージャー。イベント駆動型のライフサイクルフックを提供します。|
+| **Storage** | SQLite に基づくキーバリューストレージシステム。一般的な SQL チェーンクエリをサポートします。|
+| **Config** | TOML 形式の設定ファイル管理。|
+| **Logger** | モジュール化されたログシステム。サブロガーをサポートします。|
+| **Router** | HTTP/WebSocket ルーティング管理。抽象層を介して下位のバックエンド（現在は FastAPI + Uvicorn）をラップし、デコレーターベースのルーティング、ミドルウェア、グループ化、リクエスト制限、CORS をサポートします。|
+| **HttpClient** | 統一された HTTP/WS クライアント。抽象層を介して下位のリクエストライブラリ（現在は aiohttp）をラップし、リクエスト統計、リトライ、ログ、WebSocket クライアント、ErisPulse 例外体系などの機能を提供します。クライアントとサーバーの WebSocket は `WebSocketConnectionBase` 基底クラスを共有します。|
 
-## 初期化プロセス
+## 初期化フロー
 
-下の図は、`sdk.init()` の完全な初期化プロセスを示しています：
+下図は `sdk.init()` の完全な初期化プロセスを示しています：
 
 ```mermaid
 flowchart TD
-    A["sdk.init()"] --> B["環境準備"]
+    A["sdk.init()"] --> B["実行環境の準備"]
     B --> B1["設定ファイルのロード"]
-    B1 --> B2["グローバルな例外処理の設定"]
-    B2 --> C["アダプター & モジュールの検出"]
+    B1 --> B2["グローバル例外処理の設定"]
+    B2 --> C["アダプタ & モジュールの発見"]
     C --> D{"並列ロード"}
-    D --> D1["PyPIからアダプターをロード"]
-    D --> D2["PyPIからモジュールをロード"]
-    D1 & D2 --> E["アダプターの登録"]
-    E --> E1["アダプターの起動"]
+    D --> D1["PyPI からアダプタをロード"]
+    D --> D2["PyPI からモジュールをロード"]
+    D1 & D2 --> E["アダプタの登録"]
+    E --> E1["アダプタの起動"]
     E1 --> F["モジュールの登録"]
     F --> F1{"依存関係の検証"}
-    F1 -->|"依存関係が不足"| F2["そのモジュールをスキップし、警告を記録"]
-    F1 -->|"依存関係が満たされている"| F3["トポロジカルソート<br/>（Kahnアルゴリズム + 優先度）"]
-    F3 --> G["モジュールの順序通り初期化<br/>（インスタンス化 + on_load）"]
+    F1 -->|"依存が不足"| F2["モジュールをスキップして警告を記録"]
+    F1 -->|"依存が満たされている"| F3["トポロジカルソート<br/>（Kahn アルゴリズム + 優先度）"]
+    F3 --> G["順序に従ってモジュールを初期化<br/>（インスタンス化 + on_load）"]
     F2 --> G
-    G --> H["ルーター・サーバーの起動"]
+    G --> H["ルーティングサーバーの起動"]
     H --> K["実行準備完了"]
 ```
 
-### 初期化段階の詳細
+### 初期化フェーズの詳細
 
-1. **環境準備** - TOML 設定ファイルのロード、グローバルな例外処理の設定
-2. **並列検出** - インストール済みの PyPI パッケージからアダプターとモジュールを同時に発見
-3. **アダプターの登録** - 発見されたアダプターをアダプターマネージャーに登録
-4. **アダプターの起動** - 各プラットフォームのアダプター接続を非同期で起動（モジュール初期化の前に、モジュールが即座にメッセージを送信できることを保証）
+1. **環境準備** - TOML 設定ファイルをロードし、グローバル例外処理を設定
+2. **並行発見** - 既にインストールされた PyPI パッケージから同時にアダプタとモジュールを発見
+3. **アダプタの登録** - 発見されたアダプタをアダプタマネージャーに登録
+4. **アダプタの起動** - 各プラットフォームのアダプタを非同期で起動（モジュールの初期化前に、モジュールが即座にメッセージを送信できるようにする）
 5. **モジュールの登録** - 発見されたモジュールをモジュールマネージャーに登録
-6. **依存関係の検証** - モジュールが宣言する `depends` 依存関係が登録済みかをチェックし、欠落している依存を持つモジュールをスキップ
-7. **トポロジカルソート** - Kahn アルゴリズムを使用して依存関係に基づいてモジュールのロード順序を並べ、同階層は `priority` で降順に並べ替え
-8. **モジュールの初期化** - ソート順序通りにモジュールインスタンスを作成し、`on_load` ライフサイクルメソッドを呼び出し
-9. **ルーター・サーバーの起動** - Uvicorn を使用して FastAPI ルーターサーバーを起動
+6. **依存関係の検証** - モジュールが宣言した `depends` 依存が登録されているかを確認し、不足している依存を持つモジュールはスキップ
+7. **トポロジカルソート** - Kahn アルゴリズムを使用して依存関係に基づいてモジュールのロード順序をソートし、同レベルでは `priority` で降順に並べる
+8. **モジュールの初期化** - ソート順に従ってモジュールのインスタンスを作成し、`on_load` ライフサイクルメソッドを呼び出す
+9. **ルーティングサーバーの起動** - Uvicorn を使用して FastAPI ルーティングサーバーを起動
+
+[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## イベント処理フロー
 
-下の図は、メッセージがプラットフォームからプロセッサーへと完全に流れる経路を示しています：
+下図は、メッセージがプラットフォームからハンドラへと流れる完全なフローを示しています：
 
 ```mermaid
 flowchart LR
-    A["プラットフォームの生メッセージ"] --> B["アダプターによる受信"]
-    B --> C["OneBot12 標準への変換"]
+    A["プラットフォームの元のメッセージ"] --> B["アダプタが受信"]
+    B --> C["OneBot12 標準に変換"]
     C --> D["adapter.emit()"]
-    D --> E["ミドルウェアチェーンの実行"]
+    D --> E["ミドルウェアチェーンを実行"]
     E --> F{"イベント配信"}
-    F --> G1["command<br/>コマンドプロセッサー"]
-    F --> G2["message<br/>メッセージプロセッサー"]
-    F --> G3["notice<br/>通知プロセッサー"]
-    F --> G4["request<br/>リクエストプロセッサー"]
-    F --> G5["meta<br/>メタイベントプロセッサー"]
-    G1 & G2 & G3 & G4 & G5 --> H["プロセッサーコールバックの実行"]
-    H --> I["event.reply()<br/>SendDSLによる応答"]
-    I --> J["アダプターによるプラットフォームへの送信"]
+    F --> G1["command<br/>コマンドハンドラ"]
+    F --> G2["message<br/>メッセージハンドラ"]
+    F --> G3["notice<br/>通知ハンドラ"]
+    F --> G4["request<br/>リクエストハンドラ"]
+    F --> G5["meta<br/>メタイベントハンドラ"]
+    G1 & G2 & G3 & G4 & G5 --> H["ハンドラのコールバック実行"]
+    H --> I["event.reply()<br/>SendDSL で返信"]
+    I --> J["アダプタがプラットフォームに送信"]
 ```
 
 ### イベント処理の重要なステップ
 
-- **アダプターによる受信** - 各プラットフォームのアダプターが WebSocket/Webhook などを通じてネイティブなイベントを受信
-- **OB12 標準化** - プラットフォームのネイティブイベントを統一された OneBot12 標準形式に変換
-- **ミドルウェア処理** - 登録済みのミドルウェア関数を順次実行し、イベントデータを変更可能
-- **イベント配信** - イベントタイプ（message/notice/request/meta）に基づいて対応するプロセッサーに配信
-- **SendDSL による応答** - プロセッサーが `event.reply()` または `SendDSL` チェーン呼び出しを使用して応答を送信
+- **アダプタが受信** - 各プラットフォームのアダプタは WebSocket/Webhook などの方法でネイティブイベントを受信します。
+- **OB12 標準化** - プラットフォームのネイティブイベントを統一された OneBot12 標準フォーマットに変換します。
+- **ミドルウェア処理** - 登録されたミドルウェア関数を順次実行し、イベントデータを変更できます。
+- **イベント配信** - イベントの種類（message/notice/request/meta）に応じて、対応するハンドラに配信します。
+- **SendDSL で返信** - ハンドラは `event.reply()` または `SendDSL` のチェーン呼び出しを使って返信を送信します。
 
-## ライフサイクル・イベント
+## ライフサイクルイベント
 
-下の図は、フレームワークの各コンポーネントにおけるライフサイクル・イベントのトリガー順序を示しています：
+下図は、フレームワークの各コンポーネントのライフサイクルイベントの発生順序を示しています：
 
 ```mermaid
 flowchart LR
@@ -170,7 +174,7 @@ flowchart LR
         C1["core.init.start"] --> C2["core.init.complete"]
     end
 
-    subgraph AdapterLife["アダプター"]
+    subgraph AdapterLife["アダプタ"]
         direction LR
         A1["adapter.start"] --> A2["adapter.status.change"] --> A3["adapter.stop"] --> A4["adapter.stopped"]
     end
@@ -190,17 +194,17 @@ flowchart LR
     AdapterLife -.-> BotLife
 ```
 
-### ライフサイクル・イベントの監視
+### ライフサイクルイベントの監視
 
-`lifecycle.on()` を通じてこれらのイベントを監視し、カスタムロジックを実行できます：
+これらのイベントを `lifecycle.on()` を使って監視し、カスタムロジックを実行することができます：
 
 ```python
 from ErisPulse import sdk
 
-# 全アダプター・イベントを監視
+# すべてのアダプタイベントを監視
 @sdk.lifecycle.on("adapter")
 async def on_adapter_event(event_data):
-    print(f"アダプターイベント: {event_data}")
+    print(f"アダプタイベント: {event_data}")
 
 # モジュールのロード完了を監視
 @sdk.lifecycle.on("module.load")
@@ -210,25 +214,115 @@ async def on_module_loaded(event_data):
 # Botのオンラインを監視
 @sdk.lifecycle.on("adapter.bot.online")
 async def on_bot_online(event_data):
-    print(f"Botがオンライン: {event_data}")
-```
+    print(f"Botがオンラインになりました: {event_data}")
 
-## モジュール・ロード戦略
+## モジュールロード戦略
 
-ErisPulse は 2 つのモジュール・ロード戦略をサポートしています：
+ErisPulse は、`get_load_strategy()` が返す `ModuleLoadStrategy` によって宣言される 3 つのモジュールロード戦略をサポートしています：
 
 ```mermaid
 flowchart TD
-    A["モジュールをModuleManagerに登録"] --> B{"ロード戦略"}
-    B -->|"lazy_load = true"| C["LazyModuleプロキシを作成"]
-    C --> D["sdkプロパティにマウント"]
-    D --> E["初回アクセス時に初期化"]
-    B -->|"lazy_load = false"| F["インスタンスを即座に作成"]
-    F --> G["on_load()を呼び出す"]
-    G --> D2["sdkプロパティにマウント"]
+    A["モジュールが ModuleManager に登録"] --> B{"ロード戦略"}
+    B -->|"lazy_load = true<br/>+ activate_on が宣言されている"| C["ModuleActivator 代理を作成"]
+    B -->|"lazy_load = true<br/>activate_on が宣言されていない"| D["LazyModule 代理を作成"]
+    B -->|"lazy_load = false"| E["即時インスタンス作成"]
+    C --> F["イベント/コマンド stub をディスパッチャに登録"]
+    F --> G["sdk 属性にマウント"]
+    G --> H["イベントが到達してアクティベーションをトリガー"]
+    H --> I["インスタンス化 + on_load() + stub の登録解除"]
+    D --> J["sdk 属性にマウント"]
+    J --> K["最初の属性アクセス時に初期化"]
+    E --> L["on_load() を呼び出す"]
+    L --> M["sdk 属性にマウント"]
 ```
 
-> 詳細については、[遅延ロード・システム](advanced/lazy-loading.md) および [ライフサイクル管理](advanced/lifecycle.md) をご参照ください。
+> 詳細は [遅延ロードシステム](advanced/lazy-loading.md)、[ライフサイクル管理](advanced/lifecycle.md) およびモジュールドキュメントを参照してください。
+
+### イベント駆動遅延アクティベーション（`activate_on`）トリガー構造
+
+`activate_on` は、モジュールが**最初の一致するイベント/コマンドが到達したときにのみ**ロードされるようにし、常駐メモリを避けると同時にイベントのロスを防ぎます：
+
+```mermaid
+flowchart LR
+    subgraph Declare["モジュール宣言"]
+        S1["get_load_strategy() が<br/>ModuleLoadStrategy(activate_on=...) を返す"] --> S2["activate_on 構文：<br/>str / dict / list を自由に混合"]
+        S2 --> S2a["'message' → イベントタイプレベル"]
+        S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ タイプ + detail_type"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ コマンドトリガー"]
+    end
+
+    subgraph Runtime["実行時"]
+        R1["ModuleActivator が stub を登録"] --> R1a["イベント stub → message/notice/request/meta マネージャー<br/>優先度 ACTIVATION_STUB_PRIORITY（極めて低い）"]
+        R1 --> R1b["コマンド stub → コマンドマネージャー<br/>隠しプレースホルダコマンド（hidden=True）"]
+        R1a --> R2{"トリガーイベントが到達"}
+        R1b --> R2
+        R2 --> R3["owner に基づくスコープフィルタリング"]
+        R3 --> R4["asyncio.Lock で重複アクティベーションを防止"]
+        R4 --> R5["モジュールのインスタンス化 + on_load() の呼び出し"]
+        R5 --> R6["すべての stub の登録解除"]
+        R6 --> R7["イベントを真のハンドラに転送"]
+    end
+
+    Declare --> Runtime
+```
+
+**トリガーの意味要点：**
+
+1. **stub 登録**：イベント stub は、対応するイベントマネージャーに極めて低い優先度（`ACTIVATION_STUB_PRIORITY`）で登録され、同種のイベントのすべての通常のハンドラの**後に**実行されるようにします。コマンド stub は隠しプレースホルダコマンドとして登録され、コマンドリストを汚染しません。
+2. **スコープフィルタリング**：stub にはモジュールの owner 身分が付与され、該当する Bot / セッション / プラットフォームに対して有効でないモジュールはトリガーされません。
+3. **再入防止**：`asyncio.Lock` により、並行イベント下でも一度だけアクティベーションされるようにします。
+4. **イベント転送**：アクティベーション完了後、現在のイベントは真のハンドラに転送されます（外側のグループループは、stub の後に登録されたハンドラが二度処理されないことを既に検証済みです）。
+5. **失敗時の意味**：アクティベーションが失敗した場合、再試行は行われず、stub も同時に登録解除され、毎回イベントに対して繰り返し試行されるのを防ぎます。
+
+## ローカルプラグインフォルダの構造
+
+ローカルプラグイン（`plugins/` ディレクトリ）は、パッケージ化して配布する必要がなく、フレームワークの起動時に自動的に発見され読み込まれます：
+
+```mermaid
+flowchart TD
+    A["プロジェクトの plugins/ ディレクトリ<br/>（ErisPulse.framework.plugins_dir、複数ディレクトリ対応）"] --> B{"PluginFolderLoader.discover()"}
+    B --> C["単一ファイル：dice.py → プラグイン名 = ファイル名"]
+    B --> D["パッケージ形式：weather/（__init__.py あり）→ プラグイン名 = ディレクトリ名"]
+    B --> E["無視対象：__pycache__ / _ で始まる / .py でない / __init__.py がないディレクトリ"]
+    C --> F["モジュールのインポート（spec_from_file_location）"]
+    D --> G["モジュールのインポート（sys.path + import_module）"]
+    F --> H["モジュールクラスの識別：Main（BaseModule のサブクラス）を優先し、存在しない場合は最初のサブクラス"]
+    G --> H
+    H --> I["entry-point と同じ moduleInfo を構築"]
+    I --> J["ModuleLoader.load() によるマージ<br/>ローカルのモジュールが PyPI の同名インストールパッケージを上書き"]
+    J --> K["インストールパッケージモジュールと共有：<br/>有効状態 / スコープ / meta / i18n / コンテキスト"]
+```
+
+**規約と特徴：**
+
+- プラグイン名の取得方法：単一ファイルはファイル名、パッケージ形式はディレクトリ名
+- ローカルプラグインの `moduleInfo.meta.source == "plugin_folder"` であり、PyPI でインストールされたパッケージモジュールとシームレスに共存
+- 同名のモジュールが存在する場合、ローカルのモジュールが優先（ローカルの上書きやデバッグに便利）、無効化された場合、同名の entry-point 条目も同時に削除
+
+[**English**](docs/ja/quick-start.md)
+
+## ローカルプラグインのホットリロードアーキテクチャ
+
+ホットリロードはプラグインファイルの変更を監視し、対応するプラグインを自動的に再読み込みします：
+
+```mermaid
+flowchart TD
+    A["sdk.enable_plugin_hot_reload()"] --> B["PluginReloadWatcher の起動"]
+    B --> C["PollingObserver（バックグラウンドのデーモンスレッド）<br/>定期的に .py ファイルの mtime を比較"]
+    C --> D{"プラグインファイルの変更"}
+    D --> E["変更のデューディレイ（デフォルト 1 秒）"]
+    E --> F["_handle_change でプラグイン名を解析<br/>（単一ファイル / パッケージ形式）"]
+    F --> G["asyncio.run_coroutine_threadsafe<br/>メインイベントループへのスケジューリング"]
+    G --> H["sdk.reload_plugin(name)"]
+    H --> I["古いインスタンスのアンロード（on_unload をトリガー）"]
+    I --> J["登録のクリーンアップ（unregister + sdk 属性の削除）"]
+    J --> K["sys.modules のクリーンアップで強制的に再インポート"]
+    K --> L["再発見 + 再登録 + 再読み込み"]
+    L --> M["新しいインスタンスを sdk 属性にマウント"]
+    M --> N["ファイルの削除 → 読み込み結果から自動的に削除"]
+```
+
+[**English**](docs/ja/quick-start.md)
 
 
 
@@ -1746,11 +1840,11 @@ if TYPE_CHECKING:
 
 # モジュール開発入門
 
-本ガイドでは、ゼロから ErisPulse モジュールを作成する方法を説明します。
+このガイドでは、ErisPulse モジュールをゼロから作成する方法を解説します。
 
-## プロジェクト構成
+## プロジェクト構造
 
-標準的なモジュール構成：
+標準的なモジュール構造：
 
 ```
 MyModule/
@@ -1760,9 +1854,8 @@ MyModule/
 └── MyModule/
     ├── __init__.py
     └── Core.py
-```
 
-## pyproject.toml の設定
+## pyproject.toml 設定
 
 ```toml
 [project]
@@ -1780,13 +1873,11 @@ dependencies = []
 
 [project.entry-points."erispulse.module"]
 "MyModule" = "MyModule:Main"
-```
 
 ## __init__.py
 
 ```python
 from .Core import Main
-```
 
 ## Core.py - 基本モジュール
 
@@ -1804,7 +1895,7 @@ class Main(BaseModule):
     
     @staticmethod
     def get_load_strategy():
-        """モジュールのロード戦略を返します"""
+        """モジュール読み込み戦略を返す"""
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
@@ -1813,20 +1904,20 @@ class Main(BaseModule):
         )
     
     async def on_load(self, event):
-        """モジュールのロード時に呼び出されます"""
-        @command("hello", help="挨拶を送信")
+        """モジュールが読み込まれたときに呼び出される"""
+        @command("hello", help="挨拶を送信する")
         async def hello_command(event):
             name = event.get_user_nickname() or "友達"
             await event.reply(f"こんにちは、{name}！")
         
-        self.logger.info("モジュールがロードされました")
+        self.logger.info("モジュールが読み込まれました")
     
     async def on_unload(self, event):
-        """モジュールのアンロード時に呼び出されます"""
+        """モジュールがアンロードされるときに呼び出される"""
         self.logger.info("モジュールがアンロードされました")
     
     def _load_config(self):
-        """モジュール設定をロードします"""
+        """モジュール設定を読み込む"""
         config = self.sdk.config.getConfig("MyModule")
         if not config:
             default_config = {
@@ -1836,14 +1927,13 @@ class Main(BaseModule):
             self.sdk.config.setConfig("MyModule", default_config)
             return default_config
         return config
-```
 
-## モジュールのテスト
+## テストモジュール
 
 ### ローカルテスト
 
 ```bash
-# プロジェクトディレクトリにモジュールをインストール
+# プロジェクトディレクトリでモジュールをインストール
 epsdk install ./MyModule
 
 # プロジェクトを実行
@@ -1852,13 +1942,12 @@ epsdk run main.py --reload
 
 ### テストコマンド
 
-コマンドを送信してテスト：
+コマンド送信テスト：
 
 ```
 /hello
-```
 
-## コア概念
+## コアコンセプト
 
 ### BaseModule 基底クラス
 
@@ -1866,10 +1955,74 @@ epsdk run main.py --reload
 
 | メソッド | 説明 | 必須 |
 |------|------|------|
-| `__init__(self)` | コンストラクタ | いいえ |
-| `get_load_strategy()` | ロード戦略を返します | いいえ |
-| `on_load(self, event)` | モジュールのロード時に呼び出されます | はい |
-| `on_unload(self, event)` | モジュールのアンロード時に呼び出されます | はい |
+| `__init__(self)` | コンストラクタ | 否 |
+| `get_load_strategy()` | ロード戦略を返す | 否 |
+| `get_meta()` | モジュール紹介メタ情報（オプション）を返す | 否 |
+| `on_load(self, event)` | モジュールロード時に呼び出される | 是 |
+| `on_unload(self, event)` | モジュールアンロード時に呼び出される | 是 |
+
+### モジュール紹介 meta
+
+`get_meta()` を通じてモジュールの紹介メタ情報（このモジュールが何をするものか、どのカテゴリに属するかなど）を宣言します。
+メタ情報はモジュールの**汎用紹介データ**であり、help モジュール、Dashboard モジュール一覧、モジュールストアなど、各種 UI/エコモジュールによって消費されます。
+
+`get_load_strategy()` が `ModuleLoadStrategy` を返すのと同様に、**`ModuleMeta` 設定クラスのインスタンスを返すことを推奨**します（プロパティの型付け、IDE の補完機能）が、dict を直接返すことでも互換性があります：
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="天気",               # 表示名（デフォルトの登録名）
+            description="都市の天気を照合",  # モジュールの概要
+            version="1.0.0",
+            author="ErisDev",
+            group="ツール",               # 機能グループ
+            tags=["天気", "照合"],
+        )
+```
+
+互換性のある記法（dict）：
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> dict:
+        return {
+            "name": "天気",
+            "description": "都市の天気を照合",
+            "version": "1.0.0",
+            "author": "ErisDev",
+            "group": "ツール",
+            "tags": ["天気", "照合"],
+        }
+```
+
+- `module.get_meta("MyModule")` は解析済みのメタ情報を読み取ります（クラス宣言 > 登録 info、自動的にこのモジュールのコマンド名が補完されます）。
+- `module.get_commands_overview()` は「モジュール meta + その登録されたコマンド（エイリアス/グループ/ヘルプ）」を集約し、モジュール単位で整理されたコマンドの概要です。
+- コマンドが所属するモジュールは `cmd_info["owner"]` で取得できます（登録時にコンテキストシステムによって自動的に注入されます）。
+
+#### meta フィールドの i18n サポート
+
+メタ情報フィールドの値は純粋な文字列、または i18n 辞書 `{"i18n": "key.path", "default": "フォールバックテキスト"}`（設定 `description` と同様の規約に従います）を使用できます。
+翻訳キーは `I18nClass` によって宣言および登録され、`module.get_meta()` が読み込まれた際に現在の言語のテキストとして自動的に解析されます：
+
+```python
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        meta_description: I18nKey = I18nKey(
+            default="Weather lookup",
+            zh_CN="都市の天気を照合",
+            en="Weather lookup",
+        )
+
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="天気",
+            description={"i18n": "MyModule.meta_description", "default": "Weather lookup"},
+        )
+```
 
 ### SDK オブジェクト
 
@@ -1882,15 +2035,14 @@ sdk.storage    # ストレージシステム
 sdk.config     # 設定システム
 sdk.logger     # ログシステム
 sdk.adapter    # アダプタシステム
-sdk.router     # ルータシステム
+sdk.router     # ルーティングシステム
 sdk.lifecycle  # ライフサイクルシステム
-```
 
 ## 次のステップ
 
-- [モジュールのコア概念](core-concepts.md) - モジュールアーキテクチャを深く理解する
-- [Event ラッパークラスの詳細](event-wrapper.md) - Event オブジェクトを学ぶ
-- [モジュールのベストプラクティス](best-practices.md) - 高品質なモジュールを開発する
+- [モジュールの基本概念](core-concepts.md) - モジュールのアーキテクチャについて深く理解する
+- [Event ラッパークラスの詳細](event-wrapper.md) - Event オブジェクトの習得
+- [モジュール開発のベストプラクティス](best-practices.md) - 高品質なモジュールの開発
 
 
 
@@ -3061,7 +3213,7 @@ async def test_command_handling():
     event = create_test_command_event("hello")
     await module.handle_command(event)
 
-## 部署
+## 配置
 
 ### 1. バージョン管理
 
@@ -3071,26 +3223,26 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-セマンティックバージョニング（Semantic Versioning）に従います：
+セマンティックバージョニングに従います：
 - MAJOR.MINOR.PATCH
-- メジャーバージョン：互換性のない API の変更
-- マイナーバージョン：下位互換のある機能の追加
-- パッチバージョン：下位互換のある問題の修正
+- 主バージョン：互換性のないAPIの変更
+- 次バージョン：互換性のある機能の追加
+- 修正番号：互換性のある問題の修正
 
-### 2. README ヘッダー
+### 2. READMEのヘッダー
 
-`epsdk create` で生成された README には、ErisPulse のヘッダー識別子（ロゴ + バッジ行）が既に組み込まれています。2つの推奨モードがあります。
+`epsdk create` で生成されたREADMEには、ErisPulseのヘッダー識別子（ロゴ + バッジ行）が組み込まれています。2つの推奨モードがあります：
 
-**モード A — ErisPulse ロゴのみ（デフォルト）：**
+**モード A — ErisPulseロゴのみ（デフォルト）：**
 
 ```markdown
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
 
 # MyModule
 
-**一文で説明**
+**1文で説明**
 
 <p>
   <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -3102,21 +3254,21 @@ version = "1.0.0"
 </div>
 ```
 
-**モード B — モジュールアイコン × ErisPulse ロゴ（カスタムアイコンがある場合）：**
+**モード B — モジュールアイコン × ErisPulseロゴ（独自アイコンがある場合）：**
 
 ```markdown
 <div align="center">
 
 <img src=".github/assets/MyModuleIcon.svg" width="120" alt="MyModule" />
 <span style="font-size:44px;color:#c8c8c8;margin:0 18px;vertical-align:middle;">×</span>
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
 （バッジ行は上記と同じ）
 </div>
 ```
 
-GitHub Stars、Downloads などのバッジを必要に応じて追加できます。ロゴもプロジェクトローカルにダウンロード可能です（`.github/assets/ErisPulseLogo.png`）し、相対パスで参照してください。
+GitHub Stars、Downloadsなどのバッジを必要に応じて追加できます。ロゴはプロジェクトのローカルにダウンロードし（`.github/assets/ErisPulseLogo.png`）、相対パスで参照することも可能です。
 
 
 
@@ -3517,128 +3669,130 @@ services:
 
 ### CLI 命令参考
 
-# CLI コマンドリファレンス
+# CLIコマンドリファレンス
 
-ErisPulse コマンドラインツール（`epsdk`）は、プロジェクト管理およびパッケージ管理機能を提供します。
+ErisPulseコマンドラインツール（`epsdk`）は、プロジェクト管理およびパッケージ管理機能を提供します。
 
-> **ヒント**: すべてのコマンドは `epsdk <command> --help` で詳細なパラメータ説明を確認できます。
+> **ヒント**：すべてのコマンドは `epsdk <コマンド> --help` を使用して、詳細なパラメータ説明を確認できます。
 
 ---
 
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
+
 ## パッケージ管理コマンド
 
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | モジュール/アダプタをインストール |
-| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | モジュール/アダプタをアンインストール |
-| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 指定したモジュールをアップグレード、またはすべてをアップグレード |
-| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | SDK 自体を更新 |
+| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | モジュール/アダプターのインストール |
+| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | モジュール/アダプターのアンインストール |
+| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 指定されたモジュールまたはすべてのモジュールをアップグレード |
+| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | SDK 自体の更新 |
 
 ## 診断コマンド
 
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose]` | 環境を診断し、ヘルスレポートを出力 |
+| `doctor` | `diag` | `[--verbose]` | 環境を診断し、健康レポートを出力します |
 
 ### install
 
-ErisPulse モジュールまたはアダプタパッケージをインストールします。パッケージ名を指定しない場合、対話型インストール画面になります。
+ErisPulse モジュールまたはアダプタパッケージをインストールします。パッケージ名を指定しない場合、対話形式のインストールインターフェースに移行します。
 
-**エイリアス:** `i`, `add`
+**別名：** `i`, `add`
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
 | `[package]...` | | インストールするパッケージ名。複数指定可能 |
-| `--upgrade` | `-U` | インストール時に最新バージョンへアップグレード |
-| `--pre` | | プリリリース版のインストールを許可 |
-| `--editable` | `-e` | 編集可能モードでインストール（パスを指定必要） |
-| `--user` | | ユーザーの site-packages ディレクトリへインストール |
-| `--no-deps` | | 依存関係をインストールしない |
-| `--target` | `-t` | 指定のディレクトリへインストール |
-| `--index-url` | | PyPI ミラーソースアドレスを指定 |
-| `--extra-index-url` | | 追加の PyPI ミラーソースアドレス（複数指定可能） |
-| `--no-cache-dir` | | キャッシュを無効化 |
-| `--requirement` | `-r` | requirements ファイルからインストール |
-| `--constraint` | `-c` | constraint ファイルからインストール |
-| `--force-reinstall` | | 強制的に再インストール |
-| `--ignore-installed` | | 既にインストール済みのパッケージを無視 |
-| `--compile` | | インストール後、.pyc ファイルをコンパイル |
-| `--no-compile` | | インストール後、.pyc ファイルをコンパイルしない |
-| `--prefix` | | 指定のプレフィックスディレクトリへインストール |
-| `--src` | | 編集可能インストール時のソースディレクトリ |
-| `--config-settings` | | ビルドバックエンドへ渡す設定（複数指定可能） |
-| `--no-binary` | | バイナリパッケージを使用しないように制限（`:all:` のような形式） |
-| `--only-binary` | | バイナリパッケージのみ使用するように制限（`:all:` のような形式） |
-| `--prefer-binary` | | バイナリパッケージを優先 |
-| `--build-isolation` | | ビルド隔離を有効化 |
-| `--no-build-isolation` | | ビルド隔離を無効化 |
+| `--upgrade` | `-U` | インストール時に最新バージョンにアップグレードします |
+| `--pre` | | プレリリース版のインストールを許可します |
+| `--editable` | `-e` | 編集可能なモードでインストールします（パスを指定する必要があります） |
+| `--user` | | ユーザーの site-packages ディレクトリにインストールします |
+| `--no-deps` | | 依存関係をインストールしません |
+| `--target` | `-t` | 指定したディレクトリにインストールします |
+| `--index-url` | | PyPI ミラーサーバの URL を指定します |
+| `--extra-index-url` | | 追加の PyPI ミラーサーバの URL（複数指定可能） |
+| `--no-cache-dir` | | キャッシュを無効にします |
+| `--requirement` | `-r` | requirements ファイルからインストールします |
+| `--constraint` | `-c` | 制約ファイルからインストールします |
+| `--force-reinstall` | | 強制的に再インストールします |
+| `--ignore-installed` | | 既にインストール済みのパッケージを無視します |
+| `--compile` | | インストール後に .pyc ファイルをコンパイルします |
+| `--no-compile` | | インストール後に .pyc ファイルをコンパイルしません |
+| `--prefix` | | 指定したプレフィックスディレクトリにインストールします |
+| `--src` | | 編集可能なインストール時に使用するソースコードディレクトリ |
+| `--config-settings` | | ビルドバックエンドに渡す設定（複数指定可能） |
+| `--no-binary` | | 二進数パッケージの使用を制限します（`:all:` の形式） |
+| `--only-binary` | | 二進数パッケージのみを使用するように制限します（`:all:` の形式） |
+| `--prefer-binary` | | 二進数パッケージを優先的に選択します |
+| `--build-isolation` | | ビルドの隔離を有効にします |
+| `--no-build-isolation` | | ビルドの隔離を無効にします |
 | `--upgrade-strategy` | | アップグレード戦略：`eager`、`only-if-needed`、`to-satisfy-only` |
-| `--break-system-packages` | | システムパッケージマネージャーが管理する Python パッケージの変更を許可 |
-| `--no-uv` | | uv の代わりに pip を使用 |
+| `--break-system-packages` | | システムパッケージマネージャが管理する Python パッケージの変更を許可します |
+| `--no-uv` | | uv の代わりに pip を使用します |
 
-**例:**
+**例：**
 
 ```bash
-# 単一のモジュールをインストール
+# 単一モジュールのインストール
 epsdk install Weather
 
-# 複数のモジュールをインストール
+# 複数モジュールのインストール
 epsdk install Yunhu Weather
 
-# ミラーソースからインストールしてアップグレード
+# ミラーサーバからインストールし、アップグレード
 epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
-# 編集可能モードでインストール（開発モード）
+# 編集可能なモードでインストール（開発モード）
 epsdk install -e ./my-adapter
 ```
 
 ### uninstall
 
-既にインストールされた ErisPulse モジュールまたはアダプタパッケージをアンインストールします。パッケージ名を指定しない場合、対話型アンインストール画面になります。
+インストール済みの ErisPulse モジュールまたはアダプタパッケージをアンインストールします。パッケージ名を指定しない場合、対話形式のアンインストールインターフェースに移行します。
 
-**エイリアス:** `rm`, `remove`
+**別名：** `rm`, `remove`
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 説明 |
+| パラメータ | 説明 |
 |------|------|
 | `<package>...` | アンインストールするパッケージ名。複数指定可能 |
-| `--no-uv` | uv の代わりに pip を使用 |
+| `--no-uv` | uv の代わりに pip を使用します |
 
-**例:**
+**例：**
 
 ```bash
-# 単一のモジュールをアンインストール
+# 単一モジュールのアンインストール
 epsdk uninstall Weather
 
-# 複数のモジュールをアンインストール
+# 複数モジュールのアンインストール
 epsdk uninstall Yunhu Weather
 ```
 
 ### upgrade
 
-既にインストールされた ErisPulse コンポーネントをアップグレードします。パッケージ名を指定しないと、対話型で全件をアップグレードします。
+インストール済みの ErisPulse コンポーネントをアップグレードします。パッケージ名を指定しない場合、すべてを対話形式でアップグレードします。
 
-**エイリアス:** `up`
+**別名：** `up`
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
 | `[package]...` | | アップグレードするパッケージ名。複数指定可能 |
-| `--force` | `-f` | 強制的にアップグレード、確認をスキップ |
-| `--pre` | | プリリリース版へのアップグレードを許可 |
-| `--no-uv` | | uv の代わりに pip を使用 |
+| `--force` | `-f` | 強制的にアップグレードし、確認をスキップします |
+| `--pre` | | プレリリース版へのアップグレードを許可します |
+| `--no-uv` | | uv の代わりに pip を使用します |
 
-**例:**
+**例：**
 
 ```bash
 # すべてのパッケージをアップグレード
 epsdk upgrade
 
-# 指定したパッケージをアップグレード
+# 指定パッケージをアップグレード
 epsdk upgrade Weather
 
 # 強制アップグレード（確認をスキップ）
@@ -3647,119 +3801,113 @@ epsdk upgrade -f
 
 ### self-update
 
-ErisPulse SDK 自体を最新バージョンへ更新します。
+ErisPulse SDK 自身を最新バージョンに更新します。
 
-**エイリアス:** `su`, `update`
+**別名：** `su`, `update`
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `[version]` | | 更新対象のバージョン番号を指定 |
-| `--pre` | | プリリリース版への更新を許可 |
-| `--force` | `-f` | 強制的に更新、確認をスキップ |
-| `--no-uv` | | uv の代わりに pip を使用 |
+| `[version]` | | 更新する対象のバージョン番号を指定します |
+| `--pre` | | プレリリース版への更新を許可します |
+| `--force` | `-f` | 強制的に更新し、確認をスキップします |
+| `--no-uv` | | uv の代わりに pip を使用します |
 
-**例:**
+**例：**
 
 ```bash
-# 最新の安定版へ更新
+# 最新の安定版に更新
 epsdk self-update
 
-# 指定バージョンへ更新
+# 指定バージョンに更新
 epsdk self-update 1.2.3
 
-# プリリリース版を許可
+# プレリリース版を許容
 epsdk self-update --pre
 
 # 強制更新
 epsdk self-update -f
-```
-
----
 
 ## 情報照会コマンド
 
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | インストール済みコンポーネントを一覧表示 |
-| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | リモートで利用可能なコンポーネントを一覧表示 |
+| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | インストール済みのコンポーネントを一覧表示します |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | リモートで利用可能なコンポーネントを一覧表示します |
 
 ### list
 
-インストール済みの ErisPulse モジュールとアダプタを一覧表示します。
+インストール済みの ErisPulse モジュールとアダプタを表示します。
 
-**エイリアス:** `l`, `ls`
+**別名:** `l`, `ls`
 
-**引数:**
+**パラメータ:**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `--type` | `-t` | タイプを指定：`modules`、`adapters`、`all`（デフォルト） |
-| `--outdated` | `-o` | アップグレード可能なパッケージのみ表示 |
+| `--type` | `-t` | タイプを指定: `modules`、`adapters`、`all`（デフォルト） |
+| `--outdated` | `-o` | 更新可能なパッケージのみ表示します |
 
 **例:**
 
 ```bash
-# インストール済みのすべてのコンポーネントを一覧表示
+# インストール済みのすべてのコンポーネントを表示
 epsdk list
 
-# モジュールのみを一覧表示
+# モジュールのみを表示
 epsdk list -t modules
 
-# アダプタのみを一覧表示
+# アダプタのみを表示
 epsdk list -t adapters
 
-# アップグレード可能なパッケージのみ表示
+# 更新可能なパッケージのみを表示
 epsdk list -o
 ```
 
 ### list-remote
 
-リモートリポジトリで利用可能な ErisPulse モジュールとアダプタを一覧表示します。
+リモートリポジトリで利用可能な ErisPulse モジュールとアダプタを表示します。
 
-**エイリアス:** `lsr`
+**別名:** `lsr`
 
-**引数:**
+**パラメータ:**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `--type` | `-t` | タイプを指定：`modules`、`adapters`、`all`（デフォルト） |
-| `--refresh` | `-r` | リモートパッケージリストキャッシュを強制的に更新 |
+| `--type` | `-t` | タイプを指定: `modules`、`adapters`、`all`（デフォルト） |
+| `--refresh` | `-r` | リモートパッケージリストのキャッシュを強制的に更新します |
 
 **例:**
 
 ```bash
-# すべてのリモート利用可能コンポーネントを一覧表示
+# リモートで利用可能なすべてのコンポーネントを表示
 epsdk list-remote
 
-# リモートモジュールのみを一覧表示
+# リモートモジュールのみを表示
 epsdk list-remote -t modules
 
-# キャッシュを強制的に更新して一覧表示
+# キャッシュを強制的に更新した後に表示
 epsdk list-remote -r
-```
 
----
+## 実行コントロールコマンド
 
-## 実行制御コマンド
-
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `run` | `r` | `[script] [--reload]` | 指定したスクリプトまたは SDK を実行 |
+| `run` | `r` | `[script] [--reload]` | 指定されたスクリプトまたは SDK を実行 |
 
 ### run
 
-ErisPulse プロジェクトスクリプトを実行、または SDK を直接起動します。ホットリロードモードに対応しています。
+ErisPulse プロジェクトのスクリプトを実行するか、SDK を直接起動します。ホットリロードモードをサポートしています。
 
-**エイリアス:** `r`
+**別名:** `r`
 
-**引数:**
+**パラメータ:**
 
-| 引数 | 説明 |
+| パラメータ | 説明 |
 |------|------|
-| `[script]` | 実行するスクリプトファイル。指定しない場合は SDK を実行 |
-| `--reload` | ホットリロードモードを有効化。ファイルの変更を監視し、自動的に再起動 |
+| `[script]` | 実行するスクリプトファイル。指定しない場合は SDK を実行します。 |
+| `--reload` | ホットリロードモードを有効にします。ファイルの変更を監視して自動的に再起動します。 |
 
 **例:**
 
@@ -3767,43 +3915,45 @@ ErisPulse プロジェクトスクリプトを実行、または SDK を直接�
 # SDK を直接実行
 epsdk run
 
-# 指定したスクリプトファイルを実行
+# 指定されたスクリプトファイルを実行
 epsdk run main.py
 
-# ホットリロードモードで実行（ファイル変更時に自動再起動）
+# ホットリロードモードで実行（ファイルの変更で自動的に再起動）
 epsdk run main.py --reload
 
-# SDK ホットリロードモード
+# SDK のホットリロードモード
 epsdk run --reload
 ```
 
 ---
 
+docs/ja/quick-start.md
+
 ## プロジェクト管理コマンド
 
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | ErisPulse プロジェクトを初期化 |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | モジュール/アダプタのスキャフォールドを作成 |
+| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | ErisPulse プロジェクトを初期化します |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | モジュール/アダプターのスキャフォールディングを作成します |
 
 ### init
 
-新しい ErisPulse プロジェクトを初期化します。対話モードとクイックモードをサポートしています。
+新しい ErisPulse プロジェクトを初期化します。インタラクティブモードとクイックモードをサポートしています。
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
 | `--project-name` | `-n` | プロジェクト名 |
-| `--quick` | `-q` | クイックモード。対話ウィザードをスキップ |
-| `--force` | `-f` | 既存の設定ファイルを強制的に上書き |
-| `--here` | | 現在のディレクトリで初期化。サブディレクトリを作成しない |
-| `--no-uv` | | uv の代わりに pip を使用 |
+| `--quick` | `-q` | クイックモード、インタラクティブガイドをスキップします |
+| `--force` | `-f` | 既存の設定ファイルを強制的に上書きします |
+| `--here` | | 現在のディレクトリで初期化し、サブディレクトリを作成しません |
+| `--no-uv` | | uv の代わりに pip を使用します |
 
-**例:**
+**例：**
 
 ```bash
-# 対話型で初期化
+# インタラクティブな初期化
 epsdk init
 
 # クイック初期化
@@ -3818,11 +3968,11 @@ epsdk init --here -n my_bot
 
 ### create
 
-ErisPulse モジュールまたはアダプタのスキャフォールドプロジェクトを作成します。
+ErisPulse モジュールまたはアダプターのスキャフォールディングプロジェクトを作成します。
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
 | `{module,adapter}` | | 作成するタイプ：`module` または `adapter` |
 | `--name` | `-n` | プロジェクト名（PascalCase） |
@@ -3831,21 +3981,25 @@ ErisPulse モジュールまたはアダプタのスキャフォールドプロ�
 | `--email` | `-e` | 作者のメールアドレス |
 | `--homepage` | | プロジェクトのホームページ URL |
 | `--output` | `-o` | 出力ディレクトリ（デフォルトは現在のディレクトリ） |
-| `--force` | `-f` | 既存のディレクトリを強制的に上書き |
+| `--force` | `-f` | 既存のディレクトリを強制的に上書きします |
+| `--local` | | ローカルプラグインを作成します（`module` のみ利用可能）：`plugins/<name>/` パッケージ構造を生成し、ビルドせずにインストールできます |
 
-**例:**
+**例：**
 
 ```bash
-# 対話型で作成（タイプと情報入力の誘導）
+# インタラクティブな作成（タイプの選択と情報入力のガイド付き）
 epsdk create
 
 # Module プロジェクトを直接作成
 epsdk create module -n MyModule
 
+# ローカルプラグインを作成（`plugins/` ディレクトリに配置され、起動時に自動的に検出され、ホットリロードがサポートされます）
+epsdk create module -n MyModule --local
+
 # Adapter プロジェクトを直接作成
 epsdk create adapter -n MyAdapter
 
-# 完全な引数
+# 完全なパラメータ
 epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "mail@example.com"
 
 # 出力ディレクトリを指定
@@ -3853,146 +4007,152 @@ epsdk create module -n MyModule -o ./projects
 
 # 既存のディレクトリを強制的に上書き
 epsdk create module -n MyModule -f
-```
-
----
 
 ## 言語コマンド
 
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | CLI 表示言語の確認または切り替え |
+| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | CLIの表示言語を確認または切り替える |
 
 ### i18n
 
-現在の CLI 言語を確認、サポートされている言語を一覧表示、表示言語を切り替えます。パラメータを指定しない場合、対話型の選択画面になります。
+現在のCLI言語を確認し、サポートされている言語の一覧を表示し、表示言語を切り替える。パラメータを指定しない場合は、インタラクティブな選択画面に移行する。
 
-**エイリアス:** `language`, `lang`
+**別名：** `language`, `lang`
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `[lang]` | | 切り替える言語コード（例: `zh-CN`、`en`、`ja`、`ru`） |
-| `--list` | `-l` | サポートされているすべての言語を一覧表示 |
+| `[lang]` | | 切り替える言語コード（例：`zh-CN`、`en`、`ja`、`ru`） |
+| `--list` | `-l` | すべてのサポート言語を表示する |
 
-**例:**
+**例：**
 
 ```bash
-# 対話型で言語を選択
+# インタラクティブに言語を選択
 epsdk i18n
 
-# 英語へ切り替え
+# 英語に切り替える
 epsdk i18n en
 
-# 日本語へ切り替え
+# 日本語に切り替える
 epsdk i18n ja
 
-# サポートされている言語を一覧表示
+# すべてのサポート言語を表示する
 epsdk i18n --list
-```
 
----
+## タイプ・スタブ・コマンド
 
-## 型スタブコマンド
-
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | IDE 自補のための型スタブファイルを生成 |
+| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | IDE補完を有効にするためのタイプ・スタブ・ファイルを生成します |
 
 ### types
 
-インストール済みの ErisPulse モジュールとアダプタをスキャンし、`.pyi` 型スタブファイルを生成して、IDE で正確なコード補完と型チェックのサポートを得ます。
+インストール済みの ErisPulse モジュールとアダプタをスキャンし、`.pyi` タイプ・スタブ・ファイルを生成します。これにより、IDE で正確なコード補完と型検査のサポートが得られます。
 
-**エイリアス:** `t`, `stub`
+**別名：** `t`, `stub`
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `--output` | `-o` | 出力先パス（デフォルトは現在のディレクトリ下の `ep-stubs/`） |
-| `--force` | | 既存のスタブファイルを強制的に上書き |
-| `--adapters-only` | | アダプタの型スタブのみ生成 |
-| `--modules-only` | | モジュールの型スタブのみ生成 |
+| `--output` | `-o` | 出力パス（デフォルトは現在のディレクトリの `ep-stubs/`） |
+| `--force` | | 既存のスタブ・ファイルを上書きします |
+| `--adapters-only` | | アダプタのタイプ・スタブのみを生成します |
+| `--modules-only` | | モジュールのタイプ・スタブのみを生成します |
 
-> **注意:** `--adapters-only` と `--modules-only` は排他的です。両方を同時に指定した場合、後者が有効になります。
+> **注意：** `--adapters-only` と `--modules-only` は排他的です。両方指定した場合、後者（`--modules-only`）が有効になります。
 
-**例:**
+**例：**
 
 ```bash
-# すべてのインストール済みモジュールとアダプタに対して型スタブを生成
+# インストール済みのすべてのモジュールとアダプタのタイプ・スタブを生成します
 epsdk types
 
-# アダプタのスタブのみ生成
+# アダプタのスタブのみを生成します
 epsdk types --adapters-only
 
-# 指定したディレクトリへ出力
+# 指定したディレクトリに出力します
 epsdk types -o ./typings
 
-# 既存のファイルを強制的に上書き
+# 既存のファイルを強制的に上書きします
 epsdk types --force
 ```
 
 ---
 
-## 全体パラメータ
+**重要：** パスの置換ルール  
+- ドキュメント内のリンクにある `docs/ja/` を `docs/ja/` に置換します  
+- 例：`docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更します  
+- 非現在言語版のファイルを指すリンク（`README.xx.md` 形式のリンク）は、変更しないでください  
+- これにより、リンクが正しい言語のドキュメント版を指すようにします
+
+## グローバルパラメータ
 
 以下のパラメータはすべてのコマンドに適用されます：
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `--help` | `-h` | ヘルプ情報を表示 |
-| `--version` | `-V` | バージョン情報を表示 |
-| `--verbose` | `-v` | 詳細な出力を表示（`-vv`/`-vvv` で累積） |
-| `--no-color` | | 色の出力を無効化（CI / ログ収集向け） |
-| `--yes` | `-y` | すべての対話プロンプトを自動確認（非対話実行時） |
+| `--help` | `-h` | ヘルプ情報を表示します |
+| `--version` | `-V` | バージョン情報を表示します |
+| `--verbose` | `-v` | 詳細出力を表示します（`-vv`/`-vvv` で重ねて使用可能） |
+| `--no-color` | | カラフルな出力を無効にします（CI / ログ収集に適しています） |
+| `--yes` | `-y` | すべてのインタラクティブなプロンプトに自動的に確認します（インタラクティブでない実行） |
 
 ---
+
+[**English**](docs/ja/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 環境診断
 
 ### doctor
 
-現在の CLI 実行環境を診断し、ヘルスレポートを出力します。「なぜインストールできない / 接続できないのか」といった問題の原因特定に使用します。
+現在の CLI 実行環境を診断し、健康レポートを出力します。これは「なぜインストールできない / 接続できないか」などの問題を解決するために使用します。
 
 | パラメータ | 説明 |
 |------|------|
-| `--verbose` | 詳細な診断情報を表示 |
+| `--verbose` | 詳細な診断情報を表示します |
 
-**確認項目**:
-- **Python**: インタプリタのバージョンとパス
-- **インストールバックエンド**: `uv` または `pip` を使用
-- **ターゲットインタプリタ**: パッケージが実際にインストールされる Python 環境
-- **設定ファイル**: `config/config.toml` が存在するか
-- **PyPI 接続性**: PyPI へのアクセス可否（見つかったコンポーネント数を表示）
-- **システムプロキシ**: プロキシの検出有無
+**チェック項目**:
+- **Python**：解釈器のバージョンとパス
+- **インストールバックエンド**：`uv` または `pip` の使用
+- **目標解釈器**：パッケージが実際にインストールされる Python 環境
+- **設定ファイル**：`config/config.toml` が存在するか
+- **PyPI への接続性**：PyPI にアクセスできるか（発見されたコンポーネント数を表示）
+- **システムプロキシ**：プロキシが検出されているか
 
 ```bash
-# 実行環境診断
+# 実行環境の診断
 epsdk doctor
 
-# エイリアスを使用
+# 別名を使用
 epsdk diag
 ```
 
 ---
 
-## 対話型インストール
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
-`epsdk install` でパッケージ名を指定せずに実行すると対話型インストールになります：
+## インタラクティブインストール
+
+`epsdk install` をパッケージ名を指定せずに実行すると、インタラクティブインストールモードになります：
 
 ```bash
 epsdk install
 ```
 
-対話画面では以下が提供されます：
-1. アダプタ選択
-2. モジュール選択
+インタラクティブインターフェースでは、以下のオプションが利用できます：
+1. アダプタの選択
+2. モジュールの選択
 3. カスタムインストール
 
-## よく使われる使用例
+[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
-### モジュールをインストール
+## 一般的使い方
+
+### モジュールのインストール
 
 ```bash
 # 単一のモジュールをインストール
@@ -4005,7 +4165,7 @@ epsdk install Yunhu Weather
 epsdk install Weather -U
 ```
 
-### コンポーネントを一覧表示
+### コンポーネントの一覧表示
 
 ```bash
 # すべてのコンポーネントを一覧表示
@@ -4021,7 +4181,7 @@ epsdk list -o
 epsdk list-remote
 ```
 
-### コンポーネントをアンインストール
+### コンポーネントのアンインストール
 
 ```bash
 # 単一のコンポーネントをアンインストール
@@ -4031,20 +4191,20 @@ epsdk uninstall Weather
 epsdk uninstall Yunhu Weather
 ```
 
-### コンポーネントをアップグレード
+### コンポーネントのアップグレード
 
 ```bash
 # すべてのコンポーネントをアップグレード
 epsdk upgrade
 
-# 指定したコンポーネントをアップグレード
+# 指定されたコンポーネントをアップグレード
 epsdk upgrade Weather
 
-# 強制アップグレード
+# 強制的にアップグレード
 epsdk upgrade -f
 ```
 
-### プロジェクトを実行
+### プロジェクトの実行
 
 ```bash
 # 通常の実行
@@ -4054,43 +4214,43 @@ epsdk run main.py
 epsdk run main.py --reload
 ```
 
-### 言語を切り替え
+### 言語の切り替え
 
 ```bash
-# 対話型で言語を選択
+# 対話形式で言語を選択
 epsdk i18n
 
-# 英語へ直接切り替え
+# 英語に直接切り替え
 epsdk i18n en
 
-# サポートされている言語を一覧表示
+# 対応している言語の一覧表示
 epsdk i18n --list
 ```
 
-### 型スタブを生成
+### タイプのスタブ生成
 
 ```bash
-# すべての型スタブを生成
+# すべてのタイプのスタブを生成
 epsdk types
 
-# モジュールの型スタブのみ生成
+# モジュールのタイプのスタブのみを生成
 epsdk types --modules-only
 ```
 
-### プロジェクトを初期化
+### プロジェクトの初期化
 
 ```bash
-# 対話型で初期化
+# 対話形式での初期化
 epsdk init
 
 # クイック初期化
 epsdk init -q -n my_bot
 ```
 
-### スキャフォールドを作成
+### フレームワークの作成
 
 ```bash
-# 対話型で作成（タイプと情報入力の誘導）
+# 対話形式での作成（タイプの選択と情報の入力をガイド）
 epsdk create
 
 # Module プロジェクトを直接作成
@@ -4099,7 +4259,7 @@ epsdk create module -n MyModule
 # Adapter プロジェクトを直接作成
 epsdk create adapter -n MyAdapter
 
-# 完全な引数
+# 完全なパラメータ
 epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "mail@example.com"
 
 # 既存のディレクトリを強制的に上書き
@@ -8223,6 +8383,241 @@ CLI は**独立した**国際化モジュール（`ErisPulse.CLI.i18n`）を持�
 
 
 
+### 模块作用域系统
+
+# モジュールスコープシステム
+
+モジュールスコープシステムは、あるBotがどのモジュールを使用できるかを制御し、マルチBotシナリオにおけるモジュールの分離を実現します。
+デフォルトでは、すべてのモジュールがすべてのBotに開放されています。設定のバインド後にフィルタリングが開始されるだけで、**モジュールとアダプターを何も変更する必要はありません**。
+
+{!--< tips >!--}
+1. スコープは「アダプタープラットフォーム + Bot識別子 + セッション識別子」を次元としてモジュールをバインドします。
+2. ホワイトリスト（`modules`）とブラックリスト（`blocked`）の2つの方式をサポートしています。
+3. スコープで無効化されたモジュールがメッセージを受信した場合は静かに無視され、返信による通知は行われません。
+4. 実行時の動的な追加・削除（`sdk.scope.bind()` / `unbind()`）をサポートし、永続化可能です。
+{!--< /tips >!--}
+
+## 動作仕様
+
+```
+Bot がメッセージを受信
+  → フレームワークがイベントから (platform, bot_id, session_id) を抽出
+  → スコープ バインディングを検索（セッション級 > Bot級 > プラットフォーム級）
+  → バインディングにヒットした場合は、ホワイトリスト/ブラックリストでモジュールをフィルタリング
+  → 無効になっているモジュール：コマンドとイベントハンドラの両方がトリガーされない（サイレント無視）
+```
+
+- **解析優先度：** セッション級 > Bot級 > プラットフォーム級。より優先度が高いレベルでルールがバインドされていない場合は、次のレベルにフォールバックする。すべてのレベルで設定されていない場合は、すべてのモジュールが許可される。
+- イベントデータに `self` が含まれていない（Bot を認識できない）場合、Bot級をスキップしてセッション級 / プラットフォーム級で判定する。
+- フレームワーク層リソース（owner が空のハンドラ、コマンドディスパッチャ、イベントバス）は常に許可され、スコープの影響を受けない。
+
+## 設定ファイル
+
+```toml
+[ErisPulse.scope]
+default_allow = true        # デフォルトで全許可（false = 厳格モードでの暗黙拒否）
+cache_size = 1024           # is_allowed の LRU キャッシュサイズ
+
+# プラットフォームレベルのバインド（そのプラットフォームのすべての Bot / セッションに適用）
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Translate"]   # ホワイトリスト：そのプラットフォームの Bot はこれらのモジュールのみ使用可能
+blocked = ["Danger"]              # ブラックリスト：これらのモジュールはそのプラットフォームで無効化
+
+# Bot レベルのバインド（その Bot のすべてのセッションに適用、プラットフォームレベルより優先）
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Chat"]
+blocked = []
+
+# セッションレベルのバインド（特定のグループ / チャンネル / 個人チャットに適用、最も具体的）
+[ErisPulse.scope.sessions.onebot11."789012345"]
+modules = ["Chat"]                # そのグループは Chat のみ使用可能
+blocked = []
+```
+
+意味合い（モジュール名は**大文字・小文字を区別しない**）：
+
+| 設定 | 効果 |
+|------|------|
+| `modules` のみ（ホワイトリスト） | リストされたモジュールのみ使用可能 |
+| `blocked` のみ（ブラックリスト） | リストされたモジュールは使用禁止、それ以外は全て許可 |
+| 両方を設定 | ホワイトリストで範囲を限定し、ホワイトリスト内のモジュールからブラックリストを除外 |
+| 両方が空 / 未設定 | `default_allow` に従う：`true`（デフォルト）は全て許可、`false` は暗黙的に拒否 |
+
+> `modules` と `blocked` はいずれも文字列または文字列のリストをサポートします。モジュール名は大文字・小文字を区別しません（`"Chat"` と `"chat"` は等価）。
+> セッション識別子は、グループ ID（`group_id`）、チャンネル ID（`channel_id`）またはプライベートチャットのユーザー ID（`user_id`）です。
+> **セッション識別子はプラットフォームごとに分離されます**：`(platform, session_id)` の組み合わせでセッションを一意に識別し、`onebot11` の `789` と `telegram` の `789` は互いに影響を与えません。
+
+## ランタイム API
+
+### モジュールの許可状態を確認
+
+```python
+from ErisPulse import sdk
+
+# 特定の Bot が特定のモジュールを使用可能か判定する
+allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat")
+
+# 特定のセッション（グループ / チャンネル / DM）で判定する
+allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
+```
+
+### 動的バインド / アンバインド
+
+```python
+# Bot レベルのホワイトリストに追加（設定に永続化）
+sdk.scope.bind("onebot11", "123456", modules=["Chat", "Translate"])
+
+# セッションレベルのホワイトリストに追加（第三引数は session_id）
+sdk.scope.bind("onebot11", "123456", "789012345", modules=["Chat"])
+
+# プラットフォームレベルのブラックリストに追加
+sdk.scope.bind("onebot11", blocked=["Danger"])
+
+# 常時有効（リロードのみで永続化しない）
+sdk.scope.bind("onebot11", "123456", modules=["Chat"], persist=False)
+
+# マージモード（Music を既存のホワイトリストに追加する）：
+# デフォルトの bind は置換であることに注意
+sdk.scope.bind("onebot11", "123456", modules=["Music"], merge=True)
+
+# バインドを解除（すべて許可に戻す）；
+# session_id を指定するとセッションレベルのバインドのみ解除できる
+sdk.scope.unbind("onebot11", "123456")
+sdk.scope.unbind("onebot11", "123456", "789012345")
+```
+
+> `bind()` はデフォルトでターゲットのすべてのバインドを**置換**します；`merge=True` の場合は、新規モジュール/無効化設定を既存のバインドにマージします。
+
+### バインド情報の取得
+
+```python
+# 有効なバインドを取得（セッションを指定可能）
+sdk.scope.get("onebot11", "123456")              # {"modules": ["Chat"], "blocked": []}
+sdk.scope.get("onebot11", "123456", "789012345") # セッションレベルで有効なバインド
+sdk.scope.get("onebot11")                        # プラットフォームレベルのバインド、存在しなければ None
+
+# 全てのバインドをリスト表示（platforms / bots / sessions の3つのカテゴリ）
+sdk.scope.list_bindings()
+```
+
+### フィルタリング統計（デバッグ）
+
+```python
+# スコープによって静的にフィルタリングされた回数とキャッシュのヒット状況を表示
+sdk.scope.get_stats()
+# {"is_allowed_calls": 10, "filtered_count": 3, "cache_hits": 5, "cache_misses": 5}
+
+sdk.scope.reset_stats()
+```
+
+### トポロジー木データ
+
+```python
+# スコープ部分（Dashboard 用）
+sdk.scope.get_topology()
+
+## よくある質問と注意点
+
+### 1. 設定の階層
+
+優先度：**セッション級 > Bot 級 > プラットフォーム級**。優先度が高いものが、優先度が低いものを**全体で上書き**します。
+
+```toml
+# プラットフォーム級は Chat のみ許可
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat"]
+
+# しかし Bot 級は Music のみ許可 → その Bot は最終的に Music のみ使用可能！
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Music"]
+```
+
+- "プラットフォーム級で Chat を許可し、Bot 紧に Music を追加" したい場合、**Bot 紧で両方を同時にリストアップする必要があります**：`modules = ["Chat", "Music"]`。
+- 同様に、下位のブラックリストは上位のホワイトリストによって上書きされます。プラットフォーム級 `blocked=["Danger"]` + Bot 级 `modules=["Danger"]` → Bot 级の設定が全体で優先されるため、Danger は使用可能です。階層が高く、より具体的なものが優先されます。
+
+### 2. これは「イベントごと」の判断であり、**付着しない**
+
+スコープ判定は**現在の単一のイベントに対してのみ**行われ、イベントをまたいで記憶することはありません。
+- セッション g1 でモジュール A が無効化されている → g1 の**この**メッセージでは A はトリガーされません。**次の**メッセージでは独立して再判定されます。バインドが変更されていない限り引き続きトリガーされず、変更されれば即座に有効になります（LRU キャッシュが自動的に無効になります）。
+- セッション g2 でバインドが未設定 → Bot 级 / プラットフォーム级の判定にフォールバックします。両方ともない場合は `default_allow` に従います。
+
+### 3. モジュールに反応がない
+
+メッセージを送信したのにモジュールが反応しない場合は、まずスコープ（適用範囲）を疑い、モジュールやアダプターではありません。
+
+```python
+# モジュールのコードや一時スクリプトに一行追加して位置特定
+from ErisPulse import sdk
+print(sdk.scope.is_allowed(event.get_platform(), <bot_id>, "MyModule", <session_id>))
+print(sdk.scope.get_stats())          # filtered_count > 0 は確実にフィルタされたことを示します
+```
+
+フィルタリングは**静かに**行われます（ユーザーにスコープのルールを明かさないようにメッセージを返さず、応答しません）、ですが `filtered_count` は累積されます。
+
+### 4. セッション識別子はプラットフォームごとに分離
+
+`(platform, session_id)` の組み合わせが唯一の識別子となります。`[ErisPulse.scope.sessions.onebot11."789"]` は onebot11 プラットフォームにのみ適用され、telegram で同じ `789` のセッションには影響しません。
+
+### 5. パフォーマンス
+
+`is_allowed()` の結果には **LRU キャッシュ**が含まれています（デフォルト 1024 件、`scope.cache_size` で調整可能）。
+設定の変更 / `bind()` / `unbind()` で自動的にキャッシュが無効になり、高頻度のイベント処理においてオーバーヘッドは極めて小さくなります。
+
+## 拓扑ツリー API
+
+`ModuleManager.get_topology()` と `AdapterManager.get_topology()` はモジュール/アダプタの所属関係データを提供します。
+`sdk.get_topology()` はこれら3つをワンクリックで集約します。
+
+```python
+from ErisPulse import sdk
+
+topology = sdk.get_topology()
+# {
+#   "modules": {                                   # モジュール → 所持リソース
+#     "Chat": {
+#       "loaded": True, "enabled": True,
+#       "load_strategy": {"lazy": False, "priority": 50},
+#       "info": {...},
+#       "commands": ["chat", "translate"],
+#       "handlers": {"message": 2, "notice": 1},
+#       "routes": {"http": ["/Chat/api"], "ws": [], "sse": []},
+#       "lifecycle_hooks": 3,
+#       "scope_applies": True,
+#     }
+#   },
+#   "adapters": {                                  # アダプタ → Bot → スコープ
+#     "onebot11": {
+#       "status": "started", "enabled": True,
+#       "bots": {"123456": {"status": "online", "last_active": ..., "info": {...}, "scope": {...}}},
+#       "scope": {"modules": [...], "blocked": [...]},
+#     }
+#   },
+#   "scope": {"platforms": {...}, "bots": {...}, "sessions": {...}}   # 全スコープのバインド
+# }
+```
+
+- モジュールのトポロジは、そのモジュールが登録したコマンド、イベントハンドラー、HTTP/WS/SSE ルート、ライフサイクルフックを集約しており、モジュールリソースツリーを描画するのに便利です。
+- アダプタのトポロジは、各アダプタの状態、配下の Bot の状態、およびプラットフォームレベル / Bot レベルのスコープバインドを集約しています。
+
+## プライバシー：メッセージログのブロック
+
+バックグラウンド（Dashboard ログパネルなど）から各チャンネル/プライベートチャットのメッセージ内容を非表示にする必要がある場合は、`[ErisPulse.logger]` で EVENT レベルをブロックします（メッセージの送受信内容は EVENT レベルで記録されます）：
+
+```toml
+[ErisPulse.logger]
+exclude_levels = ["EVENT"]
+```
+
+ブロックされたレベルのログは**完全に破棄**されます（メモリには書き込まれず、サブスクライバーへの通知も送信されず、出力もされず、ファイルにも書き込まれません）。
+また、コードから動的に制御することも可能です：
+
+```python
+sdk.logger.set_excluded_levels(["EVENT"])   # ブロック
+sdk.logger.exclude_level("EVENT")
+sdk.logger.allow_level("EVENT")             # 復元
+
+
+
 ### 启动流程与手动控制
 
 # 起動プロセスと手動制御
@@ -8877,6 +9272,108 @@ A: 一般的なものやプラットフォーム固有の型については、`{
 ====
 生态模块
 ====
+
+
+### ErisPulse-App 安装与使用
+
+# ErisPulse-App
+
+[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) は ErisDev が直接運用している **公式マルチプラットフォームクライアント**（Android / Windows / Linux / macOS の各プラットフォームでリリース済み）で、
+完全にネイティブなグラフィカル管理インターフェースを提供します。スマートフォンやコンピュータ上で複数のボットインスタンスの作成、実行、管理が可能です。
+端末（ターミナル）を開く必要もなく、Python 環境を別途インストールする必要もありません。
+
+> [!IMPORTANT]
+> ErisPulse-App は**スタンドアロンのインストール型クライアントプログラム**であり、`epsdk install` でインストールされるモジュールではありません。
+> Python ランタイムと ErisPulse SDK を内部に搭載しているため、インストールしてすぐに利用可能です——**スマートフォンでも直接実行できます**。
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+## 機能概要
+
+- **マルチインスタンス管理**: インスタンスの作成 / 起動 / 停止 / 削除。ポートとアクセストークンが自動的に割り当てられます。新規環境または既存環境のクローンに対応しています。
+- **ダッシュボード**: アダプタ / モジュール / オンラインボット / イベント総数の統計、CPU / メモリ使用率のアラート（色の変化）。
+- **モジュールストア**: 検索・タグによるフィルタリング、ワンクリックでのインストール / アップグレード / アンインストール、特定バージョンのインストール、pipミラーソースと Git パッケージのサポート。
+- **イベントストリーム + イベントビルダー**: リアルタイムでのイベント確認、テストイベントの視覚的な構築とアダプタへの送信。
+- **監視**: ログ / ライフサイクル / 監査の統合ビュー。
+- **コマンド管理**: プリフィックス・エイリアスなどの全体的な設定、開始・停止、プラットフォームのホワイトリスト・ブラックリスト。
+- **ボット概要 / 設定 / ファイル管理**: 原生インターフェースによるインスタンス直接操作。
+- **常駐バックグラウンド**: Android フロントグラウンドサービスによるプロセス維持；Windows はシステムトレイへ最小化し、ウィンドウを閉じてもインスタンスを中断しません。
+- **モジュール動的ウィンドウ**: モジュールが登録されたページがサイドナビゲーション（ダッシュボードと同じグループ）に自動的に表示されます。クリックで直接移動できます。
+
+## 対応プラットフォーム
+
+すべてのプラットフォームのインストーラーは、[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) からダウンロードできます。必要なものを選択してください。
+
+| プラットフォーム | インストーラー | 説明 |
+|------|--------|------|
+| Android | `online-*.apk` / `offline-*.apk` | **スマートフォンで直接実行**、PCは不要です |
+| Windows | `windows-x64-setup.exe` / `windows-x64.zip` | インストーラー版 / 解凍のみ版 |
+| Linux | `linux-x64.tar.gz` | 解凍して使用 |
+| macOS | `macos-arm64.zip` | Apple Silicon（arm64） |
+
+Flutter による単一のコードベースで、すべてのプラットフォームをカバーしています。
+
+---
+
+## インストール方法（Android / スマートフォン直接実行）
+
+[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) から APK をダウンロードしてインストールするだけです。2つのビルドがあります。
+
+| ビルド | ランタイムイメージ | 適用シーン |
+|------|-----------------|---------|
+| `erispulse-app-online-*.apk` | 起動時にダウンロード | インストールパッケージが小さく、ネットワーク環境が良い場合に適しています |
+| `erispulse-app-offline-*.apk` | APK に同梱 | オフラインで自己完結しており、インストール後にネットワーク接続不要 |
+
+2つのビルドともインストール手順は同じです。
+
+1. APK をダウンロードしてインストールします。起動時に通知権限を許可してください（バックグラウンドサービスを維持するために使用します）
+2. ホーム画面に初期化バナーが表示されたら、実行ボタンをクリックして最初の初期化を行います（進捗とログのビューを含みます）
+3. インスタンスを作成して起動します
+4. App 内蔵の管理画面でアダプタとモデル API Key を設定します
+
+> オフラインパッケージは自己完結しています — インストール後にネットワークは不要です。起動時のダウンロードが遅い場合や不安定な場合は、設定画面でダウンロード元をミラーサイト（ghfast / gh-proxy）に切り替えることができます。
+
+### インストール方法（デスクトップ：Windows / Linux / macOS）
+
+1. [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) から対応するプラットフォームのインストーラをダウンロードします（Windows の `setup.exe` または ZIP 版、Linux の `tar.gz`、macOS の `zip`）
+2. インストールして起動します
+3. ウェルカム画面でインストールしたい ErisPulse SDK のバージョンを選択します（デフォルトは最新バージョン）そしてインストールします
+4. インスタンスを作成して起動します
+
+---
+
+## 動作原理
+
+```
+┌────────────────────────────────────────────────────┐
+│  ErisPulse-App (Flutter)                            │
+│                                                    │
+│  ネイティブ UI ── Dashboard REST / WS API          │
+│       │                                            │
+│       ├── Android：フォアグラウンドサービス + proot + Ubuntu rootfs│
+│       │        + Python + ErisPulse インスタンス            │
+│       └── デスクトップ：内蔵 Python + 直接プロセス管理         │
+└────────────────────────────────────────────────────┘
+```
+
+- **Android**：インスタンスはフォアグラウンドサービス（background isolate）によって管理された proot（ユーザーランド chroot）内で動作します。UIが閉じられてもボットは継続して実行され、クラッシュすると自動的に再起動します。
+- **デスクトップ**：インスタンスはAppの直接の子プロセスとして実行されます。Windowsの場合、システムトレイに最小化してバックグラウンドで常駐（ウィンドウを閉じてもインスタンスは中断されません）。Appを再起動すると、実行中のインスタンスへの管理が自動的に回復し、終了時にすべてのインスタンスを一括して停止します。
+- すべてのプラットフォームのネイティブ UI は、`127.0.0.1:<port>/Dashboard/*` の REST / WebSocket API を介してインスタンスと通信します。これは[ErisPulse-Dashboard](dashboard.md)と同じAPIを使用します。
+
+---
+
+## SDK との関係
+
+- App 内部に ErisPulse SDK を同梱：Android 版は Ubuntu イメージにパッケージングされており、デスクトップ版は PyPI からインストールします（ウェルカム画面はオプション、デフォルトは最新版）
+- App 内のインスタンスは、コマンドライン `epsdk` で作成されたインスタンスと等価であり、同じモジュール / アダプタを使用可能です
+- モジュール開発者は、[Dashboard ウィンドウで API を登録](dashboard.md)してカスタムページを登録できます：
+  - ウィンドウは App のサイドナビゲーションに自動的に表示されます（グループは Dashboard と一致）
+  - クリックすると対応するページレンダリングに遷移します
+
+---
+
+</translate>
+
 
 
 ### Dashboard 使用与视窗注册
