@@ -143,6 +143,7 @@ class BaseEventHandler:
         handler: Callable,
         priority: int = DEFAULT_HANDLER_PRIORITY,
         condition: Callable | None = None,
+        scope_exempt: bool = False,
     ):
         """
         注册事件处理器
@@ -150,6 +151,8 @@ class BaseEventHandler:
         :param handler: 事件处理器函数
         :param priority: 处理器优先级，数值越大优先级越高
         :param condition: 处理器条件函数，返回True时才会执行处理器
+        :param scope_exempt: 是否豁免作用域过滤（框架级处理器专用，默认 False）。
+                             为 True 时不参与模块作用域判断，始终执行。
         """
         handler_info = {
             "func": handler,
@@ -157,13 +160,15 @@ class BaseEventHandler:
             "condition": condition,
             "module": self.module_name,
             "owner": current_owner.get(),
+            "scope_exempt": scope_exempt,
         }
         self.handlers.append(handler_info)
         self._handler_map[id(handler)] = handler_info
         self.handlers.sort(key=lambda x: x["priority"], reverse=True)
 
         if self.event_type and not self._linked_to_adapter_bus:
-            adapter.on(self.event_type)(self._process_event)
+            # 框架级事件总线处理器：豁免作用域过滤，内部再按 owner 逐个过滤
+            adapter.on(self.event_type, scope_exempt=True)(self._process_event)
             self._linked_to_adapter_bus = True
         logger.trace(
             i18n.t(
@@ -263,14 +268,26 @@ class BaseEventHandler:
                 if ignore_self:
                     return
 
+        # 作用域上下文（每个事件只计算一次）：平台 + Bot 标识 + 会话标识
+        from ..scope import scope as _scope
+
+        scope_platform = event.get("platform", UNKNOWN_PLATFORM)
+        scope_bot = event.get_self_account_id()
+        scope_session = _scope.session_id_from_event(event)
+
         for _priority, group_iter in groupby(
             self.handlers, key=lambda h: h["priority"]
         ):
             group = list(group_iter)
 
-            # 过滤出满足条件的处理器
+            # 过滤出满足条件的处理器（条件函数 + 模块作用域）
             active = [
-                h for h in group if not h.get("condition") or h["condition"](event)
+                h
+                for h in group
+                if (not h.get("condition") or h["condition"](event))
+                and self._is_scope_allowed(
+                    h, scope_platform, scope_bot, scope_session
+                )
             ]
             if not active:
                 continue
@@ -366,6 +383,34 @@ class BaseEventHandler:
                     total=f"{_total * 1000:.2f}",
                 )
             )
+
+    @staticmethod
+    def _is_scope_allowed(
+        handler_info: dict, platform: str, bot_id: str, session_id: str
+    ) -> bool:
+        """
+        {!--< internal-use >!--}
+        判断处理器是否通过模块作用域检查
+
+        框架级处理器（``scope_exempt`` 或 owner 为空）始终放行；
+        模块级处理器按 owner 与当前事件所属平台/Bot/会话判定。
+
+        :param handler_info: 处理器信息字典
+        :param platform: 事件平台名称
+        :param bot_id: 事件 Bot 标识（可能为空字符串）
+        :param session_id: 事件会话标识（群 / 频道 / 私聊，可能为空字符串）
+        :return: 是否允许执行
+        """
+        if handler_info.get("scope_exempt"):
+            return True
+        owner = handler_info.get("owner")
+        if not owner:
+            return True
+        from ..scope import scope
+
+        return scope.is_allowed(
+            platform, bot_id or None, owner, session_id or None
+        )
 
     def _clear_handlers(self):
         """

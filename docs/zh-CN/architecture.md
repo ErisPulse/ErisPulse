@@ -174,17 +174,104 @@ async def on_bot_online(event_data):
 
 ## 模块加载策略
 
-ErisPulse 支持两种模块加载策略：
+ErisPulse 支持三种模块加载策略，由 `get_load_strategy()` 返回的 `ModuleLoadStrategy` 声明：
 
 ```mermaid
 flowchart TD
     A["模块注册到 ModuleManager"] --> B{"加载策略"}
-    B -->|"lazy_load = true"| C["创建 LazyModule 代理"]
-    C --> D["挂载到 sdk 属性"]
-    D --> E["首次访问时初始化"]
-    B -->|"lazy_load = false"| F["立即创建实例"]
-    F --> G["调用 on_load()"]
-    G --> D2["挂载到 sdk 属性"]
+    B -->|"lazy_load = true<br/>+ activate_on 声明"| C["创建 ModuleActivator 代理"]
+    B -->|"lazy_load = true<br/>无 activate_on"| D["创建 LazyModule 代理"]
+    B -->|"lazy_load = false"| E["立即创建实例"]
+    C --> F["注册事件/命令 stub 到分发器"]
+    F --> G["挂载到 sdk 属性"]
+    G --> H["事件到达触发激活"]
+    H --> I["实例化 + on_load() + 注销 stub"]
+    D --> J["挂载到 sdk 属性"]
+    J --> K["首次属性访问时初始化"]
+    E --> L["调用 on_load()"]
+    L --> M["挂载到 sdk 属性"]
 ```
 
-> 更多详情请参考 [懒加载系统](advanced/lazy-loading.md) 和 [生命周期管理](advanced/lifecycle.md)。
+> 更多详情请参考 [懒加载系统](advanced/lazy-loading.md)、[生命周期管理](advanced/lifecycle.md) 与模块文档。
+
+### 事件驱动懒激活（`activate_on`）触发架构
+
+`activate_on` 允许模块在**首个匹配事件/命令到达时**才加载，避免常驻内存，同时保证事件不丢失：
+
+```mermaid
+flowchart LR
+    subgraph Declare["模块声明"]
+        S1["get_load_strategy() 返回<br/>ModuleLoadStrategy(activate_on=...)"] --> S2["activate_on 语法：<br/>str / dict / list 自由混合"]
+        S2 --> S2a["'message' → 事件类型级"]
+        S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ 类型 + detail_type"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ 命令触发"]
+    end
+
+    subgraph Runtime["运行期"]
+        R1["ModuleActivator 注册 stub"] --> R1a["事件 stub → message/notice/request/meta 管理器<br/>优先级 ACTIVATION_STUB_PRIORITY（极低）"]
+        R1 --> R1b["命令 stub → 命令管理器<br/>隐藏占位命令（hidden=True）"]
+        R1a --> R2{"触发事件到达"}
+        R1b --> R2
+        R2 --> R3["按 owner 过作用域过滤"]
+        R3 --> R4["asyncio.Lock 防止重复激活"]
+        R4 --> R5["实例化模块 + 调用 on_load()"]
+        R5 --> R6["注销全部 stub"]
+        R6 --> R7["事件转发到真实处理器"]
+    end
+
+    Declare --> Runtime
+```
+
+**触发语义要点：**
+
+1. **stub 注册**：事件 stub 以极低优先级（`ACTIVATION_STUB_PRIORITY`）注册到对应事件管理器，确保在同类事件的所有普通处理器**之后**执行；命令 stub 以隐藏占位命令注册，不污染命令列表
+2. **作用域过滤**：stub 带模块 owner 身份，未对该 Bot / 会话 / 平台启用的模块不触发
+3. **防重入**：`asyncio.Lock` 保证并发事件下只激活一次
+4. **事件转发**：激活完成后将当前事件转发给真实处理器（外层分组循环已验证 stub 之后注册的处理器不会被二次处理）
+5. **失败语义**：激活失败不重试，stub 一并注销，避免每次事件都重复尝试
+
+## 本地插件文件夹架构
+
+本地插件（`plugins/` 目录）无需打包发布，框架启动时自动发现并加载：
+
+```mermaid
+flowchart TD
+    A["项目 plugins/ 目录<br/>（ErisPulse.framework.plugins_dir，支持多目录）"] --> B{"PluginFolderLoader.discover()"}
+    B --> C["单文件：dice.py → 插件名 = 文件名"]
+    B --> D["包形式：weather/（含 __init__.py）→ 插件名 = 目录名"]
+    B --> E["忽略：__pycache__ / _ 开头 / 非 .py / 无 __init__.py 目录"]
+    C --> F["导入模块（spec_from_file_location）"]
+    D --> G["导入模块（sys.path + import_module）"]
+    F --> H["识别模块类：Main（BaseModule 子类）优先，回落首个子类"]
+    G --> H
+    H --> I["构造与 entry-point 一致的 moduleInfo"]
+    I --> J["ModuleLoader.load() 合并<br/>本地优先覆盖 PyPI 同名安装包"]
+    J --> K["与安装包模块共用：<br/>启用状态 / 作用域 / meta / i18n / 上下文"]
+```
+
+**约定与特性：**
+
+- 插件名来源：单文件取文件名，包形式取目录名
+- 本地插件 `moduleInfo.meta.source == "plugin_folder"`，与 PyPI 安装包模块无缝共存
+- 同名时本地优先（便于本地覆盖调试），被禁用时同时移除同名 entry-point 条目
+
+## 本地插件热重载架构
+
+热重载监控插件文件变更，自动重新加载对应插件：
+
+```mermaid
+flowchart TD
+    A["sdk.enable_plugin_hot_reload()"] --> B["PluginReloadWatcher 启动"]
+    B --> C["PollingObserver（后台守护线程）<br/>定期比较 .py 文件 mtime"]
+    C --> D{"插件文件变更"}
+    D --> E["变更去抖（默认 1 秒）"]
+    E --> F["_handle_change 解析插件名<br/>（单文件 / 包形式）"]
+    F --> G["asyncio.run_coroutine_threadsafe<br/>调度回主事件循环"]
+    G --> H["sdk.reload_plugin(name)"]
+    H --> I["卸载旧实例（触发 on_unload）"]
+    I --> J["清理注册（unregister + 移除 sdk 属性）"]
+    J --> K["清理 sys.modules 强制重新导入"]
+    K --> L["重新 discover + register + load"]
+    L --> M["挂载新实例到 sdk 属性"]
+    M --> N["文件删除 → 自动从加载结果移除"]
+```

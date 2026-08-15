@@ -11,6 +11,11 @@ ErisPulse 运行时配置和管理模块
 # config_schema 的符号通过 __getattr__ 懒加载
 # （避免在 runtime 初始化阶段触发 Core.Bases 完整加载链，导致循环引用）
 # 注意：i18n_schema 的 BaseI18n / I18nKey 已不再从 runtime 导出，请从 Core.Bases 导入
+from .context import (
+    get_current_owner,
+    get_handler_waits,
+    owner_scope,
+)
 from .diagnostics import (
     extract_user_frame,
     format_diagnostic_block,
@@ -42,6 +47,7 @@ from .hints import (
     suggest_similar,
 )
 from .memory import get_rss_mb, get_traced_mb, log_snapshot, snapshot
+from .plugin_reload import PluginReloadWatcher
 from .tasks import spawn_background
 
 __all__ = [
@@ -66,9 +72,11 @@ __all__ = [
     "format_diagnostic_block",
     "get_config",
     "get_config_schema",
+    "get_current_owner",
     "get_erispulse_config",
     "get_event_config",
     "get_framework_config",
+    "get_handler_waits",
     "get_i18n_config",
     "get_logger_config",
     "get_master_config",
@@ -80,6 +88,8 @@ __all__ = [
     # 异常诊断
     "log_diagnostic",
     "log_snapshot",
+    "owner_scope",
+    "PluginReloadWatcher",
     "redact_secret",
     "register_config_i18n",
     "resolve_config_schema",

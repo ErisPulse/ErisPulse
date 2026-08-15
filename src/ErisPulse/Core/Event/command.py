@@ -563,6 +563,22 @@ class CommandHandler:
             cmd_info = self.commands[actual_cmd_name]
             handler = cmd_info["func"]
 
+            # 作用域检查：模块未对该 Bot / 会话 / 平台启用时静默忽略（不回复、不认领）
+            cmd_owner = cmd_info.get("owner")
+            if cmd_owner:
+                from ..scope import scope
+
+                if not scope.is_allowed(
+                    event.get("platform", UNKNOWN_PLATFORM),
+                    event.get_self_account_id() or None,
+                    cmd_owner,
+                    scope.session_id_from_event(event) or None,
+                ):
+                    logger.trace(
+                        i18n.t("core.scope.denied", module=cmd_owner)
+                    )
+                    return False
+
             # 检查框架主人权限（must_master）
             if cmd_info.get("must_master"):
                 from ..master import master
@@ -830,9 +846,12 @@ class CommandHandler:
         将命令分发器注册到共享 handler（如尚未注册）
         """
         if self._bound_handler is not None and not self._dispatcher_registered:
+            # 命令分发器为框架级处理器：豁免作用域过滤，
+            # 具体命令在 _try_execute_command 中按 owner 逐个判定
             self._bound_handler.register(
                 self._handle_message,
                 priority=DEFAULT_COMMAND_DISPATCHER_PRIORITY,
+                scope_exempt=True,
             )
             self._dispatcher_registered = True
 

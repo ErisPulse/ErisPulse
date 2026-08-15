@@ -63,6 +63,72 @@
 
 ---
 
+## [2.8.0-dev.0] - 2026/08/13
+> 开发版本
+
+**版本摘要**
+本开发版本聚焦六组能力：(1) **模块作用域系统**——按"适配器平台 + Bot + 会话"三级绑定模块（白名单/黑名单，优先级 会话>Bot>平台），默认允许全部模块，模块与适配器零改动即可适配，被禁模块静默忽略；(2) **拓扑树 API**——`ModuleManager/AdapterManager/ScopeManager.get_topology()` 与 `sdk.get_topology()` 聚合命令/事件处理器/路由/生命周期钩子归属，供 Dashboard 绘制模块资源树；(3) **日志等级屏蔽**——`[ErisPulse.logger] exclude_levels` 屏蔽指定等级日志（如 `["EVENT"]` 隐藏消息收发内容，实现后台隐私）；(4) **模块介绍 meta 与命令总览**——`BaseModule.get_meta()` 声明式元信息（推荐返回 `ModuleMeta` 配置类，dict 兼容，支持 i18n 字段），`ModuleManager.get_meta()` / `get_commands_overview()` 按模块聚合命令总览；(5) **本地插件文件夹**——`plugins/` 免打包即插即用（单文件/包两种布局，本地优先覆盖 PyPI 同名安装包），配合 **热重载**（`sdk.enable_plugin_hot_reload()` 自动重载 / `sdk.reload_plugin()` 手动触发）与 **CLI `create module --local`**（生成本地插件结构）;(6) **`activate_on` 事件驱动懒激活**——`ModuleLoadStrategy` 声明事件/命令触发懒加载，事件到达时按需激活模块；
+
+### 新增
+- @wsu2059q
+  - **模块作用域系统** `Core/scope.py`：
+    - `ScopeManager` 单例 `scope`，三级绑定：`platforms.<platform>` / `bots.<platform>.<bot_id>` / `sessions.<platform>.<session_id>`（`modules` 白名单 + `blocked` 黑名单），解析优先级 会话>Bot>平台
+    - 模块名**大小写不敏感**；`default_allow`（默认 true，false=隐式拒绝严格模式）；`is_allowed` 结果带 **LRU 缓存**（`cache_size`，默认 1024，配置变更/bind/unbind 自动失效）
+    - `bind()` 支持 `merge=True` 合并而非替换；`get_stats()` 输出 `filtered_count` / 缓存命中统计；被过滤模块输出 TRACE 日志（缓存命中不重复）
+    - 运行时 API：`is_allowed()` / `bind()` / `unbind()` / `get()` / `list_bindings()` / `clear()` / `get_stats()`，支持持久化与配置热更新
+    - 分发闸口：`Core/Event/base.py`（事件处理器按 owner 过滤）、`Core/Event/command.py`（命令按 owner 过滤，静默忽略）、`Core/adapter.py`（`adapter.on()` 记录 owner 并在 emit 过滤）；命令分发器与事件总线处理器 `scope_exempt` 豁免，避免误杀允许模块
+  - **模块介绍 meta 与命令总览**：
+    - `BaseModule.get_meta()` 声明式约定模块介绍元信息（`name` / `description` / `version` / `author` / `group` / `tags` 等），供 help、Dashboard、模块商店等各类界面 / 生态模块消费
+    - meta 字段支持 **i18n 字典** `{"i18n": "key", "default": "文本"}`（键经 `I18nClass` 注册），`get_meta()` 自动解析为当前语言
+    - `ModuleManager.get_meta()` 解析 meta（类声明 > 注册 info，自动补全该模块的命令名，`resolve_i18n=False` 可透传原始字典）
+    - `ModuleManager.get_commands_overview()` 按模块聚合「meta + 注册命令（别名/分组/帮助）」
+    - 命令归属模块：`cmd_info["owner"]`（注册时由上下文系统 `current_owner` 注入）
+  - **拓扑树 API**：
+    - `ModuleManager.get_topology()` 聚合模块拥有的命令/事件处理器/路由/生命周期钩子
+    - `AdapterManager.get_topology()` 聚合适配器状态、Bot 状态与作用域绑定
+    - `LifecycleManager.get_owner_counts()` 统计各 owner 的钩子数
+    - `sdk.get_topology()` 一键聚合 modules + adapters + scope
+  - **日志等级屏蔽** `Core/logger.py`：
+    - `set_excluded_levels()` / `exclude_level()` / `allow_level()` / `list_excluded_levels()`
+    - `[ErisPulse.logger] exclude_levels` 配置项（默认空，支持热更新与环境变量覆盖）
+    - 被屏蔽等级的日志完全丢弃：不写内存、不推订阅器、不打印、不写文件
+  - **本地插件文件夹** `loaders/plugin_folder.py`：
+    - 无需打包发布，将插件放入项目 `plugins/` 目录（`ErisPulse.framework.plugins_dir` 可配置，支持多目录）即自动发现加载
+    - 支持单文件（`dice.py`）与包形式（`weather/` 含 `__init__.py`）两种插件布局
+    - 模块类识别优先 `Main`（BaseModule 子类）；本地插件优先于 PyPI 同名安装包（便于本地覆盖调试）
+    - 插件与安装包模块共用启用状态 / 作用域 / meta / i18n / 上下文；`moduleInfo.meta.source == "plugin_folder"`
+  - **本地插件热重载** `runtime/plugin_reload.py`：
+    - `sdk.enable_plugin_hot_reload()` 启用监控，复用 `PollingObserver`（纯 Python mtime 轮询守护线程），`.py` 变更时自动重载对应插件
+    - `sdk.reload_plugin(name)` / `ModuleLoader.reload_plugin()` 手动触发：卸载旧实例 → 清理注册 → 强制重新导入 → 重新加载
+    - 变更去抖（默认 1 秒），文件删除自动从加载结果移除；仅插件文件夹来源支持热重载
+  - **CLI `create module --local`**：
+    - 生成 `plugins/<name>/` 本地插件包结构（`__init__.py` + `Core.py`），免打包安装，配合热重载开箱即用
+  - **模块加载策略 `activate_on`（事件驱动懒激活）**：
+    - `get_load_strategy()` 返回 `ModuleLoadStrategy(activate_on=...)` 声明事件触发懒激活：`str`（事件类型级）/ `dict`（类型+detail_type 或 `{"command": "cmd"}`）/ `list` 自由混合
+    - `ModuleActivator` 注册低优先级 stub 到事件/命令分发器，触发时激活模块并转发事件到真实处理器；激活失败不重试
+  - **meta 声明优化**：`get_meta()` 推荐返回 `ModuleMeta` **配置类实例**（与 `get_load_strategy()` 返回 `ModuleLoadStrategy` 对齐），dict 兼容；`ACTIVATION_STUB_PRIORITY` 常量移至 `Core/constants.py`
+
+### 测试
+- @wsu2059q
+  - `tests/unit/test_unit_scope.py`（34 用例）：三级绑定解析、allow/block 语义、会话>Bot>平台优先级、大小写不敏感、default_allow 隐式拒绝、bind merge、LRU 缓存失效、get_stats、运行时增删、持久化写配置、事件/命令分发过滤
+  - `tests/unit/test_unit_logger.py` 新增 `TestExcludedLevels`：屏蔽等级不入内存/订阅器/控制台/文件、恢复、热更新、LoggerChild 遵循
+  - `tests/unit/test_unit_topology.py`：模块/适配器/作用域拓扑与 `sdk.get_topology()` 聚合
+  - 新增 `tests/unit/test_unit_plugin_folder.py`（6 用例）：插件发现（单文件/包形式）、moduleInfo 构造、非法条目忽略、路径追踪、`ModuleLoader.load()` 并入
+  - 新增 `tests/unit/test_unit_plugin_reload.py`（3 用例）：文件变更→插件名解析、start/stop、无插件目录降级
+  - `tests/unit/test_unit_module.py` 新增 meta 声明测试；`test_module_load_submits_lifecycle_event` 改用 `call_args_list` 断言（兼容 load 提交 `module.load`+`module.init` 两次事件）
+  - `tests/unit/test_unit_cli.py` 新增 `TestCreateModuleLocal`：`--local` 生成 `plugins/<name>/` 结构并可被框架发现
+
+### 文档
+- @wsu2059q
+  - 新增 `docs/zh-CN/advanced/scope.md`（作用域系统、拓扑树 API、优先级陷阱/降级语义/跨平台隔离等注意事项）
+  - `docs/zh-CN/user-guide/configuration.md`：logger `exclude_levels`、作用域（含 default_allow/cache_size）配置段
+  - 新增 `docs/zh-CN/ecosystem/app.md`：官方全平台客户端 **ErisPulse-App** 安装与使用说明（Android **手机直接运行**，Windows / Linux / macOS 桌面端均已发布，发行版页面按平台选择下载；含功能速览——多实例 / 概览仪表盘 / 模块商店 / 事件构建器 / 监控 / 命令管理 / 托盘常驻 / 模块动态视窗）
+  - `docs/zh-CN/developer-guide/modules/getting-started.md`：meta 声明改用推荐写法——返回 `ModuleMeta` 配置类实例（与 `get_load_strategy()` 返回 `ModuleLoadStrategy` 对齐），dict 写法降为兼容
+  - `docs/zh-CN/user-guide/cli-reference.md`：create 命令补充 `--local` 参数说明
+  - 同步注册到 `generate-docs-index.py` / `generate-ai-prompts.py` 与 `docs/zh-CN/README.md`、`advanced/README.md`
+
+---
+
 ## [2.7.1] - 2026/08/11
 > 正式发布
 

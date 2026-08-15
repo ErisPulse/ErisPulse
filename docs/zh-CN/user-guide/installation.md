@@ -69,6 +69,18 @@ uv pip install ErisPulse --upgrade
 
 安装完成后，项目初始化、模块安装、运行的完整流程见 [5 分钟快速开始](../quick-start.md)。
 
+### 方式三：使用 ErisPulse-App 客户端（免终端）
+
+不想装 Python 环境？[ErisPulse-App](../ecosystem/app.md) 是官方全平台客户端
+（Android / Windows / Linux / macOS），**手机直接运行**，桌面版支持最小化到
+系统托盘后台常驻；内置 Python 运行时与 ErisPulse SDK，无需终端与手动配置：
+
+- 从 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 按平台选择下载
+  （Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）
+- 在 App 内创建并启动实例，通过原生界面管理适配器与模块、浏览模块商店
+
+> 完整说明见 [ErisPulse-App 安装与使用](../ecosystem/app.md)。
+
 ## 验证安装
 
 ### 检查安装

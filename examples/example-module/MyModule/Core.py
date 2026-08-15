@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from ErisPulse.Core.Bases import BaseConfig, BaseModule, BaseI18n, I18nKey
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey, ModuleMeta
 from ErisPulse.Core.Event import command, message, notice
 
 
@@ -77,6 +77,20 @@ class Main(BaseModule):
         self.adapter = self.sdk.adapter
 
         self.logger.info("MyModule 初始化完成")
+
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        """
+        返回模块介绍元信息（推荐返回 ModuleMeta 配置类实例，与 get_load_strategy 对齐）
+        """
+        return ModuleMeta(
+            name="MyModule",
+            description="自定义模块示例",
+            version="1.0.0",
+            author="ErisDev",
+            group="示例",
+            tags=["示例", "demo"],
+        )
 
     @staticmethod
     def get_load_strategy():

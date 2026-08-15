@@ -1,4 +1,4 @@
-"""
+﻿"""
 CLI Русский перевод (ru)
 
 Независимые переводы CLI, отдельно от Core i18n.
@@ -48,6 +48,9 @@ TRANSLATIONS = {
     "cli.create.homepage_help": "URL домашней страницы проекта",
     "cli.create.output_help": "Выходной каталог (по умолчанию: текущий каталог)",
     "cli.create.force_help": "Принудительно перезаписать существующий каталог",
+    "cli.create.local_module_help": "Создать локальный плагин (структура plugins/, без упаковки и установки; только для module)",
+    "cli.create.local_structure": "Структура локального плагина",
+    "cli.create.local_tip": "Поместите плагин в каталог plugins/ проекта — он будет автоматически обнаружен при запуске и перезагружен при изменении",
     "cli.create.select_type_title": "Выберите тип создания",
     "cli.create.select_type_module": "Пользовательский функциональный Module",
     "cli.create.select_type_adapter": "Платформенный Adapter",

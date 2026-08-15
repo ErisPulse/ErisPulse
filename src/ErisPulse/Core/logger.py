@@ -105,6 +105,7 @@ class Logger:
         self._max_logs = DEFAULT_LOG_MEMORY_LIMIT
         self._logs = {}
         self._module_levels = {}
+        self._excluded_levels: set[int] = set()
         self._json_mode = False
         self._logger = logging.getLogger(LOGGER_NAME)
         self._logger.setLevel(logging.DEBUG)
@@ -309,6 +310,88 @@ class Logger:
             return True
         self._logger.error(i18n.t("core.logger.invalid_level", level=level))
         return False
+
+    def set_excluded_levels(self, levels: list[str]) -> bool:
+        """
+        设置被屏蔽的日志等级列表
+
+        被屏蔽等级的日志将被完全丢弃：不写入内存、不推送给订阅器、
+        不输出控制台、不写入日志文件。常用于隐私保护场景，
+        例如 ``exclude_levels = ["EVENT"]`` 可隐藏消息收发内容
+        （消息收发日志使用 EVENT 等级记录）。
+
+        :param levels: 日志等级名称列表（如 ["EVENT", "DEBUG"]），空列表表示不屏蔽
+        :return: bool 设置是否成功（含非法等级时返回 False 且不生效）
+
+        :example:
+        >>> # 屏蔽 EVENT 等级（隐藏消息收发内容）
+        >>> logger.set_excluded_levels(["EVENT"])
+        >>> # 恢复所有等级
+        >>> logger.set_excluded_levels([])
+        """
+        resolved: set[int] = set()
+        for level in levels:
+            level_value = self._resolve_level(level)
+            if level_value is None:
+                self._logger.error(i18n.t("core.logger.invalid_level", level=level))
+                return False
+            resolved.add(level_value)
+        changed = resolved != self._excluded_levels
+        self._excluded_levels = resolved
+        if changed and resolved:
+            # 仅在存在实际屏蔽项时记录，避免配置热更新空列表刷屏
+            self._logger.info(
+                i18n.t(
+                    "core.logger.excluded_levels_set",
+                    levels=", ".join(self.list_excluded_levels()) or "-",
+                )
+            )
+        return True
+
+    def exclude_level(self, level: str) -> bool:
+        """
+        屏蔽单个日志等级
+
+        被屏蔽等级的日志将被完全丢弃（内存 / 订阅器 / 控制台 / 文件）。
+
+        :param level: 日志等级名称（如 "EVENT"）
+        :return: bool 是否设置成功
+        """
+        level_value = self._resolve_level(level)
+        if level_value is None:
+            self._logger.error(i18n.t("core.logger.invalid_level", level=level))
+            return False
+        self._excluded_levels.add(level_value)
+        return True
+
+    def allow_level(self, level: str) -> bool:
+        """
+        取消屏蔽单个日志等级
+
+        :param level: 日志等级名称（如 "EVENT"）
+        :return: bool 是否成功（等级原本未被屏蔽时返回 False）
+        """
+        level_value = self._resolve_level(level)
+        if level_value is None:
+            self._logger.error(i18n.t("core.logger.invalid_level", level=level))
+            return False
+        if level_value in self._excluded_levels:
+            self._excluded_levels.remove(level_value)
+            return True
+        return False
+
+    def list_excluded_levels(self) -> list[str]:
+        """
+        列出当前被屏蔽的日志等级名称
+
+        :return: list[str] 被屏蔽的等级名称列表
+        """
+        names: list[str] = []
+        for level_value in sorted(self._excluded_levels):
+            name = logging.getLevelName(level_value)
+            if not name.startswith("Level "):
+                names.append(name)
+        return names
 
     def set_output_file(self, path) -> bool:
         """
@@ -545,6 +628,8 @@ class Logger:
         logger_config = get_logger_config()
         if "level" in logger_config:
             self.set_level(logger_config["level"])
+        if "exclude_levels" in logger_config:
+            self.set_excluded_levels(list(logger_config["exclude_levels"] or []))
         if logger_config.get("log_files"):
             self.set_output_file(logger_config["log_files"])
         if "memory_limit" in logger_config:
@@ -577,6 +662,10 @@ class Logger:
         :param args: 额外的格式化参数
         :param kwargs: 额外的关键字参数
         """
+        # 屏蔽等级：直接丢弃（不写内存、不推订阅器、不打印、不写文件）。
+        # 用于隐私保护，例如屏蔽 EVENT 等级可隐藏消息收发内容。
+        if level_const in self._excluded_levels:
+            return
         # 是否存在订阅器愿意接收该级别（订阅器 min_level 可低于全局级别）
         has_subscriber = self._has_handler_for(level_const)
         # 快速路径：消息低于全局阈值，且没有任何模块覆盖到该级别，
@@ -723,6 +812,8 @@ class Logger:
 
         :param text: str 需要写入日志管道的 UI 文本
         """
+        if logging.INFO in self._excluded_levels:
+            return
         caller = self._get_caller()
         self._save_in_memory(caller, "info", logging.INFO, text)
         self._notify_handlers("info", logging.INFO, caller, text)
@@ -858,6 +949,9 @@ class LoggerChild:
         :param level_const: 日志级别常量
         :param msg: 日志消息
         """
+        # 屏蔽等级：直接丢弃（与父 Logger 保持一致，见 Logger._log）
+        if level_const in self._parent._excluded_levels:
+            return
         parts = self._name.split(".")
         deduped = [parts[0]]
         for p in parts[1:]:

@@ -378,7 +378,13 @@ class ModuleManager(ManagerBase):
             module_class = self._module_classes[module_name]
 
             init_signature = inspect.signature(module_class.__init__)
-            params = [p for p in init_signature.parameters.values() if p.name != "self"]
+            params = [
+                p
+                for p in init_signature.parameters.values()
+                if p.name != "self"
+                and p.kind
+                not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+            ]
 
             if (sdk_to_use := self._sdk) is None:
                 from .. import sdk
@@ -1025,6 +1031,146 @@ class ModuleManager(ManagerBase):
             return None
         return self._module_info.get(name)
 
+    def get_meta(
+        self,
+        name: str | None = None,
+        *,
+        resolve_i18n: bool = True,
+        module_name: str | None = None,
+    ) -> dict | None:
+        """
+        获取模块的介绍元信息（描述这个模块是什么、属于哪一类等）
+
+        元信息是模块的**通用介绍数据**，供 help 模块、Dashboard 模块列表、
+        模块商店等各类界面 / 生态模块消费。
+
+        **i18n 支持**：元信息字段值可为纯字符串，或 i18n 字典
+        ``{"i18n": "key.path", "default": "兜底文本"}``（与配置 description 约定一致）。
+        翻译键通过模块的 ``I18nClass`` 声明注册（键路径 ``<模块名>.<属性名>``）。
+        ``resolve_i18n=True``（默认）时解析为当前语言文本；``False`` 时透传原始字典。
+
+        解析优先级：模块类声明的 ``get_meta()`` > 注册时传入的 ``info``，缺失字段自动补全。
+
+        :param name: 模块名称
+        :param resolve_i18n: 是否解析 i18n 字典为当前语言文本（默认 True）
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
+        :return: 元信息字典，模块未注册时返回 None
+
+        :example:
+        >>> meta = module.get_meta("Weather")
+        >>> meta["description"]   # 当前语言下的模块简介
+        """
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.get_meta", "module_name", "name")
+            name = module_name
+        if name is None or name not in self._module_classes:
+            return None
+
+        meta: dict[str, Any] = {}
+        # 1. 模块类声明的 get_meta()（支持 ModuleMeta 声明类或 dict）
+        module_class = self._module_classes[name]
+        get_meta_method = getattr(module_class, "get_meta", None)
+        if callable(get_meta_method):
+            try:
+                declared = get_meta_method()
+                if isinstance(declared, dict):
+                    meta.update(declared)
+                elif declared is not None and hasattr(declared, "to_dict"):
+                    # ModuleMeta 声明类：内部解析只依赖 to_dict() 输出
+                    meta.update(declared.to_dict())
+            except Exception:
+                pass
+        # 2. 注册时传入的 info
+        info = self._module_info.get(name)
+        if isinstance(info, dict):
+            for key, value in info.items():
+                meta.setdefault(key, value)
+        # 3. 自动补全
+        meta.setdefault("name", name)
+        if "commands" not in meta:
+            meta["commands"] = self._commands_of(name)
+        # 4. i18n 解析
+        if resolve_i18n:
+            meta = {k: self._resolve_meta_value(v) for k, v in meta.items()}
+        return meta
+
+    @staticmethod
+    def _resolve_meta_value(value: Any) -> Any:
+        """
+        {!--< internal-use >!--}
+        解析元信息字段值：i18n 字典 → 当前语言文本；其余原样返回
+
+        :param value: 原始值（str 或 {"i18n": ..., "default": ...}）
+        :return: 解析后的值
+        """
+        if isinstance(value, dict) and "i18n" in value:
+            from .i18n import i18n
+
+            key = value["i18n"]
+            default = value.get("default", key)
+            return i18n.t(key, default=default)
+        return value
+
+    def _commands_of(self, module_name: str) -> list[str]:
+        """{!--< internal-use >!--} 列出该模块注册的主命令名"""
+        try:
+            from .Event import command
+
+            return sorted(
+                cmd_name
+                for cmd_name, cmd_info in command.get_commands().items()
+                if cmd_info.get("owner") == module_name
+                and cmd_name == cmd_info.get("main_name")
+            )
+        except Exception:
+            return []
+
+    def get_commands_overview(self) -> dict[str, dict[str, Any]]:
+        """
+        获取命令总览（模块 meta + 其注册的命令，按模块聚合）
+
+        聚合每个模块的**介绍元信息**与其**注册的命令**（含别名 / 分组 / 帮助文本），
+        便于 help 模块、管理界面等按模块展示"这个模块是干什么的 + 有哪些命令"。
+
+        :return: {模块名: {"meta": {...}, "commands": [{name, aliases, group, help, hidden}]}}
+
+        :example:
+        >>> overview = module.get_commands_overview()
+        >>> overview["Weather"]["meta"]["description"]
+        "查询城市天气"
+        >>> overview["Weather"]["commands"][0]["name"]
+        "weather"
+        """
+        from .Event import command
+
+        commands_by_owner: dict[str, list[dict[str, Any]]] = {}
+        for cmd_name, cmd_info in command.get_commands().items():
+            owner = cmd_info.get("owner")
+            if not owner or cmd_name != cmd_info.get("main_name"):
+                continue
+            aliases = sorted(
+                alias
+                for alias, main in command.aliases.items()
+                if main == cmd_name and alias != cmd_name
+            )
+            commands_by_owner.setdefault(owner, []).append(
+                {
+                    "name": cmd_name,
+                    "aliases": aliases,
+                    "group": cmd_info.get("group"),
+                    "help": cmd_info.get("help"),
+                    "hidden": bool(cmd_info.get("hidden", False)),
+                }
+            )
+
+        result: dict[str, dict[str, Any]] = {}
+        for owner, cmds in commands_by_owner.items():
+            result[owner] = {
+                "meta": self.get_meta(owner) or {},
+                "commands": cmds,
+            }
+        return result
+
     def get_status_summary(self) -> dict[str, Any]:
         """
         获取模块的完整状态摘要
@@ -1071,6 +1217,98 @@ class ModuleManager(ManagerBase):
                     "enabled": parse_bool_config(config_status[name]),
                     "is_base_module": None,
                 }
+
+        return {"modules": modules_summary}
+
+    def get_topology(self) -> dict[str, Any]:
+        """
+        获取模块的拓扑树数据（便于 WebUI 展示）
+
+        聚合每个模块拥有的命令、事件处理器、路由与生命周期钩子，
+        按 owner（模块名）归并，展示模块与资源的归属关系。
+
+        :return: 拓扑树字典
+            {"modules": {name: {
+                "loaded": bool, "enabled": bool,
+                "load_strategy": {"lazy": bool|None, "priority": int|None},
+                "info": dict|None,
+                "commands": [str, ...],
+                "handlers": {event_type: count},
+                "routes": {"http": [...], "ws": [...], "sse": [...]},
+                "lifecycle_hooks": int,
+                "scope_applies": bool,
+            }}}
+
+        :example:
+        >>> topology = module.get_topology()
+        >>> print(topology["modules"]["Chat"]["commands"])
+        ["chat"]
+        """
+        from .config import parse_bool_config
+        from .Event import command, message, meta, notice, request
+        from .lifecycle import lifecycle
+        from .router import router
+
+        # 命令：{owner: [主命令名, ...]}
+        commands_by_owner: dict[str, list[str]] = {}
+        for cmd_name, cmd_info in command.get_commands().items():
+            owner = cmd_info.get("owner")
+            if not owner or cmd_name != cmd_info.get("main_name"):
+                continue
+            commands_by_owner.setdefault(owner, []).append(cmd_name)
+
+        # 事件处理器：{owner: {event_type: count}}
+        handlers_by_owner: dict[str, dict[str, int]] = {}
+        for event_type, event_handler in (
+            ("message", message.handler),
+            ("notice", notice.handler),
+            ("request", request.handler),
+            ("meta", meta.handler),
+        ):
+            for handler_info in event_handler.handlers:
+                owner = handler_info.get("owner")
+                if not owner:
+                    continue
+                handlers_by_owner.setdefault(owner, {}).setdefault(event_type, 0)
+                handlers_by_owner[owner][event_type] += 1
+
+        # 路由：{namespace: {"http": [...], "ws": [...], "sse": [...]}}
+        routes_by_namespace = router.list_namespaces()
+
+        # 生命周期钩子：{owner: count}
+        hook_counts = lifecycle.get_owner_counts()
+
+        modules_summary: dict[str, Any] = {}
+        for name in self._module_classes:
+            module_class = self._module_classes[name]
+            strategy = {"lazy": None, "priority": None}
+            if hasattr(module_class, "get_load_strategy"):
+                try:
+                    strat = module_class.get_load_strategy()
+                    strategy = {
+                        "lazy": getattr(strat, "lazy_load", None),
+                        "priority": getattr(strat, "priority", None),
+                    }
+                except Exception:
+                    pass
+            ns_routes = routes_by_namespace.get(name, {})
+            modules_summary[name] = {
+                "loaded": name in self._loaded_modules,
+                "enabled": parse_bool_config(
+                    config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(name), True)
+                ),
+                "load_strategy": strategy,
+                "info": self._module_info.get(name),
+                "commands": sorted(commands_by_owner.get(name, [])),
+                "handlers": handlers_by_owner.get(name, {}),
+                "routes": {
+                    "http": list(ns_routes.get("http", [])),
+                    "ws": list(ns_routes.get("websocket", [])),
+                    "sse": list(ns_routes.get("sse", [])),
+                },
+                "lifecycle_hooks": hook_counts.get(name, 0),
+                "scope_applies": True,
+            }
 
         return {"modules": modules_summary}
 

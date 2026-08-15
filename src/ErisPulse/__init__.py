@@ -28,6 +28,7 @@ from .Core import (
     logger,
     module,
     router,
+    scope,
     storage,
 )
 
@@ -82,6 +83,7 @@ __all__ = [
     "restart",
     "router",
     "run",
+    "scope",
     "sdk",
     "storage",
     "uninit",

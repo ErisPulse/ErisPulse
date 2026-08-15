@@ -256,6 +256,7 @@ SECTION_ADVANCED_MODULE = Section(
         DocEntry("懶加载系统", "advanced/lazy-loading.md"),
         DocEntry("会话类型系统", "advanced/session-types.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
+        DocEntry("模块作用域系统", "advanced/scope.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )
@@ -268,6 +269,7 @@ SECTION_ADVANCED_ADAPTER = Section(
         DocEntry("生命周期管理", "advanced/lifecycle.md"),
         DocEntry("懶加载系统", "advanced/lazy-loading.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
+        DocEntry("模块作用域系统", "advanced/scope.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )
@@ -284,6 +286,7 @@ SECTION_ADVANCED_FULL = Section(
         DocEntry("会话类型系统", "advanced/session-types.md"),
         DocEntry("Conversation 多轮对话", "advanced/conversation.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
+        DocEntry("模块作用域系统", "advanced/scope.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )
@@ -291,6 +294,7 @@ SECTION_ADVANCED_FULL = Section(
 SECTION_ECOSYSTEM = Section(
     title="生态模块",
     entries=[
+        DocEntry("ErisPulse-App 安装与使用", "ecosystem/app.md"),
         DocEntry("Dashboard 使用与视窗注册", "ecosystem/dashboard.md"),
         DocEntry("Takumi 图片渲染", "ecosystem/takumi.md"),
     ],
