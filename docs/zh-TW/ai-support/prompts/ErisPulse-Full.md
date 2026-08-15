@@ -45,7 +45,11 @@
 
 # 架構概覽
 
-本文檔透過視覺化圖表介紹 ErisPulse SDK 的技術架構，幫助你快速理解框架的設計思想和模組關係。
+本文檔透過可視化圖表介紹 ErisPulse SDK 的技術架構，幫助你快速理解框架的設計理念和模組關係。
+
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## SDK 核心架構
 
@@ -59,7 +63,7 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>生命週期管理"]
     SDK --> Logger["Logger<br/>日誌管理"]
     SDK --> Storage["Storage / env<br/>儲存管理"]
-    SDK --> Config["Config<br/>設定管理"]
+    SDK --> Config["Config<br/>配置管理"]
     SDK --> AdapterMgr["Adapter<br/>適配器管理"]
     SDK --> ModuleMgr["Module<br/>模組管理"]
     SDK --> Router["Router<br/>路由管理"]
@@ -89,13 +93,13 @@ graph TB
 |------|------|
 | **Event** | 事件系統，提供 command / message / notice / request / meta 五類事件處理，以及 Conversation 多輪對話 |
 | **Adapter** | 適配器管理器，管理多平台適配器的註冊、啟動和關閉 |
-| **Module** | 模組管理器，管理外掛的註冊、載入和卸載，支援依賴宣告和拓撲排序 |
+| **Module** | 模組管理器，管理插件的註冊、載入和卸載，支援依賴宣告和拓撲排序 |
 | **Lifecycle** | 生命週期管理器，提供事件驅動的生命週期鉤子 |
-| **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 鏈式查詢 |
+| **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 串流查詢 |
 | **Config** | TOML 格式的設定檔管理 |
 | **Logger** | 模組化日誌系統，支援子日誌器 |
-| **Router** | HTTP/WebSocket 路由管理，透過抽象層封裝底層後端（目前為 FastAPI + Uvicorn），支援裝飾器路由、中介軟體、分組、限流、CORS |
-| **HttpClient** | 統一 HTTP/WS 客戶端，透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端、ErisPulse 異常體系等功能。客戶端和服務端 WebSocket 共享 `WebSocketConnectionBase` 基類 |
+| **Router** | HTTP/WebSocket 路由管理，透過抽象層封裝底層後端（目前為 FastAPI + Uvicorn），支援裝飾器路由、中間件、分組、限流、CORS |
+| **HttpClient** | 統一 HTTP/WS 客戶端，透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端、ErisPulse 異常體系等功能。客戶端和伺服器 WebSocket 共享 `WebSocketConnectionBase` 基類 |
 
 ## 初始化流程
 
@@ -103,20 +107,20 @@ graph TB
 
 ```mermaid
 flowchart TD
-    A["sdk.init()"] --> B["準備運行環境"]
-    B --> B1["載入設定檔"]
-    B1 --> B2["設定全域異常處理"]
+    A["sdk.init()"] --> B["準備執行環境"]
+    B --> B1["載入配置檔案"]
+    B1 --> B2["設定全域例外處理"]
     B2 --> C["適配器 & 模組發現"]
-    C --> D{"並行載入"}
-    D --> D1["從 PyPI 載入適配器"]
-    D --> D2["從 PyPI 載入模組"]
+    C --> D{"平行載入"}
+    D --> D1["從 PyPI 加載適配器"]
+    D --> D2["從 PyPI 加載模組"]
     D1 & D2 --> E["註冊適配器"]
     E --> E1["啟動適配器"]
     E1 --> F["註冊模組"]
     F --> F1{"依賴驗證"}
     F1 -->|"缺失依賴"| F2["跳過該模組並記錄警告"]
-    F1 -->|"依賴滿足"| F3["拓撲排序<br/>（Kahn 演算法 + 優先級）"]
-    F3 --> G["按序初始化模組<br/>（實例化 + on_load）"]
+    F1 -->|"依賴滿足"| F3["拓撲排序<br/>（Kahn 算法 + 優先級）"]
+    F3 --> G["依序初始化模組<br/>（實例化 + on_load）"]
     F2 --> G
     G --> H["啟動路由伺服器"]
     H --> K["運行就緒"]
@@ -124,33 +128,33 @@ flowchart TD
 
 ### 初始化階段詳解
 
-1. **環境準備** - 載入 TOML 設定檔，設定全域異常處理
-2. **並行發現** - 同時從已安裝的 PyPI 套件中發現適配器和模組
+1. **環境準備** - 加載 TOML 配置檔案，設定全域例外處理
+2. **平行發現** - 同時從已安裝的 PyPI 套件中發現適配器和模組
 3. **註冊適配器** - 將發現的適配器註冊到適配器管理器
-4. **啟動適配器** - 非同步啟動各平台適配器連接（在模組初始化之前，確保模組能立即發送訊息）
+4. **啟動適配器** - 異步啟動各平台適配器連接（在模組初始化之前，確保模組能立即傳送訊息）
 5. **註冊模組** - 將發現的模組註冊到模組管理器
-6. **依賴驗證** - 檢查模組聲明的 `depends` 依賴是否已註冊，跳過缺失依賴的模組
-7. **拓撲排序** - 使用 Kahn 演算法按依賴關係排序模組載入順序，同級按 `priority` 降序排列
+6. **依賴驗證** - 檢查模組宣告的 `depends` 依賴是否已註冊，跳過缺失依賴的模組
+7. **拓撲排序** - 使用 Kahn 算法按依賴關係排序模組載入順序，同級按 `priority` 降序排列
 8. **模組初始化** - 按排序順序建立模組實例，呼叫 `on_load` 生命週期方法
 9. **啟動路由伺服器** - 使用 Uvicorn 啟動 FastAPI 路由伺服器
 
 ## 事件處理流程
 
-下圖展示了訊息從平台到處理器的完整流轉路徑：
+下圖展示了訊息從平台到處理器的完整轉流路徑：
 
 ```mermaid
 flowchart LR
     A["平台原始訊息"] --> B["適配器接收"]
     B --> C["轉換為 OneBot12 標準"]
     C --> D["adapter.emit()"]
-    D --> E["執行中介軟體鏈"]
+    D --> E["執行中間件鏈"]
     E --> F{"事件分發"}
     F --> G1["command<br/>命令處理器"]
     F --> G2["message<br/>訊息處理器"]
     F --> G3["notice<br/>通知處理器"]
     F --> G4["request<br/>請求處理器"]
     F --> G5["meta<br/>元事件處理器"]
-    G1 & G2 & G3 & G4 & G5 --> H["處理器回呼執行"]
+    G1 & G2 & G3 & G4 & G5 --> H["處理器回調執行"]
     H --> I["event.reply()<br/>透過 SendDSL 回覆"]
     I --> J["適配器發送至平台"]
 ```
@@ -159,13 +163,13 @@ flowchart LR
 
 - **適配器接收** - 各平台適配器透過 WebSocket/Webhook 等方式接收原生事件
 - **OB12 標準化** - 將平台原生事件轉換為統一的 OneBot12 標準格式
-- **中介軟體處理** - 依次執行已註冊的中介軟體函式，可修改事件資料
+- **中間件處理** - 依序執行已註冊的中間件函數，可修改事件資料
 - **事件分發** - 根據事件類型（message/notice/request/meta）分發到對應處理器
-- **SendDSL 回覆** - 處理器透過 `event.reply()` 或 `SendDSL` 鏈式呼叫發送回應
+- **SendDSL 回覆** - 處理器透過 `event.reply()` 或 `SendDSL` 串接呼叫發送回應
 
-## 生命週期事件
+## 生命周期事件
 
-下圖展示了框架各組件的生命週期事件觸發順序：
+下圖展示了框架各組件的生命周期事件觸發順序：
 
 ```mermaid
 flowchart LR
@@ -194,7 +198,7 @@ flowchart LR
     AdapterLife -.-> BotLife
 ```
 
-### 監聽生命週期事件
+### 監聽生命周期事件
 
 你可以透過 `lifecycle.on()` 監聽這些事件，執行自訂邏輯：
 
@@ -215,24 +219,109 @@ async def on_module_loaded(event_data):
 @sdk.lifecycle.on("adapter.bot.online")
 async def on_bot_online(event_data):
     print(f"Bot 上線: {event_data}")
-```
 
 ## 模組載入策略
 
-ErisPulse 支援兩種模組載入策略：
+ErisPulse 支援三種模組載入策略，由 `get_load_strategy()` 回傳的 `ModuleLoadStrategy` 宣告：
 
 ```mermaid
 flowchart TD
     A["模組註冊到 ModuleManager"] --> B{"載入策略"}
-    B -->|"lazy_load = true"| C["建立 LazyModule 代理"]
-    C --> D["掛載到 sdk 屬性"]
-    D --> E["首次存取時初始化"]
-    B -->|"lazy_load = false"| F["立即建立實例"]
-    F --> G["呼叫 on_load()"]
-    G --> D2["掛載到 sdk 屬性"]
+    B -->|"lazy_load = true<br/>+ activate_on 宣告"| C["建立 ModuleActivator 代理"]
+    B -->|"lazy_load = true<br/>無 activate_on"| D["建立 LazyModule 代理"]
+    B -->|"lazy_load = false"| E["立即建立實例"]
+    C --> F["註冊事件/命令 stub 到分發器"]
+    F --> G["掛載到 sdk 屬性"]
+    G --> H["事件到達觸發激活"]
+    H --> I["實例化 + on_load() + 解除註冊 stub"]
+    D --> J["掛載到 sdk 屬性"]
+    J --> K["首次屬性存取時初始化"]
+    E --> L["呼叫 on_load()"]
+    L --> M["掛載到 sdk 屬性"]
 ```
 
-> 更多詳情請參考 [懶載入系統](advanced/lazy-loading.md) 和 [生命週期管理](advanced/lifecycle.md)。
+> 更多詳情請參考 [懶加載系統](docs/zh-TW/advanced/lazy-loading.md)、[生命週期管理](docs/zh-TW/advanced/lifecycle.md) 與模組文件。
+
+### 事件驅動懶激活（`activate_on`）觸發架構
+
+`activate_on` 允許模組在**首個匹配事件/命令到達時**才載入，避免常駐記憶體，同時確保事件不遺失：
+
+```mermaid
+flowchart LR
+    subgraph Declare["模組宣告"]
+        S1["get_load_strategy() 回傳<br/>ModuleLoadStrategy(activate_on=...)"] --> S2["activate_on 語法：<br/>str / dict / list 自由混合"]
+        S2 --> S2a["'message' → 事件類型級"]
+        S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ 類型 + detail_type"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ 命令觸發"]
+    end
+
+    subgraph Runtime["執行期"]
+        R1["ModuleActivator 註冊 stub"] --> R1a["事件 stub → message/notice/request/meta 管理器<br/>優先級 ACTIVATION_STUB_PRIORITY（極低）"]
+        R1 --> R1b["命令 stub → 命令管理器<br/>隱藏佔位命令（hidden=True）"]
+        R1a --> R2{"觸發事件到達"}
+        R1b --> R2
+        R2 --> R3["按 owner 過作用域過濾"]
+        R3 --> R4["asyncio.Lock 防止重複激活"]
+        R4 --> R5["實例化模組 + 呼叫 on_load()"]
+        R5 --> R6["解除註冊全部 stub"]
+        R6 --> R7["事件轉發到真實處理器"]
+    end
+
+    Declare --> Runtime
+```
+
+**觸發語義要點：**
+
+1. **stub 註冊**：事件 stub 以極低優先級（`ACTIVATION_STUB_PRIORITY`）註冊到對應事件管理器，確保在同類事件的所有普通處理器**之後**執行；命令 stub 以隱藏佔位命令註冊，不污染命令列表
+2. **作用域過濾**：stub 帶模組 owner 身份，未對該 Bot / 會話 / 平台啟用的模組不觸發
+3. **防重入**：`asyncio.Lock` 保證併發事件下只激活一次
+4. **事件轉發**：激活完成後將當前事件轉發給真實處理器（外層分組迴圈已驗證 stub 之後註冊的處理器不會被二次處理）
+5. **失敗語義**：激活失敗不重試，stub 一併解除註冊，避免每次事件都重複嘗試
+
+## 本地插件檔案夾架構
+
+本地插件（`plugins/` 目錄）無需打包發布，框架啟動時會自動發現並載入：
+
+```mermaid
+flowchart TD
+    A["專案 plugins/ 目錄<br/>（ErisPulse.framework.plugins_dir，支援多目錄）"] --> B{"PluginFolderLoader.discover()"}
+    B --> C["單一檔案：dice.py → 插件名 = 檔案名"]
+    B --> D["套件形式：weather/（含 __init__.py）→ 插件名 = 目錄名"]
+    B --> E["忽略：__pycache__ / _ 開頭 / 非 .py / 無 __init__.py 目錄"]
+    C --> F["匯入模組（spec_from_file_location）"]
+    D --> G["匯入模組（sys.path + import_module）"]
+    F --> H["識別模組類別：Main（BaseModule 子類別）優先，回退至首個子類別"]
+    G --> H
+    H --> I["建構與 entry-point 一致的 moduleInfo"]
+    I --> J["ModuleLoader.load() 合併<br/>本地優先覆蓋 PyPI 同名安裝套件"]
+    J --> K["與安裝套件模組共用：<br/>啟用狀態 / 作用域 / meta / i18n / 上下文"]
+```
+
+**約定與特性：**
+
+- 插件名來源：單一檔案取檔案名，套件形式取目錄名
+- 本地插件 `moduleInfo.meta.source == "plugin_folder"`，與 PyPI 安裝套件模組無縫共存
+- 同名時本地優先（便於本地覆蓋調試），被禁用時同時移除同名 entry-point 條目
+
+## 本地插件熱重載架構
+
+熱重載會監控插件檔案的變更，並自動重新載入對應的插件：
+
+```mermaid
+flowchart TD
+    A["sdk.enable_plugin_hot_reload()"] --> B["PluginReloadWatcher 啟動"]
+    B --> C["PollingObserver（背景守護執行緒）<br/>定期比較 .py 檔案的 mtime"]
+    C --> D{"插件檔案變更"}
+    D --> E["變更去抖（預設 1 秒）"]
+    E --> F["_handle_change 解析插件名<br/>（單一檔案 / 包形式）"]
+    F --> G["asyncio.run_coroutine_threadsafe<br/>調度回主事件循環"]
+    G --> H["sdk.reload_plugin(name)"]
+    H --> I["卸載舊實例（觸發 on_unload）"]
+    I --> J["清理註冊（unregister + 移除 sdk 屬性）"]
+    J --> K["清理 sys.modules 強制重新載入"]
+    K --> L["重新 discover + register + load"]
+    L --> M["掛載新實例到 sdk 屬性"]
+    M --> N["檔案刪除 → 自動從載入結果移除"]
 
 
 
@@ -2292,8 +2381,8 @@ if TYPE_CHECKING:
 
 # 安裝參考
 
-> 本文是安裝方式的**完整參考**（pip / uv / Docker / 故障排除）。
-> 如果你只想快速跑起來，[5 分鐘快速開始](../quick-start.md) 已經涵蓋了最簡流程。
+> 本文是安裝方式的**完整參考**（pip / uv / Docker / 故障排查）。
+> 如果你只想快速跑起來，[5 分鐘快速開始](../quick-start.md) 已經覆蓋了最簡流程。
 
 ## 系統要求
 
@@ -2330,7 +2419,7 @@ uv --version
 #### 建立虛擬環境
 
 ```bash
-# 建立專案資料夾
+# 建立專案目錄
 mkdir my_bot && cd my_bot
 
 # 安裝 Python 3.12
@@ -2340,7 +2429,7 @@ uv python install 3.12
 uv venv
 ```
 
-#### 激活虛擬環境
+#### 啟動虛擬環境
 
 ```bash
 # Windows
@@ -2355,11 +2444,22 @@ source .venv/bin/activate
 ```bash
 # 安裝 ErisPulse
 uv pip install ErisPulse --upgrade
-```
 
-## 項目初始化與模組安裝
+## 專案初始化與模組安裝
 
-安裝完成後，項目初始化、模組安裝、執行的完整流程見 [5 分鐘快速開始](../quick-start.md)。
+安裝完成後，專案初始化、模組安裝、執行的完整流程請見 [5 分鐘快速開始](../zh-TW/quick-start.md)。
+
+### 方式三：使用 ErisPulse-App 用戶端（免終端）
+
+不想安裝 Python 環境？[ErisPulse-App](../zh-TW/ecosystem/app.md) 是官方全平台用戶端
+（Android / Windows / Linux / macOS），**手機直接執行**，桌面版支援最小化到
+系統圖示後台常駐；內建 Python 執行環境與 ErisPulse SDK，無需終端機與手動設定：
+
+- 從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 按平台選擇下載
+  （Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）
+- 在 App 內建立並啟動執行個體，透過原生介面管理適配器與模組、瀏覽模組商店
+
+> 完整說明請見 [ErisPulse-App 安裝與使用](../zh-TW/ecosystem/app.md)。
 
 ## 驗證安裝
 
@@ -2381,10 +2481,9 @@ epsdk run main.py
 
 ```
 [INFO] 正在初始化 ErisPulse...
-[INFO] 适配器已加载: Yunhu
-[INFO] 模块已加载: MyModule
+[INFO] 介面卡已載入: Yunhu
+[INFO] 模組已載入: MyModule
 [INFO] ErisPulse 初始化完成
-```
 
 ## 常見問題
 
@@ -2393,30 +2492,32 @@ epsdk run main.py
 1. 檢查 Python 版本是否 >= 3.10（推薦 3.10 - 3.13）
 2. 嘗試使用 `uv pip install ErisPulse` 替代 `pip install`
 3. 如果提示權限錯誤，嘗試 `pip install --user ErisPulse` 或使用虛擬環境
-4. 如果在企業代理環境下遇到 SSL 證書錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
-5. 確保網路連線正常，pip 源可訪問
+4. 如果在企業代理環境下遇到 SSL 憑證錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. 確保網路連線正常，pip 源可存取
 
 ### 配置錯誤
 
-1. 檢查 `config.toml` 語法是否正確（TOML 格式對縮進和引號敏感）
-2. 確認所有必需的配置項都已填寫
-3. 查看終端日誌獲取詳細錯誤資訊
+1. 檢查 `config.toml` 語法是否正確（TOML 格式對縮排和引號敏感）
+2. 確認所有必要的配置項都已填寫
+3. 查看終端日誌取得詳細錯誤資訊
 4. 使用 `epsdk init` 重新生成配置檔案
 
 ### 模組安裝失敗
 
-1. 確認模組名稱拼寫正確（大小寫敏感）
+1. 確認模組名稱拼寫正確（區分大小寫）
 2. 檢查網路連線
-3. 使用 `epsdk list-remote` 查看可用模組列表
-4. 確認模組與你目前 SDK 版本相容
+3. 使用 `epsdk list-remote` 查看可用模組清單
+4. 確認模組與您當前 SDK 版本相容
 
 ### Windows PowerShell 執行策略
 
-如果 PowerShell 提示「無法加載檔案...因為在此系統上禁止運行腳本」：
+如果 PowerShell 提示「無法載入檔案...因為在此系統上禁止執行腳本」：
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 
 
@@ -2424,30 +2525,36 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 # CLI 命令參考
 
-ErisPulse 命令列工具 (`epsdk`) 提供專案管理和套件管理功能。
+ErisPulse 命令行工具（`epsdk`）提供專案管理和套件管理功能。
 
 > **提示**：所有命令均可透過 `epsdk <命令> --help` 查看詳細的參數說明。
 
 ---
 
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
 ## 套件管理命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | 安裝模組/配接器 |
-| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | 解除安裝模組/配接器 |
-| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 升級指定模組或全部 |
-| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | 更新 SDK 本身 |
+| `install` | `i`, `add` | `[套件]... [--upgrade/-U] [--pre] [-e 路徑] [--user] [--no-deps] [-t 目錄] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r 檔案] [-c 檔案] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix 目錄] [--src 目錄] [--config-settings 設定] [--no-binary 格式] [--only-binary 格式] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | 安裝模組/適配器 |
+| `uninstall` | `rm`, `remove` | `<套件>... [--no-uv]` | 卸載模組/適配器 |
+| `upgrade` | `up` | `[套件]... [--force/-f] [--pre] [--no-uv]` | 升級指定套件或全部 |
+| `self-update` | `su`, `update` | `[版本] [--pre] [--force/-f] [--no-uv]` | 更新 SDK 本身 |
 
-## 診斷命令
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+## 臨床診斷命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose]` | 診斷環境並輸出健康報告 |
+| `doctor` | `diag` | `[--verbose]` | 臨床診斷環境並輸出健康報告 |
 
 ### install
 
-安裝 ErisPulse 模組或配接器套件。若不指定套件名稱則進入互動式安裝介面。
+安裝 ErisPulse 模組或適配器套件。若不指定套件名稱則進入互動式安裝介面。
 
 **別名：** `i`, `add`
 
@@ -2457,13 +2564,13 @@ ErisPulse 命令列工具 (`epsdk`) 提供專案管理和套件管理功能。
 |------|--------|------|
 | `[package]...` | | 要安裝的套件名稱，可指定多個 |
 | `--upgrade` | `-U` | 安裝時升級到最新版本 |
-| `--pre` | | 允許安裝預發布版本 |
+| `--pre` | | 允許安裝預發行版本 |
 | `--editable` | `-e` | 以可編輯模式安裝（需指定路徑） |
 | `--user` | | 安裝到使用者 site-packages 目錄 |
-| `--no-deps` | | 不安裝依賴 |
+| `--no-deps` | | 不安裝相依性 |
 | `--target` | `-t` | 安裝到指定目錄 |
-| `--index-url` | | 指定 PyPI 鏡像源位址 |
-| `--extra-index-url` | | 額外 PyPI 鏡像源位址（可多次指定） |
+| `--index-url` | | 指定 PyPI 鏡像來源地址 |
+| `--extra-index-url` | | 額外 PyPI 鏡像來源地址（可多次指定） |
 | `--no-cache-dir` | | 禁用快取 |
 | `--requirement` | `-r` | 從 requirements 檔案安裝 |
 | `--constraint` | `-c` | 從約束檔案安裝 |
@@ -2476,14 +2583,14 @@ ErisPulse 命令列工具 (`epsdk`) 提供專案管理和套件管理功能。
 | `--config-settings` | | 傳遞給建置後端的設定（可多次指定） |
 | `--no-binary` | | 限制不使用二進位套件（格式如 `:all:`） |
 | `--only-binary` | | 限制僅使用二進位套件（格式如 `:all:`） |
-| `--prefer-binary` | | 優先選擇二進位套件 |
+| `--prefer-binary` | | 优先選擇二進位套件 |
 | `--build-isolation` | | 啟用建置隔離 |
 | `--no-build-isolation` | | 禁用建置隔離 |
 | `--upgrade-strategy` | | 升級策略：`eager`、`only-if-needed`、`to-satisfy-only` |
 | `--break-system-packages` | | 允許修改系統套件管理器管理的 Python 套件 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
-**範例：**
+**示例：**
 
 ```bash
 # 安裝單個模組
@@ -2501,7 +2608,7 @@ epsdk install -e ./my-adapter
 
 ### uninstall
 
-解除安裝已安裝的 ErisPulse 模組或配接器套件。若不指定套件名稱則進入互動式解除安裝介面。
+卸載已安裝的 ErisPulse 模組或適配器套件。若不指定套件名稱則進入互動式卸載介面。
 
 **別名：** `rm`, `remove`
 
@@ -2509,22 +2616,22 @@ epsdk install -e ./my-adapter
 
 | 參數 | 說明 |
 |------|------|
-| `<package>...` | 要解除安裝的套件名稱，可指定多個 |
+| `<package>...` | 要卸載的套件名稱，可指定多個 |
 | `--no-uv` | 使用 pip 代替 uv |
 
-**範例：**
+**示例：**
 
 ```bash
-# 解除安裝單個模組
+# 卸載單個模組
 epsdk uninstall Weather
 
-# 解除安裝多個模組
+# 卸載多個模組
 epsdk uninstall Yunhu Weather
 ```
 
 ### upgrade
 
-升級已安裝的 ErisPulse 元件。不指定套件名稱則互動式升級全部。
+升級已安裝的 ErisPulse 組件。不指定套件名稱則互動式升級全部。
 
 **別名：** `up`
 
@@ -2534,10 +2641,10 @@ epsdk uninstall Yunhu Weather
 |------|--------|------|
 | `[package]...` | | 要升級的套件名稱，可指定多個 |
 | `--force` | `-f` | 強制升級，跳過確認 |
-| `--pre` | | 允許升級到預發布版本 |
+| `--pre` | | 允許升級到預發行版本 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
-**範例：**
+**示例：**
 
 ```bash
 # 升級所有套件
@@ -2561,11 +2668,11 @@ epsdk upgrade -f
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
 | `[version]` | | 指定要更新的目標版本號 |
-| `--pre` | | 允許更新到預發布版本 |
+| `--pre` | | 允許更新到預發行版本 |
 | `--force` | `-f` | 強制更新，跳過確認 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
-**範例：**
+**示例：**
 
 ```bash
 # 更新到最新穩定版
@@ -2574,25 +2681,22 @@ epsdk self-update
 # 更新到指定版本
 epsdk self-update 1.2.3
 
-# 允許預發布版本
+# 允許預發行版本
 epsdk self-update --pre
 
 # 強制更新
 epsdk self-update -f
-```
 
----
-
-## 資訊查詢命令
+## 信息查詢命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | 列出已安裝的元件 |
-| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | 列出遠端可用的元件 |
+| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | 列出已安裝的組件 |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | 列出遠端可用的組件 |
 
 ### list
 
-列出已安裝的 ErisPulse 模組和配接器。
+列出已安裝的 ErisPulse 模組和適配器。
 
 **別名：** `l`, `ls`
 
@@ -2603,25 +2707,25 @@ epsdk self-update -f
 | `--type` | `-t` | 指定類型：`modules`、`adapters`、`all`（預設） |
 | `--outdated` | `-o` | 僅顯示可升級的套件 |
 
-**範例：**
+**示例：**
 
 ```bash
-# 列出所有已安裝的元件
+# 列出所有已安裝的組件
 epsdk list
 
 # 只列出模組
 epsdk list -t modules
 
-# 只列出配接器
+# 只列出適配器
 epsdk list -t adapters
 
-# 只顯示可升級的套件
+# 僅顯示可升級的套件
 epsdk list -o
 ```
 
 ### list-remote
 
-列出遠端倉庫中可用的 ErisPulse 模組和配接器。
+列出遠端倉庫中可用的 ErisPulse 模組和適配器。
 
 **別名：** `lsr`
 
@@ -2630,24 +2734,21 @@ epsdk list -o
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
 | `--type` | `-t` | 指定類型：`modules`、`adapters`、`all`（預設） |
-| `--refresh` | `-r` | 強制重新整理遠端套件列表快取 |
+| `--refresh` | `-r` | 強制刷新遠端套件列表快取 |
 
-**範例：**
+**示例：**
 
 ```bash
-# 列出所有遠端可用元件
+# 列出所有遠端可用組件
 epsdk list-remote
 
 # 只列出遠端模組
 epsdk list-remote -t modules
 
-# 強制重新整理快取後列出
+# 強制刷新快取後列出
 epsdk list-remote -r
-```
 
----
-
-## 執行控制命令
+## 運行控制命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
@@ -2655,7 +2756,7 @@ epsdk list-remote -r
 
 ### run
 
-執行 ErisPulse 專案腳本或直接啟動 SDK。支援熱重載模式。
+執行 ErisPulse 項目腳本或直接啟動 SDK。支援熱重載模式。
 
 **別名：** `r`
 
@@ -2664,7 +2765,7 @@ epsdk list-remote -r
 | 參數 | 說明 |
 |------|------|
 | `[script]` | 要執行的腳本檔案，不指定則執行 SDK |
-| `--reload` | 啟用熱重載模式，監控檔案變化自動重啟 |
+| `--reload` | 啟用熱重載模式，監控檔案變更自動重啟 |
 
 **範例：**
 
@@ -2680,28 +2781,25 @@ epsdk run main.py --reload
 
 # SDK 熱重載模式
 epsdk run --reload
-```
 
----
-
-## 專案管理命令
+## 項目管理命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | 初始化 ErisPulse 專案 |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 建立模組/配接器腳手架 |
+| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | 初始化 ErisPulse 項目 |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 創建模組/適配器腳手架 |
 
 ### init
 
-初始化一個新的 ErisPulse 專案。支援互動式與快速模式。
+初始化一個新的 ErisPulse 項目。支援互動式與快速模式。
 
 **參數：**
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `--project-name` | `-n` | 專案名稱 |
+| `--project-name` | `-n` | 項目名稱 |
 | `--quick` | `-q` | 快速模式，跳過互動式嚮導 |
-| `--force` | `-f` | 強制覆蓋現有設定檔 |
+| `--force` | `-f` | 強制覆蓋現有配置檔案 |
 | `--here` | | 在當前目錄初始化，不建立子目錄 |
 | `--no-uv` | | 使用 pip 代替 uv |
 
@@ -2714,7 +2812,7 @@ epsdk init
 # 快速初始化
 epsdk init -q -n my_bot
 
-# 強制覆蓋已有設定
+# 強制覆蓋已有配置
 epsdk init -f
 
 # 在當前目錄初始化
@@ -2723,31 +2821,35 @@ epsdk init --here -n my_bot
 
 ### create
 
-建立 ErisPulse 模組或配接器的腳手架專案。
+創建 ErisPulse 模組或適配器的腳手架項目。
 
 **參數：**
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `{module,adapter}` | | 要建立的類型：`module` 或 `adapter` |
-| `--name` | `-n` | 專案名稱（PascalCase） |
-| `--description` | `-d` | 專案描述 |
+| `{module,adapter}` | | 要創建的類型：`module` 或 `adapter` |
+| `--name` | `-n` | 項目名稱（PascalCase） |
+| `--description` | `-d` | 項目描述 |
 | `--author` | `-a` | 作者名稱 |
-| `--email` | `-e` | 作者電子郵件 |
-| `--homepage` | | 專案首頁 URL |
+| `--email` | `-e` | 作者郵箱 |
+| `--homepage` | | 項目主頁 URL |
 | `--output` | `-o` | 輸出目錄（預設當前目錄） |
 | `--force` | `-f` | 強制覆蓋已存在的目錄 |
+| `--local` | | 創建本地插件（僅 `module` 可用）：生成 `plugins/<name>/` 包結構，免打包安裝 |
 
 **範例：**
 
 ```bash
-# 互動式建立（引導選擇類型和填寫資訊）
+# 互動式創建（引導選擇類型和填寫資訊）
 epsdk create
 
-# 直接建立 Module 專案
+# 直接創建 Module 項目
 epsdk create module -n MyModule
 
-# 直接建立 Adapter 專案
+# 創建本地插件（放入項目 plugins/ 目錄，啟動時自動發現，支援熱重載）
+epsdk create module -n MyModule --local
+
+# 直接創建 Adapter 項目
 epsdk create adapter -n MyAdapter
 
 # 完整參數
@@ -2758,9 +2860,6 @@ epsdk create module -n MyModule -o ./projects
 
 # 強制覆蓋已有目錄
 epsdk create module -n MyModule -f
-```
-
----
 
 ## 語言命令
 
@@ -2795,19 +2894,16 @@ epsdk i18n ja
 
 # 列出所有支援的語言
 epsdk i18n --list
-```
-
----
 
 ## 類型存根命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | 產生類型存根檔案以啟用 IDE 自動補全 |
+| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | 產生類型存根檔案以啟用 IDE 自動完成 |
 
 ### types
 
-掃描已安裝的 ErisPulse 模組和配接器，為它們產生 `.pyi` 類型存根檔案，從而在 IDE 中獲得準確的程式碼自動補全與類型檢查支援。
+掃描已安裝的 ErisPulse 模組和適配器，為它們產生 `.pyi` 類型存根檔案，進而在 IDE 中獲得準確的程式碼自動完成與類型檢查支援。
 
 **別名：** `t`, `stub`
 
@@ -2815,20 +2911,20 @@ epsdk i18n --list
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `--output` | `-o` | 輸出路徑（預設當前目錄下的 `ep-stubs/`） |
+| `--output` | `-o` | 輸出路徑（預設為當前目錄下的 `ep-stubs/`） |
 | `--force` | | 強制覆蓋已存在的存根檔案 |
-| `--adapters-only` | | 僅產生配接器的類型存根 |
+| `--adapters-only` | | 僅產生適配器的類型存根 |
 | `--modules-only` | | 僅產生模組的類型存根 |
 
-> **注意：** `--adapters-only` 與 `--modules-only` 互斥，同時指定時後者生效。
+> **注意：** `--adapters-only` 與 `--modules-only` 相互排斥，同時指定時後者生效。
 
 **範例：**
 
 ```bash
-# 為所有已安裝的模組和配接器產生類型存根
+# 為所有已安裝的模組和適配器產生類型存根
 epsdk types
 
-# 僅產生配接器存根
+# 僅產生適配器存根
 epsdk types --adapters-only
 
 # 輸出到指定目錄
@@ -2840,40 +2936,44 @@ epsdk types --force
 
 ---
 
-## 全域參數
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+## 全局參數
 
 以下參數適用於所有命令：
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
-| `--help` | `-h` | 顯示說明資訊 |
+| `--help` | `-h` | 顯示幫助資訊 |
 | `--version` | `-V` | 顯示版本資訊 |
 | `--verbose` | `-v` | 顯示詳細輸出（可疊加 `-vv`/`-vvv`） |
-| `--no-color` | | 禁用彩色輸出（適合 CI / 日誌採集） |
-| `--yes` | `-y` | 自動確認所有互動提示（非互動式執行） |
+| `--no-color` | | 禁用彩色輸出（適合 CI / 日誌收集） |
+| `--yes` | `-y` | 自動確認所有互動提示（非互動式運行） |
 
 ---
+
+docs/zh-TW/quick-start.md
 
 ## 環境診斷
 
 ### doctor
 
-診斷當前 CLI 執行環境，輸出健康報告。用於排查"為什麼裝不上 / 連不上"類問題。
+診斷當前 CLI 運行環境，輸出健康報告。用於排查「為什麼裝不上 / 連不上」類問題。
 
 | 參數 | 說明 |
 |------|------|
 | `--verbose` | 顯示詳細診斷資訊 |
 
-**檢查項**：
-- **Python**：直譯器版本與路徑
+**檢查項目**：
+- **Python**：解釋器版本與路徑
 - **安裝後端**：使用 `uv` 還是 `pip`
-- **目標直譯器**：套件實際安裝到的目標 Python 環境
-- **設定檔**：`config/config.toml` 是否存在
+- **目標解釋器**：套件實際安裝到的目標 Python 環境
+- **配置檔案**：`config/config.toml` 是否存在
 - **PyPI 連通性**：能否存取 PyPI（並顯示發現的元件數）
 - **系統代理**：是否偵測到代理
 
 ```bash
-# 執行環境診斷
+# 運行環境診斷
 epsdk doctor
 
 # 使用別名
@@ -2882,18 +2982,22 @@ epsdk diag
 
 ---
 
-## 互動式安裝
+docs/zh-TW/quick-start.md
 
-執行 `epsdk install` 不指定套件名稱時進入互動式安裝：
+## 傳統中文
+
+執行 `epsdk install` 時若未指定套件名稱，將進入互動式安裝：
 
 ```bash
 epsdk install
 ```
 
 互動介面提供：
-1. 配接器選擇
+1. 驅動程式選擇
 2. 模組選擇
 3. 自訂安裝
+
+[**English**](docs/zh-TW/quick-start.md) | [**简体中文**](docs/zh-TW/quick-start.md)
 
 ## 常見用法
 
@@ -2910,49 +3014,49 @@ epsdk install Yunhu Weather
 epsdk install Weather -U
 ```
 
-### 列出元件
+### 列出組件
 
 ```bash
-# 列出所有元件
+# 列出所有組件
 epsdk list
 
-# 只列出配接器
+# 只列出適配器
 epsdk list -t adapters
 
-# 只列出可升級的元件
+# 只列出可升級的組件
 epsdk list -o
 
-# 查看遠端可用元件
+# 查看遠端可用組件
 epsdk list-remote
 ```
 
-### 解除安裝元件
+### 卸載組件
 
 ```bash
-# 解除安裝單個元件
+# 卸載單個組件
 epsdk uninstall Weather
 
-# 解除安裝多個元件
+# 卸載多個組件
 epsdk uninstall Yunhu Weather
 ```
 
-### 升級元件
+### 升級組件
 
 ```bash
-# 升級所有元件
+# 升級所有組件
 epsdk upgrade
 
-# 升級指定元件
+# 升級指定組件
 epsdk upgrade Weather
 
 # 強制升級
 epsdk upgrade -f
 ```
 
-### 執行專案
+### 運行專案
 
 ```bash
-# 普通執行
+# 普通運行
 epsdk run main.py
 
 # 熱重載模式
@@ -3088,15 +3192,15 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 ## 配置熱更新
 
-從 2.7.0 開始，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（背景 watcher 每 5 秒偵測一次），或程式碼呼叫 `setConfig()` 後，各組件會自動回應：
+從 2.7.0 開始，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（背景 watcher 每 5 秒檢測一次），或程式碼呼叫 `setConfig()` 後，各元件自動回應：
 
-| 組件 | 支援熱更新的配置 | 行為 |
+| 元件 | 支援熱更新的配置 | 行為 |
 |------|----------------|------|
-| **日誌 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | 自動重新套用（帶變更偵測） |
+| **日誌 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` / `exclude_levels` | 自動重新套用（帶變更檢測） |
 | **命令系統 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一條訊息即生效 |
 | **適配器併發** | `framework.handler_max_concurrency` | 失效快取信號量，按新值重建 |
 | **主動 GC** | `framework.proactive_gc_*` | 配置變更即時重新啟動 GC 任務，支援執行時調整/停用/重新啟用 |
-| **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查實時讀取，無需重啟 |
+| **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查即時讀取，無需重啟 |
 | **模組/適配器配置** | 各自的配置項 | 觸發 `on_config_update(old, new)` 回呼 |
 
 **需重啟的配置**（無法安全熱切換，變更時會輸出告警「需重啟程序後生效」）：
@@ -3106,9 +3210,11 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 | `router.cors.*` / `router.security.*` | 中間件在服務啟動時寫入 FastAPI，執行時無法安全熱切換 |
 | `storage.use_global_db` | SQLite 檔案句柄已在執行時開啟，切換路徑不安全 |
 
-> **中途編輯儲存出錯？** 若編輯 `config.toml` 時出現瞬時語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各組件（避免 `on_config_update` 收到空值誤回退預設值）。
+> **中途編輯儲存出錯？** 若編輯 `config.toml` 時出現瞬間語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各元件（避免 `on_config_update` 收到空值誤回退預設）。
 
-## 完整配置示例
+[**English**](docs/zh-TW/quick-start.md)
+
+## 完整設定範例
 
 ```toml
 [ErisPulse.server]
@@ -3122,6 +3228,7 @@ level = "INFO"
 format = "rich"
 log_files = []
 memory_limit = 1000
+exclude_levels = []
 
 [ErisPulse.framework]
 enable_lazy_loading = true
@@ -3146,9 +3253,6 @@ ignore_self = true
 
 [ErisPulse.i18n]
 language = "auto"
-```
-
-[**English**](docs/zh-TW/quick-start.md) | [**简体中文**](docs/zh-TW/quick-start.md)
 
 ## 伺服器設定
 
@@ -3178,16 +3282,18 @@ ssl_keyfile = "/path/to/key.pem"
 level = "INFO"
 log_files = ["app.log", "debug.log"]
 memory_limit = 1000
+exclude_levels = ["EVENT"]
 ```
 
-| 配置項 | 類型 | 預設值 | 說明 |
+| 配置項目 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | level | string | INFO | 日誌等級：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低等級，輸出框架內部詳細除錯資訊） |
 | format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文本無顏色，適合日誌採集/管道重定向）、`json`（JSON 結構化，適合 ELK 等） |
-| log_files | array | 空 | 日誌輸出檔案清單 |
-| memory_limit | integer | 1000 | 在記憶體中保存的日誌條數 |
+| log_files | array | 空 | 日誌輸出檔案列表 |
+| memory_limit | integer | 1000 | 內存中保存的日誌條數 |
+| exclude_levels | array | 空 | 屏蔽指定日誌等級。被屏蔽等級的日誌**完全丟棄**（不寫入內存、不推送到 Dashboard 等訂閱器、不列印、不寫入檔案）。支援熱更新 |
 
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+> **隱私保護**：訊息收發內容以 **EVENT 等級**（數值 21）記錄。設定 `exclude_levels = ["EVENT"]` 即可讓後台（如 Dashboard 日誌面板）無法看到各群/私聊的訊息內容，同時不影響其它等級日誌。
 
 ## 框架配置
 
@@ -3339,6 +3445,40 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > `setConfig` 預設採用延遲寫入（約每 5 秒批量儲存到檔案），設定 `immediate=True` 可立即持久化。設定變更會觸發 `config.set` 生命週期事件。
 
 請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+## 作用域配置
+
+模組作用域系統用於控制「某個 Bot 只能使用哪些模組」。預設情況下所有模組對所有 Bot 開放，僅在配置綁定後才開始過濾，模組與適配器**無需任何修改**即可適配。
+
+```toml
+# 平台級綁定（作用於該平台所有 Bot / 會話）
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Translate"]   # 白名單：該平台 Bot 只能使用這些模組
+blocked = ["Danger"]              # 黑名單：這些模組在該平台禁用
+
+# Bot 級綁定（作用於該 Bot 的所有會話，覆蓋平台級）
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Chat"]
+blocked = []
+
+# 會話級綁定（作用於某個群 / 頻道 / 私聊，最具體）
+[ErisPulse.scope.sessions.onebot11."789012345"]
+modules = ["Chat"]
+blocked = []
+```
+
+| 配置項 | 類型 | 說明 |
+|---------|------|------|
+| `scope.default_allow` | boolean | 預設允許全部模組（`true`）。`false` = 隱式拒絕嚴格模式，僅白名單內模組可用 |
+| `scope.cache_size` | integer | `is_allowed` 的 LRU 快取大小（預設 1024） |
+| `scope.platforms.<platform>.modules` | array | 平台級白名單：僅列出的模組允許使用（空 = 不限制） |
+| `scope.platforms.<platform>.blocked` | array | 平台級黑名單：列出的模組禁用（空 = 不限制） |
+| `scope.bots.<platform>.<bot_id>.modules` | array | Bot 級白名單，覆蓋平台級 |
+| `scope.bots.<platform>.<bot_id>.blocked` | array | Bot 級黑名單，覆蓋平台級 |
+| `scope.sessions.<platform>.<session_id>.modules` | array | 會話級白名單（群/頻道/私聊），優先級最高 |
+| `scope.sessions.<platform>.<session_id>.blocked` | array | 會話級黑名單，優先級最高 |
+
+> 解析優先級：**會話級 > Bot 級 > 平台級**。模組名大小寫不敏感；會話標識跨平台隔離。支援執行時透過 `sdk.scope.bind()` / `unbind()` 動態增刪（`merge=True` 可合併），詳見[作用域系統](../advanced/scope.md)。
 
 
 
@@ -3717,11 +3857,11 @@ level = "DEBUG"
 
 # 模組開發入門
 
-本指南帶你從零開始建立一個 ErisPulse 模組。
+本指南將引導您從零開始建立一個 ErisPulse 模組。
 
 ## 專案結構
 
-一個標準的模組結構：
+標準的模組結構：
 
 ```
 MyModule/
@@ -3731,7 +3871,6 @@ MyModule/
 └── MyModule/
     ├── __init__.py
     └── Core.py
-```
 
 ## pyproject.toml 配置
 
@@ -3751,13 +3890,11 @@ dependencies = []
 
 [project.entry-points."erispulse.module"]
 "MyModule" = "MyModule:Main"
-```
 
 ## __init__.py
 
 ```python
 from .Core import Main
-```
 
 ## Core.py - 基礎模組
 
@@ -3775,29 +3912,29 @@ class Main(BaseModule):
     
     @staticmethod
     def get_load_strategy():
-        """返回模組載入策略"""
+        """傳回模組載入策略"""
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
-            depends=[]  # 可選：依賴的其他模組列表
+            depends=[]  # Optional: list of other modules to depend on
         )
     
     async def on_load(self, event):
         """模組載入時呼叫"""
-        @command("hello", help="發送問候")
+        @command("hello", help="Send greeting")
         async def hello_command(event):
-            name = event.get_user_nickname() or "朋友"
-            await event.reply(f"你好，{name}！")
+            name = event.get_user_nickname() or "Friend"
+            await event.reply(f"Hello, {name}!")
         
-        self.logger.info("模組已載入")
+        self.logger.info("Module loaded")
     
     async def on_unload(self, event):
         """模組卸載時呼叫"""
-        self.logger.info("模組已卸載")
+        self.logger.info("Module unloaded")
     
     def _load_config(self):
-        """載入模組配置"""
+        """載入模組設定"""
         config = self.sdk.config.getConfig("MyModule")
         if not config:
             default_config = {
@@ -3807,11 +3944,10 @@ class Main(BaseModule):
             self.sdk.config.setConfig("MyModule", default_config)
             return default_config
         return config
-```
 
 ## 測試模組
 
-### 本地測試
+### 本機測試
 
 ```bash
 # 在專案目錄安裝模組
@@ -3823,39 +3959,107 @@ epsdk run main.py --reload
 
 ### 測試指令
 
-發送指令測試：
+傳送指令測試：
 
 ```
 /hello
-```
 
 ## 核心概念
 
-### BaseModule 基礎類別
+### BaseModule 基類
 
 所有模組必須繼承 `BaseModule`，提供以下方法：
 
-| 方法 | 說明 | 必要 |
+| 方法 | 說明 | 必須 |
 |------|------|------|
-| `__init__(self)` | 建構函式 | 否 |
+| `__init__(self)` | 建構函數 | 否 |
 | `get_load_strategy()` | 返回載入策略 | 否 |
+| `get_meta()` | 返回模組介紹元資訊（選填） | 否 |
 | `on_load(self, event)` | 模組載入時呼叫 | 是 |
 | `on_unload(self, event)` | 模組卸載時呼叫 | 是 |
 
+### 模組介紹 meta
+
+透過 `get_meta()` 宣告模組的介紹元資訊（這個模組是做什麼的、屬於哪一類等）。
+元資訊是模組的**通用介紹資料**，供 help 模組、Dashboard 模組列表、模組商店等各類介面/生態模組消費。
+
+與 `get_load_strategy()` 返回 `ModuleLoadStrategy` 一致，**推薦返回 `ModuleMeta` 設定類別實例**（屬性鍵入、IDE 自動補全），也兼容直接返回 dict：
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="天氣",               # 顯示名（預設註冊名）
+            description="查詢城市天氣",  # 模組簡介
+            version="1.0.0",
+            author="ErisDev",
+            group="工具",               # 功能分組
+            tags=["天氣", "查詢"],
+        )
+```
+
+兼容寫法（dict）：
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> dict:
+        return {
+            "name": "天氣",
+            "description": "查詢城市天氣",
+            "version": "1.0.0",
+            "author": "ErisDev",
+            "group": "工具",
+            "tags": ["天氣", "查詢"],
+        }
+```
+
+- `module.get_meta("MyModule")` 讀取已解析的元資訊（類別宣告 > 註冊 info，自動補全該模組的指令名）。
+- `module.get_commands_overview()` 聚合「模組 meta + 其註冊的指令（別名/分組/幫助）」，按模組組織的指令總覽。
+- 指令歸屬模組透過 `cmd_info["owner"]` 獲取（註冊時由上下文系統自動注入）。
+
+#### meta 欄位的 i18n 支援
+
+元資訊欄位值可用純字串，或 i18n 字典 `{"i18n": "key.path", "default": "兜底文本"}`（與設定 `description` 約定一致）。
+翻譯鍵透過 `I18nClass` 宣告註冊，`module.get_meta()` 讀取時自動解析為當前語言文字：
+
+```python
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        meta_description: I18nKey = I18nKey(
+            default="Weather lookup",
+            zh_CN="查詢城市天氣",
+            en="Weather lookup",
+        )
+
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="天氣",
+            description={"i18n": "MyModule.meta_description", "default": "Weather lookup"},
+        )
+```
+
 ### SDK 物件
 
-通過 `sdk` 物件存取核心功能：
+透過 `sdk` 物件存取核心功能：
 
 ```python
 from ErisPulse import sdk
 
-sdk.storage    # 儲存系統
+sdk.storage    # 存儲系統
 sdk.config     # 設定系統
 sdk.logger     # 日誌系統
-sdk.adapter    # 介面卡系統
+sdk.adapter    # 适配器系統
 sdk.router     # 路由系統
 sdk.lifecycle  # 生命週期系統
-```
+
+## 下一階段
+
+- [模組核心概念](core-concepts.md) - 深入了解模組架構
+- [Event 包裝類別詳解](event-wrapper.md) - 學習 Event 物件
+- [模組最佳實踐](best-practices.md) - 開發高品質模組
 
 
 
@@ -5043,14 +5247,14 @@ version = "1.0.0"
 
 ### 2. README 頭部
 
-`epsdk create` 生成的 README 已內建 ErisPulse 頭部識別標識（Logo + 徽章行）。兩種推薦模式：
+`epsdk create` 生成的 README 已內建 ErisPulse 頭部標識（Logo + 徽章行）。兩種推薦模式：
 
 **模式 A — 僅 ErisPulse Logo（預設）：**
 
 ```markdown
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
 
 # MyModule
 
@@ -5066,21 +5270,21 @@ version = "1.0.0"
 </div>
 ```
 
-**模式 B — 模組圖示 × ErisPulse Logo（有自訂圖示時）：**
+**模式 B — 模塊圖標 × ErisPulse Logo（有自定義圖標時）：**
 
 ```markdown
 <div align="center">
 
 <img src=".github/assets/MyModuleIcon.svg" width="120" alt="MyModule" />
 <span style="font-size:44px;color:#c8c8c8;margin:0 18px;vertical-align:middle;">×</span>
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
 （徽章行同上）
 </div>
 ```
 
-可按需求追加 GitHub Stars、Downloads 等徽章。Logo 也可下載到專案本地（`.github/assets/ErisPulseLogo.png`）改為相對路徑引用。
+可按需追加 GitHub Stars、Downloads 等徽章。Logo 也可下載到專案本地（`.github/assets/ErisPulseLogo.png`）改為相對路徑引用。
 
 ## 相關文件
 
@@ -15704,6 +15908,238 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 
 
 
+### 模块作用域系统
+
+# 模組作用域系統
+
+模組作用域系統用於控制「某個 Bot 只能使用哪些模組」，實現多 Bot 場景下的模組隔離。
+預設情況下所有模組對所有 Bot 開放；僅在設定綁定後才開始過濾，**模組與適配器無需任何變更**即可適配。
+
+{!--< tips >!--}
+1. 作用域以「適配器平台 + Bot 標識 + 會話標識」為維度綁定模組
+2. 支援白名單（`modules`）與黑名單（`blocked`）兩種方式
+3. 被作用域停用的模組收到訊息時靜默忽略，不回覆提示
+4. 支援執行階段 `sdk.scope.bind()` / `unbind()` 動態新增與刪除，可持久化
+{!--< /tips >!--}
+
+## 運作原理
+
+```
+Bot 收到訊息
+  → 框架從事件中提取 (platform, bot_id, session_id)
+  → 查找作用域繫結（會話級 > Bot 級 > 平台級）
+  → 命中繫結則按 白名單/黑名單 過濾模組
+  → 被停用的模組：指令與事件處理器均不觸發（靜默忽略）
+```
+
+- **解析優先順序：會話級 > Bot 級 > 平台級**，更高優先順序未繫結規則時回退到下一級；全部未設定則允許全部模組。
+- 事件資料缺少 `self`（無法識別 Bot）時，跳過 Bot 級，按會話級 / 平台級判斷。
+- 框架層資源（owner 為空的處理器、指令分發器、事件總線）始終放行，不受作用域影響。
+
+## 配置檔案
+
+```toml
+[ErisPulse.scope]
+default_allow = true        # 預設允許全部（false = 隱式拒絕嚴格模式）
+cache_size = 1024           # is_allowed 的 LRU 快取大小
+
+# 平台級別綁定（作用於該平台所有 Bot / 會話）
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Translate"]   # 白名單：該平台 Bot 只能使用這些模組
+blocked = ["Danger"]              # 黑名單：這些模組在該平台被禁用
+
+# Bot 級別綁定（作用於該 Bot 的所有會話，覆蓋平台級別）
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Chat"]
+blocked = []
+
+# 會話級別綁定（作用於某個群組 / 頻道 / 私聊，最具體）
+[ErisPulse.scope.sessions.onebot11."789012345"]
+modules = ["Chat"]                # 該群組只能使用 Chat
+blocked = []
+```
+
+語意（模組名稱匹配**大小寫不敏感**）：
+
+| 配置 | 效果 |
+|------|------|
+| 僅 `modules`（白名單） | 只有列出的模組允許使用 |
+| 僅 `blocked`（黑名單） | 列出的模組被禁用，其餘全部允許 |
+| 兩者都配置 | 白名單限定範圍，白名單內的模組再剔除黑名單 |
+| 兩者都為空 / 未配置 | 遵循 `default_allow`：`true`（預設）允許全部；`false` 則隱式拒絕 |
+
+> `modules` 與 `blocked` 均支援字串或字串清單。模組名稱大小寫不敏感（`"Chat"` 與 `"chat"` 等價）。
+> 會話識別為事件的群組 ID（`group_id`）、頻道 ID（`channel_id`）或私聊使用者 ID（`user_id`）。
+> **會話識別跨平台隔離**：`(platform, session_id)` 組合唯一識別一個會話，`onebot11` 的 `789` 與 `telegram` 的 `789` 互不影響。
+
+## 執行階段 API
+
+### 判斷模組是否允許
+
+```python
+from ErisPulse import sdk
+
+# 某個 Bot 是否允許使用某模組
+allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat")
+
+# 指定會話（群組 / 頻道 / 私聊）判斷
+allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
+```
+
+### 動態綁定 / 解綁
+
+```python
+# 綁定 Bot 級白名單（持久化到配置）
+sdk.scope.bind("onebot11", "123456", modules=["Chat", "Translate"])
+
+# 綁定會話級白名單（第三參數為 session_id）
+sdk.scope.bind("onebot11", "123456", "789012345", modules=["Chat"])
+
+# 綁定平台級黑名單
+sdk.scope.bind("onebot11", blocked=["Danger"])
+
+# 僅執行階段生效（重啟失效）
+sdk.scope.bind("onebot11", "123456", modules=["Chat"], persist=False)
+
+# 合併而非取代：把 Music 併入現有白名單（預設 bind 是取代）
+sdk.scope.bind("onebot11", "123456", modules=["Music"], merge=True)
+
+# 移除綁定（恢復允許全部）；可指定 session_id 移除會話級綁定
+sdk.scope.unbind("onebot11", "123456")
+sdk.scope.unbind("onebot11", "123456", "789012345")
+```
+
+> `bind()` 預設**取代**該目標的整個綁定；`merge=True` 時將新模組/停用併入現有綁定。
+
+### 查詢綁定
+
+```python
+# 取得生效綁定（可指定會話）
+sdk.scope.get("onebot11", "123456")              # {"modules": ["Chat"], "blocked": []}
+sdk.scope.get("onebot11", "123456", "789012345") # 會話級生效綁定
+sdk.scope.get("onebot11")                        # 平台級綁定，無則 None
+
+# 列出全部綁定（platforms / bots / sessions 三桶）
+sdk.scope.list_bindings()
+```
+
+### 過濾統計（偵錯）
+
+```python
+# 查看被作用域靜默過濾的次數與快取命中情況
+sdk.scope.get_stats()
+# {"is_allowed_calls": 10, "filtered_count": 3, "cache_hits": 5, "cache_misses": 5}
+
+sdk.scope.reset_stats()
+```
+
+### 拓撲樹資料
+
+```python
+# 作用域部分（供 Dashboard 展示）
+sdk.scope.get_topology()
+
+## 常見問題與注意事項
+
+### 1. 配置層級
+
+解析優先級：**會話級 > Bot 級 > 平台級**。高優先級綁定會**整體覆蓋**低優先級。
+
+```toml
+# 平台級只允許 Chat
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat"]
+
+# 但 Bot 級只允許 Music → 該 Bot 最終只能用 Music，不能用 Chat！
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Music"]
+```
+
+- 想「平台級允許 Chat，Bot 級再加 Music」，必須在 **Bot 級同時列出兩者**：`modules = ["Chat", "Music"]`。
+- 同理，底層黑名單會被上層白名單覆蓋：平台級 `blocked=["Danger"]` + Bot 級 `modules=["Danger"]` → Bot 級整體覆蓋，Danger 可用。層級越高、越具體，越以它為準。
+
+### 2. 它是「逐事件」判斷，不會「粘住」
+
+作用域判斷**只針對當前這一條事件**，不跨事件記憶：
+- 會話 g1 禁用了模組 A → 在 g1 的**這條**訊息 A 不觸發；**下一條**訊息獨立重新判斷，若綁定沒變仍不觸發，綁定改了立即生效（LRU 快取會自動失效）。
+- 會話 g2 沒配綁定 → 回退到 Bot 級 / 平台級判斷；都沒有則按 `default_allow`。
+
+### 3. 模組沒反應
+
+當你發了訊息模組卻沒反應，先懷疑作用域而不是模組/適配器：
+
+```python
+# 在模組代碼或臨時腳本裡加一行定位
+from ErisPulse import sdk
+print(sdk.scope.is_allowed(event.get_platform(), <bot_id>, "MyModule", <session_id>))
+print(sdk.scope.get_stats())          # filtered_count > 0 說明確實被過濾了
+```
+
+被過濾是**靜默**的（不回覆，避免暴露作用域規則給用戶），但 `filtered_count` 會累計。
+
+### 4. 會話識別碼跨平台隔離
+
+`(platform, session_id)` 組合才是唯一識別碼。`[ErisPulse.scope.sessions.onebot11."789"]` 只作用於 onebot11 平台，不影響 telegram 上同為 `789` 的會話。
+
+### 5. 效能
+
+`is_allowed()` 結果帶 **LRU 快取**（預設 1024 條，`scope.cache_size` 可調），
+配置變更 / `bind()` / `unbind()` 自動失效，高頻事件路徑開銷極小。
+
+## 拓撲樹 API
+
+`ModuleManager.get_topology()` 與 `AdapterManager.get_topology()` 提供模組/適配器歸屬關係資料，
+`sdk.get_topology()` 一鍵聚合三者：
+
+```python
+from ErisPulse import sdk
+
+topology = sdk.get_topology()
+# {
+#   "modules": {                                   # 模組 → 擁有的資源
+#     "Chat": {
+#       "loaded": True, "enabled": True,
+#       "load_strategy": {"lazy": False, "priority": 50},
+#       "info": {...},
+#       "commands": ["chat", "translate"],
+#       "handlers": {"message": 2, "notice": 1},
+#       "routes": {"http": ["/Chat/api"], "ws": [], "sse": []},
+#       "lifecycle_hooks": 3,
+#       "scope_applies": True,
+#     }
+#   },
+#   "adapters": {                                  # 適配器 → Bot → 作用域
+#     "onebot11": {
+#       "status": "started", "enabled": True,
+#       "bots": {"123456": {"status": "online", "last_active": ..., "info": {...}, "scope": {...}}},
+#       "scope": {"modules": [...], "blocked": [...]},
+#     }
+#   },
+#   "scope": {"platforms": {...}, "bots": {...}, "sessions": {...}}   # 全部作用域綁定
+# }
+
+- 模組拓撲聚合了該模組註冊的命令、事件處理器、HTTP/WS/SSE 路由與生命週期鉤子，便於繪製模組資源樹。
+- 適配器拓撲聚合了各適配器狀態、下屬 Bot 狀態及平台級/Bot 級作用域綁定。
+
+## 隱私：隱藏訊息日誌
+
+如需讓後台（如 Dashboard 日誌面板）無法查看各群組/私聊的訊息內容，可在 `[ErisPulse.logger]` 中隱藏 EVENT 等級（訊息收發內容以 EVENT 等級記錄）：
+
+```toml
+[ErisPulse.logger]
+exclude_levels = ["EVENT"]
+```
+
+被隱藏等級的日誌會**完全丟棄**（不寫入記憶體、不推送給訂閱者、不列印、不寫入檔案），
+也可透過程式碼動態控制：
+
+```python
+sdk.logger.set_excluded_levels(["EVENT"])   # 隱藏
+sdk.logger.exclude_level("EVENT")
+sdk.logger.allow_level("EVENT")             # 恢復
+
+
+
 ### 启动流程与手动控制
 
 # 啟動流程與手動控制
@@ -16072,6 +16508,112 @@ await sdk.hard_restart()
 ====
 生态模块
 ====
+
+
+### ErisPulse-App 安装与使用
+
+# ErisPulse-App
+
+[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) 是由 ErisDev 直接維護的 **官方多端用戶端**（Android / Windows / Linux / macOS 均已發布），
+提供完全原生的圖形化管理介面：在手機或電腦上建立、執行、管理多個機器人實例，
+無需終端機，也無需單獨安裝 Python 環境。
+
+> [!IMPORTANT]
+> ErisPulse-App 是**獨立安裝的用戶端程式**，不是 `epsdk install` 安裝的模組。
+> 它內建了 Python 執行時環境與 ErisPulse SDK，安裝即用——**手機上也能直接執行**。
+
+请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。
+
+再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。
+
+## 功能速覽
+
+- **多實例管理**：建立 / 啟動 / 停止 / 刪除多個實例，連接埠與存取權杖自動分配，支援全新環境或克隆既有環境
+- **概覽儀表板**：適配器 / 模組 / 在線機器人 / 事件總數統計，CPU / 記憶體佔用告警變色
+- **模組商店**：搜尋與標籤篩選、一鍵安裝 / 升級 / 解除安裝、指定版本安裝、pip 映像源與 Git 套件支援
+- **事件流 + 事件構建器**：即時事件查看，視覺化建構測試事件並提交至適配器
+- **監控**：日誌 / 生命週期 / 審計三合一檢視
+- **指令管理**：前置字串與別名等全域設定、啟停與平台黑白名單
+- **機器人總覽 / 設定 / 檔案管理**：原生介面直接操作實例
+- **背景常駐**：Android 前台服務保活；Windows 最小化至系統匣，關閉視窗不中斷實例
+- **模組動態視窗**：模組註冊的頁面自動出現在側邊導覽（與 Dashboard 同分組），點擊直接導向
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+## 支援平台
+
+所有平台的安裝程式均可從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下載，按需選擇即可：
+
+| 平台 | 安裝程式 | 說明 |
+|------|--------|------|
+| Android | `online-*.apk` / `offline-*.apk` | **手機直接執行**，無需電腦 |
+| Windows | `windows-x64-setup.exe` / `windows-x64.zip` | 安裝版 / 免安裝版 |
+| Linux | `linux-x64.tar.gz` | 解壓即用 |
+| macOS | `macos-arm64.zip` | Apple Silicon（arm64） |
+
+一個 Flutter 程式庫涵蓋所有平台。
+
+## 安裝方式（Android / 手機直接執行）
+
+從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下載 APK 安裝即可，有兩種建構：
+
+| 建構 | 執行時映像 | 適用場景 |
+|------|-----------|---------|
+| `erispulse-app-online-*.apk` | 首次啟動時下載 | 安裝檔更小，適合網路良好 |
+| `erispulse-app-offline-*.apk` | 已打包進 APK | 離線自包含，安裝後無需上網 |
+
+兩種建構安裝步驟相同：
+
+1. 下載並安裝 APK，啟動時允許通知權限（用於保持後台服務存活）
+2. 首頁出現初始化橫幅後點擊執行首次初始化（含進度與日誌檢視）
+3. 建立一個實例並啟動
+4. 在 App 內建的管理介面設定配接器與模型 API Key
+
+> 離線包自包含——安裝後無需網路。如果首次啟動下載慢或不穩定，
+> 可在設定頁將下載來源切換為映像（ghfast / gh-proxy）。
+
+### 安裝方式（桌面端：Windows / Linux / macOS）
+
+1. 從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下載對應平台安裝包
+   （Windows `setup.exe` 或免安裝 `zip`、Linux `tar.gz`、macOS `zip`）
+2. 安裝並啟動
+3. 在歡迎頁選擇要安裝的 ErisPulse SDK 版本（預設最新）並安裝
+4. 建立實例並啟動
+
+---
+
+## 運作原理
+
+```
+┌────────────────────────────────────────────────────┐
+│  ErisPulse-App (Flutter)                            │
+│                                                    │
+│  原生 UI ── Dashboard REST / WS API                │
+│       │                                            │
+│       ├── Android：前台服務 + proot + Ubuntu rootfs│
+│       │        + Python + ErisPulse 實例           │
+│       └── 桌面端：內建 Python + 直接進程管理         │
+└────────────────────────────────────────────────────┘
+```
+
+- **Android**：實例運行在前台服務（background isolate）托管的 proot（使用者態 chroot）內，UI 關閉後機器人仍持續運行，崩潰自動重啟
+- **桌面端**：實例作為 App 的直接子進程運行；Windows 支援最小化到系統匣背景常駐（關閉視窗不中斷實例），App 重啟後自動恢復對仍在運行實例的管理，退出時統一停止全部實例
+- 所有平台的原生 UI 都透過 `127.0.0.1:<port>/Dashboard/*` 的 REST / WebSocket API 與實例通訊，與 [ErisPulse-Dashboard](dashboard.md) 共用同一套 API
+
+---
+
+## 與 SDK 的關係
+
+- App 內建 ErisPulse SDK：Android 端打包在 Ubuntu 映像中，桌面端從 PyPI 安裝
+  （歡迎頁可選版本，預設最新）
+- App 中的執行個體與命令列 `epsdk` 建立的執行個體等價，可使用相同的模組 / 適配器
+- 模組開發者可透過 [儀表板視窗註冊 API](docs/zh-TW/dashboard.md) 註冊自訂頁面：
+  視窗會自動出現在 App 側邊導航（分組與儀表板一致），點擊跳轉對應頁面渲染
+
+---
+
+請直接傳回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
 
 
 ### Dashboard 使用与视窗注册

@@ -64,31 +64,31 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 > 注：`ErisPulse.server.port` のようなフレームワークの設定は、`get_server_config()` などの API で読み取られ、すべて環境変数の上書きの影響を受けます。
 
-## 設定のホットリロード
+## 設定のホットアップデート
 
-2.7.0 以降、フレームワークは設定のホットリロードを**体系的にサポート**するようになりました。外部で `config.toml` を変更した後（バックグラウンドの watcher が 5 秒ごとにチェック）、またはコードで `setConfig()` を呼び出した後、各コンポーネントは自動的に対応します：
+2.7.0 以降、フレームワークは設定のホットアップデートを**体系的にサポート**するようになりました。`config.toml` を外部から変更した場合（バックグラウンドの watcher が 5 秒ごとにチェック）、またはコードで `setConfig()` を呼び出した場合、各コンポーネントは自動的に対応します：
 
-| コンポーネント | ホットリロード可能な設定 | 行動 |
+| コンポーネント | ホットアップデート対応の設定 | 動作 |
 |------|----------------|------|
-| **ログ Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | 変更検出付きで自動的に再適用 |
-| **コマンドシステム CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 次のメッセージで即座に有効化 |
-| **アダプタの並行処理** | `framework.handler_max_concurrency` | 失効したキャッシュシグナルを新値に基づいて再構築 |
-| **プロアクティブGC** | `framework.proactive_gc_*` | 設定変更時に即座にGCタスクを再起動し、実行時調整/無効化/再有効化が可能 |
-| **マスターシステム Master** | `master.users` | `is_master()` 検査毎にリアルタイムで読み取り、リスタート不要 |
-| **モジュール/アダプタ設定** | 各々の設定項目 | `on_config_update(old, new)` カルバックをトリガー |
+| **ログ Logger** | `logger.level` / `log_files` / `memory_limit` / `format` / `exclude_levels` | 変更検出付きで自動的に再適用 |
+| **コマンドシステム CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 次のメッセージで即時反映 |
+| **アダプタの並行処理** | `framework.handler_max_concurrency` | キャッシュされたシグナルを無効化し、新しい値で再構築 |
+| **プロアクティブ GC** | `framework.proactive_gc_*` | 設定変更時に即時 GC タスクを再起動し、実行時調整/無効化/再有効化をサポート |
+| **マスターシステム Master** | `master.users` | `is_master()` 検査のたびにリアルタイムで読み込み、再起動不要 |
+| **モジュール/アダプタ設定** | 各々の設定項目 | `on_config_update(old, new)` コールバックをトリガー |
 
-**リスタートが必要な設定**（安全にホットスイッチできないため、変更時に「プロセスを再起動後に有効化」という警告が出力されます）：
+**再起動が必要な設定**（安全なホットスイッチができないため、変更時に「プロセスを再起動後に有効」という警告が出力されます）：
 
 | 設定 | 理由 |
 |------|------|
-| `router.cors.*` / `router.security.*` | 中間処理はサービス起動時に FastAPI に書き込まれており、実行時に安全にホットスイッチできない |
-| `storage.use_global_db` | SQLite ファイルハンドルは既に実行時に開かれているため、パスの切り替えは安全ではない |
+| `router.cors.*` / `router.security.*` | 中間件はサービス起動時に FastAPI に書き込まれており、実行時に安全なホットスイッチができない |
+| `storage.use_global_db` | SQLite ファイルハンドルは実行時に既に開かれているため、パスを切り替えるのは安全ではない |
 
-> **途中で編集保存に失敗した？** `config.toml` を編集中に一時的な構文エラーが発生した場合、フレームワークは**前回の有効な設定を保持**し、診断ログを出力します。各コンポーネントに空の設定をブロードキャストすることはありません（`on_config_update` が空値を受け取り、誤ってデフォルトに戻るのを防ぐため）。
+> **途中で編集保存に失敗した場合？** `config.toml` を編集中に一時的な構文エラーが発生した場合、フレームワークは**前回の有効な設定を保持**し、診断ログを出力します。各コンポーネントに空の設定をブロードキャストすることはありません（`on_config_update` が空値を受け取り、誤ってデフォルトに戻るのを防ぐため）。
 
-docs/ja/config-hot-reload.md
+[**English**](docs/ja/quick-start.md)
 
-## 完全な設定例
+## 完全な構成例
 
 ```toml
 [ErisPulse.server]
@@ -102,6 +102,7 @@ level = "INFO"
 format = "rich"
 log_files = []
 memory_limit = 1000
+exclude_levels = []
 
 [ErisPulse.framework]
 enable_lazy_loading = true
@@ -153,16 +154,20 @@ ssl_keyfile = "/path/to/key.pem"
 level = "INFO"
 log_files = ["app.log", "debug.log"]
 memory_limit = 1000
+exclude_levels = ["EVENT"]
 ```
 
-| 設定項目 | タイプ | デフォルト値 | 説明 |
+| 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
 | level | string | INFO | ログレベル：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE は最低レベルで、フレームワーク内部の詳細なデバッグ情報を出力） |
-| format | string | rich | ログ出力形式：`rich`（カラー表示、デフォルト）、`plain`（カラーなしの純粋なテキスト、ログ収集/パイプリダイレクトに適している）、`json`（JSON形式、ELK などに適している） |
+| format | string | rich | ログ出力フォーマット：`rich`（カラー表示、デフォルト）、`plain`（カラーなしのプレーンテキスト、ログ収集/パイプリダイレクトに適している）、`json`（JSON 構造化、ELK などに適している） |
 | log_files | array | 空 | ログ出力ファイルのリスト |
-| memory_limit | integer | 1000 | メモリに保持するログの件数 |
+| memory_limit | integer | 1000 | メモリ内に保持するログの件数 |
+| exclude_levels | array | 空 | 指定されたログレベルを除外する。除外されたログレベルのログは**完全に破棄**される（メモリに書き込まない、ダッシュボードなどのサブスクライバーに送信しない、表示しない、ファイルに書き込まない）。ホットアップデートをサポートしている |
 
-[**English**](docs/ja/quick-start.md)
+> **プライバシー保護**：メッセージの送受信内容は **EVENT レベル**（数値 21）で記録される。`exclude_levels = ["EVENT"]` を設定することで、バックエンド（ダッシュボードのログパネルなど）が各グループ/プライベートチャットのメッセージ内容を見ることができなくなり、他のログレベルには影響しない。
+
+[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 框架設定
 
@@ -316,6 +321,40 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > `setConfig` はデフォルトで遅延書き込み（約5秒ごとに一括保存）が行われます。`immediate=True` を設定すると即時永続化されます。設定の変更は `config.set` ライフサイクルイベントをトリガーします。
 
 [**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+## スコープ設定
+
+モジュールスコープシステムは、"どのBotがどのモジュールを使用できるか"を制御するために使用されます。デフォルトでは、すべてのモジュールがすべてのBotに対して開放されており、設定のバインディングが行われた後にフィルタリングが開始されます。モジュールとアダプターは**変更を必要とせず**に適応できます。
+
+```toml
+# プラットフォームレベルのバインディング（このプラットフォームのすべてのBot / セッションに適用）
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Translate"]   # ホワイトリスト：このプラットフォームのBotはこれらのモジュールのみ使用可能
+blocked = ["Danger"]              # ブラックリスト：これらのモジュールはこのプラットフォームで禁止
+
+# Botレベルのバインディング（このBotのすべてのセッションに適用、プラットフォームレベルをオーバーライド）
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Chat"]
+blocked = []
+
+# セッションレベルのバインディング（特定のグループ / チャンネル / プライベートチャットに適用、最も具体的）
+[ErisPulse.scope.sessions.onebot11."789012345"]
+modules = ["Chat"]
+blocked = []
+```
+
+| 設定項目 | タイプ | 説明 |
+|---------|------|------|
+| `scope.default_allow` | boolean | デフォルトで全モジュールを許可する（`true`）。`false` = 隠式拒否の厳格モード、ホワイトリスト内のモジュールのみ使用可能 |
+| `scope.cache_size` | integer | `is_allowed` のLRUキャッシュサイズ（デフォルト 1024） |
+| `scope.platforms.<platform>.modules` | array | プラットフォームレベルのホワイトリスト：リストされたモジュールのみ使用可能（空 = 制限なし） |
+| `scope.platforms.<platform>.blocked` | array | プラットフォームレベルのブラックリスト：リストされたモジュールは禁止（空 = 制限なし） |
+| `scope.bots.<platform>.<bot_id>.modules` | array | Botレベルのホワイトリスト、プラットフォームレベルをオーバーライド |
+| `scope.bots.<platform>.<bot_id>.blocked` | array | Botレベルのブラックリスト、プラットフォームレベルをオーバーライド |
+| `scope.sessions.<platform>.<session_id>.modules` | array | セッションレベルのホワイトリスト（グループ/チャンネル/プライベートチャット）、優先度が最も高い |
+| `scope.sessions.<platform>.<session_id>.blocked` | array | セッションレベルのブラックリスト、優先度が最も高い |
+
+> 解析優先度：**セッションレベル > Botレベル > プラットフォームレベル**。モジュール名は大文字小文字を区別しない。セッション識別子はプラットフォーム間で隔離される。実行時に `sdk.scope.bind()` / `unbind()` を使用して動的に追加・削除が可能（`merge=True` でマージ可能）、詳細は[スコープシステム](../advanced/scope.md)を参照。
 
 ## 次に進む
 

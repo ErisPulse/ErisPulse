@@ -53,12 +53,13 @@ ErisPulse 事件处理基础模块
 ---
 
 
-##### `register(handler: Callable, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable | None = None)`
+##### `register(handler: Callable, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable | None = None, scope_exempt: bool = False)`
 
 注册事件处理器
 
 - **handler** (`事件处理器函数`): - **priority**: 处理器优先级，数值越大优先级越高
-- **condition**: 处理器条件函数，返回True时才会执行处理器
+- **condition** (`处理器条件函数，返回True时才会执行处理器`): - **scope_exempt**: 是否豁免作用域过滤（框架级处理器专用，默认 False）。
+                     为 True 时不参与模块作用域判断，始终执行。
 
 ---
 
@@ -101,6 +102,22 @@ ErisPulse 事件处理基础模块
 同优先级处理器的修改冲突采用后者覆盖前者的策略。
 
 - **event**: 事件数据
+
+---
+
+
+##### `_is_scope_allowed(handler_info: dict, platform: str, bot_id: str, session_id: str)`
+
+> **内部方法**
+判断处理器是否通过模块作用域检查
+
+框架级处理器（``scope_exempt`` 或 owner 为空）始终放行；
+模块级处理器按 owner 与当前事件所属平台/Bot/会话判定。
+
+- **handler_info** (`处理器信息字典`): - **platform**: 事件平台名称
+- **bot_id** (`事件`): Bot 标识（可能为空字符串）
+- **session_id** (`事件会话标识（群`): / 频道 / 私聊，可能为空字符串）
+**返回值**: 是否允许执行
 
 ---
 

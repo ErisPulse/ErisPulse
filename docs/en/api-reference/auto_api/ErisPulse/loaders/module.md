@@ -30,6 +30,38 @@ ErisPulse 模块加载器
 ---
 
 
+### `parse_activate_on(activate_on: Any)`
+
+解析 activate_on 触发器声明
+
+支持 str / list / dict 三种形式的自由混合：
+
+- ``str``：事件类型级触发，如 ``"message"``、``"notice"``
+- ``dict``：单键映射，键为事件类型或 ``command``
+  - ``{"message": "private"}``：事件类型 + detail_type（消息的 detail_type 即会话类型）
+  - ``{"notice": "group_member_increase"}``：事件类型 + detail_type
+  - ``{"command": "roll"}``：命令名触发，值为命令名或命令名列表
+- ``list``：以上各项的混合列表
+
+- **activate_on** (`activate_on`): 声明值（str / dict / list）
+**返回值** (```(event_triggers,`): command_triggers)``
+    - event_triggers: ``[(event_type, detail_type | None), ...]``
+    - command_triggers: ``[命令名, ...]``
+
+**示例**:
+```python
+>>> event_triggers, command_triggers = parse_activate_on(
+...     ["message", {"notice": "group_member_increase"}, {"command": "roll"}]
+... )
+>>> event_triggers
+[('message', None), ('notice', 'group_member_increase')]
+>>> command_triggers
+['roll']
+```
+
+---
+
+
 ## 类列表
 
 
@@ -73,6 +105,43 @@ ErisPulse 模块加载器
     list[str]: 禁用列表
 
 **异常**: `ImportError` - 当加载失败时抛出
+
+---
+
+
+##### `_merge_plugin_folder(objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any)`
+
+> **内部方法**
+发现本地插件文件夹并并入加载结果
+
+本地插件优先：与 entry-point 模块同名时，本地插件覆盖安装包条目
+（便于本地覆盖调试）。启用状态沿用 ``ErisPulse.modules.status``。
+
+- **objs** (`模块对象字典（原地修改）`): - **enabled_list**: 启用列表（原地修改）
+- **disabled_list** (`禁用列表（原地修改）`): - **manager_instance**: 模块管理器实例
+
+---
+
+
+##### `async reload_plugin(plugin_name: str, manager_instance: Any, sdk_instance: Any)`
+
+热重载单个本地插件：卸载旧实例 → 清理注册 → 重新导入 → 重新注册并加载
+
+- **plugin_name** (`插件名`): - **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+**返回值** (`是否重载成功`): > **提示**
+> 仅适用于插件文件夹来源的插件（moduleInfo meta 的 source 为
+> ``plugin_folder``）。PyPI 安装包模块不支持热重载。
+
+---
+
+
+##### `_purge_plugin_modules(plugin_name: str)`
+
+> **内部方法**
+从 sys.modules 移除插件相关模块，强制下次导入重新执行
+
+- **plugin_name**: 插件名
 
 ---
 
@@ -373,6 +442,92 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 
 - **args** (`位置参数`): - **kwargs**: 关键字参数
 **返回值**: 调用结果
+
+---
+
+
+### `class ModuleActivator(LazyModule)`
+
+事件驱动懒激活模块包装器
+
+在 LazyModule 基础上，通过 ``get_load_strategy()`` 中声明的 ``activate_on``
+触发器，在首个匹配事件/命令到达时自动加载模块，而非等待属性访问。
+
+事件触发器 stub 以 owner 身份注册到对应事件管理器（message/notice/request/meta），
+参与模块作用域过滤；命令触发器 stub 以同名占位命令注册到命令管理器。
+
+> **提示**
+> 1. stub 带 owner 走作用域过滤：模块未对该 Bot / 会话 / 平台启用时不触发
+> 2. 激活成功后自动注销所有 stub，模块按普通模块继续运行
+> 3. 激活失败不重试，stub 一并注销，避免每次事件都重复尝试
+
+
+#### 方法列表
+
+
+##### `__init__(module_name: str, module_class: type, sdk_ref: Any, module_info: dict[str, Any], manager_instance: Any)`
+
+初始化事件驱动懒激活包装器
+
+- **module_name** (`str`): 模块名称
+- **module_class** (`Type`): 模块类
+- **sdk_ref** (`Any`): SDK 引用
+- **module_info** (`dict[str,`): Any] 模块信息字典
+- **manager_instance** (`模块管理器实例`): - **activate_on**: 触发器声明（str / dict / list）
+
+---
+
+
+##### `_register_stubs()`
+
+注册事件与命令触发器 stub
+
+---
+
+
+##### `async _activate()`
+
+激活模块
+
+**返回值** (`bool`): 是否激活成功
+
+---
+
+
+##### `_deregister_stubs()`
+
+注销所有触发器 stub
+
+---
+
+
+##### `async _activate_and_forward(event_handler: Any, event: Any)`
+
+激活模块并把首个匹配事件转发给该模块的真实处理器
+
+- **event_handler** (`事件管理器（BaseEventHandler）`): - **event**: 触发事件
+
+---
+
+
+##### `async _forward_event(event_handler: Any, event: Any)`
+
+定向转发事件给本模块在事件管理器中注册的真实处理器
+
+按优先级降序逐个调用（stub 本身已注销，不会重复触发）
+
+- **event_handler** (`事件管理器（BaseEventHandler）`): - **event**: 事件数据
+
+---
+
+
+##### `async _activate_and_forward_command(cmd_name: str, event: Any)`
+
+激活模块并重跑命令匹配，使真实命令（已注册）接管本次触发
+
+命令 stub 已被占位匹配并认领事件，需清空认领标记后重新进入命令分发
+
+- **cmd_name** (`命令名`): - **event**: 消息事件
 
 ---
 

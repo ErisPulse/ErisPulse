@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1390,
+  "total_keywords": 1418,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -318,6 +318,14 @@
         "title": "1. 配置 pyproject.toml"
       }
     ],
+    "1. 配置层级": [
+      {
+        "document": "advanced/scope.md",
+        "line": 133,
+        "level": 3,
+        "title": "1. 配置层级"
+      }
+    ],
     "1.1 接收类型 && 发送类型": [
       {
         "document": "standards/session-types.md",
@@ -580,6 +588,14 @@
         "line": 12,
         "level": 2,
         "title": "2. 基础返回结构"
+      }
+    ],
+    "2. 它是\"逐事件\"判断，不会\"粘住\"": [
+      {
+        "document": "advanced/scope.md",
+        "line": 150,
+        "level": 3,
+        "title": "2. 它是\"逐事件\"判断，不会\"粘住\""
       }
     ],
     "2. 批量操作": [
@@ -1042,6 +1058,14 @@
         "title": "3. 标准动作列表"
       }
     ],
+    "3. 模块没反应": [
+      {
+        "document": "advanced/scope.md",
+        "line": 156,
+        "level": 3,
+        "title": "3. 模块没反应"
+      }
+    ],
     "3. 注册层：register_to_manager": [
       {
         "document": "advanced/startup.md",
@@ -1258,6 +1282,14 @@
         "title": "4. detail_type 使用了非标准值"
       }
     ],
+    "4. 会话标识跨平台隔离": [
+      {
+        "document": "advanced/scope.md",
+        "line": 169,
+        "level": 3,
+        "title": "4. 会话标识跨平台隔离"
+      }
+    ],
     "4. 使用方式": [
       {
         "document": "standards/api-action-spec.md",
@@ -1472,6 +1504,14 @@
         "line": 363,
         "level": 3,
         "title": "5. 往返一致性"
+      }
+    ],
+    "5. 性能": [
+      {
+        "document": "advanced/scope.md",
+        "line": 173,
+        "level": 3,
+        "title": "5. 性能"
       }
     ],
     "5. 扩展规范": [
@@ -2546,6 +2586,14 @@
         "title": "ErisPulse 适配器标准化返回规范"
       }
     ],
+    "ErisPulse-App": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-App"
+      }
+    ],
     "ErisPulse-Dashboard": [
       {
         "document": "ecosystem/dashboard.md",
@@ -3081,7 +3129,7 @@
       },
       {
         "document": "developer-guide/modules/getting-started.md",
-        "line": 128,
+        "line": 192,
         "level": 3,
         "title": "SDK 对象"
       }
@@ -3381,7 +3429,7 @@
     "Windows PowerShell 执行策略": [
       {
         "document": "user-guide/installation.md",
-        "line": 121,
+        "line": 133,
         "level": 3,
         "title": "Windows PowerShell 执行策略"
       }
@@ -3805,7 +3853,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 435,
+        "line": 439,
         "level": 3,
         "title": "doctor"
       }
@@ -3853,7 +3901,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 347,
+        "line": 351,
         "level": 3,
         "title": "i18n"
       }
@@ -3928,6 +3976,14 @@
         "line": 240,
         "level": 3,
         "title": "meta 事件类型"
+      }
+    ],
+    "meta 字段的 i18n 支持": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 170,
+        "level": 4,
+        "title": "meta 字段的 i18n 支持"
       }
     ],
     "metadata 约定": [
@@ -4069,7 +4125,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 384,
+        "line": 388,
         "level": 3,
         "title": "types"
       }
@@ -4157,7 +4213,7 @@
     "三、我要深入理解原理": [
       {
         "document": "README.md",
-        "line": 37,
+        "line": 38,
         "level": 3,
         "title": "三、我要深入理解原理"
       }
@@ -4193,7 +4249,7 @@
       },
       {
         "document": "developer-guide/modules/getting-started.md",
-        "line": 143,
+        "line": 207,
         "level": 2,
         "title": "下一步"
       },
@@ -4229,13 +4285,13 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 303,
+        "line": 342,
         "level": 2,
         "title": "下一步"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 129,
+        "line": 141,
         "level": 2,
         "title": "下一步"
       }
@@ -4272,6 +4328,14 @@
         "title": "与 CLI i18n 的关系"
       }
     ],
+    "与 SDK 的关系": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 90,
+        "level": 2,
+        "title": "与 SDK 的关系"
+      }
+    ],
     "与 SendDSL 标准方法的关系": [
       {
         "document": "getting-started/ide-completion.md",
@@ -4291,7 +4355,7 @@
     "严格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 194,
+        "line": 199,
         "level": 3,
         "title": "严格模式"
       }
@@ -4353,7 +4417,7 @@
     "主动 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 179,
+        "line": 184,
         "level": 3,
         "title": "主动 GC 配置"
       }
@@ -4691,9 +4755,17 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 234,
+        "line": 239,
         "level": 2,
         "title": "事件配置"
+      }
+    ],
+    "事件驱动懒激活（`activate_on`）触发架构": [
+      {
+        "document": "architecture.md",
+        "line": 197,
+        "level": 3,
+        "title": "事件驱动懒激活（`activate_on`）触发架构"
       }
     ],
     "事件驱动架构": [
@@ -4731,7 +4803,7 @@
     "二、我要开发模块 / 适配器": [
       {
         "document": "README.md",
-        "line": 26,
+        "line": 27,
         "level": 3,
         "title": "二、我要开发模块 / 适配器"
       }
@@ -4755,7 +4827,7 @@
     "五、我要为 ErisPulse 贡献": [
       {
         "document": "README.md",
-        "line": 61,
+        "line": 64,
         "level": 3,
         "title": "五、我要为 ErisPulse 贡献"
       }
@@ -4785,7 +4857,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 461,
+        "line": 465,
         "level": 2,
         "title": "交互式安装"
       }
@@ -4952,6 +5024,14 @@
         "line": 73,
         "level": 2,
         "title": "何时重新生成"
+      }
+    ],
+    "作用域配置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 308,
+        "level": 2,
+        "title": "作用域配置"
       }
     ],
     "使用 Discord 特有方法": [
@@ -5209,7 +5289,7 @@
     "全局参数": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 419,
+        "line": 423,
         "level": 2,
         "title": "全局参数"
       }
@@ -5265,7 +5345,7 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 79,
+        "line": 82,
         "level": 2,
         "title": "其他"
       }
@@ -5373,7 +5453,7 @@
     "切换语言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 538,
+        "line": 542,
         "level": 3,
         "title": "切换语言"
       }
@@ -5397,7 +5477,7 @@
     "列出组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 489,
+        "line": 493,
         "level": 3,
         "title": "列出组件"
       }
@@ -5421,7 +5501,7 @@
     "创建脚手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 571,
+        "line": 575,
         "level": 3,
         "title": "创建脚手架"
       }
@@ -5481,7 +5561,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 561,
+        "line": 565,
         "level": 3,
         "title": "初始化项目"
       }
@@ -5502,10 +5582,18 @@
         "title": "删除表"
       }
     ],
+    "判断模块是否允许": [
+      {
+        "document": "advanced/scope.md",
+        "line": 65,
+        "level": 3,
+        "title": "判断模块是否允许"
+      }
+    ],
     "前置知识": [
       {
         "document": "advanced/README.md",
-        "line": 29,
+        "line": 30,
         "level": 2,
         "title": "前置知识"
       }
@@ -5516,6 +5604,14 @@
         "line": 76,
         "level": 3,
         "title": "功能概览"
+      }
+    ],
+    "功能速览": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 11,
+        "level": 2,
+        "title": "功能速览"
       }
     ],
     "加密模式说明": [
@@ -5556,6 +5652,14 @@
         "title": "动态内容"
       }
     ],
+    "动态绑定 / 解绑": [
+      {
+        "document": "advanced/scope.md",
+        "line": 77,
+        "level": 3,
+        "title": "动态绑定 / 解绑"
+      }
+    ],
     "动画示例": [
       {
         "document": "ecosystem/takumi.md",
@@ -5583,7 +5687,7 @@
     "升级组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 515,
+        "line": 519,
         "level": 3,
         "title": "升级组件"
       }
@@ -5623,7 +5727,7 @@
     "卸载组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 505,
+        "line": 509,
         "level": 3,
         "title": "卸载组件"
       }
@@ -6239,7 +6343,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 236,
+        "line": 241,
         "level": 3,
         "title": "命令配置"
       }
@@ -6260,12 +6364,12 @@
         "title": "响应"
       }
     ],
-    "四、推荐生态模块": [
+    "四、生态与官方客户端": [
       {
         "document": "README.md",
-        "line": 51,
+        "line": 53,
         "level": 3,
-        "title": "四、推荐生态模块"
+        "title": "四、生态与官方客户端"
       }
     ],
     "回复功能": [
@@ -6347,7 +6451,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 263,
+        "line": 268,
         "level": 2,
         "title": "国际化配置"
       }
@@ -7145,7 +7249,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 223,
+        "line": 228,
         "level": 2,
         "title": "存储配置"
       }
@@ -7223,7 +7327,7 @@
     "安装失败": [
       {
         "document": "user-guide/installation.md",
-        "line": 99,
+        "line": 111,
         "level": 3,
         "title": "安装失败"
       }
@@ -7236,6 +7340,22 @@
         "title": "安装方式"
       }
     ],
+    "安装方式（Android / 手机直接运行）": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 38,
+        "level": 2,
+        "title": "安装方式（Android / 手机直接运行）"
+      }
+    ],
+    "安装方式（桌面端：Windows / Linux / macOS）": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 57,
+        "level": 3,
+        "title": "安装方式（桌面端：Windows / Linux / macOS）"
+      }
+    ],
     "安装模块": [
       {
         "document": "quick-start.md",
@@ -7245,7 +7365,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 476,
+        "line": 480,
         "level": 3,
         "title": "安装模块"
       }
@@ -7424,9 +7544,21 @@
         "title": "工作原理"
       },
       {
+        "document": "advanced/scope.md",
+        "line": 13,
+        "level": 2,
+        "title": "工作原理"
+      },
+      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 259,
         "level": 3,
+        "title": "工作原理"
+      },
+      {
+        "document": "ecosystem/app.md",
+        "line": 67,
+        "level": 2,
         "title": "工作原理"
       },
       {
@@ -7521,7 +7653,7 @@
     "常用命令": [
       {
         "document": "user-guide/README.md",
-        "line": 16,
+        "line": 17,
         "level": 3,
         "title": "常用命令"
       }
@@ -7537,7 +7669,7 @@
     "常见用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 474,
+        "line": 478,
         "level": 2,
         "title": "常见用法"
       }
@@ -7545,7 +7677,7 @@
     "常见配置位置": [
       {
         "document": "user-guide/README.md",
-        "line": 29,
+        "line": 30,
         "level": 3,
         "title": "常见配置位置"
       }
@@ -7571,9 +7703,17 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 97,
+        "line": 109,
         "level": 2,
         "title": "常见问题"
+      }
+    ],
+    "常见问题与注意事项": [
+      {
+        "document": "advanced/scope.md",
+        "line": 131,
+        "level": 2,
+        "title": "常见问题与注意事项"
       }
     ],
     "常见陷阱": [
@@ -7769,7 +7909,7 @@
     "开发方式": [
       {
         "document": "README.md",
-        "line": 72,
+        "line": 75,
         "level": 2,
         "title": "开发方式"
       }
@@ -8015,7 +8155,7 @@
       },
       {
         "document": "user-guide/README.md",
-        "line": 14,
+        "line": 15,
         "level": 2,
         "title": "快速参考"
       }
@@ -8131,7 +8271,7 @@
     "我也想把自己的模块列在这里？": [
       {
         "document": "ecosystem/README.md",
-        "line": 24,
+        "line": 29,
         "level": 2,
         "title": "我也想把自己的模块列在这里？"
       }
@@ -8326,6 +8466,22 @@
         "title": "抽象类型"
       }
     ],
+    "拓扑树 API": [
+      {
+        "document": "advanced/scope.md",
+        "line": 178,
+        "level": 2,
+        "title": "拓扑树 API"
+      }
+    ],
+    "拓扑树数据": [
+      {
+        "document": "advanced/scope.md",
+        "line": 124,
+        "level": 3,
+        "title": "拓扑树数据"
+      }
+    ],
     "指定发送账号": [
       {
         "document": "api-reference/adapter-system.md",
@@ -8420,12 +8576,12 @@
         "title": "推荐写法：通过 I18nClass 声明翻译键（v2.7.0+）"
       }
     ],
-    "推荐模块": [
+    "推荐模块与官方客户端": [
       {
         "document": "ecosystem/README.md",
-        "line": 15,
+        "line": 19,
         "level": 2,
-        "title": "推荐模块"
+        "title": "推荐模块与官方客户端"
       }
     ],
     "推荐禁用懒加载的场景（lazy_load=False）": [
@@ -8458,6 +8614,14 @@
         "line": 383,
         "level": 2,
         "title": "搜索功能"
+      }
+    ],
+    "支持平台": [
+      {
+        "document": "ecosystem/app.md",
+        "line": 23,
+        "level": 2,
+        "title": "支持平台"
       }
     ],
     "支持的 i18n 字段": [
@@ -8796,6 +8960,14 @@
         "title": "方式一：使用 pip 安装"
       }
     ],
+    "方式三：使用 ErisPulse-App 客户端（免终端）": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 72,
+        "level": 3,
+        "title": "方式三：使用 ErisPulse-App 客户端（免终端）"
+      }
+    ],
     "方式二：event.send_chain()": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -8915,7 +9087,7 @@
     "日志配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 142,
+        "line": 143,
         "level": 2,
         "title": "日志配置"
       }
@@ -9025,9 +9197,25 @@
     "服务器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 125,
+        "line": 126,
         "level": 2,
         "title": "服务器配置"
+      }
+    ],
+    "本地插件文件夹架构": [
+      {
+        "document": "architecture.md",
+        "line": 233,
+        "level": 2,
+        "title": "本地插件文件夹架构"
+      }
+    ],
+    "本地插件热重载架构": [
+      {
+        "document": "architecture.md",
+        "line": 258,
+        "level": 2,
+        "title": "本地插件热重载架构"
       }
     ],
     "本地测试": [
@@ -9162,6 +9350,14 @@
         "line": 65,
         "level": 3,
         "title": "查询方法"
+      }
+    ],
+    "查询绑定": [
+      {
+        "document": "advanced/scope.md",
+        "line": 102,
+        "level": 3,
+        "title": "查询绑定"
       }
     ],
     "标准 OB12 映射": [
@@ -9463,7 +9659,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 158,
+        "line": 163,
         "level": 2,
         "title": "框架配置"
       }
@@ -9471,7 +9667,7 @@
     "检查安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 74,
+        "line": 86,
         "level": 3,
         "title": "检查安装"
       }
@@ -9528,6 +9724,22 @@
         "title": "模块中使用示例"
       }
     ],
+    "模块介绍 meta": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 129,
+        "level": 3,
+        "title": "模块介绍 meta"
+      }
+    ],
+    "模块作用域系统": [
+      {
+        "document": "advanced/scope.md",
+        "line": 1,
+        "level": 1,
+        "title": "模块作用域系统"
+      }
+    ],
     "模块加载策略": [
       {
         "document": "architecture.md",
@@ -9555,7 +9767,7 @@
     "模块安装失败": [
       {
         "document": "user-guide/installation.md",
-        "line": 114,
+        "line": 126,
         "level": 3,
         "title": "模块安装失败"
       }
@@ -9647,7 +9859,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 274,
+        "line": 279,
         "level": 2,
         "title": "模块配置"
       }
@@ -10147,7 +10359,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 252,
+        "line": 257,
         "level": 3,
         "title": "消息配置"
       }
@@ -10361,7 +10573,7 @@
     "环境诊断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 433,
+        "line": 437,
         "level": 2,
         "title": "环境诊断"
       }
@@ -10429,7 +10641,7 @@
     "生成类型存根": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 551,
+        "line": 555,
         "level": 3,
         "title": "生成类型存根"
       }
@@ -10687,7 +10899,7 @@
       },
       {
         "document": "user-guide/README.md",
-        "line": 39,
+        "line": 40,
         "level": 2,
         "title": "相关文档"
       }
@@ -10695,7 +10907,13 @@
     "相关链接": [
       {
         "document": "README.md",
-        "line": 91,
+        "line": 94,
+        "level": 2,
+        "title": "相关链接"
+      },
+      {
+        "document": "ecosystem/app.md",
+        "line": 100,
         "level": 2,
         "title": "相关链接"
       },
@@ -10885,7 +11103,7 @@
     "类型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 378,
+        "line": 382,
         "level": 2,
         "title": "类型存根命令"
       }
@@ -11173,7 +11391,7 @@
     "获取帮助": [
       {
         "document": "README.md",
-        "line": 85,
+        "line": 88,
         "level": 2,
         "title": "获取帮助"
       }
@@ -11325,7 +11543,7 @@
     "语言命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 341,
+        "line": 345,
         "level": 2,
         "title": "语言命令"
       }
@@ -11473,7 +11691,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 211,
+        "line": 216,
         "level": 4,
         "title": "豁免清单"
       }
@@ -11692,12 +11910,28 @@
         "title": "输出格式"
       }
     ],
+    "过滤统计（调试）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 114,
+        "level": 3,
+        "title": "过滤统计（调试）"
+      }
+    ],
     "运行控制命令": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 226,
         "level": 2,
         "title": "运行控制命令"
+      }
+    ],
+    "运行时 API": [
+      {
+        "document": "advanced/scope.md",
+        "line": 63,
+        "level": 2,
+        "title": "运行时 API"
       }
     ],
     "运行时细粒度控制": [
@@ -11727,7 +11961,7 @@
     "运行测试": [
       {
         "document": "user-guide/installation.md",
-        "line": 81,
+        "line": 93,
         "level": 3,
         "title": "运行测试"
       }
@@ -11741,7 +11975,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 528,
+        "line": 532,
         "level": 3,
         "title": "运行项目"
       }
@@ -11863,7 +12097,7 @@
     "适用对象": [
       {
         "document": "advanced/README.md",
-        "line": 21,
+        "line": 22,
         "level": 2,
         "title": "适用对象"
       }
@@ -12312,6 +12546,12 @@
     ],
     "配置文件": [
       {
+        "document": "advanced/scope.md",
+        "line": 27,
+        "level": 2,
+        "title": "配置文件"
+      },
+      {
         "document": "quick-start.md",
         "line": 158,
         "level": 2,
@@ -12467,7 +12707,7 @@
     "配置错误": [
       {
         "document": "user-guide/installation.md",
-        "line": 107,
+        "line": 119,
         "level": 3,
         "title": "配置错误"
       }
@@ -12782,6 +13022,14 @@
         "title": "附件消息段"
       }
     ],
+    "隐私：屏蔽消息日志": [
+      {
+        "document": "advanced/scope.md",
+        "line": 214,
+        "level": 2,
+        "title": "隐私：屏蔽消息日志"
+      }
+    ],
     "需求描述模板": [
       {
         "document": "ai-support/README.md",
@@ -12855,7 +13103,7 @@
     "验证安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 72,
+        "line": 84,
         "level": 2,
         "title": "验证安装"
       }

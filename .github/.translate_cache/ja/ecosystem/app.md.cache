@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "hash": "3d0a29940bc6373fe64b99b5fbf15f84",
+  "file_hash": "3d0a29940bc6373fe64b99b5fbf15f84",
+  "translated_at": "2026-08-15T19:51:24.735869",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "8192180e711fe5d48fdb7d5a1f63d59f",
+      "translation": "# ErisPulse-App\n\n[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) は ErisDev が直接運用している **公式マルチプラットフォームクライアント**（Android / Windows / Linux / macOS の各プラットフォームでリリース済み）で、\n完全にネイティブなグラフィカル管理インターフェースを提供します。スマートフォンやコンピュータ上で複数のボットインスタンスの作成、実行、管理が可能です。\n端末（ターミナル）を開く必要もなく、Python 環境を別途インストールする必要もありません。\n\n> [!IMPORTANT]\n> ErisPulse-App は**スタンドアロンのインストール型クライアントプログラム**であり、`epsdk install` でインストールされるモジュールではありません。\n> Python ランタイムと ErisPulse SDK を内部に搭載しているため、インストールしてすぐに利用可能です——**スマートフォンでも直接実行できます**。\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。"
+    },
+    {
+      "hash": "cdebbf4787647b0a9a637d3290657ed2",
+      "translation": "## 機能概要\n\n- **マルチインスタンス管理**: インスタンスの作成 / 起動 / 停止 / 削除。ポートとアクセストークンが自動的に割り当てられます。新規環境または既存環境のクローンに対応しています。\n- **ダッシュボード**: アダプタ / モジュール / オンラインボット / イベント総数の統計、CPU / メモリ使用率のアラート（色の変化）。\n- **モジュールストア**: 検索・タグによるフィルタリング、ワンクリックでのインストール / アップグレード / アンインストール、特定バージョンのインストール、pipミラーソースと Git パッケージのサポート。\n- **イベントストリーム + イベントビルダー**: リアルタイムでのイベント確認、テストイベントの視覚的な構築とアダプタへの送信。\n- **監視**: ログ / ライフサイクル / 監査の統合ビュー。\n- **コマンド管理**: プリフィックス・エイリアスなどの全体的な設定、開始・停止、プラットフォームのホワイトリスト・ブラックリスト。\n- **ボット概要 / 設定 / ファイル管理**: 原生インターフェースによるインスタンス直接操作。\n- **常駐バックグラウンド**: Android フロントグラウンドサービスによるプロセス維持；Windows はシステムトレイへ最小化し、ウィンドウを閉じてもインスタンスを中断しません。\n- **モジュール動的ウィンドウ**: モジュールが登録されたページがサイドナビゲーション（ダッシュボードと同じグループ）に自動的に表示されます。クリックで直接移動できます。"
+    },
+    {
+      "hash": "1e20cd142d4308a04af3cd35ee335e26",
+      "translation": "## 対応プラットフォーム\n\nすべてのプラットフォームのインストーラーは、[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) からダウンロードできます。必要なものを選択してください。\n\n| プラットフォーム | インストーラー | 説明 |\n|------|--------|------|\n| Android | `online-*.apk` / `offline-*.apk` | **スマートフォンで直接実行**、PCは不要です |\n| Windows | `windows-x64-setup.exe` / `windows-x64.zip` | インストーラー版 / 解凍のみ版 |\n| Linux | `linux-x64.tar.gz` | 解凍して使用 |\n| macOS | `macos-arm64.zip` | Apple Silicon（arm64） |\n\nFlutter による単一のコードベースで、すべてのプラットフォームをカバーしています。\n\n---"
+    },
+    {
+      "hash": "6e2b27fa10d474b811f8bcf3d3576fb5",
+      "translation": "## インストール方法（Android / スマートフォン直接実行）\n\n[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) から APK をダウンロードしてインストールするだけです。2つのビルドがあります。\n\n| ビルド | ランタイムイメージ | 適用シーン |\n|------|-----------------|---------|\n| `erispulse-app-online-*.apk` | 起動時にダウンロード | インストールパッケージが小さく、ネットワーク環境が良い場合に適しています |\n| `erispulse-app-offline-*.apk` | APK に同梱 | オフラインで自己完結しており、インストール後にネットワーク接続不要 |\n\n2つのビルドともインストール手順は同じです。\n\n1. APK をダウンロードしてインストールします。起動時に通知権限を許可してください（バックグラウンドサービスを維持するために使用します）\n2. ホーム画面に初期化バナーが表示されたら、実行ボタンをクリックして最初の初期化を行います（進捗とログのビューを含みます）\n3. インスタンスを作成して起動します\n4. App 内蔵の管理画面でアダプタとモデル API Key を設定します\n\n> オフラインパッケージは自己完結しています — インストール後にネットワークは不要です。起動時のダウンロードが遅い場合や不安定な場合は、設定画面でダウンロード元をミラーサイト（ghfast / gh-proxy）に切り替えることができます。\n\n### インストール方法（デスクトップ：Windows / Linux / macOS）\n\n1. [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) から対応するプラットフォームのインストーラをダウンロードします（Windows の `setup.exe` または ZIP 版、Linux の `tar.gz`、macOS の `zip`）\n2. インストールして起動します\n3. ウェルカム画面でインストールしたい ErisPulse SDK のバージョンを選択します（デフォルトは最新バージョン）そしてインストールします\n4. インスタンスを作成して起動します\n\n---"
+    },
+    {
+      "hash": "4635d45527d2564c576449ca3207cbb7",
+      "translation": "## 動作原理\n\n```\n┌────────────────────────────────────────────────────┐\n│  ErisPulse-App (Flutter)                            │\n│                                                    │\n│  ネイティブ UI ── Dashboard REST / WS API          │\n│       │                                            │\n│       ├── Android：フォアグラウンドサービス + proot + Ubuntu rootfs│\n│       │        + Python + ErisPulse インスタンス            │\n│       └── デスクトップ：内蔵 Python + 直接プロセス管理         │\n└────────────────────────────────────────────────────┘\n```\n\n- **Android**：インスタンスはフォアグラウンドサービス（background isolate）によって管理された proot（ユーザーランド chroot）内で動作します。UIが閉じられてもボットは継続して実行され、クラッシュすると自動的に再起動します。\n- **デスクトップ**：インスタンスはAppの直接の子プロセスとして実行されます。Windowsの場合、システムトレイに最小化してバックグラウンドで常駐（ウィンドウを閉じてもインスタンスは中断されません）。Appを再起動すると、実行中のインスタンスへの管理が自動的に回復し、終了時にすべてのインスタンスを一括して停止します。\n- すべてのプラットフォームのネイティブ UI は、`127.0.0.1:<port>/Dashboard/*` の REST / WebSocket API を介してインスタンスと通信します。これは[ErisPulse-Dashboard](dashboard.md)と同じAPIを使用します。\n\n---"
+    },
+    {
+      "hash": "920d93147376c527eb5c23519c01d889",
+      "translation": "## SDK との関係\n\n- App 内部に ErisPulse SDK を同梱：Android 版は Ubuntu イメージにパッケージングされており、デスクトップ版は PyPI からインストールします（ウェルカム画面はオプション、デフォルトは最新版）\n- App 内のインスタンスは、コマンドライン `epsdk` で作成されたインスタンスと等価であり、同じモジュール / アダプタを使用可能です\n- モジュール開発者は、[Dashboard ウィンドウで API を登録](dashboard.md)してカスタムページを登録できます：\n  - ウィンドウは App のサイドナビゲーションに自動的に表示されます（グループは Dashboard と一致）\n  - クリックすると対応するページレンダリングに遷移します\n\n---\n\n</translate>"
+    },
+    {
+      "hash": "fb97cf3223f74fee1201ee377b9d9ee5",
+      "translation": "## 関連リンク\n\n- GitHub リポジトリ：[https://github.com/ErisPulse/ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App)\n- ダウンロード：[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)\n- 検討（議論）：[Discussions](https://github.com/ErisPulse/ErisPulse-App/discussions)"
+    }
+  ]
+}

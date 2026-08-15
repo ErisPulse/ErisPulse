@@ -10,66 +10,67 @@ ErisPulse — это масштабируемый, многоуровневый 
 
 ## Выбор вашего пути
 
-Выберите соответствующий путь обучения в зависимости от ваших целей. Каждый путь организован от простого к сложному.
+Выберите соответствующий путь обучения в зависимости от ваших целей. Каждый путь структурирован от простого к сложному.
 
 ### 1. Я хочу использовать робота
 
 Запустите робота, установите модули и настройте его.
 
-| Стадия | Документ | Описание |
+| Статус | Документация | Описание |
 |------|------|------|
-| **① Начало работы** | [5 минут к быстрому запуску](docs/ru/quick-start.md) | Установка, инициализация, запуск — единственный вход для начала |
-| ② Глубже | [Создание первого робота](docs/ru/getting-started/first-bot.md) | Написание первого обработчика команд |
-| ③ Концепции | [Основные концепции](docs/ru/getting-started/basic-concepts.md) | Понимание концепции адаптеров/модулей/событий |
-| ④ Практика | [Примеры распространённых задач](docs/ru/getting-started/common-tasks.md) | Хранение данных, расписания, контроль прав доступа |
-| Справочник | [Описание конфигурационного файла](docs/ru/user-guide/configuration.md) · [Справочник CLI](docs/ru/user-guide/cli-reference.md) · [Руководство по развертыванию](docs/ru/user-guide/deployment.md) | Дополнительная информация по запросу |
-| Справочник | [Руководство по особенностям платформ](docs/ru/platform-guide/README.md) | Особенности различных платформ (облако, QQ, Telegram и т.д.) |
+| **① Начало работы** | [5 минут к быстрому запуску](docs/ru/quick-start.md) | Установка, инициализация, запуск — единственный вход для старта |
+| Прямая установка через App | [Клиент ErisPulse-App](ecosystem/app.md) | Официальный клиент для всех платформ: графический интерфейс на телефоне / компьютере для запуска и управления без терминала |
+| ② Глубокое изучение | [Создание первого робота](getting-started/first-bot.md) | Написание первого обработчика команд |
+| ③ Понимание концепций | [Основные понятия](getting-started/basic-concepts.md) | Понимание концепций адаптера/модуля/события |
+| ④ Практика | [Примеры распространённых задач](getting-started/common-tasks.md) | Хранение данных, планирование задач, управление правами |
+| Справочник | [Описание конфигурационного файла](user-guide/configuration.md) · [Справочник CLI-команд](user-guide/cli-reference.md) · [Руководство по развертыванию](user-guide/deployment.md) | Документы по запросу |
+| Справочник | [Руководство по функциям платформы](platform-guide/README.md) | Различия между платформами (облако/QQ/Telegram и т.д.) |
 
-### 2. Я хочу разработать модуль / адаптер
+### 2. Я хочу разрабатывать модули / адаптеры
 
 Разработка расширений для ErisPulse, которые можно распространять.
 
-| Тип | Начало | Продвинутый |
+| Тип | Начало | Продвинуто |
 |------|------|------|
-| **Разработка модуля** (рекомендуется) | [Начало разработки модуля](docs/ru/developer-guide/modules/getting-started.md) | [Основные концепции](docs/ru/developer-guide/modules/core-concepts.md) · [Обёртка событий](docs/ru/developer-guide/modules/event-wrapper.md) · [Лучшие практики](docs/ru/developer-guide/modules/best-practices.md) |
-| **Разработка адаптера** | [Начало разработки адаптера](docs/ru/developer-guide/adapters/getting-started.md) | [Основные концепции](docs/ru/developer-guide/adapters/core-concepts.md) · [Подробное руководство SendDSL](docs/ru/developer-guide/adapters/send-dsl.md) · [Конвертер событий](docs/ru/developer-guide/adapters/converter.md) · [Лучшие практики](docs/ru/developer-guide/adapters/best-practices.md) |
-| **Технические стандарты** | [Обзор стандартов](docs/ru/standards/README.md) | Стандарты, которые необходимо соблюдать при разработке адаптеров: [Типы сессий](docs/ru/standards/session-types.md) · [Конвертация событий](docs/ru/standards/event-conversion.md) · [Методы отправки](docs/ru/standards/send-method-spec.md) · [Ответ API](docs/ru/standards/api-response.md) · [Действия запроса](docs/ru/standards/request-action-spec.md) |
-| **Публикация** | [Публикация и магазин модулей](docs/ru/developer-guide/publishing.md) | Публикация работ на PyPI и в магазин модулей |
+| **Разработка модуля** (рекомендуется) | [Начало разработки модуля](developer-guide/modules/getting-started.md) | [Основные понятия](developer-guide/modules/core-concepts.md) · [Event-обёртка](developer-guide/modules/event-wrapper.md) · [Лучшие практики](developer-guide/modules/best-practices.md) |
+| **Разработка адаптера** | [Начало разработки адаптера](developer-guide/adapters/getting-started.md) | [Основные понятия](developer-guide/adapters/core-concepts.md) · [Подробное описание SendDSL](developer-guide/adapters/send-dsl.md) · [Конвертер событий](developer-guide/adapters/converter.md) · [Лучшие практики](developer-guide/adapters/best-practices.md) |
+| **Технические стандарты** | [Обзор стандартов](standards/README.md) | Стандарты, которые необходимо соблюдать при разработке адаптера: [типы сессий](standards/session-types.md) · [конвертация событий](standards/event-conversion.md) · [методы отправки](standards/send-method-spec.md) · [ответ API](standards/api-response.md) · [действия запросов](standards/request-action-spec.md) |
+| **Публикация** | [Публикация и магазин модулей](developer-guide/publishing.md) | Публикация работы на PyPI и в магазине модулей |
 
-### 3. Я хочу глубже понять принципы работы
+### 3. Я хочу глубоко понять принципы работы
 
 Понимание внутренней работы фреймворка.
 
-| Документ | Описание |
+| Документация | Описание |
 |------|------|
-| [Обзор архитектуры](docs/ru/architecture.md) | Визуальные диаграммы: основная архитектура, процесс инициализации, обработка событий, жизненный цикл |
-| [Процесс запуска и ручное управление](docs/ru/advanced/startup.md) | Разбор цепочки запуска, ручное управление этапами, диагностика сбоев загрузки |
-| [Система событий](docs/ru/api-reference/event-system.md) | Полный API для пяти основных типов событий |
-| [Система адаптеров](docs/ru/api-reference/adapter-system.md) | Регистрация, запуск и остановка адаптеров, вызов API |
-| [Основные модули](docs/ru/api-reference/core-modules.md) | Основные возможности: Storage / Config / Logger / Router и т.д. |
-| [Управление жизненным циклом](docs/ru/advanced/lifecycle.md) · [Ленивая загрузка](docs/ru/advanced/lazy-loading.md) · [Система маршрутизации](docs/ru/advanced/router.md) | Внутренние подсистемы |
-| [Многошаговый диалог Conversation](docs/ru/advanced/conversation.md) · [MessageBuilder](docs/ru/advanced/message-builder.md) · [SQL Builder](docs/ru/advanced/sql-builder.md) · [HTTP-клиент](docs/ru/advanced/http-client.md) · [Международная локализация](docs/ru/advanced/i18n.md) | Расширенные инструменты |
+| [Обзор архитектуры](architecture.md) | Визуальная диаграмма: основная архитектура, процесс инициализации, обработка событий, жизненный цикл, стратегия загрузки модулей (включая ленивую активацию на основе события `activate_on`), локальная папка плагинов и архитектура горячей перезагрузки |
+| [Процесс запуска и ручное управление](advanced/startup.md) | Разбор цепочки запуска, ручное управление этапами, диагностика сбоев загрузки |
+| [Система событий](api-reference/event-system.md) | Полный API для пяти типов событий |
+| [Система адаптеров](api-reference/adapter-system.md) | Регистрация, запуск и остановка адаптеров, вызов API |
+| [Основные модули](api-reference/core-modules.md) | Основные возможности: Storage / Config / Logger / Router и т.д. |
+| [Управление жизненным циклом](advanced/lifecycle.md) · [Ленивая загрузка](advanced/lazy-loading.md) · [Система маршрутизации](advanced/router.md) | Внутренние подсистемы |
+| [Система модульных областей](advanced/scope.md) | Связь и изоляция модулей и адаптеров с платформой Bot |
+| [Многошаговые диалоги Conversation](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL-генератор](advanced/sql-builder.md) · [HTTP-клиент](advanced/http-client.md) · [Международная локализация](advanced/i18n.md) | Расширенные инструменты |
 
-### 4. Рекомендуемые модули экосистемы
+### 4. Экосистема и официальный клиент
 
-Установите и используйте **третьи сторонние модули сообщества** (не встроенные функции фреймворка).
+Официальный клиент + модули экосистемы, которые можно устанавливать по требованию (это не встроенные функции фреймворка).
 
-| Документ | Описание |
+| Документация | Описание |
 |------|------|
-| [Обзор модулей экосистемы](docs/ru/ecosystem/README.md) | Узнайте, как установить модули экосистемы и почему они не являются встроенными функциями |
-| [ErisPulse-Dashboard](docs/ru/ecosystem/dashboard.md) | Веб-панель управления + API регистрации окон (модули могут регистрировать собственные страницы в боковой панели) |
-| [ErisPulse-Takumi](docs/ru/ecosystem/takumi.md) | Рендеринг изображений (HTML / дерево узлов / SVG / анимация, встроенные шрифты на китайском и английском языках) |
+| [Обзор экосистемы](ecosystem/README.md) | Как устанавливать модули экосистемы, почему они не являются встроенными функциями |
+| [ErisPulse-App](ecosystem/app.md) | Официальный клиент для всех платформ (Android / Windows / Linux / macOS): нативный интерфейс для управления несколькими экземплярами, **прямой запуск с телефона**, постоянное присутствие в системном трее |
+| [ErisPulse-Dashboard](ecosystem/dashboard.md) | Веб-панель управления + API регистрации виджетов (модули могут регистрировать пользовательские страницы в боковой панели) |
+| [ErisPulse-Takumi](ecosystem/takumi.md) | Генерация изображений (HTML / дерево узлов / SVG / анимация, встроенные шрифты на китайском и английском языках) |
 
 ### 5. Я хочу внести вклад в ErisPulse
 
-Сделайте фреймворк лучше
+Сделать фреймворк лучше
 
-| Документ | Описание |
+| Документация | Описание |
 |------|------|
-| [Вклад в ErisPulse](docs/ru/contributing/README.md) | Обзор способов внесения вклада: документация / локализация / баги / модули / адаптеры |
-| [Первый вклад](docs/ru/contributing/first-contribution.md) | От форка до отправки PR |
-
----
+| [Вклад в ErisPulse](contributing/README.md) | Обзор способов вклада: документация / i18n / ошибки / модули / адаптеры |
+| [Первый вклад](contributing/first-contribution.md) | От форка до отправки PR |
 
 ## Способы разработки
 

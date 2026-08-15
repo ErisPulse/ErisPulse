@@ -45,24 +45,28 @@
 
 # Architecture Overview
 
-This document introduces the technical architecture of ErisPulse SDK through visual diagrams, helping you quickly understand the design philosophy and module relationships of the framework.
+This document introduces the technical architecture of the ErisPulse SDK through visual diagrams to help you quickly understand the framework's design philosophy and module relationships.
+
+Please directly return the complete translated Markdown content without any additional text.
+
+Once again, please note: if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the formatting requirements outlined in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## SDK Core Architecture
 
-The diagram below shows the composition of the SDK's core modules and their relationships:
+The following diagram illustrates the core modules of the SDK and their relationships:
 
 ```mermaid
 graph TB
-    SDK["sdk<br/>Unified Entry"]
+    SDK["sdk<br/>Unified Entry Point"]
 
     SDK --> Event["Event<br/>Event System"]
     SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
-    SDK --> Logger["Logger<br/>Logger Management"]
+    SDK --> Logger["Logger<br/>Log Management"]
     SDK --> Storage["Storage / env<br/>Storage Management"]
     SDK --> Config["Config<br/>Configuration Management"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
-    SDK --> Router["Router<br/>Router Management"]
+    SDK --> Router["Router<br/>Routing Management"]
     SDK --> Client["HttpClient<br/>HTTP Client"]
     Event --> Command["command"]
     Event --> Message["message"]
@@ -72,39 +76,39 @@ graph TB
     Event --> Conversation["Conversation<br/>Branch + Persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["Yunhu"]
+    BaseAdapter --> P1["CloudLake"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
 
     ModuleMgr --> BaseModule["BaseModule"]
-    BaseModule --> CM["Custom Modules"]
+    BaseModule --> CM["Custom Module"]
 
     BaseAdapter -.-> SendDSL["SendDSL<br/>Message Sending"]
 ```
 
-### Core Module Description
+### Core Module Descriptions
 
 | Module | Description |
-|------|------|
-| **Event** | Event system, providing five types of event processing: command / message / notice / request / meta, and Conversation multi-round dialogue |
-| **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
-| **Module** | Module manager, managing plugin registration, loading, and unloading, supporting dependency declaration and topological sorting |
-| **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
-| **Storage** | SQLite-based key-value storage system, supporting general SQL chained queries |
-| **Config** | TOML format configuration file management |
-| **Logger** | Modular logging system, supporting sub-loggers |
-| **Router** | HTTP/WebSocket route management, encapsulating the underlying backend via an abstraction layer (currently FastAPI + Uvicorn), supporting decorator routes, middleware, grouping, rate limiting, CORS |
-| **HttpClient** | Unified HTTP/WS client, encapsulating the underlying request library via an abstraction layer (currently aiohttp), providing request statistics, retry, logging, WebSocket client, and ErisPulse exception hierarchy features. The client and server WebSocket share the `WebSocketConnectionBase` base class |
+|--------|-------------|
+| **Event** | Event system providing handling for five event types: command / message / notice / request / meta, as well as Conversation for multi-turn dialogue |
+| **Adapter** | Adapter manager responsible for registering, starting, and shutting down adapters for multiple platforms |
+| **Module** | Module manager responsible for registering, loading, and unloading plugins, supporting dependency declaration and topological sorting |
+| **Lifecycle** | Lifecycle manager providing event-driven lifecycle hooks |
+| **Storage** | Key-value storage system based on SQLite, supporting generic SQL chainable queries |
+| **Config** | Configuration file management in TOML format |
+| **Logger** | Modular logging system supporting sub-loggers |
+| **Router** | HTTP/WebSocket routing management, abstracting the underlying backend (currently FastAPI + Uvicorn), supporting decorator-based routing, middleware, grouping, rate limiting, CORS |
+| **HttpClient** | Unified HTTP/WS client abstracting the underlying request library (currently aiohttp), providing request statistics, retry logic, logging, WebSocket client, and ErisPulse exception handling. The client and server WebSocket share the `WebSocketConnectionBase` base class |
 
 ## Initialization Process
 
-The diagram below shows the complete initialization process of `sdk.init()`:
+The following diagram illustrates the complete initialization process of `sdk.init()`:
 
 ```mermaid
 flowchart TD
     A["sdk.init()"] --> B["Prepare Runtime Environment"]
-    B --> B1["Load Configuration Files"]
+    B --> B1["Load Configuration File"]
     B1 --> B2["Set Global Exception Handling"]
     B2 --> C["Adapter & Module Discovery"]
     C --> D{"Parallel Loading"}
@@ -114,58 +118,58 @@ flowchart TD
     E --> E1["Start Adapters"]
     E1 --> F["Register Modules"]
     F --> F1{"Dependency Validation"}
-    F1 -->|"Missing Dependencies"| F2["Skip module and record warning"]
-    F1 -->|"Dependencies Met"| F3["Topological Sort<br/> (Kahn Algorithm + Priority)"]
-    F3 --> G["Initialize Modules in Order<br/> (Instantiation + on_load)"]
+    F1 -->|"Missing Dependencies"| F2["Skip Module and Log Warning"]
+    F1 -->|"Dependencies Satisfied"| F3["Topological Sorting<br/>(Kahn Algorithm + Priority)"]
+    F3 --> G["Initialize Modules in Order<br/>(Instantiation + on_load)"]
     F2 --> G
     G --> H["Start Router Server"]
-    H --> K["Running"]
+    H --> K["Ready to Run"]
 ```
 
-### Initialization Stage Breakdown
+### Detailed Initialization Stages
 
-1. **Environment Preparation** - Load TOML configuration files, set up global exception handling
-2. **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
-3. **Adapter Registration** - Register discovered adapters to the adapter manager
-4. **Adapter Startup** - Asynchronously start platform adapter connections (before module initialization, ensuring modules can immediately send messages)
-5. **Module Registration** - Register discovered modules to the module manager
-6. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
-7. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
-8. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
-9. **Start Router Server** - Start the FastAPI route server using Uvicorn
+1. **Environment Preparation** - Load TOML configuration file, set global exception handling
+2. **Parallel Discovery** - Discover adapters and modules simultaneously from installed PyPI packages
+3. **Register Adapters** - Register discovered adapters to the adapter manager
+4. **Start Adapters** - Asynchronously start connections for each platform adapter (before module initialization, ensuring modules can immediately send messages)
+5. **Register Modules** - Register discovered modules to the module manager
+6. **Dependency Validation** - Check if declared `depends` dependencies of modules have been registered, skip modules with missing dependencies
+7. **Topological Sorting** - Use Kahn algorithm to sort module loading order by dependencies, and sort by `priority` in descending order for modules at the same level
+8. **Module Initialization** - Create module instances in sorted order, call `on_load` lifecycle method
+9. **Start Router Server** - Start FastAPI router server using Uvicorn
 
-## Event Handling Process
+## Event Handling Flow
 
-The diagram below shows the complete flow path of messages from the platform to the handler:
+The following diagram illustrates the complete message flow path from the platform to the handler:
 
 ```mermaid
 flowchart LR
-    A["Platform Raw Message"] --> B["Adapter Receive"]
-    B --> C["Convert to OneBot12 Standard"]
+    A["Platform raw message"] --> B["Adapter receives"]
+    B --> C["Convert to OneBot12 standard"]
     C --> D["adapter.emit()"]
-    D --> E["Execute Middleware Chain"]
-    E --> F{"Event Dispatch"}
-    F --> G1["command<br/>Command Handler"]
-    F --> G2["message<br/>Message Handler"]
-    F --> G3["notice<br/>Notice Handler"]
-    F --> G4["request<br/>Request Handler"]
-    F --> G5["meta<br/>Meta Event Handler"]
-    G1 & G2 & G3 & G4 & G5 --> H["Handler Callback Execution"]
+    D --> E["Execute middleware chain"]
+    E --> F{"Event dispatch"}
+    F --> G1["command<br/>Command handler"]
+    F --> G2["message<br/>Message handler"]
+    F --> G3["notice<br/>Notice handler"]
+    F --> G4["request<br/>Request handler"]
+    F --> G5["meta<br/>Meta event handler"]
+    G1 & G2 & G3 & G4 & G5 --> H["Handler callback execution"]
     H --> I["event.reply()<br/>Reply via SendDSL"]
-    I --> J["Adapter Send to Platform"]
+    I --> J["Adapter sends to platform"]
 ```
 
 ### Key Steps in Event Handling
 
-- **Adapter Receive** - Platform adapters receive native events via WebSocket/Webhook, etc.
-- **OB12 Standardization** - Convert platform native events to the unified OneBot12 standard format
-- **Middleware Processing** - Execute registered middleware functions sequentially, allowing modification of event data
-- **Event Dispatch** - Dispatch to corresponding handlers based on event type (message/notice/request/meta)
-- **SendDSL Reply** - Handlers send responses via `event.reply()` or `SendDSL` chain calls
+- **Adapter receives** - Each platform adapter receives native events via methods such as WebSocket/Webhook
+- **OB12 standardization** - Convert platform native events into the unified OneBot12 standard format
+- **Middleware processing** - Execute registered middleware functions in sequence, which can modify event data
+- **Event dispatch** - Distribute events to corresponding handlers based on event type (message/notice/request/meta)
+- **SendDSL reply** - Handlers send responses via `event.reply()` or a chain of `SendDSL` calls
 
 ## Lifecycle Events
 
-The diagram below shows the triggering sequence of lifecycle events for various framework components:
+The following diagram shows the order in which lifecycle events are triggered for each component of the framework:
 
 ```mermaid
 flowchart LR
@@ -196,7 +200,7 @@ flowchart LR
 
 ### Listening to Lifecycle Events
 
-You can listen to these events via `lifecycle.on()` to execute custom logic:
+You can listen to these events using `lifecycle.on()` to execute custom logic:
 
 ```python
 from ErisPulse import sdk
@@ -206,33 +210,125 @@ from ErisPulse import sdk
 async def on_adapter_event(event_data):
     print(f"Adapter event: {event_data}")
 
-# Listen for module load completion
+# Listen to module load completion
 @sdk.lifecycle.on("module.load")
 async def on_module_loaded(event_data):
     print(f"Module loaded: {event_data}")
 
-# Listen for Bot online
+# Listen to Bot online status
 @sdk.lifecycle.on("adapter.bot.online")
 async def on_bot_online(event_data):
     print(f"Bot online: {event_data}")
-```
 
-## Module Loading Strategy
+## Module Loading Strategies
 
-ErisPulse supports two module loading strategies:
+ErisPulse supports three module loading strategies, declared by the `ModuleLoadStrategy` returned by `get_load_strategy()`:
 
 ```mermaid
 flowchart TD
-    A["Register Module to ModuleManager"] --> B{"Loading Strategy"}
-    B -->|"lazy_load = true"| C["Create LazyModule Proxy"]
-    C --> D["Mount to sdk attributes"]
-    D --> E["Initialize on First Access"]
-    B -->|"lazy_load = false"| F["Create Instance Immediately"]
-    F --> G["Call on_load()"]
-    G --> D2["Mount to sdk attributes"]
+    A["Module registered to ModuleManager"] --> B{"Load Strategy"}
+    B -->|"lazy_load = true<br/>+ activate_on declared"| C["Create ModuleActivator proxy"]
+    B -->|"lazy_load = true<br/>no activate_on"| D["Create LazyModule proxy"]
+    B -->|"lazy_load = false"| E["Create instance immediately"]
+    C --> F["Register event/command stubs to dispatcher"]
+    F --> G["Mount to sdk attribute"]
+    G --> H["Event arrival triggers activation"]
+    H --> I["Instantiate + on_load() + unregister stubs"]
+    D --> J["Mount to sdk attribute"]
+    J --> K["Initialize on first attribute access"]
+    E --> L["Call on_load()"]
+    L --> M["Mount to sdk attribute"]
 ```
 
-> For more details, please refer to [Lazy Loading System](advanced/lazy-loading.md) and [Lifecycle Management](advanced/lifecycle.md).
+> For more details, please refer to [Lazy Loading System](docs/en/lazy-loading.md), [Lifecycle Management](docs/en/lifecycle.md), and the module documentation.
+
+### Event-Driven Lazy Activation (`activate_on`) Trigger Architecture
+
+`activate_on` allows a module to be loaded only when the **first matching event/command arrives**, avoiding persistent memory usage while ensuring no events are lost:
+
+```mermaid
+flowchart LR
+    subgraph Declare["Module Declaration"]
+        S1["get_load_strategy() returns<br/>ModuleLoadStrategy(activate_on=...)"] --> S2["activate_on syntax:<br/>str / dict / list freely mixed"]
+        S2 --> S2a["'message' → event type level"]
+        S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ type + detail_type"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ command trigger"]
+    end
+
+    subgraph Runtime["Runtime"]
+        R1["ModuleActivator registers stub"] --> R1a["Event stub → message/notice/request/meta manager<br/>priority ACTIVATION_STUB_PRIORITY (very low)"]
+        R1 --> R1b["Command stub → command manager<br/>hidden placeholder command (hidden=True)"]
+        R1a --> R2{"Event trigger arrives"}
+        R1b --> R2
+        R2 --> R3["Filter by owner scope"]
+        R3 --> R4["asyncio.Lock prevents duplicate activation"]
+        R4 --> R5["Instantiate module + call on_load()"]
+        R5 --> R6["Unregister all stubs"]
+        R6 --> R7["Event forwarded to real handler"]
+    end
+
+    Declare --> Runtime
+```
+
+**Trigger Semantics Key Points:**
+
+1. **Stub Registration**: Event stubs are registered to the corresponding event manager with very low priority (`ACTIVATION_STUB_PRIORITY`), ensuring they execute **after** all regular handlers of the same event type; command stubs are registered as hidden placeholder commands, not polluting the command list.
+2. **Scope Filtering**: Stubs carry the module owner identity, so modules not enabled for the Bot / session / platform do not trigger.
+3. **Reentrancy Protection**: `asyncio.Lock` ensures only one activation occurs under concurrent events.
+4. **Event Forwarding**: After activation, the current event is forwarded to the real handler (outer group loop has verified that handlers registered after stubs will not be processed twice).
+5. **Failure Semantics**: Activation failure does not retry; stubs are unregistered together, avoiding repeated attempts for every event.
+
+## Local Plugin Folder Architecture
+
+Local plugins (the `plugins/` directory) do not require packaging and publishing; the framework automatically discovers and loads them when starting up:
+
+```mermaid
+flowchart TD
+    A["Project plugins/ directory<br/>（ErisPulse.framework.plugins_dir, supports multiple directories）"] --> B{"PluginFolderLoader.discover()"}
+    B --> C["Single file: dice.py → Plugin name = filename"]
+    B --> D["Package form: weather/ (with __init__.py) → Plugin name = directory name"]
+    B --> E["Ignored: __pycache__ / _-prefixed / non .py / directories without __init__.py"]
+    C --> F["Import module (spec_from_file_location)"]
+    D --> G["Import module (sys.path + import_module)"]
+    F --> H["Identify module class: Main (sub-class of BaseModule) preferred, fallback to first sub-class"]
+    G --> H
+    H --> I["Construct moduleInfo with entry-point matching"]
+    I --> J["ModuleLoader.load() merges<br/>Local overrides PyPI installed packages with same name"]
+    J --> K["Shares with installed package modules:<br/>Enabled status / scope / meta / i18n / context"]
+```
+
+**Conventions and Features:**
+
+- Plugin name source: Use filename for single files, directory name for package form
+- Local plugin `moduleInfo.meta.source == "plugin_folder"`, seamlessly coexists with PyPI installed package modules
+- When names conflict, local takes precedence (for local override debugging), and disabled plugins also remove corresponding entry-point entries
+
+## Local Plugin Hot Reload Architecture
+
+Hot reload monitors plugin file changes and automatically reloads the corresponding plugin:
+
+```mermaid
+flowchart TD
+    A["sdk.enable_plugin_hot_reload()"] --> B["PluginReloadWatcher starts"]
+    B --> C["PollingObserver (background daemon thread)<br/>Regularly compares .py file mtime"]
+    C --> D{"Plugin file changed"}
+    D --> E["Change debouncing (default 1 second)"]
+    E --> F["_handle_change parses plugin name<br/>(single file / package format)"]
+    F --> G["asyncio.run_coroutine_threadsafe<br/>schedules back to main event loop"]
+    G --> H["sdk.reload_plugin(name)"]
+    H --> I["Unloads old instance (triggers on_unload)"]
+    I --> J["Cleans up registration (unregister + remove sdk attribute)"]
+    J --> K["Cleans sys.modules to force re-import"]
+    K --> L["Re-discover + register + load"]
+    L --> M["Mounts new instance to sdk attribute"]
+    M --> N["File deletion → automatically removed from load results"]
+```
+
+7. **Important: Path replacement rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 
 
@@ -2277,8 +2373,8 @@ The `SendDSL` base class already includes standard send methods (Text/Image/Voic
 
 # Installation Reference
 
-> This document is a **complete reference** for installation methods (pip / uv / Docker / troubleshooting).
-> If you just want to get started quickly, [5-Minute Quick Start](../quick-start.md) covers the minimal process.
+> This document is the **complete reference** for installation methods (pip / uv / Docker / Troubleshooting).
+> If you just want to get started quickly, [5-Minute Quick Start](../quick-start.md) covers the minimal workflow.
 
 ## System Requirements
 
@@ -2288,7 +2384,7 @@ The `SendDSL` base class already includes standard send methods (Text/Image/Voic
 
 ## Installation Methods
 
-### Method 1: Install with pip
+### Method 1: Install using pip
 
 ```bash
 # Install ErisPulse
@@ -2298,9 +2394,9 @@ pip install ErisPulse
 pip install ErisPulse --upgrade
 ```
 
-### Method 2: Install with uv (Recommended)
+### Method 2: Install using uv (Recommended)
 
-uv is a faster Python toolchain, recommended for development environments.
+uv is a faster Python toolchain and is recommended for development environments.
 
 #### Install uv
 
@@ -2312,7 +2408,7 @@ pip install uv
 uv --version
 ```
 
-#### Create a Virtual Environment
+#### Create a virtual environment
 
 ```bash
 # Create project directory
@@ -2325,7 +2421,7 @@ uv python install 3.12
 uv venv
 ```
 
-#### Activate the Virtual Environment
+#### Activate virtual environment
 
 ```bash
 # Windows
@@ -2340,11 +2436,24 @@ source .venv/bin/activate
 ```bash
 # Install ErisPulse
 uv pip install ErisPulse --upgrade
-```
 
 ## Project Initialization and Module Installation
 
-After installation, the complete workflow for project initialization, module installation, and running is covered in [5-Minute Quick Start](../quick-start.md).
+After installation, please refer to the [5-Minute Quick Start](../quick-start.md) for the complete workflow of project initialization, module installation, and running.
+
+### Method 3: Using the ErisPulse-App Client (Terminal-Free)
+
+Don't want to set up a Python environment? [ErisPulse-App](../ecosystem/app.md) is the official cross-platform client
+(Android / Windows / Linux / macOS) that runs **directly on your phone**; the desktop version supports minimizing to
+the system tray for background operation; it includes a built-in Python runtime and ErisPulse SDK, no terminal or manual configuration required:
+
+- Download according to your platform from [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)
+  (Android `online`/`offline` APK, Windows `setup.exe`/`zip`, Linux `tar.gz`, macOS `zip`)
+- Create and start an instance within the App, and manage adapters and modules, as well as browse the module store, via the native interface
+
+> For detailed instructions, see [ErisPulse-App Installation and Usage](../ecosystem/app.md).
+
+Please return the complete translated Markdown content directly, without including any other text.
 
 ## Verify Installation
 
@@ -2355,7 +2464,7 @@ After installation, the complete workflow for project initialization, module ins
 epsdk --version
 ```
 
-### Run a Test
+### Run Tests
 
 ```bash
 # Run the project
@@ -2371,37 +2480,40 @@ If you see output similar to the following, the installation was successful:
 [INFO] ErisPulse initialization complete
 ```
 
-## Common Issues
+Please return the complete translated Markdown content directly, without including any other text.
+
+Reminder: If the document contains language switch lines (lines where language names are separated by `` | ``), please strictly follow the format requirements in point 8 above and do not write incorrect formats like ``[**Label**](file)``.
+
+## FAQ
 
 ### Installation Failure
 
-1. Check that Python version is >= 3.10 (recommended 3.10 - 3.13)
+1. Check if Python version >= 3.10 (recommended 3.10 - 3.13)
 2. Try using `uv pip install ErisPulse` instead of `pip install`
-3. If permission errors occur, try `pip install --user ErisPulse` or use a virtual environment
-4. If SSL certificate errors occur in a corporate proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
-5. Ensure network connectivity is normal and the pip source is accessible
+3. If permission error is prompted, try `pip install --user ErisPulse` or use a virtual environment
+4. If encountering SSL certificate error in a corporate proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. Ensure network connection is normal and pip source is accessible
 
 ### Configuration Errors
 
-1. Check that the `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)
-2. Confirm all required configuration items are filled in
-3. Check terminal logs for detailed error messages
+1. Check if `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)
+2. Confirm that all required configuration items have been filled
+3. View terminal logs for detailed error information
 4. Use `epsdk init` to regenerate the configuration file
 
 ### Module Installation Failure
 
-1. Confirm the module name is spelled correctly (case-sensitive)
-2. Check network connectivity
-3. Use `epsdk list-remote` to view available module lists
+1. Confirm the module name spelling is correct (case sensitive)
+2. Check network connection
+3. Use `epsdk list-remote` to view the list of available modules
 4. Confirm the module is compatible with your current SDK version
 
 ### Windows PowerShell Execution Policy
 
-If PowerShell prompts "Cannot load file... because running scripts is disabled on this system":
+If PowerShell prompts "cannot load file... because running scripts is disabled on this system":
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
 
 
 
@@ -2409,16 +2521,18 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 # CLI Command Reference
 
-The ErisPulse command-line tool (`epsdk`) provides project management and package management functionality.
+The ErisPulse command-line tool (`epsdk`) provides project management and package management features.
 
-> **Tip**: You can view detailed parameter descriptions for all commands using `epsdk <command> --help`.
+> **Tip**: You can view detailed parameter descriptions for any command using `epsdk <command> --help`.
 
 ---
 
+docs/en/quick-start.md | docs/en/project-management.md | docs/en/package-management.md | docs/en/cli-reference.md
+
 ## Package Management Commands
 
-| Command | Aliases | Arguments | Description |
-|---------|---------|-----------|-------------|
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
 | `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | Install modules/adapters |
 | `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | Uninstall modules/adapters |
 | `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | Upgrade specified modules or all |
@@ -2426,46 +2540,46 @@ The ErisPulse command-line tool (`epsdk`) provides project management and packag
 
 ## Diagnostic Commands
 
-| Command | Aliases | Arguments | Description |
-|---------|---------|-----------|-------------|
-| `doctor` | `diag` | `[--verbose]` | Diagnose the environment and output a health report |
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
+| `doctor` | `diag` | `[--verbose]` | Diagnose environment and output health report |
 
 ### install
 
-Install an ErisPulse module or adapter package. If no package name is specified, an interactive installation interface is entered.
+Install ErisPulse modules or adapter packages. If no package name is specified, enter the interactive installation interface.
 
 **Aliases:** `i`, `add`
 
-**Arguments:**
+**Parameters:**
 
-| Argument | Short Flag | Description |
-|----------|------------|-------------|
-| `[package]...` | | Package names to install, can specify multiple |
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `[package]...` | | Package names to install, multiple can be specified |
 | `--upgrade` | `-U` | Upgrade to the latest version during installation |
-| `--pre` | | Allow installing pre-release versions |
-| `--editable` | `-e` | Install in editable mode (path required) |
+| `--pre` | | Allow installation of pre-release versions |
+| `--editable` | `-e` | Install in editable mode (requires path specification) |
 | `--user` | | Install to user site-packages directory |
 | `--no-deps` | | Do not install dependencies |
-| `--target` | `-t` | Install to specified directory |
+| `--target` | `-t` | Install to a specified directory |
 | `--index-url` | | Specify PyPI mirror source address |
 | `--extra-index-url` | | Additional PyPI mirror source address (can be specified multiple times) |
 | `--no-cache-dir` | | Disable cache |
 | `--requirement` | `-r` | Install from requirements file |
 | `--constraint` | `-c` | Install from constraint file |
-| `--force-reinstall` | | Force reinstall |
+| `--force-reinstall` | | Force reinstallation |
 | `--ignore-installed` | | Ignore already installed packages |
 | `--compile` | | Compile .pyc files after installation |
 | `--no-compile` | | Do not compile .pyc files after installation |
-| `--prefix` | | Install to specified prefix directory |
-| `--src` | | Source directory for editable installs |
-| `--config-settings` | | Configuration to pass to build backend (can be specified multiple times) |
-| `--no-binary` | | Restrict binary packages (format like `:all:`) |
-| `--only-binary` | | Restrict to binary packages only (format like `:all:`) |
+| `--prefix` | | Install to a specified prefix directory |
+| `--src` | | Source code directory used for editable installation |
+| `--config-settings` | | Pass configuration to the build backend (can be specified multiple times) |
+| `--no-binary` | | Restrict not to use binary packages (format like `:all:`) |
+| `--only-binary` | | Restrict to use only binary packages (format like `:all:`) |
 | `--prefer-binary` | | Prefer binary packages |
 | `--build-isolation` | | Enable build isolation |
 | `--no-build-isolation` | | Disable build isolation |
 | `--upgrade-strategy` | | Upgrade strategy: `eager`, `only-if-needed`, `to-satisfy-only` |
-| `--break-system-packages` | | Allow modifying Python packages managed by the system package manager |
+| `--break-system-packages` | | Allow modification of Python packages managed by the system package manager |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
@@ -2477,7 +2591,7 @@ epsdk install Weather
 # Install multiple modules
 epsdk install Yunhu Weather
 
-# Install from a mirror source and upgrade
+# Install from mirror source and upgrade
 epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Install in editable mode (development mode)
@@ -2486,15 +2600,15 @@ epsdk install -e ./my-adapter
 
 ### uninstall
 
-Uninstall an installed ErisPulse module or adapter package. If no package name is specified, an interactive uninstallation interface is entered.
+Uninstall installed ErisPulse modules or adapter packages. If no package name is specified, enter the interactive uninstallation interface.
 
 **Aliases:** `rm`, `remove`
 
-**Arguments:**
+**Parameters:**
 
-| Argument | Description |
-|----------|-------------|
-| `<package>...` | Package names to uninstall, can specify multiple |
+| Parameter | Description |
+|-----------|-------------|
+| `<package>...` | Package names to uninstall, multiple can be specified |
 | `--no-uv` | Use pip instead of uv |
 
 **Examples:**
@@ -2509,17 +2623,17 @@ epsdk uninstall Yunhu Weather
 
 ### upgrade
 
-Upgrade installed ErisPulse components. If no package name is specified, interactive upgrade for all is performed.
+Upgrade installed ErisPulse components. If no package name is specified, upgrade all interactively.
 
-**Aliases:** `up`
+**Alias:** `up`
 
-**Arguments:**
+**Parameters:**
 
-| Argument | Short Flag | Description |
-|----------|------------|-------------|
-| `[package]...` | | Package names to upgrade, can specify multiple |
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `[package]...` | | Package names to upgrade, multiple can be specified |
 | `--force` | `-f` | Force upgrade, skip confirmation |
-| `--pre` | | Allow upgrading to pre-release versions |
+| `--pre` | | Allow upgrade to pre-release versions |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
@@ -2537,16 +2651,16 @@ epsdk upgrade -f
 
 ### self-update
 
-Update the ErisPulse SDK itself to the latest version.
+Update ErisPulse SDK itself to the latest version.
 
 **Aliases:** `su`, `update`
 
-**Arguments:**
+**Parameters:**
 
-| Argument | Short Flag | Description |
-|----------|------------|-------------|
+| Parameter | Short | Description |
+|-----------|-------|-------------|
 | `[version]` | | Specify the target version number to update to |
-| `--pre` | | Allow updating to pre-release versions |
+| `--pre` | | Allow update to pre-release versions |
 | `--force` | `-f` | Force update, skip confirmation |
 | `--no-uv` | | Use pip instead of uv |
 
@@ -2556,37 +2670,34 @@ Update the ErisPulse SDK itself to the latest version.
 # Update to the latest stable version
 epsdk self-update
 
-# Update to a specific version
+# Update to a specified version
 epsdk self-update 1.2.3
 
-# Allow pre-release versions
+# Allow pre-release version
 epsdk self-update --pre
 
 # Force update
 epsdk self-update -f
-```
-
----
 
 ## Information Query Commands
 
-| Command | Aliases | Arguments | Description |
-|---------|---------|-----------|-------------|
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
 | `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | List installed components |
-| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | List remotely available components |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | List remote available components |
 
 ### list
 
 List installed ErisPulse modules and adapters.
 
-**Aliases:** `l`, `ls`
+**Alias:** `l`, `ls`
 
-**Arguments:**
+**Parameters:**
 
-| Argument | Short Flag | Description |
-|----------|------------|-------------|
+| Parameter | Short Parameter | Description |
+|-----------|-----------------|-------------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--outdated` | `-o` | Only show packages that can be upgraded |
+| `--outdated` | `-o` | Only display packages that can be upgraded |
 
 **Examples:**
 
@@ -2594,13 +2705,13 @@ List installed ErisPulse modules and adapters.
 # List all installed components
 epsdk list
 
-# List only modules
+# Only list modules
 epsdk list -t modules
 
-# List only adapters
+# Only list adapters
 epsdk list -t adapters
 
-# Only show packages that can be upgraded
+# Only display packages that can be upgraded
 epsdk list -o
 ```
 
@@ -2608,48 +2719,45 @@ epsdk list -o
 
 List ErisPulse modules and adapters available in the remote repository.
 
-**Aliases:** `lsr`
+**Alias:** `lsr`
 
-**Arguments:**
+**Parameters:**
 
-| Argument | Short Flag | Description |
-|----------|------------|-------------|
+| Parameter | Short Parameter | Description |
+|-----------|-----------------|-------------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--refresh` | `-r` | Force refresh of the remote package list cache |
+| `--refresh` | `-r` | Force refresh the remote package list cache |
 
 **Examples:**
 
 ```bash
-# List all remotely available components
+# List all remote available components
 epsdk list-remote
 
-# List only remote modules
+# Only list remote modules
 epsdk list-remote -t modules
 
 # List after forcing cache refresh
 epsdk list-remote -r
-```
-
----
 
 ## Runtime Control Commands
 
-| Command | Aliases | Arguments | Description |
-|---------|---------|-----------|-------------|
-| `run` | `r` | `[script] [--reload]` | Run specified script or SDK |
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
+| `run` | `r` | `[script] [--reload]` | Run a specified script or SDK |
 
 ### run
 
-Run ErisPulse project scripts or start the SDK directly. Supports hot reload mode.
+Run ErisPulse project scripts or directly start the SDK. Hot reload mode is supported.
 
-**Aliases:** `r`
+**Alias:** `r`
 
-**Arguments:**
+**Parameters:**
 
-| Argument | Description |
-|----------|-------------|
-| `[script]` | Script file to run, if not specified, SDK runs |
-| `--reload` | Enable hot reload mode, automatically restart on file changes |
+| Parameter | Description |
+|-----------|-------------|
+| `[script]` | The script file to run. If not specified, the SDK is run. |
+| `--reload` | Enable hot reload mode, which monitors file changes and automatically restarts. |
 
 **Examples:**
 
@@ -2657,10 +2765,10 @@ Run ErisPulse project scripts or start the SDK directly. Supports hot reload mod
 # Run SDK directly
 epsdk run
 
-# Run specified script file
+# Run a specified script file
 epsdk run main.py
 
-# Run in hot reload mode (auto restart on file change)
+# Run in hot reload mode (automatically restarts on file changes)
 epsdk run main.py --reload
 
 # SDK in hot reload mode
@@ -2669,25 +2777,31 @@ epsdk run --reload
 
 ---
 
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the documentation
+
 ## Project Management Commands
 
-| Command | Aliases | Arguments | Description |
-|---------|---------|-----------|-------------|
-| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | Initialize ErisPulse project |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | Create module/adapter scaffolding |
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
+| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | Initialize an ErisPulse project |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | Create a scaffold for a module/adapter |
 
 ### init
 
-Initialize a new ErisPulse project. Supports interactive and quick modes.
+Initialize a new ErisPulse project. Supports both interactive and quick mode.
 
-**Arguments:**
+**Parameters:**
 
-| Argument | Short Flag | Description |
-|----------|------------|-------------|
+| Parameter | Short Parameter | Description |
+|-----------|-----------------|-------------|
 | `--project-name` | `-n` | Project name |
-| `--quick` | `-q` | Quick mode, skip interactive wizard |
+| `--quick` | `-q` | Quick mode, skips the interactive wizard |
 | `--force` | `-f` | Force overwrite existing configuration files |
-| `--here` | | Initialize in current directory, no subdirectory creation |
+| `--here` | | Initialize in the current directory, without creating a subdirectory |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
@@ -2699,71 +2813,72 @@ epsdk init
 # Quick initialization
 epsdk init -q -n my_bot
 
-# Force overwrite existing config
+# Force overwrite existing configuration
 epsdk init -f
 
-# Initialize in current directory
+# Initialize in the current directory
 epsdk init --here -n my_bot
 ```
 
 ### create
 
-Create scaffolding for an ErisPulse module or adapter.
+Create a scaffold project for an ErisPulse module or adapter.
 
-**Arguments:**
+**Parameters:**
 
-| Argument | Short Flag | Description |
-|----------|------------|-------------|
+| Parameter | Short Parameter | Description |
+|-----------|-----------------|-------------|
 | `{module,adapter}` | | Type to create: `module` or `adapter` |
 | `--name` | `-n` | Project name (PascalCase) |
 | `--description` | `-d` | Project description |
 | `--author` | `-a` | Author name |
 | `--email` | `-e` | Author email |
 | `--homepage` | | Project homepage URL |
-| `--output` | `-o` | Output directory (default current directory) |
+| `--output` | `-o` | Output directory (defaults to current directory) |
 | `--force` | `-f` | Force overwrite existing directory |
+| `--local` | | Create a local plugin (only available for `module`): generates `plugins/<name>/` package structure, allows installation without packaging |
 
 **Examples:**
 
 ```bash
-# Interactive creation (guided selection of type and input)
+# Interactive creation (guided selection of type and filling in information)
 epsdk create
 
-# Directly create Module project
+# Directly create a Module project
 epsdk create module -n MyModule
 
-# Directly create Adapter project
+# Create a local plugin (placed in the project's `plugins/` directory, automatically discovered at startup, supports hot reload)
+epsdk create module -n MyModule --local
+
+# Directly create an Adapter project
 epsdk create adapter -n MyAdapter
 
-# Full arguments
-epsdk create module -n MyModule -d "Module Description" -a "Author" -e "mail@example.com"
+# Full parameters
+epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
 
 # Specify output directory
 epsdk create module -n MyModule -o ./projects
 
 # Force overwrite existing directory
 epsdk create module -n MyModule -f
-```
 
----
+## Language Commands
 
-## Language Command
-
-| Command | Aliases | Arguments | Description |
-|---------|---------|-----------|-------------|
-| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | View or switch CLI display language |
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
+| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | View or switch the CLI display language |
 
 ### i18n
 
-View current CLI language, list supported languages, and switch display language. If no argument is specified, an interactive selection interface is entered.
+View the current CLI language, list supported languages, or switch the display language. If no parameter is specified, enter the interactive selection interface.
 
 **Aliases:** `language`, `lang`
 
-**Arguments:**
+**Parameters:**
 
-| Argument | Short Flag | Description |
-|----------|------------|-------------|
-| `[lang]` | | Language code to switch to (e.g., `zh-CN`, `en`, `ja`, `ru`) |
+| Parameter | Short Parameter | Description |
+|-----------|-----------------|-------------|
+| `[lang]` | | The language code to switch to (e.g., `zh-CN`, `en`, `ja`, `ru`) |
 | `--list` | `-l` | List all supported languages |
 
 **Examples:**
@@ -2784,28 +2899,33 @@ epsdk i18n --list
 
 ---
 
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md`-formatted links), keep them unchanged to ensure links point to the correct language version of the document
+
 ## Type Stub Commands
 
-| Command | Aliases | Arguments | Description |
-|---------|---------|-----------|-------------|
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
 | `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | Generate type stub files to enable IDE completion |
 
 ### types
 
-Scan installed ErisPulse modules and adapters, generate `.pyi` type stub files for them, thereby obtaining accurate code completion and type checking support in IDEs.
+Scans installed ErisPulse modules and adapters, generating `.pyi` type stub files to provide accurate code completion and type checking support in IDEs.
 
 **Aliases:** `t`, `stub`
 
-**Arguments:**
+**Parameters:**
 
-| Argument | Short Flag | Description |
-|----------|------------|-------------|
-| `--output` | `-o` | Output path (default `ep-stubs/` in current directory) |
+| Parameter | Short Parameter | Description |
+|-----------|-----------------|-------------|
+| `--output` | `-o` | Output path (default: `ep-stubs/` in current directory) |
 | `--force` | | Force overwrite existing stub files |
 | `--adapters-only` | | Generate type stubs only for adapters |
 | `--modules-only` | | Generate type stubs only for modules |
 
-> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive. The latter takes effect if specified simultaneously.
+> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive; if both are specified, `--modules-only` takes precedence.
 
 **Examples:**
 
@@ -2813,59 +2933,55 @@ Scan installed ErisPulse modules and adapters, generate `.pyi` type stub files f
 # Generate type stubs for all installed modules and adapters
 epsdk types
 
-# Generate adapter stubs only
+# Generate stubs only for adapters
 epsdk types --adapters-only
 
-# Output to a specific directory
+# Output to a specified directory
 epsdk types -o ./typings
 
 # Force overwrite existing files
 epsdk types --force
-```
 
----
+## Global Parameters
 
-## Global Arguments
+The following parameters are applicable to all commands:
 
-The following arguments apply to all commands:
-
-| Argument | Short Flag | Description |
-|----------|------------|-------------|
-| `--help` | `-h` | Display help information |
-| `--version` | `-V` | Display version information |
-| `--verbose` | `-v` | Display verbose output (can stack `-vv`/`-vvv`) |
+| Parameter | Short Parameter | Description |
+|-----------|-----------------|-------------|
+| `--help` | `-h` | Show help information |
+| `--version` | `-V` | Show version information |
+| `--verbose` | `-v` | Show verbose output (can be stacked with `-vv`/`-vvv`) |
 | `--no-color` | | Disable colored output (suitable for CI / log collection) |
-| `--yes` | `-y` | Auto-confirm all interactive prompts (non-interactive run) |
+| `--yes` | `-y` | Automatically confirm all interactive prompts (non-interactive execution) |
 
 ---
+
+Please directly return the complete translated Markdown content, without any additional text.
 
 ## Environment Diagnosis
 
 ### doctor
 
-Diagnose the current CLI runtime environment and output a health report. Used to troubleshoot "why can't I install / connect" type issues.
+Diagnose the current CLI runtime environment and output a health report. Used to troubleshoot issues like "why can't it be installed / connected".
 
-| Argument | Description |
-|----------|-------------|
-| `--verbose` | Display detailed diagnostic information |
+| Parameter | Description |
+|-----------|-------------|
+| `--verbose` | Show detailed diagnostic information |
 
-**Checks**:
+**Check items**:
 - **Python**: Interpreter version and path
-- **Install Backend**: Using `uv` or `pip`
-- **Target Interpreter**: The target Python environment packages are actually installed to
-- **Config File**: Whether `config/config.toml` exists
-- **PyPI Connectivity**: Whether PyPI can be accessed (and displays number of components found)
-- **System Proxy**: Whether a proxy is detected
+- **Installation backend**: Whether `uv` or `pip` is used
+- **Target interpreter**: The actual Python environment where the package is installed
+- **Configuration file**: Whether `config/config.toml` exists
+- **PyPI connectivity**: Whether PyPI can be accessed (and displays the number of discovered packages)
+- **System proxy**: Whether a proxy is detected
 
 ```bash
 # Run environment diagnosis
 epsdk doctor
 
-# Using alias
+# Use alias
 epsdk diag
-```
-
----
 
 ## Interactive Installation
 
@@ -2880,6 +2996,9 @@ The interactive interface provides:
 2. Module selection
 3. Custom installation
 
+For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged to ensure links point to the correct language version of the document.
+
 ## Common Usage
 
 ### Install Modules
@@ -2891,7 +3010,7 @@ epsdk install Weather
 # Install multiple modules
 epsdk install Yunhu Weather
 
-# Upgrade module
+# Upgrade a module
 epsdk install Weather -U
 ```
 
@@ -2907,7 +3026,7 @@ epsdk list -t adapters
 # List only upgradable components
 epsdk list -o
 
-# View remotely available components
+# View remote available components
 epsdk list-remote
 ```
 
@@ -2927,7 +3046,7 @@ epsdk uninstall Yunhu Weather
 # Upgrade all components
 epsdk upgrade
 
-# Upgrade specified component
+# Upgrade specified components
 epsdk upgrade Weather
 
 # Force upgrade
@@ -2937,7 +3056,7 @@ epsdk upgrade -f
 ### Run Project
 
 ```bash
-# Normal run
+# Run normally
 epsdk run main.py
 
 # Hot reload mode
@@ -2963,7 +3082,7 @@ epsdk i18n --list
 # Generate all type stubs
 epsdk types
 
-# Generate module type stubs only
+# Generate only module type stubs
 epsdk types --modules-only
 ```
 
@@ -2980,17 +3099,17 @@ epsdk init -q -n my_bot
 ### Create Scaffolding
 
 ```bash
-# Interactive creation (guided selection of type and input)
+# Interactive creation (guided selection of type and filling in information)
 epsdk create
 
-# Directly create Module project
+# Direct creation of Module project
 epsdk create module -n MyModule
 
-# Directly create Adapter project
+# Direct creation of Adapter project
 epsdk create adapter -n MyAdapter
 
-# Full arguments
-epsdk create module -n MyModule -d "Module Description" -a "Author" -e "mail@example.com"
+# Full parameters
+epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
 
 # Force overwrite existing directory
 epsdk create module -n MyModule -f
@@ -3077,25 +3196,25 @@ Once again, if the document contains language switch lines (with each language n
 
 ## Configuration Hot Reload
 
-Starting from version 2.7.0, the framework provides **systematic support** for configuration hot reload. After external modification of `config.toml` (background watcher checks every 5 seconds), or after code calls `setConfig()`, components automatically respond:
+Starting from version 2.7.0, the framework provides **systematic support** for configuration hot reload. After external modification of `config.toml` (background watcher checks every 5 seconds) or code calls `setConfig()`, components automatically respond:
 
 | Component | Configurations Supporting Hot Reload | Behavior |
 |-----------|--------------------------------------|----------|
-| **Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | Automatically reapplied (with change detection) |
+| **Logger** | `logger.level` / `log_files` / `memory_limit` / `format` / `exclude_levels` | Automatically reapplied (with change detection) |
 | **Command System CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
 | **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore and rebuilds with new value |
-| **Proactive GC** | `framework.proactive_gc_*` | Configuration changes immediately restart GC task, supports runtime adjustment/disable/re-enable |
-| **Master System Master** | `master.users` | Each `is_master()` check reads in real-time, no restart needed |
-| **Module/Adapter Configuration** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
+| **Proactive GC** | `framework.proactive_gc_*` | Configuration change immediately restarts GC task, supports runtime adjustment/disable/re-enable |
+| **Master System Master** | `master.users` | Each `is_master()` check reads in real-time, no restart required |
+| **Module/Adapter Configuration** | Individual configuration items | Triggers `on_config_update(old, new)` callback |
 
-**Configurations Requiring Restart** (cannot be safely hot-swapped; warning "Process needs restart to take effect" is output on change):
+**Configurations Requiring Restart** (cannot be safely hot-swapped; warning "Process needs to be restarted for changes to take effect" is output when changed):
 
 | Configuration | Reason |
 |---------------|--------|
-| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-swapped at runtime |
-| `storage.use_global_db` | SQLite file handle is already open at runtime, switching paths is unsafe |
+| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup; cannot be safely hot-swapped at runtime |
+| `storage.use_global_db` | SQLite file handle is already open at runtime; switching paths is unsafe |
 
-> **Error editing and saving midway?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, not broadcasting an empty configuration to components (to avoid `on_config_update` receiving null values and mistakenly reverting to default).
+> **Error during in-progress editing and saving?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, without broadcasting an empty configuration to components (to avoid `on_config_update` receiving empty values and mistakenly reverting to defaults).
 
 docs/en/configuration-hot-reload.md
 
@@ -3113,6 +3232,7 @@ level = "INFO"
 format = "rich"
 log_files = []
 memory_limit = 1000
+exclude_levels = []
 
 [ErisPulse.framework]
 enable_lazy_loading = true
@@ -3166,18 +3286,18 @@ Once again, if the document contains language switching lines (lines with langua
 level = "INFO"
 log_files = ["app.log", "debug.log"]
 memory_limit = 1000
+exclude_levels = ["EVENT"]
 ```
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| level | string | INFO | Logging level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal debugging information) |
-| format | string | rich | Logging output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
+| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal framework debugging information) |
+| format | string | rich | Log output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
 | log_files | array | empty | List of log output files |
-| memory_limit | integer | 1000 | Number of log entries saved in memory |
+| memory_limit | integer | 1000 | Number of log entries to keep in memory |
+| exclude_levels | array | empty | Exclude specified log levels. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to file). Supports hot update |
 
-Please directly return the complete translated Markdown content, without including any other text.
-
-Once again, if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the above rule #8 and do not write incorrect formats such as ``[**Label**](file)``.
+> **Privacy Protection**: Message sending and receiving content is recorded at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (such as the Dashboard log panel) from seeing message content in groups/private chats, while not affecting logs of other levels.
 
 ## Framework Configuration
 
@@ -3329,6 +3449,40 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > By default, `setConfig` uses delayed writing (approximately batch saving to file every 5 seconds). Setting `immediate=True` will persist immediately. Configuration changes will trigger the `config.set` lifecycle event.
 
 Please replace paths in document links by replacing `docs/en/` with `docs/en/`. For example, `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`. For links pointing to files of non-current language versions (such as `README.xx.md`), keep them unchanged to ensure links point to the correct language version of the document.
+
+## Scope Configuration
+
+The module scope system is used to control "which modules a certain Bot can use." By default, all modules are open to all Bots. Filtering only begins after configuration binding, and adapters require **no changes** to be compatible.
+
+```toml
+# Platform-level binding (applies to all Bots/sessions on this platform)
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Translate"]   # Whitelist: Bots on this platform can only use these modules
+blocked = ["Danger"]              # Blacklist: These modules are disabled on this platform
+
+# Bot-level binding (applies to all sessions of this Bot, overrides platform-level)
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Chat"]
+blocked = []
+
+# Session-level binding (applies to a specific group/channel/private chat, most specific)
+[ErisPulse.scope.sessions.onebot11."789012345"]
+modules = ["Chat"]
+blocked = []
+```
+
+| Configuration Item | Type | Description |
+|---------|------|------|
+| `scope.default_allow` | boolean | Default allows all modules (`true`). `false` = implicit deny strict mode, only modules in the whitelist are available |
+| `scope.cache_size` | integer | LRU cache size for `is_allowed` (default 1024) |
+| `scope.platforms.<platform>.modules` | array | Platform-level whitelist: only listed modules are allowed (empty = no restriction) |
+| `scope.platforms.<platform>.blocked` | array | Platform-level blacklist: listed modules are disabled (empty = no restriction) |
+| `scope.bots.<platform>.<bot_id>.modules` | array | Bot-level whitelist, overrides platform-level |
+| `scope.bots.<platform>.<bot_id>.blocked` | array | Bot-level blacklist, overrides platform-level |
+| `scope.sessions.<platform>.<session_id>.modules` | array | Session-level whitelist (group/channel/private chat), highest priority |
+| `scope.sessions.<platform>.<session_id>.blocked` | array | Session-level blacklist, highest priority |
+
+> Resolution priority: **Session-level > Bot-level > Platform-level**. Module names are case-insensitive; session identifiers are isolated across platforms. Dynamic addition/removal at runtime is supported via `sdk.scope.bind()` / `unbind()` (with `merge=True` to merge), see [Scope System](../advanced/scope.md).
 
 
 
@@ -3700,9 +3854,9 @@ For the complete publishing process, refer to the [Publishing and Module Store G
 
 ### 模块开发入门
 
-# Introduction to Module Development
+# Getting Started with Module Development
 
-This guide will take you from scratch to create an ErisPulse module.
+This guide walks you through creating an ErisPulse module from scratch.
 
 ## Project Structure
 
@@ -3716,7 +3870,6 @@ MyModule/
 └── MyModule/
     ├── __init__.py
     └── Core.py
-```
 
 ## pyproject.toml Configuration
 
@@ -3724,7 +3877,7 @@ MyModule/
 [project]
 name = "ErisPulse-MyModule"
 version = "1.0.0"
-description = "Module functionality description"
+description = "Module description"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -3736,13 +3889,11 @@ dependencies = []
 
 [project.entry-points."erispulse.module"]
 "MyModule" = "MyModule:Main"
-```
 
 ## __init__.py
 
 ```python
 from .Core import Main
-```
 
 ## Core.py - Basic Module
 
@@ -3765,14 +3916,14 @@ class Main(BaseModule):
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
-            depends=[]  # Optional: List of other modules this module depends on
+            depends=[]  # Optional: list of other modules to depend on
         )
     
     async def on_load(self, event):
         """Called when the module is loaded"""
         @command("hello", help="Send a greeting")
         async def hello_command(event):
-            name = event.get_user_nickname() or "friend"
+            name = event.get_user_nickname() or "Friend"
             await event.reply(f"Hello, {name}!")
         
         self.logger.info("Module loaded")
@@ -3792,27 +3943,25 @@ class Main(BaseModule):
             self.sdk.config.setConfig("MyModule", default_config)
             return default_config
         return config
-```
 
-## Testing the Module
+## Test Module
 
 ### Local Testing
 
 ```bash
-# Install the module in the project directory
+# Install module in the project directory
 epsdk install ./MyModule
 
 # Run the project
 epsdk run main.py --reload
 ```
 
-### Testing Commands
+### Test Commands
 
-Send the command to test:
+Send a command test:
 
 ```
 /hello
-```
 
 ## Core Concepts
 
@@ -3821,11 +3970,75 @@ Send the command to test:
 All modules must inherit from `BaseModule` and provide the following methods:
 
 | Method | Description | Required |
-|------|------|------|
+|--------|-------------|----------|
 | `__init__(self)` | Constructor | No |
-| `get_load_strategy()` | Returns load strategy | No |
+| `get_load_strategy()` | Return load strategy | No |
+| `get_meta()` | Return module description metadata (optional) | No |
 | `on_load(self, event)` | Called when module is loaded | Yes |
 | `on_unload(self, event)` | Called when module is unloaded | Yes |
+
+### Module Description meta
+
+Declare the module's description metadata via `get_meta()` (what this module does, which category it belongs to, etc.).
+Metadata is the **general introduction data** of the module, consumed by the help module, Dashboard module list, module store, and various other interfaces/ecosystem modules.
+
+Consistent with `get_load_strategy()` returning a `ModuleLoadStrategy`, it is **recommended to return a `ModuleMeta` configuration class instance** (for attribute typing and IDE autocomplete), and it is also compatible with returning a dict directly:
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="Weather",               # Display name (defaults to the registered name)
+            description="Query city weather",  # Module brief introduction
+            version="1.0.0",
+            author="ErisDev",
+            group="Tool",                 # Functional grouping
+            tags=["Weather", "Query"],
+        )
+```
+
+Compatible writing style (dict):
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> dict:
+        return {
+            "name": "Weather",
+            "description": "Query city weather",
+            "version": "1.0.0",
+            "author": "ErisDev",
+            "group": "Tool",
+            "tags": ["Weather", "Query"],
+        }
+```
+
+- `module.get_meta("MyModule")` reads the parsed metadata (class declaration > registered info, automatically completes the module's command name).
+- `module.get_commands_overview()` aggregates the "module meta + its registered commands (aliases/grouping/help)" to provide a command overview organized by module.
+- The module a command belongs to can be obtained via `cmd_info["owner"]` (automatically injected by the context system upon registration).
+
+#### meta fields i18n support
+
+Metadata field values can be plain strings or an i18n dictionary `{"i18n": "key.path", "default": "fallback text"}` (consistent with the `description` configuration convention).
+Translation keys are declared and registered via `I18nClass`, and when `module.get_meta()` reads them, they are automatically resolved into the current language text:
+
+```python
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        meta_description: I18nKey = I18nKey(
+            default="Weather lookup",
+            zh_CN="查询城市天气",
+            en="Weather lookup",
+        )
+
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="Weather",
+            description={"i18n": "MyModule.meta_description", "default": "Weather lookup"},
+        )
+```
 
 ### SDK Objects
 
@@ -3840,7 +4053,6 @@ sdk.logger     # Logging system
 sdk.adapter    # Adapter system
 sdk.router     # Routing system
 sdk.lifecycle  # Lifecycle system
-```
 
 
 
@@ -5000,26 +5212,26 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-Adhere to semantic versioning:
+Follow semantic versioning:
 - MAJOR.MINOR.PATCH
 - Major version: Incompatible API changes
-- Minor version: Backward-compatible new features
+- Minor version: Backward-compatible feature additions
 - Patch version: Backward-compatible bug fixes
 
 ### 2. README Header
 
-The README generated by `epsdk create` comes with a built-in ErisPulse header (Logo + Badge row). Two recommended modes:
+The README generated by `epsdk create` already includes the ErisPulse header (Logo + badge row). Two recommended modes:
 
-**Mode A — ErisPulse Logo only (Default):**
+**Mode A — ErisPulse Logo Only (Default):**
 
 ```markdown
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
 
 # MyModule
 
-**A brief description**
+**One-sentence description**
 
 <p>
   <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -5031,21 +5243,25 @@ The README generated by `epsdk create` comes with a built-in ErisPulse header (L
 </div>
 ```
 
-**Mode B — Module Icon × ErisPulse Logo (When you have a custom icon):**
+**Mode B — Module Icon × ErisPulse Logo (When Custom Icon is Available):**
 
 ```markdown
 <div align="center">
 
 <img src=".github/assets/MyModuleIcon.svg" width="120" alt="MyModule" />
 <span style="font-size:44px;color:#c8c8c8;margin:0 18px;vertical-align:middle;">×</span>
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
-(The badge row is the same as above)
+(Badge row same as above)
 </div>
 ```
 
-You can add GitHub Stars, Downloads, and other badges as needed. The Logo can also be downloaded to the project local (`.github/assets/ErisPulseLogo.png`) and referenced with a relative path.
+Badges such as GitHub Stars, Downloads, etc. can be added as needed. The logo can also be downloaded to the project locally (`.github/assets/ErisPulseLogo.png`) and referenced using a relative path.
+
+Please directly return the complete translated Markdown content, without any additional text.
+
+Once again, if the document contains a language switch row (with language names separated by `` | ``), strictly follow the format requirement in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 
 
@@ -15570,6 +15786,242 @@ This design ensures that translation changes in the CLI will not affect the stab
 
 
 
+### 模块作用域系统
+
+# Module Scope System
+
+The module scope system is used to control "which modules a specific Bot can use," implementing module isolation in multi-bot scenarios.
+
+By default, all modules are open to all Bots; filtering only begins after configuration binding, requiring **no changes to modules or adapters** to be compatible.
+
+{!--< tips >!--}
+1. Scopes bind modules based on the dimensions of "Adapter Platform + Bot Identifier + Session Identifier"
+2. Supports both whitelist (`modules`) and blacklist (`blocked`) modes
+3. Modules disabled by scope silently ignore incoming messages without replying with a prompt
+4. Supports runtime `sdk.scope.bind()` / `unbind()` for dynamic addition and removal, and is persistable
+{!--< /tips >!--}
+
+Please return the complete translated Markdown content directly without any other text.
+
+## How It Works
+
+```
+Bot receives a message
+  → Framework extracts (platform, bot_id, session_id) from the event
+  → Finds scope bindings (Session > Bot > Platform)
+  → Hits binding: Filters modules by Whitelist/Blacklist
+  → Disabled modules: Neither command nor event handlers trigger (silently ignored)
+```
+
+- **Resolution Priority:** Session > Bot > Platform. When higher priority is unbound, fall back to the next level; if all are unconfigured, allow all modules.
+- When event data is missing `self` (Bot unidentifiable), skip Bot level and judge based on Session level / Platform level.
+- Framework-layer resources (handlers with empty owner, command dispatchers, event bus) are always allowed through and are not affected by scope.
+
+Please return the complete Markdown content directly without any other text.
+
+## Configuration File
+
+```toml
+[ErisPulse.scope]
+default_allow = true        # Allow all by default (false = implicit strict mode)
+cache_size = 1024           # LRU cache size for is_allowed
+
+# Platform-level bindings (applies to all Bots / Sessions on this platform)
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Translate"]   # Whitelist: only these modules can be used on this platform
+blocked = ["Danger"]              # Blacklist: these modules are disabled on this platform
+
+# Bot-level bindings (applies to all sessions for this Bot, overrides platform-level)
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Chat"]
+blocked = []
+
+# Session-level bindings (applies to a specific group / channel / private chat, most specific)
+[ErisPulse.scope.sessions.onebot11."789012345"]
+modules = ["Chat"]                # Only Chat is allowed for this group
+blocked = []
+```
+
+Semantics (module names match **case-insensitively**):
+
+| Config | Effect |
+|--------|--------|
+| Only `modules` (whitelist) | Only listed modules are allowed |
+| Only `blocked` (blacklist) | Listed modules are blocked, everything else is allowed |
+| Both configured | Whitelist restricts the scope, then Blacklist removes items from the whitelist |
+| Both empty / not configured | Follows `default_allow`: `true` (default) allows all; `false` implicitly denies |
+
+> `modules` and `blocked` both support strings or string lists. Module names are case-insensitive (`"Chat"` is equivalent to `"chat"`).
+> Session identifiers are the event's Group ID (`group_id`), Channel ID (`channel_id`), or Private chat User ID (`user_id`).
+> **Session identifiers are isolated across platforms**: The `(platform, session_id)` combination uniquely identifies a session. `789` for `onebot11` does not affect `789` for `telegram`.
+
+## Runtime API
+
+### Checking if a module is allowed
+
+```python
+from ErisPulse import sdk
+
+# Check if a certain Bot is allowed to use a certain module
+allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat")
+
+# Check for a specific session (Group / Channel / Direct Message)
+allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
+```
+
+### Dynamic Binding / Unbinding
+
+```python
+# Bind Bot-level whitelist (persisted to config)
+sdk.scope.bind("onebot11", "123456", modules=["Chat", "Translate"])
+
+# Bind session-level whitelist (3rd parameter is session_id)
+sdk.scope.bind("onebot11", "123456", "789012345", modules=["Chat"])
+
+# Bind platform-level blacklist
+sdk.scope.bind("onebot11", blocked=["Danger"])
+
+# Only effective at runtime (invalidated after restart)
+sdk.scope.bind("onebot11", "123456", modules=["Chat"], persist=False)
+
+# Merge instead of replace: add Music to existing whitelist (default bind is replace)
+sdk.scope.bind("onebot11", "123456", modules=["Music"], merge=True)
+
+# Remove bindings (restore allow all); you can specify session_id to remove session-level bindings
+sdk.scope.unbind("onebot11", "123456")
+sdk.scope.unbind("onebot11", "123456", "789012345")
+```
+
+> `bind()` **replaces** the entire binding for the target by default; when `merge=True`, it merges new modules/disables into existing bindings.
+
+### Query Bindings
+
+```python
+# Get active bindings (can specify session)
+sdk.scope.get("onebot11", "123456")              # {"modules": ["Chat"], "blocked": []}
+sdk.scope.get("onebot11", "123456", "789012345") # Session-level active bindings
+sdk.scope.get("onebot11")                        # Platform-level bindings, None if not exists
+
+# List all bindings (platforms / bots / sessions buckets)
+sdk.scope.list_bindings()
+```
+
+### Filtering Statistics (Debug)
+
+```python
+# View the count of bindings silently filtered by the scope and cache hit status
+sdk.scope.get_stats()
+# {"is_allowed_calls": 10, "filtered_count": 3, "cache_hits": 5, "cache_misses": 5}
+
+sdk.scope.reset_stats()
+```
+
+### Topology Tree Data
+
+```python
+# Scope part (for Dashboard display)
+sdk.scope.get_topology()
+
+## FAQ and Considerations
+
+### 1. Configuration Hierarchy
+
+Parsing Priority: **Session > Bot > Platform**. Higher priority bindings **completely override** lower priority ones.
+
+```toml
+# Platform level only allows Chat
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat"]
+
+# But Bot level only allows Music → This bot can ultimately only use Music, cannot use Chat!
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Music"]
+```
+
+- To "allow Chat at platform level and add Music at Bot level", you must **list both at Bot level simultaneously**: `modules = ["Chat", "Music"]`.
+- Similarly, the lower-level blacklist is overridden by the upper-level whitelist: Platform level `blocked=["Danger"]` + Bot level `modules=["Danger"]` → Bot level completely overrides, Danger is usable. The higher the hierarchy and the more specific it is, the more it takes precedence.
+
+### 2. It is "Event-by-Event" Judgment, not "Sticky"
+
+Scope judgment applies **only to the current event**, without cross-event memory:
+- Session g1 has module A disabled → For this **message** on g1, A does not trigger; the **next** message is judged independently, if the binding hasn't changed it still won't trigger, if the binding changes it takes effect immediately (LRU cache will automatically invalidate).
+- Session g2 has no binding configured → Falls back to Bot level / Platform level judgment; if neither exists, follows `default_allow`.
+
+### 3. Module Not Responding
+
+When you send a message and the module doesn't react, suspect the scope first rather than the module / adapter:
+
+```python
+# Add a line in the module code or a temporary script to locate
+from ErisPulse import sdk
+print(sdk.scope.is_allowed(event.get_platform(), <bot_id>, "MyModule", <session_id>))
+print(sdk.scope.get_stats())          # filtered_count > 0 indicates it was indeed filtered
+```
+
+Being filtered is **silent** (no reply, to avoid exposing scope rules to users), but `filtered_count` will accumulate.
+
+### 4. Session Identifier Cross-Platform Isolation
+
+The `(platform, session_id)` combination is the unique identifier. `[ErisPulse.scope.sessions.onebot11."789"]` only applies to the onebot11 platform and does not affect a telegram session with the same `789`.
+
+### 5. Performance
+
+`is_allowed()` results are cached with **LRU Cache** (default 1024 entries, `scope.cache_size` is adjustable),
+config changes / `bind()` / `unbind()` automatically invalidate the cache, making the overhead for high-frequency event paths extremely small.
+
+## Topology Tree API
+
+`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide data on module/adapter ownership, while `sdk.get_topology()` aggregates all three:
+
+```python
+from ErisPulse import sdk
+
+topology = sdk.get_topology()
+# {
+#   "modules": {                                   # Module -> Owned Resources
+#     "Chat": {
+#       "loaded": True, "enabled": True,
+#       "load_strategy": {"lazy": False, "priority": 50},
+#       "info": {...},
+#       "commands": ["chat", "translate"],
+#       "handlers": {"message": 2, "notice": 1},
+#       "routes": {"http": ["/Chat/api"], "ws": [], "sse": []},
+#       "lifecycle_hooks": 3,
+#       "scope_applies": True,
+#     }
+#   },
+#   "adapters": {                                  # Adapter -> Bot -> Scope
+#     "onebot11": {
+#       "status": "started", "enabled": True,
+#       "bots": {"123456": {"status": "online", "last_active": ..., "info": {...}, "scope": {...}}},
+#       "scope": {"modules": [...], "blocked": [...]},
+#     }
+#   },
+#   "scope": {"platforms": {...}, "bots": {...}, "sessions": {...}}   # All scopes bound
+# }
+```
+
+- Module topology aggregates commands, event handlers, HTTP/WS/SSE routes, and lifecycle hooks registered by the module, facilitating the drawing of the module resource tree.
+- Adapter topology aggregates adapter status, subordinate Bot status, and platform-level/Bot-level scope bindings.
+
+## Privacy: Suppressing Message Logs
+
+To prevent the backend (such as the Dashboard log panel) from viewing the message content of each group/private chat, you can suppress EVENT level within `[ErisPulse.logger]` (message transmission/reception content is recorded at the EVENT level):
+
+```toml
+[ErisPulse.logger]
+exclude_levels = ["EVENT"]
+```
+
+Logs at suppressed levels will be **completely discarded** (not written to memory, not pushed to subscribers, not printed, and not written to files). You can also control this dynamically via code:
+
+```python
+sdk.logger.set_excluded_levels(["EVENT"])   # Suppress
+sdk.logger.exclude_level("EVENT")
+sdk.logger.allow_level("EVENT")             # Restore
+
+
+
 ### 启动流程与手动控制
 
 # Startup Flow and Manual Control
@@ -15932,6 +16384,112 @@ Hard restart is not just a "more thorough restart," it is more suitable, and eve
 ====
 生态模块
 ====
+
+
+### ErisPulse-App 安装与使用
+
+# ErisPulse-App
+
+[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) is an **official cross-platform client** maintained directly by ErisDev (releases available for Android / Windows / Linux / macOS),
+providing a fully native graphical management interface: create, run, and manage multiple bot instances on your phone or computer,
+without the need for a terminal, or a separate Python environment.
+
+> [!IMPORTANT]
+> ErisPulse-App is a **standalone installed client application**, not a module installed via `epsdk install`.
+> It comes with a built-in Python runtime and ErisPulse SDK, ready to use out of the box—**you can run it directly on your phone**.
+
+## Feature Overview
+
+- **Multi-instance Management**: Create / Start / Stop / Delete multiple instances, automatic port and access token allocation, support for new environments or cloning existing environments
+- **Overview Dashboard**: Adapter / Module / Online Bots / Total Events statistics, CPU / Memory usage alerts with color changes
+- **Module Store**: Search and tag filtering, one-click Install / Upgrade / Uninstall, specify version installation, pip mirror source and Git package support
+- **Event Stream + Event Builder**: Real-time event viewing, visual construction and submission of test events to adapters
+- **Monitoring**: Log / Lifecycle / Audit unified view
+- **Command Management**: Global settings such as Prefix and Aliases, start/stop and platform allow/deny lists
+- **Bot Overview / Config / File Management**: Native interface for direct instance operations
+- **Background Persistence**: Android foreground service keep-alive; Windows minimized to system tray, closing the window does not interrupt the instance
+- **Dynamic Module Windows**: Registered module pages automatically appear in the sidebar navigation (grouped with Dashboard), click to jump directly
+
+Please return the complete translated Markdown content directly, without including any other text.
+
+Reminder again: If the document contains language switching lines (lines with language names separated by ``|``), please strictly adhere to the format requirements in item 8 above, and do not write incorrect formats like ``[**Label**](file)``.
+
+## Supported Platforms
+
+All platform installers can be downloaded from [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases). Simply select the appropriate package as needed:
+
+| Platform | Package | Description |
+|----------|--------|-------------|
+| Android | `online-*.apk` / `offline-*.apk` | **Run directly on phone**, no computer required |
+| Windows | `windows-x64-setup.exe` / `windows-x64.zip` | Installer / Portable version |
+| Linux | `linux-x64.tar.gz` | Extract and run |
+| macOS | `macos-arm64.zip` | Apple Silicon (arm64) |
+
+A single Flutter codebase covers all platforms.
+
+---
+
+## Installation (Android / Mobile Direct Run)
+
+Download and install the APK from [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases). There are two builds available:
+
+| Build | Runtime Image | Use Case |
+|------|-----------|---------|
+| `erispulse-app-online-*.apk` | Downloaded on first launch | Smaller installer, suitable for good network connectivity |
+| `erispulse-app-offline-*.apk` | Packaged into APK | Offline self-contained, no internet required after installation |
+
+The installation steps for both builds are identical:
+
+1. Download and install the APK, and grant notification permission at startup (required to keep background services alive)
+2. Click "Run First Initialization" once the initialization banner appears on the home page (includes progress and log view)
+3. Create an instance and start it
+4. Configure adapters and Model API Keys in the built-in management interface
+
+> The offline package is self-contained — no network is required after installation. If the download is slow or unstable during the first launch, you can switch the download source to a mirror (ghfast / gh-proxy) in the settings page.
+
+### Installation (Desktop: Windows / Linux / macOS)
+
+1. Download the corresponding platform installer from [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)
+   (Windows `setup.exe` or portable `zip`, Linux `tar.gz`, macOS `zip`)
+2. Install and launch
+3. On the welcome page, select the ErisPulse SDK version to install (default is the latest) and install it
+4. Create an instance and launch it
+
+---
+
+## How It Works
+
+```
+┌────────────────────────────────────────────────────┐
+│  ErisPulse-App (Flutter)                            │
+│                                                    │
+│  Native UI ── Dashboard REST / WS API              │
+│       │                                            │
+│       ├── Android: Foreground Service + proot + Ubuntu rootfs│
+│       │        + Python + ErisPulse instance       │
+│       └── Desktop: Built-in Python + Direct process management│
+└────────────────────────────────────────────────────┘
+```
+
+- **Android**: The instance runs inside a foreground service (background isolate) managed `proot` (user-mode chroot). The bot continues to run after the UI closes, with automatic crash recovery.
+- **Desktop**: The instance runs as a direct child process of the App; Windows supports minimizing to the system tray for background persistence (closing the window does not interrupt the instance). Upon App restart, management of still-running instances is automatically resumed; upon exit, all instances are stopped uniformly.
+- Native UI across all platforms communicates with the instance via the REST / WebSocket API at `127.0.0.1:<port>/Dashboard/*`, sharing the same API as [ErisPulse-Dashboard](docs/en/dashboard.md)
+
+---
+
+## Relationship with SDK
+
+- App comes with a built-in ErisPulse SDK: Android side is bundled in the Ubuntu image, desktop side is installed via PyPI (Welcome page optional versions, default is latest)
+- The instance within the App is equivalent to the instance created by the CLI `epsdk`, and the same modules / adapters can be used
+- Module developers can register custom pages via [Dashboard View API Registration](dashboard.md):
+  The view will automatically appear in the App sidebar navigation (groups are consistent with Dashboard), click to jump to the corresponding page rendering
+
+---
+
+Please return the complete translated Markdown content directly, without any other text.
+
+Reminder again: If the document contains language switching lines (lines separated by ` | ` with language names), please strictly follow rule 8 above and do not write formats like `[**Label**](file)`.
+
 
 
 ### Dashboard 使用与视窗注册

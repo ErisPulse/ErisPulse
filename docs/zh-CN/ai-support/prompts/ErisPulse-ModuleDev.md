@@ -215,20 +215,107 @@ async def on_bot_online(event_data):
 
 ## 模块加载策略
 
-ErisPulse 支持两种模块加载策略：
+ErisPulse 支持三种模块加载策略，由 `get_load_strategy()` 返回的 `ModuleLoadStrategy` 声明：
 
 ```mermaid
 flowchart TD
     A["模块注册到 ModuleManager"] --> B{"加载策略"}
-    B -->|"lazy_load = true"| C["创建 LazyModule 代理"]
-    C --> D["挂载到 sdk 属性"]
-    D --> E["首次访问时初始化"]
-    B -->|"lazy_load = false"| F["立即创建实例"]
-    F --> G["调用 on_load()"]
-    G --> D2["挂载到 sdk 属性"]
+    B -->|"lazy_load = true<br/>+ activate_on 声明"| C["创建 ModuleActivator 代理"]
+    B -->|"lazy_load = true<br/>无 activate_on"| D["创建 LazyModule 代理"]
+    B -->|"lazy_load = false"| E["立即创建实例"]
+    C --> F["注册事件/命令 stub 到分发器"]
+    F --> G["挂载到 sdk 属性"]
+    G --> H["事件到达触发激活"]
+    H --> I["实例化 + on_load() + 注销 stub"]
+    D --> J["挂载到 sdk 属性"]
+    J --> K["首次属性访问时初始化"]
+    E --> L["调用 on_load()"]
+    L --> M["挂载到 sdk 属性"]
 ```
 
-> 更多详情请参考 [懒加载系统](advanced/lazy-loading.md) 和 [生命周期管理](advanced/lifecycle.md)。
+> 更多详情请参考 [懒加载系统](advanced/lazy-loading.md)、[生命周期管理](advanced/lifecycle.md) 与模块文档。
+
+### 事件驱动懒激活（`activate_on`）触发架构
+
+`activate_on` 允许模块在**首个匹配事件/命令到达时**才加载，避免常驻内存，同时保证事件不丢失：
+
+```mermaid
+flowchart LR
+    subgraph Declare["模块声明"]
+        S1["get_load_strategy() 返回<br/>ModuleLoadStrategy(activate_on=...)"] --> S2["activate_on 语法：<br/>str / dict / list 自由混合"]
+        S2 --> S2a["'message' → 事件类型级"]
+        S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ 类型 + detail_type"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ 命令触发"]
+    end
+
+    subgraph Runtime["运行期"]
+        R1["ModuleActivator 注册 stub"] --> R1a["事件 stub → message/notice/request/meta 管理器<br/>优先级 ACTIVATION_STUB_PRIORITY（极低）"]
+        R1 --> R1b["命令 stub → 命令管理器<br/>隐藏占位命令（hidden=True）"]
+        R1a --> R2{"触发事件到达"}
+        R1b --> R2
+        R2 --> R3["按 owner 过作用域过滤"]
+        R3 --> R4["asyncio.Lock 防止重复激活"]
+        R4 --> R5["实例化模块 + 调用 on_load()"]
+        R5 --> R6["注销全部 stub"]
+        R6 --> R7["事件转发到真实处理器"]
+    end
+
+    Declare --> Runtime
+```
+
+**触发语义要点：**
+
+1. **stub 注册**：事件 stub 以极低优先级（`ACTIVATION_STUB_PRIORITY`）注册到对应事件管理器，确保在同类事件的所有普通处理器**之后**执行；命令 stub 以隐藏占位命令注册，不污染命令列表
+2. **作用域过滤**：stub 带模块 owner 身份，未对该 Bot / 会话 / 平台启用的模块不触发
+3. **防重入**：`asyncio.Lock` 保证并发事件下只激活一次
+4. **事件转发**：激活完成后将当前事件转发给真实处理器（外层分组循环已验证 stub 之后注册的处理器不会被二次处理）
+5. **失败语义**：激活失败不重试，stub 一并注销，避免每次事件都重复尝试
+
+## 本地插件文件夹架构
+
+本地插件（`plugins/` 目录）无需打包发布，框架启动时自动发现并加载：
+
+```mermaid
+flowchart TD
+    A["项目 plugins/ 目录<br/>（ErisPulse.framework.plugins_dir，支持多目录）"] --> B{"PluginFolderLoader.discover()"}
+    B --> C["单文件：dice.py → 插件名 = 文件名"]
+    B --> D["包形式：weather/（含 __init__.py）→ 插件名 = 目录名"]
+    B --> E["忽略：__pycache__ / _ 开头 / 非 .py / 无 __init__.py 目录"]
+    C --> F["导入模块（spec_from_file_location）"]
+    D --> G["导入模块（sys.path + import_module）"]
+    F --> H["识别模块类：Main（BaseModule 子类）优先，回落首个子类"]
+    G --> H
+    H --> I["构造与 entry-point 一致的 moduleInfo"]
+    I --> J["ModuleLoader.load() 合并<br/>本地优先覆盖 PyPI 同名安装包"]
+    J --> K["与安装包模块共用：<br/>启用状态 / 作用域 / meta / i18n / 上下文"]
+```
+
+**约定与特性：**
+
+- 插件名来源：单文件取文件名，包形式取目录名
+- 本地插件 `moduleInfo.meta.source == "plugin_folder"`，与 PyPI 安装包模块无缝共存
+- 同名时本地优先（便于本地覆盖调试），被禁用时同时移除同名 entry-point 条目
+
+## 本地插件热重载架构
+
+热重载监控插件文件变更，自动重新加载对应插件：
+
+```mermaid
+flowchart TD
+    A["sdk.enable_plugin_hot_reload()"] --> B["PluginReloadWatcher 启动"]
+    B --> C["PollingObserver（后台守护线程）<br/>定期比较 .py 文件 mtime"]
+    C --> D{"插件文件变更"}
+    D --> E["变更去抖（默认 1 秒）"]
+    E --> F["_handle_change 解析插件名<br/>（单文件 / 包形式）"]
+    F --> G["asyncio.run_coroutine_threadsafe<br/>调度回主事件循环"]
+    G --> H["sdk.reload_plugin(name)"]
+    H --> I["卸载旧实例（触发 on_unload）"]
+    I --> J["清理注册（unregister + 移除 sdk 属性）"]
+    J --> K["清理 sys.modules 强制重新导入"]
+    K --> L["重新 discover + register + load"]
+    L --> M["挂载新实例到 sdk 属性"]
+    M --> N["文件删除 → 自动从加载结果移除"]
+```
 
 
 
@@ -1845,8 +1932,72 @@ epsdk run main.py --reload
 |------|------|------|
 | `__init__(self)` | 构造函数 | 否 |
 | `get_load_strategy()` | 返回加载策略 | 否 |
+| `get_meta()` | 返回模块介绍元信息（可选） | 否 |
 | `on_load(self, event)` | 模块加载时调用 | 是 |
 | `on_unload(self, event)` | 模块卸载时调用 | 是 |
+
+### 模块介绍 meta
+
+通过 `get_meta()` 声明模块的介绍元信息（这个模块是干什么的、属于哪一类等）。
+元信息是模块的**通用介绍数据**，供 help 模块、Dashboard 模块列表、模块商店等各类界面/生态模块消费。
+
+与 `get_load_strategy()` 返回 `ModuleLoadStrategy` 一致，**推荐返回 `ModuleMeta` 配置类实例**（属性键入、IDE 补全），也兼容直接返回 dict：
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="天气",               # 显示名（默认注册名）
+            description="查询城市天气",  # 模块简介
+            version="1.0.0",
+            author="ErisDev",
+            group="工具",               # 功能分组
+            tags=["天气", "查询"],
+        )
+```
+
+兼容写法（dict）：
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> dict:
+        return {
+            "name": "天气",
+            "description": "查询城市天气",
+            "version": "1.0.0",
+            "author": "ErisDev",
+            "group": "工具",
+            "tags": ["天气", "查询"],
+        }
+```
+
+- `module.get_meta("MyModule")` 读取已解析的元信息（类声明 > 注册 info，自动补全该模块的命令名）。
+- `module.get_commands_overview()` 聚合「模块 meta + 其注册的命令（别名/分组/帮助）」，按模块组织的命令总览。
+- 命令归属模块通过 `cmd_info["owner"]` 获取（注册时由上下文系统自动注入）。
+
+#### meta 字段的 i18n 支持
+
+元信息字段值可用纯字符串，或 i18n 字典 `{"i18n": "key.path", "default": "兜底文本"}`（与配置 `description` 约定一致）。
+翻译键通过 `I18nClass` 声明注册，`module.get_meta()` 读取时自动解析为当前语言文本：
+
+```python
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        meta_description: I18nKey = I18nKey(
+            default="Weather lookup",
+            zh_CN="查询城市天气",
+            en="Weather lookup",
+        )
+
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="天气",
+            description={"i18n": "MyModule.meta_description", "default": "Weather lookup"},
+        )
+```
 
 ### SDK 对象
 
@@ -3050,7 +3201,7 @@ version = "1.0.0"
 ```markdown
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
 
 # MyModule
 
@@ -3073,7 +3224,7 @@ version = "1.0.0"
 
 <img src=".github/assets/MyModuleIcon.svg" width="120" alt="MyModule" />
 <span style="font-size:44px;color:#c8c8c8;margin:0 18px;vertical-align:middle;">×</span>
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
 （徽章行同上）
@@ -3797,6 +3948,7 @@ epsdk init --here -n my_bot
 | `--homepage` | | 项目主页 URL |
 | `--output` | `-o` | 输出目录（默认当前目录） |
 | `--force` | `-f` | 强制覆盖已存在的目录 |
+| `--local` | | 创建本地插件（仅 `module` 可用）：生成 `plugins/<name>/` 包结构，免打包安装 |
 
 **示例：**
 
@@ -3806,6 +3958,9 @@ epsdk create
 
 # 直接创建 Module 项目
 epsdk create module -n MyModule
+
+# 创建本地插件（放入项目 plugins/ 目录，启动时自动发现，支持热重载）
+epsdk create module -n MyModule --local
 
 # 直接创建 Adapter 项目
 epsdk create adapter -n MyAdapter
@@ -8182,6 +8337,242 @@ CLI 拥有**独立**的国际化模块（`ErisPulse.CLI.i18n`），与框架核�
 
 
 
+### 模块作用域系统
+
+# 模块作用域系统
+
+模块作用域系统用于控制"某个 Bot 只能使用哪些模块"，实现多 Bot 场景下的模块隔离。
+默认情况下所有模块对所有 Bot 开放；仅在配置绑定后才开始过滤，**模块与适配器无需任何改动**即可适配。
+
+{!--< tips >!--}
+1. 作用域以「适配器平台 + Bot 标识 + 会话标识」为维度绑定模块
+2. 支持白名单（`modules`）与黑名单（`blocked`）两种方式
+3. 被作用域禁用的模块收到消息时静默忽略，不回复提示
+4. 支持运行时 `sdk.scope.bind()` / `unbind()` 动态增删，可持久化
+{!--< /tips >!--}
+
+## 工作原理
+
+```
+Bot 收到消息
+  → 框架从事件中提取 (platform, bot_id, session_id)
+  → 查找作用域绑定（会话级 > Bot 级 > 平台级）
+  → 命中绑定则按 白名单/黑名单 过滤模块
+  → 被禁用的模块：命令与事件处理器均不触发（静默忽略）
+```
+
+- **解析优先级：会话级 > Bot 级 > 平台级**，更高优先级未绑定规则时回退到下一级；全部未配置则允许全部模块。
+- 事件数据缺少 `self`（无法识别 Bot）时，跳过 Bot 级，按会话级 / 平台级判断。
+- 框架层资源（owner 为空的处理器、命令分发器、事件总线）始终放行，不受作用域影响。
+
+## 配置文件
+
+```toml
+[ErisPulse.scope]
+default_allow = true        # 默认允许全部（false = 隐式拒绝严格模式）
+cache_size = 1024           # is_allowed 的 LRU 缓存大小
+
+# 平台级绑定（作用于该平台所有 Bot / 会话）
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Translate"]   # 白名单：该平台 Bot 只能使用这些模块
+blocked = ["Danger"]              # 黑名单：这些模块在该平台禁用
+
+# Bot 级绑定（作用于该 Bot 的所有会话，覆盖平台级）
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Chat"]
+blocked = []
+
+# 会话级绑定（作用于某个群 / 频道 / 私聊，最具体）
+[ErisPulse.scope.sessions.onebot11."789012345"]
+modules = ["Chat"]                # 该群只能使用 Chat
+blocked = []
+```
+
+语义（模块名匹配**大小写不敏感**）：
+
+| 配置 | 效果 |
+|------|------|
+| 仅 `modules`（白名单） | 只有列出的模块允许使用 |
+| 仅 `blocked`（黑名单） | 列出的模块被禁用，其余全部允许 |
+| 两者都配置 | 白名单限定范围，白名单内的模块再剔除黑名单 |
+| 两者都为空 / 未配置 | 遵循 `default_allow`：`true`（默认）允许全部；`false` 则隐式拒绝 |
+
+> `modules` 与 `blocked` 均支持字符串或字符串列表。模块名大小写不敏感（`"Chat"` 与 `"chat"` 等价）。
+> 会话标识为事件的群 ID（`group_id`）、频道 ID（`channel_id`）或私聊用户 ID（`user_id`）。
+> **会话标识跨平台隔离**：`(platform, session_id)` 组合唯一标识一个会话，`onebot11` 的 `789` 与 `telegram` 的 `789` 互不影响。
+
+## 运行时 API
+
+### 判断模块是否允许
+
+```python
+from ErisPulse import sdk
+
+# 某个 Bot 是否允许使用某模块
+allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat")
+
+# 指定会话（群 / 频道 / 私聊）判断
+allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
+```
+
+### 动态绑定 / 解绑
+
+```python
+# 绑定 Bot 级白名单（持久化到配置）
+sdk.scope.bind("onebot11", "123456", modules=["Chat", "Translate"])
+
+# 绑定会话级白名单（第三参数为 session_id）
+sdk.scope.bind("onebot11", "123456", "789012345", modules=["Chat"])
+
+# 绑定平台级黑名单
+sdk.scope.bind("onebot11", blocked=["Danger"])
+
+# 仅运行时生效（重启失效）
+sdk.scope.bind("onebot11", "123456", modules=["Chat"], persist=False)
+
+# 合并而非替换：把 Music 并入现有白名单（默认 bind 是替换）
+sdk.scope.bind("onebot11", "123456", modules=["Music"], merge=True)
+
+# 移除绑定（恢复允许全部）；可指定 session_id 移除会话级绑定
+sdk.scope.unbind("onebot11", "123456")
+sdk.scope.unbind("onebot11", "123456", "789012345")
+```
+
+> `bind()` 默认**替换**该目标的整个绑定；`merge=True` 时将新模块/禁用并入现有绑定。
+
+### 查询绑定
+
+```python
+# 获取生效绑定（可指定会话）
+sdk.scope.get("onebot11", "123456")              # {"modules": ["Chat"], "blocked": []}
+sdk.scope.get("onebot11", "123456", "789012345") # 会话级生效绑定
+sdk.scope.get("onebot11")                        # 平台级绑定，无则 None
+
+# 列出全部绑定（platforms / bots / sessions 三桶）
+sdk.scope.list_bindings()
+```
+
+### 过滤统计（调试）
+
+```python
+# 查看被作用域静默过滤的次数与缓存命中情况
+sdk.scope.get_stats()
+# {"is_allowed_calls": 10, "filtered_count": 3, "cache_hits": 5, "cache_misses": 5}
+
+sdk.scope.reset_stats()
+```
+
+### 拓扑树数据
+
+```python
+# 作用域部分（供 Dashboard 展示）
+sdk.scope.get_topology()
+```
+
+## 常见问题与注意事项
+
+### 1. 配置层级
+
+解析优先级：**会话级 > Bot 级 > 平台级**。高优先级绑定**整体覆盖**低优先级。
+
+```toml
+# 平台级只允许 Chat
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat"]
+
+# 但 Bot 级只允许 Music → 该 Bot 最终只能用 Music，不能用 Chat！
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Music"]
+```
+
+- 想"平台级允许 Chat，Bot 级再加 Music"，必须在 **Bot 级同时列出两者**：`modules = ["Chat", "Music"]`。
+- 同理，底层黑名单会被上层白名单覆盖：平台级 `blocked=["Danger"]` + Bot 级 `modules=["Danger"]` → Bot 级整体覆盖，Danger 可用。层级越高、越具体，越以它为准。
+
+### 2. 它是"逐事件"判断，不会"粘住"
+
+作用域判断**只针对当前这一条事件**，不跨事件记忆：
+- 会话 g1 禁用了模块 A → 在 g1 的**这条**消息 A 不触发；**下一条**消息独立重新判断，若绑定没变仍不触发，绑定改了立即生效（LRU 缓存会自动失效）。
+- 会话 g2 没配绑定 → 回退到 Bot 级 / 平台级判断；都没有则按 `default_allow`。
+
+### 3. 模块没反应
+
+当你发了消息模块却没反应，先怀疑作用域而不是模块/适配器：
+
+```python
+# 在模块代码或临时脚本里加一行定位
+from ErisPulse import sdk
+print(sdk.scope.is_allowed(event.get_platform(), <bot_id>, "MyModule", <session_id>))
+print(sdk.scope.get_stats())          # filtered_count > 0 说明确实被过滤了
+```
+
+被过滤是**静默**的（不回复，避免暴露作用域规则给用户），但 `filtered_count` 会累计。
+
+### 4. 会话标识跨平台隔离
+
+`(platform, session_id)` 组合才是唯一标识。`[ErisPulse.scope.sessions.onebot11."789"]` 只作用于 onebot11 平台，不影响 telegram 上同为 `789` 的会话。
+
+### 5. 性能
+
+`is_allowed()` 结果带 **LRU 缓存**（默认 1024 条，`scope.cache_size` 可调），
+配置变更 / `bind()` / `unbind()` 自动失效，高频事件路径开销极小。
+
+## 拓扑树 API
+
+`ModuleManager.get_topology()` 与 `AdapterManager.get_topology()` 提供模块/适配器归属关系数据，
+`sdk.get_topology()` 一键聚合三者：
+
+```python
+from ErisPulse import sdk
+
+topology = sdk.get_topology()
+# {
+#   "modules": {                                   # 模块 → 拥有的资源
+#     "Chat": {
+#       "loaded": True, "enabled": True,
+#       "load_strategy": {"lazy": False, "priority": 50},
+#       "info": {...},
+#       "commands": ["chat", "translate"],
+#       "handlers": {"message": 2, "notice": 1},
+#       "routes": {"http": ["/Chat/api"], "ws": [], "sse": []},
+#       "lifecycle_hooks": 3,
+#       "scope_applies": True,
+#     }
+#   },
+#   "adapters": {                                  # 适配器 → Bot → 作用域
+#     "onebot11": {
+#       "status": "started", "enabled": True,
+#       "bots": {"123456": {"status": "online", "last_active": ..., "info": {...}, "scope": {...}}},
+#       "scope": {"modules": [...], "blocked": [...]},
+#     }
+#   },
+#   "scope": {"platforms": {...}, "bots": {...}, "sessions": {...}}   # 全部作用域绑定
+# }
+```
+
+- 模块拓扑聚合了该模块注册的命令、事件处理器、HTTP/WS/SSE 路由与生命周期钩子，便于绘制模块资源树。
+- 适配器拓扑聚合了各适配器状态、下属 Bot 状态及平台级/Bot 级作用域绑定。
+
+## 隐私：屏蔽消息日志
+
+如需让后台（如 Dashboard 日志面板）无法看到各群/私聊的消息内容，可在 `[ErisPulse.logger]`
+中屏蔽 EVENT 等级（消息收发内容以 EVENT 等级记录）：
+
+```toml
+[ErisPulse.logger]
+exclude_levels = ["EVENT"]
+```
+
+被屏蔽等级的日志会**完全丢弃**（不写内存、不推送给订阅器、不打印、不写文件），
+也可通过代码动态控制：
+
+```python
+sdk.logger.set_excluded_levels(["EVENT"])   # 屏蔽
+sdk.logger.exclude_level("EVENT")
+sdk.logger.allow_level("EVENT")             # 恢复
+```
+
+
+
 ### 启动流程与手动控制
 
 # 启动流程与手动控制
@@ -8836,6 +9227,109 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 ====
 生态模块
 ====
+
+
+### ErisPulse-App 安装与使用
+
+# ErisPulse-App
+
+[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) 是 ErisDev 直接维护的 **官方多端客户端**（Android / Windows / Linux / macOS 均已发布），
+提供完全原生的图形化管理界面：在手机或电脑上创建、运行、管理多个机器人实例，
+无需终端，也无需单独安装 Python 环境。
+
+> [!IMPORTANT]
+> ErisPulse-App 是**独立安装的客户端程序**，不是 `epsdk install` 安装的模块。
+> 它内置了 Python 运行时与 ErisPulse SDK，安装即用——**手机上也能直接运行**。
+
+## 功能速览
+
+- **多实例管理**：创建 / 启动 / 停止 / 删除多个实例，端口与访问令牌自动分配，支持全新环境或克隆已有环境
+- **概览仪表盘**：适配器 / 模块 / 在线机器人 / 事件总数统计，CPU / 内存占用告警变色
+- **模块商店**：搜索与标签筛选、一键安装 / 升级 / 卸载、指定版本安装、pip 镜像源与 Git 包支持
+- **事件流 + 事件构建器**：实时事件查看，可视化构造测试事件并提交到适配器
+- **监控**：日志 / 生命周期 / 审计三合一视图
+- **命令管理**：前缀与别名等全局设置、启停与平台黑白名单
+- **机器人总览 / 配置 / 文件管理**：原生界面直接操作实例
+- **后台常驻**：Android 前台服务保活；Windows 最小化到系统托盘，关闭窗口不中断实例
+- **模块动态视窗**：模块注册的页面自动出现在侧边导航（与 Dashboard 同分组），点击直达
+
+## 支持平台
+
+所有平台的安装包均从 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下载，按需选择即可：
+
+| 平台 | 安装包 | 说明 |
+|------|--------|------|
+| Android | `online-*.apk` / `offline-*.apk` | **手机直接运行**，无需电脑 |
+| Windows | `windows-x64-setup.exe` / `windows-x64.zip` | 安装版 / 免安装版 |
+| Linux | `linux-x64.tar.gz` | 解压即用 |
+| macOS | `macos-arm64.zip` | Apple Silicon（arm64） |
+
+一个 Flutter 代码库覆盖所有平台。
+
+---
+
+## 安装方式（Android / 手机直接运行）
+
+从 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下载 APK 安装即可，有两种构建：
+
+| 构建 | 运行时镜像 | 适用场景 |
+|------|-----------|---------|
+| `erispulse-app-online-*.apk` | 首次启动时下载 | 安装包更小，适合网络良好 |
+| `erispulse-app-offline-*.apk` | 已打包进 APK | 离线自包含，安装后无需联网 |
+
+两种构建安装步骤相同：
+
+1. 下载并安装 APK，启动时允许通知权限（用于保持后台服务存活）
+2. 首页出现初始化横幅后点击运行首次初始化（含进度与日志视图）
+3. 创建一个实例并启动
+4. 在 App 内置的管理界面配置适配器与模型 API Key
+
+> 离线包自包含——安装后无需网络。如果首次启动下载慢或不稳定，
+> 可在设置页将下载源切换为镜像（ghfast / gh-proxy）。
+
+### 安装方式（桌面端：Windows / Linux / macOS）
+
+1. 从 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下载对应平台安装包
+   （Windows `setup.exe` 或免安装 `zip`、Linux `tar.gz`、macOS `zip`）
+2. 安装并启动
+3. 在欢迎页选择要安装的 ErisPulse SDK 版本（默认最新）并安装
+4. 创建实例并启动
+
+---
+
+## 工作原理
+
+```
+┌────────────────────────────────────────────────────┐
+│  ErisPulse-App (Flutter)                            │
+│                                                    │
+│  原生 UI ── Dashboard REST / WS API                │
+│       │                                            │
+│       ├── Android：前台服务 + proot + Ubuntu rootfs│
+│       │        + Python + ErisPulse 实例           │
+│       └── 桌面端：内置 Python + 直接进程管理         │
+└────────────────────────────────────────────────────┘
+```
+
+- **Android**：实例运行在前台服务（background isolate）托管的 proot（用户态 chroot）
+  内，UI 关闭后机器人仍持续运行，崩溃自动重启
+- **桌面端**：实例作为 App 的直接子进程运行；Windows 支持最小化到系统托盘后台常驻
+  （关闭窗口不中断实例），App 重启后自动恢复对仍在运行实例的管理，退出时统一停止全部实例
+- 所有平台的原生 UI 都通过 `127.0.0.1:<port>/Dashboard/*` 的 REST / WebSocket API
+  与实例通信，与 [ErisPulse-Dashboard](dashboard.md) 共用同一套 API
+
+---
+
+## 与 SDK 的关系
+
+- App 内置 ErisPulse SDK：Android 端打包在 Ubuntu 镜像中，桌面端从 PyPI 安装
+  （欢迎页可选版本，默认最新）
+- App 中的实例与命令行 `epsdk` 创建的实例等价，可使用相同的模块 / 适配器
+- 模块开发者可通过 [Dashboard 视窗注册 API](dashboard.md) 注册自定义页面：
+  视窗会自动出现在 App 侧边导航（分组与 Dashboard 一致），点击跳转对应页面渲染
+
+---
+
 
 
 ### Dashboard 使用与视窗注册

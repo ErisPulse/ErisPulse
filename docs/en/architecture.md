@@ -1,23 +1,27 @@
 # Architecture Overview
 
-This document introduces the technical architecture of ErisPulse SDK through visual diagrams, helping you quickly understand the design philosophy and module relationships of the framework.
+This document introduces the technical architecture of the ErisPulse SDK through visual diagrams to help you quickly understand the framework's design philosophy and module relationships.
+
+Please directly return the complete translated Markdown content without any additional text.
+
+Once again, please note: if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the formatting requirements outlined in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## SDK Core Architecture
 
-The diagram below shows the composition of the SDK's core modules and their relationships:
+The following diagram illustrates the core modules of the SDK and their relationships:
 
 ```mermaid
 graph TB
-    SDK["sdk<br/>Unified Entry"]
+    SDK["sdk<br/>Unified Entry Point"]
 
     SDK --> Event["Event<br/>Event System"]
     SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
-    SDK --> Logger["Logger<br/>Logger Management"]
+    SDK --> Logger["Logger<br/>Log Management"]
     SDK --> Storage["Storage / env<br/>Storage Management"]
     SDK --> Config["Config<br/>Configuration Management"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
-    SDK --> Router["Router<br/>Router Management"]
+    SDK --> Router["Router<br/>Routing Management"]
     SDK --> Client["HttpClient<br/>HTTP Client"]
     Event --> Command["command"]
     Event --> Message["message"]
@@ -27,39 +31,39 @@ graph TB
     Event --> Conversation["Conversation<br/>Branch + Persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["Yunhu"]
+    BaseAdapter --> P1["CloudLake"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
 
     ModuleMgr --> BaseModule["BaseModule"]
-    BaseModule --> CM["Custom Modules"]
+    BaseModule --> CM["Custom Module"]
 
     BaseAdapter -.-> SendDSL["SendDSL<br/>Message Sending"]
 ```
 
-### Core Module Description
+### Core Module Descriptions
 
 | Module | Description |
-|------|------|
-| **Event** | Event system, providing five types of event processing: command / message / notice / request / meta, and Conversation multi-round dialogue |
-| **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
-| **Module** | Module manager, managing plugin registration, loading, and unloading, supporting dependency declaration and topological sorting |
-| **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
-| **Storage** | SQLite-based key-value storage system, supporting general SQL chained queries |
-| **Config** | TOML format configuration file management |
-| **Logger** | Modular logging system, supporting sub-loggers |
-| **Router** | HTTP/WebSocket route management, encapsulating the underlying backend via an abstraction layer (currently FastAPI + Uvicorn), supporting decorator routes, middleware, grouping, rate limiting, CORS |
-| **HttpClient** | Unified HTTP/WS client, encapsulating the underlying request library via an abstraction layer (currently aiohttp), providing request statistics, retry, logging, WebSocket client, and ErisPulse exception hierarchy features. The client and server WebSocket share the `WebSocketConnectionBase` base class |
+|--------|-------------|
+| **Event** | Event system providing handling for five event types: command / message / notice / request / meta, as well as Conversation for multi-turn dialogue |
+| **Adapter** | Adapter manager responsible for registering, starting, and shutting down adapters for multiple platforms |
+| **Module** | Module manager responsible for registering, loading, and unloading plugins, supporting dependency declaration and topological sorting |
+| **Lifecycle** | Lifecycle manager providing event-driven lifecycle hooks |
+| **Storage** | Key-value storage system based on SQLite, supporting generic SQL chainable queries |
+| **Config** | Configuration file management in TOML format |
+| **Logger** | Modular logging system supporting sub-loggers |
+| **Router** | HTTP/WebSocket routing management, abstracting the underlying backend (currently FastAPI + Uvicorn), supporting decorator-based routing, middleware, grouping, rate limiting, CORS |
+| **HttpClient** | Unified HTTP/WS client abstracting the underlying request library (currently aiohttp), providing request statistics, retry logic, logging, WebSocket client, and ErisPulse exception handling. The client and server WebSocket share the `WebSocketConnectionBase` base class |
 
 ## Initialization Process
 
-The diagram below shows the complete initialization process of `sdk.init()`:
+The following diagram illustrates the complete initialization process of `sdk.init()`:
 
 ```mermaid
 flowchart TD
     A["sdk.init()"] --> B["Prepare Runtime Environment"]
-    B --> B1["Load Configuration Files"]
+    B --> B1["Load Configuration File"]
     B1 --> B2["Set Global Exception Handling"]
     B2 --> C["Adapter & Module Discovery"]
     C --> D{"Parallel Loading"}
@@ -69,58 +73,58 @@ flowchart TD
     E --> E1["Start Adapters"]
     E1 --> F["Register Modules"]
     F --> F1{"Dependency Validation"}
-    F1 -->|"Missing Dependencies"| F2["Skip module and record warning"]
-    F1 -->|"Dependencies Met"| F3["Topological Sort<br/> (Kahn Algorithm + Priority)"]
-    F3 --> G["Initialize Modules in Order<br/> (Instantiation + on_load)"]
+    F1 -->|"Missing Dependencies"| F2["Skip Module and Log Warning"]
+    F1 -->|"Dependencies Satisfied"| F3["Topological Sorting<br/>(Kahn Algorithm + Priority)"]
+    F3 --> G["Initialize Modules in Order<br/>(Instantiation + on_load)"]
     F2 --> G
     G --> H["Start Router Server"]
-    H --> K["Running"]
+    H --> K["Ready to Run"]
 ```
 
-### Initialization Stage Breakdown
+### Detailed Initialization Stages
 
-1. **Environment Preparation** - Load TOML configuration files, set up global exception handling
-2. **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
-3. **Adapter Registration** - Register discovered adapters to the adapter manager
-4. **Adapter Startup** - Asynchronously start platform adapter connections (before module initialization, ensuring modules can immediately send messages)
-5. **Module Registration** - Register discovered modules to the module manager
-6. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
-7. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
-8. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
-9. **Start Router Server** - Start the FastAPI route server using Uvicorn
+1. **Environment Preparation** - Load TOML configuration file, set global exception handling
+2. **Parallel Discovery** - Discover adapters and modules simultaneously from installed PyPI packages
+3. **Register Adapters** - Register discovered adapters to the adapter manager
+4. **Start Adapters** - Asynchronously start connections for each platform adapter (before module initialization, ensuring modules can immediately send messages)
+5. **Register Modules** - Register discovered modules to the module manager
+6. **Dependency Validation** - Check if declared `depends` dependencies of modules have been registered, skip modules with missing dependencies
+7. **Topological Sorting** - Use Kahn algorithm to sort module loading order by dependencies, and sort by `priority` in descending order for modules at the same level
+8. **Module Initialization** - Create module instances in sorted order, call `on_load` lifecycle method
+9. **Start Router Server** - Start FastAPI router server using Uvicorn
 
-## Event Handling Process
+## Event Handling Flow
 
-The diagram below shows the complete flow path of messages from the platform to the handler:
+The following diagram illustrates the complete message flow path from the platform to the handler:
 
 ```mermaid
 flowchart LR
-    A["Platform Raw Message"] --> B["Adapter Receive"]
-    B --> C["Convert to OneBot12 Standard"]
+    A["Platform raw message"] --> B["Adapter receives"]
+    B --> C["Convert to OneBot12 standard"]
     C --> D["adapter.emit()"]
-    D --> E["Execute Middleware Chain"]
-    E --> F{"Event Dispatch"}
-    F --> G1["command<br/>Command Handler"]
-    F --> G2["message<br/>Message Handler"]
-    F --> G3["notice<br/>Notice Handler"]
-    F --> G4["request<br/>Request Handler"]
-    F --> G5["meta<br/>Meta Event Handler"]
-    G1 & G2 & G3 & G4 & G5 --> H["Handler Callback Execution"]
+    D --> E["Execute middleware chain"]
+    E --> F{"Event dispatch"}
+    F --> G1["command<br/>Command handler"]
+    F --> G2["message<br/>Message handler"]
+    F --> G3["notice<br/>Notice handler"]
+    F --> G4["request<br/>Request handler"]
+    F --> G5["meta<br/>Meta event handler"]
+    G1 & G2 & G3 & G4 & G5 --> H["Handler callback execution"]
     H --> I["event.reply()<br/>Reply via SendDSL"]
-    I --> J["Adapter Send to Platform"]
+    I --> J["Adapter sends to platform"]
 ```
 
 ### Key Steps in Event Handling
 
-- **Adapter Receive** - Platform adapters receive native events via WebSocket/Webhook, etc.
-- **OB12 Standardization** - Convert platform native events to the unified OneBot12 standard format
-- **Middleware Processing** - Execute registered middleware functions sequentially, allowing modification of event data
-- **Event Dispatch** - Dispatch to corresponding handlers based on event type (message/notice/request/meta)
-- **SendDSL Reply** - Handlers send responses via `event.reply()` or `SendDSL` chain calls
+- **Adapter receives** - Each platform adapter receives native events via methods such as WebSocket/Webhook
+- **OB12 standardization** - Convert platform native events into the unified OneBot12 standard format
+- **Middleware processing** - Execute registered middleware functions in sequence, which can modify event data
+- **Event dispatch** - Distribute events to corresponding handlers based on event type (message/notice/request/meta)
+- **SendDSL reply** - Handlers send responses via `event.reply()` or a chain of `SendDSL` calls
 
 ## Lifecycle Events
 
-The diagram below shows the triggering sequence of lifecycle events for various framework components:
+The following diagram shows the order in which lifecycle events are triggered for each component of the framework:
 
 ```mermaid
 flowchart LR
@@ -151,7 +155,7 @@ flowchart LR
 
 ### Listening to Lifecycle Events
 
-You can listen to these events via `lifecycle.on()` to execute custom logic:
+You can listen to these events using `lifecycle.on()` to execute custom logic:
 
 ```python
 from ErisPulse import sdk
@@ -161,30 +165,122 @@ from ErisPulse import sdk
 async def on_adapter_event(event_data):
     print(f"Adapter event: {event_data}")
 
-# Listen for module load completion
+# Listen to module load completion
 @sdk.lifecycle.on("module.load")
 async def on_module_loaded(event_data):
     print(f"Module loaded: {event_data}")
 
-# Listen for Bot online
+# Listen to Bot online status
 @sdk.lifecycle.on("adapter.bot.online")
 async def on_bot_online(event_data):
     print(f"Bot online: {event_data}")
-```
 
-## Module Loading Strategy
+## Module Loading Strategies
 
-ErisPulse supports two module loading strategies:
+ErisPulse supports three module loading strategies, declared by the `ModuleLoadStrategy` returned by `get_load_strategy()`:
 
 ```mermaid
 flowchart TD
-    A["Register Module to ModuleManager"] --> B{"Loading Strategy"}
-    B -->|"lazy_load = true"| C["Create LazyModule Proxy"]
-    C --> D["Mount to sdk attributes"]
-    D --> E["Initialize on First Access"]
-    B -->|"lazy_load = false"| F["Create Instance Immediately"]
-    F --> G["Call on_load()"]
-    G --> D2["Mount to sdk attributes"]
+    A["Module registered to ModuleManager"] --> B{"Load Strategy"}
+    B -->|"lazy_load = true<br/>+ activate_on declared"| C["Create ModuleActivator proxy"]
+    B -->|"lazy_load = true<br/>no activate_on"| D["Create LazyModule proxy"]
+    B -->|"lazy_load = false"| E["Create instance immediately"]
+    C --> F["Register event/command stubs to dispatcher"]
+    F --> G["Mount to sdk attribute"]
+    G --> H["Event arrival triggers activation"]
+    H --> I["Instantiate + on_load() + unregister stubs"]
+    D --> J["Mount to sdk attribute"]
+    J --> K["Initialize on first attribute access"]
+    E --> L["Call on_load()"]
+    L --> M["Mount to sdk attribute"]
 ```
 
-> For more details, please refer to [Lazy Loading System](advanced/lazy-loading.md) and [Lifecycle Management](advanced/lifecycle.md).
+> For more details, please refer to [Lazy Loading System](docs/en/lazy-loading.md), [Lifecycle Management](docs/en/lifecycle.md), and the module documentation.
+
+### Event-Driven Lazy Activation (`activate_on`) Trigger Architecture
+
+`activate_on` allows a module to be loaded only when the **first matching event/command arrives**, avoiding persistent memory usage while ensuring no events are lost:
+
+```mermaid
+flowchart LR
+    subgraph Declare["Module Declaration"]
+        S1["get_load_strategy() returns<br/>ModuleLoadStrategy(activate_on=...)"] --> S2["activate_on syntax:<br/>str / dict / list freely mixed"]
+        S2 --> S2a["'message' → event type level"]
+        S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ type + detail_type"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ command trigger"]
+    end
+
+    subgraph Runtime["Runtime"]
+        R1["ModuleActivator registers stub"] --> R1a["Event stub → message/notice/request/meta manager<br/>priority ACTIVATION_STUB_PRIORITY (very low)"]
+        R1 --> R1b["Command stub → command manager<br/>hidden placeholder command (hidden=True)"]
+        R1a --> R2{"Event trigger arrives"}
+        R1b --> R2
+        R2 --> R3["Filter by owner scope"]
+        R3 --> R4["asyncio.Lock prevents duplicate activation"]
+        R4 --> R5["Instantiate module + call on_load()"]
+        R5 --> R6["Unregister all stubs"]
+        R6 --> R7["Event forwarded to real handler"]
+    end
+
+    Declare --> Runtime
+```
+
+**Trigger Semantics Key Points:**
+
+1. **Stub Registration**: Event stubs are registered to the corresponding event manager with very low priority (`ACTIVATION_STUB_PRIORITY`), ensuring they execute **after** all regular handlers of the same event type; command stubs are registered as hidden placeholder commands, not polluting the command list.
+2. **Scope Filtering**: Stubs carry the module owner identity, so modules not enabled for the Bot / session / platform do not trigger.
+3. **Reentrancy Protection**: `asyncio.Lock` ensures only one activation occurs under concurrent events.
+4. **Event Forwarding**: After activation, the current event is forwarded to the real handler (outer group loop has verified that handlers registered after stubs will not be processed twice).
+5. **Failure Semantics**: Activation failure does not retry; stubs are unregistered together, avoiding repeated attempts for every event.
+
+## Local Plugin Folder Architecture
+
+Local plugins (the `plugins/` directory) do not require packaging and publishing; the framework automatically discovers and loads them when starting up:
+
+```mermaid
+flowchart TD
+    A["Project plugins/ directory<br/>（ErisPulse.framework.plugins_dir, supports multiple directories）"] --> B{"PluginFolderLoader.discover()"}
+    B --> C["Single file: dice.py → Plugin name = filename"]
+    B --> D["Package form: weather/ (with __init__.py) → Plugin name = directory name"]
+    B --> E["Ignored: __pycache__ / _-prefixed / non .py / directories without __init__.py"]
+    C --> F["Import module (spec_from_file_location)"]
+    D --> G["Import module (sys.path + import_module)"]
+    F --> H["Identify module class: Main (sub-class of BaseModule) preferred, fallback to first sub-class"]
+    G --> H
+    H --> I["Construct moduleInfo with entry-point matching"]
+    I --> J["ModuleLoader.load() merges<br/>Local overrides PyPI installed packages with same name"]
+    J --> K["Shares with installed package modules:<br/>Enabled status / scope / meta / i18n / context"]
+```
+
+**Conventions and Features:**
+
+- Plugin name source: Use filename for single files, directory name for package form
+- Local plugin `moduleInfo.meta.source == "plugin_folder"`, seamlessly coexists with PyPI installed package modules
+- When names conflict, local takes precedence (for local override debugging), and disabled plugins also remove corresponding entry-point entries
+
+## Local Plugin Hot Reload Architecture
+
+Hot reload monitors plugin file changes and automatically reloads the corresponding plugin:
+
+```mermaid
+flowchart TD
+    A["sdk.enable_plugin_hot_reload()"] --> B["PluginReloadWatcher starts"]
+    B --> C["PollingObserver (background daemon thread)<br/>Regularly compares .py file mtime"]
+    C --> D{"Plugin file changed"}
+    D --> E["Change debouncing (default 1 second)"]
+    E --> F["_handle_change parses plugin name<br/>(single file / package format)"]
+    F --> G["asyncio.run_coroutine_threadsafe<br/>schedules back to main event loop"]
+    G --> H["sdk.reload_plugin(name)"]
+    H --> I["Unloads old instance (triggers on_unload)"]
+    I --> J["Cleans up registration (unregister + remove sdk attribute)"]
+    J --> K["Cleans sys.modules to force re-import"]
+    K --> L["Re-discover + register + load"]
+    L --> M["Mounts new instance to sdk attribute"]
+    M --> N["File deletion → automatically removed from load results"]
+```
+
+7. **Important: Path replacement rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the document
