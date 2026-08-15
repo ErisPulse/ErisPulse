@@ -1,4 +1,4 @@
-"""
+﻿"""
 English translation data (en)
 
 Built-in framework translations, do not modify directly.
@@ -64,6 +64,9 @@ TRANSLATIONS = {
     "core.sdk.module.load_failed": "Failed to load module {name}: {error}",
     # ==================== SDK Run ====================
     "core.sdk.run.init_failed": "ErisPulse initialization failed, please check the logs",
+    "core.sdk.hot_reload.enabled": "Local plugin hot reload enabled",
+    "core.sdk.hot_reload.no_loader": "Hot reload unavailable: SDK module loader not initialized",
+    "core.sdk.hot_reload.failed": "Hot reload of plugin {name} failed: {error}",
     "core.sdk.run.shutdown_signal": "Shutdown signal received, cleaning up...",
     "core.sdk.run.unexpected_error": "Unexpected termination signal intercepted: {error}, process kept alive",
     # ==================== SDK Callbacks ====================
@@ -376,6 +379,25 @@ TRANSLATIONS = {
     "loader.adapter.load_failed_msg": "Adapter {name} load failed: {error}",
     "loader.adapter.register_skipped": "Adapter {name} registration failed, skipped",
     "loader.module.discovered": "Discovered {count} modules",
+    "loader.plugin.discovered": "Discovered {count} local plugins from plugin folder",
+    "loader.plugin.dir_not_found": "Plugin directory not found, skipped: {dir}",
+    "loader.plugin.duplicate": "Plugin {name} declared multiple times, only the first is loaded",
+    "loader.plugin.override": "Local plugin {name} takes priority over installed module with same name",
+    "loader.plugin.no_module_class": "Plugin {name} defines no Main(BaseModule) subclass, skipped",
+    "loader.plugin.load_failed": "Plugin {name} load failed: {error}",
+    "loader.plugin.systemexit": "Plugin {name} called SystemExit({code}) during import, skipped",
+    "loader.plugin.discovery_failed": "Plugin folder discovery failed: {error}",
+    "loader.plugin.diag_hint": "  → Hint: check the plugin file's imports and class definition (must inherit BaseModule)",
+    "loader.plugin.reload_unknown": "Hot reload of plugin {name} failed: plugin not in loaded results",
+    "loader.plugin.reload_not_plugin": "Hot reload of plugin {name} failed: only plugins from the plugin folder support hot reload",
+    "loader.plugin.reload_unload_failed": "Failed to unload plugin {name}: {error}",
+    "loader.plugin.reload_removed": "Plugin {name} deleted, removed from loaded results",
+    "loader.plugin.reload_ok": "Plugin {name} hot reloaded successfully",
+
+    "loader.activate.unsupported_trigger": "Invalid activate_on trigger item: {trigger}",
+    "loader.activate.unsupported_event_type": "activate_on uses unsupported event type: {event_type} (module {module})",
+    "loader.activate.activation_failed": "Event-driven lazy activation module {name} failed to activate",
+    "loader.module.mount_activator": "Mounted event-driven lazy activation module to sdk: {name}",
     "loader.module.none": "No modules found",
     "loader.module.discovery_failed": "Module discovery failed, environment/dependency issue may be the cause: {error}",
     "loader.module.load_failed": "Failed to load {group} entry-points: {error}",
@@ -446,6 +468,7 @@ TRANSLATIONS = {
     "core.logger.invalid_level": "Invalid log level: {level}",
     "core.logger.invalid_format": "Invalid log format: {fmt}. Valid values are rich, plain, json.",
     "core.logger.module_level_set": "Module {module} log level set to {level}",
+    "core.logger.excluded_levels_set": "Excluded log levels: {levels}",
     "core.logger.set_output_failed": "Failed to set log file {path}: {error}",
     "core.logger.no_output_set": "Failed to set any log file.",
     "core.logger.memory_limit_invalid": "Log memory limit must be greater than 0.",
@@ -469,8 +492,7 @@ TRANSLATIONS = {
     "core.command.parsed": "[Command] parsed: cmd={cmd_name} args={args} platform={platform} user={user_id}",
     "core.command.matched": "[Command] matched: cmd={cmd_name} (alias={alias}) platform={platform} user={user_id}",
     "core.command.permission_denied": "[Command] permission denied: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
+    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
@@ -587,7 +609,10 @@ TRANSLATIONS = {
     "core.loader.lazy_async_init_done": "Lazy module {name} async initialization partially complete",
     "core.loader.lazy_async_init_failed": "Lazy module {name} async initialization partially failed: {error}",
     "core.master.global_persist_not_supported": "Global master does not support persisting to dict format. Set ErisPulse.master.users as a list.",
-    "core.module.config_template_generated": "Generated default config template for {key}",
+    "core.scope.is_allowed": "Module {module} allowed on {platform}/{bot}: {allowed}",
+    "core.scope.bound": "Scope bound: {platform}/{bot} → modules={modules} blocked={blocked}",
+    "core.scope.unbound": "Scope binding removed: {platform}/{bot}",
+    "core.scope.denied": "Module {module} not enabled for this Bot, silently ignored",    "core.module.config_template_generated": "Generated default config template for {key}",
     "core.module.start_loading": "Start loading module: {name}",
     "core.router.auth_required_tag": "(auth required)",
     "core.sendrules.callback_error": "SendDSL rule callback execution error: {error}",

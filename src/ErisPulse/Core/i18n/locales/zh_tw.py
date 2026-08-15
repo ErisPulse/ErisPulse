@@ -1,4 +1,4 @@
-"""
+﻿"""
 繁體中文翻譯資料 (zh-TW)
 
 框架內建翻譯，請勿直接修改。
@@ -64,6 +64,9 @@ TRANSLATIONS = {
     "core.sdk.module.load_failed": "載入模組 {name} 失敗: {error}",
     # ==================== SDK 執行 ====================
     "core.sdk.run.init_failed": "ErisPulse 初始化失敗，請檢查日誌",
+    "core.sdk.hot_reload.enabled": "已啟用本地插件熱重載",
+    "core.sdk.hot_reload.no_loader": "熱重載不可用：SDK 尚未初始化模組載入器",
+    "core.sdk.hot_reload.failed": "熱重載插件 {name} 失敗: {error}",
     "core.sdk.run.shutdown_signal": "收到關閉訊號，正在清理...",
     "core.sdk.run.unexpected_error": "攔截到意外終止訊號: {error}，已阻止程序退出",
     # ==================== SDK 回呼 ====================
@@ -376,6 +379,25 @@ TRANSLATIONS = {
     "loader.adapter.load_failed_msg": "適配器 {name} 載入失敗: {error}",
     "loader.adapter.register_skipped": "適配器 {name} 註冊失敗，已跳過",
     "loader.module.discovered": "發現 {count} 個模組",
+    "loader.plugin.discovered": "從插件資料夾發現 {count} 個本地插件",
+    "loader.plugin.dir_not_found": "插件資料夾不存在，跳過: {dir}",
+    "loader.plugin.duplicate": "插件 {name} 重複宣告，僅載入首個",
+    "loader.plugin.override": "本地插件 {name} 優先於同名安裝包模組",
+    "loader.plugin.no_module_class": "插件 {name} 未定義 Main(BaseModule) 或其子類，已跳過",
+    "loader.plugin.load_failed": "插件 {name} 載入失敗: {error}",
+    "loader.plugin.systemexit": "插件 {name} 在匯入時呼叫 SystemExit({code})，已跳過",
+    "loader.plugin.discovery_failed": "插件資料夾發現失敗: {error}",
+    "loader.plugin.diag_hint": "  → 提示: 檢查插件檔案的匯入與類別定義（需繼承 BaseModule）",
+    "loader.plugin.reload_unknown": "熱重載插件 {name} 失敗：插件未在載入結果中",
+    "loader.plugin.reload_not_plugin": "熱重載插件 {name} 失敗：僅插件資料夾來源的插件支援熱重載",
+    "loader.plugin.reload_unload_failed": "卸載插件 {name} 失敗: {error}",
+    "loader.plugin.reload_removed": "插件 {name} 已被刪除，已從載入結果移除",
+    "loader.plugin.reload_ok": "插件 {name} 熱重載成功",
+
+    "loader.activate.unsupported_trigger": "無效的 activate_on 觸發器項目: {trigger}",
+    "loader.activate.unsupported_event_type": "activate_on 使用了不受支援的事件類型: {event_type}（模組 {module}）",
+    "loader.activate.activation_failed": "事件驅動懶啟動模組 {name} 啟動失敗",
+    "loader.module.mount_activator": "掛載事件驅動懶啟動模組到 sdk: {name}",
     "loader.module.none": "未發現模組",
     "loader.module.discovery_failed": "模組發現失敗，可能是環境或依賴問題: {error}",
     "loader.module.load_failed": "載入 {group} entry-points 失敗: {error}",
@@ -446,6 +468,7 @@ TRANSLATIONS = {
     "core.logger.invalid_level": "無效的日誌等級: {level}",
     "core.logger.invalid_format": "無效的日誌格式: {fmt}。有效值為 rich、plain、json。",
     "core.logger.module_level_set": "模組 {module} 日誌等級已設定為 {level}",
+    "core.logger.excluded_levels_set": "已屏蔽日誌等級: {levels}",
     "core.logger.set_output_failed": "無法設定日誌檔案 {path}: {error}",
     "core.logger.no_output_set": "未能成功設定任何日誌檔案。",
     "core.logger.memory_limit_invalid": "日誌儲存上限必須大於0。",
@@ -469,8 +492,7 @@ TRANSLATIONS = {
     "core.command.parsed": "[Command] parsed: cmd={cmd_name} args={args} platform={platform} user={user_id}",
     "core.command.matched": "[Command] matched: cmd={cmd_name} (alias={alias}) platform={platform} user={user_id}",
     "core.command.permission_denied": "[Command] permission denied: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
+    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
@@ -587,7 +609,10 @@ TRANSLATIONS = {
     "core.loader.lazy_async_init_done": "懶載入模組 {name} 非同步初始化部分完成",
     "core.loader.lazy_async_init_failed": "懶載入模組 {name} 非同步初始化部分失敗: {error}",
     "core.master.global_persist_not_supported": "全域主人不支援持久化到 dict 格式設定。請將 ErisPulse.master.users 設為 list 格式。",
-    "core.module.config_template_generated": "已生成 {key} 預設設定範本",
+    "core.scope.is_allowed": "模組 {module} 在 {platform}/{bot} 上允許使用: {allowed}",
+    "core.scope.bound": "已綁定作用域: {platform}/{bot} → modules={modules} blocked={blocked}",
+    "core.scope.unbound": "已移除作用域綁定: {platform}/{bot}",
+    "core.scope.denied": "模組 {module} 未對該 Bot 啟用，已靜默忽略",    "core.module.config_template_generated": "已生成 {key} 預設設定範本",
     "core.module.start_loading": "開始載入模組: {name}",
     "core.router.auth_required_tag": "(需認證)",
     "core.sendrules.callback_error": "SendDSL 規則回呼執行例外: {error}",

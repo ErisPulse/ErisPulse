@@ -17,6 +17,7 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 | 进度 | 文档 | 说明 |
 |------|------|------|
 | **① 上手** | [5 分钟快速开始](quick-start.md) | 安装、初始化、运行 —— 唯一的起步入口 |
+| App 直装 | [ErisPulse-App 客户端](ecosystem/app.md) | 官方全平台客户端：手机 / 电脑图形界面直接运行与管理，免终端 |
 | ② 深入 | [创建第一个机器人](getting-started/first-bot.md) | 编写第一个命令处理器 |
 | ③ 概念 | [基础概念](getting-started/basic-concepts.md) | 理解适配器/模块/事件的设计 |
 | ④ 实战 | [常见任务示例](getting-started/common-tasks.md) | 存储、定时任务、权限控制 |
@@ -40,21 +41,23 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 
 | 文档 | 说明 |
 |------|------|
-| [架构概览](architecture.md) | 可视化图表：核心架构、初始化流程、事件处理、生命周期 |
+| [架构概览](architecture.md) | 可视化图表：核心架构、初始化流程、事件处理、生命周期、模块加载策略（含 `activate_on` 事件驱动懒激活）、本地插件文件夹与热重载架构 |
 | [启动流程与手动控制](advanced/startup.md) | 启动链路拆解、手动驱动各环节、加载失败诊断 |
 | [事件系统](api-reference/event-system.md) | 五大类事件的完整 API |
 | [适配器系统](api-reference/adapter-system.md) | 适配器注册、启停、API 调用 |
 | [核心模块](api-reference/core-modules.md) | Storage / Config / Logger / Router 等基础能力 |
 | [生命周期管理](advanced/lifecycle.md) · [懶加载](advanced/lazy-loading.md) · [路由系统](advanced/router.md) | 内部子系统 |
+| [模块作用域系统](advanced/scope.md) | 模块与适配器 Bot/平台的绑定与隔离 |
 | [Conversation 多轮对话](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL 构建](advanced/sql-builder.md) · [HTTP 客户端](advanced/http-client.md) · [国际化](advanced/i18n.md) | 进阶工具 |
 
-### 四、推荐生态模块
+### 四、生态与官方客户端
 
-按需安装、即装即用的 **第三方社区模块**（不是框架内置功能）。
+官方客户端 + 按需安装、即装即用的生态模块（都不是框架内置功能）。
 
 | 文档 | 说明 |
 |------|------|
-| [生态模块总览](ecosystem/README.md) | 了解如何安装生态模块、为什么这些不是内置功能 |
+| [生态总览](ecosystem/README.md) | 如何安装生态模块、为什么这些不是内置功能 |
+| [ErisPulse-App](ecosystem/app.md) | 官方全平台客户端（Android / Windows / Linux / macOS）：原生界面管理多个实例，**手机直接运行**，桌面托盘常驻 |
 | [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web 管理面板 + 视窗注册 API（模块可向侧边栏注册自定义页面） |
 | [ErisPulse-Takumi](ecosystem/takumi.md) | 图片渲染（HTML / 节点树 / SVG / 动画，内置中英文字体） |
 

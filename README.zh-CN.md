@@ -588,9 +588,13 @@ ErisPulse 不仅仅是框架。装上就能开始，不需要从零造轮子。
 </td>
 <td align="center" width="25%">
 
-**文档**
+**ErisPulse-App**
 
-[erisdev.com](https://www.erisdev.com)
+官方多端客户端
+
+手机直接运行 · 桌面托盘常驻
+
+[下载安装 →](https://github.com/ErisPulse/ErisPulse-App/releases)
 
 </td>
 <td align="center" width="25%">
@@ -604,7 +608,9 @@ ErisPulse 不仅仅是框架。装上就能开始，不需要从零造轮子。
 </td>
 <td align="center" width="25%">
 
-**CLI**
+**文档 & CLI**
+
+[erisdev.com](https://www.erisdev.com)
 
 `epsdk` 脚手架工具
 

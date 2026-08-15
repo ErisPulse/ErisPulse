@@ -8,7 +8,7 @@ from .adapter import ApiDSL, SendDSL, RequestDSL, BaseAdapter
 from .converter import BaseConverter
 from .send_rules import SendContext
 from .send_builder import SendBuilder, BatchContext
-from .module import BaseModule
+from .module import BaseModule, ModuleMeta
 from .storage import BaseStorage, BaseQueryBuilder
 from .kv_builder import KVQueryBuilder
 from .errors import (
@@ -62,6 +62,7 @@ __all__ = [
     # i18n 单键声明
     "I18nKey",
     "KVQueryBuilder",
+    "ModuleMeta",
     "RequestDSL",
     "SendBuilder",
     "SendContext",

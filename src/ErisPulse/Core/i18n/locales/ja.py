@@ -1,4 +1,4 @@
-"""
+﻿"""
 日本語翻訳データ (ja)
 
 フレームワーク組み込みの翻訳です。直接変更しないでください。
@@ -64,6 +64,9 @@ TRANSLATIONS = {
     "core.sdk.module.load_failed": "モジュール {name} の読み込みに失敗しました: {error}",
     # ==================== SDK 実行 ====================
     "core.sdk.run.init_failed": "ErisPulse の初期化に失敗しました、ログを確認してください",
+    "core.sdk.hot_reload.enabled": "ローカルプラグインのホットリロードを有効化しました",
+    "core.sdk.hot_reload.no_loader": "ホットリロード不可: SDK のモジュールローダーが未初期化です",
+    "core.sdk.hot_reload.failed": "プラグイン {name} のホットリロードに失敗しました: {error}",
     "core.sdk.run.shutdown_signal": "シャットダウンシグナルを受信しました、クリーンアップ中...",
     "core.sdk.run.unexpected_error": "予期しない終了シグナルを遮断しました: {error}、プロセスは維持されます",
     # ==================== SDK コールバック ====================
@@ -376,6 +379,25 @@ TRANSLATIONS = {
     "loader.adapter.load_failed_msg": "アダプター {name} の読み込みに失敗しました: {error}",
     "loader.adapter.register_skipped": "アダプター {name} の登録に失敗しました、スキップしました",
     "loader.module.discovered": "{count} 個のモジュールを発見しました",
+    "loader.plugin.discovered": "プラグインフォルダから {count} 個のローカルプラグインを発見しました",
+    "loader.plugin.dir_not_found": "プラグインフォルダが存在しないためスキップ: {dir}",
+    "loader.plugin.duplicate": "プラグイン {name} が重複宣言されています。最初のもののみ読み込みます",
+    "loader.plugin.override": "ローカルプラグイン {name} は同名のインストール済みモジュールより優先されます",
+    "loader.plugin.no_module_class": "プラグイン {name} に Main(BaseModule) のサブクラスが定義されていません。スキップしました",
+    "loader.plugin.load_failed": "プラグイン {name} の読み込みに失敗しました: {error}",
+    "loader.plugin.systemexit": "プラグイン {name} がインポート中に SystemExit({code}) を呼び出しました。スキップしました",
+    "loader.plugin.discovery_failed": "プラグインフォルダの検出に失敗しました: {error}",
+    "loader.plugin.diag_hint": "  → ヒント: プラグインファイルのインポートとクラス定義を確認してください（BaseModule を継承する必要があります）",
+    "loader.plugin.reload_unknown": "プラグイン {name} のホットリロードに失敗しました: ロード結果に見つかりません",
+    "loader.plugin.reload_not_plugin": "プラグイン {name} のホットリロードに失敗しました: プラグインフォルダ由来のプラグインのみサポート",
+    "loader.plugin.reload_unload_failed": "プラグイン {name} のアンロードに失敗しました: {error}",
+    "loader.plugin.reload_removed": "プラグイン {name} が削除されたため、ロード結果から除外しました",
+    "loader.plugin.reload_ok": "プラグイン {name} のホットリロードに成功しました",
+
+    "loader.activate.unsupported_trigger": "無効な activate_on トリガー項目: {trigger}",
+    "loader.activate.unsupported_event_type": "activate_on がサポートしていないイベントタイプを使用しています: {event_type}（モジュール {module}）",
+    "loader.activate.activation_failed": "イベント駆動の遅延起動モジュール {name} の起動に失敗しました",
+    "loader.module.mount_activator": "イベント駆動の遅延起動モジュールを sdk にマウントしました: {name}",
     "loader.module.none": "モジュールが見つかりません",
     "loader.module.discovery_failed": "モジュールの検出に失敗しました。環境または依存関係の問題が考えられます: {error}",
     "loader.module.load_failed": "{group} entry-points の読み込みに失敗しました: {error}",
@@ -446,6 +468,7 @@ TRANSLATIONS = {
     "core.logger.invalid_level": "無効なログレベル: {level}",
     "core.logger.invalid_format": "無効なログ形式: {fmt}。有効な値は rich、plain、json です。",
     "core.logger.module_level_set": "モジュール {module} のログレベルを {level} に設定しました",
+    "core.logger.excluded_levels_set": "除外されたログレベル: {levels}",
     "core.logger.set_output_failed": "ログファイル {path} の設定に失敗しました: {error}",
     "core.logger.no_output_set": "ログファイルを1つも設定できませんでした。",
     "core.logger.memory_limit_invalid": "ログ保存上限は0より大きい値にしてください。",
@@ -469,8 +492,7 @@ TRANSLATIONS = {
     "core.command.parsed": "[Command] parsed: cmd={cmd_name} args={args} platform={platform} user={user_id}",
     "core.command.matched": "[Command] matched: cmd={cmd_name} (alias={alias}) platform={platform} user={user_id}",
     "core.command.permission_denied": "[Command] permission denied: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
+    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
@@ -587,7 +609,10 @@ TRANSLATIONS = {
     "core.loader.lazy_async_init_done": "遅延ロードモジュール {name} の非同期初期化が部分的に完了",
     "core.loader.lazy_async_init_failed": "遅延ロードモジュール {name} の非同期初期化が部分的に失敗しました: {error}",
     "core.master.global_persist_not_supported": "グローバルマスターは dict 形式への永続化をサポートしていません。ErisPulse.master.users を list 形式に設定してください。",
-    "core.module.config_template_generated": "{key} のデフォルト設定テンプレートを生成しました",
+    "core.scope.is_allowed": "モジュール {module} は {platform}/{bot} で許可されています: {allowed}",
+    "core.scope.bound": "スコープをバインドしました: {platform}/{bot} → modules={modules} blocked={blocked}",
+    "core.scope.unbound": "スコープのバインドを解除しました: {platform}/{bot}",
+    "core.scope.denied": "モジュール {module} はこのBotで有効化されていないため、静かに無視しました",    "core.module.config_template_generated": "{key} のデフォルト設定テンプレートを生成しました",
     "core.module.start_loading": "モジュールの読み込みを開始: {name}",
     "core.router.auth_required_tag": "(要認証)",
     "core.sendrules.callback_error": "SendDSL ルールコールバック実行例外: {error}",

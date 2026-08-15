@@ -64,7 +64,7 @@ _MODULE_INIT = """from .Core import Main
 """
 
 _MODULE_CORE = """from dataclasses import dataclass, field
-from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey, ModuleMeta
 from ErisPulse.Core.Event import command, message, notice
 from ErisPulse.Core.i18n import i18n
 
@@ -127,6 +127,20 @@ class Main(BaseModule):
         self.client = self.sdk.client
 
         self.logger.info((\"{text[module.log.init_done]}\").format(name=\"{name}\"))
+
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        \"\"\"
+        {text[module.meta_doc]}
+        \"\"\"
+        return ModuleMeta(
+            name=\"{name}\",
+            description=\"{name} module\",
+            version=\"0.1.0\",
+            author=\"ErisDev\",
+            group=\"default\",
+            tags=[\"{name}\"],
+        )
 
     @staticmethod
     def get_load_strategy():
@@ -645,6 +659,12 @@ class CreateCommand(Command):
         parser.add_argument(
             "--force", "-f", action="store_true", help=i18n.t("cli.create.force_help")
         )
+        parser.add_argument(
+            "--local",
+            action="store_true",
+            default=False,
+            help=i18n.t("cli.create.local_module_help"),
+        )
 
     def execute(self, args):
         create_type = getattr(args, "create_type", None)
@@ -712,6 +732,11 @@ class CreateCommand(Command):
         :param name: [str] 模块名称
         :return: [None] 无返回值
         """
+        # --local：创建本地插件（plugins/ 目录结构，免打包安装）
+        if getattr(args, "local", False):
+            self._create_module_local(args, name)
+            return
+
         description = self._ask_missing(
             args,
             "description",
@@ -792,6 +817,55 @@ class CreateCommand(Command):
             )
             console.print(f"    · {i18n.t('cli.create.install_dev')}")
             console.print(f"    · {i18n.t('cli.create.run_test')}")
+
+        except Exception as e:
+            console.print(f"[error]  {i18n.t('cli.create.failed', error=e)}")
+            sys.exit(1)
+
+    def _create_module_local(self, args, name: str):
+        """
+        创建本地插件（--local）：生成 plugins/ 目录结构，免打包安装
+
+        :param args: [Any] 解析后的命令参数对象
+        :param name: [str] 模块名称
+        :return: [None] 无返回值
+        """
+        output = Path(args.output)
+        plugins_dir = output / "plugins"
+        plugin_dir = plugins_dir / name
+
+        if plugin_dir.exists() and not args.force:
+            console.print(
+                f"[error]  {i18n.t('cli.create.dir_exists', dir=str(plugin_dir))}"
+            )
+            sys.exit(1)
+
+        try:
+            plugin_dir.mkdir(parents=True, exist_ok=True)
+
+            (plugin_dir / "__init__.py").write_text(_MODULE_INIT, encoding="utf-8")
+            (plugin_dir / "Core.py").write_text(
+                _MODULE_CORE.format(name=name, text=_scaffold_text(name)),
+                encoding="utf-8",
+            )
+
+            console.print()
+            console.print(
+                f"[success]  {i18n.t('cli.create.module_created', name=name)}[/]"
+            )
+            console.print()
+            console.print(Text(i18n.t("cli.create.local_structure"), style="bold"))
+            console.print("    plugins/")
+            console.print(f"    └── {name}/")
+            console.print("        ├── __init__.py")
+            console.print("        └── Core.py")
+            console.print()
+            console.print(Text(i18n.t("cli.create.next_steps"), style="bold"))
+            console.print(f"    · {i18n.t('cli.create.cd_to', dir=str(plugin_dir))}")
+            console.print(
+                f"    · {i18n.t('cli.create.edit_module', file=str(plugin_dir) + '/Core.py')}"
+            )
+            console.print(f"    · {i18n.t('cli.create.local_tip')}")
 
         except Exception as e:
             console.print(f"[error]  {i18n.t('cli.create.failed', error=e)}")

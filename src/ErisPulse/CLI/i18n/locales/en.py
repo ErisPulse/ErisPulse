@@ -1,4 +1,4 @@
-"""
+﻿"""
 CLI English translations (en)
 
 Independent CLI translation data, decoupled from Core i18n.
@@ -48,6 +48,9 @@ TRANSLATIONS = {
     "cli.create.homepage_help": "Project homepage URL",
     "cli.create.output_help": "Output directory (default: current directory)",
     "cli.create.force_help": "Force overwrite existing directory",
+    "cli.create.local_module_help": "Create a local plugin (plugins/ structure, no packaging/install; module only)",
+    "cli.create.local_structure": "Local plugin structure",
+    "cli.create.local_tip": "Place the plugin in the project's plugins/ directory; auto-discovered on startup and hot-reloaded on change",
     "cli.create.select_type_title": "Select creation type",
     "cli.create.select_type_module": "Custom functional Module",
     "cli.create.select_type_adapter": "Platform Adapter",
