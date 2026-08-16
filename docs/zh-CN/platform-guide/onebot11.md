@@ -330,6 +330,7 @@ async def handle_message(event):
 
 | 方法 | 返回类型 | 说明 |
 |------|----------|------|
+| `get_raw_event()` | `dict` | 获取 OneBot11 完整原始事件数据 |
 | `get_raw_self_id()` | `str` | 获取原始 self_id（Bot 的 QQ 号） |
 | `get_sender_info()` | `dict` | 获取完整的发送者信息（包含 nickname、role、level 等） |
 | `get_sender_role()` | `str` | 获取发送者在群内的角色（owner/admin/member） |

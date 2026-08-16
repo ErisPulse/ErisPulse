@@ -104,9 +104,12 @@
   - **CLI `create module --local`**：
     - 生成 `plugins/<name>/` 本地插件包结构（`__init__.py` + `Core.py`），免打包安装，配合热重载开箱即用
   - **模块加载策略 `activate_on`（事件驱动懒激活）**：
-    - `get_load_strategy()` 返回 `ModuleLoadStrategy(activate_on=...)` 声明事件触发懒激活：`str`（事件类型级）/ `dict`（类型+detail_type 或 `{"command": "cmd"}`）/ `list` 自由混合
+    - `get_load_strategy()` 返回 `ModuleLoadStrategy(activate_on=...)` 声明事件触发懒激活：`str`（事件类型级）/ `dict`（类型+detail_type 或 `{"command": ...}`）/ `list` 自由混合，命令名与事件 detail_type 列表均支持
+    - 命令触发声明支持 **dict 形式**（镜像 `@command()` 用户级参数）：`{"command": {"name": "dice", "help": "掷一个骰子", "usage": ..., "group": ..., "aliases": ["d"], "hidden": True}}`，`name` 必填；同名命令简写与 dict 混合声明时去重（dict 优先）；缺 `name` 或事件 detail_type 误写 dict 时告警并忽略（不再静默失效）
     - `ModuleActivator` 注册低优先级 stub 到事件/命令分发器，触发时激活模块并转发事件到真实处理器；激活失败不重试
+    - 命令触发器 stub 注册占位命令：默认**可见**（`hidden=False`）——命令触发是"主动"的，占位命令必须对 Help / 命令总览可见，用户才能发现并输入命令触发激活；dict 声明的 help/usage/group/aliases/hidden 镜像注册（hidden=True 占位同隐藏，与真实命令语义对齐；别名输入同样触发激活）；占位 help 回退链：dict help → `get_meta().description` → 模块 `__description__` → 包元数据 Summary → 通用 i18n 提示；激活后占位命令注销、真实命令接管
   - **meta 声明优化**：`get_meta()` 推荐返回 `ModuleMeta` **配置类实例**（与 `get_load_strategy()` 返回 `ModuleLoadStrategy` 对齐），dict 兼容；`ACTIVATION_STUB_PRIORITY` 常量移至 `Core/constants.py`
+  - **`Core.Bases` 补全 `I18nConfig` 导出**：`Core/Bases/__init__.py` 此前漏 re-export `I18nConfig`，导致 `from ErisPulse.Core.Bases import I18nConfig` 抛 ImportError（只能走 `Core.Bases.config_schema` 子模块路径）；现已补入 `__all__`，与 `config_schema.I18nConfig` 同一对象（`runtime` 的 lazy re-export 不变）
 
 ### 测试
 - @wsu2059q
@@ -115,7 +118,7 @@
   - `tests/unit/test_unit_topology.py`：模块/适配器/作用域拓扑与 `sdk.get_topology()` 聚合
   - 新增 `tests/unit/test_unit_plugin_folder.py`（6 用例）：插件发现（单文件/包形式）、moduleInfo 构造、非法条目忽略、路径追踪、`ModuleLoader.load()` 并入
   - 新增 `tests/unit/test_unit_plugin_reload.py`（3 用例）：文件变更→插件名解析、start/stop、无插件目录降级
-  - `tests/unit/test_unit_module.py` 新增 meta 声明测试；`test_module_load_submits_lifecycle_event` 改用 `call_args_list` 断言（兼容 load 提交 `module.load`+`module.init` 两次事件）
+  - `tests/unit/test_unit_module.py` 新增 meta 声明测试；`test_module_load_submits_lifecycle_event` 改用 `call_args_list` 断言（兼容 load 提交 `module.load`+`module.init` 两次事件）；新增 `TestModuleActivateOnCommandVisibility`（10 用例）：命令触发占位命令对 Help 可见、help 五层回退链（dict 声明 / meta description / 模块描述 / 包 Summary mock / 通用提示）、dict 声明解析与去重、缺 name 告警忽略、hidden 语义对齐、usage/group/aliases 镜像注册、激活后真实命令接管闭环成立
   - `tests/unit/test_unit_cli.py` 新增 `TestCreateModuleLocal`：`--local` 生成 `plugins/<name>/` 结构并可被框架发现
 
 ### 文档
@@ -125,7 +128,15 @@
   - 新增 `docs/zh-CN/ecosystem/app.md`：官方全平台客户端 **ErisPulse-App** 安装与使用说明（Android **手机直接运行**，Windows / Linux / macOS 桌面端均已发布，发行版页面按平台选择下载；含功能速览——多实例 / 概览仪表盘 / 模块商店 / 事件构建器 / 监控 / 命令管理 / 托盘常驻 / 模块动态视窗）
   - `docs/zh-CN/developer-guide/modules/getting-started.md`：meta 声明改用推荐写法——返回 `ModuleMeta` 配置类实例（与 `get_load_strategy()` 返回 `ModuleLoadStrategy` 对齐），dict 写法降为兼容
   - `docs/zh-CN/user-guide/cli-reference.md`：create 命令补充 `--local` 参数说明
+  - `docs/zh-CN/architecture.md`：新增模块加载策略（三种策略对比）与 `activate_on` 触发架构（声明语法、命令 dict 参数、help 回退链、触发语义）、本地插件文件夹、本地插件热重载等架构图
+  - `docs/zh-CN/advanced/lazy-loading.md`：新增「事件驱动懒激活（activate_on）」章节（完整语法、命令 dict 参数表、help 五层回退链、触发语义），最佳实践/注意事项补 activate_on 第三选择
+  - `docs/zh-CN/developer-guide/modules/best-practices.md`：懒加载实践改为三模式示例（activate_on 低频命令/监听器 vs 立即加载 vs 工具懒加载）
+  - `docs/zh-CN/developer-guide/modules/getting-started.md`：`get_load_strategy` 示例补 `activate_on` 可选参数注释
   - 同步注册到 `generate-docs-index.py` / `generate-ai-prompts.py` 与 `docs/zh-CN/README.md`、`advanced/README.md`
+  - **文档准确性审查与修正**（对照源码逐项核查）：`email.md` 修正不存在的 `@sdk.on_message(platform=)`（改用 `message.on_message()` + 平台过滤）；`event-system.md` / `event-wrapper.md` 修正 `reply_to_message` 参数（现为 `quote`，否则落入 `**kwargs` 被静默丢弃）；`startup.md` 修正 `init()` 异常语义（内部捕获返回 `False`，非"向上抛"）；`getting-started.md` / `core-concepts.md` / `best-practices.md` 清理已废弃的 `_load_config()` 手动配置演示，统一指向 `ConfigClass` + `self.cfg`；`core-concepts.md` ConfigClass 示例补 `__init__(self, sdk)`（框架不注入 `self.logger`）；`configuration.md` 补 `[ErisPulse.master]` 段、`server.auto_start` 键、修正 `case_sensitive` 示例与默认值矛盾；`lifecycle.md` 补 `config.updated` 事件；`onebot11.md` 补 `get_raw_event()`
+  - **版本标注**：为 2.8.0 新增特性（`activate_on` / 作用域 / `exclude_levels` / 本地插件 / 模块 meta）统一加 `> [!NOTE] 本特性需要 ErisPulse 2.8.0+`；补 2.7 回溯标注（`event.done()`/`mark_processed(claim=, stop=)` 2.7.1、`reply(via=)`/`send_chain()` 2.7.0、CLI `doctor` 2.7.0、`infer_receive_type` 语义子类型行为变更 2.7.0）
+  - **去重**：合并 `advanced/session-types.md` 与 `standards/session-types.md`（standards 为权威，吸收核心 API/工具方法章节，删除 advanced 版本并同步清理 4 语言副本与 `.translate_cache` 缓存、修正死链）；`architecture.md` 三处去重（初始化 9 步 / activate_on 7 条要点 / 生命周期监听示例改为链接到对应文档）；`configuration.md` 作用域配置段精简（删三级绑定 TOML 示例，指向 `scope.md`）；`scope.md` 移除越界的日志屏蔽段
+  - 新增 7 张 mermaid 配图：`lazy-loading.md` 加载策略决策图（三策略分流）；`lifecycle.md` 一条消息的完整生命周期事件时序图（adapter.event.receive → … → dispatched）；`scope.md` 三级绑定解析流程图（替换原 ASCII 图，会话>Bot>平台优先级与回退语义）；`event-system.md` 五类事件处理器分发图；`adapters/getting-started.md` 正向/反向转换架构图（替换原 ASCII 图）；`conversation.md` 对话活跃状态流转图（stateDiagram）；`send-dsl.md` 方法链构建流程图（替换原 ASCII 图）
 
 ---
 

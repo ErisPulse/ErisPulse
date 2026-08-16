@@ -187,6 +187,9 @@ async def handler_c(event):
 
 ## 链路控制：认领与阻断
 
+> [!NOTE]
+> `event.done()` / `event.mark_processed()` 的 `claim=` / `stop=` 参数本特性需要 ErisPulse **2.7.1+**。
+
 ErisPulse 将「认领」与「阻断」两个正交语义解耦，通过 `event.done()` 统一控制，便于在命令处理周围叠加日志、审计、权限等观察层。
 
 **两个概念的准确定义：**

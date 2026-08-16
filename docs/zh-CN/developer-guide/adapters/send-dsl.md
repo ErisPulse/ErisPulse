@@ -30,8 +30,12 @@ await adapter.Send.Using("bot1").To("group", "123").Text("Hello")
 
 ## 方法链
 
-```
-Using/Account() → To() → [修饰方法] → [发送方法]
+```mermaid
+flowchart LR
+    A["Using / Account<br/>（选发送账号，可选）"] --> B["To<br/>（选目标类型与 ID）"]
+    B --> C["修饰方法<br/>At / Reply / Expire / ForMember 等"]
+    C --> D["发送方法<br/>Text / Image / Voice / Raw_ob12"]
+    D --> E["返回 asyncio.Task"]
 ```
 
 ## 发送方法
@@ -151,6 +155,9 @@ await adapter.Send.To("group", "big").Expire(3600).ForMember("114").Board("看�
 ```
 
 ## 在 Event 包装类中使用修饰方法
+
+> [!NOTE]
+> `reply(via=)` 与 `event.send_chain()` 本特性需要 ErisPulse **2.7.0+**。
 
 `event.reply()` 默认只暴露 `at_sender`/`at_users`/`at_all`/`quote` 等内置修饰参数。要使用平台专有修饰方法，有两种方式：
 
