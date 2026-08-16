@@ -5,7 +5,7 @@
 ## 文档列表
 
 - [启动流程与手动控制](startup.md) - 启动链路拆解（Finder/Loader/Manager/Router）与手动完整启动
-- [懒加载系统](lazy-loading.md) - 懒加载模块系统的工作原理和配置
+- [懒加载系统](lazy-loading.md) - 懒加载模块系统的工作原理、配置与事件驱动懒激活（activate_on）
 - [模块作用域系统](scope.md) - 模块与适配器 Bot/平台的绑定与隔离
 - [国际化 (i18n)](i18n.md) - 多语言支持、翻译注册与语言检测
 - [生命周期管理](lifecycle.md) - 生命周期事件系统的使用方法
@@ -13,7 +13,7 @@
 - [HTTP 客户端](http-client.md) - 统一 HTTP 请求客户端
 - [MessageBuilder 详解](message-builder.md) - OneBot12 消息段构建器的双模式用法
 - [SQL 查询构建器](sql-builder.md) - 通用 SQL 链式查询构建器及存储后端抽象
-- [会话类型系统](session-types.md) - 会话类型定义、映射与自定义类型注册
+- [会话类型系统](../standards/session-types.md) - 会话类型定义、映射与自定义类型注册
 - [Conversation 多轮对话](conversation.md) - 多轮对话上下文的交互方法
 
 > [!NOTE]
