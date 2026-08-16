@@ -1012,4 +1012,27 @@ level = "INFO"
         assert "ErisPulse.modules.status" not in manager._dirty_keys
 
 
+class TestBasesReExport:
+    """Bases 包聚合导出完整性测试"""
+
+    def test_i18n_config_re_exported(self):
+        """I18nConfig 应从 Bases 顶层导出，且与 config_schema 是同一对象"""
+        from ErisPulse.Core.Bases import I18nConfig
+        from ErisPulse.Core.Bases.config_schema import I18nConfig as _Source
+
+        assert I18nConfig is _Source
+
+    def test_i18n_config_in_all(self):
+        """I18nConfig 应包含在 Bases.__all__ 中"""
+        import ErisPulse.Core.Bases as Bases
+
+        assert "I18nConfig" in Bases.__all__
+
+    def test_i18n_config_default_language(self):
+        """I18nConfig 默认 language 为 auto"""
+        from ErisPulse.Core.Bases import I18nConfig
+
+        assert I18nConfig().language == "auto"
+
+
 

@@ -29,6 +29,7 @@ from .config_schema import (
     AdapterConfig,
     BaseConfig,
     BotAccountConfig,
+    I18nConfig,
 )
 from .i18n_schema import (
     BaseI18n,
@@ -59,6 +60,8 @@ __all__ = [
     "ErisPulseError",
     "HTTPStatusError",
     "HttpRequest",
+    # i18n 配置 Schema（控制显示语言）
+    "I18nConfig",
     # i18n 单键声明
     "I18nKey",
     "KVQueryBuilder",
