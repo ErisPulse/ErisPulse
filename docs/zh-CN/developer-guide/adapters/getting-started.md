@@ -15,18 +15,16 @@
 
 ### 适配器架构
 
-```
-正向转换（接收）                        反向转换（发送）
-─────────────                        ─────────────
-平台事件                               模块构建消息
-    ↓                                    ↓
-Converter.convert()               Send.Raw_ob12()
-    ↓                                    ↓
-OneBot12 标准事件                   平台原生 API 调用
-    ↓                                    ↓
-事件系统                             标准响应格式
-    ↓
-模块处理
+```mermaid
+flowchart LR
+    subgraph receive["正向转换（接收）"]
+        direction TB
+        P1["平台事件"] --> C1["Converter.convert()"] --> O1["OneBot12 标准事件"] --> S1["事件系统"] --> M1["模块处理"]
+    end
+    subgraph send["反向转换（发送）"]
+        direction TB
+        M2["模块构建消息"] --> R1["Send.Raw_ob12()"] --> N1["平台原生 API 调用"] --> R2["标准响应格式"]
+    end
 ```
 
 ## 目录结构

@@ -88,8 +88,15 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = ""
 ssl_keyfile = ""
+
+[ErisPulse.master]
+# users 支持两种写法（二选一）：
+#   全局主人（所有平台生效）：users = ["123456", "789012"]
+#   按平台指定主人：users = { yunhu = ["123456"], telegram = ["789012"] }
+users = {}
 
 [ErisPulse.logger]
 level = "INFO"
@@ -129,6 +136,7 @@ language = "auto"
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = "/path/to/cert.pem"
 ssl_keyfile = "/path/to/key.pem"
 ```
@@ -137,8 +145,35 @@ ssl_keyfile = "/path/to/key.pem"
 |---------|------|---------|------|
 | host | string | 0.0.0.0 | 监听地址，0.0.0.0 表示所有接口 |
 | port | integer | 8000 | 监听端口号 |
+| auto_start | boolean | true | 是否在 `sdk.init()` 时自动启动路由服务器。设为 `false` 可跳过路由服务器启动（纯事件/无 WebUI 场景） |
 | ssl_certfile | string | 空 | SSL 证书文件路径 |
 | ssl_keyfile | string | 空 | SSL 私钥文件路径 |
+
+## 主人系统配置
+
+主人系统用于识别「框架主人」账号（如 Bot 管理员）。`master.users` 支持两种写法：
+
+```toml
+[ErisPulse.master]
+# 写法一：全局主人（所有平台生效）
+users = ["123456", "789012"]
+
+# 写法二：按平台指定主人（dict）
+# users = { yunhu = ["123456"], telegram = ["789012"] }
+```
+
+| 配置项 | 类型 | 默认值 | 说明 |
+|---------|------|---------|------|
+| users | array / object | 空 | 主人账号列表。`list` 形式为全局主人（所有平台生效）；`dict` 形式按平台指定（键为平台名，值为该平台的主人账号列表） |
+
+代码中通过 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 检查，每次调用实时读取配置（支持热更新，无需重启）：
+
+```python
+from ErisPulse.Core import master
+
+if master.is_master(event):
+    await event.reply("主人你好")
+```
 
 ## 日志配置
 
@@ -159,6 +194,9 @@ exclude_levels = ["EVENT"]
 | exclude_levels | array | 空 | 屏蔽指定日志等级。被屏蔽等级的日志**完全丢弃**（不写内存、不推送给 Dashboard 等订阅器、不打印、不写文件）。支持热更新 |
 
 > **隐私保护**：消息收发内容以 **EVENT 等级**（数值 21）记录。设置 `exclude_levels = ["EVENT"]` 即可让后台（如 Dashboard 日志面板）无法看到各群/私聊的消息内容，同时不影响其它等级日志。
+
+> [!NOTE]
+> `exclude_levels` 本特性需要 ErisPulse **2.8.0+**。
 
 ## 框架配置
 
@@ -243,7 +281,7 @@ use_global_db = false
 ```toml
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = false
+case_sensitive = true
 allow_space_prefix = false
 ```
 
@@ -307,23 +345,15 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 
 ## 作用域配置
 
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
 模块作用域系统用于控制"某个 Bot 只能使用哪些模块"。默认情况下所有模块对所有 Bot 开放，仅在配置绑定后才开始过滤，模块与适配器**无需任何改动**即可适配。
 
 ```toml
-# 平台级绑定（作用于该平台所有 Bot / 会话）
-[ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Translate"]   # 白名单：该平台 Bot 只能使用这些模块
-blocked = ["Danger"]              # 黑名单：这些模块在该平台禁用
-
-# Bot 级绑定（作用于该 Bot 的所有会话，覆盖平台级）
-[ErisPulse.scope.bots.onebot11."123456"]
-modules = ["Chat"]
-blocked = []
-
-# 会话级绑定（作用于某个群 / 频道 / 私聊，最具体）
-[ErisPulse.scope.sessions.onebot11."789012345"]
-modules = ["Chat"]
-blocked = []
+[ErisPulse.scope]
+default_allow = true        # 默认允许全部（false = 隐式拒绝严格模式）
+cache_size = 1024           # is_allowed 的 LRU 缓存大小
 ```
 
 | 配置项 | 类型 | 说明 |
@@ -337,7 +367,7 @@ blocked = []
 | `scope.sessions.<platform>.<session_id>.modules` | array | 会话级白名单（群/频道/私聊），优先级最高 |
 | `scope.sessions.<platform>.<session_id>.blocked` | array | 会话级黑名单，优先级最高 |
 
-> 解析优先级：**会话级 > Bot 级 > 平台级**。模块名大小写不敏感；会话标识跨平台隔离。支持运行时通过 `sdk.scope.bind()` / `unbind()` 动态增删（`merge=True` 可合并），详见[作用域系统](../advanced/scope.md)。
+> 解析优先级：**会话级 > Bot 级 > 平台级**。三级绑定的完整 TOML 示例、模块名大小写不敏感、会话标识跨平台隔离、运行时 `sdk.scope.bind()` / `unbind()` 动态增删（`merge=True` 可合并）等详见[作用域系统](../advanced/scope.md)。
 
 ## 下一步
 

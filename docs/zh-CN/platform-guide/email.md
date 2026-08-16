@@ -282,10 +282,12 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 ## 事件处理示例
 
 ```python
-from ErisPulse import sdk
+from ErisPulse.Core.Event import message
 
-@sdk.on_message(platform="email")
+@message.on_message()
 async def handle_email(event):
+    if event.get("platform") != "email":
+        return
     # 发件人纯邮箱地址
     sender = event["user_id"]              # sender@example.com
     

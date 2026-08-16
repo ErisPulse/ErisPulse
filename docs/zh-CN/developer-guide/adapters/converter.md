@@ -377,4 +377,4 @@ import time
 - [适配器核心概念](core-concepts.md) - 适配器整体架构
 - [SendDSL 详解](send-dsl.md) - 反向转换（发送方向）
 - [事件转换标准](../../standards/event-conversion.md) - 正式的事件转换规范
-- [会话类型系统](../../advanced/session-types.md) - 会话类型映射规则
+- [会话类型系统](../../standards/session-types.md) - 会话类型映射规则

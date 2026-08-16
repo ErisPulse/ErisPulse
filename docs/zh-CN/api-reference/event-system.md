@@ -2,6 +2,19 @@
 
 本文档详细介绍了 ErisPulse 事件系统的 API。
 
+事件系统将平台事件按类型分发到五类处理器：
+
+```mermaid
+flowchart LR
+    A["平台事件<br/>（OneBot12 标准）"] --> B{"事件类型"}
+    B --> C["command<br/>命令处理器"]
+    B --> D["message<br/>消息处理器"]
+    B --> E["notice<br/>通知处理器"]
+    B --> F["request<br/>请求处理器"]
+    B --> G["meta<br/>元事件处理器"]
+    C & D & E & F & G --> H["Event 包装类<br/>reply / get_text / done 等"]
+```
+
 ## Command 命令模块
 
 ### 注册命令
@@ -368,10 +381,10 @@ await event.reply("你好")
 await event.reply("你好", at_sender=True)
 
 # 回复并引用当前消息
-await event.reply("收到", reply_to_message=True)
+await event.reply("收到", quote=True)
 
 # 组合使用
-await event.reply("收到", at_sender=True, reply_to_message=True)
+await event.reply("收到", at_sender=True, quote=True)
 
 # 发送图片（使用 method 参数）
 if event.supports("Image"):

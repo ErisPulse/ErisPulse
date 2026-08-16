@@ -1,5 +1,8 @@
 # 模块作用域系统
 
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
 模块作用域系统用于控制"某个 Bot 只能使用哪些模块"，实现多 Bot 场景下的模块隔离。
 默认情况下所有模块对所有 Bot 开放；仅在配置绑定后才开始过滤，**模块与适配器无需任何改动**即可适配。
 
@@ -12,12 +15,17 @@
 
 ## 工作原理
 
-```
-Bot 收到消息
-  → 框架从事件中提取 (platform, bot_id, session_id)
-  → 查找作用域绑定（会话级 > Bot 级 > 平台级）
-  → 命中绑定则按 白名单/黑名单 过滤模块
-  → 被禁用的模块：命令与事件处理器均不触发（静默忽略）
+```mermaid
+flowchart TD
+    A["Bot 收到消息"] --> B["提取 (platform, bot_id, session_id)"]
+    B --> C{"查找作用域绑定<br/>（会话级 > Bot 级 > 平台级）"}
+    C -->|"会话级"| D["sessions<br/>优先级最高"]
+    C -->|"Bot 级"| E["bots<br/>覆盖平台级"]
+    C -->|"平台级"| F["platforms"]
+    D & E & F --> G{"命中绑定？"}
+    G -->|"命中"| H["按 白名单 / 黑名单 过滤模块"]
+    G -->|"未命中"| I["回退到下一级<br/>全未配置则允许全部"]
+    H --> J["被禁用的模块：命令与事件处理器均不触发<br/>（静默忽略）"]
 ```
 
 - **解析优先级：会话级 > Bot 级 > 平台级**，更高优先级未绑定规则时回退到下一级；全部未配置则允许全部模块。
@@ -210,22 +218,3 @@ topology = sdk.get_topology()
 
 - 模块拓扑聚合了该模块注册的命令、事件处理器、HTTP/WS/SSE 路由与生命周期钩子，便于绘制模块资源树。
 - 适配器拓扑聚合了各适配器状态、下属 Bot 状态及平台级/Bot 级作用域绑定。
-
-## 隐私：屏蔽消息日志
-
-如需让后台（如 Dashboard 日志面板）无法看到各群/私聊的消息内容，可在 `[ErisPulse.logger]`
-中屏蔽 EVENT 等级（消息收发内容以 EVENT 等级记录）：
-
-```toml
-[ErisPulse.logger]
-exclude_levels = ["EVENT"]
-```
-
-被屏蔽等级的日志会**完全丢弃**（不写内存、不推送给订阅器、不打印、不写文件），
-也可通过代码动态控制：
-
-```python
-sdk.logger.set_excluded_levels(["EVENT"])   # 屏蔽
-sdk.logger.exclude_level("EVENT")
-sdk.logger.allow_level("EVENT")             # 恢复
-```

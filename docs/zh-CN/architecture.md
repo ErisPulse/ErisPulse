@@ -79,15 +79,7 @@ flowchart TD
 
 ### 初始化阶段详解
 
-1. **环境准备** - 加载 TOML 配置文件，设置全局异常处理
-2. **并行发现** - 同时从已安装的 PyPI 包中发现适配器和模块
-3. **注册适配器** - 将发现的适配器注册到适配器管理器
-4. **启动适配器** - 异步启动各平台适配器连接（在模块初始化之前，确保模块能立即发送消息）
-5. **注册模块** - 将发现的模块注册到模块管理器
-6. **依赖验证** - 检查模块声明的 `depends` 依赖是否已注册，跳过缺失依赖的模块
-7. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序排列
-8. **模块初始化** - 按排序顺序创建模块实例，调用 `on_load` 生命周期方法
-9. **启动路由服务器** - 使用 Uvicorn 启动 FastAPI 路由服务器
+> 完整的初始化链路拆解（Finder / Loader / Manager / Router）、底层入口（`init()` / `init_task()` / `init_sync()`）与手动完整启动见 [启动流程与手动控制](advanced/startup.md)。
 
 ## 事件处理流程
 
@@ -151,26 +143,7 @@ flowchart LR
 
 ### 监听生命周期事件
 
-你可以通过 `lifecycle.on()` 监听这些事件，执行自定义逻辑：
-
-```python
-from ErisPulse import sdk
-
-# 监听所有适配器事件
-@sdk.lifecycle.on("adapter")
-async def on_adapter_event(event_data):
-    print(f"适配器事件: {event_data}")
-
-# 监听模块加载完成
-@sdk.lifecycle.on("module.load")
-async def on_module_loaded(event_data):
-    print(f"模块已加载: {event_data}")
-
-# 监听 Bot 上线
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(event_data):
-    print(f"Bot 上线: {event_data}")
-```
+> 完整的事件监听方法（`lifecycle.on()` / `once()` / `has_handlers()`）、全部生命周期事件列表与数据格式见 [生命周期管理](advanced/lifecycle.md)。
 
 ## 模块加载策略
 
@@ -196,6 +169,9 @@ flowchart TD
 
 ### 事件驱动懒激活（`activate_on`）触发架构
 
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
 `activate_on` 允许模块在**首个匹配事件/命令到达时**才加载，避免常驻内存，同时保证事件不丢失：
 
 ```mermaid
@@ -204,12 +180,13 @@ flowchart LR
         S1["get_load_strategy() 返回<br/>ModuleLoadStrategy(activate_on=...)"] --> S2["activate_on 语法：<br/>str / dict / list 自由混合"]
         S2 --> S2a["'message' → 事件类型级"]
         S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ 类型 + detail_type"]
-        S2 --> S2c["{'command': 'roll'}<br/>→ 命令触发"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ 命令触发（简写/列表）"]
+        S2 --> S2d["{'command': {'name': 'dice', 'help': ...,<br/>'aliases': [...], 'hidden': ...}}<br/>→ 命令触发（dict 声明）"]
     end
 
     subgraph Runtime["运行期"]
         R1["ModuleActivator 注册 stub"] --> R1a["事件 stub → message/notice/request/meta 管理器<br/>优先级 ACTIVATION_STUB_PRIORITY（极低）"]
-        R1 --> R1b["命令 stub → 命令管理器<br/>隐藏占位命令（hidden=True）"]
+        R1 --> R1b["命令 stub → 命令管理器<br/>占位命令（镜像 dict 声明的 help/usage/group/aliases/hidden）"]
         R1a --> R2{"触发事件到达"}
         R1b --> R2
         R2 --> R3["按 owner 过作用域过滤"]
@@ -224,13 +201,12 @@ flowchart LR
 
 **触发语义要点：**
 
-1. **stub 注册**：事件 stub 以极低优先级（`ACTIVATION_STUB_PRIORITY`）注册到对应事件管理器，确保在同类事件的所有普通处理器**之后**执行；命令 stub 以隐藏占位命令注册，不污染命令列表
-2. **作用域过滤**：stub 带模块 owner 身份，未对该 Bot / 会话 / 平台启用的模块不触发
-3. **防重入**：`asyncio.Lock` 保证并发事件下只激活一次
-4. **事件转发**：激活完成后将当前事件转发给真实处理器（外层分组循环已验证 stub 之后注册的处理器不会被二次处理）
-5. **失败语义**：激活失败不重试，stub 一并注销，避免每次事件都重复尝试
+> 完整的 `activate_on` 语法（str / dict / list）、命令 dict 声明、占位命令 help 回退链、作用域过滤与失败语义见 [懒加载系统](advanced/lazy-loading.md#事件驱动懒激活activate_on)。
 
 ## 本地插件文件夹架构
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
 
 本地插件（`plugins/` 目录）无需打包发布，框架启动时自动发现并加载：
 
