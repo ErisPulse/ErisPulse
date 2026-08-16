@@ -1018,3 +1018,324 @@ class TestModuleMeta:
         meta = mgr.get_meta("M")
         assert meta["author"] == "alice"
         assert meta["description"] == "类声明"
+
+
+class TestModuleActivateOnCommandVisibility:
+    """activate_on 命令触发器的占位命令必须对 Help/命令总览可见
+
+    命令触发是"主动"的——用户必须先输入命令才能激活模块。若占位命令
+    被隐藏（hidden=True），Help/命令总览无法发现它，用户无从得知命令存在，
+    命令触发将永远无法激活模块（与事件触发的"被动到达"不同）。
+    """
+
+    def _make_manager(self):
+        from ErisPulse.Core.module import ModuleManager
+
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._module_classes.clear()
+        manager._loaded_modules.clear()
+        manager._module_info.clear()
+        return manager
+
+    def _make_module_class(self):
+        class Dice(BaseModule):
+            async def on_load(self, event=None):
+                from ErisPulse.Core.Event.command import command
+
+                @command("roll")
+                async def roll(event):
+                    event["_command_ran"] = "roll"
+
+            async def on_unload(self, event=None):
+                pass
+
+            @staticmethod
+            def get_meta():
+                return {"description": "掷骰子"}
+
+        return Dice
+
+    def _make_activator(self, manager, cls, activate_on, module_info=None):
+        from ErisPulse.loaders.module import ModuleActivator
+
+        class _Sdk:
+            pass
+
+        sdk = _Sdk()
+        info = module_info or {
+            "meta": {"name": "dice", "is_base_module": True},
+        }
+        return ModuleActivator(
+            "dice",
+            cls,
+            sdk,
+            info,
+            manager,
+            activate_on=activate_on,
+        )
+
+    def test_command_stub_visible_in_help(self):
+        """占位命令对 Help 可见（hidden=False + 有 help 文本）"""
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_module_class()
+        act = self._make_activator(manager, cls, [{"command": "roll"}])
+
+        try:
+            assert "roll" in command.commands
+            info = command.commands["roll"]
+            assert info["hidden"] is False
+            assert info["owner"] == "dice"
+            assert info["help"]  # 有帮助文本
+            assert "roll" in command.get_visible_commands()
+        finally:
+            act._deregister_stubs()
+
+    def test_command_stub_help_from_meta_description(self):
+        """占位命令 help 优先取模块 get_meta() 的 description"""
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_module_class()
+        act = self._make_activator(manager, cls, [{"command": "roll"}])
+
+        try:
+            assert command.commands["roll"]["help"] == "掷骰子"
+        finally:
+            act._deregister_stubs()
+
+    async def test_activation_promotes_stub_to_real_command(self):
+        """激活后占位命令注销，真实命令接管（命令触发闭环成立）"""
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_module_class()
+        manager.register(
+            "dice", cls, {"meta": {"name": "dice", "is_base_module": True}}
+        )
+        act = self._make_activator(manager, cls, [{"command": "roll"}])
+
+        try:
+            await act._activate()
+            # 真实命令已注册
+            assert "roll" in command.commands
+            real = command.commands["roll"]
+            assert real["func"].__name__ == "roll"
+            # 占位命令已被注销：不再有模块未加载时注册的 stub 处理函数
+            assert not any(
+                info["func"] is not real["func"] for info in command.commands.values()
+            )
+
+            from ErisPulse.Core.Event.wrapper import Event
+
+            ev = Event(
+                {
+                    "type": "message",
+                    "detail_type": "private",
+                    "message_id": "1",
+                    "message": [{"type": "text", "data": {"text": "/roll"}}],
+                    "user_id": "u1",
+                    "self": {"user_id": "bot"},
+                }
+            )
+            await command._handle_message(ev)
+            assert ev.get("_command_ran") == "roll"
+        finally:
+            act._deregister_stubs()
+
+    def test_parse_activate_on_dict_forms_and_dedup(self):
+        """parse_activate_on：dict 命令值提取 name，混合形式去重保序"""
+        from ErisPulse.loaders.module import parse_activate_on
+
+        event_triggers, command_triggers = parse_activate_on(
+            [
+                "message",
+                {"notice": "group_member_increase"},
+                {"command": "roll"},
+                {"command": {"name": "dice", "help": "掷一个骰子"}},
+                {"command": ["roll", {"name": "dice"}]},  # 重复声明：去重
+            ]
+        )
+        assert event_triggers == [
+            ("message", None),
+            ("notice", "group_member_increase"),
+        ]
+        assert command_triggers == ["roll", "dice"]
+
+    def test_parse_activate_on_command_name_required(self):
+        """dict 命令声明缺 name：告警并忽略，不影响其它触发器"""
+        from ErisPulse.loaders.module import parse_activate_on
+
+        _, command_triggers = parse_activate_on(
+            [{"command": {"help": "缺 name"}}, {"command": "roll"}]
+        )
+        assert command_triggers == ["roll"]
+
+    def test_extract_command_meta(self):
+        """_extract_command_meta：仅 dict 声明产生元数据，字段归一化"""
+        from ErisPulse.loaders.module import _extract_command_meta
+
+        meta = _extract_command_meta(
+            [
+                {"command": "roll"},  # 简写：不产生元数据
+                {
+                    "command": {
+                        "name": "dice",
+                        "help": "掷一个骰子",
+                        "aliases": ["d"],
+                        "hidden": True,
+                    }
+                },
+            ]
+        )
+        assert set(meta.keys()) == {"dice"}
+        assert meta["dice"]["help"] == "掷一个骰子"
+        assert meta["dice"]["aliases"] == ["d"]
+        assert meta["dice"]["hidden"] is True
+        assert meta["dice"]["usage"] is None
+        assert meta["dice"]["group"] is None
+
+    def test_command_stub_help_from_activate_on_decl(self):
+        """占位命令 help 优先取 activate_on dict 声明（高于 get_meta description）"""
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_module_class()
+        act = self._make_activator(
+            manager,
+            cls,
+            [{"command": {"name": "roll", "help": "命令级介绍"}}],
+        )
+
+        try:
+            assert command.commands["roll"]["help"] == "命令级介绍"
+        finally:
+            act._deregister_stubs()
+
+    def test_command_stub_help_fallback_to_module_description(self):
+        """回退链：无 dict help、无 get_meta description → moduleInfo description"""
+        from ErisPulse.Core.Event.command import command
+
+        class NoMetaModule(BaseModule):
+            async def on_load(self, event=None):
+                pass
+
+            async def on_unload(self, event=None):
+                pass
+
+        manager = self._make_manager()
+        act = self._make_activator(
+            manager,
+            NoMetaModule,
+            [{"command": "roll"}],
+            module_info={
+                "meta": {
+                    "name": "dice",
+                    "is_base_module": True,
+                    "description": "模块级描述",
+                }
+            },
+        )
+
+        try:
+            assert command.commands["roll"]["help"] == "模块级描述"
+        finally:
+            act._deregister_stubs()
+
+    def test_command_stub_help_pkg_summary_fallback(self, monkeypatch):
+        """回退链：均无声明时取包元数据 Summary"""
+
+        class _FakeDist:
+            metadata = {"Summary": "骰子包简介"}
+
+        monkeypatch.setattr(
+            "importlib.metadata.distribution", lambda name: _FakeDist()
+        )
+
+        class NoMetaModule(BaseModule):
+            async def on_load(self, event=None):
+                pass
+
+            async def on_unload(self, event=None):
+                pass
+
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        act = self._make_activator(
+            manager,
+            NoMetaModule,
+            [{"command": "roll"}],
+            module_info={
+                "meta": {
+                    "name": "dice",
+                    "is_base_module": True,
+                    "description": "",
+                    "package": "dice-pkg",
+                }
+            },
+        )
+
+        try:
+            assert command.commands["roll"]["help"] == "骰子包简介"
+        finally:
+            act._deregister_stubs()
+
+    def test_command_stub_hidden_semantics(self):
+        """dict 声明 hidden=True：占位命令同样隐藏（与真实命令语义对齐）"""
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_module_class()
+        act = self._make_activator(
+            manager,
+            cls,
+            [
+                {"command": "roll"},
+                {"command": {"name": "debug", "hidden": True}},
+            ],
+        )
+
+        try:
+            # 可见命令：仅 roll
+            assert command.commands["roll"]["hidden"] is False
+            assert "roll" in command.get_visible_commands()
+            # 隐藏命令：注册但不进可见列表，输入仍可触发激活
+            assert command.commands["debug"]["hidden"] is True
+            assert "debug" not in command.get_visible_commands()
+        finally:
+            act._deregister_stubs()
+
+    def test_command_stub_meta_registration(self):
+        """dict 声明的 usage/group/aliases 镜像注册到占位命令"""
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_module_class()
+        act = self._make_activator(
+            manager,
+            cls,
+            [
+                {
+                    "command": {
+                        "name": "dice",
+                        "help": "掷一个骰子",
+                        "usage": "/dice",
+                        "group": "娱乐",
+                        "aliases": ["d"],
+                    }
+                }
+            ],
+        )
+
+        try:
+            info = command.commands["dice"]
+            assert info["help"] == "掷一个骰子"
+            assert info["usage"] == "/dice"
+            assert info["group"] == "娱乐"
+            # 别名已注册：输入别名同样命中占位命令（触发激活）
+            assert command.aliases.get("d") == "dice"
+        finally:
+            act._deregister_stubs()
