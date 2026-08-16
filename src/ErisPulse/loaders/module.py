@@ -1440,13 +1440,14 @@ def parse_activate_on(activate_on: Any) -> tuple[list[tuple[str, str | None]], l
     - ``dict``：单键映射，键为事件类型或 ``command``
       - ``{"message": "private"}``：事件类型 + detail_type（消息的 detail_type 即会话类型）
       - ``{"notice": "group_member_increase"}``：事件类型 + detail_type
-      - ``{"command": "roll"}``：命令名触发，值为命令名或命令名列表
+      - ``{"command": "roll"}``：命令名触发，值为命令名 / 命令名列表
+      - ``{"command": {"name": "dice", "help": "掷一个骰子"}}``：命令名 + 元数据声明
     - ``list``：以上各项的混合列表
 
     :param activate_on: activate_on 声明值（str / dict / list）
     :return: ``(event_triggers, command_triggers)``
         - event_triggers: ``[(event_type, detail_type | None), ...]``
-        - command_triggers: ``[命令名, ...]``
+        - command_triggers: ``[命令名, ...]``（已去重，保持声明顺序）
 
     :example:
     >>> event_triggers, command_triggers = parse_activate_on(
@@ -1459,6 +1460,7 @@ def parse_activate_on(activate_on: Any) -> tuple[list[tuple[str, str | None]], l
     """
     event_triggers: list[tuple[str, str | None]] = []
     command_triggers: list[str] = []
+    _seen_commands: set[str] = set()
 
     if activate_on is None:
         return event_triggers, command_triggers
@@ -1470,9 +1472,17 @@ def parse_activate_on(activate_on: Any) -> tuple[list[tuple[str, str | None]], l
         elif isinstance(item, dict):
             for key, value in item.items():
                 if key == "command":
-                    names = value if isinstance(value, list) else [value]
-                    command_triggers.extend(str(n) for n in names)
+                    _collect_command_names(value, command_triggers, _seen_commands)
                 else:
+                    if isinstance(value, dict):
+                        # 事件 detail_type 误写为 dict：条件永假，明确告警而非静默失效
+                        logger.warning(
+                            i18n.t(
+                                "loader.activate.unsupported_detail_type",
+                                event_type=key,
+                            )
+                        )
+                        continue
                     details = value if isinstance(value, list) else [value]
                     event_triggers.extend((key, detail) for detail in details)
         else:
@@ -1483,6 +1493,108 @@ def parse_activate_on(activate_on: Any) -> tuple[list[tuple[str, str | None]], l
                 )
             )
     return event_triggers, command_triggers
+
+
+def _collect_command_names(
+    value: Any,
+    command_triggers: list[str],
+    seen: set[str],
+) -> None:
+    """
+    收集命令触发器名称（支持 str / list / dict 三种形式）
+
+    - ``str``：命令名
+    - ``list``：命令名列表（元素为 str 或 dict）
+    - ``dict``：命令声明（含 ``name`` 字段，缺省时告警并忽略）
+
+    :param value: ``command`` 键的值
+    :param command_triggers: 命令名列表（就地追加）
+    :param seen: 已收集命令名集合（去重，保持声明顺序）
+    """
+    if isinstance(value, str):
+        if value not in seen:
+            seen.add(value)
+            command_triggers.append(value)
+    elif isinstance(value, list):
+        for item in value:
+            _collect_command_names(item, command_triggers, seen)
+    elif isinstance(value, dict):
+        name = value.get("name")
+        if not name or not isinstance(name, str):
+            logger.warning(i18n.t("loader.activate.command_name_required"))
+            return
+        if name not in seen:
+            seen.add(name)
+            command_triggers.append(name)
+    else:
+        logger.warning(
+            i18n.t("loader.activate.unsupported_trigger", trigger=value)
+        )
+
+
+def _extract_command_meta(activate_on: Any) -> dict[str, dict[str, Any]]:
+    """
+    提取命令触发器的元数据声明（dict 形式）
+
+    仅 ``{"command": {...}}`` 的 dict 声明携带元数据（help / usage / group /
+    aliases / hidden）；简写与列表形式不携带，其帮助文本由 ``_command_stub_help``
+    的回退链兜底。同名命令同时以简写与 dict 声明时，dict 声明优先（此处仅收集
+    dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
+
+    :param activate_on: activate_on 声明值
+    :return: ``{命令名: {"help": ..., "usage": ..., "group": ..., "aliases": [...], "hidden": ...}}``
+    """
+    meta: dict[str, dict[str, Any]] = {}
+
+    if activate_on is None:
+        return meta
+
+    items = activate_on if isinstance(activate_on, list) else [activate_on]
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        for key, value in item.items():
+            if key == "command":
+                _extract_command_meta_value(value, meta)
+    return meta
+
+
+def _extract_command_meta_value(
+    value: Any,
+    meta: dict[str, dict[str, Any]],
+) -> None:
+    """
+    递归收集 dict 形式的命令元数据声明
+
+    :param value: ``command`` 键的值
+    :param meta: 命令元数据字典（就地追加）
+    """
+    if isinstance(value, list):
+        for item in value:
+            _extract_command_meta_value(item, meta)
+        return
+    if not isinstance(value, dict):
+        return
+
+    name = value.get("name")
+    if not name or not isinstance(name, str):
+        return
+
+    aliases = value.get("aliases")
+    if aliases is None:
+        aliases = []
+    elif isinstance(aliases, str):
+        aliases = [aliases]
+    elif not isinstance(aliases, list):
+        aliases = []
+
+    meta[name] = {
+        "help": value.get("help"),
+        "usage": value.get("usage"),
+        "group": value.get("group"),
+        "aliases": list(aliases),
+        "hidden": bool(value.get("hidden", False)),
+    }
 
 
 class ModuleActivator(LazyModule):
@@ -1507,6 +1619,7 @@ class ModuleActivator(LazyModule):
         "_activated",
         "_activation_failed",
         "_activation_lock",
+        "_command_meta",
         "_command_stubs",
         "_command_triggers",
         "_event_stubs",
@@ -1543,6 +1656,7 @@ class ModuleActivator(LazyModule):
         event_triggers, command_triggers = parse_activate_on(activate_on)
         object.__setattr__(self, "_event_triggers", event_triggers)
         object.__setattr__(self, "_command_triggers", command_triggers)
+        object.__setattr__(self, "_command_meta", _extract_command_meta(activate_on))
 
         self._register_stubs()
 
@@ -1595,16 +1709,98 @@ class ModuleActivator(LazyModule):
                 )
             self._event_stubs.append((event_handler, _stub_event))
 
-        # 命令触发器：注册同名占位命令（hidden）
+        # 命令触发器：注册占位命令（镜像 @command() 的用户级参数）
+        # 注意：命令触发是"主动"的——用户必须先输入命令才会激活模块，
+        # 因此占位命令默认对 Help / 命令总览可见，否则用户无从得知命令存在，
+        # 命令触发将永远无法激活模块（与事件触发的"被动到达"不同）。
+        # dict 声明可携带 help/usage/group/aliases/hidden：声明 hidden=True 的
+        # 命令其占位同样隐藏（与激活后真实命令的隐藏语义对齐）。
+        command_meta = object.__getattribute__(self, "_command_meta")
         for cmd_name in object.__getattribute__(self, "_command_triggers"):
             async def _stub_command(event: Any, _name=cmd_name) -> None:
                 await self._activate_and_forward_command(_name, event)
 
             from ..Core.Event.command import command
 
+            meta = command_meta.get(cmd_name) or {}
             with owner_scope(module_name):
-                command(cmd_name, hidden=True)(_stub_command)
+                command(
+                    cmd_name,
+                    aliases=meta.get("aliases") or None,
+                    group=meta.get("group"),
+                    hidden=bool(meta.get("hidden", False)),
+                    help=self._command_stub_help(cmd_name),
+                    usage=meta.get("usage"),
+                )(_stub_command)
             self._command_stubs.append(_stub_command)
+
+    def _command_stub_help(self, cmd_name: str) -> str:
+        """
+        生成命令触发占位命令的帮助文本（模块未加载时展示）
+
+        回退链（逐层取值，取到即止）：
+
+        1. ``activate_on`` dict 声明的命令级 ``help``（最精确）
+        2. 模块 ``get_meta()`` 的 ``description``（静态方法，无需实例化）
+        3. 模块 ``__description__``（moduleInfo.meta.description）
+        4. 包元数据的 ``Summary``（PyPI 包简介；本地插件无包信息时跳过）
+        5. 通用提示（说明该命令首次使用会自动加载对应模块）
+
+        :param cmd_name: 命令名
+        :return: 帮助文本
+        """
+        # 1. activate_on dict 声明的命令级 help
+        declared = (object.__getattribute__(self, "_command_meta").get(cmd_name) or {}).get("help")
+        if isinstance(declared, dict):
+            # 防御：误写 i18n 字典时取 default，避免展示原始字典
+            declared = declared.get("default")
+        if declared:
+            return str(declared)
+
+        module_info = object.__getattribute__(self, "_module_info") or {}
+
+        # 2. 模块类 get_meta() 的 description
+        try:
+            module_class = object.__getattribute__(self, "_module_class")
+            get_meta = getattr(module_class, "get_meta", None)
+            if callable(get_meta):
+                meta = get_meta()
+                if isinstance(meta, dict):
+                    description = meta.get("description")
+                elif meta is not None and hasattr(meta, "to_dict"):
+                    description = meta.to_dict().get("description")
+                else:
+                    description = None
+                if isinstance(description, dict):
+                    # i18n 字典格式：模块未加载，翻译键未注册，取 default 兜底
+                    description = description.get("default")
+                if description:
+                    return str(description)
+        except Exception:
+            pass
+
+        # 3. 模块 __description__（moduleInfo.meta.description）
+        module_description = module_info.get("meta", {}).get("description")
+        if module_description:
+            return str(module_description)
+
+        # 4. 包元数据 Summary（PyPI 包简介；本地插件无包信息时跳过）
+        package = module_info.get("meta", {}).get("package")
+        if package:
+            try:
+                dist = importlib.metadata.distribution(package)
+                summary = dist.metadata.get("Summary", "")
+                if summary:
+                    return str(summary)
+            except Exception:
+                pass
+
+        # 5. 通用提示
+        module_name = object.__getattribute__(self, "_module_name")
+        return i18n.t(
+            "loader.activate.command_hint",
+            module=module_name,
+        )
 
     # ------------------------------------------------------------------
     # 激活流程
