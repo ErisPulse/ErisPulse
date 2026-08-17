@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1434,
+  "total_keywords": 1423,
   "keywords": {
     "\"Chat\": {": [
       {
@@ -2772,14 +2772,6 @@
         "title": "I18nConfig は dataclass なので、設定テンプレートを生成するために使用できます"
       }
     ],
-    "ID フィールドのクエリ": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 86,
-        "level": 3,
-        "title": "ID フィールドのクエリ"
-      }
-    ],
     "Jinja テンプレートの例": [
       {
         "document": "ecosystem/takumi.md",
@@ -5276,14 +5268,6 @@
         "title": "カスタムストレージバックエンド"
       }
     ],
-    "カスタムタイプの登録": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 122,
-        "level": 2,
-        "title": "カスタムタイプの登録"
-      }
-    ],
     "カスタムフォント": [
       {
         "document": "ecosystem/takumi.md",
@@ -5510,12 +5494,6 @@
       {
         "document": "advanced/conversation.md",
         "line": 36,
-        "level": 2,
-        "title": "コア API"
-      },
-      {
-        "document": "advanced/session-types.md",
-        "line": 67,
         "level": 2,
         "title": "コア API"
       }
@@ -6130,14 +6108,6 @@
         "title": "セキュリティヘッダー"
       }
     ],
-    "セッションタイプシステム": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 1,
-        "level": 1,
-        "title": "セッションタイプシステム"
-      }
-    ],
     "セッションレベルのバインディング（特定のグループ / チャンネル / プライベートチャットに適用、最も具体的）": [
       {
         "document": "user-guide/configuration.md",
@@ -6178,14 +6148,6 @@
         "title": "タイプのスタブ生成（IDEの補完）"
       }
     ],
-    "タイプマッピング": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 32,
-        "level": 2,
-        "title": "タイプマッピング"
-      }
-    ],
     "タイプ・スタブ・コマンド": [
       {
         "document": "user-guide/cli-reference.md",
@@ -6200,22 +6162,6 @@
         "line": 59,
         "level": 2,
         "title": "タイプ分類"
-      }
-    ],
-    "タイプ変換": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 69,
-        "level": 3,
-        "title": "タイプ変換"
-      }
-    ],
-    "タイプ定義": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 5,
-        "level": 2,
-        "title": "タイプ定義"
       }
     ],
     "タイマージョブ": [
@@ -6248,14 +6194,6 @@
         "line": 109,
         "level": 4,
         "title": "タプルを辞書に変換"
-      }
-    ],
-    "ターゲット ID の取得": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 113,
-        "level": 3,
-        "title": "ターゲット ID の取得"
       }
     ],
     "ダッシュボードの自動登録": [
@@ -8360,12 +8298,6 @@
         "title": "ユーティリティメソッド"
       },
       {
-        "document": "advanced/session-types.md",
-        "line": 147,
-        "level": 2,
-        "title": "ユーティリティメソッド"
-      },
-      {
         "document": "api-reference/event-system.md",
         "line": 432,
         "level": 3,
@@ -8880,14 +8812,6 @@
         "line": 53,
         "level": 3,
         "title": "ワイルドカード"
-      }
-    ],
-    "ワンステップで送信情報を取得": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 100,
-        "level": 3,
-        "title": "ワンステップで送信情報を取得"
       }
     ],
     "一、ロボットを使いたい": [
@@ -9622,14 +9546,6 @@
         "line": 76,
         "level": 3,
         "title": "友達操作メソッド"
-      }
-    ],
-    "受信タイプ (ReceiveType)": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 7,
-        "level": 3,
-        "title": "受信タイプ (ReceiveType)"
       }
     ],
     "各ステップの詳細": [
@@ -11502,14 +11418,6 @@
         "title": "自動ドキュメント"
       }
     ],
-    "自動推論": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 49,
-        "level": 2,
-        "title": "自動推論"
-      }
-    ],
     "自動注入": [
       {
         "document": "ecosystem/takumi.md",
@@ -12074,14 +11982,6 @@
         "title": "送信アカウントの指定"
       }
     ],
-    "送信タイプ (SendType)": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 20,
-        "level": 3,
-        "title": "送信タイプ (SendType)"
-      }
-    ],
     "送信メソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -12488,12 +12388,6 @@
       {
         "document": "advanced/router.md",
         "line": 414,
-        "level": 2,
-        "title": "関連ドキュメント"
-      },
-      {
-        "document": "advanced/session-types.md",
-        "line": 175,
         "level": 2,
         "title": "関連ドキュメント"
       },

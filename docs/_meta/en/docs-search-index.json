@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1415,
+  "total_keywords": 1404,
   "keywords": {
     "\"Chat\": {": [
       {
@@ -2626,14 +2626,6 @@
         "title": "Automatic Failure Retry (Retry)"
       }
     ],
-    "Automatic Inference": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 49,
-        "level": 2,
-        "title": "Automatic Inference"
-      }
-    ],
     "Automatic Injection": [
       {
         "document": "ecosystem/takumi.md",
@@ -4108,12 +4100,6 @@
         "line": 36,
         "level": 2,
         "title": "Core API"
-      },
-      {
-        "document": "advanced/session-types.md",
-        "line": 67,
-        "level": 2,
-        "title": "Core API"
       }
     ],
     "Core Components": [
@@ -4366,14 +4352,6 @@
         "line": 342,
         "level": 2,
         "title": "Custom Storage Backend"
-      }
-    ],
-    "Custom Type Registration": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 122,
-        "level": 2,
-        "title": "Custom Type Registration"
       }
     ],
     "Custom confirmation words": [
@@ -5904,14 +5882,6 @@
         "title": "Get Method Details"
       }
     ],
-    "Get Target ID": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 113,
-        "level": 3,
-        "title": "Get Target ID"
-      }
-    ],
     "Get a complete status summary (suitable for WebUI display)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -6430,14 +6400,6 @@
         "line": 521,
         "level": 1,
         "title": "I18nConfig is a dataclass, can be used to generate config template"
-      }
-    ],
-    "ID Field Query": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 86,
-        "level": 3,
-        "title": "ID Field Query"
       }
     ],
     "II. I Want to Develop Modules / Adapters": [
@@ -8290,14 +8252,6 @@
         "title": "One-Click Installation Script (Recommended)"
       }
     ],
-    "One-Step Send Information Retrieval": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 100,
-        "level": 3,
-        "title": "One-Step Send Information Retrieval"
-      }
-    ],
     "One-time Registration (once)": [
       {
         "document": "advanced/lifecycle.md",
@@ -9244,14 +9198,6 @@
         "title": "Reading configuration"
       }
     ],
-    "Receive Type": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 7,
-        "level": 3,
-        "title": "Receive Type"
-      }
-    ],
     "Receiving Messages": [
       {
         "document": "advanced/http-client.md",
@@ -9414,12 +9360,6 @@
       {
         "document": "advanced/router.md",
         "line": 414,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
-        "document": "advanced/session-types.md",
-        "line": 175,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10198,14 +10138,6 @@
         "title": "Send Rule Decorators"
       }
     ],
-    "Send Type": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 20,
-        "level": 3,
-        "title": "Send Type"
-      }
-    ],
     "Send merged prompt + options using Markdown": [
       {
         "document": "getting-started/event-handling.md",
@@ -10412,14 +10344,6 @@
         "line": 104,
         "level": 4,
         "title": "Session Identifiers"
-      }
-    ],
-    "Session Type System": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 1,
-        "level": 1,
-        "title": "Session Type System"
       }
     ],
     "Session-level binding (applies to a specific group/channel/private chat, most specific)": [
@@ -11254,30 +11178,6 @@
         "title": "Type Classification"
       }
     ],
-    "Type Conversion": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 69,
-        "level": 3,
-        "title": "Type Conversion"
-      }
-    ],
-    "Type Definitions": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 5,
-        "level": 2,
-        "title": "Type Definitions"
-      }
-    ],
-    "Type Mapping": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 32,
-        "level": 2,
-        "title": "Type Mapping"
-      }
-    ],
     "Type Stub Generation (IDE Completion)": [
       {
         "document": "getting-started/ide-completion.md",
@@ -11798,12 +11698,6 @@
       {
         "document": "advanced/message-builder.md",
         "line": 97,
-        "level": 2,
-        "title": "Utility Methods"
-      },
-      {
-        "document": "advanced/session-types.md",
-        "line": 147,
         "level": 2,
         "title": "Utility Methods"
       },

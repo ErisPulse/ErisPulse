@@ -336,7 +336,7 @@
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
       "icon": "fa-fire",
-      "count": 12,
+      "count": 11,
       "documents": [
         {
           "title": "Расширенные темы",
@@ -367,12 +367,6 @@
           "path": "advanced/message-builder.md",
           "level": 1,
           "icon": "fa-comment-dots"
-        },
-        {
-          "title": "Система типов сессий",
-          "path": "advanced/session-types.md",
-          "level": 1,
-          "icon": "fa-layer-group"
         },
         {
           "title": "Conversation Многошаговый диалог",
