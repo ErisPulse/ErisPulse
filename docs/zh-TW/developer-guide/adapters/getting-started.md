@@ -6,31 +6,29 @@
 
 再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第 8 條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
-## 介面卡簡介
+## 適配器簡介
 
-### 什麼是介面卡
+### 什麼是適配器
 
-介面卡是 ErisPulse 與各個訊息平台之間的橋樑，負責：
+適配器是 ErisPulse 與各個消息平台之間的橋樑，負責：
 
 1. **正向轉換**：接收平台事件並轉換為 OneBot12 標準格式（Converter）
-2. **反向轉換**：將 OneBot12 訊息段轉換為平台 API 呼叫（`Raw_ob12`）
-3. 管理與平台的連線（WebSocket/WebHook）
-4. 提供統一的 SendDSL 訊息發送介面
+2. **反向轉換**：將 OneBot12 消息段轉換為平台 API 調用（`Raw_ob12`）
+3. 管理與平台的連接（WebSocket/WebHook）
+4. 提供統一的 SendDSL 消息發送介面
 
-### 介面卡架構
+### 適配器架構
 
-```
-正向轉換（接收）                        反向轉換（發送）
-─────────────                        ─────────────
-平台事件                               模組建構訊息
-    ↓                                    ↓
-Converter.convert()               Send.Raw_ob12()
-    ↓                                    ↓
-OneBot12 標準事件                   平台原生 API 呼叫
-    ↓                                    ↓
-事件系統                             標準回應格式
-    ↓
-模組處理
+```mermaid
+flowchart LR
+    subgraph receive["正向轉換（接收）"]
+        direction TB
+        P1["平台事件"] --> C1["Converter.convert()"] --> O1["OneBot12 標準事件"] --> S1["事件系統"] --> M1["模組處理"]
+    end
+    subgraph send["反向轉換（發送）"]
+        direction TB
+        M2["模組構建消息"] --> R1["Send.Raw_ob12()"] --> N1["平台原生 API 調用"] --> R2["標準回應格式"]
+    end
 
 ## 目錄結構
 

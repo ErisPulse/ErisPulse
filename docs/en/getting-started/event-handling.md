@@ -192,46 +192,49 @@ Again: If the document contains language switching lines (lines where language n
 
 ## Link Control: Claim and Stop
 
-ErisPulse decouples the two orthogonal semantics of "Claim" and "Stop" through the unified control of `event.done()`, making it easy to overlay observation layers such as logging, auditing, and permissions around command processing.
+> [!NOTE]
+> The `claim=` / `stop=` parameters of `event.done()` / `event.mark_processed()` require ErisPulse **2.7.1+**.
+
+ErisPulse decouples the orthogonal semantics of "Claim" and "Stop", unified through `event.done()`, making it easy to overlay log, audit, permission, and other observation layers around command processing.
 
 **Precise definitions of the two concepts:**
 
-- **Claim**: Marks that the event has been processed by this handler (writes to `_processed`). When the command dispatcher sees a claimed event, it will **skip deduplication**—avoiding the same message being processed multiple times by multiple command handlers. Typical scenario: Claim after command matching is successful to prevent the command dispatcher from intervening again.
-- **Stop**: Prevents the event from propagating to **lower priority** handlers (writes to `_propagation_stopped`). Lower priority handlers (e.g., `on_message`) will no longer see that event. Typical scenario: A high priority handler has fully processed the event, and you do not want lower priority handlers to execute.
+- **Claim (认领)**: Marks the event as handled by this processor (writes to `_processed`). The command dispatcher will **skip claiming events**—avoiding multiple command processors processing the same message. Typical scenario: Claim after successful command matching, preventing the command dispatcher from intervening again.
+- **Stop (阻断)**: Prevents the event from propagating to **lower priority** processors (writes to `_propagation_stopped`). Lower priority processors (e.g., `on_message`) will no longer see the event. Typical scenario: High priority processors have fully processed the event, and no lower priority execution is desired.
 
 | `event.done(...)` | Claim | Stop | Scenario |
 |-------------------|-------|------|----------|
-| `event.done()` | ✔ | ✔ | Standard practice for command/handler processing completion |
-| `event.done(stop=False)` | ✔ | ✘ | Claim only, allowing lower priority observers (logging / stats) to continue seeing it |
-| `event.done(claim=False)` | ✘ | ✔ | Stop only (e.g., firewall / rate limiting), without deduplicating commands |
+| `event.done()` | ✔ | ✔ | Standard practice for commands / processors |
+| `event.done(stop=False)` | ✔ | ✘ | Only claim, allowing low priority observers (logs / stats) to continue seeing the event |
+| `event.done(claim=False)` | ✘ | ✔ | Only stop (e.g., firewall / rate limiting), but do not deduplicate commands |
 
-`event.done(claim=, stop=)` is an alias of `event.mark_processed(claim=, stop=)`, and their parameters and behavior are completely equivalent.
+`event.done(claim=, stop=)` is an alias for `event.mark_processed(claim=, stop=)`, with completely equivalent parameters and behavior.
 
 ```python
 @command("help")
 async def help_cmd(event):
-    event.done()            # Claim + Stop (Standard practice for command completion)
+    event.done()            # Claim + Stop (standard practice for command processing)
 
 @message.on_message(priority=50)
 async def observer(event):
-    event.done(stop=False)  # Claim only: lower priority handlers will still execute (logging / stats)
+    event.done(stop=False)  # Only claim: low priority processors still execute (logs / stats)
 
 @message.on_message(priority=100)
 async def firewall(event):
     if denied(event):
-        event.done(claim=False)  # Stop only: lower priority handlers won't execute, but no deduplication
+        event.done(claim=False)  # Only stop: low priority processors do not execute, but no deduplication
 ```
 
 ### Block Configuration for Commands and Replies
 
-By default, propagation is blocked after command matching succeeds or `wait_reply` matches a reply (for backward compatibility). You can configure this to allow it, so lower priority handlers (logging / auditing / permissions) can also observe these messages:
+After successful command matching / matching a reply via `wait_reply`, propagation is blocked by default (backwards compatible). You can allow the flow by configuring it so that lower priority processors (logs / audit / permission) can also observe these messages:
 
 ```toml
 [ErisPulse.event.command]
-block = false   # Command messages continue to flow to lower priority handlers
+block = false   # Command messages continue to flow to low priority processors
 
 [ErisPulse.event.wait_reply]
-block = false   # Replies consumed by wait_reply continue to flow to lower priority handlers
+block = false   # Replies consumed by wait_reply continue to flow to low priority processors
 
 ## Notification Event Handling
 

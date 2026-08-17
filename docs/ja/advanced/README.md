@@ -2,22 +2,22 @@
 
 このディレクトリには ErisPulse フレームワークの高度な機能と深掘りトピックが含まれています。
 
-## ドキュメント一覧
+## ドキュメントリスト
 
-- [起動プロセスと手動制御](docs/ja/startup.md) - 起動フロー分解（Finder/Loader/Manager/Router）と手動による完全起動
-- [遅延読み込みシステム](docs/ja/lazy-loading.md) - 遅延読み込みモジュールシステムの仕組みと設定
-- [モジュールスコープシステム](docs/ja/scope.md) - モジュールとアダプタ Bot/プラットフォームのバインディングと隔離
-- [国際化 (i18n)](docs/ja/i18n.md) - 多言語サポート、翻訳登録、言語検出
-- [ライフサイクル管理](docs/ja/lifecycle.md) - ライフサイクルイベントシステムの使用方法
-- [ルーター管理](docs/ja/router.md) - HTTP および WebSocket ルーティング管理
-- [HTTP クライアント](docs/ja/http-client.md) - 統一 HTTP リクエストクライアント
-- [MessageBuilder 詳解](docs/ja/message-builder.md) - OneBot12 メッセージセグメントビルダーの双モード使い方
-- [SQL クエリビルダー](docs/ja/sql-builder.md) - 汎用的な SQL チェーンクエリビルダーおよびストレージバックエンド抽象
-- [セッションタイプシステム](docs/ja/session-types.md) - セッションタイプの定義、マッピング、カスタムタイプ登録
-- [Conversation 多会話](docs/ja/conversation.md) - 多会話コンテキストのインタラクション方法
+- [起動フローと手動制御](startup.md) - 起動経路の分解（Finder/Loader/Manager/Router）と手動による完全な起動
+- [ラジオーディングシステム](lazy-loading.md) - ラジオーディングモジュールシステムの動作原理、設定、イベント駆動による遅延アクティベーション（activate_on）
+- [モジュールスコープシステム](scope.md) - モジュールとアダプタ Bot/プラットフォームのバインディングと隔離
+- [国際化 (i18n)](i18n.md) - 多言語サポート、翻訳の登録、言語検出
+- [ライフサイクル管理](lifecycle.md) - ライフサイクルイベントシステムの使用方法
+- [ルートマネージャー](router.md) - HTTP および WebSocket ルートの管理
+- [HTTP クライアント](http-client.md) - 統一された HTTP リクエストクライアント
+- [MessageBuilder 詳解](message-builder.md) - OneBot12 メッセージセグメントビルダーの二重モードの使用法
+- [SQL クエリビルダー](sql-builder.md) - 一般的な SQL チェーン式クエリビルダーおよびストレージバックエンドの抽象化
+- [セッションタイプシステム](../standards/session-types.md) - セッションタイプの定義、マッピング、およびカスタムタイプの登録
+- [Conversation 多輪対話](conversation.md) - 多輪対話コンテキストのインタラクション方法
 
 > [!NOTE]
-> Dashboard ウィンドウ登録、Takumi 画像レンダリングなど **サードパーティ生態モジュール** のドキュメントは、[生態モジュール](../ecosystem/README.md) ディレクトリへ移動しました。
+> Dashboard 視窗の登録、Takumi による画像レンダリングなどの **サードパーティエコシステムモジュール** のドキュメントは、[エコシステムモジュール](../ecosystem/README.md) 目録に移動されました。
 
 ## 対象読者
 

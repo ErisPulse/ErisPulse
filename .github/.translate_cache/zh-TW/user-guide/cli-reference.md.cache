@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "2b6a19313e9b1927c2190ab2af365959",
-  "file_hash": "2b6a19313e9b1927c2190ab2af365959",
-  "translated_at": "2026-08-15T19:12:38.247880",
+  "hash": "4c892347c3d00eeb4211829edfa9047a",
+  "file_hash": "4c892347c3d00eeb4211829edfa9047a",
+  "translated_at": "2026-08-17T12:21:33.234128",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -42,8 +42,8 @@
       "translation": "## 全局參數\n\n以下參數適用於所有命令：\n\n| 參數 | 短參數 | 說明 |\n|------|--------|------|\n| `--help` | `-h` | 顯示幫助資訊 |\n| `--version` | `-V` | 顯示版本資訊 |\n| `--verbose` | `-v` | 顯示詳細輸出（可疊加 `-vv`/`-vvv`） |\n| `--no-color` | | 禁用彩色輸出（適合 CI / 日誌收集） |\n| `--yes` | `-y` | 自動確認所有互動提示（非互動式運行） |\n\n---\n\ndocs/zh-TW/quick-start.md"
     },
     {
-      "hash": "7f7350c46ac97ffd49acd7e65edb5647",
-      "translation": "## 環境診斷\n\n### doctor\n\n診斷當前 CLI 運行環境，輸出健康報告。用於排查「為什麼裝不上 / 連不上」類問題。\n\n| 參數 | 說明 |\n|------|------|\n| `--verbose` | 顯示詳細診斷資訊 |\n\n**檢查項目**：\n- **Python**：解釋器版本與路徑\n- **安裝後端**：使用 `uv` 還是 `pip`\n- **目標解釋器**：套件實際安裝到的目標 Python 環境\n- **配置檔案**：`config/config.toml` 是否存在\n- **PyPI 連通性**：能否存取 PyPI（並顯示發現的元件數）\n- **系統代理**：是否偵測到代理\n\n```bash\n# 運行環境診斷\nepsdk doctor\n\n# 使用別名\nepsdk diag\n```\n\n---\n\ndocs/zh-TW/quick-start.md"
+      "hash": "428033ac26e60c8cf116589dcb268cf2",
+      "translation": "## 環境診斷\n\n### doctor\n\n> [!NOTE]\n> 此命令需要 ErisPulse **2.7.0+**。\n\n診斷目前 CLI 運行環境，並輸出健康報告。用於排查「為什麼無法安裝 / 連不上」之類的問題。\n\n| 參數 | 說明 |\n|------|------|\n| `--verbose` | 顯示詳細診斷資訊 |\n\n**檢查項目**：\n- **Python**：解釋器版本與路徑\n- **安裝後端**：使用 `uv` 還是 `pip`\n- **目標解釋器**：套件實際安裝到的目標 Python 環境\n- **設定檔**：`config/config.toml` 是否存在\n- **PyPI 連通性**：能否存取 PyPI（並顯示發現的元件數）\n- **系統代理**：是否偵測到代理\n\n```bash\n# 運行環境診斷\nepsdk doctor\n\n# 使用別名\nepsdk diag\n```\n\n---\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。"
     },
     {
       "hash": "9aecd4e7ff61fbc7ae1142870b5a16f3",

@@ -98,8 +98,15 @@ Starting from version 2.7.0, the framework provides **systematic support** for h
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = ""
 ssl_keyfile = ""
+
+[ErisPulse.master]
+# users поддерживает два способа записи (выберите один):
+#   Глобальный владелец (действует для всех платформ): users = ["123456", "789012"]
+#   Владелец по платформе: users = { yunhu = ["123456"], telegram = ["789012"] }
+users = {}
 
 [ErisPulse.logger]
 level = "INFO"
@@ -132,12 +139,13 @@ ignore_self = true
 [ErisPulse.i18n]
 language = "auto"
 
-## Серверная конфигурация
+## Конфигурация сервера
 
 ```toml
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = "/path/to/cert.pem"
 ssl_keyfile = "/path/to/key.pem"
 ```
@@ -145,16 +153,42 @@ ssl_keyfile = "/path/to/key.pem"
 | Параметр | Тип | Значение по умолчанию | Описание |
 |---------|------|---------|------|
 | host | string | 0.0.0.0 | Адрес прослушивания, 0.0.0.0 означает все интерфейсы |
-| port | integer | 8000 | Прослушиваемый порт |
+| port | integer | 8000 | Порт прослушивания |
+| auto_start | boolean | true | Автоматически запускать сервер маршрутизации при вызове `sdk.init()`. Установка в `false` пропустит запуск сервера маршрутизации (режим только событий/без WebUI) |
 | ssl_certfile | string | пусто | Путь к файлу SSL-сертификата |
-| ssl_keyfile | string | пусто | Путь к файлу SSL-приватного ключа |
+| ssl_keyfile | string | пусто | Путь к файлу SSL-ключа |
 
-Пожалуйста, замените `docs/ru/` на `docs/ru/` в ссылках документации.  
-Например: `docs/ru/quick-start.md` должно быть изменено на `docs/ru/quick-start.md`  
-Для ссылок на файлы не текущего языка (в формате `README.xx.md`) оставьте без изменений.  
-Это гарантирует, что ссылки указывают на правильную версию документации на нужном языке.
+Пожалуйста, замените `docs/ru/` на `docs/ru/` в ссылках документации. Например, `docs/ru/quick-start.md` должно быть изменено на `docs/ru/quick-start.md`. Ссылки на файлы других языков (например, в формате `README.xx.md`) должны оставаться без изменений. Это гарантирует, что ссылки указывают на правильную версию документации на нужном языке.
 
-## Конфигурация журналирования
+## Конфигурация главной системы
+
+Главная система используется для распознавания аккаунтов "владельца фреймворка" (например, администраторов бота). `master.users` поддерживает два способа написания:
+
+```toml
+[ErisPulse.master]
+# Способ 1: Глобальный владелец (действует на всех платформах)
+users = ["123456", "789012"]
+
+# Способ 2: Владелец по платформе (dict)
+# users = { yunhu = ["123456"], telegram = ["789012"] }
+```
+
+| Параметр конфигурации | Тип | Значение по умолчанию | Описание |
+|-----------------------|-----|------------------------|----------|
+| users | array / object | пустой | Список аккаунтов владельцев. Формат `list` означает глобального владельца (действует на всех платформах); формат `dict` означает владельца по платформе (ключ - имя платформы, значение - список аккаунтов владельца для этой платформы) |
+
+В коде проверка осуществляется через `master.is_master(event)` или `master.is_master(platform, user_id)`, при каждом вызове конфигурация читается в реальном времени (поддерживается горячая перезагрузка, перезапуск не требуется):
+
+```python
+from ErisPulse.Core import master
+
+if master.is_master(event):
+    await event.reply("Привет, хозяин")
+```
+
+[**English**](docs/ru/quick-start.md)
+
+## Конфигурация журнала
 
 ```toml
 [ErisPulse.logger]
@@ -166,15 +200,18 @@ exclude_levels = ["EVENT"]
 
 | Параметр | Тип | Значение по умолчанию | Описание |
 |---------|------|---------|------|
-| level | string | INFO | Уровень журналирования: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE — самый низкий уровень, выводит подробную отладочную информацию внутреннего фреймворка) |
-| format | string | rich | Формат вывода журнала: `rich` (цветной, по умолчанию), `plain` (чистый текст без цвета, подходит для сбора журналов/перенаправления в трубу), `json` (структурированный JSON, подходит для ELK и т.д.) |
+| level | string | INFO | Уровень журнала: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE - самый низкий уровень, выводит подробную отладочную информацию внутренней части фреймворка) |
+| format | string | rich | Формат вывода журнала: `rich` (цветной, по умолчанию), `plain` (чистый текст без цвета, подходит для сбора журнала/перенаправления в поток), `json` (структурированный JSON, подходит для ELK и др.) |
 | log_files | array | пустой | Список файлов вывода журнала |
 | memory_limit | integer | 1000 | Количество записей журнала, сохраняемых в памяти |
-| exclude_levels | array | пустой | Уровни журналирования, которые нужно исключить. Журналы с исключёнными уровнями **полностью отбрасываются** (не сохраняются в памяти, не отправляются на Dashboard и другие подписчики, не выводятся, не записываются в файл). Поддерживается горячая перезагрузка |
+| exclude_levels | array | пустой | Отключение указанных уровней журнала. Журналы с отключенными уровнями **полностью отбрасываются** (не записываются в память, не отправляются на Dashboard и другие подписчики, не выводятся на экран, не записываются в файл). Поддерживается горячая перезагрузка. |
 
-> **Защита конфиденциальности**: Содержимое сообщений отправки и получения записывается на уровне **EVENT** (значение 21). Установка `exclude_levels = ["EVENT"]` позволяет предотвратить доступ к содержимому сообщений в группах/личных чатах на панели журнала Dashboard, не влияя при этом на другие уровни журналирования.
+> **Защита конфиденциальности**: Содержание сообщений отправки и получения записывается на уровне **EVENT** (значение 21). Установка `exclude_levels = ["EVENT"]` позволит фоновым компонентам (например, панели журнала Dashboard) не видеть содержимое сообщений в группах или личных чатах, при этом не влияя на другие уровни журнала.
 
-[**English**](docs/ru/quick-start.md)
+> [!NOTE]
+> Функция `exclude_levels` доступна в ErisPulse **2.8.0+**.
+
+> [**中文**](docs/ru/logging.md) | [**English**](docs/en-US/logging.md) | [**Русский**](docs/ru/logging.md)
 
 ## Конфигурация фреймворка
 
@@ -263,16 +300,16 @@ use_global_db = false
 ```toml
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = false
+case_sensitive = true
 allow_space_prefix = false
 ```
 
 | Параметр | Тип | Значение по умолчанию | Описание |
 |---------|------|---------|------|
 | prefix | string | / | Префикс команды |
-| case_sensitive | boolean | true | Регистр чувствителен (команды `/Help` и `/help` считаются разными) |
+| case_sensitive | boolean | true | Регистрозависимость (различаются ли команды `/Help` и `/help`) |
 | allow_space_prefix | boolean | false | Разрешить пробел в качестве префикса |
-| must_at_bot | boolean | false | Команды могут быть вызваны только с упоминанием бота (в личных сообщениях это ограничение не действует) |
+| must_at_bot | boolean | false | Требуется упоминание бота для активации команды (для личных сообщений не применяется) |
 
 ### Конфигурация сообщений
 
@@ -284,8 +321,6 @@ ignore_self = true
 | Параметр | Тип | Значение по умолчанию | Описание |
 |---------|------|---------|------|
 | ignore_self | boolean | true | Игнорировать собственные сообщения бота |
-
-[**English**](docs/ru/quick-start.md) | [**简体中文**](docs/ru/quick-start.md) | [**Русский**](docs/ru/quick-start.md)
 
 ## Международная локализация
 
@@ -331,41 +366,33 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 
 [**中文**](docs/ru/quick-start.md)
 
-## Scope Configuration
+## Конфигурация области видимости
 
-The module scope system is used to control which modules a "certain Bot" can use. By default, all modules are open to all Bots, and filtering only begins after the configuration is bound. Adapters and modules **do not require any changes** to be compatible.
+> [!NOTE]
+> Эта функция требует ErisPulse **2.8.0+**.
+
+Система области видимости модуля используется для контроля "какие модули может использовать конкретный Bot". По умолчанию все модули доступны для всех Bots, фильтрация начинается только после привязки конфигурации, модули и адаптеры **не требуют никаких изменений** для адаптации.
 
 ```toml
-# Platform-level binding (applies to all Bots/sessions on this platform)
-[ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Translate"]   # Whitelist: Bots on this platform can only use these modules
-blocked = ["Danger"]              # Blacklist: These modules are disabled on this platform
-
-# Bot-level binding (applies to all sessions of this Bot, overrides platform-level)
-[ErisPulse.scope.bots.onebot11."123456"]
-modules = ["Chat"]
-blocked = []
-
-# Session-level binding (applies to a specific group/channel/private chat, most specific)
-[ErisPulse.scope.sessions.onebot11."789012345"]
-modules = ["Chat"]
-blocked = []
+[ErisPulse.scope]
+default_allow = true        # По умолчанию разрешить все (false = строгий режим с неявным запретом)
+cache_size = 1024           # Размер кэша LRU для is_allowed
 ```
 
-| Configuration Item | Type | Description |
+| Параметр | Тип | Описание |
 |---------|------|------|
-| `scope.default_allow` | boolean | Default allows all modules (`true`). `false` = implicit deny strict mode, only modules in the whitelist are available |
-| `scope.cache_size` | integer | LRU cache size for `is_allowed` (default 1024) |
-| `scope.platforms.<platform>.modules` | array | Platform-level whitelist: only listed modules are allowed (empty = no restriction) |
-| `scope.platforms.<platform>.blocked` | array | Platform-level blacklist: listed modules are disabled (empty = no restriction) |
-| `scope.bots.<platform>.<bot_id>.modules` | array | Bot-level whitelist, overrides platform-level |
-| `scope.bots.<platform>.<bot_id>.blocked` | array | Bot-level blacklist, overrides platform-level |
-| `scope.sessions.<platform>.<session_id>.modules` | array | Session-level whitelist (group/channel/private chat), highest priority |
-| `scope.sessions.<platform>.<session_id>.blocked` | array | Session-level blacklist, highest priority |
+| `scope.default_allow` | boolean | По умолчанию разрешить все модули (`true`). `false` = строгий режим с неявным запретом, доступны только модули из белого списка |
+| `scope.cache_size` | integer | Размер кэша LRU для `is_allowed` (по умолчанию 1024) |
+| `scope.platforms.<platform>.modules` | array | Белый список на уровне платформы: разрешены только перечисленные модули (пустой список = без ограничений) |
+| `scope.platforms.<platform>.blocked` | array | Чёрный список на уровне платформы: запрещены перечисленные модули (пустой список = без ограничений) |
+| `scope.bots.<platform>.<bot_id>.modules` | array | Белый список на уровне Bot, переопределяет платформенный |
+| `scope.bots.<platform>.<bot_id>.blocked` | array | Чёрный список на уровне Bot, переопределяет платформенный |
+| `scope.sessions.<platform>.<session_id>.modules` | array | Белый список на уровне сессии (группа/канал/личный чат), имеет наивысший приоритет |
+| `scope.sessions.<platform>.<session_id>.blocked` | array | Чёрный список на уровне сессии, имеет наивысший приоритет |
 
-> Resolution priority: **Session-level > Bot-level > Platform-level**. Module names are case-insensitive; session identifiers are isolated across platforms. Dynamic addition and removal at runtime is supported via `sdk.scope.bind()` / `unbind()` (with `merge=True` for merging), see [Scope System](../advanced/scope.md).
+> Приоритет анализа: **Сессия > Bot > Платформа**. Полный пример TOML с привязкой на трёх уровнях, нечувствительность к регистру названий модулей, изоляция идентификаторов сессий между платформами, динамическое добавление/удаление во время выполнения с помощью `sdk.scope.bind()` / `unbind()` (с `merge=True` можно объединять) и т.д. см. в разделе [Система области видимости](../advanced/scope.md).
 
-请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。
+docs/ru/quick-start.md | docs/ru/configuration.md | docs/ru/plugins.md | docs/ru/advanced/scope.md
 
 ## Далее
 

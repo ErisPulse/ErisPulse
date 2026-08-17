@@ -1,38 +1,44 @@
-# Matrixプラットフォーム特性ドキュメント
+# Matrixプラットフォームの特徴ドキュメント
 
-MatrixAdapterは[Matrixプロトコル](https://spec.matrix.org/)に基づいて構築されたアダプターであり、Matrixプロトコルのすべての核心的な機能モジュールを統合し、統一されたイベント処理およびメッセージ操作インターフェースを提供します。
+MatrixAdapter は [Matrixプロトコル](https://spec.matrix.org/) に基づいて構築されたアダプターであり、Matrixプロトコルのすべてのコア機能モジュールを統合し、一貫したイベント処理およびメッセージ操作インターフェースを提供します。
 
 ---
 
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
+
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 1.0.0
-- メンテナ: ErisPulse
+- 対応モジュールバージョン: 4.1.0
+- 維持者: ErisPulse
+
+[クイックスタートガイド](docs/ja/quick-start.md) | [詳細なインストール手順](docs/ja/installation.md) | [APIリファレンス](docs/ja/api-reference.md) | [FAQ](docs/ja/faq.md)
 
 ## 基本情報
 
-- プラットフォーム概要：Matrixはオープンな非中央集権型通信プロトコルであり、プライベートメッセージ（ダイレクトメッセージ）、グループなど複数のシナリオをサポートしています。
-- アダプター名：MatrixAdapter
-- 複数アカウントサポート：同時に複数のMatrixアカウントを設定することが可能です。
-- 接続方式：Long Polling（Matrix Sync API `/sync` 経由）
-- 認証方式：access_tokenまたはuser_id+passwordのログインに基づいてトークンを取得
-- メソッドチェーン修飾サポート：`.Reply()`、`.At()`、`.AtAll()`などのメソッドチェーン修飾をサポート
-- OneBot12互換：OneBot12フォーマットのメッセージ送信をサポート
+- プラットフォーム紹介：Matrixは、プライベートチャット、グループチャットなど多様なシナリオをサポートするオープンな分散型通信プロトコルです
+- アダプタ名：MatrixAdapter
+- 複数アカウント対応：複数の Matrix アカウントを同時に設定できます
+- 接続方法：Long Polling（Matrix Sync API `/sync` を使用）
+- 認証方法：access_token または user_id + password を使用してトークンを取得
+- チェーン修飾子対応：`.Reply()`、`.At()`、`.AtAll()` などのチェーン修飾子メソッドをサポート
+- OneBot12互換：OneBot12形式のメッセージ送信をサポート
 
-## 設定説明
+[**English**](docs/ja/quick-start.md)
 
-MatrixAdapterは複数アカウント設定をサポートしており、各アカウントはhomeserverと認証情報を独立して設定します。
+## 設定の説明
+
+MatrixAdapter は、各アカウントごとに homeserver と認証情報を個別に設定できる多アカウント設定をサポートしています。
 
 ```toml
 # config.toml
 # アカウント1
 [Matrix_Adapter.accounts.default]
-homeserver = "https://matrix.org"          # Matrixサーバーアドレス（必須）
-access_token = "YOUR_ACCESS_TOKEN"          # アクセストークン（user_id+password と二択）
-user_id = ""                                # MatrixユーザーID（例: @bot:matrix.org）
-password = ""                               # Matrixユーザーパスワード
-auto_accept_invites = true                  # ルームへの招待を自動的に承諾するか（任意、デフォルトはtrue）
-enabled = true                              # 有効にするか（任意、デフォルトはtrue）
+homeserver = "https://matrix.org"          # Matrixサーバーのアドレス（必須）
+access_token = "YOUR_ACCESS_TOKEN"          # アクセストークン（user_id + password のどちらか一方）
+user_id = ""                                # MatrixのユーザーID（例: @bot:matrix.org）
+password = ""                               # Matrixのユーザーのパスワード
+auto_accept_invites = true                  # ルーム招待を自動的に受け入れるかどうか（オプション、デフォルトはtrue）
+enabled = true                              # アカウントを有効にするかどうか（オプション、デフォルトはtrue）
 
 # アカウント2
 [Matrix_Adapter.accounts.bot2]
@@ -41,23 +47,26 @@ access_token = "ANOTHER_TOKEN"
 enabled = true
 ```
 
-> 旧設定との互換性：古い単一アカウントの`[Matrix_Adapter]`設定（access_tokenを含む）を検出した場合、自動的に`accounts.default`に移行されます。
+> 旧設定の互換性：`access_token` を含む旧形式の単一アカウントの `[Matrix_Adapter]` 設定が検出された場合、自動的に `accounts.default` に移行されます。
 
-**設定項目の説明（各アカウント）：**
-- `homeserver`：Matrixサーバーアドレス（必須）、デフォルトは`https://matrix.org`
-- `access_token`：アクセストークン。Matrixクライアントから取得可能。既存のトークンがある場合は直接入力します。
-- `user_id`：MatrixユーザーID（例: `@bot:matrix.org`）、`password`と組み合わせてログインに使用します。
-- `password`：Matrixユーザーパスワード。自動ログインでaccess_tokenを取得するために使用します。
-- `auto_accept_invites`：ルームへの招待を自動的に承諾するかどうか。デフォルトは`true`。
-- `enabled`：このアカウントを有効にするかどうか（任意、デフォルトはtrue）。
+**各アカウントの設定項目の説明：**
+- `homeserver`：Matrixサーバーのアドレス（必須）、デフォルトは `https://matrix.org`
+- `access_token`：Matrixクライアントから取得できるアクセストークン。既にトークンがある場合は、そのまま記入してください
+- `user_id`：MatrixのユーザーID（例: `@bot:matrix.org`）、`password` と併用してログインします
+- `password`：Matrixのユーザーのパスワード、自動ログイン時に access_token を取得するために使用します
+- `auto_accept_invites`：ルーム招待を自動的に受け入れるかどうか、デフォルトは `true`
+- `enabled`：このアカウントを有効にするかどうか（オプション、デフォルトはtrue）
 
-**認証方式：**
-- 方式1（推奨）：直接`access_token`を提供する
-- 方式2：`user_id`と`password`を提供すると、アダプターが自動的にログインAPIを呼び出してトークンを取得します。
+**認証方法：**
+- 方法1（推奨）：`access_token` を直接提供する
+- 方法2：`user_id` と `password` を提供し、アダプタが自動的にログインAPIを呼び出してトークンを取得する
 
-## サポートするメッセージ送信タイプ
+[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
-すべての送信メソッドはメソッドチェーン構文で実装されています。例：
+## 支持的消息送信タイプ
+
+すべての送信メソッドは、チェーン式構文で実装されています。例：
+
 ```python
 from ErisPulse.Core import adapter
 matrix = adapter.get("matrix")
@@ -65,40 +74,41 @@ matrix = adapter.get("matrix")
 await matrix.Send.To("group", room_id).Text("Hello World!")
 ```
 
-サポートする送信タイプは以下の通りです：
-- `.Text(text: str)`：プレーンテキストメッセージを送信します。
+サポートされている送信タイプは以下の通りです：
+
+- `.Text(text: str)`：純粋なテキストメッセージを送信します。
 - `.Image(file: bytes | str)`：画像メッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
 - `.Voice(file: bytes | str)`：音声メッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
-- `.Video(file: bytes | str)`：動画メッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
+- `.Video(file: bytes | str)`：ビデオメッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
 - `.File(file: bytes | str, filename: str = "")`：ファイルメッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
-- `.Notice(text: str)`：通知メッセージ（Matrixのm.noticeタイプ）を送信します。
-- `.Html(html: str, fallback: str = "")`：HTMLフォーマットのメッセージを送信します。リッチテキストコンテンツをサポートします。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12フォーマットのメッセージを送信します。
+- `.Notice(text: str)`：通知メッセージを送信します（Matrixのm.noticeタイプ）。
+- `.Html(html: str, fallback: str = "")`：HTML形式のメッセージを送信します。富文本コンテンツをサポートします。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
 
-### メソッドチェーン修飾メソッド（組み合わせて使用可能）
+### チェーン式修飾メソッド（組み合わせて使用可能）
 
-メソッドチェーン修飾メソッドは`self`を返し、メソッドチェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
+チェーン式修飾メソッドは`self`を返し、チェーン式呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
 
-- `.Reply(message_id: str)`：指定したメッセージに返信します（Matrixの`m.in_reply_to`リレーション経由）。
-- `.At(user_id: str)`：指定したユーザーにメンションします（Matrixの`m.mentions`フィールドで実装）。
-- `.AtAll()`：ルーム内の全員にメンションします（Matrixの`@room`メンションで実装）。
+- `.Reply(message_id: str)`：指定されたメッセージに返信します（Matrixの`m.in_reply_to`関係を使用）。
+- `.At(user_id: str)`：指定されたユーザーを@します（Matrixの`m.mentions`フィールドで実現）。
+- `.AtAll()`：部屋内の全員に@します（Matrixの`@room`メンションで実現）。
 
-### メソッドチェーン呼び出し例
+### チェーン式呼び出しの例
 
 ```python
 # 基本的な送信
 await matrix.Send.To("user", dm_room_id).Text("Hello")
 
-# 返信メッセージ
+# メッセージに返信
 await matrix.Send.To("group", room_id).Reply("$event_id").Text("返信メッセージ")
 
-# ユーザーへのメンション
+# ユーザーを@する
 await matrix.Send.To("group", room_id).At("@user:matrix.org").Text("こんにちは")
 
-# 全員へのメンション
-await matrix.Send.To("group", room_id).AtAll().Text("お知らせ")
+# 全員に@する
+await matrix.Send.To("group", room_id).AtAll().Text("公告通知")
 
-# 組み合わせ：返信 + メンション
+# 組み合わせ：返信 + @
 await matrix.Send.To("group", room_id).Reply("$event_id").At("@user:matrix.org").Text("複合メッセージ")
 
 # HTMLメッセージの送信
@@ -108,16 +118,16 @@ await matrix.Send.To("group", room_id).Html("<h1>タイトル</h1><p>内容</p>"
 await matrix.Send.To("group", room_id).Notice("システム通知")
 ```
 
-### OneBot12メッセージサポート
+### OneBot12メッセージのサポート
 
-アダプターはOneBot12フォーマットのメッセージ送信をサポートしており、クロスプラットフォームのメッセージ互換性に役立ちます：
+アダプタはOneBot12形式のメッセージを送信する機能をサポートしており、プラットフォーム間のメッセージ互換性を確保します：
 
 ```python
-# OneBot12フォーマットのメッセージを送信
+# OneBot12形式のメッセージを送信
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await matrix.Send.To("user", dm_room_id).Raw_ob12(ob12_msg)
 
-# メソッドチェーン修飾と組み合わせ
+# チェーン式修飾と併用
 ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
 await matrix.Send.To("group", room_id).Reply("$event_id").Raw_ob12(ob12_msg)
 
@@ -125,55 +135,54 @@ await matrix.Send.To("group", room_id).Reply("$event_id").Raw_ob12(ob12_msg)
 ob12_msg = [
     {"type": "text", "data": {"text": "この画像を見て："}},
     {"type": "image", "data": {"file": "https://example.com/image.png"}},
-    {"type": "text", "data": {"text": "いいよね？"}}
+    {"type": "text", "data": {"text": "いいでしょ？"}}
 ]
 await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
-```
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドはTaskオブジェクトを返し、直接`await`して送信結果を取得できます。戻り値はErisPulseアダプターの標準化された戻り値の仕様に従います：
+すべての送信メソッドは Task オブジェクトを返し、これに直接 await を使用して送信結果を取得できます。返り値は ErisPulse アダプタの標準化された返り値規格に従います：
 
 ```python
 {
     "status": "ok",           // 実行ステータス: "ok" または "failed"
-    "retcode": 0,             // リターンコード
-    "data": {...},            // レスポンスデータ
-    "message_id": "$event_id", // MatrixイベントID
+    "retcode": 0,             // 戻りコード
+    "data": {...},            // 応答データ
+    "message_id": "$event_id", // Matrix イベントID
     "message": "",            // エラーメッセージ
-    "matrix_raw": {...}       // 生のレスポンスデータ
+    "matrix_raw": {...}       // 元の応答データ
 }
 ```
 
-### エラーコードの説明
+### 戻りコードの説明
 
 | retcode | 説明 |
 |---------|------|
 | 0 | 成功 |
-| 32000 | リクエストタイムアウトまたはメディアのアップロード失敗 |
-| 33000 | API呼び出し例外 |
-| 34000 | APIが予期しないフォーマットまたはビジネスエラーを返しました |
+| 32000 | リクエストがタイムアウトまたはメディアのアップロードに失敗した |
+| 33000 | APIの呼び出しに異常が発生した |
+| 34000 | APIが予期しない形式または業務エラーを返した |
 
-## 固有のイベントタイプ
+## 特有イベントタイプ
 
-`platform=="matrix"`で検出してからこのプラットフォームの特性を使用する必要があります。
+このプラットフォームの機能を使用するには、`platform=="matrix"` の検証が必要です。
 
-### 核心な違い
+### 核心的な違い
 
-1. **非中央集権型アーキテクチャ**：Matrixは非中央集権型の通信プロトコルであり、ユーザーIDのフォーマットは`@user:server.domain`、ルームIDのフォーマットは`!room_id:server.domain`です。
-2. **ルームの概念**：Matrixはグループチャットとダイレクトメッセージを区別せず、すべての会話は「ルーム」です。アダプターはDM（Direct Message）アカウントデータを通じてダイレクトメッセージのルームを自動的に識別します。
-3. **ロングポーリング同期**：WebSocketではなく、`/sync` APIを使用してロングポーリングを行い、新しいイベントを取得します。
-4. **MXC URI**：メディアファイルは`mxc://server.domain/media_id`フォーマットで参照されます。
-5. **HTMLリッチテキスト**：`formatted_body`を通じたHTMLフォーマットのメッセージ送信をサポートします。
-6. **絵文字リアクション**：従来の返信メッセージとは異なる、メッセージレベルの絵文字リアクション（Reaction）をサポートします。
-7. **メッセージ編集**：`m.replace`リレーションによる送信済みメッセージの編集をサポートします。
-8. **メッセージの削除**：`m.room.redaction`によるメッセージの削除をサポートします。
+1. **分散型アーキテクチャ**：Matrix は分散型の通信プロトコルであり、ユーザーIDの形式は `@user:server.domain`、ルームIDの形式は `!room_id:server.domain` です。
+2. **ルーム概念**：Matrix はグループチャットとプライベートチャットを区別せず、すべての会話は「ルーム」として扱われます。アダプターはDM（Direct Message）アカウントデータを用いて自動的にプライベートチャットルームを識別します。
+3. **Long Polling 同期**：WebSocket ではなく、`/sync` API を用いた長時間ポーリングで新規イベントを取得します。
+4. **MXC URI**：メディアファイルは `mxc://server.domain/media_id` 形式で参照されます。
+5. **HTML フォーマット**：`formatted_body` を用いて HTML 形式のメッセージを送信できます。
+6. **絵文字応答**：従来の返信メッセージとは異なり、メッセージレベルでの絵文字応答（Reaction）がサポートされています。
+7. **メッセージ編集**：`m.replace` 関係を用いて送信済みメッセージの編集が可能です。
+8. **メッセージ撤回**：`m.room.redaction` を用いてメッセージの撤回/削除が可能です。
 
 ### 拡張フィールド
 
-- すべての固有フィールドは`matrix_`プレフィックスで識別されます。
-- 生のデータは`matrix_raw`フィールドに保持されます。
-- `matrix_raw_type`は生のMatrixイベントタイプ（例: `m.room.message`、`m.room.member`）を識別します。
+- すべての独自フィールドは `matrix_` という接頭辞で識別されます。
+- 元のデータは `matrix_raw` フィールドに保持されます。
+- `matrix_raw_type` は元のMatrixイベントタイプ（例：`m.room.message`、`m.room.member`）を識別します。
 
 ### 特殊フィールドの例
 
@@ -187,7 +196,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
   "matrix_room_id": "!room_id:matrix.org"
 }
 
-# ダイレクトメッセージ
+# プライベートメッセージ
 {
   "type": "message",
   "detail_type": "private",
@@ -195,7 +204,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
   "matrix_room_id": "!dm_room_id:matrix.org"
 }
 
-# 絵文字リアクション
+# 絵文字応答
 {
   "type": "notice",
   "detail_type": "matrix_reaction",
@@ -203,7 +212,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
   "matrix_reaction_key": "👍"
 }
 
-# メッセージの削除
+# メッセージ撤回
 {
   "type": "notice",
   "detail_type": "matrix_redaction",
@@ -214,7 +223,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 {
   "type": "message",
   "detail_type": "group",
-  "matrix_edit": true,
+  "matrix_edit": True,
   "matrix_original_event_id": "$original_event_id"
 }
 
@@ -228,18 +237,18 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 
 ### メッセージセグメントタイプ
 
-Matrixメッセージは`msgtype`に基づいて対応するメッセージセグメントに自動的に変換されます：
+Matrixメッセージは `msgtype` に基づいて対応するメッセージセグメントに自動的に変換されます：
 
 | msgtype | 変換タイプ | 説明 |
 |---|---|---|
 | m.text | `text` | テキストメッセージ |
 | m.notice | `text` | 通知メッセージ |
-| m.emote | `text` | アクションメッセージ |
+| m.emote | `text` | 動作メッセージ |
 | m.image | `image` | 画像メッセージ |
 | m.audio | `voice` | 音声メッセージ |
 | m.video | `video` | 動画メッセージ |
 | m.file | `file` | ファイルメッセージ |
-| m.location | `location` | 位置情報メッセージ |
+| m.location | `location` | 位置メッセージ |
 
 メッセージセグメントの構造例：
 
@@ -248,8 +257,8 @@ Matrixメッセージは`msgtype`に基づいて対応するメッセージセ�
 {
   "type": "text",
   "data": {
-    "text": "プレーンテキスト内容",
-    "html": "<b>HTML内容</b>"
+    "text": "純粋なテキスト内容",
+    "html": "<b>HTMLコンテンツ</b>"
   }
 }
 
@@ -269,7 +278,7 @@ Matrixメッセージは`msgtype`に基づいて対応するメッセージセ�
   }
 }
 
-// 位置情報メッセージ
+// 位置メッセージ
 {
   "type": "location",
   "data": {
@@ -283,16 +292,16 @@ Matrixメッセージは`msgtype`に基づいて対応するメッセージセ�
 
 ### Event Mixin メソッド
 
-MatrixAdapterは以下のイベントミックスインメソッドを登録しており、イベント処理内で直接呼び出すことができます：
+MatrixAdapter は以下のイベントミキシンメソッドを登録しており、イベント処理中で直接呼び出すことができます：
 
 | メソッド | 戻り値の型 | 説明 |
 |------|----------|------|
-| `get_room_id()` | `str` | ルームIDを取得 |
-| `get_matrix_event_type()` | `str` | 生のMatrixイベントタイプを取得 |
-| `get_matrix_sender()` | `str` | 生の送信者IDを取得 |
-| `get_reaction_key()` | `str` | リアクションの絵文字を取得 |
-| `is_edited()` | `bool` | メッセージが編集されたものか判定 |
-| `is_notice()` | `bool` | メッセージがm.noticeタイプか判定 |
+| `get_room_id()` | `str` | ルームIDを取得します |
+| `get_matrix_event_type()` | `str` | 元のMatrixイベントタイプを取得します |
+| `get_matrix_sender()` | `str` | 元の送信者IDを取得します |
+| `get_reaction_key()` | `str` | 応答用の絵文字を取得します |
+| `is_edited()` | `bool` | メッセージが編集されたものかどうかを判定します |
+| `is_notice()` | `bool` | メッセージが m.notice タイプかどうかを判定します |
 
 ```python
 @message.on_message()
@@ -305,30 +314,31 @@ async def handle_message(event):
     sender = event.get_matrix_sender()
     is_edited = event.is_edited()
     is_notice = event.is_notice()
-```
 
 ## Sync API 接続
 
 ### 同期フロー
 
-1. access_tokenまたはuser_id+passwordを使用して認証
-2. `/_matrix/client/v3/account/whoami`を呼び出してbot_user_idを取得
-3. connectメタイベントを発火
-4. 初期同期（`/_matrix/client/v3/sync?timeout=0`）を実行し、`next_batch`トークンを取得
-5. DMルームを検出（`/_matrix/client/v3/user/{user_id}/account_data/m.direct`）
-6. ロングポーリング同期ループを開始（`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`）
-7. 毎回の同期で返された新しいイベントを処理し、変換して発火
+1. access_token または user_id + password を使用して認証を行う
+2. `/_matrix/client/v3/account/whoami` を呼び出し、bot_user_id を取得する
+3. connect 元イベントを発行する
+4. 初期同期を実行する（`/_matrix/client/v3/sync?timeout=0`）`next_batch` token を取得する
+5. DM ルームを検出する（`/_matrix/client/v3/user/{user_id}/account_data/m.direct`）
+6. Long Polling 同期ループを開始する（`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`）
+7. 各同期で返された新しいイベントを処理し、発行する
 
 ### ハートビートメカニズム
 
-- アダプターは30秒ごとに1回`heartbeat`メタイベントを発火します。
-- 接続成功時に`connect`メタイベントを発火します。
-- 終了時に`disconnect`メタイベントを発火します。
+- アダプターは 30 秒ごとに `heartbeat` 元イベントを発行する
+- 接続が成功した場合に `connect` 元イベントを発行する
+- 閉じる際に `disconnect` 元イベントを発行する
 
-### ルームへの招待
+### ルーム招待
 
-- ルームへの招待（`invite`ステータスのルーム）を受信した際、`auto_accept_invites`が`true`（デフォルト）に設定されている場合、アダプターは自動的にルームに参加します。
-- ルームへの参加は`/_matrix/client/v3/join/{room_id}`インターフェースを呼び出します。
+- ルーム招待（`invite` 状態のルーム）を受け取った場合、`auto_accept_invites` 設定が `true`（デフォルト）の場合、アダプターは自動的にルームに参加する
+- ルームに参加する際には `/_matrix/client/v3/join/{room_id}` エンドポイントを呼び出す
+
+[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 使用例
 
@@ -356,7 +366,7 @@ async def handle_group_msg(event):
         ).Text("Hello!")
 ```
 
-### 絵文字リアクションの処理
+### 表情応酬の処理
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -370,27 +380,27 @@ async def handle_reaction(event):
         reaction_key = event.get("matrix_reaction_key")
         reacted_event_id = event.get("matrix_reaction_event_id")
         room_id = event.get_room_id()
-        # 絵文字リアクションの処理...
+        # 表情応酬の処理...
 ```
 
 ### メディアメッセージの送信
 
 ```python
-# 画像を送信（URL）
+# 画像の送信（URL）
 await matrix.Send.To("group", room_id).Image("https://example.com/image.png")
 
-# 画像を送信（MXC URI）
+# 画像の送信（MXC URI）
 await matrix.Send.To("group", room_id).Image("mxc://matrix.org/abc123")
 
-# 画像を送信（バイナリデータ）
+# 画像の送信（バイナリデータ）
 with open("image.png", "rb") as f:
     image_bytes = f.read()
 await matrix.Send.To("group", room_id).Image(image_bytes)
 
-# 画像を送信（ローカルファイルパス）
+# 画像の送信（ローカルファイルパス）
 await matrix.Send.To("group", room_id).Image("/path/to/image.png")
 
-# ファイルを送信（ファイル名付き）
+# ファイルの送信（ファイル名付き）
 await matrix.Send.To("group", room_id).File("/path/to/document.pdf", filename="ドキュメント.pdf")
 ```
 
@@ -420,7 +430,7 @@ async def handle_member_change(event):
     if detail_type == "group_member_increase":
         user_id = event.get("user_id")
         nickname = event.get("user_nickname")
-        print(f"ユーザー {nickname} ({user_id}) がルームに参加しました")
+        print(f"ユーザー {nickname} ({user_id}) が部屋に参加しました")
 
     elif detail_type == "group_member_decrease":
         user_id = event.get("user_id")

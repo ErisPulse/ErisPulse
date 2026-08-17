@@ -2,36 +2,29 @@
 
 This guide helps you start developing an ErisPulse adapter to connect with a new messaging platform.
 
-## Adapter Overview
+## Adapter Introduction
 
 ### What is an Adapter
 
-The adapter acts as a bridge between ErisPulse and various messaging platforms, responsible for:
+The adapter is the bridge between ErisPulse and various messaging platforms, responsible for:
 
-1. **Forward Conversion**: Receiving platform events and converting them to the OneBot12 standard format (Converter)
+1. **Forward Conversion**: Receiving platform events and converting them to OneBot12 standard format (Converter)
 2. **Reverse Conversion**: Converting OneBot12 message segments into platform API calls (`Raw_ob12`)
-3. Managing connections with the platform (WebSocket/WebHook)
+3. Managing connections with platforms (WebSocket/WebHook)
 4. Providing a unified SendDSL message sending interface
 
 ### Adapter Architecture
 
-```
-Forward Conversion (Receive)                    Reverse Conversion (Send)
-─────────────                                    ─────────────
-Platform Event                                   Module Constructed Message
-    ↓                                            ↓
-Converter.convert()                            Send.Raw_ob12()
-    ↓                                            ↓
-OneBot12 Standard Event                        Platform Native API Call
-    ↓                                            ↓
-Event System                                    Standard Response Format
-    ↓
-Module Processing
-```
-
-Please return the translated Markdown content directly, without adding any other text.
-
-**Reminder**: If the document contains language switching lines (lines separated by `|`), please strictly follow the format requirements in point 8 above and do not use incorrect formats like `[**Label**](file)`.
+```mermaid
+flowchart LR
+    subgraph receive["Forward Conversion (Receive)"]
+        direction TB
+        P1["Platform Event"] --> C1["Converter.convert()"] --> O1["OneBot12 Standard Event"] --> S1["Event System"] --> M1["Module Processing"]
+    end
+    subgraph send["Reverse Conversion (Send)"]
+        direction TB
+        M2["Module Builds Message"] --> R1["Send.Raw_ob12()"] --> N1["Platform Native API Call"] --> R2["Standard Response Format"]
+    end
 
 ## Directory Structure
 
