@@ -40,13 +40,14 @@ ErisPulse 模块加载器
 - ``dict``：单键映射，键为事件类型或 ``command``
   - ``{"message": "private"}``：事件类型 + detail_type（消息的 detail_type 即会话类型）
   - ``{"notice": "group_member_increase"}``：事件类型 + detail_type
-  - ``{"command": "roll"}``：命令名触发，值为命令名或命令名列表
+  - ``{"command": "roll"}``：命令名触发，值为命令名 / 命令名列表
+  - ``{"command": {"name": "dice", "help": "掷一个骰子"}}``：命令名 + 元数据声明
 - ``list``：以上各项的混合列表
 
 - **activate_on** (`activate_on`): 声明值（str / dict / list）
 **返回值** (```(event_triggers,`): command_triggers)``
     - event_triggers: ``[(event_type, detail_type | None), ...]``
-    - command_triggers: ``[命令名, ...]``
+    - command_triggers: ``[命令名, ...]``（已去重，保持声明顺序）
 
 **示例**:
 ```python
@@ -58,6 +59,45 @@ ErisPulse 模块加载器
 >>> command_triggers
 ['roll']
 ```
+
+---
+
+
+### `_collect_command_names(value: Any, command_triggers: list[str], seen: set[str])`
+
+收集命令触发器名称（支持 str / list / dict 三种形式）
+
+- ``str``：命令名
+- ``list``：命令名列表（元素为 str 或 dict）
+- ``dict``：命令声明（含 ``name`` 字段，缺省时告警并忽略）
+
+- **value** (```command```): 键的值
+- **command_triggers** (`命令名列表（就地追加）`): - **seen**: 已收集命令名集合（去重，保持声明顺序）
+
+---
+
+
+### `_extract_command_meta(activate_on: Any)`
+
+提取命令触发器的元数据声明（dict 形式）
+
+仅 ``{"command": {...}}`` 的 dict 声明携带元数据（help / usage / group /
+aliases / hidden）；简写与列表形式不携带，其帮助文本由 ``_command_stub_help``
+的回退链兜底。同名命令同时以简写与 dict 声明时，dict 声明优先（此处仅收集
+dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
+
+- **activate_on** (`activate_on`): 声明值
+**返回值** (```{命令名:`): {"help": ..., "usage": ..., "group": ..., "aliases": [...], "hidden": ...}}``
+
+---
+
+
+### `_extract_command_meta_value(value: Any, meta: dict[str, dict[str, Any]])`
+
+递归收集 dict 形式的命令元数据声明
+
+- **value** (```command```): 键的值
+- **meta**: 命令元数据字典（就地追加）
 
 ---
 
@@ -481,6 +521,23 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 ##### `_register_stubs()`
 
 注册事件与命令触发器 stub
+
+---
+
+
+##### `_command_stub_help(cmd_name: str)`
+
+生成命令触发占位命令的帮助文本（模块未加载时展示）
+
+回退链（逐层取值，取到即止）：
+
+1. ``activate_on`` dict 声明的命令级 ``help``（最精确）
+2. 模块 ``get_meta()`` 的 ``description``（静态方法，无需实例化）
+3. 模块 ``__description__``（moduleInfo.meta.description）
+4. 包元数据的 ``Summary``（PyPI 包简介；本地插件无包信息时跳过）
+5. 通用提示（说明该命令首次使用会自动加载对应模块）
+
+- **cmd_name** (`命令名`): **返回值**: 帮助文本
 
 ---
 

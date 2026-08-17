@@ -287,7 +287,7 @@
           "icon": "fa-link"
         },
         {
-          "title": "花枫咖啡馆（Ideaura）平台特性文档",
+          "title": "花枫咖啡馆（RockyChat）平台特性文档",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
@@ -336,7 +336,7 @@
     "高级主题": {
       "description": "深入理解框架的高级特性",
       "icon": "fa-fire",
-      "count": 12,
+      "count": 11,
       "documents": [
         {
           "title": "高级主题",
@@ -367,12 +367,6 @@
           "path": "advanced/message-builder.md",
           "level": 1,
           "icon": "fa-comment-dots"
-        },
-        {
-          "title": "会话类型系统",
-          "path": "advanced/session-types.md",
-          "level": 1,
-          "icon": "fa-layer-group"
         },
         {
           "title": "Conversation 多轮对话",

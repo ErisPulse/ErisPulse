@@ -21,8 +21,8 @@
 
 - **模块总数**: 92
 - **类总数**: 114（包括 6 个嵌套类）
-- **函数总数**: 166
-- **方法总数**: 1093
+- **函数总数**: 169
+- **方法总数**: 1094
 
 ---
 
@@ -416,7 +416,7 @@
 
 ### [ErisPulse.loaders.module](ErisPulse/loaders/module.md)
 
-3 个类 | 36 个方法 | 2 个函数
+3 个类 | 37 个方法 | 5 个函数
 
 
 ### [ErisPulse.loaders.plugin_folder](ErisPulse/loaders/plugin_folder.md)
