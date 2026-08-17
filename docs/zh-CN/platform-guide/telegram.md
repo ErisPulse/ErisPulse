@@ -6,7 +6,7 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 
 ## 文档信息
 
-- 对应模块版本: 4.0.0
+- 对应模块版本: 4.1.1
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -366,7 +366,7 @@ Telegram 适配器仅支持 **Polling（轮询）** 模式，Webhook 模式已�
 
 ### 代理配置
 
-如需通过代理连接 Telegram API，请使用系统级代理（环境变量 ` + 'ALL_PROXY' + ` / ` + 'HTTPS_PROXY' + `）。
+如需通过代理连接 Telegram API，请使用系统级代理（环境变量 `ALL_PROXY` / `HTTPS_PROXY`）。
 
 ### 旧版配置迁移
 
