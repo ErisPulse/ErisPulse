@@ -3,7 +3,7 @@
 ## 基本信息
 - 模块名称: `ErisPulse-WechatMpAdapter`
 - 平台标识: `mp`（别名: `wechat_mp`）
-- 模块版本: 4.0.0
+- 模块版本: 4.1.0
 - 维护者: ErisPulse
 - 依赖: `cryptography`
 
@@ -32,6 +32,7 @@
 ### 重要限制
 - 客服消息只能在用户与公众号交互后 **48 小时内** 主动发送
 - 超过 48 小时需使用模板消息（需用户授权场景）
+- 未认证服务号（`verified=false`）无法主动发送，只能被动回复（见上方「认证服务号与被动回复」）
 
 ## 事件类型
 
@@ -102,6 +103,7 @@ appsecret = "your_app_secret_here"
 token = "your_callback_token"
 encoding_aes_key = ""                    # 安全模式/兼容模式才需要（43位）
 callback_path = "/mp/main"               # 回调路径
+verified = true                          # 是否为认证服务号（影响主动发送能力）
 enable = true
 
 [WechatMpAdapter.accounts.secondary]
@@ -121,7 +123,15 @@ enable = true
 | `token` | 否 | 回调验证 Token（建议填写以启用签名验证） |
 | `encoding_aes_key` | 否 | 消息加解密密钥（43位，安全模式必需） |
 | `callback_path` | 否 | 回调路径模板，默认 `/mp/{account}`，`{account}` 会被账户名替换 |
+| `verified` | 否 | 是否为**认证服务号**，默认 `true`（见下方说明） |
 | `enable` | 否 | 是否启用，默认 true |
+
+### 认证服务号与被动回复（verified）
+
+- `verified = true`（默认，认证服务号）：可随时使用**客服消息**主动推送（48 小时窗口内）与模板消息
+- `verified = false`（未认证订阅号）：
+  - 客服消息 / 模板消息**只能在 webhook 被动回复上下文中发送**（收到用户消息后 15 秒内、一次回复）——适配器会自动将发送截获为被动回复
+  - 主动推送（如定时任务）返回 `retcode=34003` 错误
 
 ## 加密模式说明
 

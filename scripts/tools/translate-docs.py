@@ -10,12 +10,15 @@ ErisPulse 文档翻译器
 - 翻译后自检（长度、代码块、乱码）
 - 429 限速自动指数退避重试
 - 可配置是否启用推理/思考模式
+- 目标语言级并行翻译（语言内部仍受 concurrent 信号量约束）
+- 时间预算：到点停止调度新文件，在途任务收尾后退出（缓存续传，下次运行续译）
 
 使用方法:
     python scripts/tools/translate-docs.py
     python scripts/tools/translate-docs.py --lang en ja
     python scripts/tools/translate-docs.py --force
     python scripts/tools/translate-docs.py --no-check
+    python scripts/tools/translate-docs.py --time-budget 40
 """
 
 import argparse
@@ -125,6 +128,9 @@ class DocsTranslator:
 
         self.providers: List[Dict] = []
         self.clients: List[AsyncOpenAI] = []
+        # 请求级超时：防止流式响应挂起拖垮整轮翻译
+        # （max_retries=0：重试由脚本自管，含 429 指数退避，避免 SDK 内部长阻塞）
+        self.request_timeout = self._setting("request_timeout", 180)
         self._init_providers()
 
         self.enable_reasoning = self._setting("enable_reasoning", False)
@@ -141,6 +147,7 @@ class DocsTranslator:
             "translated_files": 0,
             "skipped_files": 0,
             "failed_files": 0,
+            "budget_remaining": 0,
             "validation_failed": [],
             "start_time": None,
             "end_time": None,
@@ -158,7 +165,12 @@ class DocsTranslator:
                     )
                     continue
                 base_url = pc.get("base_url", "https://api.openai.com/v1").rstrip("/")
-                client = AsyncOpenAI(api_key=api_key, base_url=base_url)
+                client = AsyncOpenAI(
+                    api_key=api_key,
+                    base_url=base_url,
+                    timeout=self.request_timeout,
+                    max_retries=0,
+                )
                 self.providers.append(pc)
                 self.clients.append(client)
         if not self.providers:
@@ -178,7 +190,14 @@ class DocsTranslator:
                     "model": model,
                 }
             )
-            self.clients.append(AsyncOpenAI(api_key=api_key, base_url=base_url))
+            self.clients.append(
+                AsyncOpenAI(
+                    api_key=api_key,
+                    base_url=base_url,
+                    timeout=self.request_timeout,
+                    max_retries=0,
+                )
+            )
         Logger.log(
             f"  可用服务商: {', '.join(p.get('name', p.get('base_url')) for p in self.providers)}"
         )
@@ -213,6 +232,7 @@ class DocsTranslator:
                     }
                 ],
                 "concurrent": 1,
+                "time_budget_minutes": 0,
                 "request_delay": 2,
                 "max_retries": 5,
                 "retry_base_delay": 10,
@@ -1084,23 +1104,36 @@ class DocsTranslator:
         target_langs: Optional[List[str]] = None,
         force: bool = False,
         no_check: bool = False,
+        time_budget: Optional[float] = None,
     ):
         self.stats["start_time"] = time.time()
 
         if target_langs is None:
             target_langs = self.config.get("target_langs", [])
 
+        # 时间预算：到点后不再调度新文件，在途任务收尾后退出（缓存照常落盘，下次运行续译）
+        budget_minutes = (
+            time_budget
+            if time_budget is not None
+            else (self.config.get("time_budget_minutes", 0) or 0)
+        )
+        deadline = None
+        if budget_minutes and budget_minutes > 0:
+            deadline = self.stats["start_time"] + budget_minutes * 60
+
         Logger.log("=" * 60)
         Logger.log("ErisPulse 文档翻译器")
         Logger.log("=" * 60)
         Logger.log(f"源语言: {self.config['source_lang']}")
         Logger.log(f"目标语言: {', '.join(target_langs)}")
-        Logger.log(f"并发数: {self.config.get('concurrent', 1)}")
+        Logger.log(f"单语言并发数: {self.config.get('concurrent', 1)}")
         Logger.log(f"服务商数: {len(self.providers)}")
         Logger.log(f"推理模式: {'开启' if self.enable_reasoning else '关闭'}")
         Logger.log(
             f"自检: {'开启' if self.enable_self_check and not no_check else '关闭'}"
         )
+        if deadline is not None:
+            Logger.log(f"时间预算: {budget_minutes:g} 分钟")
         Logger.log("")
 
         files = self.scan_files()
@@ -1110,16 +1143,41 @@ class DocsTranslator:
 
         concurrent = self.config.get("concurrent", 1)
 
-        for target_lang in target_langs:
+        async def _translate_lang(lang_idx: int, target_lang: str):
             lang_name = self.LANG_CONFIG.get(target_lang, {}).get("name", target_lang)
             Logger.log(f"--- {lang_name} ({target_lang}) ---")
 
             semaphore = asyncio.Semaphore(concurrent)
 
-            async def _translate(file_path, idx):
+            async def _translate(file_path: Path, idx: int):
+                # 预算耗尽：排队中的任务直接跳过，留待下次运行续译（缓存续传）
+                if deadline is not None and time.time() >= deadline:
+                    self.stats["budget_remaining"] += 1
+                    Logger.progress(
+                        self._get_rel_path(file_path),
+                        target_lang,
+                        "skip",
+                        "时间预算耗尽，留待下次续译",
+                    )
+                    return True
                 async with semaphore:
+                    # 拿到信号量后再检查一次（排队期间预算可能已耗尽）
+                    if deadline is not None and time.time() >= deadline:
+                        self.stats["budget_remaining"] += 1
+                        Logger.progress(
+                            self._get_rel_path(file_path),
+                            target_lang,
+                            "skip",
+                            "时间预算耗尽，留待下次续译",
+                        )
+                        return True
+                    # idx + lang_idx：语言间错开服务商，避免所有语言挤同一服务商
                     return await self.translate_file(
-                        file_path, target_lang, force, no_check, file_index=idx
+                        file_path,
+                        target_lang,
+                        force,
+                        no_check,
+                        file_index=idx + lang_idx,
                     )
 
             results = await asyncio.gather(
@@ -1134,6 +1192,12 @@ class DocsTranslator:
                     )
                     self.stats["failed_files"] += 1
 
+        # 语言级并行：所有目标语言同时翻译（语言内部仍受 concurrent 信号量约束）
+        await asyncio.gather(
+            *[_translate_lang(li, lang) for li, lang in enumerate(target_langs)],
+            return_exceptions=True,
+        )
+
         self.stats["end_time"] = time.time()
         duration = self.stats["end_time"] - self.stats["start_time"]
 
@@ -1143,6 +1207,8 @@ class DocsTranslator:
         Logger.log(f"翻译: {self.stats['translated_files']}")
         Logger.log(f"跳过: {self.stats['skipped_files']}")
         Logger.log(f"失败: {self.stats['failed_files']}")
+        if self.stats["budget_remaining"] > 0:
+            Logger.log(f"预算耗尽待续译: {self.stats['budget_remaining']}")
         Logger.log(f"耗时: {duration:.1f}s")
         if self.stats["translated_files"] > 0 and duration > 0:
             Logger.log(f"速度: {self.stats['translated_files'] / duration:.2f} 文件/秒")
@@ -1151,6 +1217,8 @@ class DocsTranslator:
             for f in self.stats["validation_failed"]:
                 Logger.log(f"  - {f}")
         Logger.log("=" * 60)
+        # 机器可读输出：供 CI 判断是否需要续译（翻译任务因预算耗尽被跳过的数量）
+        Logger.log(f"REMAINING_FILES={self.stats['budget_remaining']}")
 
 
 async def main():
@@ -1172,13 +1240,23 @@ async def main():
         parser.add_argument("--force", action="store_true", help="强制重新翻译所有文件")
         parser.add_argument("--no-check", action="store_true", help="跳过翻译后自检")
         parser.add_argument(
+            "--time-budget",
+            type=float,
+            default=None,
+            help="时间预算（分钟）：到点后停止调度新文件，在途任务收尾后退出"
+            "（默认读配置 time_budget_minutes，0 表示不限）",
+        )
+        parser.add_argument(
             "--version", action="version", version="ErisPulse 文档翻译器"
         )
 
         args = parser.parse_args()
         translator = DocsTranslator(args.config)
         await translator.translate(
-            target_langs=args.lang, force=args.force, no_check=args.no_check
+            target_langs=args.lang,
+            force=args.force,
+            no_check=args.no_check,
+            time_budget=args.time_budget,
         )
     except KeyboardInterrupt:
         Logger.log("")
