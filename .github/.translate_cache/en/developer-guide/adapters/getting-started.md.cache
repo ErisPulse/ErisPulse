@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "11aba9df7350f3e3ec78558f7ae4ef68",
-  "file_hash": "11aba9df7350f3e3ec78558f7ae4ef68",
-  "translated_at": "2026-08-05T21:59:39.113916",
+  "hash": "e16cf30f4ddd1e4658569eb55f1b7cf0",
+  "file_hash": "e16cf30f4ddd1e4658569eb55f1b7cf0",
+  "translated_at": "2026-08-17T12:11:28.944845",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Getting Started with Adapter Development\n\nThis guide helps you start developing an ErisPulse adapter to connect with a new messaging platform."
     },
     {
-      "hash": "41673a17b0c43e4f92c0a31517ba4185",
-      "translation": "## Adapter Overview\n\n### What is an Adapter\n\nThe adapter acts as a bridge between ErisPulse and various messaging platforms, responsible for:\n\n1. **Forward Conversion**: Receiving platform events and converting them to the OneBot12 standard format (Converter)\n2. **Reverse Conversion**: Converting OneBot12 message segments into platform API calls (`Raw_ob12`)\n3. Managing connections with the platform (WebSocket/WebHook)\n4. Providing a unified SendDSL message sending interface\n\n### Adapter Architecture\n\n```\nForward Conversion (Receive)                    Reverse Conversion (Send)\n─────────────                                    ─────────────\nPlatform Event                                   Module Constructed Message\n    ↓                                            ↓\nConverter.convert()                            Send.Raw_ob12()\n    ↓                                            ↓\nOneBot12 Standard Event                        Platform Native API Call\n    ↓                                            ↓\nEvent System                                    Standard Response Format\n    ↓\nModule Processing\n```\n\nPlease return the translated Markdown content directly, without adding any other text.\n\n**Reminder**: If the document contains language switching lines (lines separated by `|`), please strictly follow the format requirements in point 8 above and do not use incorrect formats like `[**Label**](file)`."
+      "hash": "0c61aa42f7ade16d05a2f27cf278223a",
+      "translation": "## Adapter Introduction\n\n### What is an Adapter\n\nThe adapter is the bridge between ErisPulse and various messaging platforms, responsible for:\n\n1. **Forward Conversion**: Receiving platform events and converting them to OneBot12 standard format (Converter)\n2. **Reverse Conversion**: Converting OneBot12 message segments into platform API calls (`Raw_ob12`)\n3. Managing connections with platforms (WebSocket/WebHook)\n4. Providing a unified SendDSL message sending interface\n\n### Adapter Architecture\n\n```mermaid\nflowchart LR\n    subgraph receive[\"Forward Conversion (Receive)\"]\n        direction TB\n        P1[\"Platform Event\"] --> C1[\"Converter.convert()\"] --> O1[\"OneBot12 Standard Event\"] --> S1[\"Event System\"] --> M1[\"Module Processing\"]\n    end\n    subgraph send[\"Reverse Conversion (Send)\"]\n        direction TB\n        M2[\"Module Builds Message\"] --> R1[\"Send.Raw_ob12()\"] --> N1[\"Platform Native API Call\"] --> R2[\"Standard Response Format\"]\n    end"
     },
     {
       "hash": "ec84ec300612297e437460aa7207b09e",

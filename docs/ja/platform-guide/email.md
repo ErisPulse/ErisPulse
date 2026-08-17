@@ -1,41 +1,47 @@
 # メールプラットフォームの機能ドキュメント
 
-EmailAdapter は SMTP/IMAP プロトコルに基づいたメールアダプターで、メールの送信、受信、処理をサポートしています。
+EmailAdapter は SMTP/IMAP プロトコルに基づいたメールアダプタであり、メールの送信、受信、および処理をサポートしています。
 
 ---
+
+docs/ja/quick-start.md
 
 ## ドキュメント情報
 
 - 対応モジュールバージョン: 4.1.0
 - メンテナー: ErisPulse
 
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**繁體中文**](docs/zh-TW/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Bahasa Indonesia**](docs/id/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**हिन्दी**](docs/hi/quick-start.md) | [**ไทย**](docs/th/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**Bahasa Indonesia**](docs/id/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**हिन्दी**](docs/hi/quick-start.md)
+
 ## 基本情報
 
-- プラットフォームの概要：標準の SMTP/IMAP プロトコルを使用してメールを送受信する汎用アダプター
-- アダプター名：EmailAdapter
-- 複数アカウントのサポート：複数のメールアカウントを同時に設定可能
-- 接続方式：IMAP 長時間ポーリングによる受信 + SMTP による送信
-- 認証方式：メールアドレス + パスワード/認証コード
-- OneBot12 の互換性：OneBot12 形式のメッセージ送信をサポート
+- プラットフォーム概要：標準の SMTP/IMAP プロトコルを使用してメールを送受信する汎用アダプタ
+- アダプタ名：EmailAdapter
+- 複数アカウント対応：複数のメールアカウントを同時に設定可能
+- 接続方法：IMAP 長時間ポーリングによる受信 + SMTP による送信
+- 認証方法：メールアドレス + パスワード/アプリケーションパスワード
+- OneBot12 兼容：OneBot12 形式のメッセージ送信をサポート
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 設定説明
 
-### グローバル設定 (EmailAdapter)
+### グローバル設定（EmailAdapter）
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |--------|------|--------|------|
-| `imap_server` | str | `imap.example.com` | デフォルトの IMAP サーバーのアドレス |
-| `imap_port` | int | `993` | デフォルトの IMAP ポート番号 |
-| `smtp_server` | str | `smtp.example.com` | デフォルトの SMTP サーバーのアドレス |
-| `smtp_port` | int | `465` | デフォルトの SMTP ポート番号 |
-| `ssl` | bool | `true` | SSL をデフォルトで有効にするか |
+| `imap_server` | str | `imap.example.com` | デフォルトのIMAPサーバーのアドレス |
+| `imap_port` | int | `993` | デフォルトのIMAPポート |
+| `smtp_server` | str | `smtp.example.com` | デフォルトのSMTPサーバーのアドレス |
+| `smtp_port` | int | `465` | デフォルトのSMTPポート |
+| `ssl` | bool | `true` | SSLをデフォルトで有効にするかどうか |
 | `timeout` | int | `30` | デフォルトの接続タイムアウト（秒） |
-| `poll_interval` | int | `60` | IMAP ポーリング間隔（秒） |
+| `poll_interval` | int | `60` | IMAPのポーリング間隔（秒） |
 | `max_retries` | int | `3` | 接続失敗時の最大リトライ回数 |
 
-### アカウント設定 (EmailAdapter.accounts)
+### アカウント設定（EmailAdapter.accounts）
 
-各アカウントは独立したメールアドレスに対応します。アカウントレベルの設定はグローバル設定より優先されます。
+各アカウントは個別のメールアドレスに対応します。アカウントレベルの設定はグローバル設定よりも優先されます。
 
 ```toml
 [EmailAdapter.accounts.default]
@@ -55,9 +61,11 @@ password = "another-password"
 enabled = true
 ```
 
-## 送信可能なメッセージの種類
+docs/ja/quick-start.md
 
-すべての送信メソッドはメソッドチェーン構文で実装されています：
+## 支援されるメッセージ送信タイプ
+
+すべての送信メソッドは、チェーン式構文で実装されています：
 
 ```python
 from ErisPulse.Core import adapter
@@ -79,52 +87,52 @@ await mail.Send.To("private", "to@example.com").Raw_ob12([
     {"type": "file", "data": {"file": "/path/to/attachment.pdf"}},
 ])
 
-# 送信アカウントを指定（複数アカウント）
+# 送信アカウントを指定（複数アカウント使用時）
 await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 ```
 
-> メソッドチェーン構文を使用する際は、パラメータを設定するメソッド（Subject / Cc / Attachment など）は送信メソッド（Text / Html / Raw_ob12）の前に呼び出す必要があります。
+> 注：チェーン式構文を使用する場合、パラメータメソッド（Subject / Cc / Attachment など）は送信メソッド（Text / Html / Raw_ob12）の前に呼び出す必要があります。
 
-### 基本的な送信メソッド
+### 基本送信メソッド
 
 | メソッド | 説明 |
 |------|------|
 | `.Text(text: str)` | 純粋なテキストメールを送信 |
-| `.Html(html: str)` | HTML 形式のメールを送信 |
-| `.Raw_ob12(message, **kwargs)` | OneBot12 形式のメッセージを送信 |
+| `.Html(html: str)` | HTML形式のメールを送信 |
+| `.Raw_ob12(message, **kwargs)` | OneBot12形式のメッセージを送信 |
 
-### メソッドチェーンの修飾メソッド（self を返すため、組み合わせて使用可能）
+### チェーン修飾メソッド（selfを返却し、組み合わせて使用可能）
 
 | メソッド | 説明 |
 |------|------|
 | `.Subject(subject: str)` | メールの件名を設定 |
-| `.Cc(emails: Union[str, List[str]])` | 送信先の CC アドレスを設定 |
-| `.Bcc(emails: Union[str, List[str]])` | 送信先の BCC アドレスを設定 |
-| `.ReplyTo(email: str)` | 回信先アドレスを設定 |
+| `.Cc(emails: Union[str, List[str]])` | 抄送先を設定 |
+| `.Bcc(emails: Union[str, List[str]])` | 密送先を設定 |
+| `.ReplyTo(email: str)` | 回信先を設定 |
 | `.Attachment(file, filename: str = None)` | 附件を追加 |
 
-### OB12 メッセージセグメントの逆変換 (Raw_ob12)
+### OB12 メッセージセグメントの逆変換（Raw_ob12）
 
-| OB12 メッセージセグメント | メールの内容に変換 |
+| OB12 メッセージセグメント | メール本文に変換 |
 |------------|--------------|
-| `text` | 純粋な本文 |
+| `text` | 純粋なテキスト本文 |
 | `image` | 画像の附件 |
 | `video` | 動画の附件 |
 | `file` | ファイルの附件 |
 | `audio` | 音声の附件 |
-| `markdown` | HTML 本文に変換 |
+| `markdown` | HTML本文に変換 |
 
-## 特有のイベントタイプ
+## 特有イベントタイプ
 
-### 核心的な違い
+### コアな違い
 
-1. メールイベントはすべて `message` タイプで、`detail_type` は固定で `private`
-2. `user_id` は送信者の**純粋なメールアドレス**、`user_nickname` は送信者の表示名
-3. `message` メッセージセグメントは標準の OB12 形式（text セグメント + file セグメント）
-4. メールの件名は `email_subject` 拡張フィールドから取得
-5. 完全な元データは `email_raw` フィールドに保存
+1. メールイベントはすべて `message` タイプで、`detail_type` は固定で `private` です。
+2. `user_id` は送信者の**純粋なメールアドレス**で、`user_nickname` は送信者の表示名です。
+3. `message` メッセージセグメントは標準の OB12 形式（text セグメント + file セグメント）です。
+4. メールの件名は `email_subject` 拡張フィールドから取得します。
+5. 完全な元データは `email_raw` フィールドに保存されます。
 
-### 新しいメールイベント (email_new)
+### 新しいメールイベント（email_new）
 
 ```json
 {
@@ -145,13 +153,13 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
       }
     }
   ],
-  "alt_message": "メールの件名",
+  "alt_message": "メール件名",
   "user_id": "sender@example.com",
   "user_nickname": "Saber"
 }
 ```
 
-### 附件付きのメール
+### 附件付きメール
 
 ```json
 {
@@ -159,7 +167,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     {
       "type": "text",
       "data": {
-        "text": "添付ファイルをご覧ください"
+        "text": "添付ファイルをご確認ください"
       }
     },
     {
@@ -174,9 +182,9 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 }
 ```
 
-### 回答メールイベント (email_reply)
+### メール返信イベント（email_reply）
 
-メールに `References` または `In-Reply-To` ヘッダーが含まれている場合、`email_raw_type` は `email_reply` になります：
+メールに `References` または `In-Reply-To` ヘッダーが含まれている場合、`email_raw_type` は `email_reply` です：
 
 ```json
 {
@@ -186,19 +194,18 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     "in_reply_to": "<original-msg-id@example.com>"
   }
 }
-```
 
 ## 拡張フィールドの説明
 
 | フィールド | 型 | 説明 |
 |------|------|------|
 | `email_raw` | dict | 完全な元のメールデータ（subject/from/to/date/cc/bcc/text_content/html_content/attachments など） |
-| `email_raw_type` | str | 元のイベントタイプ：`email_new`（新メール）または `email_reply`（回答メール） |
+| `email_raw_type` | str | 元のイベントの種類：`email_new`（新規メール）または `email_reply`（返信メール） |
 | `email_subject` | str | メールの件名（アクセスしやすいように） |
 | `email_from` | str | 送信者の純粋なメールアドレス（アクセスしやすいように） |
-| `attachments` | list | 附件データのリスト（後方互換性のために binary `data` フィールドを含む） |
+| `attachments` | list | 附件データのリスト（バイナリ `data` フィールドを含み、後方互換性を保つ） |
 
-## 標準的なイベントの例
+## 標準イベントの例
 
 ### 完全なメールイベント
 
@@ -217,7 +224,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     {
       "type": "text",
       "data": {
-        "text": "添付ファイルをご覧ください"
+        "text": "添付ファイルをご確認ください"
       }
     },
     {
@@ -231,12 +238,12 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
   ],
   "alt_message": "会議のお知らせ",
   "user_id": "sender@example.com",
-  "user_nickname": "Sender",
+  "user_nickname": "送信者",
   "email_subject": "会議のお知らせ",
   "email_from": "sender@example.com",
   "email_raw": {
     "subject": "会議のお知らせ",
-    "from": "\"Sender\" <sender@example.com>",
+    "from": "\"送信者\" <sender@example.com>",
     "to": "<bot@example.com>",
     "date": "Wed, 9 Jul 2026 02:00:46 +0800",
     "message_id": "<abc123@example.com>",
@@ -244,8 +251,8 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     "in_reply_to": "",
     "cc": "",
     "bcc": "",
-    "text_content": "添付ファイルをご覧ください",
-    "html_content": "<p>添付ファイルをご覧ください</p>",
+    "text_content": "添付ファイルをご確認ください",
+    "html_content": "<p>添付ファイルをご確認ください</p>",
     "attachments": ["document.pdf"]
   },
   "email_raw_type": "email_new",
@@ -258,34 +265,34 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     }
   ]
 }
-```
 
-## 送信メソッドの返り値
+## 送信メソッドの戻り値
 
 ```json
 {
   "status": "ok",
   "retcode": 0,
   "data": {
-    "message_id": "<sent-msg-id@example.com>",
+    "message_id": "<送信済みメッセージID@example.com>",
     "time": 1751990446
   },
-  "message_id": "<sent-msg-id@example.com>",
+  "message_id": "<送信済みメッセージID@example.com>",
   "message": "",
   "email_raw": {
     "success": true,
     "message": "メールの送信に成功しました"
   }
 }
-```
 
 ## イベント処理の例
 
 ```python
-from ErisPulse import sdk
+from ErisPulse.Core.Event import message
 
-@sdk.on_message(platform="email")
+@message.on_message()
 async def handle_email(event):
+    if event.get("platform") != "email":
+        return
     # 送信者の純粋なメールアドレス
     sender = event["user_id"]              # sender@example.com
     
@@ -295,7 +302,7 @@ async def handle_email(event):
     # メールの件名
     subject = event.get("email_subject")   # 会議のお知らせ
     
-    # 純粋なテキスト本文（最初の text セグメント）
+    # テキスト形式の本文（最初の text パラグラフ）
     text = event.get_text()
     
     # 完全な元のデータ
@@ -308,5 +315,8 @@ async def handle_email(event):
             filename = seg["data"]["file_name"]
             size = seg["data"]["size"]
     
-    # 回答メール
+    # メールの返信
     await event.reply(f"受信しました：{subject}")
+```
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**中文**](docs/ja/quick-start.md)

@@ -4,21 +4,31 @@ TelegramAdapter is an adapter built based on the Telegram Bot API, supporting mu
 
 ---
 
-## Document Information
+Please directly return the complete translated Markdown content without any additional text.
 
-- Corresponding Module Version: 4.0.0
+Once again, if the document contains language switching lines (with each language name separated by `` | ``), strictly adhere to the formatting requirements above in point 8. Do not write incorrect formats such as ``[**Label**](file)``.
+
+## Documentation Information
+
+- Corresponding Module Version: 4.1.1
 - Maintainer: ErisPulse
+
+Please directly return the complete translated Markdown content, without including any other text.
+
+Again, please note: If the document contains a language switch line (with each language name separated by `` | ``), strictly follow the format requirement in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Basic Information
 
 - Platform Introduction: Telegram is a cross-platform instant messaging software
 - Adapter Name: TelegramAdapter
-- Supported Protocols/API Versions: Telegram Bot API
-- Session Type Mapping: `private` → Use `user` when sending, `group`/`supergroup` → `group`, `channel` → `channel`
+- Supported Protocol/API Version: Telegram Bot API
+- Session Type Mapping: `private` → use `user` when sending, `group`/`supergroup` → `group`, `channel` → `channel`
+
+Please directly return the complete translated Markdown content without any additional text.
 
 ## Supported Message Sending Types
 
-All sending methods are implemented via chained syntax, for example:
+All sending methods are implemented through a fluent interface, for example:
 ```python
 from ErisPulse.Core import adapter
 telegram = adapter.get("telegram")
@@ -30,53 +40,53 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 
 | Method | Description | Parameters |
 |--------|-------------|------------|
-| `.Text(text)` | Sends a plain text message | `text: str` |
-| `.Face(emoji)` | Sends a dice emoji | `emoji: str` (e.g., 🎲 🎯 🏀) |
-| `.Markdown(text, content_type)` | Sends a Markdown format message | `content_type` defaults to `"MarkdownV2"` |
-| `.HTML(text)` | Sends an HTML format message | `text: str` |
-| `.Sticker(file)` | Sends a sticker | `file: str (file_id/URL) \| bytes` |
-| `.Location(lat, lng)` | Sends a location | `latitude: float, longitude: float` |
-| `.Venue(lat, lng, title, addr)` | Sends a venue | With title and address |
-| `.Contact(phone, first, last)` | Sends a contact | With phone number and name |
+| `.Text(text)` | Send plain text message | `text: str` |
+| `.Face(emoji)` | Send emoji dice | `emoji: str` (e.g. 🎲 🎯 🏀) |
+| `.Markdown(text, content_type)` | Send Markdown-formatted message | `content_type` defaults to `"MarkdownV2"` |
+| `.HTML(text)` | Send HTML-formatted message | `text: str` |
+| `.Sticker(file)` | Send sticker | `file: str (file_id/URL) \| bytes` |
+| `.Location(lat, lng)` | Send location | `latitude: float, longitude: float` |
+| `.Venue(lat, lng, title, addr)` | Send venue | Includes title and address |
+| `.Contact(phone, first, last)` | Send contact | Includes phone number and name |
 
 ### Media Sending Methods
 
-All media methods support both `bytes` (upload) and `str` (file_id / URL) as input:
+All media methods support both `bytes` (upload) and `str` (file_id / URL) inputs:
 
 | Method | Description |
 |--------|-------------|
-| `.Image(file, caption, content_type)` | Sends an image |
-| `.Video(file, caption, content_type)` | Sends a video |
-| `.Voice(file, caption)` | Sends a voice message |
-| `.Audio(file, caption, content_type)` | Sends an audio message |
-| `.File(file, caption)` | Sends a file |
-| `.Document(file, caption, content_type)` | Alias of File |
+| `.Image(file, caption, content_type)` | Send image |
+| `.Video(file, caption, content_type)` | Send video |
+| `.Voice(file, caption)` | Send voice |
+| `.Audio(file, caption, content_type)` | Send audio |
+| `.File(file, caption)` | Send file |
+| `.Document(file, caption, content_type)` | Alias for File |
 
 ### Message Management Methods
 
 | Method | Description |
 |--------|-------------|
-| `.Edit(message_id, text, content_type)` | Edits an existing message |
-| `.Recall(message_id)` | Deletes a specified message |
-| `.Forward(from_chat_id, message_id)` | Forwards a message (preserving source) |
-| `.CopyMessage(from_chat_id, message_id)` | Copies a message (without source) |
-| `.AnswerCallback(callback_query_id, text, show_alert)` | Answers a callback query |
+| `.Edit(message_id, text, content_type)` | Edit an existing message |
+| `.Recall(message_id)` | Delete a specified message |
+| `.Forward(from_chat_id, message_id)` | Forward a message (retains source) |
+| `.CopyMessage(from_chat_id, message_id)` | Copy a message (without source) |
+| `.AnswerCallback(callback_query_id, text, show_alert)` | Answer a callback query |
 
 ### Raw Message Sending
 
-- `.Raw_ob12(message: List[Dict])`: Sends a OneBot12 standard format message
-- `.Raw_json(json_str: str)`: Sends a raw JSON format message
+- `.Raw_ob12(message: List[Dict])`: Send a message in OneBot12 standard format
+- `.Raw_json(json_str: str)`: Send a message in raw JSON format
 
-### Chained Modifying Methods
+### Fluent Modifier Methods
 
 | Method | Description |
 |--------|-------------|
-| `.At(user_id)` | Mentions a specific user (implemented via Telegram entities, can be called multiple times) |
-| `.AtAll()` | Mentions all members (sends `@All` text) |
-| `.Reply(message_id)` | Replies to a specified message |
-| `.Keyboard(inline_keyboard)` | Sets an inline keyboard (`list[list[dict]]`) |
-| `.ProtectContent(protect)` | Protects content (prevents forwarding and saving) |
-| `.Silent(silent)` | Sends silently (without notifying users) |
+| `.At(user_id)` | @ a specified user (implemented via Telegram entities, can be called multiple times) |
+| `.AtAll()` | @ all members (sends `@All` text) |
+| `.Reply(message_id)` | Reply to a specified message |
+| `.Keyboard(inline_keyboard)` | Set an inline keyboard (`list[list[dict]]`) |
+| `.ProtectContent(protect)` | Protect content (prevents forwarding and saving) |
+| `.Silent(silent)` | Send silently (does not notify the user) |
 
 ### Sending Examples
 
@@ -91,26 +101,26 @@ keyboard = [
     [{"text": "Button 1", "callback_data": "btn1"}, {"text": "Button 2", "callback_data": "btn2"}],
     [{"text": "Visit Website", "url": "https://example.com"}],
 ]
-await telegram.Send.To("group", group_id).Keyboard(keyboard).Text("Please choose:")
+await telegram.Send.To("group", group_id).Keyboard(keyboard).Text("Please select:")
 
-# Media sending (URL method)
+# Media sending (using URL)
 await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="Image")
 
-# @User
+# @ user
 await telegram.Send.To("group", group_id).At("6117725680").Text("Hello!")
 
-# Reply + Protect content
-await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("Confidential message")
+# Reply + protect content
+await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("Secret Message")
 
 # Silent sending
-await telegram.Send.To("group", group_id).Silent().Text("Silent notification")
+await telegram.Send.To("group", group_id).Silent().Text("Silent Notification")
 
 # Answer callback query
 await telegram.Send.AnswerCallback(callback_query_id, text="Processed", show_alert=False)
 
-# OneBot12 combined message
+# OneBot12 composite message
 ob12_message = [
-    {"type": "text", "data": {"text": "Complex message:"}},
+    {"type": "text", "data": {"text": "Complex message: "}},
     {"type": "mention", "data": {"user_id": "6117725680", "user_name": "Username"}},
     {"type": "reply", "data": {"message_id": "12345"}},
     {"type": "image", "data": {"file": "https://http.cat/200"}}
@@ -122,57 +132,56 @@ await telegram.Send.To("user", user_id).Sticker("CAACAgIAAxkBAA...")  # file_id
 
 # Send location
 await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
-```
 
-## Specific Event Types
+## Telegram Event Types
 
-Telegram events follow the OneBot12 standard, with platform extensions provided through the `telegram_` prefix.
+Telegram event transformations follow the OneBot12 standard, with platform extensions provided via the `telegram_` prefix.
 
 ### Message Event detail_type Mapping
 
-| Telegram chat.type | OneBot12 detail_type | Target Type for Sending |
+| Telegram chat.type | OneBot12 detail_type | Target Type |
 |---|---|---|
 | `private` | `private` | `user` |
 | `group` | `group` | `group` |
 | `supergroup` | `group` | `group` |
 | `channel` | `channel` | `channel` |
 
-### Specific Event Types
+### Telegram-Specific Event Types
 
 | detail_type | Description |
 |---|---|
-| `telegram_callback_query` | Callback query (inline button click) |
+| `telegram_callback_query` | Callback query (inline keyboard button click) |
 | `telegram_inline_query` | Inline query |
 | `telegram_chosen_inline_result` | Chosen inline result |
 | `telegram_poll` | Poll event |
 | `telegram_poll_answer` | Poll answer |
-| `telegram_my_chat_member` | Bot's own chat member status change |
+| `telegram_my_chat_member` | Bot member status change |
 | `telegram_chat_member` | Chat member change |
-| `telegram_chat_join_request` | Chat join request |
+| `telegram_chat_join_request` | Join chat request |
 | `telegram_shipping_query` | Shipping query |
 | `telegram_pre_checkout_query` | Pre-checkout query |
 
 ### Standard Message Segment Types
 
-Converted message segments use OneBot12 standard format:
+Transformed message segments use the OneBot12 standard format:
 
-| Segment Type | Description | data field |
+| Segment Type | Description | data Fields |
 |---|---|---|
 | `text` | Plain text (without @username) | `text` |
-| `mention` | @mention (standard OB12) | `user_id`, `user_name` |
+| `mention` | @User (standard OB12) | `user_id`, `user_name` |
 | `reply` | Reply reference | `message_id`, `user_id` |
 | `image` | Image | `file_id`, `url` |
 | `video` | Video | `file_id`, `url`, `duration`, `width`, `height` |
-| `voice` | Voice message | `file_id`, `url`, `duration` |
+| `voice` | Voice | `file_id`, `url`, `duration` |
 | `audio` | Audio | `file_id`, `url`, `duration`, `title`, `performer` |
 | `file` | File | `file_id`, `url`, `file_name`, `file_size`, `mime_type` |
 | `location` | Location | `latitude`, `longitude`, optional `title`, `address` |
 
 ### Platform Extension Message Segments
 
-Extension message segments identified with `telegram_` prefix:
+Message segments with the `telegram_` prefix are platform extensions:
 
-| Segment Type | Description | data field |
+| Segment Type | Description | data Fields |
 |---|---|---|
 | `telegram_sticker` | Sticker | `file_id`, `emoji`, `sticker_type`, `url` |
 | `telegram_animation` | GIF animation | `file_id`, `url`, `duration`, `caption` |
@@ -181,7 +190,7 @@ Extension message segments identified with `telegram_` prefix:
 
 ### Event Examples
 
-#### Group Chat Message (with @mention)
+#### Group Message (with @mention)
 ```python
 {
   "type": "message",
@@ -237,7 +246,7 @@ Extension message segments identified with `telegram_` prefix:
   "type": "message",
   "detail_type": "group",
   "message": [
-    {"type": "text", "data": {"text": "Please choose:"}},
+    {"type": "text", "data": {"text": "Please select:"}},
     {
       "type": "telegram_inline_keyboard",
       "data": {
@@ -249,42 +258,41 @@ Extension message segments identified with `telegram_` prefix:
     }
   ]
 }
-```
 
 ## Event Mixin Extension Methods
 
-The adapter registers platform-specific methods that are only available when `platform == "telegram"`:
+The adapter registers the following platform-specific methods, which are only available when `platform == "telegram"`:
 
 ### Message-related
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `is_bot_message()` | `bool` | Checks if the message is from a bot |
-| `is_edited_message()` | `bool` | Checks if the message was edited |
-| `is_topic_message()` | `bool` | Checks if it's a topic/Topic message |
-| `get_update_id()` | `int` | Gets Telegram update ID |
-| `get_chat_title()` | `str` | Gets chat title |
-| `get_chat_username()` | `str` | Gets chat username |
-| `get_forward_from()` | `dict` | Gets forward source information |
-| `get_topic_id()` | `str` | Gets topic ID |
+| `is_bot_message()` | `bool` | Determine if the message comes from a bot |
+| `is_edited_message()` | `bool` | Determine if the message has been edited |
+| `is_topic_message()` | `bool` | Determine if the message is a topic/Topic message |
+| `get_update_id()` | `int` | Get the Telegram update ID |
+| `get_chat_title()` | `str` | Get the chat title |
+| `get_chat_username()` | `str` | Get the chat username |
+| `get_forward_from()` | `dict` | Get the forward source information |
+| `get_topic_id()` | `str` | Get the topic ID |
 
 ### Callback Query-related
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `get_callback_data()` | `str` | Gets callback_data from callback query |
-| `get_callback_id()` | `str` | Gets callback query ID (for answering) |
+| `get_callback_data()` | `str` | Get the callback_data from the callback query |
+| `get_callback_id()` | `str` | Get the callback query ID (used for responding) |
 
 ### Message Segment Data Extraction
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `get_inline_keyboard()` | `list` | Gets inline keyboard from message |
-| `get_sticker_info()` | `dict` | Gets sticker information |
-| `get_contact_info()` | `dict` | Gets contact information |
-| `get_location()` | `dict` | Gets location information |
+| `get_inline_keyboard()` | `list` | Get the inline keyboard from the message |
+| `get_sticker_info()` | `dict` | Get the sticker information |
+| `get_contact_info()` | `dict` | Get the contact information |
+| `get_location()` | `dict` | Get the location information |
 
-### Usage Examples
+### Usage Example
 
 ```python
 from ErisPulse.Core.Event import message, notice
@@ -327,23 +335,24 @@ async def handle_notice(event):
         callback_data = event.get_callback_data()
         callback_id = event.get_callback_id()
 
-        # Answer callback query
+        # Respond to the callback query
         telegram = sdk.adapter.get("telegram")
         await telegram.Send.AnswerCallback(callback_id, text="Clicked")
 
-        # Reply to message
+        # Reply to the message
         await event.reply(f"You clicked: {callback_data}")
-```
 
-## Extended Field Descriptions
+## Extension Field Description
 
-- All specific fields are identified with the `telegram_` prefix
-- Original data is preserved in the `telegram_raw` field
-- Original event type is preserved in the `telegram_raw_type` field
+- All unique fields are prefixed with `telegram_`
+- The original data is preserved in the `telegram_raw` field
+- The original event type is preserved in the `telegram_raw_type` field
 - Channel messages use `detail_type="channel"`
 - Private chat messages use `detail_type="private"` (must be converted to `user` when sending)
-- Topic messages include a `thread_id` field
-- `@` mentions use the standard `mention` message segment type (`type: "mention"`), without @username in the text
+- Thread messages include the `thread_id` field
+- `@` mentions use the standard `mention` message segment type (`type: "mention"`), and the text does not contain @username
+
+Please replace all `docs/en/` paths in document links with `docs/en/`. For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`. For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged. This ensures that links point to the correct language version of the document.
 
 ## Configuration Options
 
@@ -360,17 +369,17 @@ token = "ANOTHER_BOT_TOKEN"
 enabled = true
 ```
 
-### Operating Mode
+### Running Mode
 
-The Telegram adapter only supports **Polling** mode. The Webhook mode has been removed.
+The Telegram adapter only supports the **Polling (polling)** mode. The Webhook mode has been removed.
 
 ### Proxy Configuration
 
-If you need to connect to Telegram API via a proxy, please use a system-level proxy (environment variables `ALL_PROXY` or `HTTPS_PROXY`).
+To connect to the Telegram API through a proxy, use system-level proxy (environment variables `ALL_PROXY` / `HTTPS_PROXY`).
 
 ### Migration from Old Configuration
 
-The old single token configuration is automatically compatible:
+Old single-token configuration is automatically compatible:
 ```toml
 # Old format (still usable, but migration is recommended)
 [Telegram_Adapter]
@@ -382,3 +391,10 @@ It is recommended to migrate to the new format:
 [Telegram_Adapter.accounts.default]
 token = "YOUR_BOT_TOKEN"
 enabled = true
+```
+
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
+   - This ensures that links point to the correct language version of the documentation

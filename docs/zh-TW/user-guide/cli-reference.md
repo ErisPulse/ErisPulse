@@ -433,7 +433,10 @@ docs/zh-TW/quick-start.md
 
 ### doctor
 
-診斷當前 CLI 運行環境，輸出健康報告。用於排查「為什麼裝不上 / 連不上」類問題。
+> [!NOTE]
+> 此命令需要 ErisPulse **2.7.0+**。
+
+診斷目前 CLI 運行環境，並輸出健康報告。用於排查「為什麼無法安裝 / 連不上」之類的問題。
 
 | 參數 | 說明 |
 |------|------|
@@ -443,7 +446,7 @@ docs/zh-TW/quick-start.md
 - **Python**：解釋器版本與路徑
 - **安裝後端**：使用 `uv` 還是 `pip`
 - **目標解釋器**：套件實際安裝到的目標 Python 環境
-- **配置檔案**：`config/config.toml` 是否存在
+- **設定檔**：`config/config.toml` 是否存在
 - **PyPI 連通性**：能否存取 PyPI（並顯示發現的元件數）
 - **系統代理**：是否偵測到代理
 
@@ -457,7 +460,7 @@ epsdk diag
 
 ---
 
-docs/zh-TW/quick-start.md
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 傳統中文
 

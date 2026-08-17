@@ -158,10 +158,10 @@ async def on_unload(self, event):
 
 ## Обработка событий
 
-### 1. Использование класса-обёртки Event
+### 1. Использование обёртки Event
 
 ```python
-# Удобный метод с использованием класса-обёртки Event
+# Удобный способ использования обёртки Event
 @command("info")
 async def info_command(event):
     user_id = event.get_user_id()
@@ -171,30 +171,43 @@ async def info_command(event):
 # Вместо прямого доступа к словарю
 @command("info")
 async def info_command(event):
-    user_id = event["user_id"]  # менее наглядно, подвержено ошибкам
+    user_id = event["user_id"]  # Неочевидно и может привести к ошибкам
 ```
 
-### 2. Оптимальное использование отложенной загрузки
+### 2. Разумное использование ленивой загрузки
 
 ```python
-# Модули обработки команд должны загружаться немедленно
+# Модуль с редко используемыми командами: объявите триггер activate_on, автоматически активируется при первом совпадении команды (сохраняется ленивая загрузка)
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        return ModuleLoadStrategy(lazy_load=False)
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"command": {"name": "dice", "help": "Бросить кубик", "aliases": ["d"]}},
+        ])
 
-# Модули прослушивателей должны загружаться немедленно
+# Модуль с редко используемыми слушателями: объявите триггер события, автоматически активируется при поступлении события
 class ListenerModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"notice": "group_member_increase"},
+        ])
+
+# Модуль с высокой частотой срабатывания (обрабатывается каждое сообщение) или модуль, который должен быть готов при запуске: немедленная загрузка
+class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# Модули утилит подходят для отложенной загрузки
+# Инструментальные модули подходят для ленивой загрузки
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
+
+> Полный синтаксис activate_on (три формы событий / сокращённое объявление команды и dict / цепочка help возврата) см. в
+> [системе модулей с ленивой загрузкой](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate-on).
 
 ### 3. Регистрация обработчиков событий
 
@@ -207,9 +220,13 @@ async def on_load(self, event):
     
     @message.on_group_message()
     async def group_handler(event):
-        self.logger.info("Получено сообщение из группы")
+        self.logger.info("Получено сообщение в группе")
     
-    # Не нужно вручную отменять регистрацию, фреймворк обрабатывает это автоматически
+    # Не нужно вручную отписываться, фреймворк сделает это автоматически
+```
+
+> `activate_on` 的完整语法（事件三形式 / 命令简写与 dict 声明 / help 回退链）见
+> [懒加载模块系统](../../advanced/lazy-loading.md#事件驱动懒激活activate_on)。
 
 ## Обработка ошибок
 
@@ -354,55 +371,62 @@ async def process_message(self, event):
 
 ## Безопасность
 
-### 1. Защита чувствительных данных
+### 1. Защита конфиденциальных данных
 
 ```python
-# Чувствительные данные хранятся в конфигурации
-class MyModule(BaseModule):
-    def _load_config(self):
-        config = self.sdk.config.getConfig("MyModule")
-        self.api_key = config.get("api_key")
-        
-        if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("Укажите действующий API-ключ в config.toml")
+# Конфиденциальные данные хранятся в конфигурации (декларативный ConfigClass, поле secret не попадает в логи/экспорт)
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
-# ❌ Жесткое кодирование чувствительных данных
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={"description": "Ключ API", "secret": True},
+    )
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    def check_api_key(self):
+        if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
+            raise ValueError("Пожалуйста, настройте действительный ключ API в config.toml")
+
+# ❌ Конфиденциальные данные жестко закодированы
 class MyModule(BaseModule):
     API_KEY = "sk-1234567890"  # Не делайте так!
 ```
 
-### 2. Валидация входных данных
+### 2. Валидация ввода
 
 ```python
-# Проверка пользовательского ввода
+# Валидация пользовательского ввода
 async def process_command(self, event):
     user_input = event.get_text()
     
-    # Проверка длины ввода
+    # Валидация длины ввода
     if len(user_input) > 1000:
-        await event.reply("Слишком длинный ввод, пожалуйста, введите заново")
+        await event.reply("Слишком длинный ввод, пожалуйста, повторите")
         return
     
-    # Проверка формата ввода
+    # Валидация формата ввода
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("Неверный формат ввода")
         return
 
 ## Тестирование
 
-### 1. Unit Tests
+### 1. Юнит-тесты
 
 ```python
 import pytest
 from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
-    def test_load_config(self):
-        """Тестирование загрузки конфигурации"""
-        module = MyModule()
-        config = module._load_config()
-        assert config is not None
-        assert "api_url" in config
+    def test_config_defaults(self):
+        """Тестирование значений по умолчанию конфигурации"""
+        config = MyModule.ConfigClass()
+        assert config.timeout == 30
 ```
 
 ### 2. Интеграционные тесты

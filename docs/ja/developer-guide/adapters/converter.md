@@ -1,24 +1,28 @@
 # イベントコンバーター実装ガイド
 
-イベントコンバーター (Converter) はアダプターのコアコンポーネントの一つであり、プラットフォームのネイティブイベントを ErisPulse の統一された OneBot12 標準イベント形式に変換します。
+イベントコンバーター (Converter) は、アダプターのコアコンポーネントの一つであり、プラットフォームのネイティブイベントを ErisPulse の統一された OneBot12 標準イベント形式に変換する役割を担います。
 
-## Converter の責務
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
+
+## Converter の責任
 
 ```
 プラットフォームのネイティブイベント ──→ Converter.convert() ──→ OneBot12 標準イベント
 ```
 
-Converter は**正方向変換**（受信方向）のみを担当し、プラットフォームのネイティブイベントデータを OneBot12 標準形式に変換します。逆方向変換（送信方向）は `Send.Raw_ob12()` メソッドで処理されます。
+Converter は**正方向の変換**（受信方向）のみを担当し、プラットフォームのネイティブイベントデータを OneBot12 標準形式に変換します。逆方向の変換（送信方向）は `Send.Raw_ob12()` メソッドが処理します。
 
-### 核心原則
+### コア原則
 
-1. **無損変換**：元のデータは `{platform}_raw` フィールドに完全に保持される必要があります
-2. **標準互換性**：変換後のイベントは OneBot12 標準形式に準拠している必要があります
-3. **プラットフォーム拡張**：プラットフォーム固有のデータは `{platform}_` で始まるフィールドに格納されます
+1. **損失のない変換**：元のデータは `{platform}_raw` フィールドに完全に保持されなければなりません
+2. **標準互換性**：変換後のイベントは OneBot12 標準形式に準拠しなければなりません
+3. **プラットフォーム拡張**：プラットフォーム固有のデータは `{platform}_` という接頭辞を持つフィールドに格納されます
+
+[**English**](/docs/en/quick-start.md) | [**日本語**](/docs/ja/quick-start.md) | [**简体中文**](/docs/ja/quick-start.md) | [**繁體中文**](/docs/zh-TW/quick-start.md) | [**한국어**](/docs/ko/quick-start.md)
 
 ## BaseConverter 基底クラス（推奨）
 
-2.7.0 以降、フレームワークは `BaseConverter` 基底クラス（`ErisPulse.Core.Bases`）を提供しており、OneBot12 イベントの**共通フィールド構築**と**一般的なメッセージセグメントの補助**をカプセル化しています。これにより、コンバーターは型マッピングに集中することができます：
+2.7.0 以降、フレームワークは `BaseConverter` 基底クラス（`ErisPulse.Core.Bases`）を提供し、OneBot12 イベントの**共通フィールドの構築**と**一般的なメッセージセグメントの補助**をカプセル化することで、変換器は型マッピングにのみ集中できるようにします。
 
 ```python
 from ErisPulse.Core.Bases import BaseConverter
@@ -43,16 +47,16 @@ class MyConverter(BaseConverter):
         return None
 ```
 
-`build_base_event()` で埋め込まれる共通フィールド：
+`build_base_event()` で既に埋め込まれている共通フィールド：
 
-| フィールド | 情報源 |
+| フィールド | 構成元 |
 |------|------|
-| `id` | `raw_event["event_id"]`、不足時は自動生成された UUID |
-| `time` | `raw_event["timestamp"]`、不足時は現在時刻 |
-| `platform` | コンストラクタで渡された `platform` |
+| `id` | `raw_event["event_id"]`、欠損時は UUID が自動生成されます |
+| `time` | `raw_event["timestamp"]`、欠損時は現在時刻が使用されます |
+| `platform` | コンストラクタに渡された `platform` |
 | `self` | `{"platform": ..., "user_id": raw_event["bot_id"]}` |
-| `{platform}_raw` | 元のイベント（「無損変換」の原則を満たす） |
-| `{platform}_raw_type` | 元のイベントの型 |
+| `{platform}_raw` | 原始イベント（「無損失変換」の原則を満たす） |
+| `{platform}_raw_type` | 原始イベントの型 |
 
 一般的なメッセージセグメント補助メソッド（すべて静的メソッドで、直接再利用可能）：
 
@@ -62,7 +66,7 @@ converter.at("123456")        # {"type": "at", "data": {"user_id": "123456"}}
 converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```
 
-> 手動実装する場合、`build_base_event` の共通フィールド構築は繰り返し書く必要がある定型コードですが、`BaseConverter` を使用することでこの部分を省略でき、自然に「無損変換」（元のイベントは常に `{platform}_raw` に格納される）が満たされます。
+> 手動で実装する場合、`build_base_event` の共通フィールドの構築は繰り返し書かなければならない定型コードですが、`BaseConverter` を使用することでこの部分を省略でき、また「無損失変換」（原始イベントは常に `{platform}_raw` に格納される）を自然に満たします。
 
 ## convert() メソッド
 
@@ -71,9 +75,9 @@ converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```python
 def convert(self, raw_event: dict) -> dict:
     """
-    プラットフォームのネイティブイベントを OneBot12 標準形式に変換する
+    プラットフォーム固有のイベントを OneBot12 標準形式に変換します
 
-    :param raw_event: プラットフォームのネイティブイベントデータ
+    :param raw_event: プラットフォーム固有のイベントデータ
     :return: OneBot12 標準形式のイベント辞書
     """
     pass
@@ -81,15 +85,15 @@ def convert(self, raw_event: dict) -> dict:
 
 ### 戻り値の構造
 
-変換後のイベント辞書には以下の標準フィールドが含まれている必要があります：
+変換後のイベント辞書には以下の標準フィールドを含める必要があります：
 
 ```python
 {
-    "id": "イベントのユニークID",
+    "id": "イベントの一意ID",
     "time": 1234567890,           # Unix タイムスタンプ（秒）
-    "type": "message",             # イベントの型
-    "detail_type": "private",      # 詳細の型
-    "platform": "myplatform",      # プラットフォームの名前
+    "type": "message",             # イベントの種類
+    "detail_type": "private",      # 詳細な種類
+    "platform": "myplatform",      # プラットフォーム名
     "self": {
         "platform": "myplatform",
         "user_id": "bot_user_id"
@@ -101,42 +105,41 @@ def convert(self, raw_event: dict) -> dict:
     "alt_message": "プレーンテキストの内容",
 
     # 元のデータを保持する必要がある
-    "myplatform_raw": { ... },     # プラットフォームのネイティブイベントの完全なデータ
-    "myplatform_raw_type": "元のイベントの型名",
+    "myplatform_raw": { ... },     # プラットフォーム固有のイベントの完全なデータ
+    "myplatform_raw_type": "プラットフォーム固有のイベントの型名",
 }
-```
 
-## 必須フィールドのマッピング
+## 必須フィールドマッピング
 
-### 一般的なフィールド（すべてのイベント型に共通）
+### 一般的フィールド（すべてのイベントタイプ）
 
 | OB12 フィールド | 型 | 説明 |
 |-----------|------|------|
 | `id` | str | イベントの一意の識別子 |
-| `time` | int | Unix タイムスタンプ（秒） |
-| `type` | str | イベントの型：`message` / `notice` / `request` / `meta` |
-| `detail_type` | str | 詳細の型：`private` / `group` / `friend` など |
-| `platform` | str | プラットフォームの名前、アダプター登録名と一致する |
-| `self` | dict | ロボットの情報：`{"platform": "...", "user_id": "..."}` |
+| `time` | int | Unixタイムスタンプ（秒） |
+| `type` | str | イベントの種類：`message` / `notice` / `request` / `meta` |
+| `detail_type` | str | 詳細なタイプ：`private` / `group` / `friend` など |
+| `platform` | str | プラットフォーム名、アダプタの登録名と一致する |
+| `self` | dict | ロボット情報：`{"platform": "...", "user_id": "..."}` |
 
 ### メッセージイベントの追加フィールド
 
 | OB12 フィールド | 型 | 説明 |
 |-----------|------|------|
-| `user_id` | str | 送信者の ID |
+| `user_id` | str | 送信者のID |
 | `message` | list[dict] | OneBot12 メッセージセグメントのリスト |
-| `alt_message` | str | プレーンテキストの代替内容 |
+| `alt_message` | str | 純粋なテキストの代替内容 |
 
 ### 通知イベントの追加フィールド
 
 | OB12 フィールド | 型 | 説明 |
 |-----------|------|------|
-| `user_id` | str | 関連するユーザーの ID |
-| `operator_id` | str | 操作者の ID（例：グループメンバーの変更） |
+| `user_id` | str | 関連するユーザーID |
+| `operator_id` | str | 操作者のID（例：グループメンバーの変更） |
 
-## メッセージセグメントの変換
+## メッセージセグメント変換
 
-OneBot12 標準では以下のメッセージセグメントの型が定義されています：
+OneBot12 標準では、以下のメッセージセグメント型が定義されています：
 
 ```python
 # テキスト
@@ -164,11 +167,13 @@ OneBot12 標準では以下のメッセージセグメントの型が定義さ�
 {"type": "reply", "data": {"message_id": "msg_123"}}
 ```
 
-プラットフォームがサポートしていないメッセージセグメントの型がある場合は、そのセグメントを省略するか、最も近い標準型に変換することができます。
+プラットフォームがサポートしていないメッセージセグメント型がある場合、そのセグメントを省略するか、最も近い標準型に変換することができます。
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## プラットフォーム拡張フィールド
 
-プラットフォーム固有のデータは、`{platform}_` で始まるフィールドに格納し、標準フィールドとの衝突を避ける必要があります：
+プラットフォーム固有のデータは、標準フィールドとの衝突を避けるために `{platform}_` というプレフィックスを付けて保存してください：
 
 ```python
 {
@@ -177,9 +182,9 @@ OneBot12 標準では以下のメッセージセグメントの型が定義さ�
     "detail_type": "group",
     # ...
 
-    # プラットフォームの拡張フィールド
-    "myplatform_raw": { ... },          # 元のイベントのデータ（必須）
-    "myplatform_raw_type": "chat",      # 元のイベントの型（必須）
+    # プラットフォーム拡張フィールド
+    "myplatform_raw": { ... },          # 原始イベントデータ（必須）
+    "myplatform_raw_type": "chat",      # 原始イベントの種類（必須）
 
     # その他のプラットフォーム固有のフィールド
     "myplatform_group_name": "グループ名",
@@ -187,11 +192,13 @@ OneBot12 標準では以下のメッセージセグメントの型が定義さ�
 }
 ```
 
-> **重要**：`{platform}_raw` フィールドは必須であり、ErisPulse のイベントシステムやモジュールは、このフィールドを介してプラットフォームの元のデータにアクセスする可能性があります。
+> **重要**: `{platform}_raw` フィールドは必須であり、ErisPulse のイベントシステムやモジュールは、プラットフォームの元のデータにアクセスするためにこれに依存する可能性があります。
 
-## 完全な実装例
+[**English**](docs/ja/quick-start.md)
 
-以下は完全な Converter 実装の例です：
+## 完全例
+
+以下は Converter の完全な実装例です：
 
 ```python
 class MyConverter:
@@ -271,13 +278,15 @@ class MyConverter:
         return base
 ```
 
-## ファイブメディアメッセージの変換例
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
-実際のプラットフォームのメッセージには、画像、@メンション、返信などのファイブメディアコンテンツが含まれていることがよくあります。以下は `_convert_message_segments` が複数のメッセージ型を処理する例です：
+## 富媒体メッセージ変換の例
+
+実際のプラットフォームのメッセージには、通常、画像、@メンション、返信などの富媒体コンテンツが含まれています。以下は、`_convert_message_segments` が複数のメッセージタイプを処理する例です：
 
 ```python
 def _convert_message_segments(self, raw_content: list) -> list:
-    """プラットフォームのネイティブメッセージセグメントリストを OneBot12 標準メッセージセグメントに変換する"""
+    """プラットフォーム固有のメッセージセグメントリストを OneBot12 標準メッセージセグメントに変換"""
     segments = []
 
     for item in raw_content:
@@ -314,17 +323,16 @@ def _convert_message_segments(self, raw_content: list) -> list:
         else:
             segments.append({
                 "type": "text",
-                "data": {"text": f"[サポートされていないメッセージ型: {item_type}]"}
+                "data": {"text": f"[サポートされていないメッセージタイプ: {item_type}]"}
             })
 
     return segments
-```
 
-## 一般的な落とし穴
+## 常見の落とし穴
 
 ### 1. `{platform}_raw` フィールドの欠落
 
-これは最も一般的なエラーです。元のデータフィールドが欠けていると、モジュールがプラットフォーム固有の情報をアクセスできなくなります。
+これは最も一般的なエラーです。原始データフィールドが欠落すると、モジュールがプラットフォーム固有の情報をアクセスできなくなります。
 
 ```python
 base_event["myplatform_raw"] = raw_event        # 必須！
@@ -333,7 +341,7 @@ base_event["myplatform_raw_type"] = event_type   # 必須！
 
 ### 2. タイムスタンプ形式の誤り
 
-OneBot12 標準では `time` フィールドは Unix 秒単位のタイムスタンプ（整数）である必要があります。プラットフォームがミリ秒単位のタイムスタンプや ISO 形式の文字列を返す場合、変換する必要があります：
+OneBot12 標準では、`time` フィールドは Unix 秒単位のタイムスタンプ（整数）である必要があります。プラットフォームがミリ秒タイムスタンプまたは ISO 形式の文字列を返す場合、変換する必要があります：
 
 ```python
 import time
@@ -347,7 +355,7 @@ import time
 
 ### 3. `self` フィールドの欠落
 
-`self` フィールドにはロボット自身の情報が含まれ、`user_id` はロボットのアカウント ID です。複数の Bot が存在する状況ではこのフィールドが重要です：
+`self` フィールドにはロボット自身の情報が含まれ、`user_id` はロボットのアカウント ID です。複数 Bot のシナリオではこのフィールドが重要です：
 
 ```python
 "self": {
@@ -356,25 +364,29 @@ import time
 }
 ```
 
-### 4. `detail_type` に非標準の値を使用
+### 4. `detail_type` に標準外の値を使用
 
-`detail_type` には OneBot12 標準で定義された値（例：`private`、`group`、`friend_increase`、`group_member_increase` など）を使用する必要があります。プラットフォーム固有の命名は使用しないでください。
+`detail_type` には OneBot12 標準で定義された値、例えば `private`、`group`、`friend_increase`、`group_member_increase` などを使用する必要があります。プラットフォーム固有の命名は使用しないでください。
 
 ### 5. 往復の一貫性
 
-Converter が生成するメッセージセグメントの型と Send 端のサポートするメソッドが対応していることを確認してください。たとえば、Converter がプラットフォームの画像メッセージを `{"type": "image", ...}` に変換した場合、Send 端の `Image()` メソッドは画像の送信に対応している必要があります。
+Converter が生成するメッセージセグメントの型が、Send 端でサポートするメソッドに対応していることを確認してください。たとえば、Converter がプラットフォームの画像メッセージを `{"type": "image", ...}` に変換した場合、Send 端の `Image()` メソッドは画像送信を処理できる必要があります。
 
-## 最善の実践
+## 最佳実践
 
-1. **常に元のデータを保持する**：`{platform}_raw` フィールドは省略しないでください
-2. **標準メッセージセグメントを使用する**：可能な限りプラットフォームのメッセージを OneBot12 標準メッセージセグメントに変換してください
-3. **`detail_type` を適切に設定する**：標準の型（`private`/`group`/`channel` など）を使用し、独自に定義しないでください
-4. **境界条件を処理する**：元のイベントに特定のフィールドが欠けている可能性があるため、`.get()` を使用し、適切なデフォルト値を提供してください
-5. **パフォーマンスの考慮**：`convert()` は各イベントで呼び出されるため、ここで時間のかかる処理を行わないでください
+1. **常に元データを保持する**：`{platform}_raw` フィールドは省略しないでください
+2. **標準メッセージセグメントを使用する**：可能な限り、プラットフォームのメッセージを OneBot12 標準メッセージセグメントに変換してください
+3. **detail_type を適切に設定する**：標準の型（`private`/`group`/`channel` など）を使用し、独自に定義しないでください
+4. **境界条件を処理する**：元のイベントには特定のフィールドが欠落している可能性があり、`.get()` を使用して適切なデフォルト値を提供してください
+5. **パフォーマンスを考慮する**：`convert()` は各イベントで呼び出されるため、ここで時間のかかる処理を行わないでください
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 関連ドキュメント
 
-- [アダプターのコアコンセプト](core-concepts.md) - アダプターの全体的なアーキテクチャ
-- [SendDSL 詳解](send-dsl.md) - 逆方向変換（送信方向）
-- [イベント変換の標準](../../standards/event-conversion.md) - 正式なイベント変換の規格
-- [セッション型システム](../../advanced/session-types.md) - セッション型のマッピングルール
+- [アダプタのコアコンセプト](core-concepts.md) - アダプタの全体的なアーキテクチャ
+- [SendDSL 詳解](send-dsl.md) - 逆変換（送信方向）
+- [イベント変換標準](../../standards/event-conversion.md) - 公式のイベント変換仕様
+- [セッション型システム](../../standards/session-types.md) - セッション型マッピングルール
+
+言語切り替え行が含まれる場合（各言語名は `` | `` で区切られている行）は、上記の第8条のフォーマット規則を厳密に遵守し、``[**Label**](file)`` といった誤った形式を出力しないように注意してください。

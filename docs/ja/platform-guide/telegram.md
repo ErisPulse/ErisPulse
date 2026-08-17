@@ -1,24 +1,31 @@
-# Telegramプラットフォーム特性ドキュメント
+# Telegramプラットフォームの特徴ドキュメント
 
-TelegramAdapterは、Telegram Bot APIに基づいて構築されたアダプターであり、複数のメッセージタイプとイベント処理をサポートしています。
+TelegramAdapterは、Telegram Bot APIに基づいて構築されたアダプターであり、さまざまなメッセージタイプとイベント処理をサポートしています。
 
 ---
 
+[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.0.0
+- 対応モジュールバージョン: 4.1.1
 - メンテナー: ErisPulse
+
+[**English**](docs/ja/quick-start.md)
 
 ## 基本情報
 
-- プラットフォーム概要：Telegramはクロスプラットフォームのインスタントメッセージングソフトウェアです
-- アダプター名：TelegramAdapter
-- サポートするプロトコル/APIバージョン：Telegram Bot API
-- セッションタイプのマッピング：`private` → 送信時に `user` を使用、`group`/`supergroup` → `group`、`channel` → `channel`
+- プラットフォームの概要: Telegram はクロスプラットフォームのリアルタイムメッセージングソフトウェアです。
+- アダプタ名: TelegramAdapter
+- 対応するプロトコル/APIバージョン: Telegram Bot API
+- セッションタイプのマッピング: `private` → 送信時に `user` を使用、`group`/`supergroup` → `group`、`channel` → `channel`
 
-## サポートするメッセージ送信タイプ
+[**基本情報**](docs/ja/quick-start.md) | [**プラグイン開発**](docs/ja/plugin-development.md) | [**アダプタ開発**](docs/ja/adapter-development.md) | [**FAQ**](docs/ja/faq.md) | [**貢献**](docs/ja/contributing.md) | [**ライセンス**](docs/ja/license.md)
 
-すべての送信メソッドはメソッドチェーン（チェーン構文）によって実装されています。例えば以下の通りです：
+## 支援されるメッセージ送信タイプ
+
+すべての送信メソッドは、チェーン式の構文で実装されています。たとえば：
+
 ```python
 from ErisPulse.Core import adapter
 telegram = adapter.get("telegram")
@@ -31,26 +38,26 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 | メソッド | 説明 | パラメータ |
 |------|------|------|
 | `.Text(text)` | 純粋なテキストメッセージを送信 | `text: str` |
-| `.Face(emoji)` | エモイジスタンプを送信 | `emoji: str`（例：🎲 🎯 🏀） |
-| `.Markdown(text, content_type)` | Markdown形式のメッセージを送信 | `content_type` のデフォルトは `"MarkdownV2"` |
+| `.Face(emoji)` | エモジーダイスを送信 | `emoji: str`（例: 🎲 🎯 🏀） |
+| `.Markdown(text, content_type)` | Markdown形式のメッセージを送信 | `content_type` はデフォルトで `"MarkdownV2"` |
 | `.HTML(text)` | HTML形式のメッセージを送信 | `text: str` |
 | `.Sticker(file)` | ステッカーを送信 | `file: str (file_id/URL) \| bytes` |
 | `.Location(lat, lng)` | 位置情報を送信 | `latitude: float, longitude: float` |
-| `.Venue(lat, lng, title, addr)` | 場所を送信 | タイトルと住所を含む |
+| `.Venue(lat, lng, title, addr)` | 地点情報を送信 | タイトルと住所を含む |
 | `.Contact(phone, first, last)` | 連絡先を送信 | 電話番号と名前を含む |
 
 ### メディア送信メソッド
 
-すべてのメディアメソッドは、`bytes`（アップロード）と `str`（file_id / URL）の2種類の入力をサポートしています：
+すべてのメディアメソッドは、`bytes`（アップロード）と `str`（file_id / URL）の2種類の入力形式をサポートしています：
 
 | メソッド | 説明 |
 |------|------|
 | `.Image(file, caption, content_type)` | 画像を送信 |
-| `.Video(file, caption, content_type)` | 動画を送信 |
+| `.Video(file, caption, content_type)` | ビデオを送信 |
 | `.Voice(file, caption)` | 音声を送信 |
-| `.Audio(file, caption, content_type)` | オーディオを送信 |
+| `.Audio(file, caption, content_type)` | 音声を送信 |
 | `.File(file, caption)` | ファイルを送信 |
-| `.Document(file, caption, content_type)` | File のエイリアス |
+| `.Document(file, caption, content_type)` | `File` のエイリアス |
 
 ### メッセージ管理メソッド
 
@@ -58,25 +65,25 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 |------|------|
 | `.Edit(message_id, text, content_type)` | 既存のメッセージを編集 |
 | `.Recall(message_id)` | 指定されたメッセージを削除 |
-| `.Forward(from_chat_id, message_id)` | メッセージを転送（送信元を保持） |
-| `.CopyMessage(from_chat_id, message_id)` | メッセージをコピー（送信元なし） |
+| `.Forward(from_chat_id, message_id)` | メッセージを転送（元の送信元を保持） |
+| `.CopyMessage(from_chat_id, message_id)` | メッセージをコピー（元の送信元を保持しない） |
 | `.AnswerCallback(callback_query_id, text, show_alert)` | コールバッククエリに応答 |
 
-### 生メッセージ送信
+### 原始メッセージ送信
 
-- `.Raw_ob12(message: List[Dict])`：OneBot12 標準形式のメッセージを送信
-- `.Raw_json(json_str: str)`：生の JSON 形式のメッセージを送信
+- `.Raw_ob12(message: List[Dict])`：OneBot12標準形式のメッセージを送信
+- `.Raw_json(json_str: str)`：原始JSON形式のメッセージを送信
 
-### チェーン修飾メソッド
+### チェーン式修飾メソッド
 
 | メソッド | 説明 |
 |------|------|
-| `.At(user_id)` | 指定ユーザーをメンション（Telegram entities により実現、複数回呼び出し可能） |
-| `.AtAll()` | 全メンバーをメンション（`@All` テキストを送信） |
+| `.At(user_id)` | 指定ユーザーを@する（Telegramのentitiesで実現、複数回呼び出せる） |
+| `.AtAll()` | 全員を@する（`@All`テキストを送信） |
 | `.Reply(message_id)` | 指定されたメッセージに返信 |
-| `.Keyboard(inline_keyboard)` | インラインキーボードを設定（`list[list[dict]]`） |
-| `.ProtectContent(protect)` | コンテンツを保護（転送と保存を防止） |
-| `.Silent(silent)` | サイレント送信（ユーザーに通知しない） |
+| `.Keyboard(inline_keyboard)` | インラインキーボードを設定（`list[list[dict]]`形式） |
+| `.ProtectContent(protect)` | 内容を保護（転送や保存を防止） |
+| `.Silent(silent)` | 静かに送信（ユーザーに通知しない） |
 
 ### 送信例
 
@@ -89,26 +96,26 @@ from ErisPulse import sdk
 telegram = sdk.adapter.get("telegram")
 keyboard = [
     [{"text": "ボタン1", "callback_data": "btn1"}, {"text": "ボタン2", "callback_data": "btn2"}],
-    [{"text": "公式サイトへ", "url": "https://example.com"}],
+    [{"text": "公式サイトにアクセス", "url": "https://example.com"}],
 ]
 await telegram.Send.To("group", group_id).Keyboard(keyboard).Text("選択してください：")
 
 # メディア送信（URL方式）
 await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="画像")
 
-# ユーザーのメンション
+# ユーザーを@する
 await telegram.Send.To("group", group_id).At("6117725680").Text("こんにちは！")
 
-# 返信 + コンテンツの保護
+# 返信 + 内容保護
 await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("機密メッセージ")
 
-# サイレント送信
-await telegram.Send.To("group", group_id).Silent().Text("サイレント通知")
+# 静かに送信
+await telegram.Send.To("group", group_id).Silent().Text("通知なし")
 
-# コールバッククエリへの応答
+# コールバッククエリに応答
 await telegram.Send.AnswerCallback(callback_query_id, text="処理済み", show_alert=False)
 
-# OneBot12 複合メッセージ
+# OneBot12の複合メッセージ
 ob12_message = [
     {"type": "text", "data": {"text": "複雑なメッセージ："}},
     {"type": "mention", "data": {"user_id": "6117725680", "user_name": "ユーザー名"}},
@@ -117,56 +124,55 @@ ob12_message = [
 ]
 await telegram.Send.To("group", group_id).Raw_ob12(ob12_message)
 
-# ステッカーの送信
+# ステッカーを送信
 await telegram.Send.To("user", user_id).Sticker("CAACAgIAAxkBAA...")  # file_id
 
-# 位置情報の送信
+# 位置情報を送信
 await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
-```
 
-## 固有のイベントタイプ
+## 特有イベントタイプ
 
-Telegramのイベント変換はOneBot12標準に準拠しつつ、`telegram_` プレフィックスを通じてプラットフォーム拡張を提供します。
+Telegram イベントの変換は OneBot12 標準に従い、`telegram_` プレフィックスによるプラットフォーム拡張を提供します。
 
 ### メッセージイベント detail_type マッピング
 
-| Telegram chat.type | OneBot12 detail_type | 送信先タイプ |
+| Telegram chat.type | OneBot12 detail_type | 送信先の種類 |
 |---|---|---|
 | `private` | `private` | `user` |
 | `group` | `group` | `group` |
 | `supergroup` | `group` | `group` |
 | `channel` | `channel` | `channel` |
 
-### 固有のイベントタイプ
+### 特有イベントタイプ
 
 | detail_type | 説明 |
-|------|------|
+|---|---|
 | `telegram_callback_query` | コールバッククエリ（インラインキーボードボタンのクリック） |
 | `telegram_inline_query` | インラインクエリ |
 | `telegram_chosen_inline_result` | 選択されたインライン結果 |
 | `telegram_poll` | 投票イベント |
-| `telegram_poll_answer` | 投票の回答 |
+| `telegram_poll_answer` | 投票回答 |
 | `telegram_my_chat_member` | Bot 自身のメンバー状態の変更 |
 | `telegram_chat_member` | チャットメンバーの変更 |
-| `telegram_chat_join_request` | チャット参加リクエスト |
-| `telegram_shipping_query` | 配送料金クエリ |
-| `telegram_pre_checkout_query` | 支払前クエリ |
+| `telegram_chat_join_request` | チャットへの参加リクエスト |
+| `telegram_shipping_query` | 配送に関するクエリ |
+| `telegram_pre_checkout_query` | 事前決済クエリ |
 
 ### 標準メッセージセグメントタイプ
 
-変換されたメッセージセグメントはOneBot12標準形式を使用します：
+変換後のメッセージセグメントは OneBot12 標準形式を使用します：
 
 | メッセージセグメントタイプ | 説明 | data フィールド |
 |---|---|---|
 | `text` | 純粋なテキスト（@ユーザー名を含まない） | `text` |
-| `mention` | ユーザーのメンション（標準OB12） | `user_id`, `user_name` |
-| `reply` | 返信引用 | `message_id`, `user_id` |
+| `mention` | @ユーザー（標準 OB12） | `user_id`, `user_name` |
+| `reply` | メッセージへの返信引用 | `message_id`, `user_id` |
 | `image` | 画像 | `file_id`, `url` |
 | `video` | 動画 | `file_id`, `url`, `duration`, `width`, `height` |
 | `voice` | 音声 | `file_id`, `url`, `duration` |
-| `audio` | オーディオ | `file_id`, `url`, `duration`, `title`, `performer` |
+| `audio` | 音楽 | `file_id`, `url`, `duration`, `title`, `performer` |
 | `file` | ファイル | `file_id`, `url`, `file_name`, `file_size`, `mime_type` |
-| `location` | 位置 | `latitude`, `longitude`, オプションで `title`, `address` |
+| `location` | 位置情報 | `latitude`, `longitude`, オプションで `title`, `address` |
 
 ### プラットフォーム拡張メッセージセグメント
 
@@ -175,13 +181,13 @@ Telegramのイベント変換はOneBot12標準に準拠しつつ、`telegram_` �
 | メッセージセグメントタイプ | 説明 | data フィールド |
 |---|---|---|
 | `telegram_sticker` | ステッカー | `file_id`, `emoji`, `sticker_type`, `url` |
-| `telegram_animation` | GIFアニメーション | `file_id`, `url`, `duration`, `caption` |
+| `telegram_animation` | GIF 動画 | `file_id`, `url`, `duration`, `caption` |
 | `telegram_contact` | 連絡先 | `phone_number`, `first_name`, `last_name`, `user_id` |
 | `telegram_inline_keyboard` | インラインキーボード | `inline_keyboard` |
 
-### イベント例
+### イベントの例
 
-#### グループチャットメッセージ（メンションを含む）
+#### グループチャットメッセージ（@ユーザーのメンション付き）
 ```python
 {
   "type": "message",
@@ -249,40 +255,39 @@ Telegramのイベント変換はOneBot12標準に準拠しつつ、`telegram_` �
     }
   ]
 }
-```
 
 ## Event Mixin 拡張メソッド
 
-アダプターは以下のプラットフォーム固有のメソッドを登録しており、`platform == "telegram"` の場合にのみ利用可能です：
+アダプタは以下のプラットフォーム固有メソッドを登録しており、`platform == "telegram"` の場合にのみ利用可能です：
 
 ### メッセージ関連
 
-| メソッド | 戻り値の型 | 説明 |
+| メソッド | 戻り値型 | 説明 |
 |------|----------|------|
-| `is_bot_message()` | `bool` | メッセージがボットからのものかを判定 |
-| `is_edited_message()` | `bool` | 編集されたメッセージかどうかを判定 |
-| `is_topic_message()` | `bool` | トピックメッセージかどうかを判定 |
-| `get_update_id()` | `int` | Telegram update ID を取得 |
-| `get_chat_title()` | `str` | チャットのタイトルを取得 |
-| `get_chat_username()` | `str` | チャットのユーザー名を取得 |
-| `get_forward_from()` | `dict` | 転送元情報を取得 |
-| `get_topic_id()` | `str` | トピック ID を取得 |
+| `is_bot_message()` | `bool` | メッセージがロボットからのものかどうかを判定します |
+| `is_edited_message()` | `bool` | 編集されたメッセージかどうかを判定します |
+| `is_topic_message()` | `bool` | トピック/Topic メッセージかどうかを判定します |
+| `get_update_id()` | `int` | Telegram update ID を取得します |
+| `get_chat_title()` | `str` | チャットのタイトルを取得します |
+| `get_chat_username()` | `str` | チャットのユーザーネームを取得します |
+| `get_forward_from()` | `dict` | 転送元情報を取得します |
+| `get_topic_id()` | `str` | トピック ID を取得します |
 
 ### コールバッククエリ関連
 
-| メソッド | 戻り値の型 | 説明 |
+| メソッド | 戻り値型 | 説明 |
 |------|----------|------|
-| `get_callback_data()` | `str` | コールバッククエリの callback_data を取得 |
-| `get_callback_id()` | `str` | コールバッククエリ ID を取得（応答に使用） |
+| `get_callback_data()` | `str` | コールバッククエリの callback_data を取得します |
+| `get_callback_id()` | `str` | コールバッククエリ ID（応答用）を取得します |
 
 ### メッセージセグメントデータ抽出
 
-| メソッド | 戻り値の型 | 説明 |
+| メソッド | 戻り値型 | 説明 |
 |------|----------|------|
-| `get_inline_keyboard()` | `list` | メッセージ内のインラインキーボードを取得 |
-| `get_sticker_info()` | `dict` | ステッカー情報を取得 |
-| `get_contact_info()` | `dict` | 連絡先情報を取得 |
-| `get_location()` | `dict` | 位置情報を取得 |
+| `get_inline_keyboard()` | `list` | メッセージ内のインラインキーボードを取得します |
+| `get_sticker_info()` | `dict` | ステッカー情報（sticker）を取得します |
+| `get_contact_info()` | `dict` | 連絡先情報（contact）を取得します |
+| `get_location()` | `dict` | 位置情報（location）を取得します |
 
 ### 使用例
 
@@ -296,7 +301,7 @@ async def handle_message(event):
 
     # メッセージ属性
     if event.is_bot_message():
-        return  # ボットメッセージを無視
+        return  # ロボットからのメッセージを無視
 
     if event.is_edited_message():
         print("これは編集されたメッセージです")
@@ -327,27 +332,28 @@ async def handle_notice(event):
         callback_data = event.get_callback_data()
         callback_id = event.get_callback_id()
 
-        # コールバッククエリに応答
+        # コールバッククエリへの応答
         telegram = sdk.adapter.get("telegram")
-        await telegram.Send.AnswerCallback(callback_id, text="既にクリック")
+        await telegram.Send.AnswerCallback(callback_id, text="クリックしました")
 
-        # メッセージに返信
-        await event.reply(f"{callback_data}をクリックしました")
-```
+        # メッセージへの返信
+        await event.reply(f"あなたがクリックした内容：{callback_data}")
 
-## 拡張フィールド説明
+## 拡張フィールドの説明
 
-- すべての固有フィールドは `telegram_` プレフィックスで識別されます
-- 原始データは `telegram_raw` フィールドに保持されます
-- 原始イベントタイプは `telegram_raw_type` フィールドに保持されます
-- チャンネルメッセージでは `detail_type="channel"` を使用します
-- プライベートチャットメッセージでは `detail_type="private"` を使用します（送信時に `user` に変換する必要があります）
+- すべての固有フィールドは `telegram_` という接頭辞で識別されます
+- 元のデータは `telegram_raw` フィールドに保持されます
+- 元のイベントタイプは `telegram_raw_type` フィールドに保持されます
+- チャンネルメッセージは `detail_type="channel"` を使用します
+- プライベートチャットメッセージは `detail_type="private"` を使用します（送信時には `user` に変換する必要があります）
 - トピックメッセージには `thread_id` フィールドが含まれます
-- `@` メンションは標準の `mention` メッセージセグメントタイプ（`type: "mention"`）を使用し、テキストには `@` ユーザー名が含まれません
+- `@` でのメンションは標準の `mention` メッセージセグメントタイプを使用します（`type: "mention"`、テキスト内には @ユーザー名が含まれません）
+
+[**English**](docs/en/telegram.md) | [**日本語**](docs/ja/telegram.md)
 
 ## 設定オプション
 
-Telegram アダプターは複数アカウントの設定をサポートしています：
+Telegram アダプタは複数アカウントの設定をサポートしています。
 
 ### 設定例
 ```toml
@@ -362,23 +368,26 @@ enabled = true
 
 ### 実行モード
 
-Telegram アダプターは **Polling（ポーリング）** モードのみをサポートしており、Webhook モードは削除されました。
+Telegram アダプタは **Polling（ポーリング）** モードのみをサポートし、Webhook モードは削除されました。
 
-### プロキシ設定
+### 代理設定
 
-Telegram API にプロキシ経由で接続する場合は、システムレベルのプロキシ（環境変数 ` + 'ALL_PROXY' + ` / ` + 'HTTPS_PROXY' + `）を使用してください。
+Telegram API にプロキシ経由で接続する必要がある場合は、システムレベルのプロキシ（環境変数 `ALL_PROXY` / `HTTPS_PROXY`）を使用してください。
 
-### 旧設定のマイグレーション
+### 旧版設定の移行
 
-旧バージョンの単一 token 設定は自動的に互換性があります：
+旧版の単一トークン設定は自動的に互換性を持ちます：
 ```toml
-# 旧形式（まだ使用可能ですが、マイグレーションを推奨します）
+# 旧版形式（引き続き使用可能ですが、移行することを推奨します）
 [Telegram_Adapter]
 token = "YOUR_BOT_TOKEN"
 ```
 
-新形式へのマイグレーションを推奨します：
+新しい形式への移行を推奨します：
 ```toml
 [Telegram_Adapter.accounts.default]
 token = "YOUR_BOT_TOKEN"
 enabled = true
+```
+
+docs/ja/quick-start.md

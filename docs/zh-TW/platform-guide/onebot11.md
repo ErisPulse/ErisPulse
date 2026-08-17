@@ -4,31 +4,41 @@ OneBot11Adapter 是基於 OneBot V11 協議建構的適配器。
 
 ---
 
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第 8 條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
 ## 文件資訊
 
 - 對應模組版本: 4.0.0
 - 維護者: ErisPulse
 
-## 基本資料
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
-- 平台簡介：OneBot 是一個聊天機器人應用程式介面標準
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
+## 基本資訊
+
+- 平台簡介：OneBot 是一個聊天機器人應用介面標準
 - 適配器名稱：OneBotAdapter
 - 支援的協定/API版本：OneBot V11
-- 多帳號支援：預設多帳號架構，支援同時設定和執行多個 OneBot 帳號
+- 多帳戶支援：預設多帳戶架構，支援同時設定和執行多個 OneBot 帳戶
 - 配置鍵名：`OneBotAdapter`
 
-## 支援的訊息傳送類型
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-所有傳送方法均透過鏈式語法實現，例如：
+## 支援的消息發送類型
+
+所有發送方法均透過鏈式語法實現，例如：
 ```python
 from ErisPulse.Core import adapter
 onebot = adapter.get("onebot11")
 
-# 使用預設帳號傳送
+# 使用預設帳戶發送
 await onebot.Send.To("group", group_id).Text("Hello World!")
 
-# 指定特定帳號傳送
-await onebot.Send.Using("main").To("group", group_id).Text("來自主帳號的訊息")
+# 指定特定帳戶發送
+await onebot.Send.Using("main").To("group", group_id).Text("來自主帳戶的消息")
 
 # 鏈式修飾：@使用者 + 回覆
 await onebot.Send.To("group", group_id).At(123456).Reply(msg_id).Text("回覆訊息")
@@ -37,15 +47,15 @@ await onebot.Send.To("group", group_id).At(123456).Reply(msg_id).Text("回覆訊
 await onebot.Send.To("group", group_id).AtAll().Text("公告訊息")
 ```
 
-### 基礎傳送方法
+### 基礎發送方法
 
-- `.Text(text: str)`：傳送純文字訊息。
-- `.Image(file: Union[str, bytes], filename: str = "image.png")`：傳送圖片（支援 URL、Base64 或 bytes）。
-- `.Voice(file: Union[str, bytes], filename: str = "voice.amr")`：傳送語音訊息。
-- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：傳送視訊訊息。
-- `.Face(id: Union[str, int])`：傳送 QQ 表情。
-- `.File(file: Union[str, bytes], filename: str = "file.dat")`：傳送檔案（自動判斷類型）。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：傳送 OneBot12 格式訊息（自動轉換為 OB11）。
+- `.Text(text: str)`：發送純文字訊息。
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`：發送圖片（支援 URL、Base64 或 bytes）。
+- `.Voice(file: Union[str, bytes], filename: str = "voice.amr")`：發送語音訊息。
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：發送影片訊息。
+- `.Face(id: Union[str, int])`：發送 QQ 表情。
+- `.File(file: Union[str, bytes], filename: str = "file.dat")`：發送檔案（自動判斷類型）。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式訊息（自動轉換為 OB11）。
 - `.Recall(message_id: Union[str, int])`：撤回訊息。
 
 ### 群操作方法
@@ -66,7 +76,7 @@ await onebot.Send.To("group", group_id).AtAll().Text("公告訊息")
 
 - `.GetMsg(message_id)`：獲取訊息內容。
 - `.GetForwardMsg(id)`：獲取合併轉發訊息。
-- `.GetLoginInfo()`：獲取當前登入號資訊。
+- `.GetLoginInfo()`：獲取目前登入號資訊。
 - `.GetFriendList()`：獲取好友列表。
 - `.GetGroupInfo()`：獲取群資訊（需 `To("group", group_id)`）。
 - `.GetGroupList()`：獲取群列表。
@@ -75,11 +85,11 @@ await onebot.Send.To("group", group_id).AtAll().Text("公告訊息")
 
 ### 好友操作方法
 
-- `.Like(user_id, times=1)`：發送好友讚（最大 10 次）。
+- `.Like(user_id, times=1)`：發送好友讚（最多 10 次）。
 
 ### 鏈式修飾方法（可組合使用）
 
-鏈式修飾方法傳回 `self`，支援鏈式呼叫，必須在最終傳送方法前呼叫：
+鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終發送方法前呼叫：
 
 - `.At(user_id: Union[str, int], name: str = None)`：@指定使用者（可多次呼叫）。
 - `.AtAll()`：@全體成員。
@@ -88,7 +98,7 @@ await onebot.Send.To("group", group_id).AtAll().Text("公告訊息")
 ### 鏈式呼叫範例
 
 ```python
-# 基礎傳送
+# 基礎發送
 await onebot.Send.To("group", 123456).Text("Hello")
 
 # @單個使用者
@@ -97,7 +107,7 @@ await onebot.Send.To("group", 123456).At(789012).Text("你好")
 # @多個使用者
 await onebot.Send.To("group", 123456).At(111).At(222).At(333).Text("大家好")
 
-# 傳送 OneBot12 格式訊息
+# 發送 OneBot12 格式訊息
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await onebot.Send.To("group", 123456).Raw_ob12(ob12_msg)
 
@@ -122,18 +132,17 @@ await onebot.Send.To("group", 123456).SetGroupName("新群名")
 # 獲取群資訊
 result = await onebot.Send.To("group", 123456).GetGroupInfo()
 
-# 指定帳號操作
+# 指定帳戶操作
 await onebot.Send.Using("main").To("group", 123456).Ban(789012)
 ```
 
 ### 不支援的類型處理
 
-如果呼叫未定義的傳送方法，適配器會傳回文字提示：
+如果呼叫未定義的發送方法，適配器會回傳文字提示：
 ```python
 # 呼叫不存在的方法
 await onebot.Send.To("group", 123456).SomeUnsupportedMethod(arg1, arg2)
-# 實際發送: "[不支援的傳送類型] 方法名: SomeUnsupportedMethod, 參數: [...]"
-```
+# 實際發送: "[不支援的發送類型] 方法名: SomeUnsupportedMethod, 參數: [...]"
 
 ## 請求操作（Request DSL）
 
@@ -174,7 +183,7 @@ await onebot.Request("flag_string").reject()
 await onebot.Request("flag_string").Using("main").accept()
 ```
 
-### 完整範例
+### 完整示例
 
 ```python
 from ErisPulse.Core.Event import request
@@ -197,7 +206,7 @@ async def handle_friend_request(event):
         await onebot.Request(flag).reject()
 ```
 
-### 請求操作傳回值
+### 請求操作回傳值
 
 ```python
 {
@@ -207,7 +216,6 @@ async def handle_friend_request(event):
     "message_id": "",
     "message": ""
 }
-```
 
 ## 事件類型映射
 
@@ -215,19 +223,19 @@ async def handle_friend_request(event):
 
 | OB11 原始類型 | 轉換後 detail_type | 說明 |
 |--------------|-------------------|------|
-| message_type: private | `private` | 私聊訊息 |
-| message_type: group | `group` | 群聊訊息 |
+| message_type: private | `private` | 私聊消息 |
+| message_type: group | `group` | 群聊消息 |
 | request_type: friend | `friend` | 好友請求 |
 | request_type: group | `group` | 群請求 |
 | meta_event_type: heartbeat | `heartbeat` | 心跳 |
-| notice_type: group_upload | `group_file_upload` | 群檔案上傳 |
+| notice_type: group_upload | `group_file_upload` | 群文件上傳 |
 | notice_type: group_admin | `group_admin_change` | 群管理員變動 |
 | notice_type: group_increase | `group_member_increase` | 群成員增加 |
 | notice_type: group_decrease | `group_member_decrease` | 群成員減少 |
 | notice_type: group_ban | `group_ban` | 群禁言 |
-| notice_type: friend_add | `friend_increase` | 好友新增 |
+| notice_type: friend_add | `friend_increase` | 好友添加 |
 | notice_type: friend_delete | `friend_decrease` | 好友刪除 |
-| notice_type: group_recall / friend_recall | `message_recall` | 訊息撤回 |
+| notice_type: group_recall / friend_recall | `message_recall` | 消息撤回 |
 
 ### 平台特有事件（onebot11_ 前綴）
 
@@ -239,7 +247,7 @@ async def handle_friend_request(event):
 | notify + sub_type: lucky_king | `onebot11_lucky_king` | 群紅包運氣王 |
 | CQ 碼未知類型 | 消息段 `onebot11_{type}` | 未識別的 CQ 碼 |
 
-### 事件範例
+### 事件示例
 
 ```python
 // 好友請求
@@ -306,15 +314,15 @@ async def handle_friend_request(event):
 ### 擴展欄位說明
 
 - 所有特有欄位均以 `onebot11_` 前綴標識
-- 保留原始事件資料在 `onebot11_raw` 欄位
+- 保留原始事件數據在 `onebot11_raw` 欄位
 - 保留原始事件類型在 `onebot11_raw_type` 欄位
-- 訊息內容中的 CQ 碼會轉換為相應的訊息段（標準類型無前綴，未知類型加 `onebot11_` 前綴）
-- 回覆訊息會新增 `reply` 類型的訊息段
-- @訊息會新增 `mention` 類型的訊息段
+- 消息內容中的 CQ 碼會轉換為相應的消息段（標準類型無前綴，未知類型加 `onebot11_` 前綴）
+- 回覆消息會添加 `reply` 類型的消息段
+- @消息會添加 `mention` 類型的消息段
 
 ## 事件擴展方法
 
-OneBot11 適配器為事件物件註冊了以下平台專有方法，可在事件處理器中直接呼叫：
+OneBot11 适配器為事件物件註冊了以下平台專有方法，可在事件處理器中直接調用：
 
 ```python
 from ErisPulse.Core.Event import message
@@ -328,8 +336,9 @@ async def handle_message(event):
 
 ### 方法列表
 
-| 方法 | 回傳類型 | 說明 |
+| 方法 | 返回類型 | 說明 |
 |------|----------|------|
+| `get_raw_event()` | `dict` | 獲取 OneBot11 完整原始事件數據 |
 | `get_raw_self_id()` | `str` | 獲取原始 self_id（Bot 的 QQ 號） |
 | `get_sender_info()` | `dict` | 獲取完整的發送者資訊（包含 nickname、role、level 等） |
 | `get_sender_role()` | `str` | 獲取發送者在群內的角色（owner/admin/member） |
@@ -337,7 +346,7 @@ async def handle_message(event):
 | `get_sender_title()` | `str` | 獲取發送者群頭銜 |
 | `is_system_message()` | `bool` | 判斷是否為系統訊息（sub_type == "system"） |
 
-### 使用範例
+### 使用示例
 
 ```python
 from ErisPulse.Core.Event import message, command
@@ -358,30 +367,29 @@ async def whoami(event):
     nickname = info.get("nickname", "未知")
     level = event.get_sender_level()
     await event.reply(f"暱稱: {nickname}, 等級: {level}")
-```
 
-## 設定選項
+## 配置選項
 
-OneBot11 適配器採用多帳號架構，每個帳號獨立設定。設定鍵名為 `OneBotAdapter`。
+OneBot11 适配器採用多帳戶架構，每個帳戶獨立配置。配置鍵名為 `OneBotAdapter`。
 
-### 帳號設定欄位
+### 帳戶配置欄位
 
-| 欄位 | 類型 | 必填 | 預設值 | 說明 |
+| 欄位 | 類型 | 必填 | 默認值 | 說明 |
 |------|------|------|--------|------|
-| `bot_id` | `str` | 是 | `""` | 機器人 QQ 號，用於標識帳號 |
+| `bot_id` | `str` | 是 | `""` | 機器人 QQ 號，用於標識帳戶 |
 | `mode` | `str` | 否 | `"server"` | 運行模式：`"server"`（被動監聽）或 `"client"`（主動連接） |
 | `url` | `str` | 否 | `"ws://127.0.0.1:3001"` | Client 模式的 WebSocket 位址 |
-| `token` | `str` | 否 | `""` | 認證 Token（Client 模式連線 Token / Server 模式驗證 Token） |
+| `token` | `str` | 否 | `""` | 認證 Token（Client 模式連接 Token / Server 模式驗證 Token） |
 | `server_path` | `str` | 否 | `"/"` | Server 模式的 WebSocket 路徑 |
-| `enabled` | `bool` | 否 | `true` | 是否啟用該帳號 |
-| `name` | `str` | 否 | `""` | 帳號備註名稱 |
+| `enabled` | `bool` | 否 | `true` | 是否啟用該帳戶 |
+| `name` | `str` | 否 | `""` | 帳戶備註名稱 |
 
-### 內建預設值
+### 內建默認值
 
-- 重連間隔：30 秒
-- API 呼叫逾時：30 秒
+- 重連間隔：30秒
+- API調用超時：30秒
 
-### 設定範例
+### 配置範例
 
 ```toml
 [OneBotAdapter.accounts.main]
@@ -405,20 +413,19 @@ url = "ws://127.0.0.1:3003"
 enabled = false
 ```
 
-### 預設設定
+### 默認配置
 
-如果未設定任何帳號，適配器會自動建立：
+如果未配置任何帳戶，適配器會自動建立：
 ```toml
 [OneBotAdapter.accounts.default]
 bot_id = ""
 mode = "server"
 server_path = "/"
 enabled = true
-```
 
-## 傳送方法傳回值
+## 發送方法回傳值
 
-所有傳送方法均傳回一個 Task 物件，可以直接 await 取得傳送結果。傳回結果遵循 ErisPulse 適配器標準化傳回規範：
+所有發送方法均返回一個 Task 物件，可以直接 await 獲取發送結果。回傳結果遵循 ErisPulse 适配器標準化回傳規範：
 
 ```python
 {
@@ -431,47 +438,56 @@ enabled = true
 }
 ```
 
-### 多帳號傳送語法
+### 多帳戶發送語法
 
 ```python
-# 帳號選擇方法
-await onebot.Send.Using("main").To("group", 123456).Text("主帳號訊息")
+# 帳戶選擇方法
+await onebot.Send.Using("main").To("group", 123456).Text("主帳戶訊息")
 await onebot.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
 
-# 透過 bot_id 選擇帳號
-await onebot.Send.Using("123456789").To("group", 123456).Text("透過QQ號選擇")
+# 透過 bot_id 選擇帳戶
+await onebot.Send.Using("123456789").To("group", 123456).Text("透過 QQ 號選擇")
 
-# API呼叫方式
+# API 調用方式
 await onebot.call_api("send_msg", account_id="main", group_id=123456, message="Hello")
 ```
 
-### 帳號解析優先級
+### 帳戶解析優先順序
 
-`call_api` 和 `Using()` 中 `account_id` 參數的解析優先級：
-1. 精確匹配帳號名稱
+`call_api` 和 `Using()` 中 `account_id` 參數的解析優先順序：
+1. 精確匹配帳戶名稱
 2. 匹配 `bot_id` 欄位
-3. 匹配帳號的任意 `str` 類型欄位
-4. 回退到第一個已啟用的帳號
+3. 匹配帳戶的任意 `str` 類型欄位
+4. 回退到第一個已啟用的帳戶
 
-## 非同步處理機制
+[**English**](docs/zh-TW/quick-start.md) | [**简体中文**](docs/zh-TW/quick-start.md)
 
-OneBot11 適配器採用非同步非阻塞設計，確保：
-1. 訊息傳送不會阻擋事件處理循環
-2. 多個併發傳送操作可以同時進行
-3. API 回應能夠及時處理
-4. WebSocket 連線保持活躍狀態
-5. 多帳號併發處理，每個帳號獨立運行
+## 異步處理機制
+
+OneBot11 适配器採用異步非阻塞設計，確保：
+
+1. 消息發送不會阻塞事件處理循環  
+2. 多個並發發送操作可以同時進行  
+3. API 回應能夠即時處理  
+4. WebSocket 連接保持活躍狀態  
+5. 多帳號並發處理，每個帳號獨立運行  
+
+docs/zh-TW/async-processing.md
 
 ## 錯誤處理
 
 適配器提供完善的錯誤處理機制：
-1. 網路連線異常自動重連（支援每個帳號獨立重連，間隔 30 秒）
-2. API 呼叫逾時處理（固定 30 秒逾時）
-3. 連線失敗時自動按間隔重試
+1. 網路連接異常自動重連（支援每個帳戶獨立重連，間隔30秒）
+2. API 呼叫超時處理（固定30秒超時）
+3. 連接失敗時自動按間隔重試
+
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 事件處理增強
 
-多帳號模式下，所有事件都會自動新增帳號資訊：
+多帳戶模式下，所有事件都會自動添加帳戶資訊：
 ```python
 {
     "type": "message",
@@ -482,34 +498,43 @@ OneBot11 適配器採用非同步非阻塞設計，確保：
 }
 ```
 
-適配器自動維護 `self_id → account_name` 映射，`event.reply()` 無需手動指定帳號即可正確路由到來源帳號。
+適配器自動維護 `self_id → account_name` 映射，`event.reply()` 無需手動指定帳戶即可正確路由至來源帳戶。
 
 ## 管理介面
 
 ```python
-# 取得所有帳號資訊
+# 獲取所有帳戶資訊
 accounts = onebot.accounts
 
-# 檢查帳號連線狀態
+# 檢查帳戶連接狀態
 connection_status = {
     account_id: connection is not None and not connection.closed
     for account_id, connection in onebot.connections.items()
 }
 
-# 動態啟用/禁用帳號（需要重啟適配器）
+# 動態啟用/停用帳戶（需要重新啟動適配器）
 onebot.accounts["test"].enabled = False
 ```
 
+7. **重要：路徑替換規則**
+   - 將文件連結中的 `docs/zh-TW/` 替換為 `docs/zh-TW/`
+   - 例如：`docs/zh-TW/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`
+   - 對於指向非目前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改
+   - 這確保了連結指向正確語言的文件版本
+
 ## self_id 自動映射
 
-適配器會自動建立 OneBot `self_id`（QQ號）到 `account_name` 的映射關係，用於事件回路由：
+適配器會自動建立 OneBot `self_id`（QQ號）到 `account_name` 的映射關係，用於事件回傳路由：
 
 ```python
-// 適配器內部自動完成
-// 當收到事件時，self.user_id 欄位填補為 bot_id
-// 適配器自動記錄: self_id("123456789") → account_name("main")
+# 適配器內部自動完成
+# 當收到事件時，self.user_id 欄位填充為 bot_id
+# 適配器自動記錄: self_id("123456789") → account_name("main")
 
-// 因此 event.reply() 可以自動找到正確的帳號傳送訊息
+# 因此 event.reply() 可以自動找到正確的帳戶發送訊息
 @message.on_message()
 async def handler(event):
-    await event.reply("自動路由到正確的帳號")
+    await event.reply("自動路由到正確的帳戶")
+```
+
+[**English**](docs/zh-TW/quick-start.md) | [**简体中文**](docs/zh-TW/quick-start.md)

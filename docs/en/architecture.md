@@ -62,36 +62,28 @@ The following diagram illustrates the complete initialization process of `sdk.in
 
 ```mermaid
 flowchart TD
-    A["sdk.init()"] --> B["Prepare Runtime Environment"]
-    B --> B1["Load Configuration File"]
-    B1 --> B2["Set Global Exception Handling"]
-    B2 --> C["Adapter & Module Discovery"]
-    C --> D{"Parallel Loading"}
-    D --> D1["Load Adapters from PyPI"]
-    D --> D2["Load Modules from PyPI"]
-    D1 & D2 --> E["Register Adapters"]
-    E --> E1["Start Adapters"]
-    E1 --> F["Register Modules"]
-    F --> F1{"Dependency Validation"}
-    F1 -->|"Missing Dependencies"| F2["Skip Module and Log Warning"]
-    F1 -->|"Dependencies Satisfied"| F3["Topological Sorting<br/>(Kahn Algorithm + Priority)"]
-    F3 --> G["Initialize Modules in Order<br/>(Instantiation + on_load)"]
+    A["sdk.init()"] --> B["Prepare runtime environment"]
+    B --> B1["Load configuration file"]
+    B1 --> B2["Set global exception handling"]
+    B2 --> C["Adapter & module discovery"]
+    C --> D{"Parallel loading"}
+    D --> D1["Load adapters from PyPI"]
+    D --> D2["Load modules from PyPI"]
+    D1 & D2 --> E["Register adapters"]
+    E --> E1["Start adapters"]
+    E1 --> F["Register modules"]
+    F --> F1{"Dependency validation"}
+    F1 -->|"Missing dependencies"| F2["Skip module and log warning"]
+    F1 -->|"Dependencies satisfied"| F3["Topological sorting<br/>(Kahn algorithm + priority)"]
+    F3 --> G["Initialize modules in order<br/>(instantiation + on_load)"]
     F2 --> G
-    G --> H["Start Router Server"]
-    H --> K["Ready to Run"]
+    G --> H["Start router server"]
+    H --> K["Ready to run"]
 ```
 
-### Detailed Initialization Stages
+### Detailed Explanation of Initialization Stages
 
-1. **Environment Preparation** - Load TOML configuration file, set global exception handling
-2. **Parallel Discovery** - Discover adapters and modules simultaneously from installed PyPI packages
-3. **Register Adapters** - Register discovered adapters to the adapter manager
-4. **Start Adapters** - Asynchronously start connections for each platform adapter (before module initialization, ensuring modules can immediately send messages)
-5. **Register Modules** - Register discovered modules to the module manager
-6. **Dependency Validation** - Check if declared `depends` dependencies of modules have been registered, skip modules with missing dependencies
-7. **Topological Sorting** - Use Kahn algorithm to sort module loading order by dependencies, and sort by `priority` in descending order for modules at the same level
-8. **Module Initialization** - Create module instances in sorted order, call `on_load` lifecycle method
-9. **Start Router Server** - Start FastAPI router server using Uvicorn
+> The complete initialization chain is broken down into (Finder / Loader / Manager / Router), the underlying entry points (`init()` / `init_task()` / `init_sync()`), and manual full startup can be found in [Startup Process and Manual Control](advanced/startup.md).
 
 ## Event Handling Flow
 
@@ -124,7 +116,7 @@ flowchart LR
 
 ## Lifecycle Events
 
-The following diagram shows the order in which lifecycle events are triggered for each component of the framework:
+The following diagram shows the order in which lifecycle events are triggered for each component in the framework:
 
 ```mermaid
 flowchart LR
@@ -155,25 +147,7 @@ flowchart LR
 
 ### Listening to Lifecycle Events
 
-You can listen to these events using `lifecycle.on()` to execute custom logic:
-
-```python
-from ErisPulse import sdk
-
-# Listen to all adapter events
-@sdk.lifecycle.on("adapter")
-async def on_adapter_event(event_data):
-    print(f"Adapter event: {event_data}")
-
-# Listen to module load completion
-@sdk.lifecycle.on("module.load")
-async def on_module_loaded(event_data):
-    print(f"Module loaded: {event_data}")
-
-# Listen to Bot online status
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(event_data):
-    print(f"Bot online: {event_data}")
+> For the complete event listener methods (`lifecycle.on()` / `once()` / `has_handlers()`), the full list of lifecycle events, and their data formats, see [Lifecycle Management](advanced/lifecycle.md).
 
 ## Module Loading Strategies
 
@@ -181,13 +155,13 @@ ErisPulse supports three module loading strategies, declared by the `ModuleLoadS
 
 ```mermaid
 flowchart TD
-    A["Module registered to ModuleManager"] --> B{"Load Strategy"}
+    A["Module registered to ModuleManager"] --> B{"Loading Strategy"}
     B -->|"lazy_load = true<br/>+ activate_on declared"| C["Create ModuleActivator proxy"]
     B -->|"lazy_load = true<br/>no activate_on"| D["Create LazyModule proxy"]
     B -->|"lazy_load = false"| E["Create instance immediately"]
     C --> F["Register event/command stubs to dispatcher"]
     F --> G["Mount to sdk attribute"]
-    G --> H["Event arrival triggers activation"]
+    G --> H["Activation triggered by event arrival"]
     H --> I["Instantiate + on_load() + unregister stubs"]
     D --> J["Mount to sdk attribute"]
     J --> K["Initialize on first attribute access"]
@@ -195,11 +169,14 @@ flowchart TD
     L --> M["Mount to sdk attribute"]
 ```
 
-> For more details, please refer to [Lazy Loading System](docs/en/lazy-loading.md), [Lifecycle Management](docs/en/lifecycle.md), and the module documentation.
+> For more details, please refer to [Lazy Loading System](advanced/lazy-loading.md), [Lifecycle Management](advanced/lifecycle.md), and module documentation.
 
 ### Event-Driven Lazy Activation (`activate_on`) Trigger Architecture
 
-`activate_on` allows a module to be loaded only when the **first matching event/command arrives**, avoiding persistent memory usage while ensuring no events are lost:
+> [!NOTE]
+> This feature requires ErisPulse **2.8.0+**.
+
+`activate_on` allows modules to be loaded only when the **first matching event/command arrives**, avoiding constant memory usage while ensuring events are not lost:
 
 ```mermaid
 flowchart LR
@@ -207,12 +184,13 @@ flowchart LR
         S1["get_load_strategy() returns<br/>ModuleLoadStrategy(activate_on=...)"] --> S2["activate_on syntax:<br/>str / dict / list freely mixed"]
         S2 --> S2a["'message' → event type level"]
         S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ type + detail_type"]
-        S2 --> S2c["{'command': 'roll'}<br/>→ command trigger"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ command trigger (shorthand/list)"]
+        S2 --> S2d["{'command': {'name': 'dice', 'help': ...,<br/>'aliases': [...], 'hidden': ...}}<br/>→ command trigger (dict declaration)"]
     end
 
     subgraph Runtime["Runtime"]
-        R1["ModuleActivator registers stub"] --> R1a["Event stub → message/notice/request/meta manager<br/>priority ACTIVATION_STUB_PRIORITY (very low)"]
-        R1 --> R1b["Command stub → command manager<br/>hidden placeholder command (hidden=True)"]
+        R1["ModuleActivator registers stubs"] --> R1a["Event stubs → message/notice/request/meta manager<br/>priority ACTIVATION_STUB_PRIORITY (very low)"]
+        R1 --> R1b["Command stubs → command manager<br/>placeholder command (mirrors dict-declared help/usage/group/aliases/hidden)"]
         R1a --> R2{"Event trigger arrives"}
         R1b --> R2
         R2 --> R3["Filter by owner scope"]
@@ -227,36 +205,37 @@ flowchart LR
 
 **Trigger Semantics Key Points:**
 
-1. **Stub Registration**: Event stubs are registered to the corresponding event manager with very low priority (`ACTIVATION_STUB_PRIORITY`), ensuring they execute **after** all regular handlers of the same event type; command stubs are registered as hidden placeholder commands, not polluting the command list.
-2. **Scope Filtering**: Stubs carry the module owner identity, so modules not enabled for the Bot / session / platform do not trigger.
-3. **Reentrancy Protection**: `asyncio.Lock` ensures only one activation occurs under concurrent events.
-4. **Event Forwarding**: After activation, the current event is forwarded to the real handler (outer group loop has verified that handlers registered after stubs will not be processed twice).
-5. **Failure Semantics**: Activation failure does not retry; stubs are unregistered together, avoiding repeated attempts for every event.
+> Complete `activate_on` syntax (str / dict / list), command dict declaration, placeholder command help fallback chain, scope filtering, and failure semantics are described in [Lazy Loading System](advanced/lazy-loading.md#event-driven-lazy-activationactivate_on).
 
 ## Local Plugin Folder Architecture
 
-Local plugins (the `plugins/` directory) do not require packaging and publishing; the framework automatically discovers and loads them when starting up:
+> [!NOTE]
+> This feature requires ErisPulse **2.8.0+**.
+
+Local plugins (in the `plugins/` directory) do not need to be packaged for release; the framework automatically discovers and loads them during startup:
 
 ```mermaid
 flowchart TD
     A["Project plugins/ directory<br/>（ErisPulse.framework.plugins_dir, supports multiple directories）"] --> B{"PluginFolderLoader.discover()"}
-    B --> C["Single file: dice.py → Plugin name = filename"]
-    B --> D["Package form: weather/ (with __init__.py) → Plugin name = directory name"]
+    B --> C["Single file: dice.py → plugin name = filename"]
+    B --> D["Package format: weather/ (with __init__.py) → plugin name = directory name"]
     B --> E["Ignored: __pycache__ / _-prefixed / non .py / directories without __init__.py"]
     C --> F["Import module (spec_from_file_location)"]
     D --> G["Import module (sys.path + import_module)"]
     F --> H["Identify module class: Main (sub-class of BaseModule) preferred, fallback to first sub-class"]
     G --> H
-    H --> I["Construct moduleInfo with entry-point matching"]
-    I --> J["ModuleLoader.load() merges<br/>Local overrides PyPI installed packages with same name"]
-    J --> K["Shares with installed package modules:<br/>Enabled status / scope / meta / i18n / context"]
+    H --> I["Construct moduleInfo consistent with entry-point"]
+    I --> J["ModuleLoader.load() merges<br/>local takes precedence over PyPI packages with same name"]
+    J --> K["Shares with installed package modules:<br/>enabled status / scope / meta / i18n / context"]
 ```
 
 **Conventions and Features:**
 
-- Plugin name source: Use filename for single files, directory name for package form
-- Local plugin `moduleInfo.meta.source == "plugin_folder"`, seamlessly coexists with PyPI installed package modules
-- When names conflict, local takes precedence (for local override debugging), and disabled plugins also remove corresponding entry-point entries
+- Plugin name origin: filename for single files, directory name for package format
+- Local plugin `moduleInfo.meta.source == "plugin_folder"`, seamlessly coexists with PyPI-installed package modules
+- When names conflict, local takes precedence (for easy local override and debugging), and disabled plugins remove corresponding entry-point entries
+
+Please directly return the complete translated Markdown content, without any additional text.
 
 ## Local Plugin Hot Reload Architecture
 

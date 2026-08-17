@@ -2,24 +2,22 @@
 
 This directory contains advanced features and in-depth topics of the ErisPulse framework.
 
-## Documentation List
+## Document List
 
-- [Startup Process and Manual Control](docs/en/startup.md) - Deconstruction of the startup pipeline (Finder/Loader/Manager/Router) and manual full startup
-- [Lazy Loading System](docs/en/lazy-loading.md) - How the lazy loading module system works and configuration
-- [Module Scope System](docs/en/scope.md) - Binding and isolation of modules and adapters Bot/Platform
-- [Internationalization (i18n)](docs/en/i18n.md) - Multi-language support, translation registration, and language detection
-- [Lifecycle Management](docs/en/lifecycle.md) - Usage of the lifecycle event system
-- [Router Manager](docs/en/router.md) - HTTP and WebSocket routing management
-- [HTTP Client](docs/en/http-client.md) - Unified HTTP request client
-- [MessageBuilder Deep Dive](docs/en/message-builder.md) - Dual-mode usage of the OneBot12 message segment builder
-- [SQL Query Builder](docs/en/sql-builder.md) - Generic SQL chain query builder and storage backend abstraction
-- [Session Type System](docs/en/session-types.md) - Session type definition, mapping, and custom type registration
-- [Conversation Multi-turn Dialogue](docs/en/conversation.md) - Interaction methods for multi-turn dialogue context
+- [Startup Process and Manual Control](startup.md) - Breakdown of the startup chain (Finder/Loader/Manager/Router) and manual full startup
+- [Lazy Loading System](lazy-loading.md) - Working principles, configuration, and event-driven lazy activation (activate_on) of the lazy loading module system
+- [Module Scope System](scope.md) - Binding and isolation of modules and adapters (Bot/Platform)
+- [Internationalization (i18n)](i18n.md) - Multi-language support, translation registration, and language detection
+- [Lifecycle Management](lifecycle.md) - Usage methods of the lifecycle event system
+- [Router Manager](router.md) - HTTP and WebSocket routing management
+- [HTTP Client](http-client.md) - Unified HTTP request client
+- [MessageBuilder Detailed Explanation](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder
+- [SQL Query Builder](sql-builder.md) - General SQL chain query builder and storage backend abstraction
+- [Session Type System](../standards/session-types.md) - Session type definition, mapping, and custom type registration
+- [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue context
 
 > [!NOTE]
-> Documentation for **Third-party Ecosystem Modules** such as Dashboard window registration and Takumi image rendering has been migrated to the [Ecosystem Modules](../ecosystem/README.md) directory.
-
-Please return the complete translated Markdown content directly, without including any other text.
+> Documentation for third-party ecosystem modules such as Dashboard window registration and Takumi image rendering has been moved to the [Ecosystem Modules](../ecosystem/README.md) directory.
 
 ## Target Audience
 

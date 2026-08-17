@@ -100,8 +100,15 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = ""
 ssl_keyfile = ""
+
+[ErisPulse.master]
+# users 支援兩種寫法（二選一）：
+#   全域主人（所有平台生效）：users = ["123456", "789012"]
+#   按平台指定主人：users = { yunhu = ["123456"], telegram = ["789012"] }
+users = {}
 
 [ErisPulse.logger]
 level = "INFO"
@@ -140,6 +147,7 @@ language = "auto"
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = "/path/to/cert.pem"
 ssl_keyfile = "/path/to/key.pem"
 ```
@@ -148,12 +156,43 @@ ssl_keyfile = "/path/to/key.pem"
 |---------|------|---------|------|
 | host | string | 0.0.0.0 | 監聽位址，0.0.0.0 表示所有介面 |
 | port | integer | 8000 | 監聽埠號 |
+| auto_start | boolean | true | 是否在 `sdk.init()` 時自動啟動路由伺服器。設為 `false` 可跳過路由伺服器啟動（純事件/無 WebUI 場景） |
 | ssl_certfile | string | 空 | SSL 證書檔案路徑 |
 | ssl_keyfile | string | 空 | SSL 私鑰檔案路徑 |
 
 請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+## 主人系統配置
+
+主人系統用於識別「框架主人」帳號（如 Bot 管理員）。`master.users` 支援兩種寫法：
+
+```toml
+[ErisPulse.master]
+# 寫法一：全域主人（所有平台生效）
+users = ["123456", "789012"]
+
+# 寫法二：按平台指定主人（dict）
+# users = { yunhu = ["123456"], telegram = ["789012"] }
+```
+
+| 配置項 | 類型 | 預設值 | 說明 |
+|---------|------|---------|------|
+| users | array / object | 空 | 主人帳號列表。`list` 形式為全域主人（所有平台生效）；`dict` 形式按平台指定（鍵為平台名，值為該平台的主人帳號列表） |
+
+程式碼中透過 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 檢查，每次呼叫即時讀取設定（支援熱更新，無需重啟）：
+
+```python
+from ErisPulse.Core import master
+
+if master.is_master(event):
+    await event.reply("主人你好")
+```
+
+7. **重要：路徑替換規則**
+   - 將文件連結中的 `docs/zh-TW/` 替換為 `docs/zh-TW/`
+   - 例如：`docs/zh-TW/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`
+   - 對於指向非目前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改
+   - 這確保連結指向正確語言的文件版本
 
 ## 日誌配置
 
@@ -165,15 +204,18 @@ memory_limit = 1000
 exclude_levels = ["EVENT"]
 ```
 
-| 配置項目 | 類型 | 預設值 | 說明 |
+| 配置項 | 類型 | 默認值 | 說明 |
 |---------|------|---------|------|
-| level | string | INFO | 日誌等級：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低等級，輸出框架內部詳細除錯資訊） |
-| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文本無顏色，適合日誌採集/管道重定向）、`json`（JSON 結構化，適合 ELK 等） |
+| level | string | INFO | 日誌級別：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低級別，輸出框架內部詳細調試信息） |
+| format | string | rich | 日誌輸出格式：`rich`（彩色，默認）、`plain`（純文本無顏色，適合日誌採集/管道重定向）、`json`（JSON 結構化，適合 ELK 等） |
 | log_files | array | 空 | 日誌輸出檔案列表 |
 | memory_limit | integer | 1000 | 內存中保存的日誌條數 |
-| exclude_levels | array | 空 | 屏蔽指定日誌等級。被屏蔽等級的日誌**完全丟棄**（不寫入內存、不推送到 Dashboard 等訂閱器、不列印、不寫入檔案）。支援熱更新 |
+| exclude_levels | array | 空 | 屏蔽指定日誌等級。被屏蔽等級的日誌**完全丟棄**（不寫內存、不推送到 Dashboard 等訂閱器、不列印、不寫檔案）。支援熱更新 |
 
 > **隱私保護**：訊息收發內容以 **EVENT 等級**（數值 21）記錄。設定 `exclude_levels = ["EVENT"]` 即可讓後台（如 Dashboard 日誌面板）無法看到各群/私聊的訊息內容，同時不影響其它等級日誌。
+
+> [!NOTE]
+> `exclude_levels` 本特性需要 ErisPulse **2.8.0+**。
 
 ## 框架配置
 
@@ -253,34 +295,34 @@ use_global_db = false
 
 請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-## 事件配置
+## 事件設定
 
-### 命令配置
+### 命令設定
 
 ```toml
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = false
+case_sensitive = true
 allow_space_prefix = false
 ```
 
-| 配置項 | 類型 | 默認值 | 說明 |
+| 設定項目 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | prefix | string | / | 命令前綴 |
 | case_sensitive | boolean | true | 是否區分大小寫（`/Help` 與 `/help` 是否為不同命令） |
 | allow_space_prefix | boolean | false | 是否允許空格作為前綴 |
 | must_at_bot | boolean | false | 是否必須@機器人才能觸發命令（私聊不受限制） |
 
-### 消息配置
+### 消息設定
 
 ```toml
 [ErisPulse.event.message]
 ignore_self = true
 ```
 
-| 配置項 | 類型 | 默認值 | 說明 |
+| 設定項目 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| ignore_self | boolean | true | 是否忽略機器人自己的消息 |
+| ignore_self | boolean | true | 是否忽略機器人自己的訊息 |
 
 ## 國際化配置
 
@@ -328,23 +370,15 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 
 ## 作用域配置
 
+> [!NOTE]
+> 此功能需要 ErisPulse **2.8.0+**。
+
 模組作用域系統用於控制「某個 Bot 只能使用哪些模組」。預設情況下所有模組對所有 Bot 開放，僅在配置綁定後才開始過濾，模組與適配器**無需任何修改**即可適配。
 
 ```toml
-# 平台級綁定（作用於該平台所有 Bot / 會話）
-[ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Translate"]   # 白名單：該平台 Bot 只能使用這些模組
-blocked = ["Danger"]              # 黑名單：這些模組在該平台禁用
-
-# Bot 級綁定（作用於該 Bot 的所有會話，覆蓋平台級）
-[ErisPulse.scope.bots.onebot11."123456"]
-modules = ["Chat"]
-blocked = []
-
-# 會話級綁定（作用於某個群 / 頻道 / 私聊，最具體）
-[ErisPulse.scope.sessions.onebot11."789012345"]
-modules = ["Chat"]
-blocked = []
+[ErisPulse.scope]
+default_allow = true        # 預設允許全部（false = 隱式拒絕嚴格模式）
+cache_size = 1024           # is_allowed 的 LRU 快取大小
 ```
 
 | 配置項 | 類型 | 說明 |
@@ -358,7 +392,7 @@ blocked = []
 | `scope.sessions.<platform>.<session_id>.modules` | array | 會話級白名單（群/頻道/私聊），優先級最高 |
 | `scope.sessions.<platform>.<session_id>.blocked` | array | 會話級黑名單，優先級最高 |
 
-> 解析優先級：**會話級 > Bot 級 > 平台級**。模組名大小寫不敏感；會話標識跨平台隔離。支援執行時透過 `sdk.scope.bind()` / `unbind()` 動態增刪（`merge=True` 可合併），詳見[作用域系統](../advanced/scope.md)。
+> 解析優先級：**會話級 > Bot 級 > 平台級**。三級綁定的完整 TOML 範例、模組名大小寫不敏感、會話標識跨平台隔離、執行時 `sdk.scope.bind()` / `unbind()` 動態增刪（`merge=True` 可合併）等詳見[作用域系統](../advanced/scope.md)。
 
 ## 下一步
 
