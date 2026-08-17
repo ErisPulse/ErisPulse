@@ -336,7 +336,7 @@
     "進階主題": {
       "description": "深入理解框架的進階特性",
       "icon": "fa-fire",
-      "count": 12,
+      "count": 11,
       "documents": [
         {
           "title": "進階主題",
@@ -367,12 +367,6 @@
           "path": "advanced/message-builder.md",
           "level": 1,
           "icon": "fa-comment-dots"
-        },
-        {
-          "title": "會話類型系統",
-          "path": "advanced/session-types.md",
-          "level": 1,
-          "icon": "fa-layer-group"
         },
         {
           "title": "Conversation 多輪對話",

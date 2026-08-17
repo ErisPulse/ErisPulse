@@ -336,7 +336,7 @@
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
       "icon": "fa-fire",
-      "count": 12,
+      "count": 11,
       "documents": [
         {
           "title": "詳細トピック",
@@ -367,12 +367,6 @@
           "path": "advanced/message-builder.md",
           "level": 1,
           "icon": "fa-comment-dots"
-        },
-        {
-          "title": "セッションタイプシステム",
-          "path": "advanced/session-types.md",
-          "level": 1,
-          "icon": "fa-layer-group"
         },
         {
           "title": "Conversation 多輪対話",

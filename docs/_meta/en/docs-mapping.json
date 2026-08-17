@@ -336,7 +336,7 @@
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
       "icon": "fa-fire",
-      "count": 12,
+      "count": 11,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -367,12 +367,6 @@
           "path": "advanced/message-builder.md",
           "level": 1,
           "icon": "fa-comment-dots"
-        },
-        {
-          "title": "Session Type System",
-          "path": "advanced/session-types.md",
-          "level": 1,
-          "icon": "fa-layer-group"
         },
         {
           "title": "Conversation Multi-turn Conversations",

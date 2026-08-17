@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1466,
+  "total_keywords": 1455,
   "keywords": {
     "\"Chat\": {": [
       {
@@ -2666,14 +2666,6 @@
         "title": "I18nManager"
       }
     ],
-    "ID 欄位查詢": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 86,
-        "level": 3,
-        "title": "ID 欄位查詢"
-      }
-    ],
     "INFO: 正常執行資訊": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -4202,14 +4194,6 @@
         "line": 63,
         "level": 3,
         "title": "一次性註冊（once）"
-      }
-    ],
-    "一步獲取發送資訊": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 100,
-        "level": 3,
-        "title": "一步獲取發送資訊"
       }
     ],
     "一般事件的自動發現": [
@@ -7190,12 +7174,6 @@
         "title": "工具方法"
       },
       {
-        "document": "advanced/session-types.md",
-        "line": 147,
-        "level": 2,
-        "title": "工具方法"
-      },
-      {
         "document": "api-reference/event-system.md",
         "line": 432,
         "level": 3,
@@ -8016,14 +7994,6 @@
         "title": "接收消息"
       }
     ],
-    "接收類型 (ReceiveType)": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 7,
-        "level": 3,
-        "title": "接收類型 (ReceiveType)"
-      }
-    ],
     "推薦使用 SDK 內建客戶端（自帶超時和重試）": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -8730,14 +8700,6 @@
         "title": "會話識別"
       }
     ],
-    "會話類型系統": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 1,
-        "level": 1,
-        "title": "會話類型系統"
-      }
-    ],
     "本機測試": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -8844,12 +8806,6 @@
       {
         "document": "advanced/conversation.md",
         "line": 36,
-        "level": 2,
-        "title": "核心 API"
-      },
-      {
-        "document": "advanced/session-types.md",
-        "line": 67,
         "level": 2,
         "title": "核心 API"
       }
@@ -9802,14 +9758,6 @@
         "title": "獲取幫助"
       }
     ],
-    "獲取目標 ID": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 113,
-        "level": 3,
-        "title": "獲取目標 ID"
-      }
-    ],
     "獲取第一個啟用的帳戶（傳入 None）": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -10196,14 +10144,6 @@
         "title": "發送規則裝飾器"
       }
     ],
-    "發送類型 (SendType)": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 20,
-        "level": 3,
-        "title": "發送類型 (SendType)"
-      }
-    ],
     "監聽 Bot 生命週期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -10386,12 +10326,6 @@
       {
         "document": "advanced/router.md",
         "line": 414,
-        "level": 2,
-        "title": "相關文件"
-      },
-      {
-        "document": "advanced/session-types.md",
-        "line": 175,
         "level": 2,
         "title": "相關文件"
       },
@@ -10868,14 +10802,6 @@
         "title": "臨床診斷命令"
       }
     ],
-    "自動推斷": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 49,
-        "level": 2,
-        "title": "自動推斷"
-      }
-    ],
     "自動文件": [
       {
         "document": "advanced/router.md",
@@ -10938,14 +10864,6 @@
         "line": 269,
         "level": 3,
         "title": "自訂字體"
-      }
-    ],
-    "自訂類型註冊": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 122,
-        "level": 2,
-        "title": "自訂類型註冊"
       }
     ],
     "與 CLI i18n 的關係": [
@@ -13026,30 +12944,6 @@
         "line": 1,
         "level": 1,
         "title": "類型存根生成（IDE 自動完成）"
-      }
-    ],
-    "類型定義": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 5,
-        "level": 2,
-        "title": "類型定義"
-      }
-    ],
-    "類型對應": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 32,
-        "level": 2,
-        "title": "類型對應"
-      }
-    ],
-    "類型轉換": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 69,
-        "level": 3,
-        "title": "類型轉換"
       }
     ],
     "驗證使用者輸入": [

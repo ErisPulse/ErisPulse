@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1442,
+  "total_keywords": 1430,
   "keywords": {
     "\"Chat\": {": [
       {
@@ -3328,14 +3328,6 @@
         "title": "Автоматическое обнаружение обычных событий"
       }
     ],
-    "Автоматическое определение": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 49,
-        "level": 2,
-        "title": "Автоматическое определение"
-      }
-    ],
     "Автоматическое сопоставление self_id": [
       {
         "document": "platform-guide/onebot11.md",
@@ -4662,14 +4654,6 @@
         "title": "Запрос от друга"
       }
     ],
-    "Запрос полей ID": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 86,
-        "level": 3,
-        "title": "Запрос полей ID"
-      }
-    ],
     "Запрос привязок": [
       {
         "document": "advanced/scope.md",
@@ -5400,14 +5384,6 @@
         "line": 17,
         "level": 2,
         "title": "Как это работает"
-      }
-    ],
-    "Картирование типов": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 32,
-        "level": 2,
-        "title": "Картирование типов"
       }
     ],
     "Качество кода": [
@@ -7454,14 +7430,6 @@
         "title": "Определение типа уведомления"
       }
     ],
-    "Определение типов": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 5,
-        "level": 2,
-        "title": "Определение типов"
-      }
-    ],
     "Определение того, разрешен ли модуль": [
       {
         "document": "advanced/scope.md",
@@ -7624,12 +7592,6 @@
       {
         "document": "advanced/conversation.md",
         "line": 36,
-        "level": 2,
-        "title": "Основные API"
-      },
-      {
-        "document": "advanced/session-types.md",
-        "line": 67,
         "level": 2,
         "title": "Основные API"
       }
@@ -8958,14 +8920,6 @@
         "title": "Получение информации о команде"
       }
     ],
-    "Получение информации об отправке за один шаг": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 100,
-        "level": 3,
-        "title": "Получение информации об отправке за один шаг"
-      }
-    ],
     "Получение одной записи": [
       {
         "document": "advanced/sql-builder.md",
@@ -8988,14 +8942,6 @@
         "line": 85,
         "level": 3,
         "title": "Получение подробной информации о методе"
-      }
-    ],
-    "Получение целевого ID": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 113,
-        "level": 3,
-        "title": "Получение целевого ID"
       }
     ],
     "Получение экземпляра адаптера": [
@@ -9204,14 +9150,6 @@
         "line": 137,
         "level": 2,
         "title": "Преобразование сообщений"
-      }
-    ],
-    "Преобразование типов": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 69,
-        "level": 3,
-        "title": "Преобразование типов"
       }
     ],
     "Приглашение участника в группу": [
@@ -10244,14 +10182,6 @@
         "title": "Регистрация перевода конфигурации"
       }
     ],
-    "Регистрация пользовательских типов": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 122,
-        "level": 2,
-        "title": "Регистрация пользовательских типов"
-      }
-    ],
     "Регистрация промежуточных обработчиков": [
       {
         "document": "api-reference/adapter-system.md",
@@ -10560,12 +10490,6 @@
         "title": "Связанные документы"
       },
       {
-        "document": "advanced/session-types.md",
-        "line": 175,
-        "level": 2,
-        "title": "Связанные документы"
-      },
-      {
         "document": "advanced/sql-builder.md",
         "line": 377,
         "level": 2,
@@ -10866,14 +10790,6 @@
         "line": 31,
         "level": 3,
         "title": "Система событий"
-      }
-    ],
-    "Система типов сессий": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 1,
-        "level": 1,
-        "title": "Система типов сессий"
       }
     ],
     "Системные маршруты": [
@@ -11906,14 +11822,6 @@
         "title": "Типы мета-событий"
       }
     ],
-    "Типы отправки (SendType)": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 20,
-        "level": 3,
-        "title": "Типы отправки (SendType)"
-      }
-    ],
     "Типы поддерживаемой отправки сообщений": [
       {
         "document": "platform-guide/onebot11.md",
@@ -11928,14 +11836,6 @@
         "line": 69,
         "level": 2,
         "title": "Типы поддерживаемых сообщений для отправки"
-      }
-    ],
-    "Типы получения (ReceiveType)": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 7,
-        "level": 3,
-        "title": "Типы получения (ReceiveType)"
       }
     ],
     "Типы сегментов сообщений": [
@@ -12396,14 +12296,6 @@
         "line": 434,
         "level": 3,
         "title": "Утилитарные методы"
-      }
-    ],
-    "Утилиты": [
-      {
-        "document": "advanced/session-types.md",
-        "line": 147,
-        "level": 2,
-        "title": "Утилиты"
       }
     ],
     "Участие в разработке": [
