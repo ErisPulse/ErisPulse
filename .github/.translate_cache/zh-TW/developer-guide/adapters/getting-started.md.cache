@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "11aba9df7350f3e3ec78558f7ae4ef68",
-  "file_hash": "11aba9df7350f3e3ec78558f7ae4ef68",
-  "translated_at": "2026-08-05T22:57:15.459801",
+  "hash": "e16cf30f4ddd1e4658569eb55f1b7cf0",
+  "file_hash": "e16cf30f4ddd1e4658569eb55f1b7cf0",
+  "translated_at": "2026-08-17T12:20:00.089117",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 介面卡開發入門\n\n本指南將協助你開始開發 ErisPulse 介面卡，連線至新的訊息平台。\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。\n\n再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第 8 條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。"
     },
     {
-      "hash": "41673a17b0c43e4f92c0a31517ba4185",
-      "translation": "## 介面卡簡介\n\n### 什麼是介面卡\n\n介面卡是 ErisPulse 與各個訊息平台之間的橋樑，負責：\n\n1. **正向轉換**：接收平台事件並轉換為 OneBot12 標準格式（Converter）\n2. **反向轉換**：將 OneBot12 訊息段轉換為平台 API 呼叫（`Raw_ob12`）\n3. 管理與平台的連線（WebSocket/WebHook）\n4. 提供統一的 SendDSL 訊息發送介面\n\n### 介面卡架構\n\n```\n正向轉換（接收）                        反向轉換（發送）\n─────────────                        ─────────────\n平台事件                               模組建構訊息\n    ↓                                    ↓\nConverter.convert()               Send.Raw_ob12()\n    ↓                                    ↓\nOneBot12 標準事件                   平台原生 API 呼叫\n    ↓                                    ↓\n事件系統                             標準回應格式\n    ↓\n模組處理"
+      "hash": "0c61aa42f7ade16d05a2f27cf278223a",
+      "translation": "## 適配器簡介\n\n### 什麼是適配器\n\n適配器是 ErisPulse 與各個消息平台之間的橋樑，負責：\n\n1. **正向轉換**：接收平台事件並轉換為 OneBot12 標準格式（Converter）\n2. **反向轉換**：將 OneBot12 消息段轉換為平台 API 調用（`Raw_ob12`）\n3. 管理與平台的連接（WebSocket/WebHook）\n4. 提供統一的 SendDSL 消息發送介面\n\n### 適配器架構\n\n```mermaid\nflowchart LR\n    subgraph receive[\"正向轉換（接收）\"]\n        direction TB\n        P1[\"平台事件\"] --> C1[\"Converter.convert()\"] --> O1[\"OneBot12 標準事件\"] --> S1[\"事件系統\"] --> M1[\"模組處理\"]\n    end\n    subgraph send[\"反向轉換（發送）\"]\n        direction TB\n        M2[\"模組構建消息\"] --> R1[\"Send.Raw_ob12()\"] --> N1[\"平台原生 API 調用\"] --> R2[\"標準回應格式\"]\n    end"
     },
     {
       "hash": "ec84ec300612297e437460aa7207b09e",

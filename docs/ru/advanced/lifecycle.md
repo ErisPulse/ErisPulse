@@ -1,11 +1,13 @@
 # Управление жизненным циклом
 
-ErisPulse предоставляет единую систему перехватчиков/жизненного цикла для мониторинга статуса выполнения компонентов системы, а также реализации таких функций расширения, как аудит, статистика и кастомная логика.
+ErisPulse предоставляет единый систему хуков/жизненного цикла для мониторинга состояния работы компонентов системы, а также реализации расширенных функций, таких как аудит, статистика и пользовательская логика.
 
-Система поддерживает три способа триггерации:
-- `await lifecycle.emit("event", data)` — упрощенная версия, принимает произвольные данные
-- `lifecycle.emit_sync("event", data)` — синхронная версия (для неасинхронных контекстов)
-- `await lifecycle.submit_event("event", ...)` — совместима с предыдущими версиями, автоматически формирует стандартный формат события
+Система поддерживает три способа триггеризации:
+- `await lifecycle.emit("event", data)` — упрощённая версия, передача произвольных данных
+- `lifecycle.emit_sync("event", data)` — синхронная версия (для контекстов без асинхронности)
+- `await lifecycle.submit_event("event", ...)` — совместимость со старой версией, автоматическое построение стандартного формата событий
+
+Пожалуйста, замените в ссылках `docs/ru/` на `docs/ru/`. Например, `docs/ru/quick-start.md` должно быть заменено на `docs/ru/quick-start.md`. Ссылки на файлы других языков (в формате `README.xx.md`) оставьте без изменений, чтобы гарантировать корректное направление на нужную версию документации.
 
 ## Механизм обработки событий
 
@@ -14,10 +16,10 @@ ErisPulse предоставляет единую систему перехва�
 ```python
 from ErisPulse import sdk
 
-# Декораторный режим
+# Декораторный стиль
 @sdk.lifecycle.on("module.load")
 async def on_module_load(data):
-    print(f"Модуль загружен: {data}")
+    print(f"Загрузка модуля: {data}")
 
 # Программная регистрация
 sdk.lifecycle.register("module.load", on_module_load, priority=10)
@@ -25,34 +27,34 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 # Отмена регистрации
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# Массовая отмена регистрации по владельцу (вызывается автоматически при выгрузке адаптера/модуля)
+# Массовая отмена регистрации по владельцу (автоматически вызывается фреймворком при выгрузке модуля/адаптера)
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
-print(f"Очищено {removed} жизненных циклов-перехватчиков")
+print(f"Очищено {removed} хуков жизненного цикла")
 ```
 
 ### Приоритет
 
-Обработчики поддерживают параметр `priority`, чем больше значение, тем раньше выполняется обработчик (совпадает с логикой загрузчика модулей):
+Обработчики поддерживают параметр `priority`, чем больше значение, тем раньше выполняется (аналогично загрузчику модулей):
 
 ```python
-@sdk.lifecycle.on("adapter.event.receive", priority=10)  # Выполнится первым
+@sdk.lifecycle.on("adapter.event.receive", priority=10)  # Выполняется первым
 async def first_handler(data):
     pass
 
-@sdk.lifecycle.on("adapter.event.receive", priority=0)  # Выполнится вторым
+@sdk.lifecycle.on("adapter.event.receive", priority=0)  # Выполняется позже
 async def second_handler(data):
     pass
 ```
 
-### События по точечной структуре
+### События с точечной структурой
 
-При запуске конкретного события также запускаются родительские события:
+При срабатывании конкретного события также срабатывают и его родительские события:
 - При срабатывании `module.load` также срабатывает `module`
 - При срабатывании `adapter.event.receive` также срабатывают `adapter.event` и `adapter`
 
-### Подстановочные знаки
+### Шаблоны (wildcards)
 
-Регистрация `*` перехватывает все события:
+Регистрация `*` для захвата всех событий:
 
 ```python
 @sdk.lifecycle.on("*")
@@ -60,49 +62,72 @@ async def on_anything(data):
     print(f"Получено событие: {data}")
 ```
 
-### Одноразовая регистрация (once)
+### Однократная регистрация (once)
 
-Начиная с версии 2.7.0, обработчики, зарегистрированные через `lifecycle.once()`, автоматически удаляются после **одного срабатывания**, что подходит для одноразовых хуков, таких как "первая готовность":
+Начиная с версии 2.7.0, обработчики, зарегистрированные через `lifecycle.once()`, автоматически отписываются после **одного срабатывания**, что подходит для одноразовых хуков типа "первичной готовности":
 
 ```python
 @sdk.lifecycle.once("core.init.complete")
 async def on_first_ready(data):
-    print("Первая готовность, больше не срабатывает")
+    print("Первичная готовность, дальнейшие события не будут обрабатываться")
 ```
 
-- Имеет тот же смысл параметра приоритета, что и у `on()` (чем больше значение, тем раньше выполняется)
-- Автоматическое удаление, ручное `unregister` не требуется
-- Поддерживаются как синхронные, так и асинхронные обработчики
+- Имеет ту же семантику параметра приоритета `priority`, что и `on()` (чем больше значение, тем раньше выполняется)
+- Автоматическая отписка, без необходимости ручной `unregister`
+- Поддерживает как синхронные, так и асинхронные обработчики
 
-### Запрос обработчиков (has_handlers)
+### Проверка наличия слушателей (has_handlers)
 
-В критических сценариях можно сначала использовать `has_handlers()`, чтобы проверить наличие слушателей, избегая ненужного перебора событий и планирования задач:
+Для сценариев с частыми проверками можно использовать `has_handlers()` для определения наличия слушателей, чтобы избежать бесполезного перебора событий и планирования задач:
 
 ```python
 if sdk.lifecycle.has_handlers("message.sending"):
     await sdk.lifecycle.emit("message.sending", send_ctx)
 ```
 
-- Охватывает **точное имя события, подстановочный знак `*`, а также родительские события**
-- Возвращает `False`, если нет никаких слушателей, можно безопасно пропустить `emit`
+- Проверяет **точное имя события, шаблон `*`, родительские события**
+- Возвращает `False`, если нет слушателей, что позволяет безопасно пропустить `emit`
 
-## Обзор точек останова перехватчиков
+## Обзор точек останова хуков
 
-Фреймворк включает следующие точки останова перехватчиков, пользователи могут отслеживать любую точку с помощью `@sdk.lifecycle.on()` для реализации кастомной логики.
+Типичная последовательность событий жизненного цикла сообщения от входа в платформу до завершения обработки:
 
-### Инициализация ядра
+```mermaid
+sequenceDiagram
+    participant P as Платформа
+    participant A as Адаптер
+    participant F as Ядро фреймворка
+    participant M as Обработчик модуля
 
-| Имя перехватчика | Когда срабатывает | Данные |
+    P->>A: Пришло нативное событие
+    A->>F: adapter.event.receive (самый ранний момент)
+    F->>F: event.pre_process (перед выполнением обработчика)
+    F->>M: Диспетчеризация к обработчику (команды/сообщения/уведомления и т.д.)
+    M->>M: command.matched / command.executed
+    M->>F: event.reply()
+    F->>F: message.sending (перед отправкой)
+    F->>A: SendDSL отправка
+    A->>P: Отправка на платформу
+    A->>F: message.sent (отправка завершена)
+    F->>F: adapter.event.dispatched (диспетчеризация завершена)
+```
+
+В фреймворке встроены следующие точки останова хуков, пользователь может прослушивать любую точку останова с помощью `@sdk.lifecycle.on()` для реализации пользовательской логики.
+
+### Ядро инициализации
+
+| Имя хука | Время срабатывания | Данные |
 |---------|---------|------|
 | `core.init.start` | Начало инициализации SDK | `{}` |
-| `core.init.complete` | Завершение инициализации SDK | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(только при ошибке)}` |
-| `core.uninit.complete` | Завершение деинициализации SDK | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(только при ошибке)}` |
+| `core.init.complete` | Завершение инициализации SDK | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (только при неудаче)}` |
+| `core.uninit.complete` | Завершение обратной инициализации SDK | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (только при неудаче)}` |
 
-### Изменения конфигурации
+### Изменение конфигурации
 
-| Имя перехватчика | Когда срабатывает | Данные |
+| Имя хука | Время срабатывания | Данные |
 |---------|---------|------|
-| `config.set` | Конфигурационный элемент был изменен | `{"key": str, "old_value": Any, "new_value": Any}` |
+| `config.set` | Изменение параметра конфигурации | `{"key": str, "old_value": Any, "new_value": Any}` |
+| `config.updated` | Обнаружено изменение всей конфигурации после редактирования config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **Пример: аудит конфигурации**
 
@@ -112,34 +137,34 @@ def audit_config(data):
     print(f"[Аудит] {data['key']}: {data['old_value']} -> {data['new_value']}")
 ```
 
-### Жизненный цикл модулей
+### Жизненный цикл модуля
 
-| Имя перехватчика | Когда срабатывает | Данные |
+| Имя хука | Время срабатывания | Данные |
 |---------|---------|------|
-| `module.register` | Класс модуля зарегистрирован в менеджере | `{"module_name": str, "success": bool}` |
-| `module.load` | Модуль загружен (экземпляр создан успешно) | `{"module_name": str, "success": bool}` |
-| `module.init` | Модуль инициализирован (включая отложенную загрузку) | `{"module_name": str, "success": bool}` |
-| `module.unload` | Модуль выгружен | `{"module_name": str, "success": bool}` |
+| `module.register` | Регистрация класса модуля в менеджере | `{"module_name": str, "success": bool}` |
+| `module.load` | Завершение загрузки модуля (успешное инстанцирование) | `{"module_name": str, "success": bool}` |
+| `module.init` | Завершение инициализации модуля (включая ленивую загрузку) | `{"module_name": str, "success": bool}` |
+| `module.unload` | Удаление модуля | `{"module_name": str, "success": bool}` |
 
-### Жизненный цикл адаптеров
+### Жизненный цикл адаптера
 
-| Имя перехватчика | Когда срабатывает | Данные |
+| Имя хука | Время срабатывания | Данные |
 |---------|---------|------|
-| `adapter.load` | Зарегистрирование адаптера завершено | `{"platform": str, "success": bool}` |
+| `adapter.load` | Завершение регистрации адаптера | `{"platform": str, "success": bool}` |
 | `adapter.start` | Запуск адаптера | `{"platforms": [str]}` |
-| `adapter.status.change` | Изменение статуса адаптера | `{"platform": str, "status": str, "retry_count": int, "error": str(только при ошибке)}` |
+| `adapter.status.change` | Изменение состояния адаптера | `{"platform": str, "status": str, "retry_count": int, "error": str (только при неудаче)}` |
 | `adapter.stop` | Остановка адаптера | `{"platforms": [str]}` |
-| `adapter.stopped` | Остановка адаптера завершена | `{"platforms": [str]}` |
-| `adapter.bot.online` | Бот онлайн | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
-| `adapter.bot.offline` | Бот оффлайн | `{"platform": str, "bot_id": str, "status": str}` |
+| `adapter.stopped` | Завершение остановки адаптера | `{"platforms": [str]}` |
+| `adapter.bot.online` | Онлайн бота | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
+| `adapter.bot.offline` | Оффлайн бота | `{"platform": str, "bot_id": str, "status": str}` |
 
-### Получение и обработка событий
+### Прием и обработка событий
 
-| Имя перехватчика | Когда срабатывает | Данные |
+| Имя хука | Время срабатывания | Данные |
 |---------|---------|------|
-| `adapter.event.receive` | Получено внешнее платформенное событие (раньше всех) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.dispatched` | Распределение события завершено | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | Перед выполнением обработчика событий | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `adapter.event.receive` | Получено событие с внешней платформы (самый ранний момент) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.dispatched` | Завершена диспетчеризация события | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `event.pre_process` | Перед началом выполнения обработчика события | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **Пример: статистика событий**
 
@@ -154,15 +179,15 @@ def count_events(data):
 @sdk.lifecycle.on("adapter.event.dispatched")
 def log_unhandled(data):
     if data["onebot_handlers_count"] == 0:
-        print(f"[Не обработано] {data['platform']}/{data['event_type']}")
+        print(f"[Необработано] {data['platform']}/{data['event_type']}")
 ```
 
 ### Отправка сообщений
 
-| Имя перехватчика | Когда срабатывает | Данные |
+| Имя хука | Время срабатывания | Данные |
 |---------|---------|------|
-| `message.sending` | Сообщение скоро будет отправлено | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | Отправка сообщения завершена | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | Сообщение готовится к отправке | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | Завершена отправка сообщения | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **Пример: аудит отправки сообщений**
 
@@ -172,12 +197,12 @@ def log_sending(data):
     print(f"[Отправка] -> {data['platform']}/{data['detail_type']}/{data['target_id']} через {data['method']}")
 ```
 
-### Командная система
+### Система команд
 
-| Имя перехватчика | Когда срабатывает | Данные |
+| Имя хука | Время срабатывания | Данные |
 |---------|---------|------|
-| `command.matched` | Команда сопоставлена и скоро будет выполнена | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | Выполнение команды завершено | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(только при ошибке)}` |
+| `command.matched` | Команда найдена и готовится к выполнению | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.executed` | Завершено выполнение команды | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (только при неудаче)}` |
 
 **Пример: статистика команд**
 
@@ -187,14 +212,14 @@ def count_commands(data):
     print(f"[Команда] /{data['command']} от {data['user_id']}@{data['platform']}")
 ```
 
-### HTTP маршрутизация
+### HTTP-маршрутизация
 
-| Имя перехватчика | Когда срабатывает | Данные |
+| Имя хука | Время срабатывания | Данные |
 |---------|---------|------|
-| `server.request` | Получен HTTP запрос | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | Отправлен HTTP ответ | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.request` | Получен HTTP-запрос | `{"method": str, "path": str, "client_ip": str}` |
+| `server.response` | Отправлен HTTP-ответ | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
-**Пример: лог запросов**
+**Пример: логирование запросов**
 
 ```python
 @sdk.lifecycle.on("server.response")
@@ -204,14 +229,14 @@ def log_http(data):
 
 ### WebSocket
 
-| Имя перехватчика | Когда срабатывает | Данные |
+| Имя хука | Время срабатывания | Данные |
 |---------|---------|------|
-| `server.start` | Запуск маршрутизационного сервера | `{"base_url": str, "host": str, "port": int}` |
-| `server.stop` | Остановка маршрутизационного сервера | `{}` |
-| `server.websocket.connect` | Установлено WebSocket соединение | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket соединение разорвано | `{"path": str, "module_name": str, "reason": str, "error": str(только при исключении)}` |
+| `server.start` | Запуск сервера маршрутизации | `{"base_url": str, "host": str, "port": int}` |
+| `server.stop` | Остановка сервера маршрутизации | `{}` |
+| `server.websocket.connect` | Установлено WebSocket-соединение | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | Разорвано WebSocket-соединение | `{"path": str, "module_name": str, "reason": str, "error": str (только при аномалии)}` |
 
-**Пример: мониторинг WebSocket соединений**
+**Пример: мониторинг WebSocket-соединений**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -221,12 +246,11 @@ def on_ws_connect(data):
 @sdk.lifecycle.on("server.websocket.disconnect")
 def on_ws_disconnect(data):
     print(f"[WS] Отключение: {data['path']} ({data['reason']})")
-```
 
-## Определения стандартных событий
+## Стандартное определение событий
 
 ```python
-STANDARD_EVENTS = {
+СТАНДАРТНЫЕ_СОБЫТИЯ = {
     "core": ["init.start", "init.complete", "uninit.complete"],
     "module": ["load", "init", "unload", "register"],
     "adapter": [
@@ -244,9 +268,8 @@ STANDARD_EVENTS = {
     "command": ["matched", "executed"],
     "config": ["set"],
 }
-```
 
-## Полная справка по API
+## Полный справочник API
 
 ### Регистрация и отмена
 
@@ -256,23 +279,23 @@ STANDARD_EVENTS = {
 | `lifecycle.register(event, handler, *, priority=0)` | Программная регистрация |
 | `lifecycle.unregister(event, handler=None)` | Отмена регистрации (при handler=None отменяются все обработчики события) |
 
-### Триггеринг
+### Запуск
 
 | Метод | Описание |
 |------|------|
-| `await lifecycle.emit(event, data=None)` | Асинхронный триггер, возвращаемое обработчиком значение не None изменяет data для последующих обработчиков |
-| `lifecycle.emit_sync(event, data=None)` | Синхронный триггер, асинхронные обработчики запускаются через create_task |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | Совместимо с предыдущими версиями, автоматически формирует стандартный формат события |
+| `await lifecycle.emit(event, data=None)` | Асинхронный запуск, обработчики могут изменить data, возвращая ненулевое значение |
+| `lifecycle.emit_sync(event, data=None)` | Синхронный запуск, асинхронные обработчики запускаются через create_task |
+| `await lifecycle.submit_event(event_type, *, source, msg, data)` | Совместимость со старыми версиями, автоматически формируется стандартный формат события |
 
 ### Инструменты
 
 | Метод | Описание |
 |------|------|
-| `lifecycle.start_timer(timer_id)` | Запуск таймера |
-| `lifecycle.get_duration(timer_id)` | Получение прошедшего времени (секунды) |
-| `lifecycle.stop_timer(timer_id)` | Остановка таймера и возвращение прошедшего времени |
-| `lifecycle.list_hooks()` | Вывод списка всех зарегистрированных перехватчиков и количества обработчиков |
-| `lifecycle.clear()` | Очистка всех обработчиков и таймеров |
+| `lifecycle.start_timer(timer_id)` | Начать таймер |
+| `lifecycle.get_duration(timer_id)` | Получить прошедшее время (в секундах) |
+| `lifecycle.stop_timer(timer_id)` | Остановить таймер и вернуть прошедшее время |
+| `lifecycle.list_hooks()` | Вывести список всех зарегистрированных хуков и количество обработчиков |
+| `lifecycle.clear()` | Очистить все обработчики и таймеры |
 
 ## Пример использования в модуле
 
@@ -293,7 +316,7 @@ class Main(BaseModule):
         # Мониторинг всех команд
         @sdk.lifecycle.on("command.matched")
         async def log_cmd(data):
-            sdk.logger.info(f"Выполнение команды: /{data['command']} от {data['user_id']}")
+            sdk.logger.info(f"Команда выполнена: /{data['command']} от {data['user_id']}")
         
         # Аудит изменений конфигурации
         @sdk.lifecycle.on("config.set")
@@ -301,17 +324,21 @@ class Main(BaseModule):
             sdk.logger.info(f"Изменение конфигурации: {data['key']} = {data['new_value']}")
 ```
 
-## Важные примечания
+[**中文**](docs/ru/quick-start.md)
 
-1. **Обработчики могут быть синхронными или асинхронными**: система автоматически определяет тип и корректно вызывает
-2. **Передача данных**: в режиме `emit()`, возвращаемое обработчиком значение не None изменяет `data`, передаваемую в последующие обработчики
-3. **Номенклатура событий**: рекомендуется использовать точечную структуру именования событий для удобства использования родительских слушателей
+## Примечания
+
+1. **Обработчики могут быть синхронными или асинхронными**: система автоматически распознает и правильно вызывает их
+2. **Передача данных**: в режиме `emit()`, если обработчик возвращает непустое значение, это изменяет данные, передаваемые последующим обработчикам
+3. **Нормы именования событий**: рекомендуется использовать точечную структуру для именования событий, что упрощает использование родительских слушателей
 4. **Изоляция ошибок**: исключение в одном обработчике не влияет на выполнение других обработчиков
-5. **Ограничения синхронного триггера**: в `emit_sync()` асинхронные обработчики запускаются методом fire-and-forget, возвращаемое значение невозможно получить
+5. **Ограничение синхронного триггера**: в `emit_sync()` асинхронные обработчики запускаются в режиме fire-and-forget, возвращаемые значения не могут быть переданы обратно
 6. **Очистка жизненного цикла**: при вызове `sdk.uninit()` все зарегистрированные обработчики и таймеры будут очищены
-7. **Приоритет загрузки**: если необходимо прослушивать события на этапе инициализации фреймворка, рекомендуется установить высокий приоритет и отключить отложенную загрузку
+7. **Приоритет загрузки**: если необходимо слушать события на этапе инициализации фреймворка, рекомендуется установить высокий приоритет и отключить ленивую загрузку
+
+[**中文**](docs/ru/quick-start.md)
 
 ## Связанные документы
 
-- [Руководство разработчика модулей](../developer-guide/modules/getting-started.md) — Узнать о методах жизненного цикла модуля
-- [Рекомендации по лучшим практикам](../developer-guide/modules/best-practices.md) — Рекомендации по использованию событий жизненного цикла
+- [Руководство по разработке модулей](../developer-guide/modules/getting-started.md) - Узнайте о методах жизненного цикла модулей
+- [Рекомендуемые практики](../developer-guide/modules/best-practices.md) - Рекомендации по использованию событий жизненного цикла

@@ -54,44 +54,34 @@ graph TB
 | **Router** | HTTP/WebSocket ルーティング管理。抽象層を介して下位のバックエンド（現在は FastAPI + Uvicorn）をラップし、デコレーターベースのルーティング、ミドルウェア、グループ化、リクエスト制限、CORS をサポートします。|
 | **HttpClient** | 統一された HTTP/WS クライアント。抽象層を介して下位のリクエストライブラリ（現在は aiohttp）をラップし、リクエスト統計、リトライ、ログ、WebSocket クライアント、ErisPulse 例外体系などの機能を提供します。クライアントとサーバーの WebSocket は `WebSocketConnectionBase` 基底クラスを共有します。|
 
-## 初期化フロー
+## 初期化プロセス
 
 下図は `sdk.init()` の完全な初期化プロセスを示しています：
 
 ```mermaid
 flowchart TD
     A["sdk.init()"] --> B["実行環境の準備"]
-    B --> B1["設定ファイルのロード"]
+    B --> B1["設定ファイルの読み込み"]
     B1 --> B2["グローバル例外処理の設定"]
     B2 --> C["アダプタ & モジュールの発見"]
     C --> D{"並列ロード"}
-    D --> D1["PyPI からアダプタをロード"]
-    D --> D2["PyPI からモジュールをロード"]
+    D --> D1["PyPIからアダプタのロード"]
+    D --> D2["PyPIからモジュールのロード"]
     D1 & D2 --> E["アダプタの登録"]
     E --> E1["アダプタの起動"]
     E1 --> F["モジュールの登録"]
     F --> F1{"依存関係の検証"}
-    F1 -->|"依存が不足"| F2["モジュールをスキップして警告を記録"]
-    F1 -->|"依存が満たされている"| F3["トポロジカルソート<br/>（Kahn アルゴリズム + 優先度）"]
+    F1 -->|"依存関係が不足"| F2["該当モジュールをスキップし、警告を記録"]
+    F1 -->|"依存関係が満たされている"| F3["トポロジカルソート<br/>（Kahnアルゴリズム + 優先度）"]
     F3 --> G["順序に従ってモジュールを初期化<br/>（インスタンス化 + on_load）"]
     F2 --> G
     G --> H["ルーティングサーバーの起動"]
     H --> K["実行準備完了"]
 ```
 
-### 初期化フェーズの詳細
+### 初期化段階の詳細
 
-1. **環境準備** - TOML 設定ファイルをロードし、グローバル例外処理を設定
-2. **並行発見** - 既にインストールされた PyPI パッケージから同時にアダプタとモジュールを発見
-3. **アダプタの登録** - 発見されたアダプタをアダプタマネージャーに登録
-4. **アダプタの起動** - 各プラットフォームのアダプタを非同期で起動（モジュールの初期化前に、モジュールが即座にメッセージを送信できるようにする）
-5. **モジュールの登録** - 発見されたモジュールをモジュールマネージャーに登録
-6. **依存関係の検証** - モジュールが宣言した `depends` 依存が登録されているかを確認し、不足している依存を持つモジュールはスキップ
-7. **トポロジカルソート** - Kahn アルゴリズムを使用して依存関係に基づいてモジュールのロード順序をソートし、同レベルでは `priority` で降順に並べる
-8. **モジュールの初期化** - ソート順に従ってモジュールのインスタンスを作成し、`on_load` ライフサイクルメソッドを呼び出す
-9. **ルーティングサーバーの起動** - Uvicorn を使用して FastAPI ルーティングサーバーを起動
-
-[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+> 完全な初期化フローの分解（Finder / Loader / Manager / Router）、下層エントリポイント（`init()` / `init_task()` / `init_sync()`）および手動での完全起動については [起動プロセスと手動制御](advanced/startup.md) を参照してください。
 
 ## イベント処理フロー
 
@@ -124,7 +114,7 @@ flowchart LR
 
 ## ライフサイクルイベント
 
-下図は、フレームワークの各コンポーネントのライフサイクルイベントの発生順序を示しています：
+下図は、フレームワークの各コンポーネントがライフサイクルイベントをどのように発生させるかを示しています：
 
 ```mermaid
 flowchart LR
@@ -133,7 +123,7 @@ flowchart LR
         C1["core.init.start"] --> C2["core.init.complete"]
     end
 
-    subgraph AdapterLife["アダプタ"]
+    subgraph AdapterLife["アダプター"]
         direction LR
         A1["adapter.start"] --> A2["adapter.status.change"] --> A3["adapter.stop"] --> A4["adapter.stopped"]
     end
@@ -155,39 +145,21 @@ flowchart LR
 
 ### ライフサイクルイベントの監視
 
-これらのイベントを `lifecycle.on()` を使って監視し、カスタムロジックを実行することができます：
+> 完全なイベント監視メソッド（`lifecycle.on()` / `once()` / `has_handlers()`）、すべてのライフサイクルイベントリストとデータ形式は [ライフサイクル管理](advanced/lifecycle.md) を参照してください。
 
-```python
-from ErisPulse import sdk
-
-# すべてのアダプタイベントを監視
-@sdk.lifecycle.on("adapter")
-async def on_adapter_event(event_data):
-    print(f"アダプタイベント: {event_data}")
-
-# モジュールのロード完了を監視
-@sdk.lifecycle.on("module.load")
-async def on_module_loaded(event_data):
-    print(f"モジュールがロードされました: {event_data}")
-
-# Botのオンラインを監視
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(event_data):
-    print(f"Botがオンラインになりました: {event_data}")
-
-## モジュールロード戦略
+## モジュールのロード戦略
 
 ErisPulse は、`get_load_strategy()` が返す `ModuleLoadStrategy` によって宣言される 3 つのモジュールロード戦略をサポートしています：
 
 ```mermaid
 flowchart TD
     A["モジュールが ModuleManager に登録"] --> B{"ロード戦略"}
-    B -->|"lazy_load = true<br/>+ activate_on が宣言されている"| C["ModuleActivator 代理を作成"]
-    B -->|"lazy_load = true<br/>activate_on が宣言されていない"| D["LazyModule 代理を作成"]
-    B -->|"lazy_load = false"| E["即時インスタンス作成"]
+    B -->|"lazy_load = true<br/>+ activate_on 声明"| C["ModuleActivator 代理を作成"]
+    B -->|"lazy_load = true<br/>activate_on なし"| D["LazyModule 代理を作成"]
+    B -->|"lazy_load = false"| E["即時インスタンスを作成"]
     C --> F["イベント/コマンド stub をディスパッチャに登録"]
     F --> G["sdk 属性にマウント"]
-    G --> H["イベントが到達してアクティベーションをトリガー"]
+    G --> H["イベントが到達すると活性化がトリガー"]
     H --> I["インスタンス化 + on_load() + stub の登録解除"]
     D --> J["sdk 属性にマウント"]
     J --> K["最初の属性アクセス時に初期化"]
@@ -195,31 +167,35 @@ flowchart TD
     L --> M["sdk 属性にマウント"]
 ```
 
-> 詳細は [遅延ロードシステム](advanced/lazy-loading.md)、[ライフサイクル管理](advanced/lifecycle.md) およびモジュールドキュメントを参照してください。
+> 詳細については、[遅延ロードシステム](advanced/lazy-loading.md)、[ライフサイクル管理](advanced/lifecycle.md) およびモジュールのドキュメントを参照してください。
 
-### イベント駆動遅延アクティベーション（`activate_on`）トリガー構造
+### イベント駆動の遅延活性化（`activate_on`）トリガー構造
 
-`activate_on` は、モジュールが**最初の一致するイベント/コマンドが到達したときにのみ**ロードされるようにし、常駐メモリを避けると同時にイベントのロスを防ぎます：
+> [!NOTE]
+> この機能には ErisPulse **2.8.0+** が必要です。
+
+`activate_on` により、モジュールは**最初の一致するイベント/コマンドが到達した時点で**のみロードされるようになり、メモリ常駐を回避しながら、イベントのロスを防ぐことができます：
 
 ```mermaid
 flowchart LR
-    subgraph Declare["モジュール宣言"]
+    subgraph Declare["モジュールの宣言"]
         S1["get_load_strategy() が<br/>ModuleLoadStrategy(activate_on=...) を返す"] --> S2["activate_on 構文：<br/>str / dict / list を自由に混合"]
         S2 --> S2a["'message' → イベントタイプレベル"]
         S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ タイプ + detail_type"]
-        S2 --> S2c["{'command': 'roll'}<br/>→ コマンドトリガー"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ コマンドトリガー（省略形/リスト）"]
+        S2 --> S2d["{'command': {'name': 'dice', 'help': ...,<br/>'aliases': [...], 'hidden': ...}}<br/>→ コマンドトリガー（dict 声明）"]
     end
 
     subgraph Runtime["実行時"]
         R1["ModuleActivator が stub を登録"] --> R1a["イベント stub → message/notice/request/meta マネージャー<br/>優先度 ACTIVATION_STUB_PRIORITY（極めて低い）"]
-        R1 --> R1b["コマンド stub → コマンドマネージャー<br/>隠しプレースホルダコマンド（hidden=True）"]
+        R1 --> R1b["コマンド stub → コマンドマネージャー<br/>プレースホルダーコマンド（dict 声明の help/usage/group/aliases/hidden を反映）"]
         R1a --> R2{"トリガーイベントが到達"}
         R1b --> R2
-        R2 --> R3["owner に基づくスコープフィルタリング"]
-        R3 --> R4["asyncio.Lock で重複アクティベーションを防止"]
+        R2 --> R3["owner によるスコープフィルタリング"]
+        R3 --> R4["asyncio.Lock で重複活性化を防止"]
         R4 --> R5["モジュールのインスタンス化 + on_load() の呼び出し"]
         R5 --> R6["すべての stub の登録解除"]
-        R6 --> R7["イベントを真のハンドラに転送"]
+        R6 --> R7["イベントを実際のハンドラに転送"]
     end
 
     Declare --> Runtime
@@ -227,38 +203,35 @@ flowchart LR
 
 **トリガーの意味要点：**
 
-1. **stub 登録**：イベント stub は、対応するイベントマネージャーに極めて低い優先度（`ACTIVATION_STUB_PRIORITY`）で登録され、同種のイベントのすべての通常のハンドラの**後に**実行されるようにします。コマンド stub は隠しプレースホルダコマンドとして登録され、コマンドリストを汚染しません。
-2. **スコープフィルタリング**：stub にはモジュールの owner 身分が付与され、該当する Bot / セッション / プラットフォームに対して有効でないモジュールはトリガーされません。
-3. **再入防止**：`asyncio.Lock` により、並行イベント下でも一度だけアクティベーションされるようにします。
-4. **イベント転送**：アクティベーション完了後、現在のイベントは真のハンドラに転送されます（外側のグループループは、stub の後に登録されたハンドラが二度処理されないことを既に検証済みです）。
-5. **失敗時の意味**：アクティベーションが失敗した場合、再試行は行われず、stub も同時に登録解除され、毎回イベントに対して繰り返し試行されるのを防ぎます。
+> 完全な `activate_on` 構文（str / dict / list）、コマンド dict 声明、プレースホルダーコマンドの help フォールバックチェーン、スコープフィルタリング、および失敗時の意味については、[遅延ロードシステム](advanced/lazy-loading.md#イベント駆動の遅延活性化activate_on) を参照してください。
 
-## ローカルプラグインフォルダの構造
+## ローカルプラグインフォルダのアーキテクチャ
 
-ローカルプラグイン（`plugins/` ディレクトリ）は、パッケージ化して配布する必要がなく、フレームワークの起動時に自動的に発見され読み込まれます：
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
+
+ローカルプラグイン（`plugins/` 目录）はパッケージ化して公開する必要がなく、フレームワークの起動時に自動的に発見・ロードされます：
 
 ```mermaid
 flowchart TD
-    A["プロジェクトの plugins/ ディレクトリ<br/>（ErisPulse.framework.plugins_dir、複数ディレクトリ対応）"] --> B{"PluginFolderLoader.discover()"}
+    A["プロジェクトの plugins/ 目录<br/>（ErisPulse.framework.plugins_dir、複数目录をサポート）"] --> B{"PluginFolderLoader.discover()"}
     B --> C["単一ファイル：dice.py → プラグイン名 = ファイル名"]
-    B --> D["パッケージ形式：weather/（__init__.py あり）→ プラグイン名 = ディレクトリ名"]
-    B --> E["無視対象：__pycache__ / _ で始まる / .py でない / __init__.py がないディレクトリ"]
+    B --> D["パッケージ形式：weather/（含 __init__.py）→ プラグイン名 = 目录名"]
+    B --> E["無視対象：__pycache__ / _ で始まる / .py でない / __init__.py が存在しない目录"]
     C --> F["モジュールのインポート（spec_from_file_location）"]
     D --> G["モジュールのインポート（sys.path + import_module）"]
-    F --> H["モジュールクラスの識別：Main（BaseModule のサブクラス）を優先し、存在しない場合は最初のサブクラス"]
+    F --> H["モジュールクラスの識別：Main（BaseModule の子クラス）を優先し、存在しない場合は最初の子クラス"]
     G --> H
-    H --> I["entry-point と同じ moduleInfo を構築"]
-    I --> J["ModuleLoader.load() によるマージ<br/>ローカルのモジュールが PyPI の同名インストールパッケージを上書き"]
-    J --> K["インストールパッケージモジュールと共有：<br/>有効状態 / スコープ / meta / i18n / コンテキスト"]
+    H --> I["entry-point と一致する moduleInfo を構築"]
+    I --> J["ModuleLoader.load() で統合<br/>ローカルのモジュールが PyPI に同名のインストールパッケージを上書き"]
+    J --> K["インストールパッケージのモジュールと共有：<br/>有効状態 / スコープ / meta / i18n / コンテキスト"]
 ```
 
-**規約と特徴：**
+**規約と特性：**
 
-- プラグイン名の取得方法：単一ファイルはファイル名、パッケージ形式はディレクトリ名
+- プラグイン名の取得方法：単一ファイルはファイル名、パッケージ形式は目录名
 - ローカルプラグインの `moduleInfo.meta.source == "plugin_folder"` であり、PyPI でインストールされたパッケージモジュールとシームレスに共存
-- 同名のモジュールが存在する場合、ローカルのモジュールが優先（ローカルの上書きやデバッグに便利）、無効化された場合、同名の entry-point 条目も同時に削除
-
-[**English**](docs/ja/quick-start.md)
+- 同名のモジュールがある場合、ローカルのモジュールが優先（ローカルでの上書きデバッグが可能）、無効化された場合、同名の entry-point 条目も同時に削除
 
 ## ローカルプラグインのホットリロードアーキテクチャ
 

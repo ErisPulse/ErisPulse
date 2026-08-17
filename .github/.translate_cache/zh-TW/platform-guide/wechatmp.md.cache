@@ -1,5 +1,49 @@
 {
-  "hash": "721a6e112efb53f04e50df182f77e415",
-  "translated_at": "2026-06-16T13:05:04.461500",
-  "target_lang": "zh-TW"
+  "version": 2,
+  "hash": "f8e2cf460b7f679bb574df13ce8e760b",
+  "file_hash": "f8e2cf460b7f679bb574df13ce8e760b",
+  "translated_at": "2026-08-17T12:11:19.032992",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "14db41cfd5442e4c2e8f919fbf334294",
+      "translation": "# 微信公眾號 (WechatMp) 適配器 - 平台特性文件\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。\n\n再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。"
+    },
+    {
+      "hash": "4f7ae8b760f8f5e1b905891b2753c320",
+      "translation": "## 基本資訊\n- 模組名稱: `ErisPulse-WechatMpAdapter`\n- 平台標識: `mp`（別名: `wechat_mp`）\n- 模組版本: 4.1.0\n- 維護者: ErisPulse\n- 依賴: `cryptography`\n\n請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。"
+    },
+    {
+      "hash": "5a31f4da1ab530aebcecf5636951aa52",
+      "translation": "## 支援的消息傳送類型\n\n| 方法 | 說明 | 微信 API |\n|------|------|---------|\n| `Text(text)` | 發送文字 | 客服消息 `message/custom/send` |\n| `Image(file)` | 發送圖片（自動上傳獲取 media_id） | 客服消息 + `media/upload` |\n| `Voice(file)` | 發送語音（自動上傳獲取 media_id） | 客服消息 + `media/upload` |\n| `Video(file, title, description)` | 發送影片（自動上傳獲取 media_id） | 客服消息 + `media/upload` |\n| `Music(url, title, description, ...)` | 發送音樂 | 客服消息 |\n| `News(articles)` | 發送圖文消息 | 客服消息 |\n| `Template(template_id, data, url)` | 發送模板消息 | `message/template/send` |\n| `Menu(head_content, list, tail_content)` | 發送選單消息 | 客服消息 `msgmenu` |\n| `Raw_ob12(message)` | 發送 OneBot12 標準消息段 | - |\n\n### 媒體文件說明\n- 支援三種參數類型：\n  - `str` URL（以 `http://` / `https://` 開頭）：自動下載後上傳\n  - `str` 本地檔案路徑：自動讀取後上傳\n  - `bytes` 二進位資料：直接上傳\n  - `str` media_id：以 `media:` 前綴可直接重用已上傳的 media_id\n- 上傳後獲得臨時素材 `media_id`，有效期 3 天\n\n### 重要限制\n- 客服消息只能在用戶與公眾號互動後 **48 小時內** 主動發送\n- 超過 48 小時需使用模板消息（需用戶授權場景）\n- 未認證服務號（`verified=false`）無法主動發送，只能被動回覆（見上方「認證服務號與被動回覆」）"
+    },
+    {
+      "hash": "7a71087216a7ebf99bee9ac4195b93dd",
+      "translation": "## 事件類型\n\n### 消息事件 (message)\n所有使用者訊息均為 `detail_type: private`（公眾號 1v1 場景）。\n\n| 微信 MsgType | 消息段類型 | 說明 |\n|-------------|-----------|------|\n| `text` | `text` | 文字訊息 |\n| `image` | `image` | 圖片訊息 |\n| `voice` | `voice` | 語音訊息（含語音辨識結果） |\n| `video` | `video` | 影片訊息 |\n| `shortvideo` | `video` | 小影片（標記 `mp_shortvideo`） |\n| `location` | `location` | 地理位置訊息 |\n| `link` | `text` | 鏈接訊息（轉為文字） |\n\n### 通知事件 (notice)\n事件透過 `mp_event` 欄位區分具體類型。\n\n| 微信 Event | `mp_event` | 說明 |\n|-----------|-----------|------|\n| `subscribe` | `subscribe` | 關注公眾號 |\n| `unsubscribe` | `unsubscribe` | 取消關注 |\n| `SCAN` | `scan` | 掃描帶參數二維碼 |\n| `LOCATION` | `location_report` | 上報地理位置 |\n| `CLICK` | `menu_click` | 自訂選單點擊 |\n| `VIEW` | `menu_view` | 選單跳轉連結 |\n| `TEMPLATESENDJOBFINISH` | `template_send_finish` | 模板訊息發送結果 |\n| `MASSSENDJOBFINISH` | `mass_send_finish` | 群發訊息發送結果 |"
+    },
+    {
+      "hash": "86200a700e8ad3602909b33105c909a1",
+      "translation": "## 平台擴展欄位\n\n事件物件中的微信特有欄位（`mp_` 前綴）：\n\n| 欄位 | 類型 | 說明 |\n|------|------|------|\n| `mp_raw` | str | 原始 XML 數據 |\n| `mp_raw_type` | str | 原始消息/事件類型 |\n| `mp_msg_id` | str | 微信消息 ID |\n| `mp_event` | str | 事件類型（僅事件通知） |\n| `mp_event_key` | str | 事件 Key（選單點擊/掃描等） |\n| `mp_to_user` | str | 接收方微信號（公眾號原始 ID） |\n| `mp_from_user` | str | 發送方 OpenID |\n| `mp_data` | dict | 解析後的 XML 字典數據 |\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。"
+    },
+    {
+      "hash": "9e6159674a101183c0b5a7d6596a1fa8",
+      "translation": "## 事件擴展方法\n\n透過 `register_event_mixin(\"mp\", ...)` 註冊後，在事件物件上可直接呼叫：\n\n| 方法 | 返回值 | 說明 |\n|------|--------|------|\n| `get_openid()` | str | 發送者 OpenID |\n| `get_msg_type()` | str | 微信原始消息類型 |\n| `get_event()` | str | 事件類型（僅事件通知） |\n| `get_content()` | str | 消息純文字內容 |\n| `get_raw_xml()` | str | 原始 XML 數據 |\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。\n\n再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。"
+    },
+    {
+      "hash": "e703acfb172d5d5d53d27c404fb4bdf0",
+      "translation": "## 配置選項\n\n### 多帳號配置\n\n每個帳號對應一個公眾號：\n\n```toml\n[WechatMpAdapter.accounts.main]\nappid = \"wx1234567890abcdef\"\nappsecret = \"your_app_secret_here\"\ntoken = \"your_callback_token\"\nencoding_aes_key = \"\"                    # 安全模式/兼容模式才需要（43位）\ncallback_path = \"/mp/main\"               # 回調路徑\nverified = true                          # 是否為認證服務號（影響主動發送能力）\nenable = true\n\n[WechatMpAdapter.accounts.secondary]\nappid = \"wx0987654321fedcba\"\nappsecret = \"another_app_secret\"\ntoken = \"another_callback_token\"\ncallback_path = \"/mp/secondary\"\nenable = true\n```\n\n### 配置字段說明\n\n| 字段 | 必填 | 說明 |\n|------|------|------|\n| `appid` | 是 | 公眾號 AppID |\n| `appsecret` | 是 | 公眾號 AppSecret（secret） |\n| `token` | 否 | 回調驗證 Token（建議填寫以啟用簽名驗證） |\n| `encoding_aes_key` | 否 | 消息加解密密鑰（43位，安全模式必需） |\n| `callback_path` | 否 | 回調路徑模板，預設 `/mp/{account}`，`{account}` 會被帳號名替換 |\n| `verified` | 否 | 是否為**認證服務號**，預設 `true`（見下方說明） |\n| `enable` | 否 | 是否啟用，預設 true |\n\n### 認證服務號與被動回覆（verified）\n\n- `verified = true`（預設，認證服務號）：可隨時使用**客服消息**主動推送（48 小時視窗內）與模板消息\n- `verified = false`（未認證訂閱號）：\n  - 客服消息 / 模板消息**只能在 webhook 被動回覆上下文中發送**（收到用戶消息後 15 秒內、一次回覆）——適配器會自動將發送截獲為被動回覆\n  - 主動推送（如定時任務）返回 `retcode=34003` 錯誤"
+    },
+    {
+      "hash": "aa50fccfb0318b3abe63534caeb53ae8",
+      "translation": "## 加密模式說明\n\n微信公眾號提供三種訊息加解密模式：\n\n| 模式 | 說明 | encoding_aes_key | 驗證欄位 |\n|------|------|-----------------|---------|\n| 明文模式 | XML 明文傳輸 | 不需要 | `signature` |\n| 兼容模式 | 明文+密文同時存在 | 可選 | `signature` / `msg_signature` |\n| 安全模式 | 全部加密 | 必需 | `msg_signature` |\n\n本適配器自動處理：\n- 明文模式：驗證 `signature`，直接解析 XML\n- 安全/兼容模式：檢測 `Encrypt` 欄位，驗證 `msg_signature`，使用 AES-256-CBC 解密\n- 解密依賴 `cryptography` 庫（已宣告在 dependencies 中）\n\n請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。"
+    },
+    {
+      "hash": "9ab87fa187837f01c94b8d928db48f5e",
+      "translation": "## 回調路由\n\n適配器為每個已啟用帳戶註冊兩個路由（GET + POST）：\n\n- **GET**：微信伺服器接入驗證，驗證簽名後返回 `echostr`\n- **POST**：接收使用者訊息和事件，驗證簽名→解密（如需）→轉換→emit\n\n實際訪問路徑會自動添加模組前綴，例如註冊路徑 `/mp/main`，\n實際訪問路徑為 `/mp_{account}_verify/mp/main` 和 `/mp_{account}_message/mp/main`。"
+    },
+    {
+      "hash": "0d3b45708e831329d83b1324ac4eed5a",
+      "translation": "## API 回應\n\n所有 `call_api` 調用返回標準化響應：\n\n- 成功：`status: \"ok\"`, `retcode: 0`\n- 失敗：`status: \"failed\"`, `retcode: 34000+errcode`\n- 始終包含 `mp_raw`（原始響應）、`message_id`\n\n[**返回頂部**](docs/zh-TW/quick-start.md)"
+    }
+  ]
 }

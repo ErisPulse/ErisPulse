@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "11aba9df7350f3e3ec78558f7ae4ef68",
-  "file_hash": "11aba9df7350f3e3ec78558f7ae4ef68",
-  "translated_at": "2026-08-05T23:26:31.459418",
+  "hash": "e16cf30f4ddd1e4658569eb55f1b7cf0",
+  "file_hash": "e16cf30f4ddd1e4658569eb55f1b7cf0",
+  "translated_at": "2026-08-17T12:22:38.460827",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# アダプタ開発入門\n\nこのガイドは、新しいメッセージプラットフォームと接続して ErisPulse アダプタの開発を開始するのを支援します。\n\n```java\n// アダプタの開始と初期化\npublic void startAdapter() {\n    // プラットフォーム設定のロード\n    String configPath = \"configs/platform-config.json\";\n\n    // ErisPulse アダプタインスタンスの作成\n    ErisPulseAdapter adapter = new ErisPulseAdapter(configPath);\n\n    // サーバー接続の確立\n    adapter.connectToServer();\n\n    // メッセージリスナーの登録\n    adapter.registerMessageListener(new MessageListener() {\n        @Override\n        public void onMessageReceived(Message msg) {\n            // 受信したメッセージの処理\n            System.out.println(\"受信メッセージ: \" + msg.getContent());\n\n            // メッセージの返信\n            msg.reply(\"ありがとうございます。\");\n        }\n    });\n\n    // エラーハンドリング\n    adapter.setOnErrorHandler((error) -> {\n        System.err.println(\"エラーが発生しました: \" + error.getMessage());\n    });\n}"
     },
     {
-      "hash": "41673a17b0c43e4f92c0a31517ba4185",
-      "translation": "## アダプターの概要\n\n### アダプターとは\n\nアダプターは ErisPulse と各メッセージプラットフォームの間のブリッジであり、以下の役割を担当します：\n\n1. **正方向の変換（Forward Conversion）**：プラットフォームのイベントを受信し、OneBot12 標準形式に変換する（Converter）\n2. **反方向の変換（Reverse Conversion）**：OneBot12 のメッセージセグメントをプラットフォームの API 呼び出しに変換する（`Raw_ob12`）\n3. プラットフォームとの接続の管理（WebSocket/WebHook）\n4. 統一された SendDSL メッセージ送信インターフェースを提供する\n\n### アダプターのアーキテクチャ\n\n```\n正方向の変換（受信）                        反方向の変換（送信）\n─────────────                        ─────────────\nプラットフォームイベント                  モジュール構築メッセージ\n    ↓                                    ↓\nConverter.convert()               Send.Raw_ob12()\n    ↓                                    ↓\nOneBot12 標準イベント                  プラットフォームネイティブ API 呼び出し\n    ↓                                    ↓\nイベントシステム                       標準応答形式\n    ↓\nモジュール処理"
+      "hash": "0c61aa42f7ade16d05a2f27cf278223a",
+      "translation": "## アダプターの概要\n\n### アダプターとは\n\nアダプターは ErisPulse と各メッセージプラットフォームの間の橋渡しとして機能し、主に以下の役割を担当します。\n\n1. **正変換**：プラットフォームからのイベントを受け取り、OneBot12 標準形式に変換する（Converter）\n2. **逆変換**：OneBot12 メッセージセグメントをプラットフォーム API コールに変換する（`Raw_ob12`）\n3. プラットフォームとの接続管理（WebSocket/WebHook）\n4. 統一された SendDSL メッセージ送信インターフェースの提供\n\n### アダプターのアーキテクチャ\n\n```mermaid\nflowchart LR\n    subgraph receive[\"正変換（受信）\"]\n        direction TB\n        P1[\"プラットフォームイベント\"] --> C1[\"Converter.convert()\"] --> O1[\"OneBot12 標準イベント\"] --> S1[\"イベントシステム\"] --> M1[\"モジュール処理\"]\n    end\n    subgraph send[\"逆変換（送信）\"]\n        direction TB\n        M2[\"モジュールメッセージ構築\"] --> R1[\"Send.Raw_ob12()\"] --> N1[\"プラットフォームネイティブ API コール\"] --> R2[\"標準応答フォーマット\"]\n    end"
     },
     {
       "hash": "ec84ec300612297e437460aa7207b09e",

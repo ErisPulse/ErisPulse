@@ -168,7 +168,7 @@ async def info_command(event):
     nickname = event.get_user_nickname()
     await event.reply(f"你好，{nickname}！")
 
-# 而非直接存取字典
+# 而非直接訪問字典
 @command("info")
 async def info_command(event):
     user_id = event["user_id"]  # 不夠清晰，容易出錯
@@ -177,14 +177,24 @@ async def info_command(event):
 ### 2. 合理使用懶加載
 
 ```python
-# 命令處理模組需要立即載入
+# 低頻命令模組：聲明 activate_on 觸發器，首個匹配命令到達時自動激活（保持懶加載）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        return ModuleLoadStrategy(lazy_load=False)
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"command": {"name": "dice", "help": "擲一個骰子", "aliases": ["d"]}},
+        ])
 
-# 監聽器模組需要立即載入
+# 低頻監聽器模組：聲明事件觸發器，事件到達時自動激活
 class ListenerModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"notice": "group_member_increase"},
+        ])
+
+# 高頻觸發（每條消息都要處理）或啟動時就必須就緒的模組：立即加載
+class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
@@ -195,6 +205,9 @@ class UtilityModule(BaseModule):
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
+
+> `activate_on` 的完整語法（事件三形式 / 命令簡寫與 dict 聲明 / help 回退鏈）見
+> [懶加載模組系統](../../advanced/lazy-loading.md#事件驅動懶激活activate_on)。
 
 ### 3. 事件處理器註冊
 
@@ -210,11 +223,6 @@ async def on_load(self, event):
         self.logger.info("收到群消息")
     
     # 不需要手動註銷，框架會自動處理
-```
-
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
-
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第 8 條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 錯誤處理
 
@@ -361,14 +369,23 @@ async def process_message(self, event):
 ### 1. 敏感數據保護
 
 ```python
-# 敏感數據儲存在配置中
+# 敏感數據儲存在配置中（聲明式 ConfigClass，secret 欄位不進入日誌/匯出）
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule, BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={"description": "API 密鑰", "secret": True},
+    )
+
 class MyModule(BaseModule):
-    def _load_config(self):
-        config = self.sdk.config.getConfig("MyModule")
-        self.api_key = config.get("api_key")
-        
-        if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("請在 config.toml 中設定有效的 API 密鑰")
+    ConfigClass = MyModuleConfig
+
+    def check_api_key(self):
+        if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
+            raise ValueError("請在 config.toml 中配置有效的 API 密鑰")
 
 # ❌ 敏感數據硬編碼
 class MyModule(BaseModule):
@@ -401,15 +418,13 @@ import pytest
 from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
-    def test_load_config(self):
-        """測試配置加載"""
-        module = MyModule()
-        config = module._load_config()
-        assert config is not None
-        assert "api_url" in config
+    def test_config_defaults(self):
+        """測試配置預設值"""
+        config = MyModule.ConfigClass()
+        assert config.timeout == 30
 ```
 
-### 2. 整合測試
+### 2. 集成測試
 
 ```python
 @pytest.mark.asyncio

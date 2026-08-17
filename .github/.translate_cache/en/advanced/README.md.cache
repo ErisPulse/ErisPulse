@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "f726ac48e056e248affbe341b358e197",
-  "file_hash": "f726ac48e056e248affbe341b358e197",
-  "translated_at": "2026-08-15T18:08:20.162760",
+  "hash": "ced99c31785ac3f12312d2fcb7e67e9f",
+  "file_hash": "ced99c31785ac3f12312d2fcb7e67e9f",
+  "translated_at": "2026-08-17T11:56:12.671631",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Advanced Topics\n\nThis directory contains advanced features and in-depth topics of the ErisPulse framework."
     },
     {
-      "hash": "ad8c5fcf2305ac14c1f0e39bf57d364d",
-      "translation": "## Documentation List\n\n- [Startup Process and Manual Control](docs/en/startup.md) - Deconstruction of the startup pipeline (Finder/Loader/Manager/Router) and manual full startup\n- [Lazy Loading System](docs/en/lazy-loading.md) - How the lazy loading module system works and configuration\n- [Module Scope System](docs/en/scope.md) - Binding and isolation of modules and adapters Bot/Platform\n- [Internationalization (i18n)](docs/en/i18n.md) - Multi-language support, translation registration, and language detection\n- [Lifecycle Management](docs/en/lifecycle.md) - Usage of the lifecycle event system\n- [Router Manager](docs/en/router.md) - HTTP and WebSocket routing management\n- [HTTP Client](docs/en/http-client.md) - Unified HTTP request client\n- [MessageBuilder Deep Dive](docs/en/message-builder.md) - Dual-mode usage of the OneBot12 message segment builder\n- [SQL Query Builder](docs/en/sql-builder.md) - Generic SQL chain query builder and storage backend abstraction\n- [Session Type System](docs/en/session-types.md) - Session type definition, mapping, and custom type registration\n- [Conversation Multi-turn Dialogue](docs/en/conversation.md) - Interaction methods for multi-turn dialogue context\n\n> [!NOTE]\n> Documentation for **Third-party Ecosystem Modules** such as Dashboard window registration and Takumi image rendering has been migrated to the [Ecosystem Modules](../ecosystem/README.md) directory.\n\nPlease return the complete translated Markdown content directly, without including any other text."
+      "hash": "1b4aa804d2bd756b37b4b950bfee862e",
+      "translation": "## Document List\n\n- [Startup Process and Manual Control](startup.md) - Breakdown of the startup chain (Finder/Loader/Manager/Router) and manual full startup\n- [Lazy Loading System](lazy-loading.md) - Working principles, configuration, and event-driven lazy activation (activate_on) of the lazy loading module system\n- [Module Scope System](scope.md) - Binding and isolation of modules and adapters (Bot/Platform)\n- [Internationalization (i18n)](i18n.md) - Multi-language support, translation registration, and language detection\n- [Lifecycle Management](lifecycle.md) - Usage methods of the lifecycle event system\n- [Router Manager](router.md) - HTTP and WebSocket routing management\n- [HTTP Client](http-client.md) - Unified HTTP request client\n- [MessageBuilder Detailed Explanation](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder\n- [SQL Query Builder](sql-builder.md) - General SQL chain query builder and storage backend abstraction\n- [Session Type System](../standards/session-types.md) - Session type definition, mapping, and custom type registration\n- [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue context\n\n> [!NOTE]\n> Documentation for third-party ecosystem modules such as Dashboard window registration and Takumi image rendering has been moved to the [Ecosystem Modules](../ecosystem/README.md) directory."
     },
     {
       "hash": "81b5854fa95b29d89b547d92b77468de",

@@ -101,7 +101,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ### Декларативная конфигурация (рекомендуется)
 
-Начиная с версии v2.5.2, модули могут объявлять класс конфигурации через `ConfigClass`, используя ту же систему схем конфигурации, что и адаптеры. Конфигурация считывается в реальном времени через `self.cfg` и вступает в силу немедленно после изменения:
+Начиная с версии 2.5.2, модули могут объявлять класс конфигурации через `ConfigClass`, используя ту же систему схем конфигурации, что и адаптеры. Конфигурация считывается в реальном времени через `self.cfg` и вступает в силу немедленно после изменений:
 
 ```python
 from dataclasses import dataclass, field
@@ -113,7 +113,7 @@ class MyModuleConfig(BaseConfig):
     api_key: str = field(
         default="",
         metadata={
-            "description": {"i18n": "my_module.api_key", "default": "API ключ"},
+            "description": {"i18n": "my_module.api_key", "default": "API Ключ"},
             "required": True,
             "secret": True,
             "ui": {"widget": "password", "group": "basic", "order": 1},
@@ -122,13 +122,17 @@ class MyModuleConfig(BaseConfig):
     timeout: int = field(
         default=30,
         metadata={
-            "description": {"i18n": "my_module.timeout", "default": "Время ожидания (сек)"},
+            "description": {"i18n": "my_module.timeout", "default": "Тайм-аут (сек)"},
             "ui": {"widget": "number", "group": "advanced", "order": 2},
         },
     )
 
 class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
+
+    def __init__(self, sdk):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
 
     async def on_load(self, event):
         self.logger.info("Модуль загружен")
@@ -137,16 +141,16 @@ class MyModule(BaseModule):
         pass
 
     async def do_something(self):
-        cfg = self.cfg  # Считывание в реальном времени, с проверкой типов
+        cfg = self.cfg  # Считывание в реальном времени, типобезопасность
         api_key = cfg.api_key
         timeout = cfg.timeout
 ```
 
-`BaseConfig` — это универсальный базовый класс конфигурации, который подходит для адаптеров, модулей, внешних проектов и любых других сценариев. Поля конфигурации поддерживают многоязычные описания i18n (см. [документацию i18n](../../advanced/i18n.md#配置字段多语言)).
+`BaseConfig` — это базовый класс конфигурации общего назначения, подходящий для любых сценариев, включая адаптеры, модули и внешние проекты. Поля конфигурации поддерживают многоязычные описания i18n (см. подробнее в [документации i18n](../../advanced/i18n.md#поля-конфигурации-многоязычные)).
 
-### Декларативные ключи переводов (v2.7.0+)
+### Декларативные ключи перевода (v2.7.0+)
 
-Начиная с версии v2.7.0, модули также могут централизованно объявлять ключи переводов, используя вложенный класс `I18nClass`, подобно тому, как объявляют `ConfigClass`. Фреймворк автоматически **регистрирует** все объявленные ключи переводов при загрузке, не требуя ручного вызова `i18n.register()`, а момент регистрации наступает раньше генерации шаблонов конфигурации, что гарантирует доступность i18n-ключей, используемых в описаниях конфигурации.
+Начиная с версии 2.7.0, модули могут централизованно объявлять ключи перевода, как объявляют `ConfigClass`, через вложенный класс `I18nClass`. Фреймворк будет автоматически регистрировать все объявленные ключи перевода при загрузке, без необходимости вручную вызывать `i18n.register()`, и регистрация происходит до генерации шаблона конфигурации, что гарантирует доступность ключей i18n, на которые ссылаются описания конфигурации.
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
@@ -156,53 +160,50 @@ class MyModule(BaseModule):
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
-            default="欢迎",
+            default="Добро пожаловать",
             metadata={
                 "description": {"i18n": "mymodule.welcome_msg", "default": "Приветственное сообщение"},
             },
         )
 
-    # Класс набора ключей переводов (необязательно)
+    # Класс набора ключей перевода (необязательно)
     class I18nClass(BaseI18n):
-        # Имена атрибутов автоматически объединяются в полный путь ключа: <имя_модуля>.<имя_атрибута>
+        # Имена свойств автоматически объединяются в полный путь ключа: <имя_модуля>.<имя_свойства>
         welcome_msg: I18nKey = I18nKey(
-            default="Welcome Message",   # Языко-независимое значение по умолчанию
-            zh_CN="欢迎消息",
-            zh_TW="歡迎訊息",
+            default="Welcome Message",   # Языконезависимый запасной вариант
+            zh_CN="Приветственное сообщение",
+            zh_TW="Приветственное сообщение",
             en="Welcome Message",
             ja="ウェルカムメッセージ",
             ru="Приветственное сообщение",
         )
         hello: I18nKey = I18nKey(
             default="Hello, {name}!",
-            zh_CN="你好，{name}！",
-            zh_TW="你好，{name}！",
+            zh_CN="Привет, {name}!",
+            zh_TW="Привет, {name}!",
             en="Hello, {name}!",
-            ja="こんにちは、{name}！",
+            ja="こんにちは、{name}!",
             ru="Привет, {name}!",
         )
 ```
 
-Подробнее см. [рекомендуемый подход i18n](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270).
+Подробнее см. [Рекомендуемый способ написания i18n](../../advanced/i18n.md#рекомендуемый-способ-через-i18nclass-объявить-ключи-перевода-v270).
 
-### Ручное чтение конфигурации (совместимый способ)
+### Ручное чтение конфигурации (не рекомендуется)
 
-Если не используется декларативная конфигурация, можно напрямую считывать и записывать хранилище конфигурации:
+> **Устарело**: Пожалуйста, используйте вместо этого [декларативную конфигурацию](#декларативная-конфигурация-рекомендуется) + чтение через `self.cfg` в реальном времени.
 
 ```python
-def _load_config(self):
-    config = self.sdk.config.getConfig("MyModule")
-    if not config:
-        default_config = {
-            "api_key": "",
-            "timeout": 30
-        }
-        self.sdk.config.setConfig("MyModule", default_config)
-        return default_config
-    return config
-```
+class MyModule(BaseModule):
+    def __init__(self, sdk):
+        self.sdk = sdk
 
-> **Примечание**: При ручном способе избегайте использования `self.config` в качестве имени атрибута, рекомендуется использовать `self.cfg` или любое другое пользовательское имя, чтобы избежать конфликтов с будущими свойствами фреймворка.
+    def _load_config(self):
+        config = self.sdk.config.getConfig("MyModule")
+        if not config:
+            self.sdk.config.setConfig("MyModule", {"api_key": "", "timeout": 30})
+            return {"api_key": "", "timeout": 30}
+        return config
 
 ## Система хранения
 

@@ -1,17 +1,17 @@
 {
   "version": 2,
-  "hash": "fde20927013a6de1796d7e04d40c3365",
-  "file_hash": "fde20927013a6de1796d7e04d40c3365",
-  "translated_at": "2026-08-15T18:51:05.045189",
+  "hash": "1f4ac52ac6489e0b60f4c5498ddfd9cf",
+  "file_hash": "1f4ac52ac6489e0b60f4c5498ddfd9cf",
+  "translated_at": "2026-08-17T11:55:06.697770",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "291a5529e6f7f532d45bac5601b0a03b",
-      "translation": "# 模組作用域系統\n\n模組作用域系統用於控制「某個 Bot 只能使用哪些模組」，實現多 Bot 場景下的模組隔離。\n預設情況下所有模組對所有 Bot 開放；僅在設定綁定後才開始過濾，**模組與適配器無需任何變更**即可適配。\n\n{!--< tips >!--}\n1. 作用域以「適配器平台 + Bot 標識 + 會話標識」為維度綁定模組\n2. 支援白名單（`modules`）與黑名單（`blocked`）兩種方式\n3. 被作用域停用的模組收到訊息時靜默忽略，不回覆提示\n4. 支援執行階段 `sdk.scope.bind()` / `unbind()` 動態新增與刪除，可持久化\n{!--< /tips >!--}"
+      "hash": "035ecc211ebafad9481425ffc1301c7c",
+      "translation": "# 模組作用域系統\n\n> [!NOTE]\n> 本特性需要 ErisPulse **2.8.0+**。\n\n模組作用域系統用於控制「某個 Bot 只能使用哪些模組」，實現多 Bot 場景下的模組隔離。  \n預設情況下所有模組對所有 Bot 開放；僅在配置綁定後才開始過濾，**模組與適配器無需任何變動**即可適配。\n\n{!--< tips >!--}\n1. 作用域以「適配器平台 + Bot 標識 + 會話標識」為維度綁定模組\n2. 支持白名單（`modules`）與黑名單（`blocked`）兩種方式\n3. 被作用域禁用的模組收到訊息時靜默忽略，不回覆提示\n4. 支援執行時 `sdk.scope.bind()` / `unbind()` 動態增刪，可持久化\n{!--< /tips >!--}\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。\n\n再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。"
     },
     {
-      "hash": "07c82bfee84c96c3b438d657cf707fb0",
-      "translation": "## 運作原理\n\n```\nBot 收到訊息\n  → 框架從事件中提取 (platform, bot_id, session_id)\n  → 查找作用域繫結（會話級 > Bot 級 > 平台級）\n  → 命中繫結則按 白名單/黑名單 過濾模組\n  → 被停用的模組：指令與事件處理器均不觸發（靜默忽略）\n```\n\n- **解析優先順序：會話級 > Bot 級 > 平台級**，更高優先順序未繫結規則時回退到下一級；全部未設定則允許全部模組。\n- 事件資料缺少 `self`（無法識別 Bot）時，跳過 Bot 級，按會話級 / 平台級判斷。\n- 框架層資源（owner 為空的處理器、指令分發器、事件總線）始終放行，不受作用域影響。"
+      "hash": "81f515c4fe3580e3224d1899088e8b59",
+      "translation": "## 工作原理\n\n```mermaid\nflowchart TD\n    A[\"Bot 收到消息\"] --> B[\"提取 (platform, bot_id, session_id)\"]\n    B --> C{\"查找作用域綁定<br/>（會話級 > Bot 級 > 平台級）\"}\n    C -->|\"會話級\"| D[\"sessions<br/>優先級最高\"]\n    C -->|\"Bot 級\"| E[\"bots<br/>覆蓋平台級\"]\n    C -->|\"平台級\"| F[\"platforms\"]\n    D & E & F --> G{\"命中綁定？\"}\n    G -->|\"命中\"| H[\"按 白名單 / 黑名單 過濾模組\"]\n    G -->|\"未命中\"| I[\"回退到下一級<br/>全未配置則允許全部\"]\n    H --> J[\"被禁用的模組：命令與事件處理器均不觸發<br/>（靜默忽略）\"]\n```\n\n- **解析優先級：會話級 > Bot 級 > 平台級**，更高優先級未綁定規則時回退到下一級；全部未配置則允許全部模組。\n- 事件數據缺少 `self`（無法識別 Bot）時，跳過 Bot 級，按會話級 / 平台級判斷。\n- 框架層資源（owner 為空的處理器、命令分發器、事件總線）始終放行，不受作用域影響。"
     },
     {
       "hash": "5ca62637c9b5f9651ccadfa084608916",
@@ -28,10 +28,6 @@
     {
       "hash": "76067e52f77d5b31de42dfe3bc0a5cfa",
       "translation": "## 拓撲樹 API\n\n`ModuleManager.get_topology()` 與 `AdapterManager.get_topology()` 提供模組/適配器歸屬關係資料，\n`sdk.get_topology()` 一鍵聚合三者：\n\n```python\nfrom ErisPulse import sdk\n\ntopology = sdk.get_topology()\n# {\n#   \"modules\": {                                   # 模組 → 擁有的資源\n#     \"Chat\": {\n#       \"loaded\": True, \"enabled\": True,\n#       \"load_strategy\": {\"lazy\": False, \"priority\": 50},\n#       \"info\": {...},\n#       \"commands\": [\"chat\", \"translate\"],\n#       \"handlers\": {\"message\": 2, \"notice\": 1},\n#       \"routes\": {\"http\": [\"/Chat/api\"], \"ws\": [], \"sse\": []},\n#       \"lifecycle_hooks\": 3,\n#       \"scope_applies\": True,\n#     }\n#   },\n#   \"adapters\": {                                  # 適配器 → Bot → 作用域\n#     \"onebot11\": {\n#       \"status\": \"started\", \"enabled\": True,\n#       \"bots\": {\"123456\": {\"status\": \"online\", \"last_active\": ..., \"info\": {...}, \"scope\": {...}}},\n#       \"scope\": {\"modules\": [...], \"blocked\": [...]},\n#     }\n#   },\n#   \"scope\": {\"platforms\": {...}, \"bots\": {...}, \"sessions\": {...}}   # 全部作用域綁定\n# }\n\n- 模組拓撲聚合了該模組註冊的命令、事件處理器、HTTP/WS/SSE 路由與生命週期鉤子，便於繪製模組資源樹。\n- 適配器拓撲聚合了各適配器狀態、下屬 Bot 狀態及平台級/Bot 級作用域綁定。"
-    },
-    {
-      "hash": "cf37901fbc816772d28fcc2abec3c95b",
-      "translation": "## 隱私：隱藏訊息日誌\n\n如需讓後台（如 Dashboard 日誌面板）無法查看各群組/私聊的訊息內容，可在 `[ErisPulse.logger]` 中隱藏 EVENT 等級（訊息收發內容以 EVENT 等級記錄）：\n\n```toml\n[ErisPulse.logger]\nexclude_levels = [\"EVENT\"]\n```\n\n被隱藏等級的日誌會**完全丟棄**（不寫入記憶體、不推送給訂閱者、不列印、不寫入檔案），\n也可透過程式碼動態控制：\n\n```python\nsdk.logger.set_excluded_levels([\"EVENT\"])   # 隱藏\nsdk.logger.exclude_level(\"EVENT\")\nsdk.logger.allow_level(\"EVENT\")             # 恢復"
     }
   ]
 }
