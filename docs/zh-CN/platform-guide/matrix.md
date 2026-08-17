@@ -6,7 +6,7 @@ MatrixAdapter 是基于 [Matrix协议](https://spec.matrix.org/) 构建的适配
 
 ## 文档信息
 
-- 对应模块版本: 1.0.0
+- 对应模块版本: 4.1.0
 - 维护者: ErisPulse
 
 ## 基本信息

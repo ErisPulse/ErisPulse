@@ -6,7 +6,7 @@ DiscordAdapter 是基于 Discord Gateway (WebSocket) 和 REST API v10 协议构�
 
 ## 文档信息
 
-- 对应模块版本: 4.0.0
+- 对应模块版本: 4.1.0
 - 维护者: ErisPulse
 - Discord API 版本: v10
 

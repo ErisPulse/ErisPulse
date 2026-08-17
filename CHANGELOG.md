@@ -121,6 +121,13 @@
   - `tests/unit/test_unit_module.py` 新增 meta 声明测试；`test_module_load_submits_lifecycle_event` 改用 `call_args_list` 断言（兼容 load 提交 `module.load`+`module.init` 两次事件）；新增 `TestModuleActivateOnCommandVisibility`（10 用例）：命令触发占位命令对 Help 可见、help 五层回退链（dict 声明 / meta description / 模块描述 / 包 Summary mock / 通用提示）、dict 声明解析与去重、缺 name 告警忽略、hidden 语义对齐、usage/group/aliases 镜像注册、激活后真实命令接管闭环成立
   - `tests/unit/test_unit_cli.py` 新增 `TestCreateModuleLocal`：`--local` 生成 `plugins/<name>/` 结构并可被框架发现
 
+### 优化
+- @wsu2059q
+  - **文档翻译 CI 超时治理**（修复 `update-and-generate-docs` 运行至 360 分钟被强制取消且成果全部丢失的问题）：
+    - `scripts/tools/translate-docs.py`：`AsyncOpenAI` 增加 `timeout=180` / `max_retries=0`（防流式响应挂起，重试仍由脚本自管）；目标语言从串行 `for` 循环改为**语言级并行**（语言内部仍受 `concurrent` 信号量约束，服务商按语言错开）；新增 `--time-budget` 时间预算——到点停止调度新文件、在途任务收尾后退出，缓存照常落盘供下次续译，结束时输出机器可读统计行 `REMAINING_FILES=N`
+    - `scripts/tools/translate-config.json`：`concurrent` 1→3，新增 `time_budget_minutes: 40` 与 `request_timeout: 180`
+    - `.github/workflows/auto-update-docs.yml`：job 硬上限 `timeout-minutes: 90`；**生成类产物（API / AI Prompt / 索引）先提交**（commit #1），翻译超时/失败不再丢失生成结果；翻译改为时间预算多轮续译（总预算 55 分钟、最多 3 轮、缓存续传，剩余任务输出 warning 并在下次文档变更时自动续译）；两次提交前各自 refresh GitHub App token（token 有效期 1h）
+
 ### 文档
 - @wsu2059q
   - 新增 `docs/zh-CN/advanced/scope.md`（作用域系统、拓扑树 API、优先级陷阱/降级语义/跨平台隔离等注意事项）
@@ -137,6 +144,10 @@
   - **版本标注**：为 2.8.0 新增特性（`activate_on` / 作用域 / `exclude_levels` / 本地插件 / 模块 meta）统一加 `> [!NOTE] 本特性需要 ErisPulse 2.8.0+`；补 2.7 回溯标注（`event.done()`/`mark_processed(claim=, stop=)` 2.7.1、`reply(via=)`/`send_chain()` 2.7.0、CLI `doctor` 2.7.0、`infer_receive_type` 语义子类型行为变更 2.7.0）
   - **去重**：合并 `advanced/session-types.md` 与 `standards/session-types.md`（standards 为权威，吸收核心 API/工具方法章节，删除 advanced 版本并同步清理 4 语言副本与 `.translate_cache` 缓存、修正死链）；`architecture.md` 三处去重（初始化 9 步 / activate_on 7 条要点 / 生命周期监听示例改为链接到对应文档）；`configuration.md` 作用域配置段精简（删三级绑定 TOML 示例，指向 `scope.md`）；`scope.md` 移除越界的日志屏蔽段
   - 新增 7 张 mermaid 配图：`lazy-loading.md` 加载策略决策图（三策略分流）；`lifecycle.md` 一条消息的完整生命周期事件时序图（adapter.event.receive → … → dispatched）；`scope.md` 三级绑定解析流程图（替换原 ASCII 图，会话>Bot>平台优先级与回退语义）；`event-system.md` 五类事件处理器分发图；`adapters/getting-started.md` 正向/反向转换架构图（替换原 ASCII 图）；`conversation.md` 对话活跃状态流转图（stateDiagram）；`send-dsl.md` 方法链构建流程图（替换原 ASCII 图）
+  - **平台特性文档同步**（对照 `SDK/Adapter` 各适配器仓库源码与上游文档逐项核查）：
+    - `yunhu.md` 同步 4.0.0→**4.3.0**：`Board`/`DismissBoard` 链式作用域重构（`To()` 推断本地/全局，新增 `.Expire()`/`.ExpireAt()`/`.ForMember()` 修饰，空内容自动撤销，兼容旧式 scope 写法）；新增**标准 API 动作（ApiDSL）**章节（`Api` 类 6 个标准动作、不支持动作清单、11 组平台扩展动作）；新增 **Event Mixin** 14 个扩展方法；事件新增标准 `role` 与 `user_avatar` 字段；多Bot配置 `bots`→`accounts`（`bot_id` 改为运行时自动探测，新增 `mode` 接收模式 ws/webhook）
+    - `ideaura.md` 同步至 **4.0.1**：平台更名 花枫咖啡馆（Allons）→（**RockyChat**）；认证方式变更为 **Bot Token**（`bot-token-` 前缀，MSCPO 开放平台获取，移除邮箱密码登录）；`base_url` 默认值改为 `https://api.mscpo.com/api/rockychat`；新增 `.Command()` 链式修饰方法与 `ideaura_command` 消息段；新增 **Event Mixin** 11 个扩展方法
+    - `telegram.md`（4.1.1）/ `discord.md`（4.1.0）/ `matrix.md`（4.1.0）/ `wechatmp.md`（4.1.0）版本号同步（适配器侧均为内部修复与 i18n，用户侧 API 无变化）；`telegram.md` 修正代理说明中残留的字面字符串拼接（` + 'ALL_PROXY' + ` → `ALL_PROXY`）
 
 ---
 
