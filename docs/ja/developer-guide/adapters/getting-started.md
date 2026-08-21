@@ -377,6 +377,41 @@ async def handle_friend_request(event):
 # MyAdapter/__init__.py
 from .Core import MyAdapter
 
+## 依存関係の宣言（オプション、2.8.0+）
+
+アダプタは他のアダプタやモジュールへの依存を宣言し、アダプタ間の連携とオプション機能を実現できます：
+
+```python
+from typing import ClassVar
+
+class MyAdapter(BaseAdapter):
+    # 硬い依存：存在しない場合は起動をスキップ（警告 + status=skipped-dependency イベント）
+    depends: ClassVar[dict] = {
+        "adapters": ["onebot11"],   # 依存するアダプタ（プラットフォーム名で）
+        "modules": ["TranslateEngine"],  # 依存するモジュール（登録名で）
+    }
+    # ソフトな依存：存在しない場合は起動に影響しない；モジュールのロード/アンロード時にコールバックを受け取る（オプション機能モード）
+    optional_modules: ClassVar[list] = ["TranslateEngine"]
+```
+
+- **起動順序**：モジュールの硬い依存を宣言したアダプタは**モジュールの初期化完了後に起動される**。
+- **ソフトな依存の通知**：`optional_modules`（またはモジュールの硬い依存）に含まれるモジュールがロードされたときに `on_dependency_ready(module_name)` を呼び出す；アンロードされたときに `on_dependency_lost(module_name)` を呼び出す（デフォルトでは空実装、オーバーライド可能）——遅いロードやホットリロードの状況に対応：
+
+```python
+async def on_dependency_ready(self, module_name):
+    """ソフトな依存モジュールが準備完了：対応するオプション機能を有効化"""
+    if module_name == "TranslateEngine":
+        self._translate = self.sdk.TranslateEngine
+
+async def on_dependency_lost(self, module_name):
+    """ソフトな依存モジュールが失われた：機能をロールバック"""
+    if module_name == "TranslateEngine":
+        self._translate = None
+```
+
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
+
 ## `__init__` 注意事項
 
 アダプター開発において `__init__` のオーバーライドが必要となる層は 3 つあります。各層での正しい実装について以下に記載します。

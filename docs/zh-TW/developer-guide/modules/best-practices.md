@@ -96,12 +96,12 @@ class MyModule(BaseModule):
 
 詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
 
-## 非同步程式設計
+## 異步程式設計
 
-### 1. 使用非同步庫
+### 1. 使用異步庫
 
 ```python
-# 建議使用 SDK 內建 HTTP 用戶端（非同步，自動日誌和統計）
+# 推薦使用 SDK 內建 HTTP 客戶端（異步，自動日誌和統計）
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -117,7 +117,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# 不要直接使用 aiohttp 匯入（不便於框架統一管理）
+# 不要使用 aiohttp 直接匯入（不利於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -126,34 +126,39 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# 不要使用 requests（同步，會阻擋事件循環）
+# 不要使用 requests（同步，會阻塞事件循環）
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # 會阻擋事件循環
+        return requests.get(url).json()  # 會阻塞事件循環
 ```
 
-### 2. 正確的非同步操作
+### 2. 正確的異步操作
 
 ```python
 async def handle_command(self, event):
-    # 使用 create_task 讓耗時操作在背景執行
-    task = asyncio.create_task(self._long_operation())
-    
-    # 如果需要等待結果
-    result = await task
+    # 需要等待結果的耗時操作：直接 await（生命週期明確）
+    result = await self._long_operation()
+
+async def on_load(self, event):
+    # 後台任務（輪詢/定時/fire-and-forget）：使用 self.spawn()，
+    # 模組卸載時框架在 on_unload 之後兜底取消，避免持有 self 導致泄漏
+    self.spawn(self._poll())
 ```
+
+> [!NOTE]
+> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——後者建立的裸任務不歸屬於模組，卸載時不會被自動清除，會持有 `self` 引用導致模組實例無法被回收（熱重載泄漏）。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
 
 ### 3. 資源管理
 
 ```python
 async def on_load(self, event):
-    # SDK 用戶端已自動管理連線池，無需手動建立 session
+    # SDK 客戶端已自動管理連接池，無需手動建立 session
     pass
     
 async def on_unload(self, event):
-    # 如需自訂用戶端，記得清理資源
+    # 如需自訂客戶端，記得清理資源
     pass
 
 ## 事件處理

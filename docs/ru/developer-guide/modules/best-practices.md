@@ -101,7 +101,7 @@ class MyModule(BaseModule):
 ### 1. Использование асинхронной библиотеки
 
 ```python
-# Рекомендуется использовать встроенный HTTP-клиент SDK (асинхронный, с автоматическими логами и статистикой)
+# Рекомендуется использовать встроенный HTTP-клиент SDK (асинхронный, автоматическая логгирование и статистика)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -109,7 +109,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# Также можно использовать sdk.client (результат такой же)
+# Также можно использовать sdk.client (результат тот же)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -117,7 +117,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Не следует импортировать aiohttp напрямую (неудобно для унифицированного управления в рамках фреймворка)
+# Не используйте aiohttp напрямую (неудобно для унифицированного управления фреймворком)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -126,34 +126,39 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Не следует использовать requests (синхронный, блокирует цикл событий)
+# Не используйте requests (синхронный, блокирует событийный цикл)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # Блокирует цикл событий
+        return requests.get(url).json()  # Блокирует событийный цикл
 ```
 
-### 2. Правильная асинхронная операция
+### 2. Правильные асинхронные операции
 
 ```python
 async def handle_command(self, event):
-    # Используйте create_task для выполнения трудоемких операций на фоне
-    task = asyncio.create_task(self._long_operation())
-    
-    # Если необходимо дождаться результата
-    result = await task
+    # Длительные операции, результат которых нужно ждать: просто await (жизненный цикл ясен)
+    result = await self._long_operation()
+
+async def on_load(self, event):
+    # Задачи в фоне (опрос/таймер/fire-and-forget): используйте self.spawn(),
+    # при выгрузке модуля фреймворк отменяет их в on_unload, предотвращая утечку
+    self.spawn(self._poll())
 ```
+
+> [!NOTE]
+> Для фоновых задач рекомендуется использовать `self.spawn()` (ErisPulse **2.8.0+**), а не `asyncio.create_task` — последний создает "голые" задачи, не принадлежащие модулю, и при выгрузке не будет автоматической отмены, что приведет к утечке ссылки на `self` и невозможности сборки мусора модуля (утечка при горячей перезагрузке). Подробнее см. [Управление жизненным циклом](../../advanced/lifecycle.md#фоновые-задачи-принадлежность-и-автоматическая-отмена).
 
 ### 3. Управление ресурсами
 
 ```python
 async def on_load(self, event):
-    # Клиент SDK уже автоматически управляет пулом соединений, создавать session вручную не нужно
+    # SDK-клиент автоматически управляет пулом соединений, не нужно создавать session вручную
     pass
     
 async def on_unload(self, event):
-    # Если необходимо использовать собственный клиент, не забудьте очистить ресурсы
+    # Если нужен пользовательский клиент, не забудьте очистить ресурсы
     pass
 
 ## Обработка событий

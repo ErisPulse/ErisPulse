@@ -72,29 +72,75 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 ## 配置熱更新
 
-從 2.7.0 開始，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（背景 watcher 每 5 秒檢測一次），或程式碼呼叫 `setConfig()` 後，各元件自動回應：
+從 2.7.0 版本開始，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（背景 watcher 每 5 秒檢測一次），或程式碼呼叫 `setConfig()` 後，各組件會自動回應：
 
-| 元件 | 支援熱更新的配置 | 行為 |
+| 組件 | 支援熱更新的配置 | 行為 |
 |------|----------------|------|
-| **日誌 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` / `exclude_levels` | 自動重新套用（帶變更檢測） |
+| **日誌 Logger** | `logger.level` / `log_files` / `log_dir`（含分段參數）/ `memory_limit` / `format` / `exclude_levels` | 自動重新套用（含變更檢測） |
 | **命令系統 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一條訊息即生效 |
 | **適配器併發** | `framework.handler_max_concurrency` | 失效快取信號量，按新值重建 |
-| **主動 GC** | `framework.proactive_gc_*` | 配置變更即時重新啟動 GC 任務，支援執行時調整/停用/重新啟用 |
+| **主動 GC** | `framework.proactive_gc_*` | 配置變更即時重啟 GC 任務，支援執行時調整/停用/重新啟用 |
 | **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查即時讀取，無需重啟 |
-| **模組/適配器配置** | 各自的配置項 | 觸發 `on_config_update(old, new)` 回呼 |
+| **模組/適配器配置** | 各自的配置項目 | 觸發 `on_config_update(old, new)` 回呼 |
 
-**需重啟的配置**（無法安全熱切換，變更時會輸出告警「需重啟程序後生效」）：
+**需重啟的配置**（無法安全熱切換，變更時會輸出警告「需重啟程序後生效」）：
 
 | 配置 | 原因 |
 |------|------|
 | `router.cors.*` / `router.security.*` | 中間件在服務啟動時寫入 FastAPI，執行時無法安全熱切換 |
 | `storage.use_global_db` | SQLite 檔案句柄已在執行時開啟，切換路徑不安全 |
 
-> **中途編輯儲存出錯？** 若編輯 `config.toml` 時出現瞬間語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各元件（避免 `on_config_update` 收到空值誤回退預設）。
+> **中途編輯儲存出錯？** 若編輯 `config.toml` 時出現瞬間語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各組件（避免 `on_config_update` 收到空值誤回退預設值）。
 
-[**English**](docs/zh-TW/quick-start.md)
+### 熱更新鏈路內部拆解
 
-## 完整設定範例
+「改了配置，各組件怎麼知道的？」——背後是一條檢測 → 重載 → 廣播的鏈路：
+
+```mermaid
+flowchart TD
+    A["外部編輯 config.toml"] --> B{"誰先發現？"}
+    B -->|"背景 watcher 線程<br/>每 5 秒輪詢 mtime"| C["_check_file_change 判定變更"]
+    B -->|"程式碼讀取配置時<br/>快取超過 60 秒"| C
+    C --> D["_load_config 重新解析 TOML"]
+    D --> E{"解析成功？"}
+    E -->|"否（語法錯誤）"| F["保留上次有效配置<br/>不廣播，打診斷日誌"]
+    E -->|"是"| G["lifecycle.emit config.updated<br/>攜帶 old_config / new_config"]
+    G --> H["各組件監聽者回應<br/>（logger / scope / 命令 / GC ...）"]
+```
+
+**兩條檢測路徑**（取其一即可，均能兜底）：
+
+| 路徑 | 機制 | 觸發時機 |
+|------|------|---------|
+| 背景 watcher | daemon 線程 `config-watcher` 每 **5 秒** `wait` 輪詢檔案 `mtime` | 外部改檔案後最多 5 秒內 |
+| 慵惰檢測 | 任何 `getConfig()` 讀取時，若快取超過 **60 秒**則先查檔案 | 下次讀配置時 |
+
+> **框架不會誤傷自己**：`setConfig()` 寫盤時會記錄「自身寫入的 mtime」，watcher 對比時把它排除，只把**外部編輯**視為變更。
+
+**兩類配置變更事件：**
+
+| 事件 | 觸發者 | 數據 | 典型場景 |
+|------|--------|------|---------|
+| `config.set` | 程式碼 / Dashboard 調 `setConfig()` | `{key, old_value, new_value}` | 單鍵寫入（模板生成、狀態記錄、執行時改配置） |
+| `config.updated` | 外部編輯後 watcher/惰性檢測捕獲 | `{old_config, new_config, config_file}` | 手動改 `config.toml` |
+
+> `setConfig()` 預設**延遲 5 秒落盤**（合併多次寫入），`immediate=True` 立即寫。watcher 檢測到外部修改後只更新記憶體快取，**不會**把外部變動回寫檔案。
+
+**自動回應方清單**（兩類事件通常會都訂閱，回應內容一致）：
+
+| 組件 | 監聽 | 回應 |
+|------|------|------|
+| Logger | `config.set` + `config.updated` | 級別/檔案/目錄分段/記憶體上限/格式/屏蔽等級重新套用（含變更檢測，無變化不動） |
+| Scope | `config.updated` | 作用域綁定快取重建 |
+| 命令系統 | `config.updated` | 前綴/大小寫/空格前綴/must_at_bot 解析參數刷新，下一條訊息生效 |
+| 適配器併發 | `config.set` + `config.updated` | `handler_max_concurrency` 失效重建信號量 |
+| 主動 GC | `config.set` + `config.updated` | `proactive_gc_*` 即時重啟 GC 後台任務 |
+| 適配器 | 路由到 `on_config_update` | 各適配器 `on_config_update(old, new)` 回呼 |
+| 模組 | 路由到 `on_config_update` | 各模組 `on_config_update(old, new)` 回呼 |
+| 存儲 | `config.updated` | `use_global_db` 變更**僅告警**（需重啟） |
+| 路由 | `config.updated` | `cors.*` / `security.*` 變更**僅告警**（需重啟） |
+
+## 完整配置示例
 
 ```toml
 [ErisPulse.server]
@@ -105,8 +151,8 @@ ssl_certfile = ""
 ssl_keyfile = ""
 
 [ErisPulse.master]
-# users 支援兩種寫法（二選一）：
-#   全域主人（所有平台生效）：users = ["123456", "789012"]
+# users 支持兩種寫法（二選一）：
+#   全局主人（所有平台生效）：users = ["123456", "789012"]
 #   按平台指定主人：users = { yunhu = ["123456"], telegram = ["789012"] }
 users = {}
 
@@ -114,6 +160,11 @@ users = {}
 level = "INFO"
 format = "rich"
 log_files = []
+log_dir = ""
+log_rotation = "size"
+log_max_size_mb = 10
+log_backup_count = 5
+log_rotation_when = "midnight"
 memory_limit = 1000
 exclude_levels = []
 
@@ -199,18 +250,43 @@ if master.is_master(event):
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = ["app.log", "debug.log"]
+log_files = []                # 明確的日誌檔案列表（與 log_dir 互斥，優先級更高）
+log_dir = ""                  # 日誌目錄（設定後自動分段輪轉）
+log_rotation = "size"         # 分段方式: "size" / "date" / "none"
+log_max_size_mb = 10          # size 模式單檔案上限（MB）
+log_backup_count = 5          # 保留的歷史日誌檔案數
+log_rotation_when = "midnight"  # date 模式輪轉週期: S/M/H/D/midnight
 memory_limit = 1000
 exclude_levels = ["EVENT"]
 ```
 
-| 配置項 | 類型 | 默認值 | 說明 |
+| 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| level | string | INFO | 日誌級別：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低級別，輸出框架內部詳細調試信息） |
-| format | string | rich | 日誌輸出格式：`rich`（彩色，默認）、`plain`（純文本無顏色，適合日誌採集/管道重定向）、`json`（JSON 結構化，適合 ELK 等） |
-| log_files | array | 空 | 日誌輸出檔案列表 |
+| level | string | INFO | 日誌等級：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低等級，輸出框架內部詳細除錯資訊） |
+| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文本無顏色，適合日誌採集/管道重定向）、`json`（JSON 結構化，適合 ELK 等） |
+| log_files | array | 空 | 日誌輸出檔案列表（明確路徑，不分段） |
+| log_dir | string | 空 | 日誌輸出目錄（自動建立）。設定後寫入目錄內 `erispulse.log` 並按 `log_rotation` 自動分段；與 `log_files` 互斥，`log_files` 優先 |
+| log_rotation | string | size | 分段方式：`size`（按大小）/ `date`（按時間）/ `none`（不分段） |
+| log_max_size_mb | float | 10 | size 模式單檔案大小上限（MB），超過後輪轉為 `.1`/`.2` 備份 |
+| log_backup_count | integer | 5 | 保留的歷史日誌檔案數，超出的最舊備份自動刪除 |
+| log_rotation_when | string | midnight | date 模式輪轉週期：`S`/`M`/`H`/`D`/`midnight`（預設每天零點） |
 | memory_limit | integer | 1000 | 內存中保存的日誌條數 |
 | exclude_levels | array | 空 | 屏蔽指定日誌等級。被屏蔽等級的日誌**完全丟棄**（不寫內存、不推送到 Dashboard 等訂閱器、不列印、不寫檔案）。支援熱更新 |
+
+也可在程式碼中動態切換：
+
+```python
+from ErisPulse.Core import logger
+
+# 按大小分段：單檔案 10MB，保留 5 份
+logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
+
+# 按時間分段：每天零點輪轉，保留 7 份
+logger.set_output_dir("logs", rotation="date", backup_count=7)
+```
+
+> [!NOTE]
+> `log_dir` 及分段相關設定需要 ErisPulse **2.8.0+**。
 
 > **隱私保護**：訊息收發內容以 **EVENT 等級**（數值 21）記錄。設定 `exclude_levels = ["EVENT"]` 即可讓後台（如 Dashboard 日誌面板）無法看到各群/私聊的訊息內容，同時不影響其它等級日誌。
 

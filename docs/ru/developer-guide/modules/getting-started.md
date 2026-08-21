@@ -150,11 +150,10 @@ from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.Event import command
 
 class Main(BaseModule):
-    def __init__(self):
+    def __init__(self, sdk):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
-        self.config = self._load_config()
     
     @staticmethod
     def get_load_strategy():
@@ -163,14 +162,16 @@ class Main(BaseModule):
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
-            depends=[]  # Необязательно: список зависимых модулей
+            depends=[],  # Опционально: список зависимых других модулей
+            # Опционально: ленивая активация на основе событий — объявление триггеров, автоматическая загрузка при первом совпадении события/команды
+            # activate_on=[{"command": {"name": "hello", "help": "Отправить приветствие"}}],
         )
     
     async def on_load(self, event):
         """Вызывается при загрузке модуля"""
-        @command("hello", help="Отправляет приветствие")
+        @command("hello", help="Отправить приветствие")
         async def hello_command(event):
-            name = event.get_user_nickname() or "Дружище"
+            name = event.get_user_nickname() or "друг"
             await event.reply(f"Привет, {name}!")
         
         self.logger.info("Модуль загружен")
@@ -178,18 +179,9 @@ class Main(BaseModule):
     async def on_unload(self, event):
         """Вызывается при выгрузке модуля"""
         self.logger.info("Модуль выгружен")
-    
-    def _load_config(self):
-        """Загружает конфигурацию модуля"""
-        config = self.sdk.config.getConfig("MyModule")
-        if not config:
-            default_config = {
-                "api_url": "https://api.example.com",
-                "timeout": 30
-            }
-            self.sdk.config.setConfig("MyModule", default_config)
-            return default_config
-        return config
+```
+
+> **Чтение конфигурации**: приведённый выше базовый пример не использует конфигурацию. При необходимости чтения конфигурации рекомендуется объявить вложенный класс `ConfigClass` и получать доступ к ней через `self.cfg` в режиме реального времени (см. [Основные концепции модулей](core-concepts.md#рекомендуемая-декларативная-конфигурация)). Устаревший способ с ручным вызовом `_load_config()` больше не поддерживается.
 
 ## Модуль тестирования
 
@@ -210,7 +202,7 @@ epsdk run main.py --reload
 ```
 /hello
 
-## Основные концепции
+## Основные понятия
 
 ### Базовый класс BaseModule
 
@@ -218,78 +210,80 @@ epsdk run main.py --reload
 
 | Метод | Описание | Обязательно |
 |------|------|------|
-| `__init__(self)` | Конструктор | Нет |
+| `__init__(self, sdk)` | Конструктор (фреймворк передает экземпляр `sdk`) | Нет |
 | `get_load_strategy()` | Возвращает стратегию загрузки | Нет |
-| `get_meta()` | Возвращает метаданные модуля (необязательно) | Нет |
+| `get_meta()` | Возвращает метаданные о модуле (необязательно) | Нет |
 | `on_load(self, event)` | Вызывается при загрузке модуля | Да |
-| `on_unload(self, event)` | Вызывается при卸ождении модуля | Да |
+| `on_unload(self, event)` | Вызывается при выгрузке модуля | Да |
 
-### Метаданные модуля
+### Мета-информация о модуле
 
-Через `get_meta()` объявляются метаданные модуля (что делает этот модуль, какому классу принадлежит и т.д.).
-Метаданные — это **общие данные описания модуля**, потребляемые модулем help, списком модулей в Dashboard, модулем магазина и другими интерфейсными/экосистемными модулями.
+> [!NOTE]
+> Эта функция доступна начиная с ErisPulse **2.8.0+**.
 
-Совпадает с возвращаемым значением `get_load_strategy()`, возвращающим `ModuleLoadStrategy`, **рекомендуется возвращать экземпляр конфигурационного класса `ModuleMeta`** (для подсказок типов и автодополнения в IDE), также совместимо с прямым возвратом dict:
+Мета-информация о модуле объявляется через `get_meta()`. Она описывает, что делает данный модуль, к какой категории он относится и т.д. Мета-данные являются **общей информацией о модуле**, которую могут использовать различные интерфейсы и экосистемные модули, такие как модуль help, список модулей в Dashboard, магазин модулей и т.д.
+
+Возвращаемое значение `get_load_strategy()` должно быть экземпляром `ModuleLoadStrategy`. **Рекомендуется возвращать экземпляр класса `ModuleMeta`** (поддержка типизации, автодополнение в IDE), но также поддерживается возврат словаря:
 
 ```python
 class MyModule(BaseModule):
     @staticmethod
     def get_meta() -> ModuleMeta:
         return ModuleMeta(
-            name="Weather",               # Отображаемое имя (по умолчанию — имя регистрации)
-            description="Lookup city weather",  # Краткое описание модуля
+            name="Погода",               # Отображаемое имя (по умолчанию имя регистрации)
+            description="Получение погоды в городе",  # Краткое описание модуля
             version="1.0.0",
             author="ErisDev",
-            group="Tools",               # Группа функций
-            tags=["Weather", "Lookup"],
+            group="Инструменты",               # Группа функций
+            tags=["Погода", "Поиск"],
         )
 ```
 
-Совместимая запись (dict):
+Альтернативный способ (возврат словаря):
 
 ```python
 class MyModule(BaseModule):
     @staticmethod
     def get_meta() -> dict:
         return {
-            "name": "Weather",
-            "description": "Lookup city weather",
+            "name": "Погода",
+            "description": "Получение погоды в городе",
             "version": "1.0.0",
             "author": "ErisDev",
-            "group": "Tools",
-            "tags": ["Weather", "Lookup"],
+            "group": "Инструменты",
+            "tags": ["Погода", "Поиск"],
         }
 ```
 
-- `module.get_meta("MyModule")` читает проанализированные метаданные (объявление класса > зарегистрированная информация, автоматически дополняет имя команды этого модуля).
-- `module.get_commands_overview()` агрегирует «метаданные модуля + его зарегистрированные команды (алиасы/группы/справка)», общую сводку команд, сгруппированную по модулям.
-- Владельцем команды служит модуль, к которому она принадлежит, через `cmd_info["owner"]` (автоматически внедряется системой контекста при регистрации).
+- `module.get_meta("MyModule")` читает уже разобранные метаданные (сначала класс, затем информация о регистрации, автоматически дополняется имя команды модуля).
+- `module.get_commands_overview()` объединяет «метаданные модуля + зарегистрированные команды (псевдонимы/группы/помощь)», и представляет общий обзор команд, организованных по модулям.
+- Модуль, к которому принадлежит команда, можно получить через `cmd_info["owner"]` (автоматически вставляется системой контекста при регистрации).
 
-#### Поддержка i18n для полей meta
+#### Поддержка i18n для полей мета-информации
 
-Значения полей метаданных могут быть строками или словарем i18n `{"i18n": "key.path", "default": "текст-заглушка"}` (в соответствии с соглашением для поля `description`).
-Ключи перевода регистрируются через объявление в `I18nClass`, при чтении `module.get_meta()` автоматически разрешаются в текст на текущем языке:
+Значения полей мета-информации могут быть простыми строками или словарями i18n `{"i18n": "key.path", "default": "текст по умолчанию"}` (согласно соглашению для поля `description`).
+Ключи для перевода объявляются через `I18nClass`, а `module.get_meta()` автоматически разбирает их в текст текущего языка:
 
 ```python
 class MyModule(BaseModule):
     class I18nClass(BaseI18n):
         meta_description: I18nKey = I18nKey(
             default="Weather lookup",
-            zh_CN="查询城市天气",
+            zh_CN="Получение погоды в городе",
             en="Weather lookup",
         )
 
     @staticmethod
     def get_meta() -> ModuleMeta:
         return ModuleMeta(
-            name="Weather",
+            name="Погода",
             description={"i18n": "MyModule.meta_description", "default": "Weather lookup"},
         )
 ```
 
 ### Объект SDK
 
-Доступ к ключевым функциям через объект `sdk`:
+Доступ к основным функциям осуществляется через объект `sdk`:
 
 ```python
 from ErisPulse import sdk
@@ -300,6 +294,9 @@ sdk.logger     # Система логирования
 sdk.adapter    # Система адаптеров
 sdk.router     # Система маршрутизации
 sdk.lifecycle  # Система жизненного цикла
+```
+
+docs/ru/quick-start.md
 
 ## Следующие шаги
 

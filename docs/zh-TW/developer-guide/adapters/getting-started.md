@@ -359,6 +359,41 @@ from .Core import MyAdapter
 
 請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
+## 依賴聲明（可選，2.8.0+）
+
+適配器可以聲明對其它適配器或模組的依賴，以實現適配器間的聯動與可選功能：
+
+```python
+from typing import ClassVar
+
+class MyAdapter(BaseAdapter):
+    # 硬依賴：缺失時跳過啟動（警告 + status=skipped-dependency 事件）
+    depends: ClassVar[dict] = {
+        "adapters": ["onebot11"],   # 依賴的適配器（按平台名）
+        "modules": ["TranslateEngine"],  # 依賴的模組（按註冊名）
+    }
+    # 軟依賴：缺失不影響啟動；模組加載/卸載時收到回調（可選功能模式）
+    optional_modules: ClassVar[list] = ["TranslateEngine"]
+```
+
+- **啟動順序**：宣告了模組硬依賴的適配器會**延遲到模組初始化完成後**再啟動
+- **軟依賴通知**：`optional_modules`（或模組硬依賴）中的模組被加載時會呼叫 `on_dependency_ready(module_name)`；被卸載時會呼叫 `on_dependency_lost(module_name)`（預設空實作，可覆寫）——用於處理晚加載與熱重載場景：
+
+```python
+async def on_dependency_ready(self, module_name):
+    """軟依賴模組就緒：啟用對應可選功能"""
+    if module_name == "TranslateEngine":
+        self._translate = self.sdk.TranslateEngine
+
+async def on_dependency_lost(self, module_name):
+    """軟依賴模組丟失：降級功能"""
+    if module_name == "TranslateEngine":
+        self._translate = None
+```
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
 ## `__init__` 注意事項
 
 適配器開發中有三個層面可能涉及 `__init__` 重寫。以下是每個層面的正確做法。

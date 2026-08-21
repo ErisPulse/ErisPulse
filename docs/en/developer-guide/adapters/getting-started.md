@@ -347,6 +347,41 @@ async def handle_friend_request(event):
 # MyAdapter/__init__.py
 from .Core import MyAdapter
 
+## Dependency Declaration (Optional, 2.8.0+)
+
+Adapters can declare dependencies on other adapters or modules to achieve adapter interlinking and optional features:
+
+```python
+from typing import ClassVar
+
+class MyAdapter(BaseAdapter):
+    # Hard dependency: Skips startup if missing (warning + status=skipped-dependency event)
+    depends: ClassVar[dict] = {
+        "adapters": ["onebot11"],   # Dependent adapters (by platform name)
+        "modules": ["TranslateEngine"],  # Dependent modules (by registered name)
+    }
+    # Soft dependency: Missing does not affect startup; receives callbacks on module load/unload (optional feature mode)
+    optional_modules: ClassVar[list] = ["TranslateEngine"]
+```
+
+- **Startup Order**: Adapters declaring hard dependencies on modules will **start after the module initialization is complete**
+- **Soft Dependency Notification**: `on_dependency_ready(module_name)` is called when a module in `optional_modules` (or hard dependencies) is loaded; `on_dependency_lost(module_name)` is called when it is unloaded (default empty implementation, can be overridden) — covers late loading and hot reload scenarios:
+
+```python
+async def on_dependency_ready(self, module_name):
+    """Soft dependency module ready: Enable corresponding optional features"""
+    if module_name == "TranslateEngine":
+        self._translate = self.sdk.TranslateEngine
+
+async def on_dependency_lost(self, module_name):
+    """Soft dependency module lost: Downgrade features"""
+    if module_name == "TranslateEngine":
+        self._translate = None
+```
+
+> [!NOTE]
+> This feature requires ErisPulse **2.8.0+**.
+
 ## `__init__` Notes
 
 In adapter development, there are three layers where `__init__` overwriting might be involved. Here are the correct practices for each layer.

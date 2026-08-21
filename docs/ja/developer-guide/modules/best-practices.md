@@ -114,7 +114,7 @@ class MyModule(BaseModule):
 ### 1. 非同期ライブラリの使用
 
 ```python
-# SDK 内蔵の HTTP クライアント（非同期、自動ログと統計）を推奨します
+# SDKに内蔵されたHTTPクライアント（非同期、自動ログと統計機能付き）の使用が推奨されます
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -122,7 +122,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# sdk.client を使用することもできます（同じ効果です）
+# また、sdk.clientを使用することもできます（効果は同じ）
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -130,7 +130,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# aiohttp を直接インポートしないでください（フレームワークの統一管理が不便です）
+# aiohttpを直接インポートして使用しないでください（フレームワークの統一管理が難しくなります）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -139,7 +139,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# requests を使用しないでください（同期で、イベントループをブロックします）
+# requestsを使用しないでください（同期的で、イベントループをブロックします）
 import requests
 
 class MyModule(BaseModule):
@@ -147,73 +147,91 @@ class MyModule(BaseModule):
         return requests.get(url).json()  # イベントループをブロックします
 ```
 
-### 2. 適切な非同期操作
+### 2. 正しい非同期操作
 
 ```python
 async def handle_command(self, event):
-    # 長時間実行される操作をバックグラウンドで実行するために create_task を使用します
-    task = asyncio.create_task(self._long_operation())
-    
-    # 結果を待つ必要がある場合
-    result = await task
+    # 結果を待つ必要のある処理：直接 await（ライフサイクルが明確）
+    result = await self._long_operation()
+
+async def on_load(self, event):
+    # バックグラウンドタスク（ポーリング/定時実行/fire-and-forget）：self.spawn()を使用し、
+    # モジュールのアンロード時にon_unloadの後にフレームワークがキャンセルを処理し、
+    # selfの保持によるリークを回避します
+    self.spawn(self._poll())
 ```
+
+> [!NOTE]
+> バックグラウンドタスクはself.spawn()（ErisPulse **2.8.0+**）を使用することを推奨します。asyncio.create_task()は推奨されません。後者は裸のタスクを作成し、モジュールに属さず、アンロード時に自動的にクリーンアップされず、selfの参照を保持してモジュールインスタンスが回収されない（ホットリロードのリーク）可能性があります。詳細は[ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの所属と自動キャンセル)をご覧ください。
 
 ### 3. リソース管理
 
 ```python
 async def on_load(self, event):
-    # SDK クライアントは自動的に接続プールを管理しているため、手動でセッションを作成する必要はありません
+    # SDKのクライアントは接続プールを自動的に管理しているため、手動でsessionを作成する必要はありません
     pass
     
 async def on_unload(self, event):
-    # カスタムクライアントが必要な場合は、リソースのクリーンアップを忘れないでください
+    # 自定義クライアントが必要な場合は、リソースのクリーンアップを忘れずに
     pass
 
 ## イベント処理
 
-### 1. Event クラスの使用
+### 1. Eventラッパークラスの使用
 
 ```python
-# Event クラスを利用する便利なメソッド
+# Eventラッパークラスを使用する便利な方法
 @command("info")
 async def info_command(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"こんにちは、{nickname}！")
 
-# 辞書を直接アクセスする代わりに
+# ディクショナリに直接アクセスするのではなく
 @command("info")
 async def info_command(event):
-    user_id = event["user_id"]  # 不明確で、エラーが発生しやすい
+    user_id = event["user_id"]  # 明確さに欠け、間違いやすい
 ```
 
-### 2. 適切な Lazy Load（遅延読み込み）の使用
+### 2. ラグジュアリーなロードの適切な使用
 
 ```python
-# コマンド処理モジュールは即時読み込みが必要
+# 頻度の低いコマンドモジュール：activate_onトリガーを宣言し、最初の一致するコマンドが到着したときに自動的に有効化（ラグジュアリーなロードの維持）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        return ModuleLoadStrategy(lazy_load=False)
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"command": {"name": "dice", "help": "サイコロを振る", "aliases": ["d"]}},
+        ])
 
-# リスナーモジュールは即時読み込みが必要
+# 頻度の低いリスナーモジュール：イベントトリガーを宣言し、イベントが到着したときに自動的に有効化
 class ListenerModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"notice": "group_member_increase"},
+        ])
+
+# 毎回メッセージを処理する必要がある高頻度のトリガー、または起動時に即座に準備が必要なモジュール：即時ロード
+class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# ユーティリティモジュールは遅延読み込みに適している
+# ユーティリティモジュールはラグジュアリーなロードに適している
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-### 3. イベントハンドラーの登録
+> `activate_on` の完全な構文（イベントの3形式 / コマンドの簡略化と dict宣言 / helpのフォールバックチェーン）は、[ラグジュアリーなロードモジュールシステム](../../advanced/lazy-loading.md#イベント駆動ラグジュアリー有効化activate_on)を参照してください。
+
+### 3. イベントハンドラの登録
 
 ```python
 async def on_load(self, event):
-    # on_load でイベントハンドラーを登録
+    # on_loadでイベントハンドラを登録
     @command("hello")
     async def hello_handler(event):
         await event.reply("こんにちは！")
@@ -222,7 +240,7 @@ async def on_load(self, event):
     async def group_handler(event):
         self.logger.info("グループメッセージを受信しました")
     
-    # 手動で登録解除する必要はありません。フレームワークが自動的に処理します
+    # 手動で登録解除は不要、フレームワークが自動的に処理します
 
 ## エラー処理
 
@@ -366,69 +384,79 @@ async def process_message(self, event):
 
 ## セキュリティ
 
-### 1. 敏感データの保護
+### 1. 敏感データ保護
 
 ```python
-# 設定に敏感データを保存
-class MyModule(BaseModule):
-    def _load_config(self):
-        config = self.sdk.config.getConfig("MyModule")
-        self.api_key = config.get("api_key")
-        
-        if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("config.toml で有効な API キーを設定してください")
+# 敏感データは設定に保存されます（宣言型 ConfigClass、secret フィールドはログ/エクスポートに含まれません）
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
-# ❌ 機密情報をハードコーディングするのは避けてください
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={"description": "API キー", "secret": True},
+    )
+
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # このようなことはしないでください！
+    ConfigClass = MyModuleConfig
+
+    def check_api_key(self):
+        if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
+            raise ValueError("config.toml に有効な API キーを設定してください")
+
+# ❌ 敏感データのハードコーディング
+class MyModule(BaseModule):
+    API_KEY = "sk-1234567890"  # これを行わないでください！
 ```
 
-### 2. 入力値の検証
+### 2. 入力検証
 
 ```python
-# ユーザー入力を検証
+# ユーザー入力の検証
 async def process_command(self, event):
     user_input = event.get_text()
     
-    # 入力の長さを検証
+    # 入力長の検証
     if len(user_input) > 1000:
-        await event.reply("入力が長すぎます。もう一度入力してください")
+        await event.reply("入力が長すぎます。再度入力してください")
         return
     
-    # 入力の形式を検証
+    # 入力形式の検証
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("入力形式が正しくありません")
         return
 
 ## テスト
 
-### 1. 単体テスト
+### 1. ユニットテスト
 
 ```python
 import pytest
 from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
-    def test_load_config(self):
-        """設定の読み込みをテスト"""
-        module = MyModule()
-        config = module._load_config()
-        assert config is not None
-        assert "api_url" in config
+    def test_config_defaults(self):
+        """テスト設定のデフォルト値"""
+        config = MyModule.ConfigClass()
+        assert config.timeout == 30
 ```
 
-### 2. 統合テスト
+### 2. インテグレーションテスト
 
 ```python
 @pytest.mark.asyncio
 async def test_command_handling():
-    """コマンドの処理をテスト"""
+    """テストコマンドの処理"""
     module = MyModule()
     await module.on_load({})
     
-    # コマンドイベントのシミュレーション
+    # コマンドイベントをシミュレート
     event = create_test_command_event("hello")
     await module.handle_command(event)
+```
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 配置
 

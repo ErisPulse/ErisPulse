@@ -4,7 +4,7 @@ Understanding the core concepts of the ErisPulse module is the foundation for de
 
 ## Module Lifecycle
 
-### Load Strategy
+### Loading Strategy
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -13,42 +13,117 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """Return module load strategy"""
+        """Return the module loading strategy"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # Lazy load or immediate load
-            priority=0,       # Load priority (higher values are loaded first)
-            depends=["OtherModule"]  # Optional: Declare other modules to depend on
+            lazy_load=True,   # Whether to load lazily or immediately
+            priority=0,       # Loading priority (higher number loads earlier)
+            depends=["OtherModule"]  # Optional: declare dependencies on other modules
         )
 ```
 
-> Modules declared in `depends` that are not registered will cause the current module to be skipped with a warning. The load order is determined by topological sorting, with same-level modules sorted by `priority` in descending order.
+> If the modules declared in `depends` are not registered, the current module will be skipped and a warning will be logged. The loading order is determined by topological sorting, with modules at the same level sorted by `priority` in descending order.
+
+> [!NOTE]
+> **Cascading Unload / Cascading Reload** (ErisPulse **2.8.0+**): When unloading a module that is depended on by other modules, the dependent modules will be **cascadingly unloaded first** (with a log indicating the cascade chain); when hot-reloading local plugins, dependent plugins will also be **cascadingly reloaded**, preventing dependent modules from continuing to run with invalid instance references. Circular dependencies will be rejected at load time with a `RuntimeError`.
 
 ### on_load Method
 
-Called when a module loads, used to initialize resources and register event handlers:
+Called when the module is loaded, used for initializing resources and registering event handlers:
 
 ```python
 async def on_load(self, event):
-    # Register event handler
-    @command("hello", help="greeting command")
+    # Register event handlers
+    @command("hello", help="Greeting command")
     async def hello_handler(event):
         await event.reply("Hello!")
-    
-    # Use SDK built-in HTTP client (automatically manages connection pool, no need to manually create session)
-    # Requests can be sent via sdk.client
+
+    # Use SDK's built-in HTTP client (automatically manages connection pool, no need to manually create session)
+    # Send requests via sdk.client
 ```
 
 ### on_unload Method
 
-Called when a module unloads, used to clean up resources:
+Called when the module is unloaded, used for cleaning up resources:
 
 ```python
 async def on_unload(self, event):
     # Clean up custom resources
-    # sdk.client is managed by the framework, no need to manually close it
+    # sdk.client is managed by the framework, no need to manually close
     
-    # Cancel event handler (the framework handles this automatically)
-    self.logger.info("Module unloaded")
+    # Cancel event handlers (handled automatically by the framework)
+    self.logger.info("Module has been unloaded")
+```
+
+> Creation and cleanup of background tasks (`self.spawn()` / framework's fallback cancellation) are detailed in [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
+
+### Unload vs. Purge (彻底卸载)
+
+> [!NOTE]
+> This feature requires ErisPulse **2.8.0+**.
+
+`unload()` by default only **cancels loading** (unloads instances and resources), but retains registration stubs (module class and metadata) — the module can still be rediscovered by `discover` and re-instantiated by `load()` without needing to re-register.
+
+When you need to **completely unload** (release module class references, clean `sys.modules` so that plugins and their exclusive dependencies can be garbage collected), pass `purge=True`:
+
+```python
+# Only cancel loading: retain registration stubs, can be reloaded anytime
+await sdk.module.unload("MyModule")
+
+# Completely unload: delete registration stubs + clean sys.modules (plugin source)
+await sdk.module.unload("MyModule", purge=True)
+```
+
+| Semantics | `unload()` default | `unload(purge=True)` |
+|-----------|---------------------|----------------------|
+| Unload instances and resources (events/task/routing/lifecycle/i18n) | ✅ | ✅ |
+| Retain registration stubs (module class and metadata) | ✅ | ❌ Deleted |
+| Clean `sys.modules` (only for plugin folder sources) | ❌ | ✅ |
+| Module class can be garbage collected | ❌ | ✅ |
+| Reload | `load()` directly available | Must first `register()` + `load()` |
+
+> When `purge=True`, cascading unloaded dependents are also purged; after unloading, the framework will `gc.collect()` and check if module class/instance can be collected, residual references will be warned in logs (including the referencing party, DEBUG level).
+
+### Lifecycle Overview
+
+Putting the above methods together, the framework does **all the behind-the-scenes work** when loading and unloading a module:
+
+```mermaid
+flowchart TD
+    subgraph Load["Loading (register → load)"]
+        L1["register: register module class and metadata"] --> L2["Dependency validation<br/>Skip if missing"]
+        L2 --> L3["Topological sorting (Kahn + priority)"]
+        L3 --> L4["owner injection current_owner"]
+        L4 --> L5["Generate configuration template + register i18n translation keys"]
+        L5 --> L6["Instantiate module (inject sdk)"]
+        L6 --> L7["Call on_load()"]
+        L7 --> L8["Mount to sdk attribute + emit module.load"]
+    end
+
+    subgraph Unload["Unloading (unload)"]
+        U1["Call on_unload()"] --> U2["Fallback cancellation of background tasks (self.spawn ownership)"]
+        U2 --> U3["Clean i18n translation keys"]
+        U3 --> U4["Remove routes / commands / event handlers (by owner)"]
+        U4 --> U5["Clean lifecycle hooks (by owner)"]
+        U5 --> U6["Remove SDK attribute + lazy loading proxy"]
+        U6 --> U7["emit module.unload"]
+    end
+
+    Load --> Unload
+```
+
+**What the framework does for you during loading** (you only need to write `on_load`, the rest is automatic):
+
+| Stage | Framework automatically does |
+|-------|------------------------------|
+| owner injection | Wrap module name with `owner_scope` during instantiation — commands/events/hooks/background tasks registered in `on_load` are **automatically assigned to this module** and cleaned up in one click when unloaded |
+| configuration template | For modules declaring `ConfigClass`, the framework automatically generates/fills the `ErisPulse.<ModuleName>` configuration section |
+| i18n translation keys | For modules declaring `I18nClass`, translation keys are automatically registered (automatically unregistered on unload) |
+| dependency topology | Sort by `depends` declaration to ensure dependent modules load first; circular dependencies are rejected with `RuntimeError` |
+| SDK mounting | After instantiation, mount to `sdk.<ModuleName>`, allowing access via `sdk.MyModule.xxx` |
+
+**What the framework cleans up for you during unloading** (corresponding to U1→U7 above): After `on_unload` completes, it performs fallback cleanup — background tasks are forcibly cancelled (created via `self.spawn`, graceful shutdown should be handled manually in `on_unload`), i18n keys, routes, commands/event handlers, lifecycle hooks, and finally removes the SDK attribute. `purge=True` additionally deletes registration stubs and cleans `sys.modules`.
+
+> This automatic cleanup is the foundation for "you only need to write `on_load`/`on_unload`, no need to manually unregister" — the framework uses owner assignment to make "who registers, who cleans" a one-click process.
 
 ## SDK Objects
 

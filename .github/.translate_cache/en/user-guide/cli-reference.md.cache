@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "2b6a19313e9b1927c2190ab2af365959",
-  "file_hash": "2b6a19313e9b1927c2190ab2af365959",
-  "translated_at": "2026-08-15T18:34:12.150416",
+  "hash": "4c892347c3d00eeb4211829edfa9047a",
+  "file_hash": "4c892347c3d00eeb4211829edfa9047a",
+  "translated_at": "2026-08-21T01:53:38.301305",
   "target_lang": "en",
   "chunks": [
     {
@@ -42,8 +42,8 @@
       "translation": "## Global Parameters\n\nThe following parameters are applicable to all commands:\n\n| Parameter | Short Parameter | Description |\n|-----------|-----------------|-------------|\n| `--help` | `-h` | Show help information |\n| `--version` | `-V` | Show version information |\n| `--verbose` | `-v` | Show verbose output (can be stacked with `-vv`/`-vvv`) |\n| `--no-color` | | Disable colored output (suitable for CI / log collection) |\n| `--yes` | `-y` | Automatically confirm all interactive prompts (non-interactive execution) |\n\n---\n\nPlease directly return the complete translated Markdown content, without any additional text."
     },
     {
-      "hash": "7f7350c46ac97ffd49acd7e65edb5647",
-      "translation": "## Environment Diagnosis\n\n### doctor\n\nDiagnose the current CLI runtime environment and output a health report. Used to troubleshoot issues like \"why can't it be installed / connected\".\n\n| Parameter | Description |\n|-----------|-------------|\n| `--verbose` | Show detailed diagnostic information |\n\n**Check items**:\n- **Python**: Interpreter version and path\n- **Installation backend**: Whether `uv` or `pip` is used\n- **Target interpreter**: The actual Python environment where the package is installed\n- **Configuration file**: Whether `config/config.toml` exists\n- **PyPI connectivity**: Whether PyPI can be accessed (and displays the number of discovered packages)\n- **System proxy**: Whether a proxy is detected\n\n```bash\n# Run environment diagnosis\nepsdk doctor\n\n# Use alias\nepsdk diag"
+      "hash": "428033ac26e60c8cf116589dcb268cf2",
+      "translation": "## Environment Diagnosis\n\n### doctor\n\n> [!NOTE]\n> This command requires ErisPulse **2.7.0+**.\n\nDiagnose the current CLI runtime environment and output a health report. Used to troubleshoot issues like \"why can't it be installed / connected\".\n\n| Parameter | Description |\n|-----------|-------------|\n| `--verbose` | Show detailed diagnostic information |\n\n**Checks**:\n- **Python**: Interpreter version and path\n- **Installation Backend**: Whether `uv` or `pip` is used\n- **Target Interpreter**: The actual target Python environment where packages are installed\n- **Configuration File**: Whether `config/config.toml` exists\n- **PyPI Connectivity**: Whether PyPI can be accessed (and display the number of discovered components)\n- **System Proxy**: Whether a proxy is detected\n\n```bash\n# Run environment diagnosis\nepsdk doctor\n\n# Use alias\nepsdk diag"
     },
     {
       "hash": "9aecd4e7ff61fbc7ae1142870b5a16f3",

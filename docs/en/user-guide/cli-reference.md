@@ -441,19 +441,22 @@ Please directly return the complete translated Markdown content, without any add
 
 ### doctor
 
+> [!NOTE]
+> This command requires ErisPulse **2.7.0+**.
+
 Diagnose the current CLI runtime environment and output a health report. Used to troubleshoot issues like "why can't it be installed / connected".
 
 | Parameter | Description |
 |-----------|-------------|
 | `--verbose` | Show detailed diagnostic information |
 
-**Check items**:
+**Checks**:
 - **Python**: Interpreter version and path
-- **Installation backend**: Whether `uv` or `pip` is used
-- **Target interpreter**: The actual Python environment where the package is installed
-- **Configuration file**: Whether `config/config.toml` exists
-- **PyPI connectivity**: Whether PyPI can be accessed (and displays the number of discovered packages)
-- **System proxy**: Whether a proxy is detected
+- **Installation Backend**: Whether `uv` or `pip` is used
+- **Target Interpreter**: The actual target Python environment where packages are installed
+- **Configuration File**: Whether `config/config.toml` exists
+- **PyPI Connectivity**: Whether PyPI can be accessed (and display the number of discovered components)
+- **System Proxy**: Whether a proxy is detected
 
 ```bash
 # Run environment diagnosis
