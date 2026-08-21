@@ -48,6 +48,13 @@ DEFAULT_ERISPULSE_CONFIG = {
         "level": DEFAULT_LOG_LEVEL,
         "format": "rich",
         "log_files": [],
+        # 日志目录模式（与 log_files 互斥，log_files 显式路径优先）：
+        # 设置后日志自动写入该目录并支持自动分段
+        "log_dir": "",
+        "log_rotation": "size",       # 分段方式: "size" | "date" | "none"
+        "log_max_size_mb": 10,        # size 模式单文件上限（MB）
+        "log_backup_count": 5,        # 保留的历史日志文件数
+        "log_rotation_when": "midnight",  # date 模式轮转周期
         "memory_limit": DEFAULT_LOG_MEMORY_LIMIT,
         # 屏蔽指定日志等级（如 ["EVENT"] 隐藏消息收发内容，用于隐私保护）
         "exclude_levels": [],
