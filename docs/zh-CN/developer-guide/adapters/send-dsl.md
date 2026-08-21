@@ -567,6 +567,66 @@ def TelegramSticker(self, ...):
     pass
 ```
 
+## 发送链路内部拆解
+
+一次 `await adapter.Send.To("group", "123").Text("x")` 的背后，框架帮你完成了下面这一串事：
+
+```mermaid
+flowchart TD
+    A["adapter.Send.To(...).Text(...)"] --> B["To/Using 链式方法<br/>每次返回不可变新实例（顺序无关）"]
+    B --> C["__getattribute__ 拦截发送方法<br/>包一层规则包装器"]
+    C --> D["调用原始方法（如 Text）<br/>内部委托 Raw_ob12"]
+    D --> E["Raw_ob12 返回 asyncio.create_task(...)"]
+    E --> F["写 [Send] 日志"]
+    F --> G["emit message.sending（fire-and-forget）"]
+    G --> H{"声明了发送规则？"}
+    H -->|"否"| I["Task done_callback → emit message.sent"]
+    H -->|"是"| J["apply_send_rules 包成外层 Task<br/>重试/超时/延迟/优先级"]
+    J --> I
+    I --> K["await 得到标准响应 dict"]
+```
+
+**每一步框架做了什么：**
+
+| 阶段 | 框架做了什么 |
+|------|-------------|
+| 链式合并 | `To`/`Using`/`Account` 每次调用都**新建不可变实例**并继承已设字段，因此 `To(...).Using(...)` 与 `Using(...).To(...)` **等价**、顺序无关 |
+| 方法包装 | 发送方法（`Text` 等）被 `__getattribute__` 拦截包一层；修饰方法（`To`/`Using`/`At`/`Retry` 等）**不包装**。嵌套的 `Raw_ob12` 调用靠 `_in_rule_wrap` 标记防重复包装 |
+| Task 创建 | `Raw_ob12` 内部 `asyncio.create_task()` 才是 Task 真正的创建点；`Text()` 只是同步返回这个 Task，**不阻塞** |
+| 发送日志 | 写 `[Send] platform/method -> target` 事件日志（`exclude_levels=["EVENT"]` 可屏蔽） |
+| `message.sending` | 发送方法被调用时**立即**以 fire-and-forget 触发（仅当存在监听者，先 `has_handlers` 短路） |
+| `message.sent` | 绑定在 Task 的 `done_callback` 上——**有规则时覆盖整个重试流程的最终结果**，无规则时即原始 Task 完成 |
+
+### 账户解析回退链
+
+当适配器内部调用 `_resolve_account(account_id)` 时，按以下顺序解析到具体账户：
+
+1. 单账户适配器（无 `AccountConfigClass`）→ 直接返回
+2. 账户名精确匹配 `account_id`
+3. 各账户 `bot_id` 字段匹配
+4. 各账户任意 `str` 字段值匹配（排除 `enabled`/`name`）
+5. 兜底第一个启用的账户
+6. 全部失败 → 抛 `ValueError`
+
+> 你传的 `account_id` 来自：`Using()` 显式指定 > 事件 `self` 字段（`account_id` 优先于 `user_id`，由 `event.reply()` 自动注入）> 不指定（由适配器兜底第一个启用账户）。
+
+### 发送规则引擎（重试/超时/延迟）
+
+规则在 `Raw_ob12` 返回 Task **之后**包装成新的外层 Task，不影响主流程。关键事实：
+
+| 规则 | 说明 |
+|------|------|
+| `Retry(n)` | 总尝试 `n+1` 次；**失败后立即重发，无指数退避** |
+| `Timeout(s)` | 单次发送超时取消（`asyncio.wait_for`），未耗尽则重试 |
+| `Defer(s)` | 发送前延迟 sleep |
+| `Priority(level, drop_if_busy)` | 积压超阈值时直接返回 `{status:"failed", retcode:10002, message:"dropped_low_priority"}` |
+| `Hook(fn)` | 仅最终成功时按序执行 |
+| `on_progress` / `on_error` | 各阶段 / 最终失败回调 |
+
+> **注意**：重试是「立即重发」，没有退避间隔；若平台限流需要退避，请在 `on_error` 回调里自行 sleep 后再手动重发。规则的成功判定以返回 dict 的 `status == "ok"` 为准（`retcode == 0`）。
+
+> 标准响应格式与 `retcode` 完整语义见 [API 响应规范](../../standards/api-response.md)。
+
 ## 返回值
 
 ### Task 对象

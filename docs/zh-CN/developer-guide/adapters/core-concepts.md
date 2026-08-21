@@ -858,7 +858,7 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
 框架的事件回复机制会自动从事件的 `self` 字段中提取 `account_id`（优先）或 `user_id`，作为 `Using` 参数传入。适配器开发者需要确保 Converter 中 `self.user_id` 的值与 `_resolve_account()` 能够正确匹配。
 
-**框架内部行为**（`Event._get_adapter_and_target`）：
+**框架内部行为**：
 
 ```python
 # 框架提取 bot_id 的逻辑

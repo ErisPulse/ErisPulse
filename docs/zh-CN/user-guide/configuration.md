@@ -66,7 +66,7 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 | 组件 | 支持热更新的配置 | 行为 |
 |------|----------------|------|
-| **日志 Logger** | `logger.level` / `log_files` / `memory_limit` / `format` / `exclude_levels` | 自动重新应用（带变更检测） |
+| **日志 Logger** | `logger.level` / `log_files` / `log_dir`（含分段参数）/ `memory_limit` / `format` / `exclude_levels` | 自动重新应用（带变更检测） |
 | **命令系统 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一条消息即生效 |
 | **适配器并发** | `framework.handler_max_concurrency` | 失效缓存信号量，按新值重建 |
 | **主动 GC** | `framework.proactive_gc_*` | 配置变更即时重启 GC 任务，支持运行时调整/禁用/重新启用 |
@@ -81,6 +81,55 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 | `storage.use_global_db` | SQLite 文件句柄已在运行时打开，切换路径不安全 |
 
 > **中途编辑保存出错？** 若编辑 `config.toml` 时出现瞬时语法错误，框架会**保留上次有效配置**并输出诊断日志，不会把空配置广播给各组件（避免 `on_config_update` 收到空值误回退默认）。
+
+### 热更新链路内部拆解
+
+「改了配置，各组件怎么知道的？」——背后是一条检测 → 重载 → 广播的链路：
+
+```mermaid
+flowchart TD
+    A["外部编辑 config.toml"] --> B{"谁先发现？"}
+    B -->|"后台 watcher 线程<br/>每 5 秒轮询 mtime"| C["_check_file_change 判定变更"]
+    B -->|"代码读取配置时<br/>缓存超 60 秒"| C
+    C --> D["_load_config 重新解析 TOML"]
+    D --> E{"解析成功？"}
+    E -->|"否（语法错误）"| F["保留上次有效配置<br/>不广播，打诊断日志"]
+    E -->|"是"| G["lifecycle.emit config.updated<br/>携带 old_config / new_config"]
+    G --> H["各组件监听者响应<br/>（logger / scope / 命令 / GC ...）"]
+```
+
+**两条检测路径**（取其一即可，均能兜底）：
+
+| 路径 | 机制 | 触发时机 |
+|------|------|---------|
+| 后台 watcher | daemon 线程 `config-watcher` 每 **5 秒** `wait` 轮询文件 `mtime` | 外部改文件后最多 5 秒内 |
+| 惰性检测 | 任何 `getConfig()` 读取时，若缓存超过 **60 秒**则先查文件 | 下次读配置时 |
+
+> **框架不会误伤自己**：`setConfig()` 写盘时会记录「自身写入的 mtime」，watcher 对比时把它排除，只把**外部编辑**视为变更。
+
+**两类配置变更事件：**
+
+| 事件 | 触发者 | 数据 | 典型场景 |
+|------|--------|------|---------|
+| `config.set` | 代码 / Dashboard 调 `setConfig()` | `{key, old_value, new_value}` | 单键写入（模板生成、状态记录、运行时改配置） |
+| `config.updated` | 外部编辑后 watcher/惰性检测捕获 | `{old_config, new_config, config_file}` | 手改 `config.toml` |
+
+> `setConfig()` 默认**延迟 5 秒落盘**（合并多次写入），`immediate=True` 立即写。watcher 检测到外部修改后只更新内存缓存，**不会**把外部改动回写文件。
+
+**自动响应方清单**（两类事件通常会都订阅，响应内容一致）：
+
+| 组件 | 监听 | 响应 |
+|------|------|------|
+| Logger | `config.set` + `config.updated` | 级别/文件/目录分段/内存上限/格式/屏蔽等级重新应用（带变更检测，无变化不动） |
+| Scope | `config.updated` | 作用域绑定缓存重建 |
+| 命令系统 | `config.updated` | 前缀/大小写/空格前缀/must_at_bot 解析参数刷新，下一条消息生效 |
+| 适配器并发 | `config.set` + `config.updated` | `handler_max_concurrency` 失效重建信号量 |
+| 主动 GC | `config.set` + `config.updated` | `proactive_gc_*` 即时重启 GC 后台任务 |
+| 适配器 | 路由到 `on_config_update` | 各适配器 `on_config_update(old, new)` 回调 |
+| 模块 | 路由到 `on_config_update` | 各模块 `on_config_update(old, new)` 回调 |
+| 存储 | `config.updated` | `use_global_db` 变更**仅告警**（需重启） |
+| 路由 | `config.updated` | `cors.*` / `security.*` 变更**仅告警**（需重启） |
+
 
 ## 完整配置示例
 
@@ -102,6 +151,11 @@ users = {}
 level = "INFO"
 format = "rich"
 log_files = []
+log_dir = ""
+log_rotation = "size"
+log_max_size_mb = 10
+log_backup_count = 5
+log_rotation_when = "midnight"
 memory_limit = 1000
 exclude_levels = []
 
@@ -180,7 +234,12 @@ if master.is_master(event):
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = ["app.log", "debug.log"]
+log_files = []                # 显式日志文件列表（与 log_dir 互斥，优先级更高）
+log_dir = ""                  # 日志目录（设置后自动分段轮转）
+log_rotation = "size"         # 分段方式: "size" / "date" / "none"
+log_max_size_mb = 10          # size 模式单文件上限（MB）
+log_backup_count = 5          # 保留的历史日志文件数
+log_rotation_when = "midnight"  # date 模式轮转周期: S/M/H/D/midnight
 memory_limit = 1000
 exclude_levels = ["EVENT"]
 ```
@@ -189,9 +248,29 @@ exclude_levels = ["EVENT"]
 |---------|------|---------|------|
 | level | string | INFO | 日志级别：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 为最低级别，输出框架内部详细调试信息） |
 | format | string | rich | 日志输出格式：`rich`（彩色，默认）、`plain`（纯文本无颜色，适合日志采集/管道重定向）、`json`（JSON 结构化，适合 ELK 等） |
-| log_files | array | 空 | 日志输出文件列表 |
+| log_files | array | 空 | 日志输出文件列表（显式路径，不分段） |
+| log_dir | string | 空 | 日志输出目录（自动创建）。设置后写入目录内 `erispulse.log` 并按 `log_rotation` 自动分段；与 `log_files` 互斥，`log_files` 优先 |
+| log_rotation | string | size | 分段方式：`size`（按大小）/ `date`（按时间）/ `none`（不分段） |
+| log_max_size_mb | float | 10 | size 模式单文件大小上限（MB），超过后轮转为 `.1`/`.2` 备份 |
+| log_backup_count | integer | 5 | 保留的历史日志文件数，超出的最旧备份自动删除 |
+| log_rotation_when | string | midnight | date 模式轮转周期：`S`/`M`/`H`/`D`/`midnight`（默认每天零点） |
 | memory_limit | integer | 1000 | 内存中保存的日志条数 |
 | exclude_levels | array | 空 | 屏蔽指定日志等级。被屏蔽等级的日志**完全丢弃**（不写内存、不推送给 Dashboard 等订阅器、不打印、不写文件）。支持热更新 |
+
+也可在代码中动态切换：
+
+```python
+from ErisPulse.Core import logger
+
+# 按大小分段：单文件 10MB，保留 5 份
+logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
+
+# 按时间分段：每天零点轮转，保留 7 份
+logger.set_output_dir("logs", rotation="date", backup_count=7)
+```
+
+> [!NOTE]
+> `log_dir` 及分段相关配置需要 ErisPulse **2.8.0+**。
 
 > **隐私保护**：消息收发内容以 **EVENT 等级**（数值 21）记录。设置 `exclude_levels = ["EVENT"]` 即可让后台（如 Dashboard 日志面板）无法看到各群/私聊的消息内容，同时不影响其它等级日志。
 
