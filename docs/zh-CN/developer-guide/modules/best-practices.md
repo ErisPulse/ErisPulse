@@ -134,12 +134,17 @@ class MyModule(BaseModule):
 
 ```python
 async def handle_command(self, event):
-    # 使用 create_task 让耗时操作在后台执行
-    task = asyncio.create_task(self._long_operation())
-    
-    # 如果需要等待结果
-    result = await task
+    # 需要等待结果的耗时操作：直接 await（生命周期明确）
+    result = await self._long_operation()
+
+async def on_load(self, event):
+    # 后台任务（轮询/定时/fire-and-forget）：用 self.spawn()，
+    # 模块卸载时框架在 on_unload 之后兜底取消，避免持有 self 导致泄漏
+    self.spawn(self._poll())
 ```
+
+> [!NOTE]
+> 后台任务推荐 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——后者创建的裸任务不归属模块，卸载时不会被自动清理，会持有 `self` 引用导致模块实例无法被回收（热重载泄漏）。详见 [生命周期管理](../../advanced/lifecycle.md#后台任务归属与自动取消)。
 
 ### 3. 资源管理
 
