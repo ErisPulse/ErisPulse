@@ -62,6 +62,75 @@ ErisPulse 适配器系统
 ---
 
 
+##### `_register_dependency_routing()`
+
+> **内部方法**
+注册 module.load / module.unload 事件订阅，将模块就绪/丢失路由到
+声明了依赖的适配器的 on_dependency_ready / on_dependency_lost 钩子
+
+---
+
+
+##### `_dependency_watchers(module_name: str)`
+
+> **内部方法**
+找出关注指定模块的已注册适配器（软依赖或硬依赖均可收到通知）
+
+- **module_name** (`模块名`): **返回值** (`(platform, adapter_instance), ...`):
+
+---
+
+
+##### `async _dispatch_dependency_event(module_name: str, hook_name: str)`
+
+> **内部方法**
+向关注指定模块的适配器分发依赖事件钩子
+
+- **module_name** (`模块名`): - **hook_name**: 钩子方法名（on_dependency_ready / on_dependency_lost）
+
+---
+
+
+##### `async _on_module_load_notify(data: dict)`
+
+> **内部方法**
+处理 module.load 事件：通知依赖该模块的适配器（on_dependency_ready）
+
+---
+
+
+##### `async _on_module_unload_notify(data: dict)`
+
+> **内部方法**
+处理 module.unload 事件：通知依赖该模块的适配器（on_dependency_lost）
+
+---
+
+
+##### `_extract_module_name(data: dict)`
+
+> **内部方法**
+从生命周期事件数据中提取模块名
+
+兼容两种事件形状：直接 emit 的扁平 dict（``{"module_name": ...}``）
+与 submit_event 包装的标准事件（``{"data": {"module_name": ...}}``）。
+
+- **data** (`生命周期事件数据`): **返回值** (`模块名，无法提取时返回`): None
+
+---
+
+
+##### `_check_missing_dependencies(adapter: 'BaseAdapter', platform: str)`
+
+> **内部方法**
+检查适配器硬依赖是否就绪（适配器 + 模块均已注册）
+
+- **adapter** (`适配器实例`): - **platform**: 平台名称（用于日志）
+**返回值**: 缺失的依赖描述列表（空列表表示全部就绪）
+
+---
+
+
 ##### `_on_config_set(data: dict)`
 
 > **内部方法**
@@ -197,12 +266,13 @@ ErisPulse 适配器系统
 ---
 
 
-##### `_cleanup_adapter_resources(platform: str)`
+##### `async _cleanup_adapter_resources(platform: str)`
 
 > **内部方法**
 适配器资源兜底清理（与模块卸载对齐颗粒度）。
 
-清理该平台在运行期间注册的所有路由、命令与事件处理器。同时覆盖两种注册方式：
+清理该平台在运行期间注册的所有路由、命令与事件处理器，并兜底取消
+该平台名下的后台任务。同时覆盖两种注册方式：
 - 直接以平台名为命名空间注册的路由（unregister_all_by_namespace）
 - 适配器以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册的路由
   （unregister_all_by_owner，依赖 start() 期间注入的 current_owner）
@@ -225,6 +295,23 @@ ErisPulse 适配器系统
 **示例**:
 ```python
 >>> await sdk.adapter.restart("OneBot11")
+```
+
+---
+
+
+##### `async unload(platform: str)`
+
+卸载并注销单个平台适配器
+
+与 ``shutdown()``（仅停止）不同，``unload()`` 在停止并清理资源后，
+额外从管理器注销该平台（释放适配器实例与类引用），用于动态移除适配器
+并回收其内存占用。若同一实例还注册了其它平台，实例会保留（仅注销该平台）。
+
+- **platform** (`平台名称`): **返回值** (`是否卸载成功`): 
+**示例**:
+```python
+>>> await adapter.unload("MyPlatform")
 ```
 
 ---

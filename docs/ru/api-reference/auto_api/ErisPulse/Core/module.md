@@ -165,15 +165,43 @@ ErisPulse 模块系统
 ---
 
 
+##### `_collect_dependents(name: str)`
+
+> **内部方法**
+收集直接或间接依赖指定模块的模块闭包（BFS）
+
+返回顺序为由近及远（直接依赖者在前、间接依赖者在后）；
+卸载时应按相反顺序执行，保证每个依赖者卸载时其依赖仍可用。
+
+- **name** (`目标模块名`): **返回值** (`依赖者模块名列表（不含`): name 本身）
+
+---
+
+
 ##### `async unload(name: str | None = None)`
 
 卸载指定模块或所有模块
 
+卸载被其它模块依赖的模块时，依赖它的模块会**级联卸载**
+（依赖者先卸载，日志说明级联链），避免依赖者持有失效引用继续运行。
+
+``purge`` 控制是否**一并删除注册存根**：
+
+- ``purge=False``（默认）：只取消加载——卸载实例与资源，但保留
+  注册存根（模块类与元信息），模块仍可被 discover 重新发现、`load()`
+  重新实例化，无需重新 `register()`
+- ``purge=True``：彻底卸载——同时删除注册存根（释放模块类引用），
+  并对插件文件夹来源的模块清理 ``sys.modules``，使插件及其独占依赖
+  可被 GC 回收（解决 NoneBot 式卸载后插件与依赖内存不释放的问题）；
+  级联卸载的依赖者同样被 purge。卸载后重新加载需重新 `register()`
+
 - **name** (`模块名称，None表示卸载所有模块（默认None）`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+- **purge** (`是否一并删除注册存根并清理`): sys.modules（默认 False）
 **返回值** (`是否卸载成功`): 
 **示例**:
 ```python
->>> await module.unload("MyModule")  # 卸载单个模块
+>>> await module.unload("MyModule")  # 卸载单个模块（依赖者级联卸载）
+>>> await module.unload("MyModule", purge=True)  # 彻底卸载（释放类引用）
 >>> await module.unload()  # 卸载所有模块
 ```
 
@@ -186,6 +214,38 @@ ErisPulse 模块系统
 卸载单个模块
 
 - **module_name** (`模块名称`): **返回值**: 是否卸载成功
+
+---
+
+
+##### `_purge_module_stub(module_name: str)`
+
+> **内部方法**
+删除模块注册存根，释放模块类引用（并清理插件来源的 sys.modules）
+
+返回 (module_name, class_weakref, instance_weakref) 供回收诊断。
+
+- **module_name** (`模块名`): **返回值** (`供`): `_report_purge_recyclability` 消费的弱引用三元组
+
+---
+
+
+##### `_purge_sys_modules(module_name: str, top_level: list[str])`
+
+> **内部方法**
+从 sys.modules 移除插件自身模块与其子包（保守：不清理第三方/共享库）
+
+- **module_name** (`插件模块名`): - **top_level**: 顶层包名列表（用于清理包内子模块）
+
+---
+
+
+##### `_report_purge_recyclability(refs: list[tuple[str, Any, Any]])`
+
+> **内部方法**
+purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出引用方
+
+- **refs** (``_purge_module_stub``): 产出的 (name, class_ref, instance_ref) 列表
 
 ---
 

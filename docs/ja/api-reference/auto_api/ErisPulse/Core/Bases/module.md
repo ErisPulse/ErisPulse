@@ -185,6 +185,32 @@ on_load / on_unload 事件数据
 ---
 
 
+##### `spawn(coro)`
+
+调度一个归属于本模块的后台任务（推荐的任务创建方式）
+
+任务自动登记到模块名下：模块卸载时，框架在 ``on_unload`` 之后
+兜底取消仍未结束的任务，防止任务持有 ``self`` 引用导致模块
+实例无法被回收（热重载泄漏的常见根因）。
+
+需要精细控制生命周期的任务，建议在 ``on_unload`` 中自行取消
+并等待收尾；本方法作为兜底保障。
+
+- **coro** (`待执行的协程`): **返回值** (`创建出的`): asyncio.Task（可忽略）
+
+**示例**:
+```python
+>>> async def _poll(self):
+...     while True:
+...         await asyncio.sleep(5)
+...
+>>> async def on_load(self, event):
+...     self.spawn(self._poll())
+```
+
+---
+
+
 ##### `_get_config_key()`
 
 配置键名
