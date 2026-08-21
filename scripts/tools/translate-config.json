@@ -24,12 +24,6 @@
       "model": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
       "supports_thinking": false,
       "max_tokens": 40000
-    },
-    {
-      "name": "bigmodel",
-      "base_url": "https://open.bigmodel.cn/api/coding/paas/v4",
-      "api_key_env": "BIGMODEL_API_KEY",
-      "model": "GLM-4.7-Flash"
     }
   ]
 }
