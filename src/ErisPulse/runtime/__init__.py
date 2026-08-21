@@ -48,7 +48,7 @@ from .hints import (
 )
 from .memory import get_rss_mb, get_traced_mb, log_snapshot, snapshot
 from .plugin_reload import PluginReloadWatcher
-from .tasks import spawn_background
+from .tasks import cancel_all_background_tasks, cancel_owner_tasks, get_owner_tasks, spawn_background
 
 __all__ = [
     # 配置管理
@@ -64,6 +64,8 @@ __all__ = [
     "async_exception_handler",
     "best_match",
     "best_match_with_prefix",
+    "cancel_all_background_tasks",
+    "cancel_owner_tasks",
     "dataclass_to_defaults_dict",
     "dataclass_to_toml_with_comments",
     "dict_to_dataclass",
@@ -80,6 +82,7 @@ __all__ = [
     "get_i18n_config",
     "get_logger_config",
     "get_master_config",
+    "get_owner_tasks",
     "get_rss_mb",
     "get_server_config",
     "get_storage_config",

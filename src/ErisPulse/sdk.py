@@ -402,12 +402,22 @@ class SDK:
                         i18n.t("core.sdk.init.adapter_register_partial")
                     )
 
-                # 3. 启动适配器
-                if enabled_adapters:
+                # 3. 启动适配器（声明模块硬依赖的适配器推迟到模块初始化完成后启动）
+                deferred_platforms: list[str] = []
+                dep_free_platforms: list[str] = []
+                for _platform in enabled_adapters:
+                    _instance = adapter_manager._adapters.get(_platform)
+                    _depends = getattr(_instance, "depends", None) or {}
+                    if isinstance(_depends, dict) and _depends.get("modules"):
+                        deferred_platforms.append(_platform)
+                    else:
+                        dep_free_platforms.append(_platform)
+
+                if dep_free_platforms:
                     self.logger.print_section_header(
                         i18n.t("core.sdk.init.adapter_start_phase")
                     )
-                    await adapter_manager.startup()
+                    await adapter_manager.startup(dep_free_platforms)
 
                 # 4. 注册模块
                 self.logger.print_section_header(
@@ -433,6 +443,13 @@ class SDK:
                         self.logger.warning(i18n.t("core.sdk.init.module_init_partial"))
                 else:
                     success = True
+
+                # 5. 启动声明了模块硬依赖的适配器（此时依赖模块已初始化完成）
+                if deferred_platforms:
+                    self.logger.print_section_header(
+                        i18n.t("core.sdk.init.adapter_start_deferred_phase")
+                    )
+                    await adapter_manager.startup(deferred_platforms)
 
                 # 6. 启动路由服务器
                 self.logger.print_section_header(i18n.t("core.sdk.init.router_start"))
@@ -760,6 +777,15 @@ class SDK:
 
                 # 5. 清理所有事件处理器
                 self.Event._clear_all_handlers()
+
+                # 5.5 兜底取消所有归属后台任务（fire-and-forget 钩子、异步生命周期
+                # 处理器调度等），防止悬挂任务持有实例引用阻碍回收
+                try:
+                    from .runtime.tasks import cancel_all_background_tasks
+
+                    await cancel_all_background_tasks()
+                except Exception:
+                    pass
 
                 # 6. 清理管理器
                 adapter_manager.clear()

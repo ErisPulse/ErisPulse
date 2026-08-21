@@ -160,12 +160,15 @@ class PluginFolderLoader:
             if isinstance(strategy, ModuleLoadStrategy) and hasattr(strategy, "_data"):
                 lazy_load = strategy._data.get("lazy_load", True)
                 priority = strategy._data.get("priority", 0)
+                depends = strategy._data.get("depends", None) or []
             elif isinstance(strategy, dict):
                 lazy_load = strategy.get("lazy_load", True)
                 priority = strategy.get("priority", 0)
+                depends = strategy.get("depends", None) or []
             else:
                 lazy_load = True
                 priority = 0
+                depends = []
 
             from ..Core.Bases.module import BaseModule
 
@@ -183,6 +186,7 @@ class PluginFolderLoader:
                     "package": None,  # 本地插件非安装包
                     "lazy_load": lazy_load,
                     "priority": priority,
+                    "depends": list(depends),
                     "is_base_module": is_base_module,
                     "top_level": [name],
                     "source": "plugin_folder",

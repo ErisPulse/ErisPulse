@@ -2364,3 +2364,270 @@ class TestBaseConverter:
         with pytest.raises(NotImplementedError):
             c.convert({})
 
+
+# ==================== 适配器依赖声明测试（2.8.0+） ====================
+
+
+class TestAdapterDependencies:
+    """适配器硬依赖检查与软依赖通知"""
+
+    @pytest.fixture
+    def manager(self):
+        manager = AdapterManager()
+        manager._adapters.clear()
+        manager._started_instances.clear()
+        manager._adapter_info.clear()
+        manager._onebot_handlers.clear()
+        manager._raw_handlers.clear()
+        manager._onebot_middlewares.clear()
+        return manager
+
+    def _make_adapter_class(self, depends=None, optional_modules=None):
+        class _DepAdapter(BaseAdapter):
+            def __init__(self, sdk=None):
+                super().__init__()
+                self.sdk = sdk
+                self.ready_modules = []
+                self.lost_modules = []
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {}
+
+            async def on_dependency_ready(self, module_name):
+                self.ready_modules.append(module_name)
+
+            async def on_dependency_lost(self, module_name):
+                self.lost_modules.append(module_name)
+
+        if depends is not None:
+            _DepAdapter.depends = depends
+        if optional_modules is not None:
+            _DepAdapter.optional_modules = optional_modules
+        return _DepAdapter
+
+    def test_default_declaration_attributes(self):
+        """BaseAdapter 默认依赖声明为空"""
+        assert BaseAdapter.depends == {}
+        assert BaseAdapter.optional_modules == []
+        assert callable(BaseAdapter.on_dependency_ready)
+        assert callable(BaseAdapter.on_dependency_lost)
+
+    def test_check_missing_dependencies_all_present(self, manager):
+        """硬依赖全部就绪时返回空列表"""
+        cls = self._make_adapter_class(depends={"adapters": ["onebot11"]})
+        manager._adapters["onebot11"] = Mock()
+        adapter = cls()
+
+        missing = manager._check_missing_dependencies(adapter, "myplatform")
+        assert missing == []
+
+    def test_check_missing_dependencies_adapter_missing(self, manager):
+        """适配器硬依赖缺失被检出"""
+        cls = self._make_adapter_class(depends={"adapters": ["onebot11"]})
+        adapter = cls()
+
+        missing = manager._check_missing_dependencies(adapter, "myplatform")
+        assert missing == ["adapter:onebot11"]
+
+    def test_check_missing_dependencies_module_missing(self, manager):
+        """模块硬依赖缺失被检出（模块未注册）"""
+        cls = self._make_adapter_class(depends={"modules": ["TranslateEngine"]})
+        adapter = cls()
+        manager._sdk = Mock()
+        manager._sdk.module = Mock()
+        manager._sdk.module._module_classes = {}
+
+        missing = manager._check_missing_dependencies(adapter, "myplatform")
+        assert missing == ["module:TranslateEngine"]
+
+    def test_check_missing_dependencies_module_registered(self, manager):
+        """模块已注册即视为就绪（懒加载也算）"""
+        cls = self._make_adapter_class(depends={"modules": ["TranslateEngine"]})
+        adapter = cls()
+        manager._sdk = Mock()
+        manager._sdk.module = Mock()
+        manager._sdk.module._module_classes = {"TranslateEngine": object}
+
+        missing = manager._check_missing_dependencies(adapter, "myplatform")
+        assert missing == []
+
+    def test_check_ignores_invalid_depends_decl(self, manager):
+        """非法 depends 声明（非 dict）安全忽略"""
+        cls = self._make_adapter_class()
+        cls.depends = ["onebot11"]  # 错误类型
+        adapter = cls()
+        assert manager._check_missing_dependencies(adapter, "p") == []
+
+    async def test_run_adapter_skips_when_hard_deps_missing(self, manager):
+        """硬依赖缺失时跳过启动并提交 skipped-dependency 事件"""
+        cls = self._make_adapter_class(depends={"adapters": ["onebot11"]})
+        adapter = cls()
+        manager._adapters["myplatform"] = adapter
+
+        events = []
+
+        def _capture(data):
+            events.append(data)
+
+        lifecycle.register("adapter.status.change", _capture)
+        try:
+            await manager._run_adapter(adapter, "myplatform")
+        finally:
+            lifecycle.unregister("adapter.status.change", _capture)
+
+        assert adapter not in manager._started_instances
+        statuses = [
+            (e.get("data") or {}).get("status") or e.get("status") for e in events
+        ]
+        assert "skipped-dependency" in statuses
+
+    async def test_run_adapter_starts_when_deps_ready(self, manager):
+        """硬依赖就绪时正常启动"""
+        cls = self._make_adapter_class(depends={"adapters": ["onebot11"]})
+        adapter = cls()
+        manager._adapters["onebot11"] = Mock()
+        manager._adapters["myplatform"] = adapter
+
+        await manager._run_adapter(adapter, "myplatform")
+        assert adapter in manager._started_instances
+
+    async def test_module_load_notifies_optional_dependent(self, manager):
+        """module.load 事件触发软依赖适配器的 on_dependency_ready"""
+        cls = self._make_adapter_class(optional_modules=["TranslateEngine"])
+        adapter = cls()
+        manager._adapters["myplatform"] = adapter
+
+        await manager._on_module_load_notify({"module_name": "TranslateEngine"})
+        assert adapter.ready_modules == ["TranslateEngine"]
+
+    async def test_module_unload_notifies_optional_dependent(self, manager):
+        """module.unload 事件触发软依赖适配器的 on_dependency_lost"""
+        cls = self._make_adapter_class(optional_modules=["TranslateEngine"])
+        adapter = cls()
+        manager._adapters["myplatform"] = adapter
+
+        await manager._on_module_unload_notify({"module_name": "TranslateEngine"})
+        assert adapter.lost_modules == ["TranslateEngine"]
+
+    async def test_hard_module_dep_also_notified(self, manager):
+        """模块硬依赖同样收到 ready 通知"""
+        cls = self._make_adapter_class(depends={"modules": ["Engine"]})
+        adapter = cls()
+        manager._adapters["myplatform"] = adapter
+
+        await manager._on_module_load_notify({"module_name": "Engine"})
+        assert adapter.ready_modules == ["Engine"]
+
+    async def test_unrelated_module_not_notified(self, manager):
+        """无关模块事件不通知"""
+        cls = self._make_adapter_class(optional_modules=["Engine"])
+        adapter = cls()
+        manager._adapters["myplatform"] = adapter
+
+        await manager._on_module_load_notify({"module_name": "OtherModule"})
+        assert adapter.ready_modules == []
+
+    async def test_dependency_hook_exception_isolated(self, manager):
+        """依赖回调异常不影响其它适配器"""
+        cls_bad = self._make_adapter_class(optional_modules=["Engine"])
+        bad_adapter = cls_bad()
+
+        async def _boom(module_name):
+            raise RuntimeError("hook boom")
+
+        bad_adapter.on_dependency_ready = _boom
+
+        cls_good = self._make_adapter_class(optional_modules=["Engine"])
+        good_adapter = cls_good()
+
+        manager._adapters["bad"] = bad_adapter
+        manager._adapters["good"] = good_adapter
+
+        await manager._on_module_load_notify({"module_name": "Engine"})
+        assert good_adapter.ready_modules == ["Engine"]
+
+    def test_watcher_detection_via_class_declaration(self, manager):
+        """_dependency_watchers 同时识别软依赖与硬依赖声明"""
+        cls = self._make_adapter_class(
+            depends={"modules": ["Hard"]}, optional_modules=["Soft"]
+        )
+        adapter = cls()
+        manager._adapters["p"] = adapter
+
+        watchers_hard = manager._dependency_watchers("Hard")
+        watchers_soft = manager._dependency_watchers("Soft")
+        watchers_none = manager._dependency_watchers("Unknown")
+        assert [p for p, _ in watchers_hard] == ["p"]
+        assert [p for p, _ in watchers_soft] == ["p"]
+        assert watchers_none == []
+
+
+# ==================== 适配器卸载（unload）测试（2.8.0+） ====================
+
+
+class TestAdapterUnload:
+    """AdapterManager.unload 停止并注销单个平台（释放实例/类引用）"""
+
+    @pytest.fixture
+    def manager(self):
+        manager = AdapterManager()
+        manager._adapters.clear()
+        manager._started_instances.clear()
+        manager._adapter_info.clear()
+        manager._onebot_handlers.clear()
+        manager._raw_handlers.clear()
+        manager._onebot_middlewares.clear()
+        return manager
+
+    def _make_adapter(self):
+        class _A(BaseAdapter):
+            def __init__(self, sdk=None):
+                super().__init__()
+                self.sdk = sdk
+                self.shutdown_called = False
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                self.shutdown_called = True
+
+            async def call_api(self, endpoint: str, **params):
+                return {}
+
+        return _A
+
+    async def test_unload_registered_platform(self, manager):
+        """已注册平台：shutdown 后注销并释放实例/类引用"""
+        cls = self._make_adapter()
+        adapter = cls()
+        manager._adapters["p1"] = adapter
+        manager._adapter_info["p1"] = {"adapter_class": cls}
+        manager._started_instances.add(adapter)
+
+        assert await manager.unload("p1") is True
+        assert adapter.shutdown_called is True
+        assert "p1" not in manager._adapters
+        assert "p1" not in manager._adapter_info
+        assert adapter not in manager._started_instances
+
+    async def test_unload_unregistered_returns_false(self, manager):
+        """未注册平台返回 False"""
+        assert await manager.unload("nonexistent") is False
+
+    async def test_unload_not_started_still_unregisters(self, manager):
+        """未启动的适配器也能被注销（shutdown 幂等）"""
+        cls = self._make_adapter()
+        adapter = cls()
+        manager._adapters["p2"] = adapter
+        manager._adapter_info["p2"] = {"adapter_class": cls}
+
+        assert await manager.unload("p2") is True
+        assert "p2" not in manager._adapters
+

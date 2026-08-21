@@ -147,7 +147,10 @@ class Main(BaseModule):
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=False,
-            priority=100
+            priority=100,
+            # 依赖声明（可选）：缺失依赖的模块会被跳过加载；
+            # 被依赖模块卸载/热重载时，本模块将级联卸载/重载
+            # depends=[],
         )
 
     async def on_load(self, event: dict) -> bool:
@@ -226,6 +229,7 @@ __all__ = [
 _ADAPTER_CORE = """import asyncio
 import json
 from dataclasses import dataclass, field
+from typing import ClassVar
 from ErisPulse.Core import BaseAdapter
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
 from ErisPulse.Core import router
@@ -236,6 +240,13 @@ class {name}(BaseAdapter):
     \"\"\"
     {text[adapter.doc]}
     \"\"\"
+
+    # 依赖声明（可选，ErisPulse 2.8.0+）：
+    # depends = {{"adapters": [], "modules": []}}   # 硬依赖：缺失时跳过启动
+    # optional_modules = []                          # 软依赖：就绪/丢失时收到
+    #                                               # on_dependency_ready/lost 回调
+    depends: ClassVar[dict] = {{}}
+    optional_modules: ClassVar[list] = []
 
     # {text[adapter.config_hint]}
     @dataclass

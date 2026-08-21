@@ -261,6 +261,9 @@ class ModuleLoader(BaseLoader):
         """
         热重载单个本地插件：卸载旧实例 → 清理注册 → 重新导入 → 重新注册并加载
 
+        依赖该插件的模块会**级联重载**：本地插件依赖者走完整重载流程，
+        PyPI 模块依赖者卸载后直接重新实例化。
+
         :param plugin_name: 插件名
         :param manager_instance: 模块管理器实例
         :param sdk_instance: SDK 实例
@@ -285,13 +288,58 @@ class ModuleLoader(BaseLoader):
             )
             return False
 
-        # 1. 卸载旧实例（触发 on_unload）
+        # 收集依赖者（BFS 由近及远）：级联重载顺序 = 自身 → 直接依赖者 → 间接依赖者
+        dependents = manager_instance._collect_dependents(plugin_name)
+        if dependents:
+            logger.warning(
+                i18n.t(
+                    "loader.plugin.reload_cascade",
+                    name=plugin_name,
+                    deps=", ".join(dependents),
+                )
+            )
+        # 记录依赖者来源（unload 不清除 _module_info，但提前快照更稳妥）
+        dependent_sources = {
+            dep: ((manager_instance._module_info.get(dep) or {}).get("meta", {}) or {}).get("source")
+            for dep in dependents
+        }
+
+        # 1. 卸载旧实例（触发 on_unload；级联卸载依赖者）
         try:
             await manager_instance.unload(plugin_name)
         except Exception as e:
             logger.error(i18n.t("loader.plugin.reload_unload_failed", name=plugin_name, error=e))
 
-        # 2. 清理注册（类 / info / 懒加载代理）
+        # 2. 重载自身
+        if not await self._reload_single_plugin(plugin_name, manager_instance, sdk_instance):
+            return False
+
+        # 3. 级联重载依赖者（近 → 远，依赖者在其依赖就绪后重载）
+        for dep in dependents:
+            if dependent_sources.get(dep) == "plugin_folder":
+                await self._reload_single_plugin(dep, manager_instance, sdk_instance)
+            elif dep in getattr(manager_instance, "_module_classes", {}):
+                # PyPI 依赖者：类注册仍在，直接重新实例化加载
+                try:
+                    if await manager_instance.load(dep):
+                        setattr(sdk_instance, dep, manager_instance.get(dep))
+                except Exception as e:
+                    logger.error(i18n.t("loader.plugin.dependent_reload_failed", name=dep, error=e))
+            # 未加载且非插件来源的依赖者：跳过（懒加载会在下次访问时使用新依赖）
+
+        return True
+
+    async def _reload_single_plugin(self, plugin_name: str, manager_instance: Any, sdk_instance: Any) -> bool:
+        """
+        {!--< internal-use >!--}
+        重载单个本地插件：清理注册 → 清模块缓存 → 重新发现 → 注册并加载
+
+        :param plugin_name: 插件名
+        :param manager_instance: 模块管理器实例
+        :param sdk_instance: SDK 实例
+        :return: 是否重载成功
+        """
+        # 清理注册（类 / info / 懒加载代理）
         try:
             manager_instance.unregister(plugin_name)
         except Exception:
@@ -304,10 +352,10 @@ class ModuleLoader(BaseLoader):
             except Exception:
                 pass
 
-        # 3. 清理已导入的插件模块，强制重新导入
+        # 清理已导入的插件模块，强制重新导入
         self._purge_plugin_modules(plugin_name)
 
-        # 4. 重新发现并加载该插件
+        # 重新发现并加载该插件
         try:
             plugin_objs = self._plugin_loader.discover()
         except Exception as e:
@@ -321,7 +369,7 @@ class ModuleLoader(BaseLoader):
             logger.info(i18n.t("loader.plugin.reload_removed", name=plugin_name))
             return True
 
-        # 5. 重新注册并加载
+        # 重新注册并加载
         new_meta_name = new_module.moduleInfo["meta"]["name"]
         try:
             manager_instance.register(new_meta_name, new_module.moduleInfo["module_class"], new_module.moduleInfo)
@@ -418,6 +466,7 @@ class ModuleLoader(BaseLoader):
             strategy = self._get_load_strategy(loaded_obj)
             lazy_load = self._extract_strategy_value(strategy, "lazy_load", True)
             priority = self._extract_strategy_value(strategy, "priority", 0)
+            depends = self._extract_strategy_value(strategy, "depends", None) or []
 
             top_level = []
             if entry_point.dist:
@@ -435,6 +484,7 @@ class ModuleLoader(BaseLoader):
                     "package": entry_point.dist.name if entry_point.dist else None,
                     "lazy_load": lazy_load,
                     "priority": priority,
+                    "depends": list(depends),
                     "is_base_module": is_base_module,
                     "top_level": top_level,
                 },

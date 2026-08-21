@@ -231,6 +231,34 @@ class BaseModule(ABC):
         """
         raise NotImplementedError
 
+    # ==================== 后台任务 ====================
+
+    def spawn(self, coro):
+        """
+        调度一个归属于本模块的后台任务（推荐的任务创建方式）
+
+        任务自动登记到模块名下：模块卸载时，框架在 ``on_unload`` 之后
+        兜底取消仍未结束的任务，防止任务持有 ``self`` 引用导致模块
+        实例无法被回收（热重载泄漏的常见根因）。
+
+        需要精细控制生命周期的任务，建议在 ``on_unload`` 中自行取消
+        并等待收尾；本方法作为兜底保障。
+
+        :param coro: 待执行的协程
+        :return: 创建出的 asyncio.Task（可忽略）
+
+        :example:
+        >>> async def _poll(self):
+        ...     while True:
+        ...         await asyncio.sleep(5)
+        ...
+        >>> async def on_load(self, event):
+        ...     self.spawn(self._poll())
+        """
+        from ...runtime.tasks import spawn_background
+
+        return spawn_background(coro, owner=self._get_config_key())
+
     # ==================== 配置管理 ====================
 
     def _get_config_key(self) -> str:
