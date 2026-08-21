@@ -114,7 +114,7 @@ flowchart TD
     E --> E1["啟動適配器"]
     E1 --> F["註冊模組"]
     F --> F1{"依賴驗證"}
-    F1 -->|"缺失依賴"| F2["跳過該模組並記錄警告"]
+    F1 -->|"缺少依賴"| F2["跳過該模組並記錄警告"]
     F1 -->|"依賴滿足"| F3["拓撲排序<br/>（Kahn 算法 + 優先級）"]
     F3 --> G["依序初始化模組<br/>（實例化 + on_load）"]
     F2 --> G
@@ -124,15 +124,7 @@ flowchart TD
 
 ### 初始化階段詳解
 
-1. **環境準備** - 加載 TOML 配置檔案，設定全域例外處理
-2. **平行發現** - 同時從已安裝的 PyPI 套件中發現適配器和模組
-3. **註冊適配器** - 將發現的適配器註冊到適配器管理器
-4. **啟動適配器** - 異步啟動各平台適配器連接（在模組初始化之前，確保模組能立即傳送訊息）
-5. **註冊模組** - 將發現的模組註冊到模組管理器
-6. **依賴驗證** - 檢查模組宣告的 `depends` 依賴是否已註冊，跳過缺失依賴的模組
-7. **拓撲排序** - 使用 Kahn 算法按依賴關係排序模組載入順序，同級按 `priority` 降序排列
-8. **模組初始化** - 按排序順序建立模組實例，呼叫 `on_load` 生命週期方法
-9. **啟動路由伺服器** - 使用 Uvicorn 啟動 FastAPI 路由伺服器
+> 完整的初始化鏈路拆解（Finder / Loader / Manager / Router）、底層入口（`init()` / `init_task()` / `init_sync()`）與手動完整啟動見 [啟動流程與手動控制](advanced/startup.md)。
 
 ## 事件處理流程
 
@@ -155,17 +147,61 @@ flowchart LR
     I --> J["適配器發送至平台"]
 ```
 
-### 事件處理關鍵步驟
+### 事件處理鏈路詳解
 
-- **適配器接收** - 各平台適配器透過 WebSocket/Webhook 等方式接收原生事件
-- **OB12 標準化** - 將平台原生事件轉換為統一的 OneBot12 標準格式
-- **中間件處理** - 依序執行已註冊的中間件函數，可修改事件資料
-- **事件分發** - 根據事件類型（message/notice/request/meta）分發到對應處理器
-- **SendDSL 回覆** - 處理器透過 `event.reply()` 或 `SendDSL` 串接呼叫發送回應
+上面這張圖是「結果」；下面拆開 `adapter.emit()` 之後框架**在背後做了什麼**——這是一條三層分發的鏈路：
 
-## 生命周期事件
+```mermaid
+sequenceDiagram
+    participant P as 平台
+    participant A as 適配器總線層<br/>AdapterManager.emit
+    participant T as 處理器 Task 層<br/>_dispatch_handler_task
+    participant E as Event 模組層<br/>_process_event
 
-下圖展示了框架各組件的生命周期事件觸發順序：
+    P->>A: 原生事件
+    A->>A: 提取 platform/type/detail_type + 原始字段
+    A->>A: [Recv] 接收日誌
+    A->>A: lifecycle.adapter.event.receive（最早期鈎子）
+    A->>A: 處理 self 字段（meta 分支 / Bot 自動註冊）
+    A->>A: 中間件鏈（串行，可改寫事件資料）
+    A->>A: 收集 handler（具體類型 + 通配符 *）
+    A->>A: 作用域過濾（建立 Task 前，靜默跳過）
+    A->>T: asyncio.create_task（fire-and-forget）
+    A->>A: lifecycle.adapter.event.dispatched（最末鈎子）
+    T->>T: 獲取並發信號量（預設上限 64）
+    T->>E: 調用 Event 模組掛載的處理器
+    E->>E: lifecycle.event.pre_process
+    E->>E: ignore_self（訊息事件預設忽略自身）
+    E->>E: 按優先級分組：高→低、組間串行、組內並發
+    E->>E: 組內副本執行 + 字段合併（衝突告警）
+    E->>E: 組後檢查 stop() 阻斷更低優先級
+    T->>T: 慢日誌（超 1s 告警，wait_reply 時間白名單）
+```
+
+**每一步框架做了什麼、你能干預什麼：**
+
+| 階段 | 框架做了什麼 | 你能干預的 |
+|------|-------------|-----------|
+| 接收 | 提取標準字段，保留 `{platform}_raw` 原始資料；寫 `[Recv]` 日誌 | 監聽 `adapter.event.receive` 拿到最早期事件 |
+| self 字段 | meta 事件走 connect/disconnect/heartbeat 分支；普通事件自動註冊 Bot 並觸發 `adapter.bot.online` | 監聽 `adapter.bot.online` / `bot.offline` |
+| 中間件 | **串行**執行，返回值非 None 則取代事件資料 | 註冊中間件改寫/攔截事件 |
+| 分發收集 | 先取具體類型 handler，再取 `*` 通配符 handler | — |
+| 作用域過濾 | 按 owner 判定 `scope.is_allowed`（會話級>Bot級>平台級），**不通過則靜默跳過** | 配置作用域白名單/黑名單 |
+| 調度 | 每個匹配 handler 獨立 `asyncio.Task`，`emit()` **不等待** handler 完成即回傳 | — |
+| 優先級 | 高優先級組先執行；**組間串行、組內並發**（組內各自持有事件副本，改字段合併回原事件，衝突打 WARNING） | `@command(..., priority=N)` / 註冊時指定 priority |
+| 阻斷 | 每處理完一組檢查 `event.is_stopped()`，命中則**不再執行更低優先級** | `event.mark_processed(stop=True)` / `event.done()` |
+
+> **常見誤區**：
+> 1. **作用域過濾是靜默的**——被屏蔽的 handler 不報錯不回應，只在 TRACE 級日誌可見（`core.scope.denied`）。「我的模組沒收到訊息」優先排查作用域綁定。
+> 2. **handler 天然並發**——框架已為每個 handler 建獨立 Task，你**不需要**再自己 `asyncio.create_task` 包一層。
+> 3. **同優先級組內不阻斷**——`mark_processed(stop=True)` 只阻止更低優先級組，同組內已並發的 handler 不會中途被打斷。
+> 4. **慢日誌閾值固定 1 秒**——處理器耗時超 1s 會在日誌打 WARNING（`wait_reply` 等待時間已從耗時中剔除），但不中斷執行。
+
+> 作用域三級綁定與優先級細節見 [作用域系統](docs/zh-TW/advanced/scope.md)；claim/阻斷完整語義見 [事件處理入門](docs/zh-TW/getting-started/event-handling.md)；並發上限配置見 [配置指南](docs/zh-TW/user-guide/configuration.md#框架配置)。
+
+## 生命週期事件
+
+下圖展示了框架各組件的生命週期事件觸發順序：
 
 ```mermaid
 flowchart LR
@@ -194,51 +230,36 @@ flowchart LR
     AdapterLife -.-> BotLife
 ```
 
-### 監聽生命周期事件
+### 監聽生命週期事件
 
-你可以透過 `lifecycle.on()` 監聽這些事件，執行自訂邏輯：
-
-```python
-from ErisPulse import sdk
-
-# 監聽所有適配器事件
-@sdk.lifecycle.on("adapter")
-async def on_adapter_event(event_data):
-    print(f"適配器事件: {event_data}")
-
-# 監聽模組載入完成
-@sdk.lifecycle.on("module.load")
-async def on_module_loaded(event_data):
-    print(f"模組已載入: {event_data}")
-
-# 監聽 Bot 上線
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(event_data):
-    print(f"Bot 上線: {event_data}")
+> 完整的事件監聽方法（`lifecycle.on()` / `once()` / `has_handlers()`）、全部生命週期事件列表與資料格式見 [生命週期管理](advanced/lifecycle.md)。
 
 ## 模組載入策略
 
-ErisPulse 支援三種模組載入策略，由 `get_load_strategy()` 回傳的 `ModuleLoadStrategy` 宣告：
+ErisPulse 支援三種模組載入策略，由 `get_load_strategy()` 回傳的 `ModuleLoadStrategy` 聲明：
 
 ```mermaid
 flowchart TD
     A["模組註冊到 ModuleManager"] --> B{"載入策略"}
-    B -->|"lazy_load = true<br/>+ activate_on 宣告"| C["建立 ModuleActivator 代理"]
+    B -->|"lazy_load = true<br/>+ activate_on 聲明"| C["建立 ModuleActivator 代理"]
     B -->|"lazy_load = true<br/>無 activate_on"| D["建立 LazyModule 代理"]
     B -->|"lazy_load = false"| E["立即建立實例"]
     C --> F["註冊事件/命令 stub 到分發器"]
     F --> G["掛載到 sdk 屬性"]
     G --> H["事件到達觸發激活"]
-    H --> I["實例化 + on_load() + 解除註冊 stub"]
+    H --> I["實例化 + on_load() + 注銷 stub"]
     D --> J["掛載到 sdk 屬性"]
     J --> K["首次屬性存取時初始化"]
     E --> L["呼叫 on_load()"]
     L --> M["掛載到 sdk 屬性"]
 ```
 
-> 更多詳情請參考 [懶加載系統](docs/zh-TW/advanced/lazy-loading.md)、[生命週期管理](docs/zh-TW/advanced/lifecycle.md) 與模組文件。
+> 更多詳情請參考 [懶載入系統](docs/zh-TW/advanced/lazy-loading.md)、[生命週期管理](docs/zh-TW/advanced/lifecycle.md) 與模組文件。
 
 ### 事件驅動懶激活（`activate_on`）觸發架構
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
 
 `activate_on` 允許模組在**首個匹配事件/命令到達時**才載入，避免常駐記憶體，同時確保事件不遺失：
 
@@ -248,18 +269,19 @@ flowchart LR
         S1["get_load_strategy() 回傳<br/>ModuleLoadStrategy(activate_on=...)"] --> S2["activate_on 語法：<br/>str / dict / list 自由混合"]
         S2 --> S2a["'message' → 事件類型級"]
         S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ 類型 + detail_type"]
-        S2 --> S2c["{'command': 'roll'}<br/>→ 命令觸發"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ 命令觸發（簡寫/列表）"]
+        S2 --> S2d["{'command': {'name': 'dice', 'help': ...,<br/>'aliases': [...], 'hidden': ...}}<br/>→ 命令觸發（dict 聲明）"]
     end
 
     subgraph Runtime["執行期"]
         R1["ModuleActivator 註冊 stub"] --> R1a["事件 stub → message/notice/request/meta 管理器<br/>優先級 ACTIVATION_STUB_PRIORITY（極低）"]
-        R1 --> R1b["命令 stub → 命令管理器<br/>隱藏佔位命令（hidden=True）"]
+        R1 --> R1b["命令 stub → 命令管理器<br/>占位命令（鏡像 dict 聲明的 help/usage/group/aliases/hidden）"]
         R1a --> R2{"觸發事件到達"}
         R1b --> R2
         R2 --> R3["按 owner 過作用域過濾"]
         R3 --> R4["asyncio.Lock 防止重複激活"]
         R4 --> R5["實例化模組 + 呼叫 on_load()"]
-        R5 --> R6["解除註冊全部 stub"]
+        R5 --> R6["註銷全部 stub"]
         R6 --> R7["事件轉發到真實處理器"]
     end
 
@@ -268,35 +290,34 @@ flowchart LR
 
 **觸發語義要點：**
 
-1. **stub 註冊**：事件 stub 以極低優先級（`ACTIVATION_STUB_PRIORITY`）註冊到對應事件管理器，確保在同類事件的所有普通處理器**之後**執行；命令 stub 以隱藏佔位命令註冊，不污染命令列表
-2. **作用域過濾**：stub 帶模組 owner 身份，未對該 Bot / 會話 / 平台啟用的模組不觸發
-3. **防重入**：`asyncio.Lock` 保證併發事件下只激活一次
-4. **事件轉發**：激活完成後將當前事件轉發給真實處理器（外層分組迴圈已驗證 stub 之後註冊的處理器不會被二次處理）
-5. **失敗語義**：激活失敗不重試，stub 一併解除註冊，避免每次事件都重複嘗試
+> 完整的 `activate_on` 語法（str / dict / list）、命令 dict 聲明、占位命令 help 回退鏈、作用域過濾與失敗語義見 [懶載入系統](docs/zh-TW/advanced/lazy-loading.md#事件驅動懶激活activate_on)。
 
 ## 本地插件檔案夾架構
 
-本地插件（`plugins/` 目錄）無需打包發布，框架啟動時會自動發現並載入：
+> [!NOTE]  
+> 此功能需要 ErisPulse **2.8.0+**。
+
+本地插件（`plugins/` 目錄）無需打包發布，框架啟動時會自動發現並加載：
 
 ```mermaid
 flowchart TD
-    A["專案 plugins/ 目錄<br/>（ErisPulse.framework.plugins_dir，支援多目錄）"] --> B{"PluginFolderLoader.discover()"}
-    B --> C["單一檔案：dice.py → 插件名 = 檔案名"]
-    B --> D["套件形式：weather/（含 __init__.py）→ 插件名 = 目錄名"]
+    A["項目 plugins/ 目錄<br/>（ErisPulse.framework.plugins_dir，支援多目錄）"] --> B{"PluginFolderLoader.discover()"}
+    B --> C["單文件：dice.py → 插件名 = 檔案名"]
+    B --> D["包形式：weather/（含 __init__.py）→ 插件名 = 目錄名"]
     B --> E["忽略：__pycache__ / _ 開頭 / 非 .py / 無 __init__.py 目錄"]
-    C --> F["匯入模組（spec_from_file_location）"]
-    D --> G["匯入模組（sys.path + import_module）"]
-    F --> H["識別模組類別：Main（BaseModule 子類別）優先，回退至首個子類別"]
+    C --> F["導入模組（spec_from_file_location）"]
+    D --> G["導入模組（sys.path + import_module）"]
+    F --> H["識別模組類：Main（BaseModule 子類）優先，回退至首個子類"]
     G --> H
     H --> I["建構與 entry-point 一致的 moduleInfo"]
-    I --> J["ModuleLoader.load() 合併<br/>本地優先覆蓋 PyPI 同名安裝套件"]
-    J --> K["與安裝套件模組共用：<br/>啟用狀態 / 作用域 / meta / i18n / 上下文"]
+    I --> J["ModuleLoader.load() 合併<br/>本地優先覆蓋 PyPI 同名安裝包"]
+    J --> K["與安裝包模組共用：<br/>啟用狀態 / 作用域 / meta / i18n / 上下文"]
 ```
 
 **約定與特性：**
 
-- 插件名來源：單一檔案取檔案名，套件形式取目錄名
-- 本地插件 `moduleInfo.meta.source == "plugin_folder"`，與 PyPI 安裝套件模組無縫共存
+- 插件名來源：單文件取檔案名，包形式取目錄名
+- 本地插件 `moduleInfo.meta.source == "plugin_folder"`，與 PyPI 安裝包模組無縫共存
 - 同名時本地優先（便於本地覆蓋調試），被禁用時同時移除同名 entry-point 條目
 
 ## 本地插件熱重載架構
@@ -1086,12 +1107,12 @@ async def at_handler(event: Event):
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="顯示說明資訊")
+@command("help", help="顯示幫助資訊")
 async def help_handler(event):
     help_text = """
 可用命令：
-/help - 顯示說明
-/ping - 測試連線
+/help - 显示帮助
+/ping - 測試連接
 /info - 查看資訊
     """
     await event.reply(help_text)
@@ -1100,22 +1121,22 @@ async def help_handler(event):
 ### 命令別名
 
 ```python
-@command(["help", "h"], aliases=["說明"], help="顯示說明資訊")
+@command(["help", "h"], aliases=["幫助"], help="顯示幫助資訊")
 async def help_handler(event):
-    await event.reply("說明資訊...")
+    await event.reply("幫助資訊...")
 ```
 
 使用者可以使用以下任何方式呼叫：
 - `/help`
 - `/h`
-- `/說明`
+- `/幫助`
 
 ### 命令參數
 
 ```python
 @command("echo", help="回顯訊息")
 async def echo_handler(event):
-    # 取得命令參數
+    # 獲取命令參數
     args = event.get_command_args()
     
     if not args:
@@ -1124,7 +1145,7 @@ async def echo_handler(event):
         await event.reply(f"你說了: {' '.join(args)}")
 ```
 
-### 命令群組
+### 命令組
 
 ```python
 @command("admin.reload", group="admin", help="重新載入模組")
@@ -1149,22 +1170,22 @@ async def master_handler(event):
     await event.reply("這是框架主人命令")
 ```
 
-### 命令優先順序
+### 命令優先級
 
 ```python
-# 優先順序數值越大，執行越早
+# 優先級數值越大，執行越早
 @message.on_message(priority=10)
 async def high_priority_handler(event):
-    await event.reply("高優先順序處理器")
+    await event.reply("高優先級處理器")
 
 @message.on_message(priority=1)
 async def low_priority_handler(event):
-    await event.reply("低優先順序處理器")
+    await event.reply("低優先級處理器")
 ```
 
 ### 並行事件處理
 
-ErisPulse 事件系統採用**同優先順序並行、不同優先順序串行**的排程模型：
+ErisPulse 事件系統採用**同優先級並行、不同優先級串行**的調度模型：
 
 ```
 事件到達
@@ -1176,14 +1197,14 @@ priority=0 組: [處理器A || 處理器B] 並行 → 合併結果
 ...
 ```
 
-- **同優先順序並行**：優先順序相同的多個處理器會同時執行，提高吞吐量
-- **跨級串行**：不同優先順序的組按順序執行（數值越大越先執行），確保高優先順序處理器先執行
+- **同優先級並行**：優先級相同的多個處理器會同時執行，提高吞吐量
+- **跨級串行**：不同優先級的組按順序執行（數值越大越先執行），確保高優先級處理器先運行
 - **Copy-On-Write**：處理器無修改時不建立副本，確保零開銷
-- **衝突處理**：同優先順序多處理器修改同一欄位時，使用最後修改值並記錄警告日誌
-- **中斷機制**：任意處理器呼叫 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先順序組。認領與阻斷的差別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
+- **衝突處理**：同優先級多處理器修改同一欄位時，使用最後修改值並記錄警告日誌
+- **中斷機制**：任意處理器呼叫 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先級組。認領與阻斷的區別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
 
 ```python
-# 範例：同優先順序處理器並行執行
+# 範例：同優先級處理器並行執行
 @message.on_message(priority=0)
 async def handler_a(event):
     # 處理任務A
@@ -1194,11 +1215,34 @@ async def handler_b(event):
     # 與 handler_a 並行執行
     event['result_b'] = process_b()
 
-# 不同優先順序串行執行
+# 不同優先級串行執行
 @message.on_message(priority=10)
 async def handler_c(event):
-    # 優先順序最高，最先執行
+    # 優先級最高，最先執行
     pass
+```
+
+> **併發上限**：所有匹配 handler 的 Task 會**立即建立**，但透過一個信號量限制**同時在途執行數**，預設上限 **64**（`ErisPulse.framework.handler_max_concurrency`，支援熱更新）。超過上限的 Task 在信號量上排隊，等前面的完成後再進入。事件洪峰時這就是你的「泄壓閥」。
+>
+> **慢日誌**：單個處理器耗時超過 **1 秒**時，框架會在日誌打 WARNING（`handler_slow`）。`wait_reply` 的等待時間會從耗時裡剔除，不會因為「等人回覆」誤報慢。
+
+## 作用域過濾：為什麼我的模組沒有收到訊息
+
+事件分發會在**建立處理器 Task 之前**進行作用域過濾——根據模組 owner 判定 `scope.is_allowed`（會話級 > Bot 級 > 平台級），**不通過則靜默跳過**，不會報錯也不會回應。
+
+```python
+# 假設 config.toml 裡將 MyModule 在某個群組中屏蔽：
+[ErisPulse.scope]
+block = { yunhu = { group_123 = ["MyModule"] } }
+```
+
+此時該群組的訊息到達時，`MyModule` 的命令與事件處理器**都不會被調度**。這不是 bug，而是作用域機制——排查「模組沒有反應」時應優先檢查作用域綁定。
+
+- 三層過濾點：適配器總線級（Task 建立前）、Event 模組級（每個優先級組內）、命令級（權限檢查前）
+- 過濾日誌只在 **TRACE** 級可見（`core.scope.denied`），預設 INFO 級看不到任何痕跡
+- 框架級處理器（如命令分發器 `scope_exempt=True`）不受作用域影響
+
+> 作用域三級綁定、白名單/黑名單、優先級覆蓋與「default_allow」隱式拒絕語義請見 [作用域系統](../../advanced/scope.md)。
 
 ## 鏈路控制：認領與阻斷
 
@@ -1857,46 +1901,38 @@ from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.Event import command
 
 class Main(BaseModule):
-    def __init__(self):
+    def __init__(self, sdk):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
-        self.config = self._load_config()
     
     @staticmethod
     def get_load_strategy():
-        """傳回模組載入策略"""
+        """返回模組加載策略"""
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
-            depends=[]  # Optional: list of other modules to depend on
+            depends=[],  # 可選：依賴的其他模組列表
+            # 可選：事件驅動懶激活——聲名觸發器，首個匹配事件/命令到達時自動加載
+            # activate_on=[{"command": {"name": "hello", "help": "發送問候"}}],
         )
     
     async def on_load(self, event):
-        """模組載入時呼叫"""
-        @command("hello", help="Send greeting")
+        """模組加載時調用"""
+        @command("hello", help="發送問候")
         async def hello_command(event):
-            name = event.get_user_nickname() or "Friend"
-            await event.reply(f"Hello, {name}!")
+            name = event.get_user_nickname() or "朋友"
+            await event.reply(f"你好，{name}！")
         
-        self.logger.info("Module loaded")
+        self.logger.info("模組已加載")
     
     async def on_unload(self, event):
-        """模組卸載時呼叫"""
-        self.logger.info("Module unloaded")
-    
-    def _load_config(self):
-        """載入模組設定"""
-        config = self.sdk.config.getConfig("MyModule")
-        if not config:
-            default_config = {
-                "api_url": "https://api.example.com",
-                "timeout": 30
-            }
-            self.sdk.config.setConfig("MyModule", default_config)
-            return default_config
-        return config
+        """模組卸載時調用"""
+        self.logger.info("模組已卸載")
+```
+
+> **配置讀取**：上面的基礎示例未使用配置。需要讀取配置時，推薦聲名嵌套的 `ConfigClass` 並透過 `self.cfg` 即時讀取（見 [模組核心概念](core-concepts.md#聲名式配置推薦)）。手動調用 `_load_config()` 的舊寫法已廢棄。
 
 ## 測試模組
 
@@ -1925,18 +1961,21 @@ epsdk run main.py --reload
 
 | 方法 | 說明 | 必須 |
 |------|------|------|
-| `__init__(self)` | 建構函數 | 否 |
+| `__init__(self, sdk)` | 建構函數（框架傳入 `sdk` 實例） | 否 |
 | `get_load_strategy()` | 返回載入策略 | 否 |
-| `get_meta()` | 返回模組介紹元資訊（選填） | 否 |
+| `get_meta()` | 返回模組介紹元資訊（可選） | 否 |
 | `on_load(self, event)` | 模組載入時呼叫 | 是 |
 | `on_unload(self, event)` | 模組卸載時呼叫 | 是 |
 
 ### 模組介紹 meta
 
-透過 `get_meta()` 宣告模組的介紹元資訊（這個模組是做什麼的、屬於哪一類等）。
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+透過 `get_meta()` 聲明模組的介紹元資訊（這個模組是用來做什麼的、屬於哪一類等）。  
 元資訊是模組的**通用介紹資料**，供 help 模組、Dashboard 模組列表、模組商店等各類介面/生態模組消費。
 
-與 `get_load_strategy()` 返回 `ModuleLoadStrategy` 一致，**推薦返回 `ModuleMeta` 設定類別實例**（屬性鍵入、IDE 自動補全），也兼容直接返回 dict：
+與 `get_load_strategy()` 返回 `ModuleLoadStrategy` 一致，**推薦返回 `ModuleMeta` 配置類實例**（屬性類型、IDE 自動補全），也相容直接返回 dict：
 
 ```python
 class MyModule(BaseModule):
@@ -1952,7 +1991,7 @@ class MyModule(BaseModule):
         )
 ```
 
-兼容寫法（dict）：
+相容寫法（dict）：
 
 ```python
 class MyModule(BaseModule):
@@ -1968,14 +2007,14 @@ class MyModule(BaseModule):
         }
 ```
 
-- `module.get_meta("MyModule")` 讀取已解析的元資訊（類別宣告 > 註冊 info，自動補全該模組的指令名）。
-- `module.get_commands_overview()` 聚合「模組 meta + 其註冊的指令（別名/分組/幫助）」，按模組組織的指令總覽。
-- 指令歸屬模組透過 `cmd_info["owner"]` 獲取（註冊時由上下文系統自動注入）。
+- `module.get_meta("MyModule")` 讀取已解析的元資訊（類宣告 > 註冊 info，自動補全該模組的命令名）。
+- `module.get_commands_overview()` 聚合「模組 meta + 其註冊的命令（別名/分組/幫助）」，按模組組織的命令總覽。
+- 命令歸屬模組透過 `cmd_info["owner"]` 取得（註冊時由上下文系統自動注入）。
 
-#### meta 欄位的 i18n 支援
+#### meta 字段的 i18n 支援
 
-元資訊欄位值可用純字串，或 i18n 字典 `{"i18n": "key.path", "default": "兜底文本"}`（與設定 `description` 約定一致）。
-翻譯鍵透過 `I18nClass` 宣告註冊，`module.get_meta()` 讀取時自動解析為當前語言文字：
+元資訊字段值可用純字串，或 i18n 字典 `{"i18n": "key.path", "default": "兜底文本"}`（與配置 `description` 約定一致）。  
+翻譯鍵透過 `I18nClass` 聲明註冊，`module.get_meta()` 讀取時自動解析為當前語言文本：
 
 ```python
 class MyModule(BaseModule):
@@ -2001,12 +2040,15 @@ class MyModule(BaseModule):
 ```python
 from ErisPulse import sdk
 
-sdk.storage    # 存儲系統
-sdk.config     # 設定系統
+sdk.storage    # 儲存系統
+sdk.config     # 配置系統
 sdk.logger     # 日誌系統
-sdk.adapter    # 适配器系統
+sdk.adapter    # 適配器系統
 sdk.router     # 路由系統
 sdk.lifecycle  # 生命週期系統
+```
+
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
 ## 下一階段
 
@@ -2024,7 +2066,7 @@ sdk.lifecycle  # 生命週期系統
 
 ## 模組生命週期
 
-### 載入策略
+### 加載策略
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -2033,34 +2075,37 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """返回模組載入策略"""
+        """返回模組加載策略"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # 懶載入還是立即載入
-            priority=0,       # 載入優先級（數值越大越先載入）
-            depends=["OtherModule"]  # 可選：宣告依賴的其他模組
+            lazy_load=True,   # 慣性加載還是立即加載
+            priority=0,       # 加載優先級（數值越大越先加載）
+            depends=["OtherModule"]  # 可選：聲明依賴的其他模組
         )
 ```
 
-> 如果宣告的 `depends` 模組尚未註冊，當前模組將被跳過並記錄警告。載入順序由拓樸排序決定，同層級按 `priority` 遞減排序。
+> `depends` 聲明的模組如果未註冊，當前模組將被跳過並記錄警告。加載順序由拓撲排序決定，同層級按 `priority` 降序。
+
+> [!NOTE]
+> **級聯卸載 / 級聯重載**（ErisPulse **2.8.0+**）：卸載被其它模組依賴的模組時，依賴它的模組會**先被級聯卸載**（日誌說明級聯鏈）；熱重載本地插件時，依賴它的插件同樣**級聯重載**，避免依賴者持有失效實例引用繼續運行。聲明循環依賴會在加載時以 `RuntimeError` 拒絕。
 
 ### on_load 方法
 
-模組載入時呼叫，用於初始化資源和註冊事件處理器：
+模組加載時調用，用於初始化資源和註冊事件處理器：
 
 ```python
 async def on_load(self, event):
     # 註冊事件處理器
-    @command("hello", help="問候指令")
+    @command("hello", help="問候命令")
     async def hello_handler(event):
         await event.reply("你好！")
     
-    # 使用 SDK 內建 HTTP 客戶端（自動管理連線集區，無需手動建立 session）
+    # 使用 SDK 內建 HTTP 客戶端（自動管理連接池，無需手動建立 session）
     # 透過 sdk.client 即可發送請求
 ```
 
 ### on_unload 方法
 
-模組卸載時呼叫，用於清理資源：
+模組卸載時調用，用於清理資源：
 
 ```python
 async def on_unload(self, event):
@@ -2069,6 +2114,78 @@ async def on_unload(self, event):
     
     # 取消事件處理器（框架會自動處理）
     self.logger.info("模組已卸載")
+```
+
+> 後台任務的建立與清理（`self.spawn()` / 框架兜底取消）詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
+
+### 卸載與徹底卸載（purge）
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+`unload()` 預設只**取消加載**（卸載實例與資源），但保留註冊存根（模組類與元資訊）——模組仍可被 discover 重新發現、`load()` 重新實例化，無需重新 `register()`。
+
+當需要**徹底卸載**（釋放模組類引用、清理 `sys.modules`，讓插件及其獨占依賴可被 GC 回收）時，傳入 `purge=True`：
+
+```python
+# 只取消加載：保留註冊存根，可隨時重新 load()
+await sdk.module.unload("MyModule")
+
+# 彻底卸載：刪除註冊存根 + 清理 sys.modules（插件來源）
+await sdk.module.unload("MyModule", purge=True)
+```
+
+| 語義 | `unload()` 預設 | `unload(purge=True)` |
+|------|-----------------|----------------------|
+| 卸載實例與資源（事件/task/路由/lifecycle/i18n） | ✅ | ✅ |
+| 保留註冊存根（模組類與元資訊） | ✅ | ❌ 刪除 |
+| 清理 `sys.modules`（僅插件資料夾來源） | ❌ | ✅ |
+| 模組類可被 GC 回收 | ❌ | ✅ |
+| 重新加載 | `load()` 直接可用 | 需先 `register()` + `load()` |
+
+> `purge=True` 時級聯卸載的依賴者同樣被 purge；卸載後框架會 `gc.collect()` 並檢查模組類/實例是否可回收，殘留引用會在日誌中告警（含引用方，DEBUG 級）。
+
+### 生命週期全景
+
+將上面的方法串起來，框架在加載與卸載一個模組時，**在背後為你做的全部事情**：
+
+```mermaid
+flowchart TD
+    subgraph Load["加載（register → load）"]
+        L1["register：登記模組類與元資訊"] --> L2["依賴校驗<br/>缺失則跳過"]
+        L2 --> L3["拓撲排序（Kahn + priority）"]
+        L3 --> L4["owner 注入 current_owner"]
+        L4 --> L5["產生配置範本 + 註冊 i18n 翻譯鍵"]
+        L5 --> L6["實例化模組（注入 sdk）"]
+        L6 --> L7["呼叫 on_load()"]
+        L7 --> L8["掛載到 sdk 屬性 + emit module.load"]
+    end
+
+    subgraph Unload["卸載（unload）"]
+        U1["呼叫 on_unload()"] --> U2["兜底取消後台任務（self.spawn 歸屬）"]
+        U2 --> U3["清理 i18n 翻譯鍵"]
+        U3 --> U4["移除路由 / 命令 / 事件處理器（按 owner）"]
+        U4 --> U5["清理 lifecycle 鈎子（按 owner）"]
+        U5 --> U6["移除 SDK 屬性 + 慣性加載代理"]
+        U6 --> U7["emit module.unload"]
+    end
+
+    Load --> Unload
+```
+
+**加載時框架幫你做了什麼**（你只需寫 `on_load`，其餘自動完成）：
+
+| 環節 | 框架自動做的 |
+|------|-------------|
+| owner 注入 | 實例化期間用 `owner_scope` 包住模組名——你 `on_load` 裡註冊的命令/事件/鈎子/後台任務**自動歸屬本模組**，卸載時按 owner 一鍵清理 |
+| 配置範本 | 聲明了 `ConfigClass` 的模組，框架自动生成/填補 `ErisPulse.<ModuleName>` 配置段 |
+| i18n 翻譯鍵 | 聲明了 `I18nClass` 的模組，翻譯鍵自動註冊（卸載時自動註銷） |
+| 依賴拓撲 | 按 `depends` 聲明排序，確保被依賴模組先加載；循環依賴以 `RuntimeError` 拒絕 |
+| SDK 挂載 | 實例化後掛到 `sdk.<ModuleName>`，你才能 `sdk.MyModule.xxx` 訪問 |
+
+**卸載時框架幫你清理的**（對應上面的 U1→U7）：`on_unload` 跑完後再兜底清理——後台任務強制取消（`self.spawn` 創建的，優雅收尾請在 `on_unload` 自行做）、i18n 鍵、路由、命令/事件處理器、lifecycle 鈎子，最後移除 SDK 屬性。`purge=True` 預設額外刪除註冊存根 + 清理 `sys.modules`。
+
+> 這些自動清理就是「你只需寫 `on_load`/`on_unload`，不用手動 unregister」的底氣——框架用 owner 歸屬把「誰註冊的誰清理」做成了一鍵式。
 
 ## SDK 物件
 
@@ -2893,12 +3010,12 @@ class MyModule(BaseModule):
 
 詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
 
-## 非同步程式設計
+## 異步程式設計
 
-### 1. 使用非同步庫
+### 1. 使用異步庫
 
 ```python
-# 建議使用 SDK 內建 HTTP 用戶端（非同步，自動日誌和統計）
+# 推薦使用 SDK 內建 HTTP 客戶端（異步，自動日誌和統計）
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -2914,7 +3031,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# 不要直接使用 aiohttp 匯入（不便於框架統一管理）
+# 不要使用 aiohttp 直接匯入（不利於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -2923,34 +3040,39 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# 不要使用 requests（同步，會阻擋事件循環）
+# 不要使用 requests（同步，會阻塞事件循環）
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # 會阻擋事件循環
+        return requests.get(url).json()  # 會阻塞事件循環
 ```
 
-### 2. 正確的非同步操作
+### 2. 正確的異步操作
 
 ```python
 async def handle_command(self, event):
-    # 使用 create_task 讓耗時操作在背景執行
-    task = asyncio.create_task(self._long_operation())
-    
-    # 如果需要等待結果
-    result = await task
+    # 需要等待結果的耗時操作：直接 await（生命週期明確）
+    result = await self._long_operation()
+
+async def on_load(self, event):
+    # 後台任務（輪詢/定時/fire-and-forget）：使用 self.spawn()，
+    # 模組卸載時框架在 on_unload 之後兜底取消，避免持有 self 導致泄漏
+    self.spawn(self._poll())
 ```
+
+> [!NOTE]
+> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——後者建立的裸任務不歸屬於模組，卸載時不會被自動清除，會持有 `self` 引用導致模組實例無法被回收（熱重載泄漏）。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
 
 ### 3. 資源管理
 
 ```python
 async def on_load(self, event):
-    # SDK 用戶端已自動管理連線池，無需手動建立 session
+    # SDK 客戶端已自動管理連接池，無需手動建立 session
     pass
     
 async def on_unload(self, event):
-    # 如需自訂用戶端，記得清理資源
+    # 如需自訂客戶端，記得清理資源
     pass
 
 ## 事件處理
@@ -7676,6 +7798,37 @@ class Main(BaseModule):
 - 對於指向非目前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改  
 - 這確保連結指向正確語言的文件版本
 
+## 後台任務歸屬與自動取消
+
+> [!NOTE]  
+> 本特性需要 ErisPulse **2.8.0+**。
+
+模組建立的 asyncio 後台任務如果未在 `on_unload` 中取消，會持有 `self` 引用導致模組實例無法被回收（熱重載後舊實例殘留）。框架提供以下兜底機制：
+
+- **`self.spawn(coro)`**（模組內推薦）：任務自動歸屬模組名，模組卸載時框架在 `on_unload` **之後**兜底取消未結束的任務並記錄警告
+- **`spawn_background(coro)`**（`ErisPulse.runtime`）：自動捕獲當前 `owner_scope` 上下文；`cancel_owner_tasks(owner)` 按歸屬取消，`cancel_all_background_tasks()` 供 `sdk.uninit()` 兜底
+- **適配器**：關閉時對平台名下的後台任務同樣兜底取消
+
+```python
+async def on_load(self, event):
+    # 推薦：後台任務用 self.spawn()，卸載時框架自動兜底取消
+    self.spawn(self._poll())
+
+async def on_unload(self, event):
+    # 精細控制的場景仍建議自行取消並等待收尾
+    if self._poll_task:
+        self._poll_task.cancel()
+        await asyncio.gather(self._poll_task, return_exceptions=True)
+
+async def _poll(self):
+    while True:
+        await asyncio.sleep(60)
+        ...
+```
+
+> [!IMPORTANT]  
+> 框架兜底是**強制 cancel**（`cancel_owner_tasks`），它發生在 `on_unload` 返回之後。因此需要優雅收尾的任務（flush 缓衝、持久化狀態、關閉連接）**必須**在 `on_unload` 裡自行 `cancel()` + `await` 完成——別指望兜底能保留收尾邏輯。框架只保證「不殘留持有 `self` 的任務」，不保證「優雅」。需要 `await` 結果的任務請直接 `await`，不要丟給後台任務。
+
 ## 注意事項
 
 1. **處理程序可以是同步或非同步**：系統會自動識別並正確調用
@@ -7703,45 +7856,130 @@ class Main(BaseModule):
 
 ErisPulse SDK 提供了強大的慢載模組系統，允許模組在實際需要時才進行初始化，從而顯著提升應用啟動速度和記憶體效率。
 
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
 ## 概述
 
-慢載模組系統是 ErisPulse 的核心特性之一，它透過以下方式運作：
+懶加載模組系統是 ErisPulse 的核心特性之一，它透過以下方式運作：
 
 - **延遲初始化**：模組只有在第一次被存取時才會實際載入和初始化
-- **透明使用**：對開發者而言，慢載模組與一般模組在使用上幾乎沒有差別
-- **自動依賴管理**：模組依賴會在被使用時自動初始化
+- **透明使用**：對開發者來說，懶加載模組與一般模組在使用上幾乎沒有差別
+- **自動依賴管理**：模組的依賴會在被使用時自動初始化
 - **生命週期支援**：對於繼承自 `BaseModule` 的模組，會自動呼叫生命週期方法
 
-## 運作原理
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-### LazyModule 類別
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
-慢載系統的核心是 `LazyModule` 類別，它是一個包裝器，在第一次存取時才實際初始化模組。
+## 工作原理
+
+### LazyModule 類
+
+懶加載系統的核心是 `LazyModule` 類，它是一個包裝器，在第一次存取時才實際初始化模組。
 
 ### 初始化過程
 
 當模組首次被存取時，`LazyModule` 會執行以下操作：
 
-1. 取得模組類別的 `__init__` 參數資訊
+1. 獲取模組類的 `__init__` 參數資訊
 2. 根據參數決定是否傳入 `sdk` 引用
 3. 設定模組的 `moduleInfo` 屬性
 4. 對於繼承自 `BaseModule` 的模組，呼叫 `on_load` 方法
 5. 觸發 `module.init` 生命週期事件
 
-## 配置慢載
+## 事件驅動懶激活（activate_on）
+
+> [!NOTE]  
+> 本特性需要 ErisPulse **2.8.0+**。
+
+`lazy_load=True` 的模組預設只在**首次屬性存取**時載入。若模組註冊了命令/事件處理器，  
+傳統做法只能 `lazy_load=False` 立即載入。`activate_on` 提供了第三種選擇：**宣告觸發器，  
+首個匹配事件/命令到達時自動激活模組**——既不常駐記憶體，又不遺失觸發入口。
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class MyModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            activate_on=[
+                # ---- 事件觸發（被動到達，無需使用者感知）----
+                "message",                                    # 類型級：任何訊息事件
+                {"notice": "group_member_increase"},          # 類型 + 單個 detail_type
+                {"message": ["private", "group"]},            # 類型 + 多個 detail_type
+
+                # ---- 命令觸發（主動輸入，佔位命令對 Help 可見）----
+                {"command": "roll"},                          # 簡寫：命令名
+                {"command": ["roll", "dice"]},                # 命令名列表
+                {"command": {                                 # dict 聲明（name 必填）
+                    "name": "dice",
+                    "help": "擲一個骰子",
+                    "usage": "/dice",
+                    "group": "娛樂",
+                    "aliases": ["d"],
+                    "hidden": False,
+                }},
+            ],
+        )
+```
+
+### 命令 dict 聲明參數
+
+dict 形式鏡像 `@command()` 裝飾器的使用者級參數，用於在模組載入前就註冊佔位命令：
+
+| 參數 | 類型 | 預設 | 說明 |
+|------|------|------|------|
+| `name` | `str` | **必填** | 命令名；須與 `on_load` 中 `@command(name)` 一致，否則激活後佔位註銷、命令不存在 |
+| `help` | `str` | 回退鏈 | Help 中顯示的介紹；未聲明時按回退鏈取值（見下） |
+| `usage` | `str` | 自动生成 | 用法行，預設 `{prefix}{name}` |
+| `group` | `str` | `None` | 命令分組 |
+| `aliases` | `list[str]` | `[]` | 別名同時註冊，**輸入別名同樣觸發激活** |
+| `hidden` | `bool` | `False` | `True` 時佔位命令同樣隱藏（與激活後真實命令的隱藏語意對齊）；知道命令名的使用者輸入仍可觸發 |
+
+**不支援** `priority` / `permission` / `master`：佔位命令的使命只是觸發激活，  
+權限檢查由激活後的真實命令執行（佔位階段攔截權限反而會讓「輸入命令激活」失效）。
+
+### 佔位命令 help 回退鏈
+
+模組未載入時 Help 顯示的命令介紹，按以下順序取值（取到即止）：
+
+1. dict 聲明的命令級 `help`（最精確）  
+2. 模組 `get_meta()` 的 `description`  
+3. 模組 `__description__` 屬性  
+4. 包元數據的 `Summary`（PyPI 包簡介）  
+5. 通用提示：「此命令來自懶載入模組 X，首次使用將自動載入該模組」
+
+### 觸發語意
+
+- **事件 stub**：以極低優先級（`ACTIVATION_STUB_PRIORITY`）註冊到對應事件管理器，  
+  在所有普通處理器之後兜底觸發；激活後將當前事件轉發給模組的真實處理器
+- **命令 stub**：註冊佔位命令；激活後佔位註銷、真實命令接管當次觸發
+- **防重入**：`asyncio.Lock` 保證併發觸發下只激活一次
+- **作用域過濾**：stub 帶模組 owner 身份，模組未對該 Bot / 會話 / 平台啟用時不觸發
+- **失敗語意**：激活失敗不重試，stub 一併註銷
+- **去重**：同名命令以簡寫 + dict 混合聲明時去重（dict 优先）；dict 缺 `name`  
+  或事件 `detail_type` 誤寫 dict 時告警並忽略
+
+> 架構圖與完整語意詳見 [架構概覽](../architecture.md#事件驅動懶激活activate_on觸發架構)。
+
+## 配置懶加載
 
 ### 全域配置
 
-在設定檔中啟用/停用全域慢載：
+在設定檔中啟用/停用全域懶加載：
 
 ```toml
 [ErisPulse.framework]
-enable_lazy_loading = true  # true=啟用慢載(預設)，false=停用慢載
+enable_lazy_loading = true  # true=啟用懶加載(預設值)，false=停用懶加載
 ```
 
 ### 模組層級控制
 
-模組可以透過實作 `get_load_strategy()` 靜態方法來控制載入策略：
+模組可以透過實作 `get_load_strategy()` 靜態方法來控制加載策略：
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -7750,45 +7988,45 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """傳回模組載入策略"""
+        """傳回模組加載策略"""
         return ModuleLoadStrategy(
-            lazy_load=False,  # 傳回 False 表示立即載入
-            priority=100      # 載入優先級，數值越大優先級越高
+            lazy_load=False,  # 傳回 False 表示立即加載
+            priority=100      # 加載優先級，數值越大優先級越高
         )
-```
 
-## 使用慢載模組
+## 使用 Lazy-Loaded 模組
 
-### 基本使用
+### 基本用法
 
-對開發者而言，慢載模組與一般模組在使用上幾乎沒有差別：
+對於開發者來說，Lazy-Loaded 模組與一般模組在使用上幾乎沒有差異：
 
 ```python
-# 透過 SDK 存取慢載模組
+# 透過 SDK 訪問 Lazy-Loaded 模組
 from ErisPulse import sdk
 
-# 以下存取會觸發模組慢載
+# 以下訪問會觸發模組 Lazy-Loading
 result = await sdk.my_module.my_method()
 ```
 
-### 統一的模組取得入口
+### 統一的模組獲取入口
 
-無論是透過 SDK 屬性、模組管理器屬性存取，還是透過 `module.get()` 查詢，對於「已註冊但尚未載入」的慢載模組，都會返回同一個慢載代理，存取其屬性才會真正觸發初始化：
+無論是透過 SDK 屬性、模組管理器屬性，還是透過 `module.get()` 查詢，
+對於「已註冊但尚未載入」的 Lazy-Loaded 模組，都會返回同一個 Lazy-Loaded 代理，只有在訪問其屬性時才會真正觸發初始化：
 
 ```python
-# 三種方式拿到的都是慢載代理（在模組未載入時），行為一致、對使用者透明
+# 三種方式拿到的都是 Lazy-Loaded 代理（在模組未載入時），行為一致且對使用者透明
 sdk.my_module          # 觸發載入的入口
-sdk.module.my_module   # 同樣返回慢載代理
-sdk.module.get("my_module")  # 也返回慢載代理，本身不會觸發載入
+sdk.module.my_module   # 同樣返回 Lazy-Loaded 代理
+sdk.module.get("my_module")  # 也返回 Lazy-Loaded 代理，本身不會觸發載入
 
-# 存取代理的任意屬性才會真正初始化模組
+# 訪問代理的任意屬性才會真正初始化模組
 result = await sdk.my_module.my_method()
 ```
 
 `module.get()` 是**查詢**介面，本身不觸發載入：
-- 模組已載入 → 回傳真實實例
-- 模組已註冊但未載入 → 回傳慢載代理（存取屬性才初始化）
-- 模組未註冊 → 回傳 `None`
+- 模組已載入 → 返回真實實例
+- 模組已註冊但未載入 → 返回 Lazy-Loaded 代理（訪問屬性才初始化）
+- 模組未註冊 → 返回 `None`
 
 如需顯式觸發載入，請使用 `await sdk.load_module("my_module")`。
 
@@ -7806,38 +8044,59 @@ result = await sdk.my_module.my_method()
 
 ### 同步初始化
 
-對於不需要異步初始化的模組，可以直接存取：
+對於不需要異步初始化的模組，可以直接訪問：
 
 ```python
-# 直接存取會自動同步初始化
+# 直接訪問會自動同步初始化
 result = sdk.my_module.some_sync_method()
-```
 
 ## 最佳實踐
 
-### 推薦使用慢載的場景（lazy_load=True）
+選擇載入策略時，可參考以下決策流程：
 
-- 被動呼叫的工具類（如資料查詢模組，格式轉換器等，僅只在其他模組呼叫時才需要）
+```mermaid
+flowchart TD
+    A["模組宣告<br/>get_load_strategy()"] --> B{"需要啟動即就緒<br/>或高頻觸發？"}
+    B -->|"是"| C["lazy_load=False<br/>立即載入"]
+    B -->|"否"| D{"註冊了命令 / 事件處理程式？"}
+    D -->|"是"| E["lazy_load=True + activate_on<br/>事件/命令到達時激活"]
+    D -->|"否"| F["lazy_load=True<br/>首次屬性存取時載入"]
+    C --> G["啟動時呼叫 on_load()"]
+    E --> H["註冊 stub → 觸發時實例化"]
+    F --> I["LazyModule 代理"]
+```
 
-### 推薦停用慢載的場景（lazy_load=False）
+### 推薦使用懶載入的場景（lazy_load=True）
 
-- 註冊觸發器的模組（如：命令處理器，訊息處理器）
-- 生命週期事件監聽器
+- 被動呼叫的工具類（如資料查詢模組、格式轉換器等，僅在其他模組呼叫時才需要）
+- 註冊命令/事件處理程式但非高頻使用的模組——配合 `activate_on` 聲明觸發器，首個匹配事件/命令到達時自動激活，無需放棄懶載入
+
+### 推薦禁用懶載入的場景（lazy_load=False）
+
+- 需要在啟動時立即就緒的模組（如為其它模組提供基礎服務的核心模組）
+- 高頻觸發的監聽器（每條訊息都要處理）——`activate_on` 轉發有一次激活開銷，高頻場景立即載入更直接
 - 定時任務模組
 - 需要在應用啟動時就初始化的模組
 
 > `priority` 參數控制立即載入模組間的初始化順序，數值越大越先初始化。同優先級的模組按註冊順序載入。
 
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+
 ## 注意事項
 
-1. 如果您的模組使用了慢載，如果其他模組從未在 ErisPulse 內進行過呼叫，則您的模組永遠不會被初始化。
-2. 如果您的模組中包含了如監聽 Event 的模組，或其它主動監聽類似模組，請務必宣告需要立即被載入，否則會影響您模組的正常業務。
-3. 我們不建議您停用慢載，除非有特殊需求，否則它可能會為您帶來如依賴管理和生命週期事件等的問題。
+1. 如果您的模組使用了懶加載，如果其他模組從未在 ErisPulse 內被呼叫過，則您的模組永遠不會被初始化。
+2. 如果您的模組中包含了例如監聽 Event 的模組，或其它主動監聽類似模組，有兩種選擇：宣告 `activate_on` 觸發器（保持懶加載，事件到達時自動激活），或宣告需要立即被加載（`lazy_load=False`），否則會影響您模組的正常業務。
+3. 我們不建議您禁用懶加載，除非有特殊需求，否則它可能為您帶來例如依賴管理和生命週期事件等的問題。
+4. 在 `activate_on` 的命令 dict 聲明中，`name` 必須與模組 `on_load` 中 `@command()` 註冊的真實命令名一致——否則模組激活後占位命令註銷，宣告與實現不一致的命令將不存在。
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第 8 條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 相關文件
 
 - [模組開發指南](../developer-guide/modules/getting-started.md) - 學習開發模組
-- [最佳實踐](../developer-guide/modules/best-practices.md) - 了解更多最佳實踐
+- [最佳實務](../developer-guide/modules/best-practices.md) - 瞭解更多最佳實務
 
 
 
@@ -8685,34 +8944,137 @@ topology = sdk.get_topology()
 
 # 啟動流程與手動控制
 
-ErisPulse 的 `await sdk.run()` / `await sdk.init()` 把一整條啟動鏈路封裝成了「一行程式碼」。但當你需要完全自訂啟動流程（例如部分載入、動態註冊、熱插拔、注入自訂載入策略）時，就需要了解這條鏈路內部到底發生了什麼、以及如何手動驅動每一步。
+ErisPulse 的 `await sdk.run()` / `await sdk.init()` 將一整條啟動鏈路封裝成了一行程式碼。但當你需要完全自訂啟動流程（例如部分載入、動態註冊、熱插拔、注入自訂載入策略）時，就需要了解這條鏈路內部到底發生了什麼，以及如何手動驅動每一步。
 
-本文把啟動鏈路拆解成獨立的環節，說明各自的職責、呼叫順序，並給出手動完整啟動的示例。
+本文將啟動鏈路拆解成獨立的環節，說明各自的職責、呼叫順序，並給出手動完整啟動的範例。
 
 > 本文假設你已經跑過 [第一個機器人](../getting-started/first-bot.md)，了解 `sdk.run(keep_running=True/False)` 兩種模式。本文聚焦於 `init()` **內部**的鏈路拆解，以及 `init()`/`init_task()`/`init_sync()` 等更底層的入口。
 
-## SDK 頂層入口一覽
+## 啟動流程概覽
 
-除了 `run()` 的兩種 `keep_running` 模式，SDK 還提供幾個更底層的初始化入口，區別在於**非同步性、回傳值、以及是否包裝例外**：
+ErisPulse 的啟動流程可以分為以下幾個階段：
 
-| 入口 | 非同步性 | 回傳值 | 例外處理 | 適用場景 |
+1. **初始化 SDK**：設定核心配置、載入基本模組。
+2. **載入插件**：根據配置動態註冊並載入插件。
+3. **建立機器人**：初始化機器人實例，設定事件監聽。
+4. **啟動服務**：啟動網路服務、資料庫連接等。
+5. **執行主迴圈**：進入主迴圈，處理事件與任務。
+
+以下是各階段的詳細說明與手動驅動範例。
+
+## 手動啟動流程範例
+
+以下是手動驅動完整啟動流程的範例程式碼：
+
+```python
+import erispulse as sdk
+
+# 1. 初始化 SDK
+await sdk.init(
+    config_path="config.yaml",
+    plugins=["plugin1", "plugin2"],
+    keep_running=True
+)
+
+# 2. 建立機器人實例
+bot = sdk.Bot(
+    token="your-bot-token",
+    event_handlers={
+        "message": handle_message,
+        "command": handle_command,
+    }
+)
+
+# 3. 啟動網路服務
+await sdk.start_server()
+
+# 4. 啟動主迴圈
+await sdk.run_bot(bot)
+```
+
+## 各階段詳細說明
+
+### 1. 初始化 SDK
+
+初始化 SDK 是啟動流程的第一步，主要負責設定核心配置、載入基本模組。
+
+```python
+await sdk.init(
+    config_path="config.yaml",  # 配置檔案路徑
+    plugins=["plugin1", "plugin2"],  # 插件列表
+    keep_running=True  # 是否保持運行
+)
+```
+
+### 2. 載入插件
+
+載入插件是根據配置動態註冊並載入插件的過程。
+
+```python
+# 動態註冊插件
+await sdk.register_plugin("plugin1")
+await sdk.register_plugin("plugin2")
+```
+
+### 3. 建立機器人
+
+建立機器人實例是初始化機器人實例，設定事件監聽的過程。
+
+```python
+bot = sdk.Bot(
+    token="your-bot-token",  # 機器人令牌
+    event_handlers={
+        "message": handle_message,  # 訊息事件處理函數
+        "command": handle_command,  # 指令事件處理函數
+    }
+)
+```
+
+### 4. 啟動服務
+
+啟動服務是啟動網路服務、資料庫連接等的過程。
+
+```python
+await sdk.start_server()  # 啟動網路服務
+await sdk.start_database()  # 啟動資料庫連接
+```
+
+### 5. 執行主迴圈
+
+執行主迴圈是進入主迴圈，處理事件與任務的過程。
+
+```python
+await sdk.run_bot(bot)  # 執行主迴圈
+```
+
+## 結語
+
+透過了解啟動流程的各個環節，你可以更靈活地控制 ErisPulse 的啟動過程，實現更複雜的自訂需求。手動驅動啟動流程不僅提供了更多的控制權，也讓你在開發過程中更容易進行調試與測試。
+
+## SDK 頂層入口概覽
+
+除了 `run()` 的兩種 `keep_running` 模式，SDK 還提供了幾個更底層的初始化入口，其差異在於**異步性、返回值，以及是否包裝異常**：
+
+| 入口 | 異步性 | 返回值 | 異常處理 | 適用場景 |
 |------|--------|--------|----------|----------|
-| `await sdk.run(True)` | async，阻塞維持 | `None`（關閉時自動 `uninit`） | 模組/適配器錯誤被攔截，不拖垮程序 | 純 bot 應用 |
-| `await sdk.run(False)` | async，不阻塞 | `None`（不自動卸載） | 同上 | 初始化後執行自訂邏輯 |
-| `await sdk.init()` | async，需 await | `bool` | **不包裝**，例外向上拋 | 手動控制生命週期（配 `uninit()`） |
-| `sdk.init_task()` | async，返回 Task 不阻塞 | `asyncio.Task` | 同 `init()` | 並發執行別的初始化、或事件迴圈尚未運行 |
-| `sdk.init_sync()` | **同步**，阻塞目前執行緒 | `bool` | 同 `init()` | 命令列腳本、無事件迴圈的同步入口 |
+| `await sdk.run(True)` | async，阻塞維持 | `None`（關閉時自動 `uninit`） | 模組/適配器錯誤被擋住，不拖垮進程 | 純 bot 應用 |
+| `await sdk.run(False)` | async，不阻塞 | `None`（不自動卸載） | 同上 | 初始化後執行自定義邏輯 |
+| `await sdk.init()` | async，需 await | `bool` | 內部捕獲組件異常，失敗返回 `False` | 手動控制生命週期（配 `uninit()`） |
+| `sdk.init_task()` | async，返回 Task 不阻塞 | `asyncio.Task` | 同 `init()` | 並發執行別的初始化、或事件循環尚未運行 |
+| `sdk.init_sync()` | **同步**，阻塞當前執行緒 | `bool` | 同 `init()` | 命令列腳本、無事件循環的同步入口 |
 
-> **常見誤區**：`await sdk.init()` **不等於** `await sdk.run(keep_running=False)`。兩點不同：① `init()` 回傳 `bool`，`run()` 回傳 `None`；② `run()` 用 try/except 包裝初始化與運行過程（攔截模組/適配器例外防崩），而 `init()` 不包裝，例外會直接向上拋。需要配對卸載或自訂例外處理時，用 `init()` + `uninit()`。
+> **常見誤區**：`await sdk.init()` **不等於** `await sdk.run(keep_running=False)`。兩點不同：① `init()` 返回 `bool`（失敗時返回 `False`），`run()` 返回 `None`；② `init()` 僅做初始化、**不自動卸載**，`run()` 在事件循環結束時自動 `uninit()`。因此需要手動配對卸載或自定義生命週期時，使用 `init()` + `uninit()`。
+
+docs/zh-TW/quick-start.md
 
 ## 啟動鏈路總覽
 
-`sdk.init()`（準確說是其內部的 `Initializer.init()`）按以下順序拉起整個框架：
+`sdk.init()`（準確來說是其內部的 `Initializer.init()`）會按照以下順序啟動整個框架：
 
 ```mermaid
 flowchart TD
-    A[0. 準備環境<br/>配置載入 / 例外處理] --> B
-    B[1. 並行發現與載入<br/>AdapterLoader.load / ModuleLoader.load<br/>內部呼叫 Finder.find_all] --> C
+    A[0. 準備環境<br/>配置加載 / 異常處理] --> B
+    B[1. 並行發現與加載<br/>AdapterLoader.load / ModuleLoader.load<br/>內部呼叫 Finder.find_all] --> C
     C[2. 註冊適配器<br/>AdapterLoader.register_to_manager] --> D
     D[3. 啟動適配器<br/>adapter.startup] --> E
     E[4. 註冊模組<br/>ModuleLoader.register_to_manager] --> F
@@ -8720,15 +9082,15 @@ flowchart TD
     G[6. 啟動路由伺服器<br/>router.start]
 ```
 
-對應的核心元件：
+對應的核心組件：
 
-| 層 | 元件 | 職責 |
+| 層 | 組件 | 職責 |
 |----|------|------|
 | 發現 | `AdapterFinder` / `ModuleFinder` | 從已安裝套件的 entry-points 中**發現**適配器/模組 |
-| 載入 | `AdapterLoader` / `ModuleLoader` | 發現 + 導入 + 讀取元資料 + 判斷啟用/禁用，回傳物件清單 |
+| 加載 | `AdapterLoader` / `ModuleLoader` | 發現 + 導入 + 讀取元數據 + 判斷啟用/禁用，返回物件清單 |
 | 註冊 | `*Loader.register_to_manager` | 把物件登記到對應管理器 |
 | 管理 | `sdk.adapter` / `sdk.module` | 維護適配器/模組實例，提供啟停介面 |
-| 初始化 | `ModuleLoader.initialize_modules` | 建立模組實例並掛載到 `sdk`（處理依賴拓撲排序） |
+| 初始化 | `ModuleLoader.initialize_modules` | 創建模組實例並掛載到 `sdk`（處理依賴拓撲排序） |
 | 路由 | `sdk.router` | HTTP / WebSocket 伺服器 |
 
 > **重要**：`Finder` 和 `Loader` 是兩層。`Loader` 內部**已經持有**一個 `Finder`（`AdapterLoader` 自帶 `AdapterFinder`，`ModuleLoader` 自帶 `ModuleFinder`）。大多數場景你只需要用 `Loader`，只有需要「只列出不導入」時才會單獨用 `Finder`。
@@ -8737,7 +9099,7 @@ flowchart TD
 
 ### 1. 發現層：Finder
 
-Finder 只負責「找到有哪些套件提供了適配器/模組」，不導入、不實例化。
+Finder 只負責「找到有哪些套件提供了適配器/模組」，不匯入、不實例化。
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -8753,11 +9115,11 @@ module_entries = module_finder.find_all()      # list[EntryPoint]
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-每個 `EntryPoint` 可以 `.load()` 得到對應的類，但通常不用你手動調——Loader 會做。
+每個 `EntryPoint` 可以 `.load()` 得到對應的類，但通常不用你手動呼叫——Loader 會處理。
 
-### 2. 載入層：Loader
+### 2. 加載層：Loader
 
-Loader 在 Finder 之上做了「導入 + 讀元資料 + 判斷啟用/禁用」。
+Loader 在 Finder 之上做了「匯入 + 讀取元數據 + 判斷啟用/禁用」。
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -8766,32 +9128,32 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() 內部：呼叫 finder.find_all() → 逐個處理 entry-point → 回傳三元組
+# load() 內部：呼叫 finder.find_all() → 逐個處理 entry-point → 返回三元組
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
 
-`load()` 回傳的三元組：
+`load()` 返回的三元組：
 
-| 回傳值 | 含義 |
+| 返回值 | 含義 |
 |--------|------|
 | `objs` (`dict`) | 名稱 → 對象（適配器類 / 模組包裝物件） |
 | `enabled` (`list[str]`) | 被啟用的名稱（設定中未禁用） |
 | `disabled` (`list[str]`) | 被禁用的名稱 |
 
-#### 載入失敗時的診斷資訊
+#### 加載失敗時的診斷資訊
 
-當某個模組/適配器在載入或初始化階段拋出例外時，框架會跳過該元件並繼續載入其他元件，同時輸出**使用者程式碼框架摘要**，讓你在預設 INFO 級別下即可定位出錯位置，無需手動重開 DEBUG：
+當某個模組/適配器在加載或初始化階段拋出異常時，框架會跳過該元件並繼續加載其他元件，同時輸出**用戶程式碼框架摘要**，讓你在預設的 INFO 級別下即可定位出錯位置，無需手動重開 DEBUG：
 
 ```
-[ERROR] [ModuleLoader] 從 entry-point 載入模組 MyModule 失敗，已跳過: 'NoneType' object has no attribute 'platform'
+[ERROR] [ModuleLoader] 從 entry-point 加載模組 MyModule 失敗，已跳過: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → 提示: 將日誌等級提高到 DEBUG 可查看完整堆疊；檢查模組 MyModule 的實作程式碼
+  → 提示: 將日誌級別提高到 DEBUG 可查看完整堆疊；檢查模組 MyModule 的實作程式碼
 ```
 
-診斷資訊透過 `ErisPulse.runtime.diagnostics` 模組產生，會自動過濾掉框架內部框架，只保留你的程式碼框架。如需在自訂載入邏輯中重用：
+診斷資訊透過 `ErisPulse.runtime.diagnostics` 模組產生，會自動過濾掉框架內部框架，只保留你的程式碼框架。如需在自訂加載邏輯中重用：
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -8799,24 +9161,24 @@ from ErisPulse.runtime import log_diagnostic
 try:
     risky_init()
 except Exception as e:
-    log_diagnostic(e)  # 自動提取使用者程式碼框架並寫入 ERROR 日誌
+    log_diagnostic(e)  # 自動提取用戶程式碼框架並寫入 ERROR 日誌
 ```
 
-該模組還提供 `extract_user_frame()`（回傳結構化框架資訊）和 `format_diagnostic_block()`（回傳多行文字）兩個底層函數。
+該模組還提供 `extract_user_frame()`（返回結構化框架資訊）和 `format_diagnostic_block()`（返回多行文字）兩個底層函數。
 
 ### 3. 註冊層：register_to_manager
 
 把 Loader 產出的物件登記到管理器，讓 `sdk.adapter` / `sdk.module` 能識別它們。
 
 ```python
-# 註冊適配器（回傳 bool，表示是否全部成功）
+# 註冊適配器（返回 bool，表示是否全部成功）
 await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.adapter)
 
 # 註冊模組
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-註冊後，適配器進入 `sdk.adapter._adapters`，模組類進入 `sdk.module`，但**都還未啟動/實例化**。
+註冊後，適配器已登記到適配器管理器、模組已登記到模組管理器，但**都還未啟動/實例化**。
 
 ### 4. 啟動適配器
 
@@ -8832,7 +9194,7 @@ await sdk.adapter.startup(["yunhu", "telegram"])
 
 ### 5. 初始化模組
 
-模組比適配器多一步——需要**實例化**並掛載到 `sdk` 上（這樣你才能 `sdk.MyModule.xxx` 調用）。這一步還處理模組間的依賴宣告與拓撲排序。
+模組比適配器多一步——需要**實例化**並掛載到 `sdk` 上（這樣你才能 `sdk.MyModule.xxx` 呼叫）。這一步還處理模組間的依賴宣告與拓撲排序。
 
 ```python
 success = await module_loader.initialize_modules(
@@ -8853,11 +9215,11 @@ await sdk.router.start(
 )
 ```
 
-路由伺服器負責接收適配器的 Webhook / WebSocket 回呼。不啟動它，server 模式的適配器無法收訊息。
+路由伺服器負責接收適配器的 Webhook / WebSocket 回呼。不啟動它，server 模式的適配器無法接收訊息。
 
 ## 完整手動啟動示例
 
-下面這段程式碼**等於** `await sdk.init()` 的核心流程，但每一步都暴露在你手裡，可以在任意環節插入自訂邏輯：
+下面這段程式碼**等價於** `await sdk.init()` 的核心流程，但每一步都暴露在你手上，可以在任意環節插入自定義邏輯：
 
 ```python
 import asyncio
@@ -8867,7 +9229,7 @@ from ErisPulse.loaders import AdapterLoader, ModuleLoader
 async def manual_startup():
     # 0. 準備環境（載入設定、註冊全域例外處理）
     #    _prepare_environment 是 init() 內部的前置步驟；手動流程也需先呼叫，
-    #    否則 Loader 讀不到設定，會把所有適配器/模組誤判為禁用。
+    #    否則 Loader 讀不到設定，會把所有適配器/模組誤判為停用。
     if not await sdk._prepare_environment():
         print("環境準備失敗")
         return False
@@ -8921,22 +9283,24 @@ if __name__ == "__main__":
 
 ### 何時該手動啟動？
 
-絕大多數情況下**不需要**手動啟動，`await sdk.run()` 已經把上面這些都做好了。手動啟動僅在這些場景才有價值：
+大多數情況下**不需要**手動啟動，`await sdk.run()` 已經把上面這些都做好了。手動啟動僅在這些場景才有價值：
 
 - **部分載入**：只載入指定的適配器/模組，跳過其他
 - **動態註冊**：執行時根據條件註冊新的適配器/模組
-- **自訂順序**：需要打亂預設的載入順序（如先啟動某模組再啟動適配器）
+- **自訂順序**：需要打亂預設的載入順序（例如先啟動某模組再啟動適配器）
 - **注入策略**：對 Loader 注入自訂的嚴格模式管理器、載入策略等
 - **除錯/診斷**：在某個環節失敗時，手動驅動以定位問題
+
+[**English**](docs/zh-TW/quick-start.md) | [**简体中文**](docs/zh-TW/quick-start.md)
 
 ## 運行時細粒度控制
 
 即使用了 `sdk.run()` 完成啟動，你仍然可以在運行時單獨控制各子系統，而不必重新啟動整個 SDK：
 
-### 適配器熱啟停
+### 适配器熱啟停
 
 ```python
-# 熱重啟某個適配器（修復連接，不受其他平台影響）
+# 熱重啟某個适配器（修復連接，不影響其他平台）
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
@@ -8947,7 +9311,7 @@ await sdk.adapter.startup("telegram")
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` 要求適配器**已被註冊**到管理器。註冊發生在 `init()`/`run()` 內部，所以這是啟動**之後**的細粒度控制。
+> `adapter.startup()` 要求适配器**已被註冊**到管理器。註冊發生在 `init()`/`run()` 內部，所以這是啟動**之後**的細粒度控制。
 
 ### 路由伺服器
 
@@ -8959,19 +9323,18 @@ await sdk.router.stop()
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
-### 模組按需載入
+### 模組按需加載
 
 ```python
-# 手動載入一個（可能是懶載入的）模組
+# 手動加載一個（可能是懶加載的）模組
 await sdk.load_module("MyModule")
-```
 
 ## 優雅關閉
 
-從 2.7.0 起，`sdk.shutdown()` 提供**程式化優雅關閉**：設定關閉事件，讓正在 `await sdk.run(keep_running=True)` 掛起的主迴圈返回，進而觸發 `uninit()` 完成資源清理。
+從 2.7.0 版本起，`sdk.shutdown()` 提供**程式化的優雅關閉**：設定關閉事件，讓正在 `await sdk.run(keep_running=True)` 中掛起的主迴圈返回，進而觸發 `uninit()` 完成資源清理。
 
 ```python
-# 在任意協程中呼叫，觸發優雅退出（run() 掛起返回並自動 uninit）
+# 在任何協程中呼叫，觸發優雅退出（run() 挂起返回並自動 uninit）
 sdk.shutdown()
 ```
 
@@ -8988,61 +9351,64 @@ async def shutdown_after_idle():
 - Windows 不支援 `loop.add_signal_handler`，信號處理器會自動跳過（仍可用 `sdk.shutdown()` 或 Ctrl+C 觸發關閉）
 - 反覆呼叫 `sdk.shutdown()` 是安全的（事件已設定後再次呼叫為無操作）
 
+[**English**](docs/zh-TW/quick-start.md) | [**简体中文**](docs/zh-TW/quick-start.md)
+
 ## 卸載流程
 
 啟動的反向操作是 `await sdk.uninit()`，它按相反順序清理：
 
 1. 關閉所有適配器（`adapter.shutdown()`）
 2. 卸載所有模組
-3. 清理所有事件處理器
+3. 清理所有事件處理程式
 4. 清理管理器與 SDK 上的模組屬性
 
-手動啟動場景下，記得在退出前呼叫 `uninit()` 保證優雅關閉：
+手動啟動場景下，記得在退出前呼叫 `uninit()` 以確保優雅關閉：
 
 ```python
 try:
     await asyncio.Event().wait()   # 維持運行
 finally:
     await sdk.uninit()
-```
 
-## 重啟
+## 重新啟動
 
-SDK 提供兩種重啟方式，都不需要你自己先卸載——框架會自行處理：
+SDK 提供兩種重新啟動方式，都不需要你自己先卸載——框架會自行處理：
 
-| 方式 | 呼叫 | 行為 | 適用場景 |
+| 方式 | 調用 | 行為 | 適用場景 |
 |------|------|------|----------|
-| 熱重啟 | `await sdk.restart()` | 同一進程內 `uninit()` 後重新 `init()`，重新載入適配器/模組 | 重新載入設定、熱更新模組 |
-| 硬重啟 | `await sdk.hard_restart()` | `uninit()` 後退出整個進程，由父進程（`epsdk run`）拉起全新進程 | 怀疑有記憶體/資源泄漏、需要徹底乾淨重啟 |
+| 熱重新啟動 | `await sdk.restart()` | 同一進程內 `uninit()` 後重新 `init()`，重新載入適配器/模組 | 重新載入配置、熱更新模組 |
+| 硬重新啟動 | `await sdk.hard_restart()` | `uninit()` 後退出整個進程，由父進程（`epsdk run`）拉起全新進程 | 懷疑有記憶體/資源洩漏、需要徹底乾淨重新啟動 |
 
 ```python
-# 熱重啟：同進程內重新載入（最常用）
+# 熱重新啟動：同進程內重新載入（最常用）
 await sdk.restart()
 
-# 硬重啟：退出進程，需透過 `epsdk run main.py` 啟動才生效
+# 硬重新啟動：退出進程，需透過 epsdk run 啟動才生效
 await sdk.hard_restart()
 ```
 
 > **兩點注意**：
-> 1. 這兩個方法都用背景任務執行重啟，**立即回傳 `True` 表示「重啟任務已排程」**，而非「重啟已完成」。實際重啟在背景進行，避免中斷目前事件鏈路。
-> 2. `hard_restart()` **必須透過 `epsdk run main.py` 啟動才能生效**。它的原理是：卸載後以**退出碼 42** 退出進程，`epsdk run` 的父進程偵測到 42 才會重新拉起一個全新進程；如果是直接 `python main.py` 啟動，進程以碼 42 退出後就直接結束了，不會自動重啟。
+> 1. 這兩個方法都用背景任務執行重新啟動，**立即返回 `True` 表示「重新啟動任務已排程」**，而非「重新啟動已完成」。實際重新啟動在背景進行，避免中斷當前事件鏈路。
+> 2. `hard_restart()` **必須透過 `epsdk run main.py` 啟動才能生效**。它的原理是：卸載後以**退出碼 42** 退出進程，`epsdk run` 的父進程檢測到 42 才會重新拉起一個全新進程；如果是直接 `python main.py` 啟動，進程以碼 42 退出後就直接結束了，不會自動重新啟動。
 
-### 什麼時候該用硬重啟？
+### 什麼時候該用硬重新啟動？
 
-硬重啟不只是「更徹底的重啟」，它在以下場景比熱重啟更合適、甚至更高效：
+硬重新啟動不只是「更徹底的重新啟動」，它在以下場景比熱重新啟動更合適、甚至更高效：
 
-- **二進位庫（C 擴展）副作用**：熱重啟在同一進程內進行，無法釋放 C 擴展、打開的檔案描述符、執行緒等進程級資源；硬重啟換一個全新進程，這些副作用隨之徹底清零。
-- **資源泄漏排查**：懷疑存在記憶體或句柄泄漏時，硬重啟能拿到一個乾淨的環境。
-- **對效能敏感的頻繁重啟**：硬重啟省去了同進程內卸載→重新載入的開銷，實際比熱重啟更高效。
+- **二進制庫（C 擴展）副作用**：熱重新啟動在同一進程內進行，無法釋放 C 擴展、打開的檔案描述符、執行緒等進程級資源；硬重新啟動換一個全新進程，這些副作用隨之徹底清零。
+- **資源洩漏排查**：懷疑存在記憶體或句柄洩漏時，硬重新啟動能拿到一個乾淨的環境。
+- **對效能敏感的頻繁重新啟動**：硬重新啟動省去了同進程內卸載→重新載入的開銷，實際比熱重新啟動更高效。
 
-> Dashboard 管理介面裡的「框架重啟」功能，底層呼叫的就是 `hard_restart()`。
-> 另外就是硬重啟一個要求！必須使用 epsdk 的 run 命令進行啟動，否則程式只是會拋出 42 退出碼進行退出，因為 run 命令的拉起檢查了 42 退出碼進行重新拉起進程，這點必須要注意！！！
+> Dashboard 管理介面中的「框架重新啟動」功能，底層呼叫的就是 `hard_restart()`。
+> 另外就是硬重新啟動一個要求！必須使用 epsdk 的 run 命令進行啟動，否則程式只是會拋出 42 退出碼進行退出，因為 run 命令的拉起檢查了 42 退出碼進行重新拉起進程，這點必須要注意！！！
 
 ## 相關文件
 
-- [建立第一個機器人](../getting-started/first-bot.md) - `keep_running` 兩種基礎模式入門
+- [建立第一個機器人](../getting-started/first-bot.md) - `keep_running` 兩種基本模式入門
 - [生命週期管理](lifecycle.md) - 監聽 `core.init.start` / `core.init.complete` 等啟動事件
-- [懶載入系統](lazy-loading.md) - 模組懶載入機制與 `load_module`
+- [懶加載系統](lazy-loading.md) - 模組懶加載機制與 `load_module`
+
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
 
 

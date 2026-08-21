@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1432,
+  "total_keywords": 1433,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -45,7 +45,7 @@
     "1. 使用 Event 包装类": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 163,
+        "line": 165,
         "level": 3,
         "title": "1. 使用 Event 包装类"
       }
@@ -61,7 +61,7 @@
     "1. 使用事务": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 272,
+        "line": 274,
         "level": 3,
         "title": "1. 使用事务"
       }
@@ -77,7 +77,7 @@
     "1. 使用缓存": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 339,
+        "line": 341,
         "level": 3,
         "title": "1. 使用缓存"
       }
@@ -99,7 +99,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 232,
+        "line": 234,
         "level": 3,
         "title": "1. 分类异常处理"
       }
@@ -137,7 +137,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 422,
+        "line": 424,
         "level": 3,
         "title": "1. 单元测试"
       }
@@ -161,7 +161,7 @@
     "1. 合理使用日志级别": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 305,
+        "line": 307,
         "level": 3,
         "title": "1. 合理使用日志级别"
       }
@@ -217,7 +217,7 @@
     "1. 敏感数据保护": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 376,
+        "line": 378,
         "level": 3,
         "title": "1. 敏感数据保护"
       }
@@ -265,7 +265,7 @@
     "1. 版本管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 451,
+        "line": 453,
         "level": 3,
         "title": "1. 版本管理"
       }
@@ -495,7 +495,7 @@
     "2. README 头部": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 465,
+        "line": 467,
         "level": 3,
         "title": "2. README 头部"
       }
@@ -583,7 +583,7 @@
     "2. 合理使用懒加载": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 179,
+        "line": 181,
         "level": 3,
         "title": "2. 合理使用懒加载"
       }
@@ -615,7 +615,7 @@
     "2. 批量操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 288,
+        "line": 290,
         "level": 3,
         "title": "2. 批量操作"
       }
@@ -709,7 +709,7 @@
     "2. 结构化日志": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 327,
+        "line": 329,
         "level": 3,
         "title": "2. 结构化日志"
       }
@@ -741,7 +741,7 @@
     "2. 超时处理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 254,
+        "line": 256,
         "level": 3,
         "title": "2. 超时处理"
       }
@@ -749,7 +749,7 @@
     "2. 输入验证": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 402,
+        "line": 404,
         "level": 3,
         "title": "2. 输入验证"
       }
@@ -765,7 +765,7 @@
     "2. 避免阻塞操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 360,
+        "line": 362,
         "level": 3,
         "title": "2. 避免阻塞操作"
       }
@@ -795,7 +795,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 435,
+        "line": 437,
         "level": 3,
         "title": "2. 集成测试"
       }
@@ -955,7 +955,7 @@
     "3. 事件处理器注册": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 214,
+        "line": 216,
         "level": 3,
         "title": "3. 事件处理器注册"
       }
@@ -1123,7 +1123,7 @@
     "3. 资源管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 149,
+        "line": 151,
         "level": 3,
         "title": "3. 资源管理"
       }
@@ -2163,7 +2163,7 @@
     "@消息相关": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 127,
+        "line": 144,
         "level": 4,
         "title": "@消息相关"
       }
@@ -2469,7 +2469,7 @@
     "ClientWebSocket 属性": [
       {
         "document": "advanced/http-client.md",
-        "line": 333,
+        "line": 336,
         "level": 3,
         "title": "ClientWebSocket 属性"
       }
@@ -2785,7 +2785,7 @@
     "HTTP 请求事件": [
       {
         "document": "advanced/http-client.md",
-        "line": 224,
+        "line": 227,
         "level": 3,
         "title": "HTTP 请求事件"
       }
@@ -2809,7 +2809,7 @@
     "HTTPStatusError": [
       {
         "document": "advanced/http-client.md",
-        "line": 432,
+        "line": 435,
         "level": 3,
         "title": "HTTPStatusError"
       }
@@ -3381,7 +3381,7 @@
     "WSMessage": [
       {
         "document": "advanced/http-client.md",
-        "line": 324,
+        "line": 327,
         "level": 3,
         "title": "WSMessage"
       }
@@ -3405,7 +3405,7 @@
     "WebSocket 客户端": [
       {
         "document": "advanced/http-client.md",
-        "line": 257,
+        "line": 260,
         "level": 2,
         "title": "WebSocket 客户端"
       }
@@ -3451,7 +3451,7 @@
     "WebSocket 连接事件": [
       {
         "document": "advanced/http-client.md",
-        "line": 236,
+        "line": 239,
         "level": 3,
         "title": "WebSocket 连接事件"
       }
@@ -3753,7 +3753,7 @@
     "`hasattr` 和 `dir` 支持": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 395,
+        "line": 412,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支持"
       }
@@ -4281,7 +4281,7 @@
     "上下文管理": [
       {
         "document": "advanced/http-client.md",
-        "line": 248,
+        "line": 251,
         "level": 2,
         "title": "上下文管理"
       }
@@ -4458,6 +4458,14 @@
         "title": "中间件执行顺序"
       }
     ],
+    "为 event 参数添加类型注解": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 5,
+        "level": 2,
+        "title": "为 event 参数添加类型注解"
+      }
+    ],
     "为什么推荐 I18nClass？": [
       {
         "document": "advanced/i18n.md",
@@ -4547,7 +4555,7 @@
     "事件基础信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 91,
+        "line": 108,
         "level": 4,
         "title": "事件基础信息"
       }
@@ -4555,7 +4563,7 @@
     "事件处理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 161,
+        "line": 163,
         "level": 2,
         "title": "事件处理"
       },
@@ -4947,7 +4955,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 203,
+        "line": 220,
         "level": 4,
         "title": "交互方法"
       }
@@ -4955,7 +4963,7 @@
     "交互方法示例": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 242,
+        "line": 259,
         "level": 4,
         "title": "交互方法示例"
       }
@@ -5057,7 +5065,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 104,
+        "line": 121,
         "level": 4,
         "title": "会话标识"
       }
@@ -5073,7 +5081,7 @@
     "低级方法": [
       {
         "document": "advanced/http-client.md",
-        "line": 301,
+        "line": 304,
         "level": 4,
         "title": "低级方法"
       }
@@ -5413,7 +5421,7 @@
     "关闭连接": [
       {
         "document": "advanced/http-client.md",
-        "line": 360,
+        "line": 363,
         "level": 3,
         "title": "关闭连接"
       }
@@ -5843,7 +5851,7 @@
     "原始数据": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 359,
+        "line": 376,
         "level": 3,
         "title": "原始数据"
       }
@@ -6191,7 +6199,7 @@
     "发送者信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 116,
+        "line": 133,
         "level": 4,
         "title": "发送者信息"
       }
@@ -6379,7 +6387,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 350,
+        "line": 367,
         "level": 3,
         "title": "命令信息"
       }
@@ -6387,7 +6395,7 @@
     "命令信息获取": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 65,
+        "line": 82,
         "level": 2,
         "title": "命令信息获取"
       }
@@ -6411,7 +6419,7 @@
     "命令基础": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 352,
+        "line": 369,
         "level": 4,
         "title": "命令基础"
       }
@@ -6505,13 +6513,13 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 51,
+        "line": 68,
         "level": 2,
         "title": "回复功能"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 162,
+        "line": 179,
         "level": 3,
         "title": "回复功能"
       }
@@ -6817,7 +6825,7 @@
     "基本用法": [
       {
         "document": "advanced/http-client.md",
-        "line": 261,
+        "line": 264,
         "level": 3,
         "title": "基本用法"
       },
@@ -6853,7 +6861,7 @@
     "基础判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 133,
+        "line": 150,
         "level": 4,
         "title": "基础判断"
       }
@@ -6883,7 +6891,7 @@
     "基础回复": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 164,
+        "line": 181,
         "level": 4,
         "title": "基础回复"
       }
@@ -7359,7 +7367,7 @@
     "存储系统": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 270,
+        "line": 272,
         "level": 2,
         "title": "存储系统"
       },
@@ -7405,7 +7413,7 @@
     "安全性": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 374,
+        "line": 376,
         "level": 2,
         "title": "安全性"
       }
@@ -7897,7 +7905,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 364,
+        "line": 381,
         "level": 3,
         "title": "平台扩展方法"
       },
@@ -7987,7 +7995,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 178,
+        "line": 195,
         "level": 4,
         "title": "平台能力查询"
       }
@@ -8091,7 +8099,7 @@
     "异常体系": [
       {
         "document": "advanced/http-client.md",
-        "line": 366,
+        "line": 369,
         "level": 2,
         "title": "异常体系"
       }
@@ -8099,7 +8107,7 @@
     "异常层级": [
       {
         "document": "advanced/http-client.md",
-        "line": 372,
+        "line": 375,
         "level": 3,
         "title": "异常层级"
       }
@@ -8107,7 +8115,7 @@
     "异常捕获": [
       {
         "document": "advanced/http-client.md",
-        "line": 384,
+        "line": 387,
         "level": 3,
         "title": "异常捕获"
       },
@@ -8333,7 +8341,7 @@
     "性能优化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 337,
+        "line": 339,
         "level": 2,
         "title": "性能优化"
       }
@@ -8673,7 +8681,7 @@
     "接收消息": [
       {
         "document": "advanced/http-client.md",
-        "line": 273,
+        "line": 276,
         "level": 3,
         "title": "接收消息"
       }
@@ -9145,7 +9153,7 @@
     "方法速查表": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 87,
+        "line": 104,
         "level": 2,
         "title": "方法速查表"
       }
@@ -9199,7 +9207,7 @@
     "日志记录": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 303,
+        "line": 305,
         "level": 2,
         "title": "日志记录"
       },
@@ -9277,7 +9285,7 @@
     "最佳实践": [
       {
         "document": "advanced/http-client.md",
-        "line": 469,
+        "line": 472,
         "level": 2,
         "title": "最佳实践"
       },
@@ -9355,7 +9363,7 @@
     "机器人信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 98,
+        "line": 115,
         "level": 4,
         "title": "机器人信息"
       }
@@ -9441,7 +9449,7 @@
     "查询已注册方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 386,
+        "line": 403,
         "level": 3,
         "title": "查询已注册方法"
       }
@@ -9631,7 +9639,7 @@
     "核心字段方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 12,
+        "line": 29,
         "level": 2,
         "title": "核心字段方法"
       }
@@ -9701,7 +9709,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 89,
+        "line": 106,
         "level": 3,
         "title": "核心方法"
       }
@@ -9747,7 +9755,7 @@
     "核心特性": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 5,
+        "line": 22,
         "level": 2,
         "title": "核心特性"
       }
@@ -10145,7 +10153,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 420,
+        "line": 422,
         "level": 2,
         "title": "测试"
       }
@@ -10217,13 +10225,13 @@
     "消息事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 25,
+        "line": 42,
         "level": 2,
         "title": "消息事件方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 108,
+        "line": 125,
         "level": 3,
         "title": "消息事件方法"
       }
@@ -10247,7 +10255,7 @@
     "消息内容": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 110,
+        "line": 127,
         "level": 4,
         "title": "消息内容"
       }
@@ -10417,13 +10425,13 @@
     "消息类型判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 38,
+        "line": 55,
         "level": 2,
         "title": "消息类型判断"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 131,
+        "line": 148,
         "level": 3,
         "title": "消息类型判断"
       }
@@ -10725,7 +10733,7 @@
     "生命周期事件": [
       {
         "document": "advanced/http-client.md",
-        "line": 222,
+        "line": 225,
         "level": 2,
         "title": "生命周期事件"
       },
@@ -10761,7 +10769,7 @@
     "生命周期钩子": [
       {
         "document": "advanced/http-client.md",
-        "line": 342,
+        "line": 345,
         "level": 3,
         "title": "生命周期钩子"
       }
@@ -10911,7 +10919,7 @@
       },
       {
         "document": "advanced/http-client.md",
-        "line": 479,
+        "line": 482,
         "level": 2,
         "title": "相关文档"
       },
@@ -11007,7 +11015,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 506,
+        "line": 508,
         "level": 2,
         "title": "相关文档"
       },
@@ -11019,7 +11027,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 421,
+        "line": 438,
         "level": 2,
         "title": "相关文档"
       },
@@ -11143,7 +11151,7 @@
     "等待回复功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 193,
+        "line": 210,
         "level": 3,
         "title": "等待回复功能"
       }
@@ -11289,7 +11297,7 @@
     "统一捕获": [
       {
         "document": "advanced/http-client.md",
-        "line": 419,
+        "line": 422,
         "level": 3,
         "title": "统一捕获"
       }
@@ -11353,7 +11361,7 @@
     "群组/频道信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 121,
+        "line": 138,
         "level": 4,
         "title": "群组/频道信息"
       }
@@ -11457,7 +11465,7 @@
     "自定义默认头": [
       {
         "document": "advanced/http-client.md",
-        "line": 197,
+        "line": 200,
         "level": 2,
         "title": "自定义默认头"
       }
@@ -11703,7 +11711,7 @@
     "请求事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 152,
+        "line": 169,
         "level": 3,
         "title": "请求事件方法"
       }
@@ -11719,7 +11727,7 @@
     "请求信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 154,
+        "line": 171,
         "level": 4,
         "title": "请求信息"
       }
@@ -11773,7 +11781,7 @@
     "请求类型判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 157,
+        "line": 174,
         "level": 4,
         "title": "请求类型判断"
       }
@@ -11781,7 +11789,7 @@
     "请求统计": [
       {
         "document": "advanced/http-client.md",
-        "line": 209,
+        "line": 212,
         "level": 2,
         "title": "请求统计"
       }
@@ -11923,7 +11931,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 402,
+        "line": 419,
         "level": 3,
         "title": "跨平台扩展（通配符）"
       }
@@ -11979,7 +11987,7 @@
     "转发功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 182,
+        "line": 199,
         "level": 4,
         "title": "转发功能"
       }
@@ -12227,7 +12235,7 @@
     "适配器中使用": [
       {
         "document": "advanced/http-client.md",
-        "line": 444,
+        "line": 447,
         "level": 2,
         "title": "适配器中使用"
       }
@@ -12457,13 +12465,13 @@
     "通知事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 77,
+        "line": 94,
         "level": 2,
         "title": "通知事件方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 139,
+        "line": 156,
         "level": 3,
         "title": "通知事件方法"
       }
@@ -12479,7 +12487,7 @@
     "通知操作者": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 141,
+        "line": 158,
         "level": 4,
         "title": "通知操作者"
       }
@@ -12487,7 +12495,7 @@
     "通知类型判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 145,
+        "line": 162,
         "level": 4,
         "title": "通知类型判断"
       }
@@ -12575,7 +12583,7 @@
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 449,
+        "line": 451,
         "level": 2,
         "title": "部署"
       }
@@ -13071,7 +13079,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 230,
+        "line": 232,
         "level": 2,
         "title": "错误处理"
       },
@@ -13225,7 +13233,7 @@
     "高级方法 (推荐)": [
       {
         "document": "advanced/http-client.md",
-        "line": 275,
+        "line": 278,
         "level": 4,
         "title": "高级方法 (推荐)"
       }

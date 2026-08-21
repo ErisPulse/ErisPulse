@@ -252,7 +252,7 @@ Content-Type 值
 ---
 
 
-### `class HttpClient(BaseHttpClient)`
+### `class Client(BaseClient)`
 
 HTTP/WS 客户端 (基于 aiohttp)
 

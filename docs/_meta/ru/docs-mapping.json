@@ -182,7 +182,7 @@
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL: подробное описание",
+              "title": "Подробное руководство SendDSL",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
@@ -227,13 +227,13 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Документация по особенностям платформы Telegram",
+          "title": "Документация по функциям платформы Telegram",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
         },
         {
-          "title": "Документация по функциям почтовой платформы",
+          "title": "Документация по функциональным возможностям платформы электронной почты",
           "path": "platform-guide/email.md",
           "level": 1,
           "icon": "fa-envelope"
@@ -399,7 +399,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Процесс запуска и ручное управление",
+          "title": "Запуск и ручное управление",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
