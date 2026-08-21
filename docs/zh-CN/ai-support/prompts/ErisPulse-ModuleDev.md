@@ -143,13 +143,57 @@ flowchart LR
     I --> J["适配器发送至平台"]
 ```
 
-### 事件处理关键步骤
+### 事件处理链路详解
 
-- **适配器接收** - 各平台适配器通过 WebSocket/Webhook 等方式接收原生事件
-- **OB12 标准化** - 将平台原生事件转换为统一的 OneBot12 标准格式
-- **中间件处理** - 依次执行已注册的中间件函数，可修改事件数据
-- **事件分发** - 根据事件类型（message/notice/request/meta）分发到对应处理器
-- **SendDSL 回复** - 处理器通过 `event.reply()` 或 `SendDSL` 链式调用发送响应
+上面这张图是「结果」；下面拆开 `adapter.emit()` 之后框架**在背后做了什么**——这是一条三层分发的链路：
+
+```mermaid
+sequenceDiagram
+    participant P as 平台
+    participant A as 适配器总线层<br/>AdapterManager.emit
+    participant T as 处理器 Task 层<br/>_dispatch_handler_task
+    participant E as Event 模块层<br/>_process_event
+
+    P->>A: 原生事件
+    A->>A: 提取 platform/type/detail_type + 原始字段
+    A->>A: [Recv] 接收日志
+    A->>A: lifecycle.adapter.event.receive（最早期钩子）
+    A->>A: 处理 self 字段（meta 分支 / Bot 自动注册）
+    A->>A: 中间件链（串行，可改写事件数据）
+    A->>A: 收集 handler（具体类型 + 通配符 *）
+    A->>A: 作用域过滤（创建 Task 前，静默跳过）
+    A->>T: asyncio.create_task（fire-and-forget）
+    A->>A: lifecycle.adapter.event.dispatched（最末钩子）
+    T->>T: 获取并发信号量（默认上限 64）
+    T->>E: 调用 Event 模块挂载的处理器
+    E->>E: lifecycle.event.pre_process
+    E->>E: ignore_self（消息事件默认忽略自身）
+    E->>E: 按优先级分组：高→低、组间串行、组内并发
+    E->>E: 组内副本执行 + 字段合并（冲突告警）
+    E->>E: 组后检查 stop() 阻断更低优先级
+    T->>T: 慢日志（超 1s 告警，wait_reply 时间白名单）
+```
+
+**每一步框架做了什么、你能干预什么：**
+
+| 阶段 | 框架做了什么 | 你能干预的 |
+|------|-------------|-----------|
+| 接收 | 提取标准字段，保留 `{platform}_raw` 原始数据；写 `[Recv]` 日志 | 监听 `adapter.event.receive` 拿到最早期事件 |
+| self 字段 | meta 事件走 connect/disconnect/heartbeat 分支；普通事件自动注册 Bot 并触发 `adapter.bot.online` | 监听 `adapter.bot.online` / `bot.offline` |
+| 中间件 | **串行**执行，返回值非 None 则替换事件数据 | 注册中间件改写/拦截事件 |
+| 分发收集 | 先取具体类型 handler，再取 `*` 通配符 handler | — |
+| 作用域过滤 | 按 owner 判定 `scope.is_allowed`（会话级>Bot级>平台级），**不通过则静默跳过** | 配置作用域白名单/黑名单 |
+| 调度 | 每个匹配 handler 独立 `asyncio.Task`，`emit()` **不等待** handler 完成即返回 | — |
+| 优先级 | 高优先级组先执行；**组间串行、组内并发**（组内各自持有事件副本，改字段合并回原事件，冲突打 WARNING） | `@command(..., priority=N)` / 注册时指定 priority |
+| 阻断 | 每处理完一组检查 `event.is_stopped()`，命中则**不再执行更低优先级** | `event.mark_processed(stop=True)` / `event.done()` |
+
+> **常见误区**：
+> 1. **作用域过滤是静默的**——被屏蔽的 handler 不报错不响应，只在 TRACE 级日志可见（`core.scope.denied`）。「我的模块没收到消息」优先排查作用域绑定。
+> 2. **handler 天然并发**——框架已为每个 handler 建独立 Task，你**不需要**再自己 `asyncio.create_task` 包一层。
+> 3. **同优先级组内不阻断**——`mark_processed(stop=True)` 只阻止更低优先级组，同组内已并发的 handler 不会中途被打断。
+> 4. **慢日志阈值固定 1 秒**——处理器耗时超 1s 会在日志打 WARNING（`wait_reply` 等待时间已从耗时中剔除），但不中断执行。
+
+> 作用域三级绑定与优先级细节见 [作用域系统](advanced/scope.md)；claim/阻断完整语义见 [事件处理入门](getting-started/event-handling.md)；并发上限配置见 [配置指南](user-guide/configuration.md#框架配置)。
 
 ## 生命周期事件
 
@@ -1179,6 +1223,28 @@ async def handler_c(event):
     pass
 ```
 
+> **并发上限**：所有匹配 handler 的 Task 会**立即创建**，但通过一个信号量限制**同时在途执行数**，默认上限 **64**（`ErisPulse.framework.handler_max_concurrency`，支持热更新）。超过上限的 Task 在信号量上排队，等前面的完成后再进。事件洪峰时这就是你的「泄压阀」。
+>
+> **慢日志**：单个处理器耗时超过 **1 秒**时，框架会在日志打 WARNING（`handler_slow`）。`wait_reply` 的等待时间会从耗时里剔除，不会因为「等人回复」误报慢。
+
+## 作用域过滤：为什么我的模块没收到消息
+
+事件分发在**创建处理器 Task 之前**会做作用域过滤——按模块 owner 判定 `scope.is_allowed`（会话级 > Bot 级 > 平台级），**不通过就静默跳过**，不报错不响应。
+
+```python
+# 假设 config.toml 里把 MyModule 屏蔽在了某个群：
+[ErisPulse.scope]
+block = { yunhu = { group_123 = ["MyModule"] } }
+```
+
+此时该群的消息到达时，`MyModule` 的命令与事件处理器**都不会被调度**。这不是 bug，是作用域机制——排查「模块没反应」时优先检查作用域绑定。
+
+- 三层过滤点：适配器总线级（Task 创建前）、Event 模块级（每个优先级组内）、命令级（权限检查前）
+- 过滤日志只在 **TRACE** 级可见（`core.scope.denied`），默认 INFO 看不到任何痕迹
+- 框架级处理器（如命令分发器 `scope_exempt=True`）不受作用域影响
+
+> 作用域三级绑定、白名单/黑名单、优先级覆盖与「default_allow」隐式拒绝语义见 [作用域系统](../../advanced/scope.md)。
+
 ## 链路控制：认领与阻断
 
 > [!NOTE]
@@ -2016,6 +2082,9 @@ class MyModule(BaseModule):
 
 > `depends` 声明的模块如果未注册，当前模块将被跳过并记录警告。加载顺序由拓扑排序决定，同层级按 `priority` 降序。
 
+> [!NOTE]
+> **级联卸载 / 级联重载**（ErisPulse **2.8.0+**）：卸载被其它模块依赖的模块时，依赖它的模块会**先被级联卸载**（日志说明级联链）；热重载本地插件时，依赖它的插件同样**级联重载**，避免依赖者持有失效实例引用继续运行。声明循环依赖会在加载时以 `RuntimeError` 拒绝。
+
 ### on_load 方法
 
 模块加载时调用，用于初始化资源和注册事件处理器：
@@ -2043,6 +2112,77 @@ async def on_unload(self, event):
     # 取消事件处理器（框架会自动处理）
     self.logger.info("模块已卸载")
 ```
+
+> 后台任务的创建与清理（`self.spawn()` / 框架兜底取消）详见 [生命周期管理](../../advanced/lifecycle.md#后台任务归属与自动取消)。
+
+### 卸载与彻底卸载（purge）
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+`unload()` 默认只**取消加载**（卸载实例与资源），但保留注册存根（模块类与元信息）——模块仍可被 discover 重新发现、`load()` 重新实例化，无需重新 `register()`。
+
+当需要**彻底卸载**（释放模块类引用、清理 `sys.modules`，让插件及其独占依赖可被 GC 回收）时，传入 `purge=True`：
+
+```python
+# 只取消加载：保留注册存根，可随时重新 load()
+await sdk.module.unload("MyModule")
+
+# 彻底卸载：删除注册存根 + 清理 sys.modules（插件来源）
+await sdk.module.unload("MyModule", purge=True)
+```
+
+| 语义 | `unload()` 默认 | `unload(purge=True)` |
+|------|-----------------|----------------------|
+| 卸载实例与资源（事件/task/路由/lifecycle/i18n） | ✅ | ✅ |
+| 保留注册存根（模块类与元信息） | ✅ | ❌ 删除 |
+| 清理 `sys.modules`（仅插件文件夹来源） | ❌ | ✅ |
+| 模块类可被 GC 回收 | ❌ | ✅ |
+| 重新加载 | `load()` 直接可用 | 需先 `register()` + `load()` |
+
+> `purge=True` 时级联卸载的依赖者同样被 purge；卸载后框架会 `gc.collect()` 并检查模块类/实例是否可回收，残留引用会在日志中告警（含引用方，DEBUG 级）。
+
+### 生命周期全景
+
+把上面的方法串起来，框架在加载与卸载一个模块时，**在背后为你做的全部事情**：
+
+```mermaid
+flowchart TD
+    subgraph Load["加载（register → load）"]
+        L1["register：登记模块类与元信息"] --> L2["依赖校验<br/>缺失则跳过"]
+        L2 --> L3["拓扑排序（Kahn + priority）"]
+        L3 --> L4["owner 注入 current_owner"]
+        L4 --> L5["生成配置模板 + 注册 i18n 翻译键"]
+        L5 --> L6["实例化模块（注入 sdk）"]
+        L6 --> L7["调用 on_load()"]
+        L7 --> L8["挂载到 sdk 属性 + emit module.load"]
+    end
+
+    subgraph Unload["卸载（unload）"]
+        U1["调用 on_unload()"] --> U2["兜底取消后台任务（self.spawn 归属）"]
+        U2 --> U3["清理 i18n 翻译键"]
+        U3 --> U4["移除路由 / 命令 / 事件处理器（按 owner）"]
+        U4 --> U5["清理 lifecycle 钩子（按 owner）"]
+        U5 --> U6["移除 SDK 属性 + 懒加载代理"]
+        U6 --> U7["emit module.unload"]
+    end
+
+    Load --> Unload
+```
+
+**加载时框架帮你做了什么**（你只需写 `on_load`，其余自动完成）：
+
+| 环节 | 框架自动做的 |
+|------|-------------|
+| owner 注入 | 实例化期间用 `owner_scope` 包住模块名——你 `on_load` 里注册的命令/事件/钩子/后台任务**自动归属本模块**，卸载时按 owner 一键清理 |
+| 配置模板 | 声明了 `ConfigClass` 的模块，框架自动生成/填充 `ErisPulse.<ModuleName>` 配置段 |
+| i18n 翻译键 | 声明了 `I18nClass` 的模块，翻译键自动注册（卸载时自动注销） |
+| 依赖拓扑 | 按 `depends` 声明排序，确保被依赖模块先加载；循环依赖以 `RuntimeError` 拒绝 |
+| SDK 挂载 | 实例化后挂到 `sdk.<ModuleName>`，你才能 `sdk.MyModule.xxx` 访问 |
+
+**卸载时框架帮你清理的**（对应上面的 U1→U7）：`on_unload` 跑完后再兜底清理——后台任务强制取消（`self.spawn` 创建的，优雅收尾请在 `on_unload` 自行做）、i18n 键、路由、命令/事件处理器、lifecycle 钩子，最后移除 SDK 属性。`purge=True` 额外删除注册存根 + 清理 `sys.modules`。
+
+> 这些自动清理就是「你只需写 `on_load`/`on_unload`，不用手动 unregister」的底气——框架用 owner 归属把「谁注册的谁清理」做成了一键式。
 
 ## SDK 对象
 
@@ -2864,12 +3004,17 @@ class MyModule(BaseModule):
 
 ```python
 async def handle_command(self, event):
-    # 使用 create_task 让耗时操作在后台执行
-    task = asyncio.create_task(self._long_operation())
-    
-    # 如果需要等待结果
-    result = await task
+    # 需要等待结果的耗时操作：直接 await（生命周期明确）
+    result = await self._long_operation()
+
+async def on_load(self, event):
+    # 后台任务（轮询/定时/fire-and-forget）：用 self.spawn()，
+    # 模块卸载时框架在 on_unload 之后兜底取消，避免持有 self 导致泄漏
+    self.spawn(self._poll())
 ```
+
+> [!NOTE]
+> 后台任务推荐 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——后者创建的裸任务不归属模块，卸载时不会被自动清理，会持有 `self` 引用导致模块实例无法被回收（热重载泄漏）。详见 [生命周期管理](../../advanced/lifecycle.md#后台任务归属与自动取消)。
 
 ### 3. 资源管理
 
@@ -7454,6 +7599,37 @@ class Main(BaseModule):
             sdk.logger.info(f"配置变更: {data['key']} = {data['new_value']}")
 ```
 
+## 后台任务归属与自动取消
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+模块创建的 asyncio 后台任务若未在 `on_unload` 中取消，会持有 `self` 引用导致模块实例无法被回收（热重载后旧实例残留）。框架提供以下兜底机制：
+
+- **`self.spawn(coro)`**（模块内推荐）：任务自动归属模块名，模块卸载时框架在 `on_unload` **之后**兜底取消未结束的任务并记录警告
+- **`spawn_background(coro)`**（`ErisPulse.runtime`）：自动捕获当前 `owner_scope` 上下文；`cancel_owner_tasks(owner)` 按归属取消，`cancel_all_background_tasks()` 供 `sdk.uninit()` 兜底
+- **适配器**：关闭时对平台名下的后台任务同样兜底取消
+
+```python
+async def on_load(self, event):
+    # 推荐：后台任务用 self.spawn()，卸载时框架自动兜底取消
+    self.spawn(self._poll())
+
+async def on_unload(self, event):
+    # 精细控制的场景仍建议自行取消并等待收尾
+    if self._poll_task:
+        self._poll_task.cancel()
+        await asyncio.gather(self._poll_task, return_exceptions=True)
+
+async def _poll(self):
+    while True:
+        await asyncio.sleep(60)
+        ...
+```
+
+> [!IMPORTANT]
+> 框架兜底是**强制 cancel**（`cancel_owner_tasks`），它发生在 `on_unload` 返回之后。因此需要优雅收尾的任务（flush 缓冲、持久化状态、关闭连接）**必须**在 `on_unload` 里自行 `cancel()` + `await` 完成——别指望兜底能保留收尾逻辑。框架只保证「不残留持有 `self` 的任务」，不保证「优雅」。需要 `await` 结果的任务请直接 `await`，不要丢给后台任务。
+
 ## 注意事项
 
 1. **处理器可以是同步或异步**：系统自动识别并正确调用
@@ -8658,7 +8834,7 @@ await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.ada
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-注册后，适配器进入 `sdk.adapter._adapters`，模块类进入 `sdk.module`，但**都还未启动/实例化**。
+注册后，适配器已登记到适配器管理器、模块已登记到模块管理器，但**都还未启动/实例化**。
 
 ### 4. 启动适配器
 

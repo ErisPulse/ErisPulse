@@ -104,36 +104,28 @@ The following diagram illustrates the complete initialization process of `sdk.in
 
 ```mermaid
 flowchart TD
-    A["sdk.init()"] --> B["Prepare Runtime Environment"]
-    B --> B1["Load Configuration File"]
-    B1 --> B2["Set Global Exception Handling"]
-    B2 --> C["Adapter & Module Discovery"]
-    C --> D{"Parallel Loading"}
-    D --> D1["Load Adapters from PyPI"]
-    D --> D2["Load Modules from PyPI"]
-    D1 & D2 --> E["Register Adapters"]
-    E --> E1["Start Adapters"]
-    E1 --> F["Register Modules"]
-    F --> F1{"Dependency Validation"}
-    F1 -->|"Missing Dependencies"| F2["Skip Module and Log Warning"]
-    F1 -->|"Dependencies Satisfied"| F3["Topological Sorting<br/>(Kahn Algorithm + Priority)"]
-    F3 --> G["Initialize Modules in Order<br/>(Instantiation + on_load)"]
+    A["sdk.init()"] --> B["Prepare runtime environment"]
+    B --> B1["Load configuration file"]
+    B1 --> B2["Set global exception handling"]
+    B2 --> C["Adapter & module discovery"]
+    C --> D{"Parallel loading"}
+    D --> D1["Load adapters from PyPI"]
+    D --> D2["Load modules from PyPI"]
+    D1 & D2 --> E["Register adapters"]
+    E --> E1["Start adapters"]
+    E1 --> F["Register modules"]
+    F --> F1{"Dependency validation"}
+    F1 -->|"Missing dependencies"| F2["Skip module and log warning"]
+    F1 -->|"Dependencies satisfied"| F3["Topological sorting<br/>(Kahn algorithm + priority)"]
+    F3 --> G["Initialize modules in order<br/>(instantiation + on_load)"]
     F2 --> G
-    G --> H["Start Router Server"]
-    H --> K["Ready to Run"]
+    G --> H["Start router server"]
+    H --> K["Ready to run"]
 ```
 
-### Detailed Initialization Stages
+### Detailed Explanation of Initialization Stages
 
-1. **Environment Preparation** - Load TOML configuration file, set global exception handling
-2. **Parallel Discovery** - Discover adapters and modules simultaneously from installed PyPI packages
-3. **Register Adapters** - Register discovered adapters to the adapter manager
-4. **Start Adapters** - Asynchronously start connections for each platform adapter (before module initialization, ensuring modules can immediately send messages)
-5. **Register Modules** - Register discovered modules to the module manager
-6. **Dependency Validation** - Check if declared `depends` dependencies of modules have been registered, skip modules with missing dependencies
-7. **Topological Sorting** - Use Kahn algorithm to sort module loading order by dependencies, and sort by `priority` in descending order for modules at the same level
-8. **Module Initialization** - Create module instances in sorted order, call `on_load` lifecycle method
-9. **Start Router Server** - Start FastAPI router server using Uvicorn
+> The complete initialization chain is broken down into (Finder / Loader / Manager / Router), the underlying entry points (`init()` / `init_task()` / `init_sync()`), and manual full startup can be found in [Startup Process and Manual Control](advanced/startup.md).
 
 ## Event Handling Flow
 
@@ -166,7 +158,7 @@ flowchart LR
 
 ## Lifecycle Events
 
-The following diagram shows the order in which lifecycle events are triggered for each component of the framework:
+The following diagram shows the order in which lifecycle events are triggered for each component in the framework:
 
 ```mermaid
 flowchart LR
@@ -197,25 +189,7 @@ flowchart LR
 
 ### Listening to Lifecycle Events
 
-You can listen to these events using `lifecycle.on()` to execute custom logic:
-
-```python
-from ErisPulse import sdk
-
-# Listen to all adapter events
-@sdk.lifecycle.on("adapter")
-async def on_adapter_event(event_data):
-    print(f"Adapter event: {event_data}")
-
-# Listen to module load completion
-@sdk.lifecycle.on("module.load")
-async def on_module_loaded(event_data):
-    print(f"Module loaded: {event_data}")
-
-# Listen to Bot online status
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(event_data):
-    print(f"Bot online: {event_data}")
+> For the complete event listener methods (`lifecycle.on()` / `once()` / `has_handlers()`), the full list of lifecycle events, and their data formats, see [Lifecycle Management](advanced/lifecycle.md).
 
 ## Module Loading Strategies
 
@@ -223,13 +197,13 @@ ErisPulse supports three module loading strategies, declared by the `ModuleLoadS
 
 ```mermaid
 flowchart TD
-    A["Module registered to ModuleManager"] --> B{"Load Strategy"}
+    A["Module registered to ModuleManager"] --> B{"Loading Strategy"}
     B -->|"lazy_load = true<br/>+ activate_on declared"| C["Create ModuleActivator proxy"]
     B -->|"lazy_load = true<br/>no activate_on"| D["Create LazyModule proxy"]
     B -->|"lazy_load = false"| E["Create instance immediately"]
     C --> F["Register event/command stubs to dispatcher"]
     F --> G["Mount to sdk attribute"]
-    G --> H["Event arrival triggers activation"]
+    G --> H["Activation triggered by event arrival"]
     H --> I["Instantiate + on_load() + unregister stubs"]
     D --> J["Mount to sdk attribute"]
     J --> K["Initialize on first attribute access"]
@@ -237,11 +211,14 @@ flowchart TD
     L --> M["Mount to sdk attribute"]
 ```
 
-> For more details, please refer to [Lazy Loading System](docs/en/lazy-loading.md), [Lifecycle Management](docs/en/lifecycle.md), and the module documentation.
+> For more details, please refer to [Lazy Loading System](advanced/lazy-loading.md), [Lifecycle Management](advanced/lifecycle.md), and module documentation.
 
 ### Event-Driven Lazy Activation (`activate_on`) Trigger Architecture
 
-`activate_on` allows a module to be loaded only when the **first matching event/command arrives**, avoiding persistent memory usage while ensuring no events are lost:
+> [!NOTE]
+> This feature requires ErisPulse **2.8.0+**.
+
+`activate_on` allows modules to be loaded only when the **first matching event/command arrives**, avoiding constant memory usage while ensuring events are not lost:
 
 ```mermaid
 flowchart LR
@@ -249,12 +226,13 @@ flowchart LR
         S1["get_load_strategy() returns<br/>ModuleLoadStrategy(activate_on=...)"] --> S2["activate_on syntax:<br/>str / dict / list freely mixed"]
         S2 --> S2a["'message' → event type level"]
         S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ type + detail_type"]
-        S2 --> S2c["{'command': 'roll'}<br/>→ command trigger"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ command trigger (shorthand/list)"]
+        S2 --> S2d["{'command': {'name': 'dice', 'help': ...,<br/>'aliases': [...], 'hidden': ...}}<br/>→ command trigger (dict declaration)"]
     end
 
     subgraph Runtime["Runtime"]
-        R1["ModuleActivator registers stub"] --> R1a["Event stub → message/notice/request/meta manager<br/>priority ACTIVATION_STUB_PRIORITY (very low)"]
-        R1 --> R1b["Command stub → command manager<br/>hidden placeholder command (hidden=True)"]
+        R1["ModuleActivator registers stubs"] --> R1a["Event stubs → message/notice/request/meta manager<br/>priority ACTIVATION_STUB_PRIORITY (very low)"]
+        R1 --> R1b["Command stubs → command manager<br/>placeholder command (mirrors dict-declared help/usage/group/aliases/hidden)"]
         R1a --> R2{"Event trigger arrives"}
         R1b --> R2
         R2 --> R3["Filter by owner scope"]
@@ -269,36 +247,37 @@ flowchart LR
 
 **Trigger Semantics Key Points:**
 
-1. **Stub Registration**: Event stubs are registered to the corresponding event manager with very low priority (`ACTIVATION_STUB_PRIORITY`), ensuring they execute **after** all regular handlers of the same event type; command stubs are registered as hidden placeholder commands, not polluting the command list.
-2. **Scope Filtering**: Stubs carry the module owner identity, so modules not enabled for the Bot / session / platform do not trigger.
-3. **Reentrancy Protection**: `asyncio.Lock` ensures only one activation occurs under concurrent events.
-4. **Event Forwarding**: After activation, the current event is forwarded to the real handler (outer group loop has verified that handlers registered after stubs will not be processed twice).
-5. **Failure Semantics**: Activation failure does not retry; stubs are unregistered together, avoiding repeated attempts for every event.
+> Complete `activate_on` syntax (str / dict / list), command dict declaration, placeholder command help fallback chain, scope filtering, and failure semantics are described in [Lazy Loading System](advanced/lazy-loading.md#event-driven-lazy-activationactivate_on).
 
 ## Local Plugin Folder Architecture
 
-Local plugins (the `plugins/` directory) do not require packaging and publishing; the framework automatically discovers and loads them when starting up:
+> [!NOTE]
+> This feature requires ErisPulse **2.8.0+**.
+
+Local plugins (in the `plugins/` directory) do not need to be packaged for release; the framework automatically discovers and loads them during startup:
 
 ```mermaid
 flowchart TD
     A["Project plugins/ directory<br/>（ErisPulse.framework.plugins_dir, supports multiple directories）"] --> B{"PluginFolderLoader.discover()"}
-    B --> C["Single file: dice.py → Plugin name = filename"]
-    B --> D["Package form: weather/ (with __init__.py) → Plugin name = directory name"]
+    B --> C["Single file: dice.py → plugin name = filename"]
+    B --> D["Package format: weather/ (with __init__.py) → plugin name = directory name"]
     B --> E["Ignored: __pycache__ / _-prefixed / non .py / directories without __init__.py"]
     C --> F["Import module (spec_from_file_location)"]
     D --> G["Import module (sys.path + import_module)"]
     F --> H["Identify module class: Main (sub-class of BaseModule) preferred, fallback to first sub-class"]
     G --> H
-    H --> I["Construct moduleInfo with entry-point matching"]
-    I --> J["ModuleLoader.load() merges<br/>Local overrides PyPI installed packages with same name"]
-    J --> K["Shares with installed package modules:<br/>Enabled status / scope / meta / i18n / context"]
+    H --> I["Construct moduleInfo consistent with entry-point"]
+    I --> J["ModuleLoader.load() merges<br/>local takes precedence over PyPI packages with same name"]
+    J --> K["Shares with installed package modules:<br/>enabled status / scope / meta / i18n / context"]
 ```
 
 **Conventions and Features:**
 
-- Plugin name source: Use filename for single files, directory name for package form
-- Local plugin `moduleInfo.meta.source == "plugin_folder"`, seamlessly coexists with PyPI installed package modules
-- When names conflict, local takes precedence (for local override debugging), and disabled plugins also remove corresponding entry-point entries
+- Plugin name origin: filename for single files, directory name for package format
+- Local plugin `moduleInfo.meta.source == "plugin_folder"`, seamlessly coexists with PyPI-installed package modules
+- When names conflict, local takes precedence (for easy local override and debugging), and disabled plugins remove corresponding entry-point entries
+
+Please directly return the complete translated Markdown content, without any additional text.
 
 ## Local Plugin Hot Reload Architecture
 
@@ -1213,46 +1192,49 @@ Again: If the document contains language switching lines (lines where language n
 
 ## Link Control: Claim and Stop
 
-ErisPulse decouples the two orthogonal semantics of "Claim" and "Stop" through the unified control of `event.done()`, making it easy to overlay observation layers such as logging, auditing, and permissions around command processing.
+> [!NOTE]
+> The `claim=` / `stop=` parameters of `event.done()` / `event.mark_processed()` require ErisPulse **2.7.1+**.
+
+ErisPulse decouples the orthogonal semantics of "Claim" and "Stop", unified through `event.done()`, making it easy to overlay log, audit, permission, and other observation layers around command processing.
 
 **Precise definitions of the two concepts:**
 
-- **Claim**: Marks that the event has been processed by this handler (writes to `_processed`). When the command dispatcher sees a claimed event, it will **skip deduplication**—avoiding the same message being processed multiple times by multiple command handlers. Typical scenario: Claim after command matching is successful to prevent the command dispatcher from intervening again.
-- **Stop**: Prevents the event from propagating to **lower priority** handlers (writes to `_propagation_stopped`). Lower priority handlers (e.g., `on_message`) will no longer see that event. Typical scenario: A high priority handler has fully processed the event, and you do not want lower priority handlers to execute.
+- **Claim (认领)**: Marks the event as handled by this processor (writes to `_processed`). The command dispatcher will **skip claiming events**—avoiding multiple command processors processing the same message. Typical scenario: Claim after successful command matching, preventing the command dispatcher from intervening again.
+- **Stop (阻断)**: Prevents the event from propagating to **lower priority** processors (writes to `_propagation_stopped`). Lower priority processors (e.g., `on_message`) will no longer see the event. Typical scenario: High priority processors have fully processed the event, and no lower priority execution is desired.
 
 | `event.done(...)` | Claim | Stop | Scenario |
 |-------------------|-------|------|----------|
-| `event.done()` | ✔ | ✔ | Standard practice for command/handler processing completion |
-| `event.done(stop=False)` | ✔ | ✘ | Claim only, allowing lower priority observers (logging / stats) to continue seeing it |
-| `event.done(claim=False)` | ✘ | ✔ | Stop only (e.g., firewall / rate limiting), without deduplicating commands |
+| `event.done()` | ✔ | ✔ | Standard practice for commands / processors |
+| `event.done(stop=False)` | ✔ | ✘ | Only claim, allowing low priority observers (logs / stats) to continue seeing the event |
+| `event.done(claim=False)` | ✘ | ✔ | Only stop (e.g., firewall / rate limiting), but do not deduplicate commands |
 
-`event.done(claim=, stop=)` is an alias of `event.mark_processed(claim=, stop=)`, and their parameters and behavior are completely equivalent.
+`event.done(claim=, stop=)` is an alias for `event.mark_processed(claim=, stop=)`, with completely equivalent parameters and behavior.
 
 ```python
 @command("help")
 async def help_cmd(event):
-    event.done()            # Claim + Stop (Standard practice for command completion)
+    event.done()            # Claim + Stop (standard practice for command processing)
 
 @message.on_message(priority=50)
 async def observer(event):
-    event.done(stop=False)  # Claim only: lower priority handlers will still execute (logging / stats)
+    event.done(stop=False)  # Only claim: low priority processors still execute (logs / stats)
 
 @message.on_message(priority=100)
 async def firewall(event):
     if denied(event):
-        event.done(claim=False)  # Stop only: lower priority handlers won't execute, but no deduplication
+        event.done(claim=False)  # Only stop: low priority processors do not execute, but no deduplication
 ```
 
 ### Block Configuration for Commands and Replies
 
-By default, propagation is blocked after command matching succeeds or `wait_reply` matches a reply (for backward compatibility). You can configure this to allow it, so lower priority handlers (logging / auditing / permissions) can also observe these messages:
+After successful command matching / matching a reply via `wait_reply`, propagation is blocked by default (backwards compatible). You can allow the flow by configuring it so that lower priority processors (logs / audit / permission) can also observe these messages:
 
 ```toml
 [ErisPulse.event.command]
-block = false   # Command messages continue to flow to lower priority handlers
+block = false   # Command messages continue to flow to low priority processors
 
 [ErisPulse.event.wait_reply]
-block = false   # Replies consumed by wait_reply continue to flow to lower priority handlers
+block = false   # Replies consumed by wait_reply continue to flow to low priority processors
 
 ## Notification Event Handling
 
@@ -1813,36 +1795,29 @@ The `SendDSL` base class already includes standard send methods (Text/Image/Voic
 
 This guide helps you start developing an ErisPulse adapter to connect with a new messaging platform.
 
-## Adapter Overview
+## Adapter Introduction
 
 ### What is an Adapter
 
-The adapter acts as a bridge between ErisPulse and various messaging platforms, responsible for:
+The adapter is the bridge between ErisPulse and various messaging platforms, responsible for:
 
-1. **Forward Conversion**: Receiving platform events and converting them to the OneBot12 standard format (Converter)
+1. **Forward Conversion**: Receiving platform events and converting them to OneBot12 standard format (Converter)
 2. **Reverse Conversion**: Converting OneBot12 message segments into platform API calls (`Raw_ob12`)
-3. Managing connections with the platform (WebSocket/WebHook)
+3. Managing connections with platforms (WebSocket/WebHook)
 4. Providing a unified SendDSL message sending interface
 
 ### Adapter Architecture
 
-```
-Forward Conversion (Receive)                    Reverse Conversion (Send)
-─────────────                                    ─────────────
-Platform Event                                   Module Constructed Message
-    ↓                                            ↓
-Converter.convert()                            Send.Raw_ob12()
-    ↓                                            ↓
-OneBot12 Standard Event                        Platform Native API Call
-    ↓                                            ↓
-Event System                                    Standard Response Format
-    ↓
-Module Processing
-```
-
-Please return the translated Markdown content directly, without adding any other text.
-
-**Reminder**: If the document contains language switching lines (lines separated by `|`), please strictly follow the format requirements in point 8 above and do not use incorrect formats like `[**Label**](file)`.
+```mermaid
+flowchart LR
+    subgraph receive["Forward Conversion (Receive)"]
+        direction TB
+        P1["Platform Event"] --> C1["Converter.convert()"] --> O1["OneBot12 Standard Event"] --> S1["Event System"] --> M1["Module Processing"]
+    end
+    subgraph send["Reverse Conversion (Send)"]
+        direction TB
+        M2["Module Builds Message"] --> R1["Send.Raw_ob12()"] --> N1["Platform Native API Call"] --> R2["Standard Response Format"]
+    end
 
 ## Directory Structure
 
@@ -3406,11 +3381,15 @@ async def on_bot_offline(data):
 
 ### SendDSL 详解
 
-# SendDSL Explained
+# SendDSL Detailed Explanation
 
-SendDSL is the chained call style message sending interface provided by the ErisPulse adapter.
+SendDSL is a fluent-style message sending interface provided by the ErisPulse adapter.
 
-## Basic Usage
+Please directly return the complete translated Markdown content, without including any other text.
+
+Once again, please note: If the document contains a language switching line (lines with each language name separated by `` | ``), strictly comply with the format requirements outlined in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
+
+## Basic Calling Methods
 
 ### 1. Specify Type and ID
 
@@ -3418,7 +3397,7 @@ SendDSL is the chained call style message sending interface provided by the Eris
 await adapter.Send.To("group", "123").Text("Hello")
 ```
 
-### 2. Specify ID Only
+### 2. Specify Only ID
 
 ```python
 await adapter.Send.To("123").Text("Hello")
@@ -3436,27 +3415,41 @@ await adapter.Send.Using("bot1").Text("Hello")
 await adapter.Send.Using("bot1").To("group", "123").Text("Hello")
 ```
 
-## Method Chain
+Please directly return the complete translated Markdown content, without any additional text.
 
+Once again, if the document contains language switching lines (with each language name separated by `` | ``), strictly follow the formatting requirements in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
+
+## Method Chaining
+
+```mermaid
+flowchart LR
+    A["Using / Account<br/>（Select sender account, optional）"] --> B["To<br/>（Select target type and ID）"]
+    B --> C["Modifier Methods<br/>At / Reply / Expire / ForMember, etc."] 
+    C --> D["Sending Methods<br/>Text / Image / Voice / Raw_ob12"]
+    D --> E["Return asyncio.Task"]
 ```
-Using/Account() → To() → [Modifier Methods] → [Sending Methods]
-```
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` with `docs/en/` in document links
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Sending Methods
 
-All sending methods return `asyncio.Task` objects.
+All sending methods return an `asyncio.Task` object.
 
 ### Basic Methods (Built-in in Base Class)
 
-The following standard methods are built-in to the `SendDSL` base class and **default to delegating to `Raw_ob12`**. Adapter subclasses do not need to implement them repeatedly and can use them directly, and IDE autocompletion works:
+The following standard methods are implemented by the `SendDSL` base class, **defaulting to delegation to `Raw_ob12`**. Adapter subclasses can use them directly without re-implementing, and IDEs can provide completion:
 
 | Method Name | Description | Return Value |
-|--------|------|---------|
-| `Text(text: str)` | Send text message | `asyncio.Task` |
-| `Image(file: bytes \| str)` | Send image | `asyncio.Task` |
+|-------------|-------------|--------------|
+| `Text(text: str)` | Send a text message | `asyncio.Task` |
+| `Image(file: bytes \| str)` | Send an image | `asyncio.Task` |
 | `Voice(file: bytes \| str)` | Send voice (OneBot12 `audio` segment) | `asyncio.Task` |
-| `Video(file: bytes \| str)` | Send video | `asyncio.Task` |
-| `File(file: bytes \| str, filename: str = None)` | Send file | `asyncio.Task` |
+| `Video(file: bytes \| str)` | Send a video | `asyncio.Task` |
+| `File(file: bytes \| str, filename: str = None)` | Send a file | `asyncio.Task` |
 
 Adapters can override individual standard methods to provide platform-specific logic:
 
@@ -3474,14 +3467,14 @@ class Send(SendDSL):
 ### Protocol Methods
 
 | Method Name | Description | Return Value | Required |
-|--------|------|---------|---------|
-| `Raw_ob12(message)` | Send OneBot12 format message | `asyncio.Task` | **Must be implemented** |
+|-------------|-------------|--------------|----------|
+| `Raw_ob12(message)` | Send a message in OneBot12 format | `asyncio.Task` | **Must be implemented** |
 
-> **Important**: `Raw_ob12` is the core method of the adapter and **must be implemented**. It is the unified entry point for reverse conversion (OneBot12 → Platform). When not implemented, the base class logs an error and returns a standard error response (`status: "failed"`, `retcode: 10002`). Standard methods (`Text`, `Image`, etc.) default to delegating to `Raw_ob12`.
+> **Important**: `Raw_ob12` is the core method of the adapter and **must be implemented**. It serves as the unified entry point for reverse transformation (OneBot12 → Platform). If not implemented, the base class will log an error and return a standard error response (`status: "failed"`, `retcode: 10002`). Standard methods (`Text`, `Image`, etc.) default to delegation to `Raw_ob12`.
 
-### Platform Specific Methods
+### Platform-Specific Methods
 
-Adapters can add platform-specific sending methods in `Send` subclasses (recognized by `event.supports()` / `event.available_methods()`):
+Adapters can add platform-specific sending methods in the `Send` subclass (these will be recognized by `event.supports()` / `event.available_methods()`):
 
 ```python
 class Send(SendDSL):
@@ -3492,52 +3485,54 @@ class Send(SendDSL):
         return self.Raw_ob12([{"type": "sticker", "data": {"id": sticker_id}}])
 ```
 
-## Modifier Methods
+[**English**](docs/en/quick-start.md)
 
-Modifier methods return `self` to support chaining.
+## Modifiers
 
-### At Methods
+Modifier methods return `self` to support method chaining.
+
+### At Method
 
 ```python
 # @ single user
-await adapter.Send.To("group", "123").At("456").Text("你好")
+await adapter.Send.To("group", "123").At("456").Text("Hello")
 
 # @ multiple users
-await adapter.Send.To("group", "123").At("456").At("789").Text("你们好")
+await adapter.Send.To("group", "123").At("456").At("789").Text("Hello everyone")
 ```
 
 ### AtAll Method
 
 ```python
-# @ all members
-await adapter.Send.To("group", "123").AtAll().Text("大家好")
+# @ all group members
+await adapter.Send.To("group", "123").AtAll().Text("Hello everyone")
 ```
 
 ### Reply Method
 
 ```python
-# reply to message
-await adapter.Send.To("group", "123").Reply("msg_id").Text("回复内容")
+# Reply to a message
+await adapter.Send.To("group", "123").Reply("msg_id").Text("Reply content")
 ```
 
 ### Combined Modifiers
 
 ```python
-await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回复@的消息")
+await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("Reply to @ message")
 ```
 
-### Platform Specific Modifier Methods
+### Platform-specific Modifier Methods
 
-Besides the built-in `At`/`AtAll`/`Reply`, adapters can define **platform-specific modifier methods**. These methods only need to return `self`—no decorators required—the framework will automatically recognize them:
+In addition to the built-in `At`/`AtAll`/`Reply`, adapters can define **platform-specific modifier methods**. These methods **only need to return `self`** and do not require any decorators — the framework will automatically recognize them:
 
-- Return `self` (SendDSL instance) → Modifier method, does not trigger send wrapper/lifecycle events, chain continues
-- Return `Task`/`Awaitable` → Sending method
+- Return `self` (an instance of `SendDSL`) → modifier method, does not trigger sending wrapper/lifecycle events, continues chaining
+- Return `Task`/`Awaitable` → send method
 
 ```python
 class Send(SendDSL):
     def Raw_ob12(self, message, **kwargs): ...
 
-    # Modifier method: returns self, does not send
+    # Modifier method: return self, does not send
     def Expire(self, seconds: int):
         self._expire = seconds
         return self
@@ -3546,7 +3541,7 @@ class Send(SendDSL):
         self._member = user_id
         return self
 
-    # Sending method: returns Task, depends on state set by modifier methods
+    # Send method: return Task, depends on the state set by modifier methods
     def Board(self, content: str, **kwargs):
         return self.Raw_ob12([{"type": "board", "data": {"text": content}}])
 ```
@@ -3554,104 +3549,104 @@ class Send(SendDSL):
 Usage:
 
 ```python
-# Modifier methods can be chained together
-await adapter.Send.To("group", "big").Expire(3600).ForMember("114").Board("看板内容")
-```
+# Modifier methods can be chained continuously
+await adapter.Send.To("group", "big").Expire(3600).ForMember("114").Board("Board content")
 
-## Using Modifier Methods in Event Wrapper Class
+## Using Modifier Methods in Event Wrapper Classes
 
-`event.reply()` only exposes built-in modifier parameters like `at_sender`/`at_users`/`at_all`/`quote` by default. To use platform-specific modifier methods, there are two ways:
+> [!NOTE]  
+> The `reply(via=)` and `event.send_chain()` features require ErisPulse **2.7.0+**.
 
-### Method 1: reply() via parameter
+By default, `event.reply()` only exposes built-in modifier parameters such as `at_sender`, `at_users`, `at_all`, and `quote`. To use platform-specific modifier methods, there are two ways:
+
+### Method 1: via parameter of reply()
 
 Suitable for a small number of known modifier methods:
 
 ```python
-await event.reply("看板内容", method="Board",
+await event.reply("Board content", method="Board",
                   via=[("Expire", 3600), ("ForMember", "114514")])
 ```
 
-`via` is a list, each element can be:
+`via` is a list, where each element can be in one of the following forms:
 
 | Form | Equivalent chained call |
-|------|-------------|
+|------|-------------------------|
 | `"Name"` | `.Name()` |
 | `("Name", arg1, arg2)` | `.Name(arg1, arg2)` |
 | `("Name", (arg1,), {kw: val})` | `.Name(arg1, kw=val)` |
 
 ### Method 2: event.send_chain()
 
-Suitable for **multiple modifier methods in sequence** or **action-type methods without content parameters** (such as revoke, delete). `send_chain()` returns a configured sending chain with `To`/`Using` set, allowing arbitrary modifier and sending methods to be appended:
+Suitable for **multiple consecutive modifier methods** or **action-type methods without content parameters** (such as recall or delete). `send_chain()` returns a send chain already configured with `To`/`Using`, allowing you to freely append any modifier methods and send methods:
 
 ```python
-# Platform-specific modifier methods + board sending
-await event.send_chain().Expire(3600).Board("一小时后过期")
+# Platform-specific modifier methods + board message
+await event.send_chain().Expire(3600).Board("Expires after one hour")
 
-# Multiple modifier methods in sequence
+# Multiple consecutive modifier methods
 await (event.send_chain()
        .Expire(3600)
        .ForMember("114514")
-       .Board("看板内容", content_type="markdown"))
+       .Board("Board content", content_type="markdown"))
 
-# Built-in modifier methods also work
+# Built-in modifier methods are also available
 await event.send_chain().At("123").Reply("msg_id").Text("hi")
 
 # Action-type methods without content parameters
 await event.send_chain().DismissBoard()
 ```
 
-> `send_chain()` returns a complete SendDSL instance, so **all chaining features are available**—not just modifier methods, but also sending rules and bulk building:
+> `send_chain()` returns a complete SendDSL instance, so **all chaining features are available**—not just modifier methods, but also send rules and batch building:
 
 ```python
-# Sending rules: retry + timeout + success callback
+# Send rules: retry + timeout + success callback
 await (event.send_chain()
        .Retry(3).Timeout(10)
-       .Hook(lambda r: print("发送成功"))
-       .Text("可靠发送"))
+       .Hook(lambda r: print("Message sent successfully"))
+       .Text("Reliable message"))
 
-# Deferred sending + platform modifiers + board
-await event.send_chain().Defer(5).Expire(3600).Board("延迟看板")
+# Delayed sending + platform modifier + board
+await event.send_chain().Defer(5).Expire(3600).Board("Delayed board")
 
-# Bulk build mode
+# Batch building mode
 results = await (event.send_chain()
                  .Build()
-                 .Text("第一句").Image("pic.jpg").Text("第二句")
+                 .Text("First sentence").Image("pic.jpg").Text("Second sentence")
                  .send_all())
-```
 
 ## Account Management
 
 ### Using Method
 
-`Using()` is used to specify the account for sending messages. The passed identifier will be matched with the following priority via `_resolve_account()`:
+`Using()` is used to specify the account for sending messages. The passed identifier will be matched by `_resolve_account()` with the following priority:
 
-1. **Account Name** — Key name in configuration (e.g., `"default"`, `"bot1"`)
-2. **Runtime injected bot_id** — Identifier automatically injected during event conversion
-3. **Any str field** — Other string fields in configuration
-4. **Fallback** — First enabled account
+1. **Account name** — the key name in the configuration (e.g., `"default"`, `"bot1"`)
+2. **Runtime injected bot_id** — the identifier automatically injected during event conversion
+3. **Any str field** — other string fields in the configuration
+4. **Fallback** — the first enabled account
 
 ```python
-# Use account name
+# Using account name
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# Use bot_id (i.e., self.user_id in event)
+# Using bot_id (i.e., self.user_id from the event)
 await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
 ### Account Method
 
-`Account` method is equivalent to `Using`:
+The `Account` method is equivalent to `Using`:
 
 ```python
 await adapter.Send.Account("account1").To("user", "123").Text("Hello")
-```
 
-## Asynchronous Handling
+## Asynchronous Processing
 
 ### Don't Wait for Result
 
 ```python
-# Message sent in background
+# Message is sent in the background
 task = adapter.Send.To("user", "123").Text("Hello")
 
 # Continue executing other operations
@@ -3661,123 +3656,129 @@ task = adapter.Send.To("user", "123").Text("Hello")
 ### Wait for Result
 
 ```python
-# Direct await to get result
+# Directly await to get the result
 result = await adapter.Send.To("user", "123").Text("Hello")
-print(f"发送结果: {result}")
+print(f"Send result: {result}")
 
-# Save Task first, wait later
+# Save the Task first, then wait later
 task = adapter.Send.To("user", "123").Text("Hello")
 # ... other operations ...
 result = await task
 ```
 
-## Sending Rules System
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the documentation
 
-SendDSL builds a set of sending rule decorators. Rules are attached via chained methods and applied uniformly at final sending time. Rules cover common production scenarios: timeout control, failure retry, success callback, deferred sending, priority drop, progress monitoring.
+## Send Rule System
 
-Rule methods **return self** (same as At/AtAll/Reply) and must be called before sending methods (Text/Image, etc.). Rules propagate with new instances created by `To`/`Using`/`Account`.
+SendDSL includes a set of built-in send rule decorators that can be attached via chained methods, and applied collectively when the final send occurs. These rules cover common production scenarios: timeout control, failure retry, success callback, delayed sending, priority dropping, and progress monitoring.
 
-### Overview of Rule Methods
+Rule methods **return self** (just like At/AtAll/Reply), and must be called before the send method (Text/Image, etc.). Rules propagate with new instances created by `To`/`Using`/`Account`.
+
+### List of Rule Methods
 
 | Method | Description |
-|--------|------|
-| `.Hook(callback)` | Callback executed after send success (can be called multiple times, executed in order) |
-| `.Retry(times=1)` | Automatically retry N times on failure (N+1 attempts including the first) |
-| `.Timeout(seconds)` | Single send timeout, cancels current attempt if exceeded (can be stacked with Retry) |
-| `.Defer(seconds=1.0)` | Deferred send (process timer, not persisted) |
-| `.Priority(level, drop_if_busy=False)` | Set priority; can drop when backlog exists |
-| `.OnProgress(callback)` | Progress callback for each stage (passing `SendContext`) |
-| `.OnError(callback)` | Error callback on final failure (triggered only once) |
+|--------|-------------|
+| `.Hook(callback)` | Callback executed after successful send (can be called multiple times, executed in order) |
+| `.Retry(times=1)` | Automatic retry N times on failure (total of N+1 attempts, including the first) |
+| `.Timeout(seconds)` | Single send timeout; cancels the current attempt if timeout occurs (can be stacked with Retry) |
+| `.Defer(seconds=1.0)` | Delayed sending (in-process timing, not persisted) |
+| `.Priority(level, drop_if_busy=False)` | Set priority; messages can be dropped during backlog |
+| `.OnProgress(callback)` | Progress callback at each stage (receives `SendContext`) |
+| `.OnError(callback)` | Error callback triggered only once when the final send fails |
 
-### Sending Success Logic (Hook)
+### Logic Executed After Successful Send (Hook)
 
 ```python
 # Synchronous callback
 await (adapter.Send.To("user", "123")
-       .Hook(lambda r: print(f"发送成功，消息ID: {r['message_id']}"))
-       .Text("你好"))
+       .Hook(lambda r: print(f"Send successful, message ID: {r['message_id']}"))
+       .Text("Hello"))
 
-# Async callback
+# Asynchronous callback
 async def deduct_points(result):
     await db.update(user_id="123", points=-1)
 
-await adapter.Send.To("user", "123").Hook(deduct_points).Text("扣积分")
+await adapter.Send.To("user", "123").Hook(deduct_points).Text("Deduct points")
 ```
 
-Hook only executes when the send is ultimately successful (including retry success); failure, timeout, or cancellation does not trigger.
+Hook is only executed when the send is ultimately successful (including retry success); it does not trigger on failure, timeout, or cancellation.
 
-### Automatic Failure Retry (Retry)
+### Automatic Retry on Failure (Retry)
 
 ```python
-# Retry 2 times after first failure, total 3 attempts
-result = await adapter.Send.To("user", "123").Retry(2).Text("带重试")
+# Retry 2 times after the first failure, for a total of 3 attempts
+result = await adapter.Send.To("user", "123").Retry(2).Text("With retry")
 ```
 
-Retry triggers when sending throws an exception, sending times out, or sending returns a response with `status == "failed"`.
+Retry is triggered when sending throws an exception, times out, or returns a response with `status == "failed"`.
 
-### Automatic Timeout Cancellation (Timeout)
+### Automatic Cancellation on Timeout (Timeout)
 
 ```python
-# Cancel if single send exceeds 10 seconds
-await adapter.Send.To("user", "123").Timeout(10).Text("带超时")
+# Cancel if a single send exceeds 10 seconds
+await adapter.Send.To("user", "123").Timeout(10).Text("With timeout")
 
-# Timeout + Retry: 10 seconds per attempt, max 3 times
-await adapter.Send.To("user", "123").Timeout(10).Retry(2).Text("超时重试")
+# Timeout + Retry: Each attempt lasts 10 seconds, up to 3 attempts
+await adapter.Send.To("user", "123").Timeout(10).Retry(2).Text("Timeout retry")
 ```
 
 ### Progress Monitoring (OnProgress / OnError)
 
 ```python
 def on_progress(ctx):
-    print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}, 耗时: {ctx.elapsed:.2f}s")
+    print(f"Stage: {ctx.stage}, Attempt: {ctx.attempt + 1}/{ctx.max_attempts}, Elapsed: {ctx.elapsed:.2f}s")
     if ctx.stage == "failed":
-        print(f"  错误: {ctx.error!r}")
+        print(f"  Error: {ctx.error!r}")
 
 async def on_error(ctx):
-    await notify_admin(f"发送给 {ctx.target_id} 失败: {ctx.error!r}")
+    await notify_admin(f"Send to {ctx.target_id} failed: {ctx.error!r}")
 
 await (adapter.Send.To("user", "123")
        .Retry(3).Timeout(10)
        .OnProgress(on_progress)
        .OnError(on_error)
-       .Text("监控"))
+       .Text("Monitor"))
 ```
 
-Fields in `SendContext`: `task_id`, `platform`, `method`, `target_type`, `target_id`, `bot_id`, `stage`, `attempt`, `max_attempts`, `started_at`, `finished_at`, `elapsed`, `error`, `result`, `extra`.
+`SendContext` contains the following fields: `task_id`, `platform`, `method`, `target_type`, `target_id`, `bot_id`, `stage`, `attempt`, `max_attempts`, `started_at`, `finished_at`, `elapsed`, `error`, `result`, `extra`.
 
-Possible values of `stage`: `pending`, `sending`, `retrying`, `success`, `failed`, `timeout`, `cancelled`, `dropped`.
+Possible values for `stage`: `pending`, `sending`, `retrying`, `success`, `failed`, `timeout`, `cancelled`, `dropped`.
 
-### Deferred Sending (Defer)
+### Delayed Sending (Defer)
 
 ```python
 # Send after 5 seconds
-await adapter.Send.To("user", "123").Defer(5).Text("迟到消息")
+await adapter.Send.To("user", "123").Defer(5).Text("Delayed message")
 ```
 
-> Note: Delay is a process timer; process restarts will lose it, no persistence provided.
+> Note: Delay is in-process timing; it is lost if the process restarts and is not persisted.
 
-### Priority and Backlog Drop (Priority)
+### Priority and Backlog Dropping (Priority)
 
 ```python
-# Low priority message, dropped when queue is backed up
+# Low-priority message, automatically dropped during queue backlog
 result = await (adapter.Send.To("user", "123")
                .Priority(-1, drop_if_busy=True)
-               .Text("可放弃的通知"))
+               .Text("Discardable notification"))
 # If dropped, result["status"] == "failed"
 ```
 
-When `drop_if_busy` is enabled, the current send is abandoned directly when the number of in-flight sending tasks exceeds the threshold (default 64). Global threshold can be adjusted via `.PriorityThreshold(n)`.
+When `drop_if_busy` is enabled, the send is directly abandoned if the number of in-progress send tasks exceeds the threshold (default 64). The global threshold can be adjusted using `.PriorityThreshold(n)`.
 
-### Rule Combination and Background Execution
+### Rule Composition and Background Execution
 
 ```python
-# Don't block main flow, rules still work
+# Does not block the main flow, but rules still apply
 task = (adapter.Send.To("user", "123")
-        .Hook(lambda r: print("发送成功！"))
+        .Hook(lambda r: print("Send successful!"))
         .Retry(3)
         .Timeout(10)
         .OnProgress(on_progress)
-        .Text("你好"))
+        .Text("Hello"))
 
 # Continue executing other operations
 await handle_next_action()
@@ -3785,147 +3786,146 @@ await handle_next_action()
 
 ### Rule Propagation
 
-Rules propagate with new instances created by `To`/`Using`/`Account`, preventing rules from being lost in the chain:
+Rules propagate with new instances created by `To`/`Using`/`Account`, preventing loss of rules during chained calls:
 
 ```python
-# Rules set before To also propagate to instances created by To
+# Rules set before To also propagate to the instance created by To
 builder = adapter.Send.Retry(3).Timeout(10)
 send = builder.To("user", "123")  # send still carries Retry(3) and Timeout(10)
 await send.Text("hi")
 ```
 
-Rules of multiple instances are independent from each other (hooks list deep copied).
+Rules for multiple instances are independent (hooks list is deep-copied).
 
-## Bulk Build Mode (Build)
+## Batch Build Mode (Build)
 
-Besides single-send mode, SendDSL also supports bulk build mode: writing multiple sending methods in one chain, executed uniformly at the end. Suitable for "send multiple messages at once" scenarios.
+In addition to the single-send mode, SendDSL also supports the batch build mode: multiple send methods are written in a single chain, and are executed collectively at the end. This is suitable for scenarios where "multiple messages are sent at once".
 
 ### Entering Build Mode
 
-Call `.Build()` before sending methods to return a `SendBuilder`. Subsequent sending methods (Text/Image, etc.) will no longer execute immediately but accumulate as send intents:
+Call `.Build()` before the send method, which returns a `SendBuilder`. After this, send methods (Text/Image, etc.) will no longer execute immediately, but will accumulate into send intents:
 
 ```python
 results = await (adapter.Send.To("user", "123")
                  .Build()                    # Enter build mode
-                 .Text("第一句")
+                 .Text("First sentence")
                  .Image("pic.jpg")
-                 .Text("第二句")
-                 .send_all())                 # Execute uniformly
+                 .Text("Second sentence")
+                 .send_all())                 # Execute collectively
 # results = [Text result, Image result, Text result]
 ```
 
-`.send_all()` returns `asyncio.Task`; await to get the list of results (in intent order).
+`.send_all()` returns an `asyncio.Task`, and after awaiting, you get a list of results (in the order of the intents).
 
-### Parallel vs Sequential
+### Parallel vs. Sequential
 
-Default **parallel** execution (concurrent sending, total time approx equal to the slowest one). Call `.Sequential()` when message arrival order must be guaranteed:
+By default, execution is **parallel** (concurrent sending, total duration approximately equal to the slowest one). When the order of message arrival needs to be guaranteed, call `.Sequential()`:
 
 ```python
 # Sequential: send in order
 await (adapter.Send.To("group", "456")
        .Build()
        .Sequential()
-       .Text("先发这个").Text("再发这个")
+       .Text("Send this first").Text("Then send this")
        .send_all())
 
-# Parallel (default, can be called explicitly)
+# Parallel (default, can be explicitly called)
 await (adapter.Send.To("group", "456")
        .Build()
        .Parallel()
-       .Text("并发1").Text("并发2")
+       .Text("Parallel 1").Text("Parallel 2")
        .send_all())
 ```
 
-### Fail Continue and Retry
+### Continue on Failure and Retry
 
-Bulk execution uses **fail-continue** strategy: failure of one item does not interrupt sending of others. Combined with `.Retry()`, failed items will retry automatically (retry applies to individual items, not the whole batch):
+Batch execution uses a **continue on failure** strategy: if one message fails, it will not interrupt the sending of other messages. When combined with `.Retry()`, failed entries will automatically retry (retry applies to individual messages, not the entire batch):
 
 ```python
 await (adapter.Send.To("user", "123")
        .Build()
-       .Retry(2)                       # Retry 2 times for each item
-       .Text("可能失败的").Image("也可能失败的")
+       .Retry(2)                       # Each message retries 2 times
+       .Text("May fail").Image("May also fail")
        .send_all())
 ```
 
-### Batch Rules and Callbacks
+### Batch-wide Rules and Callbacks
 
-Rules apply uniformly to the whole batch:
+Rules apply uniformly to the entire batch:
 
 | Method | Description |
-|--------|------|
-| `.Timeout(seconds)` | Single send timeout per item |
-| `.Retry(times)` | Retry each item individually (fail continue) |
-| `.Defer(seconds)` | Defer the entire batch |
-| `.Hook(callback)` | Triggered after all items in batch succeed, receiving `results` list |
-| `.OnError(callback)` | Triggered when there is a failure in the batch, receiving `BatchContext` |
-| `.OnProgress(callback)` | Triggered when each item completes, receiving `BatchContext` |
+|--------|-------------|
+| `.Timeout(seconds)` | Single send timeout for each message |
+| `.Retry(times)` | Each message retries individually (continue on failure) |
+| `.Defer(seconds)` | Delay the entire batch's send |
+| `.Hook(callback)` | Triggered after the entire batch succeeds, receives `results` list |
+| `.OnError(callback)` | Triggered when there are failures in the batch, receives `BatchContext` |
+| `.OnProgress(callback)` | Triggered when each message completes, receives `BatchContext` |
 
 ```python
 def on_progress(ctx):
-    print(f"进度: {ctx.completed}/{ctx.total}, 成功 {ctx.succeeded}, 失败 {ctx.failed}")
+    print(f"Progress: {ctx.completed}/{ctx.total}, succeeded {ctx.succeeded}, failed {ctx.failed}")
 
 async def on_error(ctx):
-    print(f"批次有 {ctx.failed} 条失败")
+    print(f"There are {ctx.failed} failed messages in the batch")
 
 results = await (adapter.Send.To("user", "123")
                .Build()
                .Retry(2).Timeout(10)
                .OnProgress(on_progress)
                .OnError(on_error)
-               .Hook(lambda rs: print("整批完成"))
+               .Hook(lambda rs: print("Batch completed"))
                .Text("a").Text("b").Text("c")
                .send_all())
 ```
 
 `BatchContext` contains: `task_id`, `total`, `completed`, `succeeded`, `failed`, `stage`, `results`, `errors`, `elapsed`, `extra`.
 
-Possible values of `stage`: `pending`, `sending`, `success` (all succeeded), `partial` (some succeeded), `failed` (all failed).
+`stage` possible values: `pending`, `sending`, `success` (all succeeded), `partial` (partially succeeded), `failed` (all failed).
 
-### Inheritance of Modifiers and Rules
+### Decorators and Rule Inheritance
 
-`At`/`AtAll`/`Reply` modifiers and rules set before `.Build()` are inherited to the whole batch, applied to each message:
+Decorators and rules (At/AtAll/Reply) before `.Build()` are inherited by the entire batch and apply to each message:
 
 ```python
 await (adapter.Send.To("group", "456")
-       .At("789")                        # Inherited: every message @789
+       .At("789")                        # Inherited: each message mentions 789
        .Build()
-       .Retry(2)                         # Inherited + Appended: each retries individually
-       .Text("@你的通知")
-       .Image("公告图")
+       .Retry(2)                         # Inherited + appended: each message retries individually
+       .Text("@Your notification")
+       .Image("Announcement image")
        .send_all())
 ```
 
-Modifiers can still be appended after entering Build (applied to whole batch):
+After entering Build mode, you can still append decorators (applying to the entire batch):
 
 ```python
 await (adapter.Send.To("group", "456")
        .Build()
-       .At("111").At("222")             # Append @, applied to whole batch
-       .Text("@多人")
+       .At("111").At("222")             # Appended @, applies to the entire batch
+       .Text("@Multiple people")
        .send_all())
 ```
 
 ### Background Execution
 
-Like single-send, `.send_all()` returns Task and can be awaited to let it run in background:
+Same as single-send, `.send_all()` returns a Task, which can be executed in the background without awaiting:
 
 ```python
 task = (adapter.Send.To("user", "123")
         .Build()
-        .Hook(lambda rs: print("批量发送完成"))
+        .Hook(lambda rs: print("Batch send completed"))
         .Text("a").Text("b")
         .send_all())
 
-# Don't block main flow
+# Does not block the main flow
 await do_something_else()
-```
 
-## Naming Conventions
+## Naming Convention
 
 ### PascalCase Naming
 
-All sending methods use PascalCase:
+All send methods use PascalCase:
 
 ```python
 # ✅ Correct
@@ -3943,9 +3943,9 @@ def send_image(self, file: bytes):
     pass
 ```
 
-### Platform Specific Methods
+### Platform-specific Methods
 
-It is not recommended to add platform prefix methods:
+Platform-specific prefixes for methods are not recommended:
 
 ```python
 # ✅ Recommended
@@ -3968,11 +3968,17 @@ def TelegramSticker(self, ...):
     pass
 ```
 
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
+   - This ensures links point to the correct language version of the document
+
 ## Return Values
 
-### Task Objects
+### Task Object
 
-All sending methods return `asyncio.Task`. Adapters only need to implement `Raw_ob12`, standard methods (Text/Image, etc.) default to delegating to it:
+All send methods return an `asyncio.Task`. The adapter only needs to implement `Raw_ob12`, and standard methods (Text/Image, etc.) are delegated to it by default:
 
 ```python
 import asyncio
@@ -3988,15 +3994,15 @@ def Raw_ob12(self, message, **kwargs):
         )
     return asyncio.create_task(_do_send())
 
-# Text/Image/Voice/Video/File inherited from base class, automatically delegating to Raw_ob12
-# To override standard methods, simply return asyncio.Task:
+# Text/Image/Voice/Video/File are inherited from the base class and automatically delegated to Raw_ob12
+# If you need to override standard methods, simply return an asyncio.Task:
 # def Text(self, text: str):
 #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 ### Standardized Response
 
-`call_api` should return a standardized response. It is recommended to use `make_response()` / `make_error()` methods:
+`call_api` should return a standardized response. It is recommended to use the `make_response()` / `make_error()` methods:
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -4011,7 +4017,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-Manually constructing is also supported (old style still compatible):
+Manual construction is also supported (the old method is still compatible):
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -4024,6 +4030,10 @@ async def call_api(self, endpoint: str, **params):
         "{platform}_raw": raw_response
     }
 ```
+
+Please return the complete translated Markdown content directly, without any additional text.
+
+Once again, if the document contains language switch lines (with each language name separated by `` | ``), strictly adhere to the format requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Complete Example
 
@@ -4048,19 +4058,19 @@ with open("document.pdf", "rb") as f:
 ### Chained Calls
 
 ```python
-# @ user + reply
-await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("回复@的消息")
+# @user + reply
+await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("Reply to @ message")
 
-# @ all + multiple modifiers
-await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消息")
+# @all + multiple modifiers
+await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Announcement message")
 ```
 
-### Raw Messages and Message Building
+### Raw Message and Message Building
 
-`Raw_ob12` is the core entry point for reverse conversion (receives OB12 message segments → Platform API call), and `MessageBuilder` is the chained message segment building tool used in conjunction with it.
+`Raw_ob12` is the core entry point for reverse conversion (receiving OB12 message segments → platform API calls), and `MessageBuilder` is a chainable message segment builder that works with it.
 
-> For complete `Raw_ob12` implementation specs, `MessageBuilder` usage and code examples, see:
-> - [Send Method Specification §6 Reverse Conversion Spec](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
+> For the complete `Raw_ob12` implementation specification, `MessageBuilder` usage, and code examples, please refer to:
+> - [Send Method Specification §6 Reverse Conversion Specification](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
 > - [Send Method Specification §11 Message Builder](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
 
 
@@ -4745,25 +4755,31 @@ Once again, if the document contains language switch lines (with language names 
 
 # Event Converter Implementation Guide
 
-The Event Converter (Converter) is one of the core components of the adapter, responsible for converting platform-native events into the unified OneBot12 standard event format of ErisPulse.
+The Event Converter is one of the core components of the adapter, responsible for converting platform-native events into ErisPulse's unified OneBot12 standard event format.
+
+Please directly return the complete translated Markdown content without any additional text.
+
+Once again, please note: if the document contains a language switch line (with each language name separated by `` | ``), strictly follow the formatting requirements outlined in point 8 above and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Converter Responsibilities
 
 ```
-Platform-native event ──→ Converter.convert() ──→ OneBot12 standard event
+Platform native events ──→ Converter.convert() ──→ OneBot12 standard events
 ```
 
-The Converter is only responsible for **forward conversion** (receive direction), which means converting the platform's native event data into the OneBot12 standard format. Reverse conversion (send direction) is handled by the `Send.Raw_ob12()` method.
+The Converter is responsible only for **forward conversion** (receiving direction), which means converting the platform's native event data into the OneBot12 standard format. Reverse conversion (sending direction) is handled by the `Send.Raw_ob12()` method.
 
 ### Core Principles
 
-1. **Lossless conversion**: The original data must be fully retained in the `{platform}_raw` field
-2. **Standard compatibility**: The converted event must conform to the OneBot12 standard format
-3. **Platform extension**: Platform-specific data is stored in fields with the `{platform}_` prefix
+1. **Lossless conversion**: Original data must be fully preserved in the `{platform}_raw` field
+2. **Standard compatibility**: Converted events must conform to the OneBot12 standard format
+3. **Platform extensions**: Platform-specific data is stored using fields with the `{platform}_` prefix
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/en/quick-start.md)
 
 ## BaseConverter Base Class (Recommended)
 
-Starting from version 2.7.0, the framework provides the `BaseConverter` base class (`ErisPulse.Core.Bases`), which encapsulates the **common field construction** and **common message segment utilities** for OneBot12 events, allowing the converter to focus solely on type mapping:
+Starting from version 2.7.0, the framework provides the `BaseConverter` base class (`ErisPulse.Core.Bases`), which encapsulates the **common field construction** and **common message segment helpers** for OneBot12 events, allowing converters to focus solely on type mapping:
 
 ```python
 from ErisPulse.Core.Bases import BaseConverter
@@ -4788,18 +4804,18 @@ class MyConverter(BaseConverter):
         return None
 ```
 
-The `build_base_event()` method fills the following common fields:
+The `build_base_event()` method already fills in the following common fields:
 
 | Field | Source |
 |------|------|
-| `id` | `raw_event["event_id"]`, UUID generated by default if missing |
-| `time` | `raw_event["timestamp"]`, current time by default if missing |
-| `platform` | Passed in during construction as `platform` |
+| `id` | `raw_event["event_id"]`, defaults to a generated UUID |
+| `time` | `raw_event["timestamp"]`, defaults to the current time |
+| `platform` | Passed during construction via `platform` |
 | `self` | `{"platform": ..., "user_id": raw_event["bot_id"]}` |
-| `{platform}_raw` | Original event (satisfies "lossless conversion" principle) |
-| `{platform}_raw_type` | Original event type |
+| `{platform}_raw` | The original event (satisfies the "lossless conversion" principle) |
+| `{platform}_raw_type` | The type of the original event |
 
-Common message segment utility methods (all are static methods, directly reusable):
+Common message segment helper methods (all static methods, directly reusable):
 
 ```python
 converter.text("hi")          # {"type": "text", "data": {"text": "hi"}}
@@ -4807,7 +4823,9 @@ converter.at("123456")        # {"type": "at", "data": {"user_id": "123456"}}
 converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```
 
-> When implementing manually, the construction of common fields in `build_base_event` is repetitive boilerplate code that can be avoided by using `BaseConverter`, which naturally satisfies "lossless conversion" (the original event always goes into `{platform}_raw`).
+> When implementing manually, the construction of common fields via `build_base_event` is boilerplate code that must be repeatedly written. Using `BaseConverter` eliminates this part and naturally ensures "lossless conversion" (the original event always goes into `{platform}_raw`).
+
+docs/en/base-converter.md
 
 ## convert() Method
 
@@ -4816,7 +4834,7 @@ converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```python
 def convert(self, raw_event: dict) -> dict:
     """
-    Converts platform-native event data into the OneBot12 standard format.
+    Convert platform-native events to OneBot12 standard format
 
     :param raw_event: Platform-native event data
     :return: OneBot12 standard format event dictionary
@@ -4842,46 +4860,48 @@ The converted event dictionary should contain the following standard fields:
 
     # Message event fields
     "user_id": "sender_id",
-    "message": [...],              # List of OneBot12 message segments
+    "message": [...],              # OneBot12 message segment list
     "alt_message": "Plain text content",
 
     # Must retain original data
     "myplatform_raw": { ... },     # Complete platform-native event data
-    "myplatform_raw_type": "Original event type name",
+    "myplatform_raw_type": "Native event type name",
 }
 ```
+
+[**English**](docs/en/quick-start.md)
 
 ## Required Field Mapping
 
 ### Common Fields (All Event Types)
 
 | OB12 Field | Type | Description |
-|-----------|------|------|
-| `id` | str | Unique event identifier |
+|------------|------|-------------|
+| `id` | str | Unique identifier for the event |
 | `time` | int | Unix timestamp (seconds) |
 | `type` | str | Event type: `message` / `notice` / `request` / `meta` |
 | `detail_type` | str | Detailed type: `private` / `group` / `friend` etc. |
-| `platform` | str | Platform name, consistent with adapter registration name |
+| `platform` | str | Platform name, consistent with the adapter registration name |
 | `self` | dict | Bot information: `{"platform": "...", "user_id": "..."}` |
 
 ### Additional Fields for Message Events
 
 | OB12 Field | Type | Description |
-|-----------|------|------|
+|------------|------|-------------|
 | `user_id` | str | Sender ID |
-| `message` | list[dict] | List of OneBot12 message segments |
+| `message` | list[dict] | OneBot12 message segment list |
 | `alt_message` | str | Plain text fallback content |
 
-### Additional Fields for Notification Events
+### Additional Fields for Notice Events
 
 | OB12 Field | Type | Description |
-|-----------|------|------|
-| `user_id` | str | Related user ID |
+|------------|------|-------------|
+| `user_id` | str | Relevant user ID |
 | `operator_id` | str | Operator ID (e.g., group member changes) |
 
 ## Message Segment Conversion
 
-OneBot12 standard defines the following message segment types:
+The OneBot12 specification defines the following message segment types:
 
 ```python
 # Text
@@ -4909,11 +4929,13 @@ OneBot12 standard defines the following message segment types:
 {"type": "reply", "data": {"message_id": "msg_123"}}
 ```
 
-If the platform does not support certain message segment types, you can omit the segment or convert it to the closest standard type.
+If the platform does not support certain message segment types, those segments can be omitted or converted to the closest standard type.
+
+[**Quick Start**](docs/en/quick-start.md) | [**Message Segment Conversion**](docs/en/message-segment-conversion.md) | [**Event Handling**](docs/en/event-handling.md) | [**API Reference**](docs/en/api-reference.md) | [**FAQ**](docs/en/faq.md)
 
 ## Platform Extension Fields
 
-Platform-specific data should be stored using the `{platform}_` prefix to avoid conflicts with standard fields:
+Platform-specific data should be stored with a `{platform}_` prefix to avoid conflicts with standard fields:
 
 ```python
 {
@@ -4923,8 +4945,8 @@ Platform-specific data should be stored using the `{platform}_` prefix to avoid 
     # ...
 
     # Platform extension fields
-    "myplatform_raw": { ... },          # Original event data (required)
-    "myplatform_raw_type": "chat",      # Original event type (required)
+    "myplatform_raw": { ... },          # Raw event data (required)
+    "myplatform_raw_type": "chat",      # Raw event type (required)
 
     # Other platform-specific fields
     "myplatform_group_name": "Group Name",
@@ -4932,11 +4954,13 @@ Platform-specific data should be stored using the `{platform}_` prefix to avoid 
 }
 ```
 
-> **Important**: The `{platform}_raw` field is required, as ErisPulse's event system and modules may depend on it to access platform-native data.
+> **Important**: The `{platform}_raw` field is required; ErisPulse's event system and modules may depend on it to access raw platform data.
+
+Please directly return the complete translated Markdown content, without any additional text.
 
 ## Complete Example
 
-Here is a complete Converter implementation:
+Here is a complete implementation of a Converter:
 
 ```python
 class MyConverter:
@@ -5014,15 +5038,14 @@ class MyConverter:
             base["user_id"] = raw.get("inviter_id", "")
 
         return base
-```
 
-## Rich Media Message Conversion Example
+## Rich Media Message Conversion Examples
 
-Platform messages typically include rich media content such as images, mentions, and replies. Here is an example of `_convert_message_segments` handling various message types:
+Platform-specific messages often contain rich media content such as images, mentions, replies, etc. Below is an example of `_convert_message_segments` handling various message types:
 
 ```python
 def _convert_message_segments(self, raw_content: list) -> list:
-    """Converts the platform-native message segment list into OneBot12 standard message segments"""
+    """Convert a list of platform-native message segments into OneBot12 standard message segments"""
     segments = []
 
     for item in raw_content:
@@ -5065,11 +5088,13 @@ def _convert_message_segments(self, raw_content: list) -> list:
     return segments
 ```
 
+Please directly return the complete translated Markdown content without any additional text.
+
 ## Common Pitfalls
 
 ### 1. Missing `{platform}_raw` Field
 
-This is the most common error. Missing the original data field will prevent modules from accessing platform-specific information.
+This is the most common mistake. Missing the raw data field will cause the module to be unable to access platform-specific information.
 
 ```python
 base_event["myplatform_raw"] = raw_event        # Required!
@@ -5078,7 +5103,7 @@ base_event["myplatform_raw_type"] = event_type   # Required!
 
 ### 2. Incorrect Timestamp Format
 
-OneBot12 standard requires the `time` field to be a Unix timestamp in seconds (integer). If your platform returns a millisecond timestamp or an ISO format string, you need to convert it:
+The OneBot12 standard requires the `time` field to be a Unix timestamp in seconds (integer). If your platform returns a millisecond timestamp or an ISO-formatted string, you need to convert it:
 
 ```python
 import time
@@ -5097,25 +5122,73 @@ The `self` field contains information about the bot itself, with `user_id` being
 ```python
 "self": {
     "platform": self.platform,
-    "user_id": raw_event.get("bot_id", ""),   # Bot's own ID
+    "user_id": raw_event.get("bot_id", ""),   # The bot's own ID
 }
 ```
 
 ### 4. Using Non-standard `detail_type` Values
 
-`detail_type` must use the standard OneBot12 defined values, such as `private`, `group`, `friend_increase`, `group_member_increase`, etc. Do not use platform-specific naming.
+The `detail_type` must use values defined by the OneBot12 standard, such as `private`, `group`, `friend_increase`, `group_member_increase`, etc. Do not use platform-specific naming.
 
 ### 5. Round-trip Consistency
 
-Ensure that the message segment types generated by the Converter correspond to the methods supported by the Send side. For example, if the Converter converts the platform's image message to `{"type": "image", ...}`, then the Send side's `Image()` method must be able to handle image sending.
+Ensure that the message segment types generated by the Converter correspond to the methods supported by the Send side. For example, if the Converter converts the platform's image message to `{"type": "image", ...}`, then the `Image()` method on the Send side must be able to handle image sending.
+
+## 常见陷阱
+
+### 1. 缺少 `{platform}_raw` 字段
+
+这是最常见的错误。缺少原始数据字段会导致模块无法访问平台特有的信息。
+
+```python
+base_event["myplatform_raw"] = raw_event        # 必须！
+base_event["myplatform_raw_type"] = event_type   # 必须！
+```
+
+### 2. 时间戳格式错误
+
+OneBot12 标准要求 `time` 字段为 Unix 秒级时间戳（整数）。如果你的平台返回毫秒时间戳或 ISO 格式字符串，需要转换：
+
+```python
+import time
+
+# 毫秒 → 秒
+"time": raw_event.get("timestamp", 0) // 1000
+
+# ISO 字符串 → 秒
+"time": int(time.mktime(time.strptime(raw_event["created_at"], "%Y-%m-%dT%H:%M:%S")))
+```
+
+### 3. 缺少 `self` 字段
+
+`self` 字段包含机器人自身信息，`user_id` 为机器人的账号 ID。多 Bot 场景下此字段至关重要：
+
+```python
+"self": {
+    "platform": self.platform,
+    "user_id": raw_event.get("bot_id", ""),   # 机器人自身的 ID
+}
+```
+
+### 4. detail_type 使用了非标准值
+
+`detail_type` 必须使用 OneBot12 标准定义的值，如 `private`、`group`、`friend_increase`、`group_member_increase` 等。不要使用平台特有的命名。
+
+### 5. 往返一致性
+
+确保 Converter 生成的消息段类型与 Send 端支持的方法对应。例如，如果 Converter 将平台的图片消息转换为 `{"type": "image", ...}`，那么 Send 端的 `Image()` 方法必须能处理图片发送。
 
 ## Best Practices
 
-1. **Always retain original data**: The `{platform}_raw` field cannot be omitted
-2. **Use standard message segments**: Try to convert platform messages into OneBot12 standard message segments
-3. **Set `detail_type` appropriately**: Use standard types (`private`/`group`/`channel` etc.), do not customize
-4. **Handle edge cases**: Original events may lack certain fields; use `.get()` and provide reasonable defaults
-5. **Performance considerations**: `convert()` is called for every event; avoid performing time-consuming operations within it
+1. **Always retain raw data**: The `{platform}_raw` field cannot be omitted.
+2. **Use standard message segments**: Try to convert platform messages into OneBot12 standard message segments.
+3. **Set `detail_type` appropriately**: Use standard types (`private`/`group`/`channel`, etc.), do not customize.
+4. **Handle edge cases**: Raw events may lack certain fields, use `.get()` and provide reasonable default values.
+5. **Consider performance**: `convert()` is called on each event, avoid performing time-consuming operations within it.
+
+Please directly return the complete translated Markdown content, without including any other text.
+
+Once again, if the document contains language switch lines (with language names separated by `` | ``), strictly adhere to the above formatting requirements in point 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 
 
@@ -8219,38 +8292,118 @@ class Main(BaseModule):
 
 # Lazy-Loaded Module System
 
-The ErisPulse SDK provides a powerful lazy-loaded module system, which allows modules to be initialized only when they are actually needed, significantly improving application startup speed and memory efficiency.
+The ErisPulse SDK provides a powerful lazy-loaded module system that allows modules to be initialized only when needed, significantly improving application startup speed and memory efficiency.
+
+Please directly return the complete translated Markdown content without any additional text.
+
+Once again, please note: if the document contains a language switch line (with language names separated by `` | ``), strictly adhere to the format requirements outlined above in point 8. Do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Overview
 
-The lazy-loaded module system is one of the core features of ErisPulse. It works in the following ways:
+The lazy loading module system is one of the core features of ErisPulse. It works in the following ways:
 
-- **Delayed Initialization**: Modules are only loaded and initialized when they are first accessed.
-- **Transparent Usage**: For developers, lazy-loaded modules are almost indistinguishable from regular modules in usage.
-- **Automatic Dependency Management**: Module dependencies are automatically initialized when they are used.
-- **Lifecycle Support**: For modules that inherit from `BaseModule`, lifecycle methods are automatically called.
+- **Lazy Initialization**: Modules are only actually loaded and initialized when first accessed.
+- **Transparent Usage**: For developers, lazy-loaded modules are almost indistinguishable from regular modules in terms of usage.
+- **Automatic Dependency Management**: Module dependencies are automatically initialized when used.
+- **Lifecycle Support**: For modules that inherit from `BaseModule`, lifecycle methods are automatically invoked.
 
-## Working Principle
+Please replace all `docs/en/` in document links with `docs/en/`. For example, `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`. For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged to ensure links point to the correct language version of the document.
+
+## How It Works
 
 ### LazyModule Class
 
-The core of the lazy-loading system is the `LazyModule` class, which acts as a wrapper that actually initializes the module only on the first access.
+The core of the lazy loading system is the `LazyModule` class, which is a wrapper that actually initializes the module only when it is first accessed.
 
 ### Initialization Process
 
-When a module is first accessed, `LazyModule` performs the following operations:
+When the module is first accessed, `LazyModule` performs the following operations:
 
-1. Retrieves the `__init__` parameter information of the module class.
-2. Determines whether to pass the `sdk` reference based on the parameters.
-3. Sets the `moduleInfo` attribute of the module.
-4. For modules that inherit from `BaseModule`, calls the `on_load` method.
-5. Triggers the `module.init` lifecycle event.
+1. Retrieves the `__init__` parameter information of the module class
+2. Determines whether to pass a `sdk` reference based on the parameters
+3. Sets the `moduleInfo` property of the module
+4. For modules that inherit from `BaseModule`, calls the `on_load` method
+5. Triggers the `module.init` lifecycle event
 
-## Configuring Lazy Loading
+The following is the translated content without any additional text or formatting:
+
+## Event-Driven Lazy Activation (`activate_on`)
+
+> [!NOTE]
+> This feature requires ErisPulse **2.8.0+**.
+
+Modules with `lazy_load=True` are loaded by default only on the **first attribute access**. If a module registers command/event handlers, the traditional approach would require `lazy_load=False` to load immediately. `activate_on` provides a third option: **declare triggers, and automatically activate the module when the first matching event/command arrives**—it neither stays in memory nor loses the trigger entry point.
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class MyModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            activate_on=[
+                # ---- Event triggers (passive arrival, no user awareness required) ----
+                "message",                                    # Type-level: any message event
+                {"notice": "group_member_increase"},          # Type + single detail_type
+                {"message": ["private", "group"]},            # Type + multiple detail_types
+
+                # ---- Command triggers (active input, placeholder commands visible to Help) ----
+                {"command": "roll"},                          # Shorthand: command name
+                {"command": ["roll", "dice"]},                # List of command names
+                {"command": {                                 # Dict declaration (name is required)
+                    "name": "dice",
+                    "help": "Roll a die",
+                    "usage": "/dice",
+                    "group": "Entertainment",
+                    "aliases": ["d"],
+                    "hidden": False,
+                }},
+            ],
+        )
+```
+
+### Command Dict Declaration Parameters
+
+The dict format mirrors the user-level parameters of the `@command()` decorator, used to register placeholder commands before the module loads:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `name` | `str` | **Required** | Command name; must match `@command(name)` in `on_load`, otherwise the placeholder is unregistered after activation, and the command does not exist |
+| `help` | `str` | Fallback chain | Description displayed in Help; if not declared, it falls back to the chain (see below) |
+| `usage` | `str` | Auto-generated | Usage line, defaulting to `{prefix}{name}` |
+| `group` | `str` | `None` | Command group |
+| `aliases` | `list[str]` | `[]` | Aliases are registered simultaneously; **activating the module is triggered by inputting aliases** |
+| `hidden` | `bool` | `False` | If `True`, the placeholder command is also hidden (aligned with the hidden semantics of the real command after activation); users who know the command name can still trigger activation by inputting it |
+
+**Not supported**: `priority` / `permission` / `master`: The placeholder command's mission is only to trigger activation; permission checks are performed by the real command after activation (blocking permissions during the placeholder stage would make "activating by inputting a command" ineffective).
+
+### Placeholder Command Help Fallback Chain
+
+When the module is not loaded, the command description displayed in Help is taken in the following order (the first match is used):
+
+1. The command-level `help` declared in the dict (most precise)
+2. The `description` from the module's `get_meta()`
+3. The module's `__description__` attribute
+4. The `Summary` from package metadata (PyPI package summary)
+5. A generic prompt: "This command comes from a lazy-loaded module X; the module will be automatically loaded on first use"
+
+### Trigger Semantics
+
+- **Event stub**: Registered to the corresponding event manager with very low priority (`ACTIVATION_STUB_PRIORITY`), acting as a fallback trigger after all ordinary handlers; after activation, the current event is forwarded to the module's real handler
+- **Command stub**: Registers a placeholder command; after activation, the placeholder is unregistered, and the real command takes over the current trigger
+- **Reentrancy protection**: An `asyncio.Lock` ensures activation occurs only once, even under concurrent triggers
+- **Scope filtering**: The stub carries the module owner's identity, so it does not trigger if the module is not enabled for the Bot / session / platform
+- **Failure semantics**: If activation fails, it is not retried, and the stub is also unregistered
+- **Deduplication**: When the same command name is declared using a mix of shorthand and dict forms, deduplication occurs (dict takes precedence); if the dict lacks `name` or the event `detail_type` is incorrectly written as a dict, a warning is issued and it is ignored
+
+> For the architecture diagram and complete semantics, see [Architecture Overview](../architecture.md#event-driven-lazy-activation-activate_on-trigger-architecture).
+
+## Configure Lazy Loading
 
 ### Global Configuration
 
-Enable/disable global lazy loading in the configuration file:
+Enable/disable lazy loading in the configuration file:
 
 ```toml
 [ErisPulse.framework]
@@ -8268,12 +8421,18 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """Returns the module loading strategy"""
+        """Return the module loading strategy"""
         return ModuleLoadStrategy(
             lazy_load=False,  # Return False to indicate immediate loading
-            priority=100      # Loading priority, higher values have higher priority
+            priority=100      # Loading priority, higher value means higher priority
         )
 ```
+
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
+   - This ensures that links point to the correct language version of the document
 
 ## Using Lazy-Loaded Modules
 
@@ -8282,37 +8441,37 @@ class MyModule(BaseModule):
 For developers, lazy-loaded modules are almost indistinguishable from regular modules in usage:
 
 ```python
-# Accessing lazy-loaded modules through SDK
+# Accessing a lazy-loaded module through the SDK
 from ErisPulse import sdk
 
-# The following access triggers lazy loading of the module
+# The following access will trigger the lazy loading of the module
 result = await sdk.my_module.my_method()
 ```
 
 ### Unified Module Access Entry
 
-Regardless of whether you access through SDK properties, module manager properties, or via `module.get()`, for "registered but not yet loaded" lazy-loaded modules, the same lazy-loaded proxy will be returned. Accessing its properties will trigger initialization:
+Whether accessed through the SDK attribute, the module manager attribute, or queried via `module.get()`, for "registered but not yet loaded" lazy-loaded modules, the same lazy-loading proxy is returned. The module is only truly initialized when its attributes are accessed:
 
 ```python
-# All three methods return the same lazy-loaded proxy (when the module is not loaded), behavior is consistent and transparent to the user
+# All three methods return the same lazy-loading proxy (when the module is not loaded), with consistent behavior and transparent to the user
 sdk.my_module          # Entry point that triggers loading
-sdk.module.my_module   # Also returns the lazy-loaded proxy
-sdk.module.get("my_module")  # Also returns the lazy-loaded proxy, itself does not trigger loading
+sdk.module.my_module   # Also returns the lazy-loading proxy
+sdk.module.get("my_module")  # Also returns the lazy-loading proxy; itself does not trigger loading
 
-# Accessing any property of the proxy will actually initialize the module
+# Accessing any attribute of the proxy will truly initialize the module
 result = await sdk.my_module.my_method()
 ```
 
 `module.get()` is a **query** interface and does not trigger loading by itself:
 - If the module is already loaded → returns the real instance
-- If the module is registered but not loaded → returns the lazy-loaded proxy (initialization occurs when accessing properties)
+- If the module is registered but not loaded → returns the lazy-loading proxy (module is initialized only when attributes are accessed)
 - If the module is not registered → returns `None`
 
 To explicitly trigger loading, use `await sdk.load_module("my_module")`.
 
 ### Asynchronous Initialization
 
-For modules that require asynchronous initialization, it is recommended to load them explicitly first:
+For modules requiring asynchronous initialization, it is recommended to load them explicitly first:
 
 ```python
 # First, explicitly load the module
@@ -8327,30 +8486,51 @@ result = await sdk.my_module.my_method()
 For modules that do not require asynchronous initialization, you can directly access them:
 
 ```python
-# Direct access will automatically initialize synchronously
+# Direct access will automatically trigger synchronous initialization
 result = sdk.my_module.some_sync_method()
-```
 
 ## Best Practices
 
+When choosing a loading strategy, refer to the following decision flow:
+
+```mermaid
+flowchart TD
+    A["Module Declaration<br/>get_load_strategy()"] --> B{"Required to be ready at startup<br/>or frequently triggered?"}
+    B -->|"Yes"| C["lazy_load=False<br/>Load immediately"]
+    B -->|"No"| D{"Registered command/event handlers?"}
+    D -->|"Yes"| E["lazy_load=True + activate_on<br/>Activate when event/command arrives"]
+    D -->|"No"| F["lazy_load=True<br/>Load on first attribute access"]
+    C --> G["Call on_load() at startup"]
+    E --> H["Register stub → Instantiate on trigger"]
+    F --> I["LazyModule proxy"]
+```
+
 ### Recommended Scenarios for Lazy Loading (lazy_load=True)
 
-- Passive utility classes (such as data query modules, format converters, etc., which are only needed when called by other modules)
+- Passive utility classes (e.g., data query modules, format converters, etc., which are only needed when called by other modules)
+- Modules that register command/event handlers but are not used frequently — use `activate_on` to declare triggers, and automatically activate when the first matching event/command arrives, without abandoning lazy loading
 
 ### Recommended Scenarios for Disabling Lazy Loading (lazy_load=False)
 
-- Modules that register triggers (such as command processors, message processors)
-- Lifecycle event listeners
+- Modules that need to be ready at startup (e.g., core modules providing basic services to other modules)
+- High-frequency listeners (each message needs to be processed) — `activate_on` forwarding has an activation overhead, so immediate loading is more direct in high-frequency scenarios
 - Scheduled task modules
 - Modules that need to be initialized at application startup
 
-> The `priority` parameter controls the initialization order among modules that are loaded immediately. Higher values are initialized first. Modules with the same priority are loaded in registration order.
+> The `priority` parameter controls the initialization order among immediately loaded modules; higher values initialize earlier. Modules with the same priority are loaded in registration order.
+
+docs/en/best-practices.md
 
 ## Notes
 
-1. If your module uses lazy loading, and other modules never call it within ErisPulse, your module will never be initialized.
-2. If your module contains modules that listen to Events or other similar actively listening modules, be sure to declare that it needs to be loaded immediately, otherwise it may affect the normal operation of your module.
-3. We do not recommend disabling lazy loading unless there is a special requirement, otherwise it may cause issues such as dependency management and lifecycle events.
+1. If your module uses lazy loading, and other modules have never been called within ErisPulse, your module will never be initialized.
+2. If your module contains modules that listen to Events, or other actively listening modules, there are two options: declare an `activate_on` trigger (maintain lazy loading, activate automatically when the event arrives), or declare that it needs to be loaded immediately (`lazy_load=False`), otherwise it will affect the normal operation of your module.
+3. We do not recommend disabling lazy loading unless there are special requirements, otherwise it may bring you problems such as dependency management and lifecycle events.
+4. In the command dict declaration of `activate_on`, `name` must be consistent with the real command name registered by `@command()` in the module's `on_load` — otherwise, after the module is activated, the placeholder command will be unregistered, and the declared command inconsistent with the implementation will not exist.
+
+Please directly return the complete translated Markdown content, without including any other text.
+
+Once again, if the document contains a language switch line (with each language name separated by `` | ``), be sure to strictly follow the format requirements above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 
 
@@ -9184,59 +9364,69 @@ sdk.logger.allow_level("EVENT")             # Restore
 
 # Startup Flow and Manual Control
 
-The `await sdk.run()` / `await sdk.init()` of ErisPulse encapsulates the entire startup chain into a single line of code. However, when you need full customization of the startup process (e.g., partial loading, dynamic registration, hot-plugging, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
+ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a single line of code. However, when you need to fully customize the startup process (for example, partial loading, dynamic registration, hot plugging, or injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
 
-This article breaks down the startup chain into independent components, explains their respective responsibilities and call order, and provides an example of manual full startup.
+This article breaks down the startup chain into independent components, explains their respective responsibilities, call order, and provides an example of manually initiating the full startup process.
 
-> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the chain within `init()`, as well as lower-level entry points such as `init()`/`init_task()`/`init_sync()`.
+> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the chain within `init()`, as well as lower-level entry points such as `init()` / `init_task()` / `init_sync()`.
 
-## Overview of SDK Top-Level Entry Points
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (such as links in the form of `README.xx.md`), keep them unchanged
+   - This ensures that links point to the correct language version of the document
 
-In addition to the two `keep_running` modes of `run()`, the SDK also provides several lower-level initialization entry points, which differ in **asynchronicity, return value, and whether exceptions are wrapped**:
+## SDK Top-Level Entry Overview
 
-| Entry Point | Asynchronous | Return Value | Exception Handling | Applicable Scenarios |
-|-------------|--------------|--------------|--------------------|----------------------|
-| `await sdk.run(True)` | async, blocks to maintain | `None` (automatically `uninit` on shutdown) | Module/adapter errors are intercepted, not crashing the process | Pure bot application |
-| `await sdk.run(False)` | async, non-blocking | `None` (no automatic unloading) | Same as above | Execute custom logic after initialization |
-| `await sdk.init()` | async, requires `await` | `bool` | **Does not wrap**, exceptions are thrown upwards | Manual lifecycle control (paired with `uninit()`) |
-| `sdk.init_task()` | async, returns `Task` without blocking | `asyncio.Task` | Same as `init()` | Concurrently execute other initializations or when event loop is not running |
-| `sdk.init_sync()` | **Synchronous**, blocks current thread | `bool` | Same as `init()` | Command-line scripts, synchronous entry without event loop |
+In addition to the two `keep_running` modes of `run()`, the SDK provides several lower-level initialization entries, which differ in **asynchronicity, return value, and whether exceptions are wrapped**:
 
-> **Common misconception**: `await sdk.init()` **is not equivalent to** `await sdk.run(keep_running=False)`. Two differences: ① `init()` returns `bool`, `run()` returns `None`; ② `run()` wraps the initialization and running process with try/except (intercepts module/adapter exceptions to prevent crashes), while `init()` does not wrap, and exceptions are thrown directly upwards. Use `init()` + `uninit()` when you need paired unloading or custom exception handling.
+| Entry | Asynchronicity | Return Value | Exception Handling | Use Case |
+|------|--------|--------|----------|----------|
+| `await sdk.run(True)` | async, blocking | `None` (automatically `uninit` on shutdown) | Module/adapter errors are intercepted, not crashing the process | Pure bot applications |
+| `await sdk.run(False)` | async, non-blocking | `None` (not automatically unloaded) | Same as above | Execute custom logic after initialization |
+| `await sdk.init()` | async, requires await | `bool` | Internal component exceptions are caught, returns `False` on failure | Manual lifecycle control (paired with `uninit()`) |
+| `sdk.init_task()` | async, returns Task without blocking | `asyncio.Task` | Same as `init()` | Concurrently execute other initialization tasks, or when event loop is not yet running |
+| `sdk.init_sync()` | **Synchronous**, blocks current thread | `bool` | Same as `init()` | Command-line scripts, synchronous entry points without event loop |
 
-## Overview of the Startup Chain
+> **Common Misunderstanding**: `await sdk.init()` is **not equivalent** to `await sdk.run(keep_running=False)`. Two differences: ① `init()` returns `bool` (returns `False` on failure), `run()` returns `None`; ② `init()` only performs initialization, **does not automatically unload**, while `run()` automatically calls `uninit()` when the event loop ends. Therefore, when manual pairing of unloading or custom lifecycle control is needed, use `init()` + `uninit()`.
 
-`sdk.init()` (specifically its internal `Initializer.init()`) launches the entire framework in the following order:
+docs/en/sdk-overview.md
+
+## Overview of the Startup Process
+
+`sdk.init()` (specifically its internal `Initializer.init()`) initiates the entire framework in the following sequence:
 
 ```mermaid
 flowchart TD
-    A[0. Prepare Environment<br/>Configuration loading / Exception handling] --> B
-    B[1. Parallel Discovery and Loading<br/>AdapterLoader.load / ModuleLoader.load<br/>Internal call to Finder.find_all] --> C
+    A[0. Prepare Environment<br/>Configuration Loading / Exception Handling] --> B
+    B[1. Parallel Discovery and Loading<br/>AdapterLoader.load / ModuleLoader.load<br/>Internally calls Finder.find_all] --> C
     C[2. Register Adapters<br/>AdapterLoader.register_to_manager] --> D
     D[3. Start Adapters<br/>adapter.startup] --> E
     E[4. Register Modules<br/>ModuleLoader.register_to_manager] --> F
     F[5. Initialize Modules<br/>ModuleLoader.initialize_modules<br/>Instantiate and mount to sdk] --> G
-    G[6. Start Router Server<br/>router.start]
+    G[6. Start the Router Server<br/>router.start]
 ```
 
 Corresponding core components:
 
 | Layer | Component | Responsibility |
-|-------|-----------|----------------|
+|----|------|------|
 | Discovery | `AdapterFinder` / `ModuleFinder` | **Discover** adapters/modules from entry-points of installed packages |
-| Loading | `AdapterLoader` / `ModuleLoader` | Discovery + import + read metadata + determine enable/disable, return object list |
+| Loading | `AdapterLoader` / `ModuleLoader` | Discovery + Import + Read metadata + Determine enable/disable, return object list |
 | Registration | `*Loader.register_to_manager` | Register objects to corresponding managers |
 | Management | `sdk.adapter` / `sdk.module` | Maintain adapter/module instances, provide start/stop interfaces |
 | Initialization | `ModuleLoader.initialize_modules` | Create module instances and mount to `sdk` (handle dependency topological sorting) |
 | Routing | `sdk.router` | HTTP / WebSocket server |
 
-> **Important**: `Finder` and `Loader` are two layers. The `Loader` internally **already holds** a `Finder` (`AdapterLoader` comes with `AdapterFinder`, `ModuleLoader` comes with `ModuleFinder`). In most scenarios, you only need to use `Loader`; only when you need "list without importing" will you use `Finder` alone.
+> **Important**: `Finder` and `Loader` are two layers. The `Loader` internally **already holds** a `Finder` (e.g., `AdapterLoader` comes with its own `AdapterFinder`, `ModuleLoader` comes with its own `ModuleFinder`). In most scenarios, you only need to use the `Loader`; only when you need "list without importing" would you use `Finder` alone.
 
-## Detailed Explanation of Each Component
+[**English**](docs/en/quick-start.md)
+
+## Detailed Explanation of Each Step
 
 ### 1. Discovery Layer: Finder
 
-The Finder is responsible only for "finding which packages provide adapters/modules," without importing or instantiating.
+The Finder is only responsible for "finding which packages provide adapters/modules", without importing or instantiating them.
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -9252,11 +9442,11 @@ module_entries = module_finder.find_all()      # list[EntryPoint]
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-Each `EntryPoint` can be loaded using `.load()` to get the corresponding class, but usually, you don't need to call it manually—the Loader will handle it.
+Each `EntryPoint` can be loaded using `.load()` to get the corresponding class, but usually you don't need to do this manually — the Loader will handle it.
 
 ### 2. Loading Layer: Loader
 
-The Loader does "import + read metadata + determine enable/disable" on top of the Finder.
+The Loader performs "importing + reading metadata + determining enable/disable" on top of the Finder.
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -9265,7 +9455,7 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() internally: calls finder.find_all() → processes each entry-point → returns a triple
+# Internally, load() calls finder.find_all() → processes each entry-point → returns a triple
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
@@ -9274,23 +9464,23 @@ The triple returned by `load()`:
 
 | Return Value | Meaning |
 |--------------|---------|
-| `objs` (`dict`) | Name → object (adapter class / module wrapper object) |
+| `objs` (`dict`) | Name → Object (adapter class / module wrapper object) |
 | `enabled` (`list[str]`) | Names that are enabled (not disabled in configuration) |
 | `disabled` (`list[str]`) | Names that are disabled |
 
-#### Diagnostic Information When Loading Fails
+#### Diagnostic Information on Loading Failure
 
-When a module/adapter throws an exception during loading or initialization, the framework skips that component and continues loading other components, while outputting a **summary of user code frames** so you can locate the error position at the default INFO level without manually enabling DEBUG:
+When a module/adapter throws an exception during loading or initialization, the framework skips that component and continues loading others, while outputting a **summary of user code frames**. This allows you to locate the error position at the default INFO level, without manually switching to DEBUG:
 
 ```
 [ERROR] [ModuleLoader] Failed to load module MyModule from entry-point, skipped: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → Hint: Increase log level to DEBUG to view full stack; check implementation code of module MyModule
+  → Note: Increase the log level to DEBUG to view the full stack trace; check the implementation code of module MyModule
 ```
 
-The diagnostic information is generated by the `ErisPulse.runtime.diagnostics` module and automatically filters out internal framework frames, retaining only your code frames. If you need to reuse it in custom loading logic:
+Diagnostic information is generated through the `ErisPulse.runtime.diagnostics` module, which automatically filters out internal framework frames and retains only your code frames. If you need to reuse this in custom loading logic:
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -9298,14 +9488,14 @@ from ErisPulse.runtime import log_diagnostic
 try:
     risky_init()
 except Exception as e:
-    log_diagnostic(e)  # Automatically extract user code frames and write to ERROR log
+    log_diagnostic(e)  # Automatically extracts user code frames and writes to ERROR log
 ```
 
 This module also provides two low-level functions: `extract_user_frame()` (returns structured frame information) and `format_diagnostic_block()` (returns multi-line text).
 
 ### 3. Registration Layer: register_to_manager
 
-Registers the objects produced by the Loader to the managers so that `sdk.adapter` / `sdk.module` can recognize them.
+Registers the objects produced by the Loader into the manager, allowing `sdk.adapter` / `sdk.module` to recognize them.
 
 ```python
 # Register adapters (returns bool, indicating whether all succeeded)
@@ -9315,23 +9505,23 @@ await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.ada
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-After registration, adapters enter `sdk.adapter._adapters`, and module classes enter `sdk.module`, but **they are not yet started/initialized**.
+After registration, adapters enter `sdk.adapter._adapters`, and module classes enter `sdk.module`, but **they are not yet started/instantiated**.
 
-### 4. Start Adapters
+### 4. Starting Adapters
 
 ```python
 # Start all registered adapters
 await sdk.adapter.startup()
-# Or specify platform
+# Or specify a platform
 await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> Registration ≠ Startup. `register_to_manager` only registers; `startup` calls the adapter's `start()`, establishing a connection with the platform.
+> Registration ≠ Startup. `register_to_manager` only registers; `startup` calls the adapter's `start()` method to establish a connection with the platform.
 
-### 5. Initialize Modules
+### 5. Initializing Modules
 
-Modules have one extra step compared to adapters—they need to be **instantiated** and mounted to `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module dependencies and topological sorting.
+Modules have one extra step compared to adapters — they need to be **instantiated** and mounted onto `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module dependencies and topological sorting.
 
 ```python
 success = await module_loader.initialize_modules(
@@ -9341,7 +9531,7 @@ success = await module_loader.initialize_modules(
 
 After successful instantiation, the module appears on `sdk.<ModuleName>`.
 
-### 6. Start Router Server
+### 6. Starting the Routing Server
 
 ```python
 await sdk.router.start(
@@ -9352,11 +9542,15 @@ await sdk.router.start(
 )
 ```
 
-The router server is responsible for receiving webhook/WebSocket callbacks from adapters. Without starting it, server-mode adapters cannot receive messages.
+The routing server is responsible for receiving webhook/WebSocket callbacks from adapters. Without starting it, server-mode adapters cannot receive messages.
 
-## Full Manual Startup Example
+---
 
-The following code is **equivalent to** the core process of `await sdk.init()`, but each step is exposed to you, allowing you to insert custom logic at any step:
+[**English**](docs/en/quick-start.md)
+
+## Complete Manual Startup Example
+
+The following code is **equivalent** to the core flow of `await sdk.init()`, but each step is exposed to you, allowing you to insert custom logic at any point:
 
 ```python
 import asyncio
@@ -9364,9 +9558,9 @@ from ErisPulse import sdk
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
 async def manual_startup():
-    # 0. Prepare Environment (load configuration, register global exception handler)
-    #    _prepare_environment is a pre-step inside init(); manual flow also needs to call it first,
-    #    otherwise Loader cannot read configuration and will misjudge all adapters/modules as disabled.
+    # 0. Prepare environment (load configuration, register global exception handling)
+    #    _prepare_environment is a pre-step within init(); in manual flow, it must be called first,
+    #    otherwise Loader will not read the configuration and will misjudge all adapters/modules as disabled.
     if not await sdk._prepare_environment():
         print("Environment preparation failed")
         return False
@@ -9375,7 +9569,7 @@ async def manual_startup():
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. Parallel discovery and loading (consistent with init() using gather)
+    # 2. Parallel discovery and loading (consistent with internal gather in init())
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
@@ -9402,10 +9596,10 @@ async def manual_startup():
             enabled_modules, module_objs, sdk.module, sdk
         )
 
-    # 7. Start router server
+    # 7. Start route server
     await sdk.router.start(host="0.0.0.0", port=8000)
 
-    print("Manual startup complete")
+    print("Manual startup completed")
     return True
 
 async def main():
@@ -9420,33 +9614,33 @@ if __name__ == "__main__":
 
 ### When to Use Manual Startup?
 
-In most cases, manual startup is **not needed**—`await sdk.run()` has already done all of the above. Manual startup is only valuable in these scenarios:
+In most cases, manual startup is **not required**, as `await sdk.run()` already handles all the above steps. Manual startup is valuable only in these scenarios:
 
 - **Partial loading**: Load only specified adapters/modules, skipping others
 - **Dynamic registration**: Register new adapters/modules at runtime based on conditions
-- **Custom order**: Need to disrupt the default loading order (e.g., start a module before an adapter)
-- **Inject strategies**: Inject custom strict mode managers, loading strategies, etc., into the Loader
-- **Debugging/diagnosis**: Manually drive to locate issues when a step fails
+- **Custom order**: Need to disrupt the default loading order (e.g., start a specific module before starting adapters)
+- **Injection strategies**: Inject custom strict mode managers, loading strategies, etc., into the Loader
+- **Debugging/diagnosis**: When failure occurs at a certain step, manually drive the process to locate the issue
 
-## Fine-Grained Runtime Control
+## Runtime Fine-grained Control
 
-Even after using `sdk.run()` to complete the startup, you can still individually control each subsystem at runtime without restarting the entire SDK:
+Even after using `sdk.run()` to complete the startup, you can still control individual subsystems at runtime without restarting the entire SDK:
 
-### Hot Restart/Stop Adapters
+### Hot Restart of Adapters
 
 ```python
-# Hot restart an adapter (fix connection, does not affect other platforms)
+# Hot restart a specific adapter (to fix connection, without affecting other platforms)
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
-# Bring up a new platform at runtime
+# Bring up a new platform during runtime
 await sdk.adapter.startup("telegram")
 
 # Temporarily take a platform offline
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` requires the adapter to be **registered** to the manager. Registration happens inside `init()`/`run()`, so this is fine-grained control **after** startup.
+> `adapter.startup()` requires the adapter to be **registered** with the manager. Registration occurs internally within `init()`/`run()`, so this allows fine-grained control after startup.
 
 ### Router Server
 
@@ -9454,23 +9648,25 @@ await sdk.adapter.shutdown("telegram")
 # Temporarily take the webhook server offline
 await sdk.router.stop()
 
-# Restart (e.g., after changing the port)
+# Restart it (for example, after changing the port)
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
-### Lazy Module Loading
+### On-demand Module Loading
 
 ```python
 # Manually load a (possibly lazily loaded) module
 await sdk.load_module("MyModule")
 ```
 
+[**English**](docs/en/quick-start.md)
+
 ## Graceful Shutdown
 
-Since version 2.7.0, `sdk.shutdown()` provides **programmatic graceful shutdown**: set a shutdown event to allow the main loop, which is suspended by `await sdk.run(keep_running=True)`, to return, thus triggering `uninit()` to complete resource cleanup.
+Starting from version 2.7.0, `sdk.shutdown()` provides **programmatic graceful shutdown**: it sets a shutdown event, allowing the main loop that is suspended by `await sdk.run(keep_running=True)` to return, which in turn triggers `uninit()` to complete resource cleanup.
 
 ```python
-# Call from any coroutine to trigger graceful exit (run() suspends and returns, automatically uninit)
+# Call from any coroutine to trigger graceful exit (run() suspends and returns, and uninit() is automatically called)
 sdk.shutdown()
 ```
 
@@ -9479,63 +9675,96 @@ Typical use cases:
 ```python
 async def shutdown_after_idle():
     await asyncio.sleep(3600)
-    sdk.shutdown()  # Gracefully exit after 1 hour of idle
+    sdk.shutdown()  # Gracefully exit after being idle for 1 hour
 ```
 
-**Signal Handling**: `run()` internally registers `SIGTERM` / `SIGHUP` handlers, converting system signals into graceful shutdown—when container orchestration (Docker `docker stop`) or `systemd` stops the service, the process will go through `uninit()` cleanup instead of being forcibly killed.
+**Signal Handling**: `run()` internally registers `SIGTERM` / `SIGHUP` handlers, converting system signals into graceful shutdown—when stopping services via container orchestration (Docker `docker stop`) or `systemd`, the process will complete `uninit()` cleanup instead of being forcefully killed.
 
-- Windows does not support `loop.add_signal_handler`, so the signal handler is automatically skipped (still use `sdk.shutdown()` or Ctrl+C to trigger shutdown)
-- Repeatedly calling `sdk.shutdown()` is safe (no operation after the event is set)
+- Windows does not support `loop.add_signal_handler`, so the signal handler is automatically skipped (graceful shutdown can still be triggered using `sdk.shutdown()` or Ctrl+C)
+- Repeatedly calling `sdk.shutdown()` is safe (subsequent calls after the event is set are no-ops)
 
-## Unload Process
+docs/en/quick-start.md
 
-The reverse operation of startup is `await sdk.uninit()`, which cleans up in reverse order:
+## Uninstall Process
+
+The reverse operation of startup is `await sdk.uninit()`, which cleans up in the reverse order:
 
 1. Shut down all adapters (`adapter.shutdown()`)
 2. Unload all modules
 3. Clean up all event handlers
-4. Clean up managers and module attributes on SDK
+4. Clean up module properties on managers and the SDK
 
-In manual startup scenarios, remember to call `uninit()` before exiting to ensure graceful shutdown:
+In manual startup scenarios, remember to call `uninit()` before exiting to ensure a graceful shutdown:
 
 ```python
 try:
-    await asyncio.Event().wait()   # Maintain running
+    await asyncio.Event().wait()   # Keep running
 finally:
     await sdk.uninit()
-```
 
 ## Restart
 
-The SDK provides two restart methods, neither of which requires you to unload first—the framework handles it automatically:
+The SDK provides two restart methods, both of which do not require you to uninstall first—the framework will handle it automatically:
 
 | Method | Call | Behavior | Applicable Scenarios |
-|--------|------|----------|----------------------|
-| Hot Restart | `await sdk.restart()` | Same process `uninit()` then re-`init()`, reload adapters/modules | Reload configuration, hot-update modules |
-| Hard Restart | `await sdk.hard_restart()` | `uninit()` then exit the entire process, pulled up by parent process (`epsdk run`) | Suspected memory/resource leaks, need a completely clean restart |
+|------|------|------|----------|
+| Hot Restart | `await sdk.restart()` | `uninit()` within the same process, then re-`init()`, reloading adapters/modules | Reload configuration, hot update modules |
+| Hard Restart | `await sdk.hard_restart()` | After `uninit()`, exit the entire process and start a new process by the parent process (`epsdk run`) | Suspected memory/resource leaks, requiring a completely clean restart |
 
 ```python
-# Hot Restart: Reload within the same process (most commonly used)
+# Hot restart: reload within the same process (most commonly used)
 await sdk.restart()
 
-# Hard Restart: Exit process, must be started via `epsdk run main.py` to take effect
+# Hard restart: exit the process, effective only when started via `epsdk run`
 await sdk.hard_restart()
 ```
 
 > **Two points to note**:
-> 1. These methods execute restarts in the background task and **immediately return `True` indicating "restart task scheduled"**, not "restart completed." Actual restart happens in the background to avoid interrupting the current event chain.
-> 2. `hard_restart()` **must be started via `epsdk run main.py` to take effect**. Its principle is: after uninit, exit the process with exit code 42; the parent process of `epsdk run` detects code 42 and pulls up a new process; if started directly via `python main.py`, the process exits with code 42 and ends directly, without automatic restart.
+> 1. Both methods execute the restart in a background task, **immediately returning `True` to indicate that the "restart task has been scheduled,"** not that the restart has completed. The actual restart occurs in the background to avoid interrupting the current event chain.
+> 2. `hard_restart()` **must be executed through `epsdk run main.py` to take effect.** The principle is: after unloading, the process exits with **exit code 42**; the parent process of `epsdk run` detects code 42 and restarts a new process; if started directly via `python main.py`, the process exits with code 42 and terminates without automatic restart.
 
 ### When to Use Hard Restart?
 
-Hard restart is not just a "more thorough restart," it is more suitable, and even more efficient, in the following scenarios:
+Hard restart is not just a "more thorough restart," it is more suitable and even more efficient than hot restart in the following scenarios:
 
-- **Binary library (C extension) side effects**: Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart switches to a new process, thoroughly clearing these side effects.
-- **Resource leak diagnosis**: When suspected memory or handle leaks exist, hard restart provides a clean environment.
-- **Performance-sensitive frequent restarts**: Hard restart avoids the overhead of unloading and reloading within the same process, making it more efficient than hot restart in practice.
+- **Side effects of binary libraries (C extensions):** Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart uses a new process, thus thoroughly clearing these side effects.
+- **Resource leak troubleshooting:** When suspected memory or handle leaks exist, hard restart provides a clean environment.
+- **Frequent restarts sensitive to performance:** Hard restart eliminates the overhead of uninstalling and reloading within the same process, making it more efficient than hot restart in practice.
 
 > The "Framework Restart" function in the Dashboard management panel internally calls `hard_restart()`.
-> Additionally, hard restart requires the use of the `epsdk` `run` command for startup; otherwise, the program will only throw exit code 42 and exit, because the `run` command checks for exit code 42 to restart the process. This must be noted carefully!!!
+> Additionally, hard restart has a requirement: it must be started using the `epsdk run` command, otherwise the program will just throw exit code 42 and exit. The `run` command checks for exit code 42 to restart the process, which must be noted carefully!!!
+
+## Restart
+
+The SDK provides two restart methods, both of which do not require you to uninstall first—the framework will handle it automatically:
+
+| Method | Call | Behavior | Applicable Scenarios |
+|------|------|------|----------|
+| Hot Restart | `await sdk.restart()` | `uninit()` within the same process, then re-`init()`, reloading adapters/modules | Reload configuration, hot update modules |
+| Hard Restart | `await sdk.hard_restart()` | After `uninit()`, exit the entire process and start a new process by the parent process (`epsdk run`) | Suspected memory/resource leaks, requiring a completely clean restart |
+
+```python
+# Hot restart: reload within the same process (most commonly used)
+await sdk.restart()
+
+# Hard restart: exit the process, effective only when started via `epsdk run`
+await sdk.hard_restart()
+```
+
+> **Two points to note**:
+> 1. Both methods execute the restart in a background task, **immediately returning `True` to indicate that the "restart task has been scheduled,"** not that the restart has completed. The actual restart occurs in the background to avoid interrupting the current event chain.
+> 2. `hard_restart()` **must be executed through `epsdk run main.py` to take effect.** The principle is: after unloading, the process exits with **exit code 42**; the parent process of `epsdk run` detects code 42 and restarts a new process; if started directly via `python main.py`, the process exits with code 42 and terminates without automatic restart.
+
+### When to Use Hard Restart?
+
+Hard restart is not just a "more thorough restart," it is more suitable and even more efficient than hot restart in the following scenarios:
+
+- **Side effects of binary libraries (C extensions):** Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart uses a new process, thus thoroughly clearing these side effects.
+- **Resource leak troubleshooting:** When suspected memory or handle leaks exist, hard restart provides a clean environment.
+- **Frequent restarts sensitive to performance:** Hard restart eliminates the overhead of uninstalling and reloading within the same process, making it more efficient than hot restart in practice.
+
+> The "Framework Restart" function in the Dashboard management panel internally calls `hard_restart()`.
+> Additionally, hard restart has a requirement: it must be started using the `epsdk run` command, otherwise the program will just throw exit code 42 and exit. The `run` command checks for exit code 42 to restart the process, which must be noted carefully!!!
 
 
 
@@ -13815,21 +14044,31 @@ TelegramAdapter is an adapter built based on the Telegram Bot API, supporting mu
 
 ---
 
-## Document Information
+Please directly return the complete translated Markdown content without any additional text.
 
-- Corresponding Module Version: 4.0.0
+Once again, if the document contains language switching lines (with each language name separated by `` | ``), strictly adhere to the formatting requirements above in point 8. Do not write incorrect formats such as ``[**Label**](file)``.
+
+## Documentation Information
+
+- Corresponding Module Version: 4.1.1
 - Maintainer: ErisPulse
+
+Please directly return the complete translated Markdown content, without including any other text.
+
+Again, please note: If the document contains a language switch line (with each language name separated by `` | ``), strictly follow the format requirement in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Basic Information
 
 - Platform Introduction: Telegram is a cross-platform instant messaging software
 - Adapter Name: TelegramAdapter
-- Supported Protocols/API Versions: Telegram Bot API
-- Session Type Mapping: `private` → Use `user` when sending, `group`/`supergroup` → `group`, `channel` → `channel`
+- Supported Protocol/API Version: Telegram Bot API
+- Session Type Mapping: `private` → use `user` when sending, `group`/`supergroup` → `group`, `channel` → `channel`
+
+Please directly return the complete translated Markdown content without any additional text.
 
 ## Supported Message Sending Types
 
-All sending methods are implemented via chained syntax, for example:
+All sending methods are implemented through a fluent interface, for example:
 ```python
 from ErisPulse.Core import adapter
 telegram = adapter.get("telegram")
@@ -13841,53 +14080,53 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 
 | Method | Description | Parameters |
 |--------|-------------|------------|
-| `.Text(text)` | Sends a plain text message | `text: str` |
-| `.Face(emoji)` | Sends a dice emoji | `emoji: str` (e.g., 🎲 🎯 🏀) |
-| `.Markdown(text, content_type)` | Sends a Markdown format message | `content_type` defaults to `"MarkdownV2"` |
-| `.HTML(text)` | Sends an HTML format message | `text: str` |
-| `.Sticker(file)` | Sends a sticker | `file: str (file_id/URL) \| bytes` |
-| `.Location(lat, lng)` | Sends a location | `latitude: float, longitude: float` |
-| `.Venue(lat, lng, title, addr)` | Sends a venue | With title and address |
-| `.Contact(phone, first, last)` | Sends a contact | With phone number and name |
+| `.Text(text)` | Send plain text message | `text: str` |
+| `.Face(emoji)` | Send emoji dice | `emoji: str` (e.g. 🎲 🎯 🏀) |
+| `.Markdown(text, content_type)` | Send Markdown-formatted message | `content_type` defaults to `"MarkdownV2"` |
+| `.HTML(text)` | Send HTML-formatted message | `text: str` |
+| `.Sticker(file)` | Send sticker | `file: str (file_id/URL) \| bytes` |
+| `.Location(lat, lng)` | Send location | `latitude: float, longitude: float` |
+| `.Venue(lat, lng, title, addr)` | Send venue | Includes title and address |
+| `.Contact(phone, first, last)` | Send contact | Includes phone number and name |
 
 ### Media Sending Methods
 
-All media methods support both `bytes` (upload) and `str` (file_id / URL) as input:
+All media methods support both `bytes` (upload) and `str` (file_id / URL) inputs:
 
 | Method | Description |
 |--------|-------------|
-| `.Image(file, caption, content_type)` | Sends an image |
-| `.Video(file, caption, content_type)` | Sends a video |
-| `.Voice(file, caption)` | Sends a voice message |
-| `.Audio(file, caption, content_type)` | Sends an audio message |
-| `.File(file, caption)` | Sends a file |
-| `.Document(file, caption, content_type)` | Alias of File |
+| `.Image(file, caption, content_type)` | Send image |
+| `.Video(file, caption, content_type)` | Send video |
+| `.Voice(file, caption)` | Send voice |
+| `.Audio(file, caption, content_type)` | Send audio |
+| `.File(file, caption)` | Send file |
+| `.Document(file, caption, content_type)` | Alias for File |
 
 ### Message Management Methods
 
 | Method | Description |
 |--------|-------------|
-| `.Edit(message_id, text, content_type)` | Edits an existing message |
-| `.Recall(message_id)` | Deletes a specified message |
-| `.Forward(from_chat_id, message_id)` | Forwards a message (preserving source) |
-| `.CopyMessage(from_chat_id, message_id)` | Copies a message (without source) |
-| `.AnswerCallback(callback_query_id, text, show_alert)` | Answers a callback query |
+| `.Edit(message_id, text, content_type)` | Edit an existing message |
+| `.Recall(message_id)` | Delete a specified message |
+| `.Forward(from_chat_id, message_id)` | Forward a message (retains source) |
+| `.CopyMessage(from_chat_id, message_id)` | Copy a message (without source) |
+| `.AnswerCallback(callback_query_id, text, show_alert)` | Answer a callback query |
 
 ### Raw Message Sending
 
-- `.Raw_ob12(message: List[Dict])`: Sends a OneBot12 standard format message
-- `.Raw_json(json_str: str)`: Sends a raw JSON format message
+- `.Raw_ob12(message: List[Dict])`: Send a message in OneBot12 standard format
+- `.Raw_json(json_str: str)`: Send a message in raw JSON format
 
-### Chained Modifying Methods
+### Fluent Modifier Methods
 
 | Method | Description |
 |--------|-------------|
-| `.At(user_id)` | Mentions a specific user (implemented via Telegram entities, can be called multiple times) |
-| `.AtAll()` | Mentions all members (sends `@All` text) |
-| `.Reply(message_id)` | Replies to a specified message |
-| `.Keyboard(inline_keyboard)` | Sets an inline keyboard (`list[list[dict]]`) |
-| `.ProtectContent(protect)` | Protects content (prevents forwarding and saving) |
-| `.Silent(silent)` | Sends silently (without notifying users) |
+| `.At(user_id)` | @ a specified user (implemented via Telegram entities, can be called multiple times) |
+| `.AtAll()` | @ all members (sends `@All` text) |
+| `.Reply(message_id)` | Reply to a specified message |
+| `.Keyboard(inline_keyboard)` | Set an inline keyboard (`list[list[dict]]`) |
+| `.ProtectContent(protect)` | Protect content (prevents forwarding and saving) |
+| `.Silent(silent)` | Send silently (does not notify the user) |
 
 ### Sending Examples
 
@@ -13902,26 +14141,26 @@ keyboard = [
     [{"text": "Button 1", "callback_data": "btn1"}, {"text": "Button 2", "callback_data": "btn2"}],
     [{"text": "Visit Website", "url": "https://example.com"}],
 ]
-await telegram.Send.To("group", group_id).Keyboard(keyboard).Text("Please choose:")
+await telegram.Send.To("group", group_id).Keyboard(keyboard).Text("Please select:")
 
-# Media sending (URL method)
+# Media sending (using URL)
 await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="Image")
 
-# @User
+# @ user
 await telegram.Send.To("group", group_id).At("6117725680").Text("Hello!")
 
-# Reply + Protect content
-await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("Confidential message")
+# Reply + protect content
+await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("Secret Message")
 
 # Silent sending
-await telegram.Send.To("group", group_id).Silent().Text("Silent notification")
+await telegram.Send.To("group", group_id).Silent().Text("Silent Notification")
 
 # Answer callback query
 await telegram.Send.AnswerCallback(callback_query_id, text="Processed", show_alert=False)
 
-# OneBot12 combined message
+# OneBot12 composite message
 ob12_message = [
-    {"type": "text", "data": {"text": "Complex message:"}},
+    {"type": "text", "data": {"text": "Complex message: "}},
     {"type": "mention", "data": {"user_id": "6117725680", "user_name": "Username"}},
     {"type": "reply", "data": {"message_id": "12345"}},
     {"type": "image", "data": {"file": "https://http.cat/200"}}
@@ -13933,57 +14172,56 @@ await telegram.Send.To("user", user_id).Sticker("CAACAgIAAxkBAA...")  # file_id
 
 # Send location
 await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
-```
 
-## Specific Event Types
+## Telegram Event Types
 
-Telegram events follow the OneBot12 standard, with platform extensions provided through the `telegram_` prefix.
+Telegram event transformations follow the OneBot12 standard, with platform extensions provided via the `telegram_` prefix.
 
 ### Message Event detail_type Mapping
 
-| Telegram chat.type | OneBot12 detail_type | Target Type for Sending |
+| Telegram chat.type | OneBot12 detail_type | Target Type |
 |---|---|---|
 | `private` | `private` | `user` |
 | `group` | `group` | `group` |
 | `supergroup` | `group` | `group` |
 | `channel` | `channel` | `channel` |
 
-### Specific Event Types
+### Telegram-Specific Event Types
 
 | detail_type | Description |
 |---|---|
-| `telegram_callback_query` | Callback query (inline button click) |
+| `telegram_callback_query` | Callback query (inline keyboard button click) |
 | `telegram_inline_query` | Inline query |
 | `telegram_chosen_inline_result` | Chosen inline result |
 | `telegram_poll` | Poll event |
 | `telegram_poll_answer` | Poll answer |
-| `telegram_my_chat_member` | Bot's own chat member status change |
+| `telegram_my_chat_member` | Bot member status change |
 | `telegram_chat_member` | Chat member change |
-| `telegram_chat_join_request` | Chat join request |
+| `telegram_chat_join_request` | Join chat request |
 | `telegram_shipping_query` | Shipping query |
 | `telegram_pre_checkout_query` | Pre-checkout query |
 
 ### Standard Message Segment Types
 
-Converted message segments use OneBot12 standard format:
+Transformed message segments use the OneBot12 standard format:
 
-| Segment Type | Description | data field |
+| Segment Type | Description | data Fields |
 |---|---|---|
 | `text` | Plain text (without @username) | `text` |
-| `mention` | @mention (standard OB12) | `user_id`, `user_name` |
+| `mention` | @User (standard OB12) | `user_id`, `user_name` |
 | `reply` | Reply reference | `message_id`, `user_id` |
 | `image` | Image | `file_id`, `url` |
 | `video` | Video | `file_id`, `url`, `duration`, `width`, `height` |
-| `voice` | Voice message | `file_id`, `url`, `duration` |
+| `voice` | Voice | `file_id`, `url`, `duration` |
 | `audio` | Audio | `file_id`, `url`, `duration`, `title`, `performer` |
 | `file` | File | `file_id`, `url`, `file_name`, `file_size`, `mime_type` |
 | `location` | Location | `latitude`, `longitude`, optional `title`, `address` |
 
 ### Platform Extension Message Segments
 
-Extension message segments identified with `telegram_` prefix:
+Message segments with the `telegram_` prefix are platform extensions:
 
-| Segment Type | Description | data field |
+| Segment Type | Description | data Fields |
 |---|---|---|
 | `telegram_sticker` | Sticker | `file_id`, `emoji`, `sticker_type`, `url` |
 | `telegram_animation` | GIF animation | `file_id`, `url`, `duration`, `caption` |
@@ -13992,7 +14230,7 @@ Extension message segments identified with `telegram_` prefix:
 
 ### Event Examples
 
-#### Group Chat Message (with @mention)
+#### Group Message (with @mention)
 ```python
 {
   "type": "message",
@@ -14048,7 +14286,7 @@ Extension message segments identified with `telegram_` prefix:
   "type": "message",
   "detail_type": "group",
   "message": [
-    {"type": "text", "data": {"text": "Please choose:"}},
+    {"type": "text", "data": {"text": "Please select:"}},
     {
       "type": "telegram_inline_keyboard",
       "data": {
@@ -14060,42 +14298,41 @@ Extension message segments identified with `telegram_` prefix:
     }
   ]
 }
-```
 
 ## Event Mixin Extension Methods
 
-The adapter registers platform-specific methods that are only available when `platform == "telegram"`:
+The adapter registers the following platform-specific methods, which are only available when `platform == "telegram"`:
 
 ### Message-related
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `is_bot_message()` | `bool` | Checks if the message is from a bot |
-| `is_edited_message()` | `bool` | Checks if the message was edited |
-| `is_topic_message()` | `bool` | Checks if it's a topic/Topic message |
-| `get_update_id()` | `int` | Gets Telegram update ID |
-| `get_chat_title()` | `str` | Gets chat title |
-| `get_chat_username()` | `str` | Gets chat username |
-| `get_forward_from()` | `dict` | Gets forward source information |
-| `get_topic_id()` | `str` | Gets topic ID |
+| `is_bot_message()` | `bool` | Determine if the message comes from a bot |
+| `is_edited_message()` | `bool` | Determine if the message has been edited |
+| `is_topic_message()` | `bool` | Determine if the message is a topic/Topic message |
+| `get_update_id()` | `int` | Get the Telegram update ID |
+| `get_chat_title()` | `str` | Get the chat title |
+| `get_chat_username()` | `str` | Get the chat username |
+| `get_forward_from()` | `dict` | Get the forward source information |
+| `get_topic_id()` | `str` | Get the topic ID |
 
 ### Callback Query-related
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `get_callback_data()` | `str` | Gets callback_data from callback query |
-| `get_callback_id()` | `str` | Gets callback query ID (for answering) |
+| `get_callback_data()` | `str` | Get the callback_data from the callback query |
+| `get_callback_id()` | `str` | Get the callback query ID (used for responding) |
 
 ### Message Segment Data Extraction
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `get_inline_keyboard()` | `list` | Gets inline keyboard from message |
-| `get_sticker_info()` | `dict` | Gets sticker information |
-| `get_contact_info()` | `dict` | Gets contact information |
-| `get_location()` | `dict` | Gets location information |
+| `get_inline_keyboard()` | `list` | Get the inline keyboard from the message |
+| `get_sticker_info()` | `dict` | Get the sticker information |
+| `get_contact_info()` | `dict` | Get the contact information |
+| `get_location()` | `dict` | Get the location information |
 
-### Usage Examples
+### Usage Example
 
 ```python
 from ErisPulse.Core.Event import message, notice
@@ -14138,23 +14375,24 @@ async def handle_notice(event):
         callback_data = event.get_callback_data()
         callback_id = event.get_callback_id()
 
-        # Answer callback query
+        # Respond to the callback query
         telegram = sdk.adapter.get("telegram")
         await telegram.Send.AnswerCallback(callback_id, text="Clicked")
 
-        # Reply to message
+        # Reply to the message
         await event.reply(f"You clicked: {callback_data}")
-```
 
-## Extended Field Descriptions
+## Extension Field Description
 
-- All specific fields are identified with the `telegram_` prefix
-- Original data is preserved in the `telegram_raw` field
-- Original event type is preserved in the `telegram_raw_type` field
+- All unique fields are prefixed with `telegram_`
+- The original data is preserved in the `telegram_raw` field
+- The original event type is preserved in the `telegram_raw_type` field
 - Channel messages use `detail_type="channel"`
 - Private chat messages use `detail_type="private"` (must be converted to `user` when sending)
-- Topic messages include a `thread_id` field
-- `@` mentions use the standard `mention` message segment type (`type: "mention"`), without @username in the text
+- Thread messages include the `thread_id` field
+- `@` mentions use the standard `mention` message segment type (`type: "mention"`), and the text does not contain @username
+
+Please replace all `docs/en/` paths in document links with `docs/en/`. For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`. For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged. This ensures that links point to the correct language version of the document.
 
 ## Configuration Options
 
@@ -14171,17 +14409,17 @@ token = "ANOTHER_BOT_TOKEN"
 enabled = true
 ```
 
-### Operating Mode
+### Running Mode
 
-The Telegram adapter only supports **Polling** mode. The Webhook mode has been removed.
+The Telegram adapter only supports the **Polling (polling)** mode. The Webhook mode has been removed.
 
 ### Proxy Configuration
 
-If you need to connect to Telegram API via a proxy, please use a system-level proxy (environment variables `ALL_PROXY` or `HTTPS_PROXY`).
+To connect to the Telegram API through a proxy, use system-level proxy (environment variables `ALL_PROXY` / `HTTPS_PROXY`).
 
 ### Migration from Old Configuration
 
-The old single token configuration is automatically compatible:
+Old single-token configuration is automatically compatible:
 ```toml
 # Old format (still usable, but migration is recommended)
 [Telegram_Adapter]
@@ -14193,6 +14431,13 @@ It is recommended to migrate to the new format:
 [Telegram_Adapter.accounts.default]
 token = "YOUR_BOT_TOKEN"
 enabled = true
+```
+
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
+   - This ensures that links point to the correct language version of the documentation
 
 
 
@@ -14767,27 +15012,35 @@ The system automatically supports legacy format configurations, but migration to
 
 ### 邮件适配
 
-# Email Platform Feature Documentation
+# Email Platform Feature Document
 
-EmailAdapter is an email adapter based on the SMTP/IMAP protocol, supporting email sending, receiving, and processing.
+EmailAdapter is a mail adapter based on the SMTP/IMAP protocols, supporting mail sending, receiving, and processing.
 
 ---
 
-## Document Information
+Please directly return the complete translated Markdown content without including any other text.
+
+Once again, if the document contains language switch lines (with each language name separated by `` | ``), strictly follow the above rule #8 and do not write incorrect formats such as ``[**Label**](file)``.
+
+## Documentation Information
 
 - Corresponding Module Version: 4.1.0
 - Maintainer: ErisPulse
 
+Please directly return the complete translated Markdown content without any additional text.
+
 ## Basic Information
 
-- Platform Overview: A general-purpose adapter for sending and receiving emails via standard SMTP/IMAP protocols
+- Platform Introduction: A general adapter for sending and receiving emails via standard SMTP/IMAP protocols
 - Adapter Name: EmailAdapter
-- Multi-Account Support: Supports simultaneous configuration of multiple email accounts
+- Multi-account Support: Supports configuring multiple email accounts simultaneously
 - Connection Method: IMAP long-polling for receiving + SMTP for sending
 - Authentication Method: Email address + password/authorization code
 - OneBot12 Compatibility: Supports sending OneBot12 formatted messages
 
-## Configuration Instructions
+docs/en/quick-start.md
+
+## Configuration Guide
 
 ### Global Configuration (EmailAdapter)
 
@@ -14797,20 +15050,20 @@ EmailAdapter is an email adapter based on the SMTP/IMAP protocol, supporting ema
 | `imap_port` | int | `993` | Default IMAP port |
 | `smtp_server` | str | `smtp.example.com` | Default SMTP server address |
 | `smtp_port` | int | `465` | Default SMTP port |
-| `ssl` | bool | `true` | Whether SSL is enabled by default |
+| `ssl` | bool | `true` | Whether to enable SSL by default |
 | `timeout` | int | `30` | Default connection timeout (seconds) |
 | `poll_interval` | int | `60` | IMAP polling interval (seconds) |
-| `max_retries` | int | `3` | Maximum number of retries for connection failures |
+| `max_retries` | int | `3` | Maximum number of retries on connection failure |
 
 ### Account Configuration (EmailAdapter.accounts)
 
-Each account corresponds to an independent email. Account-level configurations take precedence over global configurations.
+Each account corresponds to a separate email. Account-level configuration takes precedence over global configuration.
 
 ```toml
 [EmailAdapter.accounts.default]
 email = "user@example.com"
 password = "your-password-or-auth-code"
-imap_server = "imap.example.com"    # Optional, leave empty to use global default
+imap_server = "imap.example.com"    # Optional, leave blank to use global default
 imap_port = 993                      # Optional
 smtp_server = "smtp.example.com"    # Optional
 smtp_port = 465                      # Optional
@@ -14824,40 +15077,42 @@ password = "another-password"
 enabled = true
 ```
 
+[**English**](docs/en/quick-start.md)
+
 ## Supported Message Sending Types
 
-All sending methods are implemented using a fluent interface:
+All sending methods are implemented through a fluent syntax:
 
 ```python
 from ErisPulse.Core import adapter
 mail = adapter.get("email")
 
-# Simple text email
+# Simple plain text email
 await mail.Send.To("private", "to@example.com").Subject("Test").Text("Content")
 
-# HTML email with attachments
+# HTML email with attachment
 await mail.Send.To("private", "to@example.com") \
     .Subject("HTML Email") \
     .Cc(["cc1@example.com", "cc2@example.com"]) \
     .Attachment("report.pdf") \
     .Html("<h1>HTML Content</h1>")
 
-# Use Raw_ob12 to send standard OB12 messages
+# Use Raw_ob12 to send standard OB12 message
 await mail.Send.To("private", "to@example.com").Raw_ob12([
     {"type": "text", "data": {"text": "Email body"}},
     {"type": "file", "data": {"file": "/path/to/attachment.pdf"}},
 ])
 
-# Specify sending account (multi-account)
+# Specify sending account (for multiple accounts)
 await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 ```
 
-> Note: When using the fluent interface, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).
+> Note: When using fluent syntax, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).
 
 ### Basic Sending Methods
 
 | Method | Description |
-|--------|-------------|
+|------|------|
 | `.Text(text: str)` | Send plain text email |
 | `.Html(html: str)` | Send HTML formatted email |
 | `.Raw_ob12(message, **kwargs)` | Send OneBot12 formatted message |
@@ -14865,17 +15120,17 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 ### Fluent Modifier Methods (return self, can be combined)
 
 | Method | Description |
-|--------|-------------|
-| `.Subject(subject: str)` | Set the email subject |
-| `.Cc(emails: Union[str, List[str]])` | Set the CC addresses |
-| `.Bcc(emails: Union[str, List[str]])` | Set the BCC addresses |
-| `.ReplyTo(email: str)` | Set the reply address |
-| `.Attachment(file, filename: str = None)` | Add an attachment |
+|------|------|
+| `.Subject(subject: str)` | Set email subject |
+| `.Cc(emails: Union[str, List[str]])` | Set CC addresses |
+| `.Bcc(emails: Union[str, List[str]])` | Set BCC addresses |
+| `.ReplyTo(email: str)` | Set reply address |
+| `.Attachment(file, filename: str = None)` | Add attachment |
 
 ### OB12 Message Segment Reverse Conversion (Raw_ob12)
 
 | OB12 Message Segment | Converted to Email Content |
-|----------------------|----------------------------|
+|------------|--------------|
 | `text` | Plain text body |
 | `image` | Image attachment |
 | `video` | Video attachment |
@@ -14883,17 +15138,17 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 | `audio` | Audio attachment |
 | `markdown` | Converted to HTML body |
 
-## Unique Event Types
+## Specific Event Types
 
 ### Core Differences
 
-1. All email events are of type `message`, and `detail_type` is fixed as `private`
-2. `user_id` is the sender's **pure email address**, `user_nickname` is the sender's display name
-3. `message` message segments are in standard OB12 format (text segment + file segment)
-4. The email subject is obtained through the `email_subject` extension field
-5. The complete raw data is preserved in the `email_raw` field
+1. All email events are of type `message`, with `detail_type` fixed as `private`.
+2. `user_id` is the sender's **raw email address**, and `user_nickname` is the sender's display name.
+3. The `message` segment is in standard OB12 format (text segment + file segment).
+4. The email subject is obtained via the `email_subject` extension field.
+5. The complete raw data is preserved in the `email_raw` field.
 
-### New Email Event (email_new)
+### New Mail Event (email_new)
 
 ```json
 {
@@ -14910,17 +15165,17 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
     {
       "type": "text",
       "data": {
-        "text": "Email body content"
+        "text": "Mail body content"
       }
     }
   ],
-  "alt_message": "Email subject",
+  "alt_message": "Mail subject",
   "user_id": "sender@example.com",
   "user_nickname": "Saber"
 }
 ```
 
-### Email with Attachments
+### Mail with Attachment
 
 ```json
 {
@@ -14943,7 +15198,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 }
 ```
 
-### Reply Email Event (email_reply)
+### Reply Mail Event (email_reply)
 
 When the email contains `References` or `In-Reply-To` headers, `email_raw_type` is `email_reply`:
 
@@ -14955,17 +15210,22 @@ When the email contains `References` or `In-Reply-To` headers, `email_raw_type` 
     "in_reply_to": "<original-msg-id@example.com>"
   }
 }
-```
 
-## Extension Field Descriptions
+## Extension Field Description
 
 | Field | Type | Description |
-|-------|------|-------------|
+|------|------|------|
 | `email_raw` | dict | Complete raw email data (subject/from/to/date/cc/bcc/text_content/html_content/attachments, etc.) |
-| `email_raw_type` | str | Raw event type: `email_new` (new email) or `email_reply` (reply email) |
+| `email_raw_type` | str | Raw event type: `email_new` (new email) or `email_reply` (replied email) |
 | `email_subject` | str | Email subject (convenient access) |
 | `email_from` | str | Sender's pure email address (convenient access) |
-| `attachments` | list | List of attachment data (including binary `data` field, backward compatible) |
+| `attachments` | list | List of attachment data (includes binary `data` field, backward compatible) |
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Standard Event Examples
 
@@ -15027,9 +15287,8 @@ When the email contains `References` or `In-Reply-To` headers, `email_raw_type` 
     }
   ]
 }
-```
 
-## Sending Method Return Values
+## Send Method Return Value
 
 ```json
 {
@@ -15046,16 +15305,17 @@ When the email contains `References` or `In-Reply-To` headers, `email_raw_type` 
     "message": "Email sent successfully"
   }
 }
-```
 
 ## Event Handling Example
 
 ```python
-from ErisPulse import sdk
+from ErisPulse.Core.Event import message
 
-@sdk.on_message(platform="email")
+@message.on_message()
 async def handle_email(event):
-    # Pure email address of the sender
+    if event.get("platform") != "email":
+        return
+    # Sender's pure email address
     sender = event["user_id"]              # sender@example.com
     
     # Sender's display name
@@ -15071,7 +15331,7 @@ async def handle_email(event):
     raw = event.get("email_raw", {})
     html = raw.get("html_content", "")
     
-    # Handling attachments
+    # Process attachments
     for seg in event.get("message", []):
         if seg["type"] == "file":
             filename = seg["data"]["file_name"]
@@ -15579,30 +15839,40 @@ async def handle_private_notice(event):
 
 ### Matrix 适配
 
-# Matrix Platform Features Document
+# Matrix Platform Feature Documentation
 
-MatrixAdapter is an adapter built based on the [Matrix protocol](https://spec.matrix.org/), integrating all core functional modules of the Matrix protocol to provide a unified event handling and message operation interface.
+MatrixAdapter is an adapter built based on the [Matrix protocol](https://spec.matrix.org/), integrating all core functional modules of the Matrix protocol and providing a unified interface for event handling and message operations.
 
 ---
 
+docs/en/quick-start.md
+
 ## Document Information
 
-- Corresponding module version: 1.0.0
+- Corresponding Module Version: 4.1.0
 - Maintainer: ErisPulse
+
+Please directly return the complete translated Markdown content without including any other text.
 
 ## Basic Information
 
-- Platform Introduction: Matrix is an open decentralized communication protocol supporting various scenarios such as private chats and group chats
+- Platform Overview: Matrix is an open, decentralized communication protocol that supports various scenarios, including private chats and group chats.
 - Adapter Name: MatrixAdapter
 - Multi-account Support: Supports configuring multiple Matrix accounts simultaneously
-- Connection Method: Long Polling (through Matrix Sync API `/sync`)
-- Authentication Method: Login to obtain token based on access_token or user_id + password
-- Chaining Modifier Support: Supports chaining modifier methods such as `.Reply()`, `.At()`, `.AtAll()`
-- OneBot12 Compatibility: Supports sending OneBot12 format messages
+- Connection Method: Long Polling (via Matrix Sync API `/sync`)
+- Authentication Method: Token obtained via access_token or user_id + password login
+- Chained Modifier Support: Supports chained modifier methods such as `.Reply()`, `.At()`, and `.AtAll()`
+- OneBot12 Compatibility: Supports sending OneBot12 formatted messages
+
+Please replace the following path rules in document links:
+- Replace `docs/en/` with `docs/en/`
+- For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+- For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+- This ensures links point to the correct language version of the documentation
 
 ## Configuration Instructions
 
-MatrixAdapter supports multi-account configuration, with each account configured independently for homeserver and authentication information.
+MatrixAdapter supports multi-account configuration, with each account having independent homeserver and authentication settings.
 
 ```toml
 # config.toml
@@ -15612,8 +15882,8 @@ homeserver = "https://matrix.org"          # Matrix server address (required)
 access_token = "YOUR_ACCESS_TOKEN"          # Access token (either this or user_id+password)
 user_id = ""                                # Matrix user ID (e.g., @bot:matrix.org)
 password = ""                               # Matrix user password
-auto_accept_invites = true                  # Whether to automatically accept room invitations (optional, defaults to true)
-enabled = true                              # Whether to enable (optional, defaults to true)
+auto_accept_invites = true                  # Whether to automatically accept room invites (optional, default is true)
+enabled = true                              # Whether to enable this account (optional, default is true)
 
 # Account 2
 [Matrix_Adapter.accounts.bot2]
@@ -15622,23 +15892,23 @@ access_token = "ANOTHER_TOKEN"
 enabled = true
 ```
 
-> **Compatibility Note:** If an old single-account configuration (containing `access_token`) is detected, it will be automatically migrated to `accounts.default`.
+> Compatibility with old configuration: If an old single-account `[Matrix_Adapter]` configuration (including access_token) is detected, it will be automatically migrated to `accounts.default`.
 
-**Configuration Item Description (for each account):**
-- `homeserver`: Matrix server address (required), defaults to `https://matrix.org`
-- `access_token`: Access token, can be obtained from Matrix client. If you already have a token, just fill it in
-- `user_id`: Matrix user ID (e.g., `@bot:matrix.org`), used with `password` for login
-- `password`: Matrix user password, used for automatic login to obtain access_token
-- `auto_accept_invites`: Whether to automatically accept room invitations, defaults to `true`
-- `enabled`: Whether to enable this account (optional, defaults to true)
+**Configuration Item Description (per account):**
+- `homeserver`: Matrix server address (required), default is `https://matrix.org`
+- `access_token`: Access token, can be obtained from a Matrix client. If you already have a token, just fill it in directly
+- `user_id`: Matrix user ID (e.g., `@bot:matrix.org`), used together with `password` for login
+- `password`: Matrix user password, used for automatic login to obtain access token
+- `auto_accept_invites`: Whether to automatically accept room invites, default is `true`
+- `enabled`: Whether to enable this account (optional, default is true)
 
 **Authentication Methods:**
-- Method 1 (Recommended): Directly provide `access_token`
-- Method 2: Provide `user_id` and `password`, the adapter will automatically call login interface to get token
+- Method 1 (recommended): Provide `access_token` directly
+- Method 2: Provide `user_id` and `password`, the adapter will automatically call the login API to obtain the token
 
 ## Supported Message Sending Types
 
-All sending methods are implemented through chaining syntax, for example:
+All send methods are implemented through a fluent syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 matrix = adapter.get("matrix")
@@ -15646,83 +15916,82 @@ matrix = adapter.get("matrix")
 await matrix.Send.To("group", room_id).Text("Hello World!")
 ```
 
-Supported sending types include:
-- `.Text(text: str)`: Send plain text messages.
-- `.Image(file: bytes | str)`: Send image messages, supports file paths, URLs, MXC URIs, and binary data.
-- `.Voice(file: bytes | str)`: Send voice messages, supports file paths, URLs, MXC URIs, and binary data.
-- `.Video(file: bytes | str)`: Send video messages, supports file paths, URLs, MXC URIs, and binary data.
-- `.File(file: bytes | str, filename: str = "")`: Send file messages, supports file paths, URLs, MXC URIs, and binary data.
-- `.Notice(text: str)`: Send notification messages (Matrix's m.notice type).
-- `.Html(html: str, fallback: str = "")`: Send HTML format messages, supports rich text content.
-- `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 format messages.
+The supported sending types include:
+- `.Text(text: str)`: Sends a plain text message.
+- `.Image(file: bytes | str)`: Sends an image message, supporting file paths, URLs, MXC URIs, and binary data.
+- `.Voice(file: bytes | str)`: Sends a voice message, supporting file paths, URLs, MXC URIs, and binary data.
+- `.Video(file: bytes | str)`: Sends a video message, supporting file paths, URLs, MXC URIs, and binary data.
+- `.File(file: bytes | str, filename: str = "")`: Sends a file message, supporting file paths, URLs, MXC URIs, and binary data.
+- `.Notice(text: str)`: Sends a notice message (Matrix's m.notice type).
+- `.Html(html: str, fallback: str = "")`: Sends an HTML formatted message, supporting rich text content.
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Sends a OneBot12 formatted message.
 
-### Chaining Modifier Methods (Can be used in combination)
+### Fluent Modifier Methods (Can Be Combined)
 
-Chaining modifier methods return `self`, support chaining calls, and must be called before the final sending method:
+Fluent modifier methods return `self`, supporting fluent calls, and must be called before the final send method:
 
-- `.Reply(message_id: str)`: Reply to a specific message (through Matrix `m.in_reply_to` relationship).
-- `.At(user_id: str)`: @ Mention a specific user (implemented through Matrix `m.mentions` field).
-- `.AtAll()`: @ Mention everyone in the room (implemented through Matrix `@room` mention).
+- `.Reply(message_id: str)`: Replies to a specified message (using Matrix `m.in_reply_to` relation).
+- `.At(user_id: str)`: Mentions a specified user (using Matrix `m.mentions` field).
+- `.AtAll()`: Mentions everyone in the room (using Matrix `@room` mention).
 
-### Chaining Call Examples
+### Fluent Call Examples
 
 ```python
 # Basic sending
 await matrix.Send.To("user", dm_room_id).Text("Hello")
 
-# Reply to message
+# Reply to a message
 await matrix.Send.To("group", room_id).Reply("$event_id").Text("Reply message")
 
-# @ User
+# Mention a user
 await matrix.Send.To("group", room_id).At("@user:matrix.org").Text("Hello")
 
-# @ Everyone
+# Mention everyone
 await matrix.Send.To("group", room_id).AtAll().Text("Announcement")
 
-# Combined usage: Reply + @
-await matrix.Send.To("group", room_id).Reply("$event_id").At("@user:matrix.org").Text("Complex message")
+# Combined use: Reply + Mention
+await matrix.Send.To("group", room_id).Reply("$event_id").At("@user:matrix.org").Text("Composite message")
 
-# Send HTML message
-await matrix.Send.To("group", room_id).Html("<h1>Title</h1><p>Content</p>", fallback="Title\nContent")
+# Send an HTML message
+await matrix.Send.To("group", room_id).Html("<h1>Heading</h1><p>Content</p>", fallback="Heading\nContent")
 
-# Send notification message
+# Send a notice message
 await matrix.Send.To("group", room_id).Notice("System notification")
 ```
 
 ### OneBot12 Message Support
 
-The adapter supports sending OneBot12 format messages for cross-platform message compatibility:
+The adapter supports sending OneBot12 formatted messages, facilitating cross-platform message compatibility:
 
 ```python
-# Send OneBot12 format message
+# Send a OneBot12 formatted message
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await matrix.Send.To("user", dm_room_id).Raw_ob12(ob12_msg)
 
-# Combined with chaining modifiers
+# Combined with fluent modifiers
 ob12_msg = [{"type": "text", "data": {"text": "Reply message"}}]
 await matrix.Send.To("group", room_id).Reply("$event_id").Raw_ob12(ob12_msg)
 
 # Complex message
 ob12_msg = [
-    {"type": "text", "data": {"text": "Look at this image:"}},
+    {"type": "text", "data": {"text": "Look at this image: "}},
     {"type": "image", "data": {"file": "https://example.com/image.png"}},
-    {"type": "text", "data": {"text": "Nice, isn't it?"}}
+    {"type": "text", "data": {"text": "Isn't it great? "}}
 ]
 await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
-```
 
-## Sending Method Return Values
+## Send Method Return Values
 
-All sending methods return a Task object, which can be directly awaited to get the sending result. The returned result follows the ErisPulse adapter standardized return specification:
+All send methods return a Task object, which can be directly awaited to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
 
 ```python
 {
-    "status": "ok",           # Execution status: "ok" or "failed"
-    "retcode": 0,             # Return code
-    "data": {...},            # Response data
-    "message_id": "$event_id", # Matrix event ID
-    "message": "",            # Error message
-    "matrix_raw": {...}       # Original response data
+    "status": "ok",           // Execution status: "ok" or "failed"
+    "retcode": 0,             // Return code
+    "data": {...},            // Response data
+    "message_id": "$event_id", // Matrix event ID
+    "message": "",            // Error message
+    "matrix_raw": {...}       // Original response data
 }
 ```
 
@@ -15735,26 +16004,26 @@ All sending methods return a Task object, which can be directly awaited to get t
 | 33000 | API call exception |
 | 34000 | API returned unexpected format or business error |
 
-## Unique Event Types
+## Platform-Specific Event Types
 
-Requires `platform=="matrix"` check to use platform-specific features
+Platform-specific features require `platform=="matrix"` detection before use.
 
 ### Core Differences
 
-1. **Decentralized Architecture**: Matrix is a decentralized communication protocol, user ID format is `@user:server.domain`, room ID format is `!room_id:server.domain`
-2. **Room Concept**: Matrix does not distinguish between group chats and private chats, all sessions are "rooms". The adapter automatically identifies private chat rooms through DM (Direct Message) account data
-3. **Long Polling Sync**: Uses `/sync` API for long polling to get new events, rather than WebSocket
-4. **MXC URI**: Media files are referenced through `mxc://server.domain/media_id` format
-5. **HTML Rich Text**: Supports sending HTML format messages through `formatted_body`
-6. **Emoji Reactions**: Supports message-level emoji reactions (Reaction), different from traditional reply messages
-7. **Message Editing**: Supports editing sent messages through `m.replace` relationship
-8. **Message Recall**: Supports recalling/deleting messages through `m.room.redaction`
+1. **Decentralized Architecture**: Matrix is a decentralized communication protocol. User IDs are formatted as `@user:server.domain`, and room IDs are formatted as `!room_id:server.domain`.
+2. **Room Concept**: Matrix does not distinguish between group chats and private chats; all conversations are "rooms." Adapters automatically identify private chat rooms through DM (Direct Message) account data.
+3. **Long Polling Synchronization**: Uses the `/sync` API for long polling to retrieve new events, rather than WebSocket.
+4. **MXC URI**: Media files are referenced using the `mxc://server.domain/media_id` format.
+5. **HTML Rich Text**: Supports sending HTML-formatted messages via `formatted_body`.
+6. **Reaction Emojis**: Supports message-level emoji reactions (Reaction), distinct from traditional reply messages.
+7. **Message Editing**: Supports editing previously sent messages via the `m.replace` relationship.
+8. **Message Retraction**: Supports retraction/deletion of messages via `m.room.redaction`.
 
 ### Extended Fields
 
-- All unique fields are prefixed with `matrix_`
-- Original data is retained in the `matrix_raw` field
-- `matrix_raw_type` identifies the original Matrix event type (e.g., `m.room.message`, `m.room.member`)
+- All platform-specific fields are prefixed with `matrix_`.
+- Original data is retained in the `matrix_raw` field.
+- `matrix_raw_type` indicates the original Matrix event type (e.g., `m.room.message`, `m.room.member`).
 
 ### Special Field Examples
 
@@ -15768,7 +16037,7 @@ Requires `platform=="matrix"` check to use platform-specific features
   "matrix_room_id": "!room_id:matrix.org"
 }
 
-# Private chat message
+# Private message
 {
   "type": "message",
   "detail_type": "private",
@@ -15776,7 +16045,7 @@ Requires `platform=="matrix"` check to use platform-specific features
   "matrix_room_id": "!dm_room_id:matrix.org"
 }
 
-# Emoji reaction
+# Reaction
 {
   "type": "notice",
   "detail_type": "matrix_reaction",
@@ -15784,18 +16053,18 @@ Requires `platform=="matrix"` check to use platform-specific features
   "matrix_reaction_key": "👍"
 }
 
-# Message recall
+# Message retraction
 {
   "type": "notice",
   "detail_type": "matrix_redaction",
   "matrix_redacted_event_id": "$deleted_msg_id"
 }
 
-# Message edit
+# Message editing
 {
   "type": "message",
   "detail_type": "group",
-  "matrix_edit": true,
+  "matrix_edit": True,
   "matrix_original_event_id": "$original_event_id"
 }
 
@@ -15809,7 +16078,7 @@ Requires `platform=="matrix"` check to use platform-specific features
 
 ### Message Segment Types
 
-Matrix messages are automatically converted to corresponding message segments based on `msgtype`:
+Matrix messages are automatically converted into corresponding message segments based on `msgtype`:
 
 | msgtype | Conversion Type | Description |
 |---|---|---|
@@ -15822,7 +16091,7 @@ Matrix messages are automatically converted to corresponding message segments ba
 | m.file | `file` | File message |
 | m.location | `location` | Location message |
 
-Message segment structure examples:
+Message segment structure example:
 
 ```json
 // Text message (with HTML)
@@ -15857,23 +16126,23 @@ Message segment structure examples:
     "latitude": 0.0,
     "longitude": 0.0,
     "matrix_geo_uri": "geo:39.9,116.4",
-    "text": "Beijing"
+    "text": "Beijing, China"
   }
 }
 ```
 
 ### Event Mixin Methods
 
-MatrixAdapter registers the following event mixin methods that can be directly called in event handling:
+MatrixAdapter registers the following event mixin methods, which can be directly called within event handlers:
 
 | Method | Return Type | Description |
-|------|-------------|-------------|
+|------|----------|------|
 | `get_room_id()` | `str` | Get room ID |
 | `get_matrix_event_type()` | `str` | Get original Matrix event type |
 | `get_matrix_sender()` | `str` | Get original sender ID |
 | `get_reaction_key()` | `str` | Get reaction emoji |
 | `is_edited()` | `bool` | Determine if message is edited |
-| `is_notice()` | `bool` | Determine if message is m.notice type |
+| `is_notice()` | `bool` | Determine if message is of type m.notice |
 
 ```python
 @message.on_message()
@@ -15886,30 +16155,29 @@ async def handle_message(event):
     sender = event.get_matrix_sender()
     is_edited = event.is_edited()
     is_notice = event.is_notice()
-```
 
 ## Sync API Connection
 
-### Sync Process
+### Synchronization Flow
 
 1. Authenticate using access_token or user_id + password
 2. Call `/_matrix/client/v3/account/whoami` to get bot_user_id
-3. Emit connect meta event
-4. Perform initial sync (`/_matrix/client/v3/sync?timeout=0`) to get `next_batch` token
+3. Send a connect metadata event
+4. Perform initial sync (`/_matrix/client/v3/sync?timeout=0`) to get the `next_batch` token
 5. Discover DM rooms (`/_matrix/client/v3/user/{user_id}/account_data/m.direct`)
-6. Start Long Polling sync loop (`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`)
-7. Process each sync returned new events and convert/emit them
+6. Start Long Polling synchronization loop (`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`)
+7. Process new events returned each sync and convert them for emission
 
 ### Heartbeat Mechanism
 
-- The adapter emits a `heartbeat` meta event every 30 seconds
-- Emits `connect` meta event when connection is successful
-- Emits `disconnect` meta event when closing
+- The adapter sends a `heartbeat` metadata event every 30 seconds
+- Sends a `connect` metadata event upon successful connection
+- Sends a `disconnect` metadata event upon disconnection
 
-### Room Invitation
+### Room Invitations
 
-- When receiving room invitations (rooms with `invite` status), if `auto_accept_invites` is configured as `true` (default), the adapter will automatically join the room
-- Join room calls `/_matrix/client/v3/join/{room_id}` interface
+- When receiving a room invitation (room with `invite` state), if the `auto_accept_invites` configuration is set to `true` (default), the adapter will automatically join the room
+- Joining the room calls the `/_matrix/client/v3/join/{room_id}` endpoint
 
 ## Usage Examples
 
@@ -15937,7 +16205,7 @@ async def handle_group_msg(event):
         ).Text("Hello!")
 ```
 
-### Handling Reactions
+### Handling Reaction Messages
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -15951,7 +16219,7 @@ async def handle_reaction(event):
         reaction_key = event.get("matrix_reaction_key")
         reacted_event_id = event.get("matrix_reaction_event_id")
         room_id = event.get_room_id()
-        # Handle reaction...
+        # Handle reaction message...
 ```
 
 ### Sending Media Messages
@@ -15975,7 +16243,7 @@ await matrix.Send.To("group", room_id).Image("/path/to/image.png")
 await matrix.Send.To("group", room_id).File("/path/to/document.pdf", filename="Document.pdf")
 ```
 
-### Handling Message Editing
+### Handling Message Edits
 
 ```python
 @message.on_message()
@@ -17607,29 +17875,39 @@ Automatically detected through magic bytes:
 
 # Discord Platform Feature Documentation
 
-The DiscordAdapter is an adapter built based on the Discord Gateway (WebSocket) and REST API v10 protocol. It integrates the core functionality of Discord Bots, providing a unified event handling and message operation interface.
+DiscordAdapter is an adapter built based on the Discord Gateway (WebSocket) and REST API v10 protocols. It integrates the core functions of Discord Bot and provides unified event handling and message operation interfaces.
 
 ---
 
+Please directly return the complete translated Markdown content without any additional text.
+
+Once again, if the document contains a language switch line (with language names separated by `` | ``), be sure to strictly follow the formatting requirements in item 8 above and do not write incorrect formats such as ``[**Label**](file)``.
+
 ## Document Information
 
-- Corresponding Module Version: 4.0.0
+- Corresponding Module Version: 4.1.0
 - Maintainer: ErisPulse
 - Discord API Version: v10
 
+Please directly return the complete translated Markdown content without any additional text.
+
+Once again, if the document contains a language switch line (with each language name separated by `` | ``), be sure to strictly follow the format requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
+
 ## Basic Information
 
-- Platform Introduction: Discord is a widely popular community communication platform that supports various forms of sessions such as servers, channels, and direct messages (DMs), and provides a comprehensive Bot development interface.
+- Platform Overview: Discord is a widely popular community communication platform that supports various conversation forms such as servers, channels, and private messages, and provides a comprehensive Bot development interface.
 - Adapter Name: DiscordAdapter
-- Multi-Account Support: Supports configuring multiple Discord Bots simultaneously.
-- Connection Method: Gateway WebSocket (receive events) + REST API (send messages/call interfaces).
-- Authentication Method: Bot Token (HTTP Header `Authorization: Bot {token}`, Gateway IDENTIFY payload carries token).
-- Chained Modifier Support: Supports chained modifier methods such as `.Reply()`, `.At()`, `.AtAll()`.
-- OneBot12 Compatibility: Supports sending OneBot12 formatted messages.
+- Multi-account Support: Supports configuring multiple Discord bots simultaneously.
+- Connection Method: Gateway WebSocket (for receiving events) + REST API (for sending messages/calling APIs)
+- Authentication Method: Bot Token (HTTP header `Authorization: Bot {token}`, token carried in Gateway IDENTIFY payload)
+- Chained Modifier Support: Supports chained modifier methods such as `.Reply()`, `.At()`, `.AtAll()`
+- OneBot12 Compatibility: Supports sending OneBot12 formatted messages
 
-## Configuration Description
+Please directly return the complete translated Markdown content without including any other text.
 
-The DiscordAdapter supports multi-account configuration, where each account corresponds to a separate Discord Bot.
+## Configuration Instructions
+
+DiscordAdapter supports multi-account configuration, where each account corresponds to an independent Discord Bot.
 
 ```toml
 # config.toml
@@ -17637,8 +17915,8 @@ The DiscordAdapter supports multi-account configuration, where each account corr
 # Account 1
 [DiscordAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"       # Discord Bot Token (Required)
-intents = 33281                 # Gateway Intents (Optional, default 33281)
-enabled = true                  # Enable (Optional, default true)
+intents = 33281                 # Gateway Intents (Optional, default: 33281)
+enabled = true                  # Whether to enable (Optional, default: true)
 
 # Account 2
 [DiscordAdapter.accounts.bot2]
@@ -17649,33 +17927,34 @@ enabled = true
 
 **Configuration Item Descriptions (per account):**
 
-- `token`: Discord Bot Token (Required), obtained from [Discord Developer Portal](https://discord.com/developers/applications).
-- `intents`: Gateway Intents bit mask (Optional, default `33281`), determines the types of events the Bot subscribes to.
-- `bot_id`: Bot's user ID (Optional, automatically obtained at runtime from the READY event, no need to manually fill in).
-- `enabled`: Whether to enable this account (Optional, default `true`).
+- `token`: Discord Bot Token (Required), obtained from [Discord Developer Portal](https://discord.com/developers/applications)
+- `intents`: Gateway Intents bitmask (Optional, default: `33281`), determines the types of events the Bot subscribes to
+- `bot_id`: The user ID of the Bot (Optional, automatically obtained at runtime from the READY event, no manual entry required)
+- `enabled`: Whether to enable this account (Optional, default: `true`)
 
 ### Gateway Intents
 
-Intents use a bit mask, calculated by bitwise ORing (`|`) the values of each Intent:
+Intents use bitmasks, calculated by bitwise OR (`|`) of each Intent value:
 
 | Intent | Bit | Value | Description | Privileged |
 |-------|------|------|------|------|
-| GUILDS | `1 << 0` | 1 | Guild create/delete/update, channel, role changes | No |
+| GUILDS | `1 << 0` | 1 | Server creation/deletion/update, channel, role changes | No |
 | GUILD_MEMBERS | `1 << 1` | 2 | Member join/leave/update | Yes |
-| GUILD_MESSAGES | `1 << 9` | 512 | Guild message send/receive | No |
+| GUILD_MESSAGES | `1 << 9` | 512 | Server message sending/receiving | No |
 | MESSAGE_CONTENT | `1 << 15` | 32768 | Message content (content is empty without this Intent) | Yes |
 
 Default value `33281` = `GUILDS(1) | GUILD_MESSAGES(512) | MESSAGE_CONTENT(32768)`.
 
-> **Note**: Privileged Intents must be enabled in Discord Developer Portal → Bot → Privileged Gateway Intents. If the Bot is in over 100 guilds, Discord audit is also required.
+> **Note**: Privileged Intents must be enabled in Discord Developer Portal → Bot → Privileged Gateway Intents. If the Bot is in more than 100 servers, it also requires approval from Discord.
 
 **API Environment:**
-- Discord REST API Base URL: `https://discord.com/api/v10`
-- Gateway WebSocket URL: Dynamically obtained via `GET /gateway/bot`, usually `wss://gateway.discord.gg/?v=10&encoding=json`
+- Discord REST API base URL: `https://discord.com/api/v10`
+- Gateway WebSocket URL: Dynamically obtained via `GET /gateway/bot`, typically `wss://gateway.discord.gg/?v=10&encoding=json`
 
 ## Supported Message Sending Types
 
-All sending methods are implemented via a chained syntax, for example:
+All sending methods are implemented through a fluent chainable syntax, for example:
+
 ```python
 from ErisPulse.Core import adapter
 discord = adapter.get("discord")
@@ -17683,22 +17962,22 @@ discord = adapter.get("discord")
 await discord.Send.To("group", channel_id).Text("Hello World!")
 ```
 
-Supported sending types include:
-- `.Text(text: str)`: Sends a plain text message.
-- `.Embed(embed: dict | list)`: Sends an Embed message, supports single or multiple Embeds.
-- `.Image(file: bytes | str, filename: str = "image.png")`: Sends an image, supports binary data or URL.
-- `.File(file: bytes | str, filename: str = None)`: Sends a file, supports binary data or URL.
-- `.Reply(content: str, message_id: str)`: Replies to a specific message (convenience terminal method).
-- `.Raw_ob12(message: List[Dict], **kwargs)`: Sends a OneBot12 formatted message.
-- `.Raw_json(json_str: str)`: Sends arbitrary Discord API request JSON.
+The supported sending types include:
+- `.Text(text: str)` - Send plain text messages.
+- `.Embed(embed: dict | list)` - Send Embed messages, supporting single or multiple Embeds.
+- `.Image(file: bytes | str, filename: str = "image.png")` - Send images, supporting binary data or URLs.
+- `.File(file: bytes | str, filename: str = None)` - Send files, supporting binary data or URLs.
+- `.Reply(content: str, message_id: str)` - Reply to a specified message (convenience terminal method).
+- `.Raw_ob12(message: List[Dict], **kwargs)` - Send OneBot12 formatted messages.
+- `.Raw_json(json_str: str)` - Send arbitrary Discord API request JSON.
 
-### Chained Modifier Methods (Composable)
+### Fluent Modifier Methods (can be combined)
 
-Chained modifier methods return `self`, supporting chaining calls. They must be called before the final sending method:
+Fluent modifier methods return `self`, supporting chained calls, and must be called before the final sending method:
 
-- `.Reply(message_id: str)`: Replies (references) to a specific message, sets `message_reference`.
-- `.At(user_id: str)`: @mentions a specific user, converts to `<@user_id>`, can be called multiple times.
-- `.AtAll()`: @mentions everyone, converts to `@everyone`.
+- `.Reply(message_id: str)` - Reply (reference) to a specified message, setting `message_reference`.
+- `.At(user_id: str)` - Mention a specified user, converting to `<@user_id>`, can be called multiple times.
+- `.AtAll()` - Mention everyone, converting to `@everyone`.
 
 ### Chained Call Examples
 
@@ -17706,22 +17985,22 @@ Chained modifier methods return `self`, supporting chaining calls. They must be 
 # Basic sending
 await discord.Send.To("group", channel_id).Text("Hello")
 
-# Reply to message
-await discord.Send.To("group", channel_id).Reply(msg_id).Text("Reply content")
+# Reply to a message
+await discord.Send.To("group", channel_id).Reply(msg_id).Text("Reply message")
 
-# Convenient reply (in one step)
+# Convenient reply (one-step)
 await discord.Send.To("group", channel_id).Reply("Reply content", msg_id)
 
-# @User
+# Mention a user
 await discord.Send.To("group", channel_id).At("user_id").Text("Hello")
 
-# @Multiple Users
-await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Multi-user @")
+# Mention multiple users
+await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Multiple users @")
 
-# @All
+# Mention everyone
 await discord.Send.To("group", channel_id).AtAll().Text("Announcement")
 
-# Combined usage
+# Combine usage
 await discord.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("Composite message")
 
 # Embed message
@@ -17733,17 +18012,17 @@ embed = {
 }
 await discord.Send.To("group", channel_id).Embed(embed)
 
-# Send Image
+# Send image
 await discord.Send.To("group", channel_id).Image("https://example.com/image.png")
 ```
 
 ### Direct Message Sending
 
-When sending direct messages, the adapter automatically creates a DM channel:
+When sending direct messages, the adapter will automatically create a DM channel:
 
 ```python
-# Send DM
-await discord.Send.To("user", user_id).Text("DM content")
+# Send direct message
+await discord.Send.To("user", user_id).Text("Direct message content")
 await discord.Send.To("user", user_id).Embed(embed)
 ```
 
@@ -17759,17 +18038,16 @@ ob12_msg = [
     {"type": "mention", "data": {"user_id": "user_id"}},
 ]
 await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
-```
 
-## Sending Method Return Values
+## Send Method Return Values
 
-All sending methods return a Task object, which can be awaited directly to get the sending result. The return result follows the ErisPulse adapter standard return specification:
+All send methods return a Task object, which can be directly awaited to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
 
 ```python
 {
     "status": "ok",           // Execution status: "ok" or "failed"
-    "retcode": 0,             // Return code (0 for success)
-    "data": {...},            // Discord API raw response
+    "retcode": 0,             // Return code (0 indicates success)
+    "data": {...},            // Original Discord API response
     "message_id": "xxx",      // Message ID (when sending a message)
     "message": "",            // Error message
     "discord_raw": {...}      // Raw response data
@@ -17779,53 +18057,55 @@ All sending methods return a Task object, which can be awaited directly to get t
 ### Error Code Description
 
 | retcode | Description |
-|---------|------|
+|---------|-------------|
 | 0 | Success |
 | 33001 | Network error (connection failed, timeout, etc.) |
-| 34000 | Discord API error (insufficient permissions, invalid parameters, etc.) |
+| 34000 | Discord API returned error (insufficient permissions, parameter error, etc.) |
 
-## Unique Event Types
+docs/en/quick-start.md
 
-Use `platform == "discord"` check before using this platform's features.
+## Platform-Specific Event Types
+
+Use the `platform == "discord"` check to ensure platform-specific features are only used when applicable.
 
 ### Core Differences
 
-1. **Server/Channel System**: Discord uses a two-layer structure of Guilds (Servers) and Channels. Channels are the basic target for sending messages.
-2. **Gateway Events**: All events are received via the WebSocket Gateway using Opcode + Dispatch mechanism.
-3. **Intents Subscription**: Subscribe to event types via bit masks; `MESSAGE_CONTENT` requires Privileged permissions.
-4. **Message Segment Types**: Supports message segments such as text, images, files, video, audio, Embeds, Stickers, etc.
+1. **Server/Channel System**: Discord uses a two-tier structure of servers (Guilds) and channels (Channels), with channels being the basic targets for message sending.
+2. **Gateway Events**: All events are received via the WebSocket Gateway using an Opcode + Dispatch mechanism.
+3. **Intents Subscription**: Event types are subscribed to using bitmask, and `MESSAGE_CONTENT` requires Privileged permissions.
+4. **Message Segment Types**: Supports text, image, file, video, audio, Embed, Sticker, and other message segments.
 5. **Mention Format**: Discord uses the `<@user_id>` format to represent user mentions.
 
 ### Extended Fields
 
-All unique fields are prefixed with `discord_`:
-- `discord_raw`: Raw Discord event data.
-- `discord_raw_type`: Raw event type name (e.g., `MESSAGE_CREATE`).
-- `discord_guild_id`: Guild ID.
-- `discord_channel_id`: Channel ID.
+All platform-specific fields are prefixed with `discord_`:
+- `discord_raw`: Raw Discord event data
+- `discord_raw_type`: Raw event type name (e.g., `MESSAGE_CREATE`)
+- `discord_guild_id`: Server ID
+- `discord_channel_id`: Channel ID
 
 ### detail_type Mapping
 
 | Discord Scenario | detail_type | Description |
 |---|---|---|
 | Channel Message | `channel` | ErisPulse extended type |
-| Direct Message (DM) | `private` | OneBot12 standard type |
+| Private Message (DM) | `private` | OneBot12 standard type |
 
 ### Event Type Mapping
 
 | Discord Event | OneBot12 type | detail_type | Description |
 |---|---|---|---|
-| MESSAGE_CREATE | message | channel/private | Message created |
-| MESSAGE_UPDATE | message | channel/private | Message edited |
-| MESSAGE_DELETE | notice | group_message_delete / private_message_delete | Message deleted |
-| GUILD_MEMBER_ADD | notice | group_member_increase | Member joined |
-| GUILD_MEMBER_REMOVE | notice | group_member_decrease | Member left |
-| GUILD_MEMBER_UPDATE | notice | group_member_update | Member info updated |
-| GUILD_ROLE_CREATE | notice | group_role_create | Role created |
-| GUILD_ROLE_DELETE | notice | group_role_delete | Role deleted |
-| CHANNEL_CREATE | notice | channel_create | Channel created |
-| CHANNEL_DELETE | notice | channel_delete | Channel deleted |
-| INTERACTION_CREATE | request | interaction | Interaction (buttons, commands, etc.) |
+| MESSAGE_CREATE | message | channel/private | Message creation |
+| MESSAGE_UPDATE | message | channel/private | Message edit |
+| MESSAGE_DELETE | notice | group_message_delete / private_message_delete | Message deletion |
+| GUILD_MEMBER_ADD | notice | group_member_increase | Member join |
+| GUILD_MEMBER_REMOVE | notice | group_member_decrease | Member leave |
+| GUILD_MEMBER_UPDATE | notice | group_member_update | Member information update |
+| GUILD_ROLE_CREATE | notice | group_role_create | Role creation |
+| GUILD_ROLE_DELETE | notice | group_role_delete | Role deletion |
+| CHANNEL_CREATE | notice | channel_create | Channel creation |
+| CHANNEL_DELETE | notice | channel_delete | Channel deletion |
+| INTERACTION_CREATE | request | interaction | Interaction (button, command, etc.) |
 
 ### Special Field Examples
 
@@ -17834,14 +18114,14 @@ All unique fields are prefixed with `discord_`:
 {
   "type": "message",
   "detail_type": "channel",
-  "user_id": "SenderID",
-  "user_nickname": "Username",
-  "group_id": "ChannelID",
-  "message_id": "MessageID",
+  "user_id": "sender ID",
+  "user_nickname": "username",
+  "group_id": "channel ID",
+  "message_id": "message ID",
   "discord_raw": {...},
   "discord_raw_type": "MESSAGE_CREATE",
-  "discord_guild_id": "GuildID",
-  "discord_channel_id": "ChannelID",
+  "discord_guild_id": "server ID",
+  "discord_channel_id": "channel ID",
   "message": [
     {"type": "text", "data": {"text": "Hello"}}
   ],
@@ -17852,16 +18132,16 @@ All unique fields are prefixed with `discord_`:
 {
   "type": "message",
   "detail_type": "private",
-  "user_id": "SenderID",
-  "user_nickname": "Username",
-  "message_id": "MessageID",
+  "user_id": "sender ID",
+  "user_nickname": "username",
+  "message_id": "message ID",
   "discord_raw": {...},
   "discord_raw_type": "MESSAGE_CREATE",
-  "discord_channel_id": "DMChannelID",
+  "discord_channel_id": "DM channel ID",
   "message": [
-    {"type": "text", "data": {"text": "DM content"}}
+    {"type": "text", "data": {"text": "Private message content"}}
   ],
-  "alt_message": "DM content"
+  "alt_message": "Private message content"
 }
 
 # Message with Embed
@@ -17871,7 +18151,7 @@ All unique fields are prefixed with `discord_`:
   "message": [
     {"type": "discord_embed", "data": {"embed": {...}}}
   ],
-  "alt_message": "[Embedded Message]"
+  "alt_message": "[Embedded message]"
 }
 
 # Message with attachment
@@ -17879,18 +18159,18 @@ All unique fields are prefixed with `discord_`:
   "type": "message",
   "detail_type": "channel",
   "message": [
-    {"type": "text", "data": {"text": "Look at this picture"}},
-    {"type": "image", "data": {"file": "ImageURL", "url": "ImageURL", "file_name": "image.png"}}
+    {"type": "text", "data": {"text": "Look at this image"}},
+    {"type": "image", "data": {"file": "image URL", "url": "image URL", "file_name": "image.png"}}
   ],
-  "alt_message": "Look at this picture [Image]"
+  "alt_message": "Look at this image[Image]"
 }
 ```
 
 ### Message Segment Types
 
-Discord message content is automatically converted to corresponding message segments based on the `content`, `attachments`, and `embeds` fields:
+Discord message content is automatically converted into corresponding message segments based on the `content`, `attachments`, and `embeds` fields:
 
-| Source | Converted Type | Description |
+| Source | Conversion Type | Description |
 |---|---|---|
 | content text | `text` | Plain text content |
 | content `<@id>` | `mention` | User mention |
@@ -17920,47 +18200,46 @@ Discord message content is automatically converted to corresponding message segm
     }
   }
 }
-```
 
 ## Gateway Connection
 
 ### Connection Flow
 
-1. Call `GET /gateway/bot` to obtain the WebSocket gateway URL
+1. Call `GET /gateway/bot` to get the WebSocket gateway URL
 2. Connect to `wss://gateway.discord.gg/?v=10&encoding=json`
 3. Receive opcode 10 HELLO: contains `heartbeat_interval`
 4. Send opcode 2 IDENTIFY: carries token, intents, properties
 5. Start heartbeat loop: send opcode 1 Heartbeat at intervals of `heartbeat_interval`
-6. Receive opcode 0 Dispatch: event dispatch (`t`=event name, `s`=sequence, `d`=data)
+6. Receive opcode 0 Dispatch: event dispatch (`t`=event name, `s`=sequence number, `d`=data)
 7. Receive opcode 11 Heartbeat ACK: heartbeat confirmation
 
 ### Opcode Description
 
 | Opcode | Name | Direction | Description |
-|--------|------|------|------|
-| 0 | Dispatch | Receive | Event dispatch (contains `t`, `s`, `d` fields) |
-| 1 | Heartbeat | Send/Receive | Heartbeat (carries last `seq`) |
-| 2 | Identify | Send | Authentication |
+|--------|------|-----------|-------------|
+| 0 | Dispatch | Receive | Event dispatch (includes `t`, `s`, `d` fields) |
+| 1 | Heartbeat | Send/Receive | Heartbeat (carries last seq) |
+| 2 | Identify | Send | Identity authentication |
 | 6 | Resume | Send | Resume session |
-| 7 | Reconnect | Receive | Server requires reconnection |
+| 7 | Reconnect | Receive | Server requests reconnection |
 | 9 | Invalid Session | Receive | Invalid session |
-| 10 | Hello | Receive | Connection handshake (contains heartbeat_interval) |
+| 10 | Hello | Receive | Connection handshake (includes heartbeat_interval) |
 | 11 | Heartbeat ACK | Receive | Heartbeat confirmation |
 
-### Disconnect Reconnection and RESUME
+### Disconnection Reconnect and RESUME
 
-- After disconnection, the adapter automatically retries connection
-- If a `session_id` was previously available, RESUME (opcode 6) is attempted to restore the session
-- RESUME carries `token`, `session_id`, and the last `seq`, and missed events are resent after restoration
-- When opcode 7 (Reconnect) is received, keep session state and reconnect
+- After connection is disconnected, the adapter automatically retries the connection
+- If there was a previous `session_id`, try RESUME (opcode 6) to resume the session first
+- RESUME carries `token`, `session_id`, and last `seq`, to resume and re-send missed events
+- When opcode 7 (Reconnect) is received, keep the session state and reconnect
 - When opcode 9 (Invalid Session) is received and `d=false`, clear the session and re-IDENTIFY
 
 ### Heartbeat Mechanism
 
 - After receiving HELLO, wait `heartbeat_interval * random()` milliseconds before sending the first heartbeat
-- Subsequently, send a heartbeat every `heartbeat_interval` milliseconds
-- The heartbeat carries the last `seq` value (opcode 1, `d: seq`)
-- If no ACK (opcode 11) is received within `heartbeat_interval` after sending a heartbeat, the connection is considered abnormal and reconnection occurs
+- After that, send a heartbeat every `heartbeat_interval` milliseconds
+- Heartbeat carries the last `seq` value (opcode 1, `d: seq`)
+- If no ACK (opcode 11) is received within `heartbeat_interval` after sending a heartbeat, the connection is considered abnormal and will be reconnected
 
 ## Usage Examples
 
@@ -17984,7 +18263,7 @@ async def handle_group_msg(event):
         await discord.Send.To("group", channel_id).Text("Hello!")
 ```
 
-### Handling Direct Messages
+### Handling Private Messages
 
 ```python
 @message.on_message()
@@ -18005,7 +18284,7 @@ async def handle_private_msg(event):
 ```python
 embed = {
     "title": "Server Announcement",
-    "description": "Welcome to the ErisPulse Discord Adapter",
+    "description": "Welcome to use ErisPulse Discord Adapter",
     "color": 3447003,
     "fields": [
         {"name": "Version", "value": "4.0.0", "inline": True},
@@ -18033,7 +18312,7 @@ async def handle(event):
 
     if embeds:
         await discord.Send.To("group", channel_id).Text(
-            f"Received {len(embeds)} Embed(s)"
+            f"Received {len(embeds)} Embeds"
         )
 ```
 

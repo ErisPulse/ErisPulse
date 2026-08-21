@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1423,
+  "total_keywords": 1432,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -13,7 +13,7 @@
     "1. BaseAdapter 层（大多数情况不需要重写）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 357,
+        "line": 392,
         "level": 3,
         "title": "1. BaseAdapter 层（大多数情况不需要重写）"
       }
@@ -45,7 +45,7 @@
     "1. 使用 Event 包装类": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 158,
+        "line": 163,
         "level": 3,
         "title": "1. 使用 Event 包装类"
       }
@@ -61,7 +61,7 @@
     "1. 使用事务": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 267,
+        "line": 272,
         "level": 3,
         "title": "1. 使用事务"
       }
@@ -77,7 +77,7 @@
     "1. 使用缓存": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 334,
+        "line": 339,
         "level": 3,
         "title": "1. 使用缓存"
       }
@@ -99,7 +99,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 227,
+        "line": 232,
         "level": 3,
         "title": "1. 分类异常处理"
       }
@@ -137,7 +137,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 417,
+        "line": 422,
         "level": 3,
         "title": "1. 单元测试"
       }
@@ -161,7 +161,7 @@
     "1. 合理使用日志级别": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 300,
+        "line": 305,
         "level": 3,
         "title": "1. 合理使用日志级别"
       }
@@ -193,7 +193,7 @@
     "1. 异常处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 649,
+        "line": 671,
         "level": 3,
         "title": "1. 异常处理"
       }
@@ -217,7 +217,7 @@
     "1. 敏感数据保护": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 371,
+        "line": 376,
         "level": 3,
         "title": "1. 敏感数据保护"
       }
@@ -265,7 +265,7 @@
     "1. 版本管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 446,
+        "line": 451,
         "level": 3,
         "title": "1. 版本管理"
       }
@@ -377,7 +377,7 @@
     "10. SSE (Server-Sent Events) 支持": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 475,
+        "line": 510,
         "level": 3,
         "title": "10. SSE (Server-Sent Events) 支持"
       }
@@ -495,7 +495,7 @@
     "2. README 头部": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 460,
+        "line": 465,
         "level": 3,
         "title": "2. README 头部"
       }
@@ -503,7 +503,7 @@
     "2. Send 内部类（大多数情况不需要重写）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 388,
+        "line": 423,
         "level": 3,
         "title": "2. Send 内部类（大多数情况不需要重写）"
       }
@@ -583,7 +583,7 @@
     "2. 合理使用懒加载": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 174,
+        "line": 179,
         "level": 3,
         "title": "2. 合理使用懒加载"
       }
@@ -615,7 +615,7 @@
     "2. 批量操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 283,
+        "line": 288,
         "level": 3,
         "title": "2. 批量操作"
       }
@@ -645,7 +645,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 667,
+        "line": 689,
         "level": 3,
         "title": "2. 日志记录"
       }
@@ -709,7 +709,7 @@
     "2. 结构化日志": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 322,
+        "line": 327,
         "level": 3,
         "title": "2. 结构化日志"
       }
@@ -741,7 +741,7 @@
     "2. 超时处理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 249,
+        "line": 254,
         "level": 3,
         "title": "2. 超时处理"
       }
@@ -749,7 +749,7 @@
     "2. 输入验证": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 397,
+        "line": 402,
         "level": 3,
         "title": "2. 输入验证"
       }
@@ -765,7 +765,7 @@
     "2. 避免阻塞操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 355,
+        "line": 360,
         "level": 3,
         "title": "2. 避免阻塞操作"
       }
@@ -795,7 +795,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 430,
+        "line": 435,
         "level": 3,
         "title": "2. 集成测试"
       }
@@ -939,7 +939,7 @@
     "3. Request 内部类（大多数情况不需要重写）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 412,
+        "line": 447,
         "level": 3,
         "title": "3. Request 内部类（大多数情况不需要重写）"
       }
@@ -955,7 +955,7 @@
     "3. 事件处理器注册": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 209,
+        "line": 214,
         "level": 3,
         "title": "3. 事件处理器注册"
       }
@@ -1059,7 +1059,7 @@
     "3. 条件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 683,
+        "line": 705,
         "level": 3,
         "title": "3. 条件处理"
       }
@@ -1123,7 +1123,7 @@
     "3. 资源管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 144,
+        "line": 149,
         "level": 3,
         "title": "3. 资源管理"
       }
@@ -2107,7 +2107,7 @@
     "9. 连接信息与路由发现": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 434,
+        "line": 469,
         "level": 3,
         "title": "9. 连接信息与路由发现"
       }
@@ -2415,7 +2415,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 325,
+        "line": 347,
         "level": 3,
         "title": "Bot 状态查询"
       }
@@ -2721,7 +2721,7 @@
     "Event 对象常用方法": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 572,
+        "line": 594,
         "level": 3,
         "title": "Event 对象常用方法"
       }
@@ -3183,7 +3183,7 @@
     "SDK 对象": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 54,
+        "line": 128,
         "level": 2,
         "title": "SDK 对象"
       },
@@ -3309,7 +3309,7 @@
     "SseEmitter API": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 513,
+        "line": 548,
         "level": 4,
         "title": "SseEmitter API"
       }
@@ -3349,7 +3349,7 @@
     "Task 对象": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 572,
+        "line": 632,
         "level": 3,
         "title": "Task 对象"
       }
@@ -3737,7 +3737,7 @@
     "`__init__` 注意事项": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 353,
+        "line": 388,
         "level": 2,
         "title": "`__init__` 注意事项"
       }
@@ -4057,7 +4057,7 @@
     "on_load 方法": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 26,
+        "line": 29,
         "level": 3,
         "title": "on_load 方法"
       }
@@ -4065,7 +4065,7 @@
     "on_unload 方法": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 41,
+        "line": 44,
         "level": 3,
         "title": "on_unload 方法"
       }
@@ -4295,7 +4295,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 552,
+        "line": 587,
         "level": 2,
         "title": "下一步"
       },
@@ -4319,7 +4319,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 700,
+        "line": 722,
         "level": 2,
         "title": "下一步"
       },
@@ -4337,7 +4337,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 372,
+        "line": 451,
         "level": 2,
         "title": "下一步"
       },
@@ -4415,7 +4415,7 @@
     "严格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 237,
+        "line": 316,
         "level": 3,
         "title": "严格模式"
       }
@@ -4477,7 +4477,7 @@
     "主人系统配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 152,
+        "line": 206,
         "level": 2,
         "title": "主人系统配置"
       }
@@ -4485,7 +4485,7 @@
     "主动 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 222,
+        "line": 301,
         "level": 3,
         "title": "主动 GC 配置"
       }
@@ -4555,13 +4555,13 @@
     "事件处理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 156,
+        "line": 161,
         "level": 2,
         "title": "事件处理"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 237,
+        "line": 311,
         "level": 2,
         "title": "事件处理"
       }
@@ -4574,18 +4574,10 @@
         "title": "事件处理入门"
       }
     ],
-    "事件处理关键步骤": [
-      {
-        "document": "architecture.md",
-        "line": 105,
-        "level": 3,
-        "title": "事件处理关键步骤"
-      }
-    ],
     "事件处理器注册": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 239,
+        "line": 313,
         "level": 3,
         "title": "事件处理器注册"
       }
@@ -4593,7 +4585,7 @@
     "事件处理器生命周期": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 255,
+        "line": 329,
         "level": 3,
         "title": "事件处理器生命周期"
       }
@@ -4615,7 +4607,7 @@
     "事件处理最佳实践": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 647,
+        "line": 669,
         "level": 2,
         "title": "事件处理最佳实践"
       }
@@ -4656,6 +4648,14 @@
         "title": "事件处理示例"
       }
     ],
+    "事件处理链路详解": [
+      {
+        "document": "architecture.md",
+        "line": 105,
+        "level": 3,
+        "title": "事件处理链路详解"
+      }
+    ],
     "事件扩展方法": [
       {
         "document": "platform-guide/onebot11.md",
@@ -4689,7 +4689,7 @@
     "事件数据访问": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 570,
+        "line": 592,
         "level": 2,
         "title": "事件数据访问"
       }
@@ -4823,7 +4823,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 277,
+        "line": 356,
         "level": 2,
         "title": "事件配置"
       }
@@ -4831,7 +4831,7 @@
     "事件驱动懒激活（`activate_on`）触发架构": [
       {
         "document": "architecture.md",
-        "line": 170,
+        "line": 214,
         "level": 3,
         "title": "事件驱动懒激活（`activate_on`）触发架构"
       }
@@ -4863,7 +4863,7 @@
     "事务使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 227,
+        "line": 301,
         "level": 3,
         "title": "事务使用"
       }
@@ -4919,7 +4919,7 @@
     "交互式处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 347,
+        "line": 369,
         "level": 2,
         "title": "交互式处理"
       }
@@ -5094,10 +5094,18 @@
         "title": "何时重新生成"
       }
     ],
+    "作用域过滤：为什么我的模块没收到消息": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 192,
+        "level": 2,
+        "title": "作用域过滤：为什么我的模块没收到消息"
+      }
+    ],
     "作用域配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 346,
+        "line": 425,
         "level": 2,
         "title": "作用域配置"
       }
@@ -5137,7 +5145,7 @@
     "使用 reply 方法发送回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 349,
+        "line": 371,
         "level": 3,
         "title": "使用 reply 方法发送回复"
       }
@@ -5231,7 +5239,7 @@
     "使用请求参数": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 495,
+        "line": 530,
         "level": 4,
         "title": "使用请求参数"
       }
@@ -5242,6 +5250,14 @@
         "line": 19,
         "level": 3,
         "title": "使用适配器事件监听"
+      }
+    ],
+    "依赖声明（可选，2.8.0+）": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 353,
+        "level": 2,
+        "title": "依赖声明（可选，2.8.0+）"
       }
     ],
     "侧边栏分组": [
@@ -5333,7 +5349,7 @@
     "元事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 298,
+        "line": 320,
         "level": 2,
         "title": "元事件处理"
       }
@@ -5481,7 +5497,7 @@
     "内置确认词": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 563,
+        "line": 585,
         "level": 3,
         "title": "内置确认词"
       }
@@ -5537,7 +5553,7 @@
     "列出支持的发送方法": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 79,
+        "line": 153,
         "level": 3,
         "title": "列出支持的发送方法"
       }
@@ -5792,6 +5808,14 @@
         "title": "占位命令 help 回退链"
       }
     ],
+    "卸载与彻底卸载（purge）": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 59,
+        "level": 3,
+        "title": "卸载与彻底卸载（purge）"
+      }
+    ],
     "卸载流程": [
       {
         "document": "advanced/startup.md",
@@ -5827,7 +5851,7 @@
     "原始消息与消息构建": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 657,
+        "line": 717,
         "level": 3,
         "title": "原始消息与消息构建"
       }
@@ -6172,6 +6196,14 @@
         "title": "发送者信息"
       }
     ],
+    "发送规则引擎（重试/超时/延迟）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 613,
+        "level": 3,
+        "title": "发送规则引擎（重试/超时/延迟）"
+      }
+    ],
     "发送规则系统": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -6186,6 +6218,14 @@
         "line": 102,
         "level": 4,
         "title": "发送规则装饰器"
+      }
+    ],
+    "发送链路内部拆解": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 570,
+        "level": 2,
+        "title": "发送链路内部拆解"
       }
     ],
     "可用属性": [
@@ -6234,6 +6274,14 @@
         "line": 312,
         "level": 3,
         "title": "同步流程"
+      }
+    ],
+    "后台任务归属与自动取消": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 327,
+        "level": 2,
+        "title": "后台任务归属与自动取消"
       }
     ],
     "后台执行": [
@@ -6295,7 +6343,7 @@
     "命令与回复的 block 配置": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 223,
+        "line": 245,
         "level": 3,
         "title": "命令与回复的 block 配置"
       }
@@ -6419,7 +6467,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 279,
+        "line": 358,
         "level": 3,
         "title": "命令配置"
       }
@@ -6527,7 +6575,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 306,
+        "line": 385,
         "level": 2,
         "title": "国际化配置"
       }
@@ -6567,7 +6615,7 @@
     "在 RouteGroup 中使用": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 522,
+        "line": 557,
         "level": 4,
         "title": "在 RouteGroup 中使用"
       }
@@ -6627,19 +6675,19 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 479,
+        "line": 514,
         "level": 4,
         "title": "基本使用"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 629,
+        "line": 689,
         "level": 3,
         "title": "基本使用"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 214,
+        "line": 288,
         "level": 3,
         "title": "基本使用"
       }
@@ -6903,7 +6951,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 154,
+        "line": 228,
         "level": 3,
         "title": "声明式翻译键（v2.7.0+）"
       }
@@ -6917,7 +6965,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 105,
+        "line": 179,
         "level": 3,
         "title": "声明式配置（推荐）"
       }
@@ -7135,7 +7183,7 @@
     "多轮对话 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 536,
+        "line": 558,
         "level": 3,
         "title": "多轮对话 (conversation)"
       }
@@ -7207,7 +7255,7 @@
     "好友添加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 237,
+        "line": 259,
         "level": 3,
         "title": "好友添加"
       }
@@ -7223,7 +7271,7 @@
     "好友请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 271,
+        "line": 293,
         "level": 3,
         "title": "好友请求"
       }
@@ -7311,13 +7359,13 @@
     "存储系统": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 265,
+        "line": 270,
         "level": 2,
         "title": "存储系统"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 212,
+        "line": 286,
         "level": 2,
         "title": "存储系统"
       }
@@ -7325,7 +7373,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 266,
+        "line": 345,
         "level": 2,
         "title": "存储配置"
       }
@@ -7357,7 +7405,7 @@
     "安全性": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 369,
+        "line": 374,
         "level": 2,
         "title": "安全性"
       }
@@ -7485,7 +7533,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 627,
+        "line": 687,
         "level": 2,
         "title": "完整示例"
       },
@@ -7507,7 +7555,7 @@
     "完整配置示例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 85,
+        "line": 134,
         "level": 2,
         "title": "完整配置示例"
       }
@@ -7627,7 +7675,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 261,
+        "line": 335,
         "level": 3,
         "title": "工作原理"
       },
@@ -7691,7 +7739,7 @@
     "带回调的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 421,
+        "line": 443,
         "level": 3,
         "title": "带回调的等待回复"
       }
@@ -7707,7 +7755,7 @@
     "带验证的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 394,
+        "line": 416,
         "level": 3,
         "title": "带验证的等待回复"
       }
@@ -7855,7 +7903,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 618,
+        "line": 640,
         "level": 3,
         "title": "平台扩展方法"
       }
@@ -8065,7 +8113,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 284,
+        "line": 358,
         "level": 3,
         "title": "异常捕获"
       }
@@ -8151,7 +8199,7 @@
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 316,
+        "line": 338,
         "level": 3,
         "title": "心跳事件"
       }
@@ -8285,7 +8333,7 @@
     "性能优化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 332,
+        "line": 337,
         "level": 2,
         "title": "性能优化"
       }
@@ -8293,7 +8341,7 @@
     "总结": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 425,
+        "line": 460,
         "level": 3,
         "title": "总结"
       }
@@ -8309,7 +8357,7 @@
     "懒加载机制": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 259,
+        "line": 333,
         "level": 2,
         "title": "懒加载机制"
       }
@@ -8389,7 +8437,7 @@
     "手动读取配置（已废弃）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 195,
+        "line": 269,
         "level": 3,
         "title": "手动读取配置（已废弃）"
       }
@@ -8819,7 +8867,7 @@
     "收集表单 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 495,
+        "line": 517,
         "level": 3,
         "title": "收集表单 (collect)"
       }
@@ -9151,13 +9199,13 @@
     "日志记录": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 298,
+        "line": 303,
         "level": 2,
         "title": "日志记录"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 299,
+        "line": 373,
         "level": 3,
         "title": "日志记录"
       }
@@ -9165,7 +9213,7 @@
     "日志配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 178,
+        "line": 232,
         "level": 2,
         "title": "日志配置"
       }
@@ -9275,7 +9323,7 @@
     "服务器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 133,
+        "line": 187,
         "level": 2,
         "title": "服务器配置"
       }
@@ -9283,7 +9331,7 @@
     "本地插件文件夹架构": [
       {
         "document": "architecture.md",
-        "line": 206,
+        "line": 250,
         "level": 2,
         "title": "本地插件文件夹架构"
       }
@@ -9291,7 +9339,7 @@
     "本地插件热重载架构": [
       {
         "document": "architecture.md",
-        "line": 234,
+        "line": 278,
         "level": 2,
         "title": "本地插件热重载架构"
       }
@@ -9489,7 +9537,7 @@
     "标准化响应": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 596,
+        "line": 656,
         "level": 3,
         "title": "标准化响应"
       }
@@ -9739,7 +9787,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 201,
+        "line": 280,
         "level": 2,
         "title": "框架配置"
       }
@@ -9823,7 +9871,7 @@
     "模块加载策略": [
       {
         "document": "architecture.md",
-        "line": 148,
+        "line": 192,
         "level": 2,
         "title": "模块加载策略"
       }
@@ -9939,7 +9987,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 317,
+        "line": 396,
         "level": 2,
         "title": "模块配置"
       }
@@ -9947,7 +9995,7 @@
     "模块间通信": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 67,
+        "line": 141,
         "level": 3,
         "title": "模块间通信"
       }
@@ -10041,7 +10089,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 327,
+        "line": 358,
         "level": 2,
         "title": "注意事项"
       },
@@ -10097,7 +10145,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 415,
+        "line": 420,
         "level": 2,
         "title": "测试"
       }
@@ -10439,7 +10487,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 295,
+        "line": 374,
         "level": 3,
         "title": "消息配置"
       }
@@ -10498,6 +10546,14 @@
         "line": 47,
         "level": 3,
         "title": "点式结构事件"
+      }
+    ],
+    "热更新链路内部拆解": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 85,
+        "level": 3,
+        "title": "热更新链路内部拆解"
       }
     ],
     "版本更新说明": [
@@ -10681,9 +10737,17 @@
       },
       {
         "document": "architecture.md",
-        "line": 113,
+        "line": 157,
         "level": 2,
         "title": "生命周期事件"
+      }
+    ],
+    "生命周期全景": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 86,
+        "level": 3,
+        "title": "生命周期全景"
       }
     ],
     "生命周期管理": [
@@ -10801,7 +10865,7 @@
     "监听生命周期事件": [
       {
         "document": "architecture.md",
-        "line": 144,
+        "line": 188,
         "level": 3,
         "title": "监听生命周期事件"
       }
@@ -10859,7 +10923,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 337,
+        "line": 368,
         "level": 2,
         "title": "相关文档"
       },
@@ -10937,19 +11001,19 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 665,
+        "line": 725,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 501,
+        "line": 506,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 310,
+        "line": 384,
         "level": 2,
         "title": "相关文档"
       },
@@ -11001,7 +11065,7 @@
     "确认对话 (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 442,
+        "line": 464,
         "level": 3,
         "title": "确认对话 (confirm)"
       }
@@ -11031,7 +11095,7 @@
     "立即加载": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 269,
+        "line": 343,
         "level": 3,
         "title": "立即加载"
       }
@@ -11063,7 +11127,7 @@
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 515,
+        "line": 537,
         "level": 3,
         "title": "等待任意事件 (wait_for)"
       }
@@ -11087,7 +11151,7 @@
     "等待用户回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 377,
+        "line": 399,
         "level": 3,
         "title": "等待用户回复"
       }
@@ -11265,7 +11329,7 @@
     "群成员减少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 259,
+        "line": 281,
         "level": 3,
         "title": "群成员减少"
       }
@@ -11273,7 +11337,7 @@
     "群成员增加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 249,
+        "line": 271,
         "level": 3,
         "title": "群成员增加"
       }
@@ -11329,7 +11393,7 @@
     "群邀请请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 287,
+        "line": 309,
         "level": 3,
         "title": "群邀请请求"
       }
@@ -11433,7 +11497,7 @@
     "获取方法详细信息": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 87,
+        "line": 161,
         "level": 3,
         "title": "获取方法详细信息"
       }
@@ -11569,7 +11633,7 @@
     "访问核心模块": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 56,
+        "line": 130,
         "level": 3,
         "title": "访问核心模块"
       }
@@ -11631,7 +11695,7 @@
     "请求事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 269,
+        "line": 291,
         "level": 2,
         "title": "请求事件处理"
       }
@@ -11733,7 +11797,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 254,
+        "line": 333,
         "level": 4,
         "title": "豁免清单"
       }
@@ -11768,6 +11832,14 @@
         "line": 449,
         "level": 3,
         "title": "账户解析优先级"
+      }
+    ],
+    "账户解析回退链": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 600,
+        "level": 3,
+        "title": "账户解析回退链"
       }
     ],
     "账户配置": [
@@ -11883,7 +11955,7 @@
     "路由发现": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 532,
+        "line": 567,
         "level": 4,
         "title": "路由发现"
       }
@@ -12025,7 +12097,7 @@
     "返回值": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 570,
+        "line": 630,
         "level": 2,
         "title": "返回值"
       }
@@ -12081,7 +12153,7 @@
     "连接事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 300,
+        "line": 322,
         "level": 3,
         "title": "连接事件"
       }
@@ -12179,7 +12251,7 @@
     "适配器发送方法查询": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 75,
+        "line": 149,
         "level": 2,
         "title": "适配器发送方法查询"
       }
@@ -12313,7 +12385,7 @@
     "选择菜单 (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 459,
+        "line": 481,
         "level": 3,
         "title": "选择菜单 (choose)"
       }
@@ -12377,7 +12449,7 @@
     "通知事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 235,
+        "line": 257,
         "level": 2,
         "title": "通知事件处理"
       }
@@ -12503,7 +12575,7 @@
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 444,
+        "line": 449,
         "level": 2,
         "title": "部署"
       }
@@ -12665,7 +12737,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 103,
+        "line": 177,
         "level": 2,
         "title": "配置管理"
       }
@@ -12905,7 +12977,7 @@
     "链式调用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 647,
+        "line": 707,
         "level": 3,
         "title": "链式调用"
       }
@@ -12979,7 +13051,7 @@
     "链路控制：认领与阻断": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 188,
+        "line": 210,
         "level": 2,
         "title": "链路控制：认领与阻断"
       }
@@ -12999,13 +13071,13 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 225,
+        "line": 230,
         "level": 2,
         "title": "错误处理"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 282,
+        "line": 356,
         "level": 2,
         "title": "错误处理"
       },
