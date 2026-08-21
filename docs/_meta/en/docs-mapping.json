@@ -152,7 +152,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event Wrapper Class Detailed Explanation",
+              "title": "Event Wrapper Class Details",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -215,7 +215,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "OneBot11 Platform Features Documentation",
+          "title": "OneBot11 Platform Feature Documentation",
           "path": "platform-guide/onebot11.md",
           "level": 1,
           "icon": "fa-comments"
@@ -275,7 +275,7 @@
           "icon": "fa-gamepad"
         },
         {
-          "title": "WechatMp Adapter - Platform Features Document",
+          "title": "WechatMp Adapter - Platform Features Documentation",
           "path": "platform-guide/wechatmp.md",
           "level": 1,
           "icon": "fa-mobile-screen"
@@ -287,7 +287,7 @@
           "icon": "fa-link"
         },
         {
-          "title": "Ideaura Cafe Platform Features Documentation",
+          "title": "Platform Features Documentation for RockyChat",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
@@ -465,7 +465,7 @@
           "icon": "fa-gavel"
         },
         {
-          "title": "ErisPulse Session Type Standards",
+          "title": "ErisPulse Session Type Standard",
           "path": "standards/session-types.md",
           "level": 1,
           "icon": "fa-layer-group"

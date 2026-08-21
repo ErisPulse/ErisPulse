@@ -7114,6 +7114,14 @@
         "title": "`class BaseClientWebSocket(WebSocketConnectionBase)`"
       }
     ],
+    "`class BaseClient`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/client.md",
+        "line": 195,
+        "level": 3,
+        "title": "`class BaseClient`"
+      }
+    ],
     "`class BaseConfig`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
@@ -7144,14 +7152,6 @@
         "line": 65,
         "level": 3,
         "title": "`class BaseFinder(ABC)`"
-      }
-    ],
-    "`class BaseHttpClient`": [
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/Bases/client.md",
-        "line": 195,
-        "level": 3,
-        "title": "`class BaseHttpClient`"
       }
     ],
     "`class BaseHttpResponse`": [
@@ -7232,6 +7232,14 @@
         "line": 63,
         "level": 3,
         "title": "`class CliI18n`"
+      }
+    ],
+    "`class Client(BaseClient)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/client.md",
+        "line": 255,
+        "level": 3,
+        "title": "`class Client(BaseClient)`"
       }
     ],
     "`class ClientConnectionError(ClientError)`": [
@@ -7400,14 +7408,6 @@
         "line": 67,
         "level": 3,
         "title": "`class HomeEntry(TypedDict)`"
-      }
-    ],
-    "`class HttpClient(BaseHttpClient)`": [
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/client.md",
-        "line": 255,
-        "level": 3,
-        "title": "`class HttpClient(BaseHttpClient)`"
       }
     ],
     "`class HttpRequest`": [

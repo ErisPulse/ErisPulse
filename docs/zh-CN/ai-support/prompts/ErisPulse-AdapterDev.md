@@ -60,7 +60,7 @@ graph TB
     SDK --> AdapterMgr["Adapter<br/>适配器管理"]
     SDK --> ModuleMgr["Module<br/>模块管理"]
     SDK --> Router["Router<br/>路由管理"]
-    SDK --> Client["HttpClient<br/>HTTP 客户端"]
+    SDK --> Client["Client<br/>HTTP 客户端"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -92,7 +92,7 @@ graph TB
 | **Config** | TOML 格式的配置文件管理 |
 | **Logger** | 模块化日志系统，支持子日志器 |
 | **Router** | HTTP/WebSocket 路由管理，通过抽象层封装底层后端（当前为 FastAPI + Uvicorn），支持装饰器路由、中间件、分组、限流、CORS |
-| **HttpClient** | 统一 HTTP/WS 客户端，通过抽象层封装底层请求库（当前为 aiohttp），提供请求统计、重试、日志、WebSocket 客户端、ErisPulse 异常体系等功能。客户端和服务端 WebSocket 共享 `WebSocketConnectionBase` 基类 |
+| **Client** | 统一 HTTP/WS 客户端（2.8.0 前为 `HttpClient`，保留兼容别名），通过抽象层封装底层请求库（当前为 aiohttp），提供请求统计、重试、日志、WebSocket 客户端、ErisPulse 异常体系等功能。客户端和服务端 WebSocket 共享 `WebSocketConnectionBase` 基类 |
 
 ## 初始化流程
 
@@ -7231,10 +7231,10 @@ resp = await client.request(
 ## 超时与重试
 
 ```python
-from ErisPulse.Core import HttpClient
+from ErisPulse.Core import Client
 
 # 创建带自定义超时的客户端
-client = HttpClient(
+client = Client(
     timeout=60,           # 请求总超时 60s
     connect_timeout=5,    # 连接超时 5s
     max_retries=3,        # 失败自动重试 3 次
@@ -7245,10 +7245,13 @@ client = HttpClient(
 resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
+> [!NOTE]
+> 客户端类从 2.8.0 起更名为 `Client`（`sdk.client` 属性名不变）；旧名 `HttpClient` 保留为兼容别名，老代码无需修改。
+
 ## 自定义默认头
 
 ```python
-client = HttpClient(
+client = Client(
     headers={
         "Authorization": "Bearer token",
         "X-App-Id": "my-app",
@@ -7300,7 +7303,7 @@ async def on_ws_connect(event_data):
 
 ```python
 # 作为上下文管理器，自动关闭会话
-async with HttpClient(timeout=30) as client:
+async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
 ```
