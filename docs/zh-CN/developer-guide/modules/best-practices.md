@@ -133,11 +133,13 @@ class MyModule(BaseModule):
 ### 2. 正确的异步操作
 
 ```python
-async def handle_command(self, event):
+from ErisPulse.Core.Event import Event  # event: Event 注解可获得 IDE 补全
+
+async def handle_command(self, event: Event):
     # 需要等待结果的耗时操作：直接 await（生命周期明确）
     result = await self._long_operation()
 
-async def on_load(self, event):
+async def on_load(self, event: dict):
     # 后台任务（轮询/定时/fire-and-forget）：用 self.spawn()，
     # 模块卸载时框架在 on_unload 之后兜底取消，避免持有 self 导致泄漏
     self.spawn(self._poll())
@@ -165,14 +167,14 @@ async def on_unload(self, event):
 ```python
 # 使用 Event 包装类的便捷方法
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"你好，{nickname}！")
 
 # 而非直接访问字典
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event["user_id"]  # 不够清晰，容易出错
 ```
 
@@ -217,11 +219,11 @@ class UtilityModule(BaseModule):
 async def on_load(self, event):
     # 在 on_load 中注册事件处理器
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("你好！")
     
     @message.on_group_message()
-    async def group_handler(event):
+    async def group_handler(event: Event):
         self.logger.info("收到群消息")
     
     # 不需要手动注销，框架会自动处理
@@ -232,7 +234,7 @@ async def on_load(self, event):
 ### 1. 分类异常处理
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
@@ -361,12 +363,12 @@ class MyModule(BaseModule):
 
 ```python
 # 使用异步操作
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # 异步处理
     await self._async_process(event)
 
 # ❌ 阻塞操作
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # 同步操作，阻塞事件循环
     result = self._sync_process(event)
 ```
@@ -403,7 +405,7 @@ class MyModule(BaseModule):
 
 ```python
 # 验证用户输入
-async def process_command(self, event):
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
     # 验证输入长度

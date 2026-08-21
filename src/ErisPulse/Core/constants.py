@@ -71,6 +71,23 @@ CONFIG_ROOT_KEY: Final[str] = "ErisPulse"
 CONFIG_KEY_ADAPTER_STATUS: Final[str] = "ErisPulse.adapters.status"
 CONFIG_KEY_ADAPTER_STATUS_OF: Final[str] = "ErisPulse.adapters.status.{}"  # .format(platform)
 
+# 适配器生命周期状态值（adapter.status.change 事件的 data.status 与 get_status 返回）。
+# 使用位置: Core/adapter.py 提交状态事件与查询运行状态。
+# 修改影响: Dashboard / 外部监听 adapter.status.change 的下游需同步。
+ADAPTER_STATUS_STARTING: Final[str] = "starting"
+ADAPTER_STATUS_STARTED: Final[str] = "started"
+ADAPTER_STATUS_START_FAILED: Final[str] = "start_failed"
+ADAPTER_STATUS_STOPPING: Final[str] = "stopping"
+ADAPTER_STATUS_STOPPED: Final[str] = "stopped"
+ADAPTER_STATUS_STOP_FAILED: Final[str] = "stop_failed"
+ADAPTER_STATUS_SKIPPED_DEPENDENCY: Final[str] = "skipped-dependency"
+ADAPTER_STATUS_DISABLED: Final[str] = "disabled"
+
+# Bot 在线状态值（adapter.bot.online / bot.offline 事件的 data.status 与 _bots 记录）。
+# 使用位置: Core/adapter.py 的 Bot 状态登记与离线标记。
+BOT_STATUS_ONLINE: Final[str] = "online"
+BOT_STATUS_OFFLINE: Final[str] = "offline"
+
 # 模块启用状态的配置键前缀。
 # 例如: ErisPulse.modules.status.Dashboard = true
 # 修改影响: 模块启用/禁用状态的读写路径。
@@ -145,6 +162,17 @@ DEFAULT_LOG_ROTATION_WHEN: Final[str] = "midnight"
 # Rich 控制台日志的时间戳格式（strftime 语法）。
 # 修改影响: 终端日志输出的时间显示样式。
 LOG_TIME_FORMAT: Final[str] = "[%H:%M:%S]"
+
+# 非 JSON 模式下日志文件的统一行格式。
+# 消息体自带 [模块] 前缀；文件用完整日期+时间，跨天运行也可定位。
+# 使用位置: Core/logger.py 的文件日志格式化器（_make_file_formatter）。
+# 修改影响: 日志文件每行的呈现结构。
+LOG_FILE_FORMAT: Final[str] = "%(asctime)s [%(levelname)s] %(message)s"
+
+# 非 JSON 模式下日志文件的日期时间格式（strftime 语法）。
+# 使用位置: Core/logger.py 的文件日志格式化器。
+# 修改影响: 日志文件每行的时间显示样式。
+LOG_FILE_DATEFMT: Final[str] = "%Y-%m-%d %H:%M:%S"
 
 # Rich 日志配色主题。
 # 键为 Rich 样式名（Theme key），值为 rich 样式字符串。
@@ -577,7 +605,7 @@ DEFAULT_I18N_LANGUAGE: Final[str] = "auto"
 # HTTP 客户端默认值
 #
 # 控制内置 HTTP 客户端的超时、重试和连接行为。
-# 使用位置: Core/Bases/client.py -> HttpClient.__init__()
+# 使用位置: Core/Bases/client.py -> Client.__init__()
 # ==============================================================================
 
 # HTTP 客户端请求总超时（秒）。
@@ -604,7 +632,7 @@ DEFAULT_HTTP_CLIENT_USER_AGENT: Final[str] = ""
 # WebSocket 客户端默认值
 #
 # 控制内置 WebSocket 客户端的心跳和连接行为。
-# 使用位置: Core/client.py -> HttpClient.ws_connect()
+# 使用位置: Core/client.py -> Client.ws_connect()
 # ==============================================================================
 
 # WebSocket 客户端默认心跳间隔（秒）。
@@ -693,6 +721,18 @@ DEFAULT_PROACTIVE_GC_GEN0_MIN: Final[int] = 500
 # 修改影响: 设大确保处理器完整结束，设小加速关闭流程。
 DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS: Final[float] = 5.0
 
+# 按 owner 取消后台任务时等待任务回收的超时（秒）。
+# 运行时行为。模块卸载 / 适配器关闭时兜底取消名下后台任务后，
+# 等待其进入 cancelled 状态的最大耐心时间；超时不再阻塞（任务已取消，最终自行结束）。
+# 修改影响: 设大确保任务彻底回收，设小加速卸载流程。
+DEFAULT_OWNER_CANCEL_TIMEOUT_SECS: Final[float] = 5.0
+
+# 模块注册来源标识：本地插件文件夹（plugins/ 目录）。
+# 使用位置: loaders/plugin_folder.py（构造 meta.source）与 Core/module.py
+# （purge 卸载时仅对本地插件清理 sys.modules）。
+# 修改影响: 必须与 plugin_folder.py 写入的 source 值保持一致。
+MODULE_SOURCE_PLUGIN_FOLDER: Final[str] = "plugin_folder"
+
 # ==============================================================================
 # 进程 / 版本 / 日志展示常量
 #
@@ -755,6 +795,16 @@ __all__ = [
     "ADAPTER_EVENT_MIXIN_PLATFORM",
     "ADAPTER_RETRY_BACKOFF_INTERVALS",
     "ADAPTER_RETRY_FIXED_DELAY_SECS",
+    "ADAPTER_STATUS_DISABLED",
+    "ADAPTER_STATUS_SKIPPED_DEPENDENCY",
+    "ADAPTER_STATUS_STARTED",
+    "ADAPTER_STATUS_STARTING",
+    "ADAPTER_STATUS_START_FAILED",
+    "ADAPTER_STATUS_STOPPED",
+    "ADAPTER_STATUS_STOPPING",
+    "ADAPTER_STATUS_STOP_FAILED",
+    "BOT_STATUS_OFFLINE",
+    "BOT_STATUS_ONLINE",
     "CONFIG_CACHE_TIMEOUT_SECS",
     "CONFIG_KEY_ADAPTER_STATUS",
     "CONFIG_KEY_ADAPTER_STATUS_OF",
@@ -803,6 +853,7 @@ __all__ = [
     "DEFAULT_MODULE_ENABLED",
     "DEFAULT_MODULE_PRIORITY",
     "DEFAULT_OFFLINE_BOT_EXPIRY_SECS",
+    "DEFAULT_OWNER_CANCEL_TIMEOUT_SECS",
     "DEFAULT_PROACTIVE_GC_FULL_EVERY",
     "DEFAULT_PROACTIVE_GC_GEN0_MIN",
     "DEFAULT_PROACTIVE_GC_GENERATION",
@@ -847,9 +898,12 @@ __all__ = [
     "LIFECYCLE_TIMER_CORE_INIT",
     "LIFECYCLE_TIMER_CORE_UNINIT",
     "LOGGER_NAME",
+    "LOG_FILE_DATEFMT",
+    "LOG_FILE_FORMAT",
     "LOG_MESSAGE_TRUNCATE_CHARS",
     "LOG_RICH_THEME",
     "LOG_TIME_FORMAT",
+    "MODULE_SOURCE_PLUGIN_FOLDER",
     "RETCODE_NOT_IMPLEMENTED",
     "RETCODE_OK",
     "SERVER_SHUTDOWN_TIMEOUT_SECS",
