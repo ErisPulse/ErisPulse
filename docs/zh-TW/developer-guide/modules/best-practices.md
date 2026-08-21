@@ -117,7 +117,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# 不要使用 aiohttp 直接匯入（不利於框架統一管理）
+# 不要使用 aiohttp 直接導入（不利於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -137,18 +137,20 @@ class MyModule(BaseModule):
 ### 2. 正確的異步操作
 
 ```python
-async def handle_command(self, event):
+from ErisPulse.Core.Event import Event  # event: Event 注解可獲得 IDE 自動補全
+
+async def handle_command(self, event: Event):
     # 需要等待結果的耗時操作：直接 await（生命週期明確）
     result = await self._long_operation()
 
-async def on_load(self, event):
+async def on_load(self, event: dict):
     # 後台任務（輪詢/定時/fire-and-forget）：使用 self.spawn()，
     # 模組卸載時框架在 on_unload 之後兜底取消，避免持有 self 導致泄漏
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——後者建立的裸任務不歸屬於模組，卸載時不會被自動清除，會持有 `self` 引用導致模組實例無法被回收（熱重載泄漏）。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
+> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——後者建立的裸任務不歸屬模組，卸載時不會被自動清理，會持有 `self` 引用導致模組實例無法被回收（熱重載泄漏）。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
 
 ### 3. 資源管理
 
@@ -168,14 +170,14 @@ async def on_unload(self, event):
 ```python
 # 使用 Event 包裝類的便捷方法
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"你好，{nickname}！")
 
 # 而非直接訪問字典
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event["user_id"]  # 不夠清晰，容易出錯
 ```
 
@@ -220,11 +222,11 @@ class UtilityModule(BaseModule):
 async def on_load(self, event):
     # 在 on_load 中註冊事件處理器
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("你好！")
     
     @message.on_group_message()
-    async def group_handler(event):
+    async def group_handler(event: Event):
         self.logger.info("收到群消息")
     
     # 不需要手動註銷，框架會自動處理
@@ -234,7 +236,7 @@ async def on_load(self, event):
 ### 1. 分類異常處理
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
@@ -242,10 +244,10 @@ async def handle_event(self, event):
         self.logger.warning(f"業務警告: {e}")
         await event.reply(f"參數錯誤: {e}")
     except aiohttp.ClientError as e:
-        # 網路錯誤（推薦使用 sdk.client + ClientError 替代）
-        # 舊代碼直接用 aiohttp 仍可正常運作，但新代碼推薦使用 ErisPulse 異常體系
-        self.logger.error(f"網路錯誤: {e}")
-        await event.reply("網路請求失敗，請稍後重試")
+        # 網絡錯誤（推薦使用 sdk.client + ClientError 替代）
+        # 邊緣代碼直接使用 aiohttp 仍可正常運作，但新代碼推薦使用 ErisPulse 異常體系
+        self.logger.error(f"網絡錯誤: {e}")
+        await event.reply("網絡請求失敗，請稍後重試")
     except Exception as e:
         # 未預期的錯誤
         self.logger.error(f"未知錯誤: {e}", exc_info=True)
@@ -256,7 +258,7 @@ async def handle_event(self, event):
 ### 2. 超時處理
 
 ```python
-# 推薦使用 SDK 內建客戶端（自帶超時和重試）
+# 推薦使用 SDK 內建客戶端（內建超時和重試）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -348,7 +350,7 @@ class MyModule(BaseModule):
             if key in self._cache:
                 return self._cache[key]
             
-            # 從資料庫擷取
+            # 從資料庫獲取
             data = await self._fetch_from_db(key)
             
             # 快取資料
@@ -356,25 +358,30 @@ class MyModule(BaseModule):
             return data
 ```
 
-### 2. 避免阻擋操作
+### 2. 避免阻塞操作
 
 ```python
 # 使用非同步操作
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # 非同步處理
     await self._async_process(event)
 
-# ❌ 阻擋操作
-async def process_message(self, event):
-    # 同步操作，阻擋事件迴圈
+# ❌ 阻塞操作
+async def process_message(self, event: Event):
+    # 同步操作，阻塞事件循環
     result = self._sync_process(event)
+```
+
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 安全性
 
 ### 1. 敏感數據保護
 
 ```python
-# 敏感數據儲存在配置中（聲明式 ConfigClass，secret 欄位不進入日誌/匯出）
+# 敏感數據儲存在配置中（聲明式 ConfigClass，secret 欄位不會進入日誌/匯出）
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -401,7 +408,7 @@ class MyModule(BaseModule):
 
 ```python
 # 驗證使用者輸入
-async def process_command(self, event):
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
     # 驗證輸入長度
