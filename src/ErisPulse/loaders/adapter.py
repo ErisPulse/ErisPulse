@@ -176,6 +176,12 @@ class AdapterLoader(BaseLoader):
                 if self._strict().decide(meta_name, "adapter", "not_base_class"):
                     return objs, enabled_list, disabled_list, is_new
 
+            # 依赖声明（2.8.0+）：来自适配器类属性 depends / optional_modules
+            depends_decl = dict(getattr(loaded_class, "depends", None) or {})
+            optional_modules = list(
+                getattr(loaded_class, "optional_modules", None) or []
+            )
+
             adapter_info = {
                 "meta": {
                     "name": meta_name,
@@ -186,6 +192,8 @@ class AdapterLoader(BaseLoader):
                     "author": getattr(adapter_obj, "__author__", ""),
                     "license": getattr(adapter_obj, "__license__", ""),
                     "package": entry_point.dist.name if entry_point.dist else None,
+                    "depends": depends_decl,
+                    "optional_modules": optional_modules,
                     "top_level": self._finder.get_top_level_modules(
                         entry_point.dist.name
                     )

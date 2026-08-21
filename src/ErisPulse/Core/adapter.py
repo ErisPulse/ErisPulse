@@ -141,6 +141,9 @@ class AdapterManager(ManagerBase):
 
         # 注册配置变更路由：将 config.set / config.updated 事件转发到各适配器的 on_config_update
         self._register_config_change_routing()
+        # 注册模块依赖通知路由：将 module.load / module.unload 事件转发到
+        # 声明了 optional_modules / depends.modules 的适配器钩子
+        self._register_dependency_routing()
         # framework 配置（如 handler_max_concurrency）不在任何适配器配置键下，
         # 需 manager 级别单独订阅以支持热更新
         try:
@@ -175,6 +178,141 @@ class AdapterManager(ManagerBase):
         """
         lifecycle.register("config.set", self._on_config_set)
         lifecycle.register("config.updated", self._on_config_updated)
+
+    # ==================== 依赖声明路由（2.8.0+） ====================
+
+    def _register_dependency_routing(self) -> None:
+        """
+        {!--< internal-use >!--}
+        注册 module.load / module.unload 事件订阅，将模块就绪/丢失路由到
+        声明了依赖的适配器的 on_dependency_ready / on_dependency_lost 钩子
+        """
+        try:
+            lifecycle.register("module.load", self._on_module_load_notify)
+            lifecycle.register("module.unload", self._on_module_unload_notify)
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.dependency_hook_register_failed", error=e)
+            )
+
+    def _dependency_watchers(self, module_name: str) -> list[tuple[str, "BaseAdapter"]]:
+        """
+        {!--< internal-use >!--}
+        找出关注指定模块的已注册适配器（软依赖或硬依赖均可收到通知）
+
+        :param module_name: 模块名
+        :return: [(platform, adapter_instance), ...]
+        """
+        watchers = []
+        for platform, adapter in self._adapters.items():
+            optional = getattr(adapter, "optional_modules", None) or []
+            depends = getattr(adapter, "depends", None) or {}
+            dep_modules = depends.get("modules", []) if isinstance(depends, dict) else []
+            if module_name in optional or module_name in dep_modules:
+                watchers.append((platform, adapter))
+        return watchers
+
+    async def _dispatch_dependency_event(
+        self, module_name: str, hook_name: str
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        向关注指定模块的适配器分发依赖事件钩子
+
+        :param module_name: 模块名
+        :param hook_name: 钩子方法名（on_dependency_ready / on_dependency_lost）
+        """
+        for platform, adapter in self._dependency_watchers(module_name):
+            hook = getattr(adapter, hook_name, None)
+            if hook is None:
+                continue
+            try:
+                import inspect as _inspect
+
+                if _inspect.iscoroutinefunction(hook):
+                    await hook(module_name)
+                else:
+                    hook(module_name)
+            except Exception as e:
+                logger.warning(
+                    i18n.t(
+                        "core.adapter.dependency_hook_failed",
+                        platform=platform,
+                        hook=hook_name,
+                        error=e,
+                    )
+                )
+
+    async def _on_module_load_notify(self, data: dict) -> None:
+        """
+        {!--< internal-use >!--}
+        处理 module.load 事件：通知依赖该模块的适配器（on_dependency_ready）
+        """
+        module_name = self._extract_module_name(data)
+        if not module_name or module_name == "All":
+            return
+        await self._dispatch_dependency_event(module_name, "on_dependency_ready")
+
+    async def _on_module_unload_notify(self, data: dict) -> None:
+        """
+        {!--< internal-use >!--}
+        处理 module.unload 事件：通知依赖该模块的适配器（on_dependency_lost）
+        """
+        module_name = self._extract_module_name(data)
+        if not module_name or module_name == "All":
+            return
+        await self._dispatch_dependency_event(module_name, "on_dependency_lost")
+
+    @staticmethod
+    def _extract_module_name(data: dict) -> "str | None":
+        """
+        {!--< internal-use >!--}
+        从生命周期事件数据中提取模块名
+
+        兼容两种事件形状：直接 emit 的扁平 dict（``{"module_name": ...}``）
+        与 submit_event 包装的标准事件（``{"data": {"module_name": ...}}``）。
+
+        :param data: 生命周期事件数据
+        :return: 模块名，无法提取时返回 None
+        """
+        if not isinstance(data, dict):
+            return None
+        name = data.get("module_name")
+        if not name and isinstance(data.get("data"), dict):
+            name = data["data"].get("module_name")
+        return name
+
+    def _check_missing_dependencies(
+        self, adapter: "BaseAdapter", platform: str
+    ) -> list[str]:
+        """
+        {!--< internal-use >!--}
+        检查适配器硬依赖是否就绪（适配器 + 模块均已注册）
+
+        :param adapter: 适配器实例
+        :param platform: 平台名称（用于日志）
+        :return: 缺失的依赖描述列表（空列表表示全部就绪）
+        """
+        depends = getattr(adapter, "depends", None) or {}
+        if not isinstance(depends, dict):
+            return []
+        missing: list[str] = []
+
+        missing.extend(
+            f"adapter:{dep}"
+            for dep in depends.get("adapters", []) or []
+            if dep not in self._adapters
+        )
+
+        module_manager = getattr(self._sdk, "module", None) if self._sdk else None
+        module_classes = getattr(module_manager, "_module_classes", {}) or {}
+        missing.extend(
+            f"module:{dep}"
+            for dep in depends.get("modules", []) or []
+            if dep not in module_classes
+        )
+
+        return missing
 
     def _on_config_set(self, data: dict) -> None:
         """
@@ -468,6 +606,31 @@ class AdapterManager(ManagerBase):
                 )
                 return
 
+            # 硬依赖检查：缺失则跳过启动（警告 + skipped-dependency 状态事件）
+            missing_deps = self._check_missing_dependencies(adapter, platform)
+            if missing_deps:
+                logger.warning(
+                    i18n.t(
+                        "core.adapter.dependencies_missing",
+                        platform=platform,
+                        deps=", ".join(missing_deps),
+                    )
+                )
+                await lifecycle.submit_event(
+                    "adapter.status.change",
+                    msg=i18n.t(
+                        "core.adapter.state_skipped_dependency",
+                        platform=platform,
+                        deps=", ".join(missing_deps),
+                    ),
+                    data={
+                        "platform": platform,
+                        "status": "skipped-dependency",
+                        "missing": missing_deps,
+                    },
+                )
+                return
+
             retry_count = 0
             fixed_delay = ADAPTER_RETRY_FIXED_DELAY_SECS
             backoff_intervals = ADAPTER_RETRY_BACKOFF_INTERVALS
@@ -670,10 +833,10 @@ class AdapterManager(ManagerBase):
                                     },
                                 )
 
-            # 清理被关闭平台注册的资源（路由 + 命令 + 事件处理器），与模块卸载对齐颗粒度。
+            # 清理被关闭平台注册的资源（路由 + 命令 + 事件处理器 + 后台任务），与模块卸载对齐颗粒度。
             # 同时覆盖"以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册"的资源。
             for platform in platforms:
-                self._cleanup_adapter_resources(platform)
+                await self._cleanup_adapter_resources(platform)
 
             # 将相关 Bot 标记为离线
             for platform, bot_id in bots_to_offline:
@@ -738,8 +901,8 @@ class AdapterManager(ManagerBase):
             )
         self._started_instances.discard(adapter_instance)
 
-        # 回收该平台运行期间注册的路由/事件/命令（幂等）
-        self._cleanup_adapter_resources(platform)
+        # 回收该平台运行期间注册的路由/事件/命令与后台任务（幂等）
+        await self._cleanup_adapter_resources(platform)
 
     async def _drain_pending_handler_tasks(
         self, timeout: float = DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS
@@ -774,12 +937,13 @@ class AdapterManager(ManagerBase):
         finally:
             self._pending_handler_tasks.clear()
 
-    def _cleanup_adapter_resources(self, platform: str) -> None:
+    async def _cleanup_adapter_resources(self, platform: str) -> None:
         """
         {!--< internal-use >!--}
         适配器资源兜底清理（与模块卸载对齐颗粒度）。
 
-        清理该平台在运行期间注册的所有路由、命令与事件处理器。同时覆盖两种注册方式：
+        清理该平台在运行期间注册的所有路由、命令与事件处理器，并兜底取消
+        该平台名下的后台任务。同时覆盖两种注册方式：
         - 直接以平台名为命名空间注册的路由（unregister_all_by_namespace）
         - 适配器以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册的路由
           （unregister_all_by_owner，依赖 start() 期间注入的 current_owner）
@@ -787,6 +951,24 @@ class AdapterManager(ManagerBase):
         :param platform: 平台名称
         {!--< /internal-use >!--}
         """
+        # 兜底取消该平台名下的后台任务（任务可能持有适配器实例引用）
+        try:
+            from ..runtime.tasks import cancel_owner_tasks
+
+            cancelled = await cancel_owner_tasks(platform)
+            if cancelled > 0:
+                logger.warning(
+                    i18n.t(
+                        "core.adapter.tasks_cancelled",
+                        platform=platform,
+                        count=cancelled,
+                    )
+                )
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.tasks_cancel_failed", platform=platform, error=e)
+            )
+
         try:
             from .router import router
 
@@ -902,6 +1084,36 @@ class AdapterManager(ManagerBase):
             msg=i18n.t("core.adapter.state_started", platform=platform),
             data={"platform": platform, "status": "started"},
         )
+        return True
+
+    async def unload(self, platform: str) -> bool:
+        """
+        卸载并注销单个平台适配器
+
+        与 ``shutdown()``（仅停止）不同，``unload()`` 在停止并清理资源后，
+        额外从管理器注销该平台（释放适配器实例与类引用），用于动态移除适配器
+        并回收其内存占用。若同一实例还注册了其它平台，实例会保留（仅注销该平台）。
+
+        :param platform: 平台名称
+        :return: 是否卸载成功
+
+        :example:
+        >>> await adapter.unload("MyPlatform")
+        """
+        if platform not in self._adapters:
+            logger.warning(i18n.t("core.adapter.not_registered", platform=platform))
+            return False
+
+        # 停止 + 资源清理（路由/事件/任务/bot offline），复用 shutdown 语义
+        await self.shutdown(platform)
+
+        # 注销：释放实例与类引用（_adapter_info 持有 adapter_class）
+        self._adapters.pop(platform, None)
+        self._adapter_info.pop(platform, None)
+        self._bots.pop(platform, None)
+        self._adapter_tasks.pop(platform, None)
+
+        logger.info(i18n.t("core.adapter.unloaded", platform=platform))
         return True
 
     def clear(self) -> None:

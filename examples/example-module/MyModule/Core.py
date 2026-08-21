@@ -100,7 +100,10 @@ class Main(BaseModule):
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=False,
-            priority=100
+            priority=100,
+            # 依赖声明（可选，2.8.0+）：缺失依赖的模块会被跳过加载；
+            # 被依赖模块卸载/热重载时，本模块将级联卸载/重载
+            # depends=["OtherModule"],
         )
 
     async def on_load(self, event: dict) -> bool:
@@ -113,8 +116,20 @@ class Main(BaseModule):
         await self._register_commands()
         await self._register_message_handlers()
 
+        # 后台任务推荐使用 self.spawn()（2.8.0+）：
+        # 任务自动归属本模块，模块卸载时框架在 on_unload 之后兜底取消，
+        # 防止任务持有 self 引用导致模块无法被回收
+        self.spawn(self._background_poll())
+
         self.logger.info(f"模块已加载: {event}")
         return True
+
+    async def _background_poll(self):
+        """示例后台任务：模块卸载时会被框架兜底取消"""
+        import asyncio
+
+        while True:
+            await asyncio.sleep(60)
 
     async def on_unload(self, event: dict) -> bool:
         """
