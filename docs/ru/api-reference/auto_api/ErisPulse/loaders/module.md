@@ -167,11 +167,26 @@ dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
 
 热重载单个本地插件：卸载旧实例 → 清理注册 → 重新导入 → 重新注册并加载
 
+依赖该插件的模块会**级联重载**：本地插件依赖者走完整重载流程，
+PyPI 模块依赖者卸载后直接重新实例化。
+
 - **plugin_name** (`插件名`): - **manager_instance**: 模块管理器实例
 - **sdk_instance** (`SDK`): 实例
 **返回值** (`是否重载成功`): > **提示**
 > 仅适用于插件文件夹来源的插件（moduleInfo meta 的 source 为
 > ``plugin_folder``）。PyPI 安装包模块不支持热重载。
+
+---
+
+
+##### `async _reload_single_plugin(plugin_name: str, manager_instance: Any, sdk_instance: Any)`
+
+> **内部方法**
+重载单个本地插件：清理注册 → 清模块缓存 → 重新发现 → 注册并加载
+
+- **plugin_name** (`插件名`): - **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+**返回值**: 是否重载成功
 
 ---
 

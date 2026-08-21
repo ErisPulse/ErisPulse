@@ -95,44 +95,34 @@ graph TB
 | **Router** | HTTP/WebSocket ルーティング管理。抽象層を介して下位のバックエンド（現在は FastAPI + Uvicorn）をラップし、デコレーターベースのルーティング、ミドルウェア、グループ化、リクエスト制限、CORS をサポートします。|
 | **HttpClient** | 統一された HTTP/WS クライアント。抽象層を介して下位のリクエストライブラリ（現在は aiohttp）をラップし、リクエスト統計、リトライ、ログ、WebSocket クライアント、ErisPulse 例外体系などの機能を提供します。クライアントとサーバーの WebSocket は `WebSocketConnectionBase` 基底クラスを共有します。|
 
-## 初期化フロー
+## 初期化プロセス
 
 下図は `sdk.init()` の完全な初期化プロセスを示しています：
 
 ```mermaid
 flowchart TD
     A["sdk.init()"] --> B["実行環境の準備"]
-    B --> B1["設定ファイルのロード"]
+    B --> B1["設定ファイルの読み込み"]
     B1 --> B2["グローバル例外処理の設定"]
     B2 --> C["アダプタ & モジュールの発見"]
     C --> D{"並列ロード"}
-    D --> D1["PyPI からアダプタをロード"]
-    D --> D2["PyPI からモジュールをロード"]
+    D --> D1["PyPIからアダプタのロード"]
+    D --> D2["PyPIからモジュールのロード"]
     D1 & D2 --> E["アダプタの登録"]
     E --> E1["アダプタの起動"]
     E1 --> F["モジュールの登録"]
     F --> F1{"依存関係の検証"}
-    F1 -->|"依存が不足"| F2["モジュールをスキップして警告を記録"]
-    F1 -->|"依存が満たされている"| F3["トポロジカルソート<br/>（Kahn アルゴリズム + 優先度）"]
+    F1 -->|"依存関係が不足"| F2["該当モジュールをスキップし、警告を記録"]
+    F1 -->|"依存関係が満たされている"| F3["トポロジカルソート<br/>（Kahnアルゴリズム + 優先度）"]
     F3 --> G["順序に従ってモジュールを初期化<br/>（インスタンス化 + on_load）"]
     F2 --> G
     G --> H["ルーティングサーバーの起動"]
     H --> K["実行準備完了"]
 ```
 
-### 初期化フェーズの詳細
+### 初期化段階の詳細
 
-1. **環境準備** - TOML 設定ファイルをロードし、グローバル例外処理を設定
-2. **並行発見** - 既にインストールされた PyPI パッケージから同時にアダプタとモジュールを発見
-3. **アダプタの登録** - 発見されたアダプタをアダプタマネージャーに登録
-4. **アダプタの起動** - 各プラットフォームのアダプタを非同期で起動（モジュールの初期化前に、モジュールが即座にメッセージを送信できるようにする）
-5. **モジュールの登録** - 発見されたモジュールをモジュールマネージャーに登録
-6. **依存関係の検証** - モジュールが宣言した `depends` 依存が登録されているかを確認し、不足している依存を持つモジュールはスキップ
-7. **トポロジカルソート** - Kahn アルゴリズムを使用して依存関係に基づいてモジュールのロード順序をソートし、同レベルでは `priority` で降順に並べる
-8. **モジュールの初期化** - ソート順に従ってモジュールのインスタンスを作成し、`on_load` ライフサイクルメソッドを呼び出す
-9. **ルーティングサーバーの起動** - Uvicorn を使用して FastAPI ルーティングサーバーを起動
-
-[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+> 完全な初期化フローの分解（Finder / Loader / Manager / Router）、下層エントリポイント（`init()` / `init_task()` / `init_sync()`）および手動での完全起動については [起動プロセスと手動制御](advanced/startup.md) を参照してください。
 
 ## イベント処理フロー
 
@@ -165,7 +155,7 @@ flowchart LR
 
 ## ライフサイクルイベント
 
-下図は、フレームワークの各コンポーネントのライフサイクルイベントの発生順序を示しています：
+下図は、フレームワークの各コンポーネントがライフサイクルイベントをどのように発生させるかを示しています：
 
 ```mermaid
 flowchart LR
@@ -174,7 +164,7 @@ flowchart LR
         C1["core.init.start"] --> C2["core.init.complete"]
     end
 
-    subgraph AdapterLife["アダプタ"]
+    subgraph AdapterLife["アダプター"]
         direction LR
         A1["adapter.start"] --> A2["adapter.status.change"] --> A3["adapter.stop"] --> A4["adapter.stopped"]
     end
@@ -196,39 +186,21 @@ flowchart LR
 
 ### ライフサイクルイベントの監視
 
-これらのイベントを `lifecycle.on()` を使って監視し、カスタムロジックを実行することができます：
+> 完全なイベント監視メソッド（`lifecycle.on()` / `once()` / `has_handlers()`）、すべてのライフサイクルイベントリストとデータ形式は [ライフサイクル管理](advanced/lifecycle.md) を参照してください。
 
-```python
-from ErisPulse import sdk
-
-# すべてのアダプタイベントを監視
-@sdk.lifecycle.on("adapter")
-async def on_adapter_event(event_data):
-    print(f"アダプタイベント: {event_data}")
-
-# モジュールのロード完了を監視
-@sdk.lifecycle.on("module.load")
-async def on_module_loaded(event_data):
-    print(f"モジュールがロードされました: {event_data}")
-
-# Botのオンラインを監視
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(event_data):
-    print(f"Botがオンラインになりました: {event_data}")
-
-## モジュールロード戦略
+## モジュールのロード戦略
 
 ErisPulse は、`get_load_strategy()` が返す `ModuleLoadStrategy` によって宣言される 3 つのモジュールロード戦略をサポートしています：
 
 ```mermaid
 flowchart TD
     A["モジュールが ModuleManager に登録"] --> B{"ロード戦略"}
-    B -->|"lazy_load = true<br/>+ activate_on が宣言されている"| C["ModuleActivator 代理を作成"]
-    B -->|"lazy_load = true<br/>activate_on が宣言されていない"| D["LazyModule 代理を作成"]
-    B -->|"lazy_load = false"| E["即時インスタンス作成"]
+    B -->|"lazy_load = true<br/>+ activate_on 声明"| C["ModuleActivator 代理を作成"]
+    B -->|"lazy_load = true<br/>activate_on なし"| D["LazyModule 代理を作成"]
+    B -->|"lazy_load = false"| E["即時インスタンスを作成"]
     C --> F["イベント/コマンド stub をディスパッチャに登録"]
     F --> G["sdk 属性にマウント"]
-    G --> H["イベントが到達してアクティベーションをトリガー"]
+    G --> H["イベントが到達すると活性化がトリガー"]
     H --> I["インスタンス化 + on_load() + stub の登録解除"]
     D --> J["sdk 属性にマウント"]
     J --> K["最初の属性アクセス時に初期化"]
@@ -236,31 +208,35 @@ flowchart TD
     L --> M["sdk 属性にマウント"]
 ```
 
-> 詳細は [遅延ロードシステム](advanced/lazy-loading.md)、[ライフサイクル管理](advanced/lifecycle.md) およびモジュールドキュメントを参照してください。
+> 詳細については、[遅延ロードシステム](advanced/lazy-loading.md)、[ライフサイクル管理](advanced/lifecycle.md) およびモジュールのドキュメントを参照してください。
 
-### イベント駆動遅延アクティベーション（`activate_on`）トリガー構造
+### イベント駆動の遅延活性化（`activate_on`）トリガー構造
 
-`activate_on` は、モジュールが**最初の一致するイベント/コマンドが到達したときにのみ**ロードされるようにし、常駐メモリを避けると同時にイベントのロスを防ぎます：
+> [!NOTE]
+> この機能には ErisPulse **2.8.0+** が必要です。
+
+`activate_on` により、モジュールは**最初の一致するイベント/コマンドが到達した時点で**のみロードされるようになり、メモリ常駐を回避しながら、イベントのロスを防ぐことができます：
 
 ```mermaid
 flowchart LR
-    subgraph Declare["モジュール宣言"]
+    subgraph Declare["モジュールの宣言"]
         S1["get_load_strategy() が<br/>ModuleLoadStrategy(activate_on=...) を返す"] --> S2["activate_on 構文：<br/>str / dict / list を自由に混合"]
         S2 --> S2a["'message' → イベントタイプレベル"]
         S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ タイプ + detail_type"]
-        S2 --> S2c["{'command': 'roll'}<br/>→ コマンドトリガー"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ コマンドトリガー（省略形/リスト）"]
+        S2 --> S2d["{'command': {'name': 'dice', 'help': ...,<br/>'aliases': [...], 'hidden': ...}}<br/>→ コマンドトリガー（dict 声明）"]
     end
 
     subgraph Runtime["実行時"]
         R1["ModuleActivator が stub を登録"] --> R1a["イベント stub → message/notice/request/meta マネージャー<br/>優先度 ACTIVATION_STUB_PRIORITY（極めて低い）"]
-        R1 --> R1b["コマンド stub → コマンドマネージャー<br/>隠しプレースホルダコマンド（hidden=True）"]
+        R1 --> R1b["コマンド stub → コマンドマネージャー<br/>プレースホルダーコマンド（dict 声明の help/usage/group/aliases/hidden を反映）"]
         R1a --> R2{"トリガーイベントが到達"}
         R1b --> R2
-        R2 --> R3["owner に基づくスコープフィルタリング"]
-        R3 --> R4["asyncio.Lock で重複アクティベーションを防止"]
+        R2 --> R3["owner によるスコープフィルタリング"]
+        R3 --> R4["asyncio.Lock で重複活性化を防止"]
         R4 --> R5["モジュールのインスタンス化 + on_load() の呼び出し"]
         R5 --> R6["すべての stub の登録解除"]
-        R6 --> R7["イベントを真のハンドラに転送"]
+        R6 --> R7["イベントを実際のハンドラに転送"]
     end
 
     Declare --> Runtime
@@ -268,38 +244,35 @@ flowchart LR
 
 **トリガーの意味要点：**
 
-1. **stub 登録**：イベント stub は、対応するイベントマネージャーに極めて低い優先度（`ACTIVATION_STUB_PRIORITY`）で登録され、同種のイベントのすべての通常のハンドラの**後に**実行されるようにします。コマンド stub は隠しプレースホルダコマンドとして登録され、コマンドリストを汚染しません。
-2. **スコープフィルタリング**：stub にはモジュールの owner 身分が付与され、該当する Bot / セッション / プラットフォームに対して有効でないモジュールはトリガーされません。
-3. **再入防止**：`asyncio.Lock` により、並行イベント下でも一度だけアクティベーションされるようにします。
-4. **イベント転送**：アクティベーション完了後、現在のイベントは真のハンドラに転送されます（外側のグループループは、stub の後に登録されたハンドラが二度処理されないことを既に検証済みです）。
-5. **失敗時の意味**：アクティベーションが失敗した場合、再試行は行われず、stub も同時に登録解除され、毎回イベントに対して繰り返し試行されるのを防ぎます。
+> 完全な `activate_on` 構文（str / dict / list）、コマンド dict 声明、プレースホルダーコマンドの help フォールバックチェーン、スコープフィルタリング、および失敗時の意味については、[遅延ロードシステム](advanced/lazy-loading.md#イベント駆動の遅延活性化activate_on) を参照してください。
 
-## ローカルプラグインフォルダの構造
+## ローカルプラグインフォルダのアーキテクチャ
 
-ローカルプラグイン（`plugins/` ディレクトリ）は、パッケージ化して配布する必要がなく、フレームワークの起動時に自動的に発見され読み込まれます：
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
+
+ローカルプラグイン（`plugins/` 目录）はパッケージ化して公開する必要がなく、フレームワークの起動時に自動的に発見・ロードされます：
 
 ```mermaid
 flowchart TD
-    A["プロジェクトの plugins/ ディレクトリ<br/>（ErisPulse.framework.plugins_dir、複数ディレクトリ対応）"] --> B{"PluginFolderLoader.discover()"}
+    A["プロジェクトの plugins/ 目录<br/>（ErisPulse.framework.plugins_dir、複数目录をサポート）"] --> B{"PluginFolderLoader.discover()"}
     B --> C["単一ファイル：dice.py → プラグイン名 = ファイル名"]
-    B --> D["パッケージ形式：weather/（__init__.py あり）→ プラグイン名 = ディレクトリ名"]
-    B --> E["無視対象：__pycache__ / _ で始まる / .py でない / __init__.py がないディレクトリ"]
+    B --> D["パッケージ形式：weather/（含 __init__.py）→ プラグイン名 = 目录名"]
+    B --> E["無視対象：__pycache__ / _ で始まる / .py でない / __init__.py が存在しない目录"]
     C --> F["モジュールのインポート（spec_from_file_location）"]
     D --> G["モジュールのインポート（sys.path + import_module）"]
-    F --> H["モジュールクラスの識別：Main（BaseModule のサブクラス）を優先し、存在しない場合は最初のサブクラス"]
+    F --> H["モジュールクラスの識別：Main（BaseModule の子クラス）を優先し、存在しない場合は最初の子クラス"]
     G --> H
-    H --> I["entry-point と同じ moduleInfo を構築"]
-    I --> J["ModuleLoader.load() によるマージ<br/>ローカルのモジュールが PyPI の同名インストールパッケージを上書き"]
-    J --> K["インストールパッケージモジュールと共有：<br/>有効状態 / スコープ / meta / i18n / コンテキスト"]
+    H --> I["entry-point と一致する moduleInfo を構築"]
+    I --> J["ModuleLoader.load() で統合<br/>ローカルのモジュールが PyPI に同名のインストールパッケージを上書き"]
+    J --> K["インストールパッケージのモジュールと共有：<br/>有効状態 / スコープ / meta / i18n / コンテキスト"]
 ```
 
-**規約と特徴：**
+**規約と特性：**
 
-- プラグイン名の取得方法：単一ファイルはファイル名、パッケージ形式はディレクトリ名
+- プラグイン名の取得方法：単一ファイルはファイル名、パッケージ形式は目录名
 - ローカルプラグインの `moduleInfo.meta.source == "plugin_folder"` であり、PyPI でインストールされたパッケージモジュールとシームレスに共存
-- 同名のモジュールが存在する場合、ローカルのモジュールが優先（ローカルの上書きやデバッグに便利）、無効化された場合、同名の entry-point 条目も同時に削除
-
-[**English**](docs/ja/quick-start.md)
+- 同名のモジュールがある場合、ローカルのモジュールが優先（ローカルでの上書きデバッグが可能）、無効化された場合、同名の entry-point 条目も同時に削除
 
 ## ローカルプラグインのホットリロードアーキテクチャ
 
@@ -1879,7 +1852,7 @@ dependencies = []
 ```python
 from .Core import Main
 
-## Core.py - 基本モジュール
+## Core.py - 基礎モジュール
 
 ```python
 from ErisPulse import sdk
@@ -1887,46 +1860,38 @@ from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.Event import command
 
 class Main(BaseModule):
-    def __init__(self):
+    def __init__(self, sdk):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
-        self.config = self._load_config()
     
     @staticmethod
     def get_load_strategy():
-        """モジュール読み込み戦略を返す"""
+        """モジュールのロード戦略を返す"""
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
-            depends=[]  # オプション：依存する他のモジュールのリスト
+            depends=[],  # オプション：依存する他のモジュールのリスト
+            # オプション：イベント駆動の遅延活性化——トリガーを宣言し、最初に一致するイベント/コマンドが到達した際に自動的にロード
+            # activate_on=[{"command": {"name": "hello", "help": "挨拶を送信する"}}],
         )
     
     async def on_load(self, event):
-        """モジュールが読み込まれたときに呼び出される"""
+        """モジュールがロードされたときに呼び出される"""
         @command("hello", help="挨拶を送信する")
         async def hello_command(event):
-            name = event.get_user_nickname() or "友達"
+            name = event.get_user_nickname() or "友人"
             await event.reply(f"こんにちは、{name}！")
         
-        self.logger.info("モジュールが読み込まれました")
+        self.logger.info("モジュールがロードされました")
     
     async def on_unload(self, event):
-        """モジュールがアンロードされるときに呼び出される"""
+        """モジュールがアンロードされたときに呼び出される"""
         self.logger.info("モジュールがアンロードされました")
-    
-    def _load_config(self):
-        """モジュール設定を読み込む"""
-        config = self.sdk.config.getConfig("MyModule")
-        if not config:
-            default_config = {
-                "api_url": "https://api.example.com",
-                "timeout": 30
-            }
-            self.sdk.config.setConfig("MyModule", default_config)
-            return default_config
-        return config
+```
+
+> **設定の読み込み**：上記の基本例では設定を使用していません。設定を読み込む必要がある場合は、ネストされた `ConfigClass` を宣言し、`self.cfg` を通じてリアルタイムに読み込むことを推奨します（[モジュールのコアコンセプト](core-concepts.md#宣言的設定の推奨)を参照）。手動で `_load_config()` を呼び出す古い書き方は廃止されました。
 
 ## テストモジュール
 
@@ -1947,26 +1912,28 @@ epsdk run main.py --reload
 ```
 /hello
 
-## コアコンセプト
+## 核心概念
 
 ### BaseModule 基底クラス
 
-すべてのモジュールは `BaseModule` を継承する必要があり、以下のメソッドを提供します：
+すべてのモジュールは `BaseModule` を継承し、以下のメソッドを提供する必要があります：
 
 | メソッド | 説明 | 必須 |
 |------|------|------|
-| `__init__(self)` | コンストラクタ | 否 |
-| `get_load_strategy()` | ロード戦略を返す | 否 |
-| `get_meta()` | モジュール紹介メタ情報（オプション）を返す | 否 |
-| `on_load(self, event)` | モジュールロード時に呼び出される | 是 |
-| `on_unload(self, event)` | モジュールアンロード時に呼び出される | 是 |
+| `__init__(self, sdk)` | コンストラクタ（フレームワークが `sdk` インスタンスを渡す） | いいえ |
+| `get_load_strategy()` | ロード戦略を返す | いいえ |
+| `get_meta()` | モジュールの説明メタ情報を返す（オプション） | いいえ |
+| `on_load(self, event)` | モジュールがロードされたときに呼び出される | はい |
+| `on_unload(self, event)` | モジュールがアンロードされたときに呼び出される | はい |
 
 ### モジュール紹介 meta
 
-`get_meta()` を通じてモジュールの紹介メタ情報（このモジュールが何をするものか、どのカテゴリに属するかなど）を宣言します。
-メタ情報はモジュールの**汎用紹介データ**であり、help モジュール、Dashboard モジュール一覧、モジュールストアなど、各種 UI/エコモジュールによって消費されます。
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
 
-`get_load_strategy()` が `ModuleLoadStrategy` を返すのと同様に、**`ModuleMeta` 設定クラスのインスタンスを返すことを推奨**します（プロパティの型付け、IDE の補完機能）が、dict を直接返すことでも互換性があります：
+`get_meta()` でモジュールの紹介メタ情報を宣言します（このモジュールが何をするものか、どのカテゴリに属するかなど）。メタ情報はモジュールの**一般的な紹介データ**であり、help モジュール、Dashboard モジュールリスト、モジュールストアなどの各種インターフェース/エコシステムモジュールが利用します。
+
+`get_load_strategy()` が `ModuleLoadStrategy` を返すのと同じように、**`ModuleMeta` 設定クラスのインスタンスを返すことを推奨します**（プロパティの型付け、IDEの補完機能）、dict を直接返すことも互換性があります：
 
 ```python
 class MyModule(BaseModule):
@@ -1974,15 +1941,15 @@ class MyModule(BaseModule):
     def get_meta() -> ModuleMeta:
         return ModuleMeta(
             name="天気",               # 表示名（デフォルトの登録名）
-            description="都市の天気を照合",  # モジュールの概要
+            description="都市の天気を照会",  # モジュールの概要
             version="1.0.0",
             author="ErisDev",
-            group="ツール",               # 機能グループ
-            tags=["天気", "照合"],
+            group="ツール",               # 機能のグループ
+            tags=["天気", "照会"],
         )
 ```
 
-互換性のある記法（dict）：
+互換的な書き方（dict）：
 
 ```python
 class MyModule(BaseModule):
@@ -1990,29 +1957,29 @@ class MyModule(BaseModule):
     def get_meta() -> dict:
         return {
             "name": "天気",
-            "description": "都市の天気を照合",
+            "description": "都市の天気を照会",
             "version": "1.0.0",
             "author": "ErisDev",
             "group": "ツール",
-            "tags": ["天気", "照合"],
+            "tags": ["天気", "照会"],
         }
 ```
 
-- `module.get_meta("MyModule")` は解析済みのメタ情報を読み取ります（クラス宣言 > 登録 info、自動的にこのモジュールのコマンド名が補完されます）。
-- `module.get_commands_overview()` は「モジュール meta + その登録されたコマンド（エイリアス/グループ/ヘルプ）」を集約し、モジュール単位で整理されたコマンドの概要です。
-- コマンドが所属するモジュールは `cmd_info["owner"]` で取得できます（登録時にコンテキストシステムによって自動的に注入されます）。
+- `module.get_meta("MyModule")` は、既に解析されたメタ情報を読み取ります（クラス宣言 > 登録 info、自動的にこのモジュールのコマンド名を補完します）。
+- `module.get_commands_overview()` は、「モジュール meta + 登録されたコマンド（エイリアス/グループ/ヘルプ）」を統合し、モジュールごとに整理されたコマンドの概要を提供します。
+- コマンドの所属モジュールは `cmd_info["owner"]` で取得できます（登録時にコンテキストシステムが自動的に注入します）。
 
-#### meta フィールドの i18n サポート
+#### meta フィールドの i18n 対応
 
-メタ情報フィールドの値は純粋な文字列、または i18n 辞書 `{"i18n": "key.path", "default": "フォールバックテキスト"}`（設定 `description` と同様の規約に従います）を使用できます。
-翻訳キーは `I18nClass` によって宣言および登録され、`module.get_meta()` が読み込まれた際に現在の言語のテキストとして自動的に解析されます：
+メタ情報のフィールド値は、純粋な文字列、または i18n ディクショナリ `{"i18n": "key.path", "default": "代替テキスト"}`（設定の `description` と同様の約束）で指定できます。
+翻訳キーは `I18nClass` で宣言・登録し、`module.get_meta()` で読み取る際に、現在の言語のテキストに自動的に変換されます：
 
 ```python
 class MyModule(BaseModule):
     class I18nClass(BaseI18n):
         meta_description: I18nKey = I18nKey(
             default="Weather lookup",
-            zh_CN="都市の天気を照合",
+            zh_CN="都市の天気照会",
             en="Weather lookup",
         )
 
@@ -2026,7 +1993,7 @@ class MyModule(BaseModule):
 
 ### SDK オブジェクト
 
-`sdk` オブジェクトを通じてコア機能にアクセスします：
+`sdk` オブジェクトを通じて、コア機能にアクセスします：
 
 ```python
 from ErisPulse import sdk
@@ -2034,9 +2001,12 @@ from ErisPulse import sdk
 sdk.storage    # ストレージシステム
 sdk.config     # 設定システム
 sdk.logger     # ログシステム
-sdk.adapter    # アダプタシステム
+sdk.adapter    # アダプターシステム
 sdk.router     # ルーティングシステム
 sdk.lifecycle  # ライフサイクルシステム
+```
+
+docs/ja/core-concepts.md
 
 ## 次のステップ
 
@@ -2151,7 +2121,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ### 宣言的設定（推奨）
 
-v2.5.2 以降、モジュールは `ConfigClass` を使用して設定クラスを宣言できるようになりました。アダプターと同じ設定 Schema システムを使用します。設定は `self.cfg` でリアルタイムに読み出され、変更後はすぐに有効になります：
+v2.5.2 以降、モジュールは `ConfigClass` を宣言して、アダプターと同じ設定 Schema システムを使用することができます。設定は `self.cfg` を通じてリアルタイムに読み取ることができ、変更後は即座に有効になります：
 
 ```python
 from dataclasses import dataclass, field
@@ -2163,7 +2133,7 @@ class MyModuleConfig(BaseConfig):
     api_key: str = field(
         default="",
         metadata={
-            "description": {"i18n": "my_module.api_key", "default": "API キー"},
+            "description": {"i18n": "my_module.api_key", "default": "API 密钥"},
             "required": True,
             "secret": True,
             "ui": {"widget": "password", "group": "basic", "order": 1},
@@ -2172,13 +2142,17 @@ class MyModuleConfig(BaseConfig):
     timeout: int = field(
         default=30,
         metadata={
-            "description": {"i18n": "my_module.timeout", "default": "タイムアウト（秒）"},
+            "description": {"i18n": "my_module.timeout", "default": "超时时间（秒）"},
             "ui": {"widget": "number", "group": "advanced", "order": 2},
         },
     )
 
 class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
+
+    def __init__(self, sdk):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
 
     async def on_load(self, event):
         self.logger.info("モジュールがロードされました")
@@ -2187,36 +2161,36 @@ class MyModule(BaseModule):
         pass
 
     async def do_something(self):
-        cfg = self.cfg  # リアルタイム読み出し、型安全
+        cfg = self.cfg  # 実時読み取り、型安全
         api_key = cfg.api_key
         timeout = cfg.timeout
 ```
 
-`BaseConfig` は汎用的な設定基底クラスで、アダプター、モジュール、外部プロジェクトなどあらゆるシーンに適用できます。設定フィールドは i18n 多言語記述をサポートしています（詳細は [i18n ドキュメント](../../advanced/i18n.md#設定フィールド多言語)をご参照ください）。
+`BaseConfig` は、アダプター、モジュール、外部プロジェクトなど、あらゆる場面で使用できる汎用的な設定基底クラスです。設定フィールドは i18n 多言語説明をサポートしています（詳細は [i18n ドキュメント](../../advanced/i18n.md#設定フィールド多言語) を参照）。
 
 ### 宣言的翻訳キー（v2.7.0+）
 
-v2.7.0 以降、モジュールは `ConfigClass` を宣言するのと同様に、ネストされた `I18nClass` クラスを使って翻訳キーを一括で宣言することもできます。フレームワークはロード時に宣言されたすべての翻訳キーを**自動的に登録**するため、手動で `i18n.register()` を呼び出す必要はありません。また、設定テンプレートの生成より早いタイミングで登録されるため、設定記述で参照する i18n キーが利用可能であることが保証されます。
+v2.7.0 以降、モジュールは `ConfigClass` の宣言と同じように、ネストされたクラス `I18nClass` を使って翻訳キーを一括宣言することができます。フレームワークはロード時に**自動的に**すべての宣言された翻訳キーを登録し、手動で `i18n.register()` を呼び出す必要がなく、また設定テンプレート生成よりも早いタイミングで登録されるため、設定説明で参照される i18n キーが利用可能になります。
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
 
 class MyModule(BaseModule):
-    # 設定クラス（任意）
+    # 設定クラス（オプション）
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
             default="欢迎",
             metadata={
-                "description": {"i18n": "mymodule.welcome_msg", "default": "ウェルカムメッセージ"},
+                "description": {"i18n": "mymodule.welcome_msg", "default": "欢迎消息"},
             },
         )
 
-    # 翻訳キーセットクラス（任意）
+    # 翻訳キー集合クラス（オプション）
     class I18nClass(BaseI18n):
-        # プロパティ名が自動的に完全なキーパスに連結されます：<モジュール名>.<プロパティ名>
+        # 属性名が自動的に完全なキー・パスに結合されます：<モジュール名>.<属性名>
         welcome_msg: I18nKey = I18nKey(
-            default="Welcome Message",   # 言語に依存しないフォールバック
+            default="Welcome Message",   # 言語に依存しないバックアップ
             zh_CN="欢迎消息",
             zh_TW="歡迎訊息",
             en="Welcome Message",
@@ -2233,30 +2207,24 @@ class MyModule(BaseModule):
         )
 ```
 
-詳細は [i18n 推奨の記述方法](../../advanced/i18n.md#推奨の記述方法I18nClassで翻訳キーを宣言するv270) を参照してください。
+詳細は [i18n 推奨の書き方](../../advanced/i18n.md#推奨の書き方通过-i18nclass-声明翻译键-v270) を参照してください。
 
-### 手動による設定の読み込み（互換方式）
+### 手動で設定を読み取る（廃止済み）
 
-宣言的設定を使用しない場合、直接設定ストレージに対して読み書きすることも可能です。
+> **廃止済み**：宣言的設定（[宣言的設定推奨](#宣言式設定推奨)）と `self.cfg` を通じたリアルタイム読み取りを使用してください。
 
 ```python
-def _load_config(self):
-    config = self.sdk.config.getConfig("MyModule")
-    if not config:
-        default_config = {
-            "api_key": "",
-            "timeout": 30
-        }
-        self.sdk.config.setConfig("MyModule", default_config)
-        return default_config
-    return config
+class MyModule(BaseModule):
+    def __init__(self, sdk):
+        self.sdk = sdk
+
+    def _load_config(self):
+        config = self.sdk.config.getConfig("MyModule")
+        if not config:
+            self.sdk.config.setConfig("MyModule", {"api_key": "", "timeout": 30})
+            return {"api_key": "", "timeout": 30}
+        return config
 ```
-
-> **注意**：手動方式の場合は `self.config` をプロパティ名として使用しないでください。`self.cfg` または独自の名前を使用することをお勧めします。そうしないと、将来的なフレームワークのプロパティとの競合を避けることができません。
-
-请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。
-
-再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。
 
 ## ストレージシステム
 
@@ -4109,31 +4077,29 @@ epsdk types --force
 
 ### doctor
 
-現在の CLI 実行環境を診断し、健康レポートを出力します。これは「なぜインストールできない / 接続できないか」などの問題を解決するために使用します。
+> [!NOTE]
+> このコマンドは ErisPulse **2.7.0+** が必要です。
+
+現在の CLI 実行環境を診断し、ヘルスレポートを出力します。「なぜインストールできない / 接続できないのか」の問題を特定するために使用します。
 
 | パラメータ | 説明 |
 |------|------|
-| `--verbose` | 詳細な診断情報を表示します |
+| `--verbose` | 詳細な診断情報を表示 |
 
-**チェック項目**:
-- **Python**：解釈器のバージョンとパス
-- **インストールバックエンド**：`uv` または `pip` の使用
-- **目標解釈器**：パッケージが実際にインストールされる Python 環境
+**チェック項目**：
+- **Python**：インタプリタのバージョンとパス
+- **インストール済みバックエンド**：`uv` を使用するか、`pip` を使用するか
+- **ターゲット・インタプリタ**：パッケージが実際にインストールされるターゲット Python 環境
 - **設定ファイル**：`config/config.toml` が存在するか
-- **PyPI への接続性**：PyPI にアクセスできるか（発見されたコンポーネント数を表示）
-- **システムプロキシ**：プロキシが検出されているか
+- **PyPI の接続性**：PyPI にアクセスできるか（検出されたコンポーネント数を表示）
+- **システムプロキシ**：プロキシが検出されたか
 
 ```bash
-# 実行環境の診断
+# 実行環境診断
 epsdk doctor
 
-# 別名を使用
+# エイリアスを使用
 epsdk diag
-```
-
----
-
-[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
 ## インタラクティブインストール
 
@@ -7452,49 +7418,127 @@ class Main(BaseModule):
 
 ### 懶加载系统
 
-# ラグロードモジュールシステム
+# ラグ遅延ロードモジュールシステム
 
-ErisPulse SDK は、モジュールを実際に必要になるまで初期化しない強力なラグロードモジュールシステムを提供し、アプリケーションの起動速度とメモリ効率を大幅に向上させます。
+ErisPulse SDK は強力なラグ遅延ロードモジュールシステムを提供しており、モジュールを実際に必要になるまで初期化しないことで、アプリケーションの起動速度とメモリ効率を大幅に向上させることができます。
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md)
 
 ## 概要
 
-ラグロードモジュールシステムは、ErisPulse のコア機能の一つであり、以下の方法で動作します：
+ErisPulseのラジオロードモジュールシステムは、以下の方法で動作するコア機能の1つです：
 
 - **遅延初期化**：モジュールは、初めてアクセスされたときにのみ実際にロードおよび初期化されます
-- **透明な使用**：開発者にとって、ラグロードモジュールは通常のモジュールと使用方法にほとんど違いがありません
+- **透明な使用**：開発者にとって、ラジオロードモジュールは通常のモジュールとほとんど区別がつきません
 - **自動依存管理**：モジュールの依存関係は、使用時に自動的に初期化されます
-- **ライフサイクルサポート**：`BaseModule` を継承したモジュールに対しては、ライフサイクルメソッドが自動的に呼び出されます
+- **ライフサイクルサポート**：`BaseModule` を継承するモジュールに対しては、ライフサイクルメソッドが自動的に呼び出されます
+
+[**English**](docs/en/overview.md) | [**日本語**](docs/ja/overview.md) | [**简体中文**](docs/ja/overview.md)
 
 ## 動作原理
 
 ### LazyModule クラス
 
-ラグロードシステムの中心は、`LazyModule` クラスです。これは、最初のアクセス時にのみ実際にモジュールを初期化するラッパーです。
+遅延ロードシステムの中心となるのは `LazyModule` クラスです。これは、最初にアクセスされたときにのみモジュールを実際に初期化するラッパーです。
 
 ### 初期化プロセス
 
 モジュールが初めてアクセスされたとき、`LazyModule` は以下の操作を実行します：
 
-1. モジュールクラスの `__init__` の引数情報を取得します
-2. 引数に基づいて `sdk` 参照を渡すかどうかを決定します
+1. モジュールクラスの `__init__` パラメータ情報を取得します
+2. パラメータに基づいて `sdk` リファレンスを渡すかどうかを決定します
 3. モジュールの `moduleInfo` 属性を設定します
-4. `BaseModule` を継承したモジュールに対しては `on_load` メソッドを呼び出します
-5. `module.init` ライフサイクルイベントを発生させます
+4. `BaseModule` を継承したモジュールの場合、`on_load` メソッドを呼び出します
+5. `module.init` ライフサイクルイベントをトリガーします
 
-## ラグロードの設定
+[**English**](docs/ja/quick-start.md)
 
-### グローバル設定
+## イベント駆動型遅延起動（activate_on）
 
-設定ファイルでグローバルなラグロードを有効/無効にします：
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
+
+`lazy_load=True` のモジュールはデフォルトで**最初の属性アクセス時**にのみロードされます。モジュールがコマンド/イベントハンドラを登録している場合、従来の方法では `lazy_load=False` にして即時ロードするしかありませんでした。`activate_on` は第三の選択肢を提供します：**トリガを宣言し、最初の一致するイベント/コマンドが到着した時点でモジュールを自動的にアクティブ化する**——メモリ上に常駐させることなく、トリガのエントリポイントを失うこともありません。
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class MyModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            activate_on=[
+                # ---- イベントトリガ（受動的到着、ユーザーの意識を必要としない）----
+                "message",                                    # タイプレベル：任意のメッセージイベント
+                {"notice": "group_member_increase"},          # タイプ + 単一 detail_type
+                {"message": ["private", "group"]},            # タイプ + 複数 detail_type
+
+                # ---- コマンドトリガ（能動的な入力、Help で表示されるプレースホルダーコマンド）----
+                {"command": "roll"},                          # 略記：コマンド名
+                {"command": ["roll", "dice"]},                # コマンド名リスト
+                {"command": {                                 # dict 形式の宣言（name は必須）
+                    "name": "dice",
+                    "help": "サイコロを振る",
+                    "usage": "/dice",
+                    "group": "娯楽",
+                    "aliases": ["d"],
+                    "hidden": False,
+                }},
+            ],
+        )
+```
+
+### コマンド dict 形式の宣言パラメータ
+
+dict 形式は `@command()` デコレーターのユーザー側パラメータをミラーしており、モジュールのロード前にプレースホルダーコマンドを登録するのに使用されます：
+
+| パラメータ | 型 | デフォルト | 説明 |
+|------|------|------|------|
+| `name` | `str` | **必須** | コマンド名；`on_load` 内の `@command(name)` と一致する必要がある。一致しないと、アクティブ化後にプレースホルダーが削除され、コマンドが存在しなくなる |
+| `help` | `str` | フォールバックチェーン | Help に表示される説明；宣言されていない場合はフォールバックチェーンから値を取得する（下記参照） |
+| `usage` | `str` | 自動生成 | 使用方法行；デフォルトは `{prefix}{name}` |
+| `group` | `str` | `None` | コマンドグループ |
+| `aliases` | `list[str]` | `[]` | 別名も同時に登録され、**別名の入力でもアクティブ化がトリガされる** |
+| `hidden` | `bool` | `False` | `True` の場合、プレースホルダーコマンドも非表示（アクティブ化後の実際のコマンドの非表示の意味と一致）；コマンド名を知っているユーザーが入力してもトリガされる |
+
+**サポートされていない** `priority` / `permission` / `master`：プレースホルダーコマンドの役割はアクティブ化のトリガのみであり、権限チェックはアクティブ化後の実際のコマンドが実行する（プレースホルダー段階で権限をブロックしてしまうと、「コマンド入力でアクティブ化」が無効になってしまう）。
+
+### プレースホルダーコマンドの help フォールバックチェーン
+
+モジュールがロードされていない場合、Help に表示されるコマンドの説明は以下の順序で値を取得します（取得した時点で終了）：
+
+1. dict 形式で宣言されたコマンドレベルの `help`（最も正確）
+2. モジュールの `get_meta()` の `description`
+3. モジュールの `__description__` 属性
+4. パッケージのメタデータの `Summary`（PyPI パッケージの概要）
+5. 一般的なヒント：「このコマンドは遅延ロードモジュール X から来ています。初めて使用すると、そのモジュールが自動的にロードされます」
+
+### トリガの意味
+
+- **イベントスタブ**：対応するイベントマネージャーに非常に低い優先度（`ACTIVATION_STUB_PRIORITY`）で登録され、すべての通常のハンドラの後にバックアップとしてトリガされる。アクティブ化後は、現在のイベントをモジュールの実際のハンドラに転送する
+- **コマンドスタブ**：プレースホルダーコマンドを登録する。アクティブ化後は、プレースホルダーが削除され、実際のコマンドがそのトリガを引き継ぐ
+- **再入防止**：`asyncio.Lock` を使用して、並行トリガの下でも一度だけアクティブ化されるように保証する
+- **スコープフィルタリング**：スタブにはモジュールのオーナーのアイデンティティが含まれており、モジュールが Bot / セッション / プラットフォームに対して有効でない場合はトリガされない
+- **失敗時の意味**：アクティブ化に失敗した場合、再試行はせず、スタブも一緒に削除される
+- **重複排除**：同名のコマンドが略記 + dict 混合で宣言された場合、重複を排除する（dict が優先）。dict に `name` が欠落している場合、またはイベントの `detail_type` を dict として誤って書いた場合は、警告を出して無視する
+
+> アーキテクチャ図と完全な意味については、[アーキテクチャ概要](../architecture.md#イベント駆動型遅延起動activate_onのトリガアーキテクチャ)を参照してください。
+
+## 懒惰ロードの構成
+
+### グローバル構成
+
+構成ファイルでグローバルな lazy loading を有効または無効にします：
 
 ```toml
 [ErisPulse.framework]
-enable_lazy_loading = true  # true=ラグロードを有効にする(デフォルト), false=ラグロードを無効にする
+enable_lazy_loading = true  # true=lazy loadingを有効にする(デフォルト), false=lazy loadingを無効にする
 ```
 
 ### モジュールレベルの制御
 
-モジュールは、`get_load_strategy()` 静的メソッドを実装することで、ロード戦略を制御できます：
+モジュールは `get_load_strategy()` 静的メソッドを実装することで、ロード戦略を制御できます：
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -7503,49 +7547,50 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """モジュールロード戦略を返す"""
+        """モジュールのロード戦略を返す"""
         return ModuleLoadStrategy(
-            lazy_load=False,  # False を返すと即時ロード
+            lazy_load=False,  # Falseを返すと即時ロード
             priority=100      # ロード優先度、数値が大きいほど優先度が高い
         )
-```
 
 ## ラグロードモジュールの使用
 
-### 基本的な使用
+### 基本的な使用方法
 
-開発者にとって、ラグロードモジュールは通常のモジュールと使用方法にほとんど違いがありません：
+開発者にとって、ラグロードモジュールは通常のモジュールと使用方法にほとんど違いはありません：
 
 ```python
-# SDK を通じてラグロードモジュールにアクセス
+# SDKを介してラグロードモジュールにアクセス
 from ErisPulse import sdk
 
-# 以下のようなアクセスはモジュールのラグロードをトリガーします
+# 以下のようにアクセスするとモジュールのラグロードがトリガーされます
 result = await sdk.my_module.my_method()
 ```
 
-### 一貫したモジュール取得エントリ
+### モジュールの取得エントリの統一
 
-SDK 属性、モジュールマネージャー属性を通じてアクセスする場合、または `module.get()` を使って検索する場合、
-「登録済みだがまだロードされていない」ラグロードモジュールに対しては、同じラグロードプロキシが返され、
-そのプロパティにアクセスすることで初めて初期化がトリガーされます：
+SDK属性、モジュールマネージャ属性、または`module.get()`を介してアクセスする場合、
+「登録済みだがまだロードされていない」ラグロードモジュールに対しては、
+すべて同じラグロードプロキシが返されます。プロパティにアクセスすることで、
+実際に初期化がトリガーされます：
 
 ```python
-# 3 つの方法で取得されるのはすべてラグロードプロキシ（モジュールがロードされていない場合）、動作は一貫しており、ユーザーには透明です
+# 3つの方法で取得されるのはすべてラグロードプロキシ（モジュールがロードされていない場合）、
+# 振る舞いは一貫しており、ユーザーには透明です
 sdk.my_module          # ロードをトリガーするエントリ
-sdk.module.my_module   # 同様にラグロードプロキシを返します
-sdk.module.get("my_module")  # ラグロードプロキシを返しますが、自体はロードをトリガーしません
+sdk.module.my_module   # 同じくラグロードプロキシを返します
+sdk.module.get("my_module")  # ラグロードプロキシを返しますが、ロードはトリガーしません
 
-# プロキシの任意のプロパティにアクセスすることで、モジュールが実際に初期化されます
+# プロキシの任意のプロパティにアクセスすることで、実際にモジュールの初期化が行われます
 result = await sdk.my_module.my_method()
 ```
 
-`module.get()` は**検索**インターフェースであり、自体はロードをトリガーしません：
+`module.get()`は**検索**インターフェースであり、ロードをトリガーしません：
 - モジュールがロード済み → 実際のインスタンスを返します
-- モジュールが登録済みだがロードされていない → ラグロードプロキシを返します（プロパティにアクセスすることで初期化されます）
-- モジュールが登録されていない → `None` を返します
+- モジュールが登録済みだがロードされていない → ラグロードプロキシを返します（プロパティにアクセスして初めて初期化されます）
+- モジュールが登録されていない → `None`を返します
 
-明示的にロードをトリガーするには、`await sdk.load_module("my_module")` を使用してください。
+明示的にロードをトリガーしたい場合は、`await sdk.load_module("my_module")`を使用してください。
 
 ### 非同期初期化
 
@@ -7561,33 +7606,52 @@ result = await sdk.my_module.my_method()
 
 ### 同期初期化
 
-非同期初期化が必要ないモジュールについては、直接アクセスできます：
+非同期初期化を必要としないモジュールについては、直接アクセスできます：
 
 ```python
-# 直接アクセスすることで自動的に同期初期化されます
+# 直接アクセスすると自動的に同期初期化されます
 result = sdk.my_module.some_sync_method()
+
+## 最佳実践
+
+ロード戦略を選択する際には、以下の意思決定フローを参考にしてください：
+
+```mermaid
+flowchart TD
+    A["モジュール宣言<br/>get_load_strategy()"] --> B{"起動時に即座に準備が必要か<br/>または高頻度でトリガーされるか？"}
+    B -->|"はい"| C["lazy_load=False<br/>即時ロード"]
+    B -->|"いいえ"| D{"コマンド/イベントハンドラを登録したか？"}
+    D -->|"はい"| E["lazy_load=True + activate_on<br/>イベント/コマンドが到着した際にアクティベート"]
+    D -->|"いいえ"| F["lazy_load=True<br/>最初の属性アクセス時にロード"]
+    C --> G["起動時に on_load() を呼び出す"]
+    E --> H["stub を登録 → トリガー時にインスタンス化"]
+    F --> I["LazyModule 代理"]
 ```
 
-## 最適な実践
+### lazy_load=True を推奨するシナリオ
 
-### ラグロードを使用することを推奨する場面（lazy_load=True）
+- 他のモジュールによって呼び出されるだけの受動的なユーティリティモジュール（例：データクエリモジュール、フォーマット変換器など）
+- コマンド/イベントハンドラを登録しているが高頻度で使用されないモジュール — `activate_on` でトリガーを宣言し、最初の一致するイベント/コマンドが到着した際に自動的にアクティベートするため、遅延ロードを放棄する必要がない
 
-- 他のモジュールが呼び出すときにのみ必要な受動的なユーティリティクラス（データクエリモジュール、フォーマット変換器など）
+### lazy_load=False を推奨するシナリオ
 
-### ラグロードを無効にすることを推奨する場面（lazy_load=False）
-
-- トリガーを登録するモジュール（コマンドプロセッサ、メッセージプロセッサなど）
-- ライフサイクルイベントリスナー
-- タイミングタスクモジュール
+- 起動時に即座に準備が必要なモジュール（他のモジュールに基礎サービスを提供するコアモジュールなど）
+- 高頻度でトリガーされるリスナー（各メッセージを処理する必要がある） — `activate_on` の転送には一度のアクティベートオーバーヘッドがあるため、高頻度のシナリオでは即時ロードの方が直接的
+- 定時タスクモジュール
 - アプリケーション起動時に初期化が必要なモジュール
 
-> `priority` パラメータは、即時ロードモジュール間の初期化順序を制御します。数値が大きいほど先に初期化されます。同優先度のモジュールは、登録順にロードされます。
+> `priority` パラメータは、即時ロードモジュール間の初期化順序を制御し、値が大きいほど先に初期化されます。同じ優先度のモジュールは登録順にロードされます。
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**繁體中文**](docs/zh-TW/quick-start.md)
 
 ## 注意事項
 
-1. あなたのモジュールがラグロードを使用している場合、他のモジュールがErisPulse内で一度も呼び出さない限り、あなたのモジュールは決して初期化されません。
-2. あなたのモジュールにイベントを監視するモジュールや、そのようなモジュールを積極的に監視するモジュールが含まれている場合、必ず即時ロードが必要であることを宣言してください。そうしないと、モジュールの正常な業務に影響を与えます。
-3. 特殊な要件がない限り、ラグロードを無効にすることは推奨しません。そうしないと、依存管理やライフサイクルイベントなどの問題が発生する可能性があります。
+1. モジュールが遅延ロードを使用している場合、ErisPulse内で他のモジュールが一度も呼び出されたことがない場合、そのモジュールは決して初期化されません。
+2. モジュールにイベントをリッスンするモジュール、またはその他の類似モジュールを積極的にリッスンするモジュールが含まれている場合、2つの選択肢があります：`activate_on` トリガーを宣言して遅延ロードを維持し、イベントが到着したときに自動的にアクティブ化するか、または即時ロードが必要であることを宣言する（`lazy_load=False`）、さもなければモジュールの正常な業務に影響を与える可能性があります。
+3. 特殊な要件がない限り、遅延ロードを無効にすることは推奨しません。そうしないと、依存管理やライフサイクルイベントなどの問題が発生する可能性があります。
+4. `activate_on` のコマンド dict 声明において、`name` はモジュールの `on_load` 中の `@command()` で登録された実際のコマンド名と一致している必要があります。一致していない場合、モジュールがアクティブ化された後にプレースホルダーコマンドが登録解除され、宣言と実装が一致しないコマンドは存在しません。
+
+[**English**](docs/en/advanced.md) | [**日本語**](docs/ja/advanced.md)
 
 
 
@@ -8444,34 +8508,36 @@ sdk.logger.allow_level("EVENT")             # 復元
 
 # 起動プロセスと手動制御
 
-ErisPulse の `await sdk.run()` / `await sdk.init()` は、一連の起動プロセスを「一行のコード」にラップしています。しかし、部分的なロード、動的登録、ホットプラグ、カスタムロード戦略の注入など、完全にカスタム起動プロセスが必要な場合、このプロセスの内部で何が起こっているのか、および各ステップを手動で駆動する方法を理解する必要があります。
+ErisPulse の `await sdk.run()` / `await sdk.init()` は、一連の起動フローを「一行のコード」に抽象化しています。しかし、部分的なロード、動的な登録、ホットプラグ、カスタムロード戦略の注入など、起動フローを完全にカスタマイズする必要がある場合は、このフローの内部で何が起こっているのか、そして各ステップを手動で駆動する方法を理解する必要があります。
 
-本文では、起動プロセスを独立したステップに分解し、それぞれの役割と呼び出し順序を説明し、手動で完全な起動を行うための例を示します。
+本文では、起動フローを個々のステップに分解し、それぞれの役割と呼び出し順序を説明し、手動で完全な起動を行うための例を示します。
 
-> 本文では、[最初のロボット](../getting-started/first-bot.md)を実行し、`sdk.run(keep_running=True/False)` の2つのモードを理解していることを前提としています。本文では、`init()` **内部**のプロセス分解と、`init()` / `init_task()` / `init_sync()` などのより低レベルなエントリポイントに焦点を当てます。
+> 本文では、[最初のロボット](../getting-started/first-bot.md)を実行した前提があり、`sdk.run(keep_running=True/False)` の2つのモードについて理解しているものとします。本文では、`init()` **内部**のフローの分解、および `init()` / `init_task()` / `init_sync()` などのより下層のエントリポイントに焦点を当てます。
 
-## SDK トップレベルエントリ一覧
+- [English](docs/en/quick-start.md) | **日本語** | [简体中文](docs/ja/quick-start.md) | [繁體中文](docs/zh-TW/quick-start.md) | [한국어](docs/ko/quick-start.md)
 
-`run()` の2つの `keep_running` モードに加えて、SDK には異なった**非同期性、戻り値、および例外のラッピング**を持ついくつかの低レベルな初期化エントリが提供されています。
+## SDK トップレベルエントリーポイント一覧
 
-| エントリ | 非同期性 | 戻り値 | 例外処理 | 適用シーン |
+`run()` の 2 つの `keep_running` モードに加えて、SDK はいくつかのより下層の初期化エントリーポイントを提供しています。これらは、**非同期性、戻り値、例外のラッピング有無**によって区別されます：
+
+| エントリーポイント | 非同期性 | 戻り値 | 例外処理 | 適用場面 |
 |------|--------|--------|----------|----------|
-| `await sdk.run(True)` | async、ブロックして維持 | `None`（終了時に自動 `uninit`） | モジュール/アダプタエラーが捕捉され、プロセスをクラッシュさせない | ロボットアプリケーションのみ |
-| `await sdk.run(False)` | async、ブロックしない | `None`（自動アンロードしない） | 同上 | 初期化後にカスタムロジックを実行 |
-| `await sdk.init()` | async、`await` 必須 | `bool` | **ラップしない**、例外は上に投げられる | ライフサイクルを手動で制御（`uninit()` と併用） |
-| `sdk.init_task()` | async、`Task` を返してブロックしない | `asyncio.Task` | `init()` と同じ | 並列で他の初期化を実行する、またはイベントループがまだ実行されていない |
-| `sdk.init_sync()` | **同期**、現在のスレッドをブロック | `bool` | `init()` と同じ | コマンドラインスクリプト、イベントループのない同期エントリ |
+| `await sdk.run(True)` | async、ブロッキングを維持 | `None`（終了時に自動 `uninit`） | モジュール/アダプターのエラーはキャッチされ、プロセスをクラッシュさせない | ボット専用アプリケーション |
+| `await sdk.run(False)` | async、ブロッキングしない | `None`（自動アンロードしない） | 同上 | 初期化後にカスタムロジックを実行する |
+| `await sdk.init()` | async、awaitが必要 | `bool` | 内部でコンポーネントの例外をキャッチし、失敗時は `False` を返す | 手動でライフサイクルを制御する（`uninit()` と併用） |
+| `sdk.init_task()` | async、Task を返すことでブロッキングしない | `asyncio.Task` | `init()` と同じ | 並行的に他の初期化処理を実行する、またはイベントループがまだ実行されていない場合 |
+| `sdk.init_sync()` | **同期**、現在のスレッドをブロッキング | `bool` | `init()` と同じ | コマンドラインスクリプト、イベントループのない同期エントリーポイント |
 
-> **よくある誤解**：`await sdk.init()` **は** `await sdk.run(keep_running=False)` **と等価ではありません**。2点の違いがあります：① `init()` は `bool` を返し、`run()` は `None` を返す；② `run()` は初期化と実行プロセスを `try/except` でラップし（モジュール/アダプタエラーを捕捉してクラッシュを防ぐ）、`init()` はラップせず、例外は直接上に投げられます。アンロードやカスタム例外処理が必要な場合は、`init()` + `uninit()` を使用してください。
+> **よくある誤解**：`await sdk.init()` は `await sdk.run(keep_running=False)` と**等価ではありません**。2 点の違いがあります：① `init()` は `bool` を返します（失敗時は `False` を返す）、`run()` は `None` を返します；② `init()` は初期化のみを行い、**自動アンロードは行いません**、`run()` はイベントループが終了した際に自動で `uninit()` を実行します。したがって、手動でアンロードやカスタムライフサイクルを制御する必要がある場合は、`init()` + `uninit()` を使用してください。
 
-## 起動プロセスの概要
+## 開始フローの概要
 
-`sdk.init()`（正確にはその内部の `Initializer.init()`）は、以下の順序でフレームワーク全体を起動します：
+`sdk.init()`（正確には内部の `Initializer.init()`）は、以下の順序でフレームワーク全体を起動します：
 
 ```mermaid
 flowchart TD
-    A[0. 環境準備<br/>設定のロード / 例外処理] --> B
-    B[1. 並列発見とロード<br/>AdapterLoader.load / ModuleLoader.load<br/>内部で Finder.find_all を呼び出す] --> C
+    A[0. 環境準備<br/>設定の読み込み / エラーハンドリング] --> B
+    B[1. 並列での発見とロード<br/>AdapterLoader.load / ModuleLoader.load<br/>内部で Finder.find_all を呼び出す] --> C
     C[2. アダプタの登録<br/>AdapterLoader.register_to_manager] --> D
     D[3. アダプタの起動<br/>adapter.startup] --> E
     E[4. モジュールの登録<br/>ModuleLoader.register_to_manager] --> F
@@ -8481,22 +8547,24 @@ flowchart TD
 
 対応するコアコンポーネント：
 
-| 層 | コンポーネント | 役割 |
+| 層 | コンポーネント | 機能 |
 |----|------|------|
-| 発見 | `AdapterFinder` / `ModuleFinder` | 既にインストールされたパッケージの entry-points から**発見**する |
-| ロード | `AdapterLoader` / `ModuleLoader` | 発見 + インポート + メタデータの読み取り + 有効/無効の判断、オブジェクトリストを返す |
+| 発見 | `AdapterFinder` / `ModuleFinder` | インストール済みパッケージの entry-points から**発見**する |
+| 加載 | `AdapterLoader` / `ModuleLoader` | 発見 + インポート + メタデータの読み取り + 有効/無効の判定を行い、オブジェクトのリストを返す |
 | 登録 | `*Loader.register_to_manager` | オブジェクトを対応するマネージャーに登録する |
-| 管理 | `sdk.adapter` / `sdk.module` | アダプタ/モジュールのインスタンスを維持し、起動/停止のインターフェースを提供する |
-| 初期化 | `ModuleLoader.initialize_modules` | モジュールのインスタンスを作成し、`sdk` にマウントする（依存関係のトポロジカルソートを処理） |
+| 管理 | `sdk.adapter` / `sdk.module` | アダプタ/モジュールのインスタンスを管理し、起動/停止のインターフェースを提供する |
+| 初期化 | `ModuleLoader.initialize_modules` | モジュールのインスタンスを作成して `sdk` にマウントする（依存関係のトポロジカルソート処理） |
 | ルーティング | `sdk.router` | HTTP / WebSocket サーバー |
 
-> **重要**：`Finder` と `Loader` は2つの層です。`Loader` は内部で**すでに** `Finder` を保持しています（`AdapterLoader` は `AdapterFinder` を、`ModuleLoader` は `ModuleFinder` を持っています）。ほとんどのシーンでは `Loader` を使用するだけで十分です。"インポートせずにリストする"必要がある場合にのみ `Finder` を個別に使用します。
+> **重要**：`Finder` と `Loader` は2つの層です。`Loader` 内部では**すでに** `Finder` を保持しています（`AdapterLoader` は `AdapterFinder` を内包し、`ModuleLoader` は `ModuleFinder` を内包しています）。ほとんどの場合、`Loader` を使用するだけで十分です。"リスト表示のみ、インポートしない"が必要な場合にのみ、`Finder` を個別に使用します。
 
-## 各ステップの詳細
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
+
+## 各環節の詳細説明
 
 ### 1. 発見層：Finder
 
-Finder は「どのパッケージがアダプタ/モジュールを提供しているか」を発見するだけです。インポートやインスタンス化はしません。
+Finder は「どのパッケージがアダプター/モジュールを提供しているか」を見つけるだけを担当し、インポートやインスタンス化は行いません。
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -8504,19 +8572,19 @@ from ErisPulse.finders import AdapterFinder, ModuleFinder
 adapter_finder = AdapterFinder()
 module_finder = ModuleFinder()
 
-# すべてのインストール済みアダプタ/モジュールの entry-points を検索
+# すべてのインストール済みアダプター/モジュールの entry-points を検索
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
-# 名前で単一の検索
+# 名称で単一のエントリポイントを検索
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-各 `EntryPoint` は `.load()` で対応するクラスを得られますが、通常は手動で呼び出す必要はありません。`Loader` が行います。
+各 `EntryPoint` は `.load()` を呼び出すことで対応するクラスを得られますが、通常は手動で呼び出す必要はありません —— Loader が行います。
 
-### 2. ロード層：Loader
+### 2. 加載層：Loader
 
-Loader は Finder の上に「インポート + メタデータの読み取り + 有効/無効の判断」を行っています。
+Loader は Finder の上に「インポート + メタデータの読み込み + 啓用/無効化の判断」を行います。
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -8525,32 +8593,32 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() 内部：finder.find_all() を呼び出す → 各 entry-point を処理 → 3タプルを返す
+# load() 内部：finder.find_all() を呼び出す → 各エントリポイントを順次処理 → 三つ組を返す
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
 
-`load()` が返す3タプル：
+`load()` が返す三つ組：
 
-| 戻り値 | 含意 |
+| 戻り値 | 意味 |
 |--------|------|
-| `objs` (`dict`) | 名称 → オブジェクト（アダプタクラス / モジュールラッパー） |
-| `enabled` (`list[str]`) | 有効化された名称（設定で無効化されていない） |
+| `objs` (`dict`) | 名称 → オブジェクト（アダプタークラス / モジュールラッパー） |
+| `enabled` (`list[str]`) | 啓用された名称（設定で無効化されていない） |
 | `disabled` (`list[str]`) | 無効化された名称 |
 
-#### ロード失敗時の診断情報
+#### 加載失敗時の診断情報
 
-モジュール/アダプタがロードまたは初期化段階で例外を送出した場合、フレームワークはそのコンポーネントをスキップして他のコンポーネントのロードを続け、**ユーザーのコードフレームの要約**を出力します。これにより、通常の INFO レベルでもエラー箇所を特定でき、手動で DEBUG モードを再開する必要がありません。
+モジュール/アダプターが加載または初期化段階で例外を送出した場合、フレームワークはそのコンポーネントをスキップして他のコンポーネントの加載を継続し、**ユーザーコードのフレームの要約**を出力します。これにより、デフォルトの INFO レベル下でもエラー箇所を特定でき、手動で DEBUG モードを再開する必要がありません。
 
 ```
-[ERROR] [ModuleLoader] entry-point からモジュール MyModule のロードに失敗しました。スキップしました: 'NoneType' object has no attribute 'platform'
+[ERROR] [ModuleLoader] entry-point からモジュール MyModule の加載に失敗しました。スキップしました: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → ヒント: ログレベルを DEBUG に上げると完全なスタックトレースを表示できます。モジュール MyModule の実装コードを確認してください。
+  → ヒント: ログレベルを DEBUG に上げると完全なスタックトレースが表示されます。モジュール MyModule の実装コードを確認してください。
 ```
 
-診断情報は `ErisPulse.runtime.diagnostics` モジュールによって生成され、フレームワーク内部のフレームは自動的にフィルタリングされ、ユーザーのコードフレームのみが残ります。カスタムロードロジックで再利用する場合は：
+診断情報は `ErisPulse.runtime.diagnostics` モジュールによって生成され、フレームワーク内部のフレームは自動的にフィルタリングされ、ユーザーのコードフレームのみが保持されます。カスタム加載ロジックで再利用する場合は：
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -8558,40 +8626,40 @@ from ErisPulse.runtime import log_diagnostic
 try:
     risky_init()
 except Exception as e:
-    log_diagnostic(e)  # 自動的にユーザーのコードフレームを抽出して ERROR ログに記録
+    log_diagnostic(e)  # 自動的にユーザーのコードフレームを抽出し、ERROR ログに書き込みます
 ```
 
-このモジュールには、`extract_user_frame()`（構造化されたフレーム情報を返す）と `format_diagnostic_block()`（複数行のテキストを返す）という2つの低レベル関数もあります。
+このモジュールには、`extract_user_frame()`（構造化されたフレーム情報を返す）と `format_diagnostic_block()`（複数行のテキストを返す）という2つの低レベル関数も提供されています。
 
 ### 3. 登録層：register_to_manager
 
 Loader が出力したオブジェクトをマネージャーに登録し、`sdk.adapter` / `sdk.module` がそれらを認識できるようにします。
 
 ```python
-# アダプタの登録（すべて成功した場合は bool を返す）
+# アダプターの登録（すべて成功した場合に True を返す）
 await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.adapter)
 
 # モジュールの登録
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-登録後、アダプタは `sdk.adapter._adapters` に、モジュールクラスは `sdk.module` に登録されますが、**まだ起動/インスタンス化されていません**。
+登録後、アダプターは `sdk.adapter._adapters` に、モジュールクラスは `sdk.module` に登録されますが、**まだ起動/インスタンス化は行われていません**。
 
-### 4. アダプタの起動
+### 4. アダプターの起動
 
 ```python
-# すべての登録済みアダプタを起動
+# すべての登録済みアダプターを起動
 await sdk.adapter.startup()
 # または特定のプラットフォームを指定
 await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> 登録 ≠ 起動。`register_to_manager` は単に登録するだけです。`startup` でアダプタの `start()` を呼び出し、プラットフォームとの接続を確立します。
+> 登録 ≠ 起動。`register_to_manager` は単に登録するだけです。`startup` がアダプターの `start()` を呼び出し、プラットフォームとの接続を確立します。
 
 ### 5. モジュールの初期化
 
-モジュールはアダプタよりも1ステップ多く、**インスタンス化**して `sdk` にマウントする必要があります（これにより `sdk.MyModule.xxx` で呼び出すことができます）。このステップでは、モジュール間の依存宣言とトポロジカルソートも処理されます。
+モジュールはアダプターに比べて1段階多く、**インスタンス化**して `sdk` にマウントする必要があります（これにより `sdk.MyModule.xxx` と呼び出せるようになります）。この段階では、モジュール間の依存宣言とトポロジカルソートも処理されます。
 
 ```python
 success = await module_loader.initialize_modules(
@@ -8599,7 +8667,7 @@ success = await module_loader.initialize_modules(
 )
 ```
 
-インスタンス化に成功すると、モジュールは `sdk.<ModuleName>` に表示されます。
+インスタンス化が成功すると、モジュールは `sdk.<ModuleName>` に登録されます。
 
 ### 6. ルーティングサーバーの起動
 
@@ -8612,11 +8680,11 @@ await sdk.router.start(
 )
 ```
 
-ルーティングサーバーは、アダプタの Webhook / WebSocket コールバックを受け取ります。起動しないと、サーバーモードのアダプタはメッセージを受け取れません。
+ルーティングサーバーは、アダプターからの Webhook / WebSocket コールバックを受信します。これを起動しないと、server モードのアダプターはメッセージを受け取れません。
 
 ## 完全な手動起動の例
 
-以下のコードは `await sdk.init()` のコアプロセスと**等価**ですが、各ステップが明示的に表示されており、任意の段階でカスタムロジックを挿入できます。
+以下のコードは `await sdk.init()` のコアな処理と**等価**ですが、各ステップが明示的に公開されており、任意の段階でカスタムロジックを挿入することができます。
 
 ```python
 import asyncio
@@ -8624,30 +8692,30 @@ from ErisPulse import sdk
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
 async def manual_startup():
-    # 0. 環境準備（設定のロード、グローバル例外処理の登録）
-    #    _prepare_environment は init() 内部の前置ステップです。手動プロセスでも先に呼び出す必要があります。
-    #    そうしないと、Loader は設定を読み取れず、すべてのアダプタ/モジュールを誤って無効化と判断します。
+    # 0. 環境の準備（設定の読み込み、グローバルな例外処理の登録）
+    #    _prepare_environment は init() 内部の前置処理です。手動プロセスでも最初に呼び出す必要があります。
+    #    そうでないと、Loader は設定を読み取れず、すべてのアダプター/モジュールを無効と誤認します。
     if not await sdk._prepare_environment():
-        print("環境準備に失敗しました")
+        print("環境の準備に失敗しました")
         return False
 
-    # 1. ローダーの作成（内部でそれぞれ Finder を保持）
+    # 1. ローダーの作成（内部で Finder を保持）
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. 並列発見とロード（init() 内部と同じ gather を使用）
+    # 2. 並行して発見とロード（init() 内部と同じ gather を使用）
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
         module_loader.load(sdk.module),
     )
 
-    # 3. アダプタの登録
+    # 3. アダプターの登録
     await adapter_loader.register_to_manager(
         enabled_adapters, adapter_objs, sdk.adapter
     )
 
-    # 4. アダプタの起動
+    # 4. アダプターの起動
     if enabled_adapters:
         await sdk.adapter.startup()
 
@@ -8665,72 +8733,71 @@ async def manual_startup():
     # 7. ルーティングサーバーの起動
     await sdk.router.start(host="0.0.0.0", port=8000)
 
-    print("手動起動完了")
+    print("手動起動が完了しました")
     return True
 
 async def main():
     ok = await manual_startup()
     if ok:
-        # プログラムを維持する（手動プロセスでは自動的にブロックされない）
+        # 実行を維持するためのブロッキング（手動プロセスでは自動的にブロッキングされません）
         await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### いつ手動起動が必要か？
+### 手動起動が必要な場合
 
-ほとんどの場合、手動起動は必要ありません。`await sdk.run()` で上記のすべてが行われています。手動起動は以下のシナリオでのみ価値があります：
+ほとんどの場合、手動起動は**不要**です。`await sdk.run()` は上記のすべてを自動的に行います。手動起動は以下のシナリオでのみ価値があります：
 
-- **部分的なロード**：指定されたアダプタ/モジュールのみをロードし、他のものをスキップ
-- **動的登録**：実行時に条件に応じて新しいアダプタ/モジュールを登録
-- **カスタム順序**：デフォルトのロード順序を乱す（例：特定のモジュールを起動してからアダプタを起動）
-- **戦略の注入**：Loader にカスタムの厳密モードマネージャー、ロード戦略などを注入
-- **デバッグ/診断**：特定の段階で失敗した場合、手動で駆動して問題を特定
+- **部分的なロード**：指定されたアダプター/モジュールのみをロードし、他の部分はスキップ
+- **動的登録**：実行時に条件に応じて新しいアダプター/モジュールを登録
+- **カスタム順序**：デフォルトのロード順序を変更したい場合（例えば、特定のモジュールを先に起動してからアダプターを起動する）
+- **注入戦略**：Loader にカスタムの厳格モードマネージャー、ロード戦略などを注入
+- **デバッグ/診断**：特定の段階で失敗した際に、手動でプロセスを進めることで問題の原因を特定
 
 ## 実行時細粒度制御
 
-`sdk.run()` で起動した後でも、SDK 全体を再起動することなく、各サブシステムを個別に制御できます。
+`sdk.run()` を使用して起動しても、SDK 全体を再起動することなく、実行時に個々のサブシステムを個別に制御することができます。
 
 ### アダプタのホット起動/停止
 
 ```python
-# アダプタのホットリスタート（接続を修復し、他のプラットフォームに影響しない）
+# あるアダプタをホットリスタート（接続の修復、他のプラットフォームへの影響なし）
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
 # 実行中に新しいプラットフォームを起動
 await sdk.adapter.startup("telegram")
 
-# 一時的にプラットフォームをオフラインにする
+# 一時的に特定のプラットフォームをオフラインにする
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` はアダプタが**マネージャーに登録されている**ことを要求します。登録は `init()` / `run()` 内部で行われるため、これは起動**後の**細粒度制御です。
+> `adapter.startup()` は、アダプタが**マネージャーに登録済み**であることを要求します。登録は `init()` / `run()` の内部で行われるため、これは起動**後の**細粒度制御になります。
 
-### ルーティングサーバー
+### ルーターサーバー
 
 ```python
 # 一時的に webhook サーバーをオフラインにする
 await sdk.router.stop()
 
-# 再起動（例：ポートを変更した場合）
+# 再起動（たとえばポートが変更された場合）
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
 ### モジュールのオンデマンドロード
 
 ```python
-# モジュールを手動でロードする（おそらく遅延ロードのモジュール）
+# 手動でロード（遅延ロードされている可能性のある）モジュールをロード
 await sdk.load_module("MyModule")
-```
 
 ## エレガントなシャットダウン
 
-2.7.0 以降、`sdk.shutdown()` は**プログラムによるエレガントなシャットダウン**を提供します：シャットダウンイベントを設定し、`await sdk.run(keep_running=True)` で待機中のメインループが返り、`uninit()` がリソースのクリーンアップをトリガーします。
+2.7.0 以降、`sdk.shutdown()` は**プログラムによるエレガントなシャットダウン**を提供します：シャットダウンイベントを設定し、`await sdk.run(keep_running=True)` で待機中のメインループが返り、`uninit()` をトリガーしてリソースのクリーンアップを完了します。
 
 ```python
-# 任意のコルーチンで呼び出し、エレガントな終了をトリガー（run() は待機を返し、自動 uninit）
+# 任意のコルーチンで呼び出すことで、エレガントな終了をトリガー（run() が待機から戻り、自動的に uninit() が実行される）
 sdk.shutdown()
 ```
 
@@ -8739,63 +8806,64 @@ sdk.shutdown()
 ```python
 async def shutdown_after_idle():
     await asyncio.sleep(3600)
-    sdk.shutdown()  # 空き1時間後にエレガントに終了
+    sdk.shutdown()  # 空き状態が1時間続いたらエレガントに終了
 ```
 
-**シグナル処理**：`run()` 内部では `SIGTERM` / `SIGHUP` ハンドラが登録され、システムシグナルをエレガントなシャットダウンに変換します——コンテナ編成（Docker `docker stop`）や `systemd` でサービスを停止する場合、プロセスは `uninit()` のクリーンアップを完了してから強制終了されます。
+**シグナル処理**：`run()` 内部では `SIGTERM` / `SIGHUP` ハンドラを登録し、システムシグナルをエレガントなシャットダウンに変換します——コンテナオーケストレーション（Docker `docker stop`）や `systemd` でサービスを停止する場合、プロセスは強制終了ではなく `uninit()` のクリーンアップを完了します。
 
-- Windows は `loop.add_signal_handler` をサポートしていません。シグナルハンドラは自動的にスキップされます（`sdk.shutdown()` または Ctrl+C でシャットダウンをトリガーできます）
-- `sdk.shutdown()` を繰り返し呼び出すことは安全です（イベントが設定された後は無操作になります）
+- Windows では `loop.add_signal_handler` はサポートされていないため、シグナルハンドラは自動的にスキップされます（`sdk.shutdown()` または Ctrl+C でシャットダウンをトリガーすることは可能です）
+- `sdk.shutdown()` を繰り返し呼び出しても安全です（イベントが設定された後、再び呼び出しても無効になります）
 
-## アンロードプロセス
+[**English**](docs/ja/quick-start.md)
 
-起動の逆操作は `await sdk.uninit()` で、逆順でリソースを解放します：
+## アンインストールのフロー
+
+初期化の逆操作は `await sdk.uninit()` であり、これは逆の順序でクリーンアップを行います：
 
 1. すべてのアダプタを閉じる（`adapter.shutdown()`）
 2. すべてのモジュールをアンロードする
 3. すべてのイベントハンドラをクリーンアップする
 4. マネージャーと SDK 上のモジュール属性をクリーンアップする
 
-手動起動の場合は、終了前に `uninit()` を呼び出してエレガントなシャットダウンを保証してください：
+手動で起動する場合、正常終了を保証するために終了前に `uninit()` を呼び出すことを忘れないでください：
 
 ```python
 try:
-    await asyncio.Event().wait()   # プログラムを維持
+    await asyncio.Event().wait()   # 実行を維持
 finally:
     await sdk.uninit()
-```
 
-## リスタート
+## 再起動
 
-SDK には2種類のリスタート方法があります。どちらも事前にアンロードする必要はありません——フレームワークが自動的に処理します：
+SDK は 2 つの再起動方法を提供しており、自分でアンインストールする必要はありません。フレームワークが自動的に処理します。
 
 | 方法 | 呼び出し | 行動 | 適用シーン |
 |------|------|------|----------|
-| ホットリスタート | `await sdk.restart()` | 同一プロセス内で `uninit()` の後に再 `init()`、アダプタ/モジュールを再ロード | 設定の再ロード、モジュールのホットアップデート |
-| ハードリスタート | `await sdk.hard_restart()` | `uninit()` の後にプロセスを終了し、親プロセス（`epsdk run`）が新しいプロセスを起動 | メモリ/リソースリークが疑われる、完全にクリーンなリスタートが必要な場合 |
+| ホット再起動 | `await sdk.restart()` | 同一プロセス内で `uninit()` の後に再び `init()` を実行し、アダプタ/モジュールを再読み込み | 設定の再読み込み、ホットアップデートモジュール |
+| ハード再起動 | `await sdk.hard_restart()` | `uninit()` の後にプロセス全体を終了し、親プロセス（`epsdk run`）が新しいプロセスを起動 | メモリ/リソースのリークが疑われる場合、完全にクリーンな再起動が必要な場合 |
 
 ```python
-# ホットリスタート：同一プロセス内で再ロード（最も一般的）
+# ホット再起動：同一プロセス内で再読み込み（最も一般的）
 await sdk.restart()
 
-# ハードリスタート：プロセスを終了し、`epsdk run` で起動した場合にのみ有効
+# ハード再起動：プロセスを終了し、epsdk run で起動する必要あり
 await sdk.hard_restart()
 ```
 
-> **2点注意**：
-> 1. これらのメソッドはバックグラウンドタスクで実行され、**即座に `True` を返す**ことで「リスタートタスクがスケジュールされた」ことを示します。リスタートが完了したわけではありません。実際のリスタートはバックグラウンドで行われ、現在のイベントフローを中断しません。
-> 2. `hard_restart()` **は `epsdk run main.py` で起動した場合にのみ有効です**。その原理は、アンロード後に**終了コード 42** でプロセスを終了し、`epsdk run` の親プロセスが 42 を検出して新しいプロセスを再起動することです。`python main.py` で直接起動した場合は、42 で終了した後プロセスが終了し、自動的に再起動されません。
+> **2 点注意**：
+> 1. どちらのメソッドもバックグラウンドタスクで再起動を実行し、**即座に `True` を返すのは「再起動タスクがスケジュールされた」ことを意味し、「再起動が完了した」ことを示すものではありません**。実際の再起動はバックグラウンドで行われ、現在のイベントフローを中断しません。
+> 2. `hard_restart()` は **`epsdk run main.py` で起動した場合にのみ有効**です。その仕組みは、アンインストール後に**終了コード 42** でプロセスを終了させ、`epsdk run` の親プロセスが 42 を検知すると新しいプロセスを再起動します。`python main.py` で直接起動した場合は、終了コード 42 でプロセスが終了した後、自動的に再起動されません。
 
-### ハードリスタートはいつ使うか？
+### ハード再起動を使用すべきタイミング
 
-ハードリスタートは「より徹底的なリスタート」だけでなく、以下のシナリオでより適切で、場合によってはより効率的です：
+ハード再起動は単に「より徹底的な再起動」ではなく、以下のシナリオではホット再起動よりも適切で、場合によっては効率的です：
 
-- **バイナリライブラリ（C拡張）の副作用**：ホットリスタートは同じプロセス内で行われるため、C拡張、開いたファイルディスクリプタ、スレッドなどのプロセスレベルのリソースを解放できません。ハードリスタートでは新しいプロセスが起動され、これらの副作用は完全にクリアされます。
-- **リソースリークの調査**：メモリやハンドルのリークが疑われる場合、ハードリスタートはクリーンな環境を得ることができます。
-- **頻繁なリスタートに性能が敏感な場合**：ハードリスタートは同じプロセス内でアンロード→再ロードのオーバーヘッドを省くため、実際にはホットリスタートよりも効率的です。
+- **バイナリライブラリ（C拡張）の副作用**：ホット再起動は同一プロセス内で行われるため、C拡張、開かれたファイルディスクリプタ、スレッドなどのプロセスレベルのリソースを解放できません。ハード再起動は新しいプロセスを起動するため、これらの副作用を完全にクリアできます。
+- **リソースリークの調査**：メモリやハンドルのリークが疑われる場合、ハード再起動によりクリーンな環境を得ることができます。
+- **頻繁な再起動に性能が敏感な場合**：ハード再起動は同一プロセス内でアンロード→再ロードのオーバーヘッドを省くため、実際にはホット再起動よりも効率的です。
 
-> ダッシュボード管理パネルの「フレームワークリスタート」機能は、下層で `hard_restart()` を呼び出しています。
-> また、ハードリスタートは **`epsdk` の `run` コマンドを使用して起動しなければ効果がありません**。`run` コマンドは 42 退出コードを検出してプロセスを再起動するため、`python main.py` で起動した場合は 42 でプロセスが終了し、自動的に再起動されません。この点は注意してください！！
+> Dashboard 管理パネルの「フレームワーク再起動」機能は、下層で `hard_restart()` を呼び出しています。
+> さらに、ハード再起動には 1 つの要件があります！必ず `epsdk` の `run` コマンドを使用して起動する必要があります。そうでない場合、プログラムは単に 42 の終了コードを投げて終了するだけです。`run` コマンドは終了コード 42 を検知してプロセスを再起動するため、この点は注意が必要です！！！
 
 
 

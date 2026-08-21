@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1423,
+  "total_keywords": 1451,
   "keywords": {
     "\"Chat\": {": [
       {
@@ -178,6 +178,22 @@
         "title": "- \"zh-TW\"     — 繁体字中国語"
       }
     ],
+    "...": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 262,
+        "level": 1,
+        "title": "..."
+      }
+    ],
+    "... 他の操作 ...": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 274,
+        "level": 1,
+        "title": "... 他の操作 ..."
+      }
+    ],
     "0 成功（OK）": [
       {
         "document": "standards/api-response.md",
@@ -189,7 +205,7 @@
     "1. BaseAdapter 層（大半の場合オーバーライド不要）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 386,
+        "line": 384,
         "level": 3,
         "title": "1. BaseAdapter 層（大半の場合オーバーライド不要）"
       }
@@ -221,7 +237,7 @@
     "1. `{platform}_raw` フィールドの欠落": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 325,
+        "line": 333,
         "level": 3,
         "title": "1. `{platform}_raw` フィールドの欠落"
       }
@@ -248,14 +264,6 @@
         "line": 3,
         "level": 2,
         "title": "1. コア原則"
-      }
-    ],
-    "1. タイプとIDを指定する": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 7,
-        "level": 3,
-        "title": "1. タイプとIDを指定する"
       }
     ],
     "1. バージョン管理": [
@@ -346,6 +354,14 @@
         "title": "1. 単一責任の原則"
       }
     ],
+    "1. 型とIDを指定": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 9,
+        "level": 3,
+        "title": "1. 型とIDを指定"
+      }
+    ],
     "1. 基本情報のセクション": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -397,7 +413,7 @@
     "1. 発見層：Finder": [
       {
         "document": "advanced/startup.md",
-        "line": 53,
+        "line": 57,
         "level": 3,
         "title": "1. 発見層：Finder"
       }
@@ -477,7 +493,7 @@
     "10. SSE (Server-Sent Events) サポート": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 504,
+        "line": 502,
         "level": 3,
         "title": "10. SSE (Server-Sent Events) サポート"
       }
@@ -602,12 +618,12 @@
         "title": "2. GitHub Actions ワークフローの作成"
       }
     ],
-    "2. IDのみを指定する": [
+    "2. IDのみ指定": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 13,
+        "line": 15,
         "level": 3,
-        "title": "2. IDのみを指定する"
+        "title": "2. IDのみ指定"
       }
     ],
     "2. PyPI への公開": [
@@ -629,7 +645,7 @@
     "2. Send 内部クラス（大半の場合オーバーライド不要）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 417,
+        "line": 415,
         "level": 3,
         "title": "2. Send 内部クラス（大半の場合オーバーライド不要）"
       }
@@ -677,7 +693,7 @@
     "2. タイムスタンプ形式の誤り": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 334,
+        "line": 342,
         "level": 3,
         "title": "2. タイムスタンプ形式の誤り"
       }
@@ -752,14 +768,6 @@
         "title": "2. ログ記録"
       }
     ],
-    "2. ロード層：Loader": [
-      {
-        "document": "advanced/startup.md",
-        "line": 73,
-        "level": 3,
-        "title": "2. ロード層：Loader"
-      }
-    ],
     "2. 三層の並列構造 DSL": [
       {
         "document": "standards/api-action-spec.md",
@@ -774,6 +782,14 @@
         "line": 386,
         "level": 3,
         "title": "2. 入力値の検証"
+      }
+    ],
+    "2. 加載層：Loader": [
+      {
+        "document": "advanced/startup.md",
+        "line": 77,
+        "level": 3,
+        "title": "2. 加載層：Loader"
       }
     ],
     "2. 基本戻り構造": [
@@ -963,7 +979,7 @@
     "3. Request 内部クラス（大半の場合オーバーライド不要）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 441,
+        "line": 439,
         "level": 3,
         "title": "3. Request 内部クラス（大半の場合オーバーライド不要）"
       }
@@ -971,7 +987,7 @@
     "3. `self` フィールドの欠落": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 348,
+        "line": 356,
         "level": 3,
         "title": "3. `self` フィールドの欠落"
       }
@@ -1107,17 +1123,17 @@
     "3. 登録層：register_to_manager": [
       {
         "document": "advanced/startup.md",
-        "line": 122,
+        "line": 126,
         "level": 3,
         "title": "3. 登録層：register_to_manager"
       }
     ],
-    "3. 送信アカウントを指定する": [
+    "3. 送信アカウントを指定": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 19,
+        "line": 21,
         "level": 3,
-        "title": "3. 送信アカウントを指定する"
+        "title": "3. 送信アカウントを指定"
       }
     ],
     "3.1 チェーンメソッド (Chain calls)": [
@@ -1248,6 +1264,14 @@
         "title": "3xxxx アクション実行エラー（Execution Error）"
       }
     ],
+    "3つの方法で取得されるのはすべてラグロードプロキシ（モジュールがロードされていない場合）、": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 158,
+        "level": 1,
+        "title": "3つの方法で取得されるのはすべてラグロードプロキシ（モジュールがロードされていない場合）、"
+      }
+    ],
     "4. Event 便利メソッド": [
       {
         "document": "standards/request-action-spec.md",
@@ -1256,12 +1280,12 @@
         "title": "4. Event 便利メソッド"
       }
     ],
-    "4. `detail_type` に非標準の値を使用": [
+    "4. `detail_type` に標準外の値を使用": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 359,
+        "line": 367,
         "level": 3,
-        "title": "4. `detail_type` に非標準の値を使用"
+        "title": "4. `detail_type` に標準外の値を使用"
       }
     ],
     "4. `self` フィールドの自動発見": [
@@ -1272,12 +1296,12 @@
         "title": "4. `self` フィールドの自動発見"
       }
     ],
-    "4. アダプタの起動": [
+    "4. アダプターの起動": [
       {
         "document": "advanced/startup.md",
-        "line": 136,
+        "line": 140,
         "level": 3,
-        "title": "4. アダプタの起動"
+        "title": "4. アダプターの起動"
       }
     ],
     "4. イメージをパブリックに設定する": [
@@ -1352,12 +1376,12 @@
         "title": "4. 発行済みモジュールの管理"
       }
     ],
-    "4. 組み合わせて使用する": [
+    "4. 組み合わせて使用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 25,
+        "line": 27,
         "level": 3,
-        "title": "4. 組み合わせて使用する"
+        "title": "4. 組み合わせて使用"
       }
     ],
     "4.1 Eventメソッド一覧": [
@@ -1467,7 +1491,7 @@
     "5. モジュールの初期化": [
       {
         "document": "advanced/startup.md",
-        "line": 148,
+        "line": 152,
         "level": 3,
         "title": "5. モジュールの初期化"
       }
@@ -1491,7 +1515,7 @@
     "5. 往復の一貫性": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 363,
+        "line": 371,
         "level": 3,
         "title": "5. 往復の一貫性"
       }
@@ -1632,6 +1656,14 @@
         "title": "5.5 アダプター `__init__` の注意事項"
       }
     ],
+    "5秒後に送信": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 359,
+        "level": 1,
+        "title": "5秒後に送信"
+      }
+    ],
     "6. API 使用例": [
       {
         "document": "standards/session-types.md",
@@ -1651,7 +1683,7 @@
     "6. ルーティングサーバーの起動": [
       {
         "document": "advanced/startup.md",
-        "line": 160,
+        "line": 164,
         "level": 3,
         "title": "6. ルーティングサーバーの起動"
       }
@@ -1979,7 +2011,7 @@
     "9. 接続情報とルート発見": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 463,
+        "line": 461,
         "level": 3,
         "title": "9. 接続情報とルート発見"
       }
@@ -2060,6 +2092,62 @@
         "line": 127,
         "level": 4,
         "title": "@メッセージ関連"
+      }
+    ],
+    "@メンション": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 160,
+        "level": 1,
+        "title": "@メンション"
+      }
+    ],
+    "@ユーザー + メッセージの返信": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 657,
+        "level": 1,
+        "title": "@ユーザー + メッセージの返信"
+      }
+    ],
+    "@全員": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 163,
+        "level": 1,
+        "title": "@全員"
+      }
+    ],
+    "@全員 + 複数の修飾": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 660,
+        "level": 1,
+        "title": "@全員 + 複数の修飾"
+      }
+    ],
+    "@全員メンション": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 113,
+        "level": 1,
+        "title": "@全員メンション"
+      }
+    ],
+    "@特定のユーザー": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 103,
+        "level": 1,
+        "title": "@特定のユーザー"
+      }
+    ],
+    "@複数のユーザー": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 106,
+        "level": 1,
+        "title": "@複数のユーザー"
       }
     ],
     "A2UI 消息段 (a2ui)": [
@@ -2168,12 +2256,12 @@
         "title": "API標準"
       }
     ],
-    "Account メソッド": [
+    "Adapter プロジェクトを直接作成": [
       {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 233,
-        "level": 3,
-        "title": "Account メソッド"
+        "document": "user-guide/cli-reference.md",
+        "line": 586,
+        "level": 1,
+        "title": "Adapter プロジェクトを直接作成"
       }
     ],
     "AdapterManager 适配器管理器": [
@@ -2182,22 +2270,6 @@
         "line": 48,
         "level": 2,
         "title": "AdapterManager 适配器管理器"
-      }
-    ],
-    "At メソッド": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 91,
-        "level": 3,
-        "title": "At メソッド"
-      }
-    ],
-    "AtAll メソッド": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 101,
-        "level": 3,
-        "title": "AtAll メソッド"
       }
     ],
     "BaseAdapter メソッド": [
@@ -2211,9 +2283,17 @@
     "BaseConverter 基底クラス（推奨）": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 19,
+        "line": 23,
         "level": 2,
         "title": "BaseConverter 基底クラス（推奨）"
+      }
+    ],
+    "BaseModule 基底クラス": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 104,
+        "level": 3,
+        "title": "BaseModule 基底クラス"
       }
     ],
     "Bot ステータス確認": [
@@ -2356,12 +2436,12 @@
         "title": "Conversation 多輪対話"
       }
     ],
-    "Converter の責務": [
+    "Converter の責任": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 5,
+        "line": 7,
         "level": 2,
-        "title": "Converter の責務"
+        "title": "Converter の責任"
       }
     ],
     "Cursor への接続": [
@@ -2370,22 +2450,6 @@
         "line": 93,
         "level": 3,
         "title": "Cursor への接続"
-      }
-    ],
-    "DMの処理": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 380,
-        "level": 3,
-        "title": "DMの処理"
-      }
-    ],
-    "DM（Direct Message）送信": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 133,
-        "level": 3,
-        "title": "DM（Direct Message）送信"
       }
     ],
     "Dashboard からのモジュールインストール": [
@@ -2412,20 +2476,20 @@
         "title": "Discord"
       }
     ],
-    "Discord プラットフォーム仕様ドキュメント": [
+    "Discord プラットフォームの機能ドキュメント": [
       {
         "document": "platform-guide/discord.md",
         "line": 1,
         "level": 1,
-        "title": "Discord プラットフォーム仕様ドキュメント"
+        "title": "Discord プラットフォームの機能ドキュメント"
       }
     ],
-    "Discord 固有メソッドの使用": [
+    "Discord 特有のメソッドの使用": [
       {
         "document": "platform-guide/discord.md",
-        "line": 413,
+        "line": 421,
         "level": 3,
-        "title": "Discord 固有メソッドの使用"
+        "title": "Discord 特有のメソッドの使用"
       }
     ],
     "Docker Hub へも同時に公開": [
@@ -2476,10 +2540,18 @@
         "title": "Docker 方式"
       }
     ],
+    "Embed を含むメッセージ": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 269,
+        "level": 1,
+        "title": "Embed を含むメッセージ"
+      }
+    ],
     "Embed メッセージの送信": [
       {
         "document": "platform-guide/discord.md",
-        "line": 396,
+        "line": 404,
         "level": 3,
         "title": "Embed メッセージの送信"
       }
@@ -2588,18 +2660,10 @@
         "title": "ErisPulse-Takumi"
       }
     ],
-    "Event Mixin メソッド": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 284,
-        "level": 3,
-        "title": "Event Mixin メソッド"
-      }
-    ],
     "Event Mixin 拡張メソッド": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 254,
+        "line": 259,
         "level": 2,
         "title": "Event Mixin 拡張メソッド"
       }
@@ -2636,6 +2700,14 @@
         "title": "Event 包装クラスの詳細解説"
       }
     ],
+    "Event 包装类中的修飾メソッドの使用": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 161,
+        "level": 2,
+        "title": "Event 包装类中的修飾メソッドの使用"
+      }
+    ],
     "Event 快捷方法": [
       {
         "document": "platform-guide/onebot11.md",
@@ -2663,17 +2735,9 @@
     "Gateway Intents": [
       {
         "document": "platform-guide/discord.md",
-        "line": 50,
+        "line": 56,
         "level": 3,
         "title": "Gateway Intents"
-      }
-    ],
-    "Gateway 接続": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 318,
-        "level": 2,
-        "title": "Gateway 接続"
       }
     ],
     "HTML をレンダリング": [
@@ -2799,7 +2863,7 @@
     "LazyModule クラス": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 16,
+        "line": 20,
         "level": 3,
         "title": "LazyModule クラス"
       }
@@ -2820,12 +2884,12 @@
         "title": "MCP サーバー"
       }
     ],
-    "Matrixプラットフォーム特性ドキュメント": [
+    "Matrixプラットフォームの特徴ドキュメント": [
       {
         "document": "platform-guide/matrix.md",
         "line": 1,
         "level": 1,
-        "title": "Matrixプラットフォーム特性ドキュメント"
+        "title": "Matrixプラットフォームの特徴ドキュメント"
       }
     ],
     "Mentionメッセージセグメント": [
@@ -2844,6 +2908,14 @@
         "title": "MessageBuilder 詳細"
       }
     ],
+    "Module プロジェクトを直接作成": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 583,
+        "level": 1,
+        "title": "Module プロジェクトを直接作成"
+      }
+    ],
     "Module モジュール": [
       {
         "document": "api-reference/core-modules.md",
@@ -2855,7 +2927,7 @@
     "MyAdapter/Converter.py": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 272,
+        "line": 270,
         "level": 1,
         "title": "MyAdapter/Converter.py"
       }
@@ -2863,7 +2935,7 @@
     "MyAdapter/Core.py": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 111,
+        "line": 109,
         "level": 1,
         "title": "MyAdapter/Core.py"
       }
@@ -2871,17 +2943,17 @@
     "MyAdapter/__init__.py": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 379,
+        "line": 377,
         "level": 1,
         "title": "MyAdapter/__init__.py"
       }
     ],
-    "OB12 メッセージセグメントの逆変換 (Raw_ob12)": [
+    "OB12 メッセージセグメントの逆変換（Raw_ob12）": [
       {
         "document": "platform-guide/email.md",
-        "line": 106,
+        "line": 114,
         "level": 3,
-        "title": "OB12 メッセージセグメントの逆変換 (Raw_ob12)"
+        "title": "OB12 メッセージセグメントの逆変換（Raw_ob12）"
       }
     ],
     "OneBot11": [
@@ -2940,6 +3012,14 @@
         "title": "OneBot12プラットフォームの特徴"
       }
     ],
+    "OneBot12メッセージのサポート": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 121,
+        "level": 3,
+        "title": "OneBot12メッセージのサポート"
+      }
+    ],
     "OneBot12メッセージサポート": [
       {
         "document": "platform-guide/ideaura.md",
@@ -2950,12 +3030,6 @@
       {
         "document": "platform-guide/kook.md",
         "line": 105,
-        "level": 3,
-        "title": "OneBot12メッセージサポート"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 111,
         "level": 3,
         "title": "OneBot12メッセージサポート"
       },
@@ -2991,7 +3065,7 @@
     "Opcode の説明": [
       {
         "document": "platform-guide/discord.md",
-        "line": 330,
+        "line": 338,
         "level": 3,
         "title": "Opcode の説明"
       }
@@ -3015,7 +3089,7 @@
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 518,
+        "line": 531,
         "level": 3,
         "title": "PascalCase 命名"
       }
@@ -3068,18 +3142,10 @@
         "title": "QQBotプラットフォーム特性"
       }
     ],
-    "Reply メソッド": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 108,
-        "level": 3,
-        "title": "Reply メソッド"
-      }
-    ],
     "RouteGroup での使用": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 551,
+        "line": 549,
         "level": 4,
         "title": "RouteGroup での使用"
       }
@@ -3100,12 +3166,20 @@
         "title": "SDK との関係"
       }
     ],
-    "SDK トップレベルエントリ一覧": [
+    "SDK オブジェクト": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 181,
+        "level": 3,
+        "title": "SDK オブジェクト"
+      }
+    ],
+    "SDK トップレベルエントリーポイント一覧": [
       {
         "document": "advanced/startup.md",
-        "line": 9,
+        "line": 11,
         "level": 2,
-        "title": "SDK トップレベルエントリ一覧"
+        "title": "SDK トップレベルエントリーポイント一覧"
       }
     ],
     "SDK 核心アーキテクチャ": [
@@ -3114,6 +3188,14 @@
         "line": 7,
         "level": 2,
         "title": "SDK 核心アーキテクチャ"
+      }
+    ],
+    "SDKを介してラグロードモジュールにアクセス": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 143,
+        "level": 1,
+        "title": "SDKを介してラグロードモジュールにアクセス"
       }
     ],
     "SQL チェーンクエリ": [
@@ -3215,7 +3297,7 @@
     "SseEmitter API": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 542,
+        "line": 540,
         "level": 4,
         "title": "SseEmitter API"
       }
@@ -3247,7 +3329,7 @@
     "Sync API 接続": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 310,
+        "line": 318,
         "level": 2,
         "title": "Sync API 接続"
       }
@@ -3268,14 +3350,6 @@
         "title": "TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL"
       }
     ],
-    "Task オブジェクト": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 565,
-        "level": 3,
-        "title": "Task オブジェクト"
-      }
-    ],
     "Telegram": [
       {
         "document": "standards/session-types.md",
@@ -3284,12 +3358,20 @@
         "title": "Telegram"
       }
     ],
-    "Telegramプラットフォーム特性ドキュメント": [
+    "Telegramプラットフォームの特徴ドキュメント": [
       {
         "document": "platform-guide/telegram.md",
         "line": 1,
         "level": 1,
-        "title": "Telegramプラットフォーム特性ドキュメント"
+        "title": "Telegramプラットフォームの特徴ドキュメント"
+      }
+    ],
+    "Text/Image/Voice/Video/File は基底クラスから継承され、自動的に Raw_ob12 に委譲されます": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 595,
+        "level": 1,
+        "title": "Text/Image/Voice/Video/File は基底クラスから継承され、自動的に Raw_ob12 に委譲されます"
       }
     ],
     "Token更新": [
@@ -3300,12 +3382,12 @@
         "title": "Token更新"
       }
     ],
-    "Using メソッド": [
+    "Toの前にルールを設定しても、Toで作成されたインスタンスに伝播します": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 216,
-        "level": 3,
-        "title": "Using メソッド"
+        "line": 397,
+        "level": 1,
+        "title": "Toの前にルールを設定しても、Toで作成されたインスタンスに伝播します"
       }
     ],
     "WSMessage": [
@@ -3667,7 +3749,7 @@
     "`__init__` 注意事項": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 382,
+        "line": 380,
         "level": 2,
         "title": "`__init__` 注意事項"
       }
@@ -3712,12 +3794,28 @@
         "title": "`self` フィールドの拡張情報"
       }
     ],
+    "await を直接使用して結果を取得します": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 268,
+        "level": 1,
+        "title": "await を直接使用して結果を取得します"
+      }
+    ],
     "bot_id を使用してメッセージを送信（対応するアカウントを自動的に照合）": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 515,
         "level": 1,
         "title": "bot_id を使用してメッセージを送信（対応するアカウントを自動的に照合）"
+      }
+    ],
+    "bot_id を使用（イベント内の self.user_id に相当）": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 239,
+        "level": 1,
+        "title": "bot_id を使用（イベント内の self.user_id に相当）"
       }
     ],
     "call_api メソッド": [
@@ -3803,7 +3901,7 @@
     "convert() メソッド": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 67,
+        "line": 71,
         "level": 2,
         "title": "convert() メソッド"
       }
@@ -3824,12 +3922,12 @@
         "title": "create"
       }
     ],
-    "detail_type マッピング": [
+    "def Text(self, text: str):": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 200,
-        "level": 3,
-        "title": "detail_type マッピング"
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 597,
+        "level": 1,
+        "title": "def Text(self, text: str):"
       }
     ],
     "disconnect — 断开连接": [
@@ -3838,14 +3936,6 @@
         "line": 304,
         "level": 4,
         "title": "disconnect — 断开连接"
-      }
-    ],
-    "discord_embed メッセージセグメント": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 299,
-        "level": 3,
-        "title": "discord_embed メッセージセグメント"
       }
     ],
     "docker-compose.yml": [
@@ -3920,6 +4010,22 @@
         "title": "is_active"
       }
     ],
+    "lazy_load=False を推奨するシナリオ": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 216,
+        "level": 3,
+        "title": "lazy_load=False を推奨するシナリオ"
+      }
+    ],
+    "lazy_load=True を推奨するシナリオ": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 211,
+        "level": 3,
+        "title": "lazy_load=True を推奨するシナリオ"
+      }
+    ],
     "len() / bool()": [
       {
         "document": "advanced/message-builder.md",
@@ -3950,6 +4056,14 @@
         "line": 240,
         "level": 3,
         "title": "meta イベントの種類"
+      }
+    ],
+    "meta フィールドの i18n 対応": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 159,
+        "level": 4,
+        "title": "meta フィールドの i18n 対応"
       }
     ],
     "on_load メソッド": [
@@ -3990,6 +4104,22 @@
         "line": 36,
         "level": 4,
         "title": "private"
+      }
+    ],
+    "results = [Text結果, Image結果, Text結果]": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 420,
+        "level": 1,
+        "title": "results = [Text結果, Image結果, Text結果]"
+      }
+    ],
+    "return self.Raw_ob12([{\"type\": \"text\", \"data\": {\"text\": text}}])": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 598,
+        "level": 1,
+        "title": "return self.Raw_ob12([{\"type\": \"text\", \"data\": {\"text\": text}}])"
       }
     ],
     "run": [
@@ -4218,14 +4348,6 @@
         "title": "あなたのモジュールをリリースする"
       }
     ],
-    "いつ手動起動が必要か？": [
-      {
-        "document": "advanced/startup.md",
-        "line": 237,
-        "level": 3,
-        "title": "いつ手動起動が必要か？"
-      }
-    ],
     "しかし Bot 級は Music のみ許可 → その Bot は最終的に Music のみ使用可能！": [
       {
         "document": "advanced/scope.md",
@@ -4237,7 +4359,7 @@
     "すぐにロード": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 267,
+        "line": 265,
         "level": 3,
         "title": "すぐにロード"
       }
@@ -4250,12 +4372,36 @@
         "title": "すべての i18n フィールドが現在の言語の文字列に解決されています"
       }
     ],
+    "すべてのコンポーネントをアップグレード": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 524,
+        "level": 1,
+        "title": "すべてのコンポーネントをアップグレード"
+      }
+    ],
+    "すべてのコンポーネントを一覧表示": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 498,
+        "level": 1,
+        "title": "すべてのコンポーネントを一覧表示"
+      }
+    ],
     "すべてのサポート言語を表示する": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 371,
         "level": 1,
         "title": "すべてのサポート言語を表示する"
+      }
+    ],
+    "すべてのタイプのスタブを生成": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 560,
+        "level": 1,
+        "title": "すべてのタイプのスタブを生成"
       }
     ],
     "すべてのメッセージを監視": [
@@ -4282,6 +4428,14 @@
         "title": "その他のメッセージタイプ"
       }
     ],
+    "その後、モジュールを使用します": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 183,
+        "level": 1,
+        "title": "その後、モジュールを使用します"
+      }
+    ],
     "なぜ I18nClass が推奨されますか？": [
       {
         "document": "advanced/i18n.md",
@@ -4306,10 +4460,26 @@
         "title": "ほとんどのアダプタ：bot_id は実行時に自動的に取得され、設定は不要"
       }
     ],
+    "まず Task を保存し、後で待機します": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 272,
+        "level": 1,
+        "title": "まず Task を保存し、後で待機します"
+      }
+    ],
+    "まずモジュールを明示的にロードします": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 180,
+        "level": 1,
+        "title": "まずモジュールを明示的にロードします"
+      }
+    ],
     "まとめ": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 454,
+        "line": 452,
         "level": 3,
         "title": "まとめ"
       }
@@ -4360,6 +4530,14 @@
         "title": "アカウントを指定して送信"
       }
     ],
+    "アカウント名を使用": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 236,
+        "level": 1,
+        "title": "アカウント名を使用"
+      }
+    ],
     "アカウント名を使用してメッセージを送信": [
       {
         "document": "platform-guide/yunhu.md",
@@ -4376,14 +4554,6 @@
         "title": "アカウント構成ファイル"
       }
     ],
-    "アカウント管理": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 214,
-        "level": 2,
-        "title": "アカウント管理"
-      }
-    ],
     "アカウント設定": [
       {
         "document": "platform-guide/onebot12.md",
@@ -4392,20 +4562,20 @@
         "title": "アカウント設定"
       }
     ],
-    "アカウント設定 (EmailAdapter.accounts)": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 36,
-        "level": 3,
-        "title": "アカウント設定 (EmailAdapter.accounts)"
-      }
-    ],
     "アカウント設定フィールド": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 367,
         "level": 3,
         "title": "アカウント設定フィールド"
+      }
+    ],
+    "アカウント設定（EmailAdapter.accounts）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 42,
+        "level": 3,
+        "title": "アカウント設定（EmailAdapter.accounts）"
       }
     ],
     "アクセス制御": [
@@ -4432,6 +4602,14 @@
         "title": "アダプタによるメタイベント送信"
       }
     ],
+    "アダプタのみを一覧表示": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 501,
+        "level": 1,
+        "title": "アダプタのみを一覧表示"
+      }
+    ],
     "アダプタのみを表示": [
       {
         "document": "user-guide/cli-reference.md",
@@ -4451,7 +4629,7 @@
     "アダプタのホット起動/停止": [
       {
         "document": "advanced/startup.md",
-        "line": 251,
+        "line": 255,
         "level": 3,
         "title": "アダプタのホット起動/停止"
       }
@@ -4638,20 +4816,20 @@
         "title": "アダプタ開発者にとって"
       }
     ],
+    "アップグレード可能なコンポーネントのみを一覧表示": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 504,
+        "level": 1,
+        "title": "アップグレード可能なコンポーネントのみを一覧表示"
+      }
+    ],
     "アニメーションの例": [
       {
         "document": "ecosystem/takumi.md",
         "line": 193,
         "level": 3,
         "title": "アニメーションの例"
-      }
-    ],
-    "アンロードプロセス": [
-      {
-        "document": "advanced/startup.md",
-        "line": 306,
-        "level": 2,
-        "title": "アンロードプロセス"
       }
     ],
     "アーキテクチャ概要": [
@@ -4770,14 +4948,6 @@
         "title": "イベントタイプの概要"
       }
     ],
-    "イベントタイプマッピング": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 207,
-        "level": 3,
-        "title": "イベントタイプマッピング"
-      }
-    ],
     "イベントデータへのアクセス": [
       {
         "document": "getting-started/event-handling.md",
@@ -4789,7 +4959,7 @@
     "イベントハンドラのライフサイクル": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 253,
+        "line": 251,
         "level": 3,
         "title": "イベントハンドラのライフサイクル"
       }
@@ -4797,7 +4967,7 @@
     "イベントハンドラの登録": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 237,
+        "line": 235,
         "level": 3,
         "title": "イベントハンドラの登録"
       }
@@ -4818,28 +4988,12 @@
         "title": "イベントフロー"
       }
     ],
-    "イベントラッパークラスでの修飾メソッドの使用": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 153,
-        "level": 2,
-        "title": "イベントラッパークラスでの修飾メソッドの使用"
-      }
-    ],
     "イベントリスナー": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 155,
         "level": 3,
         "title": "イベントリスナー"
-      }
-    ],
-    "イベント例": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 182,
-        "level": 3,
-        "title": "イベント例"
       }
     ],
     "イベント内のアカウント識別": [
@@ -4853,7 +5007,7 @@
     "イベント処理": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 235,
+        "line": 233,
         "level": 2,
         "title": "イベント処理"
       }
@@ -4867,12 +5021,6 @@
       }
     ],
     "イベント処理の例": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 282,
-        "level": 2,
-        "title": "イベント処理の例"
-      },
       {
         "document": "platform-guide/ideaura.md",
         "line": 284,
@@ -4911,7 +5059,7 @@
     "イベント処理の重要なステップ": [
       {
         "document": "architecture.md",
-        "line": 117,
+        "line": 107,
         "level": 3,
         "title": "イベント処理の重要なステップ"
       }
@@ -4919,7 +5067,7 @@
     "イベント処理フロー": [
       {
         "document": "architecture.md",
-        "line": 96,
+        "line": 86,
         "level": 2,
         "title": "イベント処理フロー"
       }
@@ -4994,12 +5142,28 @@
         "title": "イベント配信メカニズム"
       }
     ],
+    "イベント駆動の遅延活性化（`activate_on`）トリガー構造": [
+      {
+        "document": "architecture.md",
+        "line": 172,
+        "level": 3,
+        "title": "イベント駆動の遅延活性化（`activate_on`）トリガー構造"
+      }
+    ],
     "イベント駆動型アーキテクチャ": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 5,
         "level": 2,
         "title": "イベント駆動型アーキテクチャ"
+      }
+    ],
+    "イベント駆動型遅延起動（activate_on）": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 36,
+        "level": 2,
+        "title": "イベント駆動型遅延起動（activate_on）"
       }
     ],
     "インストールと有効化": [
@@ -5060,12 +5224,6 @@
     ],
     "インタラクションイベントの処理": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 433,
-        "level": 3,
-        "title": "インタラクションイベントの処理"
-      },
-      {
         "document": "platform-guide/qqbot.md",
         "line": 325,
         "level": 3,
@@ -5086,14 +5244,6 @@
         "line": 362,
         "level": 1,
         "title": "インタラクティブに言語を選択"
-      }
-    ],
-    "インタラクティブインストール": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 467,
-        "level": 2,
-        "title": "インタラクティブインストール"
       }
     ],
     "インタラクティブメソッド": [
@@ -5136,22 +5286,6 @@
         "title": "インポート"
       }
     ],
-    "インラインキーボード付きメッセージ": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 234,
-        "level": 4,
-        "title": "インラインキーボード付きメッセージ"
-      }
-    ],
-    "インラインクエリイベント": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 221,
-        "level": 4,
-        "title": "インラインクエリイベント"
-      }
-    ],
     "ウィンドウの登録解除": [
       {
         "document": "ecosystem/dashboard.md",
@@ -5170,20 +5304,8 @@
     ],
     "エラーコードの説明": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 172,
-        "level": 3,
-        "title": "エラーコードの説明"
-      },
-      {
         "document": "platform-guide/kook.md",
         "line": 158,
-        "level": 3,
-        "title": "エラーコードの説明"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 148,
         "level": 3,
         "title": "エラーコードの説明"
       },
@@ -5234,14 +5356,6 @@
         "line": 465,
         "level": 2,
         "title": "エラー処理"
-      }
-    ],
-    "エレガントなシャットダウン": [
-      {
-        "document": "advanced/startup.md",
-        "line": 284,
-        "level": 2,
-        "title": "エレガントなシャットダウン"
       }
     ],
     "エントリの登録": [
@@ -5372,6 +5486,12 @@
         "line": 76,
         "level": 3,
         "title": "クイック初期化"
+      },
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 573,
+        "level": 1,
+        "title": "クイック初期化"
       }
     ],
     "クエリ条件の再利用": [
@@ -5398,18 +5518,18 @@
         "title": "グループチャットメッセージを監視"
       }
     ],
-    "グループチャットメッセージ（メンションを含む）": [
+    "グループメッセージ": [
       {
-        "document": "platform-guide/telegram.md",
-        "line": 184,
-        "level": 4,
-        "title": "グループチャットメッセージ（メンションを含む）"
+        "document": "platform-guide/matrix.md",
+        "line": 190,
+        "level": 1,
+        "title": "グループメッセージ"
       }
     ],
     "グループメッセージの処理": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 335,
+        "line": 345,
         "level": 3,
         "title": "グループメッセージの処理"
       },
@@ -5474,20 +5594,28 @@
         "title": "グローバルパラメータ"
       }
     ],
-    "グローバル設定": [
+    "グローバル構成": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 32,
+        "line": 110,
         "level": 3,
-        "title": "グローバル設定"
+        "title": "グローバル構成"
       }
     ],
-    "グローバル設定 (EmailAdapter)": [
+    "グローバル設定（EmailAdapter）": [
       {
         "document": "platform-guide/email.md",
-        "line": 23,
+        "line": 29,
         "level": 3,
-        "title": "グローバル設定 (EmailAdapter)"
+        "title": "グローバル設定（EmailAdapter）"
+      }
+    ],
+    "ゲートウェイ接続": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 326,
+        "level": 2,
+        "title": "ゲートウェイ接続"
       }
     ],
     "コア API": [
@@ -5506,12 +5634,12 @@
         "title": "コアとなる相違点"
       }
     ],
-    "コアの違い点": [
+    "コアな違い": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 184,
+        "document": "platform-guide/email.md",
+        "line": 127,
         "level": 3,
-        "title": "コアの違い点"
+        "title": "コアな違い"
       }
     ],
     "コアコンポーネント": [
@@ -5562,6 +5690,12 @@
     ],
     "コア原則": [
       {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 15,
+        "level": 3,
+        "title": "コア原則"
+      },
+      {
         "document": "standards/README.md",
         "line": 18,
         "level": 3,
@@ -5582,6 +5716,14 @@
         "line": 17,
         "level": 3,
         "title": "コマンド"
+      }
+    ],
+    "コマンド dict 形式の宣言パラメータ": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 72,
+        "level": 3,
+        "title": "コマンド dict 形式の宣言パラメータ"
       }
     ],
     "コマンドが反応しない？": [
@@ -5740,30 +5882,6 @@
         "title": "コンバーターの例"
       }
     ],
-    "コンポーネントのアップグレード": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 523,
-        "level": 3,
-        "title": "コンポーネントのアップグレード"
-      }
-    ],
-    "コンポーネントのアンインストール": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 513,
-        "level": 3,
-        "title": "コンポーネントのアンインストール"
-      }
-    ],
-    "コンポーネントの一覧表示": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 497,
-        "level": 3,
-        "title": "コンポーネントの一覧表示"
-      }
-    ],
     "コンポーネント関係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5812,18 +5930,10 @@
         "title": "コード品質"
       }
     ],
-    "コールバッククエリイベント": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 208,
-        "level": 4,
-        "title": "コールバッククエリイベント"
-      }
-    ],
     "コールバッククエリ関連": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 271,
+        "line": 276,
         "level": 3,
         "title": "コールバッククエリ関連"
       }
@@ -5922,12 +6032,6 @@
     ],
     "サポートされるメッセージ送信タイプ": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 69,
-        "level": 2,
-        "title": "サポートされるメッセージ送信タイプ"
-      },
-      {
         "document": "platform-guide/onebot12.md",
         "line": 20,
         "level": 2,
@@ -5956,20 +6060,8 @@
         "title": "サポートするメッセージ送信タイプ"
       },
       {
-        "document": "platform-guide/matrix.md",
-        "line": 58,
-        "level": 2,
-        "title": "サポートするメッセージ送信タイプ"
-      },
-      {
         "document": "platform-guide/onebot11.md",
         "line": 20,
-        "level": 2,
-        "title": "サポートするメッセージ送信タイプ"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 19,
         "level": 2,
         "title": "サポートするメッセージ送信タイプ"
       },
@@ -6084,6 +6176,14 @@
         "title": "ストレージバックエンド抽象化"
       }
     ],
+    "スレッドメッセージ": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 230,
+        "level": 1,
+        "title": "スレッドメッセージ"
+      }
+    ],
     "セキュリティ": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -6132,14 +6232,6 @@
         "title": "ソート、ページネーション"
       }
     ],
-    "タイプのスタブ生成": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 559,
-        "level": 3,
-        "title": "タイプのスタブ生成"
-      }
-    ],
     "タイプのスタブ生成（IDEの補完）": [
       {
         "document": "getting-started/ide-completion.md",
@@ -6172,6 +6264,14 @@
         "title": "タイマージョブ"
       }
     ],
+    "タイムアウト + リトライ：各試行10秒、最大3回": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 330,
+        "level": 1,
+        "title": "タイムアウト + リトライ：各試行10秒、最大3回"
+      }
+    ],
     "タイムアウトとリトライ": [
       {
         "document": "advanced/http-client.md",
@@ -6180,20 +6280,20 @@
         "title": "タイムアウトとリトライ"
       }
     ],
-    "タイムアウト時の自動キャンセル（Timeout）": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 310,
-        "level": 3,
-        "title": "タイムアウト時の自動キャンセル（Timeout）"
-      }
-    ],
     "タプルを辞書に変換": [
       {
         "document": "advanced/sql-builder.md",
         "line": 109,
         "level": 4,
         "title": "タプルを辞書に変換"
+      }
+    ],
+    "ダイレクトメッセージの送信": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 141,
+        "level": 3,
+        "title": "ダイレクトメッセージの送信"
       }
     ],
     "ダッシュボードの自動登録": [
@@ -6242,12 +6342,6 @@
         "line": 298,
         "level": 3,
         "title": "チェーン修飾メソッド"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 70,
-        "level": 3,
-        "title": "チェーン修飾メソッド"
       }
     ],
     "チェーン修飾メソッド（selfを返すことでチェーン呼び出しをサポート）": [
@@ -6258,12 +6352,12 @@
         "title": "チェーン修飾メソッド（selfを返すことでチェーン呼び出しをサポート）"
       }
     ],
-    "チェーン修飾メソッド（組み合わせ可能）": [
+    "チェーン修飾メソッド（selfを返却し、組み合わせて使用可能）": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 88,
+        "document": "platform-guide/email.md",
+        "line": 104,
         "level": 3,
-        "title": "チェーン修飾メソッド（組み合わせ可能）"
+        "title": "チェーン修飾メソッド（selfを返却し、組み合わせて使用可能）"
       }
     ],
     "チェーン修飾子メソッド（組み合わせて使用可能）": [
@@ -6282,21 +6376,7 @@
         "title": "チェーン修飾子メソッド（組み合わせ可能）"
       }
     ],
-    "チェーン呼び出し": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 640,
-        "level": 3,
-        "title": "チェーン呼び出し"
-      }
-    ],
     "チェーン呼び出しの例": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 96,
-        "level": 3,
-        "title": "チェーン呼び出しの例"
-      },
       {
         "document": "platform-guide/qqbot.md",
         "line": 76,
@@ -6308,6 +6388,42 @@
         "line": 126,
         "level": 3,
         "title": "チェーン呼び出しの例"
+      }
+    ],
+    "チェーン式修飾メソッド": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 77,
+        "level": 3,
+        "title": "チェーン式修飾メソッド"
+      }
+    ],
+    "チェーン式修飾メソッド（組み合わせて使用可能）": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 96,
+        "level": 3,
+        "title": "チェーン式修飾メソッド（組み合わせて使用可能）"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 88,
+        "level": 3,
+        "title": "チェーン式修飾メソッド（組み合わせて使用可能）"
+      }
+    ],
+    "チェーン式呼び出しの例": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 104,
+        "level": 3,
+        "title": "チェーン式呼び出しの例"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 96,
+        "level": 3,
+        "title": "チェーン式呼び出しの例"
       }
     ],
     "チェーン構文の使用例": [
@@ -6326,10 +6442,18 @@
         "title": "チェーン構文修飾メソッド（組み合わせ可能）"
       }
     ],
+    "チャンネルのテキストメッセージ": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 235,
+        "level": 1,
+        "title": "チャンネルのテキストメッセージ"
+      }
+    ],
     "チャンネルメッセージの処理": [
       {
         "document": "platform-guide/discord.md",
-        "line": 360,
+        "line": 368,
         "level": 3,
         "title": "チャンネルメッセージの処理"
       },
@@ -6348,20 +6472,20 @@
         "title": "チャンネルメッセージセグメント"
       }
     ],
-    "テストコマンド": [
+    "テキスト": [
       {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 103,
-        "level": 3,
-        "title": "テストコマンド"
+        "document": "developer-guide/adapters/converter.md",
+        "line": 145,
+        "level": 1,
+        "title": "テキスト"
       }
     ],
-    "テストモジュール": [
+    "テキストを送信": [
       {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 91,
-        "level": 2,
-        "title": "テストモジュール"
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 643,
+        "level": 1,
+        "title": "テキストを送信"
       }
     ],
     "テーブルの作成": [
@@ -6407,7 +6531,7 @@
     "ディレクトリ構造": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 61,
+        "line": 59,
         "level": 2,
         "title": "ディレクトリ構造"
       }
@@ -6515,7 +6639,7 @@
     "データを保存": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 216,
+        "line": 214,
         "level": 1,
         "title": "データを保存"
       }
@@ -6523,7 +6647,7 @@
     "データを削除": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 222,
+        "line": 220,
         "level": 1,
         "title": "データを削除"
       }
@@ -6531,7 +6655,7 @@
     "データを取得": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 219,
+        "line": 217,
         "level": 1,
         "title": "データを取得"
       }
@@ -6561,7 +6685,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 229,
+        "line": 227,
         "level": 1,
         "title": "トランザクションを使用してデータの一貫性を確保"
       }
@@ -6572,6 +6696,14 @@
         "line": 30,
         "level": 3,
         "title": "トランザクション操作"
+      }
+    ],
+    "トリガの意味": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 97,
+        "level": 3,
+        "title": "トリガの意味"
       }
     ],
     "トリガー": [
@@ -6614,13 +6746,15 @@
         "title": "ドキュメントメンテナンス手順"
       }
     ],
-    "ドキュメント一覧": [
+    "ドキュメントリスト": [
       {
         "document": "advanced/README.md",
         "line": 5,
         "level": 2,
-        "title": "ドキュメント一覧"
-      },
+        "title": "ドキュメントリスト"
+      }
+    ],
+    "ドキュメント一覧": [
       {
         "document": "api-reference/README.md",
         "line": 5,
@@ -6631,13 +6765,13 @@
     "ドキュメント情報": [
       {
         "document": "platform-guide/discord.md",
-        "line": 7,
+        "line": 9,
         "level": 2,
         "title": "ドキュメント情報"
       },
       {
         "document": "platform-guide/email.md",
-        "line": 7,
+        "line": 9,
         "level": 2,
         "title": "ドキュメント情報"
       },
@@ -6649,7 +6783,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 7,
+        "line": 9,
         "level": 2,
         "title": "ドキュメント情報"
       },
@@ -6673,7 +6807,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 7,
+        "line": 9,
         "level": 2,
         "title": "ドキュメント情報"
       },
@@ -6749,23 +6883,23 @@
     "ハートビートメカニズム": [
       {
         "document": "platform-guide/discord.md",
-        "line": 351,
+        "line": 359,
         "level": 3,
         "title": "ハートビートメカニズム"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 322,
+        "line": 330,
         "level": 3,
         "title": "ハートビートメカニズム"
       }
     ],
-    "ハードリスタートはいつ使うか？": [
+    "ハード再起動を使用すべきタイミング": [
       {
         "document": "advanced/startup.md",
-        "line": 345,
+        "line": 349,
         "level": 3,
-        "title": "ハードリスタートはいつ使うか？"
+        "title": "ハード再起動を使用すべきタイミング"
       }
     ],
     "バインド情報の取得": [
@@ -6792,22 +6926,6 @@
         "title": "バックアップ"
       }
     ],
-    "バックグラウンド実行": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 501,
-        "level": 3,
-        "title": "バックグラウンド実行"
-      }
-    ],
-    "バッチ全体のルールとコールバック": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 443,
-        "level": 3,
-        "title": "バッチ全体のルールとコールバック"
-      }
-    ],
     "バッチ操作": [
       {
         "document": "api-reference/core-modules.md",
@@ -6825,12 +6943,6 @@
       }
     ],
     "バッチ構築モード（Build）": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 391,
-        "level": 2,
-        "title": "バッチ構築モード（Build）"
-      },
       {
         "document": "platform-guide/README.md",
         "line": 137,
@@ -6910,12 +7022,12 @@
         "title": "ビルダーのリセット"
       }
     ],
-    "ファイブメディアメッセージの変換例": [
+    "ファイル": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 274,
-        "level": 2,
-        "title": "ファイブメディアメッセージの変換例"
+        "line": 157,
+        "level": 1,
+        "title": "ファイル"
       }
     ],
     "ファイルへの即時保存": [
@@ -6924,6 +7036,14 @@
         "line": 317,
         "level": 1,
         "title": "ファイルへの即時保存"
+      }
+    ],
+    "ファイルを送信": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 649,
+        "level": 1,
+        "title": "ファイルを送信"
       }
     ],
     "ファイル処理の特徴": [
@@ -6988,14 +7108,6 @@
         "title": "フレンドリクエスト"
       }
     ],
-    "フレームワークの作成": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 579,
-        "level": 3,
-        "title": "フレームワークの作成"
-      }
-    ],
     "ブラックリストフィルタリング": [
       {
         "document": "getting-started/common-tasks.md",
@@ -7012,7 +7124,27 @@
         "title": "プライベートチャットメッセージを監視"
       }
     ],
+    "プライベートメッセージ": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 253,
+        "level": 1,
+        "title": "プライベートメッセージ"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 199,
+        "level": 1,
+        "title": "プライベートメッセージ"
+      }
+    ],
     "プライベートメッセージの処理": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 388,
+        "level": 3,
+        "title": "プライベートメッセージの処理"
+      },
       {
         "document": "platform-guide/kook.md",
         "line": 379,
@@ -7095,23 +7227,9 @@
     "プラットフォーム固有のメソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 74,
+        "line": 84,
         "level": 3,
         "title": "プラットフォーム固有のメソッド"
-      },
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 538,
-        "level": 3,
-        "title": "プラットフォーム固有のメソッド"
-      }
-    ],
-    "プラットフォーム固有の修飾メソッド": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 121,
-        "level": 3,
-        "title": "プラットフォーム固有の修飾メソッド"
       }
     ],
     "プラットフォーム固有の応答": [
@@ -7138,13 +7256,15 @@
         "title": "プラットフォーム固有イベント"
       }
     ],
-    "プラットフォーム拡張フィールド": [
+    "プラットフォーム固有メソッド": [
       {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 169,
-        "level": 2,
-        "title": "プラットフォーム拡張フィールド"
-      },
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 551,
+        "level": 3,
+        "title": "プラットフォーム固有メソッド"
+      }
+    ],
+    "プラットフォーム拡張フィールド": [
       {
         "document": "platform-guide/wechatmp.md",
         "line": 65,
@@ -7170,14 +7290,6 @@
         "line": 609,
         "level": 3,
         "title": "プラットフォーム拡張メソッド"
-      }
-    ],
-    "プラットフォーム拡張メッセージセグメント": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 171,
-        "level": 3,
-        "title": "プラットフォーム拡張メッセージセグメント"
       }
     ],
     "プラットフォーム機能の検出": [
@@ -7212,12 +7324,20 @@
         "title": "プラットフォーム能力確認"
       }
     ],
-    "プロキシ設定": [
+    "プレースホルダーコマンドの help フォールバックチェーン": [
       {
-        "document": "platform-guide/telegram.md",
-        "line": 367,
+        "document": "advanced/lazy-loading.md",
+        "line": 87,
         "level": 3,
-        "title": "プロキシ設定"
+        "title": "プレースホルダーコマンドの help フォールバックチェーン"
+      }
+    ],
+    "プロキシの任意のプロパティにアクセスすることで、実際にモジュールの初期化が行われます": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 164,
+        "level": 1,
+        "title": "プロキシの任意のプロパティにアクセスすることで、実際にモジュールの初期化が行われます"
       }
     ],
     "プロジェクトの初期化": [
@@ -7225,12 +7345,6 @@
         "document": "quick-start.md",
         "line": 61,
         "level": 2,
-        "title": "プロジェクトの初期化"
-      },
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 569,
-        "level": 3,
         "title": "プロジェクトの初期化"
       }
     ],
@@ -7240,15 +7354,15 @@
         "line": 115,
         "level": 2,
         "title": "プロジェクトの実行"
-      },
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 536,
-        "level": 3,
-        "title": "プロジェクトの実行"
       }
     ],
     "プロジェクトを実行": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 91,
+        "level": 1,
+        "title": "プロジェクトを実行"
+      },
       {
         "document": "user-guide/installation.md",
         "line": 99,
@@ -7262,6 +7376,14 @@
         "line": 48,
         "level": 3,
         "title": "プロジェクトテンプレート"
+      }
+    ],
+    "プロジェクトディレクトリでモジュールをインストール": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 88,
+        "level": 1,
+        "title": "プロジェクトディレクトリでモジュールをインストール"
       }
     ],
     "プロジェクト構造": [
@@ -7297,7 +7419,7 @@
     "プロトコルメソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 66,
+        "line": 76,
         "level": 3,
         "title": "プロトコルメソッド"
       }
@@ -7352,6 +7474,14 @@
         "line": 441,
         "level": 2,
         "title": "ベストプラクティス"
+      }
+    ],
+    "ホットリロードモード": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 540,
+        "level": 1,
+        "title": "ホットリロードモード"
       }
     ],
     "ホームエントリ": [
@@ -7494,6 +7624,22 @@
         "title": "ミドルウェアの追加"
       }
     ],
+    "メインフローをブロックしない": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 526,
+        "level": 1,
+        "title": "メインフローをブロックしない"
+      }
+    ],
+    "メインプロセスをブロックせず、ルールは正常に有効": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 380,
+        "level": 1,
+        "title": "メインプロセスをブロックせず、ルールは正常に有効"
+      }
+    ],
     "メソッドの登録解除": [
       {
         "document": "api-reference/event-system.md",
@@ -7513,7 +7659,7 @@
     "メソッドチェーン": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 31,
+        "line": 35,
         "level": 2,
         "title": "メソッドチェーン"
       }
@@ -7540,28 +7686,12 @@
         "title": "メソッドチェーンによる修飾（組み合わせ可能）"
       }
     ],
-    "メソッドチェーンの修飾メソッド（self を返すため、組み合わせて使用可能）": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 96,
-        "level": 3,
-        "title": "メソッドチェーンの修飾メソッド（self を返すため、組み合わせて使用可能）"
-      }
-    ],
     "メソッドチェーンの呼び出し例": [
       {
         "document": "platform-guide/yunhu_user.md",
         "line": 93,
         "level": 3,
         "title": "メソッドチェーンの呼び出し例"
-      }
-    ],
-    "メソッドチェーン修飾メソッド（組み合わせて使用可能）": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 78,
-        "level": 3,
-        "title": "メソッドチェーン修飾メソッド（組み合わせて使用可能）"
       }
     ],
     "メソッドチェーン修飾メソッド（組み合わせ可能）": [
@@ -7586,14 +7716,6 @@
         "title": "メソッドチェーン呼び出しの例"
       }
     ],
-    "メソッドチェーン呼び出し例": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 86,
-        "level": 3,
-        "title": "メソッドチェーン呼び出し例"
-      }
-    ],
     "メソッドリスト": [
       {
         "document": "platform-guide/onebot11.md",
@@ -7613,7 +7735,7 @@
     "メソッド署名": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 69,
+        "line": 73,
         "level": 3,
         "title": "メソッド署名"
       }
@@ -7682,6 +7804,22 @@
         "title": "メッセージの編集と撤回"
       }
     ],
+    "メッセージはバックグラウンドで送信されます": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 258,
+        "level": 1,
+        "title": "メッセージはバックグラウンドで送信されます"
+      }
+    ],
+    "メッセージへの返信": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 120,
+        "level": 1,
+        "title": "メッセージへの返信"
+      }
+    ],
     "メッセージイベント (Message Events)": [
       {
         "document": "platform-guide/onebot12.md",
@@ -7696,22 +7834,6 @@
         "line": 38,
         "level": 3,
         "title": "メッセージイベント (message)"
-      }
-    ],
-    "メッセージイベント detail_type マッピング": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 131,
-        "level": 3,
-        "title": "メッセージイベント detail_type マッピング"
-      }
-    ],
-    "メッセージイベントの追加フィールド": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 122,
-        "level": 3,
-        "title": "メッセージイベントの追加フィールド"
       }
     ],
     "メッセージイベントメソッド": [
@@ -7776,30 +7898,10 @@
         "title": "メッセージセグメントのタイプ"
       }
     ],
-    "メッセージセグメントの変換": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 137,
-        "level": 2,
-        "title": "メッセージセグメントの変換"
-      }
-    ],
     "メッセージセグメントタイプ": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 282,
-        "level": 3,
-        "title": "メッセージセグメントタイプ"
-      },
       {
         "document": "platform-guide/kook.md",
         "line": 268,
-        "level": 3,
-        "title": "メッセージセグメントタイプ"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 229,
         "level": 3,
         "title": "メッセージセグメントタイプ"
       }
@@ -7807,7 +7909,7 @@
     "メッセージセグメントデータ抽出": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 278,
+        "line": 283,
         "level": 3,
         "title": "メッセージセグメントデータ抽出"
       }
@@ -7858,10 +7960,18 @@
         "title": "メッセージ審査結果の監視"
       }
     ],
+    "メッセージ撤回": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 215,
+        "level": 1,
+        "title": "メッセージ撤回"
+      }
+    ],
     "メッセージ操作": [
       {
         "document": "platform-guide/discord.md",
-        "line": 143,
+        "line": 151,
         "level": 3,
         "title": "メッセージ操作"
       }
@@ -7877,7 +7987,7 @@
     "メッセージ管理メソッド": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 55,
+        "line": 62,
         "level": 3,
         "title": "メッセージ管理メソッド"
       }
@@ -7890,10 +8000,18 @@
         "title": "メッセージ統計"
       }
     ],
+    "メッセージ編集": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 222,
+        "level": 1,
+        "title": "メッセージ編集"
+      }
+    ],
     "メッセージ編集の処理": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 397,
+        "line": 407,
         "level": 3,
         "title": "メッセージ編集の処理"
       }
@@ -7963,7 +8081,7 @@
     "メッセージ関連": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 258,
+        "line": 263,
         "level": 3,
         "title": "メッセージ関連"
       }
@@ -8001,7 +8119,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 376,
+        "line": 386,
         "level": 3,
         "title": "メディアメッセージの送信"
       },
@@ -8015,7 +8133,7 @@
     "メディア送信メソッド": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 42,
+        "line": 49,
         "level": 3,
         "title": "メディア送信メソッド"
       }
@@ -8023,7 +8141,7 @@
     "メンバー変更の監視": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 410,
+        "line": 420,
         "level": 3,
         "title": "メンバー変更の監視"
       }
@@ -8034,6 +8152,14 @@
         "line": 1,
         "level": 1,
         "title": "メールプラットフォームの機能ドキュメント"
+      }
+    ],
+    "メール返信イベント（email_reply）": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 185,
+        "level": 3,
+        "title": "メール返信イベント（email_reply）"
       }
     ],
     "モジュール": [
@@ -8068,14 +8194,6 @@
         "title": "モジュールのみを表示"
       }
     ],
-    "モジュールのインストール": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 484,
-        "level": 3,
-        "title": "モジュールのインストール"
-      }
-    ],
     "モジュールのインストールに失敗しました": [
       {
         "document": "user-guide/installation.md",
@@ -8087,7 +8205,7 @@
     "モジュールのオンデマンドロード": [
       {
         "document": "advanced/startup.md",
-        "line": 277,
+        "line": 281,
         "level": 3,
         "title": "モジュールのオンデマンドロード"
       }
@@ -8100,12 +8218,28 @@
         "title": "モジュールのコードや一時スクリプトに一行追加して位置特定"
       }
     ],
+    "モジュールのタイプのスタブのみを生成": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 563,
+        "level": 1,
+        "title": "モジュールのタイプのスタブのみを生成"
+      }
+    ],
     "モジュールのライフサイクル": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 5,
         "level": 2,
         "title": "モジュールのライフサイクル"
+      }
+    ],
+    "モジュールのロード戦略": [
+      {
+        "document": "architecture.md",
+        "line": 150,
+        "level": 2,
+        "title": "モジュールのロード戦略"
       }
     ],
     "モジュールの基本概念": [
@@ -8122,6 +8256,14 @@
         "line": 65,
         "level": 3,
         "title": "モジュールの許可状態を確認"
+      }
+    ],
+    "モジュールをアップグレード": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 491,
+        "level": 1,
+        "title": "モジュールをアップグレード"
       }
     ],
     "モジュールクラスでの使用": [
@@ -8165,7 +8307,7 @@
     "モジュールレベルの制御": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 41,
+        "line": 119,
         "level": 3,
         "title": "モジュールレベルの制御"
       }
@@ -8184,6 +8326,14 @@
         "line": 16,
         "level": 2,
         "title": "モジュール概要"
+      }
+    ],
+    "モジュール紹介 meta": [
+      {
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 116,
+        "level": 3,
+        "title": "モジュール紹介 meta"
       }
     ],
     "モジュール設計": [
@@ -8327,7 +8477,7 @@
       },
       {
         "document": "architecture.md",
-        "line": 125,
+        "line": 115,
         "level": 2,
         "title": "ライフサイクルイベント"
       }
@@ -8343,7 +8493,7 @@
     "ライフサイクルイベントの監視": [
       {
         "document": "architecture.md",
-        "line": 156,
+        "line": 146,
         "level": 3,
         "title": "ライフサイクルイベントの監視"
       }
@@ -8372,44 +8522,12 @@
         "title": "ライフサイクル統合"
       }
     ],
-    "ラグロードの設定": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 30,
-        "level": 2,
-        "title": "ラグロードの設定"
-      }
-    ],
-    "ラグロードを使用することを推奨する場面（lazy_load=True）": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 119,
-        "level": 3,
-        "title": "ラグロードを使用することを推奨する場面（lazy_load=True）"
-      }
-    ],
-    "ラグロードを無効にすることを推奨する場面（lazy_load=False）": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 123,
-        "level": 3,
-        "title": "ラグロードを無効にすることを推奨する場面（lazy_load=False）"
-      }
-    ],
-    "ラグロードモジュールの使用": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 59,
-        "level": 2,
-        "title": "ラグロードモジュールの使用"
-      }
-    ],
-    "ラグロードモジュールシステム": [
+    "ラグ遅延ロードモジュールシステム": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 1,
         "level": 1,
-        "title": "ラグロードモジュールシステム"
+        "title": "ラグ遅延ロードモジュールシステム"
       }
     ],
     "ランタイム API": [
@@ -8447,7 +8565,7 @@
     "リクエストパラメータの使用": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 524,
+        "line": 522,
         "level": 4,
         "title": "リクエストパラメータの使用"
       }
@@ -8504,14 +8622,6 @@
         "title": "リクエスト関連ID（X-Request-ID）"
       }
     ],
-    "リスタート": [
-      {
-        "document": "advanced/startup.md",
-        "line": 324,
-        "level": 2,
-        "title": "リスタート"
-      }
-    ],
     "リスナーの確認（has_handlers）": [
       {
         "document": "advanced/lifecycle.md",
@@ -8542,6 +8652,14 @@
         "line": 213,
         "level": 1,
         "title": "リモートで利用可能なすべてのコンポーネントを表示"
+      }
+    ],
+    "リモートで利用可能なコンポーネントを確認": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 507,
+        "level": 1,
+        "title": "リモートで利用可能なコンポーネントを確認"
       }
     ],
     "リモートモジュールのみを表示": [
@@ -8576,20 +8694,20 @@
         "title": "ルーターグループ"
       }
     ],
+    "ルーターサーバー": [
+      {
+        "document": "advanced/startup.md",
+        "line": 271,
+        "level": 3,
+        "title": "ルーターサーバー"
+      }
+    ],
     "ルーティンググループ": [
       {
         "document": "advanced/router.md",
         "line": 195,
         "level": 2,
         "title": "ルーティンググループ"
-      }
-    ],
-    "ルーティングサーバー": [
-      {
-        "document": "advanced/startup.md",
-        "line": 267,
-        "level": 3,
-        "title": "ルーティングサーバー"
       }
     ],
     "ルーティングマネージャー": [
@@ -8627,7 +8745,7 @@
     "ルート発見": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 561,
+        "line": 559,
         "level": 4,
         "title": "ルート発見"
       }
@@ -8640,42 +8758,18 @@
         "title": "ループ対話"
       }
     ],
-    "ルームへの招待": [
+    "ルーム招待": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 328,
+        "line": 336,
         "level": 3,
-        "title": "ルームへの招待"
-      }
-    ],
-    "ルールの伝播": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 378,
-        "level": 3,
-        "title": "ルールの伝播"
-      }
-    ],
-    "ルールの組み合わせとバックグラウンド実行": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 363,
-        "level": 3,
-        "title": "ルールの組み合わせとバックグラウンド実行"
-      }
-    ],
-    "ルールメソッド一覧": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 272,
-        "level": 3,
-        "title": "ルールメソッド一覧"
+        "title": "ルーム招待"
       }
     ],
     "レイジー ローディング機構": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 257,
+        "line": 255,
         "level": 2,
         "title": "レイジー ローディング機構"
       }
@@ -8755,7 +8849,7 @@
     "ログレベルの使い分け": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 299,
+        "line": 297,
         "level": 1,
         "title": "ログレベルの使い分け"
       }
@@ -8776,20 +8870,20 @@
         "title": "ロボット情報"
       }
     ],
-    "ローカルテスト": [
+    "ローカルプラグインのホットリロードアーキテクチャ": [
       {
-        "document": "developer-guide/modules/getting-started.md",
-        "line": 93,
-        "level": 3,
-        "title": "ローカルテスト"
+        "document": "architecture.md",
+        "line": 236,
+        "level": 2,
+        "title": "ローカルプラグインのホットリロードアーキテクチャ"
       }
     ],
-    "ロード失敗時の診断情報": [
+    "ローカルプラグインフォルダのアーキテクチャ": [
       {
-        "document": "advanced/startup.md",
-        "line": 97,
-        "level": 4,
-        "title": "ロード失敗時の診断情報"
+        "document": "architecture.md",
+        "line": 208,
+        "level": 2,
+        "title": "ローカルプラグインフォルダのアーキテクチャ"
       }
     ],
     "ロード戦略": [
@@ -8862,14 +8956,6 @@
         "title": "一般的なパラメータ"
       }
     ],
-    "一般的なフィールド（すべてのイベント型に共通）": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 111,
-        "level": 3,
-        "title": "一般的なフィールド（すべてのイベント型に共通）"
-      }
-    ],
     "一般的なフロー・パターン": [
       {
         "document": "advanced/conversation.md",
@@ -8886,36 +8972,12 @@
         "title": "一般的な問題"
       }
     ],
-    "一般的な落とし穴": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 323,
-        "level": 2,
-        "title": "一般的な落とし穴"
-      }
-    ],
     "一般的な質問": [
       {
         "document": "ai-support/README.md",
         "line": 109,
         "level": 2,
         "title": "一般的な質問"
-      }
-    ],
-    "一般的使い方": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 482,
-        "level": 2,
-        "title": "一般的使い方"
-      }
-    ],
-    "一貫したモジュール取得エントリ": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 73,
-        "level": 3,
-        "title": "一貫したモジュール取得エントリ"
       }
     ],
     "三、内部原理を深く理解したい": [
@@ -8942,12 +9004,12 @@
         "title": "严重性分级"
       }
     ],
-    "並列と直列": [
+    "並列（デフォルト、明示的に呼び出すことも可能）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 411,
-        "level": 3,
-        "title": "並列と直列"
+        "line": 437,
+        "level": 1,
+        "title": "並列（デフォルト、明示的に呼び出すことも可能）"
       }
     ],
     "中国語を登録（default と一致しても良いし、異なっても良い）": [
@@ -9014,12 +9076,44 @@
         "title": "五、ErisPulse に貢献したい"
       }
     ],
+    "交互イベントの処理": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 441,
+        "level": 3,
+        "title": "交互イベントの処理"
+      }
+    ],
     "他のモジュールにアクセスする": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 69,
         "level": 1,
         "title": "他のモジュールにアクセスする"
+      }
+    ],
+    "他の操作を継続": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 388,
+        "level": 1,
+        "title": "他の操作を継続"
+      }
+    ],
+    "他の操作を続行します": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 261,
+        "level": 1,
+        "title": "他の操作を続行します"
+      }
+    ],
+    "以下のようにアクセスするとモジュールのラグロードがトリガーされます": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 146,
+        "level": 1,
+        "title": "以下のようにアクセスするとモジュールのラグロードがトリガーされます"
       }
     ],
     "仮想環境のアクティブ化": [
@@ -9044,6 +9138,14 @@
         "line": 506,
         "level": 3,
         "title": "任意のイベントを待つ (wait_for)"
+      }
+    ],
+    "任意のコルーチンで呼び出すことで、エレガントな終了をトリガー（run() が待機から戻り、自動的に uninit() が実行される）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 292,
+        "level": 1,
+        "title": "任意のコルーチンで呼び出すことで、エレガントな終了をトリガー（run() が待機から戻り、自動的に uninit() が実行される）"
       }
     ],
     "会話識別子": [
@@ -9078,6 +9180,14 @@
         "title": "低優先度のハンドラーは後に実行されます"
       }
     ],
+    "低優先度のメッセージ、送信キューが混雑した場合に自動的に破棄": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 368,
+        "level": 1,
+        "title": "低優先度のメッセージ、送信キューが混雑した場合に自動的に破棄"
+      }
+    ],
     "使用": [
       {
         "document": "advanced/i18n.md",
@@ -9089,7 +9199,7 @@
     "使用例": [
       {
         "document": "platform-guide/discord.md",
-        "line": 358,
+        "line": 366,
         "level": 2,
         "title": "使用例"
       },
@@ -9101,7 +9211,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 333,
+        "line": 343,
         "level": 2,
         "title": "使用例"
       },
@@ -9119,7 +9229,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 287,
+        "line": 292,
         "level": 3,
         "title": "使用例"
       }
@@ -9172,20 +9282,12 @@
         "title": "修正済みのバグ"
       }
     ],
-    "修飾メソッド": [
+    "修飾メソッドは連続してメソッドチェーンで使用可能": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 87,
-        "level": 2,
-        "title": "修飾メソッド"
-      }
-    ],
-    "修飾子とルールの継承": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 477,
-        "level": 3,
-        "title": "修飾子とルールの継承"
+        "line": 158,
+        "level": 1,
+        "title": "修飾メソッドは連続してメソッドチェーンで使用可能"
       }
     ],
     "優先度": [
@@ -9194,14 +9296,6 @@
         "line": 33,
         "level": 3,
         "title": "優先度"
-      }
-    ],
-    "優先度とキューの廃棄（Priority）": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 351,
-        "level": 3,
-        "title": "優先度とキューの廃棄（Priority）"
       }
     ],
     "優先度を使用して実行順序を制御": [
@@ -9324,6 +9418,14 @@
         "title": "再生成のタイミング"
       }
     ],
+    "再起動": [
+      {
+        "document": "advanced/startup.md",
+        "line": 328,
+        "level": 2,
+        "title": "再起動"
+      }
+    ],
     "処理制御": [
       {
         "document": "api-reference/event-system.md",
@@ -9356,36 +9458,34 @@
         "title": "分岐とジャンプ"
       }
     ],
-    "切断再接続と RESUME": [
+    "初回失敗後に2回リトライし、合計3回の試行": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 343,
-        "level": 3,
-        "title": "切断再接続と RESUME"
-      }
-    ],
-    "初期化フェーズの詳細": [
-      {
-        "document": "architecture.md",
-        "line": 82,
-        "level": 3,
-        "title": "初期化フェーズの詳細"
-      }
-    ],
-    "初期化フロー": [
-      {
-        "document": "architecture.md",
-        "line": 57,
-        "level": 2,
-        "title": "初期化フロー"
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 318,
+        "level": 1,
+        "title": "初回失敗後に2回リトライし、合計3回の試行"
       }
     ],
     "初期化プロセス": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 20,
+        "line": 24,
         "level": 3,
         "title": "初期化プロセス"
+      },
+      {
+        "document": "architecture.md",
+        "line": 57,
+        "level": 2,
+        "title": "初期化プロセス"
+      }
+    ],
+    "初期化段階の詳細": [
+      {
+        "document": "architecture.md",
+        "line": 82,
+        "level": 3,
+        "title": "初期化段階の詳細"
       }
     ],
     "前提知識": [
@@ -9394,6 +9494,14 @@
         "line": 34,
         "level": 2,
         "title": "前提知識"
+      }
+    ],
+    "加載失敗時の診断情報": [
+      {
+        "document": "advanced/startup.md",
+        "line": 101,
+        "level": 4,
+        "title": "加載失敗時の診断情報"
       }
     ],
     "動作仕様": [
@@ -9407,13 +9515,13 @@
     "動作原理": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 14,
+        "line": 18,
         "level": 2,
         "title": "動作原理"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 259,
+        "line": 257,
         "level": 3,
         "title": "動作原理"
       },
@@ -9436,12 +9544,28 @@
         "title": "動作原理"
       }
     ],
+    "動画": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 154,
+        "level": 1,
+        "title": "動画"
+      }
+    ],
     "動的バインド / アンバインド": [
       {
         "document": "advanced/scope.md",
         "line": 77,
         "level": 3,
         "title": "動的バインド / アンバインド"
+      }
+    ],
+    "単一のコンポーネントをアンインストール": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 514,
+        "level": 1,
+        "title": "単一のコンポーネントをアンインストール"
       }
     ],
     "単一のメソッド登録": [
@@ -9452,12 +9576,28 @@
         "title": "単一のメソッド登録"
       }
     ],
+    "単一のモジュールをインストール": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 485,
+        "level": 1,
+        "title": "単一のモジュールをインストール"
+      }
+    ],
     "単一レコードの取得": [
       {
         "document": "advanced/sql-builder.md",
         "line": 124,
         "level": 4,
         "title": "単一レコードの取得"
+      }
+    ],
+    "単回送信が10秒を超えるとキャンセル": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 327,
+        "level": 1,
+        "title": "単回送信が10秒を超えるとキャンセル"
       }
     ],
     "単独使用（手動登録）": [
@@ -9468,12 +9608,12 @@
         "title": "単独使用（手動登録）"
       }
     ],
-    "原始メッセージとメッセージ構築": [
+    "原始メッセージ送信": [
       {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 650,
+        "document": "platform-guide/telegram.md",
+        "line": 72,
         "level": 3,
-        "title": "原始メッセージとメッセージ構築"
+        "title": "原始メッセージ送信"
       }
     ],
     "原生 Renderer": [
@@ -9548,34 +9688,34 @@
         "title": "友達操作メソッド"
       }
     ],
-    "各ステップの詳細": [
+    "各環節の詳細説明": [
       {
         "document": "advanced/startup.md",
-        "line": 51,
+        "line": 55,
         "level": 2,
-        "title": "各ステップの詳細"
+        "title": "各環節の詳細説明"
+      }
+    ],
+    "同期コールバック": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 301,
+        "level": 1,
+        "title": "同期コールバック"
       }
     ],
     "同期フロー": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 312,
+        "line": 320,
         "level": 3,
         "title": "同期フロー"
-      }
-    ],
-    "同期初期化": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 108,
-        "level": 3,
-        "title": "同期初期化"
       }
     ],
     "命名規則": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 516,
+        "line": 529,
         "level": 2,
         "title": "命名規則"
       }
@@ -9596,21 +9736,7 @@
         "title": "四、エコシステムと公式クライアント"
       }
     ],
-    "回答メールイベント (email_reply)": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 177,
-        "level": 3,
-        "title": "回答メールイベント (email_reply)"
-      }
-    ],
     "固有のイベントタイプ": [
-      {
-        "document": "platform-guide/discord.md",
-        "line": 180,
-        "level": 2,
-        "title": "固有のイベントタイプ"
-      },
       {
         "document": "platform-guide/ideaura.md",
         "line": 114,
@@ -9621,24 +9747,6 @@
         "document": "platform-guide/kook.md",
         "line": 173,
         "level": 2,
-        "title": "固有のイベントタイプ"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 157,
-        "level": 2,
-        "title": "固有のイベントタイプ"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 127,
-        "level": 2,
-        "title": "固有のイベントタイプ"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 140,
-        "level": 3,
         "title": "固有のイベントタイプ"
       },
       {
@@ -9702,12 +9810,12 @@
         "title": "基本メソッド"
       }
     ],
-    "基本メソッド（基底クラスに組み込み済み）": [
+    "基本メソッド（基底クラスに内蔵）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 41,
+        "line": 51,
         "level": 3,
-        "title": "基本メソッド（基底クラスに組み込み済み）"
+        "title": "基本メソッド（基底クラスに内蔵）"
       }
     ],
     "基本メッセージタイプ": [
@@ -9737,13 +9845,13 @@
     "基本情報": [
       {
         "document": "platform-guide/discord.md",
-        "line": 13,
+        "line": 17,
         "level": 2,
         "title": "基本情報"
       },
       {
         "document": "platform-guide/email.md",
-        "line": 12,
+        "line": 16,
         "level": 2,
         "title": "基本情報"
       },
@@ -9761,7 +9869,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 12,
+        "line": 16,
         "level": 2,
         "title": "基本情報"
       },
@@ -9785,7 +9893,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 12,
+        "line": 16,
         "level": 2,
         "title": "基本情報"
       },
@@ -9838,34 +9946,20 @@
         "title": "基本的な使い方"
       }
     ],
-    "基本的な使用": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 61,
-        "level": 3,
-        "title": "基本的な使用"
-      },
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 622,
-        "level": 3,
-        "title": "基本的な使用"
-      }
-    ],
     "基本的な使用法": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 508,
+        "line": 506,
         "level": 4,
         "title": "基本的な使用法"
       }
     ],
-    "基本的な呼び出し方": [
+    "基本的な呼び出し方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 5,
+        "line": 7,
         "level": 2,
-        "title": "基本的な呼び出し方"
+        "title": "基本的な呼び出し方法"
       }
     ],
     "基本的な送信": [
@@ -9878,14 +9972,8 @@
     ],
     "基本的な送信メソッド": [
       {
-        "document": "platform-guide/email.md",
-        "line": 88,
-        "level": 3,
-        "title": "基本的な送信メソッド"
-      },
-      {
         "document": "platform-guide/telegram.md",
-        "line": 29,
+        "line": 36,
         "level": 3,
         "title": "基本的な送信メソッド"
       }
@@ -9915,6 +10003,12 @@
       }
     ],
     "基本送信メソッド": [
+      {
+        "document": "platform-guide/email.md",
+        "line": 96,
+        "level": 3,
+        "title": "基本送信メソッド"
+      },
       {
         "document": "platform-guide/onebot11.md",
         "line": 40,
@@ -9976,22 +10070,6 @@
         "title": "失敗応答例"
       }
     ],
-    "失敗時の継続とリトライ": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 431,
-        "level": 3,
-        "title": "失敗時の継続とリトライ"
-      }
-    ],
-    "失敗時の自動リトライ（Retry）": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 301,
-        "level": 3,
-        "title": "失敗時の自動リトライ（Retry）"
-      }
-    ],
     "学習の道筋を選択": [
       {
         "document": "README.md",
@@ -10032,12 +10110,12 @@
         "title": "完全なステータスサマリーを取得"
       }
     ],
-    "完全なメールイベント": [
+    "完全なパラメータ": [
       {
-        "document": "platform-guide/email.md",
-        "line": 203,
-        "level": 3,
-        "title": "完全なメールイベント"
+        "document": "user-guide/cli-reference.md",
+        "line": 589,
+        "level": 1,
+        "title": "完全なパラメータ"
       }
     ],
     "完全なモジュールの例": [
@@ -10054,26 +10132,12 @@
         "line": 151,
         "level": 2,
         "title": "完全な例"
-      },
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 620,
-        "level": 2,
-        "title": "完全な例"
-      }
-    ],
-    "完全な実装例": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 192,
-        "level": 2,
-        "title": "完全な実装例"
       }
     ],
     "完全な手動起動の例": [
       {
         "document": "advanced/startup.md",
-        "line": 173,
+        "line": 177,
         "level": 2,
         "title": "完全な手動起動の例"
       }
@@ -10102,14 +10166,6 @@
         "title": "実行コントロールコマンド"
       }
     ],
-    "実行モード": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 363,
-        "level": 3,
-        "title": "実行モード"
-      }
-    ],
     "実行時での設定の書き込み（遅延保存）": [
       {
         "document": "user-guide/configuration.md",
@@ -10121,7 +10177,7 @@
     "実行時細粒度制御": [
       {
         "document": "advanced/startup.md",
-        "line": 247,
+        "line": 251,
         "level": 2,
         "title": "実行時細粒度制御"
       }
@@ -10142,6 +10198,14 @@
         "title": "宣言的翻訳キー（v2.7.0+）"
       }
     ],
+    "対応している言語の一覧表示": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 553,
+        "level": 1,
+        "title": "対応している言語の一覧表示"
+      }
+    ],
     "対応プラットフォーム": [
       {
         "document": "ecosystem/app.md",
@@ -10156,6 +10220,30 @@
         "line": 5,
         "level": 2,
         "title": "対話の作成"
+      }
+    ],
+    "対話形式での作成（タイプの選択と情報の入力をガイド）": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 580,
+        "level": 1,
+        "title": "対話形式での作成（タイプの選択と情報の入力をガイド）"
+      }
+    ],
+    "対話形式での初期化": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 570,
+        "level": 1,
+        "title": "対話形式での初期化"
+      }
+    ],
+    "対話形式で言語を選択": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 547,
+        "level": 1,
+        "title": "対話形式で言語を選択"
       }
     ],
     "対象読者": [
@@ -10174,6 +10262,14 @@
         "title": "導入方法"
       }
     ],
+    "常見の落とし穴": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 331,
+        "level": 2,
+        "title": "常見の落とし穴"
+      }
+    ],
     "幅 (`width`) と高さ (`height`) について": [
       {
         "document": "ecosystem/takumi.md",
@@ -10190,6 +10286,14 @@
         "title": "平台特有イベント（onebot11_ 前綴）"
       }
     ],
+    "強制的にアップグレード": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 530,
+        "level": 1,
+        "title": "強制的にアップグレード"
+      }
+    ],
     "必須フィールド": [
       {
         "document": "bug-tracker.md",
@@ -10202,14 +10306,6 @@
         "line": 646,
         "level": 3,
         "title": "必須フィールド"
-      }
-    ],
-    "必須フィールドのマッピング": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 109,
-        "level": 2,
-        "title": "必須フィールドのマッピング"
       }
     ],
     "快速構築モード（静的）": [
@@ -10226,6 +10322,14 @@
         "line": 18,
         "level": 2,
         "title": "快速開始"
+      }
+    ],
+    "懒惰ロードの構成": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 108,
+        "level": 2,
+        "title": "懒惰ロードの構成"
       }
     ],
     "成功応答例": [
@@ -10247,7 +10351,7 @@
     "戻り値の構造": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 82,
+        "line": 86,
         "level": 3,
         "title": "戻り値の構造"
       }
@@ -10300,6 +10404,14 @@
         "title": "手動登録による独自翻訳の定義（旧い記法）"
       }
     ],
+    "手動起動が必要な場合": [
+      {
+        "document": "advanced/startup.md",
+        "line": 241,
+        "level": 3,
+        "title": "手動起動が必要な場合"
+      }
+    ],
     "承認にどのくらい時間がかかりますか？": [
       {
         "document": "developer-guide/publishing.md",
@@ -10334,20 +10446,8 @@
     ],
     "拡張フィールド": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 192,
-        "level": 3,
-        "title": "拡張フィールド"
-      },
-      {
         "document": "platform-guide/kook.md",
         "line": 185,
-        "level": 3,
-        "title": "拡張フィールド"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 172,
         "level": 3,
         "title": "拡張フィールド"
       },
@@ -10359,12 +10459,6 @@
       }
     ],
     "拡張フィールドの説明": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 191,
-        "level": 2,
-        "title": "拡張フィールドの説明"
-      },
       {
         "document": "platform-guide/ideaura.md",
         "line": 395,
@@ -10384,14 +10478,6 @@
         "title": "拡張フィールドの説明"
       }
     ],
-    "拡張フィールド説明": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 338,
-        "level": 2,
-        "title": "拡張フィールド説明"
-      }
-    ],
     "拡張：より多くの機能を追加する": [
       {
         "document": "getting-started/first-bot.md",
@@ -10408,12 +10494,28 @@
         "title": "指定がない場合、最初に有効になったbotが使用されます"
       }
     ],
+    "指定されたコンポーネントをアップグレード": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 527,
+        "level": 1,
+        "title": "指定されたコンポーネントをアップグレード"
+      }
+    ],
     "按钮消息段 (yunhu_user_button)": [
       {
         "document": "platform-guide/yunhu_user.md",
         "line": 414,
         "level": 4,
         "title": "按钮消息段 (yunhu_user_button)"
+      }
+    ],
+    "振る舞いは一貫しており、ユーザーには透明です": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 159,
+        "level": 1,
+        "title": "振る舞いは一貫しており、ユーザーには透明です"
       }
     ],
     "接続の再試行": [
@@ -10435,7 +10537,7 @@
     "接続フロー": [
       {
         "document": "platform-guide/discord.md",
-        "line": 320,
+        "line": 328,
         "level": 3,
         "title": "接続フロー"
       },
@@ -10486,6 +10588,34 @@
         "title": "提供されるツール"
       }
     ],
+    "支持的消息送信タイプ": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 66,
+        "level": 2,
+        "title": "支持的消息送信タイプ"
+      }
+    ],
+    "支援されるメッセージ送信タイプ": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 75,
+        "level": 2,
+        "title": "支援されるメッセージ送信タイプ"
+      },
+      {
+        "document": "platform-guide/email.md",
+        "line": 66,
+        "level": 2,
+        "title": "支援されるメッセージ送信タイプ"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 25,
+        "level": 2,
+        "title": "支援されるメッセージ送信タイプ"
+      }
+    ],
     "文書情報": [
       {
         "document": "platform-guide/kook.md",
@@ -10502,12 +10632,20 @@
         "title": "文章消息段 (yunhu_user_post)"
       }
     ],
-    "新しいメールイベント (email_new)": [
+    "断線時の再接続と RESUME": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 351,
+        "level": 3,
+        "title": "断線時の再接続と RESUME"
+      }
+    ],
+    "新しいメールイベント（email_new）": [
       {
         "document": "platform-guide/email.md",
-        "line": 127,
+        "line": 135,
         "level": 3,
-        "title": "新しいメールイベント (email_new)"
+        "title": "新しいメールイベント（email_new）"
       }
     ],
     "新機能：元のイベントタイプフィールド": [
@@ -10526,6 +10664,22 @@
         "title": "方法 1: pip を使用してインストールする"
       }
     ],
+    "方法 1: reply() の via パラメータ": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 168,
+        "level": 3,
+        "title": "方法 1: reply() の via パラメータ"
+      }
+    ],
+    "方法 2: event.send_chain()": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 185,
+        "level": 3,
+        "title": "方法 2: event.send_chain()"
+      }
+    ],
     "方法 2: uv を使用してインストールする（推奨）": [
       {
         "document": "user-guide/installation.md",
@@ -10534,20 +10688,12 @@
         "title": "方法 2: uv を使用してインストールする（推奨）"
       }
     ],
-    "方法1: reply() の via パラメータ": [
+    "既存のディレクトリを強制的に上書き": [
       {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 157,
-        "level": 3,
-        "title": "方法1: reply() の via パラメータ"
-      }
-    ],
-    "方法2: event.send_chain()": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 174,
-        "level": 3,
-        "title": "方法2: event.send_chain()"
+        "document": "user-guide/cli-reference.md",
+        "line": 592,
+        "level": 1,
+        "title": "既存のディレクトリを強制的に上書き"
       }
     ],
     "日本語に切り替える": [
@@ -10558,12 +10704,12 @@
         "title": "日本語に切り替える"
       }
     ],
-    "旧設定のマイグレーション": [
+    "旧版形式（引き続き使用可能ですが、移行することを推奨します）": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 371,
-        "level": 3,
-        "title": "旧設定のマイグレーション"
+        "line": 381,
+        "level": 1,
+        "title": "旧版形式（引き続き使用可能ですが、移行することを推奨します）"
       }
     ],
     "普通イベントの自動発見": [
@@ -10606,20 +10752,26 @@
         "title": "更新要件"
       }
     ],
+    "最佳実践": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 195,
+        "level": 2,
+        "title": "最佳実践"
+      },
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 375,
+        "level": 2,
+        "title": "最佳実践"
+      }
+    ],
     "最初のロボットを作成する": [
       {
         "document": "getting-started/first-bot.md",
         "line": 1,
         "level": 1,
         "title": "最初のロボットを作成する"
-      }
-    ],
-    "最善の実践": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 367,
-        "level": 2,
-        "title": "最善の実践"
       }
     ],
     "最小限の使用可能モジュール": [
@@ -10642,12 +10794,6 @@
       {
         "document": "advanced/http-client.md",
         "line": 469,
-        "level": 2,
-        "title": "最適な実践"
-      },
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 117,
         "level": 2,
         "title": "最適な実践"
       }
@@ -10684,14 +10830,6 @@
         "title": "条目テンプレート"
       }
     ],
-    "核心な違い": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 161,
-        "level": 3,
-        "title": "核心な違い"
-      }
-    ],
     "核心の差異点": [
       {
         "document": "platform-guide/yunhu.md",
@@ -10716,12 +10854,12 @@
         "title": "核心メソッド"
       }
     ],
-    "核心原則": [
+    "核心概念": [
       {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 13,
-        "level": 3,
-        "title": "核心原則"
+        "document": "developer-guide/modules/getting-started.md",
+        "line": 102,
+        "level": 2,
+        "title": "核心概念"
       }
     ],
     "核心機能": [
@@ -10736,14 +10874,6 @@
         "line": 5,
         "level": 2,
         "title": "核心機能"
-      }
-    ],
-    "核心的な違い": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 119,
-        "level": 3,
-        "title": "核心的な違い"
       }
     ],
     "検索メソッド": [
@@ -10779,7 +10909,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 5,
+        "line": 7,
         "level": 2,
         "title": "概要"
       },
@@ -10794,14 +10924,6 @@
         "line": 5,
         "level": 2,
         "title": "概要"
-      }
-    ],
-    "構築モードへの移行": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 395,
-        "level": 3,
-        "title": "構築モードへの移行"
       }
     ],
     "標準 OB12 マッピング": [
@@ -10852,12 +10974,12 @@
         "title": "標準フォーマット"
       }
     ],
-    "標準メッセージセグメントタイプ": [
+    "標準メソッドをオーバーライドする場合は、asyncio.Task を返すだけです：": [
       {
-        "document": "platform-guide/telegram.md",
-        "line": 155,
-        "level": 3,
-        "title": "標準メッセージセグメントタイプ"
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 596,
+        "level": 1,
+        "title": "標準メソッドをオーバーライドする場合は、asyncio.Task を返すだけです："
       }
     ],
     "標準レスポンスフォーマット": [
@@ -10868,28 +10990,12 @@
         "title": "標準レスポンスフォーマット"
       }
     ],
-    "標準化されたレスポンス": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 589,
-        "level": 3,
-        "title": "標準化されたレスポンス"
-      }
-    ],
     "標準概要": [
       {
         "document": "standards/README.md",
         "line": 14,
         "level": 2,
         "title": "標準概要"
-      }
-    ],
-    "標準的なイベントの例": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 201,
-        "level": 2,
-        "title": "標準的なイベントの例"
       }
     ],
     "標準装備のフォント": [
@@ -10941,13 +11047,13 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 581,
+        "line": 579,
         "level": 2,
         "title": "次のステップ"
       },
       {
         "document": "developer-guide/modules/getting-started.md",
-        "line": 201,
+        "line": 198,
         "level": 2,
         "title": "次のステップ"
       },
@@ -10979,7 +11085,7 @@
     "注意事項": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 132,
+        "line": 227,
         "level": 2,
         "title": "注意事項"
       },
@@ -11050,34 +11156,24 @@
     ],
     "特有のイベントタイプ": [
       {
-        "document": "platform-guide/email.md",
-        "line": 117,
-        "level": 2,
-        "title": "特有のイベントタイプ"
-      },
-      {
         "document": "platform-guide/qqbot.md",
         "line": 134,
         "level": 2,
         "title": "特有のイベントタイプ"
       }
     ],
-    "特殊フィールドの例": [
+    "特有イベントタイプ": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 223,
-        "level": 3,
-        "title": "特殊フィールドの例"
-      },
+        "document": "platform-guide/email.md",
+        "line": 125,
+        "level": 2,
+        "title": "特有イベントタイプ"
+      }
+    ],
+    "特殊フィールドの例": [
       {
         "document": "platform-guide/kook.md",
         "line": 191,
-        "level": 3,
-        "title": "特殊フィールドの例"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 178,
         "level": 3,
         "title": "特殊フィールドの例"
       },
@@ -11142,12 +11238,12 @@
         "title": "環境診断"
       }
     ],
-    "生メッセージ送信": [
+    "画像": [
       {
-        "document": "platform-guide/telegram.md",
-        "line": 65,
-        "level": 3,
-        "title": "生メッセージ送信"
+        "document": "developer-guide/adapters/converter.md",
+        "line": 148,
+        "level": 1,
+        "title": "画像"
       }
     ],
     "画像のダウンロードと保存": [
@@ -11156,6 +11252,14 @@
         "line": 441,
         "level": 3,
         "title": "画像のダウンロードと保存"
+      }
+    ],
+    "画像を送信": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 646,
+        "level": 1,
+        "title": "画像を送信"
       }
     ],
     "画像処理": [
@@ -11188,6 +11292,14 @@
         "line": 180,
         "level": 1,
         "title": "異なる優先度で直列実行"
+      }
+    ],
+    "異同步コールバック": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 306,
+        "level": 1,
+        "title": "異同步コールバック"
       }
     ],
     "発行済みモジュールの更新": [
@@ -11230,6 +11342,22 @@
         "title": "目次"
       }
     ],
+    "直列：順番に送信": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 430,
+        "level": 1,
+        "title": "直列：順番に送信"
+      }
+    ],
+    "直接アクセスすると自動的に同期初期化されます": [
+      {
+        "document": "advanced/lazy-loading.md",
+        "line": 192,
+        "level": 1,
+        "title": "直接アクセスすると自動的に同期初期化されます"
+      }
+    ],
     "直接呼び出し方式": [
       {
         "document": "api-reference/core-modules.md",
@@ -11244,6 +11372,14 @@
         "line": 31,
         "level": 3,
         "title": "省略可能なフィールド"
+      }
+    ],
+    "破棄された場合、result[\"status\"] == \"failed\"": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 372,
+        "level": 1,
+        "title": "破棄された場合、result[\"status\"] == \"failed\""
       }
     ],
     "確認会話 (confirm)": [
@@ -11298,14 +11434,6 @@
         "title": "素材ドキュメント"
       }
     ],
-    "組み合わせ修飾": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 115,
-        "level": 3,
-        "title": "組み合わせ修飾"
-      }
-    ],
     "組み込みの確認語": [
       {
         "document": "getting-started/event-handling.md",
@@ -11320,22 +11448,6 @@
         "line": 606,
         "level": 4,
         "title": "組み込みメソッドのオーバーライド"
-      }
-    ],
-    "結果を待たない": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 243,
-        "level": 3,
-        "title": "結果を待たない"
-      }
-    ],
-    "結果を待つ": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 253,
-        "level": 3,
-        "title": "結果を待つ"
       }
     ],
     "統一されたキャッチ": [
@@ -11354,12 +11466,12 @@
         "title": "統計概要"
       }
     ],
-    "絵文字リアクションの処理": [
+    "絵文字応答": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 359,
-        "level": 3,
-        "title": "絵文字リアクションの処理"
+        "line": 207,
+        "level": 1,
+        "title": "絵文字応答"
       }
     ],
     "群操作メソッド": [
@@ -11450,6 +11562,14 @@
         "title": "英語に切り替える"
       }
     ],
+    "英語に直接切り替え": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 550,
+        "level": 1,
+        "title": "英語に直接切り替え"
+      }
+    ],
     "英語を登録": [
       {
         "document": "advanced/i18n.md",
@@ -11466,12 +11586,28 @@
         "title": "表单消息段 (yunhu_user_form)"
       }
     ],
+    "表情応酬の処理": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 369,
+        "level": 3,
+        "title": "表情応酬の処理"
+      }
+    ],
     "表示言語。オプション:": [
       {
         "document": "advanced/i18n.md",
         "line": 548,
         "level": 1,
         "title": "表示言語。オプション:"
+      }
+    ],
+    "複数のコンポーネントをアンインストール": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 517,
+        "level": 1,
+        "title": "複数のコンポーネントをアンインストール"
       }
     ],
     "複数のプラットフォームをサポートするには？": [
@@ -11488,6 +11624,14 @@
         "line": 548,
         "level": 4,
         "title": "複数のメソッド登録（Mixin クラス）"
+      }
+    ],
+    "複数のモジュールをインストール": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 488,
+        "level": 1,
+        "title": "複数のモジュールをインストール"
       }
     ],
     "複数アカウントモデル": [
@@ -11562,14 +11706,6 @@
         "title": "要求記述テンプレート"
       }
     ],
-    "言語の切り替え": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 546,
-        "level": 3,
-        "title": "言語の切り替え"
-      }
-    ],
     "言語検出メカニズム": [
       {
         "document": "advanced/i18n.md",
@@ -11598,6 +11734,14 @@
         "line": 67,
         "level": 2,
         "title": "設定のホットアップデート"
+      }
+    ],
+    "設定の説明": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 28,
+        "level": 2,
+        "title": "設定の説明"
       }
     ],
     "設定の読み込み": [
@@ -11634,12 +11778,6 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 237,
-        "level": 2,
-        "title": "設定オプション"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 348,
         "level": 2,
         "title": "設定オプション"
       },
@@ -11710,12 +11848,6 @@
         "line": 252,
         "level": 3,
         "title": "設定例"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 352,
-        "level": 3,
-        "title": "設定例"
       }
     ],
     "設定変更": [
@@ -11737,13 +11869,13 @@
     "設定説明": [
       {
         "document": "platform-guide/discord.md",
-        "line": 23,
+        "line": 29,
         "level": 2,
         "title": "設定説明"
       },
       {
         "document": "platform-guide/email.md",
-        "line": 21,
+        "line": 27,
         "level": 2,
         "title": "設定説明"
       },
@@ -11755,12 +11887,6 @@
       },
       {
         "document": "platform-guide/kook.md",
-        "line": 22,
-        "level": 2,
-        "title": "設定説明"
-      },
-      {
-        "document": "platform-guide/matrix.md",
         "line": 22,
         "level": 2,
         "title": "設定説明"
@@ -11842,14 +11968,6 @@
         "title": "起動プロセスと手動制御"
       }
     ],
-    "起動プロセスの概要": [
-      {
-        "document": "advanced/startup.md",
-        "line": 23,
-        "level": 2,
-        "title": "起動プロセスの概要"
-      }
-    ],
     "超级文件分享事件の例": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -11898,20 +12016,20 @@
         "title": "近似マッピングの原則"
       }
     ],
-    "返り値": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 563,
-        "level": 2,
-        "title": "返り値"
-      }
-    ],
     "返り値の仕様": [
       {
         "document": "api-reference/event-system.md",
         "line": 569,
         "level": 4,
         "title": "返り値の仕様"
+      }
+    ],
+    "返信": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 166,
+        "level": 1,
+        "title": "返信"
       }
     ],
     "返信の待機": [
@@ -11984,12 +12102,6 @@
     ],
     "送信メソッド": [
       {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 37,
-        "level": 2,
-        "title": "送信メソッド"
-      },
-      {
         "document": "standards/send-method-spec.md",
         "line": 457,
         "level": 3,
@@ -11998,8 +12110,8 @@
     ],
     "送信メソッドの戻り値": [
       {
-        "document": "platform-guide/discord.md",
-        "line": 157,
+        "document": "platform-guide/email.md",
+        "line": 269,
         "level": 2,
         "title": "送信メソッドの戻り値"
       },
@@ -12012,12 +12124,6 @@
       {
         "document": "platform-guide/kook.md",
         "line": 143,
-        "level": 2,
-        "title": "送信メソッドの戻り値"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 133,
         "level": 2,
         "title": "送信メソッドの戻り値"
       },
@@ -12052,28 +12158,12 @@
         "title": "送信メソッドの戻り値"
       }
     ],
-    "送信メソッドの返り値": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 263,
-        "level": 2,
-        "title": "送信メソッドの返り値"
-      }
-    ],
     "送信メソッド命名": [
       {
         "document": "standards/README.md",
         "line": 89,
         "level": 3,
         "title": "送信メソッド命名"
-      }
-    ],
-    "送信ルールシステム": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 266,
-        "level": 2,
-        "title": "送信ルールシステム"
       }
     ],
     "送信ルールデコレーター": [
@@ -12087,17 +12177,9 @@
     "送信例": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 81,
+        "line": 88,
         "level": 3,
         "title": "送信例"
-      }
-    ],
-    "送信可能なメッセージの種類": [
-      {
-        "document": "platform-guide/email.md",
-        "line": 58,
-        "level": 2,
-        "title": "送信可能なメッセージの種類"
       }
     ],
     "送信成功後のロジック実行": [
@@ -12108,12 +12190,12 @@
         "title": "送信成功後のロジック実行"
       }
     ],
-    "送信成功後の実行ロジック（Hook）": [
+    "送信方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 284,
-        "level": 3,
-        "title": "送信成功後の実行ロジック（Hook）"
+        "line": 47,
+        "level": 2,
+        "title": "送信方法"
       }
     ],
     "送信者情報": [
@@ -12164,6 +12246,14 @@
         "title": "逆変換とメッセージ構築"
       }
     ],
+    "通常の実行": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 537,
+        "level": 1,
+        "title": "通常の実行"
+      }
+    ],
     "通知イベント": [
       {
         "document": "api-reference/event-system.md",
@@ -12194,14 +12284,6 @@
         "line": 395,
         "level": 3,
         "title": "通知イベントの処理（絵文字反応など）"
-      }
-    ],
-    "通知イベントの追加フィールド": [
-      {
-        "document": "developer-guide/adapters/converter.md",
-        "line": 130,
-        "level": 3,
-        "title": "通知イベントの追加フィールド"
       }
     ],
     "通知イベントメソッド": [
@@ -12242,22 +12324,6 @@
         "title": "通知操作者"
       }
     ],
-    "進捗監視（OnProgress / OnError）": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 320,
-        "level": 3,
-        "title": "進捗監視（OnProgress / OnError）"
-      }
-    ],
-    "遅延送信（Defer）": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 342,
-        "level": 3,
-        "title": "遅延送信（Defer）"
-      }
-    ],
     "適用シナリオ": [
       {
         "document": "developer-guide/publishing.md",
@@ -12288,6 +12354,14 @@
         "line": 32,
         "level": 3,
         "title": "重要な制限"
+      }
+    ],
+    "開始フローの概要": [
+      {
+        "document": "advanced/startup.md",
+        "line": 25,
+        "level": 2,
+        "title": "開始フローの概要"
       }
     ],
     "開発タイプの選択": [
@@ -12369,7 +12443,7 @@
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 138,
+        "line": 236,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -12399,7 +12473,7 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 356,
+        "line": 360,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -12435,13 +12509,7 @@
       },
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 375,
-        "level": 2,
-        "title": "関連ドキュメント"
-      },
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 658,
+        "line": 385,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -12453,7 +12521,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 306,
+        "line": 304,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -12510,12 +12578,20 @@
         "title": "閲覧と検索"
       }
     ],
-    "附件付きのメール": [
+    "附件を含むメッセージ": [
+      {
+        "document": "platform-guide/discord.md",
+        "line": 279,
+        "level": 1,
+        "title": "附件を含むメッセージ"
+      }
+    ],
+    "附件付きメール": [
       {
         "document": "platform-guide/email.md",
-        "line": 154,
+        "line": 162,
         "level": 3,
-        "title": "附件付きのメール"
+        "title": "附件付きメール"
       }
     ],
     "雲湖プラットフォーム特性ドキュメント": [
@@ -12542,14 +12618,6 @@
         "title": "非同期プログラミング"
       }
     ],
-    "非同期処理": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 241,
-        "level": 2,
-        "title": "非同期処理"
-      }
-    ],
     "非同期処理メカニズム": [
       {
         "document": "platform-guide/onebot11.md",
@@ -12562,14 +12630,6 @@
         "line": 359,
         "level": 2,
         "title": "非同期処理メカニズム"
-      }
-    ],
-    "非同期初期化": [
-      {
-        "document": "advanced/lazy-loading.md",
-        "line": 96,
-        "level": 3,
-        "title": "非同期初期化"
       }
     ],
     "非同期操作の使用": [
@@ -12586,6 +12646,14 @@
         "line": 87,
         "level": 4,
         "title": "非同期送信と結果処理"
+      }
+    ],
+    "音声": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 151,
+        "level": 1,
+        "title": "音声"
       }
     ],
     "高レベルメソッド (推奨)": [

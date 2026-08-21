@@ -152,7 +152,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Подробное руководство по Event-обертке",
+              "title": "Подробное объяснение класса-обертки Event",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -215,7 +215,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "Характеристики платформы OneBot11",
+          "title": "Документация по функциям платформы OneBot11",
           "path": "platform-guide/onebot11.md",
           "level": 1,
           "icon": "fa-comments"
@@ -275,7 +275,7 @@
           "icon": "fa-gamepad"
         },
         {
-          "title": "Адаптер WeChatMp (WeChat Public Account) - Документация по особенностям платформы",
+          "title": "Адаптер WeChatMp - Документация по функциональным возможностям платформы",
           "path": "platform-guide/wechatmp.md",
           "level": 1,
           "icon": "fa-mobile-screen"
@@ -287,7 +287,7 @@
           "icon": "fa-link"
         },
         {
-          "title": "Документация по функциям платформы Ideaura (HuaFeng Coffeehouse)",
+          "title": "Документация по функциям платформы RockyChat (HuaFeng Coffee Shop)",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
@@ -369,7 +369,7 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Conversation Многошаговый диалог",
+          "title": "Conversation многократный диалог",
           "path": "advanced/conversation.md",
           "level": 1,
           "icon": "fa-comments"
@@ -393,7 +393,7 @@
           "icon": "fa-language"
         },
         {
-          "title": "Система области видимости модулей",
+          "title": "Система модульных областей",
           "path": "advanced/scope.md",
           "level": 1,
           "icon": "fa-fire"

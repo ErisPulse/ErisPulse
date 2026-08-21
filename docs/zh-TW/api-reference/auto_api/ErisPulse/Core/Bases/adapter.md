@@ -1316,6 +1316,37 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
+##### `async on_dependency_ready(module_name: str)`
+
+软依赖模块就绪回调（可选实现）
+
+当 ``optional_modules`` 中声明的模块被加载（含启动晚于适配器、
+热重载后再加载）时调用。子类可覆写以启用对应可选功能。
+
+- **module_name** (`就绪的模块名`): 
+**示例**:
+```python
+>>> optional_modules = ["TranslateEngine"]
+>>> async def on_dependency_ready(self, module_name):
+...     if module_name == "TranslateEngine":
+...         self._translate = self.sdk.TranslateEngine
+```
+
+---
+
+
+##### `async on_dependency_lost(module_name: str)`
+
+软依赖模块丢失回调（可选实现）
+
+当 ``optional_modules``（或模块硬依赖）中声明的模块被卸载/禁用时
+调用。子类可覆写以降级对应功能（如关闭翻译、清理缓存引用）。
+
+- **module_name**: 丢失的模块名
+
+---
+
+
 ##### `send(target_type: str, target_id: str, message: Any)`
 
 发送消息的便捷方法，返回一个 asyncio Task

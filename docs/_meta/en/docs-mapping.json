@@ -182,7 +182,7 @@
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL Explained",
+              "title": "SendDSL Detailed Explanation",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
@@ -233,7 +233,7 @@
           "icon": "fa-paper-plane"
         },
         {
-          "title": "Email Platform Feature Documentation",
+          "title": "Email Platform Feature Document",
           "path": "platform-guide/email.md",
           "level": 1,
           "icon": "fa-envelope"
@@ -263,7 +263,7 @@
           "icon": "fa-headset"
         },
         {
-          "title": "Matrix Platform Features Document",
+          "title": "Matrix Platform Feature Documentation",
           "path": "platform-guide/matrix.md",
           "level": 1,
           "icon": "fa-th-large"
