@@ -97,7 +97,7 @@ For detailed usage, please see [i18n documentation](../../advanced/i18n.md#Recom
 ### 1. Using Asynchronous Libraries
 
 ```python
-# Recommended to use the SDK's built-in HTTP client (asynchronous, with automatic logging and statistics)
+# Recommended: Use the SDK's built-in HTTP client (asynchronous, with automatic logging and statistics)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -105,7 +105,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# Alternatively, you can use sdk.client (same effect)
+# Alternatively, use sdk.client (same effect)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -113,7 +113,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Do not directly import aiohttp (not convenient for unified framework management)
+# Do not use aiohttp directly (not convenient for framework-level management)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -122,29 +122,31 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Do not use requests (synchronous, blocks the event loop)
+# Do not use requests (synchronous, will block the event loop)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # blocks the event loop
+        return requests.get(url).json()  # Will block the event loop
 ```
 
 ### 2. Correct Asynchronous Operations
 
 ```python
-async def handle_command(self, event):
+from ErisPulse.Core.Event import Event  # Event: Event annotation provides IDE auto-completion
+
+async def handle_command(self, event: Event):
     # Time-consuming operations that require waiting for results: directly await (clear lifecycle)
     result = await self._long_operation()
 
-async def on_load(self, event):
-    # Background tasks (polling/timed/fire-and-forget): use self.spawn(),
-    # the framework cancels them after on_unload when the module is unloaded, avoiding holding self and causing leaks
+async def on_load(self, event: dict):
+    # Background tasks (polling/periodic/fire-and-forget): use self.spawn(),
+    # when the module is unloaded, the framework cancels them after on_unload to prevent self reference leaks
     self.spawn(self._poll())
 ```
 
-> [!NOTE]  
-> Background tasks are recommended to use `self.spawn()` (ErisPulse **2.8.0+**), rather than `asyncio.create_task`—the raw tasks created by the latter do not belong to the module, and will not be automatically cleaned up during unloading, causing the module instance to be unable to be reclaimed due to holding a reference to `self` (hot reload leak). See [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
+> [!NOTE]
+> Background tasks are recommended to use `self.spawn()` (ErisPulse **2.8.0+**), rather than `asyncio.create_task`—the raw tasks created by the latter do not belong to the module, and will not be automatically cleaned up during unloading, potentially holding a reference to `self` and causing module instances to be unrecoverable (hot reload leak). See [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
 
 ### 3. Resource Management
 
@@ -152,33 +154,33 @@ async def on_load(self, event):
 async def on_load(self, event):
     # The SDK client automatically manages the connection pool, no need to manually create a session
     pass
-
+    
 async def on_unload(self, event):
     # If a custom client is needed, remember to clean up resources
     pass
 
 ## Event Handling
 
-### 1. Using Event Wrapper Classes
+### 1. Using Event Wrapper Class
 
 ```python
 # Convenient method using Event wrapper class
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"Hello, {nickname}!")
 
-# Instead of directly accessing the dictionary
+# Rather than directly accessing the dictionary
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event["user_id"]  # Less clear, prone to errors
 ```
 
 ### 2. Reasonable Use of Lazy Loading
 
 ```python
-# Infrequent command module: declare activate_on trigger, automatically activates on first matching command (maintains lazy loading)
+# Low-frequency command module: declare activate_on trigger, automatically activate on first matching command arrival (maintain lazy loading)
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -186,7 +188,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "Roll a dice", "aliases": ["d"]}},
         ])
 
-# Infrequent listener module: declare event trigger, automatically activates when event arrives
+# Low-frequency listener module: declare event trigger, automatically activate when event arrives
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -194,7 +196,7 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# Modules with high-frequency triggers (process every message) or those that must be ready at startup: load immediately
+# High-frequency triggers (process every message) or modules that must be ready at startup: load immediately
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -207,8 +209,7 @@ class UtilityModule(BaseModule):
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> For the complete syntax of `activate_on` (event three-form / command shorthand and dict declaration / help fallback chain), see  
-> [Lazy-Loading Module System](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate_on).
+> The full syntax of `activate_on` (three forms of events / command shorthand and dict declaration / help fallback chain) can be found in the [Lazy Loading Module System](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate_on).
 
 ### 3. Event Handler Registration
 
@@ -216,43 +217,43 @@ class UtilityModule(BaseModule):
 async def on_load(self, event):
     # Register event handlers in on_load
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("Hello!")
     
     @message.on_group_message()
-    async def group_handler(event):
+    async def group_handler(event: Event):
         self.logger.info("Received group message")
     
-    # No need to manually deregister, the framework handles it automatically
+    # No need to manually deregister, the framework will handle it automatically
 
 ## Error Handling
 
 ### 1. Categorized Exception Handling
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # Expected business errors
+        # Expected business error
         self.logger.warning(f"Business warning: {e}")
         await event.reply(f"Parameter error: {e}")
     except aiohttp.ClientError as e:
-        # Network errors (It is recommended to use sdk.client + ClientError instead)
-        # Old code using aiohttp directly still works, but new code recommends using the ErisPulse exception system
+        # Network error (recommended to use sdk.client + ClientError instead)
+        # Code directly using aiohttp still works, but new code recommends using ErisPulse exception system
         self.logger.error(f"Network error: {e}")
         await event.reply("Network request failed, please try again later")
     except Exception as e:
-        # Unexpected errors
+        # Unexpected error
         self.logger.error(f"Unknown error: {e}", exc_info=True)
-        await event.reply("Processing failed, please contact the administrator")
+        await event.reply("Processing failed, please contact administrator")
         raise
 ```
 
 ### 2. Timeout Handling
 
 ```python
-# It is recommended to use the SDK built-in client (which comes with timeout and retry logic)
+# Recommended to use SDK built-in client (includes timeout and retry)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -263,6 +264,9 @@ async def fetch_with_timeout(self, url, timeout=30):
     except ClientTimeoutError:
         self.logger.warning(f"Request timeout: {url}")
         raise
+```
+
+[**Quick Start**](docs/en/quick-start.md) | [**API Reference**](docs/en/api-reference.md) | [**Configuration**](docs/en/configuration.md) | [**Development**](docs/en/development.md)
 
 ## Storage System
 
@@ -347,7 +351,7 @@ class MyModule(BaseModule):
             # Fetch from database
             data = await self._fetch_from_db(key)
             
-            # Cache data
+            # Cache the data
             self._cache[key] = data
             return data
 ```
@@ -355,22 +359,29 @@ class MyModule(BaseModule):
 ### 2. Avoid Blocking Operations
 
 ```python
-# Use async operations
-async def process_message(self, event):
-    # Async processing
+# Use asynchronous operations
+async def process_message(self, event: Event):
+    # Asynchronous processing
     await self._async_process(event)
 
 # ❌ Blocking operation
-async def process_message(self, event):
-    # Synchronous operation, blocks event loop
+async def process_message(self, event: Event):
+    # Synchronous operation, blocks the event loop
     result = self._sync_process(event)
+```
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Security
 
 ### 1. Sensitive Data Protection
 
 ```python
-# Sensitive data is stored in the configuration (declarative ConfigClass, secret fields do not appear in logs/export)
+# Sensitive data stored in configuration (declarative ConfigClass, secret fields do not enter logs/export)
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -386,7 +397,7 @@ class MyModule(BaseModule):
 
     def check_api_key(self):
         if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("Please configure a valid API Key in config.toml")
+            raise ValueError("Please configure a valid API key in config.toml")
 
 # ❌ Hardcoded sensitive data
 class MyModule(BaseModule):
@@ -397,18 +408,25 @@ class MyModule(BaseModule):
 
 ```python
 # Validate user input
-async def process_command(self, event):
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
     # Validate input length
     if len(user_input) > 1000:
-        await event.reply("Input too long, please re-enter")
+        await event.reply("Input is too long, please re-enter")
         return
     
     # Validate input format
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("Invalid input format")
         return
+```
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g. `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Testing
 

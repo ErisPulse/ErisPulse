@@ -114,7 +114,7 @@ class MyModule(BaseModule):
 ### 1. 非同期ライブラリの使用
 
 ```python
-# SDKに内蔵されたHTTPクライアント（非同期、自動ログと統計機能付き）の使用が推奨されます
+# SDK内蔵のHTTPクライアント（非同期、自動ログと統計）の使用が推奨
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -122,7 +122,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# また、sdk.clientを使用することもできます（効果は同じ）
+# sdk.clientを使用することも可能（効果は同じ）
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -130,7 +130,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# aiohttpを直接インポートして使用しないでください（フレームワークの統一管理が難しくなります）
+# aiohttpを直接インポートしないこと（フレームワークによる統一管理が困難）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -139,40 +139,41 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# requestsを使用しないでください（同期的で、イベントループをブロックします）
+# requestsを使用しないこと（同期的で、イベントループをブロックする）
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # イベントループをブロックします
+        return requests.get(url).json()  # イベントループをブロックする
 ```
 
 ### 2. 正しい非同期操作
 
 ```python
-async def handle_command(self, event):
-    # 結果を待つ必要のある処理：直接 await（ライフサイクルが明確）
+from ErisPulse.Core.Event import Event  # event: Event注釈でIDEの補完が得られる
+
+async def handle_command(self, event: Event):
+    # 結果を待つ必要のある処理：直接await（ライフサイクルが明確）
     result = await self._long_operation()
 
-async def on_load(self, event):
-    # バックグラウンドタスク（ポーリング/定時実行/fire-and-forget）：self.spawn()を使用し、
-    # モジュールのアンロード時にon_unloadの後にフレームワークがキャンセルを処理し、
-    # selfの保持によるリークを回避します
+async def on_load(self, event: dict):
+    # バックグラウンドタスク（ポーリング/定時/fire-and-forget）：self.spawn()を使用
+    # モジュールのアンロード時にon_unloadの後にフレームワークがキャンセルを保証し、selfの保持によるリークを防ぐ
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> バックグラウンドタスクはself.spawn()（ErisPulse **2.8.0+**）を使用することを推奨します。asyncio.create_task()は推奨されません。後者は裸のタスクを作成し、モジュールに属さず、アンロード時に自動的にクリーンアップされず、selfの参照を保持してモジュールインスタンスが回収されない（ホットリロードのリーク）可能性があります。詳細は[ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの所属と自動キャンセル)をご覧ください。
+> バックグラウンドタスクは`self.spawn()`（ErisPulse **2.8.0+**）を使用することを推奨します。`asyncio.create_task`は、裸のタスクを作成し、モジュールに属さないため、アンロード時に自動的にクリーンアップされず、selfの参照を保持してモジュールインスタンスが回収されない（ホットリロードのリーク）可能性があります。詳細は[ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの所属と自動キャンセル)をご覧ください。
 
 ### 3. リソース管理
 
 ```python
 async def on_load(self, event):
-    # SDKのクライアントは接続プールを自動的に管理しているため、手動でsessionを作成する必要はありません
+    # SDKクライアントは接続プールを自動的に管理するため、手動でsessionを作成する必要はない
     pass
     
 async def on_unload(self, event):
-    # 自定義クライアントが必要な場合は、リソースのクリーンアップを忘れずに
+    # カスタムクライアントが必要な場合は、リソースのクリーンアップを忘れずに
     pass
 
 ## イベント処理
@@ -180,23 +181,23 @@ async def on_unload(self, event):
 ### 1. Eventラッパークラスの使用
 
 ```python
-# Eventラッパークラスを使用する便利な方法
+# Eventラッパークラスの便利な方法を使用
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"こんにちは、{nickname}！")
 
-# ディクショナリに直接アクセスするのではなく
+# 辞書に直接アクセスするのではなく
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event["user_id"]  # 明確さに欠け、間違いやすい
 ```
 
-### 2. ラグジュアリーなロードの適切な使用
+### 2. 懒惰的ロードの適切な使用
 
 ```python
-# 頻度の低いコマンドモジュール：activate_onトリガーを宣言し、最初の一致するコマンドが到着したときに自動的に有効化（ラグジュアリーなロードの維持）
+# 使用頻度の低いコマンドモジュール：activate_onトリガーを宣言し、最初の一致するコマンドが到着したときに自動的にアクティブ化（懒惰的ロードを維持）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -204,7 +205,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "サイコロを振る", "aliases": ["d"]}},
         ])
 
-# 頻度の低いリスナーモジュール：イベントトリガーを宣言し、イベントが到着したときに自動的に有効化
+# 使用頻度の低いリスナー・モジュール：イベントトリガーを宣言し、イベントが到着したときに自動的にアクティブ化
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -212,20 +213,21 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# 毎回メッセージを処理する必要がある高頻度のトリガー、または起動時に即座に準備が必要なモジュール：即時ロード
+# 高頻度のトリガー（各メッセージを処理する必要がある）または起動時に準備が必要なモジュール：即時ロード
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# ユーティリティモジュールはラグジュアリーなロードに適している
+# ユーティリティモジュールは懒惰的ロードに適している
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> `activate_on` の完全な構文（イベントの3形式 / コマンドの簡略化と dict宣言 / helpのフォールバックチェーン）は、[ラグジュアリーなロードモジュールシステム](../../advanced/lazy-loading.md#イベント駆動ラグジュアリー有効化activate_on)を参照してください。
+> `activate_on`の完全な構文（イベントの三形式 / コマンドの簡略化とdict宣言 / helpのフォールバックチェーン）については、  
+> [懒惰的ロードモジュールシステム](../../advanced/lazy-loading.md#イベント駆動の懒惰的アクティベーションactivate_on)を参照してください。
 
 ### 3. イベントハンドラの登録
 
@@ -233,43 +235,43 @@ class UtilityModule(BaseModule):
 async def on_load(self, event):
     # on_loadでイベントハンドラを登録
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("こんにちは！")
     
     @message.on_group_message()
-    async def group_handler(event):
+    async def group_handler(event: Event):
         self.logger.info("グループメッセージを受信しました")
     
-    # 手動で登録解除は不要、フレームワークが自動的に処理します
+    # 手動での登録解除は不要、フレームワークが自動的に処理します
 
 ## エラー処理
 
-### 1. 例外処理の分類
+### 1. 例外の分類処理
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # 予期されるビジネスエラー
+        # 予期されたビジネスエラー
         self.logger.warning(f"ビジネス警告: {e}")
         await event.reply(f"パラメータエラー: {e}")
     except aiohttp.ClientError as e:
-        # ネットワークエラー（sdk.client + ClientError の使用を推奨）
-        # 旧コードは aiohttp を直接使用しても動作しますが、新コードでは ErisPulse 例外体系を使用することを推奨します
+        # ネットワークエラー（推奨: sdk.client + ClientError を使用）
+        # 旧コードでは直接 aiohttp を使用しても正常に動作しますが、新規コードでは ErisPulse の例外体系を使用することを推奨します
         self.logger.error(f"ネットワークエラー: {e}")
-        await event.reply("ネットワークリクエストに失敗しました。しばらく待ってから再試行してください")
+        await event.reply("ネットワークリクエストに失敗しました。後でもう一度お試しください")
     except Exception as e:
         # 予期しないエラー
         self.logger.error(f"不明なエラー: {e}", exc_info=True)
-        await event.reply("処理に失敗しました。管理者にお問い合わせください")
+        await event.reply("処理に失敗しました。管理者に連絡してください")
         raise
 ```
 
 ### 2. タイムアウト処理
 
 ```python
-# SDK 内蔵クライアント（タイムアウトとリトライ機能付き）の使用を推奨
+# 推奨: SDK 内部のクライアントを使用（タイムアウトと再試行機能が付属）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -278,7 +280,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"リクエストタイムアウト: {url}")
+        self.logger.warning(f"リクエストがタイムアウトしました: {url}")
         raise
 
 ## ストレージシステム
@@ -346,7 +348,7 @@ self.logger.info(f"リクエストを処理中: request_id={request_id}, user_id
 # ❌ 非構造化ログを使用
 self.logger.info(f"リクエストを処理しました。ユーザー {user_id} からのもの、所要時間 {duration} ミリ秒")
 
-## パフォーマンスの最適化
+## パフォーマンス最適化
 
 ### 1. キャッシュの使用
 
@@ -372,13 +374,13 @@ class MyModule(BaseModule):
 ### 2. ブロッキング操作の回避
 
 ```python
-# 非同期操作の使用
-async def process_message(self, event):
+# 非同期操作を使用
+async def process_message(self, event: Event):
     # 非同期処理
     await self._async_process(event)
 
 # ❌ ブロッキング操作
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # 同期操作、イベントループをブロック
     result = self._sync_process(event)
 
@@ -387,7 +389,7 @@ async def process_message(self, event):
 ### 1. 敏感データ保護
 
 ```python
-# 敏感データは設定に保存されます（宣言型 ConfigClass、secret フィールドはログ/エクスポートに含まれません）
+# 敏感データは設定に格納されます（宣言型の ConfigClass、secret フィールドはログ/エクスポートに含まれません）
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -405,7 +407,7 @@ class MyModule(BaseModule):
         if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
             raise ValueError("config.toml に有効な API キーを設定してください")
 
-# ❌ 敏感データのハードコーディング
+# ❌ 敏感データをハードコードしないでください
 class MyModule(BaseModule):
     API_KEY = "sk-1234567890"  # これを行わないでください！
 ```
@@ -413,16 +415,16 @@ class MyModule(BaseModule):
 ### 2. 入力検証
 
 ```python
-# ユーザー入力の検証
-async def process_command(self, event):
+# ユーザー入力を検証
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
-    # 入力長の検証
+    # 入力の長さを検証
     if len(user_input) > 1000:
-        await event.reply("入力が長すぎます。再度入力してください")
+        await event.reply("入力が長すぎます。再入力してください")
         return
     
-    # 入力形式の検証
+    # 入力の形式を検証
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("入力形式が正しくありません")
         return

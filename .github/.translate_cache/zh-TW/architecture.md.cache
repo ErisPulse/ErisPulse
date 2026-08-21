@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "3a88a2db7e3fb5c74fbc9f382cc0a496",
-  "file_hash": "3a88a2db7e3fb5c74fbc9f382cc0a496",
-  "translated_at": "2026-08-21T01:36:46.027063",
+  "hash": "d762cff961dc18fa4d94fc956483a904",
+  "file_hash": "d762cff961dc18fa4d94fc956483a904",
+  "translated_at": "2026-08-21T21:59:15.206787",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 架構概覽\n\n本文檔透過可視化圖表介紹 ErisPulse SDK 的技術架構，幫助你快速理解框架的設計理念和模組關係。\n\n請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。\n\n再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。"
     },
     {
-      "hash": "6cfb51d7212c38c82109a9afce92c5fc",
-      "translation": "## SDK 核心架構\n\n下圖展示了 SDK 的核心模組組成及其關係：\n\n```mermaid\ngraph TB\n    SDK[\"sdk<br/>統一入口\"]\n\n    SDK --> Event[\"Event<br/>事件系統\"]\n    SDK --> Lifecycle[\"Lifecycle<br/>生命週期管理\"]\n    SDK --> Logger[\"Logger<br/>日誌管理\"]\n    SDK --> Storage[\"Storage / env<br/>儲存管理\"]\n    SDK --> Config[\"Config<br/>配置管理\"]\n    SDK --> AdapterMgr[\"Adapter<br/>適配器管理\"]\n    SDK --> ModuleMgr[\"Module<br/>模組管理\"]\n    SDK --> Router[\"Router<br/>路由管理\"]\n    SDK --> Client[\"HttpClient<br/>HTTP 客戶端\"]\n    Event --> Command[\"command\"]\n    Event --> Message[\"message\"]\n    Event --> Notice[\"notice\"]\n    Event --> Request[\"request\"]\n    Event --> Meta[\"meta\"]\n    Event --> Conversation[\"Conversation<br/>分支 + 持久化\"]\n\n    AdapterMgr --> BaseAdapter[\"BaseAdapter\"]\n    BaseAdapter --> P1[\"雲湖\"]\n    BaseAdapter --> P2[\"Telegram\"]\n    BaseAdapter --> P3[\"OneBot11/12\"]\n    BaseAdapter --> PN[\"...\"]\n\n    ModuleMgr --> BaseModule[\"BaseModule\"]\n    BaseModule --> CM[\"自訂模組\"]\n\n    BaseAdapter -.-> SendDSL[\"SendDSL<br/>訊息發送\"]\n```\n\n### 核心模組說明\n\n| 模組 | 說明 |\n|------|------|\n| **Event** | 事件系統，提供 command / message / notice / request / meta 五類事件處理，以及 Conversation 多輪對話 |\n| **Adapter** | 適配器管理器，管理多平台適配器的註冊、啟動和關閉 |\n| **Module** | 模組管理器，管理插件的註冊、載入和卸載，支援依賴宣告和拓撲排序 |\n| **Lifecycle** | 生命週期管理器，提供事件驅動的生命週期鉤子 |\n| **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 串流查詢 |\n| **Config** | TOML 格式的設定檔管理 |\n| **Logger** | 模組化日誌系統，支援子日誌器 |\n| **Router** | HTTP/WebSocket 路由管理，透過抽象層封裝底層後端（目前為 FastAPI + Uvicorn），支援裝飾器路由、中間件、分組、限流、CORS |\n| **HttpClient** | 統一 HTTP/WS 客戶端，透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端、ErisPulse 異常體系等功能。客戶端和伺服器 WebSocket 共享 `WebSocketConnectionBase` 基類 |"
+      "hash": "7653e71964450c15eb40515fee6d2bb1",
+      "translation": "## SDK 核心架構\n\n下圖展示了 SDK 的核心模組組成及其關係：\n\n```mermaid\ngraph TB\n    SDK[\"sdk<br/>統一入口\"]\n\n    SDK --> Event[\"Event<br/>事件系統\"]\n    SDK --> Lifecycle[\"Lifecycle<br/>生命週期管理\"]\n    SDK --> Logger[\"Logger<br/>日誌管理\"]\n    SDK --> Storage[\"Storage / env<br/>儲存管理\"]\n    SDK --> Config[\"Config<br/>配置管理\"]\n    SDK --> AdapterMgr[\"Adapter<br/>適配器管理\"]\n    SDK --> ModuleMgr[\"Module<br/>模組管理\"]\n    SDK --> Router[\"Router<br/>路由管理\"]\n    SDK --> Client[\"Client<br/>HTTP 客戶端\"]\n    Event --> Command[\"command\"]\n    Event --> Message[\"message\"]\n    Event --> Notice[\"notice\"]\n    Event --> Request[\"request\"]\n    Event --> Meta[\"meta\"]\n    Event --> Conversation[\"Conversation<br/>分支 + 持久化\"]\n\n    AdapterMgr --> BaseAdapter[\"BaseAdapter\"]\n    BaseAdapter --> P1[\"雲湖\"]\n    BaseAdapter --> P2[\"Telegram\"]\n    BaseAdapter --> P3[\"OneBot11/12\"]\n    BaseAdapter --> PN[\"...\"]\n\n    ModuleMgr --> BaseModule[\"BaseModule\"]\n    BaseModule --> CM[\"自訂模組\"]\n\n    BaseAdapter -.-> SendDSL[\"SendDSL<br/>訊息發送\"]\n```\n\n### 核心模組說明\n\n| 模組 | 說明 |\n|------|------|\n| **Event** | 事件系統，提供 command / message / notice / request / meta 五類事件處理，以及 Conversation 多輪對話 |\n| **Adapter** | 適配器管理器，管理多平台適配器的註冊、啟動和關閉 |\n| **Module** | 模組管理器，管理插件的註冊、載入和卸載，支援依賴宣告和拓撲排序 |\n| **Lifecycle** | 生命週期管理器，提供事件驅動的生命週期鉤子 |\n| **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 串流查詢 |\n| **Config** | TOML 格式的設定檔管理 |\n| **Logger** | 模組化日誌系統，支援子日誌器 |\n| **Router** | HTTP/WebSocket 路由管理，透過抽象層封裝底層後端（目前為 FastAPI + Uvicorn），支援裝飾器路由、中間件、分組、限流、CORS |\n| **Client** | 統一 HTTP/WS 客戶端（2.8.0 前為 `HttpClient`，保留相容別名），透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端、ErisPulse 異常體系等功能。客戶端和伺服器 WebSocket 共享 `WebSocketConnectionBase` 基類 |"
     },
     {
       "hash": "13f749ee1c5b080c06d87347a48fcfb4",
