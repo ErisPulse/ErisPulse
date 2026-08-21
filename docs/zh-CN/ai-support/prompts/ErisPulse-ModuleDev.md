@@ -59,7 +59,7 @@ graph TB
     SDK --> AdapterMgr["Adapter<br/>适配器管理"]
     SDK --> ModuleMgr["Module<br/>模块管理"]
     SDK --> Router["Router<br/>路由管理"]
-    SDK --> Client["HttpClient<br/>HTTP 客户端"]
+    SDK --> Client["Client<br/>HTTP 客户端"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -91,7 +91,7 @@ graph TB
 | **Config** | TOML 格式的配置文件管理 |
 | **Logger** | 模块化日志系统，支持子日志器 |
 | **Router** | HTTP/WebSocket 路由管理，通过抽象层封装底层后端（当前为 FastAPI + Uvicorn），支持装饰器路由、中间件、分组、限流、CORS |
-| **HttpClient** | 统一 HTTP/WS 客户端，通过抽象层封装底层请求库（当前为 aiohttp），提供请求统计、重试、日志、WebSocket 客户端、ErisPulse 异常体系等功能。客户端和服务端 WebSocket 共享 `WebSocketConnectionBase` 基类 |
+| **Client** | 统一 HTTP/WS 客户端（2.8.0 前为 `HttpClient`，保留兼容别名），通过抽象层封装底层请求库（当前为 aiohttp），提供请求统计、重试、日志、WebSocket 客户端、ErisPulse 异常体系等功能。客户端和服务端 WebSocket 共享 `WebSocketConnectionBase` 基类 |
 
 ## 初始化流程
 
@@ -2448,6 +2448,23 @@ self.logger.critical("致命错误") # 致命错误
 
 Event 模块提供了功能强大的 Event 包装类，简化事件处理。
 
+## 为 event 参数添加类型注解
+
+事件处理器的 `event` 参数是 **Event 包装类**（dict 子类）。强烈建议为它添加类型注解：
+
+```python
+from ErisPulse.Core.Event import Event
+
+@message.on_private_message()
+async def handler(event: Event):
+    text = event.get_text()   # IDE 自动补全所有便捷方法
+    await event.reply(text)   # 拼写错误在静态检查时即可发现
+```
+
+不加注解时 IDE 无法识别 Event 上的方法（`get_text()` / `reply()` / `wait_reply()` / 平台扩展方法均不提示），只能靠记忆拼写。
+
+> **注意区分**：事件处理器回调的 `event` 是 **Event 包装类**（注解为 `Event`）；模块生命周期方法 `on_load` / `on_unload` 的 `event` 是普通 **dict**（注解为 `dict`），二者不要混淆。
+
 ## 核心特性
 
 - **完全兼容字典**：Event 继承自 dict
@@ -2461,7 +2478,7 @@ Event 模块提供了功能强大的 Event 包装类，简化事件处理。
 from ErisPulse.Core.Event import command
 
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     event_id = event.get_id()
     platform = event.get_platform()
     time = event.get_time()
@@ -2474,7 +2491,7 @@ async def info_command(event):
 from ErisPulse.Core.Event import message
 
 @message.on_private_message()
-async def private_handler(event):
+async def private_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
@@ -2487,7 +2504,7 @@ async def private_handler(event):
 from ErisPulse.Core.Event import message
 
 @message.on_group_message()
-async def group_handler(event):
+async def group_handler(event: Event):
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
@@ -2500,7 +2517,7 @@ async def group_handler(event):
 from ErisPulse.Core.Event import command
 
 @command("ask")
-async def ask_command(event):
+async def ask_command(event: Event):
     await event.reply("请输入你的名字:")
     reply = await event.wait_reply(timeout=30)
     if reply:
@@ -2514,7 +2531,7 @@ async def ask_command(event):
 from ErisPulse.Core.Event import command
 
 @command("cmdinfo")
-async def cmdinfo_command(event):
+async def cmdinfo_command(event: Event):
     cmd_name = event.get_command_name()
     cmd_args = event.get_command_args()
     await event.reply(f"命令: {cmd_name}, 参数: {cmd_args}")
@@ -2526,7 +2543,7 @@ async def cmdinfo_command(event):
 from ErisPulse.Core.Event import notice
 
 @notice.on_friend_add()
-async def friend_add_handler(event):
+async def friend_add_handler(event: Event):
     await event.reply("欢迎添加我为好友！")
 ```
 
@@ -2691,7 +2708,7 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ```python
 @command("delete", help="删除数据")
-async def delete_handler(event):
+async def delete_handler(event: Event):
     if await event.confirm("确定要删除所有数据吗？"):
         sdk.storage.delete("all_data")
         await event.reply("数据已删除")
@@ -2712,7 +2729,7 @@ if await event.confirm("确定继续？", hint=True):
 
 ```python
 @command("color", help="选择颜色")
-async def color_handler(event):
+async def color_handler(event: Event):
     choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
     if choice is not None:
         colors = ["红色", "绿色", "蓝色"]
@@ -2770,7 +2787,7 @@ choice = await event.choose(
 
 ```python
 @command("register", help="注册")
-async def register_handler(event):
+async def register_handler(event: Event):
     data = await event.collect([
         {"key": "name", "prompt": "请输入姓名："},
         {"key": "age", "prompt": "请输入年龄：",
@@ -3003,11 +3020,13 @@ class MyModule(BaseModule):
 ### 2. 正确的异步操作
 
 ```python
-async def handle_command(self, event):
+from ErisPulse.Core.Event import Event  # event: Event 注解可获得 IDE 补全
+
+async def handle_command(self, event: Event):
     # 需要等待结果的耗时操作：直接 await（生命周期明确）
     result = await self._long_operation()
 
-async def on_load(self, event):
+async def on_load(self, event: dict):
     # 后台任务（轮询/定时/fire-and-forget）：用 self.spawn()，
     # 模块卸载时框架在 on_unload 之后兜底取消，避免持有 self 导致泄漏
     self.spawn(self._poll())
@@ -3035,14 +3054,14 @@ async def on_unload(self, event):
 ```python
 # 使用 Event 包装类的便捷方法
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"你好，{nickname}！")
 
 # 而非直接访问字典
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event["user_id"]  # 不够清晰，容易出错
 ```
 
@@ -3087,11 +3106,11 @@ class UtilityModule(BaseModule):
 async def on_load(self, event):
     # 在 on_load 中注册事件处理器
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("你好！")
     
     @message.on_group_message()
-    async def group_handler(event):
+    async def group_handler(event: Event):
         self.logger.info("收到群消息")
     
     # 不需要手动注销，框架会自动处理
@@ -3102,7 +3121,7 @@ async def on_load(self, event):
 ### 1. 分类异常处理
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
@@ -3231,12 +3250,12 @@ class MyModule(BaseModule):
 
 ```python
 # 使用异步操作
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # 异步处理
     await self._async_process(event)
 
 # ❌ 阻塞操作
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # 同步操作，阻塞事件循环
     result = self._sync_process(event)
 ```
@@ -3273,7 +3292,7 @@ class MyModule(BaseModule):
 
 ```python
 # 验证用户输入
-async def process_command(self, event):
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
     # 验证输入长度
@@ -6177,10 +6196,10 @@ resp = await client.request(
 ## 超时与重试
 
 ```python
-from ErisPulse.Core import HttpClient
+from ErisPulse.Core import Client
 
 # 创建带自定义超时的客户端
-client = HttpClient(
+client = Client(
     timeout=60,           # 请求总超时 60s
     connect_timeout=5,    # 连接超时 5s
     max_retries=3,        # 失败自动重试 3 次
@@ -6191,10 +6210,13 @@ client = HttpClient(
 resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
+> [!NOTE]
+> 客户端类从 2.8.0 起更名为 `Client`（`sdk.client` 属性名不变）；旧名 `HttpClient` 保留为兼容别名，老代码无需修改。
+
 ## 自定义默认头
 
 ```python
-client = HttpClient(
+client = Client(
     headers={
         "Authorization": "Bearer token",
         "X-App-Id": "my-app",
@@ -6246,7 +6268,7 @@ async def on_ws_connect(event_data):
 
 ```python
 # 作为上下文管理器，自动关闭会话
-async with HttpClient(timeout=30) as client:
+async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
 ```

@@ -152,7 +152,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event 包装クラスの詳細解説",
+              "title": "Event 包装クラスの詳細",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -215,7 +215,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "OneBot11プラットフォーム特性ドキュメント",
+          "title": "OneBot11プラットフォームの機能ドキュメント",
           "path": "platform-guide/onebot11.md",
           "level": 1,
           "icon": "fa-comments"
@@ -239,7 +239,7 @@
           "icon": "fa-envelope"
         },
         {
-          "title": "雲湖プラットフォーム特性ドキュメント",
+          "title": "雲湖プラットフォームの特徴ドキュメント",
           "path": "platform-guide/yunhu.md",
           "level": 1,
           "icon": "fa-cloud"
@@ -275,7 +275,7 @@
           "icon": "fa-gamepad"
         },
         {
-          "title": "WeChat 公衆アカウント (WechatMp) アダプタ - プラットフォーム特性ドキュメント",
+          "title": "WeChatMpアダプタ - プラットフォーム特徴ドキュメント",
           "path": "platform-guide/wechatmp.md",
           "level": 1,
           "icon": "fa-mobile-screen"
@@ -287,7 +287,7 @@
           "icon": "fa-link"
         },
         {
-          "title": "花楓カフェ（Ideaura）プラットフォーム特性ドキュメント",
+          "title": "花楓コーヒーショップ（RockyChat）プラットフォームの機能ドキュメント",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
@@ -465,7 +465,7 @@
           "icon": "fa-gavel"
         },
         {
-          "title": "ErisPulse セッション型標準",
+          "title": "ErisPulse セッションタイプ標準",
           "path": "standards/session-types.md",
           "level": 1,
           "icon": "fa-layer-group"
