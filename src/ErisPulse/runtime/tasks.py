@@ -20,6 +20,7 @@ from collections.abc import Awaitable, Coroutine
 from typing import Any, TypeVar
 
 from .context import current_owner
+from ..Core.constants import DEFAULT_OWNER_CANCEL_TIMEOUT_SECS
 
 _T = TypeVar("_T")
 
@@ -38,10 +39,6 @@ _owner_tasks: dict[str | None, set[Any]] = {}
 # 避免在临时事件循环中执行业务代码导致的 "Future attached to a different loop"。
 _MAIN_LOOP: asyncio.AbstractEventLoop | None = None
 _MAIN_LOOP_LOCK = threading.Lock()
-
-# 取消归属者任务时等待回收的超时（秒）。超时后不再等待（防止卸载流程被卡死），
-# 任务仍保持 cancelled 状态，最终会自行结束。
-_OWNER_CANCEL_TIMEOUT_SECS = 5.0
 
 
 def register_main_loop(loop: asyncio.AbstractEventLoop) -> None:
@@ -109,7 +106,7 @@ def get_owner_tasks(owner: str | None) -> set[Any]:
     return set(_owner_tasks.get(owner, ()))
 
 
-async def cancel_owner_tasks(owner: str | None, *, timeout: float = _OWNER_CANCEL_TIMEOUT_SECS) -> int:
+async def cancel_owner_tasks(owner: str | None, *, timeout: float = DEFAULT_OWNER_CANCEL_TIMEOUT_SECS) -> int:
     """
     取消并等待指定归属者的全部后台任务
 
@@ -146,7 +143,7 @@ async def cancel_owner_tasks(owner: str | None, *, timeout: float = _OWNER_CANCE
     return cancelled
 
 
-async def cancel_all_background_tasks(*, timeout: float = _OWNER_CANCEL_TIMEOUT_SECS) -> int:
+async def cancel_all_background_tasks(*, timeout: float = DEFAULT_OWNER_CANCEL_TIMEOUT_SECS) -> int:
     """
     取消并等待全部后台任务
 

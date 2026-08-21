@@ -399,6 +399,35 @@ class TestCreateTemplatesCompile:
         code = c._MODULE_CORE.format(name="MyModule", text=self._text())
         compile(code, "<module_core>", "exec")
 
+    def test_module_core_sdk_injection_annotation(self):
+        """模块模板：sdk 纯注入 + SDK 类型注解，无 import 兜底"""
+        from ErisPulse.CLI.commands import create as c
+
+        code = c._MODULE_CORE.format(name="MyModule", text=self._text())
+        assert "def __init__(self, sdk: SDK = None):" in code
+        assert "from ErisPulse import SDK" in code
+        assert "from ErisPulse import sdk as _sdk" not in code
+        assert "_sdk if sdk is None else sdk" not in code
+        # 初始化日志不再调用无效的 .format(name=...)
+        assert ').format(name="MyModule")' not in code
+
+    def test_module_core_event_annotation_and_meta_i18n(self):
+        """模块模板：事件回调带 Event 注解；meta description 用 i18n 字典"""
+        from ErisPulse.CLI.commands import create as c
+
+        code = c._MODULE_CORE.format(name="MyModule", text=self._text())
+        assert "from ErisPulse.Core.Event import Event" in code
+        # 事件回调全部注解为 Event
+        assert "async def hello_command(event: Event):" in code
+        assert "async def private_message_handler(event: Event):" in code
+        assert "async def group_message_handler(event: Event):" in code
+        assert "async def friend_add_handler(event: Event):" in code
+        # 生命周期方法保持 dict
+        assert "async def on_load(self, event: dict) -> bool:" in code
+        # meta description 为 i18n 字典，且 I18nClass 注册了对应键
+        assert '"i18n": "module.MyModule.meta.description"' in code
+        assert 'key="module.MyModule.meta.description"' in code
+
     def test_adapter_converter_renders_and_compiles(self):
         from ErisPulse.CLI.commands import create as c
 

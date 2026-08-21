@@ -30,6 +30,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from ..Core.constants import MODULE_SOURCE_PLUGIN_FOLDER
 from ..Core.i18n import i18n
 from ..Core.logger import logger
 
@@ -189,7 +190,7 @@ class PluginFolderLoader:
                     "depends": list(depends),
                     "is_base_module": is_base_module,
                     "top_level": [name],
-                    "source": "plugin_folder",
+                    "source": MODULE_SOURCE_PLUGIN_FOLDER,
                 },
                 "module_class": module_class,
                 "strategy": strategy,

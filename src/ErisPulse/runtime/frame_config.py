@@ -17,8 +17,12 @@ from ..Core.constants import (
     DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_I18N_LANGUAGE,
     DEFAULT_LAZY_LOADING_ENABLED,
+    DEFAULT_LOG_BACKUP_COUNT,
     DEFAULT_LOG_LEVEL,
+    DEFAULT_LOG_MAX_SIZE_MB,
     DEFAULT_LOG_MEMORY_LIMIT,
+    DEFAULT_LOG_ROTATION,
+    DEFAULT_LOG_ROTATION_WHEN,
     DEFAULT_MESSAGE_IGNORE_SELF,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
     DEFAULT_PROACTIVE_GC_FULL_EVERY,
@@ -51,10 +55,10 @@ DEFAULT_ERISPULSE_CONFIG = {
         # 日志目录模式（与 log_files 互斥，log_files 显式路径优先）：
         # 设置后日志自动写入该目录并支持自动分段
         "log_dir": "",
-        "log_rotation": "size",       # 分段方式: "size" | "date" | "none"
-        "log_max_size_mb": 10,        # size 模式单文件上限（MB）
-        "log_backup_count": 5,        # 保留的历史日志文件数
-        "log_rotation_when": "midnight",  # date 模式轮转周期
+        "log_rotation": DEFAULT_LOG_ROTATION,          # 分段方式: "size" | "date" | "none"
+        "log_max_size_mb": DEFAULT_LOG_MAX_SIZE_MB,    # size 模式单文件上限（MB）
+        "log_backup_count": DEFAULT_LOG_BACKUP_COUNT,  # 保留的历史日志文件数
+        "log_rotation_when": DEFAULT_LOG_ROTATION_WHEN,  # date 模式轮转周期
         "memory_limit": DEFAULT_LOG_MEMORY_LIMIT,
         # 屏蔽指定日志等级（如 ["EVENT"] 隐藏消息收发内容，用于隐私保护）
         "exclude_levels": [],

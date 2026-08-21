@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 
+from ErisPulse import SDK
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey, ModuleMeta
-from ErisPulse.Core.Event import command, message, notice
+from ErisPulse.Core.Event import Event, command, message, notice
 
 
 class Main(BaseModule):
@@ -70,7 +71,7 @@ class Main(BaseModule):
             zh_TW="等待逾時，請重試。",
         )
 
-    def __init__(self, sdk):
+    def __init__(self, sdk: SDK = None):
         self.sdk = sdk
         self.logger = self.sdk.logger.get_child("MyModule")
         self.storage = self.sdk.storage
@@ -151,18 +152,18 @@ class Main(BaseModule):
     async def _register_commands(self):
         """注册命令处理器"""
         @command("hello", help="发送问候消息")
-        async def hello_command(event):
+        async def hello_command(event: Event):
             await event.reply("Hello World!")
             sender = event.get_sender()
             self.logger.info(f"收到来自 {sender['user_id']} 的hello命令")
 
         @command("help", aliases=["h"], help="显示帮助信息")
-        async def help_command(event):
+        async def help_command(event: Event):
             help_text = command.help()
             await event.reply(help_text)
 
         @command("echo", help="回显消息", usage="/echo <内容>")
-        async def echo_command(event):
+        async def echo_command(event: Event):
             # 实时读取配置（每次访问都反映最新值）
             cfg = self.cfg
             if not cfg.echo_enabled:
@@ -177,7 +178,7 @@ class Main(BaseModule):
                 await event.reply(response)
 
         @command("interactive", help="交互式命令示例", usage="/interactive")
-        async def interactive_command(event):
+        async def interactive_command(event: Event):
             from ErisPulse import i18n
             await event.reply(i18n.t("MyModule.greeting_prompt"))
 
@@ -192,20 +193,20 @@ class Main(BaseModule):
     async def _register_message_handlers(self):
         """注册消息和通知处理器"""
         @message.on_private_message()
-        async def private_message_handler(event):
+        async def private_message_handler(event: Event):
             cfg = self.cfg
             if cfg.debug_mode:
                 self.logger.info(f"收到私聊消息，发送者: {event.get_user_nickname()}, 内容: {event.get_text()}")
 
         @message.on_group_message()
-        async def group_message_handler(event):
+        async def group_message_handler(event: Event):
             if event.is_at_message():
                 mentions = event.get_mentions()
                 self.logger.info(f"收到@消息，被@的用户: {mentions}")
                 await event.reply("我收到了你的@消息！")
 
         @notice.on_friend_add()
-        async def friend_add_handler(event):
+        async def friend_add_handler(event: Event):
             self.logger.info(f"新好友添加: {event.get_user_nickname()}")
 
             # 实时读取配置
