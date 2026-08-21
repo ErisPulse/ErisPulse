@@ -102,13 +102,57 @@ flowchart LR
     I --> J["适配器发送至平台"]
 ```
 
-### 事件处理关键步骤
+### 事件处理链路详解
 
-- **适配器接收** - 各平台适配器通过 WebSocket/Webhook 等方式接收原生事件
-- **OB12 标准化** - 将平台原生事件转换为统一的 OneBot12 标准格式
-- **中间件处理** - 依次执行已注册的中间件函数，可修改事件数据
-- **事件分发** - 根据事件类型（message/notice/request/meta）分发到对应处理器
-- **SendDSL 回复** - 处理器通过 `event.reply()` 或 `SendDSL` 链式调用发送响应
+上面这张图是「结果」；下面拆开 `adapter.emit()` 之后框架**在背后做了什么**——这是一条三层分发的链路：
+
+```mermaid
+sequenceDiagram
+    participant P as 平台
+    participant A as 适配器总线层<br/>AdapterManager.emit
+    participant T as 处理器 Task 层<br/>_dispatch_handler_task
+    participant E as Event 模块层<br/>_process_event
+
+    P->>A: 原生事件
+    A->>A: 提取 platform/type/detail_type + 原始字段
+    A->>A: [Recv] 接收日志
+    A->>A: lifecycle.adapter.event.receive（最早期钩子）
+    A->>A: 处理 self 字段（meta 分支 / Bot 自动注册）
+    A->>A: 中间件链（串行，可改写事件数据）
+    A->>A: 收集 handler（具体类型 + 通配符 *）
+    A->>A: 作用域过滤（创建 Task 前，静默跳过）
+    A->>T: asyncio.create_task（fire-and-forget）
+    A->>A: lifecycle.adapter.event.dispatched（最末钩子）
+    T->>T: 获取并发信号量（默认上限 64）
+    T->>E: 调用 Event 模块挂载的处理器
+    E->>E: lifecycle.event.pre_process
+    E->>E: ignore_self（消息事件默认忽略自身）
+    E->>E: 按优先级分组：高→低、组间串行、组内并发
+    E->>E: 组内副本执行 + 字段合并（冲突告警）
+    E->>E: 组后检查 stop() 阻断更低优先级
+    T->>T: 慢日志（超 1s 告警，wait_reply 时间白名单）
+```
+
+**每一步框架做了什么、你能干预什么：**
+
+| 阶段 | 框架做了什么 | 你能干预的 |
+|------|-------------|-----------|
+| 接收 | 提取标准字段，保留 `{platform}_raw` 原始数据；写 `[Recv]` 日志 | 监听 `adapter.event.receive` 拿到最早期事件 |
+| self 字段 | meta 事件走 connect/disconnect/heartbeat 分支；普通事件自动注册 Bot 并触发 `adapter.bot.online` | 监听 `adapter.bot.online` / `bot.offline` |
+| 中间件 | **串行**执行，返回值非 None 则替换事件数据 | 注册中间件改写/拦截事件 |
+| 分发收集 | 先取具体类型 handler，再取 `*` 通配符 handler | — |
+| 作用域过滤 | 按 owner 判定 `scope.is_allowed`（会话级>Bot级>平台级），**不通过则静默跳过** | 配置作用域白名单/黑名单 |
+| 调度 | 每个匹配 handler 独立 `asyncio.Task`，`emit()` **不等待** handler 完成即返回 | — |
+| 优先级 | 高优先级组先执行；**组间串行、组内并发**（组内各自持有事件副本，改字段合并回原事件，冲突打 WARNING） | `@command(..., priority=N)` / 注册时指定 priority |
+| 阻断 | 每处理完一组检查 `event.is_stopped()`，命中则**不再执行更低优先级** | `event.mark_processed(stop=True)` / `event.done()` |
+
+> **常见误区**：
+> 1. **作用域过滤是静默的**——被屏蔽的 handler 不报错不响应，只在 TRACE 级日志可见（`core.scope.denied`）。「我的模块没收到消息」优先排查作用域绑定。
+> 2. **handler 天然并发**——框架已为每个 handler 建独立 Task，你**不需要**再自己 `asyncio.create_task` 包一层。
+> 3. **同优先级组内不阻断**——`mark_processed(stop=True)` 只阻止更低优先级组，同组内已并发的 handler 不会中途被打断。
+> 4. **慢日志阈值固定 1 秒**——处理器耗时超 1s 会在日志打 WARNING（`wait_reply` 等待时间已从耗时中剔除），但不中断执行。
+
+> 作用域三级绑定与优先级细节见 [作用域系统](advanced/scope.md)；claim/阻断完整语义见 [事件处理入门](getting-started/event-handling.md)；并发上限配置见 [配置指南](user-guide/configuration.md#框架配置)。
 
 ## 生命周期事件
 

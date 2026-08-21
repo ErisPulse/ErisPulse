@@ -324,6 +324,37 @@ class Main(BaseModule):
             sdk.logger.info(f"配置变更: {data['key']} = {data['new_value']}")
 ```
 
+## 后台任务归属与自动取消
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+模块创建的 asyncio 后台任务若未在 `on_unload` 中取消，会持有 `self` 引用导致模块实例无法被回收（热重载后旧实例残留）。框架提供以下兜底机制：
+
+- **`self.spawn(coro)`**（模块内推荐）：任务自动归属模块名，模块卸载时框架在 `on_unload` **之后**兜底取消未结束的任务并记录警告
+- **`spawn_background(coro)`**（`ErisPulse.runtime`）：自动捕获当前 `owner_scope` 上下文；`cancel_owner_tasks(owner)` 按归属取消，`cancel_all_background_tasks()` 供 `sdk.uninit()` 兜底
+- **适配器**：关闭时对平台名下的后台任务同样兜底取消
+
+```python
+async def on_load(self, event):
+    # 推荐：后台任务用 self.spawn()，卸载时框架自动兜底取消
+    self.spawn(self._poll())
+
+async def on_unload(self, event):
+    # 精细控制的场景仍建议自行取消并等待收尾
+    if self._poll_task:
+        self._poll_task.cancel()
+        await asyncio.gather(self._poll_task, return_exceptions=True)
+
+async def _poll(self):
+    while True:
+        await asyncio.sleep(60)
+        ...
+```
+
+> [!IMPORTANT]
+> 框架兜底是**强制 cancel**（`cancel_owner_tasks`），它发生在 `on_unload` 返回之后。因此需要优雅收尾的任务（flush 缓冲、持久化状态、关闭连接）**必须**在 `on_unload` 里自行 `cancel()` + `await` 完成——别指望兜底能保留收尾逻辑。框架只保证「不残留持有 `self` 的任务」，不保证「优雅」。需要 `await` 结果的任务请直接 `await`，不要丢给后台任务。
+
 ## 注意事项
 
 1. **处理器可以是同步或异步**：系统自动识别并正确调用

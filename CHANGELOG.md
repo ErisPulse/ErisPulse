@@ -110,10 +110,21 @@
     - 命令触发器 stub 注册占位命令：默认**可见**（`hidden=False`）——命令触发是"主动"的，占位命令必须对 Help / 命令总览可见，用户才能发现并输入命令触发激活；dict 声明的 help/usage/group/aliases/hidden 镜像注册（hidden=True 占位同隐藏，与真实命令语义对齐；别名输入同样触发激活）；占位 help 回退链：dict help → `get_meta().description` → 模块 `__description__` → 包元数据 Summary → 通用 i18n 提示；激活后占位命令注销、真实命令接管
   - **meta 声明优化**：`get_meta()` 推荐返回 `ModuleMeta` **配置类实例**（与 `get_load_strategy()` 返回 `ModuleLoadStrategy` 对齐），dict 兼容；`ACTIVATION_STUB_PRIORITY` 常量移至 `Core/constants.py`
   - **`Core.Bases` 补全 `I18nConfig` 导出**：`Core/Bases/__init__.py` 此前漏 re-export `I18nConfig`，导致 `from ErisPulse.Core.Bases import I18nConfig` 抛 ImportError（只能走 `Core.Bases.config_schema` 子模块路径）；现已补入 `__all__`，与 `config_schema.I18nConfig` 同一对象（`runtime` 的 lazy re-export 不变）
+  - **日志系统修复与日志目录分段** `Core/logger.py`：
+    - **多行消息单行化（不影响控制台布局）**：内存 / Dashboard 订阅器 / 日志文件中的消息换行统一转义为字面 `\n`（文件由单行化 Formatter 在格式化层处理），修复多行日志（异常堆栈文本、多行 f-string、路由服务器地址树）导致 Dashboard 表格空消息/错位、文件一行一记录被破坏的问题；**控制台（Rich/plain）保留多行原始布局**
+    - **格式化路径收口**：控制台/文件改为复用内存副本同款已展开文本，消除 `msg % args` 双路径二次格式化差异
+    - **文件日志补时间戳与级别**：非 JSON 模式文件行由裸 `%(message)s` 改为 `日期时间 [级别] [模块] 消息`，跨天运行可定位
+    - **修复 `save_logs()` plain 模式写 dict repr**：导出内容由 `{'timestamp': ...}` 字典字面量修正为 `时间 [级别] 消息` 文本
+    - **新增 `set_output_dir()` 目录日志与自动分段**：`[ErisPulse.logger] log_dir` 设置目录（自动创建），`log_rotation` 支持 `size`（按大小，`log_max_size_mb`/`log_backup_count`）/ `date`（按时间，`log_rotation_when` 默认每天零点）/ `none` 三种方式；与 `log_files` 互斥（显式路径优先），支持热更新；新增 i18n 键 `core.logger.rotation_invalid` / `core.logger.log_dir_failed`（5 语言同步）
 
 ### 测试
 - @wsu2059q
+  - `tests/unit/test_unit_logger.py` 新增 `TestSingleLineMessages`（8 用例：内存/订阅器/子 logger/文件单行化、CRLF 归一、plain 文件一行一记录、文件行含日期时间与级别、`save_logs` 导出文本）与 `TestLogDirectoryRotation`（8 用例：目录自动创建、size 分段轮转备份、date 分段 handler 类型、none 模式、非法分段拒绝、替换既有文件 handler、配置应用 log_dir、log_files 优先级）
   - `tests/unit/test_unit_scope.py`（34 用例）：三级绑定解析、allow/block 语义、会话>Bot>平台优先级、大小写不敏感、default_allow 隐式拒绝、bind merge、LRU 缓存失效、get_stats、运行时增删、持久化写配置、事件/命令分发过滤
+  - 新增 `tests/unit/test_unit_tasks.py`（10 用例）：owner 追踪（上下文/显式/None）、按归属取消与隔离、全局兜底、weakref 验证任务取消后实例可回收（热重载泄漏场景）
+  - `tests/unit/test_unit_module.py` 新增 `TestCascadeUnload`（9 用例：直接/间接/环依赖收集、级联卸载顺序、卸载取消 owner 任务、disable 级联与 lifecycle 清理、i18n domain 清理）与 `TestDependsWiredThroughLoader`（2 用例：插件 depends 贯通进 meta、供依赖校验消费）
+  - `tests/unit/test_unit_adapter.py` 新增 `TestAdapterDependencies`（14 用例：默认声明、硬依赖缺失检出（适配器/模块）、非法声明忽略、skipped-dependency 跳过启动、软依赖 ready/lost 通知、异常隔离、watcher 识别）
+  - `tests/unit/test_unit_module.py` 新增 `TestPurgeUnload`（8 用例：默认 unload 保留存根、purge 删除存根、级联 purge、sys.modules 清理（plugin_folder/entry-point 边界）、弱引用返回、回收诊断）；`tests/unit/test_unit_adapter.py` 新增 `TestAdapterUnload`（3 用例：已注册卸载注销、未注册返回 False、未启动仍可注销）
   - `tests/unit/test_unit_logger.py` 新增 `TestExcludedLevels`：屏蔽等级不入内存/订阅器/控制台/文件、恢复、热更新、LoggerChild 遵循
   - `tests/unit/test_unit_topology.py`：模块/适配器/作用域拓扑与 `sdk.get_topology()` 聚合
   - 新增 `tests/unit/test_unit_plugin_folder.py`（6 用例）：插件发现（单文件/包形式）、moduleInfo 构造、非法条目忽略、路径追踪、`ModuleLoader.load()` 并入
@@ -127,6 +138,18 @@
     - `scripts/tools/translate-docs.py`：`AsyncOpenAI` 增加 `timeout=180` / `max_retries=0`（防流式响应挂起，重试仍由脚本自管）；目标语言从串行 `for` 循环改为**语言级并行**（语言内部仍受 `concurrent` 信号量约束，服务商按语言错开）；新增 `--time-budget` 时间预算——到点停止调度新文件、在途任务收尾后退出，缓存照常落盘供下次续译，结束时输出机器可读统计行 `REMAINING_FILES=N`
     - `scripts/tools/translate-config.json`：`concurrent` 1→3，新增 `time_budget_minutes: 40` 与 `request_timeout: 180`
     - `.github/workflows/auto-update-docs.yml`：job 硬上限 `timeout-minutes: 90`；**生成类产物（API / AI Prompt / 索引）先提交**（commit #1），翻译超时/失败不再丢失生成结果；翻译改为时间预算多轮续译（总预算 55 分钟、最多 3 轮、缓存续传，剩余任务输出 warning 并在下次文档变更时自动续译）；两次提交前各自 refresh GitHub App token（token 有效期 1h）
+  - **组件生命周期强化（依赖级联 + 任务归属）**：
+    - **修复 `depends` 声明从未贯通进 meta 的断点**：`loaders/module.py` 与 `loaders/plugin_folder.py` 的 meta 构建现合入 `strategy.depends`，依赖校验 / 拓扑排序在真实加载路径生效（此前恒为空、仅 mock 测试覆盖）
+    - **级联卸载**：`ModuleManager.unload(name)` 卸载被依赖的模块时，先按「最深层依赖者优先」级联卸载闭包（BFS 反向依赖 + 防环），日志说明级联链；`disable(name)` 同语义级联
+    - **级联重载**：`reload_plugin` 热重载本地插件时，依赖它的本地插件链式重载（PyPI 依赖者卸载后重新实例化）
+    - **后台任务归属与自动取消**：`runtime/tasks.py` 新增按 owner 索引（自动捕获 `current_owner` 上下文）与 `cancel_owner_tasks` / `cancel_all_background_tasks` / `get_owner_tasks`；`BaseModule.spawn()` 推荐模块后台任务写法；模块卸载在 `on_unload` 之后兜底取消名下任务并记录警告（修复任务持有 `self` 引用导致热重载旧实例无法回收）；适配器 `_cleanup_adapter_resources` 关闭时同样兜底取消（改为 async）；`sdk.uninit()` 全局兜底取消
+    - **卸载一致性补齐**：`disable()` 补漏 `lifecycle.unregister_by_owner` 与 i18n domain 清理；模块卸载流程同步清理 i18n domain（`i18n.unregister_domain`）
+    - **彻底卸载（`unload(purge=True)`）**：`ModuleManager.unload()` 新增 `purge` 参数——默认仅取消加载（保留注册存根，模块仍可 discover 重新发现 / `load()` 重新实例化）；`purge=True` 时删除注册存根（释放模块类引用）+ 清理 `sys.modules`（**保守**：仅插件文件夹来源的插件自身模块与子包，不碰已安装包/共享库），级联卸载的依赖者同样被 purge；卸载后 `gc.collect()` + weakref 诊断模块类/实例是否可回收，残留引用告警并列出引用方（DEBUG 级）
+    - **适配器卸载**：`AdapterManager.unload(platform)` 停止并注销单个平台（释放适配器实例与 `adapter_class` 引用，与 `shutdown()` 仅停止的语义区分）
+  - **适配器依赖声明（可选功能）**：
+    - `BaseAdapter` 新增 `depends`（硬依赖，`{"adapters": [...], "modules": [...]}`）与 `optional_modules`（软依赖）类属性，`loaders/adapter.py` 合入 meta
+    - 硬依赖缺失时跳过启动（警告 + `adapter.status.change` 状态 `skipped-dependency`）；声明模块硬依赖的适配器**推迟到模块初始化完成后启动**
+    - 软依赖就绪/丢失通知：监听 `module.load` / `module.unload` 事件，分发 `on_dependency_ready` / `on_dependency_lost` 钩子（默认空实现，可覆写）；兼容直接 emit 与 submit_event 两种事件形状
 
 ### 文档
 - @wsu2059q
@@ -148,6 +171,15 @@
     - `yunhu.md` 同步 4.0.0→**4.3.0**：`Board`/`DismissBoard` 链式作用域重构（`To()` 推断本地/全局，新增 `.Expire()`/`.ExpireAt()`/`.ForMember()` 修饰，空内容自动撤销，兼容旧式 scope 写法）；新增**标准 API 动作（ApiDSL）**章节（`Api` 类 6 个标准动作、不支持动作清单、11 组平台扩展动作）；新增 **Event Mixin** 14 个扩展方法；事件新增标准 `role` 与 `user_avatar` 字段；多Bot配置 `bots`→`accounts`（`bot_id` 改为运行时自动探测，新增 `mode` 接收模式 ws/webhook）
     - `ideaura.md` 同步至 **4.0.1**：平台更名 花枫咖啡馆（Allons）→（**RockyChat**）；认证方式变更为 **Bot Token**（`bot-token-` 前缀，MSCPO 开放平台获取，移除邮箱密码登录）；`base_url` 默认值改为 `https://api.mscpo.com/api/rockychat`；新增 `.Command()` 链式修饰方法与 `ideaura_command` 消息段；新增 **Event Mixin** 11 个扩展方法
     - `telegram.md`（4.1.1）/ `discord.md`（4.1.0）/ `matrix.md`（4.1.0）/ `wechatmp.md`（4.1.0）版本号同步（适配器侧均为内部修复与 i18n，用户侧 API 无变化）；`telegram.md` 修正代理说明中残留的字面字符串拼接（` + 'ALL_PROXY' + ` → `ALL_PROXY`）
+  - **生命周期强化文档**（2.8.0+ 版本标注）：`developer-guide/modules/core-concepts.md`（depends 贯通 + 级联卸载/重载语义）、`getting-started.md`（depends 注释）、`advanced/lifecycle.md`（后台任务归属与自动取消段）、`developer-guide/adapters/getting-started.md`（适配器依赖声明 + 软依赖通知示例）；`CLI/commands/create.py` 与 `examples/` 模板/示例同步示范 `depends` / `self.spawn` / 适配器 `depends`+`optional_modules`
+  - **后台任务写法引导**：`developer-guide/modules/best-practices.md` 修正 `asyncio.create_task` 反例为 `self.spawn()`（并说明边界——需 `await` 结果的直接 await）；`lifecycle.md` 补「框架兜底是强制 cancel，优雅收尾须在 on_unload 自行完成」的边界措辞；`core-concepts.md` 加后台任务交叉链接
+  - **彻底卸载文档**：`developer-guide/modules/core-concepts.md` 新增「卸载与彻底卸载（purge）」小节（`unload()` 默认 vs `purge=True` 对照表 + 回收诊断说明）
+  - **文档深度增强（startup.md 风格「内部链路拆解」）**：
+    - `architecture.md`「事件处理流程」扩写为三层分发链路详解（适配器总线层 → 处理器 Task 层 → Event 模块层）时序图 + 分步表 + 常见误区（作用域静默过滤 / handler 天然并发 / 同组不阻断 / 慢日志 1s）
+    - `developer-guide/adapters/send-dsl.md` 新增「发送链路内部拆解」（12 步链路图、账户解析回退链 6 步、`message.sending`/`message.sent` 触发时机、规则引擎事实表——重试无退避）
+    - `user-guide/configuration.md` 新增「热更新链路内部拆解」（双检测路径、`config.set` vs `config.updated` 对比、自动响应方清单、需重启键告警语义）
+    - `developer-guide/modules/core-concepts.md` 新增「生命周期全景」（load 时框架自动做的 6 件事 + unload 清理链全序 + owner 一键清理机制）
+    - `getting-started/event-handling.md` 补「并发上限/慢日志」与「作用域过滤」小节（三层过滤点、TRACE 可见性、scope_exempt 豁免）
 
 ---
 

@@ -131,7 +131,7 @@ await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.ada
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-注册后，适配器进入 `sdk.adapter._adapters`，模块类进入 `sdk.module`，但**都还未启动/实例化**。
+注册后，适配器已登记到适配器管理器、模块已登记到模块管理器，但**都还未启动/实例化**。
 
 ### 4. 启动适配器
 
