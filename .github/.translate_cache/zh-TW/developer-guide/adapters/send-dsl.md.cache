@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "bc436573a4e02df005fcb6e7a96247ee",
-  "file_hash": "bc436573a4e02df005fcb6e7a96247ee",
-  "translated_at": "2026-08-17T12:30:38.787861",
+  "hash": "2a746981c3985e6bae48849c20931ec7",
+  "file_hash": "2a746981c3985e6bae48849c20931ec7",
+  "translated_at": "2026-08-21T01:50:07.102321",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -48,6 +48,10 @@
     {
       "hash": "7779e6ebf8a49c0a53506354454e4616",
       "translation": "## 命名規範\n\n### PascalCase 命名\n\n所有傳送方法使用大駝峰命名法：\n\n```python\n# ✅ 正確\ndef Text(self, text: str):\n    pass\n\ndef Image(self, file: bytes):\n    pass\n\n# ❌ 錯誤\ndef text(self, text: str):\n    pass\n\ndef send_image(self, file: bytes):\n    pass\n```\n\n### 平台特有方法\n\n不建議新增平台前綴方法：\n\n```python\n# ✅ 建議\ndef Sticker(self, sticker_id: str):\n    pass\n\n# ❌ 不建議\ndef TelegramSticker(self, sticker_id: str):\n    pass\n```\n\n使用 `Raw` 方法取代：\n\n```python\n# ✅ 建議\nawait adapter.Send.Raw_ob12([{\"type\": \"sticker\", ...}])\n\n# ❌ 不建議\ndef TelegramSticker(self, ...):\n    pass"
+    },
+    {
+      "hash": "936d54f6fbf6a7d69566f5604a091542",
+      "translation": "## 發送鏈路內部拆解\n\n一次 `await adapter.Send.To(\"group\", \"123\").Text(\"x\")` 的背後，框架幫你完成了下面這一串事：\n\n```mermaid\nflowchart TD\n    A[\"adapter.Send.To(...).Text(...)\"] --> B[\"To/Using 鏈式方法<br/>每次返回不可變新實例（順序無關）\"]\n    B --> C[\"__getattribute__ 拦截發送方法<br/>包一層規則包裝器\"]\n    C --> D[\"調用原始方法（如 Text）<br/>內部委託 Raw_ob12\"]\n    D --> E[\"Raw_ob12 返回 asyncio.create_task(...)\"]\n    E --> F[\"寫 [Send] 日誌\"]\n    F --> G[\"emit message.sending（fire-and-forget）\"]\n    G --> H{\"聲明了發送規則？\"}\n    H -->|\"否\"| I[\"Task done_callback → emit message.sent\"]\n    H -->|\"是\"| J[\"apply_send_rules 包成外層 Task<br/>重試/超時/延遲/優先級\"]\n    J --> I\n    I --> K[\"await 得到標準回應 dict\"]\n```\n\n**每一步框架做了什麼：**\n\n| 階段 | 框架做了什麼 |\n|------|-------------|\n| 鏈式合併 | `To`/`Using`/`Account` 每次呼叫都**新建不可變實例**並繼承已設欄位，因此 `To(...).Using(...)` 與 `Using(...).To(...)` **等價**、順序無關 |\n| 方法包裝 | 發送方法（`Text` 等）被 `__getattribute__` 拦截包一層；修飾方法（`To`/`Using`/`At`/`Retry` 等）**不包裝**。嵌套的 `Raw_ob12` 呼叫靠 `_in_rule_wrap` 標記防重複包裝 |\n| Task 創建 | `Raw_ob12` 內部 `asyncio.create_task()` 才是 Task 真正的創建點；`Text()` 只是同步返回這個 Task，**不阻塞** |\n| 發送日誌 | 寫 `[Send] platform/method -> target` 事件日誌（`exclude_levels=[\"EVENT\"]` 可屏蔽） |\n| `message.sending` | 發送方法被呼叫時**立即**以 fire-and-forget 觸發（僅當存在監聽者，先 `has_handlers` 短路） |\n| `message.sent` | 綁定在 Task 的 `done_callback` 上——**有規則時覆蓋整個重試流程的最終結果**，無規則時即原始 Task 完成 |\n\n### 帳戶解析回退鏈\n\n當適配器內部呼叫 `_resolve_account(account_id)` 時，按以下順序解析到具體帳戶：\n\n1. 單帳戶適配器（無 `AccountConfigClass`）→ 直接返回\n2. 帳戶名精確匹配 `account_id`\n3. 各帳戶 `bot_id` 欄位匹配\n4. 各帳戶任意 `str` 欄位值匹配（排除 `enabled`/`name`）\n5. 兜底第一個啟用的帳戶\n6. 全部失敗 → 抛 `ValueError`\n\n> 你傳的 `account_id` 來自：`Using()` 明確指定 > 事件 `self` 欄位（`account_id` 优先於 `user_id`，由 `event.reply()` 自動注入）> 不指定（由適配器兜底第一個啟用帳戶）。\n\n### 發送規則引擎（重試/超時/延遲）\n\n規則在 `Raw_ob12` 返回 Task **之後**包裝成新的外層 Task，不影響主流程。關鍵事實：\n\n| 規則 | 說明 |\n|------|------|\n| `Retry(n)` | 總嘗試 `n+1` 次；**失敗後立即重發，無指數退避** |\n| `Timeout(s)` | 單次發送超時取消（`asyncio.wait_for`），未耗盡則重試 |\n| `Defer(s)` | 發送前延遲 sleep |\n| `Priority(level, drop_if_busy)` | 积壓超閾值時直接返回 `{status:\"failed\", retcode:10002, message:\"dropped_low_priority\"}` |\n| `Hook(fn)` | 僅最終成功時按序執行 |\n| `on_progress` / `on_error` | 各階段 / 最終失敗回調 |\n\n> **注意**：重試是「立即重發」，沒有退避間隔；若平台限流需要退避，請在 `on_error` 回調裡自行 sleep 後再手動重發。規則的成功判定以返回 dict 的 `status == \"ok\"` 為準（`retcode == 0`）。\n\n> 標準回應格式與 `retcode` 完整語義見 [API 响应规范](../../standards/api-response.md)。"
     },
     {
       "hash": "3b8987320920b07f9723b11e0684d2e6",

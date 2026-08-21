@@ -92,12 +92,12 @@ class MyModule(BaseModule):
 
 For detailed usage, please see [i18n documentation](../../advanced/i18n.md#Recommended Approach Declare Translation Keys via I18nClass v270).
 
-## Async Programming
+## Asynchronous Programming
 
 ### 1. Using Asynchronous Libraries
 
 ```python
-# It is recommended to use the SDK's built-in HTTP client (async, automatic logging and metrics)
+# Recommended to use the SDK's built-in HTTP client (asynchronous, with automatic logging and statistics)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -105,7 +105,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# You can also use sdk.client (same effect)
+# Alternatively, you can use sdk.client (same effect)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -113,7 +113,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Do not import aiohttp directly (inconvenient for unified framework management)
+# Do not directly import aiohttp (not convenient for unified framework management)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -122,24 +122,29 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Do not use requests (sync, will block the event loop)
+# Do not use requests (synchronous, blocks the event loop)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # Will block the event loop
+        return requests.get(url).json()  # blocks the event loop
 ```
 
 ### 2. Correct Asynchronous Operations
 
 ```python
 async def handle_command(self, event):
-    # Use create_task to run time-consuming operations in the background
-    task = asyncio.create_task(self._long_operation())
-    
-    # If waiting for the result is required
-    result = await task
+    # Time-consuming operations that require waiting for results: directly await (clear lifecycle)
+    result = await self._long_operation()
+
+async def on_load(self, event):
+    # Background tasks (polling/timed/fire-and-forget): use self.spawn(),
+    # the framework cancels them after on_unload when the module is unloaded, avoiding holding self and causing leaks
+    self.spawn(self._poll())
 ```
+
+> [!NOTE]  
+> Background tasks are recommended to use `self.spawn()` (ErisPulse **2.8.0+**), rather than `asyncio.create_task`—the raw tasks created by the latter do not belong to the module, and will not be automatically cleaned up during unloading, causing the module instance to be unable to be reclaimed due to holding a reference to `self` (hot reload leak). See [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
 
 ### 3. Resource Management
 
@@ -147,14 +152,14 @@ async def handle_command(self, event):
 async def on_load(self, event):
     # The SDK client automatically manages the connection pool, no need to manually create a session
     pass
-    
+
 async def on_unload(self, event):
-    # If customizing the client is required, remember to clean up resources
+    # If a custom client is needed, remember to clean up resources
     pass
 
 ## Event Handling
 
-### 1. Using Event wrapper classes
+### 1. Using Event Wrapper Classes
 
 ```python
 # Convenient method using Event wrapper class
@@ -164,35 +169,48 @@ async def info_command(event):
     nickname = event.get_user_nickname()
     await event.reply(f"Hello, {nickname}!")
 
-# Rather than directly accessing the dict
+# Instead of directly accessing the dictionary
 @command("info")
 async def info_command(event):
-    user_id = event["user_id"]  # Not clear enough, prone to errors
+    user_id = event["user_id"]  # Less clear, prone to errors
 ```
 
-### 2. Reasonable use of lazy loading
+### 2. Reasonable Use of Lazy Loading
 
 ```python
-# Command handling modules require immediate loading
+# Infrequent command module: declare activate_on trigger, automatically activates on first matching command (maintains lazy loading)
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        return ModuleLoadStrategy(lazy_load=False)
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"command": {"name": "dice", "help": "Roll a dice", "aliases": ["d"]}},
+        ])
 
-# Listener modules require immediate loading
+# Infrequent listener module: declare event trigger, automatically activates when event arrives
 class ListenerModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"notice": "group_member_increase"},
+        ])
+
+# Modules with high-frequency triggers (process every message) or those that must be ready at startup: load immediately
+class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# Utility modules suit lazy loading
+# Utility modules are suitable for lazy loading
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-### 3. Event handler registration
+> For the complete syntax of `activate_on` (event three-form / command shorthand and dict declaration / help fallback chain), see  
+> [Lazy-Loading Module System](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate_on).
+
+### 3. Event Handler Registration
 
 ```python
 async def on_load(self, event):
@@ -205,7 +223,7 @@ async def on_load(self, event):
     async def group_handler(event):
         self.logger.info("Received group message")
     
-    # No need to manually unregister, the framework handles this automatically
+    # No need to manually deregister, the framework handles it automatically
 
 ## Error Handling
 
@@ -352,16 +370,25 @@ async def process_message(self, event):
 ### 1. Sensitive Data Protection
 
 ```python
-# Sensitive data is stored in the configuration
-class MyModule(BaseModule):
-    def _load_config(self):
-        config = self.sdk.config.getConfig("MyModule")
-        self.api_key = config.get("api_key")
-        
-        if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("Please configure a valid API key in config.toml")
+# Sensitive data is stored in the configuration (declarative ConfigClass, secret fields do not appear in logs/export)
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
-# ❌ Sensitive data hardcoded
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={"description": "API Key", "secret": True},
+    )
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    def check_api_key(self):
+        if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
+            raise ValueError("Please configure a valid API Key in config.toml")
+
+# ❌ Hardcoded sensitive data
 class MyModule(BaseModule):
     API_KEY = "sk-1234567890"  # Do not do this!
 ```
@@ -375,7 +402,7 @@ async def process_command(self, event):
     
     # Validate input length
     if len(user_input) > 1000:
-        await event.reply("Input is too long, please re-enter")
+        await event.reply("Input too long, please re-enter")
         return
     
     # Validate input format
@@ -392,12 +419,10 @@ import pytest
 from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
-    def test_load_config(self):
-        """Test config loading"""
-        module = MyModule()
-        config = module._load_config()
-        assert config is not None
-        assert "api_url" in config
+    def test_config_defaults(self):
+        """Test configuration default values"""
+        config = MyModule.ConfigClass()
+        assert config.timeout == 30
 ```
 
 ### 2. Integration Tests
@@ -409,7 +434,7 @@ async def test_command_handling():
     module = MyModule()
     await module.on_load({})
     
-    # Mock command event
+    # Simulate command event
     event = create_test_command_event("hello")
     await module.handle_command(event)
 

@@ -347,6 +347,43 @@ async def handle_friend_request(event):
 # MyAdapter/__init__.py
 from .Core import MyAdapter
 
+## Зависимости (необязательно, 2.8.0+)
+
+Адаптер может объявлять зависимости от других адаптеров или модулей, обеспечивая взаимодействие между адаптерами и опциональные функции:
+
+```python
+from typing import ClassVar
+
+class MyAdapter(BaseAdapter):
+    # Жёсткая зависимость: при отсутствии адаптер пропускается (предупреждение + событие status=skipped-dependency)
+    depends: ClassVar[dict] = {
+        "adapters": ["onebot11"],   # Зависимые адаптеры (по названию платформы)
+        "modules": ["TranslateEngine"],  # Зависимые модули (по зарегистрированному имени)
+    }
+    # Опциональная зависимость: отсутствие не влияет на запуск; при загрузке/выгрузке модуля вызывается обратный вызов (режим опциональных функций)
+    optional_modules: ClassVar[list] = ["TranslateEngine"]
+```
+
+- **Порядок запуска**: адаптеры, объявившие жёсткую зависимость от модуля, будут запускаться **после инициализации модуля**
+- **Уведомления об опциональных зависимостях**: при загрузке модуля из `optional_modules` (или жёсткой зависимости) вызывается `on_dependency_ready(module_name)`; при выгрузке вызывается `on_dependency_lost(module_name)` (по умолчанию пустая реализация, можно переопределить) — для сценариев поздней загрузки и горячей перезагрузки:
+
+```python
+async def on_dependency_ready(self, module_name):
+    """Опциональный модуль готов: включить соответствующую опциональную функцию"""
+    if module_name == "TranslateEngine":
+        self._translate = self.sdk.TranslateEngine
+
+async def on_dependency_lost(self, module_name):
+    """Опциональный модуль утерян: понизить функциональность"""
+    if module_name == "TranslateEngine":
+        self._translate = None
+```
+
+> [!NOTE]
+> Эта функция требует ErisPulse **2.8.0+**.
+
+[**English**](docs/ru/quick-start.md) | [**简体中文**](docs/ru/quick-start.md)
+
 ## Примечания к `__init__`
 
 В разработке адаптеров может потребоваться переопределение `__init__` на трёх уровнях. Ниже приведены правильные подходы для каждого уровня.

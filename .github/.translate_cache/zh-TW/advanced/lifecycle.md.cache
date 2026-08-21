@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "ec4c48a19497154f5c43918f8c8d5789",
-  "file_hash": "ec4c48a19497154f5c43918f8c8d5789",
-  "translated_at": "2026-08-17T12:02:01.291884",
+  "hash": "c3a02b3ae3300de4653b970b61a3e38a",
+  "file_hash": "c3a02b3ae3300de4653b970b61a3e38a",
+  "translated_at": "2026-08-21T01:40:49.452959",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -28,6 +28,10 @@
     {
       "hash": "a7b250bd23c981d084c8152a11f8f516",
       "translation": "## 模組中使用範例\n\n```python\nfrom ErisPulse.Core.Bases import BaseModule\nfrom ErisPulse import sdk\n\nclass Main(BaseModule):\n    async def on_load(self, event):\n        # 實現簡單的訊息統計\n        self.msg_count = 0\n        \n        @sdk.lifecycle.on(\"adapter.event.receive\")\n        async def count(data):\n            if data[\"event_type\"] == \"message\":\n                self.msg_count += 1\n        \n        # 監控所有命令\n        @sdk.lifecycle.on(\"command.matched\")\n        async def log_cmd(data):\n            sdk.logger.info(f\"命令執行: /{data['command']} by {data['user_id']}\")\n        \n        # 配置變更審計\n        @sdk.lifecycle.on(\"config.set\")\n        def audit(data):\n            sdk.logger.info(f\"配置變更: {data['key']} = {data['new_value']}\")\n```\n\n重要：路徑替換規則  \n- 將文件連結中的 `docs/zh-CN/` 替換為 `docs/zh-TW/`  \n- 例如：`docs/zh-CN/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`  \n- 對於指向非目前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改  \n- 這確保連結指向正確語言的文件版本"
+    },
+    {
+      "hash": "eca916f2be10761c8a9dc327f3a0d82b",
+      "translation": "## 後台任務歸屬與自動取消\n\n> [!NOTE]  \n> 本特性需要 ErisPulse **2.8.0+**。\n\n模組建立的 asyncio 後台任務如果未在 `on_unload` 中取消，會持有 `self` 引用導致模組實例無法被回收（熱重載後舊實例殘留）。框架提供以下兜底機制：\n\n- **`self.spawn(coro)`**（模組內推薦）：任務自動歸屬模組名，模組卸載時框架在 `on_unload` **之後**兜底取消未結束的任務並記錄警告\n- **`spawn_background(coro)`**（`ErisPulse.runtime`）：自動捕獲當前 `owner_scope` 上下文；`cancel_owner_tasks(owner)` 按歸屬取消，`cancel_all_background_tasks()` 供 `sdk.uninit()` 兜底\n- **適配器**：關閉時對平台名下的後台任務同樣兜底取消\n\n```python\nasync def on_load(self, event):\n    # 推薦：後台任務用 self.spawn()，卸載時框架自動兜底取消\n    self.spawn(self._poll())\n\nasync def on_unload(self, event):\n    # 精細控制的場景仍建議自行取消並等待收尾\n    if self._poll_task:\n        self._poll_task.cancel()\n        await asyncio.gather(self._poll_task, return_exceptions=True)\n\nasync def _poll(self):\n    while True:\n        await asyncio.sleep(60)\n        ...\n```\n\n> [!IMPORTANT]  \n> 框架兜底是**強制 cancel**（`cancel_owner_tasks`），它發生在 `on_unload` 返回之後。因此需要優雅收尾的任務（flush 缓衝、持久化狀態、關閉連接）**必須**在 `on_unload` 裡自行 `cancel()` + `await` 完成——別指望兜底能保留收尾邏輯。框架只保證「不殘留持有 `self` 的任務」，不保證「優雅」。需要 `await` 結果的任務請直接 `await`，不要丟給後台任務。"
     },
     {
       "hash": "2a6e2fa5de4e531da522416e6fcdbca8",
