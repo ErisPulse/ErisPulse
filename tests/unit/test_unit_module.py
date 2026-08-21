@@ -1339,3 +1339,383 @@ class TestModuleActivateOnCommandVisibility:
             assert command.aliases.get("d") == "dice"
         finally:
             act._deregister_stubs()
+
+
+# ==================== 依赖级联与任务归属测试（2.8.0+） ====================
+
+
+class TestCascadeUnload:
+    """卸载被依赖模块时级联卸载依赖者"""
+
+    @pytest.fixture
+    def manager(self):
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._module_classes.clear()
+        manager._loaded_modules.clear()
+        manager._module_info.clear()
+        return manager
+
+    def _make_module_class(self, name):
+        class _M(BaseModule):
+            def __init__(self, sdk=None):
+                self.sdk = sdk
+                self.unloaded = False
+
+            async def on_load(self, event):
+                return True
+
+            async def on_unload(self, event):
+                self.unloaded = True
+                return True
+
+        _M.__name__ = name
+        return _M
+
+    def _register_with_depends(self, manager, name, depends=None):
+        cls = self._make_module_class(name)
+        manager.register(
+            name,
+            cls,
+            {
+                "meta": {
+                    "name": name,
+                    "depends": list(depends or []),
+                },
+                "module_class": cls,
+            },
+        )
+        return cls
+
+    async def _load(self, manager, name):
+        assert await manager.load(name)
+
+    def test_collect_dependents_direct(self, manager):
+        """直接依赖者收集"""
+        self._register_with_depends(manager, "Base")
+        self._register_with_depends(manager, "Child", depends=["Base"])
+        self._register_with_depends(manager, "Other")
+        assert manager._collect_dependents("Base") == ["Child"]
+
+    def test_collect_dependents_indirect(self, manager):
+        """间接依赖者收集（BFS 由近及远）"""
+        self._register_with_depends(manager, "A")
+        self._register_with_depends(manager, "B", depends=["A"])
+        self._register_with_depends(manager, "C", depends=["B"])
+        assert manager._collect_dependents("A") == ["B", "C"]
+
+    def test_collect_dependents_cycle_safe(self, manager):
+        """循环依赖声明不会死循环"""
+        self._register_with_depends(manager, "X", depends=["Y"])
+        self._register_with_depends(manager, "Y", depends=["X"])
+        result = manager._collect_dependents("X")
+        assert "Y" in result
+
+    async def test_unload_cascades_dependents(self, manager):
+        """卸载 Base 时依赖者 Child 先被卸载"""
+        self._register_with_depends(manager, "Base")
+        self._register_with_depends(manager, "Child", depends=["Base"])
+        await self._load(manager, "Base")
+        await self._load(manager, "Child")
+        child_instance = manager._modules["Child"]
+
+        assert await manager.unload("Base") is True
+        assert "Base" not in manager._loaded_modules
+        assert "Child" not in manager._loaded_modules
+        assert child_instance.unloaded is True
+
+    async def test_unload_cascade_order_deep_first(self, manager):
+        """级联顺序：最深层依赖者先卸载（C 先于 B）"""
+        order = []
+        base_cls = self._make_module_class("A")
+        b_cls = self._make_module_class("B")
+        c_cls = self._make_module_class("C")
+
+        original_unload = manager._unload_single_module
+
+        async def _record(name):
+            order.append(name)
+            return await original_unload(name)
+
+        manager._unload_single_module = _record
+        manager.register("A", base_cls, {"meta": {"name": "A"}})
+        manager.register("B", b_cls, {"meta": {"name": "B", "depends": ["A"]}})
+        manager.register("C", c_cls, {"meta": {"name": "C", "depends": ["B"]}})
+        await self._load(manager, "A")
+        await self._load(manager, "B")
+        await self._load(manager, "C")
+
+        await manager.unload("A")
+        assert order == ["C", "B", "A"]
+
+    async def test_unload_cancels_owner_tasks(self, manager):
+        """卸载模块时兜底取消其名下后台任务"""
+        from ErisPulse.runtime.context import owner_scope
+        from ErisPulse.runtime.tasks import get_owner_tasks, spawn_background
+
+        self._register_with_depends(manager, "TaskModule")
+        await self._load(manager, "TaskModule")
+
+        async def forever():
+            await asyncio.sleep(100)
+
+        with owner_scope("TaskModule"):
+            task = spawn_background(forever())
+
+        await manager.unload("TaskModule")
+        await asyncio.sleep(0.05)
+        assert task.cancelled()
+        assert not get_owner_tasks("TaskModule")
+
+    def test_disable_cascades_dependents(self, manager):
+        """disable 同样级联禁用依赖者"""
+        self._register_with_depends(manager, "Base")
+        self._register_with_depends(manager, "Child", depends=["Base"])
+
+        assert manager.disable("Base") is True
+        assert "Child" not in manager._loaded_modules
+
+    def test_disable_cleans_lifecycle_hooks(self, manager):
+        """disable 清理模块注册的生命周期钩子（与 unload 一致）"""
+        from ErisPulse.Core.lifecycle import lifecycle
+        from ErisPulse.runtime.context import owner_scope
+
+        self._register_with_depends(manager, "HookModule")
+        manager._modules["HookModule"] = self._make_module_class("HookModule")()
+        manager._loaded_modules.add("HookModule")
+
+        def _hook(data):
+            pass
+
+        with owner_scope("HookModule"):
+            lifecycle.register("module.load", _hook)
+        try:
+            assert "HookModule" in lifecycle.get_owner_counts()
+            assert manager.disable("HookModule") is True
+            assert "HookModule" not in lifecycle.get_owner_counts()
+        finally:
+            lifecycle.unregister("module.load", _hook)
+
+    async def test_unload_clears_i18n_domain(self, manager):
+        """卸载清理模块 i18n 翻译键"""
+        from ErisPulse.Core.i18n import i18n
+
+        self._register_with_depends(manager, "I18nModule")
+        await self._load(manager, "I18nModule")
+
+        i18n.register("zh-CN", {"I18nModule.greeting": "你好"}, domain="I18nModule")
+        assert i18n.t("I18nModule.greeting") == "你好"
+
+        await manager.unload("I18nModule")
+        # domain 注销后回退到键名
+        assert i18n.t("I18nModule.greeting") == "I18nModule.greeting"
+
+
+class TestDependsWiredThroughLoader:
+    """depends 声明经真实加载路径贯通进 meta（修复恒为空的断点）"""
+
+    @pytest.fixture
+    def plugin_env(self, tmp_path):
+        """创建临时插件目录与加载器（patch 插件目录配置，测试期间生效）"""
+        plugins_dir = tmp_path / "plugins"
+        plugins_dir.mkdir()
+        from ErisPulse.loaders.plugin_folder import PluginFolderLoader
+
+        loader = PluginFolderLoader()
+        # get_plugins_dirs 在方法体内延迟 import runtime.get_framework_config，
+        # patch runtime 模块级符号即可覆盖目录解析
+        with patch(
+            "ErisPulse.runtime.get_framework_config",
+            return_value={"plugins_dir": str(plugins_dir)},
+        ):
+            yield plugins_dir, loader
+
+    def _write_plugin(self, plugins_dir, name, depends=None):
+        dep_stmt = ""
+        if depends is not None:
+            dep_list = ", ".join(f'"{d}"' for d in depends)
+            dep_stmt = f", depends=[{dep_list}]"
+        content = (
+            "from ErisPulse.Core.Bases import BaseModule\n"
+            "from ErisPulse.loaders import ModuleLoadStrategy\n\n\n"
+            f"class Main(BaseModule):\n"
+            f"    @staticmethod\n"
+            f"    def get_load_strategy():\n"
+            f"        return ModuleLoadStrategy(lazy_load=False{dep_stmt})\n\n"
+            f"    async def on_load(self, event):\n"
+            f"        return True\n\n"
+            f"    async def on_unload(self, event):\n"
+            f"        return True\n"
+        )
+        plugin_file = plugins_dir / f"{name}.py"
+        plugin_file.write_text(content, encoding="utf-8")
+        return plugin_file
+
+    def test_plugin_depends_in_meta(self, plugin_env):
+        """插件声明的 depends 出现在 moduleInfo.meta.depends"""
+        plugins_dir, loader = plugin_env
+        self._write_plugin(plugins_dir, "weatherlib")
+        self._write_plugin(plugins_dir, "weatherbot", depends=["weatherlib"])
+
+        objs = loader.discover()
+        assert "weatherbot" in objs
+        meta = objs["weatherbot"].moduleInfo["meta"]
+        assert meta["depends"] == ["weatherlib"]
+        # 无依赖插件为空列表
+        assert objs["weatherlib"].moduleInfo["meta"]["depends"] == []
+
+    def test_plugin_depends_feed_validation(self, plugin_env):
+        """贯通后的 depends 可被依赖校验消费（缺失依赖被检出）"""
+        from ErisPulse.loaders.module import ModuleLoader
+
+        plugins_dir, loader = plugin_env
+        self._write_plugin(plugins_dir, "lonelybot", depends=["ghost"])
+
+        objs = loader.discover()
+        module_loader = ModuleLoader()
+        module_objs = {"lonelybot": objs["lonelybot"]}
+        missing = module_loader._validate_dependencies(["lonelybot"], module_objs)
+        assert "lonelybot" in missing
+        assert "ghost" in missing["lonelybot"]
+
+
+# ==================== 彻底卸载（purge）测试（2.8.0+） ====================
+
+
+class TestPurgeUnload:
+    """unload(purge=True) 删除注册存根并清理 sys.modules"""
+
+    @pytest.fixture
+    def manager(self):
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._module_classes.clear()
+        manager._loaded_modules.clear()
+        manager._module_info.clear()
+        return manager
+
+    def _register(self, manager, name, *, source="entry_point", depends=None):
+        class _M(BaseModule):
+            def __init__(self, sdk=None):
+                self.sdk = sdk
+
+            async def on_load(self, event):
+                return True
+
+            async def on_unload(self, event):
+                return True
+
+        manager.register(
+            name,
+            _M,
+            {
+                "meta": {
+                    "name": name,
+                    "source": source,
+                    "top_level": [name],
+                    "depends": list(depends or []),
+                },
+                "module_class": _M,
+            },
+        )
+        return _M
+
+    async def _load(self, manager, name):
+        assert await manager.load(name)
+
+    async def test_unload_keeps_registration_by_default(self, manager):
+        """默认 unload 保留注册存根（模块仍可重新 load）"""
+        self._register(manager, "M")
+        await self._load(manager, "M")
+        await manager.unload("M")
+        assert "M" in manager._module_classes
+        assert "M" in manager._module_info
+        # 存根仍在，可直接重新 load
+        assert await manager.load("M") is True
+
+    async def test_unload_purge_removes_registration(self, manager):
+        """purge 删除注册存根"""
+        self._register(manager, "M")
+        await self._load(manager, "M")
+        assert await manager.unload("M", purge=True) is True
+        assert "M" not in manager._module_classes
+        assert "M" not in manager._module_info
+        assert "M" not in manager._modules
+        assert "M" not in manager._loaded_modules
+
+    async def test_unload_purge_cascades(self, manager):
+        """purge 级联删除依赖者存根"""
+        self._register(manager, "Base")
+        self._register(manager, "Child", depends=["Base"])
+        await self._load(manager, "Base")
+        await self._load(manager, "Child")
+        await manager.unload("Base", purge=True)
+        assert "Base" not in manager._module_classes
+        assert "Child" not in manager._module_classes
+
+    def test_purge_sys_modules_plugin_folder(self, manager):
+        """_purge_sys_modules 清理插件自身模块与子包"""
+        import sys
+        import types
+
+        sys.modules["weatherlib"] = types.ModuleType("weatherlib")
+        sys.modules["weatherlib.util"] = types.ModuleType("weatherlib.util")
+        try:
+            manager._purge_sys_modules("weatherlib", ["weatherlib"])
+            assert "weatherlib" not in sys.modules
+            assert "weatherlib.util" not in sys.modules
+        finally:
+            sys.modules.pop("weatherlib.util", None)
+            sys.modules.pop("weatherlib", None)
+
+    async def test_purge_plugin_folder_clears_sys_modules(self, manager):
+        """plugin_folder 来源的 purge 卸载会清理 sys.modules"""
+        import sys
+        import types
+
+        sys.modules["myplug"] = types.ModuleType("myplug")
+        sys.modules["myplug.Core"] = types.ModuleType("myplug.Core")
+        try:
+            self._register(manager, "myplug", source="plugin_folder")
+            await self._load(manager, "myplug")
+            await manager.unload("myplug", purge=True)
+            assert "myplug" not in sys.modules
+            assert "myplug.Core" not in sys.modules
+        finally:
+            sys.modules.pop("myplug.Core", None)
+            sys.modules.pop("myplug", None)
+
+    async def test_purge_entry_point_keeps_sys_modules(self, manager):
+        """entry-point 来源的 purge 不清理 sys.modules（保守）"""
+        import sys
+        import types
+
+        sys.modules["somepkg"] = types.ModuleType("somepkg")
+        try:
+            self._register(manager, "EP", source="entry_point")
+            await self._load(manager, "EP")
+            await manager.unload("EP", purge=True)
+            assert "somepkg" in sys.modules
+        finally:
+            sys.modules.pop("somepkg", None)
+
+    def test_purge_module_stub_returns_weakrefs(self, manager):
+        """_purge_module_stub 返回类/实例弱引用并移除存根"""
+        import weakref
+
+        cls = self._register(manager, "M", source="plugin_folder")
+        manager._modules["M"] = cls()
+        name, class_ref, instance_ref = manager._purge_module_stub("M")
+        assert name == "M"
+        assert class_ref is not None
+        assert instance_ref is not None
+        assert "M" not in manager._module_classes
+        assert "M" not in manager._module_info
+
+    def test_report_purge_recyclability_noop_when_reclaimed(self, manager):
+        """回收诊断：对象可回收时不告警（不抛异常）"""
+        cls = self._register(manager, "M")
+        manager._purge_module_stub("M")
+        manager._report_purge_recyclability([])
+        # 空列表应静默通过
+        assert True
