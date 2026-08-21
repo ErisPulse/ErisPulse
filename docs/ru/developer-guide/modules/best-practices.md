@@ -101,7 +101,7 @@ class MyModule(BaseModule):
 ### 1. Использование асинхронной библиотеки
 
 ```python
-# Рекомендуется использовать встроенный HTTP-клиент SDK (асинхронный, автоматическая логгирование и статистика)
+# Рекомендуется использовать встроенный HTTP-клиент SDK (асинхронный, автоматический лог и статистика)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -117,7 +117,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Не используйте aiohttp напрямую (неудобно для унифицированного управления фреймворком)
+# Не используйте aiohttp напрямую (трудно управлять из фреймворка)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -126,35 +126,37 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Не используйте requests (синхронный, блокирует событийный цикл)
+# Не используйте requests (синхронный, блокирует цикл событий)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # Блокирует событийный цикл
+        return requests.get(url).json()  # Блокирует цикл событий
 ```
 
 ### 2. Правильные асинхронные операции
 
 ```python
-async def handle_command(self, event):
-    # Длительные операции, результат которых нужно ждать: просто await (жизненный цикл ясен)
+from ErisPulse.Core.Event import Event  # аннотация event: Event дает автодополнение в IDE
+
+async def handle_command(self, event: Event):
+    # Долгие операции, которые требуют ожидания результата: await (жизненный цикл ясен)
     result = await self._long_operation()
 
-async def on_load(self, event):
-    # Задачи в фоне (опрос/таймер/fire-and-forget): используйте self.spawn(),
-    # при выгрузке модуля фреймворк отменяет их в on_unload, предотвращая утечку
+async def on_load(self, event: dict):
+    # Фоновые задачи (опрос/таймер/fire-and-forget): используйте self.spawn(),
+    # при выгрузке модуля фреймворк отменяет задачи после on_unload, предотвращая утечку
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> Для фоновых задач рекомендуется использовать `self.spawn()` (ErisPulse **2.8.0+**), а не `asyncio.create_task` — последний создает "голые" задачи, не принадлежащие модулю, и при выгрузке не будет автоматической отмены, что приведет к утечке ссылки на `self` и невозможности сборки мусора модуля (утечка при горячей перезагрузке). Подробнее см. [Управление жизненным циклом](../../advanced/lifecycle.md#фоновые-задачи-принадлежность-и-автоматическая-отмена).
+> Рекомендуется использовать `self.spawn()` (ErisPulse **2.8.0+**) вместо `asyncio.create_task` — задачи, созданные через `asyncio.create_task`, не принадлежат модулю, и при выгрузке не будут автоматически отменены, что приведет к удержанию ссылки на `self` и невозможности сборки мусора (утечка при горячей перезагрузке). Подробнее см. [Управление жизненным циклом](../../advanced/lifecycle.md#фоновые-задачи-принадлежность-и-автоматическая-отмена).
 
 ### 3. Управление ресурсами
 
 ```python
 async def on_load(self, event):
-    # SDK-клиент автоматически управляет пулом соединений, не нужно создавать session вручную
+    # Клиент SDK автоматически управляет пулом соединений, не нужно создавать session вручную
     pass
     
 async def on_unload(self, event):
@@ -168,21 +170,21 @@ async def on_unload(self, event):
 ```python
 # Удобный способ использования обёртки Event
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"Привет, {nickname}!")
 
 # Вместо прямого доступа к словарю
 @command("info")
-async def info_command(event):
-    user_id = event["user_id"]  # Неочевидно и может привести к ошибкам
+async def info_command(event: Event):
+    user_id = event["user_id"]  # Не очень понятно, легко ошибиться
 ```
 
 ### 2. Разумное использование ленивой загрузки
 
 ```python
-# Модуль с редко используемыми командами: объявите триггер activate_on, автоматически активируется при первом совпадении команды (сохраняется ленивая загрузка)
+# Модуль с низкой частотой использования: объявляем триггер activate_on, автоматически активируется при первом совпадении команды (сохраняется ленивая загрузка)
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -190,7 +192,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "Бросить кубик", "aliases": ["d"]}},
         ])
 
-# Модуль с редко используемыми слушателями: объявите триггер события, автоматически активируется при поступлении события
+# Модуль с низкой частотой использования: объявляем триггер события, автоматически активируется при поступлении события
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -198,7 +200,7 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# Модуль с высокой частотой срабатывания (обрабатывается каждое сообщение) или модуль, который должен быть готов при запуске: немедленная загрузка
+# Модуль с высокой частотой триггеров (обрабатывается каждое сообщение) или модуль, который должен быть готов при запуске: немедленная загрузка
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -211,23 +213,22 @@ class UtilityModule(BaseModule):
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> Полный синтаксис activate_on (три формы событий / сокращённое объявление команды и dict / цепочка help возврата) см. в
-> [системе модулей с ленивой загрузкой](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate-on).
+> Полный синтаксис activate_on (три формы событий / сокращённая и dict-декларация команд / цепочка help-возврата) см. в разделе [Система ленивой загрузки модулей](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate-on).
 
 ### 3. Регистрация обработчиков событий
 
 ```python
 async def on_load(self, event):
-    # Регистрация обработчиков событий в on_load
+    # Регистрируем обработчик события в on_load
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("Привет!")
     
     @message.on_group_message()
-    async def group_handler(event):
-        self.logger.info("Получено сообщение в группе")
+    async def group_handler(event: Event):
+        self.logger.info("Получено групповое сообщение")
     
-    # Не нужно вручную отписываться, фреймворк сделает это автоматически
+    # Не нужно вручную отписываться, фреймворк будет обрабатывать это автоматически
 ```
 
 > `activate_on` 的完整语法（事件三形式 / 命令简写与 dict 声明 / help 回退链）见
@@ -235,33 +236,32 @@ async def on_load(self, event):
 
 ## Обработка ошибок
 
-### 1. Классификация и обработка исключений
+### 1. Обработка исключений по категориям
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # Ожидаемые бизнес-ошибки
-        self.logger.warning(f"Бизнес-предупреждение: {e}")
-        await event.reply(f"Ошибка параметров: {e}")
+        # Ожидаемая бизнес-ошибка
+        self.logger.warning(f"Предупреждение по бизнес-логике: {e}")
+        await event.reply(f"Ошибка параметра: {e}")
     except aiohttp.ClientError as e:
-        # Сетевая ошибка (рекомендуется использовать sdk.client + ClientError)
-        # Старый код, использующий напрямую aiohttp, по-прежнему будет работать,
-        # но в новом коде рекомендуется использовать систему исключений ErisPulse.
-        self.logger.error(f"Сетевая ошибка: {e}")
-        await event.reply("Не удалось выполнить сетевой запрос, повторите попытку позже")
+        # Ошибка сети (рекомендуется использовать sdk.client + ClientError)
+        # Старый код, использующий напрямую aiohttp, по-прежнему работает корректно, но в новом коде рекомендуется использовать систему исключений ErisPulse
+        self.logger.error(f"Ошибка сети: {e}")
+        await event.reply("Ошибка сетевого запроса, пожалуйста, повторите попытку позже")
     except Exception as e:
-        # Неожиданные ошибки
+        # Неожиданная ошибка
         self.logger.error(f"Неизвестная ошибка: {e}", exc_info=True)
-        await event.reply("Ошибка обработки, свяжитесь с администратором")
+        await event.reply("Обработка не удалась, пожалуйста, свяжитесь с администратором")
         raise
 ```
 
-### 2. Обработка таймаутов
+### 2. Обработка тайм-аутов
 
 ```python
-# Рекомендуется использовать встроенный клиент SDK (включает таймауты и перезапросы)
+# Рекомендуется использовать встроенный клиент SDK (имеет встроенный тайм-аут и повторные попытки)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -270,8 +270,11 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"Таймаут запроса: {url}")
+        self.logger.warning(f"Тайм-аут запроса: {url}")
         raise
+```
+
+[**中文**](README.zh.md) | [**English**](README.en.md) | [**Русский**](README.ru.md)
 
 ## Система хранения
 
@@ -340,7 +343,7 @@ self.logger.info(f"Запрос обработан, от пользовател�
 
 ## Оптимизация производительности
 
-### 1. Использование кэша
+### 1. Использование кэширования
 
 ```python
 class MyModule(BaseModule):
@@ -353,7 +356,7 @@ class MyModule(BaseModule):
             if key in self._cache:
                 return self._cache[key]
             
-            # Получение данных из базы данных
+            # Получение из базы данных
             data = await self._fetch_from_db(key)
             
             # Кэширование данных
@@ -365,12 +368,12 @@ class MyModule(BaseModule):
 
 ```python
 # Использование асинхронных операций
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # Асинхронная обработка
     await self._async_process(event)
 
 # ❌ Блокирующая операция
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # Синхронная операция, блокирует цикл событий
     result = self._sync_process(event)
 
@@ -402,19 +405,19 @@ class MyModule(BaseModule):
     API_KEY = "sk-1234567890"  # Не делайте так!
 ```
 
-### 2. Валидация ввода
+### 2. Проверка входных данных
 
 ```python
-# Валидация пользовательского ввода
-async def process_command(self, event):
+# Проверка пользовательского ввода
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
-    # Валидация длины ввода
+    # Проверка длины ввода
     if len(user_input) > 1000:
         await event.reply("Слишком длинный ввод, пожалуйста, повторите")
         return
     
-    # Валидация формата ввода
+    # Проверка формата ввода
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("Неверный формат ввода")
         return

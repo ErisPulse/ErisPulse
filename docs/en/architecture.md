@@ -12,49 +12,49 @@ The following diagram illustrates the core modules of the SDK and their relation
 
 ```mermaid
 graph TB
-    SDK["sdk<br/>Unified Entry Point"]
+    SDK["sdk<br/>Unified entry point"]
 
-    SDK --> Event["Event<br/>Event System"]
-    SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
-    SDK --> Logger["Logger<br/>Log Management"]
-    SDK --> Storage["Storage / env<br/>Storage Management"]
-    SDK --> Config["Config<br/>Configuration Management"]
-    SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
-    SDK --> ModuleMgr["Module<br/>Module Management"]
-    SDK --> Router["Router<br/>Routing Management"]
-    SDK --> Client["HttpClient<br/>HTTP Client"]
+    SDK --> Event["Event<br/>Event system"]
+    SDK --> Lifecycle["Lifecycle<br/>Lifecycle management"]
+    SDK --> Logger["Logger<br/>Log management"]
+    SDK --> Storage["Storage / env<br/>Storage management"]
+    SDK --> Config["Config<br/>Configuration management"]
+    SDK --> AdapterMgr["Adapter<br/>Adapter management"]
+    SDK --> ModuleMgr["Module<br/>Module management"]
+    SDK --> Router["Router<br/>Routing management"]
+    SDK --> Client["Client<br/>HTTP client"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
-    Event --> Conversation["Conversation<br/>Branch + Persistence"]
+    Event --> Conversation["Conversation<br/>Branch + persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["CloudLake"]
+    BaseAdapter --> P1["Yunhu"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
 
     ModuleMgr --> BaseModule["BaseModule"]
-    BaseModule --> CM["Custom Module"]
+    BaseModule --> CM["Custom module"]
 
-    BaseAdapter -.-> SendDSL["SendDSL<br/>Message Sending"]
+    BaseAdapter -.-> SendDSL["SendDSL<br/>Message sending"]
 ```
 
 ### Core Module Descriptions
 
 | Module | Description |
-|--------|-------------|
-| **Event** | Event system providing handling for five event types: command / message / notice / request / meta, as well as Conversation for multi-turn dialogue |
-| **Adapter** | Adapter manager responsible for registering, starting, and shutting down adapters for multiple platforms |
-| **Module** | Module manager responsible for registering, loading, and unloading plugins, supporting dependency declaration and topological sorting |
-| **Lifecycle** | Lifecycle manager providing event-driven lifecycle hooks |
-| **Storage** | Key-value storage system based on SQLite, supporting generic SQL chainable queries |
+|------|------|
+| **Event** | Event system, providing five types of event handling: command / message / notice / request / meta, as well as Conversation for multi-turn dialogues |
+| **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
+| **Module** | Module manager, managing plugin registration, loading, and unloading, supporting dependency declaration and topological sorting |
+| **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
+| **Storage** | Key-value storage system based on SQLite, supporting general SQL chained queries |
 | **Config** | Configuration file management in TOML format |
-| **Logger** | Modular logging system supporting sub-loggers |
-| **Router** | HTTP/WebSocket routing management, abstracting the underlying backend (currently FastAPI + Uvicorn), supporting decorator-based routing, middleware, grouping, rate limiting, CORS |
-| **HttpClient** | Unified HTTP/WS client abstracting the underlying request library (currently aiohttp), providing request statistics, retry logic, logging, WebSocket client, and ErisPulse exception handling. The client and server WebSocket share the `WebSocketConnectionBase` base class |
+| **Logger** | Modular logging system, supporting sub-loggers |
+| **Router** | HTTP/WebSocket routing management, abstracting the underlying backend (currently FastAPI + Uvicorn), supporting decorator routing, middleware, grouping, rate limiting, CORS |
+| **Client** | Unified HTTP/WS client (pre-2.8.0 was `HttpClient`, compatible alias retained), abstracting the underlying request library (currently aiohttp), providing request statistics, retry, logging, WebSocket client, ErisPulse exception system, etc. The WebSocket client and server share the `WebSocketConnectionBase` base class |
 
 ## Initialization Process
 

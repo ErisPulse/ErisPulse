@@ -4,9 +4,9 @@
 
 docs/ja/quick-start.md
 
-## SDK 核心アーキテクチャ
+## SDKのコアアーキテクチャ
 
-下図は、SDK のコアモジュールの構成とその関係を示しています：
+下図は、SDKのコアモジュール構成とその関係を示しています：
 
 ```mermaid
 graph TB
@@ -20,7 +20,7 @@ graph TB
     SDK --> AdapterMgr["Adapter<br/>アダプタ管理"]
     SDK --> ModuleMgr["Module<br/>モジュール管理"]
     SDK --> Router["Router<br/>ルーティング管理"]
-    SDK --> Client["HttpClient<br/>HTTP クライアント"]
+    SDK --> Client["Client<br/>HTTPクライアント"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -29,7 +29,7 @@ graph TB
     Event --> Conversation["Conversation<br/>分岐 + 永続化"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["雲湖"]
+    BaseAdapter --> P1["云湖"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
@@ -44,15 +44,15 @@ graph TB
 
 | モジュール | 説明 |
 |------|------|
-| **Event** | イベントシステム。command / message / notice / request / meta の5種類のイベント処理と、Conversation 多段対話機能を提供します。|
-| **Adapter** | アダプタマネージャー。複数プラットフォーム用アダプタの登録、起動、停止を管理します。|
+| **Event** | イベントシステム。command / message / notice / request / meta の5種類のイベント処理と、Conversationによる多段対話機能を提供します。|
+| **Adapter** | アダプタマネージャー。複数プラットフォームのアダプタの登録、起動、停止を管理します。|
 | **Module** | モジュールマネージャー。プラグインの登録、ロード、アンロードを管理し、依存関係の宣言とトポロジカルソートをサポートします。|
 | **Lifecycle** | ライフサイクルマネージャー。イベント駆動型のライフサイクルフックを提供します。|
-| **Storage** | SQLite に基づくキーバリューストレージシステム。一般的な SQL チェーンクエリをサポートします。|
-| **Config** | TOML 形式の設定ファイル管理。|
+| **Storage** | SQLiteベースのキーバリューストレージシステム。一般的なSQLチェーンクエリをサポートします。|
+| **Config** | TOML形式の設定ファイル管理。|
 | **Logger** | モジュール化されたログシステム。サブロガーをサポートします。|
-| **Router** | HTTP/WebSocket ルーティング管理。抽象層を介して下位のバックエンド（現在は FastAPI + Uvicorn）をラップし、デコレーターベースのルーティング、ミドルウェア、グループ化、リクエスト制限、CORS をサポートします。|
-| **HttpClient** | 統一された HTTP/WS クライアント。抽象層を介して下位のリクエストライブラリ（現在は aiohttp）をラップし、リクエスト統計、リトライ、ログ、WebSocket クライアント、ErisPulse 例外体系などの機能を提供します。クライアントとサーバーの WebSocket は `WebSocketConnectionBase` 基底クラスを共有します。|
+| **Router** | HTTP/WebSocketルーティング管理。抽象層を介して下位のバックエンド（現在はFastAPI + Uvicorn）をラップし、デコレーターベースのルーティング、ミドルウェア、グループ化、リクエスト制限、CORSをサポートします。|
+| **Client** | 統一HTTP/WSクライアント（2.8.0以前は`HttpClient`、互換性のため別名を保持）。抽象層を介して下位のリクエストライブラリ（現在はaiohttp）をラップし、リクエスト統計、リトライ、ログ、WebSocketクライアント、ErisPulse例外体系などの機能を提供します。クライアントとサーバーのWebSocketは`WebSocketConnectionBase`基底クラスを共有します。|
 
 ## 初期化プロセス
 
