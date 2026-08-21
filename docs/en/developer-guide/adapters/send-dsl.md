@@ -591,6 +591,66 @@ def TelegramSticker(self, ...):
    - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
    - This ensures links point to the correct language version of the document
 
+## Internal Breakdown of the Send Chain
+
+Behind a single `await adapter.Send.To("group", "123").Text("x")`, the framework helps you complete the following sequence of operations:
+
+```mermaid
+flowchart TD
+    A["adapter.Send.To(...).Text(...)"] --> B["To/Using chainable methods<br/>Each returns a new immutable instance (order irrelevant)"]
+    B --> C["__getattribute__ intercepts send methods<br/>Wraps with a rule wrapper"]
+    C --> D["Calls original method (e.g., Text)<br/>Internally delegates to Raw_ob12"]
+    D --> E["Raw_ob12 returns asyncio.create_task(...)"]
+    E --> F["Write [Send] log"]
+    F --> G["emit message.sending (fire-and-forget)"]
+    G --> H{"Defined send rules?"}
+    H -->|"No"| I["Task done_callback → emit message.sent"]
+    H -->|"Yes"| J["apply_send_rules wraps into outer Task<br/>Retry/timeout/delay/priority"]
+    J --> I
+    I --> K["await yields standard response dict"]
+```
+
+**What the framework does at each step:**
+
+| Phase | What the framework does |
+|------|-------------|
+| Chainable merging | `To`/`Using`/`Account` each call **creates a new immutable instance** and inherits already set fields, so `To(...).Using(...)` and `Using(...).To(...)` are **equivalent**, order irrelevant |
+| Method wrapping | Send methods (`Text`, etc.) are intercepted and wrapped by `__getattribute__`; modifier methods (`To`/`Using`/`At`/`Retry`, etc.) are **not wrapped**. Nested `Raw_ob12` calls are marked with `_in_rule_wrap` to prevent duplicate wrapping |
+| Task creation | `Raw_ob12` internally uses `asyncio.create_task()` as the true task creation point; `Text()` only synchronously returns this Task, **does not block** |
+| Send logging | Writes `[Send] platform/method -> target` event logs (can be suppressed with `exclude_levels=["EVENT"]`) |
+| `message.sending` | The send method is called **immediately** triggered fire-and-forget (only if listeners exist, short-circuited by `has_handlers`) |
+| `message.sent` | Bound to the Task's `done_callback` — **when rules are present, it covers the final result of the entire retry process**, otherwise it's simply the original Task completion |
+
+### Account Resolution Fallback Chain
+
+When the adapter internally calls `_resolve_account(account_id)`, it resolves to a specific account in the following order:
+
+1. Single-account adapter (no `AccountConfigClass`) → directly returns
+2. Exact match of `account_id` by account name
+3. Match of `bot_id` field in each account
+4. Match of any `str` field value in each account (excluding `enabled`/`name`)
+5. Fallback to the first enabled account
+6. All fail → raise `ValueError`
+
+> The `account_id` you provide comes from: `Using()` explicitly specified > event `self` field (`account_id` takes precedence over `user_id`, automatically injected by `event.reply()`) > not specified (adapter falls back to the first enabled account).
+
+### Send Rule Engine (Retry/Timeout/Delay)
+
+Rules are wrapped into a new outer Task after `Raw_ob12` returns a Task, without affecting the main flow. Key facts:
+
+| Rule | Description |
+|------|------|
+| `Retry(n)` | Total attempts `n+1`; **immediately retries on failure, no exponential backoff** |
+| `Timeout(s)` | Single send timeout cancellation (`asyncio.wait_for`), retries if not exhausted |
+| `Defer(s)` | Delays sleep before sending |
+| `Priority(level, drop_if_busy)` | If backlog exceeds threshold, directly returns `{status:"failed", retcode:10002, message:"dropped_low_priority"}` |
+| `Hook(fn)` | Only executes in order when final success occurs |
+| `on_progress` / `on_error` | Callbacks at each stage / final failure |
+
+> **Note**: Retries are "immediate retransmission" with no backoff interval; if platform rate limiting requires backoff, please manually sleep and retransmit in the `on_error` callback. Rule success is determined by `status == "ok"` in the returned dict (`retcode == 0`).
+
+> The standard response format and complete semantics of `retcode` are detailed in [API Response Specification](../../standards/api-response.md).
+
 ## Return Values
 
 ### Task Object

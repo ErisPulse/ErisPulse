@@ -4,44 +4,54 @@ EmailAdapter 是基於 SMTP/IMAP 協議的郵件適配器，支援郵件發送�
 
 ---
 
+請直接返回翻譯後的完整 Markdown 文件，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
 ## 文件資訊
 
 - 對應模組版本: 4.1.0
 - 維護者: ErisPulse
 
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
 ## 基本資訊
 
 - 平台簡介：透過標準 SMTP/IMAP 協議收發郵件的通用適配器
 - 適配器名稱：EmailAdapter
-- 多帳戶支援：支援同時設定多個電郵帳戶
+- 多帳戶支援：支援同時設定多個郵箱帳戶
 - 連接方式：IMAP 長輪詢接收 + SMTP 發送
-- 認證方式：電郵地址 + 密碼/授權碼
+- 認證方式：郵箱地址 + 密碼/授權碼
 - OneBot12 兼容：支援發送 OneBot12 格式訊息
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 配置說明
 
-### 全域配置（EmailAdapter）
+### 全局配置（EmailAdapter）
 
-| 配置項目 | 類型 | 默認值 | 說明 |
+| 配置項目 | 類型 | 預設值 | 說明 |
 |--------|------|--------|------|
-| `imap_server` | str | `imap.example.com` | 默認 IMAP 伺服器位址 |
-| `imap_port` | int | `993` | 默認 IMAP 端口 |
-| `smtp_server` | str | `smtp.example.com` | 默認 SMTP 伺服器位址 |
-| `smtp_port` | int | `465` | 默認 SMTP 端口 |
-| `ssl` | bool | `true` | 是否默認啟用 SSL |
-| `timeout` | int | `30` | 默認連線超時（秒） |
+| `imap_server` | str | `imap.example.com` | 預設 IMAP 伺服器位址 |
+| `imap_port` | int | `993` | 預設 IMAP 端口 |
+| `smtp_server` | str | `smtp.example.com` | 預設 SMTP 伺服器位址 |
+| `smtp_port` | int | `465` | 預設 SMTP 端口 |
+| `ssl` | bool | `true` | 是否預設啟用 SSL |
+| `timeout` | int | `30` | 預設連線超時（秒） |
 | `poll_interval` | int | `60` | IMAP 輪詢間隔（秒） |
 | `max_retries` | int | `3` | 連線失敗最大重試次數 |
 
 ### 帳戶配置（EmailAdapter.accounts）
 
-每個帳戶對應一個獨立電郵。帳戶級配置優先於全域配置。
+每個帳戶對應一個獨立的電子信箱。帳戶層級的設定優先於全域設定。
 
 ```toml
 [EmailAdapter.accounts.default]
 email = "user@example.com"
 password = "your-password-or-auth-code"
-imap_server = "imap.example.com"    # 可選，留空使用全域默認
+imap_server = "imap.example.com"    # 可選，留空使用全域預設
 imap_port = 993                      # 可選
 smtp_server = "smtp.example.com"    # 可選
 smtp_port = 465                      # 可選
@@ -53,9 +63,8 @@ enabled = true
 email = "backup@example.com"
 password = "another-password"
 enabled = true
-```
 
-## 支援的訊息發送類型
+## 支援的消息傳送類型
 
 所有發送方法均透過鏈式語法實現：
 
@@ -63,7 +72,7 @@ enabled = true
 from ErisPulse.Core import adapter
 mail = adapter.get("email")
 
-# 簡單文字郵件
+# 簡單純文字郵件
 await mail.Send.To("private", "to@example.com").Subject("測試").Text("內容")
 
 # 帶附件的 HTML 郵件
@@ -73,7 +82,7 @@ await mail.Send.To("private", "to@example.com") \
     .Attachment("report.pdf") \
     .Html("<h1>HTML內容</h1>")
 
-# 使用 Raw_ob12 發送標準 OB12 訊息
+# 使用 Raw_ob12 發送標準 OB12 消息
 await mail.Send.To("private", "to@example.com").Raw_ob12([
     {"type": "text", "data": {"text": "郵件正文"}},
     {"type": "file", "data": {"file": "/path/to/attachment.pdf"}},
@@ -97,15 +106,15 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 
 | 方法 | 說明 |
 |------|------|
-| `.Subject(subject: str)` | 設定郵件主題 |
-| `.Cc(emails: Union[str, List[str]])` | 設定抄送位址 |
-| `.Bcc(emails: Union[str, List[str]])` | 設定密送位址 |
-| `.ReplyTo(email: str)` | 設定回覆位址 |
+| `.Subject(subject: str)` | 設定郵件主旨 |
+| `.Cc(emails: Union[str, List[str]])` | 設定抄送地址 |
+| `.Bcc(emails: Union[str, List[str]])` | 設定密送地址 |
+| `.ReplyTo(email: str)` | 設定回覆地址 |
 | `.Attachment(file, filename: str = None)` | 添加附件 |
 
-### OB12 訊息段反向轉換（Raw_ob12）
+### OB12 消息段反向轉換（Raw_ob12）
 
-| OB12 訊息段 | 轉換為郵件內容 |
+| OB12 消息段 | 轉換為郵件內容 |
 |------------|--------------|
 | `text` | 純文字正文 |
 | `image` | 圖片附件 |
@@ -119,8 +128,8 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 ### 核心差異點
 
 1. 郵件事件均為 `message` 類型，`detail_type` 固定為 `private`
-2. `user_id` 為寄件人**純電郵位址**，`user_nickname` 為寄件人顯示名
-3. `message` 訊息段為標準 OB12 格式（text 段 + file 段）
+2. `user_id` 為寄件人**純郵箱地址**，`user_nickname` 為寄件人顯示名
+3. `message` 消息段為標準 OB12 格式（text 段 + file 段）
 4. 郵件主題透過 `email_subject` 擴展欄位獲取
 5. 完整原始資料保留在 `email_raw` 欄位中
 
@@ -186,7 +195,6 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
     "in_reply_to": "<original-msg-id@example.com>"
   }
 }
-```
 
 ## 擴展欄位說明
 
@@ -194,11 +202,13 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 |------|------|------|
 | `email_raw` | dict | 完整原始郵件資料（subject/from/to/date/cc/bcc/text_content/html_content/attachments 等） |
 | `email_raw_type` | str | 原始事件類型：`email_new`（新郵件）或 `email_reply`（回覆郵件） |
-| `email_subject` | str | 郵件主題（便捷存取） |
-| `email_from` | str | 寄件人純電郵位址（便捷存取） |
-| `attachments` | list | 附件資料列表（含二進位 `data` 欄位，向後相容） |
+| `email_subject` | str | 郵件主旨（方便存取） |
+| `email_from` | str | 寄件人純郵箱地址（方便存取） |
+| `attachments` | list | 附件資料清單（包含二進位 `data` 欄位，向後相容） |
 
-## 標準事件範例
+docs/zh-TW/quick-start.md
+
+## 標準事件示例
 
 ### 完整郵件事件
 
@@ -258,9 +268,8 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
     }
   ]
 }
-```
 
-## 發送方法回傳值
+## 發送方法返回值
 
 ```json
 {
@@ -279,14 +288,22 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 }
 ```
 
+7. **重要：路徑替換規則**
+   - 將文件鏈接中的 `docs/zh-TW/` 替換為 `docs/zh-TW/`
+   - 例如：`docs/zh-TW/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`
+   - 對於指向非當前語言版本文件的鏈接（如 `README.xx.md` 形式的鏈接），保持原樣不要修改
+   - 這確保了鏈接指向正確語言的文件版本
+
 ## 事件處理範例
 
 ```python
-from ErisPulse import sdk
+from ErisPulse.Core.Event import message
 
-@sdk.on_message(platform="email")
+@message.on_message()
 async def handle_email(event):
-    # 寄件人純電郵位址
+    if event.get("platform") != "email":
+        return
+    # 寄件人純郵件地址
     sender = event["user_id"]              # sender@example.com
     
     # 寄件人顯示名
@@ -310,3 +327,6 @@ async def handle_email(event):
     
     # 回覆郵件
     await event.reply(f"已收到：{subject}")
+```
+
+[**English**](docs/zh-TW/quick-start.md)

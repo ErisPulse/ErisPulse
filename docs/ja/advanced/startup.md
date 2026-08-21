@@ -52,11 +52,11 @@ flowchart TD
 
 [**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
-## 各環節の詳細説明
+## 各段階の詳細説明
 
-### 1. 発見層：Finder
+### 1. 検出層：Finder
 
-Finder は「どのパッケージがアダプター/モジュールを提供しているか」を見つけるだけを担当し、インポートやインスタンス化は行いません。
+Finder は「どのパッケージがアダプタ/モジュールを提供しているかを検出する」ことだけを担当し、インポートやインスタンス化は行いません。
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -64,7 +64,7 @@ from ErisPulse.finders import AdapterFinder, ModuleFinder
 adapter_finder = AdapterFinder()
 module_finder = ModuleFinder()
 
-# すべてのインストール済みアダプター/モジュールの entry-points を検索
+# インストール済みの全てのアダプタ/モジュールの entry-points を検索
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
@@ -72,11 +72,11 @@ module_entries = module_finder.find_all()      # list[EntryPoint]
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-各 `EntryPoint` は `.load()` を呼び出すことで対応するクラスを得られますが、通常は手動で呼び出す必要はありません —— Loader が行います。
+各 `EntryPoint` は `.load()` を呼ぶことで対応するクラスを得られますが、通常は手動で呼び出す必要はありません——Loader が処理を行います。
 
 ### 2. 加載層：Loader
 
-Loader は Finder の上に「インポート + メタデータの読み込み + 啓用/無効化の判断」を行います。
+Loader は Finder の上に「インポート + メタデータの読込 + 有効/無効の判断」を行います。
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -85,7 +85,7 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() 内部：finder.find_all() を呼び出す → 各エントリポイントを順次処理 → 三つ組を返す
+# load() 内部：finder.find_all() を呼び出す → 各 entry-point を順次処理 → 三つ組を返す
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
@@ -94,23 +94,23 @@ module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.mo
 
 | 戻り値 | 意味 |
 |--------|------|
-| `objs` (`dict`) | 名称 → オブジェクト（アダプタークラス / モジュールラッパー） |
-| `enabled` (`list[str]`) | 啓用された名称（設定で無効化されていない） |
+| `objs` (`dict`) | 名称 → オブジェクト（アダプタクラス / モジュールラッパー） |
+| `enabled` (`list[str]`) | 有効化された名称（設定で無効化されていない） |
 | `disabled` (`list[str]`) | 無効化された名称 |
 
 #### 加載失敗時の診断情報
 
-モジュール/アダプターが加載または初期化段階で例外を送出した場合、フレームワークはそのコンポーネントをスキップして他のコンポーネントの加載を継続し、**ユーザーコードのフレームの要約**を出力します。これにより、デフォルトの INFO レベル下でもエラー箇所を特定でき、手動で DEBUG モードを再開する必要がありません。
+モジュール/アダプタが加載または初期化段階で例外を送出した場合、フレームワークはそのコンポーネントをスキップして他のコンポーネントの加載を継続し、**ユーザコードのフレームサマリー**を出力します。これにより、デフォルトの INFO レベルでエラー箇所を特定でき、手動で DEBUG モードに切り替える必要がありません。
 
 ```
 [ERROR] [ModuleLoader] entry-point からモジュール MyModule の加載に失敗しました。スキップしました: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → ヒント: ログレベルを DEBUG に上げると完全なスタックトレースが表示されます。モジュール MyModule の実装コードを確認してください。
+  → ヒント: ログレベルを DEBUG に上げると完全なスタックトレースを確認できます。モジュール MyModule の実装コードを確認してください。
 ```
 
-診断情報は `ErisPulse.runtime.diagnostics` モジュールによって生成され、フレームワーク内部のフレームは自動的にフィルタリングされ、ユーザーのコードフレームのみが保持されます。カスタム加載ロジックで再利用する場合は：
+診断情報は `ErisPulse.runtime.diagnostics` モジュールによって生成され、フレームワーク内部のフレームは自動的にフィルタされ、ユーザコードのフレームのみが保持されます。カスタム加載ロジックで再利用する場合は：
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -118,40 +118,40 @@ from ErisPulse.runtime import log_diagnostic
 try:
     risky_init()
 except Exception as e:
-    log_diagnostic(e)  # 自動的にユーザーのコードフレームを抽出し、ERROR ログに書き込みます
+    log_diagnostic(e)  # 自動的にユーザコードのフレームを抽出し、ERROR ログに書き込みます
 ```
 
-このモジュールには、`extract_user_frame()`（構造化されたフレーム情報を返す）と `format_diagnostic_block()`（複数行のテキストを返す）という2つの低レベル関数も提供されています。
+このモジュールには `extract_user_frame()`（構造化されたフレーム情報を返す）と `format_diagnostic_block()`（複数行のテキストを返す）という2つの低レベル関数も提供されています。
 
 ### 3. 登録層：register_to_manager
 
 Loader が出力したオブジェクトをマネージャーに登録し、`sdk.adapter` / `sdk.module` がそれらを認識できるようにします。
 
 ```python
-# アダプターの登録（すべて成功した場合に True を返す）
+# アダプタの登録（全登録が成功したかを表す bool を返す）
 await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.adapter)
 
 # モジュールの登録
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-登録後、アダプターは `sdk.adapter._adapters` に、モジュールクラスは `sdk.module` に登録されますが、**まだ起動/インスタンス化は行われていません**。
+登録後、アダプタはアダプタマネージャーに、モジュールはモジュールマネージャーに登録されますが、**まだ起動/インスタンス化は行われていません**。
 
-### 4. アダプターの起動
+### 4. アダプタの起動
 
 ```python
-# すべての登録済みアダプターを起動
+# すべての登録済みアダプタを起動
 await sdk.adapter.startup()
 # または特定のプラットフォームを指定
 await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> 登録 ≠ 起動。`register_to_manager` は単に登録するだけです。`startup` がアダプターの `start()` を呼び出し、プラットフォームとの接続を確立します。
+> 登録 ≠ 起動。`register_to_manager` は単に登録を行うだけです。`startup` を呼ぶことでアダプタの `start()` が呼び出され、プラットフォームとの接続が確立されます。
 
 ### 5. モジュールの初期化
 
-モジュールはアダプターに比べて1段階多く、**インスタンス化**して `sdk` にマウントする必要があります（これにより `sdk.MyModule.xxx` と呼び出せるようになります）。この段階では、モジュール間の依存宣言とトポロジカルソートも処理されます。
+モジュールはアダプタよりも1つステップ多く、**インスタンス化**して `sdk` にマウントする必要があります（これにより `sdk.MyModule.xxx` で呼び出せるようになります）。この段階では、モジュール間の依存宣言とトポロジカルソートも処理されます。
 
 ```python
 success = await module_loader.initialize_modules(
@@ -172,7 +172,9 @@ await sdk.router.start(
 )
 ```
 
-ルーティングサーバーは、アダプターからの Webhook / WebSocket コールバックを受信します。これを起動しないと、server モードのアダプターはメッセージを受け取れません。
+ルーティングサーバーは、アダプタからの Webhook / WebSocket コールバックを受信する役割を担います。これを起動しないと、server モードのアダプタはメッセージを受け取れません。
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 完全な手動起動の例
 

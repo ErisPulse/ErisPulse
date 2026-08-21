@@ -572,6 +572,66 @@ await adapter.Send.Raw_ob12([{"type": "sticker", ...}])
 def TelegramSticker(self, ...):
     pass
 
+## 送信リンクの内部分解
+
+`await adapter.Send.To("group", "123").Text("x")` を実行すると、フレームワークは以下の処理をすべて自動的に行います。
+
+```mermaid
+flowchart TD
+    A["adapter.Send.To(...).Text(...)"] --> B["To/Using チェーンメソッド<br/>毎回不変の新規インスタンスを返す（順序は関係ない）"]
+    B --> C["__getattribute__ による送信メソッドのインターセプト<br/>ルールラッパーを1層包む"]
+    C --> D["送信メソッド（Textなど）の呼び出し<br/>内部では Raw_ob12 に委譲"]
+    D --> E["Raw_ob12 は asyncio.create_task(...) を返す"]
+    E --> F["[Send] ログを記録"]
+    F --> G["emit message.sending（fire-and-forget）を発火"]
+    G --> H{"送信ルールを宣言しているか？"}
+    H -->|"いいえ"| I["Task done_callback → emit message.sent"]
+    H -->|"はい"| J["apply_send_rules で外層 Task にラップ<br/>リトライ/タイムアウト/遅延/優先度"]
+    J --> I
+    I --> K["await により標準的なレスポンス dict を得る"]
+```
+
+**フレームワークが各ステップで行ったこと:**
+
+| 階段 | フレームワークが行ったこと |
+|------|-------------|
+| チェーンのマージ | `To`/`Using`/`Account` の各呼び出しは**不変の新規インスタンス**を作成し、既に設定されたフィールドを継承するため、`To(...).Using(...)` と `Using(...).To(...)` は**等価**、順序は関係ない |
+| メソッドのラッピング | 送信メソッド（`Text`など）は `__getattribute__` によってラップされ、修飾メソッド（`To`/`Using`/`At`/`Retry`など）は**ラップされない**。`Raw_ob12` のネストされた呼び出しは `_in_rule_wrap` によるマーキングで重複ラップを防ぐ |
+| Task の作成 | `Raw_ob12` 内部の `asyncio.create_task()` が Task の実際の作成点であり、`Text()` は Task を同期的に返すだけで、**ブロックはしない** |
+| 送信ログ | `[Send] platform/method -> target` のイベントログを記録（`exclude_levels=["EVENT"]` で抑制可能） |
+| `message.sending` | 送信メソッドが呼び出された際に**即座に** fire-and-forget でトリガーされる（ハンドラが存在する場合にのみ、`has_handlers` による短絡評価が先に実行される） |
+| `message.sent` | Task の `done_callback` にバインドされる——**ルールがある場合は、リトライプロセス全体の最終結果を上書きする**、ルールがない場合は元の Task の完了を意味する |
+
+### アカウント解決のフォールバックチェーン
+
+アダプタ内部で `_resolve_account(account_id)` を呼び出した場合、以下の順序で具体的なアカウントに解決されます：
+
+1. 単一アカウントアダプタ（`AccountConfigClass` なし）→ 直接返す
+2. アカウント名が `account_id` に正確に一致
+3. 各アカウントの `bot_id` フィールドが一致
+4. 各アカウントの `str` 型フィールド値が一致（`enabled`/`name` を除く）
+5. 最後に有効な最初のアカウントを返す
+6. すべて失敗 → `ValueError` を投げる
+
+> あなたが渡した `account_id` は、`Using()` で明示的に指定されたもの > イベントの `self` フィールド（`account_id` は `user_id` より優先、`event.reply()` で自動的に注入される）> 指定なし（アダプタが最初の有効なアカウントをデフォルトで返す）。
+
+### 送信ルールエンジン（リトライ/タイムアウト/遅延）
+
+ルールは `Raw_ob12` が Task を返した**後**に外側の Task としてラップされ、メインの処理には影響しない。重要な事実:
+
+| ルール | 説明 |
+|------|------|
+| `Retry(n)` | 合計 `n+1` 回の試行を行う；**失敗後は即時再送信、指数バックオフはなし** |
+| `Timeout(s)` | 単回送信のタイムアウト取消（`asyncio.wait_for`）、期限切れでなければリトライ |
+| `Defer(s)` | 送信前に `sleep` による遅延 |
+| `Priority(level, drop_if_busy)` | 積み重ねが閾値を超えた場合、直ちに `{status:"failed", retcode:10002, message:"dropped_low_priority"}` を返す |
+| `Hook(fn)` | 最終的に成功した場合のみ順序通りに実行 |
+| `on_progress` / `on_error` | 各段階 / 最終的な失敗時のコールバック |
+
+> **注意**: リトライは「即時再送信」であり、指数バックオフは行われない。プラットフォームのリクエスト制限によるバックオフが必要な場合は、`on_error` コールバック内で `sleep` してから手動で再送信を行う必要がある。ルールの成功判定は、返却される dict の `status == "ok"` に基づく（`retcode == 0`）。
+
+> 標準的なレスポンス形式と `retcode` の完全な意味については [API レスポンス規格](../../standards/api-response.md) を参照してください。
+
 ## 戻り値
 
 ### Task オブジェクト

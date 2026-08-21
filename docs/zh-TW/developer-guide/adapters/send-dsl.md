@@ -571,6 +571,66 @@ await adapter.Send.Raw_ob12([{"type": "sticker", ...}])
 def TelegramSticker(self, ...):
     pass
 
+## 發送鏈路內部拆解
+
+一次 `await adapter.Send.To("group", "123").Text("x")` 的背後，框架幫你完成了下面這一串事：
+
+```mermaid
+flowchart TD
+    A["adapter.Send.To(...).Text(...)"] --> B["To/Using 鏈式方法<br/>每次返回不可變新實例（順序無關）"]
+    B --> C["__getattribute__ 拦截發送方法<br/>包一層規則包裝器"]
+    C --> D["調用原始方法（如 Text）<br/>內部委託 Raw_ob12"]
+    D --> E["Raw_ob12 返回 asyncio.create_task(...)"]
+    E --> F["寫 [Send] 日誌"]
+    F --> G["emit message.sending（fire-and-forget）"]
+    G --> H{"聲明了發送規則？"}
+    H -->|"否"| I["Task done_callback → emit message.sent"]
+    H -->|"是"| J["apply_send_rules 包成外層 Task<br/>重試/超時/延遲/優先級"]
+    J --> I
+    I --> K["await 得到標準回應 dict"]
+```
+
+**每一步框架做了什麼：**
+
+| 階段 | 框架做了什麼 |
+|------|-------------|
+| 鏈式合併 | `To`/`Using`/`Account` 每次呼叫都**新建不可變實例**並繼承已設欄位，因此 `To(...).Using(...)` 與 `Using(...).To(...)` **等價**、順序無關 |
+| 方法包裝 | 發送方法（`Text` 等）被 `__getattribute__` 拦截包一層；修飾方法（`To`/`Using`/`At`/`Retry` 等）**不包裝**。嵌套的 `Raw_ob12` 呼叫靠 `_in_rule_wrap` 標記防重複包裝 |
+| Task 創建 | `Raw_ob12` 內部 `asyncio.create_task()` 才是 Task 真正的創建點；`Text()` 只是同步返回這個 Task，**不阻塞** |
+| 發送日誌 | 寫 `[Send] platform/method -> target` 事件日誌（`exclude_levels=["EVENT"]` 可屏蔽） |
+| `message.sending` | 發送方法被呼叫時**立即**以 fire-and-forget 觸發（僅當存在監聽者，先 `has_handlers` 短路） |
+| `message.sent` | 綁定在 Task 的 `done_callback` 上——**有規則時覆蓋整個重試流程的最終結果**，無規則時即原始 Task 完成 |
+
+### 帳戶解析回退鏈
+
+當適配器內部呼叫 `_resolve_account(account_id)` 時，按以下順序解析到具體帳戶：
+
+1. 單帳戶適配器（無 `AccountConfigClass`）→ 直接返回
+2. 帳戶名精確匹配 `account_id`
+3. 各帳戶 `bot_id` 欄位匹配
+4. 各帳戶任意 `str` 欄位值匹配（排除 `enabled`/`name`）
+5. 兜底第一個啟用的帳戶
+6. 全部失敗 → 抛 `ValueError`
+
+> 你傳的 `account_id` 來自：`Using()` 明確指定 > 事件 `self` 欄位（`account_id` 优先於 `user_id`，由 `event.reply()` 自動注入）> 不指定（由適配器兜底第一個啟用帳戶）。
+
+### 發送規則引擎（重試/超時/延遲）
+
+規則在 `Raw_ob12` 返回 Task **之後**包裝成新的外層 Task，不影響主流程。關鍵事實：
+
+| 規則 | 說明 |
+|------|------|
+| `Retry(n)` | 總嘗試 `n+1` 次；**失敗後立即重發，無指數退避** |
+| `Timeout(s)` | 單次發送超時取消（`asyncio.wait_for`），未耗盡則重試 |
+| `Defer(s)` | 發送前延遲 sleep |
+| `Priority(level, drop_if_busy)` | 积壓超閾值時直接返回 `{status:"failed", retcode:10002, message:"dropped_low_priority"}` |
+| `Hook(fn)` | 僅最終成功時按序執行 |
+| `on_progress` / `on_error` | 各階段 / 最終失敗回調 |
+
+> **注意**：重試是「立即重發」，沒有退避間隔；若平台限流需要退避，請在 `on_error` 回調裡自行 sleep 後再手動重發。規則的成功判定以返回 dict 的 `status == "ok"` 為準（`retcode == 0`）。
+
+> 標準回應格式與 `retcode` 完整語義見 [API 响应规范](../../standards/api-response.md)。
+
 ## 返回值
 
 ### Task 物件

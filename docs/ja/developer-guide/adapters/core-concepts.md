@@ -796,11 +796,11 @@ async def call_api(self, endpoint: str, **params):
         "myplatform_raw": raw_response
     }
 
-## 多アカウントサポート
+## 多アカウントのサポート
 
 ### 宣言的構成（推奨）
 
-`AccountConfigClass` を宣言構成クラスとして使用すると、フレームワークは多アカウントの自動読み込み、検証、テンプレート生成を管理します：
+`AccountConfigClass` を宣言的に使用することで、フレームワークは多アカウントのロード、検証、テンプレート生成を自動的に管理します：
 
 ```python
 from dataclasses import dataclass, field
@@ -816,7 +816,7 @@ class MyAdapter(BaseAdapter):
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            self.logger.info(f"アカウントを起動中 {name}: {account.bot_id}")
+            self.logger.info(f"アカウント {name} を起動: {account.bot_id}")
             await self._connect(name, account)
     
     async def call_api(self, endpoint: str, **params):
@@ -845,7 +845,7 @@ enabled = true
 # Using メソッドを使用してアカウントを指定
 my_adapter = adapter.get("myplatform")
 
-# イベント内の self.user_id を使用（推奨、最も汎用的）
+# イベントの self.user_id を使用（推奨、最も汎用的）
 await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
 
 # アカウント名を使用
@@ -854,9 +854,9 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
 ### self.user_id と Using の関係
 
-フレームワークのイベント返信メカニズムは、イベントの `self` フィールドから `account_id`（優先）または `user_id` を自動的に抽出し、`Using` パラメータとして渡します。アダプタ開発者は、Converter で `self.user_id` の値が `_resolve_account()` と正しく一致することを確認する必要があります。
+フレームワークのイベント返信メカニズムは、イベントの `self` フィールドから `account_id`（優先）または `user_id` を自動的に抽出し、`Using` パラメータとして渡します。アダプタ開発者は、Converter で `self.user_id` の値が `_resolve_account()` と正しく一致することを保証する必要があります。
 
-**フレームワーク内部の動作**（`Event._get_adapter_and_target`）：
+**フレームワーク内部の動作**：
 
 ```python
 # フレームワークが bot_id を抽出するロジック
@@ -867,7 +867,7 @@ if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **重要な点**：アダプタが単一の Bot 構成のみを使用している場合でも、Converter が `self.user_id` を正しく設定している限り、フレームワークはそれを `Using` パラメータとして渡します。アダプタは、`self.user_id` が `AccountConfigClass` の識別フィールド（例: `bot_id`）と一致することを確認し、`_resolve_account()` が正しいアカウントにマッチすることを保証する必要があります。`self.user_id` が空の場合、フレームワークは `Using` を呼び出さず、この場合 `call_api` に渡される `account_id` は `None` になります。`_resolve_account(None)` は、最初に有効なアカウントを返します。
+> **重要な点**：アダプタが単一の Bot 構成しか使用していない場合でも、Converter が `self.user_id` を正しく設定している限り、フレームワークはそれを `Using` パラメータとして渡します。アダプタは、`self.user_id` が `AccountConfigClass` の識別フィールド（例: `bot_id`）と一致していることを保証し、`_resolve_account()` が正しいアカウントを照合できるようにする必要があります。`self.user_id` が空の場合、フレームワークは `Using` を呼び出さず、この場合 `call_api` に渡される `account_id` は `None` となり、`_resolve_account(None)` は最初に有効化されたアカウントを返します。
 
 ## エラー処理
 

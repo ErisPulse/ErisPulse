@@ -802,7 +802,7 @@ async def call_api(self, endpoint: str, **params):
 
 ### Декларативная конфигурация (рекомендуется)
 
-После использования `AccountConfigClass` для декларирования класса конфигурации, фреймворк автоматически управляет загрузкой, проверкой и генерацией шаблонов для нескольких аккаунтов:
+После использования `AccountConfigClass` для декларативного класса конфигурации, фреймворк автоматически управляет загрузкой, проверкой и генерацией шаблонов для нескольких аккаунтов:
 
 ```python
 from dataclasses import dataclass, field
@@ -824,10 +824,10 @@ class MyAdapter(BaseAdapter):
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
         name, account = self._resolve_account(account_id)
-        # Использование полей account.token, account.bot_id и т.д.
+        # Использование account.token, account.bot_id и других полей
 ```
 
-### Файл конфигурации аккаунта
+### Конфигурационный файл аккаунта
 
 ```toml
 [MyAdapter.accounts.account1]
@@ -854,22 +854,22 @@ await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("He
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 ```
 
-### Отношение self.user_id и Using
+### Связь self.user_id и Using
 
-Механизм ответа событий фреймворка автоматически извлекает `account_id` (в приоритете) или `user_id` из поля `self` события и передает их в качестве параметра `Using`. Разработчикам адаптеров необходимо убедиться, что значение `self.user_id` в Converter корректно сопоставляется с `_resolve_account()`.
+Механизм ответа событий фреймворка автоматически извлекает `account_id` (в первую очередь) или `user_id` из поля `self` события и передает их в качестве параметра `Using`. Разработчику адаптера необходимо убедиться, что значение `self.user_id` в Converter корректно соответствует `_resolve_account()`.
 
-**Внутреннее поведение фреймворка** (`Event._get_adapter_and_target`):
+**Внутреннее поведение фреймворка**:
 
 ```python
 # Логика извлечения bot_id фреймворком
 bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
 
-# Вызов Using только при непустом bot_id
+# Вызов Using только в случае, если bot_id не пустой
 if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **Ключевой момент**: Даже если адаптер использует только одну конфигурацию бота, фреймворк будет передавать `Using` параметр, если `self.user_id` в Converter корректно установлен. Адаптер должен обеспечить соответствие значения `self.user_id` с идентификатором поля в `AccountConfigClass` (например, `bot_id`), чтобы `_resolve_account()` мог корректно сопоставить правильный аккаунт. Если `self.user_id` пуст, фреймворк не вызывает `Using`, и в этом случае `call_api` получает `account_id` в виде `None`, а `_resolve_account(None)` возвращает первый включенный аккаунт.
+> **Ключевой момент**: Даже если адаптер использует только одну конфигурацию Bot, при условии, что Converter правильно установил `self.user_id`, фреймворк передаст его в качестве параметра `Using`. Адаптер должен обеспечить соответствие значения `self.user_id` с идентификатором поля в `AccountConfigClass` (например, `bot_id`), чтобы `_resolve_account()` корректно находил нужный аккаунт. Если `self.user_id` пуст, фреймворк не вызовет `Using`, и в этом случае `call_api` получит `account_id` со значением `None`, а `_resolve_account(None)` вернет первый включенный аккаунт.
 
 ## Обработка ошибок
 

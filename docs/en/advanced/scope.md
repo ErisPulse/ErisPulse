@@ -1,33 +1,41 @@
 # Module Scope System
 
-The module scope system is used to control "which modules a specific Bot can use," implementing module isolation in multi-bot scenarios.
+> [!NOTE]
+> This feature requires ErisPulse **2.8.0+**.
 
-By default, all modules are open to all Bots; filtering only begins after configuration binding, requiring **no changes to modules or adapters** to be compatible.
+The module scope system is used to control which modules a "certain Bot" can use, achieving module isolation in multi-Bot scenarios. By default, all modules are available to all Bots; filtering only begins after configuration binding, and **no changes are required for modules or adapters** to adapt.
 
 {!--< tips >!--}
-1. Scopes bind modules based on the dimensions of "Adapter Platform + Bot Identifier + Session Identifier"
-2. Supports both whitelist (`modules`) and blacklist (`blocked`) modes
-3. Modules disabled by scope silently ignore incoming messages without replying with a prompt
-4. Supports runtime `sdk.scope.bind()` / `unbind()` for dynamic addition and removal, and is persistable
+1. The scope is bound to modules based on the dimension of 「adapter platform + Bot identifier + session identifier」
+2. Supports both whitelist (`modules`) and blacklist (`blocked`) methods
+3. Modules disabled by scope silently ignore messages and do not reply with prompts
+4. Supports dynamic addition and removal at runtime via `sdk.scope.bind()` / `unbind()`, which can be persisted
 {!--< /tips >!--}
 
-Please return the complete translated Markdown content directly without any other text.
+Please directly return the complete translated Markdown content without including any other text.
+
+Once again, if the document contains a language switch line (with language names separated by `` | ``), strictly follow the format requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## How It Works
 
-```
-Bot receives a message
-  → Framework extracts (platform, bot_id, session_id) from the event
-  → Finds scope bindings (Session > Bot > Platform)
-  → Hits binding: Filters modules by Whitelist/Blacklist
-  → Disabled modules: Neither command nor event handlers trigger (silently ignored)
+```mermaid
+flowchart TD
+    A["Bot receives message"] --> B["Extract (platform, bot_id, session_id)"]
+    B --> C{"Find scope binding<br/>(session-level > bot-level > platform-level)"}
+    C -->|"session-level"| D["sessions<br/>highest priority"]
+    C -->|"bot-level"| E["bots<br/>overrides platform-level"]
+    C -->|"platform-level"| F["platforms"]
+    D & E & F --> G{"Binding matched?"}
+    G -->|"matched"| H["Filter modules by whitelist / blacklist"]
+    G -->|"not matched"| I["Fallback to next lower level<br/>allow all if none configured"]
+    H --> J["Disabled modules: neither command nor event handlers are triggered<br/>(silently ignored)"]
 ```
 
-- **Resolution Priority:** Session > Bot > Platform. When higher priority is unbound, fall back to the next level; if all are unconfigured, allow all modules.
-- When event data is missing `self` (Bot unidentifiable), skip Bot level and judge based on Session level / Platform level.
-- Framework-layer resources (handlers with empty owner, command dispatchers, event bus) are always allowed through and are not affected by scope.
+- **Resolution priority: session-level > bot-level > platform-level**, if a higher priority has no binding rules, fall back to the next lower level; if none is configured, allow all modules.
+- When event data lacks `self` (Bot cannot be identified), skip bot-level and determine based on session-level / platform-level.
+- Framework-level resources (handlers with empty owner, command dispatcher, event bus) are always allowed, unaffected by scope.
 
-Please return the complete Markdown content directly without any other text.
+Please directly return the complete translated Markdown content, without any additional text.
 
 ## Configuration File
 
@@ -213,19 +221,3 @@ topology = sdk.get_topology()
 
 - Module topology aggregates commands, event handlers, HTTP/WS/SSE routes, and lifecycle hooks registered by the module, facilitating the drawing of the module resource tree.
 - Adapter topology aggregates adapter status, subordinate Bot status, and platform-level/Bot-level scope bindings.
-
-## Privacy: Suppressing Message Logs
-
-To prevent the backend (such as the Dashboard log panel) from viewing the message content of each group/private chat, you can suppress EVENT level within `[ErisPulse.logger]` (message transmission/reception content is recorded at the EVENT level):
-
-```toml
-[ErisPulse.logger]
-exclude_levels = ["EVENT"]
-```
-
-Logs at suppressed levels will be **completely discarded** (not written to memory, not pushed to subscribers, not printed, and not written to files). You can also control this dynamically via code:
-
-```python
-sdk.logger.set_excluded_levels(["EVENT"])   # Suppress
-sdk.logger.exclude_level("EVENT")
-sdk.logger.allow_level("EVENT")             # Restore

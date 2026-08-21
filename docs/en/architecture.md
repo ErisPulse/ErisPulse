@@ -87,32 +87,76 @@ flowchart TD
 
 ## Event Handling Flow
 
-The following diagram illustrates the complete message flow path from the platform to the handler:
+The following diagram illustrates the complete flow path of messages from the platform to the handlers:
 
 ```mermaid
 flowchart LR
-    A["Platform raw message"] --> B["Adapter receives"]
-    B --> C["Convert to OneBot12 standard"]
+    A["Platform Raw Message"] --> B["Adapter Receives"]
+    B --> C["Convert to OneBot12 Standard"]
     C --> D["adapter.emit()"]
-    D --> E["Execute middleware chain"]
-    E --> F{"Event dispatch"}
-    F --> G1["command<br/>Command handler"]
-    F --> G2["message<br/>Message handler"]
-    F --> G3["notice<br/>Notice handler"]
-    F --> G4["request<br/>Request handler"]
-    F --> G5["meta<br/>Meta event handler"]
-    G1 & G2 & G3 & G4 & G5 --> H["Handler callback execution"]
+    D --> E["Execute Middleware Chain"]
+    E --> F{"Event Dispatch"}
+    F --> G1["command<br/>Command Handler"]
+    F --> G2["message<br/>Message Handler"]
+    F --> G3["notice<br/>Notice Handler"]
+    F --> G4["request<br/>Request Handler"]
+    F --> G5["meta<br/>Meta Event Handler"]
+    G1 & G2 & G3 & G4 & G5 --> H["Handler Callback Execution"]
     H --> I["event.reply()<br/>Reply via SendDSL"]
-    I --> J["Adapter sends to platform"]
+    I --> J["Adapter Sends to Platform"]
 ```
 
-### Key Steps in Event Handling
+### Detailed Event Handling Chain
 
-- **Adapter receives** - Each platform adapter receives native events via methods such as WebSocket/Webhook
-- **OB12 standardization** - Convert platform native events into the unified OneBot12 standard format
-- **Middleware processing** - Execute registered middleware functions in sequence, which can modify event data
-- **Event dispatch** - Distribute events to corresponding handlers based on event type (message/notice/request/meta)
-- **SendDSL reply** - Handlers send responses via `event.reply()` or a chain of `SendDSL` calls
+The above diagram shows the "result"; below is a breakdown of what the framework does behind the scenes after `adapter.emit()` — this is a three-layer dispatch chain:
+
+```mermaid
+sequenceDiagram
+    participant P as Platform
+    participant A as Adapter Bus Layer<br/>AdapterManager.emit
+    participant T as Handler Task Layer<br/>_dispatch_handler_task
+    participant E as Event Module Layer<br/>_process_event
+
+    P->>A: Native Event
+    A->>A: Extract platform/type/detail_type + raw fields
+    A->>A: [Recv] Receive Log
+    A->>A: lifecycle.adapter.event.receive (earliest hook)
+    A->>A: Process self field (meta branch / Bot auto-registration)
+    A->>A: Middleware Chain (serial, can rewrite event data)
+    A->>A: Collect handlers (specific type + wildcard *)
+    A->>A: Scope Filtering (silent skip before creating Task)
+    A->>T: asyncio.create_task (fire-and-forget)
+    A->>A: lifecycle.adapter.event.dispatched (latest hook)
+    T->>T: Get concurrency semaphore (default limit 64)
+    T->>E: Call Event module-mounted handlers
+    E->>E: lifecycle.event.pre_process
+    E->>E: ignore_self (messages default ignore self)
+    E->>E: Group by priority: high → low, serial between groups, concurrent within group
+    E->>E: Concurrent execution within group + field merging (conflict warning)
+    E->>E: Post-group check stop() to block lower priority
+    T->>T: Slow Log (warn if > 1s, wait_reply time excluded from timeout)
+```
+
+**What the framework does at each step and what you can intervene:**
+
+| Stage | What the framework does | What you can intervene |
+|------|-------------|-----------|
+| Receive | Extract standard fields, retain `{platform}_raw` raw data; write `[Recv]` log | Listen `adapter.event.receive` to get earliest event |
+| self field | Meta events go through connect/disconnect/heartbeat branches; ordinary events auto-register Bot and trigger `adapter.bot.online` | Listen `adapter.bot.online` / `bot.offline` |
+| Middleware | **Serial** execution, if return value is not None it replaces event data | Register middleware to rewrite or intercept events |
+| Dispatch Collection | First get specific type handler, then get `*` wildcard handler | — |
+| Scope Filtering | Determine `scope.is_allowed` by owner (session level > Bot level > platform level), **silently skip if not allowed** | Configure scope whitelist/blacklist |
+| Scheduling | Each matching handler gets an independent `asyncio.Task`, `emit()` **returns immediately without waiting** for handler completion | — |
+| Priority | High priority group executes first; **serial between groups, concurrent within group** (each handler holds its own event copy, modifies fields and merges back to original event, conflict issues WARNING) | `@command(..., priority=N)` / specify priority during registration |
+| Blocking | After each group is processed, check `event.is_stopped()`, if triggered, **lower priority groups are not executed** | `event.mark_processed(stop=True)` / `event.done()` |
+
+> **Common Misunderstandings**:
+> 1. **Scope filtering is silent** — filtered handlers do not report errors or respond, only visible in TRACE-level logs (`core.scope.denied`). If "my module did not receive the message," first check scope binding.
+> 2. **Handlers are naturally concurrent** — the framework already creates independent Tasks for each handler, you **do not need** to wrap them with `asyncio.create_task` yourself.
+> 3. **No blocking within the same priority group** — `mark_processed(stop=True)` only blocks lower priority groups, handlers already running concurrently within the same group are not interrupted mid-execution.
+> 4. **Slow log threshold is fixed at 1 second** — handlers taking over 1s will issue a WARNING in the log (time spent waiting for `wait_reply` is excluded from the timeout), but execution is not interrupted.
+
+> For details on scope binding and priority, see [Scope System](docs/en/advanced/scope.md); for full semantics of claim/blocking, see [Event Handling Introduction](docs/en/getting-started/event-handling.md); for concurrency limit configuration, see [Configuration Guide](docs/en/user-guide/configuration.md#Framework_Configuration).
 
 ## Lifecycle Events
 
