@@ -68,7 +68,7 @@ if TYPE_CHECKING:
         BaseStorage as _BaseStorage,
     )
     from .Core import (
-        HttpClient as _HttpClient,
+        Client as _Client,
     )
     from .Core import (
         SendDSL as _SendDSL,
@@ -186,7 +186,7 @@ class SDK:
     adapter: AdapterManager
     module: ModuleManager
     router: RouterManager
-    client: _HttpClient
+    client: _Client
     BaseAdapter: type[_BaseAdapter]
     SendDSL: type[_SendDSL]
     BaseStorage: type[_BaseStorage]

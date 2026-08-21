@@ -19,7 +19,7 @@ import threading
 import weakref
 from typing import TYPE_CHECKING, Any, cast
 
-from ..Core.constants import ACTIVATION_STUB_PRIORITY, MODULE_ENTRY_POINT_GROUP
+from ..Core.constants import ACTIVATION_STUB_PRIORITY, MODULE_ENTRY_POINT_GROUP, MODULE_SOURCE_PLUGIN_FOLDER
 from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
 from ..Core.logger import logger
@@ -282,7 +282,7 @@ class ModuleLoader(BaseLoader):
             return False
 
         meta = old_obj.moduleInfo.get("meta", {})
-        if meta.get("source") != "plugin_folder":
+        if meta.get("source") != MODULE_SOURCE_PLUGIN_FOLDER:
             logger.warning(
                 i18n.t("loader.plugin.reload_not_plugin", name=plugin_name)
             )
@@ -316,7 +316,7 @@ class ModuleLoader(BaseLoader):
 
         # 3. 级联重载依赖者（近 → 远，依赖者在其依赖就绪后重载）
         for dep in dependents:
-            if dependent_sources.get(dep) == "plugin_folder":
+            if dependent_sources.get(dep) == MODULE_SOURCE_PLUGIN_FOLDER:
                 await self._reload_single_plugin(dep, manager_instance, sdk_instance)
             elif dep in getattr(manager_instance, "_module_classes", {}):
                 # PyPI 依赖者：类注册仍在，直接重新实例化加载

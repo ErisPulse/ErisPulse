@@ -16,6 +16,7 @@ from .constants import (
     CONFIG_KEY_MODULE_STATUS_OF,
     CONFIG_KEY_MODULES_STATUS,
     DEFAULT_MODULE_ENABLED,
+    MODULE_SOURCE_PLUGIN_FOLDER,
 )
 from .i18n import i18n
 from .lifecycle import lifecycle
@@ -745,7 +746,7 @@ class ModuleManager(ManagerBase):
 
         # 保守清理 sys.modules：仅插件文件夹来源（本地插件），不碰已安装包/共享库
         meta = (info or {}).get("meta", {}) or {}
-        if meta.get("source") == "plugin_folder":
+        if meta.get("source") == MODULE_SOURCE_PLUGIN_FOLDER:
             self._purge_sys_modules(module_name, meta.get("top_level") or [module_name])
 
         logger.info(i18n.t("core.module.purged", name=module_name))

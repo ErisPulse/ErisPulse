@@ -1034,5 +1034,24 @@ class TestBasesReExport:
 
         assert I18nConfig().language == "auto"
 
+    def test_client_rename_backcompat_aliases(self):
+        """Client/BaseClient 新类名导出，旧名 HttpClient/BaseHttpClient 保留兼容别名"""
+        from ErisPulse.Core import BaseClient, Client, BaseHttpClient, HttpClient
+        from ErisPulse.Core.Bases import BaseClient as _BC, BaseHttpClient as _BOC
+
+        assert HttpClient is Client
+        assert BaseHttpClient is BaseClient
+        assert _BOC is _BC
+        # 顶层单例属性名不变
+        from ErisPulse.Core import client
+
+        assert isinstance(client, Client)
+
+    def test_sdk_type_exported_top_level(self):
+        """SDK 类应从 ErisPulse 顶层导出（供模块 __init__ 注解 sdk: SDK 使用）"""
+        from ErisPulse import SDK, sdk
+
+        assert SDK is type(sdk)
+
 
 

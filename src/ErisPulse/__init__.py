@@ -35,8 +35,8 @@ from .Core import (
 # 导入懒加载模块类
 from .loaders.module import LazyModule
 
-# 导入实际的SDK对象
-from .sdk import sdk
+# 导入实际的SDK对象与 SDK 类型（供模块 __init__ 注解 sdk: SDK = None 使用）
+from .sdk import SDK, sdk
 
 # ==================== 版本信息 ====================
 
@@ -60,6 +60,7 @@ uninit = sdk.uninit
 
 # 导出列表
 __all__ = [
+    "SDK",
     "BaseAdapter",
     "BatchContext",
     "Event",

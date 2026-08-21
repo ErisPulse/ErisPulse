@@ -188,7 +188,7 @@ class BaseClientWebSocket(WebSocketConnectionBase):
             pass
 
 
-class BaseHttpClient:
+class BaseClient:
     """
     HTTP 客户端抽象基类
 
@@ -332,7 +332,11 @@ class BaseHttpClient:
         raise NotImplementedError
 
 
+# 向后兼容别名：2.8.0 前类名为 BaseHttpClient
+BaseHttpClient = BaseClient
+
 __all__ = [
+    "BaseClient",
     "BaseClientWebSocket",
     "BaseHttpClient",
     "BaseHttpResponse",

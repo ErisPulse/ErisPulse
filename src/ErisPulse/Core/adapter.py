@@ -20,6 +20,16 @@ from .config import config
 from .constants import (
     ADAPTER_RETRY_BACKOFF_INTERVALS,
     ADAPTER_RETRY_FIXED_DELAY_SECS,
+    ADAPTER_STATUS_DISABLED,
+    ADAPTER_STATUS_SKIPPED_DEPENDENCY,
+    ADAPTER_STATUS_START_FAILED,
+    ADAPTER_STATUS_STARTED,
+    ADAPTER_STATUS_STARTING,
+    ADAPTER_STATUS_STOP_FAILED,
+    ADAPTER_STATUS_STOPPED,
+    ADAPTER_STATUS_STOPPING,
+    BOT_STATUS_OFFLINE,
+    BOT_STATUS_ONLINE,
     CONFIG_KEY_ADAPTER_STATUS,
     CONFIG_KEY_ADAPTER_STATUS_OF,
     DEFAULT_ADAPTER_ENABLED,
@@ -625,7 +635,7 @@ class AdapterManager(ManagerBase):
                     ),
                     data={
                         "platform": platform,
-                        "status": "skipped-dependency",
+                        "status": ADAPTER_STATUS_SKIPPED_DEPENDENCY,
                         "missing": missing_deps,
                     },
                 )
@@ -641,7 +651,7 @@ class AdapterManager(ManagerBase):
                 msg=i18n.t("core.adapter.state_starting", platform=platform),
                 data={
                     "platform": platform,
-                    "status": "starting",
+                    "status": ADAPTER_STATUS_STARTING,
                     "retry_count": retry_count,
                 },
             )
@@ -663,7 +673,7 @@ class AdapterManager(ManagerBase):
                     await lifecycle.submit_event(
                         "adapter.status.change",
                         msg=i18n.t("core.adapter.state_started", platform=platform),
-                        data={"platform": platform, "status": "started"},
+                        data={"platform": platform, "status": ADAPTER_STATUS_STARTED},
                     )
 
                     return
@@ -691,7 +701,7 @@ class AdapterManager(ManagerBase):
                         ),
                         data={
                             "platform": platform,
-                            "status": "start_failed",
+                            "status": ADAPTER_STATUS_START_FAILED,
                             "retry_count": retry_count,
                             "error": str(e),
                         },
@@ -775,7 +785,7 @@ class AdapterManager(ManagerBase):
                 # 收集该平台下需要标记为离线的 Bot
                 if platform in self._bots:
                     for bot_id, bot_info in self._bots[platform].items():
-                        if bot_info.get("status") != "offline":
+                        if bot_info.get("status") != BOT_STATUS_OFFLINE:
                             bots_to_offline.append((platform, bot_id))
 
             # 对每个受影响的 adapter 实例执行 shutdown（如果尚未关闭）
@@ -792,7 +802,7 @@ class AdapterManager(ManagerBase):
                             await lifecycle.submit_event(
                                 "adapter.status.change",
                                 msg=i18n.t("core.adapter.state_stopping", platform=p),
-                                data={"platform": p, "status": "stopping"},
+                                data={"platform": p, "status": ADAPTER_STATUS_STOPPING},
                             )
 
                     try:
@@ -807,7 +817,7 @@ class AdapterManager(ManagerBase):
                                     msg=i18n.t(
                                         "core.adapter.state_stopped", platform=p
                                     ),
-                                    data={"platform": p, "status": "stopped"},
+                                    data={"platform": p, "status": ADAPTER_STATUS_STOPPED},
                                 )
                     except Exception as e:
                         logger.error(
@@ -828,7 +838,7 @@ class AdapterManager(ManagerBase):
                                     ),
                                     data={
                                         "platform": p,
-                                        "status": "stop_failed",
+                                        "status": ADAPTER_STATUS_STOP_FAILED,
                                         "error": str(e),
                                     },
                                 )
@@ -841,7 +851,7 @@ class AdapterManager(ManagerBase):
             # 将相关 Bot 标记为离线
             for platform, bot_id in bots_to_offline:
                 if platform in self._bots and bot_id in self._bots[platform]:
-                    self._bots[platform][bot_id]["status"] = "offline"
+                    self._bots[platform][bot_id]["status"] = BOT_STATUS_OFFLINE
                     await lifecycle.submit_event(
                         "adapter.bot.offline",
                         msg=i18n.t(
@@ -850,7 +860,7 @@ class AdapterManager(ManagerBase):
                         data={
                             "platform": platform,
                             "bot_id": bot_id,
-                            "status": "offline",
+                            "status": BOT_STATUS_OFFLINE,
                         },
                     )
 
@@ -1053,7 +1063,7 @@ class AdapterManager(ManagerBase):
         await lifecycle.submit_event(
             "adapter.status.change",
             msg=i18n.t("core.adapter.state_stopping", platform=platform),
-            data={"platform": platform, "status": "stopping"},
+            data={"platform": platform, "status": ADAPTER_STATUS_STOPPING},
         )
         await self._stop_adapter(platform)
 
@@ -1061,7 +1071,7 @@ class AdapterManager(ManagerBase):
         await lifecycle.submit_event(
             "adapter.status.change",
             msg=i18n.t("core.adapter.state_starting", platform=platform),
-            data={"platform": platform, "status": "starting"},
+            data={"platform": platform, "status": ADAPTER_STATUS_STARTING},
         )
         token = current_owner.set(platform)
         try:
@@ -1082,7 +1092,7 @@ class AdapterManager(ManagerBase):
         await lifecycle.submit_event(
             "adapter.status.change",
             msg=i18n.t("core.adapter.state_started", platform=platform),
-            data={"platform": platform, "status": "started"},
+            data={"platform": platform, "status": ADAPTER_STATUS_STARTED},
         )
         return True
 
@@ -1521,13 +1531,13 @@ class AdapterManager(ManagerBase):
                                 "info": self._bots.get(platform, {})
                                 .get(bot_id, {})
                                 .get("info", {}),
-                                "status": "online",
+                                "status": BOT_STATUS_ONLINE,
                             },
                         )
                     case "disconnect":
                         # Bot 断开连接
                         self._update_bot_status(
-                            platform, str(self_info["user_id"]), "offline"
+                            platform, str(self_info["user_id"]), BOT_STATUS_OFFLINE
                         )
                     case "heartbeat":
                         # 心跳，更新活跃时间
@@ -1551,7 +1561,7 @@ class AdapterManager(ManagerBase):
                             "info": self._bots.get(platform, {})
                             .get(bot_id, {})
                             .get("info", {}),
-                            "status": "online",
+                            "status": BOT_STATUS_ONLINE,
                         },
                     )
 
@@ -1868,7 +1878,7 @@ class AdapterManager(ManagerBase):
         existing_meta.update(bot_meta)
 
         self._bots[platform][bot_id] = {
-            "status": "online",
+            "status": BOT_STATUS_ONLINE,
             "last_active": time.time(),
             "info": existing_meta,
         }
@@ -1914,7 +1924,7 @@ class AdapterManager(ManagerBase):
                     )
                 )
 
-        if status == "offline":
+        if status == BOT_STATUS_OFFLINE:
             if not self._is_being_shutdown:
                 try:
                     loop = asyncio.get_running_loop()
@@ -1932,7 +1942,7 @@ class AdapterManager(ManagerBase):
                                 data={
                                     "platform": platform,
                                     "bot_id": bot_id,
-                                    "status": "offline",
+                                    "status": BOT_STATUS_OFFLINE,
                                 },
                             )
                         finally:
@@ -1997,7 +2007,7 @@ class AdapterManager(ManagerBase):
             for bot_id in list(self._bots[platform].keys()):
                 bot_info = self._bots[platform][bot_id]
                 if (
-                    bot_info.get("status") == "offline"
+                    bot_info.get("status") == BOT_STATUS_OFFLINE
                     and (now - bot_info.get("last_active", 0)) > expiry_secs
                 ):
                     del self._bots[platform][bot_id]
@@ -2051,7 +2061,7 @@ class AdapterManager(ManagerBase):
         """
         if (bot_info := self._bots.get(platform, {}).get(bot_id)) is None:
             return False
-        return bot_info.get("status") == "online"
+        return bot_info.get("status") == BOT_STATUS_ONLINE
 
     def get_status_summary(self) -> dict[str, Any]:
         """
@@ -2090,9 +2100,9 @@ class AdapterManager(ManagerBase):
         for platform_name in self._adapters:
             adapter_instance = self._adapters[platform_name]
             if adapter_instance in self._started_instances:
-                adapter_status = "started"
+                adapter_status = ADAPTER_STATUS_STARTED
             else:
-                adapter_status = "stopped"
+                adapter_status = ADAPTER_STATUS_STOPPED
 
             adapters_summary[platform_name] = {
                 "status": adapter_status,
@@ -2105,7 +2115,7 @@ class AdapterManager(ManagerBase):
         for platform_name in config_status:
             if platform_name not in adapters_summary:
                 adapters_summary[platform_name] = {
-                    "status": "disabled",
+                    "status": ADAPTER_STATUS_DISABLED,
                     "enabled": parse_bool_config(config_status[platform_name]),
                     "bots": {},
                 }
@@ -2138,9 +2148,9 @@ class AdapterManager(ManagerBase):
         for platform_name in self._adapters:
             adapter_instance = self._adapters[platform_name]
             if adapter_instance in self._started_instances:
-                adapter_status = "started"
+                adapter_status = ADAPTER_STATUS_STARTED
             else:
-                adapter_status = "stopped"
+                adapter_status = ADAPTER_STATUS_STOPPED
 
             bots_summary = {}
             for bot_id, bot_info in self._bots.get(platform_name, {}).items():
@@ -2164,7 +2174,7 @@ class AdapterManager(ManagerBase):
         for platform_name in config_status:
             if platform_name not in adapters_summary:
                 adapters_summary[platform_name] = {
-                    "status": "disabled",
+                    "status": ADAPTER_STATUS_DISABLED,
                     "enabled": parse_bool_config(config_status[platform_name]),
                     "bots": {},
                     "scope": scope.get(platform_name),
@@ -2304,7 +2314,11 @@ class AdapterManager(ManagerBase):
 
         base_url = urls.get("base_url", "")
 
-        status = "started" if self.is_running(platform) else "stopped"
+        status = (
+            ADAPTER_STATUS_STARTED
+            if self.is_running(platform)
+            else ADAPTER_STATUS_STOPPED
+        )
 
         return {
             "platform": platform,

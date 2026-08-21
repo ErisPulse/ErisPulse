@@ -64,8 +64,10 @@ _MODULE_INIT = """from .Core import Main
 """
 
 _MODULE_CORE = """from dataclasses import dataclass, field
+
+from ErisPulse import SDK
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey, ModuleMeta
-from ErisPulse.Core.Event import command, message, notice
+from ErisPulse.Core.Event import Event, command, message, notice
 from ErisPulse.Core.i18n import i18n
 
 
@@ -90,6 +92,15 @@ class Main(BaseModule):
     class I18nClass(BaseI18n):
         \"\"\"{name} translation keys\"\"\"
 
+        meta_description: I18nKey = I18nKey(
+            key=\"module.{name}.meta.description\",
+            default=\"{name} module\",
+            zh_CN=\"{name} 模块\",
+            en=\"{name} module\",
+            ja=\"{name} モジュール\",
+            ru=\"Модуль {name}\",
+            zh_TW=\"{name} 模組\",
+        )
         enabled: I18nKey = I18nKey(
             key=\"module.{name}.enabled\",
             default=\"Enable module\",
@@ -118,15 +129,15 @@ class Main(BaseModule):
             zh_TW=\"來自 {name} 的問候！\",
         )
 
-    def __init__(self, sdk=None):
-        from ErisPulse import sdk as _sdk
-        self.sdk = _sdk if sdk is None else sdk
+    def __init__(self, sdk: SDK = None):
+        # sdk 由框架在实例化时自动注入（无需手动导入兜底）
+        self.sdk = sdk
         self.logger = self.sdk.logger.get_child(\"{name}\")
         self.storage = self.sdk.storage
         self.adapter = self.sdk.adapter
         self.client = self.sdk.client
 
-        self.logger.info((\"{text[module.log.init_done]}\").format(name=\"{name}\"))
+        self.logger.info(\"{text[module.log.init_done]}\")
 
     @staticmethod
     def get_meta() -> ModuleMeta:
@@ -135,7 +146,8 @@ class Main(BaseModule):
         \"\"\"
         return ModuleMeta(
             name=\"{name}\",
-            description=\"{name} module\",
+            # description 支持 i18n 字典（key 由 I18nClass 注册），也可用纯字符串
+            description={{\"i18n\": \"module.{name}.meta.description\", \"default\": \"{name} module\"}},
             version=\"0.1.0\",
             author=\"ErisDev\",
             group=\"default\",
@@ -181,20 +193,20 @@ class Main(BaseModule):
 
     async def _register_commands(self):
         @command(\"hello\", help=i18n.t(\"module.{name}.command.hello.help\"))
-        async def hello_command(event):
+        async def hello_command(event: Event):
             await event.reply(i18n.t(\"module.{name}.command.hello.reply\"))
 
     async def _register_message_handlers(self):
         @message.on_private_message()
-        async def private_message_handler(event):
+        async def private_message_handler(event: Event):
             self.logger.info((\"{text[module.log.private_message]}\").format(content=event.get_text()))
 
         @message.on_group_message()
-        async def group_message_handler(event):
+        async def group_message_handler(event: Event):
             pass
 
         @notice.on_friend_add()
-        async def friend_add_handler(event):
+        async def friend_add_handler(event: Event):
             self.logger.info((\"{text[module.log.friend_add]}\").format(nickname=event.get_user_nickname()))
 """
 

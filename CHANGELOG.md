@@ -146,6 +146,12 @@
     - **卸载一致性补齐**：`disable()` 补漏 `lifecycle.unregister_by_owner` 与 i18n domain 清理；模块卸载流程同步清理 i18n domain（`i18n.unregister_domain`）
     - **彻底卸载（`unload(purge=True)`）**：`ModuleManager.unload()` 新增 `purge` 参数——默认仅取消加载（保留注册存根，模块仍可 discover 重新发现 / `load()` 重新实例化）；`purge=True` 时删除注册存根（释放模块类引用）+ 清理 `sys.modules`（**保守**：仅插件文件夹来源的插件自身模块与子包，不碰已安装包/共享库），级联卸载的依赖者同样被 purge；卸载后 `gc.collect()` + weakref 诊断模块类/实例是否可回收，残留引用告警并列出引用方（DEBUG 级）
     - **适配器卸载**：`AdapterManager.unload(platform)` 停止并注销单个平台（释放适配器实例与 `adapter_class` 引用，与 `shutdown()` 仅停止的语义区分）
+  - **SDK 注入规范化与 Client 更名**：
+    - 顶层导出 `SDK` 类（`from ErisPulse import SDK`），供模块 `__init__` 类型注解使用；`create` 模块模板 `__init__` 改为纯注入写法 `def __init__(self, sdk: SDK = None): self.sdk = sdk`（删除旧版 `from ErisPulse import sdk as _sdk` 兜底——框架经签名检测总是注入 sdk）；同时删除模板中无效的 `.format(name="{name}")` 调用（scaffold 文本已预替换 `{name}` 占位符）
+    - 模板 `get_meta()` 的 `description` 改用 i18n 字典声明（`{"i18n": "module.<Name>.meta.description", "default": ...}`），`I18nClass` 同步注册 `meta_description` 翻译键（5 语言）
+    - `HttpClient` 更名为 `Client`、`BaseHttpClient` 更名为 `BaseClient`（旧名保留为兼容别名，`sdk.client` 属性名不变）；`Core`/`Bases` 聚合导出与 `__all__` 同步双名
+    - 模板与示例项目的事件回调统一添加 `event: Event` 类型注解（生命周期方法保持 `event: dict`），文档 6 篇 80 处签名全量补齐；`event-wrapper.md` 新增「为 event 参数添加类型注解」引导（IDE 补全价值 + Event 与 dict 区分说明）
+  - **常量收敛**（内部重构，无行为变更）：`DEFAULT_OWNER_CANCEL_TIMEOUT_SECS`（tasks.py 模块内私有常量上移）、`LOG_FILE_FORMAT`/`LOG_FILE_DATEFMT`（logger.py 模块内私有上移，与 `LOG_TIME_FORMAT` 命名族对齐）、`MODULE_SOURCE_PLUGIN_FOLDER`（`"plugin_folder"` 来源标识散落 4 处收敛）、`ADAPTER_STATUS_*` 8 态 + `BOT_STATUS_ONLINE`/`OFFLINE`（适配器/Bot 状态字符串散落 20+ 处收敛）；`frame_config.py` 默认配置树 logger 分段 4 键由字面量改为引用 `DEFAULT_LOG_*` 常量（消除双源）
   - **适配器依赖声明（可选功能）**：
     - `BaseAdapter` 新增 `depends`（硬依赖，`{"adapters": [...], "modules": [...]}`）与 `optional_modules`（软依赖）类属性，`loaders/adapter.py` 合入 meta
     - 硬依赖缺失时跳过启动（警告 + `adapter.status.change` 状态 `skipped-dependency`）；声明模块硬依赖的适配器**推迟到模块初始化完成后启动**

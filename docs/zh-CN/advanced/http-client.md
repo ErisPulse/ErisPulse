@@ -180,10 +180,10 @@ resp = await client.request(
 ## 超时与重试
 
 ```python
-from ErisPulse.Core import HttpClient
+from ErisPulse.Core import Client
 
 # 创建带自定义超时的客户端
-client = HttpClient(
+client = Client(
     timeout=60,           # 请求总超时 60s
     connect_timeout=5,    # 连接超时 5s
     max_retries=3,        # 失败自动重试 3 次
@@ -194,10 +194,13 @@ client = HttpClient(
 resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
+> [!NOTE]
+> 客户端类从 2.8.0 起更名为 `Client`（`sdk.client` 属性名不变）；旧名 `HttpClient` 保留为兼容别名，老代码无需修改。
+
 ## 自定义默认头
 
 ```python
-client = HttpClient(
+client = Client(
     headers={
         "Authorization": "Bearer token",
         "X-App-Id": "my-app",
@@ -249,7 +252,7 @@ async def on_ws_connect(event_data):
 
 ```python
 # 作为上下文管理器，自动关闭会话
-async with HttpClient(timeout=30) as client:
+async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
 ```

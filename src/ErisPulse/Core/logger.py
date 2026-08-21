@@ -31,6 +31,8 @@ from .constants import (
     DEFAULT_LOG_MEMORY_LIMIT,
     DEFAULT_LOG_ROTATION,
     DEFAULT_LOG_ROTATION_WHEN,
+    LOG_FILE_DATEFMT,
+    LOG_FILE_FORMAT,
     LOG_RICH_THEME,
     LOG_TIME_FORMAT,
     LOGGER_NAME,
@@ -62,10 +64,6 @@ class _SingleLineFormatter(logging.Formatter):
         return _to_single_line(super().format(record))
 
 
-_FILE_LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
-_FILE_LOG_DATEFMT = "%Y-%m-%d %H:%M:%S"
-
-
 def _make_file_formatter() -> logging.Formatter:
     """
     构建非 JSON 模式下的日志文件格式化器
@@ -75,7 +73,7 @@ def _make_file_formatter() -> logging.Formatter:
 
     :return: 带日期时间、级别且单行化的 Formatter
     """
-    return _SingleLineFormatter(fmt=_FILE_LOG_FORMAT, datefmt=_FILE_LOG_DATEFMT)
+    return _SingleLineFormatter(fmt=LOG_FILE_FORMAT, datefmt=LOG_FILE_DATEFMT)
 
 
 def _format_message(msg: object, args: tuple) -> str:
