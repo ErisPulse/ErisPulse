@@ -124,6 +124,24 @@ DEFAULT_LOG_MEMORY_LIMIT: Final[int] = 1000
 # 修改影响: 仅影响未配置日志级别时的默认行为。
 DEFAULT_LOG_LEVEL: Final[str] = "INFO"
 
+# 日志目录的默认分段方式。
+# 可选值: "size"（按大小）/ "date"（按时间）/ "none"（不分段）。
+# 修改影响: log_dir 模式下的日志轮转策略。
+DEFAULT_LOG_ROTATION: Final[str] = "size"
+
+# size 分段模式下单个日志文件的大小上限（MB）。
+# 修改影响: 触发轮转的阈值；超过后旧日志轮转为 .1/.2 备份。
+DEFAULT_LOG_MAX_SIZE_MB: Final[float] = 10.0
+
+# 分段模式下保留的历史日志文件数量。
+# 修改影响: 超出数量的最旧备份会被删除；增大占用更多磁盘。
+DEFAULT_LOG_BACKUP_COUNT: Final[int] = 5
+
+# date 分段模式的轮转周期（logging TimedRotatingFileHandler 的 when 参数）。
+# 可选值: "S"/"M"/"H"/"D"/"midnight"。默认 "midnight"（每天零点轮转）。
+# 修改影响: 按时间分段的粒度。
+DEFAULT_LOG_ROTATION_WHEN: Final[str] = "midnight"
+
 # Rich 控制台日志的时间戳格式（strftime 语法）。
 # 修改影响: 终端日志输出的时间显示样式。
 LOG_TIME_FORMAT: Final[str] = "[%H:%M:%S]"
@@ -774,8 +792,12 @@ __all__ = [
     "DEFAULT_I18N_LANGUAGE",
     "DEFAULT_KV_TABLE_NAME",
     "DEFAULT_LAZY_LOADING_ENABLED",
+    "DEFAULT_LOG_BACKUP_COUNT",
     "DEFAULT_LOG_LEVEL",
+    "DEFAULT_LOG_MAX_SIZE_MB",
     "DEFAULT_LOG_MEMORY_LIMIT",
+    "DEFAULT_LOG_ROTATION",
+    "DEFAULT_LOG_ROTATION_WHEN",
     "DEFAULT_MAX_RETRIES",
     "DEFAULT_MESSAGE_IGNORE_SELF",
     "DEFAULT_MODULE_ENABLED",
