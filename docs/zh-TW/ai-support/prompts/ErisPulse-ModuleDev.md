@@ -63,7 +63,7 @@ graph TB
     SDK --> AdapterMgr["Adapter<br/>適配器管理"]
     SDK --> ModuleMgr["Module<br/>模組管理"]
     SDK --> Router["Router<br/>路由管理"]
-    SDK --> Client["HttpClient<br/>HTTP 客戶端"]
+    SDK --> Client["Client<br/>HTTP 客戶端"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -95,7 +95,7 @@ graph TB
 | **Config** | TOML 格式的設定檔管理 |
 | **Logger** | 模組化日誌系統，支援子日誌器 |
 | **Router** | HTTP/WebSocket 路由管理，透過抽象層封裝底層後端（目前為 FastAPI + Uvicorn），支援裝飾器路由、中間件、分組、限流、CORS |
-| **HttpClient** | 統一 HTTP/WS 客戶端，透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端、ErisPulse 異常體系等功能。客戶端和伺服器 WebSocket 共享 `WebSocketConnectionBase` 基類 |
+| **Client** | 統一 HTTP/WS 客戶端（2.8.0 前為 `HttpClient`，保留相容別名），透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端、ErisPulse 異常體系等功能。客戶端和伺服器 WebSocket 共享 `WebSocketConnectionBase` 基類 |
 
 ## 初始化流程
 
@@ -2455,6 +2455,25 @@ Event 模組提供了功能強大的 Event 包裝類，簡化事件處理。
 
 再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
+## 為 event 參數添加類型註解
+
+事件處理器的 `event` 參數是 **Event 包裝類**（dict 子類）。強烈建議為它添加類型註解：
+
+```python
+from ErisPulse.Core.Event import Event
+
+@message.on_private_message()
+async def handler(event: Event):
+    text = event.get_text()   # IDE 自動補全所有便捷方法
+    await event.reply(text)   # 拼寫錯誤在靜態檢查時即可發現
+```
+
+不加註解時 IDE 無法識別 Event 上的方法（`get_text()` / `reply()` / `wait_reply()` / 平台擴展方法均不提示），只能靠記憶拼寫。
+
+> **注意區分**：事件處理器回調的 `event` 是 **Event 包裝類**（註解為 `Event`）；模組生命週期方法 `on_load` / `on_unload` 的 `event` 是普通 **dict**（註解為 `dict`），二者不要混淆。
+
+[**English**](docs/zh-TW/quick-start.md)
+
 ## 核心特性
 
 - **完全相容字典**：Event 繼承自 dict
@@ -2466,24 +2485,20 @@ Event 模組提供了功能強大的 Event 包裝類，簡化事件處理。
 
 再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
-## 核心欄位方法
+## 核心字段方法
 
 ```python
 from ErisPulse.Core.Event import command
 
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     event_id = event.get_id()
     platform = event.get_platform()
     time = event.get_time()
     print(f"ID: {event_id}, 平台: {platform}, 時間: {time}")
 ```
 
-7. **重要：路徑替換規則**
-   - 將文件連結中的 `docs/zh-TW/` 替換為 `docs/zh-TW/`
-   - 例如：`docs/zh-TW/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`
-   - 對於指向非當前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改
-   - 這確保了連結指向正確語言的文件版本
+[**回到顶部**](#top)
 
 ## 消息事件方法
 
@@ -2491,18 +2506,14 @@ async def info_command(event):
 from ErisPulse.Core.Event import message
 
 @message.on_private_message()
-async def private_handler(event):
+async def private_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"你好，{nickname}！")
 ```
 
-7. **重要：路徑替換規則**
-   - 將文件連結中的 `docs/zh-TW/` 替換為 `docs/zh-TW/`
-   - 例如：`docs/zh-TW/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`
-   - 對於指向非當前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改
-   - 這確保連結指向正確語言的文件版本
+[**快速入門**](docs/zh-TW/quick-start.md) | [**核心概念**](docs/zh-TW/core-concepts.md) | [**事件處理**](docs/zh-TW/event-handling.md) | [**API 參考**](docs/zh-TW/api-reference.md)
 
 ## 消息類型判斷
 
@@ -2510,7 +2521,7 @@ async def private_handler(event):
 from ErisPulse.Core.Event import message
 
 @message.on_group_message()
-async def group_handler(event):
+async def group_handler(event: Event):
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
@@ -2521,15 +2532,15 @@ async def group_handler(event):
    - 將文件連結中的 `docs/zh-TW/` 替換為 `docs/zh-TW/`
    - 例如：`docs/zh-TW/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`
    - 對於指向非當前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改
-   - 這確保連結指向正確語言的文件版本
+   - 這確保了連結指向正確語言的文件版本
 
-## 回覆功能
+## 回應功能
 
 ```python
 from ErisPulse.Core.Event import command
 
 @command("ask")
-async def ask_command(event):
+async def ask_command(event: Event):
     await event.reply("請輸入你的名字:")
     reply = await event.wait_reply(timeout=30)
     if reply:
@@ -2537,7 +2548,9 @@ async def ask_command(event):
         await event.reply(f"你好，{name}！")
 ```
 
-[**English**](docs/zh-TW/quick-start.md)
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 命令資訊獲取
 
@@ -2545,7 +2558,7 @@ async def ask_command(event):
 from ErisPulse.Core.Event import command
 
 @command("cmdinfo")
-async def cmdinfo_command(event):
+async def cmdinfo_command(event: Event):
     cmd_name = event.get_command_name()
     cmd_args = event.get_command_args()
     await event.reply(f"命令: {cmd_name}, 參數: {cmd_args}")
@@ -2563,11 +2576,13 @@ async def cmdinfo_command(event):
 from ErisPulse.Core.Event import notice
 
 @notice.on_friend_add()
-async def friend_add_handler(event):
+async def friend_add_handler(event: Event):
     await event.reply("歡迎添加我為好友！")
 ```
 
 請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 方法速查表
 
@@ -2581,13 +2596,13 @@ async def friend_add_handler(event):
 - `get_platform()` - 獲取平台名稱
 
 #### 机器人信息
-- `get_self_platform()` - 獲取机器人平台名稱
-- `get_self_user_id()` - 獲取机器人用戶ID
-- `get_self_account_id()` - 獲取机器人賬戶ID（多Bot模式）
-- `get_self_info()` - 獲取机器人完整信息字典
+- `get_self_platform()` - 獲取機器人平台名稱
+- `get_self_user_id()` - 獲取機器人用戶ID
+- `get_self_account_id()` - 獲取機器人賬戶ID（多Bot模式）
+- `get_self_info()` - 獲取機器人完整信息字典
 
 #### 會話標識
-- `get_target_id()` - 獲取統一目標ID（群聊返回 `group_id`，頻道返回 `channel_id`，私聊返回 `user_id`，按 group → channel → guild → thread → user 顺序取首个非空值）
+- `get_target_id()` - 獲取統一目標 ID（群聊返回 `group_id`，頻道返回 `channel_id`，私聊返回 `user_id`，按 group → channel → guild → thread → user 顺序取首个非空值）
 - `get_session_id()` - 獲取會話唯一標識，格式為 `{platform}:{detail_type}:{target_id}`
 
 ### 消息事件方法
@@ -2610,7 +2625,7 @@ async def friend_add_handler(event):
 - `get_thread_id()` - 獲取話題/子頻道ID（話題消息）
 
 #### @消息相關
-- `has_mention()` - 是否包含@机器人
+- `has_mention()` - 是否包含@機器人
 - `get_mentions()` - 獲取所有被@的用戶ID列表
 
 ### 消息類型判斷
@@ -2653,7 +2668,7 @@ async def friend_add_handler(event):
   - `at_sender`: 是否@發送者（自動提取 user_id）
   - `quote`: 是否引用回覆當前消息（自動提取 message_id）
   - `at_users`: @用戶列表，如 `["user1", "user2"]`
-  - `reply_to`: 手動指定回覆的消息ID
+  - `reply_to`: 手動指定回覆的消息 ID
   - `at_all`: 是否@全體成員
   - `**kwargs`: 額外參數（如 Mention 方法的 user_id）
 
@@ -2685,7 +2700,7 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - `method`: 發送提示消息的方法，預設 "Text"
   - 返回用戶回覆的 Event 對象，超時返回 None
 
-#### 互動方法
+#### 交互方法
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - 確認對話
   - 返回 `True`（確認）/ `False`（否定）/ `None`（超時）
@@ -2710,10 +2725,10 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - `placeholder`: 選項插入占位符，預設 `{options}`；prompt 中出現該標記的位置替換為選項文本，設為空字串則始終追加到末尾
 
 - `collect(fields, timeout_per_field=60.0)` - 表單收集
-  - `fields`: 欄位列表，每項包含 `key`、`prompt`、可選 `validator`、可選 `method`
-  - 返回 `{key: value}` 字典，任一欄位超時返回 `None`
-  - 每個 field 支援 `method` 鍵指定發送方法，例如收集圖片時用 `{"key": "avatar", "prompt": "請發送頭像", "method": "Image"}`
-  - 每個 field 可選 `options` 鍵（列表），提供時該欄位變為選擇題（自動調用 choose 逻辑）
+  - `fields`: 字段列表，每項包含 `key`、`prompt`、可選 `validator`、可選 `method`
+  - 返回 `{key: value}` 字典，任一字段超時返回 `None`
+  - 每個 field 支持 `method` 鍵指定發送方法，例如收集圖片時用 `{"key": "avatar", "prompt": "請發送頭像", "method": "Image"}`
+  - 每個 field 可選 `options` 鍵（列表），提供時該字段變為選擇題（自動調用 choose 逻辑）
   - 每個 field 可選 `options_format`、`merge_prompt`、`placeholder` 鍵，控制選項格式、消息合併行為和占位符
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - 等待任意事件
@@ -2724,13 +2739,13 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - 返回 `Conversation` 對象，支援 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
   - `is_active` 屬性表示對話是否活躍
 
-#### 互動方法示例
+#### 交互方法示例
 
 **confirm() - 確認對話：**
 
 ```python
 @command("delete", help="刪除數據")
-async def delete_handler(event):
+async def delete_handler(event: Event):
     if await event.confirm("確定要刪除所有數據嗎？"):
         sdk.storage.delete("all_data")
         await event.reply("數據已刪除")
@@ -2751,7 +2766,7 @@ if await event.confirm("確定繼續？", hint=True):
 
 ```python
 @command("color", help="選擇顏色")
-async def color_handler(event):
+async def color_handler(event: Event):
     choice = await event.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
     if choice is not None:
         colors = ["紅色", "綠色", "藍色"]
@@ -2809,7 +2824,7 @@ choice = await event.choose(
 
 ```python
 @command("register", help="註冊")
-async def register_handler(event):
+async def register_handler(event: Event):
     data = await event.collect([
         {"key": "name", "prompt": "請輸入姓名："},
         {"key": "age", "prompt": "請輸入年齡：",
@@ -2850,7 +2865,7 @@ await event.reply_ob12(segments)
 
 適配器可以為 Event 包裝類註冊平台專有方法。方法僅在對應平台的 Event 實例上可用，其他平台訪問時拋出 `AttributeError`。
 
-平台方法通過 `Event.__getattribute__` 优先於內建方法生效，因此可以覆寫 `confirm`、`choose`、`collect`、`wait_reply` 等內建互動方法，提供平台特色實現（如按鈕、卡片等）。內建實現作為 `_builtin_*` 函數導出供覆寫方調用。
+平台方法通過 `Event.__getattribute__` 优先於內建方法生效，因此可以覆寫 `confirm`、`choose`、`collect`、`wait_reply` 等內建交互方法，提供平台特色實現（如按鈕、卡片等）。內建實現作為 `_builtin_*` 函數導出供覆寫方調用。
 
 ```python
 # 郵件事件 - 只有郵件方法
@@ -2877,7 +2892,7 @@ methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", ...]
 ```
 
-### `hasattr` 和 `dir` 支援
+### `hasattr` 和 `dir` 支持
 
 ```python
 hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
@@ -2886,7 +2901,7 @@ hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
 
 ### 跨平台擴展（通配符）
 
-`register_event_method` 和 `register_event_mixin` 支援傳 `"*"` 作為平台名，註冊的方法在**所有平台**的 Event 實例上都可用。適合 AI 對話、上下文管理等需要跨平台複用的功能。
+`register_event_method` 和 `register_event_mixin` 支持傳 `"*"` 作為平台名，註冊的方法在**所有平台**的 Event 實例上都可用。適合 AI 對話、上下文管理等需要跨平台複用的功能。
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
@@ -3031,7 +3046,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# 不要使用 aiohttp 直接匯入（不利於框架統一管理）
+# 不要使用 aiohttp 直接導入（不利於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -3051,18 +3066,20 @@ class MyModule(BaseModule):
 ### 2. 正確的異步操作
 
 ```python
-async def handle_command(self, event):
+from ErisPulse.Core.Event import Event  # event: Event 注解可獲得 IDE 自動補全
+
+async def handle_command(self, event: Event):
     # 需要等待結果的耗時操作：直接 await（生命週期明確）
     result = await self._long_operation()
 
-async def on_load(self, event):
+async def on_load(self, event: dict):
     # 後台任務（輪詢/定時/fire-and-forget）：使用 self.spawn()，
     # 模組卸載時框架在 on_unload 之後兜底取消，避免持有 self 導致泄漏
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——後者建立的裸任務不歸屬於模組，卸載時不會被自動清除，會持有 `self` 引用導致模組實例無法被回收（熱重載泄漏）。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
+> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——後者建立的裸任務不歸屬模組，卸載時不會被自動清理，會持有 `self` 引用導致模組實例無法被回收（熱重載泄漏）。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
 
 ### 3. 資源管理
 
@@ -3082,14 +3099,14 @@ async def on_unload(self, event):
 ```python
 # 使用 Event 包裝類的便捷方法
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"你好，{nickname}！")
 
 # 而非直接訪問字典
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event["user_id"]  # 不夠清晰，容易出錯
 ```
 
@@ -3134,11 +3151,11 @@ class UtilityModule(BaseModule):
 async def on_load(self, event):
     # 在 on_load 中註冊事件處理器
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("你好！")
     
     @message.on_group_message()
-    async def group_handler(event):
+    async def group_handler(event: Event):
         self.logger.info("收到群消息")
     
     # 不需要手動註銷，框架會自動處理
@@ -3148,7 +3165,7 @@ async def on_load(self, event):
 ### 1. 分類異常處理
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
@@ -3156,10 +3173,10 @@ async def handle_event(self, event):
         self.logger.warning(f"業務警告: {e}")
         await event.reply(f"參數錯誤: {e}")
     except aiohttp.ClientError as e:
-        # 網路錯誤（推薦使用 sdk.client + ClientError 替代）
-        # 舊代碼直接用 aiohttp 仍可正常運作，但新代碼推薦使用 ErisPulse 異常體系
-        self.logger.error(f"網路錯誤: {e}")
-        await event.reply("網路請求失敗，請稍後重試")
+        # 網絡錯誤（推薦使用 sdk.client + ClientError 替代）
+        # 邊緣代碼直接使用 aiohttp 仍可正常運作，但新代碼推薦使用 ErisPulse 異常體系
+        self.logger.error(f"網絡錯誤: {e}")
+        await event.reply("網絡請求失敗，請稍後重試")
     except Exception as e:
         # 未預期的錯誤
         self.logger.error(f"未知錯誤: {e}", exc_info=True)
@@ -3170,7 +3187,7 @@ async def handle_event(self, event):
 ### 2. 超時處理
 
 ```python
-# 推薦使用 SDK 內建客戶端（自帶超時和重試）
+# 推薦使用 SDK 內建客戶端（內建超時和重試）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -3262,7 +3279,7 @@ class MyModule(BaseModule):
             if key in self._cache:
                 return self._cache[key]
             
-            # 從資料庫擷取
+            # 從資料庫獲取
             data = await self._fetch_from_db(key)
             
             # 快取資料
@@ -3270,25 +3287,30 @@ class MyModule(BaseModule):
             return data
 ```
 
-### 2. 避免阻擋操作
+### 2. 避免阻塞操作
 
 ```python
 # 使用非同步操作
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # 非同步處理
     await self._async_process(event)
 
-# ❌ 阻擋操作
-async def process_message(self, event):
-    # 同步操作，阻擋事件迴圈
+# ❌ 阻塞操作
+async def process_message(self, event: Event):
+    # 同步操作，阻塞事件循環
     result = self._sync_process(event)
+```
+
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 安全性
 
 ### 1. 敏感數據保護
 
 ```python
-# 敏感數據儲存在配置中（聲明式 ConfigClass，secret 欄位不進入日誌/匯出）
+# 敏感數據儲存在配置中（聲明式 ConfigClass，secret 欄位不會進入日誌/匯出）
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -3315,7 +3337,7 @@ class MyModule(BaseModule):
 
 ```python
 # 驗證使用者輸入
-async def process_command(self, event):
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
     # 驗證輸入長度
@@ -6212,24 +6234,32 @@ complex_msg = (
 
 ### HTTP 客户端
 
-# 網絡客戶端
+# 網路客戶端
 
-ErisPulse 提供了統一的網絡客戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模塊和適配器**必須優先使用**此客戶端，而非自行導入 `aiohttp` / `httpx` / `requests` 等第三方庫。
+ErisPulse 提供了統一的網路客戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模組和適配器**必須優先使用**此客戶端，而非自行導入 `aiohttp` / `httpx` / `requests` 等第三方庫。
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 概述
 
-網絡客戶端的主要功能：
+網路客戶端的主要功能：
 
-- **統一接口**：提供 `get` / `post` / `put` / `delete` / `patch` / `request` 方法
-- **WebSocket 客戶端**：通過 `ws_connect` 建立客戶端 WebSocket 連接
-- **自動日誌**：所有請求自動記錄日誌和統計信息
-- **生命週期集成**：每次請求觸發 `client.request` 生命週期事件，WS 連接觸發 `client.ws.connect` 事件
-- **重試支持**：可配置自動重試次數和間隔
+- **統一介面**：提供 `get` / `post` / `put` / `delete` / `patch` / `request` 方法
+- **WebSocket 客戶端**：透過 `ws_connect` 建立客戶端 WebSocket 連接
+- **自動日誌**：所有請求自動記錄日誌和統計資訊
+- **生命週期整合**：每次請求觸發 `client.request` 生命週期事件，WS 連接觸發 `client.ws.connect` 事件
+- **重試支援**：可配置自動重試次數和間隔
 - **超時控制**：獨立的連接超時和請求超時
-- **連接池復用**：基於 aiohttp.ClientSession 的連接池管理
-- **異常體系**：aiohttp 異常自動轉換為 ErisPulse 異常 (ClientError 體系)
+- **連接池複用**：基於 aiohttp.ClientSession 的連接池管理
+- **異常體系**：aiohttp 異常自動轉換為 ErisPulse 異常 (ClientError 体系)
 
-## 快速開始
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
+## 快速入門
 
 ### HTTP 請求
 
@@ -6260,28 +6290,34 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
 ## HttpResponse
 
-所有請求方法返回 `HttpResponse` 對象：
+所有請求方法都會返回 `HttpResponse` 物件：
 
 ```python
 from ErisPulse.Core import client
 
 resp = await client.get("https://httpbin.org/get")
 
-resp.status       # int - HTTP 狀態碼 (如 200, 404)
-resp.reason       # str | None - 狀態描述 (如 "OK")
-resp.headers      # 响應頭 (大小寫不敏感)
+resp.status       # int - HTTP 狀態碼 (例如 200, 404)
+resp.reason       # str | None - 狀態描述 (例如 "OK")
+resp.headers      # 回應標頭 (大小寫不敏感)
 resp.content_type # str | None - Content-Type
-resp.url          # 最終 URL (可能因重定向變化)
-resp.raw          # 底層原生響應對象 (當前為 aiohttp.ClientResponse)
+resp.url          # 最終 URL (可能因重定向而變更)
+resp.raw          # 底層原生回應物件 (目前為 aiohttp.ClientResponse)
 
-# 讀取響應體
+# 讀取回應主體
 body = await resp.read()       # bytes
 text = await resp.text()       # str
 data = await resp.json()       # 解析 JSON
 text = await resp.text("gbk")  # 指定編碼
 ```
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 請求方法
 
@@ -6322,7 +6358,7 @@ resp = await client.post(
 )
 
 # 文件上傳 (使用 files 參數, 無需導入 aiohttp)
-# 格式: {字段名: 文件對象/bytes/(filename, file)/(filename, file, content_type)}
+# 格式: {字段名: 文件物件/bytes/(檔名, 檔案)/(檔名, 檔案, content_type)}
 resp = await client.post(
     "https://api.example.com/upload",
     data={"description": "頭像"},            # 可選: 同時攜帶普通表單字段
@@ -6331,7 +6367,7 @@ resp = await client.post(
     },
 )
 
-# 簡化寫法: 直接傳文件對象
+# 簡化寫法: 直接傳文件物件
 resp = await client.post(
     "https://api.example.com/upload",
     files={"file": open("photo.png", "rb")},
@@ -6366,7 +6402,6 @@ resp = await client.request(
     "https://api.example.com/resource",
     headers={"Origin": "https://example.com"},
 )
-```
 
 ## 參數說明
 
@@ -6376,10 +6411,10 @@ resp = await client.request(
 |------|------|------|
 | `url` | `str` | 請求 URL |
 | `params` | `dict[str, str]` | 查詢參數 (可選) |
-| `headers` | `dict[str, str]` | 預設請求頭 (可選) |
-| `data` | `Any` | 請求體 (表單或原始數據) (可選) |
-| `json` | `Any` | JSON 請求體 (可選) |
-| `files` | `dict[str, Any]` | 文件上傳字段 (可選, 自動構建 multipart/form-data) |
+| `headers` | `dict[str, str]` | 額外請求頭 (可選) |
+| `data` | `Any` | 請求主體 (表單或原始數據) (可選) |
+| `json` | `Any` | JSON 請求主體 (可選) |
+| `files` | `dict[str, Any]` | 檔案上傳欄位 (可選, 自動建立 multipart/form-data) |
 | `timeout` | `float` | 本次請求超時 (秒) (可選, 覆蓋預設值) |
 | `max_retries` | `int` | 本次最大重試次數 (可選, 覆蓋預設值) |
 
@@ -6387,38 +6422,42 @@ resp = await client.request(
 
 | 參數 | 類型 | 說明 |
 |------|------|------|
-| `url` | `str` | WebSocket 服務器 URL |
-| `headers` | `dict[str, str]` | 預設請求頭 (可選) |
+| `url` | `str` | WebSocket 伺服器 URL |
+| `headers` | `dict[str, str]` | 額外請求頭 (可選) |
 | `heartbeat` | `float` | 心跳間隔秒數 (可選) |
 
 ## 超時與重試
 
 ```python
-from ErisPulse.Core import HttpClient
+from ErisPulse.Core import Client
 
-# 創建帶自定義超時的客戶端
-client = HttpClient(
-    timeout=60,           # 請求總超時 60s
-    connect_timeout=5,    # 連接超時 5s
+# 建立帶自訂超時的客戶端
+client = Client(
+    timeout=60,           # 請求總超時 60 秒
+    connect_timeout=5,    # 連線超時 5 秒
     max_retries=3,        # 失敗自動重試 3 次
-    retry_delay=2,        # 重試間隔 2s
+    retry_delay=2,        # 重試間隔 2 秒
 )
 
 # 單次請求覆蓋超時
 resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
-## 自定義預設頭
+> [!NOTE]
+> 客戶端類別自 2.8.0 版起更名為 `Client`（`sdk.client` 屬性名不變）；舊名 `HttpClient` 保留為相容別名，舊代碼無需修改。
+
+[**簡體中文**](docs/zh-TW/timeout-retry.md) | [**繁體中文**](docs/zh-TW/timeout-retry.md) | [**English**](docs/en/timeout-retry.md)
+
+## 自訂預設標頭
 
 ```python
-client = HttpClient(
+client = Client(
     headers={
         "Authorization": "Bearer token",
         "X-App-Id": "my-app",
     },
     user_agent="MyBot/1.0",
 )
-```
 
 ## 請求統計
 
@@ -6429,9 +6468,8 @@ from ErisPulse.Core import client
 stats = client.stats
 # {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
 
-# 重置統計
+# 重設統計
 client.reset_stats()
-```
 
 ## 生命週期事件
 
@@ -6457,20 +6495,25 @@ from ErisPulse.Core import lifecycle
 @lifecycle.on("client.ws.connect")
 async def on_ws_connect(event_data):
     print(f"WS 連接: {event_data['url']}")
-```
 
 ## 上下文管理
 
 ```python
 # 作為上下文管理器，自動關閉會話
-async with HttpClient(timeout=30) as client:
+async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
 ```
 
+7. **重要：路徑替換規則**
+   - 將文件連結中的 `docs/zh-TW/` 替換為 `docs/zh-TW/`
+   - 例如：`docs/zh-TW/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`
+   - 對於指向非當前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改
+   - 這確保連結指向正確語言的文件版本
+
 ## WebSocket 客戶端
 
-通過 `client.ws_connect()` 建立 WebSocket 客戶端連接，返回 `ClientWebSocket` 對象。客戶端和服務器 WebSocket 共享相同的 `WebSocketConnectionBase` 基類，send/receive/iter 接口完全一致。
+透過 `client.ws_connect()` 建立 WebSocket 客戶端連接，回傳 `ClientWebSocket` 物件。客戶端與服務端 WebSocket 共享相同的 `WebSocketConnectionBase` 基類，send/receive/iter 接口完全一致。
 
 ### 基本用法
 
@@ -6484,11 +6527,11 @@ await ws.send_bytes(b"\x00\x01\x02")
 await ws.send_json({"type": "ping"})
 ```
 
-### 接收消息
+### 接收訊息
 
-#### 高級方法 (推薦)
+#### 高階方法 (推薦)
 
-自動過濾消息類型，斷開時拋出 `WebSocketDisconnect`：
+自動過濾訊息類型，斷開時拋出 `WebSocketDisconnect`：
 
 ```python
 from ErisPulse.Core import client
@@ -6496,12 +6539,12 @@ from ErisPulse.Core.Bases.errors import WebSocketDisconnect
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# 單條接收
+# 單筆接收
 text = await ws.receive_text()    # str
 data = await ws.receive_bytes()   # bytes
 obj = await ws.receive_json()     # dict / list
 
-# 迭代接收 (自動在斷開時停止)
+# 迭代接收 (斷開時自動停止)
 async for text in ws.iter_text():
     print(text)
 
@@ -6512,9 +6555,9 @@ async for obj in ws.iter_json():
     print(obj)
 ```
 
-#### 低級方法
+#### 低階方法
 
-使用 `receive()` 和 `iter_messages()` 處理原始消息類型，可區分 TEXT / BINARY / CLOSE / ERROR：
+使用 `receive()` 和 `iter_messages()` 處理原始訊息類型，可區分 TEXT / BINARY / CLOSE / ERROR：
 
 ```python
 from ErisPulse.Core import client
@@ -6522,40 +6565,40 @@ from ErisPulse.Core.Bases.websocket import WSMessage
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# 單條接收原始消息
+# 單筆接收原始訊息
 msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
 
-# 迭代原始消息 (CLOSE/ERROR 時自動停止)
+# 迭代原始訊息 (CLOSE/ERROR 時自動停止)
 async for msg in ws.iter_messages():
     if msg.type == WSMessage.TEXT:
         print(f"文本: {msg.data}")
     elif msg.type == WSMessage.BINARY:
-        print(f"二進制: {len(msg.data)} bytes")
+        print(f"二進位: {len(msg.data)} bytes")
 ```
 
 ### WSMessage
 
-`WSMessage` 是統一的 WebSocket 消息類型，不依賴底層庫：
+`WSMessage` 是統一的 WebSocket 訊息類型，不依賴底層函式庫：
 
 | 屬性 | 類型 | 說明 |
 |------|------|------|
-| `type` | `str` | 消息類型: `WSMessage.TEXT` / `WSMessage.BINARY` / `WSMessage.CLOSE` / `WSMessage.ERROR` |
-| `data` | `Any` | 消息數據 |
+| `type` | `str` | 訊息類型: `WSMessage.TEXT` / `WSMessage.BINARY` / `WSMessage.CLOSE` / `WSMessage.ERROR` |
+| `data` | `Any` | 訊息資料 |
 
 ### ClientWebSocket 屬性
 
 | 屬性 | 類型 | 說明 |
 |------|------|------|
 | `url` | `URL` | 連接 URL |
-| `headers` | `Headers` | 响應頭 |
+| `headers` | `Headers` | 回應標頭 |
 | `closed` | `bool` | 連接是否已關閉 |
-| `raw` | `object` | 底層原生對象 (aiohttp.ClientWebSocketResponse) |
+| `raw` | `object` | 底層原生物件 (aiohttp.ClientWebSocketResponse) |
 
-### 生命週期鈎子
+### 生命週期鉤子
 
-與 `服務端 WebSocketConnection` 一致，支持 `on_disconnect` 和 `on_error` 回調：
+與 `服務端 WebSocketConnection` 一致，支援 `on_disconnect` 和 `on_error` 回呼：
 
 ```python
 from ErisPulse.Core import client
@@ -6575,24 +6618,23 @@ async def handle_error(ws, error=""):
 
 ```python
 await ws.close(code=1000, reason="Normal closure")
-```
 
 ## 異常體系
 
-ErisPulse 定義了統一的異常層級，通過 `sdk.client` 發起的請求會自動將底層 aiohttp 異常轉換為 ErisPulse 異常。
+ErisPulse 定義了統一的異常層級，透過 `sdk.client` 發起的請求會自動將底層 aiohttp 異常轉換為 ErisPulse 異常。
 
-> **向後兼容**：直接使用 `aiohttp.ClientSession` 的舊模塊/適配器完全不受影響。異常轉換僅在通過 `sdk.client` 發起請求時生效，直接使用 aiohttp 的代碼仍然捕獲 `aiohttp.ClientError` 等原生異常。兩種方式可以共存。
+> **向後相容**：直接使用 `aiohttp.ClientSession` 的舊模組/適配器完全不受影響。異常轉換僅在透過 `sdk.client` 發起請求時生效，直接使用 aiohttp 的程式碼仍然捕獲 `aiohttp.ClientError` 等原生異常。兩種方式可以共存。
 
 ### 異常層級
 
 ```
 ErisPulseError
 ├── ClientError                  # 所有 HTTP/WS 客戶端請求異常的基類
-│   ├── ClientConnectionError    # 連接失敗 (DNS 解析失敗、連接被拒絕、網絡不可達)
-│   ├── ClientTimeoutError       # 連接超時或請求超時
+│   ├── ClientConnectionError    # 連線失敗 (DNS 解析失敗、連線被拒絕、網路不可達)
+│   ├── ClientTimeoutError       # 連線超時或請求超時
 │   └── HTTPStatusError          # HTTP 4xx/5xx 狀態碼錯誤
 └── WebSocketError               # WebSocket 異常基類
-    └── WebSocketDisconnect      # WebSocket 連接斷開 (客戶端和服務端通用)
+    └── WebSocketDisconnect      # WebSocket 連線中斷 (客戶端和服務端通用)
 ```
 
 ### 異常捕獲
@@ -6625,7 +6667,7 @@ try:
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 except WebSocketDisconnect as e:
-    print(f"連接斷開: code={e.code}, reason={e.reason}")
+    print(f"連線中斷: code={e.code}, reason={e.reason}")
 except WebSocketError as e:
     print(f"WebSocket 錯誤: {e}")
 ```
@@ -6653,11 +6695,10 @@ from ErisPulse.Core.Bases.errors import HTTPStatusError
 resp = await client.get("https://api.example.com/data")
 if resp.status >= 400:
     raise HTTPStatusError(resp.status, await resp.text())
-```
 
-## 適配器中使用
+## 在適配器中使用
 
-適配器可使用全局客戶端或自行創建客戶端實例發送平台 API 請求：
+適配器可以使用全域客戶端或自行建立客戶端實例來發送平台 API 請求：
 
 ```python
 from ErisPulse.Core import client
@@ -6678,17 +6719,31 @@ class MyAdapter(BaseAdapter):
             raise
 ```
 
-> 也可通過 `from ErisPulse import sdk` 使用 `sdk.client`，效果相同。
+> 也可以透過 `from ErisPulse import sdk` 使用 `sdk.client`，效果相同。
+
+## 重要：路徑替換規則
+- 將文件連結中的 `docs/zh-TW/` 替換為 `docs/zh-TW/`
+- 例如：`docs/zh-TW/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`
+- 對於指向非當前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改
+- 這確保了連結指向正確語言的文件版本
 
 ## 最佳實踐
 
-1. **優先使用全局客戶端**：使用 `from ErisPulse.Core import client` 獲取全局單例，便於框架統一管理和監控
-2. **避免直接導入 aiohttp**：使用 `client` 替代 `aiohttp.ClientSession`，未來更換底層實現無需修改代碼。舊代碼直接使用 aiohttp 仍可正常工作，兩種方式可以共存
-3. **使用 ErisPulse 異常體系**：通過 `sdk.client` 請求時捕獲 `ClientError` 而非 `aiohttp.ClientError`，確保代碼不依賴特定 HTTP 庫。直接使用 aiohttp 的舊代碼不受影響
-4. **合理設置超時**：根據 API 响應速度設置合理的超時時間，避免長時間阻塞
+1. **優先使用全域客戶端**：使用 `from ErisPulse.Core import client` 取得全域單例，便於框架統一管理和監控
+2. **避免直接導入 aiohttp**：使用 `client` 替代 `aiohttp.ClientSession`，未來更換底層實作無需修改程式碼。舊程式碼直接使用 aiohttp 仍可正常運作，兩種方式可以共存
+3. **使用 ErisPulse 異常體系**：透過 `sdk.client` 發出請求時捕獲 `ClientError` 而非 `aiohttp.ClientError`，確保程式碼不依賴特定 HTTP 庫。直接使用 aiohttp 的舊程式碼不受影響
+4. **合理設定超時**：根據 API 回應速度設定合理的超時時間，避免長時間阻塞
 5. **使用重試機制**：對不穩定的 API 啟用重試，提高可靠性
-6. **監控請求統計**：通過 `sdk.client.stats` 或 `client.request` 生命週期事件監控請求情況
-7. **WebSocket 使用高級方法**：優先使用 `iter_text` / `iter_json` 等高級方法，僅在需要區分消息類型時使用 `iter_messages`
+6. **監控請求統計**：透過 `sdk.client.stats` 或 `client.request` 生命週期事件監控請求情況
+7. **WebSocket 使用高階方法**：優先使用 `iter_text` / `iter_json` 等高階方法，僅在需要區分訊息類型時使用 `iter_messages`
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+## 相關文件
+
+- [路由管理器](router.md) - HTTP/WebSocket 服務端路由（服務端 WebSocketConnection 與客戶端共享同一基類）
+- [適配器開發指南](../developer-guide/adapters/getting-started.md) - 適配器中使用 HTTP 客戶端
+- [生命週期管理](lifecycle.md) - 監聽請求事件
 
 
 

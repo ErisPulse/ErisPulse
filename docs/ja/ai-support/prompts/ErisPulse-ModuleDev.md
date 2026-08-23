@@ -45,9 +45,9 @@ ErisPulse 模块开发指南
 
 docs/ja/quick-start.md
 
-## SDK 核心アーキテクチャ
+## SDKのコアアーキテクチャ
 
-下図は、SDK のコアモジュールの構成とその関係を示しています：
+下図は、SDKのコアモジュール構成とその関係を示しています：
 
 ```mermaid
 graph TB
@@ -61,7 +61,7 @@ graph TB
     SDK --> AdapterMgr["Adapter<br/>アダプタ管理"]
     SDK --> ModuleMgr["Module<br/>モジュール管理"]
     SDK --> Router["Router<br/>ルーティング管理"]
-    SDK --> Client["HttpClient<br/>HTTP クライアント"]
+    SDK --> Client["Client<br/>HTTPクライアント"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -70,7 +70,7 @@ graph TB
     Event --> Conversation["Conversation<br/>分岐 + 永続化"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["雲湖"]
+    BaseAdapter --> P1["云湖"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
@@ -85,15 +85,15 @@ graph TB
 
 | モジュール | 説明 |
 |------|------|
-| **Event** | イベントシステム。command / message / notice / request / meta の5種類のイベント処理と、Conversation 多段対話機能を提供します。|
-| **Adapter** | アダプタマネージャー。複数プラットフォーム用アダプタの登録、起動、停止を管理します。|
+| **Event** | イベントシステム。command / message / notice / request / meta の5種類のイベント処理と、Conversationによる多段対話機能を提供します。|
+| **Adapter** | アダプタマネージャー。複数プラットフォームのアダプタの登録、起動、停止を管理します。|
 | **Module** | モジュールマネージャー。プラグインの登録、ロード、アンロードを管理し、依存関係の宣言とトポロジカルソートをサポートします。|
 | **Lifecycle** | ライフサイクルマネージャー。イベント駆動型のライフサイクルフックを提供します。|
-| **Storage** | SQLite に基づくキーバリューストレージシステム。一般的な SQL チェーンクエリをサポートします。|
-| **Config** | TOML 形式の設定ファイル管理。|
+| **Storage** | SQLiteベースのキーバリューストレージシステム。一般的なSQLチェーンクエリをサポートします。|
+| **Config** | TOML形式の設定ファイル管理。|
 | **Logger** | モジュール化されたログシステム。サブロガーをサポートします。|
-| **Router** | HTTP/WebSocket ルーティング管理。抽象層を介して下位のバックエンド（現在は FastAPI + Uvicorn）をラップし、デコレーターベースのルーティング、ミドルウェア、グループ化、リクエスト制限、CORS をサポートします。|
-| **HttpClient** | 統一された HTTP/WS クライアント。抽象層を介して下位のリクエストライブラリ（現在は aiohttp）をラップし、リクエスト統計、リトライ、ログ、WebSocket クライアント、ErisPulse 例外体系などの機能を提供します。クライアントとサーバーの WebSocket は `WebSocketConnectionBase` 基底クラスを共有します。|
+| **Router** | HTTP/WebSocketルーティング管理。抽象層を介して下位のバックエンド（現在はFastAPI + Uvicorn）をラップし、デコレーターベースのルーティング、ミドルウェア、グループ化、リクエスト制限、CORSをサポートします。|
+| **Client** | 統一HTTP/WSクライアント（2.8.0以前は`HttpClient`、互換性のため別名を保持）。抽象層を介して下位のリクエストライブラリ（現在はaiohttp）をラップし、リクエスト統計、リトライ、ログ、WebSocketクライアント、ErisPulse例外体系などの機能を提供します。クライアントとサーバーのWebSocketは`WebSocketConnectionBase`基底クラスを共有します。|
 
 ## 初期化プロセス
 
@@ -2476,6 +2476,23 @@ Event モジュールは、強力な Event 包装クラスを提供し、イベ�
 
 各言語の文書へのリンクは、`docs/ja/` を `docs/ja/` に置き換えてください。たとえば、`docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更します。`README.xx.md` 形式のリンクは、他の言語バージョンを指すため、そのままにしてください。
 
+## event パラメータに型注釈を追加
+
+イベントハンドラの `event` パラメータは **Event 包装クラス**（dict のサブクラス）です。型注釈を追加することを強く推奨します：
+
+```python
+from ErisPulse.Core.Event import Event
+
+@message.on_private_message()
+async def handler(event: Event):
+    text = event.get_text()   # IDE が便利なメソッドをすべて自動補完
+    await event.reply(text)   # 構文エラーは静的解析時に検出されます
+```
+
+注釈を追加しない場合、IDE は Event 上のメソッド（`get_text()` / `reply()` / `wait_reply()` / プラットフォーム拡張メソッド）を認識できず、すべて手動で記憶して入力する必要があります。
+
+> **注意**: イベントハンドラのコールバックの `event` は **Event 包装クラス**（注釈は `Event`）です。モジュールのライフサイクルメソッド `on_load` / `on_unload` の `event` は通常の **dict**（注釈は `dict`）です。これらを混同しないでください。
+
 ## コア機能
 
 - **完全な辞書互換性**：Event は dict を継承しています
@@ -2491,14 +2508,14 @@ Event モジュールは、強力な Event 包装クラスを提供し、イベ�
 from ErisPulse.Core.Event import command
 
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     event_id = event.get_id()
     platform = event.get_platform()
     time = event.get_time()
     print(f"ID: {event_id}, プラットフォーム: {platform}, 時間: {time}")
 ```
 
-[**English**](docs/ja/quick-start.md)
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## メッセージイベントメソッド
 
@@ -2506,14 +2523,14 @@ async def info_command(event):
 from ErisPulse.Core.Event import message
 
 @message.on_private_message()
-async def private_handler(event):
+async def private_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"こんにちは、{nickname}！")
 ```
 
-[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## メッセージタイプの判断
 
@@ -2521,12 +2538,14 @@ async def private_handler(event):
 from ErisPulse.Core.Event import message
 
 @message.on_group_message()
-async def group_handler(event):
+async def group_handler(event: Event):
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
     await event.reply(f"タイプ: {'プライベートチャット' if is_private else 'グループチャット'}")
 ```
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
 ## 回答機能
 
@@ -2534,7 +2553,7 @@ async def group_handler(event):
 from ErisPulse.Core.Event import command
 
 @command("ask")
-async def ask_command(event):
+async def ask_command(event: Event):
     await event.reply("あなたの名前を入力してください:")
     reply = await event.wait_reply(timeout=30)
     if reply:
@@ -2542,7 +2561,7 @@ async def ask_command(event):
         await event.reply(f"こんにちは、{name}！")
 ```
 
-[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## コマンド情報の取得
 
@@ -2550,13 +2569,13 @@ async def ask_command(event):
 from ErisPulse.Core.Event import command
 
 @command("cmdinfo")
-async def cmdinfo_command(event):
+async def cmdinfo_command(event: Event):
     cmd_name = event.get_command_name()
     cmd_args = event.get_command_args()
-    await event.reply(f"コマンド: {cmd_name}, 引数: {cmd_args}")
+    await event.reply(f"コマンド: {cmd_name}, パラメータ: {cmd_args}")
 ```
 
-[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+[**English**](docs/ja/quick-start.md)
 
 ## 通知イベントメソッド
 
@@ -2564,11 +2583,15 @@ async def cmdinfo_command(event):
 from ErisPulse.Core.Event import notice
 
 @notice.on_friend_add()
-async def friend_add_handler(event):
-    await event.reply("友達追加ありがとうございます！")
+async def friend_add_handler(event: Event):
+    await event.reply("友達として追加してくれてありがとう！")
 ```
 
-[**English**](docs/ja/quick-start.md)
+7. **重要：パスの置換ルール**
+   - ドキュメントリンク内の `docs/ja/` を `docs/ja/` に置換する
+   - 例: `docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更する
+   - 非現在言語版ファイルを指すリンク（例: `README.xx.md` 形式のリンク）は、変更しないでそのままにする
+   - これにより、リンクが正しい言語のドキュメントバージョンを指すようになる
 
 ## 方法速查表
 
@@ -2588,16 +2611,16 @@ async def friend_add_handler(event):
 - `get_self_info()` - ロボットの完全な情報辞書を取得
 
 #### 会話識別子
-- `get_target_id()` - 統一されたターゲットIDを取得（グループチャットの場合は `group_id`、チャンネルの場合は `channel_id`、プライベートチャットの場合は `user_id`、group → channel → guild → thread → userの順に最初の非空値を取得）
-- `get_session_id()` - セッションの一意な識別子を取得、形式は `{platform}:{detail_type}:{target_id}`
+- `get_target_id()` - 統一されたターゲットIDを取得（グループチャットは `group_id` を返す、チャンネルは `channel_id` を返す、プライベートチャットは `user_id` を返す、group → channel → guild → thread → user の順に最初の非空値を取得）
+- `get_session_id()` - 会話のユニークな識別子を取得、形式は `{platform}:{detail_type}:{target_id}`
 
 ### メッセージイベントメソッド
 
 #### メッセージ内容
 - `get_message()` - メッセージセグメントの配列を取得（OneBot12形式）
 - `get_alt_message()` - メッセージの代替テキストを取得
-- `get_text()` - 純粋なテキスト内容を取得（`get_alt_message()`の別名）
-- `get_message_text()` - 純粋なテキスト内容を取得（`get_alt_message()`の別名）
+- `get_text()` - 純粋なテキスト内容を取得（`get_alt_message()` の別名）
+- `get_message_text()` - 純粋なテキスト内容を取得（`get_alt_message()` の別名）
 
 #### 送信者情報
 - `get_user_id()` - 送信者のユーザーIDを取得
@@ -2618,9 +2641,9 @@ async def friend_add_handler(event):
 
 #### 基本判断
 - `is_message()` - メッセージイベントかどうか
-- `is_private_message()` - プライベートチャットのメッセージかどうか
-- `is_group_message()` - グループチャットのメッセージかどうか
-- `is_at_message()` - @メッセージかどうか（`has_mention()`の別名）
+- `is_private_message()` - プライベートチャットメッセージかどうか
+- `is_group_message()` - グループチャットメッセージかどうか
+- `is_at_message()` - @メッセージかどうか（`has_mention()` の別名）
 
 ### 通知イベントメソッド
 
@@ -2632,8 +2655,8 @@ async def friend_add_handler(event):
 - `is_notice()` - 通知イベントかどうか
 - `is_group_member_increase()` - グループメンバー増加イベント
 - `is_group_member_decrease()` - グループメンバー減少イベント
-- `is_friend_add()` - 友達追加イベント（`detail_type == "friend_increase"`に一致）
-- `is_friend_delete()` - 友達削除イベント（`detail_type == "friend_decrease"`に一致）
+- `is_friend_add()` - フレンド追加イベント（`detail_type == "friend_increase"` に一致）
+- `is_friend_delete()` - フレンド削除イベント（`detail_type == "friend_decrease"` に一致）
 
 ### 要求イベントメソッド
 
@@ -2642,32 +2665,32 @@ async def friend_add_handler(event):
 
 #### 要求タイプ判断
 - `is_request()` - 要求イベントかどうか
-- `is_friend_request()` - 友達要求かどうか
+- `is_friend_request()` - フレンド要求かどうか
 - `is_group_request()` - グループ要求かどうか
 
-### 返信機能
+### 回答機能
 
-#### 基本返信
-- `reply(content, method="Text", at_sender=False, quote=False, at_users=None, reply_to=None, at_all=False, via=None, **kwargs)` - 一般的な返信メソッド
-  - `content`: 送信内容（テキスト、URLなど）
-  - `method`: 送信方法、デフォルトは "Text"、"Image"/"Voice"/"Video"/"File" など
+#### 基本回答
+- `reply(content, method="Text", at_sender=False, quote=False, at_users=None, reply_to=None, at_all=False, via=None, **kwargs)` - 一般的な回答メソッド
+  - `content`: 送信内容（テキスト、URL等）
+  - `method`: 送信方法、デフォルトは "Text"、"Image"/"Voice"/"Video"/"File" 等を選択可能
   - `at_sender`: 送信者を@するかどうか（自動的に user_id を抽出）
   - `quote`: 現在のメッセージを引用して返信するかどうか（自動的に message_id を抽出）
-  - `at_users`: @するユーザーのリスト、例えば `["user1", "user2"]`
-  - `reply_to`: 手動で指定された返信メッセージID
-  - `at_all`: 全員を@するかどうか
-  - `**kwargs`: 余分なパラメータ（例えば Mention 方法の user_id）
+  - `at_users`: @するユーザーのリスト、例: `["user1", "user2"]`
+  - `reply_to`: 手動で返信するメッセージIDを指定
+  - `at_all`: 全てのメンバーを@するかどうか
+  - `**kwargs`: 余分なパラメータ（例: Mentionメソッドの user_id）
 
 - `reply_ob12(message)` - OneBot12メッセージセグメントを使って返信
-  - `message`: OneBot12メッセージセグメントのリストまたは辞書、MessageBuilderを使って構築できる
+  - `message`: OneBot12メッセージセグメントのリストまたは辞書、MessageBuilderを使って構築可能
 
-#### プラットフォーム能力の確認
-- `supports(method)` - 現在のプラットフォームが特定の送信方法（例えば `"Image"`、`"Voice"`）をサポートしているかどうかを確認し、`bool`を返す
-- `available_methods()` - 現在のプラットフォームで利用可能なすべての送信方法をリスト形式で返す
+#### プラットフォーム能力確認
+- `supports(method)` - 現在のプラットフォームが特定の送信方法（例: `"Image"`、`"Voice"`）をサポートしているかどうかを確認し、`bool`を返す
+- `available_methods()` - 現在のプラットフォームで利用可能なすべての送信方法のリストを返す
 
 #### 転送機能
 
-> **注意**: 転送機能はアダプタの Send DSL を介して実装する必要があり、Eventラッパークラス自体は直接的な転送メソッドを提供していません。
+> **注意**: 転送機能はアダプターの Send DSL によって実装される必要があり、Eventラッパークラス自体は直接的な転送メソッドを提供しない。
 
 ```python
 # メッセージをグループに転送
@@ -2676,83 +2699,83 @@ target_id = event.get_group_id()  # または他のグループIDを指定
 await adapter.Send.To("group", target_id).Text(event.get_text())
 ```
 
-### 返信を待つ機能
+### レプライ待機機能
 
 - `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - ユーザーの返信を待つ
-  - `prompt`: プロンプトメッセージ、提供された場合、ユーザーに送信される
+  - `prompt`: プロンプトメッセージ、提供された場合ユーザーに送信される
   - `timeout`: 待機のタイムアウト時間（秒）、デフォルトは60秒
   - `callback`: 返信を受け取ったときに実行されるコールバック関数
   - `validator`: 返信が有効かどうかを検証する関数
-  - `method`: プロンプトメッセージの送信方法、デフォルトは "Text"
-  - ユーザーの返信のEventオブジェクトを返す、タイムアウトの場合はNoneを返す
+  - `method`: プロンプトメッセージを送信する方法、デフォルトは "Text"
+  - ユーザーの返信のEventオブジェクトを返す、タイムアウト時は `None` を返す
 
 #### インタラクティブメソッド
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - 確認対話
   - `True`（確認）/ `False`（否定）/ `None`（タイムアウト）を返す
-  - 内部的に中英語の確認語を自動的に認識し、カスタム語集を定義できる
-  - `method`: 送信方法、デフォルトは "Text"、"Image"/"Markdown" など非テキスト方式で送信可能
-  - `hint`: プロンプトの末尾に自動的に確認語のヒントを追加するかどうか、デフォルトはFalse
+  - 内部的に中英語の確認単語を自動的に認識し、独自の語集をカスタマイズ可能
+  - `method`: 送信方法、デフォルトは "Text"、"Image"/"Markdown" 等の非テキスト方式で送信可能
+  - `hint`: プロンプトの末尾に自動的に確認単語のプロンプトを追加するかどうか、デフォルトは `False`
 
 - `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - 選択メニュー
   - `options`: 選択肢のテキストリスト
-  - 選択肢のインデックス（0ベース）を返す、タイムアウトの場合はNoneを返す
+  - 選択肢のインデックス（0ベース）を返す、タイムアウト時は `None` を返す
   - `method`: 送信方法、デフォルトは "Text"、テキスト系メソッド (Text/Markdown/md/Html/h5) はデフォルトで末尾に選択肢を結合
   - `options_format`: 選択肢のフォーマット（デフォルト: "auto"、methodに応じて自動的に組み込みスタイルを選択）
-    - `"auto"`: Markdown→箇条書き（`- 1.選択肢`）、Html→順序付きリスト（`<ol>`）、その他→純粋なテキストリスト
-    - `"list"`: 各行に1つ、例えば ``1. 選択肢A\n2. 選択肢B``
-    - `"inline"`: 1行に表示、例えば ``1.A | 2.B``
-    - `"md"`: Markdown 箇条書き
-    - `"html"`: Html 順序付きリスト
-    - `callable`: 自定義関数、``list[str]``を受け取り``str``を返す
-  - `merge_prompt`: 強制的に1つのメッセージに結合して送信するかどうか、デフォルトはFalse
-    - `False`（デフォルト）: テキスト系メソッドは自動的に結合；非テキスト系メソッドはまずpromptを送信してからText選択肢を送信
-    - `True`: どのようなmethodでも結合して1つのメッセージに送信し、ユーザーが指定したmethodを使って送信する
-  - `placeholder`: 選択肢の挿入用のプレースホルダー、デフォルトは`{options}`；promptにこのマークが含まれる場所に選択肢のテキストを置き換える、空文字列に設定すると末尾に常に追加される
+    - `"auto"`: Markdown→無序リスト（`- 1.選択肢`）、Html→順序リスト（`<ol>`）、その他→純粋なテキストリスト
+    - `"list"`: 各行に1つ、例: ``1. 選択肢A\n2. 選択肢B``
+    - `"inline"`: 1行で表示、例: ``1.A | 2.B``
+    - `"md"`: Markdown無序リスト
+    - `"html"`: Html順序リスト
+    - `callable`: 自作関数、``list[str]``を受け取り``str``を返す
+  - `merge_prompt`: 強制的に1つのメッセージとして送信するかどうか、デフォルトは `False`
+    - `False`（デフォルト）: テキスト系メソッドは自動的に結合、非テキスト系メソッドは先にpromptを送信してからText選択肢を送信
+    - `True`: どのようなmethodでも1つのメッセージに結合し、ユーザーが指定したmethodで送信
+  - `placeholder`: 選択肢挿入のプレースホルダ、デフォルトは `{options}`、promptにこのマークが含まれる位置に選択肢のテキストを置き換え、空文字列に設定すると常に末尾に追加
 
 - `collect(fields, timeout_per_field=60.0)` - フォーム収集
-  - `fields`: フィールドリスト、各項目には`key`、`prompt`、オプションの`validator`、オプションの`method`が含まれる
-  - `{key: value}`の辞書を返す、いずれかのフィールドがタイムアウトの場合はNoneを返す
-  - 各フィールドは`method`キーで送信方法を指定できる、例えば画像を収集する場合は`{"key": "avatar", "prompt": "プロフィール画像を送ってください", "method": "Image"}`
-  - 各フィールドはオプションの`options`キー（リスト）を提供できる、提供された場合、そのフィールドは選択問題になる（自動的にchooseのロジックを呼び出す）
-  - 各フィールドはオプションの`options_format`、`merge_prompt`、`placeholder`キーを制御できる、選択肢のフォーマット、メッセージの結合動作、プレースホルダー
+  - `fields`: フィールドリスト、各項目には `key`、`prompt`、オプションで `validator`、オプションで `method` を含む
+  - `{key: value}`の辞書を返す、いずれかのフィールドがタイムアウトした場合は `None` を返す
+  - 各フィールドは `method`キーで送信方法を指定可能、例: 画像を収集する場合 `{"key": "avatar", "prompt": "プロフィール画像を送ってください", "method": "Image"}`
+  - 各フィールドはオプションで `options`キー（リスト）を含み、指定するとそのフィールドは選択問題になる（自動的にchooseのロジックを呼び出す）
+  - 各フィールドはオプションで `options_format`、`merge_prompt`、`placeholder`キーを含み、選択肢のフォーマット、メッセージの結合動作、プレースホルダを制御
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - 任意のイベントを待つ
-  - `condition`: 条件関数、Trueを返す場合に一致する
-  - 一致するEventオブジェクトを返す、タイムアウトの場合はNoneを返す
+  - `condition`: フィルタ関数、`True`を返すときに一致する
+  - マッチしたEventオブジェクトを返す、タイムアウト時は `None` を返す
 
-- `conversation(timeout=60.0)` - マルチラウンド対話コンテキストを作成
+- `conversation(timeout=60.0)` - 複数ラウンド対話コンテキストを作成
   - `Conversation`オブジェクトを返す、`say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`をサポート
   - `is_active`属性は対話がアクティブかどうかを示す
 
-#### インタラクティブメソッドの例
+#### 交互メソッドの例
 
 **confirm() - 確認対話：**
 
 ```python
 @command("delete", help="データを削除")
-async def delete_handler(event):
+async def delete_handler(event: Event):
     if await event.confirm("すべてのデータを削除してもよろしいですか？"):
         sdk.storage.delete("all_data")
-        await event.reply("データが削除されました")
+        await event.reply("データは削除されました")
     else:
-        await event.reply("キャンセルされました")
+        await event.reply("キャンセルしました")
 ```
 
-**confirm() - ヒント付き：**
+**confirm() - プロンプト付き：**
 
 ```python
-# hint=True はプロンプトの末尾に "（はい/いいえ）" を追加する
+# hint=True はプロンプトの末尾に "（はい/いいえ）" を追加
 if await event.confirm("続行してもよろしいですか？", hint=True):
     await event.reply("続行しました")
-# ユーザーに表示される内容：続行してもよろしいですか？（はい/いいえ）
+# ユーザーは "続行してもよろしいですか？（はい/いいえ）" を表示
 ```
 
 **choose() - 選択メニュー：**
 
 ```python
 @command("color", help="色を選択")
-async def color_handler(event):
+async def color_handler(event: Event):
     choice = await event.choose("色を選択してください：", ["赤", "緑", "青"])
     if choice is not None:
         colors = ["赤", "緑", "青"]
@@ -2766,39 +2789,39 @@ async def color_handler(event):
 choice = await event.choose("選択してください：", ["A", "B", "C"], options_format="inline")
 # 出力：1.A | 2.B | 3.C
 
-# 自定義フォーマット
+# 自作フォーマット
 choice = await event.choose("選択してください：", ["猫", "犬"],
     options_format=lambda opts: " / ".join(opts))
 # 出力：猫 / 犬
 
 # options_format="auto"（デフォルト）：methodに応じて自動的に組み込みスタイルを選択
-# Markdown → 箇条書き
+# Markdown → 無序リスト
 choice = await event.choose(
     "## 選択してください", ["猫", "犬"],
-    method="Markdown",  # autoは自動的にmdリストと認識
+    method="Markdown",  # autoはmdリストと自動的に認識
 )
 # 出力：
 # ## 選択してください
 # - 1. 猫
 # - 2. 犬
 
-# Html → 順序付きリスト
+# Html → 順序リスト
 choice = await event.choose(
     "<h2>選択してください</h2>", ["猫", "犬"],
-    method="Html", merge_prompt=True,  # autoは自動的にhtmlリストと認識
+    method="Html", merge_prompt=True,  # autoはhtmlリストと自動的に認識
 )
 # 出力：
 # <h2>選択してください</h2>
 # <ol><li>1. 猫</li><li>2. 犬</li></ol>
 
-# 結合モード + プレースホルダー
+# 合併モード + プレースホルダ
 choice = await event.choose(
     "## 選択してください\n{options}\n番号を返信してください",
     ["猫", "犬"],
     method="Markdown", merge_prompt=True,
 )
 
-# 自定義プレースホルダー
+# 自作プレースホルダ
 choice = await event.choose(
     "選択してください: [choices]",
     ["猫", "犬"],
@@ -2810,17 +2833,17 @@ choice = await event.choose(
 
 ```python
 @command("register", help="登録")
-async def register_handler(event):
+async def register_handler(event: Event):
     data = await event.collect([
-        {"key": "name", "prompt": "お名前を入力してください："},
+        {"key": "name", "prompt": "名前を入力してください："},
         {"key": "age", "prompt": "年齢を入力してください：",
          "validator": lambda e: e.get_text().isdigit()},
     ])
     if data:
-        await event.reply(f"登録が完了しました！{data['name']}、{data['age']}歳")
+        await event.reply(f"登録完了！{data['name']}、{data['age']}歳")
 ```
 
-**非テキスト方法のreply：**
+**テキスト以外のメソッドでのreply：**
 
 ```python
 await event.reply("http://example.com/img.jpg", method="Image")
@@ -2831,42 +2854,42 @@ segments = MessageBuilder.text("この画像を見てください：").image("ht
 await event.reply_ob12(segments)
 ```
 
-> 完全なConversationマルチラウンド対話の使い方は [Conversationマルチラウンド対話](../../advanced/conversation.md) を参照してください。
+> 完全なConversation多ラウンド対話の使い方は [Conversation多ラウンド対話](../../advanced/conversation.md) を参照してください。
 
 ### コマンド情報
 
-#### コマンドの基本
+#### コマンド基礎
 - `get_command_name()` - コマンド名を取得
 - `get_command_args()` - コマンド引数のリストを取得
 - `get_command_raw()` - コマンドの元のテキストを取得
 - `get_command_info()` - 完全なコマンド情報の辞書を取得
 - `is_command()` - コマンドかどうか
 
-### 元のデータ
+### 元データ
 
 - `get_raw()` - プラットフォームの元のイベントデータを取得
 - `get_raw_type()` - プラットフォームの元のイベントタイプを取得
 
 ### プラットフォーム拡張メソッド
 
-アダプタはEventラッパークラスにプラットフォーム固有のメソッドを登録することができます。メソッドは対応するプラットフォームのEventインスタンスでのみ利用可能で、他のプラットフォームでアクセスすると`AttributeError`が発生します。
+アダプターはEventラッパークラスにプラットフォーム固有のメソッドを登録できる。メソッドは対応するプラットフォームのEventインスタンスでのみ利用可能で、他のプラットフォームでアクセスすると `AttributeError` が発生する。
 
-プラットフォームメソッドは`Event.__getattribute__`によって、組み込みメソッドよりも優先的に有効になります。そのため、`confirm`、`choose`、`collect`、`wait_reply`などの組み込みインタラクティブメソッドを覆い、プラットフォーム特有の実装（ボタン、カードなど）を提供することができます。組み込みの実装は覆い書き可能な`_builtin_*`関数としてエクスポートされています。
+プラットフォームメソッドは `Event.__getattribute__` により、組み込みメソッドよりも優先して有効になるため、`confirm`、`choose`、`collect`、`wait_reply` などの組み込みインタラクティブメソッドを覆写して、プラットフォーム特有の実装（例: ボタン、カードなど）を提供できる。組み込み実装は `_builtin_*` 関数として導出され、覆写元に提供される。
 
 ```python
-# メールイベント - メールメソッドのみ
+# メールイベント - メール専用メソッドのみ
 event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
-event.get_subject()      # ✅ "Hello"を返す
+event.get_subject()      # ✅ "Hello" を返す
 event.get_chat_type()    # ❌ AttributeError
 
-# Telegramイベント - Telegramメソッドのみ
+# Telegramイベント - Telegram専用メソッドのみ
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
-event.get_chat_type()    # ✅ "private"を返す
+event.get_chat_type()    # ✅ "private" を返す
 event.get_subject()      # ❌ AttributeError
 
 # 組み込みメソッドは常に利用可能
-event.get_text()         # ✅ すべてのプラットフォームで利用可能
-event.reply("hi")        # ✅ すべてのプラットフォームで利用可能
+event.get_text()         # ✅ どのプラットフォームでも
+event.reply("hi")        # ✅ どのプラットフォームでも
 ```
 
 ### 登録されたメソッドの照会
@@ -2881,13 +2904,13 @@ methods = get_platform_event_methods("email")
 ### `hasattr` と `dir` のサポート
 
 ```python
-hasattr(event, "get_subject")   # platform="email"の場合のみTrueを返す
+hasattr(event, "get_subject")   # platform="email" のみで True を返す
 "get_subject" in dir(event)     # 同上
 ```
 
 ### 跨プラットフォーム拡張（ワイルドカード）
 
-`register_event_method` と `register_event_mixin` は `"*"` をプラットフォーム名として渡すことができ、登録されたメソッドは**すべてのプラットフォーム**のEventインスタンスで利用可能です。AI対話、コンテキスト管理など、跨プラットフォームで再利用可能な機能に適しています。
+`register_event_method` と `register_event_mixin` は `"*"` をプラットフォーム名として渡すことができ、登録されたメソッドは**すべてのプラットフォーム**のEventインスタンスで利用可能になる。AI対話、コンテキスト管理など、跨プラットフォームで再利用可能な機能に適している。
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
@@ -2898,11 +2921,11 @@ async def ai_chat(self, prompt: str):
     await self.reply(f"AI: {prompt}")
 ```
 
-登録後、どのプラットフォームのイベントハンドラーでも `event.ai_chat(...)` を呼び出すことができます。
+登録後、どのプラットフォームのイベントハンドラでも `event.ai_chat(...)` を呼び出すことができる。
 
-メソッドの優先順位（高い順）：プラットフォーム固有のメソッド → ワイルドカードメソッド → 組み込みメソッド → 辞書キーのアクセス。
+メソッドの優先順位（高から低）: プラットフォーム固有メソッド → ワイルドカードメソッド → 組み込みメソッド → 辞書キーのアクセス。
 
-> アダプタ開発者が拡張メソッドを登録する方法は [イベントシステムAPI - 跨プラットフォーム拡張（ワイルドカード）](../../api-reference/event-system.md#跨平台扩展通配符) を参照してください。
+> アダプター開発者が拡張メソッドを登録する方法は [イベントシステムAPI - 跨プラットフォーム拡張ワイルドカード](../../api-reference/event-system.md#跨プラットフォーム拡張ワイルドカード) を参照してください。
 
 
 
@@ -3024,7 +3047,7 @@ class MyModule(BaseModule):
 ### 1. 非同期ライブラリの使用
 
 ```python
-# SDKに内蔵されたHTTPクライアント（非同期、自動ログと統計機能付き）の使用が推奨されます
+# SDK内蔵のHTTPクライアント（非同期、自動ログと統計）の使用が推奨
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -3032,7 +3055,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# また、sdk.clientを使用することもできます（効果は同じ）
+# sdk.clientを使用することも可能（効果は同じ）
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -3040,7 +3063,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# aiohttpを直接インポートして使用しないでください（フレームワークの統一管理が難しくなります）
+# aiohttpを直接インポートしないこと（フレームワークによる統一管理が困難）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -3049,40 +3072,41 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# requestsを使用しないでください（同期的で、イベントループをブロックします）
+# requestsを使用しないこと（同期的で、イベントループをブロックする）
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # イベントループをブロックします
+        return requests.get(url).json()  # イベントループをブロックする
 ```
 
 ### 2. 正しい非同期操作
 
 ```python
-async def handle_command(self, event):
-    # 結果を待つ必要のある処理：直接 await（ライフサイクルが明確）
+from ErisPulse.Core.Event import Event  # event: Event注釈でIDEの補完が得られる
+
+async def handle_command(self, event: Event):
+    # 結果を待つ必要のある処理：直接await（ライフサイクルが明確）
     result = await self._long_operation()
 
-async def on_load(self, event):
-    # バックグラウンドタスク（ポーリング/定時実行/fire-and-forget）：self.spawn()を使用し、
-    # モジュールのアンロード時にon_unloadの後にフレームワークがキャンセルを処理し、
-    # selfの保持によるリークを回避します
+async def on_load(self, event: dict):
+    # バックグラウンドタスク（ポーリング/定時/fire-and-forget）：self.spawn()を使用
+    # モジュールのアンロード時にon_unloadの後にフレームワークがキャンセルを保証し、selfの保持によるリークを防ぐ
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> バックグラウンドタスクはself.spawn()（ErisPulse **2.8.0+**）を使用することを推奨します。asyncio.create_task()は推奨されません。後者は裸のタスクを作成し、モジュールに属さず、アンロード時に自動的にクリーンアップされず、selfの参照を保持してモジュールインスタンスが回収されない（ホットリロードのリーク）可能性があります。詳細は[ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの所属と自動キャンセル)をご覧ください。
+> バックグラウンドタスクは`self.spawn()`（ErisPulse **2.8.0+**）を使用することを推奨します。`asyncio.create_task`は、裸のタスクを作成し、モジュールに属さないため、アンロード時に自動的にクリーンアップされず、selfの参照を保持してモジュールインスタンスが回収されない（ホットリロードのリーク）可能性があります。詳細は[ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの所属と自動キャンセル)をご覧ください。
 
 ### 3. リソース管理
 
 ```python
 async def on_load(self, event):
-    # SDKのクライアントは接続プールを自動的に管理しているため、手動でsessionを作成する必要はありません
+    # SDKクライアントは接続プールを自動的に管理するため、手動でsessionを作成する必要はない
     pass
     
 async def on_unload(self, event):
-    # 自定義クライアントが必要な場合は、リソースのクリーンアップを忘れずに
+    # カスタムクライアントが必要な場合は、リソースのクリーンアップを忘れずに
     pass
 
 ## イベント処理
@@ -3090,23 +3114,23 @@ async def on_unload(self, event):
 ### 1. Eventラッパークラスの使用
 
 ```python
-# Eventラッパークラスを使用する便利な方法
+# Eventラッパークラスの便利な方法を使用
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"こんにちは、{nickname}！")
 
-# ディクショナリに直接アクセスするのではなく
+# 辞書に直接アクセスするのではなく
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event["user_id"]  # 明確さに欠け、間違いやすい
 ```
 
-### 2. ラグジュアリーなロードの適切な使用
+### 2. 懒惰的ロードの適切な使用
 
 ```python
-# 頻度の低いコマンドモジュール：activate_onトリガーを宣言し、最初の一致するコマンドが到着したときに自動的に有効化（ラグジュアリーなロードの維持）
+# 使用頻度の低いコマンドモジュール：activate_onトリガーを宣言し、最初の一致するコマンドが到着したときに自動的にアクティブ化（懒惰的ロードを維持）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -3114,7 +3138,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "サイコロを振る", "aliases": ["d"]}},
         ])
 
-# 頻度の低いリスナーモジュール：イベントトリガーを宣言し、イベントが到着したときに自動的に有効化
+# 使用頻度の低いリスナー・モジュール：イベントトリガーを宣言し、イベントが到着したときに自動的にアクティブ化
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -3122,20 +3146,21 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# 毎回メッセージを処理する必要がある高頻度のトリガー、または起動時に即座に準備が必要なモジュール：即時ロード
+# 高頻度のトリガー（各メッセージを処理する必要がある）または起動時に準備が必要なモジュール：即時ロード
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# ユーティリティモジュールはラグジュアリーなロードに適している
+# ユーティリティモジュールは懒惰的ロードに適している
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> `activate_on` の完全な構文（イベントの3形式 / コマンドの簡略化と dict宣言 / helpのフォールバックチェーン）は、[ラグジュアリーなロードモジュールシステム](../../advanced/lazy-loading.md#イベント駆動ラグジュアリー有効化activate_on)を参照してください。
+> `activate_on`の完全な構文（イベントの三形式 / コマンドの簡略化とdict宣言 / helpのフォールバックチェーン）については、  
+> [懒惰的ロードモジュールシステム](../../advanced/lazy-loading.md#イベント駆動の懒惰的アクティベーションactivate_on)を参照してください。
 
 ### 3. イベントハンドラの登録
 
@@ -3143,43 +3168,43 @@ class UtilityModule(BaseModule):
 async def on_load(self, event):
     # on_loadでイベントハンドラを登録
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("こんにちは！")
     
     @message.on_group_message()
-    async def group_handler(event):
+    async def group_handler(event: Event):
         self.logger.info("グループメッセージを受信しました")
     
-    # 手動で登録解除は不要、フレームワークが自動的に処理します
+    # 手動での登録解除は不要、フレームワークが自動的に処理します
 
 ## エラー処理
 
-### 1. 例外処理の分類
+### 1. 例外の分類処理
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # 予期されるビジネスエラー
+        # 予期されたビジネスエラー
         self.logger.warning(f"ビジネス警告: {e}")
         await event.reply(f"パラメータエラー: {e}")
     except aiohttp.ClientError as e:
-        # ネットワークエラー（sdk.client + ClientError の使用を推奨）
-        # 旧コードは aiohttp を直接使用しても動作しますが、新コードでは ErisPulse 例外体系を使用することを推奨します
+        # ネットワークエラー（推奨: sdk.client + ClientError を使用）
+        # 旧コードでは直接 aiohttp を使用しても正常に動作しますが、新規コードでは ErisPulse の例外体系を使用することを推奨します
         self.logger.error(f"ネットワークエラー: {e}")
-        await event.reply("ネットワークリクエストに失敗しました。しばらく待ってから再試行してください")
+        await event.reply("ネットワークリクエストに失敗しました。後でもう一度お試しください")
     except Exception as e:
         # 予期しないエラー
         self.logger.error(f"不明なエラー: {e}", exc_info=True)
-        await event.reply("処理に失敗しました。管理者にお問い合わせください")
+        await event.reply("処理に失敗しました。管理者に連絡してください")
         raise
 ```
 
 ### 2. タイムアウト処理
 
 ```python
-# SDK 内蔵クライアント（タイムアウトとリトライ機能付き）の使用を推奨
+# 推奨: SDK 内部のクライアントを使用（タイムアウトと再試行機能が付属）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -3188,7 +3213,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"リクエストタイムアウト: {url}")
+        self.logger.warning(f"リクエストがタイムアウトしました: {url}")
         raise
 
 ## ストレージシステム
@@ -3256,7 +3281,7 @@ self.logger.info(f"リクエストを処理中: request_id={request_id}, user_id
 # ❌ 非構造化ログを使用
 self.logger.info(f"リクエストを処理しました。ユーザー {user_id} からのもの、所要時間 {duration} ミリ秒")
 
-## パフォーマンスの最適化
+## パフォーマンス最適化
 
 ### 1. キャッシュの使用
 
@@ -3282,13 +3307,13 @@ class MyModule(BaseModule):
 ### 2. ブロッキング操作の回避
 
 ```python
-# 非同期操作の使用
-async def process_message(self, event):
+# 非同期操作を使用
+async def process_message(self, event: Event):
     # 非同期処理
     await self._async_process(event)
 
 # ❌ ブロッキング操作
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # 同期操作、イベントループをブロック
     result = self._sync_process(event)
 
@@ -3297,7 +3322,7 @@ async def process_message(self, event):
 ### 1. 敏感データ保護
 
 ```python
-# 敏感データは設定に保存されます（宣言型 ConfigClass、secret フィールドはログ/エクスポートに含まれません）
+# 敏感データは設定に格納されます（宣言型の ConfigClass、secret フィールドはログ/エクスポートに含まれません）
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -3315,7 +3340,7 @@ class MyModule(BaseModule):
         if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
             raise ValueError("config.toml に有効な API キーを設定してください")
 
-# ❌ 敏感データのハードコーディング
+# ❌ 敏感データをハードコードしないでください
 class MyModule(BaseModule):
     API_KEY = "sk-1234567890"  # これを行わないでください！
 ```
@@ -3323,16 +3348,16 @@ class MyModule(BaseModule):
 ### 2. 入力検証
 
 ```python
-# ユーザー入力の検証
-async def process_command(self, event):
+# ユーザー入力を検証
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
-    # 入力長の検証
+    # 入力の長さを検証
     if len(user_input) > 1000:
-        await event.reply("入力が長すぎます。再度入力してください")
+        await event.reply("入力が長すぎます。再入力してください")
         return
     
-    # 入力形式の検証
+    # 入力の形式を検証
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("入力形式が正しくありません")
         return
@@ -6046,34 +6071,38 @@ complex_msg = (
 
 # ネットワーククライアント
 
-ErisPulse は、HTTPリクエスト、WebSocket接続、および接続プール管理を統合した統一されたネットワーククライアントを提供しています。モジュールやアダプターは、**aiohttp / httpx / requests** などのサードパーティライブラリを直接インポートするのではなく、このクライアントを優先的に使用する必要があります。
+ErisPulse は、HTTPリクエスト、WebSocket接続、および接続プール管理を統合した統一されたネットワーククライアントを提供しています。モジュールやアダプターは、**aiohttp / httpx / requests** などのサードパーティライブラリを直接インポートするのではなく、このクライアントを優先して使用する必要があります。
+
+docs/ja/quick-start.md
 
 ## 概要
 
 ネットワーククライアントの主な機能：
 
-- **統一インターフェース**：`get` / `post` / `put` / `delete` / `patch` / `request` メソッドを提供
-- **WebSocketクライアント**：`ws_connect` を通じてクライアント側のWebSocket接続を確立
-- **自動ログ**：すべてのリクエストに対して自動的にログと統計情報を記録
-- **ライフサイクル統合**：各リクエストは `client.request` ライフサイクルイベントをトリガーし、WebSocket接続は `client.ws.connect` イベントをトリガー
+- **統一されたインターフェース**：`get` / `post` / `put` / `delete` / `patch` / `request` メソッドを提供
+- **WebSocket クライアント**：`ws_connect` を通じてクライアント側の WebSocket 接続を確立
+- **自動ログ**：すべてのリクエストを自動的にログ記録し、統計情報を取得
+- **ライフサイクル統合**：各リクエストごとに `client.request` ライフサイクルイベントをトリガーし、WS 接続時は `client.ws.connect` イベントをトリガー
 - **リトライサポート**：自動リトライ回数と間隔を設定可能
 - **タイムアウト制御**：接続タイムアウトとリクエストタイムアウトを個別に制御
-- **接続プールの再利用**：aiohttp.ClientSessionに基づく接続プール管理
-- **例外体系**：aiohttpの例外は自動的にErisPulseの例外（ClientError体系）に変換される
+- **接続プールの再利用**：aiohttp.ClientSession に基づく接続プール管理
+- **例外体系**：aiohttp の例外を自動的に ErisPulse の例外 (ClientError 体系) に変換
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**中文**](docs/ja/quick-start.md)
 
 ## 快速開始
 
-### HTTPリクエスト
+### HTTP リクエスト
 
 ```python
 from ErisPulse.Core import client
 
-# GETリクエスト
+# GET リクエスト
 resp = await client.get("https://httpbin.org/get")
 data = await resp.json()
 print(resp.status)  # 200
 
-# POSTリクエスト
+# POST リクエスト
 resp = await client.post(
     "https://httpbin.org/post",
     json={"key": "value"},
@@ -6081,7 +6110,7 @@ resp = await client.post(
 data = await resp.json()
 ```
 
-### WebSocket接続
+### WebSocket 接続
 
 ```python
 from ErisPulse.Core import client
@@ -6090,7 +6119,6 @@ ws = await client.ws_connect("wss://example.com/ws")
 
 async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
-```
 
 ## HttpResponse
 
@@ -6101,19 +6129,18 @@ from ErisPulse.Core import client
 
 resp = await client.get("https://httpbin.org/get")
 
-resp.status       # int - HTTPステータスコード (例: 200, 404)
-resp.reason       # str | None - ステータス説明 (例: "OK")
-resp.headers      # レスポンスヘッダー (大文字小文字を区別しない)
+resp.status       # int - HTTP ステータスコード (例: 200, 404)
+resp.reason       # str | None - ステータスの説明 (例: "OK")
+resp.headers      # レスポンスヘッダー (大文字小文字を区別しません)
 resp.content_type # str | None - Content-Type
-resp.url          # 最終URL (リダイレクトにより変化する可能性がある)
-resp.raw          # ベースの生のレスポンスオブジェクト (現在はaiohttp.ClientResponse)
+resp.url          # 最終的な URL (リダイレクトにより変更される可能性があります)
+resp.raw          # ベースとなるネイティブなレスポンスオブジェクト (現在は aiohttp.ClientResponse)
 
-# レスポンスボディの読み取り
+# レスポンスボディを読み取る
 body = await resp.read()       # bytes
 text = await resp.text()       # str
-data = await resp.json()       # JSONを解析
-text = await resp.text("gbk")  # 指定されたエンコーディング
-```
+data = await resp.json()       # JSON を解析
+text = await resp.text("gbk")  # エンコーディングを指定
 
 ## リクエストメソッド
 
@@ -6146,30 +6173,30 @@ resp = await client.post(
     data={"username": "admin", "password": "123"},
 )
 
-# バイナリデータ
+# ロウデータ
 resp = await client.post(
     "https://api.example.com/upload",
     data=b"raw bytes",
     headers={"Content-Type": "application/octet-stream"},
 )
 
-# ファイルアップロード (filesパラメータを使用、aiohttpをインポートする必要なし)
+# ファイルアップロード (filesパラメータを使用, aiohttpのインポートは不要)
 # 形式: {フィールド名: ファイルオブジェクト/bytes/(filename, file)/(filename, file, content_type)}
 resp = await client.post(
     "https://api.example.com/upload",
-    data={"description": "プロフィール画像"},            # 任意: 通常のフォームフィールドを同時に送信
+    data={"description": "プロフィール画像"},            # 任意: 普通のフォームフィールドも同時に送信可能
     files={
         "file": ("photo.png", open("photo.png", "rb"), "image/png"),
     },
 )
 
-# 簡略化された書き方: ファイルオブジェクトを直接渡す
+# 簡易記法: ファイルオブジェクトを直接渡す
 resp = await client.post(
     "https://api.example.com/upload",
     files={"file": open("photo.png", "rb")},
 )
 
-# メモリ内データを直接アップロード (ファイルを保存する必要なし)
+# メモリ上のデータを直接アップロード (ディスクへの保存は不要)
 import io
 
 resp = await client.post(
@@ -6188,7 +6215,7 @@ resp = await client.delete("https://api.example.com/users/1")
 resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
 ```
 
-### 一般的なrequest
+### 一般的な request
 
 ```python
 from ErisPulse.Core import client
@@ -6198,7 +6225,6 @@ resp = await client.request(
     "https://api.example.com/resource",
     headers={"Origin": "https://example.com"},
 )
-```
 
 ## パラメータの説明
 
@@ -6209,11 +6235,11 @@ resp = await client.request(
 | `url` | `str` | リクエストURL |
 | `params` | `dict[str, str]` | クエリパラメータ (オプション) |
 | `headers` | `dict[str, str]` | 追加のリクエストヘッダー (オプション) |
-| `data` | `Any` | リクエストボディ (フォームまたはバイナリデータ) (オプション) |
+| `data` | `Any` | リクエストボディ (フォームまたは生データ) (オプション) |
 | `json` | `Any` | JSONリクエストボディ (オプション) |
 | `files` | `dict[str, Any]` | ファイルアップロードフィールド (オプション、multipart/form-dataを自動的に構築) |
-| `timeout` | `float` | 今回のリクエストのタイムアウト (秒) (オプション、デフォルト値を上書き) |
-| `max_retries` | `int` | 今回の最大リトライ回数 (オプション、デフォルト値を上書き) |
+| `timeout` | `float` | 本次のリクエストタイムアウト (秒) (オプション、デフォルト値を上書き) |
+| `max_retries` | `int` | 本次の最大リトライ回数 (オプション、デフォルト値を上書き) |
 
 ### ws_connect パラメータ
 
@@ -6226,24 +6252,29 @@ resp = await client.request(
 ## タイムアウトとリトライ
 
 ```python
-from ErisPulse.Core import HttpClient
+from ErisPulse.Core import Client
 
-# カスタムタイムアウトを持つクライアントを作成
-client = HttpClient(
-    timeout=60,           # リクエスト全体のタイムアウト 60秒
-    connect_timeout=5,    # 接続のタイムアウト 5秒
-    max_retries=3,        # 失敗時の自動リトライ 3回
+# カスタムタイムアウトを設定したクライアントを作成
+client = Client(
+    timeout=60,           # 要求の総タイムアウト 60秒
+    connect_timeout=5,    # 接続タイムアウト 5秒
+    max_retries=3,        # 失敗時に自動でリトライ 3回
     retry_delay=2,        # リトライ間隔 2秒
 )
 
-# 今回のリクエストでタイムアウトを上書き
+# 単一の要求でタイムアウトを上書き
 resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
-## デフォルトヘッダーのカスタマイズ
+> [!NOTE]
+> クライアントクラスは 2.8.0 から `Client` に名前が変更されました（`sdk.client` の属性名は変更されません）；古い名前 `HttpClient` は互換性のためのエイリアスとして保持され、古いコードを変更する必要はありません。
+
+[**English**](docs/en/timeout-retry.md) | [**简体中文**](docs/ja/timeout-retry.md) | [**日本語**](docs/ja/timeout-retry.md)
+
+## デフォルトのヘッダーをカスタマイズ
 
 ```python
-client = HttpClient(
+client = Client(
     headers={
         "Authorization": "Bearer token",
         "X-App-Id": "my-app",
@@ -6252,12 +6283,14 @@ client = HttpClient(
 )
 ```
 
+[**English**](docs/ja/quick-start.md)
+
 ## リクエスト統計
 
 ```python
 from ErisPulse.Core import client
 
-# 統計を確認
+# 統計を表示
 stats = client.stats
 # {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
 
@@ -6265,11 +6298,13 @@ stats = client.stats
 client.reset_stats()
 ```
 
+[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
 ## ライフサイクルイベント
 
 ### HTTPリクエストイベント
 
-各リクエストの完了後に `client.request` イベントがトリガーされ、モニタリングに使用できます：
+リクエストが完了するたびに `client.request` イベントがトリガーされ、モニタリングに使用できます：
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -6281,30 +6316,31 @@ async def on_request(event_data):
 
 ### WebSocket接続イベント
 
-WebSocket接続が確立された後に `client.ws.connect` イベントがトリガーされます：
+WebSocket接続が確立するたびに `client.ws.connect` イベントがトリガーされます：
 
 ```python
 from ErisPulse.Core import lifecycle
 
 @lifecycle.on("client.ws.connect")
 async def on_ws_connect(event_data):
-    print(f"WS接続: {event_data['url']}")
-```
+    print(f"WS 接続: {event_data['url']}")
 
-## コンテキストマネージャー
+## コンテキスト管理
 
 ```python
 # コンテキストマネージャーとして使用し、セッションを自動的に閉じる
-async with HttpClient(timeout=30) as client:
+async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
 ```
 
-## WebSocketクライアント
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
-`client.ws_connect()` を通じてWebSocketクライアント接続を確立し、`ClientWebSocket` オブジェクトを返します。クライアントとサーバー側のWebSocketは同じ `WebSocketConnectionBase` 基底クラスを共有し、send/receive/iterインターフェースは完全に同じです。
+## WebSocket クライアント
 
-### 基本的な使い方
+`client.ws_connect()` を使用して WebSocket クライアント接続を確立し、`ClientWebSocket` オブジェクトを返します。クライアントとサーバーの WebSocket は同じ `WebSocketConnectionBase` 基底クラスを共有し、send/receive/iter インターフェースは完全に一致しています。
+
+### 基本的な使用方法
 
 ```python
 from ErisPulse.Core import client
@@ -6318,7 +6354,7 @@ await ws.send_json({"type": "ping"})
 
 ### メッセージの受信
 
-#### 高レベルメソッド (推奨)
+#### 高レベルメソッド（推奨）
 
 メッセージの種類を自動的にフィルタリングし、切断時に `WebSocketDisconnect` をスローします：
 
@@ -6328,12 +6364,12 @@ from ErisPulse.Core.Bases.errors import WebSocketDisconnect
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# 1件のメッセージを受信
+# 単一のメッセージ受信
 text = await ws.receive_text()    # str
 data = await ws.receive_bytes()   # bytes
 obj = await ws.receive_json()     # dict / list
 
-# 受信のイテレーション (切断時に自動的に停止)
+# 反復処理による受信（切断時に自動停止）
 async for text in ws.iter_text():
     print(text)
 
@@ -6346,7 +6382,7 @@ async for obj in ws.iter_json():
 
 #### 低レベルメソッド
 
-`receive()` と `iter_messages()` を使用して、元のメッセージの種類を処理し、TEXT / BINARY / CLOSE / ERROR を区別できます：
+`receive()` と `iter_messages()` を使用して、TEXT / BINARY / CLOSE / ERROR を区別できる生のメッセージタイプを処理します：
 
 ```python
 from ErisPulse.Core import client
@@ -6354,12 +6390,12 @@ from ErisPulse.Core.Bases.websocket import WSMessage
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# 1件のメッセージを受信
+# 単一の生メッセージ受信
 msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
 
-# メッセージのイテレーション (CLOSE/ERROR時に自動的に停止)
+# 生メッセージの反復処理（CLOSE/ERROR で自動停止）
 async for msg in ws.iter_messages():
     if msg.type == WSMessage.TEXT:
         print(f"テキスト: {msg.data}")
@@ -6369,7 +6405,7 @@ async for msg in ws.iter_messages():
 
 ### WSMessage
 
-`WSMessage` は、下層ライブラリに依存しない統一されたWebSocketメッセージの型です：
+`WSMessage` は、下位ライブラリに依存しない統一された WebSocket メッセージタイプです：
 
 | 属性 | 型 | 説明 |
 |------|------|------|
@@ -6380,14 +6416,14 @@ async for msg in ws.iter_messages():
 
 | 属性 | 型 | 説明 |
 |------|------|------|
-| `url` | `URL` | 接続URL |
-| `headers` | `Headers` | レスポンスヘッダー |
-| `closed` | `bool` | 接続が閉じられているかどうか |
-| `raw` | `object` | 下層の生のオブジェクト (aiohttp.ClientWebSocketResponse) |
+| `url` | `URL` | 接続の URL |
+| `headers` | `Headers` | 応答ヘッダー |
+| `closed` | `bool` | 接続が閉じられているか |
+| `raw` | `object` | 下位の生のオブジェクト (aiohttp.ClientWebSocketResponse) |
 
 ### ライフサイクルフック
 
-`サービス側 WebSocketConnection` と同じで、`on_disconnect` と `on_error` コールバックをサポートします：
+`サービス側 WebSocketConnection` と同様に、`on_disconnect` と `on_error` コールバックをサポートします：
 
 ```python
 from ErisPulse.Core import client
@@ -6406,25 +6442,24 @@ async def handle_error(ws, error=""):
 ### 接続の切断
 
 ```python
-await ws.close(code=1000, reason="正常な切断")
-```
+await ws.close(code=1000, reason="Normal closure")
 
 ## 例外体系
 
-ErisPulse は、統一された例外階層を定義しています。`sdk.client` からリクエストを発行すると、下層の aiohttp 例外が自動的に ErisPulse 例外に変換されます。
+ErisPulse は、統一された例外階層を定義しており、`sdk.client` を介してリクエストを発行すると、自動的に下層の aiohttp 例外を ErisPulse 例外に変換します。
 
-> **後方互換性**：aiohttp.ClientSession を直接使用する古いモジュール/アダプターは、完全に影響を受けません。例外の変換は `sdk.client` からリクエストを発行する場合にのみ有効で、aiohttp を直接使用するコードは依然として `aiohttp.ClientError` などの生の例外をキャッチします。2つの方法は共存可能です。
+> **互換性の維持**：`aiohttp.ClientSession` を直接使用する旧モジュール/アダプタは完全に影響を受けません。例外変換は `sdk.client` を介してリクエストを発行する場合にのみ有効であり、aiohttp を直接使用するコードは引き続き `aiohttp.ClientError` などのネイティブ例外をキャッチします。両方の方法は共存可能です。
 
 ### 例外階層
 
 ```
 ErisPulseError
-├── ClientError                  # HTTP/WSクライアントリクエスト例外の基底クラス
-│   ├── ClientConnectionError    # 接続失敗 (DNS解析失敗、接続拒否、ネットワーク到達不能)
+├── ClientError                  # すべての HTTP/WS クライアントリクエスト例外の基底クラス
+│   ├── ClientConnectionError    # 接続失敗 (DNS 解析失敗、接続拒否、ネットワーク到達不能)
 │   ├── ClientTimeoutError       # 接続タイムアウトまたはリクエストタイムアウト
-│   └── HTTPStatusError          # HTTP 4xx/5xxステータスコードエラー
-└── WebSocketError               # WebSocket例外の基底クラス
-    └── WebSocketDisconnect      # WebSocket接続が切断された (クライアントとサーバー共通)
+│   └── HTTPStatusError          # HTTP 4xx/5xx ステータスコードエラー
+└── WebSocketError               # WebSocket 例外の基底クラス
+    └── WebSocketDisconnect      # WebSocket 接続切断 (クライアントとサーバー共通)
 ```
 
 ### 例外のキャッチ
@@ -6440,7 +6475,7 @@ from ErisPulse.Core.Bases.errors import (
     WebSocketError,
 )
 
-# HTTPリクエスト例外の処理
+# HTTP リクエスト例外の処理
 try:
     resp = await client.get("https://api.example.com/data")
     data = await resp.json()
@@ -6451,7 +6486,7 @@ except ClientTimeoutError:
 except ClientError as e:
     print(f"リクエストが失敗しました: {e}")
 
-# WebSocket例外の処理
+# WebSocket 例外の処理
 try:
     ws = await client.ws_connect("wss://example.com/ws")
     async for text in ws.iter_text():
@@ -6459,12 +6494,12 @@ try:
 except WebSocketDisconnect as e:
     print(f"接続が切断されました: code={e.code}, reason={e.reason}")
 except WebSocketError as e:
-    print(f"WebSocketエラー: {e}")
+    print(f"WebSocket エラー: {e}")
 ```
 
 ### 統一されたキャッチ
 
-`ClientError` を使用して、HTTP/WSクライアントリクエストのすべての例外を統一的にキャッチします：
+`ClientError` を使用して、すべての HTTP/WS クライアントリクエスト例外を統一的にキャッチします：
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError
@@ -6477,7 +6512,7 @@ except ClientError as e:
 
 ### HTTPStatusError
 
-リクエスト後にステータスコードをチェックして例外をスローする必要がある場合、手動で使用できます：
+リクエスト後にステータスコードをチェックし、例外を投げる必要がある場合、手動で使用できます：
 
 ```python
 from ErisPulse.Core.Bases.errors import HTTPStatusError
@@ -6485,11 +6520,10 @@ from ErisPulse.Core.Bases.errors import HTTPStatusError
 resp = await client.get("https://api.example.com/data")
 if resp.status >= 400:
     raise HTTPStatusError(resp.status, await resp.text())
-```
 
 ## アダプターでの使用
 
-アダプターは、グローバルクライアントまたは独自のクライアントインスタンスを使用して、プラットフォームAPIリクエストを送信できます：
+アダプターは、グローバルクライアントまたは独自にクライアントインスタンスを作成して、プラットフォームAPIリクエストを送信することができます。
 
 ```python
 from ErisPulse.Core import client
@@ -6506,21 +6540,25 @@ class MyAdapter(BaseAdapter):
             )
             return await resp.json()
         except ClientError as e:
-            self.logger.error(f"API呼び出しに失敗しました: {e}")
+            self.logger.error(f"APIの呼び出しに失敗しました: {e}")
             raise
 ```
 
-> `from ErisPulse import sdk` を使用して `sdk.client` を使うことも可能で、効果は同じです。
+> `from ErisPulse import sdk` から `sdk.client` を使用することもでき、効果は同じです。
 
-## 最適な実践
+## 最佳実践
 
-1. **グローバルクライアントを優先する**：`from ErisPulse.Core import client` を使用してグローバルシングルトンを取得し、フレームワークの統一管理と監視を容易にする
-2. **aiohttpの直接インポートを避ける**：`client` を使用して `aiohttp.ClientSession` を置き換え、将来の下層実装の変更に伴うコードの変更を必要としない。古いコードで直接 aiohttp を使用しても正常に動作し、2つの方法は共存可能
-3. **ErisPulseの例外体系を使用する**：`sdk.client` からリクエストする際は `aiohttp.ClientError` ではなく `ClientError` をキャッチし、特定のHTTPライブラリに依存しないコードを確保する。直接 aiohttp を使用する古いコードは影響を受けない
-4. **適切なタイムアウトを設定する**：APIの応答速度に応じて適切なタイムアウト時間を設定し、長時間のブロッキングを避ける
-5. **リトライメカニズムを使用する**：不安定なAPIに対してリトライを有効化し、信頼性を向上させる
-6. **リクエスト統計を監視する**：`sdk.client.stats` または `client.request` ライフサイクルイベントを使用してリクエスト状況を監視する
-7. **WebSocketで高レベルメソッドを使用する**：`iter_text` / `iter_json` などの高レベルメソッドを優先し、メッセージの種類を区別する必要がある場合にのみ `iter_messages` を使用する
+1. **グローバルクライアントを優先する**：`from ErisPulse.Core import client` を使用してグローバルシングルトンを取得し、フレームワークによる統一的な管理と監視を容易にする
+2. **直接 aiohttp をインポートしない**：`client` を `aiohttp.ClientSession` の代わりに使用し、将来の下層実装の変更時にコードを修正する必要がないようにする。古いコードで直接 aiohttp を使用しても正常に動作し、両方の方法を共存させることができる
+3. **ErisPulse の例外体系を使用する**：`sdk.client` を使用してリクエストする際には `aiohttp.ClientError` ではなく `ClientError` をキャッチし、コードが特定の HTTP ライブラリに依存しないようにする。直接 aiohttp を使用する古いコードには影響しない
+4. **適切なタイムアウトを設定する**：API の応答速度に応じて適切なタイムアウト時間を設定し、長時間のブロッキングを避ける
+5. **リトライメカニズムを使用する**：不安定な API に対してリトライを有効にし、信頼性を向上させる
+6. **リクエスト統計を監視する**：`sdk.client.stats` または `client.request` のライフサイクルイベントを使用してリクエスト状況を監視する
+7. **WebSocket で高機能メソッドを使用する**：`iter_text` / `iter_json` などの高機能メソッドを優先し、メッセージタイプを区別する必要がある場合にのみ `iter_messages` を使用する
+
+## ドキュメントの言語切り替え
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 
 

@@ -43,6 +43,19 @@ ErisPulse 模块系统
 #### 方法列表
 
 
+##### `_unload_timeout()`
+
+> **内部方法**
+读取模块 on_unload 优雅收尾的超时（秒）
+
+复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算，
+整体仍有 uninit 的 wait_for 兜底）；未配置或非法时回退常量默认值。
+
+**返回值**: 超时秒数（>0）
+
+---
+
+
 ##### `set_sdk_ref(sdk)`
 
 设置 SDK 引用

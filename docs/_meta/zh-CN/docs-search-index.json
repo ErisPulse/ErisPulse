@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1433,
+  "total_keywords": 1441,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -16,6 +16,14 @@
         "line": 392,
         "level": 3,
         "title": "1. BaseAdapter 层（大多数情况不需要重写）"
+      }
+    ],
+    "1. CLI run 命令（开发/简单部署，推荐）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 370,
+        "level": 4,
+        "title": "1. CLI run 命令（开发/简单部署，推荐）"
       }
     ],
     "1. SDK 对象": [
@@ -508,6 +516,14 @@
         "title": "2. Send 内部类（大多数情况不需要重写）"
       }
     ],
+    "2. systemd（Linux 服务器）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 378,
+        "level": 4,
+        "title": "2. systemd（Linux 服务器）"
+      }
+    ],
     "2. 三层 DSL 并行结构": [
       {
         "document": "standards/api-action-spec.md",
@@ -928,6 +944,14 @@
         "title": "2xxxx 动作处理器错误（Handler Error）"
       }
     ],
+    "3. Docker / docker-compose": [
+      {
+        "document": "advanced/startup.md",
+        "line": 391,
+        "level": 4,
+        "title": "3. Docker / docker-compose"
+      }
+    ],
     "3. Request DSL": [
       {
         "document": "standards/request-action-spec.md",
@@ -1280,6 +1304,14 @@
         "title": "4. Event 便捷方法"
       }
     ],
+    "4. PM2（Node 生态运维）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 402,
+        "level": 4,
+        "title": "4. PM2（Node 生态运维）"
+      }
+    ],
     "4. `self` 字段自动发现": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -1494,6 +1526,14 @@
         "line": 80,
         "level": 3,
         "title": "5. Bot 状态查询"
+      }
+    ],
+    "5. supervisord": [
+      {
+        "document": "advanced/startup.md",
+        "line": 410,
+        "level": 4,
+        "title": "5. supervisord"
       }
     ],
     "5. 初始化模块": [
@@ -1750,6 +1790,14 @@
         "line": 147,
         "level": 2,
         "title": "6. 注意事项"
+      }
+    ],
+    "6. 纯 Python 自定义监督者": [
+      {
+        "document": "advanced/startup.md",
+        "line": 419,
+        "level": 4,
+        "title": "6. 纯 Python 自定义监督者"
       }
     ],
     "6. 适配器实现检查清单": [
@@ -2565,7 +2613,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 241,
+        "line": 252,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -3333,7 +3381,7 @@
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
-        "line": 207,
+        "line": 218,
         "level": 3,
         "title": "Supervisor"
       }
@@ -4073,7 +4121,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 251,
+        "line": 262,
         "level": 3,
         "title": "pip 方式"
       }
@@ -4169,7 +4217,7 @@
     "systemd (Linux)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 175,
+        "line": 186,
         "level": 3,
         "title": "systemd (Linux)"
       }
@@ -4289,7 +4337,7 @@
     "下一步": [
       {
         "document": "ai-support/README.md",
-        "line": 117,
+        "line": 134,
         "level": 2,
         "title": "下一步"
       },
@@ -5333,7 +5381,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 100,
+        "line": 111,
         "level": 2,
         "title": "健康检查"
       }
@@ -5943,7 +5991,7 @@
     "反向代理": [
       {
         "document": "user-guide/deployment.md",
-        "line": 121,
+        "line": 132,
         "level": 2,
         "title": "反向代理"
       }
@@ -7073,7 +7121,7 @@
     "备份": [
       {
         "document": "user-guide/deployment.md",
-        "line": 258,
+        "line": 269,
         "level": 3,
         "title": "备份"
       }
@@ -7105,7 +7153,7 @@
     "多实例部署": [
       {
         "document": "user-guide/deployment.md",
-        "line": 231,
+        "line": 242,
         "level": 2,
         "title": "多实例部署"
       }
@@ -7405,7 +7453,7 @@
     "安全建议": [
       {
         "document": "user-guide/deployment.md",
-        "line": 222,
+        "line": 233,
         "level": 2,
         "title": "安全建议"
       }
@@ -7811,7 +7859,7 @@
     "常见问题": [
       {
         "document": "ai-support/README.md",
-        "line": 109,
+        "line": 126,
         "level": 2,
         "title": "常见问题"
       },
@@ -8461,7 +8509,7 @@
     "手动部署（pip）": [
       {
         "document": "user-guide/deployment.md",
-        "line": 153,
+        "line": 164,
         "level": 2,
         "title": "手动部署（pip）"
       }
@@ -8662,22 +8710,6 @@
         "title": "排序、分页"
       }
     ],
-    "接入 Claude Desktop": [
-      {
-        "document": "ai-support/README.md",
-        "line": 77,
-        "level": 3,
-        "title": "接入 Claude Desktop"
-      }
-    ],
-    "接入 Cursor": [
-      {
-        "document": "ai-support/README.md",
-        "line": 93,
-        "level": 3,
-        "title": "接入 Cursor"
-      }
-    ],
     "接收消息": [
       {
         "document": "advanced/http-client.md",
@@ -8716,14 +8748,6 @@
         "line": 214,
         "level": 3,
         "title": "推荐禁用懒加载的场景（lazy_load=False）"
-      }
-    ],
-    "提供的工具": [
-      {
-        "document": "ai-support/README.md",
-        "line": 64,
-        "level": 3,
-        "title": "提供的工具"
       }
     ],
     "插入数据": [
@@ -9094,6 +9118,14 @@
         "title": "方式一：使用 pip 安装"
       }
     ],
+    "方式一：本地进程（推荐）": [
+      {
+        "document": "ai-support/README.md",
+        "line": 75,
+        "level": 3,
+        "title": "方式一：本地进程（推荐）"
+      }
+    ],
     "方式三：使用 ErisPulse-App 客户端（免终端）": [
       {
         "document": "user-guide/installation.md",
@@ -9116,6 +9148,14 @@
         "line": 24,
         "level": 3,
         "title": "方式二：使用 uv 安装（推荐）"
+      }
+    ],
+    "方式二：官方在线端点": [
+      {
+        "document": "ai-support/README.md",
+        "line": 114,
+        "level": 3,
+        "title": "方式二：官方在线端点"
       }
     ],
     "方法列表": [
@@ -9253,7 +9293,7 @@
     "更新与维护": [
       {
         "document": "user-guide/deployment.md",
-        "line": 239,
+        "line": 250,
         "level": 2,
         "title": "更新与维护"
       }
@@ -10725,7 +10765,7 @@
     "生产环境配置": [
       {
         "document": "user-guide/deployment.md",
-        "line": 157,
+        "line": 168,
         "level": 3,
         "title": "生产环境配置"
       }
@@ -10902,6 +10942,14 @@
         "title": "监听者查询（has_handlers）"
       }
     ],
+    "监督者指南": [
+      {
+        "document": "advanced/startup.md",
+        "line": 366,
+        "level": 3,
+        "title": "监督者指南"
+      }
+    ],
     "目录结构": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -10955,7 +11003,7 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 356,
+        "line": 437,
         "level": 2,
         "title": "相关文档"
       },
@@ -12158,6 +12206,14 @@
         "title": "进度监控（OnProgress / OnError）"
       }
     ],
+    "进程监督与硬重启": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 100,
+        "level": 2,
+        "title": "进程监督与硬重启"
+      }
+    ],
     "连接事件": [
       {
         "document": "getting-started/event-handling.md",
@@ -12206,6 +12262,14 @@
         "line": 876,
         "level": 3,
         "title": "连接重试"
+      }
+    ],
+    "退出码 42 契约": [
+      {
+        "document": "advanced/startup.md",
+        "line": 355,
+        "level": 3,
+        "title": "退出码 42 契约"
       }
     ],
     "适用场景": [
