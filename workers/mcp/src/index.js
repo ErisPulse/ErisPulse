@@ -15,7 +15,7 @@
  *  - search_docs(query, top_k?, lang?)  —— BM25 关键词检索官方文档
  *  - read_document(doc_path, lang?)     —— 读取单篇文档完整内容
  *  - list_documents(lang?)              —— 列出所有文档标题与路径
- *  - list_languages()                   —— 列出文档支持的语言
+
  *
  * 暴露的资源（resources，可选）：
  *  - erispulse://docs/{lang}/{path}     —— 单篇文档作为 MCP resource
@@ -39,7 +39,7 @@ const SUPPORTED_LANGS = ["zh-CN", "en", "zh-TW", "ja", "ru"];
 
 const PROTOCOL_VERSION = "2025-03-26"; // Streamable HTTP
 const SERVER_NAME = "erispulse-docs";
-const SERVER_VERSION = "1.0.0";
+const SERVER_VERSION = "1.0.4";
 
 // 访问控制：
 //  - 若环境变量配置了 MCP_TOKEN，则所有请求必须带 Authorization: Bearer <token>
@@ -500,11 +500,6 @@ const TOOL_DEFINITIONS = [
       required: [],
     },
   },
-  {
-    name: "list_languages",
-    description: "列出 ErisPulse 文档支持的所有语言及各语言的文档数量。",
-    inputSchema: { type: "object", properties: {}, required: [] },
-  },
 ];
 
 // ============================================================
@@ -568,39 +563,15 @@ async function toolListDocuments(args) {
     category: d.category,
   }));
   return textContent(
-    `ErisPulse 文档清单（语言：${lang}，共 ${list.length} 篇）：\n\n` +
+    `ErisPulse docs (lang: ${lang}, ${list.length} docs). Supported languages: ${SUPPORTED_LANGS.join(", ")}.\n\n` +
       JSON.stringify(list, null, 2),
   );
-}
-
-async function toolListLanguages() {
-  const url = MAPPING_INDEX_URL;
-  const proxyUrl = DOCS_PROXY_BASE + "_meta/docs-mapping.json";
-  try {
-    const data = await fetchJsonWithFallback(url, proxyUrl);
-    const langs = Object.entries(data.languages || {}).map(([code, info]) => ({
-      code,
-      docs_count: info.docs_count,
-    }));
-    return textContent(
-      "ErisPulse 文档支持的语言：\n\n" + JSON.stringify(langs, null, 2),
-    );
-  } catch (e) {
-    return textContent(
-      JSON.stringify(
-        SUPPORTED_LANGS.map((code) => ({ code, docs_count: "未知" })),
-        null,
-        2,
-      ),
-    );
-  }
 }
 
 const TOOL_HANDLERS = {
   search_docs: toolSearchDocs,
   read_document: toolReadDocument,
   list_documents: toolListDocuments,
-  list_languages: toolListLanguages,
 };
 
 // ============================================================
@@ -654,6 +625,9 @@ async function handleMcpRequest(body) {
           tools: { listChanged: false },
           resources: { listChanged: false },
         },
+        instructions:
+          `Retrieve ErisPulse docs with search_docs/read_document/list_documents. ` +
+          `Supported languages: ${SUPPORTED_LANGS.join(", ")} (default zh-CN).`,
       };
       // 即便无状态，也下发一个 sessionId 以兼容严格客户端
       return {
@@ -796,61 +770,163 @@ async function handleMcpRequest(body) {
 // 7. 人类访问的着陆页（GET /）
 // ============================================================
 
-function landingPage() {
+function pickRequestLang(request, url) {
+  const q = (url && url.searchParams.get("lang")) || "";
+  if (q === "zh") return "zh-CN";
+  if (q === "en") return "en";
+  const header = request.headers.get("Accept-Language") || "";
+  if (/zh/i.test(header)) return "zh-CN";
+  if (/en/i.test(header)) return "en";
+  return "zh-CN";
+}
+
+const LANDING_I18N = {
+  "zh-CN": {
+    title: "ErisPulse MCP Server",
+    tag: "MCP · mcp.erisdev.com",
+    lead: "本端点为 AI 编码助手提供 ErisPulse 官方文档检索能力（MCP Streamable HTTP）。",
+    tools: "支持的 MCP 工具",
+    search: "BM25 关键词检索",
+    read: "读取单篇文档",
+    list: "列出所有文档",
+    client: "在客户端中接入",
+    endpoint: "在客户端配置中填入上面的 url：",
+    docs: "开源仓库",
+    source: "github.com/ErisPulse/ErisPulse",
+  },
+  en: {
+    title: "ErisPulse MCP Server",
+    tag: "MCP · mcp.erisdev.com",
+    lead: "This endpoint gives AI coding assistants MCP Streamable HTTP access to ErisPulse docs.",
+    tools: "MCP tools",
+    search: "BM25 keyword search",
+    read: "read a single doc",
+    list: "list all docs",
+    client: "Client configuration",
+    endpoint: "Set the url above in your client:",
+    docs: "Source",
+    source: "github.com/ErisPulse/ErisPulse",
+  },
+};
+
+function landingPage(lang) {
+  const t = LANDING_I18N[lang] || LANDING_I18N["zh-CN"];
   const html = `<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="${lang || "zh-CN"}">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>ErisPulse MCP Server</title>
+<title>${t.title}</title>
 <style>
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:760px;margin:40px auto;padding:0 20px;color:#222;line-height:1.6}
-  code,pre{background:#f5f5f7;padding:2px 6px;border-radius:4px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:0.9em}
-  pre{padding:16px;overflow-x:auto}
-  h1{margin-bottom:8px}
-  .tag{display:inline-block;background:#6366f1;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;margin-left:8px;vertical-align:middle}
-  a{color:#6366f1}
+  :root {
+    --bg: #f4f6fb; --bg-deep: #eceff6; --card: #ffffff;
+    --ink: #1f2937; --ink-soft: #64748b; --ink-faint: #9aa6b8; --line: #e8edf5;
+    --accent: #64748b; --accent-glow: rgba(100,116,139,0.10); --danger: #ef4444;
+    --radius: 14px; --shadow: 0 1px 2px rgba(16,24,40,0.03), 0 4px 20px rgba(16,24,40,0.04);
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font-sans); background: var(--bg); color: var(--ink); min-height: 100vh; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .container { max-width: 860px; margin: 0 auto; padding: 32px 24px 64px; }
+  .crumbs { color: var(--ink-faint); font-size: 13px; margin-bottom: 6px; }
+  h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
+  .sub { color: var(--ink-soft); font-size: 15px; margin-top: 6px; }
+  .badges { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .chip { padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; background: var(--bg-deep); color: var(--ink-soft); border: 1px solid var(--line); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; transition: box-shadow 0.2s, transform 0.2s; }
+  .card:hover { box-shadow: 0 6px 28px rgba(16,24,40,0.06); transform: translateY(-2px); }
+  .card.wide { grid-column: 1 / -1; }
+  .card-head { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; margin-bottom: 18px; }
+  .card-head svg { width: 19px; height: 19px; }
+  .cmd-wrapper { position: relative; background: var(--bg-deep); border-radius: 12px; overflow: hidden; }
+  .cmd-label { padding: 8px 16px; font-size: 12px; color: var(--ink-soft); border-bottom: 1px solid var(--line); background: rgba(0,0,0,0.02); }
+  .cmd-content { padding: 14px 16px; font-family: var(--font-mono); font-size: 13px; color: var(--ink); display: flex; align-items: center; justify-content: space-between; gap: 12px; overflow-x: auto; }
+  .cmd-text { flex: 1; word-break: break-all; }
+  .btn { background: var(--accent); color: #fff; border: none; padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .btn:hover { opacity: 0.9; }
+  .steps { list-style: none; counter-reset: s; }
+  .steps li { position: relative; padding-left: 32px; margin-bottom: 12px; color: var(--ink-soft); font-size: 14px; }
+  .steps li:last-child { margin-bottom: 0; }
+  .steps li::before { counter-increment: s; content: counter(s); position: absolute; left: 0; top: 0; width: 22px; height: 22px; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--accent); }
+  .steps code { font-family: var(--font-mono); color: var(--ink); background: var(--bg-deep); padding: 1px 5px; border-radius: 4px; }
+  .links-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .link-item { display: flex; align-items: center; justify-content: center; padding: 12px; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; color: var(--ink-soft); text-decoration: none; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+  .link-item:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+  .foot { margin-top: 36px; text-align: center; color: var(--ink-faint); font-size: 13px; }
+  .lang-switch { display: inline-flex; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; margin-bottom: 12px; }
+  .lang-btn { padding: 6px 16px; font-size: 12px; background: transparent; border: none; color: var(--ink-soft); cursor: pointer; }
+  .lang-btn.active { background: var(--accent); color: #fff; }
+  a { color: var(--accent); text-decoration: none; }
+  @media (max-width: 640px) { .container { padding: 20px 14px 40px; } .grid { grid-template-columns: 1fr; } .cmd-content { flex-direction: column; align-items: stretch; gap: 10px; } .btn { width: 100%; } }
 </style>
 </head>
 <body>
-<h1>ErisPulse MCP Server <span class="tag">mcp.erisdev.com</span></h1>
-<p>本端点为 AI 编码助手提供 ErisPulse 官方文档检索能力（MCP Streamable HTTP）。</p>
+<div class="container">
+  <div class="crumbs">ErisPulse / MCP</div>
+  <h1>${t.title}</h1>
+  <div class="sub">${t.lead}</div>
+  <div class="badges">
+    <span class="chip">MCP</span><span class="chip">Streamable HTTP</span><span class="chip">mcp.erisdev.com</span>
+  </div>
 
-<h2>支持的 MCP 工具</h2>
-<ul>
-  <li><code>search_docs(query, top_k?, lang?)</code> — BM25 关键词检索</li>
-  <li><code>read_document(doc_path, lang?)</code> — 读取单篇文档</li>
-  <li><code>list_documents(lang?)</code> — 列出所有文档</li>
-  <li><code>list_languages()</code> — 列出支持的语言</li>
-</ul>
+  <div class="grid">
+    <div class="card wide">
+      <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>${t.client}</div>
+      <div class="cmd-wrapper">
+        <div class="cmd-label">mcpServers</div>
+        <div class="cmd-content">
+          <span class="cmd-text">{ "mcpServers": { "erispulse": { "url": "https://mcp.erisdev.com/" } } }</span>
+          <button class="btn" onclick="copyCmd(this)">复制</button>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:12px;font-size:13px;color:var(--ink-soft)">${t.endpoint}</p>
+    </div>
 
-<h2>在客户端中接入</h2>
-<p>Claude Desktop（<code>claude_desktop_config.json</code>）：</p>
-<pre>{
-  "mcpServers": {
-    "erispulse": {
-      "url": "https://mcp.erisdev.com/"
-    }
-  }
-}</pre>
+    <div class="card">
+      <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>${t.tools}</div>
+      <ol class="steps">
+        <li><code>search_docs(query, top_k?, lang?)</code> — ${t.search}</li>
+        <li><code>read_document(doc_path, lang?)</code> — ${t.read}</li>
+        <li><code>list_documents(lang?)</code> — ${t.list}</li>
+      </ol>
+    </div>
 
-<p>Cursor / 通用 MCP 客户端：</p>
-<pre>{
-  "mcpServers": {
-    "erispulse": {
-      "url": "https://mcp.erisdev.com/"
-    }
-  }
-}</pre>
+    <div class="card">
+      <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>${t.docs}</div>
+      <div class="links-grid">
+        <a href="https://github.com/ErisPulse/ErisPulse" target="_blank" class="link-item">GitHub</a>
+        <a href="https://www.erisdev.com" target="_blank" class="link-item">官网</a>
+        <a href="https://github.com/ErisPulse/ErisPulse/tree/Develop/v2/workers/mcp" target="_blank" class="link-item">源码</a>
+      </div>
+    </div>
+  </div>
 
-<p>直接发送 JSON-RPC 请求测试：</p>
-<pre>curl -X POST https://mcp.erisdev.com/ \\
-  -H "Content-Type: application/json" \\
-  -H "Accept: application/json, text/event-stream" \\
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'</pre>
-
-<h2>文档源</h2>
-<p><a href="https://github.com/ErisPulse/ErisPulse/tree/Develop/v2/docs">github.com/ErisPulse/ErisPulse · Develop/v2/docs</a></p>
+  <div class="foot">
+    <div class="lang-switch">
+      <button class="lang-btn ${lang === "en" ? "active" : ""}" onclick="switchLang('en')">English</button>
+      <button class="lang-btn ${lang !== "en" ? "active" : ""}" onclick="switchLang('zh')">中文</button>
+    </div>
+      </div>
+</div>
+<script>
+function copyCmd(btn) {
+  const t = btn.closest('.cmd-wrapper').querySelector('.cmd-text').innerText.trim();
+  navigator.clipboard.writeText(t).then(() => {
+    const zh = document.documentElement.lang !== 'en';
+    const orig = btn.innerText;
+    btn.innerText = zh ? '已复制!' : 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerText = orig; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {});
+}
+function switchLang(lang) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('lang', lang);
+  window.location.href = url.toString();
+}
+</script>
 </body>
 </html>`;
   return new Response(html, {
@@ -875,7 +951,7 @@ export default {
     // GET 着陆页 / 健康检查：不受鉴权/限流约束
     if (method === "GET") {
       if (url.pathname === "/" || url.pathname === "/health") {
-        return landingPage();
+        return landingPage(pickRequestLang(request, url));
       }
       return new Response("Not Found", { status: 404 });
     }
