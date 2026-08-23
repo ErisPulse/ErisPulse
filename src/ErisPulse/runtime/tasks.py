@@ -19,8 +19,8 @@ import threading
 from collections.abc import Awaitable, Coroutine
 from typing import Any, TypeVar
 
-from .context import current_owner
 from ..Core.constants import DEFAULT_OWNER_CANCEL_TIMEOUT_SECS
+from .context import current_owner
 
 _T = TypeVar("_T")
 
@@ -114,6 +114,12 @@ async def cancel_owner_tasks(owner: str | None, *, timeout: float = DEFAULT_OWNE
     中未自行取消的任务，防止任务持有实例引用导致模块无法被回收
     （热重载泄漏的常见根因）。
 
+    正在执行本取消逻辑的任务自身会被**排除**：``uninit()`` 的兜底取消
+    由 ``_do_hard_restart`` 等任务驱动，若把当前任务也取消，Python 3.13
+    的取消传播会沿其正在等待的 ``gather`` 结构回环（当前任务 -> gather
+    -> 再取消当前任务），触发 ``RecursionError`` 且后续清理（如
+    ``os._exit``）永远无法执行。
+
     :param owner: 资源归属者（模块名/适配器平台名）
     :param timeout: 等待任务回收的超时秒数，超时后不再阻塞
     :return: 发起取消的任务数
@@ -122,7 +128,12 @@ async def cancel_owner_tasks(owner: str | None, *, timeout: float = DEFAULT_OWNE
     if not tasks:
         return 0
 
-    pending: list[Any] = [t for t in tasks if not t.done()]
+    # 防自取消：排除当前正在执行取消逻辑的任务（见 docstring——
+    # 取消自身会经 gather 取消传播形成递归环，RecursionError 后续清理全部中断）
+    current = asyncio.current_task()
+    pending: list[Any] = [
+        t for t in tasks if not t.done() and t is not current
+    ]
     cancelled = 0
     for task in pending:
         try:

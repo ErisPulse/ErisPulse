@@ -23,6 +23,11 @@ StorageManager 等单例）。因此 CLI 需要的常量在此独立维护，**�
 # 镜像于: ErisPulse.Core.constants.HARD_RESTART_EXIT_CODE
 HARD_RESTART_EXIT_CODE: int = 42
 
+# 监督者标记环境变量名。
+# CLI run 命令启动子进程时注入；SDK 据此判断是否被监督（决定硬重启是否会被拉起）。
+# 镜像于: ErisPulse.Core.constants.ENV_SUPERVISED
+ENV_SUPERVISED: str = "ERISPULSE_SUPERVISED"
+
 # 模块入口点组名（loader / finder / create / types 共用）。
 # 镜像于: ErisPulse.Core.constants.MODULE_ENTRY_POINT_GROUP
 MODULE_ENTRY_POINT_GROUP: str = "erispulse.module"
@@ -40,6 +45,7 @@ PYPI_PACKAGE_JSON_URL_TEMPLATE: str = "https://pypi.org/pypi/{package}/json"
 
 __all__ = [
     "ADAPTER_ENTRY_POINT_GROUP",
+    "ENV_SUPERVISED",
     "HARD_RESTART_EXIT_CODE",
     "MODULE_ENTRY_POINT_GROUP",
     "PYPI_PACKAGE_JSON_URL_TEMPLATE",
