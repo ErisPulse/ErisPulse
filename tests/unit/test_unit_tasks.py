@@ -151,3 +151,81 @@ class TestGcWithWeakref:
         await asyncio.sleep(0.05)
         gc.collect()
         assert ref() is None, "实例应在任务取消后被回收"
+
+
+# ==================== 取消自保护测试（RecursionError 回归） ====================
+
+
+class TestCancelSelfProtection:
+    """取消逻辑不得取消正在执行取消的任务自身（Python 3.13 取消传播递归环）"""
+
+    async def test_current_task_not_cancelled_by_cancel_owner(self):
+        """当前任务在 owner 集合内时不被取消（计数不含自身，任务存活）"""
+        from ErisPulse.runtime.tasks import spawn_background
+
+        survivor_flag = {"done": False}
+
+        async def canceller():
+            # canceller 自身经 spawn_background 注册（owner=None，同当前任务）
+            spawn_background(asyncio.sleep(100))  # 伴生任务，应被取消
+            cancelled = await cancel_owner_tasks(None)
+            survivor_flag["done"] = True
+            return cancelled
+
+        task = asyncio.get_event_loop().create_task(canceller())
+        await asyncio.sleep(0.2)
+
+        assert survivor_flag["done"] is True, "取消逻辑不应中断当前任务"
+        assert not task.cancelled(), "当前任务不应被取消"
+        # 伴生任务被取消
+        assert await task == 1
+
+    async def test_hard_restart_scenario_no_recursion(self):
+        """端到端回归：hard_restart 式任务内调用全局取消，自身存活到收尾"""
+        from ErisPulse.runtime.tasks import cancel_all_background_tasks, spawn_background
+
+        progress = {"uninit_done": False, "exit_code": None}
+
+        async def _do_hard_restart_like():
+            # 模拟 _do_hard_restart：spawn_background 驱动，内部做全局兜底取消
+            await asyncio.sleep(0.05)
+            spawn_background(asyncio.sleep(100))  # 悬挂任务
+            try:
+                await asyncio.wait_for(
+                    cancel_all_background_tasks(), timeout=5.0
+                )
+            except Exception as e:
+                progress["exit_code"] = f"exception: {e!r}"
+                return
+            progress["uninit_done"] = True
+            progress["exit_code"] = 42  # 模拟 os._exit(42) 前的最后一步
+
+        driver = spawn_background(_do_hard_restart_like())
+        await asyncio.sleep(0.3)
+
+        assert progress["uninit_done"] is True, "uninit 阶段不应被自身取消中断"
+        assert progress["exit_code"] == 42, "应存活到 os._exit 前一步"
+        assert driver.done() and not driver.cancelled()
+
+    async def test_nested_gather_no_recursion_loop(self):
+        """当前任务 await gather（含其他被取消任务）时不形成取消传播环"""
+        from ErisPulse.runtime.tasks import spawn_background
+
+        async def child():
+            await asyncio.sleep(100)
+
+        async def parent():
+            c = spawn_background(child())
+            try:
+                # parent 取消 owner 名下任务（含 c），gather 等待 c 回收
+                await asyncio.gather(
+                    cancel_owner_tasks(None),
+                    asyncio.sleep(0.05),
+                )
+            except asyncio.CancelledError:
+                return "cancelled"
+            return "ok"
+
+        t = asyncio.get_event_loop().create_task(parent())
+        result = await asyncio.wait_for(t, timeout=3)
+        assert result == "ok", "不应被取消或递归卡死"

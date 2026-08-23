@@ -165,6 +165,28 @@ class AdapterManager(ManagerBase):
         except Exception as e:
             logger.trace(i18n.t("core.adapter.config_hook_register_failed", error=e))
 
+    @staticmethod
+    def _shutdown_timeout() -> float:
+        """
+        {!--< internal-use >!--}
+        读取适配器 shutdown 优雅收尾的超时（秒）
+
+        复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算）；
+        未配置或非法时回退常量默认值。
+
+        :return: 超时秒数（>0）
+        """
+        from ..runtime import get_framework_config
+        from .constants import DEFAULT_UNINIT_TIMEOUT_SECS
+
+        try:
+            value = get_framework_config().get("uninit_timeout")
+            if isinstance(value, (int, float)) and value > 0:
+                return float(value)
+        except Exception:
+            pass
+        return float(DEFAULT_UNINIT_TIMEOUT_SECS)
+
     def set_sdk_ref(self, sdk) -> bool:
         """
         设置 SDK 引用
@@ -806,7 +828,10 @@ class AdapterManager(ManagerBase):
                             )
 
                     try:
-                        await adapter_instance.shutdown()
+                        await asyncio.wait_for(
+                            adapter_instance.shutdown(),
+                            timeout=self._shutdown_timeout(),
+                        )
                         self._started_instances.remove(adapter_instance)
 
                         # 提交适配器状态变化事件（stopped）
@@ -819,7 +844,31 @@ class AdapterManager(ManagerBase):
                                     ),
                                     data={"platform": p, "status": ADAPTER_STATUS_STOPPED},
                                 )
+                    except asyncio.TimeoutError:
+                        # shutdown 超时：强杀语义——不再视为已启动，进入停止失败路径
+                        self._started_instances.discard(adapter_instance)
+                        logger.warning(
+                            i18n.t(
+                                "core.adapter.shutdown_timeout",
+                                platform=", ".join(instance_platforms),
+                                timeout=self._shutdown_timeout(),
+                            )
+                        )
+                        for p in instance_platforms:
+                            if p in platforms:
+                                await lifecycle.submit_event(
+                                    "adapter.status.change",
+                                    msg=i18n.t(
+                                        "core.adapter.state_stop_failed", platform=p
+                                    ),
+                                    data={
+                                        "platform": p,
+                                        "status": ADAPTER_STATUS_STOP_FAILED,
+                                        "error": "shutdown timeout",
+                                    },
+                                )
                     except Exception as e:
+                        self._started_instances.discard(adapter_instance)
                         logger.error(
                             i18n.t(
                                 "core.adapter.stop_failed",
@@ -893,7 +942,8 @@ class AdapterManager(ManagerBase):
         场景均经此入口，保证适配器一旦停止、归属资源必被回收，无需调用方再补清理。
 
         对未注册的平台直接返回；``shutdown()`` 与清理均幂等，半途失败的重试场景
-        也能正确回收 start() 期间已注册的资源。
+        也能正确回收 start() 期间已注册的资源。``shutdown()`` 带优雅收尾超时
+        （``unload_timeout``），卡死时强制进入清理，避免阻塞重启/关闭链路。
 
         :param platform: 平台名称
         {!--< /internal-use >!--}
@@ -904,7 +954,18 @@ class AdapterManager(ManagerBase):
 
         # 调用适配器自身 shutdown（未启动/半途失败的重试场景也需清理部分状态）
         try:
-            await adapter_instance.shutdown()
+            await asyncio.wait_for(
+                adapter_instance.shutdown(),
+                timeout=self._shutdown_timeout(),
+            )
+        except asyncio.TimeoutError:
+            logger.warning(
+                i18n.t(
+                    "core.adapter.shutdown_timeout",
+                    platform=platform,
+                    timeout=self._shutdown_timeout(),
+                )
+            )
         except Exception as e:
             logger.error(
                 i18n.t("core.adapter.stop_adapter_failed", platform=platform, error=e)

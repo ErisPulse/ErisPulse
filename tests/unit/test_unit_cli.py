@@ -466,6 +466,62 @@ class TestCreateTemplatesCompile:
         assert "I18nKeys" not in imported
 
 
+# ==================== 完整配置示例（config.full.example） ====================
+
+
+class TestFullExampleConfig:
+    """验证 init 生成的完整配置示例是合法 TOML 且覆盖框架关键配置"""
+
+    @staticmethod
+    def _example():
+        import tomllib
+
+        from ErisPulse.CLI.commands.init import InitCommand
+
+        text = InitCommand._get_full_example_config()
+        return text, tomllib.loads(text)
+
+    def test_example_is_valid_toml(self):
+        """生成的示例必须是可解析的 TOML"""
+        _, data = self._example()
+        assert "ErisPulse" in data
+
+    def test_framework_section_covers_key_config(self):
+        """framework 段包含懒加载/插件目录/超时/严格模式/并发/主动GC"""
+        _, data = self._example()
+        f = data["ErisPulse"]["framework"]
+        for key in [
+            "enable_lazy_loading",
+            "plugins_dir",
+            "uninit_timeout",
+            "strict_mode",
+            "strict_mode_exceptions",
+            "handler_max_concurrency",
+            "proactive_gc_interval",
+            "offline_bot_expiry",
+        ]:
+            assert key in f, f"framework 配置缺少 {key}"
+        assert f["strict_mode_exceptions"] == {"modules": [], "adapters": []}
+
+    def test_uninit_timeout_documented(self):
+        """uninit_timeout 出现在示例中（优雅收尾超时）"""
+        text, data = self._example()
+        assert "uninit_timeout" in text
+        assert data["ErisPulse"]["framework"]["uninit_timeout"] == 30
+
+    def test_no_invalid_toml_literals(self):
+        """示例中不残留 TOML 非法字面量（如 null）"""
+        text, _ = self._example()
+        assert "= null" not in text
+
+    def test_ssl_defaults_to_config_ssl_dir(self):
+        """SSL 证书默认放 config/ssl/（相对路径跟随项目运行目录）"""
+        _, data = self._example()
+        server = data["ErisPulse"]["server"]
+        assert server["ssl_certfile"] == "config/ssl/cert.pem"
+        assert server["ssl_keyfile"] == "config/ssl/key.pem"
+
+
 # ==================== 跨进程契约常量 ====================
 
 
@@ -496,6 +552,13 @@ class TestCrossProcessContracts:
 
         assert CLI_MODULE == CORE_MODULE == "erispulse.module"
         assert CLI_ADAPTER == CORE_ADAPTER == "erispulse.adapter"
+
+    def test_env_supervised_is_shared(self):
+        """监督者标记环境变量：CLI run 注入 与 SDK 检测必须一致"""
+        from ErisPulse.CLI.constants import ENV_SUPERVISED as CLI_ENV
+        from ErisPulse.Core.constants import ENV_SUPERVISED as CORE_ENV
+
+        assert CLI_ENV == CORE_ENV == "ERISPULSE_SUPERVISED"
 
 
 # ==================== 运行器子进程清理 ====================

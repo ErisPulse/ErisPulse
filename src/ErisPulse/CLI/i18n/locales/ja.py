@@ -279,6 +279,7 @@ TRANSLATIONS = {
     "cli.run.file_changed_restart": "ファイル変更を検出 ([cmd]{file}[/])、再起動中...",
     "cli.run.process_exited": "プロセスが正常に終了しました。ファイルの変更を待機して再起動",
     "cli.run.process_crashed": "プロセスが異常終了しました（終了コード {code}）。修正して保存すると自動再起動",
+    "cli.run.process_exited": "子プロセスが正常終了しました、再起動しません",
     "cli.run.subprocess_crashed_retry": "サブプロセスが異常終了しました。{seconds} 秒後に自動再試行します...",
     "cli.run.terminating_child": "ポートなどのリソースを解放するため、ボットの子プロセスを終了しています...",
     # ==================== uninstall コマンド ====================

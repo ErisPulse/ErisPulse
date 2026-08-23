@@ -279,6 +279,7 @@ TRANSLATIONS = {
     "cli.run.file_changed_restart": "File change detected ([cmd]{file}[/]), restarting...",
     "cli.run.process_exited": "Process exited normally, waiting for file changes to restart",
     "cli.run.process_crashed": "Process crashed (exit code {code}), fix and save to restart",
+    "cli.run.process_exited": "Child process exited normally, not respawning",
     "cli.run.subprocess_crashed_retry": "Subprocess crashed, will auto-retry in {seconds}s...",
     "cli.run.terminating_child": "Terminating the bot subprocess to release ports and resources...",
     # ==================== uninstall command ====================

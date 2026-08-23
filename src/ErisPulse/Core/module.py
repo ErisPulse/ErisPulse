@@ -84,6 +84,28 @@ class ModuleManager(ManagerBase):
                 return True
         return False
 
+    @staticmethod
+    def _unload_timeout() -> float:
+        """
+        {!--< internal-use >!--}
+        读取模块 on_unload 优雅收尾的超时（秒）
+
+        复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算，
+        整体仍有 uninit 的 wait_for 兜底）；未配置或非法时回退常量默认值。
+
+        :return: 超时秒数（>0）
+        """
+        from ..runtime import get_framework_config
+        from .constants import DEFAULT_UNINIT_TIMEOUT_SECS
+
+        try:
+            value = get_framework_config().get("uninit_timeout")
+            if isinstance(value, (int, float)) and value > 0:
+                return float(value)
+        except Exception:
+            pass
+        return float(DEFAULT_UNINIT_TIMEOUT_SECS)
+
     def __init__(self):
         # 模块存储
         self._modules: dict[str, Any] = {}  # 已加载的模块实例
@@ -627,13 +649,28 @@ class ModuleManager(ManagerBase):
             return True
 
         try:
+            import asyncio
+
+            unload_timeout = self._unload_timeout()
             instance = self._modules.get(module_name)
             if instance and hasattr(instance, "on_unload"):
                 try:
                     if inspect.iscoroutinefunction(instance.on_unload):
-                        await instance.on_unload({"module_name": module_name})
+                        # 优雅收尾超时保护：on_unload 卡死不再阻塞卸载/级联/重载/uninit
+                        await asyncio.wait_for(
+                            instance.on_unload({"module_name": module_name}),
+                            timeout=unload_timeout,
+                        )
                     else:
                         instance.on_unload({"module_name": module_name})
+                except asyncio.TimeoutError:
+                    logger.warning(
+                        i18n.t(
+                            "core.module.on_unload_timeout",
+                            name=module_name,
+                            timeout=unload_timeout,
+                        )
+                    )
                 except Exception as e:
                     logger.error(
                         i18n.t(
@@ -1104,8 +1141,22 @@ class ModuleManager(ManagerBase):
 
                 async def _unload_then_cancel_tasks() -> None:
                     """异步 on_unload：完成后兜底取消（与 unload 时序一致）"""
+                    import asyncio
+
+                    unload_timeout = self._unload_timeout()
                     try:
-                        await instance.on_unload({"module_name": module_name})
+                        await asyncio.wait_for(
+                            instance.on_unload({"module_name": module_name}),
+                            timeout=unload_timeout,
+                        )
+                    except asyncio.TimeoutError:
+                        logger.warning(
+                            i18n.t(
+                                "core.module.on_unload_timeout",
+                                name=module_name,
+                                timeout=unload_timeout,
+                            )
+                        )
                     except Exception as e:
                         logger.error(
                             i18n.t(

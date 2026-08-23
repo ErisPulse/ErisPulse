@@ -279,6 +279,7 @@ TRANSLATIONS = {
     "cli.run.file_changed_restart": "檢測到檔案變更 ([cmd]{file}[/])，正在重啟...",
     "cli.run.process_exited": "程式已正常退出，等待檔案變更後重啟",
     "cli.run.process_crashed": "程式異常退出（退出碼 {code}），修復後儲存檔案將自動重啟",
+    "cli.run.process_exited": "子程序正常退出，不再拉起",
     "cli.run.subprocess_crashed_retry": "子程序異常終止，將在 {seconds} 秒後自動重試...",
     "cli.run.terminating_child": "正在終止機器人子程序，釋放連接埠等資源...",
     # ==================== uninstall 命令 ====================
