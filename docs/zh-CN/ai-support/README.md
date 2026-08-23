@@ -59,11 +59,9 @@ ErisPulse 提供两种互补的 AI 辅助开发方式，让 AI 能基于最新�
 
 ## MCP 服务器
 
-ErisPulse 提供官方 **MCP（Model Context Protocol）服务器**，部署在 [`mcp.erisdev.com`](https://mcp.erisdev.com/)。接入支持 MCP 的 AI 编码助手（Claude Desktop、Cursor 等）后，AI 就能在你写代码时**直接检索、查阅 ErisPulse 官方文档**，而不需要手动粘贴。
+ErisPulse 提供一个文档检索 MCP Server，让 AI 编码助手（支持 MCP 的均可）在你写代码时直接检索、查阅 ErisPulse 官方文档。
 
-### 提供的工具
-
-接入后，AI 会获得以下工具：
+接入方式有两种：**本地进程（推荐）**或**官方在线端点**。工具集一致：
 
 | 工具 | 参数 | 说明 |
 |------|------|------|
@@ -74,37 +72,56 @@ ErisPulse 提供官方 **MCP（Model Context Protocol）服务器**，部署在 
 
 支持语言：`zh-CN` / `en` / `zh-TW` / `ja` / `ru`。检索技巧：用**多个关键词**而不是整句，例如 `命令注册 事件监听` 比 `怎么注册一个命令` 更好。
 
-### 接入 Claude Desktop
+### 方式一：本地进程（推荐）
 
-编辑配置文件（macOS：`~/Library/Application Support/Claude/claude_desktop_config.json`；Windows：`%APPDATA%\Claude\claude_desktop_config.json`）：
+安装后直接本地启动：
+
+```bash
+npm i -g @erisdev/mcp-server   # 全局安装 → 出现 epsdk-mcp 命令
+epsdk-mcp --server               # 启动 MCP 服务；首次运行自动拉取文档到 ~/.cache/erispulse-mcp/docs
+```
+
+不全局安装也可通过 `npx` 直跑（免装）：
+
+```bash
+npx @erisdev/mcp-server --server
+```
+
+有本地文档目录时指定它（不联网）：
+
+```bash
+ERISPULSE_DOCS_DIR=/path/to/erispulse/docs epsdk-mcp --server
+```
+
+在 MCP 客户端中按 **stdio 传输**配置，标准键值（`command` + `args` 指向上面的启动方式；具体配置位置与格式见各客户端自己的 MCP 接入文档）：
 
 ```json
 {
-  "mcpServers": {
-    "erispulse": {
-      "url": "https://mcp.erisdev.com/"
-    }
-  }
+  "command": "epsdk-mcp",
+  "args": ["--server"]
 }
 ```
 
-> 需要 Claude Desktop 0.85+。旧版本可通过 `mcp-remote` 桥接：`{ "command": "npx", "args": ["mcp-remote", "https://mcp.erisdev.com/"] }`。
-
-### 接入 Cursor
-
-编辑 `~/.cursor/mcp.json`（全局）或项目内 `.cursor/mcp.json`：
+或
 
 ```json
 {
-  "mcpServers": {
-    "erispulse": {
-      "url": "https://mcp.erisdev.com/"
-    }
-  }
+  "command": "npx",
+  "args": ["@erisdev/mcp-server", "--server"]
 }
 ```
 
-服务默认公开，无需 Token。为防滥用有 IP 限流（每 IP 每分钟 60 次）。Worker 源码在本库 workers 文件夹下，支持自部署。
+### 方式二：官方在线端点
+
+不想本地起进程时，连官方托管的 [`mcp.erisdev.com`](https://mcp.erisdev.com/)。MCP 客户端按 **HTTP 传输**配置：
+
+```json
+{
+  "url": "https://mcp.erisdev.com/"
+}
+```
+
+服务默认公开、无需 Token，有 IP 限流（每 IP 每分钟 60 次）。官方端点可随时停用，**生产工作流建议用方式一（本地进程）或自托管**。
 
 ## 常见问题
 
@@ -112,7 +129,7 @@ ErisPulse 提供官方 **MCP（Model Context Protocol）服务器**，部署在 
 检查是否提供了完整文档；在需求中补充更多细节（输入输出示例、边界条件）；让 AI 分步生成（先骨架再补功能）；参考 [examples/](../../examples/) 目录示例作为补充上下文。
 
 **MCP 接入后 AI 没调用 `search_docs`？**
-确认客户端加载了该 server（Claude Desktop 重启后右下角应有图标）；部分客户端需要在 prompt 里显式提示「使用 ErisPulse 文档工具查证 API」。
+确认客户端加载了该 server（**重启客户端后可看到工具已生效**）；部分客户端需要在 prompt 里显式提示「使用 ErisPulse 文档工具查证 API」。
 
 ## 下一步
 
