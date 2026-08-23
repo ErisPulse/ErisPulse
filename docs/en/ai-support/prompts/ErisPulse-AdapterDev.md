@@ -54,49 +54,49 @@ The following diagram illustrates the core modules of the SDK and their relation
 
 ```mermaid
 graph TB
-    SDK["sdk<br/>Unified Entry Point"]
+    SDK["sdk<br/>Unified entry point"]
 
-    SDK --> Event["Event<br/>Event System"]
-    SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
-    SDK --> Logger["Logger<br/>Log Management"]
-    SDK --> Storage["Storage / env<br/>Storage Management"]
-    SDK --> Config["Config<br/>Configuration Management"]
-    SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
-    SDK --> ModuleMgr["Module<br/>Module Management"]
-    SDK --> Router["Router<br/>Routing Management"]
-    SDK --> Client["HttpClient<br/>HTTP Client"]
+    SDK --> Event["Event<br/>Event system"]
+    SDK --> Lifecycle["Lifecycle<br/>Lifecycle management"]
+    SDK --> Logger["Logger<br/>Log management"]
+    SDK --> Storage["Storage / env<br/>Storage management"]
+    SDK --> Config["Config<br/>Configuration management"]
+    SDK --> AdapterMgr["Adapter<br/>Adapter management"]
+    SDK --> ModuleMgr["Module<br/>Module management"]
+    SDK --> Router["Router<br/>Routing management"]
+    SDK --> Client["Client<br/>HTTP client"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
-    Event --> Conversation["Conversation<br/>Branch + Persistence"]
+    Event --> Conversation["Conversation<br/>Branch + persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["CloudLake"]
+    BaseAdapter --> P1["Yunhu"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
 
     ModuleMgr --> BaseModule["BaseModule"]
-    BaseModule --> CM["Custom Module"]
+    BaseModule --> CM["Custom module"]
 
-    BaseAdapter -.-> SendDSL["SendDSL<br/>Message Sending"]
+    BaseAdapter -.-> SendDSL["SendDSL<br/>Message sending"]
 ```
 
 ### Core Module Descriptions
 
 | Module | Description |
-|--------|-------------|
-| **Event** | Event system providing handling for five event types: command / message / notice / request / meta, as well as Conversation for multi-turn dialogue |
-| **Adapter** | Adapter manager responsible for registering, starting, and shutting down adapters for multiple platforms |
-| **Module** | Module manager responsible for registering, loading, and unloading plugins, supporting dependency declaration and topological sorting |
-| **Lifecycle** | Lifecycle manager providing event-driven lifecycle hooks |
-| **Storage** | Key-value storage system based on SQLite, supporting generic SQL chainable queries |
+|------|------|
+| **Event** | Event system, providing five types of event handling: command / message / notice / request / meta, as well as Conversation for multi-turn dialogues |
+| **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
+| **Module** | Module manager, managing plugin registration, loading, and unloading, supporting dependency declaration and topological sorting |
+| **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
+| **Storage** | Key-value storage system based on SQLite, supporting general SQL chained queries |
 | **Config** | Configuration file management in TOML format |
-| **Logger** | Modular logging system supporting sub-loggers |
-| **Router** | HTTP/WebSocket routing management, abstracting the underlying backend (currently FastAPI + Uvicorn), supporting decorator-based routing, middleware, grouping, rate limiting, CORS |
-| **HttpClient** | Unified HTTP/WS client abstracting the underlying request library (currently aiohttp), providing request statistics, retry logic, logging, WebSocket client, and ErisPulse exception handling. The client and server WebSocket share the `WebSocketConnectionBase` base class |
+| **Logger** | Modular logging system, supporting sub-loggers |
+| **Router** | HTTP/WebSocket routing management, abstracting the underlying backend (currently FastAPI + Uvicorn), supporting decorator routing, middleware, grouping, rate limiting, CORS |
+| **Client** | Unified HTTP/WS client (pre-2.8.0 was `HttpClient`, compatible alias retained), abstracting the underlying request library (currently aiohttp), providing request statistics, retry, logging, WebSocket client, ErisPulse exception system, etc. The WebSocket client and server share the `WebSocketConnectionBase` base class |
 
 ## Initialization Process
 
@@ -7274,20 +7274,36 @@ The returned structure contains the status of the following subsystems:
 
 # Network Client
 
-ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must prioritize** using this client instead of directly importing third-party libraries such as `aiohttp`, `httpx`, or `requests`.
+ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must prioritize** using this client over importing third-party libraries such as `aiohttp`, `httpx`, or `requests` directly.
+
+Please directly return the complete translated Markdown content, without any additional text.
+
+Once again, if the document contains language switch lines (with language names separated by `` | ``), strictly adhere to the format requirements in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
+
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., links in the form of `README.xx.md`), keep them unchanged
+   - This ensures that links point to the correct language version of the document
 
 ## Overview
 
 The main features of the network client are:
 
-- **Unified interface**: Provides `get` / `post` / `put` / `delete` / `patch` / `request` methods
-- **WebSocket client**: Establishes a client WebSocket connection via `ws_connect`
-- **Automatic logging**: All requests are automatically logged and tracked for statistics
-- **Lifecycle integration**: Each request triggers the `client.request` lifecycle event, and WebSocket connections trigger the `client.ws.connect` event
-- **Retry support**: Configurable automatic retry count and interval
-- **Timeout control**: Independent connection timeout and request timeout
-- **Connection pool reuse**: Connection pool management based on aiohttp.ClientSession
-- **Exception system**: aiohttp exceptions are automatically converted to ErisPulse exceptions (ClientError system)
+- **Unified Interface**: Provides `get` / `post` / `put` / `delete` / `patch` / `request` methods
+- **WebSocket Client**: Establishes a client WebSocket connection via `ws_connect`
+- **Automatic Logging**: All requests are automatically logged and statistics are recorded
+- **Lifecycle Integration**: Each request triggers the `client.request` lifecycle event, and WS connections trigger the `client.ws.connect` event
+- **Retry Support**: Configurable automatic retry count and interval
+- **Timeout Control**: Independent connection timeout and request timeout
+- **Connection Pool Reuse**: Connection pool management based on aiohttp.ClientSession
+- **Exception System**: aiohttp exceptions are automatically converted to ErisPulse exceptions (ClientError system)
+
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Quick Start
 
@@ -7320,6 +7336,10 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
+Please directly return the complete translated Markdown content without any additional text.
+
+Again, if the document contains a language switch line (with language names separated by `` | ``), strictly follow the format requirement in item 8 above and do not write incorrect formats such as ``[**Label**](file)``.
+
 ## HttpResponse
 
 All request methods return an `HttpResponse` object:
@@ -7329,8 +7349,8 @@ from ErisPulse.Core import client
 
 resp = await client.get("https://httpbin.org/get")
 
-resp.status       # int - HTTP status code (e.g., 200, 404)
-resp.reason       # str | None - status description (e.g., "OK")
+resp.status       # int - HTTP status code (such as 200, 404)
+resp.reason       # str | None - status description (such as "OK")
 resp.headers      # response headers (case-insensitive)
 resp.content_type # str | None - Content-Type
 resp.url          # final URL (may change due to redirects)
@@ -7342,6 +7362,12 @@ text = await resp.text()       # str
 data = await resp.json()       # parse JSON
 text = await resp.text("gbk")  # specify encoding
 ```
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
+   - This ensures that links point to the correct language version of the document
 
 ## Request Methods
 
@@ -7385,19 +7411,19 @@ resp = await client.post(
 # Format: {field name: file object/bytes/(filename, file)/(filename, file, content_type)}
 resp = await client.post(
     "https://api.example.com/upload",
-    data={"description": "Avatar"},            # Optional: also carry regular form fields
+    data={"description": "avatar"},            # Optional: also carry regular form fields
     files={
         "file": ("photo.png", open("photo.png", "rb"), "image/png"),
     },
 )
 
-# Simplified syntax: directly pass file object
+# Simplified syntax: pass file object directly
 resp = await client.post(
     "https://api.example.com/upload",
     files={"file": open("photo.png", "rb")},
 )
 
-# Upload in-memory data directly (no need to write to disk)
+# Upload data directly from memory (no need to write to disk)
 import io
 
 resp = await client.post(
@@ -7426,9 +7452,8 @@ resp = await client.request(
     "https://api.example.com/resource",
     headers={"Origin": "https://example.com"},
 )
-```
 
-## Parameter Explanation
+## Parameter Description
 
 ### HTTP Request Parameters
 
@@ -7440,8 +7465,8 @@ resp = await client.request(
 | `data` | `Any` | Request body (form or raw data) (optional) |
 | `json` | `Any` | JSON request body (optional) |
 | `files` | `dict[str, Any]` | File upload fields (optional, automatically builds multipart/form-data) |
-| `timeout` | `float` | Timeout for this request (seconds) (optional, overrides default value) |
-| `max_retries` | `int` | Maximum retry attempts for this request (optional, overrides default value) |
+| `timeout` | `float` | Timeout for this request (in seconds) (optional, overrides default value) |
+| `max_retries` | `int` | Maximum number of retries for this request (optional, overrides default value) |
 
 ### ws_connect Parameters
 
@@ -7451,16 +7476,18 @@ resp = await client.request(
 | `headers` | `dict[str, str]` | Additional request headers (optional) |
 | `heartbeat` | `float` | Heartbeat interval in seconds (optional) |
 
-## Timeout and Retry
+[**English**](docs/en/quick-start.md)
+
+## Timeouts and Retries
 
 ```python
-from ErisPulse.Core import HttpClient
+from ErisPulse.Core import Client
 
-# Create a client with custom timeout
-client = HttpClient(
+# Create a client with custom timeouts
+client = Client(
     timeout=60,           # Total request timeout 60s
     connect_timeout=5,    # Connection timeout 5s
-    max_retries=3,        # Automatic retry 3 times on failure
+    max_retries=3,        # Automatic retry on failure 3 times
     retry_delay=2,        # Retry interval 2s
 )
 
@@ -7468,10 +7495,15 @@ client = HttpClient(
 resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
+> [!NOTE]
+> The client class was renamed to `Client` starting from version 2.8.0 (the `sdk.client` property name remains unchanged); the old name `HttpClient` is retained as a compatibility alias, so old code does not need modification.
+
+docs/en/timeouts-and-retries.md
+
 ## Custom Default Headers
 
 ```python
-client = HttpClient(
+client = Client(
     headers={
         "Authorization": "Bearer token",
         "X-App-Id": "my-app",
@@ -7479,6 +7511,12 @@ client = HttpClient(
     user_agent="MyBot/1.0",
 )
 ```
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
+   - This ensures links point to the correct language version of the documentation
 
 ## Request Statistics
 
@@ -7493,11 +7531,17 @@ stats = client.stats
 client.reset_stats()
 ```
 
+7. **Important: Path replacement rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (such as `README.xx.md` format links), keep them unchanged
+   - This ensures links point to the correct language version of the document
+
 ## Lifecycle Events
 
 ### HTTP Request Events
 
-The `client.request` event is triggered after each request, which can be used for monitoring:
+The `client.request` event is triggered after each request completes, which can be used for monitoring:
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -7516,21 +7560,26 @@ from ErisPulse.Core import lifecycle
 
 @lifecycle.on("client.ws.connect")
 async def on_ws_connect(event_data):
-    print(f"WS connection: {event_data['url']}")
+    print(f"WS Connection: {event_data['url']}")
 ```
+
+7. **Important: Path replacement rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Context Management
 
 ```python
-# As a context manager, automatically closes the session
-async with HttpClient(timeout=30) as client:
+# As a context manager, it automatically closes the session
+async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
-```
 
 ## WebSocket Client
 
-Establish a WebSocket client connection via `client.ws_connect()`, returning a `ClientWebSocket` object. The client and server WebSocket share the same `WebSocketConnectionBase` base class, with identical send/receive/iter interfaces.
+Use `client.ws_connect()` to establish a WebSocket client connection, returning a `ClientWebSocket` object. The client and server WebSocket share the same `WebSocketConnectionBase` base class, with identical send/receive/iter interfaces.
 
 ### Basic Usage
 
@@ -7546,9 +7595,9 @@ await ws.send_json({"type": "ping"})
 
 ### Receiving Messages
 
-#### Advanced Methods (Recommended)
+#### High-Level Methods (Recommended)
 
-Automatically filter message types and raise `WebSocketDisconnect` when disconnected:
+Automatically filter message types and raise `WebSocketDisconnect` on disconnection:
 
 ```python
 from ErisPulse.Core import client
@@ -7561,7 +7610,7 @@ text = await ws.receive_text()    # str
 data = await ws.receive_bytes()   # bytes
 obj = await ws.receive_json()     # dict / list
 
-# Iterative receive (automatically stops when disconnected)
+# Iterative receive (automatically stops on disconnection)
 async for text in ws.iter_text():
     print(text)
 
@@ -7574,7 +7623,7 @@ async for obj in ws.iter_json():
 
 #### Low-Level Methods
 
-Use `receive()` and `iter_messages()` to handle raw message types, distinguishing TEXT / BINARY / CLOSE / ERROR:
+Use `receive()` and `iter_messages()` to handle raw message types, allowing distinction between TEXT / BINARY / CLOSE / ERROR:
 
 ```python
 from ErisPulse.Core import client
@@ -7587,7 +7636,7 @@ msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
 
-# Iterative raw message receive (stops automatically on CLOSE/ERROR)
+# Iterative raw messages (automatically stops on CLOSE/ERROR)
 async for msg in ws.iter_messages():
     if msg.type == WSMessage.TEXT:
         print(f"Text: {msg.data}")
@@ -7597,7 +7646,7 @@ async for msg in ws.iter_messages():
 
 ### WSMessage
 
-`WSMessage` is a unified WebSocket message type, independent of the underlying library:
+`WSMessage` is a unified WebSocket message type independent of the underlying library:
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
@@ -7631,17 +7680,16 @@ async def handle_error(ws, error=""):
     print(f"Connection error: {error}")
 ```
 
-### Closing Connection
+### Closing the Connection
 
 ```python
 await ws.close(code=1000, reason="Normal closure")
-```
 
 ## Exception System
 
-ErisPulse defines a unified exception hierarchy. Requests initiated via `sdk.client` automatically convert underlying aiohttp exceptions into ErisPulse exceptions.
+ErisPulse defines a unified exception hierarchy. Requests initiated through `sdk.client` automatically convert underlying aiohttp exceptions into ErisPulse exceptions.
 
-> **Backward Compatibility**: Old modules/adapters that directly use `aiohttp.ClientSession` are unaffected. Exception conversion only applies when requests are initiated via `sdk.client`. Code directly using aiohttp still catches `aiohttp.ClientError` and other native exceptions. Both methods can coexist.
+> **Backward Compatibility**: Old modules/adapters that directly use `aiohttp.ClientSession` are completely unaffected. Exception conversion only takes effect when requests are initiated through `sdk.client`. Code that directly uses aiohttp still catches native exceptions such as `aiohttp.ClientError`. Both approaches can coexist.
 
 ### Exception Hierarchy
 
@@ -7650,9 +7698,9 @@ ErisPulseError
 ├── ClientError                  # Base class for all HTTP/WS client request exceptions
 │   ├── ClientConnectionError    # Connection failed (DNS resolution failed, connection refused, network unreachable)
 │   ├── ClientTimeoutError       # Connection timeout or request timeout
-│   └── HTTPStatusError          # HTTP 4xx/5xx status code error
+│   └── HTTPStatusError          # HTTP 4xx/5xx status code errors
 └── WebSocketError               # Base class for WebSocket exceptions
-    └── WebSocketDisconnect      # WebSocket connection disconnected (common to client and server)
+    └── WebSocketDisconnect      # WebSocket connection disconnected (applicable to both client and server)
 ```
 
 ### Exception Handling
@@ -7668,18 +7716,18 @@ from ErisPulse.Core.Bases.errors import (
     WebSocketError,
 )
 
-# HTTP request exception handling
+# Handling HTTP request exceptions
 try:
     resp = await client.get("https://api.example.com/data")
     data = await resp.json()
 except ClientConnectionError:
-    print("Cannot connect to the server")
+    print("Unable to connect to the server")
 except ClientTimeoutError:
     print("Request timeout")
 except ClientError as e:
     print(f"Request failed: {e}")
 
-# WebSocket exception handling
+# Handling WebSocket exceptions
 try:
     ws = await client.ws_connect("wss://example.com/ws")
     async for text in ws.iter_text():
@@ -7690,9 +7738,9 @@ except WebSocketError as e:
     print(f"WebSocket error: {e}")
 ```
 
-### Unified Exception Handling
+### Unified Handling
 
-Use `ClientError` to catch all HTTP/WS client request exceptions:
+Use `ClientError` to handle all HTTP/WS client request exceptions uniformly:
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError
@@ -7713,11 +7761,10 @@ from ErisPulse.Core.Bases.errors import HTTPStatusError
 resp = await client.get("https://api.example.com/data")
 if resp.status >= 400:
     raise HTTPStatusError(resp.status, await resp.text())
-```
 
 ## Using in Adapters
 
-Adapters can use the global client or create their own client instance to send platform API requests:
+Adapters can use the global client or create their own client instances to send platform API requests:
 
 ```python
 from ErisPulse.Core import client
@@ -7738,17 +7785,27 @@ class MyAdapter(BaseAdapter):
             raise
 ```
 
-> You can also use `from ErisPulse import sdk` to access `sdk.client`, which has the same effect.
+> You can also use `sdk.client` via `from ErisPulse import sdk`, which has the same effect.
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Best Practices
 
-1. **Prefer the global client**: Use `from ErisPulse.Core import client` to obtain the global singleton, facilitating unified management and monitoring by the framework.
-2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession`, allowing seamless switching of the underlying implementation without code changes. Old code using aiohttp directly still works, and both methods can coexist.
-3. **Use the ErisPulse exception system**: When making requests via `sdk.client`, catch `ClientError` instead of `aiohttp.ClientError`, ensuring code independence from specific HTTP libraries. Old code using aiohttp directly remains unaffected.
-4. **Set reasonable timeouts**: Configure appropriate timeout values based on API response speed to avoid long blocking.
+1. **Prefer using the global client**: Use `from ErisPulse.Core import client` to get the global singleton, which facilitates unified management and monitoring by the framework.
+2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession`. This avoids code changes when switching the underlying implementation in the future. Old code using aiohttp directly will still work normally, and both methods can coexist.
+3. **Use the ErisPulse exception system**: When making requests through `sdk.client`, catch `ClientError` instead of `aiohttp.ClientError` to ensure the code does not depend on a specific HTTP library. Old code using aiohttp directly is unaffected.
+4. **Set timeouts reasonably**: Set reasonable timeout values based on the API response speed to avoid long blocking.
 5. **Use retry mechanisms**: Enable retries for unstable APIs to improve reliability.
-6. **Monitor request statistics**: Use `sdk.client.stats` or the `client.request` lifecycle event to monitor request status.
-7. **Use advanced WebSocket methods**: Prefer advanced methods like `iter_text` / `iter_json`, and only use `iter_messages` when distinguishing message types is necessary.
+6. **Monitor request statistics**: Monitor request situations through `sdk.client.stats` or lifecycle events of `client.request`.
+7. **Use advanced methods for WebSocket**: Prefer advanced methods such as `iter_text` / `iter_json`. Only use `iter_messages` when distinguishing message types is necessary.
+
+Please directly return the complete translated Markdown content without including any other text.
+
+Once again, please note: if the document contains language switch lines (with each language name separated by `` | ``), strictly adhere to the format requirements specified above in point 8. Do not write incorrect formats like ``[**Label**](file)``.
 
 
 

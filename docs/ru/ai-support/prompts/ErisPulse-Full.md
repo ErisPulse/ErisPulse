@@ -53,7 +53,7 @@
 
 ## Основная архитектура SDK
 
-На следующей схеме показаны основные модули SDK и их взаимосвязи:
+На следующей диаграмме показаны основные модули SDK и их взаимосвязи:
 
 ```mermaid
 graph TB
@@ -67,13 +67,13 @@ graph TB
     SDK --> AdapterMgr["Adapter<br/>Управление адаптерами"]
     SDK --> ModuleMgr["Module<br/>Управление модулями"]
     SDK --> Router["Router<br/>Управление маршрутизацией"]
-    SDK --> Client["HttpClient<br/>HTTP-клиент"]
+    SDK --> Client["Client<br/>HTTP-клиент"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
-    Event --> Conversation["Conversation<br/>Ветвление + постоянство"]
+    Event --> Conversation["Conversation<br/>Ветвление + сохранение"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
     BaseAdapter --> P1["Yunhu"]
@@ -91,15 +91,15 @@ graph TB
 
 | Модуль | Описание |
 |------|------|
-| **Event** | Система событий, предоставляет обработку пяти типов событий: command / message / notice / request / meta, а также Conversation для многошаговых диалогов |
+| **Event** | Система событий, предоставляет обработку пяти типов событий: command / message / notice / request / meta, а также поддерживает Conversation для многошагового диалога |
 | **Adapter** | Менеджер адаптеров, управляет регистрацией, запуском и остановкой адаптеров для различных платформ |
 | **Module** | Менеджер модулей, управляет регистрацией, загрузкой и выгрузкой плагинов, поддерживает объявление зависимостей и топологическую сортировку |
-| **Lifecycle** | Менеджер жизненного цикла, предоставляет хуки, управляемые событиями |
-| **Storage** | Система хранения на основе SQLite, поддерживающая общие SQL-цепочные запросы |
+| **Lifecycle** | Менеджер жизненного цикла, предоставляет обработчики событий для жизненного цикла |
+| **Storage** | Система хранения ключ-значение на базе SQLite, поддерживает общие SQL-цепочечные запросы |
 | **Config** | Управление конфигурационными файлами в формате TOML |
-| **Logger** | Модульная система логирования, поддерживающая под-логгеры |
-| **Router** | Управление маршрутизацией HTTP/WebSocket, через абстрактный слой обертывает нижележащие бэкенды (в настоящее время FastAPI + Uvicorn), поддерживает маршрутизацию через декораторы, промежуточные обработчики, группировку, ограничение скорости, CORS |
-| **HttpClient** | Единый HTTP/WS-клиент, через абстрактный слой обертывает нижележащие библиотеки запросов (в настоящее время aiohttp), предоставляет статистику запросов, повторные попытки, логирование, WebSocket-клиент, систему исключений ErisPulse. Клиент и сервер WebSocket разделяют базовый класс `WebSocketConnectionBase` |
+| **Logger** | Модульная система логирования, поддерживает под-логгеры |
+| **Router** | Управление маршрутизацией HTTP/WebSocket, через абстрактный слой обертывает нижележащие бэкенды (в настоящее время FastAPI + Uvicorn), поддерживает маршрутизацию через декораторы, промежуточные слои, группы, ограничение скорости, CORS |
+| **Client** | Единый HTTP/WS клиент (до версии 2.8.0 назывался `HttpClient`, сохраняется совместимость с псевдонимом), через абстрактный слой обертывает нижележащие библиотеки запросов (в настоящее время aiohttp), предоставляет статистику запросов, повторные попытки, логирование, WebSocket-клиент, систему исключений ErisPulse. WebSocket-клиент и серверная часть WebSocket разделяют базовый класс `WebSocketConnectionBase` |
 
 ## Процесс инициализации
 
@@ -4761,6 +4761,25 @@ self.logger.critical("Критическая ошибка") # Критическ
 
 Еще раз напоминаю: если документ содержит строку с переключением языка (где названия языков разделены символом `` | ``), строго соблюдайте вышеуказанные правила форматирования, не создавайте ошибочных форматов вида ``[**Label**](file)``.
 
+## Добавление аннотаций типов для параметра event
+
+Параметр `event` обработчика событий является **обёрткой Event** (подкласс dict). Рекомендуется добавлять для него аннотации типов:
+
+```python
+from ErisPulse.Core.Event import Event
+
+@message.on_private_message()
+async def handler(event: Event):
+    text = event.get_text()   # IDE автоматически подсказывает все удобные методы
+    await event.reply(text)   # Опечатки обнаруживаются на этапе статической проверки
+```
+
+Без аннотаций IDE не может распознавать методы Event (`get_text()` / `reply()` / `wait_reply()` / методы расширения платформы не подсказываются), и приходится полагаться на память при написании.
+
+> **Важно различать**: `event` в обратном вызове обработчика событий — это **обёртка Event** (аннотация `Event`); `event` в методах жизненного цикла модуля `on_load` / `on_unload` — это обычный **dict** (аннотация `dict`), не следует их путать.
+
+[**中文**](docs/ru/quick-start.md)
+
 ## Основные возможности
 
 - **Полная совместимость со словарем**: Event наследуется от dict
@@ -4780,7 +4799,7 @@ self.logger.critical("Критическая ошибка") # Критическ
 from ErisPulse.Core.Event import command
 
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     event_id = event.get_id()
     platform = event.get_platform()
     time = event.get_time()
@@ -4795,29 +4814,29 @@ async def info_command(event):
 from ErisPulse.Core.Event import message
 
 @message.on_private_message()
-async def private_handler(event):
+async def private_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"Привет, {nickname}!")
 ```
 
-[**中文**](docs/ru/message-event.md) | [**English**](docs/en/message-event.md) | [**Русский**](docs/ru/message-event.md)
+[**English**](docs/ru/quick-start.md)
 
-## Типы сообщений
+## Определение типа сообщения
 
 ```python
 from ErisPulse.Core.Event import message
 
 @message.on_group_message()
-async def group_handler(event):
+async def group_handler(event: Event):
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
     await event.reply(f"Тип: {'Личное сообщение' if is_private else 'Группа'}")
 ```
 
-[**English**](docs/ru/quick-start.md) | [**Русский**](docs/ru/quick-start.md)
+[**中文**](docs/ru/message-type-detection.md) | [**English**](docs/en/message-type-detection.md) | [**Русский**](docs/ru/message-type-detection.md)
 
 ## Функция ответа
 
@@ -4825,7 +4844,7 @@ async def group_handler(event):
 from ErisPulse.Core.Event import command
 
 @command("ask")
-async def ask_command(event):
+async def ask_command(event: Event):
     await event.reply("Пожалуйста, введите ваше имя:")
     reply = await event.wait_reply(timeout=30)
     if reply:
@@ -4833,7 +4852,7 @@ async def ask_command(event):
         await event.reply(f"Привет, {name}!")
 ```
 
-[**English**](docs/ru/quick-start.md) | [**中文**](docs/ru/quick-start.md)
+[**English**](docs/ru/quick-start.md)
 
 ## Получение информации о команде
 
@@ -4841,32 +4860,32 @@ async def ask_command(event):
 from ErisPulse.Core.Event import command
 
 @command("cmdinfo")
-async def cmdinfo_command(event):
+async def cmdinfo_command(event: Event):
     cmd_name = event.get_command_name()
     cmd_args = event.get_command_args()
     await event.reply(f"Команда: {cmd_name}, аргументы: {cmd_args}")
 ```
 
-[**Переключить язык**](docs/ru/quick-start.md)
+[**English**](docs/ru/quick-start.md) | [**Русский**](docs/ru/quick-start.md)
 
-## Метод уведомления события
+## Метод уведомления событий
 
 ```python
 from ErisPulse.Core.Event import notice
 
 @notice.on_friend_add()
-async def friend_add_handler(event):
+async def friend_add_handler(event: Event):
     await event.reply("Добро пожаловать, добавьте меня в друзья!")
 ```
 
-[**语言切换**](README.ru.md)
+[**English**](docs/ru/quick-start.md)
 
 ## Справочник методов
 
 ### Основные методы
 
-#### Базовая информация о событии
-- `get_id()` - Получить ID события
+#### Базовая информация об событии
+- `get_id()` - Получить идентификатор события
 - `get_time()` - Получить метку времени события (Unix в секундах)
 - `get_type()` - Получить тип события (message/notice/request/meta)
 - `get_detail_type()` - Получить подробный тип события (private/group/friend и т.д.)
@@ -4874,55 +4893,55 @@ async def friend_add_handler(event):
 
 #### Информация о боте
 - `get_self_platform()` - Получить название платформы бота
-- `get_self_user_id()` - Получить ID пользователя бота
-- `get_self_account_id()` - Получить ID аккаунта бота (режим с несколькими ботами)
-- `get_self_info()` - Получить полную информацию о боте в виде словаря
+- `get_self_user_id()` - Получить идентификатор пользователя бота
+- `get_self_account_id()` - Получить идентификатор аккаунта бота (режим множественных ботов)
+- `get_self_info()` - Получить полный словарь информации о боте
 
 #### Идентификаторы сессии
-- `get_target_id()` - Получить единый идентификатор цели (для групповых чатов возвращает `group_id`, для каналов `channel_id`, для личных сообщений `user_id`, возвращается первый непустой элемент в порядке group → channel → guild → thread → user)
+- `get_target_id()` - Получить единый идентификатор цели (для групповых чатов возвращает `group_id`, для каналов `channel_id`, для личных сообщений `user_id`, выбирает первый непустой по порядку group → channel → guild → thread → user)
 - `get_session_id()` - Получить уникальный идентификатор сессии, формат: `{platform}:{detail_type}:{target_id}`
 
 ### Методы событий сообщений
 
-#### Содержимое сообщения
+#### Содержание сообщения
 - `get_message()` - Получить массив сегментов сообщения (формат OneBot12)
-- `get_alt_message()` - Получить альтернативный текст сообщения
-- `get_text()` - Получить чистый текст (псевдоним `get_alt_message()`)
-- `get_message_text()` - Получить чистый текст (псевдоним `get_alt_message()`)
+- `get_alt_message()` - Получить резервный текст сообщения
+- `get_text()` - Получить чистый текст (альтернативное имя для `get_alt_message()`)
+- `get_message_text()` - Получить чистый текст (альтернативное имя для `get_alt_message()`)
 
 #### Информация об отправителе
-- `get_user_id()` - Получить ID пользователя-отправителя
+- `get_user_id()` - Получить идентификатор пользователя-отправителя
 - `get_user_nickname()` - Получить никнейм отправителя
-- `get_sender()` - Получить полную информацию об отправителе в виде словаря
+- `get_sender()` - Получить полный словарь информации об отправителе
 
 #### Информация о группе/канале
-- `get_group_id()` - Получить ID группы (сообщения в группе)
-- `get_channel_id()` - Получить ID канала (сообщения в канале)
-- `get_guild_id()` - Получить ID сервера (сообщения на сервере)
-- `get_thread_id()` - Получить ID темы/подканала (сообщения в теме)
+- `get_group_id()` - Получить идентификатор группы (сообщения в группе)
+- `get_channel_id()` - Получить идентификатор канала (сообщения в канале)
+- `get_guild_id()` - Получить идентификатор сервера (сообщения на сервере)
+- `get_thread_id()` - Получить идентификатор темы/подканала (сообщения в теме)
 
-#### Связанные с @ сообщениями
+#### Связанные с упоминаниями
 - `has_mention()` - Содержит ли сообщение упоминание бота
-- `get_mentions()` - Получить список всех ID упомянутых пользователей
+- `get_mentions()` - Получить список всех упомянутых пользователей
 
 ### Определение типа сообщения
 
 #### Основные проверки
 - `is_message()` - Является ли событием сообщения
 - `is_private_message()` - Является ли личным сообщением
-- `is_group_message()` - Является ли групповым сообщением
-- `is_at_message()` - Является ли упоминающим сообщением (`has_mention()` псевдоним)
+- `is_group_message()` - Является ли сообщением в группе
+- `is_at_message()` - Является ли сообщением с упоминанием (альтернативное имя для `has_mention()`)
 
 ### Методы событий уведомлений
 
 #### Информация об операторе
-- `get_operator_id()` - Получить ID оператора
+- `get_operator_id()` - Получить идентификатор оператора
 - `get_operator_nickname()` - Получить никнейм оператора
 
 #### Определение типа уведомления
 - `is_notice()` - Является ли событием уведомления
-- `is_group_member_increase()` - Событие добавления участника в группу
-- `is_group_member_decrease()` - Событие удаления участника из группы
+- `is_group_member_increase()` - Событие увеличения участников группы
+- `is_group_member_decrease()` - Событие уменьшения участников группы
 - `is_friend_add()` - Событие добавления друга (соответствует `detail_type == "friend_increase"`)
 - `is_friend_delete()` - Событие удаления друга (соответствует `detail_type == "friend_decrease"`)
 
@@ -4933,86 +4952,86 @@ async def friend_add_handler(event):
 
 #### Определение типа запроса
 - `is_request()` - Является ли событием запроса
-- `is_friend_request()` - Является ли запросом добавления друга
-- `is_group_request()` - Является ли запросом добавления в группу
+- `is_friend_request()` - Является ли запросом дружбы
+- `is_group_request()` - Является ли запросом группы
 
 ### Функции ответа
 
-#### Основной ответ
+#### Базовый ответ
 - `reply(content, method="Text", at_sender=False, quote=False, at_users=None, reply_to=None, at_all=False, via=None, **kwargs)` - Общий метод ответа
-  - `content`: Содержимое отправки (текст, URL и т.д.)
-  - `method`: Метод отправки, по умолчанию "Text", доступны "Image"/"Voice"/"Video"/"File" и т.д.
-  - `at_sender`: Упоминать ли отправителя (автоматически извлекает user_id)
-  - `quote`: Ссылаться ли на текущее сообщение (автоматически извлекает message_id)
-  - `at_users`: Список упоминаемых пользователей, например `["user1", "user2"]`
-  - `reply_to`: Ручное указание ID сообщения для ответа
-  - `at_all`: Упоминать ли всех участников
-  - `**kwargs`: Дополнительные параметры (например, user_id для метода Mention)
+  - `content`: содержимое отправки (текст, URL и т.д.)
+  - `method`: метод отправки, по умолчанию "Text", возможные значения "Image"/"Voice"/"Video"/"File" и т.д.
+  - `at_sender`: упоминать ли отправителя (автоматически извлекает user_id)
+  - `quote`: цитировать ли текущее сообщение (автоматически извлекает message_id)
+  - `at_users`: список пользователей для упоминания, например `["user1", "user2"]`
+  - `reply_to`: вручную указать идентификатор сообщения для ответа
+  - `at_all`: упоминать ли всех участников
+  - `**kwargs`: дополнительные параметры (например user_id для метода Mention)
 
 - `reply_ob12(message)` - Ответ с использованием OneBot12 сегментов сообщения
-  - `message`: Список или словарь сегментов OneBot12, можно использовать MessageBuilder для построения
+  - `message`: список или словарь сегментов OneBot12, можно использовать MessageBuilder для построения
 
-#### Проверка поддержки платформой
-- `supports(method)` - Проверить, поддерживает ли текущая платформа метод отправки (например, `"Image"`, `"Voice"`), возвращает `bool`
+#### Проверка возможностей платформы
+- `supports(method)` - Проверить, поддерживает ли текущая платформа метод отправки (например `"Image"`, `"Voice"`), возвращает `bool`
 - `available_methods()` - Получить список всех доступных методов отправки на текущей платформе, возвращает список названий методов
 
 #### Пересылка сообщений
 
-> **Важно**: Функция пересылки должна реализовываться через DSL отправки адаптера, Event обёртка сама не предоставляет прямого метода пересылки.
+> **Внимание:** Функция пересылки должна реализовываться через DSL отправки адаптера, Event wrapper класс не предоставляет прямой метод пересылки.
 
 ```python
 # Переслать сообщение в группу
 adapter = sdk.adapter.get(event.get_platform())
-target_id = event.get_group_id()  # или указать другой ID группы
+target_id = event.get_group_id()  # или указать другой идентификатор группы
 await adapter.Send.To("group", target_id).Text(event.get_text())
 ```
 
 ### Функция ожидания ответа
 
-- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - Ожидание ответа пользователя
-  - `prompt`: Подсказка, если указана, будет отправлена пользователю
-  - `timeout`: Время ожидания (секунды), по умолчанию 60 секунд
-  - `callback`: Функция обратного вызова, выполняется при получении ответа
-  - `validator`: Функция проверки, используется для валидации ответа
-  - `method`: Метод отправки подсказки, по умолчанию "Text"
-  - Возвращает объект Event с ответом пользователя, при таймауте возвращает None
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - Ожидать ответ пользователя
+  - `prompt`: сообщение-подсказка, если указано, будет отправлено пользователю
+  - `timeout`: время ожидания (в секундах), по умолчанию 60 секунд
+  - `callback`: функция обратного вызова, выполняется при получении ответа
+  - `validator`: функция проверки, используется для валидации ответа
+  - `method`: метод отправки подсказки, по умолчанию "Text"
+  - Возвращает Event объект с ответом пользователя, при таймауте возвращает None
 
 #### Интерактивные методы
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - Подтверждение диалога
   - Возвращает `True` (подтверждение) / `False` (отрицание) / `None` (таймаут)
-  - Встроенные слова подтверждения на китайском и английском автоматически распознаются, можно задать собственные наборы слов
-  - `method`: Метод отправки, по умолчанию "Text"; поддерживает "Image"/"Markdown" и другие не текстовые способы отправки подсказки
-  - `hint`: Добавлять ли автоматически подсказку с вариантами ответа в конец подсказки (например, "（是/否）"), по умолчанию False
+  - Встроенные английские и китайские слова автоматически распознаются, можно задать собственные наборы слов
+  - `method`: метод отправки, по умолчанию "Text"; поддерживает "Image"/"Markdown" и другие не текстовые способы отправки подсказки
+  - `hint`: добавлять ли автоматически подсказку с вариантами ответа в конец сообщения (например "（是/否）"), по умолчанию False
 
 - `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - Меню выбора
-  - `options`: Список текстовых вариантов
-  - Возвращает индекс выбранного варианта (начиная с 0), при таймауте возвращает `None`
-  - `method`: Метод отправки, по умолчанию "Text"; текстовые методы (Text/Markdown/md/Html/h5) по умолчанию объединяют варианты в конец
-  - `options_format`: Формат вариантов (по умолчанию: "auto", автоматически выбирается встроенный стиль в зависимости от method)
-    - `"auto"`: Markdown→нумерованный список (`- 1. Вариант`), Html→упорядоченный список (`<ol>`), иные→простой текстовый список
-    - `"list"`: Каждый вариант на отдельной строке, например ``1. ВариантA\n2. ВариантB``
-    - `"inline"`: Варианты отображаются в одной строке, например ``1.ВариантA | 2.ВариантB``
-    - `"md"`: Markdown нумерованный список
+  - `options`: список текстов вариантов
+  - Возвращает индекс выбранного варианта (от 0), при таймауте возвращает `None`
+  - `method`: метод отправки, по умолчанию "Text"; текстовые методы (Text/Markdown/md/Html/h5) по умолчанию объединяют варианты в конец
+  - `options_format`: формат вариантов (по умолчанию: "auto", автоматически выбирается встроенный стиль в зависимости от method)
+    - `"auto"`: Markdown→неупорядоченный список (`- 1. вариант`), Html→упорядоченный список (`<ol>`), остальное→простой текстовый список
+    - `"list"`: каждый вариант на отдельной строке, например ``1. ВариантA\n2. ВариантB``
+    - `"inline"`: варианты отображаются в одной строке, например ``1.A | 2.B``
+    - `"md"`: Markdown неупорядоченный список
     - `"html"`: Html упорядоченный список
-    - `callable`: Пользовательская функция, принимает ``list[str]`` и возвращает ``str``
-  - `merge_prompt`: Принудительно объединять ли в одно сообщение, по умолчанию False
-    - `False` (по умолчанию): Текстовые методы объединяют автоматически; не текстовые методы сначала отправляют prompt, затем Text варианты
-    - `True`: Независимо от method объединяются в одно сообщение, отправляется с указанным method
-  - `placeholder`: Заполнитель для вставки вариантов, по умолчанию `{options}`; текст с этим маркером заменяется на варианты, если пустая строка, варианты всегда добавляются в конец
+    - `callable`: пользовательская функция, принимает ``list[str]`` и возвращает ``str``
+  - `merge_prompt`: принудительно объединять ли в одно сообщение, по умолчанию False
+    - `False` (по умолчанию): текстовые методы автоматически объединяют; для не текстовых методов сначала отправляется prompt, затем Text варианты
+    - `True`: независимо от method объединяются в одно сообщение и отправляются с указанным method
+  - `placeholder`: маркер для вставки вариантов, по умолчанию `{options}`; текст внутри prompt, где встречается этот маркер, заменяется на текст вариантов, если установить пустую строку, варианты всегда добавляются в конец
 
 - `collect(fields, timeout_per_field=60.0)` - Сбор формы
-  - `fields`: Список полей, каждое содержит `key`, `prompt`, необязательный `validator`, необязательный `method`
+  - `fields`: список полей, каждое содержит `key`, `prompt`, опционально `validator`, опционально `method`
   - Возвращает словарь `{key: value}`, при таймауте любого поля возвращает `None`
-  - Каждое поле поддерживает ключ `method` для указания метода отправки, например при сборе изображения: `{"key": "avatar", "prompt": "Пожалуйста, отправьте аватар", "method": "Image"}`
-  - Каждое поле может иметь ключ `options` (список), при наличии становится выбором (автоматически вызывается choose логика)
-  - Каждое поле может иметь ключи `options_format`, `merge_prompt`, `placeholder` для управления форматом вариантов, поведением объединения сообщений и заполнителем
+  - Каждое поле может иметь ключ `method` для указания метода отправки, например для сбора изображения: `{"key": "avatar", "prompt": "Пожалуйста, отправьте аватар", "method": "Image"}`
+  - Каждое поле может иметь ключ `options` (список), при наличии этого ключа поле становится выборочным (автоматически вызывается choose логика)
+  - Каждое поле может иметь ключи `options_format`, `merge_prompt`, `placeholder`, для управления форматом вариантов, поведением объединения сообщений и маркером
 
-- `wait_for(event_type="message", condition=None, timeout=60.0)` - Ожидание произвольного события
-  - `condition`: Фильтрующая функция, возвращает `True` при совпадении
-  - Возвращает соответствующий Event объект, при таймауте возвращает None
+- `wait_for(event_type="message", condition=None, timeout=60.0)` - Ожидать произвольного события
+  - `condition`: фильтрующая функция, возвращает `True` при совпадении
+  - Возвращает соответствующий Event объект, при таймауте возвращает `None`
 
-- `conversation(timeout=60.0)` - Создание контекста многошагового диалога
+- `conversation(timeout=60.0)` - Создать контекст многошагового диалога
   - Возвращает `Conversation` объект, поддерживающий `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
   - Свойство `is_active` указывает, активен ли диалог
 
@@ -5022,8 +5041,8 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ```python
 @command("delete", help="Удалить данные")
-async def delete_handler(event):
-    if await event.confirm("Вы уверены, что хотите удалить все данные?"):
+async def delete_handler(event: Event):
+    if await event.confirm("Вы действительно хотите удалить все данные?"):
         sdk.storage.delete("all_data")
         await event.reply("Данные удалены")
     else:
@@ -5033,7 +5052,7 @@ async def delete_handler(event):
 **confirm() - С подсказкой:**
 
 ```python
-# hint=True добавит "（是/否）" в конец подсказки
+# hint=True добавит в конец подсказки "（是/否）"
 if await event.confirm("Продолжить?", hint=True):
     await event.reply("Продолжено")
 # Пользователь увидит: Продолжить?（是/否）
@@ -5043,10 +5062,10 @@ if await event.confirm("Продолжить?", hint=True):
 
 ```python
 @command("color", help="Выбрать цвет")
-async def color_handler(event):
-    choice = await event.choose("Выберите цвет:", ["красный", "зелёный", "синий"])
+async def color_handler(event: Event):
+    choice = await event.choose("Выберите цвет:", ["红色", "绿色", "蓝色"])
     if choice is not None:
-        colors = ["красный", "зелёный", "синий"]
+        colors = ["红色", "绿色", "蓝色"]
         await event.reply(f"Вы выбрали: {colors[choice]}")
 ```
 
@@ -5058,41 +5077,41 @@ choice = await event.choose("Выберите:", ["A", "B", "C"], options_format
 # Вывод: 1.A | 2.B | 3.C
 
 # Пользовательская функция форматирования
-choice = await event.choose("Выберите:", ["кот", "собака"],
+choice = await event.choose("Выберите:", ["猫", "狗"],
     options_format=lambda opts: " / ".join(opts))
-# Вывод: кот / собака
+# Вывод: 猫 / 狗
 
 # options_format="auto" (по умолчанию): автоматически выбирается встроенный стиль в зависимости от method
-# Markdown → нумерованный список
+# Markdown → неупорядоченный список
 choice = await event.choose(
-    "## Выберите", ["кот", "собака"],
-    method="Markdown",  # auto автоматически распознаёт как md список
+    "## Выберите", ["猫", "狗"],
+    method="Markdown",  # auto автоматически распознает как md список
 )
 # Вывод:
 # ## Выберите
-# - 1. кот
-# - 2. собака
+# - 1. 猫
+# - 2. 狗
 
 # Html → упорядоченный список
 choice = await event.choose(
-    "<h2>Выберите</h2>", ["кот", "собака"],
-    method="Html", merge_prompt=True,  # auto автоматически распознаёт как html список
+    "<h2>Выберите</h2>", ["猫", "狗"],
+    method="Html", merge_prompt=True,  # auto автоматически распознает как html список
 )
 # Вывод:
 # <h2>Выберите</h2>
-# <ol><li>1. кот</li><li>2. собака</li></ol>
+# <ol><li>1. 猫</li><li>2. 狗</li></ol>
 
-# Режим объединения + заполнитель
+# Режим объединения + маркер
 choice = await event.choose(
     "## Выберите\n{options}\nПожалуйста, ответьте номером",
-    ["кот", "собака"],
+    ["猫", "狗"],
     method="Markdown", merge_prompt=True,
 )
 
-# Пользовательский заполнитель
+# Пользовательский маркер
 choice = await event.choose(
     "Выберите: [choices]",
-    ["кот", "собака"],
+    ["猫", "狗"],
     placeholder="[choices]",
 )
 ```
@@ -5101,7 +5120,7 @@ choice = await event.choose(
 
 ```python
 @command("register", help="Регистрация")
-async def register_handler(event):
+async def register_handler(event: Event):
     data = await event.collect([
         {"key": "name", "prompt": "Введите имя:"},
         {"key": "age", "prompt": "Введите возраст:",
@@ -5118,7 +5137,7 @@ await event.reply("http://example.com/img.jpg", method="Image")
 await event.reply("http://example.com/audio.mp3", method="Voice")
 
 from ErisPulse.Core.Event import MessageBuilder
-segments = MessageBuilder.text("Посмотрите на эту картинку:").image("http://example.com/img.jpg").build()
+segments = MessageBuilder.text("Посмотрите на эту картинку：").image("http://example.com/img.jpg").build()
 await event.reply_ob12(segments)
 ```
 
@@ -5130,7 +5149,7 @@ await event.reply_ob12(segments)
 - `get_command_name()` - Получить имя команды
 - `get_command_args()` - Получить список аргументов команды
 - `get_command_raw()` - Получить исходный текст команды
-- `get_command_info()` - Получить полную информацию о команде в виде словаря
+- `get_command_info()` - Получить полный словарь информации о команде
 - `is_command()` - Является ли событием команды
 
 ### Исходные данные
@@ -5140,9 +5159,9 @@ await event.reply_ob12(segments)
 
 ### Платформенные расширения
 
-Адаптеры могут регистрировать платформенно-специфичные методы для Event обёртки. Методы доступны только в экземплярах Event соответствующей платформы, при попытке доступа с других платформ будет выброшено исключение `AttributeError`.
+Адаптеры могут регистрировать платформенно-специфичные методы для Event wrapper класса. Методы доступны только на экземплярах Event соответствующей платформы, попытка доступа с других платформ вызывает `AttributeError`.
 
-Платформенные методы через `Event.__getattribute__` имеют приоритет над встроенными методами, поэтому можно переопределить встроенные интерактивные методы (`confirm`, `choose`, `collect`, `wait_reply`), предоставив специфичную реализацию платформы (например, кнопки, карточки). Встроенная реализация экспортируется в `_builtin_*` функциях для переопределения.
+Платформенные методы имеют приоритет над встроенными методами через `Event.__getattribute__`, поэтому можно переопределить встроенные интерактивные методы (`confirm`, `choose`, `collect`, `wait_reply`), предоставив платформенно-специфичную реализацию (например, кнопки, карточки). Встроенная реализация экспортируется как `_builtin_*` функции для переопределения.
 
 ```python
 # Почтовое событие - только почтовые методы
@@ -5156,11 +5175,11 @@ event.get_chat_type()    # ✅ Возвращает "private"
 event.get_subject()      # ❌ AttributeError
 
 # Встроенные методы всегда доступны
-event.get_text()         # ✅ Любая платформа
-event.reply("hi")        # ✅ Любая платформа
+event.get_text()         # ✅ На любой платформе
+event.reply("hi")        # ✅ На любой платформе
 ```
 
-### 查询已注册方法
+### Запрос зарегистрированных методов
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -5169,29 +5188,29 @@ methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", ...]
 ```
 
-### `hasattr` и `dir` поддержка
+### Поддержка hasattr и dir
 
 ```python
-hasattr(event, "get_subject")   # Только если platform="email", возвращает True
+hasattr(event, "get_subject")   # Возвращает True только если platform="email"
 "get_subject" in dir(event)     # То же самое
 ```
 
 ### Кросс-платформенное расширение (шаблон)
 
-`register_event_method` и `register_event_mixin` поддерживают передачу `"*"` в качестве названия платформы, регистрируя методы, доступные на **всех платформах** в экземплярах Event. Подходит для функций, требующих кросс-платформенного повторного использования, таких как AI-диалоги, управление контекстом и т.д.
+`register_event_method` и `register_event_mixin` поддерживают передачу `"*"` в качестве названия платформы, регистрируя методы, доступные на **всех** платформах Event экземпляров. Подходит для функций, требующих переносимости между платформами, таких как AI диалоги, управление контекстом и т.д.
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    # self — экземпляр Event, доступен к событию и встроенным методам
+    # self - экземпляр Event, можно получить доступ к данным события и встроенным методам
     await self.reply(f"AI: {prompt}")
 ```
 
-После регистрации любой обработчик событий на любой платформе может вызывать `event.ai_chat(...)`.
+После регистрации, любой обработчик событий на любой платформе может вызвать `event.ai_chat(...)`.
 
-Приоритет разрешения методов (от высшего к низшему): платформенно-специфичные методы → шаблонные методы → встроенные методы → доступ по ключу словаря.
+Приоритет разрешения методов (от высшего к низшему): платформенно-специфичный метод → шаблонный метод → встроенный метод → доступ по ключу словаря.
 
 > Способ регистрации расширений адаптерами см. в [API системы событий - Кросс-платформенное расширение (шаблон)](../../api-reference/event-system.md#跨平台扩展通配符).
 
@@ -5302,7 +5321,7 @@ class MyModule(BaseModule):
 ### 1. Использование асинхронной библиотеки
 
 ```python
-# Рекомендуется использовать встроенный HTTP-клиент SDK (асинхронный, автоматическая логгирование и статистика)
+# Рекомендуется использовать встроенный HTTP-клиент SDK (асинхронный, автоматический лог и статистика)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -5318,7 +5337,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Не используйте aiohttp напрямую (неудобно для унифицированного управления фреймворком)
+# Не используйте aiohttp напрямую (трудно управлять из фреймворка)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -5327,35 +5346,37 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Не используйте requests (синхронный, блокирует событийный цикл)
+# Не используйте requests (синхронный, блокирует цикл событий)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # Блокирует событийный цикл
+        return requests.get(url).json()  # Блокирует цикл событий
 ```
 
 ### 2. Правильные асинхронные операции
 
 ```python
-async def handle_command(self, event):
-    # Длительные операции, результат которых нужно ждать: просто await (жизненный цикл ясен)
+from ErisPulse.Core.Event import Event  # аннотация event: Event дает автодополнение в IDE
+
+async def handle_command(self, event: Event):
+    # Долгие операции, которые требуют ожидания результата: await (жизненный цикл ясен)
     result = await self._long_operation()
 
-async def on_load(self, event):
-    # Задачи в фоне (опрос/таймер/fire-and-forget): используйте self.spawn(),
-    # при выгрузке модуля фреймворк отменяет их в on_unload, предотвращая утечку
+async def on_load(self, event: dict):
+    # Фоновые задачи (опрос/таймер/fire-and-forget): используйте self.spawn(),
+    # при выгрузке модуля фреймворк отменяет задачи после on_unload, предотвращая утечку
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> Для фоновых задач рекомендуется использовать `self.spawn()` (ErisPulse **2.8.0+**), а не `asyncio.create_task` — последний создает "голые" задачи, не принадлежащие модулю, и при выгрузке не будет автоматической отмены, что приведет к утечке ссылки на `self` и невозможности сборки мусора модуля (утечка при горячей перезагрузке). Подробнее см. [Управление жизненным циклом](../../advanced/lifecycle.md#фоновые-задачи-принадлежность-и-автоматическая-отмена).
+> Рекомендуется использовать `self.spawn()` (ErisPulse **2.8.0+**) вместо `asyncio.create_task` — задачи, созданные через `asyncio.create_task`, не принадлежат модулю, и при выгрузке не будут автоматически отменены, что приведет к удержанию ссылки на `self` и невозможности сборки мусора (утечка при горячей перезагрузке). Подробнее см. [Управление жизненным циклом](../../advanced/lifecycle.md#фоновые-задачи-принадлежность-и-автоматическая-отмена).
 
 ### 3. Управление ресурсами
 
 ```python
 async def on_load(self, event):
-    # SDK-клиент автоматически управляет пулом соединений, не нужно создавать session вручную
+    # Клиент SDK автоматически управляет пулом соединений, не нужно создавать session вручную
     pass
     
 async def on_unload(self, event):
@@ -5369,21 +5390,21 @@ async def on_unload(self, event):
 ```python
 # Удобный способ использования обёртки Event
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"Привет, {nickname}!")
 
 # Вместо прямого доступа к словарю
 @command("info")
-async def info_command(event):
-    user_id = event["user_id"]  # Неочевидно и может привести к ошибкам
+async def info_command(event: Event):
+    user_id = event["user_id"]  # Не очень понятно, легко ошибиться
 ```
 
 ### 2. Разумное использование ленивой загрузки
 
 ```python
-# Модуль с редко используемыми командами: объявите триггер activate_on, автоматически активируется при первом совпадении команды (сохраняется ленивая загрузка)
+# Модуль с низкой частотой использования: объявляем триггер activate_on, автоматически активируется при первом совпадении команды (сохраняется ленивая загрузка)
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -5391,7 +5412,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "Бросить кубик", "aliases": ["d"]}},
         ])
 
-# Модуль с редко используемыми слушателями: объявите триггер события, автоматически активируется при поступлении события
+# Модуль с низкой частотой использования: объявляем триггер события, автоматически активируется при поступлении события
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -5399,7 +5420,7 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# Модуль с высокой частотой срабатывания (обрабатывается каждое сообщение) или модуль, который должен быть готов при запуске: немедленная загрузка
+# Модуль с высокой частотой триггеров (обрабатывается каждое сообщение) или модуль, который должен быть готов при запуске: немедленная загрузка
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -5412,23 +5433,22 @@ class UtilityModule(BaseModule):
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> Полный синтаксис activate_on (три формы событий / сокращённое объявление команды и dict / цепочка help возврата) см. в
-> [системе модулей с ленивой загрузкой](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate-on).
+> Полный синтаксис activate_on (три формы событий / сокращённая и dict-декларация команд / цепочка help-возврата) см. в разделе [Система ленивой загрузки модулей](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate-on).
 
 ### 3. Регистрация обработчиков событий
 
 ```python
 async def on_load(self, event):
-    # Регистрация обработчиков событий в on_load
+    # Регистрируем обработчик события в on_load
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("Привет!")
     
     @message.on_group_message()
-    async def group_handler(event):
-        self.logger.info("Получено сообщение в группе")
+    async def group_handler(event: Event):
+        self.logger.info("Получено групповое сообщение")
     
-    # Не нужно вручную отписываться, фреймворк сделает это автоматически
+    # Не нужно вручную отписываться, фреймворк будет обрабатывать это автоматически
 ```
 
 > `activate_on` 的完整语法（事件三形式 / 命令简写与 dict 声明 / help 回退链）见
@@ -5436,33 +5456,32 @@ async def on_load(self, event):
 
 ## Обработка ошибок
 
-### 1. Классификация и обработка исключений
+### 1. Обработка исключений по категориям
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # Ожидаемые бизнес-ошибки
-        self.logger.warning(f"Бизнес-предупреждение: {e}")
-        await event.reply(f"Ошибка параметров: {e}")
+        # Ожидаемая бизнес-ошибка
+        self.logger.warning(f"Предупреждение по бизнес-логике: {e}")
+        await event.reply(f"Ошибка параметра: {e}")
     except aiohttp.ClientError as e:
-        # Сетевая ошибка (рекомендуется использовать sdk.client + ClientError)
-        # Старый код, использующий напрямую aiohttp, по-прежнему будет работать,
-        # но в новом коде рекомендуется использовать систему исключений ErisPulse.
-        self.logger.error(f"Сетевая ошибка: {e}")
-        await event.reply("Не удалось выполнить сетевой запрос, повторите попытку позже")
+        # Ошибка сети (рекомендуется использовать sdk.client + ClientError)
+        # Старый код, использующий напрямую aiohttp, по-прежнему работает корректно, но в новом коде рекомендуется использовать систему исключений ErisPulse
+        self.logger.error(f"Ошибка сети: {e}")
+        await event.reply("Ошибка сетевого запроса, пожалуйста, повторите попытку позже")
     except Exception as e:
-        # Неожиданные ошибки
+        # Неожиданная ошибка
         self.logger.error(f"Неизвестная ошибка: {e}", exc_info=True)
-        await event.reply("Ошибка обработки, свяжитесь с администратором")
+        await event.reply("Обработка не удалась, пожалуйста, свяжитесь с администратором")
         raise
 ```
 
-### 2. Обработка таймаутов
+### 2. Обработка тайм-аутов
 
 ```python
-# Рекомендуется использовать встроенный клиент SDK (включает таймауты и перезапросы)
+# Рекомендуется использовать встроенный клиент SDK (имеет встроенный тайм-аут и повторные попытки)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -5471,8 +5490,11 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"Таймаут запроса: {url}")
+        self.logger.warning(f"Тайм-аут запроса: {url}")
         raise
+```
+
+[**中文**](README.zh.md) | [**English**](README.en.md) | [**Русский**](README.ru.md)
 
 ## Система хранения
 
@@ -5541,7 +5563,7 @@ self.logger.info(f"Запрос обработан, от пользовател�
 
 ## Оптимизация производительности
 
-### 1. Использование кэша
+### 1. Использование кэширования
 
 ```python
 class MyModule(BaseModule):
@@ -5554,7 +5576,7 @@ class MyModule(BaseModule):
             if key in self._cache:
                 return self._cache[key]
             
-            # Получение данных из базы данных
+            # Получение из базы данных
             data = await self._fetch_from_db(key)
             
             # Кэширование данных
@@ -5566,12 +5588,12 @@ class MyModule(BaseModule):
 
 ```python
 # Использование асинхронных операций
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # Асинхронная обработка
     await self._async_process(event)
 
 # ❌ Блокирующая операция
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # Синхронная операция, блокирует цикл событий
     result = self._sync_process(event)
 
@@ -5603,19 +5625,19 @@ class MyModule(BaseModule):
     API_KEY = "sk-1234567890"  # Не делайте так!
 ```
 
-### 2. Валидация ввода
+### 2. Проверка входных данных
 
 ```python
-# Валидация пользовательского ввода
-async def process_command(self, event):
+# Проверка пользовательского ввода
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
-    # Валидация длины ввода
+    # Проверка длины ввода
     if len(user_input) > 1000:
         await event.reply("Слишком длинный ввод, пожалуйста, повторите")
         return
     
-    # Валидация формата ввода
+    # Проверка формата ввода
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("Неверный формат ввода")
         return
@@ -13415,20 +13437,24 @@ if result["retcode"] == 10002:
 
 # Сетевой клиент
 
-ErisPulse предоставляет единый сетевой клиент, объединяющий HTTP-запросы, WebSocket-соединения и управление пулом соединений. Модули и адаптеры **должны** использовать этот клиент, а не импортировать сторонние библиотеки, такие как `aiohttp` / `httpx` / `requests`.
+ErisPulse предоставляет единый сетевой клиент, объединяющий HTTP-запросы, WebSocket-соединения и управление пулы соединений. Модули и адаптеры **должны использовать** этот клиент в первую очередь, а не импортировать сторонние библиотеки, такие как `aiohttp` / `httpx` / `requests`.
+
+docs/ru/quick-start.md
 
 ## Обзор
 
 Основные функции сетевого клиента:
 
 - **Единый интерфейс**: предоставляет методы `get` / `post` / `put` / `delete` / `patch` / `request`
-- **WebSocket-клиент**: через `ws_connect` устанавливает WebSocket-соединение
-- **Автоматическое логирование**: все запросы автоматически записываются в лог и статистику
-- **Интеграция с жизненным циклом**: каждый запрос вызывает событие `client.request`, а WebSocket-соединение — `client.ws.connect`
-- **Поддержка повторных попыток**: настраиваемое количество автоматических повторов и интервал
-- **Управление таймаутами**: независимые таймауты подключения и запроса
-- **Повторное использование соединений**: управление пулом соединений на основе aiohttp.ClientSession
-- **Система исключений**: aiohttp-исключения автоматически преобразуются в исключения ErisPulse (система ClientError)
+- **WebSocket-клиент**: установка WebSocket-соединения клиента через `ws_connect`
+- **Автоматическая регистрация в журнале**: все запросы автоматически записываются в журнал и собираются статистические данные
+- **Интеграция жизненного цикла**: каждый запрос вызывает событие жизненного цикла `client.request`, подключение WebSocket вызывает событие `client.ws.connect`
+- **Поддержка повторных попыток**: можно настроить количество и интервал автоматических повторных попыток
+- **Управление тайм-аутами**: отдельные настройки тайм-аута подключения и тайм-аута запроса
+- **Возможность повторного использования пула соединений**: управление пулом соединений на основе aiohttp.ClientSession
+- **Система исключений**: исключения aiohttp автоматически преобразуются в исключения ErisPulse (система ClientError)
+
+[**Переключить язык**](docs/ru/quick-start.md)
 
 ## Быстрый старт
 
@@ -13458,33 +13484,34 @@ from ErisPulse.Core import client
 ws = await client.ws_connect("wss://example.com/ws")
 
 async for text in ws.iter_text():
-    await ws.send_text(f"Echo: {text}")
-```
+    await ws.send_text(f"Эхо: {text}")
 
 ## HttpResponse
 
-Все методы запросов возвращают объект `HttpResponse`:
+Все методы запроса возвращают объект `HttpResponse`:
 
 ```python
 from ErisPulse.Core import client
 
 resp = await client.get("https://httpbin.org/get")
 
-resp.status       # int - HTTP-статус (например, 200, 404)
+resp.status       # int - HTTP статус (например, 200, 404)
 resp.reason       # str | None - описание статуса (например, "OK")
-resp.headers      # Заголовки ответа (регистронезависимые)
+resp.headers      # заголовки ответа (без учета регистра)
 resp.content_type # str | None - Content-Type
-resp.url          # Окончательный URL (может измениться из-за редиректов)
-resp.raw          # Оригинальный ответ (aiohttp.ClientResponse)
+resp.url          # финальный URL (может измениться из-за редиректа)
+resp.raw          # базовый объект ответа (в настоящее время aiohttp.ClientResponse)
 
 # Чтение тела ответа
 body = await resp.read()       # bytes
 text = await resp.text()       # str
-data = await resp.json()       # Парсинг JSON
-text = await resp.text("gbk")  # Указание кодировки
+data = await resp.json()       # разбор JSON
+text = await resp.text("gbk")  # указание кодировки
 ```
 
-## Методы запросов
+[**English**](docs/ru/quick-start.md) | [**Русский**](docs/ru/quick-start.md)
+
+## Методы запроса
 
 ### GET
 
@@ -13509,7 +13536,7 @@ resp = await client.post(
     json={"name": "Alice", "age": 30},
 )
 
-# Тело запроса в формате формы
+# Тело формы
 resp = await client.post(
     "https://api.example.com/login",
     data={"username": "admin", "password": "123"},
@@ -13523,10 +13550,10 @@ resp = await client.post(
 )
 
 # Загрузка файлов (используя параметр files, без импорта aiohttp)
-# Формат: {имя_поля: объект_файла/bytes/(имя_файла, файл)/(имя_файла, файл, тип_контента)}
+# Формат: {имя_поля: объект_файла/bytes/(имя_файла, файл)/(имя_файла, файл, тип_содержимого)}
 resp = await client.post(
     "https://api.example.com/upload",
-    data={"description": "Аватар"},            # Опционально: одновременно с обычными полями формы
+    data={"description": "Аватарка"},            # Необязательно: также передать обычные поля формы
     files={
         "file": ("photo.png", open("photo.png", "rb"), "image/png"),
     },
@@ -13538,7 +13565,7 @@ resp = await client.post(
     files={"file": open("photo.png", "rb")},
 )
 
-# Загрузка данных из памяти (без сохранения на диск)
+# Прямая загрузка данных из памяти (без сохранения на диск)
 import io
 
 resp = await client.post(
@@ -13557,7 +13584,7 @@ resp = await client.delete("https://api.example.com/users/1")
 resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
 ```
 
-### Общий запрос
+### Общий request
 
 ```python
 from ErisPulse.Core import client
@@ -13567,52 +13594,56 @@ resp = await client.request(
     "https://api.example.com/resource",
     headers={"Origin": "https://example.com"},
 )
-```
 
-## Параметры запроса
+## Параметры
 
 ### Параметры HTTP-запроса
 
 | Параметр | Тип | Описание |
 |------|------|------|
-| `url` | `str` | URL запроса |
-| `params` | `dict[str, str]` | Параметры запроса (опционально) |
-| `headers` | `dict[str, str]` | Дополнительные заголовки (опционально) |
-| `data` | `Any` | Тело запроса (форма или сырые данные) (опционально) |
-| `json` | `Any` | Тело запроса в формате JSON (опционально) |
-| `files` | `dict[str, Any]` | Поля для загрузки файлов (опционально, автоматически формирует multipart/form-data) |
-| `timeout` | `float` | Таймаут запроса (секунды) (опционально, переопределяет значение по умолчанию) |
-| `max_retries` | `int` | Максимальное количество повторных попыток (опционально, переопределяет значение по умолчанию) |
+| `url` | `str` | URL-адрес запроса |
+| `params` | `dict[str, str]` | Параметры запроса (необязательно) |
+| `headers` | `dict[str, str]` | Дополнительные заголовки запроса (необязательно) |
+| `data` | `Any` | Тело запроса (форма или сырые данные) (необязательно) |
+| `json` | `Any` | Тело запроса в формате JSON (необязательно) |
+| `files` | `dict[str, Any]` | Поля для загрузки файлов (необязательно, автоматически формируется multipart/form-data) |
+| `timeout` | `float` | Таймаут запроса (секунды) (необязательно, переопределяет значение по умолчанию) |
+| `max_retries` | `int` | Максимальное количество повторных попыток для этого запроса (необязательно, переопределяет значение по умолчанию) |
 
 ### Параметры ws_connect
 
 | Параметр | Тип | Описание |
 |------|------|------|
-| `url` | `str` | URL WebSocket-сервера |
-| `headers` | `dict[str, str]` | Дополнительные заголовки (опционально) |
-| `heartbeat` | `float` | Интервал в секундах для пингов (опционально) |
+| `url` | `str` | URL-адрес сервера WebSocket |
+| `headers` | `dict[str, str]` | Дополнительные заголовки запроса (необязательно) |
+| `heartbeat` | `float` | Интервал между心跳 сообщениями (секунды) (необязательно) |
 
-## Таймауты и повторные попытки
+## Тайм-ауты и повторные попытки
 
 ```python
-from ErisPulse.Core import HttpClient
+from ErisPulse.Core import Client
 
-# Создание клиента с пользовательскими таймаутами
-client = HttpClient(
-    timeout=60,           # Общий таймаут запроса 60 секунд
-    connect_timeout=5,    # Таймаут подключения 5 секунд
-    max_retries=3,        # Автоматические повторные попытки 3 раза
-    retry_delay=2,        # Интервал между повторами 2 секунды
+# Создание клиента с пользовательскими тайм-аутами
+client = Client(
+    timeout=60,           # Общий тайм-аут запроса 60 секунд
+    connect_timeout=5,    # Тайм-аут подключения 5 секунд
+    max_retries=3,        # Автоматические повторные попытки при сбое 3 раза
+    retry_delay=2,        # Интервал между повторными попытками 2 секунды
 )
 
-# Переопределение таймаута для одного запроса
+# Переопределение тайм-аута для одного запроса
 resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
-## Настройка заголовков по умолчанию
+> [!NOTE]
+> Класс клиента с версии 2.8.0 переименован в `Client` (имя свойства `sdk.client` остается неизменным); старое имя `HttpClient` сохранено как совместимое псевдоним, старый код не требует изменений.
+
+[**English**](docs/ru/quick-start.md) | [**简体中文**](docs/ru/quick-start.md) | [**日本語**](README.ja.md) | [**한국어**](README.ko.md)
+
+## Пользовательские заголовки по умолчанию
 
 ```python
-client = HttpClient(
+client = Client(
     headers={
         "Authorization": "Bearer token",
         "X-App-Id": "my-app",
@@ -13621,7 +13652,9 @@ client = HttpClient(
 )
 ```
 
-## Статистика запросов
+[**Перейти к следующему разделу**](docs/ru/quick-start.md)
+
+## Запросы статистики
 
 ```python
 from ErisPulse.Core import client
@@ -13634,11 +13667,13 @@ stats = client.stats
 client.reset_stats()
 ```
 
-## События жизненного цикла
+[**English**](docs/ru/quick-start.md)
+
+## Жизненный цикл событий
 
 ### События HTTP-запросов
 
-Событие `client.request` вызывается после завершения каждого запроса, используется для мониторинга:
+Событие `client.request` срабатывает после завершения каждого запроса и может использоваться для мониторинга:
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -13650,7 +13685,7 @@ async def on_request(event_data):
 
 ### События WebSocket-соединений
 
-Событие `client.ws.connect` вызывается после установления каждого WebSocket-соединения:
+Событие `client.ws.connect` срабатывает каждый раз после установления WebSocket-соединения:
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -13658,20 +13693,21 @@ from ErisPulse.Core import lifecycle
 @lifecycle.on("client.ws.connect")
 async def on_ws_connect(event_data):
     print(f"WS-соединение: {event_data['url']}")
-```
 
-## Контекстный менеджер
+## Управление контекстом
 
 ```python
-# Использование как контекстный менеджер, автоматическое закрытие сессии
-async with HttpClient(timeout=30) as client:
+# В качестве менеджера контекста, автоматически закрывает сессию
+async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
 ```
 
-## WebSocket-клиент
+См. также: [**Справочник API**](docs/ru/api-reference.md)
 
-WebSocket-клиент создается через `client.ws_connect()`, возвращается объект `ClientWebSocket`. Клиент и серверная часть WebSocket разделяют один и тот же базовый класс `WebSocketConnectionBase`, интерфейсы send/receive/iter полностью идентичны.
+## WebSocket клиент
+
+Создайте подключение WebSocket-клиента с помощью `client.ws_connect()`, который возвращает объект `ClientWebSocket`. Клиент и сервер WebSocket используют один и тот же базовый класс `WebSocketConnectionBase`, а интерфейсы send/receive/iter полностью совпадают.
 
 ### Основное использование
 
@@ -13680,16 +13716,16 @@ from ErisPulse.Core import client
 
 ws = await client.ws_connect("wss://example.com/ws", heartbeat=30)
 
-await ws.send_text("Hello")
+await ws.send_text("Привет")
 await ws.send_bytes(b"\x00\x01\x02")
 await ws.send_json({"type": "ping"})
 ```
 
-### Прием сообщений
+### Получение сообщений
 
-#### Рекомендуемые методы (уровень выше)
+#### Высокоуровневые методы (рекомендуется)
 
-Автоматически фильтруют типы сообщений, при разрыве соединения выбрасывают `WebSocketDisconnect`:
+Автоматически фильтрует типы сообщений и выбрасывает `WebSocketDisconnect` при разрыве соединения:
 
 ```python
 from ErisPulse.Core import client
@@ -13715,7 +13751,7 @@ async for obj in ws.iter_json():
 
 #### Низкоуровневые методы
 
-Использование `receive()` и `iter_messages()` для обработки сообщений в их исходном виде, можно различать типы TEXT / BINARY / CLOSE / ERROR:
+Используйте `receive()` и `iter_messages()` для обработки необработанных типов сообщений, чтобы различать TEXT / BINARY / CLOSE / ERROR:
 
 ```python
 from ErisPulse.Core import client
@@ -13723,22 +13759,22 @@ from ErisPulse.Core.Bases.websocket import WSMessage
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# Получение одного сообщения
+# Получение одного необработанного сообщения
 msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
 
-# Итерация по сообщениям (автоматически останавливается при CLOSE/ERROR)
+# Итерация по необработанным сообщениям (автоматически останавливается при CLOSE/ERROR)
 async for msg in ws.iter_messages():
     if msg.type == WSMessage.TEXT:
         print(f"Текст: {msg.data}")
     elif msg.type == WSMessage.BINARY:
-        print(f"Двоичные данные: {len(msg.data)} bytes")
+        print(f"Двоичные данные: {len(msg.data)} байт")
 ```
 
 ### WSMessage
 
-`WSMessage` — единый тип WebSocket-сообщения, не зависит от底层 библиотеки:
+`WSMessage` — это единый тип сообщения WebSocket, независимый от базовой библиотеки:
 
 | Свойство | Тип | Описание |
 |------|------|------|
@@ -13752,11 +13788,11 @@ async for msg in ws.iter_messages():
 | `url` | `URL` | URL соединения |
 | `headers` | `Headers` | Заголовки ответа |
 | `closed` | `bool` | Закрыто ли соединение |
-| `raw` | `object` | Оригинальный объект (aiohttp.ClientWebSocketResponse) |
+| `raw` | `object` | Низкоуровневый объект (aiohttp.ClientWebSocketResponse) |
 
-### Хуки жизненного цикла
+### Жизненный цикл
 
-Аналогично `WebSocketConnection` сервера, поддерживаются обратные вызовы `on_disconnect` и `on_error`:
+Аналогично `серверному WebSocketConnection`, поддерживает обратные вызовы `on_disconnect` и `on_error`:
 
 ```python
 from ErisPulse.Core import client
@@ -13775,25 +13811,24 @@ async def handle_error(ws, error=""):
 ### Закрытие соединения
 
 ```python
-await ws.close(code=1000, reason="Normal closure")
-```
+await ws.close(code=1000, reason="Нормальное закрытие")
 
 ## Система исключений
 
-ErisPulse определяет единый иерархический уровень исключений, запросы, инициированные через `sdk.client`, автоматически преобразуют исключения aiohttp в исключения ErisPulse.
+ErisPulse определяет единый иерархический уровень исключений, при этом запросы, инициированные через `sdk.client`, автоматически преобразуют исключения aiohttp в исключения ErisPulse.
 
-> **Обратная совместимость**: старые модули/адаптеры, использующие напрямую `aiohttp.ClientSession`, не затронуты. Преобразование исключений происходит только при использовании `sdk.client`, код, использующий напрямую aiohttp, по-прежнему ловит исключения `aiohttp.ClientError` и другие оригинальные исключения. Оба способа могут сосуществовать.
+> **Обратная совместимость**: Старые модули/адаптеры, использующие напрямую `aiohttp.ClientSession`, полностью не затрагиваются. Преобразование исключений применяется только при запросах, инициированных через `sdk.client`, а код, использующий напрямую aiohttp, по-прежнему будет перехватывать исключения, такие как `aiohttp.ClientError`. Оба способа могут сосуществовать.
 
 ### Иерархия исключений
 
 ```
 ErisPulseError
-├── ClientError                  # Базовый класс для всех исключений HTTP/WS-клиента
-│   ├── ClientConnectionError    # Ошибка подключения (DNS, соединение отклонено, недоступность сети)
-│   ├── ClientTimeoutError       # Таймаут подключения или запроса
-│   └── HTTPStatusError          # Ошибки HTTP 4xx/5xx
-└── WebSocketError               # Базовый класс WebSocket-исключений
-    └── WebSocketDisconnect      # Отключение WebSocket (общий для клиента и сервера)
+├── ClientError                  # Базовый класс для всех исключений HTTP/WS клиентских запросов
+│   ├── ClientConnectionError    # Ошибка соединения (неудачное разрешение DNS, отказ в подключении, недоступность сети)
+│   ├── ClientTimeoutError       # Ошибка соединения или запроса по таймауту
+│   └── HTTPStatusError          # Ошибка HTTP статуса 4xx/5xx
+└── WebSocketError               # Базовый класс исключений WebSocket
+    └── WebSocketDisconnect      # Отключение WebSocket (общее для клиента и сервера)
 ```
 
 ### Обработка исключений
@@ -13816,7 +13851,7 @@ try:
 except ClientConnectionError:
     print("Невозможно подключиться к серверу")
 except ClientTimeoutError:
-    print("Запрос превысил таймаут")
+    print("Запрос превысил лимит времени")
 except ClientError as e:
     print(f"Запрос не удался: {e}")
 
@@ -13833,7 +13868,7 @@ except WebSocketError as e:
 
 ### Единое перехватывание
 
-Использование `ClientError` для перехвата всех исключений HTTP/WS-клиента:
+Используйте `ClientError` для единого перехвата всех исключений HTTP/WS клиентских запросов:
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError
@@ -13841,12 +13876,12 @@ from ErisPulse.Core.Bases.errors import ClientError
 try:
     resp = await client.get("https://api.example.com/data")
 except ClientError as e:
-    print(f"Ошибка клиента: {e}")
+    print(f"Клиентская ошибка: {e}")
 ```
 
 ### HTTPStatusError
 
-Когда нужно проверить статус-код после запроса и выбросить исключение, можно использовать `HTTPStatusError`:
+Если необходимо проверить код состояния после запроса и выбросить исключение, можно использовать `HTTPStatusError` вручную:
 
 ```python
 from ErisPulse.Core.Bases.errors import HTTPStatusError
@@ -13854,11 +13889,10 @@ from ErisPulse.Core.Bases.errors import HTTPStatusError
 resp = await client.get("https://api.example.com/data")
 if resp.status >= 400:
     raise HTTPStatusError(resp.status, await resp.text())
-```
 
-## Использование в адаптерах
+## Использование в адаптере
 
-Адаптеры могут использовать глобальный клиент или создавать экземпляр клиента для отправки платформенных API-запросов:
+Адаптер может использовать глобальный клиент или создать экземпляр клиента для отправки запросов к API платформы:
 
 ```python
 from ErisPulse.Core import client
@@ -13879,17 +13913,264 @@ class MyAdapter(BaseAdapter):
             raise
 ```
 
-> Также можно использовать `from ErisPulse import sdk` и `sdk.client`, результат будет идентичен.
+> Также можно использовать `sdk.client` через `from ErisPulse import sdk`, результат будет таким же.
 
 ## Лучшие практики
 
-1. **Предпочтительное использование глобального клиента**: получение глобального синглтона через `from ErisPulse.Core import client` для упрощения управления и мониторинга фреймворком
-2. **Избегайте прямого импорта aiohttp**: использование `client` вместо `aiohttp.ClientSession`, при замене底层 реализации код не потребует изменений. Старый код, использующий напрямую aiohttp, по-прежнему работает, оба способа могут сосуществовать
-3. **Использование системы исключений ErisPulse**: при запросах через `sdk.client` ловите `ClientError`, а не `aiohttp.ClientError`, чтобы код не зависел от конкретной HTTP-библиотеки. Код, использующий напрямую aiohttp, не затронут
-4. **Разумная настройка таймаутов**: установка разумных таймаутов в зависимости от скорости ответа API, чтобы избежать длительных блокировок
-5. **Использование механизма повторных попыток**: включение повторов для нестабильных API, повышение надежности
-6. **Мониторинг статистики запросов**: использование `sdk.client.stats` или событий жизненного цикла `client.request` для мониторинга запросов
-7. **Использование высокого уровня методов WebSocket**: предпочтительное использование `iter_text` / `iter_json` и других высокого уровня методов, использование `iter_messages` только при необходимости различать типы сообщений
+1. **Предпочтение глобального клиента**: Используйте `from ErisPulse.Core import client`, чтобы получить глобальный синглтон, что упрощает единое управление и мониторинг в рамках фреймворка
+2. **Избегайте прямого импорта aiohttp**: Используйте `client` вместо `aiohttp.ClientSession`, чтобы в будущем при замене реализации на более низком уровне не пришлось изменять код. Старый код, использующий напрямую aiohttp, будет продолжать работать нормально, и оба способа могут сосуществовать
+3. **Используйте систему исключений ErisPulse**: При запросах через `sdk.client` перехватывайте `ClientError`, а не `aiohttp.ClientError`, чтобы код не зависел от конкретной библиотеки HTTP. Старый код, использующий напрямую aiohttp, не будет затронут
+4. **Разумно задавайте тайм-ауты**: Устанавливайте разумные значения тайм-аутов в зависимости от скорости ответа API, чтобы избежать длительных блокировок
+5. **Используйте механизм повторных попыток**: Включайте повторные попытки для нестабильных API, чтобы повысить надежность
+6. **Мониторинг статистики запросов**: Мониторинг состояния запросов можно осуществлять через `sdk.client.stats` или события жизненного цикла `client.request`
+7. **Использование WebSocket с помощью продвинутых методов**: Предпочтение отдается продвинутым методам, таким как `iter_text` / `iter_json`, и используйте `iter_messages` только в случае необходимости различения типов сообщений
+
+## Руководство по быстрому старту
+
+Перед началом работы с ErisPulse SDK необходимо установить пакет:
+
+```bash
+pip install erispulse-sdk
+```
+
+### Инициализация глобального клиента
+
+Для начала работы с ErisPulse SDK необходимо инициализировать глобальный клиент. Это можно сделать с помощью следующего кода:
+
+```python
+from ErisPulse.Core import client
+
+# Инициализация глобального клиента
+client.init(
+    api_key="your_api_key_here",  # Замените на ваш API ключ
+    base_url="https://api.erispulse.com",  # Опционально: базовый URL API
+    timeout=30,  # Опционально: тайм-аут запроса в секундах
+)
+```
+
+### Пример использования
+
+После инициализации глобального клиента вы можете использовать его для выполнения запросов к API ErisPulse. Ниже приведен пример простого GET-запроса:
+
+```python
+import asyncio
+
+async def main():
+    try:
+        # Выполнение GET-запроса
+        response = await client.get("/some-endpoint")
+        
+        # Обработка ответа
+        if response.status == 200:
+            data = await response.json()
+            print("Данные получены успешно:", data)
+        else:
+            print(f"Ошибка: {response.status}")
+            
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+
+# Запуск асинхронной функции
+asyncio.run(main())
+```
+
+### Дополнительные методы
+
+Кроме GET-запросов, глобальный клиент поддерживает также POST, PUT, DELETE и другие HTTP-методы:
+
+```python
+# POST-запрос
+await client.post("/some-endpoint", json={"key": "value"})
+
+# PUT-запрос
+await client.put("/some-endpoint", json={"key": "value"})
+
+# DELETE-запрос
+await client.delete("/some-endpoint")
+```
+
+### Обработка ошибок
+
+ErisPulse SDK предоставляет собственную систему исключений, которая позволяет обрабатывать ошибки HTTP-запросов:
+
+```python
+from ErisPulse.Core import ClientError
+
+try:
+    response = await client.get("/some-endpoint")
+except ClientError as e:
+    print(f"Ошибка клиента: {e}")
+except Exception as e:
+    print(f"Неизвестная ошибка: {e}")
+```
+
+### WebSocket
+
+Для работы с WebSocket можно использовать метод `client.ws_connect`:
+
+```python
+async def main():
+    async with client.ws_connect("/ws-endpoint") as ws:
+        # Отправка сообщения
+        await ws.send_json({"type": "ping"})
+        
+        # Получение сообщения
+        async for msg in ws:
+            if msg.type == aiohttp.WSMsgType.TEXT:
+                print("Получено сообщение:", msg.data)
+            elif msg.type == aiohttp.WSMsgType.CLOSED:
+                break
+            elif msg.type == aiohttp.WSMsgType.ERROR:
+                break
+
+asyncio.run(main())
+```
+
+### Мониторинг
+
+Для мониторинга статистики запросов можно использовать `client.stats`:
+
+```python
+# Получение статистики
+stats = client.stats()
+print("Общее количество запросов:", stats.total_requests)
+print("Количество успешных запросов:", stats.successful_requests)
+print("Количество ошибок:", stats.errors)
+```
+
+### Завершение работы
+
+После завершения работы с ErisPulse SDK рекомендуется закрыть глобальный клиент:
+
+```python
+await client.close()
+```
+
+## API Reference
+
+### `client.get`
+
+Выполняет GET-запрос к указанному URL.
+
+**Параметры:**
+- `url` (str): URL-адрес, к которому нужно отправить запрос.
+- `params` (Optional[Dict[str, Any]]): Параметры запроса.
+- `headers` (Optional[Dict[str, str]]): Заголовки запроса.
+- `timeout` (Optional[int]): Тайм-аут запроса в секундах.
+
+**Возвращает:**
+- `aiohttp.ClientResponse`: Объект ответа.
+
+**Пример:**
+```python
+response = await client.get("/users")
+```
+
+### `client.post`
+
+Выполняет POST-запрос к указанному URL.
+
+**Параметры:**
+- `url` (str): URL-адрес, к которому нужно отправить запрос.
+- `data` (Optional[Dict[str, Any]]): Данные для отправки.
+- `json` (Optional[Dict[str, Any]]): JSON-данные для отправки.
+- `headers` (Optional[Dict[str, str]]): Заголовки запроса.
+- `timeout` (Optional[int]): Тайм-аут запроса в секундах.
+
+**Возвращает:**
+- `aiohttp.ClientResponse`: Объект ответа.
+
+**Пример:**
+```python
+response = await client.post("/users", json={"name": "John"})
+```
+
+### `client.put`
+
+Выполняет PUT-запрос к указанному URL.
+
+**Параметры:**
+- `url` (str): URL-адрес, к которому нужно отправить запрос.
+- `data` (Optional[Dict[str, Any]]): Данные для отправки.
+- `json` (Optional[Dict[str, Any]]): JSON-данные для отправки.
+- `headers` (Optional[Dict[str, str]]): Заголовки запроса.
+- `timeout` (Optional[int]): Тайм-аут запроса в секундах.
+
+**Возвращает:**
+- `aiohttp.ClientResponse`: Объект ответа.
+
+**Пример:**
+```python
+response = await client.put("/users/1", json={"name": "Jane"})
+```
+
+### `client.delete`
+
+Выполняет DELETE-запрос к указанному URL.
+
+**Параметры:**
+- `url` (str): URL-адрес, к которому нужно отправить запрос.
+- `params` (Optional[Dict[str, Any]]): Параметры запроса.
+- `headers` (Optional[Dict[str, str]]): Заголовки запроса.
+- `timeout` (Optional[int]): Тайм-аут запроса в секундах.
+
+**Возвращает:**
+- `aiohttp.ClientResponse`: Объект ответа.
+
+**Пример:**
+```python
+response = await client.delete("/users/1")
+```
+
+### `client.ws_connect`
+
+Устанавливает WebSocket-соединение с указанным URL.
+
+**Параметры:**
+- `url` (str): URL-адрес, к которому нужно установить соединение.
+- `params` (Optional[Dict[str, Any]]): Параметры запроса.
+- `headers` (Optional[Dict[str, str]]): Заголовки запроса.
+- `timeout` (Optional[int]): Тайм-аут запроса в секундах.
+
+**Возвращает:**
+- `aiohttp.ClientWebSocketResponse`: Объект WebSocket-соединения.
+
+**Пример:**
+```python
+async with client.ws_connect("/ws-endpoint") as ws:
+    await ws.send_json({"type": "ping"})
+    async for msg in ws:
+        if msg.type == aiohttp.WSMsgType.TEXT:
+            print("Получено сообщение:", msg.data)
+```
+
+### `client.stats`
+
+Возвращает статистику запросов.
+
+**Возвращает:**
+- `ClientStats`: Объект со статистикой запросов.
+
+**Пример:**
+```python
+stats = client.stats()
+print("Общее количество запросов:", stats.total_requests)
+print("Количество успешных запросов:", stats.successful_requests)
+print("Количество ошибок:", stats.errors)
+```
+
+### `client.close`
+
+Закрывает глобальный клиент.
+
+**Пример:**
+```python
+await client.close()
+```
+
+## Лицензия
+
+ErisPulse SDK распространяется под лицензией MIT. Подробнее см. в файле [LICENSE](docs/ru/LICENSE.md).
 
 
 

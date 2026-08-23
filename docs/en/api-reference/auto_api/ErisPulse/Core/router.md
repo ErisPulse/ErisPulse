@@ -1000,14 +1000,37 @@ router 中间件配置变更回调：CORS/安全头需重启进程才能生效
 ---
 
 
+##### `_build_ssl_context_from_pem(cert_pem: str, key_pem: str)`
+
+> **内部方法**
+从 PEM 文本内容构建 SSLContext
+
+将证书/密钥写入临时文件（load_cert_chain 需要文件路径），加载完成后
+立即删除临时文件——PEM 内容不落盘残留。
+
+- **cert_pem** (`证书`): PEM 文本
+- **key_pem** (`密钥`): PEM 文本
+**返回值**: ssl.SSLContext
+
+---
+
+
 ##### `async start(host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT, ssl_certfile: str | None = None, ssl_keyfile: str | None = None)`
 
 启动路由服务器
+
+SSL 支持两种配置方式（内容优先于路径）：
+
+- 路径方式：``ssl_certfile`` / ``ssl_keyfile`` 传入证书/密钥文件路径
+- 内容方式：``ssl_cert`` / ``ssl_key`` 直接传入 PEM 文本内容
+  （适合容器/无文件系统场景，框架落盘临时文件构建 SSLContext 后即删除）
 
 - **host** (`str`): 监听地址(默认"0.0.0.0")
 - **port** (`int`): 监听端口(默认8000)
 - **ssl_certfile** (`str`): | None SSL证书路径
 - **ssl_keyfile** (`str`): | None SSL密钥路径
+- **ssl_cert** (`str`): | None SSL证书 PEM 文本内容（优先于 ssl_certfile）
+- **ssl_key** (`str`): | None SSL密钥 PEM 文本内容（优先于 ssl_keyfile）
 
 **异常**: `RuntimeError` - 当服务器已在运行时抛出
 
