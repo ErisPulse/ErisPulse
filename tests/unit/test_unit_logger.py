@@ -662,6 +662,195 @@ class TestPercentFormatting:
         assert any("mapped-value" in d["message"] for d in received)
 
 
+# ==================== 多行消息单行化测试 ====================
+
+
+class TestSingleLineMessages:
+    """多行消息应被规范化为单行（修复 Dashboard 空消息/错位与 plain 文件一行一记录被破坏的问题）"""
+
+    @pytest.fixture
+    def temp_logger(self):
+        test_logger = Logger()
+        yield test_logger
+
+    def test_memory_message_single_line(self, temp_logger):
+        """含真实换行的消息，内存副本应为单行（换行转义为字面 \\n）"""
+        temp_logger.error("[文件下载失败] 无法获取文件: a.png\n原因: timeout")
+        for logs in temp_logger._logs.values():
+            for entry in logs:
+                assert "\n" not in entry["message"]
+        assert any(
+            "\\n原因: timeout" in entry["message"]
+            for logs in temp_logger._logs.values()
+            for entry in logs
+        )
+
+    def test_crlf_and_cr_normalized(self, temp_logger):
+        """CRLF 与孤立 CR 都应被统一处理，不留真实换行"""
+        temp_logger.info("line1\r\nline2\rline3")
+        for logs in temp_logger._logs.values():
+            for entry in logs:
+                assert "\n" not in entry["message"]
+                assert "\r" not in entry["message"]
+
+    def test_subscriber_receives_single_line(self, temp_logger):
+        """订阅器（如 Dashboard）收到的消息应为单行"""
+        received = []
+
+        @temp_logger.handler("single-line", min_level="TRACE")
+        def on_log(d):
+            received.append(d)
+
+        temp_logger.warning("第一行\n\n\n第二行")
+        assert received
+        assert all("\n" not in d["message"] for d in received)
+        assert any("第一行" in d["message"] and "第二行" in d["message"] for d in received)
+
+    def test_child_logger_single_line(self, temp_logger):
+        """子 logger（LoggerChild）同样应用单行化"""
+        child = temp_logger.get_child("adapter.yunhu", relative=False)
+        child.error("失败\n原因: token 过期")
+        for logs in temp_logger._logs.values():
+            for entry in logs:
+                assert "\n" not in entry["message"]
+
+    def test_plain_file_one_record_per_line(self, temp_logger):
+        """plain 格式文件输出应保持一行一记录"""
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as td:
+            log_file = Path(td) / "app.log"
+            temp_logger.set_format("plain")
+            assert temp_logger.set_output_file(str(log_file))
+            temp_logger.error("多行消息第一行\n多行消息第二行")
+            for handler in temp_logger._file_handlers:
+                handler.flush()
+            content = log_file.read_text(encoding="utf-8")
+            lines = [line for line in content.splitlines() if line.strip()]
+            assert len(lines) == 1
+            assert "\\n多行消息第二行" in lines[0]
+            # 清理 - 先关闭 handler 再退出临时目录（Windows 文件占用）
+            for handler in temp_logger._file_handlers:
+                temp_logger._logger.removeHandler(handler)
+                handler.close()
+            temp_logger._file_handlers.clear()
+
+    def test_file_line_contains_timestamp_and_level(self, temp_logger):
+        """非 JSON 模式的文件行应包含时间戳与级别（与控制台信息对齐）"""
+        import re
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as td:
+            log_file = Path(td) / "app.log"
+            assert temp_logger.set_output_file(str(log_file))
+            temp_logger.warning("文件格式验证")
+            for handler in temp_logger._file_handlers:
+                handler.flush()
+            content = log_file.read_text(encoding="utf-8")
+            assert re.search(
+                r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \[WARNING\] \[.*\] 文件格式验证",
+                content,
+            )
+            for handler in temp_logger._file_handlers:
+                temp_logger._logger.removeHandler(handler)
+                handler.close()
+            temp_logger._file_handlers.clear()
+
+    def test_formatted_args_then_single_lined(self, temp_logger):
+        """先展开 %s 再单行化：参数引入的换行同样被转义"""
+        temp_logger.info("result: %s", "ok\nwith newline")
+        for logs in temp_logger._logs.values():
+            for entry in logs:
+                assert "\n" not in entry["message"]
+
+    def test_empty_message_untouched(self, temp_logger):
+        """空消息不受单行化影响"""
+        temp_logger.info("")
+        assert any(
+            entry["message"] == ""
+            for logs in temp_logger._logs.values()
+            for entry in logs
+        )
+
+    def test_save_logs_plain_writes_message_text(self, temp_logger):
+        """save_logs plain 模式应写消息文本，而非 dict repr"""
+        import tempfile
+        from pathlib import Path
+
+        temp_logger.info("hello from memory")
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td) / "dump.log"
+            assert temp_logger.save_logs(str(out))
+            content = out.read_text(encoding="utf-8")
+            assert "hello from memory" in content
+            assert "'timestamp'" not in content
+            assert "'level_num'" not in content
+
+    def test_console_keeps_multiline_layout(self, temp_logger, capsys):
+        """控制台（plain 格式）应保留多行布局（如路由服务器地址树）"""
+        temp_logger.set_format("plain")
+        temp_logger.info("启动路由服务器 http://0.0.0.0:8000\n  ├─ 局域网IPv4: http://192.168.1.2:8000\n  └─ 局域网IPv6: http://[fe80::1]:8000")
+        captured = capsys.readouterr()
+        console = captured.err or captured.out
+        # 控制台输出保留真实换行（三行布局）
+        assert "启动路由服务器 http://0.0.0.0:8000\n" in console
+        assert "├─ 局域网IPv4" in console
+        assert "└─ 局域网IPv6" in console
+        # 控制台不应出现字面 \n 转义
+        assert "\\n" not in console
+
+    def test_file_single_line_while_console_multiline(self, temp_logger, capsys):
+        """同一条多行日志：控制台多行、文件单行（转义）"""
+        import tempfile
+        from pathlib import Path
+
+        temp_logger.set_format("plain")
+        with tempfile.TemporaryDirectory() as td:
+            log_file = Path(td) / "app.log"
+            assert temp_logger.set_output_file(str(log_file))
+            temp_logger.warning("第一行\n第二行")
+            for handler in temp_logger._file_handlers:
+                handler.flush()
+            # 控制台多行
+            captured = capsys.readouterr()
+            console = captured.err or captured.out
+            assert "第一行\n第二行" in console
+            # 文件单行
+            content = log_file.read_text(encoding="utf-8")
+            lines = [line for line in content.splitlines() if line.strip()]
+            assert len(lines) == 1
+            assert "\\n第二行" in lines[0]
+            for handler in temp_logger._file_handlers:
+                temp_logger._logger.removeHandler(handler)
+                handler.close()
+            temp_logger._file_handlers.clear()
+
+    def test_json_file_single_line(self, temp_logger):
+        """JSON 模式文件输出保持 JSONL 一行一记录"""
+        import json as jsonlib
+        import tempfile
+        from pathlib import Path
+
+        temp_logger.set_format("json")
+        with tempfile.TemporaryDirectory() as td:
+            log_file = Path(td) / "app.jsonl"
+            assert temp_logger.set_output_file(str(log_file))
+            temp_logger.error("json 多行\n消息体")
+            for handler in temp_logger._file_handlers:
+                handler.flush()
+            content = log_file.read_text(encoding="utf-8")
+            lines = [line for line in content.splitlines() if line.strip()]
+            assert len(lines) == 1
+            entry = jsonlib.loads(lines[0])
+            assert "\\n" in entry["message"]
+            for handler in temp_logger._file_handlers:
+                temp_logger._logger.removeHandler(handler)
+                handler.close()
+            temp_logger._file_handlers.clear()
+
+
 # ==================== 输出格式（rich / plain / json）测试 ====================
 
 
@@ -867,3 +1056,249 @@ class TestSubscriberBelowGlobalLevel:
         temp_logger.debug("fully filtered")
         captured = capsys.readouterr()
         assert "fully filtered" not in (captured.out + captured.err)
+
+
+# ==================== 屏蔽日志等级（隐私）测试 ====================
+
+
+class TestExcludedLevels:
+    """exclude_levels 屏蔽指定日志等级（如 EVENT 隐藏消息内容）"""
+
+    @pytest.fixture
+    def temp_logger(self):
+        test_logger = Logger()
+        yield test_logger
+
+    def test_set_excluded_levels(self, temp_logger):
+        """设置屏蔽等级列表"""
+        assert temp_logger.set_excluded_levels(["EVENT"]) is True
+        assert temp_logger.list_excluded_levels() == ["EVENT"]
+
+    def test_set_excluded_levels_empty(self, temp_logger):
+        """清空屏蔽等级"""
+        temp_logger.set_excluded_levels(["EVENT"])
+        assert temp_logger.set_excluded_levels([]) is True
+        assert temp_logger.list_excluded_levels() == []
+
+    def test_set_excluded_levels_invalid(self, temp_logger):
+        """非法等级应拒绝且不生效"""
+        assert temp_logger.set_excluded_levels(["NOPE"]) is False
+        assert temp_logger.list_excluded_levels() == []
+
+    def test_exclude_and_allow_level(self, temp_logger):
+        """单个等级屏蔽 / 恢复"""
+        assert temp_logger.exclude_level("EVENT") is True
+        assert temp_logger.list_excluded_levels() == ["EVENT"]
+        assert temp_logger.allow_level("EVENT") is True
+        assert temp_logger.list_excluded_levels() == []
+
+    def test_allow_level_not_excluded(self, temp_logger):
+        """恢复未屏蔽等级返回 False"""
+        assert temp_logger.allow_level("EVENT") is False
+
+    def test_excluded_level_not_in_memory(self, temp_logger):
+        """被屏蔽等级不入内存（get_logs 不可见）"""
+        temp_logger.set_excluded_levels(["EVENT"])
+        temp_logger.event("secret message content")
+        all_logs = temp_logger.get_logs()
+        flat = []
+        for logs in all_logs.values():
+            flat.extend(logs)
+        assert not any("secret message content" in entry for entry in flat)
+
+    def test_excluded_level_not_to_console(self, temp_logger, capsys):
+        """被屏蔽等级不输出控制台"""
+        temp_logger.set_excluded_levels(["EVENT"])
+        temp_logger.event("hidden console content")
+        captured = capsys.readouterr()
+        assert "hidden console content" not in (captured.out + captured.err)
+
+    def test_excluded_level_not_to_subscriber(self, temp_logger):
+        """被屏蔽等级不推送给订阅器（即使 min_level 更低）"""
+        temp_logger.set_excluded_levels(["EVENT"])
+        received = []
+
+        @temp_logger.handler("excl-privacy", min_level="TRACE")
+        def on_log(d):
+            received.append(d)
+
+        temp_logger.event("hidden from subscriber")
+        assert not any("hidden from subscriber" in d["message"] for d in received)
+
+    def test_other_levels_unaffected(self, temp_logger, caplog):
+        """屏蔽 EVENT 不影响 INFO / WARNING 等其它等级"""
+        temp_logger.set_excluded_levels(["EVENT"])
+        temp_logger.info("normal info still works")
+        temp_logger.warning("warning still works")
+        with caplog.at_level(logging.INFO):
+            pass
+        all_logs = temp_logger.get_logs()
+        flat = []
+        for logs in all_logs.values():
+            flat.extend(logs)
+        assert any("normal info still works" in entry for entry in flat)
+        assert any("warning still works" in entry for entry in flat)
+
+    def test_child_logger_respects_exclusion(self, temp_logger):
+        """LoggerChild 遵循父 Logger 的屏蔽等级"""
+        temp_logger.set_excluded_levels(["EVENT"])
+        child = LoggerChild(temp_logger, "Message")
+        child.event("child hidden content")
+        all_logs = temp_logger.get_logs()
+        flat = []
+        for logs in all_logs.values():
+            flat.extend(logs)
+        assert not any("child hidden content" in entry for entry in flat)
+
+    def test_config_hot_reload_applies_exclude_levels(self, temp_logger):
+        """配置热更新：exclude_levels 变化时重新应用"""
+        with patch("ErisPulse.runtime.get_logger_config") as mock_get:
+            mock_get.return_value = {"exclude_levels": ["EVENT"]}
+            temp_logger._setup_config()
+            assert temp_logger.list_excluded_levels() == ["EVENT"]
+
+    def test_excluded_level_not_to_file(self, temp_logger):
+        """被屏蔽等级不写入日志文件"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_file = os.path.join(tmpdir, "test.log")
+            temp_logger.set_excluded_levels(["EVENT"])
+            temp_logger.set_output_file(log_file)
+            temp_logger.event("hidden from file")
+            temp_logger.info("visible in file")
+            for handler in temp_logger._file_handlers:
+                temp_logger._logger.removeHandler(handler)
+                handler.close()
+            temp_logger._file_handlers.clear()
+            with open(log_file, encoding="utf-8") as f:
+                content = f.read()
+            assert "hidden from file" not in content
+            assert "visible in file" in content
+
+
+# ==================== 日志目录与自动分段测试 ====================
+
+
+class TestLogDirectoryRotation:
+    """set_output_dir 支持目录日志与 size/date/none 三种分段方式"""
+
+    @pytest.fixture
+    def temp_logger(self):
+        test_logger = Logger()
+        yield test_logger
+        for handler in test_logger._file_handlers:
+            test_logger._logger.removeHandler(handler)
+            handler.close()
+        test_logger._file_handlers.clear()
+
+    def _close_handlers(self, lg):
+        """关闭文件处理器（Windows 下须在删除文件/目录前关闭）"""
+        for handler in lg._file_handlers:
+            lg._logger.removeHandler(handler)
+            handler.close()
+        lg._file_handlers.clear()
+
+    def test_creates_directory_and_writes_log(self, temp_logger):
+        """目录不存在时自动创建，日志写入目录内文件"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_dir = os.path.join(tmpdir, "nested", "logs")
+            assert temp_logger.set_output_dir(log_dir)
+            assert os.path.isdir(log_dir)
+            temp_logger.info("dir mode message")
+            for handler in temp_logger._file_handlers:
+                handler.flush()
+            log_file = os.path.join(log_dir, "erispulse.log")
+            assert os.path.exists(log_file)
+            with open(log_file, encoding="utf-8") as f:
+                content = f.read()
+            assert "dir mode message" in content
+            self._close_handlers(temp_logger)
+
+    def test_size_rotation_creates_backup(self, temp_logger):
+        """size 模式超过单文件上限后轮转出备份文件"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            assert temp_logger.set_output_dir(
+                tmpdir, rotation="size", max_size_mb=0.001, backup_count=2
+            )
+            for i in range(20):
+                temp_logger.info("rotation trigger line %03d %s" % (i, "x" * 200))
+            for handler in temp_logger._file_handlers:
+                handler.flush()
+            backups = [f for f in os.listdir(tmpdir) if f.startswith("erispulse.log.")]
+            assert backups, "expected rotated backup files"
+            self._close_handlers(temp_logger)
+
+    def test_date_mode_uses_timed_handler(self, temp_logger):
+        """date 模式使用 TimedRotatingFileHandler"""
+        from logging.handlers import TimedRotatingFileHandler
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            assert temp_logger.set_output_dir(tmpdir, rotation="date", when="midnight")
+            assert any(
+                isinstance(h, TimedRotatingFileHandler)
+                for h in temp_logger._file_handlers
+            )
+            self._close_handlers(temp_logger)
+
+    def test_none_mode_plain_file(self, temp_logger):
+        """none 模式等同普通文件，不轮转"""
+        from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            assert temp_logger.set_output_dir(tmpdir, rotation="none")
+            assert temp_logger._file_handlers
+            for h in temp_logger._file_handlers:
+                assert not isinstance(h, (RotatingFileHandler, TimedRotatingFileHandler))
+            self._close_handlers(temp_logger)
+
+    def test_invalid_rotation_rejected(self, temp_logger):
+        """非法分段方式返回 False"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            assert not temp_logger.set_output_dir(tmpdir, rotation="hourly")
+            self._close_handlers(temp_logger)
+
+    def test_replaces_existing_file_handlers(self, temp_logger):
+        """切换到目录模式后替换 set_output_file 设置的处理器"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plain = os.path.join(tmpdir, "plain.log")
+            assert temp_logger.set_output_file(plain)
+            assert len(temp_logger._file_handlers) == 1
+            assert temp_logger.set_output_dir(os.path.join(tmpdir, "logs"))
+            assert len(temp_logger._file_handlers) == 1
+            assert not os.path.samefile(
+                temp_logger._file_handlers[0].baseFilename, os.path.abspath(plain)
+            )
+            self._close_handlers(temp_logger)
+
+    def test_config_applies_log_dir(self, temp_logger):
+        """_setup_config 读取 log_dir 配置段并应用目录日志"""
+        from logging.handlers import TimedRotatingFileHandler
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_dir = os.path.join(tmpdir, "cfg_logs")
+            with patch("ErisPulse.runtime.get_logger_config") as mock_get:
+                mock_get.return_value = {
+                    "log_dir": log_dir,
+                    "log_rotation": "date",
+                }
+                temp_logger._setup_config()
+            assert os.path.isdir(log_dir)
+            assert any(
+                isinstance(h, TimedRotatingFileHandler)
+                for h in temp_logger._file_handlers
+            )
+            self._close_handlers(temp_logger)
+
+    def test_log_files_takes_priority_over_log_dir(self, temp_logger):
+        """log_files 显式路径优先于 log_dir"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plain = os.path.join(tmpdir, "explicit.log")
+            with patch("ErisPulse.runtime.get_logger_config") as mock_get:
+                mock_get.return_value = {
+                    "log_files": [plain],
+                    "log_dir": os.path.join(tmpdir, "unused_dir"),
+                }
+                temp_logger._setup_config()
+            assert not os.path.exists(os.path.join(tmpdir, "unused_dir"))
+            assert temp_logger._file_handlers
+            assert temp_logger._file_handlers[0].baseFilename == os.path.abspath(plain)
+            self._close_handlers(temp_logger)

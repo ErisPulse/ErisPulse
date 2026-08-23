@@ -15,18 +15,16 @@
 
 ### 适配器架构
 
-```
-正向转换（接收）                        反向转换（发送）
-─────────────                        ─────────────
-平台事件                               模块构建消息
-    ↓                                    ↓
-Converter.convert()               Send.Raw_ob12()
-    ↓                                    ↓
-OneBot12 标准事件                   平台原生 API 调用
-    ↓                                    ↓
-事件系统                             标准响应格式
-    ↓
-模块处理
+```mermaid
+flowchart LR
+    subgraph receive["正向转换（接收）"]
+        direction TB
+        P1["平台事件"] --> C1["Converter.convert()"] --> O1["OneBot12 标准事件"] --> S1["事件系统"] --> M1["模块处理"]
+    end
+    subgraph send["反向转换（发送）"]
+        direction TB
+        M2["模块构建消息"] --> R1["Send.Raw_ob12()"] --> N1["平台原生 API 调用"] --> R2["标准响应格式"]
+    end
 ```
 
 ## 目录结构
@@ -351,6 +349,41 @@ async def handle_friend_request(event):
 # MyAdapter/__init__.py
 from .Core import MyAdapter
 ```
+
+## 依赖声明（可选，2.8.0+）
+
+适配器可以声明对其它适配器或模块的依赖，实现适配器间联动与可选功能：
+
+```python
+from typing import ClassVar
+
+class MyAdapter(BaseAdapter):
+    # 硬依赖：缺失时跳过启动（警告 + status=skipped-dependency 事件）
+    depends: ClassVar[dict] = {
+        "adapters": ["onebot11"],   # 依赖的适配器（按平台名）
+        "modules": ["TranslateEngine"],  # 依赖的模块（按注册名）
+    }
+    # 软依赖：缺失不影响启动；模块加载/卸载时收到回调（可选功能模式）
+    optional_modules: ClassVar[list] = ["TranslateEngine"]
+```
+
+- **启动顺序**：声明了模块硬依赖的适配器会**推迟到模块初始化完成后**再启动
+- **软依赖通知**：`optional_modules`（或模块硬依赖）中的模块被加载时调用 `on_dependency_ready(module_name)`；被卸载时调用 `on_dependency_lost(module_name)`（默认空实现，可覆写）——覆盖晚加载与热重载场景：
+
+```python
+async def on_dependency_ready(self, module_name):
+    """软依赖模块就绪：启用对应可选功能"""
+    if module_name == "TranslateEngine":
+        self._translate = self.sdk.TranslateEngine
+
+async def on_dependency_lost(self, module_name):
+    """软依赖模块丢失：降级功能"""
+    if module_name == "TranslateEngine":
+        self._translate = None
+```
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
 
 ## `__init__` 注意事项
 

@@ -20,6 +20,16 @@ from .config import config
 from .constants import (
     ADAPTER_RETRY_BACKOFF_INTERVALS,
     ADAPTER_RETRY_FIXED_DELAY_SECS,
+    ADAPTER_STATUS_DISABLED,
+    ADAPTER_STATUS_SKIPPED_DEPENDENCY,
+    ADAPTER_STATUS_START_FAILED,
+    ADAPTER_STATUS_STARTED,
+    ADAPTER_STATUS_STARTING,
+    ADAPTER_STATUS_STOP_FAILED,
+    ADAPTER_STATUS_STOPPED,
+    ADAPTER_STATUS_STOPPING,
+    BOT_STATUS_OFFLINE,
+    BOT_STATUS_ONLINE,
     CONFIG_KEY_ADAPTER_STATUS,
     CONFIG_KEY_ADAPTER_STATUS_OF,
     DEFAULT_ADAPTER_ENABLED,
@@ -141,6 +151,9 @@ class AdapterManager(ManagerBase):
 
         # 注册配置变更路由：将 config.set / config.updated 事件转发到各适配器的 on_config_update
         self._register_config_change_routing()
+        # 注册模块依赖通知路由：将 module.load / module.unload 事件转发到
+        # 声明了 optional_modules / depends.modules 的适配器钩子
+        self._register_dependency_routing()
         # framework 配置（如 handler_max_concurrency）不在任何适配器配置键下，
         # 需 manager 级别单独订阅以支持热更新
         try:
@@ -151,6 +164,28 @@ class AdapterManager(ManagerBase):
             lifecycle.register("config.set", self._on_framework_config_changed)
         except Exception as e:
             logger.trace(i18n.t("core.adapter.config_hook_register_failed", error=e))
+
+    @staticmethod
+    def _shutdown_timeout() -> float:
+        """
+        {!--< internal-use >!--}
+        读取适配器 shutdown 优雅收尾的超时（秒）
+
+        复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算）；
+        未配置或非法时回退常量默认值。
+
+        :return: 超时秒数（>0）
+        """
+        from ..runtime import get_framework_config
+        from .constants import DEFAULT_UNINIT_TIMEOUT_SECS
+
+        try:
+            value = get_framework_config().get("uninit_timeout")
+            if isinstance(value, (int, float)) and value > 0:
+                return float(value)
+        except Exception:
+            pass
+        return float(DEFAULT_UNINIT_TIMEOUT_SECS)
 
     def set_sdk_ref(self, sdk) -> bool:
         """
@@ -175,6 +210,141 @@ class AdapterManager(ManagerBase):
         """
         lifecycle.register("config.set", self._on_config_set)
         lifecycle.register("config.updated", self._on_config_updated)
+
+    # ==================== 依赖声明路由（2.8.0+） ====================
+
+    def _register_dependency_routing(self) -> None:
+        """
+        {!--< internal-use >!--}
+        注册 module.load / module.unload 事件订阅，将模块就绪/丢失路由到
+        声明了依赖的适配器的 on_dependency_ready / on_dependency_lost 钩子
+        """
+        try:
+            lifecycle.register("module.load", self._on_module_load_notify)
+            lifecycle.register("module.unload", self._on_module_unload_notify)
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.dependency_hook_register_failed", error=e)
+            )
+
+    def _dependency_watchers(self, module_name: str) -> list[tuple[str, "BaseAdapter"]]:
+        """
+        {!--< internal-use >!--}
+        找出关注指定模块的已注册适配器（软依赖或硬依赖均可收到通知）
+
+        :param module_name: 模块名
+        :return: [(platform, adapter_instance), ...]
+        """
+        watchers = []
+        for platform, adapter in self._adapters.items():
+            optional = getattr(adapter, "optional_modules", None) or []
+            depends = getattr(adapter, "depends", None) or {}
+            dep_modules = depends.get("modules", []) if isinstance(depends, dict) else []
+            if module_name in optional or module_name in dep_modules:
+                watchers.append((platform, adapter))
+        return watchers
+
+    async def _dispatch_dependency_event(
+        self, module_name: str, hook_name: str
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        向关注指定模块的适配器分发依赖事件钩子
+
+        :param module_name: 模块名
+        :param hook_name: 钩子方法名（on_dependency_ready / on_dependency_lost）
+        """
+        for platform, adapter in self._dependency_watchers(module_name):
+            hook = getattr(adapter, hook_name, None)
+            if hook is None:
+                continue
+            try:
+                import inspect as _inspect
+
+                if _inspect.iscoroutinefunction(hook):
+                    await hook(module_name)
+                else:
+                    hook(module_name)
+            except Exception as e:
+                logger.warning(
+                    i18n.t(
+                        "core.adapter.dependency_hook_failed",
+                        platform=platform,
+                        hook=hook_name,
+                        error=e,
+                    )
+                )
+
+    async def _on_module_load_notify(self, data: dict) -> None:
+        """
+        {!--< internal-use >!--}
+        处理 module.load 事件：通知依赖该模块的适配器（on_dependency_ready）
+        """
+        module_name = self._extract_module_name(data)
+        if not module_name or module_name == "All":
+            return
+        await self._dispatch_dependency_event(module_name, "on_dependency_ready")
+
+    async def _on_module_unload_notify(self, data: dict) -> None:
+        """
+        {!--< internal-use >!--}
+        处理 module.unload 事件：通知依赖该模块的适配器（on_dependency_lost）
+        """
+        module_name = self._extract_module_name(data)
+        if not module_name or module_name == "All":
+            return
+        await self._dispatch_dependency_event(module_name, "on_dependency_lost")
+
+    @staticmethod
+    def _extract_module_name(data: dict) -> "str | None":
+        """
+        {!--< internal-use >!--}
+        从生命周期事件数据中提取模块名
+
+        兼容两种事件形状：直接 emit 的扁平 dict（``{"module_name": ...}``）
+        与 submit_event 包装的标准事件（``{"data": {"module_name": ...}}``）。
+
+        :param data: 生命周期事件数据
+        :return: 模块名，无法提取时返回 None
+        """
+        if not isinstance(data, dict):
+            return None
+        name = data.get("module_name")
+        if not name and isinstance(data.get("data"), dict):
+            name = data["data"].get("module_name")
+        return name
+
+    def _check_missing_dependencies(
+        self, adapter: "BaseAdapter", platform: str
+    ) -> list[str]:
+        """
+        {!--< internal-use >!--}
+        检查适配器硬依赖是否就绪（适配器 + 模块均已注册）
+
+        :param adapter: 适配器实例
+        :param platform: 平台名称（用于日志）
+        :return: 缺失的依赖描述列表（空列表表示全部就绪）
+        """
+        depends = getattr(adapter, "depends", None) or {}
+        if not isinstance(depends, dict):
+            return []
+        missing: list[str] = []
+
+        missing.extend(
+            f"adapter:{dep}"
+            for dep in depends.get("adapters", []) or []
+            if dep not in self._adapters
+        )
+
+        module_manager = getattr(self._sdk, "module", None) if self._sdk else None
+        module_classes = getattr(module_manager, "_module_classes", {}) or {}
+        missing.extend(
+            f"module:{dep}"
+            for dep in depends.get("modules", []) or []
+            if dep not in module_classes
+        )
+
+        return missing
 
     def _on_config_set(self, data: dict) -> None:
         """
@@ -468,6 +638,31 @@ class AdapterManager(ManagerBase):
                 )
                 return
 
+            # 硬依赖检查：缺失则跳过启动（警告 + skipped-dependency 状态事件）
+            missing_deps = self._check_missing_dependencies(adapter, platform)
+            if missing_deps:
+                logger.warning(
+                    i18n.t(
+                        "core.adapter.dependencies_missing",
+                        platform=platform,
+                        deps=", ".join(missing_deps),
+                    )
+                )
+                await lifecycle.submit_event(
+                    "adapter.status.change",
+                    msg=i18n.t(
+                        "core.adapter.state_skipped_dependency",
+                        platform=platform,
+                        deps=", ".join(missing_deps),
+                    ),
+                    data={
+                        "platform": platform,
+                        "status": ADAPTER_STATUS_SKIPPED_DEPENDENCY,
+                        "missing": missing_deps,
+                    },
+                )
+                return
+
             retry_count = 0
             fixed_delay = ADAPTER_RETRY_FIXED_DELAY_SECS
             backoff_intervals = ADAPTER_RETRY_BACKOFF_INTERVALS
@@ -478,7 +673,7 @@ class AdapterManager(ManagerBase):
                 msg=i18n.t("core.adapter.state_starting", platform=platform),
                 data={
                     "platform": platform,
-                    "status": "starting",
+                    "status": ADAPTER_STATUS_STARTING,
                     "retry_count": retry_count,
                 },
             )
@@ -500,7 +695,7 @@ class AdapterManager(ManagerBase):
                     await lifecycle.submit_event(
                         "adapter.status.change",
                         msg=i18n.t("core.adapter.state_started", platform=platform),
-                        data={"platform": platform, "status": "started"},
+                        data={"platform": platform, "status": ADAPTER_STATUS_STARTED},
                     )
 
                     return
@@ -528,7 +723,7 @@ class AdapterManager(ManagerBase):
                         ),
                         data={
                             "platform": platform,
-                            "status": "start_failed",
+                            "status": ADAPTER_STATUS_START_FAILED,
                             "retry_count": retry_count,
                             "error": str(e),
                         },
@@ -612,7 +807,7 @@ class AdapterManager(ManagerBase):
                 # 收集该平台下需要标记为离线的 Bot
                 if platform in self._bots:
                     for bot_id, bot_info in self._bots[platform].items():
-                        if bot_info.get("status") != "offline":
+                        if bot_info.get("status") != BOT_STATUS_OFFLINE:
                             bots_to_offline.append((platform, bot_id))
 
             # 对每个受影响的 adapter 实例执行 shutdown（如果尚未关闭）
@@ -629,11 +824,14 @@ class AdapterManager(ManagerBase):
                             await lifecycle.submit_event(
                                 "adapter.status.change",
                                 msg=i18n.t("core.adapter.state_stopping", platform=p),
-                                data={"platform": p, "status": "stopping"},
+                                data={"platform": p, "status": ADAPTER_STATUS_STOPPING},
                             )
 
                     try:
-                        await adapter_instance.shutdown()
+                        await asyncio.wait_for(
+                            adapter_instance.shutdown(),
+                            timeout=self._shutdown_timeout(),
+                        )
                         self._started_instances.remove(adapter_instance)
 
                         # 提交适配器状态变化事件（stopped）
@@ -644,9 +842,33 @@ class AdapterManager(ManagerBase):
                                     msg=i18n.t(
                                         "core.adapter.state_stopped", platform=p
                                     ),
-                                    data={"platform": p, "status": "stopped"},
+                                    data={"platform": p, "status": ADAPTER_STATUS_STOPPED},
+                                )
+                    except asyncio.TimeoutError:
+                        # shutdown 超时：强杀语义——不再视为已启动，进入停止失败路径
+                        self._started_instances.discard(adapter_instance)
+                        logger.warning(
+                            i18n.t(
+                                "core.adapter.shutdown_timeout",
+                                platform=", ".join(instance_platforms),
+                                timeout=self._shutdown_timeout(),
+                            )
+                        )
+                        for p in instance_platforms:
+                            if p in platforms:
+                                await lifecycle.submit_event(
+                                    "adapter.status.change",
+                                    msg=i18n.t(
+                                        "core.adapter.state_stop_failed", platform=p
+                                    ),
+                                    data={
+                                        "platform": p,
+                                        "status": ADAPTER_STATUS_STOP_FAILED,
+                                        "error": "shutdown timeout",
+                                    },
                                 )
                     except Exception as e:
+                        self._started_instances.discard(adapter_instance)
                         logger.error(
                             i18n.t(
                                 "core.adapter.stop_failed",
@@ -665,20 +887,20 @@ class AdapterManager(ManagerBase):
                                     ),
                                     data={
                                         "platform": p,
-                                        "status": "stop_failed",
+                                        "status": ADAPTER_STATUS_STOP_FAILED,
                                         "error": str(e),
                                     },
                                 )
 
-            # 清理被关闭平台注册的资源（路由 + 命令 + 事件处理器），与模块卸载对齐颗粒度。
+            # 清理被关闭平台注册的资源（路由 + 命令 + 事件处理器 + 后台任务），与模块卸载对齐颗粒度。
             # 同时覆盖"以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册"的资源。
             for platform in platforms:
-                self._cleanup_adapter_resources(platform)
+                await self._cleanup_adapter_resources(platform)
 
             # 将相关 Bot 标记为离线
             for platform, bot_id in bots_to_offline:
                 if platform in self._bots and bot_id in self._bots[platform]:
-                    self._bots[platform][bot_id]["status"] = "offline"
+                    self._bots[platform][bot_id]["status"] = BOT_STATUS_OFFLINE
                     await lifecycle.submit_event(
                         "adapter.bot.offline",
                         msg=i18n.t(
@@ -687,7 +909,7 @@ class AdapterManager(ManagerBase):
                         data={
                             "platform": platform,
                             "bot_id": bot_id,
-                            "status": "offline",
+                            "status": BOT_STATUS_OFFLINE,
                         },
                     )
 
@@ -720,7 +942,8 @@ class AdapterManager(ManagerBase):
         场景均经此入口，保证适配器一旦停止、归属资源必被回收，无需调用方再补清理。
 
         对未注册的平台直接返回；``shutdown()`` 与清理均幂等，半途失败的重试场景
-        也能正确回收 start() 期间已注册的资源。
+        也能正确回收 start() 期间已注册的资源。``shutdown()`` 带优雅收尾超时
+        （``unload_timeout``），卡死时强制进入清理，避免阻塞重启/关闭链路。
 
         :param platform: 平台名称
         {!--< /internal-use >!--}
@@ -731,15 +954,26 @@ class AdapterManager(ManagerBase):
 
         # 调用适配器自身 shutdown（未启动/半途失败的重试场景也需清理部分状态）
         try:
-            await adapter_instance.shutdown()
+            await asyncio.wait_for(
+                adapter_instance.shutdown(),
+                timeout=self._shutdown_timeout(),
+            )
+        except asyncio.TimeoutError:
+            logger.warning(
+                i18n.t(
+                    "core.adapter.shutdown_timeout",
+                    platform=platform,
+                    timeout=self._shutdown_timeout(),
+                )
+            )
         except Exception as e:
             logger.error(
                 i18n.t("core.adapter.stop_adapter_failed", platform=platform, error=e)
             )
         self._started_instances.discard(adapter_instance)
 
-        # 回收该平台运行期间注册的路由/事件/命令（幂等）
-        self._cleanup_adapter_resources(platform)
+        # 回收该平台运行期间注册的路由/事件/命令与后台任务（幂等）
+        await self._cleanup_adapter_resources(platform)
 
     async def _drain_pending_handler_tasks(
         self, timeout: float = DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS
@@ -774,12 +1008,13 @@ class AdapterManager(ManagerBase):
         finally:
             self._pending_handler_tasks.clear()
 
-    def _cleanup_adapter_resources(self, platform: str) -> None:
+    async def _cleanup_adapter_resources(self, platform: str) -> None:
         """
         {!--< internal-use >!--}
         适配器资源兜底清理（与模块卸载对齐颗粒度）。
 
-        清理该平台在运行期间注册的所有路由、命令与事件处理器。同时覆盖两种注册方式：
+        清理该平台在运行期间注册的所有路由、命令与事件处理器，并兜底取消
+        该平台名下的后台任务。同时覆盖两种注册方式：
         - 直接以平台名为命名空间注册的路由（unregister_all_by_namespace）
         - 适配器以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册的路由
           （unregister_all_by_owner，依赖 start() 期间注入的 current_owner）
@@ -787,6 +1022,24 @@ class AdapterManager(ManagerBase):
         :param platform: 平台名称
         {!--< /internal-use >!--}
         """
+        # 兜底取消该平台名下的后台任务（任务可能持有适配器实例引用）
+        try:
+            from ..runtime.tasks import cancel_owner_tasks
+
+            cancelled = await cancel_owner_tasks(platform)
+            if cancelled > 0:
+                logger.warning(
+                    i18n.t(
+                        "core.adapter.tasks_cancelled",
+                        platform=platform,
+                        count=cancelled,
+                    )
+                )
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.tasks_cancel_failed", platform=platform, error=e)
+            )
+
         try:
             from .router import router
 
@@ -871,7 +1124,7 @@ class AdapterManager(ManagerBase):
         await lifecycle.submit_event(
             "adapter.status.change",
             msg=i18n.t("core.adapter.state_stopping", platform=platform),
-            data={"platform": platform, "status": "stopping"},
+            data={"platform": platform, "status": ADAPTER_STATUS_STOPPING},
         )
         await self._stop_adapter(platform)
 
@@ -879,7 +1132,7 @@ class AdapterManager(ManagerBase):
         await lifecycle.submit_event(
             "adapter.status.change",
             msg=i18n.t("core.adapter.state_starting", platform=platform),
-            data={"platform": platform, "status": "starting"},
+            data={"platform": platform, "status": ADAPTER_STATUS_STARTING},
         )
         token = current_owner.set(platform)
         try:
@@ -900,8 +1153,38 @@ class AdapterManager(ManagerBase):
         await lifecycle.submit_event(
             "adapter.status.change",
             msg=i18n.t("core.adapter.state_started", platform=platform),
-            data={"platform": platform, "status": "started"},
+            data={"platform": platform, "status": ADAPTER_STATUS_STARTED},
         )
+        return True
+
+    async def unload(self, platform: str) -> bool:
+        """
+        卸载并注销单个平台适配器
+
+        与 ``shutdown()``（仅停止）不同，``unload()`` 在停止并清理资源后，
+        额外从管理器注销该平台（释放适配器实例与类引用），用于动态移除适配器
+        并回收其内存占用。若同一实例还注册了其它平台，实例会保留（仅注销该平台）。
+
+        :param platform: 平台名称
+        :return: 是否卸载成功
+
+        :example:
+        >>> await adapter.unload("MyPlatform")
+        """
+        if platform not in self._adapters:
+            logger.warning(i18n.t("core.adapter.not_registered", platform=platform))
+            return False
+
+        # 停止 + 资源清理（路由/事件/任务/bot offline），复用 shutdown 语义
+        await self.shutdown(platform)
+
+        # 注销：释放实例与类引用（_adapter_info 持有 adapter_class）
+        self._adapters.pop(platform, None)
+        self._adapter_info.pop(platform, None)
+        self._bots.pop(platform, None)
+        self._adapter_tasks.pop(platform, None)
+
+        logger.info(i18n.t("core.adapter.unloaded", platform=platform))
         return True
 
     def clear(self) -> None:
@@ -1164,6 +1447,7 @@ class AdapterManager(ManagerBase):
         *,
         raw: bool = False,
         platform: str | None = None,
+        scope_exempt: bool = False,
     ) -> Callable[[Callable], Callable]:
         """
         OneBot12协议事件监听装饰器
@@ -1171,6 +1455,8 @@ class AdapterManager(ManagerBase):
         :param event_type: OneBot12事件类型
         :param raw: 是否监听原生事件
         :param platform: 指定平台，None表示监听所有平台
+        :param scope_exempt: 是否豁免模块作用域过滤（框架级总线处理器专用）。
+                             为 True 时不参与作用域判断，始终分发。
         :return: 装饰器函数
 
         :example:
@@ -1200,8 +1486,13 @@ class AdapterManager(ManagerBase):
             async def wrapper(*args, **kwargs):
                 return await func(*args, **kwargs)
 
-            # 创建带元信息的处理器包装器
-            handler_wrapper = {"func": wrapper, "platform": platform}
+            # 创建带元信息的处理器包装器（记录 owner 供模块作用域过滤）
+            handler_wrapper = {
+                "func": wrapper,
+                "platform": platform,
+                "owner": current_owner.get(),
+                "scope_exempt": scope_exempt,
+            }
 
             if raw:
                 self._raw_handlers[event_type].append(handler_wrapper)
@@ -1301,13 +1592,13 @@ class AdapterManager(ManagerBase):
                                 "info": self._bots.get(platform, {})
                                 .get(bot_id, {})
                                 .get("info", {}),
-                                "status": "online",
+                                "status": BOT_STATUS_ONLINE,
                             },
                         )
                     case "disconnect":
                         # Bot 断开连接
                         self._update_bot_status(
-                            platform, str(self_info["user_id"]), "offline"
+                            platform, str(self_info["user_id"]), BOT_STATUS_OFFLINE
                         )
                     case "heartbeat":
                         # 心跳，更新活跃时间
@@ -1331,7 +1622,7 @@ class AdapterManager(ManagerBase):
                             "info": self._bots.get(platform, {})
                             .get(bot_id, {})
                             .get("info", {}),
-                            "status": "online",
+                            "status": BOT_STATUS_ONLINE,
                         },
                     )
 
@@ -1373,6 +1664,8 @@ class AdapterManager(ManagerBase):
         for handler_wrapper in handlers_to_call:
             handler_platform = handler_wrapper.get("platform")
             if handler_platform is None or handler_platform == platform:
+                if not self._is_handler_scope_allowed(handler_wrapper, data):
+                    continue
                 self._dispatch_handler_task(
                     handler_wrapper["func"],
                     processed_data,
@@ -1395,6 +1688,8 @@ class AdapterManager(ManagerBase):
             for handler_wrapper in raw_handlers_to_call:
                 handler_platform = handler_wrapper.get("platform")
                 if handler_platform is None or handler_platform == platform:
+                    if not self._is_handler_scope_allowed(handler_wrapper, data):
+                        continue
                     self._dispatch_handler_task(
                         handler_wrapper["func"],
                         platform_raw,
@@ -1411,6 +1706,32 @@ class AdapterManager(ManagerBase):
                 "raw_event_type": raw_event_type,
                 "onebot_handlers_count": len(handlers_to_call),
             },
+        )
+
+    def _is_handler_scope_allowed(self, handler_wrapper: dict, data: dict) -> bool:
+        """
+        {!--< internal-use >!--}
+        判断 OneBot12 / 原生事件处理器是否通过模块作用域检查
+
+        框架级总线处理器（``scope_exempt`` 或 owner 为空）始终放行；
+        模块级处理器按 owner 与当前事件所属平台/Bot 判定。
+
+        :param handler_wrapper: 处理器包装器（含 func/platform/owner/scope_exempt）
+        :param data: 原始事件数据
+        :return: 是否允许分发
+        """
+        if handler_wrapper.get("scope_exempt"):
+            return True
+        owner = handler_wrapper.get("owner")
+        if not owner:
+            return True
+        from .scope import scope
+
+        return scope.is_allowed(
+            data.get("platform", ""),
+            scope.bot_id_from_event(data) or None,
+            owner,
+            scope.session_id_from_event(data) or None,
         )
 
     def _get_handler_semaphore(self) -> asyncio.Semaphore:
@@ -1618,7 +1939,7 @@ class AdapterManager(ManagerBase):
         existing_meta.update(bot_meta)
 
         self._bots[platform][bot_id] = {
-            "status": "online",
+            "status": BOT_STATUS_ONLINE,
             "last_active": time.time(),
             "info": existing_meta,
         }
@@ -1664,7 +1985,7 @@ class AdapterManager(ManagerBase):
                     )
                 )
 
-        if status == "offline":
+        if status == BOT_STATUS_OFFLINE:
             if not self._is_being_shutdown:
                 try:
                     loop = asyncio.get_running_loop()
@@ -1682,7 +2003,7 @@ class AdapterManager(ManagerBase):
                                 data={
                                     "platform": platform,
                                     "bot_id": bot_id,
-                                    "status": "offline",
+                                    "status": BOT_STATUS_OFFLINE,
                                 },
                             )
                         finally:
@@ -1747,7 +2068,7 @@ class AdapterManager(ManagerBase):
             for bot_id in list(self._bots[platform].keys()):
                 bot_info = self._bots[platform][bot_id]
                 if (
-                    bot_info.get("status") == "offline"
+                    bot_info.get("status") == BOT_STATUS_OFFLINE
                     and (now - bot_info.get("last_active", 0)) > expiry_secs
                 ):
                     del self._bots[platform][bot_id]
@@ -1801,7 +2122,7 @@ class AdapterManager(ManagerBase):
         """
         if (bot_info := self._bots.get(platform, {}).get(bot_id)) is None:
             return False
-        return bot_info.get("status") == "online"
+        return bot_info.get("status") == BOT_STATUS_ONLINE
 
     def get_status_summary(self) -> dict[str, Any]:
         """
@@ -1840,9 +2161,9 @@ class AdapterManager(ManagerBase):
         for platform_name in self._adapters:
             adapter_instance = self._adapters[platform_name]
             if adapter_instance in self._started_instances:
-                adapter_status = "started"
+                adapter_status = ADAPTER_STATUS_STARTED
             else:
-                adapter_status = "stopped"
+                adapter_status = ADAPTER_STATUS_STOPPED
 
             adapters_summary[platform_name] = {
                 "status": adapter_status,
@@ -1855,9 +2176,69 @@ class AdapterManager(ManagerBase):
         for platform_name in config_status:
             if platform_name not in adapters_summary:
                 adapters_summary[platform_name] = {
-                    "status": "disabled",
+                    "status": ADAPTER_STATUS_DISABLED,
                     "enabled": parse_bool_config(config_status[platform_name]),
                     "bots": {},
+                }
+
+        return {"adapters": adapters_summary}
+
+    def get_topology(self) -> dict[str, Any]:
+        """
+        获取适配器与 Bot 的拓扑树数据（便于 WebUI 展示）
+
+        聚合每个适配器的运行状态、下属 Bot 状态，以及平台级 / Bot 级
+        模块作用域绑定，展示"适配器 → Bot → 作用域"的归属关系。
+
+        :return: 拓扑树字典
+            {"adapters": {platform: {
+                "status": str, "enabled": bool,
+                "bots": {bot_id: {"status", "last_active", "info", "scope"}},
+                "scope": {"modules": [...], "blocked": [...]},
+            }}}
+
+        :example:
+        >>> topology = adapter.get_topology()
+        >>> print(topology["adapters"]["onebot11"]["bots"])
+        {"123456": {...}}
+        """
+        from .config import parse_bool_config
+        from .scope import scope
+
+        adapters_summary = {}
+        for platform_name in self._adapters:
+            adapter_instance = self._adapters[platform_name]
+            if adapter_instance in self._started_instances:
+                adapter_status = ADAPTER_STATUS_STARTED
+            else:
+                adapter_status = ADAPTER_STATUS_STOPPED
+
+            bots_summary = {}
+            for bot_id, bot_info in self._bots.get(platform_name, {}).items():
+                bot_scope = scope.get(platform_name, bot_id)
+                bots_summary[str(bot_id)] = {
+                    "status": bot_info.get("status", "unknown"),
+                    "last_active": bot_info.get("last_active"),
+                    "info": dict(bot_info.get("info", {})),
+                    "scope": bot_scope,
+                }
+
+            adapters_summary[platform_name] = {
+                "status": adapter_status,
+                "enabled": self.is_enabled(platform_name),
+                "bots": bots_summary,
+                "scope": scope.get(platform_name),
+            }
+
+        # 补充配置中存在但未注册的适配器（被禁用的适配器），方便管理界面显示并开启
+        config_status = config.getConfig(CONFIG_KEY_ADAPTER_STATUS, {})
+        for platform_name in config_status:
+            if platform_name not in adapters_summary:
+                adapters_summary[platform_name] = {
+                    "status": ADAPTER_STATUS_DISABLED,
+                    "enabled": parse_bool_config(config_status[platform_name]),
+                    "bots": {},
+                    "scope": scope.get(platform_name),
                 }
 
         return {"adapters": adapters_summary}
@@ -1994,7 +2375,11 @@ class AdapterManager(ManagerBase):
 
         base_url = urls.get("base_url", "")
 
-        status = "started" if self.is_running(platform) else "stopped"
+        status = (
+            ADAPTER_STATUS_STARTED
+            if self.is_running(platform)
+            else ADAPTER_STATUS_STOPPED
+        )
 
         return {
             "platform": platform,

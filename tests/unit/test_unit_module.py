@@ -4,16 +4,14 @@
 测试模块管理器和基础模块类的功能
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, patch
-from typing import Dict, Any
+from unittest.mock import AsyncMock, Mock, patch
 
-from ErisPulse.Core.module import ModuleManager
+import pytest
+
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.config import config
-from ErisPulse.Core.lifecycle import lifecycle
-
+from ErisPulse.Core.module import ModuleManager
 
 # ==================== 模块管理器测试 ====================
 
@@ -460,7 +458,7 @@ class TestModuleManager:
                 def mock_get_enabled(key, default=None):
                     if key == "ErisPulse.modules.status":
                         return {"enabled": True}
-                    elif key == "ErisPulse.modules.status.enabled":
+                    if key == "ErisPulse.modules.status.enabled":
                         return True
                     return default
 
@@ -473,7 +471,7 @@ class TestModuleManager:
                 def mock_get_disabled(key, default=None):
                     if key == "ErisPulse.modules.status":
                         return {"disabled": False}
-                    elif key == "ErisPulse.modules.status.disabled":
+                    if key == "ErisPulse.modules.status.disabled":
                         return False
                     return default
 
@@ -595,8 +593,10 @@ class TestModuleLifecycleIntegration:
 
             # 验证生命周期事件被提交
             mock_lifecycle.submit_event.assert_called()
-            call_args = mock_lifecycle.submit_event.call_args
-            assert call_args[0][0] == "module.load"
+            # load() 成功路径依次提交 "module.load" 与 "module.init"，
+            # 断言其中确实包含 "module.load" 事件
+            event_names = [c.args[0] for c in mock_lifecycle.submit_event.call_args_list]
+            assert "module.load" in event_names
 
     @pytest.mark.asyncio
     async def test_module_unload_submits_lifecycle_event(self):
@@ -835,3 +835,979 @@ class TestModuleStatusHotReload:
         with patch("ErisPulse.Core.module.logger"):
             asyncio.run(manager.unload())
         assert "lazy_mod" not in manager._lazy_modules
+
+
+class TestModuleMeta:
+    """模块介绍 meta 与命令总览（按模块组织的命令数据）"""
+
+    @pytest.fixture(autouse=True)
+    def clean(self):
+        from ErisPulse.Core.adapter import adapter
+        from ErisPulse.Core.Event import _clear_all_handlers
+
+        _clear_all_handlers()
+        adapter._onebot_handlers.clear()
+        adapter._raw_handlers.clear()
+        adapter._onebot_middlewares.clear()
+        adapter._bots.clear()
+        yield
+        _clear_all_handlers()
+        adapter._onebot_handlers.clear()
+        adapter._raw_handlers.clear()
+        adapter._onebot_middlewares.clear()
+        adapter._bots.clear()
+
+    @staticmethod
+    def _make_mgr():
+        return ModuleManager()
+
+    def _register_with_commands(self, mgr):
+        from ErisPulse.Core.Event import command
+        from ErisPulse.runtime.context import owner_scope
+
+        class Weather(BaseModule):
+            async def on_load(self, event): return True
+            async def on_unload(self, event): return True
+
+            @staticmethod
+            def get_meta():
+                return {"name": "天气", "description": "查询城市天气", "group": "工具"}
+
+        mgr.register("Weather", Weather)
+        with owner_scope("Weather"):
+            @command("weather", help="查询天气", group="工具")
+            async def weather_cmd(event): pass
+            @command("forecast", aliases=["fc"], help="天气预报")
+            async def fc_cmd(event): pass
+
+    def test_get_meta_from_class(self):
+        """get_meta() 从类声明 + 自动补全命令"""
+        mgr = self._make_mgr()
+        self._register_with_commands(mgr)
+        meta = mgr.get_meta("Weather")
+        assert meta["description"] == "查询城市天气"
+        assert meta["group"] == "工具"
+        assert set(meta["commands"]) == {"weather", "forecast"}
+
+    def test_get_meta_none_for_unregistered(self):
+        """未注册模块返回 None"""
+        mgr = self._make_mgr()
+        assert mgr.get_meta("Nope") is None
+
+    def test_get_meta_merges_register_info(self):
+        """注册 info 与类 get_meta 合并（类优先）"""
+        mgr = self._make_mgr()
+
+        class M(BaseModule):
+            async def on_load(self, event): return True
+            async def on_unload(self, event): return True
+
+            @staticmethod
+            def get_meta():
+                return {"description": "类描述"}
+
+        mgr.register("M", M, {"author": "alice", "description": "info描述"})
+        meta = mgr.get_meta("M")
+        assert meta["author"] == "alice"
+        assert meta["description"] == "类描述"  # 类声明优先
+
+    def test_get_commands_overview(self):
+        """命令总览：模块 meta + 命令（别名/分组/帮助）"""
+        mgr = self._make_mgr()
+        self._register_with_commands(mgr)
+        overview = mgr.get_commands_overview()
+        entry = overview["Weather"]
+        assert entry["meta"]["description"] == "查询城市天气"
+        by_name = {c["name"]: c for c in entry["commands"]}
+        assert by_name["weather"]["group"] == "工具"
+        assert by_name["forecast"]["aliases"] == ["fc"]
+        assert by_name["weather"]["hidden"] is False
+
+    def test_get_meta_i18n_resolved(self):
+        """i18n 字典字段解析为当前语言文本（键经 I18nClass 注册）"""
+        from ErisPulse.Core.Bases import BaseI18n, I18nKey
+
+        mgr = self._make_mgr()
+
+        class WeatherI18n(BaseI18n):
+            meta_description: I18nKey = I18nKey(
+                default="Weather lookup", zh_CN="查询城市天气", en="Weather lookup"
+            )
+            meta_group: I18nKey = I18nKey(default="Tools", zh_CN="工具", en="Tools")
+
+        class Weather(BaseModule):
+            async def on_load(self, event): return True
+            async def on_unload(self, event): return True
+
+            @staticmethod
+            def get_meta():
+                return {
+                    "name": "天气",
+                    "description": {"i18n": "Weather.meta_description", "default": "Weather lookup"},
+                    "group": {"i18n": "Weather.meta_group", "default": "Tools"},
+                }
+
+        mgr.register("Weather", Weather)
+        WeatherI18n.register(prefix="Weather.", domain="Weather")
+
+        meta = mgr.get_meta("Weather")
+        assert meta["description"] == "查询城市天气"
+        assert meta["group"] == "工具"
+
+    def test_get_meta_i18n_raw(self):
+        """resolve_i18n=False 透传原始 i18n 字典"""
+        mgr = self._make_mgr()
+
+        class M(BaseModule):
+            async def on_load(self, event): return True
+            async def on_unload(self, event): return True
+
+            @staticmethod
+            def get_meta():
+                return {"description": {"i18n": "M.desc", "default": "Fallback"}}
+
+        mgr.register("M", M)
+        meta = mgr.get_meta("M", resolve_i18n=False)
+        assert meta["description"] == {"i18n": "M.desc", "default": "Fallback"}
+
+    def test_module_meta_class(self):
+        """get_meta() 返回 ModuleMeta 声明类（属性键入）"""
+        from ErisPulse.Core.Bases import ModuleMeta
+
+        meta = ModuleMeta(name="天气", description="查询城市天气", group="工具", tags=["天气"])
+        d = meta.to_dict()
+        assert d == {"name": "天气", "description": "查询城市天气", "group": "工具", "tags": ["天气"]}
+        # None 字段被过滤
+        assert "version" not in d and "author" not in d
+
+    def test_get_meta_with_module_meta(self):
+        """ModuleManager.get_meta() 解析 ModuleMeta 实例（to_dict 链路）"""
+        from ErisPulse.Core.Bases import ModuleMeta
+
+        mgr = self._make_mgr()
+
+        class Weather(BaseModule):
+            async def on_load(self, event): return True
+            async def on_unload(self, event): return True
+
+            @staticmethod
+            def get_meta():
+                return ModuleMeta(name="天气", description="查询城市天气", group="工具")
+
+        mgr.register("Weather", Weather)
+        meta = mgr.get_meta("Weather")
+        assert meta["description"] == "查询城市天气"
+        assert meta["group"] == "工具"
+        assert meta["name"] == "天气"
+
+    def test_get_meta_meta_class_with_register_info(self):
+        """ModuleMeta 声明 > 注册 info（与 dict 语义一致）"""
+        from ErisPulse.Core.Bases import ModuleMeta
+
+        mgr = self._make_mgr()
+
+        class M(BaseModule):
+            async def on_load(self, event): return True
+            async def on_unload(self, event): return True
+
+            @staticmethod
+            def get_meta():
+                return ModuleMeta(description="类声明")
+
+        mgr.register("M", M, {"author": "alice", "description": "info描述"})
+        meta = mgr.get_meta("M")
+        assert meta["author"] == "alice"
+        assert meta["description"] == "类声明"
+
+
+class TestModuleActivateOnCommandVisibility:
+    """activate_on 命令触发器的占位命令必须对 Help/命令总览可见
+
+    命令触发是"主动"的——用户必须先输入命令才能激活模块。若占位命令
+    被隐藏（hidden=True），Help/命令总览无法发现它，用户无从得知命令存在，
+    命令触发将永远无法激活模块（与事件触发的"被动到达"不同）。
+    """
+
+    def _make_manager(self):
+        from ErisPulse.Core.module import ModuleManager
+
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._module_classes.clear()
+        manager._loaded_modules.clear()
+        manager._module_info.clear()
+        return manager
+
+    def _make_module_class(self):
+        class Dice(BaseModule):
+            async def on_load(self, event=None):
+                from ErisPulse.Core.Event.command import command
+
+                @command("roll")
+                async def roll(event):
+                    event["_command_ran"] = "roll"
+
+            async def on_unload(self, event=None):
+                pass
+
+            @staticmethod
+            def get_meta():
+                return {"description": "掷骰子"}
+
+        return Dice
+
+    def _make_activator(self, manager, cls, activate_on, module_info=None):
+        from ErisPulse.loaders.module import ModuleActivator
+
+        class _Sdk:
+            pass
+
+        sdk = _Sdk()
+        info = module_info or {
+            "meta": {"name": "dice", "is_base_module": True},
+        }
+        return ModuleActivator(
+            "dice",
+            cls,
+            sdk,
+            info,
+            manager,
+            activate_on=activate_on,
+        )
+
+    def test_command_stub_visible_in_help(self):
+        """占位命令对 Help 可见（hidden=False + 有 help 文本）"""
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_module_class()
+        act = self._make_activator(manager, cls, [{"command": "roll"}])
+
+        try:
+            assert "roll" in command.commands
+            info = command.commands["roll"]
+            assert info["hidden"] is False
+            assert info["owner"] == "dice"
+            assert info["help"]  # 有帮助文本
+            assert "roll" in command.get_visible_commands()
+        finally:
+            act._deregister_stubs()
+
+    def test_command_stub_help_from_meta_description(self):
+        """占位命令 help 优先取模块 get_meta() 的 description"""
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_module_class()
+        act = self._make_activator(manager, cls, [{"command": "roll"}])
+
+        try:
+            assert command.commands["roll"]["help"] == "掷骰子"
+        finally:
+            act._deregister_stubs()
+
+    async def test_activation_promotes_stub_to_real_command(self):
+        """激活后占位命令注销，真实命令接管（命令触发闭环成立）"""
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_module_class()
+        manager.register(
+            "dice", cls, {"meta": {"name": "dice", "is_base_module": True}}
+        )
+        act = self._make_activator(manager, cls, [{"command": "roll"}])
+
+        try:
+            await act._activate()
+            # 真实命令已注册
+            assert "roll" in command.commands
+            real = command.commands["roll"]
+            assert real["func"].__name__ == "roll"
+            # 占位命令已被注销：不再有模块未加载时注册的 stub 处理函数
+            assert not any(
+                info["func"] is not real["func"] for info in command.commands.values()
+            )
+
+            from ErisPulse.Core.Event.wrapper import Event
+
+            ev = Event(
+                {
+                    "type": "message",
+                    "detail_type": "private",
+                    "message_id": "1",
+                    "message": [{"type": "text", "data": {"text": "/roll"}}],
+                    "user_id": "u1",
+                    "self": {"user_id": "bot"},
+                }
+            )
+            await command._handle_message(ev)
+            assert ev.get("_command_ran") == "roll"
+        finally:
+            act._deregister_stubs()
+
+    def test_parse_activate_on_dict_forms_and_dedup(self):
+        """parse_activate_on：dict 命令值提取 name，混合形式去重保序"""
+        from ErisPulse.loaders.module import parse_activate_on
+
+        event_triggers, command_triggers = parse_activate_on(
+            [
+                "message",
+                {"notice": "group_member_increase"},
+                {"command": "roll"},
+                {"command": {"name": "dice", "help": "掷一个骰子"}},
+                {"command": ["roll", {"name": "dice"}]},  # 重复声明：去重
+            ]
+        )
+        assert event_triggers == [
+            ("message", None),
+            ("notice", "group_member_increase"),
+        ]
+        assert command_triggers == ["roll", "dice"]
+
+    def test_parse_activate_on_command_name_required(self):
+        """dict 命令声明缺 name：告警并忽略，不影响其它触发器"""
+        from ErisPulse.loaders.module import parse_activate_on
+
+        _, command_triggers = parse_activate_on(
+            [{"command": {"help": "缺 name"}}, {"command": "roll"}]
+        )
+        assert command_triggers == ["roll"]
+
+    def test_extract_command_meta(self):
+        """_extract_command_meta：仅 dict 声明产生元数据，字段归一化"""
+        from ErisPulse.loaders.module import _extract_command_meta
+
+        meta = _extract_command_meta(
+            [
+                {"command": "roll"},  # 简写：不产生元数据
+                {
+                    "command": {
+                        "name": "dice",
+                        "help": "掷一个骰子",
+                        "aliases": ["d"],
+                        "hidden": True,
+                    }
+                },
+            ]
+        )
+        assert set(meta.keys()) == {"dice"}
+        assert meta["dice"]["help"] == "掷一个骰子"
+        assert meta["dice"]["aliases"] == ["d"]
+        assert meta["dice"]["hidden"] is True
+        assert meta["dice"]["usage"] is None
+        assert meta["dice"]["group"] is None
+
+    def test_command_stub_help_from_activate_on_decl(self):
+        """占位命令 help 优先取 activate_on dict 声明（高于 get_meta description）"""
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_module_class()
+        act = self._make_activator(
+            manager,
+            cls,
+            [{"command": {"name": "roll", "help": "命令级介绍"}}],
+        )
+
+        try:
+            assert command.commands["roll"]["help"] == "命令级介绍"
+        finally:
+            act._deregister_stubs()
+
+    def test_command_stub_help_fallback_to_module_description(self):
+        """回退链：无 dict help、无 get_meta description → moduleInfo description"""
+        from ErisPulse.Core.Event.command import command
+
+        class NoMetaModule(BaseModule):
+            async def on_load(self, event=None):
+                pass
+
+            async def on_unload(self, event=None):
+                pass
+
+        manager = self._make_manager()
+        act = self._make_activator(
+            manager,
+            NoMetaModule,
+            [{"command": "roll"}],
+            module_info={
+                "meta": {
+                    "name": "dice",
+                    "is_base_module": True,
+                    "description": "模块级描述",
+                }
+            },
+        )
+
+        try:
+            assert command.commands["roll"]["help"] == "模块级描述"
+        finally:
+            act._deregister_stubs()
+
+    def test_command_stub_help_pkg_summary_fallback(self, monkeypatch):
+        """回退链：均无声明时取包元数据 Summary"""
+
+        class _FakeDist:
+            metadata = {"Summary": "骰子包简介"}
+
+        monkeypatch.setattr(
+            "importlib.metadata.distribution", lambda name: _FakeDist()
+        )
+
+        class NoMetaModule(BaseModule):
+            async def on_load(self, event=None):
+                pass
+
+            async def on_unload(self, event=None):
+                pass
+
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        act = self._make_activator(
+            manager,
+            NoMetaModule,
+            [{"command": "roll"}],
+            module_info={
+                "meta": {
+                    "name": "dice",
+                    "is_base_module": True,
+                    "description": "",
+                    "package": "dice-pkg",
+                }
+            },
+        )
+
+        try:
+            assert command.commands["roll"]["help"] == "骰子包简介"
+        finally:
+            act._deregister_stubs()
+
+    def test_command_stub_hidden_semantics(self):
+        """dict 声明 hidden=True：占位命令同样隐藏（与真实命令语义对齐）"""
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_module_class()
+        act = self._make_activator(
+            manager,
+            cls,
+            [
+                {"command": "roll"},
+                {"command": {"name": "debug", "hidden": True}},
+            ],
+        )
+
+        try:
+            # 可见命令：仅 roll
+            assert command.commands["roll"]["hidden"] is False
+            assert "roll" in command.get_visible_commands()
+            # 隐藏命令：注册但不进可见列表，输入仍可触发激活
+            assert command.commands["debug"]["hidden"] is True
+            assert "debug" not in command.get_visible_commands()
+        finally:
+            act._deregister_stubs()
+
+    def test_command_stub_meta_registration(self):
+        """dict 声明的 usage/group/aliases 镜像注册到占位命令"""
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_module_class()
+        act = self._make_activator(
+            manager,
+            cls,
+            [
+                {
+                    "command": {
+                        "name": "dice",
+                        "help": "掷一个骰子",
+                        "usage": "/dice",
+                        "group": "娱乐",
+                        "aliases": ["d"],
+                    }
+                }
+            ],
+        )
+
+        try:
+            info = command.commands["dice"]
+            assert info["help"] == "掷一个骰子"
+            assert info["usage"] == "/dice"
+            assert info["group"] == "娱乐"
+            # 别名已注册：输入别名同样命中占位命令（触发激活）
+            assert command.aliases.get("d") == "dice"
+        finally:
+            act._deregister_stubs()
+
+
+# ==================== 依赖级联与任务归属测试（2.8.0+） ====================
+
+
+class TestCascadeUnload:
+    """卸载被依赖模块时级联卸载依赖者"""
+
+    @pytest.fixture
+    def manager(self):
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._module_classes.clear()
+        manager._loaded_modules.clear()
+        manager._module_info.clear()
+        return manager
+
+    def _make_module_class(self, name):
+        class _M(BaseModule):
+            def __init__(self, sdk=None):
+                self.sdk = sdk
+                self.unloaded = False
+
+            async def on_load(self, event):
+                return True
+
+            async def on_unload(self, event):
+                self.unloaded = True
+                return True
+
+        _M.__name__ = name
+        return _M
+
+    def _register_with_depends(self, manager, name, depends=None):
+        cls = self._make_module_class(name)
+        manager.register(
+            name,
+            cls,
+            {
+                "meta": {
+                    "name": name,
+                    "depends": list(depends or []),
+                },
+                "module_class": cls,
+            },
+        )
+        return cls
+
+    async def _load(self, manager, name):
+        assert await manager.load(name)
+
+    def test_collect_dependents_direct(self, manager):
+        """直接依赖者收集"""
+        self._register_with_depends(manager, "Base")
+        self._register_with_depends(manager, "Child", depends=["Base"])
+        self._register_with_depends(manager, "Other")
+        assert manager._collect_dependents("Base") == ["Child"]
+
+    def test_collect_dependents_indirect(self, manager):
+        """间接依赖者收集（BFS 由近及远）"""
+        self._register_with_depends(manager, "A")
+        self._register_with_depends(manager, "B", depends=["A"])
+        self._register_with_depends(manager, "C", depends=["B"])
+        assert manager._collect_dependents("A") == ["B", "C"]
+
+    def test_collect_dependents_cycle_safe(self, manager):
+        """循环依赖声明不会死循环"""
+        self._register_with_depends(manager, "X", depends=["Y"])
+        self._register_with_depends(manager, "Y", depends=["X"])
+        result = manager._collect_dependents("X")
+        assert "Y" in result
+
+    async def test_unload_cascades_dependents(self, manager):
+        """卸载 Base 时依赖者 Child 先被卸载"""
+        self._register_with_depends(manager, "Base")
+        self._register_with_depends(manager, "Child", depends=["Base"])
+        await self._load(manager, "Base")
+        await self._load(manager, "Child")
+        child_instance = manager._modules["Child"]
+
+        assert await manager.unload("Base") is True
+        assert "Base" not in manager._loaded_modules
+        assert "Child" not in manager._loaded_modules
+        assert child_instance.unloaded is True
+
+    async def test_unload_cascade_order_deep_first(self, manager):
+        """级联顺序：最深层依赖者先卸载（C 先于 B）"""
+        order = []
+        base_cls = self._make_module_class("A")
+        b_cls = self._make_module_class("B")
+        c_cls = self._make_module_class("C")
+
+        original_unload = manager._unload_single_module
+
+        async def _record(name):
+            order.append(name)
+            return await original_unload(name)
+
+        manager._unload_single_module = _record
+        manager.register("A", base_cls, {"meta": {"name": "A"}})
+        manager.register("B", b_cls, {"meta": {"name": "B", "depends": ["A"]}})
+        manager.register("C", c_cls, {"meta": {"name": "C", "depends": ["B"]}})
+        await self._load(manager, "A")
+        await self._load(manager, "B")
+        await self._load(manager, "C")
+
+        await manager.unload("A")
+        assert order == ["C", "B", "A"]
+
+    async def test_unload_cancels_owner_tasks(self, manager):
+        """卸载模块时兜底取消其名下后台任务"""
+        from ErisPulse.runtime.context import owner_scope
+        from ErisPulse.runtime.tasks import get_owner_tasks, spawn_background
+
+        self._register_with_depends(manager, "TaskModule")
+        await self._load(manager, "TaskModule")
+
+        async def forever():
+            await asyncio.sleep(100)
+
+        with owner_scope("TaskModule"):
+            task = spawn_background(forever())
+
+        await manager.unload("TaskModule")
+        await asyncio.sleep(0.05)
+        assert task.cancelled()
+        assert not get_owner_tasks("TaskModule")
+
+    def test_disable_cascades_dependents(self, manager):
+        """disable 同样级联禁用依赖者"""
+        self._register_with_depends(manager, "Base")
+        self._register_with_depends(manager, "Child", depends=["Base"])
+
+        assert manager.disable("Base") is True
+        assert "Child" not in manager._loaded_modules
+
+    def test_disable_cleans_lifecycle_hooks(self, manager):
+        """disable 清理模块注册的生命周期钩子（与 unload 一致）"""
+        from ErisPulse.Core.lifecycle import lifecycle
+        from ErisPulse.runtime.context import owner_scope
+
+        self._register_with_depends(manager, "HookModule")
+        manager._modules["HookModule"] = self._make_module_class("HookModule")()
+        manager._loaded_modules.add("HookModule")
+
+        def _hook(data):
+            pass
+
+        with owner_scope("HookModule"):
+            lifecycle.register("module.load", _hook)
+        try:
+            assert "HookModule" in lifecycle.get_owner_counts()
+            assert manager.disable("HookModule") is True
+            assert "HookModule" not in lifecycle.get_owner_counts()
+        finally:
+            lifecycle.unregister("module.load", _hook)
+
+    async def test_unload_clears_i18n_domain(self, manager):
+        """卸载清理模块 i18n 翻译键"""
+        from ErisPulse.Core.i18n import i18n
+
+        self._register_with_depends(manager, "I18nModule")
+        await self._load(manager, "I18nModule")
+
+        i18n.register("zh-CN", {"I18nModule.greeting": "你好"}, domain="I18nModule")
+        assert i18n.t("I18nModule.greeting") == "你好"
+
+        await manager.unload("I18nModule")
+        # domain 注销后回退到键名
+        assert i18n.t("I18nModule.greeting") == "I18nModule.greeting"
+
+
+class TestDependsWiredThroughLoader:
+    """depends 声明经真实加载路径贯通进 meta（修复恒为空的断点）"""
+
+    @pytest.fixture
+    def plugin_env(self, tmp_path):
+        """创建临时插件目录与加载器（patch 插件目录配置，测试期间生效）"""
+        plugins_dir = tmp_path / "plugins"
+        plugins_dir.mkdir()
+        from ErisPulse.loaders.plugin_folder import PluginFolderLoader
+
+        loader = PluginFolderLoader()
+        # get_plugins_dirs 在方法体内延迟 import runtime.get_framework_config，
+        # patch runtime 模块级符号即可覆盖目录解析
+        with patch(
+            "ErisPulse.runtime.get_framework_config",
+            return_value={"plugins_dir": str(plugins_dir)},
+        ):
+            yield plugins_dir, loader
+
+    def _write_plugin(self, plugins_dir, name, depends=None):
+        dep_stmt = ""
+        if depends is not None:
+            dep_list = ", ".join(f'"{d}"' for d in depends)
+            dep_stmt = f", depends=[{dep_list}]"
+        content = (
+            "from ErisPulse.Core.Bases import BaseModule\n"
+            "from ErisPulse.loaders import ModuleLoadStrategy\n\n\n"
+            f"class Main(BaseModule):\n"
+            f"    @staticmethod\n"
+            f"    def get_load_strategy():\n"
+            f"        return ModuleLoadStrategy(lazy_load=False{dep_stmt})\n\n"
+            f"    async def on_load(self, event):\n"
+            f"        return True\n\n"
+            f"    async def on_unload(self, event):\n"
+            f"        return True\n"
+        )
+        plugin_file = plugins_dir / f"{name}.py"
+        plugin_file.write_text(content, encoding="utf-8")
+        return plugin_file
+
+    def test_plugin_depends_in_meta(self, plugin_env):
+        """插件声明的 depends 出现在 moduleInfo.meta.depends"""
+        plugins_dir, loader = plugin_env
+        self._write_plugin(plugins_dir, "weatherlib")
+        self._write_plugin(plugins_dir, "weatherbot", depends=["weatherlib"])
+
+        objs = loader.discover()
+        assert "weatherbot" in objs
+        meta = objs["weatherbot"].moduleInfo["meta"]
+        assert meta["depends"] == ["weatherlib"]
+        # 无依赖插件为空列表
+        assert objs["weatherlib"].moduleInfo["meta"]["depends"] == []
+
+    def test_plugin_depends_feed_validation(self, plugin_env):
+        """贯通后的 depends 可被依赖校验消费（缺失依赖被检出）"""
+        from ErisPulse.loaders.module import ModuleLoader
+
+        plugins_dir, loader = plugin_env
+        self._write_plugin(plugins_dir, "lonelybot", depends=["ghost"])
+
+        objs = loader.discover()
+        module_loader = ModuleLoader()
+        module_objs = {"lonelybot": objs["lonelybot"]}
+        missing = module_loader._validate_dependencies(["lonelybot"], module_objs)
+        assert "lonelybot" in missing
+        assert "ghost" in missing["lonelybot"]
+
+
+# ==================== 彻底卸载（purge）测试（2.8.0+） ====================
+
+
+class TestPurgeUnload:
+    """unload(purge=True) 删除注册存根并清理 sys.modules"""
+
+    @pytest.fixture
+    def manager(self):
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._module_classes.clear()
+        manager._loaded_modules.clear()
+        manager._module_info.clear()
+        return manager
+
+    def _register(self, manager, name, *, source="entry_point", depends=None):
+        class _M(BaseModule):
+            def __init__(self, sdk=None):
+                self.sdk = sdk
+
+            async def on_load(self, event):
+                return True
+
+            async def on_unload(self, event):
+                return True
+
+        manager.register(
+            name,
+            _M,
+            {
+                "meta": {
+                    "name": name,
+                    "source": source,
+                    "top_level": [name],
+                    "depends": list(depends or []),
+                },
+                "module_class": _M,
+            },
+        )
+        return _M
+
+    async def _load(self, manager, name):
+        assert await manager.load(name)
+
+    async def test_unload_keeps_registration_by_default(self, manager):
+        """默认 unload 保留注册存根（模块仍可重新 load）"""
+        self._register(manager, "M")
+        await self._load(manager, "M")
+        await manager.unload("M")
+        assert "M" in manager._module_classes
+        assert "M" in manager._module_info
+        # 存根仍在，可直接重新 load
+        assert await manager.load("M") is True
+
+    async def test_unload_purge_removes_registration(self, manager):
+        """purge 删除注册存根"""
+        self._register(manager, "M")
+        await self._load(manager, "M")
+        assert await manager.unload("M", purge=True) is True
+        assert "M" not in manager._module_classes
+        assert "M" not in manager._module_info
+        assert "M" not in manager._modules
+        assert "M" not in manager._loaded_modules
+
+    async def test_unload_purge_cascades(self, manager):
+        """purge 级联删除依赖者存根"""
+        self._register(manager, "Base")
+        self._register(manager, "Child", depends=["Base"])
+        await self._load(manager, "Base")
+        await self._load(manager, "Child")
+        await manager.unload("Base", purge=True)
+        assert "Base" not in manager._module_classes
+        assert "Child" not in manager._module_classes
+
+    def test_purge_sys_modules_plugin_folder(self, manager):
+        """_purge_sys_modules 清理插件自身模块与子包"""
+        import sys
+        import types
+
+        sys.modules["weatherlib"] = types.ModuleType("weatherlib")
+        sys.modules["weatherlib.util"] = types.ModuleType("weatherlib.util")
+        try:
+            manager._purge_sys_modules("weatherlib", ["weatherlib"])
+            assert "weatherlib" not in sys.modules
+            assert "weatherlib.util" not in sys.modules
+        finally:
+            sys.modules.pop("weatherlib.util", None)
+            sys.modules.pop("weatherlib", None)
+
+    async def test_purge_plugin_folder_clears_sys_modules(self, manager):
+        """plugin_folder 来源的 purge 卸载会清理 sys.modules"""
+        import sys
+        import types
+
+        sys.modules["myplug"] = types.ModuleType("myplug")
+        sys.modules["myplug.Core"] = types.ModuleType("myplug.Core")
+        try:
+            self._register(manager, "myplug", source="plugin_folder")
+            await self._load(manager, "myplug")
+            await manager.unload("myplug", purge=True)
+            assert "myplug" not in sys.modules
+            assert "myplug.Core" not in sys.modules
+        finally:
+            sys.modules.pop("myplug.Core", None)
+            sys.modules.pop("myplug", None)
+
+    async def test_purge_entry_point_keeps_sys_modules(self, manager):
+        """entry-point 来源的 purge 不清理 sys.modules（保守）"""
+        import sys
+        import types
+
+        sys.modules["somepkg"] = types.ModuleType("somepkg")
+        try:
+            self._register(manager, "EP", source="entry_point")
+            await self._load(manager, "EP")
+            await manager.unload("EP", purge=True)
+            assert "somepkg" in sys.modules
+        finally:
+            sys.modules.pop("somepkg", None)
+
+    def test_purge_module_stub_returns_weakrefs(self, manager):
+        """_purge_module_stub 返回类/实例弱引用并移除存根"""
+        import weakref
+
+        cls = self._register(manager, "M", source="plugin_folder")
+        manager._modules["M"] = cls()
+        name, class_ref, instance_ref = manager._purge_module_stub("M")
+        assert name == "M"
+        assert class_ref is not None
+        assert instance_ref is not None
+        assert "M" not in manager._module_classes
+        assert "M" not in manager._module_info
+
+    def test_report_purge_recyclability_noop_when_reclaimed(self, manager):
+        """回收诊断：对象可回收时不告警（不抛异常）"""
+        cls = self._register(manager, "M")
+        manager._purge_module_stub("M")
+        manager._report_purge_recyclability([])
+        # 空列表应静默通过
+        assert True
+
+
+# ==================== on_unload 超时保护测试（2.8.0+） ====================
+
+
+class TestUnloadTimeout:
+    """on_unload 卡死时按 uninit_timeout 超时强杀，清理继续（优雅关闭→超时强杀）"""
+
+    @pytest.fixture
+    def manager(self):
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._module_classes.clear()
+        manager._loaded_modules.clear()
+        manager._module_info.clear()
+        return manager
+
+    def _make_stuck_module(self, name, *, stuck=True):
+        """on_unload 可卡死的模块"""
+
+        class _M(BaseModule):
+            def __init__(self, sdk=None):
+                self.sdk = sdk
+                self.unload_started = False
+
+            async def on_load(self, event):
+                return True
+
+            async def on_unload(self, event):
+                self.unload_started = True
+                if stuck:
+                    await asyncio.Event().wait()  # 永不返回
+                return True
+
+        _M.__name__ = name
+        return _M
+
+    @pytest.fixture
+    def tiny_timeout(self):
+        """把 uninit_timeout 调小加速测试"""
+        from ErisPulse.Core.config import config
+
+        old = config.getConfig("ErisPulse.framework", {}).get("uninit_timeout", 30)
+        config.setConfig("ErisPulse.framework", {"uninit_timeout": 0.2}, immediate=True)
+        yield
+        config.setConfig("ErisPulse.framework", {"uninit_timeout": old}, immediate=True)
+
+    async def test_unload_stuck_on_unload_forced_after_timeout(self, manager, tiny_timeout):
+        """on_unload 卡死：超时后强制清理，卸载仍成功且不阻塞"""
+        cls = self._make_stuck_module("Stuck")
+        manager.register("Stuck", cls, {"meta": {"name": "Stuck"}, "module_class": cls})
+        assert await manager.load("Stuck")
+        instance = manager._modules["Stuck"]
+
+        start = asyncio.get_event_loop().time()
+        ok = await manager.unload("Stuck")
+        elapsed = asyncio.get_event_loop().time() - start
+
+        assert ok is True
+        assert instance.unload_started is True
+        assert elapsed < 3, f"unload blocked too long: {elapsed:.1f}s"
+        assert "Stuck" not in manager._loaded_modules
+        assert "Stuck" not in manager._modules
+
+    async def test_unload_normal_on_unload_no_timeout(self, manager):
+        """正常 on_unload 不受超时影响，快速完成"""
+        cls = self._make_stuck_module("Fast", stuck=False)
+        manager.register("Fast", cls, {"meta": {"name": "Fast"}, "module_class": cls})
+        assert await manager.load("Fast")
+
+        start = asyncio.get_event_loop().time()
+        assert await manager.unload("Fast") is True
+        elapsed = asyncio.get_event_loop().time() - start
+        assert elapsed < 1
+
+    async def test_unload_timeout_reads_config(self, manager):
+        """_unload_timeout 读取 uninit_timeout 配置"""
+        from ErisPulse.Core.config import config
+
+        config.setConfig("ErisPulse.framework", {"uninit_timeout": 12.5}, immediate=True)
+        try:
+            assert manager._unload_timeout() == 12.5
+        finally:
+            config.setConfig("ErisPulse.framework", {"uninit_timeout": 30}, immediate=True)
+
+    def test_unload_timeout_fallback_default(self, manager):
+        """配置缺失时回退默认常量"""
+        from ErisPulse.Core.config import config
+        from ErisPulse.Core.constants import DEFAULT_UNINIT_TIMEOUT_SECS
+
+        config.setConfig("ErisPulse.framework", {}, immediate=True)
+        assert manager._unload_timeout() == float(DEFAULT_UNINIT_TIMEOUT_SECS)

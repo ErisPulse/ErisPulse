@@ -12,7 +12,7 @@ ErisPulse 适配器基础模块
 import asyncio
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 if TYPE_CHECKING:
     # Self 用于让链式方法返回子类类型，使 IDE 能补全平台特有方法
@@ -1321,6 +1321,15 @@ class BaseAdapter(ABC):
     I18nClass: type | None = None
     EventMixin: type | None = None
 
+    # ==================== 依赖声明（2.8.0+，可选） ====================
+    # 硬依赖：缺失时不启动本适配器（警告并跳过）。
+    #   depends = {"adapters": ["onebot11"], "modules": ["SomeModule"]}
+    # 声明了模块硬依赖的适配器会在模块初始化完成后再启动。
+    depends: ClassVar[dict[str, list[str]]] = {}
+    # 软依赖：缺失不影响启动；依赖模块加载/卸载时收到回调通知（可选功能模式）。
+    #   optional_modules = ["TranslateEngine"]
+    optional_modules: ClassVar[list[str]] = []
+
     _platform: str = ""
     _sdk: Any = None
 
@@ -1944,6 +1953,32 @@ class BaseAdapter(ABC):
 
         :param old_config: 变更前的配置实例
         :param new_config: 变更后的配置实例
+        """
+
+    async def on_dependency_ready(self, module_name: str) -> None:  # noqa: B027
+        """
+        软依赖模块就绪回调（可选实现）
+
+        当 ``optional_modules`` 中声明的模块被加载（含启动晚于适配器、
+        热重载后再加载）时调用。子类可覆写以启用对应可选功能。
+
+        :param module_name: 就绪的模块名
+
+        :example:
+        >>> optional_modules = ["TranslateEngine"]
+        >>> async def on_dependency_ready(self, module_name):
+        ...     if module_name == "TranslateEngine":
+        ...         self._translate = self.sdk.TranslateEngine
+        """
+
+    async def on_dependency_lost(self, module_name: str) -> None:  # noqa: B027
+        """
+        软依赖模块丢失回调（可选实现）
+
+        当 ``optional_modules``（或模块硬依赖）中声明的模块被卸载/禁用时
+        调用。子类可覆写以降级对应功能（如关闭翻译、清理缓存引用）。
+
+        :param module_name: 丢失的模块名
         """
 
     async def emit(self, *args, **kwargs):

@@ -1,5 +1,6 @@
 import asyncio
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 from ErisPulse.Core import BaseAdapter, RequestDSL, SendDSL
 from ErisPulse.Core.Bases import BaseConfig, BotAccountConfig, BaseI18n, I18nKey
@@ -21,6 +22,13 @@ class MyAdapter(BaseAdapter):
     - _resolve_account() 自动解析多账户
     - Api 内部类提供跨平台标准动作（get_user_info / get_group_list 等）
     """
+
+    # 依赖声明（可选，2.8.0+）：
+    # depends = {"adapters": ["onebot11"], "modules": []}   # 硬依赖：缺失时跳过启动
+    # optional_modules = ["TranslateEngine"]                 # 软依赖：就绪/丢失时收到
+    #                                                        # on_dependency_ready/lost 回调
+    depends: ClassVar[dict] = {}
+    optional_modules: ClassVar[list] = []
 
     # 全局配置类以嵌套类形式声明（需 @dataclass 装饰），框架自动识别 ConfigClass
     @dataclass

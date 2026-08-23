@@ -353,14 +353,19 @@ class DocsIndexGenerator:
         "advanced/lazy-loading.md": 3,
         "advanced/router.md": 4,
         "advanced/message-builder.md": 5,
-        "advanced/session-types.md": 6,
         "advanced/conversation.md": 7,
         "advanced/dashboard-view.md": 8,
         "advanced/http-client.md": 9,
         "advanced/sql-builder.md": 10,
         "advanced/i18n.md": 11,
+        "advanced/scope.md": 12,
         # AI 辅助开发
         "ai-support/README.md": 1,
+        # 生态模块
+        "ecosystem/README.md": 1,
+        "ecosystem/app.md": 2,
+        "ecosystem/dashboard.md": 3,
+        "ecosystem/takumi.md": 4,
         # 技术标准
         "standards/README.md": 1,
         "standards/session-types.md": 2,
@@ -493,7 +498,6 @@ class DocsIndexGenerator:
         "advanced/lazy-loading.md": "fa-hourglass-half",
         "advanced/router.md": "fa-route",
         "advanced/message-builder.md": "fa-comment-dots",
-        "advanced/session-types.md": "fa-layer-group",
         "advanced/conversation.md": "fa-comments",
         "advanced/dashboard-view.md": "fa-table-columns",
         "advanced/http-client.md": "fa-globe",
@@ -501,6 +505,11 @@ class DocsIndexGenerator:
         "advanced/i18n.md": "fa-language",
         # AI 辅助开发
         "ai-support/README.md": "fa-robot",
+        # 生态模块
+        "ecosystem/README.md": "fa-cubes",
+        "ecosystem/app.md": "fa-mobile-screen",
+        "ecosystem/dashboard.md": "fa-table-columns",
+        "ecosystem/takumi.md": "fa-image",
         # 技术标准
         "standards/README.md": "fa-gavel",
         "standards/session-types.md": "fa-layer-group",

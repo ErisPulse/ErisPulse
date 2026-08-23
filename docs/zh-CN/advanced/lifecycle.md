@@ -88,6 +88,28 @@ if sdk.lifecycle.has_handlers("message.sending"):
 
 ## 钩子断点一览
 
+一条消息从平台进入框架到处理完成的典型生命周期事件时序：
+
+```mermaid
+sequenceDiagram
+    participant P as 平台
+    participant A as 适配器
+    participant F as 框架核心
+    participant M as 模块处理器
+
+    P->>A: 原生事件到达
+    A->>F: adapter.event.receive（最早期）
+    F->>F: event.pre_process（处理器执行前）
+    F->>M: 分发到处理器（命令/消息/通知等）
+    M->>M: command.matched / command.executed
+    M->>F: event.reply()
+    F->>F: message.sending（发送前）
+    F->>A: SendDSL 发送
+    A->>P: 发送到平台
+    A->>F: message.sent（发送完成）
+    F->>F: adapter.event.dispatched（分发完成）
+```
+
 框架内置了以下钩子断点，用户可以通过 `@sdk.lifecycle.on()` 监听任意断点实现自定义逻辑。
 
 ### 核心初始化
@@ -103,6 +125,7 @@ if sdk.lifecycle.has_handlers("message.sending"):
 | 钩子名称 | 触发时机 | 数据 |
 |---------|---------|------|
 | `config.set` | 配置项被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
+| `config.updated` | 外部编辑 config.toml 后检测到整树变更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **示例：配置审计**
 
@@ -300,6 +323,37 @@ class Main(BaseModule):
         def audit(data):
             sdk.logger.info(f"配置变更: {data['key']} = {data['new_value']}")
 ```
+
+## 后台任务归属与自动取消
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+模块创建的 asyncio 后台任务若未在 `on_unload` 中取消，会持有 `self` 引用导致模块实例无法被回收（热重载后旧实例残留）。框架提供以下兜底机制：
+
+- **`self.spawn(coro)`**（模块内推荐）：任务自动归属模块名，模块卸载时框架在 `on_unload` **之后**兜底取消未结束的任务并记录警告
+- **`spawn_background(coro)`**（`ErisPulse.runtime`）：自动捕获当前 `owner_scope` 上下文；`cancel_owner_tasks(owner)` 按归属取消，`cancel_all_background_tasks()` 供 `sdk.uninit()` 兜底
+- **适配器**：关闭时对平台名下的后台任务同样兜底取消
+
+```python
+async def on_load(self, event):
+    # 推荐：后台任务用 self.spawn()，卸载时框架自动兜底取消
+    self.spawn(self._poll())
+
+async def on_unload(self, event):
+    # 精细控制的场景仍建议自行取消并等待收尾
+    if self._poll_task:
+        self._poll_task.cancel()
+        await asyncio.gather(self._poll_task, return_exceptions=True)
+
+async def _poll(self):
+    while True:
+        await asyncio.sleep(60)
+        ...
+```
+
+> [!IMPORTANT]
+> 框架兜底是**强制 cancel**（`cancel_owner_tasks`），它发生在 `on_unload` 返回之后。因此需要优雅收尾的任务（flush 缓冲、持久化状态、关闭连接）**必须**在 `on_unload` 里自行 `cancel()` + `await` 完成——别指望兜底能保留收尾逻辑。框架只保证「不残留持有 `self` 的任务」，不保证「优雅」。需要 `await` 结果的任务请直接 `await`，不要丢给后台任务。
 
 ## 注意事项
 

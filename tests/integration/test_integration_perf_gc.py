@@ -293,8 +293,8 @@ class TestLifecycleOwnerCleanupIntegration:
 
         assert "adapter.custom" in lifecycle._hooks
 
-        # 调用适配器资源清理
-        adapter._cleanup_adapter_resources("MyPlatform")
+        # 调用适配器资源清理（2.8.0 起为 async：含后台任务兜底取消）
+        await adapter._cleanup_adapter_resources("MyPlatform")
 
         # 钩子应被清理
         assert "adapter.custom" not in lifecycle._hooks

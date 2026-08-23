@@ -71,6 +71,23 @@ CONFIG_ROOT_KEY: Final[str] = "ErisPulse"
 CONFIG_KEY_ADAPTER_STATUS: Final[str] = "ErisPulse.adapters.status"
 CONFIG_KEY_ADAPTER_STATUS_OF: Final[str] = "ErisPulse.adapters.status.{}"  # .format(platform)
 
+# 适配器生命周期状态值（adapter.status.change 事件的 data.status 与 get_status 返回）。
+# 使用位置: Core/adapter.py 提交状态事件与查询运行状态。
+# 修改影响: Dashboard / 外部监听 adapter.status.change 的下游需同步。
+ADAPTER_STATUS_STARTING: Final[str] = "starting"
+ADAPTER_STATUS_STARTED: Final[str] = "started"
+ADAPTER_STATUS_START_FAILED: Final[str] = "start_failed"
+ADAPTER_STATUS_STOPPING: Final[str] = "stopping"
+ADAPTER_STATUS_STOPPED: Final[str] = "stopped"
+ADAPTER_STATUS_STOP_FAILED: Final[str] = "stop_failed"
+ADAPTER_STATUS_SKIPPED_DEPENDENCY: Final[str] = "skipped-dependency"
+ADAPTER_STATUS_DISABLED: Final[str] = "disabled"
+
+# Bot 在线状态值（adapter.bot.online / bot.offline 事件的 data.status 与 _bots 记录）。
+# 使用位置: Core/adapter.py 的 Bot 状态登记与离线标记。
+BOT_STATUS_ONLINE: Final[str] = "online"
+BOT_STATUS_OFFLINE: Final[str] = "offline"
+
 # 模块启用状态的配置键前缀。
 # 例如: ErisPulse.modules.status.Dashboard = true
 # 修改影响: 模块启用/禁用状态的读写路径。
@@ -124,9 +141,38 @@ DEFAULT_LOG_MEMORY_LIMIT: Final[int] = 1000
 # 修改影响: 仅影响未配置日志级别时的默认行为。
 DEFAULT_LOG_LEVEL: Final[str] = "INFO"
 
+# 日志目录的默认分段方式。
+# 可选值: "size"（按大小）/ "date"（按时间）/ "none"（不分段）。
+# 修改影响: log_dir 模式下的日志轮转策略。
+DEFAULT_LOG_ROTATION: Final[str] = "size"
+
+# size 分段模式下单个日志文件的大小上限（MB）。
+# 修改影响: 触发轮转的阈值；超过后旧日志轮转为 .1/.2 备份。
+DEFAULT_LOG_MAX_SIZE_MB: Final[float] = 10.0
+
+# 分段模式下保留的历史日志文件数量。
+# 修改影响: 超出数量的最旧备份会被删除；增大占用更多磁盘。
+DEFAULT_LOG_BACKUP_COUNT: Final[int] = 5
+
+# date 分段模式的轮转周期（logging TimedRotatingFileHandler 的 when 参数）。
+# 可选值: "S"/"M"/"H"/"D"/"midnight"。默认 "midnight"（每天零点轮转）。
+# 修改影响: 按时间分段的粒度。
+DEFAULT_LOG_ROTATION_WHEN: Final[str] = "midnight"
+
 # Rich 控制台日志的时间戳格式（strftime 语法）。
 # 修改影响: 终端日志输出的时间显示样式。
 LOG_TIME_FORMAT: Final[str] = "[%H:%M:%S]"
+
+# 非 JSON 模式下日志文件的统一行格式。
+# 消息体自带 [模块] 前缀；文件用完整日期+时间，跨天运行也可定位。
+# 使用位置: Core/logger.py 的文件日志格式化器（_make_file_formatter）。
+# 修改影响: 日志文件每行的呈现结构。
+LOG_FILE_FORMAT: Final[str] = "%(asctime)s [%(levelname)s] %(message)s"
+
+# 非 JSON 模式下日志文件的日期时间格式（strftime 语法）。
+# 使用位置: Core/logger.py 的文件日志格式化器。
+# 修改影响: 日志文件每行的时间显示样式。
+LOG_FILE_DATEFMT: Final[str] = "%Y-%m-%d %H:%M:%S"
 
 # Rich 日志配色主题。
 # 键为 Rich 样式名（Theme key），值为 rich 样式字符串。
@@ -328,6 +374,12 @@ DEFAULT_HANDLER_PRIORITY: Final[int] = 0
 # 命令分发器优先级（远高于默认值，确保命令在消息处理器之前执行）。
 # 修改影响: 命令 /xxx 总是优先于 on_message / on_group_message 等处理器触发。
 DEFAULT_COMMAND_DISPATCHER_PRIORITY: Final[int] = 100
+
+# 事件驱动懒激活（activate_on）stub 处理器优先级：极低，确保它在同类事件的所有普通处理器之后运行。
+# 这样外层 _process_event 的分组循环在 stub 之前已按优先级处理完其它处理器，
+# 激活期间注册的真实处理器不会被外层循环二次处理（已验证 groupby 迭代语义）。
+# 修改影响: 使用 activate_on 的模块的激活时机——数值越小，真实处理器越先于 stub 被处理。
+ACTIVATION_STUB_PRIORITY: Final[int] = -1_000_000_000
 
 # 等待用户回复的默认超时时间（秒）。
 # 使用位置: command.wait_reply(), Event.wait_reply(), Event.wait_for() 等 8 处。
@@ -553,7 +605,7 @@ DEFAULT_I18N_LANGUAGE: Final[str] = "auto"
 # HTTP 客户端默认值
 #
 # 控制内置 HTTP 客户端的超时、重试和连接行为。
-# 使用位置: Core/Bases/client.py -> HttpClient.__init__()
+# 使用位置: Core/Bases/client.py -> Client.__init__()
 # ==============================================================================
 
 # HTTP 客户端请求总超时（秒）。
@@ -580,7 +632,7 @@ DEFAULT_HTTP_CLIENT_USER_AGENT: Final[str] = ""
 # WebSocket 客户端默认值
 #
 # 控制内置 WebSocket 客户端的心跳和连接行为。
-# 使用位置: Core/client.py -> HttpClient.ws_connect()
+# 使用位置: Core/client.py -> Client.ws_connect()
 # ==============================================================================
 
 # WebSocket 客户端默认心跳间隔（秒）。
@@ -669,6 +721,18 @@ DEFAULT_PROACTIVE_GC_GEN0_MIN: Final[int] = 500
 # 修改影响: 设大确保处理器完整结束，设小加速关闭流程。
 DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS: Final[float] = 5.0
 
+# 按 owner 取消后台任务时等待任务回收的超时（秒）。
+# 运行时行为。模块卸载 / 适配器关闭时兜底取消名下后台任务后，
+# 等待其进入 cancelled 状态的最大耐心时间；超时不再阻塞（任务已取消，最终自行结束）。
+# 修改影响: 设大确保任务彻底回收，设小加速卸载流程。
+DEFAULT_OWNER_CANCEL_TIMEOUT_SECS: Final[float] = 5.0
+
+# 模块注册来源标识：本地插件文件夹（plugins/ 目录）。
+# 使用位置: loaders/plugin_folder.py（构造 meta.source）与 Core/module.py
+# （purge 卸载时仅对本地插件清理 sys.modules）。
+# 修改影响: 必须与 plugin_folder.py 写入的 source 值保持一致。
+MODULE_SOURCE_PLUGIN_FOLDER: Final[str] = "plugin_folder"
+
 # ==============================================================================
 # 进程 / 版本 / 日志展示常量
 #
@@ -679,6 +743,12 @@ DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS: Final[float] = 5.0
 # 子进程 hard_restart 后以此码退出，父进程（CLI run 命令）据此判断"需重启"而非"崩溃"。
 # 修改影响: 必须同步 sdk.py 与 CLI/commands/run.py，否则硬重启会被误判为崩溃。
 HARD_RESTART_EXIT_CODE: Final[int] = 42
+
+# 监督者标记环境变量名。
+# 当子进程由监督者（CLI run 命令）启动时注入，SDK 据此判断"是否有父进程会在
+# 退出码 42 时重新拉起我"。未设置时 hard_restart() 走 self-respawn（自行拉起新进程）。
+# 修改影响: 必须同步 sdk.py 与 CLI/commands/run.py。
+ENV_SUPERVISED: Final[str] = "ERISPULSE_SUPERVISED"
 
 # 版本元数据缺失时的回退字符串。
 # 使用位置: sdk.py / ErisPulse/__init__.py / Core/router.py 的版本探测兜底。
@@ -727,9 +797,20 @@ DEFAULT_SSE_HEADERS: Final[dict[str, str]] = {
 }
 
 __all__ = [
+    "ACTIVATION_STUB_PRIORITY",
     "ADAPTER_EVENT_MIXIN_PLATFORM",
     "ADAPTER_RETRY_BACKOFF_INTERVALS",
     "ADAPTER_RETRY_FIXED_DELAY_SECS",
+    "ADAPTER_STATUS_DISABLED",
+    "ADAPTER_STATUS_SKIPPED_DEPENDENCY",
+    "ADAPTER_STATUS_STARTED",
+    "ADAPTER_STATUS_STARTING",
+    "ADAPTER_STATUS_START_FAILED",
+    "ADAPTER_STATUS_STOPPED",
+    "ADAPTER_STATUS_STOPPING",
+    "ADAPTER_STATUS_STOP_FAILED",
+    "BOT_STATUS_OFFLINE",
+    "BOT_STATUS_ONLINE",
     "CONFIG_CACHE_TIMEOUT_SECS",
     "CONFIG_KEY_ADAPTER_STATUS",
     "CONFIG_KEY_ADAPTER_STATUS_OF",
@@ -767,13 +848,18 @@ __all__ = [
     "DEFAULT_I18N_LANGUAGE",
     "DEFAULT_KV_TABLE_NAME",
     "DEFAULT_LAZY_LOADING_ENABLED",
+    "DEFAULT_LOG_BACKUP_COUNT",
     "DEFAULT_LOG_LEVEL",
+    "DEFAULT_LOG_MAX_SIZE_MB",
     "DEFAULT_LOG_MEMORY_LIMIT",
+    "DEFAULT_LOG_ROTATION",
+    "DEFAULT_LOG_ROTATION_WHEN",
     "DEFAULT_MAX_RETRIES",
     "DEFAULT_MESSAGE_IGNORE_SELF",
     "DEFAULT_MODULE_ENABLED",
     "DEFAULT_MODULE_PRIORITY",
     "DEFAULT_OFFLINE_BOT_EXPIRY_SECS",
+    "DEFAULT_OWNER_CANCEL_TIMEOUT_SECS",
     "DEFAULT_PROACTIVE_GC_FULL_EVERY",
     "DEFAULT_PROACTIVE_GC_GEN0_MIN",
     "DEFAULT_PROACTIVE_GC_GENERATION",
@@ -807,6 +893,7 @@ __all__ = [
     "DETAIL_TYPE_HEARTBEAT",
     "DETAIL_TYPE_PRIVATE",
     "DETAIL_TYPE_USER",
+    "ENV_SUPERVISED",
     "EVENT_TYPE_MESSAGE",
     "EVENT_TYPE_META",
     "EVENT_TYPE_NOTICE",
@@ -818,9 +905,12 @@ __all__ = [
     "LIFECYCLE_TIMER_CORE_INIT",
     "LIFECYCLE_TIMER_CORE_UNINIT",
     "LOGGER_NAME",
+    "LOG_FILE_DATEFMT",
+    "LOG_FILE_FORMAT",
     "LOG_MESSAGE_TRUNCATE_CHARS",
     "LOG_RICH_THEME",
     "LOG_TIME_FORMAT",
+    "MODULE_SOURCE_PLUGIN_FOLDER",
     "RETCODE_NOT_IMPLEMENTED",
     "RETCODE_OK",
     "SERVER_SHUTDOWN_TIMEOUT_SECS",

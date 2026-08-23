@@ -1,11 +1,13 @@
 {
   "source_lang": "zh-CN",
   "target_langs": ["en", "zh-TW", "ja", "ru"],
-  "concurrent": 1,
+  "concurrent": 3,
+  "time_budget_minutes": 40,
   "ignore_dirs": ["ai-support/prompts", "api-reference/auto_api", "_meta"],
   "cache_dir": ".github/.translate_cache",
   "default": {
     "request_delay": 2,
+    "request_timeout": 180,
     "max_retries": 5,
     "retry_base_delay": 10,
     "max_tokens": 40000,
@@ -22,12 +24,6 @@
       "model": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
       "supports_thinking": false,
       "max_tokens": 40000
-    },
-    {
-      "name": "bigmodel",
-      "base_url": "https://open.bigmodel.cn/api/coding/paas/v4",
-      "api_key_env": "BIGMODEL_API_KEY",
-      "model": "GLM-4.7-Flash"
     }
   ]
 }

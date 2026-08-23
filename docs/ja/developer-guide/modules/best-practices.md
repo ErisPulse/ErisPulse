@@ -114,7 +114,7 @@ class MyModule(BaseModule):
 ### 1. 非同期ライブラリの使用
 
 ```python
-# SDK 内蔵の HTTP クライアント（非同期、自動ログと統計）を推奨します
+# SDK内蔵のHTTPクライアント（非同期、自動ログと統計）の使用が推奨
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -122,7 +122,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# sdk.client を使用することもできます（同じ効果です）
+# sdk.clientを使用することも可能（効果は同じ）
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -130,7 +130,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# aiohttp を直接インポートしないでください（フレームワークの統一管理が不便です）
+# aiohttpを直接インポートしないこと（フレームワークによる統一管理が困難）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -139,119 +139,139 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# requests を使用しないでください（同期で、イベントループをブロックします）
+# requestsを使用しないこと（同期的で、イベントループをブロックする）
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # イベントループをブロックします
+        return requests.get(url).json()  # イベントループをブロックする
 ```
 
-### 2. 適切な非同期操作
+### 2. 正しい非同期操作
 
 ```python
-async def handle_command(self, event):
-    # 長時間実行される操作をバックグラウンドで実行するために create_task を使用します
-    task = asyncio.create_task(self._long_operation())
-    
-    # 結果を待つ必要がある場合
-    result = await task
+from ErisPulse.Core.Event import Event  # event: Event注釈でIDEの補完が得られる
+
+async def handle_command(self, event: Event):
+    # 結果を待つ必要のある処理：直接await（ライフサイクルが明確）
+    result = await self._long_operation()
+
+async def on_load(self, event: dict):
+    # バックグラウンドタスク（ポーリング/定時/fire-and-forget）：self.spawn()を使用
+    # モジュールのアンロード時にon_unloadの後にフレームワークがキャンセルを保証し、selfの保持によるリークを防ぐ
+    self.spawn(self._poll())
 ```
+
+> [!NOTE]
+> バックグラウンドタスクは`self.spawn()`（ErisPulse **2.8.0+**）を使用することを推奨します。`asyncio.create_task`は、裸のタスクを作成し、モジュールに属さないため、アンロード時に自動的にクリーンアップされず、selfの参照を保持してモジュールインスタンスが回収されない（ホットリロードのリーク）可能性があります。詳細は[ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの所属と自動キャンセル)をご覧ください。
 
 ### 3. リソース管理
 
 ```python
 async def on_load(self, event):
-    # SDK クライアントは自動的に接続プールを管理しているため、手動でセッションを作成する必要はありません
+    # SDKクライアントは接続プールを自動的に管理するため、手動でsessionを作成する必要はない
     pass
     
 async def on_unload(self, event):
-    # カスタムクライアントが必要な場合は、リソースのクリーンアップを忘れないでください
+    # カスタムクライアントが必要な場合は、リソースのクリーンアップを忘れずに
     pass
 
 ## イベント処理
 
-### 1. Event クラスの使用
+### 1. Eventラッパークラスの使用
 
 ```python
-# Event クラスを利用する便利なメソッド
+# Eventラッパークラスの便利な方法を使用
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"こんにちは、{nickname}！")
 
-# 辞書を直接アクセスする代わりに
+# 辞書に直接アクセスするのではなく
 @command("info")
-async def info_command(event):
-    user_id = event["user_id"]  # 不明確で、エラーが発生しやすい
+async def info_command(event: Event):
+    user_id = event["user_id"]  # 明確さに欠け、間違いやすい
 ```
 
-### 2. 適切な Lazy Load（遅延読み込み）の使用
+### 2. 懒惰的ロードの適切な使用
 
 ```python
-# コマンド処理モジュールは即時読み込みが必要
+# 使用頻度の低いコマンドモジュール：activate_onトリガーを宣言し、最初の一致するコマンドが到着したときに自動的にアクティブ化（懒惰的ロードを維持）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        return ModuleLoadStrategy(lazy_load=False)
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"command": {"name": "dice", "help": "サイコロを振る", "aliases": ["d"]}},
+        ])
 
-# リスナーモジュールは即時読み込みが必要
+# 使用頻度の低いリスナー・モジュール：イベントトリガーを宣言し、イベントが到着したときに自動的にアクティブ化
 class ListenerModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"notice": "group_member_increase"},
+        ])
+
+# 高頻度のトリガー（各メッセージを処理する必要がある）または起動時に準備が必要なモジュール：即時ロード
+class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# ユーティリティモジュールは遅延読み込みに適している
+# ユーティリティモジュールは懒惰的ロードに適している
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-### 3. イベントハンドラーの登録
+> `activate_on`の完全な構文（イベントの三形式 / コマンドの簡略化とdict宣言 / helpのフォールバックチェーン）については、  
+> [懒惰的ロードモジュールシステム](../../advanced/lazy-loading.md#イベント駆動の懒惰的アクティベーションactivate_on)を参照してください。
+
+### 3. イベントハンドラの登録
 
 ```python
 async def on_load(self, event):
-    # on_load でイベントハンドラーを登録
+    # on_loadでイベントハンドラを登録
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("こんにちは！")
     
     @message.on_group_message()
-    async def group_handler(event):
+    async def group_handler(event: Event):
         self.logger.info("グループメッセージを受信しました")
     
-    # 手動で登録解除する必要はありません。フレームワークが自動的に処理します
+    # 手動での登録解除は不要、フレームワークが自動的に処理します
 
 ## エラー処理
 
-### 1. 例外処理の分類
+### 1. 例外の分類処理
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # 予期されるビジネスエラー
+        # 予期されたビジネスエラー
         self.logger.warning(f"ビジネス警告: {e}")
         await event.reply(f"パラメータエラー: {e}")
     except aiohttp.ClientError as e:
-        # ネットワークエラー（sdk.client + ClientError の使用を推奨）
-        # 旧コードは aiohttp を直接使用しても動作しますが、新コードでは ErisPulse 例外体系を使用することを推奨します
+        # ネットワークエラー（推奨: sdk.client + ClientError を使用）
+        # 旧コードでは直接 aiohttp を使用しても正常に動作しますが、新規コードでは ErisPulse の例外体系を使用することを推奨します
         self.logger.error(f"ネットワークエラー: {e}")
-        await event.reply("ネットワークリクエストに失敗しました。しばらく待ってから再試行してください")
+        await event.reply("ネットワークリクエストに失敗しました。後でもう一度お試しください")
     except Exception as e:
         # 予期しないエラー
         self.logger.error(f"不明なエラー: {e}", exc_info=True)
-        await event.reply("処理に失敗しました。管理者にお問い合わせください")
+        await event.reply("処理に失敗しました。管理者に連絡してください")
         raise
 ```
 
 ### 2. タイムアウト処理
 
 ```python
-# SDK 内蔵クライアント（タイムアウトとリトライ機能付き）の使用を推奨
+# 推奨: SDK 内部のクライアントを使用（タイムアウトと再試行機能が付属）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -260,7 +280,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"リクエストタイムアウト: {url}")
+        self.logger.warning(f"リクエストがタイムアウトしました: {url}")
         raise
 
 ## ストレージシステム
@@ -328,7 +348,7 @@ self.logger.info(f"リクエストを処理中: request_id={request_id}, user_id
 # ❌ 非構造化ログを使用
 self.logger.info(f"リクエストを処理しました。ユーザー {user_id} からのもの、所要時間 {duration} ミリ秒")
 
-## パフォーマンスの最適化
+## パフォーマンス最適化
 
 ### 1. キャッシュの使用
 
@@ -354,45 +374,54 @@ class MyModule(BaseModule):
 ### 2. ブロッキング操作の回避
 
 ```python
-# 非同期操作の使用
-async def process_message(self, event):
+# 非同期操作を使用
+async def process_message(self, event: Event):
     # 非同期処理
     await self._async_process(event)
 
 # ❌ ブロッキング操作
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # 同期操作、イベントループをブロック
     result = self._sync_process(event)
 
 ## セキュリティ
 
-### 1. 敏感データの保護
+### 1. 敏感データ保護
 
 ```python
-# 設定に敏感データを保存
-class MyModule(BaseModule):
-    def _load_config(self):
-        config = self.sdk.config.getConfig("MyModule")
-        self.api_key = config.get("api_key")
-        
-        if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("config.toml で有効な API キーを設定してください")
+# 敏感データは設定に格納されます（宣言型の ConfigClass、secret フィールドはログ/エクスポートに含まれません）
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
-# ❌ 機密情報をハードコーディングするのは避けてください
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={"description": "API キー", "secret": True},
+    )
+
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # このようなことはしないでください！
+    ConfigClass = MyModuleConfig
+
+    def check_api_key(self):
+        if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
+            raise ValueError("config.toml に有効な API キーを設定してください")
+
+# ❌ 敏感データをハードコードしないでください
+class MyModule(BaseModule):
+    API_KEY = "sk-1234567890"  # これを行わないでください！
 ```
 
-### 2. 入力値の検証
+### 2. 入力検証
 
 ```python
 # ユーザー入力を検証
-async def process_command(self, event):
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
     # 入力の長さを検証
     if len(user_input) > 1000:
-        await event.reply("入力が長すぎます。もう一度入力してください")
+        await event.reply("入力が長すぎます。再入力してください")
         return
     
     # 入力の形式を検証
@@ -402,35 +431,36 @@ async def process_command(self, event):
 
 ## テスト
 
-### 1. 単体テスト
+### 1. ユニットテスト
 
 ```python
 import pytest
 from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
-    def test_load_config(self):
-        """設定の読み込みをテスト"""
-        module = MyModule()
-        config = module._load_config()
-        assert config is not None
-        assert "api_url" in config
+    def test_config_defaults(self):
+        """テスト設定のデフォルト値"""
+        config = MyModule.ConfigClass()
+        assert config.timeout == 30
 ```
 
-### 2. 統合テスト
+### 2. インテグレーションテスト
 
 ```python
 @pytest.mark.asyncio
 async def test_command_handling():
-    """コマンドの処理をテスト"""
+    """テストコマンドの処理"""
     module = MyModule()
     await module.on_load({})
     
-    # コマンドイベントのシミュレーション
+    # コマンドイベントをシミュレート
     event = create_test_command_event("hello")
     await module.handle_command(event)
+```
 
-## 部署
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+## 配置
 
 ### 1. バージョン管理
 
@@ -440,26 +470,26 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-セマンティックバージョニング（Semantic Versioning）に従います：
+セマンティックバージョニングに従います：
 - MAJOR.MINOR.PATCH
-- メジャーバージョン：互換性のない API の変更
-- マイナーバージョン：下位互換のある機能の追加
-- パッチバージョン：下位互換のある問題の修正
+- 主バージョン：互換性のないAPIの変更
+- 次バージョン：互換性のある機能の追加
+- 修正番号：互換性のある問題の修正
 
-### 2. README ヘッダー
+### 2. READMEのヘッダー
 
-`epsdk create` で生成された README には、ErisPulse のヘッダー識別子（ロゴ + バッジ行）が既に組み込まれています。2つの推奨モードがあります。
+`epsdk create` で生成されたREADMEには、ErisPulseのヘッダー識別子（ロゴ + バッジ行）が組み込まれています。2つの推奨モードがあります：
 
-**モード A — ErisPulse ロゴのみ（デフォルト）：**
+**モード A — ErisPulseロゴのみ（デフォルト）：**
 
 ```markdown
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
 
 # MyModule
 
-**一文で説明**
+**1文で説明**
 
 <p>
   <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -471,21 +501,21 @@ version = "1.0.0"
 </div>
 ```
 
-**モード B — モジュールアイコン × ErisPulse ロゴ（カスタムアイコンがある場合）：**
+**モード B — モジュールアイコン × ErisPulseロゴ（独自アイコンがある場合）：**
 
 ```markdown
 <div align="center">
 
 <img src=".github/assets/MyModuleIcon.svg" width="120" alt="MyModule" />
 <span style="font-size:44px;color:#c8c8c8;margin:0 18px;vertical-align:middle;">×</span>
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
 （バッジ行は上記と同じ）
 </div>
 ```
 
-GitHub Stars、Downloads などのバッジを必要に応じて追加できます。ロゴもプロジェクトローカルにダウンロード可能です（`.github/assets/ErisPulseLogo.png`）し、相対パスで参照してください。
+GitHub Stars、Downloadsなどのバッジを必要に応じて追加できます。ロゴはプロジェクトのローカルにダウンロードし（`.github/assets/ErisPulseLogo.png`）、相対パスで参照することも可能です。
 
 ## 関連ドキュメント
 

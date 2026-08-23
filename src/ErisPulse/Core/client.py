@@ -22,7 +22,7 @@ import json
 import time
 from typing import Any
 
-from .Bases.client import BaseClientWebSocket, BaseHttpClient, BaseHttpResponse
+from .Bases.client import BaseClient, BaseClientWebSocket, BaseHttpResponse
 from .Bases.errors import (
     ClientConnectionError,
     ClientError,
@@ -376,7 +376,7 @@ class ClientWebSocket(BaseClientWebSocket):
         self._closed = True
 
 
-class HttpClient(BaseHttpClient):
+class Client(BaseClient):
     """
     HTTP/WS 客户端 (基于 aiohttp)
 
@@ -949,7 +949,11 @@ class HttpClient(BaseHttpClient):
         await self.close()
 
 
+# 向后兼容别名：2.8.0 前类名为 HttpClient
+HttpClient = Client
+
 __all__ = [
+    "Client",
     "ClientWebSocket",
     "HttpClient",
     "HttpResponse",

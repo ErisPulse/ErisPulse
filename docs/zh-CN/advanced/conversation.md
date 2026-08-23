@@ -177,6 +177,18 @@ if conv.is_active:
 
 ## 活跃状态管理
 
+```mermaid
+stateDiagram-v2
+    state "活跃" as active
+    state "非活跃" as inactive
+    [*] --> active: event.conversation()
+    active --> active: say / wait / confirm / choose / collect
+    active --> inactive: stop()
+    active --> inactive: wait() 超时
+    active --> inactive: collect() 超时或重试耗尽
+    inactive --> [*]
+```
+
 对话在以下情况会自动变为非活跃状态：
 
 1. 调用 `stop()` 方法

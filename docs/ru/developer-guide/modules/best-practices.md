@@ -101,7 +101,7 @@ class MyModule(BaseModule):
 ### 1. Использование асинхронной библиотеки
 
 ```python
-# Рекомендуется использовать встроенный HTTP-клиент SDK (асинхронный, с автоматическими логами и статистикой)
+# Рекомендуется использовать встроенный HTTP-клиент SDK (асинхронный, автоматический лог и статистика)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -109,7 +109,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# Также можно использовать sdk.client (результат такой же)
+# Также можно использовать sdk.client (результат тот же)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -117,7 +117,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Не следует импортировать aiohttp напрямую (неудобно для унифицированного управления в рамках фреймворка)
+# Не используйте aiohttp напрямую (трудно управлять из фреймворка)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -126,7 +126,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Не следует использовать requests (синхронный, блокирует цикл событий)
+# Не используйте requests (синхронный, блокирует цикл событий)
 import requests
 
 class MyModule(BaseModule):
@@ -134,112 +134,134 @@ class MyModule(BaseModule):
         return requests.get(url).json()  # Блокирует цикл событий
 ```
 
-### 2. Правильная асинхронная операция
+### 2. Правильные асинхронные операции
 
 ```python
-async def handle_command(self, event):
-    # Используйте create_task для выполнения трудоемких операций на фоне
-    task = asyncio.create_task(self._long_operation())
-    
-    # Если необходимо дождаться результата
-    result = await task
+from ErisPulse.Core.Event import Event  # аннотация event: Event дает автодополнение в IDE
+
+async def handle_command(self, event: Event):
+    # Долгие операции, которые требуют ожидания результата: await (жизненный цикл ясен)
+    result = await self._long_operation()
+
+async def on_load(self, event: dict):
+    # Фоновые задачи (опрос/таймер/fire-and-forget): используйте self.spawn(),
+    # при выгрузке модуля фреймворк отменяет задачи после on_unload, предотвращая утечку
+    self.spawn(self._poll())
 ```
+
+> [!NOTE]
+> Рекомендуется использовать `self.spawn()` (ErisPulse **2.8.0+**) вместо `asyncio.create_task` — задачи, созданные через `asyncio.create_task`, не принадлежат модулю, и при выгрузке не будут автоматически отменены, что приведет к удержанию ссылки на `self` и невозможности сборки мусора (утечка при горячей перезагрузке). Подробнее см. [Управление жизненным циклом](../../advanced/lifecycle.md#фоновые-задачи-принадлежность-и-автоматическая-отмена).
 
 ### 3. Управление ресурсами
 
 ```python
 async def on_load(self, event):
-    # Клиент SDK уже автоматически управляет пулом соединений, создавать session вручную не нужно
+    # Клиент SDK автоматически управляет пулом соединений, не нужно создавать session вручную
     pass
     
 async def on_unload(self, event):
-    # Если необходимо использовать собственный клиент, не забудьте очистить ресурсы
+    # Если нужен пользовательский клиент, не забудьте очистить ресурсы
     pass
 
 ## Обработка событий
 
-### 1. Использование класса-обёртки Event
+### 1. Использование обёртки Event
 
 ```python
-# Удобный метод с использованием класса-обёртки Event
+# Удобный способ использования обёртки Event
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"Привет, {nickname}!")
 
 # Вместо прямого доступа к словарю
 @command("info")
-async def info_command(event):
-    user_id = event["user_id"]  # менее наглядно, подвержено ошибкам
+async def info_command(event: Event):
+    user_id = event["user_id"]  # Не очень понятно, легко ошибиться
 ```
 
-### 2. Оптимальное использование отложенной загрузки
+### 2. Разумное использование ленивой загрузки
 
 ```python
-# Модули обработки команд должны загружаться немедленно
+# Модуль с низкой частотой использования: объявляем триггер activate_on, автоматически активируется при первом совпадении команды (сохраняется ленивая загрузка)
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        return ModuleLoadStrategy(lazy_load=False)
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"command": {"name": "dice", "help": "Бросить кубик", "aliases": ["d"]}},
+        ])
 
-# Модули прослушивателей должны загружаться немедленно
+# Модуль с низкой частотой использования: объявляем триггер события, автоматически активируется при поступлении события
 class ListenerModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"notice": "group_member_increase"},
+        ])
+
+# Модуль с высокой частотой триггеров (обрабатывается каждое сообщение) или модуль, который должен быть готов при запуске: немедленная загрузка
+class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# Модули утилит подходят для отложенной загрузки
+# Инструментальные модули подходят для ленивой загрузки
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
+> Полный синтаксис activate_on (три формы событий / сокращённая и dict-декларация команд / цепочка help-возврата) см. в разделе [Система ленивой загрузки модулей](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate-on).
+
 ### 3. Регистрация обработчиков событий
 
 ```python
 async def on_load(self, event):
-    # Регистрация обработчиков событий в on_load
+    # Регистрируем обработчик события в on_load
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("Привет!")
     
     @message.on_group_message()
-    async def group_handler(event):
-        self.logger.info("Получено сообщение из группы")
+    async def group_handler(event: Event):
+        self.logger.info("Получено групповое сообщение")
     
-    # Не нужно вручную отменять регистрацию, фреймворк обрабатывает это автоматически
+    # Не нужно вручную отписываться, фреймворк будет обрабатывать это автоматически
+```
+
+> `activate_on` 的完整语法（事件三形式 / 命令简写与 dict 声明 / help 回退链）见
+> [懒加载模块系统](../../advanced/lazy-loading.md#事件驱动懒激活activate_on)。
 
 ## Обработка ошибок
 
-### 1. Классификация и обработка исключений
+### 1. Обработка исключений по категориям
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # Ожидаемые бизнес-ошибки
-        self.logger.warning(f"Бизнес-предупреждение: {e}")
-        await event.reply(f"Ошибка параметров: {e}")
+        # Ожидаемая бизнес-ошибка
+        self.logger.warning(f"Предупреждение по бизнес-логике: {e}")
+        await event.reply(f"Ошибка параметра: {e}")
     except aiohttp.ClientError as e:
-        # Сетевая ошибка (рекомендуется использовать sdk.client + ClientError)
-        # Старый код, использующий напрямую aiohttp, по-прежнему будет работать,
-        # но в новом коде рекомендуется использовать систему исключений ErisPulse.
-        self.logger.error(f"Сетевая ошибка: {e}")
-        await event.reply("Не удалось выполнить сетевой запрос, повторите попытку позже")
+        # Ошибка сети (рекомендуется использовать sdk.client + ClientError)
+        # Старый код, использующий напрямую aiohttp, по-прежнему работает корректно, но в новом коде рекомендуется использовать систему исключений ErisPulse
+        self.logger.error(f"Ошибка сети: {e}")
+        await event.reply("Ошибка сетевого запроса, пожалуйста, повторите попытку позже")
     except Exception as e:
-        # Неожиданные ошибки
+        # Неожиданная ошибка
         self.logger.error(f"Неизвестная ошибка: {e}", exc_info=True)
-        await event.reply("Ошибка обработки, свяжитесь с администратором")
+        await event.reply("Обработка не удалась, пожалуйста, свяжитесь с администратором")
         raise
 ```
 
-### 2. Обработка таймаутов
+### 2. Обработка тайм-аутов
 
 ```python
-# Рекомендуется использовать встроенный клиент SDK (включает таймауты и перезапросы)
+# Рекомендуется использовать встроенный клиент SDK (имеет встроенный тайм-аут и повторные попытки)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -248,8 +270,11 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"Таймаут запроса: {url}")
+        self.logger.warning(f"Тайм-аут запроса: {url}")
         raise
+```
+
+[**中文**](README.zh.md) | [**English**](README.en.md) | [**Русский**](README.ru.md)
 
 ## Система хранения
 
@@ -318,7 +343,7 @@ self.logger.info(f"Запрос обработан, от пользовател�
 
 ## Оптимизация производительности
 
-### 1. Использование кэша
+### 1. Использование кэширования
 
 ```python
 class MyModule(BaseModule):
@@ -331,7 +356,7 @@ class MyModule(BaseModule):
             if key in self._cache:
                 return self._cache[key]
             
-            # Получение данных из базы данных
+            # Получение из базы данных
             data = await self._fetch_from_db(key)
             
             # Кэширование данных
@@ -343,44 +368,53 @@ class MyModule(BaseModule):
 
 ```python
 # Использование асинхронных операций
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # Асинхронная обработка
     await self._async_process(event)
 
 # ❌ Блокирующая операция
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # Синхронная операция, блокирует цикл событий
     result = self._sync_process(event)
 
 ## Безопасность
 
-### 1. Защита чувствительных данных
+### 1. Защита конфиденциальных данных
 
 ```python
-# Чувствительные данные хранятся в конфигурации
-class MyModule(BaseModule):
-    def _load_config(self):
-        config = self.sdk.config.getConfig("MyModule")
-        self.api_key = config.get("api_key")
-        
-        if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("Укажите действующий API-ключ в config.toml")
+# Конфиденциальные данные хранятся в конфигурации (декларативный ConfigClass, поле secret не попадает в логи/экспорт)
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
-# ❌ Жесткое кодирование чувствительных данных
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={"description": "Ключ API", "secret": True},
+    )
+
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    def check_api_key(self):
+        if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
+            raise ValueError("Пожалуйста, настройте действительный ключ API в config.toml")
+
+# ❌ Конфиденциальные данные жестко закодированы
 class MyModule(BaseModule):
     API_KEY = "sk-1234567890"  # Не делайте так!
 ```
 
-### 2. Валидация входных данных
+### 2. Проверка входных данных
 
 ```python
 # Проверка пользовательского ввода
-async def process_command(self, event):
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
     # Проверка длины ввода
     if len(user_input) > 1000:
-        await event.reply("Слишком длинный ввод, пожалуйста, введите заново")
+        await event.reply("Слишком длинный ввод, пожалуйста, повторите")
         return
     
     # Проверка формата ввода
@@ -390,19 +424,17 @@ async def process_command(self, event):
 
 ## Тестирование
 
-### 1. Unit Tests
+### 1. Юнит-тесты
 
 ```python
 import pytest
 from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
-    def test_load_config(self):
-        """Тестирование загрузки конфигурации"""
-        module = MyModule()
-        config = module._load_config()
-        assert config is not None
-        assert "api_url" in config
+    def test_config_defaults(self):
+        """Тестирование значений по умолчанию конфигурации"""
+        config = MyModule.ConfigClass()
+        assert config.timeout == 30
 ```
 
 ### 2. Интеграционные тесты
@@ -428,56 +460,52 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-Соблюдение семантического версионирования:
+Следуйте семантическому управлению версиями:
 - MAJOR.MINOR.PATCH
-- MAJOR (основная версия): несовместимые изменения API
-- MINOR (дополнительная версия): новые возможности, совместимые с предыдущими версиями
-- PATCH (исправление версии): исправления ошибок, совместимые с предыдущими версиями
+- Главная версия: несовместимые изменения API
+- Второстепенная версия: добавление функций, совместимых с предыдущими версиями
+- Ревизия: исправления проблем, совместимые с предыдущими версиями
 
 ### 2. Заголовок README
 
-`epsdk create` генерирует README с встроенной идентификацией ErisPulse (Logo + полоса бейджей). Два рекомендуемых режима:
+README, созданный с помощью `epsdk create`, уже содержит встроенный заголовок ErisPulse (логотип + строка значков). Рекомендуется использовать два режима:
 
-**Режим A — только ErisPulse Logo (по умолчанию):**
+**Режим A — только логотип ErisPulse (по умолчанию):**
 
 ```markdown
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
 
 # MyModule
 
-**Краткое описание**
+**Описание в одной строке**
 
 <p>
-  <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
-  <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python"></a>
+  <a href="docs/ru/quick-start.md"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
+  <a href="docs/ru/quick-start.md"><img src="https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
-  <a href="https://github.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/Powered_by-ErisPulse-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="ErisPulse"></a>
+  <a href="docs/ru/quick-start.md"><img src="https://img.shields.io/badge/Powered_by-ErisPulse-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="ErisPulse"></a>
 </p>
 
 </div>
 ```
 
-**Режим B — значок модуля × ErisPulse Logo (при наличии пользовательского значка):**
+**Режим B — значок модуля × логотип ErisPulse (при наличии пользовательского значка):**
 
 ```markdown
 <div align="center">
 
 <img src=".github/assets/MyModuleIcon.svg" width="120" alt="MyModule" />
 <span style="font-size:44px;color:#c8c8c8;margin:0 18px;vertical-align:middle;">×</span>
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
-(полоса бейджей аналогична выше)
+(Строка значков аналогична предыдущей)
 </div>
 ```
 
-При необходимости можно добавить бейджи GitHub Stars, Downloads и т.д. Логотип также можно скачать в локальную папку проекта (`.github/assets/ErisPulseLogo.png`) и ссылаться через относительный путь.
-
-Пожалуйста, верните полный перевод Markdown, не добавляя ничего лишнего.
-
-Напоминаю: если в документе есть строки переключения языков (строки с названиями языков, разделёнными символом `|`), строго следуйте формату, указанному в пункте 8 выше, и не используйте неверный формат `[[**Label**](file)]`.
+Вы можете добавить дополнительные значки, такие как GitHub Stars, Downloads и т.д. Логотип также можно загрузить в локальную папку проекта (`.github/assets/ErisPulseLogo.png`) и изменить ссылку на относительный путь.
 
 ## Related Documentation
 

@@ -1,5 +1,41 @@
 {
-  "hash": "fa49d9ef3b7017973915982d155f92b8",
-  "translated_at": "2026-06-04T06:08:13.074014",
-  "target_lang": "ja"
+  "version": 2,
+  "hash": "b0fd49a959689afc4dc37a62b3b8d5e1",
+  "file_hash": "b0fd49a959689afc4dc37a62b3b8d5e1",
+  "translated_at": "2026-08-17T12:18:13.490449",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "1a641ad2e70cab0bd7aa7947bf3707b7",
+      "translation": "# モジュール開発入門\n\nこのガイドでは、ErisPulse モジュールをゼロから作成する方法を解説します。"
+    },
+    {
+      "hash": "a0073e5af21db81bec6138a64a0fdceb",
+      "translation": "## プロジェクト構造\n\n標準的なモジュール構造：\n\n```\nMyModule/\n├── pyproject.toml\n├── README.md\n├── LICENSE\n└── MyModule/\n    ├── __init__.py\n    └── Core.py"
+    },
+    {
+      "hash": "7cc9ee9d87ec4f2e3547f1f3be0b7578",
+      "translation": "## pyproject.toml 設定\n\n```toml\n[project]\nname = \"ErisPulse-MyModule\"\nversion = \"1.0.0\"\ndescription = \"モジュールの機能説明\"\nreadme = \"README.md\"\nrequires-python = \">=3.10\"\nlicense = { file = \"LICENSE\" }\nauthors = [ { name = \"yourname\", email = \"your@mail.com\" } ]\ndependencies = []\n\n[project.urls]\n\"homepage\" = \"https://github.com/yourname/MyModule\"\n\n[project.entry-points.\"erispulse.module\"]\n\"MyModule\" = \"MyModule:Main\""
+    },
+    {
+      "hash": "533d351dc74326e611ccffab057a73a4",
+      "translation": "## __init__.py\n\n```python\nfrom .Core import Main"
+    },
+    {
+      "hash": "46fb55a7709c7f449b98832a2d63dc77",
+      "translation": "## Core.py - 基礎モジュール\n\n```python\nfrom ErisPulse import sdk\nfrom ErisPulse.Core.Bases import BaseModule\nfrom ErisPulse.Core.Event import command\n\nclass Main(BaseModule):\n    def __init__(self, sdk):\n        self.sdk = sdk\n        self.logger = sdk.logger.get_child(\"MyModule\")\n        self.storage = sdk.storage\n    \n    @staticmethod\n    def get_load_strategy():\n        \"\"\"モジュールのロード戦略を返す\"\"\"\n        from ErisPulse.loaders import ModuleLoadStrategy\n        return ModuleLoadStrategy(\n            lazy_load=True,\n            priority=0,\n            depends=[],  # オプション：依存する他のモジュールのリスト\n            # オプション：イベント駆動の遅延活性化——トリガーを宣言し、最初に一致するイベント/コマンドが到達した際に自動的にロード\n            # activate_on=[{\"command\": {\"name\": \"hello\", \"help\": \"挨拶を送信する\"}}],\n        )\n    \n    async def on_load(self, event):\n        \"\"\"モジュールがロードされたときに呼び出される\"\"\"\n        @command(\"hello\", help=\"挨拶を送信する\")\n        async def hello_command(event):\n            name = event.get_user_nickname() or \"友人\"\n            await event.reply(f\"こんにちは、{name}！\")\n        \n        self.logger.info(\"モジュールがロードされました\")\n    \n    async def on_unload(self, event):\n        \"\"\"モジュールがアンロードされたときに呼び出される\"\"\"\n        self.logger.info(\"モジュールがアンロードされました\")\n```\n\n> **設定の読み込み**：上記の基本例では設定を使用していません。設定を読み込む必要がある場合は、ネストされた `ConfigClass` を宣言し、`self.cfg` を通じてリアルタイムに読み込むことを推奨します（[モジュールのコアコンセプト](core-concepts.md#宣言的設定の推奨)を参照）。手動で `_load_config()` を呼び出す古い書き方は廃止されました。"
+    },
+    {
+      "hash": "b19935b00f6e24f77df608fef2d1ed1b",
+      "translation": "## テストモジュール\n\n### ローカルテスト\n\n```bash\n# プロジェクトディレクトリでモジュールをインストール\nepsdk install ./MyModule\n\n# プロジェクトを実行\nepsdk run main.py --reload\n```\n\n### テストコマンド\n\nコマンド送信テスト：\n\n```\n/hello"
+    },
+    {
+      "hash": "d269ee7215a3848703e40ccb19237a63",
+      "translation": "## 核心概念\n\n### BaseModule 基底クラス\n\nすべてのモジュールは `BaseModule` を継承し、以下のメソッドを提供する必要があります：\n\n| メソッド | 説明 | 必須 |\n|------|------|------|\n| `__init__(self, sdk)` | コンストラクタ（フレームワークが `sdk` インスタンスを渡す） | いいえ |\n| `get_load_strategy()` | ロード戦略を返す | いいえ |\n| `get_meta()` | モジュールの説明メタ情報を返す（オプション） | いいえ |\n| `on_load(self, event)` | モジュールがロードされたときに呼び出される | はい |\n| `on_unload(self, event)` | モジュールがアンロードされたときに呼び出される | はい |\n\n### モジュール紹介 meta\n\n> [!NOTE]\n> この機能は ErisPulse **2.8.0+** が必要です。\n\n`get_meta()` でモジュールの紹介メタ情報を宣言します（このモジュールが何をするものか、どのカテゴリに属するかなど）。メタ情報はモジュールの**一般的な紹介データ**であり、help モジュール、Dashboard モジュールリスト、モジュールストアなどの各種インターフェース/エコシステムモジュールが利用します。\n\n`get_load_strategy()` が `ModuleLoadStrategy` を返すのと同じように、**`ModuleMeta` 設定クラスのインスタンスを返すことを推奨します**（プロパティの型付け、IDEの補完機能）、dict を直接返すことも互換性があります：\n\n```python\nclass MyModule(BaseModule):\n    @staticmethod\n    def get_meta() -> ModuleMeta:\n        return ModuleMeta(\n            name=\"天気\",               # 表示名（デフォルトの登録名）\n            description=\"都市の天気を照会\",  # モジュールの概要\n            version=\"1.0.0\",\n            author=\"ErisDev\",\n            group=\"ツール\",               # 機能のグループ\n            tags=[\"天気\", \"照会\"],\n        )\n```\n\n互換的な書き方（dict）：\n\n```python\nclass MyModule(BaseModule):\n    @staticmethod\n    def get_meta() -> dict:\n        return {\n            \"name\": \"天気\",\n            \"description\": \"都市の天気を照会\",\n            \"version\": \"1.0.0\",\n            \"author\": \"ErisDev\",\n            \"group\": \"ツール\",\n            \"tags\": [\"天気\", \"照会\"],\n        }\n```\n\n- `module.get_meta(\"MyModule\")` は、既に解析されたメタ情報を読み取ります（クラス宣言 > 登録 info、自動的にこのモジュールのコマンド名を補完します）。\n- `module.get_commands_overview()` は、「モジュール meta + 登録されたコマンド（エイリアス/グループ/ヘルプ）」を統合し、モジュールごとに整理されたコマンドの概要を提供します。\n- コマンドの所属モジュールは `cmd_info[\"owner\"]` で取得できます（登録時にコンテキストシステムが自動的に注入します）。\n\n#### meta フィールドの i18n 対応\n\nメタ情報のフィールド値は、純粋な文字列、または i18n ディクショナリ `{\"i18n\": \"key.path\", \"default\": \"代替テキスト\"}`（設定の `description` と同様の約束）で指定できます。\n翻訳キーは `I18nClass` で宣言・登録し、`module.get_meta()` で読み取る際に、現在の言語のテキストに自動的に変換されます：\n\n```python\nclass MyModule(BaseModule):\n    class I18nClass(BaseI18n):\n        meta_description: I18nKey = I18nKey(\n            default=\"Weather lookup\",\n            zh_CN=\"都市の天気照会\",\n            en=\"Weather lookup\",\n        )\n\n    @staticmethod\n    def get_meta() -> ModuleMeta:\n        return ModuleMeta(\n            name=\"天気\",\n            description={\"i18n\": \"MyModule.meta_description\", \"default\": \"Weather lookup\"},\n        )\n```\n\n### SDK オブジェクト\n\n`sdk` オブジェクトを通じて、コア機能にアクセスします：\n\n```python\nfrom ErisPulse import sdk\n\nsdk.storage    # ストレージシステム\nsdk.config     # 設定システム\nsdk.logger     # ログシステム\nsdk.adapter    # アダプターシステム\nsdk.router     # ルーティングシステム\nsdk.lifecycle  # ライフサイクルシステム\n```\n\ndocs/ja/core-concepts.md"
+    },
+    {
+      "hash": "396851cc7f0728c2b96c0a9dece48ec5",
+      "translation": "## 次のステップ\n\n- [モジュールの基本概念](core-concepts.md) - モジュールのアーキテクチャについて深く理解する\n- [Event ラッパークラスの詳細](event-wrapper.md) - Event オブジェクトの習得\n- [モジュール開発のベストプラクティス](best-practices.md) - 高品質なモジュールの開発"
+    }
+  ]
 }

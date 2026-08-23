@@ -76,27 +76,73 @@ Once again, if the document contains language switch lines (with each language n
 
 ## Configuration Hot Reload
 
-Starting from version 2.7.0, the framework provides **systematic support** for configuration hot reload. After external modification of `config.toml` (background watcher checks every 5 seconds), or after code calls `setConfig()`, components automatically respond:
+Starting from version 2.7.0, the framework provides **systematic support** for configuration hot reload. After external modification of `config.toml` (detected every 5 seconds by a background watcher), or after code calls `setConfig()`, components automatically respond:
 
 | Component | Configurations Supporting Hot Reload | Behavior |
 |-----------|--------------------------------------|----------|
-| **Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | Automatically reapplied (with change detection) |
+| **Logger** | `logger.level` / `log_files` / `log_dir` (including segmentation parameters) / `memory_limit` / `format` / `exclude_levels` | Automatically reapplies (with change detection) |
 | **Command System CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
 | **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore and rebuilds with new value |
-| **Proactive GC** | `framework.proactive_gc_*` | Configuration changes immediately restart GC task, supports runtime adjustment/disable/re-enable |
-| **Master System Master** | `master.users` | Each `is_master()` check reads in real-time, no restart needed |
-| **Module/Adapter Configuration** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
+| **Proactive GC** | `framework.proactive_gc_*` | Configuration change immediately restarts GC task, supports runtime adjustment/disable/reenable |
+| **Master System Master** | `master.users` | Each `is_master()` check reads in real-time, no restart required |
+| **Module/Adapter Configurations** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
 
-**Configurations Requiring Restart** (cannot be safely hot-swapped; warning "Process needs restart to take effect" is output on change):
+**Configurations Requiring Restart** (cannot be safely hot-switched; a warning "Requires process restart to take effect" is output when changed):
 
 | Configuration | Reason |
-|---------------|--------|
-| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-swapped at runtime |
+|----------------|--------|
+| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-switched at runtime |
 | `storage.use_global_db` | SQLite file handle is already open at runtime, switching paths is unsafe |
 
-> **Error editing and saving midway?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, not broadcasting an empty configuration to components (to avoid `on_config_update` receiving null values and mistakenly reverting to default).
+> **Error during editing and saving?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, and will not broadcast an empty configuration to components (to prevent `on_config_update` receiving null values and mistakenly reverting to defaults).
 
-docs/en/configuration-hot-reload.md
+### Internal Breakdown of Hot Reload Chain
+
+"How do components know when the configuration is changed?" — Behind this is a chain of detection → reload → broadcast:
+
+```mermaid
+flowchart TD
+    A["External edit config.toml"] --> B{"Who detects first?"}
+    B -->|"Background watcher thread<br/>Polls mtime every 5 seconds"| C["_check_file_change determines change"]
+    B -->|"When reading configuration<br/>Cache exceeds 60 seconds"| C
+    C --> D["_load_config re-parses TOML"]
+    D --> E{"Parse successful?"}
+    E -->|"No (syntax error)"| F["Retains last valid configuration<br/>Does not broadcast, outputs diagnostic log"]
+    E -->|"Yes"| G["lifecycle.emit config.updated<br/>Carries old_config / new_config"]
+    G --> H["Component listeners respond<br/>(logger / scope / command / GC ... )"]
+```
+
+**Two detection paths** (either one is sufficient, both serve as fallback):
+
+| Path | Mechanism | Trigger Timing |
+|------|-----------|----------------|
+| Background watcher | Daemon thread `config-watcher` polls file `mtime` every **5 seconds** | Within 5 seconds after external file modification |
+| Lazy detection | Any `getConfig()` read, if cache exceeds **60 seconds**, checks file first | On next configuration read |
+
+> **Framework does not self-damage**: When `setConfig()` writes to disk, it records the "mtime written by itself"; the watcher excludes it during comparison, treating only **external edits** as changes.
+
+**Two types of configuration change events:**
+
+| Event | Trigger | Data | Typical Scenario |
+|-------|---------|------|------------------|
+| `config.set` | Code / Dashboard calls `setConfig()` | `{key, old_value, new_value}` | Single key write (template generation, status recording, runtime config change) |
+| `config.updated` | Captured by watcher/lazy detection after external edit | `{old_config, new_config, config_file}` | Manual edit of `config.toml` |
+
+> `setConfig()` defaults to **delayed disk write for 5 seconds** (merges multiple writes), `immediate=True` writes immediately. After watcher detects external modification, it only updates the in-memory cache, **does not** write external changes back to the file.
+
+**List of automatic responders** (both event types are typically subscribed, with consistent responses):
+
+| Component | Listener | Response |
+|-----------|----------|----------|
+| Logger | `config.set` + `config.updated` | Reapplies level/file/directory segmentation/memory limit/format/exclude levels (with change detection, no change means no action) |
+| Scope | `config.updated` | Rebuilds scope binding cache |
+| Command System | `config.updated` | Refreshes prefix/case-sensitive/space prefix/must_at_bot parsing parameters, takes effect on next message |
+| Adapter Concurrency | `config.set` + `config.updated` | Invalidates and rebuilds semaphore for `handler_max_concurrency` |
+| Proactive GC | `config.set` + `config.updated` | Immediately restarts GC background task for `proactive_gc_*` |
+| Adapters | Routes to `on_config_update` | Each adapter's `on_config_update(old, new)` callback |
+| Modules | Routes to `on_config_update` | Each module's `on_config_update(old, new)` callback |
+| Storage | `config.updated` | Change of `use_global_db` only warns (requires restart) |
+| Router | `config.updated` | Change of `cors.*` / `security.*` only warns (requires restart) |
 
 ## Complete Configuration Example
 
@@ -104,14 +150,27 @@ docs/en/configuration-hot-reload.md
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = ""
 ssl_keyfile = ""
+
+[ErisPulse.master]
+# users supports two writing methods (choose one):
+#   Global owner (effective on all platforms): users = ["123456", "789012"]
+#   Owner specified by platform: users = { yunhu = ["123456"], telegram = ["789012"] }
+users = {}
 
 [ErisPulse.logger]
 level = "INFO"
 format = "rich"
 log_files = []
+log_dir = ""
+log_rotation = "size"
+log_max_size_mb = 10
+log_backup_count = 5
+log_rotation_when = "midnight"
 memory_limit = 1000
+exclude_levels = []
 
 [ErisPulse.framework]
 enable_lazy_loading = true
@@ -143,6 +202,7 @@ language = "auto"
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = "/path/to/cert.pem"
 ssl_keyfile = "/path/to/key.pem"
 ```
@@ -151,32 +211,86 @@ ssl_keyfile = "/path/to/key.pem"
 |---------|------|---------|------|
 | host | string | 0.0.0.0 | Listening address, 0.0.0.0 means all interfaces |
 | port | integer | 8000 | Listening port number |
-| ssl_certfile | string | empty | Path to SSL certificate file |
-| ssl_keyfile | string | empty | Path to SSL private key file |
+| auto_start | boolean | true | Whether to automatically start the routing server when `sdk.init()`. Setting to `false` skips the routing server startup (pure event/without WebUI scenario) |
+| ssl_certfile | string | empty | SSL certificate file path |
+| ssl_keyfile | string | empty | SSL private key file path |
 
-Please directly return the translated complete Markdown content, without including any other text.
+Please directly return the translated complete Markdown content, without any additional text.
 
-Once again, if the document contains language switching lines (lines with language names separated by `` | ``), be sure to strictly follow the format requirement in the above item 8, and do not write the incorrect format of ``[**Label**](file)``.
+Once again, please note: if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the format requirement in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
+
+## Master System Configuration
+
+The master system is used to identify the "framework master" account (such as Bot administrator). `master.users` supports two writing styles:
+
+```toml
+[ErisPulse.master]
+# Style 1: Global master (effective on all platforms)
+users = ["123456", "789012"]
+
+# Style 2: Specify master per platform (dict)
+# users = { yunhu = ["123456"], telegram = ["789012"] }
+```
+
+| Configuration Item | Type | Default Value | Description |
+|---------|------|---------|------|
+| users | array / object | empty | List of master account IDs. In `list` form, it represents a global master (effective on all platforms); in `dict` form, it specifies masters per platform (key is the platform name, value is the list of master account IDs for that platform) |
+
+The code checks using `master.is_master(event)` or `master.is_master(platform, user_id)`. The configuration is read in real time during each call (supports hot updates, no restart required):
+
+```python
+from ErisPulse.Core import master
+
+if master.is_master(event):
+    await event.reply("Hello master")
 
 ## Logging Configuration
 
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = ["app.log", "debug.log"]
+log_files = []                # Explicit list of log files (mutually exclusive with log_dir, higher priority)
+log_dir = ""                  # Log directory (automatically segmented and rotated upon setting)
+log_rotation = "size"         # Segmentation method: "size" / "date" / "none"
+log_max_size_mb = 10          # Maximum file size for size-based segmentation (MB)
+log_backup_count = 5          # Number of historical log files to retain
+log_rotation_when = "midnight"  # Rotation cycle for date-based segmentation: S/M/H/D/midnight
 memory_limit = 1000
+exclude_levels = ["EVENT"]
 ```
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| level | string | INFO | Logging level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal debugging information) |
-| format | string | rich | Logging output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
-| log_files | array | empty | List of log output files |
-| memory_limit | integer | 1000 | Number of log entries saved in memory |
+| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal framework debug information) |
+| format | string | rich | Log output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
+| log_files | array | empty | List of log output files (explicit paths, no segmentation) |
+| log_dir | string | empty | Log output directory (automatically created). Upon setting, logs are written to `erispulse.log` within the directory and automatically segmented according to `log_rotation`; mutually exclusive with `log_files`, `log_files` takes precedence |
+| log_rotation | string | size | Segmentation method: `size` (by size) / `date` (by time) / `none` (no segmentation) |
+| log_max_size_mb | float | 10 | Maximum file size for size-based segmentation (MB); logs exceeding this size are rotated to `.1`/`.2` backups |
+| log_backup_count | integer | 5 | Number of historical log files to retain; oldest backups beyond this limit are automatically deleted |
+| log_rotation_when | string | midnight | Rotation cycle for date-based segmentation: `S`/`M`/`H`/`D`/`midnight` (default: daily at midnight) |
+| memory_limit | integer | 1000 | Number of log entries to keep in memory |
+| exclude_levels | array | empty | Levels of logs to suppress. Logs of suppressed levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to file). Supports hot updates |
 
-Please directly return the complete translated Markdown content, without including any other text.
+You can also dynamically switch in code:
 
-Once again, if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the above rule #8 and do not write incorrect formats such as ``[**Label**](file)``.
+```python
+from ErisPulse.Core import logger
+
+# Segmentation by size: single file 10MB, retain 5 copies
+logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
+
+# Segmentation by date: rotate at midnight, retain 7 copies
+logger.set_output_dir("logs", rotation="date", backup_count=7)
+```
+
+> [!NOTE]
+> `log_dir` and related segmentation configurations require ErisPulse **2.8.0+**.
+
+> **Privacy Protection**: Message sending and receiving content is recorded at the **EVENT** level (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (such as the Dashboard log panel) from seeing message content in groups/private chats, without affecting logs of other levels.
+
+> [!NOTE]
+> The `exclude_levels` feature requires ErisPulse **2.8.0+**.
 
 ## Framework Configuration
 
@@ -265,7 +379,7 @@ Once again, please note: if the document contains language switching lines (with
 ```toml
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = false
+case_sensitive = true
 allow_space_prefix = false
 ```
 
@@ -273,7 +387,7 @@ allow_space_prefix = false
 |---------|------|---------|------|
 | prefix | string | / | Command prefix |
 | case_sensitive | boolean | true | Whether to distinguish case (whether `/Help` and `/help` are different commands) |
-| allow_space_prefix | boolean | false | Whether to allow space as prefix |
+| allow_space_prefix | boolean | false | Whether to allow space as a prefix |
 | must_at_bot | boolean | false | Whether the command must be triggered by mentioning the bot (not restricted in private chats) |
 
 ### Message Configuration
@@ -285,7 +399,13 @@ ignore_self = true
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| ignore_self | boolean | true | Whether to ignore messages sent by the bot itself |
+| ignore_self | boolean | true | Whether to ignore the robot's own messages |
+
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md`), keep them unchanged
+   - This ensures that links point to the correct language version of the documentation
 
 ## Internationalization Configuration
 
@@ -328,6 +448,34 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > By default, `setConfig` uses delayed writing (approximately batch saving to file every 5 seconds). Setting `immediate=True` will persist immediately. Configuration changes will trigger the `config.set` lifecycle event.
 
 Please replace paths in document links by replacing `docs/en/` with `docs/en/`. For example, `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`. For links pointing to files of non-current language versions (such as `README.xx.md`), keep them unchanged to ensure links point to the correct language version of the document.
+
+## Scope Configuration
+
+> [!NOTE]
+> This feature requires ErisPulse **2.8.0+**.
+
+The module scope system is used to control which modules a "certain Bot" can use. By default, all modules are open to all Bots, and filtering only begins after configuration binding. Modules and adapters can be adapted without any changes.
+
+```toml
+[ErisPulse.scope]
+default_allow = true        # Allow all by default (false = implicit deny strict mode)
+cache_size = 1024           # LRU cache size for is_allowed
+```
+
+| Configuration | Type | Description |
+|---------------|------|-------------|
+| `scope.default_allow` | boolean | Allow all modules by default (`true`). `false` = implicit deny strict mode, only modules in the whitelist are available |
+| `scope.cache_size` | integer | LRU cache size for `is_allowed` (default 1024) |
+| `scope.platforms.<platform>.modules` | array | Platform-level whitelist: only listed modules are allowed (empty = no restriction) |
+| `scope.platforms.<platform>.blocked` | array | Platform-level blacklist: listed modules are disabled (empty = no restriction) |
+| `scope.bots.<platform>.<bot_id>.modules` | array | Bot-level whitelist, overrides platform-level |
+| `scope.bots.<platform>.<bot_id>.blocked` | array | Bot-level blacklist, overrides platform-level |
+| `scope.sessions.<platform>.<session_id>.modules` | array | Session-level whitelist (group/channel/private chat), highest priority |
+| `scope.sessions.<platform>.<session_id>.blocked` | array | Session-level blacklist, highest priority |
+
+> Resolution priority: **Session-level > Bot-level > Platform-level**. For a complete TOML example of the three-level binding, case-insensitive module names, session identifiers isolated across platforms, and runtime `sdk.scope.bind()` / `unbind()` dynamic addition and removal (with `merge=True` for merging), please refer to the [Scope System](../advanced/scope.md).
+
+docs/en/scope.md
 
 ## Next Steps
 

@@ -36,27 +36,25 @@ public void startAdapter() {
 
 ### アダプターとは
 
-アダプターは ErisPulse と各メッセージプラットフォームの間のブリッジであり、以下の役割を担当します：
+アダプターは ErisPulse と各メッセージプラットフォームの間の橋渡しとして機能し、主に以下の役割を担当します。
 
-1. **正方向の変換（Forward Conversion）**：プラットフォームのイベントを受信し、OneBot12 標準形式に変換する（Converter）
-2. **反方向の変換（Reverse Conversion）**：OneBot12 のメッセージセグメントをプラットフォームの API 呼び出しに変換する（`Raw_ob12`）
-3. プラットフォームとの接続の管理（WebSocket/WebHook）
-4. 統一された SendDSL メッセージ送信インターフェースを提供する
+1. **正変換**：プラットフォームからのイベントを受け取り、OneBot12 標準形式に変換する（Converter）
+2. **逆変換**：OneBot12 メッセージセグメントをプラットフォーム API コールに変換する（`Raw_ob12`）
+3. プラットフォームとの接続管理（WebSocket/WebHook）
+4. 統一された SendDSL メッセージ送信インターフェースの提供
 
 ### アダプターのアーキテクチャ
 
-```
-正方向の変換（受信）                        反方向の変換（送信）
-─────────────                        ─────────────
-プラットフォームイベント                  モジュール構築メッセージ
-    ↓                                    ↓
-Converter.convert()               Send.Raw_ob12()
-    ↓                                    ↓
-OneBot12 標準イベント                  プラットフォームネイティブ API 呼び出し
-    ↓                                    ↓
-イベントシステム                       標準応答形式
-    ↓
-モジュール処理
+```mermaid
+flowchart LR
+    subgraph receive["正変換（受信）"]
+        direction TB
+        P1["プラットフォームイベント"] --> C1["Converter.convert()"] --> O1["OneBot12 標準イベント"] --> S1["イベントシステム"] --> M1["モジュール処理"]
+    end
+    subgraph send["逆変換（送信）"]
+        direction TB
+        M2["モジュールメッセージ構築"] --> R1["Send.Raw_ob12()"] --> N1["プラットフォームネイティブ API コール"] --> R2["標準応答フォーマット"]
+    end
 
 ## ディレクトリ構造
 
@@ -378,6 +376,41 @@ async def handle_friend_request(event):
 ```python
 # MyAdapter/__init__.py
 from .Core import MyAdapter
+
+## 依存関係の宣言（オプション、2.8.0+）
+
+アダプタは他のアダプタやモジュールへの依存を宣言し、アダプタ間の連携とオプション機能を実現できます：
+
+```python
+from typing import ClassVar
+
+class MyAdapter(BaseAdapter):
+    # 硬い依存：存在しない場合は起動をスキップ（警告 + status=skipped-dependency イベント）
+    depends: ClassVar[dict] = {
+        "adapters": ["onebot11"],   # 依存するアダプタ（プラットフォーム名で）
+        "modules": ["TranslateEngine"],  # 依存するモジュール（登録名で）
+    }
+    # ソフトな依存：存在しない場合は起動に影響しない；モジュールのロード/アンロード時にコールバックを受け取る（オプション機能モード）
+    optional_modules: ClassVar[list] = ["TranslateEngine"]
+```
+
+- **起動順序**：モジュールの硬い依存を宣言したアダプタは**モジュールの初期化完了後に起動される**。
+- **ソフトな依存の通知**：`optional_modules`（またはモジュールの硬い依存）に含まれるモジュールがロードされたときに `on_dependency_ready(module_name)` を呼び出す；アンロードされたときに `on_dependency_lost(module_name)` を呼び出す（デフォルトでは空実装、オーバーライド可能）——遅いロードやホットリロードの状況に対応：
+
+```python
+async def on_dependency_ready(self, module_name):
+    """ソフトな依存モジュールが準備完了：対応するオプション機能を有効化"""
+    if module_name == "TranslateEngine":
+        self._translate = self.sdk.TranslateEngine
+
+async def on_dependency_lost(self, module_name):
+    """ソフトな依存モジュールが失われた：機能をロールバック"""
+    if module_name == "TranslateEngine":
+        self._translate = None
+```
+
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
 
 ## `__init__` 注意事項
 

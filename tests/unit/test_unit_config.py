@@ -1012,4 +1012,46 @@ level = "INFO"
         assert "ErisPulse.modules.status" not in manager._dirty_keys
 
 
+class TestBasesReExport:
+    """Bases 包聚合导出完整性测试"""
+
+    def test_i18n_config_re_exported(self):
+        """I18nConfig 应从 Bases 顶层导出，且与 config_schema 是同一对象"""
+        from ErisPulse.Core.Bases import I18nConfig
+        from ErisPulse.Core.Bases.config_schema import I18nConfig as _Source
+
+        assert I18nConfig is _Source
+
+    def test_i18n_config_in_all(self):
+        """I18nConfig 应包含在 Bases.__all__ 中"""
+        import ErisPulse.Core.Bases as Bases
+
+        assert "I18nConfig" in Bases.__all__
+
+    def test_i18n_config_default_language(self):
+        """I18nConfig 默认 language 为 auto"""
+        from ErisPulse.Core.Bases import I18nConfig
+
+        assert I18nConfig().language == "auto"
+
+    def test_client_rename_backcompat_aliases(self):
+        """Client/BaseClient 新类名导出，旧名 HttpClient/BaseHttpClient 保留兼容别名"""
+        from ErisPulse.Core import BaseClient, Client, BaseHttpClient, HttpClient
+        from ErisPulse.Core.Bases import BaseClient as _BC, BaseHttpClient as _BOC
+
+        assert HttpClient is Client
+        assert BaseHttpClient is BaseClient
+        assert _BOC is _BC
+        # 顶层单例属性名不变
+        from ErisPulse.Core import client
+
+        assert isinstance(client, Client)
+
+    def test_sdk_type_exported_top_level(self):
+        """SDK 类应从 ErisPulse 顶层导出（供模块 __init__ 注解 sdk: SDK 使用）"""
+        from ErisPulse import SDK, sdk
+
+        assert SDK is type(sdk)
+
+
 

@@ -1,32 +1,39 @@
 # Ecosystem Modules
 
-The ErisPulse framework itself only provides core capabilities (event system, module system, configuration, routing, logging, etc.) and **does not include built-in** GUI, image rendering, visualization, and other "heavyweight" features. These capabilities are provided by **third-party modules** maintained by the community, which can be installed on demand.
+The ErisPulse framework itself only provides core capabilities (event system, module system, configuration, routing, logging, etc.) and **does not include** "heavyweight" features such as GUI, image rendering, and visualization. These capabilities are provided by **community-maintained third-party modules**, which can be installed on demand.
 
 > [!IMPORTANT]
-> All modules described in the documents in this directory **need to be installed separately** and are not included in the ErisPulse framework:
+> Documentation in this directory is divided into two categories with different installation methods:
 >
-> ```bash
-> epsdk install <module_name>
-> ```
+> - **Modules** (e.g., Dashboard / Takumi) use `epsdk install` to install:
 >
+>   ```bash
+>   epsdk install <module_name>
+>   ```
+>
+> - **Standalone Programs** (e.g., ErisPulse-App client) are installed directly by downloading from the corresponding GitHub Releases, without needing `epsdk`.
+>
+
+## Recommended Modules and Official Clients
+
+| Item | Type | Purpose | Documentation |
+|------|------|--------|---------------|
+| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | Official Client | Official cross-platform client (Android / Windows / Linux / macOS): create/run/manage multiple instances natively with native UI, built-in module store and event builder; **run directly on mobile**, resident desktop tray | [ErisPulse-App Installation and Usage](app.md) |
+| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | Module | Web admin panel: start/stop modules, edit configurations, view logs, monitor events; supports custom windows registration in the sidebar for other modules | [Dashboard Usage and Window Registration](dashboard.md) |
+| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi) (Author [@ccd2s](https://github.com/ccd2s)) | Module | Image rendering: HTML / Node Tree / Jinja / SVG / Animation, based on [takumi-py](https://github.com/BalconyJH/takumi-py); built-in Chinese and English fonts, ready to use | [Takumi Image Rendering](takumi.md) |
 
 ---
 
-## Recommended Modules
+## I also want to list my module here?
 
-| Module | Purpose | Docs |
-|--------|---------|------|
-| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | Web management panel: module start/stop, configuration editing, log viewing, event monitoring; supports other modules registering custom views to the sidebar | [Dashboard Usage and View Registration](dashboard.md) |
-| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi) (Author [@ccd2s](https://github.com/ccd2s)) | Image rendering: HTML / node tree / Jinja / SVG / animation, based on [takumi-py](https://github.com/BalconyJH/takumi-py); built-in Chinese and English fonts, ready to use out of the box | [Takumi Image Rendering](takumi.md) |
+Welcome to recommend high-quality, widely reusable ErisPulse ecosystem modules. Requirements:
 
----
+1. Published to [PyPI](https://pypi.org/), and the package name starts with `ErisPulse-`
+2. Provide basic README and usage examples
+3. Actively maintained, responsive to Issues
 
-## I want to list my module here too?
+Module authors who meet the above conditions can create a new `<ModuleName>.md` document in this directory via PR and append a row to the "Recommended Modules" table.
 
-You are welcome to recommend high-quality, widely reusable ErisPulse ecosystem modules. Requirements:
+Please return the complete translated Markdown content directly without including any other text.
 
-1. Published to [PyPI](https://pypi.org/) and package name starts with `ErisPulse-`
-2. Provides basic README and usage examples
-3. Actively maintained with responses to Issues
-
-Module authors meeting the above conditions can add a `<module_name>.md` document under this directory via a PR and append a row to the "Recommended Modules" table.
+**Important Reminder:** If the document contains language switch lines (lines with language names separated by ` | `), you must strictly adhere to the format requirement in item 8 above and avoid writing incorrect formats like ``[**Label**](file)``.

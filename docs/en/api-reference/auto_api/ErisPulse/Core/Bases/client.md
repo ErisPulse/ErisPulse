@@ -192,7 +192,7 @@ Content-Type 值
 ---
 
 
-### `class BaseHttpClient`
+### `class BaseClient`
 
 HTTP 客户端抽象基类
 

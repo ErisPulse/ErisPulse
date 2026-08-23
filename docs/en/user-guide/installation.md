@@ -1,7 +1,7 @@
 # Installation Reference
 
-> This document is a **complete reference** for installation methods (pip / uv / Docker / troubleshooting).
-> If you just want to get started quickly, [5-Minute Quick Start](../quick-start.md) covers the minimal process.
+> This document is the **complete reference** for installation methods (pip / uv / Docker / Troubleshooting).
+> If you just want to get started quickly, [5-Minute Quick Start](../quick-start.md) covers the minimal workflow.
 
 ## System Requirements
 
@@ -11,7 +11,7 @@
 
 ## Installation Methods
 
-### Method 1: Install with pip
+### Method 1: Install using pip
 
 ```bash
 # Install ErisPulse
@@ -21,9 +21,9 @@ pip install ErisPulse
 pip install ErisPulse --upgrade
 ```
 
-### Method 2: Install with uv (Recommended)
+### Method 2: Install using uv (Recommended)
 
-uv is a faster Python toolchain, recommended for development environments.
+uv is a faster Python toolchain and is recommended for development environments.
 
 #### Install uv
 
@@ -35,7 +35,7 @@ pip install uv
 uv --version
 ```
 
-#### Create a Virtual Environment
+#### Create a virtual environment
 
 ```bash
 # Create project directory
@@ -48,7 +48,7 @@ uv python install 3.12
 uv venv
 ```
 
-#### Activate the Virtual Environment
+#### Activate virtual environment
 
 ```bash
 # Windows
@@ -63,11 +63,24 @@ source .venv/bin/activate
 ```bash
 # Install ErisPulse
 uv pip install ErisPulse --upgrade
-```
 
 ## Project Initialization and Module Installation
 
-After installation, the complete workflow for project initialization, module installation, and running is covered in [5-Minute Quick Start](../quick-start.md).
+After installation, please refer to the [5-Minute Quick Start](../quick-start.md) for the complete workflow of project initialization, module installation, and running.
+
+### Method 3: Using the ErisPulse-App Client (Terminal-Free)
+
+Don't want to set up a Python environment? [ErisPulse-App](../ecosystem/app.md) is the official cross-platform client
+(Android / Windows / Linux / macOS) that runs **directly on your phone**; the desktop version supports minimizing to
+the system tray for background operation; it includes a built-in Python runtime and ErisPulse SDK, no terminal or manual configuration required:
+
+- Download according to your platform from [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)
+  (Android `online`/`offline` APK, Windows `setup.exe`/`zip`, Linux `tar.gz`, macOS `zip`)
+- Create and start an instance within the App, and manage adapters and modules, as well as browse the module store, via the native interface
+
+> For detailed instructions, see [ErisPulse-App Installation and Usage](../ecosystem/app.md).
+
+Please return the complete translated Markdown content directly, without including any other text.
 
 ## Verify Installation
 
@@ -78,7 +91,7 @@ After installation, the complete workflow for project initialization, module ins
 epsdk --version
 ```
 
-### Run a Test
+### Run Tests
 
 ```bash
 # Run the project
@@ -94,39 +107,42 @@ If you see output similar to the following, the installation was successful:
 [INFO] ErisPulse initialization complete
 ```
 
-## Common Issues
+Please return the complete translated Markdown content directly, without including any other text.
+
+Reminder: If the document contains language switch lines (lines where language names are separated by `` | ``), please strictly follow the format requirements in point 8 above and do not write incorrect formats like ``[**Label**](file)``.
+
+## FAQ
 
 ### Installation Failure
 
-1. Check that Python version is >= 3.10 (recommended 3.10 - 3.13)
+1. Check if Python version >= 3.10 (recommended 3.10 - 3.13)
 2. Try using `uv pip install ErisPulse` instead of `pip install`
-3. If permission errors occur, try `pip install --user ErisPulse` or use a virtual environment
-4. If SSL certificate errors occur in a corporate proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
-5. Ensure network connectivity is normal and the pip source is accessible
+3. If permission error is prompted, try `pip install --user ErisPulse` or use a virtual environment
+4. If encountering SSL certificate error in a corporate proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. Ensure network connection is normal and pip source is accessible
 
 ### Configuration Errors
 
-1. Check that the `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)
-2. Confirm all required configuration items are filled in
-3. Check terminal logs for detailed error messages
+1. Check if `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)
+2. Confirm that all required configuration items have been filled
+3. View terminal logs for detailed error information
 4. Use `epsdk init` to regenerate the configuration file
 
 ### Module Installation Failure
 
-1. Confirm the module name is spelled correctly (case-sensitive)
-2. Check network connectivity
-3. Use `epsdk list-remote` to view available module lists
+1. Confirm the module name spelling is correct (case sensitive)
+2. Check network connection
+3. Use `epsdk list-remote` to view the list of available modules
 4. Confirm the module is compatible with your current SDK version
 
 ### Windows PowerShell Execution Policy
 
-If PowerShell prompts "Cannot load file... because running scripts is disabled on this system":
+If PowerShell prompts "cannot load file... because running scripts is disabled on this system":
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
 
 ## Next Steps
 
 - [CLI Command Reference](cli-reference.md) - Learn about all command-line commands
-- [Configuration File Guide](configuration.md) - Learn about configuration options in detail
+- [Configuration Guide](configuration.md) - Get detailed information about configuration options

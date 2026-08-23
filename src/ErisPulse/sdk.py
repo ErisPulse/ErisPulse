@@ -30,6 +30,7 @@ from .Core.constants import (
     DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
     DEFAULT_PROACTIVE_GC_MEMORY_GROWTH_MB,
     DEFAULT_UNINIT_TIMEOUT_SECS,
+    ENV_SUPERVISED,
     HARD_RESTART_EXIT_CODE,
     LIFECYCLE_TIMER_CORE_INIT,
     LIFECYCLE_TIMER_CORE_UNINIT,
@@ -55,6 +56,7 @@ if TYPE_CHECKING:
         MasterManager,
         ModuleManager,
         RouterManager,
+        ScopeManager,
         StorageManager,
     )
     from .Core import (
@@ -67,7 +69,7 @@ if TYPE_CHECKING:
         BaseStorage as _BaseStorage,
     )
     from .Core import (
-        HttpClient as _HttpClient,
+        Client as _Client,
     )
     from .Core import (
         SendDSL as _SendDSL,
@@ -99,6 +101,8 @@ def _resolve_core(attr: str):
         "router": ("ErisPulse.Core", "router"),
         "client": ("ErisPulse.Core", "client"),
         "master": ("ErisPulse.Core", "master"),
+        "scope": ("ErisPulse.Core", "scope"),
+        "context": ("ErisPulse.runtime", "context"),
         "BaseAdapter": ("ErisPulse.Core", "BaseAdapter"),
         "SendDSL": ("ErisPulse.Core", "SendDSL"),
         "BaseStorage": ("ErisPulse.Core.Bases.storage", "BaseStorage"),
@@ -127,6 +131,8 @@ _CORE_ATTR_NAMES = {
     "router",
     "client",
     "master",
+    "scope",
+    "context",
     "BaseAdapter",
     "SendDSL",
     "BaseStorage",
@@ -161,6 +167,8 @@ class SDK:
     - router: 路由管理器
     - client: HTTP 客户端
     - master: 框架主人管理器
+    - scope: 模块作用域管理器（模块-Bot/平台/会话绑定）
+    - context: 模块上下文管理（owner_scope / get_current_owner）
     {!--< /tips >!--}
     """
 
@@ -179,12 +187,14 @@ class SDK:
     adapter: AdapterManager
     module: ModuleManager
     router: RouterManager
-    client: _HttpClient
+    client: _Client
     BaseAdapter: type[_BaseAdapter]
     SendDSL: type[_SendDSL]
     BaseStorage: type[_BaseStorage]
     BaseQueryBuilder: type[_BaseQueryBuilder]
     master: MasterManager
+    scope: ScopeManager
+    context: ModuleType
 
     def __init__(self):
         """
@@ -393,12 +403,22 @@ class SDK:
                         i18n.t("core.sdk.init.adapter_register_partial")
                     )
 
-                # 3. 启动适配器
-                if enabled_adapters:
+                # 3. 启动适配器（声明模块硬依赖的适配器推迟到模块初始化完成后启动）
+                deferred_platforms: list[str] = []
+                dep_free_platforms: list[str] = []
+                for _platform in enabled_adapters:
+                    _instance = adapter_manager._adapters.get(_platform)
+                    _depends = getattr(_instance, "depends", None) or {}
+                    if isinstance(_depends, dict) and _depends.get("modules"):
+                        deferred_platforms.append(_platform)
+                    else:
+                        dep_free_platforms.append(_platform)
+
+                if dep_free_platforms:
                     self.logger.print_section_header(
                         i18n.t("core.sdk.init.adapter_start_phase")
                     )
-                    await adapter_manager.startup()
+                    await adapter_manager.startup(dep_free_platforms)
 
                 # 4. 注册模块
                 self.logger.print_section_header(
@@ -425,6 +445,13 @@ class SDK:
                 else:
                     success = True
 
+                # 5. 启动声明了模块硬依赖的适配器（此时依赖模块已初始化完成）
+                if deferred_platforms:
+                    self.logger.print_section_header(
+                        i18n.t("core.sdk.init.adapter_start_deferred_phase")
+                    )
+                    await adapter_manager.startup(deferred_platforms)
+
                 # 6. 启动路由服务器
                 self.logger.print_section_header(i18n.t("core.sdk.init.router_start"))
                 from ErisPulse.runtime import get_server_config
@@ -441,6 +468,8 @@ class SDK:
                         port=_server_config["port"],
                         ssl_certfile=_server_config.get("ssl_certfile"),
                         ssl_keyfile=_server_config.get("ssl_keyfile"),
+                        ssl_cert=_server_config.get("ssl_cert"),
+                        ssl_key=_server_config.get("ssl_key"),
                     )
 
                 # 获取加载耗时
@@ -751,6 +780,15 @@ class SDK:
 
                 # 5. 清理所有事件处理器
                 self.Event._clear_all_handlers()
+
+                # 5.5 兜底取消所有归属后台任务（fire-and-forget 钩子、异步生命周期
+                # 处理器调度等），防止悬挂任务持有实例引用阻碍回收
+                try:
+                    from .runtime.tasks import cancel_all_background_tasks
+
+                    await cancel_all_background_tasks()
+                except Exception:
+                    pass
 
                 # 6. 清理管理器
                 adapter_manager.clear()
@@ -1444,6 +1482,10 @@ class SDK:
         内部调用 ``init()`` 完成初始化，然后在 ``on_ready`` 回调执行完毕后
         挂起主程序（当 ``keep_running=True`` 时）。
 
+        硬重启（``hard_restart()``）通过退出码 42 契约交由**外部
+        监督者**（``epsdk run`` / systemd / Docker / PM2 等，见 startup.md
+        「监督者指南」）重新拉起。
+
         {!--< tips >!--}
         异常处理原则：
         1. 模块/适配器的任何错误都会被拦截，不会导致进程退出
@@ -1546,6 +1588,72 @@ class SDK:
         """
         if self._shutdown_event is not None and not self._shutdown_event.is_set():
             self._shutdown_event.set()
+
+    def enable_plugin_hot_reload(self, interval: float = 1.0) -> bool:
+        """
+        启用本地插件文件夹热重载
+
+        监控插件文件夹（默认 ``plugins/``，可通过 ``ErisPulse.framework.plugins_dir``
+        配置）下 ``.py`` 文件的变更，自动重新加载对应插件。
+        需在 ``await sdk.run()`` 之前调用。
+
+        :param interval: 轮询间隔（秒，默认 1.0）
+        :return: 是否启动成功（无插件目录或已在运行返回 False）
+
+        :example:
+        >>> await sdk.init()
+        >>> sdk.enable_plugin_hot_reload()
+        >>> await sdk.run()
+        """
+        if getattr(self, "_plugin_watcher", None) is not None:
+            return False
+
+        from .runtime import PluginReloadWatcher
+
+        watcher = PluginReloadWatcher(self._reload_plugin, interval=interval)
+        ok = watcher.start()
+        if ok:
+            self._plugin_watcher = watcher
+            self.logger.info(i18n.t("core.sdk.hot_reload.enabled"))
+        return ok
+
+    async def reload_plugin(self, plugin_name: str) -> bool:
+        """
+        热重载单个本地插件（手动触发）
+
+        卸载旧实例、清理注册、强制重新导入并重新加载。
+
+        :param plugin_name: 插件名
+        :return: 是否重载成功
+
+        :example:
+        >>> await sdk.reload_plugin("dice")
+        """
+        if getattr(self, "_module_loader", None) is None:
+            self.logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
+            return False
+        return await self._module_loader.reload_plugin(
+            plugin_name, self.module, self._sdk
+        )
+
+    async def _reload_plugin(self, plugin_name: str) -> None:
+        """
+        {!--< internal-use >!--}
+        热重载回调（由 PluginReloadWatcher 调度），失败仅记录不抛异常
+        """
+        try:
+            await self.reload_plugin(plugin_name)
+        except Exception as e:
+            self.logger.error(i18n.t("core.sdk.hot_reload.failed", name=plugin_name, error=e))
+
+    def stop_plugin_hot_reload(self) -> None:
+        """
+        停止本地插件热重载监控
+        """
+        watcher = getattr(self, "_plugin_watcher", None)
+        if watcher is not None:
+            watcher.stop()
+            self._plugin_watcher = None
 
     def _register_signal_handlers(self) -> None:
         """
@@ -1819,17 +1927,32 @@ class SDK:
 
     RESTART_EXIT_CODE = HARD_RESTART_EXIT_CODE
 
+    def is_supervised(self) -> bool:
+        """
+        检测当前进程是否由外部监督者启动（CLI run 命令 / systemd / Docker 等）
+
+        监督者会在进程退出码为 42（``HARD_RESTART_EXIT_CODE``）时重新拉起新进程。
+        未被监督时硬重启后进程不会自动恢复，``hard_restart()`` 会打出警告提醒
+        配置外部监督者（见 startup.md「监督者指南」）。
+
+        :return: 是否有外部监督者
+        """
+        import os
+
+        return bool(os.environ.get(ENV_SUPERVISED))
+
     async def hard_restart(self) -> bool:
         """
-        硬重启：反初始化后退出进程，由父进程（run.py）重新启动新实例
+        硬重启：反初始化后退出进程，由外部监督者重新启动新实例
 
         与 restart()（热重启）的区别：
         - restart(): 在同一进程内反初始化再重新初始化
-        - hard_restart(): 反初始化后退出进程，由父进程重新启动全新进程
+        - hard_restart(): 反初始化后以退出码 42 退出进程，由外部监督者重新拉起全新进程
 
         确保资源完全释放
 
-        需要通过 epsdk run 启动才生效，否则进程退出后不会自动重启。
+        硬重启依赖外部监督者（``epsdk run`` / systemd / Docker / PM2 / supervisord）
+        在退出码 42 时重新拉起进程；未被监督时进程退出后不会自动恢复，会打警告提醒。
 
         :return: bool 硬重启任务是否成功调度
 
@@ -1852,12 +1975,43 @@ class SDK:
                 _config_manager.force_save()
             except Exception:
                 pass
+            if not self.is_supervised():
+                self.logger.warning(
+                    i18n.t(
+                        "core.sdk.hardrestart.not_supervised",
+                        code=self.RESTART_EXIT_CODE,
+                    )
+                )
             os._exit(self.RESTART_EXIT_CODE)
 
         from .runtime.tasks import spawn_background
 
         spawn_background(_do_hard_restart())
         return True
+
+
+    def get_topology(self) -> dict[str, Any]:
+        """
+        获取完整的拓扑树数据（便于 Dashboard 等管理界面展示）
+
+        聚合模块、适配器与作用域的归属关系：
+        - ``modules``：每个模块拥有的命令 / 事件处理器 / 路由 / 生命周期钩子
+        - ``adapters``：每个适配器的运行状态、下属 Bot 状态与作用域绑定
+        - ``scope``：全部平台级 / Bot 级作用域绑定
+
+        :return: 拓扑树字典
+            {"modules": {...}, "adapters": {...}, "scope": {...}}
+
+        :example:
+        >>> topology = sdk.get_topology()
+        >>> topology["modules"]["Chat"]["commands"]
+        ["chat"]
+        """
+        return {
+            "modules": self.module.get_topology().get("modules", {}),
+            "adapters": self.adapter.get_topology().get("adapters", {}),
+            "scope": self.scope.get_topology(),
+        }
 
     async def uninit(self) -> bool:
         """

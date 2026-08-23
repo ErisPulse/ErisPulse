@@ -44,6 +44,19 @@ ErisPulse 适配器系统
 #### 方法列表
 
 
+##### `_shutdown_timeout()`
+
+> **内部方法**
+读取适配器 shutdown 优雅收尾的超时（秒）
+
+复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算）；
+未配置或非法时回退常量默认值。
+
+**返回值**: 超时秒数（>0）
+
+---
+
+
 ##### `set_sdk_ref(sdk)`
 
 设置 SDK 引用
@@ -58,6 +71,75 @@ ErisPulse 适配器系统
 
 > **内部方法**
 注册 config.set / config.updated 事件订阅，将配置变更路由到各适配器的 on_config_update
+
+---
+
+
+##### `_register_dependency_routing()`
+
+> **内部方法**
+注册 module.load / module.unload 事件订阅，将模块就绪/丢失路由到
+声明了依赖的适配器的 on_dependency_ready / on_dependency_lost 钩子
+
+---
+
+
+##### `_dependency_watchers(module_name: str)`
+
+> **内部方法**
+找出关注指定模块的已注册适配器（软依赖或硬依赖均可收到通知）
+
+- **module_name** (`模块名`): **返回值** (`(platform, adapter_instance), ...`):
+
+---
+
+
+##### `async _dispatch_dependency_event(module_name: str, hook_name: str)`
+
+> **内部方法**
+向关注指定模块的适配器分发依赖事件钩子
+
+- **module_name** (`模块名`): - **hook_name**: 钩子方法名（on_dependency_ready / on_dependency_lost）
+
+---
+
+
+##### `async _on_module_load_notify(data: dict)`
+
+> **内部方法**
+处理 module.load 事件：通知依赖该模块的适配器（on_dependency_ready）
+
+---
+
+
+##### `async _on_module_unload_notify(data: dict)`
+
+> **内部方法**
+处理 module.unload 事件：通知依赖该模块的适配器（on_dependency_lost）
+
+---
+
+
+##### `_extract_module_name(data: dict)`
+
+> **内部方法**
+从生命周期事件数据中提取模块名
+
+兼容两种事件形状：直接 emit 的扁平 dict（``{"module_name": ...}``）
+与 submit_event 包装的标准事件（``{"data": {"module_name": ...}}``）。
+
+- **data** (`生命周期事件数据`): **返回值** (`模块名，无法提取时返回`): None
+
+---
+
+
+##### `_check_missing_dependencies(adapter: 'BaseAdapter', platform: str)`
+
+> **内部方法**
+检查适配器硬依赖是否就绪（适配器 + 模块均已注册）
+
+- **adapter** (`适配器实例`): - **platform**: 平台名称（用于日志）
+**返回值**: 缺失的依赖描述列表（空列表表示全部就绪）
 
 ---
 
@@ -180,7 +262,8 @@ ErisPulse 适配器系统
 场景均经此入口，保证适配器一旦停止、归属资源必被回收，无需调用方再补清理。
 
 对未注册的平台直接返回；``shutdown()`` 与清理均幂等，半途失败的重试场景
-也能正确回收 start() 期间已注册的资源。
+也能正确回收 start() 期间已注册的资源。``shutdown()`` 带优雅收尾超时
+（``unload_timeout``），卡死时强制进入清理，避免阻塞重启/关闭链路。
 
 - **platform**: 平台名称
 
@@ -197,12 +280,13 @@ ErisPulse 适配器系统
 ---
 
 
-##### `_cleanup_adapter_resources(platform: str)`
+##### `async _cleanup_adapter_resources(platform: str)`
 
 > **内部方法**
 适配器资源兜底清理（与模块卸载对齐颗粒度）。
 
-清理该平台在运行期间注册的所有路由、命令与事件处理器。同时覆盖两种注册方式：
+清理该平台在运行期间注册的所有路由、命令与事件处理器，并兜底取消
+该平台名下的后台任务。同时覆盖两种注册方式：
 - 直接以平台名为命名空间注册的路由（unregister_all_by_namespace）
 - 适配器以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册的路由
   （unregister_all_by_owner，依赖 start() 期间注入的 current_owner）
@@ -225,6 +309,23 @@ ErisPulse 适配器系统
 **示例**:
 ```python
 >>> await sdk.adapter.restart("OneBot11")
+```
+
+---
+
+
+##### `async unload(platform: str)`
+
+卸载并注销单个平台适配器
+
+与 ``shutdown()``（仅停止）不同，``unload()`` 在停止并清理资源后，
+额外从管理器注销该平台（释放适配器实例与类引用），用于动态移除适配器
+并回收其内存占用。若同一实例还注册了其它平台，实例会保留（仅注销该平台）。
+
+- **platform** (`平台名称`): **返回值** (`是否卸载成功`): 
+**示例**:
+```python
+>>> await adapter.unload("MyPlatform")
 ```
 
 ---
@@ -341,7 +442,9 @@ ErisPulse 适配器系统
 OneBot12协议事件监听装饰器
 
 - **event_type** (`OneBot12事件类型`): - **raw**: 是否监听原生事件
-- **platform** (`指定平台，None表示监听所有平台`): **返回值** (`装饰器函数`): 
+- **platform** (`指定平台，None表示监听所有平台`): - **scope_exempt**: 是否豁免模块作用域过滤（框架级总线处理器专用）。
+                     为 True 时不参与作用域判断，始终分发。
+**返回值** (`装饰器函数`): 
 **示例**:
 ```python
 >>> # 监听OneBot12标准事件（所有平台）
@@ -405,6 +508,20 @@ OneBot12协议事件监听装饰器
 >>>     "myplatform_raw_type": "text_message"
 >>> })
 ```
+
+---
+
+
+##### `_is_handler_scope_allowed(handler_wrapper: dict, data: dict)`
+
+> **内部方法**
+判断 OneBot12 / 原生事件处理器是否通过模块作用域检查
+
+框架级总线处理器（``scope_exempt`` 或 owner 为空）始终放行；
+模块级处理器按 owner 与当前事件所属平台/Bot 判定。
+
+- **handler_wrapper** (`处理器包装器（含`): func/platform/owner/scope_exempt）
+- **data** (`原始事件数据`): **返回值**: 是否允许分发
 
 ---
 
@@ -574,6 +691,29 @@ self字段标准扩展：
 >>> #         }
 >>> #     }
 >>> # }
+```
+
+---
+
+
+##### `get_topology()`
+
+获取适配器与 Bot 的拓扑树数据（便于 WebUI 展示）
+
+聚合每个适配器的运行状态、下属 Bot 状态，以及平台级 / Bot 级
+模块作用域绑定，展示"适配器 → Bot → 作用域"的归属关系。
+
+**返回值** (`拓扑树字典`): {"adapters": {platform: {
+        "status": str, "enabled": bool,
+        "bots": {bot_id: {"status", "last_active", "info", "scope"}},
+        "scope": {"modules": [...], "blocked": [...]},
+    }}}
+
+**示例**:
+```python
+>>> topology = adapter.get_topology()
+>>> print(topology["adapters"]["onebot11"]["bots"])
+{"123456": {...}}
 ```
 
 ---

@@ -73,12 +73,12 @@ async def at_handler(event: Event):
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="顯示說明資訊")
+@command("help", help="顯示幫助資訊")
 async def help_handler(event):
     help_text = """
 可用命令：
-/help - 顯示說明
-/ping - 測試連線
+/help - 显示帮助
+/ping - 測試連接
 /info - 查看資訊
     """
     await event.reply(help_text)
@@ -87,22 +87,22 @@ async def help_handler(event):
 ### 命令別名
 
 ```python
-@command(["help", "h"], aliases=["說明"], help="顯示說明資訊")
+@command(["help", "h"], aliases=["幫助"], help="顯示幫助資訊")
 async def help_handler(event):
-    await event.reply("說明資訊...")
+    await event.reply("幫助資訊...")
 ```
 
 使用者可以使用以下任何方式呼叫：
 - `/help`
 - `/h`
-- `/說明`
+- `/幫助`
 
 ### 命令參數
 
 ```python
 @command("echo", help="回顯訊息")
 async def echo_handler(event):
-    # 取得命令參數
+    # 獲取命令參數
     args = event.get_command_args()
     
     if not args:
@@ -111,7 +111,7 @@ async def echo_handler(event):
         await event.reply(f"你說了: {' '.join(args)}")
 ```
 
-### 命令群組
+### 命令組
 
 ```python
 @command("admin.reload", group="admin", help="重新載入模組")
@@ -136,22 +136,22 @@ async def master_handler(event):
     await event.reply("這是框架主人命令")
 ```
 
-### 命令優先順序
+### 命令優先級
 
 ```python
-# 優先順序數值越大，執行越早
+# 優先級數值越大，執行越早
 @message.on_message(priority=10)
 async def high_priority_handler(event):
-    await event.reply("高優先順序處理器")
+    await event.reply("高優先級處理器")
 
 @message.on_message(priority=1)
 async def low_priority_handler(event):
-    await event.reply("低優先順序處理器")
+    await event.reply("低優先級處理器")
 ```
 
 ### 並行事件處理
 
-ErisPulse 事件系統採用**同優先順序並行、不同優先順序串行**的排程模型：
+ErisPulse 事件系統採用**同優先級並行、不同優先級串行**的調度模型：
 
 ```
 事件到達
@@ -163,14 +163,14 @@ priority=0 組: [處理器A || 處理器B] 並行 → 合併結果
 ...
 ```
 
-- **同優先順序並行**：優先順序相同的多個處理器會同時執行，提高吞吐量
-- **跨級串行**：不同優先順序的組按順序執行（數值越大越先執行），確保高優先順序處理器先執行
+- **同優先級並行**：優先級相同的多個處理器會同時執行，提高吞吐量
+- **跨級串行**：不同優先級的組按順序執行（數值越大越先執行），確保高優先級處理器先運行
 - **Copy-On-Write**：處理器無修改時不建立副本，確保零開銷
-- **衝突處理**：同優先順序多處理器修改同一欄位時，使用最後修改值並記錄警告日誌
-- **中斷機制**：任意處理器呼叫 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先順序組。認領與阻斷的差別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
+- **衝突處理**：同優先級多處理器修改同一欄位時，使用最後修改值並記錄警告日誌
+- **中斷機制**：任意處理器呼叫 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先級組。認領與阻斷的區別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
 
 ```python
-# 範例：同優先順序處理器並行執行
+# 範例：同優先級處理器並行執行
 @message.on_message(priority=0)
 async def handler_a(event):
     # 處理任務A
@@ -181,19 +181,45 @@ async def handler_b(event):
     # 與 handler_a 並行執行
     event['result_b'] = process_b()
 
-# 不同優先順序串行執行
+# 不同優先級串行執行
 @message.on_message(priority=10)
 async def handler_c(event):
-    # 優先順序最高，最先執行
+    # 優先級最高，最先執行
     pass
+```
+
+> **併發上限**：所有匹配 handler 的 Task 會**立即建立**，但透過一個信號量限制**同時在途執行數**，預設上限 **64**（`ErisPulse.framework.handler_max_concurrency`，支援熱更新）。超過上限的 Task 在信號量上排隊，等前面的完成後再進入。事件洪峰時這就是你的「泄壓閥」。
+>
+> **慢日誌**：單個處理器耗時超過 **1 秒**時，框架會在日誌打 WARNING（`handler_slow`）。`wait_reply` 的等待時間會從耗時裡剔除，不會因為「等人回覆」誤報慢。
+
+## 作用域過濾：為什麼我的模組沒有收到訊息
+
+事件分發會在**建立處理器 Task 之前**進行作用域過濾——根據模組 owner 判定 `scope.is_allowed`（會話級 > Bot 級 > 平台級），**不通過則靜默跳過**，不會報錯也不會回應。
+
+```python
+# 假設 config.toml 裡將 MyModule 在某個群組中屏蔽：
+[ErisPulse.scope]
+block = { yunhu = { group_123 = ["MyModule"] } }
+```
+
+此時該群組的訊息到達時，`MyModule` 的命令與事件處理器**都不會被調度**。這不是 bug，而是作用域機制——排查「模組沒有反應」時應優先檢查作用域綁定。
+
+- 三層過濾點：適配器總線級（Task 建立前）、Event 模組級（每個優先級組內）、命令級（權限檢查前）
+- 過濾日誌只在 **TRACE** 級可見（`core.scope.denied`），預設 INFO 級看不到任何痕跡
+- 框架級處理器（如命令分發器 `scope_exempt=True`）不受作用域影響
+
+> 作用域三級綁定、白名單/黑名單、優先級覆蓋與「default_allow」隱式拒絕語義請見 [作用域系統](../../advanced/scope.md)。
 
 ## 鏈路控制：認領與阻斷
 
-ErisPulse 將「認領」與「阻斷」兩個正交語義解耦，透過統一的 `event.done()` 控制來操作，方便在命令處理周圍疊加日誌、審計、權限等觀察層。
+> [!NOTE]
+> `event.done()` / `event.mark_processed()` 的 `claim=` / `stop=` 參數本特性需要 ErisPulse **2.7.1+**。
+
+ErisPulse 將「認領」與「阻斷」兩個正交語義解耦，透過 `event.done()` 統一控制，便於在命令處理周圍疊加日誌、審計、權限等觀察層。
 
 **兩個概念的準確定義：**
 
-- **認領（claim）**：標記事件已由本處理器處理（寫入 `_processed`）。命令分發器看到已認領的事件會**跳過去重**——避免同一訊息被多個命令處理器重複處理。典型場景：命令匹配成功後認領，阻止命令分發器再介入。
+- **認領（claim）**：標記事件已被本處理器處理（寫入 `_processed`）。命令分發器看到已認領的事件會**跳過重複**——避免同一訊息被多個命令處理器重複處理。典型場景：命令匹配成功後認領，阻止命令分發器再介入。
 - **阻斷（stop）**：阻止事件向**更低優先級**處理器傳播（寫入 `_propagation_stopped`）。低優先級處理器（如 `on_message`）將不再看到該事件。典型場景：高優先級處理器已完整處理事件，不希望低優先級再執行。
 
 | `event.done(...)` | 認領 | 阻斷 | 場景 |
@@ -229,11 +255,6 @@ block = false   # 命令訊息繼續流向低優先級處理器
 
 [ErisPulse.event.wait_reply]
 block = false   # 被 wait_reply 消費的回覆繼續流向低優先級處理器
-```
-
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
-
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第 8 條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 通知事件處理
 

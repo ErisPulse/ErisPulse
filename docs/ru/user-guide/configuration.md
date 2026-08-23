@@ -70,27 +70,75 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 ## Hot Configuration Reload
 
-Starting from version 2.7.0, the framework provides **systematic support** for hot reloading of configurations. After an external modification of `config.toml` (the background watcher checks every 5 seconds) or after a code call to `setConfig()`, components automatically respond:
+Starting from version 2.7.0, the framework provides **systematic support** for hot configuration reload. After an external modification of `config.toml` (background watcher checks every 5 seconds) or a code call to `setConfig()`, components automatically respond:
 
 | Component | Configurations Supporting Hot Reload | Behavior |
 |-----------|--------------------------------------|----------|
-| **Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | Automatically reapplied (with change detection) |
+| **Logger** | `logger.level` / `log_files` / `log_dir` (including segment parameters) / `memory_limit` / `format` / `exclude_levels` | Automatically reapplied (with change detection) |
 | **Command System CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
-| **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore and rebuilds with the new value |
-| **Proactive GC** | `framework.proactive_gc_*` | Configuration changes immediately restart the GC task, supporting runtime adjustments, disabling, and re-enabling |
+| **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore, recreates with new value |
+| **Proactive GC** | `framework.proactive_gc_*` | Configuration change immediately restarts GC task, supports runtime adjustment/disable/re-enable |
 | **Master System Master** | `master.users` | Each `is_master()` check reads in real time, no restart required |
-| **Module/Adapter Configuration** | Individual configuration items | Triggers the `on_config_update(old, new)` callback |
+| **Module/Adapter Configurations** | Individual configuration items | Triggers `on_config_update(old, new)` callback |
 
-**Configurations Requiring Restart** (cannot be safely hot-swapped; a warning "Process needs to be restarted for changes to take effect" is output when changed):
+**Configurations Requiring Restart** (cannot be safely hot-switched, warning "Process restart required" is output on change):
 
 | Configuration | Reason |
 |---------------|--------|
-| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-swapped at runtime |
+| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-switched at runtime |
 | `storage.use_global_db` | SQLite file handle is already open at runtime, switching paths is unsafe |
 
-> **Error in Mid-Edit Save?** If a temporary syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, avoiding the broadcast of an empty configuration to components (to prevent `on_config_update` receiving empty values and mistakenly reverting to defaults).
+> **Error during mid-edit save?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, and will not broadcast an empty configuration to components (to avoid `on_config_update` receiving null values and incorrectly reverting to defaults).
 
-docs/ru/configuration-hot-reload.md
+### Internal Breakdown of Hot Reload Chain
+
+"How do components know when the configuration changes?" — Behind this is a chain of detection → reload → broadcast:
+
+```mermaid
+flowchart TD
+    A["External edit of config.toml"] --> B{"Who detects it first?"}
+    B -->|"Background watcher thread<br/>Polls mtime every 5 seconds"| C["_check_file_change determines change"]
+    B -->|"When reading configuration in code<br/>Cache exceeds 60 seconds"| C
+    C --> D["_load_config re-parses TOML"]
+    D --> E{"Was parsing successful?"}
+    E -->|"No (syntax error)"| F["Retain last valid configuration<br/>Do not broadcast, output diagnostic log"]
+    E -->|"Yes"| G["lifecycle.emit config.updated<br/>Carries old_config / new_config"]
+    G --> H["Component listeners respond<br/>(logger / scope / command / GC ... )"]
+```
+
+**Two Detection Paths** (either one suffices, both serve as fallback):
+
+| Path | Mechanism | Trigger Timing |
+|------|-----------|----------------|
+| Background watcher | Daemon thread `config-watcher` polls file `mtime` every **5 seconds** | External file change detected within up to 5 seconds |
+| Lazy detection | Any `getConfig()` read, if cache exceeds **60 seconds**, checks file first | Next time configuration is read |
+
+> **Framework does not self-harm**: When `setConfig()` writes to disk, it records the "mtime written by itself," and the watcher excludes it during comparison, treating only **external edits** as changes.
+
+**Two Types of Configuration Change Events:**
+
+| Event | Trigger | Data | Typical Scenario |
+|-------|---------|------|------------------|
+| `config.set` | Code / Dashboard calls `setConfig()` | `{key, old_value, new_value}` | Single key write (template generation, status recording, runtime config change) |
+| `config.updated` | Captured by watcher/lazy detection after external edit | `{old_config, new_config, config_file}` | Manual edit of `config.toml` |
+
+> `setConfig()` defaults to **delayed disk write for 5 seconds** (combines multiple writes), `immediate=True` writes immediately. After the watcher detects an external modification, it only updates the in-memory cache and **does not** write the external change back to the file.
+
+**List of Automatic Responders** (both event types are typically subscribed, responses are consistent):
+
+| Component | Listener | Response |
+|-----------|----------|----------|
+| Logger | `config.set` + `config.updated` | Reapplies level/file/directory segments/memory limit/format/level exclusion (with change detection, no change means no action) |
+| Scope | `config.updated` | Recreates cached scope binding |
+| Command System | `config.updated` | Refreshes prefix/case sensitivity/space prefix/must_at_bot parsing parameters, takes effect on next message |
+| Adapter Concurrency | `config.set` + `config.updated` | Invalidates and recreates semaphore for `handler_max_concurrency` |
+| Proactive GC | `config.set` + `config.updated` | Immediately restarts GC background task for `proactive_gc_*` |
+| Adapter | Routes to `on_config_update` | Each adapter's `on_config_update(old, new)` callback |
+| Module | Routes to `on_config_update` | Each module's `on_config_update(old, new)` callback |
+| Storage | `config.updated` | Change of `use_global_db` only **logs warning** (requires restart) |
+| Router | `config.updated` | Change of `cors.*` / `security.*` only **logs warning** (requires restart) |
+
+docs/ru/quick-start.md
 
 ## Полный пример конфигурации
 
@@ -98,14 +146,27 @@ docs/ru/configuration-hot-reload.md
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = ""
 ssl_keyfile = ""
+
+[ErisPulse.master]
+# users поддерживает два способа записи (выберите один из двух):
+#   Глобальный владелец (действует на всех платформах): users = ["123456", "789012"]
+#   Владелец, указанный по платформам: users = { yunhu = ["123456"], telegram = ["789012"] }
+users = {}
 
 [ErisPulse.logger]
 level = "INFO"
 format = "rich"
 log_files = []
+log_dir = ""
+log_rotation = "size"
+log_max_size_mb = 10
+log_backup_count = 5
+log_rotation_when = "midnight"
 memory_limit = 1000
+exclude_levels = []
 
 [ErisPulse.framework]
 enable_lazy_loading = true
@@ -131,12 +192,13 @@ ignore_self = true
 [ErisPulse.i18n]
 language = "auto"
 
-## Серверная конфигурация
+## Конфигурация сервера
 
 ```toml
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = "/path/to/cert.pem"
 ssl_keyfile = "/path/to/key.pem"
 ```
@@ -144,32 +206,88 @@ ssl_keyfile = "/path/to/key.pem"
 | Параметр | Тип | Значение по умолчанию | Описание |
 |---------|------|---------|------|
 | host | string | 0.0.0.0 | Адрес прослушивания, 0.0.0.0 означает все интерфейсы |
-| port | integer | 8000 | Прослушиваемый порт |
+| port | integer | 8000 | Порт прослушивания |
+| auto_start | boolean | true | Автоматически запускать сервер маршрутизации при вызове `sdk.init()`. Установка в `false` пропустит запуск сервера маршрутизации (режим только событий/без WebUI) |
 | ssl_certfile | string | пусто | Путь к файлу SSL-сертификата |
-| ssl_keyfile | string | пусто | Путь к файлу SSL-приватного ключа |
+| ssl_keyfile | string | пусто | Путь к файлу SSL-ключа |
 
-Пожалуйста, замените `docs/ru/` на `docs/ru/` в ссылках документации.  
-Например: `docs/ru/quick-start.md` должно быть изменено на `docs/ru/quick-start.md`  
-Для ссылок на файлы не текущего языка (в формате `README.xx.md`) оставьте без изменений.  
-Это гарантирует, что ссылки указывают на правильную версию документации на нужном языке.
+Пожалуйста, замените `docs/ru/` на `docs/ru/` в ссылках документации. Например, `docs/ru/quick-start.md` должно быть изменено на `docs/ru/quick-start.md`. Ссылки на файлы других языков (например, в формате `README.xx.md`) должны оставаться без изменений. Это гарантирует, что ссылки указывают на правильную версию документации на нужном языке.
 
-## Конфигурация логирования
+## Конфигурация главной системы
+
+Главная система используется для распознавания аккаунтов "владельца фреймворка" (например, администраторов бота). `master.users` поддерживает два способа написания:
+
+```toml
+[ErisPulse.master]
+# Способ 1: Глобальный владелец (действует на всех платформах)
+users = ["123456", "789012"]
+
+# Способ 2: Владелец по платформе (dict)
+# users = { yunhu = ["123456"], telegram = ["789012"] }
+```
+
+| Параметр конфигурации | Тип | Значение по умолчанию | Описание |
+|-----------------------|-----|------------------------|----------|
+| users | array / object | пустой | Список аккаунтов владельцев. Формат `list` означает глобального владельца (действует на всех платформах); формат `dict` означает владельца по платформе (ключ - имя платформы, значение - список аккаунтов владельца для этой платформы) |
+
+В коде проверка осуществляется через `master.is_master(event)` или `master.is_master(platform, user_id)`, при каждом вызове конфигурация читается в реальном времени (поддерживается горячая перезагрузка, перезапуск не требуется):
+
+```python
+from ErisPulse.Core import master
+
+if master.is_master(event):
+    await event.reply("Привет, хозяин")
+```
+
+[**English**](docs/ru/quick-start.md)
+
+## Конфигурация журнала
 
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = ["app.log", "debug.log"]
+log_files = []                # Явный список файлов журнала (взаимоисключается с log_dir, имеет более высокий приоритет)
+log_dir = ""                  # Директория журнала (после установки автоматически сегментируется и ротируется)
+log_rotation = "size"         # Способ сегментации: "size" / "date" / "none"
+log_max_size_mb = 10          # Максимальный размер файла в режиме "size" (МБ)
+log_backup_count = 5          # Количество сохраняемых файлов журнала
+log_rotation_when = "midnight"  # Период ротации в режиме "date": S/M/H/D/midnight
 memory_limit = 1000
+exclude_levels = ["EVENT"]
 ```
 
 | Параметр | Тип | Значение по умолчанию | Описание |
 |---------|------|---------|------|
-| level | string | INFO | Уровень логирования: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE - самый низкий уровень, выводит подробную отладочную информацию внутренней структуры) |
-| format | string | rich | Формат вывода логов: `rich` (цветной, по умолчанию), `plain` (чистый текст без цвета, подходит для сбора логов/перенаправления в поток), `json` (структурированный JSON, подходит для ELK и подобных систем) |
-| log_files | array | пустой | Список файлов для вывода логов |
-| memory_limit | integer | 1000 | Количество записей логов, сохраняемых в памяти |
+| level | string | INFO | Уровень журнала: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE - самый низкий уровень, выводит подробную отладочную информацию внутренней структуры) |
+| format | string | rich | Формат вывода журнала: `rich` (цветной, по умолчанию), `plain` (чистый текст без цвета, подходит для сбора журнала/перенаправления в поток), `json` (структурированный JSON, подходит для ELK и т.д.) |
+| log_files | array | пустой | Список файлов журнала (явные пути, без сегментации) |
+| log_dir | string | пустой | Директория журнала (автоматически создается). После установки запись в файл `erispulse.log` в указанной директории с автоматической сегментацией по `log_rotation`; взаимоисключается с `log_files`, `log_files` имеет приоритет |
+| log_rotation | string | size | Способ сегментации: `size` (по размеру) / `date` (по времени) / `none` (без сегментации) |
+| log_max_size_mb | float | 10 | Максимальный размер файла в режиме "size" (МБ), при превышении создается резервная копия с расширением .1/.2 |
+| log_backup_count | integer | 5 | Количество сохраняемых файлов журнала, старые резервные копии автоматически удаляются |
+| log_rotation_when | string | midnight | Период ротации в режиме "date": `S`/`M`/`H`/`D`/`midnight` (по умолчанию ротация каждый день в полночь) |
+| memory_limit | integer | 1000 | Количество записей журнала, сохраняемых в памяти |
+| exclude_levels | array | пустой | Уровни журнала, которые нужно отключить. Журналы с отключенными уровнями **полностью отбрасываются** (не записываются в память, не передаются на панель Dashboard и другие подписчики, не выводятся, не записываются в файл). Поддерживается горячая перезагрузка |
 
-Пожалуйста, замените в документе `docs/ru/` на `docs/ru/` для всех ссылок на документацию. Например, `docs/ru/quick-start.md` должно быть заменено на `docs/ru/quick-start.md`. Ссылки на файлы других языков (в формате `README.xx.md`) оставьте без изменений. Это обеспечит корректное указание на документацию нужного языка.
+Также можно динамически переключать в коде:
+
+```python
+from ErisPulse.Core import logger
+
+# Сегментация по размеру: файл 10 МБ, сохранять 5 копий
+logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
+
+# Сегментация по времени: ротация каждый день в полночь, сохранять 7 копий
+logger.set_output_dir("logs", rotation="date", backup_count=7)
+```
+
+> [!NOTE]
+> Настройки `log_dir` и связанные с сегментацией параметры требуют ErisPulse **2.8.0+**.
+
+> **Защита конфиденциальности**: Содержимое сообщений записывается с уровнем **EVENT** (значение 21). Установка `exclude_levels = ["EVENT"]` позволяет скрыть содержимое сообщений в группах/личных чатах от фоновых процессов (например, панели журнала Dashboard), при этом не влияя на другие уровни журнала.
+
+> [!NOTE]
+> Функция `exclude_levels` требует ErisPulse **2.8.0+**.
 
 ## Конфигурация фреймворка
 
@@ -258,16 +376,16 @@ use_global_db = false
 ```toml
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = false
+case_sensitive = true
 allow_space_prefix = false
 ```
 
 | Параметр | Тип | Значение по умолчанию | Описание |
 |---------|------|---------|------|
 | prefix | string | / | Префикс команды |
-| case_sensitive | boolean | true | Регистр чувствителен (команды `/Help` и `/help` считаются разными) |
+| case_sensitive | boolean | true | Регистрозависимость (различаются ли команды `/Help` и `/help`) |
 | allow_space_prefix | boolean | false | Разрешить пробел в качестве префикса |
-| must_at_bot | boolean | false | Команды могут быть вызваны только с упоминанием бота (в личных сообщениях это ограничение не действует) |
+| must_at_bot | boolean | false | Требуется упоминание бота для активации команды (для личных сообщений не применяется) |
 
 ### Конфигурация сообщений
 
@@ -279,8 +397,6 @@ ignore_self = true
 | Параметр | Тип | Значение по умолчанию | Описание |
 |---------|------|---------|------|
 | ignore_self | boolean | true | Игнорировать собственные сообщения бота |
-
-[**English**](docs/ru/quick-start.md) | [**简体中文**](docs/ru/quick-start.md) | [**Русский**](docs/ru/quick-start.md)
 
 ## Международная локализация
 
@@ -325,6 +441,34 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > `setConfig` по умолчанию использует отложенную запись (примерно каждые 5 секунд пакетное сохранение в файл), установка `immediate=True` приводит к немедленной постоянной записи. Изменение конфигурации запускает событие жизненного цикла `config.set`.
 
 [**中文**](docs/ru/quick-start.md)
+
+## Конфигурация области видимости
+
+> [!NOTE]
+> Эта функция требует ErisPulse **2.8.0+**.
+
+Система области видимости модуля используется для контроля "какие модули может использовать конкретный Bot". По умолчанию все модули доступны для всех Bots, фильтрация начинается только после привязки конфигурации, модули и адаптеры **не требуют никаких изменений** для адаптации.
+
+```toml
+[ErisPulse.scope]
+default_allow = true        # По умолчанию разрешить все (false = строгий режим с неявным запретом)
+cache_size = 1024           # Размер кэша LRU для is_allowed
+```
+
+| Параметр | Тип | Описание |
+|---------|------|------|
+| `scope.default_allow` | boolean | По умолчанию разрешить все модули (`true`). `false` = строгий режим с неявным запретом, доступны только модули из белого списка |
+| `scope.cache_size` | integer | Размер кэша LRU для `is_allowed` (по умолчанию 1024) |
+| `scope.platforms.<platform>.modules` | array | Белый список на уровне платформы: разрешены только перечисленные модули (пустой список = без ограничений) |
+| `scope.platforms.<platform>.blocked` | array | Чёрный список на уровне платформы: запрещены перечисленные модули (пустой список = без ограничений) |
+| `scope.bots.<platform>.<bot_id>.modules` | array | Белый список на уровне Bot, переопределяет платформенный |
+| `scope.bots.<platform>.<bot_id>.blocked` | array | Чёрный список на уровне Bot, переопределяет платформенный |
+| `scope.sessions.<platform>.<session_id>.modules` | array | Белый список на уровне сессии (группа/канал/личный чат), имеет наивысший приоритет |
+| `scope.sessions.<platform>.<session_id>.blocked` | array | Чёрный список на уровне сессии, имеет наивысший приоритет |
+
+> Приоритет анализа: **Сессия > Bot > Платформа**. Полный пример TOML с привязкой на трёх уровнях, нечувствительность к регистру названий модулей, изоляция идентификаторов сессий между платформами, динамическое добавление/удаление во время выполнения с помощью `sdk.scope.bind()` / `unbind()` (с `merge=True` можно объединять) и т.д. см. в разделе [Система области видимости](../advanced/scope.md).
+
+docs/ru/quick-start.md | docs/ru/configuration.md | docs/ru/plugins.md | docs/ru/advanced/scope.md
 
 ## Далее
 

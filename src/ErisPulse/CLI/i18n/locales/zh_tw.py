@@ -1,4 +1,4 @@
-"""
+﻿"""
 CLI 繁體中文翻譯 (zh-TW)
 
 獨立于 Core i18n 的 CLI 翻譯資料。
@@ -48,6 +48,9 @@ TRANSLATIONS = {
     "cli.create.homepage_help": "專案首頁 URL",
     "cli.create.output_help": "輸出目錄 (預設為當前目錄)",
     "cli.create.force_help": "強制覆蓋已存在的目錄",
+    "cli.create.local_module_help": "建立本地外掛（plugins/ 目錄結構，免打包安裝，僅 module 可用）",
+    "cli.create.local_structure": "本地外掛結構",
+    "cli.create.local_tip": "將外掛放入專案的 plugins/ 目錄，框架啟動時自動發現；修改後熱重載自動生效",
     "cli.create.select_type_title": "選擇建立類型",
     "cli.create.select_type_module": "自訂功能 Module",
     "cli.create.select_type_adapter": "平台 Adapter",
@@ -276,6 +279,7 @@ TRANSLATIONS = {
     "cli.run.file_changed_restart": "檢測到檔案變更 ([cmd]{file}[/])，正在重啟...",
     "cli.run.process_exited": "程式已正常退出，等待檔案變更後重啟",
     "cli.run.process_crashed": "程式異常退出（退出碼 {code}），修復後儲存檔案將自動重啟",
+    "cli.run.process_exited": "子程序正常退出，不再拉起",
     "cli.run.subprocess_crashed_retry": "子程序異常終止，將在 {seconds} 秒後自動重試...",
     "cli.run.terminating_child": "正在終止機器人子程序，釋放連接埠等資源...",
     # ==================== uninstall 命令 ====================

@@ -140,7 +140,7 @@
           "icon": "fa-puzzle-piece",
           "documents": [
             {
-              "title": "Introduction to Module Development",
+              "title": "Getting Started with Module Development",
               "path": "developer-guide/modules/getting-started.md",
               "level": 1,
               "icon": "fa-puzzle-piece"
@@ -152,7 +152,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event Wrapper Class Detailed Explanation",
+              "title": "Event Wrapper Class Details",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -182,7 +182,7 @@
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL Explained",
+              "title": "SendDSL Detailed Explanation",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
@@ -215,7 +215,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "OneBot11 Platform Features Documentation",
+          "title": "OneBot11 Platform Feature Documentation",
           "path": "platform-guide/onebot11.md",
           "level": 1,
           "icon": "fa-comments"
@@ -233,7 +233,7 @@
           "icon": "fa-paper-plane"
         },
         {
-          "title": "Email Platform Feature Documentation",
+          "title": "Email Platform Feature Document",
           "path": "platform-guide/email.md",
           "level": 1,
           "icon": "fa-envelope"
@@ -263,7 +263,7 @@
           "icon": "fa-headset"
         },
         {
-          "title": "Matrix Platform Features Document",
+          "title": "Matrix Platform Feature Documentation",
           "path": "platform-guide/matrix.md",
           "level": 1,
           "icon": "fa-th-large"
@@ -275,7 +275,7 @@
           "icon": "fa-gamepad"
         },
         {
-          "title": "WechatMp Adapter - Platform Features Document",
+          "title": "WechatMp Adapter - Platform Features Documentation",
           "path": "platform-guide/wechatmp.md",
           "level": 1,
           "icon": "fa-mobile-screen"
@@ -287,7 +287,7 @@
           "icon": "fa-link"
         },
         {
-          "title": "Ideaura Cafe Platform Features Documentation",
+          "title": "Platform Features Documentation for RockyChat",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
@@ -369,12 +369,6 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Session Type System",
-          "path": "advanced/session-types.md",
-          "level": 1,
-          "icon": "fa-layer-group"
-        },
-        {
           "title": "Conversation Multi-turn Conversations",
           "path": "advanced/conversation.md",
           "level": 1,
@@ -399,6 +393,12 @@
           "icon": "fa-language"
         },
         {
+          "title": "Module Scope System",
+          "path": "advanced/scope.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
           "title": "Startup Flow and Manual Control",
           "path": "advanced/startup.md",
           "level": 1,
@@ -410,7 +410,7 @@
     "Ecosystem Modules": {
       "description": "Community-maintained third-party modules",
       "icon": "fa-cubes",
-      "count": 3,
+      "count": 4,
       "documents": [
         {
           "title": "Ecosystem Modules",
@@ -419,16 +419,22 @@
           "icon": "fa-cubes"
         },
         {
+          "title": "ErisPulse-App",
+          "path": "ecosystem/app.md",
+          "level": 1,
+          "icon": "fa-mobile-screen"
+        },
+        {
           "title": "ErisPulse-Dashboard",
           "path": "ecosystem/dashboard.md",
           "level": 1,
-          "icon": "fa-cubes"
+          "icon": "fa-table-columns"
         },
         {
           "title": "ErisPulse-Takumi",
           "path": "ecosystem/takumi.md",
           "level": 1,
-          "icon": "fa-cubes"
+          "icon": "fa-image"
         }
       ],
       "subgroups": {}
@@ -459,7 +465,7 @@
           "icon": "fa-gavel"
         },
         {
-          "title": "ErisPulse Session Type Standards",
+          "title": "ErisPulse Session Type Standard",
           "path": "standards/session-types.md",
           "level": 1,
           "icon": "fa-layer-group"

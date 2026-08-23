@@ -8,7 +8,7 @@ from .adapter import ApiDSL, SendDSL, RequestDSL, BaseAdapter
 from .converter import BaseConverter
 from .send_rules import SendContext
 from .send_builder import SendBuilder, BatchContext
-from .module import BaseModule
+from .module import BaseModule, ModuleMeta
 from .storage import BaseStorage, BaseQueryBuilder
 from .kv_builder import KVQueryBuilder
 from .errors import (
@@ -22,13 +22,15 @@ from .errors import (
 )
 from .websocket import WebSocketConnectionBase, WSMessage
 from .router import HttpRequest, WebSocketConnection, SseEmitter
-from .client import BaseHttpClient, BaseHttpResponse, BaseClientWebSocket
+from .client import BaseClient, BaseHttpResponse, BaseClientWebSocket
+from .client import BaseHttpClient  # 向后兼容别名（2.8.0 前类名）
 
 # 配置 / i18n Schema 类型
 from .config_schema import (
     AdapterConfig,
     BaseConfig,
     BotAccountConfig,
+    I18nConfig,
 )
 from .i18n_schema import (
     BaseI18n,
@@ -44,6 +46,7 @@ __all__ = [
     "BaseClientWebSocket",
     "BaseConfig",
     "BaseConverter",
+    "BaseClient",
     "BaseHttpClient",
     "BaseHttpResponse",
     # i18n 键声明 Schema 基类（命名对齐 BaseConfig）
@@ -59,9 +62,12 @@ __all__ = [
     "ErisPulseError",
     "HTTPStatusError",
     "HttpRequest",
+    # i18n 配置 Schema（控制显示语言）
+    "I18nConfig",
     # i18n 单键声明
     "I18nKey",
     "KVQueryBuilder",
+    "ModuleMeta",
     "RequestDSL",
     "SendBuilder",
     "SendContext",

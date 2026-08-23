@@ -252,3 +252,33 @@ class TestShutdown:
             assert sdk._shutdown_event.is_set()
         finally:
             sdk._shutdown_event = old
+
+
+# ==================== 监督者标记检测（2.8.0+） ====================
+
+
+class TestSupervised:
+    """is_supervised() 检测外部监督者标记（ERISPULSE_SUPERVISED）"""
+
+    def test_not_supervised_by_default(self, monkeypatch):
+        """默认（无监督标记）返回 False"""
+        from ErisPulse import sdk
+
+        monkeypatch.delenv("ERISPULSE_SUPERVISED", raising=False)
+        assert sdk.is_supervised() is False
+
+    def test_supervised_when_marker_present(self, monkeypatch):
+        """CLI run 注入 ERISPULSE_SUPERVISED 后返回 True"""
+        from ErisPulse import sdk
+
+        monkeypatch.setenv("ERISPULSE_SUPERVISED", "cli")
+        assert sdk.is_supervised() is True
+
+    def test_supervised_any_value(self, monkeypatch):
+        """标记存在即为监督（值不限）"""
+        from ErisPulse import sdk
+
+        monkeypatch.setenv("ERISPULSE_SUPERVISED", "systemd")
+        assert sdk.is_supervised() is True
+
+

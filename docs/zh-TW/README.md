@@ -16,16 +16,17 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 
 ### 一、我要使用機器人
 
-讓機器人跑起來、安裝模組、進行設定。
+讓機器人跑起來、裝模組、做設定。
 
 | 進度 | 文件 | 說明 |
 |------|------|------|
-| **① 開始** | [5 分鐘快速入門](quick-start.md) | 安裝、初始化、運行 —— 唯一的起步入口 |
-| ② 深入 | [建立第一個機器人](getting-started/first-bot.md) | 編寫第一個指令處理器 |
-| ③ 概念 | [基礎概念](getting-started/basic-concepts.md) | 理解適配器/模組/事件的設計 |
-| ④ 實戰 | [常見任務範例](getting-started/common-tasks.md) | 存儲、定時任務、權限控制 |
-| 參考 | [設定檔說明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md) | 按需查閱 |
-| 參考 | [平台特性指南](platform-guide/README.md) | 各平台（雲湖/QQ/Telegram…）的差異 |
+| **① 上手** | [5 分鐘快速開始](docs/zh-TW/quick-start.md) | 安裝、初始化、執行 —— 唯一的起步入口 |
+| App 直裝 | [ErisPulse-App 客戶端](docs/zh-TW/ecosystem/app.md) | 官方全平台客戶端：手機 / 電腦圖形介面直接執行與管理，免終端 |
+| ② 深入 | [建立第一個機器人](docs/zh-TW/getting-started/first-bot.md) | 編寫第一個指令處理器 |
+| ③ 概念 | [基礎概念](docs/zh-TW/getting-started/basic-concepts.md) | 理解適配器/模組/事件的設計 |
+| ④ 實戰 | [常見任務範例](docs/zh-TW/getting-started/common-tasks.md) | 儲存、定時任務、權限控制 |
+| 參考 | [設定檔說明](docs/zh-TW/user-guide/configuration.md) · [CLI 命令](docs/zh-TW/user-guide/cli-reference.md) · [部署指南](docs/zh-TW/user-guide/deployment.md) | 按需查閱 |
+| 參考 | [平台特性指南](docs/zh-TW/platform-guide/README.md) | 各平台（雲湖/QQ/Telegram…）的差異 |
 
 ### 二、我要開發模組 / 適配器
 
@@ -33,10 +34,10 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 
 | 類型 | 入門 | 進階 |
 |------|------|------|
-| **模組開發**（推薦） | [模組開發入門](developer-guide/modules/getting-started.md) | [核心概念](developer-guide/modules/core-concepts.md) · [Event 包裝類](developer-guide/modules/event-wrapper.md) · [最佳實踐](developer-guide/modules/best-practices.md) |
-| **適配器開發** | [適配器開發入門](developer-guide/adapters/getting-started.md) | [核心概念](developer-guide/adapters/core-concepts.md) · [SendDSL 詳解](developer-guide/adapters/send-dsl.md) · [事件轉換器](developer-guide/adapters/converter.md) · [最佳實踐](developer-guide/adapters/best-practices.md) |
-| **技術標準** | [標準規範總覽](standards/README.md) | 適配器開發必須遵循的 [會話類型](standards/session-types.md) · [事件轉換](standards/event-conversion.md) · [發送方法](standards/send-method-spec.md) · [API 回應](standards/api-response.md) · [請求操作](standards/request-action-spec.md) 規範 |
-| **發布** | [發布與模組商店](developer-guide/publishing.md) | 將作品發布到 PyPI 和模組商店 |
+| **模組開發**（推薦） | [模組開發入門](docs/zh-TW/developer-guide/modules/getting-started.md) | [核心概念](docs/zh-TW/developer-guide/modules/core-concepts.md) · [Event 包裝類](docs/zh-TW/developer-guide/modules/event-wrapper.md) · [最佳實踐](docs/zh-TW/developer-guide/modules/best-practices.md) |
+| **適配器開發** | [適配器開發入門](docs/zh-TW/developer-guide/adapters/getting-started.md) | [核心概念](docs/zh-TW/developer-guide/adapters/core-concepts.md) · [SendDSL 詳解](docs/zh-TW/developer-guide/adapters/send-dsl.md) · [事件轉換器](docs/zh-TW/developer-guide/adapters/converter.md) · [最佳實踐](docs/zh-TW/developer-guide/adapters/best-practices.md) |
+| **技術標準** | [標準規範總覽](docs/zh-TW/standards/README.md) | 適配器開發必須遵循的 [會話類型](docs/zh-TW/standards/session-types.md) · [事件轉換](docs/zh-TW/standards/event-conversion.md) · [發送方法](docs/zh-TW/standards/send-method-spec.md) · [API 回應](docs/zh-TW/standards/api-response.md) · [請求操作](docs/zh-TW/standards/request-action-spec.md) 規範 |
+| **發布** | [發布與模組商店](docs/zh-TW/developer-guide/publishing.md) | 將作品發布到 PyPI 和模組商店 |
 
 ### 三、我要深入了解原理
 
@@ -44,32 +45,34 @@ ErisPulse 是一個可擴展的多平台訊息處理框架，支援透過適配�
 
 | 文件 | 說明 |
 |------|------|
-| [架構概覽](architecture.md) | 可視化圖表：核心架構、初始化流程、事件處理、生命週期 |
-| [啟動流程與手動控制](advanced/startup.md) | 啟動鏈路拆解、手動驅動各環節、載入失敗診斷 |
-| [事件系統](api-reference/event-system.md) | 五大類事件的完整 API |
-| [適配器系統](api-reference/adapter-system.md) | 適配器註冊、啟停、API 調用 |
-| [核心模組](api-reference/core-modules.md) | Storage / Config / Logger / Router 等基礎能力 |
-| [生命週期管理](advanced/lifecycle.md) · [懶加載](advanced/lazy-loading.md) · [路由系統](advanced/router.md) | 內部子系統 |
-| [Conversation 多輪對話](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL 建構](advanced/sql-builder.md) · [HTTP 客戶端](advanced/http-client.md) · [國際化](advanced/i18n.md) | 進階工具 |
+| [架構概覽](docs/zh-TW/architecture.md) | 可視化圖表：核心架構、初始化流程、事件處理、生命週期、模組載入策略（含 `activate_on` 事件驅動懶激活）、本地插件資料夾與熱重載架構 |
+| [啟動流程與手動控制](docs/zh-TW/advanced/startup.md) | 啟動鏈路拆解、手動驅動各環節、載入失敗診斷 |
+| [事件系統](docs/zh-TW/api-reference/event-system.md) | 五大類事件的完整 API |
+| [適配器系統](docs/zh-TW/api-reference/adapter-system.md) | 適配器註冊、啟停、API 調用 |
+| [核心模組](docs/zh-TW/api-reference/core-modules.md) | Storage / Config / Logger / Router 等基礎能力 |
+| [生命週期管理](docs/zh-TW/advanced/lifecycle.md) · [懶加載](docs/zh-TW/advanced/lazy-loading.md) · [路由系統](docs/zh-TW/advanced/router.md) | 內部子系統 |
+| [模組作用域系統](docs/zh-TW/advanced/scope.md) | 模組與適配器 Bot/平台的綁定與隔離 |
+| [Conversation 多輪對話](docs/zh-TW/advanced/conversation.md) · [MessageBuilder](docs/zh-TW/advanced/message-builder.md) · [SQL 構建](docs/zh-TW/advanced/sql-builder.md) · [HTTP 客戶端](docs/zh-TW/advanced/http-client.md) · [國際化](docs/zh-TW/advanced/i18n.md) | 進階工具 |
 
-### 四、推薦生態模組
+### 四、生態與官方客戶端
 
-按需安裝、即裝即用的 **第三方社群模組**（不是框架內建功能）。
+官方客戶端 + 按需安裝、即裝即用的生態模組（都不是框架內建功能）。
 
 | 文件 | 說明 |
 |------|------|
-| [生態模組總覽](ecosystem/README.md) | 了解如何安裝生態模組、為什麼這些不是內建功能 |
-| [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web 管理面板 + 視窗註冊 API（模組可向側邊欄註冊自訂頁面） |
-| [ErisPulse-Takumi](ecosystem/takumi.md) | 圖片渲染（HTML / 節點樹 / SVG / 動畫，內建中英文字型） |
+| [生態總覽](docs/zh-TW/ecosystem/README.md) | 如何安裝生態模組、為什麼這些不是內建功能 |
+| [ErisPulse-App](docs/zh-TW/ecosystem/app.md) | 官方全平台客戶端（Android / Windows / Linux / macOS）：原生介面管理多個實例，**手機直接執行**，桌面托盤常駐 |
+| [ErisPulse-Dashboard](docs/zh-TW/ecosystem/dashboard.md) | Web 管理介面 + 視窗註冊 API（模組可向側邊欄註冊自訂頁面） |
+| [ErisPulse-Takumi](docs/zh-TW/ecosystem/takumi.md) | 圖片渲染（HTML / 節點樹 / SVG / 動畫，內建中英文字型） |
 
 ### 五、我要為 ErisPulse 貢獻
 
-讓框架變得更好
+讓框架更好
 
 | 文件 | 說明 |
 |------|------|
-| [為 ErisPulse 貢獻](contributing/README.md) | 貢獻方式總覽：文件 / i18n / Bug / 模組 / 適配器 |
-| [首次貢獻](contributing/first-contribution.md) | 從 fork 到提交 PR |
+| [為 ErisPulse 貢獻](docs/zh-TW/contributing/README.md) | 貢獻方式總覽：文件 / i18n / Bug / 模組 / 適配器 |
+| [首次貢獻](docs/zh-TW/contributing/first-contribution.md) | 從 fork 到提交 PR |
 
 ## 開發方式
 

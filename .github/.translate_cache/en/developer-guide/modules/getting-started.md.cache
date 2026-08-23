@@ -1,5 +1,41 @@
 {
-  "hash": "fa49d9ef3b7017973915982d155f92b8",
-  "translated_at": "2026-05-25T14:34:33.524003",
-  "target_lang": "en"
+  "version": 2,
+  "hash": "b0fd49a959689afc4dc37a62b3b8d5e1",
+  "file_hash": "b0fd49a959689afc4dc37a62b3b8d5e1",
+  "translated_at": "2026-08-17T12:07:39.169698",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "1a641ad2e70cab0bd7aa7947bf3707b7",
+      "translation": "# Getting Started with Module Development\n\nThis guide walks you through creating an ErisPulse module from scratch."
+    },
+    {
+      "hash": "a0073e5af21db81bec6138a64a0fdceb",
+      "translation": "## Project Structure\n\nA standard module structure:\n\n```\nMyModule/\n├── pyproject.toml\n├── README.md\n├── LICENSE\n└── MyModule/\n    ├── __init__.py\n    └── Core.py"
+    },
+    {
+      "hash": "7cc9ee9d87ec4f2e3547f1f3be0b7578",
+      "translation": "## pyproject.toml Configuration\n\n```toml\n[project]\nname = \"ErisPulse-MyModule\"\nversion = \"1.0.0\"\ndescription = \"Module description\"\nreadme = \"README.md\"\nrequires-python = \">=3.10\"\nlicense = { file = \"LICENSE\" }\nauthors = [ { name = \"yourname\", email = \"your@mail.com\" } ]\ndependencies = []\n\n[project.urls]\n\"homepage\" = \"https://github.com/yourname/MyModule\"\n\n[project.entry-points.\"erispulse.module\"]\n\"MyModule\" = \"MyModule:Main\""
+    },
+    {
+      "hash": "533d351dc74326e611ccffab057a73a4",
+      "translation": "## __init__.py\n\n```python\nfrom .Core import Main"
+    },
+    {
+      "hash": "46fb55a7709c7f449b98832a2d63dc77",
+      "translation": "## Core.py - Core Module\n\n```python\nfrom ErisPulse import sdk\nfrom ErisPulse.Core.Bases import BaseModule\nfrom ErisPulse.Core.Event import command\n\nclass Main(BaseModule):\n    def __init__(self, sdk):\n        self.sdk = sdk\n        self.logger = sdk.logger.get_child(\"MyModule\")\n        self.storage = sdk.storage\n    \n    @staticmethod\n    def get_load_strategy():\n        \"\"\"Returns the module loading strategy\"\"\"\n        from ErisPulse.loaders import ModuleLoadStrategy\n        return ModuleLoadStrategy(\n            lazy_load=True,\n            priority=0,\n            depends=[],  # Optional: list of other modules this module depends on\n            # Optional: event-driven lazy activation - declare triggers, module will auto-load when first matching event/command arrives\n            # activate_on=[{\"command\": {\"name\": \"hello\", \"help\": \"Send greeting\"}}],\n        )\n    \n    async def on_load(self, event):\n        \"\"\"Called when the module is loaded\"\"\"\n        @command(\"hello\", help=\"Send greeting\")\n        async def hello_command(event):\n            name = event.get_user_nickname() or \"friend\"\n            await event.reply(f\"Hello, {name}!\")\n        \n        self.logger.info(\"Module loaded\")\n    \n    async def on_unload(self, event):\n        \"\"\"Called when the module is unloaded\"\"\"\n        self.logger.info(\"Module unloaded\")\n```\n\n> **Configuration Reading**: The basic example above does not use configuration. When configuration is needed, it is recommended to declare a nested `ConfigClass` and read it in real time through `self.cfg` (see [Module Core Concepts](core-concepts.md#declarative-configuration-recommended)). The old method of manually calling `_load_config()` is deprecated."
+    },
+    {
+      "hash": "b19935b00f6e24f77df608fef2d1ed1b",
+      "translation": "## Test Module\n\n### Local Testing\n\n```bash\n# Install module in the project directory\nepsdk install ./MyModule\n\n# Run the project\nepsdk run main.py --reload\n```\n\n### Test Commands\n\nSend a command test:\n\n```\n/hello"
+    },
+    {
+      "hash": "d269ee7215a3848703e40ccb19237a63",
+      "translation": "## Core Concepts\n\n### BaseModule Base Class\n\nAll modules must inherit from `BaseModule`, providing the following methods:\n\n| Method | Description | Required |\n|------|------|------|\n| `__init__(self, sdk)` | Constructor (framework passes in `sdk` instance) | No |\n| `get_load_strategy()` | Return the load strategy | No |\n| `get_meta()` | Return module metadata (optional) | No |\n| `on_load(self, event)` | Called when the module is loaded | Yes |\n| `on_unload(self, event)` | Called when the module is unloaded | Yes |\n\n### Module Meta Information\n\n> [!NOTE]\n> This feature requires ErisPulse **2.8.0+**.\n\nDeclare module metadata (what the module does, its category, etc.) via `get_meta()`.  \nMetadata is **generic module introduction data** for consumption by help modules, dashboard module lists, module stores, and other interfaces/ecosystem modules.\n\nConsistent with `get_load_strategy()` returning `ModuleLoadStrategy`, **it is recommended to return an instance of the `ModuleMeta` configuration class** (with typed attributes and IDE completion), but direct return of a dict is also compatible:\n\n```python\nclass MyModule(BaseModule):\n    @staticmethod\n    def get_meta() -> ModuleMeta:\n        return ModuleMeta(\n            name=\"Weather\",               # Display name (default registration name)\n            description=\"Weather lookup\",  # Module description\n            version=\"1.0.0\",\n            author=\"ErisDev\",\n            group=\"Tools\",               # Functional group\n            tags=[\"Weather\", \"Lookup\"],\n        )\n```\n\nCompatible syntax (dict):\n\n```python\nclass MyModule(BaseModule):\n    @staticmethod\n    def get_meta() -> dict:\n        return {\n            \"name\": \"Weather\",\n            \"description\": \"Weather lookup\",\n            \"version\": \"1.0.0\",\n            \"author\": \"ErisDev\",\n            \"group\": \"Tools\",\n            \"tags\": [\"Weather\", \"Lookup\"],\n        }\n```\n\n- `module.get_meta(\"MyModule\")` reads the parsed metadata (class declaration > registration info, automatically completes the module's command name).\n- `module.get_commands_overview()` aggregates \"module meta + its registered commands (aliases/groups/help)\", organized by module as a command overview.\n- The module owning a command can be obtained via `cmd_info[\"owner\"]` (automatically injected by the context system during registration).\n\n#### i18n Support for Meta Fields\n\nMetadata field values can be plain strings, or an i18n dictionary `{\"i18n\": \"key.path\", \"default\": \"fallback text\"}` (consistent with the `description` configuration convention).  \nTranslation keys are declared and registered via `I18nClass`, and `module.get_meta()` automatically resolves them to the current language text:\n\n```python\nclass MyModule(BaseModule):\n    class I18nClass(BaseI18n):\n        meta_description: I18nKey = I18nKey(\n            default=\"Weather lookup\",\n            zh_CN=\"查询城市天气\",\n            en=\"Weather lookup\",\n        )\n\n    @staticmethod\n    def get_meta() -> ModuleMeta:\n        return ModuleMeta(\n            name=\"Weather\",\n            description={\"i18n\": \"MyModule.meta_description\", \"default\": \"Weather lookup\"},\n        )\n```\n\n### SDK Object\n\nAccess core functionality through the `sdk` object:\n\n```python\nfrom ErisPulse import sdk\n\nsdk.storage    # Storage system\nsdk.config     # Configuration system\nsdk.logger     # Logging system\nsdk.adapter    # Adapter system\nsdk.router     # Routing system\nsdk.lifecycle  # Lifecycle system\n```\n\nPlease directly return the translated complete Markdown content, without including any other text."
+    },
+    {
+      "hash": "396851cc7f0728c2b96c0a9dece48ec5",
+      "translation": "## Next Steps\n\n- [Module Core Concepts](core-concepts.md) - Deep dive into module architecture\n- [Event Wrapper Class Details](event-wrapper.md) - Learn about Event objects\n- [Module Best Practices](best-practices.md) - Develop high-quality modules"
+    }
+  ]
 }

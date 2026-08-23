@@ -1,25 +1,33 @@
-# Документация по функциям платформы Ideaura (HuaFeng Coffeehouse)
+# Документация по функциям платформы RockyChat (HuaFeng Coffee Shop)
 
-IdeauraAdapter — это адаптер, построенный на API платформы HuaFeng Coffeehouse (Allons), интегрирующий все модули функций платформы и предоставляющий единый интерфейс для обработки событий и операций сообщений.
+IdeauraAdapter — это адаптер, построенный на основе API платформы RockyChat (HuaFeng Coffee Shop), объединяющий все модули функций платформы и предоставляющий единый интерфейс для обработки событий и операций с сообщениями.
 
 ---
+
+Переход к документации: [**Русский**](docs/ru/quick-start.md)
 
 ## Информация о документации
 
 - Соответствующий модуль: ErisPulse-Ideaura
+- Версия модуля: 4.0.1
 - Ответственный: ErisPulse
+
+Вернуться к [**Содержание**](docs/ru/README.ru.md) | [**ErisPulse-Ideaura**](docs/ru/README.ru.md)
 
 ## Основная информация
 
-- Краткое описание платформы: HuaFeng Coffeehouse (Allons) — это платформа мгновенного обмена сообщениями
-- Название адаптера: IdeauraAdapter
-- Поддержка нескольких аккаунтов: Поддерживает настройку нескольких аккаунтов через token или email/password
-- Поддержка цепочечных модификаторов: Поддерживает цепочечные методы модификаторов, такие как `.At()`、`.AtAll()`、`.Reply()`
-- Совместимость с OneBot12: Поддерживает отправку сообщений в формате OneBot12
+- **Описание платформы:** RockyChat — это платформа для мгновенных сообщений
+- **Название адаптера:** IdeauraAdapter
+- **Поддержка нескольких аккаунтов:** Поддержка настройки нескольких аккаунтов через Bot Token
+- **Поддержка цепочки модификаторов:** Поддержка цепочки методов модификаторов, таких как `.At()`、`.AtAll()`、`.Reply()`、`.Command()` и т.д.
+- **Совместимость с OneBot12:** Поддержка отправки сообщений в формате OneBot12
 
-## Поддерживаемые типы отправки сообщений
+[**Руководство по быстрому запуску**](docs/ru/quick-start.md)
 
-Все методы отправки реализованы через цепочечную синтаксическую конструкцию, например:
+## Типы поддерживаемых сообщений
+
+Все методы отправки реализованы с использованием цепочечного синтаксиса, например:
+
 ```python
 from ErisPulse.Core import adapter
 ideaura = adapter.get("ideaura")
@@ -32,26 +40,30 @@ await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 - `.Image(file, filename: str = None)` — отправка сообщения с изображением, поддерживает bytes/URL/локальный путь.
 - `.Video(file, filename: str = None)` — отправка сообщения с видео, поддерживает bytes/URL/локальный путь.
 - `.File(file, filename: str = None)` — отправка сообщения с файлом, поддерживает bytes/URL/локальный путь.
-- `.Voice(file, filename: str = None)` — отправка голосового сообщения (как файл).
-- `.Face(face_id: str)` — отправка эмодзи (как чистый текст).
+- `.Voice(file, filename: str = None)` — отправка голосового сообщения (в виде файла).
+- `.Face(face_id: str)` — отправка эмодзи (в виде чистого текста).
 - `.Markdown(text: str)` — отправка сообщения в формате Markdown.
 - `.Html(html: str)` — отправка сообщения в формате HTML.
 - `.Edit(message_id: str, text: str, content_type: str = "text")` — редактирование существующего сообщения.
 - `.Recall(message_id: str)` — отмена отправки сообщения.
 
-### Цепочечные методы модификаторов (можно комбинировать)
+### Методы цепочной модификации (можно комбинировать)
 
-Методы модификаторов возвращают `self`, поддерживают цепочечный вызов, должны вызываться перед окончательным методом отправки:
+Методы цепочной модификации возвращают `self`, поддерживают цепочечное использование и должны вызываться перед окончательным методом отправки:
 
-- `.At(user_id: str, name: str = None)` — упоминание указанного пользователя.
+- `.At(user_id: str, name: str = None)` — упоминание конкретного пользователя.
 - `.AtAll()` — упоминание всех пользователей.
-- `.Reply(message_id: str)` — ответ на указанное сообщение.
+- `.Reply(message_id: str)` — ответ на конкретное сообщение.
+- `.Command(command_id: str)` — активация команды бота, используется в сочетании с методом отправки (сообщение отправляется как указанная команда).
 
 ### Примеры цепочечного вызова
 
 ```python
 # Базовая отправка
 await ideaura.Send.To("user", user_id).Text("Hello")
+
+# Активация команды бота
+await ideaura.Send.To("group", "chatroom").Command("550e8400-e29b-41d4-a716-446655440000").Text("/weather 北京")
 
 # Упоминание пользователя
 await ideaura.Send.To("group", "chatroom").At("456").Text("@李四 你好")
@@ -62,11 +74,11 @@ await ideaura.Send.To("group", "chatroom").At("456").At("789").Text("@多人")
 # Ответ на сообщение
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).Text("回复消息")
 
-# Ответ и упоминание
+# Ответ + упоминание
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("回复并@")
 ```
 
-### Отправка в разные цели
+### Отправка на разные цели
 
 ```python
 # Отправка в чат-комнату
@@ -75,65 +87,67 @@ await ideaura.Send.To("group", "chatroom").Text("聊天室消息")
 # Отправка в тему
 await ideaura.Send.To("group", "topic_id").Text("话题消息")
 
-# Отправка личного сообщения
+# Личное сообщение
 await ideaura.Send.To("user", "user_id").Text("私聊消息")
 ```
 
 ### Поддержка OneBot12 сообщений
 
-Адаптер поддерживает отправку OneBot12 форматированных сообщений, что облегчает совместимость сообщений между платформами:
+Адаптер поддерживает отправку сообщений в формате OneBot12, что обеспечивает совместимость сообщений между платформами:
 
-- `.Raw_ob12(message: List[Dict], **kwargs)` — отправка OneBot12 форматированных сообщений.
+- `.Raw_ob12(message: List[Dict], **kwargs)` — отправка сообщения в формате OneBot12.
 
 ```python
-# Отправка OneBot12 форматированных сообщений
+# Отправка сообщения в формате OneBot12
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await ideaura.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# С цепочечными модификаторами
+# В сочетании с цепочечными методами
 ob12_msg = [{"type": "text", "data": {"text": "回复消息"}}]
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
-```
 
 ## Возвращаемые значения методов отправки
 
-Все методы отправки возвращают объект Task, который можно ожидать с помощью await для получения результата отправки. Возвращаемые результаты соответствуют стандартизированному формату возврата адаптера ErisPulse:
+Все методы отправки возвращают объект Task, который можно непосредственно ожидать, чтобы получить результат отправки. Возвращаемый результат соответствует стандартизированному спецификации возврата адаптера ErisPulse:
 
 ```python
 {
     "status": "ok",           // Статус выполнения
     "retcode": 0,             // Код возврата
-    "data": {...},            // Данные ответа
-    "self": {...},            // Информация о себе (содержит user_id)
+    "data": {...},            // Ответные данные
+    "self": {...},            // Информация об авторе (содержит user_id)
     "message_id": "123456",   // Идентификатор сообщения
     "message": "",            // Сообщение об ошибке
-    "ideaura_raw": {...}      // Исходные данные ответа
+    "ideaura_raw": {...}      // Исходные ответные данные
 }
 ```
 
-## Уникальные типы событий
+[**English**](docs/ru/quick-start.md) | [**Русский**](docs/ru/quick-start.md)
 
-Необходимо использовать `platform=="ideaura"` для проверки перед использованием функций платформы
+## Специфические типы событий
+
+Необходимо использовать проверку `platform=="ideaura"` для использования функций этой платформы
 
 ### Основные отличия
 
-1. Уникальные типы событий:
+1. Специфические типы событий:
     - Редактирование сообщения: ideaura_message_edit
-    - Отмена отправки сообщения: ideaura_message_recall
+    - Отзыв сообщения: ideaura_message_recall
     - Пересылка сообщения: ideaura_message_forward
     - Сообщение прочитано: ideaura_message_read
-    - Запрос на добавление в друзья отклонен: ideaura_friend_rejected
+    - Друг отклонен: ideaura_friend_rejected
     - Друг онлайн: ideaura_friend_online
     - Друг оффлайн: ideaura_friend_offline
     - Изменение статуса пользователя: ideaura_user_status_change
-    - Сегмент пересланного сообщения: ideaura_forwarded
-    - Сегмент отредактированного сообщения: ideaura_edited
-    - Сегмент сообщения в формате Markdown: ideaura_markdown
-    - Сегмент сообщения в формате HTML: ideaura_html
+    - Сегмент пересылаемого сообщения: ideaura_forwarded
+    - Сегмент редактирования: ideaura_edited
+    - Сегмент Markdown сообщения: ideaura_markdown
+    - Сегмент HTML сообщения: ideaura_html
+    - Сегмент команды бота: ideaura_command
 2. Расширенные поля:
-    - Все уникальные поля имеют префикс `ideaura_`
-    - Сохраняются исходные данные в поле `ideaura_raw`
-    - `self.user_id` обозначает идентификатор текущего аккаунта пользователя
+    - Все специфические поля имеют префикс `ideaura_`
+    - Исходные данные сохраняются в поле `ideaura_raw`
+    - `self.user_id` обозначает ID текущего пользователя
 
 ### Событие редактирования сообщения
 
@@ -142,26 +156,26 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "type": "notice",
   "detail_type": "ideaura_message_edit",
   "platform": "ideaura",
-  "message_id": "Идентификатор сообщения",
-  "user_id": "Идентификатор редактора",
+  "message_id": "ID сообщения",
+  "user_id": "ID редактора",
   "ideaura_new_content": "Содержимое после редактирования",
   "ideaura_updated_message": { ... },
   "ideaura_source_type": "chatroom/topic/private"
 }
 ```
 
-### Событие отмены отправки сообщения
+### Событие отзыва сообщения
 
 ```python
 {
   "type": "notice",
   "detail_type": "ideaura_message_recall",
   "platform": "ideaura",
-  "message_id": "Идентификатор отмененного сообщения",
-  "user_id": "Идентификатор отменяющего",
+  "message_id": "ID отзываемого сообщения",
+  "user_id": "ID отзывающего",
   "group_id": "chatroom",
   "ideaura_source_type": "chatroom",
-  "ideaura_recall_time": "Время отмены",
+  "ideaura_recall_time": "Время отзыва",
   "ideaura_is_self": false
 }
 ```
@@ -173,11 +187,11 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "type": "notice",
   "detail_type": "ideaura_message_forward",
   "platform": "ideaura",
-  "message_id": "Идентификатор исходного сообщения",
-  "user_id": "Идентификатор пересылающего",
-  "ideaura_forward_to": "Идентификатор целевой темы",
-  "ideaura_original_message_id": "Идентификатор исходного сообщения",
-  "ideaura_forwarded_message_id": "Идентификатор нового сообщения после пересылки"
+  "message_id": "ID исходного сообщения",
+  "user_id": "ID пересылающего",
+  "ideaura_forward_to": "ID целевого топика",
+  "ideaura_original_message_id": "ID исходного сообщения",
+  "ideaura_forwarded_message_id": "ID нового сообщения после пересылки"
 }
 ```
 
@@ -188,8 +202,8 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "type": "notice",
   "detail_type": "ideaura_message_read",
   "platform": "ideaura",
-  "message_id": "Идентификатор сообщения",
-  "ideaura_reader_id": "Идентификатор прочитавшего",
+  "message_id": "ID сообщения",
+  "ideaura_reader_id": "ID прочитавшего",
   "ideaura_reader_name": "Имя прочитавшего"
 }
 ```
@@ -201,7 +215,7 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "type": "notice",
   "detail_type": "ideaura_friend_online",
   "platform": "ideaura",
-  "user_id": "Идентификатор друга",
+  "user_id": "ID друга",
   "user_nickname": "Имя друга",
   "ideaura_friend_avatar": "URL аватара",
   "ideaura_presence_status": "online"
@@ -215,7 +229,7 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "type": "notice",
   "detail_type": "ideaura_friend_offline",
   "platform": "ideaura",
-  "user_id": "Идентификатор друга",
+  "user_id": "ID друга",
   "ideaura_presence_status": "offline"
 }
 ```
@@ -227,44 +241,44 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "type": "notice",
   "detail_type": "ideaura_user_status_change",
   "platform": "ideaura",
-  "user_id": "Идентификатор пользователя",
+  "user_id": "ID пользователя",
   "ideaura_status": "Новый статус",
   "ideaura_previous_status": "Старый статус"
 }
 ```
 
-### Событие запроса на добавление в друзья
+### Событие запроса друга
 
 ```python
 {
   "type": "request",
   "detail_type": "friend",
   "platform": "ideaura",
-  "user_id": "Идентификатор запрашивающего",
-  "user_nickname": "Имя запрашивающего",
-  "ideaura_request_id": "Идентификатор запроса",
+  "user_id": "ID запроса",
+  "user_nickname": "Имя запроса",
+  "ideaura_request_id": "ID запроса",
   "ideaura_message": "Сообщение проверки"
 }
 ```
 
-### Событие отклонения запроса на добавление в друзья
+### Событие отклонения друга
 
 ```python
 {
   "type": "notice",
   "detail_type": "ideaura_friend_rejected",
   "platform": "ideaura",
-  "user_id": "Идентификатор отклоняющего",
+  "user_id": "ID отклоняющего",
   "user_nickname": "Имя отклоняющего",
-  "ideaura_request_id": "Идентификатор запроса",
-  "ideaura_requester_id": "Идентификатор запрашивающего",
-  "ideaura_requester_name": "Имя запрашивающего"
+  "ideaura_request_id": "ID запроса",
+  "ideaura_requester_id": "ID инициатора запроса",
+  "ideaura_requester_name": "Имя инициатора запроса"
 }
 ```
 
-### Сегмент пересланного сообщения (ideaura_forwarded)
+### Сегмент пересылаемого сообщения (ideaura_forwarded)
 
-При получении пересланного сообщения тип сегмента сообщения будет `ideaura_forwarded`:
+При получении пересылаемого сообщения, тип сегмента будет `ideaura_forwarded`:
 
 ```json
 {
@@ -278,8 +292,25 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 
 | Поле | Тип | Описание |
 |------|------|------|
-| `forward_source_id` | string | Идентификатор исходного сообщения |
-| `original_message_id` | string | Идентификатор исходного сообщения |
+| `forward_source_id` | string | ID исходного сообщения |
+| `original_message_id` | string | ID оригинального сообщения |
+
+### Сегмент команды бота (ideaura_command)
+
+При активации команды бота, тип сегмента будет `ideaura_command`:
+
+```json
+{
+  "type": "ideaura_command",
+  "data": {
+    "command_id": "550e8400-e29b-41d4-a716-446655440000"
+  }
+}
+```
+
+| Поле | Тип | Описание |
+|------|------|------|
+| `command_id` | string | UUID команды |
 
 ### Пример обработки событий
 
@@ -293,7 +324,7 @@ async def handle_message(event):
         for segment in event.get("message", []):
             if segment.get("type") == "ideaura_forwarded":
                 data = segment["data"]
-                print(f"Пересланное сообщение, исходный ID: {data['forward_source_id']}")
+                print(f"Пересылка сообщения, ID источника: {data['forward_source_id']}")
 
 @notice.on_notice()
 async def handle_notice(event):
@@ -308,7 +339,7 @@ async def handle_notice(event):
 
     elif detail_type == "ideaura_message_recall":
         message_id = event.get("message_id")
-        print(f"Сообщение отменено: {message_id}")
+        print(f"Сообщение отозвано: {message_id}")
 
     elif detail_type == "ideaura_friend_online":
         friend_name = event.get_user_nickname()
@@ -317,50 +348,83 @@ async def handle_notice(event):
     elif detail_type == "ideaura_user_status_change":
         status = event.get("ideaura_status")
         print(f"Изменение статуса пользователя: {status}")
+
+## Event Mixin расширения методов
+
+Адаптер зарегистрировал следующие методы, специфичные для платформы, доступные только при `platform == "ideaura"`:
+
+| Метод | Тип возвращаемого значения | Описание |
+|------|----------|------|
+| `get_source_type()` | `str` | Тип источника сообщения (`chatroom`/`topic`/`private`) |
+| `get_sender_name()` | `str` | Псевдоним отправителя |
+| `get_sender_avatar()` | `str` | URL аватара отправителя |
+| `is_sender_bot()` | `bool` | Является ли отправитель ботом |
+| `is_receiver_bot()` | `bool` | Является ли получатель ботом |
+| `get_command_id()` | `str` | ID активированной команды бота (если есть, `ideaura_command_id`) |
+| `get_command()` | `str` | Алиас для `get_command_id()` |
+| `get_topic_name()` | `str` | Название темы |
+| `get_message_type()` | `str` | Тип сообщения (normal/edited/forwarded/quoted) |
+| `get_message_subtype()` | `str` | Подтип сообщения (text/image/video/file/markdown/html) |
+| `is_self_message()` | `bool` | Является ли сообщение отправленным самим пользователем |
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event.get_platform() != "ideaura":
+        return
+
+    # Получить ID активированной команды бота (если есть)
+    cmd_id = event.get_command_id()
+    if cmd_id:
+        print(f"Получена команда: {cmd_id}")
 ```
 
 ---
 
+docs/ru/quick-start.md
+
 ## Многоаккаунтная настройка
 
-### Описание конфигурации
+### Инструкции по настройке
 
-IdeauraAdapter поддерживает одновременную настройку и запуск нескольких аккаунтов, каждый аккаунт может выбрать вход по токену или по электронной почте и паролю (один из двух).
+IdeauraAdapter поддерживает одновременную конфигурацию и работу с несколькими аккаунтами, используя аутентификацию по **Bot Token**.
+
+> [!WARNING]
+> Начиная с версии 4.0.1 **удалена** аутентификация по электронной почте и паролю, теперь поддерживается только Bot Token. Bot Token можно получить на [открытом платформе MSCPO](https://open.mscpo.com/rockychat/bots) (начинается с `bot-token-`).
 
 ```toml
 # config.toml
-# Аккаунт 1: Вход по токену (рекомендуется, не требует электронной почты и пароля)
+# Аккаунт 1
 [IdeauraAdapter.accounts.default]
-token = "your-token-here"        # Токен для входа (см. email+password, один из двух)
-enabled = true                   # Включен ли аккаунт (опционально, по умолчанию true)
+token = "bot-token-xxxxxx1"      # API Token бота (обязательно)
+enabled = true                   # Включить аккаунт (необязательно, по умолчанию true)
 
-# Аккаунт 2: Вход по электронной почте и паролю
+# Аккаунт 2
 [IdeauraAdapter.accounts.bot2]
-email = "user2@example.com"      # Электронная почта для входа
-password = "password2"           # Пароль для входа
+token = "bot-token-xxxxxx2"
 enabled = true
 
-# Опционально: Настройка адреса сервера
+# Необязательно: пользовательский адрес сервера
 [IdeauraAdapter]
-base_url = "https://api-cofe.allons-y.uk:3009"
+base_url = "https://api.mscpo.com/api/rockychat"
 ws_url = "wss://api-cofe.allons-y.uk:3009/mqtt"
 heartbeat_interval = 30
 ```
 
-**Описание параметров конфигурации:**
-- `token`: Токен для входа (опционально, при заполнении используется токен для входа, не требуется электронная почта и пароль)
-- `email`: Электронная почта для входа (при входе по токену не требуется, при входе по электронной почте и паролю обязательна)
-- `password`: Пароль для входа (при входе по токену не требуется, при входе по электронной почте и паролю обязательна)
-- `enabled`: Включен ли аккаунт (опционально, по умолчанию true)
+**Описание параметров:**
+- `token`: API Token бота (обязательно, начинается с `bot-token-`)
+- `enabled`: Включить аккаунт (необязательно, по умолчанию true)
 
-**Глобальные параметры конфигурации:**
-- `base_url`: Адрес сервера API (опционально, по умолчанию адрес официального сервера HuaFeng Coffeehouse)
-- `ws_url`: Адрес сервера WebSocket (опционально, по умолчанию адрес официального сервера HuaFeng Coffeehouse)
-- `heartbeat_interval`: Интервал в секундах для心跳 (опционально, по умолчанию 30 секунд)
+**Глобальные параметры:**
+- `base_url`: Адрес API-сервера (необязательно, по умолчанию `https://api.mscpo.com/api/rockychat`)
+- `ws_url`: Адрес WebSocket-сервера (необязательно, по умолчанию официальный адрес для Цветущего Кофейни)
+- `heartbeat_interval`: Интервал отправки пингов в секундах (необязательно, по умолчанию 30 секунд)
 
 ### Использование Send DSL для указания аккаунта
 
-Можно использовать метод `Using()` для указания, какой аккаунт использовать для отправки сообщений:
+Можно указать, какой аккаунт использовать для отправки сообщений с помощью метода `Using()`:
 
 ```python
 from ErisPulse.Core import adapter
@@ -369,16 +433,16 @@ ideaura = adapter.get("ideaura")
 # Отправка сообщения с использованием имени аккаунта
 await ideaura.Send.Using("default").To("user", "user123").Text("Hello from account 1!")
 
-# Отправка сообщения с использованием user_id (автоматически сопоставляется с соответствующим аккаунтом)
+# Отправка сообщения с использованием user_id (автоматически подбирается соответствующий аккаунт)
 await ideaura.Send.Using("456").To("group", "chatroom").Text("Hello from account 2!")
 
-# Без указания аккаунта используется первый включенный аккаунт
+# Если не указано, используется первый включенный аккаунт
 await ideaura.Send.To("user", "user123").Text("Hello from default account!")
 ```
 
 ### Идентификация аккаунта в событиях
 
-События, полученные, автоматически содержат информацию об аккаунте:
+Полученные события автоматически содержат информацию о соответствующем аккаунте:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -387,32 +451,29 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     if event["platform"] == "ideaura":
         account_id = event["self"]["user_id"]
-        print(f"Сообщение от аккаунта: {account_id}")
-```
-
----
+        print(f"Сообщение пришло от аккаунта: {account_id}")
 
 ## Описание расширенных полей
 
-- Все уникальные поля имеют префикс `ideaura_`, чтобы избежать конфликта с стандартными полями
-- Сохраняются исходные данные в поле `ideaura_raw`, для удобного доступа к полным исходным данным платформы
-- `self.user_id` обозначает идентификатор пользователя текущего входящего аккаунта
-- `ideaura_source_type`: Тип источника сообщения (`chatroom`/`topic`/`private`)
-- `ideaura_sender_name`: Имя отправителя
+- Все специфические поля идентифицируются с префиксом `ideaura_`, чтобы избежать конфликтов со стандартными полями
+- Оригинальные данные сохраняются в поле `ideaura_raw`, что позволяет получить доступ к полным исходным данным платформы
+- `self.user_id` обозначает ID текущего авторизованного пользователя
+- `ideaura_source_type`: тип источника сообщения (`chatroom`/`topic`/`private`)
+- `ideaura_sender_name`: никнейм отправителя
 - `ideaura_sender_avatar`: URL аватара отправителя
-- `ideaura_sender_is_bot`: Является ли отправитель ботом
-- `ideaura_is_self`: Является ли сообщение отправленным самим собой (самосообщения отфильтрованы)
-- `ideaura_topic_name`: Название темы
-- `ideaura_message_type`: Тип сообщения (normal/edited/forwarded/quoted)
-- `ideaura_message_subtype`: Подтип сообщения (text/image/video/file/markdown/html)
+- `ideaura_sender_is_bot`: является ли отправитель ботом
+- `ideaura_is_self`: является ли сообщение отправленным самим собой (самосообщения были отфильтрованы)
+- `ideaura_topic_name`: название темы
+- `ideaura_message_type`: тип сообщения (normal/edited/forwarded/quoted)
+- `ideaura_message_subtype`: подтип сообщения (text/image/video/file/markdown/html)
 
 ### Особенности обработки файлов
 
-- Ограничение размера файлов: 10MB (ограничение на скачивание и локальное чтение)
-- Автоматическая детекция типа файла: определение фактического типа по магическим байтам файла
+- Ограничение размера файла: 10 МБ (ограничение действует как при скачивании, так и при локальном чтении)
+- Автоматическая детекция типа файла: определение фактического типа по магическим байтам заголовка
 - Интеллектуальное определение имени файла: автоматическая корректировка бессмысленных расширений, таких как `.bin`/`.dat`/`.tmp`
-- Поддержка трех способов ввода файлов: bytes, URL, локальный путь
-- Автоматическая загрузка и загрузка URL-файлов на сервер
+- Поддержка трёх способов ввода файла: bytes, URL, локальный путь
+- Автоматическая загрузка URL-файлов и последующая загрузка на сервер
 
 ### Поддерживаемые типы файлов
 
@@ -425,15 +486,13 @@ async def handle_message(event):
 | Аудио | mp3, wav, ogg |
 | Документ | pdf, docx |
 
----
-
 ## Примечания
 
-1. Адрес сервера `api-cofe.allons-y.uk` является адресом платформы, не меняется с изменением имени адаптера
-2. Адаптер использует WebSocket-соединение для получения событий, поддерживает автоматическое повторное подключение (фиксированная задержка 5 секунд)
-3. Сообщения, отправленные самим собой (`isSelf: true`), автоматически фильтруются и не генерируют события
+1. Адрес API-сервера по умолчанию: `https://api.mscpo.com/api/rockychat` (можно настроить с помощью `base_url`); адрес WebSocket `wss://api-cofe.allons-y.uk:3009/mqtt` является фиксированным адресом платформы и не изменяется в зависимости от имени адаптера
+2. Адаптер использует WebSocket-длинные соединения для получения событий и поддерживает автоматическое повторное подключение (фиксированная задержка 5 секунд)
+3. Сообщения, отправленные самим адаптером (`isSelf: true`), автоматически фильтруются и не генерируют события
 4. Упоминание всех (`AtAll()`) требует прав администратора
-5. Ограничение размера загружаемых файлов составляет 10MB
-6. Аудиофайлы отправляются как подтип `file` (платформа не различает отдельные типы аудиофайлов)
-7. Эмодзи (`Face()`) отправляются в виде чистого текста (эмодзи)
-8. При выходе из программы необходимо вызвать `shutdown()` для освобождения ресурсов
+5. Ограничение на размер загружаемых файлов составляет 10 МБ
+6. Аудиофайлы отправляются как подтип `file` (платформа не различает отдельные типы аудио)
+7. Эмодзи (`Face()`) отправляются в виде обычного текста
+8. При выходе из программы необходимо вызвать `shutdown()` для корректного освобождения ресурсов

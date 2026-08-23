@@ -43,6 +43,19 @@ ErisPulse 模块系统
 #### 方法列表
 
 
+##### `_unload_timeout()`
+
+> **内部方法**
+读取模块 on_unload 优雅收尾的超时（秒）
+
+复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算，
+整体仍有 uninit 的 wait_for 兜底）；未配置或非法时回退常量默认值。
+
+**返回值**: 超时秒数（>0）
+
+---
+
+
 ##### `set_sdk_ref(sdk)`
 
 设置 SDK 引用
@@ -165,15 +178,43 @@ ErisPulse 模块系统
 ---
 
 
+##### `_collect_dependents(name: str)`
+
+> **内部方法**
+收集直接或间接依赖指定模块的模块闭包（BFS）
+
+返回顺序为由近及远（直接依赖者在前、间接依赖者在后）；
+卸载时应按相反顺序执行，保证每个依赖者卸载时其依赖仍可用。
+
+- **name** (`目标模块名`): **返回值** (`依赖者模块名列表（不含`): name 本身）
+
+---
+
+
 ##### `async unload(name: str | None = None)`
 
 卸载指定模块或所有模块
 
+卸载被其它模块依赖的模块时，依赖它的模块会**级联卸载**
+（依赖者先卸载，日志说明级联链），避免依赖者持有失效引用继续运行。
+
+``purge`` 控制是否**一并删除注册存根**：
+
+- ``purge=False``（默认）：只取消加载——卸载实例与资源，但保留
+  注册存根（模块类与元信息），模块仍可被 discover 重新发现、`load()`
+  重新实例化，无需重新 `register()`
+- ``purge=True``：彻底卸载——同时删除注册存根（释放模块类引用），
+  并对插件文件夹来源的模块清理 ``sys.modules``，使插件及其独占依赖
+  可被 GC 回收（解决 NoneBot 式卸载后插件与依赖内存不释放的问题）；
+  级联卸载的依赖者同样被 purge。卸载后重新加载需重新 `register()`
+
 - **name** (`模块名称，None表示卸载所有模块（默认None）`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+- **purge** (`是否一并删除注册存根并清理`): sys.modules（默认 False）
 **返回值** (`是否卸载成功`): 
 **示例**:
 ```python
->>> await module.unload("MyModule")  # 卸载单个模块
+>>> await module.unload("MyModule")  # 卸载单个模块（依赖者级联卸载）
+>>> await module.unload("MyModule", purge=True)  # 彻底卸载（释放类引用）
 >>> await module.unload()  # 卸载所有模块
 ```
 
@@ -186,6 +227,38 @@ ErisPulse 模块系统
 卸载单个模块
 
 - **module_name** (`模块名称`): **返回值**: 是否卸载成功
+
+---
+
+
+##### `_purge_module_stub(module_name: str)`
+
+> **内部方法**
+删除模块注册存根，释放模块类引用（并清理插件来源的 sys.modules）
+
+返回 (module_name, class_weakref, instance_weakref) 供回收诊断。
+
+- **module_name** (`模块名`): **返回值** (`供`): `_report_purge_recyclability` 消费的弱引用三元组
+
+---
+
+
+##### `_purge_sys_modules(module_name: str, top_level: list[str])`
+
+> **内部方法**
+从 sys.modules 移除插件自身模块与其子包（保守：不清理第三方/共享库）
+
+- **module_name** (`插件模块名`): - **top_level**: 顶层包名列表（用于清理包内子模块）
+
+---
+
+
+##### `_report_purge_recyclability(refs: list[tuple[str, Any, Any]])`
+
+> **内部方法**
+purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出引用方
+
+- **refs** (``_purge_module_stub``): 产出的 (name, class_ref, instance_ref) 列表
 
 ---
 
@@ -395,6 +468,72 @@ ErisPulse 模块系统
 ---
 
 
+##### `get_meta(name: str | None = None)`
+
+获取模块的介绍元信息（描述这个模块是什么、属于哪一类等）
+
+元信息是模块的**通用介绍数据**，供 help 模块、Dashboard 模块列表、
+模块商店等各类界面 / 生态模块消费。
+
+**i18n 支持**：元信息字段值可为纯字符串，或 i18n 字典
+``{"i18n": "key.path", "default": "兜底文本"}``（与配置 description 约定一致）。
+翻译键通过模块的 ``I18nClass`` 声明注册（键路径 ``<模块名>.<属性名>``）。
+``resolve_i18n=True``（默认）时解析为当前语言文本；``False`` 时透传原始字典。
+
+解析优先级：模块类声明的 ``get_meta()`` > 注册时传入的 ``info``，缺失字段自动补全。
+
+- **name** (`模块名称`): - **resolve_i18n**: 是否解析 i18n 字典为当前语言文本（默认 True）
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+**返回值** (`元信息字典，模块未注册时返回`): None
+
+**示例**:
+```python
+>>> meta = module.get_meta("Weather")
+>>> meta["description"]   # 当前语言下的模块简介
+```
+
+---
+
+
+##### `_resolve_meta_value(value: Any)`
+
+> **内部方法**
+解析元信息字段值：i18n 字典 → 当前语言文本；其余原样返回
+
+- **value** (`原始值（str`): 或 {"i18n": ..., "default": ...}）
+**返回值**: 解析后的值
+
+---
+
+
+##### `_commands_of(module_name: str)`
+
+> **内部方法** 列出该模块注册的主命令名
+
+---
+
+
+##### `get_commands_overview()`
+
+获取命令总览（模块 meta + 其注册的命令，按模块聚合）
+
+聚合每个模块的**介绍元信息**与其**注册的命令**（含别名 / 分组 / 帮助文本），
+便于 help 模块、管理界面等按模块展示"这个模块是干什么的 + 有哪些命令"。
+
+**返回值** (`{模块名:`): {"meta": {...}, "commands": [{name, aliases, group, help, hidden}]}}
+
+**示例**:
+```python
+>>> overview = module.get_commands_overview()
+>>> overview["Weather"]["meta"]["description"]
+"查询城市天气"
+>>> overview["Weather"]["commands"][0]["name"]
+"weather"
+```
+
+---
+
+
 ##### `get_status_summary()`
 
 获取模块的完整状态摘要
@@ -420,6 +559,34 @@ ErisPulse 模块系统
 >>> #         }
 >>> #     }
 >>> # }
+```
+
+---
+
+
+##### `get_topology()`
+
+获取模块的拓扑树数据（便于 WebUI 展示）
+
+聚合每个模块拥有的命令、事件处理器、路由与生命周期钩子，
+按 owner（模块名）归并，展示模块与资源的归属关系。
+
+**返回值** (`拓扑树字典`): {"modules": {name: {
+        "loaded": bool, "enabled": bool,
+        "load_strategy": {"lazy": bool|None, "priority": int|None},
+        "info": dict|None,
+        "commands": [str, ...],
+        "handlers": {event_type: count},
+        "routes": {"http": [...], "ws": [...], "sse": [...]},
+        "lifecycle_hooks": int,
+        "scope_applies": bool,
+    }}}
+
+**示例**:
+```python
+>>> topology = module.get_topology()
+>>> print(topology["modules"]["Chat"]["commands"])
+["chat"]
 ```
 
 ---
