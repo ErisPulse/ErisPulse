@@ -5,6 +5,7 @@ Run 命令实现
 """
 
 import asyncio
+import os
 import runpy
 import subprocess
 import sys
@@ -17,7 +18,7 @@ from rich.panel import Panel
 
 from ..base import Command
 from ..console import console
-from ..constants import HARD_RESTART_EXIT_CODE
+from ..constants import ENV_SUPERVISED, HARD_RESTART_EXIT_CODE
 from ..i18n import i18n
 from ..utils.file_watcher import FileSystemEventHandler, PollingObserver
 
@@ -186,7 +187,11 @@ class RunCommand(Command):
         process = None
         try:
             while True:
-                process = subprocess.Popen(cmd)
+                # 注入监督者标记：子进程据此判断"有父进程会在退出码 42 时重新拉起我"，
+                # 从而 hard_restart() 走退出码契约而非 self-respawn。
+                child_env = dict(os.environ)
+                child_env[ENV_SUPERVISED] = "cli"
+                process = subprocess.Popen(cmd, env=child_env)
                 process.wait()
 
                 if process.returncode == self._RESTART_EXIT_CODE:
@@ -195,7 +200,12 @@ class RunCommand(Command):
                     time.sleep(0.5)
                     continue
 
-                # 非硬重启退出码：模块/适配器内部错误导致子进程异常终止
+                if process.returncode == 0:
+                    # 子进程正常退出：finish，不再拉起
+                    console.print(f"[info]{i18n.t('cli.run.process_exited')}[/]")
+                    break
+
+                # 非硬重启/非正常退出码：模块/适配器内部错误导致子进程异常终止
                 # 不退出主进程，等待后自动重试
                 crash_count += 1
                 backoff = min(self._MAX_CRASH_BACKOFF, 3.0 * crash_count)

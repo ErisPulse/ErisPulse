@@ -2631,3 +2631,51 @@ class TestAdapterUnload:
         assert await manager.unload("p2") is True
         assert "p2" not in manager._adapters
 
+    async def test_shutdown_stuck_forced_after_timeout(self, manager):
+        """适配器 shutdown 卡死：超时后强制清理，仍被注销"""
+        from ErisPulse.Core.config import config
+
+        class _StuckAdapter(BaseAdapter):
+            def __init__(self, sdk=None):
+                super().__init__()
+                self.sdk = sdk
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                import asyncio
+
+                await asyncio.Event().wait()  # 永不返回
+
+            async def call_api(self, endpoint: str, **params):
+                return {}
+
+        adapter = _StuckAdapter()
+        manager._adapters["stuck"] = adapter
+        manager._adapter_info["stuck"] = {"adapter_class": _StuckAdapter}
+        manager._started_instances.add(adapter)
+
+        old = config.getConfig("ErisPulse.framework", {}).get("uninit_timeout", 30)
+        config.setConfig("ErisPulse.framework", {"uninit_timeout": 0.2}, immediate=True)
+        try:
+            start = asyncio.get_event_loop().time()
+            assert await manager.unload("stuck") is True
+            elapsed = asyncio.get_event_loop().time() - start
+        finally:
+            config.setConfig("ErisPulse.framework", {"uninit_timeout": old}, immediate=True)
+
+        assert elapsed < 3, f"unload blocked too long: {elapsed:.1f}s"
+        assert "stuck" not in manager._adapters
+        assert adapter not in manager._started_instances
+
+    def test_shutdown_timeout_reads_config(self, manager):
+        """_shutdown_timeout 读取 uninit_timeout 配置"""
+        from ErisPulse.Core.config import config
+
+        config.setConfig("ErisPulse.framework", {"uninit_timeout": 8.5}, immediate=True)
+        try:
+            assert manager._shutdown_timeout() == 8.5
+        finally:
+            config.setConfig("ErisPulse.framework", {"uninit_timeout": 30}, immediate=True)
+

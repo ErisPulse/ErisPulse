@@ -744,6 +744,12 @@ MODULE_SOURCE_PLUGIN_FOLDER: Final[str] = "plugin_folder"
 # 修改影响: 必须同步 sdk.py 与 CLI/commands/run.py，否则硬重启会被误判为崩溃。
 HARD_RESTART_EXIT_CODE: Final[int] = 42
 
+# 监督者标记环境变量名。
+# 当子进程由监督者（CLI run 命令）启动时注入，SDK 据此判断"是否有父进程会在
+# 退出码 42 时重新拉起我"。未设置时 hard_restart() 走 self-respawn（自行拉起新进程）。
+# 修改影响: 必须同步 sdk.py 与 CLI/commands/run.py。
+ENV_SUPERVISED: Final[str] = "ERISPULSE_SUPERVISED"
+
 # 版本元数据缺失时的回退字符串。
 # 使用位置: sdk.py / ErisPulse/__init__.py / Core/router.py 的版本探测兜底。
 UNKNOWN_VERSION: Final[str] = "UnknownVersion"
@@ -887,6 +893,7 @@ __all__ = [
     "DETAIL_TYPE_HEARTBEAT",
     "DETAIL_TYPE_PRIVATE",
     "DETAIL_TYPE_USER",
+    "ENV_SUPERVISED",
     "EVENT_TYPE_MESSAGE",
     "EVENT_TYPE_META",
     "EVENT_TYPE_NOTICE",

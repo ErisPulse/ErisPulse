@@ -1719,3 +1719,95 @@ class TestPurgeUnload:
         manager._report_purge_recyclability([])
         # 空列表应静默通过
         assert True
+
+
+# ==================== on_unload 超时保护测试（2.8.0+） ====================
+
+
+class TestUnloadTimeout:
+    """on_unload 卡死时按 uninit_timeout 超时强杀，清理继续（优雅关闭→超时强杀）"""
+
+    @pytest.fixture
+    def manager(self):
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._module_classes.clear()
+        manager._loaded_modules.clear()
+        manager._module_info.clear()
+        return manager
+
+    def _make_stuck_module(self, name, *, stuck=True):
+        """on_unload 可卡死的模块"""
+
+        class _M(BaseModule):
+            def __init__(self, sdk=None):
+                self.sdk = sdk
+                self.unload_started = False
+
+            async def on_load(self, event):
+                return True
+
+            async def on_unload(self, event):
+                self.unload_started = True
+                if stuck:
+                    await asyncio.Event().wait()  # 永不返回
+                return True
+
+        _M.__name__ = name
+        return _M
+
+    @pytest.fixture
+    def tiny_timeout(self):
+        """把 uninit_timeout 调小加速测试"""
+        from ErisPulse.Core.config import config
+
+        old = config.getConfig("ErisPulse.framework", {}).get("uninit_timeout", 30)
+        config.setConfig("ErisPulse.framework", {"uninit_timeout": 0.2}, immediate=True)
+        yield
+        config.setConfig("ErisPulse.framework", {"uninit_timeout": old}, immediate=True)
+
+    async def test_unload_stuck_on_unload_forced_after_timeout(self, manager, tiny_timeout):
+        """on_unload 卡死：超时后强制清理，卸载仍成功且不阻塞"""
+        cls = self._make_stuck_module("Stuck")
+        manager.register("Stuck", cls, {"meta": {"name": "Stuck"}, "module_class": cls})
+        assert await manager.load("Stuck")
+        instance = manager._modules["Stuck"]
+
+        start = asyncio.get_event_loop().time()
+        ok = await manager.unload("Stuck")
+        elapsed = asyncio.get_event_loop().time() - start
+
+        assert ok is True
+        assert instance.unload_started is True
+        assert elapsed < 3, f"unload blocked too long: {elapsed:.1f}s"
+        assert "Stuck" not in manager._loaded_modules
+        assert "Stuck" not in manager._modules
+
+    async def test_unload_normal_on_unload_no_timeout(self, manager):
+        """正常 on_unload 不受超时影响，快速完成"""
+        cls = self._make_stuck_module("Fast", stuck=False)
+        manager.register("Fast", cls, {"meta": {"name": "Fast"}, "module_class": cls})
+        assert await manager.load("Fast")
+
+        start = asyncio.get_event_loop().time()
+        assert await manager.unload("Fast") is True
+        elapsed = asyncio.get_event_loop().time() - start
+        assert elapsed < 1
+
+    async def test_unload_timeout_reads_config(self, manager):
+        """_unload_timeout 读取 uninit_timeout 配置"""
+        from ErisPulse.Core.config import config
+
+        config.setConfig("ErisPulse.framework", {"uninit_timeout": 12.5}, immediate=True)
+        try:
+            assert manager._unload_timeout() == 12.5
+        finally:
+            config.setConfig("ErisPulse.framework", {"uninit_timeout": 30}, immediate=True)
+
+    def test_unload_timeout_fallback_default(self, manager):
+        """配置缺失时回退默认常量"""
+        from ErisPulse.Core.config import config
+        from ErisPulse.Core.constants import DEFAULT_UNINIT_TIMEOUT_SECS
+
+        config.setConfig("ErisPulse.framework", {}, immediate=True)
+        assert manager._unload_timeout() == float(DEFAULT_UNINIT_TIMEOUT_SECS)

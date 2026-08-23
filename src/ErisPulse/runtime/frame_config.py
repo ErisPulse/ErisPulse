@@ -47,6 +47,9 @@ DEFAULT_ERISPULSE_CONFIG = {
         "auto_start": DEFAULT_SERVER_AUTO_START,
         "ssl_certfile": None,
         "ssl_keyfile": None,
+        # 内联 PEM 内容（优先于路径，适合容器/无文件系统场景）
+        "ssl_cert": None,
+        "ssl_key": None,
     },
     "logger": {
         "level": DEFAULT_LOG_LEVEL,

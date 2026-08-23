@@ -2474,6 +2474,46 @@ class RouterManager:
         except Exception as e:
             logger.trace(i18n.t("core.router.get_local_ip_failed", error=e))
 
+    @staticmethod
+    def _build_ssl_context_from_pem(cert_pem: str, key_pem: str):
+        """
+        {!--< internal-use >!--}
+        从 PEM 文本内容构建 SSLContext
+
+        将证书/密钥写入临时文件（load_cert_chain 需要文件路径），加载完成后
+        立即删除临时文件——PEM 内容不落盘残留。
+
+        :param cert_pem: 证书 PEM 文本
+        :param key_pem: 密钥 PEM 文本
+        :return: ssl.SSLContext
+        """
+        import ssl
+        import tempfile
+        from pathlib import Path
+
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        cert_path = key_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".pem", delete=False, encoding="utf-8"
+            ) as f:
+                f.write(cert_pem)
+                cert_path = f.name
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".pem", delete=False, encoding="utf-8"
+            ) as f:
+                f.write(key_pem)
+                key_path = f.name
+            ctx.load_cert_chain(cert_path, key_path)
+            return ctx
+        finally:
+            for p in (cert_path, key_path):
+                if p:
+                    try:
+                        Path(p).unlink(missing_ok=True)
+                    except Exception:
+                        pass
+
     @_web_stack_required
     async def start(
         self,
@@ -2481,14 +2521,25 @@ class RouterManager:
         port: int = DEFAULT_SERVER_PORT,
         ssl_certfile: str | None = None,
         ssl_keyfile: str | None = None,
+        *,
+        ssl_cert: str | None = None,
+        ssl_key: str | None = None,
     ) -> None:
         """
         启动路由服务器
+
+        SSL 支持两种配置方式（内容优先于路径）：
+
+        - 路径方式：``ssl_certfile`` / ``ssl_keyfile`` 传入证书/密钥文件路径
+        - 内容方式：``ssl_cert`` / ``ssl_key`` 直接传入 PEM 文本内容
+          （适合容器/无文件系统场景，框架落盘临时文件构建 SSLContext 后即删除）
 
         :param host: str 监听地址(默认"0.0.0.0")
         :param port: int 监听端口(默认8000)
         :param ssl_certfile: str | None SSL证书路径
         :param ssl_keyfile: str | None SSL密钥路径
+        :param ssl_cert: str | None SSL证书 PEM 文本内容（优先于 ssl_certfile）
+        :param ssl_key: str | None SSL密钥 PEM 文本内容（优先于 ssl_keyfile）
 
         :raises RuntimeError: 当服务器已在运行时抛出
 
@@ -2515,17 +2566,30 @@ class RouterManager:
                 logger.warning(i18n.t("core.router.start_skipped_port_in_use"))
                 return
 
+            # 内联 PEM 内容优先于路径：临时落盘构建 SSLContext 后立即删除
+            ssl_context = None
+            if ssl_cert and ssl_key:
+                try:
+                    ssl_context = self._build_ssl_context_from_pem(ssl_cert, ssl_key)
+                    logger.debug(i18n.t("core.router.ssl_inline_applied"))
+                except Exception as e:
+                    logger.error(i18n.t("core.router.ssl_inline_invalid", error=e))
+            use_https = bool(ssl_context or ssl_certfile)
+
             config = uvicorn.Config(
                 self.app,
                 host=host,
                 port=port,
                 log_level="warning",
-                ssl_certfile=ssl_certfile,
-                ssl_keyfile=ssl_keyfile,
+                ssl_certfile=None if ssl_context else ssl_certfile,
+                ssl_keyfile=None if ssl_context else ssl_keyfile,
+                ssl_context_factory=(lambda ctx=ssl_context: ctx)
+                if ssl_context
+                else None,
             )
             self._uvicorn_server = uvicorn.Server(config)
 
-            self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
+            self.base_url = f"http{'s' if use_https else ''}://{host}:{port}"
             display_url = self._format_display_url(self.base_url)
             http_count = sum(len(paths) for paths in self._http_routes.values())
             ws_count = sum(len(paths) for paths in self._websocket_routes.values())

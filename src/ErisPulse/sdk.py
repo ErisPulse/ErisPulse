@@ -30,6 +30,7 @@ from .Core.constants import (
     DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
     DEFAULT_PROACTIVE_GC_MEMORY_GROWTH_MB,
     DEFAULT_UNINIT_TIMEOUT_SECS,
+    ENV_SUPERVISED,
     HARD_RESTART_EXIT_CODE,
     LIFECYCLE_TIMER_CORE_INIT,
     LIFECYCLE_TIMER_CORE_UNINIT,
@@ -467,6 +468,8 @@ class SDK:
                         port=_server_config["port"],
                         ssl_certfile=_server_config.get("ssl_certfile"),
                         ssl_keyfile=_server_config.get("ssl_keyfile"),
+                        ssl_cert=_server_config.get("ssl_cert"),
+                        ssl_key=_server_config.get("ssl_key"),
                     )
 
                 # 获取加载耗时
@@ -1479,6 +1482,10 @@ class SDK:
         内部调用 ``init()`` 完成初始化，然后在 ``on_ready`` 回调执行完毕后
         挂起主程序（当 ``keep_running=True`` 时）。
 
+        硬重启（``hard_restart()``）通过退出码 42 契约交由**外部
+        监督者**（``epsdk run`` / systemd / Docker / PM2 等，见 startup.md
+        「监督者指南」）重新拉起。
+
         {!--< tips >!--}
         异常处理原则：
         1. 模块/适配器的任何错误都会被拦截，不会导致进程退出
@@ -1920,17 +1927,32 @@ class SDK:
 
     RESTART_EXIT_CODE = HARD_RESTART_EXIT_CODE
 
+    def is_supervised(self) -> bool:
+        """
+        检测当前进程是否由外部监督者启动（CLI run 命令 / systemd / Docker 等）
+
+        监督者会在进程退出码为 42（``HARD_RESTART_EXIT_CODE``）时重新拉起新进程。
+        未被监督时硬重启后进程不会自动恢复，``hard_restart()`` 会打出警告提醒
+        配置外部监督者（见 startup.md「监督者指南」）。
+
+        :return: 是否有外部监督者
+        """
+        import os
+
+        return bool(os.environ.get(ENV_SUPERVISED))
+
     async def hard_restart(self) -> bool:
         """
-        硬重启：反初始化后退出进程，由父进程（run.py）重新启动新实例
+        硬重启：反初始化后退出进程，由外部监督者重新启动新实例
 
         与 restart()（热重启）的区别：
         - restart(): 在同一进程内反初始化再重新初始化
-        - hard_restart(): 反初始化后退出进程，由父进程重新启动全新进程
+        - hard_restart(): 反初始化后以退出码 42 退出进程，由外部监督者重新拉起全新进程
 
         确保资源完全释放
 
-        需要通过 epsdk run 启动才生效，否则进程退出后不会自动重启。
+        硬重启依赖外部监督者（``epsdk run`` / systemd / Docker / PM2 / supervisord）
+        在退出码 42 时重新拉起进程；未被监督时进程退出后不会自动恢复，会打警告提醒。
 
         :return: bool 硬重启任务是否成功调度
 
@@ -1953,12 +1975,20 @@ class SDK:
                 _config_manager.force_save()
             except Exception:
                 pass
+            if not self.is_supervised():
+                self.logger.warning(
+                    i18n.t(
+                        "core.sdk.hardrestart.not_supervised",
+                        code=self.RESTART_EXIT_CODE,
+                    )
+                )
             os._exit(self.RESTART_EXIT_CODE)
 
         from .runtime.tasks import spawn_background
 
         spawn_background(_do_hard_restart())
         return True
+
 
     def get_topology(self) -> dict[str, Any]:
         """
