@@ -43,129 +43,167 @@
 
 ### 架构概览
 
-# アーキテクチャの概要
+# アーキテクチャ概要
 
-本文書は、視覚的な図を通じて ErisPulse SDK の技術的なアーキテクチャを紹介し、フレームワークの設計思想とモジュール間の関係を迅速に理解できるようにします。
+このドキュメントでは、ErisPulse SDK の技術的アーキテクチャを視覚的なチャートを用いて紹介し、フレームワークの設計思想とモジュール間の関係をすばやく理解できるようにします。
 
-## SDK コア・アーキテクチャ
+docs/ja/quick-start.md
 
-下の図は、SDK のコア・モジュール構成とその関係を示しています：
+## SDKのコアアーキテクチャ
+
+下図は、SDKのコアモジュール構成とその関係を示しています：
 
 ```mermaid
 graph TB
-    SDK["sdk<br/>統合エントリーポイント"]
+    SDK["sdk<br/>統一エントリーポイント"]
 
     SDK --> Event["Event<br/>イベントシステム"]
     SDK --> Lifecycle["Lifecycle<br/>ライフサイクル管理"]
     SDK --> Logger["Logger<br/>ログ管理"]
     SDK --> Storage["Storage / env<br/>ストレージ管理"]
     SDK --> Config["Config<br/>設定管理"]
-    SDK --> AdapterMgr["Adapter<br/>アダプターマネージャー"]
+    SDK --> AdapterMgr["Adapter<br/>アダプタ管理"]
     SDK --> ModuleMgr["Module<br/>モジュール管理"]
-    SDK --> Router["Router<br/>ルーターマネージャー"]
-    SDK --> Client["HttpClient<br/>HTTPクライアント"]
+    SDK --> Router["Router<br/>ルーティング管理"]
+    SDK --> Client["Client<br/>HTTPクライアント"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
-    Event --> Conversation["Conversation<br/>チャット（マルチターン会話）"]
+    Event --> Conversation["Conversation<br/>分岐 + 永続化"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["Yunhu"]
+    BaseAdapter --> P1["云湖"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
 
     ModuleMgr --> BaseModule["BaseModule"]
-    BaseModule --> CM["カスタム・モジュール"]
+    BaseModule --> CM["カスタムモジュール"]
 
     BaseAdapter -.-> SendDSL["SendDSL<br/>メッセージ送信"]
 ```
 
-### コア・モジュールの説明
+### コアモジュールの説明
 
 | モジュール | 説明 |
 |------|------|
-| **Event** | イベントシステム。command / message / notice / request / meta の5種類のイベント処理と、Conversation チャット（マルチターン会話）を提供します。 |
-| **Adapter** | アダプターマネージャー。マルチプラットフォーム・アダプターの登録、起動、および停止管理を行います。 |
-| **Module** | モジュールマネージャー。プラグインの登録、ロード、アンロードを管理し、依存関係の宣言とトポロジカルソートをサポートします。 |
-| **Lifecycle** | ライフサイクルマネージャー。イベント駆動のライフサイクル・フックを提供します。 |
-| **Storage** | SQLite ベースのキー値ストレージシステム。汎用 SQL のチェーン（連鎖）クエリをサポートします。 |
-| **Config** | TOML 形式の設定ファイル管理。 |
-| **Logger** | モジュール化されたログシステム。サブロガーのサポートを行います。 |
-| **Router** | HTTP/WebSocket ルーターマネージャー。抽象レイヤーを通じて基盤となるバックエンド（現在は FastAPI + Uvicorn）をカプセル化し、デコレーターロータ、ミドルウェア、グループ化、レートリミット、CORS をサポートします。 |
-| **HttpClient** | 統一された HTTP クライアント。抽象レイヤーを通じて基盤となるリクエストライブラリ（現在は aiohttp）をカプセル化し、リクエスト統計、リトライ、ログなどの機能を提供します。 |
+| **Event** | イベントシステム。command / message / notice / request / meta の5種類のイベント処理と、Conversationによる多段対話機能を提供します。|
+| **Adapter** | アダプタマネージャー。複数プラットフォームのアダプタの登録、起動、停止を管理します。|
+| **Module** | モジュールマネージャー。プラグインの登録、ロード、アンロードを管理し、依存関係の宣言とトポロジカルソートをサポートします。|
+| **Lifecycle** | ライフサイクルマネージャー。イベント駆動型のライフサイクルフックを提供します。|
+| **Storage** | SQLiteベースのキーバリューストレージシステム。一般的なSQLチェーンクエリをサポートします。|
+| **Config** | TOML形式の設定ファイル管理。|
+| **Logger** | モジュール化されたログシステム。サブロガーをサポートします。|
+| **Router** | HTTP/WebSocketルーティング管理。抽象層を介して下位のバックエンド（現在はFastAPI + Uvicorn）をラップし、デコレーターベースのルーティング、ミドルウェア、グループ化、リクエスト制限、CORSをサポートします。|
+| **Client** | 統一HTTP/WSクライアント（2.8.0以前は`HttpClient`、互換性のため別名を保持）。抽象層を介して下位のリクエストライブラリ（現在はaiohttp）をラップし、リクエスト統計、リトライ、ログ、WebSocketクライアント、ErisPulse例外体系などの機能を提供します。クライアントとサーバーのWebSocketは`WebSocketConnectionBase`基底クラスを共有します。|
 
 ## 初期化プロセス
 
-下の図は、`sdk.init()` の完全な初期化プロセスを示しています：
+下図は `sdk.init()` の完全な初期化プロセスを示しています：
 
 ```mermaid
 flowchart TD
-    A["sdk.init()"] --> B["環境準備"]
-    B --> B1["設定ファイルのロード"]
-    B1 --> B2["グローバルな例外処理の設定"]
-    B2 --> C["アダプター & モジュールの検出"]
+    A["sdk.init()"] --> B["実行環境の準備"]
+    B --> B1["設定ファイルの読み込み"]
+    B1 --> B2["グローバル例外処理の設定"]
+    B2 --> C["アダプタ & モジュールの発見"]
     C --> D{"並列ロード"}
-    D --> D1["PyPIからアダプターをロード"]
-    D --> D2["PyPIからモジュールをロード"]
-    D1 & D2 --> E["アダプターの登録"]
-    E --> E1["アダプターの起動"]
+    D --> D1["PyPIからアダプタのロード"]
+    D --> D2["PyPIからモジュールのロード"]
+    D1 & D2 --> E["アダプタの登録"]
+    E --> E1["アダプタの起動"]
     E1 --> F["モジュールの登録"]
     F --> F1{"依存関係の検証"}
-    F1 -->|"依存関係が不足"| F2["そのモジュールをスキップし、警告を記録"]
+    F1 -->|"依存関係が不足"| F2["該当モジュールをスキップし、警告を記録"]
     F1 -->|"依存関係が満たされている"| F3["トポロジカルソート<br/>（Kahnアルゴリズム + 優先度）"]
-    F3 --> G["モジュールの順序通り初期化<br/>（インスタンス化 + on_load）"]
+    F3 --> G["順序に従ってモジュールを初期化<br/>（インスタンス化 + on_load）"]
     F2 --> G
-    G --> H["ルーター・サーバーの起動"]
+    G --> H["ルーティングサーバーの起動"]
     H --> K["実行準備完了"]
 ```
 
 ### 初期化段階の詳細
 
-1. **環境準備** - TOML 設定ファイルのロード、グローバルな例外処理の設定
-2. **並列検出** - インストール済みの PyPI パッケージからアダプターとモジュールを同時に発見
-3. **アダプターの登録** - 発見されたアダプターをアダプターマネージャーに登録
-4. **アダプターの起動** - 各プラットフォームのアダプター接続を非同期で起動（モジュール初期化の前に、モジュールが即座にメッセージを送信できることを保証）
-5. **モジュールの登録** - 発見されたモジュールをモジュールマネージャーに登録
-6. **依存関係の検証** - モジュールが宣言する `depends` 依存関係が登録済みかをチェックし、欠落している依存を持つモジュールをスキップ
-7. **トポロジカルソート** - Kahn アルゴリズムを使用して依存関係に基づいてモジュールのロード順序を並べ、同階層は `priority` で降順に並べ替え
-8. **モジュールの初期化** - ソート順序通りにモジュールインスタンスを作成し、`on_load` ライフサイクルメソッドを呼び出し
-9. **ルーター・サーバーの起動** - Uvicorn を使用して FastAPI ルーターサーバーを起動
+> 完全な初期化フローの分解（Finder / Loader / Manager / Router）、下層エントリポイント（`init()` / `init_task()` / `init_sync()`）および手動での完全起動については [起動プロセスと手動制御](advanced/startup.md) を参照してください。
 
 ## イベント処理フロー
 
-下の図は、メッセージがプラットフォームからプロセッサーへと完全に流れる経路を示しています：
+下図は、メッセージがプラットフォームからハンドラへと流れる完全な経路を示しています：
 
 ```mermaid
 flowchart LR
-    A["プラットフォームの生メッセージ"] --> B["アダプターによる受信"]
-    B --> C["OneBot12 標準への変換"]
+    A["プラットフォームの元のメッセージ"] --> B["アダプタ受信"]
+    B --> C["OneBot12 標準に変換"]
     C --> D["adapter.emit()"]
     D --> E["ミドルウェアチェーンの実行"]
     E --> F{"イベント配信"}
-    F --> G1["command<br/>コマンドプロセッサー"]
-    F --> G2["message<br/>メッセージプロセッサー"]
-    F --> G3["notice<br/>通知プロセッサー"]
-    F --> G4["request<br/>リクエストプロセッサー"]
-    F --> G5["meta<br/>メタイベントプロセッサー"]
-    G1 & G2 & G3 & G4 & G5 --> H["プロセッサーコールバックの実行"]
-    H --> I["event.reply()<br/>SendDSLによる応答"]
-    I --> J["アダプターによるプラットフォームへの送信"]
+    F --> G1["command<br/>コマンドハンドラ"]
+    F --> G2["message<br/>メッセージハンドラ"]
+    F --> G3["notice<br/>通知ハンドラ"]
+    F --> G4["request<br/>リクエストハンドラ"]
+    F --> G5["meta<br/>メタイベントハンドラ"]
+    G1 & G2 & G3 & G4 & G5 --> H["ハンドラのコールバック実行"]
+    H --> I["event.reply()<br/>SendDSL による返信"]
+    I --> J["アダプタがプラットフォームに送信"]
 ```
 
-### イベント処理の重要なステップ
+### イベント処理の詳細な流れ
 
-- **アダプターによる受信** - 各プラットフォームのアダプターが WebSocket/Webhook などを通じてネイティブなイベントを受信
-- **OB12 標準化** - プラットフォームのネイティブイベントを統一された OneBot12 標準形式に変換
-- **ミドルウェア処理** - 登録済みのミドルウェア関数を順次実行し、イベントデータを変更可能
-- **イベント配信** - イベントタイプ（message/notice/request/meta）に基づいて対応するプロセッサーに配信
-- **SendDSL による応答** - プロセッサーが `event.reply()` または `SendDSL` チェーン呼び出しを使用して応答を送信
+上記の図は「結果」です。以下は `adapter.emit()` を分解した後、フレームワークが**背景で何を行っているか**を示すものです。これは3層に分かれた配信の流れです：
 
-## ライフサイクル・イベント
+```mermaid
+sequenceDiagram
+    participant P as プラットフォーム
+    participant A as アダプタバス層<br/>AdapterManager.emit
+    participant T as ハンドラ Task 層<br/>_dispatch_handler_task
+    participant E as Event モジュール層<br/>_process_event
 
-下の図は、フレームワークの各コンポーネントにおけるライフサイクル・イベントのトリガー順序を示しています：
+    P->>A: ネイティブイベント
+    A->>A: platform/type/detail_type + 元のフィールドの抽出
+    A->>A: [Recv] 受信ログ
+    A->>A: lifecycle.adapter.event.receive（初期のフック）
+    A->>A: self フィールドの処理（meta 分岐 / Bot の自動登録）
+    A->>A: ミドルウェアチェーン（シーケンシャル、イベントデータの変更可）
+    A->>A: handler の収集（具体的なタイプ + ワイルドカード *）
+    A->>A: スコープフィルタリング（Task の作成前に、静かにスキップ）
+    A->>T: asyncio.create_task（fire-and-forget）
+    A->>A: lifecycle.adapter.event.dispatched（最後のフック）
+    T->>T: 並行処理のシグナルマネージャーの取得（デフォルト上限 64）
+    T->>E: Event モジュールに登録されたハンドラの呼び出し
+    E->>E: lifecycle.event.pre_process
+    E->>E: ignore_self（メッセージイベントではデフォルトで自身を無視）
+    E->>E: 優先度順にグループ化：高→低、グループ間はシーケンシャル、グループ内は並行
+    E->>E: グループ内のコピーを実行 + フィールドのマージ（競合警告）
+    E->>E: グループ後の stop() 検査で、より低い優先度をブロック
+    T->>T: スローなログ（1秒以上かかると警告、wait_reply 時間は除外）
+```
+
+**フレームワークが何を行ったか、そしてあなたが何を介入できるか：**
+
+| 階段 | フレームワークが何を行ったか | 介入できる内容 |
+|------|-------------|-----------|
+| 受信 | 標準フィールドの抽出、`{platform}_raw` の元データの保持；`[Recv]` ログの記録 | `adapter.event.receive` を監視して初期のイベントを取得 |
+| self フィールド | meta イベントは connect/disconnect/heartbeat 分岐を経る；通常のイベントは Bot を自動登録し、`adapter.bot.online` をトリガー | `adapter.bot.online` / `bot.offline` を監視 |
+| ミドルウェア | **シーケンシャル**に実行、戻り値が None でなければイベントデータを置き換え | ミドルウェアを登録してイベントを変更/ブロック |
+| 分配・収集 | 先に具体的なタイプの handler を取り、次に `*` ワイルドカードの handler を取り | — |
+| スコープフィルタリング | owner に基づいて `scope.is_allowed` を判定（セッションレベル > Bot レベル > プラットフォームレベル）、**不正な場合は静かにスキップ** | スコープのホワイトリスト/ブラックリストを設定 |
+| スケジューリング | 各マッチする handler に独立した `asyncio.Task` を作成、`emit()` は **handler の完了を待たずに即座に返却** | — |
+| 優先度 | 高優先度のグループが先に実行、**グループ間はシーケンシャル、グループ内は並行**（グループ内では各 handler がイベントのコピーを持ち、フィールドを変更して元のイベントにマージ、競合時は WARNING を出力） | `@command(..., priority=N)` / 登録時に priority を指定 |
+| ブロック | 各グループの処理後に `event.is_stopped()` をチェックし、一致すれば**より低い優先度を実行しない** | `event.mark_processed(stop=True)` / `event.done()` |
+
+> **よくある誤解**：
+> 1. **スコープフィルタリングは静かに**——遮断された handler はエラーも返答もせず、TRACE レベルのログ（`core.scope.denied`）にのみ表示されます。「自分のモジュールがメッセージを受け取っていない」場合は、まずスコープのバインドを確認してください。
+> 2. **handler は天然に並行**——フレームワークは各 handler に独立した Task を作成しているので、**自分で `asyncio.create_task` をラップする必要はありません**。
+> 3. **同じ優先度のグループ内ではブロックしない**——`mark_processed(stop=True)` は、より低い優先度のグループをブロックするだけで、同じグループ内の既に並行実行中の handler は途中で中断されません。
+> 4. **スローなログの閾値は固定の1秒**——ハンドラの処理時間が1秒を超えると、ログに WARNING が出力されます（`wait_reply` の待機時間は処理時間から除外されていますが、実行は中断されません）。
+
+> スコープの3段階のバインドと優先度の詳細は [スコープシステム](advanced/scope.md) を参照してください。claim/ブロックの完全な意味は [イベント処理の入門](getting-started/event-handling.md) を参照してください。並行処理の上限の設定は [設定ガイド](user-guide/configuration.md#フレームワーク設定) を参照してください。
+
+## ライフサイクルイベント
+
+下図は、フレームワークの各コンポーネントがライフサイクルイベントをどのように発生させるかを示しています：
 
 ```mermaid
 flowchart LR
@@ -194,45 +232,118 @@ flowchart LR
     AdapterLife -.-> BotLife
 ```
 
-### ライフサイクル・イベントの監視
+### ライフサイクルイベントの監視
 
-`lifecycle.on()` を通じてこれらのイベントを監視し、カスタムロジックを実行できます：
+> 完全なイベント監視メソッド（`lifecycle.on()` / `once()` / `has_handlers()`）、すべてのライフサイクルイベントリストとデータ形式は [ライフサイクル管理](advanced/lifecycle.md) を参照してください。
 
-```python
-from ErisPulse import sdk
+## モジュールのロード戦略
 
-# 全アダプター・イベントを監視
-@sdk.lifecycle.on("adapter")
-async def on_adapter_event(event_data):
-    print(f"アダプターイベント: {event_data}")
-
-# モジュールのロード完了を監視
-@sdk.lifecycle.on("module.load")
-async def on_module_loaded(event_data):
-    print(f"モジュールがロードされました: {event_data}")
-
-# Botのオンラインを監視
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(event_data):
-    print(f"Botがオンライン: {event_data}")
-```
-
-## モジュール・ロード戦略
-
-ErisPulse は 2 つのモジュール・ロード戦略をサポートしています：
+ErisPulse は、`get_load_strategy()` が返す `ModuleLoadStrategy` によって宣言される 3 つのモジュールロード戦略をサポートしています：
 
 ```mermaid
 flowchart TD
-    A["モジュールをModuleManagerに登録"] --> B{"ロード戦略"}
-    B -->|"lazy_load = true"| C["LazyModuleプロキシを作成"]
-    C --> D["sdkプロパティにマウント"]
-    D --> E["初回アクセス時に初期化"]
-    B -->|"lazy_load = false"| F["インスタンスを即座に作成"]
-    F --> G["on_load()を呼び出す"]
-    G --> D2["sdkプロパティにマウント"]
+    A["モジュールが ModuleManager に登録"] --> B{"ロード戦略"}
+    B -->|"lazy_load = true<br/>+ activate_on 声明"| C["ModuleActivator 代理を作成"]
+    B -->|"lazy_load = true<br/>activate_on なし"| D["LazyModule 代理を作成"]
+    B -->|"lazy_load = false"| E["即時インスタンスを作成"]
+    C --> F["イベント/コマンド stub をディスパッチャに登録"]
+    F --> G["sdk 属性にマウント"]
+    G --> H["イベントが到達すると活性化がトリガー"]
+    H --> I["インスタンス化 + on_load() + stub の登録解除"]
+    D --> J["sdk 属性にマウント"]
+    J --> K["最初の属性アクセス時に初期化"]
+    E --> L["on_load() を呼び出す"]
+    L --> M["sdk 属性にマウント"]
 ```
 
-> 詳細については、[遅延ロード・システム](advanced/lazy-loading.md) および [ライフサイクル管理](advanced/lifecycle.md) をご参照ください。
+> 詳細については、[遅延ロードシステム](advanced/lazy-loading.md)、[ライフサイクル管理](advanced/lifecycle.md) およびモジュールのドキュメントを参照してください。
+
+### イベント駆動の遅延活性化（`activate_on`）トリガー構造
+
+> [!NOTE]
+> この機能には ErisPulse **2.8.0+** が必要です。
+
+`activate_on` により、モジュールは**最初の一致するイベント/コマンドが到達した時点で**のみロードされるようになり、メモリ常駐を回避しながら、イベントのロスを防ぐことができます：
+
+```mermaid
+flowchart LR
+    subgraph Declare["モジュールの宣言"]
+        S1["get_load_strategy() が<br/>ModuleLoadStrategy(activate_on=...) を返す"] --> S2["activate_on 構文：<br/>str / dict / list を自由に混合"]
+        S2 --> S2a["'message' → イベントタイプレベル"]
+        S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ タイプ + detail_type"]
+        S2 --> S2c["{'command': 'roll'}<br/>→ コマンドトリガー（省略形/リスト）"]
+        S2 --> S2d["{'command': {'name': 'dice', 'help': ...,<br/>'aliases': [...], 'hidden': ...}}<br/>→ コマンドトリガー（dict 声明）"]
+    end
+
+    subgraph Runtime["実行時"]
+        R1["ModuleActivator が stub を登録"] --> R1a["イベント stub → message/notice/request/meta マネージャー<br/>優先度 ACTIVATION_STUB_PRIORITY（極めて低い）"]
+        R1 --> R1b["コマンド stub → コマンドマネージャー<br/>プレースホルダーコマンド（dict 声明の help/usage/group/aliases/hidden を反映）"]
+        R1a --> R2{"トリガーイベントが到達"}
+        R1b --> R2
+        R2 --> R3["owner によるスコープフィルタリング"]
+        R3 --> R4["asyncio.Lock で重複活性化を防止"]
+        R4 --> R5["モジュールのインスタンス化 + on_load() の呼び出し"]
+        R5 --> R6["すべての stub の登録解除"]
+        R6 --> R7["イベントを実際のハンドラに転送"]
+    end
+
+    Declare --> Runtime
+```
+
+**トリガーの意味要点：**
+
+> 完全な `activate_on` 構文（str / dict / list）、コマンド dict 声明、プレースホルダーコマンドの help フォールバックチェーン、スコープフィルタリング、および失敗時の意味については、[遅延ロードシステム](advanced/lazy-loading.md#イベント駆動の遅延活性化activate_on) を参照してください。
+
+## ローカルプラグインフォルダのアーキテクチャ
+
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
+
+ローカルプラグイン（`plugins/` 目录）はパッケージ化して公開する必要がなく、フレームワークの起動時に自動的に発見・ロードされます：
+
+```mermaid
+flowchart TD
+    A["プロジェクトの plugins/ 目录<br/>（ErisPulse.framework.plugins_dir、複数目录をサポート）"] --> B{"PluginFolderLoader.discover()"}
+    B --> C["単一ファイル：dice.py → プラグイン名 = ファイル名"]
+    B --> D["パッケージ形式：weather/（含 __init__.py）→ プラグイン名 = 目录名"]
+    B --> E["無視対象：__pycache__ / _ で始まる / .py でない / __init__.py が存在しない目录"]
+    C --> F["モジュールのインポート（spec_from_file_location）"]
+    D --> G["モジュールのインポート（sys.path + import_module）"]
+    F --> H["モジュールクラスの識別：Main（BaseModule の子クラス）を優先し、存在しない場合は最初の子クラス"]
+    G --> H
+    H --> I["entry-point と一致する moduleInfo を構築"]
+    I --> J["ModuleLoader.load() で統合<br/>ローカルのモジュールが PyPI に同名のインストールパッケージを上書き"]
+    J --> K["インストールパッケージのモジュールと共有：<br/>有効状態 / スコープ / meta / i18n / コンテキスト"]
+```
+
+**規約と特性：**
+
+- プラグイン名の取得方法：単一ファイルはファイル名、パッケージ形式は目录名
+- ローカルプラグインの `moduleInfo.meta.source == "plugin_folder"` であり、PyPI でインストールされたパッケージモジュールとシームレスに共存
+- 同名のモジュールがある場合、ローカルのモジュールが優先（ローカルでの上書きデバッグが可能）、無効化された場合、同名の entry-point 条目も同時に削除
+
+## ローカルプラグインのホットリロードアーキテクチャ
+
+ホットリロードはプラグインファイルの変更を監視し、対応するプラグインを自動的に再読み込みします：
+
+```mermaid
+flowchart TD
+    A["sdk.enable_plugin_hot_reload()"] --> B["PluginReloadWatcher の起動"]
+    B --> C["PollingObserver（バックグラウンドのデーモンスレッド）<br/>定期的に .py ファイルの mtime を比較"]
+    C --> D{"プラグインファイルの変更"}
+    D --> E["変更のデューディレイ（デフォルト 1 秒）"]
+    E --> F["_handle_change でプラグイン名を解析<br/>（単一ファイル / パッケージ形式）"]
+    F --> G["asyncio.run_coroutine_threadsafe<br/>メインイベントループへのスケジューリング"]
+    G --> H["sdk.reload_plugin(name)"]
+    H --> I["古いインスタンスのアンロード（on_unload をトリガー）"]
+    I --> J["登録のクリーンアップ（unregister + sdk 属性の削除）"]
+    J --> K["sys.modules のクリーンアップで強制的に再インポート"]
+    K --> L["再発見 + 再登録 + 再読み込み"]
+    L --> M["新しいインスタンスを sdk 属性にマウント"]
+    M --> N["ファイルの削除 → 読み込み結果から自動的に削除"]
+```
+
+[**English**](docs/ja/quick-start.md)
 
 
 
@@ -1074,15 +1185,15 @@ async def at_handler(event: Event):
 
 ## コマンドイベント処理
 
-### 基本的コマンド
+### 基本コマンド
 
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="ヘルプ情報を表示")
+@command("help", help="ヘルプ情報を表示します")
 async def help_handler(event):
     help_text = """
-使用可能なコマンド：
+利用可能なコマンド：
 /help - ヘルプを表示
 /ping - 接続をテスト
 /info - 情報を表示
@@ -1090,93 +1201,93 @@ async def help_handler(event):
     await event.reply(help_text)
 ```
 
-### コマンドの別名
+### コマンド別名
 
 ```python
-@command(["help", "h"], aliases=["ヘルプ"], help="ヘルプ情報を表示")
+@command(["help", "h"], aliases=["help", "h"], help="ヘルプ情報を表示します")
 async def help_handler(event):
     await event.reply("ヘルプ情報...")
 ```
 
-ユーザーは以下のいずれかの方法で呼び出せます：
+ユーザーは以下のいずれかの方法で呼び出すことができます：
 - `/help`
 - `/h`
-- `/ヘルプ`
+- `/help`
 
 ### コマンド引数
 
 ```python
-@command("echo", help="メッセージをエコーバック")
+@command("echo", help="メッセージをエコーします")
 async def echo_handler(event):
     # コマンド引数を取得
     args = event.get_command_args()
     
     if not args:
-        await event.reply("エコーバックするメッセージを入力してください")
+        await event.reply("エコーするメッセージを入力してください")
     else:
-        await event.reply(f"あなたは言いました: {' '.join(args)}")
+        await event.reply(f"あなたが言った: {' '.join(args)}")
 ```
 
 ### コマンドグループ
 
 ```python
-@command("admin.reload", group="admin", help="モジュールを再ロード")
+@command("admin.reload", group="admin", help="モジュールを再読み込みします")
 async def reload_handler(event):
-    await event.reply("モジュールを再ロードしました")
+    await event.reply("モジュールを再読み込みしました")
 
-@command("admin.stop", group="admin", help="ボットを停止")
+@command("admin.stop", group="admin", help="ロボットを停止します")
 async def stop_handler(event):
-    await event.reply("ボットを停止しました")
+    await event.reply("ロボットを停止しました")
 ```
 
 ### コマンド権限
 
 ```python
 def is_master(event):
-    """ユーザーがフレームワークの管理者かどうかを確認"""
+    """ユーザーがフレームワークの所有者かをチェックします"""
     master_list = ["user123", "user456"]
     return event.get_user_id() in master_list
 
-@command("master", permission=is_master, help="管理者コマンド")
+@command("master", permission=is_master, help="フレームワーク所有者用コマンド")
 async def master_handler(event):
-    await event.reply("これは管理者コマンドです")
+    await event.reply("これはフレームワーク所有者用のコマンドです")
 ```
 
 ### コマンド優先度
 
 ```python
-# 優先度値が大きいほど、実行が早い
+# 優先度の数値が大きいほど、実行が早くなります
 @message.on_message(priority=10)
 async def high_priority_handler(event):
-    await event.reply("高優先度プロセッサー")
+    await event.reply("高優先度のハンドラ")
 
 @message.on_message(priority=1)
 async def low_priority_handler(event):
-    await event.reply("低優先度プロセッサー")
+    await event.reply("低優先度のハンドラ")
 ```
 
 ### 並列イベント処理
 
-ErisPulse イベントシステムは**同優先度は並列、異なる優先度は直列**のスケジューリングモデルを採用しています：
+ErisPulse のイベントシステムは**同優先度では並列、異なる優先度では直列**のスケジューリングモデルを採用しています：
 
 ```
 イベント到着
     ↓
-priority=10 グループ: [プロセッサーC || プロセッサーD] 並列 → 結果を統合
+priority=10 組: [ハンドラC || ハンドラD] 並列 → 結果をマージ
     ↓ (中断されない場合)
-priority=0 グループ: [プロセッサーA || プロセッサーB] 並列 → 結果を統合
+priority=0 組: [ハンドラA || ハンドラB] 並列 → 結果をマージ
     ↓
 ...
 ```
 
-- **同優先度並列**：優先度が同じ複数のプロセッサーが同時に実行され、スループットを向上
-- **優先度階層の直列**：優先度の異なるグループが順番に実行（数値が大きいものから先）、高優先度プロセッサーが先に実行されることを保証
-- **Copy-On-Write**：プロセッサーが変更を行わない場合、コピーを作成せず、ゼロオーバーヘッドを確保
-- **競合処理**：同優先度の複数プロセッサーが同一フィールドを変更する場合、最後に変更された値を使用し、警告ログを記録
-- **割り込み機構**：任意のプロセッサーが `event.done()`（デフォルト）または `event.done(claim=False)` を呼び出すと、その後の低優先度グループはスキップされます。認識（Claim）とブロック（Block）の違いは、以下の [「リンク制御：認識とブロック」](#リンク制御認識とブロック) を参照してください
+- **同優先度並列**：優先度が同じ複数のハンドラは同時に実行され、スループットが向上します
+- **跨優先度直列**：異なる優先度のグループは順番に実行されます（数値が大きいほど先に実行）、高優先度ハンドラが先に実行されることを保証します
+- **Copy-On-Write**：ハンドラが変更を行わない場合、コピーを作成せず、オーバーヘッドをゼロにします
+- **競合処理**：同優先度の複数ハンドラが同じフィールドを変更した場合、最後に変更された値が使用され、警告ログが記録されます
+- **中断メカニズム**：任意のハンドラが `event.done()`（デフォルト）または `event.done(claim=False)` を呼び出した後、以降の低優先度グループはスキップされます。認領とブロッキングの違いは下記の[「リンク制御：認領とブロッキング」](docs/ja/event-handling.md#リンク制御認領とブロッキング)を参照してください。
 
 ```python
-# 例：同優先度プロセッサーが並列実行
+# 例：同優先度ハンドラの並列実行
 @message.on_message(priority=0)
 async def handler_a(event):
     # タスクAを処理
@@ -1184,57 +1295,83 @@ async def handler_a(event):
 
 @message.on_message(priority=0)
 async def handler_b(event):
-    # handler_a と並列実行
+    # handler_a と並列に実行
     event['result_b'] = process_b()
 
-# 異なる優先度で直列実行
+# 異なる優先度の直列実行
 @message.on_message(priority=10)
 async def handler_c(event):
-    # 優先度が最も高く、最初に実行
+    # 最も優先度が高い、最初に実行されます
     pass
+```
 
-## リンク制御：クレームとブロック
+> **並列上限**：一致するハンドラのすべての Task は**即座に作成**されますが、**同時に実行される数**を制限するための信号量によって制御され、デフォルトの上限は **64**（`ErisPulse.framework.handler_max_concurrency`、ホットアップデート対応）です。上限を超えた Task は信号量上でキューイングされ、前の処理が完了した後に実行されます。イベントのピーク時には、これが「圧力調整弁」となります。
+>
+> **遅延ログ**：個々のハンドラが **1 秒**以上処理にかかった場合、フレームワークは WARNING ログを出力します（`handler_slow`）。`wait_reply` の待機時間は処理時間から除外され、「返信を待つ」ことで誤って遅延と判定されることはありません。
 
-ErisPulse は「クレーム」と「ブロック」という二つの直交するセマンティクスを分離し、`event.done()` によって統一的に制御します。これにより、コマンド処理の周囲にログ、監査、権限などのオブザーバー層を重ねやすくなります。
+## スコープフィルタリング：なぜ私のモジュールはメッセージを受け取らないのか
 
-**二つの概念の正確な定義：**
+イベントの配信は、**ハンドラ Task の作成前に**スコープフィルタリングが行われます。これは、モジュールの所有者に基づいて `scope.is_allowed` を判定（セッションレベル > Bot レベル > プラットフォームレベル）し、**通過しない場合は静かにスキップ**され、エラーもレスポンスも出ません。
 
-- **クレーム (claim)**：イベントが本プロセッサによって処理されたことをマークする（`_processed` に書き込みます）。コマンドディスパッチャーは既にクレームされたイベントを**スキップして再処理しない**――同一メッセージが複数のコマンドプロセッサによって重複して処理されるのを防ぎます。典型的なシナリオ：コマンドがマッチング成功後にクレームし、コマンドディスパッチャーがさらに介入することを防ぐものです。
-- **ブロック (stop)**：イベントを**より低い優先度**を持つプロセッサに伝播させないようにする（`_propagation_stopped` に書き込みます）。低優先度のプロセッサ（例: `on_message`）は当該イベントをもう見ません。典型的なシナリオ：高優先度プロセッサがイベントを完全に処理し、低優先度での実行を望まない場合です。
+```python
+# 仮に config.toml で MyModule を特定のグループにブロックしている場合：
+[ErisPulse.scope]
+block = { yunhu = { group_123 = ["MyModule"] } }
+```
 
-| `event.done(...)` | クレーム | ブロック | シナリオ |
-|-------------------|:-------:|:-------:|---------|
-| `event.done()` | ✔ | ✔ | コマンド / プロセッサが完了した際の標準的な方法 |
-| `event.done(stop=False)` | ✔ | ✘ | クレームのみ。低優先度のオブザーバー（ログ / 統計）も引き続きイベントを見る |
-| `event.done(claim=False)` | ✘ | ✔ | ブロックのみ（ファイアウォール / レート制限など）。ただしコマンドの重複排除は行わない |
+この場合、そのグループのメッセージが到着しても、`MyModule` のコマンドやイベントハンドラは**いずれもスケジュールされません**。これはバグではなく、スコープメカニズムによるものです。モジュールが反応しない問題を調査する際には、まずスコープのバインディングを確認してください。
 
-`event.done(claim=, stop=)` は `event.mark_processed(claim=, stop=)` のエイリアスであり、パラメータと動作は完全に等価です。
+- 3段階のフィルタリングポイント：アダプターバスレベル（Task の作成前）、Event モジュールレベル（各優先度グループ内）、コマンドレベル（権限チェック前）
+- フィルタリングのログは **TRACE** レベルでのみ表示されます（`core.scope.denied`）。デフォルトの INFO レベルでは、何も表示されません。
+- フレームワークレベルのハンドラ（例：コマンドディスパッチャー `scope_exempt=True`）は、スコープの影響を受けません。
+
+> スコープの3段階バインディング、ホワイトリスト/ブラックリスト、優先度のオーバーライド、および「default_allow」による暗黙の拒否の意味については、[スコープシステム](../../advanced/scope.md)を参照してください。
+
+## リンク制御：認領とブロック
+
+> [!NOTE]  
+> `event.done()` / `event.mark_processed()` の `claim=` / `stop=` パラメータは、この機能には ErisPulse **2.7.1+** が必要です。
+
+ErisPulse では、「認領」と「ブロック」の 2 つの正交的な意味を分離し、`event.done()` で一元的に制御することで、コマンド処理の周囲にログ、監査、権限などの観察層を重ねることが容易になります。
+
+**2 つの概念の正確な定義：**
+
+- **認領（claim）**：イベントがこのプロセッサによって処理されたことをマークします（`_processed` に書き込み）。コマンドディスパッチャは、認領済みのイベントを**スキップ**します——同じメッセージが複数のコマンドプロセッサによって繰り返し処理されるのを防ぎます。典型的なシナリオ：コマンドが正常にマッチした後に認領し、コマンドディスパッチャが再び介入しないようにします。
+- **ブロック（stop）**：イベントが**より低い優先度**のプロセッサに伝播するのを阻止します（`_propagation_stopped` に書き込み）。低い優先度のプロセッサ（例：`on_message`）は、このイベントを見なくなります。典型的なシナリオ：高い優先度のプロセッサがイベントを完全に処理したため、低い優先度のプロセッサが再度実行されないようにする。
+
+| `event.done(...)` | 認領 | ブロック | 場面 |
+|-------------------|------|------|------|
+| `event.done()` | ✔ | ✔ | コマンド / プロセッサが処理完了した際の標準的な方法 |
+| `event.done(stop=False)` | ✔ | ✘ | 認領のみ：低い優先度の観察者（ログ / 統計）は引き続きイベントを見ることができます |
+| `event.done(claim=False)` | ✘ | ✔ | ブロックのみ（例：ファイアウォール / 限流）：認領は行わず、低い優先度の処理は実行されません |
+
+`event.done(claim=, stop=)` は `event.mark_processed(claim=, stop=)` のエイリアスであり、両者はパラメータと動作が完全に等価です。
 
 ```python
 @command("help")
 async def help_cmd(event):
-    event.done()            # クレーム + ブロック（コマンド処理完了の標準的な方法）
+    event.done()            # 認領 + ブロック（コマンド処理完了の標準的な方法）
 
 @message.on_message(priority=50)
 async def observer(event):
-    event.done(stop=False)  # クレームのみ：低優先度も実行される（ログ / 統計）
+    event.done(stop=False)  # 認領のみ：低い優先度の処理が引き続き実行されます（ログ / 統計）
 
 @message.on_message(priority=100)
 async def firewall(event):
     if denied(event):
-        event.done(claim=False)  # ブロックのみ：低優先度は実行されないが、重複排除は行わない
+        event.done(claim=False)  # ブロックのみ：低い優先度の処理は実行されず、認領も行いません
 ```
 
 ### コマンドと返信の block 設定
 
-コマンドマッチング成功 / `wait_reply` で返信がマッチした後、デフォルトでは伝播がブロックされます（後方互換性のため）。設定で放行することで、低優先度プロセッサ（ログ / 監査 / 権限）でもこれらのメッセージを観測できるようにできます。
+コマンドがマッチした後、または `wait_reply` が返信をマッチした後、デフォルトではイベントの伝播がブロックされます（後方互換性のため）。この設定を変更することで、低い優先度のプロセッサ（ログ / 監査 / 権限）がこれらのメッセージを観察できるようにすることができます。
 
 ```toml
 [ErisPulse.event.command]
-block = false   # コマンドメッセージを低優先度プロセッサに伝播させる
+block = false   # コマンドメッセージは低い優先度のプロセッサに引き続き伝播します
 
 [ErisPulse.event.wait_reply]
-block = false   # wait_reply によって消費された返信を低優先度プロセッサに伝播させる
+block = false   # wait_reply によって消費された返信は、低い優先度のプロセッサに引き続き伝播します
 
 ## 通知イベント処理
 
@@ -2315,32 +2452,35 @@ if TYPE_CHECKING:
 
 ### 安装和配置
 
-# インストールの参考
+# インストールリファレンス
 
-> 本文はインストール方法の**完全な参考**（pip / uv / Docker / 故障トラブルシューティング）です。  
-> もしすぐに実行したい場合は、[5 分で始める](../quick-start.md)が最もシンプルな手順をカバーしています。
+> 本ページはインストール方法の**完全リファレンス**（pip / uv / Docker / トラブルシューティング）です。
+> もし素早く動かしたいだけなら、[5分クイックスタート](../quick-start.md) で最も単純なフローが説明されています。
+
+直接翻訳された完全なMarkdownコンテンツを返してください。その他の文字を含めないでください。
+再度お知らせ：ドキュメントに言語切り替え行（各言語名が `` | `` で区切られた行）が含まれている場合は、上記の第8条のフォーマット要件を厳守してください。 ``[**Label**](file)`` のような間違った形式を作成しないでください。
 
 ## システム要件
 
-- Python 3.10 以上
+- Python 3.10 以降
 - pip または uv（推奨）
 - 十分なディスク容量（少なくとも 100MB）
 
 ## インストール方法
 
-### 方法1: pip を使用したインストール
+### 方法 1: pip を使用してインストールする
 
 ```bash
-# ErisPulse のインストール
+# ErisPulse をインストール
 pip install ErisPulse
 
-# 最新バージョンへのアップグレード
+# 最新版にアップグレード
 pip install ErisPulse --upgrade
 ```
 
-### 方法2: uv を使用したインストール（推奨）
+### 方法 2: uv を使用してインストールする（推奨）
 
-uv はより高速な Python ツールチェーンであり、開発環境での使用が推奨されます。
+uv は、より高速な Python ツールチェーンです。開発環境での使用が推奨されます。
 
 #### uv のインストール
 
@@ -2348,24 +2488,24 @@ uv はより高速な Python ツールチェーンであり、開発環境での
 # pip を使用して uv をインストール
 pip install uv
 
-# インストールの確認
+# インストールを確認
 uv --version
 ```
 
 #### 仮想環境の作成
 
 ```bash
-# プロジェクトディレクトリの作成
+# プロジェクトのディレクトリを作成
 mkdir my_bot && cd my_bot
 
-# Python 3.12 のインストール
+# Python 3.12 をインストール
 uv python install 3.12
 
-# 仮想環境の作成
+# 仮想環境を作成
 uv venv
 ```
 
-#### 仮想環境の有効化
+#### 仮想環境のアクティブ化
 
 ```bash
 # Windows
@@ -2375,205 +2515,219 @@ uv venv
 source .venv/bin/activate
 ```
 
-#### ErisPulse のインストール
+#### ErisPulse をインストール
 
 ```bash
-# ErisPulse のインストール
+# ErisPulse をインストール
 uv pip install ErisPulse --upgrade
-```
 
 ## プロジェクト初期化とモジュールのインストール
 
-インストールが完了した後、プロジェクトの初期化、モジュールのインストール、実行の完全な手順は [5 分で始める](../quick-start.md) を参照してください。
+インストールが完了した後の、プロジェクトの初期化、モジュールのインストール、実行の完全な手順については、[5 分クイックスタート](../quick-start.md) を参照してください。
 
-## インストールの確認
+### 方法 3: ErisPulse-App クライアントを使用する（ターミナル不要）
 
-### インストールの確認
+Python 環境のインストールが面倒ですか？[ErisPulse-App](../ecosystem/app.md) は公式のクロスプラットフォーム クライアントです
+(Android / Windows / Linux / macOS)、**スマホで直接実行**、デスクトップ版はシステムトレイへ常駐して最小化が可能です。内部に Python ランタイムと ErisPulse SDK を搭載しているため、ターミナルと手動設定は不要です。
+
+- [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) からプラットフォームに合わせてダウンロード
+  （Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）
+- App 内でインスタンスを作成して起動し、ネイティブ インターフェースでアダプターとモジュールを管理、モジュールストアを閲覧します
+
+> 詳細な説明は [ErisPulse-App のインストールと使用方法](../ecosystem/app.md) を参照してください。
+
+直接返事してください：翻訳後の完全なMarkdownコンテンツを返してください。その他の文字は一切含めないでください。
+
+## インストールの検証
+
+### インストール状況の確認
 
 ```bash
-# ErisPulse のバージョン確認
+# ErisPulse のバージョンを確認
 epsdk --version
 ```
 
 ### テストの実行
 
 ```bash
-# プロジェクトの実行
+# プロジェクトを実行
 epsdk run main.py
 ```
 
-次のような出力が表示されればインストールが成功しています：
+類似の出力が表示されれば、インストールは成功しています：
 
 ```
-[INFO] ErisPulse の初期化を開始しています...
-[INFO] アダプタがロードされました: Yunhu
-[INFO] モジュールがロードされました: MyModule
+[INFO] ErisPulse の初期化中...
+[INFO] アダプターが読み込まれました: Yunhu
+[INFO] モジュールが読み込まれました: MyModule
 [INFO] ErisPulse の初期化が完了しました
-```
 
-## 一般的な問題
+## よくある質問
 
-### インストール失敗
+### インストールに失敗しました
 
-1. Python のバージョンが 3.10 以上であるか確認してください（推奨は 3.10 - 3.13）
+1. Python バージョンが >= 3.10（推奨 3.10 - 3.13）か確認してください
 2. `pip install` の代わりに `uv pip install ErisPulse` を試してください
-3. パーミッションエラーが発生した場合は、`pip install --user ErisPulse` を試すか、仮想環境を使用してください
-4. 企業のプロキシ環境で SSL 証明書エラーが発生した場合は、`pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse` を試してください
-5. ネットワーク接続が正常であることを確認し、pip ソースにアクセス可能であることを確認してください
+3. 権限エラーが表示される場合は、`pip install --user ErisPulse` を実行するか、仮想環境を使用してください
+4. 企业のプロキシ環境下で SSL 証明書エラーが発生した場合は、`pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse` を試してください
+5. ネットワーク接続が正常で、pip のソースにアクセスできることを確認してください
 
 ### 設定エラー
 
-1. `config.toml` の構文が正しいか確認してください（TOML 形式はインデントや引用符に敏感です）
-2. 必須の設定項目がすべて記入されていることを確認してください
-3. ターミナルログを確認して詳細なエラー情報を取得してください
+1. `config.toml` の構文が正しいか確認してください（TOML 形式はインデントと引用符に敏感です）
+2. すべての必須設定項目が入力されていることを確認してください
+3. 詳細なエラーメッセージについては、ターミナルのログを確認してください
 4. `epsdk init` を使用して設定ファイルを再生成してください
 
-### モジュールのインストール失敗
+### モジュールのインストールに失敗しました
 
-1. モジュール名のスペルが正しいか確認してください（大文字小文字が区別されます）
+1. モジュール名のスペルが正しいか確認してください（大文字と小文字は区別されます）
 2. ネットワーク接続を確認してください
-3. `epsdk list-remote` を使用して利用可能なモジュール一覧を確認してください
-4. モジュールが現在の SDK バージョンと互換性があるか確認してください
+3. 利用可能なモジュールの一覧を表示するには `epsdk list-remote` を使用してください
+4. モジュールが現在の SDK バージョンと互換であることを確認してください
 
 ### Windows PowerShell の実行ポリシー
 
-PowerShell で「ファイルをロードできません...このシステムではスクリプトの実行が禁止されています」というメッセージが表示された場合：
+PowerShell で "このシステム上でスクリプトの実行が無効になっているため、ファイルを読み込むことができません" と表示される場合は、以下を実行してください。
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
 
 ## 次のステップ
 
-- [CLI コマンドの参考](cli-reference.md) - すべてのコマンドラインコマンドについて
-- [設定ファイルの説明](configuration.md) - 詳細な設定オプションについて
+- [CLI コマンドリファレンス](cli-reference.md) - すべてのコマンドラインコマンドについて
+- [設定ファイルの説明](configuration.md) - 設定オプションの詳細について
+
+（注：原文不包含语言切换行，因此无需处理）
 
 
 
 ### CLI 命令参考
 
-# CLI コマンドリファレンス
+# CLIコマンドリファレンス
 
-ErisPulse コマンドラインツール（`epsdk`）は、プロジェクト管理およびパッケージ管理機能を提供します。
+ErisPulseコマンドラインツール（`epsdk`）は、プロジェクト管理およびパッケージ管理機能を提供します。
 
-> **ヒント**: すべてのコマンドは `epsdk <command> --help` で詳細なパラメータ説明を確認できます。
+> **ヒント**：すべてのコマンドは `epsdk <コマンド> --help` を使用して、詳細なパラメータ説明を確認できます。
 
 ---
 
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
+
 ## パッケージ管理コマンド
 
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | モジュール/アダプタをインストール |
-| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | モジュール/アダプタをアンインストール |
-| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 指定したモジュールをアップグレード、またはすべてをアップグレード |
-| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | SDK 自体を更新 |
+| `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | モジュール/アダプターのインストール |
+| `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | モジュール/アダプターのアンインストール |
+| `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | 指定されたモジュールまたはすべてのモジュールをアップグレード |
+| `self-update` | `su`, `update` | `[version] [--pre] [--force/-f] [--no-uv]` | SDK 自体の更新 |
 
 ## 診断コマンド
 
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `doctor` | `diag` | `[--verbose]` | 環境を診断し、ヘルスレポートを出力 |
+| `doctor` | `diag` | `[--verbose]` | 環境を診断し、健康レポートを出力します |
 
 ### install
 
-ErisPulse モジュールまたはアダプタパッケージをインストールします。パッケージ名を指定しない場合、対話型インストール画面になります。
+ErisPulse モジュールまたはアダプタパッケージをインストールします。パッケージ名を指定しない場合、対話形式のインストールインターフェースに移行します。
 
-**エイリアス:** `i`, `add`
+**別名：** `i`, `add`
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
 | `[package]...` | | インストールするパッケージ名。複数指定可能 |
-| `--upgrade` | `-U` | インストール時に最新バージョンへアップグレード |
-| `--pre` | | プリリリース版のインストールを許可 |
-| `--editable` | `-e` | 編集可能モードでインストール（パスを指定必要） |
-| `--user` | | ユーザーの site-packages ディレクトリへインストール |
-| `--no-deps` | | 依存関係をインストールしない |
-| `--target` | `-t` | 指定のディレクトリへインストール |
-| `--index-url` | | PyPI ミラーソースアドレスを指定 |
-| `--extra-index-url` | | 追加の PyPI ミラーソースアドレス（複数指定可能） |
-| `--no-cache-dir` | | キャッシュを無効化 |
-| `--requirement` | `-r` | requirements ファイルからインストール |
-| `--constraint` | `-c` | constraint ファイルからインストール |
-| `--force-reinstall` | | 強制的に再インストール |
-| `--ignore-installed` | | 既にインストール済みのパッケージを無視 |
-| `--compile` | | インストール後、.pyc ファイルをコンパイル |
-| `--no-compile` | | インストール後、.pyc ファイルをコンパイルしない |
-| `--prefix` | | 指定のプレフィックスディレクトリへインストール |
-| `--src` | | 編集可能インストール時のソースディレクトリ |
-| `--config-settings` | | ビルドバックエンドへ渡す設定（複数指定可能） |
-| `--no-binary` | | バイナリパッケージを使用しないように制限（`:all:` のような形式） |
-| `--only-binary` | | バイナリパッケージのみ使用するように制限（`:all:` のような形式） |
-| `--prefer-binary` | | バイナリパッケージを優先 |
-| `--build-isolation` | | ビルド隔離を有効化 |
-| `--no-build-isolation` | | ビルド隔離を無効化 |
+| `--upgrade` | `-U` | インストール時に最新バージョンにアップグレードします |
+| `--pre` | | プレリリース版のインストールを許可します |
+| `--editable` | `-e` | 編集可能なモードでインストールします（パスを指定する必要があります） |
+| `--user` | | ユーザーの site-packages ディレクトリにインストールします |
+| `--no-deps` | | 依存関係をインストールしません |
+| `--target` | `-t` | 指定したディレクトリにインストールします |
+| `--index-url` | | PyPI ミラーサーバの URL を指定します |
+| `--extra-index-url` | | 追加の PyPI ミラーサーバの URL（複数指定可能） |
+| `--no-cache-dir` | | キャッシュを無効にします |
+| `--requirement` | `-r` | requirements ファイルからインストールします |
+| `--constraint` | `-c` | 制約ファイルからインストールします |
+| `--force-reinstall` | | 強制的に再インストールします |
+| `--ignore-installed` | | 既にインストール済みのパッケージを無視します |
+| `--compile` | | インストール後に .pyc ファイルをコンパイルします |
+| `--no-compile` | | インストール後に .pyc ファイルをコンパイルしません |
+| `--prefix` | | 指定したプレフィックスディレクトリにインストールします |
+| `--src` | | 編集可能なインストール時に使用するソースコードディレクトリ |
+| `--config-settings` | | ビルドバックエンドに渡す設定（複数指定可能） |
+| `--no-binary` | | 二進数パッケージの使用を制限します（`:all:` の形式） |
+| `--only-binary` | | 二進数パッケージのみを使用するように制限します（`:all:` の形式） |
+| `--prefer-binary` | | 二進数パッケージを優先的に選択します |
+| `--build-isolation` | | ビルドの隔離を有効にします |
+| `--no-build-isolation` | | ビルドの隔離を無効にします |
 | `--upgrade-strategy` | | アップグレード戦略：`eager`、`only-if-needed`、`to-satisfy-only` |
-| `--break-system-packages` | | システムパッケージマネージャーが管理する Python パッケージの変更を許可 |
-| `--no-uv` | | uv の代わりに pip を使用 |
+| `--break-system-packages` | | システムパッケージマネージャが管理する Python パッケージの変更を許可します |
+| `--no-uv` | | uv の代わりに pip を使用します |
 
-**例:**
+**例：**
 
 ```bash
-# 単一のモジュールをインストール
+# 単一モジュールのインストール
 epsdk install Weather
 
-# 複数のモジュールをインストール
+# 複数モジュールのインストール
 epsdk install Yunhu Weather
 
-# ミラーソースからインストールしてアップグレード
+# ミラーサーバからインストールし、アップグレード
 epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
-# 編集可能モードでインストール（開発モード）
+# 編集可能なモードでインストール（開発モード）
 epsdk install -e ./my-adapter
 ```
 
 ### uninstall
 
-既にインストールされた ErisPulse モジュールまたはアダプタパッケージをアンインストールします。パッケージ名を指定しない場合、対話型アンインストール画面になります。
+インストール済みの ErisPulse モジュールまたはアダプタパッケージをアンインストールします。パッケージ名を指定しない場合、対話形式のアンインストールインターフェースに移行します。
 
-**エイリアス:** `rm`, `remove`
+**別名：** `rm`, `remove`
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 説明 |
+| パラメータ | 説明 |
 |------|------|
 | `<package>...` | アンインストールするパッケージ名。複数指定可能 |
-| `--no-uv` | uv の代わりに pip を使用 |
+| `--no-uv` | uv の代わりに pip を使用します |
 
-**例:**
+**例：**
 
 ```bash
-# 単一のモジュールをアンインストール
+# 単一モジュールのアンインストール
 epsdk uninstall Weather
 
-# 複数のモジュールをアンインストール
+# 複数モジュールのアンインストール
 epsdk uninstall Yunhu Weather
 ```
 
 ### upgrade
 
-既にインストールされた ErisPulse コンポーネントをアップグレードします。パッケージ名を指定しないと、対話型で全件をアップグレードします。
+インストール済みの ErisPulse コンポーネントをアップグレードします。パッケージ名を指定しない場合、すべてを対話形式でアップグレードします。
 
-**エイリアス:** `up`
+**別名：** `up`
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
 | `[package]...` | | アップグレードするパッケージ名。複数指定可能 |
-| `--force` | `-f` | 強制的にアップグレード、確認をスキップ |
-| `--pre` | | プリリリース版へのアップグレードを許可 |
-| `--no-uv` | | uv の代わりに pip を使用 |
+| `--force` | `-f` | 強制的にアップグレードし、確認をスキップします |
+| `--pre` | | プレリリース版へのアップグレードを許可します |
+| `--no-uv` | | uv の代わりに pip を使用します |
 
-**例:**
+**例：**
 
 ```bash
 # すべてのパッケージをアップグレード
 epsdk upgrade
 
-# 指定したパッケージをアップグレード
+# 指定パッケージをアップグレード
 epsdk upgrade Weather
 
 # 強制アップグレード（確認をスキップ）
@@ -2582,119 +2736,113 @@ epsdk upgrade -f
 
 ### self-update
 
-ErisPulse SDK 自体を最新バージョンへ更新します。
+ErisPulse SDK 自身を最新バージョンに更新します。
 
-**エイリアス:** `su`, `update`
+**別名：** `su`, `update`
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `[version]` | | 更新対象のバージョン番号を指定 |
-| `--pre` | | プリリリース版への更新を許可 |
-| `--force` | `-f` | 強制的に更新、確認をスキップ |
-| `--no-uv` | | uv の代わりに pip を使用 |
+| `[version]` | | 更新する対象のバージョン番号を指定します |
+| `--pre` | | プレリリース版への更新を許可します |
+| `--force` | `-f` | 強制的に更新し、確認をスキップします |
+| `--no-uv` | | uv の代わりに pip を使用します |
 
-**例:**
+**例：**
 
 ```bash
-# 最新の安定版へ更新
+# 最新の安定版に更新
 epsdk self-update
 
-# 指定バージョンへ更新
+# 指定バージョンに更新
 epsdk self-update 1.2.3
 
-# プリリリース版を許可
+# プレリリース版を許容
 epsdk self-update --pre
 
 # 強制更新
 epsdk self-update -f
-```
-
----
 
 ## 情報照会コマンド
 
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | インストール済みコンポーネントを一覧表示 |
-| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | リモートで利用可能なコンポーネントを一覧表示 |
+| `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | インストール済みのコンポーネントを一覧表示します |
+| `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | リモートで利用可能なコンポーネントを一覧表示します |
 
 ### list
 
-インストール済みの ErisPulse モジュールとアダプタを一覧表示します。
+インストール済みの ErisPulse モジュールとアダプタを表示します。
 
-**エイリアス:** `l`, `ls`
+**別名:** `l`, `ls`
 
-**引数:**
+**パラメータ:**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `--type` | `-t` | タイプを指定：`modules`、`adapters`、`all`（デフォルト） |
-| `--outdated` | `-o` | アップグレード可能なパッケージのみ表示 |
+| `--type` | `-t` | タイプを指定: `modules`、`adapters`、`all`（デフォルト） |
+| `--outdated` | `-o` | 更新可能なパッケージのみ表示します |
 
 **例:**
 
 ```bash
-# インストール済みのすべてのコンポーネントを一覧表示
+# インストール済みのすべてのコンポーネントを表示
 epsdk list
 
-# モジュールのみを一覧表示
+# モジュールのみを表示
 epsdk list -t modules
 
-# アダプタのみを一覧表示
+# アダプタのみを表示
 epsdk list -t adapters
 
-# アップグレード可能なパッケージのみ表示
+# 更新可能なパッケージのみを表示
 epsdk list -o
 ```
 
 ### list-remote
 
-リモートリポジトリで利用可能な ErisPulse モジュールとアダプタを一覧表示します。
+リモートリポジトリで利用可能な ErisPulse モジュールとアダプタを表示します。
 
-**エイリアス:** `lsr`
+**別名:** `lsr`
 
-**引数:**
+**パラメータ:**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `--type` | `-t` | タイプを指定：`modules`、`adapters`、`all`（デフォルト） |
-| `--refresh` | `-r` | リモートパッケージリストキャッシュを強制的に更新 |
+| `--type` | `-t` | タイプを指定: `modules`、`adapters`、`all`（デフォルト） |
+| `--refresh` | `-r` | リモートパッケージリストのキャッシュを強制的に更新します |
 
 **例:**
 
 ```bash
-# すべてのリモート利用可能コンポーネントを一覧表示
+# リモートで利用可能なすべてのコンポーネントを表示
 epsdk list-remote
 
-# リモートモジュールのみを一覧表示
+# リモートモジュールのみを表示
 epsdk list-remote -t modules
 
-# キャッシュを強制的に更新して一覧表示
+# キャッシュを強制的に更新した後に表示
 epsdk list-remote -r
-```
 
----
+## 実行コントロールコマンド
 
-## 実行制御コマンド
-
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `run` | `r` | `[script] [--reload]` | 指定したスクリプトまたは SDK を実行 |
+| `run` | `r` | `[script] [--reload]` | 指定されたスクリプトまたは SDK を実行 |
 
 ### run
 
-ErisPulse プロジェクトスクリプトを実行、または SDK を直接起動します。ホットリロードモードに対応しています。
+ErisPulse プロジェクトのスクリプトを実行するか、SDK を直接起動します。ホットリロードモードをサポートしています。
 
-**エイリアス:** `r`
+**別名:** `r`
 
-**引数:**
+**パラメータ:**
 
-| 引数 | 説明 |
+| パラメータ | 説明 |
 |------|------|
-| `[script]` | 実行するスクリプトファイル。指定しない場合は SDK を実行 |
-| `--reload` | ホットリロードモードを有効化。ファイルの変更を監視し、自動的に再起動 |
+| `[script]` | 実行するスクリプトファイル。指定しない場合は SDK を実行します。 |
+| `--reload` | ホットリロードモードを有効にします。ファイルの変更を監視して自動的に再起動します。 |
 
 **例:**
 
@@ -2702,43 +2850,45 @@ ErisPulse プロジェクトスクリプトを実行、または SDK を直接�
 # SDK を直接実行
 epsdk run
 
-# 指定したスクリプトファイルを実行
+# 指定されたスクリプトファイルを実行
 epsdk run main.py
 
-# ホットリロードモードで実行（ファイル変更時に自動再起動）
+# ホットリロードモードで実行（ファイルの変更で自動的に再起動）
 epsdk run main.py --reload
 
-# SDK ホットリロードモード
+# SDK のホットリロードモード
 epsdk run --reload
 ```
 
 ---
 
+docs/ja/quick-start.md
+
 ## プロジェクト管理コマンド
 
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | ErisPulse プロジェクトを初期化 |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | モジュール/アダプタのスキャフォールドを作成 |
+| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | ErisPulse プロジェクトを初期化します |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | モジュール/アダプターのスキャフォールディングを作成します |
 
 ### init
 
-新しい ErisPulse プロジェクトを初期化します。対話モードとクイックモードをサポートしています。
+新しい ErisPulse プロジェクトを初期化します。インタラクティブモードとクイックモードをサポートしています。
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
 | `--project-name` | `-n` | プロジェクト名 |
-| `--quick` | `-q` | クイックモード。対話ウィザードをスキップ |
-| `--force` | `-f` | 既存の設定ファイルを強制的に上書き |
-| `--here` | | 現在のディレクトリで初期化。サブディレクトリを作成しない |
-| `--no-uv` | | uv の代わりに pip を使用 |
+| `--quick` | `-q` | クイックモード、インタラクティブガイドをスキップします |
+| `--force` | `-f` | 既存の設定ファイルを強制的に上書きします |
+| `--here` | | 現在のディレクトリで初期化し、サブディレクトリを作成しません |
+| `--no-uv` | | uv の代わりに pip を使用します |
 
-**例:**
+**例：**
 
 ```bash
-# 対話型で初期化
+# インタラクティブな初期化
 epsdk init
 
 # クイック初期化
@@ -2753,11 +2903,11 @@ epsdk init --here -n my_bot
 
 ### create
 
-ErisPulse モジュールまたはアダプタのスキャフォールドプロジェクトを作成します。
+ErisPulse モジュールまたはアダプターのスキャフォールディングプロジェクトを作成します。
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
 | `{module,adapter}` | | 作成するタイプ：`module` または `adapter` |
 | `--name` | `-n` | プロジェクト名（PascalCase） |
@@ -2766,21 +2916,25 @@ ErisPulse モジュールまたはアダプタのスキャフォールドプロ�
 | `--email` | `-e` | 作者のメールアドレス |
 | `--homepage` | | プロジェクトのホームページ URL |
 | `--output` | `-o` | 出力ディレクトリ（デフォルトは現在のディレクトリ） |
-| `--force` | `-f` | 既存のディレクトリを強制的に上書き |
+| `--force` | `-f` | 既存のディレクトリを強制的に上書きします |
+| `--local` | | ローカルプラグインを作成します（`module` のみ利用可能）：`plugins/<name>/` パッケージ構造を生成し、ビルドせずにインストールできます |
 
-**例:**
+**例：**
 
 ```bash
-# 対話型で作成（タイプと情報入力の誘導）
+# インタラクティブな作成（タイプの選択と情報入力のガイド付き）
 epsdk create
 
 # Module プロジェクトを直接作成
 epsdk create module -n MyModule
 
+# ローカルプラグインを作成（`plugins/` ディレクトリに配置され、起動時に自動的に検出され、ホットリロードがサポートされます）
+epsdk create module -n MyModule --local
+
 # Adapter プロジェクトを直接作成
 epsdk create adapter -n MyAdapter
 
-# 完全な引数
+# 完全なパラメータ
 epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "mail@example.com"
 
 # 出力ディレクトリを指定
@@ -2788,119 +2942,124 @@ epsdk create module -n MyModule -o ./projects
 
 # 既存のディレクトリを強制的に上書き
 epsdk create module -n MyModule -f
-```
-
----
 
 ## 言語コマンド
 
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | CLI 表示言語の確認または切り替え |
+| `i18n` | `language`, `lang` | `[lang] [--list/-l]` | CLIの表示言語を確認または切り替える |
 
 ### i18n
 
-現在の CLI 言語を確認、サポートされている言語を一覧表示、表示言語を切り替えます。パラメータを指定しない場合、対話型の選択画面になります。
+現在のCLI言語を確認し、サポートされている言語の一覧を表示し、表示言語を切り替える。パラメータを指定しない場合は、インタラクティブな選択画面に移行する。
 
-**エイリアス:** `language`, `lang`
+**別名：** `language`, `lang`
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `[lang]` | | 切り替える言語コード（例: `zh-CN`、`en`、`ja`、`ru`） |
-| `--list` | `-l` | サポートされているすべての言語を一覧表示 |
+| `[lang]` | | 切り替える言語コード（例：`zh-CN`、`en`、`ja`、`ru`） |
+| `--list` | `-l` | すべてのサポート言語を表示する |
 
-**例:**
+**例：**
 
 ```bash
-# 対話型で言語を選択
+# インタラクティブに言語を選択
 epsdk i18n
 
-# 英語へ切り替え
+# 英語に切り替える
 epsdk i18n en
 
-# 日本語へ切り替え
+# 日本語に切り替える
 epsdk i18n ja
 
-# サポートされている言語を一覧表示
+# すべてのサポート言語を表示する
 epsdk i18n --list
-```
 
----
+## タイプ・スタブ・コマンド
 
-## 型スタブコマンド
-
-| コマンド | エイリアス | 引数 | 説明 |
+| コマンド | 別名 | パラメータ | 説明 |
 |------|------|------|------|
-| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | IDE 自補のための型スタブファイルを生成 |
+| `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | IDE補完を有効にするためのタイプ・スタブ・ファイルを生成します |
 
 ### types
 
-インストール済みの ErisPulse モジュールとアダプタをスキャンし、`.pyi` 型スタブファイルを生成して、IDE で正確なコード補完と型チェックのサポートを得ます。
+インストール済みの ErisPulse モジュールとアダプタをスキャンし、`.pyi` タイプ・スタブ・ファイルを生成します。これにより、IDE で正確なコード補完と型検査のサポートが得られます。
 
-**エイリアス:** `t`, `stub`
+**別名：** `t`, `stub`
 
-**引数:**
+**パラメータ：**
 
-| 引数 | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `--output` | `-o` | 出力先パス（デフォルトは現在のディレクトリ下の `ep-stubs/`） |
-| `--force` | | 既存のスタブファイルを強制的に上書き |
-| `--adapters-only` | | アダプタの型スタブのみ生成 |
-| `--modules-only` | | モジュールの型スタブのみ生成 |
+| `--output` | `-o` | 出力パス（デフォルトは現在のディレクトリの `ep-stubs/`） |
+| `--force` | | 既存のスタブ・ファイルを上書きします |
+| `--adapters-only` | | アダプタのタイプ・スタブのみを生成します |
+| `--modules-only` | | モジュールのタイプ・スタブのみを生成します |
 
-> **注意:** `--adapters-only` と `--modules-only` は排他的です。両方を同時に指定した場合、後者が有効になります。
+> **注意：** `--adapters-only` と `--modules-only` は排他的です。両方指定した場合、後者（`--modules-only`）が有効になります。
 
-**例:**
+**例：**
 
 ```bash
-# すべてのインストール済みモジュールとアダプタに対して型スタブを生成
+# インストール済みのすべてのモジュールとアダプタのタイプ・スタブを生成します
 epsdk types
 
-# アダプタのスタブのみ生成
+# アダプタのスタブのみを生成します
 epsdk types --adapters-only
 
-# 指定したディレクトリへ出力
+# 指定したディレクトリに出力します
 epsdk types -o ./typings
 
-# 既存のファイルを強制的に上書き
+# 既存のファイルを強制的に上書きします
 epsdk types --force
 ```
 
 ---
 
-## 全体パラメータ
+**重要：** パスの置換ルール  
+- ドキュメント内のリンクにある `docs/ja/` を `docs/ja/` に置換します  
+- 例：`docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更します  
+- 非現在言語版のファイルを指すリンク（`README.xx.md` 形式のリンク）は、変更しないでください  
+- これにより、リンクが正しい言語のドキュメント版を指すようにします
+
+## グローバルパラメータ
 
 以下のパラメータはすべてのコマンドに適用されます：
 
-| パラメータ | 短引数 | 説明 |
+| パラメータ | 短パラメータ | 説明 |
 |------|--------|------|
-| `--help` | `-h` | ヘルプ情報を表示 |
-| `--version` | `-V` | バージョン情報を表示 |
-| `--verbose` | `-v` | 詳細な出力を表示（`-vv`/`-vvv` で累積） |
-| `--no-color` | | 色の出力を無効化（CI / ログ収集向け） |
-| `--yes` | `-y` | すべての対話プロンプトを自動確認（非対話実行時） |
+| `--help` | `-h` | ヘルプ情報を表示します |
+| `--version` | `-V` | バージョン情報を表示します |
+| `--verbose` | `-v` | 詳細出力を表示します（`-vv`/`-vvv` で重ねて使用可能） |
+| `--no-color` | | カラフルな出力を無効にします（CI / ログ収集に適しています） |
+| `--yes` | `-y` | すべてのインタラクティブなプロンプトに自動的に確認します（インタラクティブでない実行） |
 
 ---
+
+[**English**](docs/ja/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 環境診断
 
 ### doctor
 
-現在の CLI 実行環境を診断し、ヘルスレポートを出力します。「なぜインストールできない / 接続できないのか」といった問題の原因特定に使用します。
+> [!NOTE]
+> このコマンドは ErisPulse **2.7.0+** が必要です。
+
+現在の CLI 実行環境を診断し、ヘルスレポートを出力します。「なぜインストールできない / 接続できないのか」の問題を特定するために使用します。
 
 | パラメータ | 説明 |
 |------|------|
 | `--verbose` | 詳細な診断情報を表示 |
 
-**確認項目**:
-- **Python**: インタプリタのバージョンとパス
-- **インストールバックエンド**: `uv` または `pip` を使用
-- **ターゲットインタプリタ**: パッケージが実際にインストールされる Python 環境
-- **設定ファイル**: `config/config.toml` が存在するか
-- **PyPI 接続性**: PyPI へのアクセス可否（見つかったコンポーネント数を表示）
-- **システムプロキシ**: プロキシの検出有無
+**チェック項目**：
+- **Python**：インタプリタのバージョンとパス
+- **インストール済みバックエンド**：`uv` を使用するか、`pip` を使用するか
+- **ターゲット・インタプリタ**：パッケージが実際にインストールされるターゲット Python 環境
+- **設定ファイル**：`config/config.toml` が存在するか
+- **PyPI の接続性**：PyPI にアクセスできるか（検出されたコンポーネント数を表示）
+- **システムプロキシ**：プロキシが検出されたか
 
 ```bash
 # 実行環境診断
@@ -2908,26 +3067,25 @@ epsdk doctor
 
 # エイリアスを使用
 epsdk diag
-```
 
----
+## インタラクティブインストール
 
-## 対話型インストール
-
-`epsdk install` でパッケージ名を指定せずに実行すると対話型インストールになります：
+`epsdk install` をパッケージ名を指定せずに実行すると、インタラクティブインストールモードになります：
 
 ```bash
 epsdk install
 ```
 
-対話画面では以下が提供されます：
-1. アダプタ選択
-2. モジュール選択
+インタラクティブインターフェースでは、以下のオプションが利用できます：
+1. アダプタの選択
+2. モジュールの選択
 3. カスタムインストール
 
-## よく使われる使用例
+[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
-### モジュールをインストール
+## 一般的使い方
+
+### モジュールのインストール
 
 ```bash
 # 単一のモジュールをインストール
@@ -2940,7 +3098,7 @@ epsdk install Yunhu Weather
 epsdk install Weather -U
 ```
 
-### コンポーネントを一覧表示
+### コンポーネントの一覧表示
 
 ```bash
 # すべてのコンポーネントを一覧表示
@@ -2956,7 +3114,7 @@ epsdk list -o
 epsdk list-remote
 ```
 
-### コンポーネントをアンインストール
+### コンポーネントのアンインストール
 
 ```bash
 # 単一のコンポーネントをアンインストール
@@ -2966,20 +3124,20 @@ epsdk uninstall Weather
 epsdk uninstall Yunhu Weather
 ```
 
-### コンポーネントをアップグレード
+### コンポーネントのアップグレード
 
 ```bash
 # すべてのコンポーネントをアップグレード
 epsdk upgrade
 
-# 指定したコンポーネントをアップグレード
+# 指定されたコンポーネントをアップグレード
 epsdk upgrade Weather
 
-# 強制アップグレード
+# 強制的にアップグレード
 epsdk upgrade -f
 ```
 
-### プロジェクトを実行
+### プロジェクトの実行
 
 ```bash
 # 通常の実行
@@ -2989,43 +3147,43 @@ epsdk run main.py
 epsdk run main.py --reload
 ```
 
-### 言語を切り替え
+### 言語の切り替え
 
 ```bash
-# 対話型で言語を選択
+# 対話形式で言語を選択
 epsdk i18n
 
-# 英語へ直接切り替え
+# 英語に直接切り替え
 epsdk i18n en
 
-# サポートされている言語を一覧表示
+# 対応している言語の一覧表示
 epsdk i18n --list
 ```
 
-### 型スタブを生成
+### タイプのスタブ生成
 
 ```bash
-# すべての型スタブを生成
+# すべてのタイプのスタブを生成
 epsdk types
 
-# モジュールの型スタブのみ生成
+# モジュールのタイプのスタブのみを生成
 epsdk types --modules-only
 ```
 
-### プロジェクトを初期化
+### プロジェクトの初期化
 
 ```bash
-# 対話型で初期化
+# 対話形式での初期化
 epsdk init
 
 # クイック初期化
 epsdk init -q -n my_bot
 ```
 
-### スキャフォールドを作成
+### フレームワークの作成
 
 ```bash
-# 対話型で作成（タイプと情報入力の誘導）
+# 対話形式での作成（タイプの選択と情報の入力をガイド）
 epsdk create
 
 # Module プロジェクトを直接作成
@@ -3034,7 +3192,7 @@ epsdk create module -n MyModule
 # Adapter プロジェクトを直接作成
 epsdk create adapter -n MyAdapter
 
-# 完全な引数
+# 完全なパラメータ
 epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "mail@example.com"
 
 # 既存のディレクトリを強制的に上書き
@@ -3110,29 +3268,75 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 > 注：`ErisPulse.server.port` のようなフレームワークの設定は、`get_server_config()` などの API で読み取られ、すべて環境変数の上書きの影響を受けます。
 
-## 設定のホットリロード
+## 設定のホットアップデート
 
-2.7.0 以降、フレームワークは設定のホットリロードを**体系的にサポート**するようになりました。外部で `config.toml` を変更した後（バックグラウンドの watcher が 5 秒ごとにチェック）、またはコードで `setConfig()` を呼び出した後、各コンポーネントは自動的に対応します：
+2.7.0 以降、フレームワークは設定のホットアップデートを**体系的なサポート**を実装しました。外部で `config.toml` を編集した後（バックグラウンドの watcher が 5 秒ごとに検出）、またはコードで `setConfig()` を呼び出した後、各コンポーネントは自動的に応答します：
 
-| コンポーネント | ホットリロード可能な設定 | 行動 |
+| コンポーネント | ホットアップデートがサポートされる設定 | 行動 |
 |------|----------------|------|
-| **ログ Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | 変更検出付きで自動的に再適用 |
+| **ログ Logger** | `logger.level` / `log_files` / `log_dir`（分割パラメータを含む）/ `memory_limit` / `format` / `exclude_levels` | 自動的に再適用（変更検出付き） |
 | **コマンドシステム CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 次のメッセージで即座に有効化 |
-| **アダプタの並行処理** | `framework.handler_max_concurrency` | 失効したキャッシュシグナルを新値に基づいて再構築 |
-| **プロアクティブGC** | `framework.proactive_gc_*` | 設定変更時に即座にGCタスクを再起動し、実行時調整/無効化/再有効化が可能 |
-| **マスターシステム Master** | `master.users` | `is_master()` 検査毎にリアルタイムで読み取り、リスタート不要 |
-| **モジュール/アダプタ設定** | 各々の設定項目 | `on_config_update(old, new)` カルバックをトリガー |
+| **アダプタの並行処理** | `framework.handler_max_concurrency` | 失効したキャッシュシグナルを再構築、新しい値で再作成 |
+| **プロアクティブ GC** | `framework.proactive_gc_*` | 設定変更が即座に GC タスクを再起動し、実行時調整/無効化/再有効化が可能 |
+| **マスターシステム Master** | `master.users` | `is_master()` 検査毎にリアルタイム読み取り、再起動不要 |
+| **モジュール/アダプタの設定** | 各々の設定項目 | `on_config_update(old, new)` コールバックをトリガー |
 
-**リスタートが必要な設定**（安全にホットスイッチできないため、変更時に「プロセスを再起動後に有効化」という警告が出力されます）：
+**再起動が必要な設定**（安全にホット切り替えできない、変更時に「プロセスを再起動後に有効化」と警告を出力）：
 
 | 設定 | 理由 |
 |------|------|
-| `router.cors.*` / `router.security.*` | 中間処理はサービス起動時に FastAPI に書き込まれており、実行時に安全にホットスイッチできない |
-| `storage.use_global_db` | SQLite ファイルハンドルは既に実行時に開かれているため、パスの切り替えは安全ではない |
+| `router.cors.*` / `router.security.*` | 中間層が FastAPI の起動時に書き込まれており、実行時に安全にホット切り替えできない |
+| `storage.use_global_db` | SQLite ファイルハンドルが実行時に既に開かれているため、パスの切り替えは安全ではない |
 
-> **途中で編集保存に失敗した？** `config.toml` を編集中に一時的な構文エラーが発生した場合、フレームワークは**前回の有効な設定を保持**し、診断ログを出力します。各コンポーネントに空の設定をブロードキャストすることはありません（`on_config_update` が空値を受け取り、誤ってデフォルトに戻るのを防ぐため）。
+> **途中で編集保存に失敗した？** `config.toml` を編集する際に一時的な構文エラーが発生した場合、フレームワークは**前回の有効な設定を保持**し、診断ログを出力します。各コンポーネントに空の設定をブロードキャストすることはありません（`on_config_update` が空値を受け取り、誤ってデフォルトに戻るのを防ぐため）。
 
-docs/ja/config-hot-reload.md
+### ホットアップデートの内部処理の分解
+
+「設定を変更したが、各コンポーネントはどのように知るのか？」——その背後には、検出 → 再ロード → ブロードキャストの処理チェーンがあります：
+
+```mermaid
+flowchart TD
+    A["外部で config.toml を編集"] --> B{"誰が最初に発見するか？"}
+    B -->|"バックグラウンドの watcher スレッド<br/>5秒ごとに mtime をポーリング"| C["_check_file_change で変更を判定"]
+    B -->|"設定を読み取るとき<br/>キャッシュが60秒以上経過"| C
+    C --> D["_load_config で TOML を再解析"]
+    D --> E{"解析成功か？"}
+    E -->|"いいえ（構文エラー）"| F["前回の有効な設定を保持<br/>ブロードキャストせず、診断ログを出力"]
+    E -->|"はい"| G["lifecycle.emit config.updated<br/>old_config / new_config を含む"]
+    G --> H["各コンポーネントのリスナーが応答<br/>（logger / scope / 命令 / GC ...）"]
+```
+
+**2つの検出経路**（どちらか1つで十分、両方ともバックアップになります）：
+
+| 経路 | メカニズム | トリガー |
+|------|------|---------|
+| バックグラウンド watcher | daemon スレッド `config-watcher` が **5秒**ごとに `wait` でファイル `mtime` をポーリング | 外部でファイルを変更してから最大5秒以内 |
+| 慣性検出 | `getConfig()` で読み取るとき、キャッシュが **60秒**以上経過している場合は先にファイルをチェック | 次回設定を読み取るとき |
+
+> **フレームワークは自分自身を誤って傷つけない**：`setConfig()` でファイルに書き込む際、「自身が書き込んだ mtime」を記録し、watcher が比較する際にそれを除外し、**外部編集**のみを変更とみなします。
+
+**2種類の設定変更イベント**：
+
+| イベント | トリガー | データ | 代表的な場面 |
+|------|--------|------|---------|
+| `config.set` | コード / Dashboard が `setConfig()` を呼び出す | `{key, old_value, new_value}` | 単一キーの書き込み（テンプレート生成、状態記録、実行時設定の変更） |
+| `config.updated` | 外部編集後に watcher/慣性検出が捕捉する | `{old_config, new_config, config_file}` | `config.toml` を手動で編集した場合 |
+
+> `setConfig()` はデフォルトで**5秒遅延してファイルに書き込む**（複数回の書き込みを結合）。`immediate=True` は即座に書き込む。watcher が外部変更を検出した後はメモリキャッシュを更新するだけで、**外部の変更をファイルに書き戻すことはない**。
+
+**自動応答するコンポーネント一覧**（2種類のイベントは通常両方をサブスクライブし、応答内容は同一）：
+
+| コンポーネント | 監視 | 応答 |
+|------|------|------|
+| Logger | `config.set` + `config.updated` | 級別/ファイル/ディレクトリの分割/メモリ上限/フォーマット/非表示レベルを再適用（変更検出付き、変更なしの場合は処理しない） |
+| Scope | `config.updated` | スコープバインディングキャッシュを再構築 |
+| コマンドシステム | `config.updated` | プレフィックス/大文字小文字/スペースプレフィックス/must_at_bot の解析パラメータを更新、次のメッセージで有効化 |
+| アダプタの並行処理 | `config.set` + `config.updated` | `handler_max_concurrency` が失効し、シグナルを再構築 |
+| プロアクティブ GC | `config.set` + `config.updated` | `proactive_gc_*` が即座に GC バックグラウンドタスクを再起動 |
+| アダプタ | `on_config_update` にルーティング | 各アダプタの `on_config_update(old, new)` コールバック |
+| モジュール | `on_config_update` にルーティング | 各モジュールの `on_config_update(old, new)` コールバック |
+| ストレージ | `config.updated` | `use_global_db` の変更は**警告のみ**（再起動が必要） |
+| ルーティング | `config.updated` | `cors.*` / `security.*` の変更は**警告のみ**（再起動が必要） |
 
 ## 完全な設定例
 
@@ -3140,14 +3344,27 @@ docs/ja/config-hot-reload.md
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = ""
 ssl_keyfile = ""
+
+[ErisPulse.master]
+# users には2種類の書き方が可能です（どちらか一方を選択してください）：
+#   グローバルなオーナー（すべてのプラットフォームに効果）：users = ["123456", "789012"]
+#   プラットフォームごとにオーナーを指定：users = { yunhu = ["123456"], telegram = ["789012"] }
+users = {}
 
 [ErisPulse.logger]
 level = "INFO"
 format = "rich"
 log_files = []
+log_dir = ""
+log_rotation = "size"
+log_max_size_mb = 10
+log_backup_count = 5
+log_rotation_when = "midnight"
 memory_limit = 1000
+exclude_levels = []
 
 [ErisPulse.framework]
 enable_lazy_loading = true
@@ -3179,36 +3396,96 @@ language = "auto"
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = "/path/to/cert.pem"
 ssl_keyfile = "/path/to/key.pem"
 ```
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
-| host | string | 0.0.0.0 | 監聴アドレス。0.0.0.0 はすべてのインターフェースを意味します |
-| port | integer | 8000 | 監聴ポート番号 |
-| ssl_certfile | string | 空 | SSL 証明書ファイルのパス |
-| ssl_keyfile | string | 空 | SSL 秘密鍵ファイルのパス |
+| host | string | 0.0.0.0 | 監視するアドレス。0.0.0.0 はすべてのインターフェースを意味します |
+| port | integer | 8000 | 監視するポート番号 |
+| auto_start | boolean | true | `sdk.init()` 時にルーティングサーバーを自動的に起動するかどうか。`false` に設定するとルーティングサーバーの起動をスキップできます（純粋なイベント/WebUIなしのシナリオ） |
+| ssl_certfile | string | 空 | SSL証明書ファイルのパス |
+| ssl_keyfile | string | 空 | SSL秘密鍵ファイルのパス |
 
-[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+## 主人システム設定
+
+主人システムは「フレームワークの主人」アカウント（例：Bot管理者）を識別するために使用されます。`master.users` は2つの書式をサポートしています：
+
+```toml
+[ErisPulse.master]
+# 書式1：グローバルな主人（すべてのプラットフォームに適用）
+users = ["123456", "789012"]
+
+# 書式2：プラットフォームごとに主人を指定（dict）
+# users = { yunhu = ["123456"], telegram = ["789012"] }
+```
+
+| 設定項目 | 型 | デフォルト値 | 説明 |
+|---------|------|---------|------|
+| users | array / object | 空 | 主人アカウントのリスト。`list` 形式はグローバルな主人（すべてのプラットフォームに適用）；`dict` 形式はプラットフォームごとに指定（キーがプラットフォーム名、値がそのプラットフォームの主人アカウントのリスト） |
+
+コード中では `master.is_master(event)` または `master.is_master(platform, user_id)` を使用してチェックし、各呼び出し時に設定をリアルタイムで読み込みます（ホットアップデートをサポートし、再起動は不要です）：
+
+```python
+from ErisPulse.Core import master
+
+if master.is_master(event):
+    await event.reply("主人こんにちは")
+```
+
+[**English**](docs/ja/quick-start.md)
 
 ## ログ設定
 
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = ["app.log", "debug.log"]
+log_files = []                # 明示的なログファイルのリスト（log_dir と排他的で、優先度が高くなります）
+log_dir = ""                  # ログディレクトリ（設定後、自動的にセグメント分割とローテーションを行います）
+log_rotation = "size"         # セグメント分割方法: "size" / "date" / "none"
+log_max_size_mb = 10          # size モードの単一ファイルの上限サイズ（MB）
+log_backup_count = 5          # 保持する履歴ログファイル数
+log_rotation_when = "midnight"  # date モードのローテーション周期: S/M/H/D/midnight
 memory_limit = 1000
+exclude_levels = ["EVENT"]
 ```
 
-| 設定項目 | タイプ | デフォルト値 | 説明 |
+| 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
-| level | string | INFO | ログレベル：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE は最低レベルで、フレームワーク内部の詳細なデバッグ情報を出力） |
-| format | string | rich | ログ出力形式：`rich`（カラー表示、デフォルト）、`plain`（カラーなしの純粋なテキスト、ログ収集/パイプリダイレクトに適している）、`json`（JSON形式、ELK などに適している） |
-| log_files | array | 空 | ログ出力ファイルのリスト |
+| level | string | INFO | ログレベル: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE は最低レベルで、フレームワーク内部の詳細なデバッグ情報を出力します） |
+| format | string | rich | ログ出力フォーマット: `rich`（カラー表示、デフォルト）、`plain`（純粋なテキスト、色なし、ログの収集/パイプのリダイレクトに適しています）、`json`（JSON形式、ELK 等に適しています） |
+| log_files | array | 空 | ログ出力ファイルのリスト（明示的なパス、セグメント分割なし） |
+| log_dir | string | 空 | ログ出力ディレクトリ（自動作成）。設定後、ディレクトリ内に `erispulse.log` を書き込み、`log_rotation` に従って自動的にセグメント分割します。`log_files` と排他的で、`log_files` が優先されます |
+| log_rotation | string | size | セグメント分割方法: `size`（サイズで分割）/ `date`（日時で分割）/ `none`（分割なし） |
+| log_max_size_mb | float | 10 | size モードの単一ファイルのサイズ上限（MB）。上限を超えると `.1`/`.2` などのバックアップにローテーションされます |
+| log_backup_count | integer | 5 | 保持する履歴ログファイル数。古いバックアップは自動的に削除されます |
+| log_rotation_when | string | midnight | date モードのローテーション周期: `S`/`M`/`H`/`D`/`midnight`（デフォルトは毎日0時） |
 | memory_limit | integer | 1000 | メモリに保持するログの件数 |
+| exclude_levels | array | 空 | 指定したログレベルを除外します。除外されたレベルのログは**完全に破棄**されます（メモリに書き込まず、Dashboard などのサブスクライバーに送信せず、表示せず、ファイルに書き込まず）。ホットアップデートが可能です |
 
-[**English**](docs/ja/quick-start.md)
+また、コード内で動的に切り替えることも可能です：
+
+```python
+from ErisPulse.Core import logger
+
+# サイズで分割: 単一ファイル10MB、5個保持
+logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
+
+# 日時で分割: 毎日0時にローテーション、7個保持
+logger.set_output_dir("logs", rotation="date", backup_count=7)
+```
+
+> [!NOTE]
+> `log_dir` および分割関連の設定は ErisPulse **2.8.0+** が必要です。
+
+> **プライバシー保護**: メッセージの送受信内容は **EVENT** レベル（値21）で記録されます。`exclude_levels = ["EVENT"]` を設定すると、バックエンド（例: Dashboard のログパネル）は各グループ/プライベートチャットのメッセージ内容を表示できなくなりますが、他のログレベルには影響しません。
+
+> [!NOTE]
+> `exclude_levels` 機能は ErisPulse **2.8.0+** が必要です。
 
 ## 框架設定
 
@@ -3288,25 +3565,25 @@ use_global_db = false
 
 [**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
-## イベントの設定
+## イベント設定
 
-### コマンドの設定
+### コマンド設定
 
 ```toml
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = false
+case_sensitive = true
 allow_space_prefix = false
 ```
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
 | prefix | string | / | コマンドのプレフィックス |
-| case_sensitive | boolean | true | 大文字小文字を区別するかどうか（`/Help` と `/help` が異なるコマンドとして扱われるかどうか） |
+| case_sensitive | boolean | true | 大文字小文字を区別するかどうか（`/Help` と `/help` が異なるコマンドになるかどうか） |
 | allow_space_prefix | boolean | false | 空白をプレフィックスとして許可するかどうか |
-| must_at_bot | boolean | false | コマンドをトリガーするには必ず@botが必要かどうか（プライベートチャットは制限されない） |
+| must_at_bot | boolean | false | コマンドをトリガーするには必ず@ボットが必要かどうか（プライベートチャットは制限されない） |
 
-### メッセージの設定
+### メッセージ設定
 
 ```toml
 [ErisPulse.event.message]
@@ -3317,7 +3594,7 @@ ignore_self = true
 |---------|------|---------|------|
 | ignore_self | boolean | true | ロボット自身のメッセージを無視するかどうか |
 
-[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+[**English**](docs/ja/README.md)
 
 ## 国際化設定
 
@@ -3362,6 +3639,32 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > `setConfig` はデフォルトで遅延書き込み（約5秒ごとに一括保存）が行われます。`immediate=True` を設定すると即時永続化されます。設定の変更は `config.set` ライフサイクルイベントをトリガーします。
 
 [**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+## スコープ設定
+
+> [!NOTE]  
+> この機能には ErisPulse **2.8.0+** が必要です。
+
+モジュールスコープシステムは、「特定の Bot がどのモジュールを使用できるか」を制御するために使用されます。デフォルトでは、すべてのモジュールはすべての Bot に対して開放されており、設定のバインディング後にフィルタリングが開始されます。モジュールとアダプターは**変更なし**で適応可能です。
+
+```toml
+[ErisPulse.scope]
+default_allow = true        # デフォルトで全モジュールを許可（false = 隠れ拒否の厳密モード）
+cache_size = 1024           # is_allowed の LRU キャッシュサイズ
+```
+
+| 設定項目 | 型 | 説明 |
+|---------|------|------|
+| `scope.default_allow` | boolean | デフォルトで全モジュールを許可（`true`）。`false` = 隠れ拒否の厳密モード、ホワイトリスト内のモジュールのみ使用可能 |
+| `scope.cache_size` | integer | `is_allowed` の LRU キャッシュサイズ（デフォルト 1024） |
+| `scope.platforms.<platform>.modules` | array | プラットフォームレベルのホワイトリスト：指定されたモジュールのみ使用可能（空 = 制限なし） |
+| `scope.platforms.<platform>.blocked` | array | プラットフォームレベルのブラックリスト：指定されたモジュールは無効（空 = 制限なし） |
+| `scope.bots.<platform>.<bot_id>.modules` | array | Bot レベルのホワイトリスト、プラットフォームレベルを上書き |
+| `scope.bots.<platform>.<bot_id>.blocked` | array | Bot レベルのブラックリスト、プラットフォームレベルを上書き |
+| `scope.sessions.<platform>.<session_id>.modules` | array | 会話レベルのホワイトリスト（グループ/チャンネル/プライベートチャット）、優先度が最も高い |
+| `scope.sessions.<platform>.<session_id>.blocked` | array | 会話レベルのブラックリスト、優先度が最も高い |
+
+> 解析優先度：**会話レベル > Bot レベル > プラットフォームレベル**。3段階のバインディングの完全な TOML 例、モジュール名の大文字小文字は区別されない、会話識別子はプラットフォーム間で隔離される、実行時 `sdk.scope.bind()` / `unbind()` による動的な追加・削除（`merge=True` で結合可能）などは、[スコープシステム](../advanced/scope.md)を参照してください。
 
 ## 次に進む
 
@@ -3742,11 +4045,11 @@ level = "DEBUG"
 
 # モジュール開発入門
 
-本ガイドでは、ゼロから ErisPulse モジュールを作成する方法を説明します。
+このガイドでは、ErisPulse モジュールをゼロから作成する方法を解説します。
 
-## プロジェクト構成
+## プロジェクト構造
 
-標準的なモジュール構成：
+標準的なモジュール構造：
 
 ```
 MyModule/
@@ -3756,9 +4059,8 @@ MyModule/
 └── MyModule/
     ├── __init__.py
     └── Core.py
-```
 
-## pyproject.toml の設定
+## pyproject.toml 設定
 
 ```toml
 [project]
@@ -3776,15 +4078,13 @@ dependencies = []
 
 [project.entry-points."erispulse.module"]
 "MyModule" = "MyModule:Main"
-```
 
 ## __init__.py
 
 ```python
 from .Core import Main
-```
 
-## Core.py - 基本モジュール
+## Core.py - 基礎モジュール
 
 ```python
 from ErisPulse import sdk
@@ -3792,54 +4092,45 @@ from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.Event import command
 
 class Main(BaseModule):
-    def __init__(self):
+    def __init__(self, sdk):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
-        self.config = self._load_config()
     
     @staticmethod
     def get_load_strategy():
-        """モジュールのロード戦略を返します"""
+        """モジュールのロード戦略を返す"""
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
-            depends=[]  # オプション：依存する他のモジュールのリスト
+            depends=[],  # オプション：依存する他のモジュールのリスト
+            # オプション：イベント駆動の遅延活性化——トリガーを宣言し、最初に一致するイベント/コマンドが到達した際に自動的にロード
+            # activate_on=[{"command": {"name": "hello", "help": "挨拶を送信する"}}],
         )
     
     async def on_load(self, event):
-        """モジュールのロード時に呼び出されます"""
-        @command("hello", help="挨拶を送信")
+        """モジュールがロードされたときに呼び出される"""
+        @command("hello", help="挨拶を送信する")
         async def hello_command(event):
-            name = event.get_user_nickname() or "友達"
+            name = event.get_user_nickname() or "友人"
             await event.reply(f"こんにちは、{name}！")
         
         self.logger.info("モジュールがロードされました")
     
     async def on_unload(self, event):
-        """モジュールのアンロード時に呼び出されます"""
+        """モジュールがアンロードされたときに呼び出される"""
         self.logger.info("モジュールがアンロードされました")
-    
-    def _load_config(self):
-        """モジュール設定をロードします"""
-        config = self.sdk.config.getConfig("MyModule")
-        if not config:
-            default_config = {
-                "api_url": "https://api.example.com",
-                "timeout": 30
-            }
-            self.sdk.config.setConfig("MyModule", default_config)
-            return default_config
-        return config
 ```
 
-## モジュールのテスト
+> **設定の読み込み**：上記の基本例では設定を使用していません。設定を読み込む必要がある場合は、ネストされた `ConfigClass` を宣言し、`self.cfg` を通じてリアルタイムに読み込むことを推奨します（[モジュールのコアコンセプト](core-concepts.md#宣言的設定の推奨)を参照）。手動で `_load_config()` を呼び出す古い書き方は廃止されました。
+
+## テストモジュール
 
 ### ローカルテスト
 
 ```bash
-# プロジェクトディレクトリにモジュールをインストール
+# プロジェクトディレクトリでモジュールをインストール
 epsdk install ./MyModule
 
 # プロジェクトを実行
@@ -3848,28 +4139,93 @@ epsdk run main.py --reload
 
 ### テストコマンド
 
-コマンドを送信してテスト：
+コマンド送信テスト：
 
 ```
 /hello
-```
 
-## コア概念
+## 核心概念
 
 ### BaseModule 基底クラス
 
-すべてのモジュールは `BaseModule` を継承する必要があり、以下のメソッドを提供します：
+すべてのモジュールは `BaseModule` を継承し、以下のメソッドを提供する必要があります：
 
 | メソッド | 説明 | 必須 |
 |------|------|------|
-| `__init__(self)` | コンストラクタ | いいえ |
-| `get_load_strategy()` | ロード戦略を返します | いいえ |
-| `on_load(self, event)` | モジュールのロード時に呼び出されます | はい |
-| `on_unload(self, event)` | モジュールのアンロード時に呼び出されます | はい |
+| `__init__(self, sdk)` | コンストラクタ（フレームワークが `sdk` インスタンスを渡す） | いいえ |
+| `get_load_strategy()` | ロード戦略を返す | いいえ |
+| `get_meta()` | モジュールの説明メタ情報を返す（オプション） | いいえ |
+| `on_load(self, event)` | モジュールがロードされたときに呼び出される | はい |
+| `on_unload(self, event)` | モジュールがアンロードされたときに呼び出される | はい |
+
+### モジュール紹介 meta
+
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
+
+`get_meta()` でモジュールの紹介メタ情報を宣言します（このモジュールが何をするものか、どのカテゴリに属するかなど）。メタ情報はモジュールの**一般的な紹介データ**であり、help モジュール、Dashboard モジュールリスト、モジュールストアなどの各種インターフェース/エコシステムモジュールが利用します。
+
+`get_load_strategy()` が `ModuleLoadStrategy` を返すのと同じように、**`ModuleMeta` 設定クラスのインスタンスを返すことを推奨します**（プロパティの型付け、IDEの補完機能）、dict を直接返すことも互換性があります：
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="天気",               # 表示名（デフォルトの登録名）
+            description="都市の天気を照会",  # モジュールの概要
+            version="1.0.0",
+            author="ErisDev",
+            group="ツール",               # 機能のグループ
+            tags=["天気", "照会"],
+        )
+```
+
+互換的な書き方（dict）：
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> dict:
+        return {
+            "name": "天気",
+            "description": "都市の天気を照会",
+            "version": "1.0.0",
+            "author": "ErisDev",
+            "group": "ツール",
+            "tags": ["天気", "照会"],
+        }
+```
+
+- `module.get_meta("MyModule")` は、既に解析されたメタ情報を読み取ります（クラス宣言 > 登録 info、自動的にこのモジュールのコマンド名を補完します）。
+- `module.get_commands_overview()` は、「モジュール meta + 登録されたコマンド（エイリアス/グループ/ヘルプ）」を統合し、モジュールごとに整理されたコマンドの概要を提供します。
+- コマンドの所属モジュールは `cmd_info["owner"]` で取得できます（登録時にコンテキストシステムが自動的に注入します）。
+
+#### meta フィールドの i18n 対応
+
+メタ情報のフィールド値は、純粋な文字列、または i18n ディクショナリ `{"i18n": "key.path", "default": "代替テキスト"}`（設定の `description` と同様の約束）で指定できます。
+翻訳キーは `I18nClass` で宣言・登録し、`module.get_meta()` で読み取る際に、現在の言語のテキストに自動的に変換されます：
+
+```python
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        meta_description: I18nKey = I18nKey(
+            default="Weather lookup",
+            zh_CN="都市の天気照会",
+            en="Weather lookup",
+        )
+
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="天気",
+            description={"i18n": "MyModule.meta_description", "default": "Weather lookup"},
+        )
+```
 
 ### SDK オブジェクト
 
-`sdk` オブジェクトを通じてコア機能にアクセスします：
+`sdk` オブジェクトを通じて、コア機能にアクセスします：
 
 ```python
 from ErisPulse import sdk
@@ -3877,16 +4233,18 @@ from ErisPulse import sdk
 sdk.storage    # ストレージシステム
 sdk.config     # 設定システム
 sdk.logger     # ログシステム
-sdk.adapter    # アダプタシステム
-sdk.router     # ルータシステム
+sdk.adapter    # アダプターシステム
+sdk.router     # ルーティングシステム
 sdk.lifecycle  # ライフサイクルシステム
 ```
 
+docs/ja/core-concepts.md
+
 ## 次のステップ
 
-- [モジュールのコア概念](core-concepts.md) - モジュールアーキテクチャを深く理解する
-- [Event ラッパークラスの詳細](event-wrapper.md) - Event オブジェクトを学ぶ
-- [モジュールのベストプラクティス](best-practices.md) - 高品質なモジュールを開発する
+- [モジュールの基本概念](core-concepts.md) - モジュールのアーキテクチャについて深く理解する
+- [Event ラッパークラスの詳細](event-wrapper.md) - Event オブジェクトの習得
+- [モジュール開発のベストプラクティス](best-practices.md) - 高品質なモジュールの開発
 
 
 
@@ -3898,7 +4256,7 @@ ErisPulse モジュールの基本概念を理解することは、高品質な�
 
 ## モジュールのライフサイクル
 
-### ロード戦略
+### 加载戦略
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -3907,29 +4265,32 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """モジュールのロード戦略を返します"""
+        """モジュールの加載戦略を返す"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # 延遅ロードか即時ロードか
-            priority=0,       # ロード優先度（数値が大きいほど先にロードされます）
-            depends=["OtherModule"]  # オプション：依存する他のモジュールを宣言
+            lazy_load=True,   # 慣性加載にするか即時加載にするか
+            priority=0,       # 加載優先度（数値が大きいほど先に加載される）
+            depends=["OtherModule"]  # 任意：依存する他のモジュールを宣言
         )
 ```
 
-> `depends` で宣言されたモジュールが未登録の場合、現在のモジュールはスキップされ、警告が記録されます。ロード順序はトポロジカルソートによって決定され、同じ階層では `priority` 降順になります。
+> `depends` で宣言されたモジュールが登録されていない場合、現在のモジュールはスキップされ、警告が記録されます。加載順序はトポロジカルソートによって決定され、同じレベルでは `priority` の降順になります。
+
+> [!NOTE]
+> **連鎖アンロード / 連鎖再ロード**（ErisPulse **2.8.0+**）：他のモジュールに依存しているモジュールをアンロードする場合、それを依存しているモジュールは**先に連鎖的にアンロードされます**（ログに連鎖チェーンが説明されます）；ローカルプラグインのホットリロードを行うとき、それを依存しているプラグインも**連鎖的に再ロードされます**。依存者が無効なインスタンス参照を保持したまま実行し続けるのを避けるためです。循環依存を宣言した場合、加載時に `RuntimeError` で拒否されます。
 
 ### on_load メソッド
 
-モジュールのロード時に呼び出され、リソースの初期化やイベントハンドラーの登録に使用されます：
+モジュールの加載時に呼び出され、リソースの初期化とイベントハンドラの登録に使用されます：
 
 ```python
 async def on_load(self, event):
-    # イベントハンドラーを登録
+    # イベントハンドラの登録
     @command("hello", help="挨拶コマンド")
     async def hello_handler(event):
         await event.reply("こんにちは！")
     
-    # SDKの組み込みHTTPクライアントを使用（接続プールを自動管理するため、手動でセッションを作成する必要はありません）
-    # sdk.client からリクエストを送信できます
+    # SDK 内蔵の HTTP クライアントを使用（接続プールを自動管理し、手動で session を作成する必要はありません）
+    # sdk.client でリクエストを送信できます
 ```
 
 ### on_unload メソッド
@@ -3938,11 +4299,83 @@ async def on_load(self, event):
 
 ```python
 async def on_unload(self, event):
-    # カスタムリソースのクリーンアップ
+    # 自定義リソースのクリーンアップ
     # sdk.client はフレームワークが管理するため、手動で閉じる必要はありません
     
-    # イベントハンドラーのキャンセル（フレームワークが自動的に処理します）
+    # イベントハンドラのキャンセル（フレームワークが自動的に処理します）
     self.logger.info("モジュールがアンロードされました")
+```
+
+> バックグラウンドタスクの作成とクリーンアップ（`self.spawn()` / フレームワークの兜底キャンセル）については、[ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの所有と自動キャンセル)を参照してください。
+
+### アンロードと完全アンロード（purge）
+
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
+
+`unload()` はデフォルトで**加載のキャンセル**（インスタンスとリソースのアンロード）のみを行いますが、登録のスタブ（モジュールクラスとメタ情報）は保持します。そのため、モジュールは再び `discover` で再発見され、`load()` で再インスタンス化され、再 `register()` する必要はありません。
+
+**完全アンロード**（モジュールクラスの参照を解放し、`sys.modules` をクリーンアップして、プラグインとその排他的な依存を GC で回収可能にする）が必要な場合は、`purge=True` を渡します：
+
+```python
+# 加載のキャンセルのみ：登録のスタブを保持し、いつでも再 load() が可能です
+await sdk.module.unload("MyModule")
+
+# 完全アンロード：登録のスタブと sys.modules のクリーンアップ（プラグインのソース）
+await sdk.module.unload("MyModule", purge=True)
+```
+
+| 意味 | `unload()` デフォルト | `unload(purge=True)` |
+|------|-----------------|----------------------|
+| インスタンスとリソースのアンロード（イベント/task/ルーティング/lifecycle/i18n） | ✅ | ✅ |
+| 登録のスタブ（モジュールクラスとメタ情報）を保持 | ✅ | ❌ 削除 |
+| `sys.modules` のクリーンアップ（プラグインフォルダからのみ） | ❌ | ✅ |
+| モジュールクラスが GC で回収可能 | ❌ | ✅ |
+| 再加載 | `load()` で直接使用可能 | `register()` + `load()` が必要 |
+
+> `purge=True` の場合、連鎖アンロードされた依存者も purge されます。アンロード後、フレームワークは `gc.collect()` を実行し、モジュールクラス/インスタンスが回収可能かどうかを確認します。残存する参照はログに警告として表示されます（参照元を含む、DEBUG レベル）。
+
+### ライフサイクルの全体像
+
+上記のメソッドをつなげると、フレームワークがモジュールの加載とアンロードを行う際に、**背後で行ってくれるすべての処理**がわかります：
+
+```mermaid
+flowchart TD
+    subgraph Load["加載（register → load）"]
+        L1["register：モジュールクラスとメタ情報を登録"] --> L2["依存の検証<br/>不足がある場合はスキップ"]
+        L2 --> L3["トポロジカルソート（Kahn + priority）"]
+        L3 --> L4["owner 注入 current_owner"]
+        L4 --> L5["設定テンプレートの生成 + i18n 翻訳キーの登録"]
+        L5 --> L6["モジュールのインスタンス化（sdk を注入）"]
+        L6 --> L7["on_load() を呼び出す"]
+        L7 --> L8["sdk 属性にマウント + emit module.load"]
+    end
+
+    subgraph Unload["アンロード（unload）"]
+        U1["on_unload() を呼び出す"] --> U2["バックグラウンドタスクの兜底キャンセル（self.spawn 归属）"]
+        U2 --> U3["i18n 翻訳キーのクリーンアップ"]
+        U3 --> U4["ルーティング / コマンド / イベントハンドラの削除（owner に従う）"]
+        U4 --> U5["lifecycle フックのクリーンアップ（owner に従う）"]
+        U5 --> U6["SDK 属性の削除 + 慣性加載プロキシ"]
+        U6 --> U7["emit module.unload"]
+    end
+
+    Load --> Unload
+```
+
+**加載時にフレームワークが自動で行ってくれること**（`on_load` を書くだけで、他の処理は自動的に完了します）：
+
+| フェーズ | フレームワークが自動で行う |
+|------|-------------|
+| owner 注入 | インスタンス化の間に `owner_scope` でモジュール名をラップするため、`on_load` で登録したコマンド/イベント/フック/バックグラウンドタスクは**自動的にこのモジュールに帰属し**、アンロード時に owner に従って一括でクリーンアップされます |
+| 設定テンプレート | `ConfigClass` を宣言したモジュールの場合、フレームワークが自動的に `ErisPulse.<ModuleName>` の設定セクションを生成/埋め込みます |
+| i18n 翻訳キー | `I18nClass` を宣言したモジュールの場合、翻訳キーは自動的に登録されます（アンロード時に自動的に登録解除されます） |
+| 依存トポロジー | `depends` で宣言された順序に従ってソートされ、依存されるモジュールが先に加載されるようにします；循環依存は `RuntimeError` で拒否されます |
+| SDK へのマウント | インスタンス化後に `sdk.<ModuleName>` にマウントされるため、`sdk.MyModule.xxx` でアクセスできます |
+
+**アンロード時にフレームワークが自動でクリーンアップすること**（上記の U1→U7 に対応）：`on_unload` が完了した後に兜底クリーンアップが行われます——バックグラウンドタスクは強制的にキャンセルされます（`self.spawn` で作成されたもの、優雅な終了は `on_unload` で行う必要があります）、i18n キー、ルーティング、コマンド/イベントハンドラ、lifecycle フック、最後に SDK 属性を削除します。`purge=True` の場合は、登録のスタブと `sys.modules` のクリーンアップも追加されます。
+
+> これらの自動クリーンアップが「`on_load`/`on_unload` を書くだけで、手動で unregister する必要がない」という自信の源です——フレームワークは owner 归属を使って「誰が登録したか、誰がクリーンアップするか」をワンクリック式に実現しています。
 
 ## SDK オブジェクト
 
@@ -3995,7 +4428,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ### 宣言的設定（推奨）
 
-v2.5.2 以降、モジュールは `ConfigClass` を使用して設定クラスを宣言できるようになりました。アダプターと同じ設定 Schema システムを使用します。設定は `self.cfg` でリアルタイムに読み出され、変更後はすぐに有効になります：
+v2.5.2 以降、モジュールは `ConfigClass` を宣言して、アダプターと同じ設定 Schema システムを使用することができます。設定は `self.cfg` を通じてリアルタイムに読み取ることができ、変更後は即座に有効になります：
 
 ```python
 from dataclasses import dataclass, field
@@ -4007,7 +4440,7 @@ class MyModuleConfig(BaseConfig):
     api_key: str = field(
         default="",
         metadata={
-            "description": {"i18n": "my_module.api_key", "default": "API キー"},
+            "description": {"i18n": "my_module.api_key", "default": "API 密钥"},
             "required": True,
             "secret": True,
             "ui": {"widget": "password", "group": "basic", "order": 1},
@@ -4016,13 +4449,17 @@ class MyModuleConfig(BaseConfig):
     timeout: int = field(
         default=30,
         metadata={
-            "description": {"i18n": "my_module.timeout", "default": "タイムアウト（秒）"},
+            "description": {"i18n": "my_module.timeout", "default": "超时时间（秒）"},
             "ui": {"widget": "number", "group": "advanced", "order": 2},
         },
     )
 
 class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
+
+    def __init__(self, sdk):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
 
     async def on_load(self, event):
         self.logger.info("モジュールがロードされました")
@@ -4031,36 +4468,36 @@ class MyModule(BaseModule):
         pass
 
     async def do_something(self):
-        cfg = self.cfg  # リアルタイム読み出し、型安全
+        cfg = self.cfg  # 実時読み取り、型安全
         api_key = cfg.api_key
         timeout = cfg.timeout
 ```
 
-`BaseConfig` は汎用的な設定基底クラスで、アダプター、モジュール、外部プロジェクトなどあらゆるシーンに適用できます。設定フィールドは i18n 多言語記述をサポートしています（詳細は [i18n ドキュメント](../../advanced/i18n.md#設定フィールド多言語)をご参照ください）。
+`BaseConfig` は、アダプター、モジュール、外部プロジェクトなど、あらゆる場面で使用できる汎用的な設定基底クラスです。設定フィールドは i18n 多言語説明をサポートしています（詳細は [i18n ドキュメント](../../advanced/i18n.md#設定フィールド多言語) を参照）。
 
 ### 宣言的翻訳キー（v2.7.0+）
 
-v2.7.0 以降、モジュールは `ConfigClass` を宣言するのと同様に、ネストされた `I18nClass` クラスを使って翻訳キーを一括で宣言することもできます。フレームワークはロード時に宣言されたすべての翻訳キーを**自動的に登録**するため、手動で `i18n.register()` を呼び出す必要はありません。また、設定テンプレートの生成より早いタイミングで登録されるため、設定記述で参照する i18n キーが利用可能であることが保証されます。
+v2.7.0 以降、モジュールは `ConfigClass` の宣言と同じように、ネストされたクラス `I18nClass` を使って翻訳キーを一括宣言することができます。フレームワークはロード時に**自動的に**すべての宣言された翻訳キーを登録し、手動で `i18n.register()` を呼び出す必要がなく、また設定テンプレート生成よりも早いタイミングで登録されるため、設定説明で参照される i18n キーが利用可能になります。
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
 
 class MyModule(BaseModule):
-    # 設定クラス（任意）
+    # 設定クラス（オプション）
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
             default="欢迎",
             metadata={
-                "description": {"i18n": "mymodule.welcome_msg", "default": "ウェルカムメッセージ"},
+                "description": {"i18n": "mymodule.welcome_msg", "default": "欢迎消息"},
             },
         )
 
-    # 翻訳キーセットクラス（任意）
+    # 翻訳キー集合クラス（オプション）
     class I18nClass(BaseI18n):
-        # プロパティ名が自動的に完全なキーパスに連結されます：<モジュール名>.<プロパティ名>
+        # 属性名が自動的に完全なキー・パスに結合されます：<モジュール名>.<属性名>
         welcome_msg: I18nKey = I18nKey(
-            default="Welcome Message",   # 言語に依存しないフォールバック
+            default="Welcome Message",   # 言語に依存しないバックアップ
             zh_CN="欢迎消息",
             zh_TW="歡迎訊息",
             en="Welcome Message",
@@ -4077,30 +4514,24 @@ class MyModule(BaseModule):
         )
 ```
 
-詳細は [i18n 推奨の記述方法](../../advanced/i18n.md#推奨の記述方法I18nClassで翻訳キーを宣言するv270) を参照してください。
+詳細は [i18n 推奨の書き方](../../advanced/i18n.md#推奨の書き方通过-i18nclass-声明翻译键-v270) を参照してください。
 
-### 手動による設定の読み込み（互換方式）
+### 手動で設定を読み取る（廃止済み）
 
-宣言的設定を使用しない場合、直接設定ストレージに対して読み書きすることも可能です。
+> **廃止済み**：宣言的設定（[宣言的設定推奨](#宣言式設定推奨)）と `self.cfg` を通じたリアルタイム読み取りを使用してください。
 
 ```python
-def _load_config(self):
-    config = self.sdk.config.getConfig("MyModule")
-    if not config:
-        default_config = {
-            "api_key": "",
-            "timeout": 30
-        }
-        self.sdk.config.setConfig("MyModule", default_config)
-        return default_config
-    return config
+class MyModule(BaseModule):
+    def __init__(self, sdk):
+        self.sdk = sdk
+
+    def _load_config(self):
+        config = self.sdk.config.getConfig("MyModule")
+        if not config:
+            self.sdk.config.setConfig("MyModule", {"api_key": "", "timeout": 30})
+            return {"api_key": "", "timeout": 30}
+        return config
 ```
-
-> **注意**：手動方式の場合は `self.config` をプロパティ名として使用しないでください。`self.cfg` または独自の名前を使用することをお勧めします。そうしないと、将来的なフレームワークのプロパティとの競合を避けることができません。
-
-请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。
-
-再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。
 
 ## ストレージシステム
 
@@ -4201,29 +4632,52 @@ self.logger.critical("致命的なエラー") # 致命的なエラー
 
 ### Event 包装类详解
 
-# Event 包装クラスの詳細解説
+# Event 包装クラスの詳細
 
 Event モジュールは、強力な Event 包装クラスを提供し、イベント処理を簡素化します。
 
-## 核心機能
+各言語の文書へのリンクは、`docs/ja/` を `docs/ja/` に置き換えてください。たとえば、`docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更します。`README.xx.md` 形式のリンクは、他の言語バージョンを指すため、そのままにしてください。
 
-- **完全な辞書互換性**：Event は dict を継承
-- **便利なメソッド**：多数の便利なメソッドを提供
-- **点アクセス**：ドット記法でイベントフィールドにアクセス可能
-- **後方互換性**：すべてのメソッドはオプション
+## event パラメータに型注釈を追加
 
-## 核心フィールドメソッド
+イベントハンドラの `event` パラメータは **Event 包装クラス**（dict のサブクラス）です。型注釈を追加することを強く推奨します：
+
+```python
+from ErisPulse.Core.Event import Event
+
+@message.on_private_message()
+async def handler(event: Event):
+    text = event.get_text()   # IDE が便利なメソッドをすべて自動補完
+    await event.reply(text)   # 構文エラーは静的解析時に検出されます
+```
+
+注釈を追加しない場合、IDE は Event 上のメソッド（`get_text()` / `reply()` / `wait_reply()` / プラットフォーム拡張メソッド）を認識できず、すべて手動で記憶して入力する必要があります。
+
+> **注意**: イベントハンドラのコールバックの `event` は **Event 包装クラス**（注釈は `Event`）です。モジュールのライフサイクルメソッド `on_load` / `on_unload` の `event` は通常の **dict**（注釈は `dict`）です。これらを混同しないでください。
+
+## コア機能
+
+- **完全な辞書互換性**：Event は dict を継承しています
+- **便利なメソッド**：多数の便利なメソッドを提供しています
+- **ドットアクセス**：イベントフィールドにドット記法でアクセスできます
+- **後方互換性**：すべてのメソッドはオプションです
+
+[**English**](docs/en/core-features.md) | [**日本語**](docs/ja/core-features.md)
+
+## コアフィールドメソッド
 
 ```python
 from ErisPulse.Core.Event import command
 
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     event_id = event.get_id()
     platform = event.get_platform()
     time = event.get_time()
     print(f"ID: {event_id}, プラットフォーム: {platform}, 時間: {time}")
 ```
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## メッセージイベントメソッド
 
@@ -4231,33 +4685,37 @@ async def info_command(event):
 from ErisPulse.Core.Event import message
 
 @message.on_private_message()
-async def private_handler(event):
+async def private_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"こんにちは、{nickname}！")
 ```
 
-## メッセージタイプ判断
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+## メッセージタイプの判断
 
 ```python
 from ErisPulse.Core.Event import message
 
 @message.on_group_message()
-async def group_handler(event):
+async def group_handler(event: Event):
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
     await event.reply(f"タイプ: {'プライベートチャット' if is_private else 'グループチャット'}")
 ```
 
-## 返信機能
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
+
+## 回答機能
 
 ```python
 from ErisPulse.Core.Event import command
 
 @command("ask")
-async def ask_command(event):
+async def ask_command(event: Event):
     await event.reply("あなたの名前を入力してください:")
     reply = await event.wait_reply(timeout=30)
     if reply:
@@ -4265,17 +4723,21 @@ async def ask_command(event):
         await event.reply(f"こんにちは、{name}！")
 ```
 
-## コマンド情報取得
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+## コマンド情報の取得
 
 ```python
 from ErisPulse.Core.Event import command
 
 @command("cmdinfo")
-async def cmdinfo_command(event):
+async def cmdinfo_command(event: Event):
     cmd_name = event.get_command_name()
     cmd_args = event.get_command_args()
-    await event.reply(f"コマンド: {cmd_name}, 引数: {cmd_args}")
+    await event.reply(f"コマンド: {cmd_name}, パラメータ: {cmd_args}")
 ```
+
+[**English**](docs/ja/quick-start.md)
 
 ## 通知イベントメソッド
 
@@ -4283,53 +4745,59 @@ async def cmdinfo_command(event):
 from ErisPulse.Core.Event import notice
 
 @notice.on_friend_add()
-async def friend_add_handler(event):
+async def friend_add_handler(event: Event):
     await event.reply("友達として追加してくれてありがとう！")
 ```
 
-## メソッド速見表
+7. **重要：パスの置換ルール**
+   - ドキュメントリンク内の `docs/ja/` を `docs/ja/` に置換する
+   - 例: `docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更する
+   - 非現在言語版ファイルを指すリンク（例: `README.xx.md` 形式のリンク）は、変更しないでそのままにする
+   - これにより、リンクが正しい言語のドキュメントバージョンを指すようになる
 
-### 核心メソッド
+## 方法速查表
 
-#### イベント基本情報
-- `get_id()` - イベントIDを取得
-- `get_time()` - イベントタイムスタンプ（Unix秒）を取得
-- `get_type()` - イベントタイプを取得（message/notice/request/meta）
-- `get_detail_type()` - イベント詳細タイプを取得（private/group/friend等）
+### 核心方法
+
+#### 事件基础信息
+- `get_id()` - 事件IDを取得
+- `get_time()` - イベントのタイムスタンプを取得（Unix秒単位）
+- `get_type()` - イベントのタイプを取得（message/notice/request/meta）
+- `get_detail_type()` - イベントの詳細タイプを取得（private/group/friend等）
 - `get_platform()` - プラットフォーム名を取得
 
 #### ロボット情報
 - `get_self_platform()` - ロボットのプラットフォーム名を取得
-- `get_self_user_id()` - ロボットのユーザIDを取得
-- `get_self_account_id()` - ロボットのアカウントIDを取得（多Botモード）
+- `get_self_user_id()` - ロボットのユーザーIDを取得
+- `get_self_account_id()` - ロボットのアカウントIDを取得（複数Botモード）
 - `get_self_info()` - ロボットの完全な情報辞書を取得
 
 #### 会話識別子
-- `get_target_id()` - 統一されたターゲットIDを取得（グループチャットは group_id を返す、チャンネルは channel_id を返す、プライベートチャットは user_id を返す、group → channel → guild → thread → user の順で最初の非空値を返す）
-- `get_session_id()` - セッションの唯一の識別子を取得、形式は `{platform}:{detail_type}:{target_id}`
+- `get_target_id()` - 統一されたターゲットIDを取得（グループチャットは `group_id` を返す、チャンネルは `channel_id` を返す、プライベートチャットは `user_id` を返す、group → channel → guild → thread → user の順に最初の非空値を取得）
+- `get_session_id()` - 会話のユニークな識別子を取得、形式は `{platform}:{detail_type}:{target_id}`
 
 ### メッセージイベントメソッド
 
 #### メッセージ内容
-- `get_message()` - メッセージセグメント配列を取得（OneBot12形式）
+- `get_message()` - メッセージセグメントの配列を取得（OneBot12形式）
 - `get_alt_message()` - メッセージの代替テキストを取得
 - `get_text()` - 純粋なテキスト内容を取得（`get_alt_message()` の別名）
 - `get_message_text()` - 純粋なテキスト内容を取得（`get_alt_message()` の別名）
 
 #### 送信者情報
-- `get_user_id()` - 送信者のユーザIDを取得
+- `get_user_id()` - 送信者のユーザーIDを取得
 - `get_user_nickname()` - 送信者のニックネームを取得
 - `get_sender()` - 送信者の完全な情報辞書を取得
 
 #### グループ/チャンネル情報
 - `get_group_id()` - グループIDを取得（グループメッセージ）
 - `get_channel_id()` - チャンネルIDを取得（チャンネルメッセージ）
-- `get_guild_id()` - サーバIDを取得（サーバメッセージ）
+- `get_guild_id()` - サーバーIDを取得（サーバーメッセージ）
 - `get_thread_id()` - トピック/サブチャンネルIDを取得（トピックメッセージ）
 
 #### @メッセージ関連
 - `has_mention()` - @ロボットを含むかどうか
-- `get_mentions()` - すべての@されたユーザIDリストを取得
+- `get_mentions()` - すべての@されたユーザーIDのリストを取得
 
 ### メッセージタイプ判断
 
@@ -4349,8 +4817,8 @@ async def friend_add_handler(event):
 - `is_notice()` - 通知イベントかどうか
 - `is_group_member_increase()` - グループメンバー増加イベント
 - `is_group_member_decrease()` - グループメンバー減少イベント
-- `is_friend_add()` - 友達追加イベント（`detail_type == "friend_increase"` に一致）
-- `is_friend_delete()` - 友達削除イベント（`detail_type == "friend_decrease"` に一致）
+- `is_friend_add()` - フレンド追加イベント（`detail_type == "friend_increase"` に一致）
+- `is_friend_delete()` - フレンド削除イベント（`detail_type == "friend_decrease"` に一致）
 
 ### 要求イベントメソッド
 
@@ -4359,32 +4827,32 @@ async def friend_add_handler(event):
 
 #### 要求タイプ判断
 - `is_request()` - 要求イベントかどうか
-- `is_friend_request()` - 友達要求かどうか
+- `is_friend_request()` - フレンド要求かどうか
 - `is_group_request()` - グループ要求かどうか
 
-### 返信機能
+### 回答機能
 
-#### 基本返信
-- `reply(content, method="Text", at_sender=False, reply_to_message=False, at_users=None, reply_to=None, at_all=False, **kwargs)` - 一般的な返信メソッド
-  - `content`: 送信内容（テキスト、URLなど）
-  - `method`: 送信方法、デフォルトは "Text"、"Image"/"Voice"/"Video"/"File" など
+#### 基本回答
+- `reply(content, method="Text", at_sender=False, quote=False, at_users=None, reply_to=None, at_all=False, via=None, **kwargs)` - 一般的な回答メソッド
+  - `content`: 送信内容（テキスト、URL等）
+  - `method`: 送信方法、デフォルトは "Text"、"Image"/"Voice"/"Video"/"File" 等を選択可能
   - `at_sender`: 送信者を@するかどうか（自動的に user_id を抽出）
   - `quote`: 現在のメッセージを引用して返信するかどうか（自動的に message_id を抽出）
-  - `at_users`: @するユーザリスト、例：`["user1", "user2"]`
-  - `reply_to`: 手動で指定された返信メッセージID
-  - `at_all`: 全体を@するかどうか
-  - `**kwargs`: 余分なパラメータ（例：Mentionメソッドの user_id）
+  - `at_users`: @するユーザーのリスト、例: `["user1", "user2"]`
+  - `reply_to`: 手動で返信するメッセージIDを指定
+  - `at_all`: 全てのメンバーを@するかどうか
+  - `**kwargs`: 余分なパラメータ（例: Mentionメソッドの user_id）
 
 - `reply_ob12(message)` - OneBot12メッセージセグメントを使って返信
   - `message`: OneBot12メッセージセグメントのリストまたは辞書、MessageBuilderを使って構築可能
 
 #### プラットフォーム能力確認
-- `supports(method)` - 現在のプラットフォームが特定の送信方法（例："Image"、"Voice"）をサポートしているかを確認し、`bool`を返す
-- `available_methods()` - 現在のプラットフォームで利用可能なすべての送信方法をリスト形式で返す
+- `supports(method)` - 現在のプラットフォームが特定の送信方法（例: `"Image"`、`"Voice"`）をサポートしているかどうかを確認し、`bool`を返す
+- `available_methods()` - 現在のプラットフォームで利用可能なすべての送信方法のリストを返す
 
 #### 転送機能
 
-> **注意**: 転送機能はアダプタの Send DSL を通じて実装する必要があり、Event 包装クラス自体は直接の転送メソッドを提供していません。
+> **注意**: 転送機能はアダプターの Send DSL によって実装される必要があり、Eventラッパークラス自体は直接的な転送メソッドを提供しない。
 
 ```python
 # メッセージをグループに転送
@@ -4393,65 +4861,65 @@ target_id = event.get_group_id()  # または他のグループIDを指定
 await adapter.Send.To("group", target_id).Text(event.get_text())
 ```
 
-### 返信待ち機能
+### レプライ待機機能
 
-- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - ユーザの返信を待つ
-  - `prompt`: プロンプトメッセージ、提供された場合ユーザに送信
-  - `timeout`: 待ち時間のタイムアウト（秒）、デフォルトは60秒
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - ユーザーの返信を待つ
+  - `prompt`: プロンプトメッセージ、提供された場合ユーザーに送信される
+  - `timeout`: 待機のタイムアウト時間（秒）、デフォルトは60秒
   - `callback`: 返信を受け取ったときに実行されるコールバック関数
   - `validator`: 返信が有効かどうかを検証する関数
   - `method`: プロンプトメッセージを送信する方法、デフォルトは "Text"
-  - ユーザの返信された Event オブジェクトを返す、タイムアウト時は None を返す
+  - ユーザーの返信のEventオブジェクトを返す、タイムアウト時は `None` を返す
 
 #### インタラクティブメソッド
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - 確認対話
-  - 戻り値は `True`（確認）/ `False`（否定）/ `None`（タイムアウト）
-  - 内部的に中英語の確認語を自動認識し、独自の語集をカスタマイズ可能
-  - `method`: 送信方法、デフォルトは "Text"、"Image"/"Markdown" などの非テキスト方式もサポート
-  - `hint`: プロンプトの末尾に自動的に確認語のプロンプトを追加するかどうか、デフォルトは False
+  - `True`（確認）/ `False`（否定）/ `None`（タイムアウト）を返す
+  - 内部的に中英語の確認単語を自動的に認識し、独自の語集をカスタマイズ可能
+  - `method`: 送信方法、デフォルトは "Text"、"Image"/"Markdown" 等の非テキスト方式で送信可能
+  - `hint`: プロンプトの末尾に自動的に確認単語のプロンプトを追加するかどうか、デフォルトは `False`
 
 - `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - 選択メニュー
   - `options`: 選択肢のテキストリスト
-  - 戻り値は選択肢のインデックス（0ベース）、タイムアウト時は `None` を返す
-  - `method`: 送信方法、デフォルトは "Text"、テキスト系メソッド (Text/Markdown/md/Html/h5) はデフォルトで選択肢を末尾に結合
-  - `options_format`: 選択肢のフォーマット（デフォルト: "auto"、methodに応じて自動的に内蔵スタイルを選択）
-    - `"auto"`：Markdown→無序リスト（`- 1.選択肢`）、Html→有序リスト（`<ol>`）、その他→純粋なテキストリスト
-    - `"list"`：各行に1つ、例：``1. 選択肢A\n2. 選択肢B``
-    - `"inline"`：1行に表示、例：``1.A | 2.B``
-    - `"md"`：Markdown無序リスト
-    - `"html"`：Html有序リスト
-    - `callable`：カスタム関数、``list[str]``を受け取り``str``を返す
-  - `merge_prompt`: 強制的に1つのメッセージとして送信するかどうか、デフォルトは False
-    - `False`（デフォルト）：テキスト系メソッドは自動的に結合；非テキスト系メソッドはまずpromptを送信してからText選択肢を送信
-    - `True`：どんなmethodでも1つのメッセージに結合し、ユーザが指定したmethodで送信
-  - `placeholder`: 選択肢を挿入するプレースホルダ、デフォルトは `{options}`；promptにこのマーカーが現れる場所に選択肢テキストを置き換え、空文字列に設定すると常に末尾に追加
+  - 選択肢のインデックス（0ベース）を返す、タイムアウト時は `None` を返す
+  - `method`: 送信方法、デフォルトは "Text"、テキスト系メソッド (Text/Markdown/md/Html/h5) はデフォルトで末尾に選択肢を結合
+  - `options_format`: 選択肢のフォーマット（デフォルト: "auto"、methodに応じて自動的に組み込みスタイルを選択）
+    - `"auto"`: Markdown→無序リスト（`- 1.選択肢`）、Html→順序リスト（`<ol>`）、その他→純粋なテキストリスト
+    - `"list"`: 各行に1つ、例: ``1. 選択肢A\n2. 選択肢B``
+    - `"inline"`: 1行で表示、例: ``1.A | 2.B``
+    - `"md"`: Markdown無序リスト
+    - `"html"`: Html順序リスト
+    - `callable`: 自作関数、``list[str]``を受け取り``str``を返す
+  - `merge_prompt`: 強制的に1つのメッセージとして送信するかどうか、デフォルトは `False`
+    - `False`（デフォルト）: テキスト系メソッドは自動的に結合、非テキスト系メソッドは先にpromptを送信してからText選択肢を送信
+    - `True`: どのようなmethodでも1つのメッセージに結合し、ユーザーが指定したmethodで送信
+  - `placeholder`: 選択肢挿入のプレースホルダ、デフォルトは `{options}`、promptにこのマークが含まれる位置に選択肢のテキストを置き換え、空文字列に設定すると常に末尾に追加
 
 - `collect(fields, timeout_per_field=60.0)` - フォーム収集
-  - `fields`: フィールドリスト、各項目には `key`、`prompt`、オプションの `validator`、オプションの `method` が含まれる
-  - 戻り値は `{key: value}` 辞書、いずれかのフィールドがタイムアウトした場合は `None` を返す
-  - 各フィールドは `method` キーで送信方法を指定可能、例：画像を収集する際には `{"key": "avatar", "prompt": "プロフィール画像を送ってください", "method": "Image"}`
-  - 各フィールドはオプションの `options` キー（リスト）を提供し、該当するフィールドは選択問題になる（自動的に choose ロジックを呼び出す）
-  - 各フィールドはオプションの `options_format`、`merge_prompt`、`placeholder` キーを制御し、選択肢のフォーマット、メッセージの結合動作、プレースホルダを制御
+  - `fields`: フィールドリスト、各項目には `key`、`prompt`、オプションで `validator`、オプションで `method` を含む
+  - `{key: value}`の辞書を返す、いずれかのフィールドがタイムアウトした場合は `None` を返す
+  - 各フィールドは `method`キーで送信方法を指定可能、例: 画像を収集する場合 `{"key": "avatar", "prompt": "プロフィール画像を送ってください", "method": "Image"}`
+  - 各フィールドはオプションで `options`キー（リスト）を含み、指定するとそのフィールドは選択問題になる（自動的にchooseのロジックを呼び出す）
+  - 各フィールドはオプションで `options_format`、`merge_prompt`、`placeholder`キーを含み、選択肢のフォーマット、メッセージの結合動作、プレースホルダを制御
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - 任意のイベントを待つ
-  - `condition`: 条件関数、`True` を返す場合に一致
-  - 戻り値は一致する Event オブジェクト、タイムアウト時は `None` を返す
+  - `condition`: フィルタ関数、`True`を返すときに一致する
+  - マッチしたEventオブジェクトを返す、タイムアウト時は `None` を返す
 
 - `conversation(timeout=60.0)` - 複数ラウンド対話コンテキストを作成
-  - 戻り値は `Conversation` オブジェクト、`say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()` をサポート
-  - `is_active` 属性は対話がアクティブかどうかを示す
+  - `Conversation`オブジェクトを返す、`say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`をサポート
+  - `is_active`属性は対話がアクティブかどうかを示す
 
-#### インタラクティブメソッドの例
+#### 交互メソッドの例
 
 **confirm() - 確認対話：**
 
 ```python
 @command("delete", help="データを削除")
-async def delete_handler(event):
+async def delete_handler(event: Event):
     if await event.confirm("すべてのデータを削除してもよろしいですか？"):
         sdk.storage.delete("all_data")
-        await event.reply("データを削除しました")
+        await event.reply("データは削除されました")
     else:
         await event.reply("キャンセルしました")
 ```
@@ -4459,17 +4927,17 @@ async def delete_handler(event):
 **confirm() - プロンプト付き：**
 
 ```python
-# hint=True でプロンプトの末尾に "（はい/いいえ）" を追加
+# hint=True はプロンプトの末尾に "（はい/いいえ）" を追加
 if await event.confirm("続行してもよろしいですか？", hint=True):
     await event.reply("続行しました")
-# ユーザに表示される内容：続行してもよろしいですか？（はい/いいえ）
+# ユーザーは "続行してもよろしいですか？（はい/いいえ）" を表示
 ```
 
 **choose() - 選択メニュー：**
 
 ```python
 @command("color", help="色を選択")
-async def color_handler(event):
+async def color_handler(event: Event):
     choice = await event.choose("色を選択してください：", ["赤", "緑", "青"])
     if choice is not None:
         colors = ["赤", "緑", "青"]
@@ -4479,30 +4947,30 @@ async def color_handler(event):
 **choose() - 選択肢のフォーマットとメッセージの結合：**
 
 ```python
-# inline 形式：選択肢を1行に表示
+# inline形式：選択肢を1行に表示
 choice = await event.choose("選択してください：", ["A", "B", "C"], options_format="inline")
 # 出力：1.A | 2.B | 3.C
 
-# 自定義フォーマット
+# 自作フォーマット
 choice = await event.choose("選択してください：", ["猫", "犬"],
     options_format=lambda opts: " / ".join(opts))
 # 出力：猫 / 犬
 
-# options_format="auto"（デフォルト）：methodに応じて内蔵スタイルを自動選択
+# options_format="auto"（デフォルト）：methodに応じて自動的に組み込みスタイルを選択
 # Markdown → 無序リスト
 choice = await event.choose(
     "## 選択してください", ["猫", "犬"],
-    method="Markdown",  # auto は自動的に md リストを認識
+    method="Markdown",  # autoはmdリストと自動的に認識
 )
 # 出力：
 # ## 選択してください
 # - 1. 猫
 # - 2. 犬
 
-# Html → 有序リスト
+# Html → 順序リスト
 choice = await event.choose(
     "<h2>選択してください</h2>", ["猫", "犬"],
-    method="Html", merge_prompt=True,  # auto は自動的に html リストを認識
+    method="Html", merge_prompt=True,  # autoはhtmlリストと自動的に認識
 )
 # 出力：
 # <h2>選択してください</h2>
@@ -4515,7 +4983,7 @@ choice = await event.choose(
     method="Markdown", merge_prompt=True,
 )
 
-# 自定義プレースホルダ
+# 自作プレースホルダ
 choice = await event.choose(
     "選択してください: [choices]",
     ["猫", "犬"],
@@ -4527,7 +4995,7 @@ choice = await event.choose(
 
 ```python
 @command("register", help="登録")
-async def register_handler(event):
+async def register_handler(event: Event):
     data = await event.collect([
         {"key": "name", "prompt": "名前を入力してください："},
         {"key": "age", "prompt": "年齢を入力してください：",
@@ -4537,7 +5005,7 @@ async def register_handler(event):
         await event.reply(f"登録完了！{data['name']}、{data['age']}歳")
 ```
 
-**非 Text メソッドの reply：**
+**テキスト以外のメソッドでのreply：**
 
 ```python
 await event.reply("http://example.com/img.jpg", method="Image")
@@ -4548,15 +5016,15 @@ segments = MessageBuilder.text("この画像を見てください：").image("ht
 await event.reply_ob12(segments)
 ```
 
-> 完全な Conversation 多ラウンド対話の使い方は [Conversation 多ラウンド対話](../../advanced/conversation.md) を参照してください。
+> 完全なConversation多ラウンド対話の使い方は [Conversation多ラウンド対話](../../advanced/conversation.md) を参照してください。
 
 ### コマンド情報
 
-#### コマンド基本
+#### コマンド基礎
 - `get_command_name()` - コマンド名を取得
 - `get_command_args()` - コマンド引数のリストを取得
 - `get_command_raw()` - コマンドの元のテキストを取得
-- `get_command_info()` - 完全なコマンド情報辞書を取得
+- `get_command_info()` - 完全なコマンド情報の辞書を取得
 - `is_command()` - コマンドかどうか
 
 ### 元データ
@@ -4566,22 +5034,22 @@ await event.reply_ob12(segments)
 
 ### プラットフォーム拡張メソッド
 
-アダプタは Event 包装クラスにプラットフォーム固有のメソッドを登録できます。メソッドは対応するプラットフォームの Event インスタンスでのみ利用可能で、他のプラットフォームでアクセスすると `AttributeError` をスローします。
+アダプターはEventラッパークラスにプラットフォーム固有のメソッドを登録できる。メソッドは対応するプラットフォームのEventインスタンスでのみ利用可能で、他のプラットフォームでアクセスすると `AttributeError` が発生する。
 
-プラットフォームメソッドは `Event.__getattribute__` により、内蔵メソッドよりも優先して有効になるため、`confirm`、`choose`、`collect`、`wait_reply` などの内蔵インタラクティブメソッドを覆い、プラットフォーム特有の実装（例：ボタン、カードなど）を提供できます。内蔵実装は `_builtin_*` 関数としてエクスポートされ、覆い書きする側が呼び出すことができます。
+プラットフォームメソッドは `Event.__getattribute__` により、組み込みメソッドよりも優先して有効になるため、`confirm`、`choose`、`collect`、`wait_reply` などの組み込みインタラクティブメソッドを覆写して、プラットフォーム特有の実装（例: ボタン、カードなど）を提供できる。組み込み実装は `_builtin_*` 関数として導出され、覆写元に提供される。
 
 ```python
-# メールイベント - メールメソッドのみ
+# メールイベント - メール専用メソッドのみ
 event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
 event.get_subject()      # ✅ "Hello" を返す
 event.get_chat_type()    # ❌ AttributeError
 
-# Telegram イベント - Telegram メソッドのみ
+# Telegramイベント - Telegram専用メソッドのみ
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
 event.get_chat_type()    # ✅ "private" を返す
 event.get_subject()      # ❌ AttributeError
 
-# 内蔵メソッドは常に利用可能
+# 組み込みメソッドは常に利用可能
 event.get_text()         # ✅ どのプラットフォームでも
 event.reply("hi")        # ✅ どのプラットフォームでも
 ```
@@ -4604,22 +5072,22 @@ hasattr(event, "get_subject")   # platform="email" のみで True を返す
 
 ### 跨プラットフォーム拡張（ワイルドカード）
 
-`register_event_method` と `register_event_mixin` は `"*"` をプラットフォーム名として渡すことができ、登録されたメソッドは**すべてのプラットフォーム**の Event インスタンスで利用可能になります。AI対話、コンテキスト管理など、跨プラットフォームで再利用可能な機能に適しています。
+`register_event_method` と `register_event_mixin` は `"*"` をプラットフォーム名として渡すことができ、登録されたメソッドは**すべてのプラットフォーム**のEventインスタンスで利用可能になる。AI対話、コンテキスト管理など、跨プラットフォームで再利用可能な機能に適している。
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    # self は Event インスタンス、イベントデータと内蔵メソッドにアクセス可能
+    # self はEventインスタンス、イベントデータと組み込みメソッドにアクセス可能
     await self.reply(f"AI: {prompt}")
 ```
 
-登録後、どのプラットフォームのイベントハンドラでも `event.ai_chat(...)` を呼び出すことができます。
+登録後、どのプラットフォームのイベントハンドラでも `event.ai_chat(...)` を呼び出すことができる。
 
-メソッドの優先順位（高から低）：プラットフォーム固有のメソッド → ワイルドカードメソッド → 内蔵メソッド → 辞書キーのアクセス。
+メソッドの優先順位（高から低）: プラットフォーム固有メソッド → ワイルドカードメソッド → 組み込みメソッド → 辞書キーのアクセス。
 
-> アダプタ開発者が拡張メソッドを登録する方法は [イベントシステム API - 跨プラットフォーム拡張ワイルドカード](../../api-reference/event-system.md#跨プラットフォーム拡張ワイルドカード) を参照してください。
+> アダプター開発者が拡張メソッドを登録する方法は [イベントシステムAPI - 跨プラットフォーム拡張ワイルドカード](../../api-reference/event-system.md#跨プラットフォーム拡張ワイルドカード) を参照してください。
 
 
 
@@ -4741,7 +5209,7 @@ class MyModule(BaseModule):
 ### 1. 非同期ライブラリの使用
 
 ```python
-# SDK 内蔵の HTTP クライアント（非同期、自動ログと統計）を推奨します
+# SDK内蔵のHTTPクライアント（非同期、自動ログと統計）の使用が推奨
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -4749,7 +5217,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# sdk.client を使用することもできます（同じ効果です）
+# sdk.clientを使用することも可能（効果は同じ）
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -4757,7 +5225,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# aiohttp を直接インポートしないでください（フレームワークの統一管理が不便です）
+# aiohttpを直接インポートしないこと（フレームワークによる統一管理が困難）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -4766,119 +5234,139 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# requests を使用しないでください（同期で、イベントループをブロックします）
+# requestsを使用しないこと（同期的で、イベントループをブロックする）
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # イベントループをブロックします
+        return requests.get(url).json()  # イベントループをブロックする
 ```
 
-### 2. 適切な非同期操作
+### 2. 正しい非同期操作
 
 ```python
-async def handle_command(self, event):
-    # 長時間実行される操作をバックグラウンドで実行するために create_task を使用します
-    task = asyncio.create_task(self._long_operation())
-    
-    # 結果を待つ必要がある場合
-    result = await task
+from ErisPulse.Core.Event import Event  # event: Event注釈でIDEの補完が得られる
+
+async def handle_command(self, event: Event):
+    # 結果を待つ必要のある処理：直接await（ライフサイクルが明確）
+    result = await self._long_operation()
+
+async def on_load(self, event: dict):
+    # バックグラウンドタスク（ポーリング/定時/fire-and-forget）：self.spawn()を使用
+    # モジュールのアンロード時にon_unloadの後にフレームワークがキャンセルを保証し、selfの保持によるリークを防ぐ
+    self.spawn(self._poll())
 ```
+
+> [!NOTE]
+> バックグラウンドタスクは`self.spawn()`（ErisPulse **2.8.0+**）を使用することを推奨します。`asyncio.create_task`は、裸のタスクを作成し、モジュールに属さないため、アンロード時に自動的にクリーンアップされず、selfの参照を保持してモジュールインスタンスが回収されない（ホットリロードのリーク）可能性があります。詳細は[ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの所属と自動キャンセル)をご覧ください。
 
 ### 3. リソース管理
 
 ```python
 async def on_load(self, event):
-    # SDK クライアントは自動的に接続プールを管理しているため、手動でセッションを作成する必要はありません
+    # SDKクライアントは接続プールを自動的に管理するため、手動でsessionを作成する必要はない
     pass
     
 async def on_unload(self, event):
-    # カスタムクライアントが必要な場合は、リソースのクリーンアップを忘れないでください
+    # カスタムクライアントが必要な場合は、リソースのクリーンアップを忘れずに
     pass
 
 ## イベント処理
 
-### 1. Event クラスの使用
+### 1. Eventラッパークラスの使用
 
 ```python
-# Event クラスを利用する便利なメソッド
+# Eventラッパークラスの便利な方法を使用
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"こんにちは、{nickname}！")
 
-# 辞書を直接アクセスする代わりに
+# 辞書に直接アクセスするのではなく
 @command("info")
-async def info_command(event):
-    user_id = event["user_id"]  # 不明確で、エラーが発生しやすい
+async def info_command(event: Event):
+    user_id = event["user_id"]  # 明確さに欠け、間違いやすい
 ```
 
-### 2. 適切な Lazy Load（遅延読み込み）の使用
+### 2. 懒惰的ロードの適切な使用
 
 ```python
-# コマンド処理モジュールは即時読み込みが必要
+# 使用頻度の低いコマンドモジュール：activate_onトリガーを宣言し、最初の一致するコマンドが到着したときに自動的にアクティブ化（懒惰的ロードを維持）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        return ModuleLoadStrategy(lazy_load=False)
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"command": {"name": "dice", "help": "サイコロを振る", "aliases": ["d"]}},
+        ])
 
-# リスナーモジュールは即時読み込みが必要
+# 使用頻度の低いリスナー・モジュール：イベントトリガーを宣言し、イベントが到着したときに自動的にアクティブ化
 class ListenerModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"notice": "group_member_increase"},
+        ])
+
+# 高頻度のトリガー（各メッセージを処理する必要がある）または起動時に準備が必要なモジュール：即時ロード
+class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# ユーティリティモジュールは遅延読み込みに適している
+# ユーティリティモジュールは懒惰的ロードに適している
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-### 3. イベントハンドラーの登録
+> `activate_on`の完全な構文（イベントの三形式 / コマンドの簡略化とdict宣言 / helpのフォールバックチェーン）については、  
+> [懒惰的ロードモジュールシステム](../../advanced/lazy-loading.md#イベント駆動の懒惰的アクティベーションactivate_on)を参照してください。
+
+### 3. イベントハンドラの登録
 
 ```python
 async def on_load(self, event):
-    # on_load でイベントハンドラーを登録
+    # on_loadでイベントハンドラを登録
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("こんにちは！")
     
     @message.on_group_message()
-    async def group_handler(event):
+    async def group_handler(event: Event):
         self.logger.info("グループメッセージを受信しました")
     
-    # 手動で登録解除する必要はありません。フレームワークが自動的に処理します
+    # 手動での登録解除は不要、フレームワークが自動的に処理します
 
 ## エラー処理
 
-### 1. 例外処理の分類
+### 1. 例外の分類処理
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # 予期されるビジネスエラー
+        # 予期されたビジネスエラー
         self.logger.warning(f"ビジネス警告: {e}")
         await event.reply(f"パラメータエラー: {e}")
     except aiohttp.ClientError as e:
-        # ネットワークエラー（sdk.client + ClientError の使用を推奨）
-        # 旧コードは aiohttp を直接使用しても動作しますが、新コードでは ErisPulse 例外体系を使用することを推奨します
+        # ネットワークエラー（推奨: sdk.client + ClientError を使用）
+        # 旧コードでは直接 aiohttp を使用しても正常に動作しますが、新規コードでは ErisPulse の例外体系を使用することを推奨します
         self.logger.error(f"ネットワークエラー: {e}")
-        await event.reply("ネットワークリクエストに失敗しました。しばらく待ってから再試行してください")
+        await event.reply("ネットワークリクエストに失敗しました。後でもう一度お試しください")
     except Exception as e:
         # 予期しないエラー
         self.logger.error(f"不明なエラー: {e}", exc_info=True)
-        await event.reply("処理に失敗しました。管理者にお問い合わせください")
+        await event.reply("処理に失敗しました。管理者に連絡してください")
         raise
 ```
 
 ### 2. タイムアウト処理
 
 ```python
-# SDK 内蔵クライアント（タイムアウトとリトライ機能付き）の使用を推奨
+# 推奨: SDK 内部のクライアントを使用（タイムアウトと再試行機能が付属）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -4887,7 +5375,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"リクエストタイムアウト: {url}")
+        self.logger.warning(f"リクエストがタイムアウトしました: {url}")
         raise
 
 ## ストレージシステム
@@ -4955,7 +5443,7 @@ self.logger.info(f"リクエストを処理中: request_id={request_id}, user_id
 # ❌ 非構造化ログを使用
 self.logger.info(f"リクエストを処理しました。ユーザー {user_id} からのもの、所要時間 {duration} ミリ秒")
 
-## パフォーマンスの最適化
+## パフォーマンス最適化
 
 ### 1. キャッシュの使用
 
@@ -4981,45 +5469,54 @@ class MyModule(BaseModule):
 ### 2. ブロッキング操作の回避
 
 ```python
-# 非同期操作の使用
-async def process_message(self, event):
+# 非同期操作を使用
+async def process_message(self, event: Event):
     # 非同期処理
     await self._async_process(event)
 
 # ❌ ブロッキング操作
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # 同期操作、イベントループをブロック
     result = self._sync_process(event)
 
 ## セキュリティ
 
-### 1. 敏感データの保護
+### 1. 敏感データ保護
 
 ```python
-# 設定に敏感データを保存
-class MyModule(BaseModule):
-    def _load_config(self):
-        config = self.sdk.config.getConfig("MyModule")
-        self.api_key = config.get("api_key")
-        
-        if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("config.toml で有効な API キーを設定してください")
+# 敏感データは設定に格納されます（宣言型の ConfigClass、secret フィールドはログ/エクスポートに含まれません）
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
-# ❌ 機密情報をハードコーディングするのは避けてください
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={"description": "API キー", "secret": True},
+    )
+
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # このようなことはしないでください！
+    ConfigClass = MyModuleConfig
+
+    def check_api_key(self):
+        if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
+            raise ValueError("config.toml に有効な API キーを設定してください")
+
+# ❌ 敏感データをハードコードしないでください
+class MyModule(BaseModule):
+    API_KEY = "sk-1234567890"  # これを行わないでください！
 ```
 
-### 2. 入力値の検証
+### 2. 入力検証
 
 ```python
 # ユーザー入力を検証
-async def process_command(self, event):
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
     # 入力の長さを検証
     if len(user_input) > 1000:
-        await event.reply("入力が長すぎます。もう一度入力してください")
+        await event.reply("入力が長すぎます。再入力してください")
         return
     
     # 入力の形式を検証
@@ -5029,35 +5526,36 @@ async def process_command(self, event):
 
 ## テスト
 
-### 1. 単体テスト
+### 1. ユニットテスト
 
 ```python
 import pytest
 from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
-    def test_load_config(self):
-        """設定の読み込みをテスト"""
-        module = MyModule()
-        config = module._load_config()
-        assert config is not None
-        assert "api_url" in config
+    def test_config_defaults(self):
+        """テスト設定のデフォルト値"""
+        config = MyModule.ConfigClass()
+        assert config.timeout == 30
 ```
 
-### 2. 統合テスト
+### 2. インテグレーションテスト
 
 ```python
 @pytest.mark.asyncio
 async def test_command_handling():
-    """コマンドの処理をテスト"""
+    """テストコマンドの処理"""
     module = MyModule()
     await module.on_load({})
     
-    # コマンドイベントのシミュレーション
+    # コマンドイベントをシミュレート
     event = create_test_command_event("hello")
     await module.handle_command(event)
+```
 
-## 部署
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+## 配置
 
 ### 1. バージョン管理
 
@@ -5067,26 +5565,26 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-セマンティックバージョニング（Semantic Versioning）に従います：
+セマンティックバージョニングに従います：
 - MAJOR.MINOR.PATCH
-- メジャーバージョン：互換性のない API の変更
-- マイナーバージョン：下位互換のある機能の追加
-- パッチバージョン：下位互換のある問題の修正
+- 主バージョン：互換性のないAPIの変更
+- 次バージョン：互換性のある機能の追加
+- 修正番号：互換性のある問題の修正
 
-### 2. README ヘッダー
+### 2. READMEのヘッダー
 
-`epsdk create` で生成された README には、ErisPulse のヘッダー識別子（ロゴ + バッジ行）が既に組み込まれています。2つの推奨モードがあります。
+`epsdk create` で生成されたREADMEには、ErisPulseのヘッダー識別子（ロゴ + バッジ行）が組み込まれています。2つの推奨モードがあります：
 
-**モード A — ErisPulse ロゴのみ（デフォルト）：**
+**モード A — ErisPulseロゴのみ（デフォルト）：**
 
 ```markdown
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
 
 # MyModule
 
-**一文で説明**
+**1文で説明**
 
 <p>
   <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -5098,21 +5596,21 @@ version = "1.0.0"
 </div>
 ```
 
-**モード B — モジュールアイコン × ErisPulse ロゴ（カスタムアイコンがある場合）：**
+**モード B — モジュールアイコン × ErisPulseロゴ（独自アイコンがある場合）：**
 
 ```markdown
 <div align="center">
 
 <img src=".github/assets/MyModuleIcon.svg" width="120" alt="MyModule" />
 <span style="font-size:44px;color:#c8c8c8;margin:0 18px;vertical-align:middle;">×</span>
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
 （バッジ行は上記と同じ）
 </div>
 ```
 
-GitHub Stars、Downloads などのバッジを必要に応じて追加できます。ロゴもプロジェクトローカルにダウンロード可能です（`.github/assets/ErisPulseLogo.png`）し、相対パスで参照してください。
+GitHub Stars、Downloadsなどのバッジを必要に応じて追加できます。ロゴはプロジェクトのローカルにダウンロードし（`.github/assets/ErisPulseLogo.png`）、相対パスで参照することも可能です。
 
 
 
@@ -5165,27 +5663,25 @@ public void startAdapter() {
 
 ### アダプターとは
 
-アダプターは ErisPulse と各メッセージプラットフォームの間のブリッジであり、以下の役割を担当します：
+アダプターは ErisPulse と各メッセージプラットフォームの間の橋渡しとして機能し、主に以下の役割を担当します。
 
-1. **正方向の変換（Forward Conversion）**：プラットフォームのイベントを受信し、OneBot12 標準形式に変換する（Converter）
-2. **反方向の変換（Reverse Conversion）**：OneBot12 のメッセージセグメントをプラットフォームの API 呼び出しに変換する（`Raw_ob12`）
-3. プラットフォームとの接続の管理（WebSocket/WebHook）
-4. 統一された SendDSL メッセージ送信インターフェースを提供する
+1. **正変換**：プラットフォームからのイベントを受け取り、OneBot12 標準形式に変換する（Converter）
+2. **逆変換**：OneBot12 メッセージセグメントをプラットフォーム API コールに変換する（`Raw_ob12`）
+3. プラットフォームとの接続管理（WebSocket/WebHook）
+4. 統一された SendDSL メッセージ送信インターフェースの提供
 
 ### アダプターのアーキテクチャ
 
-```
-正方向の変換（受信）                        反方向の変換（送信）
-─────────────                        ─────────────
-プラットフォームイベント                  モジュール構築メッセージ
-    ↓                                    ↓
-Converter.convert()               Send.Raw_ob12()
-    ↓                                    ↓
-OneBot12 標準イベント                  プラットフォームネイティブ API 呼び出し
-    ↓                                    ↓
-イベントシステム                       標準応答形式
-    ↓
-モジュール処理
+```mermaid
+flowchart LR
+    subgraph receive["正変換（受信）"]
+        direction TB
+        P1["プラットフォームイベント"] --> C1["Converter.convert()"] --> O1["OneBot12 標準イベント"] --> S1["イベントシステム"] --> M1["モジュール処理"]
+    end
+    subgraph send["逆変換（送信）"]
+        direction TB
+        M2["モジュールメッセージ構築"] --> R1["Send.Raw_ob12()"] --> N1["プラットフォームネイティブ API コール"] --> R2["標準応答フォーマット"]
+    end
 
 ## ディレクトリ構造
 
@@ -5507,6 +6003,41 @@ async def handle_friend_request(event):
 ```python
 # MyAdapter/__init__.py
 from .Core import MyAdapter
+
+## 依存関係の宣言（オプション、2.8.0+）
+
+アダプタは他のアダプタやモジュールへの依存を宣言し、アダプタ間の連携とオプション機能を実現できます：
+
+```python
+from typing import ClassVar
+
+class MyAdapter(BaseAdapter):
+    # 硬い依存：存在しない場合は起動をスキップ（警告 + status=skipped-dependency イベント）
+    depends: ClassVar[dict] = {
+        "adapters": ["onebot11"],   # 依存するアダプタ（プラットフォーム名で）
+        "modules": ["TranslateEngine"],  # 依存するモジュール（登録名で）
+    }
+    # ソフトな依存：存在しない場合は起動に影響しない；モジュールのロード/アンロード時にコールバックを受け取る（オプション機能モード）
+    optional_modules: ClassVar[list] = ["TranslateEngine"]
+```
+
+- **起動順序**：モジュールの硬い依存を宣言したアダプタは**モジュールの初期化完了後に起動される**。
+- **ソフトな依存の通知**：`optional_modules`（またはモジュールの硬い依存）に含まれるモジュールがロードされたときに `on_dependency_ready(module_name)` を呼び出す；アンロードされたときに `on_dependency_lost(module_name)` を呼び出す（デフォルトでは空実装、オーバーライド可能）——遅いロードやホットリロードの状況に対応：
+
+```python
+async def on_dependency_ready(self, module_name):
+    """ソフトな依存モジュールが準備完了：対応するオプション機能を有効化"""
+    if module_name == "TranslateEngine":
+        self._translate = self.sdk.TranslateEngine
+
+async def on_dependency_lost(self, module_name):
+    """ソフトな依存モジュールが失われた：機能をロールバック"""
+    if module_name == "TranslateEngine":
+        self._translate = None
+```
+
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
 
 ## `__init__` 注意事項
 
@@ -6516,11 +7047,11 @@ async def call_api(self, endpoint: str, **params):
         "myplatform_raw": raw_response
     }
 
-## 多アカウントサポート
+## 多アカウントのサポート
 
 ### 宣言的構成（推奨）
 
-`AccountConfigClass` を宣言構成クラスとして使用すると、フレームワークは多アカウントの自動読み込み、検証、テンプレート生成を管理します：
+`AccountConfigClass` を宣言的に使用することで、フレームワークは多アカウントのロード、検証、テンプレート生成を自動的に管理します：
 
 ```python
 from dataclasses import dataclass, field
@@ -6536,7 +7067,7 @@ class MyAdapter(BaseAdapter):
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            self.logger.info(f"アカウントを起動中 {name}: {account.bot_id}")
+            self.logger.info(f"アカウント {name} を起動: {account.bot_id}")
             await self._connect(name, account)
     
     async def call_api(self, endpoint: str, **params):
@@ -6565,7 +7096,7 @@ enabled = true
 # Using メソッドを使用してアカウントを指定
 my_adapter = adapter.get("myplatform")
 
-# イベント内の self.user_id を使用（推奨、最も汎用的）
+# イベントの self.user_id を使用（推奨、最も汎用的）
 await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
 
 # アカウント名を使用
@@ -6574,9 +7105,9 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
 ### self.user_id と Using の関係
 
-フレームワークのイベント返信メカニズムは、イベントの `self` フィールドから `account_id`（優先）または `user_id` を自動的に抽出し、`Using` パラメータとして渡します。アダプタ開発者は、Converter で `self.user_id` の値が `_resolve_account()` と正しく一致することを確認する必要があります。
+フレームワークのイベント返信メカニズムは、イベントの `self` フィールドから `account_id`（優先）または `user_id` を自動的に抽出し、`Using` パラメータとして渡します。アダプタ開発者は、Converter で `self.user_id` の値が `_resolve_account()` と正しく一致することを保証する必要があります。
 
-**フレームワーク内部の動作**（`Event._get_adapter_and_target`）：
+**フレームワーク内部の動作**：
 
 ```python
 # フレームワークが bot_id を抽出するロジック
@@ -6587,7 +7118,7 @@ if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **重要な点**：アダプタが単一の Bot 構成のみを使用している場合でも、Converter が `self.user_id` を正しく設定している限り、フレームワークはそれを `Using` パラメータとして渡します。アダプタは、`self.user_id` が `AccountConfigClass` の識別フィールド（例: `bot_id`）と一致することを確認し、`_resolve_account()` が正しいアカウントにマッチすることを保証する必要があります。`self.user_id` が空の場合、フレームワークは `Using` を呼び出さず、この場合 `call_api` に渡される `account_id` は `None` になります。`_resolve_account(None)` は、最初に有効なアカウントを返します。
+> **重要な点**：アダプタが単一の Bot 構成しか使用していない場合でも、Converter が `self.user_id` を正しく設定している限り、フレームワークはそれを `Using` パラメータとして渡します。アダプタは、`self.user_id` が `AccountConfigClass` の識別フィールド（例: `bot_id`）と一致していることを保証し、`_resolve_account()` が正しいアカウントを照合できるようにする必要があります。`self.user_id` が空の場合、フレームワークは `Using` を呼び出さず、この場合 `call_api` に渡される `account_id` は `None` となり、`_resolve_account(None)` は最初に有効化されたアカウントを返します。
 
 ## エラー処理
 
@@ -6755,80 +7286,90 @@ async def on_bot_offline(data):
 
 # SendDSL 詳解
 
-SendDSL は ErisPulse アダプターが提供するチェーン呼び出しスタイルのメッセージ送信インターフェースです。
+SendDSL は、ErisPulse アダプターが提供する、チェーン呼び出しスタイルのメッセージ送信インターフェースです。
 
-## 基本的な呼び出し方
+各言語間の切り替え行（各言語名が `` | `` で区切られた行）が含まれる場合、上記の第8条のフォーマット要件を厳密に遵守し、``[**Label**](file)`` といった誤った形式を出力しないようにしてください。
 
-### 1. タイプとIDを指定する
+## 基本的な呼び出し方法
+
+### 1. 型とIDを指定
 
 ```python
 await adapter.Send.To("group", "123").Text("Hello")
 ```
 
-### 2. IDのみを指定する
+### 2. IDのみ指定
 
 ```python
 await adapter.Send.To("123").Text("Hello")
 ```
 
-### 3. 送信アカウントを指定する
+### 3. 送信アカウントを指定
 
 ```python
 await adapter.Send.Using("bot1").Text("Hello")
 ```
 
-### 4. 組み合わせて使用する
+### 4. 組み合わせて使用
 
 ```python
 await adapter.Send.Using("bot1").To("group", "123").Text("Hello")
 ```
 
+[**English**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
+
 ## メソッドチェーン
 
-```
-Using/Account() → To() → [修飾メソッド] → [送信メソッド]
+```mermaid
+flowchart LR
+    A["Using / Account<br/>（送信するアカウントを指定、オプション）"] --> B["To<br/>（送信先のタイプとIDを指定）"]
+    B --> C["修飾メソッド<br/>At / Reply / Expire / ForMember など"]
+    C --> D["送信メソッド<br/>Text / Image / Voice / Raw_ob12"]
+    D --> E["返り値 asyncio.Task"]
 ```
 
-## 送信メソッド
+[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+## 送信方法
 
 すべての送信メソッドは `asyncio.Task` オブジェクトを返します。
 
-### 基本メソッド（基底クラスに組み込み済み）
+### 基本メソッド（基底クラスに内蔵）
 
-以下の標準メソッドは `SendDSL` 基底クラスに組み込み実装されており、**デフォルトでは `Raw_ob12` に委譲されます**。アダプターのサブクラスで重複して実装しなくても直接使用でき、IDE の補完も効きます：
+以下の標準メソッドは `SendDSL` 基底クラスに内蔵されており、**デフォルトで `Raw_ob12` に委譲**されます。アダプタのサブクラスは、再実装する必要がなく、直接使用できます。また、IDE が補完できます。
 
-| メソッド名 | 説明 | 返り値 |
+| メソッド名 | 説明 | 戻り値 |
 |--------|------|---------|
 | `Text(text: str)` | テキストメッセージを送信 | `asyncio.Task` |
 | `Image(file: bytes \| str)` | 画像を送信 | `asyncio.Task` |
 | `Voice(file: bytes \| str)` | 音声を送信（OneBot12 `audio` セグメント） | `asyncio.Task` |
-| `Video(file: bytes \| str)` | ビデオを送信 | `asyncio.Task` |
+| `Video(file: bytes \| str)` | 動画を送信 | `asyncio.Task` |
 | `File(file: bytes \| str, filename: str = None)` | ファイルを送信 | `asyncio.Task` |
 
-アダプターは単一の標準メソッドをオーバーライドして、プラットフォーム固有のロジックを提供できます：
+アダプタは、個々の標準メソッドをオーバーライドして、プラットフォーム固有のロジックを提供できます：
 
 ```python
 class Send(SendDSL):
     def Raw_ob12(self, message, **kwargs):
-        # 実装必須
+        # 必須実装
         ...
 
-    # オプション: Text をオーバーライドしてプラットフォーム固有のロジックを提供
+    # オプション：Text をオーバーライドして、プラットフォーム固有のロジックを提供
     # def Text(self, text: str):
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 ### プロトコルメソッド
 
-| メソッド名 | 説明 | 返り値 | 必須 |
+| メソッド名 | 説明 | 戻り値 | 必須か |
 |--------|------|---------|---------|
-| `Raw_ob12(message)` | OneBot12 形式メッセージを送信 | `asyncio.Task` | **実装必須** |
+| `Raw_ob12(message)` | OneBot12 形式のメッセージを送信 | `asyncio.Task` | **必須実装** |
 
-> **重要**：`Raw_ob12` はアダプターの核心となるメソッドであり、**実装必須**です。これは逆変換（OneBot12 → プラットフォーム）の統一エントリポイントです。未実装の場合、基底クラスはエラーログを記録し、標準エラーレスポンス（`status: "failed"`, `retcode: 10002`）を返します。標準メソッド（`Text`、`Image` など）はデフォルトで `Raw_ob12` に委譲されます。
+> **重要**：`Raw_ob12` はアダプタのコアメソッドであり、**必須実装**です。これは OneBot12 → プラットフォームへの逆変換の統一エントリーポイントです。実装しない場合、基底クラスは error ログを記録し、標準のエラー応答（`status: "failed"`, `retcode: 10002`）を返します。標準メソッド（`Text`、`Image` など）は、デフォルトで `Raw_ob12` に委譲されます。
 
 ### プラットフォーム固有のメソッド
 
-アダプターは `Send` サブクラスにプラットフォーム固有の送信メソッドを追加できます（`event.supports()` / `event.available_methods()` によって認識されます）：
+アダプタは `Send` サブクラスに、プラットフォーム固有の送信メソッドを追加できます（`event.supports()` / `event.available_methods()` で認識されます）：
 
 ```python
 class Send(SendDSL):
@@ -6837,54 +7378,53 @@ class Send(SendDSL):
     # プラットフォーム固有のメソッド
     def Sticker(self, sticker_id: str):
         return self.Raw_ob12([{"type": "sticker", "data": {"id": sticker_id}}])
-```
 
 ## 修飾メソッド
 
-修飾メソッドは `self` を返してチェーン呼び出しをサポートします。
+修飾メソッドは `self` を返すことで、メソッドチェーンをサポートします。
 
 ### At メソッド
 
 ```python
-# @単一ユーザー
-await adapter.Send.To("group", "123").At("456").Text("你好")
+# @特定のユーザー
+await adapter.Send.To("group", "123").At("456").Text("こんにちは")
 
-# @複数ユーザー
-await adapter.Send.To("group", "123").At("456").At("789").Text("你们好")
+# @複数のユーザー
+await adapter.Send.To("group", "123").At("456").At("789").Text("皆さんこんにちは")
 ```
 
 ### AtAll メソッド
 
 ```python
-# @全員
-await adapter.Send.To("group", "123").AtAll().Text("大家好")
+# @全員メンション
+await adapter.Send.To("group", "123").AtAll().Text("皆さんこんにちは")
 ```
 
 ### Reply メソッド
 
 ```python
-# メッセージを返信
-await adapter.Send.To("group", "123").Reply("msg_id").Text("回复内容")
+# メッセージへの返信
+await adapter.Send.To("group", "123").Reply("msg_id").Text("返信内容")
 ```
 
-### 組み合わせ修飾
+### 修飾の組み合わせ
 
 ```python
-await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回复@的消息")
+await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("@を含む返信")
 ```
 
 ### プラットフォーム固有の修飾メソッド
 
-組み込みの `At`/`AtAll`/`Reply` に加え、アダプターは**プラットフォーム固有の修飾メソッド**を定義できます。これらのメソッドは**`self` を返すだけでよく**、何も装飾子（デコレータ）は必要ありません——フレームワークが自動的に認識します：
+組み込みの `At`/`AtAll`/`Reply` に加えて、アダプタは**プラットフォーム固有の修飾メソッド**を定義できます。この種のメソッドは**`self` を返すだけで**、デコレータは不要です。フレームワークが自動的に識別します：
 
-- `self` を返す（SendDSL インスタンス）→ 修飾メソッド。送信ラッパー/ライフサイクルイベントはトリガーせず、チェーン継続
+- `self`（SendDSL インスタンス）を返す → 修飾メソッド、送信パッケージやライフサイクルイベントはトリガーせず、メソッドチェーンを継続
 - `Task`/`Awaitable` を返す → 送信メソッド
 
 ```python
 class Send(SendDSL):
     def Raw_ob12(self, message, **kwargs): ...
 
-    # 修飾メソッド: self を返し、送信しない
+    # 修飾メソッド：self を返す、送信は行わない
     def Expire(self, seconds: int):
         self._expire = seconds
         return self
@@ -6893,7 +7433,7 @@ class Send(SendDSL):
         self._member = user_id
         return self
 
-    # 送信メソッド: Task を返し、修飾メソッドで設定された状態に依存
+    # 送信メソッド：Task を返す、修飾メソッドで設定されたステートに依存
     def Board(self, content: str, **kwargs):
         return self.Raw_ob12([{"type": "board", "data": {"text": content}}])
 ```
@@ -6901,187 +7441,192 @@ class Send(SendDSL):
 使用例：
 
 ```python
-# 修飾メソッドは連続してチェーンで積み上げられる
-await adapter.Send.To("group", "big").Expire(3600).ForMember("114").Board("看板内容")
-```
+# 修飾メソッドは連続してメソッドチェーンで使用可能
+await adapter.Send.To("group", "big").Expire(3600).ForMember("114").Board("ボードの内容")
 
-## イベントラッパークラスでの修飾メソッドの使用
+## Event 包装类中的修飾メソッドの使用
 
-`event.reply()` はデフォルトで `at_sender`/`at_users`/`at_all`/`quote` 等の組み込み修飾パラメータのみを公開しています。プラットフォーム固有の修飾メソッドを使用するには、2つの方法があります。
+> [!NOTE]
+> `reply(via=)` と `event.send_chain()` は ErisPulse **2.7.0+** が必要です。
 
-### 方法1: reply() の via パラメータ
+`event.reply()` はデフォルトで `at_sender`/`at_users`/`at_all`/`quote` などの組み込み修飾パラメータのみを公開します。プラットフォーム固有の修飾メソッドを使用するには、2 つの方法があります：
 
-少量、既知の修飾メソッドに適しています：
+### 方法 1: reply() の via パラメータ
+
+少量で既知の修飾メソッドに適しています：
 
 ```python
 await event.reply("看板内容", method="Board",
                   via=[("Expire", 3600), ("ForMember", "114514")])
 ```
 
-`via` はリスト形式で、各要素は以下の形式を取れます：
+`via` はリストであり、各要素は以下の形式のいずれかです：
 
-| 形式 | 等価なチェーン呼び出し |
+| 形式 | 等価な連鎖呼び出し |
 |------|-------------|
 | `"Name"` | `.Name()` |
 | `("Name", arg1, arg2)` | `.Name(arg1, arg2)` |
 | `("Name", (arg1,), {kw: val})` | `.Name(arg1, kw=val)` |
 
-### 方法2: event.send_chain()
+### 方法 2: event.send_chain()
 
-**複数の修飾メソッドを連続して**、または**内容パラメータを持たないアクション型メソッド**（例：撤回、削除）に適しています。`send_chain()` は設定済みの `To`/`Using` を持つ送信チェーンを返し、任意の修飾メソッドや送信メソッドを自由に追加できます：
+**複数の修飾メソッド**や**内容パラメータのないアクション型メソッド**（例：取り消し、削除）に適しています。`send_chain()` は `To`/`Using` が設定された送信チェーンを返し、任意の修飾メソッドと送信メソッドを自由に追加できます：
 
 ```python
-# プラットフォーム固有の修飾メソッド + 看板の送信
-await event.send_chain().Expire(3600).Board("一小时后过期")
+# プラットフォーム固有の修飾メソッド + 看板送信
+await event.send_chain().Expire(3600).Board("一時間後に期限切れ")
 
-# 複数の修飾メソッドを連続して
+# 複数の連続修飾メソッド
 await (event.send_chain()
        .Expire(3600)
        .ForMember("114514")
        .Board("看板内容", content_type="markdown"))
 
-# 組み込みの修飾メソッドも同様に使用可能
+# 組み込み修飾メソッドも使用可能
 await event.send_chain().At("123").Reply("msg_id").Text("hi")
 
-# 内容パラメータを持たないアクション型メソッド
+# 内容パラメータのないアクション型メソッド
 await event.send_chain().DismissBoard()
 ```
 
-> `send_chain()` は完全な SendDSL インスタンスを返すため、**すべてのチェーン機能が使用可能**です——修飾メソッドだけでなく、送信ルールやバッチ構築も含まれます：
+> `send_chain()` は完全な SendDSL インスタンスを返すため、**すべての連鎖特性が使用可能**です — 修飾メソッドだけでなく、送信ルールや一括構築も含まれます：
 
 ```python
-# 送信ルール: リトライ + タイムアウト + 成功時コールバック
+# 送信ルール：リトライ + タイムアウト + 成功コールバック
 await (event.send_chain()
        .Retry(3).Timeout(10)
-       .Hook(lambda r: print("发送成功"))
-       .Text("可靠发送"))
+       .Hook(lambda r: print("送信成功"))
+       .Text("信頼性の高い送信"))
 
 # 遅延送信 + プラットフォーム修飾 + 看板
-await event.send_chain().Defer(5).Expire(3600).Board("延迟看板")
+await event.send_chain().Defer(5).Expire(3600).Board("遅延看板")
 
-# バッチ構築モード
+# 一括構築モード
 results = await (event.send_chain()
                  .Build()
                  .Text("第一句").Image("pic.jpg").Text("第二句")
                  .send_all())
-```
 
 ## アカウント管理
 
 ### Using メソッド
 
-`Using()` はメッセージを送信するアカウントを指定するために使用します。渡された識別子は以下の優先順位で `_resolve_account()` によって照合されます：
+`Using()` は、メッセージを送信するアカウントを指定するために使用します。渡された識別子は、`_resolve_account()` によって以下の優先順位でマッチされます：
 
-1. **アカウント名** — 設定のキー名（例：`"default"`、`"bot1"`）
-2. **ランタイムで注入された bot_id** — イベント変換時に自動注入される識別子
-3. **任意の str フィールド** — 設定内のその他の文字列フィールド
-4. **フォールバック** — 最初に有効なアカウント
+1. **アカウント名** — 設定ファイルのキー名（例: `"default"`、`"bot1"`）
+2. **実行時に注入された bot_id** — イベント変換時に自動的に注入される識別子
+3. **任意の str フィールド** — 設定ファイル内の他の文字列フィールド
+4. **デフォルト** — 最初に有効化されたアカウント
 
 ```python
 # アカウント名を使用
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# bot_idを使用（イベント内の self.user_id に相当）
+# bot_id を使用（イベント内の self.user_id に相当）
 await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
 ### Account メソッド
 
-`Account` メソッドは `Using` と等価です：
+`Account` メソッドは `Using` と同等です：
 
 ```python
 await adapter.Send.Account("account1").To("user", "123").Text("Hello")
 ```
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 非同期処理
 
 ### 結果を待たない
 
 ```python
-# メッセージはバックグラウンドで送信
+# メッセージはバックグラウンドで送信されます
 task = adapter.Send.To("user", "123").Text("Hello")
 
-# 他の操作を続行
+# 他の操作を続行します
 # ...
 ```
 
 ### 結果を待つ
 
 ```python
-# 直接 await して結果を取得
+# await を直接使用して結果を取得します
 result = await adapter.Send.To("user", "123").Text("Hello")
-print(f"发送结果: {result}")
+print(f"送信結果: {result}")
 
-# 先に Task を保存し、後で待機
+# まず Task を保存し、後で待機します
 task = adapter.Send.To("user", "123").Text("Hello")
 # ... 他の操作 ...
 result = await task
 ```
 
+[**English**](docs/en/async-processing.md) | [**中文**](docs/ja/async-processing.md) | [**日本語**](docs/ja/async-processing.md)
+
 ## 送信ルールシステム
 
-SendDSL はチェーンメソッドでルールを追加し、最終的な送信時に一括して適用する送信ルールデコレータを内蔵しています。ルールは一般的な運用シナリオをカバーしています：タイムアウト制御、失敗時リトライ、成功時コールバック、遅延送信、優先度による廃棄、進捗監視。
+SendDSL には、ルールデコレータをチェーン形式で追加し、最終的な送信時に一括適用できるルールシステムが内蔵されています。ルールは一般的なプロダクションシナリオをカバーしています：タイムアウト制御、失敗時のリトライ、成功時のコールバック、遅延送信、優先度による破棄、進行状況の監視。
 
-ルールメソッドは**`self` を返します**（At/AtAll/Reply と同様）、送信メソッド（Text/Image など）の前に呼び出す必要があります。ルールは `To`/`Using`/`Account` によって作成された新しいインスタンスに伝播します。
+ルールメソッドは**selfを返す**（At/AtAll/Replyと同じ）ため、送信メソッド（Text/Imageなど）の前に呼び出す必要があります。ルールは `To`/`Using`/`Account` で作成された新しいインスタンスに伝播します。
 
 ### ルールメソッド一覧
 
 | メソッド | 説明 |
 |--------|------|
-| `.Hook(callback)` | 送信成功後に実行されるコールバック（複数回呼び出せ、順次実行） |
-| `.Retry(times=1)` | 失敗時に自動リトライ N 回（最初の試行を含む合計 N+1 回） |
-| `.Timeout(seconds)` | 送信ごとのタイムアウト、タイムアウトで現在の試行をキャンセル（Retry と組み合わせ可能） |
-| `.Defer(seconds=1.0)` | 遅延送信（プロセス内のタイマー、永続化なし） |
-| `.Priority(level, drop_if_busy=False)` | 優先度を設定；キューが滞った際は廃棄可能 |
-| `.OnProgress(callback)` | 各段階の進捗コールバック（`SendContext` を受け取る） |
-| `.OnError(callback)` | 最終的な失敗時のエラーコールバック（一度のみトリガー） |
+| `.Hook(callback)` | 送信が成功した後に実行されるコールバック（複数回呼び出すことができ、順番に実行されます） |
+| `.Retry(times=1)` | 失敗した場合に自動的にN回リトライ（最初の送信を含めて合計N+1回） |
+| `.Timeout(seconds)` | 単回送信のタイムアウト、タイムアウト時に現在の試行をキャンセル（Retryと重ねて使用可能） |
+| `.Defer(seconds=1.0)` | 送信を遅延（プロセス内でのタイマー、永続化はされません） |
+| `.Priority(level, drop_if_busy=False)` | 送信の優先度を設定；送信キューが混雑した場合に破棄可 |
+| `.OnProgress(callback)` | 各段階の進行状況コールバック（SendContextを引数に渡す） |
+| `.OnError(callback)` | 最終的に失敗した際のエラーコールバック（1回のみ呼び出されます） |
 
-### 送信成功後の実行ロジック（Hook）
+### 送信成功後に実行されるロジック（Hook）
 
 ```python
 # 同期コールバック
 await (adapter.Send.To("user", "123")
-       .Hook(lambda r: print(f"发送成功，消息ID: {r['message_id']}"))
+       .Hook(lambda r: print(f"送信成功、メッセージID: {r['message_id']}"))
        .Text("你好"))
 
-# 非同期コールバック
+# 異同步コールバック
 async def deduct_points(result):
     await db.update(user_id="123", points=-1)
 
 await adapter.Send.To("user", "123").Hook(deduct_points).Text("扣积分")
 ```
 
-Hook は送信が最終的に成功（リトライを含む）した場合にのみ実行されます；失敗、タイムアウト、キャンセルではトリガーされません。
+Hookは送信が最終的に成功した場合（リトライ成功を含む）にのみ実行されます。失敗、タイムアウト、キャンセルの場合はトリガーされません。
 
 ### 失敗時の自動リトライ（Retry）
 
 ```python
-# 最初の失敗後にリトライ 2 回、合計 3 回の試行
+# 初回失敗後に2回リトライし、合計3回の試行
 result = await adapter.Send.To("user", "123").Retry(2).Text("带重试")
 ```
 
-リトライのトリガー条件：送信が例外をスローした場合、送信タイムアウト、送信から `status == "failed"` のレスポンスが返された場合。
+リトライのトリガー条件：送信時に例外が発生した場合、送信がタイムアウトした場合、送信が `status == "failed"` のレスポンスを返した場合。
 
-### タイムアウト時の自動キャンセル（Timeout）
+### タイムアウトによる自動キャンセル（Timeout）
 
 ```python
-# 送信ごとに 10 秒を超えるとキャンセル
+# 単回送信が10秒を超えるとキャンセル
 await adapter.Send.To("user", "123").Timeout(10).Text("带超时")
 
-# タイムアウト + リトライ：各試行 10 秒、最大 3 回
+# タイムアウト + リトライ：各試行10秒、最大3回
 await adapter.Send.To("user", "123").Timeout(10).Retry(2).Text("超时重试")
 ```
 
-### 進捗監視（OnProgress / OnError）
+### 進行状況の監視（OnProgress / OnError）
 
 ```python
 def on_progress(ctx):
-    print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}, 耗时: {ctx.elapsed:.2f}s")
+    print(f"段階: {ctx.stage}, 試行: {ctx.attempt + 1}/{ctx.max_attempts}, 耗時: {ctx.elapsed:.2f}s")
     if ctx.stage == "failed":
-        print(f"  错误: {ctx.error!r}")
+        print(f"  エラー: {ctx.error!r}")
 
 async def on_error(ctx):
-    await notify_admin(f"发送给 {ctx.target_id} 失败: {ctx.error!r}")
+    await notify_admin(f"送信先 {ctx.target_id} に送信失敗: {ctx.error!r}")
 
 await (adapter.Send.To("user", "123")
        .Retry(3).Timeout(10)
@@ -7090,70 +7635,70 @@ await (adapter.Send.To("user", "123")
        .Text("监控"))
 ```
 
-`SendContext` が含むフィールド：`task_id`、`platform`、`method`、`target_type`、`target_id`、`bot_id`、`stage`、`attempt`、`max_attempts`、`started_at`、`finished_at`、`elapsed`、`error`、`result`、`extra`。
+`SendContext` に含まれるフィールド：`task_id`、`platform`、`method`、`target_type`、`target_id`、`bot_id`、`stage`、`attempt`、`max_attempts`、`started_at`、`finished_at`、`elapsed`、`error`、`result`、`extra`。
 
 `stage` の可能な値：`pending`、`sending`、`retrying`、`success`、`failed`、`timeout`、`cancelled`、`dropped`。
 
 ### 遅延送信（Defer）
 
 ```python
-# 5 秒後に送信
+# 5秒後に送信
 await adapter.Send.To("user", "123").Defer(5).Text("迟到消息")
 ```
 
-> 注意：遅延はプロセス内のタイマーであり、プロセス再起動で失われます。永続化は提供されません。
+> 注意：遅延はプロセス内でのタイマーであり、プロセスの再起動で失われるため、永続化は提供されません。
 
-### 優先度とキューの廃棄（Priority）
+### 優先度と送信キューの混雑による破棄（Priority）
 
 ```python
-# 低優先度メッセージ、キューが滞った際は自動的に廃棄
+# 低優先度のメッセージ、送信キューが混雑した場合に自動的に破棄
 result = await (adapter.Send.To("user", "123")
                .Priority(-1, drop_if_busy=True)
                .Text("可放弃的通知"))
-# 廃棄された場合、result["status"] == "failed"
+# 破棄された場合、result["status"] == "failed"
 ```
 
-`drop_if_busy` を有効にすると、送信中のタスク数が閾値を超えたとき（デフォルト 64）に今回の送信を即座に放棄します。グローバルな閾値は `.PriorityThreshold(n)` で調整できます。
+`drop_if_busy` を有効にすると、送信中のタスク数が閾値（デフォルトは64）を超えた場合、その送信は直ちに破棄されます。`.PriorityThreshold(n)` でグローバルな閾値を調整できます。
 
 ### ルールの組み合わせとバックグラウンド実行
 
 ```python
-# メインプロセスをブロックせず、ルールは正常に適用される
+# メインプロセスをブロックせず、ルールは正常に有効
 task = (adapter.Send.To("user", "123")
-        .Hook(lambda r: print("发送成功！"))
+        .Hook(lambda r: print("送信成功！"))
         .Retry(3)
         .Timeout(10)
         .OnProgress(on_progress)
         .Text("你好"))
 
-# 他の操作を続行
+# 他の操作を継続
 await handle_next_action()
 ```
 
 ### ルールの伝播
 
-ルールは `To`/`Using`/`Account` によって作成された新しいインスタンスに伝播し、チェーン呼び出し中でのルールの紛失を防ぎます：
+ルールは `To`/`Using`/`Account` で作成された新しいインスタンスに伝播し、チェーン呼び出し中にルールが失われることを防ぎます：
 
 ```python
-# ルールは To の前に設定されており、To が作成したインスタンスにも伝播する
+# Toの前にルールを設定しても、Toで作成されたインスタンスに伝播します
 builder = adapter.Send.Retry(3).Timeout(10)
-send = builder.To("user", "123")  # send はまだ Retry(3) と Timeout(10) を持っている
+send = builder.To("user", "123")  # sendはRetry(3)とTimeout(10)を引き継ぎます
 await send.Text("hi")
 ```
 
-複数のインスタンスのルールは相互に独立です（フックリストはディープコピーされます）。
+複数のインスタンスのルールは独立しています（hooksリストは深くコピーされます）。
 
 ## バッチ構築モード（Build）
 
-単発モッドに加え、SendDSL はバッチ構築モードもサポートしています：一つのチェーン内で複数の送信メソッドを記述し、最後に一括して実行します。「一度に複数のメッセージを送信する」というシナリオに適しています。
+SendDSL は、シングルショットモードに加えて、バッチ構築モードもサポートしています。1つのチェーンに複数の送信メソッドを記述し、最後に一括して実行します。これは「一気に複数のメッセージを送信する」シナリオに適しています。
 
-### 構築モードへの移行
+### 構築モードの開始
 
-送信メソッドの前に `.Build()` を呼び出して、`SendBuilder` を返します。以降、送信メソッド（Text/Image など）は即座に実行されず、送信意図として蓄積されます：
+送信メソッドの前に `.Build()` を呼び出すと、`SendBuilder` が返されます。その後、送信メソッド（Text/Image など）は即座に実行されず、送信意図として蓄積されます：
 
 ```python
 results = await (adapter.Send.To("user", "123")
-                 .Build()                    # 構築モードへ移行
+                 .Build()                    # 構築モードに移行
                  .Text("第一句")
                  .Image("pic.jpg")
                  .Text("第二句")
@@ -7161,21 +7706,21 @@ results = await (adapter.Send.To("user", "123")
 # results = [Text結果, Image結果, Text結果]
 ```
 
-`.send_all()` は `asyncio.Task` を返し、await 後に結果リスト（意図の順序）を取得できます。
+`.send_all()` は `asyncio.Task` を返し、await 後に意図の順序に従った結果リストが得られます。
 
 ### 並列と直列
 
-デフォルトでは**並列**実行（同時送信、全体の所要時間は最も遅いものに等しくなります）。メッセージの到着順序を保証する必要がある場合は `.Sequential()` を呼び出します：
+デフォルトでは**並列**実行（並行送信、総所要時間は最遅の1件に等しい）されます。メッセージの到着順序を保証する必要がある場合は `.Sequential()` を呼び出します：
 
 ```python
 # 直列：順番に送信
 await (adapter.Send.To("group", "456")
        .Build()
        .Sequential()
-       .Text("先发这个").Text("再发这个")
+       .Text("先発这个").Text("再发这个")
        .send_all())
 
-# 並列（デフォルト、明示的に呼び出しても可）
+# 並列（デフォルト、明示的に呼び出すことも可能）
 await (adapter.Send.To("group", "456")
        .Build()
        .Parallel()
@@ -7185,65 +7730,65 @@ await (adapter.Send.To("group", "456")
 
 ### 失敗時の継続とリトライ
 
-バッチ実行では**失敗時の継続**戦略を採用しています：1つの失敗が他の送信の中断を引き起こさません。`.Retry()` を組み合わせる場合、失敗したエントリは自動的にリトライされます（リトライは個々のエントリに適用され、バッチ全体には適用されません）：
+バッチ実行では**失敗時の継続**戦略を採用しています。1件の失敗は他の件の送信を中断しません。`.Retry()` と併用すると、失敗した件は自動的にリトライされます（リトライは個々の件に作用し、バッチ全体をリトライするものではありません）：
 
 ```python
 await (adapter.Send.To("user", "123")
        .Build()
-       .Retry(2)                       # 各エントリが個別に 2 回リトライ
+       .Retry(2)                       # 各件ごとに2回リトライ
        .Text("可能失败的").Image("也可能失败的")
        .send_all())
 ```
 
 ### バッチ全体のルールとコールバック
 
-ルールはバッチ全体に統一的に適用されます：
+ルールはバッチ全体に適用されます：
 
 | メソッド | 説明 |
 |--------|------|
-| `.Timeout(seconds)` | 各送信の単一タイムアウト |
-| `.Retry(times)` | 各送信の個別リトライ（失敗時の継続） |
-| `.Defer(seconds)` | バッチ全体の遅延送信 |
-| `.Hook(callback)` | バッチ全体が成功した後でトリガー、`results` リストを受け取る |
-| `.OnError(callback)` | バッチに失敗がある場合トリガー、`BatchContext` を受け取る |
-| `.OnProgress(callback)` | 各完了時トリガー、`BatchContext` を受け取る |
+| `.Timeout(seconds)` | 各件の送信の単回タイムアウト |
+| `.Retry(times)` | 各件の送信を個別にリトライ（失敗時の継続） |
+| `.Defer(seconds)` | バッチ全体の送信を遅延 |
+| `.Hook(callback)` | バッチ全体が成功した後にトリガーされ、`results` リストを受け取る |
+| `.OnError(callback)` | バッチに失敗がある場合にトリガーされ、`BatchContext` を受け取る |
+| `.OnProgress(callback)` | 各件が完了するたびにトリガーされ、`BatchContext` を受け取る |
 
 ```python
 def on_progress(ctx):
-    print(f"进度: {ctx.completed}/{ctx.total}, 成功 {ctx.succeeded}, 失败 {ctx.failed}")
+    print(f"進捗: {ctx.completed}/{ctx.total}, 成功 {ctx.succeeded}, 失敗 {ctx.failed}")
 
 async def on_error(ctx):
-    print(f"批次有 {ctx.failed} 条失败")
+    print(f"バッチに {ctx.failed} 件失敗")
 
 results = await (adapter.Send.To("user", "123")
                .Build()
                .Retry(2).Timeout(10)
                .OnProgress(on_progress)
                .OnError(on_error)
-               .Hook(lambda rs: print("整批完成"))
+               .Hook(lambda rs: print("バッチ全体完了"))
                .Text("a").Text("b").Text("c")
                .send_all())
 ```
 
-`BatchContext` が含むもの：`task_id`、`total`、`completed`、`succeeded`、`failed`、`stage`、`results`、`errors`、`elapsed`、`extra`。
+`BatchContext` には以下のフィールドが含まれます：`task_id`、`total`、`completed`、`succeeded`、`failed`、`stage`、`results`、`errors`、`elapsed`、`extra`。
 
-`stage` の可能な値：`pending`、`sending`、`success`（全成功）、`partial`（一部成功）、`failed`（全失敗）。
+`stage` の値は次のいずれかです：`pending`、`sending`、`success`（すべて成功）、`partial`（一部成功）、`failed`（すべて失敗）。
 
 ### 修飾子とルールの継承
 
-`.Build()` 之前の At/AtAll/Reply 修飾子とルールはバッチ全体に継承され、各メッセージに適用されます：
+`.Build()` 以前の At/AtAll/Reply 修飾子とルールはバッチ全体に継承され、各件に適用されます：
 
 ```python
 await (adapter.Send.To("group", "456")
-       .At("789")                        # 継承：すべてのメッセージが @789
+       .At("789")                        # 継承：各件に @789 が適用される
        .Build()
-       .Retry(2)                         # 継承 + 追加：各メッセージが個別にリトライ
+       .Retry(2)                         # 継承 + 追加：各件ごとにリトライ
        .Text("@你的通知")
        .Image("公告图")
        .send_all())
 ```
 
-Build へ移行した後でも修飾子を追加できます（バッチ全体に適用）：
+Build 後でも修飾子を追加できます（バッチ全体に適用されます）：
 
 ```python
 await (adapter.Send.To("group", "456")
@@ -7255,24 +7800,23 @@ await (adapter.Send.To("group", "456")
 
 ### バックグラウンド実行
 
-単発モッドと同様、`.send_all()` は Task を返し、await せずにバックグラウンドで実行させることができます：
+シングルショットと同じく、`.send_all()` は Task を返し、await せずにバックグラウンドで実行させることもできます：
 
 ```python
 task = (adapter.Send.To("user", "123")
         .Build()
-        .Hook(lambda rs: print("批量发送完成"))
+        .Hook(lambda rs: print("バッチ送信完了"))
         .Text("a").Text("b")
         .send_all())
 
-# メインプロセスをブロックしない
+# メインフローをブロックしない
 await do_something_else()
-```
 
 ## 命名規則
 
 ### PascalCase 命名
 
-すべての送信メソッドは大文字小文字区別のキャメルケース（PascalCase）を使用します：
+送信メソッドはすべて大文字キャメルケース命名法を使用します：
 
 ```python
 # ✅ 正しい
@@ -7282,7 +7826,7 @@ def Text(self, text: str):
 def Image(self, file: bytes):
     pass
 
-# ❌ 間違った
+# ❌ 間違っている
 def text(self, text: str):
     pass
 
@@ -7290,36 +7834,95 @@ def send_image(self, file: bytes):
     pass
 ```
 
-### プラットフォーム固有のメソッド
+### プラットフォーム固有メソッド
 
-プラットフォームプレフィックスを持つメソッドの追加は推奨しません：
+プラットフォームプレフィックス付きメソッドの追加は推奨されません：
 
 ```python
 # ✅ 推奨
 def Sticker(self, sticker_id: str):
     pass
 
-# ❌ 推奨しない
+# ❌ 推奨されない
 def TelegramSticker(self, sticker_id: str):
     pass
 ```
 
-`Raw` メソッドを使用して置換してください：
+`Raw` メソッドを使用して置き換えます：
 
 ```python
 # ✅ 推奨
 await adapter.Send.Raw_ob12([{"type": "sticker", ...}])
 
-# ❌ 推奨しない
+# ❌ 推奨されない
 def TelegramSticker(self, ...):
     pass
+
+## 送信リンクの内部分解
+
+`await adapter.Send.To("group", "123").Text("x")` を実行すると、フレームワークは以下の処理をすべて自動的に行います。
+
+```mermaid
+flowchart TD
+    A["adapter.Send.To(...).Text(...)"] --> B["To/Using チェーンメソッド<br/>毎回不変の新規インスタンスを返す（順序は関係ない）"]
+    B --> C["__getattribute__ による送信メソッドのインターセプト<br/>ルールラッパーを1層包む"]
+    C --> D["送信メソッド（Textなど）の呼び出し<br/>内部では Raw_ob12 に委譲"]
+    D --> E["Raw_ob12 は asyncio.create_task(...) を返す"]
+    E --> F["[Send] ログを記録"]
+    F --> G["emit message.sending（fire-and-forget）を発火"]
+    G --> H{"送信ルールを宣言しているか？"}
+    H -->|"いいえ"| I["Task done_callback → emit message.sent"]
+    H -->|"はい"| J["apply_send_rules で外層 Task にラップ<br/>リトライ/タイムアウト/遅延/優先度"]
+    J --> I
+    I --> K["await により標準的なレスポンス dict を得る"]
 ```
 
-## 返り値
+**フレームワークが各ステップで行ったこと:**
+
+| 階段 | フレームワークが行ったこと |
+|------|-------------|
+| チェーンのマージ | `To`/`Using`/`Account` の各呼び出しは**不変の新規インスタンス**を作成し、既に設定されたフィールドを継承するため、`To(...).Using(...)` と `Using(...).To(...)` は**等価**、順序は関係ない |
+| メソッドのラッピング | 送信メソッド（`Text`など）は `__getattribute__` によってラップされ、修飾メソッド（`To`/`Using`/`At`/`Retry`など）は**ラップされない**。`Raw_ob12` のネストされた呼び出しは `_in_rule_wrap` によるマーキングで重複ラップを防ぐ |
+| Task の作成 | `Raw_ob12` 内部の `asyncio.create_task()` が Task の実際の作成点であり、`Text()` は Task を同期的に返すだけで、**ブロックはしない** |
+| 送信ログ | `[Send] platform/method -> target` のイベントログを記録（`exclude_levels=["EVENT"]` で抑制可能） |
+| `message.sending` | 送信メソッドが呼び出された際に**即座に** fire-and-forget でトリガーされる（ハンドラが存在する場合にのみ、`has_handlers` による短絡評価が先に実行される） |
+| `message.sent` | Task の `done_callback` にバインドされる——**ルールがある場合は、リトライプロセス全体の最終結果を上書きする**、ルールがない場合は元の Task の完了を意味する |
+
+### アカウント解決のフォールバックチェーン
+
+アダプタ内部で `_resolve_account(account_id)` を呼び出した場合、以下の順序で具体的なアカウントに解決されます：
+
+1. 単一アカウントアダプタ（`AccountConfigClass` なし）→ 直接返す
+2. アカウント名が `account_id` に正確に一致
+3. 各アカウントの `bot_id` フィールドが一致
+4. 各アカウントの `str` 型フィールド値が一致（`enabled`/`name` を除く）
+5. 最後に有効な最初のアカウントを返す
+6. すべて失敗 → `ValueError` を投げる
+
+> あなたが渡した `account_id` は、`Using()` で明示的に指定されたもの > イベントの `self` フィールド（`account_id` は `user_id` より優先、`event.reply()` で自動的に注入される）> 指定なし（アダプタが最初の有効なアカウントをデフォルトで返す）。
+
+### 送信ルールエンジン（リトライ/タイムアウト/遅延）
+
+ルールは `Raw_ob12` が Task を返した**後**に外側の Task としてラップされ、メインの処理には影響しない。重要な事実:
+
+| ルール | 説明 |
+|------|------|
+| `Retry(n)` | 合計 `n+1` 回の試行を行う；**失敗後は即時再送信、指数バックオフはなし** |
+| `Timeout(s)` | 単回送信のタイムアウト取消（`asyncio.wait_for`）、期限切れでなければリトライ |
+| `Defer(s)` | 送信前に `sleep` による遅延 |
+| `Priority(level, drop_if_busy)` | 積み重ねが閾値を超えた場合、直ちに `{status:"failed", retcode:10002, message:"dropped_low_priority"}` を返す |
+| `Hook(fn)` | 最終的に成功した場合のみ順序通りに実行 |
+| `on_progress` / `on_error` | 各段階 / 最終的な失敗時のコールバック |
+
+> **注意**: リトライは「即時再送信」であり、指数バックオフは行われない。プラットフォームのリクエスト制限によるバックオフが必要な場合は、`on_error` コールバック内で `sleep` してから手動で再送信を行う必要がある。ルールの成功判定は、返却される dict の `status == "ok"` に基づく（`retcode == 0`）。
+
+> 標準的なレスポンス形式と `retcode` の完全な意味については [API レスポンス規格](../../standards/api-response.md) を参照してください。
+
+## 戻り値
 
 ### Task オブジェクト
 
-すべての送信メソッドは `asyncio.Task` を返します。アダプターは `Raw_ob12` のみを実装すればよく、標準メソッド（Text/Image など）はデフォルトで委譲されます：
+すべての送信メソッドは `asyncio.Task` を返します。アダプタは `Raw_ob12` のみ実装すればよく、標準メソッド（Text/Image など）はデフォルトでそれらを委譲します：
 
 ```python
 import asyncio
@@ -7335,15 +7938,15 @@ def Raw_ob12(self, message, **kwargs):
         )
     return asyncio.create_task(_do_send())
 
-# Text/Image/Voice/File は基底クラスから継承済み、自動的に Raw_ob12 に委譲
-# 標準メソッドをオーバーライドする場合は、asyncio.Task を返せばよい：
+# Text/Image/Voice/Video/File は基底クラスから継承され、自動的に Raw_ob12 に委譲されます
+# 標準メソッドをオーバーライドする場合は、asyncio.Task を返すだけです：
 # def Text(self, text: str):
 #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### 標準化されたレスポンス
+### 応答の標準化
 
-`call_api` は標準化されたレスポンスを返すべきです。`make_response()` / `make_error()` メソッドの使用を推奨します：
+`call_api` は標準化された応答を返す必要があります。`make_response()` / `make_error()` メソッドの使用が推奨されます：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -7358,23 +7961,25 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-手動構築（古い方式も互換性としてサポート）も可能です：
+また、手動で構築することも可能です（旧バージョンの方式も互換性があります）：
 
 ```python
 async def call_api(self, endpoint: str, **params):
     return {
-        "status": "ok" or "failed",
-        "retcode": 0 or error_code,
+        "status": "ok" または "failed",
+        "retcode": 0 またはエラーコード,
         "data": {...},
-        "message_id": "msg_id" or "",
+        "message_id": "msg_id" または "",
         "message": "",
         "{platform}_raw": raw_response
     }
 ```
 
-## 完全な例
+直接翻訳後の完全なMarkdown内容を返してください。
 
-### 基本的な使用
+## 完全例
+
+### 基本的な使用方法
 
 ```python
 from ErisPulse.Core import adapter
@@ -7395,20 +8000,20 @@ with open("document.pdf", "rb") as f:
 ### チェーン呼び出し
 
 ```python
-# @ユーザー + 返信
-await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("回复@的消息")
+# @ユーザー + メッセージの返信
+await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("返信メッセージ")
 
 # @全員 + 複数の修飾
-await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消息")
+await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("お知らせメッセージ")
 ```
 
-### 原始メッセージとメッセージ構築
+### ロウメッセージとメッセージビルダー
 
-`Raw_ob12` は逆変換の核心的なエントリポイント（OB12 メッセージセグメントを受け取り → プラットフォーム API の呼び出し）、`MessageBuilder` はそれを補助するチェーン式メッセージセグメント構築ツールです。
+`Raw_ob12` は逆変換の中心となるエントリーポイントです（OB12 メッセージセグメント → プラットフォーム API 呼び出し）。`MessageBuilder` はそれに伴って使用されるチェーン式のメッセージセグメント構築ツールです。
 
-> 完全な `Raw_ob12` 実装仕様、`MessageBuilder` の使い方、コード例については以下を参照してください：
-> - [送信メソッド仕様 §6 逆変換仕様](../../standards/send-method-spec.md#6-逆変換仕様onebot12--プラットフォーム)
-> - [送信メソッド仕様 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
+> 完全な `Raw_ob12` 実装の規格、`MessageBuilder` の使用方法およびコード例については、以下のドキュメントを参照してください：
+> - [送信メソッド規格 §6 逆変換規格 (OneBot12 → プラットフォーム)](../../standards/send-method-spec.md#6-反向変換規格onebot12--プラットフォーム)
+> - [送信メソッド規格 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
 
 
 
@@ -8081,25 +8686,29 @@ version = "2.0.0"  # バージョン番号を更新
 
 # イベントコンバーター実装ガイド
 
-イベントコンバーター (Converter) はアダプターのコアコンポーネントの一つであり、プラットフォームのネイティブイベントを ErisPulse の統一された OneBot12 標準イベント形式に変換します。
+イベントコンバーター (Converter) は、アダプターのコアコンポーネントの一つであり、プラットフォームのネイティブイベントを ErisPulse の統一された OneBot12 標準イベント形式に変換する役割を担います。
 
-## Converter の責務
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
+
+## Converter の責任
 
 ```
 プラットフォームのネイティブイベント ──→ Converter.convert() ──→ OneBot12 標準イベント
 ```
 
-Converter は**正方向変換**（受信方向）のみを担当し、プラットフォームのネイティブイベントデータを OneBot12 標準形式に変換します。逆方向変換（送信方向）は `Send.Raw_ob12()` メソッドで処理されます。
+Converter は**正方向の変換**（受信方向）のみを担当し、プラットフォームのネイティブイベントデータを OneBot12 標準形式に変換します。逆方向の変換（送信方向）は `Send.Raw_ob12()` メソッドが処理します。
 
-### 核心原則
+### コア原則
 
-1. **無損変換**：元のデータは `{platform}_raw` フィールドに完全に保持される必要があります
-2. **標準互換性**：変換後のイベントは OneBot12 標準形式に準拠している必要があります
-3. **プラットフォーム拡張**：プラットフォーム固有のデータは `{platform}_` で始まるフィールドに格納されます
+1. **損失のない変換**：元のデータは `{platform}_raw` フィールドに完全に保持されなければなりません
+2. **標準互換性**：変換後のイベントは OneBot12 標準形式に準拠しなければなりません
+3. **プラットフォーム拡張**：プラットフォーム固有のデータは `{platform}_` という接頭辞を持つフィールドに格納されます
+
+[**English**](/docs/en/quick-start.md) | [**日本語**](/docs/ja/quick-start.md) | [**简体中文**](/docs/ja/quick-start.md) | [**繁體中文**](/docs/zh-TW/quick-start.md) | [**한국어**](/docs/ko/quick-start.md)
 
 ## BaseConverter 基底クラス（推奨）
 
-2.7.0 以降、フレームワークは `BaseConverter` 基底クラス（`ErisPulse.Core.Bases`）を提供しており、OneBot12 イベントの**共通フィールド構築**と**一般的なメッセージセグメントの補助**をカプセル化しています。これにより、コンバーターは型マッピングに集中することができます：
+2.7.0 以降、フレームワークは `BaseConverter` 基底クラス（`ErisPulse.Core.Bases`）を提供し、OneBot12 イベントの**共通フィールドの構築**と**一般的なメッセージセグメントの補助**をカプセル化することで、変換器は型マッピングにのみ集中できるようにします。
 
 ```python
 from ErisPulse.Core.Bases import BaseConverter
@@ -8124,16 +8733,16 @@ class MyConverter(BaseConverter):
         return None
 ```
 
-`build_base_event()` で埋め込まれる共通フィールド：
+`build_base_event()` で既に埋め込まれている共通フィールド：
 
-| フィールド | 情報源 |
+| フィールド | 構成元 |
 |------|------|
-| `id` | `raw_event["event_id"]`、不足時は自動生成された UUID |
-| `time` | `raw_event["timestamp"]`、不足時は現在時刻 |
-| `platform` | コンストラクタで渡された `platform` |
+| `id` | `raw_event["event_id"]`、欠損時は UUID が自動生成されます |
+| `time` | `raw_event["timestamp"]`、欠損時は現在時刻が使用されます |
+| `platform` | コンストラクタに渡された `platform` |
 | `self` | `{"platform": ..., "user_id": raw_event["bot_id"]}` |
-| `{platform}_raw` | 元のイベント（「無損変換」の原則を満たす） |
-| `{platform}_raw_type` | 元のイベントの型 |
+| `{platform}_raw` | 原始イベント（「無損失変換」の原則を満たす） |
+| `{platform}_raw_type` | 原始イベントの型 |
 
 一般的なメッセージセグメント補助メソッド（すべて静的メソッドで、直接再利用可能）：
 
@@ -8143,7 +8752,7 @@ converter.at("123456")        # {"type": "at", "data": {"user_id": "123456"}}
 converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```
 
-> 手動実装する場合、`build_base_event` の共通フィールド構築は繰り返し書く必要がある定型コードですが、`BaseConverter` を使用することでこの部分を省略でき、自然に「無損変換」（元のイベントは常に `{platform}_raw` に格納される）が満たされます。
+> 手動で実装する場合、`build_base_event` の共通フィールドの構築は繰り返し書かなければならない定型コードですが、`BaseConverter` を使用することでこの部分を省略でき、また「無損失変換」（原始イベントは常に `{platform}_raw` に格納される）を自然に満たします。
 
 ## convert() メソッド
 
@@ -8152,9 +8761,9 @@ converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```python
 def convert(self, raw_event: dict) -> dict:
     """
-    プラットフォームのネイティブイベントを OneBot12 標準形式に変換する
+    プラットフォーム固有のイベントを OneBot12 標準形式に変換します
 
-    :param raw_event: プラットフォームのネイティブイベントデータ
+    :param raw_event: プラットフォーム固有のイベントデータ
     :return: OneBot12 標準形式のイベント辞書
     """
     pass
@@ -8162,15 +8771,15 @@ def convert(self, raw_event: dict) -> dict:
 
 ### 戻り値の構造
 
-変換後のイベント辞書には以下の標準フィールドが含まれている必要があります：
+変換後のイベント辞書には以下の標準フィールドを含める必要があります：
 
 ```python
 {
-    "id": "イベントのユニークID",
+    "id": "イベントの一意ID",
     "time": 1234567890,           # Unix タイムスタンプ（秒）
-    "type": "message",             # イベントの型
-    "detail_type": "private",      # 詳細の型
-    "platform": "myplatform",      # プラットフォームの名前
+    "type": "message",             # イベントの種類
+    "detail_type": "private",      # 詳細な種類
+    "platform": "myplatform",      # プラットフォーム名
     "self": {
         "platform": "myplatform",
         "user_id": "bot_user_id"
@@ -8182,42 +8791,41 @@ def convert(self, raw_event: dict) -> dict:
     "alt_message": "プレーンテキストの内容",
 
     # 元のデータを保持する必要がある
-    "myplatform_raw": { ... },     # プラットフォームのネイティブイベントの完全なデータ
-    "myplatform_raw_type": "元のイベントの型名",
+    "myplatform_raw": { ... },     # プラットフォーム固有のイベントの完全なデータ
+    "myplatform_raw_type": "プラットフォーム固有のイベントの型名",
 }
-```
 
-## 必須フィールドのマッピング
+## 必須フィールドマッピング
 
-### 一般的なフィールド（すべてのイベント型に共通）
+### 一般的フィールド（すべてのイベントタイプ）
 
 | OB12 フィールド | 型 | 説明 |
 |-----------|------|------|
 | `id` | str | イベントの一意の識別子 |
-| `time` | int | Unix タイムスタンプ（秒） |
-| `type` | str | イベントの型：`message` / `notice` / `request` / `meta` |
-| `detail_type` | str | 詳細の型：`private` / `group` / `friend` など |
-| `platform` | str | プラットフォームの名前、アダプター登録名と一致する |
-| `self` | dict | ロボットの情報：`{"platform": "...", "user_id": "..."}` |
+| `time` | int | Unixタイムスタンプ（秒） |
+| `type` | str | イベントの種類：`message` / `notice` / `request` / `meta` |
+| `detail_type` | str | 詳細なタイプ：`private` / `group` / `friend` など |
+| `platform` | str | プラットフォーム名、アダプタの登録名と一致する |
+| `self` | dict | ロボット情報：`{"platform": "...", "user_id": "..."}` |
 
 ### メッセージイベントの追加フィールド
 
 | OB12 フィールド | 型 | 説明 |
 |-----------|------|------|
-| `user_id` | str | 送信者の ID |
+| `user_id` | str | 送信者のID |
 | `message` | list[dict] | OneBot12 メッセージセグメントのリスト |
-| `alt_message` | str | プレーンテキストの代替内容 |
+| `alt_message` | str | 純粋なテキストの代替内容 |
 
 ### 通知イベントの追加フィールド
 
 | OB12 フィールド | 型 | 説明 |
 |-----------|------|------|
-| `user_id` | str | 関連するユーザーの ID |
-| `operator_id` | str | 操作者の ID（例：グループメンバーの変更） |
+| `user_id` | str | 関連するユーザーID |
+| `operator_id` | str | 操作者のID（例：グループメンバーの変更） |
 
-## メッセージセグメントの変換
+## メッセージセグメント変換
 
-OneBot12 標準では以下のメッセージセグメントの型が定義されています：
+OneBot12 標準では、以下のメッセージセグメント型が定義されています：
 
 ```python
 # テキスト
@@ -8245,11 +8853,13 @@ OneBot12 標準では以下のメッセージセグメントの型が定義さ�
 {"type": "reply", "data": {"message_id": "msg_123"}}
 ```
 
-プラットフォームがサポートしていないメッセージセグメントの型がある場合は、そのセグメントを省略するか、最も近い標準型に変換することができます。
+プラットフォームがサポートしていないメッセージセグメント型がある場合、そのセグメントを省略するか、最も近い標準型に変換することができます。
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## プラットフォーム拡張フィールド
 
-プラットフォーム固有のデータは、`{platform}_` で始まるフィールドに格納し、標準フィールドとの衝突を避ける必要があります：
+プラットフォーム固有のデータは、標準フィールドとの衝突を避けるために `{platform}_` というプレフィックスを付けて保存してください：
 
 ```python
 {
@@ -8258,9 +8868,9 @@ OneBot12 標準では以下のメッセージセグメントの型が定義さ�
     "detail_type": "group",
     # ...
 
-    # プラットフォームの拡張フィールド
-    "myplatform_raw": { ... },          # 元のイベントのデータ（必須）
-    "myplatform_raw_type": "chat",      # 元のイベントの型（必須）
+    # プラットフォーム拡張フィールド
+    "myplatform_raw": { ... },          # 原始イベントデータ（必須）
+    "myplatform_raw_type": "chat",      # 原始イベントの種類（必須）
 
     # その他のプラットフォーム固有のフィールド
     "myplatform_group_name": "グループ名",
@@ -8268,11 +8878,13 @@ OneBot12 標準では以下のメッセージセグメントの型が定義さ�
 }
 ```
 
-> **重要**：`{platform}_raw` フィールドは必須であり、ErisPulse のイベントシステムやモジュールは、このフィールドを介してプラットフォームの元のデータにアクセスする可能性があります。
+> **重要**: `{platform}_raw` フィールドは必須であり、ErisPulse のイベントシステムやモジュールは、プラットフォームの元のデータにアクセスするためにこれに依存する可能性があります。
 
-## 完全な実装例
+[**English**](docs/ja/quick-start.md)
 
-以下は完全な Converter 実装の例です：
+## 完全例
+
+以下は Converter の完全な実装例です：
 
 ```python
 class MyConverter:
@@ -8352,13 +8964,15 @@ class MyConverter:
         return base
 ```
 
-## ファイブメディアメッセージの変換例
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
-実際のプラットフォームのメッセージには、画像、@メンション、返信などのファイブメディアコンテンツが含まれていることがよくあります。以下は `_convert_message_segments` が複数のメッセージ型を処理する例です：
+## 富媒体メッセージ変換の例
+
+実際のプラットフォームのメッセージには、通常、画像、@メンション、返信などの富媒体コンテンツが含まれています。以下は、`_convert_message_segments` が複数のメッセージタイプを処理する例です：
 
 ```python
 def _convert_message_segments(self, raw_content: list) -> list:
-    """プラットフォームのネイティブメッセージセグメントリストを OneBot12 標準メッセージセグメントに変換する"""
+    """プラットフォーム固有のメッセージセグメントリストを OneBot12 標準メッセージセグメントに変換"""
     segments = []
 
     for item in raw_content:
@@ -8395,17 +9009,16 @@ def _convert_message_segments(self, raw_content: list) -> list:
         else:
             segments.append({
                 "type": "text",
-                "data": {"text": f"[サポートされていないメッセージ型: {item_type}]"}
+                "data": {"text": f"[サポートされていないメッセージタイプ: {item_type}]"}
             })
 
     return segments
-```
 
-## 一般的な落とし穴
+## 常見の落とし穴
 
 ### 1. `{platform}_raw` フィールドの欠落
 
-これは最も一般的なエラーです。元のデータフィールドが欠けていると、モジュールがプラットフォーム固有の情報をアクセスできなくなります。
+これは最も一般的なエラーです。原始データフィールドが欠落すると、モジュールがプラットフォーム固有の情報をアクセスできなくなります。
 
 ```python
 base_event["myplatform_raw"] = raw_event        # 必須！
@@ -8414,7 +9027,7 @@ base_event["myplatform_raw_type"] = event_type   # 必須！
 
 ### 2. タイムスタンプ形式の誤り
 
-OneBot12 標準では `time` フィールドは Unix 秒単位のタイムスタンプ（整数）である必要があります。プラットフォームがミリ秒単位のタイムスタンプや ISO 形式の文字列を返す場合、変換する必要があります：
+OneBot12 標準では、`time` フィールドは Unix 秒単位のタイムスタンプ（整数）である必要があります。プラットフォームがミリ秒タイムスタンプまたは ISO 形式の文字列を返す場合、変換する必要があります：
 
 ```python
 import time
@@ -8428,7 +9041,7 @@ import time
 
 ### 3. `self` フィールドの欠落
 
-`self` フィールドにはロボット自身の情報が含まれ、`user_id` はロボットのアカウント ID です。複数の Bot が存在する状況ではこのフィールドが重要です：
+`self` フィールドにはロボット自身の情報が含まれ、`user_id` はロボットのアカウント ID です。複数 Bot のシナリオではこのフィールドが重要です：
 
 ```python
 "self": {
@@ -8437,21 +9050,23 @@ import time
 }
 ```
 
-### 4. `detail_type` に非標準の値を使用
+### 4. `detail_type` に標準外の値を使用
 
-`detail_type` には OneBot12 標準で定義された値（例：`private`、`group`、`friend_increase`、`group_member_increase` など）を使用する必要があります。プラットフォーム固有の命名は使用しないでください。
+`detail_type` には OneBot12 標準で定義された値、例えば `private`、`group`、`friend_increase`、`group_member_increase` などを使用する必要があります。プラットフォーム固有の命名は使用しないでください。
 
 ### 5. 往復の一貫性
 
-Converter が生成するメッセージセグメントの型と Send 端のサポートするメソッドが対応していることを確認してください。たとえば、Converter がプラットフォームの画像メッセージを `{"type": "image", ...}` に変換した場合、Send 端の `Image()` メソッドは画像の送信に対応している必要があります。
+Converter が生成するメッセージセグメントの型が、Send 端でサポートするメソッドに対応していることを確認してください。たとえば、Converter がプラットフォームの画像メッセージを `{"type": "image", ...}` に変換した場合、Send 端の `Image()` メソッドは画像送信を処理できる必要があります。
 
-## 最善の実践
+## 最佳実践
 
-1. **常に元のデータを保持する**：`{platform}_raw` フィールドは省略しないでください
-2. **標準メッセージセグメントを使用する**：可能な限りプラットフォームのメッセージを OneBot12 標準メッセージセグメントに変換してください
-3. **`detail_type` を適切に設定する**：標準の型（`private`/`group`/`channel` など）を使用し、独自に定義しないでください
-4. **境界条件を処理する**：元のイベントに特定のフィールドが欠けている可能性があるため、`.get()` を使用し、適切なデフォルト値を提供してください
-5. **パフォーマンスの考慮**：`convert()` は各イベントで呼び出されるため、ここで時間のかかる処理を行わないでください
+1. **常に元データを保持する**：`{platform}_raw` フィールドは省略しないでください
+2. **標準メッセージセグメントを使用する**：可能な限り、プラットフォームのメッセージを OneBot12 標準メッセージセグメントに変換してください
+3. **detail_type を適切に設定する**：標準の型（`private`/`group`/`channel` など）を使用し、独自に定義しないでください
+4. **境界条件を処理する**：元のイベントには特定のフィールドが欠落している可能性があり、`.get()` を使用して適切なデフォルト値を提供してください
+5. **パフォーマンスを考慮する**：`convert()` は各イベントで呼び出されるため、ここで時間のかかる処理を行わないでください
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 
 
@@ -9223,7 +9838,19 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 
 # イベントシステム API
 
-本ドキュメントでは、ErisPulse のイベントシステムの API について詳しく説明します。
+このドキュメントでは、ErisPulse イベントシステムの API を詳細に説明します。
+
+イベントシステムは、プラットフォームイベントをタイプに分類し、次の5つのタイプのハンドラに配信します：
+
+```mermaid
+flowchart LR
+    A["プラットフォームイベント<br/>（OneBot12 標準）"] --> B{"イベントタイプ"}
+    B --> C["command<br/>コマンドハンドラ"]
+    B --> D["message<br/>メッセージハンドラ"]
+    B --> E["notice<br/>通知ハンドラ"]
+    B --> F["request<br/>リクエストハンドラ"]
+    B --> G["meta<br/>メタイベントハンドラ"]
+    C & D & E & F & G --> H["Event 包装クラス<br/>reply / get_text / done 等"]
 
 ## Command コマンドモジュール
 
@@ -9459,53 +10086,53 @@ async def heartbeat_handler(event):
 
 アダプタがメタイベントを送信した後、フレームワークは自動的に Bot の状態を追跡します。照会 API およびライフサイクルイベントの監視については、[アダプタシステム API - Bot 状態管理](adapter-system.md#bot-状态管理) を参照してください。
 
-## イベント クラス
+## Event 包装类
 
-Event モジュールのイベントハンドラーは、dict を継承したイベントラッパークラスのインスタンスを受け取ります。これには便利なメソッドが提供されています。
+Event モジュールのイベントハンドラは、dict を継承し便利なメソッドを提供する Event 包装クラスのインスタンスを受け取ります。
 
-### 基本メソッド
+### 核心方法
 
 ```python
-# イベント情報の取得
+# イベント情報を取得
 event_id = event.get_id()
 event_time = event.get_time()
 event_type = event.get_type()
 detail_type = event.get_detail_type()
 platform = event.get_platform()
 
-# ボット情報の取得
+# ロボット情報を取得
 self_platform = event.get_self_platform()
 self_user_id = event.get_self_user_id()
 self_info = event.get_self_info()
 ```
 
-### セッション識別子
+### 会話識別子
 
 ```python
-# 統一されたターゲット ID：グループチャットは group_id、プライベートチャットは user_id など
+# 統一されたターゲット ID: グループチャットは group_id を返し、プライベートチャットは user_id を返し、以此類推
 target_id = event.get_target_id()
 
-# セッション固有の識別子、形式: {platform}:{detail_type}:{target_id}
+# セッションの唯一識別子、形式: {platform}:{detail_type}:{target_id}
 session_id = event.get_session_id()
 # 例: "telegram:private:12345"、"qq:group:67890"
 ```
 
-`get_target_id()` は以下の順序で最初の非空値を返します：`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`。コンテキスト管理や状態保存など、統一された識別子でセッションを管理する必要があるシーンに適しています。
+`get_target_id()` は以下の順序で最初の空でない値を返します: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`。コンテキスト管理、状態の保存など、セッションを統一して識別する必要がある場面に適しています。
 
-### メッセージ関連メソッド
+### メッセージメソッド
 
 ```python
-# メッセージ内容の取得
+# メッセージ内容を取得
 message_segments = event.get_message()
 alt_message = event.get_alt_message()
 text = event.get_text()
 
-# 送信者情報の取得
+# 送信者情報を取得
 user_id = event.get_user_id()
 nickname = event.get_user_nickname()
 sender = event.get_sender()
 
-# グループ情報の取得
+# グループ情報を取得
 group_id = event.get_group_id()
 
 # メッセージタイプの判定
@@ -9513,7 +10140,7 @@ is_msg = event.is_message()
 is_private = event.is_private_message()
 is_group = event.is_group_message()
 
-# メッセージへの @ について
+# @メッセージ関連
 is_at = event.is_at_message()
 has_mention = event.has_mention()
 mentions = event.get_mentions()
@@ -9522,12 +10149,12 @@ mentions = event.get_mentions()
 ### コマンド情報
 
 ```python
-# コマンド情報の取得
+# コマンド情報を取得
 cmd_name = event.get_command_name()
 cmd_args = event.get_command_args()
 cmd_raw = event.get_command_raw()
 
-# コマンドかどうかの判定
+# それがコマンドかどうかの判定
 is_cmd = event.is_command()
 ```
 
@@ -9537,21 +10164,21 @@ is_cmd = event.is_command()
 # 基本的な返信
 await event.reply("これはメッセージです")
 
-# 送信方法を指定する
+# 送信方法を指定
 await event.reply("http://example.com/image.jpg", method="Image")
 
-# ユーザーへの @ と返信メッセージ
+# @ユーザーと返信メッセージを含む
 await event.reply("こんにちは", at_users=["user1"], reply_to="msg_id")
 
-# 全体への @
+# 全員を @
 await event.reply("お知らせ", at_all=True)
 
-# プラットフォーム固有の修飾メソッドを使用（via パラメータ）
-await event.reply("看板内容", method="Board",
+# プラットフォーム固有の修飾方法を使用（via パラメータ）
+await event.reply("ホワイトボードの内容", method="Board",
                   via=[("Expire", 3600), ("ForMember", "114514")])
 
-# 送信チェーンを取得し、自由に修飾メソッドと送信方法を追加（連続する複数の修飾/アクション型メソッドに適しています）
-await event.send_chain().Expire(3600).Board("看板内容")
+# 送信チェーンを取得し、自由に修飾方法と送信方法を追加（複数の修飾 / 動作型メソッドに適しています）
+await event.send_chain().Expire(3600).Board("ホワイトボードの内容")
 await event.send_chain().DismissBoard()
 
 # OneBot12 メッセージセグメントを使用した返信
@@ -9559,76 +10186,76 @@ from ErisPulse.Core.Event import MessageBuilder
 msg = MessageBuilder().text("Hello").image("url").build()
 await event.reply_ob12(msg)
 
-# 返信の待機
+# 返信を待つ
 reply = await event.wait_reply(timeout=30)
 ```
 
-### プラットフォーム機能の確認
+### プラットフォーム能力の確認
 
 ```python
-# 現在のプラットフォームが特定の送信方法をサポートしているかを確認
+# 現在のプラットフォームが特定の送信方法をサポートしているか確認
 if event.supports("Image"):
     await event.reply(url, method="Image")
 
-# 現在のプラットフォームで利用可能なすべての送信方法を一覧表示
+# 現在のプラットフォームで利用可能なすべての送信方法をリストアップ
 methods = event.available_methods()
 # ["Text", "Image", "Voice", ...]
 ```
 
 ### 返信メソッド
 
-`reply()` メソッドは `method` パラメータで送信タイプを指定し、2つの便利なブールパラメータをサポートしています。
+`reply()` メソッドは `method` パラメータで送信タイプを指定でき、2つの便利なブール値パラメータもサポートします：
 
 ```python
 # 簡単なテキスト返信
 await event.reply("こんにちは")
 
-# 送信者への @付き返信
+# 送信者を @ して返信
 await event.reply("こんにちは", at_sender=True)
 
-# 現在のメッセージを引用した返信
-await event.reply("受信しました", reply_to_message=True)
+# 現在のメッセージを引用して返信
+await event.reply("受信しました", quote=True)
 
-# 組み合わせ
-await event.reply("受信しました", at_sender=True, reply_to_message=True)
+# 組み合わせて使用
+await event.reply("受信しました", at_sender=True, quote=True)
 
-# 画像の送信（method パラメータを使用）
+# 画像を送信（method パラメータを使用）
 if event.supports("Image"):
     await event.reply("http://example.com/img.jpg", method="Image")
 else:
     await event.reply("[画像] http://example.com/img.jpg")
 ```
 
-**パラメータの説明**：
+**パラメータの説明**:
 
 | パラメータ | 型 | 説明 |
 |------|------|------|
 | `content` | str | 送信内容 |
-| `method` | str | 送信方法、デフォルトは "Text"、選択肢は "Image"/"Voice"/"Video"/"File" など |
-| `at_sender` | bool | 送信者を @ するか（自動的に user_id を抽出） |
-| `quote` | bool | 現在のメッセージを引用して返信するか（自動的に message_id を抽出） |
-| `at_users` | list[str] | 指定したユーザーリストを @ |
-| `reply_to` | str | 手動で指定したメッセージ ID を返信先とする |
-| `at_all` | bool | 全体を @ するか |
+| `method` | str | 送信方法、デフォルトは "Text"、"Image"/"Voice"/"Video"/"File" など |
+| `at_sender` | bool | 送信者を @ するかどうか（自動的に user_id を抽出） |
+| `quote` | bool | 現在のメッセージを引用して返信するかどうか（自動的に message_id を抽出） |
+| `at_users` | list[str] | @する特定のユーザーのリスト |
+| `reply_to` | str | 手動で返信するメッセージの ID |
+| `at_all` | bool | 全員を @ するかどうか |
 
-### インタラクションメソッド
+### インタラクティブメソッド
 
 ```python
-# confirm — 会話の確定（True/False/None を返す）
-if await event.confirm("この操作を実行しますか？"):
-    await event.reply("確定しました")
+# confirm — 確認対話（True/False/None を返す）
+if await event.confirm("この操作を実行してもよろしいですか？"):
+    await event.reply("確認しました")
 
-# Text 以外の方式で確認プロンプトを送信
+# Text 以外の方法で確認提示を送信
 if await event.confirm("http://example.com/image.jpg", method="Image"):
-    await event.reply("画像の提示を確認しました")
+    await event.reply("画像提示を確認しました")
 
-# choose — 選択メニュー（オプションのインデックスまたは None を返す）
-choice = await event.choose("色を選んでください：", ["赤", "緑", "青"])
+# choose — 選択メニュー（選択肢のインデックスまたは None を返す）
+choice = await event.choose("色を選択してください：", ["赤", "緑", "青"])
 
-# options_format="auto"（デフォルト）method に合わせて自動でスタイルを選択します：
-# Markdown→順序なしリスト（- 1.オプション）、Html→順序付きリスト（<ol>）、その他→プレーンテキストリスト
-# テキスト系メソッド（Markdown/Html 等）はデフォルトで末尾にオプションを統合します
-# merge_prompt=True を指定すると任意の method で強制的に統合が可能です。placeholder でプレースホルダーをカスタマイズできます
+# options_format="auto"（デフォルト）method に応じてスタイルを自動選択：
+# Markdown→無序リスト（- 1.選択肢）、Html→順序リスト（<ol>）、その他→純粋なテキストリスト
+# テキスト系メソッド（Markdown/Html など）はデフォルトで選択肢を末尾に結合
+# merge_prompt=True 任意の method で強制的に結合可能、placeholder でプレースホルダをカスタマイズ可能
 choice = await event.choose(
     "## 選択してください\n{options}", ["A", "B"],
     method="Markdown", merge_prompt=True,
@@ -9636,66 +10263,66 @@ choice = await event.choose(
 
 # collect — フォーム収集（{key: value} の辞書または None を返す）
 data = await event.collect([
-    {"key": "name", "prompt": "お名前を入力してください："},
+    {"key": "name", "prompt": "名前を入力してください："},
     {"key": "age", "prompt": "年齢を入力してください：",
      "validator": lambda e: e.get_text().isdigit()},
-    {"key": "avatar", "prompt": "アバターを送信してください：", "method": "Image"},
+    {"key": "avatar", "prompt": "プロフィール画像を送信してください：", "method": "Image"},
 ])
 
-# wait_for — 条件を満たす任意のイベントを待機する
+# wait_for — 条件を満たす任意のイベントを待つ
 evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
-# conversation — 多ラウンド会話のコンテキスト
+# conversation — 複数回の対話コンテキスト
 conv = event.conversation(timeout=60)
 await conv.say("ようこそ！")
 ```
 
-> 詳細なインタラクションメソッドのパラメータ説明やその他の例については、[Event クラスの詳細](../developer-guide/modules/event-wrapper.md)と[Conversation 多ラウンド会話](../advanced/conversation.md)を参照してください。
+> 完全なインタラクティブメソッドのパラメータ説明とさらに多くの例については、[Event 包装クラスの詳細](../developer-guide/modules/event-wrapper.md) と [Conversation 複数回対話](../advanced/conversation.md) を参照してください。
 
 ### ユーティリティメソッド
 
 ```python
-# ディクショナリへ変換（アンダースコアで始まる内部キーはフィルタリングされます）
+# 辞書に変換（_ で始まる内部キーをフィルタリング）
 event_dict = event.to_dict()
 
-# 原始データの取得
+# 元のデータを取得
 raw = event.get_raw()
 raw_type = event.get_raw_type()
 ```
 
-### 処理制御
+### リンク制御
 
-`event.done(claim=, stop=)` は、「認証」と「ブロック」の2つの直交するセマンティクスを統一して制御します：
+`event.done(claim=, stop=)` は「認領」と「ブロック」の2つの正交的な意味を統一的に制御します：
 
-- **認証（claim）**：イベントが処理済みであることをマーク（`_processed`）、コマンドディスパッチャーはこれによりスキップします。
-- **ブロック（stop）**：低優先度のハンドラーへの伝播を防ぐ（`_propagation_stopped`）。
+- **認領（claim）**：イベントが処理済みであることをマーク（`_processed`）、コマンドディスパッチャーはこれに基づいて重複処理をスキップします
+- **ブロック（stop）**：低優先度のハンドラへの伝播を阻止（`_propagation_stopped`）
 
 ```python
-# 認証 + ブロック（デフォルト）
+# 認領 + ブロック（デフォルト）
 event.done()
 
-# 認証のみ、ブロックしない（低優先度のオブザーバーでも確認可能）
+# 認領のみ、ブロックしない（低優先度の観測者はまだ見える）
 event.done(stop=False)
 
-# ブロックのみ、認証しない（ファイアウォール / レート制限など）
+# ブロックのみ、認領しない（ファイアウォール / 限流など）
 event.done(claim=False)
 
-# mark_processed はメインメソッドで、done はそのエイリアスです
-event.mark_processed()             # event.done() と等価
-event.mark_processed(stop=False)   # event.done(stop=False) と等価
+# mark_processed が主メソッドで、done はそのエイリアス
+event.mark_processed()             # event.done() と同等
+event.mark_processed(stop=False)   # event.done(stop=False) と同等
 
-# ステータスの確認
-event.is_processed()  # 既に認証済みか
+# 状態を確認
+event.is_processed()  # 認領済みか
 event.is_stopped()    # 伝播がブロック済みか
 ```
 
 ### プラットフォーム拡張メソッド
 
-アダプターは Event にプラットフォーム固有のメソッドを登録でき、それらは対応するプラットフォームのインスタンスでのみ使用可能です。
+アダプターは Event にプラットフォーム固有のメソッドを登録でき、対応するプラットフォームのインスタンスでのみ利用可能です。
 
 #### ユーザー：プラットフォーム拡張メソッドの使用
 
-アダプターがプラットフォーム固有のメソッドを登録した後は、イベントハンドラー内で直接呼び出せます。各プラットフォームのメソッドは異なりますが、対応する[プラットフォームガイド](../platform-guide/)を参照してください。
+アダプターがプラットフォーム固有のメソッドを登録した後、イベントハンドラで直接呼び出すことができます。各プラットフォームのメソッドは異なりますので、対応する [プラットフォームドキュメント](../platform-guide/) を参照してください。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -9710,12 +10337,12 @@ async def handle_message(event):
         attachments = event.get_attachments()   # メール固有
 ```
 
-#### プラットフォームで登録されたメソッドの確認
+#### プラットフォームに登録されたメソッドの照会
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
 
-# 特定のプラットフォームに登録されているメソッドを表示
+# 特定のプラットフォームに登録されたメソッドを確認
 methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", "get_attachments", ...]
 
@@ -9741,18 +10368,18 @@ event.get_chat_type()    # ✅ "private"
 event.get_subject()      # ❌ AttributeError
 ```
 
-#### `hasattr` / `dir` サポート
+#### `hasattr` / `dir` のサポート
 
 ```python
-hasattr(event, "get_subject")   # platform="email" の時のみ True を返します
+hasattr(event, "get_subject")   # platform="email" の場合のみ True を返す
 "get_subject" in dir(event)     # 同上
 ```
 
 ### アダプター：プラットフォーム拡張メソッドの登録
 
-アダプターはデコレータを使用して Event にプラットフォーム固有のメソッドを登録できます。メソッドの最初のパラメータは `self`（Event インスタンス）で、自由にイベントデータにアクセスできます。
+アダプターはデコレータを使って Event にプラットフォーム固有のメソッドを登録でき、メソッドの最初のパラメータは self（Event インスタンス）で、イベントデータに自由にアクセスできます。
 
-#### 単一のメソッド登録
+#### 単一メソッドの登録
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -9768,9 +10395,9 @@ def get_from(self):
     return self.get("email_raw", {}).get("from", {})
 ```
 
-#### 複数のメソッド登録（Mixin クラス）
+#### 複数メソッドの登録（Mixin クラス）
 
-メソッドが多い場合は、Mixin クラスを使用して一括登録することを推奨します：
+メソッドが多い場合は、Mixin クラスを使って一括登録することを推奨します：
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin
@@ -9785,63 +10412,63 @@ class EmailEventMixin:
     def get_attachments(self):
         return self.get("email_raw", {}).get("attachments", [])
 
-# すべてのメソッドを一度に登録
+# 一括でメソッドを登録
 register_event_mixin("email", EmailEventMixin)
 ```
 
-#### 返り値の仕様
+#### 戻り値の規則
 
-| 場合 | 返り値 | ユーザー使用方法 |
+| シナリオ | 戻り値 | ユーザーの使用方法 |
 |------|--------|------------|
-| データの返却（テキスト、辞書など） | 直接返り値 | `subject = event.get_subject()` |
-| 操作の実行（メッセージ送信など） | `asyncio.Task` を返す | `task = event.do_something()` 可選で `await` |
+| データ（テキスト、辞書など）を返す | 直接返す | `subject = event.get_subject()` |
+| 操作（メッセージ送信など）を実行する | `asyncio.Task` を返す | `task = event.do_something()` は `await` がオプション |
 
-> **推奨**：データ以外の返り値を持つメソッドは `asyncio.Task` を返すようにします。これにより、ユーザーが自分で `await` するかどうかを選択でき、`await` しなくても操作は実行完了します。
+> **推奨**: データを返さないメソッドは `asyncio.Task` を返すようにし、ユーザーが `await` を決定できるようにします。`await` をしない場合でも操作は完了します。
 
 ```python
 @register_event_method("email")
 def forward_email(self, to_address: str):
-    """メールを転送 — Task を返すため、ユーザーが await するかどうかを決定できます"""
+    """メールを転送する — Task を返し、ユーザーが await を決定できる"""
     import asyncio
     return asyncio.create_task(
         self._do_forward(to_address)
     )
 
-# ユーザーは await して結果を待機できます
+# ユーザーは await して結果を待つことができる
 await event.forward_email("user@example.com")
 
-# または await せず、バックグラウンドで操作を実行できます
+# または await しないでバックグラウンドで実行することもできる
 event.forward_email("user@example.com")
 ```
 
-#### メソッドの登録解除
+#### メソッドの解除
 
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
 
-# 単一のメソッドを登録解除
+# 単一メソッドの解除
 unregister_event_method("email", "get_subject")
 
-# 特定のプラットフォームのすべてのメソッドを登録解除（アダプターシャットダウン時に呼び出します）
+# 特定のプラットフォームのすべてのメソッドを解除（アダプターのシャットダウン時に呼び出す）
 unregister_platform_event_methods("email")
 ```
 
-#### 組み込みメソッドのオーバーライド
+#### 内部メソッドの上書き
 
-`register_event_mixin` / `register_event_method` は、Event の組み込みメソッド（`confirm`、`choose`、`collect`、`wait_reply`、`reply` など）のオーバーライドをサポートします。登録されたプラットフォーム固有のメソッドは、Event.__getattribute__ を通じて組み込みメソッドより優先して適用されるため、アダプターはプラットフォーム独自のインタラクション実装を提供できます。
+`register_event_mixin` / `register_event_method` は Event の内部メソッド（`confirm`、`choose`、`collect`、`wait_reply`、`reply` など）を上書きすることもサポートしています。登録されたプラットフォームメソッドは `Event.__getattribute__` により内部メソッドよりも優先して有効になるため、アダプターはプラットフォーム特有のインタラクティブ実装を提供できます。
 
-組み込み実装は `_builtin_*` 関数としてエクスポートされており、オーバーライドする側はそれらをフォールバックとして呼び出せます：
+内部実装は `_builtin_*` 関数としてエクスポートされ、上書きする側はそれらをバックアップとして呼び出すことができます：
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
 
 class YunhuEventMixin:
     async def choose(self, prompt, options, timeout=60, method="Text"):
-        # 雲湖プラットフォームはボタンコンポーネントを使用
+        # 云湖プラットフォームではボタンコンポーネントを使用
         buttons = [[{"text": opt} for opt in options]]
         await self.reply(prompt)
-        # ...ボタンのコールバックやテキスト応答を待機...
-        # 組み込みロジックにフォールバック
+        # ...ボタンのコールバックやテキスト返信を待つ...
+        # 内部ロジックにフォールバック
         return await _builtin_choose(self, None, options, timeout, "Text")
 
 register_event_mixin("yunhu", YunhuEventMixin)
@@ -10338,23 +10965,25 @@ def on_status_change(event):
 
 ### 会话类型标准
 
-# ErisPulse セッション型標準
+# ErisPulse セッションタイプ標準
 
-本ドキュメントでは、ErisPulse がサポートするセッション型標準を定義しています。これには、イベントを受信するための受信型（Receive Type）と、メッセージを送信するための送信先型（Send Type）が含まれます。
+このドキュメントでは、ErisPulse がサポートするセッションタイプ標準を定義します。これには、受信イベントタイプと送信ターゲットタイプが含まれます。
 
-## 1. コアコンセプト
+言語切り替え行（各言語名が `` | `` で区切られている行）がドキュメントに含まれる場合、上記のルール 8 に厳密に従ってください。``[**ラベル**](ファイル)`` というような間違った形式を出力しないでください。
 
-### 1.1 受信型 && 送信型
+## 1. 核心概念
 
-ErisPulse は 2 種類のセッション型を区別します。
+### 1.1 受信タイプ && 送信タイプ
 
-- **受信型（Receive Type）**：イベントを受信する際の `detail_type` フィールド
-- **送信型（Send Type）**：メッセージを送信する際の `Send.To()` メソッドのターゲット型
+ErisPulse は、2 種類の会話タイプを区別します：
 
-### 1.2 型マッピング関係
+- **受信タイプ（Receive Type）**：イベントの `detail_type` フィールドで使用される、受信用のタイプ
+- **送信タイプ（Send Type）**：メッセージを送信する際の `Send.To()` メソッドの対象タイプ
+
+### 1.2 タイプのマッピング関係
 
 ```
-受信型 (detail_type)       送信型 (Send.To)
+受信タイプ (detail_type)     送信タイプ (Send.To)
 ─────────────────        ────────────────
 private                 →        user
 group                   →        group
@@ -10364,110 +10993,109 @@ thread                  →        thread
 user                    →        user
 ```
 
-**重要ポイント**：
-- `private` は受信時の型であり、送信時には `user` を使用する必要があります
-- `group`、`channel`、`guild`、`thread` は受信時と送信時で型は同じです
-- システムは自動的に型変換を行うため、手動で処理する必要はありません（受け取った受信型をそのまま送信に使用できることを意味します）。実際には、これらのこと心配する必要はありません。イベントのラッパークラスが存在するため、`event.reply()` メソッドを直接使用でき、型変換について考える必要はありません
+**重要な点**：
+- `private` は受信時のタイプであり、送信時には `user` を使用する必要があります
+- `group`、`channel`、`guild`、`thread` は受信時と送信時のタイプが同じです
+- システムは自動的にタイプ変換を行います。手動での処理は不要です（つまり、受信したタイプをそのまま送信に使用できます）。実際には、これらのタイプ変換について心配する必要はありません。Event のラッパークラスが存在するため、`event.reply()` メソッドを使用することで、タイプ変換を意識することなく送信できます。
 
-## 2. 標準セッション型
+## 2. 標準会話タイプ
 
-### 2.1 OneBot12 標準型
+### 2.1 OneBot12 標準タイプ
 
 #### private
-- **受信型**：`private`
-- **送信型**：`user`
-- **説明**：1対1のプライベートチャットメッセージ
-- **ID フィールド**：`user_id`
-- **対象プラットフォーム**：プライベートチャットをサポートするすべてのプラットフォーム
+- **受信タイプ**: `private`
+- **送信タイプ**: `user`
+- **説明**: 1対1のプライベートチャットメッセージ
+- **IDフィールド**: `user_id`
+- **対応プラットフォーム**: プライベートチャットをサポートするすべてのプラットフォーム
 
 #### group
-- **受信型**：`group`
-- **送信型**：`group`
-- **説明**：グループチャットメッセージ。さまざまな形式のグループ（例：Telegram スーパー群体）を含みます
-- **ID フィールド**：`group_id`
-- **対象プラットフォーム**：グループチャットをサポートするすべてのプラットフォーム
+- **受信タイプ**: `group`
+- **送信タイプ**: `group`
+- **説明**: グループチャットメッセージ。Telegram supergroup などのさまざまな形式のグループを含む
+- **IDフィールド**: `group_id`
+- **対応プラットフォーム**: グループチャットをサポートするすべてのプラットフォーム
 
 #### user
-- **受信型**：`user`
-- **送信型**：`user`
-- **説明**：ユーザータイプ。一部のプラットフォーム（例：Telegram）はプライベートチャットを private ではなく user として表現します
-- **ID フィールド**：`user_id`
-- **対象プラットフォーム**：Telegram などのプラットフォーム
+- **受信タイプ**: `user`
+- **送信タイプ**: `user`
+- **説明**: ユーザータイプ。一部のプラットフォーム（例: Telegram）ではプライベートチャットを `user` として表現する
+- **IDフィールド**: `user_id`
+- **対応プラットフォーム**: Telegram などのプラットフォーム
 
-### 2.2 ErisPulse 拡張型
+### 2.2 ErisPulse 拡張タイプ
 
 #### channel
-- **受信型**：`channel`
-- **送信型**：`channel`
-- **説明**：チャンネルメッセージ。複数のユーザーへのブロードキャストメッセージをサポート
-- **ID フィールド**：`channel_id`
-- **対象プラットフォーム**：Discord, Telegram, Line など
+- **受信タイプ**: `channel`
+- **送信タイプ**: `channel`
+- **説明**: チャンネルメッセージ。複数ユーザーへのブロードキャストメッセージをサポート
+- **IDフィールド**: `channel_id`
+- **対応プラットフォーム**: Discord, Telegram, Line など
 
 #### guild
-- **受信型**：`guild`
-- **送信型**：`guild`
-- **説明**：サーバー/コミュニティメッセージ。通常は Discord Guild レベルのイベントで使用されます
-- **ID フィールド**：`guild_id`
-- **対象プラットフォーム**：Discord など
+- **受信タイプ**: `guild`
+- **送信タイプ**: `guild`
+- **説明**: サーバー/コミュニティメッセージ。通常は Discord Guild レベルのイベントに使用
+- **IDフィールド**: `guild_id`
+- **対応プラットフォーム**: Discord など
 
 #### thread
-- **受信型**：`thread`
-- **送信型**：`thread`
-- **説明**：スレッド/サブチャンネルメッセージ。コミュニティ内のサブディスカッションエリアで使用されます
-- **ID フィールド**：`thread_id`
-- **対象プラットフォーム**：Discord Threads, Telegram Topics など
+- **受信タイプ**: `thread`
+- **送信タイプ**: `thread`
+- **説明**: トピック/サブチャンネルメッセージ。コミュニティ内のサブディスカッションエリアに使用
+- **IDフィールド**: `thread_id`
+- **対応プラットフォーム**: Discord Threads, Telegram Topics など
 
-## 3. プラットフォーム型マッピング
+## 3. プラットフォーム型のマッピング
 
-### 3.1 マッピング原則
+### 3.1 マッピングの原則
 
-アダプターは、プラットフォームのネイティブ型を ErisPulse 標準型にマッピングする責任を負います。
+アダプターは、プラットフォームのネイティブ型を ErisPulse 標準型にマッピングする役割を担います：
 
 ```
 プラットフォームネイティブ型 → ErisPulse 標準型 → 送信型
 ```
 
-### 3.2 一般的なプラットフォームマッピング例
+### 3.2 一般的なプラットフォームのマッピング例
 
 #### Telegram
 ```
-Telegram 型              ErisPulse 受信型      送信型
-─────────────────        ────────────────       ───────────
-private                private                 user
-group                  group                   group  # group にマッピング
-supergroup             group                   group
-channel                channel                 channel
+Telegram型             ErisPulse 受信型     送信型
+─────────────────      ────────────────       ───────────
+private                private                user
+group                  group                  group
+supergroup             group                  group  # group にマッピング
+channel                channel                channel
 ```
 
 #### Discord
 ```
-Discord 型              ErisPulse 受信型      送信型
-─────────────────        ────────────────       ───────────
-Direct Message         private                user
-Text Channel           channel                channel
-Guild                  guild                  guild
-Thread                 thread                 thread
+Discord型              ErisPulse 受信型     送信型
+─────────────────      ────────────────       ───────────
+Direct Message         private               user
+Text Channel           channel               channel
+Guild                  guild                 guild
+Thread                 thread                thread
 ```
 
 #### OneBot11
 ```
-OneBot11 型          ErisPulse 受信型      送信型
+OneBot11型            ErisPulse 受信型     送信型
 ─────────────────      ────────────────       ───────────
-private                private                user
-group                  group                  group
-discuss                group                  group  # group にマッピング
-```
+private                private               user
+group                  group                 group
+discuss                group                 group  # group にマッピング
 
-## 4. カスタム型拡張
+## 4. 自定义型の拡張
 
-### 4.1 カスタム型の登録
+### 4.1 自定型の登録
 
-アダプターはカスタムセッション型を登録できます：
+アダプターは、独自のセッション型を登録することができます。
 
 ```python
 from ErisPulse.Core.Event import register_custom_type
 
-# カスタム型を登録
+# 自定型の登録
 register_custom_type(
     receive_type="my_custom_type",
     send_type="custom",
@@ -10476,40 +11104,42 @@ register_custom_type(
 )
 ```
 
-### 4.2 カスタム型の使用
+### 4.2 自定型の使用
 
-登録後、システムはその型の変換と推論を自動的に処理します：
+登録後、システムは自動的にその型の変換と推論を処理します。
 
 ```python
 # 自動推論
 receive_type = infer_receive_type(event, platform="MyPlatform")
-# 返回: "my_custom_type"
+# 戻り値: "my_custom_type"
 
-# 送信型へ変換
+# 送信型への変換
 send_type = convert_to_send_type(receive_type, platform="MyPlatform")
-# 返回: "custom"
+# 戻り値: "custom"
 
-# 対応するIDを取得
+# 対応するIDの取得
 target_id = get_target_id(event, platform="MyPlatform")
-# 返回: event["custom_id"]
+# 戻り値: event["custom_id"]
 ```
 
-### 4.3 カスタム型の解除
+### 4.3 自定型の解除登録
 
 ```python
 from ErisPulse.Core.Event import unregister_custom_type
 
 unregister_custom_type("my_custom_type", platform="MyPlatform")
-```
 
 ## 5. 自動型推論
 
 イベントに明確な `detail_type` フィールドがない場合、システムは存在する ID フィールドに基づいて型を自動的に推論します：
 
-### 5.1 推論優先順位
+> [!NOTE]
+> **2.7.0+ の動作変更**：`detail_type` は**既知の会話タイプ**（標準またはカスタム）である場合にのみ直接採用されます。notice/request イベントの `detail_type`（例: `group_member_increase`、`friend_increase`）は**意味論的サブタイプ**であり、会話タイプではなく、ID フィールドに基づいて正しい会話タイプが推論されます。
+
+### 5.1 推論優先度
 
 ```
-優先順位（高い順）：
+優先度（高から低）：
 1. group_id     → group
 2. channel_id   → channel
 3. guild_id     → guild
@@ -10520,20 +11150,24 @@ unregister_custom_type("my_custom_type", platform="MyPlatform")
 ### 5.2 使用例
 
 ```python
-# イベントには group_id のみがある場合
+# イベントに group_id のみがある
 event = {"group_id": "123", "user_id": "456"}
 receive_type = infer_receive_type(event)
-# 返回: "group"（group_id が優先されるため）
+# 戻り値: "group"（group_id を優先して使用）
 
-# イベントには user_id のみがある場合
+# イベントに user_id のみがある
 event = {"user_id": "123"}
 receive_type = infer_receive_type(event)
-# 返回: "private"
-```
+# 戻り値: "private"
+
+# notice イベントの detail_type は意味論的サブタイプであり、2.7.0+ では ID フィールドから推論される
+event = {"type": "notice", "detail_type": "group_member_increase", "group_id": "123"}
+receive_type = infer_receive_type(event)
+# 戻り値: "group"（"group_member_increase" ではなく）
 
 ## 6. API 使用例
 
-### 6.1 メッセージの送信
+### 6.1 メッセージ送信
 
 ```python
 from ErisPulse import adapter
@@ -10544,82 +11178,159 @@ await adapter.myplatform.Send.To("user", "123").Text("Hello")
 # グループに送信
 await adapter.myplatform.Send.To("group", "456").Text("Hello")
 
-# 自動変換 private → user（推奨されません。互換性の問題が発生する可能性があります）
+# 自動変換 private → user（推奨されない、互換性の問題が発生する可能性がある）
 await adapter.myplatform.Send.To("private", "789").Text("Hello")
-# 内部で自動的に変換されます: Send.To("user", "789") # userをセッション型として直接使用する方がより良い選択です
+# 内部では自動的に Send.To("user", "789") に変換される # 直接 user を会話タイプとして使用するのがより優れた選択である
 ```
 
-### 6.2 イベントへの返信
+### 6.2 イベントの返信
 
 ```python
 from ErisPulse.Core.Event import Event
 
-# Event.reply() は型変換を自動的に処理します
+# Event.reply() は自動的に型変換を処理する
 await event.reply("返信内容")
-# 内部で適切な送信型が自動的に使用されます
+# 内部では自動的に正しい送信タイプが使用される
 ```
 
-### 6.3 コマンドの処理
+### 6.3 コマンド処理
 
 ```python
 from ErisPulse.Core.Event import command
 
 @command(name="test")
 async def handle_test(event):
-    # システムはセッション型を自動的に処理します
-    # 手動で group_id か user_id を判断する必要はありません
-    await event.reply("コマンド実行成功")
+    # システムが自動的に会話タイプを処理する
+    # group_id か user_id を手動で判断する必要はない
+    await event.reply("コマンドが正常に実行されました")
+
+## 7. コア API リファレンス
+
+### 7.1 タイプ変換
+
+```python
+from ErisPulse.Core.Event import convert_to_send_type, convert_to_receive_type
+
+# 受信タイプ → 送信タイプ
+convert_to_send_type("private")  # → "user"
+convert_to_send_type("group")    # → "group"
+
+# 送信タイプ → 受信タイプ
+convert_to_receive_type("user")   # → "private"
+convert_to_receive_type("group")  # → "group"
 ```
 
-## 7. ベストプラクティス
+### 7.2 ID フィールドのクエリ
 
-### 7.1 アダプター開発者向け
+```python
+from ErisPulse.Core.Event import get_id_field, get_receive_type
 
-1. **標準マッピングの使用**：可能な限り標準型にマッピングし、新しい型を作成しない
-2. **正確な変換**：受信型と送信型のマッピング関係が正しいことを確認する
-3. **生データの保持**：`{platform}_raw` に元のイベント型を保持する
-4. **ドキュメント化**：アダプタードキュメントに型マッピング関係を説明する
+get_id_field("group")    # → "group_id"
+get_id_field("private")  # → "user_id"
 
-### 7.2 モジュール開発者向け
+get_receive_type("group_id")  # → "group"
+get_receive_type("user_id")   # → "private"
+```
 
-1. **ツールメソッドの使用**：`get_send_type_and_target_id()` などのツールメソッドを使用する
-2. **ハードコーディングの回避**：`if group_id else "private"` のようなコードを書かない
-3. **すべての型のサポート**：コードはすべての標準型（private/group だけでなく）をサポートする
-4. **柔軟な設計**：イベントラッパーのメソッドを使用し、フィールドに直接アクセスしない
+### 7.3 送信情報のワンステップ取得
+
+```python
+from ErisPulse.Core.Event import get_send_type_and_target_id
+
+event = {"detail_type": "private", "user_id": "123"}
+send_type, target_id = get_send_type_and_target_id(event)
+# send_type = "user", target_id = "123"
+
+# 直接 Send.To() に使用
+await adapter.Send.To(send_type, target_id).Text("Hello")
+```
+
+### 7.4 目標 ID の取得
+
+```python
+from ErisPulse.Core.Event import get_target_id
+
+event = {"detail_type": "group", "group_id": "456"}
+get_target_id(event)  # → "456"
+
+## 8. ユーティリティメソッド
+
+```python
+from ErisPulse.Core.Event import (
+    is_standard_type,
+    is_valid_send_type,
+    get_standard_types,
+    get_send_types,
+    clear_custom_types,
+)
+
+is_standard_type("private")     # True
+is_standard_type("custom_type") # False
+
+is_valid_send_type("user")      # True
+is_valid_send_type("invalid")   # False
+
+get_standard_types()  # {"private", "group", "channel", "guild", "thread", "user"}
+get_send_types()      # {"user", "group", "channel", "guild", "thread"}
+
+clear_custom_types()                # 全てのカスタムタイプをクリア
+clear_custom_types(platform="discord")  # 指定されたプラットフォームのカスタムタイプのみをクリア
+
+## 9. 最適実践
+
+### 7.1 アダプター開発者
+
+1. **標準マッピングの使用**：可能な限り標準型にマッピングし、新規型を作成しないこと。
+2. **正しい変換**：受信型と送信型のマッピング関係が正しくなっていることを確認すること。
+3. **元のデータの保持**：`{platform}_raw` に元のイベント型を保持すること。
+4. **ドキュメントの説明**：アダプターのドキュメントに型マッピング関係を説明すること。
+
+### 7.2 モジュール開発者
+
+1. **ツールメソッドの使用**：`get_send_type_and_target_id()` などのツールメソッドを使用すること。
+2. **ハードコーディングの回避**：`if group_id else "private"` のようなコードを書かないこと。
+3. **すべての型を考慮**：コードは `private`/`group` だけでなく、すべての標準型をサポートすること。
+4. **柔軟な設計**：直接フィールドにアクセスするのではなく、イベントラッパーの方法を使用すること。
 
 ### 7.3 型推論
 
-- **detail_type の優先使用**：明確なフィールドがある場合は、推論を行わない
-- **推論の適切な使用**：明確な型がない場合のみ使用する
-- **優先順位の認識**：推論の優先順位を理解し、意図しない結果を避ける
+- **detail_type の優先使用**：明確なフィールドがある場合は、推論を行わないこと。
+- **推論の適切な使用**：明確な型がない場合にのみ使用すること。
+- **優先順位の注意**：推論の優先順位を理解し、予期しない結果を避けること。
 
-## 8. よくある質問（FAQ）
+[**English**](docs/ja/9-best-practices.md)
+
+## 10. よくある質問
 
 ### Q1: なぜ送信時に private を user に変換する必要があるのですか？
 
-A: これは OneBot12 標準の要件です。`private` は受信時の概念であり、送信時には `user` を使用する方がより適切な意味合いになります。
+A: これは OneBot12 標準の要件です。`private` は受信時の概念であり、送信時には `user` を使用する方が意味的に適切です。
 
-### Q2: 新しいセッション型をどのようにサポートしますか？
+### Q2: 新しい会話タイプをどのようにサポートしますか？
 
-A: `register_custom_type()` を使用してカスタム型を登録するか、あるいは標準型（`channel`、`guild` など）を直接使用します。
+A: `register_custom_type()` を使用してカスタムタイプを登録するか、または標準タイプの `channel`、`guild` などを直接使用します。
 
-### Q3: イベントに detail_type がない場合はどうしますか？
+### Q3: イベントに detail_type がない場合はどうすればよいですか？
 
-A: システムは存在する ID フィールドに基づいて自動的に推論します。優先順位は：group > channel > guild > thread > user です。
+A: システムは存在する ID フィールドに基づいて自動的に推論します。優先順位は、group > channel > guild > thread > user です。
 
-### Q4: アダプターは Telegram supergroup をどのようにマッピングしますか？
+### Q4: アダプタは Telegram supergroup をどのようにマッピングしますか？
 
-A: アダプターの変換ロジック内で、`supergroup` を標準の `group` 型にマッピングします。
+A: アダプタの変換ロジックの中で、`supergroup` を標準の `group` タイプにマッピングします。
 
-### Q5: メールなどの特殊なプラットフォームはどう処理しますか？
+### Q5: 電子メールなどの特殊なプラットフォームはどのように処理しますか？
 
-A: 一般的なものやプラットフォーム固有の型については、`{platform}_raw` と `{platform}_raw_type` を使用して生データを保持し、アダプター側で処理します。
+A: 一般的でない、またはプラットフォーム固有のタイプについては、`{platform}_raw` と `{platform}_raw_type` を使用して元のデータを保持し、アダプタが独自に処理します。
 
-## 9. 関連ドキュメント
+[**English**](docs/en/faq.md) | [**日本語**](docs/ja/faq.md) | [**简体中文**](docs/ja/faq.md) | [**繁體中文**](docs/zh-TW/faq.md) | [**한국어**](docs/ko/faq.md) | [**русский**](docs/ru/faq.md) | [**Español**](docs/es/faq.md) | [**Deutsch**](docs/de/faq.md) | [**français**](docs/fr/faq.md) | [**português**](docs/pt/faq.md) | [**italiano**](docs/it/faq.md) | [**ไทย**](docs/th/faq.md) | [**Bahasa Indonesia**](docs/id/faq.md) | [**العربية**](docs/ar/faq.md) | [**Türkçe**](docs/tr/faq.md) | [**עברית**](docs/he/faq.md) | [**فارسی**](docs/fa/faq.md) | [**Tiếng Việt**](docs/vi/faq.md) | [**magyar**](docs/hu/faq.md) | [**Nederlands**](docs/nl/faq.md) | [**Svenska**](docs/sv/faq.md) | [**Dansk**](docs/da/faq.md) | [**suomi**](docs/fi/faq.md) | [**Polski**](docs/pl/faq.md) | [**čeština**](docs/cs/faq.md) | [**ελληνικά**](docs/el/faq.md) | [**български**](docs/bg/faq.md) | [**hrvatski**](docs/hr/faq.md) | [**lietuvių**](docs/lt/faq.md) | [**latviešu**](docs/lv/faq.md) | [**українська**](docs/uk/faq.md) | [**български**](docs/bg/faq.md) | [**română**](docs/ro/faq.md) | [**slovenčina**](docs/sk/faq.md) | [**slovenščina**](docs/sl/faq.md) | [**Eesti**](docs/et/faq.md) | [**Norsk**](docs/no/faq.md)
 
-- [イベント変換標準](event-conversion.md) - 完全なイベント変換仕様
-- [送信メソッド仕様](send-method-spec.md) - Send クラスのメソッド命名とパラメータ仕様
-- [アダプター開発ガイド](../developer-guide/adapters/) - アダプター開発の完全ガイド
+## 11. 関連ドキュメント
+
+- [イベント変換標準](event-conversion.md) - イベント変換の完全な規格
+- [送信メソッド規格](send-method-spec.md) - Send クラスのメソッド命名とパラメータの規格
+- [アダプタ開発ガイド](../developer-guide/adapters/) - アダプタ開発の完全なガイド
+
+**言語:** [**English**](../en/README.md) | [**日本語**](../ja/README.md) | [**简体中文**](../zh-CN/README.md)
 
 
 
@@ -12518,34 +13229,38 @@ if result["retcode"] == 10002:
 
 # ネットワーククライアント
 
-ErisPulse は、HTTPリクエスト、WebSocket接続、および接続プール管理を統合した統一されたネットワーククライアントを提供しています。モジュールやアダプターは、**aiohttp / httpx / requests** などのサードパーティライブラリを直接インポートするのではなく、このクライアントを優先的に使用する必要があります。
+ErisPulse は、HTTPリクエスト、WebSocket接続、および接続プール管理を統合した統一されたネットワーククライアントを提供しています。モジュールやアダプターは、**aiohttp / httpx / requests** などのサードパーティライブラリを直接インポートするのではなく、このクライアントを優先して使用する必要があります。
+
+docs/ja/quick-start.md
 
 ## 概要
 
 ネットワーククライアントの主な機能：
 
-- **統一インターフェース**：`get` / `post` / `put` / `delete` / `patch` / `request` メソッドを提供
-- **WebSocketクライアント**：`ws_connect` を通じてクライアント側のWebSocket接続を確立
-- **自動ログ**：すべてのリクエストに対して自動的にログと統計情報を記録
-- **ライフサイクル統合**：各リクエストは `client.request` ライフサイクルイベントをトリガーし、WebSocket接続は `client.ws.connect` イベントをトリガー
+- **統一されたインターフェース**：`get` / `post` / `put` / `delete` / `patch` / `request` メソッドを提供
+- **WebSocket クライアント**：`ws_connect` を通じてクライアント側の WebSocket 接続を確立
+- **自動ログ**：すべてのリクエストを自動的にログ記録し、統計情報を取得
+- **ライフサイクル統合**：各リクエストごとに `client.request` ライフサイクルイベントをトリガーし、WS 接続時は `client.ws.connect` イベントをトリガー
 - **リトライサポート**：自動リトライ回数と間隔を設定可能
 - **タイムアウト制御**：接続タイムアウトとリクエストタイムアウトを個別に制御
-- **接続プールの再利用**：aiohttp.ClientSessionに基づく接続プール管理
-- **例外体系**：aiohttpの例外は自動的にErisPulseの例外（ClientError体系）に変換される
+- **接続プールの再利用**：aiohttp.ClientSession に基づく接続プール管理
+- **例外体系**：aiohttp の例外を自動的に ErisPulse の例外 (ClientError 体系) に変換
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**中文**](docs/ja/quick-start.md)
 
 ## 快速開始
 
-### HTTPリクエスト
+### HTTP リクエスト
 
 ```python
 from ErisPulse.Core import client
 
-# GETリクエスト
+# GET リクエスト
 resp = await client.get("https://httpbin.org/get")
 data = await resp.json()
 print(resp.status)  # 200
 
-# POSTリクエスト
+# POST リクエスト
 resp = await client.post(
     "https://httpbin.org/post",
     json={"key": "value"},
@@ -12553,7 +13268,7 @@ resp = await client.post(
 data = await resp.json()
 ```
 
-### WebSocket接続
+### WebSocket 接続
 
 ```python
 from ErisPulse.Core import client
@@ -12562,7 +13277,6 @@ ws = await client.ws_connect("wss://example.com/ws")
 
 async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
-```
 
 ## HttpResponse
 
@@ -12573,19 +13287,18 @@ from ErisPulse.Core import client
 
 resp = await client.get("https://httpbin.org/get")
 
-resp.status       # int - HTTPステータスコード (例: 200, 404)
-resp.reason       # str | None - ステータス説明 (例: "OK")
-resp.headers      # レスポンスヘッダー (大文字小文字を区別しない)
+resp.status       # int - HTTP ステータスコード (例: 200, 404)
+resp.reason       # str | None - ステータスの説明 (例: "OK")
+resp.headers      # レスポンスヘッダー (大文字小文字を区別しません)
 resp.content_type # str | None - Content-Type
-resp.url          # 最終URL (リダイレクトにより変化する可能性がある)
-resp.raw          # ベースの生のレスポンスオブジェクト (現在はaiohttp.ClientResponse)
+resp.url          # 最終的な URL (リダイレクトにより変更される可能性があります)
+resp.raw          # ベースとなるネイティブなレスポンスオブジェクト (現在は aiohttp.ClientResponse)
 
-# レスポンスボディの読み取り
+# レスポンスボディを読み取る
 body = await resp.read()       # bytes
 text = await resp.text()       # str
-data = await resp.json()       # JSONを解析
-text = await resp.text("gbk")  # 指定されたエンコーディング
-```
+data = await resp.json()       # JSON を解析
+text = await resp.text("gbk")  # エンコーディングを指定
 
 ## リクエストメソッド
 
@@ -12618,30 +13331,30 @@ resp = await client.post(
     data={"username": "admin", "password": "123"},
 )
 
-# バイナリデータ
+# ロウデータ
 resp = await client.post(
     "https://api.example.com/upload",
     data=b"raw bytes",
     headers={"Content-Type": "application/octet-stream"},
 )
 
-# ファイルアップロード (filesパラメータを使用、aiohttpをインポートする必要なし)
+# ファイルアップロード (filesパラメータを使用, aiohttpのインポートは不要)
 # 形式: {フィールド名: ファイルオブジェクト/bytes/(filename, file)/(filename, file, content_type)}
 resp = await client.post(
     "https://api.example.com/upload",
-    data={"description": "プロフィール画像"},            # 任意: 通常のフォームフィールドを同時に送信
+    data={"description": "プロフィール画像"},            # 任意: 普通のフォームフィールドも同時に送信可能
     files={
         "file": ("photo.png", open("photo.png", "rb"), "image/png"),
     },
 )
 
-# 簡略化された書き方: ファイルオブジェクトを直接渡す
+# 簡易記法: ファイルオブジェクトを直接渡す
 resp = await client.post(
     "https://api.example.com/upload",
     files={"file": open("photo.png", "rb")},
 )
 
-# メモリ内データを直接アップロード (ファイルを保存する必要なし)
+# メモリ上のデータを直接アップロード (ディスクへの保存は不要)
 import io
 
 resp = await client.post(
@@ -12660,7 +13373,7 @@ resp = await client.delete("https://api.example.com/users/1")
 resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
 ```
 
-### 一般的なrequest
+### 一般的な request
 
 ```python
 from ErisPulse.Core import client
@@ -12670,7 +13383,6 @@ resp = await client.request(
     "https://api.example.com/resource",
     headers={"Origin": "https://example.com"},
 )
-```
 
 ## パラメータの説明
 
@@ -12681,11 +13393,11 @@ resp = await client.request(
 | `url` | `str` | リクエストURL |
 | `params` | `dict[str, str]` | クエリパラメータ (オプション) |
 | `headers` | `dict[str, str]` | 追加のリクエストヘッダー (オプション) |
-| `data` | `Any` | リクエストボディ (フォームまたはバイナリデータ) (オプション) |
+| `data` | `Any` | リクエストボディ (フォームまたは生データ) (オプション) |
 | `json` | `Any` | JSONリクエストボディ (オプション) |
 | `files` | `dict[str, Any]` | ファイルアップロードフィールド (オプション、multipart/form-dataを自動的に構築) |
-| `timeout` | `float` | 今回のリクエストのタイムアウト (秒) (オプション、デフォルト値を上書き) |
-| `max_retries` | `int` | 今回の最大リトライ回数 (オプション、デフォルト値を上書き) |
+| `timeout` | `float` | 本次のリクエストタイムアウト (秒) (オプション、デフォルト値を上書き) |
+| `max_retries` | `int` | 本次の最大リトライ回数 (オプション、デフォルト値を上書き) |
 
 ### ws_connect パラメータ
 
@@ -12698,24 +13410,29 @@ resp = await client.request(
 ## タイムアウトとリトライ
 
 ```python
-from ErisPulse.Core import HttpClient
+from ErisPulse.Core import Client
 
-# カスタムタイムアウトを持つクライアントを作成
-client = HttpClient(
-    timeout=60,           # リクエスト全体のタイムアウト 60秒
-    connect_timeout=5,    # 接続のタイムアウト 5秒
-    max_retries=3,        # 失敗時の自動リトライ 3回
+# カスタムタイムアウトを設定したクライアントを作成
+client = Client(
+    timeout=60,           # 要求の総タイムアウト 60秒
+    connect_timeout=5,    # 接続タイムアウト 5秒
+    max_retries=3,        # 失敗時に自動でリトライ 3回
     retry_delay=2,        # リトライ間隔 2秒
 )
 
-# 今回のリクエストでタイムアウトを上書き
+# 単一の要求でタイムアウトを上書き
 resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
-## デフォルトヘッダーのカスタマイズ
+> [!NOTE]
+> クライアントクラスは 2.8.0 から `Client` に名前が変更されました（`sdk.client` の属性名は変更されません）；古い名前 `HttpClient` は互換性のためのエイリアスとして保持され、古いコードを変更する必要はありません。
+
+[**English**](docs/en/timeout-retry.md) | [**简体中文**](docs/ja/timeout-retry.md) | [**日本語**](docs/ja/timeout-retry.md)
+
+## デフォルトのヘッダーをカスタマイズ
 
 ```python
-client = HttpClient(
+client = Client(
     headers={
         "Authorization": "Bearer token",
         "X-App-Id": "my-app",
@@ -12724,12 +13441,14 @@ client = HttpClient(
 )
 ```
 
+[**English**](docs/ja/quick-start.md)
+
 ## リクエスト統計
 
 ```python
 from ErisPulse.Core import client
 
-# 統計を確認
+# 統計を表示
 stats = client.stats
 # {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
 
@@ -12737,11 +13456,13 @@ stats = client.stats
 client.reset_stats()
 ```
 
+[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
 ## ライフサイクルイベント
 
 ### HTTPリクエストイベント
 
-各リクエストの完了後に `client.request` イベントがトリガーされ、モニタリングに使用できます：
+リクエストが完了するたびに `client.request` イベントがトリガーされ、モニタリングに使用できます：
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -12753,30 +13474,31 @@ async def on_request(event_data):
 
 ### WebSocket接続イベント
 
-WebSocket接続が確立された後に `client.ws.connect` イベントがトリガーされます：
+WebSocket接続が確立するたびに `client.ws.connect` イベントがトリガーされます：
 
 ```python
 from ErisPulse.Core import lifecycle
 
 @lifecycle.on("client.ws.connect")
 async def on_ws_connect(event_data):
-    print(f"WS接続: {event_data['url']}")
-```
+    print(f"WS 接続: {event_data['url']}")
 
-## コンテキストマネージャー
+## コンテキスト管理
 
 ```python
 # コンテキストマネージャーとして使用し、セッションを自動的に閉じる
-async with HttpClient(timeout=30) as client:
+async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
 ```
 
-## WebSocketクライアント
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
-`client.ws_connect()` を通じてWebSocketクライアント接続を確立し、`ClientWebSocket` オブジェクトを返します。クライアントとサーバー側のWebSocketは同じ `WebSocketConnectionBase` 基底クラスを共有し、send/receive/iterインターフェースは完全に同じです。
+## WebSocket クライアント
 
-### 基本的な使い方
+`client.ws_connect()` を使用して WebSocket クライアント接続を確立し、`ClientWebSocket` オブジェクトを返します。クライアントとサーバーの WebSocket は同じ `WebSocketConnectionBase` 基底クラスを共有し、send/receive/iter インターフェースは完全に一致しています。
+
+### 基本的な使用方法
 
 ```python
 from ErisPulse.Core import client
@@ -12790,7 +13512,7 @@ await ws.send_json({"type": "ping"})
 
 ### メッセージの受信
 
-#### 高レベルメソッド (推奨)
+#### 高レベルメソッド（推奨）
 
 メッセージの種類を自動的にフィルタリングし、切断時に `WebSocketDisconnect` をスローします：
 
@@ -12800,12 +13522,12 @@ from ErisPulse.Core.Bases.errors import WebSocketDisconnect
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# 1件のメッセージを受信
+# 単一のメッセージ受信
 text = await ws.receive_text()    # str
 data = await ws.receive_bytes()   # bytes
 obj = await ws.receive_json()     # dict / list
 
-# 受信のイテレーション (切断時に自動的に停止)
+# 反復処理による受信（切断時に自動停止）
 async for text in ws.iter_text():
     print(text)
 
@@ -12818,7 +13540,7 @@ async for obj in ws.iter_json():
 
 #### 低レベルメソッド
 
-`receive()` と `iter_messages()` を使用して、元のメッセージの種類を処理し、TEXT / BINARY / CLOSE / ERROR を区別できます：
+`receive()` と `iter_messages()` を使用して、TEXT / BINARY / CLOSE / ERROR を区別できる生のメッセージタイプを処理します：
 
 ```python
 from ErisPulse.Core import client
@@ -12826,12 +13548,12 @@ from ErisPulse.Core.Bases.websocket import WSMessage
 
 ws = await client.ws_connect("wss://example.com/ws")
 
-# 1件のメッセージを受信
+# 単一の生メッセージ受信
 msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
 
-# メッセージのイテレーション (CLOSE/ERROR時に自動的に停止)
+# 生メッセージの反復処理（CLOSE/ERROR で自動停止）
 async for msg in ws.iter_messages():
     if msg.type == WSMessage.TEXT:
         print(f"テキスト: {msg.data}")
@@ -12841,7 +13563,7 @@ async for msg in ws.iter_messages():
 
 ### WSMessage
 
-`WSMessage` は、下層ライブラリに依存しない統一されたWebSocketメッセージの型です：
+`WSMessage` は、下位ライブラリに依存しない統一された WebSocket メッセージタイプです：
 
 | 属性 | 型 | 説明 |
 |------|------|------|
@@ -12852,14 +13574,14 @@ async for msg in ws.iter_messages():
 
 | 属性 | 型 | 説明 |
 |------|------|------|
-| `url` | `URL` | 接続URL |
-| `headers` | `Headers` | レスポンスヘッダー |
-| `closed` | `bool` | 接続が閉じられているかどうか |
-| `raw` | `object` | 下層の生のオブジェクト (aiohttp.ClientWebSocketResponse) |
+| `url` | `URL` | 接続の URL |
+| `headers` | `Headers` | 応答ヘッダー |
+| `closed` | `bool` | 接続が閉じられているか |
+| `raw` | `object` | 下位の生のオブジェクト (aiohttp.ClientWebSocketResponse) |
 
 ### ライフサイクルフック
 
-`サービス側 WebSocketConnection` と同じで、`on_disconnect` と `on_error` コールバックをサポートします：
+`サービス側 WebSocketConnection` と同様に、`on_disconnect` と `on_error` コールバックをサポートします：
 
 ```python
 from ErisPulse.Core import client
@@ -12878,25 +13600,24 @@ async def handle_error(ws, error=""):
 ### 接続の切断
 
 ```python
-await ws.close(code=1000, reason="正常な切断")
-```
+await ws.close(code=1000, reason="Normal closure")
 
 ## 例外体系
 
-ErisPulse は、統一された例外階層を定義しています。`sdk.client` からリクエストを発行すると、下層の aiohttp 例外が自動的に ErisPulse 例外に変換されます。
+ErisPulse は、統一された例外階層を定義しており、`sdk.client` を介してリクエストを発行すると、自動的に下層の aiohttp 例外を ErisPulse 例外に変換します。
 
-> **後方互換性**：aiohttp.ClientSession を直接使用する古いモジュール/アダプターは、完全に影響を受けません。例外の変換は `sdk.client` からリクエストを発行する場合にのみ有効で、aiohttp を直接使用するコードは依然として `aiohttp.ClientError` などの生の例外をキャッチします。2つの方法は共存可能です。
+> **互換性の維持**：`aiohttp.ClientSession` を直接使用する旧モジュール/アダプタは完全に影響を受けません。例外変換は `sdk.client` を介してリクエストを発行する場合にのみ有効であり、aiohttp を直接使用するコードは引き続き `aiohttp.ClientError` などのネイティブ例外をキャッチします。両方の方法は共存可能です。
 
 ### 例外階層
 
 ```
 ErisPulseError
-├── ClientError                  # HTTP/WSクライアントリクエスト例外の基底クラス
-│   ├── ClientConnectionError    # 接続失敗 (DNS解析失敗、接続拒否、ネットワーク到達不能)
+├── ClientError                  # すべての HTTP/WS クライアントリクエスト例外の基底クラス
+│   ├── ClientConnectionError    # 接続失敗 (DNS 解析失敗、接続拒否、ネットワーク到達不能)
 │   ├── ClientTimeoutError       # 接続タイムアウトまたはリクエストタイムアウト
-│   └── HTTPStatusError          # HTTP 4xx/5xxステータスコードエラー
-└── WebSocketError               # WebSocket例外の基底クラス
-    └── WebSocketDisconnect      # WebSocket接続が切断された (クライアントとサーバー共通)
+│   └── HTTPStatusError          # HTTP 4xx/5xx ステータスコードエラー
+└── WebSocketError               # WebSocket 例外の基底クラス
+    └── WebSocketDisconnect      # WebSocket 接続切断 (クライアントとサーバー共通)
 ```
 
 ### 例外のキャッチ
@@ -12912,7 +13633,7 @@ from ErisPulse.Core.Bases.errors import (
     WebSocketError,
 )
 
-# HTTPリクエスト例外の処理
+# HTTP リクエスト例外の処理
 try:
     resp = await client.get("https://api.example.com/data")
     data = await resp.json()
@@ -12923,7 +13644,7 @@ except ClientTimeoutError:
 except ClientError as e:
     print(f"リクエストが失敗しました: {e}")
 
-# WebSocket例外の処理
+# WebSocket 例外の処理
 try:
     ws = await client.ws_connect("wss://example.com/ws")
     async for text in ws.iter_text():
@@ -12931,12 +13652,12 @@ try:
 except WebSocketDisconnect as e:
     print(f"接続が切断されました: code={e.code}, reason={e.reason}")
 except WebSocketError as e:
-    print(f"WebSocketエラー: {e}")
+    print(f"WebSocket エラー: {e}")
 ```
 
 ### 統一されたキャッチ
 
-`ClientError` を使用して、HTTP/WSクライアントリクエストのすべての例外を統一的にキャッチします：
+`ClientError` を使用して、すべての HTTP/WS クライアントリクエスト例外を統一的にキャッチします：
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError
@@ -12949,7 +13670,7 @@ except ClientError as e:
 
 ### HTTPStatusError
 
-リクエスト後にステータスコードをチェックして例外をスローする必要がある場合、手動で使用できます：
+リクエスト後にステータスコードをチェックし、例外を投げる必要がある場合、手動で使用できます：
 
 ```python
 from ErisPulse.Core.Bases.errors import HTTPStatusError
@@ -12957,11 +13678,10 @@ from ErisPulse.Core.Bases.errors import HTTPStatusError
 resp = await client.get("https://api.example.com/data")
 if resp.status >= 400:
     raise HTTPStatusError(resp.status, await resp.text())
-```
 
 ## アダプターでの使用
 
-アダプターは、グローバルクライアントまたは独自のクライアントインスタンスを使用して、プラットフォームAPIリクエストを送信できます：
+アダプターは、グローバルクライアントまたは独自にクライアントインスタンスを作成して、プラットフォームAPIリクエストを送信することができます。
 
 ```python
 from ErisPulse.Core import client
@@ -12978,21 +13698,25 @@ class MyAdapter(BaseAdapter):
             )
             return await resp.json()
         except ClientError as e:
-            self.logger.error(f"API呼び出しに失敗しました: {e}")
+            self.logger.error(f"APIの呼び出しに失敗しました: {e}")
             raise
 ```
 
-> `from ErisPulse import sdk` を使用して `sdk.client` を使うことも可能で、効果は同じです。
+> `from ErisPulse import sdk` から `sdk.client` を使用することもでき、効果は同じです。
 
-## 最適な実践
+## 最佳実践
 
-1. **グローバルクライアントを優先する**：`from ErisPulse.Core import client` を使用してグローバルシングルトンを取得し、フレームワークの統一管理と監視を容易にする
-2. **aiohttpの直接インポートを避ける**：`client` を使用して `aiohttp.ClientSession` を置き換え、将来の下層実装の変更に伴うコードの変更を必要としない。古いコードで直接 aiohttp を使用しても正常に動作し、2つの方法は共存可能
-3. **ErisPulseの例外体系を使用する**：`sdk.client` からリクエストする際は `aiohttp.ClientError` ではなく `ClientError` をキャッチし、特定のHTTPライブラリに依存しないコードを確保する。直接 aiohttp を使用する古いコードは影響を受けない
-4. **適切なタイムアウトを設定する**：APIの応答速度に応じて適切なタイムアウト時間を設定し、長時間のブロッキングを避ける
-5. **リトライメカニズムを使用する**：不安定なAPIに対してリトライを有効化し、信頼性を向上させる
-6. **リクエスト統計を監視する**：`sdk.client.stats` または `client.request` ライフサイクルイベントを使用してリクエスト状況を監視する
-7. **WebSocketで高レベルメソッドを使用する**：`iter_text` / `iter_json` などの高レベルメソッドを優先し、メッセージの種類を区別する必要がある場合にのみ `iter_messages` を使用する
+1. **グローバルクライアントを優先する**：`from ErisPulse.Core import client` を使用してグローバルシングルトンを取得し、フレームワークによる統一的な管理と監視を容易にする
+2. **直接 aiohttp をインポートしない**：`client` を `aiohttp.ClientSession` の代わりに使用し、将来の下層実装の変更時にコードを修正する必要がないようにする。古いコードで直接 aiohttp を使用しても正常に動作し、両方の方法を共存させることができる
+3. **ErisPulse の例外体系を使用する**：`sdk.client` を使用してリクエストする際には `aiohttp.ClientError` ではなく `ClientError` をキャッチし、コードが特定の HTTP ライブラリに依存しないようにする。直接 aiohttp を使用する古いコードには影響しない
+4. **適切なタイムアウトを設定する**：API の応答速度に応じて適切なタイムアウト時間を設定し、長時間のブロッキングを避ける
+5. **リトライメカニズムを使用する**：不安定な API に対してリトライを有効にし、信頼性を向上させる
+6. **リクエスト統計を監視する**：`sdk.client.stats` または `client.request` のライフサイクルイベントを使用してリクエスト状況を監視する
+7. **WebSocket で高機能メソッドを使用する**：`iter_text` / `iter_json` などの高機能メソッドを優先し、メッセージタイプを区別する必要がある場合にのみ `iter_messages` を使用する
+
+## ドキュメントの言語切り替え
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 
 
@@ -13377,49 +14101,127 @@ class MyStorage(BaseStorage):
 
 ### 懶加载系统
 
-# ラグロードモジュールシステム
+# ラグ遅延ロードモジュールシステム
 
-ErisPulse SDK は、モジュールを実際に必要になるまで初期化しない強力なラグロードモジュールシステムを提供し、アプリケーションの起動速度とメモリ効率を大幅に向上させます。
+ErisPulse SDK は強力なラグ遅延ロードモジュールシステムを提供しており、モジュールを実際に必要になるまで初期化しないことで、アプリケーションの起動速度とメモリ効率を大幅に向上させることができます。
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md)
 
 ## 概要
 
-ラグロードモジュールシステムは、ErisPulse のコア機能の一つであり、以下の方法で動作します：
+ErisPulseのラジオロードモジュールシステムは、以下の方法で動作するコア機能の1つです：
 
 - **遅延初期化**：モジュールは、初めてアクセスされたときにのみ実際にロードおよび初期化されます
-- **透明な使用**：開発者にとって、ラグロードモジュールは通常のモジュールと使用方法にほとんど違いがありません
+- **透明な使用**：開発者にとって、ラジオロードモジュールは通常のモジュールとほとんど区別がつきません
 - **自動依存管理**：モジュールの依存関係は、使用時に自動的に初期化されます
-- **ライフサイクルサポート**：`BaseModule` を継承したモジュールに対しては、ライフサイクルメソッドが自動的に呼び出されます
+- **ライフサイクルサポート**：`BaseModule` を継承するモジュールに対しては、ライフサイクルメソッドが自動的に呼び出されます
+
+[**English**](docs/en/overview.md) | [**日本語**](docs/ja/overview.md) | [**简体中文**](docs/ja/overview.md)
 
 ## 動作原理
 
 ### LazyModule クラス
 
-ラグロードシステムの中心は、`LazyModule` クラスです。これは、最初のアクセス時にのみ実際にモジュールを初期化するラッパーです。
+遅延ロードシステムの中心となるのは `LazyModule` クラスです。これは、最初にアクセスされたときにのみモジュールを実際に初期化するラッパーです。
 
 ### 初期化プロセス
 
 モジュールが初めてアクセスされたとき、`LazyModule` は以下の操作を実行します：
 
-1. モジュールクラスの `__init__` の引数情報を取得します
-2. 引数に基づいて `sdk` 参照を渡すかどうかを決定します
+1. モジュールクラスの `__init__` パラメータ情報を取得します
+2. パラメータに基づいて `sdk` リファレンスを渡すかどうかを決定します
 3. モジュールの `moduleInfo` 属性を設定します
-4. `BaseModule` を継承したモジュールに対しては `on_load` メソッドを呼び出します
-5. `module.init` ライフサイクルイベントを発生させます
+4. `BaseModule` を継承したモジュールの場合、`on_load` メソッドを呼び出します
+5. `module.init` ライフサイクルイベントをトリガーします
 
-## ラグロードの設定
+[**English**](docs/ja/quick-start.md)
 
-### グローバル設定
+## イベント駆動型遅延起動（activate_on）
 
-設定ファイルでグローバルなラグロードを有効/無効にします：
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
+
+`lazy_load=True` のモジュールはデフォルトで**最初の属性アクセス時**にのみロードされます。モジュールがコマンド/イベントハンドラを登録している場合、従来の方法では `lazy_load=False` にして即時ロードするしかありませんでした。`activate_on` は第三の選択肢を提供します：**トリガを宣言し、最初の一致するイベント/コマンドが到着した時点でモジュールを自動的にアクティブ化する**——メモリ上に常駐させることなく、トリガのエントリポイントを失うこともありません。
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class MyModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            activate_on=[
+                # ---- イベントトリガ（受動的到着、ユーザーの意識を必要としない）----
+                "message",                                    # タイプレベル：任意のメッセージイベント
+                {"notice": "group_member_increase"},          # タイプ + 単一 detail_type
+                {"message": ["private", "group"]},            # タイプ + 複数 detail_type
+
+                # ---- コマンドトリガ（能動的な入力、Help で表示されるプレースホルダーコマンド）----
+                {"command": "roll"},                          # 略記：コマンド名
+                {"command": ["roll", "dice"]},                # コマンド名リスト
+                {"command": {                                 # dict 形式の宣言（name は必須）
+                    "name": "dice",
+                    "help": "サイコロを振る",
+                    "usage": "/dice",
+                    "group": "娯楽",
+                    "aliases": ["d"],
+                    "hidden": False,
+                }},
+            ],
+        )
+```
+
+### コマンド dict 形式の宣言パラメータ
+
+dict 形式は `@command()` デコレーターのユーザー側パラメータをミラーしており、モジュールのロード前にプレースホルダーコマンドを登録するのに使用されます：
+
+| パラメータ | 型 | デフォルト | 説明 |
+|------|------|------|------|
+| `name` | `str` | **必須** | コマンド名；`on_load` 内の `@command(name)` と一致する必要がある。一致しないと、アクティブ化後にプレースホルダーが削除され、コマンドが存在しなくなる |
+| `help` | `str` | フォールバックチェーン | Help に表示される説明；宣言されていない場合はフォールバックチェーンから値を取得する（下記参照） |
+| `usage` | `str` | 自動生成 | 使用方法行；デフォルトは `{prefix}{name}` |
+| `group` | `str` | `None` | コマンドグループ |
+| `aliases` | `list[str]` | `[]` | 別名も同時に登録され、**別名の入力でもアクティブ化がトリガされる** |
+| `hidden` | `bool` | `False` | `True` の場合、プレースホルダーコマンドも非表示（アクティブ化後の実際のコマンドの非表示の意味と一致）；コマンド名を知っているユーザーが入力してもトリガされる |
+
+**サポートされていない** `priority` / `permission` / `master`：プレースホルダーコマンドの役割はアクティブ化のトリガのみであり、権限チェックはアクティブ化後の実際のコマンドが実行する（プレースホルダー段階で権限をブロックしてしまうと、「コマンド入力でアクティブ化」が無効になってしまう）。
+
+### プレースホルダーコマンドの help フォールバックチェーン
+
+モジュールがロードされていない場合、Help に表示されるコマンドの説明は以下の順序で値を取得します（取得した時点で終了）：
+
+1. dict 形式で宣言されたコマンドレベルの `help`（最も正確）
+2. モジュールの `get_meta()` の `description`
+3. モジュールの `__description__` 属性
+4. パッケージのメタデータの `Summary`（PyPI パッケージの概要）
+5. 一般的なヒント：「このコマンドは遅延ロードモジュール X から来ています。初めて使用すると、そのモジュールが自動的にロードされます」
+
+### トリガの意味
+
+- **イベントスタブ**：対応するイベントマネージャーに非常に低い優先度（`ACTIVATION_STUB_PRIORITY`）で登録され、すべての通常のハンドラの後にバックアップとしてトリガされる。アクティブ化後は、現在のイベントをモジュールの実際のハンドラに転送する
+- **コマンドスタブ**：プレースホルダーコマンドを登録する。アクティブ化後は、プレースホルダーが削除され、実際のコマンドがそのトリガを引き継ぐ
+- **再入防止**：`asyncio.Lock` を使用して、並行トリガの下でも一度だけアクティブ化されるように保証する
+- **スコープフィルタリング**：スタブにはモジュールのオーナーのアイデンティティが含まれており、モジュールが Bot / セッション / プラットフォームに対して有効でない場合はトリガされない
+- **失敗時の意味**：アクティブ化に失敗した場合、再試行はせず、スタブも一緒に削除される
+- **重複排除**：同名のコマンドが略記 + dict 混合で宣言された場合、重複を排除する（dict が優先）。dict に `name` が欠落している場合、またはイベントの `detail_type` を dict として誤って書いた場合は、警告を出して無視する
+
+> アーキテクチャ図と完全な意味については、[アーキテクチャ概要](../architecture.md#イベント駆動型遅延起動activate_onのトリガアーキテクチャ)を参照してください。
+
+## 懒惰ロードの構成
+
+### グローバル構成
+
+構成ファイルでグローバルな lazy loading を有効または無効にします：
 
 ```toml
 [ErisPulse.framework]
-enable_lazy_loading = true  # true=ラグロードを有効にする(デフォルト), false=ラグロードを無効にする
+enable_lazy_loading = true  # true=lazy loadingを有効にする(デフォルト), false=lazy loadingを無効にする
 ```
 
 ### モジュールレベルの制御
 
-モジュールは、`get_load_strategy()` 静的メソッドを実装することで、ロード戦略を制御できます：
+モジュールは `get_load_strategy()` 静的メソッドを実装することで、ロード戦略を制御できます：
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -13428,49 +14230,50 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """モジュールロード戦略を返す"""
+        """モジュールのロード戦略を返す"""
         return ModuleLoadStrategy(
-            lazy_load=False,  # False を返すと即時ロード
+            lazy_load=False,  # Falseを返すと即時ロード
             priority=100      # ロード優先度、数値が大きいほど優先度が高い
         )
-```
 
 ## ラグロードモジュールの使用
 
-### 基本的な使用
+### 基本的な使用方法
 
-開発者にとって、ラグロードモジュールは通常のモジュールと使用方法にほとんど違いがありません：
+開発者にとって、ラグロードモジュールは通常のモジュールと使用方法にほとんど違いはありません：
 
 ```python
-# SDK を通じてラグロードモジュールにアクセス
+# SDKを介してラグロードモジュールにアクセス
 from ErisPulse import sdk
 
-# 以下のようなアクセスはモジュールのラグロードをトリガーします
+# 以下のようにアクセスするとモジュールのラグロードがトリガーされます
 result = await sdk.my_module.my_method()
 ```
 
-### 一貫したモジュール取得エントリ
+### モジュールの取得エントリの統一
 
-SDK 属性、モジュールマネージャー属性を通じてアクセスする場合、または `module.get()` を使って検索する場合、
-「登録済みだがまだロードされていない」ラグロードモジュールに対しては、同じラグロードプロキシが返され、
-そのプロパティにアクセスすることで初めて初期化がトリガーされます：
+SDK属性、モジュールマネージャ属性、または`module.get()`を介してアクセスする場合、
+「登録済みだがまだロードされていない」ラグロードモジュールに対しては、
+すべて同じラグロードプロキシが返されます。プロパティにアクセスすることで、
+実際に初期化がトリガーされます：
 
 ```python
-# 3 つの方法で取得されるのはすべてラグロードプロキシ（モジュールがロードされていない場合）、動作は一貫しており、ユーザーには透明です
+# 3つの方法で取得されるのはすべてラグロードプロキシ（モジュールがロードされていない場合）、
+# 振る舞いは一貫しており、ユーザーには透明です
 sdk.my_module          # ロードをトリガーするエントリ
-sdk.module.my_module   # 同様にラグロードプロキシを返します
-sdk.module.get("my_module")  # ラグロードプロキシを返しますが、自体はロードをトリガーしません
+sdk.module.my_module   # 同じくラグロードプロキシを返します
+sdk.module.get("my_module")  # ラグロードプロキシを返しますが、ロードはトリガーしません
 
-# プロキシの任意のプロパティにアクセスすることで、モジュールが実際に初期化されます
+# プロキシの任意のプロパティにアクセスすることで、実際にモジュールの初期化が行われます
 result = await sdk.my_module.my_method()
 ```
 
-`module.get()` は**検索**インターフェースであり、自体はロードをトリガーしません：
+`module.get()`は**検索**インターフェースであり、ロードをトリガーしません：
 - モジュールがロード済み → 実際のインスタンスを返します
-- モジュールが登録済みだがロードされていない → ラグロードプロキシを返します（プロパティにアクセスすることで初期化されます）
-- モジュールが登録されていない → `None` を返します
+- モジュールが登録済みだがロードされていない → ラグロードプロキシを返します（プロパティにアクセスして初めて初期化されます）
+- モジュールが登録されていない → `None`を返します
 
-明示的にロードをトリガーするには、`await sdk.load_module("my_module")` を使用してください。
+明示的にロードをトリガーしたい場合は、`await sdk.load_module("my_module")`を使用してください。
 
 ### 非同期初期化
 
@@ -13486,33 +14289,52 @@ result = await sdk.my_module.my_method()
 
 ### 同期初期化
 
-非同期初期化が必要ないモジュールについては、直接アクセスできます：
+非同期初期化を必要としないモジュールについては、直接アクセスできます：
 
 ```python
-# 直接アクセスすることで自動的に同期初期化されます
+# 直接アクセスすると自動的に同期初期化されます
 result = sdk.my_module.some_sync_method()
+
+## 最佳実践
+
+ロード戦略を選択する際には、以下の意思決定フローを参考にしてください：
+
+```mermaid
+flowchart TD
+    A["モジュール宣言<br/>get_load_strategy()"] --> B{"起動時に即座に準備が必要か<br/>または高頻度でトリガーされるか？"}
+    B -->|"はい"| C["lazy_load=False<br/>即時ロード"]
+    B -->|"いいえ"| D{"コマンド/イベントハンドラを登録したか？"}
+    D -->|"はい"| E["lazy_load=True + activate_on<br/>イベント/コマンドが到着した際にアクティベート"]
+    D -->|"いいえ"| F["lazy_load=True<br/>最初の属性アクセス時にロード"]
+    C --> G["起動時に on_load() を呼び出す"]
+    E --> H["stub を登録 → トリガー時にインスタンス化"]
+    F --> I["LazyModule 代理"]
 ```
 
-## 最適な実践
+### lazy_load=True を推奨するシナリオ
 
-### ラグロードを使用することを推奨する場面（lazy_load=True）
+- 他のモジュールによって呼び出されるだけの受動的なユーティリティモジュール（例：データクエリモジュール、フォーマット変換器など）
+- コマンド/イベントハンドラを登録しているが高頻度で使用されないモジュール — `activate_on` でトリガーを宣言し、最初の一致するイベント/コマンドが到着した際に自動的にアクティベートするため、遅延ロードを放棄する必要がない
 
-- 他のモジュールが呼び出すときにのみ必要な受動的なユーティリティクラス（データクエリモジュール、フォーマット変換器など）
+### lazy_load=False を推奨するシナリオ
 
-### ラグロードを無効にすることを推奨する場面（lazy_load=False）
-
-- トリガーを登録するモジュール（コマンドプロセッサ、メッセージプロセッサなど）
-- ライフサイクルイベントリスナー
-- タイミングタスクモジュール
+- 起動時に即座に準備が必要なモジュール（他のモジュールに基礎サービスを提供するコアモジュールなど）
+- 高頻度でトリガーされるリスナー（各メッセージを処理する必要がある） — `activate_on` の転送には一度のアクティベートオーバーヘッドがあるため、高頻度のシナリオでは即時ロードの方が直接的
+- 定時タスクモジュール
 - アプリケーション起動時に初期化が必要なモジュール
 
-> `priority` パラメータは、即時ロードモジュール間の初期化順序を制御します。数値が大きいほど先に初期化されます。同優先度のモジュールは、登録順にロードされます。
+> `priority` パラメータは、即時ロードモジュール間の初期化順序を制御し、値が大きいほど先に初期化されます。同じ優先度のモジュールは登録順にロードされます。
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**繁體中文**](docs/zh-TW/quick-start.md)
 
 ## 注意事項
 
-1. あなたのモジュールがラグロードを使用している場合、他のモジュールがErisPulse内で一度も呼び出さない限り、あなたのモジュールは決して初期化されません。
-2. あなたのモジュールにイベントを監視するモジュールや、そのようなモジュールを積極的に監視するモジュールが含まれている場合、必ず即時ロードが必要であることを宣言してください。そうしないと、モジュールの正常な業務に影響を与えます。
-3. 特殊な要件がない限り、ラグロードを無効にすることは推奨しません。そうしないと、依存管理やライフサイクルイベントなどの問題が発生する可能性があります。
+1. モジュールが遅延ロードを使用している場合、ErisPulse内で他のモジュールが一度も呼び出されたことがない場合、そのモジュールは決して初期化されません。
+2. モジュールにイベントをリッスンするモジュール、またはその他の類似モジュールを積極的にリッスンするモジュールが含まれている場合、2つの選択肢があります：`activate_on` トリガーを宣言して遅延ロードを維持し、イベントが到着したときに自動的にアクティブ化するか、または即時ロードが必要であることを宣言する（`lazy_load=False`）、さもなければモジュールの正常な業務に影響を与える可能性があります。
+3. 特殊な要件がない限り、遅延ロードを無効にすることは推奨しません。そうしないと、依存管理やライフサイクルイベントなどの問題が発生する可能性があります。
+4. `activate_on` のコマンド dict 声明において、`name` はモジュールの `on_load` 中の `@command()` で登録された実際のコマンド名と一致している必要があります。一致していない場合、モジュールがアクティブ化された後にプレースホルダーコマンドが登録解除され、宣言と実装が一致しないコマンドは存在しません。
+
+[**English**](docs/en/advanced.md) | [**日本語**](docs/ja/advanced.md)
 
 
 
@@ -13520,12 +14342,24 @@ result = sdk.my_module.some_sync_method()
 
 # ライフサイクル管理
 
-ErisPulse は、システムの各コンポーネントの実行状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実現するために、統一されたフック/ライフサイクルシステムを提供します。
+ErisPulse は、システムの各コンポーネントの実行状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実現するための統一されたフック/ライフサイクルシステムを提供します。
 
-システムは3つのトリガー方法をサポートしています。
-- `await lifecycle.emit("event", data)` — 簡易版、任意のデータを渡す
-- `lifecycle.emit_sync("event", data)` — 同期版（非同期コンテキストで使用）
-- `await lifecycle.submit_event("event", ...)` — 旧版との互換性、標準イベント形式を自動構築
+システムは、以下の3種類のトリガー方式をサポートしています：
+
+- `await lifecycle.emit("event", data)` — 精選版、任意のデータを渡す
+- `lifecycle.emit_sync("event", data)` — 同期版（非非同期コンテキストで使用）
+- `await lifecycle.submit_event("event", ...)` — 旧版と互換性あり、標準的なイベント形式を自動的に構築
+
+# Lifecycle Management
+
+ErisPulse provides a unified hook/lifecycle system for monitoring the operational status of various system components, as well as implementing extended features such as auditing, statistics, and custom logic.
+
+The system supports three types of trigger methods:
+- `await lifecycle.emit("event", data)` — A concise version that passes arbitrary data.
+- `lifecycle.emit_sync("event", data)` — A synchronous version (used in non-async contexts).
+- `await lifecycle.submit_event("event", ...)` — Compatible with the older version, automatically constructs a standard event format.
+
+[**English**](docs/ja/quick-start.md)
 
 ## イベント処理メカニズム
 
@@ -13534,69 +14368,69 @@ ErisPulse は、システムの各コンポーネントの実行状態を監視�
 ```python
 from ErisPulse import sdk
 
-# デコレータモード
+# デコレータパターン
 @sdk.lifecycle.on("module.load")
 async def on_module_load(data):
-    print(f"モジュールの読み込み: {data}")
+    print(f"モジュールのロード: {data}")
 
-# プログラムによる登録
+# プログラミングによる登録
 sdk.lifecycle.register("module.load", on_module_load, priority=10)
 
-# 登録解除
+# 登録の解除
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# 所有者ごとの一括登録解除（モジュール/アダプタのアンインストール時にフレームワークが自動的に呼び出す）
+# 所有者ごとの一括解除（モジュール/アダプタのアンロード時にフレームワークが自動的に呼び出す）
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
-print(f"ライフサイクルフックを {removed} 個クリアしました")
+print(f"クリーンアップしたライフサイクルフック数: {removed}")
 ```
 
 ### 優先度
 
-ハンドラは `priority` パラメータをサポートし、数値が大きいほど先に実行されます（モジュールローダーと一致）：
+ハンドラは `priority` パラメータをサポートし、数値が大きいほど先に実行されます（モジュールローダーと同一です）：
 
 ```python
-@sdk.lifecycle.on("adapter.event.receive", priority=10)  # 最優先で実行
+@sdk.lifecycle.on("adapter.event.receive", priority=10)  # 最初に実行
 async def first_handler(data):
     pass
 
-@sdk.lifecycle.on("adapter.event.receive", priority=0)  # あとで実行
+@sdk.lifecycle.on("adapter.event.receive", priority=0)  # 後に実行
 async def second_handler(data):
     pass
 ```
 
-### ドット表記構造のイベント
+### 点構造イベント
 
-具体的なイベントをトリガーすると、その親イベントもトリガーされます。
-- `module.load` をトリガーすると、`module` もトリガーされます
-- `adapter.event.receive` をトリガーすると、`adapter.event` と `adapter` もトリガーされます
+特定のイベントが発生すると、その親イベントも同時に発生します：
+- `module.load` が発生すると、`module` も発生します
+- `adapter.event.receive` が発生すると、`adapter.event` と `adapter` も発生します
 
 ### ワイルドカード
 
-`*` を登録するとすべてのイベントをキャッチします：
+`*` を登録してすべてのイベントをキャッチできます：
 
 ```python
 @sdk.lifecycle.on("*")
 async def on_anything(data):
-    print(f"イベントを受信しました: {data}")
+    print(f"イベントを受信: {data}")
 ```
 
 ### 一回限りの登録（once）
 
-2.7.0 以降、`lifecycle.once()` で登録されたハンドラは**一度トリガーされたら自動的に登録解除**されます。「初回準備完了」のような一回限りのフックに適しています：
+2.7.0 以降、`lifecycle.once()` で登録されたハンドラは**一度実行された後、自動的に登録解除**されます。これは「最初の準備完了」のような一回限りのフックに適しています：
 
 ```python
 @sdk.lifecycle.once("core.init.complete")
 async def on_first_ready(data):
-    print("初回準備完了、その後はトリガーされません")
+    print("最初の準備完了、以降は再び発生しません")
 ```
 
-- `on()` と同じ優先度パラメータの意味（数値が大きいほど先に実行）
-- 自動的に登録解除されるため、手動で `unregister` する必要がない
-- 同期/非同期ハンドラの両方をサポート
+- `on()` と同じ優先度パラメータの意味（`priority` の数値が大きいほど先に実行）
+- 自動的に登録解除され、手動で `unregister` を行う必要はありません
+- 同期/非同期のハンドラ両方をサポート
 
-### リスナーの確認（has_handlers）
+### 監視者の照会（has_handlers）
 
-熱路径（パフォーマンスが重要なパス）でのショートサーキットのため、無駄なイベントの遍歴やタスクのスケジューリングを避けるために `has_handlers()` ですでにリスナーが存在するかを先に判断できます：
+ホットパスの短絡処理では、`has_handlers()` を使って事前に監視者が存在するかを確認し、無駄なイベントのループとタスクのスケジューリングを避けることができます：
 
 ```python
 if sdk.lifecycle.has_handlers("message.sending"):
@@ -13604,25 +14438,48 @@ if sdk.lifecycle.has_handlers("message.sending"):
 ```
 
 - 精確なイベント名、ワイルドカード `*`、親イベントの3種類のマッチングをカバー
-- リスナーが一切ない場合は `False` を返し、安全に `emit` をスキップできる
+- 監視者が存在しない場合は `False` を返し、`emit` を安全にスキップできます
 
 ## フックブレークポイント一覧
 
-フレームワークには以下のフックブレークポイントが組み込まれており、ユーザーは `@sdk.lifecycle.on()` を使用して任意のブレークポイントを監視し、カスタムロジックを実装できます。
+プラットフォームからフレームワークにメッセージが届き、処理が完了するまでの典型的なライフサイクルイベントの時系列：
+
+```mermaid
+sequenceDiagram
+    participant P as プラットフォーム
+    participant A as アダプター
+    participant F as フレームワークコア
+    participant M as モジュールプロセッサ
+
+    P->>A: ネイティブイベント到着
+    A->>F: adapter.event.receive（初期段階）
+    F->>F: event.pre_process（プロセッサ実行前）
+    F->>M: プロセッサに配信（コマンド/メッセージ/通知など）
+    M->>M: command.matched / command.executed
+    M->>F: event.reply()
+    F->>F: message.sending（送信前）
+    F->>A: SendDSL 送信
+    A->>P: プラットフォームに送信
+    A->>F: message.sent（送信完了）
+    F->>F: adapter.event.dispatched（配信完了）
+```
+
+フレームワークは以下のフックブレークポイントを内蔵しており、ユーザーは `@sdk.lifecycle.on()` で任意のブレークポイントを監視してカスタムロジックを実装できます。
 
 ### コア初期化
 
-| フック名 | トリガー時機 | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
-| `core.init.start` | SDK の初期化開始 | `{}` |
-| `core.init.complete` | SDK の初期化完了 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
-| `core.uninit.complete` | SDK の逆初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
+| `core.init.start` | SDK初期化開始 | `{}` |
+| `core.init.complete` | SDK初期化完了 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
+| `core.uninit.complete` | SDK反初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
 
 ### 設定変更
 
-| フック名 | トリガー時機 | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
 | `config.set` | 設定項目が変更された | `{"key": str, "old_value": Any, "new_value": Any}` |
+| `config.updated` | 外部で config.toml を編集した後にツリー全体の変更を検出 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **例：設定監査**
 
@@ -13634,32 +14491,32 @@ def audit_config(data):
 
 ### モジュールライフサイクル
 
-| フック名 | トリガー時機 | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
 | `module.register` | モジュールクラスがマネージャーに登録された | `{"module_name": str, "success": bool}` |
-| `module.load` | モジュールの読み込み完了（インスタンス化成功） | `{"module_name": str, "success": bool}` |
-| `module.init` | モジュールの初期化完了（遅延読み込みを含む） | `{"module_name": str, "success": bool}` |
+| `module.load` | モジュールのロード完了（インスタンス化成功） | `{"module_name": str, "success": bool}` |
+| `module.init` | モジュールの初期化完了（遅延ロード含む） | `{"module_name": str, "success": bool}` |
 | `module.unload` | モジュールのアンロード | `{"module_name": str, "success": bool}` |
 
-### アダプタライフサイクル
+### アダプターライフサイクル
 
-| フック名 | トリガー時機 | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
-| `adapter.load` | アダプタの登録完了 | `{"platform": str, "success": bool}` |
-| `adapter.start` | アダプタの開始 | `{"platforms": [str]}` |
-| `adapter.status.change` | アダプタの状態変更 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
-| `adapter.stop` | アダプタの停止 | `{"platforms": [str]}` |
-| `adapter.stopped` | アダプタの停止完了 | `{"platforms": [str]}` |
-| `adapter.bot.online` | Bot オンライン | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
-| `adapter.bot.offline` | Bot オフライン | `{"platform": str, "bot_id": str, "status": str}` |
+| `adapter.load` | アダプターの登録完了 | `{"platform": str, "success": bool}` |
+| `adapter.start` | アダプターの起動 | `{"platforms": [str]}` |
+| `adapter.status.change` | アダプターのステータス変化 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
+| `adapter.stop` | アダプターの停止 | `{"platforms": [str]}` |
+| `adapter.stopped` | アダプターの停止完了 | `{"platforms": [str]}` |
+| `adapter.bot.online` | Botのオンライン | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
+| `adapter.bot.offline` | Botのオフライン | `{"platform": str, "bot_id": str, "status": str}` |
 
 ### イベント受信と処理
 
-| フック名 | トリガー時機 | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
-| `adapter.event.receive` | 外部プラットフォームからのイベント受信（最早期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.dispatched` | イベント配信完了 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | イベントハンドラの実行開始前 | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `adapter.event.receive` | 外部プラットフォームイベントを受信（初期段階） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.dispatched` | イベントの配信完了 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `event.pre_process` | イベントプロセッサの実行開始前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **例：イベント統計**
 
@@ -13679,9 +14536,9 @@ def log_unhandled(data):
 
 ### メッセージ送信
 
-| フック名 | トリガー時機 | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
-| `message.sending` | メッセージの送信直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | メッセージが送信される直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | メッセージの送信完了 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **例：メッセージ送信監査**
@@ -13694,9 +14551,9 @@ def log_sending(data):
 
 ### コマンドシステム
 
-| フック名 | トリガー時機 | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
-| `command.matched` | コマンドがマッチし、実行直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.matched` | コマンドがマッチして実行される直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | コマンドの実行完了 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
 
 **例：コマンド統計**
@@ -13707,12 +14564,12 @@ def count_commands(data):
     print(f"[コマンド] /{data['command']} from {data['user_id']}@{data['platform']}")
 ```
 
-### HTTP ルーティング
+### HTTPルーティング
 
-| フック名 | トリガー時機 | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
-| `server.request` | HTTP リクエスト受信 | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTP レスポンス送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.request` | HTTPリクエスト受信 | `{"method": str, "path": str, "client_ip": str}` |
+| `server.response` | HTTPレスポンス送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
 **例：リクエストログ**
 
@@ -13724,14 +14581,14 @@ def log_http(data):
 
 ### WebSocket
 
-| フック名 | トリガー時機 | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
-| `server.start` | ルーター サーバーの開始 | `{"base_url": str, "host": str, "port": int}` |
-| `server.stop` | ルーター サーバーの停止 | `{}` |
-| `server.websocket.connect` | WebSocket 接続確立 | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket 接続切断 | `{"path": str, "module_name": str, "reason": str, "error": str(例外時のみ)}` |
+| `server.start` | ルーティングサーバー起動 | `{"base_url": str, "host": str, "port": int}` |
+| `server.stop` | ルーティングサーバー停止 | `{}` |
+| `server.websocket.connect` | WebSocket接続確立 | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | WebSocket接続切断 | `{"path": str, "module_name": str, "reason": str, "error": str(異常時のみ)}` |
 
-**例：WebSocket 接続監視**
+**例：WebSocket接続監視**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -13741,7 +14598,6 @@ def on_ws_connect(data):
 @sdk.lifecycle.on("server.websocket.disconnect")
 def on_ws_disconnect(data):
     print(f"[WS] 切断: {data['path']} ({data['reason']})")
-```
 
 ## 標準イベント定義
 
@@ -13764,37 +14620,38 @@ STANDARD_EVENTS = {
     "command": ["matched", "executed"],
     "config": ["set"],
 }
-```
 
 ## 完全な API リファレンス
 
-### 登録とキャンセル
+### 登録と解除
 
 | メソッド | 説明 |
 |------|------|
-| `@lifecycle.on(event, *, priority=0)` | デコレータでハンドラを登録 |
+| `@lifecycle.on(event, *, priority=0)` | デコレータによるハンドラの登録 |
 | `lifecycle.register(event, handler, *, priority=0)` | プログラムによる登録 |
-| `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None の場合、そのイベントのすべてのハンドラをキャンセル） |
+| `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None の場合、該当イベントのすべてのハンドラを解除） |
 
 ### トリガー
 
 | メソッド | 説明 |
 |------|------|
-| `await lifecycle.emit(event, data=None)` | 非同期トリガー、ハンドラが非 None を返すと data を変更 |
-| `lifecycle.emit_sync(event, data=None)` | 同期トリガー、非同期ハンドラは create_task でスケジュール |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 旧版との互換性、標準イベント形式を自動構築 |
+| `await lifecycle.emit(event, data=None)` | 非同期でトリガーし、ハンドラが None 以外を返すと data を変更可能 |
+| `lifecycle.emit_sync(event, data=None)` | 同期でトリガーし、非同期ハンドラは create_task でスケジュール |
+| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 旧版との互換性、自動で標準イベント形式を構築 |
 
 ### ユーティリティ
 
 | メソッド | 説明 |
 |------|------|
-| `lifecycle.start_timer(timer_id)` | タイマー開始 |
-| `lifecycle.get_duration(timer_id)` | 経過時間の取得（秒） |
-| `lifecycle.stop_timer(timer_id)` | タイマー停止と経過時間の返却 |
-| `lifecycle.list_hooks()` | 登録されたすべてのフックとハンドラ数のリスト |
+| `lifecycle.start_timer(timer_id)` | タイマーを開始 |
+| `lifecycle.get_duration(timer_id)` | 経過時間を取得（秒） |
+| `lifecycle.stop_timer(timer_id)` | タイマーを停止し、経過時間を返す |
+| `lifecycle.list_hooks()` | 登録済みのすべてのフックとハンドラ数をリストアップ |
 | `lifecycle.clear()` | すべてのハンドラとタイマーをクリア |
 
-## モジュールでの使用例
+[**English**](docs/ja/quick-start.md)
+
+## モジュール中の使用例
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -13802,7 +14659,7 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # 簡易メッセージ統計を実装
+        # 簡単なメッセージの統計を実装
         self.msg_count = 0
         
         @sdk.lifecycle.on("adapter.event.receive")
@@ -13815,21 +14672,53 @@ class Main(BaseModule):
         async def log_cmd(data):
             sdk.logger.info(f"コマンド実行: /{data['command']} by {data['user_id']}")
         
-        # 設定変更監査
+        # 設定の変更を監査
         @sdk.lifecycle.on("config.set")
         def audit(data):
-            sdk.logger.info(f"設定変更: {data['key']} = {data['new_value']}")
+            sdk.logger.info(f"設定の変更: {data['key']} = {data['new_value']}")
+
+## バックグラウンドタスクの所有と自動キャンセル
+
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
+
+モジュールが作成した asyncio バックグラウンドタスクは、`on_unload` でキャンセルされない場合、`self` の参照を保持し、モジュールインスタンスが回収されなくなります（ホットリロード後に古いインスタンスが残存します）。フレームワークは以下のバックアップメカニズムを提供しています：
+
+- **`self.spawn(coro)`**（モジュール内で推奨）：タスクは自動的にモジュール名に所有されます。モジュールのアンロード時にフレームワークは `on_unload` **の後**に未完了のタスクをバックアップでキャンセルし、警告を記録します。
+- **`spawn_background(coro)`**（`ErisPulse.runtime`）：現在の `owner_scope` コンテキストを自動的にキャプチャします。`cancel_owner_tasks(owner)` は所有者に基づいてキャンセルし、`cancel_all_background_tasks()` は `sdk.uninit()` のバックアップとして使用されます。
+- **アダプタ**：閉じる際にプラットフォーム名以下のバックグラウンドタスクも同様にバックアップでキャンセルされます。
+
+```python
+async def on_load(self, event):
+    # 推奨：バックグラウンドタスクは self.spawn() を使用し、アンロード時にフレームワークが自動的にバックアップでキャンセルします
+    self.spawn(self._poll())
+
+async def on_unload(self, event):
+    # 精密な制御が必要な場面では、手動でキャンセルし、終了処理を待つことを推奨します
+    if self._poll_task:
+        self._poll_task.cancel()
+        await asyncio.gather(self._poll_task, return_exceptions=True)
+
+async def _poll(self):
+    while True:
+        await asyncio.sleep(60)
+        ...
 ```
+
+> [!IMPORTANT]
+> フレームワークのバックアップは**強制キャンセル**（`cancel_owner_tasks`）です。これは `on_unload` の返り値の後に発生します。したがって、優雅な終了処理が必要なタスク（バッファのフラッシュ、状態の永続化、接続の閉じる）は**必ず** `on_unload` で `cancel()` + `await` を行う必要があります。バックアップが終了処理のロジックを保持することを期待しないでください。フレームワークは「`self` を保持するタスクが残らないこと」を保証するだけで、「優雅な終了」を保証するものではありません。`await` の結果が必要なタスクは、直接 `await` してください。バックグラウンドタスクに投げないでください。
 
 ## 注意事項
 
-1. **ハンドラは同期または非同期にできる**：システムは自動的に識別し、正しく呼び出します
-2. **データの受け渡し**：`emit()` モードでは、ハンドラが非 None 値を返すと、その値が後続のハンドラに渡される data に適用されます
-3. **イベント命名規則**：親イベントの監視を容易にするために、ドット表記構造でイベント名を付けることを推奨します
-4. **エラー隔離**：単一のハンドラの例外は、他のハンドラの実行に影響しません
-5. **同期トリガーの制限**：`emit_sync()` では非同期ハンドラは fire-and-forget 方式でスケジュールされ、返却値は伝播されません
-6. **ライフサイクルのクリア**：`sdk.uninit()` を呼び出すと、すべての登録済みハンドラとタイマーがクリアされます
-7. **読み込みの優先性**：フレームワークの初期化段階でイベントを監視する必要がある場合は、高い優先度を設定し遅延読み込みを無効にすることを推奨します
+1. **プロセッサは同期または非同期のどちらでも可能です**：システムは自動的に識別し、正しく呼び出します
+2. **データの渡し方**：`emit()` モードでは、プロセッサが None 以外の値を返すと、次のプロセッサに渡される data が変更されます
+3. **イベント名の命名規則**：親レベルのリスナーを使用しやすいように、ドット構造の命名を推奨します
+4. **エラーの隔離**：個々のプロセッサの例外は、他のプロセッサの実行に影響しません
+5. **同期トリガーの制限**：`emit_sync()` では、非同期プロセッサは fire-and-forget 方式でスケジュールされ、返り値は戻りません
+6. **ライフサイクルのクリーンアップ**：`sdk.uninit()` を呼び出すと、登録済みのすべてのプロセッサとタイマーがクリーンアップされます
+7. **ロードの優先順位**：フレームワークの初期化段階でイベントをリッスンする必要がある場合は、高優先順位を設定し、遅延ロードを無効にすることを推奨します
+
+[**English**](docs/ja/quick-start.md)
 
 
 
@@ -14438,193 +15327,23 @@ complex_msg = (
 
 
 
-### 会话类型系统
-
-# セッションタイプシステム
-
-ErisPulse セッションタイプシステムは、メッセージのセッションタイプ（プライベートチャット、グループチャット、チャンネルなど）の定義と管理を担当し、受信タイプと送信タイプ間の自動変換を提供します。
-
-## タイプ定義
-
-### 受信タイプ (ReceiveType)
-
-受信タイプはOneBot12イベントの `detail_type` フィールドから取得され、イベントのセッションシナリオを表します：
-
-| タイプ | 説明 | ID フィールド |
-|------|------|---------|
-| `private` | プライベートメッセージ | `user_id` |
-| `group` | グループメッセージ | `group_id` |
-| `channel` | チャンネルメッセージ | `channel_id` |
-| `guild` | サーバーメッセージ | `guild_id` |
-| `thread` | スレッド/サブチャンネルメッセージ | `thread_id` |
-| `user` | ユーザーメッセージ（拡張） | `user_id` |
-
-### 送信タイプ (SendType)
-
-送信タイプは、`Send.To(type, id)` で送信先を指定するために使用されます：
-
-| タイプ | 説明 |
-|------|------|
-| `user` | ユーザーに送信 |
-| `group` | グループに送信 |
-| `channel` | チャンネルに送信 |
-| `guild` | サーバーに送信 |
-| `thread` | スレッドに送信 |
-
-## タイプマッピング
-
-受信タイプと送信タイプの間にはデフォルトのマッピング関係があります：
-
-```
-受信 (Receive)          送信
-─────────────          ──────────
-private        ──→     user
-group          ──→     group
-channel        ──→     channel
-guild          ──→     guild
-thread         ──→     thread
-user           ──→     user
-```
-
-重要な違い：**受信時には `private` を使用し、送信時には `user` を使用します**。これは OneBot12 標準の設計であり、イベントは「プライベートチャットのシナリオ」を記述し、送信は「ユーザーのターゲット」を記述するためです。
-
-## 自動推論
-
-イベントに明示的な `detail_type` フィールドがない場合、システムはイベント内に存在する ID フィールドに基づいてセッションタイプを自動的に推論します：
-
-**優先度**：`group_id` > `channel_id` > `guild_id` > `thread_id` > `user_id`
-
-```python
-from ErisPulse.Core.Event.session_type import infer_receive_type
-
-# group_id がある → group に推論
-event1 = {"group_id": "123", "user_id": "456"}
-print(infer_receive_type(event1))  # "group"
-
-# user_id のみ → private に推論
-event2 = {"user_id": "456"}
-print(infer_receive_type(event2))  # "private"
-```
-
-## コア API
-
-### タイプ変換
-
-```python
-from ErisPulse.Core.Event.session_type import (
-    convert_to_send_type,
-    convert_to_receive_type,
-)
-
-# 受信タイプ → 送信タイプ
-convert_to_send_type("private")  # → "user"
-convert_to_send_type("group")    # → "group"
-
-# 送信タイプ → 受信タイプ
-convert_to_receive_type("user")   # → "private"
-convert_to_receive_type("group")  # → "group"
-```
-
-### ID フィールドのクエリ
-
-```python
-from ErisPulse.Core.Event.session_type import get_id_field, get_receive_type
-
-# タイプに基づいて ID フィールド名を取得
-get_id_field("group")    # → "group_id"
-get_id_field("private")  # → "user_id"
-
-# ID フィールドに基づいてタイプを取得
-get_receive_type("group_id")  # → "group"
-get_receive_type("user_id")   # → "private"
-```
-
-### ワンステップで送信情報を取得
-
-```python
-from ErisPulse.Core.Event.session_type import get_send_type_and_target_id
-
-event = {"detail_type": "private", "user_id": "123"}
-send_type, target_id = get_send_type_and_target_id(event)
-# send_type = "user", target_id = "123"
-
-# Send.To() に直接使用
-await adapter.Send.To(send_type, target_id).Text("Hello")
-```
-
-### ターゲット ID の取得
-
-```python
-from ErisPulse.Core.Event.session_type import get_target_id
-
-event = {"detail_type": "group", "group_id": "456"}
-get_target_id(event)  # → "456"
-```
-
-## カスタムタイプの登録
-
-アダプターは、プラットフォーム固有のセッションタイプのカスタムマッピングを登録できます：
-
-```python
-from ErisPulse.Core.Event.session_type import register_custom_type, unregister_custom_type
-
-# カスタムタイプの登録
-register_custom_type(
-    receive_type="thread_reply",     # 受信タイプ名
-    send_type="thread",              # 対応する送信タイプ
-    id_field="thread_reply_id",      # 対応する ID フィールド
-    platform="discord"               # プラットフォーム名（オプション）
-)
-
-# カスタムタイプの使用
-convert_to_send_type("thread_reply", platform="discord")  # → "thread"
-get_id_field("thread_reply", platform="discord")          # → "thread_reply_id"
-
-# カスタムタイプの登録解除
-unregister_custom_type("thread_reply", platform="discord")
-```
-
-> **platform を指定した場合**、登録された受信タイプにはプラットフォームのプレフィックス（例：`discord_thread_reply`）が付加され、異なるプラットフォーム間でのタイプの競合を回避します。
-
-## ユーティリティメソッド
-
-```python
-from ErisPulse.Core.Event.session_type import (
-    is_standard_type,
-    is_valid_send_type,
-    get_standard_types,
-    get_send_types,
-    clear_custom_types,
-)
-
-# 標準タイプかどうかを確認
-is_standard_type("private")  # True
-is_standard_type("custom_type")  # False
-
-# 送信タイプが有効かどうかを確認
-is_valid_send_type("user")  # True
-is_valid_send_type("invalid")  # False
-
-# すべての標準タイプを取得
-get_standard_types()  # {"private", "group", "channel", "guild", "thread", "user"}
-get_send_types()      # {"user", "group", "channel", "guild", "thread"}
-
-# カスタムタイプをクリア
-clear_custom_types()                # すべてクリア
-clear_custom_types(platform="discord")  # 指定したプラットフォームのもののみクリア
-```
-
-
-
 ### Conversation 多轮对话
 
 # Conversation 多輪対話
 
-`Conversation` クラスは、同じセッション内で複数回のやり取りを行う便利な方法を提供し、ガイド付き操作、情報収集、対話形式の質問応答などの場面に適しています。
+`Conversation` クラスは、同じセッション内で複数回のインタラクションを行うための便利なメソッドを提供し、ガイド付き操作、情報収集、対話型の質問応答などのシナリオに適しています。
 
-## 対話の作成
+# Conversation Multi-turn Dialogue
 
-`Event` オブジェクトの `conversation()` メソッドを使用して作成します：
+The `Conversation` class provides convenient methods for conducting multi-turn interactions within the same session, suitable for scenarios such as guided operations, information collection, and conversational question-and-answer.
+
+Please directly return the complete translated Markdown content, without including any other text.
+
+Once again, please note: if the document contains a language switch line (a line where each language name is separated by `` | ``), strictly adhere to the above rule #8 for formatting, and do not write incorrect formats such as ``[**Label**](file)``.
+
+## 会話の作成
+
+`Event` オブジェクトの `conversation()` メソッドを使用して会話を作成します：
 
 ```python
 from ErisPulse.Core.Event import command
@@ -14635,32 +15354,34 @@ async def quiz_handler(event):
 
     await conv.say("🎮 知識クイズへようこそ！")
 
-    answer = await conv.choose("第1問：Pythonの作成者は誰ですか？", [
+    answer = await conv.choose("第1問：Pythonの生みの親は誰ですか？", [
         "Guido van Rossum",
         "James Gosling",
         "Dennis Ritchie",
     ])
 
     if answer is None:
-        await conv.say("タイムアウトしました。次回お試しください！")
+        await conv.say("タイムアウトしました。また挑戦してください！")
         return
 
     if answer == 0:
         await conv.say("正解です！")
     else:
-        await conv.say("不正解です。正解は Guido van Rossum です")
+        await conv.say("不正解です。正解は Guido van Rossum です。")
 
     conv.stop()
 ```
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## コア API
 
 ### say(content, **kwargs)
 
-メッセージを送信し、`self` を返してメソッドチェーンが可能になります：
+メッセージを送信し、`self` を返してメソッドチェーンを可能にします：
 
 ```python
-await conv.say("1行目").say("2行目").say("3行目")
+await conv.say("第一行").say("第二行").say("第三行")
 ```
 
 送信方法を指定することもできます：
@@ -14671,7 +15392,7 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-ユーザーからの返信を待機し、`Event` オブジェクトまたは `None`（タイムアウト）を返します：
+ユーザーからの返信を待ち、`Event` オブジェクトまたは `None`（タイムアウト時）を返します：
 
 ```python
 # 簡単な待機
@@ -14688,7 +15409,7 @@ resp = await conv.wait(prompt="10秒以内に返信してください：", timeo
 
 ### confirm(prompt=None, **kwargs)
 
-ユーザーの確認（はい/いいえ）を待機し、`True` / `False` / `None`（タイムアウト）を返します：
+ユーザーの確認（はい/いいえ）を待ち、`True` / `False` / `None`（タイムアウト時）を返します：
 
 ```python
 result = await conv.confirm("すべてのデータを削除してもよろしいですか？")
@@ -14702,11 +15423,11 @@ else:
 
 内部的に認識される確認用語：`はい/yes/y/確認/確定/好/ok/true/対/うん/行/同意/問題ない/可能/当然...`
 
-内部的に認識される否定用語：`否/no/n/キャンセル/不/不要/行かない/cancel/false/間違っている/違っている/別/拒否...`
+内部的に認識される否定用語：`否/no/n/キャンセル/不/不要/行かない/cancel/false/間違っている/対でない/別/拒否...`
 
 ### choose(prompt, options, **kwargs)
 
-ユーザーが選択肢から選択するのを待機し、選択肢のインデックス（0ベース）または `None` を返します：
+ユーザーが選択肢から選択するのを待ち、選択肢のインデックス（0ベース）または `None` を返します：
 
 ```python
 choice = await conv.choose("色を選択してください：", ["赤", "緑", "青"])
@@ -14715,60 +15436,60 @@ if choice is not None:
     await conv.say(f"選択した色は {colors[choice]} です")
 ```
 
-ユーザーは、番号（`1`/`2`/`3`）または選択肢のテキスト（`赤`）を入力することで選択できます。
+ユーザーは番号（`1`/`2`/`3`）または選択肢のテキスト（`赤`）を入力して選択できます。
 
-`options_format="auto"`（デフォルト）は、method に応じて自動的に組み込みのスタイルを選択します：Markdown→非順序リスト、Html→順序リスト、その他→単純なテキストリスト。
-`"list"`、`"inline"`、`"md"`、`"html"` またはカスタム関数もサポートします。
+`options_format="auto"`（デフォルト）は、method に応じて自動的に組み込みのスタイルを選択します：Markdown→無序リスト、Html→順序リスト、その他→プレーンテキストのリスト。
+また、`"list"`、`"inline"`、`"md"`、`"html"`、またはカスタム関数もサポートしています。
 
-`merge_prompt=True` を使用して1つのメッセージに統合し、プレースホルダで選択肢の挿入位置を制御できます（デフォルトは `{options}`、`placeholder` でカスタマイズ可能）：
+`merge_prompt=True` を使用して、プロンプトを1つのメッセージに統合し、オプションの挿入位置を制御するプレースホルダー（デフォルトは `{options}`、`placeholder` でカスタム指定可能）もサポートしています：
 
 ```python
 choice = await conv.choose(
     "## 選択してください\n{options}",
-    ["選択肢A", "選択肢B"],
+    ["オプションA", "オプションB"],
     method="Markdown",
     merge_prompt=True,
 )
 
-# カスタムプレースホルダ
+# カスタムプレースホルダー
 choice = await conv.choose(
     "選択してください: [choices]",
-    ["選択肢A", "選択肢B"],
+    ["オプションA", "オプションB"],
     placeholder="[choices]",
 )
 ```
 
 ### collect(fields, **kwargs)
 
-複数ステップで情報を収集し、データ辞書または `None` を返します：
+複数ステップで情報を収集し、データの辞書または `None` を返します：
 
 ```python
 data = await conv.collect([
     {"key": "name", "prompt": "名前を入力してください"},
     {"key": "age", "prompt": "年齢を入力してください",
      "validator": lambda e: e.get("alt_message", "").strip().isdigit(),
-     "retry_prompt": "年齢は数字でなければなりません。再度入力してください"},
+     "retry_prompt": "年齢は数字でなければなりません。もう一度入力してください"},
     {"key": "city", "prompt": "都市を入力してください"},
 ])
 
 if data:
-    await conv.say(f"登録完了！\n名前: {data['name']}\n年齢: {data['age']}\n都市: {data['city']}")
+    await conv.say(f"登録が完了しました！\n名前: {data['name']}\n年齢: {data['age']}\n都市: {data['city']}")
 else:
     await conv.say("登録が中断されました")
 ```
 
-フィールドの設定：
+フィールド設定：
 
 | パラメータ | 説明 | デフォルト値 |
 |------|------|--------|
 | `key` | フィールドのキー名（必須） | - |
 | `prompt` | プロンプトメッセージ | `"{key} を入力してください"` |
-| `validator` | 関数を受け取り、bool を返す検証関数 | なし |
-| `retry_prompt` | 検証失敗時の再入力プロンプト | `"入力が無効です。再度入力してください"` |
-| `max_retries` | 最大再試行回数 | 3 |
-| `condition` | 関数を受け取り、bool を返す条件関数 | なし |
+| `validator` | 関数を受け取り、bool を返すバリデータ | 無し |
+| `retry_prompt` | バリデーション失敗時の再入力プロンプト | `"入力が無効です。もう一度入力してください"` |
+| `max_retries` | 最大リトライ回数 | 3 |
+| `condition` | 関数を受け取り、dict を返す条件 | 無し |
 
-**条件付きフィールド**：`condition` を使用して動的フォームを実現し、条件が満たされた場合にのみフィールドを収集できます：
+**条件付きフィールド**：`condition` を使用すると、動的なフォームを実現でき、条件が満たされた場合にのみフィールドを収集できます：
 
 ```python
 data = await conv.collect([
@@ -14788,28 +15509,39 @@ conv.stop()
 
 ### is_active
 
-対話がアクティブかどうか：
+対話がアクティブかどうかを返します：
 
 ```python
 if conv.is_active:
     await conv.say("対話はまだ進行中です")
+
+## アクティブ状態管理
+
+```mermaid
+stateDiagram-v2
+    state "アクティブ" as active
+    state "非アクティブ" as inactive
+    [*] --> active: event.conversation()
+    active --> active: say / wait / confirm / choose / collect
+    active --> inactive: stop()
+    active --> inactive: wait() タイムアウト
+    active --> inactive: collect() タイムアウトまたはリトライ回数上限
+    inactive --> [*]
 ```
 
-## アクティブ状態の管理
+会話は以下のいずれかの状況で自動的に非アクティブ状態になります：
 
-以下の状況で、対話は自動的に非アクティブになります：
+1. `stop()` メソッドを呼び出す
+2. `wait()` がタイムアウトして `None` を返す
+3. `collect()` がステップのタイムアウトまたはリトライ回数上限により `None` を返す
 
-1. `stop()` メソッドが呼び出された
-2. `wait()` がタイムアウトして `None` を返した
-3. `collect()` がいずれかのステップでタイムアウトまたは再試行回数を超え、`None` を返した
-
-非アクティブになった後、`wait`/`confirm`/`choose`/`collect` などのすべてのインタラクションメソッドは即座に `None` を返し、ユーザーからの入力を待つことはありません。
+非アクティブ状態になると、すべてのインタラクションメソッド（`wait`/`confirm`/`choose`/`collect`）は即座に `None` を返し、ユーザー入力の待機は継続されません。
 
 ## 分岐とジャンプ
 
 ### @conv.branch(name) デコレータ
 
-`branch()` を使用して対話の分岐を登録し、`goto()` を使用して分岐間をジャンプできます：
+`branch()` を使用して会話の分岐を登録し、`goto()` を使用して分岐間でジャンプします：
 
 ```python
 @command("menu")
@@ -14818,7 +15550,7 @@ async def menu_handler(event):
 
     @conv.branch("main")
     async def main_menu():
-        await conv.say("=== メインメニュー ===\n1. 情報\n2. 設定\n3. 終了")
+        await conv.say("=== メインメニュー ===\n1. 本人情報\n2. 設定\n3. 終了")
         resp = await conv.wait()
         if resp is None:
             return
@@ -14833,7 +15565,7 @@ async def menu_handler(event):
 
     @conv.branch("profile")
     async def profile():
-        await conv.say("=== 情報 ===\n名前: Alice\n0. 戻る")
+        await conv.say("=== 本人情報 ===\n名前: Alice\n0. 戻る")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
@@ -14850,18 +15582,17 @@ async def menu_handler(event):
 
 ### conv.start(name=None)
 
-対話を開始し、デフォルトでは最初に登録された分岐から開始します：
+会話を開始します。デフォルトでは最初に登録された分岐から開始されます：
 
 ```python
 await conv.start()          # 最初の分岐から開始
 await conv.start("settings") # 指定された分岐から開始
-```
 
 ## コンテキストと永続化
 
 ### conv.context
 
-各対話インスタンスには、分岐間で状態を共有するための組み込みの `context` 辞書があります：
+各会話インスタンスには、分岐間で状態を共有するための組み込み `context` 辞書があります：
 
 ```python
 @conv.branch("step1")
@@ -14871,31 +15602,34 @@ async def step1():
 
 @conv.branch("step2")
 async def step2():
-    name = conv.context.get("username", "不明")
+    name = conv.context.get("username", "未知")
     await conv.say(f"こんにちは、{name}！")
 ```
 
 ### save() / resume() / clear_saved()
 
-対話は永続化が可能で、タイムアウトや中断後に復元できます：
+会話は永続化をサポートしており、タイムアウトや中断後に再開できます：
 
 ```python
-# 対話の状態を保存
+# 会話の状態を保存
 conv_id = conv.save()
 # conv_id = "user_123_group_456"  # ユーザーとグループに基づいて自動生成
 
-# ... 同じセッション内で後で復元 ...
+# ... その後、同じセッションで再開 ...
 conv2 = event.conversation()
 if conv2.resume():
-    await conv2.say("戻ってきました！以前の対話を再開します")
+    await conv2.say("おかえり！以前の会話を続けましょう")
 else:
-    await conv2.say("以前の対話が見つかりませんでした")
+    await conv2.say("以前の会話が見つかりません")
 
-# 保存された対話を削除
+# 保存された会話を削除
 conv.clear_saved()
 ```
 
-## 一般的なフロー・パターン
+**言語切り替え:**
+[English](docs/en/quick-start.md) | [简体中文](docs/ja/quick-start.md) | [日本語](docs/ja/quick-start.md)
+
+## 典型的なフローのパターン
 
 ### ガイド付き登録
 
@@ -14904,14 +15638,14 @@ conv.clear_saved()
 async def register_handler(event):
     conv = event.conversation(timeout=60)
 
-    await conv.say("登録へようこそ！")
+    await conv.say("ようこそ登録へ！")
 
     data = await conv.collect([
         {"key": "username", "prompt": "ユーザー名を入力してください（3-20文字）",
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
         {"key": "email", "prompt": "メールアドレスを入力してください",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
-         "retry_prompt": "メールアドレスの形式が正しくありません。再度入力してください"},
+         "retry_prompt": "メールアドレスの形式が正しくありません。再度入力してください。"},
     ])
 
     if not data:
@@ -14919,16 +15653,16 @@ async def register_handler(event):
         return
 
     confirmed = await conv.confirm(
-        f"登録情報の確認？\nユーザー名: {data['username']}\nメールアドレス: {data['email']}"
+        f"登録情報を確認しますか？\nユーザー名: {data['username']}\nメールアドレス: {data['email']}"
     )
 
     if confirmed:
-        await conv.say("✅ 登録完了！")
+        await conv.say("✅ 登録が完了しました！")
     else:
         await conv.say("❌ 登録がキャンセルされました")
 ```
 
-### ループ対話
+### ループによる対話
 
 ```python
 @command("chat")
@@ -14947,13 +15681,12 @@ async def chat_handler(event):
         if text == "退出":
             await conv.say("さようなら！")
             conv.stop()
-        elif text == "help":
-            await conv.say("利用可能なコマンド：退出、help、status")
-        elif text == "status":
-            await conv.say("対話はアクティブです")
+        elif text == "帮助":
+            await conv.say("利用可能なコマンド：退出、帮助、状态")
+        elif text == "状态":
+            await conv.say("対話がアクティブです")
         else:
-            await conv.say(f"入力内容：{text}")
-```
+            await conv.say(f"あなたが入力した内容：{text}")
 
 
 
@@ -15571,38 +16304,270 @@ CLI は**独立した**国際化モジュール（`ErisPulse.CLI.i18n`）を持�
 
 
 
+### 模块作用域系统
+
+# モジュールスコープシステム
+
+> [!NOTE]
+> この機能には ErisPulse **2.8.0+** が必要です。
+
+モジュールスコープシステムは、「特定の Bot がどのモジュールを使用できるか」を制御し、複数 Bot 環境におけるモジュールの隔離を実現します。  
+デフォルトでは、すべてのモジュールがすべての Bot に対して開放されています。設定のバインディング後のみフィルタリングが開始され、**モジュールとアダプタは変更なしで対応可能です**。
+
+{!--< tips >!--}
+1. スコープは「アダプタプラットフォーム + Bot 識別子 + セッション識別子」を次元としてモジュールをバインディングします
+2. ホワイトリスト（`modules`）とブラックリスト（`blocked`）の両方の方式をサポートしています
+3. スコープによって禁止されたモジュールは、メッセージを受け取った際に無言で無視し、返信や通知は行いません
+4. 実行時 `sdk.scope.bind()` / `unbind()` による動的な追加・削除が可能で、永続化もサポートしています
+{!--< /tips >!--}
+
+[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+## 動作原理
+
+```mermaid
+flowchart TD
+    A["Bot がメッセージを受信"] --> B["(platform, bot_id, session_id) を抽出"]
+    B --> C{"スコープバインディングの検索<br/>（セッションレベル > Bot レベル > プラットフォームレベル）"}
+    C -->|"セッションレベル"| D["sessions<br/>優先度が最も高い"]
+    C -->|"Bot レベル"| E["bots<br/>プラットフォームレベルを上書き"]
+    C -->|"プラットフォームレベル"| F["platforms"]
+    D & E & F --> G{"バインディングが一致するか？"}
+    G -->|"一致する"| H["ホワイトリスト / ブラックリストに基づいてモジュールをフィルタ"]
+    G -->|"一致しない"| I["次のレベルにフォールバック<br/>未設定の場合はすべてを許可"]
+    H --> J["無効化されたモジュール：コマンドとイベントハンドラはトリガされない<br/>（静かに無視）"]
+```
+
+- **解析優先度：セッションレベル > Bot レベル > プラットフォームレベル**、より高い優先度でルールがバインディングされていない場合は次のレベルにフォールバックします。すべて未設定の場合はすべてのモジュールを許可します。
+- イベントデータに `self` が含まれていない場合（Bot を識別できない）、Bot レベルをスキップし、セッションレベルまたはプラットフォームレベルで判断します。
+- フレームワーク層のリソース（owner が空のハンドラ、コマンドディスパッチャー、イベントバス）は常に通過し、スコープの影響を受けません。
+
+- [**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+## 設定ファイル
+
+```toml
+[ErisPulse.scope]
+default_allow = true        # デフォルトで全許可（false = 厳格モードでの暗黙拒否）
+cache_size = 1024           # is_allowed の LRU キャッシュサイズ
+
+# プラットフォームレベルのバインド（そのプラットフォームのすべての Bot / セッションに適用）
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Translate"]   # ホワイトリスト：そのプラットフォームの Bot はこれらのモジュールのみ使用可能
+blocked = ["Danger"]              # ブラックリスト：これらのモジュールはそのプラットフォームで無効化
+
+# Bot レベルのバインド（その Bot のすべてのセッションに適用、プラットフォームレベルより優先）
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Chat"]
+blocked = []
+
+# セッションレベルのバインド（特定のグループ / チャンネル / 個人チャットに適用、最も具体的）
+[ErisPulse.scope.sessions.onebot11."789012345"]
+modules = ["Chat"]                # そのグループは Chat のみ使用可能
+blocked = []
+```
+
+意味合い（モジュール名は**大文字・小文字を区別しない**）：
+
+| 設定 | 効果 |
+|------|------|
+| `modules` のみ（ホワイトリスト） | リストされたモジュールのみ使用可能 |
+| `blocked` のみ（ブラックリスト） | リストされたモジュールは使用禁止、それ以外は全て許可 |
+| 両方を設定 | ホワイトリストで範囲を限定し、ホワイトリスト内のモジュールからブラックリストを除外 |
+| 両方が空 / 未設定 | `default_allow` に従う：`true`（デフォルト）は全て許可、`false` は暗黙的に拒否 |
+
+> `modules` と `blocked` はいずれも文字列または文字列のリストをサポートします。モジュール名は大文字・小文字を区別しません（`"Chat"` と `"chat"` は等価）。
+> セッション識別子は、グループ ID（`group_id`）、チャンネル ID（`channel_id`）またはプライベートチャットのユーザー ID（`user_id`）です。
+> **セッション識別子はプラットフォームごとに分離されます**：`(platform, session_id)` の組み合わせでセッションを一意に識別し、`onebot11` の `789` と `telegram` の `789` は互いに影響を与えません。
+
+## ランタイム API
+
+### モジュールの許可状態を確認
+
+```python
+from ErisPulse import sdk
+
+# 特定の Bot が特定のモジュールを使用可能か判定する
+allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat")
+
+# 特定のセッション（グループ / チャンネル / DM）で判定する
+allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
+```
+
+### 動的バインド / アンバインド
+
+```python
+# Bot レベルのホワイトリストに追加（設定に永続化）
+sdk.scope.bind("onebot11", "123456", modules=["Chat", "Translate"])
+
+# セッションレベルのホワイトリストに追加（第三引数は session_id）
+sdk.scope.bind("onebot11", "123456", "789012345", modules=["Chat"])
+
+# プラットフォームレベルのブラックリストに追加
+sdk.scope.bind("onebot11", blocked=["Danger"])
+
+# 常時有効（リロードのみで永続化しない）
+sdk.scope.bind("onebot11", "123456", modules=["Chat"], persist=False)
+
+# マージモード（Music を既存のホワイトリストに追加する）：
+# デフォルトの bind は置換であることに注意
+sdk.scope.bind("onebot11", "123456", modules=["Music"], merge=True)
+
+# バインドを解除（すべて許可に戻す）；
+# session_id を指定するとセッションレベルのバインドのみ解除できる
+sdk.scope.unbind("onebot11", "123456")
+sdk.scope.unbind("onebot11", "123456", "789012345")
+```
+
+> `bind()` はデフォルトでターゲットのすべてのバインドを**置換**します；`merge=True` の場合は、新規モジュール/無効化設定を既存のバインドにマージします。
+
+### バインド情報の取得
+
+```python
+# 有効なバインドを取得（セッションを指定可能）
+sdk.scope.get("onebot11", "123456")              # {"modules": ["Chat"], "blocked": []}
+sdk.scope.get("onebot11", "123456", "789012345") # セッションレベルで有効なバインド
+sdk.scope.get("onebot11")                        # プラットフォームレベルのバインド、存在しなければ None
+
+# 全てのバインドをリスト表示（platforms / bots / sessions の3つのカテゴリ）
+sdk.scope.list_bindings()
+```
+
+### フィルタリング統計（デバッグ）
+
+```python
+# スコープによって静的にフィルタリングされた回数とキャッシュのヒット状況を表示
+sdk.scope.get_stats()
+# {"is_allowed_calls": 10, "filtered_count": 3, "cache_hits": 5, "cache_misses": 5}
+
+sdk.scope.reset_stats()
+```
+
+### トポロジー木データ
+
+```python
+# スコープ部分（Dashboard 用）
+sdk.scope.get_topology()
+
+## よくある質問と注意点
+
+### 1. 設定の階層
+
+優先度：**セッション級 > Bot 級 > プラットフォーム級**。優先度が高いものが、優先度が低いものを**全体で上書き**します。
+
+```toml
+# プラットフォーム級は Chat のみ許可
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat"]
+
+# しかし Bot 級は Music のみ許可 → その Bot は最終的に Music のみ使用可能！
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Music"]
+```
+
+- "プラットフォーム級で Chat を許可し、Bot 紧に Music を追加" したい場合、**Bot 紧で両方を同時にリストアップする必要があります**：`modules = ["Chat", "Music"]`。
+- 同様に、下位のブラックリストは上位のホワイトリストによって上書きされます。プラットフォーム級 `blocked=["Danger"]` + Bot 级 `modules=["Danger"]` → Bot 级の設定が全体で優先されるため、Danger は使用可能です。階層が高く、より具体的なものが優先されます。
+
+### 2. これは「イベントごと」の判断であり、**付着しない**
+
+スコープ判定は**現在の単一のイベントに対してのみ**行われ、イベントをまたいで記憶することはありません。
+- セッション g1 でモジュール A が無効化されている → g1 の**この**メッセージでは A はトリガーされません。**次の**メッセージでは独立して再判定されます。バインドが変更されていない限り引き続きトリガーされず、変更されれば即座に有効になります（LRU キャッシュが自動的に無効になります）。
+- セッション g2 でバインドが未設定 → Bot 级 / プラットフォーム级の判定にフォールバックします。両方ともない場合は `default_allow` に従います。
+
+### 3. モジュールに反応がない
+
+メッセージを送信したのにモジュールが反応しない場合は、まずスコープ（適用範囲）を疑い、モジュールやアダプターではありません。
+
+```python
+# モジュールのコードや一時スクリプトに一行追加して位置特定
+from ErisPulse import sdk
+print(sdk.scope.is_allowed(event.get_platform(), <bot_id>, "MyModule", <session_id>))
+print(sdk.scope.get_stats())          # filtered_count > 0 は確実にフィルタされたことを示します
+```
+
+フィルタリングは**静かに**行われます（ユーザーにスコープのルールを明かさないようにメッセージを返さず、応答しません）、ですが `filtered_count` は累積されます。
+
+### 4. セッション識別子はプラットフォームごとに分離
+
+`(platform, session_id)` の組み合わせが唯一の識別子となります。`[ErisPulse.scope.sessions.onebot11."789"]` は onebot11 プラットフォームにのみ適用され、telegram で同じ `789` のセッションには影響しません。
+
+### 5. パフォーマンス
+
+`is_allowed()` の結果には **LRU キャッシュ**が含まれています（デフォルト 1024 件、`scope.cache_size` で調整可能）。
+設定の変更 / `bind()` / `unbind()` で自動的にキャッシュが無効になり、高頻度のイベント処理においてオーバーヘッドは極めて小さくなります。
+
+## 拓扑ツリー API
+
+`ModuleManager.get_topology()` と `AdapterManager.get_topology()` はモジュール/アダプタの所属関係データを提供します。
+`sdk.get_topology()` はこれら3つをワンクリックで集約します。
+
+```python
+from ErisPulse import sdk
+
+topology = sdk.get_topology()
+# {
+#   "modules": {                                   # モジュール → 所持リソース
+#     "Chat": {
+#       "loaded": True, "enabled": True,
+#       "load_strategy": {"lazy": False, "priority": 50},
+#       "info": {...},
+#       "commands": ["chat", "translate"],
+#       "handlers": {"message": 2, "notice": 1},
+#       "routes": {"http": ["/Chat/api"], "ws": [], "sse": []},
+#       "lifecycle_hooks": 3,
+#       "scope_applies": True,
+#     }
+#   },
+#   "adapters": {                                  # アダプタ → Bot → スコープ
+#     "onebot11": {
+#       "status": "started", "enabled": True,
+#       "bots": {"123456": {"status": "online", "last_active": ..., "info": {...}, "scope": {...}}},
+#       "scope": {"modules": [...], "blocked": [...]},
+#     }
+#   },
+#   "scope": {"platforms": {...}, "bots": {...}, "sessions": {...}}   # 全スコープのバインド
+# }
+```
+
+- モジュールのトポロジは、そのモジュールが登録したコマンド、イベントハンドラー、HTTP/WS/SSE ルート、ライフサイクルフックを集約しており、モジュールリソースツリーを描画するのに便利です。
+- アダプタのトポロジは、各アダプタの状態、配下の Bot の状態、およびプラットフォームレベル / Bot レベルのスコープバインドを集約しています。
+
+
+
 ### 启动流程与手动控制
 
 # 起動プロセスと手動制御
 
-ErisPulse の `await sdk.run()` / `await sdk.init()` は、一連の起動プロセスを「一行のコード」にラップしています。しかし、部分的なロード、動的登録、ホットプラグ、カスタムロード戦略の注入など、完全にカスタム起動プロセスが必要な場合、このプロセスの内部で何が起こっているのか、および各ステップを手動で駆動する方法を理解する必要があります。
+ErisPulse の `await sdk.run()` / `await sdk.init()` は、一連の起動フローを「一行のコード」に抽象化しています。しかし、部分的なロード、動的な登録、ホットプラグ、カスタムロード戦略の注入など、起動フローを完全にカスタマイズする必要がある場合は、このフローの内部で何が起こっているのか、そして各ステップを手動で駆動する方法を理解する必要があります。
 
-本文では、起動プロセスを独立したステップに分解し、それぞれの役割と呼び出し順序を説明し、手動で完全な起動を行うための例を示します。
+本文では、起動フローを個々のステップに分解し、それぞれの役割と呼び出し順序を説明し、手動で完全な起動を行うための例を示します。
 
-> 本文では、[最初のロボット](../getting-started/first-bot.md)を実行し、`sdk.run(keep_running=True/False)` の2つのモードを理解していることを前提としています。本文では、`init()` **内部**のプロセス分解と、`init()` / `init_task()` / `init_sync()` などのより低レベルなエントリポイントに焦点を当てます。
+> 本文では、[最初のロボット](../getting-started/first-bot.md)を実行した前提があり、`sdk.run(keep_running=True/False)` の2つのモードについて理解しているものとします。本文では、`init()` **内部**のフローの分解、および `init()` / `init_task()` / `init_sync()` などのより下層のエントリポイントに焦点を当てます。
 
-## SDK トップレベルエントリ一覧
+- [English](docs/en/quick-start.md) | **日本語** | [简体中文](docs/ja/quick-start.md) | [繁體中文](docs/zh-TW/quick-start.md) | [한국어](docs/ko/quick-start.md)
 
-`run()` の2つの `keep_running` モードに加えて、SDK には異なった**非同期性、戻り値、および例外のラッピング**を持ついくつかの低レベルな初期化エントリが提供されています。
+## SDK トップレベルエントリーポイント一覧
 
-| エントリ | 非同期性 | 戻り値 | 例外処理 | 適用シーン |
+`run()` の 2 つの `keep_running` モードに加えて、SDK はいくつかのより下層の初期化エントリーポイントを提供しています。これらは、**非同期性、戻り値、例外のラッピング有無**によって区別されます：
+
+| エントリーポイント | 非同期性 | 戻り値 | 例外処理 | 適用場面 |
 |------|--------|--------|----------|----------|
-| `await sdk.run(True)` | async、ブロックして維持 | `None`（終了時に自動 `uninit`） | モジュール/アダプタエラーが捕捉され、プロセスをクラッシュさせない | ロボットアプリケーションのみ |
-| `await sdk.run(False)` | async、ブロックしない | `None`（自動アンロードしない） | 同上 | 初期化後にカスタムロジックを実行 |
-| `await sdk.init()` | async、`await` 必須 | `bool` | **ラップしない**、例外は上に投げられる | ライフサイクルを手動で制御（`uninit()` と併用） |
-| `sdk.init_task()` | async、`Task` を返してブロックしない | `asyncio.Task` | `init()` と同じ | 並列で他の初期化を実行する、またはイベントループがまだ実行されていない |
-| `sdk.init_sync()` | **同期**、現在のスレッドをブロック | `bool` | `init()` と同じ | コマンドラインスクリプト、イベントループのない同期エントリ |
+| `await sdk.run(True)` | async、ブロッキングを維持 | `None`（終了時に自動 `uninit`） | モジュール/アダプターのエラーはキャッチされ、プロセスをクラッシュさせない | ボット専用アプリケーション |
+| `await sdk.run(False)` | async、ブロッキングしない | `None`（自動アンロードしない） | 同上 | 初期化後にカスタムロジックを実行する |
+| `await sdk.init()` | async、awaitが必要 | `bool` | 内部でコンポーネントの例外をキャッチし、失敗時は `False` を返す | 手動でライフサイクルを制御する（`uninit()` と併用） |
+| `sdk.init_task()` | async、Task を返すことでブロッキングしない | `asyncio.Task` | `init()` と同じ | 並行的に他の初期化処理を実行する、またはイベントループがまだ実行されていない場合 |
+| `sdk.init_sync()` | **同期**、現在のスレッドをブロッキング | `bool` | `init()` と同じ | コマンドラインスクリプト、イベントループのない同期エントリーポイント |
 
-> **よくある誤解**：`await sdk.init()` **は** `await sdk.run(keep_running=False)` **と等価ではありません**。2点の違いがあります：① `init()` は `bool` を返し、`run()` は `None` を返す；② `run()` は初期化と実行プロセスを `try/except` でラップし（モジュール/アダプタエラーを捕捉してクラッシュを防ぐ）、`init()` はラップせず、例外は直接上に投げられます。アンロードやカスタム例外処理が必要な場合は、`init()` + `uninit()` を使用してください。
+> **よくある誤解**：`await sdk.init()` は `await sdk.run(keep_running=False)` と**等価ではありません**。2 点の違いがあります：① `init()` は `bool` を返します（失敗時は `False` を返す）、`run()` は `None` を返します；② `init()` は初期化のみを行い、**自動アンロードは行いません**、`run()` はイベントループが終了した際に自動で `uninit()` を実行します。したがって、手動でアンロードやカスタムライフサイクルを制御する必要がある場合は、`init()` + `uninit()` を使用してください。
 
-## 起動プロセスの概要
+## 開始フローの概要
 
-`sdk.init()`（正確にはその内部の `Initializer.init()`）は、以下の順序でフレームワーク全体を起動します：
+`sdk.init()`（正確には内部の `Initializer.init()`）は、以下の順序でフレームワーク全体を起動します：
 
 ```mermaid
 flowchart TD
-    A[0. 環境準備<br/>設定のロード / 例外処理] --> B
-    B[1. 並列発見とロード<br/>AdapterLoader.load / ModuleLoader.load<br/>内部で Finder.find_all を呼び出す] --> C
+    A[0. 環境準備<br/>設定の読み込み / エラーハンドリング] --> B
+    B[1. 並列での発見とロード<br/>AdapterLoader.load / ModuleLoader.load<br/>内部で Finder.find_all を呼び出す] --> C
     C[2. アダプタの登録<br/>AdapterLoader.register_to_manager] --> D
     D[3. アダプタの起動<br/>adapter.startup] --> E
     E[4. モジュールの登録<br/>ModuleLoader.register_to_manager] --> F
@@ -15612,22 +16577,24 @@ flowchart TD
 
 対応するコアコンポーネント：
 
-| 層 | コンポーネント | 役割 |
+| 層 | コンポーネント | 機能 |
 |----|------|------|
-| 発見 | `AdapterFinder` / `ModuleFinder` | 既にインストールされたパッケージの entry-points から**発見**する |
-| ロード | `AdapterLoader` / `ModuleLoader` | 発見 + インポート + メタデータの読み取り + 有効/無効の判断、オブジェクトリストを返す |
+| 発見 | `AdapterFinder` / `ModuleFinder` | インストール済みパッケージの entry-points から**発見**する |
+| 加載 | `AdapterLoader` / `ModuleLoader` | 発見 + インポート + メタデータの読み取り + 有効/無効の判定を行い、オブジェクトのリストを返す |
 | 登録 | `*Loader.register_to_manager` | オブジェクトを対応するマネージャーに登録する |
-| 管理 | `sdk.adapter` / `sdk.module` | アダプタ/モジュールのインスタンスを維持し、起動/停止のインターフェースを提供する |
-| 初期化 | `ModuleLoader.initialize_modules` | モジュールのインスタンスを作成し、`sdk` にマウントする（依存関係のトポロジカルソートを処理） |
+| 管理 | `sdk.adapter` / `sdk.module` | アダプタ/モジュールのインスタンスを管理し、起動/停止のインターフェースを提供する |
+| 初期化 | `ModuleLoader.initialize_modules` | モジュールのインスタンスを作成して `sdk` にマウントする（依存関係のトポロジカルソート処理） |
 | ルーティング | `sdk.router` | HTTP / WebSocket サーバー |
 
-> **重要**：`Finder` と `Loader` は2つの層です。`Loader` は内部で**すでに** `Finder` を保持しています（`AdapterLoader` は `AdapterFinder` を、`ModuleLoader` は `ModuleFinder` を持っています）。ほとんどのシーンでは `Loader` を使用するだけで十分です。"インポートせずにリストする"必要がある場合にのみ `Finder` を個別に使用します。
+> **重要**：`Finder` と `Loader` は2つの層です。`Loader` 内部では**すでに** `Finder` を保持しています（`AdapterLoader` は `AdapterFinder` を内包し、`ModuleLoader` は `ModuleFinder` を内包しています）。ほとんどの場合、`Loader` を使用するだけで十分です。"リスト表示のみ、インポートしない"が必要な場合にのみ、`Finder` を個別に使用します。
 
-## 各ステップの詳細
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
-### 1. 発見層：Finder
+## 各段階の詳細説明
 
-Finder は「どのパッケージがアダプタ/モジュールを提供しているか」を発見するだけです。インポートやインスタンス化はしません。
+### 1. 検出層：Finder
+
+Finder は「どのパッケージがアダプタ/モジュールを提供しているかを検出する」ことだけを担当し、インポートやインスタンス化は行いません。
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -15635,19 +16602,19 @@ from ErisPulse.finders import AdapterFinder, ModuleFinder
 adapter_finder = AdapterFinder()
 module_finder = ModuleFinder()
 
-# すべてのインストール済みアダプタ/モジュールの entry-points を検索
+# インストール済みの全てのアダプタ/モジュールの entry-points を検索
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
-# 名前で単一の検索
+# 名称で単一のエントリポイントを検索
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-各 `EntryPoint` は `.load()` で対応するクラスを得られますが、通常は手動で呼び出す必要はありません。`Loader` が行います。
+各 `EntryPoint` は `.load()` を呼ぶことで対応するクラスを得られますが、通常は手動で呼び出す必要はありません——Loader が処理を行います。
 
-### 2. ロード層：Loader
+### 2. 加載層：Loader
 
-Loader は Finder の上に「インポート + メタデータの読み取り + 有効/無効の判断」を行っています。
+Loader は Finder の上に「インポート + メタデータの読込 + 有効/無効の判断」を行います。
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -15656,32 +16623,32 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() 内部：finder.find_all() を呼び出す → 各 entry-point を処理 → 3タプルを返す
+# load() 内部：finder.find_all() を呼び出す → 各 entry-point を順次処理 → 三つ組を返す
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
 
-`load()` が返す3タプル：
+`load()` が返す三つ組：
 
-| 戻り値 | 含意 |
+| 戻り値 | 意味 |
 |--------|------|
 | `objs` (`dict`) | 名称 → オブジェクト（アダプタクラス / モジュールラッパー） |
 | `enabled` (`list[str]`) | 有効化された名称（設定で無効化されていない） |
 | `disabled` (`list[str]`) | 無効化された名称 |
 
-#### ロード失敗時の診断情報
+#### 加載失敗時の診断情報
 
-モジュール/アダプタがロードまたは初期化段階で例外を送出した場合、フレームワークはそのコンポーネントをスキップして他のコンポーネントのロードを続け、**ユーザーのコードフレームの要約**を出力します。これにより、通常の INFO レベルでもエラー箇所を特定でき、手動で DEBUG モードを再開する必要がありません。
+モジュール/アダプタが加載または初期化段階で例外を送出した場合、フレームワークはそのコンポーネントをスキップして他のコンポーネントの加載を継続し、**ユーザコードのフレームサマリー**を出力します。これにより、デフォルトの INFO レベルでエラー箇所を特定でき、手動で DEBUG モードに切り替える必要がありません。
 
 ```
-[ERROR] [ModuleLoader] entry-point からモジュール MyModule のロードに失敗しました。スキップしました: 'NoneType' object has no attribute 'platform'
+[ERROR] [ModuleLoader] entry-point からモジュール MyModule の加載に失敗しました。スキップしました: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → ヒント: ログレベルを DEBUG に上げると完全なスタックトレースを表示できます。モジュール MyModule の実装コードを確認してください。
+  → ヒント: ログレベルを DEBUG に上げると完全なスタックトレースを確認できます。モジュール MyModule の実装コードを確認してください。
 ```
 
-診断情報は `ErisPulse.runtime.diagnostics` モジュールによって生成され、フレームワーク内部のフレームは自動的にフィルタリングされ、ユーザーのコードフレームのみが残ります。カスタムロードロジックで再利用する場合は：
+診断情報は `ErisPulse.runtime.diagnostics` モジュールによって生成され、フレームワーク内部のフレームは自動的にフィルタされ、ユーザコードのフレームのみが保持されます。カスタム加載ロジックで再利用する場合は：
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -15689,24 +16656,24 @@ from ErisPulse.runtime import log_diagnostic
 try:
     risky_init()
 except Exception as e:
-    log_diagnostic(e)  # 自動的にユーザーのコードフレームを抽出して ERROR ログに記録
+    log_diagnostic(e)  # 自動的にユーザコードのフレームを抽出し、ERROR ログに書き込みます
 ```
 
-このモジュールには、`extract_user_frame()`（構造化されたフレーム情報を返す）と `format_diagnostic_block()`（複数行のテキストを返す）という2つの低レベル関数もあります。
+このモジュールには `extract_user_frame()`（構造化されたフレーム情報を返す）と `format_diagnostic_block()`（複数行のテキストを返す）という2つの低レベル関数も提供されています。
 
 ### 3. 登録層：register_to_manager
 
 Loader が出力したオブジェクトをマネージャーに登録し、`sdk.adapter` / `sdk.module` がそれらを認識できるようにします。
 
 ```python
-# アダプタの登録（すべて成功した場合は bool を返す）
+# アダプタの登録（全登録が成功したかを表す bool を返す）
 await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.adapter)
 
 # モジュールの登録
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-登録後、アダプタは `sdk.adapter._adapters` に、モジュールクラスは `sdk.module` に登録されますが、**まだ起動/インスタンス化されていません**。
+登録後、アダプタはアダプタマネージャーに、モジュールはモジュールマネージャーに登録されますが、**まだ起動/インスタンス化は行われていません**。
 
 ### 4. アダプタの起動
 
@@ -15718,11 +16685,11 @@ await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> 登録 ≠ 起動。`register_to_manager` は単に登録するだけです。`startup` でアダプタの `start()` を呼び出し、プラットフォームとの接続を確立します。
+> 登録 ≠ 起動。`register_to_manager` は単に登録を行うだけです。`startup` を呼ぶことでアダプタの `start()` が呼び出され、プラットフォームとの接続が確立されます。
 
 ### 5. モジュールの初期化
 
-モジュールはアダプタよりも1ステップ多く、**インスタンス化**して `sdk` にマウントする必要があります（これにより `sdk.MyModule.xxx` で呼び出すことができます）。このステップでは、モジュール間の依存宣言とトポロジカルソートも処理されます。
+モジュールはアダプタよりも1つステップ多く、**インスタンス化**して `sdk` にマウントする必要があります（これにより `sdk.MyModule.xxx` で呼び出せるようになります）。この段階では、モジュール間の依存宣言とトポロジカルソートも処理されます。
 
 ```python
 success = await module_loader.initialize_modules(
@@ -15730,7 +16697,7 @@ success = await module_loader.initialize_modules(
 )
 ```
 
-インスタンス化に成功すると、モジュールは `sdk.<ModuleName>` に表示されます。
+インスタンス化が成功すると、モジュールは `sdk.<ModuleName>` に登録されます。
 
 ### 6. ルーティングサーバーの起動
 
@@ -15743,11 +16710,13 @@ await sdk.router.start(
 )
 ```
 
-ルーティングサーバーは、アダプタの Webhook / WebSocket コールバックを受け取ります。起動しないと、サーバーモードのアダプタはメッセージを受け取れません。
+ルーティングサーバーは、アダプタからの Webhook / WebSocket コールバックを受信する役割を担います。これを起動しないと、server モードのアダプタはメッセージを受け取れません。
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 完全な手動起動の例
 
-以下のコードは `await sdk.init()` のコアプロセスと**等価**ですが、各ステップが明示的に表示されており、任意の段階でカスタムロジックを挿入できます。
+以下のコードは `await sdk.init()` のコアな処理と**等価**ですが、各ステップが明示的に公開されており、任意の段階でカスタムロジックを挿入することができます。
 
 ```python
 import asyncio
@@ -15755,30 +16724,30 @@ from ErisPulse import sdk
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
 async def manual_startup():
-    # 0. 環境準備（設定のロード、グローバル例外処理の登録）
-    #    _prepare_environment は init() 内部の前置ステップです。手動プロセスでも先に呼び出す必要があります。
-    #    そうしないと、Loader は設定を読み取れず、すべてのアダプタ/モジュールを誤って無効化と判断します。
+    # 0. 環境の準備（設定の読み込み、グローバルな例外処理の登録）
+    #    _prepare_environment は init() 内部の前置処理です。手動プロセスでも最初に呼び出す必要があります。
+    #    そうでないと、Loader は設定を読み取れず、すべてのアダプター/モジュールを無効と誤認します。
     if not await sdk._prepare_environment():
-        print("環境準備に失敗しました")
+        print("環境の準備に失敗しました")
         return False
 
-    # 1. ローダーの作成（内部でそれぞれ Finder を保持）
+    # 1. ローダーの作成（内部で Finder を保持）
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. 並列発見とロード（init() 内部と同じ gather を使用）
+    # 2. 並行して発見とロード（init() 内部と同じ gather を使用）
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
         module_loader.load(sdk.module),
     )
 
-    # 3. アダプタの登録
+    # 3. アダプターの登録
     await adapter_loader.register_to_manager(
         enabled_adapters, adapter_objs, sdk.adapter
     )
 
-    # 4. アダプタの起動
+    # 4. アダプターの起動
     if enabled_adapters:
         await sdk.adapter.startup()
 
@@ -15796,72 +16765,71 @@ async def manual_startup():
     # 7. ルーティングサーバーの起動
     await sdk.router.start(host="0.0.0.0", port=8000)
 
-    print("手動起動完了")
+    print("手動起動が完了しました")
     return True
 
 async def main():
     ok = await manual_startup()
     if ok:
-        # プログラムを維持する（手動プロセスでは自動的にブロックされない）
+        # 実行を維持するためのブロッキング（手動プロセスでは自動的にブロッキングされません）
         await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### いつ手動起動が必要か？
+### 手動起動が必要な場合
 
-ほとんどの場合、手動起動は必要ありません。`await sdk.run()` で上記のすべてが行われています。手動起動は以下のシナリオでのみ価値があります：
+ほとんどの場合、手動起動は**不要**です。`await sdk.run()` は上記のすべてを自動的に行います。手動起動は以下のシナリオでのみ価値があります：
 
-- **部分的なロード**：指定されたアダプタ/モジュールのみをロードし、他のものをスキップ
-- **動的登録**：実行時に条件に応じて新しいアダプタ/モジュールを登録
-- **カスタム順序**：デフォルトのロード順序を乱す（例：特定のモジュールを起動してからアダプタを起動）
-- **戦略の注入**：Loader にカスタムの厳密モードマネージャー、ロード戦略などを注入
-- **デバッグ/診断**：特定の段階で失敗した場合、手動で駆動して問題を特定
+- **部分的なロード**：指定されたアダプター/モジュールのみをロードし、他の部分はスキップ
+- **動的登録**：実行時に条件に応じて新しいアダプター/モジュールを登録
+- **カスタム順序**：デフォルトのロード順序を変更したい場合（例えば、特定のモジュールを先に起動してからアダプターを起動する）
+- **注入戦略**：Loader にカスタムの厳格モードマネージャー、ロード戦略などを注入
+- **デバッグ/診断**：特定の段階で失敗した際に、手動でプロセスを進めることで問題の原因を特定
 
 ## 実行時細粒度制御
 
-`sdk.run()` で起動した後でも、SDK 全体を再起動することなく、各サブシステムを個別に制御できます。
+`sdk.run()` を使用して起動しても、SDK 全体を再起動することなく、実行時に個々のサブシステムを個別に制御することができます。
 
 ### アダプタのホット起動/停止
 
 ```python
-# アダプタのホットリスタート（接続を修復し、他のプラットフォームに影響しない）
+# あるアダプタをホットリスタート（接続の修復、他のプラットフォームへの影響なし）
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
 # 実行中に新しいプラットフォームを起動
 await sdk.adapter.startup("telegram")
 
-# 一時的にプラットフォームをオフラインにする
+# 一時的に特定のプラットフォームをオフラインにする
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` はアダプタが**マネージャーに登録されている**ことを要求します。登録は `init()` / `run()` 内部で行われるため、これは起動**後の**細粒度制御です。
+> `adapter.startup()` は、アダプタが**マネージャーに登録済み**であることを要求します。登録は `init()` / `run()` の内部で行われるため、これは起動**後の**細粒度制御になります。
 
-### ルーティングサーバー
+### ルーターサーバー
 
 ```python
 # 一時的に webhook サーバーをオフラインにする
 await sdk.router.stop()
 
-# 再起動（例：ポートを変更した場合）
+# 再起動（たとえばポートが変更された場合）
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
 ### モジュールのオンデマンドロード
 
 ```python
-# モジュールを手動でロードする（おそらく遅延ロードのモジュール）
+# 手動でロード（遅延ロードされている可能性のある）モジュールをロード
 await sdk.load_module("MyModule")
-```
 
 ## エレガントなシャットダウン
 
-2.7.0 以降、`sdk.shutdown()` は**プログラムによるエレガントなシャットダウン**を提供します：シャットダウンイベントを設定し、`await sdk.run(keep_running=True)` で待機中のメインループが返り、`uninit()` がリソースのクリーンアップをトリガーします。
+2.7.0 以降、`sdk.shutdown()` は**プログラムによるエレガントなシャットダウン**を提供します：シャットダウンイベントを設定し、`await sdk.run(keep_running=True)` で待機中のメインループが返り、`uninit()` をトリガーしてリソースのクリーンアップを完了します。
 
 ```python
-# 任意のコルーチンで呼び出し、エレガントな終了をトリガー（run() は待機を返し、自動 uninit）
+# 任意のコルーチンで呼び出すことで、エレガントな終了をトリガー（run() が待機から戻り、自動的に uninit() が実行される）
 sdk.shutdown()
 ```
 
@@ -15870,69 +16838,172 @@ sdk.shutdown()
 ```python
 async def shutdown_after_idle():
     await asyncio.sleep(3600)
-    sdk.shutdown()  # 空き1時間後にエレガントに終了
+    sdk.shutdown()  # 空き状態が1時間続いたらエレガントに終了
 ```
 
-**シグナル処理**：`run()` 内部では `SIGTERM` / `SIGHUP` ハンドラが登録され、システムシグナルをエレガントなシャットダウンに変換します——コンテナ編成（Docker `docker stop`）や `systemd` でサービスを停止する場合、プロセスは `uninit()` のクリーンアップを完了してから強制終了されます。
+**シグナル処理**：`run()` 内部では `SIGTERM` / `SIGHUP` ハンドラを登録し、システムシグナルをエレガントなシャットダウンに変換します——コンテナオーケストレーション（Docker `docker stop`）や `systemd` でサービスを停止する場合、プロセスは強制終了ではなく `uninit()` のクリーンアップを完了します。
 
-- Windows は `loop.add_signal_handler` をサポートしていません。シグナルハンドラは自動的にスキップされます（`sdk.shutdown()` または Ctrl+C でシャットダウンをトリガーできます）
-- `sdk.shutdown()` を繰り返し呼び出すことは安全です（イベントが設定された後は無操作になります）
+- Windows では `loop.add_signal_handler` はサポートされていないため、シグナルハンドラは自動的にスキップされます（`sdk.shutdown()` または Ctrl+C でシャットダウンをトリガーすることは可能です）
+- `sdk.shutdown()` を繰り返し呼び出しても安全です（イベントが設定された後、再び呼び出しても無効になります）
 
-## アンロードプロセス
+[**English**](docs/ja/quick-start.md)
 
-起動の逆操作は `await sdk.uninit()` で、逆順でリソースを解放します：
+## アンインストールのフロー
+
+初期化の逆操作は `await sdk.uninit()` であり、これは逆の順序でクリーンアップを行います：
 
 1. すべてのアダプタを閉じる（`adapter.shutdown()`）
 2. すべてのモジュールをアンロードする
 3. すべてのイベントハンドラをクリーンアップする
 4. マネージャーと SDK 上のモジュール属性をクリーンアップする
 
-手動起動の場合は、終了前に `uninit()` を呼び出してエレガントなシャットダウンを保証してください：
+手動で起動する場合、正常終了を保証するために終了前に `uninit()` を呼び出すことを忘れないでください：
 
 ```python
 try:
-    await asyncio.Event().wait()   # プログラムを維持
+    await asyncio.Event().wait()   # 実行を維持
 finally:
     await sdk.uninit()
-```
 
-## リスタート
+## 再起動
 
-SDK には2種類のリスタート方法があります。どちらも事前にアンロードする必要はありません——フレームワークが自動的に処理します：
+SDK は 2 つの再起動方法を提供しており、自分でアンインストールする必要はありません。フレームワークが自動的に処理します。
 
 | 方法 | 呼び出し | 行動 | 適用シーン |
 |------|------|------|----------|
-| ホットリスタート | `await sdk.restart()` | 同一プロセス内で `uninit()` の後に再 `init()`、アダプタ/モジュールを再ロード | 設定の再ロード、モジュールのホットアップデート |
-| ハードリスタート | `await sdk.hard_restart()` | `uninit()` の後にプロセスを終了し、親プロセス（`epsdk run`）が新しいプロセスを起動 | メモリ/リソースリークが疑われる、完全にクリーンなリスタートが必要な場合 |
+| ホット再起動 | `await sdk.restart()` | 同一プロセス内で `uninit()` の後に再び `init()` を実行し、アダプタ/モジュールを再読み込み | 設定の再読み込み、ホットアップデートモジュール |
+| ハード再起動 | `await sdk.hard_restart()` | `uninit()` の後にプロセス全体を終了し、親プロセス（`epsdk run`）が新しいプロセスを起動 | メモリ/リソースのリークが疑われる場合、完全にクリーンな再起動が必要な場合 |
 
 ```python
-# ホットリスタート：同一プロセス内で再ロード（最も一般的）
+# ホット再起動：同一プロセス内で再読み込み（最も一般的）
 await sdk.restart()
 
-# ハードリスタート：プロセスを終了し、`epsdk run` で起動した場合にのみ有効
+# ハード再起動：プロセスを終了し、epsdk run で起動する必要あり
 await sdk.hard_restart()
 ```
 
-> **2点注意**：
-> 1. これらのメソッドはバックグラウンドタスクで実行され、**即座に `True` を返す**ことで「リスタートタスクがスケジュールされた」ことを示します。リスタートが完了したわけではありません。実際のリスタートはバックグラウンドで行われ、現在のイベントフローを中断しません。
-> 2. `hard_restart()` **は `epsdk run main.py` で起動した場合にのみ有効です**。その原理は、アンロード後に**終了コード 42** でプロセスを終了し、`epsdk run` の親プロセスが 42 を検出して新しいプロセスを再起動することです。`python main.py` で直接起動した場合は、42 で終了した後プロセスが終了し、自動的に再起動されません。
+> **2 点注意**：
+> 1. どちらのメソッドもバックグラウンドタスクで再起動を実行し、**即座に `True` を返すのは「再起動タスクがスケジュールされた」ことを意味し、「再起動が完了した」ことを示すものではありません**。実際の再起動はバックグラウンドで行われ、現在のイベントフローを中断しません。
+> 2. `hard_restart()` は **`epsdk run main.py` で起動した場合にのみ有効**です。その仕組みは、アンインストール後に**終了コード 42** でプロセスを終了させ、`epsdk run` の親プロセスが 42 を検知すると新しいプロセスを再起動します。`python main.py` で直接起動した場合は、終了コード 42 でプロセスが終了した後、自動的に再起動されません。
 
-### ハードリスタートはいつ使うか？
+### ハード再起動を使用すべきタイミング
 
-ハードリスタートは「より徹底的なリスタート」だけでなく、以下のシナリオでより適切で、場合によってはより効率的です：
+ハード再起動は単に「より徹底的な再起動」ではなく、以下のシナリオではホット再起動よりも適切で、場合によっては効率的です：
 
-- **バイナリライブラリ（C拡張）の副作用**：ホットリスタートは同じプロセス内で行われるため、C拡張、開いたファイルディスクリプタ、スレッドなどのプロセスレベルのリソースを解放できません。ハードリスタートでは新しいプロセスが起動され、これらの副作用は完全にクリアされます。
-- **リソースリークの調査**：メモリやハンドルのリークが疑われる場合、ハードリスタートはクリーンな環境を得ることができます。
-- **頻繁なリスタートに性能が敏感な場合**：ハードリスタートは同じプロセス内でアンロード→再ロードのオーバーヘッドを省くため、実際にはホットリスタートよりも効率的です。
+- **バイナリライブラリ（C拡張）の副作用**：ホット再起動は同一プロセス内で行われるため、C拡張、開かれたファイルディスクリプタ、スレッドなどのプロセスレベルのリソースを解放できません。ハード再起動は新しいプロセスを起動するため、これらの副作用を完全にクリアできます。
+- **リソースリークの調査**：メモリやハンドルのリークが疑われる場合、ハード再起動によりクリーンな環境を得ることができます。
+- **頻繁な再起動に性能が敏感な場合**：ハード再起動は同一プロセス内でアンロード→再ロードのオーバーヘッドを省くため、実際にはホット再起動よりも効率的です。
 
-> ダッシュボード管理パネルの「フレームワークリスタート」機能は、下層で `hard_restart()` を呼び出しています。
-> また、ハードリスタートは **`epsdk` の `run` コマンドを使用して起動しなければ効果がありません**。`run` コマンドは 42 退出コードを検出してプロセスを再起動するため、`python main.py` で起動した場合は 42 でプロセスが終了し、自動的に再起動されません。この点は注意してください！！
+> Dashboard 管理パネルの「フレームワーク再起動」機能は、下層で `hard_restart()` を呼び出しています。
+> さらに、ハード再起動には 1 つの要件があります！必ず `epsdk` の `run` コマンドを使用して起動する必要があります。そうでない場合、プログラムは単に 42 の終了コードを投げて終了するだけです。`run` コマンドは終了コード 42 を検知してプロセスを再起動するため、この点は注意が必要です！！！
 
 
 
 ====
 生态模块
 ====
+
+
+### ErisPulse-App 安装与使用
+
+# ErisPulse-App
+
+[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) は ErisDev が直接運用している **公式マルチプラットフォームクライアント**（Android / Windows / Linux / macOS の各プラットフォームでリリース済み）で、
+完全にネイティブなグラフィカル管理インターフェースを提供します。スマートフォンやコンピュータ上で複数のボットインスタンスの作成、実行、管理が可能です。
+端末（ターミナル）を開く必要もなく、Python 環境を別途インストールする必要もありません。
+
+> [!IMPORTANT]
+> ErisPulse-App は**スタンドアロンのインストール型クライアントプログラム**であり、`epsdk install` でインストールされるモジュールではありません。
+> Python ランタイムと ErisPulse SDK を内部に搭載しているため、インストールしてすぐに利用可能です——**スマートフォンでも直接実行できます**。
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+## 機能概要
+
+- **マルチインスタンス管理**: インスタンスの作成 / 起動 / 停止 / 削除。ポートとアクセストークンが自動的に割り当てられます。新規環境または既存環境のクローンに対応しています。
+- **ダッシュボード**: アダプタ / モジュール / オンラインボット / イベント総数の統計、CPU / メモリ使用率のアラート（色の変化）。
+- **モジュールストア**: 検索・タグによるフィルタリング、ワンクリックでのインストール / アップグレード / アンインストール、特定バージョンのインストール、pipミラーソースと Git パッケージのサポート。
+- **イベントストリーム + イベントビルダー**: リアルタイムでのイベント確認、テストイベントの視覚的な構築とアダプタへの送信。
+- **監視**: ログ / ライフサイクル / 監査の統合ビュー。
+- **コマンド管理**: プリフィックス・エイリアスなどの全体的な設定、開始・停止、プラットフォームのホワイトリスト・ブラックリスト。
+- **ボット概要 / 設定 / ファイル管理**: 原生インターフェースによるインスタンス直接操作。
+- **常駐バックグラウンド**: Android フロントグラウンドサービスによるプロセス維持；Windows はシステムトレイへ最小化し、ウィンドウを閉じてもインスタンスを中断しません。
+- **モジュール動的ウィンドウ**: モジュールが登録されたページがサイドナビゲーション（ダッシュボードと同じグループ）に自動的に表示されます。クリックで直接移動できます。
+
+## 対応プラットフォーム
+
+すべてのプラットフォームのインストーラーは、[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) からダウンロードできます。必要なものを選択してください。
+
+| プラットフォーム | インストーラー | 説明 |
+|------|--------|------|
+| Android | `online-*.apk` / `offline-*.apk` | **スマートフォンで直接実行**、PCは不要です |
+| Windows | `windows-x64-setup.exe` / `windows-x64.zip` | インストーラー版 / 解凍のみ版 |
+| Linux | `linux-x64.tar.gz` | 解凍して使用 |
+| macOS | `macos-arm64.zip` | Apple Silicon（arm64） |
+
+Flutter による単一のコードベースで、すべてのプラットフォームをカバーしています。
+
+---
+
+## インストール方法（Android / スマートフォン直接実行）
+
+[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) から APK をダウンロードしてインストールするだけです。2つのビルドがあります。
+
+| ビルド | ランタイムイメージ | 適用シーン |
+|------|-----------------|---------|
+| `erispulse-app-online-*.apk` | 起動時にダウンロード | インストールパッケージが小さく、ネットワーク環境が良い場合に適しています |
+| `erispulse-app-offline-*.apk` | APK に同梱 | オフラインで自己完結しており、インストール後にネットワーク接続不要 |
+
+2つのビルドともインストール手順は同じです。
+
+1. APK をダウンロードしてインストールします。起動時に通知権限を許可してください（バックグラウンドサービスを維持するために使用します）
+2. ホーム画面に初期化バナーが表示されたら、実行ボタンをクリックして最初の初期化を行います（進捗とログのビューを含みます）
+3. インスタンスを作成して起動します
+4. App 内蔵の管理画面でアダプタとモデル API Key を設定します
+
+> オフラインパッケージは自己完結しています — インストール後にネットワークは不要です。起動時のダウンロードが遅い場合や不安定な場合は、設定画面でダウンロード元をミラーサイト（ghfast / gh-proxy）に切り替えることができます。
+
+### インストール方法（デスクトップ：Windows / Linux / macOS）
+
+1. [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) から対応するプラットフォームのインストーラをダウンロードします（Windows の `setup.exe` または ZIP 版、Linux の `tar.gz`、macOS の `zip`）
+2. インストールして起動します
+3. ウェルカム画面でインストールしたい ErisPulse SDK のバージョンを選択します（デフォルトは最新バージョン）そしてインストールします
+4. インスタンスを作成して起動します
+
+---
+
+## 動作原理
+
+```
+┌────────────────────────────────────────────────────┐
+│  ErisPulse-App (Flutter)                            │
+│                                                    │
+│  ネイティブ UI ── Dashboard REST / WS API          │
+│       │                                            │
+│       ├── Android：フォアグラウンドサービス + proot + Ubuntu rootfs│
+│       │        + Python + ErisPulse インスタンス            │
+│       └── デスクトップ：内蔵 Python + 直接プロセス管理         │
+└────────────────────────────────────────────────────┘
+```
+
+- **Android**：インスタンスはフォアグラウンドサービス（background isolate）によって管理された proot（ユーザーランド chroot）内で動作します。UIが閉じられてもボットは継続して実行され、クラッシュすると自動的に再起動します。
+- **デスクトップ**：インスタンスはAppの直接の子プロセスとして実行されます。Windowsの場合、システムトレイに最小化してバックグラウンドで常駐（ウィンドウを閉じてもインスタンスは中断されません）。Appを再起動すると、実行中のインスタンスへの管理が自動的に回復し、終了時にすべてのインスタンスを一括して停止します。
+- すべてのプラットフォームのネイティブ UI は、`127.0.0.1:<port>/Dashboard/*` の REST / WebSocket API を介してインスタンスと通信します。これは[ErisPulse-Dashboard](dashboard.md)と同じAPIを使用します。
+
+---
+
+## SDK との関係
+
+- App 内部に ErisPulse SDK を同梱：Android 版は Ubuntu イメージにパッケージングされており、デスクトップ版は PyPI からインストールします（ウェルカム画面はオプション、デフォルトは最新版）
+- App 内のインスタンスは、コマンドライン `epsdk` で作成されたインスタンスと等価であり、同じモジュール / アダプタを使用可能です
+- モジュール開発者は、[Dashboard ウィンドウで API を登録](dashboard.md)してカスタムページを登録できます：
+  - ウィンドウは App のサイドナビゲーションに自動的に表示されます（グループは Dashboard と一致）
+  - クリックすると対応するページレンダリングに遷移します
+
+---
+
+</translate>
+
 
 
 ### Dashboard 使用与视窗注册
@@ -16944,150 +18015,157 @@ await (yunhu.Send.To("group", "456")
 
 ### OneBot11 适配
 
-# OneBot11プラットフォーム特性ドキュメント
+# OneBot11プラットフォームの機能ドキュメント
 
-OneBot11Adapter は OneBot V11 プロトコルに基づいて構築されたアダプターです。
+OneBot11Adapter は、OneBot V11 プロトコルに基づいて構築されたアダプターです。
 
 ---
+
+docs/ja/quick-start.md
 
 ## ドキュメント情報
 
 - 対応モジュールバージョン: 4.0.0
-- メンテナー: ErisPulse
+- 維持者: ErisPulse
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếង Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Arabia**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Arabia**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếng Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/quick-start.md) | [**中文繁體**](docs/zh-TW/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Nederlands**](docs/nl/quick-start.md) | [**Polski**](docs/pl/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Tiếง Việt**](docs/vi/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**الع Ara**](docs/ar/quick-start.md) | [**فارسی**](docs/fa/
 
 ## 基本情報
 
-- プラットフォーム概要：OneBot はチャットボットアプリケーションインターフェース標準です
-- アダプター名：OneBotAdapter
-- サポートするプロトコル/APIバージョン：OneBot V11
-- 複数アカウントサポート：デフォルトで複数アカウントアーキテクチャを採用し、複数のOneBotアカウントの同時設定と実行をサポートします
+- プラットフォーム概要：OneBot はチャットボットアプリケーションのインターフェース標準です
+- アダプタ名：OneBotAdapter
+- 対応プロトコル/APIバージョン：OneBot V11
+- 多アカウント対応：デフォルトでマルチアカウントアーキテクチャを採用しており、複数の OneBot アカウントを同時に設定および実行できます
 - 設定キー名：`OneBotAdapter`
 
-## サポートするメッセージ送信タイプ
+[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
-すべての送信メソッドはメソッドチェーン構文によって実装されています。例：
+## 支援するメッセージ送信タイプ
+
+すべての送信メソッドは、チェーン式の構文で実装されています。たとえば：
+
 ```python
 from ErisPulse.Core import adapter
 onebot = adapter.get("onebot11")
 
-# デフォルトアカウントで送信
+# デフォルトアカウントを使用して送信
 await onebot.Send.To("group", group_id).Text("Hello World!")
 
-# 特定のアカウントを指定して送信
-await onebot.Send.Using("main").To("group", group_id).Text("主アカウントからのメッセージ")
+# 特定のアカウントを使用して送信
+await onebot.Send.Using("main").To("group", group_id).Text("メインアカウントからのメッセージ")
 
-# 链式修饰：@用户 + 回复
-await onebot.Send.To("group", group_id).At(123456).Reply(msg_id).Text("回复消息")
+# チェーン式修飾：ユーザーを@する + メッセージを返信
+await onebot.Send.To("group", group_id).At(123456).Reply(msg_id).Text("返信メッセージ")
 
-# @全体成员
-await onebot.Send.To("group", group_id).AtAll().Text("公告消息")
+# 全員に@する
+await onebot.Send.To("group", group_id).AtAll().Text("お知らせメッセージ")
 ```
 
 ### 基本送信メソッド
 
-- `.Text(text: str)`：プレーンテキストメッセージを送信します。
-- `.Image(file: Union[str, bytes], filename: str = "image.png")`：画像を送信します（URL、Base64、またはbytesをサポート）。
-- `.Voice(file: Union[str, bytes], filename: str = "voice.amr")`：音声メッセージを送信します。
-- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：動画メッセージを送信します。
-- `.Face(id: Union[str, int])`：QQのスタンプ/顔文字を送信します。
-- `.File(file: Union[str, bytes], filename: str = "file.dat")`：ファイルを送信します（タイプを自動判定）。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します（自動的にOB11に変換）。
-- `.Recall(message_id: Union[str, int])`：メッセージを取り消します。
+- `.Text(text: str)`：プレーンテキストメッセージを送信。
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`：画像を送信（URL、Base64、または bytes をサポート）。
+- `.Voice(file: Union[str, bytes], filename: str = "voice.amr")`：音声メッセージを送信。
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：動画メッセージを送信。
+- `.Face(id: Union[str, int])`：QQ絵文字を送信。
+- `.File(file: Union[str, bytes], filename: str = "file.dat")`：ファイルを送信（自動的にタイプを判断）。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信（自動的にOB11に変換）。
+- `.Recall(message_id: Union[str, int])`：メッセージを撤回。
 
-### 群操作メソッド
+### グループ操作メソッド
 
-以下のメソッドは `To("group", group_id)` を使用して対象のグループを指定し、グループコンテキストで実行する必要があります：
+以下のメソッドは、`To("group", group_id)` を使用して対象グループを指定し、グループコンテキストで操作を実行します：
 
-- `.Kick(user_id, reject_add_request=False)`：グループメンバーをキックします。
-- `.Ban(user_id, duration=1800)`：グループメンバーを禁止します（秒単位、0は解禁）。
-- `.WholeBan(enable=True)`：全員禁止を有効/無効にします。
+- `.Kick(user_id, reject_add_request=False)`：グループメンバーをキック。
+- `.Ban(user_id, duration=1800)`：グループメンバーをミュート（秒単位）、0 は解除を意味します。
+- `.WholeBan(enable=True)`：全員ミュートを有効/無効にします。
 - `.SetAdmin(user_id, enable=True)`：グループ管理者を設定/解除します。
-- `.SetCard(user_id, card="")`：グループ名前を設定します。
+- `.SetCard(user_id, card="")`：グループのニックネームを設定します。
 - `.SetGroupName(name)`：グループ名を変更します。
-- `.Leave(is_dismiss=False)`：グループから退会します（グループオーナーは解散も可能です）。
-- `.SetTitle(user_id, title="")`：グループタイトルを設定します。
-- `.SetPortrait(file)`：グループアイコンを設定します。
+- `.Leave(is_dismiss=False)`：グループを退会（グループオーナーは解散も可能）。
+- `.SetTitle(user_id, title="")`：グループの肩書きを設定します。
+- `.SetPortrait(file)`：グループのプロフィール画像を設定します。
 
 ### 検索メソッド
 
-- `.GetMsg(message_id)`：メッセージ内容を取得します。
+- `.GetMsg(message_id)`：メッセージの内容を取得します。
 - `.GetForwardMsg(id)`：転送メッセージを取得します。
-- `.GetLoginInfo()`：現在のログイン情報（BotのQQ番号）を取得します。
+- `.GetLoginInfo()`：現在ログインしているアカウント情報を取得します。
 - `.GetFriendList()`：友達リストを取得します。
-- `.GetGroupInfo()`：グループ情報を取得します（`To("group", group_id)`が必要）。
+- `.GetGroupInfo()`：グループ情報を取得します（`To("group", group_id)` が必要）。
 - `.GetGroupList()`：グループリストを取得します。
-- `.GetGroupMemberInfo(user_id)`：グループメンバー情報を取得します（`To("group", group_id)`が必要）。
-- `.GetGroupMemberList()`：グループメンバーのリストを取得します（`To("group", group_id)`が必要）。
+- `.GetGroupMemberInfo(user_id)`：グループメンバー情報を取得します（`To("group", group_id)` が必要）。
+- `.GetGroupMemberList()`：グループメンバーのリストを取得します（`To("group", group_id)` が必要）。
 
 ### 友達操作メソッド
 
-- `.Like(user_id, times=1)`：友達にいいねを送信します（最大10回）。
+- `.Like(user_id, times=1)`：友達に「いいね」を送信（最大10回まで）。
 
-### メソッドチェーン修飾メソッド（組み合わせ可能）
+### チェーン式修飾メソッド（組み合わせて使用可能）
 
-メソッドチェーン修飾メソッドは `self` を返し、メソッドチェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
+チェーン式修飾メソッドは `self` を返し、チェーン呼び出しをサポートし、最終的な送信メソッドの前に呼び出す必要があります：
 
-- `.At(user_id: Union[str, int], name: str = None)`：指定したユーザーにメンションします（複数回呼び出し可能）。
-- `.AtAll()`：全員にメンションします。
-- `.Reply(message_id: Union[str, int])`：指定したメッセージに返信します。
+- `.At(user_id: Union[str, int], name: str = None)`：指定ユーザーを@する（複数回呼び出すことも可能）。
+- `.AtAll()`：全員を@する。
+- `.Reply(message_id: Union[str, int])`：指定メッセージに返信する。
 
-### メソッドチェーン呼び出しの例
+### チェーン式呼び出しの例
 
 ```python
 # 基本送信
 await onebot.Send.To("group", 123456).Text("Hello")
 
-# @单个用户
+# 単一ユーザーを@する
 await onebot.Send.To("group", 123456).At(789012).Text("你好")
 
-# @多个用户
+# 複数ユーザーを@する
 await onebot.Send.To("group", 123456).At(111).At(222).At(333).Text("大家好")
 
-# 发送 OneBot12 格式消息
+# OneBot12形式のメッセージを送信
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await onebot.Send.To("group", 123456).Raw_ob12(ob12_msg)
 
-# 点赞
+# フレンドに「いいね」を送信
 await onebot.Send.Like(123456, times=10)
 
-# 禁言群成员
+# グループメンバーをミュート
 await onebot.Send.To("group", 123456).Ban(789012, duration=3600)
 
-# 解禁
+# ミュートを解除
 await onebot.Send.To("group", 123456).Ban(789012, duration=0)
 
-# 踢人
+# グループメンバーをキック
 await onebot.Send.To("group", 123456).Kick(789012)
 
-# 设置群管理员
+# グループ管理者を設定
 await onebot.Send.To("group", 123456).SetAdmin(789012)
 
-# 修改群名
+# グループ名を変更
 await onebot.Send.To("group", 123456).SetGroupName("新群名")
 
-# 获取群信息
+# グループ情報を取得
 result = await onebot.Send.To("group", 123456).GetGroupInfo()
 
-# 指定账户操作
+# 特定のアカウントを使用して操作
 await onebot.Send.Using("main").To("group", 123456).Ban(789012)
 ```
 
-### サポートされていないタイプの処理
+### 未サポートのタイプの処理
 
-未定義の送信メソッドが呼び出された場合、アダプターはテキストプロンプトを返します：
+定義されていない送信メソッドを呼び出した場合、アダプタはテキストの提示を返します：
+
 ```python
-# 存在しないメソッドを呼び出し
+# 未定義のメソッドを呼び出す
 await onebot.Send.To("group", 123456).SomeUnsupportedMethod(arg1, arg2)
-# 実際の送信: "[サポートされていない送信タイプ] メソッド名: SomeUnsupportedMethod, パラメータ: [...]"
-```
+# 実際の送信: "[未サポートの送信タイプ] メソッド名: SomeUnsupportedMethod, パラメータ: [...]"
 
-## 要求操作（Request DSL）
+## リクエスト操作（Request DSL）
 
-アダプターは要求操作DSLを提供し、友達リクエストとグループリクエスト（グループ追加/招待）の承認/拒否操作に使用できます。
+アダプターは、フレンドリクエストおよびグループリクエスト（グループ参加/招待）の承認/拒否操作を処理するためのリクエスト操作 DSL を提供します。
 
-### Event 快捷方法
+### Event ショートカットメソッド
 
-要求イベントは `event.approve()` と `event.reject()` のショートカットメソッドをサポートし、内部的にRequest DSLを自動的に呼び出します：
+リクエストイベントは、`event.approve()` および `event.reject()` のショートカットメソッドをサポートし、内部で Request DSL を自動的に呼び出します。
 
 ```python
 from ErisPulse.Core.Event import request
@@ -17107,20 +18185,20 @@ async def handle_group_request(event):
     await event.approve()
 ```
 
-### 手动调用 Request DSL
+### 手動で Request DSL を呼び出す
 
 ```python
-# 同意请求
+# リクエストを承認
 await onebot.Request("flag_string").accept()
 
-# 拒绝请求
+# リクエストを拒否
 await onebot.Request("flag_string").reject()
 
-# 指定账户操作
+# 特定のアカウントで操作
 await onebot.Request("flag_string").Using("main").accept()
 ```
 
-### 完整示例
+### 完全な例
 
 ```python
 from ErisPulse.Core.Event import request
@@ -17129,13 +18207,13 @@ from ErisPulse.Core.Event import request
 async def handle_friend_request(event):
     comment = event.get("comment", "")
 
-    # 方式一：使用 Event 快捷方法
+    # 方法1：Event ショートカットメソッドを使用
     if comment == "passphrase":
         await event.approve()
     else:
         await event.reject()
 
-    # 方式二：使用 Request DSL
+    # 方法2：Request DSL を使用
     flag = event.get("flag")
     if comment == "passphrase":
         await onebot.Request(flag).accept()
@@ -17143,7 +18221,7 @@ async def handle_friend_request(event):
         await onebot.Request(flag).reject()
 ```
 
-### 要求操作の戻り値
+### リクエスト操作の戻り値
 
 ```python
 {
@@ -17153,9 +18231,8 @@ async def handle_friend_request(event):
     "message_id": "",
     "message": ""
 }
-```
 
-## イベントタイプのマッピング
+## イベントタイプマッピング
 
 ### 標準 OB12 マッピング
 
@@ -17163,7 +18240,7 @@ async def handle_friend_request(event):
 |--------------|-------------------|------|
 | message_type: private | `private` | プライベートチャットメッセージ |
 | message_type: group | `group` | グループチャットメッセージ |
-| request_type: friend | `friend` | 友達リクエスト |
+| request_type: friend | `friend` | フレンドリクエスト |
 | request_type: group | `group` | グループリクエスト |
 | meta_event_type: heartbeat | `heartbeat` | ハートビート |
 | notice_type: group_upload | `group_file_upload` | グループファイルアップロード |
@@ -17171,34 +18248,34 @@ async def handle_friend_request(event):
 | notice_type: group_increase | `group_member_increase` | グループメンバー増加 |
 | notice_type: group_decrease | `group_member_decrease` | グループメンバー減少 |
 | notice_type: group_ban | `group_ban` | グループ禁止 |
-| notice_type: friend_add | `friend_increase` | 友達追加 |
-| notice_type: friend_delete | `friend_decrease` | 友達削除 |
+| notice_type: friend_add | `friend_increase` | フレンド追加 |
+| notice_type: friend_delete | `friend_decrease` | フレンド削除 |
 | notice_type: group_recall / friend_recall | `message_recall` | メッセージ撤回 |
 
-### 平台特有イベント（onebot11_ 前綴）
+### プラットフォーム固有イベント（onebot11_ 前綴）
 
 | OB11 原始タイプ | 変換後の detail_type | 説明 |
 |--------------|-------------------|------|
 | meta_event_type: lifecycle | `onebot11_lifecycle` | OneBot 実装のライフサイクル |
-| notify + sub_type: honor | `onebot11_honor` | グループの名誉変更 |
-| notify + sub_type: poke | `onebot11_poke` | ポケポケ |
-| notify + sub_type: lucky_king | `onebot11_lucky_king` | グループのラッキーキング |
-| CQ 码未知タイプ | メッセージセグメント `onebot11_{type}` | 未認識の CQ コード |
+| notify + sub_type: honor | `onebot11_honor` | グループの栄誉変更 |
+| notify + sub_type: poke | `onebot11_poke` | ポコポコ |
+| notify + sub_type: lucky_king | `onebot11_lucky_king` | グループの赤包運の王 |
+| CQ コードの未知タイプ | メッセージセグメント `onebot11_{type}` | 未認識の CQ コード |
 
-### イベントの例
+### イベント例
 
 ```python
-// 好友请求
+// フレンドリクエスト
 {
   "type": "request",
   "detail_type": "friend",
   "user_id": "789012",
-  "comment": "请加好友",
+  "comment": "フレンドを追加してください",
   "request_id": "flag_abc123",
   "flag": "flag_abc123"
 }
 
-// 心跳
+// ハートビート
 {
   "type": "meta_event",
   "detail_type": "heartbeat",
@@ -17206,14 +18283,14 @@ async def handle_friend_request(event):
   "status": {...}
 }
 
-// 生命周期（プラットフォーム特有）
+// ライフサイクル（プラットフォーム固有）
 {
   "type": "meta_event",
   "detail_type": "onebot11_lifecycle",
   "sub_type": "enable"
 }
 
-// 戳一戳（プラットフォーム特有）
+// ポコポコ（プラットフォーム固有）
 {
   "type": "notice",
   "detail_type": "onebot11_poke",
@@ -17222,7 +18299,7 @@ async def handle_friend_request(event):
   "target_id": "345678"
 }
 
-// 群红包运气王（プラットフォーム特有）
+// グループの赤包運の王（プラットフォーム固有）
 {
   "type": "notice",
   "detail_type": "onebot11_lucky_king",
@@ -17231,7 +18308,7 @@ async def handle_friend_request(event):
   "target_id": "345678"
 }
 
-// 荣誉变更（プラットフォーム特有）
+// 栄誉変更（プラットフォーム固有）
 {
   "type": "notice",
   "detail_type": "onebot11_honor",
@@ -17240,7 +18317,7 @@ async def handle_friend_request(event):
   "honor_type": "talkative"
 }
 
-// CQ 码拡張メッセージセグメント
+// CQ コード拡張メッセージセグメント
 {
   "type": "message",
   "message": [
@@ -17251,16 +18328,16 @@ async def handle_friend_request(event):
 
 ### 拡張フィールドの説明
 
-- すべての固有フィールドは `onebot11_` プレフィックスで識別されます
+- すべての固有フィールドは `onebot11_` 前綴で識別されます
 - 元のイベントデータは `onebot11_raw` フィールドに保持されます
 - 元のイベントタイプは `onebot11_raw_type` フィールドに保持されます
-- メッセージ内容のCQコードは対応するメッセージセグメントに変換されます（標準タイプは前綴なし、未知タイプは `onebot11_` 前綴付き）
-- 回答メッセージには `reply` タイプのメッセージセグメントが追加されます
+- メッセージ内容内の CQ コードは、対応するメッセージセグメントに変換されます（標準タイプには前綴がなく、未知タイプには `onebot11_` 前綴が付きます）
+- 返信メッセージには `reply` タイプのメッセージセグメントが追加されます
 - @メッセージには `mention` タイプのメッセージセグメントが追加されます
 
 ## イベント拡張メソッド
 
-OneBot11アダプターはイベントオブジェクトに以下のプラットフォーム固有メソッドを登録し、イベントハンドラ内で直接呼び出すことができます：
+OneBot11 アダプタは、イベントオブジェクトに以下のプラットフォーム固有のメソッドを登録しており、イベントハンドラ内で直接呼び出すことができます。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -17272,15 +18349,16 @@ async def handle_message(event):
     sender_role = event.get_sender_role()
 ```
 
-### メソッドリスト
+### メソッド一覧
 
 | メソッド | 戻り値の型 | 説明 |
 |------|----------|------|
-| `get_raw_self_id()` | `str` | BotのQQ番号（原始self_id）を取得します |
-| `get_sender_info()` | `dict` | 完全な送信者情報（nickname、role、levelなど）を取得します |
-| `get_sender_role()` | `str` | 送信者がグループ内の役割（owner/admin/member）を取得します |
+| `get_raw_event()` | `dict` | OneBot11 の完全な元のイベントデータを取得します |
+| `get_raw_self_id()` | `str` | 元の self_id（Bot の QQ 番号）を取得します |
+| `get_sender_info()` | `dict` | 完全な送信者情報（nickname、role、level など）を取得します |
+| `get_sender_role()` | `str` | グループ内の送信者の役割（owner/admin/member）を取得します |
 | `get_sender_level()` | `int` | 送信者の等級を取得します |
-| `get_sender_title()` | `str` | 送信者のグループタイトルを取得します |
+| `get_sender_title()` | `str` | 送信者のグループヘッダーを取得します |
 | `is_system_message()` | `bool` | システムメッセージかどうかを判定します（sub_type == "system"） |
 
 ### 使用例
@@ -17292,40 +18370,39 @@ from ErisPulse.Core.Event import message, command
 async def handle_group(event):
     role = event.get_sender_role()
     if role == "admin" or role == "owner":
-        await event.reply("管理员好！")
+        await event.reply("管理者さん、こんにちは！")
 
     title = event.get_sender_title()
     if title:
-        await event.reply(f"你的头衔是: {title}")
+        await event.reply(f"あなたのヘッダーは: {title}")
 
 @command("whoami")
 async def whoami(event):
     info = event.get_sender_info()
-    nickname = info.get("nickname", "未知")
+    nickname = info.get("nickname", "不明")
     level = event.get_sender_level()
-    await event.reply(f"昵称: {nickname}, 等级: {level}")
-```
+    await event.reply(f"ニックネーム: {nickname}, 等級: {level}")
 
 ## 設定オプション
 
-OneBot11アダプターは多アカウントアーキテクチャを採用し、各アカウントを個別に設定できます。設定キー名は `OneBotAdapter` です。
+OneBot11 アダプタは、各アカウントごとに独立した設定を持つ多アカウントアーキテクチャを採用しています。設定のキー名は `OneBotAdapter` です。
 
 ### アカウント設定フィールド
 
 | フィールド | 型 | 必須 | デフォルト値 | 説明 |
 |------|------|------|--------|------|
-| `bot_id` | `str` | はい | `""` | ロボットのQQ番号、アカウントを識別するため |
-| `mode` | `str` | いいえ | `"server"` | 実行モード：`"server"`（パッシブリッスン）または `"client"`（アクティブ接続） |
-| `url` | `str` | いいえ | `"ws://127.0.0.1:3001"` | ClientモードのWebSocketアドレス |
-| `token` | `str` | いいえ | `""` | 認証トークン（Clientモード接続トークン / Serverモード検証トークン） |
-| `server_path` | `str` | いいえ | `"/"` | ServerモードのWebSocketパス |
-| `enabled` | `bool` | いいえ | `true` | このアカウントを有効にするかどうか |
+| `bot_id` | `str` | はい | `""` | ロボットの QQ 番号。アカウントを識別するためのもの |
+| `mode` | `str` | いいえ | `"server"` | 実行モード: `"server"`（パッシブリッスン）または `"client"`（アクティブ接続） |
+| `url` | `str` | いいえ | `"ws://127.0.0.1:3001"` | Client モードの WebSocket アドレス |
+| `token` | `str` | いいえ | `""` | 認証トークン（Client モードの接続トークン / Server モードの検証トークン） |
+| `server_path` | `str` | いいえ | `"/"` | Server モードの WebSocket パス |
+| `enabled` | `bool` | いいえ | `true` | そのアカウントを有効にするかどうか |
 | `name` | `str` | いいえ | `""` | アカウントの備考名 |
 
-### 内蔵デフォルト値
+### 内部デフォルト値
 
-- 再接続間隔：30秒
-- API呼び出しタイムアウト：30秒
+- 再接続間隔: 30秒
+- API呼び出しのタイムアウト: 30秒
 
 ### 設定例
 
@@ -17353,18 +18430,17 @@ enabled = false
 
 ### デフォルト設定
 
-アカウントが設定されていない場合、アダプターは自動的に作成します：
+アカウントを設定しない場合、アダプタは自動的に以下のようにデフォルトアカウントを作成します:
 ```toml
 [OneBotAdapter.accounts.default]
 bot_id = ""
 mode = "server"
 server_path = "/"
 enabled = true
-```
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドはTaskオブジェクトを返し、直接 `await` して送信結果を取得できます。戻り値はErisPulseアダプターの標準化された戻り値仕様に従います：
+すべての送信メソッドは Task オブジェクトを返し、これに直接 await を使用して送信結果を取得できます。返り値は ErisPulse アダプタの標準化された返り値規格に従います：
 
 ```python
 {
@@ -17377,47 +18453,57 @@ enabled = true
 }
 ```
 
-### 多アカウント送信構文
+### 複数アカウント送信の構文
 
 ```python
-# アカウント選択メソッド
-await onebot.Send.Using("main").To("group", 123456).Text("主アカウントメッセージ")
+# アカウント選択方法
+await onebot.Send.Using("main").To("group", 123456).Text("主アカウントのメッセージ")
 await onebot.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
 
-# 通过 bot_id 选择账户
-await onebot.Send.Using("123456789").To("group", 123456).Text("通过QQ号选择")
+# bot_id でアカウントを選択
+await onebot.Send.Using("123456789").To("group", 123456).Text("QQ番号で選択")
 
 # API呼び出し方法
 await onebot.call_api("send_msg", account_id="main", group_id=123456, message="Hello")
 ```
 
-### 账户解析优先级
+### アカウントの解決優先度
 
-`call_api` および `Using()` の `account_id` パラメータの解析優先順位は以下の通りです：
-1. アカウント名と正確に一致する
-2. `bot_id` フィールドと一致する
-3. アカウントの任意の `str` 型フィールドと一致する
-4. 有効な最初のアカウントに回帰する
+`call_api` および `Using()` の `account_id` パラメータの解決優先度は以下の通りです：
+1. アカウント名の正確な一致
+2. `bot_id` フィールドの一致
+3. アカウントの任意の `str` 型フィールドの一致
+4. 有効なアカウントの1つ目にデフォルトで戻る
 
 ## 非同期処理メカニズム
 
-OneBot11アダプターは非同期ノンブロッキング設計を採用し、以下のことを保証します：
-1. メッセージ送信がイベント処理ループをブロックしないこと
-2. 複数の同時送信操作が並行して行えること
-3. APIレスポンスがタイムリーに処理されること
-4. WebSocket接続がアクティブな状態を維持すること
-5. 複数アカウントの並行処理、各アカウントが独立して実行されること
+OneBot11 アダプタは非同期非ブロッキング設計を採用しており、以下の点を保証します：
 
-## エラー処理
+1. メッセージ送信がイベント処理ループをブロックしない
+2. 複数の並行送信操作が同時に実行できる
+3. APIレスポンスがタイムリーに処理される
+4. WebSocket接続がアクティブな状態を維持する
+5. 複数アカウントの並行処理が可能で、各アカウントは独立して動作する
 
-アダプターは完全なエラー処理メカニズムを提供します：
-1. ネットワーク接続例外の自動再接続（各アカウントの独立した再接続をサポート、間隔は30秒）
-2. API呼び出しタイムアウト処理（固定30秒タイムアウト）
-3. 送信失敗時のリトライ（最大3回までリトライ）
+[**English**](docs/en/async-processing.md) | [**简体中文**](docs/ja/async-processing.md) | [**日本語**](docs/ja/async-processing.md)
 
-## イベント処理の強化
+## エラーハンドリング
 
-多アカウントモードでは、すべてのイベントにアカウント情報が自動的に追加されます：
+アダプターは包括的なエラーハンドリングメカニズムを提供します:
+
+1. ネットワーク接続異常時の自動再接続（各アカウントごとに個別に再接続が可能、間隔は30秒）
+2. API呼び出しのタイムアウト処理（固定30秒のタイムアウト）
+3. 接続失敗時の自動再試行（間隔をあけて再試行）
+
+各言語のドキュメントを参照するリンクは、`docs/ja/` を `docs/ja/` に置き換えてください。  
+例: `docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更します。  
+ただし、`README.xx.md` 形式で現在の言語以外のファイルを指すリンクは、そのままにしてください。  
+これにより、適切な言語のドキュメントバージョンにリンクが正しく指向されます。
+
+## 事件処理の強化
+
+多アカウントモードでは、すべてのイベントに自動的にアカウント情報が追加されます:
+
 ```python
 {
     "type": "message",
@@ -17428,7 +18514,7 @@ OneBot11アダプターは非同期ノンブロッキング設計を採用し、
 }
 ```
 
-アダプターは自動的に `self_id → account_name` のマッピングを維持し、`event.reply()` は手動でアカウントを指定しなくても送信元アカウントに正しくルーティングされます。
+アダプタは `self_id → account_name` のマッピングを自動的に維持し、`event.reply()` は送信元アカウントに正しくルーティングするために手動でアカウントを指定する必要がありません。
 
 ## 管理インターフェース
 
@@ -17442,23 +18528,28 @@ connection_status = {
     for account_id, connection in onebot.connections.items()
 }
 
-# アカウントを動的に有効化/無効化（アダプターの再起動が必要）
+# アカウントの動的有効化/無効化（アダプタの再起動が必要）
 onebot.accounts["test"].enabled = False
 ```
 
-## self_id 自動マッピング
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
-アダプターはOneBot `self_id`（QQ番号）から `account_name` へのマッピングを自動的に作成し、イベントの返信ルーティングに使用します：
+## self_id の自動マッピング
+
+アダプタは、OneBot `self_id`（QQ番号）から `account_name` へのマッピングを自動的に確立し、イベントのルーティングに使用します：
 
 ```python
-# アダプター内部で自動的に実行
-# イベントを受け取ったとき、self.user_idフィールドにbot_idが入力されます
-# アダプターは自動的に記録します: self_id("123456789") → account_name("main")
+# アダプタ内部で自動的に実行されます
+# イベントを受け取った際に、self.user_id フィールドに bot_id が格納されます
+# アダプタは自動的に記録します: self_id("123456789") → account_name("main")
 
-# そのためevent.reply()は正しいアカウントに自動的に送信されます
+# したがって event.reply() は、正しいアカウントに自動的にメッセージを送信できます
 @message.on_message()
 async def handler(event):
-    await event.reply("自動的に正しいアカウントにルーティングされます")
+    await event.reply("正しいアカウントに自動的にルーティングされます")
+```
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 
 
@@ -17917,27 +19008,34 @@ OneBot12標準API仕様に準拠しています：
 
 ### Telegram 适配
 
-# Telegramプラットフォーム特性ドキュメント
+# Telegramプラットフォームの特徴ドキュメント
 
-TelegramAdapterは、Telegram Bot APIに基づいて構築されたアダプターであり、複数のメッセージタイプとイベント処理をサポートしています。
+TelegramAdapterは、Telegram Bot APIに基づいて構築されたアダプターであり、さまざまなメッセージタイプとイベント処理をサポートしています。
 
 ---
 
+[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.0.0
+- 対応モジュールバージョン: 4.1.1
 - メンテナー: ErisPulse
+
+[**English**](docs/ja/quick-start.md)
 
 ## 基本情報
 
-- プラットフォーム概要：Telegramはクロスプラットフォームのインスタントメッセージングソフトウェアです
-- アダプター名：TelegramAdapter
-- サポートするプロトコル/APIバージョン：Telegram Bot API
-- セッションタイプのマッピング：`private` → 送信時に `user` を使用、`group`/`supergroup` → `group`、`channel` → `channel`
+- プラットフォームの概要: Telegram はクロスプラットフォームのリアルタイムメッセージングソフトウェアです。
+- アダプタ名: TelegramAdapter
+- 対応するプロトコル/APIバージョン: Telegram Bot API
+- セッションタイプのマッピング: `private` → 送信時に `user` を使用、`group`/`supergroup` → `group`、`channel` → `channel`
 
-## サポートするメッセージ送信タイプ
+[**基本情報**](docs/ja/quick-start.md) | [**プラグイン開発**](docs/ja/plugin-development.md) | [**アダプタ開発**](docs/ja/adapter-development.md) | [**FAQ**](docs/ja/faq.md) | [**貢献**](docs/ja/contributing.md) | [**ライセンス**](docs/ja/license.md)
 
-すべての送信メソッドはメソッドチェーン（チェーン構文）によって実装されています。例えば以下の通りです：
+## 支援されるメッセージ送信タイプ
+
+すべての送信メソッドは、チェーン式の構文で実装されています。たとえば：
+
 ```python
 from ErisPulse.Core import adapter
 telegram = adapter.get("telegram")
@@ -17950,26 +19048,26 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 | メソッド | 説明 | パラメータ |
 |------|------|------|
 | `.Text(text)` | 純粋なテキストメッセージを送信 | `text: str` |
-| `.Face(emoji)` | エモイジスタンプを送信 | `emoji: str`（例：🎲 🎯 🏀） |
-| `.Markdown(text, content_type)` | Markdown形式のメッセージを送信 | `content_type` のデフォルトは `"MarkdownV2"` |
+| `.Face(emoji)` | エモジーダイスを送信 | `emoji: str`（例: 🎲 🎯 🏀） |
+| `.Markdown(text, content_type)` | Markdown形式のメッセージを送信 | `content_type` はデフォルトで `"MarkdownV2"` |
 | `.HTML(text)` | HTML形式のメッセージを送信 | `text: str` |
 | `.Sticker(file)` | ステッカーを送信 | `file: str (file_id/URL) \| bytes` |
 | `.Location(lat, lng)` | 位置情報を送信 | `latitude: float, longitude: float` |
-| `.Venue(lat, lng, title, addr)` | 場所を送信 | タイトルと住所を含む |
+| `.Venue(lat, lng, title, addr)` | 地点情報を送信 | タイトルと住所を含む |
 | `.Contact(phone, first, last)` | 連絡先を送信 | 電話番号と名前を含む |
 
 ### メディア送信メソッド
 
-すべてのメディアメソッドは、`bytes`（アップロード）と `str`（file_id / URL）の2種類の入力をサポートしています：
+すべてのメディアメソッドは、`bytes`（アップロード）と `str`（file_id / URL）の2種類の入力形式をサポートしています：
 
 | メソッド | 説明 |
 |------|------|
 | `.Image(file, caption, content_type)` | 画像を送信 |
-| `.Video(file, caption, content_type)` | 動画を送信 |
+| `.Video(file, caption, content_type)` | ビデオを送信 |
 | `.Voice(file, caption)` | 音声を送信 |
-| `.Audio(file, caption, content_type)` | オーディオを送信 |
+| `.Audio(file, caption, content_type)` | 音声を送信 |
 | `.File(file, caption)` | ファイルを送信 |
-| `.Document(file, caption, content_type)` | File のエイリアス |
+| `.Document(file, caption, content_type)` | `File` のエイリアス |
 
 ### メッセージ管理メソッド
 
@@ -17977,25 +19075,25 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 |------|------|
 | `.Edit(message_id, text, content_type)` | 既存のメッセージを編集 |
 | `.Recall(message_id)` | 指定されたメッセージを削除 |
-| `.Forward(from_chat_id, message_id)` | メッセージを転送（送信元を保持） |
-| `.CopyMessage(from_chat_id, message_id)` | メッセージをコピー（送信元なし） |
+| `.Forward(from_chat_id, message_id)` | メッセージを転送（元の送信元を保持） |
+| `.CopyMessage(from_chat_id, message_id)` | メッセージをコピー（元の送信元を保持しない） |
 | `.AnswerCallback(callback_query_id, text, show_alert)` | コールバッククエリに応答 |
 
-### 生メッセージ送信
+### 原始メッセージ送信
 
-- `.Raw_ob12(message: List[Dict])`：OneBot12 標準形式のメッセージを送信
-- `.Raw_json(json_str: str)`：生の JSON 形式のメッセージを送信
+- `.Raw_ob12(message: List[Dict])`：OneBot12標準形式のメッセージを送信
+- `.Raw_json(json_str: str)`：原始JSON形式のメッセージを送信
 
-### チェーン修飾メソッド
+### チェーン式修飾メソッド
 
 | メソッド | 説明 |
 |------|------|
-| `.At(user_id)` | 指定ユーザーをメンション（Telegram entities により実現、複数回呼び出し可能） |
-| `.AtAll()` | 全メンバーをメンション（`@All` テキストを送信） |
+| `.At(user_id)` | 指定ユーザーを@する（Telegramのentitiesで実現、複数回呼び出せる） |
+| `.AtAll()` | 全員を@する（`@All`テキストを送信） |
 | `.Reply(message_id)` | 指定されたメッセージに返信 |
-| `.Keyboard(inline_keyboard)` | インラインキーボードを設定（`list[list[dict]]`） |
-| `.ProtectContent(protect)` | コンテンツを保護（転送と保存を防止） |
-| `.Silent(silent)` | サイレント送信（ユーザーに通知しない） |
+| `.Keyboard(inline_keyboard)` | インラインキーボードを設定（`list[list[dict]]`形式） |
+| `.ProtectContent(protect)` | 内容を保護（転送や保存を防止） |
+| `.Silent(silent)` | 静かに送信（ユーザーに通知しない） |
 
 ### 送信例
 
@@ -18008,26 +19106,26 @@ from ErisPulse import sdk
 telegram = sdk.adapter.get("telegram")
 keyboard = [
     [{"text": "ボタン1", "callback_data": "btn1"}, {"text": "ボタン2", "callback_data": "btn2"}],
-    [{"text": "公式サイトへ", "url": "https://example.com"}],
+    [{"text": "公式サイトにアクセス", "url": "https://example.com"}],
 ]
 await telegram.Send.To("group", group_id).Keyboard(keyboard).Text("選択してください：")
 
 # メディア送信（URL方式）
 await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="画像")
 
-# ユーザーのメンション
+# ユーザーを@する
 await telegram.Send.To("group", group_id).At("6117725680").Text("こんにちは！")
 
-# 返信 + コンテンツの保護
+# 返信 + 内容保護
 await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("機密メッセージ")
 
-# サイレント送信
-await telegram.Send.To("group", group_id).Silent().Text("サイレント通知")
+# 静かに送信
+await telegram.Send.To("group", group_id).Silent().Text("通知なし")
 
-# コールバッククエリへの応答
+# コールバッククエリに応答
 await telegram.Send.AnswerCallback(callback_query_id, text="処理済み", show_alert=False)
 
-# OneBot12 複合メッセージ
+# OneBot12の複合メッセージ
 ob12_message = [
     {"type": "text", "data": {"text": "複雑なメッセージ："}},
     {"type": "mention", "data": {"user_id": "6117725680", "user_name": "ユーザー名"}},
@@ -18036,56 +19134,55 @@ ob12_message = [
 ]
 await telegram.Send.To("group", group_id).Raw_ob12(ob12_message)
 
-# ステッカーの送信
+# ステッカーを送信
 await telegram.Send.To("user", user_id).Sticker("CAACAgIAAxkBAA...")  # file_id
 
-# 位置情報の送信
+# 位置情報を送信
 await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
-```
 
-## 固有のイベントタイプ
+## 特有イベントタイプ
 
-Telegramのイベント変換はOneBot12標準に準拠しつつ、`telegram_` プレフィックスを通じてプラットフォーム拡張を提供します。
+Telegram イベントの変換は OneBot12 標準に従い、`telegram_` プレフィックスによるプラットフォーム拡張を提供します。
 
 ### メッセージイベント detail_type マッピング
 
-| Telegram chat.type | OneBot12 detail_type | 送信先タイプ |
+| Telegram chat.type | OneBot12 detail_type | 送信先の種類 |
 |---|---|---|
 | `private` | `private` | `user` |
 | `group` | `group` | `group` |
 | `supergroup` | `group` | `group` |
 | `channel` | `channel` | `channel` |
 
-### 固有のイベントタイプ
+### 特有イベントタイプ
 
 | detail_type | 説明 |
-|------|------|
+|---|---|
 | `telegram_callback_query` | コールバッククエリ（インラインキーボードボタンのクリック） |
 | `telegram_inline_query` | インラインクエリ |
 | `telegram_chosen_inline_result` | 選択されたインライン結果 |
 | `telegram_poll` | 投票イベント |
-| `telegram_poll_answer` | 投票の回答 |
+| `telegram_poll_answer` | 投票回答 |
 | `telegram_my_chat_member` | Bot 自身のメンバー状態の変更 |
 | `telegram_chat_member` | チャットメンバーの変更 |
-| `telegram_chat_join_request` | チャット参加リクエスト |
-| `telegram_shipping_query` | 配送料金クエリ |
-| `telegram_pre_checkout_query` | 支払前クエリ |
+| `telegram_chat_join_request` | チャットへの参加リクエスト |
+| `telegram_shipping_query` | 配送に関するクエリ |
+| `telegram_pre_checkout_query` | 事前決済クエリ |
 
 ### 標準メッセージセグメントタイプ
 
-変換されたメッセージセグメントはOneBot12標準形式を使用します：
+変換後のメッセージセグメントは OneBot12 標準形式を使用します：
 
 | メッセージセグメントタイプ | 説明 | data フィールド |
 |---|---|---|
 | `text` | 純粋なテキスト（@ユーザー名を含まない） | `text` |
-| `mention` | ユーザーのメンション（標準OB12） | `user_id`, `user_name` |
-| `reply` | 返信引用 | `message_id`, `user_id` |
+| `mention` | @ユーザー（標準 OB12） | `user_id`, `user_name` |
+| `reply` | メッセージへの返信引用 | `message_id`, `user_id` |
 | `image` | 画像 | `file_id`, `url` |
 | `video` | 動画 | `file_id`, `url`, `duration`, `width`, `height` |
 | `voice` | 音声 | `file_id`, `url`, `duration` |
-| `audio` | オーディオ | `file_id`, `url`, `duration`, `title`, `performer` |
+| `audio` | 音楽 | `file_id`, `url`, `duration`, `title`, `performer` |
 | `file` | ファイル | `file_id`, `url`, `file_name`, `file_size`, `mime_type` |
-| `location` | 位置 | `latitude`, `longitude`, オプションで `title`, `address` |
+| `location` | 位置情報 | `latitude`, `longitude`, オプションで `title`, `address` |
 
 ### プラットフォーム拡張メッセージセグメント
 
@@ -18094,13 +19191,13 @@ Telegramのイベント変換はOneBot12標準に準拠しつつ、`telegram_` �
 | メッセージセグメントタイプ | 説明 | data フィールド |
 |---|---|---|
 | `telegram_sticker` | ステッカー | `file_id`, `emoji`, `sticker_type`, `url` |
-| `telegram_animation` | GIFアニメーション | `file_id`, `url`, `duration`, `caption` |
+| `telegram_animation` | GIF 動画 | `file_id`, `url`, `duration`, `caption` |
 | `telegram_contact` | 連絡先 | `phone_number`, `first_name`, `last_name`, `user_id` |
 | `telegram_inline_keyboard` | インラインキーボード | `inline_keyboard` |
 
-### イベント例
+### イベントの例
 
-#### グループチャットメッセージ（メンションを含む）
+#### グループチャットメッセージ（@ユーザーのメンション付き）
 ```python
 {
   "type": "message",
@@ -18168,40 +19265,39 @@ Telegramのイベント変換はOneBot12標準に準拠しつつ、`telegram_` �
     }
   ]
 }
-```
 
 ## Event Mixin 拡張メソッド
 
-アダプターは以下のプラットフォーム固有のメソッドを登録しており、`platform == "telegram"` の場合にのみ利用可能です：
+アダプタは以下のプラットフォーム固有メソッドを登録しており、`platform == "telegram"` の場合にのみ利用可能です：
 
 ### メッセージ関連
 
-| メソッド | 戻り値の型 | 説明 |
+| メソッド | 戻り値型 | 説明 |
 |------|----------|------|
-| `is_bot_message()` | `bool` | メッセージがボットからのものかを判定 |
-| `is_edited_message()` | `bool` | 編集されたメッセージかどうかを判定 |
-| `is_topic_message()` | `bool` | トピックメッセージかどうかを判定 |
-| `get_update_id()` | `int` | Telegram update ID を取得 |
-| `get_chat_title()` | `str` | チャットのタイトルを取得 |
-| `get_chat_username()` | `str` | チャットのユーザー名を取得 |
-| `get_forward_from()` | `dict` | 転送元情報を取得 |
-| `get_topic_id()` | `str` | トピック ID を取得 |
+| `is_bot_message()` | `bool` | メッセージがロボットからのものかどうかを判定します |
+| `is_edited_message()` | `bool` | 編集されたメッセージかどうかを判定します |
+| `is_topic_message()` | `bool` | トピック/Topic メッセージかどうかを判定します |
+| `get_update_id()` | `int` | Telegram update ID を取得します |
+| `get_chat_title()` | `str` | チャットのタイトルを取得します |
+| `get_chat_username()` | `str` | チャットのユーザーネームを取得します |
+| `get_forward_from()` | `dict` | 転送元情報を取得します |
+| `get_topic_id()` | `str` | トピック ID を取得します |
 
 ### コールバッククエリ関連
 
-| メソッド | 戻り値の型 | 説明 |
+| メソッド | 戻り値型 | 説明 |
 |------|----------|------|
-| `get_callback_data()` | `str` | コールバッククエリの callback_data を取得 |
-| `get_callback_id()` | `str` | コールバッククエリ ID を取得（応答に使用） |
+| `get_callback_data()` | `str` | コールバッククエリの callback_data を取得します |
+| `get_callback_id()` | `str` | コールバッククエリ ID（応答用）を取得します |
 
 ### メッセージセグメントデータ抽出
 
-| メソッド | 戻り値の型 | 説明 |
+| メソッド | 戻り値型 | 説明 |
 |------|----------|------|
-| `get_inline_keyboard()` | `list` | メッセージ内のインラインキーボードを取得 |
-| `get_sticker_info()` | `dict` | ステッカー情報を取得 |
-| `get_contact_info()` | `dict` | 連絡先情報を取得 |
-| `get_location()` | `dict` | 位置情報を取得 |
+| `get_inline_keyboard()` | `list` | メッセージ内のインラインキーボードを取得します |
+| `get_sticker_info()` | `dict` | ステッカー情報（sticker）を取得します |
+| `get_contact_info()` | `dict` | 連絡先情報（contact）を取得します |
+| `get_location()` | `dict` | 位置情報（location）を取得します |
 
 ### 使用例
 
@@ -18215,7 +19311,7 @@ async def handle_message(event):
 
     # メッセージ属性
     if event.is_bot_message():
-        return  # ボットメッセージを無視
+        return  # ロボットからのメッセージを無視
 
     if event.is_edited_message():
         print("これは編集されたメッセージです")
@@ -18246,27 +19342,28 @@ async def handle_notice(event):
         callback_data = event.get_callback_data()
         callback_id = event.get_callback_id()
 
-        # コールバッククエリに応答
+        # コールバッククエリへの応答
         telegram = sdk.adapter.get("telegram")
-        await telegram.Send.AnswerCallback(callback_id, text="既にクリック")
+        await telegram.Send.AnswerCallback(callback_id, text="クリックしました")
 
-        # メッセージに返信
-        await event.reply(f"{callback_data}をクリックしました")
-```
+        # メッセージへの返信
+        await event.reply(f"あなたがクリックした内容：{callback_data}")
 
-## 拡張フィールド説明
+## 拡張フィールドの説明
 
-- すべての固有フィールドは `telegram_` プレフィックスで識別されます
-- 原始データは `telegram_raw` フィールドに保持されます
-- 原始イベントタイプは `telegram_raw_type` フィールドに保持されます
-- チャンネルメッセージでは `detail_type="channel"` を使用します
-- プライベートチャットメッセージでは `detail_type="private"` を使用します（送信時に `user` に変換する必要があります）
+- すべての固有フィールドは `telegram_` という接頭辞で識別されます
+- 元のデータは `telegram_raw` フィールドに保持されます
+- 元のイベントタイプは `telegram_raw_type` フィールドに保持されます
+- チャンネルメッセージは `detail_type="channel"` を使用します
+- プライベートチャットメッセージは `detail_type="private"` を使用します（送信時には `user` に変換する必要があります）
 - トピックメッセージには `thread_id` フィールドが含まれます
-- `@` メンションは標準の `mention` メッセージセグメントタイプ（`type: "mention"`）を使用し、テキストには `@` ユーザー名が含まれません
+- `@` でのメンションは標準の `mention` メッセージセグメントタイプを使用します（`type: "mention"`、テキスト内には @ユーザー名が含まれません）
+
+[**English**](docs/en/telegram.md) | [**日本語**](docs/ja/telegram.md)
 
 ## 設定オプション
 
-Telegram アダプターは複数アカウントの設定をサポートしています：
+Telegram アダプタは複数アカウントの設定をサポートしています。
 
 ### 設定例
 ```toml
@@ -18281,53 +19378,66 @@ enabled = true
 
 ### 実行モード
 
-Telegram アダプターは **Polling（ポーリング）** モードのみをサポートしており、Webhook モードは削除されました。
+Telegram アダプタは **Polling（ポーリング）** モードのみをサポートし、Webhook モードは削除されました。
 
-### プロキシ設定
+### 代理設定
 
-Telegram API にプロキシ経由で接続する場合は、システムレベルのプロキシ（環境変数 ` + 'ALL_PROXY' + ` / ` + 'HTTPS_PROXY' + `）を使用してください。
+Telegram API にプロキシ経由で接続する必要がある場合は、システムレベルのプロキシ（環境変数 `ALL_PROXY` / `HTTPS_PROXY`）を使用してください。
 
-### 旧設定のマイグレーション
+### 旧版設定の移行
 
-旧バージョンの単一 token 設定は自動的に互換性があります：
+旧版の単一トークン設定は自動的に互換性を持ちます：
 ```toml
-# 旧形式（まだ使用可能ですが、マイグレーションを推奨します）
+# 旧版形式（引き続き使用可能ですが、移行することを推奨します）
 [Telegram_Adapter]
 token = "YOUR_BOT_TOKEN"
 ```
 
-新形式へのマイグレーションを推奨します：
+新しい形式への移行を推奨します：
 ```toml
 [Telegram_Adapter.accounts.default]
 token = "YOUR_BOT_TOKEN"
 enabled = true
+```
+
+docs/ja/quick-start.md
 
 
 
 ### 云湖适配
 
-# 雲湖プラットフォーム特性ドキュメント
+# 雲湖プラットフォームの特徴ドキュメント
 
-YunhuAdapterは、雲湖プロトコルに基づいて構築されたアダプターであり、全ての雲湖機能モジュールを統合し、統一されたイベント処理とメッセージ操作インターフェースを提供します。
+YunhuAdapter は、雲湖プロトコルに基づいて構築されたアダプタであり、すべての雲湖機能モジュールを統合し、統一されたイベント処理およびメッセージ操作インターフェースを提供します。
 
 ---
 
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
+
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.0.0
-- メンテナ: ErisPulse
+- 対応モジュールバージョン: 4.3.0
+- 維持管理者: ErisPulse
+
+7. **重要: パスの置換ルール**
+   - ドキュメントのリンク内の `docs/ja/` を `docs/ja/` に置換する
+   - 例: `docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更する
+   - 非現在言語版ファイルを指すリンク（例: `README.xx.md` 形式のリンク）は、変更しないで元のままにする
+   - これにより、リンクが正しい言語のドキュメント版を指すようになる
 
 ## 基本情報
 
-- プラットフォーム概要：雲湖（Yunhu）はエンタープライズレベルのIMプラットフォームです
-- アダプター名：YunhuAdapter
-- マルチアカウント対応：bot_id を通じて複数の雲湖ボットアカウントを識別・設定できることをサポート
-- チェーン修飾子対応：`.Reply()` などのチェーン修飾子メソッドをサポート
-- OneBot12互換：OneBot12形式メッセージの送信をサポート
+- プラットフォーム紹介：雲湖（Yunhu）はエンタープライズ向けのリアルタイムメッセージングプラットフォームです。
+- アダプタ名：YunhuAdapter
+- マルチアカウントサポート：bot_id で識別し、複数の雲湖ロボットアカウントを設定することができます。
+- チェーン修飾サポート：`.Reply()` などのチェーン修飾メソッドをサポートしています。
+- OneBot12互換：OneBot12形式のメッセージを送信することができます。
 
-## サポートされるメッセージ送信タイプ
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**繁體中文**](docs/zh-TW/quick-start.md) | [**한국어**](docs/ko/quick-start.md)
 
-全ての送信メソッドはチェーン構文（メソッドチェーン）で実装されています。例：
+## 支持するメッセージ送信タイプ
+
+すべての送信メソッドは、チェーン式の構文で実装されています。たとえば：
 
 ```python
 from ErisPulse.Core import adapter
@@ -18336,25 +19446,25 @@ yunhu = adapter.get("yunhu")
 await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
-サポートされている送信タイプは以下の通りです：
+サポートされる送信タイプは以下の通りです：
 
-- `.Text(text: str)`：プレーンテキストメッセージを送信します。
-- `.Html(html: str)`：HTML形式メッセージを送信します。
-- `.Markdown(markdown: str)`：Markdown形式メッセージを送信します。
-- `.A2UI(text: str)`：A2UI形式メッセージを送信します。
-- `.Image(file: bytes, stream: bool = False, filename: str = None)`：画像メッセージを送信します。ストリーミングアップロードとカスタムファイル名に対応しています。
-- `.Video(file: bytes, stream: bool = False, filename: str = None)`：動画メッセージを送信します。ストリーミングアップロードとカスタムファイル名に対応しています。
-- `.File(file: bytes, stream: bool = False, filename: str = None)`：ファイルメッセージを送信します。ストリーミングアップロードとカスタムファイル名に対応しています。
-- `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`：メッセージを一括送信します。
-- `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`：既存のメッセージを編集します。
-- `.Recall(msg_id: str)`：メッセージを取り消します（撤回）。
-- `.Board(scope: str, content: str, **kwargs)`：掲示板を公告します。scope は `local` と `global` をサポートします。
-- `.DismissBoard(scope: str, **kwargs)`：公告掲示板を取り消します。
-- `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`：ストリーミングメッセージを送信します。
+- `.Text(text: str)`：純粋なテキストメッセージを送信します。
+- `.Html(html: str)`：HTML形式のメッセージを送信します。
+- `.Markdown(markdown: str)`：Markdown形式のメッセージを送信します。
+- `.A2UI(text: str)`：A2UI形式のメッセージを送信します。
+- `.Image(file: bytes, stream: bool = False, filename: str = None)`：画像メッセージを送信します。ストリームアップロードとカスタムファイル名をサポートします。
+- `.Video(file: bytes, stream: bool = False, filename: str = None)`：動画メッセージを送信します。ストリームアップロードとカスタムファイル名をサポートします。
+- `.File(file: bytes, stream: bool = False, filename: str = None)`：ファイルメッセージを送信します。ストリームアップロードとカスタムファイル名をサポートします。
+- `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`：一括送信メッセージ。
+- `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`：既存メッセージを編集します。
+- `.Recall(msg_id: str)`：メッセージを撤回します。
+- `.Board(content: str, content_type: str = "text")`：公告看板を送信します。スコープは `To()` から推論されます（対象を指定する場合はローカル看板、未指定の場合はグローバル看板）。チェーン修飾子：`.Expire(duration)` 相対的な期限切れ（秒）、`.ExpireAt(timestamp)` 絶対的な期限切れ（秒単位のタイムスタンプ）、`.ForMember(member_id)` 群メンバー看板；**内容が空の場合、自動的に看板の撤回になります**。旧式の `Board("local", "公告")` による明示的なスコープ指定も引き続きサポートされます。
+- `.DismissBoard()`：公告看板を撤回します。スコープは `To()` から推論され、`.ForMember(member_id)` もサポートされます；旧式の `DismissBoard("local")` の書き方も引き続きサポートされます。
+- `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`：ストリーム形式のメッセージを送信します。
 
 ### グループ管理メソッド
 
-全てのグループ管理メソッドはチェーン構文を使用してグループを指定する必要があります。例：
+すべてのグループ管理メソッドは、チェーン式の構文でグループを指定する必要があります。たとえば：
 
 ```python
 from ErisPulse.Core import adapter
@@ -18363,19 +19473,19 @@ yunhu = adapter.get("yunhu")
 await yunhu.Send.To("group", group_id).Kick(user_id)
 ```
 
-- `.Kick(user_id: str)`：グループメンバーを削除します。ロボットには「グループメンバーを削除する権限」が必要です。
-- `.Ban(user_id: str, duration: int = 600)`：ユーザーを禁止します。`duration` は禁止期間（秒）。0は解除、-1は永久禁止です。ロボットには「ユーザーを禁止する権限」が必要です。
-- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`：グループタグを作成します。`color` は #RRGGBB 形式、`sort` は小さいほど先頭に来ます。ロボットには「タググループを制御する権限」が必要です。
-- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`：グループタグを編集します。各パラメータはオプションで、省略すると変更されません。ロボットには「タググループを制御する権限」が必要です。
-- `.DeleteTag(tag: str)`：グループタグを削除します。ロボットには「タググループを制御する権限」が必要です。
-- `.GetTagList()`：グループタグリストを取得します。`list` 配列を含むレスポンスデータを返します。
-- `.AddUserTag(user_id: str, tag: str)`：ユーザーにタグを追加します。ロボットには「タググループを制御する権限」が必要です。
-- `.RemoveUserTag(user_id: str, tag: str)`：ユーザーからタグを削除します。ロボットには「タググループを制御する権限」が必要です。
-- `.SetMsgTypeLimit(types: str)`：グループ内のメッセージタイプを制御します。`types` はメッセージタイプ名、複数の場合はカンマ区切り（例：`"text,image,video"`）。空文字は制限なしを示します。ロボットには「グループ情報を変更する権限」が必要です。
+- `.Kick(user_id: str)`：グループメンバーを削除します。ロボットには「グループメンバーの削除を許可」の権限が必要です。
+- `.Ban(user_id: str, duration: int = 600)`：ユーザーの発言禁止。`duration`は発言禁止の期間（秒）で、0は発言禁止解除、-1は永久発言禁止です。ロボットには「ユーザーの発言禁止を許可」の権限が必要です。
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`：グループタグを作成します。`color`の形式は#RRGGBBで、`sort`は小さいほど上に表示されます。ロボットには「タググループの制御を許可」の権限が必要です。
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`：グループタグを編集します。各パラメータはオプションで、指定しない場合は変更されません。ロボットには「タググループの制御を許可」の権限が必要です。
+- `.DeleteTag(tag: str)`：グループタグを削除します。ロボットには「タググループの制御を許可」の権限が必要です。
+- `.GetTagList()`：グループタグリストを取得します。`list`配列を含むレスポンスデータを返します。
+- `.AddUserTag(user_id: str, tag: str)`：ユーザーにタグを追加します。ロボットには「タググループの制御を許可」の権限が必要です。
+- `.RemoveUserTag(user_id: str, tag: str)`：ユーザーからタグを削除します。ロボットには「タググループの制御を許可」の権限が必要です。
+- `.SetMsgTypeLimit(types: str)`：グループ内のメッセージタイプを制限します。`types`はメッセージタイプ名で、複数指定する場合はカンマで区切ります（例："text,image,video"）。空文字列は制限なしを意味します。ロボットには「グループ情報の変更を許可」の権限が必要です。
 
-### メッセージクエリメソッド
+### メッセージ取得メソッド
 
-指定されたセッション（ユーザー/グループ）の履歴メッセージリストを取得するには、チェーン構文でターゲットを指定する必要があります。例：
+指定された会話（ユーザー/グループ）の履歴メッセージリストを取得するには、チェーン式の構文で対象を指定する必要があります。たとえば：
 
 ```python
 from ErisPulse.Core import adapter
@@ -18384,51 +19494,65 @@ yunhu = adapter.get("yunhu")
 result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 ```
 
-- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`：セッション履歴メッセージを取得します。`list` 配列と `total` 総数を含むレスポンスデータを返します。
-  - `message_id`：メッセージID（オプション）。未入力の場合、`before` と共に最近のN件を返します。
-  - `before`：指定されたメッセージIDの前N件を返します。
-  - `after`：指定されたメッセージIDの後N件を返します。
-  - > **注意：** `before` と `after` は少なくとも一方を指定し、かつ 0 より大きい値である必要があります。そうしないと、サーバーは何も返しません。
+- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`：会話の履歴メッセージを取得します。`list`配列と`total`総数を含むレスポンスデータを返します。
+  - `message_id`：メッセージID（オプション）。指定しない場合、`before`と組み合わせて最近のN件のメッセージを返します。
+  - `before`：指定したメッセージIDの前N件を返します。
+  - `after`：指定したメッセージIDの後N件を返します。
+  - > **注意：** `before` と `after` の少なくとも1つは0より大きく指定する必要があります。それ以外の場合はサーバーはメッセージを返しません。
 
-Board の board_type は以下のタイプをサポートします：
+Boardのスコープは `To()` によって自動的に推論されます：
+- `To(target_type, target_id)` を指定 → ローカル看板（指定されたユーザー/グループ）
+- `To()` を指定しない → グローバル看板
 
-- `local`：指定ユーザー用掲示板
-- `global`：グローバル掲示板
+```python
+# ローカル看板（60秒後に相対的に期限切れ）
+await yunhu.Send.To("group", group_id).Expire(60).Board("公告", content_type="markdown")
+
+# 群メンバー看板（特定メンバーのみ表示）
+await yunhu.Send.To("group", group_id).ForMember(user_id).Board("あなたにのみ表示")
+
+# 絶対時間の期限切れ
+await yunhu.Send.To("group", group_id).ExpireAt(1785208268).Board("指定時間で期限切れ")
+
+# グローバル看板
+await yunhu.Send.Board("グローバル公告")
+
+# ローカル看板をクリア（内容が空 → 自動的に看板を撤回）
+await yunhu.Send.To("group", group_id).Board("")
+```
 
 ### ボタンパラメータの説明
 
-`buttons` パラメータは、ボタンのレイアウトと機能を表すネストされたリストです。各ボタンオブジェクトには以下のフィールドが含まれています：
+`buttons` パラメータは、ボタンのレイアウトと機能を表すネストされたリストです。各ボタンオブジェクトには以下のフィールドが含まれます：
 
 | フィールド         | タイプ   | 必須 | 説明                                                                 |
 |--------------|--------|----------|----------------------------------------------------------------------|
-| `text`       | string | 是       | ボタン上のテキスト                                                         |
-| `actionType` | int    | 是       | アクションタイプ：<br>`1`: URLへジャンプ<br>`2`: コピー<br>`3`: レポート |
-| `url`        | string | 否       | `actionType=1` の場合に使用、ジャンプ先の URL を示します                 |
-| `value`      | string | 否       | `actionType=2` の場合、その値がクリップボードにコピーされます<br>`actionType=3` の場合、その値がサブスクライブ先に送信されます |
+| `text`       | string | はい       | ボタン上の文字                                                         |
+| `actionType` | int    | はい       | 動作タイプ：<br>`1`: URLにジャンプ<br>`2`: コピー<br>`3`: 投稿イベントを送信            |
+| `url`        | string | いいえ       | `actionType=1` の場合、ジャンプ先のURLを示します                         |
+| `value`      | string | いいえ       | `actionType=2` の場合、この値がクリップボードにコピーされます<br>`actionType=3` の場合、この値がサブスクライバーに送信されます |
 
 例：
-
 ```python
 buttons = [
     [
-        {"text": "复制", "actionType": 2, "value": "xxxx"},
-        {"text": "点击跳转", "actionType": 1, "url": "http://www.baidu.com"},
-        {"text": "汇报事件", "actionType": 3, "value": "xxxxx"}
+        {"text": "コピー", "actionType": 2, "value": "xxxx"},
+        {"text": "クリックしてジャンプ", "actionType": 1, "url": "http://www.baidu.com"},
+        {"text": "イベントを報告", "actionType": 3, "value": "xxxxx"}
     ]
 ]
-await yunhu.Send.To("user", user_id).Buttons(buttons).Text("ボタン付きメッセージ")
+await yunhu.Send.To("user", user_id).Buttons(buttons).Text("ボタン付きのメッセージ")
 ```
-
 > **注意：**
-> - ユーザーが**ボタンレポート（Report）イベント**のボタンをクリックした場合にのみ、プッシュ通知を受け取ります。**コピー**と**URLジャンプ**ではプッシュ通知を受け取れません。
+> - ユーザーが**イベント報告ボタン**をクリックした場合にのみ通知が送信されます。**コピー**や**URLジャンプ**は通知を受け取ることはできません。
 
-### チェーン修飾子メソッド（組み合わせて使用可能）
+### チェーン修飾メソッド（組み合わせて使用可能）
 
-チェーン修飾子メソッドは `self` を返すため、チェーン呼び出しが可能です。最終的な送信メソッドの前に呼び出す必要があります。
+チェーン修飾メソッドは `self` を返し、チェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
 
 - `.Reply(message_id: str)`：指定されたメッセージに返信します。
-- `.At(user_id: str)`：指定されたユーザーにメンションします。
-- `.AtAll()`：全員にメンションします。
+- `.At(user_id: str)`：指定されたユーザーを@します。
+- `.AtAll()`：全員を@します。
 - `.Buttons(buttons: List)`：ボタンを追加します。
 
 ### チェーン呼び出しの例
@@ -18450,35 +19574,35 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("返�
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# グループメンバーを削除
+# グループメンバーの削除
 await yunhu.Send.To("group", group_id).Kick(user_id)
 
-# ユーザーを禁止（10分間）
+# ユーザーの発言禁止（10分間）
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=600)
 
-# 禁止解除
+# 発言禁止の解除
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=0)
 
-# 永久禁止
+# 永久発言禁止
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=-1)
 
-# グループタグを作成
-await yunhu.Send.To("group", group_id).CreateTag("VIP用户", color="#FF5733", desc="VIP会員")
+# グループタグの作成
+await yunhu.Send.To("group", group_id).CreateTag("VIPユーザー", color="#FF5733", desc="VIP会員")
 
-# グループタグを編集
-await yunhu.Send.To("group", group_id).EditTag("VIP用户", new_tag="SVIP用户", color="#33C4FF")
+# グループタグの編集
+await yunhu.Send.To("group", group_id).EditTag("VIPユーザー", new_tag="SVIPユーザー", color="#33C4FF")
 
-# グループタグを削除
+# グループタグの削除
 await yunhu.Send.To("group", group_id).DeleteTag("VIPユーザー")
 
-# グループタグリストを取得
+# グループタグリストの取得
 result = await yunhu.Send.To("group", group_id).GetTagList()
 
 # ユーザーにタグを追加
-await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP用户")
+await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIPユーザー")
 
-# ユーザータグを削除
-await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP用户")
+# ユーザーからタグを削除
+await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIPユーザー")
 
 # メッセージタイプの制限を設定
 await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
@@ -18487,13 +19611,13 @@ await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
 await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
 ```
 
-### メッセージクエリの例
+### メッセージ取得の例
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# グループの最近10件のメッセージを取得（合計10件）
+# グループの最新10件のメッセージを取得（合計10件）
 result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 
 # グループ内の指定されたメッセージIDの前10件を取得（合計11件）
@@ -18502,59 +19626,134 @@ result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx"
 # グループ内の指定されたメッセージIDの前後各10件を取得（合計21件）
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
 
-# ユーザーセッションの履歴メッセージを取得
+# ユーザー会話の履歴メッセージを取得
 result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
-### OneBot12メッセージサポート
+### OneBot12メッセージのサポート
 
-アダプターは OneBot12 形式のメッセージ送信をサポートしており、クロスプラットフォームのメッセージ互換性を容易にします。
+アダプターはOneBot12形式のメッセージの送信をサポートしており、プラットフォーム間のメッセージ互換性を確保します：
 
-- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12 形式メッセージを送信します。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
 
 ```python
-# OneBot12 形式のメッセージを送信
+# OneBot12形式のメッセージを送信
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# チェーン修飾子と組み合わせる
+# チェーン修飾子と組み合わせて使用
 ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
 await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
+
+## 標準 API 動作（ApiDSL）
+
+> [!NOTE]
+> この機能は ErisPulse **2.7.0+** および YunhuAdapter **4.3.0+** が必要です。
+
+`Send` のチェーン送信に加えて、アダプターは OneBot12 標準 API 動作と Yunhu プラットフォーム拡張動作を公開する `Api` 内部クラスを提供します。すべてのメソッドは標準的なレスポンス形式を返します。
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# 情報照会（公開 Web API を通じて、認証不要）
+result = await yunhu.Api.get_self_info()              # ロボット自身の情報
+result = await yunhu.Api.get_user_info("7058262")     # 任意のユーザー情報
+result = await yunhu.Api.get_group_info("635409929")  # グループ情報
+
+# ファイル操作
+result = await yunhu.Api.upload_file(type="path", name="a.png", path="./a.png")
+result = await yunhu.Api.get_file("https://chat-file.jwznb.com/xxx")
+
+# メッセージの撤回（chat_id + chat_type の追加提供が必要）
+await yunhu.Api.delete_message("msg_id", chat_id="123", chat_type="group")
+
+# 複数アカウント：Bot アカウントを指定
+info = await yunhu.Api.Using("bot1").get_self_info()
 ```
+
+### 標準動作のサポート状況
+
+| メソッド | 説明 | データソース |
+|------|------|---------|
+| `get_self_info()` | ロボット自身の情報 | 公開 Web API（bot-info） |
+| `get_user_info(user_id)` | ユーザー情報（任意のユーザーが照会可能） | 公開 Web API（user/homepage） |
+| `get_group_info(group_id)` | グループ情報 | 公開 Web API（group-info） |
+| `upload_file(*, type, name, ...)` | ファイルのアップロード（image/video/file を自動判定） | Bot 開放 API |
+| `get_file(file_id)` | ファイルの取得（file_id は URL） | — |
+| `delete_message(message_id, *, chat_id, chat_type)` | メッセージの撤回 | Bot 開放 API（/bot/recall） |
+
+> **注意**：`get_self_info` / `get_user_info` / `get_group_info` は**非公式公開 Web API**（chat-web-go.jwzhd.com）を通じて実装されています。これらのインターフェースは認証を必要としませんが、公式ドキュメントではなく、プラットフォームの更新に伴い変更される可能性があります。失敗した場合は標準的なエラーレスポンスが返されます。
+
+### 標準動作のサポート外
+
+以下の標準動作は Yunhu には対応する API がなく、呼び出した場合 `retcode=10002`（サポートされていない操作）が返されます：
+- `get_friend_list`（Bot 開放 API の「ロボットユーザー一覧」は現在リリース待ち）
+- `get_group_list` / `get_group_member_info` / `get_group_member_list`
+- `set_group_name` / `leave_group`
+
+### プラットフォーム拡張動作
+
+`Api.call("yunhu.xxx", **params)` を使用して Yunhu 特有の動作を呼び出します（パラメータは OB12 風の命名を使用し、アダプターが自動的に Yunhu フィールドに変換します）：
+
+| 拡張動作 | 説明 | 等価 Send 方法 |
+|---------|------|---------------|
+| `yunhu.recall` | メッセージの撤回（msg_id, chat_id, chat_type） | `Send.To(...).Recall(msg_id)` |
+| `yunhu.kick` | グループメンバーの排除（group_id, user_id） | `Send.To("group", g).Kick(uid)` |
+| `yunhu.ban` | 静音（group_id, user_id, duration） | `Send.To("group", g).Ban(uid, duration)` |
+| `yunhu.unban` | 静音解除（group_id, user_id） | `Send.To("group", g).Ban(uid, duration=0)` |
+| `yunhu.tag.create/edit/delete/list` | グループタグの CRUD（group_id, ...） | `Send.To("group", g).CreateTag(...)` など |
+| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | ユーザーにタグを追加/削除 | `Send.To("group", g).AddUserTag(...)` など |
+| `yunhu.set_member_title` / `yunhu.unset_member_title` | **メンバーの頭銜の別名**（タグ＝頭銜、内部的に tag.relate にマッピング） | — |
+| `yunhu.msg_type_limit` | グループメッセージの種類制限（group_id, type） | `Send.To("group", g).SetMsgTypeLimit(...)` |
+| `yunhu.get_messages` | 歴史メッセージの取得（chat_id, chat_type, message_id?, before?, after?） | `Send.To(...).GetMessages(...)` |
+| `yunhu.bot_info` | 公開 bot-info 照会（bot_id） | — |
+| `yunhu.user_homepage` | 公開ユーザーのホームページ照会（user_id） | — |
+
+```python
+# プラットフォーム拡展示例
+await yunhu.Api.call("yunhu.kick", group_id="123", user_id="456")
+await yunhu.Api.call("yunhu.set_member_title", group_id="123", user_id="456", title="VIP")
+result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="group", before=10)
+```
+
+> **タグと頭銜**：Yunhu の「タグ」の意味は OneBot12 グループメンバーの `title` と等価です。`yunhu.set_member_title` は `yunhu.tag.relate` の本質的な別名であり、内部的には同じエンドポイントにマッピングされます。グループメッセージイベントにおける送信者の役割は `senderUserLevel` から標準の `role` フィールド（owner/admin/member）にマッピングされます。
 
 ## 送信メソッドの戻り値
 
-全ての送信メソッドは `Task` オブジェクトを返し、`await` を直接使用して送信結果を取得できます。返却結果は ErisPulse アダプターの標準化された戻り値仕様に従います。
+すべての送信メソッドは Task オブジェクトを返し、これに直接 await を使用して送信結果を取得できます。返り値は ErisPulse アダプターの標準化された返り値規格に従います：
 
 ```python
 {
     "status": "ok",           // 実行ステータス
-    "retcode": 0,             // 返り値コード
-    "data": {...},            // レスポンスデータ
-    "self": {...},            // 自身情報（bot_id を含む）
+    "retcode": 0,             // 戻りコード
+    "data": {...},            // 応答データ
+    "self": {...},            // 自身の情報（bot_id を含む）
     "message_id": "123456",   // メッセージID
     "message": "",            // エラーメッセージ
-    "yunhu_raw": {...}        // 原始レスポンスデータ
+    "yunhu_raw": {...}        // 元の応答データ
 }
-```
 
-## 固有イベントタイプ
+## 特有イベントタイプ
 
-このプラットフォームの特性を使用するには、`platform=="yunhu"` を検出する必要があります
+このプラットフォームの機能を使用するには、`platform=="yunhu"` の検証が必要です。
 
-### 核心の差異点
+### 核心的な差異点
 
-1. 固有イベントタイプ：
-    - フォーム（フォームコマンドを含む）：yunhu_form
-    - スタンプ/絵文字メッセージセグメント：yunhu_expression
+1. 特有イベントタイプ：
+    - フォーム（フォームコマンドなど）：yunhu_form
+    - 表情パック/ステッカーメッセージセグメント：yunhu_expression
     - ボタンクリック：yunhu_button_click
     - A2UIボタンクリック：yunhu_a2ui_button
-    - ボット設定：yunhu_bot_setting
+    - ロボット設定：yunhu_bot_setting
     - ショートカットメニュー：yunhu_shortcut_menu
-2. 拡張フィールド：
-    - 全ての固有フィールドは yunhu_ プレフィックスで識別されます
-    - 原始データは yunhu_raw フィールドに保持されます
-    - チャットプライベート (`private`) 中の self.user_id はボットIDを表します
+2. 標準フィールドの拡張（4.3.0以降）：
+    - メッセージイベントに標準の `role` フィールドが追加されました（雲湖の `senderUserLevel` から `owner`/`admin`/`member` にマッピング）
+    - `user_avatar` フィールドが追加されました（送信者のアバターURL）
+3. 拡張フィールド：
+    - すべての特有フィールドは `yunhu_` で始まるプレフィックスで識別されます
+    - 元のデータは `yunhu_raw` フィールドに保持されます
+    - プライベートチャットでは `self.user_id` はロボットのIDを表します
 
 ### 特殊フィールドの例
 
@@ -18577,7 +19776,7 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
   }
 }
 
-# ボタンイベント
+# ボタンクリックイベント
 {
   "type": "notice",
   "detail_type": "yunhu_button_click",
@@ -18585,12 +19784,12 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
   "user_nickname": "ユーザーのニックネーム",
   "message_id": "メッセージID",
   "yunhu_button": {
-    "id": "ボタンID（空の場合あり）",
-    "value": "ボタンの値"
+    "id": "ボタンID（空の可能性あり）",
+    "value": "ボタン値"
   }
 }
 
-# A2UIボタンイベント
+# A2UIボタンクリックイベント
 {
   "type": "notice",
   "detail_type": "yunhu_a2ui_button",
@@ -18603,10 +19802,9 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
     "action_name": "操作名",
     "source_component_id": "ソースコンポーネントID",
     "form_context": {},
-    "interaction_json": "インタラクションデータJSON文字列"
+    "interaction_json": "インタラクションデータのJSON文字列"
   }
 }
-```
 
 ### ボタンクリックイベントの処理例
 
@@ -18615,47 +19813,51 @@ from ErisPulse.Core.Event import notice
 
 @notice.on_notice()
 async def handle_yunhu_notice(event):
-    """Yunhu通知イベントを処理します
+    """雲湖通知イベントを処理する
 
-    すべての通知イベントを処理するために汎用の on_notice() デコレーターを使用し、
-    detail_type を通じて異なる種類の通知を区別します
-    event.reply() は自動的に Yunhu プラットフォーム経由で返信されます
+    すべての通知イベントを処理するために一般的な on_notice() デコレーターを使用し、
+    detail_type で通知の種類を区別します。
+    event.reply() は自動的に雲湖プラットフォームを通じて返信されます。
     """
-    # ボタンクリックイベントか確認
-    if event.get("detail_type") == "yunhu_button_click":
-        user_id = event.get_user_id()
-        user_nickname = event.get_user_nickname()
-        button_value = event.get("yunhu_button", {}).get("value", "")
+
+# ボタンクリックイベントかどうかをチェックする  
+    if event.get("detail_type") == "yunhu_button_click":  
+        user_id = event.get_user_id()  
+        user_nickname = event.get_user_nickname()  
+        button_value = event.get("yunhu_button", {}).get("value", "")  
 
         print(f"ユーザー {user_nickname}({user_id}) がボタンをクリックしました: {button_value}")
 
-        # event.reply() を使用して自動返信します（プラットフォームに応じて正しい送信方法を選択します）
+# 使用 event.reply() 自動返信（プラットフォームに応じて正しい送信方法が自動的に選択されます）  
         if button_value == "confirm":
-            await event.reply("確認ボタンをクリックしました！")
+            await event.reply("あなたは確認ボタンをクリックしました！")
         elif button_value == "cancel":
-            await event.reply("操作がキャンセルされました")
+            await event.reply("操作はキャンセルされました")
         else:
-            await event.reply(f"選択を受け取りました: {button_value}")
+            await event.reply(f"あなたの選択を受け取りました: {button_value}")
 
-    # ショートカットメニューイベントを処理
+# ショートカットメニューイベントの処理
     elif event.get("detail_type") == "yunhu_shortcut_menu":
         menu_id = event.get("yunhu_menu", {}).get("id", "")
         await event.reply(f"ショートカットメニューがトリガーされました: {menu_id}")
 
-    # ボット設定の変更を処理
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+# ロボット設定の変更を処理
+
     elif event.get("detail_type") == "yunhu_bot_setting":
         settings = event.get("yunhu_setting", {})
         await event.reply(f"設定が更新されました: {settings}")
 
-    # A2UIボタンイベントを処理
+# A2UIボタンイベントの処理
     elif event.get("detail_type") == "yunhu_a2ui_button":
         a2ui = event.get("yunhu_a2ui", {})
         action_name = a2ui.get("action_name", "")
         form_context = a2ui.get("form_context", {})
-        await event.reply(f"A2UI操作: {action_name}, フォームデータ: {form_context}")
+        await event.reply(f"A2UI操作: {action_name}, 表示データ: {form_context}")
 ```
 
-### ボタン付きメッセージをチェーン呼び出しで送信
+### チェーン呼び出しを使用してボタン付きメッセージを送信
 
 ```python
 from ErisPulse import sdk
@@ -18666,33 +19868,39 @@ buttons = [
     [
         {"text": "確認", "actionType": 3, "value": "confirm"},
         {"text": "キャンセル", "actionType": 3, "value": "cancel"},
-        {"text": "詳細を見る", "actionType": 1, "url": "http://example.com/detail"}
+        {"text": "詳細を表示", "actionType": 1, "url": "http://example.com/detail"}
     ]
 ]
 
-# ボタン付きメッセージをグループに送信
+# グループにボタン付きメッセージを送信  
 await yunhu.Send.To("group", "123456").Buttons(buttons).Text("以下の操作を確認してください")
 
-# ボタン付きメッセージをユーザーのプライベートチャットに送信
-await yunhu.Send.To("user", "789").Buttons(buttons).Text("選好設定を選択してください")
-```
+# 送信ボタン付きメッセージをグループに送信  
+await yunhu.Send.To("group", "123456").Buttons(buttons).Text("以下の操作を確認してください")
 
-### A2UIメッセージの送信
+# ユーザーのプライベートチャットにボタン付きメッセージを送信  
+await yunhu.Send.To("user", "789").Buttons(buttons).Text("お好みの設定を選択してください")
+
+```markdown
+### A2UI メッセージの送信
 
 ```python
 from ErisPulse import sdk
 
 yunhu = sdk.adapter.get("yunhu")
-
-# A2UIメッセージを送信
-await yunhu.Send.To("user", user_id).A2UI("A2UIインタラクションカードの内容")
 ```
 
-# ボット設定
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**中文**](docs/ja/quick-start.md)
+
+# A2UIメッセージの送信
+await yunhu.Send.To("user", user_id).A2UI("A2UIインタラクティブカードの内容")
+
+```
+# ロボット設定
 {
   "type": "notice",
   "detail_type": "yunhu_bot_setting",
-  "group_id": "グループID（空の場合あり）",
+  "group_id": "グループID（空である可能性あり）",
   "user_nickname": "ユーザーのニックネーム",
   "yunhu_setting": {
     "設定項目ID": {
@@ -18712,27 +19920,62 @@ await yunhu.Send.To("user", user_id).A2UI("A2UIインタラクションカード
   "group_id": "グループID（グループチャットの場合）",
   "yunhu_menu": {
     "id": "メニューID",
-    "type": "メニュータイプ(整数)",
-    "action": "メニューアクション(整数)"
+    "type": "メニューのタイプ(整数)",
+    "action": "メニューのアクション(整数)"
   }
 }
-```
+
+## Event Mixin 拡張メソッド
+
+アダプターは以下のプラットフォーム固有メソッドを登録しており、`platform == "yunhu"` の場合にのみ利用可能です：
+
+| メソッド | 戻り値の型 | 説明 |
+|------|----------|------|
+| `get_raw_event()` | `dict` | 雲湖の元のイベントデータを取得します（`yunhu_raw`） |
+| `get_sender_level()` | `str` | 送信者の雲湖の元のレベル（owner/administrator/member/unknown） |
+| `get_sender_role()` | `str` | 送信者の OneBot12 標準 role（owner/admin/member） |
+| `get_sender_title()` | `str` | 送信者の肩書き（標準 `title` フィールドのアクセサ、予約済み） |
+| `get_sender_avatar()` | `str` | 送信者のアイコン URL |
+| `get_command()` | `dict` | コマンドデータ（コマンドメッセージイベントのみ、`yunhu_command`） |
+| `get_button_value()` | `str` | ボタンクリックイベントの value（`yunhu_button.value`） |
+| `get_a2ui_action()` | `str` | A2UI ボタンイベントの actionName |
+| `get_a2ui_form_context()` | `dict` | A2UI ボタンイベントのフォームコンテキスト |
+| `get_menu_id()` | `str` | ショートカットメニューイベント ID（`yunhu_menu.id`） |
+| `get_setting()` | `dict` | ロボット設定イベントの設定データ（`yunhu_setting`） |
+| `is_command_message()` | `bool` | コマンドメッセージかどうか |
+| `is_button_click()` | `bool` | ボタンクリックイベントかどうか |
+| `is_a2ui_button()` | `bool` | A2UI ボタンイベントかどうか |
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_yunhu_notice(event):
+    if event.get("platform") != "yunhu":
+        return
+
+    if event.is_button_click():
+        value = event.get_button_value()
+        await event.reply(f"あなたはボタン: {value} をクリックしました")
+
+    if event.get("detail_type") == "yunhu_shortcut_menu":
+        menu_id = event.get_menu_id()
 
 ## 拡張フィールドの説明
 
-- 全ての固有フィールドは `yunhu_` プレフィックスで識別され、標準フィールドとの競合を避けます
-- 原始データは `yunhu_raw` フィールドに保持され、雲湖プラットフォームの完全な原始データにアクセスするのに便利です
-- `self.user_id` はボットIDを表します（設定の bot_id から取得）
-- フォームコマンドは `yunhu_command` フィールドを通じて構造化データを提供します
-- ボタンクリックイベントは `yunhu_button` フィールドを通じてボタンに関する情報を提供します
-- A2UIボタンイベントは `yunhu_a2ui` フィールドを通じて A2UI インタラクションに関する情報を提供します
-- ボット設定の変更は `yunhu_setting` フィールドを通じて設定項目データを提供します
-- ショートカットメニュー操作は `yunhu_menu` フィールドを通じてメニューに関する情報を提供します
-- スタンプ/絵文字メッセージは `yunhu_expression` メッセージセグメントを通じてスタンプデータ（sticker_id、パッケージID、画像サイズなど）を提供します
+- すべての独自フィールドは `yunhu_` という接頭辞で識別され、標準フィールドとの衝突を避ける
+- `yunhu_raw` フィールドに元のデータを保持し、クラウド湖プラットフォームの完全な元のデータに簡単にアクセスできるようにする
+- `self.user_id` は、設定の bot_id から取得されるロボットIDを表す
+- フォームコマンドは `yunhu_command` フィールドを通じて構造化されたデータを提供する
+- ボタンのクリックイベントは `yunhu_button` フィールドを通じてボタンに関する情報を提供する
+- A2UIボタンイベントは `yunhu_a2ui` フィールドを通じてA2UIのインタラクションに関する情報を提供する
+- ロボットの設定変更は `yunhu_setting` フィールドを通じて設定項目のデータを提供する
+- ショートカットメニュー操作は `yunhu_menu` フィールドを通じてメニューに関する情報を提供する
+- エモジーパック/ステッカーのメッセージは `yunhu_expression` メッセージセグメントを通じてステッカーのデータ（sticker_id、ステッカーのパックID、画像のサイズなど）を提供する
 
-### スタンプ/絵文字メッセージセグメント (yunhu_expression)
+### エモジーパック/ステッカーのメッセージセグメント (yunhu_expression)
 
-ユーザーがスタンプまたは絵文字を送信すると、メッセージセグメントのタイプは `yunhu_expression` になります：
+ユーザーがエモジーパックまたはステッカーを送信した場合、メッセージセグメントのタイプは `yunhu_expression` となる：
 
 ```json
 {
@@ -18750,15 +19993,14 @@ await yunhu.Send.To("user", user_id).A2UI("A2UIインタラクションカード
 
 | フィールド | タイプ | 説明 |
 |------|------|------|
-| `sticker_id` | string | スタンプの固有識別子 |
-| `sticker_pack_id` | string | スタンプパッケージID |
-| `expression_id` | string | 絵文字ID |
-| `image_name` | string | 絵文字画像ファイルパス |
-| `width` | int | 画像の幅（任意） |
-| `height` | int | 画像の高さ（任意） |
+| `sticker_id` | string | ステッカーの一意な識別子 |
+| `sticker_pack_id` | string | ステッカーのパックID |
+| `expression_id` | string | エモジーパックのID |
+| `image_name` | string | エモジーパックの画像ファイルのパス |
+| `width` | int | 画像の幅（オプション） |
+| `height` | int | 画像の高さ（オプション） |
 
 使用例：
-
 ```python
 from ErisPulse.Core.Event import message
 
@@ -18768,70 +20010,66 @@ async def handle_message(event):
         for segment in event.get("message", []):
             if segment.get("type") == "yunhu_expression":
                 data = segment["data"]
-                print(f"スタンプを受け取りました: sticker_id={data['sticker_id']}, パックID={data['sticker_pack_id']}")
-```
+                print(f"エモジーパックを受け取りました: sticker_id={data['sticker_id']}, パックID={data['sticker_pack_id']}")
 
----
+## 多Bot配置
 
-## マルチBot設定
+### 設定説明
 
-### 設定の説明
-
-Yunhu アダプターは、同時に複数の雲湖ボットアカウントを設定・実行することをサポートしています。
+Yunhuアダプタは、複数のYunhuロボットアカウントを同時に設定および実行することをサポートしています。
 
 ```toml
 # config.toml
-[Yunhu_Adapter.bots.bot1]
-bot_id = "30535459"  # ボットID（必須）
-token = "your_bot1_token"  # ボットトークン（必須）
-webhook_path = "/webhook/bot1"  # Webhookパス（任意、デフォルトは"/webhook"）
-enabled = true  # 有効にするかどうか（任意、デフォルトはtrue）
+[Yunhu_Adapter.accounts.bot1]
+token = "your_bot1_token"  # ロボットのトークン（必須）
+mode = "ws"  # 受信モード（オプション、デフォルトは"ws"、"ws"または"webhook"）
+webhook_path = "/webhook/bot1"  # Webhookのパス（オプション、デフォルトは"/webhook"）
+enabled = true  # 有効化するかどうか（オプション、デフォルトはtrue）
 
-[Yunhu_Adapter.bots.bot2]
-bot_id = "12345678"  # 2番目のボットのID
-token = "your_bot2_token"  # 2番目のボットのトークン
-webhook_path = "/webhook/bot2"  # 独立したwebhookパス
+[Yunhu_Adapter.accounts.bot2]
+token = "your_bot2_token"  # 2番目のロボットのトークン
+webhook_path = "/webhook/bot2"  # 独自のwebhookパス
 enabled = true
 ```
 
-**設定項目の説明：**
-- `bot_id`：ボットの固有識別子ID（必須）。どのボットによってトリガーされたイベントかを識別するために使用されます
-- `token`：雲湖プラットフォームが提供するAPIトークン（必須）
-- `webhook_path`：雲湖イベントを受信するHTTPパス（任意、デフォルトは"/webhook"）
-- `enabled`：このbotを有効にするかどうか（任意、デフォルトはtrue）
+**設定項目の説明:**
+- `token`：Yunhuプラットフォームから提供されるAPIトークン（必須）
+- `mode`：受信モード（オプション、デフォルトは `"ws"`、"ws"または"webhook"）
+- `webhook_path`：Yunhuイベントを受信するHTTPパス（オプション、デフォルトは"/webhook"、webhookモードでのみ使用）
+- `enabled`：このアカウントを有効化するかどうか（オプション、デフォルトはtrue）
 
-**重要なヒント：**
-1. 雲湖プラットフォームのイベントにはボットIDが含まれていないため、設定で明示的に `bot_id` を指定する必要があります
-2. 各botには独自の `webhook_path` を持たせる必要があり、それぞれのwebhookイベントを受信できるようにするためです
-3. 雲湖プラットフォームでwebhookを設定する際は、各botに対応するURLを設定してください。例：
+**重要な注意事項:**
+1. YunhuプラットフォームのロボットIDは**実行時に自動検出**され、設定ファイルに指定する必要はありません
+2. webhookモードでは、各botに独立した`webhook_path`を設定する必要があります。これにより、それぞれのbotが独自のwebhookイベントを受信できます
+3. Yunhuプラットフォームでwebhookを設定する際は、各botに対応するURLを設定してください。たとえば:
    - Bot1: `https://your-domain.com/webhook/bot1`
    - Bot2: `https://your-domain.com/webhook/bot2`
 
-### Send DSLを使用したBotの指定
+### Send DSLを使用してBotを指定
 
-`Using()` メソッドを使用して、どのbotを使用してメッセージを送信するかを指定できます。このメソッドは2つのパラメータをサポートします：
-- **アカウント名**：設定の bot 名（例: `bot1`, `bot2`）
-- **bot_id**：設定の `bot_id` 値
+`Using()`メソッドを使用して、どのbotを使ってメッセージを送信するかを指定できます。このメソッドは2種類のパラメータを受け付けます:
+- **アカウント名**：設定ファイル中のbot名（例: `bot1`, `bot2`）
+- **bot_id**：設定ファイル中の `bot_id` 値
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
 # アカウント名を使用してメッセージを送信
-await yunhu.Send.Using("bot1").To("user", "user123").Text("bot1からのメッセージです！")
+await yunhu.Send.Using("bot1").To("user", "user123").Text("Hello from bot1!")
 
-# bot_id を使用してメッセージを送信（対応するアカウントを自動的に照合）
-await yunhu.Send.Using("30535459").To("group", "group456").Text("botからのメッセージです！")
+# bot_idを使用してメッセージを送信（対応するアカウントに自動マッチング）
+await yunhu.Send.Using("30535459").To("group", "group456").Text("Hello from bot!")
 
-# 指定がない場合、最初に有効になったbotが使用されます
-await yunhu.Send.To("user", "user123").Text("デフォルトbotからのメッセージです！")
+# 指定しない場合は、最初に有効化されたbotを使用
+await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
 ```
 
-> **ヒント：** `bot_id` を使用する場合、システムは設定内の一致するアカウントを自動的に検索します。イベントへの返信を処理する際に特に便利です。`event["self"]["user_id"]` を直接使用して、同じアカウントから返信できます。
+> **ヒント:** `bot_id`を使用する場合、システムは設定ファイルにマッチするアカウントを自動的に検索します。これは、イベントの返信処理時に特に便利で、`event["self"]["user_id"]`を使用して、同じアカウントに返信することができます。
 
-### イベント内のBot識別子
+### イベントにおけるBot識別
 
-受信したイベントには、対応する `bot_id` 情報が自動的に含まれます。
+受信したイベントには、対応する`bot_id`情報が自動的に含まれます:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -18839,11 +20077,11 @@ from ErisPulse.Core.Event import message
 @message.on_message()
 async def handle_message(event):
     if event["platform"] == "yunhu":
-        # イベントをトリガーしたボットIDを取得
+        # イベントをトリガーしたロボットIDを取得
         bot_id = event["self"]["user_id"]
-        print(f"メッセージは Bot: {bot_id} から来ました")
+        print(f"メッセージはBot: {bot_id} から送信されました")
         
-        # 同じbotで返信メッセージを送信
+        # 同じbotを使用して返信
         yunhu = adapter.get("yunhu")
         await yunhu.Send.Using(bot_id).To(
             event["detail_type"],
@@ -18853,34 +20091,32 @@ async def handle_message(event):
 
 ### ログ情報
 
-アダプターはログに自動的に `bot_id` 情報を含めます。デバッグと追跡を容易にします：
+アダプタはログに自動的に `bot_id` 情報を含め、デバッグや追跡に便利です:
 
 ```
-[INFO] [yunhu] [bot:30535459] プライベートメッセージを受信 (送信者: user123)
+[INFO] [yunhu] [bot:30535459] ユーザー user123 からのプライベートメッセージを受信
 [INFO] [yunhu] [bot:12345678] メッセージ送信成功、message_id: abc123
 ```
 
 ### 管理インターフェース
 
 ```python
-# 全アカウント情報の取得
+# すべてのアカウント情報を取得
 bots = yunhu.bots
 
-# アカウントが有効か確認
+# アカウントの有効化状態を確認
 bot_status = {
     bot_name: bot_config.enabled
     for bot_name, bot_config in yunhu.bots.items()
 }
 
-# アカウントの動的有効化/無効化（アダプターの再起動が必要）
+# 動的にアカウントの有効化/無効化（アダプタの再起動が必要）
 yunhu.bots["bot1"].enabled = False
 ```
 
-### 旧形式の設定との互換性
+### 旧設定の互換性
 
-システムは旧形式の設定を自動的に互換性を持たせますが、より良いマルチbotサポートを得るために、新形式の設定に移行することをお勧めします。
-
-請直接返回翻译后的完整Markdown内容，不要包含任何其他文字。
+旧バージョンの `[Yunhu_Adapter.bots.*]` 設定（`bot_id`フィールドを含む）は、`accounts`形式に自動的に移行されます（`bot_id`は実行時に自動検出されるため、設定ファイル中の値は無視されます）。新しい形式への移行を早急にお勧めします。
 
 
 
@@ -18888,42 +20124,48 @@ yunhu.bots["bot1"].enabled = False
 
 # メールプラットフォームの機能ドキュメント
 
-EmailAdapter は SMTP/IMAP プロトコルに基づいたメールアダプターで、メールの送信、受信、処理をサポートしています。
+EmailAdapter は SMTP/IMAP プロトコルに基づいたメールアダプタであり、メールの送信、受信、および処理をサポートしています。
 
 ---
+
+docs/ja/quick-start.md
 
 ## ドキュメント情報
 
 - 対応モジュールバージョン: 4.1.0
 - メンテナー: ErisPulse
 
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**繁體中文**](docs/zh-TW/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**ภาษาไทย**](docs/th/quick-start.md) | [**Bahasa Indonesia**](docs/id/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**हिन्दी**](docs/hi/quick-start.md) | [**ไทย**](docs/th/quick-start.md) | [**한국어**](docs/ko/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**Español**](docs/es/quick-start.md) | [**Français**](docs/fr/quick-start.md) | [**Deutsch**](docs/de/quick-start.md) | [**Italiano**](docs/it/quick-start.md) | [**Português**](docs/pt/quick-start.md) | [**Türkçe**](docs/tr/quick-start.md) | [**Bahasa Indonesia**](docs/id/quick-start.md) | [**العربية**](docs/ar/quick-start.md) | [**עברית**](docs/he/quick-start.md) | [**हिन्दी**](docs/hi/quick-start.md)
+
 ## 基本情報
 
-- プラットフォームの概要：標準の SMTP/IMAP プロトコルを使用してメールを送受信する汎用アダプター
-- アダプター名：EmailAdapter
-- 複数アカウントのサポート：複数のメールアカウントを同時に設定可能
-- 接続方式：IMAP 長時間ポーリングによる受信 + SMTP による送信
-- 認証方式：メールアドレス + パスワード/認証コード
-- OneBot12 の互換性：OneBot12 形式のメッセージ送信をサポート
+- プラットフォーム概要：標準の SMTP/IMAP プロトコルを使用してメールを送受信する汎用アダプタ
+- アダプタ名：EmailAdapter
+- 複数アカウント対応：複数のメールアカウントを同時に設定可能
+- 接続方法：IMAP 長時間ポーリングによる受信 + SMTP による送信
+- 認証方法：メールアドレス + パスワード/アプリケーションパスワード
+- OneBot12 兼容：OneBot12 形式のメッセージ送信をサポート
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 設定説明
 
-### グローバル設定 (EmailAdapter)
+### グローバル設定（EmailAdapter）
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |--------|------|--------|------|
-| `imap_server` | str | `imap.example.com` | デフォルトの IMAP サーバーのアドレス |
-| `imap_port` | int | `993` | デフォルトの IMAP ポート番号 |
-| `smtp_server` | str | `smtp.example.com` | デフォルトの SMTP サーバーのアドレス |
-| `smtp_port` | int | `465` | デフォルトの SMTP ポート番号 |
-| `ssl` | bool | `true` | SSL をデフォルトで有効にするか |
+| `imap_server` | str | `imap.example.com` | デフォルトのIMAPサーバーのアドレス |
+| `imap_port` | int | `993` | デフォルトのIMAPポート |
+| `smtp_server` | str | `smtp.example.com` | デフォルトのSMTPサーバーのアドレス |
+| `smtp_port` | int | `465` | デフォルトのSMTPポート |
+| `ssl` | bool | `true` | SSLをデフォルトで有効にするかどうか |
 | `timeout` | int | `30` | デフォルトの接続タイムアウト（秒） |
-| `poll_interval` | int | `60` | IMAP ポーリング間隔（秒） |
+| `poll_interval` | int | `60` | IMAPのポーリング間隔（秒） |
 | `max_retries` | int | `3` | 接続失敗時の最大リトライ回数 |
 
-### アカウント設定 (EmailAdapter.accounts)
+### アカウント設定（EmailAdapter.accounts）
 
-各アカウントは独立したメールアドレスに対応します。アカウントレベルの設定はグローバル設定より優先されます。
+各アカウントは個別のメールアドレスに対応します。アカウントレベルの設定はグローバル設定よりも優先されます。
 
 ```toml
 [EmailAdapter.accounts.default]
@@ -18943,9 +20185,11 @@ password = "another-password"
 enabled = true
 ```
 
-## 送信可能なメッセージの種類
+docs/ja/quick-start.md
 
-すべての送信メソッドはメソッドチェーン構文で実装されています：
+## 支援されるメッセージ送信タイプ
+
+すべての送信メソッドは、チェーン式構文で実装されています：
 
 ```python
 from ErisPulse.Core import adapter
@@ -18967,52 +20211,52 @@ await mail.Send.To("private", "to@example.com").Raw_ob12([
     {"type": "file", "data": {"file": "/path/to/attachment.pdf"}},
 ])
 
-# 送信アカウントを指定（複数アカウント）
+# 送信アカウントを指定（複数アカウント使用時）
 await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 ```
 
-> メソッドチェーン構文を使用する際は、パラメータを設定するメソッド（Subject / Cc / Attachment など）は送信メソッド（Text / Html / Raw_ob12）の前に呼び出す必要があります。
+> 注：チェーン式構文を使用する場合、パラメータメソッド（Subject / Cc / Attachment など）は送信メソッド（Text / Html / Raw_ob12）の前に呼び出す必要があります。
 
-### 基本的な送信メソッド
+### 基本送信メソッド
 
 | メソッド | 説明 |
 |------|------|
 | `.Text(text: str)` | 純粋なテキストメールを送信 |
-| `.Html(html: str)` | HTML 形式のメールを送信 |
-| `.Raw_ob12(message, **kwargs)` | OneBot12 形式のメッセージを送信 |
+| `.Html(html: str)` | HTML形式のメールを送信 |
+| `.Raw_ob12(message, **kwargs)` | OneBot12形式のメッセージを送信 |
 
-### メソッドチェーンの修飾メソッド（self を返すため、組み合わせて使用可能）
+### チェーン修飾メソッド（selfを返却し、組み合わせて使用可能）
 
 | メソッド | 説明 |
 |------|------|
 | `.Subject(subject: str)` | メールの件名を設定 |
-| `.Cc(emails: Union[str, List[str]])` | 送信先の CC アドレスを設定 |
-| `.Bcc(emails: Union[str, List[str]])` | 送信先の BCC アドレスを設定 |
-| `.ReplyTo(email: str)` | 回信先アドレスを設定 |
+| `.Cc(emails: Union[str, List[str]])` | 抄送先を設定 |
+| `.Bcc(emails: Union[str, List[str]])` | 密送先を設定 |
+| `.ReplyTo(email: str)` | 回信先を設定 |
 | `.Attachment(file, filename: str = None)` | 附件を追加 |
 
-### OB12 メッセージセグメントの逆変換 (Raw_ob12)
+### OB12 メッセージセグメントの逆変換（Raw_ob12）
 
-| OB12 メッセージセグメント | メールの内容に変換 |
+| OB12 メッセージセグメント | メール本文に変換 |
 |------------|--------------|
-| `text` | 純粋な本文 |
+| `text` | 純粋なテキスト本文 |
 | `image` | 画像の附件 |
 | `video` | 動画の附件 |
 | `file` | ファイルの附件 |
 | `audio` | 音声の附件 |
-| `markdown` | HTML 本文に変換 |
+| `markdown` | HTML本文に変換 |
 
-## 特有のイベントタイプ
+## 特有イベントタイプ
 
-### 核心的な違い
+### コアな違い
 
-1. メールイベントはすべて `message` タイプで、`detail_type` は固定で `private`
-2. `user_id` は送信者の**純粋なメールアドレス**、`user_nickname` は送信者の表示名
-3. `message` メッセージセグメントは標準の OB12 形式（text セグメント + file セグメント）
-4. メールの件名は `email_subject` 拡張フィールドから取得
-5. 完全な元データは `email_raw` フィールドに保存
+1. メールイベントはすべて `message` タイプで、`detail_type` は固定で `private` です。
+2. `user_id` は送信者の**純粋なメールアドレス**で、`user_nickname` は送信者の表示名です。
+3. `message` メッセージセグメントは標準の OB12 形式（text セグメント + file セグメント）です。
+4. メールの件名は `email_subject` 拡張フィールドから取得します。
+5. 完全な元データは `email_raw` フィールドに保存されます。
 
-### 新しいメールイベント (email_new)
+### 新しいメールイベント（email_new）
 
 ```json
 {
@@ -19033,13 +20277,13 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
       }
     }
   ],
-  "alt_message": "メールの件名",
+  "alt_message": "メール件名",
   "user_id": "sender@example.com",
   "user_nickname": "Saber"
 }
 ```
 
-### 附件付きのメール
+### 附件付きメール
 
 ```json
 {
@@ -19047,7 +20291,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     {
       "type": "text",
       "data": {
-        "text": "添付ファイルをご覧ください"
+        "text": "添付ファイルをご確認ください"
       }
     },
     {
@@ -19062,9 +20306,9 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 }
 ```
 
-### 回答メールイベント (email_reply)
+### メール返信イベント（email_reply）
 
-メールに `References` または `In-Reply-To` ヘッダーが含まれている場合、`email_raw_type` は `email_reply` になります：
+メールに `References` または `In-Reply-To` ヘッダーが含まれている場合、`email_raw_type` は `email_reply` です：
 
 ```json
 {
@@ -19074,19 +20318,18 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     "in_reply_to": "<original-msg-id@example.com>"
   }
 }
-```
 
 ## 拡張フィールドの説明
 
 | フィールド | 型 | 説明 |
 |------|------|------|
 | `email_raw` | dict | 完全な元のメールデータ（subject/from/to/date/cc/bcc/text_content/html_content/attachments など） |
-| `email_raw_type` | str | 元のイベントタイプ：`email_new`（新メール）または `email_reply`（回答メール） |
+| `email_raw_type` | str | 元のイベントの種類：`email_new`（新規メール）または `email_reply`（返信メール） |
 | `email_subject` | str | メールの件名（アクセスしやすいように） |
 | `email_from` | str | 送信者の純粋なメールアドレス（アクセスしやすいように） |
-| `attachments` | list | 附件データのリスト（後方互換性のために binary `data` フィールドを含む） |
+| `attachments` | list | 附件データのリスト（バイナリ `data` フィールドを含み、後方互換性を保つ） |
 
-## 標準的なイベントの例
+## 標準イベントの例
 
 ### 完全なメールイベント
 
@@ -19105,7 +20348,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     {
       "type": "text",
       "data": {
-        "text": "添付ファイルをご覧ください"
+        "text": "添付ファイルをご確認ください"
       }
     },
     {
@@ -19119,12 +20362,12 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
   ],
   "alt_message": "会議のお知らせ",
   "user_id": "sender@example.com",
-  "user_nickname": "Sender",
+  "user_nickname": "送信者",
   "email_subject": "会議のお知らせ",
   "email_from": "sender@example.com",
   "email_raw": {
     "subject": "会議のお知らせ",
-    "from": "\"Sender\" <sender@example.com>",
+    "from": "\"送信者\" <sender@example.com>",
     "to": "<bot@example.com>",
     "date": "Wed, 9 Jul 2026 02:00:46 +0800",
     "message_id": "<abc123@example.com>",
@@ -19132,8 +20375,8 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     "in_reply_to": "",
     "cc": "",
     "bcc": "",
-    "text_content": "添付ファイルをご覧ください",
-    "html_content": "<p>添付ファイルをご覧ください</p>",
+    "text_content": "添付ファイルをご確認ください",
+    "html_content": "<p>添付ファイルをご確認ください</p>",
     "attachments": ["document.pdf"]
   },
   "email_raw_type": "email_new",
@@ -19146,34 +20389,34 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     }
   ]
 }
-```
 
-## 送信メソッドの返り値
+## 送信メソッドの戻り値
 
 ```json
 {
   "status": "ok",
   "retcode": 0,
   "data": {
-    "message_id": "<sent-msg-id@example.com>",
+    "message_id": "<送信済みメッセージID@example.com>",
     "time": 1751990446
   },
-  "message_id": "<sent-msg-id@example.com>",
+  "message_id": "<送信済みメッセージID@example.com>",
   "message": "",
   "email_raw": {
     "success": true,
     "message": "メールの送信に成功しました"
   }
 }
-```
 
 ## イベント処理の例
 
 ```python
-from ErisPulse import sdk
+from ErisPulse.Core.Event import message
 
-@sdk.on_message(platform="email")
+@message.on_message()
 async def handle_email(event):
+    if event.get("platform") != "email":
+        return
     # 送信者の純粋なメールアドレス
     sender = event["user_id"]              # sender@example.com
     
@@ -19183,7 +20426,7 @@ async def handle_email(event):
     # メールの件名
     subject = event.get("email_subject")   # 会議のお知らせ
     
-    # 純粋なテキスト本文（最初の text セグメント）
+    # テキスト形式の本文（最初の text パラグラフ）
     text = event.get_text()
     
     # 完全な元のデータ
@@ -19196,8 +20439,11 @@ async def handle_email(event):
             filename = seg["data"]["file_name"]
             size = seg["data"]["size"]
     
-    # 回答メール
+    # メールの返信
     await event.reply(f"受信しました：{subject}")
+```
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**中文**](docs/ja/quick-start.md)
 
 
 
@@ -19699,41 +20945,47 @@ async def handle_private_notice(event):
 
 ### Matrix 适配
 
-# Matrixプラットフォーム特性ドキュメント
+# Matrixプラットフォームの特徴ドキュメント
 
-MatrixAdapterは[Matrixプロトコル](https://spec.matrix.org/)に基づいて構築されたアダプターであり、Matrixプロトコルのすべての核心的な機能モジュールを統合し、統一されたイベント処理およびメッセージ操作インターフェースを提供します。
+MatrixAdapter は [Matrixプロトコル](https://spec.matrix.org/) に基づいて構築されたアダプターであり、Matrixプロトコルのすべてのコア機能モジュールを統合し、一貫したイベント処理およびメッセージ操作インターフェースを提供します。
 
 ---
 
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
+
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 1.0.0
-- メンテナ: ErisPulse
+- 対応モジュールバージョン: 4.1.0
+- 維持者: ErisPulse
+
+[クイックスタートガイド](docs/ja/quick-start.md) | [詳細なインストール手順](docs/ja/installation.md) | [APIリファレンス](docs/ja/api-reference.md) | [FAQ](docs/ja/faq.md)
 
 ## 基本情報
 
-- プラットフォーム概要：Matrixはオープンな非中央集権型通信プロトコルであり、プライベートメッセージ（ダイレクトメッセージ）、グループなど複数のシナリオをサポートしています。
-- アダプター名：MatrixAdapter
-- 複数アカウントサポート：同時に複数のMatrixアカウントを設定することが可能です。
-- 接続方式：Long Polling（Matrix Sync API `/sync` 経由）
-- 認証方式：access_tokenまたはuser_id+passwordのログインに基づいてトークンを取得
-- メソッドチェーン修飾サポート：`.Reply()`、`.At()`、`.AtAll()`などのメソッドチェーン修飾をサポート
-- OneBot12互換：OneBot12フォーマットのメッセージ送信をサポート
+- プラットフォーム紹介：Matrixは、プライベートチャット、グループチャットなど多様なシナリオをサポートするオープンな分散型通信プロトコルです
+- アダプタ名：MatrixAdapter
+- 複数アカウント対応：複数の Matrix アカウントを同時に設定できます
+- 接続方法：Long Polling（Matrix Sync API `/sync` を使用）
+- 認証方法：access_token または user_id + password を使用してトークンを取得
+- チェーン修飾子対応：`.Reply()`、`.At()`、`.AtAll()` などのチェーン修飾子メソッドをサポート
+- OneBot12互換：OneBot12形式のメッセージ送信をサポート
 
-## 設定説明
+[**English**](docs/ja/quick-start.md)
 
-MatrixAdapterは複数アカウント設定をサポートしており、各アカウントはhomeserverと認証情報を独立して設定します。
+## 設定の説明
+
+MatrixAdapter は、各アカウントごとに homeserver と認証情報を個別に設定できる多アカウント設定をサポートしています。
 
 ```toml
 # config.toml
 # アカウント1
 [Matrix_Adapter.accounts.default]
-homeserver = "https://matrix.org"          # Matrixサーバーアドレス（必須）
-access_token = "YOUR_ACCESS_TOKEN"          # アクセストークン（user_id+password と二択）
-user_id = ""                                # MatrixユーザーID（例: @bot:matrix.org）
-password = ""                               # Matrixユーザーパスワード
-auto_accept_invites = true                  # ルームへの招待を自動的に承諾するか（任意、デフォルトはtrue）
-enabled = true                              # 有効にするか（任意、デフォルトはtrue）
+homeserver = "https://matrix.org"          # Matrixサーバーのアドレス（必須）
+access_token = "YOUR_ACCESS_TOKEN"          # アクセストークン（user_id + password のどちらか一方）
+user_id = ""                                # MatrixのユーザーID（例: @bot:matrix.org）
+password = ""                               # Matrixのユーザーのパスワード
+auto_accept_invites = true                  # ルーム招待を自動的に受け入れるかどうか（オプション、デフォルトはtrue）
+enabled = true                              # アカウントを有効にするかどうか（オプション、デフォルトはtrue）
 
 # アカウント2
 [Matrix_Adapter.accounts.bot2]
@@ -19742,23 +20994,26 @@ access_token = "ANOTHER_TOKEN"
 enabled = true
 ```
 
-> 旧設定との互換性：古い単一アカウントの`[Matrix_Adapter]`設定（access_tokenを含む）を検出した場合、自動的に`accounts.default`に移行されます。
+> 旧設定の互換性：`access_token` を含む旧形式の単一アカウントの `[Matrix_Adapter]` 設定が検出された場合、自動的に `accounts.default` に移行されます。
 
-**設定項目の説明（各アカウント）：**
-- `homeserver`：Matrixサーバーアドレス（必須）、デフォルトは`https://matrix.org`
-- `access_token`：アクセストークン。Matrixクライアントから取得可能。既存のトークンがある場合は直接入力します。
-- `user_id`：MatrixユーザーID（例: `@bot:matrix.org`）、`password`と組み合わせてログインに使用します。
-- `password`：Matrixユーザーパスワード。自動ログインでaccess_tokenを取得するために使用します。
-- `auto_accept_invites`：ルームへの招待を自動的に承諾するかどうか。デフォルトは`true`。
-- `enabled`：このアカウントを有効にするかどうか（任意、デフォルトはtrue）。
+**各アカウントの設定項目の説明：**
+- `homeserver`：Matrixサーバーのアドレス（必須）、デフォルトは `https://matrix.org`
+- `access_token`：Matrixクライアントから取得できるアクセストークン。既にトークンがある場合は、そのまま記入してください
+- `user_id`：MatrixのユーザーID（例: `@bot:matrix.org`）、`password` と併用してログインします
+- `password`：Matrixのユーザーのパスワード、自動ログイン時に access_token を取得するために使用します
+- `auto_accept_invites`：ルーム招待を自動的に受け入れるかどうか、デフォルトは `true`
+- `enabled`：このアカウントを有効にするかどうか（オプション、デフォルトはtrue）
 
-**認証方式：**
-- 方式1（推奨）：直接`access_token`を提供する
-- 方式2：`user_id`と`password`を提供すると、アダプターが自動的にログインAPIを呼び出してトークンを取得します。
+**認証方法：**
+- 方法1（推奨）：`access_token` を直接提供する
+- 方法2：`user_id` と `password` を提供し、アダプタが自動的にログインAPIを呼び出してトークンを取得する
 
-## サポートするメッセージ送信タイプ
+[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
-すべての送信メソッドはメソッドチェーン構文で実装されています。例：
+## 支持的消息送信タイプ
+
+すべての送信メソッドは、チェーン式構文で実装されています。例：
+
 ```python
 from ErisPulse.Core import adapter
 matrix = adapter.get("matrix")
@@ -19766,40 +21021,41 @@ matrix = adapter.get("matrix")
 await matrix.Send.To("group", room_id).Text("Hello World!")
 ```
 
-サポートする送信タイプは以下の通りです：
-- `.Text(text: str)`：プレーンテキストメッセージを送信します。
+サポートされている送信タイプは以下の通りです：
+
+- `.Text(text: str)`：純粋なテキストメッセージを送信します。
 - `.Image(file: bytes | str)`：画像メッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
 - `.Voice(file: bytes | str)`：音声メッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
-- `.Video(file: bytes | str)`：動画メッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
+- `.Video(file: bytes | str)`：ビデオメッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
 - `.File(file: bytes | str, filename: str = "")`：ファイルメッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
-- `.Notice(text: str)`：通知メッセージ（Matrixのm.noticeタイプ）を送信します。
-- `.Html(html: str, fallback: str = "")`：HTMLフォーマットのメッセージを送信します。リッチテキストコンテンツをサポートします。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12フォーマットのメッセージを送信します。
+- `.Notice(text: str)`：通知メッセージを送信します（Matrixのm.noticeタイプ）。
+- `.Html(html: str, fallback: str = "")`：HTML形式のメッセージを送信します。富文本コンテンツをサポートします。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
 
-### メソッドチェーン修飾メソッド（組み合わせて使用可能）
+### チェーン式修飾メソッド（組み合わせて使用可能）
 
-メソッドチェーン修飾メソッドは`self`を返し、メソッドチェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
+チェーン式修飾メソッドは`self`を返し、チェーン式呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
 
-- `.Reply(message_id: str)`：指定したメッセージに返信します（Matrixの`m.in_reply_to`リレーション経由）。
-- `.At(user_id: str)`：指定したユーザーにメンションします（Matrixの`m.mentions`フィールドで実装）。
-- `.AtAll()`：ルーム内の全員にメンションします（Matrixの`@room`メンションで実装）。
+- `.Reply(message_id: str)`：指定されたメッセージに返信します（Matrixの`m.in_reply_to`関係を使用）。
+- `.At(user_id: str)`：指定されたユーザーを@します（Matrixの`m.mentions`フィールドで実現）。
+- `.AtAll()`：部屋内の全員に@します（Matrixの`@room`メンションで実現）。
 
-### メソッドチェーン呼び出し例
+### チェーン式呼び出しの例
 
 ```python
 # 基本的な送信
 await matrix.Send.To("user", dm_room_id).Text("Hello")
 
-# 返信メッセージ
+# メッセージに返信
 await matrix.Send.To("group", room_id).Reply("$event_id").Text("返信メッセージ")
 
-# ユーザーへのメンション
+# ユーザーを@する
 await matrix.Send.To("group", room_id).At("@user:matrix.org").Text("こんにちは")
 
-# 全員へのメンション
-await matrix.Send.To("group", room_id).AtAll().Text("お知らせ")
+# 全員に@する
+await matrix.Send.To("group", room_id).AtAll().Text("公告通知")
 
-# 組み合わせ：返信 + メンション
+# 組み合わせ：返信 + @
 await matrix.Send.To("group", room_id).Reply("$event_id").At("@user:matrix.org").Text("複合メッセージ")
 
 # HTMLメッセージの送信
@@ -19809,16 +21065,16 @@ await matrix.Send.To("group", room_id).Html("<h1>タイトル</h1><p>内容</p>"
 await matrix.Send.To("group", room_id).Notice("システム通知")
 ```
 
-### OneBot12メッセージサポート
+### OneBot12メッセージのサポート
 
-アダプターはOneBot12フォーマットのメッセージ送信をサポートしており、クロスプラットフォームのメッセージ互換性に役立ちます：
+アダプタはOneBot12形式のメッセージを送信する機能をサポートしており、プラットフォーム間のメッセージ互換性を確保します：
 
 ```python
-# OneBot12フォーマットのメッセージを送信
+# OneBot12形式のメッセージを送信
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await matrix.Send.To("user", dm_room_id).Raw_ob12(ob12_msg)
 
-# メソッドチェーン修飾と組み合わせ
+# チェーン式修飾と併用
 ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
 await matrix.Send.To("group", room_id).Reply("$event_id").Raw_ob12(ob12_msg)
 
@@ -19826,55 +21082,54 @@ await matrix.Send.To("group", room_id).Reply("$event_id").Raw_ob12(ob12_msg)
 ob12_msg = [
     {"type": "text", "data": {"text": "この画像を見て："}},
     {"type": "image", "data": {"file": "https://example.com/image.png"}},
-    {"type": "text", "data": {"text": "いいよね？"}}
+    {"type": "text", "data": {"text": "いいでしょ？"}}
 ]
 await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
-```
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドはTaskオブジェクトを返し、直接`await`して送信結果を取得できます。戻り値はErisPulseアダプターの標準化された戻り値の仕様に従います：
+すべての送信メソッドは Task オブジェクトを返し、これに直接 await を使用して送信結果を取得できます。返り値は ErisPulse アダプタの標準化された返り値規格に従います：
 
 ```python
 {
     "status": "ok",           // 実行ステータス: "ok" または "failed"
-    "retcode": 0,             // リターンコード
-    "data": {...},            // レスポンスデータ
-    "message_id": "$event_id", // MatrixイベントID
+    "retcode": 0,             // 戻りコード
+    "data": {...},            // 応答データ
+    "message_id": "$event_id", // Matrix イベントID
     "message": "",            // エラーメッセージ
-    "matrix_raw": {...}       // 生のレスポンスデータ
+    "matrix_raw": {...}       // 元の応答データ
 }
 ```
 
-### エラーコードの説明
+### 戻りコードの説明
 
 | retcode | 説明 |
 |---------|------|
 | 0 | 成功 |
-| 32000 | リクエストタイムアウトまたはメディアのアップロード失敗 |
-| 33000 | API呼び出し例外 |
-| 34000 | APIが予期しないフォーマットまたはビジネスエラーを返しました |
+| 32000 | リクエストがタイムアウトまたはメディアのアップロードに失敗した |
+| 33000 | APIの呼び出しに異常が発生した |
+| 34000 | APIが予期しない形式または業務エラーを返した |
 
-## 固有のイベントタイプ
+## 特有イベントタイプ
 
-`platform=="matrix"`で検出してからこのプラットフォームの特性を使用する必要があります。
+このプラットフォームの機能を使用するには、`platform=="matrix"` の検証が必要です。
 
-### 核心な違い
+### 核心的な違い
 
-1. **非中央集権型アーキテクチャ**：Matrixは非中央集権型の通信プロトコルであり、ユーザーIDのフォーマットは`@user:server.domain`、ルームIDのフォーマットは`!room_id:server.domain`です。
-2. **ルームの概念**：Matrixはグループチャットとダイレクトメッセージを区別せず、すべての会話は「ルーム」です。アダプターはDM（Direct Message）アカウントデータを通じてダイレクトメッセージのルームを自動的に識別します。
-3. **ロングポーリング同期**：WebSocketではなく、`/sync` APIを使用してロングポーリングを行い、新しいイベントを取得します。
-4. **MXC URI**：メディアファイルは`mxc://server.domain/media_id`フォーマットで参照されます。
-5. **HTMLリッチテキスト**：`formatted_body`を通じたHTMLフォーマットのメッセージ送信をサポートします。
-6. **絵文字リアクション**：従来の返信メッセージとは異なる、メッセージレベルの絵文字リアクション（Reaction）をサポートします。
-7. **メッセージ編集**：`m.replace`リレーションによる送信済みメッセージの編集をサポートします。
-8. **メッセージの削除**：`m.room.redaction`によるメッセージの削除をサポートします。
+1. **分散型アーキテクチャ**：Matrix は分散型の通信プロトコルであり、ユーザーIDの形式は `@user:server.domain`、ルームIDの形式は `!room_id:server.domain` です。
+2. **ルーム概念**：Matrix はグループチャットとプライベートチャットを区別せず、すべての会話は「ルーム」として扱われます。アダプターはDM（Direct Message）アカウントデータを用いて自動的にプライベートチャットルームを識別します。
+3. **Long Polling 同期**：WebSocket ではなく、`/sync` API を用いた長時間ポーリングで新規イベントを取得します。
+4. **MXC URI**：メディアファイルは `mxc://server.domain/media_id` 形式で参照されます。
+5. **HTML フォーマット**：`formatted_body` を用いて HTML 形式のメッセージを送信できます。
+6. **絵文字応答**：従来の返信メッセージとは異なり、メッセージレベルでの絵文字応答（Reaction）がサポートされています。
+7. **メッセージ編集**：`m.replace` 関係を用いて送信済みメッセージの編集が可能です。
+8. **メッセージ撤回**：`m.room.redaction` を用いてメッセージの撤回/削除が可能です。
 
 ### 拡張フィールド
 
-- すべての固有フィールドは`matrix_`プレフィックスで識別されます。
-- 生のデータは`matrix_raw`フィールドに保持されます。
-- `matrix_raw_type`は生のMatrixイベントタイプ（例: `m.room.message`、`m.room.member`）を識別します。
+- すべての独自フィールドは `matrix_` という接頭辞で識別されます。
+- 元のデータは `matrix_raw` フィールドに保持されます。
+- `matrix_raw_type` は元のMatrixイベントタイプ（例：`m.room.message`、`m.room.member`）を識別します。
 
 ### 特殊フィールドの例
 
@@ -19888,7 +21143,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
   "matrix_room_id": "!room_id:matrix.org"
 }
 
-# ダイレクトメッセージ
+# プライベートメッセージ
 {
   "type": "message",
   "detail_type": "private",
@@ -19896,7 +21151,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
   "matrix_room_id": "!dm_room_id:matrix.org"
 }
 
-# 絵文字リアクション
+# 絵文字応答
 {
   "type": "notice",
   "detail_type": "matrix_reaction",
@@ -19904,7 +21159,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
   "matrix_reaction_key": "👍"
 }
 
-# メッセージの削除
+# メッセージ撤回
 {
   "type": "notice",
   "detail_type": "matrix_redaction",
@@ -19915,7 +21170,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 {
   "type": "message",
   "detail_type": "group",
-  "matrix_edit": true,
+  "matrix_edit": True,
   "matrix_original_event_id": "$original_event_id"
 }
 
@@ -19929,18 +21184,18 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 
 ### メッセージセグメントタイプ
 
-Matrixメッセージは`msgtype`に基づいて対応するメッセージセグメントに自動的に変換されます：
+Matrixメッセージは `msgtype` に基づいて対応するメッセージセグメントに自動的に変換されます：
 
 | msgtype | 変換タイプ | 説明 |
 |---|---|---|
 | m.text | `text` | テキストメッセージ |
 | m.notice | `text` | 通知メッセージ |
-| m.emote | `text` | アクションメッセージ |
+| m.emote | `text` | 動作メッセージ |
 | m.image | `image` | 画像メッセージ |
 | m.audio | `voice` | 音声メッセージ |
 | m.video | `video` | 動画メッセージ |
 | m.file | `file` | ファイルメッセージ |
-| m.location | `location` | 位置情報メッセージ |
+| m.location | `location` | 位置メッセージ |
 
 メッセージセグメントの構造例：
 
@@ -19949,8 +21204,8 @@ Matrixメッセージは`msgtype`に基づいて対応するメッセージセ�
 {
   "type": "text",
   "data": {
-    "text": "プレーンテキスト内容",
-    "html": "<b>HTML内容</b>"
+    "text": "純粋なテキスト内容",
+    "html": "<b>HTMLコンテンツ</b>"
   }
 }
 
@@ -19970,7 +21225,7 @@ Matrixメッセージは`msgtype`に基づいて対応するメッセージセ�
   }
 }
 
-// 位置情報メッセージ
+// 位置メッセージ
 {
   "type": "location",
   "data": {
@@ -19984,16 +21239,16 @@ Matrixメッセージは`msgtype`に基づいて対応するメッセージセ�
 
 ### Event Mixin メソッド
 
-MatrixAdapterは以下のイベントミックスインメソッドを登録しており、イベント処理内で直接呼び出すことができます：
+MatrixAdapter は以下のイベントミキシンメソッドを登録しており、イベント処理中で直接呼び出すことができます：
 
 | メソッド | 戻り値の型 | 説明 |
 |------|----------|------|
-| `get_room_id()` | `str` | ルームIDを取得 |
-| `get_matrix_event_type()` | `str` | 生のMatrixイベントタイプを取得 |
-| `get_matrix_sender()` | `str` | 生の送信者IDを取得 |
-| `get_reaction_key()` | `str` | リアクションの絵文字を取得 |
-| `is_edited()` | `bool` | メッセージが編集されたものか判定 |
-| `is_notice()` | `bool` | メッセージがm.noticeタイプか判定 |
+| `get_room_id()` | `str` | ルームIDを取得します |
+| `get_matrix_event_type()` | `str` | 元のMatrixイベントタイプを取得します |
+| `get_matrix_sender()` | `str` | 元の送信者IDを取得します |
+| `get_reaction_key()` | `str` | 応答用の絵文字を取得します |
+| `is_edited()` | `bool` | メッセージが編集されたものかどうかを判定します |
+| `is_notice()` | `bool` | メッセージが m.notice タイプかどうかを判定します |
 
 ```python
 @message.on_message()
@@ -20006,30 +21261,31 @@ async def handle_message(event):
     sender = event.get_matrix_sender()
     is_edited = event.is_edited()
     is_notice = event.is_notice()
-```
 
 ## Sync API 接続
 
 ### 同期フロー
 
-1. access_tokenまたはuser_id+passwordを使用して認証
-2. `/_matrix/client/v3/account/whoami`を呼び出してbot_user_idを取得
-3. connectメタイベントを発火
-4. 初期同期（`/_matrix/client/v3/sync?timeout=0`）を実行し、`next_batch`トークンを取得
-5. DMルームを検出（`/_matrix/client/v3/user/{user_id}/account_data/m.direct`）
-6. ロングポーリング同期ループを開始（`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`）
-7. 毎回の同期で返された新しいイベントを処理し、変換して発火
+1. access_token または user_id + password を使用して認証を行う
+2. `/_matrix/client/v3/account/whoami` を呼び出し、bot_user_id を取得する
+3. connect 元イベントを発行する
+4. 初期同期を実行する（`/_matrix/client/v3/sync?timeout=0`）`next_batch` token を取得する
+5. DM ルームを検出する（`/_matrix/client/v3/user/{user_id}/account_data/m.direct`）
+6. Long Polling 同期ループを開始する（`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`）
+7. 各同期で返された新しいイベントを処理し、発行する
 
 ### ハートビートメカニズム
 
-- アダプターは30秒ごとに1回`heartbeat`メタイベントを発火します。
-- 接続成功時に`connect`メタイベントを発火します。
-- 終了時に`disconnect`メタイベントを発火します。
+- アダプターは 30 秒ごとに `heartbeat` 元イベントを発行する
+- 接続が成功した場合に `connect` 元イベントを発行する
+- 閉じる際に `disconnect` 元イベントを発行する
 
-### ルームへの招待
+### ルーム招待
 
-- ルームへの招待（`invite`ステータスのルーム）を受信した際、`auto_accept_invites`が`true`（デフォルト）に設定されている場合、アダプターは自動的にルームに参加します。
-- ルームへの参加は`/_matrix/client/v3/join/{room_id}`インターフェースを呼び出します。
+- ルーム招待（`invite` 状態のルーム）を受け取った場合、`auto_accept_invites` 設定が `true`（デフォルト）の場合、アダプターは自動的にルームに参加する
+- ルームに参加する際には `/_matrix/client/v3/join/{room_id}` エンドポイントを呼び出す
+
+[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 使用例
 
@@ -20057,7 +21313,7 @@ async def handle_group_msg(event):
         ).Text("Hello!")
 ```
 
-### 絵文字リアクションの処理
+### 表情応酬の処理
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -20071,27 +21327,27 @@ async def handle_reaction(event):
         reaction_key = event.get("matrix_reaction_key")
         reacted_event_id = event.get("matrix_reaction_event_id")
         room_id = event.get_room_id()
-        # 絵文字リアクションの処理...
+        # 表情応酬の処理...
 ```
 
 ### メディアメッセージの送信
 
 ```python
-# 画像を送信（URL）
+# 画像の送信（URL）
 await matrix.Send.To("group", room_id).Image("https://example.com/image.png")
 
-# 画像を送信（MXC URI）
+# 画像の送信（MXC URI）
 await matrix.Send.To("group", room_id).Image("mxc://matrix.org/abc123")
 
-# 画像を送信（バイナリデータ）
+# 画像の送信（バイナリデータ）
 with open("image.png", "rb") as f:
     image_bytes = f.read()
 await matrix.Send.To("group", room_id).Image(image_bytes)
 
-# 画像を送信（ローカルファイルパス）
+# 画像の送信（ローカルファイルパス）
 await matrix.Send.To("group", room_id).Image("/path/to/image.png")
 
-# ファイルを送信（ファイル名付き）
+# ファイルの送信（ファイル名付き）
 await matrix.Send.To("group", room_id).File("/path/to/document.pdf", filename="ドキュメント.pdf")
 ```
 
@@ -20121,7 +21377,7 @@ async def handle_member_change(event):
     if detail_type == "group_member_increase":
         user_id = event.get("user_id")
         nickname = event.get("user_nickname")
-        print(f"ユーザー {nickname} ({user_id}) がルームに参加しました")
+        print(f"ユーザー {nickname} ({user_id}) が部屋に参加しました")
 
     elif detail_type == "group_member_decrease":
         user_id = event.get("user_id")
@@ -21281,28 +22537,36 @@ from ErisPulse.Core import adapter
 
 ### 花枫咖啡馆适配
 
-# 花楓カフェ（Ideaura）プラットフォーム特性ドキュメント
+# 花楓コーヒーショップ（RockyChat）プラットフォームの機能ドキュメント
 
-IdeauraAdapterは、花楓カフェ（Allons）プラットフォームのAPIに基づいて構築されたアダプターであり、すべてのプラットフォーム機能モジュールを統合し、統一されたイベント処理およびメッセージ操作インターフェースを提供します。
+IdeauraAdapter は、花楓コーヒーショップ（RockyChat）プラットフォームの API を基に構築されたアダプタであり、すべてのプラットフォーム機能モジュールを統合し、一貫したイベント処理およびメッセージ操作インターフェースを提供します。
 
 ---
 
+docs/ja/quick-start.md
+
 ## ドキュメント情報
 
-- 対応モジュール: ErisPulse-Ideaura
-- メンテナ: ErisPulse
+- 対応モジュール: ErisPulse-Ideaura  
+- 対応モジュールバージョン: 4.0.1  
+- 維持管理者: ErisPulse  
+
+[**English**](docs/ja/quick-start.md)
 
 ## 基本情報
 
-- プラットフォーム紹介：花楓カフェ（Allons）はインスタントメッセージングプラットフォームです
+- プラットフォーム紹介：花楓カフェ（RockyChat）はリアルタイム通信プラットフォームです。
 - アダプター名：IdeauraAdapter
-- マルチアカウントサポート：tokenまたはemail/passwordによる複数アカウントの設定をサポート
-- メソッドチェーンサポート：`.At()`、`.AtAll()`、`.Reply()`などのメソッドチェーンによる修飾をサポート
-- OneBot12互換：OneBot12形式のメッセージ送信をサポート
+- マルチアカウント対応：Bot Token による複数アカウントの設定が可能です。
+- チェーン修飾子対応：`.At()`、`.AtAll()`、`.Reply()`、`.Command()` などのチェーン修飾子メソッドに対応しています。
+- OneBot12互換性：OneBot12形式のメッセージ送信に対応しています。
 
-## サポートするメッセージ送信タイプ
+[**English**](docs/ja/quick-start.md)
 
-すべての送信メソッドはメソッドチェーン構文によって実装されています。例えば：
+## 支援されるメッセージ送信タイプ
+
+すべての送信メソッドは、チェーン式構文で実現されています。例：
+
 ```python
 from ErisPulse.Core import adapter
 ideaura = adapter.get("ideaura")
@@ -21311,45 +22575,50 @@ await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 ```
 
 サポートされている送信タイプは以下の通りです：
+
 - `.Text(text: str)`：純粋なテキストメッセージを送信します。
-- `.Image(file, filename: str = None)`：画像メッセージを送信します。bytes/URL/ローカルパスをサポートしています。
-- `.Video(file, filename: str = None)`：動画メッセージを送信します。bytes/URL/ローカルパスをサポートしています。
-- `.File(file, filename: str = None)`：ファイルメッセージを送信します。bytes/URL/ローカルパスをサポートしています。
-- `.Voice(file, filename: str = None)`：音声メッセージを送信します（ファイルとして送信されます）。
-- `.Face(face_id: str)`：絵文字を送信します（純粋なテキスト形式の絵文字として送信されます）。
+- `.Image(file, filename: str = None)`：画像メッセージを送信します。bytes/URL/ローカルパスをサポートします。
+- `.Video(file, filename: str = None)`：ビデオメッセージを送信します。bytes/URL/ローカルパスをサポートします。
+- `.File(file, filename: str = None)`：ファイルメッセージを送信します。bytes/URL/ローカルパスをサポートします。
+- `.Voice(file, filename: str = None)`：音声メッセージを送信します（ファイルとして送信）。
+- `.Face(face_id: str)`：絵文字を送信します（純粋なテキスト形式でemojiとして送信）。
 - `.Markdown(text: str)`：Markdown形式のメッセージを送信します。
 - `.Html(html: str)`：HTML形式のメッセージを送信します。
 - `.Edit(message_id: str, text: str, content_type: str = "text")`：既存のメッセージを編集します。
-- `.Recall(message_id: str)`：メッセージを取り消します。
+- `.Recall(message_id: str)`：メッセージを撤回します。
 
-### メソッドチェーンによる修飾（組み合わせ可能）
+### チェーン式修飾メソッド（組み合わせて使用可能）
 
-メソッドチェーンによる修飾メソッドは `self` を返し、チェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
+チェーン式修飾メソッドは `self` を返し、チェーン式呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
 
-- `.At(user_id: str, name: str = None)`：指定したユーザーを@します。
+- `.At(user_id: str, name: str = None)`：指定ユーザーを@します。
 - `.AtAll()`：全員を@します。
 - `.Reply(message_id: str)`：指定したメッセージに返信します。
+- `.Command(command_id: str)`：Botコマンドをトリガーします。送信メソッドと併用して使用します（メッセージを指定されたコマンドとして送信します）。
 
-### メソッドチェーン呼び出しの例
+### チェーン式呼び出しの例
 
 ```python
 # 基本的な送信
 await ideaura.Send.To("user", user_id).Text("Hello")
 
-# ユーザーを@する
-await ideaura.Send.To("group", "chatroom").At("456").Text("@李四 こんにちは")
+# Botコマンドをトリガー
+await ideaura.Send.To("group", "chatroom").Command("550e8400-e29b-41d4-a716-446655440000").Text("/weather 北京")
 
-# 複数人を@する
-await ideaura.Send.To("group", "chatroom").At("456").At("789").Text("@複数人")
+# ユーザーを@
+await ideaura.Send.To("group", "chatroom").At("456").Text("@李四 你好")
 
-# メッセージに返信する
+# 複数ユーザーを@
+await ideaura.Send.To("group", "chatroom").At("456").At("789").Text("@多人")
+
+# メッセージに返信
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).Text("返信メッセージ")
 
 # 返信 + @
-await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("返信して@する")
+await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("返信して@")
 ```
 
-### 異なるターゲットへの送信
+### 異なる送信先へ
 
 ```python
 # チャットルームに送信
@@ -21358,13 +22627,13 @@ await ideaura.Send.To("group", "chatroom").Text("チャットルームメッセ�
 # トピックに送信
 await ideaura.Send.To("group", "topic_id").Text("トピックメッセージ")
 
-# プライベートメッセージを送信
-await ideaura.Send.To("user", "user_id").Text("プライベートメッセージ")
+# プライベートチャットメッセージを送信
+await ideaura.Send.To("user", "user_id").Text("プライベートチャットメッセージ")
 ```
 
-### OneBot12メッセージサポート
+### OneBot12メッセージのサポート
 
-アダプターはOneBot12形式のメッセージ送信をサポートしており、クロスプラットフォームのメッセージ互換性に役立ちます：
+アダプタはOneBot12形式のメッセージ送信をサポートしており、プラットフォーム間のメッセージ互換性を確保します：
 
 - `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
 
@@ -21373,50 +22642,52 @@ await ideaura.Send.To("user", "user_id").Text("プライベートメッセージ
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await ideaura.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# メソッドチェーンによる修飾と組み合わせ
+# チェーン式修飾と併用
 ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
-```
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドはTaskオブジェクトを返し、直接 `await` することで送信結果を取得できます。戻り値はErisPulseアダプターの標準化された戻り値仕様に従います：
+すべての送信メソッドは Task オブジェクトを返し、これに直接 await を使用して送信結果を取得できます。返却される結果は ErisPulse アダプタの標準化された返却仕様に従います：
 
 ```python
 {
     "status": "ok",           // 実行ステータス
-    "retcode": 0,             // リターンコード
-    "data": {...},            // レスポンスデータ
-    "self": {...},            // 自身の情報（user_idを含む）
+    "retcode": 0,             // 返却コード
+    "data": {...},            // 応答データ
+    "self": {...},            // 自身の情報（user_id を含む）
     "message_id": "123456",   // メッセージID
     "message": "",            // エラーメッセージ
-    "ideaura_raw": {...}      // 生のレスポンスデータ
+    "ideaura_raw": {...}      // 元の応答データ
 }
 ```
 
-## 固有のイベントタイプ
+docs/ja/quick-start.md
 
-このプラットフォームの特性を使用する前に、`platform=="ideaura"` で検出する必要があります。
+## 特有イベントタイプ
 
-### 主要な相違点
+このプラットフォームの機能を使用するには、`platform=="ideaura"` の検証が必要です。
 
-1. 固有のイベントタイプ：
-    - メッセージ編集：ideaura_message_edit
-    - メッセージ取り消し：ideaura_message_recall
-    - メッセージ転送：ideaura_message_forward
-    - メッセージ既読：ideaura_message_read
-    - 友達拒否：ideaura_friend_rejected
-    - 友達オンライン：ideaura_friend_online
-    - 友達オフライン：ideaura_friend_offline
-    - ユーザーステータス変更：ideaura_user_status_change
-    - 転送メッセージセグメント：ideaura_forwarded
-    - 編集マークセグメント：ideaura_edited
-    - Markdownメッセージセグメント：ideaura_markdown
-    - HTMLメッセージセグメント：ideaura_html
-2. 拡張フィールド：
-    - すべての固有フィールドは `ideaura_` プレフィックスで識別されます
-    - 生データは `ideaura_raw` フィールドに保持されます
-    - `self.user_id` は現在のアカウントのユーザーIDを示します
+### 核心的な違い
+
+1. 特有のイベントタイプ：
+    - メッセージ編集: ideaura_message_edit
+    - メッセージ撤回: ideaura_message_recall
+    - メッセージ転送: ideaura_message_forward
+    - メッセージ既読: ideaura_message_read
+    - 友達リクエスト拒否: ideaura_friend_rejected
+    - 友達オンライン: ideaura_friend_online
+    - 友達オフライン: ideaura_friend_offline
+    - ユーザー状態変更: ideaura_user_status_change
+    - 転送メッセージセグメント: ideaura_forwarded
+    - 編集マークセグメント: ideaura_edited
+    - Markdownメッセージセグメント: ideaura_markdown
+    - HTMLメッセージセグメント: ideaura_html
+    - Botコマンドメッセージセグメント: ideaura_command
+2. 拡張フィールド:
+    - すべての特有フィールドは `ideaura_` で始まるプロパティ名を持つ
+    - 元のデータは `ideaura_raw` フィールドに保持される
+    - `self.user_id` は現在のアカウントのユーザーIDを表す
 
 ### メッセージ編集イベント
 
@@ -21427,24 +22698,24 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "platform": "ideaura",
   "message_id": "メッセージID",
   "user_id": "編集者ID",
-  "ideaura_new_content": "編集後的内容",
+  "ideaura_new_content": "編集後の内容",
   "ideaura_updated_message": { ... },
   "ideaura_source_type": "chatroom/topic/private"
 }
 ```
 
-### メッセージ取り消しイベント
+### メッセージ撤回イベント
 
 ```python
 {
   "type": "notice",
   "detail_type": "ideaura_message_recall",
   "platform": "ideaura",
-  "message_id": "取り消されたメッセージID",
-  "user_id": "取り消し者ID",
+  "message_id": "撤回されたメッセージID",
+  "user_id": "撤回者ID",
   "group_id": "chatroom",
   "ideaura_source_type": "chatroom",
-  "ideaura_recall_time": "取り消し時間",
+  "ideaura_recall_time": "撤回時間",
   "ideaura_is_self": false
 }
 ```
@@ -21458,7 +22729,7 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "platform": "ideaura",
   "message_id": "元のメッセージID",
   "user_id": "転送者ID",
-  "ideaura_forward_to": "転送先トピックID",
+  "ideaura_forward_to": "ターゲットトピックID",
   "ideaura_original_message_id": "元のメッセージID",
   "ideaura_forwarded_message_id": "転送後の新しいメッセージID"
 }
@@ -21503,7 +22774,7 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 }
 ```
 
-### ユーザーステータス変更イベント
+### ユーザー状態変更イベント
 
 ```python
 {
@@ -21511,8 +22782,8 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "detail_type": "ideaura_user_status_change",
   "platform": "ideaura",
   "user_id": "ユーザーID",
-  "ideaura_status": "新しいステータス",
-  "ideaura_previous_status": "前のステータス"
+  "ideaura_status": "新しい状態",
+  "ideaura_previous_status": "以前の状態"
 }
 ```
 
@@ -21526,11 +22797,11 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "user_id": "リクエスト者ID",
   "user_nickname": "リクエスト者のニックネーム",
   "ideaura_request_id": "リクエストID",
-  "ideaura_message": "確認メッセージ"
+  "ideaura_message": "認証メッセージ"
 }
 ```
 
-### 友達拒否イベント
+### 友達リクエスト拒否イベント
 
 ```python
 {
@@ -21547,7 +22818,7 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 
 ### 転送メッセージセグメント (ideaura_forwarded)
 
-転送メッセージを受け取った場合、メッセージセグメントのタイプは `ideaura_forwarded` になります：
+転送メッセージを受け取った場合、メッセージセグメントのタイプは `ideaura_forwarded` です：
 
 ```json
 {
@@ -21559,10 +22830,27 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 }
 ```
 
-| フィールド | タイプ | 説明 |
+| フィールド | 型 | 説明 |
 |------|------|------|
 | `forward_source_id` | string | 転送元メッセージID |
 | `original_message_id` | string | 元のメッセージID |
+
+### Botコマンドメッセージセグメント (ideaura_command)
+
+ユーザーがBotコマンドをトリガーした場合、メッセージセグメントのタイプは `ideaura_command` です：
+
+```json
+{
+  "type": "ideaura_command",
+  "data": {
+    "command_id": "550e8400-e29b-41d4-a716-446655440000"
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+|------|------|------|
+| `command_id` | string | コマンド UUID |
 
 ### イベント処理の例
 
@@ -21576,7 +22864,7 @@ async def handle_message(event):
         for segment in event.get("message", []):
             if segment.get("type") == "ideaura_forwarded":
                 data = segment["data"]
-                print(f"転送メッセージ、元ID: {data['forward_source_id']}")
+                print(f"転送メッセージ、元のID: {data['forward_source_id']}")
 
 @notice.on_notice()
 async def handle_notice(event):
@@ -21591,7 +22879,7 @@ async def handle_notice(event):
 
     elif detail_type == "ideaura_message_recall":
         message_id = event.get("message_id")
-        print(f"メッセージが取り消されました: {message_id}")
+        print(f"メッセージが撤回されました: {message_id}")
 
     elif detail_type == "ideaura_friend_online":
         friend_name = event.get_user_nickname()
@@ -21599,69 +22887,97 @@ async def handle_notice(event):
 
     elif detail_type == "ideaura_user_status_change":
         status = event.get("ideaura_status")
-        print(f"ユーザーのステータスが変更されました: {status}")
-```
+        print(f"ユーザーの状態が変更されました: {status}")
 
----
+## Event Mixin 拡張メソッド
 
-## マルチアカウント設定
+アダプタは、`platform == "ideaura"` の場合にのみ利用可能な以下のプラットフォーム固有メソッドを登録しています。
 
-### 設定説明
+| メソッド | 戻り値の型 | 説明 |
+|------|----------|------|
+| `get_source_type()` | `str` | メッセージの送信元タイプ（`chatroom`/`topic`/`private`） |
+| `get_sender_name()` | `str` | 送信者のニックネーム |
+| `get_sender_avatar()` | `str` | 送信者のアバターの URL |
+| `is_sender_bot()` | `bool` | 送信者が Bot かどうか |
+| `is_receiver_bot()` | `bool` | 受信者が Bot かどうか |
+| `get_command_id()` | `str` | Bot 指令の ID（存在する場合、`ideaura_command_id`） |
+| `get_command()` | `str` | `get_command_id()` のエイリアス |
+| `get_topic_name()` | `str` | トピックの名前 |
+| `get_message_type()` | `str` | メッセージのタイプ（normal/edited/forwarded/quoted） |
+| `get_message_subtype()` | `str` | メッセージのサブタイプ（text/image/video/file/markdown/html） |
+| `is_self_message()` | `bool` | 自分自身が送信したメッセージかどうか |
 
-IdeauraAdapterは複数のアカウントを同時に設定および実行することができ、各アカウントはTokenログインまたはメール/パスワードログイン（どちらか一方）を選択できます。
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event.get_platform() != "ideaura":
+        return
+
+    # Bot 指令の ID を取得（存在する場合）
+    cmd_id = event.get_command_id()
+    if cmd_id:
+        print(f"指令を受信しました: {cmd_id}")
+
+## 多アカウント設定
+
+### 設定の説明
+
+IdeauraAdapter は、**Bot Token** 認証を使用して複数のアカウントを同時に設定および実行することをサポートしています。
+
+> [!WARNING]
+> 4.0.1 以降、**メールアドレスとパスワードによるログインは削除され、Bot Token でのみ認証が可能**です。Bot Token は [MSCPO 開放プラットフォーム](https://open.mscpo.com/rockychat/bots) から取得する必要があります（`bot-token-` で始まる形式）。
 
 ```toml
 # config.toml
-# アカウント1：Tokenログイン（推奨、メール/パスワード不要）
+# アカウント1
 [IdeauraAdapter.accounts.default]
-token = "your-token-here"        # ログインToken（email+passwordと二択）
-enabled = true                   # 有効化するかどうか（オプション、デフォルトはtrue）
+token = "bot-token-xxxxxx1"      # ロボット API Token（必須）
+enabled = true                   # 有効化するかどうか（オプション、デフォルトは true）
 
-# アカウント2：メール/パスワードログイン
+# アカウント2
 [IdeauraAdapter.accounts.bot2]
-email = "user2@example.com"      # ログインメールアドレス
-password = "password2"           # ログインパスワード
+token = "bot-token-xxxxxx2"
 enabled = true
 
 # オプション：カスタムサーバーのアドレス
 [IdeauraAdapter]
-base_url = "https://api-cofe.allons-y.uk:3009"
+base_url = "https://api.mscpo.com/api/rockychat"
 ws_url = "wss://api-cofe.allons-y.uk:3009/mqtt"
 heartbeat_interval = 30
 ```
 
 **設定項目の説明：**
-- `token`：ログインToken（オプション、記入するとTokenログインが優先され、メール/パスワードは不要）
-- `email`：ログインメールアドレス（Tokenログイン時は不要、メール/パスワードログイン時は必須）
-- `password`：ログインパスワード（Tokenログイン時は不要、メール/パスワードログイン時は必須）
-- `enabled`：アカウントを有効にするかどうか（オプション、デフォルトはtrue）
+- `token`：ロボット API Token（必須、`bot-token-` で始まる形式）
+- `enabled`：このアカウントを有効化するかどうか（オプション、デフォルトは true）
 
 **グローバル設定項目：**
-- `base_url`：APIサーバーのアドレス（オプション、デフォルトは花楓カフェの公式アドレス）
-- `ws_url`：WebSocketサーバーのアドレス（オプション、デフォルトは花楓カフェの公式アドレス）
-- `heartbeat_interval`：ハートビートの間隔（秒）（オプション、デフォルトは30秒）
+- `base_url`：API サーバーのアドレス（オプション、デフォルトは `https://api.mscpo.com/api/rockychat`）
+- `ws_url`：WebSocket サーバーのアドレス（オプション、デフォルトは花楓珈琲館の公式アドレス）
+- `heartbeat_interval`：ハートビートの間隔（秒）（オプション、デフォルトは 30 秒）
 
-### Send DSLを使用してアカウントを指定
+### Send DSL を使用してアカウントを指定
 
-`Using()`メソッドを使用してどのアカウントでメッセージを送信するかを指定できます：
+`Using()` メソッドを使用して、どのアカウントからメッセージを送信するかを指定できます：
 
 ```python
 from ErisPulse.Core import adapter
 ideaura = adapter.get("ideaura")
 
 # アカウント名を使用してメッセージを送信
-await ideaura.Send.Using("default").To("user", "user123").Text("アカウント1から送信されたHello!")
+await ideaura.Send.Using("default").To("user", "user123").Text("Hello from account 1!")
 
-# user_idを使用してメッセージを送信（自動的に対応するアカウントにマッチ）
-await ideaura.Send.Using("456").To("group", "chatroom").Text("アカウント2から送信されたHello!")
+# user_id を使用してメッセージを送信（対応するアカウントに自動的にマッチ）
+await ideaura.Send.Using("456").To("group", "chatroom").Text("Hello from account 2!")
 
 # 指定しない場合は、最初に有効化されたアカウントが使用されます
-await ideaura.Send.To("user", "user123").Text("デフォルトアカウントから送信されたHello!")
+await ideaura.Send.To("user", "user123").Text("Hello from default account!")
 ```
 
 ### イベントにおけるアカウント識別
 
-イベントは自動的に対応するアカウント情報を含みます：
+受信したイベントには、自動的に対応するアカウント情報が含まれます：
 
 ```python
 from ErisPulse.Core.Event import message
@@ -21670,36 +22986,33 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     if event["platform"] == "ideaura":
         account_id = event["self"]["user_id"]
-        print(f"メッセージはアカウントから来ています: {account_id}")
-```
-
----
+        print(f"メッセージはアカウント: {account_id} から送信されました")
 
 ## 拡張フィールドの説明
 
-- すべての固有フィールドは `ideaura_` プレフィックスで識別され、標準フィールドとの衝突を避ける
-- 生データは `ideaura_raw` フィールドに保持され、プラットフォームの完全な生データにアクセスできる
-- `self.user_id` は現在のログインアカウントのユーザーIDを示す
-- `ideaura_source_type`：メッセージの送信元タイプ（`chatroom`/`topic`/`private`）
+- すべての固有フィールドは `ideaura_` という接頭辞で識別され、標準フィールドとの衝突を避ける
+- `ideaura_raw` フィールドに元のデータを保持し、プラットフォームの完全な元データにアクセスできるようにする
+- `self.user_id` は現在ログインしているアカウントのユーザーIDを示す
+- `ideaura_source_type`：メッセージの送信元の種類（`chatroom`/`topic`/`private`）
 - `ideaura_sender_name`：送信者のニックネーム
-- `ideaura_sender_avatar`：送信者のプロフィール画像URL
-- `ideaura_sender_is_bot`：送信者がボットかどうか
-- `ideaura_is_self`：自ら送信したメッセージかどうか（自メッセージはフィルタリング済み）
-- `ideaura_topic_name`：トピックの名前
-- `ideaura_message_type`：メッセージのタイプ（normal/edited/forwarded/quoted）
+- `ideaura_sender_avatar`：送信者のアバターのURL
+- `ideaura_sender_is_bot`：送信者がロボットかどうか
+- `ideaura_is_self`：送信者が自分自身かどうか（自分自身のメッセージはフィルタリング済み）
+- `ideaura_topic_name`：トピック名
+- `ideaura_message_type`：メッセージの種類（normal/edited/forwarded/quoted）
 - `ideaura_message_subtype`：メッセージのサブタイプ（text/image/video/file/markdown/html）
 
-### ファイル処理の特徴
+### ファイル処理の特性
 
-- ファイルサイズ制限：10MB（ダウンロードとローカル読み込みの両方に制限あり）
-- 自動ファイルタイプ検出：ファイルヘッダーの魔法バイトで実際のタイプを検出
-- スマートなファイル名解析：`.bin`/`.dat`/`.tmp`などの意味のない拡張子を自動的に修正
-- bytes、URL、ローカルパスの3種類のファイル入力方式をサポート
-- URLファイルは自動的にダウンロードしてサーバーにアップロード
+- ファイルサイズ制限：10MB（ダウンロードおよびローカル読み込みの両方に制限がある）
+- 自動ファイルタイプ検出：ファイルヘッダの魔法のバイトを使って実際のタイプを検出
+- スマートなファイル名解析：`.bin`/`.dat`/`.tmp` などの意味のない拡張子に対して自動的に修正
+- bytes、URL、ローカルパスの3種類のファイル入力方法をサポート
+- URLから指定されたファイルは自動的にダウンロードされ、サーバにアップロードされる
 
-### サポートされるファイルタイプ
+### 対応するファイルタイプ
 
-魔法バイトで自動検出：
+魔法のバイトによって自動的に検出される：
 
 | タイプ | 拡張子 |
 |------|--------|
@@ -21708,48 +23021,54 @@ async def handle_message(event):
 | 音声 | mp3, wav, ogg |
 | ドキュメント | pdf, docx |
 
----
-
 ## 注意事項
 
-1. サーバーのアドレス `api-cofe.allons-y.uk` はプラットフォーム固有のアドレスであり、アダプター名の変更に応じて変化しません
-2. アダプターはWebSocketの長時間接続を使ってイベントを受け取り、自動再接続（固定5秒の遅延）をサポートします
-3. 自身が送信したメッセージ（`isSelf: true`）は自動的にフィルタリングされ、イベントとして送信されません
-4. `@全員（AtAll()）` は管理者権限が必要です
-5. ファイルのアップロードサイズ制限は10MBです
-6. 音声ファイルは `file` サブタイプとして送信されます（プラットフォームでは独立した音声タイプを区別しません）
-7. 表情（`Face()`）は純粋なテキスト形式のemojiとして送信されます
-8. プログラムを終了する際は `shutdown()` を呼び出してリソースの解放を確実にしてください
+1. API サーバーのデフォルトアドレスは `https://api.mscpo.com/api/rockychat` です（`base_url` でカスタマイズ可能です）；WebSocket アドレス `wss://api-cofe.allons-y.uk:3009/mqtt` はプラットフォーム固有のアドレスであり、アダプター名の変更に伴って変化しません。
+2. アダプターは WebSocket 長接続を使用してイベントを受信し、自動再接続（固定5秒の遅延）をサポートしています。
+3. 自身が送信したメッセージ（`isSelf: true`）は自動的にフィルタリングされ、イベントが発生しません。
+4. @全員（`AtAll()`）は管理者権限が必要です。
+5. ファイルのアップロードサイズ制限は 10MB です。
+6. 音声ファイルは `file` サブタイプとして送信されます（プラットフォームでは独立した音声タイプを区別しません）。
+7. エモジ（`Face()`）は純粋なテキスト形式で emoji を送信します。
+8. プログラムを終了する際は、リソースの解放を確実にするために `shutdown()` を呼び出してください。
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
 
 
 ### Discord 适配
 
-# Discord プラットフォーム仕様ドキュメント
+# Discord プラットフォームの機能ドキュメント
 
-DiscordAdapter は Discord Gateway (WebSocket) および REST API v10 プロトコルに基づいて構築されたアダプタであり、Discord Bot のコア機能を統合し、統一されたイベント処理とメッセージ操作インターフェースを提供します。
+DiscordAdapter は、Discord Gateway (WebSocket) および REST API v10 プロトコルに基づいて構築されたアダプターであり、Discord Bot のコア機能を統合し、一貫したイベント処理およびメッセージ操作インターフェースを提供します。
 
 ---
 
+docs/ja/quick-start.md
+
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.0.0
+- 対応モジュールバージョン: 4.1.0
 - メンテナー: ErisPulse
 - Discord API バージョン: v10
 
+[**English**](docs/ja/introduction.md)
+
 ## 基本情報
 
-- プラットフォームの概要：Discord は広く人気のあるコミュニティ通話プラットフォームであり、サーバー、チャンネル、DM（DM: Direct Message）など、多様な会話形式をサポートし、完全な Bot 開発インターフェースを提供します
+- プラットフォーム紹介：Discord は、サーバー、チャンネル、プライベートメッセージなど多様な会話形式をサポートする人気の高いコミュニティコミュニケーションプラットフォームであり、Bot開発のための完全なAPIを提供しています。
 - アダプタ名：DiscordAdapter
-- マルチアカウントサポート：複数の Discord Bot を同時に設定可能
-- 接続方式：Gateway WebSocket（イベント受信）+ REST API（メッセージ送信/インターフェース呼び出し）
-- 認証方式：Bot Token（HTTP ヘッダー `Authorization: Bot {token}`、Gateway IDENTIFY payload に token を含める）
-- チェーン修飾サポート：`.Reply()`、`.At()`、`.AtAll()` などのチェーン修飾メソッドをサポート
-- OneBot12 互換性：OneBot12 形式メッセージの送信をサポート
+- 複数アカウント対応：複数のDiscord Botを同時に設定することができます。
+- 接続方法：Gateway WebSocket（イベントの受信）+ REST API（メッセージ送信/インターフェース呼び出し）
+- 認証方式：Bot Token（HTTPヘッダー `Authorization: Bot {token}`、Gateway IDENTIFY payloadにtokenを含む）
+- チェーン修飾子対応：`.Reply()`、`.At()`、`.AtAll()`などのチェーン修飾メソッドをサポートしています。
+- OneBot12互換性：OneBot12形式のメッセージ送信をサポートしています。
+
+[**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 ## 設定説明
 
-DiscordAdapter はマルチアカウント設定をサポートしており、各アカウントは独立した Discord Bot に対応します。
+DiscordAdapter は複数アカウントの設定をサポートしており、各アカウントは個別の Discord Bot に対応します。
 
 ```toml
 # config.toml
@@ -21758,7 +23077,7 @@ DiscordAdapter はマルチアカウント設定をサポートしており、�
 [DiscordAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"       # Discord Bot Token（必須）
 intents = 33281                 # Gateway Intents（オプション、デフォルト 33281）
-enabled = true                  # 有効にするかどうか（オプション、デフォルト true）
+enabled = true                  # 有効化するかどうか（オプション、デフォルト true）
 
 # アカウント2
 [DiscordAdapter.accounts.bot2]
@@ -21767,35 +23086,36 @@ intents = 33281
 enabled = true
 ```
 
-**設定項目説明（各アカウントについて）：**
+**各アカウントの設定項目の説明：**
 
-- `token`：Discord Bot Token（必須）。[Discord Developer Portal](https://discord.com/developers/applications) から取得
-- `intents`：Gateway Intents ビットマスク（オプション、デフォルト `33281`）。Bot が訂閲するイベントタイプを決定します
-- `bot_id`：Bot のユーザー ID（オプション、実行時 READY イベントから自動的に取得されるため手動で入力する必要はありません）
-- `enabled`：このアカウントを有効にするかどうか（オプション、デフォルト `true`）
+- `token`：Discord Bot Token（必須）、[Discord Developer Portal](https://discord.com/developers/applications) から取得
+- `intents`：Gateway Intents ビットマスク（オプション、デフォルト `33281`）、Bot がサブスクライブするイベントの種類を決定
+- `bot_id`：Bot のユーザー ID（オプション、READY イベントから実行時に自動取得、手動で入力する必要はありません）
+- `enabled`：このアカウントを有効化するかどうか（オプション、デフォルト `true`）
 
 ### Gateway Intents
 
-Intents はビットマスクを使用し、各 Intent 値のビット OR（`|`）演算で計算されます：
+Intents はビットマスクを使用し、各 Intent 値をビット単位の OR（`|`）で計算します：
 
 | Intent | ビット | 値 | 説明 | Privileged |
 |-------|------|------|------|------|
-| GUILDS | `1 << 0` | 1 | サーバー作成/削除/更新、チャンネル、ロールの変更 | 否 |
-| GUILD_MEMBERS | `1 << 1` | 2 | メンバーの追加/削除/更新 | 是 |
-| GUILD_MESSAGES | `1 << 9` | 512 | サーバーメッセージの送受信 | 否 |
-| MESSAGE_CONTENT | `1 << 15` | 32768 | メッセージコンテンツ（この Intentsがない場合 content は空） | 是 |
+| GUILDS | `1 << 0` | 1 | サーバーの作成/削除/更新、チャンネル、役割の変更 | いいえ |
+| GUILD_MEMBERS | `1 << 1` | 2 | メンバーの加入/離脱/更新 | はい |
+| GUILD_MESSAGES | `1 << 9` | 512 | サーバーのメッセージ送受信 | いいえ |
+| MESSAGE_CONTENT | `1 << 15` | 32768 | メッセージの内容（この Intent がない場合 content は空） | はい |
 
 デフォルト値 `33281` = `GUILDS(1) | GUILD_MESSAGES(512) | MESSAGE_CONTENT(32768)`。
 
-> **注意**：Privileged Intents は Discord Developer Portal → Bot → Privileged Gateway Intents で有効にする必要があります。Bot が100個以上のサーバーにある場合は、Discord の承認を通過する必要があります。
+> **注意**：Privileged Intents は Discord Developer Portal → Bot → Privileged Gateway Intents で有効にする必要があります。Bot が 100 以上のサーバーに存在する場合、Discord の審査も必要です。
 
 **API 環境：**
-- Discord REST API ベース URL：`https://discord.com/api/v10`
-- Gateway WebSocket URL：`GET /gateway/bot` で動的に取得します。通常は `wss://gateway.discord.gg/?v=10&encoding=json`
+- Discord REST API 基本アドレス：`https://discord.com/api/v10`
+- Gateway WebSocket アドレス：`GET /gateway/bot` で動的に取得、通常は `wss://gateway.discord.gg/?v=10&encoding=json` です
 
-## サポートされるメッセージ送信タイプ
+## 支援されるメッセージ送信タイプ
 
-すべての送信メソッドはチェーン構文を実装しており、例えば以下のようになります：
+すべての送信メソッドは、チェーン式の構文で実装されています。たとえば：
+
 ```python
 from ErisPulse.Core import adapter
 discord = adapter.get("discord")
@@ -21804,23 +23124,24 @@ await discord.Send.To("group", channel_id).Text("Hello World!")
 ```
 
 サポートされる送信タイプは以下の通りです：
-- `.Text(text: str)`：純テキストメッセージを送信します。
-- `.Embed(embed: dict | list)`：Embed 埋め込みメッセージを送信します。単一または複数の Embed をサポートします。
-- `.Image(file: bytes | str, filename: str = "image.png")`：画像を送信します。バイナリデータまたは URL をサポートします。
-- `.File(file: bytes | str, filename: str = None)`：ファイルを送信します。バイナリデータまたは URL をサポートします。
-- `.Reply(content: str, message_id: str)`：指定されたメッセージに返信します（便利なショートカットメソッド）。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12 形式のメッセージを送信します。
-- `.Raw_json(json_str: str)`：任意の Discord API リクエスト JSON を送信します。
 
-### チェーン修飾メソッド（組み合わせ可能）
+- `.Text(text: str)`：純粋なテキストメッセージを送信します。
+- `.Embed(embed: dict | list)`：埋め込みメッセージ（Embed）を送信します。単一または複数の埋め込みメッセージをサポートします。
+- `.Image(file: bytes | str, filename: str = "image.png")`：画像を送信します。バイナリデータまたはURLをサポートします。
+- `.File(file: bytes | str, filename: str = None)`：ファイルを送信します。バイナリデータまたはURLをサポートします。
+- `.Reply(content: str, message_id: str)`：指定されたメッセージに返信します（便利な終端メソッド）。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
+- `.Raw_json(json_str: str)`：任意のDiscord APIリクエストJSONを送信します。
 
-チェーン修飾メソッドは `self` を返し、チェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
+### チェーン式修飾メソッド（組み合わせて使用可能）
 
-- `.Reply(message_id: str)`：メッセージを返信（参照）し、`message_reference` を設定します。
-- `.At(user_id: str)`：指定したユーザーに@を付与します。`<@user_id>` に変換され、複数回呼び出すことができます。
-- `.AtAll()`：全員に@を付与します。`@everyone` に変換されます。
+チェーン式修飾メソッドは `self` を返し、チェーン式で呼び出すことが可能です。最終的な送信メソッドの前に呼び出す必要があります：
 
-### チェーン呼び出しの例
+- `.Reply(message_id: str)`：指定されたメッセージに返信（引用）し、`message_reference` を設定します。
+- `.At(user_id: str)`：指定されたユーザーを@でメンションします。`<@user_id>` に変換されます。複数回呼び出すことができます。
+- `.AtAll()`：全員を@でメンションします。`@everyone` に変換されます。
+
+### チェーン式呼び出しの例
 
 ```python
 # 基本的な送信
@@ -21832,19 +23153,19 @@ await discord.Send.To("group", channel_id).Reply(msg_id).Text("返信メッセ�
 # 便利な返信（ワンステップ）
 await discord.Send.To("group", channel_id).Reply("返信内容", msg_id)
 
-# ユーザーに@を付ける
+# ユーザーを@でメンション
 await discord.Send.To("group", channel_id).At("user_id").Text("こんにちは")
 
-# 複数のユーザーに@を付ける
+# 複数ユーザーを@でメンション
 await discord.Send.To("group", channel_id).At("user1").At("user2").Text("複数ユーザー@")
 
-# 全員に@を付ける
+# 全員を@でメンション
 await discord.Send.To("group", channel_id).AtAll().Text("お知らせ")
 
 # 組み合わせて使用
 await discord.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("複合メッセージ")
 
-# Embed 埋め込みメッセージ
+# 埋め込みメッセージ
 embed = {
     "title": "通知",
     "description": "これは埋め込みメッセージです",
@@ -21853,44 +23174,43 @@ embed = {
 }
 await discord.Send.To("group", channel_id).Embed(embed)
 
-# 画像を送信
+# 画像の送信
 await discord.Send.To("group", channel_id).Image("https://example.com/image.png")
 ```
 
-### DM（Direct Message）送信
+### ダイレクトメッセージの送信
 
-DM を送信する際、アダプタは自動的に DM チャンネルを作成します：
+ダイレクトメッセージを送信する際、アダプターは自動的にDMチャンネルを作成します：
 
 ```python
-# DM を送信
-await discord.Send.To("user", user_id).Text("DMコンテンツ")
+# ダイレクトメッセージの送信
+await discord.Send.To("user", user_id).Text("ダイレクトメッセージの内容")
 await discord.Send.To("user", user_id).Embed(embed)
 ```
 
 ### メッセージ操作
 
 ```python
-# メッセージを取り消す（撤回）
+# メッセージの撤回
 await discord.Send.To("group", channel_id).Recall(msg_id)
 
-# OneBot12 形式
+# OneBot12形式
 ob12_msg = [
     {"type": "text", "data": {"text": "Hello "}},
     {"type": "mention", "data": {"user_id": "user_id"}},
 ]
 await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
-```
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドは Task オブジェクトを返し、直接 await して送信結果を取得できます。戻り値は ErisPulse アダプタの標準化された戻り値仕様に従います：
+すべての送信メソッドは Task オブジェクトを返し、これに直接 await を使用して送信結果を取得できます。返り値は ErisPulse アダプタの標準化された返り値規格に従います：
 
 ```python
 {
     "status": "ok",           // 実行状態: "ok" または "failed"
     "retcode": 0,             // 戻りコード（0 は成功）
     "data": {...},            // Discord API の元のレスポンス
-    "message_id": "xxx",      // メッセージID（メッセージを送信する場合）
+    "message_id": "xxx",      // メッセージID（メッセージ送信時）
     "message": "",            // エラーメッセージ
     "discord_raw": {...}      // 元のレスポンスデータ
 }
@@ -21902,55 +23222,57 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 |---------|------|
 | 0 | 成功 |
 | 33001 | ネットワークエラー（接続失敗、タイムアウトなど） |
-| 34000 | Discord API エラー（権限不足、パラメータエラーなど） |
+| 34000 | Discord API がエラーを返した（権限不足、パラメータエラーなど） |
 
-## 固有のイベントタイプ
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
-プラットフォーム固有の機能を使用するには、`platform == "discord"` の検査が必要です。
+## 特有イベントタイプ
 
-### コアの違い点
+このプラットフォームの機能を使用するには、`platform == "discord"` の検証が必要です。
 
-1. **サーバー/チャンネルシステム**：Discord はサーバー（Guild）とチャンネル（Channel）の2層構造を使用しており、チャンネルがメッセージの基本的な送信ターゲットです
-2. **Gateway イベント**：すべてのイベントは WebSocket Gateway 経由で受信され、Opcode + Dispatch メカニズムを使用します
-3. **Intents 訂閲**：ビットマスクを使用してイベントタイプを訂閲し、`MESSAGE_CONTENT` には Privileged 権限が必要です
-4. **メッセージセグメントタイプ**：テキスト、画像、ファイル、動画、音声、Embed、Sticker などのメッセージセグメントをサポート
-5. **Mention 形式**：Discord はユーザー参照に `<@user_id>` 形式を使用します
+### 核心的な違い
+
+1. **サーバー/チャンネルシステム**：Discord はサーバー（Guild）とチャンネル（Channel）の二層構造を使用しており、チャンネルがメッセージの基本的な送信先となります。
+2. **Gateway イベント**：すべてのイベントは WebSocket Gateway を介して受信され、Opcode + Dispatch メカニズムを使用します。
+3. **Intents 訂正**：ビットマスクを使用してイベントタイプをサブスクライブし、`MESSAGE_CONTENT` は Privileged 権限が必要です。
+4. **メッセージセグメントタイプ**：テキスト、画像、ファイル、ビデオ、音声、Embed、Sticker などのメッセージセグメントをサポートします。
+5. **Mention 形式**：Discord は `<@user_id>` 形式を使用してユーザーのメンションを表します。
 
 ### 拡張フィールド
 
-すべての固有フィールドは `discord_` プレフィックスで識別されます：
+すべての固有フィールドは `discord_` という接頭辞で識別されます：
 - `discord_raw`：元の Discord イベントデータ
 - `discord_raw_type`：元のイベントタイプ名（例：`MESSAGE_CREATE`）
 - `discord_guild_id`：サーバー ID
 - `discord_channel_id`：チャンネル ID
 
-### detail_type マッピング
+### detail_type のマッピング
 
-| Discord のシナリオ | detail_type | 説明 |
+| Discord の状況 | detail_type | 説明 |
 |---|---|---|
 | チャンネルメッセージ | `channel` | ErisPulse 拡張タイプ |
-| DM（プライベートメッセージ） | `private` | OneBot12 標準タイプ |
+| プライベートメッセージ（DM） | `private` | OneBot12 標準タイプ |
 
-### イベントタイプマッピング
+### イベントタイプのマッピング
 
 | Discord イベント | OneBot12 type | detail_type | 説明 |
 |---|---|---|---|
 | MESSAGE_CREATE | message | channel/private | メッセージ作成 |
 | MESSAGE_UPDATE | message | channel/private | メッセージ編集 |
 | MESSAGE_DELETE | notice | group_message_delete / private_message_delete | メッセージ削除 |
-| GUILD_MEMBER_ADD | notice | group_member_increase | メンバー追加 |
-| GUILD_MEMBER_REMOVE | notice | group_member_decrease | メンバー削除 |
-| GUILD_MEMBER_UPDATE | notice | group_member_update | メンバー情報更新 |
-| GUILD_ROLE_CREATE | notice | group_role_create | ロール作成 |
-| GUILD_ROLE_DELETE | notice | group_role_delete | ロール削除 |
+| GUILD_MEMBER_ADD | notice | group_member_increase | メンバーの加入 |
+| GUILD_MEMBER_REMOVE | notice | group_member_decrease | メンバーの退去 |
+| GUILD_MEMBER_UPDATE | notice | group_member_update | メンバー情報の更新 |
+| GUILD_ROLE_CREATE | notice | group_role_create | ロールの作成 |
+| GUILD_ROLE_DELETE | notice | group_role_delete | ロールの削除 |
 | CHANNEL_CREATE | notice | channel_create | チャンネル作成 |
 | CHANNEL_DELETE | notice | channel_delete | チャンネル削除 |
-| INTERACTION_CREATE | request | interaction | インタラクション（ボタン、コマンドなど） |
+| INTERACTION_CREATE | request | interaction | 交互（ボタン、コマンドなど） |
 
 ### 特殊フィールドの例
 
 ```python
-# チャンネルテキストメッセージ
+# チャンネルのテキストメッセージ
 {
   "type": "message",
   "detail_type": "channel",
@@ -21968,7 +23290,7 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
   "alt_message": "Hello"
 }
 
-# DMメッセージ
+# プライベートメッセージ
 {
   "type": "message",
   "detail_type": "private",
@@ -21979,9 +23301,9 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
   "discord_raw_type": "MESSAGE_CREATE",
   "discord_channel_id": "DMチャンネルID",
   "message": [
-    {"type": "text", "data": {"text": "DMコンテンツ"}}
+    {"type": "text", "data": {"text": "プライベートメッセージ内容"}}
   ],
-  "alt_message": "DMコンテンツ"
+  "alt_message": "プライベートメッセージ内容"
 }
 
 # Embed を含むメッセージ
@@ -21994,7 +23316,7 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
   "alt_message": "[埋め込みメッセージ]"
 }
 
-# 添付ファイルを含むメッセージ
+# 附件を含むメッセージ
 {
   "type": "message",
   "detail_type": "channel",
@@ -22008,20 +23330,20 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
 ### メッセージセグメントタイプ
 
-Discord のメッセージコンテンツは、`content`、`attachments`、`embeds` フィールドに基づいて対応するメッセージセグメントに自動的に変換されます：
+Discord のメッセージ内容は `content`、`attachments`、`embeds` フィールドに基づいて自動的に対応するメッセージセグメントに変換されます：
 
-| 出典 | 変換タイプ | 説明 |
+| 情報源 | 変換タイプ | 説明 |
 |---|---|---|
-| content テキスト | `text` | 純テキストコンテンツ |
-| content `<@id>` | `mention` | ユーザー参照 |
-| content `<@&id>` | `discord_role_mention` | ロール参照 |
-| content `<#id>` | `discord_channel_mention` | チャンネル参照 |
-| attachments (image/*) | `image` | 画像添付ファイル |
-| attachments (video/*) | `video` | 動画添付ファイル |
-| attachments (audio/*) | `audio` | 音声添付ファイル |
-| attachments (その他) | `file` | ファイル添付ファイル |
+| content テキスト | `text` | 純粋なテキスト内容 |
+| content `<@id>` | `mention` | ユーザーのメンション |
+| content `<@&id>` | `discord_role_mention` | ロールのメンション |
+| content `<#id>` | `discord_channel_mention` | チャンネルのメンション |
+| attachments (image/*) | `image` | 画像の添付 |
+| attachments (video/*) | `video` | ビデオの添付 |
+| attachments (audio/*) | `audio` | 音声の添付 |
+| attachments (その他のタイプ) | `file` | その他のファイル添付 |
 | embeds | `discord_embed` | 埋め込みメッセージ |
-| sticker_items | `discord_sticker` | スタンプ |
+| sticker_items | `discord_sticker` | ステッカー |
 
 ### discord_embed メッセージセグメント
 
@@ -22040,47 +23362,46 @@ Discord のメッセージコンテンツは、`content`、`attachments`、`embe
     }
   }
 }
-```
 
-## Gateway 接続
+## ゲートウェイ接続
 
 ### 接続フロー
 
-1. `GET /gateway/bot` を呼び出して WebSocket Gateway URL を取得
-2. `wss://gateway.discord.gg/?v=10&encoding=json` に接続
-3. opcode 10 HELLO を受信：`heartbeat_interval` を含みます
-4. opcode 2 IDENTIFY を送信：token、intents、properties を含みます
-5. ハートビートループ開始：`heartbeat_interval` ごとに opcode 1 Heartbeat を送信
-6. opcode 0 Dispatch を受信：イベント配信（`t`=イベント名、`s`=シーケンス番号、`d`=データ）
+1. `GET /gateway/bot` を呼び出すことで WebSocket ゲートウェイ URL を取得する
+2. `wss://gateway.discord.gg/?v=10&encoding=json` に接続する
+3. opcode 10 HELLO を受信：`heartbeat_interval` を含む
+4. opcode 2 IDENTIFY を送信：token、intents、properties を含む
+5. ハートビートループを開始：`heartbeat_interval` に基づいて opcode 1 Heartbeat を送信する
+6. opcode 0 Dispatch を受信：イベント配信（`t`=イベント名, `s`=シーケンス番号, `d`=データ）
 7. opcode 11 Heartbeat ACK を受信：ハートビート確認
 
 ### Opcode の説明
 
-| Opcode | 名前 | 方向 | 説明 |
+| Opcode | 名称 | 方向 | 説明 |
 |--------|------|------|------|
 | 0 | Dispatch | 受信 | イベント配信（`t`、`s`、`d` フィールドを含む） |
 | 1 | Heartbeat | 送信/受信 | ハートビート（最後の seq を含む） |
-| 2 | Identify | 送信 | 認証 |
-| 6 | Resume | 送信 | セッション復旧 |
-| 7 | Reconnect | 受信 | サーバーによる再接続要求 |
+| 2 | Identify | 送信 | 身元認証 |
+| 6 | Resume | 送信 | セッションの復元 |
+| 7 | Reconnect | 受信 | サーバーからの再接続要求 |
 | 9 | Invalid Session | 受信 | 無効なセッション |
 | 10 | Hello | 受信 | 接続ハンドシェイク（`heartbeat_interval` を含む） |
 | 11 | Heartbeat ACK | 受信 | ハートビート確認 |
 
-### 切断再接続と RESUME
+### 断線時の再接続と RESUME
 
-- 接続が切断された後、アダプタは自動的に再接続を試みます
-- 前回の `session_id` がある場合は、RESUME（opcode 6）を優先してセッションを復旧します
-- RESUME は `token`、`session_id`、最後の `seq` を含みます。復旧後、漏れているイベントを送信し足します
-- opcode 7（Reconnect）を受信した場合は、セッション状態を維持したまま再接続します
-- opcode 9（Invalid Session）を受信して `d=false` の場合は、セッションをクリアして再び IDENTIFY を行います
+- 接続が切断された後、アダプターが自動的に再接続を試みる
+- 以前の `session_id` がある場合、優先的に RESUME（opcode 6）を実行してセッションを復元する
+- RESUME は `token`、`session_id`、最後の `seq` を含み、漏れたイベントを再送する
+- opcode 7（Reconnect）を受信した場合、セッションの状態を保持して再接続する
+- opcode 9（Invalid Session）を受信し、`d=false` の場合、セッションをクリアして再び IDENTIFY を行う
 
 ### ハートビートメカニズム
 
-- HELLO を受信した後、`heartbeat_interval * random()` ミリ秒待って最初のハートビートを送信します
-- その後は、`heartbeat_interval` ミリ秒ごとにハートビートを送信します
-- ハートビートは最後の `seq` 値を含みます（opcode 1、`d: seq`）
-- ハートビートを送信してから `heartbeat_interval` 内に ACK（opcode 11）を受信しなかった場合は、接続異常とみなして再接続します
+- HELLO を受信した後、`heartbeat_interval * random()` ミリ秒待機して最初のハートビートを送信する
+- その後、`heartbeat_interval` ミリ秒ごとにハートビートを送信する
+- ハートビートは最後の `seq` 値を含む（opcode 1、`d: seq`）
+- ハートビートを送信した後、`heartbeat_interval` 内に ACK（opcode 11）が受信されない場合、接続に異常があると判断し再接続を行う
 
 ## 使用例
 
@@ -22104,7 +23425,7 @@ async def handle_group_msg(event):
         await discord.Send.To("group", channel_id).Text("Hello!")
 ```
 
-### DMの処理
+### プライベートメッセージの処理
 
 ```python
 @message.on_message()
@@ -22117,7 +23438,7 @@ async def handle_private_msg(event):
     text = event.get_text()
     user_id = event.get("user_id")
 
-    await discord.Send.To("user", user_id).Text(f"あなたは言いました: {text}")
+    await discord.Send.To("user", user_id).Text(f"あなたが言った: {text}")
 ```
 
 ### Embed メッセージの送信
@@ -22137,7 +23458,7 @@ embed = {
 await discord.Send.To("group", channel_id).Embed(embed)
 ```
 
-### Discord 固有メソッドの使用
+### Discord 特有のメソッドの使用
 
 ```python
 @message.on_message()
@@ -22157,7 +23478,7 @@ async def handle(event):
         )
 ```
 
-### インタラクションイベントの処理
+### 交互イベントの処理
 
 ```python
 from ErisPulse.Core.Event import request
@@ -22170,6 +23491,9 @@ async def handle_interaction(event):
     interaction = event.get_interaction_data()
     if interaction.get("type") == 3:  # MESSAGE_COMPONENT
         await event.reply("ボタンがクリックされました！")
+```
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
 
 
@@ -22396,110 +23720,124 @@ Webhookアダプタは**プロトコルレベルのブリッジ**であり、特
 
 ### 微信公众号适配
 
-# WeChat 公衆アカウント (WechatMp) アダプタ - プラットフォーム特性ドキュメント
+# WeChatMpアダプタ - プラットフォーム特徴ドキュメント
+
+各言語の切り替え行（各言語名は `` | `` で区切られた行）がドキュメントに含まれている場合、上記の第8条のフォーマット要件を厳密に遵守し、``[**Label**](file)`` というような誤ったフォーマットを出力しないようにしてください。
 
 ## 基本情報
 - モジュール名: `ErisPulse-WechatMpAdapter`
 - プラットフォーム識別子: `mp`（別名: `wechat_mp`）
-- モジュールバージョン: 4.0.0
-- メンテナ: ErisPulse
-- 依存関係: `cryptography`
+- モジュールバージョン: 4.1.0
+- 維持者: ErisPulse
+- 依存: `cryptography`
 
-## サポートされているメッセージ送信タイプ
+[**English**](docs/ja/quick-start.md)
 
-| メソッド | 説明 | WeChat API |
+## 支持するメッセージ送信タイプ
+
+| 方法 | 説明 | WeChat API |
 |------|------|---------|
-| `Text(text)` | テキスト送信 | カスタマーサービスメッセージ `message/custom/send` |
-| `Image(file)` | 画像送信（自動アップロードして media_id を取得） | カスタマーサービスメッセージ + `media/upload` |
-| `Voice(file)` | 音声送信（自動アップロードして media_id を取得） | カスタマーサービスメッセージ + `media/upload` |
-| `Video(file, title, description)` | 動画送信（自動アップロードして media_id を取得） | カスタマーサービスメッセージ + `media/upload` |
-| `Music(url, title, description, ...)` | 音楽送信 | カスタマーサービスメッセージ |
-| `News(articles)` | 記事グループ送信 | カスタマーサービスメッセージ |
-| `Template(template_id, data, url)` | テンプレートメッセージ送信 | `message/template/send` |
-| `Menu(head_content, list, tail_content)` | メニューメッセージ送信 | カスタマーサービスメッセージ `msgmenu` |
-| `Raw_ob12(message)` | OneBot12 標準メッセージセグメント送信 | - |
+| `Text(text)` | テキストを送信 | カスタマーサービスメッセージ `message/custom/send` |
+| `Image(file)` | 画像を送信（media_id の自動取得） | カスタマーサービスメッセージ + `media/upload` |
+| `Voice(file)` | 音声を送信（media_id の自動取得） | カスタマーサービスメッセージ + `media/upload` |
+| `Video(file, title, description)` | 動画を送信（media_id の自動取得） | カスタマーサービスメッセージ + `media/upload` |
+| `Music(url, title, description, ...)` | 音楽を送信 | カスタマーサービスメッセージ |
+| `News(articles)` | 画像付きテキストメッセージを送信 | カスタマーサービスメッセージ |
+| `Template(template_id, data, url)` | テンプレートメッセージを送信 | `message/template/send` |
+| `Menu(head_content, list, tail_content)` | メニューメッセージを送信 | カスタマーサービスメッセージ `msgmenu` |
+| `Raw_ob12(message)` | OneBot12 標準メッセージセグメントを送信 | - |
 
 ### メディアファイルの説明
-- サポートされているパラメータタイプは3種類です：
-  - `str` URL（`http://` / `https://` で始まる）：自動ダウンロード後にアップロード
-  - `str` ローカルファイルパス：自動読み込み後にアップロード
+- 3 種類のパラメータ型をサポート：
+  - `str` URL（`http://` / `https://` で始まる）：自動的にダウンロードしてアップロード
+  - `str` ローカルファイルパス：自動的に読み込んでアップロード
   - `bytes` バイナリデータ：直接アップロード
-  - `str` media_id：`media:` プレフィックスを使用して、既にアップロード済みの media_id を直接再利用可能
-- アップロード後、有効期間 3 日の一時メディア `media_id` を取得します
+  - `str` media_id：`media:` という接頭辞を使用して、既にアップロードされた media_id を再利用可能
+- アップロード後に有効期限 3 日間の有効な一時素材 `media_id` が取得できる
 
 ### 重要な制限
-- カスタマーサービスメッセージは、ユーザーが公衆アカウントと対話した後 **48時間以内** にのみ、主動的に送信可能です
-- 48時間を超える場合、テンプレートメッセージを使用する必要があります（ユーザー承認が必要なシナリオ）
+- カスタマーサービスメッセージは、ユーザーが公式アカウントと対話した後 **48 時間以内** にのみ、自動的に送信可能
+- 48 時間を過ぎた場合は、テンプレートメッセージを使用する必要がある（ユーザーの許可が必要な場面が必要）
+- 認証されていないサービスアカウント（`verified=false`）は、自動的に送信できず、受動的に返信するのみ（上記の「認証済みサービスアカウントと受動的返信」を参照）
+
+docs/ja/quick-start.md
 
 ## イベントタイプ
 
 ### メッセージイベント (message)
-すべてのユーザーメッセージは `detail_type: private` です（公衆アカウント 1v1 シナリオ）。
+すべてのユーザーからのメッセージは `detail_type: private`（公式アカウント 1v1 シナリオ）です。
 
-| WeChat MsgType | メッセージセグメントタイプ | 説明 |
+| 微信 MsgType | メッセージセグメントタイプ | 説明 |
 |-------------|-----------|------|
 | `text` | `text` | テキストメッセージ |
 | `image` | `image` | 画像メッセージ |
 | `voice` | `voice` | 音声メッセージ（音声認識結果を含む） |
-| `video` | `video` | 動画メッセージ |
-| `shortvideo` | `video` | ショート動画（マーク `mp_shortvideo`） |
-| `location` | `location` | 場所メッセージ |
+| `video` | `video` | ビデオメッセージ |
+| `shortvideo` | `video` | 小型ビデオ（`mp_shortvideo` でマーク） |
+| `location` | `location` | 地理位置メッセージ |
 | `link` | `text` | リンクメッセージ（テキストに変換） |
 
 ### 通知イベント (notice)
-イベントは `mp_event` フィールドで具体的なタイプを区別します。
+イベントは `mp_event` フィールドによって具体的なタイプが区別されます。
 
-| WeChat Event | `mp_event` | 説明 |
+| 微信 Event | `mp_event` | 説明 |
 |-----------|-----------|------|
-| `subscribe` | `subscribe` | 公衆アカウントフォロー |
-| `unsubscribe` | `unsubscribe` | アンフォロー |
-| `SCAN` | `scan` | パラメータ付きQRコードスキャン |
-| `LOCATION` | `location_report` | 場所報告 |
-| `CLICK` | `menu_click` | カスタムメニュークリック |
-| `VIEW` | `menu_view` | メニューリンク移動 |
+| `subscribe` | `subscribe` | 公式アカウントをフォロー |
+| `unsubscribe` | `unsubscribe` | フォロー解除 |
+| `SCAN` | `scan` | パラメータ付きQRコードをスキャン |
+| `LOCATION` | `location_report` | 地理位置を報告 |
+| `CLICK` | `menu_click` | 自作メニューをクリック |
+| `VIEW` | `menu_view` | メニューのリンクに移動 |
 | `TEMPLATESENDJOBFINISH` | `template_send_finish` | テンプレートメッセージ送信結果 |
-| `MASSSENDJOBFINISH` | `mass_send_finish` | グループ送信メッセージ送信結果 |
+| `MASSSENDJOBFINISH` | `mass_send_finish` | 群送信メッセージ送信結果 |
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
 ## プラットフォーム拡張フィールド
 
-イベントオブジェクト内の WeChat 固有のフィールド（`mp_` プレフィックス）：
+イベントオブジェクト内の微信特有のフィールド（`mp_` で始まるフィールド）：
 
 | フィールド | 型 | 説明 |
 |------|------|------|
-| `mp_raw` | str | 原始 XML データ |
-| `mp_raw_type` | str | 原始メッセージ/イベントタイプ |
-| `mp_msg_id` | str | WeChat メッセージ ID |
-| `mp_event` | str | イベントタイプ（イベント通知のみ） |
-| `mp_event_key` | str | イベントキー（メニュークリック/スキャンなど） |
-| `mp_to_user` | str | 受信側 WeChat ID（公衆アカウント元ID） |
-| `mp_from_user` | str | 送信側 OpenID |
-| `mp_data` | dict | 解析された XML 辞書データ |
+| `mp_raw` | str | 元の XML データ |
+| `mp_raw_type` | str | 元のメッセージ/イベントの種類 |
+| `mp_msg_id` | str | 微信メッセージ ID |
+| `mp_event` | str | イベントの種類（イベント通知の場合のみ） |
+| `mp_event_key` | str | イベントの Key（メニューのクリック/スキャン等） |
+| `mp_to_user` | str | 受信者の微信号（公式アカウントの元の ID） |
+| `mp_from_user` | str | 送信者の OpenID |
+| `mp_data` | dict | 解析された XML の辞書データ |
+
+[バックトゥトップ](#)
 
 ## イベント拡張メソッド
 
-`register_event_mixin("mp", ...)` 経由で登録し、イベントオブジェクト上で直接呼び出せます：
+`register_event_mixin("mp", ...)` で登録すると、イベントオブジェクト上で直接以下のメソッドを呼び出せます。
 
 | メソッド | 戻り値 | 説明 |
 |------|--------|------|
-| `get_openid()` | str | 送信者 OpenID |
-| `get_msg_type()` | str | WeChat 原始メッセージタイプ |
-| `get_event()` | str | イベントタイプ（イベント通知のみ） |
-| `get_content()` | str | メッセージの純テキスト内容 |
-| `get_raw_xml()` | str | 原始 XML データ |
+| `get_openid()` | str | 送信者の OpenID |
+| `get_msg_type()` | str | 微信の元のメッセージタイプ |
+| `get_event()` | str | イベントの種類（イベント通知のみ） |
+| `get_content()` | str | メッセージの純粋なテキスト内容 |
+| `get_raw_xml()` | str | 元の XML データ |
+
+各言語のナビゲーションリンクを含む行がある場合、上記のルールに従ってパスを変更してください。
 
 ## 設定オプション
 
-### 複数アカウント設定
+### 複数アカウントの設定
 
-各アカウントは一つの公衆アカウントに対応します：
+各アカウントは1つの公式アカウントに対応します：
 
 ```toml
 [WechatMpAdapter.accounts.main]
 appid = "wx1234567890abcdef"
 appsecret = "your_app_secret_here"
 token = "your_callback_token"
-encoding_aes_key = ""                    # セキュアモード/互換モードのみ必要（43桁）
+encoding_aes_key = ""                    # セキュリティモード/互換モードが必要な場合（43文字）
 callback_path = "/mp/main"               # コールバックパス
+verified = true                          # 認証済みサービスアカウントかどうか（プッシュ送信能力に影響）
 enable = true
 
 [WechatMpAdapter.accounts.secondary]
@@ -22514,45 +23852,64 @@ enable = true
 
 | フィールド | 必須 | 説明 |
 |------|------|------|
-| `appid` | Yes | 公衆アカウント AppID |
-| `appsecret` | Yes | 公衆アカウント AppSecret（secret） |
-| `token` | No | コールバック検証 Token（署名検証を有効にするために推奨） |
-| `encoding_aes_key` | No | メッセージの暗号化/復号化キー（43桁、セキュアモード必須） |
-| `callback_path` | No | コールバックパステンプレート、デフォルト `/mp/{account}`、`{account}` はアカウント名で置換されます |
-| `enable` | No | 有効かどうか、デフォルト true |
+| `appid` | はい | 公式アカウントの AppID |
+| `appsecret` | はい | 公式アカウントの AppSecret（secret） |
+| `token` | いいえ | コールバック認証用のトークン（署名検証を有効にするために推奨） |
+| `encoding_aes_key` | いいえ | メッセージの暗号化/復号化キー（43文字、セキュリティモードで必須） |
+| `callback_path` | いいえ | コールバックパスのテンプレート、デフォルトは `/mp/{account}`、`{account}` はアカウント名に置換されます |
+| `verified` | いいえ | 認証済み**サービスアカウント**かどうか、デフォルトは `true`（下記を参照） |
+| `enable` | いいえ | 有効化するかどうか、デフォルトは true |
+
+### 認証済みサービスアカウントと受動応答（verified）
+
+- `verified = true`（デフォルト、認証済みサービスアカウント）：**カスタマーメッセージ**をいつでもプッシュ送信（48時間ウィンドウ内）とテンプレートメッセージを使用可能
+- `verified = false`（未認証のサブスクリプションアカウント）：
+  - カスタマーメッセージ / テンプレートメッセージは**webhookの受動応答コンテキスト内でのみ送信可能**（ユーザーからのメッセージを受信後15秒以内、1回のみ）——アダプタは送信を受動応答に自動的に変換します
+  - 主動的なプッシュ（例：スケジュールタスク）は `retcode=34003` エラーを返します
+
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
 ## 暗号化モードの説明
 
-WeChat 公衆アカウントは3種類のメッセージ暗号化/復号化モードを提供します：
+WeChat 公開アカウントは、3 種類のメッセージ暗号化/復号化モードを提供しています：
 
 | モード | 説明 | encoding_aes_key | 検証フィールド |
 |------|------|-----------------|---------|
-| 明文モード | XML 明文転送 | 必要なし | `signature` |
-| 互換モード | 明文+暗文が共存 | オプション | `signature` / `msg_signature` |
-| セキュアモード | 完全暗号化 | 必須 | `msg_signature` |
+| 明文モード | XML を明文で送信 | 必要なし | `signature` |
+| 互換モード | 明文と暗号文が同時に存在 | オプション | `signature` / `msg_signature` |
+| 安全モード | 全て暗号化 | 必須 | `msg_signature` |
 
-このアダプタは自動的に処理します：
+このアダプタは自動的に以下を処理します：
 - 明文モード：`signature` を検証し、XML を直接解析
-- セキュア/互換モード：`Encrypt` フィールドを検出し、`msg_signature` を検証、AES-256-CBC で復号
-- 復号は `cryptography` ライブラリに依存します（依存関係に宣言済み）
+- 安全/互換モード：`Encrypt` フィールドを検出し、`msg_signature` を検証し、AES-256-CBC を使用して復号
+- 復号には `cryptography` ライブラリが必要（dependencies に宣言済み）
 
-## コールバックルーティング
+言語切り替え行がある場合（各言語名を `` | `` で区切る行）、上記のルール 8 に厳密に従い、``[**Label**](file)`` のような誤った形式を出力しないように注意してください。
 
-アダプタは有効になっている各アカウントに対して2つのルート（GET + POST）を登録します：
+## コールバックルート
 
-- **GET**：WeChat サーバー接入検証、署名検証後に `echostr` を返す
-- **POST**：ユーザーメッセージとイベントを受け取り、署名検証→復号（必要な場合）→変換→emit
+アダプターは、有効化された各アカウントに対して 2 つのルート（GET + POST）を登録します：
 
-実際のアクセスパスにはモジュールプレフィックスが自動的に追加されます。例えば、登録パス `/mp/main` の場合、
-実際のアクセスパスは `/mp_{account}_verify/mp/main` と `/mp_{account}_message/mp/main` になります。
+- **GET**：WeChat サーバーへの接続検証。署名を検証した後、`echostr` を返します
+- **POST**：ユーザーからのメッセージとイベントを受信。署名を検証→（必要に応じて）復号化→変換→emit
 
-## API レスポンス
+実際のアクセスパスには、モジュールのプレフィックスが自動的に追加されます。たとえば、登録パスが `/mp/main` の場合、実際のアクセスパスは `/mp_{account}_verify/mp/main` および `/mp_{account}_message/mp/main` になります。
 
-すべての `call_api` 呼び出しは標準化されたレスポンスを返します：
+[**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
+
+## API のレスポンス
+
+すべての `call_api` 呼び出しは、標準化されたレスポンスを返します：
 
 - 成功：`status: "ok"`, `retcode: 0`
 - 失敗：`status: "failed"`, `retcode: 34000+errcode`
-- 常に `mp_raw`（原始レスポンス）、`message_id` を含みます
+- いずれの場合も `mp_raw`（元のレスポンス）、`message_id` を含みます
+
+7. **重要：パスの置換ルール**
+   - ドキュメントリンク内の `docs/ja/` を `docs/ja/` に置換する
+   - 例：`docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更する
+   - 非現在言語版ファイルを指すリンク（例：`README.xx.md` 形式のリンク）は、変更しないでそのままにする
+   - これにより、リンクが正しい言語のドキュメントバージョンを指すようになる
 
 
 

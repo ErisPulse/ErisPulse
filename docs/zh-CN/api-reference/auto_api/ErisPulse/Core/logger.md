@@ -19,6 +19,17 @@ ErisPulse 日志系统
 ## 函数列表
 
 
+### `_make_file_formatter()`
+
+构建非 JSON 模式下的日志文件格式化器
+
+> **内部方法**
+
+**返回值** (`带日期时间、级别且单行化的`): Formatter
+
+---
+
+
 ### `_format_message(msg: object, args: tuple)`
 
 将日志消息与位置参数按 ``%`` 风格格式化
@@ -35,14 +46,53 @@ ErisPulse 日志系统
 ---
 
 
+### `_to_single_line(msg: str)`
+
+将日志消息规范化为单行
+
+统一 CRLF / CR 为 LF 后，把真实换行转义为字面 ``\n``。多行消息
+（异常堆栈文本、多行 f-string 等）若原样进入内存 / 订阅器 /
+plain 日志文件，会破坏"一行一记录"的日志纪律，并导致按行渲染的
+消费端（Dashboard 表格、日志采集管道）出现空消息与错位。
+
+> **内部方法**
+
+- **msg** (`原始日志文本`): **返回值**: 不含真实换行符的单行文本
+
+---
+
+
 ## 类列表
+
+
+### `class _SingleLineFormatter(logging.Formatter)`
+
+单行化文件格式化器
+
+在标准格式化结果上把真实换行转义为字面 ``\n``，保证日志文件
+一行一记录。控制台（Rich/Stream）不受影响——多行消息在终端中
+保持原始布局（如路由服务器的地址树）。
+
+> **内部方法**
 
 
 ### `class _JsonFormatter(logging.Formatter)`
 
 JSON 日志格式化器
 
+文件用途时 message 字段单行化（保持 JSONL 一行一记录）。
+
 > **内部方法**
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+- **single_line** (`文件模式为`): True（转义换行），控制台保持 False
+
+---
 
 
 ### `class Logger`
@@ -166,12 +216,105 @@ JSON 日志格式化器
 ---
 
 
+##### `set_excluded_levels(levels: list[str])`
+
+设置被屏蔽的日志等级列表
+
+被屏蔽等级的日志将被完全丢弃：不写入内存、不推送给订阅器、
+不输出控制台、不写入日志文件。常用于隐私保护场景，
+例如 ``exclude_levels = ["EVENT"]`` 可隐藏消息收发内容
+（消息收发日志使用 EVENT 等级记录）。
+
+- **levels** (`日志等级名称列表（如`): ["EVENT", "DEBUG"]），空列表表示不屏蔽
+**返回值** (`bool`): 设置是否成功（含非法等级时返回 False 且不生效）
+
+**示例**:
+```python
+>>> # 屏蔽 EVENT 等级（隐藏消息收发内容）
+>>> logger.set_excluded_levels(["EVENT"])
+>>> # 恢复所有等级
+>>> logger.set_excluded_levels([])
+```
+
+---
+
+
+##### `exclude_level(level: str)`
+
+屏蔽单个日志等级
+
+被屏蔽等级的日志将被完全丢弃（内存 / 订阅器 / 控制台 / 文件）。
+
+- **level** (`日志等级名称（如`): "EVENT"）
+**返回值** (`bool`): 是否设置成功
+
+---
+
+
+##### `allow_level(level: str)`
+
+取消屏蔽单个日志等级
+
+- **level** (`日志等级名称（如`): "EVENT"）
+**返回值** (`bool`): 是否成功（等级原本未被屏蔽时返回 False）
+
+---
+
+
+##### `list_excluded_levels()`
+
+列出当前被屏蔽的日志等级名称
+
+**返回值** (`list[str]`): 被屏蔽的等级名称列表
+
+---
+
+
+##### `_clear_file_handlers()`
+
+移除并关闭所有已存在的文件日志处理器
+
+> **内部方法**
+
+---
+
+
 ##### `set_output_file(path)`
 
 设置日志输出
 
 - **path** (`日志文件路径`): Str/List
 **返回值** (`bool`): 设置是否成功
+
+---
+
+
+##### `set_output_dir(directory: str)`
+
+设置日志输出目录（支持自动分段/轮转）
+
+目录不存在时自动创建。与 ``set_output_file`` 互斥，调用后
+会替换已有的文件日志输出。
+
+- **directory** (`日志目录路径（自动创建）`): - **filename**: 目录内的日志文件名（默认 "erispulse.log"）
+- **rotation** (`分段方式：``"size"``（按大小，默认）/`): ``"date"``（按时间）/ ``"none"``（不分段）
+- **max_size_mb** (`size`): 模式下单文件大小上限（MB，默认 10）
+- **backup_count** (`保留的历史日志文件数（默认`): 5，超出的最旧备份自动删除）
+- **when** (`date`): 模式轮转周期（``"S"``/``"M"``/``"H"``/``"D"``/``"midnight"``，默认每天零点）
+**返回值** (`bool`): 设置是否成功
+
+**示例**:
+```python
+>>> # 在 config.toml 中配置（推荐）
+>>> [ErisPulse.logger]
+>>> log_dir = "logs"
+>>> log_rotation = "size"        # 按大小分段
+>>> log_max_size_mb = 10
+>>> log_backup_count = 5
+>>>
+>>> # 或代码中动态设置：每天零点轮转，保留 7 份
+>>> logger.set_output_dir("logs", rotation="date", backup_count=7)
+```
 
 ---
 

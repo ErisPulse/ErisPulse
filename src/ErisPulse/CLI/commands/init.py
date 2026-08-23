@@ -124,6 +124,17 @@ class InitCommand(Command):
         try:
             for dir_name in ["config", "logs"]:
                 (project_path / dir_name).mkdir(exist_ok=True)
+            # SSL 证书默认目录：跟随项目运行目录走，配置里用相对路径引用
+            ssl_dir = project_path / "config" / "ssl"
+            ssl_dir.mkdir(exist_ok=True)
+            for ssl_name in ("cert.pem", "key.pem"):
+                ssl_file = ssl_dir / ssl_name
+                if not ssl_file.exists():
+                    ssl_file.write_text(
+                        "# 将你的证书/密钥 PEM 内容粘贴到本文件，"
+                        "或在配置中改用 ssl_cert/ssl_key 内联填写\n",
+                        encoding="utf-8",
+                    )
 
             config_file = project_path / "config" / "config.toml"
             if not config_file.exists():
@@ -187,52 +198,84 @@ class InitCommand(Command):
         """
         生成完整的配置示例文本
 
+        配置注释跟随 CLI 语言（缺失语言回退英文），
+        文案键集中于 ``scaffold_text`` 的 ``cfg.*`` 键族维护。
+
         :param adapter_list: [list] 适配器名称列表 (默认: None)
         :return: [str] 完整配置示例字符串
         """
+        from ..utils.scaffold_text import ScaffoldText
+
+        st = ScaffoldText()
         lines = [
-            "# ErisPulse 完整配置示例",
-            "# 此文件展示所有可用配置项及其默认值",
-            "# 如需使用，将所需配置复制到 config.toml 并按需修改",
+            st.t("cfg.header.title"),
+            st.t("cfg.header.desc"),
+            st.t("cfg.header.usage"),
             "",
-            "# ==================== 服务器 ====================",
+            st.t("cfg.section.server"),
             "",
             "[ErisPulse.server]",
-            'host = "0.0.0.0"              # 监听地址',
-            "port = 8000                   # 监听端口",
-            "auto_start = true             # 是否自动启动 HTTP 服务器 (纯 WS/轮询适配器可设 false)",
-            "ssl_certfile = null           # SSL 证书路径",
-            "ssl_keyfile = null            # SSL 密钥路径",
+            f'host = "0.0.0.0"              # {st.t("cfg.server.host")}',
+            f"port = 8000                   # {st.t('cfg.server.port')}",
+            f"auto_start = true             # {st.t('cfg.server.auto_start')}",
+            f'ssl_certfile = "config/ssl/cert.pem"   # {st.t("cfg.server.ssl_certfile")}',
+            f'ssl_keyfile = "config/ssl/key.pem"    # {st.t("cfg.server.ssl_keyfile")}',
+            st.t("cfg.server.ssl_inline_hint"),
+            '# ssl_cert = """-----BEGIN CERTIFICATE-----',
+            "# ...",
+            '# -----END CERTIFICATE-----"""',
+            '# ssl_key = """-----BEGIN PRIVATE KEY-----',
+            "# ...",
+            '# -----END PRIVATE KEY-----"""',
             "",
-            "# ==================== 日志 ====================",
+            st.t("cfg.section.logger"),
             "",
             "[ErisPulse.logger]",
-            'level = "INFO"                # 日志级别: DEBUG/INFO/WARNING/ERROR',
-            'log_files = []                # 日志文件列表, 如 ["logs/app.log"]',
-            "memory_limit = 1000           # 内存日志条数上限",
+            f'level = "INFO"                # {st.t("cfg.logger.level")}',
+            f"log_files = []                # {st.t('cfg.logger.log_files')}",
+            f'log_dir = ""                  # {st.t("cfg.logger.log_dir")}',
+            f'log_rotation = "size"         # {st.t("cfg.logger.log_rotation")}',
+            f"log_max_size_mb = 10          # {st.t('cfg.logger.log_max_size_mb')}",
+            f"log_backup_count = 5          # {st.t('cfg.logger.log_backup_count')}",
+            f'log_rotation_when = "midnight"  # {st.t("cfg.logger.log_rotation_when")}',
+            f"memory_limit = 1000           # {st.t('cfg.logger.memory_limit')}",
             "",
-            "# ==================== 存储 ====================",
+            st.t("cfg.section.storage"),
             "",
             "[ErisPulse.storage]",
-            "use_global_db = false         # 是否使用全局数据库",
+            f"use_global_db = false         # {st.t('cfg.storage.use_global_db')}",
             "",
-            "# ==================== 事件系统 ====================",
+            st.t("cfg.section.event"),
             "",
             "[ErisPulse.event.message]",
-            "ignore_self = true            # 忽略自身消息",
+            f"ignore_self = true            # {st.t('cfg.event.ignore_self')}",
             "",
             "[ErisPulse.event.command]",
-            'prefix = "/"                  # 命令前缀',
-            "case_sensitive = true         # 区分大小写",
-            "allow_space_prefix = false    # 允许前缀前有空格",
-            "must_at_bot = false           # 必须艾特Bot才触发",
+            f'prefix = "/"                  # {st.t("cfg.command.prefix")}',
+            f"case_sensitive = true         # {st.t('cfg.command.case_sensitive')}",
+            f"allow_space_prefix = false    # {st.t('cfg.command.allow_space_prefix')}",
+            f"must_at_bot = false           # {st.t('cfg.command.must_at_bot')}",
             "",
-            "# ==================== 框架 ====================",
+            st.t("cfg.section.framework"),
             "",
             "[ErisPulse.framework]",
-            "enable_lazy_loading = true    # 启用模块懒加载",
+            f"enable_lazy_loading = true     # {st.t('cfg.framework.enable_lazy_loading')}",
+            f'plugins_dir = "plugins"        # {st.t("cfg.framework.plugins_dir")}',
+            f"uninit_timeout = 30            # {st.t('cfg.framework.uninit_timeout')}",
+            f"                                {st.t('cfg.framework.uninit_timeout_line1')}",
+            f"                                {st.t('cfg.framework.uninit_timeout_line2')}",
+            f"strict_mode = false            # {st.t('cfg.framework.strict_mode')}",
+            f"strict_mode_exceptions = {{ modules = [], adapters = [] }}  # {st.t('cfg.framework.strict_mode_exceptions')}",
+            f"handler_max_concurrency = 64   # {st.t('cfg.framework.handler_max_concurrency')}",
+            f"proactive_gc_interval = 300    # {st.t('cfg.framework.proactive_gc_interval')}",
+            f"proactive_gc_generation = 2    # {st.t('cfg.framework.proactive_gc_generation')}",
+            f"proactive_gc_full_every = 10   # {st.t('cfg.framework.proactive_gc_full_every')}",
+            f"proactive_gc_memory_growth_mb = 100  # {st.t('cfg.framework.proactive_gc_memory_growth_mb')}",
+            f"proactive_gc_idle_only = true  # {st.t('cfg.framework.proactive_gc_idle_only')}",
+            f"proactive_gc_gen0_min = 100    # {st.t('cfg.framework.proactive_gc_gen0_min')}",
+            f"offline_bot_expiry = 3600      # {st.t('cfg.framework.offline_bot_expiry')}",
             "",
-            "# ==================== 路由增强 ====================",
+            st.t("cfg.section.router"),
             "",
             "[ErisPulse.router.cors]",
             "enabled = false",
@@ -249,7 +292,7 @@ class InitCommand(Command):
             'X-Content-Type-Options = "nosniff"',
             'X-Frame-Options = "DENY"',
             "",
-            "# ==================== 适配器状态 ====================",
+            st.t("cfg.section.adapter_status"),
             "",
             "[ErisPulse.adapters.status]",
         ]
@@ -268,7 +311,7 @@ class InitCommand(Command):
         lines.extend(
             [
                 "",
-                "# ==================== 模块状态 ====================",
+                st.t("cfg.section.module_status"),
                 "",
                 "[ErisPulse.modules.status]",
                 "# MyModule = true",

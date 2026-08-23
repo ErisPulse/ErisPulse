@@ -1,4 +1,4 @@
-"""
+﻿"""
 CLI 简体中文翻译 (zh-CN)
 
 独立于 Core i18n 的 CLI 翻译数据。
@@ -48,6 +48,9 @@ TRANSLATIONS = {
     "cli.create.homepage_help": "项目主页 URL",
     "cli.create.output_help": "输出目录 (默认当前目录)",
     "cli.create.force_help": "强制覆盖已存在的目录",
+    "cli.create.local_module_help": "创建本地插件（plugins/ 目录结构，免打包安装，仅 module 可用）",
+    "cli.create.local_structure": "本地插件结构",
+    "cli.create.local_tip": "将插件放入项目的 plugins/ 目录，框架启动时自动发现；修改后热重载自动生效",
     "cli.create.select_type_title": "选择创建类型",
     "cli.create.select_type_module": "自定义功能模块",
     "cli.create.select_type_adapter": "平台适配器",
@@ -276,6 +279,7 @@ TRANSLATIONS = {
     "cli.run.file_changed_restart": "检测到文件变更 ([cmd]{file}[/])，正在重启...",
     "cli.run.process_exited": "进程已正常退出，等待文件变更后重启",
     "cli.run.process_crashed": "进程异常退出（退出码 {code}），修复后保存文件将自动重启",
+    "cli.run.process_exited": "子进程正常退出，不再拉起",
     "cli.run.subprocess_crashed_retry": "子进程异常终止，将在 {seconds} 秒后自动重试...",
     "cli.run.terminating_child": "正在终止机器人子进程，释放端口等资源...",
     # ==================== uninstall 命令 ====================

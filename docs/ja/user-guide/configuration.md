@@ -64,29 +64,75 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 > 注：`ErisPulse.server.port` のようなフレームワークの設定は、`get_server_config()` などの API で読み取られ、すべて環境変数の上書きの影響を受けます。
 
-## 設定のホットリロード
+## 設定のホットアップデート
 
-2.7.0 以降、フレームワークは設定のホットリロードを**体系的にサポート**するようになりました。外部で `config.toml` を変更した後（バックグラウンドの watcher が 5 秒ごとにチェック）、またはコードで `setConfig()` を呼び出した後、各コンポーネントは自動的に対応します：
+2.7.0 以降、フレームワークは設定のホットアップデートを**体系的なサポート**を実装しました。外部で `config.toml` を編集した後（バックグラウンドの watcher が 5 秒ごとに検出）、またはコードで `setConfig()` を呼び出した後、各コンポーネントは自動的に応答します：
 
-| コンポーネント | ホットリロード可能な設定 | 行動 |
+| コンポーネント | ホットアップデートがサポートされる設定 | 行動 |
 |------|----------------|------|
-| **ログ Logger** | `logger.level` / `log_files` / `memory_limit` / `format` | 変更検出付きで自動的に再適用 |
+| **ログ Logger** | `logger.level` / `log_files` / `log_dir`（分割パラメータを含む）/ `memory_limit` / `format` / `exclude_levels` | 自動的に再適用（変更検出付き） |
 | **コマンドシステム CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 次のメッセージで即座に有効化 |
-| **アダプタの並行処理** | `framework.handler_max_concurrency` | 失効したキャッシュシグナルを新値に基づいて再構築 |
-| **プロアクティブGC** | `framework.proactive_gc_*` | 設定変更時に即座にGCタスクを再起動し、実行時調整/無効化/再有効化が可能 |
-| **マスターシステム Master** | `master.users` | `is_master()` 検査毎にリアルタイムで読み取り、リスタート不要 |
-| **モジュール/アダプタ設定** | 各々の設定項目 | `on_config_update(old, new)` カルバックをトリガー |
+| **アダプタの並行処理** | `framework.handler_max_concurrency` | 失効したキャッシュシグナルを再構築、新しい値で再作成 |
+| **プロアクティブ GC** | `framework.proactive_gc_*` | 設定変更が即座に GC タスクを再起動し、実行時調整/無効化/再有効化が可能 |
+| **マスターシステム Master** | `master.users` | `is_master()` 検査毎にリアルタイム読み取り、再起動不要 |
+| **モジュール/アダプタの設定** | 各々の設定項目 | `on_config_update(old, new)` コールバックをトリガー |
 
-**リスタートが必要な設定**（安全にホットスイッチできないため、変更時に「プロセスを再起動後に有効化」という警告が出力されます）：
+**再起動が必要な設定**（安全にホット切り替えできない、変更時に「プロセスを再起動後に有効化」と警告を出力）：
 
 | 設定 | 理由 |
 |------|------|
-| `router.cors.*` / `router.security.*` | 中間処理はサービス起動時に FastAPI に書き込まれており、実行時に安全にホットスイッチできない |
-| `storage.use_global_db` | SQLite ファイルハンドルは既に実行時に開かれているため、パスの切り替えは安全ではない |
+| `router.cors.*` / `router.security.*` | 中間層が FastAPI の起動時に書き込まれており、実行時に安全にホット切り替えできない |
+| `storage.use_global_db` | SQLite ファイルハンドルが実行時に既に開かれているため、パスの切り替えは安全ではない |
 
-> **途中で編集保存に失敗した？** `config.toml` を編集中に一時的な構文エラーが発生した場合、フレームワークは**前回の有効な設定を保持**し、診断ログを出力します。各コンポーネントに空の設定をブロードキャストすることはありません（`on_config_update` が空値を受け取り、誤ってデフォルトに戻るのを防ぐため）。
+> **途中で編集保存に失敗した？** `config.toml` を編集する際に一時的な構文エラーが発生した場合、フレームワークは**前回の有効な設定を保持**し、診断ログを出力します。各コンポーネントに空の設定をブロードキャストすることはありません（`on_config_update` が空値を受け取り、誤ってデフォルトに戻るのを防ぐため）。
 
-docs/ja/config-hot-reload.md
+### ホットアップデートの内部処理の分解
+
+「設定を変更したが、各コンポーネントはどのように知るのか？」——その背後には、検出 → 再ロード → ブロードキャストの処理チェーンがあります：
+
+```mermaid
+flowchart TD
+    A["外部で config.toml を編集"] --> B{"誰が最初に発見するか？"}
+    B -->|"バックグラウンドの watcher スレッド<br/>5秒ごとに mtime をポーリング"| C["_check_file_change で変更を判定"]
+    B -->|"設定を読み取るとき<br/>キャッシュが60秒以上経過"| C
+    C --> D["_load_config で TOML を再解析"]
+    D --> E{"解析成功か？"}
+    E -->|"いいえ（構文エラー）"| F["前回の有効な設定を保持<br/>ブロードキャストせず、診断ログを出力"]
+    E -->|"はい"| G["lifecycle.emit config.updated<br/>old_config / new_config を含む"]
+    G --> H["各コンポーネントのリスナーが応答<br/>（logger / scope / 命令 / GC ...）"]
+```
+
+**2つの検出経路**（どちらか1つで十分、両方ともバックアップになります）：
+
+| 経路 | メカニズム | トリガー |
+|------|------|---------|
+| バックグラウンド watcher | daemon スレッド `config-watcher` が **5秒**ごとに `wait` でファイル `mtime` をポーリング | 外部でファイルを変更してから最大5秒以内 |
+| 慣性検出 | `getConfig()` で読み取るとき、キャッシュが **60秒**以上経過している場合は先にファイルをチェック | 次回設定を読み取るとき |
+
+> **フレームワークは自分自身を誤って傷つけない**：`setConfig()` でファイルに書き込む際、「自身が書き込んだ mtime」を記録し、watcher が比較する際にそれを除外し、**外部編集**のみを変更とみなします。
+
+**2種類の設定変更イベント**：
+
+| イベント | トリガー | データ | 代表的な場面 |
+|------|--------|------|---------|
+| `config.set` | コード / Dashboard が `setConfig()` を呼び出す | `{key, old_value, new_value}` | 単一キーの書き込み（テンプレート生成、状態記録、実行時設定の変更） |
+| `config.updated` | 外部編集後に watcher/慣性検出が捕捉する | `{old_config, new_config, config_file}` | `config.toml` を手動で編集した場合 |
+
+> `setConfig()` はデフォルトで**5秒遅延してファイルに書き込む**（複数回の書き込みを結合）。`immediate=True` は即座に書き込む。watcher が外部変更を検出した後はメモリキャッシュを更新するだけで、**外部の変更をファイルに書き戻すことはない**。
+
+**自動応答するコンポーネント一覧**（2種類のイベントは通常両方をサブスクライブし、応答内容は同一）：
+
+| コンポーネント | 監視 | 応答 |
+|------|------|------|
+| Logger | `config.set` + `config.updated` | 級別/ファイル/ディレクトリの分割/メモリ上限/フォーマット/非表示レベルを再適用（変更検出付き、変更なしの場合は処理しない） |
+| Scope | `config.updated` | スコープバインディングキャッシュを再構築 |
+| コマンドシステム | `config.updated` | プレフィックス/大文字小文字/スペースプレフィックス/must_at_bot の解析パラメータを更新、次のメッセージで有効化 |
+| アダプタの並行処理 | `config.set` + `config.updated` | `handler_max_concurrency` が失効し、シグナルを再構築 |
+| プロアクティブ GC | `config.set` + `config.updated` | `proactive_gc_*` が即座に GC バックグラウンドタスクを再起動 |
+| アダプタ | `on_config_update` にルーティング | 各アダプタの `on_config_update(old, new)` コールバック |
+| モジュール | `on_config_update` にルーティング | 各モジュールの `on_config_update(old, new)` コールバック |
+| ストレージ | `config.updated` | `use_global_db` の変更は**警告のみ**（再起動が必要） |
+| ルーティング | `config.updated` | `cors.*` / `security.*` の変更は**警告のみ**（再起動が必要） |
 
 ## 完全な設定例
 
@@ -94,14 +140,27 @@ docs/ja/config-hot-reload.md
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = ""
 ssl_keyfile = ""
+
+[ErisPulse.master]
+# users には2種類の書き方が可能です（どちらか一方を選択してください）：
+#   グローバルなオーナー（すべてのプラットフォームに効果）：users = ["123456", "789012"]
+#   プラットフォームごとにオーナーを指定：users = { yunhu = ["123456"], telegram = ["789012"] }
+users = {}
 
 [ErisPulse.logger]
 level = "INFO"
 format = "rich"
 log_files = []
+log_dir = ""
+log_rotation = "size"
+log_max_size_mb = 10
+log_backup_count = 5
+log_rotation_when = "midnight"
 memory_limit = 1000
+exclude_levels = []
 
 [ErisPulse.framework]
 enable_lazy_loading = true
@@ -133,36 +192,96 @@ language = "auto"
 [ErisPulse.server]
 host = "0.0.0.0"
 port = 8000
+auto_start = true
 ssl_certfile = "/path/to/cert.pem"
 ssl_keyfile = "/path/to/key.pem"
 ```
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
-| host | string | 0.0.0.0 | 監聴アドレス。0.0.0.0 はすべてのインターフェースを意味します |
-| port | integer | 8000 | 監聴ポート番号 |
-| ssl_certfile | string | 空 | SSL 証明書ファイルのパス |
-| ssl_keyfile | string | 空 | SSL 秘密鍵ファイルのパス |
+| host | string | 0.0.0.0 | 監視するアドレス。0.0.0.0 はすべてのインターフェースを意味します |
+| port | integer | 8000 | 監視するポート番号 |
+| auto_start | boolean | true | `sdk.init()` 時にルーティングサーバーを自動的に起動するかどうか。`false` に設定するとルーティングサーバーの起動をスキップできます（純粋なイベント/WebUIなしのシナリオ） |
+| ssl_certfile | string | 空 | SSL証明書ファイルのパス |
+| ssl_keyfile | string | 空 | SSL秘密鍵ファイルのパス |
 
-[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+## 主人システム設定
+
+主人システムは「フレームワークの主人」アカウント（例：Bot管理者）を識別するために使用されます。`master.users` は2つの書式をサポートしています：
+
+```toml
+[ErisPulse.master]
+# 書式1：グローバルな主人（すべてのプラットフォームに適用）
+users = ["123456", "789012"]
+
+# 書式2：プラットフォームごとに主人を指定（dict）
+# users = { yunhu = ["123456"], telegram = ["789012"] }
+```
+
+| 設定項目 | 型 | デフォルト値 | 説明 |
+|---------|------|---------|------|
+| users | array / object | 空 | 主人アカウントのリスト。`list` 形式はグローバルな主人（すべてのプラットフォームに適用）；`dict` 形式はプラットフォームごとに指定（キーがプラットフォーム名、値がそのプラットフォームの主人アカウントのリスト） |
+
+コード中では `master.is_master(event)` または `master.is_master(platform, user_id)` を使用してチェックし、各呼び出し時に設定をリアルタイムで読み込みます（ホットアップデートをサポートし、再起動は不要です）：
+
+```python
+from ErisPulse.Core import master
+
+if master.is_master(event):
+    await event.reply("主人こんにちは")
+```
+
+[**English**](docs/ja/quick-start.md)
 
 ## ログ設定
 
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = ["app.log", "debug.log"]
+log_files = []                # 明示的なログファイルのリスト（log_dir と排他的で、優先度が高くなります）
+log_dir = ""                  # ログディレクトリ（設定後、自動的にセグメント分割とローテーションを行います）
+log_rotation = "size"         # セグメント分割方法: "size" / "date" / "none"
+log_max_size_mb = 10          # size モードの単一ファイルの上限サイズ（MB）
+log_backup_count = 5          # 保持する履歴ログファイル数
+log_rotation_when = "midnight"  # date モードのローテーション周期: S/M/H/D/midnight
 memory_limit = 1000
+exclude_levels = ["EVENT"]
 ```
 
-| 設定項目 | タイプ | デフォルト値 | 説明 |
+| 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
-| level | string | INFO | ログレベル：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE は最低レベルで、フレームワーク内部の詳細なデバッグ情報を出力） |
-| format | string | rich | ログ出力形式：`rich`（カラー表示、デフォルト）、`plain`（カラーなしの純粋なテキスト、ログ収集/パイプリダイレクトに適している）、`json`（JSON形式、ELK などに適している） |
-| log_files | array | 空 | ログ出力ファイルのリスト |
+| level | string | INFO | ログレベル: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE は最低レベルで、フレームワーク内部の詳細なデバッグ情報を出力します） |
+| format | string | rich | ログ出力フォーマット: `rich`（カラー表示、デフォルト）、`plain`（純粋なテキスト、色なし、ログの収集/パイプのリダイレクトに適しています）、`json`（JSON形式、ELK 等に適しています） |
+| log_files | array | 空 | ログ出力ファイルのリスト（明示的なパス、セグメント分割なし） |
+| log_dir | string | 空 | ログ出力ディレクトリ（自動作成）。設定後、ディレクトリ内に `erispulse.log` を書き込み、`log_rotation` に従って自動的にセグメント分割します。`log_files` と排他的で、`log_files` が優先されます |
+| log_rotation | string | size | セグメント分割方法: `size`（サイズで分割）/ `date`（日時で分割）/ `none`（分割なし） |
+| log_max_size_mb | float | 10 | size モードの単一ファイルのサイズ上限（MB）。上限を超えると `.1`/`.2` などのバックアップにローテーションされます |
+| log_backup_count | integer | 5 | 保持する履歴ログファイル数。古いバックアップは自動的に削除されます |
+| log_rotation_when | string | midnight | date モードのローテーション周期: `S`/`M`/`H`/`D`/`midnight`（デフォルトは毎日0時） |
 | memory_limit | integer | 1000 | メモリに保持するログの件数 |
+| exclude_levels | array | 空 | 指定したログレベルを除外します。除外されたレベルのログは**完全に破棄**されます（メモリに書き込まず、Dashboard などのサブスクライバーに送信せず、表示せず、ファイルに書き込まず）。ホットアップデートが可能です |
 
-[**English**](docs/ja/quick-start.md)
+また、コード内で動的に切り替えることも可能です：
+
+```python
+from ErisPulse.Core import logger
+
+# サイズで分割: 単一ファイル10MB、5個保持
+logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
+
+# 日時で分割: 毎日0時にローテーション、7個保持
+logger.set_output_dir("logs", rotation="date", backup_count=7)
+```
+
+> [!NOTE]
+> `log_dir` および分割関連の設定は ErisPulse **2.8.0+** が必要です。
+
+> **プライバシー保護**: メッセージの送受信内容は **EVENT** レベル（値21）で記録されます。`exclude_levels = ["EVENT"]` を設定すると、バックエンド（例: Dashboard のログパネル）は各グループ/プライベートチャットのメッセージ内容を表示できなくなりますが、他のログレベルには影響しません。
+
+> [!NOTE]
+> `exclude_levels` 機能は ErisPulse **2.8.0+** が必要です。
 
 ## 框架設定
 
@@ -242,25 +361,25 @@ use_global_db = false
 
 [**English**](docs/en/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**简体中文**](docs/ja/quick-start.md)
 
-## イベントの設定
+## イベント設定
 
-### コマンドの設定
+### コマンド設定
 
 ```toml
 [ErisPulse.event.command]
 prefix = "/"
-case_sensitive = false
+case_sensitive = true
 allow_space_prefix = false
 ```
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
 | prefix | string | / | コマンドのプレフィックス |
-| case_sensitive | boolean | true | 大文字小文字を区別するかどうか（`/Help` と `/help` が異なるコマンドとして扱われるかどうか） |
+| case_sensitive | boolean | true | 大文字小文字を区別するかどうか（`/Help` と `/help` が異なるコマンドになるかどうか） |
 | allow_space_prefix | boolean | false | 空白をプレフィックスとして許可するかどうか |
-| must_at_bot | boolean | false | コマンドをトリガーするには必ず@botが必要かどうか（プライベートチャットは制限されない） |
+| must_at_bot | boolean | false | コマンドをトリガーするには必ず@ボットが必要かどうか（プライベートチャットは制限されない） |
 
-### メッセージの設定
+### メッセージ設定
 
 ```toml
 [ErisPulse.event.message]
@@ -271,7 +390,7 @@ ignore_self = true
 |---------|------|---------|------|
 | ignore_self | boolean | true | ロボット自身のメッセージを無視するかどうか |
 
-[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+[**English**](docs/ja/README.md)
 
 ## 国際化設定
 
@@ -316,6 +435,32 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > `setConfig` はデフォルトで遅延書き込み（約5秒ごとに一括保存）が行われます。`immediate=True` を設定すると即時永続化されます。設定の変更は `config.set` ライフサイクルイベントをトリガーします。
 
 [**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+
+## スコープ設定
+
+> [!NOTE]  
+> この機能には ErisPulse **2.8.0+** が必要です。
+
+モジュールスコープシステムは、「特定の Bot がどのモジュールを使用できるか」を制御するために使用されます。デフォルトでは、すべてのモジュールはすべての Bot に対して開放されており、設定のバインディング後にフィルタリングが開始されます。モジュールとアダプターは**変更なし**で適応可能です。
+
+```toml
+[ErisPulse.scope]
+default_allow = true        # デフォルトで全モジュールを許可（false = 隠れ拒否の厳密モード）
+cache_size = 1024           # is_allowed の LRU キャッシュサイズ
+```
+
+| 設定項目 | 型 | 説明 |
+|---------|------|------|
+| `scope.default_allow` | boolean | デフォルトで全モジュールを許可（`true`）。`false` = 隠れ拒否の厳密モード、ホワイトリスト内のモジュールのみ使用可能 |
+| `scope.cache_size` | integer | `is_allowed` の LRU キャッシュサイズ（デフォルト 1024） |
+| `scope.platforms.<platform>.modules` | array | プラットフォームレベルのホワイトリスト：指定されたモジュールのみ使用可能（空 = 制限なし） |
+| `scope.platforms.<platform>.blocked` | array | プラットフォームレベルのブラックリスト：指定されたモジュールは無効（空 = 制限なし） |
+| `scope.bots.<platform>.<bot_id>.modules` | array | Bot レベルのホワイトリスト、プラットフォームレベルを上書き |
+| `scope.bots.<platform>.<bot_id>.blocked` | array | Bot レベルのブラックリスト、プラットフォームレベルを上書き |
+| `scope.sessions.<platform>.<session_id>.modules` | array | 会話レベルのホワイトリスト（グループ/チャンネル/プライベートチャット）、優先度が最も高い |
+| `scope.sessions.<platform>.<session_id>.blocked` | array | 会話レベルのブラックリスト、優先度が最も高い |
+
+> 解析優先度：**会話レベル > Bot レベル > プラットフォームレベル**。3段階のバインディングの完全な TOML 例、モジュール名の大文字小文字は区別されない、会話識別子はプラットフォーム間で隔離される、実行時 `sdk.scope.bind()` / `unbind()` による動的な追加・削除（`merge=True` で結合可能）などは、[スコープシステム](../advanced/scope.md)を参照してください。
 
 ## 次に進む
 

@@ -133,13 +133,20 @@ class MyModule(BaseModule):
 ### 2. 正确的异步操作
 
 ```python
-async def handle_command(self, event):
-    # 使用 create_task 让耗时操作在后台执行
-    task = asyncio.create_task(self._long_operation())
-    
-    # 如果需要等待结果
-    result = await task
+from ErisPulse.Core.Event import Event  # event: Event 注解可获得 IDE 补全
+
+async def handle_command(self, event: Event):
+    # 需要等待结果的耗时操作：直接 await（生命周期明确）
+    result = await self._long_operation()
+
+async def on_load(self, event: dict):
+    # 后台任务（轮询/定时/fire-and-forget）：用 self.spawn()，
+    # 模块卸载时框架在 on_unload 之后兜底取消，避免持有 self 导致泄漏
+    self.spawn(self._poll())
 ```
+
+> [!NOTE]
+> 后台任务推荐 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——后者创建的裸任务不归属模块，卸载时不会被自动清理，会持有 `self` 引用导致模块实例无法被回收（热重载泄漏）。详见 [生命周期管理](../../advanced/lifecycle.md#后台任务归属与自动取消)。
 
 ### 3. 资源管理
 
@@ -160,28 +167,38 @@ async def on_unload(self, event):
 ```python
 # 使用 Event 包装类的便捷方法
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"你好，{nickname}！")
 
 # 而非直接访问字典
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event["user_id"]  # 不够清晰，容易出错
 ```
 
 ### 2. 合理使用懒加载
 
 ```python
-# 命令处理模块需要立即加载
+# 低频命令模块：声明 activate_on 触发器，首个匹配命令到达时自动激活（保持懒加载）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        return ModuleLoadStrategy(lazy_load=False)
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"command": {"name": "dice", "help": "掷一个骰子", "aliases": ["d"]}},
+        ])
 
-# 监听器模块需要立即加载
+# 低频监听器模块：声明事件触发器，事件到达时自动激活
 class ListenerModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(lazy_load=True, activate_on=[
+            {"notice": "group_member_increase"},
+        ])
+
+# 高频触发（每条消息都要处理）或启动时就必须就绪的模块：立即加载
+class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
@@ -193,17 +210,20 @@ class UtilityModule(BaseModule):
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
+> `activate_on` 的完整语法（事件三形式 / 命令简写与 dict 声明 / help 回退链）见
+> [懒加载模块系统](../../advanced/lazy-loading.md#事件驱动懒激活activate_on)。
+
 ### 3. 事件处理器注册
 
 ```python
 async def on_load(self, event):
     # 在 on_load 中注册事件处理器
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("你好！")
     
     @message.on_group_message()
-    async def group_handler(event):
+    async def group_handler(event: Event):
         self.logger.info("收到群消息")
     
     # 不需要手动注销，框架会自动处理
@@ -214,7 +234,7 @@ async def on_load(self, event):
 ### 1. 分类异常处理
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
@@ -343,12 +363,12 @@ class MyModule(BaseModule):
 
 ```python
 # 使用异步操作
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # 异步处理
     await self._async_process(event)
 
 # ❌ 阻塞操作
-async def process_message(self, event):
+async def process_message(self, event: Event):
     # 同步操作，阻塞事件循环
     result = self._sync_process(event)
 ```
@@ -358,13 +378,22 @@ async def process_message(self, event):
 ### 1. 敏感数据保护
 
 ```python
-# 敏感数据存储在配置中
+# 敏感数据存储在配置中（声明式 ConfigClass，secret 字段不进入日志/导出）
+from dataclasses import dataclass, field
+from ErisPulse.Core.Bases import BaseModule, BaseConfig
+
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={"description": "API 密钥", "secret": True},
+    )
+
 class MyModule(BaseModule):
-    def _load_config(self):
-        config = self.sdk.config.getConfig("MyModule")
-        self.api_key = config.get("api_key")
-        
-        if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
+    ConfigClass = MyModuleConfig
+
+    def check_api_key(self):
+        if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
             raise ValueError("请在 config.toml 中配置有效的 API 密钥")
 
 # ❌ 敏感数据硬编码
@@ -376,7 +405,7 @@ class MyModule(BaseModule):
 
 ```python
 # 验证用户输入
-async def process_command(self, event):
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
     # 验证输入长度
@@ -399,12 +428,10 @@ import pytest
 from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
-    def test_load_config(self):
-        """测试配置加载"""
-        module = MyModule()
-        config = module._load_config()
-        assert config is not None
-        assert "api_url" in config
+    def test_config_defaults(self):
+        """测试配置默认值"""
+        config = MyModule.ConfigClass()
+        assert config.timeout == 30
 ```
 
 ### 2. 集成测试
@@ -446,7 +473,7 @@ version = "1.0.0"
 ```markdown
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" width="180" alt="MyModule" />
 
 # MyModule
 
@@ -469,7 +496,7 @@ version = "1.0.0"
 
 <img src=".github/assets/MyModuleIcon.svg" width="120" alt="MyModule" />
 <span style="font-size:44px;color:#c8c8c8;margin:0 18px;vertical-align:middle;">×</span>
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
 （徽章行同上）

@@ -23,6 +23,9 @@ class MyModule(BaseModule):
 
 > `depends` 声明的模块如果未注册，当前模块将被跳过并记录警告。加载顺序由拓扑排序决定，同层级按 `priority` 降序。
 
+> [!NOTE]
+> **级联卸载 / 级联重载**（ErisPulse **2.8.0+**）：卸载被其它模块依赖的模块时，依赖它的模块会**先被级联卸载**（日志说明级联链）；热重载本地插件时，依赖它的插件同样**级联重载**，避免依赖者持有失效实例引用继续运行。声明循环依赖会在加载时以 `RuntimeError` 拒绝。
+
 ### on_load 方法
 
 模块加载时调用，用于初始化资源和注册事件处理器：
@@ -50,6 +53,77 @@ async def on_unload(self, event):
     # 取消事件处理器（框架会自动处理）
     self.logger.info("模块已卸载")
 ```
+
+> 后台任务的创建与清理（`self.spawn()` / 框架兜底取消）详见 [生命周期管理](../../advanced/lifecycle.md#后台任务归属与自动取消)。
+
+### 卸载与彻底卸载（purge）
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+`unload()` 默认只**取消加载**（卸载实例与资源），但保留注册存根（模块类与元信息）——模块仍可被 discover 重新发现、`load()` 重新实例化，无需重新 `register()`。
+
+当需要**彻底卸载**（释放模块类引用、清理 `sys.modules`，让插件及其独占依赖可被 GC 回收）时，传入 `purge=True`：
+
+```python
+# 只取消加载：保留注册存根，可随时重新 load()
+await sdk.module.unload("MyModule")
+
+# 彻底卸载：删除注册存根 + 清理 sys.modules（插件来源）
+await sdk.module.unload("MyModule", purge=True)
+```
+
+| 语义 | `unload()` 默认 | `unload(purge=True)` |
+|------|-----------------|----------------------|
+| 卸载实例与资源（事件/task/路由/lifecycle/i18n） | ✅ | ✅ |
+| 保留注册存根（模块类与元信息） | ✅ | ❌ 删除 |
+| 清理 `sys.modules`（仅插件文件夹来源） | ❌ | ✅ |
+| 模块类可被 GC 回收 | ❌ | ✅ |
+| 重新加载 | `load()` 直接可用 | 需先 `register()` + `load()` |
+
+> `purge=True` 时级联卸载的依赖者同样被 purge；卸载后框架会 `gc.collect()` 并检查模块类/实例是否可回收，残留引用会在日志中告警（含引用方，DEBUG 级）。
+
+### 生命周期全景
+
+把上面的方法串起来，框架在加载与卸载一个模块时，**在背后为你做的全部事情**：
+
+```mermaid
+flowchart TD
+    subgraph Load["加载（register → load）"]
+        L1["register：登记模块类与元信息"] --> L2["依赖校验<br/>缺失则跳过"]
+        L2 --> L3["拓扑排序（Kahn + priority）"]
+        L3 --> L4["owner 注入 current_owner"]
+        L4 --> L5["生成配置模板 + 注册 i18n 翻译键"]
+        L5 --> L6["实例化模块（注入 sdk）"]
+        L6 --> L7["调用 on_load()"]
+        L7 --> L8["挂载到 sdk 属性 + emit module.load"]
+    end
+
+    subgraph Unload["卸载（unload）"]
+        U1["调用 on_unload()"] --> U2["兜底取消后台任务（self.spawn 归属）"]
+        U2 --> U3["清理 i18n 翻译键"]
+        U3 --> U4["移除路由 / 命令 / 事件处理器（按 owner）"]
+        U4 --> U5["清理 lifecycle 钩子（按 owner）"]
+        U5 --> U6["移除 SDK 属性 + 懒加载代理"]
+        U6 --> U7["emit module.unload"]
+    end
+
+    Load --> Unload
+```
+
+**加载时框架帮你做了什么**（你只需写 `on_load`，其余自动完成）：
+
+| 环节 | 框架自动做的 |
+|------|-------------|
+| owner 注入 | 实例化期间用 `owner_scope` 包住模块名——你 `on_load` 里注册的命令/事件/钩子/后台任务**自动归属本模块**，卸载时按 owner 一键清理 |
+| 配置模板 | 声明了 `ConfigClass` 的模块，框架自动生成/填充 `ErisPulse.<ModuleName>` 配置段 |
+| i18n 翻译键 | 声明了 `I18nClass` 的模块，翻译键自动注册（卸载时自动注销） |
+| 依赖拓扑 | 按 `depends` 声明排序，确保被依赖模块先加载；循环依赖以 `RuntimeError` 拒绝 |
+| SDK 挂载 | 实例化后挂到 `sdk.<ModuleName>`，你才能 `sdk.MyModule.xxx` 访问 |
+
+**卸载时框架帮你清理的**（对应上面的 U1→U7）：`on_unload` 跑完后再兜底清理——后台任务强制取消（`self.spawn` 创建的，优雅收尾请在 `on_unload` 自行做）、i18n 键、路由、命令/事件处理器、lifecycle 钩子，最后移除 SDK 属性。`purge=True` 额外删除注册存根 + 清理 `sys.modules`。
+
+> 这些自动清理就是「你只需写 `on_load`/`on_unload`，不用手动 unregister」的底气——框架用 owner 归属把「谁注册的谁清理」做成了一键式。
 
 ## SDK 对象
 
@@ -133,6 +207,10 @@ class MyModuleConfig(BaseConfig):
 class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
+    def __init__(self, sdk):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
+
     async def on_load(self, event):
         self.logger.info("模块已加载")
 
@@ -188,24 +266,22 @@ class MyModule(BaseModule):
 
 详情见 [i18n 推荐写法](../../advanced/i18n.md#推荐写法通过-i18nclass-声明翻译键-v270)。
 
-### 手动读取配置（兼容方式）
+### 手动读取配置（已废弃）
 
-如果不使用声明式配置，也可以直接读写配置存储：
+> **已废弃**：请改用 [声明式配置](#声明式配置推荐) + `self.cfg` 实时读取。
 
 ```python
-def _load_config(self):
-    config = self.sdk.config.getConfig("MyModule")
-    if not config:
-        default_config = {
-            "api_key": "",
-            "timeout": 30
-        }
-        self.sdk.config.setConfig("MyModule", default_config)
-        return default_config
-    return config
-```
+class MyModule(BaseModule):
+    def __init__(self, sdk):
+        self.sdk = sdk
 
-> **注意**：手动方式下请避免使用 `self.config` 作为属性名，推荐使用 `self.cfg` 或自定义名称，以免与框架未来的属性冲突。
+    def _load_config(self):
+        config = self.sdk.config.getConfig("MyModule")
+        if not config:
+            self.sdk.config.setConfig("MyModule", {"api_key": "", "timeout": 30})
+            return {"api_key": "", "timeout": 30}
+        return config
+```
 
 ## 存储系统
 

@@ -1,5 +1,21 @@
 {
-  "hash": "36dfe84730e4f448e9ab8bf877cd5dd8",
-  "translated_at": "2026-08-03T17:00:10.714683",
-  "target_lang": "zh-TW"
+  "version": 2,
+  "hash": "53547945b08c993af256a31a9a8ba4e1",
+  "file_hash": "53547945b08c993af256a31a9a8ba4e1",
+  "translated_at": "2026-08-15T19:25:12.708376",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "6bd3cce836b1cccf009b5e840ebb94f5",
+      "translation": "# 生態模組\n\nErisPulse 框架本身僅提供核心能力（事件系統、模組系統、設定、路由、日誌等），**不內建** GUI、圖片渲染、視覺化等「重型」功能。這些能力由社群維護的 **第三方模組** 提供，按需安裝即可。\n\n> [!IMPORTANT]\n> 本目錄下的文件分為兩類，安裝方式不同：\n>\n> - **模組**（如 Dashboard / Takumi）使用 `epsdk install` 安裝：\n>\n>   ```bash\n>   epsdk install <模組名>\n>   ```\n>\n> - **獨立程式**（如 ErisPulse-App 用戶端）直接從對應 GitHub Releases 下載安裝，無需 `epsdk`。\n>\n\n---"
+    },
+    {
+      "hash": "25b31147cd93a4a1ac3cc1786a9b5806",
+      "translation": "## 推薦模組與官方用戶端\n\n| 專案 | 類型 | 用途 | 文件 |\n|------|------|------|------|\n| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | 官方用戶端 | 官方全平台用戶端（Android / Windows / Linux / macOS）：原生介面建立 / 執行 / 管理多個執行個體，內建模組商店與事件建構器；**手機直接執行**，桌面托盤常駐 | [ErisPulse-App 安裝與使用](docs/zh-TW/app.md) |\n| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | 模組 | Web 管理面板：模組啟停、設定編輯、日誌查看、事件監控；支援其他模組向側邊欄註冊自定義視窗 | [Dashboard 使用與視窗註冊](docs/zh-TW/dashboard.md) |\n| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)） | 模組 | 圖片渲染：HTML / 節點樹 / Jinja / SVG / 動畫，基於 [takumi-py](https://github.com/BalconyJH/takumi-py)；內建中英文字體，開箱即用 | [Takumi 圖片渲染](docs/zh-TW/takumi.md) |\n\n---"
+    },
+    {
+      "hash": "313e3e4c95c26587b54e456998ea229e",
+      "translation": "## 我也想把自己的模块列在这里？\n\n欢迎推荐优质的、可被广泛复用的 ErisPulse 生态模块。要求：\n\n1. 已发布到 [PyPI](https://pypi.org/)，且包名以 `ErisPulse-` 开头\n2. 提供基本的 README 与使用示例\n3. 积极维护，对 Issue 有响应\n\n满足以上条件的模块作者可以通过 PR 在本目录下新增 `<模块名>.md` 文档，并在本表的「推荐模块」中追加一行。\n\n请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。\n\n再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。"
+    }
+  ]
 }

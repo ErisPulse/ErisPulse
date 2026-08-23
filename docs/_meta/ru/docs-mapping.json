@@ -84,13 +84,13 @@
       "count": 5,
       "documents": [
         {
-          "title": "Руководство по использованию",
+          "title": "Руководство пользователя",
           "path": "user-guide/README.md",
           "level": 1,
           "icon": "fa-book-open"
         },
         {
-          "title": "Справочник по установке",
+          "title": "Справочное руководство по установке",
           "path": "user-guide/installation.md",
           "level": 1,
           "icon": "fa-download"
@@ -102,7 +102,7 @@
           "icon": "fa-sliders"
         },
         {
-          "title": "Справка по командной строке",
+          "title": "Справочник команд CLI",
           "path": "user-guide/cli-reference.md",
           "level": 1,
           "icon": "fa-terminal"
@@ -140,7 +140,7 @@
           "icon": "fa-puzzle-piece",
           "documents": [
             {
-              "title": "Основы разработки модулей",
+              "title": "Начало работы с разработкой модулей",
               "path": "developer-guide/modules/getting-started.md",
               "level": 1,
               "icon": "fa-puzzle-piece"
@@ -152,7 +152,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Подробное руководство по Event-обертке",
+              "title": "Подробное объяснение класса-обертки Event",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -182,7 +182,7 @@
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL: подробное описание",
+              "title": "Подробное руководство SendDSL",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
@@ -215,7 +215,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "Характеристики платформы OneBot11",
+          "title": "Документация по функциям платформы OneBot11",
           "path": "platform-guide/onebot11.md",
           "level": 1,
           "icon": "fa-comments"
@@ -227,13 +227,13 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Документация по особенностям платформы Telegram",
+          "title": "Документация по функциям платформы Telegram",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
         },
         {
-          "title": "Документация по функциям почтовой платформы",
+          "title": "Документация по функциональным возможностям платформы электронной почты",
           "path": "platform-guide/email.md",
           "level": 1,
           "icon": "fa-envelope"
@@ -275,7 +275,7 @@
           "icon": "fa-gamepad"
         },
         {
-          "title": "Адаптер WeChatMp (WeChat Public Account) - Документация по особенностям платформы",
+          "title": "Адаптер WeChatMp - Документация по функциональным возможностям платформы",
           "path": "platform-guide/wechatmp.md",
           "level": 1,
           "icon": "fa-mobile-screen"
@@ -287,7 +287,7 @@
           "icon": "fa-link"
         },
         {
-          "title": "Документация по функциям платформы Ideaura (HuaFeng Coffeehouse)",
+          "title": "Документация по функциям платформы RockyChat (HuaFeng Coffee Shop)",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
@@ -339,7 +339,7 @@
       "count": 11,
       "documents": [
         {
-          "title": "Продвинутые темы",
+          "title": "Расширенные темы",
           "path": "advanced/README.md",
           "level": 1,
           "icon": "fa-fire"
@@ -369,13 +369,7 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Система типов сессий",
-          "path": "advanced/session-types.md",
-          "level": 1,
-          "icon": "fa-layer-group"
-        },
-        {
-          "title": "Conversation Многошаговый диалог",
+          "title": "Conversation многократный диалог",
           "path": "advanced/conversation.md",
           "level": 1,
           "icon": "fa-comments"
@@ -399,7 +393,13 @@
           "icon": "fa-language"
         },
         {
-          "title": "Процесс запуска и ручное управление",
+          "title": "Система модульных областей",
+          "path": "advanced/scope.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Запуск и ручное управление",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
@@ -410,25 +410,31 @@
     "Модули экосистемы": {
       "description": "Сторонние модули, поддерживаемые сообществом",
       "icon": "fa-cubes",
-      "count": 3,
+      "count": 4,
       "documents": [
         {
-          "title": "Экосистема модулей",
+          "title": "Экосистема",
           "path": "ecosystem/README.md",
           "level": 1,
           "icon": "fa-cubes"
         },
         {
+          "title": "ErisPulse-App",
+          "path": "ecosystem/app.md",
+          "level": 1,
+          "icon": "fa-mobile-screen"
+        },
+        {
           "title": "ErisPulse-Dashboard",
           "path": "ecosystem/dashboard.md",
           "level": 1,
-          "icon": "fa-cubes"
+          "icon": "fa-table-columns"
         },
         {
           "title": "ErisPulse-Takumi",
           "path": "ecosystem/takumi.md",
           "level": 1,
-          "icon": "fa-cubes"
+          "icon": "fa-image"
         }
       ],
       "subgroups": {}

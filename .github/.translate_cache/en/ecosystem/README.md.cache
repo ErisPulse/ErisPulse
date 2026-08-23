@@ -1,5 +1,21 @@
 {
-  "hash": "36dfe84730e4f448e9ab8bf877cd5dd8",
-  "translated_at": "2026-08-03T16:56:29.696975",
-  "target_lang": "en"
+  "version": 2,
+  "hash": "53547945b08c993af256a31a9a8ba4e1",
+  "file_hash": "53547945b08c993af256a31a9a8ba4e1",
+  "translated_at": "2026-08-15T18:39:48.381927",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "6bd3cce836b1cccf009b5e840ebb94f5",
+      "translation": "# Ecosystem Modules\n\nThe ErisPulse framework itself only provides core capabilities (event system, module system, configuration, routing, logging, etc.) and **does not include** \"heavyweight\" features such as GUI, image rendering, and visualization. These capabilities are provided by **community-maintained third-party modules**, which can be installed on demand.\n\n> [!IMPORTANT]\n> Documentation in this directory is divided into two categories with different installation methods:\n>\n> - **Modules** (e.g., Dashboard / Takumi) use `epsdk install` to install:\n>\n>   ```bash\n>   epsdk install <module_name>\n>   ```\n>\n> - **Standalone Programs** (e.g., ErisPulse-App client) are installed directly by downloading from the corresponding GitHub Releases, without needing `epsdk`.\n>"
+    },
+    {
+      "hash": "25b31147cd93a4a1ac3cc1786a9b5806",
+      "translation": "## Recommended Modules and Official Clients\n\n| Item | Type | Purpose | Documentation |\n|------|------|--------|---------------|\n| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | Official Client | Official cross-platform client (Android / Windows / Linux / macOS): create/run/manage multiple instances natively with native UI, built-in module store and event builder; **run directly on mobile**, resident desktop tray | [ErisPulse-App Installation and Usage](app.md) |\n| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | Module | Web admin panel: start/stop modules, edit configurations, view logs, monitor events; supports custom windows registration in the sidebar for other modules | [Dashboard Usage and Window Registration](dashboard.md) |\n| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi) (Author [@ccd2s](https://github.com/ccd2s)) | Module | Image rendering: HTML / Node Tree / Jinja / SVG / Animation, based on [takumi-py](https://github.com/BalconyJH/takumi-py); built-in Chinese and English fonts, ready to use | [Takumi Image Rendering](takumi.md) |\n\n---"
+    },
+    {
+      "hash": "313e3e4c95c26587b54e456998ea229e",
+      "translation": "## I also want to list my module here?\n\nWelcome to recommend high-quality, widely reusable ErisPulse ecosystem modules. Requirements:\n\n1. Published to [PyPI](https://pypi.org/), and the package name starts with `ErisPulse-`\n2. Provide basic README and usage examples\n3. Actively maintained, responsive to Issues\n\nModule authors who meet the above conditions can create a new `<ModuleName>.md` document in this directory via PR and append a row to the \"Recommended Modules\" table.\n\nPlease return the complete translated Markdown content directly without including any other text.\n\n**Important Reminder:** If the document contains language switch lines (lines with language names separated by ` | `), you must strictly adhere to the format requirement in item 8 above and avoid writing incorrect formats like ``[**Label**](file)``."
+    }
+  ]
 }

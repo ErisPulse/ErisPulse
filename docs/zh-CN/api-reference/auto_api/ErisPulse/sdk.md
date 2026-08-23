@@ -63,6 +63,8 @@ ErisPulse SDK 主类
 > - router: 路由管理器
 > - client: HTTP 客户端
 > - master: 框架主人管理器
+> - scope: 模块作用域管理器（模块-Bot/平台/会话绑定）
+> - context: 模块上下文管理（owner_scope / get_current_owner）
 
 
 #### 嵌套类
@@ -396,6 +398,10 @@ SDK 初始化入口，返回 Task 对象
 内部调用 ``init()`` 完成初始化，然后在 ``on_ready`` 回调执行完毕后
 挂起主程序（当 ``keep_running=True`` 时）。
 
+硬重启（``hard_restart()``）通过退出码 42 契约交由**外部
+监督者**（``epsdk run`` / systemd / Docker / PM2 等，见 startup.md
+「监督者指南」）重新拉起。
+
 > **提示**
 > 异常处理原则：
 > 1. 模块/适配器的任何错误都会被拦截，不会导致进程退出
@@ -445,6 +451,57 @@ SDK 初始化入口，返回 Task 对象
 ```python
 >>> sdk.shutdown()  # 任意协程中调用，触发优雅退出
 ```
+
+---
+
+
+##### `enable_plugin_hot_reload(interval: float = 1.0)`
+
+启用本地插件文件夹热重载
+
+监控插件文件夹（默认 ``plugins/``，可通过 ``ErisPulse.framework.plugins_dir``
+配置）下 ``.py`` 文件的变更，自动重新加载对应插件。
+需在 ``await sdk.run()`` 之前调用。
+
+- **interval** (`轮询间隔（秒，默认`): 1.0）
+**返回值** (`是否启动成功（无插件目录或已在运行返回`): False）
+
+**示例**:
+```python
+>>> await sdk.init()
+>>> sdk.enable_plugin_hot_reload()
+>>> await sdk.run()
+```
+
+---
+
+
+##### `async reload_plugin(plugin_name: str)`
+
+热重载单个本地插件（手动触发）
+
+卸载旧实例、清理注册、强制重新导入并重新加载。
+
+- **plugin_name** (`插件名`): **返回值** (`是否重载成功`): 
+**示例**:
+```python
+>>> await sdk.reload_plugin("dice")
+```
+
+---
+
+
+##### `async _reload_plugin(plugin_name: str)`
+
+> **内部方法**
+热重载回调（由 PluginReloadWatcher 调度），失败仅记录不抛异常
+
+---
+
+
+##### `stop_plugin_hot_reload()`
+
+停止本地插件热重载监控
 
 ---
 
@@ -579,23 +636,58 @@ SDK 重新启动
 ---
 
 
+##### `is_supervised()`
+
+检测当前进程是否由外部监督者启动（CLI run 命令 / systemd / Docker 等）
+
+监督者会在进程退出码为 42（``HARD_RESTART_EXIT_CODE``）时重新拉起新进程。
+未被监督时硬重启后进程不会自动恢复，``hard_restart()`` 会打出警告提醒
+配置外部监督者（见 startup.md「监督者指南」）。
+
+**返回值**: 是否有外部监督者
+
+---
+
+
 ##### `async hard_restart()`
 
-硬重启：反初始化后退出进程，由父进程（run.py）重新启动新实例
+硬重启：反初始化后退出进程，由外部监督者重新启动新实例
 
 与 restart()（热重启）的区别：
 - restart(): 在同一进程内反初始化再重新初始化
-- hard_restart(): 反初始化后退出进程，由父进程重新启动全新进程
+- hard_restart(): 反初始化后以退出码 42 退出进程，由外部监督者重新拉起全新进程
 
 确保资源完全释放
 
-需要通过 epsdk run 启动才生效，否则进程退出后不会自动重启。
+硬重启依赖外部监督者（``epsdk run`` / systemd / Docker / PM2 / supervisord）
+在退出码 42 时重新拉起进程；未被监督时进程退出后不会自动恢复，会打警告提醒。
 
 **返回值** (`bool`): 硬重启任务是否成功调度
 
 **示例**:
 ```python
 >>> await sdk.hard_restart()
+```
+
+---
+
+
+##### `get_topology()`
+
+获取完整的拓扑树数据（便于 Dashboard 等管理界面展示）
+
+聚合模块、适配器与作用域的归属关系：
+- ``modules``：每个模块拥有的命令 / 事件处理器 / 路由 / 生命周期钩子
+- ``adapters``：每个适配器的运行状态、下属 Bot 状态与作用域绑定
+- ``scope``：全部平台级 / Bot 级作用域绑定
+
+**返回值** (`拓扑树字典`): {"modules": {...}, "adapters": {...}, "scope": {...}}
+
+**示例**:
+```python
+>>> topology = sdk.get_topology()
+>>> topology["modules"]["Chat"]["commands"]
+["chat"]
 ```
 
 ---

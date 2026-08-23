@@ -313,6 +313,7 @@ epsdk init --here -n my_bot
 | `--homepage` | | 项目主页 URL |
 | `--output` | `-o` | 输出目录（默认当前目录） |
 | `--force` | `-f` | 强制覆盖已存在的目录 |
+| `--local` | | 创建本地插件（仅 `module` 可用）：生成 `plugins/<name>/` 包结构，免打包安装 |
 
 **示例：**
 
@@ -322,6 +323,9 @@ epsdk create
 
 # 直接创建 Module 项目
 epsdk create module -n MyModule
+
+# 创建本地插件（放入项目 plugins/ 目录，启动时自动发现，支持热重载）
+epsdk create module -n MyModule --local
 
 # 直接创建 Adapter 项目
 epsdk create adapter -n MyAdapter
@@ -433,6 +437,9 @@ epsdk types --force
 ## 环境诊断
 
 ### doctor
+
+> [!NOTE]
+> 本命令需要 ErisPulse **2.7.0+**。
 
 诊断当前 CLI 运行环境，输出健康报告。用于排查"为什么装不上 / 连不上"类问题。
 

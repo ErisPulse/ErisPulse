@@ -64,8 +64,10 @@ _MODULE_INIT = """from .Core import Main
 """
 
 _MODULE_CORE = """from dataclasses import dataclass, field
-from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey
-from ErisPulse.Core.Event import command, message, notice
+
+from ErisPulse import SDK
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey, ModuleMeta
+from ErisPulse.Core.Event import Event, command, message, notice
 from ErisPulse.Core.i18n import i18n
 
 
@@ -90,6 +92,15 @@ class Main(BaseModule):
     class I18nClass(BaseI18n):
         \"\"\"{name} translation keys\"\"\"
 
+        meta_description: I18nKey = I18nKey(
+            key=\"module.{name}.meta.description\",
+            default=\"{name} module\",
+            zh_CN=\"{name} 模块\",
+            en=\"{name} module\",
+            ja=\"{name} モジュール\",
+            ru=\"Модуль {name}\",
+            zh_TW=\"{name} 模組\",
+        )
         enabled: I18nKey = I18nKey(
             key=\"module.{name}.enabled\",
             default=\"Enable module\",
@@ -118,22 +129,40 @@ class Main(BaseModule):
             zh_TW=\"來自 {name} 的問候！\",
         )
 
-    def __init__(self, sdk=None):
-        from ErisPulse import sdk as _sdk
-        self.sdk = _sdk if sdk is None else sdk
+    def __init__(self, sdk: SDK = None):
+        # sdk 由框架在实例化时自动注入（无需手动导入兜底）
+        self.sdk = sdk
         self.logger = self.sdk.logger.get_child(\"{name}\")
         self.storage = self.sdk.storage
         self.adapter = self.sdk.adapter
         self.client = self.sdk.client
 
-        self.logger.info((\"{text[module.log.init_done]}\").format(name=\"{name}\"))
+        self.logger.info(\"{text[module.log.init_done]}\")
+
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        \"\"\"
+        {text[module.meta_doc]}
+        \"\"\"
+        return ModuleMeta(
+            name=\"{name}\",
+            # description 支持 i18n 字典（key 由 I18nClass 注册），也可用纯字符串
+            description={{\"i18n\": \"module.{name}.meta.description\", \"default\": \"{name} module\"}},
+            version=\"0.1.0\",
+            author=\"ErisDev\",
+            group=\"default\",
+            tags=[\"{name}\"],
+        )
 
     @staticmethod
     def get_load_strategy():
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=False,
-            priority=100
+            priority=100,
+            # 依赖声明（可选）：缺失依赖的模块会被跳过加载；
+            # 被依赖模块卸载/热重载时，本模块将级联卸载/重载
+            # depends=[],
         )
 
     async def on_load(self, event: dict) -> bool:
@@ -164,20 +193,20 @@ class Main(BaseModule):
 
     async def _register_commands(self):
         @command(\"hello\", help=i18n.t(\"module.{name}.command.hello.help\"))
-        async def hello_command(event):
+        async def hello_command(event: Event):
             await event.reply(i18n.t(\"module.{name}.command.hello.reply\"))
 
     async def _register_message_handlers(self):
         @message.on_private_message()
-        async def private_message_handler(event):
+        async def private_message_handler(event: Event):
             self.logger.info((\"{text[module.log.private_message]}\").format(content=event.get_text()))
 
         @message.on_group_message()
-        async def group_message_handler(event):
+        async def group_message_handler(event: Event):
             pass
 
         @notice.on_friend_add()
-        async def friend_add_handler(event):
+        async def friend_add_handler(event: Event):
             self.logger.info((\"{text[module.log.friend_add]}\").format(nickname=event.get_user_nickname()))
 """
 
@@ -212,6 +241,7 @@ __all__ = [
 _ADAPTER_CORE = """import asyncio
 import json
 from dataclasses import dataclass, field
+from typing import ClassVar
 from ErisPulse.Core import BaseAdapter
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
 from ErisPulse.Core import router
@@ -222,6 +252,13 @@ class {name}(BaseAdapter):
     \"\"\"
     {text[adapter.doc]}
     \"\"\"
+
+    # 依赖声明（可选，ErisPulse 2.8.0+）：
+    # depends = {{"adapters": [], "modules": []}}   # 硬依赖：缺失时跳过启动
+    # optional_modules = []                          # 软依赖：就绪/丢失时收到
+    #                                               # on_dependency_ready/lost 回调
+    depends: ClassVar[dict] = {{}}
+    optional_modules: ClassVar[list] = []
 
     # {text[adapter.config_hint]}
     @dataclass
@@ -645,6 +682,12 @@ class CreateCommand(Command):
         parser.add_argument(
             "--force", "-f", action="store_true", help=i18n.t("cli.create.force_help")
         )
+        parser.add_argument(
+            "--local",
+            action="store_true",
+            default=False,
+            help=i18n.t("cli.create.local_module_help"),
+        )
 
     def execute(self, args):
         create_type = getattr(args, "create_type", None)
@@ -712,6 +755,11 @@ class CreateCommand(Command):
         :param name: [str] 模块名称
         :return: [None] 无返回值
         """
+        # --local：创建本地插件（plugins/ 目录结构，免打包安装）
+        if getattr(args, "local", False):
+            self._create_module_local(args, name)
+            return
+
         description = self._ask_missing(
             args,
             "description",
@@ -792,6 +840,55 @@ class CreateCommand(Command):
             )
             console.print(f"    · {i18n.t('cli.create.install_dev')}")
             console.print(f"    · {i18n.t('cli.create.run_test')}")
+
+        except Exception as e:
+            console.print(f"[error]  {i18n.t('cli.create.failed', error=e)}")
+            sys.exit(1)
+
+    def _create_module_local(self, args, name: str):
+        """
+        创建本地插件（--local）：生成 plugins/ 目录结构，免打包安装
+
+        :param args: [Any] 解析后的命令参数对象
+        :param name: [str] 模块名称
+        :return: [None] 无返回值
+        """
+        output = Path(args.output)
+        plugins_dir = output / "plugins"
+        plugin_dir = plugins_dir / name
+
+        if plugin_dir.exists() and not args.force:
+            console.print(
+                f"[error]  {i18n.t('cli.create.dir_exists', dir=str(plugin_dir))}"
+            )
+            sys.exit(1)
+
+        try:
+            plugin_dir.mkdir(parents=True, exist_ok=True)
+
+            (plugin_dir / "__init__.py").write_text(_MODULE_INIT, encoding="utf-8")
+            (plugin_dir / "Core.py").write_text(
+                _MODULE_CORE.format(name=name, text=_scaffold_text(name)),
+                encoding="utf-8",
+            )
+
+            console.print()
+            console.print(
+                f"[success]  {i18n.t('cli.create.module_created', name=name)}[/]"
+            )
+            console.print()
+            console.print(Text(i18n.t("cli.create.local_structure"), style="bold"))
+            console.print("    plugins/")
+            console.print(f"    └── {name}/")
+            console.print("        ├── __init__.py")
+            console.print("        └── Core.py")
+            console.print()
+            console.print(Text(i18n.t("cli.create.next_steps"), style="bold"))
+            console.print(f"    · {i18n.t('cli.create.cd_to', dir=str(plugin_dir))}")
+            console.print(
+                f"    · {i18n.t('cli.create.edit_module', file=str(plugin_dir) + '/Core.py')}"
+            )
+            console.print(f"    · {i18n.t('cli.create.local_tip')}")
 
         except Exception as e:
             console.print(f"[error]  {i18n.t('cli.create.failed', error=e)}")

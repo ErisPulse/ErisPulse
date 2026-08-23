@@ -16,6 +16,7 @@ from .constants import (
     CONFIG_KEY_MODULE_STATUS_OF,
     CONFIG_KEY_MODULES_STATUS,
     DEFAULT_MODULE_ENABLED,
+    MODULE_SOURCE_PLUGIN_FOLDER,
 )
 from .i18n import i18n
 from .lifecycle import lifecycle
@@ -82,6 +83,28 @@ class ModuleManager(ManagerBase):
             ):
                 return True
         return False
+
+    @staticmethod
+    def _unload_timeout() -> float:
+        """
+        {!--< internal-use >!--}
+        读取模块 on_unload 优雅收尾的超时（秒）
+
+        复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算，
+        整体仍有 uninit 的 wait_for 兜底）；未配置或非法时回退常量默认值。
+
+        :return: 超时秒数（>0）
+        """
+        from ..runtime import get_framework_config
+        from .constants import DEFAULT_UNINIT_TIMEOUT_SECS
+
+        try:
+            value = get_framework_config().get("uninit_timeout")
+            if isinstance(value, (int, float)) and value > 0:
+                return float(value)
+        except Exception:
+            pass
+        return float(DEFAULT_UNINIT_TIMEOUT_SECS)
 
     def __init__(self):
         # 模块存储
@@ -378,7 +401,13 @@ class ModuleManager(ManagerBase):
             module_class = self._module_classes[module_name]
 
             init_signature = inspect.signature(module_class.__init__)
-            params = [p for p in init_signature.parameters.values() if p.name != "self"]
+            params = [
+                p
+                for p in init_signature.parameters.values()
+                if p.name != "self"
+                and p.kind
+                not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+            ]
 
             if (sdk_to_use := self._sdk) is None:
                 from .. import sdk
@@ -482,18 +511,63 @@ class ModuleManager(ManagerBase):
             logger.error(i18n.t("core.module.load_failed", name=module_name, error=e))
             return False
 
+    def _collect_dependents(self, name: str) -> list[str]:
+        """
+        {!--< internal-use >!--}
+        收集直接或间接依赖指定模块的模块闭包（BFS）
+
+        返回顺序为由近及远（直接依赖者在前、间接依赖者在后）；
+        卸载时应按相反顺序执行，保证每个依赖者卸载时其依赖仍可用。
+
+        :param name: 目标模块名
+        :return: 依赖者模块名列表（不含 name 本身）
+        """
+        dependents: list[str] = []
+        visited: set[str] = {name}
+        queue: list[str] = [name]
+        while queue:
+            current = queue.pop(0)
+            for mod_name, mod_info in self._module_info.items():
+                if mod_name in visited:
+                    continue
+                deps = ((mod_info or {}).get("meta", {}) or {}).get("depends") or []
+                if current in deps:
+                    visited.add(mod_name)
+                    dependents.append(mod_name)
+                    queue.append(mod_name)
+        return dependents
+
     async def unload(
-        self, name: str | None = None, *, module_name: str | None = None
+        self,
+        name: str | None = None,
+        *,
+        module_name: str | None = None,
+        purge: bool = False,
     ) -> bool:
         """
         卸载指定模块或所有模块
 
+        卸载被其它模块依赖的模块时，依赖它的模块会**级联卸载**
+        （依赖者先卸载，日志说明级联链），避免依赖者持有失效引用继续运行。
+
+        ``purge`` 控制是否**一并删除注册存根**：
+
+        - ``purge=False``（默认）：只取消加载——卸载实例与资源，但保留
+          注册存根（模块类与元信息），模块仍可被 discover 重新发现、`load()`
+          重新实例化，无需重新 `register()`
+        - ``purge=True``：彻底卸载——同时删除注册存根（释放模块类引用），
+          并对插件文件夹来源的模块清理 ``sys.modules``，使插件及其独占依赖
+          可被 GC 回收（解决 NoneBot 式卸载后插件与依赖内存不释放的问题）；
+          级联卸载的依赖者同样被 purge。卸载后重新加载需重新 `register()`
+
         :param name: 模块名称，None表示卸载所有模块（默认None）
         :param module_name: [已弃用] 兼容旧关键字参数，等同 name
+        :param purge: 是否一并删除注册存根并清理 sys.modules（默认 False）
         :return: 是否卸载成功
 
         :example:
-        >>> await module.unload("MyModule")  # 卸载单个模块
+        >>> await module.unload("MyModule")  # 卸载单个模块（依赖者级联卸载）
+        >>> await module.unload("MyModule", purge=True)  # 彻底卸载（释放类引用）
         >>> await module.unload()  # 卸载所有模块
         """
         # 兼容旧关键字参数（已弃用）
@@ -501,18 +575,49 @@ class ModuleManager(ManagerBase):
             _warn_deprecated_kwarg("ModuleManager.unload", "module_name", "name")
             name = module_name
         module_name = name
+        # purge 模式下收集被卸载模块的弱引用，卸载完成后诊断是否可回收
+        purge_refs: list[tuple[str, Any, Any]] = []
         if module_name is None:
             # 卸载所有模块
             success = True
             for loaded_name in list(self._loaded_modules):
                 if not await self._unload_single_module(loaded_name):
                     success = False
+                if purge:
+                    purge_refs.append(self._purge_module_stub(loaded_name))
             # 一并清理未初始化的懒加载代理，避免卸载后仍可通过代理访问
             for lazy_name in list(self._lazy_modules):
                 self._cleanup_lazy(lazy_name)
+                if purge:
+                    purge_refs.append(self._purge_module_stub(lazy_name))
             module_name = "All"
         else:
-            success = await self._unload_single_module(module_name)
+            # 级联卸载：依赖者先卸载，最后卸载目标模块
+            dependents = self._collect_dependents(module_name)
+            if dependents:
+                logger.warning(
+                    i18n.t(
+                        "core.module.unload_cascade",
+                        name=module_name,
+                        deps=", ".join(dependents),
+                    )
+                )
+            success = True
+            # BFS 产出由近及远（直接依赖者在前），卸载按相反顺序执行：
+            # 最深层的间接依赖者先卸载，保证每个模块卸载时其依赖仍可用
+            for dep_name in reversed(dependents):
+                if dep_name in self._loaded_modules or dep_name in self._lazy_modules:
+                    if not await self._unload_single_module(dep_name):
+                        success = False
+                    if purge:
+                        purge_refs.append(self._purge_module_stub(dep_name))
+            if not await self._unload_single_module(module_name):
+                success = False
+            if purge:
+                purge_refs.append(self._purge_module_stub(module_name))
+
+        if purge and purge_refs:
+            self._report_purge_recyclability(purge_refs)
 
         await lifecycle.submit_event(
             "module.unload",
@@ -544,19 +649,54 @@ class ModuleManager(ManagerBase):
             return True
 
         try:
+            import asyncio
+
+            unload_timeout = self._unload_timeout()
             instance = self._modules.get(module_name)
             if instance and hasattr(instance, "on_unload"):
                 try:
                     if inspect.iscoroutinefunction(instance.on_unload):
-                        await instance.on_unload({"module_name": module_name})
+                        # 优雅收尾超时保护：on_unload 卡死不再阻塞卸载/级联/重载/uninit
+                        await asyncio.wait_for(
+                            instance.on_unload({"module_name": module_name}),
+                            timeout=unload_timeout,
+                        )
                     else:
                         instance.on_unload({"module_name": module_name})
+                except asyncio.TimeoutError:
+                    logger.warning(
+                        i18n.t(
+                            "core.module.on_unload_timeout",
+                            name=module_name,
+                            timeout=unload_timeout,
+                        )
+                    )
                 except Exception as e:
                     logger.error(
                         i18n.t(
                             "core.module.on_unload_failed", name=module_name, error=e
                         )
                     )
+
+            # on_unload 之后兜底取消该模块名下的后台任务：
+            # 模块未自行取消的任务可能持有实例引用，导致卸载后无法被 GC
+            from ..runtime.tasks import cancel_owner_tasks
+
+            cancelled_tasks = await cancel_owner_tasks(module_name)
+            if cancelled_tasks > 0:
+                logger.warning(
+                    i18n.t(
+                        "core.module.unload_tasks_cancelled",
+                        name=module_name,
+                        count=cancelled_tasks,
+                    )
+                )
+
+            # 清理该模块注册的 i18n 翻译键（防止热重载后翻译键泄漏）
+            try:
+                i18n.unregister_domain(module_name)
+            except Exception:
+                pass
 
             from .router import router
 
@@ -616,6 +756,106 @@ class ModuleManager(ManagerBase):
         except Exception as e:
             logger.error(i18n.t("core.module.unload_failed", name=module_name, error=e))
             return False
+
+    def _purge_module_stub(self, module_name: str) -> tuple[str, Any, Any]:
+        """
+        {!--< internal-use >!--}
+        删除模块注册存根，释放模块类引用（并清理插件来源的 sys.modules）
+
+        返回 (module_name, class_weakref, instance_weakref) 供回收诊断。
+
+        :param module_name: 模块名
+        :return: 供 `_report_purge_recyclability` 消费的弱引用三元组
+        """
+        import weakref
+
+        module_class = self._module_classes.get(module_name)
+        instance = self._modules.get(module_name)
+        info = self._module_info.get(module_name)
+
+        class_ref = weakref.ref(module_class) if module_class is not None else None
+        instance_ref = weakref.ref(instance) if instance is not None else None
+
+        # 释放注册存根（类引用 + 元信息 + 懒加载代理）
+        self._module_classes.pop(module_name, None)
+        self._module_info.pop(module_name, None)
+        self.unregister_lazy(module_name)
+
+        # 保守清理 sys.modules：仅插件文件夹来源（本地插件），不碰已安装包/共享库
+        meta = (info or {}).get("meta", {}) or {}
+        if meta.get("source") == MODULE_SOURCE_PLUGIN_FOLDER:
+            self._purge_sys_modules(module_name, meta.get("top_level") or [module_name])
+
+        logger.info(i18n.t("core.module.purged", name=module_name))
+        return module_name, class_ref, instance_ref
+
+    @staticmethod
+    def _purge_sys_modules(module_name: str, top_level: list[str]) -> None:
+        """
+        {!--< internal-use >!--}
+        从 sys.modules 移除插件自身模块与其子包（保守：不清理第三方/共享库）
+
+        :param module_name: 插件模块名
+        :param top_level: 顶层包名列表（用于清理包内子模块）
+        """
+        import sys
+
+        purge_names = {module_name}
+        purge_names.update(top_level or [])
+        for mod_name in list(sys.modules):
+            if any(
+                mod_name == n or mod_name.startswith(f"{n}.")
+                for n in purge_names
+            ):
+                sys.modules.pop(mod_name, None)
+
+    def _report_purge_recyclability(
+        self, refs: list[tuple[str, Any, Any]]
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出引用方
+
+        :param refs: `_purge_module_stub` 产出的 (name, class_ref, instance_ref) 列表
+        """
+        import gc
+
+        gc.collect()
+        for name, class_ref, instance_ref in refs:
+            leaked_class = class_ref is not None and class_ref() is not None
+            leaked_instance = instance_ref is not None and instance_ref() is not None
+            if not leaked_class and not leaked_instance:
+                continue
+            logger.warning(
+                i18n.t(
+                    "core.module.purge_leaked",
+                    name=name,
+                    kind=(
+                        "class+instance"
+                        if leaked_class and leaked_instance
+                        else "class"
+                        if leaked_class
+                        else "instance"
+                    ),
+                )
+            )
+            # 引用方定位（截断，避免刷屏）：仅 DEBUG 级输出
+            for leaked_obj in (
+                x() for x in (class_ref, instance_ref) if x is not None and x() is not None
+            ):
+                try:
+                    referrers = [
+                        type(r).__name__ for r in gc.get_referrers(leaked_obj)[:8]
+                    ]
+                    logger.debug(
+                        i18n.t(
+                            "core.module.purge_leaked_referrers",
+                            name=name,
+                            referrers=", ".join(referrers) or "?",
+                        )
+                    )
+                except Exception:
+                    pass
 
     def get(self, name: str | None = None, *, module_name: str | None = None) -> "_TModule | Any | None":
         """
@@ -862,6 +1102,20 @@ class ModuleManager(ManagerBase):
         )
         logger.info(i18n.t("core.module.module_disabled", name=module_name))
 
+        # 级联禁用依赖者（最深层依赖者先处理），与 unload 的级联语义一致
+        dependents = self._collect_dependents(module_name)
+        if dependents:
+            logger.warning(
+                i18n.t(
+                    "core.module.unload_cascade",
+                    name=module_name,
+                    deps=", ".join(dependents),
+                )
+            )
+        for dep_name in reversed(dependents):
+            if dep_name in self._loaded_modules or dep_name in self._lazy_modules:
+                self.disable(dep_name)
+
         if module_name not in self._loaded_modules:
             # 即使模块尚未实例化（懒加载代理），也要清理代理与 SDK 属性
             self._cleanup_lazy(module_name)
@@ -869,24 +1123,60 @@ class ModuleManager(ManagerBase):
 
         instance = self._modules.get(module_name)
         if instance and hasattr(instance, "on_unload"):
-            try:
-                if inspect.iscoroutinefunction(instance.on_unload):
+            from ..runtime.tasks import cancel_owner_tasks, spawn_background
+
+            async def _report_cancelled() -> None:
+                """兜底取消模块后台任务并记录数量"""
+                cancelled = await cancel_owner_tasks(module_name)
+                if cancelled > 0:
+                    logger.warning(
+                        i18n.t(
+                            "core.module.unload_tasks_cancelled",
+                            name=module_name,
+                            count=cancelled,
+                        )
+                    )
+
+            if inspect.iscoroutinefunction(instance.on_unload):
+
+                async def _unload_then_cancel_tasks() -> None:
+                    """异步 on_unload：完成后兜底取消（与 unload 时序一致）"""
                     import asyncio
 
+                    unload_timeout = self._unload_timeout()
                     try:
-                        from ..runtime.tasks import spawn_background
-
-                        spawn_background(
-                            instance.on_unload({"module_name": module_name})
+                        await asyncio.wait_for(
+                            instance.on_unload({"module_name": module_name}),
+                            timeout=unload_timeout,
                         )
-                    except RuntimeError:
-                        asyncio.run(instance.on_unload({"module_name": module_name}))
-                else:
+                    except asyncio.TimeoutError:
+                        logger.warning(
+                            i18n.t(
+                                "core.module.on_unload_timeout",
+                                name=module_name,
+                                timeout=unload_timeout,
+                            )
+                        )
+                    except Exception as e:
+                        logger.error(
+                            i18n.t(
+                                "core.module.on_unload_failed",
+                                name=module_name,
+                                error=e,
+                            )
+                        )
+                    await _report_cancelled()
+
+                spawn_background(_unload_then_cancel_tasks())
+            else:
+                # 同步 on_unload 内联执行（保持在路由/事件清理之前完成）
+                try:
                     instance.on_unload({"module_name": module_name})
-            except Exception as e:
-                logger.error(
-                    i18n.t("core.module.on_unload_failed", name=module_name, error=e)
-                )
+                except Exception as e:
+                    logger.error(
+                        i18n.t("core.module.on_unload_failed", name=module_name, error=e)
+                    )
+                spawn_background(_report_cancelled())
 
         from .router import router
 
@@ -897,6 +1187,15 @@ class ModuleManager(ManagerBase):
         command.unregister_by_owner(module_name)
         for event_handler in [message, notice, request, meta]:
             event_handler.handler.unregister_by_owner(module_name)
+
+        # 清理该模块注册的生命周期钩子（与 _unload_single_module 保持一致）
+        lifecycle.unregister_by_owner(module_name)
+
+        # 清理该模块注册的 i18n 翻译键
+        try:
+            i18n.unregister_domain(module_name)
+        except Exception:
+            pass
 
         if self._sdk is not None:
             sdk_dict = getattr(self._sdk, "__dict__", {})
@@ -1025,6 +1324,146 @@ class ModuleManager(ManagerBase):
             return None
         return self._module_info.get(name)
 
+    def get_meta(
+        self,
+        name: str | None = None,
+        *,
+        resolve_i18n: bool = True,
+        module_name: str | None = None,
+    ) -> dict | None:
+        """
+        获取模块的介绍元信息（描述这个模块是什么、属于哪一类等）
+
+        元信息是模块的**通用介绍数据**，供 help 模块、Dashboard 模块列表、
+        模块商店等各类界面 / 生态模块消费。
+
+        **i18n 支持**：元信息字段值可为纯字符串，或 i18n 字典
+        ``{"i18n": "key.path", "default": "兜底文本"}``（与配置 description 约定一致）。
+        翻译键通过模块的 ``I18nClass`` 声明注册（键路径 ``<模块名>.<属性名>``）。
+        ``resolve_i18n=True``（默认）时解析为当前语言文本；``False`` 时透传原始字典。
+
+        解析优先级：模块类声明的 ``get_meta()`` > 注册时传入的 ``info``，缺失字段自动补全。
+
+        :param name: 模块名称
+        :param resolve_i18n: 是否解析 i18n 字典为当前语言文本（默认 True）
+        :param module_name: [已弃用] 兼容旧关键字参数，等同 name
+        :return: 元信息字典，模块未注册时返回 None
+
+        :example:
+        >>> meta = module.get_meta("Weather")
+        >>> meta["description"]   # 当前语言下的模块简介
+        """
+        if module_name is not None:
+            _warn_deprecated_kwarg("ModuleManager.get_meta", "module_name", "name")
+            name = module_name
+        if name is None or name not in self._module_classes:
+            return None
+
+        meta: dict[str, Any] = {}
+        # 1. 模块类声明的 get_meta()（支持 ModuleMeta 声明类或 dict）
+        module_class = self._module_classes[name]
+        get_meta_method = getattr(module_class, "get_meta", None)
+        if callable(get_meta_method):
+            try:
+                declared = get_meta_method()
+                if isinstance(declared, dict):
+                    meta.update(declared)
+                elif declared is not None and hasattr(declared, "to_dict"):
+                    # ModuleMeta 声明类：内部解析只依赖 to_dict() 输出
+                    meta.update(declared.to_dict())
+            except Exception:
+                pass
+        # 2. 注册时传入的 info
+        info = self._module_info.get(name)
+        if isinstance(info, dict):
+            for key, value in info.items():
+                meta.setdefault(key, value)
+        # 3. 自动补全
+        meta.setdefault("name", name)
+        if "commands" not in meta:
+            meta["commands"] = self._commands_of(name)
+        # 4. i18n 解析
+        if resolve_i18n:
+            meta = {k: self._resolve_meta_value(v) for k, v in meta.items()}
+        return meta
+
+    @staticmethod
+    def _resolve_meta_value(value: Any) -> Any:
+        """
+        {!--< internal-use >!--}
+        解析元信息字段值：i18n 字典 → 当前语言文本；其余原样返回
+
+        :param value: 原始值（str 或 {"i18n": ..., "default": ...}）
+        :return: 解析后的值
+        """
+        if isinstance(value, dict) and "i18n" in value:
+            from .i18n import i18n
+
+            key = value["i18n"]
+            default = value.get("default", key)
+            return i18n.t(key, default=default)
+        return value
+
+    def _commands_of(self, module_name: str) -> list[str]:
+        """{!--< internal-use >!--} 列出该模块注册的主命令名"""
+        try:
+            from .Event import command
+
+            return sorted(
+                cmd_name
+                for cmd_name, cmd_info in command.get_commands().items()
+                if cmd_info.get("owner") == module_name
+                and cmd_name == cmd_info.get("main_name")
+            )
+        except Exception:
+            return []
+
+    def get_commands_overview(self) -> dict[str, dict[str, Any]]:
+        """
+        获取命令总览（模块 meta + 其注册的命令，按模块聚合）
+
+        聚合每个模块的**介绍元信息**与其**注册的命令**（含别名 / 分组 / 帮助文本），
+        便于 help 模块、管理界面等按模块展示"这个模块是干什么的 + 有哪些命令"。
+
+        :return: {模块名: {"meta": {...}, "commands": [{name, aliases, group, help, hidden}]}}
+
+        :example:
+        >>> overview = module.get_commands_overview()
+        >>> overview["Weather"]["meta"]["description"]
+        "查询城市天气"
+        >>> overview["Weather"]["commands"][0]["name"]
+        "weather"
+        """
+        from .Event import command
+
+        commands_by_owner: dict[str, list[dict[str, Any]]] = {}
+        for cmd_name, cmd_info in command.get_commands().items():
+            owner = cmd_info.get("owner")
+            if not owner or cmd_name != cmd_info.get("main_name"):
+                continue
+            aliases = sorted(
+                alias
+                for alias, main in command.aliases.items()
+                if main == cmd_name and alias != cmd_name
+            )
+            commands_by_owner.setdefault(owner, []).append(
+                {
+                    "name": cmd_name,
+                    "aliases": aliases,
+                    "group": cmd_info.get("group"),
+                    "help": cmd_info.get("help"),
+                    "hidden": bool(cmd_info.get("hidden", False)),
+                }
+            )
+
+        result: dict[str, dict[str, Any]] = {}
+        for owner, cmds in commands_by_owner.items():
+            result[owner] = {
+                "meta": self.get_meta(owner) or {},
+                "commands": cmds,
+            }
+        return result
+
     def get_status_summary(self) -> dict[str, Any]:
         """
         获取模块的完整状态摘要
@@ -1071,6 +1510,98 @@ class ModuleManager(ManagerBase):
                     "enabled": parse_bool_config(config_status[name]),
                     "is_base_module": None,
                 }
+
+        return {"modules": modules_summary}
+
+    def get_topology(self) -> dict[str, Any]:
+        """
+        获取模块的拓扑树数据（便于 WebUI 展示）
+
+        聚合每个模块拥有的命令、事件处理器、路由与生命周期钩子，
+        按 owner（模块名）归并，展示模块与资源的归属关系。
+
+        :return: 拓扑树字典
+            {"modules": {name: {
+                "loaded": bool, "enabled": bool,
+                "load_strategy": {"lazy": bool|None, "priority": int|None},
+                "info": dict|None,
+                "commands": [str, ...],
+                "handlers": {event_type: count},
+                "routes": {"http": [...], "ws": [...], "sse": [...]},
+                "lifecycle_hooks": int,
+                "scope_applies": bool,
+            }}}
+
+        :example:
+        >>> topology = module.get_topology()
+        >>> print(topology["modules"]["Chat"]["commands"])
+        ["chat"]
+        """
+        from .config import parse_bool_config
+        from .Event import command, message, meta, notice, request
+        from .lifecycle import lifecycle
+        from .router import router
+
+        # 命令：{owner: [主命令名, ...]}
+        commands_by_owner: dict[str, list[str]] = {}
+        for cmd_name, cmd_info in command.get_commands().items():
+            owner = cmd_info.get("owner")
+            if not owner or cmd_name != cmd_info.get("main_name"):
+                continue
+            commands_by_owner.setdefault(owner, []).append(cmd_name)
+
+        # 事件处理器：{owner: {event_type: count}}
+        handlers_by_owner: dict[str, dict[str, int]] = {}
+        for event_type, event_handler in (
+            ("message", message.handler),
+            ("notice", notice.handler),
+            ("request", request.handler),
+            ("meta", meta.handler),
+        ):
+            for handler_info in event_handler.handlers:
+                owner = handler_info.get("owner")
+                if not owner:
+                    continue
+                handlers_by_owner.setdefault(owner, {}).setdefault(event_type, 0)
+                handlers_by_owner[owner][event_type] += 1
+
+        # 路由：{namespace: {"http": [...], "ws": [...], "sse": [...]}}
+        routes_by_namespace = router.list_namespaces()
+
+        # 生命周期钩子：{owner: count}
+        hook_counts = lifecycle.get_owner_counts()
+
+        modules_summary: dict[str, Any] = {}
+        for name in self._module_classes:
+            module_class = self._module_classes[name]
+            strategy = {"lazy": None, "priority": None}
+            if hasattr(module_class, "get_load_strategy"):
+                try:
+                    strat = module_class.get_load_strategy()
+                    strategy = {
+                        "lazy": getattr(strat, "lazy_load", None),
+                        "priority": getattr(strat, "priority", None),
+                    }
+                except Exception:
+                    pass
+            ns_routes = routes_by_namespace.get(name, {})
+            modules_summary[name] = {
+                "loaded": name in self._loaded_modules,
+                "enabled": parse_bool_config(
+                    config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(name), True)
+                ),
+                "load_strategy": strategy,
+                "info": self._module_info.get(name),
+                "commands": sorted(commands_by_owner.get(name, [])),
+                "handlers": handlers_by_owner.get(name, {}),
+                "routes": {
+                    "http": list(ns_routes.get("http", [])),
+                    "ws": list(ns_routes.get("websocket", [])),
+                    "sse": list(ns_routes.get("sse", [])),
+                },
+                "lifecycle_hooks": hook_counts.get(name, 0),
+                "scope_applies": True,
+            }
 
         return {"modules": modules_summary}
 

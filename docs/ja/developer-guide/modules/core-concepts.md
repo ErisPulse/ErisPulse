@@ -4,7 +4,7 @@ ErisPulse モジュールの基本概念を理解することは、高品質な�
 
 ## モジュールのライフサイクル
 
-### ロード戦略
+### 加载戦略
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -13,29 +13,32 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """モジュールのロード戦略を返します"""
+        """モジュールの加載戦略を返す"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # 延遅ロードか即時ロードか
-            priority=0,       # ロード優先度（数値が大きいほど先にロードされます）
-            depends=["OtherModule"]  # オプション：依存する他のモジュールを宣言
+            lazy_load=True,   # 慣性加載にするか即時加載にするか
+            priority=0,       # 加載優先度（数値が大きいほど先に加載される）
+            depends=["OtherModule"]  # 任意：依存する他のモジュールを宣言
         )
 ```
 
-> `depends` で宣言されたモジュールが未登録の場合、現在のモジュールはスキップされ、警告が記録されます。ロード順序はトポロジカルソートによって決定され、同じ階層では `priority` 降順になります。
+> `depends` で宣言されたモジュールが登録されていない場合、現在のモジュールはスキップされ、警告が記録されます。加載順序はトポロジカルソートによって決定され、同じレベルでは `priority` の降順になります。
+
+> [!NOTE]
+> **連鎖アンロード / 連鎖再ロード**（ErisPulse **2.8.0+**）：他のモジュールに依存しているモジュールをアンロードする場合、それを依存しているモジュールは**先に連鎖的にアンロードされます**（ログに連鎖チェーンが説明されます）；ローカルプラグインのホットリロードを行うとき、それを依存しているプラグインも**連鎖的に再ロードされます**。依存者が無効なインスタンス参照を保持したまま実行し続けるのを避けるためです。循環依存を宣言した場合、加載時に `RuntimeError` で拒否されます。
 
 ### on_load メソッド
 
-モジュールのロード時に呼び出され、リソースの初期化やイベントハンドラーの登録に使用されます：
+モジュールの加載時に呼び出され、リソースの初期化とイベントハンドラの登録に使用されます：
 
 ```python
 async def on_load(self, event):
-    # イベントハンドラーを登録
+    # イベントハンドラの登録
     @command("hello", help="挨拶コマンド")
     async def hello_handler(event):
         await event.reply("こんにちは！")
     
-    # SDKの組み込みHTTPクライアントを使用（接続プールを自動管理するため、手動でセッションを作成する必要はありません）
-    # sdk.client からリクエストを送信できます
+    # SDK 内蔵の HTTP クライアントを使用（接続プールを自動管理し、手動で session を作成する必要はありません）
+    # sdk.client でリクエストを送信できます
 ```
 
 ### on_unload メソッド
@@ -44,11 +47,83 @@ async def on_load(self, event):
 
 ```python
 async def on_unload(self, event):
-    # カスタムリソースのクリーンアップ
+    # 自定義リソースのクリーンアップ
     # sdk.client はフレームワークが管理するため、手動で閉じる必要はありません
     
-    # イベントハンドラーのキャンセル（フレームワークが自動的に処理します）
+    # イベントハンドラのキャンセル（フレームワークが自動的に処理します）
     self.logger.info("モジュールがアンロードされました")
+```
+
+> バックグラウンドタスクの作成とクリーンアップ（`self.spawn()` / フレームワークの兜底キャンセル）については、[ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの所有と自動キャンセル)を参照してください。
+
+### アンロードと完全アンロード（purge）
+
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
+
+`unload()` はデフォルトで**加載のキャンセル**（インスタンスとリソースのアンロード）のみを行いますが、登録のスタブ（モジュールクラスとメタ情報）は保持します。そのため、モジュールは再び `discover` で再発見され、`load()` で再インスタンス化され、再 `register()` する必要はありません。
+
+**完全アンロード**（モジュールクラスの参照を解放し、`sys.modules` をクリーンアップして、プラグインとその排他的な依存を GC で回収可能にする）が必要な場合は、`purge=True` を渡します：
+
+```python
+# 加載のキャンセルのみ：登録のスタブを保持し、いつでも再 load() が可能です
+await sdk.module.unload("MyModule")
+
+# 完全アンロード：登録のスタブと sys.modules のクリーンアップ（プラグインのソース）
+await sdk.module.unload("MyModule", purge=True)
+```
+
+| 意味 | `unload()` デフォルト | `unload(purge=True)` |
+|------|-----------------|----------------------|
+| インスタンスとリソースのアンロード（イベント/task/ルーティング/lifecycle/i18n） | ✅ | ✅ |
+| 登録のスタブ（モジュールクラスとメタ情報）を保持 | ✅ | ❌ 削除 |
+| `sys.modules` のクリーンアップ（プラグインフォルダからのみ） | ❌ | ✅ |
+| モジュールクラスが GC で回収可能 | ❌ | ✅ |
+| 再加載 | `load()` で直接使用可能 | `register()` + `load()` が必要 |
+
+> `purge=True` の場合、連鎖アンロードされた依存者も purge されます。アンロード後、フレームワークは `gc.collect()` を実行し、モジュールクラス/インスタンスが回収可能かどうかを確認します。残存する参照はログに警告として表示されます（参照元を含む、DEBUG レベル）。
+
+### ライフサイクルの全体像
+
+上記のメソッドをつなげると、フレームワークがモジュールの加載とアンロードを行う際に、**背後で行ってくれるすべての処理**がわかります：
+
+```mermaid
+flowchart TD
+    subgraph Load["加載（register → load）"]
+        L1["register：モジュールクラスとメタ情報を登録"] --> L2["依存の検証<br/>不足がある場合はスキップ"]
+        L2 --> L3["トポロジカルソート（Kahn + priority）"]
+        L3 --> L4["owner 注入 current_owner"]
+        L4 --> L5["設定テンプレートの生成 + i18n 翻訳キーの登録"]
+        L5 --> L6["モジュールのインスタンス化（sdk を注入）"]
+        L6 --> L7["on_load() を呼び出す"]
+        L7 --> L8["sdk 属性にマウント + emit module.load"]
+    end
+
+    subgraph Unload["アンロード（unload）"]
+        U1["on_unload() を呼び出す"] --> U2["バックグラウンドタスクの兜底キャンセル（self.spawn 归属）"]
+        U2 --> U3["i18n 翻訳キーのクリーンアップ"]
+        U3 --> U4["ルーティング / コマンド / イベントハンドラの削除（owner に従う）"]
+        U4 --> U5["lifecycle フックのクリーンアップ（owner に従う）"]
+        U5 --> U6["SDK 属性の削除 + 慣性加載プロキシ"]
+        U6 --> U7["emit module.unload"]
+    end
+
+    Load --> Unload
+```
+
+**加載時にフレームワークが自動で行ってくれること**（`on_load` を書くだけで、他の処理は自動的に完了します）：
+
+| フェーズ | フレームワークが自動で行う |
+|------|-------------|
+| owner 注入 | インスタンス化の間に `owner_scope` でモジュール名をラップするため、`on_load` で登録したコマンド/イベント/フック/バックグラウンドタスクは**自動的にこのモジュールに帰属し**、アンロード時に owner に従って一括でクリーンアップされます |
+| 設定テンプレート | `ConfigClass` を宣言したモジュールの場合、フレームワークが自動的に `ErisPulse.<ModuleName>` の設定セクションを生成/埋め込みます |
+| i18n 翻訳キー | `I18nClass` を宣言したモジュールの場合、翻訳キーは自動的に登録されます（アンロード時に自動的に登録解除されます） |
+| 依存トポロジー | `depends` で宣言された順序に従ってソートされ、依存されるモジュールが先に加載されるようにします；循環依存は `RuntimeError` で拒否されます |
+| SDK へのマウント | インスタンス化後に `sdk.<ModuleName>` にマウントされるため、`sdk.MyModule.xxx` でアクセスできます |
+
+**アンロード時にフレームワークが自動でクリーンアップすること**（上記の U1→U7 に対応）：`on_unload` が完了した後に兜底クリーンアップが行われます——バックグラウンドタスクは強制的にキャンセルされます（`self.spawn` で作成されたもの、優雅な終了は `on_unload` で行う必要があります）、i18n キー、ルーティング、コマンド/イベントハンドラ、lifecycle フック、最後に SDK 属性を削除します。`purge=True` の場合は、登録のスタブと `sys.modules` のクリーンアップも追加されます。
+
+> これらの自動クリーンアップが「`on_load`/`on_unload` を書くだけで、手動で unregister する必要がない」という自信の源です——フレームワークは owner 归属を使って「誰が登録したか、誰がクリーンアップするか」をワンクリック式に実現しています。
 
 ## SDK オブジェクト
 
@@ -101,7 +176,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ### 宣言的設定（推奨）
 
-v2.5.2 以降、モジュールは `ConfigClass` を使用して設定クラスを宣言できるようになりました。アダプターと同じ設定 Schema システムを使用します。設定は `self.cfg` でリアルタイムに読み出され、変更後はすぐに有効になります：
+v2.5.2 以降、モジュールは `ConfigClass` を宣言して、アダプターと同じ設定 Schema システムを使用することができます。設定は `self.cfg` を通じてリアルタイムに読み取ることができ、変更後は即座に有効になります：
 
 ```python
 from dataclasses import dataclass, field
@@ -113,7 +188,7 @@ class MyModuleConfig(BaseConfig):
     api_key: str = field(
         default="",
         metadata={
-            "description": {"i18n": "my_module.api_key", "default": "API キー"},
+            "description": {"i18n": "my_module.api_key", "default": "API 密钥"},
             "required": True,
             "secret": True,
             "ui": {"widget": "password", "group": "basic", "order": 1},
@@ -122,13 +197,17 @@ class MyModuleConfig(BaseConfig):
     timeout: int = field(
         default=30,
         metadata={
-            "description": {"i18n": "my_module.timeout", "default": "タイムアウト（秒）"},
+            "description": {"i18n": "my_module.timeout", "default": "超时时间（秒）"},
             "ui": {"widget": "number", "group": "advanced", "order": 2},
         },
     )
 
 class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
+
+    def __init__(self, sdk):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
 
     async def on_load(self, event):
         self.logger.info("モジュールがロードされました")
@@ -137,36 +216,36 @@ class MyModule(BaseModule):
         pass
 
     async def do_something(self):
-        cfg = self.cfg  # リアルタイム読み出し、型安全
+        cfg = self.cfg  # 実時読み取り、型安全
         api_key = cfg.api_key
         timeout = cfg.timeout
 ```
 
-`BaseConfig` は汎用的な設定基底クラスで、アダプター、モジュール、外部プロジェクトなどあらゆるシーンに適用できます。設定フィールドは i18n 多言語記述をサポートしています（詳細は [i18n ドキュメント](../../advanced/i18n.md#設定フィールド多言語)をご参照ください）。
+`BaseConfig` は、アダプター、モジュール、外部プロジェクトなど、あらゆる場面で使用できる汎用的な設定基底クラスです。設定フィールドは i18n 多言語説明をサポートしています（詳細は [i18n ドキュメント](../../advanced/i18n.md#設定フィールド多言語) を参照）。
 
 ### 宣言的翻訳キー（v2.7.0+）
 
-v2.7.0 以降、モジュールは `ConfigClass` を宣言するのと同様に、ネストされた `I18nClass` クラスを使って翻訳キーを一括で宣言することもできます。フレームワークはロード時に宣言されたすべての翻訳キーを**自動的に登録**するため、手動で `i18n.register()` を呼び出す必要はありません。また、設定テンプレートの生成より早いタイミングで登録されるため、設定記述で参照する i18n キーが利用可能であることが保証されます。
+v2.7.0 以降、モジュールは `ConfigClass` の宣言と同じように、ネストされたクラス `I18nClass` を使って翻訳キーを一括宣言することができます。フレームワークはロード時に**自動的に**すべての宣言された翻訳キーを登録し、手動で `i18n.register()` を呼び出す必要がなく、また設定テンプレート生成よりも早いタイミングで登録されるため、設定説明で参照される i18n キーが利用可能になります。
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
 
 class MyModule(BaseModule):
-    # 設定クラス（任意）
+    # 設定クラス（オプション）
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
             default="欢迎",
             metadata={
-                "description": {"i18n": "mymodule.welcome_msg", "default": "ウェルカムメッセージ"},
+                "description": {"i18n": "mymodule.welcome_msg", "default": "欢迎消息"},
             },
         )
 
-    # 翻訳キーセットクラス（任意）
+    # 翻訳キー集合クラス（オプション）
     class I18nClass(BaseI18n):
-        # プロパティ名が自動的に完全なキーパスに連結されます：<モジュール名>.<プロパティ名>
+        # 属性名が自動的に完全なキー・パスに結合されます：<モジュール名>.<属性名>
         welcome_msg: I18nKey = I18nKey(
-            default="Welcome Message",   # 言語に依存しないフォールバック
+            default="Welcome Message",   # 言語に依存しないバックアップ
             zh_CN="欢迎消息",
             zh_TW="歡迎訊息",
             en="Welcome Message",
@@ -183,30 +262,24 @@ class MyModule(BaseModule):
         )
 ```
 
-詳細は [i18n 推奨の記述方法](../../advanced/i18n.md#推奨の記述方法I18nClassで翻訳キーを宣言するv270) を参照してください。
+詳細は [i18n 推奨の書き方](../../advanced/i18n.md#推奨の書き方通过-i18nclass-声明翻译键-v270) を参照してください。
 
-### 手動による設定の読み込み（互換方式）
+### 手動で設定を読み取る（廃止済み）
 
-宣言的設定を使用しない場合、直接設定ストレージに対して読み書きすることも可能です。
+> **廃止済み**：宣言的設定（[宣言的設定推奨](#宣言式設定推奨)）と `self.cfg` を通じたリアルタイム読み取りを使用してください。
 
 ```python
-def _load_config(self):
-    config = self.sdk.config.getConfig("MyModule")
-    if not config:
-        default_config = {
-            "api_key": "",
-            "timeout": 30
-        }
-        self.sdk.config.setConfig("MyModule", default_config)
-        return default_config
-    return config
+class MyModule(BaseModule):
+    def __init__(self, sdk):
+        self.sdk = sdk
+
+    def _load_config(self):
+        config = self.sdk.config.getConfig("MyModule")
+        if not config:
+            self.sdk.config.setConfig("MyModule", {"api_key": "", "timeout": 30})
+            return {"api_key": "", "timeout": 30}
+        return config
 ```
-
-> **注意**：手動方式の場合は `self.config` をプロパティ名として使用しないでください。`self.cfg` または独自の名前を使用することをお勧めします。そうしないと、将来的なフレームワークのプロパティとの競合を避けることができません。
-
-请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。
-
-再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。
 
 ## ストレージシステム
 

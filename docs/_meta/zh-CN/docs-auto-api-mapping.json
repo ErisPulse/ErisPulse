@@ -1,12 +1,12 @@
 {
   "version": "1.0",
   "total_categories": 1,
-  "total_documents": 100,
+  "total_documents": 93,
   "categories": {
     "自动生成 API": {
       "description": "核心 API 和接口文档",
       "icon": "fa-microchip",
-      "count": 100,
+      "count": 93,
       "documents": [
         {
           "title": "`ErisPulse.__init__` 模块",
@@ -243,36 +243,6 @@
               "icon": "fa-book"
             },
             {
-              "title": "`ErisPulse.Core.i18n.locales.en` 模块",
-              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/en.md",
-              "level": 1,
-              "icon": "fa-book"
-            },
-            {
-              "title": "`ErisPulse.Core.i18n.locales.ja` 模块",
-              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/ja.md",
-              "level": 1,
-              "icon": "fa-book"
-            },
-            {
-              "title": "`ErisPulse.Core.i18n.locales.ru` 模块",
-              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/ru.md",
-              "level": 1,
-              "icon": "fa-book"
-            },
-            {
-              "title": "`ErisPulse.Core.i18n.locales.zh_cn` 模块",
-              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/zh_cn.md",
-              "level": 1,
-              "icon": "fa-book"
-            },
-            {
-              "title": "`ErisPulse.Core.i18n.locales.zh_tw` 模块",
-              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/zh_tw.md",
-              "level": 1,
-              "icon": "fa-book"
-            },
-            {
               "title": "`ErisPulse.Core.lifecycle` 模块",
               "path": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
               "level": 1,
@@ -299,6 +269,12 @@
             {
               "title": "`ErisPulse.Core.router` 模块",
               "path": "api-reference/auto_api/ErisPulse/Core/router.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.scope` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/scope.md",
               "level": 1,
               "icon": "fa-book"
             },
@@ -441,36 +417,6 @@
               "icon": "fa-book"
             },
             {
-              "title": "`ErisPulse.CLI.i18n.locales.en` 模块",
-              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/en.md",
-              "level": 1,
-              "icon": "fa-book"
-            },
-            {
-              "title": "`ErisPulse.CLI.i18n.locales.ja` 模块",
-              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/ja.md",
-              "level": 1,
-              "icon": "fa-book"
-            },
-            {
-              "title": "`ErisPulse.CLI.i18n.locales.ru` 模块",
-              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/ru.md",
-              "level": 1,
-              "icon": "fa-book"
-            },
-            {
-              "title": "`ErisPulse.CLI.i18n.locales.zh_cn` 模块",
-              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/zh_cn.md",
-              "level": 1,
-              "icon": "fa-book"
-            },
-            {
-              "title": "`ErisPulse.CLI.i18n.locales.zh_tw` 模块",
-              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/zh_tw.md",
-              "level": 1,
-              "icon": "fa-book"
-            },
-            {
               "title": "`ErisPulse.CLI.registry` 模块",
               "path": "api-reference/auto_api/ErisPulse/CLI/registry.md",
               "level": 1,
@@ -561,6 +507,12 @@
               "icon": "fa-book"
             },
             {
+              "title": "`ErisPulse.runtime.plugin_reload` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/plugin_reload.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
               "title": "`ErisPulse.runtime.tasks` 模块",
               "path": "api-reference/auto_api/ErisPulse/runtime/tasks.md",
               "level": 1,
@@ -593,6 +545,12 @@
             {
               "title": "`ErisPulse.loaders.module` 模块",
               "path": "api-reference/auto_api/ErisPulse/loaders/module.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.loaders.plugin_folder` 模块",
+              "path": "api-reference/auto_api/ErisPulse/loaders/plugin_folder.md",
               "level": 1,
               "icon": "fa-book"
             },

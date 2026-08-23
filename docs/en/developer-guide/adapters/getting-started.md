@@ -2,36 +2,29 @@
 
 This guide helps you start developing an ErisPulse adapter to connect with a new messaging platform.
 
-## Adapter Overview
+## Adapter Introduction
 
 ### What is an Adapter
 
-The adapter acts as a bridge between ErisPulse and various messaging platforms, responsible for:
+The adapter is the bridge between ErisPulse and various messaging platforms, responsible for:
 
-1. **Forward Conversion**: Receiving platform events and converting them to the OneBot12 standard format (Converter)
+1. **Forward Conversion**: Receiving platform events and converting them to OneBot12 standard format (Converter)
 2. **Reverse Conversion**: Converting OneBot12 message segments into platform API calls (`Raw_ob12`)
-3. Managing connections with the platform (WebSocket/WebHook)
+3. Managing connections with platforms (WebSocket/WebHook)
 4. Providing a unified SendDSL message sending interface
 
 ### Adapter Architecture
 
-```
-Forward Conversion (Receive)                    Reverse Conversion (Send)
-─────────────                                    ─────────────
-Platform Event                                   Module Constructed Message
-    ↓                                            ↓
-Converter.convert()                            Send.Raw_ob12()
-    ↓                                            ↓
-OneBot12 Standard Event                        Platform Native API Call
-    ↓                                            ↓
-Event System                                    Standard Response Format
-    ↓
-Module Processing
-```
-
-Please return the translated Markdown content directly, without adding any other text.
-
-**Reminder**: If the document contains language switching lines (lines separated by `|`), please strictly follow the format requirements in point 8 above and do not use incorrect formats like `[**Label**](file)`.
+```mermaid
+flowchart LR
+    subgraph receive["Forward Conversion (Receive)"]
+        direction TB
+        P1["Platform Event"] --> C1["Converter.convert()"] --> O1["OneBot12 Standard Event"] --> S1["Event System"] --> M1["Module Processing"]
+    end
+    subgraph send["Reverse Conversion (Send)"]
+        direction TB
+        M2["Module Builds Message"] --> R1["Send.Raw_ob12()"] --> N1["Platform Native API Call"] --> R2["Standard Response Format"]
+    end
 
 ## Directory Structure
 
@@ -353,6 +346,41 @@ async def handle_friend_request(event):
 ```python
 # MyAdapter/__init__.py
 from .Core import MyAdapter
+
+## Dependency Declaration (Optional, 2.8.0+)
+
+Adapters can declare dependencies on other adapters or modules to achieve adapter interlinking and optional features:
+
+```python
+from typing import ClassVar
+
+class MyAdapter(BaseAdapter):
+    # Hard dependency: Skips startup if missing (warning + status=skipped-dependency event)
+    depends: ClassVar[dict] = {
+        "adapters": ["onebot11"],   # Dependent adapters (by platform name)
+        "modules": ["TranslateEngine"],  # Dependent modules (by registered name)
+    }
+    # Soft dependency: Missing does not affect startup; receives callbacks on module load/unload (optional feature mode)
+    optional_modules: ClassVar[list] = ["TranslateEngine"]
+```
+
+- **Startup Order**: Adapters declaring hard dependencies on modules will **start after the module initialization is complete**
+- **Soft Dependency Notification**: `on_dependency_ready(module_name)` is called when a module in `optional_modules` (or hard dependencies) is loaded; `on_dependency_lost(module_name)` is called when it is unloaded (default empty implementation, can be overridden) — covers late loading and hot reload scenarios:
+
+```python
+async def on_dependency_ready(self, module_name):
+    """Soft dependency module ready: Enable corresponding optional features"""
+    if module_name == "TranslateEngine":
+        self._translate = self.sdk.TranslateEngine
+
+async def on_dependency_lost(self, module_name):
+    """Soft dependency module lost: Downgrade features"""
+    if module_name == "TranslateEngine":
+        self._translate = None
+```
+
+> [!NOTE]
+> This feature requires ErisPulse **2.8.0+**.
 
 ## `__init__` Notes
 

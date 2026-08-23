@@ -17,8 +17,12 @@ from ..Core.constants import (
     DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_I18N_LANGUAGE,
     DEFAULT_LAZY_LOADING_ENABLED,
+    DEFAULT_LOG_BACKUP_COUNT,
     DEFAULT_LOG_LEVEL,
+    DEFAULT_LOG_MAX_SIZE_MB,
     DEFAULT_LOG_MEMORY_LIMIT,
+    DEFAULT_LOG_ROTATION,
+    DEFAULT_LOG_ROTATION_WHEN,
     DEFAULT_MESSAGE_IGNORE_SELF,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
     DEFAULT_PROACTIVE_GC_FULL_EVERY,
@@ -43,12 +47,24 @@ DEFAULT_ERISPULSE_CONFIG = {
         "auto_start": DEFAULT_SERVER_AUTO_START,
         "ssl_certfile": None,
         "ssl_keyfile": None,
+        # 内联 PEM 内容（优先于路径，适合容器/无文件系统场景）
+        "ssl_cert": None,
+        "ssl_key": None,
     },
     "logger": {
         "level": DEFAULT_LOG_LEVEL,
         "format": "rich",
         "log_files": [],
+        # 日志目录模式（与 log_files 互斥，log_files 显式路径优先）：
+        # 设置后日志自动写入该目录并支持自动分段
+        "log_dir": "",
+        "log_rotation": DEFAULT_LOG_ROTATION,          # 分段方式: "size" | "date" | "none"
+        "log_max_size_mb": DEFAULT_LOG_MAX_SIZE_MB,    # size 模式单文件上限（MB）
+        "log_backup_count": DEFAULT_LOG_BACKUP_COUNT,  # 保留的历史日志文件数
+        "log_rotation_when": DEFAULT_LOG_ROTATION_WHEN,  # date 模式轮转周期
         "memory_limit": DEFAULT_LOG_MEMORY_LIMIT,
+        # 屏蔽指定日志等级（如 ["EVENT"] 隐藏消息收发内容，用于隐私保护）
+        "exclude_levels": [],
     },
     "storage": {
         "use_global_db": DEFAULT_USE_GLOBAL_DB,
@@ -75,6 +91,8 @@ DEFAULT_ERISPULSE_CONFIG = {
     },
     "framework": {
         "enable_lazy_loading": DEFAULT_LAZY_LOADING_ENABLED,
+        # 本地插件文件夹：相对项目根目录，支持字符串或列表
+        "plugins_dir": "plugins",
         "uninit_timeout": DEFAULT_UNINIT_TIMEOUT_SECS,
         "strict_mode": DEFAULT_STRICT_MODE,
         "strict_mode_exceptions": {
@@ -93,6 +111,20 @@ DEFAULT_ERISPULSE_CONFIG = {
     },
     "i18n": {
         "language": DEFAULT_I18N_LANGUAGE,
+    },
+    # 模块作用域系统：绑定模块与适配器 Bot / 平台 / 会话。
+    # 默认允许全部模块；配置绑定后才开始过滤。
+    # 解析优先级：会话级 > Bot 级 > 平台级。
+    # default_allow = false 时开启"隐式拒绝"严格模式（未匹配白名单即拒绝）。
+    # 平台级: platforms.<platform> = {modules: [...], blocked: [...]}
+    # Bot 级: bots.<platform>.<bot_id> = {modules: [...], blocked: [...]}
+    # 会话级: sessions.<platform>.<session_id> = {modules: [...], blocked: [...]}
+    "scope": {
+        "default_allow": True,
+        "cache_size": 1024,
+        "platforms": {},
+        "bots": {},
+        "sessions": {},
     },
 }
 

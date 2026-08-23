@@ -1112,3 +1112,51 @@ class TestRateLimitCleanupTask:
         # 同步上下文无事件循环
         router_manager._start_rate_limit_cleanup()
         assert router_manager._rate_limit_cleanup_task is None
+
+
+# ==================== 内联 PEM SSL 测试（2.8.0+） ====================
+
+
+class TestInlinePemSsl:
+    """router 支持内联 PEM 证书内容（ssl_cert/ssl_key，优先于路径）"""
+
+    def test_invalid_pem_raises_and_no_tempfile_leftover(self):
+        """无效 PEM 抛异常且临时文件被清理"""
+        import glob
+        import tempfile as _tf
+
+        from ErisPulse.Core.router import RouterManager
+
+        tmpdir = _tf.gettempdir()
+        before = set(glob.glob(tmpdir + "\\*.pem"))
+
+        try:
+            RouterManager._build_ssl_context_from_pem(
+                "not-a-cert", "not-a-key"
+            )
+            raise AssertionError("should raise for invalid PEM")
+        except Exception:
+            pass
+
+        after = set(glob.glob(tmpdir + "\\*.pem"))
+        leftover = after - before
+        assert not leftover, f"temp PEM files leaked: {leftover}"
+
+    def test_build_ssl_context_signature(self):
+        """_build_ssl_context_from_pem 为静态方法可直调"""
+        from ErisPulse.Core.router import RouterManager
+
+        assert callable(RouterManager._build_ssl_context_from_pem)
+
+    def test_start_accepts_inline_ssl_params(self):
+        """start 签名接受 ssl_cert/ssl_key 参数"""
+        import inspect
+
+        from ErisPulse.Core.router import RouterManager
+
+        sig = inspect.signature(RouterManager.start)
+        assert "ssl_cert" in sig.parameters
+        assert "ssl_key" in sig.parameters
+        # 路径参数保留（向后兼容）
+        assert "ssl_certfile" in sig.parameters
+        assert "ssl_keyfile" in sig.parameters

@@ -6,31 +6,29 @@
 
 再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第 8 條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
-## 介面卡簡介
+## 適配器簡介
 
-### 什麼是介面卡
+### 什麼是適配器
 
-介面卡是 ErisPulse 與各個訊息平台之間的橋樑，負責：
+適配器是 ErisPulse 與各個消息平台之間的橋樑，負責：
 
 1. **正向轉換**：接收平台事件並轉換為 OneBot12 標準格式（Converter）
-2. **反向轉換**：將 OneBot12 訊息段轉換為平台 API 呼叫（`Raw_ob12`）
-3. 管理與平台的連線（WebSocket/WebHook）
-4. 提供統一的 SendDSL 訊息發送介面
+2. **反向轉換**：將 OneBot12 消息段轉換為平台 API 調用（`Raw_ob12`）
+3. 管理與平台的連接（WebSocket/WebHook）
+4. 提供統一的 SendDSL 消息發送介面
 
-### 介面卡架構
+### 適配器架構
 
-```
-正向轉換（接收）                        反向轉換（發送）
-─────────────                        ─────────────
-平台事件                               模組建構訊息
-    ↓                                    ↓
-Converter.convert()               Send.Raw_ob12()
-    ↓                                    ↓
-OneBot12 標準事件                   平台原生 API 呼叫
-    ↓                                    ↓
-事件系統                             標準回應格式
-    ↓
-模組處理
+```mermaid
+flowchart LR
+    subgraph receive["正向轉換（接收）"]
+        direction TB
+        P1["平台事件"] --> C1["Converter.convert()"] --> O1["OneBot12 標準事件"] --> S1["事件系統"] --> M1["模組處理"]
+    end
+    subgraph send["反向轉換（發送）"]
+        direction TB
+        M2["模組構建消息"] --> R1["Send.Raw_ob12()"] --> N1["平台原生 API 調用"] --> R2["標準回應格式"]
+    end
 
 ## 目錄結構
 
@@ -360,6 +358,41 @@ from .Core import MyAdapter
 ```
 
 請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+## 依賴聲明（可選，2.8.0+）
+
+適配器可以聲明對其它適配器或模組的依賴，以實現適配器間的聯動與可選功能：
+
+```python
+from typing import ClassVar
+
+class MyAdapter(BaseAdapter):
+    # 硬依賴：缺失時跳過啟動（警告 + status=skipped-dependency 事件）
+    depends: ClassVar[dict] = {
+        "adapters": ["onebot11"],   # 依賴的適配器（按平台名）
+        "modules": ["TranslateEngine"],  # 依賴的模組（按註冊名）
+    }
+    # 軟依賴：缺失不影響啟動；模組加載/卸載時收到回調（可選功能模式）
+    optional_modules: ClassVar[list] = ["TranslateEngine"]
+```
+
+- **啟動順序**：宣告了模組硬依賴的適配器會**延遲到模組初始化完成後**再啟動
+- **軟依賴通知**：`optional_modules`（或模組硬依賴）中的模組被加載時會呼叫 `on_dependency_ready(module_name)`；被卸載時會呼叫 `on_dependency_lost(module_name)`（預設空實作，可覆寫）——用於處理晚加載與熱重載場景：
+
+```python
+async def on_dependency_ready(self, module_name):
+    """軟依賴模組就緒：啟用對應可選功能"""
+    if module_name == "TranslateEngine":
+        self._translate = self.sdk.TranslateEngine
+
+async def on_dependency_lost(self, module_name):
+    """軟依賴模組丟失：降級功能"""
+    if module_name == "TranslateEngine":
+        self._translate = None
+```
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
 
 ## `__init__` 注意事項
 

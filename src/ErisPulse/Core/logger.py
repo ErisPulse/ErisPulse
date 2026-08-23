@@ -16,6 +16,7 @@ import json as _json
 import logging
 from collections import deque
 from collections.abc import Callable
+from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 from pathlib import Path
 
 from rich.console import Console
@@ -25,7 +26,13 @@ from rich.text import Text
 from rich.theme import Theme
 
 from .constants import (
+    DEFAULT_LOG_BACKUP_COUNT,
+    DEFAULT_LOG_MAX_SIZE_MB,
     DEFAULT_LOG_MEMORY_LIMIT,
+    DEFAULT_LOG_ROTATION,
+    DEFAULT_LOG_ROTATION_WHEN,
+    LOG_FILE_DATEFMT,
+    LOG_FILE_FORMAT,
     LOG_RICH_THEME,
     LOG_TIME_FORMAT,
     LOGGER_NAME,
@@ -41,6 +48,32 @@ logging.addLevelName(EVENT, "EVENT")
 _CUSTOM_LEVELS: dict[str, int] = {"TRACE": TRACE, "EVENT": EVENT}
 
 _LOG_THEME = Theme(LOG_RICH_THEME)
+
+class _SingleLineFormatter(logging.Formatter):
+    """
+    单行化文件格式化器
+
+    在标准格式化结果上把真实换行转义为字面 ``\\n``，保证日志文件
+    一行一记录。控制台（Rich/Stream）不受影响——多行消息在终端中
+    保持原始布局（如路由服务器的地址树）。
+
+    {!--< internal-use >!--}
+    """
+
+    def format(self, record: logging.LogRecord) -> str:
+        return _to_single_line(super().format(record))
+
+
+def _make_file_formatter() -> logging.Formatter:
+    """
+    构建非 JSON 模式下的日志文件格式化器
+
+    {!--< internal-use >!--}
+    {!--< /internal-use >!--}
+
+    :return: 带日期时间、级别且单行化的 Formatter
+    """
+    return _SingleLineFormatter(fmt=LOG_FILE_FORMAT, datefmt=LOG_FILE_DATEFMT)
 
 
 def _format_message(msg: object, args: tuple) -> str:
@@ -69,19 +102,51 @@ def _format_message(msg: object, args: tuple) -> str:
         return str(msg)
 
 
+def _to_single_line(msg: str) -> str:
+    """
+    将日志消息规范化为单行
+
+    统一 CRLF / CR 为 LF 后，把真实换行转义为字面 ``\\n``。多行消息
+    （异常堆栈文本、多行 f-string 等）若原样进入内存 / 订阅器 /
+    plain 日志文件，会破坏"一行一记录"的日志纪律，并导致按行渲染的
+    消费端（Dashboard 表格、日志采集管道）出现空消息与错位。
+
+    {!--< internal-use >!--}
+    {!--< /internal-use >!--}
+
+    :param msg: 原始日志文本
+    :return: 不含真实换行符的单行文本
+    """
+    if not msg:
+        return msg
+    return msg.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\\n")
+
+
 class _JsonFormatter(logging.Formatter):
     """
     JSON 日志格式化器
 
+    文件用途时 message 字段单行化（保持 JSONL 一行一记录）。
+
     {!--< internal-use >!--}
     """
 
+    def __init__(self, *, single_line: bool = False):
+        """
+        :param single_line: 文件模式为 True（转义换行），控制台保持 False
+        """
+        super().__init__()
+        self._single_line = single_line
+
     def format(self, record: logging.LogRecord) -> str:
+        message = record.getMessage()
+        if self._single_line:
+            message = _to_single_line(message)
         log_entry = {
             "timestamp": datetime.datetime.now().isoformat(),
             "level": record.levelname,
             "logger": record.name,
-            "message": record.getMessage(),
+            "message": message,
         }
         if record.exc_info and record.exc_info[0] is not None:
             log_entry["exception"] = self.formatException(record.exc_info)
@@ -105,6 +170,7 @@ class Logger:
         self._max_logs = DEFAULT_LOG_MEMORY_LIMIT
         self._logs = {}
         self._module_levels = {}
+        self._excluded_levels: set[int] = set()
         self._json_mode = False
         self._logger = logging.getLogger(LOGGER_NAME)
         self._logger.setLevel(logging.DEBUG)
@@ -310,6 +376,101 @@ class Logger:
         self._logger.error(i18n.t("core.logger.invalid_level", level=level))
         return False
 
+    def set_excluded_levels(self, levels: list[str]) -> bool:
+        """
+        设置被屏蔽的日志等级列表
+
+        被屏蔽等级的日志将被完全丢弃：不写入内存、不推送给订阅器、
+        不输出控制台、不写入日志文件。常用于隐私保护场景，
+        例如 ``exclude_levels = ["EVENT"]`` 可隐藏消息收发内容
+        （消息收发日志使用 EVENT 等级记录）。
+
+        :param levels: 日志等级名称列表（如 ["EVENT", "DEBUG"]），空列表表示不屏蔽
+        :return: bool 设置是否成功（含非法等级时返回 False 且不生效）
+
+        :example:
+        >>> # 屏蔽 EVENT 等级（隐藏消息收发内容）
+        >>> logger.set_excluded_levels(["EVENT"])
+        >>> # 恢复所有等级
+        >>> logger.set_excluded_levels([])
+        """
+        resolved: set[int] = set()
+        for level in levels:
+            level_value = self._resolve_level(level)
+            if level_value is None:
+                self._logger.error(i18n.t("core.logger.invalid_level", level=level))
+                return False
+            resolved.add(level_value)
+        changed = resolved != self._excluded_levels
+        self._excluded_levels = resolved
+        if changed and resolved:
+            # 仅在存在实际屏蔽项时记录，避免配置热更新空列表刷屏
+            self._logger.info(
+                i18n.t(
+                    "core.logger.excluded_levels_set",
+                    levels=", ".join(self.list_excluded_levels()) or "-",
+                )
+            )
+        return True
+
+    def exclude_level(self, level: str) -> bool:
+        """
+        屏蔽单个日志等级
+
+        被屏蔽等级的日志将被完全丢弃（内存 / 订阅器 / 控制台 / 文件）。
+
+        :param level: 日志等级名称（如 "EVENT"）
+        :return: bool 是否设置成功
+        """
+        level_value = self._resolve_level(level)
+        if level_value is None:
+            self._logger.error(i18n.t("core.logger.invalid_level", level=level))
+            return False
+        self._excluded_levels.add(level_value)
+        return True
+
+    def allow_level(self, level: str) -> bool:
+        """
+        取消屏蔽单个日志等级
+
+        :param level: 日志等级名称（如 "EVENT"）
+        :return: bool 是否成功（等级原本未被屏蔽时返回 False）
+        """
+        level_value = self._resolve_level(level)
+        if level_value is None:
+            self._logger.error(i18n.t("core.logger.invalid_level", level=level))
+            return False
+        if level_value in self._excluded_levels:
+            self._excluded_levels.remove(level_value)
+            return True
+        return False
+
+    def list_excluded_levels(self) -> list[str]:
+        """
+        列出当前被屏蔽的日志等级名称
+
+        :return: list[str] 被屏蔽的等级名称列表
+        """
+        names: list[str] = []
+        for level_value in sorted(self._excluded_levels):
+            name = logging.getLevelName(level_value)
+            if not name.startswith("Level "):
+                names.append(name)
+        return names
+
+    def _clear_file_handlers(self) -> None:
+        """
+        移除并关闭所有已存在的文件日志处理器
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        if self._file_handlers:
+            for handler in self._file_handlers:
+                self._logger.removeHandler(handler)
+                handler.close()
+            self._file_handlers.clear()
+
     def set_output_file(self, path) -> bool:
         """
         设置日志输出
@@ -317,11 +478,7 @@ class Logger:
         :param path: 日志文件路径 Str/List
         :return: bool 设置是否成功
         """
-        if self._file_handlers:
-            for handler in self._file_handlers:
-                self._logger.removeHandler(handler)
-                handler.close()
-            self._file_handlers.clear()
+        self._clear_file_handlers()
 
         if isinstance(path, str):
             path = [path]
@@ -331,9 +488,9 @@ class Logger:
             try:
                 handler = logging.FileHandler(p, encoding="utf-8")
                 if self._json_mode:
-                    handler.setFormatter(_JsonFormatter())
+                    handler.setFormatter(_JsonFormatter(single_line=True))
                 else:
-                    handler.setFormatter(logging.Formatter("%(message)s"))
+                    handler.setFormatter(_make_file_formatter())
                 self._logger.addHandler(handler)
                 self._file_handlers.append(handler)
                 success = True
@@ -346,6 +503,93 @@ class Logger:
             self._logger.warning(i18n.t("core.logger.no_output_set"))
 
         return success
+
+    def set_output_dir(
+        self,
+        directory: str,
+        *,
+        filename: str = "erispulse.log",
+        rotation: str = DEFAULT_LOG_ROTATION,
+        max_size_mb: float = DEFAULT_LOG_MAX_SIZE_MB,
+        backup_count: int = DEFAULT_LOG_BACKUP_COUNT,
+        when: str = DEFAULT_LOG_ROTATION_WHEN,
+    ) -> bool:
+        """
+        设置日志输出目录（支持自动分段/轮转）
+
+        目录不存在时自动创建。与 ``set_output_file`` 互斥，调用后
+        会替换已有的文件日志输出。
+
+        :param directory: 日志目录路径（自动创建）
+        :param filename: 目录内的日志文件名（默认 "erispulse.log"）
+        :param rotation: 分段方式：``"size"``（按大小，默认）/ ``"date"``（按时间）/ ``"none"``（不分段）
+        :param max_size_mb: size 模式下单文件大小上限（MB，默认 10）
+        :param backup_count: 保留的历史日志文件数（默认 5，超出的最旧备份自动删除）
+        :param when: date 模式轮转周期（``"S"``/``"M"``/``"H"``/``"D"``/``"midnight"``，默认每天零点）
+        :return: bool 设置是否成功
+
+        :example:
+        >>> # 在 config.toml 中配置（推荐）
+        >>> [ErisPulse.logger]
+        >>> log_dir = "logs"
+        >>> log_rotation = "size"        # 按大小分段
+        >>> log_max_size_mb = 10
+        >>> log_backup_count = 5
+        >>>
+        >>> # 或代码中动态设置：每天零点轮转，保留 7 份
+        >>> logger.set_output_dir("logs", rotation="date", backup_count=7)
+        """
+        rotation = (rotation or DEFAULT_LOG_ROTATION).lower()
+        if rotation not in ("size", "date", "none"):
+            self._logger.error(
+                i18n.t("core.logger.rotation_invalid", rotation=rotation)
+            )
+            return False
+
+        self._clear_file_handlers()
+
+        try:
+            dir_path = Path(directory)
+            dir_path.mkdir(parents=True, exist_ok=True)
+            log_path = dir_path / (filename or "erispulse.log")
+        except Exception as e:
+            self._logger.error(
+                i18n.t("core.logger.log_dir_failed", path=directory, error=e)
+            )
+            return False
+
+        try:
+            if rotation == "date":
+                handler: logging.FileHandler = TimedRotatingFileHandler(
+                    log_path,
+                    when=when or DEFAULT_LOG_ROTATION_WHEN,
+                    backupCount=backup_count,
+                    encoding="utf-8",
+                )
+            elif rotation == "size":
+                handler = RotatingFileHandler(
+                    log_path,
+                    maxBytes=max(1, int(max_size_mb * 1024 * 1024)),
+                    backupCount=backup_count,
+                    encoding="utf-8",
+                )
+            else:
+                handler = logging.FileHandler(log_path, encoding="utf-8")
+
+            handler.setFormatter(
+                _JsonFormatter(single_line=True)
+                if self._json_mode
+                else _make_file_formatter()
+            )
+            self._logger.addHandler(handler)
+            self._file_handlers.append(handler)
+            return True
+        except Exception as e:
+            self._logger.error(
+                i18n.t("core.logger.set_output_failed", path=str(log_path), error=e)
+            )
+            self._logger.warning(i18n.t("core.logger.no_output_set"))
+            return False
 
     def set_format(self, fmt: str = "rich") -> bool:
         """
@@ -411,12 +655,12 @@ class Logger:
             )
             self._logger.addHandler(console_handler)
 
-        # 更新文件处理器格式
+        # 更新文件处理器格式（与 set_output_file 保持一致：非 JSON 模式带时间戳与级别）
         for handler in self._file_handlers:
             if self._json_mode:
-                handler.setFormatter(_JsonFormatter())
+                handler.setFormatter(_JsonFormatter(single_line=True))
             else:
-                handler.setFormatter(logging.Formatter("%(message)s"))
+                handler.setFormatter(_make_file_formatter())
 
         return True
 
@@ -463,7 +707,10 @@ class Logger:
                             file.writelines(_json.dumps(log, ensure_ascii=False) + "\n" for log in logs)
                         else:
                             file.write(f"Module: {module}\n")
-                            file.writelines(f"  {log}\n" for log in logs)
+                            file.writelines(
+                                f"  {log['timestamp'][:19]} [{log.get('level', '')}] {log.get('message', '')}\n"
+                                for log in logs
+                            )
                 self._logger.info(i18n.t("core.logger.saved", path=p))
                 success = True
             except Exception as e:
@@ -545,8 +792,23 @@ class Logger:
         logger_config = get_logger_config()
         if "level" in logger_config:
             self.set_level(logger_config["level"])
+        if "exclude_levels" in logger_config:
+            self.set_excluded_levels(list(logger_config["exclude_levels"] or []))
         if logger_config.get("log_files"):
             self.set_output_file(logger_config["log_files"])
+        elif logger_config.get("log_dir"):
+            # 目录日志模式（支持自动分段）；log_files 显式路径优先
+            self.set_output_dir(
+                logger_config["log_dir"],
+                rotation=logger_config.get("log_rotation", DEFAULT_LOG_ROTATION),
+                max_size_mb=logger_config.get(
+                    "log_max_size_mb", DEFAULT_LOG_MAX_SIZE_MB
+                ),
+                backup_count=logger_config.get(
+                    "log_backup_count", DEFAULT_LOG_BACKUP_COUNT
+                ),
+                when=logger_config.get("log_rotation_when", DEFAULT_LOG_ROTATION_WHEN),
+            )
         if "memory_limit" in logger_config:
             self.set_memory_limit(logger_config["memory_limit"])
         # 应用输出格式（rich / plain / json），未配置时保持默认 rich
@@ -577,6 +839,10 @@ class Logger:
         :param args: 额外的格式化参数
         :param kwargs: 额外的关键字参数
         """
+        # 屏蔽等级：直接丢弃（不写内存、不推订阅器、不打印、不写文件）。
+        # 用于隐私保护，例如屏蔽 EVENT 等级可隐藏消息收发内容。
+        if level_const in self._excluded_levels:
+            return
         # 是否存在订阅器愿意接收该级别（订阅器 min_level 可低于全局级别）
         has_subscriber = self._has_handler_for(level_const)
         # 快速路径：消息低于全局阈值，且没有任何模块覆盖到该级别，
@@ -591,15 +857,20 @@ class Logger:
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= level_const:
             # 达到模块有效级别：完整走 内存 / 订阅器 / 控制台
-            # 内存副本/订阅器须应用格式化
-            formatted = _format_message(msg, args)
-            self._save_in_memory(caller_module, level_name, level_const, formatted)
-            self._notify_handlers(level_name, level_const, caller_module, formatted)
-            self._logger.log(level_const, f"[{caller_module}] {msg}", *args, **kwargs)
+            # 内存/订阅器使用单行文本（Dashboard 按行渲染的纪律）；
+            # 控制台传入已展开的多行文本（终端保留多行布局，如地址树），
+            # 文件由 _SingleLineFormatter 在格式化层统一单行化
+            expanded = _format_message(msg, args)
+            single = _to_single_line(expanded)
+            self._save_in_memory(caller_module, level_name, level_const, single)
+            self._notify_handlers(level_name, level_const, caller_module, single)
+            self._logger.log(
+                level_const, f"[{caller_module}] {expanded}", **kwargs
+            )
         elif has_subscriber:
             # 低于全局/模块级别，但有订阅器显式订阅：仅推送订阅器，
             # 不写内存、不输出控制台，避免污染主日志流
-            formatted = _format_message(msg, args)
+            formatted = _to_single_line(_format_message(msg, args))
             self._notify_handlers(level_name, level_const, caller_module, formatted)
 
     def _get_caller(self):
@@ -723,7 +994,10 @@ class Logger:
 
         :param text: str 需要写入日志管道的 UI 文本
         """
+        if logging.INFO in self._excluded_levels:
+            return
         caller = self._get_caller()
+        text = _to_single_line(text)
         self._save_in_memory(caller, "info", logging.INFO, text)
         self._notify_handlers("info", logging.INFO, caller, text)
         if self._file_handlers:
@@ -858,6 +1132,9 @@ class LoggerChild:
         :param level_const: 日志级别常量
         :param msg: 日志消息
         """
+        # 屏蔽等级：直接丢弃（与父 Logger 保持一致，见 Logger._log）
+        if level_const in self._parent._excluded_levels:
+            return
         parts = self._name.split(".")
         deduped = [parts[0]]
         for p in parts[1:]:
@@ -869,17 +1146,18 @@ class LoggerChild:
         has_subscriber = parent._has_handler_for(level_const)
         if parent._get_effective_level(display_name.split(".")[0]) <= level_const:
             # 达到模块有效级别：完整走 内存 / 订阅器 / 控制台
-            # 内存副本/订阅器应用格式化
-            formatted = _format_message(msg, args)
-            parent._save_in_memory(display_name, level_name, level_const, formatted)
-            parent._notify_handlers(level_name, level_const, display_name, formatted)
+            # 内存/订阅器单行；控制台保留多行布局（文件由 Formatter 单行化）
+            expanded = _format_message(msg, args)
+            single = _to_single_line(expanded)
+            parent._save_in_memory(display_name, level_name, level_const, single)
+            parent._notify_handlers(level_name, level_const, display_name, single)
             parent._logger.log(
-                level_const, f"[{display_name}] {msg}", *args, **kwargs
+                level_const, f"[{display_name}] {expanded}", **kwargs
             )
         elif has_subscriber:
             # 低于全局/模块级别，但有订阅器显式订阅：仅推送订阅器，
             # 不写内存、不输出控制台
-            formatted = _format_message(msg, args)
+            formatted = _to_single_line(_format_message(msg, args))
             parent._notify_handlers(level_name, level_const, display_name, formatted)
 
     def trace(self, msg, *args, **kwargs):

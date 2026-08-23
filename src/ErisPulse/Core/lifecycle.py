@@ -262,6 +262,23 @@ class LifecycleManager:
                 del self._hooks[event]
         return removed
 
+    def get_owner_counts(self) -> dict[str, int]:
+        """
+        统计各 owner 注册的生命周期钩子数量（便于拓扑树展示）
+
+        :return: {owner: 钩子数量} 字典
+
+        :example:
+        >>> lifecycle.get_owner_counts()
+        {"MyModule": 3, "onebot11": 2}
+        """
+        counts: dict[str, int] = {}
+        for handlers in self._hooks.values():
+            for (_priority, _handler, owner) in handlers:
+                if owner:
+                    counts[owner] = counts.get(owner, 0) + 1
+        return counts
+
     # ==================== 触发 API ====================
 
     async def emit(self, event: str, data: Any = None) -> Any:

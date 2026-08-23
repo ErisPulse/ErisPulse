@@ -27,6 +27,8 @@ on:
 jobs:
   update-and-generate-docs:
     runs-on: ubuntu-latest
+    # 硬上限：防止翻译卡死耗尽 runner 时间
+    timeout-minutes: 90
     steps:
       - name: Generate App Token
         id: app-token
@@ -52,7 +54,7 @@ jobs:
           # 原因：GitHub App installation token 有效期硬编码为 1h，长任务（>1h）
           # 中缓存的初始 token 会先过期，且 extraheader 优先级高于 URL 中嵌入的
           # 认证，导致后续 refresh 的 token 无法生效。所有写操作统一由后续步骤
-          # 通过 git remote set-url 注入最新 token。
+          # 通过 git remote set-url 注入最新 token（每次提交前各 refresh 一次）。
           persist-credentials: false
 
       - name: Setup environment
@@ -64,7 +66,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install requests openai
-    
+
       - name: Check cache directory status
         run: |
           echo "=== Checking cache directory ==="
@@ -79,12 +81,12 @@ jobs:
             ls -la .github/.translate_cache/*.cache 2>/dev/null | head -3
           fi
           echo "==================="
-    
+
       - name: Update API docs (multilingual)
         id: update-api
         run: |
           echo "Starting API docs update..."
-          
+
           # Run API docs update script (auto-generates for all languages)
           if [ -f "scripts/tools/generate-api-docs.py" ]; then
             python scripts/tools/generate-api-docs.py
@@ -92,7 +94,7 @@ jobs:
           else
             echo "API docs update script not found, skipping this step"
           fi
-          
+
           # Check if API docs were updated
           if git diff --quiet docs/*/api-reference/; then
             echo "No changes in API docs"
@@ -102,60 +104,11 @@ jobs:
             echo "api_updated=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Auto-translate docs
-        id: translate-docs
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          BIGMODEL_API_KEY: ${{ secrets.BIGMODEL_API_KEY }}
-          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
-          DEBUG_TRANSLATE: "1"
-        run: |
-          echo "Starting document translation..."
-          
-          # Check if force translation is needed
-          FORCE_FLAG=""
-          if [ "${{ github.event.inputs.force_translate }}" == "true" ]; then
-            FORCE_FLAG="--force"
-            echo "Force re-translation mode enabled"
-          fi
-          
-          # Run translation script (auto-translates for all languages)
-          TRANSLATE_EXIT_CODE=0
-          if [ -f "scripts/tools/translate-docs.py" ]; then
-            if [ -n "$OPENAI_API_KEY" ]; then
-              echo "Starting document translation..."
-              python scripts/tools/translate-docs.py $FORCE_FLAG || TRANSLATE_EXIT_CODE=$?
-              echo "Document translation complete (exit code: $TRANSLATE_EXIT_CODE)"
-            else
-              echo "OPENAI_API_KEY not configured, skipping translation step"
-              echo "Translation requires OPENAI_API_KEY to be configured in repository Secrets"
-            fi
-          else
-            echo "Translation script not found, skipping this step"
-          fi
-          
-          # Check if translated docs were updated (including root README.*.md files)
-          if git diff --quiet -- docs/ README.md README.*.md 2>/dev/null; then
-            echo "No changes in translated docs"
-            echo "docs_updated=false" >> $GITHUB_OUTPUT
-          else
-            echo "Translated docs changes detected"
-            echo "docs_updated=true" >> $GITHUB_OUTPUT
-          fi
-          
-          # Record translation failure status (but don't interrupt the workflow)
-          if [ $TRANSLATE_EXIT_CODE -ne 0 ]; then
-            echo "⚠️ Some files failed to translate, but successfully translated files will be committed"
-            echo "translate_failed=true" >> $GITHUB_OUTPUT
-          else
-            echo "translate_failed=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Generate AI Prompt docs (multilingual)
         id: generate-ai-prompts
         run: |
           echo "Starting AI Prompt document generation..."
-          
+
           # Run AI prompt generation script (auto-generates for all languages)
           if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
             python scripts/tools/generate-ai-prompts.py
@@ -163,7 +116,7 @@ jobs:
           else
             echo "AI Prompt generation script not found, skipping this step"
           fi
-          
+
           # Check if AI Prompt docs were updated
           if git diff --quiet docs/*/ai-support/prompts/; then
             echo "No changes in AI Prompt docs"
@@ -177,7 +130,7 @@ jobs:
         id: generate-docs-index
         run: |
           echo "Starting docs index generation..."
-          
+
           # Run docs index generation script (auto-generates for all languages)
           if [ -f "scripts/tools/generate-docs-index.py" ]; then
             python scripts/tools/generate-docs-index.py
@@ -185,7 +138,7 @@ jobs:
           else
             echo "Docs index generation script not found, skipping this step"
           fi
-          
+
           # Check if docs index was updated
           if git diff --quiet docs/_meta/; then
             echo "No changes in docs index"
@@ -195,34 +148,11 @@ jobs:
             echo "docs_index_updated=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Summarize updates
-        run: |
-          echo "Summarizing document updates..."
-          
-          # Count API doc updates
-          api_files=$(git diff --name-only docs/*/api-reference/ 2>/dev/null | wc -l)
-          echo "API docs updated files: $api_files"
-          
-          # Count translated doc updates
-          translated_files=$(git diff --name-only docs/en/ docs/zh-TW/ docs/ja/ docs/ru/ 2>/dev/null | grep -v "api-reference\|ai-support" | wc -l)
-          echo "Translated docs updated files: $translated_files"
-          
-          # Count AI Prompt doc updates
-          ai_prompts=$(git diff --name-only docs/*/ai-support/prompts/ 2>/dev/null | wc -l)
-          echo "AI Prompt docs updated files: $ai_prompts"
-          
-          # Count docs index updates
-          docs_index=$(git diff --name-only docs/_meta/ 2>/dev/null | wc -l)
-          echo "Docs index updated files: $docs_index"
-          
-          # Count translation cache updates
-          cache_files=$(git diff --name-only .github/.translate_cache/ 2>/dev/null | wc -l)
-          echo "Translation cache updated files: $cache_files"
-
-
+      # ==================== 提交 #1：生成类文档（API / AI Prompt / 索引） ====================
+      # 生成类产物先提交：即使后续翻译超时/失败/被取消，这些结果也不会丢失
 
       - name: Configure Git identity
-        if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         env:
           BOT_USER_ID: ${{ steps.bot-info.outputs.bot-user-id }}
           APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
@@ -232,56 +162,180 @@ jobs:
           git config user.name "${APP_SLUG}[bot]"
           git config user.email "${BOT_USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
 
-      - name: Refresh token before commit
-        if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
-        id: refresh-token
+      - name: Refresh token for generated docs commit
+        id: refresh-token-gen
+        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.ERISBOT_APP_ID }}
           private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
 
-      - name: Verify and commit updates
-        if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+      - name: Commit generated docs
+        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         env:
-          GH_TOKEN: ${{ steps.refresh-token.outputs.token }}
+          GH_TOKEN: ${{ steps.refresh-token-gen.outputs.token }}
         run: |
-          echo "Saving document updates..."
-          
-          # Verify token has push access
-          echo "Verifying token..."
-          TOKEN_LENGTH=${#GH_TOKEN}
-          echo "Token length: $TOKEN_LENGTH"
-          gh api "repos/${GITHUB_REPOSITORY}" --jq '.full_name' || {
-            echo "⚠️ Token verification failed, falling back to app-token"
-            GH_TOKEN="${{ steps.app-token.outputs.token }}"
-          }
-          echo "Token verified for: ${GITHUB_REPOSITORY}"
-          
+          echo "Committing generated docs (API / AI Prompt / index)..."
+
           # Reconfigure remote with fresh token
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          
+
           # 防御性清理：移除 checkout 可能遗留的 http.extraheader（虽然已设
           # persist-credentials: false，但 extraheader 优先级高于 URL 认证，
           # 一旦残留就会覆盖上面的新 token）
           git config --unset-all http.https://github.com/.extraheader || true
-          
-          # Add all updated docs and cache
-          git add docs/ .github/.translate_cache/ README.md README.*.md
-          
-          # Commit changes
 
-          git commit -m "chore(docs): auto-update docs" || echo "No changes to commit"
-          # Pull latest remote changes before pushing to avoid push rejection due to concurrent pushes during translation
+          git add docs/ .github/.translate_cache/ README.md README.*.md
+          git commit -m "chore(docs): auto-update generated docs" || echo "No changes to commit"
+          # Pull latest remote changes before pushing to avoid push rejection due to concurrent pushes
           git pull --rebase --autostash || echo "Failed to pull remote updates, attempting direct push"
           git push || echo "No new commits to push"
-          
-          # If there were translation failures, output warning
-          if [ "${{ steps.translate-docs.outputs.translate_failed }}" == "true" ]; then
-            echo ""
-            echo "⚠️ Note: Some files failed to translate this time"
-            echo "💡 Successfully translated files have been saved and committed"
-            echo "🔄 You can re-trigger the workflow later to retry failed files"
+
+
+      - name: Auto-translate docs (time-budgeted rounds)
+        id: translate-docs
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          BIGMODEL_API_KEY: ${{ secrets.BIGMODEL_API_KEY }}
+          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
+          DEBUG_TRANSLATE: "1"
+        run: |
+          echo "Starting document translation..."
+
+          # Check if force translation is needed
+          FORCE_FLAG=""
+          if [ "${{ github.event.inputs.force_translate }}" == "true" ]; then
+            FORCE_FLAG="--force"
+            echo "Force re-translation mode enabled"
           fi
+
+          if [ ! -f "scripts/tools/translate-docs.py" ]; then
+            echo "Translation script not found, skipping this step"
+            echo "docs_updated=false" >> $GITHUB_OUTPUT
+            echo "translate_failed=false" >> $GITHUB_OUTPUT
+            echo "remaining=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "OPENAI_API_KEY not configured, skipping translation step"
+            echo "Translation requires OPENAI_API_KEY to be configured in repository Secrets"
+            echo "docs_updated=false" >> $GITHUB_OUTPUT
+            echo "translate_failed=false" >> $GITHUB_OUTPUT
+            echo "remaining=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # 翻译总预算（分钟）：job 上限 90 分钟，为生成/提交/收尾留出余量。
+          # 脚本到点优雅退出（缓存落盘），下一轮从缓存续译；轮次用于异常退出后的快速恢复。
+          TOTAL_BUDGET_MINUTES=55
+          MAX_ROUNDS=3
+          ROUND=0
+          FINAL_REMAINING=0
+          TRANSLATE_EXIT_CODE=0
+          START_TIME=$SECONDS
+
+          while [ $ROUND -lt $MAX_ROUNDS ]; do
+            ROUND=$((ROUND + 1))
+            ELAPSED_MIN=$(( (SECONDS - START_TIME) / 60 ))
+            LEFT_MIN=$(( TOTAL_BUDGET_MINUTES - ELAPSED_MIN ))
+
+            if [ $ROUND -gt 1 ] && [ $LEFT_MIN -lt 5 ]; then
+              echo "剩余时间不足 5 分钟，停止续译"
+              break
+            fi
+
+            echo "=== Translation round ${ROUND}/${MAX_ROUNDS} (budget: ${LEFT_MIN} min) ==="
+            OUTPUT_FILE=$(mktemp)
+            set +e
+            python scripts/tools/translate-docs.py $FORCE_FLAG --time-budget $LEFT_MIN 2>&1 | tee "$OUTPUT_FILE"
+            TRANSLATE_EXIT_CODE=${PIPESTATUS[0]}
+            set -e
+
+            # 读取脚本输出的机器可读统计行（REMAINING_FILES=N）
+            FINAL_REMAINING=$(grep -oE 'REMAINING_FILES=[0-9]+' "$OUTPUT_FILE" | tail -1 | cut -d= -f2)
+            [ -z "$FINAL_REMAINING" ] && FINAL_REMAINING=0
+            rm -f "$OUTPUT_FILE"
+
+            # 首轮之后不再强制重译（缓存续传）
+            FORCE_FLAG=""
+            echo "Round ${ROUND} finished, remaining translations: ${FINAL_REMAINING}"
+
+            if [ $TRANSLATE_EXIT_CODE -ne 0 ]; then
+              echo "⚠️ Translation script exited with code ${TRANSLATE_EXIT_CODE}"
+            fi
+
+            if [ "$FINAL_REMAINING" -eq 0 ]; then
+              break
+            fi
+          done
+
+          # Check if translated docs were updated (including root README.*.md files)
+          if git diff --quiet -- docs/ README.md README.*.md 2>/dev/null; then
+            echo "No changes in translated docs"
+            echo "docs_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "Translated docs changes detected"
+            echo "docs_updated=true" >> $GITHUB_OUTPUT
+          fi
+
+          echo "remaining=$FINAL_REMAINING" >> $GITHUB_OUTPUT
+
+          # Record translation failure status (but don't interrupt the workflow)
+          if [ $TRANSLATE_EXIT_CODE -ne 0 ]; then
+            echo "⚠️ Some files failed to translate, but successfully translated files will be committed"
+            echo "translate_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "translate_failed=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ "$FINAL_REMAINING" -gt 0 ]; then
+            echo "::warning::仍有 ${FINAL_REMAINING} 个翻译任务因时间预算耗尽未完成，下次文档更新触发时将自动续译"
+          fi
+
+      - name: Configure Git identity for translation commit
+        if: steps.translate-docs.outputs.docs_updated == 'true'
+        env:
+          BOT_USER_ID: ${{ steps.bot-info.outputs.bot-user-id }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: |
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${BOT_USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
+
+      - name: Refresh token for translation commit
+        id: refresh-token-translate
+        if: steps.translate-docs.outputs.docs_updated == 'true'
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.ERISBOT_APP_ID }}
+          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
+
+      - name: Commit translated docs
+        if: steps.translate-docs.outputs.docs_updated == 'true'
+        env:
+          GH_TOKEN: ${{ steps.refresh-token-translate.outputs.token }}
+        run: |
+          echo "Committing translated docs and cache..."
+
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git config --unset-all http.https://github.com/.extraheader || true
+
+          git add docs/ .github/.translate_cache/ README.md README.*.md
+          git commit -m "chore(docs): auto-update docs" || echo "No changes to commit"
+          git pull --rebase --autostash || echo "Failed to pull remote updates, attempting direct push"
+          git push || echo "No new commits to push"
+
+      - name: Summarize updates
+        if: always()
+        run: |
+          echo "Summarizing document updates..."
+          echo "Generated docs committed in this run:"
+          echo "  - API reference docs: ${{ steps.update-api.outputs.api_updated }}"
+          echo "  - AI Prompt docs: ${{ steps.generate-ai-prompts.outputs.ai_prompts_updated }}"
+          echo "  - Docs index: ${{ steps.generate-docs-index.outputs.docs_index_updated }}"
+          echo "  - Translated docs committed: ${{ steps.translate-docs.outputs.docs_updated }}"
+          echo "  - Remaining translations (time budget): ${{ steps.translate-docs.outputs.remaining }}"
+          echo "  - Translation script failure: ${{ steps.translate-docs.outputs.translate_failed }}"
 
       - name: Docs update complete
         if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
@@ -292,18 +346,21 @@ jobs:
           if [ "${{ steps.update-api.outputs.api_updated }}" == "true" ]; then
             echo "  - API reference docs (multilingual)"
           fi
-          if [ "${{ steps.translate-docs.outputs.docs_updated }}" == "true" ]; then
-            echo "  - Translated docs"
-            echo "  - Translation cache"
-            if [ "${{ steps.translate-docs.outputs.translate_failed }}" == "true" ]; then
-              echo "  ⚠️ Note: Some files failed to translate, you can retry later"
-            fi
-          fi
           if [ "${{ steps.generate-ai-prompts.outputs.ai_prompts_updated }}" == "true" ]; then
             echo "  - AI Prompt docs (multilingual)"
           fi
           if [ "${{ steps.generate-docs-index.outputs.docs_index_updated }}" == "true" ]; then
             echo "  - Docs index (multilingual)"
+          fi
+          if [ "${{ steps.translate-docs.outputs.docs_updated }}" == "true" ]; then
+            echo "  - Translated docs"
+            echo "  - Translation cache"
+          fi
+          if [ "${{ steps.translate-docs.outputs.translate_failed }}" == "true" ]; then
+            echo "  ⚠️ Note: Some files failed to translate, you can retry later"
+          fi
+          if [ -n "${{ steps.translate-docs.outputs.remaining }}" ] && [ "${{ steps.translate-docs.outputs.remaining }}" != "0" ]; then
+            echo "  ⏳ Note: ${{ steps.translate-docs.outputs.remaining }} translations deferred (time budget), next docs push will resume them"
           fi
           echo "Document work complete"
 

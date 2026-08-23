@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "hash": "3d0a29940bc6373fe64b99b5fbf15f84",
+  "file_hash": "3d0a29940bc6373fe64b99b5fbf15f84",
+  "translated_at": "2026-08-15T19:20:35.670096",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "8192180e711fe5d48fdb7d5a1f63d59f",
+      "translation": "# ErisPulse-App\n\n[ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) 是由 ErisDev 直接維護的 **官方多端用戶端**（Android / Windows / Linux / macOS 均已發布），\n提供完全原生的圖形化管理介面：在手機或電腦上建立、執行、管理多個機器人實例，\n無需終端機，也無需單獨安裝 Python 環境。\n\n> [!IMPORTANT]\n> ErisPulse-App 是**獨立安裝的用戶端程式**，不是 `epsdk install` 安裝的模組。\n> 它內建了 Python 執行時環境與 ErisPulse SDK，安裝即用——**手機上也能直接執行**。\n\n请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。\n\n再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。"
+    },
+    {
+      "hash": "cdebbf4787647b0a9a637d3290657ed2",
+      "translation": "## 功能速覽\n\n- **多實例管理**：建立 / 啟動 / 停止 / 刪除多個實例，連接埠與存取權杖自動分配，支援全新環境或克隆既有環境\n- **概覽儀表板**：適配器 / 模組 / 在線機器人 / 事件總數統計，CPU / 記憶體佔用告警變色\n- **模組商店**：搜尋與標籤篩選、一鍵安裝 / 升級 / 解除安裝、指定版本安裝、pip 映像源與 Git 套件支援\n- **事件流 + 事件構建器**：即時事件查看，視覺化建構測試事件並提交至適配器\n- **監控**：日誌 / 生命週期 / 審計三合一檢視\n- **指令管理**：前置字串與別名等全域設定、啟停與平台黑白名單\n- **機器人總覽 / 設定 / 檔案管理**：原生介面直接操作實例\n- **背景常駐**：Android 前台服務保活；Windows 最小化至系統匣，關閉視窗不中斷實例\n- **模組動態視窗**：模組註冊的頁面自動出現在側邊導覽（與 Dashboard 同分組），點擊直接導向\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。"
+    },
+    {
+      "hash": "1e20cd142d4308a04af3cd35ee335e26",
+      "translation": "## 支援平台\n\n所有平台的安裝程式均可從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下載，按需選擇即可：\n\n| 平台 | 安裝程式 | 說明 |\n|------|--------|------|\n| Android | `online-*.apk` / `offline-*.apk` | **手機直接執行**，無需電腦 |\n| Windows | `windows-x64-setup.exe` / `windows-x64.zip` | 安裝版 / 免安裝版 |\n| Linux | `linux-x64.tar.gz` | 解壓即用 |\n| macOS | `macos-arm64.zip` | Apple Silicon（arm64） |\n\n一個 Flutter 程式庫涵蓋所有平台。"
+    },
+    {
+      "hash": "6e2b27fa10d474b811f8bcf3d3576fb5",
+      "translation": "## 安裝方式（Android / 手機直接執行）\n\n從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下載 APK 安裝即可，有兩種建構：\n\n| 建構 | 執行時映像 | 適用場景 |\n|------|-----------|---------|\n| `erispulse-app-online-*.apk` | 首次啟動時下載 | 安裝檔更小，適合網路良好 |\n| `erispulse-app-offline-*.apk` | 已打包進 APK | 離線自包含，安裝後無需上網 |\n\n兩種建構安裝步驟相同：\n\n1. 下載並安裝 APK，啟動時允許通知權限（用於保持後台服務存活）\n2. 首頁出現初始化橫幅後點擊執行首次初始化（含進度與日誌檢視）\n3. 建立一個實例並啟動\n4. 在 App 內建的管理介面設定配接器與模型 API Key\n\n> 離線包自包含——安裝後無需網路。如果首次啟動下載慢或不穩定，\n> 可在設定頁將下載來源切換為映像（ghfast / gh-proxy）。\n\n### 安裝方式（桌面端：Windows / Linux / macOS）\n\n1. 從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下載對應平台安裝包\n   （Windows `setup.exe` 或免安裝 `zip`、Linux `tar.gz`、macOS `zip`）\n2. 安裝並啟動\n3. 在歡迎頁選擇要安裝的 ErisPulse SDK 版本（預設最新）並安裝\n4. 建立實例並啟動\n\n---"
+    },
+    {
+      "hash": "4635d45527d2564c576449ca3207cbb7",
+      "translation": "## 運作原理\n\n```\n┌────────────────────────────────────────────────────┐\n│  ErisPulse-App (Flutter)                            │\n│                                                    │\n│  原生 UI ── Dashboard REST / WS API                │\n│       │                                            │\n│       ├── Android：前台服務 + proot + Ubuntu rootfs│\n│       │        + Python + ErisPulse 實例           │\n│       └── 桌面端：內建 Python + 直接進程管理         │\n└────────────────────────────────────────────────────┘\n```\n\n- **Android**：實例運行在前台服務（background isolate）托管的 proot（使用者態 chroot）內，UI 關閉後機器人仍持續運行，崩潰自動重啟\n- **桌面端**：實例作為 App 的直接子進程運行；Windows 支援最小化到系統匣背景常駐（關閉視窗不中斷實例），App 重啟後自動恢復對仍在運行實例的管理，退出時統一停止全部實例\n- 所有平台的原生 UI 都透過 `127.0.0.1:<port>/Dashboard/*` 的 REST / WebSocket API 與實例通訊，與 [ErisPulse-Dashboard](dashboard.md) 共用同一套 API\n\n---"
+    },
+    {
+      "hash": "920d93147376c527eb5c23519c01d889",
+      "translation": "## 與 SDK 的關係\n\n- App 內建 ErisPulse SDK：Android 端打包在 Ubuntu 映像中，桌面端從 PyPI 安裝\n  （歡迎頁可選版本，預設最新）\n- App 中的執行個體與命令列 `epsdk` 建立的執行個體等價，可使用相同的模組 / 適配器\n- 模組開發者可透過 [儀表板視窗註冊 API](docs/zh-TW/dashboard.md) 註冊自訂頁面：\n  視窗會自動出現在 App 側邊導航（分組與儀表板一致），點擊跳轉對應頁面渲染\n\n---\n\n請直接傳回翻譯後的完整 Markdown 內容，不要包含任何其他文字。"
+    },
+    {
+      "hash": "fb97cf3223f74fee1201ee377b9d9ee5",
+      "translation": "## 相關連結\n\n- GitHub 儲存庫：[https://github.com/ErisPulse/ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App)\n- 下載：[GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases)\n- 討論：[Discussions](https://github.com/ErisPulse/ErisPulse-App/discussions)"
+    }
+  ]
+}

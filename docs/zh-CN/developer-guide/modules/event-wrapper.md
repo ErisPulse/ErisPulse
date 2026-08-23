@@ -2,6 +2,23 @@
 
 Event 模块提供了功能强大的 Event 包装类，简化事件处理。
 
+## 为 event 参数添加类型注解
+
+事件处理器的 `event` 参数是 **Event 包装类**（dict 子类）。强烈建议为它添加类型注解：
+
+```python
+from ErisPulse.Core.Event import Event
+
+@message.on_private_message()
+async def handler(event: Event):
+    text = event.get_text()   # IDE 自动补全所有便捷方法
+    await event.reply(text)   # 拼写错误在静态检查时即可发现
+```
+
+不加注解时 IDE 无法识别 Event 上的方法（`get_text()` / `reply()` / `wait_reply()` / 平台扩展方法均不提示），只能靠记忆拼写。
+
+> **注意区分**：事件处理器回调的 `event` 是 **Event 包装类**（注解为 `Event`）；模块生命周期方法 `on_load` / `on_unload` 的 `event` 是普通 **dict**（注解为 `dict`），二者不要混淆。
+
 ## 核心特性
 
 - **完全兼容字典**：Event 继承自 dict
@@ -15,7 +32,7 @@ Event 模块提供了功能强大的 Event 包装类，简化事件处理。
 from ErisPulse.Core.Event import command
 
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     event_id = event.get_id()
     platform = event.get_platform()
     time = event.get_time()
@@ -28,7 +45,7 @@ async def info_command(event):
 from ErisPulse.Core.Event import message
 
 @message.on_private_message()
-async def private_handler(event):
+async def private_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
@@ -41,7 +58,7 @@ async def private_handler(event):
 from ErisPulse.Core.Event import message
 
 @message.on_group_message()
-async def group_handler(event):
+async def group_handler(event: Event):
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
@@ -54,7 +71,7 @@ async def group_handler(event):
 from ErisPulse.Core.Event import command
 
 @command("ask")
-async def ask_command(event):
+async def ask_command(event: Event):
     await event.reply("请输入你的名字:")
     reply = await event.wait_reply(timeout=30)
     if reply:
@@ -68,7 +85,7 @@ async def ask_command(event):
 from ErisPulse.Core.Event import command
 
 @command("cmdinfo")
-async def cmdinfo_command(event):
+async def cmdinfo_command(event: Event):
     cmd_name = event.get_command_name()
     cmd_args = event.get_command_args()
     await event.reply(f"命令: {cmd_name}, 参数: {cmd_args}")
@@ -80,7 +97,7 @@ async def cmdinfo_command(event):
 from ErisPulse.Core.Event import notice
 
 @notice.on_friend_add()
-async def friend_add_handler(event):
+async def friend_add_handler(event: Event):
     await event.reply("欢迎添加我为好友！")
 ```
 
@@ -162,7 +179,7 @@ async def friend_add_handler(event):
 ### 回复功能
 
 #### 基础回复
-- `reply(content, method="Text", at_sender=False, reply_to_message=False, at_users=None, reply_to=None, at_all=False, **kwargs)` - 通用回复方法
+- `reply(content, method="Text", at_sender=False, quote=False, at_users=None, reply_to=None, at_all=False, via=None, **kwargs)` - 通用回复方法
   - `content`: 发送内容（文本、URL等）
   - `method`: 发送方法，默认 "Text"，可选 "Image"/"Voice"/"Video"/"File" 等
   - `at_sender`: 是否@发送者（自动提取 user_id）
@@ -245,7 +262,7 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ```python
 @command("delete", help="删除数据")
-async def delete_handler(event):
+async def delete_handler(event: Event):
     if await event.confirm("确定要删除所有数据吗？"):
         sdk.storage.delete("all_data")
         await event.reply("数据已删除")
@@ -266,7 +283,7 @@ if await event.confirm("确定继续？", hint=True):
 
 ```python
 @command("color", help="选择颜色")
-async def color_handler(event):
+async def color_handler(event: Event):
     choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
     if choice is not None:
         colors = ["红色", "绿色", "蓝色"]
@@ -324,7 +341,7 @@ choice = await event.choose(
 
 ```python
 @command("register", help="注册")
-async def register_handler(event):
+async def register_handler(event: Event):
     data = await event.collect([
         {"key": "name", "prompt": "请输入姓名："},
         {"key": "age", "prompt": "请输入年龄：",

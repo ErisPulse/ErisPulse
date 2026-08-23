@@ -399,6 +399,35 @@ class TestCreateTemplatesCompile:
         code = c._MODULE_CORE.format(name="MyModule", text=self._text())
         compile(code, "<module_core>", "exec")
 
+    def test_module_core_sdk_injection_annotation(self):
+        """模块模板：sdk 纯注入 + SDK 类型注解，无 import 兜底"""
+        from ErisPulse.CLI.commands import create as c
+
+        code = c._MODULE_CORE.format(name="MyModule", text=self._text())
+        assert "def __init__(self, sdk: SDK = None):" in code
+        assert "from ErisPulse import SDK" in code
+        assert "from ErisPulse import sdk as _sdk" not in code
+        assert "_sdk if sdk is None else sdk" not in code
+        # 初始化日志不再调用无效的 .format(name=...)
+        assert ').format(name="MyModule")' not in code
+
+    def test_module_core_event_annotation_and_meta_i18n(self):
+        """模块模板：事件回调带 Event 注解；meta description 用 i18n 字典"""
+        from ErisPulse.CLI.commands import create as c
+
+        code = c._MODULE_CORE.format(name="MyModule", text=self._text())
+        assert "from ErisPulse.Core.Event import Event" in code
+        # 事件回调全部注解为 Event
+        assert "async def hello_command(event: Event):" in code
+        assert "async def private_message_handler(event: Event):" in code
+        assert "async def group_message_handler(event: Event):" in code
+        assert "async def friend_add_handler(event: Event):" in code
+        # 生命周期方法保持 dict
+        assert "async def on_load(self, event: dict) -> bool:" in code
+        # meta description 为 i18n 字典，且 I18nClass 注册了对应键
+        assert '"i18n": "module.MyModule.meta.description"' in code
+        assert 'key="module.MyModule.meta.description"' in code
+
     def test_adapter_converter_renders_and_compiles(self):
         from ErisPulse.CLI.commands import create as c
 
@@ -437,6 +466,62 @@ class TestCreateTemplatesCompile:
         assert "I18nKeys" not in imported
 
 
+# ==================== 完整配置示例（config.full.example） ====================
+
+
+class TestFullExampleConfig:
+    """验证 init 生成的完整配置示例是合法 TOML 且覆盖框架关键配置"""
+
+    @staticmethod
+    def _example():
+        import tomllib
+
+        from ErisPulse.CLI.commands.init import InitCommand
+
+        text = InitCommand._get_full_example_config()
+        return text, tomllib.loads(text)
+
+    def test_example_is_valid_toml(self):
+        """生成的示例必须是可解析的 TOML"""
+        _, data = self._example()
+        assert "ErisPulse" in data
+
+    def test_framework_section_covers_key_config(self):
+        """framework 段包含懒加载/插件目录/超时/严格模式/并发/主动GC"""
+        _, data = self._example()
+        f = data["ErisPulse"]["framework"]
+        for key in [
+            "enable_lazy_loading",
+            "plugins_dir",
+            "uninit_timeout",
+            "strict_mode",
+            "strict_mode_exceptions",
+            "handler_max_concurrency",
+            "proactive_gc_interval",
+            "offline_bot_expiry",
+        ]:
+            assert key in f, f"framework 配置缺少 {key}"
+        assert f["strict_mode_exceptions"] == {"modules": [], "adapters": []}
+
+    def test_uninit_timeout_documented(self):
+        """uninit_timeout 出现在示例中（优雅收尾超时）"""
+        text, data = self._example()
+        assert "uninit_timeout" in text
+        assert data["ErisPulse"]["framework"]["uninit_timeout"] == 30
+
+    def test_no_invalid_toml_literals(self):
+        """示例中不残留 TOML 非法字面量（如 null）"""
+        text, _ = self._example()
+        assert "= null" not in text
+
+    def test_ssl_defaults_to_config_ssl_dir(self):
+        """SSL 证书默认放 config/ssl/（相对路径跟随项目运行目录）"""
+        _, data = self._example()
+        server = data["ErisPulse"]["server"]
+        assert server["ssl_certfile"] == "config/ssl/cert.pem"
+        assert server["ssl_keyfile"] == "config/ssl/key.pem"
+
+
 # ==================== 跨进程契约常量 ====================
 
 
@@ -467,6 +552,13 @@ class TestCrossProcessContracts:
 
         assert CLI_MODULE == CORE_MODULE == "erispulse.module"
         assert CLI_ADAPTER == CORE_ADAPTER == "erispulse.adapter"
+
+    def test_env_supervised_is_shared(self):
+        """监督者标记环境变量：CLI run 注入 与 SDK 检测必须一致"""
+        from ErisPulse.CLI.constants import ENV_SUPERVISED as CLI_ENV
+        from ErisPulse.Core.constants import ENV_SUPERVISED as CORE_ENV
+
+        assert CLI_ENV == CORE_ENV == "ERISPULSE_SUPERVISED"
 
 
 # ==================== 运行器子进程清理 ====================
@@ -512,3 +604,63 @@ class TestRunInternalChildCleanup:
 
         # 子进程已退出，无需 terminate
         fake.terminate.assert_not_called()
+
+
+class TestCreateModuleLocal:
+    """create module --local 生成本地插件结构"""
+
+    def test_local_module_layout(self, tmp_path, monkeypatch, capsys):
+        """--local 生成 plugins/<name>/ 包结构，无 pyproject.toml"""
+        monkeypatch.chdir(tmp_path)
+
+        from ErisPulse.CLI.commands.create import CreateCommand
+
+        class Args:
+            local = True
+            name = "Dice"
+            description = "dice plugin"
+            author = ""
+            email = ""
+            homepage = ""
+            output = "."
+            force = False
+
+        CreateCommand()._create_module(Args(), "Dice")
+
+        plugins = tmp_path / "plugins"
+        assert (plugins / "Dice" / "__init__.py").is_file()
+        assert (plugins / "Dice" / "Core.py").is_file()
+        assert not (plugins / "Dice" / "pyproject.toml").exists()
+
+        core = (plugins / "Dice" / "Core.py").read_text(encoding="utf-8")
+        assert "class Main(BaseModule)" in core
+        assert "get_meta() -> ModuleMeta" in core
+
+    def test_local_module_discoverable(self, tmp_path, monkeypatch):
+        """生成的本地插件可被 PluginFolderLoader 发现"""
+        monkeypatch.chdir(tmp_path)
+        # 包形式插件经 import_module 导入，需将插件父目录加入 sys.path
+        monkeypatch.syspath_prepend(str(tmp_path))
+        sys.modules.pop("Dice", None)
+
+        from ErisPulse.CLI.commands.create import CreateCommand
+
+        class Args:
+            local = True
+            name = "Dice"
+            description = "dice plugin"
+            author = ""
+            email = ""
+            homepage = ""
+            output = "."
+            force = False
+
+        CreateCommand()._create_module(Args(), "Dice")
+
+        from ErisPulse.loaders.plugin_folder import PluginFolderLoader
+
+        results = PluginFolderLoader().discover()
+        assert "Dice" in results
+        meta = results["Dice"].moduleInfo["meta"]
+        assert meta["source"] == "plugin_folder"
+        assert meta["is_base_module"] is True

@@ -1,5 +1,25 @@
 {
-  "hash": "fd56ac61f70ff669c8325c06e34e1ad5",
-  "translated_at": "2026-08-03T16:58:21.527808",
-  "target_lang": "zh-TW"
+  "version": 2,
+  "hash": "ced99c31785ac3f12312d2fcb7e67e9f",
+  "file_hash": "ced99c31785ac3f12312d2fcb7e67e9f",
+  "translated_at": "2026-08-21T01:39:59.644680",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "940fb1a5278ec5d38e1b46188eea4472",
+      "translation": "# 進階主題\n\n本目錄包含 ErisPulse 框架的高級特性和深入主題。"
+    },
+    {
+      "hash": "1b4aa804d2bd756b37b4b950bfee862e",
+      "translation": "## 文件列表\n\n- [啟動流程與手動控制](startup.md) - 啟動鏈路拆解（Finder/Loader/Manager/Router）與手動完整啟動\n- [懶加載系統](lazy-loading.md) - 懶加載模組系統的工作原理、設定與事件驅動懶激活（activate_on）\n- [模組作用域系統](scope.md) - 模組與適配器 Bot/平台的綁定與隔離\n- [國際化 (i18n)](i18n.md) - 多語言支援、翻譯註冊與語言檢測\n- [生命週期管理](lifecycle.md) - 生命週期事件系統的使用方法\n- [路由管理器](router.md) - HTTP 和 WebSocket 路由管理\n- [HTTP 客戶端](http-client.md) - 統一 HTTP 請求客戶端\n- [MessageBuilder 詳解](message-builder.md) - OneBot12 消息段建構器的雙模式用法\n- [SQL 查詢建構器](sql-builder.md) - 通用 SQL 串接查詢建構器及儲存後端抽象\n- [會話類型系統](../standards/session-types.md) - 會話類型定義、映射與自訂類型註冊\n- [Conversation 多輪對話](conversation.md) - 多輪對話上下文的互動方法\n\n> [!NOTE]\n> Dashboard 視窗註冊、Takumi 圖片渲染等 **第三方生態模組** 的文件已遷移至 [生態模組](../ecosystem/README.md) 目錄。"
+    },
+    {
+      "hash": "81b5854fa95b29d89b547d92b77468de",
+      "translation": "## 適用對象\n\n這些文件適合以下開發者：\n\n- 已經熟悉 ErisPulse 基礎功能的開發者\n- 需要深入理解框架內部機制的開發者\n- 需要優化效能或實現複雜功能的開發者"
+    },
+    {
+      "hash": "3ed79ef0b3d522c4c10b2d4fa69192f8",
+      "translation": "## 前置知識\n\n閱讀本目錄文件前，建議先了解：\n\n- [基礎概念](../getting-started/basic-concepts.md)\n- [事件處理入門](../getting-started/event-handling.md)\n- [模組開發指南](../developer-guide/modules/)\n\n請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。\n\n再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第 8 條的格式要求，不要寫出 ``[**標籤**](file)`` 這類錯誤格式。"
+    }
+  ]
 }
