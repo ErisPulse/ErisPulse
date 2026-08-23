@@ -328,30 +328,111 @@ SDK 提供两种重启方式，都不需要你自己先卸载——框架会自�
 | 方式 | 调用 | 行为 | 适用场景 |
 |------|------|------|----------|
 | 热重启 | `await sdk.restart()` | 同一进程内 `uninit()` 后重新 `init()`，重新加载适配器/模块 | 重新加载配置、热更新模块 |
-| 硬重启 | `await sdk.hard_restart()` | `uninit()` 后退出整个进程，由父进程（`epsdk run`）拉起全新进程 | 怀疑有内存/资源泄漏、需要彻底干净重启 |
+| 硬重启 | `await sdk.hard_restart()` | `uninit()` 后以**退出码 42** 退出进程，由外部监督者拉起全新进程 | 怀疑有内存/资源泄漏、需要彻底干净重启 |
 
 ```python
 # 热重启：同进程内重新加载（最常用）
 await sdk.restart()
 
-# 硬重启：退出进程，需通过 epsdk run 启动才生效
+# 硬重启：退出进程，交由外部监督者重启（见下方「监督者指南」）
 await sdk.hard_restart()
 ```
 
 > **两点注意**：
 > 1. 这两个方法都用后台任务执行重启，**立即返回 `True` 表示「重启任务已调度」**，而非「重启已完成」。实际重启在后台进行，避免中断当前事件链路。
-> 2. `hard_restart()` **必须通过 `epsdk run main.py` 启动才能生效**。它的原理是：卸载后以**退出码 42** 退出进程，`epsdk run` 的父进程检测到 42 才会重新拉起一个全新进程；如果是直接 `python main.py` 启动，进程以码 42 退出后就直接结束了，不会自动重启。
+> 2. `hard_restart()` 的原理是：卸载并刷盘配置后，以**退出码 42**（`HARD_RESTART_EXIT_CODE`）退出进程——**它自身不拉起新进程**，必须由外部监督者检测到退出码 42 后重新启动。若直接 `python main.py` 运行且无任何监督者，进程以码 42 退出后就结束了，**不会自动重启**（框架会打警告提示）。
 
 ### 什么时候该用硬重启？
 
-硬重启不只是“更彻底的重启”，它在以下场景比热重启更合适、甚至更高效：
+硬重启不只是"更彻底的重启"，它在以下场景比热重启更合适、甚至更高效：
 
 - **二进制库（C 扩展）副作用**：热重启在同一进程内进行，无法释放 C 扩展、打开的文件描述符、线程等进程级资源；硬重启换一个全新进程，这些副作用随之彻底清零。
 - **资源泄漏排查**：怀疑存在内存或句柄泄漏时，硬重启能拿到一个干净的环境。
 - **对性能敏感的频繁重启**：硬重启省去了同进程内卸载→重新加载的开销，实际比热重启更高效。
 
 > Dashboard 管理面板里的「框架重启」功能，底层调用的就是 `hard_restart()`。
-> 另外就是硬重启一个要求！必须使用epsdk的run命令进行启动，否则程序只是会抛出42退出码进行退出，因为run命令的拉起检查了42退出码进行重新拉起进程，这点必须要注意！！！
+
+### 退出码 42 契约
+
+硬重启是跨进程协作：**SDK 负责退出（码 42），监督者负责拉起**。
+
+| 角色 | 行为 |
+|------|------|
+| SDK（被硬重启时） | `uninit()` → 刷盘配置 → `os._exit(42)` |
+| 监督者 | 检测到子进程退出码为 42 → 重新启动同一命令 |
+
+> `sdk.is_supervised()` 可查询当前进程是否由监督者启动（检测环境变量 `ERISPULSE_SUPERVISED`）。CLI `run` 命令启动子进程时会自动注入该标记；systemd / Docker 等外部监督者不会注入，`is_supervised()` 返回 `False`，此时硬重启后框架会打「未检测到监督者」警告。
+
+### 监督者指南
+
+选择适合你的监督者，让硬重启真正生效：
+
+#### 1. CLI run 命令（开发/简单部署，推荐）
+
+`epsdk run main.py` 内置监督循环：检测子进程退出码，42 时立即重启；其它异常退出码按指数退避自动重试；`Ctrl+C` 会先优雅终止子进程（码 0 视为正常退出，不再拉起）。
+
+```bash
+epsdk run main.py
+```
+
+#### 2. systemd（Linux 服务器）
+
+`RestartForceExitStatus=42` 让退出码 42 也触发重启（默认 `on-failure` 只对非零码生效）：
+
+```ini
+[Service]
+ExecStart=/usr/bin/python3 /opt/mybot/main.py
+Restart=on-failure
+RestartForceExitStatus=42
+RestartSec=2
+User=mybot
+```
+
+#### 3. Docker / docker-compose
+
+容器内 PID 1 是应用进程，退出码 42 后容器退出——用 `restart` 策略让它自动重启：
+
+```yaml
+services:
+  bot:
+    build: .
+    restart: unless-stopped   # 任何退出（含 42）都重启
+```
+
+#### 4. PM2（Node 生态运维）
+
+```bash
+pm2 start main.py --name mybot --interpreter python3
+# 42 被视为退出码，PM2 默认重启；设置 restart_delay 防抖
+pm2 set mybot.restart_delay 2000
+```
+
+#### 5. supervisord
+
+```ini
+[program:mybot]
+command=python3 /opt/mybot/main.py
+autorestart=true
+exitcodes=0,2,42    # 42 也视为"正常退出需重启"
+```
+
+#### 6. 纯 Python 自定义监督者
+
+```python
+import subprocess, sys, time
+
+while True:
+    p = subprocess.Popen([sys.executable, "main.py"])
+    code = p.wait()
+    if code == 42:          # 硬重启请求
+        time.sleep(0.5)
+        continue
+    if code == 0:           # 正常退出
+        break
+    time.sleep(3)           # 异常退出，退避重试
+```
+
+> **无监督者时的行为**：直接 `python main.py` 运行，调用 `hard_restart()` 后进程以码 42 退出、不会重启。此时应接入上述任一监督者。
 
 ## 相关文档
 
