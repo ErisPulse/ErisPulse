@@ -97,6 +97,17 @@ Dashboard 集成了模块商店功能，你可以：
 
 > **模块开发者的快速测试流程**：使用 Docker 部署后，在 Dashboard 中通过「上传本地包」功能直接上传你构建的 `.whl` 文件进行测试，无需手动操作容器。
 
+## 进程监督与硬重启
+
+ErisPulse 的硬重启（`sdk.hard_restart()`）依赖**外部监督者**在进程退出码为 42 时重新拉起进程——SDK 自己不拉起新进程。生产环境务必配置监督者，否则硬重启后进程不会自动恢复：
+
+- Docker：`restart: unless-stopped`（任何退出码都会重启，含 42）
+- systemd：`Restart=on-failure` + `RestartForceExitStatus=42`
+- PM2 / supervisord：将 42 加入可重启退出码
+- 纯 Python 自定义监督者：循环 `Popen` + 检测 `returncode == 42`
+
+各监督者的完整配置示例与退出码 42 契约说明见 [启动流程 → 监督者指南](../advanced/startup.md#监督者指南)。
+
 ## 健康检查
 
 SDK 内置健康检查端点：

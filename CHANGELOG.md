@@ -125,6 +125,8 @@
   - `tests/unit/test_unit_module.py` 新增 `TestCascadeUnload`（9 用例：直接/间接/环依赖收集、级联卸载顺序、卸载取消 owner 任务、disable 级联与 lifecycle 清理、i18n domain 清理）与 `TestDependsWiredThroughLoader`（2 用例：插件 depends 贯通进 meta、供依赖校验消费）
   - `tests/unit/test_unit_adapter.py` 新增 `TestAdapterDependencies`（14 用例：默认声明、硬依赖缺失检出（适配器/模块）、非法声明忽略、skipped-dependency 跳过启动、软依赖 ready/lost 通知、异常隔离、watcher 识别）
   - `tests/unit/test_unit_module.py` 新增 `TestPurgeUnload`（8 用例：默认 unload 保留存根、purge 删除存根、级联 purge、sys.modules 清理（plugin_folder/entry-point 边界）、弱引用返回、回收诊断）；`tests/unit/test_unit_adapter.py` 新增 `TestAdapterUnload`（3 用例：已注册卸载注销、未注册返回 False、未启动仍可注销）
+  - `tests/unit/test_unit_module.py` 新增 `TestUnloadTimeout`（4 用例：on_unload 卡死超时强杀、正常 on_unload 不受影响、配置读取、默认回退）；`tests/unit/test_unit_adapter.py` 新增 shutdown 超时 2 用例；`tests/unit/test_unit_sdk_callbacks.py` 新增 `TestSupervised`（3 用例：默认未监督/标记识别/任意值）；`TestCrossProcessContracts` 新增监督标记一致性断言
+  - `tests/unit/test_unit_router.py` 新增 `TestInlinePemSsl`（3 用例：非法 PEM 无临时文件残留/静态方法/start 签名）；`TestFullExampleConfig` 新增 SSL 默认路径断言
   - `tests/unit/test_unit_logger.py` 新增 `TestExcludedLevels`：屏蔽等级不入内存/订阅器/控制台/文件、恢复、热更新、LoggerChild 遵循
   - `tests/unit/test_unit_topology.py`：模块/适配器/作用域拓扑与 `sdk.get_topology()` 聚合
   - 新增 `tests/unit/test_unit_plugin_folder.py`（6 用例）：插件发现（单文件/包形式）、moduleInfo 构造、非法条目忽略、路径追踪、`ModuleLoader.load()` 并入
@@ -152,6 +154,12 @@
     - `HttpClient` 更名为 `Client`、`BaseHttpClient` 更名为 `BaseClient`（旧名保留为兼容别名，`sdk.client` 属性名不变）；`Core`/`Bases` 聚合导出与 `__all__` 同步双名
     - 模板与示例项目的事件回调统一添加 `event: Event` 类型注解（生命周期方法保持 `event: dict`），文档 6 篇 80 处签名全量补齐；`event-wrapper.md` 新增「为 event 参数添加类型注解」引导（IDE 补全价值 + Event 与 dict 区分说明）
   - **常量收敛**（内部重构，无行为变更）：`DEFAULT_OWNER_CANCEL_TIMEOUT_SECS`（tasks.py 模块内私有常量上移）、`LOG_FILE_FORMAT`/`LOG_FILE_DATEFMT`（logger.py 模块内私有上移，与 `LOG_TIME_FORMAT` 命名族对齐）、`MODULE_SOURCE_PLUGIN_FOLDER`（`"plugin_folder"` 来源标识散落 4 处收敛）、`ADAPTER_STATUS_*` 8 态 + `BOT_STATUS_ONLINE`/`OFFLINE`（适配器/Bot 状态字符串散落 20+ 处收敛）；`frame_config.py` 默认配置树 logger 分段 4 键由字面量改为引用 `DEFAULT_LOG_*` 常量（消除双源）
+  - **优雅收尾超时保护**：模块 `on_unload` / 适配器 `shutdown` 超时（复用 `ErisPulse.framework.uninit_timeout`，默认 30s）不再阻塞卸载/级联/热重载/uninit 全链路——单个组件超时后打告警（`core.module.on_unload_timeout` / `core.adapter.shutdown_timeout`，i18n×5）并**强制进入后续清理**（任务兜底取消/注册表清理）；修复适配器超时后未从 `_started_instances` 移除导致仍被视为已启动的问题
+  - **硬重启监督者契约**：CLI `run` 命令启动子进程时注入 `ERISPULSE_SUPERVISED` 监督标记（镜像到 `CLI/constants.py`，`TestCrossProcessContracts` 钉死一致性）；新增 `sdk.is_supervised()` 查询是否被监督；`hard_restart()` 未检测到监督者时打「不会自动重启」警告（i18n×5）；文档新增**监督者指南**（startup.md：退出码 42 契约 + epsdk run / systemd `RestartForceExitStatus=42` / Docker restart policy / PM2 / supervisord / 纯 Python 监督者片段）
+  - **CLI init 完整配置示例优化**：`_get_full_example_config` 补全 `[ErisPulse.framework]` 段（plugins_dir / uninit_timeout（含优雅收尾超时注释）/ strict_mode + strict_mode_exceptions / handler_max_concurrency / proactive_gc_* 全系列 / offline_bot_expiry）；修正 `ssl_certfile = null` 为合法 TOML（`""`）；新增 `TestFullExampleConfig` 4 用例钉住示例为合法 TOML 且覆盖关键配置
+  - **SSL 内联 PEM 与默认证书目录**：
+    - `router.start` 新增 `ssl_cert`/`ssl_key`（PEM 文本内容）参数，内容优先于路径；临时落盘构建 `SSLContext` 后即删（`ssl_context_factory` 注入 uvicorn），适合容器/无文件系统场景；`core.router.ssl_inline_*` i18n×5
+    - **证书默认放 `config/ssl/`**：`epsdk init` 自动创建 `config/ssl/` 目录与 `cert.pem`/`key.pem` 占位文件；full example 默认 `ssl_certfile = "config/ssl/cert.pem"`（相对路径跟随项目运行目录）
   - **适配器依赖声明（可选功能）**：
     - `BaseAdapter` 新增 `depends`（硬依赖，`{"adapters": [...], "modules": [...]}`）与 `optional_modules`（软依赖）类属性，`loaders/adapter.py` 合入 meta
     - 硬依赖缺失时跳过启动（警告 + `adapter.status.change` 状态 `skipped-dependency`）；声明模块硬依赖的适配器**推迟到模块初始化完成后启动**
