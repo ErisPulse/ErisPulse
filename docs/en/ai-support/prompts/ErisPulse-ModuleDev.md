@@ -53,49 +53,49 @@ The following diagram illustrates the core modules of the SDK and their relation
 
 ```mermaid
 graph TB
-    SDK["sdk<br/>Unified Entry Point"]
+    SDK["sdk<br/>Unified entry point"]
 
-    SDK --> Event["Event<br/>Event System"]
-    SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
-    SDK --> Logger["Logger<br/>Log Management"]
-    SDK --> Storage["Storage / env<br/>Storage Management"]
-    SDK --> Config["Config<br/>Configuration Management"]
-    SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
-    SDK --> ModuleMgr["Module<br/>Module Management"]
-    SDK --> Router["Router<br/>Routing Management"]
-    SDK --> Client["HttpClient<br/>HTTP Client"]
+    SDK --> Event["Event<br/>Event system"]
+    SDK --> Lifecycle["Lifecycle<br/>Lifecycle management"]
+    SDK --> Logger["Logger<br/>Log management"]
+    SDK --> Storage["Storage / env<br/>Storage management"]
+    SDK --> Config["Config<br/>Configuration management"]
+    SDK --> AdapterMgr["Adapter<br/>Adapter management"]
+    SDK --> ModuleMgr["Module<br/>Module management"]
+    SDK --> Router["Router<br/>Routing management"]
+    SDK --> Client["Client<br/>HTTP client"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
-    Event --> Conversation["Conversation<br/>Branch + Persistence"]
+    Event --> Conversation["Conversation<br/>Branch + persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["CloudLake"]
+    BaseAdapter --> P1["Yunhu"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
 
     ModuleMgr --> BaseModule["BaseModule"]
-    BaseModule --> CM["Custom Module"]
+    BaseModule --> CM["Custom module"]
 
-    BaseAdapter -.-> SendDSL["SendDSL<br/>Message Sending"]
+    BaseAdapter -.-> SendDSL["SendDSL<br/>Message sending"]
 ```
 
 ### Core Module Descriptions
 
 | Module | Description |
-|--------|-------------|
-| **Event** | Event system providing handling for five event types: command / message / notice / request / meta, as well as Conversation for multi-turn dialogue |
-| **Adapter** | Adapter manager responsible for registering, starting, and shutting down adapters for multiple platforms |
-| **Module** | Module manager responsible for registering, loading, and unloading plugins, supporting dependency declaration and topological sorting |
-| **Lifecycle** | Lifecycle manager providing event-driven lifecycle hooks |
-| **Storage** | Key-value storage system based on SQLite, supporting generic SQL chainable queries |
+|------|------|
+| **Event** | Event system, providing five types of event handling: command / message / notice / request / meta, as well as Conversation for multi-turn dialogues |
+| **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
+| **Module** | Module manager, managing plugin registration, loading, and unloading, supporting dependency declaration and topological sorting |
+| **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
+| **Storage** | Key-value storage system based on SQLite, supporting general SQL chained queries |
 | **Config** | Configuration file management in TOML format |
-| **Logger** | Modular logging system supporting sub-loggers |
-| **Router** | HTTP/WebSocket routing management, abstracting the underlying backend (currently FastAPI + Uvicorn), supporting decorator-based routing, middleware, grouping, rate limiting, CORS |
-| **HttpClient** | Unified HTTP/WS client abstracting the underlying request library (currently aiohttp), providing request statistics, retry logic, logging, WebSocket client, and ErisPulse exception handling. The client and server WebSocket share the `WebSocketConnectionBase` base class |
+| **Logger** | Modular logging system, supporting sub-loggers |
+| **Router** | HTTP/WebSocket routing management, abstracting the underlying backend (currently FastAPI + Uvicorn), supporting decorator routing, middleware, grouping, rate limiting, CORS |
+| **Client** | Unified HTTP/WS client (pre-2.8.0 was `HttpClient`, compatible alias retained), abstracting the underlying request library (currently aiohttp), providing request statistics, retry, logging, WebSocket client, ErisPulse exception system, etc. The WebSocket client and server share the `WebSocketConnectionBase` base class |
 
 ## Initialization Process
 
@@ -2446,6 +2446,29 @@ Please directly return the complete translated Markdown content without includin
 
 Once again, please note: If the document contains a language switch line (a line with language names separated by `` | ``), strictly adhere to the format requirements in point 8 above and do not write incorrect formats such as ``[**Label**](file)``.
 
+## Type Annotations for the event Parameter
+
+The `event` parameter of event handlers is an **Event wrapper class** (a subclass of dict). It is highly recommended to add type annotations to it:
+
+```python
+from ErisPulse.Core.Event import Event
+
+@message.on_private_message()
+async def handler(event: Event):
+    text = event.get_text()   # IDE auto-completes all convenient methods
+    await event.reply(text)   # Spelling errors can be detected during static checking
+```
+
+Without annotations, the IDE cannot recognize methods on Event (`get_text()` / `reply()` / `wait_reply()` / platform extension methods are not suggested), and you can only rely on memory for spelling.
+
+> **Note**: The `event` in event handler callbacks is an **Event wrapper class** (annotated as `Event`); the `event` in module lifecycle methods `on_load` / `on_unload` is a regular **dict** (annotated as `dict`), and these should not be confused.
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md`), keep them unchanged
+   - This ensures that links point to the correct language version of the document
+
 ## Core Features
 
 - **Full Dictionary Compatibility**: Event inherits from dict
@@ -2461,7 +2484,7 @@ Please directly return the complete translated Markdown content without any addi
 from ErisPulse.Core.Event import command
 
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     event_id = event.get_id()
     platform = event.get_platform()
     time = event.get_time()
@@ -2469,10 +2492,10 @@ async def info_command(event):
 ```
 
 7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
+   - Replace `docs/en/` with `docs/en/` in document links
    - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (such as `README.xx.md` format links), keep them unchanged
-   - This ensures that links point to the correct language version of the document
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Message Event Methods
 
@@ -2480,7 +2503,7 @@ async def info_command(event):
 from ErisPulse.Core.Event import message
 
 @message.on_private_message()
-async def private_handler(event):
+async def private_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
@@ -2488,10 +2511,10 @@ async def private_handler(event):
 ```
 
 7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
+   - Replace `docs/en/` with `docs/en/` in document links
    - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md`), keep them unchanged
-   - This ensures links point to the correct language version of the documentation
+   - For links pointing to non-current language version files (such as `README.xx.md` format links), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Message Type Detection
 
@@ -2499,26 +2522,26 @@ async def private_handler(event):
 from ErisPulse.Core.Event import message
 
 @message.on_group_message()
-async def group_handler(event):
+async def group_handler(event: Event):
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
     await event.reply(f"Type: {'Private Chat' if is_private else 'Group Chat'}")
 ```
 
-7. **Important: Path Replacement Rule**
+7. **Important: Path Replacement Rules**
    - Replace `docs/en/` in document links with `docs/en/`
    - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
    - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
-   - This ensures links point to the correct language version of the document
+   - This ensures that links point to the correct language version of the document
 
-## Reply Function
+## Reply Functionality
 
 ```python
 from ErisPulse.Core.Event import command
 
 @command("ask")
-async def ask_command(event):
+async def ask_command(event: Event):
     await event.reply("Please enter your name:")
     reply = await event.wait_reply(timeout=30)
     if reply:
@@ -2526,9 +2549,11 @@ async def ask_command(event):
         await event.reply(f"Hello, {name}!")
 ```
 
-Please directly return the complete translated Markdown content, without including any other text.
-
-Once again, if the document contains a language switching line (with each language name separated by `` | ``), be sure to strictly follow the format requirements in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
+   - This ensures that links point to the correct language version of the document
 
 ## Command Information Retrieval
 
@@ -2536,29 +2561,33 @@ Once again, if the document contains a language switching line (with each langua
 from ErisPulse.Core.Event import command
 
 @command("cmdinfo")
-async def cmdinfo_command(event):
+async def cmdinfo_command(event: Event):
     cmd_name = event.get_command_name()
     cmd_args = event.get_command_args()
     await event.reply(f"Command: {cmd_name}, Arguments: {cmd_args}")
 ```
 
-[**English**](docs/en/command-info.md)
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
-## Notification Event Method
+## Notification Event Methods
 
 ```python
 from ErisPulse.Core.Event import notice
 
 @notice.on_friend_add()
-async def friend_add_handler(event):
+async def friend_add_handler(event: Event):
     await event.reply("Welcome to add me as a friend!")
 ```
 
 Please directly return the complete translated Markdown content without any additional text.
 
-Once again, if the document contains a language switch line (with each language name separated by `` | ``), strictly follow the format requirement in item 8 above and do not write incorrect formats such as ``[**Label**](file)``.
+Once again, if the document contains language switch lines (where language names are separated by `` | ``), strictly follow the format requirements in item 8 above and do not write incorrect formats like ``[**Label**](file)``.
 
-# Method Quick Reference
+## Method Quick Reference
 
 ### Core Methods
 
@@ -2566,7 +2595,7 @@ Once again, if the document contains a language switch line (with each language 
 - `get_id()` - Get event ID
 - `get_time()` - Get event timestamp (Unix seconds)
 - `get_type()` - Get event type (message/notice/request/meta)
-- `get_detail_type()` - Get detailed event type (private/group/friend, etc.)
+- `get_detail_type()` - Get detailed event type (private/group/friend etc.)
 - `get_platform()` - Get platform name
 
 #### Bot Information
@@ -2576,14 +2605,14 @@ Once again, if the document contains a language switch line (with each language 
 - `get_self_info()` - Get complete bot information dictionary
 
 #### Session Identifiers
-- `get_target_id()` - Get unified target ID (returns `group_id` for group chat, `channel_id` for channel, `user_id` for private chat; returns first non-empty value in order: group → channel → guild → thread → user)
+- `get_target_id()` - Get unified target ID (returns `group_id` for group chats, `channel_id` for channels, `user_id` for private chats, returns first non-empty value in order: group → channel → guild → thread → user)
 - `get_session_id()` - Get unique session identifier, format: `{platform}:{detail_type}:{target_id}`
 
 ### Message Event Methods
 
 #### Message Content
 - `get_message()` - Get message segment array (OneBot12 format)
-- `get_alt_message()` - Get alternative message text
+- `get_alt_message()` - Get alternate message text
 - `get_text()` - Get plain text content (`get_alt_message()` alias)
 - `get_message_text()` - Get plain text content (`get_alt_message()` alias)
 
@@ -2593,31 +2622,31 @@ Once again, if the document contains a language switch line (with each language 
 - `get_sender()` - Get sender complete information dictionary
 
 #### Group/Channel Information
-- `get_group_id()` - Get group ID (group chat message)
-- `get_channel_id()` - Get channel ID (channel message)
-- `get_guild_id()` - Get server ID (server message)
-- `get_thread_id()` - Get topic/subchannel ID (topic message)
+- `get_group_id()` - Get group ID (group chat messages)
+- `get_channel_id()` - Get channel ID (channel messages)
+- `get_guild_id()` - Get server ID (server messages)
+- `get_thread_id()` - Get topic/subchannel ID (topic messages)
 
 #### @Message Related
-- `has_mention()` - Whether message contains @bot
+- `has_mention()` - Whether contains @bot
 - `get_mentions()` - Get list of all mentioned user IDs
 
-### Message Type Detection
+### Message Type Checks
 
-#### Basic Detection
-- `is_message()` - Whether event is a message event
-- `is_private_message()` - Whether event is a private message
-- `is_group_message()` - Whether event is a group message
-- `is_at_message()` - Whether event is an @message (`has_mention()` alias)
+#### Basic Checks
+- `is_message()` - Whether it is a message event
+- `is_private_message()` - Whether it is a private message
+- `is_group_message()` - Whether it is a group message
+- `is_at_message()` - Whether it is an @message (`has_mention()` alias)
 
-### Notification Event Methods
+### Notice Event Methods
 
-#### Notification Operator
+#### Notice Operator
 - `get_operator_id()` - Get operator ID
 - `get_operator_nickname()` - Get operator nickname
 
-#### Notification Type Detection
-- `is_notice()` - Whether event is a notification event
+#### Notice Type Checks
+- `is_notice()` - Whether it is a notice event
 - `is_group_member_increase()` - Group member increase event
 - `is_group_member_decrease()` - Group member decrease event
 - `is_friend_add()` - Friend add event (matches `detail_type == "friend_increase"`)
@@ -2628,21 +2657,21 @@ Once again, if the document contains a language switch line (with each language 
 #### Request Information
 - `get_comment()` - Get request comment
 
-#### Request Type Detection
-- `is_request()` - Whether event is a request event
-- `is_friend_request()` - Whether event is a friend request
-- `is_group_request()` - Whether event is a group request
+#### Request Type Checks
+- `is_request()` - Whether it is a request event
+- `is_friend_request()` - Whether it is a friend request
+- `is_group_request()` - Whether it is a group request
 
 ### Reply Functionality
 
 #### Basic Reply
 - `reply(content, method="Text", at_sender=False, quote=False, at_users=None, reply_to=None, at_all=False, via=None, **kwargs)` - General reply method
   - `content`: Content to send (text, URL, etc.)
-  - `method`: Sending method, default "Text", options include "Image"/"Voice"/"Video"/"File", etc.
-  - `at_sender`: Whether to @ sender (auto-extract user_id)
-  - `quote`: Whether to quote reply current message (auto-extract message_id)
-  - `at_users`: List of users to @, e.g., `["user1", "user2"]`
-  - `reply_to`: Manually specify message ID to reply to
+  - `method`: Sending method, default "Text", optional "Image"/"Voice"/"Video"/"File", etc.
+  - `at_sender`: Whether to @ sender (auto extracts user_id)
+  - `quote`: Whether to quote reply current message (auto extracts message_id)
+  - `at_users`: List of @ users, e.g., `["user1", "user2"]`
+  - `reply_to`: Manually specify reply message ID
   - `at_all`: Whether to @ all members
   - `**kwargs`: Additional parameters (e.g., user_id for Mention method)
 
@@ -2651,11 +2680,11 @@ Once again, if the document contains a language switch line (with each language 
 
 #### Platform Capability Query
 - `supports(method)` - Check if current platform supports a sending method (e.g., `"Image"`, `"Voice"`), returns `bool`
-- `available_methods()` - List all available sending methods on current platform, returns list of method names
+- `available_methods()` - List all available sending methods for current platform, returns list of method names
 
 #### Forward Functionality
 
-> **Note**: Forward functionality requires implementation through the adapter's Send DSL; the Event wrapper class itself does not provide a direct forward method.
+> **Note**: Forwarding functionality needs to be implemented through the adapter's Send DSL; the Event wrapper class itself does not provide a direct forwarding method.
 
 ```python
 # Forward message to group
@@ -2668,42 +2697,42 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 - `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - Wait for user reply
   - `prompt`: Prompt message, if provided will be sent to user
-  - `timeout`: Timeout duration (seconds), default 60 seconds
-  - `callback`: Callback function, executed when reply is received
-  - `validator`: Validation function, used to verify if reply is valid
+  - `timeout`: Timeout time (seconds), default 60 seconds
+  - `callback`: Callback function, executed when reply received
+  - `validator`: Validation function, used to validate if reply is valid
   - `method`: Sending method for prompt, default "Text"
   - Returns Event object of user reply, returns None on timeout
 
 #### Interactive Methods
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - Confirmation dialog
-  - Returns `True` (confirmed) / `False` (denied) / `None` (timeout)
-  - Built-in Chinese/English confirmation words auto-detection, customizable word sets
-  - `method`: Sending method, default "Text"; supports "Image"/"Markdown" and other non-text methods for sending prompt
+  - Returns `True` (confirmation) / `False` (rejection) / `None` (timeout)
+  - Built-in Chinese/English confirmation words auto-recognized, can customize word sets
+  - `method`: Sending method, default "Text"; supports "Image"/"Markdown" and other non-text methods for sending prompts
   - `hint`: Whether to automatically append confirmation word prompt at the end of the prompt (e.g., "（是/否）"), default False
 
 - `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - Selection menu
-  - `options`: List of option text
+  - `options`: List of option texts
   - Returns option index (0-based), returns `None` on timeout
   - `method`: Sending method, default "Text"; text-based methods (Text/Markdown/md/Html/h5) automatically merge options to the end
-  - `options_format`: Option format (default: "auto", automatically selects built-in style based on method)
+  - `options_format`: Option format (default: "auto", automatically select built-in style based on method)
     - `"auto"`: Markdown→unordered list (`- 1. Option`), Html→ordered list (`<ol>`), others→plain text list
-    - `"list"`: One per line, e.g., ``1. Option A\n2. Option B``
-    - `"inline"`: Display in single line, e.g., ``1.A | 2.B``
+    - `"list"`: Each line one, e.g., ``1. Option A\n2. Option B``
+    - `"inline"`: Display in single line, e.g., ``1. A | 2. B``
     - `"md"`: Markdown unordered list
     - `"html"`: Html ordered list
-    - `callable`: Custom function, receives ``list[str]`` and returns ``str``
+    - `callable`: Custom function, receives ``list[str]`` returns ``str``
   - `merge_prompt`: Whether to forcibly merge into a single message, default False
-    - `False` (default): Text-based methods automatically merge; non-text methods send prompt first then Text options
-    - `True`: Regardless of method, always merge into a single message, sent using the specified method
-  - `placeholder`: Option insertion placeholder, default `{options}`; the position in prompt containing this marker is replaced with option text, setting to empty string appends to the end always
+    - `False` (default): Text-based methods automatically merge; non-text methods send prompt first then send Text options
+    - `True`: Regardless of method, merge into a single message, send with user-specified method
+  - `placeholder`: Option insertion placeholder, default `{options}`; replace the marked position in prompt with option text, set to empty string to always append to the end
 
 - `collect(fields, timeout_per_field=60.0)` - Form collection
   - `fields`: Field list, each item contains `key`, `prompt`, optional `validator`, optional `method`
   - Returns `{key: value}` dictionary, returns `None` if any field times out
   - Each field supports `method` key to specify sending method, e.g., collecting image with `{"key": "avatar", "prompt": "Please send avatar", "method": "Image"}`
-  - Each field can optionally have `options` key (list), when provided, this field becomes a multiple-choice question (automatically calls choose logic)
-  - Each field can optionally have `options_format`, `merge_prompt`, `placeholder` keys, controlling option format, message merging behavior, and placeholder
+  - Each field can have optional `options` key (list), when provided, the field becomes a multiple-choice question (automatically calls choose logic)
+  - Each field can have optional `options_format`, `merge_prompt`, `placeholder` keys to control option format, message merging behavior, and placeholder
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - Wait for any event
   - `condition`: Filter function, returns `True` when matched
@@ -2711,7 +2740,7 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 - `conversation(timeout=60.0)` - Create multi-turn conversation context
   - Returns `Conversation` object, supports `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
-  - `is_active` attribute indicates whether conversation is active
+  - `is_active` property indicates whether conversation is active
 
 #### Interactive Method Examples
 
@@ -2719,8 +2748,8 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ```python
 @command("delete", help="Delete data")
-async def delete_handler(event):
-    if await event.confirm("Are you sure you want to delete all data?"):
+async def delete_handler(event: Event):
+    if await event.confirm("Are you sure to delete all data?"):
         sdk.storage.delete("all_data")
         await event.reply("Data has been deleted")
     else:
@@ -2730,7 +2759,7 @@ async def delete_handler(event):
 **confirm() - With prompt words:**
 
 ```python
-# hint=True will append "（是/否）" at the end of the prompt
+# hint=True appends "（是/否）" at the end of the prompt
 if await event.confirm("Continue?", hint=True):
     await event.reply("Continued")
 # User sees: Continue?（是/否）
@@ -2740,8 +2769,8 @@ if await event.confirm("Continue?", hint=True):
 
 ```python
 @command("color", help="Choose color")
-async def color_handler(event):
-    choice = await event.choose("Please choose a color:", ["Red", "Green", "Blue"])
+async def color_handler(event: Event):
+    choice = await event.choose("Please choose color:", ["Red", "Green", "Blue"])
     if choice is not None:
         colors = ["Red", "Green", "Blue"]
         await event.reply(f"You chose: {colors[choice]}")
@@ -2750,7 +2779,7 @@ async def color_handler(event):
 **choose() - Option formatting and message merging:**
 
 ```python
-# inline format: options displayed in the same line
+# inline format: options displayed in same line
 choice = await event.choose("Please choose:", ["A", "B", "C"], options_format="inline")
 # Output: 1.A | 2.B | 3.C
 
@@ -2759,7 +2788,7 @@ choice = await event.choose("Please choose:", ["Cat", "Dog"],
     options_format=lambda opts: " / ".join(opts))
 # Output: Cat / Dog
 
-# options_format="auto" (default): automatically selects built-in style based on method
+# options_format="auto" (default): auto-select built-in style based on method
 # Markdown → unordered list
 choice = await event.choose(
     "## Please choose", ["Cat", "Dog"],
@@ -2781,7 +2810,7 @@ choice = await event.choose(
 
 # Merge mode + placeholder
 choice = await event.choose(
-    "## Please choose\n{options}\nPlease reply with number",
+    "## Please choose\n{options}\nPlease reply number",
     ["Cat", "Dog"],
     method="Markdown", merge_prompt=True,
 )
@@ -2798,17 +2827,17 @@ choice = await event.choose(
 
 ```python
 @command("register", help="Register")
-async def register_handler(event):
+async def register_handler(event: Event):
     data = await event.collect([
-        {"key": "name", "prompt": "Please enter your name:"},
-        {"key": "age", "prompt": "Please enter your age:",
+        {"key": "name", "prompt": "Please enter name:"},
+        {"key": "age", "prompt": "Please enter age:",
          "validator": lambda e: e.get_text().isdigit()},
     ])
     if data:
         await event.reply(f"Registration successful! {data['name']}, {data['age']} years old")
 ```
 
-**Non-Text Method Reply:**
+**Non-Text method reply:**
 
 ```python
 await event.reply("http://example.com/img.jpg", method="Image")
@@ -2819,7 +2848,7 @@ segments = MessageBuilder.text("Look at this image:").image("http://example.com/
 await event.reply_ob12(segments)
 ```
 
-> For complete conversation multi-turn dialogue usage, refer to [Conversation Multi-Turn Dialogue](../../advanced/conversation.md).
+> Complete Conversation multi-turn dialog usage please refer to [Conversation Multi-turn Dialog](../../advanced/conversation.md).
 
 ### Command Information
 
@@ -2828,18 +2857,18 @@ await event.reply_ob12(segments)
 - `get_command_args()` - Get command argument list
 - `get_command_raw()` - Get raw command text
 - `get_command_info()` - Get complete command information dictionary
-- `is_command()` - Whether event is a command
+- `is_command()` - Whether it is a command
 
 ### Raw Data
 
-- `get_raw()` - Get raw platform event data
-- `get_raw_type()` - Get raw platform event type
+- `get_raw()` - Get platform raw event data
+- `get_raw_type()` - Get platform raw event type
 
 ### Platform Extension Methods
 
-Adapters can register platform-specific methods for the Event wrapper class. Methods are only available on Event instances of the corresponding platform; accessing them on other platforms raises `AttributeError`.
+Adapters can register platform-specific methods for Event wrapper classes. Methods are only available on Event instances of corresponding platforms; accessing them on other platforms raises `AttributeError`.
 
-Platform methods take precedence over built-in methods via `Event.__getattribute__`, allowing overwriting of built-in interactive methods like `confirm`, `choose`, `collect`, `wait_reply` to provide platform-specific implementations (e.g., buttons, cards). Built-in implementations are exported as `_builtin_*` functions for overwriting.
+Platform methods take precedence over built-in methods via `Event.__getattribute__`, allowing overwriting built-in interactive methods like `confirm`, `choose`, `collect`, `wait_reply` to provide platform-specific implementations (e.g., buttons, cards). Built-in implementations are exported as `_builtin_*` functions for overwriting.
 
 ```python
 # Email event - only email methods
@@ -2873,9 +2902,9 @@ hasattr(event, "get_subject")   # Returns True only when platform="email"
 "get_subject" in dir(event)     # Same as above
 ```
 
-### Cross-Platform Extension (Wildcard)
+### Cross-platform Extension (Wildcard)
 
-`register_event_method` and `register_event_mixin` support passing `"*"` as platform name, making registered methods available on Event instances of **all platforms**. Suitable for features requiring cross-platform reuse, such as AI dialogue, context management.
+`register_event_method` and `register_event_mixin` support passing `"*"` as platform name, registering methods available on **all** platform Event instances. Suitable for features needing cross-platform reuse, such as AI chat, context management.
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
@@ -2886,11 +2915,11 @@ async def ai_chat(self, prompt: str):
     await self.reply(f"AI: {prompt}")
 ```
 
-After registration, any platform's event handler can call `event.ai_chat(...)`.
+After registration, any platform event handler can call `event.ai_chat(...)`.
 
 Method resolution priority (from high to low): platform-specific methods → wildcard methods → built-in methods → dictionary key access.
 
-> For adapter developers registering extension methods, refer to [Event System API - Cross-Platform Extension (Wildcard)](../../api-reference/event-system.md#跨平台扩展通配符).
+> Adapter developers register extension methods via [Event System API - Cross-platform Extension (Wildcard)](../../api-reference/event-system.md#跨平台扩展通配符).
 
 
 
@@ -2995,7 +3024,7 @@ For detailed usage, please see [i18n documentation](../../advanced/i18n.md#Recom
 ### 1. Using Asynchronous Libraries
 
 ```python
-# Recommended to use the SDK's built-in HTTP client (asynchronous, with automatic logging and statistics)
+# Recommended: Use the SDK's built-in HTTP client (asynchronous, with automatic logging and statistics)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -3003,7 +3032,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# Alternatively, you can use sdk.client (same effect)
+# Alternatively, use sdk.client (same effect)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -3011,7 +3040,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Do not directly import aiohttp (not convenient for unified framework management)
+# Do not use aiohttp directly (not convenient for framework-level management)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -3020,29 +3049,31 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Do not use requests (synchronous, blocks the event loop)
+# Do not use requests (synchronous, will block the event loop)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # blocks the event loop
+        return requests.get(url).json()  # Will block the event loop
 ```
 
 ### 2. Correct Asynchronous Operations
 
 ```python
-async def handle_command(self, event):
+from ErisPulse.Core.Event import Event  # Event: Event annotation provides IDE auto-completion
+
+async def handle_command(self, event: Event):
     # Time-consuming operations that require waiting for results: directly await (clear lifecycle)
     result = await self._long_operation()
 
-async def on_load(self, event):
-    # Background tasks (polling/timed/fire-and-forget): use self.spawn(),
-    # the framework cancels them after on_unload when the module is unloaded, avoiding holding self and causing leaks
+async def on_load(self, event: dict):
+    # Background tasks (polling/periodic/fire-and-forget): use self.spawn(),
+    # when the module is unloaded, the framework cancels them after on_unload to prevent self reference leaks
     self.spawn(self._poll())
 ```
 
-> [!NOTE]  
-> Background tasks are recommended to use `self.spawn()` (ErisPulse **2.8.0+**), rather than `asyncio.create_task`—the raw tasks created by the latter do not belong to the module, and will not be automatically cleaned up during unloading, causing the module instance to be unable to be reclaimed due to holding a reference to `self` (hot reload leak). See [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
+> [!NOTE]
+> Background tasks are recommended to use `self.spawn()` (ErisPulse **2.8.0+**), rather than `asyncio.create_task`—the raw tasks created by the latter do not belong to the module, and will not be automatically cleaned up during unloading, potentially holding a reference to `self` and causing module instances to be unrecoverable (hot reload leak). See [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
 
 ### 3. Resource Management
 
@@ -3050,33 +3081,33 @@ async def on_load(self, event):
 async def on_load(self, event):
     # The SDK client automatically manages the connection pool, no need to manually create a session
     pass
-
+    
 async def on_unload(self, event):
     # If a custom client is needed, remember to clean up resources
     pass
 
 ## Event Handling
 
-### 1. Using Event Wrapper Classes
+### 1. Using Event Wrapper Class
 
 ```python
 # Convenient method using Event wrapper class
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     await event.reply(f"Hello, {nickname}!")
 
-# Instead of directly accessing the dictionary
+# Rather than directly accessing the dictionary
 @command("info")
-async def info_command(event):
+async def info_command(event: Event):
     user_id = event["user_id"]  # Less clear, prone to errors
 ```
 
 ### 2. Reasonable Use of Lazy Loading
 
 ```python
-# Infrequent command module: declare activate_on trigger, automatically activates on first matching command (maintains lazy loading)
+# Low-frequency command module: declare activate_on trigger, automatically activate on first matching command arrival (maintain lazy loading)
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -3084,7 +3115,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "Roll a dice", "aliases": ["d"]}},
         ])
 
-# Infrequent listener module: declare event trigger, automatically activates when event arrives
+# Low-frequency listener module: declare event trigger, automatically activate when event arrives
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -3092,7 +3123,7 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# Modules with high-frequency triggers (process every message) or those that must be ready at startup: load immediately
+# High-frequency triggers (process every message) or modules that must be ready at startup: load immediately
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -3105,8 +3136,7 @@ class UtilityModule(BaseModule):
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> For the complete syntax of `activate_on` (event three-form / command shorthand and dict declaration / help fallback chain), see  
-> [Lazy-Loading Module System](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate_on).
+> The full syntax of `activate_on` (three forms of events / command shorthand and dict declaration / help fallback chain) can be found in the [Lazy Loading Module System](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate_on).
 
 ### 3. Event Handler Registration
 
@@ -3114,43 +3144,43 @@ class UtilityModule(BaseModule):
 async def on_load(self, event):
     # Register event handlers in on_load
     @command("hello")
-    async def hello_handler(event):
+    async def hello_handler(event: Event):
         await event.reply("Hello!")
     
     @message.on_group_message()
-    async def group_handler(event):
+    async def group_handler(event: Event):
         self.logger.info("Received group message")
     
-    # No need to manually deregister, the framework handles it automatically
+    # No need to manually deregister, the framework will handle it automatically
 
 ## Error Handling
 
 ### 1. Categorized Exception Handling
 
 ```python
-async def handle_event(self, event):
+async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # Expected business errors
+        # Expected business error
         self.logger.warning(f"Business warning: {e}")
         await event.reply(f"Parameter error: {e}")
     except aiohttp.ClientError as e:
-        # Network errors (It is recommended to use sdk.client + ClientError instead)
-        # Old code using aiohttp directly still works, but new code recommends using the ErisPulse exception system
+        # Network error (recommended to use sdk.client + ClientError instead)
+        # Code directly using aiohttp still works, but new code recommends using ErisPulse exception system
         self.logger.error(f"Network error: {e}")
         await event.reply("Network request failed, please try again later")
     except Exception as e:
-        # Unexpected errors
+        # Unexpected error
         self.logger.error(f"Unknown error: {e}", exc_info=True)
-        await event.reply("Processing failed, please contact the administrator")
+        await event.reply("Processing failed, please contact administrator")
         raise
 ```
 
 ### 2. Timeout Handling
 
 ```python
-# It is recommended to use the SDK built-in client (which comes with timeout and retry logic)
+# Recommended to use SDK built-in client (includes timeout and retry)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -3161,6 +3191,9 @@ async def fetch_with_timeout(self, url, timeout=30):
     except ClientTimeoutError:
         self.logger.warning(f"Request timeout: {url}")
         raise
+```
+
+[**Quick Start**](docs/en/quick-start.md) | [**API Reference**](docs/en/api-reference.md) | [**Configuration**](docs/en/configuration.md) | [**Development**](docs/en/development.md)
 
 ## Storage System
 
@@ -3245,7 +3278,7 @@ class MyModule(BaseModule):
             # Fetch from database
             data = await self._fetch_from_db(key)
             
-            # Cache data
+            # Cache the data
             self._cache[key] = data
             return data
 ```
@@ -3253,22 +3286,29 @@ class MyModule(BaseModule):
 ### 2. Avoid Blocking Operations
 
 ```python
-# Use async operations
-async def process_message(self, event):
-    # Async processing
+# Use asynchronous operations
+async def process_message(self, event: Event):
+    # Asynchronous processing
     await self._async_process(event)
 
 # ❌ Blocking operation
-async def process_message(self, event):
-    # Synchronous operation, blocks event loop
+async def process_message(self, event: Event):
+    # Synchronous operation, blocks the event loop
     result = self._sync_process(event)
+```
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Security
 
 ### 1. Sensitive Data Protection
 
 ```python
-# Sensitive data is stored in the configuration (declarative ConfigClass, secret fields do not appear in logs/export)
+# Sensitive data stored in configuration (declarative ConfigClass, secret fields do not enter logs/export)
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -3284,7 +3324,7 @@ class MyModule(BaseModule):
 
     def check_api_key(self):
         if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("Please configure a valid API Key in config.toml")
+            raise ValueError("Please configure a valid API key in config.toml")
 
 # ❌ Hardcoded sensitive data
 class MyModule(BaseModule):
@@ -3295,18 +3335,25 @@ class MyModule(BaseModule):
 
 ```python
 # Validate user input
-async def process_command(self, event):
+async def process_command(self, event: Event):
     user_input = event.get_text()
     
     # Validate input length
     if len(user_input) > 1000:
-        await event.reply("Input too long, please re-enter")
+        await event.reply("Input is too long, please re-enter")
         return
     
     # Validate input format
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("Invalid input format")
         return
+```
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g. `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Testing
 
@@ -6140,20 +6187,36 @@ complex_msg = (
 
 # Network Client
 
-ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must prioritize** using this client instead of directly importing third-party libraries such as `aiohttp`, `httpx`, or `requests`.
+ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must prioritize** using this client over importing third-party libraries such as `aiohttp`, `httpx`, or `requests` directly.
+
+Please directly return the complete translated Markdown content, without any additional text.
+
+Once again, if the document contains language switch lines (with language names separated by `` | ``), strictly adhere to the format requirements in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
+
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., links in the form of `README.xx.md`), keep them unchanged
+   - This ensures that links point to the correct language version of the document
 
 ## Overview
 
 The main features of the network client are:
 
-- **Unified interface**: Provides `get` / `post` / `put` / `delete` / `patch` / `request` methods
-- **WebSocket client**: Establishes a client WebSocket connection via `ws_connect`
-- **Automatic logging**: All requests are automatically logged and tracked for statistics
-- **Lifecycle integration**: Each request triggers the `client.request` lifecycle event, and WebSocket connections trigger the `client.ws.connect` event
-- **Retry support**: Configurable automatic retry count and interval
-- **Timeout control**: Independent connection timeout and request timeout
-- **Connection pool reuse**: Connection pool management based on aiohttp.ClientSession
-- **Exception system**: aiohttp exceptions are automatically converted to ErisPulse exceptions (ClientError system)
+- **Unified Interface**: Provides `get` / `post` / `put` / `delete` / `patch` / `request` methods
+- **WebSocket Client**: Establishes a client WebSocket connection via `ws_connect`
+- **Automatic Logging**: All requests are automatically logged and statistics are recorded
+- **Lifecycle Integration**: Each request triggers the `client.request` lifecycle event, and WS connections trigger the `client.ws.connect` event
+- **Retry Support**: Configurable automatic retry count and interval
+- **Timeout Control**: Independent connection timeout and request timeout
+- **Connection Pool Reuse**: Connection pool management based on aiohttp.ClientSession
+- **Exception System**: aiohttp exceptions are automatically converted to ErisPulse exceptions (ClientError system)
+
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Quick Start
 
@@ -6186,6 +6249,10 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
+Please directly return the complete translated Markdown content without any additional text.
+
+Again, if the document contains a language switch line (with language names separated by `` | ``), strictly follow the format requirement in item 8 above and do not write incorrect formats such as ``[**Label**](file)``.
+
 ## HttpResponse
 
 All request methods return an `HttpResponse` object:
@@ -6195,8 +6262,8 @@ from ErisPulse.Core import client
 
 resp = await client.get("https://httpbin.org/get")
 
-resp.status       # int - HTTP status code (e.g., 200, 404)
-resp.reason       # str | None - status description (e.g., "OK")
+resp.status       # int - HTTP status code (such as 200, 404)
+resp.reason       # str | None - status description (such as "OK")
 resp.headers      # response headers (case-insensitive)
 resp.content_type # str | None - Content-Type
 resp.url          # final URL (may change due to redirects)
@@ -6208,6 +6275,12 @@ text = await resp.text()       # str
 data = await resp.json()       # parse JSON
 text = await resp.text("gbk")  # specify encoding
 ```
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
+   - This ensures that links point to the correct language version of the document
 
 ## Request Methods
 
@@ -6251,19 +6324,19 @@ resp = await client.post(
 # Format: {field name: file object/bytes/(filename, file)/(filename, file, content_type)}
 resp = await client.post(
     "https://api.example.com/upload",
-    data={"description": "Avatar"},            # Optional: also carry regular form fields
+    data={"description": "avatar"},            # Optional: also carry regular form fields
     files={
         "file": ("photo.png", open("photo.png", "rb"), "image/png"),
     },
 )
 
-# Simplified syntax: directly pass file object
+# Simplified syntax: pass file object directly
 resp = await client.post(
     "https://api.example.com/upload",
     files={"file": open("photo.png", "rb")},
 )
 
-# Upload in-memory data directly (no need to write to disk)
+# Upload data directly from memory (no need to write to disk)
 import io
 
 resp = await client.post(
@@ -6292,9 +6365,8 @@ resp = await client.request(
     "https://api.example.com/resource",
     headers={"Origin": "https://example.com"},
 )
-```
 
-## Parameter Explanation
+## Parameter Description
 
 ### HTTP Request Parameters
 
@@ -6306,8 +6378,8 @@ resp = await client.request(
 | `data` | `Any` | Request body (form or raw data) (optional) |
 | `json` | `Any` | JSON request body (optional) |
 | `files` | `dict[str, Any]` | File upload fields (optional, automatically builds multipart/form-data) |
-| `timeout` | `float` | Timeout for this request (seconds) (optional, overrides default value) |
-| `max_retries` | `int` | Maximum retry attempts for this request (optional, overrides default value) |
+| `timeout` | `float` | Timeout for this request (in seconds) (optional, overrides default value) |
+| `max_retries` | `int` | Maximum number of retries for this request (optional, overrides default value) |
 
 ### ws_connect Parameters
 
@@ -6317,16 +6389,18 @@ resp = await client.request(
 | `headers` | `dict[str, str]` | Additional request headers (optional) |
 | `heartbeat` | `float` | Heartbeat interval in seconds (optional) |
 
-## Timeout and Retry
+[**English**](docs/en/quick-start.md)
+
+## Timeouts and Retries
 
 ```python
-from ErisPulse.Core import HttpClient
+from ErisPulse.Core import Client
 
-# Create a client with custom timeout
-client = HttpClient(
+# Create a client with custom timeouts
+client = Client(
     timeout=60,           # Total request timeout 60s
     connect_timeout=5,    # Connection timeout 5s
-    max_retries=3,        # Automatic retry 3 times on failure
+    max_retries=3,        # Automatic retry on failure 3 times
     retry_delay=2,        # Retry interval 2s
 )
 
@@ -6334,10 +6408,15 @@ client = HttpClient(
 resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
+> [!NOTE]
+> The client class was renamed to `Client` starting from version 2.8.0 (the `sdk.client` property name remains unchanged); the old name `HttpClient` is retained as a compatibility alias, so old code does not need modification.
+
+docs/en/timeouts-and-retries.md
+
 ## Custom Default Headers
 
 ```python
-client = HttpClient(
+client = Client(
     headers={
         "Authorization": "Bearer token",
         "X-App-Id": "my-app",
@@ -6345,6 +6424,12 @@ client = HttpClient(
     user_agent="MyBot/1.0",
 )
 ```
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
+   - This ensures links point to the correct language version of the documentation
 
 ## Request Statistics
 
@@ -6359,11 +6444,17 @@ stats = client.stats
 client.reset_stats()
 ```
 
+7. **Important: Path replacement rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (such as `README.xx.md` format links), keep them unchanged
+   - This ensures links point to the correct language version of the document
+
 ## Lifecycle Events
 
 ### HTTP Request Events
 
-The `client.request` event is triggered after each request, which can be used for monitoring:
+The `client.request` event is triggered after each request completes, which can be used for monitoring:
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -6382,21 +6473,26 @@ from ErisPulse.Core import lifecycle
 
 @lifecycle.on("client.ws.connect")
 async def on_ws_connect(event_data):
-    print(f"WS connection: {event_data['url']}")
+    print(f"WS Connection: {event_data['url']}")
 ```
+
+7. **Important: Path replacement rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Context Management
 
 ```python
-# As a context manager, automatically closes the session
-async with HttpClient(timeout=30) as client:
+# As a context manager, it automatically closes the session
+async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
-```
 
 ## WebSocket Client
 
-Establish a WebSocket client connection via `client.ws_connect()`, returning a `ClientWebSocket` object. The client and server WebSocket share the same `WebSocketConnectionBase` base class, with identical send/receive/iter interfaces.
+Use `client.ws_connect()` to establish a WebSocket client connection, returning a `ClientWebSocket` object. The client and server WebSocket share the same `WebSocketConnectionBase` base class, with identical send/receive/iter interfaces.
 
 ### Basic Usage
 
@@ -6412,9 +6508,9 @@ await ws.send_json({"type": "ping"})
 
 ### Receiving Messages
 
-#### Advanced Methods (Recommended)
+#### High-Level Methods (Recommended)
 
-Automatically filter message types and raise `WebSocketDisconnect` when disconnected:
+Automatically filter message types and raise `WebSocketDisconnect` on disconnection:
 
 ```python
 from ErisPulse.Core import client
@@ -6427,7 +6523,7 @@ text = await ws.receive_text()    # str
 data = await ws.receive_bytes()   # bytes
 obj = await ws.receive_json()     # dict / list
 
-# Iterative receive (automatically stops when disconnected)
+# Iterative receive (automatically stops on disconnection)
 async for text in ws.iter_text():
     print(text)
 
@@ -6440,7 +6536,7 @@ async for obj in ws.iter_json():
 
 #### Low-Level Methods
 
-Use `receive()` and `iter_messages()` to handle raw message types, distinguishing TEXT / BINARY / CLOSE / ERROR:
+Use `receive()` and `iter_messages()` to handle raw message types, allowing distinction between TEXT / BINARY / CLOSE / ERROR:
 
 ```python
 from ErisPulse.Core import client
@@ -6453,7 +6549,7 @@ msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
 
-# Iterative raw message receive (stops automatically on CLOSE/ERROR)
+# Iterative raw messages (automatically stops on CLOSE/ERROR)
 async for msg in ws.iter_messages():
     if msg.type == WSMessage.TEXT:
         print(f"Text: {msg.data}")
@@ -6463,7 +6559,7 @@ async for msg in ws.iter_messages():
 
 ### WSMessage
 
-`WSMessage` is a unified WebSocket message type, independent of the underlying library:
+`WSMessage` is a unified WebSocket message type independent of the underlying library:
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
@@ -6497,17 +6593,16 @@ async def handle_error(ws, error=""):
     print(f"Connection error: {error}")
 ```
 
-### Closing Connection
+### Closing the Connection
 
 ```python
 await ws.close(code=1000, reason="Normal closure")
-```
 
 ## Exception System
 
-ErisPulse defines a unified exception hierarchy. Requests initiated via `sdk.client` automatically convert underlying aiohttp exceptions into ErisPulse exceptions.
+ErisPulse defines a unified exception hierarchy. Requests initiated through `sdk.client` automatically convert underlying aiohttp exceptions into ErisPulse exceptions.
 
-> **Backward Compatibility**: Old modules/adapters that directly use `aiohttp.ClientSession` are unaffected. Exception conversion only applies when requests are initiated via `sdk.client`. Code directly using aiohttp still catches `aiohttp.ClientError` and other native exceptions. Both methods can coexist.
+> **Backward Compatibility**: Old modules/adapters that directly use `aiohttp.ClientSession` are completely unaffected. Exception conversion only takes effect when requests are initiated through `sdk.client`. Code that directly uses aiohttp still catches native exceptions such as `aiohttp.ClientError`. Both approaches can coexist.
 
 ### Exception Hierarchy
 
@@ -6516,9 +6611,9 @@ ErisPulseError
 ├── ClientError                  # Base class for all HTTP/WS client request exceptions
 │   ├── ClientConnectionError    # Connection failed (DNS resolution failed, connection refused, network unreachable)
 │   ├── ClientTimeoutError       # Connection timeout or request timeout
-│   └── HTTPStatusError          # HTTP 4xx/5xx status code error
+│   └── HTTPStatusError          # HTTP 4xx/5xx status code errors
 └── WebSocketError               # Base class for WebSocket exceptions
-    └── WebSocketDisconnect      # WebSocket connection disconnected (common to client and server)
+    └── WebSocketDisconnect      # WebSocket connection disconnected (applicable to both client and server)
 ```
 
 ### Exception Handling
@@ -6534,18 +6629,18 @@ from ErisPulse.Core.Bases.errors import (
     WebSocketError,
 )
 
-# HTTP request exception handling
+# Handling HTTP request exceptions
 try:
     resp = await client.get("https://api.example.com/data")
     data = await resp.json()
 except ClientConnectionError:
-    print("Cannot connect to the server")
+    print("Unable to connect to the server")
 except ClientTimeoutError:
     print("Request timeout")
 except ClientError as e:
     print(f"Request failed: {e}")
 
-# WebSocket exception handling
+# Handling WebSocket exceptions
 try:
     ws = await client.ws_connect("wss://example.com/ws")
     async for text in ws.iter_text():
@@ -6556,9 +6651,9 @@ except WebSocketError as e:
     print(f"WebSocket error: {e}")
 ```
 
-### Unified Exception Handling
+### Unified Handling
 
-Use `ClientError` to catch all HTTP/WS client request exceptions:
+Use `ClientError` to handle all HTTP/WS client request exceptions uniformly:
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError
@@ -6579,11 +6674,10 @@ from ErisPulse.Core.Bases.errors import HTTPStatusError
 resp = await client.get("https://api.example.com/data")
 if resp.status >= 400:
     raise HTTPStatusError(resp.status, await resp.text())
-```
 
 ## Using in Adapters
 
-Adapters can use the global client or create their own client instance to send platform API requests:
+Adapters can use the global client or create their own client instances to send platform API requests:
 
 ```python
 from ErisPulse.Core import client
@@ -6604,17 +6698,27 @@ class MyAdapter(BaseAdapter):
             raise
 ```
 
-> You can also use `from ErisPulse import sdk` to access `sdk.client`, which has the same effect.
+> You can also use `sdk.client` via `from ErisPulse import sdk`, which has the same effect.
+
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Best Practices
 
-1. **Prefer the global client**: Use `from ErisPulse.Core import client` to obtain the global singleton, facilitating unified management and monitoring by the framework.
-2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession`, allowing seamless switching of the underlying implementation without code changes. Old code using aiohttp directly still works, and both methods can coexist.
-3. **Use the ErisPulse exception system**: When making requests via `sdk.client`, catch `ClientError` instead of `aiohttp.ClientError`, ensuring code independence from specific HTTP libraries. Old code using aiohttp directly remains unaffected.
-4. **Set reasonable timeouts**: Configure appropriate timeout values based on API response speed to avoid long blocking.
+1. **Prefer using the global client**: Use `from ErisPulse.Core import client` to get the global singleton, which facilitates unified management and monitoring by the framework.
+2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession`. This avoids code changes when switching the underlying implementation in the future. Old code using aiohttp directly will still work normally, and both methods can coexist.
+3. **Use the ErisPulse exception system**: When making requests through `sdk.client`, catch `ClientError` instead of `aiohttp.ClientError` to ensure the code does not depend on a specific HTTP library. Old code using aiohttp directly is unaffected.
+4. **Set timeouts reasonably**: Set reasonable timeout values based on the API response speed to avoid long blocking.
 5. **Use retry mechanisms**: Enable retries for unstable APIs to improve reliability.
-6. **Monitor request statistics**: Use `sdk.client.stats` or the `client.request` lifecycle event to monitor request status.
-7. **Use advanced WebSocket methods**: Prefer advanced methods like `iter_text` / `iter_json`, and only use `iter_messages` when distinguishing message types is necessary.
+6. **Monitor request statistics**: Monitor request situations through `sdk.client.stats` or lifecycle events of `client.request`.
+7. **Use advanced methods for WebSocket**: Prefer advanced methods such as `iter_text` / `iter_json`. Only use `iter_messages` when distinguishing message types is necessary.
+
+Please directly return the complete translated Markdown content without including any other text.
+
+Once again, please note: if the document contains language switch lines (with each language name separated by `` | ``), strictly adhere to the format requirements specified above in point 8. Do not write incorrect formats like ``[**Label**](file)``.
 
 
 

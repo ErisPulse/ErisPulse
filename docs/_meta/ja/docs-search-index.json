@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1512,
+  "total_keywords": 1507,
   "keywords": {
     "\"Chat\": {": [
       {
@@ -333,17 +333,17 @@
     "1. ログレベルを適切に使用する": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 318,
+        "line": 320,
         "level": 3,
         "title": "1. ログレベルを適切に使用する"
       }
     ],
-    "1. 例外処理の分類": [
+    "1. 例外の分類処理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 247,
+        "line": 249,
         "level": 3,
-        "title": "1. 例外処理の分類"
+        "title": "1. 例外の分類処理"
       }
     ],
     "1. 分類された例外処理": [
@@ -389,7 +389,7 @@
     "1. 敏感データ保護": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 387,
+        "line": 389,
         "level": 3,
         "title": "1. 敏感データ保護"
       }
@@ -707,7 +707,7 @@
     "2. タイムアウト処理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 269,
+        "line": 271,
         "level": 3,
         "title": "2. タイムアウト処理"
       }
@@ -795,7 +795,7 @@
     "2. 入力検証": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 413,
+        "line": 415,
         "level": 3,
         "title": "2. 入力検証"
       }
@@ -819,7 +819,7 @@
     "2. 構造化されたロギング": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 340,
+        "line": 342,
         "level": 3,
         "title": "2. 構造化されたロギング"
       }
@@ -1099,7 +1099,7 @@
     "3. リソース管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 167,
+        "line": 168,
         "level": 3,
         "title": "3. リソース管理"
       }
@@ -2049,7 +2049,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 141,
+        "line": 164,
         "level": 4,
         "title": "@メッセージ関連"
       }
@@ -2361,7 +2361,7 @@
     "ClientWebSocket 属性": [
       {
         "document": "advanced/http-client.md",
-        "line": 333,
+        "line": 344,
         "level": 3,
         "title": "ClientWebSocket 属性"
       }
@@ -2682,18 +2682,18 @@
         "title": "Event.reply() は自動的に型変換を処理する"
       }
     ],
-    "Eventラッパークラスを使用する便利な方法": [
+    "Eventラッパークラスの便利な方法を使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 183,
+        "line": 184,
         "level": 1,
-        "title": "Eventラッパークラスを使用する便利な方法"
+        "title": "Eventラッパークラスの便利な方法を使用"
       }
     ],
     "GET": [
       {
         "document": "advanced/http-client.md",
-        "line": 74,
+        "line": 76,
         "level": 3,
         "title": "GET"
       }
@@ -2722,20 +2722,28 @@
         "title": "HTTP Client モジュール"
       }
     ],
+    "HTTP リクエスト": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 24,
+        "level": 3,
+        "title": "HTTP リクエスト"
+      }
+    ],
+    "HTTP リクエスト例外の処理": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 407,
+        "level": 1,
+        "title": "HTTP リクエスト例外の処理"
+      }
+    ],
     "HTTP ルーター": [
       {
         "document": "api-reference/core-modules.md",
         "line": 305,
         "level": 1,
         "title": "HTTP ルーター"
-      }
-    ],
-    "HTTPStatusError": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 432,
-        "level": 3,
-        "title": "HTTPStatusError"
       }
     ],
     "HTTPデコレータ": [
@@ -2746,44 +2754,12 @@
         "title": "HTTPデコレータ"
       }
     ],
-    "HTTPリクエスト": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 20,
-        "level": 3,
-        "title": "HTTPリクエスト"
-      }
-    ],
-    "HTTPリクエストイベント": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 224,
-        "level": 3,
-        "title": "HTTPリクエストイベント"
-      }
-    ],
-    "HTTPリクエストパラメータ": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 159,
-        "level": 3,
-        "title": "HTTPリクエストパラメータ"
-      }
-    ],
     "HTTPルーティング": [
       {
         "document": "advanced/lifecycle.md",
         "line": 225,
         "level": 3,
         "title": "HTTPルーティング"
-      }
-    ],
-    "HttpResponse": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 49,
-        "level": 2,
-        "title": "HttpResponse"
       }
     ],
     "I18nClass のキーパスルール": [
@@ -2941,13 +2917,13 @@
     "MyModule": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 488,
+        "line": 490,
         "level": 1,
         "title": "MyModule"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 511,
+        "line": 513,
         "level": 1,
         "title": "MyModule"
       }
@@ -3085,7 +3061,7 @@
     "POST": [
       {
         "document": "advanced/http-client.md",
-        "line": 86,
+        "line": 88,
         "level": 3,
         "title": "POST"
       }
@@ -3093,7 +3069,7 @@
     "PUT / DELETE / PATCH": [
       {
         "document": "advanced/http-client.md",
-        "line": 135,
+        "line": 137,
         "level": 3,
         "title": "PUT / DELETE / PATCH"
       }
@@ -3200,12 +3176,12 @@
         "title": "SDK トップレベルエントリーポイント一覧"
       }
     ],
-    "SDK 核心アーキテクチャ": [
+    "SDKのコアアーキテクチャ": [
       {
         "document": "architecture.md",
         "line": 7,
         "level": 2,
-        "title": "SDK 核心アーキテクチャ"
+        "title": "SDKのコアアーキテクチャ"
       }
     ],
     "SDKを介してラグロードモジュールにアクセス": [
@@ -3427,7 +3403,7 @@
     "WSMessage": [
       {
         "document": "advanced/http-client.md",
-        "line": 324,
+        "line": 335,
         "level": 3,
         "title": "WSMessage"
       }
@@ -3448,6 +3424,14 @@
         "title": "WebSocket"
       }
     ],
+    "WebSocket クライアント": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 268,
+        "level": 2,
+        "title": "WebSocket クライアント"
+      }
+    ],
     "WebSocket ルーター": [
       {
         "document": "api-reference/core-modules.md",
@@ -3456,12 +3440,20 @@
         "title": "WebSocket ルーター"
       }
     ],
-    "WebSocketクライアント": [
+    "WebSocket 例外の処理": [
       {
         "document": "advanced/http-client.md",
-        "line": 257,
-        "level": 2,
-        "title": "WebSocketクライアント"
+        "line": 418,
+        "level": 1,
+        "title": "WebSocket 例外の処理"
+      }
+    ],
+    "WebSocket 接続": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 42,
+        "level": 3,
+        "title": "WebSocket 接続"
       }
     ],
     "WebSocketデコレータ": [
@@ -3482,12 +3474,6 @@
     ],
     "WebSocket接続": [
       {
-        "document": "advanced/http-client.md",
-        "line": 38,
-        "level": 3,
-        "title": "WebSocket接続"
-      },
-      {
         "document": "platform-guide/kook.md",
         "line": 317,
         "level": 2,
@@ -3498,14 +3484,6 @@
         "line": 255,
         "level": 2,
         "title": "WebSocket接続"
-      }
-    ],
-    "WebSocket接続イベント": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 236,
-        "level": 3,
-        "title": "WebSocket接続イベント"
       }
     ],
     "WebSocket登録": [
@@ -3823,7 +3801,7 @@
     "`hasattr` と `dir` のサポート": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 409,
+        "line": 432,
         "level": 3,
         "title": "`hasattr` と `dir` のサポート"
       }
@@ -4018,6 +3996,14 @@
         "line": 439,
         "level": 3,
         "title": "doctor"
+      }
+    ],
+    "event パラメータに型注釈を追加": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 7,
+        "level": 2,
+        "title": "event パラメータに型注釈を追加"
       }
     ],
     "get() メソッド": [
@@ -4372,14 +4358,6 @@
         "title": "wait_for — 条件を満たす任意のイベントを待つ"
       }
     ],
-    "ws_connect パラメータ": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 172,
-        "level": 3,
-        "title": "ws_connect パラメータ"
-      }
-    ],
     "{": [
       {
         "document": "advanced/scope.md",
@@ -4400,6 +4378,14 @@
         "line": 169,
         "level": 1,
         "title": "{\"name\": \"text\", \"type\": \"str\", \"default\": null, \"annotation\": \"str\"}"
+      }
+    ],
+    "{\"total_requests\": 42, \"total_errors\": 1, \"total_bytes_sent\": 0, \"total_bytes_received\": 0}": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 224,
+        "level": 1,
+        "title": "{\"total_requests\": 42, \"total_errors\": 1, \"total_bytes_sent\": 0, \"total_bytes_received\": 0}"
       }
     ],
     "}": [
@@ -4453,7 +4439,7 @@
     "❌ トランザクションを使用しないと、データの一貫性が損なわれる可能性があります": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 295,
+        "line": 297,
         "level": 1,
         "title": "❌ トランザクションを使用しないと、データの一貫性が損なわれる可能性があります"
       }
@@ -4461,7 +4447,7 @@
     "❌ ブロッキング操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 380,
+        "line": 382,
         "level": 1,
         "title": "❌ ブロッキング操作"
       }
@@ -4469,7 +4455,7 @@
     "❌ 複数回呼び出すと効率が悪い": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 311,
+        "line": 313,
         "level": 1,
         "title": "❌ 複数回呼び出すと効率が悪い"
       }
@@ -4803,7 +4789,7 @@
     "アダプターでの使用": [
       {
         "document": "advanced/http-client.md",
-        "line": 444,
+        "line": 453,
         "level": 2,
         "title": "アダプターでの使用"
       },
@@ -5299,17 +5285,9 @@
     "インタラクティブメソッド": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 217,
+        "line": 240,
         "level": 4,
         "title": "インタラクティブメソッド"
-      }
-    ],
-    "インタラクティブメソッドの例": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 256,
-        "level": 4,
-        "title": "インタラクティブメソッドの例"
       }
     ],
     "インタラクティブ初期化（推奨）": [
@@ -5403,7 +5381,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 245,
+        "line": 247,
         "level": 2,
         "title": "エラー処理"
       },
@@ -5444,6 +5422,14 @@
         "line": 342,
         "level": 2,
         "title": "カスタムストレージバックエンド"
+      }
+    ],
+    "カスタムタイムアウトを設定したクライアントを作成": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 186,
+        "level": 1,
+        "title": "カスタムタイムアウトを設定したクライアントを作成"
       }
     ],
     "カスタムフォント": [
@@ -5577,7 +5563,7 @@
     "グループ/チャンネル情報": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 135,
+        "line": 158,
         "level": 4,
         "title": "グループ/チャンネル情報"
       }
@@ -5763,7 +5749,7 @@
     "コアフィールドメソッド": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 16,
+        "line": 33,
         "level": 2,
         "title": "コアフィールドメソッド"
       }
@@ -5831,7 +5817,7 @@
     "コア機能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 7,
+        "line": 24,
         "level": 2,
         "title": "コア機能"
       }
@@ -5874,14 +5860,6 @@
         "line": 56,
         "level": 1,
         "title": "コマンドのヘルプを取得"
-      }
-    ],
-    "コマンドの基本": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 366,
-        "level": 4,
-        "title": "コマンドの基本"
       }
     ],
     "コマンドを登録": [
@@ -5940,10 +5918,18 @@
         "title": "コマンドプレフィックスを変更するには？"
       }
     ],
+    "コマンド基礎": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 389,
+        "level": 4,
+        "title": "コマンド基礎"
+      }
+    ],
     "コマンド情報": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 364,
+        "line": 387,
         "level": 3,
         "title": "コマンド情報"
       }
@@ -5951,7 +5937,7 @@
     "コマンド情報の取得": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 75,
+        "line": 94,
         "level": 2,
         "title": "コマンド情報の取得"
       }
@@ -5972,12 +5958,12 @@
         "title": "コンテキストと永続化"
       }
     ],
-    "コンテキストマネージャー": [
+    "コンテキスト管理": [
       {
         "document": "advanced/http-client.md",
-        "line": 248,
+        "line": 257,
         "level": 2,
-        "title": "コンテキストマネージャー"
+        "title": "コンテキスト管理"
       }
     ],
     "コンテンツ一覧": [
@@ -6309,7 +6295,7 @@
     "セキュリティ": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 385,
+        "line": 387,
         "level": 2,
         "title": "セキュリティ"
       }
@@ -6384,14 +6370,6 @@
         "line": 330,
         "level": 1,
         "title": "タイムアウト + リトライ：各試行10秒、最大3回"
-      }
-    ],
-    "タイムアウトとリトライ": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 180,
-        "level": 2,
-        "title": "タイムアウトとリトライ"
       }
     ],
     "タプルを辞書に変換": [
@@ -6674,14 +6652,6 @@
         "title": "テーブル管理"
       }
     ],
-    "ディクショナリに直接アクセスするのではなく": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 190,
-        "level": 1,
-        "title": "ディクショナリに直接アクセスするのではなく"
-      }
-    ],
     "ディレクトリ構造": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -6712,14 +6682,6 @@
         "line": 63,
         "level": 3,
         "title": "デバッグのヒント"
-      }
-    ],
-    "デフォルトヘッダーのカスタマイズ": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 197,
-        "level": 2,
-        "title": "デフォルトヘッダーのカスタマイズ"
       }
     ],
     "デフォルト設定": [
@@ -6811,7 +6773,7 @@
     "トランザクションを使用してデータの一貫性を確保": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 289,
+        "line": 291,
         "level": 1,
         "title": "トランザクションを使用してデータの一貫性を確保"
       }
@@ -6854,6 +6816,14 @@
         "line": 624,
         "level": 2,
         "title": "ドキュメントのメンテナンス"
+      }
+    ],
+    "ドキュメントの言語切り替え": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 488,
+        "level": 2,
+        "title": "ドキュメントの言語切り替え"
       }
     ],
     "ドキュメントフォーマットの基準": [
@@ -7061,7 +7031,7 @@
     "バッチ操作を使用してパフォーマンスを向上させる": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 305,
+        "line": 307,
         "level": 1,
         "title": "バッチ操作を使用してパフォーマンスを向上させる"
       }
@@ -7104,14 +7074,6 @@
         "line": 11,
         "level": 2,
         "title": "パッケージ管理コマンド"
-      }
-    ],
-    "パラメータの説明": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 157,
-        "level": 2,
-        "title": "パラメータの説明"
       }
     ],
     "パラメータ化クエリ": [
@@ -7409,7 +7371,7 @@
     "プラットフォーム拡張メソッド": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 378,
+        "line": 401,
         "level": 3,
         "title": "プラットフォーム拡張メソッド"
       }
@@ -7430,12 +7392,12 @@
         "title": "プラットフォーム級は Chat のみ許可"
       }
     ],
-    "プラットフォーム能力の確認": [
+    "プラットフォーム能力確認": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 192,
+        "line": 215,
         "level": 4,
-        "title": "プラットフォーム能力の確認"
+        "title": "プラットフォーム能力確認"
       }
     ],
     "プレースホルダーコマンドの help フォールバックチェーン": [
@@ -7847,7 +7809,7 @@
     "メッセージの受信": [
       {
         "document": "advanced/http-client.md",
-        "line": 273,
+        "line": 284,
         "level": 3,
         "title": "メッセージの受信"
       }
@@ -7917,13 +7879,13 @@
     "メッセージイベントメソッド": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 31,
+        "line": 48,
         "level": 2,
         "title": "メッセージイベントメソッド"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 122,
+        "line": 145,
         "level": 3,
         "title": "メッセージイベントメソッド"
       }
@@ -7995,7 +7957,7 @@
     "メッセージタイプの判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 46,
+        "line": 63,
         "level": 2,
         "title": "メッセージタイプの判断"
       }
@@ -8003,7 +7965,7 @@
     "メッセージタイプ判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 145,
+        "line": 168,
         "level": 3,
         "title": "メッセージタイプ判断"
       }
@@ -8019,7 +7981,7 @@
     "メッセージ内容": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 124,
+        "line": 147,
         "level": 4,
         "title": "メッセージ内容"
       }
@@ -8544,12 +8506,12 @@
         "title": "ユーティリティメソッド"
       }
     ],
-    "ユーティリティモジュールはラグジュアリーなロードに適している": [
+    "ユーティリティモジュールは懒惰的ロードに適している": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 221,
+        "line": 222,
         "level": 1,
-        "title": "ユーティリティモジュールはラグジュアリーなロードに適している"
+        "title": "ユーティリティモジュールは懒惰的ロードに適している"
       }
     ],
     "ライフサイクルの全体像": [
@@ -8561,12 +8523,6 @@
       }
     ],
     "ライフサイクルイベント": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 222,
-        "level": 2,
-        "title": "ライフサイクルイベント"
-      },
       {
         "document": "api-reference/adapter-system.md",
         "line": 408,
@@ -8599,7 +8555,7 @@
     "ライフサイクルフック": [
       {
         "document": "advanced/http-client.md",
-        "line": 342,
+        "line": 353,
         "level": 3,
         "title": "ライフサイクルフック"
       }
@@ -8709,7 +8665,7 @@
     "リクエストメソッド": [
       {
         "document": "advanced/http-client.md",
-        "line": 72,
+        "line": 74,
         "level": 2,
         "title": "リクエストメソッド"
       }
@@ -8726,14 +8682,6 @@
         "line": 347,
         "level": 3,
         "title": "リクエスト操作"
-      }
-    ],
-    "リクエスト統計": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 209,
-        "level": 2,
-        "title": "リクエスト統計"
       }
     ],
     "リクエスト関連ID（X-Request-ID）": [
@@ -8888,6 +8836,22 @@
         "title": "レスポンスの送信"
       }
     ],
+    "レスポンスボディを読み取る": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 68,
+        "level": 1,
+        "title": "レスポンスボディを読み取る"
+      }
+    ],
+    "レプライ待機機能": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 230,
+        "level": 3,
+        "title": "レプライ待機機能"
+      }
+    ],
     "レンダラー インスタンス": [
       {
         "document": "ecosystem/takumi.md",
@@ -8923,7 +8887,7 @@
     "ロギング": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 316,
+        "line": 318,
         "level": 2,
         "title": "ロギング"
       }
@@ -8961,7 +8925,7 @@
     "ロボット情報": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 112,
+        "line": 135,
         "level": 4,
         "title": "ロボット情報"
       }
@@ -9054,12 +9018,12 @@
         "title": "一般的な CSS クラス名"
       }
     ],
-    "一般的なrequest": [
+    "一般的な request": [
       {
         "document": "advanced/http-client.md",
-        "line": 145,
+        "line": 147,
         "level": 3,
-        "title": "一般的なrequest"
+        "title": "一般的な request"
       }
     ],
     "一般的なインターフェース": [
@@ -9169,7 +9133,7 @@
     "事件基础信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 105,
+        "line": 128,
         "level": 4,
         "title": "事件基础信息"
       }
@@ -9204,6 +9168,14 @@
         "line": 441,
         "level": 3,
         "title": "交互イベントの処理"
+      }
+    ],
+    "交互メソッドの例": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 279,
+        "level": 4,
+        "title": "交互メソッドの例"
       }
     ],
     "他の操作を継続": [
@@ -9273,7 +9245,7 @@
     "会話識別子": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 118,
+        "line": 141,
         "level": 4,
         "title": "会話識別子"
       }
@@ -9289,7 +9261,7 @@
     "低レベルメソッド": [
       {
         "document": "advanced/http-client.md",
-        "line": 301,
+        "line": 312,
         "level": 4,
         "title": "低レベルメソッド"
       }
@@ -9364,6 +9336,22 @@
         "title": "使用方法"
       }
     ],
+    "使用頻度の低いコマンドモジュール：activate_onトリガーを宣言し、最初の一致するコマンドが到着したときに自動的にアクティブ化（懒惰的ロードを維持）": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 200,
+        "level": 1,
+        "title": "使用頻度の低いコマンドモジュール：activate_onトリガーを宣言し、最初の一致するコマンドが到着したときに自動的にアクティブ化（懒惰的ロードを維持）"
+      }
+    ],
+    "使用頻度の低いリスナー・モジュール：イベントトリガーを宣言し、イベントが到着したときに自動的にアクティブ化": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 208,
+        "level": 1,
+        "title": "使用頻度の低いリスナー・モジュール：イベントトリガーを宣言し、イベントが到着したときに自動的にアクティブ化"
+      }
+    ],
     "例: \"telegram:private:12345\"、\"qq:group:67890\"": [
       {
         "document": "api-reference/event-system.md",
@@ -9372,36 +9360,12 @@
         "title": "例: \"telegram:private:12345\"、\"qq:group:67890\""
       }
     ],
-    "例外のキャッチ": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 384,
-        "level": 3,
-        "title": "例外のキャッチ"
-      }
-    ],
     "例外の捕捉": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 354,
         "level": 3,
         "title": "例外の捕捉"
-      }
-    ],
-    "例外体系": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 366,
-        "level": 2,
-        "title": "例外体系"
-      }
-    ],
-    "例外階層": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 372,
-        "level": 3,
-        "title": "例外階層"
       }
     ],
     "例：同優先度ハンドラの並列実行": [
@@ -9468,20 +9432,20 @@
         "title": "優先順位システム"
       }
     ],
-    "元のデータ": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 373,
-        "level": 3,
-        "title": "元のデータ"
-      }
-    ],
     "元のデータを取得": [
       {
         "document": "api-reference/event-system.md",
         "line": 450,
         "level": 1,
         "title": "元のデータを取得"
+      }
+    ],
+    "元データ": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 396,
+        "level": 3,
+        "title": "元データ"
       }
     ],
     "入力プロトコル": [
@@ -9762,6 +9726,14 @@
         "title": "単一のモジュールをインストール"
       }
     ],
+    "単一の要求でタイムアウトを上書き": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 194,
+        "level": 1,
+        "title": "単一の要求でタイムアウトを上書き"
+      }
+    ],
     "単一メソッドの解除": [
       {
         "document": "api-reference/event-system.md",
@@ -9901,8 +9873,14 @@
     "回答機能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 59,
+        "line": 78,
         "level": 2,
+        "title": "回答機能"
+      },
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 199,
+        "level": 3,
         "title": "回答機能"
       }
     ],
@@ -9985,9 +9963,17 @@
     "基本判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 147,
+        "line": 170,
         "level": 4,
         "title": "基本判断"
+      }
+    ],
+    "基本回答": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 201,
+        "level": 4,
+        "title": "基本回答"
       }
     ],
     "基本情報": [
@@ -10090,12 +10076,6 @@
     ],
     "基本的な使い方": [
       {
-        "document": "advanced/http-client.md",
-        "line": 261,
-        "level": 3,
-        "title": "基本的な使い方"
-      },
-      {
         "document": "getting-started/ide-completion.md",
         "line": 14,
         "level": 2,
@@ -10103,6 +10083,12 @@
       }
     ],
     "基本的な使用方法": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 272,
+        "level": 3,
+        "title": "基本的な使用方法"
+      },
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 286,
@@ -10156,14 +10142,6 @@
         "line": 338,
         "level": 3,
         "title": "基本的要件"
-      }
-    ],
-    "基本返信": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 178,
-        "level": 4,
-        "title": "基本返信"
       }
     ],
     "基本送信": [
@@ -10483,7 +10461,7 @@
     "快速開始": [
       {
         "document": "advanced/http-client.md",
-        "line": 18,
+        "line": 22,
         "level": 2,
         "title": "快速開始"
       }
@@ -10725,7 +10703,7 @@
     "接続の切断": [
       {
         "document": "advanced/http-client.md",
-        "line": 360,
+        "line": 371,
         "level": 3,
         "title": "接続の切断"
       }
@@ -10929,7 +10907,7 @@
     "方法速查表": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 101,
+        "line": 124,
         "level": 2,
         "title": "方法速查表"
       }
@@ -11032,6 +11010,12 @@
     ],
     "最佳実践": [
       {
+        "document": "advanced/http-client.md",
+        "line": 478,
+        "level": 2,
+        "title": "最佳実践"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 195,
         "level": 2,
@@ -11066,14 +11050,6 @@
         "line": 62,
         "level": 3,
         "title": "最終ユーザーにとって"
-      }
-    ],
-    "最適な実践": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 469,
-        "level": 2,
-        "title": "最適な実践"
       }
     ],
     "最適実践": [
@@ -11127,7 +11103,7 @@
     "核心方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 103,
+        "line": 126,
         "level": 3,
         "title": "核心方法"
       }
@@ -11183,7 +11159,7 @@
     "概要": [
       {
         "document": "advanced/http-client.md",
-        "line": 5,
+        "line": 7,
         "level": 2,
         "title": "概要"
       },
@@ -11366,14 +11342,6 @@
         "line": 167,
         "level": 2,
         "title": "次のステップ"
-      }
-    ],
-    "毎回メッセージを処理する必要がある高頻度のトリガー、または起動時に即座に準備が必要なモジュール：即時ロード": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 215,
-        "level": 1,
-        "title": "毎回メッセージを処理する必要がある高頻度のトリガー、または起動時に即座に準備が必要なモジュール：即時ロード"
       }
     ],
     "注意事項": [
@@ -11695,7 +11663,7 @@
     "登録されたメソッドの照会": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 400,
+        "line": 423,
         "level": 3,
         "title": "登録されたメソッドの照会"
       }
@@ -11838,20 +11806,28 @@
         "title": "組み合わせて使用"
       }
     ],
-    "統一されたキャッチ": [
-      {
-        "document": "advanced/http-client.md",
-        "line": 419,
-        "level": 3,
-        "title": "統一されたキャッチ"
-      }
-    ],
     "統一されたターゲット ID: グループチャットは group_id を返し、プライベートチャットは user_id を返し、以此類推": [
       {
         "document": "api-reference/event-system.md",
         "line": 274,
         "level": 1,
         "title": "統一されたターゲット ID: グループチャットは group_id を返し、プライベートチャットは user_id を返し、以此類推"
+      }
+    ],
+    "統計をリセット": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 226,
+        "level": 1,
+        "title": "統計をリセット"
+      }
+    ],
+    "統計を表示": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 222,
+        "level": 1,
+        "title": "統計を表示"
       }
     ],
     "統計概要": [
@@ -12089,7 +12065,7 @@
     "要求イベントメソッド": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 166,
+        "line": 189,
         "level": 3,
         "title": "要求イベントメソッド"
       }
@@ -12097,7 +12073,7 @@
     "要求タイプ判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 171,
+        "line": 194,
         "level": 4,
         "title": "要求タイプ判断"
       }
@@ -12105,7 +12081,7 @@
     "要求情報": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 168,
+        "line": 191,
         "level": 4,
         "title": "要求情報"
       }
@@ -12423,7 +12399,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 416,
+        "line": 439,
         "level": 3,
         "title": "跨プラットフォーム拡張（ワイルドカード）"
       }
@@ -12431,7 +12407,7 @@
     "転送機能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 196,
+        "line": 219,
         "level": 4,
         "title": "転送機能"
       }
@@ -12442,6 +12418,14 @@
         "line": 447,
         "level": 1,
         "title": "辞書に変換（_ で始まる内部キーをフィルタリング）"
+      }
+    ],
+    "辞書に直接アクセスするのではなく": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 191,
+        "level": 1,
+        "title": "辞書に直接アクセスするのではなく"
       }
     ],
     "近似マッピングの原則": [
@@ -12466,22 +12450,6 @@
         "line": 351,
         "level": 1,
         "title": "返信を待つ"
-      }
-    ],
-    "返信を待つ機能": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 207,
-        "level": 3,
-        "title": "返信を待つ機能"
-      }
-    ],
-    "返信機能": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 176,
-        "level": 3,
-        "title": "返信機能"
       }
     ],
     "返回:": [
@@ -12653,7 +12621,7 @@
     "送信者情報": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 130,
+        "line": 153,
         "level": 4,
         "title": "送信者情報"
       }
@@ -12741,13 +12709,13 @@
     "通知イベントメソッド": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 89,
+        "line": 108,
         "level": 2,
         "title": "通知イベントメソッド"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 153,
+        "line": 176,
         "level": 3,
         "title": "通知イベントメソッド"
       }
@@ -12763,7 +12731,7 @@
     "通知タイプ判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 159,
+        "line": 182,
         "level": 4,
         "title": "通知タイプ判断"
       }
@@ -12771,7 +12739,7 @@
     "通知操作者": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 155,
+        "line": 178,
         "level": 4,
         "title": "通知操作者"
       }
@@ -12867,7 +12835,7 @@
     "関連ドキュメント": [
       {
         "document": "advanced/http-client.md",
-        "line": 479,
+        "line": 492,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -12933,7 +12901,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 435,
+        "line": 458,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -13038,12 +13006,12 @@
         "title": "非同期処理メカニズム"
       }
     ],
-    "非同期操作の使用": [
+    "非同期操作を使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 375,
+        "line": 377,
         "level": 1,
-        "title": "非同期操作の使用"
+        "title": "非同期操作を使用"
       }
     ],
     "非同期送信と結果処理": [
@@ -13070,28 +13038,20 @@
         "title": "音声"
       }
     ],
-    "頻度の低いコマンドモジュール：activate_onトリガーを宣言し、最初の一致するコマンドが到着したときに自動的に有効化（ラグジュアリーなロードの維持）": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 199,
-        "level": 1,
-        "title": "頻度の低いコマンドモジュール：activate_onトリガーを宣言し、最初の一致するコマンドが到着したときに自動的に有効化（ラグジュアリーなロードの維持）"
-      }
-    ],
-    "頻度の低いリスナーモジュール：イベントトリガーを宣言し、イベントが到着したときに自動的に有効化": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 207,
-        "level": 1,
-        "title": "頻度の低いリスナーモジュール：イベントトリガーを宣言し、イベントが到着したときに自動的に有効化"
-      }
-    ],
-    "高レベルメソッド (推奨)": [
+    "高レベルメソッド（推奨）": [
       {
         "document": "advanced/http-client.md",
-        "line": 275,
+        "line": 286,
         "level": 4,
-        "title": "高レベルメソッド (推奨)"
+        "title": "高レベルメソッド（推奨）"
+      }
+    ],
+    "高頻度のトリガー（各メッセージを処理する必要がある）または起動時に準備が必要なモジュール：即時ロード": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 216,
+        "level": 1,
+        "title": "高頻度のトリガー（各メッセージを処理する必要がある）または起動時に準備が必要なモジュール：即時ロード"
       }
     ]
   }
