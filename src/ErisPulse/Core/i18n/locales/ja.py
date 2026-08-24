@@ -1,4 +1,4 @@
-﻿"""
+"""
 日本語翻訳データ (ja)
 
 フレームワーク組み込みの翻訳です。直接変更しないでください。
@@ -413,7 +413,6 @@ TRANSLATIONS = {
     "loader.plugin.reload_ok": "プラグイン {name} のホットリロードに成功しました",
     "loader.plugin.reload_cascade": "{name} のホットリロードに伴い、依存するモジュールを cascade リロードします: {deps}",
     "loader.plugin.dependent_reload_failed": "依存モジュール {name} の cascade リロードに失敗しました: {error}",
-
     "loader.activate.unsupported_trigger": "無効な activate_on トリガー項目: {trigger}",
     "loader.activate.unsupported_event_type": "activate_on がサポートしていないイベントタイプを使用しています: {event_type}（モジュール {module}）",
     "loader.activate.activation_failed": "イベント駆動の遅延起動モジュール {name} の起動に失敗しました",
@@ -517,7 +516,8 @@ TRANSLATIONS = {
     "core.command.parsed": "[Command] parsed: cmd={cmd_name} args={args} platform={platform} user={user_id}",
     "core.command.matched": "[Command] matched: cmd={cmd_name} (alias={alias}) platform={platform} user={user_id}",
     "core.command.permission_denied": "[Command] permission denied: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
+    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",
+    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
@@ -637,7 +637,8 @@ TRANSLATIONS = {
     "core.scope.is_allowed": "モジュール {module} は {platform}/{bot} で許可されています: {allowed}",
     "core.scope.bound": "スコープをバインドしました: {platform}/{bot} → modules={modules} blocked={blocked}",
     "core.scope.unbound": "スコープのバインドを解除しました: {platform}/{bot}",
-    "core.scope.denied": "モジュール {module} はこのBotで有効化されていないため、静かに無視しました",    "core.module.config_template_generated": "{key} のデフォルト設定テンプレートを生成しました",
+    "core.scope.denied": "モジュール {module} はこのBotで有効化されていないため、静かに無視しました",
+    "core.module.config_template_generated": "{key} のデフォルト設定テンプレートを生成しました",
     "core.module.start_loading": "モジュールの読み込みを開始: {name}",
     "core.router.auth_required_tag": "(要認証)",
     "core.sendrules.callback_error": "SendDSL ルールコールバック実行例外: {error}",
