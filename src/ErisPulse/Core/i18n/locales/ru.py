@@ -1,4 +1,4 @@
-﻿"""
+"""
 Русский перевод (ru)
 
 Встроенные переводы фреймворка, не изменяйте напрямую.
@@ -413,7 +413,6 @@ TRANSLATIONS = {
     "loader.plugin.reload_ok": "Плагин {name} успешно перезагружен",
     "loader.plugin.reload_cascade": "Горячая перезагрузка {name} приведёт к каскадной перезагрузке зависимых модулей: {deps}",
     "loader.plugin.dependent_reload_failed": "Не удалось каскадно перезагрузить зависимый модуль {name}: {error}",
-
     "loader.activate.unsupported_trigger": "Недопустимый элемент триггера activate_on: {trigger}",
     "loader.activate.unsupported_event_type": "activate_on использует неподдерживаемый тип события: {event_type} (модуль {module})",
     "loader.activate.activation_failed": "Не удалось активировать модуль ленивой активации {name}",
@@ -517,7 +516,8 @@ TRANSLATIONS = {
     "core.command.parsed": "[Command] parsed: cmd={cmd_name} args={args} platform={platform} user={user_id}",
     "core.command.matched": "[Command] matched: cmd={cmd_name} (alias={alias}) platform={platform} user={user_id}",
     "core.command.permission_denied": "[Command] permission denied: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
+    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",
+    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
@@ -637,7 +637,8 @@ TRANSLATIONS = {
     "core.scope.is_allowed": "Модуль {module} разрешен на {platform}/{bot}: {allowed}",
     "core.scope.bound": "Привязка области: {platform}/{bot} → modules={modules} blocked={blocked}",
     "core.scope.unbound": "Привязка области удалена: {platform}/{bot}",
-    "core.scope.denied": "Модуль {module} не включен для этого бота, молча проигнорирован",    "core.module.config_template_generated": "Сгенерирован шаблон конфигурации по умолчанию для {key}",
+    "core.scope.denied": "Модуль {module} не включен для этого бота, молча проигнорирован",
+    "core.module.config_template_generated": "Сгенерирован шаблон конфигурации по умолчанию для {key}",
     "core.module.start_loading": "Начало загрузки модуля: {name}",
     "core.router.auth_required_tag": "(требуется аутентификация)",
     "core.sendrules.callback_error": "Ошибка выполнения callback правила SendDSL: {error}",
