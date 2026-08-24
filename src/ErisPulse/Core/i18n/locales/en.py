@@ -1,4 +1,4 @@
-﻿"""
+"""
 English translation data (en)
 
 Built-in framework translations, do not modify directly.
@@ -413,7 +413,6 @@ TRANSLATIONS = {
     "loader.plugin.reload_ok": "Plugin {name} hot reloaded successfully",
     "loader.plugin.reload_cascade": "Hot reloading {name} will cascade-reload its dependents: {deps}",
     "loader.plugin.dependent_reload_failed": "Failed to cascade-reload dependent module {name}: {error}",
-
     "loader.activate.unsupported_trigger": "Invalid activate_on trigger item: {trigger}",
     "loader.activate.unsupported_event_type": "activate_on uses unsupported event type: {event_type} (module {module})",
     "loader.activate.activation_failed": "Event-driven lazy activation module {name} failed to activate",
@@ -517,7 +516,8 @@ TRANSLATIONS = {
     "core.command.parsed": "[Command] parsed: cmd={cmd_name} args={args} platform={platform} user={user_id}",
     "core.command.matched": "[Command] matched: cmd={cmd_name} (alias={alias}) platform={platform} user={user_id}",
     "core.command.permission_denied": "[Command] permission denied: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
+    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",
+    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
@@ -637,7 +637,8 @@ TRANSLATIONS = {
     "core.scope.is_allowed": "Module {module} allowed on {platform}/{bot}: {allowed}",
     "core.scope.bound": "Scope bound: {platform}/{bot} → modules={modules} blocked={blocked}",
     "core.scope.unbound": "Scope binding removed: {platform}/{bot}",
-    "core.scope.denied": "Module {module} not enabled for this Bot, silently ignored",    "core.module.config_template_generated": "Generated default config template for {key}",
+    "core.scope.denied": "Module {module} not enabled for this Bot, silently ignored",
+    "core.module.config_template_generated": "Generated default config template for {key}",
     "core.module.start_loading": "Start loading module: {name}",
     "core.router.auth_required_tag": "(auth required)",
     "core.sendrules.callback_error": "SendDSL rule callback execution error: {error}",

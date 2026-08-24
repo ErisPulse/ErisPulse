@@ -1,4 +1,4 @@
-﻿"""
+"""
 繁體中文翻譯資料 (zh-TW)
 
 框架內建翻譯，請勿直接修改。
@@ -413,7 +413,6 @@ TRANSLATIONS = {
     "loader.plugin.reload_ok": "插件 {name} 熱重載成功",
     "loader.plugin.reload_cascade": "熱重載 {name} 將級聯重載依賴它的模組: {deps}",
     "loader.plugin.dependent_reload_failed": "級聯重載依賴模組 {name} 失敗: {error}",
-
     "loader.activate.unsupported_trigger": "無效的 activate_on 觸發器項目: {trigger}",
     "loader.activate.unsupported_event_type": "activate_on 使用了不受支援的事件類型: {event_type}（模組 {module}）",
     "loader.activate.activation_failed": "事件驅動懶啟動模組 {name} 啟動失敗",
@@ -517,7 +516,8 @@ TRANSLATIONS = {
     "core.command.parsed": "[Command] parsed: cmd={cmd_name} args={args} platform={platform} user={user_id}",
     "core.command.matched": "[Command] matched: cmd={cmd_name} (alias={alias}) platform={platform} user={user_id}",
     "core.command.permission_denied": "[Command] permission denied: cmd={cmd_name} user={user_id} platform={platform}",
-    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
+    "core.command.master_denied": "[Command] master only: cmd={cmd_name} user={user_id} platform={platform}",
+    "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.reply_matched": "[Command] reply wait hit: key={wait_key} user={user_id} platform={platform}",
     "core.command.reply_validation_failed": "[Command] reply validation failed: key={wait_key} user={user_id} platform={platform}",
@@ -637,7 +637,8 @@ TRANSLATIONS = {
     "core.scope.is_allowed": "模組 {module} 在 {platform}/{bot} 上允許使用: {allowed}",
     "core.scope.bound": "已綁定作用域: {platform}/{bot} → modules={modules} blocked={blocked}",
     "core.scope.unbound": "已移除作用域綁定: {platform}/{bot}",
-    "core.scope.denied": "模組 {module} 未對該 Bot 啟用，已靜默忽略",    "core.module.config_template_generated": "已生成 {key} 預設設定範本",
+    "core.scope.denied": "模組 {module} 未對該 Bot 啟用，已靜默忽略",
+    "core.module.config_template_generated": "已生成 {key} 預設設定範本",
     "core.module.start_loading": "開始載入模組: {name}",
     "core.router.auth_required_tag": "(需認證)",
     "core.sendrules.callback_error": "SendDSL 規則回呼執行例外: {error}",
