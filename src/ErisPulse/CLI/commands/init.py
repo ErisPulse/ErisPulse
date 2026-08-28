@@ -44,20 +44,14 @@ class InitCommand(Command):
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument("--project-name", "-n", help=i18n.t("cli.init.name_help"))
-        parser.add_argument(
-            "--quick", "-q", action="store_true", help=i18n.t("cli.init.quick_help")
-        )
-        parser.add_argument(
-            "--force", "-f", action="store_true", help=i18n.t("cli.init.force_help")
-        )
+        parser.add_argument("--quick", "-q", action="store_true", help=i18n.t("cli.init.quick_help"))
+        parser.add_argument("--force", "-f", action="store_true", help=i18n.t("cli.init.force_help"))
         parser.add_argument(
             "--here",
             action="store_true",
             help=i18n.t("cli.init.here_help"),
         )
-        parser.add_argument(
-            "--no-uv", action="store_true", help=i18n.t("cli.init.nouv_help")
-        )
+        parser.add_argument("--no-uv", action="store_true", help=i18n.t("cli.init.nouv_help"))
 
     def execute(self, args):
         self.no_uv = getattr(args, "no_uv", False)
@@ -107,19 +101,13 @@ class InitCommand(Command):
 
             if project_path.exists():
                 if project_path.is_dir():
-                    console.print(
-                        f"[warning]  {i18n.t('cli.init.dir_exists', name=project_name)}[/]"
-                    )
+                    console.print(f"[warning]  {i18n.t('cli.init.dir_exists', name=project_name)}[/]")
                 else:
-                    console.print(
-                        f"[error]  {i18n.t('cli.init.file_exists_not_dir', name=project_name)}[/]"
-                    )
+                    console.print(f"[error]  {i18n.t('cli.init.file_exists_not_dir', name=project_name)}[/]")
                     return False
             else:
                 project_path.mkdir()
-                console.print(
-                    f"[success]  {i18n.t('cli.init.created_dir', name=project_name)}[/]"
-                )
+                console.print(f"[success]  {i18n.t('cli.init.created_dir', name=project_name)}[/]")
 
         try:
             for dir_name in ["config", "logs"]:
@@ -131,8 +119,7 @@ class InitCommand(Command):
                 ssl_file = ssl_dir / ssl_name
                 if not ssl_file.exists():
                     ssl_file.write_text(
-                        "# 将你的证书/密钥 PEM 内容粘贴到本文件，"
-                        "或在配置中改用 ssl_cert/ssl_key 内联填写\n",
+                        "# 将你的证书/密钥 PEM 内容粘贴到本文件，或在配置中改用 ssl_cert/ssl_key 内联填写\n",
                         encoding="utf-8",
                     )
 
@@ -168,29 +155,19 @@ class InitCommand(Command):
                     f.write('if __name__ == "__main__":\n')
                     f.write("    asyncio.run(main())\n")
 
-            console.print(
-                f"[success]  {i18n.t('cli.init.display_success', name=display_name)}[/]"
-            )
+            console.print(f"[success]  {i18n.t('cli.init.display_success', name=display_name)}[/]")
             console.print()
             console.print(Text(i18n.t("cli.create.next_steps"), style="bold"))
             if in_current_dir:
-                console.print(
-                    f"    · {i18n.t('cli.init.edit_config', path='config/config.toml')}"
-                )
+                console.print(f"    · {i18n.t('cli.init.edit_config', path='config/config.toml')}")
                 console.print(f"    · {i18n.t('cli.init.run_direct')}")
             else:
-                console.print(
-                    f"    · {i18n.t('cli.init.edit_config', path=f'{display_name}/config/config.toml')}"
-                )
-                console.print(
-                    f"    · {i18n.t('cli.init.cd_and_run', dir=display_name)}"
-                )
+                console.print(f"    · {i18n.t('cli.init.edit_config', path=f'{display_name}/config/config.toml')}")
+                console.print(f"    · {i18n.t('cli.init.cd_and_run', dir=display_name)}")
             return True
 
         except Exception as e:
-            console.print(
-                f"[error]  {i18n.t('cli.init.init_project_failed', error=e)}[/]"
-            )
+            console.print(f"[error]  {i18n.t('cli.init.init_project_failed', error=e)}[/]")
             return False
 
     @staticmethod
@@ -335,9 +312,7 @@ class InitCommand(Command):
             if adapters:
                 return adapters
         except Exception as e:
-            console.print(
-                f"[warning]  {i18n.t('cli.init.fetch_remote_failed', error=e)}[/]"
-            )
+            console.print(f"[warning]  {i18n.t('cli.init.fetch_remote_failed', error=e)}[/]")
 
         return {
             "yunhu": i18n.t("cli.init.adapter_desc_yunhu"),
@@ -346,9 +321,7 @@ class InitCommand(Command):
             "email": i18n.t("cli.init.adapter_desc_email"),
         }
 
-    def _interactive_init(
-        self, project_name: str | None = None, force: bool = False, here: bool = False
-    ) -> bool:
+    def _interactive_init(self, project_name: str | None = None, force: bool = False, here: bool = False) -> bool:
         """
         交互式初始化项目，引导用户配置项目位置及基本参数
 
@@ -368,9 +341,7 @@ class InitCommand(Command):
                     f"    [bold]2.[/] {i18n.t('cli.init.location_option_new')}     [dim]— {i18n.t('cli.init.location_desc_new')}[/]"
                 )
                 console.print()
-                location_choice = IntPrompt.ask(
-                    i18n.t("cli.create.select_prompt"), default=2, choices=["1", "2"]
-                )
+                location_choice = IntPrompt.ask(i18n.t("cli.create.select_prompt"), default=2, choices=["1", "2"])
                 console.print()
                 in_current_dir = location_choice == 1
 
@@ -423,26 +394,20 @@ class InitCommand(Command):
                 config.setConfig("ErisPulse.logger.level", new_level.upper())
 
             current_host = config.getConfig("ErisPulse.server.host", "0.0.0.0")
-            console.print(
-                f"  {i18n.t('cli.init.listen_host')} [dim]({current_host})[/]"
-            )
+            console.print(f"  {i18n.t('cli.init.listen_host')} [dim]({current_host})[/]")
             new_host = _input(">")
             if new_host:
                 config.setConfig("ErisPulse.server.host", new_host)
 
             current_port = str(config.getConfig("ErisPulse.server.port", 8000))
-            console.print(
-                f"  {i18n.t('cli.init.listen_port')} [dim]({current_port})[/]"
-            )
+            console.print(f"  {i18n.t('cli.init.listen_port')} [dim]({current_port})[/]")
             new_port = _input(">")
             while new_port:
                 try:
                     config.setConfig("ErisPulse.server.port", int(new_port))
                     break
                 except ValueError:
-                    console.print(
-                        f"[warning]  {i18n.t('cli.init.invalid_port', port=new_port)}[/]"
-                    )
+                    console.print(f"[warning]  {i18n.t('cli.init.invalid_port', port=new_port)}[/]")
                     new_port = _input(">")
 
             if Confirm.ask(
@@ -466,19 +431,13 @@ class InitCommand(Command):
         """
         from ErisPulse import config
 
-        with console.status(
-            f"[bold green]{i18n.t('cli.init.fetching_adapters')}...", spinner="dots"
-        ):
+        with console.status(f"[bold green]{i18n.t('cli.init.fetching_adapters')}...", spinner="dots"):
             try:
                 with concurrent.futures.ThreadPoolExecutor() as executor:
-                    future = executor.submit(
-                        asyncio.run, self._fetch_available_adapters()
-                    )
+                    future = executor.submit(asyncio.run, self._fetch_available_adapters())
                     adapters = future.result(timeout=10)
             except Exception as e:
-                console.print(
-                    f"[error]  {i18n.t('cli.init.fetch_adapters_failed', error=e)}[/]"
-                )
+                console.print(f"[error]  {i18n.t('cli.init.fetch_adapters_failed', error=e)}[/]")
                 return
 
         if not adapters:
@@ -510,30 +469,30 @@ class InitCommand(Command):
                 enabled.append(name)
                 config.setConfig(f"ErisPulse.adapters.status.{name}", True)
             else:
-                console.print(
-                    f"[warning]  {i18n.t('cli.init.invalid_index', idx=idx)}[/]"
-                )
+                console.print(f"[warning]  {i18n.t('cli.init.invalid_index', idx=idx)}[/]")
 
         for name, _ in adapter_list:
             if name not in enabled:
                 config.setConfig(f"ErisPulse.adapters.status.{name}", False)
 
-        console.print(
-            f"[dim]  {i18n.t('cli.init.adapters_enabled', count=len(enabled))}[/]"
-        )
+        console.print(f"[dim]  {i18n.t('cli.init.adapters_enabled', count=len(enabled))}[/]")
 
-        if enabled and Confirm.ask(
-            f"  [cyan]{i18n.t('cli.init.install_selected_prompt')}[/]", default=True
-        ):
+        if enabled and Confirm.ask(f"  [cyan]{i18n.t('cli.init.install_selected_prompt')}[/]", default=True):
             self._install_adapters(enabled, adapters)
 
     def _install_adapters(self, adapter_names, adapters_info):
         """
         安装选中的适配器
 
+        安装成功后衔接交互式配置向导（写入新项目的 config.toml）
+
         :param adapter_names: [list] 适配器简称列表
         :param adapters_info: [dict] 适配器信息
         """
+        from ErisPulse import config
+
+        from ..utils import config_wizard
+
         pkg_manager = PackageManager()
         pkg_manager.no_uv = getattr(self, "no_uv", False)
         for adapter_name in adapter_names:
@@ -542,14 +501,10 @@ class InitCommand(Command):
                 remote_packages = pkg_manager._cache.get("remote_packages", {})
                 if not remote_packages:
                     with concurrent.futures.ThreadPoolExecutor() as executor:
-                        future = executor.submit(
-                            asyncio.run, pkg_manager.get_remote_packages()
-                        )
+                        future = executor.submit(asyncio.run, pkg_manager.get_remote_packages())
                         remote_packages = future.result(timeout=10)
                 if adapter_name in remote_packages.get("adapters", {}):
-                    package_name = remote_packages["adapters"][adapter_name].get(
-                        "package"
-                    )
+                    package_name = remote_packages["adapters"][adapter_name].get("package")
             except Exception:
                 pass
 
@@ -562,6 +517,10 @@ class InitCommand(Command):
             success = pkg_manager.install_package([package_name])
 
             if not success:
-                console.print(
-                    f"[error]  {i18n.t('cli.init.adapter_install_failed', name=adapter_name)}[/]"
-                )
+                console.print(f"[error]  {i18n.t('cli.init.adapter_install_failed', name=adapter_name)}[/]")
+            elif config_wizard.is_interactive():
+                # 安装成功后衔接配置向导，写入已重定向到新项目的 config.toml
+                try:
+                    config_wizard.post_install_configure([package_name], config)
+                except Exception as e:
+                    console.print(f"[warning]  {i18n.t('cli.config.post_install_failed', error=e)}[/]")

@@ -63,6 +63,39 @@
 
 ---
 
+## [2.8.0-dev.1] - 2026/08/25
+> 开发版本
+
+**版本摘要**
+新增 CLI `config` 命令与安装后配置引导：`epsdk config` 按适配器/模块声明的 `ConfigClass`/`AccountConfigClass` 生成 schema 驱动的交互表单（含适配器多账户管理与启用开关），无需手写 config.toml；`epsdk install`（交互式路径）与 `epsdk init` 安装成功后自动检测新装包的配置声明并引导填写。向导已完善交互细节：字段值来源标注（已有配置/默认值）、布尔开关用字段名提问、已就绪目标提示、成功写入合并为一条汇总、账户名空输入视为取消，并统一字段描述语言（Core i18n 跟随 `epsdk i18n` 设置，消除中英混排）。
+
+### 新增
+- @wsu2059q
+  - **CLI `config` 命令** `CLI/commands/config.py`：
+    - `epsdk config` 列出全部适配器/模块及配置状态（已就绪/待完善/未配置/无配置），交互选择进入向导
+    - `epsdk config <名称>` 直接进入目标向导（支持平台名或配置键名）；`--list` 仅展示状态
+    - 向导由声明式 schema 驱动（`CLI/utils/config_wizard.py`，模块/适配器通用）：全局配置表单（password 隐藏输入、select 编号选项、switch 确认、数值 min/max 即时校验、必填空值重问、secret 不回显）→ 适配器多账户管理（添加/编辑/删除循环）→ 适配器启用开关 → 整体校验后 `setConfig(immediate=True)` 落盘，末尾汇总一次打印写入的配置键
+    - 交互细节优化：字段值来源标注（存储已有值显示"（当前:x）"、schema 默认显示"（默认:x）"）、布尔开关 prompt 用字段名避免与描述重复、已就绪目标进入时提示"回车保留现值"、账户名空输入视为取消新增
+    - 字段 i18n 统一：向导启动时将 Core i18n 语言同步为 CLI 语言（`set_language(..., persist=False)`，仅进程内），使适配器/模块字段 description/placeholder 与 CLI 框架词同语言，消除中英混排
+    - 目标发现复用 entry-points + 本地 `plugins/`，仅读取类属性（不实例化，避免 CLI 上下文副作用）
+  - **安装后自动衔接配置向导** `CLI/commands/install.py` / `CLI/commands/init.py`：
+    - `epsdk install` 交互式安装路径（选适配器/模块/搜索/自定义）安装成功后，自动检测新装包的配置声明并逐个引导配置（PyPI 名称规范化匹配，`importlib.invalidate_caches()` 刷新 entry-points）
+    - `epsdk init` 安装适配器成功后同样衔接向导（写入新项目 config.toml）
+    - 命令行指定包名的批量安装不进入向导，仅打印 `epsdk config` 指引；非 TTY 环境自动跳过引导
+
+### 优化
+- @wsu2059q
+  - 配置向导交互语义修正：新增账户的未填字段正确标注"（默认:x）"（不再误标为已有配置）；全局表单校验失败且放弃重填时中止整个向导（不写入任何配置，避免产生"已启用但配置不完整"的半成品状态）；`epsdk config` 交互选择在向导结束后回到菜单，支持连续配置多个目标
+  - 布尔开关 prompt 文案并入 i18n（`是否启用 {name}？`），消除中英文标点混排；本地插件目录发现失败时输出警告（不再静默吞异常）；提取 `_resolve_accounts_key()`（`.accounts`/`.bots` 兼容键解析）与 `_plugin_module_class()`（插件模块类提取）helper 消除重复
+
+### 测试
+- @wsu2059q
+  - 新增 `tests/unit/test_unit_config_api.py`（45 用例）：向导字段渲染（boolean/select/secret/min-max/required 重问、空默认值无括号）、字段值来源标注（当前/默认、按存储键存在性计算）、布尔 prompt 用字段名、账户名空输入取消、目标配置状态四态检查、安装后衔接匹配与跳过、`run_wizard` 落盘与就绪提示/成功汇总/放弃中止零写入、交互选择连续配置、语言同步、`epsdk config` 命令路由、CLI i18n 占位符插值
+  - Core i18n `set_language` 的 `persist` 参数行为测试（默认持久化 / `persist=False` 跳过持久化）
+  - `tests/unit/test_unit_cli.py` 的 `EXPECTED_COMMANDS` 增加 `config`（别名 `cfg`/`conf`）注册断言
+
+---
+
 ## [2.8.0-dev.0] - 2026/08/13
 > 开发版本
 
