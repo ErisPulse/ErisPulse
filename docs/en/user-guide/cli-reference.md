@@ -219,6 +219,53 @@ epsdk list-remote -t modules
 # List after forcing cache refresh
 epsdk list-remote -r
 
+## Configuration Commands
+
+| Command | Aliases | Parameters | Description |
+|---------|---------|------------|-------------|
+| `config` | `cfg`, `conf` | `[name] [--list/-l]` | Interactively configure declarative configuration items for adapters/modules |
+
+### config
+
+Interactively fill in the declarative configuration items for adapters/modules. The wizard is driven by the configuration class (ConfigClass / AccountConfigClass) declared by the adapter/module, automatically generating forms and validating them without manually writing config.toml.
+
+Adapters additionally support multi-account (bot account) management: adding/editing/deleting accounts, and enabling/disabling switches.
+
+**Aliases:** `cfg`, `conf`
+
+**Parameters:**
+
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `[name]` | | Target name (adapter platform name or module name), leave empty to enter interactive selection |
+| `--list` | `-l` | Only list the configuration status of all targets, do not enter the wizard |
+
+**Examples:**
+
+```bash
+# View configuration status of all adapters/modules
+epsdk config --list
+
+# Interactively select target for configuration
+epsdk config
+
+# Directly configure specified adapter
+epsdk config yunhu
+
+# Directly configure specified module
+epsdk config MyModule
+```
+
+**Notes:**
+
+- Configuration status is divided into four levels: `Ready` (validation passed), `Incomplete` (missing or validation failed required fields), `Not Configured` (never generated), `No Configuration` (target did not declare a configuration class)
+- Field values are annotated with source: existing configurations display ` (current:value)`, unconfigured fields show schema default values ` (default:value)`; pressing Enter retains the value
+- Secret-type fields (declared as `secret`) do not echo input, pressing Enter retains the set value
+- In interactive selection mode, after completing a single wizard, it returns to the selection menu (status refreshed), allowing continuous configuration of multiple targets; pressing Enter exits
+- If global form validation fails and re-entry is abandoned, the current wizard is terminated and no configuration is written (to avoid creating a "enabled but incomplete configuration" semi-finished state)
+- After saving, it immediately writes to `config/config.toml`, visible to both Dashboard and running SDK; running adapters can apply new account configurations by restarting the process
+- After successful interactive installation via `epsdk install` or `epsdk init`, if configuration declaration is detected, it automatically guides into this wizard; when installing directly via command line with package name, only configuration prompts are printed
+
 ## Runtime Control Commands
 
 | Command | Alias | Parameters | Description |
@@ -522,6 +569,19 @@ epsdk uninstall Weather
 epsdk uninstall Yunhu Weather
 ```
 
+### Configure Components
+
+```bash
+# View configuration status
+epsdk config --list
+
+# Interactively select target configuration
+epsdk config
+
+# Configure a specific adapter
+epsdk config yunhu
+```
+
 ### Upgrade Components
 
 ```bash
@@ -548,10 +608,10 @@ epsdk run main.py --reload
 ### Switch Language
 
 ```bash
-# Interactive language selection
+# Interactively select language
 epsdk i18n
 
-# Switch directly to English
+# Directly switch to English
 epsdk i18n en
 
 # List supported languages
@@ -584,14 +644,14 @@ epsdk init -q -n my_bot
 # Interactive creation (guided selection of type and filling in information)
 epsdk create
 
-# Direct creation of Module project
+# Directly create a Module project
 epsdk create module -n MyModule
 
-# Direct creation of Adapter project
+# Directly create an Adapter project
 epsdk create adapter -n MyAdapter
 
 # Full parameters
-epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
+epsdk create module -n MyModule -d "module description" -a "author" -e "mail@example.com"
 
 # Force overwrite existing directory
 epsdk create module -n MyModule -f

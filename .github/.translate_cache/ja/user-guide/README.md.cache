@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "77038eb74ee19fc0669511f65008a44f",
-  "file_hash": "77038eb74ee19fc0669511f65008a44f",
-  "translated_at": "2026-08-15T19:49:12.589430",
+  "hash": "02652abfd9545c64284e2a855dd4bf44",
+  "file_hash": "02652abfd9545c64284e2a855dd4bf44",
+  "translated_at": "2026-08-28T01:40:17.734733",
   "target_lang": "ja",
   "chunks": [
     {
@@ -14,8 +14,8 @@
       "translation": "## コンテンツ一覧\n\n| 文書 | 説明 |\n|------|------|\n| [インストールと設定](installation.md) | システム要件、インストール方法 (pip/uv/Docker)、インストールの検証 |\n| [ErisPulse-App スマートフォン/デスクトップクライアント](../ecosystem/app.md) | 公式クライアント：スマートフォン / デスクトップ直接実行、ネイティブインターフェースでの ErisPulse インスタンス管理 |\n| [CLI コマンドリファレンス](cli-reference.md) | `epsdk` コマンドラインツールの完全な使用説明 |\n| [設定ファイルの説明](configuration.md) | `config/config.toml` 各設定項目の詳細説明 |\n| [デプロイガイド](deployment.md) | Docker 部署、systemd サービス、SSL 設定 |"
     },
     {
-      "hash": "42eceb8ec2a76b0b2d9c256d5ececfdc",
-      "translation": "## クイックリファレンス\n\n### コマンド\n\n| コマンド | 説明 |\n|------|------|\n| `epsdk init` | プロジェクトを初期化する（`-q` で高速モード、`-n` で名前を指定） |\n| `epsdk install <パッケージ名>` | モジュール/アダプターをインストールする（引数なしで対話モードに入る） |\n| `epsdk run main.py` | プロジェクトを実行する（`--reload` でホットリロードモード） |\n| `epsdk list` | インストール済みのモジュール/アダプターを一覧表示する |\n| `epsdk upgrade <パッケージ名>` | モジュール/アダプターをアップグレードする |\n| `epsdk doctor` | 環境を診断する（Python/バックエンド/設定/PyPI 接続性） |\n\n> 完全なコマンドリストとパラメータの説明については、[CLI コマンドリファレンス](cli-reference.md)を参照してください。\n\n### 共通設定の場所\n\n| 設定項目 | 説明 | 詳細 |\n|--------|------|------|\n| `[ErisPulse.server]` | サーバー設定（ホスト、ポート） | [設定ファイルの説明](configuration.md#サーバー設定) |\n| `[ErisPulse.logger]` | ログ設定（レベル、出力ファイル） | [設定ファイルの説明](configuration.md#ログ設定) |\n| `[ErisPulse.framework]` | フレームワーク設定（遅延読み込み） | [設定ファイルの説明](configuration.md#フレームワーク設定) |\n| `[ErisPulse.event.command]` | コマンドイベント設定（プレフィックス） | [設定ファイルの説明](configuration.md#イベント設定) |\n| `[アダプター名]` | 各アダプターの固有設定 | [プラットフォーム特性ガイド](../platform-guide/) |"
+      "hash": "a5f6d78a38dba4d6e00334fe346aec31",
+      "translation": "## 快速参考\n\n### 常用コマンド\n\n| コマンド | 説明 |\n|------|------|\n| `epsdk init` | プロジェクトを初期化（`-q` はクイックモード、`-n` は名前を指定） |\n| `epsdk install <パッケージ名>` | モジュール/アダプターをインストール（パラメータなしで対話モードに入る） |\n| `epsdk config <名前>` | 対話形式でアダプター/モジュールの宣言型設定項目を設定 |\n| `epsdk run main.py` | プロジェクトを実行（`--reload` はホットリロードモード） |\n| `epsdk list` | インストール済みのモジュール/アダプターを一覧表示 |\n| `epsdk upgrade <パッケージ名>` | モジュール/アダプターをアップグレード |\n| `epsdk doctor` | 環境診断（Python/バックエンド/設定/PyPI 接続性） |\n\n> 完全なコマンドリストとパラメータの説明は [CLI コマンドリファレンス](cli-reference.md) を参照してください。\n\n### 一般的な設定位置\n\n| 設定項目 | 説明 | 詳細 |\n|--------|------|------|\n| `[ErisPulse.server]` | サーバー設定（ホスト、ポート） | [設定ファイルの説明](configuration.md#サーバー設定) |\n| `[ErisPulse.logger]` | ログ設定（レベル、出力ファイル） | [設定ファイルの説明](configuration.md#ログ設定) |\n| `[ErisPulse.framework]` | フレームワーク設定（遅延読み込み） | [設定ファイルの説明](configuration.md#フレームワーク設定) |\n| `[ErisPulse.event.command]` | コマンドイベント設定（プレフィックス） | [設定ファイルの説明](configuration.md#イベント設定) |\n| `[アダプター名]` | 各アダプターの固有設定 | [プラットフォーム機能ガイド](../platform-guide/) |"
     },
     {
       "hash": "0b20cfa96c53ab9bf5b4401abfe7697b",
