@@ -67,7 +67,7 @@
 > 开发版本
 
 **版本摘要**
-新增 CLI `config` 命令与安装后配置引导：`epsdk config` 按适配器/模块声明的 `ConfigClass`/`AccountConfigClass` 生成 schema 驱动的交互表单（含适配器多账户管理与启用开关），无需手写 config.toml；`epsdk install`（交互式路径）与 `epsdk init` 安装成功后自动检测新装包的配置声明并引导填写。向导已完善交互细节：字段值来源标注（已有配置/默认值）、布尔开关用字段名提问、已就绪目标提示、成功写入合并为一条汇总、账户名空输入视为取消，并统一字段描述语言（Core i18n 跟随 `epsdk i18n` 设置，消除中英混排）。
+新增 CLI `config` 命令与安装后配置引导：`epsdk config` 按适配器/模块声明的 `ConfigClass`/`AccountConfigClass` 生成 schema 驱动的交互表单（含适配器多账户管理与启用开关），无需手写 config.toml；`epsdk install`（交互式路径）与 `epsdk init` 安装成功后自动检测新装包的配置声明并引导填写。向导已完善交互细节：字段值来源标注（已有配置/默认值）、布尔开关用字段名提问、已就绪目标提示、成功写入合并为一条汇总、账户名空输入视为取消，并统一字段描述语言（Core i18n 跟随 `epsdk i18n` 设置，消除中英混排）。另修复 Docker 部署 site-packages 持久化卷核心包半写损坏（如 click 截断导致 `module 'click' has no attribute 'Choice'` 启动失败）无法自愈的问题，入口点启动时自动探测并从镜像备份还原。
 
 ### 新增
 - @wsu2059q
@@ -85,8 +85,17 @@
 
 ### 优化
 - @wsu2059q
+  - 修正 CI 文档自动更新流程顺序（`.github/workflows/auto-update-docs.yml`）：改为「翻译 → 提交翻译 → 生成 → 提交生成」。原顺序导致生成产物基于上一轮旧翻译、滞后一轮且无法自愈
   - 配置向导交互语义修正：新增账户的未填字段正确标注"（默认:x）"（不再误标为已有配置）；全局表单校验失败且放弃重填时中止整个向导（不写入任何配置，避免产生"已启用但配置不完整"的半成品状态）；`epsdk config` 交互选择在向导结束后回到菜单，支持连续配置多个目标
   - 布尔开关 prompt 文案并入 i18n（`是否启用 {name}？`），消除中英文标点混排；本地插件目录发现失败时输出警告（不再静默吞异常）；提取 `_resolve_accounts_key()`（`.accounts`/`.bots` 兼容键解析）与 `_plugin_module_class()`（插件模块类提取）helper 消除重复
+
+### 修复
+- @wsu2059q
+  - **Docker 入口点核心包完整性自愈** `docker-entrypoint.sh`：修复 Docker 部署在 site-packages 持久化卷（`config/.packages`）核心包损坏时启动失败且无法自愈的问题——热更新或容器重启被中断（OOM、宿主机重启等）可能残留半写状态的包（典型如 `click/__init__.py` 被截断为空，`import` 成功但零导出，uvicorn 导入期抛 `module 'click' has no attribute 'Choice'`，模块加载与路由服务器启动全部失败），而原入口点仅在卷完全为空时初始化、对部分损坏无恢复能力：
+    - 启动前对核心包做哨兵属性探测（`click.Choice` / `uvicorn.Server` / `fastapi.FastAPI` / `ErisPulse.sdk`），仅 `import` 成功不足以发现截断损坏，必须触及关键属性
+    - 探测失败时从镜像内备份 `/opt/site-packages-init` 删除并还原损坏包目录及其 `*.dist-info`（连字符精确匹配，不误伤 `ErisPulse_Dashboard` 等下划线包），还原后复检；仍失败则记录日志放行，由正常启动流程输出原始错误
+    - 备份中不存在的包不做处理（不误删用户自装模块）；框架包 `ErisPulse` 损坏时自动回滚至镜像内置版本，可在 Dashboard 重新升级
+    - 新增还原过程日志文案，入口点内联 i18n 五语言（zh / zh_TW / en / ja / ru）同步
 
 ### 测试
 - @wsu2059q
