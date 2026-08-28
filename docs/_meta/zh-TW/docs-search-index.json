@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1463,
+  "total_keywords": 1466,
   "keywords": {
     "\"Chat\": {": [
       {
@@ -256,6 +256,14 @@
         "line": 64,
         "level": 4,
         "title": "0 成功（OK）"
+      }
+    ],
+    "1. CLI run 命令（開發/簡單部署，推薦）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 475,
+        "level": 4,
+        "title": "1. CLI run 命令（開發/簡單部署，推薦）"
       }
     ],
     "1. SDK 物件": [
@@ -616,6 +624,14 @@
         "title": "2. Event 物件"
       }
     ],
+    "2. systemd（Linux 伺服器）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 483,
+        "level": 4,
+        "title": "2. systemd（Linux 伺服器）"
+      }
+    ],
     "2. 三層 DSL 並行結構": [
       {
         "document": "standards/api-action-spec.md",
@@ -952,6 +968,14 @@
         "title": "2xxxx 動作處理器錯誤（Handler Error）"
       }
     ],
+    "3. Docker / docker-compose": [
+      {
+        "document": "advanced/startup.md",
+        "line": 496,
+        "level": 4,
+        "title": "3. Docker / docker-compose"
+      }
+    ],
     "3. Request DSL": [
       {
         "document": "standards/request-action-spec.md",
@@ -1256,6 +1280,14 @@
         "title": "4. Event 便捷方法"
       }
     ],
+    "4. PM2（Node 生態維運）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 507,
+        "level": 4,
+        "title": "4. PM2（Node 生態維運）"
+      }
+    ],
     "4. `self` 字段自動發現": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -1414,6 +1446,14 @@
         "line": 84,
         "level": 3,
         "title": "5. Bot 狀態查詢"
+      }
+    ],
+    "5. supervisord": [
+      {
+        "document": "advanced/startup.md",
+        "line": 515,
+        "level": 4,
+        "title": "5. supervisord"
       }
     ],
     "5. 使用者使用": [
@@ -1630,6 +1670,14 @@
         "line": 147,
         "level": 2,
         "title": "6. 注意事項"
+      }
+    ],
+    "6. 純 Python 自訂監督者": [
+      {
+        "document": "advanced/startup.md",
+        "line": 524,
+        "level": 4,
+        "title": "6. 純 Python 自訂監督者"
       }
     ],
     "6. 配接器實現檢查清單": [
@@ -2336,12 +2384,12 @@
         "title": "Converter 職責"
       }
     ],
-    "Dashboard 管理面板": [
+    "Dashboard 管理介面": [
       {
         "document": "user-guide/deployment.md",
-        "line": 72,
+        "line": 76,
         "level": 2,
-        "title": "Dashboard 管理面板"
+        "title": "Dashboard 管理介面"
       }
     ],
     "Dashboard 自動註冊": [
@@ -2371,7 +2419,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 241,
+        "line": 266,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -2387,7 +2435,7 @@
     "Docker 部署（推薦）": [
       {
         "document": "user-guide/deployment.md",
-        "line": 5,
+        "line": 9,
         "level": 2,
         "title": "Docker 部署（推薦）"
       }
@@ -2660,14 +2708,6 @@
         "line": 217,
         "level": 3,
         "title": "Logger（日誌）"
-      }
-    ],
-    "MCP 伺服器": [
-      {
-        "document": "ai-support/README.md",
-        "line": 60,
-        "level": 2,
-        "title": "MCP 伺服器"
       }
     ],
     "Matrix平台特性文件": [
@@ -3040,14 +3080,6 @@
         "line": 179,
         "level": 3,
         "title": "Storage（存儲）"
-      }
-    ],
-    "Supervisor": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 207,
-        "level": 3,
-        "title": "Supervisor"
       }
     ],
     "Sync API 連接": [
@@ -3582,6 +3614,14 @@
         "title": "config.toml"
       }
     ],
+    "config/config.toml": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 178,
+        "level": 1,
+        "title": "config/config.toml"
+      }
+    ],
     "confirm(prompt=None, **kwargs)": [
       {
         "document": "advanced/conversation.md",
@@ -3633,7 +3673,7 @@
     "docker-compose.yml": [
       {
         "document": "user-guide/deployment.md",
-        "line": 40,
+        "line": 44,
         "level": 3,
         "title": "docker-compose.yml"
       }
@@ -3777,7 +3817,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 251,
+        "line": 276,
         "level": 3,
         "title": "pip 方式"
       }
@@ -3860,14 +3900,6 @@
         "line": 169,
         "level": 3,
         "title": "stop()"
-      }
-    ],
-    "systemd (Linux)": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 175,
-        "level": 3,
-        "title": "systemd (Linux)"
       }
     ],
     "thread": [
@@ -4219,12 +4251,6 @@
       }
     ],
     "下一步": [
-      {
-        "document": "ai-support/README.md",
-        "line": 117,
-        "level": 2,
-        "title": "下一步"
-      },
       {
         "document": "getting-started/basic-concepts.md",
         "line": 351,
@@ -4748,12 +4774,12 @@
         "title": "什麼是適配器"
       }
     ],
-    "什麼時候該用硬重新啟動？": [
+    "什麼時候該使用硬重新啟動？": [
       {
         "document": "advanced/startup.md",
         "line": 450,
         "level": 3,
-        "title": "什麼時候該用硬重新啟動？"
+        "title": "什麼時候該使用硬重新啟動？"
       }
     ],
     "介面卡基類": [
@@ -5201,7 +5227,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 100,
+        "line": 115,
         "level": 2,
         "title": "健康檢查"
       }
@@ -5217,7 +5243,7 @@
     "備份": [
       {
         "document": "user-guide/deployment.md",
-        "line": 258,
+        "line": 283,
         "level": 3,
         "title": "備份"
       }
@@ -5683,7 +5709,7 @@
     "功能概覽": [
       {
         "document": "user-guide/deployment.md",
-        "line": 76,
+        "line": 80,
         "level": 3,
         "title": "功能概覽"
       }
@@ -5897,7 +5923,7 @@
     "反向代理": [
       {
         "document": "user-guide/deployment.md",
-        "line": 121,
+        "line": 140,
         "level": 2,
         "title": "反向代理"
       }
@@ -6280,12 +6306,12 @@
         "title": "回調路由"
       }
     ],
-    "國內映像加速": [
+    "國內鏡像加速": [
       {
         "document": "user-guide/deployment.md",
-        "line": 24,
+        "line": 28,
         "level": 3,
-        "title": "國內映像加速"
+        "title": "國內鏡像加速"
       }
     ],
     "國際化 (i18n) 系統": [
@@ -6669,7 +6695,7 @@
     "多實例部署": [
       {
         "document": "user-guide/deployment.md",
-        "line": 231,
+        "line": 252,
         "level": 2,
         "title": "多實例部署"
       }
@@ -6909,7 +6935,7 @@
     "安全建議": [
       {
         "document": "user-guide/deployment.md",
-        "line": 222,
+        "line": 239,
         "level": 2,
         "title": "安全建議"
       }
@@ -7384,12 +7410,6 @@
     ],
     "常見問題": [
       {
-        "document": "ai-support/README.md",
-        "line": 109,
-        "level": 2,
-        "title": "常見問題"
-      },
-      {
         "document": "developer-guide/publishing.md",
         "line": 172,
         "level": 2,
@@ -7765,7 +7785,7 @@
     "快速啟動": [
       {
         "document": "user-guide/deployment.md",
-        "line": 9,
+        "line": 13,
         "level": 3,
         "title": "快速啟動"
       }
@@ -7880,14 +7900,6 @@
         "line": 267,
         "level": 3,
         "title": "手動讀取配置（已廢棄）"
-      }
-    ],
-    "手動部署（pip）": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 153,
-        "level": 2,
-        "title": "手動部署（pip）"
       }
     ],
     "批次傳送多條訊息": [
@@ -8080,22 +8092,6 @@
         "title": "排序、分頁"
       }
     ],
-    "接入 Claude Desktop": [
-      {
-        "document": "ai-support/README.md",
-        "line": 77,
-        "level": 3,
-        "title": "接入 Claude Desktop"
-      }
-    ],
-    "接入 Cursor": [
-      {
-        "document": "ai-support/README.md",
-        "line": 93,
-        "level": 3,
-        "title": "接入 Cursor"
-      }
-    ],
     "接收訊息": [
       {
         "document": "advanced/http-client.md",
@@ -8134,14 +8130,6 @@
         "line": 220,
         "level": 3,
         "title": "推薦禁用懶載入的場景（lazy_load=False）"
-      }
-    ],
-    "提供的工具": [
-      {
-        "document": "ai-support/README.md",
-        "line": 64,
-        "level": 3,
-        "title": "提供的工具"
       }
     ],
     "插入資料": [
@@ -8376,6 +8364,14 @@
         "line": 456,
         "level": 3,
         "title": "整批規則與回調"
+      }
+    ],
+    "數據持久化": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 69,
+        "level": 3,
+        "title": "數據持久化"
       }
     ],
     "文件": [
@@ -8693,7 +8689,7 @@
     "更新與維護": [
       {
         "document": "user-guide/deployment.md",
-        "line": 239,
+        "line": 264,
         "level": 2,
         "title": "更新與維護"
       }
@@ -9825,7 +9821,7 @@
     "環境變數": [
       {
         "document": "user-guide/deployment.md",
-        "line": 57,
+        "line": 61,
         "level": 3,
         "title": "環境變數"
       }
@@ -9890,14 +9886,6 @@
         "line": 1,
         "level": 1,
         "title": "生態模組"
-      }
-    ],
-    "生產環境配置": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 157,
-        "level": 3,
-        "title": "生產環境配置"
       }
     ],
     "產生所有類型存根": [
@@ -10150,6 +10138,14 @@
         "title": "發送鏈路內部拆解"
       }
     ],
+    "監督者指南": [
+      {
+        "document": "advanced/startup.md",
+        "line": 471,
+        "level": 3,
+        "title": "監督者指南"
+      }
+    ],
     "監聽 Bot 生命週期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -10351,7 +10347,7 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 461,
+        "line": 542,
         "level": 2,
         "title": "相關文件"
       },
@@ -11538,12 +11534,6 @@
         "line": 17,
         "level": 2,
         "title": "資料持久化"
-      },
-      {
-        "document": "user-guide/deployment.md",
-        "line": 65,
-        "level": 3,
-        "title": "資料持久化"
       }
     ],
     "質量檢查清單": [
@@ -11760,6 +11750,14 @@
         "title": "返回值說明"
       }
     ],
+    "退出碼 42 契約": [
+      {
+        "document": "advanced/startup.md",
+        "line": 460,
+        "level": 3,
+        "title": "退出碼 42 契約"
+      }
+    ],
     "适配器標準化轉換規範": [
       {
         "document": "standards/event-conversion.md",
@@ -11795,7 +11793,7 @@
     "透過 Dashboard 安裝模組": [
       {
         "document": "user-guide/deployment.md",
-        "line": 91,
+        "line": 95,
         "level": 3,
         "title": "透過 Dashboard 安裝模組"
       }
@@ -12016,6 +12014,14 @@
         "line": 329,
         "level": 3,
         "title": "進度監控（OnProgress / OnError）"
+      }
+    ],
+    "進程監督與硬重啟": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 104,
+        "level": 2,
+        "title": "進程監督與硬重啟"
       }
     ],
     "進階主題": [
@@ -12748,12 +12754,12 @@
         "title": "雲湖用戶平台特性文件"
       }
     ],
-    "需求描述範本": [
+    "需求描述模板": [
       {
         "document": "ai-support/README.md",
         "line": 36,
         "level": 3,
-        "title": "需求描述範本"
+        "title": "需求描述模板"
       }
     ],
     "靜態工廠 + 鏈式混合": [

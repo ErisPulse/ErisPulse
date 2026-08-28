@@ -108,7 +108,7 @@
           "icon": "fa-terminal"
         },
         {
-          "title": "デプロイメントガイド",
+          "title": "配置ガイド",
           "path": "user-guide/deployment.md",
           "level": 1,
           "icon": "fa-cloud-arrow-up"

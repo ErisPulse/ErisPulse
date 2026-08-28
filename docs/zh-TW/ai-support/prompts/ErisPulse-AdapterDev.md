@@ -10029,33 +10029,114 @@ finally:
 
 SDK 提供兩種重新啟動方式，都不需要你自己先卸載——框架會自行處理：
 
-| 方式 | 調用 | 行為 | 適用場景 |
+| 方式 | 呼叫 | 行為 | 適用場景 |
 |------|------|------|----------|
-| 熱重新啟動 | `await sdk.restart()` | 同一進程內 `uninit()` 後重新 `init()`，重新載入適配器/模組 | 重新載入配置、熱更新模組 |
-| 硬重新啟動 | `await sdk.hard_restart()` | `uninit()` 後退出整個進程，由父進程（`epsdk run`）拉起全新進程 | 懷疑有記憶體/資源洩漏、需要徹底乾淨重新啟動 |
+| 熱重新啟動 | `await sdk.restart()` | 同一進程內 `uninit()` 後重新 `init()`，重新載入適配器/模組 | 重新載入設定、熱更新模組 |
+| 硬重新啟動 | `await sdk.hard_restart()` | `uninit()` 後以**退出碼 42** 退出進程，由外部監督者拉起全新進程 | 懷疑有記憶體/資源泄漏、需要徹底乾淨重新啟動 |
 
 ```python
 # 熱重新啟動：同進程內重新載入（最常用）
 await sdk.restart()
 
-# 硬重新啟動：退出進程，需透過 epsdk run 啟動才生效
+# 硬重新啟動：退出進程，交由外部監督者重新啟動（見下方「監督者指南」）
 await sdk.hard_restart()
 ```
 
 > **兩點注意**：
-> 1. 這兩個方法都用背景任務執行重新啟動，**立即返回 `True` 表示「重新啟動任務已排程」**，而非「重新啟動已完成」。實際重新啟動在背景進行，避免中斷當前事件鏈路。
-> 2. `hard_restart()` **必須透過 `epsdk run main.py` 啟動才能生效**。它的原理是：卸載後以**退出碼 42** 退出進程，`epsdk run` 的父進程檢測到 42 才會重新拉起一個全新進程；如果是直接 `python main.py` 啟動，進程以碼 42 退出後就直接結束了，不會自動重新啟動。
+> 1. 這兩個方法都用後台任務執行重新啟動，**立即返回 `True` 表示「重新啟動任務已排程」**，而非「重新啟動已完成」。實際重新啟動在後台進行，避免中斷當前事件鏈路。
+> 2. `hard_restart()` 的原理是：卸載並刷盤設定後，以**退出碼 42**（`HARD_RESTART_EXIT_CODE`）退出進程——**它自身不拉起新進程**，必須由外部監督者檢測到退出碼 42 後重新啟動。若直接 `python main.py` 運行且無任何監督者，進程以碼 42 退出後就結束了，**不會自動重新啟動**（框架會打警告提示）。
 
-### 什麼時候該用硬重新啟動？
+### 什麼時候該使用硬重新啟動？
 
-硬重新啟動不只是「更徹底的重新啟動」，它在以下場景比熱重新啟動更合適、甚至更高效：
+硬重新啟動不只是"更徹底的重新啟動"，它在以下場景比熱重新啟動更合適、甚至更高效：
 
-- **二進制庫（C 擴展）副作用**：熱重新啟動在同一進程內進行，無法釋放 C 擴展、打開的檔案描述符、執行緒等進程級資源；硬重新啟動換一個全新進程，這些副作用隨之徹底清零。
-- **資源洩漏排查**：懷疑存在記憶體或句柄洩漏時，硬重新啟動能拿到一個乾淨的環境。
+- **二進制庫（C 扩展）副作用**：熱重新啟動在同一進程內進行，無法釋放 C 扩展、打開的檔案描述符、執行緒等進程級資源；硬重新啟動換一個全新進程，這些副作用隨之徹底清零。
+- **資源泄漏排查**：懷疑存在記憶體或句柄泄漏時，硬重新啟動能拿到一個乾淨的環境。
 - **對效能敏感的頻繁重新啟動**：硬重新啟動省去了同進程內卸載→重新載入的開銷，實際比熱重新啟動更高效。
 
-> Dashboard 管理介面中的「框架重新啟動」功能，底層呼叫的就是 `hard_restart()`。
-> 另外就是硬重新啟動一個要求！必須使用 epsdk 的 run 命令進行啟動，否則程式只是會拋出 42 退出碼進行退出，因為 run 命令的拉起檢查了 42 退出碼進行重新拉起進程，這點必須要注意！！！
+> Dashboard 管理介面裡的「框架重新啟動」功能，底層呼叫的就是 `hard_restart()`。
+
+### 退出碼 42 契約
+
+硬重新啟動是跨進程協作：**SDK 負責退出（碼 42），監督者負責拉起**。
+
+| 角色 | 行為 |
+|------|------|
+| SDK（被硬重新啟動時） | `uninit()` → 刷盤設定 → `os._exit(42)` |
+| 監督者 | 檢測到子進程退出碼為 42 → 重新啟動同一命令 |
+
+> `sdk.is_supervised()` 可查詢目前進程是否由監督者啟動（檢測環境變數 `ERISPULSE_SUPERVISED`）。CLI `run` 命令啟動子進程時會自動注入該標記；systemd / Docker 等外部監督者不會注入，`is_supervised()` 返回 `False`，此時硬重新啟動後框架會打「未檢測到監督者」警告。
+
+### 監督者指南
+
+選擇適合你的監督者，讓硬重新啟動真正生效：
+
+#### 1. CLI run 命令（開發/簡單部署，推薦）
+
+`epsdk run main.py` 內建監督迴圈：檢測子進程退出碼，42 時立即重新啟動；其它異常退出碼按指數退避自動重試；`Ctrl+C` 會先優雅終止子進程（碼 0 視為正常退出，不再拉起）。
+
+```bash
+epsdk run main.py
+```
+
+#### 2. systemd（Linux 伺服器）
+
+`RestartForceExitStatus=42` 讓退出碼 42 也觸發重新啟動（預設 `on-failure` 只對非零碼生效）：
+
+```ini
+[Service]
+ExecStart=/usr/bin/python3 /opt/mybot/main.py
+Restart=on-failure
+RestartForceExitStatus=42
+RestartSec=2
+User=mybot
+```
+
+#### 3. Docker / docker-compose
+
+容器內 PID 1 是應用進程，退出碼 42 後容器退出——用 `restart` 策略讓它自動重新啟動：
+
+```yaml
+services:
+  bot:
+    build: .
+    restart: unless-stopped   # 任何退出（含 42）都重新啟動
+```
+
+#### 4. PM2（Node 生態維運）
+
+```bash
+pm2 start main.py --name mybot --interpreter python3
+# 42 被視為退出碼，PM2 預設重新啟動；設定 restart_delay 防抖
+pm2 set mybot.restart_delay 2000
+```
+
+#### 5. supervisord
+
+```ini
+[program:mybot]
+command=python3 /opt/mybot/main.py
+autorestart=true
+exitcodes=0,2,42    # 42 也視為"正常退出需重新啟動"
+```
+
+#### 6. 純 Python 自訂監督者
+
+```python
+import subprocess, sys, time
+
+while True:
+    p = subprocess.Popen([sys.executable, "main.py"])
+    code = p.wait()
+    if code == 42:          # 硬重新啟動請求
+        time.sleep(0.5)
+        continue
+    if code == 0:           # 正常退出
+        break
+    time.sleep(3)           # 異常退出，退避重試
+```
+
+> **無監督者時的行為**：直接 `python main.py` 運行，呼叫 `hard_restart()` 後進程以碼 42 退出、不會重新啟動。此時應接入上述任一監督者。
 
 ## 相關文件
 

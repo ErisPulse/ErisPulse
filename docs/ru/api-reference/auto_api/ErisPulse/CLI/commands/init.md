@@ -100,6 +100,8 @@ init 命令
 
 安装选中的适配器
 
+安装成功后衔接交互式配置向导（写入新项目的 config.toml）
+
 - **adapter_names** (`list`): 适配器简称列表
 - **adapters_info** (`dict`): 适配器信息
 

@@ -151,18 +151,21 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 
 ##### `set_language(lang: str)`
 
-手动设置当前语言，同时写入全局持久化
+手动设置当前语言，可选中写入全局持久化
 
 - **lang** (`语言代码，如`): "zh-CN", "en", "ja", "ru"
 会自动按就近原则映射到支持的语言。
-设置后立即生效，并写入 `~/.erispulse/cli_state.json`
-跨所有项目生效（等效于 `epsdk i18n`）。
-如需临时覆盖，使用环境变量 `ERISPULSE_LANG`
+- **persist** (`是否写入`): `~/.erispulse/cli_state.json` 全局生效
+    （默认 True，等效于 `epsdk i18n`）；False 时仅当前进程
+    临时生效，不改变持久化语言设置（例如 CLI 配置向导同步
+    只读上下文时使用）。如需临时覆盖，也可使用环境变量
+    `ERISPULSE_LANG`
 
 **示例**:
 ```python
 >>> i18n.set_language("en")
 >>> i18n.set_language("zh-TW")  # 繁体中文
+>>> i18n.set_language("en", persist=False)  # 仅本次进程
 ```
 
 ---
