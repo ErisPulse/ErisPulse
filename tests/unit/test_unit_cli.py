@@ -26,6 +26,7 @@ EXPECTED_COMMANDS = {
     "create": ["c", "new"],
     "init": [],
     "install": ["i", "add"],
+    "config": ["cfg", "conf"],
     "uninstall": ["rm", "remove"],
     "upgrade": ["up"],
     "self-update": ["su", "update"],
