@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "77038eb74ee19fc0669511f65008a44f",
-  "file_hash": "77038eb74ee19fc0669511f65008a44f",
-  "translated_at": "2026-08-15T18:37:14.219927",
+  "hash": "02652abfd9545c64284e2a855dd4bf44",
+  "file_hash": "02652abfd9545c64284e2a855dd4bf44",
+  "translated_at": "2026-08-28T01:40:16.240889",
   "target_lang": "en",
   "chunks": [
     {
@@ -14,8 +14,8 @@
       "translation": "## Table of Contents\n\n| Document | Description |\n|------|------|\n| [Installation and Configuration](docs/en/installation.md) | System requirements, installation methods (pip/uv/Docker), verification of installation |\n| [ErisPulse-App Mobile/Desktop Client](../ecosystem/app.md) | Official client: Mobile / Desktop direct execution, native interface to manage ErisPulse instances |\n| [CLI Command Reference](docs/en/cli-reference.md) | Complete usage instructions for the `epsdk` command line tool |\n| [Configuration File Guide](docs/en/configuration.md) | Detailed description of various configuration items in `config/config.toml` |\n| [Deployment Guide](docs/en/deployment.md) | Docker deployment, systemd service, SSL configuration |"
     },
     {
-      "hash": "42eceb8ec2a76b0b2d9c256d5ececfdc",
-      "translation": "## Quick Reference\n\n### Common Commands\n\n| Command | Description |\n|------|------|\n| `epsdk init` | Initialize project (`-q` quick mode, `-n` specify name) |\n| `epsdk install <package_name>` | Install module/adapter (enter interactive mode without parameters) |\n| `epsdk run main.py` | Run project (`--reload` hot reload mode) |\n| `epsdk list` | List installed modules/adapter |\n| `epsdk upgrade <package_name>` | Upgrade module/adapter |\n| `epsdk doctor` | Diagnose environment (Python/Backend/Configuration/PyPI connectivity) |\n\n> For a complete list of commands and parameter descriptions, please refer to [CLI Command Reference](cli-reference.md).\n\n### Common Configuration Locations\n\n| Configuration Item | Description | See Also |\n|--------|------|------|\n| `[ErisPulse.server]` | Server configuration (host, port) | [Configuration File Description](configuration.md#server-configuration) |\n| `[ErisPulse.logger]` | Logging configuration (level, output file) | [Configuration File Description](configuration.md#logging-configuration) |\n| `[ErisPulse.framework]` | Framework configuration (lazy loading) | [Configuration File Description](configuration.md#framework-configuration) |\n| `[ErisPulse.event.command]` | Command event configuration (prefix) | [Configuration File Description](configuration.md#event-configuration) |\n| `[AdapterName]` | Adapter-specific configuration | [Platform Features Guide](../platform-guide/) |"
+      "hash": "a5f6d78a38dba4d6e00334fe346aec31",
+      "translation": "## Quick Reference\n\n### Common Commands\n\n| Command | Description |\n|---------|-------------|\n| `epsdk init` | Initialize project (`-q` for quick mode, `-n` to specify name) |\n| `epsdk install <package-name>` | Install module/adapter (without parameters, enter interactive mode) |\n| `epsdk config <name>` | Interactively configure declarative configuration items for adapter/module |\n| `epsdk run main.py` | Run project (`--reload` for hot reload mode) |\n| `epsdk list` | List installed modules/ adapters |\n| `epsdk upgrade <package-name>` | Upgrade module/adapter |\n| `epsdk doctor` | Diagnose environment (Python/backend/configuration/PyPI connectivity) |\n\n> For a complete list of commands and parameter descriptions, see [CLI Command Reference](cli-reference.md).\n\n### Common Configuration Locations\n\n| Configuration Item | Description | See Also |\n|--------------------|-------------|----------|\n| `[ErisPulse.server]` | Server configuration (host, port) | [Configuration File Description](configuration.md#server-configuration) |\n| `[ErisPulse.logger]` | Logging configuration (level, output file) | [Configuration File Description](configuration.md#logging-configuration) |\n| `[ErisPulse.framework]` | Framework configuration (lazy loading) | [Configuration File Description](configuration.md#framework-configuration) |\n| `[ErisPulse.event.command]` | Command event configuration (prefix) | [Configuration File Description](configuration.md#event-configuration) |\n| `[Adapter Name]` | Adapter-specific configuration | [Platform Features Guide](../platform-guide/) |"
     },
     {
       "hash": "0b20cfa96c53ab9bf5b4401abfe7697b",
