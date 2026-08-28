@@ -68,6 +68,7 @@ services:
 
 - `config/config.toml` — 配置文件
 - `config/config.db` — SQLite 存储数据库
+- `config/.packages` — Python site-packages 持久化卷，保存框架、适配器和已安装模块（首次启动时由入口点从镜像内置备份自动初始化，之后的模块安装与框架热更新均写入此目录）
 
 ## Dashboard 管理面板
 

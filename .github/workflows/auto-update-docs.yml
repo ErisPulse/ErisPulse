@@ -82,115 +82,6 @@ jobs:
           fi
           echo "==================="
 
-      - name: Update API docs (multilingual)
-        id: update-api
-        run: |
-          echo "Starting API docs update..."
-
-          # Run API docs update script (auto-generates for all languages)
-          if [ -f "scripts/tools/generate-api-docs.py" ]; then
-            python scripts/tools/generate-api-docs.py
-            echo "API docs update complete"
-          else
-            echo "API docs update script not found, skipping this step"
-          fi
-
-          # Check if API docs were updated
-          if git diff --quiet docs/*/api-reference/; then
-            echo "No changes in API docs"
-            echo "api_updated=false" >> $GITHUB_OUTPUT
-          else
-            echo "API docs changes detected"
-            echo "api_updated=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Generate AI Prompt docs (multilingual)
-        id: generate-ai-prompts
-        run: |
-          echo "Starting AI Prompt document generation..."
-
-          # Run AI prompt generation script (auto-generates for all languages)
-          if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
-            python scripts/tools/generate-ai-prompts.py
-            echo "AI Prompt document generation complete"
-          else
-            echo "AI Prompt generation script not found, skipping this step"
-          fi
-
-          # Check if AI Prompt docs were updated
-          if git diff --quiet docs/*/ai-support/prompts/; then
-            echo "No changes in AI Prompt docs"
-            echo "ai_prompts_updated=false" >> $GITHUB_OUTPUT
-          else
-            echo "AI Prompt docs changes detected"
-            echo "ai_prompts_updated=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Generate docs index (multilingual)
-        id: generate-docs-index
-        run: |
-          echo "Starting docs index generation..."
-
-          # Run docs index generation script (auto-generates for all languages)
-          if [ -f "scripts/tools/generate-docs-index.py" ]; then
-            python scripts/tools/generate-docs-index.py
-            echo "Docs index generation complete"
-          else
-            echo "Docs index generation script not found, skipping this step"
-          fi
-
-          # Check if docs index was updated
-          if git diff --quiet docs/_meta/; then
-            echo "No changes in docs index"
-            echo "docs_index_updated=false" >> $GITHUB_OUTPUT
-          else
-            echo "Docs index changes detected"
-            echo "docs_index_updated=true" >> $GITHUB_OUTPUT
-          fi
-
-      # ==================== 提交 #1：生成类文档（API / AI Prompt / 索引） ====================
-      # 生成类产物先提交：即使后续翻译超时/失败/被取消，这些结果也不会丢失
-
-      - name: Configure Git identity
-        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
-        env:
-          BOT_USER_ID: ${{ steps.bot-info.outputs.bot-user-id }}
-          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-        run: |
-          echo "App slug: $APP_SLUG"
-          echo "Bot user ID: $BOT_USER_ID"
-          git config user.name "${APP_SLUG}[bot]"
-          git config user.email "${BOT_USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
-
-      - name: Refresh token for generated docs commit
-        id: refresh-token-gen
-        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.ERISBOT_APP_ID }}
-          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
-
-      - name: Commit generated docs
-        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
-        env:
-          GH_TOKEN: ${{ steps.refresh-token-gen.outputs.token }}
-        run: |
-          echo "Committing generated docs (API / AI Prompt / index)..."
-
-          # Reconfigure remote with fresh token
-          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-
-          # 防御性清理：移除 checkout 可能遗留的 http.extraheader（虽然已设
-          # persist-credentials: false，但 extraheader 优先级高于 URL 认证，
-          # 一旦残留就会覆盖上面的新 token）
-          git config --unset-all http.https://github.com/.extraheader || true
-
-          git add docs/ .github/.translate_cache/ README.md README.*.md
-          git commit -m "chore(docs): auto-update generated docs" || echo "No changes to commit"
-          # Pull latest remote changes before pushing to avoid push rejection due to concurrent pushes
-          git pull --rebase --autostash || echo "Failed to pull remote updates, attempting direct push"
-          git push || echo "No new commits to push"
-
 
       - name: Auto-translate docs (time-budgeted rounds)
         id: translate-docs
@@ -322,6 +213,122 @@ jobs:
 
           git add docs/ .github/.translate_cache/ README.md README.*.md
           git commit -m "chore(docs): auto-update docs" || echo "No changes to commit"
+          git pull --rebase --autostash || echo "Failed to pull remote updates, attempting direct push"
+          git push || echo "No new commits to push"
+
+
+      # ==================== 生成类文档（API / AI Prompt / 索引，基于本轮最新翻译） ====================
+      # ai-prompts / docs-index 扫描各语言 docs 内容生成，必须在翻译之后运行；
+      # 否则产物基于上一轮旧翻译，且 docs/** 变更不会再触发本 workflow（滞后无法自愈）。
+      # api-docs 从源码 docstring 生成（与翻译无关），保持在 docs-index 之前（其 auto_api 索引依赖该产物）。
+
+      - name: Update API docs (multilingual)
+        id: update-api
+        run: |
+          echo "Starting API docs update..."
+
+          # Run API docs update script (auto-generates for all languages)
+          if [ -f "scripts/tools/generate-api-docs.py" ]; then
+            python scripts/tools/generate-api-docs.py
+            echo "API docs update complete"
+          else
+            echo "API docs update script not found, skipping this step"
+          fi
+
+          # Check if API docs were updated
+          if git diff --quiet docs/*/api-reference/; then
+            echo "No changes in API docs"
+            echo "api_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "API docs changes detected"
+            echo "api_updated=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate AI Prompt docs (multilingual)
+        id: generate-ai-prompts
+        run: |
+          echo "Starting AI Prompt document generation..."
+
+          # Run AI prompt generation script (auto-generates for all languages)
+          if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
+            python scripts/tools/generate-ai-prompts.py
+            echo "AI Prompt document generation complete"
+          else
+            echo "AI Prompt generation script not found, skipping this step"
+          fi
+
+          # Check if AI Prompt docs were updated
+          if git diff --quiet docs/*/ai-support/prompts/; then
+            echo "No changes in AI Prompt docs"
+            echo "ai_prompts_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "AI Prompt docs changes detected"
+            echo "ai_prompts_updated=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate docs index (multilingual)
+        id: generate-docs-index
+        run: |
+          echo "Starting docs index generation..."
+
+          # Run docs index generation script (auto-generates for all languages)
+          if [ -f "scripts/tools/generate-docs-index.py" ]; then
+            python scripts/tools/generate-docs-index.py
+            echo "Docs index generation complete"
+          else
+            echo "Docs index generation script not found, skipping this step"
+          fi
+
+          # Check if docs index was updated
+          if git diff --quiet docs/_meta/; then
+            echo "No changes in docs index"
+            echo "docs_index_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "Docs index changes detected"
+            echo "docs_index_updated=true" >> $GITHUB_OUTPUT
+          fi
+
+      # ==================== 提交 #2：生成类文档 ====================
+      # 翻译结果已在上一提交落盘；生成仅需几分钟，超时/取消风险低，
+      # 即使本提交失败，下一轮 push 会基于源码与翻译重新生成
+
+      - name: Configure Git identity
+        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        env:
+          BOT_USER_ID: ${{ steps.bot-info.outputs.bot-user-id }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: |
+          echo "App slug: $APP_SLUG"
+          echo "Bot user ID: $BOT_USER_ID"
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${BOT_USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
+
+      - name: Refresh token for generated docs commit
+        id: refresh-token-gen
+        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.ERISBOT_APP_ID }}
+          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
+
+      - name: Commit generated docs
+        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        env:
+          GH_TOKEN: ${{ steps.refresh-token-gen.outputs.token }}
+        run: |
+          echo "Committing generated docs (API / AI Prompt / index)..."
+
+          # Reconfigure remote with fresh token
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          # 防御性清理：移除 checkout 可能遗留的 http.extraheader（虽然已设
+          # persist-credentials: false，但 extraheader 优先级高于 URL 认证，
+          # 一旦残留就会覆盖上面的新 token）
+          git config --unset-all http.https://github.com/.extraheader || true
+
+          git add docs/ .github/.translate_cache/ README.md README.*.md
+          git commit -m "chore(docs): auto-update generated docs" || echo "No changes to commit"
+          # Pull latest remote changes before pushing to avoid push rejection due to concurrent pushes
           git pull --rebase --autostash || echo "Failed to pull remote updates, attempting direct push"
           git push || echo "No new commits to push"
 
