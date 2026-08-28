@@ -1,12 +1,12 @@
 {
   "version": "1.0",
   "total_categories": 1,
-  "total_documents": 93,
+  "total_documents": 105,
   "categories": {
     "自动生成 API": {
       "description": "核心 API 和接口文档",
       "icon": "fa-microchip",
-      "count": 93,
+      "count": 105,
       "documents": [
         {
           "title": "`ErisPulse.__init__` 模块",
@@ -243,6 +243,36 @@
               "icon": "fa-book"
             },
             {
+              "title": "`ErisPulse.Core.i18n.locales.en` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/en.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.i18n.locales.ja` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/ja.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.i18n.locales.ru` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/ru.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.i18n.locales.zh_cn` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/zh_cn.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.i18n.locales.zh_tw` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/i18n/locales/zh_tw.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
               "title": "`ErisPulse.Core.lifecycle` 模块",
               "path": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
               "level": 1,
@@ -311,6 +341,12 @@
             {
               "title": "`ErisPulse.CLI.commands.__init__` 模块",
               "path": "api-reference/auto_api/ErisPulse/CLI/commands/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.commands.config` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/commands/config.md",
               "level": 1,
               "icon": "fa-book"
             },
@@ -417,6 +453,36 @@
               "icon": "fa-book"
             },
             {
+              "title": "`ErisPulse.CLI.i18n.locales.en` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/en.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.i18n.locales.ja` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/ja.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.i18n.locales.ru` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/ru.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.i18n.locales.zh_cn` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/zh_cn.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.i18n.locales.zh_tw` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/i18n/locales/zh_tw.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
               "title": "`ErisPulse.CLI.registry` 模块",
               "path": "api-reference/auto_api/ErisPulse/CLI/registry.md",
               "level": 1,
@@ -425,6 +491,12 @@
             {
               "title": "`ErisPulse.CLI.utils.__init__` 模块",
               "path": "api-reference/auto_api/ErisPulse/CLI/utils/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.CLI.utils.config_wizard` 模块",
+              "path": "api-reference/auto_api/ErisPulse/CLI/utils/config_wizard.md",
               "level": 1,
               "icon": "fa-book"
             },

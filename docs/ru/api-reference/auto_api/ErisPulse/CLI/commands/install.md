@@ -96,3 +96,16 @@ install 命令
 
 ---
 
+
+##### `_post_install_configure(names: list[str], remote_packages: dict)`
+
+安装成功后衔接交互式配置向导
+
+将简称解析为完整包名（与 entry-point 所属发行包名匹配），
+交由共享向导工具检测配置声明并引导。
+
+- **names** (`list`): 本次安装的包名/简称列表
+- **remote_packages** (`dict`): 远程包索引（含简称到包名的映射）
+
+---
+

@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 92
-- **类总数**: 115（包括 6 个嵌套类）
-- **函数总数**: 175
-- **方法总数**: 1117
+- **模块总数**: 104
+- **类总数**: 117（包括 6 个嵌套类）
+- **函数总数**: 198
+- **方法总数**: 1125
 
 ---
 
@@ -49,6 +49,11 @@
 模块文档
 
 
+### [ErisPulse.CLI.commands.config](ErisPulse/CLI/commands/config.md)
+
+1 个类 | 4 个方法
+
+
 ### [ErisPulse.CLI.commands.create](ErisPulse/CLI/commands/create.md)
 
 1 个类 | 5 个方法 | 5 个函数
@@ -66,7 +71,7 @@
 
 ### [ErisPulse.CLI.commands.install](ErisPulse/CLI/commands/install.md)
 
-1 个类 | 7 个方法
+1 个类 | 8 个方法
 
 
 ### [ErisPulse.CLI.commands.language](ErisPulse/CLI/commands/language.md)
@@ -134,6 +139,31 @@
 模块文档
 
 
+### [ErisPulse.CLI.i18n.locales.en](ErisPulse/CLI/i18n/locales/en.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.ja](ErisPulse/CLI/i18n/locales/ja.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.ru](ErisPulse/CLI/i18n/locales/ru.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.zh_cn](ErisPulse/CLI/i18n/locales/zh_cn.md)
+
+模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.zh_tw](ErisPulse/CLI/i18n/locales/zh_tw.md)
+
+模块文档
+
+
 ### [ErisPulse.CLI.registry](ErisPulse/CLI/registry.md)
 
 1 个类 | 9 个方法
@@ -142,6 +172,11 @@
 ### [ErisPulse.CLI.utils.__init__](ErisPulse/CLI/utils/__init__.md)
 
 模块文档
+
+
+### [ErisPulse.CLI.utils.config_wizard](ErisPulse/CLI/utils/config_wizard.md)
+
+1 个类 | 3 个方法 | 23 个函数
 
 
 ### [ErisPulse.CLI.utils.display](ErisPulse/CLI/utils/display.md)
@@ -332,6 +367,31 @@
 ### [ErisPulse.Core.i18n.locales.__init__](ErisPulse/Core/i18n/locales/__init__.md)
 
 1 个函数
+
+
+### [ErisPulse.Core.i18n.locales.en](ErisPulse/Core/i18n/locales/en.md)
+
+模块文档
+
+
+### [ErisPulse.Core.i18n.locales.ja](ErisPulse/Core/i18n/locales/ja.md)
+
+模块文档
+
+
+### [ErisPulse.Core.i18n.locales.ru](ErisPulse/Core/i18n/locales/ru.md)
+
+模块文档
+
+
+### [ErisPulse.Core.i18n.locales.zh_cn](ErisPulse/Core/i18n/locales/zh_cn.md)
+
+模块文档
+
+
+### [ErisPulse.Core.i18n.locales.zh_tw](ErisPulse/Core/i18n/locales/zh_tw.md)
+
+模块文档
 
 
 ### [ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)
