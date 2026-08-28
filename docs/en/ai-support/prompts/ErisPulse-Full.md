@@ -3650,11 +3650,15 @@ docs/en/scope.md
 
 # Deployment Guide
 
-Best practices for deploying ErisPulse bot to production environments.
+Best practices for deploying the ErisPulse bot to a production environment.
+
+Please directly return the complete translated Markdown content, without including any other text.
+
+Once again, if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the formatting requirements in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Docker Deployment (Recommended)
 
-ErisPulse provides official Docker images with the ErisPulse framework and Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
+ErisPulse provides an official Docker image with the ErisPulse framework and Dashboard management panel built in, supporting the `linux/amd64` and `linux/arm64` architectures.
 
 ### Quick Start
 
@@ -3665,21 +3669,21 @@ docker pull erispulse/erispulse:latest
 # Download docker-compose.yml
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# Set Dashboard login token and start
+# Set the Dashboard login token and start
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-After startup, access `http://localhost:8000/Dashboard` and login using the token you set as the password.
+After starting, access `http://localhost:8000/Dashboard` and log in using the set token as the password.
 
-### Domestic Mirror Acceleration
+### Domestic Image Acceleration
 
-If Docker Hub is not accessible, you can pull images from GitHub Container Registry:
+If Docker Hub is inaccessible, you can pull the image using GitHub Container Registry:
 
 ```bash
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-When using ghcr.io images, you need to modify the `image` in `docker-compose.yml`:
+When using the ghcr.io image, you need to modify the `image` in `docker-compose.yml`:
 
 ```yaml
 services:
@@ -3707,56 +3711,69 @@ services:
 ### Environment Variables
 
 | Variable | Default Value | Description |
-|----------|--------------|-------------|
+|----------|---------------|-------------|
 | `ERISPULSE_PORT` | `8000` | Dashboard port mapping |
-| `ERISPULSE_DASHBOARD_TOKEN` | Auto-generated | Dashboard login token (highly recommended to set) |
+| `ERISPULSE_DASHBOARD_TOKEN` | Auto-generated | Dashboard login token (strongly recommended to set) |
 | `TZ` | `Asia/Shanghai` | Timezone |
 
 ### Data Persistence
 
-The `./config` directory is mounted for configuration files and database, containing:
+The `./config` directory mounts configuration files and the database, including:
 
 - `config/config.toml` — Configuration file
 - `config/config.db` — SQLite storage database
 
 ## Dashboard Management Panel
 
-The ErisPulse Docker image includes a Dashboard module that provides a web-based management interface.
+The ErisPulse Docker image includes a built-in Dashboard module, providing a web-based visualization management interface.
 
 ### Feature Overview
 
 | Feature | Description |
 |---------|-------------|
 | Dashboard | System overview, CPU/memory monitoring, uptime, event statistics |
-| Bot Management | View online status and information of bots on various platforms |
-| Event Viewer | Real-time event stream with filtering by type and platform |
-| Log Viewer | Log viewer with filtering by module and level |
+| Robot Management | View online status and information of robots across platforms |
+| Event Viewing | Real-time event stream, supports filtering by type and platform |
+| Log Viewing | Log viewer with filtering by module and level |
 | Module Management | View, load, and unload installed modules and adapters |
-| Module Store | Browse remotely available packages with one-click installation |
-| Configuration Editor | Edit `config.toml` online |
+| Module Store | Browse remote available packages and install them with one click |
+| Configuration Editing | Edit `config.toml` online |
 | Storage Management | Browse and edit Key-Value storage data |
 | Backup | Export/import configuration and storage data |
-| Audit Log | Record all management operations |
+| Audit Logs | Record all management operations |
 
 ### Installing Modules via Dashboard
 
-The Dashboard integrates a module store function where you can:
+The Dashboard integrates the module store functionality, allowing you to:
 
-1. **Install from Store**: Browse the remote module list and install needed modules with one click
-2. **Upload Local Package**: Directly upload `.whl` or `.zip` files for installation, convenient for testing personally developed modules
+1. **Install from Store**: Browse the remote module list and install required modules with one click
+2. **Upload Local Package**: Directly upload `.whl` or `.zip` files for installation, convenient for testing personal developed modules
 
-> **Quick testing workflow for module developers**: After deploying with Docker, directly upload your built `.whl` file through the "Upload Local Package" function in Dashboard for testing, without manual container operations.
+> **Quick Testing Process for Module Developers**: After deploying with Docker, directly upload your built `.whl` file through the "Upload Local Package" feature in the Dashboard for testing, without manual container operations.
+
+[**Quick Start**](docs/en/quick-start.md) | [**Configuration**](docs/en/configuration.md) | [**Modules**](docs/en/modules.md) | [**Dashboard**](docs/en/dashboard.md) | [**FAQ**](docs/en/faq.md)
+
+## Process Supervision and Hard Restart
+
+The hard restart of ErisPulse (`sdk.hard_restart()`) depends on an **external supervisor** to restart the process when the exit code is 42 — the SDK itself does not restart a new process. A supervisor must be configured in production environments; otherwise, the process will not automatically recover after a hard restart:
+
+- Docker: `restart: unless-stopped` (restarts for any exit code, including 42)
+- systemd: `Restart=on-failure` + `RestartForceExitStatus=42`
+- PM2 / supervisord: add 42 to the list of restartable exit codes
+- Custom Python supervisor: loop `Popen` + detect `returncode == 42`
+
+Complete configuration examples for each supervisor and the exit code 42 contract are described in [Startup Flow → Supervisor Guide](../advanced/startup.md#supervisor-guide).
 
 ## Health Check
 
-The SDK has built-in health check endpoints:
+The SDK includes built-in health check endpoints:
 
 ```bash
 # Health check
 curl http://localhost:8000/health
 ```
 
-Docker health check can be added in `docker-compose.yml`:
+Docker health checks can be added in `docker-compose.yml`:
 
 ```yaml
 services:
@@ -3768,9 +3785,15 @@ services:
       retries: 3
 ```
 
+**Important: Path replacement rules**
+- Replace `docs/en/` in document links with `docs/en/`
+- For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+- For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+- This ensures links point to the correct language version of the documentation
+
 ## Reverse Proxy
 
-If you need to expose the Dashboard through a reverse proxy like Nginx:
+If you need to expose the Dashboard through a reverse proxy such as Nginx:
 
 ```nginx
 server {
@@ -3784,7 +3807,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
-    # WebSocket support (required for Dashboard real-time event stream)
+    # WebSocket support (required for Dashboard real-time event streams)
     location /Dashboard/ws {
         proxy_pass http://127.0.0.1:8000;
         proxy_http_version 1.1;
@@ -3794,17 +3817,16 @@ server {
 }
 ```
 
-SSL can be set up with Let's Encrypt:
+SSL can be obtained using Let's Encrypt:
 
 ```bash
 sudo certbot --nginx -d bot.example.com
-```
 
 ## Manual Deployment (pip)
 
-If not using Docker, manual deployment is also possible.
+If you don't use Docker, you can also deploy manually.
 
-### Production Configuration
+### Production Environment Configuration
 
 ```toml
 # config/config.toml
@@ -3867,34 +3889,42 @@ autostart=true
 autorestart=true
 stderr_logfile=/var/log/erispulse-bot/err.log
 stdout_logfile=/var/log/erispulse-bot/out.log
-```
 
 ## Security Recommendations
 
-1. **Set Dashboard Token**: Use a strong random token, don't use default values
-2. **Don't Expose Port to Public Network**: Unless using reverse proxy + SSL, restrict Dashboard port to internal network
-3. **Protect Data Directory**: The `config/` directory contains configuration and database, set appropriate file permissions
-4. **Regular Updates**: Use `epsdk self-update` or pull the latest Docker image
-5. **Don't Run as Root**: Create a dedicated user for manual deployment
-6. **Use Docker Restart Policy**: `restart: unless-stopped` ensures automatic restart after unexpected exits
+1. **Set Dashboard Token**: Use a strong random token, do not use the default value
+2. **Do not expose port to public network**: Unless using reverse proxy + SSL, restrict Dashboard port to internal network
+3. **Protect data directory**: The `config/` directory contains configuration and database, set appropriate file permissions
+4. **Regular updates**: Use `epsdk self-update` or pull the latest Docker image
+5. **Do not run as root**: When deploying manually, create a dedicated user
+6. **Use Docker restart policy**: `restart: unless-stopped` ensures automatic restart after abnormal exit
 
-## Multi-instance Deployment
+Please directly return the complete translated Markdown content, without any additional text.
 
-When running multiple bot instances:
+Once again, please note: if the document contains language switch lines (with language names separated by `` | ``), strictly follow the above rule #8 for formatting and do not write incorrect formats such as ``[**Label**](file)``.
 
-1. Each instance should use a separate project directory and `docker-compose.yml`
-2. Use different ports: `ERISPULSE_PORT=8001`
+## Multi-Instance Deployment
+
+When running multiple robot instances:
+
+1. Each instance uses an independent project directory and `docker-compose.yml`
+2. Use different port numbers: `ERISPULSE_PORT=8001`
 3. Use different container names: `container_name: erispulse-bot2`
 
-## Updates and Maintenance
+For document links, replace `docs/en/` with `docs/en/`:
+
+- For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+- For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged to ensure links point to the correct language version of the documentation.
+
+## Update and Maintenance
 
 ### Docker Method
 
 ```bash
-# Pull latest image
+# Pull the latest image
 docker compose pull
 
-# Restart with new image
+# Restart using the new image
 docker compose up -d
 ```
 
@@ -3907,13 +3937,16 @@ epsdk upgrade
 
 ### Backup
 
-Regularly backup the `config/` directory:
+Regularly back up the `config/` directory:
 
 ```bash
-# Docker deployment
+# For Docker deployment
 tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
-# Or export using the "Backup" function in Dashboard
+# Or use the "Backup" function in the Dashboard to export
+```
+
+[**English**](docs/en/quick-start.md)
 
 
 
@@ -17125,67 +17158,116 @@ finally:
 
 ## Restart
 
-The SDK provides two restart methods, both of which do not require you to uninstall first—the framework will handle it automatically:
+The SDK provides two restart methods, both of which do not require you to manually uninstall first—the framework handles it automatically:
 
-| Method | Call | Behavior | Applicable Scenarios |
+| Method | Call | Behavior | Use Case |
 |------|------|------|----------|
-| Hot Restart | `await sdk.restart()` | `uninit()` within the same process, then re-`init()`, reloading adapters/modules | Reload configuration, hot update modules |
-| Hard Restart | `await sdk.hard_restart()` | After `uninit()`, exit the entire process and start a new process by the parent process (`epsdk run`) | Suspected memory/resource leaks, requiring a completely clean restart |
+| Hot Restart | `await sdk.restart()` | Re-initialize within the same process after `uninit()`, reloading adapters/modules | Reload configuration, hot update modules |
+| Hard Restart | `await sdk.hard_restart()` | Exit the process with **exit code 42** after `uninit()`, then let an external supervisor start a new process | Suspected memory/resource leaks, or when a fully clean restart is needed |
 
 ```python
-# Hot restart: reload within the same process (most commonly used)
+# Hot Restart: Reload within the same process (most common)
 await sdk.restart()
 
-# Hard restart: exit the process, effective only when started via `epsdk run`
+# Hard Restart: Exit the process, let an external supervisor restart (see "Supervisor Guide" below)
 await sdk.hard_restart()
 ```
 
 > **Two points to note**:
-> 1. Both methods execute the restart in a background task, **immediately returning `True` to indicate that the "restart task has been scheduled,"** not that the restart has completed. The actual restart occurs in the background to avoid interrupting the current event chain.
-> 2. `hard_restart()` **must be executed through `epsdk run main.py` to take effect.** The principle is: after unloading, the process exits with **exit code 42**; the parent process of `epsdk run` detects code 42 and restarts a new process; if started directly via `python main.py`, the process exits with code 42 and terminates without automatic restart.
+> 1. Both methods execute the restart in the background, immediately returning `True` to indicate that the "restart task has been scheduled," not that the restart is complete. The actual restart happens in the background, avoiding interruption of the current event chain.
+> 2. The principle of `hard_restart()` is: after unloading and flushing the configuration, exit the process with **exit code 42** (`HARD_RESTART_EXIT_CODE`)—**it does not start a new process itself**. It must be restarted by an external supervisor detecting exit code 42. If you run directly with `python main.py` and there is no supervisor, the process ends after exiting with code 42, **without automatic restart** (the framework will issue a warning).
 
 ### When to Use Hard Restart?
 
-Hard restart is not just a "more thorough restart," it is more suitable and even more efficient than hot restart in the following scenarios:
+Hard restart is not just a "more thorough restart"—it is more suitable and even more efficient than hot restart in the following scenarios:
 
-- **Side effects of binary libraries (C extensions):** Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart uses a new process, thus thoroughly clearing these side effects.
-- **Resource leak troubleshooting:** When suspected memory or handle leaks exist, hard restart provides a clean environment.
-- **Frequent restarts sensitive to performance:** Hard restart eliminates the overhead of uninstalling and reloading within the same process, making it more efficient than hot restart in practice.
+- **Side effects from binary libraries (C extensions)**: Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart starts a brand new process, thoroughly clearing these side effects.
+- **Resource leak investigation**: When suspected memory or handle leaks exist, hard restart provides a clean environment.
+- **Frequent restarts sensitive to performance**: Hard restart avoids the overhead of unloading and reloading within the same process, making it more efficient than hot restart.
 
-> The "Framework Restart" function in the Dashboard management panel internally calls `hard_restart()`.
-> Additionally, hard restart has a requirement: it must be started using the `epsdk run` command, otherwise the program will just throw exit code 42 and exit. The `run` command checks for exit code 42 to restart the process, which must be noted carefully!!!
+> The "Framework Restart" feature in the Dashboard management panel internally calls `hard_restart()`.
 
-## Restart
+### Exit Code 42 Contract
 
-The SDK provides two restart methods, both of which do not require you to uninstall first—the framework will handle it automatically:
+Hard restart is a cross-process collaboration: **SDK is responsible for exiting (code 42), and the supervisor is responsible for restarting**.
 
-| Method | Call | Behavior | Applicable Scenarios |
-|------|------|------|----------|
-| Hot Restart | `await sdk.restart()` | `uninit()` within the same process, then re-`init()`, reloading adapters/modules | Reload configuration, hot update modules |
-| Hard Restart | `await sdk.hard_restart()` | After `uninit()`, exit the entire process and start a new process by the parent process (`epsdk run`) | Suspected memory/resource leaks, requiring a completely clean restart |
+| Role | Behavior |
+|------|------|
+| SDK (when hard-restarted) | `uninit()` → flush configuration → `os._exit(42)` |
+| Supervisor | Detect child process exit code 42 → restart with the same command |
 
-```python
-# Hot restart: reload within the same process (most commonly used)
-await sdk.restart()
+> `sdk.is_supervised()` can query whether the current process was started by a supervisor (detects environment variable `ERISPULSE_SUPERVISED`). The CLI `run` command automatically injects this marker when starting a child process; external supervisors like systemd / Docker do not inject it, so `is_supervised()` returns `False`, and the framework will issue a "supervisor not detected" warning after hard restart.
 
-# Hard restart: exit the process, effective only when started via `epsdk run`
-await sdk.hard_restart()
+### Supervisor Guide
+
+Choose a supervisor that suits you to make hard restart truly effective:
+
+#### 1. CLI run command (development/simple deployment, recommended)
+
+`epsdk run main.py` includes a built-in supervision loop: it detects the child process exit code and immediately restarts if it is 42; for other abnormal exit codes, it automatically retries with exponential backoff; `Ctrl+C` will first gracefully terminate the child process (code 0 is considered normal exit, so it will not be restarted).
+
+```bash
+epsdk run main.py
 ```
 
-> **Two points to note**:
-> 1. Both methods execute the restart in a background task, **immediately returning `True` to indicate that the "restart task has been scheduled,"** not that the restart has completed. The actual restart occurs in the background to avoid interrupting the current event chain.
-> 2. `hard_restart()` **must be executed through `epsdk run main.py` to take effect.** The principle is: after unloading, the process exits with **exit code 42**; the parent process of `epsdk run` detects code 42 and restarts a new process; if started directly via `python main.py`, the process exits with code 42 and terminates without automatic restart.
+#### 2. systemd (Linux servers)
 
-### When to Use Hard Restart?
+`RestartForceExitStatus=42` makes exit code 42 trigger a restart (by default `on-failure` only applies to non-zero codes):
 
-Hard restart is not just a "more thorough restart," it is more suitable and even more efficient than hot restart in the following scenarios:
+```ini
+[Service]
+ExecStart=/usr/bin/python3 /opt/mybot/main.py
+Restart=on-failure
+RestartForceExitStatus=42
+RestartSec=2
+User=mybot
+```
 
-- **Side effects of binary libraries (C extensions):** Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart uses a new process, thus thoroughly clearing these side effects.
-- **Resource leak troubleshooting:** When suspected memory or handle leaks exist, hard restart provides a clean environment.
-- **Frequent restarts sensitive to performance:** Hard restart eliminates the overhead of uninstalling and reloading within the same process, making it more efficient than hot restart in practice.
+#### 3. Docker / docker-compose
 
-> The "Framework Restart" function in the Dashboard management panel internally calls `hard_restart()`.
-> Additionally, hard restart has a requirement: it must be started using the `epsdk run` command, otherwise the program will just throw exit code 42 and exit. The `run` command checks for exit code 42 to restart the process, which must be noted carefully!!!
+The application process is PID 1 inside the container. After exit code 42, the container exits—use the `restart` policy to make it automatically restart:
+
+```yaml
+services:
+  bot:
+    build: .
+    restart: unless-stopped   # Restart for any exit (including 42)
+```
+
+#### 4. PM2 (Node ecosystem operations)
+
+```bash
+pm2 start main.py --name mybot --interpreter python3
+# 42 is treated as an exit code, PM2 restarts by default; set restart_delay to debounce
+pm2 set mybot.restart_delay 2000
+```
+
+#### 5. supervisord
+
+```ini
+[program:mybot]
+command=python3 /opt/mybot/main.py
+autorestart=true
+exitcodes=0,2,42    # 42 is also considered "normal exit requiring restart"
+```
+
+#### 6. Pure Python custom supervisor
+
+```python
+import subprocess, sys, time
+
+while True:
+    p = subprocess.Popen([sys.executable, "main.py"])
+    code = p.wait()
+    if code == 42:          # Hard restart request
+        time.sleep(0.5)
+        continue
+    if code == 0:           # Normal exit
+        break
+    time.sleep(3)           # Abnormal exit, backoff retry
+```
+
+> **Behavior without a supervisor**: Running directly with `python main.py`, calling `hard_restart()` causes the process to exit with code 42 and not restart. In this case, you should integrate any of the supervisors mentioned above.
 
 
 

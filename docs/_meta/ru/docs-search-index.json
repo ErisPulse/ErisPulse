@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1456,
+  "total_keywords": 1452,
   "keywords": {
     "\"Chat\": {": [
       {
@@ -2144,6 +2144,14 @@
         "title": "Discord"
       }
     ],
+    "Docker 零部署（Рекомендуется）": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 9,
+        "level": 2,
+        "title": "Docker 零部署（Рекомендуется）"
+      }
+    ],
     "Docker-образ (GHCR) vs PyPI": [
       {
         "document": "developer-guide/publishing.md",
@@ -2312,14 +2320,6 @@
         "title": "Logger (Логирование)"
       }
     ],
-    "MCP-сервер": [
-      {
-        "document": "ai-support/README.md",
-        "line": 60,
-        "level": 2,
-        "title": "MCP-сервер"
-      }
-    ],
     "Meta события": [
       {
         "document": "api-reference/event-system.md",
@@ -2406,14 +2406,6 @@
         "line": 179,
         "level": 3,
         "title": "Storage (Хранилище)"
-      }
-    ],
-    "Supervisor": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 207,
-        "level": 3,
-        "title": "Supervisor"
       }
     ],
     "Telegram": [
@@ -2784,6 +2776,14 @@
         "title": "config.toml"
       }
     ],
+    "config/config.toml": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 178,
+        "level": 1,
+        "title": "config/config.toml"
+      }
+    ],
     "confirm(prompt=None, **kwargs)": [
       {
         "document": "advanced/conversation.md",
@@ -2835,7 +2835,7 @@
     "docker-compose.yml": [
       {
         "document": "user-guide/deployment.md",
-        "line": 40,
+        "line": 44,
         "level": 3,
         "title": "docker-compose.yml"
       }
@@ -2998,14 +2998,6 @@
         "line": 165,
         "level": 3,
         "title": "stop()"
-      }
-    ],
-    "systemd (Linux)": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 175,
-        "level": 3,
-        "title": "systemd (Linux)"
       }
     ],
     "thread": [
@@ -3653,7 +3645,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 9,
+        "line": 13,
         "level": 3,
         "title": "Быстрый старт"
       }
@@ -4130,12 +4122,12 @@
         "title": "Горячее включение/выключение адаптеров"
       }
     ],
-    "Горячий перезапуск: перезагрузка в том же процессе (наиболее часто используемый способ)": [
+    "Горячий перезапуск: перезагрузка в рамках одного процесса (наиболее часто используемый)": [
       {
         "document": "advanced/startup.md",
         "line": 683,
         "level": 1,
-        "title": "Горячий перезапуск: перезагрузка в том же процессе (наиболее часто используемый способ)"
+        "title": "Горячий перезапуск: перезагрузка в рамках одного процесса (наиболее часто используемый)"
       }
     ],
     "Грациозное завершение": [
@@ -4177,12 +4169,6 @@
       }
     ],
     "Дальнейшие шаги": [
-      {
-        "document": "ai-support/README.md",
-        "line": 117,
-        "level": 2,
-        "title": "Дальнейшие шаги"
-      },
       {
         "document": "getting-started/basic-concepts.md",
         "line": 351,
@@ -4421,7 +4407,7 @@
     "Документация по материалам": [
       {
         "document": "ai-support/README.md",
-        "line": 18,
+        "line": 20,
         "level": 2,
         "title": "Документация по материалам"
       }
@@ -4626,14 +4612,6 @@
         "title": "Если при входе невозможно получить bot_id, можно позволить пользователю заполнить в конфигурации"
       }
     ],
-    "Жесткий перезапуск: завершение процесса, действует только при запуске через epsdk run": [
-      {
-        "document": "advanced/startup.md",
-        "line": 686,
-        "level": 1,
-        "title": "Жесткий перезапуск: завершение процесса, действует только при запуске через epsdk run"
-      }
-    ],
     "Жизненный цикл": [
       {
         "document": "architecture.md",
@@ -4692,6 +4670,14 @@
         "line": 235,
         "level": 2,
         "title": "Жизненный цикл событий"
+      }
+    ],
+    "Жёсткий перезапуск: завершение процесса, передача управления внешнему супервайзеру (см. руководство ниже)": [
+      {
+        "document": "advanced/startup.md",
+        "line": 686,
+        "level": 1,
+        "title": "Жёсткий перезапуск: завершение процесса, передача управления внешнему супервайзеру (см. руководство ниже)"
       }
     ],
     "Загрузка модулей по требованию": [
@@ -5832,6 +5818,14 @@
         "title": "Когда перегенерировать"
       }
     ],
+    "Код 42 считается кодом завершения, PM2 по умолчанию перезапускает; настройте задержку перезапуска": [
+      {
+        "document": "advanced/startup.md",
+        "line": 755,
+        "level": 1,
+        "title": "Код 42 считается кодом завершения, PM2 по умолчанию перезапускает; настройте задержку перезапуска"
+      }
+    ],
     "Команда не отвечает?": [
       {
         "document": "getting-started/first-bot.md",
@@ -5996,14 +5990,6 @@
         "line": 526,
         "level": 2,
         "title": "Конфигурация во время выполнения"
-      }
-    ],
-    "Конфигурация для продакшна": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 157,
-        "level": 3,
-        "title": "Конфигурация для продакшна"
       }
     ],
     "Конфигурация ленивой загрузки": [
@@ -6612,6 +6598,14 @@
         "title": "Многоаккаунтная настройка"
       }
     ],
+    "Множественная развертка экземпляров": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 250,
+        "level": 2,
+        "title": "Множественная развертка экземпляров"
+      }
+    ],
     "Множественные аккаунты: указание учетной записи бота": [
       {
         "document": "platform-guide/yunhu.md",
@@ -6762,6 +6756,14 @@
         "line": 178,
         "level": 3,
         "title": "Можно ли зарегистрировать несколько модулей в одном пакете?"
+      }
+    ],
+    "Мониторинг здоровья": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 117,
+        "level": 2,
+        "title": "Мониторинг здоровья"
       }
     ],
     "Мониторинг прогресса (OnProgress / OnError)": [
@@ -7027,7 +7029,7 @@
     "Обзор функций": [
       {
         "document": "user-guide/deployment.md",
-        "line": 76,
+        "line": 80,
         "level": 3,
         "title": "Обзор функций"
       }
@@ -7067,7 +7069,7 @@
     "Обновление и обслуживание": [
       {
         "document": "user-guide/deployment.md",
-        "line": 239,
+        "line": 260,
         "level": 2,
         "title": "Обновление и обслуживание"
       }
@@ -7345,7 +7347,7 @@
     "Обратный прокси": [
       {
         "document": "user-guide/deployment.md",
-        "line": 121,
+        "line": 140,
         "level": 2,
         "title": "Обратный прокси"
       }
@@ -8409,7 +8411,7 @@
     "Панель управления Dashboard": [
       {
         "document": "user-guide/deployment.md",
-        "line": 72,
+        "line": 76,
         "level": 2,
         "title": "Панель управления Dashboard"
       }
@@ -8530,12 +8532,14 @@
         "line": 44,
         "level": 2,
         "title": "Переменные окружения"
-      },
+      }
+    ],
+    "Переменные среды": [
       {
         "document": "user-guide/deployment.md",
-        "line": 57,
+        "line": 61,
         "level": 3,
-        "title": "Переменные окружения"
+        "title": "Переменные среды"
       }
     ],
     "Переопределение встроенных методов": [
@@ -8832,22 +8836,6 @@
         "line": 106,
         "level": 3,
         "title": "Поддержка сообщений OneBot12"
-      }
-    ],
-    "Подключение к Claude Desktop": [
-      {
-        "document": "ai-support/README.md",
-        "line": 77,
-        "level": 3,
-        "title": "Подключение к Claude Desktop"
-      }
-    ],
-    "Подключение к Cursor": [
-      {
-        "document": "ai-support/README.md",
-        "line": 93,
-        "level": 3,
-        "title": "Подключение к Cursor"
       }
     ],
     "Подключение к шлюзу": [
@@ -9334,14 +9322,6 @@
         "line": 34,
         "level": 2,
         "title": "Предварительные требования"
-      }
-    ],
-    "Предоставляемые инструменты": [
-      {
-        "document": "ai-support/README.md",
-        "line": 64,
-        "level": 3,
-        "title": "Предоставляемые инструменты"
       }
     ],
     "Предположим, в config.toml MyModule был заблокирован в определённой группе:": [
@@ -9876,12 +9856,6 @@
         "line": 334,
         "level": 3,
         "title": "Проверка здоровья"
-      },
-      {
-        "document": "user-guide/deployment.md",
-        "line": 100,
-        "level": 2,
-        "title": "Проверка здоровья"
       }
     ],
     "Проверка на администратора": [
@@ -10094,6 +10068,14 @@
         "title": "Процесс удаления"
       }
     ],
+    "Процессное наблюдение и жесткий перезапуск": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 104,
+        "level": 2,
+        "title": "Процессное наблюдение и жесткий перезапуск"
+      }
+    ],
     "Прямая загрузка данных из памяти (без сохранения на диск)": [
       {
         "document": "advanced/http-client.md",
@@ -10156,22 +10138,6 @@
         "line": 453,
         "level": 2,
         "title": "Развертывание"
-      }
-    ],
-    "Развертывание нескольких экземпляров": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 231,
-        "level": 2,
-        "title": "Развертывание нескольких экземпляров"
-      }
-    ],
-    "Развертывание с Docker (рекомендуется)": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 5,
-        "level": 2,
-        "title": "Развертывание с Docker (рекомендуется)"
       }
     ],
     "Разработка адаптеров": [
@@ -10487,7 +10453,7 @@
     "Резервное копирование": [
       {
         "document": "user-guide/deployment.md",
-        "line": 258,
+        "line": 279,
         "level": 3,
         "title": "Резервное копирование"
       }
@@ -10495,7 +10461,7 @@
     "Рекомендации по безопасности": [
       {
         "document": "user-guide/deployment.md",
-        "line": 222,
+        "line": 239,
         "level": 2,
         "title": "Рекомендации по безопасности"
       }
@@ -10586,14 +10552,6 @@
         "line": 43,
         "level": 3,
         "title": "Ручное переключение в коде"
-      }
-    ],
-    "Ручное развертывание (pip)": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 153,
-        "level": 2,
-        "title": "Ручное развертывание (pip)"
       }
     ],
     "Ручное чтение конфигурации (не рекомендуется)": [
@@ -11382,6 +11340,12 @@
         "line": 17,
         "level": 2,
         "title": "Сохранение данных"
+      },
+      {
+        "document": "user-guide/deployment.md",
+        "line": 69,
+        "level": 3,
+        "title": "Сохранение данных"
       }
     ],
     "Сохранить Task и подождать позже": [
@@ -11526,20 +11490,20 @@
         "title": "Способ 2: ответ через сегмент сообщения OneBot12"
       }
     ],
-    "Способ с Docker": [
+    "Способ Docker": [
       {
         "document": "user-guide/deployment.md",
-        "line": 241,
+        "line": 262,
         "level": 3,
-        "title": "Способ с Docker"
+        "title": "Способ Docker"
       }
     ],
-    "Способ с pip": [
+    "Способ pip": [
       {
         "document": "user-guide/deployment.md",
-        "line": 251,
+        "line": 272,
         "level": 3,
-        "title": "Способ с pip"
+        "title": "Способ pip"
       }
     ],
     "Способ установки": [
@@ -11577,7 +11541,7 @@
     "Способы использования": [
       {
         "document": "ai-support/README.md",
-        "line": 30,
+        "line": 32,
         "level": 3,
         "title": "Способы использования"
       }
@@ -12364,12 +12328,12 @@
         "title": "Уровни серьезности"
       }
     ],
-    "Ускорение зеркала в Китае": [
+    "Ускорение загрузки образов в Китае": [
       {
         "document": "user-guide/deployment.md",
-        "line": 24,
+        "line": 28,
         "level": 3,
-        "title": "Ускорение зеркала в Китае"
+        "title": "Ускорение загрузки образов в Китае"
       }
     ],
     "Успешная отправка сообщения": [
@@ -12410,20 +12374,20 @@
         "title": "Установка и активация"
       }
     ],
-    "Установка модулей через Dashboard": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 91,
-        "level": 3,
-        "title": "Установка модулей через Dashboard"
-      }
-    ],
     "Установка модуля в каталог проекта": [
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 191,
         "level": 1,
         "title": "Установка модуля в каталог проекта"
+      }
+    ],
+    "Установка модуля через Dashboard": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 95,
+        "level": 3,
+        "title": "Установка модуля через Dashboard"
       }
     ],
     "Установка нескольких модулей": [
@@ -12568,14 +12532,6 @@
         "title": "Хочу добавить свой модуль сюда?"
       }
     ],
-    "Хранение данных": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 65,
-        "level": 3,
-        "title": "Хранение данных"
-      }
-    ],
     "Хранение данных пользователя": [
       {
         "document": "getting-started/common-tasks.md",
@@ -12702,12 +12658,6 @@
     ],
     "Часто задаваемые вопросы": [
       {
-        "document": "ai-support/README.md",
-        "line": 109,
-        "level": 2,
-        "title": "Часто задаваемые вопросы"
-      },
-      {
         "document": "developer-guide/publishing.md",
         "line": 172,
         "level": 2,
@@ -12793,7 +12743,7 @@
     "Шаблон описания задачи": [
       {
         "document": "ai-support/README.md",
-        "line": 36,
+        "line": 38,
         "level": 3,
         "title": "Шаблон описания задачи"
       }

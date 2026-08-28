@@ -3643,14 +3643,18 @@ cache_size = 1024           # is_allowed 的 LRU 快取大小
 
 將 ErisPulse 機器人部署到生產環境的最佳實踐。
 
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
+
+再次提醒：如果文檔包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
 ## Docker 部署（推薦）
 
-ErisPulse 提供官方 Docker 映像，內建 ErisPulse 框架和 Dashboard 管理面板，支援 `linux/amd64` 和 `linux/arm64` 架構。
+ErisPulse 提供官方 Docker 鏡像，內建 ErisPulse 框架和 Dashboard 管理介面，支援 `linux/amd64` 和 `linux/arm64` 架構。
 
 ### 快速啟動
 
 ```bash
-# 拉取映像
+# 拉取鏡像
 docker pull erispulse/erispulse:latest
 
 # 下載 docker-compose.yml
@@ -3662,15 +3666,15 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 啟動後訪問 `http://localhost:8000/Dashboard`，使用設定的令牌作為密碼登入。
 
-### 國內映像加速
+### 國內鏡像加速
 
-如果 Docker Hub 無法存取，可以使用 GitHub Container Registry 拉取映像：
+如果 Docker Hub 無法存取，可以使用 GitHub Container Registry 拉取鏡像：
 
 ```bash
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-使用 ghcr.io 映像時，需要修改 `docker-compose.yml` 中的 image：
+使用 ghcr.io 鏡像時，需要修改 `docker-compose.yml` 中的 image：
 
 ```yaml
 services:
@@ -3699,34 +3703,34 @@ services:
 
 | 變數 | 預設值 | 說明 |
 |------|--------|------|
-| `ERISPULSE_PORT` | `8000` | Dashboard 連接埠對應 |
-| `ERISPULSE_DASHBOARD_TOKEN` | 自動生成 | Dashboard 登入令牌（強烈建議設定） |
+| `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
+| `ERISPULSE_DASHBOARD_TOKEN` | 自动生成 | Dashboard 登入令牌（強烈建議設定） |
 | `TZ` | `Asia/Shanghai` | 時區 |
 
-### 資料持久化
+### 數據持久化
 
-`./config` 目錄掛載了配置檔案和資料庫，包含：
+`./config` 目錄掛載了配置文件和資料庫，包含：
 
-- `config/config.toml` — 配置檔案
-- `config/config.db` — SQLite 儲存資料庫
+- `config/config.toml` — 配置文件
+- `config/config.db` — SQLite 存儲資料庫
 
-## Dashboard 管理面板
+## Dashboard 管理介面
 
-ErisPulse Docker 映像內建 Dashboard 模組，提供 Web 可視化管理介面。
+ErisPulse Docker 鏡像內建 Dashboard 模組，提供 Web 可視化管理介面。
 
 ### 功能概覽
 
 | 功能 | 說明 |
 |------|------|
-| 儀表板 | 系統概覽、CPU/記憶體監控、運行時長、事件統計 |
-| 機器人管理 | 查看各平台機器人在線狀態和資訊 |
-| 事件查看 | 實時事件流，支援按類型和平台過濾 |
-| 日誌查看 | 按模組和等級過濾的日誌查看器 |
+| 介面板 | 系統概覽、CPU/記憶體監控、運行時間、事件統計 |
+| 機器人管理 | 查看各平台機器人線上狀態和資訊 |
+| 事件檢視 | 實時事件流，支援按類型和平台過濾 |
+| 日誌檢視 | 按模組和層級過濾的日誌檢視器 |
 | 模組管理 | 查看、載入、卸載已安裝的模組和適配器 |
 | 模組商店 | 瀏覽遠端可用套件並一鍵安裝 |
 | 配置編輯 | 在線編輯 `config.toml` |
 | 儲存管理 | 瀏覽和編輯 Key-Value 儲存資料 |
-| 備份 | 匯出/匯入配置和儲存資料 |
+| 備份 | 導出/匯入配置和儲存資料 |
 | 審計日誌 | 記錄所有管理操作 |
 
 ### 透過 Dashboard 安裝模組
@@ -3734,9 +3738,20 @@ ErisPulse Docker 映像內建 Dashboard 模組，提供 Web 可視化管理介�
 Dashboard 整合了模組商店功能，你可以：
 
 1. **從商店安裝**：瀏覽遠端模組列表，選擇需要的模組一鍵安裝
-2. **上傳本地套件**：直接上傳 `.whl` 或 `.zip` 檔案進行安裝，方便測試個人開發的模組
+2. **上傳本機套件**：直接上傳 `.whl` 或 `.zip` 檔案進行安裝，方便測試個人開發的模組
 
-> **模組開發者的快速測試流程**：使用 Docker 部署後，在 Dashboard 中透過「上傳本地套件」功能直接上傳你建構的 `.whl` 檔案進行測試，無需手動操作容器。
+> **模組開發者的快速測試流程**：使用 Docker 部署後，在 Dashboard 中透過「上傳本機套件」功能直接上傳你建構的 `.whl` 檔案進行測試，無需手動操作容器。
+
+## 進程監督與硬重啟
+
+ErisPulse 的硬重啟（`sdk.hard_restart()`）依賴**外部監督者**在進程退出碼為 42 時重新拉起進程——SDK 自己不會拉起新進程。生產環境務必配置監督者，否則硬重啟後進程不會自動恢復：
+
+- Docker：`restart: unless-stopped`（任何退出碼都會重啟，包含 42）
+- systemd：`Restart=on-failure` + `RestartForceExitStatus=42`
+- PM2 / supervisord：將 42 加入可重啟退出碼
+- 純 Python 自定義監督者：循環 `Popen` + 檢測 `returncode == 42`
+
+各監督者的完整配置示例與退出碼 42 契約說明見 [啟動流程 → 監督者指南](../advanced/startup.md#監督者指南)。
 
 ## 健康檢查
 
@@ -3747,7 +3762,7 @@ SDK 內建健康檢查端點：
 curl http://localhost:8000/health
 ```
 
-Docker 健康檢查可在 `docker-compose.yml` 中新增：
+Docker 健康檢查可在 `docker-compose.yml` 中添加：
 
 ```yaml
 services:
@@ -3759,9 +3774,13 @@ services:
       retries: 3
 ```
 
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+
 ## 反向代理
 
-如果需要透過 Nginx 等反向代理暴露 Dashboard：
+如果需要透過 Nginx 等反向代理公開 Dashboard：
 
 ```nginx
 server {
@@ -3775,7 +3794,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
-    # WebSocket 支援（Dashboard 實時事件流需要）
+    # WebSocket 支援（Dashboard 即時事件流需要）
     location /Dashboard/ws {
         proxy_pass http://127.0.0.1:8000;
         proxy_http_version 1.1;
@@ -3789,9 +3808,8 @@ SSL 可使用 Let's Encrypt：
 
 ```bash
 sudo certbot --nginx -d bot.example.com
-```
 
-## 手動部署（pip）
+## 手動部署 (pip)
 
 如果不使用 Docker，也可以手動部署。
 
@@ -3858,34 +3876,41 @@ autostart=true
 autorestart=true
 stderr_logfile=/var/log/erispulse-bot/err.log
 stdout_logfile=/var/log/erispulse-bot/out.log
-```
 
 ## 安全建議
 
-1. **設定 Dashboard 令牌**：使用強隨機令牌，不要使用預設值
-2. **不要暴露連接埠到公網**：除非使用反向代理 + SSL，否則將 Dashboard 連接埠限制在內網
+1. **設定 Dashboard 令牌**：使用強大的隨機令牌，不要使用預設值
+2. **不要將端口暴露到公網**：除非使用反向代理 + SSL，否則將 Dashboard 端口限制在內網
 3. **保護資料目錄**：`config/` 目錄包含配置和資料庫，設定適當的檔案權限
-4. **定期更新**：使用 `epsdk self-update` 或拉取最新 Docker 映像
-5. **不要以 root 執行**：手動部署時建立專用使用者
+4. **定期更新**：使用 `epsdk self-update` 或拉取最新的 Docker 鏡像
+5. **不要以 root 運行**：手動部署時建立專用使用者
 6. **使用 Docker 重啟策略**：`restart: unless-stopped` 確保異常退出後自動重啟
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 多實例部署
 
 執行多個機器人實例時：
 
 1. 每個實例使用獨立的專案目錄和 `docker-compose.yml`
-2. 使用不同的連接埠：`ERISPULSE_PORT=8001`
-3. 使用不同的容器名稱：`container_name: erispulse-bot2`
+2. 使用不同的端口號：`ERISPULSE_PORT=8001`
+3. 使用不同的容器名：`container_name: erispulse-bot2`
+
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 更新與維護
 
 ### Docker 方式
 
 ```bash
-# 拉取最新映像
+# 拉取最新鏡像
 docker compose pull
 
-# 重啟使用新映像
+# 重啟並使用新鏡像
 docker compose up -d
 ```
 
@@ -3904,7 +3929,10 @@ epsdk upgrade
 # Docker 部署
 tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
-# 或在 Dashboard 中使用「備份」功能匯出
+# 或在 Dashboard 中使用「備份」功能導出
+```
+
+[**English**](../en-US/quick-start.md) | [**简体中文**](../zh-CN/quick-start.md)
 
 
 
@@ -17141,33 +17169,114 @@ finally:
 
 SDK 提供兩種重新啟動方式，都不需要你自己先卸載——框架會自行處理：
 
-| 方式 | 調用 | 行為 | 適用場景 |
+| 方式 | 呼叫 | 行為 | 適用場景 |
 |------|------|------|----------|
-| 熱重新啟動 | `await sdk.restart()` | 同一進程內 `uninit()` 後重新 `init()`，重新載入適配器/模組 | 重新載入配置、熱更新模組 |
-| 硬重新啟動 | `await sdk.hard_restart()` | `uninit()` 後退出整個進程，由父進程（`epsdk run`）拉起全新進程 | 懷疑有記憶體/資源洩漏、需要徹底乾淨重新啟動 |
+| 熱重新啟動 | `await sdk.restart()` | 同一進程內 `uninit()` 後重新 `init()`，重新載入適配器/模組 | 重新載入設定、熱更新模組 |
+| 硬重新啟動 | `await sdk.hard_restart()` | `uninit()` 後以**退出碼 42** 退出進程，由外部監督者拉起全新進程 | 懷疑有記憶體/資源泄漏、需要徹底乾淨重新啟動 |
 
 ```python
 # 熱重新啟動：同進程內重新載入（最常用）
 await sdk.restart()
 
-# 硬重新啟動：退出進程，需透過 epsdk run 啟動才生效
+# 硬重新啟動：退出進程，交由外部監督者重新啟動（見下方「監督者指南」）
 await sdk.hard_restart()
 ```
 
 > **兩點注意**：
-> 1. 這兩個方法都用背景任務執行重新啟動，**立即返回 `True` 表示「重新啟動任務已排程」**，而非「重新啟動已完成」。實際重新啟動在背景進行，避免中斷當前事件鏈路。
-> 2. `hard_restart()` **必須透過 `epsdk run main.py` 啟動才能生效**。它的原理是：卸載後以**退出碼 42** 退出進程，`epsdk run` 的父進程檢測到 42 才會重新拉起一個全新進程；如果是直接 `python main.py` 啟動，進程以碼 42 退出後就直接結束了，不會自動重新啟動。
+> 1. 這兩個方法都用後台任務執行重新啟動，**立即返回 `True` 表示「重新啟動任務已排程」**，而非「重新啟動已完成」。實際重新啟動在後台進行，避免中斷當前事件鏈路。
+> 2. `hard_restart()` 的原理是：卸載並刷盤設定後，以**退出碼 42**（`HARD_RESTART_EXIT_CODE`）退出進程——**它自身不拉起新進程**，必須由外部監督者檢測到退出碼 42 後重新啟動。若直接 `python main.py` 運行且無任何監督者，進程以碼 42 退出後就結束了，**不會自動重新啟動**（框架會打警告提示）。
 
-### 什麼時候該用硬重新啟動？
+### 什麼時候該使用硬重新啟動？
 
-硬重新啟動不只是「更徹底的重新啟動」，它在以下場景比熱重新啟動更合適、甚至更高效：
+硬重新啟動不只是"更徹底的重新啟動"，它在以下場景比熱重新啟動更合適、甚至更高效：
 
-- **二進制庫（C 擴展）副作用**：熱重新啟動在同一進程內進行，無法釋放 C 擴展、打開的檔案描述符、執行緒等進程級資源；硬重新啟動換一個全新進程，這些副作用隨之徹底清零。
-- **資源洩漏排查**：懷疑存在記憶體或句柄洩漏時，硬重新啟動能拿到一個乾淨的環境。
+- **二進制庫（C 扩展）副作用**：熱重新啟動在同一進程內進行，無法釋放 C 扩展、打開的檔案描述符、執行緒等進程級資源；硬重新啟動換一個全新進程，這些副作用隨之徹底清零。
+- **資源泄漏排查**：懷疑存在記憶體或句柄泄漏時，硬重新啟動能拿到一個乾淨的環境。
 - **對效能敏感的頻繁重新啟動**：硬重新啟動省去了同進程內卸載→重新載入的開銷，實際比熱重新啟動更高效。
 
-> Dashboard 管理介面中的「框架重新啟動」功能，底層呼叫的就是 `hard_restart()`。
-> 另外就是硬重新啟動一個要求！必須使用 epsdk 的 run 命令進行啟動，否則程式只是會拋出 42 退出碼進行退出，因為 run 命令的拉起檢查了 42 退出碼進行重新拉起進程，這點必須要注意！！！
+> Dashboard 管理介面裡的「框架重新啟動」功能，底層呼叫的就是 `hard_restart()`。
+
+### 退出碼 42 契約
+
+硬重新啟動是跨進程協作：**SDK 負責退出（碼 42），監督者負責拉起**。
+
+| 角色 | 行為 |
+|------|------|
+| SDK（被硬重新啟動時） | `uninit()` → 刷盤設定 → `os._exit(42)` |
+| 監督者 | 檢測到子進程退出碼為 42 → 重新啟動同一命令 |
+
+> `sdk.is_supervised()` 可查詢目前進程是否由監督者啟動（檢測環境變數 `ERISPULSE_SUPERVISED`）。CLI `run` 命令啟動子進程時會自動注入該標記；systemd / Docker 等外部監督者不會注入，`is_supervised()` 返回 `False`，此時硬重新啟動後框架會打「未檢測到監督者」警告。
+
+### 監督者指南
+
+選擇適合你的監督者，讓硬重新啟動真正生效：
+
+#### 1. CLI run 命令（開發/簡單部署，推薦）
+
+`epsdk run main.py` 內建監督迴圈：檢測子進程退出碼，42 時立即重新啟動；其它異常退出碼按指數退避自動重試；`Ctrl+C` 會先優雅終止子進程（碼 0 視為正常退出，不再拉起）。
+
+```bash
+epsdk run main.py
+```
+
+#### 2. systemd（Linux 伺服器）
+
+`RestartForceExitStatus=42` 讓退出碼 42 也觸發重新啟動（預設 `on-failure` 只對非零碼生效）：
+
+```ini
+[Service]
+ExecStart=/usr/bin/python3 /opt/mybot/main.py
+Restart=on-failure
+RestartForceExitStatus=42
+RestartSec=2
+User=mybot
+```
+
+#### 3. Docker / docker-compose
+
+容器內 PID 1 是應用進程，退出碼 42 後容器退出——用 `restart` 策略讓它自動重新啟動：
+
+```yaml
+services:
+  bot:
+    build: .
+    restart: unless-stopped   # 任何退出（含 42）都重新啟動
+```
+
+#### 4. PM2（Node 生態維運）
+
+```bash
+pm2 start main.py --name mybot --interpreter python3
+# 42 被視為退出碼，PM2 預設重新啟動；設定 restart_delay 防抖
+pm2 set mybot.restart_delay 2000
+```
+
+#### 5. supervisord
+
+```ini
+[program:mybot]
+command=python3 /opt/mybot/main.py
+autorestart=true
+exitcodes=0,2,42    # 42 也視為"正常退出需重新啟動"
+```
+
+#### 6. 純 Python 自訂監督者
+
+```python
+import subprocess, sys, time
+
+while True:
+    p = subprocess.Popen([sys.executable, "main.py"])
+    code = p.wait()
+    if code == 42:          # 硬重新啟動請求
+        time.sleep(0.5)
+        continue
+    if code == 0:           # 正常退出
+        break
+    time.sleep(3)           # 異常退出，退避重試
+```
+
+> **無監督者時的行為**：直接 `python main.py` 運行，呼叫 `hard_restart()` 後進程以碼 42 退出、不會重新啟動。此時應接入上述任一監督者。
 
 ## 相關文件
 

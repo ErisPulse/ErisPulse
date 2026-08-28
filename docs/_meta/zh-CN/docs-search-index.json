@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1441,
+  "total_keywords": 1444,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3870,6 +3870,14 @@
         "title": "collect(fields, **kwargs)"
       }
     ],
+    "config": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 232,
+        "level": 3,
+        "title": "config"
+      }
+    ],
     "confirm(prompt=None, **kwargs)": [
       {
         "document": "advanced/conversation.md",
@@ -3921,7 +3929,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 300,
+        "line": 349,
         "level": 3,
         "title": "create"
       }
@@ -3961,7 +3969,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 439,
+        "line": 488,
         "level": 3,
         "title": "doctor"
       }
@@ -4009,7 +4017,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 351,
+        "line": 400,
         "level": 3,
         "title": "i18n"
       }
@@ -4017,7 +4025,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 270,
+        "line": 319,
         "level": 3,
         "title": "init"
       }
@@ -4145,7 +4153,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 232,
+        "line": 281,
         "level": 3,
         "title": "run"
       }
@@ -4233,7 +4241,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 388,
+        "line": 437,
         "level": 3,
         "title": "types"
       }
@@ -4989,7 +4997,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 468,
+        "line": 517,
         "level": 2,
         "title": "交互式安装"
       }
@@ -5429,7 +5437,7 @@
     "全局参数": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 423,
+        "line": 472,
         "level": 2,
         "title": "全局参数"
       }
@@ -5593,7 +5601,7 @@
     "切换语言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 545,
+        "line": 607,
         "level": 3,
         "title": "切换语言"
       }
@@ -5617,7 +5625,7 @@
     "列出组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 496,
+        "line": 545,
         "level": 3,
         "title": "列出组件"
       }
@@ -5641,7 +5649,7 @@
     "创建脚手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 578,
+        "line": 640,
         "level": 3,
         "title": "创建脚手架"
       }
@@ -5701,7 +5709,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 568,
+        "line": 630,
         "level": 3,
         "title": "初始化项目"
       }
@@ -5827,7 +5835,7 @@
     "升级组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 522,
+        "line": 584,
         "level": 3,
         "title": "升级组件"
       }
@@ -5883,7 +5891,7 @@
     "卸载组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 512,
+        "line": 561,
         "level": 3,
         "title": "卸载组件"
       }
@@ -7545,7 +7553,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 483,
+        "line": 532,
         "level": 3,
         "title": "安装模块"
       }
@@ -7843,7 +7851,7 @@
     "常见用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 481,
+        "line": 530,
         "level": 2,
         "title": "常见用法"
       }
@@ -7851,7 +7859,7 @@
     "常见配置位置": [
       {
         "document": "user-guide/README.md",
-        "line": 30,
+        "line": 31,
         "level": 3,
         "title": "常见配置位置"
       }
@@ -10757,7 +10765,7 @@
     "环境诊断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 437,
+        "line": 486,
         "level": 2,
         "title": "环境诊断"
       }
@@ -10833,7 +10841,7 @@
     "生成类型存根": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 558,
+        "line": 620,
         "level": 3,
         "title": "生成类型存根"
       }
@@ -11093,7 +11101,7 @@
       },
       {
         "document": "user-guide/README.md",
-        "line": 40,
+        "line": 41,
         "level": 2,
         "title": "相关文档"
       }
@@ -11297,7 +11305,7 @@
     "类型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 382,
+        "line": 431,
         "level": 2,
         "title": "类型存根命令"
       }
@@ -11705,7 +11713,7 @@
     "语言命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 345,
+        "line": 394,
         "level": 2,
         "title": "语言命令"
       }
@@ -12091,7 +12099,7 @@
     "运行控制命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 226,
+        "line": 275,
         "level": 2,
         "title": "运行控制命令"
       }
@@ -12145,7 +12153,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 535,
+        "line": 597,
         "level": 3,
         "title": "运行项目"
       }
@@ -12706,6 +12714,14 @@
         "title": "配置变更"
       }
     ],
+    "配置命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 226,
+        "level": 2,
+        "title": "配置命令"
+      }
+    ],
     "配置字段多语言": [
       {
         "document": "advanced/i18n.md",
@@ -12812,6 +12828,14 @@
         "line": 177,
         "level": 2,
         "title": "配置管理"
+      }
+    ],
+    "配置组件": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 571,
+        "level": 3,
+        "title": "配置组件"
       }
     ],
     "配置说明": [
@@ -13243,7 +13267,7 @@
     "项目管理命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 263,
+        "line": 312,
         "level": 2,
         "title": "项目管理命令"
       }

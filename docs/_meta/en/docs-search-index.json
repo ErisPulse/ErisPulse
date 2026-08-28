@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1456,
+  "total_keywords": 1451,
   "keywords": {
     "\"Chat\": {": [
       {
@@ -1532,6 +1532,14 @@
         "title": "4.4 In Event Handlers"
       }
     ],
+    "42 is treated as an exit code, PM2 restarts by default; set restart_delay to debounce": [
+      {
+        "document": "advanced/startup.md",
+        "line": 421,
+        "level": 1,
+        "title": "42 is treated as an exit code, PM2 restarts by default; set restart_delay to debounce"
+      }
+    ],
     "5. Adapter Implementation": [
       {
         "document": "standards/api-action-spec.md",
@@ -2785,7 +2793,7 @@
     "Backup": [
       {
         "document": "user-guide/deployment.md",
-        "line": 258,
+        "line": 288,
         "level": 3,
         "title": "Backup"
       }
@@ -4405,7 +4413,7 @@
     "Dashboard Management Panel": [
       {
         "document": "user-guide/deployment.md",
-        "line": 72,
+        "line": 76,
         "level": 2,
         "title": "Dashboard Management Panel"
       }
@@ -4419,7 +4427,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 65,
+        "line": 69,
         "level": 3,
         "title": "Data Persistence"
       }
@@ -4697,7 +4705,7 @@
     "Docker Deployment (Recommended)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 5,
+        "line": 9,
         "level": 2,
         "title": "Docker Deployment (Recommended)"
       }
@@ -4713,7 +4721,7 @@
     "Docker Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 241,
+        "line": 271,
         "level": 3,
         "title": "Docker Method"
       }
@@ -4852,12 +4860,12 @@
         "title": "Does not block the main flow, but rules still apply"
       }
     ],
-    "Domestic Mirror Acceleration": [
+    "Domestic Image Acceleration": [
       {
         "document": "user-guide/deployment.md",
-        "line": 24,
+        "line": 28,
         "level": 3,
-        "title": "Domestic Mirror Acceleration"
+        "title": "Domestic Image Acceleration"
       }
     ],
     "Dot-Structure Events": [
@@ -4959,7 +4967,7 @@
     "Environment Variables": [
       {
         "document": "user-guide/deployment.md",
-        "line": 57,
+        "line": 61,
         "level": 3,
         "title": "Environment Variables"
       }
@@ -5531,7 +5539,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 76,
+        "line": 80,
         "level": 3,
         "title": "Feature Overview"
       }
@@ -5747,12 +5755,6 @@
       }
     ],
     "Frequently Asked Questions": [
-      {
-        "document": "ai-support/README.md",
-        "line": 109,
-        "level": 2,
-        "title": "Frequently Asked Questions"
-      },
       {
         "document": "developer-guide/publishing.md",
         "line": 172,
@@ -6254,18 +6256,12 @@
         "title": "Handling WebSocket exceptions"
       }
     ],
-    "Hard restart: exit the process, effective only when started via `epsdk run`": [
+    "Hard Restart: Exit the process, let an external supervisor restart (see \"Supervisor Guide\" below)": [
       {
         "document": "advanced/startup.md",
         "line": 352,
         "level": 1,
-        "title": "Hard restart: exit the process, effective only when started via `epsdk run`"
-      },
-      {
-        "document": "advanced/startup.md",
-        "line": 384,
-        "level": 1,
-        "title": "Hard restart: exit the process, effective only when started via `epsdk run`"
+        "title": "Hard Restart: Exit the process, let an external supervisor restart (see \"Supervisor Guide\" below)"
       }
     ],
     "Health Check": [
@@ -6277,7 +6273,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 100,
+        "line": 117,
         "level": 2,
         "title": "Health Check"
       }
@@ -6360,26 +6356,20 @@
         "title": "Hot Restart of Adapters"
       }
     ],
+    "Hot Restart: Reload within the same process (most common)": [
+      {
+        "document": "advanced/startup.md",
+        "line": 349,
+        "level": 1,
+        "title": "Hot Restart: Reload within the same process (most common)"
+      }
+    ],
     "Hot reload mode": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 544,
         "level": 1,
         "title": "Hot reload mode"
-      }
-    ],
-    "Hot restart: reload within the same process (most commonly used)": [
-      {
-        "document": "advanced/startup.md",
-        "line": 349,
-        "level": 1,
-        "title": "Hot restart: reload within the same process (most commonly used)"
-      },
-      {
-        "document": "advanced/startup.md",
-        "line": 381,
-        "level": 1,
-        "title": "Hot restart: reload within the same process (most commonly used)"
       }
     ],
     "How It Works": [
@@ -6735,25 +6725,9 @@
     "Installing Modules via Dashboard": [
       {
         "document": "user-guide/deployment.md",
-        "line": 91,
+        "line": 95,
         "level": 3,
         "title": "Installing Modules via Dashboard"
-      }
-    ],
-    "Integrating with Claude Desktop": [
-      {
-        "document": "ai-support/README.md",
-        "line": 77,
-        "level": 3,
-        "title": "Integrating with Claude Desktop"
-      }
-    ],
-    "Integrating with Cursor": [
-      {
-        "document": "ai-support/README.md",
-        "line": 93,
-        "level": 3,
-        "title": "Integrating with Cursor"
       }
     ],
     "Inter-module Communication": [
@@ -7304,14 +7278,6 @@
         "title": "Low-priority message, automatically dropped during queue backlog"
       }
     ],
-    "MCP Server": [
-      {
-        "document": "ai-support/README.md",
-        "line": 60,
-        "level": 2,
-        "title": "MCP Server"
-      }
-    ],
     "Mail with Attachment": [
       {
         "document": "platform-guide/email.md",
@@ -7354,14 +7320,6 @@
         "line": 267,
         "level": 3,
         "title": "Manual Configuration Reading (Deprecated)"
-      }
-    ],
-    "Manual Deployment (pip)": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 153,
-        "level": 2,
-        "title": "Manual Deployment (pip)"
       }
     ],
     "Manual Project Creation": [
@@ -7415,7 +7373,7 @@
     "Material Documentation": [
       {
         "document": "ai-support/README.md",
-        "line": 18,
+        "line": 22,
         "level": 2,
         "title": "Material Documentation"
       }
@@ -8102,6 +8060,14 @@
         "title": "Multi-Account Sending Syntax"
       }
     ],
+    "Multi-Instance Deployment": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 256,
+        "level": 2,
+        "title": "Multi-Instance Deployment"
+      }
+    ],
     "Multi-account Configuration": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -8116,14 +8082,6 @@
         "line": 153,
         "level": 3,
         "title": "Multi-element Message"
-      }
-    ],
-    "Multi-instance Deployment": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 231,
-        "level": 2,
-        "title": "Multi-instance Deployment"
       }
     ],
     "Multi-platform Adaptation": [
@@ -8221,12 +8179,6 @@
       }
     ],
     "Next Steps": [
-      {
-        "document": "ai-support/README.md",
-        "line": 117,
-        "level": 2,
-        "title": "Next Steps"
-      },
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 199,
@@ -8960,12 +8912,12 @@
         "title": "Proactive GC Configuration"
       }
     ],
-    "Production Configuration": [
+    "Process Supervision and Hard Restart": [
       {
         "document": "user-guide/deployment.md",
-        "line": 157,
-        "level": 3,
-        "title": "Production Configuration"
+        "line": 106,
+        "level": 2,
+        "title": "Process Supervision and Hard Restart"
       }
     ],
     "Project Management Commands": [
@@ -9012,14 +8964,6 @@
         "line": 84,
         "level": 3,
         "title": "Protocol Methods"
-      }
-    ],
-    "Provided Tools": [
-      {
-        "document": "ai-support/README.md",
-        "line": 64,
-        "level": 3,
-        "title": "Provided Tools"
       }
     ],
     "Proximity Mapping Principle": [
@@ -9241,7 +9185,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 9,
+        "line": 13,
         "level": 3,
         "title": "Quick Start"
       }
@@ -9799,7 +9743,7 @@
     "Requirement Description Template": [
       {
         "document": "ai-support/README.md",
-        "line": 36,
+        "line": 40,
         "level": 3,
         "title": "Requirement Description Template"
       }
@@ -9959,7 +9903,7 @@
     "Reverse Proxy": [
       {
         "document": "user-guide/deployment.md",
-        "line": 121,
+        "line": 144,
         "level": 2,
         "title": "Reverse Proxy"
       }
@@ -10213,7 +10157,7 @@
     "Security Recommendations": [
       {
         "document": "user-guide/deployment.md",
-        "line": 222,
+        "line": 243,
         "level": 2,
         "title": "Security Recommendations"
       }
@@ -10900,14 +10844,6 @@
         "title": "Super File Sharing Event Example"
       }
     ],
-    "Supervisor": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 207,
-        "level": 3,
-        "title": "Supervisor"
-      }
-    ],
     "Supported Languages": [
       {
         "document": "advanced/i18n.md",
@@ -11456,12 +11392,12 @@
         "title": "Update Requirements"
       }
     ],
-    "Updates and Maintenance": [
+    "Update and Maintenance": [
       {
         "document": "user-guide/deployment.md",
-        "line": 239,
+        "line": 269,
         "level": 2,
-        "title": "Updates and Maintenance"
+        "title": "Update and Maintenance"
       }
     ],
     "Upgrade a module": [
@@ -11497,7 +11433,7 @@
       },
       {
         "document": "ai-support/README.md",
-        "line": 30,
+        "line": 34,
         "level": 3,
         "title": "Usage"
       }
@@ -12358,6 +12294,14 @@
         "title": "config.toml"
       }
     ],
+    "config/config.toml": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 182,
+        "level": 1,
+        "title": "config/config.toml"
+      }
+    ],
     "confirm(prompt=None, **kwargs)": [
       {
         "document": "advanced/conversation.md",
@@ -12417,7 +12361,7 @@
     "docker-compose.yml": [
       {
         "document": "user-guide/deployment.md",
-        "line": 40,
+        "line": 44,
         "level": 3,
         "title": "docker-compose.yml"
       }
@@ -12569,7 +12513,7 @@
     "pip Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 251,
+        "line": 281,
         "level": 3,
         "title": "pip Method"
       }
@@ -12636,14 +12580,6 @@
         "line": 167,
         "level": 3,
         "title": "stop()"
-      }
-    ],
-    "systemd (Linux)": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 175,
-        "level": 3,
-        "title": "systemd (Linux)"
       }
     ],
     "thread": [

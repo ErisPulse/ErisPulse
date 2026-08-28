@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1507,
+  "total_keywords": 1508,
   "keywords": {
     "\"Chat\": {": [
       {
@@ -240,6 +240,14 @@
         "line": 419,
         "level": 3,
         "title": "1. BaseAdapter 層（大半の場合オーバーライド不要）"
+      }
+    ],
+    "1. CLI run コマンド（開発/簡単なデプロイ、推奨）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 376,
+        "level": 4,
+        "title": "1. CLI run コマンド（開発/簡単なデプロイ、推奨）"
       }
     ],
     "1. Dockerfile の作成": [
@@ -672,6 +680,14 @@
         "title": "2. Send 内部クラス（大半の場合オーバーライド不要）"
       }
     ],
+    "2. systemd（Linux サーバー）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 384,
+        "level": 4,
+        "title": "2. systemd（Linux サーバー）"
+      }
+    ],
     "2. アカウント選択メカニズム": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -984,6 +1000,14 @@
         "title": "2つのインジェクションモード"
       }
     ],
+    "3. Docker / docker-compose": [
+      {
+        "document": "advanced/startup.md",
+        "line": 397,
+        "level": 4,
+        "title": "3. Docker / docker-compose"
+      }
+    ],
     "3. Request DSL": [
       {
         "document": "standards/request-action-spec.md",
@@ -1288,6 +1312,14 @@
         "title": "4. Event 便利メソッド"
       }
     ],
+    "4. PM2（Node 生態系の運用）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 408,
+        "level": 4,
+        "title": "4. PM2（Node 生態系の運用）"
+      }
+    ],
     "4. `detail_type` に標準外の値を使用": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -1446,6 +1478,14 @@
         "line": 82,
         "level": 3,
         "title": "5. Bot 状態の照会"
+      }
+    ],
+    "5. supervisord": [
+      {
+        "document": "advanced/startup.md",
+        "line": 416,
+        "level": 4,
+        "title": "5. supervisord"
       }
     ],
     "5. アダプター実装": [
@@ -1678,6 +1718,14 @@
         "line": 147,
         "level": 2,
         "title": "6. 注意事項"
+      }
+    ],
+    "6. 純粋な Python によるカスタム監督者": [
+      {
+        "document": "advanced/startup.md",
+        "line": 425,
+        "level": 4,
+        "title": "6. 純粋な Python によるカスタム監督者"
       }
     ],
     "6. 逆変換規則（OneBot12 → プラットフォーム）": [
@@ -2350,14 +2398,6 @@
         "title": "CORS設定"
       }
     ],
-    "Claude Desktop への接続": [
-      {
-        "document": "ai-support/README.md",
-        "line": 77,
-        "level": 3,
-        "title": "Claude Desktop への接続"
-      }
-    ],
     "ClientWebSocket 属性": [
       {
         "document": "advanced/http-client.md",
@@ -2406,26 +2446,18 @@
         "title": "Converter の責任"
       }
     ],
-    "Cursor への接続": [
-      {
-        "document": "ai-support/README.md",
-        "line": 93,
-        "level": 3,
-        "title": "Cursor への接続"
-      }
-    ],
-    "Dashboard からのモジュールインストール": [
+    "Dashboard からモジュールをインストールする": [
       {
         "document": "user-guide/deployment.md",
-        "line": 91,
+        "line": 93,
         "level": 3,
-        "title": "Dashboard からのモジュールインストール"
+        "title": "Dashboard からモジュールをインストールする"
       }
     ],
     "Dashboard 管理パネル": [
       {
         "document": "user-guide/deployment.md",
-        "line": 72,
+        "line": 74,
         "level": 2,
         "title": "Dashboard 管理パネル"
       }
@@ -2486,20 +2518,20 @@
         "title": "Docker イメージ経由でのアプリ配布"
       }
     ],
-    "Docker デプロイ（推奨）": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 5,
-        "level": 2,
-        "title": "Docker デプロイ（推奨）"
-      }
-    ],
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 241,
+        "line": 258,
         "level": 3,
         "title": "Docker 方式"
+      }
+    ],
+    "Docker 部署（推奨）": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 7,
+        "level": 2,
+        "title": "Docker 部署（推奨）"
       }
     ],
     "Embed を含むメッセージ": [
@@ -2824,14 +2856,6 @@
         "line": 217,
         "level": 3,
         "title": "Logger（ログ）"
-      }
-    ],
-    "MCP サーバー": [
-      {
-        "document": "ai-support/README.md",
-        "line": 60,
-        "level": 2,
-        "title": "MCP サーバー"
       }
     ],
     "Markdown→無序リスト（- 1.選択肢）、Html→順序リスト（<ol>）、その他→純粋なテキストリスト": [
@@ -3310,14 +3334,6 @@
         "line": 179,
         "level": 3,
         "title": "Storage（ストレージ）"
-      }
-    ],
-    "Supervisor": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 207,
-        "level": 3,
-        "title": "Supervisor"
       }
     ],
     "Sync API 接続": [
@@ -3902,6 +3918,14 @@
         "title": "config.toml"
       }
     ],
+    "config/config.toml": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 174,
+        "level": 1,
+        "title": "config/config.toml"
+      }
+    ],
     "confirm — 確認対話（True/False/None を返す）": [
       {
         "document": "api-reference/event-system.md",
@@ -3985,7 +4009,7 @@
     "docker-compose.yml": [
       {
         "document": "user-guide/deployment.md",
-        "line": 40,
+        "line": 42,
         "level": 3,
         "title": "docker-compose.yml"
       }
@@ -4169,7 +4193,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 251,
+        "line": 268,
         "level": 3,
         "title": "pip 方式"
       }
@@ -4268,14 +4292,6 @@
         "line": 171,
         "level": 3,
         "title": "stop()"
-      }
-    ],
-    "systemd (Linux)": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 175,
-        "level": 3,
-        "title": "systemd (Linux)"
       }
     ],
     "thread": [
@@ -5500,12 +5516,6 @@
         "line": 1,
         "level": 1,
         "title": "クイックスタート"
-      },
-      {
-        "document": "user-guide/deployment.md",
-        "line": 9,
-        "level": 3,
-        "title": "クイックスタート"
       }
     ],
     "クイックリファレンス": [
@@ -6303,7 +6313,7 @@
     "セキュリティに関する推奨事項": [
       {
         "document": "user-guide/deployment.md",
-        "line": 222,
+        "line": 235,
         "level": 2,
         "title": "セキュリティに関する推奨事項"
       }
@@ -6692,14 +6702,6 @@
         "title": "デフォルト設定"
       }
     ],
-    "デプロイメントガイド": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 1,
-        "level": 1,
-        "title": "デプロイメントガイド"
-      }
-    ],
     "データのクエリ": [
       {
         "document": "advanced/sql-builder.md",
@@ -6741,7 +6743,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 65,
+        "line": 67,
         "level": 3,
         "title": "データの永続化"
       }
@@ -6928,6 +6930,14 @@
         "title": "ドキュメント構造の基準"
       }
     ],
+    "ニーズ記述テンプレート": [
+      {
+        "document": "ai-support/README.md",
+        "line": 36,
+        "level": 3,
+        "title": "ニーズ記述テンプレート"
+      }
+    ],
     "ネットワーククライアント": [
       {
         "document": "advanced/http-client.md",
@@ -6988,12 +6998,12 @@
         "title": "ハートビートメカニズム"
       }
     ],
-    "ハード再起動を使用すべきタイミング": [
+    "ハード再起動をいつ使うべきか？": [
       {
         "document": "advanced/startup.md",
         "line": 351,
         "level": 3,
-        "title": "ハード再起動を使用すべきタイミング"
+        "title": "ハード再起動をいつ使うべきか？"
       }
     ],
     "バインド情報の取得": [
@@ -7015,7 +7025,7 @@
     "バックアップ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 258,
+        "line": 275,
         "level": 3,
         "title": "バックアップ"
       }
@@ -7484,12 +7494,12 @@
         "title": "プロジェクト管理コマンド"
       }
     ],
-    "プロダクション環境の設定": [
+    "プロセス監督とハードリスタート": [
       {
         "document": "user-guide/deployment.md",
-        "line": 157,
-        "level": 3,
-        "title": "プロダクション環境の設定"
+        "line": 102,
+        "level": 2,
+        "title": "プロセス監督とハードリスタート"
       }
     ],
     "プロトコルメソッド": [
@@ -7531,7 +7541,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 100,
+        "line": 113,
         "level": 2,
         "title": "ヘルスチェック"
       }
@@ -7600,6 +7610,14 @@
         "title": "ボタン引数の説明"
       }
     ],
+    "マテリアルドキュメント": [
+      {
+        "document": "ai-support/README.md",
+        "line": 18,
+        "level": 2,
+        "title": "マテリアルドキュメント"
+      }
+    ],
     "マルチアカウント設定": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -7614,14 +7632,6 @@
         "line": 346,
         "level": 3,
         "title": "マルチアカウント送信構文"
-      }
-    ],
-    "マルチインスタンスデプロイ": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 231,
-        "level": 2,
-        "title": "マルチインスタンスデプロイ"
       }
     ],
     "マルチエレメントメッセージ": [
@@ -8695,7 +8705,7 @@
     "リバースプロキシ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 121,
+        "line": 136,
         "level": 2,
         "title": "リバースプロキシ"
       }
@@ -9048,14 +9058,6 @@
         "line": 118,
         "level": 2,
         "title": "一般的な問題"
-      }
-    ],
-    "一般的な質問": [
-      {
-        "document": "ai-support/README.md",
-        "line": 109,
-        "level": 2,
-        "title": "一般的な質問"
       }
     ],
     "三、内部原理を深く理解したい": [
@@ -9906,12 +9908,12 @@
         "title": "固有のメッセージセグメントタイプ"
       }
     ],
-    "国内イメージミラーサイトの高速化": [
+    "国内用のイメージ加速": [
       {
         "document": "user-guide/deployment.md",
-        "line": 24,
+        "line": 26,
         "level": 3,
-        "title": "国内イメージミラーサイトの高速化"
+        "title": "国内用のイメージ加速"
       }
     ],
     "国際化 (i18n) システム": [
@@ -10188,6 +10190,14 @@
         "line": 398,
         "level": 2,
         "title": "多アカウントサポート"
+      }
+    ],
+    "多インスタンスデプロイ": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 246,
+        "level": 2,
+        "title": "多インスタンスデプロイ"
       }
     ],
     "大小写不敏感調用": [
@@ -10562,14 +10572,6 @@
         "title": "手動で設定を読み取る（廃止済み）"
       }
     ],
-    "手動デプロイ（pip）": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 153,
-        "level": 2,
-        "title": "手動デプロイ（pip）"
-      }
-    ],
     "手動登録による独自翻訳の定義（旧い記法）": [
       {
         "document": "advanced/i18n.md",
@@ -10768,14 +10770,6 @@
         "title": "推奨モジュールと公式クライアント"
       }
     ],
-    "提供されるツール": [
-      {
-        "document": "ai-support/README.md",
-        "line": 64,
-        "level": 3,
-        "title": "提供されるツール"
-      }
-    ],
     "支持するメッセージ送信タイプ": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -10971,7 +10965,7 @@
     "更新とメンテナンス": [
       {
         "document": "user-guide/deployment.md",
-        "line": 239,
+        "line": 256,
         "level": 2,
         "title": "更新とメンテナンス"
       }
@@ -11278,29 +11272,21 @@
         "title": "権限付きのコマンド"
       }
     ],
-    "機能の概要": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 76,
-        "level": 3,
-        "title": "機能の概要"
-      }
-    ],
     "機能概要": [
       {
         "document": "ecosystem/app.md",
         "line": 13,
         "level": 2,
         "title": "機能概要"
+      },
+      {
+        "document": "user-guide/deployment.md",
+        "line": 78,
+        "level": 3,
+        "title": "機能概要"
       }
     ],
     "次のステップ": [
-      {
-        "document": "ai-support/README.md",
-        "line": 117,
-        "level": 2,
-        "title": "次のステップ"
-      },
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 614,
@@ -11535,7 +11521,7 @@
     "環境変数": [
       {
         "document": "user-guide/deployment.md",
-        "line": 57,
+        "line": 59,
         "level": 3,
         "title": "環境変数"
       }
@@ -11676,6 +11662,14 @@
         "title": "登録と解除"
       }
     ],
+    "監督者ガイド": [
+      {
+        "document": "advanced/startup.md",
+        "line": 372,
+        "level": 3,
+        "title": "監督者ガイド"
+      }
+    ],
     "監視者の照会（has_handlers）": [
       {
         "document": "advanced/lifecycle.md",
@@ -11782,12 +11776,12 @@
         "title": "簡単なテキスト返信"
       }
     ],
-    "素材ドキュメント": [
+    "終了コード 42 の契約": [
       {
-        "document": "ai-support/README.md",
-        "line": 18,
-        "level": 2,
-        "title": "素材ドキュメント"
+        "document": "advanced/startup.md",
+        "line": 361,
+        "level": 3,
+        "title": "終了コード 42 の契約"
       }
     ],
     "組み合わせ: ユーザーへの @ 指定 + メッセージへの返信": [
@@ -12084,14 +12078,6 @@
         "line": 191,
         "level": 4,
         "title": "要求情報"
-      }
-    ],
-    "要求記述テンプレート": [
-      {
-        "document": "ai-support/README.md",
-        "line": 36,
-        "level": 3,
-        "title": "要求記述テンプレート"
       }
     ],
     "親友追加": [
@@ -12744,12 +12730,28 @@
         "title": "通知操作者"
       }
     ],
+    "速習": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 11,
+        "level": 3,
+        "title": "速習"
+      }
+    ],
     "適用シナリオ": [
       {
         "document": "developer-guide/publishing.md",
         "line": 195,
         "level": 3,
         "title": "適用シナリオ"
+      }
+    ],
+    "配置ガイド": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 1,
+        "level": 1,
+        "title": "配置ガイド"
       }
     ],
     "重要な制限": [
@@ -12865,7 +12867,7 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 362,
+        "line": 443,
         "level": 2,
         "title": "関連ドキュメント"
       },
