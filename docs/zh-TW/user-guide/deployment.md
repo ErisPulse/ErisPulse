@@ -2,7 +2,9 @@
 
 將 ErisPulse 機器人部署到生產環境的最佳實踐。
 
+請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
+再次提醒：如果文檔包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## Docker 部署（推薦）
 
@@ -21,7 +23,7 @@ curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compos
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-啟動後訪問 `http://localhost:8000/Dashboard`，使用設定的令牌作為密碼登入。
+啟動後，請前往 `http://localhost:8000/Dashboard`，使用設定的令牌作為密碼登入。
 
 ### 國內鏡像加速
 
@@ -61,7 +63,7 @@ services:
 | 變數 | 預設值 | 說明 |
 |------|--------|------|
 | `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
-| `ERISPULSE_DASHBOARD_TOKEN` | 自动生成 | Dashboard 登入令牌（強烈建議設定） |
+| `ERISPULSE_DASHBOARD_TOKEN` | 自動產生 | Dashboard 登入令牌（強烈建議設定） |
 | `TZ` | `Asia/Shanghai` | 時區 |
 
 ### 數據持久化
@@ -70,6 +72,7 @@ services:
 
 - `config/config.toml` — 配置文件
 - `config/config.db` — SQLite 存儲資料庫
+- `config/.packages` — Python site-packages 持久化卷，保存框架、適配器和已安裝模組（首次啟動時由入口點從鏡像內建備份自動初始化，之後的模組安裝與框架熱更新均寫入此目錄）
 
 ## Dashboard 管理介面
 
@@ -131,7 +134,9 @@ services:
       retries: 3
 ```
 
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 反向代理
 
@@ -241,7 +246,9 @@ stdout_logfile=/var/log/erispulse-bot/out.log
 5. **不要以 root 運行**：手動部署時建立專用使用者
 6. **使用 Docker 重啟策略**：`restart: unless-stopped` 確保異常退出後自動重啟
 
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 多實例部署
 
@@ -251,7 +258,9 @@ stdout_logfile=/var/log/erispulse-bot/out.log
 2. 使用不同的端口號：`ERISPULSE_PORT=8001`
 3. 使用不同的容器名：`container_name: erispulse-bot2`
 
+請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
+再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 更新與維護
 

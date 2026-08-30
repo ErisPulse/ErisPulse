@@ -8,13 +8,13 @@ docs/ja/quick-start.md
 
 ErisPulse は公式の Docker イメージを提供しており、ErisPulse フレームワークと Dashboard 管理パネルが内蔵されており、`linux/amd64` および `linux/arm64` アーキテクチャをサポートしています。
 
-### 速習
+### 速攻起動
 
 ```bash
-# イメージの取得
+# イメージを取得
 docker pull erispulse/erispulse:latest
 
-# docker-compose.yml のダウンロード
+# docker-compose.yml をダウンロード
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
 # Dashboard のログイントークンを設定して起動
@@ -31,7 +31,7 @@ Docker Hub にアクセスできない場合は、GitHub Container Registry を�
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-ghcr.io のイメージを使用する場合、`docker-compose.yml` の `image` を変更する必要があります：
+ghcr.io のイメージを使用する場合、`docker-compose.yml` 内の image を変更する必要があります：
 
 ```yaml
 services:
@@ -66,10 +66,11 @@ services:
 
 ### データの永続化
 
-`./config` ディレクトリは設定ファイルとデータベースにマウントされており、以下の内容を含んでいます：
+`./config` ディレクトリは設定ファイルとデータベースにマウントされており、以下の内容を含みます：
 
 - `config/config.toml` — 設定ファイル
 - `config/config.db` — SQLite ストレージデータベース
+- `config/.packages` — Python site-packages の永続化ボリューム。フレームワーク、アダプター、およびインストール済みモジュールを保存します（最初の起動時にエントリポイントがイメージ内に含まれるバックアップから自動的に初期化され、以降のモジュールインストールやフレームワークのホットアップデートはこのディレクトリに書き込まれます）。
 
 ## Dashboard 管理パネル
 

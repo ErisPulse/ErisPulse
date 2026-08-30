@@ -2,11 +2,13 @@
 
 Best practices for deploying the ErisPulse bot to a production environment.
 
+Please directly return the complete translated Markdown content, without including any other text.
 
+Once again, if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the formatting requirements in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Docker Deployment (Recommended)
 
-ErisPulse provides an official Docker image with the ErisPulse framework and Dashboard management panel built in, supporting the `linux/amd64` and `linux/arm64` architectures.
+ErisPulse provides an official Docker image that includes the ErisPulse framework and Dashboard management panel, supporting both `linux/amd64` and `linux/arm64` architectures.
 
 ### Quick Start
 
@@ -17,7 +19,7 @@ docker pull erispulse/erispulse:latest
 # Download docker-compose.yml
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# Set the Dashboard login token and start
+# Set the Dashboard login token and start the service
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
@@ -25,13 +27,13 @@ After starting, access `http://localhost:8000/Dashboard` and log in using the se
 
 ### Domestic Image Acceleration
 
-If Docker Hub is inaccessible, you can pull the image using GitHub Container Registry:
+If Docker Hub is inaccessible, you can pull the image from GitHub Container Registry:
 
 ```bash
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-When using the ghcr.io image, you need to modify the `image` in `docker-compose.yml`:
+When using the ghcr.io image, modify the `image` in `docker-compose.yml`:
 
 ```yaml
 services:
@@ -70,6 +72,7 @@ The `./config` directory mounts configuration files and the database, including:
 
 - `config/config.toml` — Configuration file
 - `config/config.db` — SQLite storage database
+- `config/.packages` — Python site-packages persistent volume, stores framework, adapters, and installed modules (automatically initialized from the image's built-in backup on first startup; subsequent module installations and framework hot updates are written to this directory)
 
 ## Dashboard Management Panel
 
@@ -133,6 +136,11 @@ services:
       retries: 3
 ```
 
+**Important: Path replacement rules**
+- Replace `docs/en/` in document links with `docs/en/`
+- For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+- For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+- This ensures links point to the correct language version of the documentation
 
 ## Reverse Proxy
 
@@ -242,7 +250,9 @@ stdout_logfile=/var/log/erispulse-bot/out.log
 5. **Do not run as root**: When deploying manually, create a dedicated user
 6. **Use Docker restart policy**: `restart: unless-stopped` ensures automatic restart after abnormal exit
 
+Please directly return the complete translated Markdown content, without any additional text.
 
+Once again, please note: if the document contains language switch lines (with language names separated by `` | ``), strictly follow the above rule #8 for formatting and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Multi-Instance Deployment
 
@@ -254,6 +264,8 @@ When running multiple robot instances:
 
 For document links, replace `docs/en/` with `docs/en/`:
 
+- For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+- For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged to ensure links point to the correct language version of the documentation.
 
 ## Update and Maintenance
 
