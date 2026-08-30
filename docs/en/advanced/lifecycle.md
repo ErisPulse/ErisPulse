@@ -7,9 +7,7 @@ The system supports three triggering methods:
 - `lifecycle.emit_sync("event", data)` — The synchronous version (used in non-async contexts)
 - `await lifecycle.submit_event("event", ...)` — Compatible with the old version, automatically constructs standard event formats
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, if the document contains language switch lines (with language names separated by `` | ``), strictly follow the format requirements above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Event Handling Mechanism
 
@@ -366,7 +364,6 @@ async def _poll(self):
 6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered processors and timers are cleaned up.
 7. **Loading priority**: If you need to listen to events during the framework initialization phase, it is recommended to set a high priority and disable lazy loading.
 
-Please directly return the complete translated Markdown content, without including any other text.
 
 ## Related Documentation
 

@@ -4,18 +4,14 @@ TelegramAdapter 是基於 Telegram Bot API 建立的適配器，支援多種訊�
 
 ---
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 文件資訊
 
 - 對應模組版本: 4.1.1
 - 維護者: ErisPulse
 
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 基本資訊
 
@@ -24,7 +20,6 @@ TelegramAdapter 是基於 Telegram Bot API 建立的適配器，支援多種訊�
 - 支援的協定/API版本：Telegram Bot API
 - 會話類型映射：`private` → 發送時用 `user`，`group`/`supergroup` → `group`，`channel` → `channel`
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 支援的消息傳送類型
 
@@ -352,7 +347,6 @@ async def handle_notice(event):
 - 論題訊息包含 `thread_id` 欄位
 - `@` 提及使用標準 `mention` 消息段類型（`type: "mention"`），文本中不含 @使用者名稱
 
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
 ## 配置選項
 

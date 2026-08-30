@@ -6,7 +6,6 @@ The ErisPulse command-line tool (`epsdk`) provides project management and packag
 
 ---
 
-docs/en/quick-start.md | docs/en/project-management.md | docs/en/package-management.md | docs/en/cli-reference.md
 
 ## Package Management Commands
 
@@ -303,11 +302,6 @@ epsdk run --reload
 
 ---
 
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
-   - This ensures links point to the correct language version of the documentation
 
 ## Project Management Commands
 
@@ -425,10 +419,6 @@ epsdk i18n --list
 
 ---
 
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md`-formatted links), keep them unchanged to ensure links point to the correct language version of the document
 
 ## Type Stub Commands
 
@@ -482,7 +472,6 @@ The following parameters are applicable to all commands:
 
 ---
 
-Please directly return the complete translated Markdown content, without any additional text.
 
 ## Environment Diagnosis
 
@@ -525,8 +514,6 @@ The interactive interface provides:
 2. Module selection
 3. Custom installation
 
-For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged to ensure links point to the correct language version of the document.
 
 ## Common Usage
 

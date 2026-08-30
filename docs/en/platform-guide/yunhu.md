@@ -4,16 +4,13 @@ YunhuAdapter is an adapter built based on the Yunhu protocol, integrating all Yu
 
 ---
 
-Please directly return the complete translated Markdown content without including any other text.
 
-Once again, please note: if the document contains a language switch line (with each language name separated by `` | ``), strictly adhere to the format requirement in item 8 above and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Document Information
 
 - Corresponding Module Version: 4.3.0
 - Maintainer: ErisPulse
 
-Please directly return the complete translated Markdown content without any additional text.
 
 ## Basic Information
 
@@ -24,9 +21,6 @@ Please directly return the complete translated Markdown content without any addi
 - OneBot12 Compatibility: Supports sending OneBot12 formatted messages
 
 For documentation links, replace `docs/en/` with `docs/en/`.
-For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`.
-For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged.
-This ensures links point to the correct language version of the documentation.
 
 ## Supported Message Sending Types
 
@@ -325,9 +319,7 @@ All send methods return a Task object, which can be awaited directly to obtain t
 }
 ```
 
-Please return the complete translated Markdown content directly, without any additional text.
 
-Once again, if the document contains a language switch line (with language names separated by `` | ``), strictly follow the format requirements above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Unique Event Types
 
@@ -431,9 +423,7 @@ async def handle_yunhu_notice(event):
         else:
             await event.reply(f"Received your selection: {button_value}")
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, if the document contains a language switch line (with each language name separated by `` | ``), be sure to strictly follow the format requirement in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 # Handling Quick Menu Events
     elif event.get("detail_type") == "yunhu_shortcut_menu":
@@ -445,9 +435,7 @@ Once again, if the document contains a language switch line (with each language 
         settings = event.get("yunhu_setting", {})
         await event.reply(f"Settings have been updated: {settings}")
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, if the document contains language switch lines (with each language name separated by `` | ``), be sure to strictly follow the format requirements in point 8 above; do not write incorrect formats such as ``[**Label**](file)``.
 
 # Handling A2UI Button Events
     elif event.get("detail_type") == "yunhu_a2ui_button":
@@ -475,9 +463,7 @@ buttons = [
 # Send a Message with Buttons to a Group
 await yunhu.Send.To("group", "123456").Buttons(buttons).Text("Please confirm the following operation")
 
-Please directly return the complete translated Markdown content without including any other text.
 
-Once again, if the document contains a language switch line (with each language name separated by `` | ``), be sure to strictly follow the format requirement in item 8 above, and do not write the incorrect format ``[**Label**](file)``.
 
 # Send a Message with Buttons to User's Private Chat
 await yunhu.Send.To("user", "789").Buttons(buttons).Text("Please select your preference settings")

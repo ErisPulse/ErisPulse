@@ -4,9 +4,7 @@ DiscordAdapter is an adapter built based on the Discord Gateway (WebSocket) and 
 
 ---
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, if the document contains a language switch line (with language names separated by `` | ``), be sure to strictly follow the formatting requirements in item 8 above and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Document Information
 
@@ -14,9 +12,7 @@ Once again, if the document contains a language switch line (with language names
 - Maintainer: ErisPulse
 - Discord API Version: v10
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, if the document contains a language switch line (with each language name separated by `` | ``), be sure to strictly follow the format requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Basic Information
 
@@ -28,7 +24,6 @@ Once again, if the document contains a language switch line (with each language 
 - Chained Modifier Support: Supports chained modifier methods such as `.Reply()`, `.At()`, `.AtAll()`
 - OneBot12 Compatibility: Supports sending OneBot12 formatted messages
 
-Please directly return the complete translated Markdown content without including any other text.
 
 ## Configuration Instructions
 

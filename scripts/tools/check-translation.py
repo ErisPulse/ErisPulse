@@ -114,6 +114,51 @@ def detect_garbled(content: str, target_lang: str) -> List[str]:
     return issues
 
 
+# 译文中的翻译提示词泄露特征（模型偶发将翻译规则回显进译文）。
+# 仅匹配绝不可能出现在正文中的“提示词残留”，避免误伤正常内容。
+LEAK_PATTERN = re.compile(
+    r"(?:return|send)\s+the\s+(?:complete\s+)?translated\s+Markdown|"
+    r"once\s+again,?\s+please\s+(?:note|adhere|follow)|"
+    r"reminder:?\s+if\s+the\s+document\s+contains\s+(?:a\s+)?language|"
+    r"Path\s+Replacement\s+Rules?|"
+    r"language\s+switch(?:ing)?\s+line|"
+    r"replace\s+`?docs/[a-z-]+/`?\s+in\s+document\s+links|"
+    r"for\s+example:\s+`?docs/[a-z-]+/.*should\s+be\s+changed\s+to|"
+    r"for\s+links\s+pointing\s+to\s+non-current\s+language\s+version\s+files|"
+    r"(?:this\s+)?ensures?\s+(?:that\s+)?links\s+point\s+to\s+the\s+correct\s+language\s+version|"
+    r"请直接返回翻译后的完整Markdown内容|"
+    r"請直接返回翻譯後的完整|"
+    r"再次提醒：?如果(?:文档|文檔|文件)|"
+    r"语言切换行本地化|"
+    r"你是一个专业的技术文档翻译专家|"
+    r"请将以下Markdown文档翻译成|"
+    r"这段中文提示|"
+    r"言語切り替え行がある場合|"
+    r"翻訳後の完全なMarkdown|"
+    r"верните непосредственно переведенный|"
+    r"еще раз напоминаем|"
+    r"переведенный полный Markdown-документ|"
+    r"строки переключения языка",
+    re.IGNORECASE,
+)
+
+
+def detect_prompt_leaks(content: str) -> List[str]:
+    """
+    检测译文中残留的翻译提示词（模型回显的规则）。
+
+    提示词泄露通常以独立段落出现，行不区别语言（译文可能被翻译为各语言）。
+    仅统计命中次数，用于在翻译质量检查中标记译文污染。
+
+    :param content: 译文文本
+    :return: 问题描述列表
+    """
+    hits = LEAK_PATTERN.findall(content)
+    if hits:
+        return [f"{len(hits)} 处翻译提示词残留"]
+    return []
+
+
 class TranslationChecker:
     """翻译质量检查器
 
@@ -241,6 +286,9 @@ class TranslationChecker:
         for gi in detect_garbled(tgt_content, lang):
             issues.append({"severity": "error", "type": "garbled", "message": gi})
 
+        for li in detect_prompt_leaks(tgt_content):
+            issues.append({"severity": "error", "type": "prompt_leak", "message": li})
+
         return issues
 
     def _delete_cache(self, rel: str, lang: str):
@@ -364,6 +412,15 @@ class TranslationChecker:
                         for gi in detect_garbled(tc, lang):
                             rm_issues.append(
                                 {"severity": "error", "type": "garbled", "message": gi}
+                            )
+                            self.summary["errors"] += 1
+                        for li in detect_prompt_leaks(tc):
+                            rm_issues.append(
+                                {
+                                    "severity": "error",
+                                    "type": "prompt_leak",
+                                    "message": li,
+                                }
                             )
                             self.summary["errors"] += 1
                     except Exception:

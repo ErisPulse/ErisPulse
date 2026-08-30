@@ -80,7 +80,6 @@ the system tray for background operation; it includes a built-in Python runtime 
 
 > For detailed instructions, see [ErisPulse-App Installation and Usage](../ecosystem/app.md).
 
-Please return the complete translated Markdown content directly, without including any other text.
 
 ## Verify Installation
 
@@ -107,9 +106,7 @@ If you see output similar to the following, the installation was successful:
 [INFO] ErisPulse initialization complete
 ```
 
-Please return the complete translated Markdown content directly, without including any other text.
 
-Reminder: If the document contains language switch lines (lines where language names are separated by `` | ``), please strictly follow the format requirements in point 8 above and do not write incorrect formats like ``[**Label**](file)``.
 
 ## FAQ
 

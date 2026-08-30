@@ -544,5 +544,3 @@ while True:
 - [建立第一個機器人](../getting-started/first-bot.md) - `keep_running` 兩種基本模式入門
 - [生命週期管理](lifecycle.md) - 監聽 `core.init.start` / `core.init.complete` 等啟動事件
 - [懶加載系統](lazy-loading.md) - 模組懶加載機制與 `load_module`
-
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。

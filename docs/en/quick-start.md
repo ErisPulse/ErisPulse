@@ -182,5 +182,3 @@ Once the bot is up and running, you can continue as needed:
 
 **For reference:**
 - [Configuration File Guide](user-guide/configuration.md) · [CLI Commands](user-guide/cli-reference.md) · [Deployment Guide](user-guide/deployment.md)
-
-Please directly return the complete translated Markdown content without including any other text.

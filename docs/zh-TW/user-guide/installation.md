@@ -136,7 +136,6 @@ epsdk run main.py
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 下一步
 

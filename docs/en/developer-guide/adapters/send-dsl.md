@@ -2,9 +2,7 @@
 
 SendDSL is a fluent-style message sending interface provided by the ErisPulse adapter.
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, please note: If the document contains a language switching line (lines with each language name separated by `` | ``), strictly comply with the format requirements outlined in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Basic Calling Methods
 
@@ -32,9 +30,7 @@ await adapter.Send.Using("bot1").Text("Hello")
 await adapter.Send.Using("bot1").To("group", "123").Text("Hello")
 ```
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, if the document contains language switching lines (with each language name separated by `` | ``), strictly follow the formatting requirements in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Method Chaining
 
@@ -46,11 +42,7 @@ flowchart LR
     D --> E["Return asyncio.Task"]
 ```
 
-7. **Important: Path Replacement Rules**
    - Replace `docs/en/` with `docs/en/` in document links
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Sending Methods
 
@@ -283,11 +275,6 @@ task = adapter.Send.To("user", "123").Text("Hello")
 result = await task
 ```
 
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
-   - This ensures links point to the correct language version of the documentation
 
 ## Send Rule System
 
@@ -585,11 +572,6 @@ def TelegramSticker(self, ...):
     pass
 ```
 
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Internal Breakdown of the Send Chain
 
@@ -708,9 +690,7 @@ async def call_api(self, endpoint: str, **params):
     }
 ```
 
-Please return the complete translated Markdown content directly, without any additional text.
 
-Once again, if the document contains language switch lines (with each language name separated by `` | ``), strictly adhere to the format requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Complete Example
 
