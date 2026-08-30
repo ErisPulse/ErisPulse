@@ -27,9 +27,7 @@ These documents are suitable for the following developers:
 - Developers needing a deep understanding of internal framework mechanisms
 - Developers needing to optimize performance or implement complex features
 
-Please return the complete translated Markdown content directly, without including any other text.
 
-Reminder: If the document contains language switching lines (lines separated by ` | `), strictly follow the formatting requirement in item 8 above; do not write incorrect formats like ``[**Label**](file)``.
 
 ## Prerequisites
 

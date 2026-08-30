@@ -4,9 +4,7 @@ IdeauraAdapter is an adapter built on the RockyChat platform API, integrating al
 
 ---
 
-Please directly return the complete translated Markdown content without including any other text.
 
-Once again, please note: If the document contains a language switch line (with language names separated by `` | ``), strictly follow the format requirement in item 8 above and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Documentation Information
 
@@ -14,7 +12,6 @@ Once again, please note: If the document contains a language switch line (with l
 - Corresponding Module Version: 4.0.1
 - Maintainer: ErisPulse
 
-Please directly return the complete translated Markdown content without including any other text.
 
 ## Basic Information
 
@@ -24,7 +21,6 @@ Please directly return the complete translated Markdown content without includin
 - Chainable Modifiers: Supports chainable modifier methods such as `.At()`, `.AtAll()`, `.Reply()`, `.Command()`
 - OneBot12 Compatibility: Supports sending OneBot12 formatted messages
 
-Please directly return the complete translated Markdown content, without including any other text.
 
 ## Supported Message Sending Types
 
@@ -123,9 +119,7 @@ All send methods return a Task object, which can be directly awaited to obtain t
 }
 ```
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, please note: If the document contains a language switch line (with each language name separated by `` | ``), strictly follow the format requirements outlined above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Platform-Specific Event Types
 
@@ -386,7 +380,6 @@ async def handle_message(event):
 
 ---
 
-Please directly return the complete translated Markdown content, without including any other text.
 
 ## Multi-Account Configuration
 
@@ -500,6 +493,3 @@ Detected automatically via magic bytes:
 7. Emojis (`Face()`) are sent as plain text emoji.
 8. When the program exits, please call `shutdown()` to ensure resource release.
 
-Please directly return the complete translated Markdown content, without including any other text.
-
-Once again, if the document contains a language switch line (with each language name separated by `` | ``), strictly follow the format requirement in item 8 above and do not write incorrect formats such as ``[**Label**](file)``.

@@ -2,9 +2,7 @@
 
 了解 ErisPulse 適配器的核心概念是開發適配器的基礎。
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 適配器架構
 
@@ -561,7 +559,6 @@ class MyAdapter(BaseAdapter):
         self.convert = self.converter.convert
 ```
 
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
 ## Send 消息發送 DSL
 

@@ -3,9 +3,7 @@
 
 ErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 來管理專案設定。
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 配置檔位置
 
@@ -211,7 +209,6 @@ ssl_keyfile = "/path/to/key.pem"
 | ssl_certfile | string | 空 | SSL 證書檔案路徑 |
 | ssl_keyfile | string | 空 | SSL 私鑰檔案路徑 |
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 主人系統配置
 
@@ -369,7 +366,6 @@ use_global_db = false
 |---------|------|---------|------|
 | use_global_db | boolean | false | 是否使用全域資料庫（包內）而非專案資料庫。`true` 時所有專案共用 ErisPulse 包內的 SQLite 資料庫；`false`（預設）時每個專案使用 `config/` 目錄下獨立的資料庫 |
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 事件設定
 
@@ -411,7 +407,6 @@ language = "auto"
 |---------|------|---------|------|
 | language | string | auto | 框架內置文本的顯示語言。設為 `auto` 自動檢測系統語言，也可設為具體代碼：`zh-CN`、`zh-TW`、`en`、`ja`、`ru` |
 
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
 ## 模組配置
 
@@ -442,7 +437,6 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 
 > `setConfig` 預設採用延遲寫入（約每 5 秒批量儲存到檔案），設定 `immediate=True` 可立即持久化。設定變更會觸發 `config.set` 生命週期事件。
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 作用域配置
 

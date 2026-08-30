@@ -63,14 +63,29 @@
 
 ---
 
-## [2.8.0-dev.1] - 2026/08/25
+## [2.8.0-dev.1] - 2026/08/28
 > 开发版本
 
 **版本摘要**
 新增 CLI `config` 命令与安装后配置引导：`epsdk config` 按适配器/模块声明的 `ConfigClass`/`AccountConfigClass` 生成 schema 驱动的交互表单（含适配器多账户管理与启用开关），无需手写 config.toml；`epsdk install`（交互式路径）与 `epsdk init` 安装成功后自动检测新装包的配置声明并引导填写。向导已完善交互细节：字段值来源标注（已有配置/默认值）、布尔开关用字段名提问、已就绪目标提示、成功写入合并为一条汇总、账户名空输入视为取消，并统一字段描述语言（Core i18n 跟随 `epsdk i18n` 设置，消除中英混排）。另修复 Docker 部署 site-packages 持久化卷核心包半写损坏（如 click 截断导致 `module 'click' has no attribute 'Choice'` 启动失败）无法自愈的问题，入口点启动时自动探测并从镜像备份还原。
+本版另引入通用角色系统与权限覆盖机制：新增数值权重制角色系统（`ErisPulse.Core.role`，内置 everyone/admin/master 层级可调权重、blocked 黑名单短路、master 桥接主人系统），命令权限改为「开发者声明仅作默认、用户覆盖优先」——用户可通过配置 `ErisPulse.event.command.permissions` / `.acl` 或运行时 API（`command.set_permission()` / `allow_user()` / `deny_user()`）随时覆盖任意命令的权限（可升可降）；scope 作用域系统扩展用户级绑定（第四桶 `users`，优先级最高）与用户黑名单（`scope.block_user()`，命中后事件在分发入口完全丢弃）。同时修复一批测试对 i18n 本地化文案的脆弱断言与两处运行时告警根因。
 
 ### 新增
 - @wsu2059q
+  - **通用角色系统** `Core/role.py`（`from ErisPulse.Core import role`）：
+    - 内置层级 `everyone(0)` / `admin(50)` / `master(100)`，权重可经 `ErisPulse.role.levels` 调整（需满足 everyone ≤ admin ≤ master，违反回退默认并报错）；`blocked` 为独立短路黑名单角色（压过 master）
+    - 自定义角色：配置 `ErisPulse.role.<name>.level` + `.users` 或运行时 `role.define()` / `role.add()` / `role.remove()`；`master` 角色桥接 `ErisPulse.master.users`（单一数据源）
+    - 判定 API：`role.at_least(event, "admin")`（权重向下继承）、`role.has()`（严格匹配）、`role.get_level()` / `get_roles()` / `is_blocked()`；结果带 LRU 缓存，配置热更新自动重建
+  - **命令权限覆盖机制** `Core/Event/command.py`：
+    - 开发者声明变为默认值：`permission="内置层级名"`（新，注册期校验，非内置名告警并按用户角色动态解析兜底）/ `permission=callable`（兼容保留）/ `master=True`（≡ 默认 master），全部可被用户覆盖
+    - 用户侧配置：`ErisPulse.event.command.permissions`（按命令覆盖等级，键支持 `模块.命令` 精确与裸命令名兜底）与 `.acl`（按命令用户黑白名单）；运行时 API `command.set_permission()` / `allow_user()` / `deny_user()` / `remove_acl()` / `get_effective_permission()`（返回生效等级与来源，便于诊断）
+    - 判定链（`_check_permission`）：blocked 短路 → ACL deny → ACL allow → 用户覆盖等级 → 开发者默认 → 放行；未定义角色引用 fail-closed 拒绝并报错；提供 `get_effective_permission` 权限自省
+  - **scope 用户级绑定与用户黑名单** `Core/scope.py`：
+    - 第四桶 `ErisPulse.scope.users.<platform>.<user_id>.modules/blocked`，解析优先级 用户级 > 会话级 > Bot 级 > 平台级；`is_allowed()` 新增可选 `user_id` 参数（向后兼容）
+    - `scope.block_user()` / `unblock_user()` / `is_user_blocked()`：命中用户的所有类型事件在 adapter 分发入口**完全丢弃**（不进入中间件与任何处理器，含框架级），`BaseEventHandler._process_event` 入口防御性双保险；`get_stats()` 新增 `dropped_events` 统计
+    - `bind()` / `unbind()` 支持 `user_id` 维度；`get_topology()` 纳入 users 桶与 blocked_users
+  - **配置整节替换写入** `runtime/frame_config.py` 新增 `set_erispulse_section(path, value)`：与 `update_erispulse_config` 的深合并语义互补，支持删除子键（权限覆盖重置、解绑等场景）
+  - i18n 五语言（zh-CN / zh-TW / en / ja / ru）新增 `core.role.*`、`core.scope.user_*`、`core.command.permission_*` 键；`create.py` 模块模板与 `examples/example-module` 增加权限声明推荐写法示例
   - **CLI `config` 命令** `CLI/commands/config.py`：
     - `epsdk config` 列出全部适配器/模块及配置状态（已就绪/待完善/未配置/无配置），交互选择进入向导
     - `epsdk config <名称>` 直接进入目标向导（支持平台名或配置键名）；`--list` 仅展示状态
@@ -91,14 +106,23 @@
 
 ### 修复
 - @wsu2059q
+  - **测试对 i18n 本地化文案的脆弱断言**：14 处 `pytest.raises(match=...)` / 错误文案断言依赖中文消息，环境语言解析为英文时失败（如 `tests/unit/test_unit_event.py`、`test_unit_adapter.py`、`test_unit_client.py`、`test_unit_config.py`、`test_unit_router.py`、`tests/integration/test_integration_router_*.py`）；统一改为断言各语言消息均嵌入的稳定参数（路径 / 字段名 / 值 / `account_id` 等），不再依赖运行语言
+  - **aiohttp 裸 bytes 文件字段弃用告警** `Core/client.py` `_build_form_data`：`files` 传裸 bytes 时显式指定 `filename=字段名`，保持 aiohttp v3「bytes 视为文件字段」语义并消除 v4 弃用告警
+  - **限流清理任务孤儿协程告警** `Core/router.py` `_start_rate_limit_cleanup`：无运行中事件循环时先于协程创建探测 loop，不再产生 `coroutine ... was never awaited` RuntimeWarning
+  - **scope.unbind 持久化删除失效**：原经 `update_erispulse_config` 深合并写入无法表达子键删除，且写后依赖事件重载可能回读旧缓存导致内存态未同步；改为整节替换写入（`set_erispulse_section`）+ 写后重放内存态，`bind(persist=True)` 同步补齐内存应用
   - **Docker 入口点核心包完整性自愈** `docker-entrypoint.sh`：修复 Docker 部署在 site-packages 持久化卷（`config/.packages`）核心包损坏时启动失败且无法自愈的问题——热更新或容器重启被中断（OOM、宿主机重启等）可能残留半写状态的包（典型如 `click/__init__.py` 被截断为空，`import` 成功但零导出，uvicorn 导入期抛 `module 'click' has no attribute 'Choice'`，模块加载与路由服务器启动全部失败），而原入口点仅在卷完全为空时初始化、对部分损坏无恢复能力：
     - 启动前对核心包做哨兵属性探测（`click.Choice` / `uvicorn.Server` / `fastapi.FastAPI` / `ErisPulse.sdk`），仅 `import` 成功不足以发现截断损坏，必须触及关键属性
     - 探测失败时从镜像内备份 `/opt/site-packages-init` 删除并还原损坏包目录及其 `*.dist-info`（连字符精确匹配，不误伤 `ErisPulse_Dashboard` 等下划线包），还原后复检；仍失败则记录日志放行，由正常启动流程输出原始错误
     - 备份中不存在的包不做处理（不误删用户自装模块）；框架包 `ErisPulse` 损坏时自动回滚至镜像内置版本，可在 Dashboard 重新升级
     - 新增还原过程日志文案，入口点内联 i18n 五语言（zh / zh_TW / en / ja / ru）同步
+  - **文档翻译器提示词泄露** `scripts/tools/translate-docs.py`：模型翻译时偶发将翻译规则/提醒（如「路径替换规则」「请直接返回翻译后的完整Markdown内容」「再次提醒：…语言切换行…」）当作正文回译进译文，污染各语言文档（en/ja/ru/zh-TW 与根 README 大量出现）。已定位根因：所有翻译规则与待翻译内容混在同一用户消息、且规则用与内容相同的语言写成，模型无法区分指令与正文而整段回显。改为架构性修复：全部规则前移到 `system` 消息、待翻译内容用 `<<<DOC_START>>>`/`<<<DOC_END>>>` 标记包裹放入 `user` 消息并明确「只翻译标记之间的内容、不得输出任何提示词」；`call_translation_api` 末尾防御性移除可能的标记残留。已对全仓库各语言受影响文档（109 个）做「移除泄露行」一次性清理（仅删除提示词残留行，未改动正文），并用中文/英文/日文/俄文泄露特征 + 与 zh-CN 源零匹配校验确保不误删。另约定：删除/移动/重命名 `docs/zh-CN` 文档时若用中文书写目录注释，须同时手动清理其它语言与缓存（已补充文档说明）。
+  - **翻译质量检查器新增提示词泄露检测** `scripts/tools/check-translation.py`：`detect_prompt_leaks()` 检出译文中的翻译提示词残留（多语言特征），计入 `ERROR`，配合 `--fix` 清缓存后由修复版翻译器重译即可自愈。
 
 ### 测试
 - @wsu2059q
+  - 新增 `tests/unit/test_unit_role.py`（23 用例）：层级权重解析与校验回退、自定义角色、双格式成员、向下继承、blocked 短路压过 master、master 桥接、`has` 严格匹配、运行时增删与持久化写入、热更新
+  - 新增 `tests/unit/test_unit_command_permission.py`（18 用例）：判定链全分支（blocked / ACL deny>allow / 覆盖替代默认 / `模块.命令` 键优先 / 未定义角色 fail-closed / 同步与异步 callable / 异常拒绝）、运行时 API（覆盖与重置、ACL 互斥维护、别名解析、整节持久化写入）
+  - `tests/unit/test_unit_scope.py`：unbind 持久化断言改为整节写入语义，补内存同步断言与 users 桶结构
   - 新增 `tests/unit/test_unit_config_api.py`（45 用例）：向导字段渲染（boolean/select/secret/min-max/required 重问、空默认值无括号）、字段值来源标注（当前/默认、按存储键存在性计算）、布尔 prompt 用字段名、账户名空输入取消、目标配置状态四态检查、安装后衔接匹配与跳过、`run_wizard` 落盘与就绪提示/成功汇总/放弃中止零写入、交互选择连续配置、语言同步、`epsdk config` 命令路由、CLI i18n 占位符插值
   - Core i18n `set_language` 的 `persist` 参数行为测试（默认持久化 / `persist=False` 跳过持久化）
   - `tests/unit/test_unit_cli.py` 的 `EXPECTED_COMMANDS` 增加 `config`（别名 `cfg`/`conf`）注册断言

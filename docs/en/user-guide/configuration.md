@@ -3,9 +3,7 @@
 
 ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project configurations.
 
-Please directly return the complete translated Markdown content without including any other text.
 
-Once again, please note: If the document contains language switch lines (lines with language names separated by `` | ``), be sure to strictly follow the format requirements above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Configuration File Location
 
@@ -18,9 +16,7 @@ project/
 ├── main.py
 ```
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, if the document contains language switch lines (lines with language names separated by `` | ``), be sure to strictly follow the format requirements in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Configuration Loading Error Handling
 
@@ -43,7 +39,6 @@ This allows you to immediately identify the issue at the **default INFO level**,
 
 > **What if you accidentally corrupt the configuration file while the bot is running?** If you manually edit `config.toml` during runtime and introduce a syntax error, the framework will output "Configuration file is corrupted (syntax error, line X), unable to merge and write—please fix the configuration file and restart" on the next write (merge configuration), instead of the confusing "write failed". The configuration items awaiting write will be preserved and will not be lost.
 
-Please directly return the complete translated Markdown content without any additional text.
 
 ## Environment Variable Override
 
@@ -70,9 +65,7 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 > Note: Framework configurations such as `ErisPulse.server.port` that are read via APIs like `get_server_config()` are all affected by environment variable overrides.
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, if the document contains language switch lines (with each language name separated by `` | ``), strictly follow the format requirement above in point 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Configuration Hot Reload
 
@@ -217,7 +210,6 @@ ssl_keyfile = "/path/to/key.pem"
 
 Please directly return the translated complete Markdown content, without any additional text.
 
-Once again, please note: if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the format requirement in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Master System Configuration
 
@@ -370,7 +362,6 @@ use_global_db = false
 
 Please directly return the fully translated Markdown content, without any additional text.
 
-Once again, please note: if the document contains language switching lines (with each language name separated by `` | ``), strictly follow the formatting requirements in the above point 8 and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Event Configuration
 
@@ -401,11 +392,6 @@ ignore_self = true
 |---------|------|---------|------|
 | ignore_self | boolean | true | Whether to ignore the robot's own messages |
 
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md`), keep them unchanged
-   - This ensures that links point to the correct language version of the documentation
 
 ## Internationalization Configuration
 
@@ -447,7 +433,6 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 
 > By default, `setConfig` uses delayed writing (approximately batch saving to file every 5 seconds). Setting `immediate=True` will persist immediately. Configuration changes will trigger the `config.set` lifecycle event.
 
-Please replace paths in document links by replacing `docs/en/` with `docs/en/`. For example, `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`. For links pointing to files of non-current language versions (such as `README.xx.md`), keep them unchanged to ensure links point to the correct language version of the document.
 
 ## Scope Configuration
 
@@ -482,6 +467,3 @@ docs/en/scope.md
 - [CLI Command Reference](cli-reference.md) - Learn about all command-line commands
 - [Developer Guide](../developer-guide/) - Learn how to develop custom modules
 
-Please directly return the complete translated Markdown content, without including any other text.
-
-Once again, please note: If the document contains a language switch line (with language names separated by `` | ``), be sure to strictly follow the format requirements in the above rule 8, and do not write the incorrect format ``[**Label**](file)``.

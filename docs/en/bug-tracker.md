@@ -11,9 +11,7 @@ This document records known bugs of the ErisPulse SDK and their fixes, arranged 
 
 ---
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, please note: if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the format requirements above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Field Descriptions
 
@@ -40,7 +38,6 @@ Once again, please note: if the document contains language switch lines (lines w
 
 ---
 
-Please directly return the complete translated Markdown content, without including any other text.
 
 ## Severity Levels
 
@@ -66,7 +63,6 @@ Please directly return the complete translated Markdown content, without includi
 
 ---
 
-Please directly return the complete translated Markdown content without any additional text.
 
 ## Item Template
 
@@ -93,9 +89,7 @@ To add a new bug item, please follow the format below:
 
 ---
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, please note: if the document contains language switch lines (with language names separated by `` | ``), strictly adhere to the format requirements above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Statistics Overview
 
@@ -122,9 +116,7 @@ Once again, please note: if the document contains language switch lines (with la
 
 ---
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, please note: if the document contains a language switch line (with each language name separated by `` | ``), strictly follow the format requirement in item 8 above and do not write incorrect formats like ``[**Label**](file)``.
 
 ## Fixed Bugs
 

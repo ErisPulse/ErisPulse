@@ -6,9 +6,7 @@
 
 The `Conversation` class provides convenient methods for conducting multi-turn interactions within the same session, suitable for scenarios such as guided operations, information collection, and conversational question-and-answer.
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, please note: if the document contains a language switch line (a line where each language name is separated by `` | ``), strictly adhere to the above rule #8 for formatting, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## 会話の作成
 

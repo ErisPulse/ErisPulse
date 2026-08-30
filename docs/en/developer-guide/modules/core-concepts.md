@@ -281,7 +281,6 @@ class MyModule(BaseModule):
         return config
 ```
 
-Please return the complete translated Markdown content without any additional text.
 
 ## Storage System
 

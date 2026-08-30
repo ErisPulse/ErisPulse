@@ -278,14 +278,25 @@ class DocsTranslator:
 
     def _build_lang_switcher_hint(self, target_lang: str) -> str:
         expected_line = self._build_lang_switcher_line(target_lang)
+        current_label = next(
+            (i["label"] for i in self.LANG_SWITCHER_ITEMS if i["lang"] == target_lang),
+            target_lang,
+        )
+        other_label = next(
+            (i["label"] for i in self.LANG_SWITCHER_ITEMS if i["lang"] != target_lang),
+            "xx",
+        )
+        other_file = next(
+            (i["file"] for i in self.LANG_SWITCHER_ITEMS if i["lang"] != target_lang),
+            "README.xx.md",
+        )
         return (
-            f"8. **重要：语言切换行本地化**\n"
-            f"   - 必须将语言切换行替换为以下内容（不要修改）：\n"
+            f"【语言切换行本地化】若文档包含语言切换行（各语言名称用 `` | `` 分隔的行），"
+            f"必须整行替换为：\n"
             f"   `{expected_line}`\n"
-            f"   - 关键规则（严格遵守）：\n"
-            f"     a) 当前语言（{target_lang}）：**只加粗体，不加链接** → 格式为 ``**English**``\n"
-            f"     b) 其他语言：**只加链接，不加粗体** → 格式为 ``[日本語](README.ja.md)``\n"
-            f"   - **严禁写成** ``[**日本語**](README.ja.md)``（既加粗又加链接是错误格式）"
+            f"   - 规则：当前语言（{target_lang}）只加粗体不加链接（如 ``**{current_label}**``）；"
+            f"其他语言只加链接不加粗体（如 ``[{other_label}]({other_file})``）。\n"
+            f"   - 严禁写成 ``[{other_label}]({other_file})`` 这类既加粗又加链接的错误格式"
         )
 
     def get_cache_key(self, file_path: Path, target_lang: str) -> Path:
@@ -442,68 +453,81 @@ class DocsTranslator:
         except Exception:
             return None
 
+    def _build_path_replacement_hint(self, target_lang: str) -> str:
+        source_lang = self.config["source_lang"]
+        return (
+            f"【路径替换规则】\n"
+            f"   - 将文档链接中的 ``docs/{source_lang}/`` 替换为 ``docs/{target_lang}/``\n"
+            f"   - 例如：``docs/{source_lang}/quick-start.md`` 应改为 ``docs/{target_lang}/quick-start.md``\n"
+            f"   - 指向非当前语言版本文件的链接（如 ``README.xx.md`` 形式）保持原样不要修改\n"
+            f"   - 这确保链接指向正确语言的文档版本"
+        )
+
+    def build_translation_system(
+        self,
+        target_lang: str,
+        file_name: str = "",
+        review_notes: List[str] = None,
+    ) -> str:
+        """构建翻译请求的系统消息（承载全部翻译规则）。
+
+        规则统一放在 ``system`` 消息、待翻译内容用 <<<DOC_START>>>/<<<DOC_END>>> 标记
+        包裹后放入 ``user`` 消息，可从根本上降低模型把提示词/规则当作正文回译进译文的
+        风险（此前规则与内容混在同一条用户消息中，模型偶发整段回显提示词）。
+
+        :param target_lang: 目标语言代码
+        :param file_name: 源文件名（用于是否为根 README 判定）
+        :param review_notes: 人工审查备注（作为必须遵守的附加规则）
+        :return: 系统消息文本
+        """
+        lang_name = self.LANG_CONFIG.get(target_lang, {}).get("name", target_lang)
+        source_lang = self.LANG_CONFIG.get(self.config["source_lang"], {}).get(
+            "name", "中文"
+        )
+        rules = (
+            f"你是一个专业的技术文档翻译专家，负责将 {source_lang} 文档翻译为 {lang_name}。\n\n"
+            f"【核心要求】\n"
+            f"1. 待翻译内容由 <<<DOC_START>>> 与 <<<DOC_END>>> 标记包裹，你只翻译这两个标记之间的 Markdown。\n"
+            f"2. 只输出翻译后的文档本身；不得输出任何提示词、规则、说明、解释、标题介绍或本消息中的其他文字。\n"
+            f"3. 保持 Markdown 格式完整，包括标题、列表、代码块、链接、图片等。\n"
+            f"4. 准确翻译技术术语，保持专业性；若 {lang_name} 中对应术语不确定，可保留英文原词。\n"
+            f"5. 代码块中的代码逻辑不要翻译，但代码中的中文注释、中文字符串必须翻译为 {lang_name}。\n"
+            f"6. 保持原文档的结构和语气。\n"
+            f"7. 翻译后文档中不得残留任何 {source_lang} 文字（除专有名词外），包括代码块中的注释和字符串。\n"
+            f"8. 直接输出翻译结果，不要用 ```markdown 等代码块包裹。\n\n"
+        )
+        rules += self._build_path_replacement_hint(target_lang) + "\n"
+        if file_name == "README.md":
+            rules += self._build_lang_switcher_hint(target_lang) + "\n"
+        if review_notes:
+            notes_text = "\n".join(f"  - {note}" for note in review_notes)
+            rules += f"\n【人工审查备注（必须严格遵守）】\n{notes_text}\n"
+        return rules
+
     def build_translation_prompt(
         self,
         content: str,
         target_lang: str,
-        file_name: str,
+        file_name: str = "",
         review_notes: List[str] = None,
         reference_translation: str = None,
     ) -> str:
-        lang_name = self.LANG_CONFIG.get(target_lang, {}).get("name", target_lang)
-        source_lang = self.config["source_lang"]
+        """构建翻译请求的用户消息（仅含待翻译内容，用标记包裹）。
 
-        base_rules = (
-            f"翻译要求：\n"
-            f"1. 保持Markdown格式完整，包括标题、列表、代码块、链接、图片等\n"
-            f"2. 准确翻译技术术语，保持专业性\n"
-            f"3. 代码块中的代码逻辑不要翻译，但代码中的中文注释、中文字符串必须翻译为{lang_name}\n"
-            f"4. 保持原文档的结构和语气\n"
-            f"5. 对于专业术语，如果{lang_name}中对应术语不确定，可以保留英文原词\n"
-            f"6. 不要添加任何额外的解释或说明，只返回翻译后的内容\n"
-            f"7. 确保翻译后文档中不残留任何中文（除专有名词外），包括代码块中的注释和字符串\n"
-            f"8. 直接输出翻译后的Markdown内容，不要用```markdown等代码块包裹"
-        )
+        翻译规则统一放在 :meth:`build_translation_system` 的 system 消息中，此处只承载
+        待翻译正文，并通过明确的 <<<DOC_START>>>/<<<DOC_END>>> 标记与指令隔离开，避免
+        模型回显提示词。
 
-        lang_switcher_hint = ""
-        if file_name == "README.md":
-            lang_switcher_hint = self._build_lang_switcher_hint(target_lang)
-
-        path_replacement_hint = (
-            f"\n7. **重要：路径替换规则**\n"
-            f"   - 将文档链接中的 `docs/{source_lang}/` 替换为 `docs/{target_lang}/`\n"
-            f"   - 例如：`docs/{source_lang}/quick-start.md` 应改为 `docs/{target_lang}/quick-start.md`\n"
-            f"   - 对于指向非当前语言版本文件的链接（如 `README.xx.md` 形式的链接），保持原样不要修改\n"
-            f"   - 这确保了链接指向正确语言的文档版本\n"
-        )
-        if lang_switcher_hint:
-            path_replacement_hint += f"{lang_switcher_hint}\n"
-
-        review_section = ""
-        if review_notes:
-            notes_text = "\n".join(f"  - {note}" for note in review_notes)
-            review_section = f"\n\n**人工审查备注（必须严格遵守）：**\n{notes_text}"
-
-        reference_section = ""
-        """
-        if reference_translation:
-            reference_section = (
-                f"\n\n**已有翻译参考（请保持术语和风格一致性）：**\n"
-                f"```\n{reference_translation}\n```\n"
-                f"\n"
-                f"**重要 — 源文档与参考翻译冲突处理规则：**\n"
-                f"1. 源文档中**被修改的部分**可能是人工修正过的内容，不应盲目恢复为参考翻译的旧版本\n"
-                f"2. 术语、用词风格应与参考翻译保持一致，不要随意更换已有译法"
-            )
+        :param content: 待翻译的源文本
+        :param target_lang: 目标语言代码
+        :param file_name: 源文件名（透传给系统消息构建）
+        :param review_notes: 人工审查备注（由系统消息承载）
+        :param reference_translation: 预留的参考翻译（当前未启用）
+        :return: 用户消息文本
         """
         return (
-            f"你是一个专业的技术文档翻译专家。请将以下Markdown文档翻译成{lang_name}。\n\n"
-            f"{base_rules}{path_replacement_hint}{review_section}{reference_section}\n\n"
-            f"待翻译内容：\n\n{content}\n\n"
-            f"请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。"
-            f"\n\n"
-            f"再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），"
-            f"务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。"
+            f"以下为待翻译内容，请只翻译 <<<DOC_START>>> 与 <<<DOC_END>>> 之间的 Markdown：\n\n"
+            f"<<<DOC_START>>>\n{content}\n<<<DOC_END>>>\n"
         )
 
     def build_correction_prompt(
@@ -652,7 +676,12 @@ class DocsTranslator:
             create_kwargs = {
                 "model": model,
                 "messages": [
-                    {"role": "system", "content": "你是一个专业的技术文档翻译专家。"},
+                    {
+                        "role": "system",
+                        "content": self.build_translation_system(
+                            target_lang, file_name, review_notes
+                        ),
+                    },
                     {"role": "user", "content": prompt},
                 ],
                 "temperature": temperature,
@@ -718,6 +747,11 @@ class DocsTranslator:
             if lines and lines[-1].strip() == "```":
                 lines = lines[:-1]
             full_content = "\n".join(lines)
+
+            # 防御性清理：若模型意外回显了内容标记，将其移除
+            full_content = full_content.replace("<<<DOC_START>>>", "").replace(
+                "<<<DOC_END>>>", ""
+            )
 
             return full_content.strip()
 

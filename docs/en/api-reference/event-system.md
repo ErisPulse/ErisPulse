@@ -15,9 +15,7 @@ flowchart LR
     C & D & E & F & G --> H["Event Wrapper Class<br/>reply / get_text / done etc."]
 ```
 
-Please return the complete translated Markdown content directly, without including any other text.
 
-Reminder: If the document contains language switching lines (lines separated by `` | ``), strictly adhere to the format requirements above, do not write incorrect formats like ``[**Label**](file)``.
 
 ## Command Module
 
@@ -253,7 +251,6 @@ async def heartbeat_handler(event):
 
 After the adapter sends a meta event, the framework automatically tracks the Bot status. For the query API and lifecycle event listeners, please refer to [Adapter System API - Bot Status Management](adapter-system.md#bot-status-management).
 
-Please return the complete translated Markdown content directly, without including any other text.
 
 ## Event Wrapper Class
 

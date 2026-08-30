@@ -4,9 +4,7 @@ OneBot11Adapter is an adapter built based on the OneBot V11 protocol.
 
 ---
 
-Please directly return the complete translated Markdown content without including any other text.
 
-Once again, please note: if the document contains language switch lines (lines with language names separated by `` | ``), strictly adhere to the format requirements outlined in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Document Information
 
@@ -23,9 +21,7 @@ Please directly return the translated complete Markdown content, without includi
 - Multi-account Support: Default multi-account architecture, supports configuring and running multiple OneBot accounts simultaneously
 - Configuration Key Name: `OneBotAdapter`
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, please note: if the document contains a language switch line (with each language name separated by `` | ``), be sure to strictly follow the format requirements in item 8 above, and do not write the incorrect format ``[**Label**](file)``.
 
 ## Supported Message Sending Types
 
@@ -471,9 +467,7 @@ The OneBot11 adapter adopts an asynchronous non-blocking design to ensure:
 4. WebSocket connections remain active
 5. Concurrent processing of multiple accounts, with each account running independently
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, if the document contains language switching lines (with each language name separated by `` | ``), strictly follow the above rule #8 for formatting, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Error Handling
 
@@ -483,9 +477,6 @@ Adapters provide a comprehensive error handling mechanism:
 3. Automatic retry at intervals when connection fails
 
 For document links containing `docs/en/`, replace them with `docs/en/`:
-- For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-- For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
-- This ensures links point to the correct language version of the document
 
 ## Event Handling Enhancement
 
@@ -503,8 +494,6 @@ In multi-account mode, all events will automatically include account information
 The adapter automatically maintains the `self_id → account_name` mapping, so `event.reply()` can correctly route to the originating account without manually specifying the account.
 
 For documentation links, replace `docs/en/` with `docs/en/`:
-- For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-- For links pointing to non-current language version files (e.g., `README.xx.md`), keep them unchanged to ensure they point to the correct language version of the document.
 
 ## Management Interface
 
@@ -535,9 +524,3 @@ The adapter will automatically establish a mapping relationship between OneBot `
 async def handler(event):
     await event.reply("Automatically routed to the correct account")
 ```
-
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., links in the form of `README.xx.md`), keep them unchanged
-   - This ensures that links point to the correct language version of the document

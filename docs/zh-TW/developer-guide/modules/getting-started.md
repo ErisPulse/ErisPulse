@@ -194,7 +194,6 @@ sdk.router     # 路由系統
 sdk.lifecycle  # 生命週期系統
 ```
 
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
 ## 下一階段
 

@@ -2,9 +2,7 @@
 
 The Event module provides a powerful Event wrapper class that simplifies event handling.
 
-Please directly return the complete translated Markdown content without including any other text.
 
-Once again, please note: If the document contains a language switch line (a line with language names separated by `` | ``), strictly adhere to the format requirements in point 8 above and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Type Annotations for the event Parameter
 
@@ -23,11 +21,6 @@ Without annotations, the IDE cannot recognize methods on Event (`get_text()` / `
 
 > **Note**: The `event` in event handler callbacks is an **Event wrapper class** (annotated as `Event`); the `event` in module lifecycle methods `on_load` / `on_unload` is a regular **dict** (annotated as `dict`), and these should not be confused.
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md`), keep them unchanged
-   - This ensures that links point to the correct language version of the document
 
 ## Core Features
 
@@ -36,7 +29,6 @@ Without annotations, the IDE cannot recognize methods on Event (`get_text()` / `
 - **Dot-style Access**: Supports accessing event fields using dot notation
 - **Backward Compatibility**: All methods are optional
 
-Please directly return the complete translated Markdown content without any additional text.
 
 ## Core Field Methods
 
@@ -51,11 +43,7 @@ async def info_command(event: Event):
     print(f"ID: {event_id}, Platform: {platform}, Time: {time}")
 ```
 
-7. **Important: Path Replacement Rules**
    - Replace `docs/en/` with `docs/en/` in document links
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Message Event Methods
 
@@ -70,11 +58,7 @@ async def private_handler(event: Event):
     await event.reply(f"Hello, {nickname}!")
 ```
 
-7. **Important: Path Replacement Rules**
    - Replace `docs/en/` with `docs/en/` in document links
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (such as `README.xx.md` format links), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Message Type Detection
 
@@ -89,11 +73,6 @@ async def group_handler(event: Event):
     await event.reply(f"Type: {'Private Chat' if is_private else 'Group Chat'}")
 ```
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
-   - This ensures that links point to the correct language version of the document
 
 ## Reply Functionality
 
@@ -109,11 +88,6 @@ async def ask_command(event: Event):
         await event.reply(f"Hello, {name}!")
 ```
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
-   - This ensures that links point to the correct language version of the document
 
 ## Command Information Retrieval
 
@@ -127,11 +101,6 @@ async def cmdinfo_command(event: Event):
     await event.reply(f"Command: {cmd_name}, Arguments: {cmd_args}")
 ```
 
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Notification Event Methods
 
@@ -143,9 +112,7 @@ async def friend_add_handler(event: Event):
     await event.reply("Welcome to add me as a friend!")
 ```
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, if the document contains language switch lines (where language names are separated by `` | ``), strictly follow the format requirements in item 8 above and do not write incorrect formats like ``[**Label**](file)``.
 
 ## Method Quick Reference
 

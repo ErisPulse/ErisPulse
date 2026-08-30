@@ -2,9 +2,7 @@
 
 The `Conversation` class provides convenient methods for multi-turn interactions within the same session, suitable for scenarios such as guided operations, information collection, and conversational question-answering.
 
-Please directly return the complete translated Markdown content without including any other text.
 
-Once again, please note: if the document contains a language switch line (with each language name separated by `` | ``), strictly follow the format requirements above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Creating Conversations
 
@@ -37,7 +35,6 @@ async def quiz_handler(event):
     conv.stop()
 ```
 
-Please directly return the complete translated Markdown content without any additional text.
 
 ## Core API
 
@@ -254,7 +251,6 @@ await conv.start()          # Start from the first branch
 await conv.start("settings") # Start from the specified branch
 ```
 
-Please directly return the complete translated Markdown content without including any other text.
 
 ## Context and Persistence
 
@@ -294,7 +290,6 @@ else:
 conv.clear_saved()
 ```
 
-Please directly return the complete translated Markdown content without any additional text.
 
 ## Typical Flow Patterns
 

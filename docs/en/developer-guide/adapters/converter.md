@@ -2,9 +2,7 @@
 
 The Event Converter is one of the core components of the adapter, responsible for converting platform-native events into ErisPulse's unified OneBot12 standard event format.
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, please note: if the document contains a language switch line (with each language name separated by `` | ``), strictly follow the formatting requirements outlined in point 8 above and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Converter Responsibilities
 
@@ -201,7 +199,6 @@ Platform-specific data should be stored with a `{platform}_` prefix to avoid con
 
 > **Important**: The `{platform}_raw` field is required; ErisPulse's event system and modules may depend on it to access raw platform data.
 
-Please directly return the complete translated Markdown content, without any additional text.
 
 ## Complete Example
 
@@ -333,7 +330,6 @@ def _convert_message_segments(self, raw_content: list) -> list:
     return segments
 ```
 
-Please directly return the complete translated Markdown content without any additional text.
 
 ## Common Pitfalls
 
@@ -431,9 +427,7 @@ import time
 4. **Handle edge cases**: Raw events may lack certain fields, use `.get()` and provide reasonable default values.
 5. **Consider performance**: `convert()` is called on each event, avoid performing time-consuming operations within it.
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, if the document contains language switch lines (with language names separated by `` | ``), strictly adhere to the above formatting requirements in point 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Related Documentation
 

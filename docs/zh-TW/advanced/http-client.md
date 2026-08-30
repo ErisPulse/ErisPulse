@@ -2,9 +2,7 @@
 
 ErisPulse 提供了統一的網路客戶端，聚合了 HTTP 請求、WebSocket 連接和連接池管理。模組和適配器**必須優先使用**此客戶端，而非自行導入 `aiohttp` / `httpx` / `requests` 等第三方庫。
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 概述
 
@@ -19,9 +17,7 @@ ErisPulse 提供了統一的網路客戶端，聚合了 HTTP 請求、WebSocket 
 - **連接池複用**：基於 aiohttp.ClientSession 的連接池管理
 - **異常體系**：aiohttp 異常自動轉換為 ErisPulse 異常 (ClientError 体系)
 
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 快速入門
 
@@ -54,9 +50,7 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## HttpResponse
 
@@ -81,7 +75,6 @@ data = await resp.json()       # 解析 JSON
 text = await resp.text("gbk")  # 指定編碼
 ```
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 請求方法
 
@@ -501,7 +494,6 @@ class MyAdapter(BaseAdapter):
 6. **監控請求統計**：透過 `sdk.client.stats` 或 `client.request` 生命週期事件監控請求情況
 7. **WebSocket 使用高階方法**：優先使用 `iter_text` / `iter_json` 等高階方法，僅在需要區分訊息類型時使用 `iter_messages`
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 相關文件
 
