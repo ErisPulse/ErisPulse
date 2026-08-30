@@ -6,9 +6,7 @@ ErisPulse is a scalable, multi-platform message processing framework that suppor
 
 ---
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, please note: If the document contains a language switch line (with language names separated by `` | ``), strictly follow the formatting requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Choose Your Path
 
@@ -81,9 +79,7 @@ ErisPulse supports two development methods:
 - **Module Development (Recommended)**: Create independent module packages and install them through a package manager, which facilitates distribution and management.
 - **Embedded Development**: Write processors directly within the project, suitable for rapid prototyping. See [Quick Start](docs/en/quick-start.md).
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, please note: If the document contains a language switch line (with each language name separated by `` | ``), strictly adhere to the above rule #8 and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Others
 
@@ -93,7 +89,6 @@ Once again, please note: If the document contains a language switch line (with e
 
 Please directly return the translated complete Markdown content, without any other text.
 
-Once again, if the document contains language switching lines (with language names separated by `` | ``), strictly follow the above rule #8 for formatting, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Getting Help
 

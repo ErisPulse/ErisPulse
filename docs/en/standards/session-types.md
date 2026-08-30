@@ -2,9 +2,7 @@
 
 This document defines the session type standard supported by ErisPulse, including received event types and sent target types.
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, if the document contains language switch lines (lines with each language name separated by `` | ``), strictly follow the format requirement in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## 1. Core Concepts
 
@@ -176,9 +174,7 @@ group                  group                  group
 discuss                group                  group  # Mapped to group
 ```
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the format requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## 4. Custom Type Extension
 
@@ -260,9 +256,7 @@ receive_type = infer_receive_type(event)
 # Returns: "group" (not "group_member_increase")
 ```
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, if the document contains a language switch line (with language names separated by `` | ``), be sure to strictly follow the format requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## 6. API Usage Examples
 
@@ -376,9 +370,7 @@ clear_custom_types()                # Clear all
 clear_custom_types(platform="discord")  # Clear only for specified platform
 ```
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the format requirements in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## 9. Best Practices
 
@@ -433,5 +425,3 @@ A: For non-generic or platform-specific types, use `{platform}_raw` and `{platfo
 - [Adapter Development Guide](../developer-guide/adapters/) - Complete guide for adapter development
 
 Please directly return the translated complete Markdown content, without including any other text.
-
-Once again, if the document contains a language switch line (with each language name separated by `` | ``), be sure to strictly follow the format requirement in item 8 above, and do not write the incorrect format ``[**Label**](file)``.

@@ -11,7 +11,6 @@ docs/en/quick-start.md
 - Corresponding Module Version: 4.1.0
 - Maintainer: ErisPulse
 
-Please directly return the complete translated Markdown content without including any other text.
 
 ## Basic Information
 
@@ -25,9 +24,6 @@ Please directly return the complete translated Markdown content without includin
 
 Please replace the following path rules in document links:
 - Replace `docs/en/` with `docs/en/`
-- For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-- For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
-- This ensures links point to the correct language version of the documentation
 
 ## Configuration Instructions
 

@@ -12,9 +12,7 @@ The module scope system is used to control which modules a "certain Bot" can use
 4. Supports dynamic addition and removal at runtime via `sdk.scope.bind()` / `unbind()`, which can be persisted
 {!--< /tips >!--}
 
-Please directly return the complete translated Markdown content without including any other text.
 
-Once again, if the document contains a language switch line (with language names separated by `` | ``), strictly follow the format requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## How It Works
 
@@ -35,7 +33,6 @@ flowchart TD
 - When event data lacks `self` (Bot cannot be identified), skip bot-level and determine based on session-level / platform-level.
 - Framework-level resources (handlers with empty owner, command dispatcher, event bus) are always allowed, unaffected by scope.
 
-Please directly return the complete translated Markdown content, without any additional text.
 
 ## Configuration File
 

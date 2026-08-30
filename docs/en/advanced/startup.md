@@ -6,11 +6,6 @@ This article breaks down the startup chain into independent components, explains
 
 > This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the chain within `init()`, as well as lower-level entry points such as `init()` / `init_task()` / `init_sync()`.
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (such as links in the form of `README.xx.md`), keep them unchanged
-   - This ensures that links point to the correct language version of the document
 
 ## SDK Top-Level Entry Overview
 

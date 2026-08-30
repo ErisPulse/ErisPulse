@@ -2,9 +2,7 @@
 
 Understanding the core concepts of ErisPulse adapters is the foundation for developing adapters.
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, please note: if the document contains language switch lines (lines with language names separated by `` | ``), strictly adhere to the format requirements outlined in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Adapter Architecture
 
@@ -555,7 +553,6 @@ class MyAdapter(BaseAdapter):
         self.convert = self.converter.convert
 ```
 
-Please return the complete translated Markdown content directly, without any additional text.
 
 ## Send Message Sending DSL
 
@@ -795,9 +792,7 @@ async def call_api(self, endpoint: str, **params):
     }
 ```
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, if the document contains language switch lines (with language names separated by `` | ``), strictly adhere to the format requirement above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Multi-Account Support
 
@@ -1038,6 +1033,3 @@ async def on_bot_offline(data):
 - [Detailed Guide to SendDSL](send-dsl.md) - Learn how to send messages
 - [Adapter Best Practices](best-practices.md) - Develop high-quality adapters
 
-Please directly return the complete translated Markdown content, without including any other text.
-
-Once again, please note: if the document contains language switch lines (with language names separated by `` | ``), strictly follow the format requirements in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.

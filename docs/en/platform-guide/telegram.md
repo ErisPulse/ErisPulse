@@ -4,18 +4,14 @@ TelegramAdapter is an adapter built based on the Telegram Bot API, supporting mu
 
 ---
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, if the document contains language switching lines (with each language name separated by `` | ``), strictly adhere to the formatting requirements above in point 8. Do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Documentation Information
 
 - Corresponding Module Version: 4.1.1
 - Maintainer: ErisPulse
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Again, please note: If the document contains a language switch line (with each language name separated by `` | ``), strictly follow the format requirement in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Basic Information
 
@@ -24,7 +20,6 @@ Again, please note: If the document contains a language switch line (with each l
 - Supported Protocol/API Version: Telegram Bot API
 - Session Type Mapping: `private` → use `user` when sending, `group`/`supergroup` → `group`, `channel` → `channel`
 
-Please directly return the complete translated Markdown content without any additional text.
 
 ## Supported Message Sending Types
 
@@ -352,7 +347,6 @@ async def handle_notice(event):
 - Thread messages include the `thread_id` field
 - `@` mentions use the standard `mention` message segment type (`type: "mention"`), and the text does not contain @username
 
-Please replace all `docs/en/` paths in document links with `docs/en/`. For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`. For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged. This ensures that links point to the correct language version of the document.
 
 ## Configuration Options
 
@@ -392,9 +386,3 @@ It is recommended to migrate to the new format:
 token = "YOUR_BOT_TOKEN"
 enabled = true
 ```
-
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
-   - This ensures that links point to the correct language version of the documentation

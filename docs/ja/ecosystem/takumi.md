@@ -18,7 +18,6 @@
 
 ---
 
-Please return the complete translated Markdown content below.
 
 ## インストールと有効化
 
@@ -329,7 +328,6 @@ png = renderer.render_html(
 
 ---
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## レンダリング結果を送信
 

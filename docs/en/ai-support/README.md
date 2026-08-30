@@ -15,9 +15,7 @@ ErisPulse provides two complementary AI-assisted development approaches, enablin
 
 The two approaches are not conflicting: for large-scale projects, both can be used simultaneously — use material documentation as the foundation, and MCP to fill in gaps.
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Again, if the document contains language switch lines (lines where language names are separated by `` | ``), strictly follow the above rule #8 and do not write incorrect formats like ``[**Label**](file)``.
 
 ## Material Documentation
 
@@ -126,11 +124,6 @@ If you don't want to start a local process, connect to the official hosted endpo
 
 The service is publicly accessible by default and does not require a token, but there is an IP rate limit (60 requests per minute per IP). The official endpoint may be deactivated at any time, so for production workflows, it is recommended to use Method 1 (local process) or self-hosting.
 
-**Important: Path Replacement Rules**
-- Replace `docs/en/` in document links with `docs/en/`
-- For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-- For links pointing to non-current language version files (e.g., `README.xx.md`-style links), keep them unchanged
-- This ensures links point to the correct language version of the documentation
 
 ## FAQ
 
@@ -140,7 +133,6 @@ Check if a complete documentation is provided; add more details in requirements 
 **After integrating MCP, the AI did not call `search_docs`?**  
 Ensure the client has loaded the server (the tool will be effective after **restarting the client**); some clients require explicitly prompting in the prompt to "use the ErisPulse documentation tool to verify the API."
 
-Please directly return the complete translated Markdown content, without any additional text.
 
 ## Next Steps
 
@@ -150,5 +142,3 @@ Please directly return the complete translated Markdown content, without any add
 - [Module Builder](https://www.erisdev.com/builder.html) -- Visual AI module generator in the browser
 
 Please directly return the translated complete Markdown content, without including any other text.
-
-Once again, if the document contains language switch lines (with language names separated by `` | ``), be sure to strictly follow the format requirements in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.

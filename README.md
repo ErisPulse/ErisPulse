@@ -2,9 +2,7 @@
 
 **English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, if the document contains a language switch line (with each language name separated by `` | ``), strictly follow the format requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 # ErisPulse
 
@@ -108,9 +106,7 @@ Intuitive chainable API design—complex logic such as @user, reply, retry, batc
 
 ---
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, please note: if the document contains a language switch line (with language names separated by `` | ``), strictly follow the format requirements in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## How It Works
 
@@ -410,7 +406,6 @@ results = await (yunhu.Send.To("user", "123")
 
 ---
 
-Please directly return the complete translated Markdown content without including any other text.
 
 ## Multi-turn Dialogue Examples
 

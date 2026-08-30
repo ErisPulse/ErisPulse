@@ -2,9 +2,7 @@
 
 This document provides best practice recommendations for developing ErisPulse adapters.
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, please note: if the document contains language switch lines (lines with language names separated by `` | ``), strictly adhere to the format requirements outlined above in point 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Bot Status Management and Meta Events
 
@@ -276,9 +274,7 @@ def _generate_event_id(self, raw_event):
     return str(uuid.uuid4())
 ```
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, if the document contains language switch lines (with language names separated by `` | ``), strictly follow the format requirements outlined in the 8th rule above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## SendDSL Implementation
 
@@ -343,11 +339,6 @@ class Send(BaseAdapter.Send):
         )
 ```
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md`), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## API Response
 
@@ -576,9 +567,7 @@ async def test_send_message():
 > - [Send Method Specification §6 Reverse Conversion Specification](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
 > - [Send Method Specification §11 MessageBuilder](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, please note: if the document contains a language switch line (with language names separated by `` | ``), strictly follow the formatting requirements outlined above in point 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Platform Event Method Extension
 
@@ -666,14 +655,10 @@ When releasing a new version, update the version information in the documentatio
 version = "2.0.0"  # Update the version number
 ```
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, if the document contains language switch lines (with language names separated by `` | ``), strictly follow the format requirements above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Related Documentation
 
 - [Getting Started with Adapter Development](getting-started.md) - Create your first adapter
 - [Core Concepts of Adapters](core-concepts.md) - Understand the adapter architecture
 - [Detailed Guide to SendDSL](send-dsl.md) - Learn how to send messages
-
-Please directly return the complete translated Markdown content, without any additional text.

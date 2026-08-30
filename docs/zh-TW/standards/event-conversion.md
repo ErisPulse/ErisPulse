@@ -514,5 +514,3 @@ async def handle_welcome(event):
 - [發送方法規範](send-method-spec.md) - Send 類別的方法命名、參數規範及反向轉換要求
 - [API 回應標準](api-response.md) - 适配器 API 回應格式標準
 - [API 動作標準](api-action-spec.md) - OneBot12 標準 API 動作的統一介面
-
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。

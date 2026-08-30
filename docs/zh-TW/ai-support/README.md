@@ -130,7 +130,6 @@ ERISPULSE_DOCS_DIR=/path/to/erispulse/docs epsdk-mcp --server
 **MCP 接入後 AI 沒有呼叫 `search_docs`？**
 確認客戶端已載入該 server（**重啟客戶端後可看到工具已生效**）；部分客戶端需要在 prompt 中明確提示「使用 ErisPulse 文件工具查證 API」。
 
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
 ## 下一步
 

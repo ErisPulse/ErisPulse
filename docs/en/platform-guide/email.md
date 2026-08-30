@@ -4,16 +4,13 @@ EmailAdapter is a mail adapter based on the SMTP/IMAP protocols, supporting mail
 
 ---
 
-Please directly return the complete translated Markdown content without including any other text.
 
-Once again, if the document contains language switch lines (with each language name separated by `` | ``), strictly follow the above rule #8 and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Documentation Information
 
 - Corresponding Module Version: 4.1.0
 - Maintainer: ErisPulse
 
-Please directly return the complete translated Markdown content without any additional text.
 
 ## Basic Information
 
@@ -207,11 +204,6 @@ When the email contains `References` or `In-Reply-To` headers, `email_raw_type` 
 | `email_from` | str | Sender's pure email address (convenient access) |
 | `attachments` | list | List of attachment data (includes binary `data` field, backward compatible) |
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Standard Event Examples
 
